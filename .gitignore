@@ -1,0 +1,15 @@
+# 敏感数据 - 绝对不提交
+data/position_sl_state.json
+data/auto_execute_log.jsonl
+data/signal_history.jsonl.gz
+data/trade_records.jsonl
+data/ws_guardian_state.json
+data/soma_ai_registry.json
+logs/
+*.log
+*.pyc
+__pycache__/
+.env
+config.py
+
+# 保留最小必要data文件（空结构）

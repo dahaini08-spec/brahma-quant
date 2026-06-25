@@ -1,0 +1,8 @@
+tornado==6.5.7
+requests==2.34.2
+numpy==1.26.4
+pandas==2.3.3
+lightgbm==3.3.5
+websocket-client==1.9.0
+websockets==15.0.1
+aiohttp==3.14.1
