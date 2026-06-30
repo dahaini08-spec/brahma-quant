@@ -2333,9 +2333,23 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
             verbose=True
         )
         # 若15M触发有效且止损更优：用15M精确止损替换4H止损
+        # [v4.0铁证封印 2026-06-30] Trigger15M收窄SL的前提：收窄后SL仍≥v4.0最低门槛
+        # 否则：维持v4.0的宽止损，不允许15M把SL缩回过窄
+        _v4_min_sl_for_15m = 0.0
+        try:
+            import json as _jv4t, pathlib as _pv4t
+            _rt_t = _pv4t.Path(__file__).parent.parent / 'data' / 'dharma_runtime.json'
+            _v4_d_t = _jv4t.loads(_rt_t.read_text()).get('exit_params_v4', {})
+            _regime_t = ms.get('regime', '')
+            _key_t = 'CHOP' if 'CHOP' in _regime_t else ('BULL' if 'BULL' in _regime_t else 'BEAR')
+            _v4_min_sl_for_15m = float(_v4_d_t.get(_key_t, {}).get('sl_pct', 0))
+        except Exception:
+            _v4_min_sl_for_15m = 2.0  # 默认BEAR体制最低2.0%
+
         if (_t15m.get('trigger_valid') and
             _t15m.get('sl_pct_15m', 99) < sl_pct and
-            _t15m.get('rr_15m', 0) >= 1.5):
+            _t15m.get('rr_15m', 0) >= 1.5 and
+            _t15m.get('sl_pct_15m', 0) >= _v4_min_sl_for_15m):  # [v4.0封印] 15M止损不得低于铁证门槛
             _sl_old = round(stop_loss, _decs)
             _sl_15m_candidate = _t15m['stop_15m']
 
