@@ -259,6 +259,42 @@ if __name__ == '__main__':
             capture_output=True, timeout=15
         )
         print(f'[pump-hunter] 推送完成 {len(r["new_alerts"])}个信号')
+
+        # ── [P2-6 架构重构 2026-06-30] 写入独立信号通道 ──
+        # 高分信号同时写入 pump_signal_queue，供独立执行器消费
+        try:
+            import sys as _sys_ph
+            _sys_ph.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            from scripts.pump_signal_executor import emit_pump_signal
+            import time as _time_ph
+
+            _regime_ph = r['new_alerts'][0].get('brahma_regime', 'BEAR_TREND') if r['new_alerts'] else 'BEAR_TREND'
+            for _a in r['new_alerts']:
+                _scan_fmt = {
+                    'symbol':    _a['symbol'],
+                    'score':     _a['score'],
+                    'valid':     _a['score'] >= 85,    # 独立通道门槛提升至85
+                    'direction': 'LONG',
+                    'signal_type': 'PUMP_SIGNAL',
+                    'tight7d':   _a.get('tight_7d', 0),
+                    'tight8h':   _a.get('tight_8h', 0),
+                    'rsi':       _a.get('rsi', 50),
+                    'shrink_h':  _a.get('shrink_hours', 0),
+                    'vol_ratio': _a.get('vol_ratio', 1.0),
+                    'chg24':     _a.get('chg_24h', 0),
+                    'atr':       _a.get('atr', 0),
+                    'atr_pct':   _a.get('atr_pct', 3.0),
+                    'price':     _a.get('price', 0),
+                    'ts':        _time_ph.time(),
+                }
+                if _scan_fmt['valid'] and _scan_fmt['price'] and _scan_fmt['atr']:
+                    _sig = emit_pump_signal(_scan_fmt, _regime_ph)
+                    if _sig:
+                        print(f'[pump-hunter] PUMP_SIGNAL写入独立队列: {_a["symbol"]} score={_a["score"]}')
+        except Exception as _e_ph:
+            print(f'[pump-hunter] 独立通道写入失败（不影响主流）: {_e_ph}')
+        # ── [END 独立通道] ──
+
     elif r['new_alerts']:
         for a in r['new_alerts'][:5]:
             print(f'  🚨{a["symbol"]:<18} score={a["score"]} | {" | ".join(a["reasons"][:2])}')
