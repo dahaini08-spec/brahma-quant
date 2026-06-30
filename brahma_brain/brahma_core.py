@@ -5305,58 +5305,11 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass
     # ══ [EventBus END] ════════════════════════════════════════════════════════
 
-    # ══ [P2-6 暴涨猎手维度融合 · 设计院 2026-06-30] ════════════════════════
-    # 暴涨猎手铁证：TIGHT<15%+缩量+RSI超卖 = LONG方向最强先验
-    # 注入规则：仅LONG方向 + 非已泵标的 + 评分上限+12
-    try:
-        import sys as _sys_ph, os as _os_ph
-        _root_ph = _os_ph.path.dirname(_os_ph.path.dirname(_os_ph.path.abspath(__file__)))
-        if _root_ph not in _sys_ph.path: _sys_ph.path.insert(0, _root_ph)
-        _ph_sym = _result.get('symbol', '') or _sym
-        _ph_dir = signal_dir or _result.get('signal_dir', 'SHORT')
-        _ph_chg24 = float((_result.get('ms') or ms or {}).get('price_change_24h', 0) or 0)
-        # 只对LONG且24H涨幅<30%（排除已泵）注入暴涨猎手加分
-        if _ph_dir == 'LONG' and _ph_chg24 < 30:
-            import numpy as _np_ph
-            from brahma_brain.brahma_bus import bus as _bus_ph
-            _k1h_ph = _bus_ph.klines(_ph_sym, '1h', 50)
-            if _k1h_ph and len(_k1h_ph) >= 25:
-                _c_ph = _np_ph.array([float(k[4]) for k in _k1h_ph])
-                _h_ph = _np_ph.array([float(k[2]) for k in _k1h_ph])
-                _l_ph = _np_ph.array([float(k[3]) for k in _k1h_ph])
-                _v_ph = _np_ph.array([float(k[5]) for k in _k1h_ph])
-                # TIGHT7D计算
-                _tight7d = (_np_ph.max(_h_ph[-168:]) - _np_ph.min(_l_ph[-168:])) / _np_ph.min(_l_ph[-168:]) * 100 if len(_h_ph)>=50 else 99
-                # RSI
-                _d_ph = _np_ph.diff(_c_ph[-15:])
-                _g_ph = _np_ph.where(_d_ph>0,_d_ph,0); _lo_ph = _np_ph.where(_d_ph<0,-_d_ph,0)
-                _ag_ph=_np_ph.mean(_g_ph); _al_ph=_np_ph.mean(_lo_ph)
-                _rsi_ph = 100-100/(1+_ag_ph/_al_ph) if _al_ph>0 else 99
-                # 连续缩量小时数
-                _shrink_ph = 0
-                for _vi in range(len(_v_ph)-2, max(0,len(_v_ph)-15), -1):
-                    if _v_ph[_vi] < _v_ph[_vi+1]: _shrink_ph += 1
-                    else: break
-                # 暴涨猎手评分
-                _ph_score = 0
-                if _tight7d < 15: _ph_score += 8   # TIGHT铁证最高权重
-                elif _tight7d < 20: _ph_score += 4
-                if _rsi_ph < 30: _ph_score += 5    # 超卖
-                elif _rsi_ph < 45: _ph_score += 2
-                if _shrink_ph >= 6: _ph_score += 4  # 连续缩量
-                elif _shrink_ph >= 3: _ph_score += 2
-                _ph_score = min(_ph_score, 12)      # 上限+12
-                if _ph_score > 0:
-                    _cur_s = float(_result.get('score_final', _result.get('score', 0)))
-                    _result['score_final'] = _cur_s + _ph_score
-                    _result.setdefault('confluence', {}).setdefault('breakdown', {})['s_pump_hunter'] = _ph_score
-                    _result['_ph_tight7d'] = round(_tight7d, 1)
-                    _result['_ph_rsi'] = round(_rsi_ph, 1)
-                    _result['_ph_shrink_h'] = _shrink_ph
-                    print(f'[PumpHunter-Fusion] {_ph_sym} LONG: TIGHT={_tight7d:.1f}% RSI={_rsi_ph:.0f} 缩量={_shrink_ph}H → +{_ph_score}分')
-    except Exception as _e_ph:
-        pass  # 暴涨猎手融合失败不影响主流程
-    # ══ [PumpHunter融合 END] ════════════════════════════════════════════════════
+    # ══ [P2-6 设计院审判2026-06-30: 暴涨猎手不注入brahma_core] ══════════════
+    # 判决：两套系统信号类型根本不同，不得混评分
+    # 梵天 = 精确趋势入场信号 | 暴涨猎手 = 蓄能预警信号
+    # 正确架构：独立信号通道，见 scripts/pump_signal_executor.py
+    # ══ [END] ══════════════════════════════════════════════════════════════════
 
     # ══ [可观测-v2] ══
     try:
