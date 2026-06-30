@@ -195,6 +195,169 @@ def format_report(r: dict) -> str:
     lines.append(f'╚══════════════════════════════════════════════════════╝')
     return '\n'.join(lines)
 
+
+# ══════════════════════════════════════════════════════════════════
+# 设计院 2026-06-30 封印 v2.0 — 标准字段集 + 固化输出卡片
+# 规则：所有分析输出必须能提取此字段集，缺失字段值为 None
+# ══════════════════════════════════════════════════════════════════
+
+# 12个必需字段 + 6个附加字段
+STANDARD_FIELDS = [
+    'regime',           # 体制: BEAR_TREND / BEAR_EARLY / CHOP_MID / BULL_TREND / BEAR_RECOVERY
+    'score',            # 梵天评分 0~175
+    'direction',        # SHORT / LONG / NEUTRAL
+    'entry_lo',         # 入场区下沿
+    'entry_hi',         # 入场区上沿
+    'sl',               # 止损价格
+    'tp1',              # 止盈1
+    'tp2',              # 止盈2
+    'rr',               # R:R比率
+    'structure_grade',  # 结构等级 0~100
+    'gex_min',          # GEX磁铁（最近支撑/压力）
+    'trigger_conf',     # 15M触发置信度 0~100
+    # 附加字段
+    'valid',            # 是否有效信号
+    'price',            # 当前价格
+    'rsi_1h',           # 1H RSI
+    'rsi_4h',           # 4H RSI
+    'fr',               # 资金费率
+    'consensus',        # 多周期共识
+]
+
+
+def extract_standard_fields(r: dict) -> dict:
+    """
+    从 brahma_core.analyze() 结果中提取标准字段集
+    所有分析输出的唯一字段提取入口
+    返回严格对应 STANDARD_FIELDS 的 dict，缺失字段值为 None
+    """
+    pa    = r.get('params', {}) or {}
+    ms    = r.get('momentum', {}) or {}
+    sent  = r.get('sentiment', {}) or {}
+    cf    = r.get('confluence', {}) or {}
+    extra = r.get('extra', {}) or {}
+    cf_bd = cf.get('breakdown', {}) or {}
+
+    # GEX磁铁：从 confluence breakdown 或 extra 提取
+    gex_min = cf_bd.get('_gex_min')
+    if gex_min is None:
+        gex_raw = extra.get('gex', {})
+        if isinstance(gex_raw, dict):
+            gex_min = gex_raw.get('min_strike') or gex_raw.get('max_strike')
+
+    # 15M触发置信
+    trig = extra.get('trigger', {})
+    trigger_conf = (trig.get('confidence') or trig.get('conf')) if isinstance(trig, dict) else None
+    if trigger_conf is None:
+        for k, v in cf_bd.items():
+            if '触发' in str(k) and isinstance(v, (int, float)):
+                trigger_conf = v
+                break
+
+    # 多周期共识
+    mt = extra.get('multitf', {})
+    consensus = (mt.get('consensus') if isinstance(mt, dict) else None) or r.get('consensus')
+
+    return {
+        'symbol':          r.get('symbol'),
+        'regime':          r.get('regime'),
+        'score':           r.get('score_final') or r.get('score') or cf.get('grade_num'),
+        'direction':       r.get('signal_dir') or r.get('direction'),
+        'entry_lo':        pa.get('entry_lo'),
+        'entry_hi':        pa.get('entry_hi'),
+        'sl':              pa.get('stop_loss'),
+        'tp1':             pa.get('tp1'),
+        'tp2':             pa.get('tp2'),
+        'rr':              pa.get('rr1'),
+        'structure_grade': r.get('effective_grade') or r.get('structure_grade'),
+        'gex_min':         gex_min,
+        'trigger_conf':    trigger_conf,
+        'valid':           r.get('valid_signal') or r.get('valid'),
+        'price':           r.get('price'),
+        'rsi_1h':          ms.get('rsi_1h'),
+        'rsi_4h':          ms.get('rsi_4h'),
+        'fr':              sent.get('funding_rate'),
+        'consensus':       consensus,
+        'elapsed':         r.get('elapsed'),
+    }
+
+
+SEP = '─' * 48
+
+def format_standard_card(r: dict, ts: str = None) -> str:
+    """
+    固化版标准信号卡 — 统一推送格式
+    唯一对外推送文本，基于 extract_standard_fields 保证字段完整
+    """
+    if r.get('error'):
+        return f'❌ {r.get("symbol","?")} 分析失败: {r["error"]}'
+
+    f   = extract_standard_fields(r)
+    sym = (f['symbol'] or '?').replace('USDT', '')
+    p         = f['price']
+    direction = f['direction'] or 'NEUTRAL'
+    regime    = f['regime'] or '?'
+    score     = f['score'] or 0
+    valid     = f['valid']
+    entry_lo  = f['entry_lo']
+    entry_hi  = f['entry_hi']
+    sl        = f['sl']
+    tp1       = f['tp1']
+    tp2       = f['tp2']
+    rr        = f['rr']
+    grade     = f['structure_grade']
+    gex_min   = f['gex_min']
+    tconf     = f['trigger_conf']
+    rsi1h     = f['rsi_1h']
+    rsi4h     = f['rsi_4h']
+    fr        = f['fr']
+    consensus = f['consensus'] or '?'
+    elapsed   = f.get('elapsed') or 0
+
+    if direction == 'NEUTRAL' or not valid:
+        return (
+            f'📊 {sym}/USDT · {regime}\n'
+            f'   score={score} | RSI1H={rsi1h} | 无有效信号，等待'
+        )
+
+    dir_icon   = '🔴 SHORT' if direction == 'SHORT' else '🟢 LONG'
+    valid_icon = '✅' if valid else '⏳'
+    thresh_icon = '🚨' if score >= 160 else ('✅' if score >= 140 else '⚠️')
+
+    lines = [
+        SEP,
+    ]
+    if ts:
+        lines.append(f'  ⏱ {ts}')
+    lines += [
+        f'  {thresh_icon} {sym}/USDT · {dir_icon}  score={score}/175',
+        f'  体制: {regime} | 多周期: {consensus}',
+    ]
+    if p:
+        lines.append(f'  当前价: ${p:,.2f}')
+    lines.append(f'')
+    if entry_lo and entry_hi:
+        lines.append(f'  📍 入场区  ${entry_lo:,.2f} ~ ${entry_hi:,.2f}')
+    if sl:
+        lines.append(f'  🛑 止损    ${sl:,.2f}')
+    if tp1 and tp2:
+        lines.append(f'  🎯 TP1 ${tp1:,.2f}   TP2 ${tp2:,.2f}')
+    if rr:
+        g_str = f'  结构等级 {grade}' if grade else ''
+        lines.append(f'  📐 R:R {rr}{g_str}')
+    lines.append(f'')
+    if rsi1h and rsi4h:
+        fr_str = f'  |  资金费率 {fr:+.4f}%' if fr is not None else ''
+        lines.append(f'  RSI  1H={rsi1h}  4H={rsi4h}{fr_str}')
+    if gex_min and tconf:
+        lines.append(f'  GEX磁铁 ${gex_min:,.0f}  |  15M置信 {tconf}/100')
+    elapsed_str = f' ({elapsed:.1f}s)' if elapsed else ''
+    lines.append(f'  {valid_icon} 触发状态: {"有效信号" if valid else "等待15M确认"}{elapsed_str}')
+    lines.append(SEP)
+
+    return '\n'.join(lines)
+
+
 # ─── 快速测试 ────────────────────────────────────────────────
 if __name__ == '__main__':
     symbols = sys.argv[1:] if len(sys.argv) > 1 else ['ETHUSDT', 'BTCUSDT']
