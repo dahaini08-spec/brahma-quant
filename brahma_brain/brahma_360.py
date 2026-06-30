@@ -230,6 +230,52 @@ def scan_d8_backups() -> list:
     return issues
 
 
+
+
+def scan_d9_signal_pipeline() -> list:
+    """D9: 信号链路关键节点可观测性检查"""
+    issues = []
+    try:
+        import json, time
+        # 读最近一次 brahma_state（记录analyze()运行结果）
+        bs = _DATA / 'brahma_state.json'
+        if not bs.exists():
+            issues.append({
+                'dim': 'D9_pipeline', 'level': 'WARN',
+                'msg': 'brahma_state.json 不存在 — 信号链路无快照',
+                'auto_fix': False,
+            })
+            return issues
+
+        state = json.loads(bs.read_text())
+        ts = state.get('ts', 0)
+        age_min = (time.time() - ts) / 60 if ts else 999
+
+        # 检查关键字段是否在最近输出中出现
+        required_keys = ['regime', 'score', 'action']
+        missing_keys = [k for k in required_keys if k not in state]
+        if missing_keys:
+            issues.append({
+                'dim': 'D9_pipeline', 'level': 'WARN',
+                'msg': f'信号快照缺失字段: {missing_keys}',
+                'auto_fix': False,
+            })
+
+        # 检查RSM是否在运行
+        rsm_state = _DATA / 'regime_state.json'
+        if rsm_state.exists():
+            rsm = json.loads(rsm_state.read_text())
+            if not rsm.get('current_regime'):
+                issues.append({
+                    'dim': 'D9_pipeline', 'level': 'WARN',
+                    'msg': 'RSM状态机无有效体制记录',
+                    'auto_fix': False,
+                })
+    except Exception as e:
+        pass  # D9非关键维度，失败不告警
+    return issues
+
+
 def run_full_scan() -> dict:
     """全量8维扫描，返回结构化结果"""
     ts = time.time()
@@ -242,6 +288,7 @@ def run_full_scan() -> dict:
     all_issues += scan_d6_silent_failures()
     all_issues += scan_d7_crons()
     all_issues += scan_d8_backups()
+    all_issues += scan_d9_signal_pipeline()
 
     # 计算健康评分 (0~100)
     deductions = {'CRITICAL': 25, 'ERROR': 10, 'WARN': 3}

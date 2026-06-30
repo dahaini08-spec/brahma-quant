@@ -1655,7 +1655,9 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
                         _n14_delta = int(_wdata.get('delta', 0))
                         _n14_label = _wdata.get('label', '')
                         break
-                except Exception as _e: pass  # [静默降级]
+                except Exception as _e:
+                        if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
+                            print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
         # 当无regime_switch_state时，保d原 N14逻辑
         elif 'BEAR_TREND' in _regime_upper and not _is_long_v4 and _rsi_v4 < 42:
             _n14_delta = 5
@@ -2684,7 +2686,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                     smc['order_blocks']['nearest_bull_ob'] = _ob4h_bull
                 if _fvg4h_bull:
                     smc['fvg']['nearest_bull'] = _fvg4h_bull
-    except Exception as _e: pass  # [静默降级]
+    except Exception as _e:
+            if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
+                print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
 
     # ══════════════════════════════════════════════════════════
     # [达摩院v12.9c 修订 设计院 2026-05-30] FVG 条件升级
@@ -2878,17 +2882,25 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _f_of  = _ex.submit(_run_orderflow)
         _f_mc  = _ex.submit(_run_macro)
         try: extra_data['onchain'] = _f_oc.result(timeout=8)
-        except Exception as _e: pass  # [静默降级]
+        except Exception as _e:
+                if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
+                    print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
         try:
             _pt = _f_pt.result(timeout=8)
             if _pt: extra_data['pattern'] = _pt
-        except Exception as _e: pass  # [静默降级]
+        except Exception as _e:
+                if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
+                    print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
         try:
             _of = _f_of.result(timeout=8)
             if _of: extra_data['order_flow'] = _of
-        except Exception as _e: pass  # [静默降级]
+        except Exception as _e:
+                if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
+                    print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
         try: extra_data['macro'] = _f_mc.result(timeout=8)
-        except Exception as _e: pass  # [静默降级]
+        except Exception as _e:
+                if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
+                    print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
 
     # P0-NEW: 谐波形态引擎（4H + 日线双重扫描）
     try:
@@ -2909,7 +2921,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         extra_data['harmonic_err'] = str(_e)
         try:
             from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'harmonic','err':str(_e)[:80]})
-        except Exception as _e: pass  # [静默降级]
+        except Exception as _e:
+                if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
+                    print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
 
     # P0-NEW: 多周期对齐引擎
     try:
@@ -2920,7 +2934,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         extra_data['multitf_err'] = str(_e)
         try:
             from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'multitf','err':str(_e)[:80]})
-        except Exception as _e: pass  # [静默降级]
+        except Exception as _e:
+                if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
+                    print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
 
     # P1-NEW: 增强信号引擎（CVD+清算+多空比趋势+时段）
     try:
@@ -2931,7 +2947,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         extra_data['enhanced_err'] = str(_e)
         try:
             from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'enhanced','err':str(_e)[:80]})
-        except Exception as _e: pass  # [静默降级]
+        except Exception as _e:
+                if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
+                    print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
 
     # P2-NEW: 鲸鱼引擎（链上大单+交易所流向）
     try:
@@ -2942,7 +2960,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         extra_data['whale_err'] = str(_e)
         try:
             from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'whale','err':str(_e)[:80]})
-        except Exception as _e: pass  # [静默降级]
+        except Exception as _e:
+                if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
+                    print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
 
     # P2-NEW: 跨市场引擎（BTC-ETH相关/DXY/风险偏好）
     try:
@@ -2953,7 +2973,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         extra_data['cross_err'] = str(_e)
         try:
             from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'cross','err':str(_e)[:80]})
-        except Exception as _e: pass  # [静默降级]
+        except Exception as _e:
+                if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
+                    print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
 
     # P2-NEW: 微观结构引擎（大单吸收/耗尽/停顿）
     try:
@@ -2964,7 +2986,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         extra_data['micro_err'] = str(_e)
         try:
             from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'micro','err':str(_e)[:80]})
-        except Exception as _e: pass  # [静默降级]
+        except Exception as _e:
+                if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
+                    print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
 
     # ─── Phase NEW: 量能衰竭 + 多周期背离共振 ────────────────────────
     # VOL-EXH: 量能衰竭引擎（底部识别核心）
@@ -4530,7 +4554,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 cf.setdefault('breakdown', {})['p0_bear_early_tc'] = (
                     f'BEAR_EARLY+tc={_tc_p0:+d}(多头排列做空) {_p0_penalty}分 WR=53.8%')
                 print(f'[P0-BearEarlyTC] ⚠️ {_sym} BEAR_EARLY tc={_tc_p0:+d}: {_p0_penalty}分 score→{_score_raw:.0f}')
-    except Exception as _e: pass  # [静默降级]
+    except Exception as _e:
+            if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
+                print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
 
     # ══════════════════════════════════════════════════════════════
     # [P1 苏摩111 2026-06-28] BTC领先ETH（跨标的领先指标）
@@ -4585,7 +4611,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                     f'{_p2lbl} {_p2v:+d}分 (p=0.001 OOS稳定)')
                 if abs(_p2v) >= 10:
                     print(f'[P2-Seasonal] 📅 {_sym} {_p2lbl}: {_p2v:+d}分 score→{_score_raw:.0f}')
-    except Exception as _e: pass  # [静默降级]
+    except Exception as _e:
+            if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
+                print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
     # ── [END P0/P1/P2 苏摩111 2026-06-28] ────────────────────────
 
 
@@ -5231,6 +5259,11 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass
     # ══ [EventBus END] ════════════════════════════════════════════════════════
 
+    # ══ [可观测-v2] ══
+    try:
+        _s=_result.get('score_final',_result.get('score',0))
+        print(f'[SIGNAL-SUMMARY] {_sym} {signal_dir} score={_s:.0f} action={_result.get("action","?")}')
+    except Exception: pass
     return _result
 
 def format_report(r: dict) -> str:
