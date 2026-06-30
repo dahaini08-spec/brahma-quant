@@ -1,0 +1,5122 @@
+{
+  "_meta": {
+    "ts": "20260612_030358",
+    "version": "multi_tf_v1",
+    "syms": [
+      "BTCUSDT",
+      "ETHUSDT"
+    ],
+    "tfs": [
+      "15m",
+      "1h",
+      "4h",
+      "1d"
+    ],
+    "regime_src": "4H标记价EMA200+RSI",
+    "pf_method": "PF_pnl(盈亏金额)",
+    "settle": "标记价H/L",
+    "tf_config": {
+      "15m": {
+        "sl": 0.8,
+        "tp": 1.6,
+        "hold": 96,
+        "rr": 2.0,
+        "cost": 0.0016
+      },
+      "1h": {
+        "sl": 1.2,
+        "tp": 2.0,
+        "hold": 48,
+        "rr": 1.667,
+        "cost": 0.0016
+      },
+      "4h": {
+        "sl": 1.5,
+        "tp": 2.5,
+        "hold": 30,
+        "rr": 1.667,
+        "cost": 0.0016
+      },
+      "1d": {
+        "sl": 2.0,
+        "tp": 4.0,
+        "hold": 20,
+        "rr": 2.0,
+        "cost": 0.002
+      }
+    },
+    "elapsed_s": 4.0
+  },
+  "results": {
+    "BTCUSDT": {
+      "15m": {
+        "summary": {
+          "total": 104978,
+          "settled": 104921,
+          "wins": 34576,
+          "losses": 70345,
+          "wr": 0.3295,
+          "pf_pnl": 0.502,
+          "avg_pnl_lev": -0.819
+        },
+        "regime_dir": [
+          {
+            "n": 12310,
+            "wins": 3909,
+            "losses": 8401,
+            "wr": 0.3175,
+            "pf_pnl": 0.464,
+            "avg_pnl": -0.868,
+            "ci": [
+              0.309,
+              0.326
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 12307,
+            "wins": 4197,
+            "losses": 8110,
+            "wr": 0.341,
+            "pf_pnl": 0.511,
+            "avg_pnl": -0.766,
+            "ci": [
+              0.333,
+              0.349
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 9844,
+            "wins": 3165,
+            "losses": 6679,
+            "wr": 0.3215,
+            "pf_pnl": 0.388,
+            "avg_pnl": -0.894,
+            "ci": [
+              0.312,
+              0.331
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 9840,
+            "wins": 3261,
+            "losses": 6579,
+            "wr": 0.3314,
+            "pf_pnl": 0.447,
+            "avg_pnl": -0.782,
+            "ci": [
+              0.322,
+              0.341
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 8053,
+            "wins": 3292,
+            "losses": 4761,
+            "wr": 0.4088,
+            "pf_pnl": 0.694,
+            "avg_pnl": -0.453,
+            "ci": [
+              0.398,
+              0.42
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 8052,
+            "wins": 2008,
+            "losses": 6044,
+            "wr": 0.2494,
+            "pf_pnl": 0.363,
+            "avg_pnl": -1.181,
+            "ci": [
+              0.24,
+              0.259
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 4700,
+            "wins": 1890,
+            "losses": 2810,
+            "wr": 0.4021,
+            "pf_pnl": 0.538,
+            "avg_pnl": -0.553,
+            "ci": [
+              0.388,
+              0.416
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_HIGH",
+            "direction": "LONG"
+          },
+          {
+            "n": 4699,
+            "wins": 1281,
+            "losses": 3418,
+            "wr": 0.2726,
+            "pf_pnl": 0.308,
+            "avg_pnl": -1.004,
+            "ci": [
+              0.26,
+              0.286
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_HIGH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 4287,
+            "wins": 1540,
+            "losses": 2747,
+            "wr": 0.3592,
+            "pf_pnl": 0.706,
+            "avg_pnl": -0.626,
+            "ci": [
+              0.345,
+              0.374
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 4285,
+            "wins": 1291,
+            "losses": 2994,
+            "wr": 0.3013,
+            "pf_pnl": 0.564,
+            "avg_pnl": -1.0,
+            "ci": [
+              0.288,
+              0.315
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 3716,
+            "wins": 1497,
+            "losses": 2219,
+            "wr": 0.4029,
+            "pf_pnl": 0.645,
+            "avg_pnl": -0.485,
+            "ci": [
+              0.387,
+              0.419
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_RECOVERY",
+            "direction": "LONG"
+          },
+          {
+            "n": 3715,
+            "wins": 1003,
+            "losses": 2712,
+            "wr": 0.27,
+            "pf_pnl": 0.352,
+            "avg_pnl": -1.085,
+            "ci": [
+              0.256,
+              0.284
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_RECOVERY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 3611,
+            "wins": 1196,
+            "losses": 2415,
+            "wr": 0.3312,
+            "pf_pnl": 0.413,
+            "avg_pnl": -0.798,
+            "ci": [
+              0.316,
+              0.347
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_MID",
+            "direction": "SHORT"
+          },
+          {
+            "n": 3609,
+            "wins": 1130,
+            "losses": 2479,
+            "wr": 0.3131,
+            "pf_pnl": 0.37,
+            "avg_pnl": -0.883,
+            "ci": [
+              0.298,
+              0.328
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_MID",
+            "direction": "LONG"
+          },
+          {
+            "n": 3160,
+            "wins": 902,
+            "losses": 2258,
+            "wr": 0.2854,
+            "pf_pnl": 0.603,
+            "avg_pnl": -1.118,
+            "ci": [
+              0.27,
+              0.301
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_CRASH",
+            "direction": "LONG"
+          },
+          {
+            "n": 3160,
+            "wins": 1200,
+            "losses": 1960,
+            "wr": 0.3797,
+            "pf_pnl": 0.784,
+            "avg_pnl": -0.551,
+            "ci": [
+              0.363,
+              0.397
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_CRASH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2791,
+            "wins": 1172,
+            "losses": 1619,
+            "wr": 0.4199,
+            "pf_pnl": 0.662,
+            "avg_pnl": -0.453,
+            "ci": [
+              0.402,
+              0.438
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_LOW",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2782,
+            "wins": 642,
+            "losses": 2140,
+            "wr": 0.2308,
+            "pf_pnl": 0.302,
+            "avg_pnl": -1.216,
+            "ci": [
+              0.215,
+              0.247
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_LOW",
+            "direction": "LONG"
+          }
+        ],
+        "fr_effect": [
+          {
+            "n": 32,
+            "wins": 16,
+            "losses": 16,
+            "wr": 0.5,
+            "pf_pnl": 1.67,
+            "avg_pnl": 2.287,
+            "ci": [
+              0.336,
+              0.664
+            ],
+            "verdict": "STRONG",
+            "fr_bucket": "极正>0.2%",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 197,
+            "wins": 81,
+            "losses": 116,
+            "wr": 0.4112,
+            "pf_pnl": 0.921,
+            "avg_pnl": -0.147,
+            "ci": [
+              0.345,
+              0.481
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "正0.1~0.2%",
+            "regime": "BULL_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 32,
+            "wins": 11,
+            "losses": 21,
+            "wr": 0.3438,
+            "pf_pnl": 0.835,
+            "avg_pnl": -0.752,
+            "ci": [
+              0.204,
+              0.517
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "极正>0.2%",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 3149,
+            "wins": 1198,
+            "losses": 1951,
+            "wr": 0.3804,
+            "pf_pnl": 0.788,
+            "avg_pnl": -0.54,
+            "ci": [
+              0.364,
+              0.398
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_CRASH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 420,
+            "wins": 152,
+            "losses": 268,
+            "wr": 0.3619,
+            "pf_pnl": 0.788,
+            "avg_pnl": -0.576,
+            "ci": [
+              0.317,
+              0.409
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "正0.1~0.2%",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 420,
+            "wins": 137,
+            "losses": 283,
+            "wr": 0.3262,
+            "pf_pnl": 0.73,
+            "avg_pnl": -0.757,
+            "ci": [
+              0.283,
+              0.372
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "正0.1~0.2%",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 8048,
+            "wins": 3292,
+            "losses": 4756,
+            "wr": 0.409,
+            "pf_pnl": 0.696,
+            "avg_pnl": -0.45,
+            "ci": [
+              0.398,
+              0.42
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 3835,
+            "wins": 1387,
+            "losses": 2448,
+            "wr": 0.3617,
+            "pf_pnl": 0.688,
+            "avg_pnl": -0.636,
+            "ci": [
+              0.347,
+              0.377
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 2787,
+            "wins": 1169,
+            "losses": 1618,
+            "wr": 0.4194,
+            "pf_pnl": 0.66,
+            "avg_pnl": -0.456,
+            "ci": [
+              0.401,
+              0.438
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_LOW",
+            "direction": "SHORT"
+          },
+          {
+            "n": 3716,
+            "wins": 1497,
+            "losses": 2219,
+            "wr": 0.4029,
+            "pf_pnl": 0.645,
+            "avg_pnl": -0.485,
+            "ci": [
+              0.387,
+              0.419
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_RECOVERY",
+            "direction": "LONG"
+          },
+          {
+            "n": 3149,
+            "wins": 898,
+            "losses": 2251,
+            "wr": 0.2852,
+            "pf_pnl": 0.601,
+            "avg_pnl": -1.122,
+            "ci": [
+              0.27,
+              0.301
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_CRASH",
+            "direction": "LONG"
+          },
+          {
+            "n": 4700,
+            "wins": 1890,
+            "losses": 2810,
+            "wr": 0.4021,
+            "pf_pnl": 0.538,
+            "avg_pnl": -0.553,
+            "ci": [
+              0.388,
+              0.416
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_HIGH",
+            "direction": "LONG"
+          },
+          {
+            "n": 3833,
+            "wins": 1128,
+            "losses": 2705,
+            "wr": 0.2943,
+            "pf_pnl": 0.53,
+            "avg_pnl": -1.049,
+            "ci": [
+              0.28,
+              0.309
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 12110,
+            "wins": 4151,
+            "losses": 7959,
+            "wr": 0.3428,
+            "pf_pnl": 0.513,
+            "avg_pnl": -0.755,
+            "ci": [
+              0.334,
+              0.351
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 12113,
+            "wins": 3828,
+            "losses": 8285,
+            "wr": 0.316,
+            "pf_pnl": 0.455,
+            "avg_pnl": -0.88,
+            "ci": [
+              0.308,
+              0.324
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 9840,
+            "wins": 3261,
+            "losses": 6579,
+            "wr": 0.3314,
+            "pf_pnl": 0.447,
+            "avg_pnl": -0.782,
+            "ci": [
+              0.322,
+              0.341
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 3611,
+            "wins": 1196,
+            "losses": 2415,
+            "wr": 0.3312,
+            "pf_pnl": 0.413,
+            "avg_pnl": -0.798,
+            "ci": [
+              0.316,
+              0.347
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_MID",
+            "direction": "SHORT"
+          },
+          {
+            "n": 197,
+            "wins": 46,
+            "losses": 151,
+            "wr": 0.2335,
+            "pf_pnl": 0.405,
+            "avg_pnl": -1.448,
+            "ci": [
+              0.18,
+              0.297
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "正0.1~0.2%",
+            "regime": "BULL_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 9844,
+            "wins": 3165,
+            "losses": 6679,
+            "wr": 0.3215,
+            "pf_pnl": 0.388,
+            "avg_pnl": -0.894,
+            "ci": [
+              0.312,
+              0.331
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 3609,
+            "wins": 1130,
+            "losses": 2479,
+            "wr": 0.3131,
+            "pf_pnl": 0.37,
+            "avg_pnl": -0.883,
+            "ci": [
+              0.298,
+              0.328
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_MID",
+            "direction": "LONG"
+          },
+          {
+            "n": 8047,
+            "wins": 2006,
+            "losses": 6041,
+            "wr": 0.2493,
+            "pf_pnl": 0.362,
+            "avg_pnl": -1.181,
+            "ci": [
+              0.24,
+              0.259
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 3715,
+            "wins": 1003,
+            "losses": 2712,
+            "wr": 0.27,
+            "pf_pnl": 0.352,
+            "avg_pnl": -1.085,
+            "ci": [
+              0.256,
+              0.284
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_RECOVERY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 4699,
+            "wins": 1281,
+            "losses": 3418,
+            "wr": 0.2726,
+            "pf_pnl": 0.308,
+            "avg_pnl": -1.004,
+            "ci": [
+              0.26,
+              0.286
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_HIGH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2778,
+            "wins": 642,
+            "losses": 2136,
+            "wr": 0.2311,
+            "pf_pnl": 0.302,
+            "avg_pnl": -1.214,
+            "ci": [
+              0.216,
+              0.247
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_LOW",
+            "direction": "LONG"
+          }
+        ]
+      },
+      "1h": {
+        "summary": {
+          "total": 104620,
+          "settled": 103153,
+          "wins": 38233,
+          "losses": 64920,
+          "wr": 0.3706,
+          "pf_pnl": 0.767,
+          "avg_pnl_lev": -0.842
+        },
+        "regime_dir": [
+          {
+            "n": 12167,
+            "wins": 4084,
+            "losses": 8083,
+            "wr": 0.3357,
+            "pf_pnl": 0.661,
+            "avg_pnl": -1.242,
+            "ci": [
+              0.327,
+              0.344
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 12144,
+            "wins": 4943,
+            "losses": 7201,
+            "wr": 0.407,
+            "pf_pnl": 0.862,
+            "avg_pnl": -0.451,
+            "ci": [
+              0.398,
+              0.416
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 9613,
+            "wins": 3530,
+            "losses": 6083,
+            "wr": 0.3672,
+            "pf_pnl": 0.721,
+            "avg_pnl": -0.883,
+            "ci": [
+              0.358,
+              0.377
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 9601,
+            "wins": 3526,
+            "losses": 6075,
+            "wr": 0.3673,
+            "pf_pnl": 0.744,
+            "avg_pnl": -0.803,
+            "ci": [
+              0.358,
+              0.377
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 7931,
+            "wins": 3577,
+            "losses": 4354,
+            "wr": 0.451,
+            "pf_pnl": 1.047,
+            "avg_pnl": 0.154,
+            "ci": [
+              0.44,
+              0.462
+            ],
+            "verdict": "MARGINAL",
+            "regime": "BEAR_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 7845,
+            "wins": 2343,
+            "losses": 5502,
+            "wr": 0.2987,
+            "pf_pnl": 0.564,
+            "avg_pnl": -1.727,
+            "ci": [
+              0.289,
+              0.309
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 4656,
+            "wins": 2166,
+            "losses": 2490,
+            "wr": 0.4652,
+            "pf_pnl": 0.985,
+            "avg_pnl": -0.023,
+            "ci": [
+              0.451,
+              0.48
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_HIGH",
+            "direction": "LONG"
+          },
+          {
+            "n": 4644,
+            "wins": 1317,
+            "losses": 3327,
+            "wr": 0.2836,
+            "pf_pnl": 0.474,
+            "avg_pnl": -1.667,
+            "ci": [
+              0.271,
+              0.297
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_HIGH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 4259,
+            "wins": 1430,
+            "losses": 2829,
+            "wr": 0.3358,
+            "pf_pnl": 0.721,
+            "avg_pnl": -1.534,
+            "ci": [
+              0.322,
+              0.35
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 4235,
+            "wins": 1735,
+            "losses": 2500,
+            "wr": 0.4097,
+            "pf_pnl": 0.952,
+            "avg_pnl": -0.187,
+            "ci": [
+              0.395,
+              0.425
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 3689,
+            "wins": 1523,
+            "losses": 2166,
+            "wr": 0.4128,
+            "pf_pnl": 0.891,
+            "avg_pnl": -0.349,
+            "ci": [
+              0.397,
+              0.429
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_RECOVERY",
+            "direction": "LONG"
+          },
+          {
+            "n": 3684,
+            "wins": 1116,
+            "losses": 2568,
+            "wr": 0.3029,
+            "pf_pnl": 0.572,
+            "avg_pnl": -1.613,
+            "ci": [
+              0.288,
+              0.318
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_RECOVERY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 3517,
+            "wins": 1424,
+            "losses": 2093,
+            "wr": 0.4049,
+            "pf_pnl": 0.818,
+            "avg_pnl": -0.483,
+            "ci": [
+              0.389,
+              0.421
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_MID",
+            "direction": "LONG"
+          },
+          {
+            "n": 3516,
+            "wins": 1206,
+            "losses": 2310,
+            "wr": 0.343,
+            "pf_pnl": 0.648,
+            "avg_pnl": -1.081,
+            "ci": [
+              0.327,
+              0.359
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_MID",
+            "direction": "SHORT"
+          },
+          {
+            "n": 3109,
+            "wins": 1258,
+            "losses": 1851,
+            "wr": 0.4046,
+            "pf_pnl": 0.978,
+            "avg_pnl": -0.079,
+            "ci": [
+              0.388,
+              0.422
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_CRASH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 3097,
+            "wins": 1097,
+            "losses": 2000,
+            "wr": 0.3542,
+            "pf_pnl": 0.777,
+            "avg_pnl": -1.444,
+            "ci": [
+              0.338,
+              0.371
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_CRASH",
+            "direction": "LONG"
+          },
+          {
+            "n": 2738,
+            "wins": 1146,
+            "losses": 1592,
+            "wr": 0.4186,
+            "pf_pnl": 0.855,
+            "avg_pnl": -0.45,
+            "ci": [
+              0.4,
+              0.437
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_LOW",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2708,
+            "wins": 812,
+            "losses": 1896,
+            "wr": 0.2999,
+            "pf_pnl": 0.599,
+            "avg_pnl": -1.406,
+            "ci": [
+              0.283,
+              0.317
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_LOW",
+            "direction": "LONG"
+          }
+        ],
+        "fr_effect": [
+          {
+            "n": 32,
+            "wins": 22,
+            "losses": 10,
+            "wr": 0.6875,
+            "pf_pnl": 3.092,
+            "avg_pnl": 11.525,
+            "ci": [
+              0.514,
+              0.82
+            ],
+            "verdict": "STRONG",
+            "fr_bucket": "极正>0.2%",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 193,
+            "wins": 99,
+            "losses": 94,
+            "wr": 0.513,
+            "pf_pnl": 1.491,
+            "avg_pnl": 2.145,
+            "ci": [
+              0.443,
+              0.583
+            ],
+            "verdict": "POSITIVE",
+            "fr_bucket": "正0.1~0.2%",
+            "regime": "BULL_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 416,
+            "wins": 182,
+            "losses": 234,
+            "wr": 0.4375,
+            "pf_pnl": 1.125,
+            "avg_pnl": 0.8,
+            "ci": [
+              0.391,
+              0.486
+            ],
+            "verdict": "MARGINAL",
+            "fr_bucket": "正0.1~0.2%",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 7926,
+            "wins": 3574,
+            "losses": 4352,
+            "wr": 0.4509,
+            "pf_pnl": 1.045,
+            "avg_pnl": 0.148,
+            "ci": [
+              0.44,
+              0.462
+            ],
+            "verdict": "MARGINAL",
+            "fr_bucket": "中性",
+            "regime": "BEAR_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 3786,
+            "wins": 1597,
+            "losses": 2189,
+            "wr": 0.4218,
+            "pf_pnl": 0.998,
+            "avg_pnl": 0.047,
+            "ci": [
+              0.406,
+              0.438
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 3098,
+            "wins": 1258,
+            "losses": 1840,
+            "wr": 0.4061,
+            "pf_pnl": 0.987,
+            "avg_pnl": -0.02,
+            "ci": [
+              0.389,
+              0.423
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_CRASH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 4656,
+            "wins": 2166,
+            "losses": 2490,
+            "wr": 0.4652,
+            "pf_pnl": 0.985,
+            "avg_pnl": -0.023,
+            "ci": [
+              0.451,
+              0.48
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_HIGH",
+            "direction": "LONG"
+          },
+          {
+            "n": 3689,
+            "wins": 1523,
+            "losses": 2166,
+            "wr": 0.4128,
+            "pf_pnl": 0.891,
+            "avg_pnl": -0.349,
+            "ci": [
+              0.397,
+              0.429
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_RECOVERY",
+            "direction": "LONG"
+          },
+          {
+            "n": 11947,
+            "wins": 4885,
+            "losses": 7062,
+            "wr": 0.4089,
+            "pf_pnl": 0.87,
+            "avg_pnl": -0.417,
+            "ci": [
+              0.4,
+              0.418
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 2734,
+            "wins": 1143,
+            "losses": 1591,
+            "wr": 0.4181,
+            "pf_pnl": 0.853,
+            "avg_pnl": -0.457,
+            "ci": [
+              0.4,
+              0.437
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_LOW",
+            "direction": "SHORT"
+          },
+          {
+            "n": 3517,
+            "wins": 1424,
+            "losses": 2093,
+            "wr": 0.4049,
+            "pf_pnl": 0.818,
+            "avg_pnl": -0.483,
+            "ci": [
+              0.389,
+              0.421
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_MID",
+            "direction": "LONG"
+          },
+          {
+            "n": 3086,
+            "wins": 1087,
+            "losses": 1999,
+            "wr": 0.3522,
+            "pf_pnl": 0.766,
+            "avg_pnl": -1.528,
+            "ci": [
+              0.336,
+              0.369
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_CRASH",
+            "direction": "LONG"
+          },
+          {
+            "n": 9601,
+            "wins": 3526,
+            "losses": 6075,
+            "wr": 0.3673,
+            "pf_pnl": 0.744,
+            "avg_pnl": -0.803,
+            "ci": [
+              0.358,
+              0.377
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 9613,
+            "wins": 3530,
+            "losses": 6083,
+            "wr": 0.3672,
+            "pf_pnl": 0.721,
+            "avg_pnl": -0.883,
+            "ci": [
+              0.358,
+              0.377
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 3811,
+            "wins": 1243,
+            "losses": 2568,
+            "wr": 0.3262,
+            "pf_pnl": 0.68,
+            "avg_pnl": -1.72,
+            "ci": [
+              0.311,
+              0.341
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 11974,
+            "wins": 3985,
+            "losses": 7989,
+            "wr": 0.3328,
+            "pf_pnl": 0.649,
+            "avg_pnl": -1.297,
+            "ci": [
+              0.324,
+              0.341
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 3516,
+            "wins": 1206,
+            "losses": 2310,
+            "wr": 0.343,
+            "pf_pnl": 0.648,
+            "avg_pnl": -1.081,
+            "ci": [
+              0.327,
+              0.359
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_MID",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2704,
+            "wins": 811,
+            "losses": 1893,
+            "wr": 0.2999,
+            "pf_pnl": 0.599,
+            "avg_pnl": -1.404,
+            "ci": [
+              0.283,
+              0.317
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_LOW",
+            "direction": "LONG"
+          },
+          {
+            "n": 417,
+            "wins": 116,
+            "losses": 301,
+            "wr": 0.2782,
+            "pf_pnl": 0.587,
+            "avg_pnl": -3.217,
+            "ci": [
+              0.237,
+              0.323
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "正0.1~0.2%",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 3684,
+            "wins": 1116,
+            "losses": 2568,
+            "wr": 0.3029,
+            "pf_pnl": 0.572,
+            "avg_pnl": -1.613,
+            "ci": [
+              0.288,
+              0.318
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_RECOVERY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 7840,
+            "wins": 2342,
+            "losses": 5498,
+            "wr": 0.2987,
+            "pf_pnl": 0.564,
+            "avg_pnl": -1.722,
+            "ci": [
+              0.289,
+              0.309
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 197,
+            "wins": 58,
+            "losses": 139,
+            "wr": 0.2944,
+            "pf_pnl": 0.546,
+            "avg_pnl": -2.523,
+            "ci": [
+              0.235,
+              0.362
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "正0.1~0.2%",
+            "regime": "BULL_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 4644,
+            "wins": 1317,
+            "losses": 3327,
+            "wr": 0.2836,
+            "pf_pnl": 0.474,
+            "avg_pnl": -1.667,
+            "ci": [
+              0.271,
+              0.297
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_HIGH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 32,
+            "wins": 5,
+            "losses": 27,
+            "wr": 0.1562,
+            "pf_pnl": 0.294,
+            "avg_pnl": -9.844,
+            "ci": [
+              0.069,
+              0.318
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "极正>0.2%",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          }
+        ]
+      },
+      "4h": {
+        "summary": {
+          "total": 25816,
+          "settled": 23861,
+          "wins": 8811,
+          "losses": 15050,
+          "wr": 0.3693,
+          "pf_pnl": 0.86,
+          "avg_pnl_lev": -0.854
+        },
+        "regime_dir": [
+          {
+            "n": 2881,
+            "wins": 977,
+            "losses": 1904,
+            "wr": 0.3391,
+            "pf_pnl": 0.756,
+            "avg_pnl": -1.794,
+            "ci": [
+              0.322,
+              0.357
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2858,
+            "wins": 1127,
+            "losses": 1731,
+            "wr": 0.3943,
+            "pf_pnl": 0.986,
+            "avg_pnl": 0.161,
+            "ci": [
+              0.377,
+              0.412
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 2198,
+            "wins": 790,
+            "losses": 1408,
+            "wr": 0.3594,
+            "pf_pnl": 0.796,
+            "avg_pnl": -1.335,
+            "ci": [
+              0.34,
+              0.38
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 2173,
+            "wins": 880,
+            "losses": 1293,
+            "wr": 0.405,
+            "pf_pnl": 1.025,
+            "avg_pnl": 0.43,
+            "ci": [
+              0.385,
+              0.426
+            ],
+            "verdict": "MARGINAL",
+            "regime": "BEAR_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 1819,
+            "wins": 713,
+            "losses": 1106,
+            "wr": 0.392,
+            "pf_pnl": 0.98,
+            "avg_pnl": 0.165,
+            "ci": [
+              0.37,
+              0.415
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 1814,
+            "wins": 566,
+            "losses": 1248,
+            "wr": 0.312,
+            "pf_pnl": 0.664,
+            "avg_pnl": -2.669,
+            "ci": [
+              0.291,
+              0.334
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 1092,
+            "wins": 359,
+            "losses": 733,
+            "wr": 0.3288,
+            "pf_pnl": 0.814,
+            "avg_pnl": -1.123,
+            "ci": [
+              0.302,
+              0.357
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_HIGH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 1080,
+            "wins": 524,
+            "losses": 556,
+            "wr": 0.4852,
+            "pf_pnl": 1.24,
+            "avg_pnl": 1.384,
+            "ci": [
+              0.455,
+              0.515
+            ],
+            "verdict": "MARGINAL",
+            "regime": "CHOP_HIGH",
+            "direction": "LONG"
+          },
+          {
+            "n": 992,
+            "wins": 252,
+            "losses": 740,
+            "wr": 0.254,
+            "pf_pnl": 0.54,
+            "avg_pnl": -5.815,
+            "ci": [
+              0.228,
+              0.282
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 966,
+            "wins": 462,
+            "losses": 504,
+            "wr": 0.4783,
+            "pf_pnl": 1.402,
+            "avg_pnl": 4.382,
+            "ci": [
+              0.447,
+              0.51
+            ],
+            "verdict": "POSITIVE",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 865,
+            "wins": 286,
+            "losses": 579,
+            "wr": 0.3306,
+            "pf_pnl": 0.665,
+            "avg_pnl": -2.856,
+            "ci": [
+              0.3,
+              0.363
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_RECOVERY",
+            "direction": "LONG"
+          },
+          {
+            "n": 865,
+            "wins": 328,
+            "losses": 537,
+            "wr": 0.3792,
+            "pf_pnl": 0.934,
+            "avg_pnl": -0.194,
+            "ci": [
+              0.347,
+              0.412
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_RECOVERY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 856,
+            "wins": 293,
+            "losses": 563,
+            "wr": 0.3423,
+            "pf_pnl": 0.717,
+            "avg_pnl": -2.003,
+            "ci": [
+              0.311,
+              0.375
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_MID",
+            "direction": "SHORT"
+          },
+          {
+            "n": 853,
+            "wins": 381,
+            "losses": 472,
+            "wr": 0.4467,
+            "pf_pnl": 1.223,
+            "avg_pnl": 1.46,
+            "ci": [
+              0.414,
+              0.48
+            ],
+            "verdict": "MARGINAL",
+            "regime": "CHOP_MID",
+            "direction": "LONG"
+          },
+          {
+            "n": 654,
+            "wins": 216,
+            "losses": 438,
+            "wr": 0.3303,
+            "pf_pnl": 0.589,
+            "avg_pnl": -3.35,
+            "ci": [
+              0.295,
+              0.367
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_LOW",
+            "direction": "SHORT"
+          },
+          {
+            "n": 651,
+            "wins": 252,
+            "losses": 399,
+            "wr": 0.3871,
+            "pf_pnl": 1.06,
+            "avg_pnl": 0.876,
+            "ci": [
+              0.35,
+              0.425
+            ],
+            "verdict": "MARGINAL",
+            "regime": "CHOP_LOW",
+            "direction": "LONG"
+          },
+          {
+            "n": 639,
+            "wins": 237,
+            "losses": 402,
+            "wr": 0.3709,
+            "pf_pnl": 0.99,
+            "avg_pnl": 0.639,
+            "ci": [
+              0.334,
+              0.409
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_CRASH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 605,
+            "wins": 168,
+            "losses": 437,
+            "wr": 0.2777,
+            "pf_pnl": 0.541,
+            "avg_pnl": -5.435,
+            "ci": [
+              0.243,
+              0.315
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_CRASH",
+            "direction": "LONG"
+          }
+        ],
+        "fr_effect": [
+          {
+            "n": 913,
+            "wins": 437,
+            "losses": 476,
+            "wr": 0.4786,
+            "pf_pnl": 1.401,
+            "avg_pnl": 4.314,
+            "ci": [
+              0.446,
+              0.511
+            ],
+            "verdict": "POSITIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 49,
+            "wins": 22,
+            "losses": 27,
+            "wr": 0.449,
+            "pf_pnl": 1.255,
+            "avg_pnl": 3.764,
+            "ci": [
+              0.319,
+              0.587
+            ],
+            "verdict": "MARGINAL",
+            "fr_bucket": "正0.1~0.2%",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 1080,
+            "wins": 524,
+            "losses": 556,
+            "wr": 0.4852,
+            "pf_pnl": 1.24,
+            "avg_pnl": 1.384,
+            "ci": [
+              0.455,
+              0.515
+            ],
+            "verdict": "MARGINAL",
+            "fr_bucket": "中性",
+            "regime": "CHOP_HIGH",
+            "direction": "LONG"
+          },
+          {
+            "n": 853,
+            "wins": 381,
+            "losses": 472,
+            "wr": 0.4467,
+            "pf_pnl": 1.223,
+            "avg_pnl": 1.46,
+            "ci": [
+              0.414,
+              0.48
+            ],
+            "verdict": "MARGINAL",
+            "fr_bucket": "中性",
+            "regime": "CHOP_MID",
+            "direction": "LONG"
+          },
+          {
+            "n": 651,
+            "wins": 252,
+            "losses": 399,
+            "wr": 0.3871,
+            "pf_pnl": 1.06,
+            "avg_pnl": 0.876,
+            "ci": [
+              0.35,
+              0.425
+            ],
+            "verdict": "MARGINAL",
+            "fr_bucket": "中性",
+            "regime": "CHOP_LOW",
+            "direction": "LONG"
+          },
+          {
+            "n": 2173,
+            "wins": 880,
+            "losses": 1293,
+            "wr": 0.405,
+            "pf_pnl": 1.025,
+            "avg_pnl": 0.43,
+            "ci": [
+              0.385,
+              0.426
+            ],
+            "verdict": "MARGINAL",
+            "fr_bucket": "中性",
+            "regime": "BEAR_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 637,
+            "wins": 237,
+            "losses": 400,
+            "wr": 0.3721,
+            "pf_pnl": 0.997,
+            "avg_pnl": 0.73,
+            "ci": [
+              0.335,
+              0.41
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_CRASH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2834,
+            "wins": 1122,
+            "losses": 1712,
+            "wr": 0.3959,
+            "pf_pnl": 0.994,
+            "avg_pnl": 0.209,
+            "ci": [
+              0.378,
+              0.414
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 1819,
+            "wins": 713,
+            "losses": 1106,
+            "wr": 0.392,
+            "pf_pnl": 0.98,
+            "avg_pnl": 0.165,
+            "ci": [
+              0.37,
+              0.415
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 865,
+            "wins": 328,
+            "losses": 537,
+            "wr": 0.3792,
+            "pf_pnl": 0.934,
+            "avg_pnl": -0.194,
+            "ci": [
+              0.347,
+              0.412
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_RECOVERY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 1092,
+            "wins": 359,
+            "losses": 733,
+            "wr": 0.3288,
+            "pf_pnl": 0.814,
+            "avg_pnl": -1.123,
+            "ci": [
+              0.302,
+              0.357
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_HIGH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2198,
+            "wins": 790,
+            "losses": 1408,
+            "wr": 0.3594,
+            "pf_pnl": 0.796,
+            "avg_pnl": -1.335,
+            "ci": [
+              0.34,
+              0.38
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 49,
+            "wins": 15,
+            "losses": 34,
+            "wr": 0.3061,
+            "pf_pnl": 0.751,
+            "avg_pnl": -4.375,
+            "ci": [
+              0.195,
+              0.445
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "正0.1~0.2%",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2857,
+            "wins": 962,
+            "losses": 1895,
+            "wr": 0.3367,
+            "pf_pnl": 0.746,
+            "avg_pnl": -1.875,
+            "ci": [
+              0.32,
+              0.354
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 856,
+            "wins": 293,
+            "losses": 563,
+            "wr": 0.3423,
+            "pf_pnl": 0.717,
+            "avg_pnl": -2.003,
+            "ci": [
+              0.311,
+              0.375
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_MID",
+            "direction": "SHORT"
+          },
+          {
+            "n": 865,
+            "wins": 286,
+            "losses": 579,
+            "wr": 0.3306,
+            "pf_pnl": 0.665,
+            "avg_pnl": -2.856,
+            "ci": [
+              0.3,
+              0.363
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_RECOVERY",
+            "direction": "LONG"
+          },
+          {
+            "n": 1814,
+            "wins": 566,
+            "losses": 1248,
+            "wr": 0.312,
+            "pf_pnl": 0.664,
+            "avg_pnl": -2.669,
+            "ci": [
+              0.291,
+              0.334
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 654,
+            "wins": 216,
+            "losses": 438,
+            "wr": 0.3303,
+            "pf_pnl": 0.589,
+            "avg_pnl": -3.35,
+            "ci": [
+              0.295,
+              0.367
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_LOW",
+            "direction": "SHORT"
+          },
+          {
+            "n": 604,
+            "wins": 167,
+            "losses": 437,
+            "wr": 0.2765,
+            "pf_pnl": 0.536,
+            "avg_pnl": -5.535,
+            "ci": [
+              0.242,
+              0.313
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_CRASH",
+            "direction": "LONG"
+          },
+          {
+            "n": 939,
+            "wins": 237,
+            "losses": 702,
+            "wr": 0.2524,
+            "pf_pnl": 0.533,
+            "avg_pnl": -5.781,
+            "ci": [
+              0.226,
+              0.281
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          }
+        ]
+      },
+      "1d": {
+        "summary": {
+          "total": 5716,
+          "settled": 3551,
+          "wins": 1027,
+          "losses": 2524,
+          "wr": 0.2892,
+          "pf_pnl": 0.72,
+          "avg_pnl_lev": -0.303
+        },
+        "regime_dir": [
+          {
+            "n": 545,
+            "wins": 141,
+            "losses": 404,
+            "wr": 0.2587,
+            "pf_pnl": 0.552,
+            "avg_pnl": -6.679,
+            "ci": [
+              0.224,
+              0.297
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_MID",
+            "direction": "SHORT"
+          },
+          {
+            "n": 516,
+            "wins": 189,
+            "losses": 327,
+            "wr": 0.3663,
+            "pf_pnl": 0.991,
+            "avg_pnl": 7.27,
+            "ci": [
+              0.326,
+              0.409
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_MID",
+            "direction": "LONG"
+          },
+          {
+            "n": 349,
+            "wins": 74,
+            "losses": 275,
+            "wr": 0.212,
+            "pf_pnl": 0.486,
+            "avg_pnl": -6.49,
+            "ci": [
+              0.172,
+              0.258
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 339,
+            "wins": 119,
+            "losses": 220,
+            "wr": 0.351,
+            "pf_pnl": 1.05,
+            "avg_pnl": 6.187,
+            "ci": [
+              0.302,
+              0.403
+            ],
+            "verdict": "MARGINAL",
+            "regime": "BULL_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 266,
+            "wins": 80,
+            "losses": 186,
+            "wr": 0.3008,
+            "pf_pnl": 0.834,
+            "avg_pnl": -0.354,
+            "ci": [
+              0.249,
+              0.358
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 224,
+            "wins": 66,
+            "losses": 158,
+            "wr": 0.2946,
+            "pf_pnl": 0.755,
+            "avg_pnl": 2.665,
+            "ci": [
+              0.239,
+              0.357
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 210,
+            "wins": 57,
+            "losses": 153,
+            "wr": 0.2714,
+            "pf_pnl": 0.72,
+            "avg_pnl": -5.237,
+            "ci": [
+              0.216,
+              0.335
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 195,
+            "wins": 61,
+            "losses": 134,
+            "wr": 0.3128,
+            "pf_pnl": 0.825,
+            "avg_pnl": 3.99,
+            "ci": [
+              0.252,
+              0.381
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 150,
+            "wins": 54,
+            "losses": 96,
+            "wr": 0.36,
+            "pf_pnl": 0.867,
+            "avg_pnl": 1.202,
+            "ci": [
+              0.288,
+              0.439
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_HIGH",
+            "direction": "LONG"
+          },
+          {
+            "n": 136,
+            "wins": 26,
+            "losses": 110,
+            "wr": 0.1912,
+            "pf_pnl": 0.531,
+            "avg_pnl": -3.819,
+            "ci": [
+              0.134,
+              0.265
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_HIGH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 118,
+            "wins": 5,
+            "losses": 113,
+            "wr": 0.0424,
+            "pf_pnl": 0.107,
+            "avg_pnl": -28.086,
+            "ci": [
+              0.018,
+              0.095
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 109,
+            "wins": 52,
+            "losses": 57,
+            "wr": 0.4771,
+            "pf_pnl": 1.499,
+            "avg_pnl": 19.411,
+            "ci": [
+              0.386,
+              0.57
+            ],
+            "verdict": "POSITIVE",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 100,
+            "wins": 27,
+            "losses": 73,
+            "wr": 0.27,
+            "pf_pnl": 0.771,
+            "avg_pnl": 3.292,
+            "ci": [
+              0.193,
+              0.364
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_RECOVERY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 79,
+            "wins": 20,
+            "losses": 59,
+            "wr": 0.2532,
+            "pf_pnl": 0.523,
+            "avg_pnl": -3.85,
+            "ci": [
+              0.17,
+              0.359
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_RECOVERY",
+            "direction": "LONG"
+          },
+          {
+            "n": 75,
+            "wins": 22,
+            "losses": 53,
+            "wr": 0.2933,
+            "pf_pnl": 0.808,
+            "avg_pnl": -2.785,
+            "ci": [
+              0.202,
+              0.404
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_LOW",
+            "direction": "LONG"
+          },
+          {
+            "n": 72,
+            "wins": 22,
+            "losses": 50,
+            "wr": 0.3056,
+            "pf_pnl": 0.754,
+            "avg_pnl": 1.295,
+            "ci": [
+              0.211,
+              0.42
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_LOW",
+            "direction": "SHORT"
+          }
+        ],
+        "fr_effect": [
+          {
+            "n": 109,
+            "wins": 52,
+            "losses": 57,
+            "wr": 0.4771,
+            "pf_pnl": 1.499,
+            "avg_pnl": 19.411,
+            "ci": [
+              0.386,
+              0.57
+            ],
+            "verdict": "POSITIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 339,
+            "wins": 119,
+            "losses": 220,
+            "wr": 0.351,
+            "pf_pnl": 1.05,
+            "avg_pnl": 6.187,
+            "ci": [
+              0.302,
+              0.403
+            ],
+            "verdict": "MARGINAL",
+            "fr_bucket": "中性",
+            "regime": "BULL_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 516,
+            "wins": 189,
+            "losses": 327,
+            "wr": 0.3663,
+            "pf_pnl": 0.991,
+            "avg_pnl": 7.27,
+            "ci": [
+              0.326,
+              0.409
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_MID",
+            "direction": "LONG"
+          },
+          {
+            "n": 150,
+            "wins": 54,
+            "losses": 96,
+            "wr": 0.36,
+            "pf_pnl": 0.867,
+            "avg_pnl": 1.202,
+            "ci": [
+              0.288,
+              0.439
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_HIGH",
+            "direction": "LONG"
+          },
+          {
+            "n": 266,
+            "wins": 80,
+            "losses": 186,
+            "wr": 0.3008,
+            "pf_pnl": 0.834,
+            "avg_pnl": -0.354,
+            "ci": [
+              0.249,
+              0.358
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 195,
+            "wins": 61,
+            "losses": 134,
+            "wr": 0.3128,
+            "pf_pnl": 0.825,
+            "avg_pnl": 3.99,
+            "ci": [
+              0.252,
+              0.381
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 75,
+            "wins": 22,
+            "losses": 53,
+            "wr": 0.2933,
+            "pf_pnl": 0.808,
+            "avg_pnl": -2.785,
+            "ci": [
+              0.202,
+              0.404
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_LOW",
+            "direction": "LONG"
+          },
+          {
+            "n": 100,
+            "wins": 27,
+            "losses": 73,
+            "wr": 0.27,
+            "pf_pnl": 0.771,
+            "avg_pnl": 3.292,
+            "ci": [
+              0.193,
+              0.364
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_RECOVERY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 224,
+            "wins": 66,
+            "losses": 158,
+            "wr": 0.2946,
+            "pf_pnl": 0.755,
+            "avg_pnl": 2.665,
+            "ci": [
+              0.239,
+              0.357
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 72,
+            "wins": 22,
+            "losses": 50,
+            "wr": 0.3056,
+            "pf_pnl": 0.754,
+            "avg_pnl": 1.295,
+            "ci": [
+              0.211,
+              0.42
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_LOW",
+            "direction": "SHORT"
+          },
+          {
+            "n": 210,
+            "wins": 57,
+            "losses": 153,
+            "wr": 0.2714,
+            "pf_pnl": 0.72,
+            "avg_pnl": -5.237,
+            "ci": [
+              0.216,
+              0.335
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 545,
+            "wins": 141,
+            "losses": 404,
+            "wr": 0.2587,
+            "pf_pnl": 0.552,
+            "avg_pnl": -6.679,
+            "ci": [
+              0.224,
+              0.297
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_MID",
+            "direction": "SHORT"
+          },
+          {
+            "n": 136,
+            "wins": 26,
+            "losses": 110,
+            "wr": 0.1912,
+            "pf_pnl": 0.531,
+            "avg_pnl": -3.819,
+            "ci": [
+              0.134,
+              0.265
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_HIGH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 79,
+            "wins": 20,
+            "losses": 59,
+            "wr": 0.2532,
+            "pf_pnl": 0.523,
+            "avg_pnl": -3.85,
+            "ci": [
+              0.17,
+              0.359
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_RECOVERY",
+            "direction": "LONG"
+          },
+          {
+            "n": 349,
+            "wins": 74,
+            "losses": 275,
+            "wr": 0.212,
+            "pf_pnl": 0.486,
+            "avg_pnl": -6.49,
+            "ci": [
+              0.172,
+              0.258
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 30,
+            "wins": 6,
+            "losses": 24,
+            "wr": 0.2,
+            "pf_pnl": 0.381,
+            "avg_pnl": 1.785,
+            "ci": [
+              0.095,
+              0.373
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_CRASH",
+            "direction": "LONG"
+          },
+          {
+            "n": 38,
+            "wins": 6,
+            "losses": 32,
+            "wr": 0.1579,
+            "pf_pnl": 0.338,
+            "avg_pnl": -4.246,
+            "ci": [
+              0.074,
+              0.304
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_CRASH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 118,
+            "wins": 5,
+            "losses": 113,
+            "wr": 0.0424,
+            "pf_pnl": 0.107,
+            "avg_pnl": -28.086,
+            "ci": [
+              0.018,
+              0.095
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          }
+        ]
+      }
+    },
+    "ETHUSDT": {
+      "15m": {
+        "summary": {
+          "total": 104978,
+          "settled": 104959,
+          "wins": 35071,
+          "losses": 69888,
+          "wr": 0.3341,
+          "pf_pnl": 0.603,
+          "avg_pnl_lev": -0.793
+        },
+        "regime_dir": [
+          {
+            "n": 10600,
+            "wins": 3478,
+            "losses": 7122,
+            "wr": 0.3281,
+            "pf_pnl": 0.57,
+            "avg_pnl": -0.827,
+            "ci": [
+              0.319,
+              0.337
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 10599,
+            "wins": 3605,
+            "losses": 6994,
+            "wr": 0.3401,
+            "pf_pnl": 0.589,
+            "avg_pnl": -0.78,
+            "ci": [
+              0.331,
+              0.349
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 9431,
+            "wins": 3149,
+            "losses": 6282,
+            "wr": 0.3339,
+            "pf_pnl": 0.504,
+            "avg_pnl": -0.845,
+            "ci": [
+              0.324,
+              0.343
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 9429,
+            "wins": 3150,
+            "losses": 6279,
+            "wr": 0.3341,
+            "pf_pnl": 0.544,
+            "avg_pnl": -0.766,
+            "ci": [
+              0.325,
+              0.344
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 7088,
+            "wins": 2560,
+            "losses": 4528,
+            "wr": 0.3612,
+            "pf_pnl": 0.77,
+            "avg_pnl": -0.556,
+            "ci": [
+              0.35,
+              0.372
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 7088,
+            "wins": 2137,
+            "losses": 4951,
+            "wr": 0.3015,
+            "pf_pnl": 0.603,
+            "avg_pnl": -1.043,
+            "ci": [
+              0.291,
+              0.312
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 6970,
+            "wins": 2935,
+            "losses": 4035,
+            "wr": 0.4211,
+            "pf_pnl": 0.831,
+            "avg_pnl": -0.283,
+            "ci": [
+              0.41,
+              0.433
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 6968,
+            "wins": 1767,
+            "losses": 5201,
+            "wr": 0.2536,
+            "pf_pnl": 0.416,
+            "avg_pnl": -1.241,
+            "ci": [
+              0.244,
+              0.264
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 5719,
+            "wins": 1734,
+            "losses": 3985,
+            "wr": 0.3032,
+            "pf_pnl": 0.629,
+            "avg_pnl": -1.094,
+            "ci": [
+              0.291,
+              0.315
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_CRASH",
+            "direction": "LONG"
+          },
+          {
+            "n": 5719,
+            "wins": 2161,
+            "losses": 3558,
+            "wr": 0.3779,
+            "pf_pnl": 0.843,
+            "avg_pnl": -0.419,
+            "ci": [
+              0.365,
+              0.391
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_CRASH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 3692,
+            "wins": 1512,
+            "losses": 2180,
+            "wr": 0.4095,
+            "pf_pnl": 0.797,
+            "avg_pnl": -0.321,
+            "ci": [
+              0.394,
+              0.425
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_RECOVERY",
+            "direction": "LONG"
+          },
+          {
+            "n": 3692,
+            "wins": 971,
+            "losses": 2721,
+            "wr": 0.263,
+            "pf_pnl": 0.383,
+            "avg_pnl": -1.236,
+            "ci": [
+              0.249,
+              0.277
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_RECOVERY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 3688,
+            "wins": 1459,
+            "losses": 2229,
+            "wr": 0.3956,
+            "pf_pnl": 0.667,
+            "avg_pnl": -0.489,
+            "ci": [
+              0.38,
+              0.411
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_HIGH",
+            "direction": "LONG"
+          },
+          {
+            "n": 3688,
+            "wins": 986,
+            "losses": 2702,
+            "wr": 0.2674,
+            "pf_pnl": 0.367,
+            "avg_pnl": -1.128,
+            "ci": [
+              0.253,
+              0.282
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_HIGH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2972,
+            "wins": 936,
+            "losses": 2036,
+            "wr": 0.3149,
+            "pf_pnl": 0.437,
+            "avg_pnl": -0.897,
+            "ci": [
+              0.298,
+              0.332
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_MID",
+            "direction": "LONG"
+          },
+          {
+            "n": 2972,
+            "wins": 999,
+            "losses": 1973,
+            "wr": 0.3361,
+            "pf_pnl": 0.488,
+            "avg_pnl": -0.79,
+            "ci": [
+              0.319,
+              0.353
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_MID",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2323,
+            "wins": 966,
+            "losses": 1357,
+            "wr": 0.4158,
+            "pf_pnl": 0.815,
+            "avg_pnl": -0.292,
+            "ci": [
+              0.396,
+              0.436
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_LOW",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2321,
+            "wins": 566,
+            "losses": 1755,
+            "wr": 0.2439,
+            "pf_pnl": 0.37,
+            "avg_pnl": -1.281,
+            "ci": [
+              0.227,
+              0.262
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_LOW",
+            "direction": "LONG"
+          }
+        ],
+        "fr_effect": [
+          {
+            "n": 33,
+            "wins": 18,
+            "losses": 15,
+            "wr": 0.5455,
+            "pf_pnl": 1.644,
+            "avg_pnl": 1.236,
+            "ci": [
+              0.38,
+              0.702
+            ],
+            "verdict": "STRONG",
+            "fr_bucket": "负<-0.1%",
+            "regime": "BEAR_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 122,
+            "wins": 47,
+            "losses": 75,
+            "wr": 0.3852,
+            "pf_pnl": 1.229,
+            "avg_pnl": 0.788,
+            "ci": [
+              0.304,
+              0.474
+            ],
+            "verdict": "MARGINAL",
+            "fr_bucket": "极正>0.2%",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 771,
+            "wins": 274,
+            "losses": 497,
+            "wr": 0.3554,
+            "pf_pnl": 0.845,
+            "avg_pnl": -0.465,
+            "ci": [
+              0.322,
+              0.39
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "正0.1~0.2%",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 103,
+            "wins": 42,
+            "losses": 61,
+            "wr": 0.4078,
+            "pf_pnl": 0.831,
+            "avg_pnl": -0.352,
+            "ci": [
+              0.318,
+              0.504
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "正0.1~0.2%",
+            "regime": "BULL_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 6937,
+            "wins": 2917,
+            "losses": 4020,
+            "wr": 0.4205,
+            "pf_pnl": 0.827,
+            "avg_pnl": -0.29,
+            "ci": [
+              0.409,
+              0.432
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 5711,
+            "wins": 2154,
+            "losses": 3557,
+            "wr": 0.3772,
+            "pf_pnl": 0.826,
+            "avg_pnl": -0.463,
+            "ci": [
+              0.365,
+              0.39
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_CRASH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2323,
+            "wins": 966,
+            "losses": 1357,
+            "wr": 0.4158,
+            "pf_pnl": 0.815,
+            "avg_pnl": -0.292,
+            "ci": [
+              0.396,
+              0.436
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_LOW",
+            "direction": "SHORT"
+          },
+          {
+            "n": 3692,
+            "wins": 1512,
+            "losses": 2180,
+            "wr": 0.4095,
+            "pf_pnl": 0.797,
+            "avg_pnl": -0.321,
+            "ci": [
+              0.394,
+              0.425
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_RECOVERY",
+            "direction": "LONG"
+          },
+          {
+            "n": 6195,
+            "wins": 2268,
+            "losses": 3927,
+            "wr": 0.3661,
+            "pf_pnl": 0.777,
+            "avg_pnl": -0.513,
+            "ci": [
+              0.354,
+              0.378
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 3688,
+            "wins": 1459,
+            "losses": 2229,
+            "wr": 0.3956,
+            "pf_pnl": 0.667,
+            "avg_pnl": -0.489,
+            "ci": [
+              0.38,
+              0.411
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_HIGH",
+            "direction": "LONG"
+          },
+          {
+            "n": 771,
+            "wins": 245,
+            "losses": 526,
+            "wr": 0.3178,
+            "pf_pnl": 0.655,
+            "avg_pnl": -1.118,
+            "ci": [
+              0.286,
+              0.351
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "正0.1~0.2%",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 122,
+            "wins": 38,
+            "losses": 84,
+            "wr": 0.3115,
+            "pf_pnl": 0.64,
+            "avg_pnl": -1.543,
+            "ci": [
+              0.236,
+              0.398
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "极正>0.2%",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 5711,
+            "wins": 1733,
+            "losses": 3978,
+            "wr": 0.3034,
+            "pf_pnl": 0.633,
+            "avg_pnl": -1.077,
+            "ci": [
+              0.292,
+              0.316
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_CRASH",
+            "direction": "LONG"
+          },
+          {
+            "n": 33,
+            "wins": 10,
+            "losses": 23,
+            "wr": 0.303,
+            "pf_pnl": 0.61,
+            "avg_pnl": -1.13,
+            "ci": [
+              0.174,
+              0.473
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "负<-0.1%",
+            "regime": "BEAR_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 10496,
+            "wins": 3576,
+            "losses": 6920,
+            "wr": 0.3407,
+            "pf_pnl": 0.59,
+            "avg_pnl": -0.775,
+            "ci": [
+              0.332,
+              0.35
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 10497,
+            "wins": 3436,
+            "losses": 7061,
+            "wr": 0.3273,
+            "pf_pnl": 0.567,
+            "avg_pnl": -0.832,
+            "ci": [
+              0.318,
+              0.336
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 6195,
+            "wins": 1825,
+            "losses": 4370,
+            "wr": 0.2946,
+            "pf_pnl": 0.567,
+            "avg_pnl": -1.105,
+            "ci": [
+              0.283,
+              0.306
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 9425,
+            "wins": 3147,
+            "losses": 6278,
+            "wr": 0.3339,
+            "pf_pnl": 0.543,
+            "avg_pnl": -0.768,
+            "ci": [
+              0.324,
+              0.343
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 9427,
+            "wins": 3149,
+            "losses": 6278,
+            "wr": 0.334,
+            "pf_pnl": 0.504,
+            "avg_pnl": -0.844,
+            "ci": [
+              0.325,
+              0.344
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 103,
+            "wins": 29,
+            "losses": 74,
+            "wr": 0.2816,
+            "pf_pnl": 0.504,
+            "avg_pnl": -1.228,
+            "ci": [
+              0.204,
+              0.375
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "正0.1~0.2%",
+            "regime": "BULL_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 2968,
+            "wins": 999,
+            "losses": 1969,
+            "wr": 0.3366,
+            "pf_pnl": 0.49,
+            "avg_pnl": -0.784,
+            "ci": [
+              0.32,
+              0.354
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_MID",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2968,
+            "wins": 935,
+            "losses": 2033,
+            "wr": 0.315,
+            "pf_pnl": 0.438,
+            "avg_pnl": -0.895,
+            "ci": [
+              0.299,
+              0.332
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_MID",
+            "direction": "LONG"
+          },
+          {
+            "n": 6935,
+            "wins": 1757,
+            "losses": 5178,
+            "wr": 0.2534,
+            "pf_pnl": 0.415,
+            "avg_pnl": -1.241,
+            "ci": [
+              0.243,
+              0.264
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 3692,
+            "wins": 971,
+            "losses": 2721,
+            "wr": 0.263,
+            "pf_pnl": 0.383,
+            "avg_pnl": -1.236,
+            "ci": [
+              0.249,
+              0.277
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_RECOVERY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2321,
+            "wins": 566,
+            "losses": 1755,
+            "wr": 0.2439,
+            "pf_pnl": 0.37,
+            "avg_pnl": -1.281,
+            "ci": [
+              0.227,
+              0.262
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_LOW",
+            "direction": "LONG"
+          },
+          {
+            "n": 3688,
+            "wins": 986,
+            "losses": 2702,
+            "wr": 0.2674,
+            "pf_pnl": 0.367,
+            "avg_pnl": -1.128,
+            "ci": [
+              0.253,
+              0.282
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_HIGH",
+            "direction": "SHORT"
+          }
+        ]
+      },
+      "1h": {
+        "summary": {
+          "total": 104620,
+          "settled": 103580,
+          "wins": 38974,
+          "losses": 64606,
+          "wr": 0.3763,
+          "pf_pnl": 0.833,
+          "avg_pnl_lev": -0.766
+        },
+        "regime_dir": [
+          {
+            "n": 10566,
+            "wins": 4161,
+            "losses": 6405,
+            "wr": 0.3938,
+            "pf_pnl": 0.879,
+            "avg_pnl": -0.51,
+            "ci": [
+              0.385,
+              0.403
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 10544,
+            "wins": 3716,
+            "losses": 6828,
+            "wr": 0.3524,
+            "pf_pnl": 0.739,
+            "avg_pnl": -1.196,
+            "ci": [
+              0.343,
+              0.362
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 9237,
+            "wins": 3389,
+            "losses": 5848,
+            "wr": 0.3669,
+            "pf_pnl": 0.762,
+            "avg_pnl": -0.936,
+            "ci": [
+              0.357,
+              0.377
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 9204,
+            "wins": 3584,
+            "losses": 5620,
+            "wr": 0.3894,
+            "pf_pnl": 0.858,
+            "avg_pnl": -0.531,
+            "ci": [
+              0.379,
+              0.399
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 7045,
+            "wins": 2355,
+            "losses": 4690,
+            "wr": 0.3343,
+            "pf_pnl": 0.692,
+            "avg_pnl": -2.035,
+            "ci": [
+              0.323,
+              0.345
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 7032,
+            "wins": 2976,
+            "losses": 4056,
+            "wr": 0.4232,
+            "pf_pnl": 1.121,
+            "avg_pnl": 0.742,
+            "ci": [
+              0.412,
+              0.435
+            ],
+            "verdict": "MARGINAL",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 6836,
+            "wins": 3222,
+            "losses": 3614,
+            "wr": 0.4713,
+            "pf_pnl": 1.239,
+            "avg_pnl": 0.911,
+            "ci": [
+              0.46,
+              0.483
+            ],
+            "verdict": "MARGINAL",
+            "regime": "BEAR_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 6755,
+            "wins": 1903,
+            "losses": 4852,
+            "wr": 0.2817,
+            "pf_pnl": 0.536,
+            "avg_pnl": -2.29,
+            "ci": [
+              0.271,
+              0.293
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 5647,
+            "wins": 2241,
+            "losses": 3406,
+            "wr": 0.3968,
+            "pf_pnl": 0.96,
+            "avg_pnl": -0.242,
+            "ci": [
+              0.384,
+              0.41
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_CRASH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 5616,
+            "wins": 2002,
+            "losses": 3614,
+            "wr": 0.3565,
+            "pf_pnl": 0.809,
+            "avg_pnl": -1.341,
+            "ci": [
+              0.344,
+              0.369
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_CRASH",
+            "direction": "LONG"
+          },
+          {
+            "n": 3678,
+            "wins": 1417,
+            "losses": 2261,
+            "wr": 0.3853,
+            "pf_pnl": 0.825,
+            "avg_pnl": -0.725,
+            "ci": [
+              0.37,
+              0.401
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_RECOVERY",
+            "direction": "LONG"
+          },
+          {
+            "n": 3678,
+            "wins": 1312,
+            "losses": 2366,
+            "wr": 0.3567,
+            "pf_pnl": 0.762,
+            "avg_pnl": -1.011,
+            "ci": [
+              0.341,
+              0.372
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_RECOVERY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 3673,
+            "wins": 1080,
+            "losses": 2593,
+            "wr": 0.294,
+            "pf_pnl": 0.556,
+            "avg_pnl": -1.818,
+            "ci": [
+              0.28,
+              0.309
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_HIGH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 3670,
+            "wins": 1678,
+            "losses": 1992,
+            "wr": 0.4572,
+            "pf_pnl": 1.066,
+            "avg_pnl": 0.223,
+            "ci": [
+              0.441,
+              0.473
+            ],
+            "verdict": "MARGINAL",
+            "regime": "CHOP_HIGH",
+            "direction": "LONG"
+          },
+          {
+            "n": 2938,
+            "wins": 1094,
+            "losses": 1844,
+            "wr": 0.3724,
+            "pf_pnl": 0.72,
+            "avg_pnl": -0.979,
+            "ci": [
+              0.355,
+              0.39
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_MID",
+            "direction": "LONG"
+          },
+          {
+            "n": 2916,
+            "wins": 1131,
+            "losses": 1785,
+            "wr": 0.3879,
+            "pf_pnl": 0.859,
+            "avg_pnl": -0.441,
+            "ci": [
+              0.37,
+              0.406
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_MID",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2286,
+            "wins": 913,
+            "losses": 1373,
+            "wr": 0.3994,
+            "pf_pnl": 0.87,
+            "avg_pnl": -0.523,
+            "ci": [
+              0.379,
+              0.42
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_LOW",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2259,
+            "wins": 800,
+            "losses": 1459,
+            "wr": 0.3541,
+            "pf_pnl": 0.703,
+            "avg_pnl": -1.247,
+            "ci": [
+              0.335,
+              0.374
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_LOW",
+            "direction": "LONG"
+          }
+        ],
+        "fr_effect": [
+          {
+            "n": 103,
+            "wins": 56,
+            "losses": 47,
+            "wr": 0.5437,
+            "pf_pnl": 1.817,
+            "avg_pnl": 3.0,
+            "ci": [
+              0.448,
+              0.637
+            ],
+            "verdict": "STRONG",
+            "fr_bucket": "正0.1~0.2%",
+            "regime": "BULL_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 33,
+            "wins": 17,
+            "losses": 16,
+            "wr": 0.5152,
+            "pf_pnl": 1.808,
+            "avg_pnl": 3.965,
+            "ci": [
+              0.352,
+              0.675
+            ],
+            "verdict": "STRONG",
+            "fr_bucket": "负<-0.1%",
+            "regime": "BEAR_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 122,
+            "wins": 54,
+            "losses": 68,
+            "wr": 0.4426,
+            "pf_pnl": 1.402,
+            "avg_pnl": 3.179,
+            "ci": [
+              0.358,
+              0.531
+            ],
+            "verdict": "POSITIVE",
+            "fr_bucket": "极正>0.2%",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 6803,
+            "wins": 3205,
+            "losses": 3598,
+            "wr": 0.4711,
+            "pf_pnl": 1.236,
+            "avg_pnl": 0.897,
+            "ci": [
+              0.459,
+              0.483
+            ],
+            "verdict": "MARGINAL",
+            "fr_bucket": "中性",
+            "regime": "BEAR_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 6146,
+            "wins": 2640,
+            "losses": 3506,
+            "wr": 0.4295,
+            "pf_pnl": 1.138,
+            "avg_pnl": 0.796,
+            "ci": [
+              0.417,
+              0.442
+            ],
+            "verdict": "MARGINAL",
+            "fr_bucket": "中性",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 3670,
+            "wins": 1678,
+            "losses": 1992,
+            "wr": 0.4572,
+            "pf_pnl": 1.066,
+            "avg_pnl": 0.223,
+            "ci": [
+              0.441,
+              0.473
+            ],
+            "verdict": "MARGINAL",
+            "fr_bucket": "中性",
+            "regime": "CHOP_HIGH",
+            "direction": "LONG"
+          },
+          {
+            "n": 764,
+            "wins": 282,
+            "losses": 482,
+            "wr": 0.3691,
+            "pf_pnl": 0.979,
+            "avg_pnl": -0.076,
+            "ci": [
+              0.336,
+              0.404
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "正0.1~0.2%",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 5639,
+            "wins": 2239,
+            "losses": 3400,
+            "wr": 0.3971,
+            "pf_pnl": 0.964,
+            "avg_pnl": -0.211,
+            "ci": [
+              0.384,
+              0.41
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_CRASH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 768,
+            "wins": 312,
+            "losses": 456,
+            "wr": 0.4062,
+            "pf_pnl": 0.919,
+            "avg_pnl": -0.604,
+            "ci": [
+              0.372,
+              0.441
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "正0.1~0.2%",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 10463,
+            "wins": 4136,
+            "losses": 6327,
+            "wr": 0.3953,
+            "pf_pnl": 0.886,
+            "avg_pnl": -0.479,
+            "ci": [
+              0.386,
+              0.405
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 2286,
+            "wins": 913,
+            "losses": 1373,
+            "wr": 0.3994,
+            "pf_pnl": 0.87,
+            "avg_pnl": -0.523,
+            "ci": [
+              0.379,
+              0.42
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_LOW",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2912,
+            "wins": 1130,
+            "losses": 1782,
+            "wr": 0.388,
+            "pf_pnl": 0.86,
+            "avg_pnl": -0.437,
+            "ci": [
+              0.371,
+              0.406
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_MID",
+            "direction": "SHORT"
+          },
+          {
+            "n": 9200,
+            "wins": 3583,
+            "losses": 5617,
+            "wr": 0.3895,
+            "pf_pnl": 0.858,
+            "avg_pnl": -0.53,
+            "ci": [
+              0.38,
+              0.399
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 3678,
+            "wins": 1417,
+            "losses": 2261,
+            "wr": 0.3853,
+            "pf_pnl": 0.825,
+            "avg_pnl": -0.725,
+            "ci": [
+              0.37,
+              0.401
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_RECOVERY",
+            "direction": "LONG"
+          },
+          {
+            "n": 5608,
+            "wins": 2001,
+            "losses": 3607,
+            "wr": 0.3568,
+            "pf_pnl": 0.814,
+            "avg_pnl": -1.291,
+            "ci": [
+              0.344,
+              0.369
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_CRASH",
+            "direction": "LONG"
+          },
+          {
+            "n": 3678,
+            "wins": 1312,
+            "losses": 2366,
+            "wr": 0.3567,
+            "pf_pnl": 0.762,
+            "avg_pnl": -1.011,
+            "ci": [
+              0.341,
+              0.372
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_RECOVERY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 9233,
+            "wins": 3387,
+            "losses": 5846,
+            "wr": 0.3668,
+            "pf_pnl": 0.761,
+            "avg_pnl": -0.937,
+            "ci": [
+              0.357,
+              0.377
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 10441,
+            "wins": 3660,
+            "losses": 6781,
+            "wr": 0.3505,
+            "pf_pnl": 0.73,
+            "avg_pnl": -1.237,
+            "ci": [
+              0.341,
+              0.36
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2934,
+            "wins": 1093,
+            "losses": 1841,
+            "wr": 0.3725,
+            "pf_pnl": 0.721,
+            "avg_pnl": -0.974,
+            "ci": [
+              0.355,
+              0.39
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_MID",
+            "direction": "LONG"
+          },
+          {
+            "n": 122,
+            "wins": 43,
+            "losses": 79,
+            "wr": 0.3525,
+            "pf_pnl": 0.704,
+            "avg_pnl": -3.05,
+            "ci": [
+              0.273,
+              0.441
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "极正>0.2%",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2259,
+            "wins": 800,
+            "losses": 1459,
+            "wr": 0.3541,
+            "pf_pnl": 0.703,
+            "avg_pnl": -1.247,
+            "ci": [
+              0.335,
+              0.374
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_LOW",
+            "direction": "LONG"
+          },
+          {
+            "n": 6155,
+            "wins": 2000,
+            "losses": 4155,
+            "wr": 0.3249,
+            "pf_pnl": 0.658,
+            "avg_pnl": -2.193,
+            "ci": [
+              0.313,
+              0.337
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 3673,
+            "wins": 1080,
+            "losses": 2593,
+            "wr": 0.294,
+            "pf_pnl": 0.556,
+            "avg_pnl": -1.818,
+            "ci": [
+              0.28,
+              0.309
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_HIGH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 6722,
+            "wins": 1897,
+            "losses": 4825,
+            "wr": 0.2822,
+            "pf_pnl": 0.538,
+            "avg_pnl": -2.271,
+            "ci": [
+              0.272,
+              0.293
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 103,
+            "wins": 25,
+            "losses": 78,
+            "wr": 0.2427,
+            "pf_pnl": 0.419,
+            "avg_pnl": -3.745,
+            "ci": [
+              0.17,
+              0.334
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "正0.1~0.2%",
+            "regime": "BULL_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 33,
+            "wins": 6,
+            "losses": 27,
+            "wr": 0.1818,
+            "pf_pnl": 0.309,
+            "avg_pnl": -6.212,
+            "ci": [
+              0.086,
+              0.344
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "负<-0.1%",
+            "regime": "BEAR_TREND",
+            "direction": "LONG"
+          }
+        ]
+      },
+      "4h": {
+        "summary": {
+          "total": 25816,
+          "settled": 23883,
+          "wins": 8809,
+          "losses": 15074,
+          "wr": 0.3688,
+          "pf_pnl": 0.879,
+          "avg_pnl_lev": -0.86
+        },
+        "regime_dir": [
+          {
+            "n": 2507,
+            "wins": 772,
+            "losses": 1735,
+            "wr": 0.3079,
+            "pf_pnl": 0.639,
+            "avg_pnl": -3.922,
+            "ci": [
+              0.29,
+              0.326
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2490,
+            "wins": 1088,
+            "losses": 1402,
+            "wr": 0.4369,
+            "pf_pnl": 1.293,
+            "avg_pnl": 2.812,
+            "ci": [
+              0.418,
+              0.457
+            ],
+            "verdict": "MARGINAL",
+            "regime": "BULL_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 2103,
+            "wins": 674,
+            "losses": 1429,
+            "wr": 0.3205,
+            "pf_pnl": 0.68,
+            "avg_pnl": -2.831,
+            "ci": [
+              0.301,
+              0.341
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2054,
+            "wins": 803,
+            "losses": 1251,
+            "wr": 0.3909,
+            "pf_pnl": 0.937,
+            "avg_pnl": -0.051,
+            "ci": [
+              0.37,
+              0.412
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 1682,
+            "wins": 607,
+            "losses": 1075,
+            "wr": 0.3609,
+            "pf_pnl": 0.764,
+            "avg_pnl": -3.312,
+            "ci": [
+              0.338,
+              0.384
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 1643,
+            "wins": 586,
+            "losses": 1057,
+            "wr": 0.3567,
+            "pf_pnl": 0.954,
+            "avg_pnl": 0.36,
+            "ci": [
+              0.334,
+              0.38
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 1614,
+            "wins": 708,
+            "losses": 906,
+            "wr": 0.4387,
+            "pf_pnl": 1.198,
+            "avg_pnl": 1.692,
+            "ci": [
+              0.415,
+              0.463
+            ],
+            "verdict": "MARGINAL",
+            "regime": "BEAR_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 1568,
+            "wins": 510,
+            "losses": 1058,
+            "wr": 0.3253,
+            "pf_pnl": 0.746,
+            "avg_pnl": -1.963,
+            "ci": [
+              0.303,
+              0.349
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 1250,
+            "wins": 438,
+            "losses": 812,
+            "wr": 0.3504,
+            "pf_pnl": 0.798,
+            "avg_pnl": -2.502,
+            "ci": [
+              0.324,
+              0.377
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_CRASH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 1176,
+            "wins": 423,
+            "losses": 753,
+            "wr": 0.3597,
+            "pf_pnl": 0.859,
+            "avg_pnl": -0.54,
+            "ci": [
+              0.333,
+              0.388
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_CRASH",
+            "direction": "LONG"
+          },
+          {
+            "n": 858,
+            "wins": 384,
+            "losses": 474,
+            "wr": 0.4476,
+            "pf_pnl": 1.086,
+            "avg_pnl": 0.816,
+            "ci": [
+              0.415,
+              0.481
+            ],
+            "verdict": "MARGINAL",
+            "regime": "CHOP_HIGH",
+            "direction": "LONG"
+          },
+          {
+            "n": 855,
+            "wins": 290,
+            "losses": 565,
+            "wr": 0.3392,
+            "pf_pnl": 0.933,
+            "avg_pnl": -0.459,
+            "ci": [
+              0.308,
+              0.372
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_HIGH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 848,
+            "wins": 246,
+            "losses": 602,
+            "wr": 0.2901,
+            "pf_pnl": 0.538,
+            "avg_pnl": -4.947,
+            "ci": [
+              0.261,
+              0.322
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_RECOVERY",
+            "direction": "LONG"
+          },
+          {
+            "n": 829,
+            "wins": 369,
+            "losses": 460,
+            "wr": 0.4451,
+            "pf_pnl": 1.248,
+            "avg_pnl": 2.663,
+            "ci": [
+              0.412,
+              0.479
+            ],
+            "verdict": "MARGINAL",
+            "regime": "BEAR_RECOVERY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 690,
+            "wins": 234,
+            "losses": 456,
+            "wr": 0.3391,
+            "pf_pnl": 0.712,
+            "avg_pnl": -2.601,
+            "ci": [
+              0.305,
+              0.375
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_MID",
+            "direction": "LONG"
+          },
+          {
+            "n": 647,
+            "wins": 268,
+            "losses": 379,
+            "wr": 0.4142,
+            "pf_pnl": 1.171,
+            "avg_pnl": 1.602,
+            "ci": [
+              0.377,
+              0.453
+            ],
+            "verdict": "MARGINAL",
+            "regime": "CHOP_MID",
+            "direction": "SHORT"
+          },
+          {
+            "n": 538,
+            "wins": 190,
+            "losses": 348,
+            "wr": 0.3532,
+            "pf_pnl": 0.849,
+            "avg_pnl": -1.154,
+            "ci": [
+              0.314,
+              0.394
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_LOW",
+            "direction": "SHORT"
+          },
+          {
+            "n": 531,
+            "wins": 219,
+            "losses": 312,
+            "wr": 0.4124,
+            "pf_pnl": 1.066,
+            "avg_pnl": 0.747,
+            "ci": [
+              0.371,
+              0.455
+            ],
+            "verdict": "MARGINAL",
+            "regime": "CHOP_LOW",
+            "direction": "LONG"
+          }
+        ],
+        "fr_effect": [
+          {
+            "n": 2478,
+            "wins": 1082,
+            "losses": 1396,
+            "wr": 0.4366,
+            "pf_pnl": 1.294,
+            "avg_pnl": 2.813,
+            "ci": [
+              0.417,
+              0.456
+            ],
+            "verdict": "MARGINAL",
+            "fr_bucket": "中性",
+            "regime": "BULL_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 829,
+            "wins": 369,
+            "losses": 460,
+            "wr": 0.4451,
+            "pf_pnl": 1.248,
+            "avg_pnl": 2.663,
+            "ci": [
+              0.412,
+              0.479
+            ],
+            "verdict": "MARGINAL",
+            "fr_bucket": "中性",
+            "regime": "BEAR_RECOVERY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 1609,
+            "wins": 703,
+            "losses": 906,
+            "wr": 0.4369,
+            "pf_pnl": 1.185,
+            "avg_pnl": 1.582,
+            "ci": [
+              0.413,
+              0.461
+            ],
+            "verdict": "MARGINAL",
+            "fr_bucket": "中性",
+            "regime": "BEAR_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 647,
+            "wins": 268,
+            "losses": 379,
+            "wr": 0.4142,
+            "pf_pnl": 1.171,
+            "avg_pnl": 1.602,
+            "ci": [
+              0.377,
+              0.453
+            ],
+            "verdict": "MARGINAL",
+            "fr_bucket": "中性",
+            "regime": "CHOP_MID",
+            "direction": "SHORT"
+          },
+          {
+            "n": 858,
+            "wins": 384,
+            "losses": 474,
+            "wr": 0.4476,
+            "pf_pnl": 1.086,
+            "avg_pnl": 0.816,
+            "ci": [
+              0.415,
+              0.481
+            ],
+            "verdict": "MARGINAL",
+            "fr_bucket": "中性",
+            "regime": "CHOP_HIGH",
+            "direction": "LONG"
+          },
+          {
+            "n": 531,
+            "wins": 219,
+            "losses": 312,
+            "wr": 0.4124,
+            "pf_pnl": 1.066,
+            "avg_pnl": 0.747,
+            "ci": [
+              0.371,
+              0.455
+            ],
+            "verdict": "MARGINAL",
+            "fr_bucket": "中性",
+            "regime": "CHOP_LOW",
+            "direction": "LONG"
+          },
+          {
+            "n": 1536,
+            "wins": 549,
+            "losses": 987,
+            "wr": 0.3574,
+            "pf_pnl": 0.953,
+            "avg_pnl": 0.384,
+            "ci": [
+              0.334,
+              0.382
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 2054,
+            "wins": 803,
+            "losses": 1251,
+            "wr": 0.3909,
+            "pf_pnl": 0.937,
+            "avg_pnl": -0.051,
+            "ci": [
+              0.37,
+              0.412
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 855,
+            "wins": 290,
+            "losses": 565,
+            "wr": 0.3392,
+            "pf_pnl": 0.933,
+            "avg_pnl": -0.459,
+            "ci": [
+              0.308,
+              0.372
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_HIGH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 1175,
+            "wins": 423,
+            "losses": 752,
+            "wr": 0.36,
+            "pf_pnl": 0.863,
+            "avg_pnl": -0.471,
+            "ci": [
+              0.333,
+              0.388
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_CRASH",
+            "direction": "LONG"
+          },
+          {
+            "n": 538,
+            "wins": 190,
+            "losses": 348,
+            "wr": 0.3532,
+            "pf_pnl": 0.849,
+            "avg_pnl": -1.154,
+            "ci": [
+              0.314,
+              0.394
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_LOW",
+            "direction": "SHORT"
+          },
+          {
+            "n": 94,
+            "wins": 30,
+            "losses": 64,
+            "wr": 0.3191,
+            "pf_pnl": 0.828,
+            "avg_pnl": -2.851,
+            "ci": [
+              0.234,
+              0.419
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "正0.1~0.2%",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 94,
+            "wins": 36,
+            "losses": 58,
+            "wr": 0.383,
+            "pf_pnl": 0.792,
+            "avg_pnl": -3.483,
+            "ci": [
+              0.291,
+              0.484
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "正0.1~0.2%",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 1249,
+            "wins": 437,
+            "losses": 812,
+            "wr": 0.3499,
+            "pf_pnl": 0.791,
+            "avg_pnl": -2.617,
+            "ci": [
+              0.324,
+              0.377
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_CRASH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 1574,
+            "wins": 568,
+            "losses": 1006,
+            "wr": 0.3609,
+            "pf_pnl": 0.766,
+            "avg_pnl": -3.229,
+            "ci": [
+              0.338,
+              0.385
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 1563,
+            "wins": 510,
+            "losses": 1053,
+            "wr": 0.3263,
+            "pf_pnl": 0.751,
+            "avg_pnl": -1.895,
+            "ci": [
+              0.304,
+              0.35
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 690,
+            "wins": 234,
+            "losses": 456,
+            "wr": 0.3391,
+            "pf_pnl": 0.712,
+            "avg_pnl": -2.601,
+            "ci": [
+              0.305,
+              0.375
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_MID",
+            "direction": "LONG"
+          },
+          {
+            "n": 2103,
+            "wins": 674,
+            "losses": 1429,
+            "wr": 0.3205,
+            "pf_pnl": 0.68,
+            "avg_pnl": -2.831,
+            "ci": [
+              0.301,
+              0.341
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 2495,
+            "wins": 769,
+            "losses": 1726,
+            "wr": 0.3082,
+            "pf_pnl": 0.64,
+            "avg_pnl": -3.91,
+            "ci": [
+              0.29,
+              0.327
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 848,
+            "wins": 246,
+            "losses": 602,
+            "wr": 0.2901,
+            "pf_pnl": 0.538,
+            "avg_pnl": -4.947,
+            "ci": [
+              0.261,
+              0.322
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_RECOVERY",
+            "direction": "LONG"
+          }
+        ]
+      },
+      "1d": {
+        "summary": {
+          "total": 4326,
+          "settled": 2733,
+          "wins": 771,
+          "losses": 1962,
+          "wr": 0.2821,
+          "pf_pnl": 0.712,
+          "avg_pnl_lev": 0.151
+        },
+        "regime_dir": [
+          {
+            "n": 311,
+            "wins": 137,
+            "losses": 174,
+            "wr": 0.4405,
+            "pf_pnl": 1.556,
+            "avg_pnl": 19.296,
+            "ci": [
+              0.386,
+              0.496
+            ],
+            "verdict": "STRONG",
+            "regime": "BULL_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 310,
+            "wins": 51,
+            "losses": 259,
+            "wr": 0.1645,
+            "pf_pnl": 0.336,
+            "avg_pnl": -15.855,
+            "ci": [
+              0.127,
+              0.21
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 239,
+            "wins": 65,
+            "losses": 174,
+            "wr": 0.272,
+            "pf_pnl": 0.657,
+            "avg_pnl": -1.749,
+            "ci": [
+              0.219,
+              0.332
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 229,
+            "wins": 79,
+            "losses": 150,
+            "wr": 0.345,
+            "pf_pnl": 0.955,
+            "avg_pnl": 6.819,
+            "ci": [
+              0.286,
+              0.409
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 223,
+            "wins": 39,
+            "losses": 184,
+            "wr": 0.1749,
+            "pf_pnl": 0.389,
+            "avg_pnl": -19.371,
+            "ci": [
+              0.131,
+              0.23
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 202,
+            "wins": 62,
+            "losses": 140,
+            "wr": 0.3069,
+            "pf_pnl": 0.874,
+            "avg_pnl": 10.635,
+            "ci": [
+              0.247,
+              0.374
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 174,
+            "wins": 37,
+            "losses": 137,
+            "wr": 0.2126,
+            "pf_pnl": 0.436,
+            "avg_pnl": -9.936,
+            "ci": [
+              0.158,
+              0.279
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 166,
+            "wins": 59,
+            "losses": 107,
+            "wr": 0.3554,
+            "pf_pnl": 0.987,
+            "avg_pnl": 8.717,
+            "ci": [
+              0.287,
+              0.431
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 112,
+            "wins": 40,
+            "losses": 72,
+            "wr": 0.3571,
+            "pf_pnl": 1.054,
+            "avg_pnl": 2.25,
+            "ci": [
+              0.274,
+              0.449
+            ],
+            "verdict": "MARGINAL",
+            "regime": "CHOP_HIGH",
+            "direction": "LONG"
+          },
+          {
+            "n": 95,
+            "wins": 26,
+            "losses": 69,
+            "wr": 0.2737,
+            "pf_pnl": 0.669,
+            "avg_pnl": 6.768,
+            "ci": [
+              0.194,
+              0.371
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_RECOVERY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 94,
+            "wins": 27,
+            "losses": 67,
+            "wr": 0.2872,
+            "pf_pnl": 0.691,
+            "avg_pnl": -6.917,
+            "ci": [
+              0.206,
+              0.386
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_RECOVERY",
+            "direction": "LONG"
+          },
+          {
+            "n": 92,
+            "wins": 27,
+            "losses": 65,
+            "wr": 0.2935,
+            "pf_pnl": 0.765,
+            "avg_pnl": 3.46,
+            "ci": [
+              0.21,
+              0.393
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_HIGH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 91,
+            "wins": 16,
+            "losses": 75,
+            "wr": 0.1758,
+            "pf_pnl": 0.471,
+            "avg_pnl": -3.299,
+            "ci": [
+              0.111,
+              0.267
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_CRASH",
+            "direction": "LONG"
+          },
+          {
+            "n": 90,
+            "wins": 28,
+            "losses": 62,
+            "wr": 0.3111,
+            "pf_pnl": 0.778,
+            "avg_pnl": 7.568,
+            "ci": [
+              0.225,
+              0.413
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "BEAR_CRASH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 90,
+            "wins": 32,
+            "losses": 58,
+            "wr": 0.3556,
+            "pf_pnl": 1.051,
+            "avg_pnl": 1.97,
+            "ci": [
+              0.264,
+              0.459
+            ],
+            "verdict": "MARGINAL",
+            "regime": "CHOP_MID",
+            "direction": "LONG"
+          },
+          {
+            "n": 81,
+            "wins": 14,
+            "losses": 67,
+            "wr": 0.1728,
+            "pf_pnl": 0.347,
+            "avg_pnl": -8.211,
+            "ci": [
+              0.106,
+              0.269
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_MID",
+            "direction": "SHORT"
+          },
+          {
+            "n": 73,
+            "wins": 22,
+            "losses": 51,
+            "wr": 0.3014,
+            "pf_pnl": 0.943,
+            "avg_pnl": 3.178,
+            "ci": [
+              0.208,
+              0.414
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_LOW",
+            "direction": "LONG"
+          },
+          {
+            "n": 61,
+            "wins": 10,
+            "losses": 51,
+            "wr": 0.1639,
+            "pf_pnl": 0.355,
+            "avg_pnl": -10.319,
+            "ci": [
+              0.092,
+              0.276
+            ],
+            "verdict": "NEGATIVE",
+            "regime": "CHOP_LOW",
+            "direction": "SHORT"
+          }
+        ],
+        "fr_effect": [
+          {
+            "n": 311,
+            "wins": 137,
+            "losses": 174,
+            "wr": 0.4405,
+            "pf_pnl": 1.556,
+            "avg_pnl": 19.296,
+            "ci": [
+              0.386,
+              0.496
+            ],
+            "verdict": "STRONG",
+            "fr_bucket": "中性",
+            "regime": "BULL_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 112,
+            "wins": 40,
+            "losses": 72,
+            "wr": 0.3571,
+            "pf_pnl": 1.054,
+            "avg_pnl": 2.25,
+            "ci": [
+              0.274,
+              0.449
+            ],
+            "verdict": "MARGINAL",
+            "fr_bucket": "中性",
+            "regime": "CHOP_HIGH",
+            "direction": "LONG"
+          },
+          {
+            "n": 90,
+            "wins": 32,
+            "losses": 58,
+            "wr": 0.3556,
+            "pf_pnl": 1.051,
+            "avg_pnl": 1.97,
+            "ci": [
+              0.264,
+              0.459
+            ],
+            "verdict": "MARGINAL",
+            "fr_bucket": "中性",
+            "regime": "CHOP_MID",
+            "direction": "LONG"
+          },
+          {
+            "n": 166,
+            "wins": 59,
+            "losses": 107,
+            "wr": 0.3554,
+            "pf_pnl": 0.987,
+            "avg_pnl": 8.717,
+            "ci": [
+              0.287,
+              0.431
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 229,
+            "wins": 79,
+            "losses": 150,
+            "wr": 0.345,
+            "pf_pnl": 0.955,
+            "avg_pnl": 6.819,
+            "ci": [
+              0.286,
+              0.409
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_EARLY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 73,
+            "wins": 22,
+            "losses": 51,
+            "wr": 0.3014,
+            "pf_pnl": 0.943,
+            "avg_pnl": 3.178,
+            "ci": [
+              0.208,
+              0.414
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_LOW",
+            "direction": "LONG"
+          },
+          {
+            "n": 202,
+            "wins": 62,
+            "losses": 140,
+            "wr": 0.3069,
+            "pf_pnl": 0.874,
+            "avg_pnl": 10.635,
+            "ci": [
+              0.247,
+              0.374
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_TREND",
+            "direction": "LONG"
+          },
+          {
+            "n": 90,
+            "wins": 28,
+            "losses": 62,
+            "wr": 0.3111,
+            "pf_pnl": 0.778,
+            "avg_pnl": 7.568,
+            "ci": [
+              0.225,
+              0.413
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_CRASH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 92,
+            "wins": 27,
+            "losses": 65,
+            "wr": 0.2935,
+            "pf_pnl": 0.765,
+            "avg_pnl": 3.46,
+            "ci": [
+              0.21,
+              0.393
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_HIGH",
+            "direction": "SHORT"
+          },
+          {
+            "n": 94,
+            "wins": 27,
+            "losses": 67,
+            "wr": 0.2872,
+            "pf_pnl": 0.691,
+            "avg_pnl": -6.917,
+            "ci": [
+              0.206,
+              0.386
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_RECOVERY",
+            "direction": "LONG"
+          },
+          {
+            "n": 95,
+            "wins": 26,
+            "losses": 69,
+            "wr": 0.2737,
+            "pf_pnl": 0.669,
+            "avg_pnl": 6.768,
+            "ci": [
+              0.194,
+              0.371
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_RECOVERY",
+            "direction": "SHORT"
+          },
+          {
+            "n": 239,
+            "wins": 65,
+            "losses": 174,
+            "wr": 0.272,
+            "pf_pnl": 0.657,
+            "avg_pnl": -1.749,
+            "ci": [
+              0.219,
+              0.332
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_EARLY",
+            "direction": "LONG"
+          },
+          {
+            "n": 91,
+            "wins": 16,
+            "losses": 75,
+            "wr": 0.1758,
+            "pf_pnl": 0.471,
+            "avg_pnl": -3.299,
+            "ci": [
+              0.111,
+              0.267
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_CRASH",
+            "direction": "LONG"
+          },
+          {
+            "n": 174,
+            "wins": 37,
+            "losses": 137,
+            "wr": 0.2126,
+            "pf_pnl": 0.436,
+            "avg_pnl": -9.936,
+            "ci": [
+              0.158,
+              0.279
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BEAR_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 223,
+            "wins": 39,
+            "losses": 184,
+            "wr": 0.1749,
+            "pf_pnl": 0.389,
+            "avg_pnl": -19.371,
+            "ci": [
+              0.131,
+              0.23
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_TREND",
+            "direction": "SHORT"
+          },
+          {
+            "n": 61,
+            "wins": 10,
+            "losses": 51,
+            "wr": 0.1639,
+            "pf_pnl": 0.355,
+            "avg_pnl": -10.319,
+            "ci": [
+              0.092,
+              0.276
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_LOW",
+            "direction": "SHORT"
+          },
+          {
+            "n": 81,
+            "wins": 14,
+            "losses": 67,
+            "wr": 0.1728,
+            "pf_pnl": 0.347,
+            "avg_pnl": -8.211,
+            "ci": [
+              0.106,
+              0.269
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "CHOP_MID",
+            "direction": "SHORT"
+          },
+          {
+            "n": 310,
+            "wins": 51,
+            "losses": 259,
+            "wr": 0.1645,
+            "pf_pnl": 0.336,
+            "avg_pnl": -15.855,
+            "ci": [
+              0.127,
+              0.21
+            ],
+            "verdict": "NEGATIVE",
+            "fr_bucket": "中性",
+            "regime": "BULL_EARLY",
+            "direction": "SHORT"
+          }
+        ]
+      }
+    }
+  }
+}

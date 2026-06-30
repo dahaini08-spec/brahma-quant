@@ -1,0 +1,50 @@
+{
+  "scan_time": "2026-06-30T09:27:42.456508",
+  "elapsed_sec": 123.9,
+  "total_scanned": 408,
+  "alerts": [
+    {
+      "symbol": "BELUSDT",
+      "score": 75,
+      "price": 0.10615,
+      "chg_24h": -5.8,
+      "vol_m": 7.9,
+      "oi_chg": 0.2,
+      "funding": -0.0136,
+      "short_pct": 63.4,
+      "compression": 13.4,
+      "vol_ratio": 0.2,
+      "rsi": 28.8,
+      "reasons": [
+        "空头拥挤63%",
+        "TIGHT压缩13%",
+        "量能萎缩0.20x",
+        "RSI超卖29"
+      ],
+      "scan_time": "2026-06-30T09:25:48.199422"
+    }
+  ],
+  "new_alerts": [
+    {
+      "symbol": "BELUSDT",
+      "score": 75,
+      "price": 0.10615,
+      "chg_24h": -5.8,
+      "vol_m": 7.9,
+      "oi_chg": 0.2,
+      "funding": -0.0136,
+      "short_pct": 63.4,
+      "compression": 13.4,
+      "vol_ratio": 0.2,
+      "rsi": 28.8,
+      "reasons": [
+        "空头拥挤63%",
+        "TIGHT压缩13%",
+        "量能萎缩0.20x",
+        "RSI超卖29"
+      ],
+      "scan_time": "2026-06-30T09:25:48.199422"
+    }
+  ],
+  "need_push": true
+}

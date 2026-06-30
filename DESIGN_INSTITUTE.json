@@ -1,0 +1,582 @@
+{
+  "_title": "梵天设计院档案 — 系统架构唯一真相",
+  "_version": "v13.0-dharma-v7",
+  "_created": "2026-05-15",
+  "_philosophy": "一切设计服务于交易。每个模块必须能追溯到它如何提升盈亏表现。",
+  "design_principles": {
+    "P1": "达摩院优先：新功能未经达摩院本地数据验证，不得进入主系统",
+    "P2": "单一真相：每个领域只有一个active文件，版本写内部，文件名不变",
+    "P3": "接口冻结：主系统接口一旦确定，子系统不得单方面修改",
+    "P4": "闭环记录：系统自动记录所有设计决策和实战结果，形成进化闭环",
+    "P5": "最小复杂度：能合并的功能不新建，新建前必须通过设计院6问",
+    "P6": "达摩院V7法则：15m信号不可信(PF<0.95)，所有梵天参数需Bootstrap 10万次验证后方可升级"
+  },
+  "system_hierarchy": {
+    "MASTER": {
+      "_desc": "主系统 — 交易决策核心，所有子系统服务于此",
+      "_kpi": "盈亏因子PF > 1.5，胜率 > 43%",
+      "modules": {
+        "M1_signal_chain": {
+          "desc": "信号链：数据→指标→过滤→评级→输出",
+          "files": [
+            "lana/hunter_v2/hunter_main.py",
+            "lana/hunter_v2/hunter_scanner.py"
+          ],
+          "entry": "run_once()",
+          "output": "signal_v3 契约",
+          "kpi": "信号质量CI > 35%",
+          "dharma_exp": [
+            "EXP-03"
+          ],
+          "_note": "lana_core_v3.py 已迁移为 hunter_main.py 存根接口 (2026-05-24)"
+        },
+        "M2_regime": {
+          "desc": "体制感知：8态状态机，系统第一道门禁",
+          "files": [
+            "lana/state_engine.py"
+          ],
+          "entry": "detect_state()",
+          "output": "STATE × 方向偏向 × Kelly系数",
+          "kpi": "信息增益IG > 0.002",
+          "dharma_exp": [
+            "EXP-02"
+          ]
+        },
+        "M3_exit": {
+          "desc": "出场管理：双轨出场，时间差异化止损",
+          "files": [
+            "lana/exit_engine.py"
+          ],
+          "entry": "ExitPlan() / check_exit()",
+          "output": "出场指令",
+          "kpi": "TrackA PF=1.07 / TrackB 均收益+0.67%",
+          "dharma_exp": [
+            "EXP-08"
+          ]
+        },
+        "M4_risk": {
+          "desc": "风控：日亏10%停机 / 总回撤20%熔断 / 浮盈8%锁利",
+          "files": [
+            "executor.py"
+          ],
+          "entry": "risk_check()",
+          "output": "ALLOW / HALT / LOCK",
+          "kpi": "最大回撤 < 20%",
+          "dharma_exp": []
+        },
+        "M5_execute": {
+          "desc": "执行：贝叶斯议会评分，Kelly仓位，限价单",
+          "files": [
+            "executor.py"
+          ],
+          "entry": "execute_signal()",
+          "output": "成交订单",
+          "kpi": "议会评分 > 70，滑点 < 0.1%",
+          "dharma_exp": []
+        }
+      }
+    },
+    "SUB_A_DHARMA": {
+      "_desc": "子系统A — 达摩院（研究验证节点）",
+      "_role": "所有新策略的验证闸门，产出EXP结论供主系统升级",
+      "_kpi": "每月至少完成2个EXP实验",
+      "modules": {
+        "A1_experiment_registry": {
+          "desc": "实验注册表：EXP-01~N的全生命周期管理",
+          "files": [
+            "dharma/experiments_v2.py"
+          ],
+          "entry": "ExperimentRegistry()"
+        },
+        "A2_backtest_engine": {
+          "desc": "回测引擎：本地数据节点，NumbaBacktestRunner",
+          "files": [
+            "dharma/dharma_core_v2.py",
+            "lana/lana_backtest_v3.py"
+          ],
+          "entry": "run_backtest()"
+        },
+        "A3_report": {
+          "desc": "报告生成：HTML+文字摘要，实验结论归档",
+          "files": [
+            "dharma/dharma_report.py"
+          ],
+          "entry": "generate_text_report()"
+        },
+        "A4_runner": {
+          "desc": "实验运行器：串行/并行执行EXP",
+          "files": [
+            "dharma/dharma_runner.py"
+          ],
+          "entry": "DharmaRunner()"
+        }
+      },
+      "promotion_gate": {
+        "desc": "从达摩院晋升主系统的条件",
+        "rules": [
+          "回测PF > 1.3",
+          "样本量 >= 30笔交易",
+          "前向验证通过（纸交易 >= 2周）",
+          "设计院6问检查通过",
+          "协调官--audit通过"
+        ]
+      },
+      "latest_version": "V7",
+      "V7_completed": "2026-05-19",
+      "V7_summary": {
+        "files": 80,
+        "indicators": 12,
+        "timeframes": [
+          "15m",
+          "1h",
+          "4h",
+          "1d"
+        ],
+        "bootstrap_n": 100000,
+        "runtime_sec": 262
+      }
+    },
+    "SUB_B_OPS": {
+      "_desc": "子系统B — 运维系统（系统健康守护）",
+      "_role": "保证主系统7×24稳定运行",
+      "_kpi": "系统可用率 > 99%，健检评分 > 90",
+      "modules": {
+        "B1_coordinator": {
+          "desc": "协调官v2.0：6层架构，日常健检+自愈",
+          "files": [
+            "brahma_coordinator.py"
+          ],
+          "entry": "main(--full/--heal/--audit)"
+        },
+        "B2_cron_rebind": {
+          "desc": "线程重绑：换线程一键迁移所有Cron",
+          "files": [
+            "cron_rebind.py"
+          ],
+          "entry": "main(--rebind)"
+        },
+        "B3_position_monitor": {
+          "desc": "持仓监控：移动止损，5分钟守护",
+          "files": [
+            "position_monitor.py"
+          ],
+          "entry": "run()"
+        },
+        "B4_manifest": {
+          "desc": "状态镜：实时系统快照",
+          "files": [
+            "SYSTEM_MANIFEST.json"
+          ],
+          "entry": "由协调官自动维护"
+        },
+        "B_nerve_system": {
+          "desc": "神经系统：6层感知（进程/契约/日志/行为/代码/新鲜度），主动感知系统异常",
+          "files": [
+            "nerve_system/nerve_core.py"
+          ],
+          "entry": "run_nerve()",
+          "kpi": "零漏报，误报率<5%",
+          "layers": {
+            "L0": "进程存活监控",
+            "L1": "状态契约校验",
+            "L2": "日志错误哨兵",
+            "L3": "行为异常感知",
+            "L4": "AST代码静态扫描",
+            "L5": "数据新鲜度检查"
+          }
+        }
+      }
+    },
+    "SUB_C_CONTENT": {
+      "_desc": "子系统C — 内容推送系统",
+      "_role": "对外输出市场分析、信号、教育内容",
+      "_kpi": "推送成功率 > 99%，ALWAYS_REVIEW铁律",
+      "modules": {
+        "C1_signal_push": {
+          "desc": "信号推送：钉钉2主推送，格式锁定",
+          "files": [
+            "../scripts/signal_push.py"
+          ],
+          "entry": "push_signal()"
+        },
+        "C2_market_analysis": {
+          "desc": "市场分析：BTC/ETH/SOL/BNB深度分析帖",
+          "files": [
+            "cron任务驱动"
+          ],
+          "entry": "Cron每日定时触发"
+        },
+        "C3_education": {
+          "desc": "教育内容：加密教育帖，行情快报",
+          "files": [
+            "cron任务驱动"
+          ],
+          "entry": "Cron定时触发"
+        }
+      }
+    },
+    "SUB_D_DESIGN": {
+      "_desc": "子系统D — 设计院（架构治理）",
+      "_role": "防止系统熵增，每次升级前守门，自动记录进化历史",
+      "_kpi": "零未经验证的主系统升级，零重复建设",
+      "modules": {
+        "D1_blueprint": {
+          "desc": "唯一真相：所有域定义、接口契约、cron注册表",
+          "files": [
+            "FANTAN_BLUEPRINT.json"
+          ],
+          "entry": "静态文件，所有工具读取"
+        },
+        "D2_architect": {
+          "desc": "设计师助手：升级前6问检查，影响域分析",
+          "files": [
+            "fantan_architect.py"
+          ],
+          "entry": "main(--upgrade/--scan/--impact)"
+        },
+        "D3_institute": {
+          "desc": "设计院院长：全系统架构治理，自动记录，优化建议",
+          "files": [
+            "fantan_design_institute.py"
+          ],
+          "entry": "main(--roadmap/--validate/--optimize)"
+        },
+        "D4_history": {
+          "desc": "进化档案：所有升级决策、实验结论、实战数据的历史库",
+          "files": [
+            "data/upgrade_history.json",
+            "data/design_log.json"
+          ],
+          "entry": "自动写入"
+        }
+      }
+    },
+    "SUB_D_SQUARE": {
+      "_desc": "子系统D — 广场运营体系 v2.0",
+      "_role": "内容自动化 + 实盘同步 + 增长飞轮，服务于创作者收益最大化",
+      "_kpi": "粉丝增速 >200/天，互动率 >5%，创作者挖矿积分周增长",
+      "_created": "2026-05-18",
+      "modules": {
+        "D1_live_sync": {
+          "desc": "实盘同步：开仓/止盈/止损 → 30秒内广场发帖",
+          "files": [
+            "scripts/square/square_live_sync.py"
+          ],
+          "hook": "hunter_executor._notify_open + execute_close",
+          "output": "开仓帖/止盈帖/止损帖/里程碑帖",
+          "kpi": "每笔实盘 = 1次高互动帖"
+        },
+        "D2_forecast_verify": {
+          "desc": "预测验证：昨日信号 vs 今日结果，每日9点发布",
+          "files": [
+            "scripts/square/square_forecast_verify.py"
+          ],
+          "cron": "square-daily-verify (every 24h)",
+          "output": "复盘帖（双账号差异化）",
+          "kpi": "透明度建立信任 → 跟单转化率↑"
+        },
+        "D3_engage_hooks": {
+          "desc": "互动钩子：所有帖子末尾注入提问/预测/分享触发器",
+          "files": [
+            "scripts/square/post_generator.py"
+          ],
+          "variants": "15种钩子轮换，3种强转化版本",
+          "kpi": "评论率目标 >3%"
+        },
+        "D4_streak_tracker": {
+          "desc": "连胜追踪：每5连胜触发里程碑帖",
+          "files": [
+            "scripts/square/square_live_sync.py"
+          ],
+          "state_file": "trading-system/data/square_streak.json",
+          "cron": "square-streak-check (every 24h)",
+          "kpi": "里程碑帖分享率 >10%"
+        }
+      },
+      "revenue_model": {
+        "source1": "创作者挖矿积分(BNB) ~20%",
+        "source2": "跟单返佣(交易量×费率) ~40% ← 核心",
+        "source3": "铁粉群会员费(20U门槛) ~15%",
+        "source4": "KOL广告合作(待解锁10K粉) ~15%",
+        "flywheel": "梵天盈利 → 广场实盘同步 → 粉丝增长 → 跟单量 → 返佣增加"
+      }
+    }
+  },
+  "data_flow": {
+    "_desc": "数据在三层系统中的流动路径",
+    "upstream": "Binance API → M1信号链 → M2体制感知",
+    "decision": "M1+M2 → M3出场 → M4风控 → M5执行",
+    "feedback": "M5执行结果 → signal_history.json → A2回测引擎 → A1实验注册",
+    "evolution": "A1实验结论 → D2设计师6问 → Blueprint更新 → 主系统升级",
+    "monitoring": "全链路 → B1协调官健检 → B4状态镜 → C1推送通知"
+  },
+  "dharma_validation_protocol": {
+    "_desc": "达摩院验证协议 — 新功能进入主系统的必经之路",
+    "stages": [
+      {
+        "stage": 1,
+        "name": "假设提出",
+        "owner": "设计师",
+        "output": "EXP-N 在实验注册表中创建"
+      },
+      {
+        "stage": 2,
+        "name": "本地回测",
+        "owner": "达摩院A2",
+        "data": "本地parquet历史数据（2025-01~2026-04）",
+        "pass_criteria": "PF > 1.3，样本 >= 30"
+      },
+      {
+        "stage": 3,
+        "name": "纸交易验证",
+        "owner": "主系统（paper模式）",
+        "duration": ">= 2周",
+        "pass_criteria": "实盘PF > 1.1"
+      },
+      {
+        "stage": 4,
+        "name": "设计院审批",
+        "owner": "D2设计师助手",
+        "check": "6问检查 + 接口兼容性 + ROI评估"
+      },
+      {
+        "stage": 5,
+        "name": "生产升级",
+        "owner": "协调官",
+        "check": "brahma_coordinator.py --audit 通过"
+      }
+    ]
+  },
+  "auto_optimization_rules": {
+    "_desc": "系统自动记录使用情况，触发优化建议",
+    "triggers": [
+      {
+        "condition": "连续3次健检评分下降",
+        "action": "自动生成架构优化报告"
+      },
+      {
+        "condition": "某域接口验证连续失败",
+        "action": "自动标记为需更新，推送告警"
+      },
+      {
+        "condition": "30天无新EXP实验",
+        "action": "提醒达摩院：系统进化停滞"
+      },
+      {
+        "condition": "实盘胜率连续10笔低于35%",
+        "action": "触发紧急达摩院复盘"
+      },
+      {
+        "condition": "废弃文件超过5个",
+        "action": "自动生成清理计划"
+      }
+    ]
+  },
+  "grandchild_systems": {
+    "_desc": "孙系统 — 原子级工具，单一职责",
+    "list": [
+      {
+        "name": "cron_rebind.py",
+        "parent": "SUB_B_OPS",
+        "role": "线程迁移"
+      },
+      {
+        "name": "signal_push.py",
+        "parent": "SUB_C_CONTENT",
+        "role": "信号推送"
+      },
+      {
+        "name": "fantan_architect.py",
+        "parent": "SUB_D_DESIGN",
+        "role": "6问守门"
+      },
+      {
+        "name": "fantan_design_institute.py",
+        "parent": "SUB_D_DESIGN",
+        "role": "院长治理"
+      },
+      {
+        "name": "emergency_close.py",
+        "parent": "SUB_B_OPS",
+        "role": "紧急平仓"
+      },
+      {
+        "name": "limit_stop_guardian.py",
+        "parent": "SUB_B_OPS",
+        "role": "止损守护"
+      },
+      {
+        "name": "daily_signal_report.py",
+        "parent": "SUB_C_CONTENT",
+        "role": "日报生成"
+      },
+      {
+        "name": "volatility_hunter.py",
+        "parent": "MASTER",
+        "role": "标的猎手"
+      },
+      {
+        "name": "arjuna_main.py",
+        "parent": "MASTER",
+        "role": "阿周那多源融合快速交易系统",
+        "version": "v1.0",
+        "created": "2026-05-18",
+        "signals": [
+          "S1_RSI极值",
+          "S2_成交量异动",
+          "S5_资金费率",
+          "S6_OI变化"
+        ],
+        "slots": 2,
+        "time_stop": "2-6H",
+        "regime_logic": "CHOP豁免(≥2强源共振+总分≥25)"
+      }
+    ]
+  },
+  "meta": {
+    "version": "1.0",
+    "created": "2026-05-15",
+    "last_updated": "2026-05-18",
+    "next_review": "2026-05-22",
+    "total_modules": 24,
+    "active_exps": 0,
+    "completed_exps": 4,
+    "last_change": "新增阿周那系统SUB_E_ARJUNA，多源融合超越拉娜v2"
+  },
+  "_last_updated": "2026-05-27",
+  "dharma_v7_findings": {
+    "_updated": "2026-05-19",
+    "_bootstrap": "100,000次 · 80文件 · 12指标 · 4周期",
+    "top_indicators": [
+      {
+        "name": "whale_signal",
+        "pf": 1.404,
+        "wr": 0.467,
+        "p_value": 0.0026,
+        "significant": true,
+        "best_tf": "1d(PF2.74)"
+      },
+      {
+        "name": "elliott_wave3",
+        "pf": 1.246,
+        "wr": 0.46,
+        "p_value": 0.0,
+        "significant": true,
+        "best_tf": "1d(PF1.70)"
+      },
+      {
+        "name": "anomaly_signal",
+        "pf": 1.212,
+        "wr": 0.468,
+        "p_value": 0.0,
+        "significant": true,
+        "best_tf": "1d(PF1.89)"
+      },
+      {
+        "name": "smc_structure",
+        "pf": 1.2,
+        "wr": 0.47,
+        "p_value": 0.0,
+        "significant": true,
+        "best_tf": "4h(PF1.14)"
+      },
+      {
+        "name": "ema_trend",
+        "pf": 1.104,
+        "wr": 0.473,
+        "p_value": 0.0,
+        "significant": true,
+        "best_tf": "4h(PF1.06)"
+      }
+    ],
+    "black_hole_indicators": [
+      {
+        "name": "rsi_extreme",
+        "pf": 0.683,
+        "p_value": 0.7564,
+        "significant": false,
+        "verdict": "统计无效，大幅降权"
+      },
+      {
+        "name": "bb_bounce",
+        "pf": 0.712,
+        "p_value": 0.9206,
+        "significant": false,
+        "verdict": "统计无效，降权"
+      },
+      {
+        "name": "cvd_divergence",
+        "pf": 0.97,
+        "p_value": 0.0,
+        "significant": true,
+        "verdict": "显著但亏损，信号方向有问题"
+      }
+    ],
+    "15m_verdict": {
+      "conclusion": "全线失效",
+      "all_pf": "<0.95",
+      "action": "15m权重归零，不参与评分，仅保留显示"
+    },
+    "timeframe_best": {
+      "1d": "whale_signal PF=2.74 (最强)",
+      "4h": "smc_structure PF=1.14",
+      "1h": "whale_signal PF=1.12",
+      "15m": "全线失效 PF<0.95"
+    },
+    "knn_node_predict": {
+      "btc_accuracy": 0.473,
+      "eth_accuracy": 0.512,
+      "verdict": "纯OHLCV KNN接近随机，需要订单流/链上特征才能有效"
+    },
+    "golden_rules": [
+      "日线whale大单信号是全系统最强指标(PF=2.74)",
+      "15m K线全线失效(PF<0.95)，梵天不应依赖15m信号",
+      "RSI/BB是黑洞指标(p>0.75统计无效)，梵天评分中大幅降权"
+    ]
+  },
+  "brahma_brain_calibrations": [
+    {
+      "version": "V7-calibration",
+      "date": "2026-05-19",
+      "commit": "b2e124c",
+      "changes": [
+        {
+          "file": "brahma_brain.py",
+          "dim": "维度3动量背离",
+          "change": "RSI上限17→11，各档位减半",
+          "reason": "PF=0.683 p=0.756 统计无效"
+        },
+        {
+          "file": "brahma_brain.py",
+          "dim": "维度5量能验证",
+          "change": "whale大单+6分(方向一致时)",
+          "reason": "PF=1.404全系统最强"
+        },
+        {
+          "file": "brahma_brain.py",
+          "dim": "维度5量能验证",
+          "change": "异动信号vol_spike +4分",
+          "reason": "PF=1.212 Bootstrap显著"
+        },
+        {
+          "file": "multitf_engine.py",
+          "dim": "多周期对齐",
+          "change": "15m权重 1→0",
+          "reason": "15m全周期PF<0.95全线失效"
+        },
+        {
+          "file": "multitf_engine.py",
+          "dim": "多周期对齐",
+          "change": "1H+15m对齐+4 → 1H单独+4",
+          "reason": "15m不可信不应拉高评分"
+        },
+        {
+          "file": "enhanced_signal_engine.py",
+          "dim": "CVD引擎",
+          "change": "新增vol_spike输出字段",
+          "reason": "供量能维度读取异动状态"
+        }
+      ]
+    }
+  ]
+}

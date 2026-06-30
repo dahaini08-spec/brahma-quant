@@ -1,0 +1,149 @@
+{
+  "symbol": "PARTIUSDT",
+  "created": "2026-05-13T23:32:32.400831+00:00",
+  "updated": "2026-05-13T23:32:58.309954+00:00",
+  "key_facts": [
+    "[05-13] LONG 评分:93 入场:0.0620309~0.0636053 SL:0.0603477 R:R=5.1",
+    "[05-13] 筹码位: POC=0.0629755 VAL=0.055352 VAH=0.067808",
+    "[05-13] LONG 评分:93 入场:0.0620309~0.0636053 SL:0.0603291 R:R=5.1"
+  ],
+  "recent_rounds": [
+    {
+      "ts": "2026-05-13T23:32:32.400854+00:00",
+      "signal_id": "S202605132332",
+      "direction": "LONG",
+      "entry": {
+        "low": 0.06203087,
+        "high": 0.06360525,
+        "mid": 0.06281806,
+        "worst": 0.06360525
+      },
+      "stop_loss": 0.0603477,
+      "targets": {
+        "t1": {
+          "price": 0.07174913,
+          "chg_pct": 12.8,
+          "rr": 2.5,
+          "note": "VAH突破确认位"
+        },
+        "t2": {
+          "price": 0.080264,
+          "chg_pct": 26.19,
+          "rr": 5.11,
+          "note": "等幅延伸目标"
+        },
+        "t3": {
+          "price": 0.08597925,
+          "note": "扩展目标（部分止盈后持有）"
+        }
+      },
+      "score": 93,
+      "council_approved": true,
+      "council_score": 91,
+      "council_votes": {
+        "technician": "FAIL",
+        "chips": "PASS",
+        "derivatives": "PASS",
+        "risk_control": "PASS",
+        "v85": "PASS",
+        "sentiment": "PASS",
+        "neural": "PASS"
+      },
+      "levels": {
+        "poc": 0.0629755,
+        "vah": 0.067808,
+        "val": 0.055352,
+        "hvn": [
+          0.055352,
+          0.056736,
+          0.05812,
+          0.059504,
+          0.060888
+        ],
+        "lvn": [
+          0.0539225,
+          0.0541275,
+          0.054323,
+          0.0543325,
+          0.054489
+        ]
+      },
+      "outcome": null,
+      "pnl_pct": null
+    },
+    {
+      "ts": "2026-05-13T23:32:58.309944+00:00",
+      "signal_id": "S202605132332",
+      "direction": "LONG",
+      "entry": {
+        "low": 0.06203087,
+        "high": 0.06360525,
+        "mid": 0.06281806,
+        "worst": 0.06360525
+      },
+      "stop_loss": 0.0603291,
+      "targets": {
+        "t1": {
+          "price": 0.07179563,
+          "chg_pct": 12.88,
+          "rr": 2.5,
+          "note": "VAH突破确认位"
+        },
+        "t2": {
+          "price": 0.080264,
+          "chg_pct": 26.19,
+          "rr": 5.08,
+          "note": "等幅延伸目标"
+        },
+        "t3": {
+          "price": 0.08595275,
+          "note": "扩展目标（部分止盈后持有）"
+        }
+      },
+      "score": 93,
+      "council_approved": true,
+      "council_score": 91,
+      "council_votes": {
+        "technician": "FAIL",
+        "chips": "PASS",
+        "derivatives": "PASS",
+        "risk_control": "PASS",
+        "v85": "PASS",
+        "sentiment": "PASS",
+        "neural": "PASS"
+      },
+      "levels": {
+        "poc": 0.0629755,
+        "vah": 0.067808,
+        "val": 0.055352,
+        "hvn": [
+          0.055352,
+          0.056736,
+          0.05812,
+          0.059504,
+          0.060888
+        ],
+        "lvn": [
+          0.0539225,
+          0.0541275,
+          0.054323,
+          0.0543325,
+          0.054489
+        ]
+      },
+      "outcome": null,
+      "pnl_pct": null
+    }
+  ],
+  "summary": "",
+  "win_count": 0,
+  "loss_count": 0,
+  "total_signals": 2,
+  "best_interval": null,
+  "worst_interval": null,
+  "fake_breakout_rate": 0.0,
+  "best_direction": null,
+  "interval_stats": {},
+  "monthly_bias": {},
+  "last_analysis_date": null
+}

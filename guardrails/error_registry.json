@@ -1,0 +1,23 @@
+[
+  {
+    "id": "ERR-005",
+    "title": "战绩帖使用2022-2023年历史模拟数据冒充近期真实信号对外发布",
+    "root_cause": "get_dharma_showcase()未过滤_is_simulation=True；101229条数据100%为模拟；BTC$18K/ETH$1717是2022年价格，对外宣称「近期入场信号回顾」",
+    "fix": "v3.0重写run_performance_post.py：禁止模拟数据；增加content_gate价格校对门（±50%偏差即拦截）；无实盘改为今日观望帖",
+    "severity": "CRITICAL",
+    "date": "2026-05-31",
+    "layer": "L1_content_gate",
+    "status": "FIXED",
+    "registered_at": 1780199209.7738926
+  },
+  {
+    "id": "ERR-006",
+    "title": "印象数据覆盖用户数据：ATH顶部错误",
+    "category": "data_integrity",
+    "description": "用户明确提供126,000U作为BTC顶部，系统忽略用户数据，使用训练记忆中的109,000U进行分析，导致全部底部预测偏差5,000U，并将错误数据发布至广场帖。根因：分析前未执行实时数据溯源，用印象代替查询。",
+    "trigger": "任何涉及「历史最高/顶部/ATH/底部预测」的分析",
+    "fix": "强制执行数据溯源：查fapi月线klines确认ATH，价格基准必须来自实时API",
+    "regression_note": "执行分析前必须先查询实际ATH，不得使用印象数字",
+    "added": "2026-06-04"
+  }
+]

@@ -1,0 +1,661 @@
+{
+  "_comment": "梵天系统实时状态镜 — 由协调官v2.0自动维护，每次健检后更新。人工不直接编辑。",
+  "_schema": "manifest_v1",
+  "last_updated": "2026-05-31T02:40:20.656418+00:00",
+  "updated_by": "设计院 2026-05-31",
+  "system": {
+    "blueprint_version": "v3.16",
+    "system_version": "v15.7",
+    "health_score": 98,
+    "health_grade": "S",
+    "health_trend": [
+      100,
+      100,
+      100,
+      100,
+      100,
+      100,
+      100,
+      100,
+      100,
+      100,
+      100,
+      100,
+      100,
+      100,
+      94,
+      100,
+      100,
+      96,
+      98,
+      98
+    ],
+    "active_thread": "019e0213-193a-7660-9c4a-14b8889f4efa",
+    "last_full_check": "2026-05-31T02:40:20.656418+00:00",
+    "version": "v15.7",
+    "version_detail": {
+      "main_loop": "v9.5",
+      "brahma_layer": "v3.0",
+      "hunter_lana": "v2.1",
+      "soul_params": "v11.2",
+      "blueprint": "v3.16",
+      "structure_engine": "v1.0",
+      "asset_universe": "v3.0",
+      "_note": "v15.7: 结构质量引擎 + 封禁墙拆除 + SMC入场区精准修复"
+    },
+    "system_name": "梵天",
+    "codename": "封禁拆除·结构识别·开放全市场·SMC精准入场"
+  },
+  "modules": {
+    "D1_signal_engine": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D2_state_machine": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D3_signal_filter": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D4_exit_engine": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D5_evolution_engine": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D6_portfolio_mgr": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D7_signal_router": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D8_hunter_scan": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D8b_execute_engine": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D9_executor": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D10_regime_detector": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D11_position_monitor": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D13_coordinator": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D14_commander": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D15_ws_guardian": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D16_attribution": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D17_nav_tracker": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D18_strategy_council": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D19_auto_poster": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D20_push_hub": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D21_alpha_filter": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D22_alpha_stage": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D23_alpha_scorer": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    },
+    "D24_dragon_engine": {
+      "file_exists": true,
+      "syntax_ok": true,
+      "status": "ACTIVE",
+      "note": ""
+    }
+  },
+  "crons": {
+    "total": 45,
+    "aligned": 45,
+    "misaligned": 0,
+    "coverage_pct": 100.0,
+    "missing": [],
+    "extra": [
+      "市场中报_北京18点",
+      "市场晚报_北京20点",
+      "信号复盘帖_北京22点",
+      "市场早报_北京08点",
+      "教育帖_北京12点",
+      "预测互动帖_北京15点",
+      "周报_每周一北京09点"
+    ]
+  },
+  "signals": {
+    "total": 16,
+    "open": 1,
+    "expired": 15,
+    "stale_open": 0,
+    "open_detail": [
+      {
+        "id": "S202605131454",
+        "symbol": "ETHUSDT",
+        "direction": "SHORT",
+        "entry_price": 2290.0,
+        "stop_loss": 2312.0,
+        "tp1": 2228.0,
+        "status": "OPEN",
+        "created_at": "2026-05-13T14:58:21Z",
+        "data_note": "⚠️ 信号内含exit_price=2313/LOSS字段，疑似已止损但status未更新"
+      }
+    ]
+  },
+  "positions": {
+    "total": 1,
+    "real": 0,
+    "test": 1,
+    "test_ids": [
+      "pos_test_001"
+    ],
+    "action": "PENDING_CLEANUP"
+  },
+  "data_issues": [
+    {
+      "id": "ISSUE-ELITE-CONFIG",
+      "severity": "WARN",
+      "desc": "hunter_config缺少精英框架配置(P1/P2/C1)",
+      "auto_fix": false,
+      "status": "OPEN"
+    }
+  ],
+  "health_history": [
+    {
+      "date": "2026-05-18",
+      "time": "14:41",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-18",
+      "time": "15:41",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-18",
+      "time": "15:41",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-18",
+      "time": "16:35",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-18",
+      "time": "16:41",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-18",
+      "time": "16:41",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-18",
+      "time": "17:41",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-18",
+      "time": "17:41",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-18",
+      "time": "18:35",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-18",
+      "time": "18:44",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-18",
+      "time": "18:44",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-18",
+      "time": "19:32",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-18",
+      "time": "19:43",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-18",
+      "time": "20:04",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-18",
+      "time": "20:13",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-18",
+      "time": "21:42",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-18",
+      "time": "22:05",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-18",
+      "time": "23:00",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-19",
+      "time": "07:01",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-19",
+      "time": "07:17",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-19",
+      "time": "07:34",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-19",
+      "time": "07:38",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-19",
+      "time": "12:04",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-19",
+      "time": "14:47",
+      "score": 94,
+      "grade": "A"
+    },
+    {
+      "date": "2026-05-19",
+      "time": "14:47",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-20",
+      "time": "07:01",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-20",
+      "time": "12:04",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-21",
+      "time": "07:01",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-21",
+      "time": "12:32",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-22",
+      "time": "07:01",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-23",
+      "time": "07:01",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-23",
+      "time": "08:51",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-23",
+      "time": "09:33",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-24",
+      "time": "09:33",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-24",
+      "time": "12:52",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-24",
+      "time": "15:39",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-24",
+      "time": "16:43",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-24",
+      "time": "16:43",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-25",
+      "time": "03:25",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-25",
+      "time": "09:00",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-25",
+      "time": "09:33",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-25",
+      "time": "15:25",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-26",
+      "time": "03:25",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-26",
+      "time": "09:33",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-27",
+      "time": "04:40",
+      "score": 94,
+      "grade": "A"
+    },
+    {
+      "date": "2026-05-27",
+      "time": "09:33",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-27",
+      "time": "09:33",
+      "score": 100,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-28",
+      "time": "07:51",
+      "score": 96,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-28",
+      "time": "09:33",
+      "score": 98,
+      "grade": "S"
+    },
+    {
+      "date": "2026-05-28",
+      "time": "10:19",
+      "score": 98,
+      "grade": "S"
+    }
+  ],
+  "merge_events": [
+    {
+      "date": "2026-05-20",
+      "action": "SUBSYSTEM_MERGE",
+      "description": "阿周那归档→通道F / volatility_hunter降级→utils/elasticity.py",
+      "impact": "ZERO_RUNTIME_IMPACT",
+      "by": "设计院"
+    },
+    {
+      "date": "2026-05-20",
+      "action": "TREASURY_GATE_DEPLOYED",
+      "description": "国库官上线，hunter_executor/brahma_core双写路径废弃，brahma_state统一由treasury_gate管理",
+      "impact": "双重记账根治",
+      "test_result": "11/11 PASSED"
+    }
+  ],
+  "infrastructure": {
+    "treasury_gate": {
+      "file": "treasury_gate.py",
+      "role": "唯一持仓状态管理者 · 开仓审批 · 全局敞口守卫 · 原子写入",
+      "version": "v1.0",
+      "status": "active",
+      "gates": [
+        "信号去重",
+        "同币种检查",
+        "NAV敞口50%",
+        "系统槽位",
+        "全局槽位10",
+        "测试单拦截"
+      ],
+      "deployed_at": "2026-05-20"
+    }
+  },
+  "_updated_by": "design_institute_global_fix_20260524",
+  "today_upgrades": {
+    "date": "2026-05-31",
+    "commits": [
+      "44098cb",
+      "7a22760",
+      "6ddad66",
+      "4e74d38"
+    ],
+    "upgrades": [
+      {
+        "id": "UP-2026-05-31-1",
+        "title": "评分系统失准根治 T-Score v2",
+        "commit": "44098cb",
+        "root_cause": "LTC/SOL在BEAR体制获满分但SL=0.44-0.84%在ATR噪音区，入场即止损",
+        "fix": "ATR门卫(-50/-20分) + WR封顶(LTC/SOL>150→封顶)",
+        "result": "LTC 172→125分 SL拦截 ✅ ETH 174→164分 正常入场 ✅"
+      },
+      {
+        "id": "UP-2026-05-31-2",
+        "title": "梵天大脑顶层重设计 — 结构质量引擎",
+        "commit": "7a22760",
+        "root_cause": "评分叠加38引擎但无\"结构是否真实\"的核心判断，封禁标的是错误路径",
+        "fix": "structure_quality_engine.py: S/A/B/C/X五级结构评级 + Kelly仓位 + 时间权重",
+        "result": "有FVG/OB锚点→通过, 无锚点grade<30→拒绝 ✅"
+      },
+      {
+        "id": "UP-2026-05-31-3",
+        "title": "拆除封禁墙 — 开放全市场",
+        "commit": "6ddad66",
+        "root_cause": "asset_universe白名单16个标的，500+全部D类退出，系统越来越封闭",
+        "fix": "asset_universe v3.0: PROVEN/ACTIVE/EXPLORE三档仓位，is_active()永远True",
+        "result": "HEMI/CLO等全市场标的可入场，仓位×0.25探索，结构门把关 ✅"
+      },
+      {
+        "id": "UP-2026-05-31-4",
+        "title": "全局质量提升五大落地",
+        "commit": "4e74d38",
+        "sub_fixes": [
+          "A1: ETH SMC入场区根治 — $2079→$2032(触发率4%→预期60%+)",
+          "A2: 376条历史信号结构评级(gap<0.5% WR=3% 应拒绝 / gap1.5-4% WR=100% 应入场)",
+          "A3: 动态持仓窗口(TREND:36H / BEAR_EARLY:24H / CHOP:16H)",
+          "B2: 触发概率奖励(gap≤0.3%:+15分 / ≤0.8%:+10分 / ≤1.5%:+5分)",
+          "封禁墙全面拆除 + UTC时间折扣移除"
+        ]
+      }
+    ]
+  },
+  "design_philosophy": {
+    "core": "胜败不是币的问题，是结构识别能力的问题",
+    "wrong_path": "封禁更多标的 → 系统越来越封闭 → 最终无路可走",
+    "right_path": "提升结构识别能力 → 让市场告诉我们哪里有机会",
+    "structure_axiom": {
+      "gap_0_0.5pct": "WR=3% — 无结构，必败",
+      "gap_0.5_1pct": "WR=40% — 弱结构",
+      "gap_1.5_4pct": "WR=100% — 强结构，必胜",
+      "conclusion": "gap = 结构质量的天然度量，不需要封禁标的"
+    },
+    "asset_philosophy": {
+      "old": "whitelist 16个，其余500+封禁",
+      "new": "PROVEN(10)×1.0 + ACTIVE(21)×0.65 + EXPLORE(全市场)×0.25",
+      "gate": "结构质量门(grade<30)是唯一拒绝机制"
+    }
+  },
+  "current_status": {
+    "regime": "CHOP_MID",
+    "btc": 74056,
+    "eth": 2030.8,
+    "nav": 127.37,
+    "positions": 0,
+    "signal_total": 376,
+    "wr_triggered": 51.8,
+    "oos_status": "STRONG",
+    "oos_pf": 4.401,
+    "oos_threshold": 140,
+    "last_signal": "2026-05-30T12:22 BTCUSDT SHORT 157分",
+    "note": "CHOP_MID体制正常观望，等待体制转换或评分≥140信号"
+  }
+}

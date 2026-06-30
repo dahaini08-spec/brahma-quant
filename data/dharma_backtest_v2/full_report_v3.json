@@ -1,0 +1,122 @@
+[
+  {
+    "symbol": "BTCUSDT",
+    "interval": "4h",
+    "split": "TRAIN",
+    "n": 173,
+    "wr": 66.5,
+    "pf": 1.49,
+    "roi": 70.3,
+    "dd": 32.8
+  },
+  {
+    "symbol": "BTCUSDT",
+    "interval": "4h",
+    "split": "OOS",
+    "n": 62,
+    "wr": 56.5,
+    "pf": 1.16,
+    "roi": 2.7,
+    "dd": 16.7
+  },
+  {
+    "symbol": "BTCUSDT",
+    "interval": "1h",
+    "split": "TRAIN",
+    "n": 663,
+    "wr": 66.5,
+    "pf": 1.49,
+    "roi": 250.9,
+    "dd": 19.8
+  },
+  {
+    "symbol": "BTCUSDT",
+    "interval": "1h",
+    "split": "OOS",
+    "n": 191,
+    "wr": 68.6,
+    "pf": 1.45,
+    "roi": 36.5,
+    "dd": 10.2
+  },
+  {
+    "symbol": "BTCUSDT",
+    "interval": "15m",
+    "split": "TRAIN",
+    "n": 3152,
+    "wr": 77.0,
+    "pf": 1.39,
+    "roi": 9107.2,
+    "dd": 20.6
+  },
+  {
+    "symbol": "BTCUSDT",
+    "interval": "15m",
+    "split": "OOS",
+    "n": 824,
+    "wr": 78.6,
+    "pf": 1.21,
+    "roi": 67.1,
+    "dd": 12.1
+  },
+  {
+    "symbol": "ETHUSDT",
+    "interval": "4h",
+    "split": "TRAIN",
+    "n": 177,
+    "wr": 68.4,
+    "pf": 1.42,
+    "roi": 91.9,
+    "dd": 33.6
+  },
+  {
+    "symbol": "ETHUSDT",
+    "interval": "4h",
+    "split": "OOS",
+    "n": 57,
+    "wr": 56.1,
+    "pf": 0.89,
+    "roi": 2.0,
+    "dd": 26.3
+  },
+  {
+    "symbol": "ETHUSDT",
+    "interval": "1h",
+    "split": "TRAIN",
+    "n": 594,
+    "wr": 66.3,
+    "pf": 1.55,
+    "roi": 327.4,
+    "dd": 23.2
+  },
+  {
+    "symbol": "ETHUSDT",
+    "interval": "1h",
+    "split": "OOS",
+    "n": 177,
+    "wr": 72.9,
+    "pf": 1.79,
+    "roi": 101.4,
+    "dd": 16.0
+  },
+  {
+    "symbol": "ETHUSDT",
+    "interval": "15m",
+    "split": "TRAIN",
+    "n": 3163,
+    "wr": 71.9,
+    "pf": 1.31,
+    "roi": 5178.7,
+    "dd": 28.1
+  },
+  {
+    "symbol": "ETHUSDT",
+    "interval": "15m",
+    "split": "OOS",
+    "n": 895,
+    "wr": 72.1,
+    "pf": 1.27,
+    "roi": 177.7,
+    "dd": 21.3
+  }
+]

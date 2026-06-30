@@ -1,0 +1,109 @@
+{
+  "_version": "v17.0",
+  "_updated": "2026-06-08",
+  "_note": "SSOT — 设计院唯一真相源。所有代码读此文件，禁止在代码中硬编码这些值。升级时只改此文件，然后运行 python3 sync_all.py",
+  "score": {
+    "s1_min": 140,
+    "s2_min": 120,
+    "s3_min": 100,
+    "broadcast_min": 145,
+    "fallback": 140,
+    "_comment": "s1_min=brahma门槛(adaptive_threshold), broadcast_min=新闻局/lana发帖门槛"
+  },
+  "gap_gate": {
+    "hard_reject_pct": 0.3,
+    "tier1_pct": 0.8,
+    "tier1_min_score": 165,
+    "tier2_pct": 1.5,
+    "tier2_min_score": 150,
+    "_comment": "<hard_reject硬拒 | hard~tier1需≥tier1_min | tier1~tier2需≥tier2_min | >tier2正常"
+  },
+  "bridge_gate": {
+    "min_grade": 50,
+    "_comment": "grade<min_grade一律拒绝写入信号日志"
+  },
+  "structure_gate": {
+    "zero_score_grade": 25,
+    "_comment": "grade<zero_score_grade时score清零"
+  },
+  "position": {
+    "default_sl_mult": 2.0,
+    "default_hold_hours": 20,
+    "default_rr1": 2.5,
+    "default_rr2": 4.0,
+    "max_concurrent": 3,
+    "risk_per_trade": 0.008
+  },
+  "paper_trading": {
+    "target_n": 200,
+    "min_wr": 0.5,
+    "score_lo": 100,
+    "hold_hours": 4
+  },
+  "_system": {
+    "root": "/root/.openclaw/workspace/trading-system",
+    "ws_guardian": "/root/.openclaw/workspace/trading-system/ws_guardian.py",
+    "watchdog": "/root/.openclaw/workspace/trading-system/scripts/watchdog_guardian.sh",
+    "sync_all": "/root/.openclaw/workspace/trading-system/sync_all.py",
+    "_note": "所有进程启动必须使用绝对路径，禁止相对路径"
+  },
+  "instruments": {
+    "_comment": "合约精度+手续费 — 来源Binance exchangeInfo。makerFee/takerFee为普通用户标准费率（VIP另算）",
+    "_updated": "2026-06-08",
+    "BTCUSDT": {
+      "tick": 0.1,
+      "step": 0.001,
+      "min_notional": 50,
+      "takerFee": 0.0004,
+      "makerFee": 0.0002
+    },
+    "ETHUSDT": {
+      "tick": 0.01,
+      "step": 0.001,
+      "min_notional": 20,
+      "takerFee": 0.0004,
+      "makerFee": 0.0002
+    },
+    "DOGEUSDT": {
+      "tick": 1e-05,
+      "step": 1,
+      "min_notional": 5,
+      "takerFee": 0.0004,
+      "makerFee": 0.0002
+    },
+    "SOLUSDT": {
+      "tick": 0.01,
+      "step": 0.01,
+      "min_notional": 5,
+      "takerFee": 0.0004,
+      "makerFee": 0.0002
+    },
+    "BNBUSDT": {
+      "tick": 0.01,
+      "step": 0.01,
+      "min_notional": 5,
+      "takerFee": 0.0004,
+      "makerFee": 0.0002
+    },
+    "LINKUSDT": {
+      "tick": 0.001,
+      "step": 0.01,
+      "min_notional": 5,
+      "takerFee": 0.0004,
+      "makerFee": 0.0002
+    },
+    "ADAUSDT": {
+      "tick": 0.0001,
+      "step": 1,
+      "min_notional": 5,
+      "takerFee": 0.0004,
+      "makerFee": 0.0002
+    }
+  },
+  "rr": {
+    "_comment": "含双边手续费的精确RR计算参数",
+    "fee_rounds": 2,
+    "default_fee": 0.0004,
+    "min_rr_net": 1.5
+  }
+}

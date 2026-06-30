@@ -1,0 +1,161 @@
+{
+  "version": "v11.1-final",
+  "updated": "2026-05-15",
+  "data_basis": "达摩院19568节点×8年全量验证",
+  "rsi_extreme_long": 25,
+  "rsi_extreme_short": 75,
+  "rsi_priority_long": 20,
+  "rsi_4h_neutral_lo": 40,
+  "rsi_4h_neutral_hi": 60,
+  "rsi_4h_reversal": 35,
+  "atr_low_threshold": 0.33,
+  "bb_width_min": 0.06,
+  "kelly_base": 0.03,
+  "kelly_extreme_top": 0.05,
+  "kelly_extreme_std": 0.03,
+  "kelly_strong_top": 0.0,
+  "kelly_strong_std": 0.0,
+  "max_positions": 20,
+  "max_nav_exposure": 0.5,
+  "peak_drawback": 0.5,
+  "sl_extreme_pct": 0.03,
+  "sl_strong_pct": 0.02,
+  "time_stop_extreme": 8,
+  "time_stop_strong": 8,
+  "signal_ci_min": 0.34,
+  "min_strength": "EXTREME",
+  "evolution_trigger": 30,
+  "tier_s": [
+    "avaxusdt",
+    "xrpusdt",
+    "atomusdt",
+    "dogeusdt"
+  ],
+  "tier_a": [
+    "bnbusdt",
+    "solusdt",
+    "nearusdt",
+    "dotusdt",
+    "aptusdt"
+  ],
+  "tier_b": [
+    "injusdt",
+    "tiausdt",
+    "arbusdt",
+    "opusdt",
+    "ltcusdt"
+  ],
+  "blacklist": [
+    "btcusdt",
+    "ethusdt",
+    "adausdt",
+    "linkusdt",
+    "suiusdt"
+  ],
+  "regime_kelly_mul": {
+    "CHOP_HIGH": 1.2,
+    "RECOVERY": 1.1,
+    "BEAR_CRASH": 0.8,
+    "BULL_ETF": 0.9,
+    "BULL_EARLY": 0.5,
+    "BULL_PEAK": 0.4,
+    "BEAR_TREND": 0.0,
+    "BEAR_TRANS": 0.3
+  },
+  "regime_direction_ban": {
+    "BULL_EARLY": [
+      "做多"
+    ],
+    "BULL_PEAK": [
+      "做空"
+    ],
+    "BEAR_TREND": [
+      "做多",
+      "做空"
+    ]
+  },
+  "sym_wr_verified": {
+    "avaxusdt_做多": 0.6,
+    "xrpusdt_做多": 0.447,
+    "atomusdt_做空": 0.444,
+    "xrpusdt_做空": 0.441,
+    "dogeusdt_做空": 0.423,
+    "bnbusdt_做多": 0.417,
+    "solusdt_做空": 0.4,
+    "dogeusdt_做多": 0.4,
+    "nearusdt_做多": 0.4,
+    "suiusdt_ALL": 0.259
+  },
+  "_version": "v11.0",
+  "_evolution_count": 2,
+  "_last_evolution": "2026-05-17T14:15:23.911449+00:00",
+  "_total_trades": 50,
+  "live_win_rate": 0.34,
+  "live_pf": 0.78,
+  "live_avg_win_pct": 3.23,
+  "live_avg_loss_pct": 2.97,
+  "_fixed_at": "2026-05-16T04:15:14.505013+00:00",
+  "_fixed_reason": "补齐evolution_engine所需字段名（v:v11.1→_version,_evolution_count等）",
+  "dharma_node_bear_rsi_long": {
+    "validated_at": "2026-05-17",
+    "data": "22币×1H×8年×969248行",
+    "trigger": "实战矛盾：BEAR_CRASH体制下RSI=9.5开多单被否定，验证真实规律",
+    "key_findings": {
+      "BEAR_CRASH+RSI<10+LONG": {
+        "pf": 4.269,
+        "wr": 73.0,
+        "n": 141,
+        "avg_pnl": "+2.848%",
+        "hold": "8H",
+        "ci90": [
+          2.045,
+          3.56
+        ],
+        "verdict": "强正期望 ✅ — 历史最优做多组合之一"
+      },
+      "BEAR_CRASH+RSI<15+LONG": {
+        "pf": 1.423,
+        "wr": 53.1,
+        "n": 747,
+        "avg_pnl": "+0.680%",
+        "hold": "8H",
+        "ci90": [
+          0.333,
+          0.96
+        ],
+        "verdict": "正期望 ✅"
+      },
+      "BEAR_CRASH+RSI<20+LONG": {
+        "pf": 1.134,
+        "wr": 48.7,
+        "n": 2761,
+        "avg_pnl": "+0.209%",
+        "hold": "8H",
+        "ci90": [
+          0.066,
+          0.367
+        ],
+        "verdict": "弱正期望 ✅ 但边际"
+      }
+    },
+    "corrected_rule": {
+      "old_rule": "BEAR_CRASH + 做多 = 负期望，禁止（PF=0.696）",
+      "new_rule": "BEAR_CRASH + RSI<15 + 做多 = 正期望（PF>1.2），允许",
+      "condition": "RSI必须低于15（极端超卖），不是RSI<30泛化做多",
+      "regime_context": "体制分类粒度问题：旧规则的PF=0.696是RSI全范围，非极端RSI"
+    },
+    "action": {
+      "hunter_filter": "BEAR_CRASH+RSI<15 允许做多，Kelly×0.7（保守）",
+      "main_system": "BEAR_CRASH体制下 RSI<15 额外+10分激励",
+      "risk": "RSI>=15时BEAR_CRASH做多仍需谨慎（PF仅1.07~1.13）"
+    }
+  },
+  "_last_evo_at_count": 50,
+  "_last_verdict": {
+    "dharma_predicted_wr": 41.6,
+    "live_actual_wr": 34.0,
+    "divergence_pct": 18.3,
+    "alignment": "⚠️ 页差（10-20％），建议检查信号质量",
+    "recommend": "建议人工审查EXP-03门槛"
+  }
+}

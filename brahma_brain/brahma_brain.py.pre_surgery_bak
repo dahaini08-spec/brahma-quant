@@ -1,0 +1,2543 @@
+"""
+brahma_brain.py · 梵天分析大脑主入口  VERSION = v3.0
+brahma_brain · Phase 1 完整整合
+
+调用流程：
+  1. market_state.py  → 多框架趋势 + 体制 + 关键位
+  2. smc_engine.py    → BOS/CHoCH/OB/FVG/流动性
+  3. confluence_score → 150分共振评分
+  4. 输出精确交易参数 + 钉钉1格式文本
+"""
+import os, sys, time
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BASE_DIR)
+sys.path.insert(0, os.path.join(BASE_DIR, '..'))
+
+from data_cache        import prefetch_symbol, get_klines, klines_to_ohlcv
+from market_state      import analyze   as ms_analyze
+from smc_engine        import analyze_smc
+from divergence_engine import divergence_score
+from volume_engine     import volume_score
+from options_engine    import sentiment_score, analyze_funding_trend
+from elliott_engine    import analyze_elliott, format_elliott
+try:
+    from onchain_engine import onchain_score as _onchain_score
+    _ONCHAIN_OK = True
+except Exception:
+    _ONCHAIN_OK = False
+try:
+    from pattern_engine import pattern_score as _pattern_score
+    _PATTERN_OK = True
+except Exception:
+    _PATTERN_OK = False
+try:
+    from order_flow_engine import order_flow_score as _order_flow_score
+    _OF_OK = True
+except Exception:
+    _OF_OK = False
+try:
+    from macro_engine import macro_score as _macro_score
+    _MACRO_OK = True
+except Exception:
+    _MACRO_OK = False
+try:
+    from harmonic_engine import harmonic_score as _harmonic_score
+    _HARMONIC_OK = True
+except Exception:
+    _HARMONIC_OK = False
+try:
+    from multitf_engine import multitf_score as _multitf_score
+    _MULTITF_OK = True
+except Exception:
+    _MULTITF_OK = False
+try:
+    from enhanced_signal_engine import enhanced_score as _enhanced_score
+    _ENHANCED_OK = True
+except Exception:
+    _ENHANCED_OK = False
+try:
+    from whale_engine import whale_score as _whale_score
+    _WHALE_OK = True
+except Exception:
+    _WHALE_OK = False
+try:
+    from cross_market_engine import cross_market_score as _cross_market_score
+    _CROSS_OK = True
+except Exception:
+    _CROSS_OK = False
+try:
+    from microstructure_engine import microstructure_score as _micro_score
+    _MICRO_OK = True
+except Exception:
+    _MICRO_OK = False
+
+# ═══════════════════════════════════════════════════════════════
+# 150分共振评分器（Phase 1 内置版）
+# ═══════════════════════════════════════════════════════════════
+
+def confluence_score(ms: dict, smc: dict, signal_dir: str,
+                     extra_data: dict = None) -> dict:
+    """
+    150分共振评分引擎
+    基于 skills/ta-engine/references/analysis_engine.md
+    """
+    score = 0
+    breakdown = {}
+
+    # [UP-TRAIN10K] T01 Bootstrap置信等级表（达摩院1万次训练验证）
+    # 信号质量排名: 量价配合(B,PF=1.277) > MACD金叉(B) > EMA趋势(C) > MACD零轴(C)
+    # WR主导信号: MACD背离(A,52.8%) | RSI(A,53.3%) | 布林带(A,53.1%)
+    # PF主导信号: 量价配合(B,1.277) — 蒙特卡洛10000次选出的核心信号
+    # 实盘层使用: breakdown中记录Bootstrap置信等级供analyze()参考
+    _boot_grades = {
+        '量价配合': 'B',      # PF=1.277 CI=[1.25,1.31] ← 最可靠
+        'MACD金叉死叉': 'B',  # PF=1.046 CI=[1.02,1.08]
+        'EMA趋势顺势': 'C',   # PF=1.121 CI=[1.07,1.18]
+        'MACD零轴位置': 'C',  # PF=1.096 CI=[1.05,1.15]
+        'MACD背离': 'A',      # WR=52.8% CI=[52.1%,53.5%] (WR优先)
+        'RSI超卖超买': 'A',   # WR=53.3% (WR优先)
+        '布林带反弹': 'A',    # WR=53.1% (WR优先)
+    }
+    breakdown['_T01_boot_ref'] = 'QP(B)>EMA(C)>ML(C)>MACD_div(A-WR)'
+
+    # ── 维度1：趋势一致性（0~20）──────────────────────────────
+    # [D01达摩院实训] CHOP体制下逆向0分→给中性基础分，避免LONG/SHORT天壤之别
+    consensus = ms['trend']['consensus']['consensus']
+    adx_1h = ms['trend']['1h']['adx']
+    _regime_str = ms.get('regime', '')
+    _is_chop = 'CHOP' in str(_regime_str).upper()
+    s1 = 0
+    if signal_dir == 'LONG':
+        if consensus == 'FULL_BULL':   s1 = 20
+        elif consensus == 'LEAN_BULL': s1 = 15
+        elif consensus == 'MIXED_BULL':s1 = 10
+        elif consensus == 'NEUTRAL':    s1 = 6   # [v12.6] 5->6
+        elif consensus == 'MIXED_BEAR': s1 = 4 if _is_chop else 2  # [v12.6] CHOP逆向4分
+        elif _is_chop:                  s1 = 4   # [v12.6] 3->4
+        else:                           s1 = 0
+    else:
+        if consensus == 'FULL_BEAR':    s1 = 20
+        elif consensus == 'LEAN_BEAR':  s1 = 15
+        elif consensus == 'MIXED_BEAR': s1 = 10
+        elif consensus == 'NEUTRAL':    s1 = 6   # [v12.6] 5->6
+        elif consensus == 'MIXED_BULL': s1 = 4 if _is_chop else 2  # [v12.6] CHOP逆向4分
+        elif _is_chop:                  s1 = 4   # [v12.6] 3->4
+        else:                           s1 = 0
+    if adx_1h > 30: s1 = min(s1 + 3, 20)
+    score += s1
+    breakdown['趋势一致性'] = s1
+
+    # ── 维度2：关键位精确度（0~20）─────────────────────────────
+    price = ms['price']
+    fib   = ms['key_levels']['fib']
+    s2    = 0
+    for fib_key, fib_val in [('0.618',5),('0.786',4),('0.382',3),('0.500',3)]:
+        if fib_key in fib:
+            dist = abs(price - fib[fib_key]) / price
+            if dist < 0.005:   s2 += fib_val
+            elif dist < 0.015: s2 += max(fib_val - 2, 0)
+    ob = smc['order_blocks']
+    if signal_dir == 'LONG' and ob.get('nearest_bull_ob'):
+        d = abs(ob['nearest_bull_ob']['dist_pct'])
+        s2 += 5 if d < 0.5 else (3 if d < 1.5 else 0)
+    if signal_dir == 'SHORT' and ob.get('nearest_bear_ob'):
+        d = abs(ob['nearest_bear_ob']['dist_pct'])
+        s2 += 5 if d < 0.5 else (3 if d < 1.5 else 0)
+    # FVG
+    fvg = smc['fvg']
+    if signal_dir == 'LONG' and fvg.get('nearest_bull'):
+        d = abs(fvg['nearest_bull']['mid'] - price) / price * 100
+        s2 += 4 if d < 0.5 else (2 if d < 1.5 else 0)
+    if signal_dir == 'SHORT' and fvg.get('nearest_bear'):
+        d = abs(fvg['nearest_bear']['mid'] - price) / price * 100
+        s2 += 4 if d < 0.5 else (2 if d < 1.5 else 0)
+    s2 = min(s2, 20)
+    score += s2
+    breakdown['关键位精确度'] = s2
+
+    # ── 维度3：动量背离确认（0~20）─────────────────────────────
+    # [达摩院v12.9c] RSI彻底改为状态描述，不参与评分
+    # 统计：PF=0.683 p=0.756，RSI单独入场指标无效（517样本验证）
+    # RSI仅在输出报告中提示超买/超卖区间，评分固定0分
+    mom  = ms['momentum']
+    rsi1 = mom['rsi_1h']
+    rsi4 = mom['rsi_4h']
+    rsid = mom['rsi_1d']
+    # RSI状态描述（不评分，仅供报告使用）
+    def _rsi_state(v):
+        if v >= 70: return f'超买({v:.0f})'
+        if v <= 30: return f'超卖({v:.0f})'
+        return f'中性({v:.0f})'
+    breakdown['RSI状态描述'] = f'1H:{_rsi_state(rsi1)} 4H:{_rsi_state(rsi4)} 1D:{_rsi_state(rsid)}'
+    s3_rsi = 0  # [v12.9c] RSI评分归零，改为纯状态描述
+
+    # Phase 2：背离检测引擎加分
+    s3_div = 0
+    if extra_data:
+        div_res = extra_data.get('divergence')
+        if div_res:
+            # FIX: 优先用新字段score，兼容旧字段
+            if 'score' in div_res:
+                s3_div = div_res.get('score', 0)
+            elif signal_dir == 'LONG':
+                s3_div = div_res.get('score_long', 0)
+            else:
+                s3_div = div_res.get('score_short', 0)
+            s3_div = min(s3_div, 12)
+        # [D03实训修复] CVD方向加分：主动买卖方向与信号一致额外+2
+        enh_res = extra_data.get('enhanced')
+        if enh_res:
+            _cvd = enh_res.get('breakdown', {}).get('cvd', 0)
+            if _cvd > 0:  # CVD与信号方向一致（enhanced已按方向处理）
+                s3_div = min(s3_div + 2, 14)
+
+    # [UP-TRAIN10K] T04体制矩阵实训: CHOP体制MACD背离PF=1.628最强
+    # 达摩院1万次训练验证: CHOP+MACD背离是全体制最优组合
+    _chop_macd_bonus = 0
+    if 'CHOP' in str(ms.get('regime', '')).upper() and s3_div >= 6:
+        _chop_macd_bonus = 4  # CHOP体制背离信号额外+4分
+        breakdown['CHOP背离奖励'] = f'+4 (CHOP+背离T04验证PF=1.628)'
+    s3 = min(s3_rsi + s3_div + _chop_macd_bonus, 20)
+    score += s3
+    breakdown['动量背离'] = s3
+
+    # ── 维度4：SMC结构支持（0~20）──────────────────────────────
+    s4 = smc['score']['score']
+    score += s4
+    breakdown['SMC结构'] = s4
+
+    # ── 维度5：量能验证（0~20）─────────────────────────────────
+    bb  = mom['bb']
+    s5  = 0
+    if signal_dir == 'LONG':
+        if bb.get('pos', 0.5) < 0.2:   s5 += 6
+        elif bb.get('pos', 0.5) < 0.3: s5 += 3
+    else:
+        if bb.get('pos', 0.5) > 0.8:   s5 += 6
+        elif bb.get('pos', 0.5) > 0.7: s5 += 3
+    if bb.get('width', 0) < 0.04: s5 += 4
+    atr_pct = mom['atr_pct']
+    if 0.3 < atr_pct < 1.5: s5 += 3
+    lsr = ms['sentiment']['long_short_ratio']
+    if signal_dir == 'LONG' and lsr < 35:  s5 += 4
+    if signal_dir == 'SHORT' and lsr > 70: s5 += 4
+
+    # [UP-TRAIN10K] QEW质量环境权重: 趋势期量能更可靠(T02:量价配合100%权重)
+    # 达摩院1万次训练: QEW趋势期×1.15, CHOP期×0.85（系统回测ETH+0.013 SOL+0.051）
+    _qew_regime = str(ms.get('regime', '')).upper()
+    _qew_mult = 1.15 if any(x in _qew_regime for x in ['BULL_TREND','BULL_PEAK','BEAR_TREND','BEAR_CRASH'])                 else (0.85 if 'CHOP' in _qew_regime else 1.0)
+    if _qew_mult != 1.0:
+        breakdown['QEW权重'] = f'×{_qew_mult} ({_qew_regime[:12]})'
+
+    # [达摩院v12.9c] OBV方向验证加分（OBV命中率61.5%，517样本）
+    # [FIX-OBV 2026-05-27] 改用4H 20根 + 累积OBV趋势（原1H 5根过于短视）
+    # 逻辑：近20根4H OBV累积值反映机构方向，比1H短期噪音更稳定
+    try:
+        _4h_c = extra_data.get('_k4h_closes', []) if extra_data else []
+        _4h_v = extra_data.get('_k4h_volumes', []) if extra_data else []
+        # 回退到1H数据
+        if len(_4h_c) < 6:
+            _4h_c = ms.get('raw_closes', [])
+            _4h_v = ms.get('raw_volumes', [])
+        if _4h_c and _4h_v and len(_4h_c) >= 6:
+            _n = min(20, len(_4h_c))
+            _obv = 0
+            _obv_mid = 0  # 前半段OBV（趋势方向判断）
+            for _i in range(len(_4h_c) - _n, len(_4h_c)):
+                _delta = _4h_c[_i] - _4h_c[_i-1] if _i > 0 else 0
+                _wt = abs(_delta) / (_4h_c[_i] + 1e-9) * _4h_v[_i]  # 价格变化加权
+                if _4h_c[_i] > _4h_c[_i-1]:   _obv += _wt
+                elif _4h_c[_i] < _4h_c[_i-1]: _obv -= _wt
+                if _i < len(_4h_c) - _n // 2:  _obv_mid += (_wt if _4h_c[_i] > _4h_c[_i-1] else -_wt if _4h_c[_i] < _4h_c[_i-1] else 0)
+            _obv_bullish = _obv > 0
+            # 趋势加速：OBV绝对值增大且方向一致 → 额外+2
+            _obv_accelerating = (_obv > 0 and _obv > _obv_mid * 1.1) or (_obv < 0 and _obv < _obv_mid * 1.1)
+            if (signal_dir == 'LONG' and _obv_bullish) or \
+               (signal_dir == 'SHORT' and not _obv_bullish):
+                _obv_add = 6 if _obv_accelerating else 4
+                s5 += _obv_add
+                breakdown['OBV方向'] = f'✅ 与{signal_dir}同向 +{_obv_add}{" (加速)" if _obv_accelerating else ""}'
+            else:
+                breakdown['OBV方向'] = f'⚠️ OBV反向(0分)'
+        else:
+            breakdown['OBV方向'] = 'N/A(无原始数据)'
+    except Exception as _obv_e:
+        breakdown['OBV方向'] = f'N/A({str(_obv_e)[:30]})'
+
+    # Phase 2：量能引擎加分
+    # [达摩院V7校准 2026-05-19] whale_signal PF=1.404 全系统最强，异动信号 PF=1.212
+    # 新增：鲸鱼大单加分+6，异动信号加分+4（原来限制日线最强 PF=2.74）
+    if extra_data:
+        vol_res = extra_data.get('volume')
+        if vol_res:
+            s5 += min(vol_res.get('score', 0), 6)
+        # whale 大单特征加分（直接处理量能引擎输出）
+        whale_res = extra_data.get('whale')
+        if whale_res:
+            whale_dir = whale_res.get('direction', '')  # 'BUY' 或 'SELL'
+            if (signal_dir == 'LONG' and whale_dir == 'BUY') or \
+               (signal_dir == 'SHORT' and whale_dir == 'SELL'):
+                s5 += min(whale_res.get('score', 0) * 6 // 15, 6)  # whale最大加+6
+        # 异动信号加分（量價齐发）
+        enh_res = extra_data.get('enhanced')
+        if enh_res and enh_res.get('vol_spike'):
+            s5 += 4  # 异动：2sigma量價齐发 +4
+
+    # 应用QEW乘数（体制质量权重，T02训练结论）
+    s5 = min(int(s5 * _qew_mult), 20)
+    score += s5
+    breakdown['量能验证'] = s5
+
+    # ── 维度6：形态成熟度（0~20）───────────────────────────────
+    wave  = ms['wave']
+    regime = ms['regime']
+    s6 = 0
+    if signal_dir == 'LONG':
+        if wave.get('wave') in ('C_WAVE_END', '4W_OR_2W'): s6 += 8
+        if regime in ('CHOP_LOW', 'BEAR_RECOVERY'):          s6 += 5
+        if wave.get('bias') == 'LONG':                       s6 += 4
+    else:  # SHORT
+        if wave.get('wave') in ('5W_TOP', 'B_WAVE'):         s6 += 8
+        if regime in ('CHOP_HIGH', 'BULL_PEAK', 'BEAR_RECOVERY'): s6 += 5
+        if wave.get('bias') == 'SHORT':                      s6 += 4
+        # [D06实训修复] 做空时CORRECTION_ABC也是有利位置（浪B顶部做空）
+        if wave.get('wave') in ('CORRECTION_ABC', 'B_WAVE_TOP'): s6 = max(s6, 8)
+
+    # Phase 3: Elliott 精确波浪引擎覆盖
+    if extra_data and extra_data.get('elliott'):
+        ew = extra_data['elliott']
+        s6_ew = ew.get('score', 0)  # 0~15
+        # 最佳浪位额外奖励
+        if ew.get('wave_pos') in ('WAVE2_COMPLETED', 'CORRECTION_C_WAVE'):
+            s6_ew = min(s6_ew + 5, 20)
+        if ew.get('confidence', 0) >= 70:
+            s6_ew = min(s6_ew + 3, 20)
+        s6 = max(s6, s6_ew)
+
+    # P2a：pattern_engine 形态门派覆盖
+    if extra_data and extra_data.get('pattern'):
+        pt = extra_data['pattern']
+        s6_pat = pt.get('score', 0)  # 0~15
+        s6 = max(s6, s6_pat)
+
+    s6 = min(s6, 20)
+    score += s6
+    breakdown['形态成熟度'] = s6
+
+    # ── 维度7：清算带/OI（0~10）────────────────────────────────
+    oi  = ms['sentiment']['oi']
+    s7  = 0
+    # P0修复 2026-05-21: 移除「OI有数据就+3」的错误逻辑
+    # [P2 2026-05-22] OI动量替代：方向一致的OI变化才加分
+    oi_chg = ms['sentiment'].get('oi_change_pct', 0.0)
+    oi_mom = ms['sentiment'].get('oi_momentum', 'NEUTRAL')
+    # OI增加+价格顺势 = 确认信号；OI增加+价格逆势 = 警告
+    if signal_dir == 'LONG' and oi_mom == 'INCREASING' and oi_chg > 1.0:
+        s7 += 4   # 多头持仓增加，资金流入确认
+    elif signal_dir == 'SHORT' and oi_mom == 'DECREASING' and oi_chg < -1.0:
+        s7 += 4   # 持仓减少，多头出逃确认空头
+    elif oi_mom == 'NEUTRAL':
+        s7 += 1   # 中性，轻微加分
+    # 流动性猎杀方向
+    liq = smc['liquidity']
+    if signal_dir == 'LONG' and liq.get('nearest_below'):
+        d = liq['nearest_below']['dist_pct']
+        if d < 0.3: s7 += 7
+        elif d < 1.0: s7 += 3
+    if signal_dir == 'SHORT' and liq.get('nearest_above'):
+        d = liq['nearest_above']['dist_pct']
+        if d < 0.3: s7 += 7
+        elif d < 1.0: s7 += 3
+    # P2c: 订单流额外加分
+    if extra_data and extra_data.get('order_flow'):
+        of_bonus = min(extra_data['order_flow'].get('score', 0) // 3, 5)
+        s7 = min(s7 + of_bonus, 15)
+    else:
+        s7 = min(s7, 10)
+    score += s7
+    breakdown['清算/OI'] = s7
+
+    # ── 维度8：资金费率+情绪+链上（0~15）────────────────────────────
+    # [UP-017] CoinGlass 链上评分接入
+    if extra_data.get('coinglass') and extra_data['coinglass'].get('available'):
+        _cg_d = extra_data['coinglass']
+        # 链上评分直接叠加（-10~+10 → 映射到 0~5）
+        _oc_bonus = max(0, min(5, extra_data.get('onchain_score', 0) + 2))
+        # F&G 极度恐惧做多+3，极度贪婪做空+3
+        _fg_label = _cg_d['fear_greed']['label']
+        if signal_dir == 'LONG' and _fg_label in ('EXTREME_FEAR', 'FEAR'):
+            _oc_bonus += 2
+        elif signal_dir == 'SHORT' and _fg_label in ('EXTREME_GREED', 'GREED'):
+            _oc_bonus += 2
+        # 清算方向确认
+        _liq_bias = _cg_d['liquidation']['bias']
+        if signal_dir == 'LONG' and _liq_bias == 'BULLISH_SQUEEZE':
+            _oc_bonus += 2   # 大量空头被清算，多头信号确认
+        elif signal_dir == 'SHORT' and _liq_bias == 'BEARISH_CONFIRMED':
+            _oc_bonus += 2
+    else:
+        _oc_bonus = 0
+    # ── 维度8：资金费率+情绪（0~10）──────────────────────────────
+    fr = ms['sentiment']['funding_rate']
+    if extra_data and extra_data.get('sentiment'):
+        s8_base = extra_data['sentiment'].get('score', 0)
+    else:
+        s8_base = 0
+        # [D08实训修复] fr单位为小数百分比(0.001=0.1%/8h)，原阈值0.1=10%永远达不到
+        # 正常ETH/BTC费率范围：0.0001(0.01%)~0.005(0.5%)，极端时可达0.01(1%)
+        if signal_dir == 'LONG':
+            if fr < -0.003:   s8_base = 10  # -0.3%/8h 极度空头拥挤，多头极有利
+            elif fr < -0.001: s8_base = 7   # -0.1%/8h 空头付息
+            elif fr < -0.0003:s8_base = 5   # -0.03%/8h 轻度有利
+            elif fr < 0.0001: s8_base = 3   # 接近0，中性偏有利
+        else:  # SHORT
+            if fr > 0.005:    s8_base = 10  # 0.5%/8h 极度多头拥挤，空头极有利
+            elif fr > 0.003:  s8_base = 8   # 0.3%/8h 高费率
+            elif fr > 0.001:  s8_base = 6   # 0.1%/8h 偏高费率
+            elif fr > 0.0003: s8_base = 4   # 0.03%/8h 正常偏高
+            elif fr > 0.0001: s8_base = 2   # 0.01%/8h 轻微多头付息
+    # P1b: 链上引擎额外加成（最多+10分）
+    onchain_bonus = 0
+    if extra_data and extra_data.get('onchain'):
+        oc = extra_data['onchain']
+        onchain_bonus = min(int(oc.get('score', 0) / 3), 10)
+    # P1c: 合约基差加分（正基差→合约溢价/反向有利）
+    basis_bonus = 0
+    if extra_data and extra_data.get('basis'):
+        _b = extra_data['basis']
+        _basis_pct = float(_b.get('basis_pct', 0))
+        if signal_dir in ('SHORT', '做空'):
+            # 正基差（合约溢价）→ 多头溢价，空头有利
+            if _basis_pct > 0.08:    basis_bonus = 3
+            elif _basis_pct > 0.04:  basis_bonus = 2
+            elif _basis_pct > 0.01:  basis_bonus = 1
+            elif _basis_pct < -0.04: basis_bonus = -1  # 已折价，空头不利
+        else:
+            # 负基差（合约折价）→ 空头溢价，多头有利
+            if _basis_pct < -0.08:   basis_bonus = 3
+            elif _basis_pct < -0.04: basis_bonus = 2
+            elif _basis_pct < -0.01: basis_bonus = 1
+            elif _basis_pct > 0.04:  basis_bonus = -1  # 已溢价，多头不利
+    s8 = min(s8_base + onchain_bonus + basis_bonus + _oc_bonus, 20)  # [UP-017] +CoinGlass链上
+    score += s8
+    breakdown['情绪/费率'] = s8
+
+    # ── 维度9：时段权重（精细化）─────────────────────────────────
+    import datetime
+    hour = datetime.datetime.utcnow().hour
+    if extra_data and extra_data.get('enhanced'):
+        en = extra_data['enhanced']
+        s9 = en.get('breakdown', {}).get('session', 4)
+        lsr_bonus = min(en.get('breakdown', {}).get('lsr_trend', 0), 5)
+        cvd_bonus = min(en.get('breakdown', {}).get('cvd', 0), 4)
+        s9 = min(s9 + lsr_bonus + cvd_bonus, 20)
+    else:
+        top_hours = {17,6,5,13,16,19,12,8,11,3,4}
+        if 13 <= hour <= 15:   s9 = 10
+        elif 13 <= hour <= 21: s9 = 8
+        elif 7 <= hour <= 15:  s9 = 6
+        else:                  s9 = 4
+        if hour in top_hours:  s9 = min(s9 + 2, 10)
+    if extra_data and extra_data.get('macro'):
+        mc_bonus = min(extra_data['macro'].get('score', 0) // 4, 3)
+        s9 = min(s9 + mc_bonus, 20)
+    # A7: ATR历史百分位（波动率体制）
+    if extra_data and extra_data.get('atr_percentile'):
+        _atr_p = extra_data['atr_percentile']
+        _atr_adj = int(_atr_p.get('score_adj', 0))
+        # COMPRESSED: 低波动压缩，不管方向都加分（爆发在即）
+        # EXPANDED: 高波动已爆，追入惩罚
+        s9 = min(max(s9 + _atr_adj, 0), 20)
+    score += s9
+    breakdown['时段权重'] = s9
+
+    # ── 维度10(NEW)：谐波PRZ + 多周期对齐 ───────────────────────
+    # [D10实训修复] 谐波方向冲突惩罚：best_dir != signal_dir时减分而非无脑加分
+    s10 = 0
+    if extra_data and extra_data.get('harmonic'):
+        _harm = extra_data['harmonic']
+        _harm_sc = _harm.get('score', 0)
+        _best_dir = _harm.get('best', {}).get('direction', '') if _harm.get('best') else ''
+        _in_prz   = _harm.get('best', {}).get('in_prz', False) if _harm.get('best') else False
+        if _best_dir == signal_dir:
+            # 方向一致：全额加分
+            s10 += min(_harm_sc, 10)
+        elif _best_dir and _best_dir != signal_dir:
+            # 方向冲突：PRZ区间内明显扣分，未命中PRZ轻微扣
+            if _in_prz:
+                s10 += -3  # PRZ内反向谐波：明确看涨/空，信号反向要小心
+            else:
+                s10 += 0   # 远离PRZ：忽略，不加不减
+        else:
+            s10 += min(_harm_sc // 2, 5)  # 无方向：给一半分
+        _has_harm = bool(_harm.get('patterns'))
+    # [D10 v12.6] 无谐波时：斐波那契回撤位基础分（0~4），解决覆盖率低问题
+    if not (_has_harm if 'harmonic' in (extra_data or {}) else False):
+        _price10 = ms.get('price', 0)
+        _fib10   = ms.get('key_levels', {}).get('fib', {})
+        if _price10 > 0 and _fib10:
+            _fib_bonus = 0
+            for _fk, _fv in [('0.618', 4), ('0.786', 4), ('0.500', 3), ('0.382', 3)]:
+                if _fk in _fib10:
+                    _fdist = abs(_price10 - float(_fib10[_fk])) / _price10
+                    if _fdist < 0.008:    _fib_bonus = max(_fib_bonus, _fv)
+                    elif _fdist < 0.020: _fib_bonus = max(_fib_bonus, _fv - 1)
+                    elif _fdist < 0.040: _fib_bonus = max(_fib_bonus, 1)
+            s10 += _fib_bonus
+    # [D10达摩院实训] 无谐波形态时multitf独立贡献满权（不再//2被压制）
+    if extra_data and extra_data.get('multitf'):
+        _mtf_sc = extra_data['multitf'].get('score', 0)
+        _has_harm2 = bool(extra_data.get('harmonic', {}).get('patterns'))
+        if _has_harm2:
+            s10 += min(_mtf_sc // 2, 10)
+        else:
+            s10 += min(_mtf_sc * 2 // 3, 13)
+    s10 = max(-5, min(s10, 20))
+    score += s10
+    breakdown['谐波+多周期'] = s10
+
+    # ── 维度11(NEW)：P2 鲸鱼+跨市场+微观结构 ─────────────────
+    s11 = 0
+    if extra_data and extra_data.get('whale'):
+        s11 += min(extra_data['whale'].get('score', 0), 10)  # [P2 2026-05-22] whale 上限 8→10（score max 15→20）
+    if extra_data and extra_data.get('cross_market'):
+        s11 += min(extra_data['cross_market'].get('score', 0), 8)
+    if extra_data and extra_data.get('microstructure'):
+        s11 += min(extra_data['microstructure'].get('score', 0), 10)
+    s11 = min(s11, 20)
+    score += s11
+    breakdown['鲸鱼+跨市场+微观'] = s11
+
+    # ── 维度12(NEW)：期权 + 订单流CVD + OBI深度 ─────────────────
+    # [D12校准 2026-05-19] 达摩院实测 7/11品种负贡献 → 降权噪音源
+    s12 = 0
+    # 期权引擎：数据质量有限，上限 5→2，仅强信号参考
+    if extra_data and extra_data.get('options'):
+        opt = extra_data['options']
+        s12 += min(int(opt.get('score', 0)), 2)  # [D12校准] 5→2
+    # 订单流CVD：弱信号给中性基础分而非归零
+    if extra_data and extra_data.get('order_flow'):
+        of = extra_data['order_flow']
+        of_score = int(of.get('score', 0))
+        if abs(of_score) >= 3:
+            s12 += min(of_score, 5)
+        elif of_score > 0:   # 弱正向信号：给1分中性
+            s12 += 1
+    # [修复] L2订单簿OBI方向确认（原在D13，此处共享加分）
+    if extra_data and extra_data.get('orderbook'):
+        ob = extra_data['orderbook']
+        ob_obi = float(ob.get('obi', 0))
+        if signal_dir in ('SHORT','做空'):
+            if ob_obi < -0.3:   s12 += 4
+            elif ob_obi < -0.1: s12 += 2
+        else:
+            if ob_obi > 0.3:    s12 += 4
+            elif ob_obi > 0.1:  s12 += 2
+    # 链上WS方向加分
+    if extra_data and extra_data.get('onchain_ws'):
+        s12 += min(abs(extra_data['onchain_ws'].get('direction_score', 0)), 3)
+    s12 = min(s12, 15)  # 上限从10→15
+    score += s12
+    breakdown['期权+订单流'] = s12
+
+    # ── Phase A 维度13: L2订单簿 + 贝叶斯 + 宏观日历 ─────────────────
+    # [D13校准 2026-05-19] 贝叶斯冷启动期保护 + OB score上限收紧
+    s13 = 0
+    # OB score: 上限 8→5（D12已用OBI，D13不重复大加分）
+    if extra_data and extra_data.get('orderbook'):
+        s13 += min(int(extra_data['orderbook'].get('score', 0)), 5)  # [D13校准] 8→5
+    # 贝叶斯：冷启动(n<20笔)期间 score_adj 限制在 [-3,+3]，避免噪音
+    if extra_data and extra_data.get('bayesian'):
+        _bayes_adj = extra_data['bayesian'].get('score_adj', 0)
+        _bayes_n   = extra_data['bayesian'].get('n_trades', extra_data['bayesian'].get('n', 0))
+        if _bayes_n < 20:
+            _bayes_adj = max(-3, min(_bayes_adj, 3))  # [D13校准] 冷启动限幅
+        s13 += _bayes_adj
+    if extra_data and extra_data.get('macro_calendar'):
+        cal = extra_data['macro_calendar']
+        if cal.get('active'):
+            s13 += cal.get('penalty', 0)
+    # [D13实训修复] BTC主导率宏观信号：主导率高→山寨弱，主导率低→山寨强
+    if extra_data and extra_data.get('macro'):
+        _mc = extra_data['macro']
+        _raw = _mc.get('raw', {})
+        _dom_raw = _raw.get('btc_dominance', {})
+        # btc_dominance 可能是 dict{'btc_dom':58.15} 或 float
+        if isinstance(_dom_raw, dict):
+            _dom = float(_dom_raw.get('btc_dom', 0) or 0)
+        else:
+            _dom = float(_dom_raw or 0)
+        if _dom > 0:
+            if signal_dir in ('SHORT','做空'):
+                # BTC主导率高(>58%)：资金集中BTC，altcoin做空更安全；做空ETH也OK
+                if _dom > 62:   s13 += 3
+                elif _dom > 58: s13 += 2
+                elif _dom < 45: s13 -= 2  # 山寨季，做空ETH风险
+            else:  # LONG
+                # BTC主导率低(<45%)：山寨季，做多ETH更安全
+                if _dom < 42:   s13 += 3
+                elif _dom < 48: s13 += 1
+                elif _dom > 62: s13 -= 2  # 资金集中BTC，altcoin多头弱
+    s13 = max(-15, min(s13, 15))
+    score += s13
+    breakdown['L2+贝叶斯+宏观'] = s13
+
+    # ── Phase B 维度14: XGBoost + 在线贝叶斯 + 滑点 + 链上WS ──────────
+    s14 = 0
+    # B1: XGBoost P(WIN) 评分（主流币保护：训练集主要为小币种时不惩罚主流币）
+    if extra_data and extra_data.get('xgboost'):
+        xgb_score = extra_data['xgboost'].get('score', 0)
+        xgb_conf  = extra_data['xgboost'].get('confidence', 'LOW')
+        # 主流币保护：MED/LOW置信时负分截断为0
+        _major_coins = {'BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT','XRPUSDT','ADAUSDT'}
+        _sym = (ms.get('symbol') or '').upper()
+        if xgb_score < 0 and xgb_conf in ('MED','LOW') and _sym in _major_coins:
+            xgb_score = 0
+        # [D14达摩院实训] HIGH置信但强负时衰减惩罚（样本仍主要来自达摩院模拟）
+        # 真实实盘累积到50条后自动解除限制
+        # [D14 v12.6] HIGH置信惩罚衰减：<50实盘截断-2，50-200实盘截断-4
+        if xgb_score < -2 and xgb_conf == 'HIGH':
+            from pathlib import Path as _Path
+            import json as _json
+            try:
+                _real_n = sum(1 for _l in _Path('data/trade_records.jsonl').read_text().split('\n')
+                              if _l.strip() and not _json.loads(_l).get('_is_simulation', False))
+            except Exception:
+                _real_n = 0
+            if _real_n < 50:
+                xgb_score = max(xgb_score, -2)
+            elif _real_n < 200:
+                xgb_score = max(xgb_score, -4)
+        s14 += xgb_score
+    # B1b: [v12.7a] 达摩院实盘代理激活器 (dharma_real_proxy)
+    # 当 real_n<50 时用达摩院邻居WR做先验，替代 Bayes HIGH冻结问题
+    try:
+        import json as _pjson
+        from pathlib import Path as _PP
+        _proxy_f = _PP('data/real_proxy_buckets.json')
+        if _proxy_f.exists():
+            if not hasattr(analyze, '_proxy_cache') or analyze._proxy_cache is None:
+                analyze._proxy_cache = _pjson.loads(_proxy_f.read_text())
+            _pcache = analyze._proxy_cache
+            _sym_p  = (ms.get('symbol') or '').upper()
+            _dir_p  = 'S' if signal_dir in ('SHORT','做空') else 'L'
+            # 优先取信号层传入的score；次选xgboost的score_norm；最后fallback为100（S1基准）
+            _score_p = 0
+            if extra_data and extra_data.get('xgboost'):
+                _xn = extra_data['xgboost'].get('score_norm', 0)
+                _score_p = int(_xn * 150) if _xn else 0
+            if _score_p == 0:
+                _score_p = 100  # 默认S1
+            def _tier(sc):
+                if sc>=135: return 'S3'
+                if sc>=120: return 'S2'
+                if sc>=100: return 'S1'
+                return 'S0'
+            # score此时还未出来，用当前已累积的中间分估算tier（或默认S1）
+            # 大多数触发信号都是S1+，S1作为保守默认
+            _tier_p = _tier(_score_p) if _score_p >= 80 else 'S1'
+            _reg_p  = 'BULL' if 'BULL' in str(ms.get('regime','')).upper() else ('BEAR' if 'BEAR' in str(ms.get('regime','')).upper() else 'CHOP')
+            from datetime import datetime as _dt, timezone as _tz
+            _h = _dt.now(_tz.utc).hour
+            _sess_p = 'ASIA' if _h < 8 else ('EU' if _h < 16 else 'US')
+            # 4级模糊查找
+            _pb = None
+            for _k in [
+                f"{_sym_p}:{_reg_p}:{_dir_p}:{_tier_p}:{_sess_p}",
+                f"{_sym_p}:{_reg_p}:{_dir_p}:{_tier_p}:US",
+                f"BTCUSDT:{_reg_p}:{_dir_p}:{_tier_p}:{_sess_p}",
+                f"ETHUSDT:{_reg_p}:{_dir_p}:{_tier_p}:{_sess_p}",
+            ]:
+                if _k in _pcache:
+                    _pb = _pcache[_k]; break
+            if _pb and isinstance(_pb, dict):
+                _pwr    = _pb.get('current_wr', 0.35)
+                _real_n = _pb.get('real_n', 0)
+                _pn     = _pb.get('proxy_n', 0)
+                _trust  = 2.0 if _real_n >= 5 else (1.5 if _real_n >= 1 else 1.0)
+                # [v12.7a] pn>=100时先验可信，无需real_n；pn<50不信任
+                if _pn >= 100:
+                    if _pwr >= 0.42:    # 高于基准(0.35)+安全边际
+                        s14 += int(2 * _trust)
+                    elif _pwr <= 0.28:  # 明显低胜率
+                        s14 -= 2
+                elif _pn >= 50:
+                    if _pwr >= 0.45:
+                        s14 += 1
+                    elif _pwr <= 0.25:
+                        s14 -= 1
+                # 详细注入到extra供外部查看
+                if extra_data is not None:
+                    extra_data['proxy_bucket'] = {'key':_k,'wr':_pwr,'real_n':_real_n,'proxy_n':_pn}
+    except Exception:
+        pass  # proxy激活失败不影响主评分
+    # B2: 在线贝叶斯多维后验
+    if extra_data and extra_data.get('online_bayes'):
+        s14 += extra_data['online_bayes'].get('score_adj', 0)
+    # B3: 滑点惩罚
+    if extra_data and extra_data.get('slippage'):
+        s14 += extra_data['slippage'].get('score_adj', 0)
+    # B4: 链上大单 WS 方向分
+    if extra_data and extra_data.get('onchain_ws'):
+        s14 += min(extra_data['onchain_ws'].get('direction_score', 0), 8)
+    s14 = max(-15, min(s14, 20))
+    score += s14
+    breakdown['ML+在线贝叶斯+滑点'] = s14
+
+    # ── Phase C 维度15: LSTM + NLP情绪 ─────────────────────────────
+    s15 = 0
+    # C1: LSTM 时序
+    if extra_data and extra_data.get('lstm'):
+        s15 += extra_data['lstm'].get('score', 0)
+    # C3: NLP 情绪
+    if extra_data and extra_data.get('sentiment_nlp'):
+        _nlp = extra_data['sentiment_nlp']
+        _nlp_score = _nlp.get('score', 0)
+        # [D15达摩院实训] news=0时给中性分+FG极值信号，而非直接0
+        _fg = _nlp.get('fng_value', 50)
+        _news_n = _nlp.get('news_count', 0)
+        # [D15 v12.7b] BSP行为情绪合成 + FG混合 (0.6*BSP + 0.4*FG)
+        # 无需外部API，从达摩院Parquet OHLCV实时合成
+        _bsp_score = 0
+        try:
+            import sys as _sys
+            if 'brahma_brain' not in _sys.path[0]:
+                _sys.path.insert(0, 'brahma_brain')
+            from dharma_nlp_synthetic import BehaviorSentiment as _BSP
+            if not hasattr(analyze, '_bsp_engine') or analyze._bsp_engine is None:
+                analyze._bsp_engine = _BSP()
+            _bsp_val, _bsp_detail = analyze._bsp_engine.score(
+                ms.get('symbol','BTCUSDT'), signal_dir, '1h'
+            )
+            if 'error' not in _bsp_detail:
+                _bsp_score = _bsp_val
+                if extra_data is not None:
+                    extra_data['bsp'] = {'score': _bsp_val, 'detail': _bsp_detail.get('bsp', {})}
+        except Exception:
+            pass  # BSP失败降级到纯FG
+        # FG固定映射（全区间8档）
+        if _nlp_score == 0 or _news_n == 0:
+            # 无新闻：完全依赖FG映射
+            if signal_dir in ('SHORT', '做空'):
+                if   _fg <= 15: _nlp_score = 5
+                elif _fg <= 25: _nlp_score = 4
+                elif _fg <= 35: _nlp_score = 3
+                elif _fg <= 45: _nlp_score = 2
+                elif _fg <= 55: _nlp_score = 0
+                elif _fg <= 65: _nlp_score = -1
+                elif _fg <= 75: _nlp_score = -2
+                else:           _nlp_score = -3
+            else:
+                if   _fg <= 15: _nlp_score = -3
+                elif _fg <= 25: _nlp_score = -2
+                elif _fg <= 35: _nlp_score = -1
+                elif _fg <= 45: _nlp_score = 0
+                elif _fg <= 55: _nlp_score = 1
+                elif _fg <= 65: _nlp_score = 2
+                elif _fg <= 75: _nlp_score = 3
+                else:           _nlp_score = 4
+        else:
+            # 有新闻：原NLP分 + FG辅助调整（限幅±2，避免双重放大）
+            _fg_adj = 0
+            if signal_dir in ('SHORT', '做空'):
+                if _fg <= 25: _fg_adj = 2
+                elif _fg >= 75: _fg_adj = -2
+            else:
+                if _fg <= 25: _fg_adj = -2
+                elif _fg >= 75: _fg_adj = 2
+            _nlp_score = max(-8, min(_nlp_score + _fg_adj, 8))
+        # [v12.7b] BSP方向确认层：同向增强x1.3，反向保守维持FG（不抵消）
+        if _bsp_score != 0 and _nlp_score != 0:
+            if _bsp_score * _nlp_score > 0:
+                # 同方向：加权增强，最大+30%
+                _nlp_score = max(-8, min(_nlp_score * 1.3 + 0.2 * _bsp_score, 8))
+            # 反向时：BSP指向短期动量，FG指向宏观情绪；保守取FG不变
+        elif _bsp_score != 0 and _nlp_score == 0:
+            # FG中性时BSP独立贡献轻量分 (0.3倍，不主导)
+            _nlp_score = max(-4, min(_bsp_score * 0.3, 4))
+        s15 += _nlp_score
+    # P0修复 2026-05-21: LSTM非零时WR=27%，比零分WR=43%低16pp
+    # 降低 LSTM 贡献权重: 大于零的部分打五折，负分保持
+    s15_adj = int(s15 * 0.5) if s15 > 0 else s15
+    s15_adj = max(-15, min(s15_adj, 9))  # 正向上限从18降至9
+    score += s15_adj
+    breakdown['LSTM+NLP情绪'] = s15_adj  # 记录修正后得分
+
+    # RL 仓位乘数注入 extra（供 analyze() 汇总层使用）
+    if extra_data and extra_data.get('rl_position'):
+        extra_data['_rl_kelly_mult'] = extra_data['rl_position'].get('kelly_mult', 1.0)
+
+
+    # ═══════════════════════════════════════════════════════════
+    # [UP-SRG v5.0] 体制×方向智能乘数
+    # ═══════════════════════════════════════════════════════════
+    # [WFV-v5.0 2026-05-28] 达摩院真实梵天体制驱动训练
+    # 用 brahma_brain.market_state.detect_regime() 真实体制标注
+    # 15资产×IS/OOS无穿越验证，覆盖2023-2024真实市场
+    #
+    # 体制OOS均PF（真实值）：
+    #   BEAR_EARLY   PF=1.141 → SHORT奖励, LONG惩罚
+    #   CHOP_HIGH    PF=1.137 → 不惩罚（旧×0.82是错的）
+    #   BEAR_RECOVERY PF=0.998 → 轻惩罚（旧×1.08是错的）
+    #   BULL_EARLY   PF=0.959 → 轻惩罚（旧×1.08是错的）
+    #   CHOP_LOW     PF=0.865 → 惩罚
+    #   CHOP_MID     PF=0.862 → 惩罚
+    #   BULL_CORRECTION PF=0.687 → 强惩罚
+    #   BEAR_TREND   PF=0.560 → 强惩罚（旧×1.20是严重错误！）
+    # ═══════════════════════════════════════════════════════════
+    _regime_str = ms.get('regime', '')
+    _regime_upper = str(_regime_str).upper()
+    _regime_mult = 1.0
+    _direction_block = False
+
+    if signal_dir == 'LONG':
+        if 'BULL_TREND' in _regime_upper:
+            _regime_mult = 1.10   # 无OOS数据，保守给加成
+        elif 'BULL_EARLY' in _regime_upper:
+            _regime_mult = 0.88   # 实测PF=0.959，轻惩罚
+        elif 'BULL_PEAK' in _regime_upper:
+            _regime_mult = 0.85   # 顶部多头危险
+        elif 'BULL_CORRECTION' in _regime_upper:
+            _regime_mult = 0.72   # 实测PF=0.687，强惩罚
+        elif 'BEAR_TREND' in _regime_upper or 'BEAR_CRASH' in _regime_upper:
+            _direction_block = True   # 实测PF=0.560，封锁
+        elif 'BEAR_EARLY' in _regime_upper:
+            _regime_mult = 0.85   # 熊市初期多头危险
+        elif 'BEAR_RECOVERY' in _regime_upper:
+            _regime_mult = 0.88   # 实测PF=0.998，中性偏空
+        elif 'CHOP_HIGH' in _regime_upper:
+            _regime_mult = 1.00   # 实测PF=1.137，不惩罚（修正旧×0.82）
+        elif 'CHOP_MID' in _regime_upper:
+            _regime_mult = 0.72   # 实测PF=0.862，惩罚
+        elif 'CHOP_LOW' in _regime_upper:
+            _regime_mult = 0.72   # 实测PF=0.865，惩罚
+    else:  # SHORT
+        if any(b in _regime_upper for b in ['BULL_TREND','BULL_BREAK']):
+            _direction_block = True   # 牛市做空封锁
+        elif 'BULL_PEAK' in _regime_upper:
+            _regime_mult = 0.78   # 牛顶做空尚可
+        elif 'BULL_EARLY' in _regime_upper:
+            _regime_mult = 0.88   # 牛市初期做空危险
+        elif 'BULL_CORRECTION' in _regime_upper:
+            _regime_mult = 0.88   # 牛市回调做空中性
+        elif 'BEAR_TREND' in _regime_upper or 'BEAR_CRASH' in _regime_upper:
+            _regime_mult = 0.88   # [v5.0修正] 实测PF=0.560，熊市趋势≠做空加分！大量假信号
+        elif 'BEAR_EARLY' in _regime_upper:
+            _regime_mult = 1.10   # 实测PF=1.141，熊市初期做空有效
+        elif 'BEAR_RECOVERY' in _regime_upper:
+            _regime_mult = 0.88   # 熊市反弹做空谨慎
+        elif 'CHOP_HIGH' in _regime_upper:
+            _regime_mult = 1.00   # 实测PF=1.137，不惩罚
+        elif 'CHOP_MID' in _regime_upper:
+            _regime_mult = 0.72   # 实测PF=0.862，惩罚
+        elif 'CHOP_LOW' in _regime_upper:
+            _regime_mult = 0.72   # 实测PF=0.865，惩罚
+
+    if _direction_block:
+        score = 0
+        breakdown['_regime_block'] = f'BLOCKED: {_regime_str} + {signal_dir}'
+    else:
+        score = int(score * _regime_mult)
+        breakdown['_regime_mult'] = _regime_mult
+    breakdown['_regime'] = _regime_str
+
+    # [UP-TRAIN10K] T04体制×最优信号奖励矩阵
+    # 达摩院1万次训练: 特定体制下命中最优信号给予×1.08奖励
+    # BULL_PEAK+量价配合PF=1.393 | BULL_TREND+EMA PF=1.344
+    # BEAR_CRASH+布林反弹PF=1.261 | BEAR_TREND+MACD零轴PF=1.156
+    _t04_regime = _regime_upper
+    _t04_bonus_applied = False
+    _s4_optimal = (  # 体制×最优信号命中检测
+        ('BULL_PEAK' in _t04_regime and breakdown.get('量能验证', 0) >= 15) or
+        ('BULL_TREND' in _t04_regime and breakdown.get('趋势一致性', 0) >= 15) or
+        ('BEAR_CRASH' in _t04_regime and breakdown.get('关键位精确度', 0) >= 12) or
+        ('BEAR_TREND' in _t04_regime and breakdown.get('动量背离', 0) >= 10)
+    )
+    if _s4_optimal and not _direction_block and score > 0:
+        score = int(score * 1.08)
+        breakdown['T04体制最优'] = f'×1.08 ({_t04_regime[:10]}命中最优信号)'
+        _t04_bonus_applied = True
+
+    # [UP-NODE] 深度节点训练 N01~N06 注入
+    # ─────────────────────────────────────────────
+    # N01: RSI超卖超买 是最高协同信号（与量价/MACD背离搭档PF=1.232）
+    #   → RSI信号同时命中时，额外+3分确认
+    _rsi_score_raw = breakdown.get('关键位精确度', 0)  # RSI代理维度
+    _vol_score_raw = breakdown.get('量能验证', 0)
+    _macd_div_raw  = breakdown.get('动量背离', 0)
+    _n01_synergy = (
+        (_rsi_score_raw >= 10 and _vol_score_raw >= 12) or   # RSI+量价 synergy=0.012
+        (_rsi_score_raw >= 10 and _macd_div_raw >= 10)        # RSI+MACD背离 synergy=0.012
+    )
+    if _n01_synergy and not _direction_block and score > 0:
+        score = min(score + 3, 175)
+        breakdown['N01协同奖励'] = '+3 (RSI双重协同)'
+
+    # N03: 时段权重 UTC 11/15/06最优(PF>1.5)，UTC 00/22/23最差(PF<0.95)
+    #   → 黄金时段+5分，深夜时段-5分
+    import datetime as _dt
+    _hour_utc = _dt.datetime.now(_dt.timezone.utc).hour
+    _golden_hours = {1, 2, 3, 5, 6, 11, 14, 15}   # [WFV-v1] UTC01 WR=42.3%新增; PF > 1.4
+    _dead_hours   = {0, 22, 23}                    # [WFV-v1] UTC03移出死区（含于黄金）
+    if _hour_utc in _golden_hours and not _direction_block and score > 0:
+        score = min(score + 5, 175)
+        breakdown['N03时段奖励'] = f'+5 (UTC{_hour_utc:02d}:xx 黄金时段)'
+    elif _hour_utc in _dead_hours and not _direction_block and score > 0:
+        score = max(0, score - 5)
+        breakdown['N03时段惩罚'] = f'-5 (UTC{_hour_utc:02d}:xx 深夜死区)'
+
+    # N04: 周末惩罚 (Sat/Sun PF=0.836/0.810 < 1.0)
+    _dow = -1
+    try:
+        _ts2 = row.name
+        _dow = _ts2.dayofweek if hasattr(_ts2, 'dayofweek') else -1
+    except Exception:
+        pass
+    if _dow in {5, 6} and not _direction_block and score > 0:  # Sat=5, Sun=6
+        score = int(score * 0.88)
+        breakdown['N04周末惩罚'] = f'×0.88 (周{"六" if _dow==5 else "日"} PF历史<1.0)'
+
+    # N06: CHOP体制持仓期提示（最优2h vs 全局12h）
+    if 'CHOP' in _regime_upper and not _direction_block:
+        breakdown['N06持仓建议'] = '⚡CHOP最优持仓2h (N06实训)'
+
+
+    # ════════════════════════════════════════════════════════════
+    # [L7] Kronos方向验证层 2026-05-27
+    # ════════════════════════════════════════════════════════════
+    try:
+        import json as _j, os as _os, time as _t
+        _kf = '/tmp/kronos_signal.json'
+        if _os.path.exists(_kf) and (_t.time() - _os.path.getmtime(_kf)) < 21600:
+            _kd   = _j.load(open(_kf))
+            # symbol从extra_data或ms里取（market_state的symbol在顶层）
+            _sym_k = (extra_data.get('_symbol','') if extra_data else '') or (ms.get('symbol','') if ms else '')
+            _kp   = _kd.get(_sym_k, {})
+            _kdir = _kp.get('direction', 'NEUTRAL')
+            _kconf= float(_kp.get('confidence', 0.5))
+            _met  = _kd.get('_meta', {}).get('method', 'stat')
+            _up   = (signal_dir == 'LONG'  and _kdir == 'UP')
+            _dn   = (signal_dir == 'SHORT' and _kdir == 'DOWN')
+            _conf_conflict = (
+                (signal_dir == 'LONG'  and _kdir == 'DOWN' and _kconf > 0.70) or
+                (signal_dir == 'SHORT' and _kdir == 'UP'   and _kconf > 0.70)
+            )
+            if (_up or _dn) and not _direction_block:
+                _s = 13 if _kconf >= 0.65 else 8
+                score += _s
+                breakdown['L7_Kronos'] = f'+{_s}(方向一致 {_kconf:.0%} [{_met}])'
+            elif _conf_conflict and not _direction_block:
+                score -= 10
+                breakdown['L7_Kronos'] = f'-10(高置信反向 {_kdir} {_kconf:.0%})'
+    except Exception:
+        pass
+
+    # [UP-NODE-v3] 深度节点训练 v3 N07~N12 注入
+    # ─────────────────────────────────────────────
+    # N08: RSI深度分层 — 体制加限（避免震荡追高）
+    _rsi_val = float(ms.get('rsi_1h', 50) if ms else 50)
+    _is_long_signal = (signal_dir == 'LONG')
+    _n08_boost = False
+    _trend_regimes = ('BULL_TREND', 'BULL_PEAK')
+    _bear_regimes  = ('BEAR_TREND', 'BEAR_CRASH')
+    # 做多超买只在牛市体制有效 | 做空超卖只在熊市体制有效
+    if _is_long_signal and _rsi_val > 75 and any(r in _regime_upper for r in _trend_regimes) and not _direction_block and score > 0:
+        score = min(int(score) + 4, 175)
+        breakdown['N08_RSI强化'] = f'+4 (RSI={_rsi_val:.0f} 牛市超买PF=1.421)'
+        _n08_boost = True
+    elif not _is_long_signal and _rsi_val < 20 and any(r in _regime_upper for r in _bear_regimes) and not _direction_block and score > 0:
+        # [WFV-v1 2026-05-28] RSI阈值收紧 25→20 (OOS验证: 更纯净信号)
+        score = min(int(score) + 4, 175)
+        breakdown['N08_RSI强化'] = f'+4 (RSI={_rsi_val:.0f} 熊市超卖<20 PF=1.292)'
+        _n08_boost = True
+
+    # N08: BULL_TREND体制RSI=45~55区间特别强化(PF=2.102)
+    if 'BULL_TREND' in _regime_upper and 45 <= _rsi_val < 55 and not _direction_block and score > 0:
+        score = min(int(score) + 6, 175)
+        breakdown['N08_牛市RSI中性'] = f'+6 (BULL_TREND RSI=45~55 PF=2.102)'
+
+    # N10: 7维全覆盖叠加奖励 — 所有主信号都有贡献时+5分
+    _sig_scores_v3 = [
+        breakdown.get('动量背离', 0),
+        breakdown.get('关键位精确度', 0),
+        breakdown.get('SMC结构', 0),
+        breakdown.get('趋势一致性', 0),
+        breakdown.get('量能验证', 0),
+        breakdown.get('形态成熟度', 0),
+        breakdown.get('时段权重', 0),
+    ]
+    _n_active_sigs = sum(1 for s in _sig_scores_v3 if s > 0)
+    if _n_active_sigs >= 7 and not _direction_block and score > 0:
+        score = min(int(score) + 5, 175)
+        breakdown['N10_全覆盖奖励'] = '+5 (7维全覆盖 PF=1.363)'
+
+    # N12: BB位置精度强化 — 仅趋势体制有效
+    _bb_pct_v3 = float(ms.get('bb', {}).get('pos', 0.5) if ms else 0.5)
+    if _is_long_signal and _bb_pct_v3 > 0.90 and any(r in _regime_upper for r in _trend_regimes) and not _direction_block and score > 0:
+        score = min(int(score) + 4, 175)
+        breakdown['N12_BB上沿'] = f'+4 (BB={_bb_pct_v3:.2f} 牛市上沿PF=1.414)'
+    elif not _is_long_signal and _bb_pct_v3 < 0.10 and any(r in _regime_upper for r in _bear_regimes) and not _direction_block and score > 0:
+        score = min(int(score) + 4, 175)
+        breakdown['N12_BB下沿'] = f'+4 (BB={_bb_pct_v3:.2f} 熊市下沿PF=1.263)'
+
+
+    # [UP-FIX-SOL-BNB] 根因修复注入 (2026-05-26 诊断)
+    # ─────────────────────────────────────────────
+    # FIX-1: 极低波动率假牛市惩罚（精确版v2）
+    _atr_pct_val = float(ms.get('atr_pct', ms.get('atr_1h', 15) / max(ms.get('price', 1), 1)) if ms else 0.01)
+    if ('BULL_TREND' in _regime_upper and signal_dir == 'LONG'
+            and _atr_pct_val < 0.005 and not _direction_block and score > 0):
+        score = int(score * 0.88)
+        breakdown['FIX1_假牛市'] = f'×0.88 (ATR_pct={_atr_pct_val:.4f} 极低波动假趋势)'
+
+    # FIX-2: CHOP超卖<25做空惩罚（精确版v2）
+    _rsi_chop = float(ms.get('rsi_1h', 50) if ms else 50)
+    if ('CHOP' in _regime_upper and not _is_long_signal
+            and _rsi_chop < 25 and not _direction_block and score > 0):
+        score = int(score * 0.88)
+        breakdown['FIX2_CHOP追空'] = f'×0.88 (CHOP RSI={_rsi_chop:.0f}<25 超卖追空)'
+
+
+    # [UP-NODE-v4] 梵天大脑v4注入
+    # ─────────────────────────────────────────────────────
+    _atr_v4 = float(ms.get('atr_pct', ms.get('atr_1h', 15) / max(ms.get('price', 1), 1)) if ms else 0.01)
+    _rsi_v4 = float(ms.get('rsi_1h', 50) if ms else 50)
+    _is_long_v4 = (signal_dir == 'LONG')
+
+    # ══════════════════════════════════════════════════════════════
+    # [达摩院v2.0 ATR体制过滤器] N16完整版 — 基于 N16_atr_layers 铁证
+    # CHOP 0.005~0.015最优(PF=1.44~1.98) | BULL_TREND <0.010禁区(PF=0.567)
+    # ══════════════════════════════════════════════════════════════
+    _atr_regime_tag = ''
+    if 'BULL_TREND' in _regime_upper:
+        # BULL_TREND ATR禁区：<0.010 PF=0.567（铁证）
+        if _atr_v4 < 0.010 and not _direction_block and score > 0:
+            score = int(score * 0.80)
+            _atr_regime_tag = f'N16_ATR禁区 ×0.80 (BULL ATR={_atr_v4:.4f}<0.010, PF=0.567)'
+        # BULL_TREND ATR黄金区：0.010~0.015
+        elif 0.010 <= _atr_v4 <= 0.015 and _is_long_v4 and not _direction_block and score > 0:
+            score = min(int(score * 1.05), 175)
+            _atr_regime_tag = f'N16_ATR黄金 ×1.05 (BULL ATR={_atr_v4:.4f} PF=1.087)'
+    elif 'CHOP' in _regime_upper:
+        # CHOP最优区：0.005~0.015 PF=1.44~1.98
+        if 0.005 <= _atr_v4 <= 0.015 and not _direction_block and score > 0:
+            bonus = int((1.98 - max(0, (_atr_v4 - 0.005) / 0.010)) * 2)  # 动态加分
+            score = min(score + bonus, 175)
+            _atr_regime_tag = f'N16_CHOP优区 +{bonus} (ATR={_atr_v4:.4f} PF≈1.5+)'
+        # CHOP大ATR区：>0.015 PF=1.013接近无效
+        elif _atr_v4 > 0.020 and not _direction_block and score > 0:
+            score = int(score * 0.90)
+            _atr_regime_tag = f'N16_CHOP大ATR ×0.90 (ATR={_atr_v4:.4f}>0.020)'
+    elif 'BEAR' in _regime_upper:
+        # BEAR体制 ATR有效区：0.007~0.025
+        if _atr_v4 < 0.007 and not _direction_block and score > 0:
+            score = int(score * 0.88)
+            _atr_regime_tag = f'N16_BEAR低ATR ×0.88 (ATR={_atr_v4:.4f}<0.007)'
+    if _atr_regime_tag:
+        breakdown['N16_ATR体制'] = _atr_regime_tag
+
+    # N14: BEAR_TREND体制切换时机强化 [dist_5~10最优 PF=1.34~1.44]
+    if 'BEAR_TREND' in _regime_upper and not _is_long_v4 and _rsi_v4 < 42 and _atr_v4 > 0.012 and not _direction_block and score > 0:
+        score = min(int(score) + 5, 175)
+        breakdown['N14_熊转边界'] = '+5 (熊市边界早鸟 PF=1.625)'
+
+    # ══════════════════════════════════════════════════════════════
+    # [达摩院v2.0 N15评分分层仓位映射] — 基于 N15_kelly 铁证
+    # 150~160分: PF=1.538 Calmar=5.16（最优） | 130~140: PF=1.02（噪声）
+    # ══════════════════════════════════════════════════════════════
+    _score_tier_tag = ''
+    if score >= 165:
+        _kelly_tier = 'S+';  _pos_tier = 0.08  # 极高分：最大仓位
+        _score_tier_tag = f'N15_S+层({score}分) pos={_pos_tier:.0%}'
+    elif score >= 158:
+        _kelly_tier = 'S';   _pos_tier = 0.065  # S1标准仓
+        _score_tier_tag = f'N15_S层({score}分) pos={_pos_tier:.0%}'
+    elif score >= 150:
+        _kelly_tier = 'S2';  _pos_tier = 0.05   # [武曲OOS✅] S2层实盘 WR=66.7% PF=3.575 n=72
+        _score_tier_tag = f'N15_S2层({score}分) pos={_pos_tier:.0%} [武曲认证]'
+    elif score >= 130:
+        _kelly_tier = 'B';   _pos_tier = 0.02   # 极轻仓观察
+        _score_tier_tag = f'N15_B层({score}分) pos={_pos_tier:.0%}'
+    else:
+        _kelly_tier = 'C';   _pos_tier = 0.0
+    # 将仓位分级注入 extra_data 供执行层使用
+    if extra_data is not None and isinstance(extra_data, dict):
+        extra_data['score_tier'] = _kelly_tier
+        extra_data['score_pos']  = _pos_tier
+    breakdown['N15_分层仓位'] = _score_tier_tag if _score_tier_tag else f'N15_C层({score}分) 不执行'
+
+    # ══════════════════════════════════════════════════════════════
+    # [达摩院v2.0 M09] 品种×维度权重修正层
+    # 来源：full_universe_backtest dim_contrib铁证
+    # BTC谐波-0.381/宏观-0.256清零 | ETH背离+0.277→×2.0 | SOL期权-0.093→×0.5
+    # 已通过DharmaBus总线写入，此处读取并追溯调整评分
+    # ══════════════════════════════════════════════════════════════
+    try:
+        import os as _os2, sys as _sys2
+        _bus_dir2 = _os2.path.join(_os2.path.dirname(_os2.path.abspath(__file__)), '..')
+        if _bus_dir2 not in _sys2.path: _sys2.path.insert(0, _bus_dir2)
+        from dharma.dharma_bus import get_dim_weight as _get_dw
+        _m09_dims = {
+            '关键位精确度': breakdown.get('关键位精确度', 0),
+            '形态成熟度':   breakdown.get('形态成熟度',   0),
+            '清算/OI':      breakdown.get('清算/OI',      0),
+            '谐波+多周期':  breakdown.get('谐波+多周期',  0),
+            'L2+贝叶斯+宏观': breakdown.get('L2+贝叶斯+宏观', 0),
+            '量能验证':     breakdown.get('量能验证',     0),
+            '动量背离':     breakdown.get('动量背离',     0),
+            '期权+订单流':  breakdown.get('期权+订单流',  0),
+            'LSTM+NLP情绪': breakdown.get('LSTM+NLP情绪', 0),
+        }
+        _m09_delta = 0
+        _m09_log = []
+        for _dim, _orig in _m09_dims.items():
+            if _orig <= 0: continue
+            _w = _get_dw(_sym, _dim)
+            if _w == 1.0: continue
+            _adjusted = round(_orig * _w)
+            _delta = _adjusted - _orig
+            _m09_delta += _delta
+            if abs(_delta) >= 1:
+                _m09_log.append(f'{_dim}:{_orig}→{_adjusted}(×{_w})')
+        if _m09_delta != 0:
+            score = max(0, min(score + _m09_delta, 175))
+            breakdown['M09_维度权重'] = f'Δ{_m09_delta:+d}分 [{" | ".join(_m09_log[:3])}]'
+    except Exception:
+        pass
+    # ══════════════════════════════════════════════════════════════
+
+    # [v13.0] 单一化输出裁决：评分决定唯一行动，不再并列多方案
+    # 裁决规则：评分主导， R:R 在 analyze() 层做最终覆盖
+    if score >= 155:
+        grade = '🔴神级';  kelly_mult = 2.0;  action = 'ENTER_FULL'  # [N18] 顶级信号全仓
+    elif score >= 140:
+        grade = '🟠极强';   kelly_mult = 1.5;  action = 'ENTER'       # [N18] 高分强信号
+    elif score >= 120:
+        grade = '🟡强';    kelly_mult = 1.0;  action = 'ENTER'        # [N18] 标准信号
+    elif score >= 80:
+        grade = '🔵中等';   kelly_mult = 0.5;  action = 'WATCH'
+    else:
+        grade = '⚫放弃';   kelly_mult = 0.0;  action = 'SKIP'
+
+    return {
+        'total':      score,
+        'max':        150,
+        'grade':      grade,
+        'kelly_mult': kelly_mult,
+        'action':     action,   # 注意：若params.valid=False，analyze()会覆盖此字段
+        'breakdown':  breakdown,
+    }
+
+# ═══════════════════════════════════════════════════════════════
+# 精确交易参数生成
+# ═══════════════════════════════════════════════════════════════
+
+def _nearest_swing_above(swing_highs: list, entry: float) -> float:
+    """找到入场价上方最近的摆动高点（用于做空止损）"""
+    candidates = [v for v in swing_highs if v > entry]
+    return min(candidates) if candidates else entry * 1.015
+
+def _nearest_swing_below(swing_lows: list, entry: float) -> float:
+    """找到入场价下方最近的摆动低点（用于做多止损）"""
+    candidates = [v for v in swing_lows if v < entry]
+    return max(candidates) if candidates else entry * 0.985
+
+def calc_trade_params(ms: dict, smc: dict, signal_dir: str) -> dict:
+    """
+    精确交易参数生成 — v13.0 四层止损架构
+    ────────────────────────────────────────────────────────
+    止损逻辑（合约思维重构）：
+      Layer 1: primary_tf = 4H（方向周期）
+               entry_tf   = 1H（入场触发周期）
+      Layer 2: 止损放在「结构失效点」：
+               SHORT → 4H最近摆动高点（或4H FVG上沿）
+               LONG  → 4H最近摆动低点（或4H FVG下沿）
+      Layer 3: ATR缓冲 = 4H ATR × 0.3（防插针，不随意加）
+      Layer 4: 验证 R:R TP1 ≥ 2.5（更严格门槛）
+    TP逻辑：
+      TP1 = 最近流动性目标（前低/清算密集区），R:R≥2.5
+      TP2 = 结构延伸目标，ATR×5.0 距离
+    ────────────────────────────────────────────────────────
+    """
+    price   = ms['price']
+    atr_1h  = ms['momentum']['atr_1h']
+    fib     = ms['key_levels']['fib']
+
+    # [终极体系 2026-05-25] 体制感知动态TP倍数
+    # CHOP体制: TP1=2.8x(盘内波幅收紧), BULL_TREND: TP1=3.0x(趋势延伸)
+    _regime_tp = ms.get('regime', '')
+    # [WFV-v3.0 2026-05-28] 达摩院无穿越训练结论（修复NodeDB/train_10k穿越）
+    # 全局冠军: RSI<20/>>82  SL=0.6x  TP=4.0x  core_OOS PF=1.227
+    # 旧WFV-v1 PF=1.453 含穿越数据，已废弃
+    if _regime_tp in ('CHOP_MID', 'CHOP_HIGH', 'CHOP_LOW', 'SQUEEZE'):
+        _tp1_mult = 4.0   # [WFV-v3] 统一4.0x（无穿越冠军）
+        _tp2_mult = 7.0
+    elif _regime_tp in ('BEAR_TREND', 'BEAR_BREAK', 'BEAR_EARLY'):
+        _tp1_mult = 4.0   # [WFV-v3] 熊市做空4.0x
+        _tp2_mult = 7.5
+    elif _regime_tp in ('BULL_TREND', 'BULL_BREAK', 'BULL_PEAK'):
+        _tp1_mult = 4.0   # [WFV-v3] 牛市做多4.0x
+        _tp2_mult = 8.0
+    else:
+        _tp1_mult = 4.0   # [WFV-v3] 默认4.0x
+        _tp2_mult = 7.0
+
+    # ── 获取4H ATR和摆动结构（primary_tf）──
+    atr_4h = ms['momentum'].get('atr_4h', atr_1h * 2.5)   # fallback
+    sw4h_h = ms.get('swing_4h', {}).get('highs', [])       # 4H摆动高点列表
+    sw4h_l = ms.get('swing_4h', {}).get('lows', [])        # 4H摆动低点列表
+
+    # ── ATR合理性护栏（双向：上限15%防暴涨品种，下限0.5%防精度崩溃）──
+    # 规则：ATR不得超过当前价的15%；不得小于0.5%（极端低价品种精度保护）
+    _atr_cap = price * 0.15
+    _atr_floor = price * 0.005   # 下限：最小ATR = 价格的0.5%
+    if atr_4h > _atr_cap:
+        atr_4h = price * 0.05   # 强制用5%价格作为ATR
+    if atr_4h < _atr_floor:
+        atr_4h = _atr_floor     # 防止精度崩溃导致SL=0
+    if atr_1h > price * 0.10:
+        atr_1h = price * 0.03
+
+    # ── 入场区（FVG中点 > OB > Fib，优先级递减）──
+    if signal_dir == 'LONG':
+        # 入场区：回调到4H空间支撑
+        ob = smc['order_blocks'].get('nearest_bull_ob')
+        fvg_bull = smc.get('fvg', {}).get('nearest_bull')
+        if fvg_bull:
+            entry_lo = fvg_bull.get('bottom', fvg_bull.get('low', price*0.995))
+            entry_hi = fvg_bull.get('top',    fvg_bull.get('high', price*1.005))
+        elif ob:
+            entry_lo = ob['low'];        entry_hi = ob['high']
+        else:
+            fib_entry = fib.get('0.618', price * 0.99)
+            entry_lo  = min(fib_entry, price) * 0.997
+            entry_hi  = min(fib_entry, price)
+        entry_lo = min(entry_lo, price);  entry_hi = min(entry_hi, price)
+
+        # Layer 2+3: 止损 = 入场区下方最近4H摆低 - ATR4H×0.3
+        struct_low = _nearest_swing_below(sw4h_l, entry_lo) if sw4h_l else entry_lo * 0.985
+        stop_loss  = struct_low - atr_4h * 0.3
+
+        # TP: 上方前高 / 流动性区
+        entry_mid = (entry_lo + entry_hi) / 2
+        risk = abs(entry_mid - stop_loss)
+        # TP1 最小R:R=2.5
+        tp1_min = entry_mid + risk * _tp1_mult  # [终极体系] 体制感知动态TP
+        # 护栏：多头TP不能超过入场价1000%（防止ATR异常导致天文数字）
+        tp1_min = min(tp1_min, entry_mid * 11.0)  # 最多+1000%
+        # 尝试用4H摆高作为TP1
+        struct_tp1 = min([v for v in sw4h_h if v > entry_hi], default=tp1_min)
+        tp1 = max(tp1_min, struct_tp1) if struct_tp1 > entry_hi else tp1_min
+        tp1 = min(tp1, entry_mid * 11.0)  # 二次护栏
+        tp2 = entry_mid + risk * _tp2_mult
+        tp2 = min(tp2, entry_mid * 20.0)  # tp2护栏
+
+    else:  # SHORT
+        # 入场区：反弹到4H空间阻力
+        ob = smc['order_blocks'].get('nearest_bear_ob')
+        fvg_bear = smc.get('fvg', {}).get('nearest_bear')
+
+        # [设计院 2026-05-30] 否决权：fvg_bear必须在当前价上方1%+，否则降级用OB/Fib
+        # 修复根因：SMC返回的nearest_bear已经过方向过滤(mid>price*1.003)
+        # 但这里加一层确认：入场区中点必须在现价上方1%（要有反弹才能入场）
+        _fvg_bear_ok = (fvg_bear and
+                        fvg_bear.get('bottom', 0) > price * 1.005 and
+                        fvg_bear.get('gap_pct', 0) >= 0.3)
+
+        if _fvg_bear_ok:
+            entry_lo = fvg_bear.get('bottom', fvg_bear.get('low', price))
+            entry_hi = fvg_bear.get('top',    fvg_bear.get('high', price*1.005))
+        elif ob and ob.get('low', 0) > price * 1.005:
+            # OB也必须在现价上方
+            entry_lo = ob['low'];        entry_hi = ob['high']
+        else:
+            # 降级：用Fib 0.382切分位作为入场区
+            fib_entry = fib.get('0.382', price * 1.012)
+            entry_lo  = max(fib_entry, price * 1.008)   # 不少于现价+0.8%
+            entry_hi  = entry_lo * 1.005
+        entry_lo = max(entry_lo, price * 1.003)   # 否决权：SHORT入场区必须在现价上方0.3%+
+        entry_hi = max(entry_hi, entry_lo * 1.002)
+
+        # Layer 2+3: 止损 = 入场区上方最近4H摆高 + ATR4H×0.3
+        struct_high = _nearest_swing_above(sw4h_h, entry_hi) if sw4h_h else entry_hi * 1.015
+        stop_loss   = struct_high + atr_4h * 0.3
+
+        # TP: 下方前低 / 流动性区
+        entry_mid = (entry_lo + entry_hi) / 2
+        risk = abs(stop_loss - entry_mid)
+        # TP1 最小R:R=2.5
+        tp1_min = entry_mid - risk * _tp1_mult  # [终极体系] 体制感知动态TP
+        # 护栏：TP不能为负数，且最多跌到入场价的80%（做空最大空间80%）
+        tp1_min = max(tp1_min, entry_mid * 0.01)   # 绝对下限：价格不能低于1%
+        tp1_min = max(tp1_min, entry_mid * (1 - 0.80))  # 相对下限：最多-80%
+        # 尝试用4H摆低作为TP1
+        struct_tp1 = max([v for v in sw4h_l if v < entry_lo], default=tp1_min)
+        tp1 = min(tp1_min, struct_tp1) if struct_tp1 < entry_lo else tp1_min
+        tp1 = max(tp1, entry_mid * 0.01)  # 二次护栏：最终值不得为负/极小
+        tp2 = entry_mid - risk * _tp2_mult
+        tp2 = max(tp2, entry_mid * 0.01)  # tp2同样护栏
+        tp2 = max(tp2, tp1 * 0.5)         # tp2不得高于tp1（做空方向tp2应更低）
+
+    entry_mid = (entry_lo + entry_hi) / 2
+    # ── 最小spread护栏：入场区间宽度不得为0（极端低价品种防护）
+    _min_spread = price * 0.001  # 最小0.1%入场区间
+    if (entry_hi - entry_lo) < _min_spread:
+        if signal_dir == 'SHORT':
+            entry_hi = price * 1.001
+            entry_lo = price * 0.999
+        else:
+            entry_lo = price * 0.999
+            entry_hi = price * 1.001
+        entry_mid = price
+    risk = abs(stop_loss - entry_mid)
+
+    # ── 最终输出护栏：拦截一切异常参数 ─────────────────────
+    # SL距离超过50%：强制用price*5%重算
+    if entry_mid > 0 and risk / entry_mid > 0.50:
+        risk = entry_mid * 0.05
+        if signal_dir == 'LONG':
+            stop_loss = entry_mid - risk
+            tp1 = entry_mid + risk * _tp1_mult
+            tp2 = entry_mid + risk * _tp2_mult
+        else:
+            stop_loss = entry_mid + risk
+            tp1 = entry_mid - risk * _tp1_mult
+            tp2 = entry_mid - risk * _tp2_mult
+    # TP不能为负数（做空）或超高价格（做多）
+    if tp1 <= 0:
+        tp1 = entry_mid * (1 - 0.15) if signal_dir == 'SHORT' else entry_mid * 1.15
+    if tp2 <= 0:
+        tp2 = entry_mid * (1 - 0.25) if signal_dir == 'SHORT' else entry_mid * 1.25
+    # 重算risk用于RR
+    risk = abs(stop_loss - entry_mid)
+
+    # ══ L6守卫：拦截一切参数逆转 ══
+    # SHORT: SL必须 > entry_hi；TP必须 < entry_lo
+    # LONG:  SL必须 < entry_lo；TP必须 > entry_hi
+    if signal_dir == 'SHORT':
+        if stop_loss <= entry_hi:
+            stop_loss = entry_hi + atr_4h * 0.5   # 强制修正
+            risk = abs(stop_loss - entry_mid)
+            tp1 = entry_mid - risk * _tp1_mult
+            tp2 = entry_mid - risk * _tp2_mult
+        if tp1 >= entry_lo:
+            tp1 = entry_mid - risk * _tp1_mult
+        if tp2 >= tp1:
+            tp2 = tp1 - risk
+    else:  # LONG
+        if stop_loss >= entry_lo:
+            stop_loss = entry_lo - atr_4h * 0.5   # 强制修正
+            risk = abs(entry_mid - stop_loss)
+            tp1 = entry_mid + risk * _tp1_mult
+            tp2 = entry_mid + risk * _tp2_mult
+        if tp1 <= entry_hi:
+            tp1 = entry_mid + risk * _tp1_mult
+        if tp2 <= tp1:
+            tp2 = tp1 + risk
+    risk = abs(stop_loss - entry_mid)  # 最终risk
+
+    rr1  = round(abs(tp1 - entry_mid) / max(risk, 1e-9), 2)
+    rr2  = round(abs(tp2 - entry_mid) / max(risk, 1e-9), 2)
+    sl_pct = round(abs(stop_loss - entry_mid) / entry_mid * 100, 2)
+    sl_atr_mult = round(risk / max(atr_4h, 1e-9), 2)
+
+    # 动态精度：防止0.0001等极端低价被 round(...,4) 戒断到相同小数
+    import math as _m
+    _decs = max(4, -int(_m.floor(_m.log10(abs(price)))) + 4) if price > 0 else 4
+
+    return {
+        'entry_lo':    round(entry_lo, _decs),
+        'entry_hi':    round(entry_hi, _decs),
+        'stop_loss':   round(stop_loss, _decs),
+        'tp1':         round(tp1, _decs),
+        'tp2':         round(tp2, _decs),
+        'sl_pct':      sl_pct,
+        'sl_atr_mult': sl_atr_mult,     # 止损宽度 / 4H ATR（应在0.6~2.0之间）
+        'tp1_pct':     round(abs(tp1 - price) / price * 100, 2),
+        'rr1':         rr1,
+        'rr2':         rr2,
+        'primary_tf':  '4H',            # 方向/止损周期
+        'entry_tf':    '1H',            # 入场触发周期
+        'sl_basis':    'swing_4h+atr4h×0.3',   # 止损依据
+        'valid':       rr1 >= _tp1_mult,   # [终极体系] 动态门槛与TP倍数对齐
+    }
+
+def rebase_params(params: dict, new_entry: float, atr_1h: float,
+                   signal_dir: str = 'SHORT', sl_mult: float = 0.6) -> dict:
+    """
+    [WFV-v3.0 2026-05-28] sl_mult 默认改为 0.6x（达摩院无穿越训练全局冠军）
+    达摩院v3.0 OOS验证: SL=0.6xATR + TP=4.0xATR  core PF=1.227 (无穿越真实值)
+    设计院 2026-05-22 入场价重算函数
+    ─────────────────────────────────────────────────────────────
+    问题根因: brahma_brain 输出的止损/TP 是基于"当前价格"计算的绝对值。
+    一旦建议"等反弹至 X 入场"，所有参数必须以 X 为基准重算，
+    否则止损距离会错误地缩减为 $0~$1，直接被扫单。
+
+    规则：
+      SHORT: 止损 = new_entry + ATR × sl_mult（上方保护）
+      LONG:  止损 = new_entry - ATR × sl_mult（下方保护）
+      TP1/TP2 基于新入场 + 原始 RR 比例重算
+
+    使用示例:
+      r = analyze('ETHUSDT', 'SHORT')
+      pa = rebase_params(r['params'], new_entry=2144, atr_1h=10.77, signal_dir='SHORT')
+    ─────────────────────────────────────────────────────────────
+    """
+    sl_dist   = atr_1h * sl_mult
+    rr1_orig  = params.get('rr1', 2.0)
+    rr2_orig  = params.get('rr2', 4.5)
+
+    if signal_dir in ('SHORT', '做空'):
+        stop_loss = new_entry + sl_dist
+        tp1       = new_entry - sl_dist * rr1_orig
+        tp2       = new_entry - sl_dist * rr2_orig
+    else:
+        stop_loss = new_entry - sl_dist
+        tp1       = new_entry + sl_dist * rr1_orig
+        tp2       = new_entry + sl_dist * rr2_orig
+
+    sl_pct = round(sl_dist / new_entry * 100, 3)
+    risk   = sl_dist
+    rr1_new = round(abs(tp1 - new_entry) / max(risk, 1e-9), 2)
+    rr2_new = round(abs(tp2 - new_entry) / max(risk, 1e-9), 2)
+
+    return {
+        'entry_lo':      round(new_entry * 0.999, 4),
+        'entry_hi':      round(new_entry, 4),
+        'stop_loss':     round(stop_loss, 4),
+        'tp1':           round(tp1, 4),
+        'tp2':           round(tp2, 4),
+        'sl_pct':        sl_pct,
+        'sl_dist_usd':   round(sl_dist, 4),
+        'rr1':           rr1_new,
+        'rr2':           rr2_new,
+        'atr_used':      atr_1h,
+        'sl_mult':       sl_mult,
+        'rebased_from':  round(params.get('entry_hi', new_entry), 4),
+        'valid':         rr1_new >= 2.0,
+        '_note':         f'[rebase] 入场从{params.get("entry_hi","?"):.2f}移至{new_entry:.2f}，止损已重算',
+    }
+
+
+# ═══════════════════════════════════════════════════════════════
+# 主分析入口
+# ═══════════════════════════════════════════════════════════════
+
+def analyze(symbol: str, signal_dir: str = None) -> dict:
+    """
+    梵天大脑主入口
+    symbol:     交易对（如 ETHUSDT）
+    signal_dir: 强制方向（LONG/SHORT），None=自动判断
+    """
+    t0 = time.time()
+    _sym = symbol.upper()
+    print(f'[BrahmaBrain] 开始分析 {_sym} dir={signal_dir or "AUTO"}')
+
+    # Step 1: 市场状态分析
+    ms = ms_analyze(symbol)
+    if 'error' in ms:
+        print(f'[BrahmaBrain] ✗ {_sym} ms_analyze失败: {ms["error"]}')
+        return {'error': ms['error']}
+
+    # Step 2: 确定方向
+    if signal_dir is None:
+        signal_dir = ms['signal_bias']
+    print(f'[BrahmaBrain] {_sym} 体制={ms.get("regime","?")} 方向={signal_dir} RSI_1H={ms.get("momentum",{}).get("rsi_1h",0):.0f}')
+    if signal_dir == 'NEUTRAL':
+        print(f'[BrahmaBrain] {_sym} 方向中性，不入场')
+        return {
+            'symbol': symbol,
+            'signal_dir': 'NEUTRAL',
+            'action': '不入场',
+            'reason': '三框架方向中性，无共识',
+            'summary': ms['summary'],
+        }
+
+    # Step 3: SMC结构分析
+    smc = analyze_smc(symbol, signal_dir, '1h', 200)
+
+    # ══════════════════════════════════════════════════════════
+    # [达摩院v12.9c 修订 设计院 2026-05-30] FVG 条件升级
+    # 原逻辑：无FVG → 硬拒绝（导致OB/Fib降级路径被绕过）
+    # 新逻辑：无「有效方向FVG（gap>0.3%且在正确方向）」→ 降级，不硬拒绝
+    #         但无FVG且无OB且Fib也不在价格外侧合理距离 → 才硬拒绝（真正无结构）
+    # 修复原因：FVG阈值从0.1%提升到0.3%后，很多情况nearest_bear=None
+    #           但OB/Fib降级是合法的入场参数来源，不应拒绝
+    # ══════════════════════════════════════════════════════════
+    _fvg_hard = smc.get('fvg', {})
+    _fvg_exists = (
+        (_fvg_hard.get('nearest_bull') is not None) if signal_dir == 'LONG'
+        else (_fvg_hard.get('nearest_bear') is not None)
+    )
+    _ob_hard = smc.get('order_blocks', {})
+    _ob_exists = (
+        (_ob_hard.get('nearest_bull_ob') is not None) if signal_dir == 'LONG'
+        else (_ob_hard.get('nearest_bear_ob') is not None)
+    )
+    # 只有FVG和OB都没有才是真正「无结构」，Fib始终存在所以允许降级
+    if not _fvg_exists and not _ob_exists:
+        print(f'[BrahmaBrain] ⚠️ FVG/OB均无 {_sym}: {signal_dir}方向无SMC结构 → 降级用Fib入场')
+        # 不拒绝，继续走Fib降级路径（calc_trade_params会处理）
+    elif not _fvg_exists:
+        print(f'[BrahmaBrain] ℹ️ {_sym} 无有效FVG，使用OB入场')
+
+    # Step 4: Phase 2 额外引擎
+    k1h = klines_to_ohlcv(get_klines(symbol, '1h', 200))
+    k4h = klines_to_ohlcv(get_klines(symbol, '4h', 200))
+    extra_data = {
+        '_symbol': _sym,
+        '_k4h_closes':  list(k4h['c'][-20:]) if k4h and k4h.get('c') else [],
+        '_k4h_volumes': list(k4h['v'][-20:]) if k4h and k4h.get('v') else [],
+    }
+    # ── [UP-017 2026-05-22] CoinGlass 链上数据接入 ───────────────
+    try:
+        import sys as _sys_cg, os as _os_cg
+        _root_cg = _os_cg.path.dirname(_os_cg.path.dirname(_os_cg.path.abspath(__file__)))
+        _bb_dir  = _os_cg.path.dirname(_os_cg.path.abspath(__file__))
+        for _p in [_root_cg, _bb_dir]:
+            if _p not in _sys_cg.path: _sys_cg.path.insert(0, _p)
+        import coinglass_engine as _cg
+        _cg_snap = _cg.get_full_snapshot(_sym)
+        extra_data['coinglass'] = _cg_snap
+        extra_data['fear_greed'] = _cg_snap['fear_greed']
+        extra_data['onchain_score'] = _cg_snap['onchain_score']
+        print(f'[BrahmaBrain] CoinGlass: F&G={_cg_snap["fear_greed"]["value"]} '
+              f'OI={_cg_snap["oi_momentum"]["oi_change_pct"]:+.2f}% '
+              f'onchain={_cg_snap["onchain_score"]:+d}')
+    except Exception as _cg_e:
+        print(f'[BrahmaBrain] CoinGlass跳过: {_cg_e}')
+    # ── liq_scanner 补充清算数据（Binance公开接口，无需Coinglass Key）────
+    try:
+        from liq_scanner import get_liq_snapshot
+        _liq_snap = get_liq_snapshot(_sym)
+        if not extra_data.get('coinglass'):
+            extra_data['coinglass'] = {}
+        _cg_liq = extra_data['coinglass'].get('liquidation', {})
+        if not _cg_liq.get('available'):
+            # Coinglass失效时用liq_scanner补充
+            extra_data['coinglass']['liquidation'] = {
+                'long_liq':  _liq_snap.get('cg_long_liq_m', 0) or 0,
+                'short_liq': _liq_snap.get('cg_short_liq_m', 0) or 0,
+                'liq_ratio': 1.0,
+                'bias':      _liq_snap.get('liq_bias', 'NEUTRAL'),
+                'available': True,
+            }
+        # 始终补充Binance公开数据字段
+        extra_data['liq_snap'] = _liq_snap
+        print(f'[BrahmaBrain] LiqScan: 散户多{_liq_snap["long_pct"]:.0f}% 大户多{_liq_snap["top_long_pct"]:.0f}% 偏向={_liq_snap["liq_bias"]}')
+    except Exception as _liq_e:
+        print(f'[BrahmaBrain] LiqScan跳过: {_liq_e}')
+    # ─────────────────────────────────────────────────────────────
+    try:
+        # 达摩院 v3 升级：传入 volumes + regime + 当前时间戳
+        import time as _time_m
+        _cur_ts_ms = int(_time_m.time() * 1000)
+        _regime_str = ms.get('regime', '') if ms else ''
+        div_1h = divergence_score(
+            k1h['o'], k1h['h'], k1h['l'], k1h['c'], signal_dir, '1H',
+            volumes=list(k1h['v']), regime=_regime_str, ts_ms=_cur_ts_ms
+        )
+        div_4h = divergence_score(
+            k4h['o'], k4h['h'], k4h['l'], k4h['c'], signal_dir, '4H',
+            volumes=list(k4h['v']), regime=_regime_str, ts_ms=_cur_ts_ms
+        )
+        # v3: 直接用 score 字段（已含所有修正）
+        s_1h = div_1h['score']
+        s_4h = div_4h['score']
+        best  = div_4h if s_4h >= s_1h else div_1h
+        best_s = max(s_1h, s_4h)
+        extra_data['divergence'] = {
+            'score':        best_s,
+            'score_long':   best_s if signal_dir=='LONG' else 0,
+            'score_short':  best_s if signal_dir=='SHORT' else 0,
+            'details_1h':   div_1h['grade_notes'],
+            'details_4h':   div_4h['grade_notes'],
+            'rsi_div':      best['rsi_div'],
+            'macd_div':     best['macd_div'],
+            'macd_zero':    '0轴上方(多头区)' if best['macd_div'].get('zero_cross_up') or
+                             (div_4h['macd_div'].get('score_long',0)>0) else '0轴下方(空头区)',
+            'vol_1h':       div_1h.get('vol_info', {}),
+            'vol_4h':       div_4h.get('vol_info', {}),
+            'time_penalty': max(div_1h.get('time_penalty',0), div_4h.get('time_penalty',0)),
+            'regime_adj':   max(div_1h.get('regime_penalty',0), div_4h.get('regime_penalty',0)),
+        }
+        _tp = extra_data['divergence']['time_penalty']
+        _rp = extra_data['divergence']['regime_adj']
+        _vb = max(div_1h.get('vol_bonus',0), div_4h.get('vol_bonus',0))
+        if _tp or _rp or _vb:
+            print(f'[D03-v3] 实训修正: 时间惩罚={-_tp} 体制调整={-_rp} 量缩奖励=+{_vb} 最终分={best_s}')
+    except Exception:
+        pass
+    try:
+        vol_res = volume_score(k1h['h'],k1h['l'],k1h['c'],k1h['v'], signal_dir)
+        extra_data['volume'] = {'score': vol_res['score'], 'details': vol_res['details']}
+    except Exception:
+        pass
+    try:
+        # Phase 3: Elliott波浪引擎
+        import statistics
+        tr_list = [max(k1h['h'][i]-k1h['l'][i],
+                       abs(k1h['h'][i]-k1h['c'][i-1]),
+                       abs(k1h['l'][i]-k1h['c'][i-1]))
+                   for i in range(1, len(k1h['c']))]
+        atr_val = statistics.mean(tr_list[-14:])
+        ew_res = analyze_elliott(k1h['h'], k1h['l'], k1h['c'], atr_val, signal_dir)
+        extra_data['elliott'] = ew_res
+    except Exception as _ew_err:
+        extra_data['elliott_err'] = str(_ew_err)  # 记录错误便于调试
+    try:
+        sent = sentiment_score(
+            symbol, signal_dir,
+            ms['sentiment']['funding_rate'],
+            ms['sentiment']['long_short_ratio']
+        )
+        extra_data['sentiment'] = sent
+    except Exception:
+        pass
+    # P1b/P2c/P2d: 链上+订单流+宏观 并发执行（原串行3×~1s → 并发后只需最慢1个）
+    from concurrent.futures import ThreadPoolExecutor as _TPE
+    _fg_pass = extra_data.get('fear_greed')
+    _k1h_ohlcv_pat = klines_to_ohlcv(get_klines(symbol, '1h', 200))
+
+    def _run_onchain():
+        if not _ONCHAIN_OK: return None
+        return _onchain_score(symbol, signal_dir)
+
+    def _run_pattern():
+        if not _PATTERN_OK: return None
+        if _k1h_ohlcv_pat and len(_k1h_ohlcv_pat.get('h',[])) >= 20:
+            return _pattern_score(_k1h_ohlcv_pat['h'], _k1h_ohlcv_pat['l'], _k1h_ohlcv_pat['c'], signal_dir)
+        return None
+
+    def _run_orderflow():
+        if not _OF_OK: return None
+        return _order_flow_score(symbol, signal_dir)
+
+    def _run_macro():
+        if not _MACRO_OK: return None
+        return _macro_score(symbol, signal_dir, fg_data=_fg_pass)
+
+    with _TPE(max_workers=4) as _ex:
+        _f_oc  = _ex.submit(_run_onchain)
+        _f_pt  = _ex.submit(_run_pattern)
+        _f_of  = _ex.submit(_run_orderflow)
+        _f_mc  = _ex.submit(_run_macro)
+        try: extra_data['onchain'] = _f_oc.result(timeout=8)
+        except Exception: pass
+        try:
+            _pt = _f_pt.result(timeout=8)
+            if _pt: extra_data['pattern'] = _pt
+        except Exception: pass
+        try:
+            _of = _f_of.result(timeout=8)
+            if _of: extra_data['order_flow'] = _of
+        except Exception: pass
+        try: extra_data['macro'] = _f_mc.result(timeout=8)
+        except Exception: pass
+
+    # P0-NEW: 谐波形态引擎
+    try:
+        if _HARMONIC_OK:
+            h_res = _harmonic_score(k4h['h'], k4h['l'], k4h['c'], signal_dir)
+            extra_data['harmonic'] = h_res
+    except Exception as _e:
+        extra_data['harmonic_err'] = str(_e)
+        try:
+            from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'harmonic','err':str(_e)[:80]})
+        except Exception: pass
+
+    # P0-NEW: 多周期对齐引擎
+    try:
+        if _MULTITF_OK:
+            mt_res = _multitf_score(symbol, signal_dir)
+            extra_data['multitf'] = mt_res
+    except Exception as _e:
+        extra_data['multitf_err'] = str(_e)
+        try:
+            from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'multitf','err':str(_e)[:80]})
+        except Exception: pass
+
+    # P1-NEW: 增强信号引擎（CVD+清算+多空比趋势+时段）
+    try:
+        if _ENHANCED_OK:
+            en_res = _enhanced_score(symbol, signal_dir)
+            extra_data['enhanced'] = en_res
+    except Exception as _e:
+        extra_data['enhanced_err'] = str(_e)
+        try:
+            from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'enhanced','err':str(_e)[:80]})
+        except Exception: pass
+
+    # P2-NEW: 鲸鱼引擎（链上大单+交易所流向）
+    try:
+        if _WHALE_OK:
+            wh_res = _whale_score(symbol, signal_dir)
+            extra_data['whale'] = wh_res
+    except Exception as _e:
+        extra_data['whale_err'] = str(_e)
+        try:
+            from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'whale','err':str(_e)[:80]})
+        except Exception: pass
+
+    # P2-NEW: 跨市场引擎（BTC-ETH相关/DXY/风险偏好）
+    try:
+        if _CROSS_OK:
+            cx_res = _cross_market_score(symbol, signal_dir)
+            extra_data['cross_market'] = cx_res
+    except Exception as _e:
+        extra_data['cross_err'] = str(_e)
+        try:
+            from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'cross','err':str(_e)[:80]})
+        except Exception: pass
+
+    # P2-NEW: 微观结构引擎（大单吸收/耗尽/停顿）
+    try:
+        if _MICRO_OK:
+            ms_res = _micro_score(symbol, signal_dir)
+            extra_data['microstructure'] = ms_res
+    except Exception as _e:
+        extra_data['micro_err'] = str(_e)
+        try:
+            from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'micro','err':str(_e)[:80]})
+        except Exception: pass
+
+    # ─── Phase A: 新引擎接入 ─────────────────────────────────────────
+    # A1: L2订单簿深度
+    try:
+        import sys as _sys_ob, os as _os_ob
+        _bd = _os_ob.path.join(_os_ob.path.dirname(_os_ob.path.abspath(__file__)))
+        if _bd not in _sys_ob.path: _sys_ob.path.insert(0, _bd)
+        from orderbook_engine import analyze_orderbook as _ob_fn
+        extra_data['orderbook'] = _ob_fn(symbol, signal_dir)
+    except Exception as _e:
+        extra_data['orderbook_err'] = str(_e)[:80]
+
+    # A2: 贝叶斯胜率调整
+    try:
+        from bayesian_updater import score_adjustment as _bayes_adj, get_posterior as _bayes_post
+        _regime_key = ms.get('regime', 'DEFAULT')
+        extra_data['bayesian'] = {
+            **_bayes_post(symbol, signal_dir, _regime_key),
+            'score_adj': _bayes_adj(symbol, signal_dir, _regime_key)
+        }
+    except Exception as _e:
+        extra_data['bayesian_err'] = str(_e)[:80]
+
+    # A3: VaR 单仓风险
+    try:
+        from var_engine import single_position_var as _var_fn
+        extra_data['var'] = _var_fn(symbol, 0.05, signal_dir)
+    except Exception as _e:
+        extra_data['var_err'] = str(_e)[:80]
+
+    # A5: 宏观事件日历
+    try:
+        from macro_calendar import get_active_risk as _cal_fn
+        extra_data['macro_calendar'] = _cal_fn()
+    except Exception as _e:
+        extra_data['macro_calendar_err'] = str(_e)[:80]
+
+    # A6: 合约基差引擎（合约标记价格 vs 现货指数价格）
+    try:
+        from data_cache import get_basis as _basis_fn
+        extra_data['basis'] = _basis_fn(symbol)
+    except Exception as _e:
+        extra_data['basis_err'] = str(_e)[:80]
+
+    # A7: ATR历史百分位（波动率体制）
+    try:
+        from data_cache import get_atr_percentile as _atr_pctile_fn
+        extra_data['atr_percentile'] = _atr_pctile_fn(symbol, '1h', 90)
+    except Exception as _e:
+        extra_data['atr_percentile_err'] = str(_e)[:80]
+
+    # ─── Phase B: ML/滑点/在线学习/链上WS ──────────────────────────
+    # B1: XGBoost 信号分类器
+    try:
+        import sys as _sys_xgb, os as _os_xgb
+        _bd = _os_xgb.path.join(_os_xgb.path.dirname(_os_xgb.path.abspath(__file__)))
+        if _bd not in _sys_xgb.path: _sys_xgb.path.insert(0, _bd)
+        from xgboost_engine import predict_win_prob as _xgb_fn
+        extra_data['xgboost'] = _xgb_fn(extra_data.get('_snap_for_xgb', {}))
+    except Exception as _e:
+        extra_data['xgboost_err'] = str(_e)[:80]
+
+    # B2: 在线贝叶斯多维后验
+    try:
+        from online_bayes import get_win_rate as _ob_fn, score_adjustment as _ob_adj
+        _tier = 'S1' if extra_data.get('bayesian',{}).get('mean',0) or ms.get('regime','') else 'S2'
+        _hour = __import__('time').gmtime().tm_hour
+        extra_data['online_bayes'] = {
+            **_ob_fn(symbol, signal_dir, ms.get('regime','DEFAULT'), score_tier=_tier, hour=_hour),
+            'score_adj': _ob_adj(symbol, signal_dir, ms.get('regime','DEFAULT'), score_tier=_tier, hour=_hour),
+        }
+    except Exception as _e:
+        extra_data['online_bayes_err'] = str(_e)[:80]
+
+    # B3: 滑点模型
+    try:
+        from slippage_model import estimate_slippage as _slip_fn
+        _nav = 124.97
+        _kelly = 0.05
+        _notional = _nav * _kelly * float(ms.get('leverage', 10))
+        extra_data['slippage'] = _slip_fn(symbol, signal_dir, notional_usdt=_notional)
+    except Exception as _e:
+        extra_data['slippage_err'] = str(_e)[:80]
+
+    # B4: 链上大单 WS/REST
+    try:
+        from onchain_ws import analyze as _ws_fn
+        extra_data['onchain_ws'] = _ws_fn(symbol, signal_dir)
+    except Exception as _e:
+        extra_data['onchain_ws_err'] = str(_e)[:80]
+
+    # 传递给 xgboost（需要完整 snap）
+    extra_data['_snap_for_xgb'] = {
+        'confluence': extra_data.get('confluence_preview', {}),
+        'direction': signal_dir,
+        'regime': ms.get('regime', ''),
+        'params': {'rr1': 2.0},
+        'extra': extra_data,
+        'market_state': ms,
+    }
+
+    # ─── Phase C: LSTM + RL + NLP ──────────────────────────────────
+    # C1: LSTM 时序预测
+    try:
+        from lstm_engine import analyze as _lstm_fn
+        _klines_1h = extra_data.get('_klines_1h') or ms.get('klines_1h')
+        extra_data['lstm'] = _lstm_fn(symbol, signal_dir, _klines_1h)
+    except Exception as _e:
+        extra_data['lstm_err'] = str(_e)[:80]
+
+    # C2: RL 仓位决策（输出 kelly_mult，不影响评分，存入 extra）
+    try:
+        from rl_position import get_action as _rl_fn
+        _rsi_val = float(ms.get('momentum', {}).get('rsi_1h', ms.get('rsi', 50)))
+        _hour    = __import__('time').gmtime().tm_hour
+        _score   = extra_data.get('_current_score', 100)
+        extra_data['rl_position'] = _rl_fn(
+            score=_score, regime=ms.get('regime','DEFAULT'),
+            rsi=_rsi_val, direction=signal_dir, hour=_hour)
+    except Exception as _e:
+        extra_data['rl_position_err'] = str(_e)[:80]
+
+    # C3: NLP 情绪引擎
+    try:
+        import sys as _sys_sent, os as _os_sent
+        _bd_sent = _os_sent.path.join(_os_sent.path.dirname(_os_sent.path.abspath(__file__)))
+        if _bd_sent not in _sys_sent.path: _sys_sent.path.insert(0, _bd_sent)
+        # 直接通过完整路径加载模块
+        import importlib.util as _ilu_sent
+        _spec = _ilu_sent.spec_from_file_location(
+            'sentiment_engine_local',
+            _os_sent.path.join(_bd_sent, 'sentiment_engine.py'))
+        _sm = _ilu_sent.module_from_spec(_spec)
+        _spec.loader.exec_module(_sm)
+        extra_data['sentiment_nlp'] = _sm.analyze(symbol, signal_dir)
+    except Exception as _e:
+        extra_data['sentiment_nlp_err'] = str(_e)[:80]
+
+    # Step 5: 共振评分
+    cf = confluence_score(ms, smc, signal_dir, extra_data)
+
+    # Step 5: 交易参数
+    params = calc_trade_params(ms, smc, signal_dir)
+
+    # [N17专项] 标的专属SL/TP参数覆盖
+    # [WFV-v4.0 2026-05-28] 达摩院高强度训练 200轮Bootstrap认证
+    # 全局冠军: RSI<20/>>85 SL=0.6x TP=4.0x  核心OOS PF=1.347 Bootstrap=MEDIUM
+    # [N17专项] 标的专属SL/TP参数覆盖
+    # [WFV-v4.0 2026-05-28] 达摩院高强度训练 200轮Bootstrap认证
+    # 全局冠军: RSI<20/>>85 SL=0.6x TP=4.0x  核心OOS PF=1.347 Bootstrap=MEDIUM
+    _sym_spec_map = {
+        # S+级（OOS PF>=2.0，Bootstrap HIGH/MEDIUM）
+        'INJUSDT':  {'sl_mult_override': 0.6, 'tp_mult_override': 4.0, 'mh_override': 12, 'pf_evidence': 2.629, 'grade': 'S+'},  # Bootstrap=MEDIUM
+        'LINKUSDT': {'sl_mult_override': 1.2, 'tp_mult_override': 3.0, 'mh_override': 12, 'pf_evidence': 2.627, 'grade': 'S+'},  # Bootstrap=HIGH
+        'XRPUSDT':  {'sl_mult_override': 0.6, 'tp_mult_override': 4.5, 'mh_override': 12, 'pf_evidence': 2.522, 'grade': 'S+'},  # Bootstrap=HIGH
+        'NEARUSDT': {'sl_mult_override': 0.6, 'tp_mult_override': 4.0, 'mh_override':  8, 'pf_evidence': 2.397, 'grade': 'S+'},
+        'ADAUSDT':  {'sl_mult_override': 0.6, 'tp_mult_override': 4.5, 'mh_override': 12, 'pf_evidence': 1.932, 'grade': 'S+'},
+        # S级（OOS PF 1.5~2.0）
+        'OPUSDT':   {'sl_mult_override': 0.6, 'tp_mult_override': 4.0, 'mh_override':  8, 'pf_evidence': 1.803, 'grade': 'S'},
+        'BNBUSDT':  {'sl_mult_override': 0.6, 'tp_mult_override': 3.0, 'mh_override':  8, 'pf_evidence': 1.588, 'grade': 'S'},
+        'BTCUSDT':  {'sl_mult_override': 0.6, 'tp_mult_override': 2.5, 'mh_override': 12, 'pf_evidence': 1.525, 'grade': 'S'},
+        'DOTUSDT':  {'sl_mult_override': 0.6, 'tp_mult_override': 2.5, 'mh_override':  8, 'pf_evidence': 1.516, 'grade': 'S'},
+        # A级
+        'DOGEUSDT': {'sl_mult_override': 0.8, 'tp_mult_override': 4.0, 'mh_override': 12, 'pf_evidence': 1.441, 'grade': 'A'},
+        'SOLUSDT':  {'sl_mult_override': 0.6, 'tp_mult_override': 4.5, 'mh_override': 12, 'pf_evidence': 1.404, 'grade': 'A'},
+        'AVAXUSDT': {'sl_mult_override': 0.6, 'tp_mult_override': 4.5, 'mh_override':  8, 'pf_evidence': 1.380, 'grade': 'B'},
+        'ATOMUSDT': {'sl_mult_override': 0.6, 'tp_mult_override': 3.0, 'mh_override':  8, 'pf_evidence': 1.279, 'grade': 'B'},
+        # C级（谨慎）
+        'ETHUSDT':  {'sl_mult_override': 1.2, 'tp_mult_override': 4.5, 'mh_override': 12, 'pf_evidence': 1.123, 'grade': 'C'},
+        'LTCUSDT':  {'sl_mult_override': 0.6, 'tp_mult_override': 4.5, 'mh_override': 12, 'pf_evidence': 1.035, 'grade': 'C'},
+    }
+
+    # [N19] BTC传导系数 — 低传导标的在BTC突破时降权
+    # 数据来源: train_10k_v5.py N19节点，15标的分析
+    # 低传导(<40%): BTC突破后4h内跟随率偏低
+    _btc_low_conductance = {
+        '1000PEPEUSDT', 'APTUSDT', 'INJUSDT', 'LUNA2USDT', 'NEARUSDT'
+    }
+    # BTC突破判断阈值: 1H涨幅>1.5%或4H EMA金叉
+    _btc_breakout_pct = 0.015
+    _spec = _sym_spec_map.get(_sym)
+    if _spec and params.get('valid'):
+        # 重算SL/TP（用专项sl_mult覆盖）
+        _sl_ov = _spec['sl_mult_override']
+        _tp_ov = _spec.get('tp_mult_override', 4.0)  # [WFV-v3] 专属TP倍数
+        _atr1 = float(ms.get('momentum', {}).get('atr_1h', ms.get('price', 1) * 0.01))
+        _price_ov = float(ms.get('price', 0))
+        _entry_lo_ov = params.get('entry_lo', _price_ov)
+        _entry_hi_ov = params.get('entry_hi', _price_ov)
+        _entry_mid_ov = (_entry_lo_ov + _entry_hi_ov) / 2
+        if _price_ov > 0 and _atr1 > 0:
+            if signal_dir == 'SHORT':
+                # [BUG修复] SL从入场区上沿算，确保SL > entry_hi
+                _sl_new = round(_entry_hi_ov + _atr1 * _sl_ov, 6)
+                _risk_ov = abs(_sl_new - _entry_mid_ov)
+                _tp1_new = round(_entry_mid_ov - _risk_ov * _tp_ov, 6)
+                _tp2_new = round(_entry_mid_ov - _risk_ov * (_tp_ov * 1.8), 6)
+            else:
+                # [BUG修复] SL从入场区下沿算，确保SL < entry_lo
+                _sl_new = round(_entry_lo_ov - _atr1 * _sl_ov, 6)
+                _risk_ov = abs(_entry_mid_ov - _sl_new)
+                _tp1_new = round(_entry_mid_ov + _risk_ov * _tp_ov, 6)
+                _tp2_new = round(_entry_mid_ov + _risk_ov * (_tp_ov * 1.8), 6)
+            # [BUG-FIX 2026-05-29] R:R必须从「入场中点」算，不能用当前价
+            # 用当前价算R:R会因为「价格离入场区还有距离」导致分母虚大，R:R严重失真
+            # ETH实测: 当前价基准R:R=1.41 vs 入场中点基准R:R=4.66
+            _sl_pct_new = round(abs(_sl_new - _entry_mid_ov) / _entry_mid_ov * 100, 3)
+            _risk_for_rr = abs(_sl_new - _entry_mid_ov)
+            _rr1_new = round(abs(_tp1_new - _entry_mid_ov) / max(_risk_for_rr, 1e-9), 2)
+            params = dict(params)
+            params.update({
+                'stop_loss': _sl_new, 'tp1': _tp1_new, 'tp2': _tp2_new,
+                'sl_pct': _sl_pct_new, 'rr1': _rr1_new,
+                'sl_atr_mult': _sl_ov,
+                '_spec_override': f'{_sym} 专项sl={_sl_ov}x mh={_spec["mh_override"]}h PF={_spec["pf_evidence"]}',
+                'valid': _rr1_new >= 2.0,
+            })
+            print(f'[N17专项] {_sym} sl覆盖={_sl_ov}x rr1={_rr1_new} sl_pct={_sl_pct_new}%')
+
+    # [v13.0] 单一化输出层：R:R不足成为唱拘定局式，覆盖action为WATCH
+    # 规则：TP1 R:R ≥ 2.5 才论入场，否则重新标注明确的R:R和拓展SL逻辑
+    if not params.get('valid'):
+        rr1_val = params.get('rr1', 0)
+        sl_basis = params.get('sl_basis', 'ATR')
+        # [FIX-RR 2026-05-27] R:R不达标时，尝试用ATR×2.0自动扩展止损重算
+        _entry_mid = (params.get('entry_lo',0) + params.get('entry_hi',0)) / 2
+        _atr4h = ms['momentum'].get('atr_4h', ms['momentum'].get('atr_1h',0)*2.5)
+        if _entry_mid > 0 and _atr4h > 0 and rr1_val > 0:
+            _new_risk = _atr4h * 2.0
+            if signal_dir == 'SHORT':
+                _new_sl  = _entry_mid + _new_risk
+                _new_tp1 = _entry_mid - _new_risk * 2.5
+                _new_rr1 = abs(_new_tp1 - _entry_mid) / _new_risk
+            else:
+                _new_sl  = _entry_mid - _new_risk
+                _new_tp1 = _entry_mid + _new_risk * 2.5
+                _new_rr1 = abs(_new_tp1 - _entry_mid) / _new_risk
+            # 拓展后止损宽度 ≤ 5%，且新RR ≥ 2.5
+            _new_sl_pct = abs(_new_sl - _entry_mid) / _entry_mid * 100
+            if _new_rr1 >= 2.5 and _new_sl_pct <= 5.0:
+                params = dict(params)
+                params['stop_loss'] = round(_new_sl, 4)
+                params['tp1']       = round(_new_tp1, 4)
+                params['rr1']       = round(_new_rr1, 2)
+                params['sl_pct']    = round(_new_sl_pct, 2)
+                params['sl_basis']  = 'atr4h×2.0(拓展重算)'
+                params['valid']     = True
+                rr1_val = params['rr1']
+        cf = dict(cf)
+        if not params.get('valid'):
+            cf['action']     = f'WATCH(R:R={rr1_val:.2f}<2.5 sl={sl_basis})'
+            cf['kelly_mult'] = 0
+            cf['rr_gate']    = 'FAIL'
+        else:
+            cf['action']  = 'ENTER_FULL'
+            cf['rr_gate'] = 'PASS'
+    else:
+        cf = dict(cf)
+        cf['rr_gate'] = 'PASS'
+        # [v13.0] 单一化：行动与 primary_tf 周期同步
+        cf['primary_tf'] = params.get('primary_tf', '4H')
+        cf['entry_tf']   = params.get('entry_tf',   '1H')
+        cf['sl_basis']   = params.get('sl_basis',   'swing_4h+atr4h×0.3')
+
+    # [Phase C-2] RL 仓位乘数覆盖 kelly_mult
+    rl = extra_data.get('rl_position', {})
+    if rl.get('kelly_mult') and cf.get('action') in ('ENTER_FULL', 'ENTER'):
+        rl_mult = rl['kelly_mult']
+        cf = dict(cf)
+        base_kelly = cf.get('kelly_base', cf.get('kelly_mult', 1.0))
+        cf['kelly_mult'] = round(base_kelly * rl_mult, 3)
+        cf['rl_kelly_note'] = rl.get('note', '')
+
+    # ══════════════════════════════════════════════════════════
+    # [v12.8] I2 冲突解析器 / I3 Kelly分配 / I4/I7 漂移+健康检测
+    # ══════════════════════════════════════════════════════════
+    import sys as _sys
+    _bb_dir = str(__file__).replace('brahma_brain.py','')
+    if _bb_dir not in _sys.path: _sys.path.insert(0, _bb_dir)
+
+    # I4/I7: 漂移检测
+    try:
+        from drift_detector import detect as _drift_detect
+        _drift = _drift_detect(_sym, extra_data)
+        extra_data['drift'] = _drift
+        if _drift['alert'] == 'ALERT':
+            print(f'[BrahmaBrain] ⚠️ DRIFT ALERT {_sym}: {_drift["summary"]}')
+    except Exception as _de:
+        pass
+
+    # I2: 冲突解析
+    try:
+        from conflict_resolver import resolve as _cr_resolve
+        _bd = cf.get('breakdown', {})
+        _conflict = _cr_resolve(_bd, signal_dir, cf.get('total', 0))
+        extra_data['conflict'] = _conflict
+        if _conflict['verdict'] == 'REJECT':
+            print(f'[BrahmaBrain] 🚫 CONFLICT REJECT {_sym}: {_conflict["conflict_summary"]}')
+            cf = dict(cf)
+            cf['kelly_mult'] = 0.0
+            cf['conflict_reject'] = True
+        elif _conflict['verdict'] == 'DOWNWEIGHT':
+            cf = dict(cf)
+            cf['kelly_mult'] = round(cf.get('kelly_mult', 1.0) * _conflict['confidence_adj'], 3)
+            cf['conflict_adj'] = _conflict['confidence_adj']
+        elif _conflict['verdict'] == 'APPROVE' and _conflict['confidence_adj'] > 1.0:
+            cf = dict(cf)
+            cf['kelly_mult'] = round(min(cf.get('kelly_mult', 1.0) * _conflict['confidence_adj'], 2.0), 3)
+    except Exception as _ce:
+        pass
+
+    # I3: Kelly仓位分配
+    try:
+        from kelly_allocator import compute as _kelly_compute
+        _bayes_wr = None
+        if extra_data.get('online_bayes'):
+            _bayes_wr = extra_data['online_bayes'].get('post_wr')
+        _xgb_prob = None
+        if extra_data.get('xgboost'):
+            _xgb_prob = extra_data['xgboost'].get('win_prob')
+        _drift_mult = extra_data.get('drift', {}).get('confidence_mult', 1.0)
+        _kelly_result = _kelly_compute(
+            rr_ratio=params.get('rr_ratio', 1.5),
+            signal_score=int(cf.get('total', 100)),
+            bayes_wr=_bayes_wr,
+            xgb_prob=_xgb_prob,
+            extra_data={'drift': {'confidence_mult': _drift_mult}},
+        )
+        extra_data['kelly'] = _kelly_result
+    except Exception as _ke:
+        pass
+
+    # ══════════════════════════════════════════════════════════
+    # [v12.9] I5 队列/资金 / I3 动态SL / I7 归因（Phase 1）
+    # ══════════════════════════════════════════════════════════
+
+    # I5: 信号队列检查（是否可以进入队列）
+    try:
+        from signal_queue import add_signal as _sq_add, get_status as _sq_status
+        _sq_result = _sq_add(
+            symbol=_sym,
+            signal_dir=signal_dir,
+            score=float(cf.get('total', 100)),
+            regime=str(ms.get('regime','')),
+        )
+        extra_data['signal_queue'] = _sq_result
+        if not _sq_result.get('accepted', True):
+            print(f'[BrahmaBrain] 🚫 Queue reject {_sym}: {_sq_result["reason"]}')
+            cf = dict(cf)
+            cf['kelly_mult'] = 0.0
+            cf['queue_reject'] = _sq_result['reason']
+    except Exception as _sqe:
+        pass
+
+    # I5: 资金分配
+    try:
+        from capital_allocator import compute as _ca_compute
+        _ca_result = _ca_compute(
+            symbol=_sym,
+            signal_score=float(cf.get('total', 100)),
+            sl_pct=params.get('sl_pct', None),
+        )
+        extra_data['capital'] = _ca_result
+        if not _ca_result.get('allowed', True):
+            cf = dict(cf)
+            cf['kelly_mult'] = 0.0
+            cf['capital_reject'] = _ca_result['reason']
+    except Exception as _cae:
+        pass
+
+    # I3: 动态止损
+    try:
+        from dynamic_sl import compute as _dsl_compute
+        _drift_alert = extra_data.get('drift', {}).get('alert', 'OK')
+        _kls = [lvl for lvl in ms.get('key_levels', {}).values()
+                if isinstance(lvl, (int,float)) and lvl > 0] if ms.get('key_levels') else []
+        _dsl = _dsl_compute(
+            symbol=_sym,
+            entry_price=float(ms.get('price', 0)),
+            signal_dir=signal_dir,
+            regime=str(ms.get('regime','')),
+            score=float(cf.get('total', 100)),
+            drift_alert=_drift_alert,
+            key_levels=_kls,
+        )
+        extra_data['dynamic_sl'] = _dsl
+        params = dict(params)
+        params['sl_price_dyn'] = _dsl.get('sl_price')
+        params['sl_pct_dyn']   = _dsl.get('sl_pct')
+        params['sl_reasoning'] = _dsl.get('reasoning')
+    except Exception as _dsle:
+        pass
+
+    # I7: 实时归因（轻量，从attribution.json读缓存而非重算）
+    try:
+        _attr_f = __import__('pathlib').Path('data/attribution.json')
+        if _attr_f.exists():
+            _attr = __import__('json').loads(_attr_f.read_text())
+            extra_data['attribution'] = {
+                'top_misleaders': _attr.get('top_misleaders', [])[:3],
+                'ts': _attr.get('ts', ''),
+            }
+    except Exception as _ate:
+        pass
+
+    # ══════════════════════════════════════════════════════════════
+    # [设计院终极版 v2.0] 六层防线集成入口
+    # regime_gate → asset_universe → regime_weights → adaptive_threshold → MTF → Kelly
+    # ══════════════════════════════════════════════════════════════
+    try:
+        import sys as _v2_sys, os as _v2_os
+        _v2_base = _v2_os.path.dirname(_v2_os.path.dirname(_v2_os.path.abspath(__file__)))
+        if _v2_base not in _v2_sys.path: _v2_sys.path.insert(0, _v2_base)
+        from upgrade_v2.v2_integrator import v2_enhance_signal as _v2_enhance
+        _v2_result = _v2_enhance(
+            symbol    = _sym,
+            direction = signal_dir,
+            score     = float(cf.get('total', 0)),
+            ms        = ms,
+            breakdown = cf.get('breakdown', {}),
+            nav       = float(ms.get('nav', 127.62) or 127.62),
+            interval  = '1h',
+        )
+        # 写入 cf 供日志记录
+        cf['v2_audit']     = _v2_result.get('audit', {})
+        cf['v2_mode']      = _v2_result.get('mode', '')
+        cf['v2_mtf_note']  = _v2_result.get('mtf_note', '')
+        cf['v2_pos_pct']   = _v2_result.get('pos_pct', 0)
+        cf['v2_breakdown'] = _v2_result.get('breakdown_ext', {})
+
+        if not _v2_result.get('allowed', True):
+            # v2 硬封锁 → 评分归零0，不退出，让analyze()完整构建返回结构
+            _block_reason = _v2_result.get('block_reason', 'v2封锁')
+            print(f'[BrahmaBrain-v2] 🛡️ 封锁 {_sym} {signal_dir}: {_block_reason[:60]}')
+            cf['total']         = 0
+            cf['score_final']   = 0
+            cf['action']        = 'SKIP'
+            cf['kelly_mult']    = 0
+            cf['v2_blocked']    = True
+            cf['v2_block_reason'] = _block_reason
+        else:
+            # v2 通过 → 更新评分和仓位
+            _v2_final_score = _v2_result.get('final_score', cf.get('total', 0))
+            if _v2_final_score != cf.get('total', 0):
+                print(f'[BrahmaBrain-v2] 📊 {_sym} 评分调整: {cf.get("total",0):.0f}→{_v2_final_score:.0f} ({_v2_result.get("mode","")})')
+                cf['total'] = _v2_final_score
+            # 仓位由v2接管
+            cf['v2_pos_pct'] = _v2_result.get('pos_pct', 0)
+    except Exception as _v2_err:
+        # v2失败降级，不影响原有流程
+        import traceback
+        cf['v2_error'] = str(_v2_err)[:100]
+
+    # [达摩院v2.0] P2: Score门槛 — 从参数总线读取品种专项门槛
+    # M01铁证: thr=160品种均PF=2.944, 158为实盘安全边际
+    try:
+        import sys as _sys, os as _os
+        _bus_dir = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..')
+        if _bus_dir not in _sys.path: _sys.path.insert(0, _bus_dir)
+        from dharma.dharma_bus import get_sym_params as _get_bus_p
+        _bus_d = _get_bus_p(_sym) if _sym else {}
+        MIN_SCORE_OPEN = int(_bus_d.get('thr', 158))
+    except Exception:
+        MIN_SCORE_OPEN = 158   # fallback: M01铁证安全边际
+    MIN_SCORE_S2   = 130   # S2门槛：轻仓3%试探
+    MIN_SCORE_S3   = 100   # S3门槛：观察记录，不开仓
+    _score_raw = cf.get('total', 0)
+
+    # ── [P2-C] N19 BTC传导系数 ─────────────────────────────────────────────
+    # 低传导标的(<40%) 在BTC强势突破(1H涨幅>1.5%)时 score×0.90
+    # 数据来源: train_10k_v5.py N19节点
+    try:
+        _btc_low_cond = {'1000PEPEUSDT','APTUSDT','INJUSDT','LUNA2USDT','NEARUSDT'}
+        if _sym in _btc_low_cond:
+            _btc_state = extra_data.get('btc_market', {}) or {}
+            _btc_chg_1h = float(_btc_state.get('price_change_pct_1h', 0) or 0)
+            if abs(_btc_chg_1h) >= 1.5:
+                _cond_factor = 0.90
+                _score_raw = round(_score_raw * _cond_factor)
+                cf['total'] = _score_raw
+                _log(f'[BrahmaBrain] 📉 P2-C N19低传导惩罚: {_sym} ×{_cond_factor} BTC1H={_btc_chg_1h:+.1f}% score→{_score_raw}')
+    except Exception:
+        pass
+    # ── [END P2-C] ──────────────────────────────────────────────────────────
+    _score_gate_ok = float(_score_raw) >= MIN_SCORE_OPEN
+    if not _score_gate_ok:
+        print(f'[BrahmaBrain] ⚠️ Score gate {_sym}: {_score_raw:.0f} < {MIN_SCORE_OPEN} (低于S1门槛)')
+        cf = dict(cf)
+        cf['score_gate_reject'] = True
+        cf['score_gate_min'] = MIN_SCORE_OPEN
+
+    # ══════════════════════════════════════════════════════════════
+    # [达摩院v2.0 M11] CI宽度仓位折扣层 — 安全保险丝
+    # LINK CI宽5.86→×0.70 | DOGE CI宽5.11→×0.70 | NEAR ×0.55
+    # 确保高不确定性品种不会因单笔大仓拖垃最大回撤
+    # ══════════════════════════════════════════════════════════════
+    try:
+        from dharma.dharma_bus import get_pos_with_ci_discount as _get_ci_pos
+        _ci_pos_cap = _get_ci_pos(_sym)
+        # score_pos是分层仓位，_ci_pos_cap是总线上限，取小者
+        _score_pos_cur = extra_data.get('score_pos', 0.065) if extra_data and isinstance(extra_data, dict) else 0.065
+        _final_pos = min(_score_pos_cur, _ci_pos_cap)
+        if _final_pos < _score_pos_cur:
+            if extra_data and isinstance(extra_data, dict):
+                extra_data['score_pos'] = _final_pos
+                extra_data['ci_discount_applied'] = True
+            _log(f'[BrahmaBrain] M11 CI折扣 {_sym}: {_score_pos_cur:.1%}→{_final_pos:.1%}')
+    except Exception:
+        pass
+
+    # [P2-A] 4h多周期方向确认层（N13实证: 4h泛化率75%优于1h67%）
+    _mom_4h = ms.get('momentum', {})
+    _rsi_4h = float(_mom_4h.get('rsi_4h', 50))
+    _macd_4h = _mom_4h.get('macd_4h', 0) or _mom_4h.get('macd', 0) or 0
+    _ema50_4h = float(_mom_4h.get('ema50_4h', 0) or 0)
+    _ema200_4h = float(_mom_4h.get('ema200_4h', 0) or 0)
+    _price_4h = float(ms.get('price', 0) or 0)
+    _4h_align = 'NEUTRAL'
+    # 4h方向判断：RSI方向 + EMA排列
+    if _rsi_4h > 55 and (_ema50_4h > _ema200_4h or _macd_4h > 0) and _price_4h > _ema50_4h > 0:
+        _4h_align = 'BULL'
+    elif _rsi_4h < 45 and (_ema50_4h < _ema200_4h or _macd_4h < 0) and _price_4h < _ema50_4h > 0:
+        _4h_align = 'BEAR'
+    # 4h与1h信号方向一致时加分（N13: +12%泛化率）
+    if _4h_align == 'BULL' and signal_dir == 'LONG' and _score_gate_ok:
+        _score_raw = round(_score_raw * 1.05, 1)
+        cf = dict(cf); cf['mtf_4h_confirm'] = f'4H✅BULL RSI={_rsi_4h:.0f} +5%'
+        print(f'[BrahmaBrain] 📊 {_sym} 4H共振BULL: score×1.05 → {_score_raw:.0f}')
+    elif _4h_align == 'BEAR' and signal_dir == 'SHORT' and _score_gate_ok:
+        _score_raw = round(_score_raw * 1.05, 1)
+        cf = dict(cf); cf['mtf_4h_confirm'] = f'4H✅BEAR RSI={_rsi_4h:.0f} +5%'
+        print(f'[BrahmaBrain] 📊 {_sym} 4H共振BEAR: score×1.05 → {_score_raw:.0f}')
+    elif _4h_align != 'NEUTRAL' and _4h_align == ('BEAR' if signal_dir=='LONG' else 'BULL'):
+        # 4h与信号反向：软惩罚
+        _score_raw = round(_score_raw * 0.93, 1)
+        cf = dict(cf); cf['mtf_4h_conflict'] = f'4H⚠️{_4h_align} vs {signal_dir} -7%'
+        print(f'[BrahmaBrain] 📊 {_sym} 4H冲突: score×0.93 → {_score_raw:.0f}')
+
+    # [设计院 2026-05-24] 达摩院6节点预测验证 — 接入真实信号流
+    _dharma_nodes = {'nodes_pass': 0, 'verdict': 'UNKNOWN', 'score_mult': 1.0, 'detail': ''}
+    try:
+        from brahma_brain.dharma_nodes import evaluate_nodes as _eval_nodes
+        _fg = 50
+        try:
+            from brahma_brain.macro_stub import get_fear_greed as _fg_fn
+            _fg = _fg_fn() or 50
+        except Exception: pass
+        _dharma_nodes = _eval_nodes(ms, signal_dir, fg=_fg)
+        # 节点乘数调整score
+        _node_mult = _dharma_nodes['score_mult']
+        if _node_mult == 0.0:
+            _score_raw = 0  # 达摩院封禁
+            print(f'[Dharma] 🚫 节点封禁 {_sym}: {_dharma_nodes["nodes_pass"]}/6节点通过 → score归零')
+        elif _node_mult != 1.0:
+            _score_raw = round(_score_raw * _node_mult, 1)
+            print(f'[Dharma] 🔱 {_sym} 节点={_dharma_nodes["nodes_pass"]}/6 mult={_node_mult} score: {cf.get("total",0):.0f}→{_score_raw:.0f} {_dharma_nodes["detail"]}')
+        else:
+            print(f'[Dharma] ✅ {_sym} 节点={_dharma_nodes["nodes_pass"]}/6 verdict={_dharma_nodes["verdict"]} {_dharma_nodes["detail"]}')
+        # 节点数<3时强制拒绝
+        _score_gate_ok = _score_gate_ok and (_dharma_nodes['nodes_pass'] >= 3)
+        # [设计院 2026-05-24] ≥5节点为高置信（HIGH_CONF），分数額外加成
+        if _dharma_nodes.get('verdict') == 'HIGH_CONF':
+            _score_raw = round(_score_raw * 1.05, 1)  # +5%加成
+            print(f'[Dharma] 🌟 HIGH_CONF {_sym}: score加成 ×1.05 → {_score_raw:.0f}')
+    except Exception as _dne:
+        pass  # 节点验证失败不阻断主流
+
+    elapsed = round(time.time() - t0, 2)
+    _score = _score_raw
+    _valid = cf['kelly_mult'] > 0 and params['valid'] and _score_gate_ok
+    # [P2-B] N14体制边界追踪 — 记录当前体制稳定度（供brahma_core判断早鸟加成）
+    _regime_now = str(ms.get('regime','') or '')
+    try:
+        import json as _j; from pathlib import Path as _P
+        _rts_f = _P(__file__).parent.parent / 'data' / '_regime_timing_state.json'
+        _rts = _j.loads(_rts_f.read_text()) if _rts_f.exists() else {}
+        _last_regime = _rts.get('last_regime','')
+        _last_change_ts = _rts.get('last_change_ts', 0)
+        import time as _tm
+        _now_ts = _tm.time()
+        if _last_regime != _regime_now:
+            _rts = {'last_regime': _regime_now, 'last_change_ts': _now_ts, 'last_regime_prev': _last_regime}
+            _rts_f.write_text(_j.dumps(_rts))
+        _regime_age_h = (_now_ts - _last_change_ts) / 3600
+        extra_data['regime_timing'] = {
+            'current': _regime_now,
+            'age_hours': round(_regime_age_h, 1),
+            'is_early': _regime_age_h < 5,   # 体制切换5h内为"早鸟"
+            'prev': _rts.get('last_regime_prev','')
+        }
+        # 早鸟加成（N14: BEAR_TREND early PF=1.625）
+        if _regime_age_h < 5 and 'BEAR_TREND' in _regime_now and signal_dir == 'SHORT' and _score_gate_ok:
+            _score_raw = round(_score_raw * 1.04, 1)
+            cf = dict(cf); cf['n14_early_bird'] = f'BEAR_TREND早鸟({_regime_age_h:.1f}h) ×1.04'
+            print(f'[BrahmaBrain] 🦅 {_sym} N14早鸟: {_regime_now} {_regime_age_h:.1f}h 进入 score→{_score_raw:.0f}')
+    except Exception: pass
+
+    print(f'[BrahmaBrain] ✓ {_sym} {signal_dir} score={_score:.0f} rr1={params["rr1"]} rr_gate={cf.get("rr_gate","?")} regime={ms.get("regime","?")} valid={_valid} 耗时={elapsed}s')
+
+    _result = {
+        'symbol':      symbol,
+        'price':       ms['price'],
+        'signal_dir':  signal_dir,
+        'regime':      ms['regime'],
+        'consensus':   ms['trend']['consensus']['consensus'],
+        'wave':        ms['wave'],
+        'momentum':    ms['momentum'],
+        'sentiment':   ms['sentiment'],
+        'key_levels':  ms['key_levels'],
+        'swing_4h':    ms.get('swing_4h', {}),
+        'smc':         smc,
+        'confluence':  cf,
+        'params':      params,
+        'summary':     ms['summary'],
+        'elapsed':     elapsed,
+        'valid_signal': _valid,
+        'primary_tf':   params.get('primary_tf', '4H'),
+        'entry_tf':     params.get('entry_tf',   '1H'),
+        'sl_basis':     params.get('sl_basis',   'swing_4h+atr4h×0.3'),
+        'sl_atr_mult':  params.get('sl_atr_mult', 0),
+        'extra':       extra_data,
+        # [设计院 2026-05-24] 达摩院6节点预测评分
+        'dharma_nodes': _dharma_nodes,
+        'nodes_pass':   _dharma_nodes.get('nodes_pass', 0),
+        'nodes_verdict':_dharma_nodes.get('verdict', 'UNKNOWN'),
+        'score_final':  _score,
+    }
+
+    # [WFV-v1 闭环 2026-05-28] 达摩院信号日志（live_signal_log.jsonl）
+    try:
+        import sys as _sys_b, os as _os_b
+        _bd = _os_b.path.dirname(_os_b.path.abspath(__file__))
+        _root = _os_b.path.dirname(_bd)
+        if _root not in _sys_b.path:
+            _sys_b.path.insert(0, _root)
+        from dharma_data_bridge import log_signal as _log_dharma
+        _logged = _log_dharma(_result)
+        if _logged:
+            print(f'[DharmaBridge] ✓ {_sym} score={_score:.0f} 已写入 live_signal_log')
+    except Exception as _e:
+        print(f'[DharmaBridge] ⚠ 写入失败（不阻断主流）: {_e}')
+
+    return _result
+
+def format_report(r: dict) -> str:
+    """生成完整分析报告文本 - 全能力六层版"""
+    if 'error' in r:
+        return f'❌ 分析失败: {r["error"]}'
+    if r.get('signal_dir') == 'NEUTRAL':
+        return f'📊 {r["symbol"]}\n{r["summary"]}\n→ 无明确信号，等待'
+
+    sym    = r['symbol'].replace('USDT','')
+    p      = r['price']
+    cf     = r['confluence']
+    pa     = r['params']
+    ms     = r['momentum']
+    sent   = r['sentiment']
+    extra  = r.get('extra', {})
+    wave   = r.get('wave', {})
+    dir_arrow = '▲ 哆' if r['signal_dir'] == 'LONG' else '▼ 箜'
+
+    # ── L1 宏观层 ──────────────────────────────────────────
+    macro = extra.get('macro', {})
+    macro_notes = macro.get('notes', [])
+    macro_str = '  '.join(macro_notes[:2]) if macro_notes else '未获取'
+
+    # ── L2 结构层（艾略特）─────────────────────────────────
+    ew = extra.get('elliott', {})
+    wave_pos  = ew.get('wave_pos', wave.get('note', '结构未识别'))
+    wave_conf = ew.get('confidence', 0)
+    fib_tgt   = ew.get('fib_targets', {})
+    ew_str    = f'{wave_pos}（置信{wave_conf}%）'
+    fib_str   = '  '.join([f'{k}=${v:,.1f}' for k,v in list(fib_tgt.items())[:2]]) if fib_tgt else ''
+
+    # ── L3 指标层（MACD背离）──────────────────────────────
+    div    = extra.get('divergence', {})
+    rsi_d  = div.get('rsi_div', {})
+    macd_d = div.get('macd_div', {})
+    zero   = div.get('macd_zero', '0轴位置未知')
+    rsi_details  = rsi_d.get('details', [])
+    macd_details = macd_d.get('details', [])
+    div_details  = div.get('details_4h', rsi_details + macd_details)
+    div_score    = div.get('score', 0)
+    div_str = ' / '.join(div_details[:3]) if div_details else '无背离信号'
+
+    # ── L4 量能层 ──────────────────────────────────────────
+    vol = extra.get('volume', {})
+    vol_details = vol.get('details', [])
+    vol_str = ' / '.join(vol_details[:3]) if vol_details else '量能数据未获取'
+
+    # ── L5 形态层 ──────────────────────────────────────────
+    pat = extra.get('pattern', {})
+    pat_list = pat.get('patterns', [])
+    pat_str  = ' / '.join(pat_list[:3]) if pat_list else '无K线形态触发'
+
+    # ── SMC层 ──────────────────────────────────────────────
+    smc_raw   = r.get('smc', {})
+    smc_score = smc_raw.get('score', {}) if isinstance(smc_raw, dict) else {}
+    smc_details = smc_score.get('details', []) if isinstance(smc_score, dict) else []
+    smc_str   = ' / '.join(smc_details[:3]) if smc_details else ''
+
+    # ── 谐波 & 多周期详情 ─────────────────────────────────
+    harmonic = extra.get('harmonic', {})
+    h_patterns = harmonic.get('patterns', [])
+    h_best = harmonic.get('best', {})
+    h_str = ' / '.join(h_patterns[:2]) if h_patterns else '无谐波形态'
+    if h_best and h_best.get('in_prz'):
+        h_str += f' ★PRZ命中 ${h_best["PRZ_lo"]:,.1f}~${h_best["PRZ_hi"]:,.1f}'
+
+    multitf = extra.get('multitf', {})
+    mt_summary = multitf.get('tf_summary', {})
+    mt_str = '  '.join([f'{tf}:{v}' for tf, v in mt_summary.items()]) if mt_summary else ''
+    mt_consensus = multitf.get('consensus', '?')
+    mt_alignment = multitf.get('alignment', 0)
+    mt_misalign = multitf.get('misalign', '')
+
+    enhanced = extra.get('enhanced', {})
+    en_notes = enhanced.get('notes', [])
+    en_lsr = enhanced.get('lsr', {})
+    en_sess = enhanced.get('session', {})
+
+    lines = [
+        f'╔══════════════════════════════════════════════════════╗',
+        f'  梵天大脑 · {sym}/USDT  ${p:,.2f}  {r["regime"]}',
+        f'  {dir_arrow}  共振 {cf["total"]}/150 {cf["grade"]}  行动: {cf["action"]}',
+        f'╠══════════════════════════════════════════════════════╣',
+        f'',
+        f'【L1 宏观方向】',
+        f'  {macro_str}',
+        f'',
+        f'【L2 结构定位】',
+        f'  浪型: {ew_str}',
+        f'  趋势: {wave.get("wave","?")} → {wave.get("note","?")}',
+    ]
+    if fib_str:
+        lines.append(f'  斐波目标: {fib_str}')
+
+    lines += [
+        f'',
+        f'【L3 指标验证】',
+        f'  RSI  1H={ms.get("rsi_1h","?")}  4H={ms.get("rsi_4h","?")}  日={ms.get("rsi_1d","?")}',
+        f'  ATR  {ms.get("atr_1h","?")} ({ms.get("atr_pct","?")}%)  BB位置: {round(ms.get("bb",{}).get("pos",0)*100,1)}%',
+        f'  MACD {zero}',
+        f'  背离 [{div_score}分] {div_str}',
+        f'',
+        f'【L4 量能确认】',
+        f'  {vol_str}',
+        f'',
+        f'【L5 结构触发】',
+        f'  K线形态: {pat_str}',
+    ]
+    if smc_str:
+        lines.append(f'  SMC信号: {smc_str}')
+
+    # 谐波 & 多周期
+    lines += [
+        f'',
+        f'【P0 谐波+多周期】',
+        f'  谐波: {h_str}',
+    ]
+    if mt_str:
+        lines.append(f'  {mt_str[:80]}')
+    if mt_consensus:
+        lines.append(f'  多周期共识: {mt_consensus}  对齐度: {mt_alignment}/10')
+    if mt_misalign:
+        lines.append(f'  {mt_misalign}')
+    if en_sess:
+        sess_name = en_sess.get('session','?')
+        sess_mult = en_sess.get('vol_mult',1)
+        lines.append(f'  时段: {sess_name}({sess_mult}x)')
+    if en_notes:
+        lines.append(f'  增强信号: {" / ".join(en_notes[:2])}')
+
+    # P2 层
+    whale = extra.get('whale', {})
+    cross = extra.get('cross_market', {})
+    micro = extra.get('microstructure', {})
+    whale_notes = whale.get('notes', [])
+    cross_notes = cross.get('notes', [])
+    micro_notes = micro.get('notes', [])
+    corr_info   = cross.get('corr', {})
+    dxy_info    = cross.get('dxy', {})
+    risk_info   = cross.get('risk', {})
+
+    if whale_notes or cross_notes or micro_notes:
+        lines += [
+            f'',
+            f'【P2 鲸鱼+跨市场+微观】',
+        ]
+        if corr_info:
+            lines.append(f'  {corr_info.get("note","")}')
+        if dxy_info:
+            lines.append(f'  {dxy_info.get("note","")}')
+        if risk_info:
+            regime = risk_info.get("regime","?")
+            fg     = risk_info.get("fear_greed",0)
+            lines.append(f'  风险偏好: {regime}  恐贪={fg}')
+        for n in whale_notes[:2]:
+            lines.append(f'  🐋 {n}')
+        for n in micro_notes[:2]:
+            lines.append(f'  🔬 {n}')
+        wh_s  = whale.get('score', 0)
+        cx_s  = cross.get('score', 0)
+        mc_s  = micro.get('score', 0)
+        lines.append(f'  P2评分: 鲸鱼{wh_s}/15  跨市场{cx_s}/15  微观{mc_s}/15')
+
+    lines += [
+        f'',
+        f'【L6 执行方案】— 唯一入场指令',
+        f'  干线周期  primary={pa.get("primary_tf","4H")}(方向/止损)  entry={pa.get("entry_tf","1H")}(入场触发)',
+        f'  入场区  ${pa["entry_lo"]:,.2f} ~ ${pa["entry_hi"]:,.2f}',
+        f'  止损    ${pa["stop_loss"]:,.2f}  宽={pa["sl_pct"]}%  ATR倍数={pa.get("sl_atr_mult",0):.2f}x',
+        f'  止损依据  {pa.get("sl_basis","swing_4h+atr4h×0.3")}',
+        f'  T1    ${pa["tp1"]:,.2f}  R:R={pa["rr1"]}  (必须≥2.5)',
+        f'  T2    ${pa["tp2"]:,.2f}  R:R={pa["rr2"]}',
+        f'  R:R门槛 {"PASS ✅" if pa.get("valid") else "FAIL ⚠️ 等待更好入场位"}',
+        f'  资金费率 {sent["funding_rate"]:+.4f}%  多空比 {sent["long_short_ratio"]}',
+        f'',
+        f'【共振评分 {cf["total"]}/150】',
+    ]
+    for k, v in cf['breakdown'].items():
+        try:
+            vi = int(v) if v != '?' else 0
+        except (TypeError, ValueError):
+            vi = 0
+        bar = '█' * (vi // 3) + '░' * max(0, 7 - vi // 3)
+        lines.append(f'  {k:10s} {vi:3d}/30  {bar}')
+
+    lines.append(f'╚══════════════════════════════════════════════════════╝')
+    return '\n'.join(lines)
+
+# ─── 快速测试 ────────────────────────────────────────────────
+if __name__ == '__main__':
+    symbols = sys.argv[1:] if len(sys.argv) > 1 else ['ETHUSDT', 'BTCUSDT']
+    for sym in symbols:
+        print(f'\n{"="*60}')
+        r = analyze(sym)
+        print(format_report(r))
+        print(f'耗时: {r.get("elapsed", "?")}s')
+    assert VERSION, 'brahma_brain version ok'

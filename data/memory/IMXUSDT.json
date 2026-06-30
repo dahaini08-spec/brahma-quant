@@ -1,0 +1,86 @@
+{
+  "symbol": "IMXUSDT",
+  "created": "2026-05-14T14:00:35.962039+00:00",
+  "updated": "2026-05-14T14:00:35.962082+00:00",
+  "key_facts": [
+    "[05-14] LONG 评分:100 入场:0.195498~0.20046 SL:0.199129 R:R=28.2",
+    "[05-14] 筹码位: POC=0.198475 VAL=0.183235 VAH=0.210625",
+    "[05-14] 议会否决 - 失败Agent: ['technician', 'chips', 'derivatives', 'risk_control']"
+  ],
+  "recent_rounds": [
+    {
+      "ts": "2026-05-14T14:00:35.962072+00:00",
+      "signal_id": "S202605141400",
+      "direction": "LONG",
+      "entry": {
+        "low": 0.19549788,
+        "high": 0.20045975,
+        "mid": 0.19797882,
+        "worst": 0.20045975
+      },
+      "stop_loss": 0.19912857,
+      "targets": {
+        "t1": {
+          "price": 0.21167812,
+          "chg_pct": 5.6,
+          "rr": 8.43,
+          "note": "VAH突破确认位"
+        },
+        "t2": {
+          "price": 0.238015,
+          "chg_pct": 18.73,
+          "rr": 28.21,
+          "note": "等幅延伸目标"
+        },
+        "t3": {
+          "price": 0.26792571,
+          "note": "扩展目标（部分止盈后持有）"
+        }
+      },
+      "score": 100,
+      "council_approved": false,
+      "council_score": 33,
+      "council_votes": {
+        "technician": "FAIL",
+        "chips": "FAIL",
+        "derivatives": "FAIL",
+        "risk_control": "FAIL",
+        "v85": "PASS",
+        "sentiment": "PASS",
+        "neural": "PASS"
+      },
+      "levels": {
+        "poc": 0.198475,
+        "vah": 0.210625,
+        "val": 0.183235,
+        "hvn": [
+          0.183235,
+          0.184705,
+          0.186175,
+          0.187645,
+          0.189115
+        ],
+        "lvn": [
+          0.18464,
+          0.18492,
+          0.1852,
+          0.18548,
+          0.18576
+        ]
+      },
+      "outcome": null,
+      "pnl_pct": null
+    }
+  ],
+  "summary": "",
+  "win_count": 0,
+  "loss_count": 0,
+  "total_signals": 1,
+  "best_interval": null,
+  "worst_interval": null,
+  "fake_breakout_rate": 0.0,
+  "best_direction": null,
+  "interval_stats": {},
+  "monthly_bias": {},
+  "last_analysis_date": null
+}

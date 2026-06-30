@@ -1,0 +1,20 @@
+# brahma-trading system cron — 零AI任务，不依赖gateway
+# 重建于 2026-06-05 03:58 UTC
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# signal-settler: 每2小时结算信号(02分错峰)
+2 */2 * * * root cd /root/.openclaw/workspace/trading-system && /usr/bin/env python3 scripts/live_signal_settler.py >> logs/system_cron.log 2>&1
+
+# brahma_state刷新: 每15分钟 (价格/NAV/体制状态)
+*/15 * * * * root cd /root/.openclaw/workspace/trading-system && /usr/bin/env python3 guardrails/brahma_state_refresh.py >> logs/system_cron.log 2>&1
+
+# ws_guardian守护: 每5分钟检查websocket
+*/5 * * * * root cd /root/.openclaw/workspace/trading-system && /usr/bin/env python3 scripts/ws_guardian.py check >> /dev/null 2>&1
+
+# watchdog_guardian守护: 每5分钟检查所有进程
+*/5 * * * * root /bin/bash /root/.openclaw/workspace/trading-system/scripts/watchdog_guardian.sh >> /dev/null 2>&1
+
+# 信号队列清理: 每日01:30 UTC
+30 1 * * * root cd /root/.openclaw/workspace/trading-system && /usr/bin/env python3 scripts/signal_queue_manager.py >> logs/system_cron.log 2>&1

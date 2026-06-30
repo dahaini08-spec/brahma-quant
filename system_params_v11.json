@@ -1,0 +1,90 @@
+{
+  "dharma_validated": {
+    "_updated": "2026-05-17T13:09:18.085535+00:00",
+    "_source": "full_model_train_20260517_0819 + node_regime_N01 + node_N07/N08/N10",
+    "M1_rsi_reversal": {
+      "optimal_tf": "4h",
+      "optimal_rsi_long": 20,
+      "optimal_rsi_short": 80,
+      "optimal_hold": 12,
+      "optimal_tp": 2.0,
+      "optimal_sl": 1.0,
+      "pf": 3.166,
+      "wr": 63.8,
+      "n": 69,
+      "action": "hunter_filter: RSI<20 4H做多允许，RSI>80 4H做空允许，score加权+5"
+    },
+    "M2_regime_direction": {
+      "status": "NEEDS_RETRAIN",
+      "current_best": "BEAR_CRASH+LONG PF=1.581 (仅BTC/ETH)",
+      "note": "需重新训练覆盖22币种，当前结论不可信",
+      "pf": 1.581
+    },
+    "M3_multiperiod": {
+      "status": "NO_EDGE",
+      "finding": "ETH RSI<15+4H<30 PF=1.107，共振无显著增益",
+      "action": "多周期共振加分规则从+5~+15 降低到+2（轻微辅助，非核心）",
+      "pf": 1.107
+    },
+    "M4_ema_structure": {
+      "optimal_setup": "DOT 1D bear_align SHORT hold5 PF=2.023 WR=61.7% n=467",
+      "action": "bear_align(EMA空头排列)做空信号 score+6",
+      "pf": 2.023,
+      "wr": 61.7,
+      "n": 467
+    },
+    "M5_volatility": {
+      "optimal_tf": "15m",
+      "optimal_symbol": "BTCUSDT",
+      "optimal_setup": "ATR极值做空 hold8 PF=8.458 WR=85.3% n=34",
+      "action": "暂停使用：ATR极值做空信号因n=34不满足铁证要求，待达摩院大样本重训后激活",
+      "pf": 8.458,
+      "wr": 85.3,
+      "n": 34,
+      "status": "⚠️ 小样本n=34，已作废 — 需n≥500重验"
+    },
+    "M6_composite": {
+      "optimal_score_threshold": 7,
+      "optimal_tf": "4h",
+      "top_symbols": [
+        "tiausdt",
+        "1000pepeusdt",
+        "avaxusdt",
+        "dogeusdt"
+      ],
+      "pf_at_score7_4h": 5.302,
+      "wr_at_score7_4h": 78.3,
+      "n_sample": 60,
+      "action": "强化score>=7的4H信号权重，低于5的信号拒绝率提高",
+      "key_insight": "score>=7在4H周期PF=5.3，比score>=5的PF=5.5略低但n=60更可信",
+      "sample_warning": "n=60 次级证据，需标注「待验证」，不得作为独立铁证"
+    },
+    "N01_regime_transition": {
+      "optimal_setup": "4H BEAR→BULL切换后等8根K线 RSI确认>40",
+      "pf": 3.258,
+      "wr": 60.0,
+      "n": 15,
+      "action": "hunter_scanner: 检测到体制切换<8根4H内，做多信号加分+8"
+    },
+    "N07_correlation": {
+      "high_corr_pairs": [
+        [
+          "AVAXUSDT",
+          "LINKUSDT",
+          0.959
+        ]
+      ],
+      "action": "D2风控: AVAX+LINK禁止同时持仓"
+    },
+    "N08_sl_width": {
+      "optimal_sl_pct": 5.0,
+      "action": "止损宽度建议5%，<3%被噪音止损，>7%无改善"
+    },
+    "N10_position_sizing": {
+      "optimal_method": "flat_10pct",
+      "calmar": 0.943,
+      "vs_kelly": "Kelly Calmar=0.658，flat>Kelly",
+      "action": "BEAR_CRASH做空用flat10%，做多用Kelly5%（已在E1实现）"
+    }
+  }
+}

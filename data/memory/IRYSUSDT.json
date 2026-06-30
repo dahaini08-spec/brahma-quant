@@ -1,0 +1,139 @@
+{
+  "symbol": "IRYSUSDT",
+  "created": "2026-05-12T03:20:13.124198+00:00",
+  "updated": "2026-05-13T13:34:01.949454+00:00",
+  "key_facts": [
+    "[05-12] LONG 评分:75 入场:0.0492613~0.0496068 SL:0.0524082 R:R=2.5",
+    "[05-12] 筹码位: POC=0.0451885 VAL=0.038768 VAH=0.0494815",
+    "[05-13] LONG 评分:75 入场:0.0525286~0.0538618 SL:0.0569145 R:R=4.9",
+    "[05-13] 筹码位: POC=0.0533285 VAL=0.0470755 VAH=0.0659015",
+    "[05-13] 议会否决 - 失败Agent: ['technician', 'chips', 'derivatives', 'risk_control']",
+    "[S202605120320] LONG WIN +10.8%"
+  ],
+  "recent_rounds": [
+    {
+      "ts": "2026-05-12T03:20:13.124242+00:00",
+      "signal_id": "?",
+      "direction": "LONG",
+      "entry": {
+        "low": 0.04926128,
+        "high": 0.0496068,
+        "mid": 0.04943404,
+        "worst": 0.04926128
+      },
+      "stop_loss": 0.05240821,
+      "targets": {
+        "t1": {
+          "price": 0.04427964,
+          "chg_pct": -10.11,
+          "rr": 1.58,
+          "note": "VAH突破确认位"
+        },
+        "t2": {
+          "price": 0.04123143,
+          "chg_pct": -16.3,
+          "rr": 2.55,
+          "note": "等幅延伸目标"
+        },
+        "t3": {
+          "price": 0.03716714,
+          "note": "扩展目标（部分止盈后持有）"
+        }
+      },
+      "score": 75,
+      "council_approved": true,
+      "council_score": 75,
+      "council_votes": {
+        "technician": "FAIL",
+        "chips": "PASS",
+        "derivatives": "PASS",
+        "risk_control": "PASS"
+      },
+      "levels": {
+        "poc": 0.0451885,
+        "vah": 0.0494815,
+        "val": 0.038768,
+        "hvn": [
+          0.038768,
+          0.039224,
+          0.03968,
+          0.040136,
+          0.040592
+        ],
+        "lvn": [
+          0.0357805,
+          0.0358215,
+          0.0358625,
+          0.035898,
+          0.0359035
+        ]
+      },
+      "outcome": null,
+      "pnl_pct": null
+    },
+    {
+      "ts": "2026-05-13T04:29:29.502410+00:00",
+      "signal_id": "?",
+      "direction": "LONG",
+      "entry": {
+        "low": 0.05252857,
+        "high": 0.05386179,
+        "mid": 0.05319518,
+        "worst": 0.05386179
+      },
+      "stop_loss": 0.0569145,
+      "targets": {
+        "t1": {
+          "price": 0.0647028,
+          "chg_pct": 20.13,
+          "rr": 3.55,
+          "note": "VAH突破确认位"
+        },
+        "t2": {
+          "price": 0.0688965,
+          "chg_pct": 27.91,
+          "rr": 4.93,
+          "note": "等幅延伸目标"
+        },
+        "t3": {
+          "price": 0.07159245,
+          "note": "扩展目标（部分止盈后持有）"
+        }
+      },
+      "score": 75,
+      "council_approved": false,
+      "council_score": 0,
+      "council_votes": {
+        "technician": "FAIL",
+        "chips": "FAIL",
+        "derivatives": "FAIL",
+        "risk_control": "FAIL"
+      },
+      "levels": {
+        "poc": 0.0533285,
+        "vah": 0.0659015,
+        "val": 0.0470755,
+        "hvn": [
+          0.0470755,
+          0.047562,
+          0.0480865,
+          0.048231,
+          0.048386
+        ],
+        "lvn": [
+          0.0354875,
+          0.0356225,
+          0.0357575,
+          0.0357885,
+          0.0358925
+        ]
+      },
+      "outcome": null,
+      "pnl_pct": null
+    }
+  ],
+  "summary": "",
+  "win_count": 1,
+  "loss_count": 0,
+  "total_signals": 2
+}

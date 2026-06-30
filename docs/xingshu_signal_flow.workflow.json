@@ -1,0 +1,240 @@
+{
+  "schema_version": 1,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Xingshu Signal Flow",
+    "subtitle": "Market Data -> brahma_core -> Gate -> Execute -> Settle",
+    "output": "docs/xingshu_signal_flow.html",
+    "viewBox": [
+      820,
+      860
+    ]
+  },
+  "lanes": [
+    {
+      "id": "market",
+      "label": "Market Data"
+    },
+    {
+      "id": "engine",
+      "label": "brahma Engine"
+    },
+    {
+      "id": "gate",
+      "label": "Gate Layer"
+    },
+    {
+      "id": "exec",
+      "label": "Execution"
+    },
+    {
+      "id": "research",
+      "label": "Research Wing (async)"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "binance_ws",
+      "lane": "market",
+      "col": 0,
+      "type": "external",
+      "label": "Binance WS",
+      "sublabel": "OHLCV / FR / OI"
+    },
+    {
+      "id": "gex_engine",
+      "lane": "market",
+      "col": 2,
+      "type": "backend",
+      "label": "GEX Engine",
+      "sublabel": "s22 gamma exposure"
+    },
+    {
+      "id": "regime_det",
+      "lane": "engine",
+      "col": 0,
+      "type": "backend",
+      "label": "Regime Detect",
+      "sublabel": "BEAR_TREND current"
+    },
+    {
+      "id": "brahma_core",
+      "lane": "engine",
+      "col": 2,
+      "type": "backend",
+      "label": "brahma_core",
+      "sublabel": "19-dim / 150pt score"
+    },
+    {
+      "id": "wr_block",
+      "lane": "engine",
+      "col": 4,
+      "type": "backend",
+      "label": "WR Block",
+      "sublabel": "dead-zone L1 check"
+    },
+    {
+      "id": "dd1",
+      "lane": "gate",
+      "col": 0,
+      "type": "security",
+      "label": "DD1 Gate",
+      "sublabel": "grade>=50 RR>=1.5"
+    },
+    {
+      "id": "treasury",
+      "lane": "gate",
+      "col": 2,
+      "type": "backend",
+      "label": "treasury_gate",
+      "sublabel": "NAV / risk / circuit"
+    },
+    {
+      "id": "executor",
+      "lane": "exec",
+      "col": 0,
+      "type": "external",
+      "label": "executor.py",
+      "sublabel": "Binance Futures order"
+    },
+    {
+      "id": "ws_guardian",
+      "lane": "exec",
+      "col": 2,
+      "type": "backend",
+      "label": "ws_guardian",
+      "sublabel": "SL/TP/breakeven live"
+    },
+    {
+      "id": "settler",
+      "lane": "exec",
+      "col": 4,
+      "type": "backend",
+      "label": "signal_settler",
+      "sublabel": "result -> dharma retrain"
+    },
+    {
+      "id": "quantdinger",
+      "lane": "research",
+      "col": 0,
+      "type": "external",
+      "label": "QuantDinger",
+      "sublabel": "Docker isolated"
+    },
+    {
+      "id": "res_bridge",
+      "lane": "research",
+      "col": 2,
+      "type": "backend",
+      "label": "res_bridge",
+      "sublabel": "TTL=30min <=8pt inject"
+    },
+    {
+      "id": "hunter_v2",
+      "lane": "research",
+      "col": 4,
+      "type": "backend",
+      "label": "hunter_v2",
+      "sublabel": "6-channel fast scan"
+    }
+  ],
+  "edges": [
+    {
+      "from": "binance_ws",
+      "to": "regime_det",
+      "variant": "default"
+    },
+    {
+      "from": "binance_ws",
+      "to": "gex_engine",
+      "variant": "default"
+    },
+    {
+      "from": "gex_engine",
+      "to": "brahma_core",
+      "variant": "default",
+      "label": "s22 score"
+    },
+    {
+      "from": "regime_det",
+      "to": "brahma_core",
+      "variant": "emphasis"
+    },
+    {
+      "from": "brahma_core",
+      "to": "wr_block",
+      "variant": "default"
+    },
+    {
+      "from": "wr_block",
+      "to": "dd1",
+      "variant": "default",
+      "label": "score pass"
+    },
+    {
+      "from": "dd1",
+      "to": "treasury",
+      "variant": "default"
+    },
+    {
+      "from": "treasury",
+      "to": "executor",
+      "variant": "emphasis",
+      "label": "position approved"
+    },
+    {
+      "from": "executor",
+      "to": "ws_guardian",
+      "variant": "default"
+    },
+    {
+      "from": "ws_guardian",
+      "to": "settler",
+      "variant": "default"
+    },
+    {
+      "from": "quantdinger",
+      "to": "res_bridge",
+      "variant": "default"
+    },
+    {
+      "from": "res_bridge",
+      "to": "brahma_core",
+      "variant": "default"
+    },
+    {
+      "from": "hunter_v2",
+      "to": "brahma_core",
+      "variant": "default"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "violet",
+      "title": "Core Engine (Immutable)",
+      "items": [
+        "brahma_core is the only trusted analysis engine",
+        "All AI outputs route through brahma — no bypasses",
+        "WR matrix blocks dead-zone combos before DD1 gate"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Research Wing (Isolated)",
+      "items": [
+        "QuantDinger runs in separate Docker network — no trade key",
+        "research_bridge enforces TTL=30min and weight<=8/150pt",
+        "CHOP regime: research signals auto-zero, never injected"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Self-Improving Loop",
+      "items": [
+        "ws_guardian writes WIN/LOSS result on every exit",
+        "signal_settler triggers XGBoost + dharma retrain",
+        "8-year anchored WFV validates every parameter change"
+      ]
+    }
+  ]
+}

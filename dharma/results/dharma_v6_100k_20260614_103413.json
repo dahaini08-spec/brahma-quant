@@ -1,0 +1,2041 @@
+{
+  "framework": "DharmaOptimizer v6.0",
+  "generated": "2026-06-14T10:41:30.840770+00:00",
+  "total_evals": 100000,
+  "btc_candidates": 85471,
+  "eth_candidates": 81743,
+  "top50": [
+    {
+      "rank": 1,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.582,
+        "btc_tp_mult": 1.942,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.864,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 2,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.6,
+        "btc_tp_mult": 1.942,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.864,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 3,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.6,
+        "btc_tp_mult": 1.942,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.864,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 4,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.582,
+        "btc_tp_mult": 1.942,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.8,
+        "eth_hold_bars": 16,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 5,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.582,
+        "btc_tp_mult": 1.8,
+        "btc_hold_bars": 21,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.8,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 6,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.582,
+        "btc_tp_mult": 1.93,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.8,
+        "eth_hold_bars": 16,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.312
+      }
+    },
+    {
+      "rank": 7,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.6,
+        "btc_tp_mult": 1.897,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.703,
+        "eth_tp_mult": 1.8,
+        "eth_hold_bars": 16,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 8,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.6,
+        "btc_tp_mult": 1.973,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.703,
+        "eth_tp_mult": 1.8,
+        "eth_hold_bars": 16,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 9,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.6,
+        "btc_tp_mult": 1.958,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.864,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.312
+      }
+    },
+    {
+      "rank": 10,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.575,
+        "btc_tp_mult": 1.897,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.794,
+        "eth_tp_mult": 1.904,
+        "eth_hold_bars": 16,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 11,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.595,
+        "btc_tp_mult": 1.942,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.864,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 12,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.6,
+        "btc_tp_mult": 1.931,
+        "btc_hold_bars": 22,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.703,
+        "eth_tp_mult": 1.881,
+        "eth_hold_bars": 16,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 13,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.592,
+        "btc_tp_mult": 1.938,
+        "btc_hold_bars": 19,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.8,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 14,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.53,
+        "btc_tp_mult": 1.998,
+        "btc_hold_bars": 22,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.703,
+        "eth_tp_mult": 1.881,
+        "eth_hold_bars": 17,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 15,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.582,
+        "btc_tp_mult": 1.966,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.735,
+        "eth_tp_mult": 1.864,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 16,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.6,
+        "btc_tp_mult": 1.942,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.957,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 17,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.564,
+        "btc_tp_mult": 1.942,
+        "btc_hold_bars": 21,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.777,
+        "eth_tp_mult": 1.957,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 18,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.53,
+        "btc_tp_mult": 1.947,
+        "btc_hold_bars": 22,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.754,
+        "eth_tp_mult": 1.8,
+        "eth_hold_bars": 17,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 19,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.6,
+        "btc_tp_mult": 1.929,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.735,
+        "eth_tp_mult": 1.864,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 20,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.595,
+        "btc_tp_mult": 1.942,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.8,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 21,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.575,
+        "btc_tp_mult": 1.8,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.794,
+        "eth_tp_mult": 1.817,
+        "eth_hold_bars": 16,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.31
+      }
+    },
+    {
+      "rank": 22,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.582,
+        "btc_tp_mult": 1.93,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.758,
+        "eth_tp_mult": 1.975,
+        "eth_hold_bars": 16,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.312
+      }
+    },
+    {
+      "rank": 23,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.6,
+        "btc_tp_mult": 1.942,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.71,
+        "eth_tp_mult": 1.825,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 24,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.595,
+        "btc_tp_mult": 1.942,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.753,
+        "eth_tp_mult": 1.8,
+        "eth_hold_bars": 16,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 25,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.582,
+        "btc_tp_mult": 1.952,
+        "btc_hold_bars": 22,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.744,
+        "eth_tp_mult": 1.864,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 26,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.516,
+        "btc_tp_mult": 1.987,
+        "btc_hold_bars": 19,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.743,
+        "eth_tp_mult": 1.823,
+        "eth_hold_bars": 17,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 27,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.582,
+        "btc_tp_mult": 1.8,
+        "btc_hold_bars": 22,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.661,
+        "eth_tp_mult": 1.83,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 28,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.575,
+        "btc_tp_mult": 1.947,
+        "btc_hold_bars": 22,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.794,
+        "eth_tp_mult": 1.879,
+        "eth_hold_bars": 16,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 29,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.54,
+        "btc_tp_mult": 1.896,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.864,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 30,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.544,
+        "btc_tp_mult": 1.942,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.8,
+        "eth_hold_bars": 17,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 31,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.564,
+        "btc_tp_mult": 1.942,
+        "btc_hold_bars": 19,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.777,
+        "eth_tp_mult": 1.942,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 32,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.582,
+        "btc_tp_mult": 1.8,
+        "btc_hold_bars": 22,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.638,
+        "eth_tp_mult": 1.8,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 33,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.582,
+        "btc_tp_mult": 1.8,
+        "btc_hold_bars": 22,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.638,
+        "eth_tp_mult": 1.8,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 34,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.582,
+        "btc_tp_mult": 1.865,
+        "btc_hold_bars": 22,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.744,
+        "eth_tp_mult": 1.912,
+        "eth_hold_bars": 16,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 35,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.6,
+        "btc_tp_mult": 1.942,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.899,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 36,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.6,
+        "btc_tp_mult": 1.956,
+        "btc_hold_bars": 19,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.864,
+        "eth_hold_bars": 16,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.312
+      }
+    },
+    {
+      "rank": 37,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.575,
+        "btc_tp_mult": 1.8,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.817,
+        "eth_hold_bars": 16,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.31
+      }
+    },
+    {
+      "rank": 38,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.53,
+        "btc_tp_mult": 1.998,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.771,
+        "eth_tp_mult": 1.832,
+        "eth_hold_bars": 17,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 39,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.582,
+        "btc_tp_mult": 1.82,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.864,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 40,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.582,
+        "btc_tp_mult": 1.912,
+        "btc_hold_bars": 22,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.606,
+        "eth_tp_mult": 1.83,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 41,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.6,
+        "btc_tp_mult": 1.942,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.732,
+        "eth_tp_mult": 1.899,
+        "eth_hold_bars": 17,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 42,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.6,
+        "btc_tp_mult": 1.822,
+        "btc_hold_bars": 21,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.703,
+        "eth_tp_mult": 1.8,
+        "eth_hold_bars": 16,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 43,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.588,
+        "btc_tp_mult": 1.912,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.606,
+        "eth_tp_mult": 1.83,
+        "eth_hold_bars": 16,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 44,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.595,
+        "btc_tp_mult": 1.942,
+        "btc_hold_bars": 19,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.864,
+        "eth_hold_bars": 17,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 45,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.6,
+        "btc_tp_mult": 1.942,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.71,
+        "eth_tp_mult": 1.825,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.301
+      }
+    },
+    {
+      "rank": 46,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.6,
+        "btc_tp_mult": 1.942,
+        "btc_hold_bars": 22,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.888,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 47,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.584,
+        "btc_tp_mult": 1.8,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.864,
+        "eth_hold_bars": 17,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 48,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.575,
+        "btc_tp_mult": 1.8,
+        "btc_hold_bars": 19,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.794,
+        "eth_tp_mult": 1.817,
+        "eth_hold_bars": 16,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 49,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.566,
+        "btc_tp_mult": 1.942,
+        "btc_hold_bars": 21,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.801,
+        "eth_hold_bars": 18,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    },
+    {
+      "rank": 50,
+      "composite": 2.210075462744432,
+      "btc": {
+        "composite": 1.991516998952567,
+        "n": 1545,
+        "wr": 0.7739504843918191,
+        "pf": 1.9339510543921263,
+        "sharpe": 4.2538782155742885,
+        "oos_rate": 1.0,
+        "wins": 719,
+        "losses": 210,
+        "tos": 616
+      },
+      "eth": {
+        "composite": 2.3888960240286843,
+        "n": 530,
+        "wr": 0.8538205980066446,
+        "pf": 2.8876403520133658,
+        "sharpe": 6.706394789020822,
+        "oos_rate": 1.0,
+        "wins": 257,
+        "losses": 44,
+        "tos": 229
+      },
+      "params": {
+        "btc_threshold": 113,
+        "btc_sl_mult": 2.582,
+        "btc_tp_mult": 1.942,
+        "btc_hold_bars": 20,
+        "btc_oi_vol_thresh": 1.761,
+        "btc_oi_mom_thresh": 0.496,
+        "eth_threshold": 116,
+        "eth_sl_mult": 2.8,
+        "eth_tp_mult": 1.852,
+        "eth_hold_bars": 16,
+        "eth_oi_vol_thresh": 1.972,
+        "eth_oi_mom_thresh": 0.3
+      }
+    }
+  ],
+  "v6_recommended": {
+    "btc_threshold": 113,
+    "btc_sl_mult": 2.582,
+    "btc_tp_mult": 1.942,
+    "btc_hold_bars": 20,
+    "btc_oi_vol_thresh": 1.761,
+    "btc_oi_mom_thresh": 0.496,
+    "eth_threshold": 116,
+    "eth_sl_mult": 2.8,
+    "eth_tp_mult": 1.864,
+    "eth_hold_bars": 18,
+    "eth_oi_vol_thresh": 1.972,
+    "eth_oi_mom_thresh": 0.3
+  },
+  "v5_baseline": {
+    "BTCUSDT": {
+      "threshold": 108,
+      "sl_mult": 1.8,
+      "tp_mult": 2.5,
+      "hold_bars": 32,
+      "oi_vol_thresh": 1.5,
+      "oi_mom_thresh": 0.8
+    },
+    "ETHUSDT": {
+      "threshold": 136,
+      "sl_mult": 2.0,
+      "tp_mult": 2.5,
+      "hold_bars": 32,
+      "oi_vol_thresh": 1.3,
+      "oi_mom_thresh": 0.5
+    }
+  }
+}

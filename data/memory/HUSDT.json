@@ -1,0 +1,326 @@
+{
+  "symbol": "HUSDT",
+  "created": "2026-05-12T03:20:12.613338+00:00",
+  "updated": "2026-05-13T21:44:10.172396+00:00",
+  "key_facts": [
+    "[05-12] LONG 评分:77 入场:0.269111~0.270998 SL:0.285618 R:R=2.5",
+    "[05-12] 筹码位: POC=0.262846 VAL=0.183211 VAH=0.277904",
+    "[05-12] LONG 评分:77 入场:0.26934~0.271495 SL:0.285307 R:R=2.7",
+    "[05-12] 筹码位: POC=0.262846 VAL=0.201708 VAH=0.277904",
+    "[05-12] LONG 评分:77 入场:0.26907~0.271223 SL:0.285037 R:R=2.7",
+    "[05-12] SHORT 评分:77 入场:0.26894~0.271092 SL:0.284907 R:R=2.7",
+    "[05-12] SHORT 评分:79 入场:0.2706~0.272765 SL:0.286567 R:R=2.7",
+    "[S202605120320] LONG LOSS -9.3%",
+    "[S202605120346] LONG LOSS -9.4%",
+    "[S202605120346] LONG LOSS -9.3%"
+  ],
+  "recent_rounds": [
+    {
+      "ts": "2026-05-12T03:20:12.613394+00:00",
+      "signal_id": "?",
+      "direction": "LONG",
+      "entry": {
+        "low": 0.2691107,
+        "high": 0.27099825,
+        "mid": 0.27005448,
+        "worst": 0.2691107
+      },
+      "stop_loss": 0.2856175,
+      "targets": {
+        "t1": {
+          "price": 0.2430375,
+          "chg_pct": -9.69,
+          "rr": 1.58,
+          "note": "VAH突破确认位"
+        },
+        "t2": {
+          "price": 0.22707,
+          "chg_pct": -15.62,
+          "rr": 2.55,
+          "note": "等幅延伸目标"
+        },
+        "t3": {
+          "price": 0.20578,
+          "note": "扩展目标（部分止盈后持有）"
+        }
+      },
+      "score": 77,
+      "council_approved": true,
+      "council_score": 75,
+      "council_votes": {
+        "technician": "FAIL",
+        "chips": "PASS",
+        "derivatives": "PASS",
+        "risk_control": "PASS"
+      },
+      "levels": {
+        "poc": 0.2628465,
+        "vah": 0.2779035,
+        "val": 0.183211,
+        "hvn": [
+          0.224296,
+          0.225948,
+          0.2276,
+          0.229252,
+          0.230904
+        ],
+        "lvn": [
+          0.2000125,
+          0.2006375,
+          0.2010665,
+          0.2012625,
+          0.2016195
+        ]
+      },
+      "outcome": null,
+      "pnl_pct": null
+    },
+    {
+      "ts": "2026-05-12T03:46:46.491818+00:00",
+      "signal_id": "?",
+      "direction": "LONG",
+      "entry": {
+        "low": 0.26934,
+        "high": 0.27149472,
+        "mid": 0.27041736,
+        "worst": 0.26934
+      },
+      "stop_loss": 0.2853075,
+      "targets": {
+        "t1": {
+          "price": 0.2427275,
+          "chg_pct": -9.88,
+          "rr": 1.67,
+          "note": "VAH突破确认位"
+        },
+        "t2": {
+          "price": 0.22676,
+          "chg_pct": -15.81,
+          "rr": 2.67,
+          "note": "等幅延伸目标"
+        },
+        "t3": {
+          "price": 0.20547,
+          "note": "扩展目标（部分止盈后持有）"
+        }
+      },
+      "score": 77,
+      "council_approved": true,
+      "council_score": 75,
+      "council_votes": {
+        "technician": "FAIL",
+        "chips": "PASS",
+        "derivatives": "PASS",
+        "risk_control": "PASS"
+      },
+      "levels": {
+        "poc": 0.2628465,
+        "vah": 0.2779035,
+        "val": 0.2017075,
+        "hvn": [
+          0.224296,
+          0.225948,
+          0.2276,
+          0.229252,
+          0.230904
+        ],
+        "lvn": [
+          0.2000125,
+          0.2006375,
+          0.2010665,
+          0.2012625,
+          0.2016195
+        ]
+      },
+      "outcome": null,
+      "pnl_pct": null
+    },
+    {
+      "ts": "2026-05-12T03:46:57.681876+00:00",
+      "signal_id": "?",
+      "direction": "LONG",
+      "entry": {
+        "low": 0.26907,
+        "high": 0.27122256,
+        "mid": 0.27014628,
+        "worst": 0.26907
+      },
+      "stop_loss": 0.2850375,
+      "targets": {
+        "t1": {
+          "price": 0.2424575,
+          "chg_pct": -9.89,
+          "rr": 1.67,
+          "note": "VAH突破确认位"
+        },
+        "t2": {
+          "price": 0.22649,
+          "chg_pct": -15.82,
+          "rr": 2.67,
+          "note": "等幅延伸目标"
+        },
+        "t3": {
+          "price": 0.2052,
+          "note": "扩展目标（部分止盈后持有）"
+        }
+      },
+      "score": 77,
+      "council_approved": true,
+      "council_score": 75,
+      "council_votes": {
+        "technician": "FAIL",
+        "chips": "PASS",
+        "derivatives": "PASS",
+        "risk_control": "PASS"
+      },
+      "levels": {
+        "poc": 0.2628465,
+        "vah": 0.2779035,
+        "val": 0.2017075,
+        "hvn": [
+          0.224296,
+          0.225948,
+          0.2276,
+          0.229252,
+          0.230904
+        ],
+        "lvn": [
+          0.2000125,
+          0.2006375,
+          0.2010665,
+          0.2012625,
+          0.2016195
+        ]
+      },
+      "outcome": null,
+      "pnl_pct": null
+    },
+    {
+      "ts": "2026-05-12T03:48:55.777162+00:00",
+      "signal_id": "?",
+      "direction": "SHORT",
+      "entry": {
+        "low": 0.26894,
+        "high": 0.27109152,
+        "mid": 0.27001576,
+        "worst": 0.26894
+      },
+      "stop_loss": 0.2849075,
+      "targets": {
+        "t1": {
+          "price": 0.2423275,
+          "chg_pct": -9.9,
+          "rr": 1.67,
+          "note": "VAH突破确认位"
+        },
+        "t2": {
+          "price": 0.22636,
+          "chg_pct": -15.83,
+          "rr": 2.67,
+          "note": "等幅延伸目标"
+        },
+        "t3": {
+          "price": 0.20507,
+          "note": "扩展目标（部分止盈后持有）"
+        }
+      },
+      "score": 77,
+      "council_approved": true,
+      "council_score": 75,
+      "council_votes": {
+        "technician": "FAIL",
+        "chips": "PASS",
+        "derivatives": "PASS",
+        "risk_control": "PASS"
+      },
+      "levels": {
+        "poc": 0.2628465,
+        "vah": 0.2779035,
+        "val": 0.2017075,
+        "hvn": [
+          0.224296,
+          0.225948,
+          0.2276,
+          0.229252,
+          0.230904
+        ],
+        "lvn": [
+          0.2000125,
+          0.2006375,
+          0.2010665,
+          0.2012625,
+          0.2016195
+        ]
+      },
+      "outcome": null,
+      "pnl_pct": null
+    },
+    {
+      "ts": "2026-05-12T03:52:06.837082+00:00",
+      "signal_id": "?",
+      "direction": "SHORT",
+      "entry": {
+        "low": 0.2706,
+        "high": 0.2727648,
+        "mid": 0.2716824,
+        "worst": 0.2706
+      },
+      "stop_loss": 0.2865675,
+      "targets": {
+        "t1": {
+          "price": 0.2439875,
+          "chg_pct": -9.83,
+          "rr": 1.67,
+          "note": "VAH突破确认位"
+        },
+        "t2": {
+          "price": 0.22802,
+          "chg_pct": -15.74,
+          "rr": 2.67,
+          "note": "等幅延伸目标"
+        },
+        "t3": {
+          "price": 0.20673,
+          "note": "扩展目标（部分止盈后持有）"
+        }
+      },
+      "score": 79,
+      "council_approved": true,
+      "council_score": 75,
+      "council_votes": {
+        "technician": "FAIL",
+        "chips": "PASS",
+        "derivatives": "PASS",
+        "risk_control": "PASS"
+      },
+      "levels": {
+        "poc": 0.2628465,
+        "vah": 0.2779035,
+        "val": 0.2017075,
+        "hvn": [
+          0.224296,
+          0.225948,
+          0.2276,
+          0.229252,
+          0.230904
+        ],
+        "lvn": [
+          0.2000125,
+          0.2006375,
+          0.2010665,
+          0.2012625,
+          0.2016195
+        ]
+      },
+      "outcome": null,
+      "pnl_pct": null
+    }
+  ],
+  "summary": "",
+  "win_count": 0,
+  "loss_count": 3,
+  "total_signals": 5,
+  "consec_losses": 3,
+  "last_loss_ts": 1778708650.1723912,
+  "cooldown_until": 1781300650.1723912
+}

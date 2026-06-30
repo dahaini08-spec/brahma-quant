@@ -1,0 +1,131 @@
+{
+  "symbol": "STXUSDT",
+  "created": "2026-05-13T08:52:09.724870+00:00",
+  "updated": "2026-05-13T08:52:38.570424+00:00",
+  "key_facts": [
+    "[05-13] LONG 评分:74 入场:0.264689~0.271407 SL:0.280246 R:R=6.4",
+    "[05-13] 筹码位: POC=0.26872 VAL=0.257655 VAH=0.292625",
+    "[05-13] 议会否决 - 失败Agent: ['technician', 'chips', 'derivatives', 'risk_control']",
+    "[05-13] LONG 评分:74 入场:0.264689~0.271407 SL:0.280346 R:R=6.3"
+  ],
+  "recent_rounds": [
+    {
+      "ts": "2026-05-13T08:52:09.724924+00:00",
+      "signal_id": "?",
+      "direction": "LONG",
+      "entry": {
+        "low": 0.2646892,
+        "high": 0.2714072,
+        "mid": 0.2680482,
+        "worst": 0.2714072
+      },
+      "stop_loss": 0.28024643,
+      "targets": {
+        "t1": {
+          "price": 0.29408812,
+          "chg_pct": 8.36,
+          "rr": 2.57,
+          "note": "VAH突破确认位"
+        },
+        "t2": {
+          "price": 0.327595,
+          "chg_pct": 20.7,
+          "rr": 6.36,
+          "note": "等幅延伸目标"
+        },
+        "t3": {
+          "price": 0.35025179,
+          "note": "扩展目标（部分止盈后持有）"
+        }
+      },
+      "score": 74,
+      "council_approved": false,
+      "council_score": 41,
+      "council_votes": {
+        "technician": "FAIL",
+        "chips": "FAIL",
+        "derivatives": "FAIL",
+        "risk_control": "FAIL",
+        "v85": "PASS",
+        "sentiment": "PASS",
+        "neural": "PASS"
+      },
+      "levels": {
+        "poc": 0.26872,
+        "vah": 0.292625,
+        "val": 0.257655,
+        "hvn": [
+          0.26344,
+          0.26432,
+          0.265125,
+          0.2652,
+          0.26608
+        ],
+        "lvn": []
+      },
+      "outcome": null,
+      "pnl_pct": null
+    },
+    {
+      "ts": "2026-05-13T08:52:38.570413+00:00",
+      "signal_id": "?",
+      "direction": "LONG",
+      "entry": {
+        "low": 0.2646892,
+        "high": 0.2714072,
+        "mid": 0.2680482,
+        "worst": 0.2714072
+      },
+      "stop_loss": 0.28034643,
+      "targets": {
+        "t1": {
+          "price": 0.29408812,
+          "chg_pct": 8.36,
+          "rr": 2.54,
+          "note": "VAH突破确认位"
+        },
+        "t2": {
+          "price": 0.327595,
+          "chg_pct": 20.7,
+          "rr": 6.29,
+          "note": "等幅延伸目标"
+        },
+        "t3": {
+          "price": 0.35035179,
+          "note": "扩展目标（部分止盈后持有）"
+        }
+      },
+      "score": 74,
+      "council_approved": false,
+      "council_score": 41,
+      "council_votes": {
+        "technician": "FAIL",
+        "chips": "FAIL",
+        "derivatives": "FAIL",
+        "risk_control": "FAIL",
+        "v85": "PASS",
+        "sentiment": "PASS",
+        "neural": "PASS"
+      },
+      "levels": {
+        "poc": 0.26872,
+        "vah": 0.292625,
+        "val": 0.257655,
+        "hvn": [
+          0.26344,
+          0.26432,
+          0.265125,
+          0.2652,
+          0.26608
+        ],
+        "lvn": []
+      },
+      "outcome": null,
+      "pnl_pct": null
+    }
+  ],
+  "summary": "",
+  "win_count": 0,
+  "loss_count": 0,
+  "total_signals": 2
+}

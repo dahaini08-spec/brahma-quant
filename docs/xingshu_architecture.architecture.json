@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Xingshu System Architecture",
+    "subtitle": "Core Engine (6+1 layers) + Research Wing + Viz Layer",
+    "output": "docs/xingshu_architecture.html"
+  },
+  "groups": [
+    {
+      "id": "core",
+      "label": "Core Trading Engine (Immutable)",
+      "color": "indigo",
+      "nodes": [
+        { "id": "brahma_core",  "label": "brahma_core",    "sublabel": "19-dim confluence score / 150pt", "type": "service" },
+        { "id": "dd1_gate",     "label": "DD1 Gate",        "sublabel": "grade>=50 + RR>=1.5",            "type": "security" },
+        { "id": "treasury",     "label": "treasury_gate",   "sublabel": "NAV $132 / position risk",       "type": "database" },
+        { "id": "executor",     "label": "executor.py",     "sublabel": "Binance Futures API only",       "type": "external" },
+        { "id": "ws_guardian",  "label": "ws_guardian",     "sublabel": "breakeven / SL / TP real-time",  "type": "service" }
+      ]
+    },
+    {
+      "id": "regime",
+      "label": "Regime Detection Layer",
+      "color": "violet",
+      "nodes": [
+        { "id": "brahma_state", "label": "brahma_state",    "sublabel": "BEAR_TREND (current)",           "type": "database" },
+        { "id": "regime_mon",   "label": "regime-switch-monitor", "sublabel": "every 30min cron",         "type": "service" },
+        { "id": "wr_matrix",    "label": "WR Matrix",       "sublabel": "7 regimes x 2 dirs (n>=1000)",   "type": "database" }
+      ]
+    },
+    {
+      "id": "dharma",
+      "label": "Dharma Training Pipeline (4-stage)",
+      "color": "cyan",
+      "nodes": [
+        { "id": "offline_replay","label": "offline_replay", "sublabel": "BTC+ETH 6.5yr 49k signals",     "type": "service" },
+        { "id": "dharma_runner", "label": "dharma_runner",  "sublabel": "WFV anchored 12/12 OOS",        "type": "service" },
+        { "id": "settler",       "label": "signal_settler", "sublabel": "live result -> XGBoost retrain","type": "service" }
+      ]
+    },
+    {
+      "id": "research",
+      "label": "Research Wing (async / isolated network)",
+      "color": "amber",
+      "nodes": [
+        { "id": "research_bridge","label": "research_bridge","sublabel": "TTL=30min weight<=8/150",       "type": "service" },
+        { "id": "quantdinger",   "label": "QuantDinger",    "sublabel": "Docker isolated / no trade key", "type": "external" },
+        { "id": "hunter_v2",     "label": "hunter_v2",      "sublabel": "6-channel fast scanner",         "type": "service" }
+      ]
+    },
+    {
+      "id": "monitor",
+      "label": "Monitor & Viz Layer (read-only)",
+      "color": "emerald",
+      "nodes": [
+        { "id": "phase0_mon",   "label": "phase0_monitor",  "sublabel": "system health check",            "type": "service" },
+        { "id": "archify_tool", "label": "archify",         "sublabel": "lifecycle / arch diagrams",      "type": "client" },
+        { "id": "star_md",      "label": "STAR.md",         "sublabel": "AI agent rules v1.0",            "type": "database" }
+      ]
+    }
+  ],
+  "edges": [
+    { "from": "brahma_core",  "to": "dd1_gate",     "label": "score>=threshold" },
+    { "from": "dd1_gate",     "to": "treasury",     "label": "grade pass" },
+    { "from": "treasury",     "to": "executor",     "label": "approved position" },
+    { "from": "executor",     "to": "ws_guardian",  "label": "order filled" },
+    { "from": "brahma_state", "to": "brahma_core",  "label": "regime context" },
+    { "from": "regime_mon",   "to": "brahma_state", "label": "update 30min" },
+    { "from": "wr_matrix",    "to": "brahma_core",  "label": "direction multiplier" },
+    { "from": "dharma_runner","to": "wr_matrix",    "label": "anchored WFV results" },
+    { "from": "offline_replay","to": "dharma_runner","label": "8yr backtest data" },
+    { "from": "settler",      "to": "dharma_runner","label": "live signal results" },
+    { "from": "research_bridge","to": "brahma_core","label": "<=8pt inject (async)" },
+    { "from": "quantdinger",  "to": "research_bridge","label": "research JSON TTL=30min" },
+    { "from": "hunter_v2",    "to": "brahma_core",  "label": "fast scan signals" },
+    { "from": "phase0_mon",   "to": "brahma_state", "label": "read-only health" },
+    { "from": "star_md",      "to": "brahma_core",  "label": "agent rules constraint" }
+  ]
+}

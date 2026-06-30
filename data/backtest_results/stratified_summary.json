@@ -1,0 +1,105 @@
+{
+  "tier1_flagship": {
+    "coins": [
+      "BTCUSDT",
+      "ETHUSDT",
+      "SOLUSDT",
+      "XRPUSDT",
+      "DOGEUSDT"
+    ],
+    "avg_winrate": 43.45,
+    "avg_pf": 1.083,
+    "best_coin": "ETHUSDT",
+    "best_param_set": "aggressive",
+    "best_params": {
+      "tp1": 8.0,
+      "tp2": 15.0,
+      "sl": 5.0
+    },
+    "conservative_avg_winrate": 46.19,
+    "conservative_avg_pf": 1.04,
+    "aggressive_avg_winrate": 40.71,
+    "aggressive_avg_pf": 1.127,
+    "better_param_set": "aggressive",
+    "insight": "主力币波动较大，激进止盈能捕获更多趋势收益 |   保守版均胜率46.2%/PF1.04 vs 激进版均胜率40.7%/PF1.13 |   最优: ETHUSDT(aggressive) 胜率61.3% PF=1.256"
+  },
+  "tier2_mid": {
+    "coins": [
+      "BNBUSDT",
+      "HYPEUSDT",
+      "NEARUSDT",
+      "1000PEPEUSDT",
+      "TRUMPUSDT"
+    ],
+    "avg_winrate": 48.87,
+    "avg_pf": 1.484,
+    "best_coin": "TRUMPUSDT",
+    "best_param_set": "aggressive",
+    "best_params": {
+      "tp1": 8.0,
+      "tp2": 15.0,
+      "sl": 5.0
+    },
+    "conservative_avg_winrate": 47.5,
+    "conservative_avg_pf": 1.406,
+    "aggressive_avg_winrate": 50.24,
+    "aggressive_avg_pf": 1.563,
+    "better_param_set": "aggressive",
+    "insight": "中型币趋势性强，激进止盈收益更佳 |   保守版均胜率47.5%/PF1.41 vs 激进版均胜率50.2%/PF1.56 |   最优: TRUMPUSDT(aggressive) 胜率50.0% PF=2.745"
+  },
+  "tier3_small": {
+    "coins": [
+      "WIFUSDT",
+      "LDOUSDT",
+      "JUPUSDT",
+      "RENDERUSDT",
+      "CHZUSDT"
+    ],
+    "avg_winrate": 43.21,
+    "avg_pf": 1.407,
+    "best_coin": "JUPUSDT",
+    "best_param_set": "conservative",
+    "best_params": {
+      "tp1": 4.0,
+      "tp2": 8.0,
+      "sl": 4.0
+    },
+    "conservative_avg_winrate": 44.74,
+    "conservative_avg_pf": 1.474,
+    "aggressive_avg_winrate": 41.69,
+    "aggressive_avg_pf": 1.34,
+    "better_param_set": "conservative",
+    "insight": "小型币波动剧烈，建议收紧止损(-4%)并设置较近T1(+4%)以锁定利润 | ；保守止盈表现更好，印证了小型币短期爆发后快速回调的特征 |   保守版均胜率44.7%/PF1.47 vs 激进版均胜率41.7%/PF1.34 |   最优: JUPUSDT(conservative) 胜率38.5% PF=2.093"
+  },
+  "tier4_micro": {
+    "coins": [
+      "FLUXUSDT",
+      "SLPUSDT",
+      "HOTUSDT",
+      "BNTUSDT",
+      "DIAUSDT"
+    ],
+    "avg_winrate": 25.11,
+    "avg_pf": 1.375,
+    "best_coin": "HOTUSDT",
+    "best_param_set": "aggressive",
+    "best_params": {
+      "tp1": 8.0,
+      "tp2": 15.0,
+      "sl": 5.0
+    },
+    "conservative_avg_winrate": 25.66,
+    "conservative_avg_pf": 1.313,
+    "aggressive_avg_winrate": 24.57,
+    "aggressive_avg_pf": 1.437,
+    "better_param_set": "aggressive",
+    "insight": "微型币流动性差、波动极大，T1止盈应更近(+4~6%)以应对快速反转 | ；本次回测激进版有更高收益，但可能是数据偏差，实盘需谨慎 |   保守版均胜率25.7%/PF1.31 vs 激进版均胜率24.6%/PF1.44 |   最优: HOTUSDT(aggressive) 胜率33.3% PF=1.987"
+  },
+  "recommendation": "综合4层回测，激进版止盈在3层中表现更优；2025年行情波动较大，趋势性强时可持有更大利润空间。但需注意小型/微型币回撤控制。 | 第1层（主力币）: 最优币种=ETHUSDT, 最优参数=aggressive | 第2层（中型币 $10亿级）: 最优币种=TRUMPUSDT, 最优参数=aggressive | 第3层（小型币 $1亿级）: 最优币种=JUPUSDT, 最优参数=conservative | 第4层（微型币 $5000万以下）: 最优币种=HOTUSDT, 最优参数=aggressive",
+  "run_info": {
+    "from_dt": "2025-01-01",
+    "to_dt": "2026-04-01",
+    "interval": "4h",
+    "run_time": "2026-05-13 02:59:33 UTC"
+  }
+}

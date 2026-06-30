@@ -253,11 +253,14 @@ def check_orphan_modules():
             # 梵天360独立入口（通过cron调用，不被brahma_core引用）
             'brahma_360',
             'gex_scanner',   # GEX扫描器（独立cron，不被brahma_core静态引用）
+            'oi_surge_scanner',  # OI猎手（独立cron + brahma_core动态import）
             # B类：离线工具，不接入实盘流程
             'offline_adapters', 'formatter', 'tardis_liq_layer',
             # C类：独立入口/被brahma_bus封装/间接使用
             'realtime_fetch', 'brahma_parallel_engine', 'external_signal',
             's7_liq_config',
+            # D类：已归档模块（s24归档，设计院2026-06-26封印）
+            'trading_agents_bridge',  # s24已归档，由s25替代，保留文件供回滚
         }
     
     orphans = []
@@ -279,4 +282,16 @@ def check_orphan_modules():
         return []
 
 if __name__ == '__main__':
-    check_orphan_modules()
+    result = check_orphan_modules()
+    # 自推送：发现孤儿模块才推送，正常静默
+    if result:
+        import subprocess as _sp
+        msg = f'🔴 梵天架构已发现孤儿模块 {len(result)}个\n' + '\n'.join(f'  - {m}' for m in result)
+        _sp.run(
+            ['openclaw', 'message', 'send',
+             '--channel', 'jarvis',
+             '--target', '73295708:thread:019f1797-6c60-7541-ad72-ec34ed14dfc4',
+             '--message', msg],
+            capture_output=True, timeout=15
+        )
+    # 正常(无孤儿) → 完全静默

@@ -1,0 +1,36 @@
+[
+  {
+    "symbol": "ETHUSDT",
+    "interval": "15m",
+    "mode": "train",
+    "trades": 3384,
+    "wins": 1140,
+    "losses": 2244,
+    "wr_pct": 33.7,
+    "pf": 0.845,
+    "rr": 1.66,
+    "gross_win": 27167.16,
+    "gross_loss": -32166.57,
+    "init_capital": 5000.0,
+    "final_capital": 0.0,
+    "roi_pct": -100.0,
+    "max_dd_pct": 100.0
+  },
+  {
+    "symbol": "ETHUSDT",
+    "interval": "15m",
+    "mode": "oos",
+    "trades": 939,
+    "wins": 285,
+    "losses": 654,
+    "wr_pct": 30.4,
+    "pf": 0.646,
+    "rr": 1.48,
+    "gross_win": 9108.23,
+    "gross_loss": -14107.85,
+    "init_capital": 5000.0,
+    "final_capital": 0.0,
+    "roi_pct": -100.0,
+    "max_dd_pct": 100.0
+  }
+]

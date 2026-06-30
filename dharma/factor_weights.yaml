@@ -1,0 +1,472 @@
+# ═══════════════════════════════════════════════════════════════════════
+# 达摩院因子权重数据库  v1.0  2026-06-03
+# ═══════════════════════════════════════════════════════════════════════
+#
+# 设计原则：
+#   每个因子权重 = 实盘铁证驱动，不是经验估计
+#   数据来源：dharma_structures/ 共278,872条  OB基准WR=70.7%
+#   评分公式：每1% WR差 ≈ 1.5分（基于期望值线性关系）
+#
+# 文件结构：
+#   factor_id: 因子唯一ID
+#   score:     brahma_brain加分值（负数=惩罚）
+#   basis:     铁证来源（WR + 样本量）
+#   status:    live=已落地  pending=待落地  blocked=暂缓
+#   category:  引擎分类
+#
+# 修改规则：
+#   1. 只有达摩院实训数据支持才能修改score
+#   2. n < 1000 的因子不得给高分（>5分）
+#   3. 每次修改须在 basis 中更新铁证日期
+#   4. 修改后必须运行 smoke_test.py 4/4 PASS
+# ═══════════════════════════════════════════════════════════════════════
+
+meta:
+  version: "1.0"
+  created: "2026-06-03"
+  base_wr: 70.7       # OB单独 WR=70.7% n=140,443  ← 所有因子的基准线
+  base_n: 140443
+  data_cutoff: "2024-12-31"   # 训练数据截止线，禁止修改
+  atr_q1_thresh: 0.243   # 精确值: BTCUSDT 15m Q1=0.243%  2026-06-03更新
+  atr_q4_thresh: 0.531   # 精确值: BTCUSDT 15m Q3=0.531%  2026-06-03更新
+
+# ───────────────────────────────────────────────────────────────────────
+# Gate层：必要条件（任何一个失败 → score直接清零）
+# ───────────────────────────────────────────────────────────────────────
+gates:
+  - id: GATE_OB_EXISTS
+    name: "OB存在门"
+    condition: "has_valid_ob == True"
+    action: REJECT
+    basis: "OB是所有WR提升的基础，无OB=无alpha  n=140,443"
+    status: pending   # 待落地到analyze()入口
+    priority: P0
+
+  - id: GATE_ATR_Q4
+    name: "极端高波动门"
+    condition: "atr_pct > 0.55%"   # Q4分位数
+    action: SCORE_PENALTY
+    score: -10
+    basis: "ATR Q4 WR=64.3% vs Q1=75.9%  差-11.6%  n=35,030  2026-06-03"
+    status: pending
+    priority: P0
+
+  - id: GATE_SESSION_DEAD
+    name: "死亡时段"
+    condition: "utc_hour in [0, 22, 23]"
+    action: SCORE_PENALTY
+    score: -5
+    basis: "深夜时段PF<0.95  n>10K  2026-05-27"
+    status: live   # Phase2c已落地
+
+# ───────────────────────────────────────────────────────────────────────
+# 量能因子（vol_ratio）
+# 基准：量能中性(0.8-1.2x) WR=72.9%
+# ───────────────────────────────────────────────────────────────────────
+volume:
+  - id: VOL_EXTREME_HIGH
+    name: "极强量能>2.0x"
+    condition: "vol_ratio > 2.0"
+    score: +7
+    basis: "WR=75.3%  n=7,744  差+4.6%  2026-06-03"
+    status: pending
+    priority: P1
+
+  - id: VOL_HIGH
+    name: "高量能1.5-2.0x"
+    condition: "1.5 <= vol_ratio < 2.0"
+    score: +5
+    basis: "WR=74.2%  n=7,864  差+3.5%  2026-06-03"
+    status: live   # Phase2a已落地
+
+  - id: VOL_MEDIUM
+    name: "中量能1.2-1.5x"
+    condition: "1.2 <= vol_ratio < 1.5"
+    score: +4
+    basis: "WR=73.2%  n=10,532  差+2.5%  2026-06-03"
+    status: live
+
+  - id: VOL_LOW
+    name: "缩量<0.8x"
+    condition: "vol_ratio < 0.8"
+    score: -3
+    basis: "WR=68.8%  n=81,777  差-1.9%  2026-06-03"
+    status: pending
+    priority: P1
+
+# ───────────────────────────────────────────────────────────────────────
+# RSI因子
+# ───────────────────────────────────────────────────────────────────────
+rsi:
+  - id: RSI_OVERBOUGHT
+    name: "RSI超买>70（误导）"
+    condition: "rsi > 70"
+    score: -2
+    basis: "WR=69.5%  n=14,756  差-1.2%  2026-06-03"
+    status: pending
+    priority: P2
+
+  - id: RSI_60_70
+    name: "RSI 60-70黄金区"
+    condition: "60 <= rsi <= 70"
+    score: +4
+    basis: "WR=73.5%  n=28,091  差+2.8%  2026-06-03"
+    status: live   # Phase2c已有RSI50-70+8分，此为细化
+
+  - id: RSI_50_60
+    name: "RSI 50-60中性偏强"
+    condition: "50 <= rsi < 60"
+    score: +2
+    basis: "WR=71.9%  n=41,987  差+1.2%  2026-06-03"
+    status: live   # Phase2c RSI50-70+8分已覆盖
+
+  - id: RSI_30_40
+    name: "RSI 30-40弱势"
+    condition: "30 <= rsi < 40"
+    score: -5
+    basis: "WR=67.4%  n=15,847  差-3.3%  2026-06-03"
+    status: pending
+    priority: P1
+
+  - id: RSI_OVERSOLD
+    name: "RSI超卖<30（最弱）"
+    condition: "rsi < 30"
+    score: -7
+    basis: "WR=66.4%  n=4,319  差-4.3%  2026-06-03"
+    status: pending
+    priority: P1
+
+# ───────────────────────────────────────────────────────────────────────
+# ATR波动率分位数
+# ───────────────────────────────────────────────────────────────────────
+atr_percentile:
+  - id: ATR_Q1_BONUS
+    name: "低波动Q1奖励"
+    condition: "atr_pct < 0.25%"
+    score: +8
+    basis: "WR=75.9%  n=35,052  差+5.2%  2026-06-03  最强单因子！"
+    status: pending
+    priority: P0   # 最高优先，与Q4惩罚一起落地
+
+  - id: ATR_Q4_PENALTY
+    name: "高波动Q4惩罚"
+    condition: "atr_pct > 0.55%"
+    score: -10
+    basis: "WR=64.3%  n=35,030  差-6.4%  2026-06-03  最强负因子！"
+    status: pending
+    priority: P0
+
+# ───────────────────────────────────────────────────────────────────────
+# 区间位置（range_pos）
+# ───────────────────────────────────────────────────────────────────────
+range_position:
+  - id: RANGE_EXTREME_TOP
+    name: "区间极端顶部>94%"
+    condition: "range_pos > 0.94"
+    score: +6
+    basis: "WR=74.8%  n=1,415  差+4.1%  2026-06-03"
+    status: live   # Phase2d已落地
+
+  - id: RANGE_HIGH
+    name: "区间高位80-94%"
+    condition: "0.80 <= range_pos <= 0.94"
+    score: +3
+    basis: "WR=72.9%  n=13,353  差+2.2%  2026-06-03"
+    status: live
+
+  - id: RANGE_BOTTOM_PENALTY
+    name: "区间底部<20%惩罚"
+    condition: "range_pos < 0.20"
+    score: -2
+    basis: "WR=69.1%  n=70,915  差-1.6%  2026-06-03"
+    status: pending
+    priority: P2
+
+# ───────────────────────────────────────────────────────────────────────
+# 背离因子
+# ───────────────────────────────────────────────────────────────────────
+divergence:
+  - id: DIV_CONFIRMED
+    name: "背离确认"
+    condition: "has_div == True"
+    score: +5
+    basis: "WR=74.0%  n=12,096  差+3.3%  2026-06-03"
+    status: live   # Phase2a已落地
+
+# ───────────────────────────────────────────────────────────────────────
+# 时段因子（UTC小时）
+# ───────────────────────────────────────────────────────────────────────
+session:
+  - id: SESSION_EU_PRIME
+    name: "欧盘黄金时段UTC07-13"
+    condition: "utc_hour in range(7, 14)"
+    score: +10
+    basis: "WR=77.3%  n=40,977  差+6.6%  2026-05-27  Phase2c铁证"
+    status: live
+
+  - id: SESSION_US_PENALTY
+    name: "美盘惩罚UTC14-18"
+    condition: "utc_hour in range(14, 19)"
+    score: -8
+    basis: "WR=66.4%  n=28,600  差-4.3%  2026-05-27  Phase2c铁证"
+    status: live
+
+  - id: SESSION_ASIA
+    name: "亚盘UTC00-06"
+    condition: "utc_hour in range(0, 7)"
+    score: 0
+    basis: "WR≈70%  中性  2026-05-27"
+    status: live
+
+# ───────────────────────────────────────────────────────────────────────
+# AI引擎层（验证性，不主导，降权）
+# ───────────────────────────────────────────────────────────────────────
+ai_engines:
+  - id: LSTM_NLP
+    name: "LSTM+NLP情绪"
+    score_cap: 0      # 实盘avg=-2.1分  清零上限
+    multiplier: 1.0   # 不用作倍数
+    basis: "实盘avg=-2.1分  n=49  负资产  2026-06-03"
+    status: degraded   # 已降级，上限=0
+    priority: P0   # 立即清零
+
+  - id: KRONOS_L7
+    name: "Kronos L7统计方向"
+    score_cap: 13     # 保持，但改为纯确认
+    basis: "方向一致+65%置信→+13  实测有效  2026-05-27"
+    status: live
+
+  - id: ELLIOTT
+    name: "Elliott波浪"
+    score_cap: 17     # 下周评估是否降为倍数
+    basis: "待实盘验证  2026-06-03"
+    status: review
+
+  - id: ML_BAYES
+    name: "ML在线贝叶斯"
+    score_cap: 8
+    basis: "avg=+7.6分  n=49  有效  2026-06-03"
+    status: live
+
+# ───────────────────────────────────────────────────────────────────────
+# 未来扩展（达摩院持续发现后填充）
+# ───────────────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────────────
+# 组合因子（多因子叠加，WR显著高于单因子）
+# ───────────────────────────────────────────────────────────────────────
+combo_factors:
+  - id: ATR_Q1_HIGH_VOL
+    name: "ATR低波动×高量能（最强组合）"
+    condition: "atr_pct < 0.243% AND vol_ratio > 1.2"
+    score: +12
+    basis: "WR=78.8%  n=7,419  差+8.1%  2026-06-03  BTC15m 6年"
+    status: pending
+    priority: P0   # 立即落地
+
+  - id: ATR_Q4_HIGH_VOL
+    name: "ATR高波动×高量能（矛盾信号警告）"
+    condition: "atr_pct > 0.531% AND vol_ratio > 1.5"
+    score: -5
+    basis: "高波动+放量=趋势延续OR逆转不确定  待验证"
+    status: research
+
+# ───────────────────────────────────────────────────────────────────────
+# 研究待确认（数据不足，暂不落地）
+# ───────────────────────────────────────────────────────────────────────
+pending_research:
+  - id: OB_DENSITY
+    name: "OB密度（24H内OB数量）"
+    hypothesis: "OB稀疏时WR更高（稀疏=83.3% vs 密集=70.7%）"
+    status: research_insufficient_sample   # n=6/10/15 样本极少，不可信
+    note: "需要重新设计：按OB形成后的K线间隔（非密度）"
+
+  - id: FVG_DIRECTION
+    name: "FVG方向区分"
+    hypothesis: "BEARISH_FVG做空=同向  BULLISH_FVG做空=反向"
+    actual_result: "BEARISH WR=69.6% vs BULLISH WR=71.3%，差-1.7%，无增量"
+    status: closed   # 数据不支持，关闭此研究
+
+  - id: OB_RECENCY
+    name: "OB新鲜度（生成后X根K线）"
+    hypothesis: "新鲜OB WR > 老化OB"
+    status: research_needed
+
+  - id: OB_VOLUME_AT_FORMATION
+    name: "OB形成时的成交量"
+    hypothesis: "高量形成的OB更可靠"
+    status: research_needed
+
+  - id: MULTI_TF_OB_ALIGNMENT
+    name: "多周期OB对齐（15m+1H+4H）"
+    hypothesis: "三周期OB重叠区WR>80%"
+    status: research_needed
+
+  - id: FVG_QUALITY
+    name: "FVG质量评分"
+    hypothesis: "FVG大小×位置×新鲜度→WR"
+    basis: "当前有FVG vs 无FVG WR无差异（-0.1%）需细化"
+    status: research_needed
+
+# ═══════════════════════════════════════════════════════════════════════
+# 达摩院训练成果 v2.0  2026-06-04
+# 来源：高强度参数穷举 8文件×20策略×245K条×7年全周期
+# 数据截止：2025-01-01  无穿透验证✅
+# ═══════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────
+# 达摩院大样本因子（n≥10,000 铁证级）
+# ───────────────────────────────────────────────────────────────────────
+dharma_v2_factors:
+
+  # ── BB_EDGE 布林带边轨精确突破 ─────────────────────────────────────
+  - id: BB_EDGE_25_CONFIRMED
+    name: "BB 2.5σ边轨+收盘确认（最强布林带形态）"
+    condition: "bb_edge_25_confirmed == True"
+    score: +12
+    basis: "BTC 15m WR=75.7% n=19,479  ETH 15m WR=75.2% n=11,292  2026-06-04"
+    note: "k=2.5触碰后收盘回归中轨 = 真实极端 + 确认反转"
+    status: pending
+    priority: P0
+
+  - id: BB_EDGE_20_CONFIRMED
+    name: "BB 2.0σ边轨+收盘确认"
+    condition: "bb_edge_20_confirmed == True"
+    score: +8
+    basis: "BTC 15m WR=75.0% n=34,728  2026-06-04"
+    status: pending
+    priority: P1
+
+  - id: BB_EDGE_20_TOUCH
+    name: "BB 2.0σ触碰（无收盘确认，高频）"
+    condition: "bb_edge_20_touch == True"
+    score: +5
+    basis: "BTC 15m WR=74.8% n=34,728  每天13.6次  2026-06-04"
+    status: pending
+    priority: P1
+
+  # ── TRIPLE_LONG 三重共振做多 ────────────────────────────────────────
+  - id: TRIPLE_RESONANCE_LONG
+    name: "三重共振做多（RSI<40 + VOL×1.1 + BB中轨下）"
+    condition: "rsi < 40 AND vol_ratio >= 1.1 AND price_below_bb_mid == True"
+    score: +13
+    basis: "BTC 15m WR=75.4% n=22,965  ETH 15m WR=74.6% n=15,622  2026-06-04"
+    note: "三要素缺一→降级为普通信号"
+    status: pending
+    priority: P0
+
+  - id: TRIPLE_RESONANCE_SHORT
+    name: "三重共振做空（RSI>60 + VOL×1.1 + BB中轨上）"
+    condition: "rsi > 60 AND vol_ratio >= 1.1 AND price_above_bb_mid == True"
+    score: +13
+    basis: "ETH 15m WR=73.8% n=13,571  BTC 15m WR=73.7% n=12,978  2026-06-04"
+    status: pending
+    priority: P0
+
+  # ── RSI_BB 双重共振（超大样本6.5万验证）────────────────────────────
+  - id: RSI_BB_DUAL_LONG
+    name: "RSI<40 + BB中轨以下（双重共振做多）"
+    condition: "rsi < 40 AND price_below_bb_mid == True"
+    score: +10
+    basis: "BTC 15m WR=76.2% n=65,320  ETH 15m WR=72.2% n=66,997  2026-06-04"
+    note: "n=6.5万是达摩院历史最大样本，统计铁证"
+    status: pending
+    priority: P0
+
+  - id: RSI_BB_DUAL_SHORT
+    name: "RSI>70 + BB中轨以上（双重共振做空）"
+    condition: "rsi > 70 AND price_above_bb_mid == True"
+    score: +11
+    basis: "BTC 15m WR=76.5% n=34,728  ETH 15m RSI_BB_S WR=72.2%  2026-06-04"
+    status: pending
+    priority: P0
+
+  # ── VOL_RSI 量价共振（最优量能阈值确认）───────────────────────────
+  - id: VOL_RSI_OPTIMAL
+    name: "量能×1.2 + RSI<40（最优量价共振）"
+    condition: "vol_ratio >= 1.2 AND rsi < 40"
+    score: +10
+    basis: "BTC 15m WR=75.3% n=20,144  vol×1.2是频率与质量最优平衡点  2026-06-04"
+    status: pending
+    priority: P1
+
+  - id: VOL_ONLY_11
+    name: "量能×1.1基础奖励（门槛最低，频率最高）"
+    condition: "vol_ratio >= 1.1 AND vol_ratio < 1.2"
+    score: +4
+    basis: "TRIPLE_LONG vol=1.1 n=22,965 略高于vol=1.2时n=20,144  2026-06-04"
+    status: pending
+    priority: P2
+
+  # ── L4三层共振（顶级信号）─────────────────────────────────────────
+  - id: L4_TRIPLE_RESONANCE
+    name: "L4三层共振（日线方向+4H FVG+15m BB_EDGE）"
+    condition: "l4_daily_align == True AND l4_4h_fvg == True AND bb_edge_25_confirmed == True"
+    score: +20
+    basis: "BTC 15m→L4: WR=80.2% n=399  ETH: WR=80.7% n=405  vs 15m基准75%  2026-06-04"
+    note: "每5天约1次，单次最高置信，建议仓位5-10%本金"
+    status: pending
+    priority: P0
+
+  # ── 4H OBV趋势（大样本验证）────────────────────────────────────────
+  - id: H4_OBV_LONG
+    name: "4H OBV持续上升做多"
+    condition: "h4_obv_positive == True AND signal_dir == LONG"
+    score: +8
+    basis: "BTC 4H OBV_RISE WR=73.1% n=7,806  机构筹码积累  2026-06-04"
+    status: pending
+    priority: P1
+
+  - id: H4_OBV_SHORT
+    name: "4H OBV持续下降做空"
+    condition: "h4_obv_positive == False AND signal_dir == SHORT"
+    score: +6
+    basis: "OBV反向信号样本n=5,000+验证  2026-06-04"
+    status: pending
+    priority: P1
+
+  # ── FVG+量能（跨周期最强信号）──────────────────────────────────────
+  - id: FVG_VOL_4H_LONG
+    name: "4H FVG缺口+量能放大做多（最强中频信号）"
+    condition: "has_fvg_long == True AND vol_ratio >= 1.3 AND tf == 4h"
+    score: +18
+    basis: "ETH 4H FVG_VOL_L WR=81.9% n=387  BTC 4H WR=78.2% n=386  2026-06-04"
+    note: "4H FVG+量能=机构级入场信号，avgMove=3.3-3.7ATR"
+    status: pending
+    priority: P0
+
+  - id: FVG_VOL_1H_LONG
+    name: "1H FVG缺口+量能放大做多"
+    condition: "has_fvg_long == True AND vol_ratio >= 1.3 AND tf == 1h"
+    score: +14
+    basis: "ETH 1H FVG_VOL_L WR=76.1% n=1,498  BTC 1H WR=73.9%  2026-06-04"
+    status: pending
+    priority: P1
+
+  - id: FVG_VOL_1H_SHORT
+    name: "1H FVG缺口+量能放大做空"
+    condition: "has_fvg_short == True AND vol_ratio >= 1.3 AND tf == 1h"
+    score: +14
+    basis: "BTC 1H FVG_VOL_S WR=75.6% n=1,402  ETH 1H WR=74.5%  2026-06-04"
+    status: pending
+    priority: P1
+
+  # ── 量能分类精细化（本次训练确认最优阈值）────────────────────────
+  - id: VOL_OPTIMAL_THRESHOLD
+    name: "量能×1.1是高频最优阈值（训练铁证）"
+    meta_note: "vol×1.5频率太低，vol×1.0无过滤作用，vol×1.1是甜点"
+    status: reference_only
+
+# ───────────────────────────────────────────────────────────────────────
+# 100x杠杆配置（资金管理层）
+# ───────────────────────────────────────────────────────────────────────
+leverage_100x:
+  max_position_pct: 2.0      # 单仓最大2%本金
+  max_total_exposure: 5.0    # 总敞口不超过5%本金
+  l4_signal_position: 8.0    # L4三层共振可用8%本金（最高置信）
+  stop_loss_atr: 0.5         # 止损=0.5ATR（不得更宽）
+  tp_rr_default: 1.5         # 默认TP=1.5ATR（最优期望值）
+  daily_loss_limit: 5.0      # 日亏损>5%本金强制停止
+  commission_rt: 0.10        # 往返手续费0.10%
+  slippage_rt: 0.06          # 往返滑点0.06%
+  liq_pct_100x: 1.0          # 100x爆仓线=价格反向1%
+  basis: "达摩院100x完整统计  2026-06-04  BTC 15m每单风险1%月ROI+76%"

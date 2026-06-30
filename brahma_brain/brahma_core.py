@@ -5063,11 +5063,33 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # ══ [KronosEngine END] ═════════════════════════════════════════════════════
 
     # ── s24: 已归档 (2026-06-26 设计院封印) ────────────────────────────
-    # trading_agents_bridge 已归档至 brahma_brain/archive/
-    # 替代方案：s25 OpenRouter推理门控（已封印）
-    # 归档原因：BEAR_TREND体制系数=0且需OPENAI_KEY，s25已完全替代
-    # 如需恢复： cp brahma_brain/archive/trading_agents_bridge.py.bak_* brahma_brain/trading_agents_bridge.py
-    pass  # s24已归档，评分贡献由s25覆盖
+    pass  # s24已归档
+
+    # ── s26: OI持仓量驱动拉升猎手（2026-06-30 设计院 × 苏摩授权）──────
+    # 五层过滤：OI结构+大户方向+资金费率+技术+体制
+    # 区分空头建仓 vs 聪明钱潜伏，BEAR_TREND下最多+5分
+    try:
+        import os as _os26, sys as _sys26
+        _bb26 = _os26.path.dirname(_os26.path.abspath(__file__))
+        _root26 = _os26.path.dirname(_bb26)
+        for _p26 in [_bb26, _root26]:
+            if _p26 not in _sys26.path:
+                _sys26.path.insert(0, _p26)
+        from oi_surge_scanner import get_oi_bonus as _get_oi_bonus
+        _oi_sym = _result.get('symbol', '')
+        _oi_dir = _result.get('signal_dir', 'NEUTRAL')
+        if _oi_sym and _oi_dir in ('LONG', 'SHORT'):
+            _oi_bonus, _oi_detail = _get_oi_bonus(_oi_sym)
+            # 只对LONG方向有效（OI猎手识别的是做多蓄能）
+            if _oi_dir == 'LONG' and _oi_bonus > 0:
+                _cur_s26 = float(_result.get('confluence', {}).get('score', 0))
+                _result['confluence']['score'] = _cur_s26 + _oi_bonus
+                _result['confluence']['_s26_oi'] = _oi_bonus
+                _result['confluence'].setdefault('breakdown', {})['s26_oi'] = \
+                    f'{_oi_bonus:+d} {_oi_detail}'
+                print(f'[s26-OI] {_oi_sym} LONG: {_oi_bonus:+d} | {_oi_detail}')
+    except Exception as _e26:
+        pass  # OI数据不影响主流评分
 
     # ── s25: OpenRouter 推理验证门控 v2 (苏摩B档 · 2026-06-26) ────────────
     # 升级内容：score阈值120（原130）+ 四模块并行ThreadPool
@@ -5282,6 +5304,59 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception:
         pass
     # ══ [EventBus END] ════════════════════════════════════════════════════════
+
+    # ══ [P2-6 暴涨猎手维度融合 · 设计院 2026-06-30] ════════════════════════
+    # 暴涨猎手铁证：TIGHT<15%+缩量+RSI超卖 = LONG方向最强先验
+    # 注入规则：仅LONG方向 + 非已泵标的 + 评分上限+12
+    try:
+        import sys as _sys_ph, os as _os_ph
+        _root_ph = _os_ph.path.dirname(_os_ph.path.dirname(_os_ph.path.abspath(__file__)))
+        if _root_ph not in _sys_ph.path: _sys_ph.path.insert(0, _root_ph)
+        _ph_sym = _result.get('symbol', '') or _sym
+        _ph_dir = signal_dir or _result.get('signal_dir', 'SHORT')
+        _ph_chg24 = float((_result.get('ms') or ms or {}).get('price_change_24h', 0) or 0)
+        # 只对LONG且24H涨幅<30%（排除已泵）注入暴涨猎手加分
+        if _ph_dir == 'LONG' and _ph_chg24 < 30:
+            import numpy as _np_ph
+            from brahma_brain.brahma_bus import bus as _bus_ph
+            _k1h_ph = _bus_ph.klines(_ph_sym, '1h', 50)
+            if _k1h_ph and len(_k1h_ph) >= 25:
+                _c_ph = _np_ph.array([float(k[4]) for k in _k1h_ph])
+                _h_ph = _np_ph.array([float(k[2]) for k in _k1h_ph])
+                _l_ph = _np_ph.array([float(k[3]) for k in _k1h_ph])
+                _v_ph = _np_ph.array([float(k[5]) for k in _k1h_ph])
+                # TIGHT7D计算
+                _tight7d = (_np_ph.max(_h_ph[-168:]) - _np_ph.min(_l_ph[-168:])) / _np_ph.min(_l_ph[-168:]) * 100 if len(_h_ph)>=50 else 99
+                # RSI
+                _d_ph = _np_ph.diff(_c_ph[-15:])
+                _g_ph = _np_ph.where(_d_ph>0,_d_ph,0); _lo_ph = _np_ph.where(_d_ph<0,-_d_ph,0)
+                _ag_ph=_np_ph.mean(_g_ph); _al_ph=_np_ph.mean(_lo_ph)
+                _rsi_ph = 100-100/(1+_ag_ph/_al_ph) if _al_ph>0 else 99
+                # 连续缩量小时数
+                _shrink_ph = 0
+                for _vi in range(len(_v_ph)-2, max(0,len(_v_ph)-15), -1):
+                    if _v_ph[_vi] < _v_ph[_vi+1]: _shrink_ph += 1
+                    else: break
+                # 暴涨猎手评分
+                _ph_score = 0
+                if _tight7d < 15: _ph_score += 8   # TIGHT铁证最高权重
+                elif _tight7d < 20: _ph_score += 4
+                if _rsi_ph < 30: _ph_score += 5    # 超卖
+                elif _rsi_ph < 45: _ph_score += 2
+                if _shrink_ph >= 6: _ph_score += 4  # 连续缩量
+                elif _shrink_ph >= 3: _ph_score += 2
+                _ph_score = min(_ph_score, 12)      # 上限+12
+                if _ph_score > 0:
+                    _cur_s = float(_result.get('score_final', _result.get('score', 0)))
+                    _result['score_final'] = _cur_s + _ph_score
+                    _result.setdefault('confluence', {}).setdefault('breakdown', {})['s_pump_hunter'] = _ph_score
+                    _result['_ph_tight7d'] = round(_tight7d, 1)
+                    _result['_ph_rsi'] = round(_rsi_ph, 1)
+                    _result['_ph_shrink_h'] = _shrink_ph
+                    print(f'[PumpHunter-Fusion] {_ph_sym} LONG: TIGHT={_tight7d:.1f}% RSI={_rsi_ph:.0f} 缩量={_shrink_ph}H → +{_ph_score}分')
+    except Exception as _e_ph:
+        pass  # 暴涨猎手融合失败不影响主流程
+    # ══ [PumpHunter融合 END] ════════════════════════════════════════════════════
 
     # ══ [可观测-v2] ══
     try:

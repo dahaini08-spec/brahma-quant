@@ -1,0 +1,27 @@
+{
+  "score": 0,
+  "sources": [
+    "timesfm_lite"
+  ],
+  "reason": "TimesFM-Lite: p_dir=0.49 conf=LOW pred=72.41 Q10=68.16~Q90=76.92",
+  "details": {
+    "timesfm_lite": {
+      "score": -0.2,
+      "p_direction": 0.486,
+      "confidence": "LOW",
+      "pred_price": 72.41,
+      "q10": 68.16,
+      "q25": 70.15,
+      "q75": 74.75,
+      "q90": 76.92,
+      "band_pct": 11.88,
+      "r_sq": 0.117,
+      "vol_h": 3.48,
+      "regime_coeff": 0.8
+    }
+  },
+  "ts": 1782813533.847172,
+  "expires": 1782817133.8471725,
+  "symbol": "SOLUSDT",
+  "direction": "LONG"
+}

@@ -1,0 +1,22 @@
+# Dockerfile.research_webhook
+# =====================================================
+# Research Webhook 接收器
+# 接收 QuantDinger 研究输出 → research_bridge → external_signal 缓存
+
+FROM python:3.11-slim
+
+WORKDIR /app/webhook
+
+# 最小依赖
+RUN pip install --no-cache-dir flask==3.0.3 gunicorn==22.0.0
+
+COPY research_bridge.py .
+COPY brahma_brain/external_signal.py ./brahma_brain/
+
+# Webhook 服务入口
+COPY scripts/research_webhook_server.py .
+
+EXPOSE 8890
+
+CMD ["gunicorn", "--bind", "0.0.0.0:8890", "--workers", "2",
+     "--timeout", "30", "research_webhook_server:app"]

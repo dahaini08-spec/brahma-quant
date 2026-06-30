@@ -1,0 +1,12 @@
+{
+  "exp_id": "EXP-18",
+  "name": "Kelly仓位优化",
+  "date": "2026-05-15T13:55:09.799799+00:00",
+  "tier": "mid",
+  "current_kelly": 0.014,
+  "optimal_kelly": 0.018,
+  "balance": 123.57,
+  "conclusion": "最优Kelly=1.8%，当前1.4%建议调整",
+  "status": "DONE",
+  "sample_warning": "实盘样本仅7笔，建议30笔后再确认"
+}

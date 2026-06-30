@@ -1,0 +1,586 @@
+{
+  "framework": "Anchored WFV v5.0",
+  "generated_at": "2026-06-14T08:47:00Z",
+  "architecture": "4周期×13维×三级体制×OB代理×15M触发×置信度仓位×假突破过滤×OI代理品种独立×品种独立参数",
+  "data_total": 606775,
+  "fixes_applied": [
+    "D1~D8",
+    "FIX1-置信度仓位",
+    "FIX2-假突破过滤",
+    "FIX3-OI代理-品种独立"
+  ],
+  "results": {
+    "BTCUSDT": {
+      "sym": "BTCUSDT",
+      "layers": 13,
+      "timeframes": 4,
+      "total_trades": 2574,
+      "oos_results": [
+        {
+          "oos_period": "2020-05~2020-11",
+          "n": 250,
+          "wins": 99,
+          "losses": 131,
+          "tos": 20,
+          "wr": 0.43,
+          "pf": 1.032,
+          "wr_ci95": [
+            0.365,
+            0.496
+          ],
+          "threshold_used": 95.0,
+          "nav_end": 9256.92
+        },
+        {
+          "oos_period": "2020-11~2021-05",
+          "n": 248,
+          "wins": 118,
+          "losses": 105,
+          "tos": 25,
+          "wr": 0.529,
+          "pf": 1.52,
+          "wr_ci95": [
+            0.466,
+            0.596
+          ],
+          "threshold_used": 96.0,
+          "nav_end": 61244.52
+        },
+        {
+          "oos_period": "2021-05~2021-11",
+          "n": 225,
+          "wins": 95,
+          "losses": 108,
+          "tos": 22,
+          "wr": 0.468,
+          "pf": 1.194,
+          "wr_ci95": [
+            0.399,
+            0.537
+          ],
+          "threshold_used": 102.0,
+          "nav_end": 215502.25
+        },
+        {
+          "oos_period": "2021-11~2022-05",
+          "n": 206,
+          "wins": 84,
+          "losses": 104,
+          "tos": 18,
+          "wr": 0.447,
+          "pf": 1.1,
+          "wr_ci95": [
+            0.378,
+            0.521
+          ],
+          "threshold_used": 108.0,
+          "nav_end": 617446.43
+        },
+        {
+          "oos_period": "2022-05~2022-11",
+          "n": 195,
+          "wins": 83,
+          "losses": 90,
+          "tos": 22,
+          "wr": 0.48,
+          "pf": 1.246,
+          "wr_ci95": [
+            0.41,
+            0.555
+          ],
+          "threshold_used": 114.0,
+          "nav_end": 2046631.02
+        },
+        {
+          "oos_period": "2022-11~2023-05",
+          "n": 185,
+          "wins": 80,
+          "losses": 82,
+          "tos": 23,
+          "wr": 0.494,
+          "pf": 1.313,
+          "wr_ci95": [
+            0.42,
+            0.574
+          ],
+          "threshold_used": 108.0,
+          "nav_end": 5798126.88
+        },
+        {
+          "oos_period": "2023-05~2023-11",
+          "n": 229,
+          "wins": 85,
+          "losses": 122,
+          "tos": 22,
+          "wr": 0.411,
+          "pf": 0.948,
+          "wr_ci95": [
+            0.343,
+            0.473
+          ],
+          "threshold_used": 102.0,
+          "nav_end": 11288873.66
+        },
+        {
+          "oos_period": "2023-11~2024-05",
+          "n": 247,
+          "wins": 92,
+          "losses": 126,
+          "tos": 29,
+          "wr": 0.422,
+          "pf": 0.989,
+          "wr_ci95": [
+            0.358,
+            0.486
+          ],
+          "threshold_used": 96.0,
+          "nav_end": 28127950.43
+        },
+        {
+          "oos_period": "2024-05~2024-11",
+          "n": 174,
+          "wins": 68,
+          "losses": 87,
+          "tos": 19,
+          "wr": 0.439,
+          "pf": 1.059,
+          "wr_ci95": [
+            0.361,
+            0.516
+          ],
+          "threshold_used": 102.0,
+          "nav_end": 61981606.76
+        },
+        {
+          "oos_period": "2024-11~2025-05",
+          "n": 155,
+          "wins": 64,
+          "losses": 75,
+          "tos": 16,
+          "wr": 0.46,
+          "pf": 1.157,
+          "wr_ci95": [
+            0.374,
+            0.54
+          ],
+          "threshold_used": 96.0,
+          "nav_end": 127096286.88
+        },
+        {
+          "oos_period": "2025-05~2025-11",
+          "n": 155,
+          "wins": 58,
+          "losses": 77,
+          "tos": 20,
+          "wr": 0.43,
+          "pf": 1.016,
+          "wr_ci95": [
+            0.348,
+            0.519
+          ],
+          "threshold_used": 102.0,
+          "nav_end": 234589401.4
+        },
+        {
+          "oos_period": "2025-11~2026-06",
+          "n": 93,
+          "wins": 42,
+          "losses": 46,
+          "tos": 5,
+          "wr": 0.477,
+          "pf": 1.252,
+          "wr_ci95": [
+            0.375,
+            0.58
+          ],
+          "threshold_used": 108.0,
+          "nav_end": 381179448.78
+        }
+      ],
+      "oos_pass_count": 8,
+      "oos_pass_rate": 0.667,
+      "final_nav": 381179448.78,
+      "final_threshold": 108.0,
+      "fb_filtered": 68,
+      "avg_conf_mult": 1.054,
+      "overall_wr": 0.461,
+      "overall_pf": 1.158,
+      "ev_per_trade_pct": 0.1507,
+      "bootstrap_wr": [
+        0.461,
+        0.441,
+        0.48
+      ],
+      "wr_matrix": {
+        "BEAR_EARLY_LONG": {
+          "n": 5,
+          "wr": 0.2,
+          "wins": 1,
+          "losses": 4,
+          "tos": 0
+        },
+        "BEAR_EARLY_SHORT": {
+          "n": 897,
+          "wr": 0.46,
+          "wins": 369,
+          "losses": 434,
+          "tos": 94
+        },
+        "BEAR_RECOVERY_LONG": {
+          "n": 37,
+          "wr": 0.219,
+          "wins": 7,
+          "losses": 25,
+          "tos": 5
+        },
+        "BEAR_RECOVERY_SHORT": {
+          "n": 36,
+          "wr": 0.394,
+          "wins": 13,
+          "losses": 20,
+          "tos": 3
+        },
+        "BULL_EARLY_LONG": {
+          "n": 1399,
+          "wr": 0.475,
+          "wins": 599,
+          "losses": 662,
+          "tos": 138
+        },
+        "BULL_EARLY_SHORT": {
+          "n": 6,
+          "wr": 0.667,
+          "wins": 4,
+          "losses": 2,
+          "tos": 0
+        },
+        "BULL_CORRECTION_SHORT": {
+          "n": 34,
+          "wr": 0.258,
+          "wins": 8,
+          "losses": 23,
+          "tos": 3
+        },
+        "BULL_CORRECTION_LONG": {
+          "n": 140,
+          "wr": 0.457,
+          "wins": 59,
+          "losses": 70,
+          "tos": 11
+        },
+        "BEAR_TREND_SHORT": {
+          "n": 16,
+          "wr": 0.375,
+          "wins": 3,
+          "losses": 5,
+          "tos": 8
+        },
+        "BULL_TREND_LONG": {
+          "n": 4,
+          "wr": null,
+          "wins": 0,
+          "losses": 0,
+          "tos": 4
+        }
+      },
+      "params": {
+        "sl_mult": 1.8,
+        "tp_mult": 2.5,
+        "hold_bars": 32,
+        "init_thresh": 68,
+        "cool_bars": 18,
+        "regime_offset": 0,
+        "oi_vol_thresh": 1.5,
+        "oi_penalize_low": false,
+        "oi_mom_thresh": 0.8
+      },
+      "elapsed_s": 54.0
+    },
+    "ETHUSDT": {
+      "sym": "ETHUSDT",
+      "layers": 13,
+      "timeframes": 4,
+      "total_trades": 2437,
+      "oos_results": [
+        {
+          "oos_period": "2020-05~2020-11",
+          "n": 252,
+          "wins": 99,
+          "losses": 124,
+          "tos": 29,
+          "wr": 0.444,
+          "pf": 1.08,
+          "wr_ci95": [
+            0.381,
+            0.507
+          ],
+          "threshold_used": 95.0,
+          "nav_end": 11052.54
+        },
+        {
+          "oos_period": "2020-11~2021-05",
+          "n": 244,
+          "wins": 107,
+          "losses": 113,
+          "tos": 24,
+          "wr": 0.486,
+          "pf": 1.284,
+          "wr_ci95": [
+            0.418,
+            0.555
+          ],
+          "threshold_used": 101.0,
+          "nav_end": 55122.69
+        },
+        {
+          "oos_period": "2021-05~2021-11",
+          "n": 227,
+          "wins": 98,
+          "losses": 104,
+          "tos": 25,
+          "wr": 0.485,
+          "pf": 1.274,
+          "wr_ci95": [
+            0.416,
+            0.554
+          ],
+          "threshold_used": 107.0,
+          "nav_end": 231575.01
+        },
+        {
+          "oos_period": "2021-11~2022-05",
+          "n": 213,
+          "wins": 90,
+          "losses": 99,
+          "tos": 24,
+          "wr": 0.476,
+          "pf": 1.229,
+          "wr_ci95": [
+            0.402,
+            0.545
+          ],
+          "threshold_used": 113.0,
+          "nav_end": 885753.99
+        },
+        {
+          "oos_period": "2022-05~2022-11",
+          "n": 191,
+          "wins": 90,
+          "losses": 77,
+          "tos": 24,
+          "wr": 0.539,
+          "pf": 1.568,
+          "wr_ci95": [
+            0.461,
+            0.611
+          ],
+          "threshold_used": 116.0,
+          "nav_end": 4519422.67
+        },
+        {
+          "oos_period": "2022-11~2023-05",
+          "n": 181,
+          "wins": 76,
+          "losses": 85,
+          "tos": 20,
+          "wr": 0.472,
+          "pf": 1.21,
+          "wr_ci95": [
+            0.398,
+            0.547
+          ],
+          "threshold_used": 116.0,
+          "nav_end": 13110493.51
+        },
+        {
+          "oos_period": "2023-05~2023-11",
+          "n": 192,
+          "wins": 77,
+          "losses": 101,
+          "tos": 14,
+          "wr": 0.433,
+          "pf": 1.042,
+          "wr_ci95": [
+            0.36,
+            0.506
+          ],
+          "threshold_used": 116.0,
+          "nav_end": 29190409.87
+        },
+        {
+          "oos_period": "2023-11~2024-05",
+          "n": 176,
+          "wins": 74,
+          "losses": 79,
+          "tos": 23,
+          "wr": 0.484,
+          "pf": 1.26,
+          "wr_ci95": [
+            0.405,
+            0.562
+          ],
+          "threshold_used": 122.0,
+          "nav_end": 84823828.14
+        },
+        {
+          "oos_period": "2024-05~2024-11",
+          "n": 156,
+          "wins": 64,
+          "losses": 81,
+          "tos": 11,
+          "wr": 0.441,
+          "pf": 1.081,
+          "wr_ci95": [
+            0.359,
+            0.524
+          ],
+          "threshold_used": 128.0,
+          "nav_end": 183821936.1
+        },
+        {
+          "oos_period": "2024-11~2025-05",
+          "n": 142,
+          "wins": 64,
+          "losses": 65,
+          "tos": 13,
+          "wr": 0.496,
+          "pf": 1.337,
+          "wr_ci95": [
+            0.411,
+            0.581
+          ],
+          "threshold_used": 134.0,
+          "nav_end": 543994134.77
+        },
+        {
+          "oos_period": "2025-05~2025-11",
+          "n": 124,
+          "wins": 60,
+          "losses": 54,
+          "tos": 10,
+          "wr": 0.526,
+          "pf": 1.511,
+          "wr_ci95": [
+            0.439,
+            0.614
+          ],
+          "threshold_used": 136.0,
+          "nav_end": 1609828864.46
+        },
+        {
+          "oos_period": "2025-11~2026-06",
+          "n": 153,
+          "wins": 61,
+          "losses": 77,
+          "tos": 15,
+          "wr": 0.442,
+          "pf": 1.076,
+          "wr_ci95": [
+            0.355,
+            0.522
+          ],
+          "threshold_used": 136.0,
+          "nav_end": 3477382331.26
+        }
+      ],
+      "oos_pass_count": 11,
+      "oos_pass_rate": 0.917,
+      "final_nav": 3477382331.26,
+      "final_threshold": 136.0,
+      "fb_filtered": 137,
+      "avg_conf_mult": 1.073,
+      "overall_wr": 0.479,
+      "overall_pf": 1.124,
+      "ev_per_trade_pct": 0.1127,
+      "bootstrap_wr": [
+        0.479,
+        0.458,
+        0.5
+      ],
+      "wr_matrix": {
+        "BEAR_EARLY_LONG": {
+          "n": 7,
+          "wr": 0.333,
+          "wins": 2,
+          "losses": 4,
+          "tos": 1
+        },
+        "BEAR_EARLY_SHORT": {
+          "n": 1136,
+          "wr": 0.485,
+          "wins": 494,
+          "losses": 525,
+          "tos": 117
+        },
+        "BULL_CORRECTION_LONG": {
+          "n": 84,
+          "wr": 0.535,
+          "wins": 38,
+          "losses": 33,
+          "tos": 13
+        },
+        "BULL_EARLY_SHORT": {
+          "n": 0,
+          "wr": null,
+          "wins": 0,
+          "losses": 0,
+          "tos": 0
+        },
+        "BULL_CORRECTION_SHORT": {
+          "n": 9,
+          "wr": 0.625,
+          "wins": 5,
+          "losses": 3,
+          "tos": 1
+        },
+        "BULL_EARLY_LONG": {
+          "n": 1109,
+          "wr": 0.477,
+          "wins": 478,
+          "losses": 524,
+          "tos": 107
+        },
+        "BEAR_RECOVERY_LONG": {
+          "n": 38,
+          "wr": 0.312,
+          "wins": 10,
+          "losses": 22,
+          "tos": 6
+        },
+        "BEAR_RECOVERY_SHORT": {
+          "n": 10,
+          "wr": 0.4,
+          "wins": 4,
+          "losses": 6,
+          "tos": 0
+        },
+        "BEAR_TREND_SHORT": {
+          "n": 37,
+          "wr": 0.367,
+          "wins": 11,
+          "losses": 19,
+          "tos": 7
+        },
+        "BULL_TREND_LONG": {
+          "n": 7,
+          "wr": 0.75,
+          "wins": 3,
+          "losses": 1,
+          "tos": 3
+        }
+      },
+      "params": {
+        "sl_mult": 2.0,
+        "tp_mult": 2.5,
+        "hold_bars": 32,
+        "init_thresh": 65,
+        "cool_bars": 18,
+        "regime_offset": -3,
+        "oi_vol_thresh": 1.3,
+        "oi_penalize_low": true,
+        "oi_mom_thresh": 0.5
+      },
+      "elapsed_s": 54.7
+    }
+  }
+}

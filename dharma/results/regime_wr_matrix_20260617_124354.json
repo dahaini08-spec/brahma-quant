@@ -1,0 +1,131 @@
+{
+  "timestamp": "20260617_124354",
+  "matrix": {
+    "CHOP_SHORT": {
+      "symbol": "BTCUSDT",
+      "regime": "CHOP",
+      "direction": "SHORT",
+      "n": 4607,
+      "wr": 0.574,
+      "avg_pnl": 0,
+      "source": "replay"
+    },
+    "BULL_TREND_SHORT": {
+      "symbol": "BTCUSDT",
+      "regime": "BULL_TREND",
+      "direction": "SHORT",
+      "n": 4999,
+      "wr": 0.482,
+      "avg_pnl": 0,
+      "source": "replay"
+    },
+    "BULL_TREND_LONG": {
+      "symbol": "BTCUSDT",
+      "regime": "BULL_TREND",
+      "direction": "LONG",
+      "n": 3046,
+      "wr": 0.705,
+      "avg_pnl": 0,
+      "source": "replay"
+    },
+    "BULL_EARLY_LONG": {
+      "symbol": "BTCUSDT",
+      "regime": "BULL_EARLY",
+      "direction": "LONG",
+      "n": 5396,
+      "wr": 0.646,
+      "avg_pnl": 0,
+      "source": "replay"
+    },
+    "CHOP_LONG": {
+      "symbol": "BTCUSDT",
+      "regime": "CHOP",
+      "direction": "LONG",
+      "n": 4113,
+      "wr": 0.571,
+      "avg_pnl": 0,
+      "source": "replay"
+    },
+    "BULL_EARLY_SHORT": {
+      "symbol": "BTCUSDT",
+      "regime": "BULL_EARLY",
+      "direction": "SHORT",
+      "n": 6855,
+      "wr": 0.517,
+      "avg_pnl": 0,
+      "source": "replay"
+    },
+    "BULL_CORRECTION_LONG": {
+      "symbol": "BTCUSDT",
+      "regime": "BULL_CORRECTION",
+      "direction": "LONG",
+      "n": 655,
+      "wr": 0.477,
+      "avg_pnl": 0,
+      "source": "replay"
+    },
+    "BULL_CORRECTION_SHORT": {
+      "symbol": "BTCUSDT",
+      "regime": "BULL_CORRECTION",
+      "direction": "SHORT",
+      "n": 494,
+      "wr": 0.739,
+      "avg_pnl": 0,
+      "source": "replay"
+    },
+    "BEAR_EARLY_LONG": {
+      "symbol": "BTCUSDT",
+      "regime": "BEAR_EARLY",
+      "direction": "LONG",
+      "n": 6341,
+      "wr": 0.506,
+      "avg_pnl": 0,
+      "source": "replay"
+    },
+    "BEAR_EARLY_SHORT": {
+      "symbol": "BTCUSDT",
+      "regime": "BEAR_EARLY",
+      "direction": "SHORT",
+      "n": 5896,
+      "wr": 0.664,
+      "avg_pnl": 0,
+      "source": "replay"
+    },
+    "BEAR_TREND_SHORT": {
+      "symbol": "BTCUSDT",
+      "regime": "BEAR_TREND",
+      "direction": "SHORT",
+      "n": 2413,
+      "wr": 0.713,
+      "avg_pnl": 0,
+      "source": "replay"
+    },
+    "BEAR_TREND_LONG": {
+      "symbol": "BTCUSDT",
+      "regime": "BEAR_TREND",
+      "direction": "LONG",
+      "n": 3322,
+      "wr": 0.446,
+      "avg_pnl": 0,
+      "source": "replay"
+    },
+    "BEAR_RECOVERY_SHORT": {
+      "symbol": "BTCUSDT",
+      "regime": "BEAR_RECOVERY",
+      "direction": "SHORT",
+      "n": 603,
+      "wr": 0.484,
+      "avg_pnl": 0,
+      "source": "replay"
+    },
+    "BEAR_RECOVERY_LONG": {
+      "symbol": "BTCUSDT",
+      "regime": "BEAR_RECOVERY",
+      "direction": "LONG",
+      "n": 430,
+      "wr": 0.776,
+      "avg_pnl": 0,
+      "source": "replay"
+    }
+  }
+}

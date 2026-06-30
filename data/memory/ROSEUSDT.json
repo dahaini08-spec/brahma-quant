@@ -1,0 +1,189 @@
+{
+  "symbol": "ROSEUSDT",
+  "created": "2026-05-13T08:43:32.011747+00:00",
+  "updated": "2026-05-13T08:52:37.439404+00:00",
+  "key_facts": [
+    "[05-13] LONG 评分:100 入场:0.0116957~0.011849 SL:0.0112704 R:R=3.1",
+    "[05-13] 筹码位: POC=0.011785 VAL=0.0107365 VAH=0.0122045",
+    "[05-13] 议会否决 - 失败Agent: ['technician', 'derivatives', 'risk_control']",
+    "[05-13] LONG 评分:75 入场:0.0118544~0.0120097 SL:0.0114304 R:R=2.9",
+    "[05-13] LONG 评分:75 入场:0.0118445~0.0119997 SL:0.0114204 R:R=2.9"
+  ],
+  "recent_rounds": [
+    {
+      "ts": "2026-05-13T08:43:32.011813+00:00",
+      "signal_id": "?",
+      "direction": "LONG",
+      "entry": {
+        "low": 0.01169568,
+        "high": 0.01184895,
+        "mid": 0.01177232,
+        "worst": 0.01184895
+      },
+      "stop_loss": 0.01127036,
+      "targets": {
+        "t1": {
+          "price": 0.01226552,
+          "chg_pct": 3.52,
+          "rr": 0.72,
+          "note": "VAH突破确认位"
+        },
+        "t2": {
+          "price": 0.0136725,
+          "chg_pct": 15.39,
+          "rr": 3.15,
+          "note": "等幅延伸目标"
+        },
+        "t3": {
+          "price": 0.01471732,
+          "note": "扩展目标（部分止盈后持有）"
+        }
+      },
+      "score": 100,
+      "council_approved": false,
+      "council_score": 54,
+      "council_votes": {
+        "technician": "FAIL",
+        "chips": "PASS",
+        "derivatives": "FAIL",
+        "risk_control": "FAIL",
+        "v85": "PASS",
+        "sentiment": "PASS",
+        "neural": "PASS"
+      },
+      "levels": {
+        "poc": 0.011785,
+        "vah": 0.0122045,
+        "val": 0.0107365,
+        "hvn": [
+          0.011167,
+          0.01122,
+          0.011245,
+          0.011303,
+          0.011335
+        ],
+        "lvn": []
+      },
+      "outcome": null,
+      "pnl_pct": null
+    },
+    {
+      "ts": "2026-05-13T08:52:08.578366+00:00",
+      "signal_id": "?",
+      "direction": "LONG",
+      "entry": {
+        "low": 0.0118544,
+        "high": 0.01200975,
+        "mid": 0.01193208,
+        "worst": 0.01200975
+      },
+      "stop_loss": 0.01143036,
+      "targets": {
+        "t1": {
+          "price": 0.01226552,
+          "chg_pct": 2.13,
+          "rr": 0.44,
+          "note": "VAH突破确认位"
+        },
+        "t2": {
+          "price": 0.0136725,
+          "chg_pct": 13.85,
+          "rr": 2.87,
+          "note": "等幅延伸目标"
+        },
+        "t3": {
+          "price": 0.01487732,
+          "note": "扩展目标（部分止盈后持有）"
+        }
+      },
+      "score": 75,
+      "council_approved": false,
+      "council_score": 54,
+      "council_votes": {
+        "technician": "FAIL",
+        "chips": "PASS",
+        "derivatives": "FAIL",
+        "risk_control": "FAIL",
+        "v85": "PASS",
+        "sentiment": "PASS",
+        "neural": "PASS"
+      },
+      "levels": {
+        "poc": 0.011785,
+        "vah": 0.0122045,
+        "val": 0.0107365,
+        "hvn": [
+          0.011167,
+          0.01122,
+          0.011245,
+          0.011303,
+          0.011335
+        ],
+        "lvn": []
+      },
+      "outcome": null,
+      "pnl_pct": null
+    },
+    {
+      "ts": "2026-05-13T08:52:37.439392+00:00",
+      "signal_id": "?",
+      "direction": "LONG",
+      "entry": {
+        "low": 0.01184448,
+        "high": 0.0119997,
+        "mid": 0.01192209,
+        "worst": 0.0119997
+      },
+      "stop_loss": 0.01142036,
+      "targets": {
+        "t1": {
+          "price": 0.01226552,
+          "chg_pct": 2.22,
+          "rr": 0.46,
+          "note": "VAH突破确认位"
+        },
+        "t2": {
+          "price": 0.0136725,
+          "chg_pct": 13.94,
+          "rr": 2.89,
+          "note": "等幅延伸目标"
+        },
+        "t3": {
+          "price": 0.01486732,
+          "note": "扩展目标（部分止盈后持有）"
+        }
+      },
+      "score": 75,
+      "council_approved": false,
+      "council_score": 54,
+      "council_votes": {
+        "technician": "FAIL",
+        "chips": "PASS",
+        "derivatives": "FAIL",
+        "risk_control": "FAIL",
+        "v85": "PASS",
+        "sentiment": "PASS",
+        "neural": "PASS"
+      },
+      "levels": {
+        "poc": 0.011785,
+        "vah": 0.0122045,
+        "val": 0.0107365,
+        "hvn": [
+          0.011167,
+          0.01122,
+          0.011245,
+          0.011303,
+          0.011335
+        ],
+        "lvn": []
+      },
+      "outcome": null,
+      "pnl_pct": null
+    }
+  ],
+  "summary": "",
+  "win_count": 0,
+  "loss_count": 0,
+  "total_signals": 3
+}
