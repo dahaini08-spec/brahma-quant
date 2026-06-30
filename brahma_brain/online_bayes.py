@@ -76,13 +76,21 @@ def _load_experience_pool():
             if not outcome:
                 continue
             regime    = s.get('regime', '')
-            direction = s.get('direction', '')
+            direction = s.get('direction', '') or s.get('signal_dir', '')
             if not regime or not direction:
                 continue
             key = f"{regime}_{direction}"
-            pool[key]['total'] += 1
-            if outcome in ('TP1', 'TP2', 'TP3', 'WIN', 'HIT_TP1', 'HIT_TP2'):
-                pool[key]['wins'] += 1
+            # [P0 2026-06-30] 扩展胜利outcome识别，覆盖全部真实结算格式
+            WIN_OUTCOMES  = ('TP1','TP2','TP3','WIN','HIT_TP1','HIT_TP2',
+                             'MISS_WIN')                  # MISS_WIN=方向正确未入场
+            LOSS_OUTCOMES = ('SL','LOSS','SL_BREACHED',
+                             'MISS_LOSS')                 # MISS_LOSS=方向错误未入场
+            if outcome in WIN_OUTCOMES:
+                pool[key]['total'] += 1
+                pool[key]['wins']  += 1
+            elif outcome in LOSS_OUTCOMES:
+                pool[key]['total'] += 1
+            # REGIME_EXPIRED/EXPIRED/PRICE_EXPIRED → 不计入经验池（方向无法判断）
     except Exception as e:
         print(f"[OnlineBayes] ⚠️ 经验池加载失败: {e}")
         return {}
