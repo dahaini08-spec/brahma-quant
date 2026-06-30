@@ -117,7 +117,20 @@ def _register_fingerprint(symbol: str, signal_dir: str, entry_lo: float, price: 
 def log_signal(result: dict) -> bool:
     try:
         score = result.get('score_final', result.get('confluence', {}).get('total', 0))
-        valid = result.get('valid_signal', False)
+        # [P0 2026-06-30 设计院修复] valid判断逻辑增强
+        # 原因：valid_signal在部分信号生成路径中未正确传递，导致338条历史信号valid全为False
+        # 修复：多级判断：(1)valid_signal (2)rr_gate=PASS (3)kelly_mult>0
+        _cf = result.get('confluence', {})
+        _params = result.get('params', {})
+        _rr_gate = _cf.get('rr_gate', '')
+        _kelly   = float(_cf.get('kelly_mult', 0) or 0)
+        _params_valid = _params.get('valid', False)
+        _rr1 = float(_params.get('rr1', 0) or 0)
+        valid = (
+            result.get('valid_signal', False)  # 原始判断
+            or (_rr_gate == 'PASS' and _kelly > 0)  # rr通过+kelly正常
+            or (_params_valid and _rr1 >= 1.0)        # params内部有效且RR达标
+        )
         _sq_grade = result.get('confluence', {}).get('structure_grade', 0) or 0
         _action   = result.get('confluence', {}).get('action', '')
 
