@@ -4912,6 +4912,30 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         from gex_engine import score_gex as _score_gex22, compute_gex as _compute_gex22
         _currency_g = 'BTC' if 'BTC' in _sym_t.upper() else \
                       'ETH' if 'ETH' in _sym_t.upper() else 'BTC'
+        # [设计院 2026-06-30] 优先用 gex_scanner（博尔正项BS公式），fallback到 gex_engine
+        try:
+            from gex_scanner import get_gex_state as _gex_state_fn, get_gex_score_for_signal as _gex_sig_fn
+            _gex_cached = _gex_state_fn(_currency_g)
+            if _gex_cached and _gex_cached.get('max_gex_strike'):
+                _gex_adj, _gex_desc = _gex_sig_fn(_currency_g, _dir_t)
+                _s22 = max(-10, min(12, _gex_adj))
+                _gex_data = _gex_cached  # 多字段可用
+                _result['confluence']['_gex_max'] = _gex_cached.get('max_gex_strike')
+                _result['confluence']['_gex_min'] = _gex_cached.get('min_gex_strike')
+                _result['confluence']['_gex_pos_pct'] = _gex_cached.get('spot_pos_pct')
+                if _s22 != 0:
+                    _cur_score22 = _result['confluence']['score']
+                    _result['confluence']['score'] = _cur_score22 + _s22
+                    _result['confluence']['_s22_gex'] = _s22
+                    _result['confluence'].setdefault('breakdown', {})['s22_gex'] = \
+                        f'{_s22:+d} MAX=${_gex_cached["max_gex_strike"]:,.0f} MIN=${_gex_cached["min_gex_strike"]:,.0f} pos={_gex_cached.get("spot_pos_pct",0):.0f}% | {_gex_desc[:40]}'
+                    print(f'[s22-GEX★] {_sym_t} {_dir_t}: {_s22:+d} | MAX=${_gex_cached["max_gex_strike"]:,.0f} MIN=${_gex_cached["min_gex_strike"]:,.0f}')
+                _gex_data = _gex_cached
+                raise StopIteration  # 跳过旧gex_engine
+        except StopIteration:
+            pass
+        except Exception:
+            pass  # gex_scanner不可用，fallback到gex_engine
         _gex_data = _compute_gex22(_currency_g)
         if _gex_data:
             _s22_res = _score_gex22(_sym_t, _dir_t, _gex_data)

@@ -252,6 +252,7 @@ def check_orphan_modules():
             'brahma_core', 'brahma_orchestrator', '__init__', 'auto_review',
             # 梵天360独立入口（通过cron调用，不被brahma_core引用）
             'brahma_360',
+            'gex_scanner',   # GEX扫描器（独立cron，不被brahma_core静态引用）
             # B类：离线工具，不接入实盘流程
             'offline_adapters', 'formatter', 'tardis_liq_layer',
             # C类：独立入口/被brahma_bus封装/间接使用
