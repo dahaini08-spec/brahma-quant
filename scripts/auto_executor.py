@@ -7,7 +7,7 @@ auto_executor.py — 梵天自动开单触发器
   ② signal.score ≥ AUTO_SCORE_THRESHOLD (138)
   ③ signal.rr1 ≥ 1.0
   ④ 体制门控通过（非死穴）
-  ⑤ 持仓数 < MAX_POSITIONS (5)
+  ⑤ 持仓数 < MAX_POSITIONS (20)
   ⑥ 该标的无现有持仓
   ⑦ 可用余额 ≥ 最小开单金额 ($10)
   ⑧ 信号未过期（expires_at 未超时）
@@ -31,7 +31,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 # ── 配置 ──────────────────────────────────────────────
 AUTO_SCORE_THRESHOLD = 138       # 最低评分
 MIN_RR               = 1.0       # 最低RR
-MAX_POSITIONS        = 5         # 最大持仓数
+MAX_POSITIONS        = 20        # 最大持仓数（苏摩授权 2026-06-30）
 MIN_SL_PCT           = 2.0       # v4.0铁证最低止损
 MAX_SL_PCT           = 5.0       # 最大止损（保护性上限）
 NAV_SIZE_PCT         = 0.02      # 每笔仓位 NAV×2%
