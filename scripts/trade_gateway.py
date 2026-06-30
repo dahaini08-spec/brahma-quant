@@ -36,7 +36,7 @@ sys.path.insert(0, str(_DIR))
 sys.path.insert(0, str(_DIR / 'brahma_brain'))
 sys.path.insert(0, str(_DIR / 'scripts'))
 
-JARVIS_TARGET = '73295708:t:019eaab8-19e6-73a2-9143-0b99bb0048d8'
+JARVIS_TARGET = '73295708:t:019f1797-6c60-7541-ad72-ec34ed14dfc4'
 MIN_WEIGHTED  = 110   # 同 signal_selector 门槛
 
 # 推送去重：同symbol+direction 6H内不重复推送
