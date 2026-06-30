@@ -1,0 +1,91 @@
+//@version=5
+indicator("D1-ATR扩张突破 [梵天拉娜]", overlay=true, max_labels_count=500)
+
+atr_len = input.int(14, "ATR周期", group="ATR参数")
+atr_hist_bars = input.int(50, "ATR历史均值回望", group="ATR参数")
+atr_expand_mult = input.float(1.2, "ATR扩张门槛", group="ATR参数", step=0.05)
+brk_bars = input.int(20, "突破回望根数", group="突破参数")
+brk_margin = input.float(0.2, "突破边距(%)", group="突破参数", step=0.05)
+vol_min = input.float(1.3, "最低量比", group="突破参数", step=0.1)
+sl_bars = input.int(8, "止损回望根数", group="止损止盈")
+t1_mult = input.float(1.5, "T1 x ATR", group="止损止盈", step=0.1)
+t2_mult = input.float(3.0, "T2 x ATR", group="止损止盈", step=0.1)
+t3_mult = input.float(5.0, "T3 x ATR", group="止损止盈", step=0.1)
+min_rr1 = input.float(1.5, "最低盈亏比", group="止损止盈", step=0.1)
+show_long = input.bool(true, "显示多头信号", group="显示")
+show_short = input.bool(true, "显示空头信号", group="显示")
+show_targets = input.bool(true, "显示止盈止损线", group="显示")
+cooldown_n = input.int(6, "同方向冷却根数", group="显示")
+
+atr_now = ta.atr(atr_len)
+atr_mean = ta.sma(atr_now, atr_hist_bars)
+atr_ratio = atr_mean > 0 ? atr_now / atr_mean : 1.0
+vol_avg = ta.sma(volume, 20)
+vol_ratio = vol_avg > 0 ? volume / vol_avg : 1.0
+prev_hi = ta.highest(high[1], brk_bars)
+prev_lo = ta.lowest(low[1], brk_bars)
+brk_up = close > prev_hi * (1.0 + brk_margin / 100.0)
+brk_down = close < prev_lo * (1.0 - brk_margin / 100.0)
+sl_long = ta.lowest(low[1], sl_bars) * 0.998
+sl_short = ta.highest(high[1], sl_bars) * 1.002
+sl_dist_l = close > 0 ? (close - sl_long) / close * 100 : 0.0
+sl_dist_s = close > 0 ? (sl_short - close) / close * 100 : 0.0
+t1_long = close + t1_mult * atr_now
+t2_long = close + t2_mult * atr_now
+t3_long = close + t3_mult * atr_now
+t1_short = close - t1_mult * atr_now
+t2_short = close - t2_mult * atr_now
+t3_short = close - t3_mult * atr_now
+rr_long = (close - sl_long) > 0 ? (t1_long - close) / (close - sl_long) : 0.0
+rr_short = (sl_short - close) > 0 ? (close - t1_short) / (sl_short - close) : 0.0
+atr_ok = atr_ratio >= atr_expand_mult
+vol_ok = vol_ratio >= vol_min
+long_ok = atr_ok and brk_up and vol_ok and sl_dist_l >= 0.3 and sl_dist_l <= 6.0 and rr_long >= min_rr1
+short_ok = atr_ok and brk_down and vol_ok and sl_dist_s >= 0.3 and sl_dist_s <= 6.0 and rr_short >= min_rr1
+
+var int last_long_bar = -999
+var int last_short_bar = -999
+long_fire = long_ok and (bar_index - last_long_bar) >= cooldown_n
+short_fire = short_ok and (bar_index - last_short_bar) >= cooldown_n
+if long_fire
+    last_long_bar := bar_index
+if short_fire
+    last_short_bar := bar_index
+
+sc_atr = atr_ratio >= 1.4 ? 35 : atr_ratio >= 1.3 ? 25 : atr_ratio >= 1.2 ? 15 : 5
+sc_vol = vol_ratio >= 3.0 ? 25 : vol_ratio >= 2.0 ? 18 : vol_ratio >= 1.5 ? 12 : 6
+sc = sc_atr + sc_vol
+
+if long_fire and show_long
+    label.new(bar_index, low * 0.999, text="D1 LONG\nATRx" + str.tostring(atr_ratio, "#.##") + " Volx" + str.tostring(vol_ratio, "#.#") + "\nRR=" + str.tostring(rr_long, "#.##") + " S=" + str.tostring(sc), style=label.style_label_up, color=color.new(color.teal, 5), textcolor=color.white, size=size.normal)
+
+if short_fire and show_short
+    label.new(bar_index, high * 1.001, text="D1 SHORT\nATRx" + str.tostring(atr_ratio, "#.##") + " Volx" + str.tostring(vol_ratio, "#.#") + "\nRR=" + str.tostring(rr_short, "#.##") + " S=" + str.tostring(sc), style=label.style_label_down, color=color.new(color.red, 5), textcolor=color.white, size=size.normal)
+
+var float line_sl = na
+var float line_t1 = na
+var float line_t2 = na
+var float line_t3 = na
+
+if long_fire and show_targets
+    line_sl := sl_long
+    line_t1 := t1_long
+    line_t2 := t2_long
+    line_t3 := t3_long
+
+if short_fire and show_targets
+    line_sl := sl_short
+    line_t1 := t1_short
+    line_t2 := t2_short
+    line_t3 := t3_short
+
+plot(show_targets ? line_sl : na, "SL", color=color.new(color.red, 20), linewidth=1, style=plot.style_linebr)
+plot(show_targets ? line_t1 : na, "T1", color=color.new(color.green, 40), linewidth=1, style=plot.style_linebr)
+plot(show_targets ? line_t2 : na, "T2", color=color.new(color.green, 20), linewidth=2, style=plot.style_linebr)
+plot(show_targets ? line_t3 : na, "T3", color=color.new(color.green, 5), linewidth=2, style=plot.style_linebr)
+
+bgcolor(atr_ratio >= atr_expand_mult ? color.new(color.yellow, 92) : na, title="ATR扩张中")
+
+alertcondition(long_fire, "D1 多头启动", "D1多头启动")
+alertcondition(short_fire, "D1 空头启动", "D1空头启动")
+alertcondition(long_fire or short_fire, "D1 任意方向", "D1启动信号")

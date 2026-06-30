@@ -1,0 +1,224 @@
+{
+  "updated_at": "2026-05-17 13:02 UTC",
+  "wins": 13,
+  "losses": 9,
+  "open": 0,
+  "total_closed": 22,
+  "win_rate_pct": 59.09,
+  "avg_win_pct": 7.9179,
+  "avg_loss_pct": -2.6176,
+  "profit_factor": 4.369,
+  "date_range": "2026-05-07 ~ 2026-05-17",
+  "data_sources": "perf_snapshot(13) + brahma_state(9)",
+  "cron_schedule": "每天北京08:00 (UTC 00:00) 自动推送",
+  "cron_id": "be45b4b4-55b9-4fdd-a941-eda892ed31cd",
+  "detail": [
+    {
+      "symbol": "GWEIUSDT",
+      "direction": "做空",
+      "score": 80,
+      "entry": 0.15783,
+      "pnl_pct": 0.4911,
+      "result": "WIN",
+      "date": "2026-05-17",
+      "channel": "MAIN"
+    },
+    {
+      "symbol": "CHZUSDT",
+      "direction": "做空",
+      "score": 80,
+      "entry": 0.04603,
+      "pnl_pct": -0.2406,
+      "result": "LOSS",
+      "date": "2026-05-17",
+      "channel": "MAIN"
+    },
+    {
+      "symbol": "EWYUSDT",
+      "direction": "做多",
+      "score": 80,
+      "entry": 176.89,
+      "pnl_pct": -0.0244,
+      "result": "LOSS",
+      "date": "2026-05-17",
+      "channel": "MAIN"
+    },
+    {
+      "symbol": "SUIUSDT",
+      "direction": "做多",
+      "score": 79,
+      "entry": 1.056052,
+      "pnl_pct": -0.2435,
+      "result": "LOSS",
+      "date": "2026-05-17",
+      "channel": "A"
+    },
+    {
+      "symbol": "TONUSDT",
+      "direction": "做多",
+      "score": 70,
+      "entry": 1.8850893,
+      "pnl_pct": 0.1642,
+      "result": "WIN",
+      "date": "2026-05-17",
+      "channel": "A"
+    },
+    {
+      "symbol": "TAOUSDT",
+      "direction": "做多",
+      "score": 71,
+      "entry": 270.97,
+      "pnl_pct": -0.4349,
+      "result": "LOSS",
+      "date": "2026-05-17",
+      "channel": "A"
+    },
+    {
+      "symbol": "AAVEUSDT",
+      "direction": "做多",
+      "score": 70,
+      "entry": 89.029,
+      "pnl_pct": 0.106,
+      "result": "WIN",
+      "date": "2026-05-17",
+      "channel": "A"
+    },
+    {
+      "symbol": "TRUMPUSDT",
+      "direction": "做多",
+      "score": 68,
+      "entry": 2.155372,
+      "pnl_pct": 0.0117,
+      "result": "WIN",
+      "date": "2026-05-17",
+      "channel": "A"
+    },
+    {
+      "symbol": "WLFIUSDT",
+      "direction": "做多",
+      "score": 71,
+      "entry": 0.061198,
+      "pnl_pct": -0.0747,
+      "result": "LOSS",
+      "date": "2026-05-17",
+      "channel": "A"
+    },
+    {
+      "symbol": "GUAUSDT",
+      "direction": "SHORT",
+      "score": 69,
+      "entry": 1.46838,
+      "pnl_pct": 15.01,
+      "result": "WIN",
+      "date": "2026-05-13"
+    },
+    {
+      "symbol": "COSUSDT",
+      "direction": "SHORT",
+      "score": 93,
+      "entry": 0.001626,
+      "pnl_pct": 2.58,
+      "result": "WIN",
+      "date": "2026-05-13"
+    },
+    {
+      "symbol": "SOLVUSDT",
+      "direction": "SHORT",
+      "score": 100,
+      "entry": 0.005827,
+      "pnl_pct": 12.99,
+      "result": "WIN",
+      "date": "2026-05-12"
+    },
+    {
+      "symbol": "HUSDT",
+      "direction": "SHORT",
+      "score": 79,
+      "entry": null,
+      "pnl_pct": 6.49,
+      "result": "WIN",
+      "date": "2026-05-12"
+    },
+    {
+      "symbol": "HUSDT",
+      "direction": "SHORT",
+      "score": 77,
+      "entry": null,
+      "pnl_pct": 5.92,
+      "result": "WIN",
+      "date": "2026-05-12"
+    },
+    {
+      "symbol": "HUSDT",
+      "direction": "LONG",
+      "score": 77,
+      "entry": null,
+      "pnl_pct": -6.06,
+      "result": "LOSS",
+      "date": "2026-05-12"
+    },
+    {
+      "symbol": "HUSDT",
+      "direction": "LONG",
+      "score": 77,
+      "entry": null,
+      "pnl_pct": -5.96,
+      "result": "LOSS",
+      "date": "2026-05-12"
+    },
+    {
+      "symbol": "HUSDT",
+      "direction": "LONG",
+      "score": 77,
+      "entry": null,
+      "pnl_pct": -5.93,
+      "result": "LOSS",
+      "date": "2026-05-12"
+    },
+    {
+      "symbol": "IRYSUSDT",
+      "direction": "LONG",
+      "score": 75,
+      "entry": null,
+      "pnl_pct": 16.7,
+      "result": "WIN",
+      "date": "2026-05-12"
+    },
+    {
+      "symbol": "REZUSDT",
+      "direction": "LONG",
+      "score": 100,
+      "entry": null,
+      "pnl_pct": 17.36,
+      "result": "WIN",
+      "date": "2026-05-07"
+    },
+    {
+      "symbol": "SAPIENUSDT",
+      "direction": "LONG",
+      "score": 93,
+      "entry": null,
+      "pnl_pct": 13.15,
+      "result": "WIN",
+      "date": "2026-05-07"
+    },
+    {
+      "symbol": "HMSTRUSDT",
+      "direction": "LONG",
+      "score": 72,
+      "entry": null,
+      "pnl_pct": -4.59,
+      "result": "LOSS",
+      "date": "2026-05-07"
+    },
+    {
+      "symbol": "NOTUSDT",
+      "direction": "LONG",
+      "score": 65,
+      "entry": null,
+      "pnl_pct": 11.96,
+      "result": "WIN",
+      "date": "2026-05-07"
+    }
+  ]
+}

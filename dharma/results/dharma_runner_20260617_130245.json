@@ -1,0 +1,66 @@
+{
+  "timestamp": "20260617_130245",
+  "mode": "quick",
+  "gates": {
+    "0": {
+      "passed": true
+    },
+    "1": {
+      "passed": true,
+      "results": {
+        "BTCUSDT": {
+          "wr": 0.6475,
+          "pf": 2.2872500000000002,
+          "oos_pass": 11,
+          "oos_total": 12,
+          "within_tolerance": true,
+          "wr_diff": 0.009500000000000064
+        },
+        "ETHUSDT": {
+          "wr": 0.6796666666666668,
+          "pf": 2.6577500000000005,
+          "oos_pass": 12,
+          "oos_total": 12,
+          "within_tolerance": true,
+          "wr_diff": 0.0043333333333333
+        }
+      }
+    },
+    "2": {
+      "passed": true,
+      "groups": {
+        "A_all_short": {
+          "n": 796,
+          "wr": 50.62814070351759
+        },
+        "A_all_long": {
+          "n": 796,
+          "wr": 51.381909547738694
+        },
+        "B_s23_pos_short": {
+          "n": 322,
+          "wr": 51.86335403726709
+        },
+        "B_s23_pos_long": {
+          "n": 327,
+          "wr": 51.98776758409785
+        },
+        "C_s23_neg_short": {
+          "n": 327,
+          "wr": 48.92966360856269
+        }
+      },
+      "marginal_wr_s23": 1.235213333749499,
+      "marginal_wr_filter": 2.933690428704395,
+      "sample_level": "🟡n<500"
+    },
+    "3": {
+      "passed": null,
+      "reason": "insufficient_samples"
+    },
+    "4": {
+      "passed": false,
+      "s23_injected": true
+    }
+  }
+}

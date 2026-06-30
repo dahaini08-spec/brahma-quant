@@ -1,0 +1,26 @@
+{
+  "patterns": {
+    "A:\u5148\u840e\u7f29\u540e\u7206\u91cf": 72,
+    "B:\u6301\u7eed\u840e\u7f29": 56,
+    "C:\u6301\u7eed\u653e\u91cf": 38,
+    "D:\u5148\u653e\u91cf\u540e\u840e\u7f29": 41
+  },
+  "combo_patterns": {
+    "\u9ec4\u91d1\u6a21\u5f0f:\u4e0b\u8dcc+\u840e\u7f29\u2192\u7206\u91cf": {
+      "n": 33,
+      "avg_pump": 154.7
+    },
+    "\u6807\u51c6\u6a21\u5f0f:\u6a2a\u76d8+\u840e\u7f29\u2192\u7206\u91cf": {
+      "n": 22,
+      "avg_pump": 173.2
+    },
+    "\u8ffd\u9ad8\u6a21\u5f0f:\u4e0a\u6da8+\u6301\u7eed\u653e\u91cf": {
+      "n": 56,
+      "avg_pump": 166.2
+    },
+    "\u5176\u4ed6\u6a21\u5f0f": {
+      "n": 189,
+      "avg_pump": 139.6
+    }
+  }
+}

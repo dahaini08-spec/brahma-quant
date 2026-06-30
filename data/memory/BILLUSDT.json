@@ -1,0 +1,76 @@
+{
+  "symbol": "BILLUSDT",
+  "created": "2026-05-13T04:29:30.392787+00:00",
+  "updated": "2026-05-13T04:29:30.392828+00:00",
+  "key_facts": [
+    "[05-13] SHORT 评分:65 入场:0.1912~0.19273 SL:0.20076 R:R=3.0",
+    "[05-13] 筹码位: POC=0.111543 VAL=0.0964395 VAH=0.190246",
+    "[05-13] 议会否决 - 失败Agent: ['technician', 'chips', 'risk_control']"
+  ],
+  "recent_rounds": [
+    {
+      "ts": "2026-05-13T04:29:30.392822+00:00",
+      "signal_id": "?",
+      "direction": "SHORT",
+      "entry": {
+        "low": 0.1912,
+        "high": 0.1927296,
+        "mid": 0.1919648,
+        "worst": 0.1912
+      },
+      "stop_loss": 0.20076,
+      "targets": {
+        "t1": {
+          "price": 0.175904,
+          "chg_pct": -8.0,
+          "rr": 1.6,
+          "note": "VAH突破确认位"
+        },
+        "t2": {
+          "price": 0.16252,
+          "chg_pct": -15.0,
+          "rr": 3.0,
+          "note": "等幅延伸目标"
+        },
+        "t3": {
+          "price": 0.14818,
+          "note": "扩展目标（部分止盈后持有）"
+        }
+      },
+      "score": 65,
+      "council_approved": false,
+      "council_score": 25,
+      "council_votes": {
+        "technician": "FAIL",
+        "chips": "FAIL",
+        "derivatives": "PASS",
+        "risk_control": "FAIL"
+      },
+      "levels": {
+        "poc": 0.111543,
+        "vah": 0.1902455,
+        "val": 0.0964395,
+        "hvn": [
+          0.104236,
+          0.105888,
+          0.10754,
+          0.109192,
+          0.110844
+        ],
+        "lvn": [
+          0.1847385,
+          0.1857555,
+          0.1867725,
+          0.1877895,
+          0.1888065
+        ]
+      },
+      "outcome": null,
+      "pnl_pct": null
+    }
+  ],
+  "summary": "",
+  "win_count": 0,
+  "loss_count": 0,
+  "total_signals": 1
+}

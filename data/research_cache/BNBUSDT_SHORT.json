@@ -1,0 +1,27 @@
+{
+  "score": 1,
+  "sources": [
+    "timesfm_lite"
+  ],
+  "reason": "TimesFM-Lite: p_dir=0.58 conf=LOW pred=545.37 Q10=530.22~Q90=563.20",
+  "details": {
+    "timesfm_lite": {
+      "score": 1.0,
+      "p_direction": 0.579,
+      "confidence": "LOW",
+      "pred_price": 545.37,
+      "q10": 530.22,
+      "q25": 537.86,
+      "q75": 555.2,
+      "q90": 563.2,
+      "band_pct": 6.0,
+      "r_sq": 0.698,
+      "vol_h": 12.95,
+      "regime_coeff": 0.8
+    }
+  },
+  "ts": 1782813533.9834695,
+  "expires": 1782817133.98347,
+  "symbol": "BNBUSDT",
+  "direction": "SHORT"
+}

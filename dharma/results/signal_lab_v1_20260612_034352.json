@@ -1,0 +1,2002 @@
+{
+  "_meta": {
+    "ts": "20260612_034352",
+    "version": "signal_lab_v1",
+    "syms": [
+      "BTCUSDT",
+      "ETHUSDT"
+    ],
+    "framework": "大周期锚(1D/4H)+1H结构+15m执行",
+    "pf_method": "PF_pnl盈亏金额",
+    "sl": "1.0×ATR",
+    "tp": "2.0×ATR",
+    "hold": "96根(24H)",
+    "min_n": 500,
+    "good_n": 5000,
+    "elapsed_s": 34.3
+  },
+  "results": {
+    "BTCUSDT": {
+      "BASELINE_LONG": {
+        "n": 209459,
+        "wins": 68612,
+        "losses": 140847,
+        "wr": 0.3276,
+        "pf_pnl": 0.565,
+        "avg_pnl": -0.837,
+        "ci": [
+          0.326,
+          0.33
+        ]
+      },
+      "BASELINE_SHORT": {
+        "n": 209538,
+        "wins": 69780,
+        "losses": 139758,
+        "wr": 0.333,
+        "pf_pnl": 0.578,
+        "avg_pnl": -0.806,
+        "ci": [
+          0.331,
+          0.335
+        ]
+      },
+      "SINGLE_rsi_os_long": {
+        "n": 7864,
+        "wins": 2297,
+        "losses": 5567,
+        "wr": 0.2921,
+        "pf_pnl": 0.565,
+        "avg_pnl": -1.075,
+        "ci": [
+          0.282,
+          0.302
+        ],
+        "conditions": {
+          "rsi": [
+            null,
+            30
+          ]
+        },
+        "direction": "LONG"
+      },
+      "SINGLE_rsi_ob_short": {
+        "n": 9165,
+        "wins": 2682,
+        "losses": 6483,
+        "wr": 0.2926,
+        "pf_pnl": 0.507,
+        "avg_pnl": -1.136,
+        "ci": [
+          0.283,
+          0.302
+        ],
+        "conditions": {
+          "rsi": [
+            70,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "SINGLE_rsi_mid_long": {
+        "n": 137687,
+        "wins": 45328,
+        "losses": 92359,
+        "wr": 0.3292,
+        "pf_pnl": 0.554,
+        "avg_pnl": -0.818,
+        "ci": [
+          0.327,
+          0.332
+        ],
+        "conditions": {
+          "rsi": [
+            40,
+            60
+          ]
+        },
+        "direction": "LONG"
+      },
+      "SINGLE_rsi_mid_short": {
+        "n": 137743,
+        "wins": 46057,
+        "losses": 91686,
+        "wr": 0.3344,
+        "pf_pnl": 0.56,
+        "avg_pnl": -0.802,
+        "ci": [
+          0.332,
+          0.337
+        ],
+        "conditions": {
+          "rsi": [
+            40,
+            60
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "SINGLE_ema_bull_long": {
+        "n": 83216,
+        "wins": 27247,
+        "losses": 55969,
+        "wr": 0.3274,
+        "pf_pnl": 0.556,
+        "avg_pnl": -0.85,
+        "ci": [
+          0.324,
+          0.331
+        ],
+        "conditions": {
+          "ema20_slope": [
+            0.1,
+            null
+          ]
+        },
+        "direction": "LONG"
+      },
+      "SINGLE_ema_bear_short": {
+        "n": 76348,
+        "wins": 25651,
+        "losses": 50697,
+        "wr": 0.336,
+        "pf_pnl": 0.605,
+        "avg_pnl": -0.781,
+        "ci": [
+          0.333,
+          0.339
+        ],
+        "conditions": {
+          "ema20_slope": [
+            null,
+            -0.1
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "SINGLE_above200_long": {
+        "n": 100897,
+        "wins": 33837,
+        "losses": 67060,
+        "wr": 0.3354,
+        "pf_pnl": 0.567,
+        "avg_pnl": -0.792,
+        "ci": [
+          0.332,
+          0.338
+        ],
+        "conditions": {
+          "dist_ema200": [
+            0.5,
+            null
+          ]
+        },
+        "direction": "LONG"
+      },
+      "SINGLE_below200_short": {
+        "n": 90534,
+        "wins": 31136,
+        "losses": 59398,
+        "wr": 0.3439,
+        "pf_pnl": 0.629,
+        "avg_pnl": -0.734,
+        "ci": [
+          0.341,
+          0.347
+        ],
+        "conditions": {
+          "dist_ema200": [
+            null,
+            -0.5
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "SINGLE_vol_spike_long": {
+        "n": 35032,
+        "wins": 11498,
+        "losses": 23534,
+        "wr": 0.3282,
+        "pf_pnl": 0.58,
+        "avg_pnl": -0.802,
+        "ci": [
+          0.323,
+          0.333
+        ],
+        "conditions": {
+          "vol_ratio": [
+            1.5,
+            null
+          ]
+        },
+        "direction": "LONG"
+      },
+      "SINGLE_vol_spike_short": {
+        "n": 35032,
+        "wins": 11738,
+        "losses": 23294,
+        "wr": 0.3351,
+        "pf_pnl": 0.575,
+        "avg_pnl": -0.811,
+        "ci": [
+          0.33,
+          0.34
+        ],
+        "conditions": {
+          "vol_ratio": [
+            1.5,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "SINGLE_bb_low_long": {
+        "n": 22731,
+        "wins": 7347,
+        "losses": 15384,
+        "wr": 0.3232,
+        "pf_pnl": 0.584,
+        "avg_pnl": -0.832,
+        "ci": [
+          0.317,
+          0.329
+        ],
+        "conditions": {
+          "bb_pct": [
+            null,
+            0.1
+          ]
+        },
+        "direction": "LONG"
+      },
+      "SINGLE_bb_high_short": {
+        "n": 22798,
+        "wins": 7497,
+        "losses": 15301,
+        "wr": 0.3288,
+        "pf_pnl": 0.562,
+        "avg_pnl": -0.831,
+        "ci": [
+          0.323,
+          0.335
+        ],
+        "conditions": {
+          "bb_pct": [
+            0.9,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "SINGLE_wick_dn_long": {
+        "n": 53350,
+        "wins": 16848,
+        "losses": 36502,
+        "wr": 0.3158,
+        "pf_pnl": 0.537,
+        "avg_pnl": -0.914,
+        "ci": [
+          0.312,
+          0.32
+        ],
+        "conditions": {
+          "wick_dn_ratio": [
+            1.5,
+            null
+          ]
+        },
+        "direction": "LONG"
+      },
+      "SINGLE_wick_up_short": {
+        "n": 51849,
+        "wins": 17060,
+        "losses": 34789,
+        "wr": 0.329,
+        "pf_pnl": 0.572,
+        "avg_pnl": -0.83,
+        "ci": [
+          0.325,
+          0.333
+        ],
+        "conditions": {
+          "wick_up_ratio": [
+            1.5,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "SINGLE_macd_bull_long": {
+        "n": 104476,
+        "wins": 34040,
+        "losses": 70436,
+        "wr": 0.3258,
+        "pf_pnl": 0.554,
+        "avg_pnl": -0.862,
+        "ci": [
+          0.323,
+          0.329
+        ],
+        "conditions": {
+          "macd_hist": [
+            0.0,
+            null
+          ]
+        },
+        "direction": "LONG"
+      },
+      "SINGLE_macd_bear_short": {
+        "n": 105010,
+        "wins": 34826,
+        "losses": 70184,
+        "wr": 0.3316,
+        "pf_pnl": 0.568,
+        "avg_pnl": -0.825,
+        "ci": [
+          0.329,
+          0.334
+        ],
+        "conditions": {
+          "macd_hist": [
+            null,
+            0.0
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "HTF_h4_bear_trend_short": {
+        "n": 32121,
+        "wins": 13227,
+        "losses": 18894,
+        "wr": 0.4118,
+        "pf_pnl": 0.796,
+        "avg_pnl": -0.349,
+        "ci": [
+          0.406,
+          0.417
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_TREND"
+        },
+        "direction": "SHORT"
+      },
+      "HTF_h4_bear_early_short": {
+        "n": 39243,
+        "wins": 12538,
+        "losses": 26705,
+        "wr": 0.3195,
+        "pf_pnl": 0.458,
+        "avg_pnl": -0.913,
+        "ci": [
+          0.315,
+          0.324
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_EARLY"
+        },
+        "direction": "SHORT"
+      },
+      "HTF_h4_bull_trend_long": {
+        "n": 17117,
+        "wins": 6338,
+        "losses": 10779,
+        "wr": 0.3703,
+        "pf_pnl": 0.802,
+        "avg_pnl": -0.491,
+        "ci": [
+          0.363,
+          0.378
+        ],
+        "conditions": {
+          "h4_regime": "BULL_TREND"
+        },
+        "direction": "LONG"
+      },
+      "HTF_h4_bull_early_long": {
+        "n": 49243,
+        "wins": 17000,
+        "losses": 32243,
+        "wr": 0.3452,
+        "pf_pnl": 0.588,
+        "avg_pnl": -0.746,
+        "ci": [
+          0.341,
+          0.349
+        ],
+        "conditions": {
+          "h4_regime": "BULL_EARLY"
+        },
+        "direction": "LONG"
+      },
+      "HTF_h4_chop_high_long": {
+        "n": 18807,
+        "wins": 7259,
+        "losses": 11548,
+        "wr": 0.386,
+        "pf_pnl": 0.594,
+        "avg_pnl": -0.573,
+        "ci": [
+          0.379,
+          0.393
+        ],
+        "conditions": {
+          "h4_regime": "CHOP_HIGH"
+        },
+        "direction": "LONG"
+      },
+      "HTF_h4_chop_low_short": {
+        "n": 11120,
+        "wins": 4849,
+        "losses": 6271,
+        "wr": 0.4361,
+        "pf_pnl": 0.777,
+        "avg_pnl": -0.343,
+        "ci": [
+          0.427,
+          0.445
+        ],
+        "conditions": {
+          "h4_regime": "CHOP_LOW"
+        },
+        "direction": "SHORT"
+      },
+      "HTF_h1_bull_ema_long": {
+        "n": 83155,
+        "wins": 27680,
+        "losses": 55475,
+        "wr": 0.3329,
+        "pf_pnl": 0.565,
+        "avg_pnl": -0.804,
+        "ci": [
+          0.33,
+          0.336
+        ],
+        "conditions": {
+          "h1_ema_bull": 1
+        },
+        "direction": "LONG"
+      },
+      "HTF_h1_bear_ema_short": {
+        "n": 71725,
+        "wins": 24300,
+        "losses": 47425,
+        "wr": 0.3388,
+        "pf_pnl": 0.616,
+        "avg_pnl": -0.777,
+        "ci": [
+          0.335,
+          0.342
+        ],
+        "conditions": {
+          "h1_ema_bear": 1
+        },
+        "direction": "SHORT"
+      },
+      "HTF_h1_above200_long": {
+        "n": 109509,
+        "wins": 37839,
+        "losses": 71670,
+        "wr": 0.3455,
+        "pf_pnl": 0.593,
+        "avg_pnl": -0.728,
+        "ci": [
+          0.343,
+          0.348
+        ],
+        "conditions": {
+          "h1_above200": 1
+        },
+        "direction": "LONG"
+      },
+      "HTF_h1_below200_short": {
+        "n": 100024,
+        "wins": 35355,
+        "losses": 64669,
+        "wr": 0.3535,
+        "pf_pnl": 0.646,
+        "avg_pnl": -0.688,
+        "ci": [
+          0.351,
+          0.356
+        ],
+        "conditions": {
+          "h1_above200": 0
+        },
+        "direction": "SHORT"
+      },
+      "HTF_d1_bull_long": {
+        "n": 84696,
+        "wins": 29588,
+        "losses": 55108,
+        "wr": 0.3493,
+        "pf_pnl": 0.619,
+        "avg_pnl": -0.701,
+        "ci": [
+          0.346,
+          0.353
+        ],
+        "conditions": {
+          "d1_bull": 1
+        },
+        "direction": "LONG"
+      },
+      "HTF_d1_bear_short": {
+        "n": 64016,
+        "wins": 22577,
+        "losses": 41439,
+        "wr": 0.3527,
+        "pf_pnl": 0.661,
+        "avg_pnl": -0.675,
+        "ci": [
+          0.349,
+          0.356
+        ],
+        "conditions": {
+          "d1_bear": 1
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_bear_trend+rsi_ob": {
+        "n": 545,
+        "wins": 269,
+        "losses": 276,
+        "wr": 0.4936,
+        "pf_pnl": 1.096,
+        "avg_pnl": 0.145,
+        "ci": [
+          0.452,
+          0.535
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_TREND",
+          "rsi": [
+            65,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_bear_trend+ema_bear": {
+        "n": 18918,
+        "wins": 7681,
+        "losses": 11237,
+        "wr": 0.406,
+        "pf_pnl": 0.801,
+        "avg_pnl": -0.353,
+        "ci": [
+          0.399,
+          0.413
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_TREND",
+          "ema20_slope": [
+            null,
+            -0.05
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_bear_trend+bb_high": {
+        "n": 2727,
+        "wins": 1231,
+        "losses": 1496,
+        "wr": 0.4514,
+        "pf_pnl": 0.909,
+        "avg_pnl": -0.139,
+        "ci": [
+          0.433,
+          0.47
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_TREND",
+          "bb_pct": [
+            0.85,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_bear_trend+macd_bear": {
+        "n": 15506,
+        "wins": 6361,
+        "losses": 9145,
+        "wr": 0.4102,
+        "pf_pnl": 0.774,
+        "avg_pnl": -0.389,
+        "ci": [
+          0.403,
+          0.418
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_TREND",
+          "macd_hist": [
+            null,
+            0.0
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_bear_trend+vol_spike": {
+        "n": 5602,
+        "wins": 2358,
+        "losses": 3244,
+        "wr": 0.4209,
+        "pf_pnl": 0.794,
+        "avg_pnl": -0.355,
+        "ci": [
+          0.408,
+          0.434
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_TREND",
+          "vol_ratio": [
+            1.5,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_bear_trend+wick_up": {
+        "n": 7931,
+        "wins": 3213,
+        "losses": 4718,
+        "wr": 0.4051,
+        "pf_pnl": 0.772,
+        "avg_pnl": -0.399,
+        "ci": [
+          0.394,
+          0.416
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_TREND",
+          "wick_up_ratio": [
+            1.5,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_h1bear+d1bear": {
+        "n": 39414,
+        "wins": 13623,
+        "losses": 25791,
+        "wr": 0.3456,
+        "pf_pnl": 0.657,
+        "avg_pnl": -0.728,
+        "ci": [
+          0.341,
+          0.35
+        ],
+        "conditions": {
+          "h1_ema_bear": 1,
+          "d1_bear": 1
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_h1bear+d1bear+rsi_ob": {
+        "n": 2260,
+        "wins": 752,
+        "losses": 1508,
+        "wr": 0.3327,
+        "pf_pnl": 0.618,
+        "avg_pnl": -0.888,
+        "ci": [
+          0.314,
+          0.352
+        ],
+        "conditions": {
+          "h1_ema_bear": 1,
+          "d1_bear": 1,
+          "rsi": [
+            65,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_below200+d1bear+rsi_ob": {
+        "n": 2432,
+        "wins": 858,
+        "losses": 1574,
+        "wr": 0.3528,
+        "pf_pnl": 0.683,
+        "avg_pnl": -0.709,
+        "ci": [
+          0.334,
+          0.372
+        ],
+        "conditions": {
+          "h1_above200": 0,
+          "d1_bear": 1,
+          "rsi": [
+            65,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_bear_early+h1bear": {
+        "n": 20597,
+        "wins": 5295,
+        "losses": 15302,
+        "wr": 0.2571,
+        "pf_pnl": 0.323,
+        "avg_pnl": -1.269,
+        "ci": [
+          0.251,
+          0.263
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_EARLY",
+          "h1_ema_bear": 1
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_bear_early+below200+macd": {
+        "n": 16066,
+        "wins": 4872,
+        "losses": 11194,
+        "wr": 0.3032,
+        "pf_pnl": 0.407,
+        "avg_pnl": -1.019,
+        "ci": [
+          0.296,
+          0.31
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_EARLY",
+          "h1_above200": 0,
+          "macd_hist": [
+            null,
+            0
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_3x_bear": {
+        "n": 15878,
+        "wins": 6397,
+        "losses": 9481,
+        "wr": 0.4029,
+        "pf_pnl": 0.729,
+        "avg_pnl": -0.455,
+        "ci": [
+          0.395,
+          0.411
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_TREND",
+          "h1_ema_bear": 1,
+          "d1_bear": 1
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_3x_bear+rsi": {
+        "n": 1839,
+        "wins": 828,
+        "losses": 1011,
+        "wr": 0.4502,
+        "pf_pnl": 0.944,
+        "avg_pnl": -0.087,
+        "ci": [
+          0.428,
+          0.473
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_TREND",
+          "h1_ema_bear": 1,
+          "rsi": [
+            60,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_3x_bear+wick": {
+        "n": 7165,
+        "wins": 2820,
+        "losses": 4345,
+        "wr": 0.3936,
+        "pf_pnl": 0.726,
+        "avg_pnl": -0.489,
+        "ci": [
+          0.382,
+          0.405
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_TREND",
+          "h1_ema_bear": 1,
+          "wick_up_ratio": [
+            1.5,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_LONG_bull_trend+rsi_os": {
+        "n": 599,
+        "wins": 225,
+        "losses": 374,
+        "wr": 0.3756,
+        "pf_pnl": 0.95,
+        "avg_pnl": -0.145,
+        "ci": [
+          0.338,
+          0.415
+        ],
+        "conditions": {
+          "h4_regime": "BULL_TREND",
+          "rsi": [
+            null,
+            35
+          ]
+        },
+        "direction": "LONG"
+      },
+      "COMBO_LONG_bull_trend+ema_bull": {
+        "n": 9677,
+        "wins": 3527,
+        "losses": 6150,
+        "wr": 0.3645,
+        "pf_pnl": 0.745,
+        "avg_pnl": -0.636,
+        "ci": [
+          0.355,
+          0.374
+        ],
+        "conditions": {
+          "h4_regime": "BULL_TREND",
+          "ema20_slope": [
+            0.05,
+            null
+          ]
+        },
+        "direction": "LONG"
+      },
+      "COMBO_LONG_bull_trend+bb_low": {
+        "n": 1832,
+        "wins": 689,
+        "losses": 1143,
+        "wr": 0.3761,
+        "pf_pnl": 0.897,
+        "avg_pnl": -0.261,
+        "ci": [
+          0.354,
+          0.399
+        ],
+        "conditions": {
+          "h4_regime": "BULL_TREND",
+          "bb_pct": [
+            null,
+            0.15
+          ]
+        },
+        "direction": "LONG"
+      },
+      "COMBO_LONG_bull_early+h1bull": {
+        "n": 35114,
+        "wins": 11876,
+        "losses": 23238,
+        "wr": 0.3382,
+        "pf_pnl": 0.556,
+        "avg_pnl": -0.781,
+        "ci": [
+          0.333,
+          0.343
+        ],
+        "conditions": {
+          "h4_regime": "BULL_EARLY",
+          "h1_ema_bull": 1
+        },
+        "direction": "LONG"
+      },
+      "COMBO_LONG_bull_early+above200": {
+        "n": 43100,
+        "wins": 14983,
+        "losses": 28117,
+        "wr": 0.3476,
+        "pf_pnl": 0.581,
+        "avg_pnl": -0.725,
+        "ci": [
+          0.343,
+          0.352
+        ],
+        "conditions": {
+          "h4_regime": "BULL_EARLY",
+          "h1_above200": 1
+        },
+        "direction": "LONG"
+      },
+      "COMBO_LONG_h1bull+d1bull": {
+        "n": 56000,
+        "wins": 18782,
+        "losses": 37218,
+        "wr": 0.3354,
+        "pf_pnl": 0.584,
+        "avg_pnl": -0.787,
+        "ci": [
+          0.331,
+          0.339
+        ],
+        "conditions": {
+          "h1_ema_bull": 1,
+          "d1_bull": 1
+        },
+        "direction": "LONG"
+      },
+      "COMBO_LONG_h1bull+d1bull+rsi_os": {
+        "n": 2612,
+        "wins": 943,
+        "losses": 1669,
+        "wr": 0.361,
+        "pf_pnl": 0.73,
+        "avg_pnl": -0.534,
+        "ci": [
+          0.343,
+          0.38
+        ],
+        "conditions": {
+          "h1_ema_bull": 1,
+          "d1_bull": 1,
+          "rsi": [
+            null,
+            35
+          ]
+        },
+        "direction": "LONG"
+      },
+      "COMBO_LONG_3x_bull": {
+        "n": 15349,
+        "wins": 5535,
+        "losses": 9814,
+        "wr": 0.3606,
+        "pf_pnl": 0.761,
+        "avg_pnl": -0.577,
+        "ci": [
+          0.353,
+          0.368
+        ],
+        "conditions": {
+          "h4_regime": "BULL_TREND",
+          "h1_ema_bull": 1,
+          "d1_bull": 1
+        },
+        "direction": "LONG"
+      },
+      "COMBO_LONG_3x_bull+wick_dn": {
+        "n": 4240,
+        "wins": 1506,
+        "losses": 2734,
+        "wr": 0.3552,
+        "pf_pnl": 0.752,
+        "avg_pnl": -0.609,
+        "ci": [
+          0.341,
+          0.37
+        ],
+        "conditions": {
+          "h4_regime": "BULL_TREND",
+          "h1_ema_bull": 1,
+          "wick_dn_ratio": [
+            1.5,
+            null
+          ]
+        },
+        "direction": "LONG"
+      },
+      "COMBO_LONG_chop_high+h1bull+rsi_os": {
+        "n": 1183,
+        "wins": 504,
+        "losses": 679,
+        "wr": 0.426,
+        "pf_pnl": 0.68,
+        "avg_pnl": -0.43,
+        "ci": [
+          0.398,
+          0.454
+        ],
+        "conditions": {
+          "h4_regime": "CHOP_HIGH",
+          "h1_ema_bull": 1,
+          "rsi": [
+            null,
+            40
+          ]
+        },
+        "direction": "LONG"
+      }
+    },
+    "ETHUSDT": {
+      "BASELINE_LONG": {
+        "n": 209687,
+        "wins": 69241,
+        "losses": 140446,
+        "wr": 0.3302,
+        "pf_pnl": 0.653,
+        "avg_pnl": -0.824,
+        "ci": [
+          0.328,
+          0.332
+        ]
+      },
+      "BASELINE_SHORT": {
+        "n": 209733,
+        "wins": 70651,
+        "losses": 139082,
+        "wr": 0.3369,
+        "pf_pnl": 0.668,
+        "avg_pnl": -0.78,
+        "ci": [
+          0.335,
+          0.339
+        ]
+      },
+      "SINGLE_rsi_os_long": {
+        "n": 8498,
+        "wins": 2535,
+        "losses": 5963,
+        "wr": 0.2983,
+        "pf_pnl": 0.647,
+        "avg_pnl": -1.09,
+        "ci": [
+          0.289,
+          0.308
+        ],
+        "conditions": {
+          "rsi": [
+            null,
+            30
+          ]
+        },
+        "direction": "LONG"
+      },
+      "SINGLE_rsi_ob_short": {
+        "n": 9611,
+        "wins": 2873,
+        "losses": 6738,
+        "wr": 0.2989,
+        "pf_pnl": 0.576,
+        "avg_pnl": -1.159,
+        "ci": [
+          0.29,
+          0.308
+        ],
+        "conditions": {
+          "rsi": [
+            70,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "SINGLE_rsi_mid_long": {
+        "n": 134582,
+        "wins": 44683,
+        "losses": 89899,
+        "wr": 0.332,
+        "pf_pnl": 0.648,
+        "avg_pnl": -0.796,
+        "ci": [
+          0.33,
+          0.335
+        ],
+        "conditions": {
+          "rsi": [
+            40,
+            60
+          ]
+        },
+        "direction": "LONG"
+      },
+      "SINGLE_rsi_mid_short": {
+        "n": 134600,
+        "wins": 45504,
+        "losses": 89096,
+        "wr": 0.3381,
+        "pf_pnl": 0.654,
+        "avg_pnl": -0.778,
+        "ci": [
+          0.336,
+          0.341
+        ],
+        "conditions": {
+          "rsi": [
+            40,
+            60
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "SINGLE_ema_bull_long": {
+        "n": 83756,
+        "wins": 27911,
+        "losses": 55845,
+        "wr": 0.3332,
+        "pf_pnl": 0.652,
+        "avg_pnl": -0.817,
+        "ci": [
+          0.33,
+          0.336
+        ],
+        "conditions": {
+          "ema20_slope": [
+            0.1,
+            null
+          ]
+        },
+        "direction": "LONG"
+      },
+      "SINGLE_ema_bear_short": {
+        "n": 76212,
+        "wins": 26270,
+        "losses": 49942,
+        "wr": 0.3447,
+        "pf_pnl": 0.713,
+        "avg_pnl": -0.702,
+        "ci": [
+          0.341,
+          0.348
+        ],
+        "conditions": {
+          "ema20_slope": [
+            null,
+            -0.1
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "SINGLE_above200_long": {
+        "n": 99861,
+        "wins": 33543,
+        "losses": 66318,
+        "wr": 0.3359,
+        "pf_pnl": 0.655,
+        "avg_pnl": -0.777,
+        "ci": [
+          0.333,
+          0.339
+        ],
+        "conditions": {
+          "dist_ema200": [
+            0.5,
+            null
+          ]
+        },
+        "direction": "LONG"
+      },
+      "SINGLE_below200_short": {
+        "n": 91523,
+        "wins": 31562,
+        "losses": 59961,
+        "wr": 0.3449,
+        "pf_pnl": 0.719,
+        "avg_pnl": -0.692,
+        "ci": [
+          0.342,
+          0.348
+        ],
+        "conditions": {
+          "dist_ema200": [
+            null,
+            -0.5
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "SINGLE_vol_spike_long": {
+        "n": 35061,
+        "wins": 11465,
+        "losses": 23596,
+        "wr": 0.327,
+        "pf_pnl": 0.658,
+        "avg_pnl": -0.817,
+        "ci": [
+          0.322,
+          0.332
+        ],
+        "conditions": {
+          "vol_ratio": [
+            1.5,
+            null
+          ]
+        },
+        "direction": "LONG"
+      },
+      "SINGLE_vol_spike_short": {
+        "n": 35063,
+        "wins": 11831,
+        "losses": 23232,
+        "wr": 0.3374,
+        "pf_pnl": 0.661,
+        "avg_pnl": -0.805,
+        "ci": [
+          0.332,
+          0.342
+        ],
+        "conditions": {
+          "vol_ratio": [
+            1.5,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "SINGLE_bb_low_long": {
+        "n": 22862,
+        "wins": 7329,
+        "losses": 15533,
+        "wr": 0.3206,
+        "pf_pnl": 0.651,
+        "avg_pnl": -0.882,
+        "ci": [
+          0.315,
+          0.327
+        ],
+        "conditions": {
+          "bb_pct": [
+            null,
+            0.1
+          ]
+        },
+        "direction": "LONG"
+      },
+      "SINGLE_bb_high_short": {
+        "n": 23128,
+        "wins": 7514,
+        "losses": 15614,
+        "wr": 0.3249,
+        "pf_pnl": 0.631,
+        "avg_pnl": -0.873,
+        "ci": [
+          0.319,
+          0.331
+        ],
+        "conditions": {
+          "bb_pct": [
+            0.9,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "SINGLE_wick_dn_long": {
+        "n": 54362,
+        "wins": 17530,
+        "losses": 36832,
+        "wr": 0.3225,
+        "pf_pnl": 0.627,
+        "avg_pnl": -0.894,
+        "ci": [
+          0.319,
+          0.326
+        ],
+        "conditions": {
+          "wick_dn_ratio": [
+            1.5,
+            null
+          ]
+        },
+        "direction": "LONG"
+      },
+      "SINGLE_wick_up_short": {
+        "n": 52508,
+        "wins": 17549,
+        "losses": 34959,
+        "wr": 0.3342,
+        "pf_pnl": 0.657,
+        "avg_pnl": -0.809,
+        "ci": [
+          0.33,
+          0.338
+        ],
+        "conditions": {
+          "wick_up_ratio": [
+            1.5,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "SINGLE_macd_bull_long": {
+        "n": 104858,
+        "wins": 34518,
+        "losses": 70340,
+        "wr": 0.3292,
+        "pf_pnl": 0.638,
+        "avg_pnl": -0.865,
+        "ci": [
+          0.326,
+          0.332
+        ],
+        "conditions": {
+          "macd_hist": [
+            0.0,
+            null
+          ]
+        },
+        "direction": "LONG"
+      },
+      "SINGLE_macd_bear_short": {
+        "n": 104873,
+        "wins": 35756,
+        "losses": 69117,
+        "wr": 0.3409,
+        "pf_pnl": 0.669,
+        "avg_pnl": -0.777,
+        "ci": [
+          0.338,
+          0.344
+        ],
+        "conditions": {
+          "macd_hist": [
+            null,
+            0.0
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "HTF_h4_bear_trend_short": {
+        "n": 27751,
+        "wins": 11643,
+        "losses": 16108,
+        "wr": 0.4196,
+        "pf_pnl": 0.913,
+        "avg_pnl": -0.17,
+        "ci": [
+          0.414,
+          0.425
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_TREND"
+        },
+        "direction": "SHORT"
+      },
+      "HTF_h4_bear_early_short": {
+        "n": 37632,
+        "wins": 12684,
+        "losses": 24948,
+        "wr": 0.3371,
+        "pf_pnl": 0.583,
+        "avg_pnl": -0.824,
+        "ci": [
+          0.332,
+          0.342
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_EARLY"
+        },
+        "direction": "SHORT"
+      },
+      "HTF_h4_bull_trend_long": {
+        "n": 28320,
+        "wins": 10319,
+        "losses": 18001,
+        "wr": 0.3644,
+        "pf_pnl": 0.833,
+        "avg_pnl": -0.482,
+        "ci": [
+          0.359,
+          0.37
+        ],
+        "conditions": {
+          "h4_regime": "BULL_TREND"
+        },
+        "direction": "LONG"
+      },
+      "HTF_h4_bull_early_long": {
+        "n": 42371,
+        "wins": 14604,
+        "losses": 27767,
+        "wr": 0.3447,
+        "pf_pnl": 0.668,
+        "avg_pnl": -0.737,
+        "ci": [
+          0.34,
+          0.349
+        ],
+        "conditions": {
+          "h4_regime": "BULL_EARLY"
+        },
+        "direction": "LONG"
+      },
+      "HTF_h4_chop_high_long": {
+        "n": 14800,
+        "wins": 5917,
+        "losses": 8883,
+        "wr": 0.3998,
+        "pf_pnl": 0.759,
+        "avg_pnl": -0.413,
+        "ci": [
+          0.392,
+          0.408
+        ],
+        "conditions": {
+          "h4_regime": "CHOP_HIGH"
+        },
+        "direction": "LONG"
+      },
+      "HTF_h4_chop_low_short": {
+        "n": 9327,
+        "wins": 3812,
+        "losses": 5515,
+        "wr": 0.4087,
+        "pf_pnl": 0.867,
+        "avg_pnl": -0.249,
+        "ci": [
+          0.399,
+          0.419
+        ],
+        "conditions": {
+          "h4_regime": "CHOP_LOW"
+        },
+        "direction": "SHORT"
+      },
+      "HTF_h1_bull_ema_long": {
+        "n": 79495,
+        "wins": 26541,
+        "losses": 52954,
+        "wr": 0.3339,
+        "pf_pnl": 0.659,
+        "avg_pnl": -0.79,
+        "ci": [
+          0.331,
+          0.337
+        ],
+        "conditions": {
+          "h1_ema_bull": 1
+        },
+        "direction": "LONG"
+      },
+      "HTF_h1_bear_ema_short": {
+        "n": 73080,
+        "wins": 24886,
+        "losses": 48194,
+        "wr": 0.3405,
+        "pf_pnl": 0.709,
+        "avg_pnl": -0.721,
+        "ci": [
+          0.337,
+          0.344
+        ],
+        "conditions": {
+          "h1_ema_bear": 1
+        },
+        "direction": "SHORT"
+      },
+      "HTF_h1_above200_long": {
+        "n": 107144,
+        "wins": 37047,
+        "losses": 70097,
+        "wr": 0.3458,
+        "pf_pnl": 0.686,
+        "avg_pnl": -0.699,
+        "ci": [
+          0.343,
+          0.349
+        ],
+        "conditions": {
+          "h1_above200": 1
+        },
+        "direction": "LONG"
+      },
+      "HTF_h1_below200_short": {
+        "n": 102589,
+        "wins": 36284,
+        "losses": 66305,
+        "wr": 0.3537,
+        "pf_pnl": 0.735,
+        "avg_pnl": -0.63,
+        "ci": [
+          0.351,
+          0.357
+        ],
+        "conditions": {
+          "h1_above200": 0
+        },
+        "direction": "SHORT"
+      },
+      "HTF_d1_bull_long": {
+        "n": 79740,
+        "wins": 28021,
+        "losses": 51719,
+        "wr": 0.3514,
+        "pf_pnl": 0.715,
+        "avg_pnl": -0.664,
+        "ci": [
+          0.348,
+          0.355
+        ],
+        "conditions": {
+          "d1_bull": 1
+        },
+        "direction": "LONG"
+      },
+      "HTF_d1_bear_short": {
+        "n": 69439,
+        "wins": 24929,
+        "losses": 44510,
+        "wr": 0.359,
+        "pf_pnl": 0.727,
+        "avg_pnl": -0.616,
+        "ci": [
+          0.355,
+          0.363
+        ],
+        "conditions": {
+          "d1_bear": 1
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_bear_trend+rsi_ob": {
+        "n": 600,
+        "wins": 300,
+        "losses": 300,
+        "wr": 0.5,
+        "pf_pnl": 1.224,
+        "avg_pnl": 0.393,
+        "ci": [
+          0.46,
+          0.54
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_TREND",
+          "rsi": [
+            65,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_bear_trend+ema_bear": {
+        "n": 16539,
+        "wins": 6806,
+        "losses": 9733,
+        "wr": 0.4115,
+        "pf_pnl": 0.912,
+        "avg_pnl": -0.182,
+        "ci": [
+          0.404,
+          0.419
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_TREND",
+          "ema20_slope": [
+            null,
+            -0.05
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_bear_trend+bb_high": {
+        "n": 2266,
+        "wins": 985,
+        "losses": 1281,
+        "wr": 0.4347,
+        "pf_pnl": 0.968,
+        "avg_pnl": -0.06,
+        "ci": [
+          0.414,
+          0.455
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_TREND",
+          "bb_pct": [
+            0.85,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_bear_trend+macd_bear": {
+        "n": 13439,
+        "wins": 5656,
+        "losses": 7783,
+        "wr": 0.4209,
+        "pf_pnl": 0.916,
+        "avg_pnl": -0.166,
+        "ci": [
+          0.413,
+          0.429
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_TREND",
+          "macd_hist": [
+            null,
+            0.0
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_bear_trend+vol_spike": {
+        "n": 4835,
+        "wins": 2061,
+        "losses": 2774,
+        "wr": 0.4263,
+        "pf_pnl": 0.913,
+        "avg_pnl": -0.172,
+        "ci": [
+          0.412,
+          0.44
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_TREND",
+          "vol_ratio": [
+            1.5,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_bear_trend+wick_up": {
+        "n": 6825,
+        "wins": 2861,
+        "losses": 3964,
+        "wr": 0.4192,
+        "pf_pnl": 0.914,
+        "avg_pnl": -0.17,
+        "ci": [
+          0.408,
+          0.431
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_TREND",
+          "wick_up_ratio": [
+            1.5,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_h1bear+d1bear": {
+        "n": 41744,
+        "wins": 14497,
+        "losses": 27247,
+        "wr": 0.3473,
+        "pf_pnl": 0.719,
+        "avg_pnl": -0.693,
+        "ci": [
+          0.343,
+          0.352
+        ],
+        "conditions": {
+          "h1_ema_bear": 1,
+          "d1_bear": 1
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_h1bear+d1bear+rsi_ob": {
+        "n": 2434,
+        "wins": 920,
+        "losses": 1514,
+        "wr": 0.378,
+        "pf_pnl": 0.862,
+        "avg_pnl": -0.337,
+        "ci": [
+          0.359,
+          0.397
+        ],
+        "conditions": {
+          "h1_ema_bear": 1,
+          "d1_bear": 1,
+          "rsi": [
+            65,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_below200+d1bear+rsi_ob": {
+        "n": 2735,
+        "wins": 1073,
+        "losses": 1662,
+        "wr": 0.3923,
+        "pf_pnl": 0.896,
+        "avg_pnl": -0.25,
+        "ci": [
+          0.374,
+          0.411
+        ],
+        "conditions": {
+          "h1_above200": 0,
+          "d1_bear": 1,
+          "rsi": [
+            65,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_bear_early+h1bear": {
+        "n": 17921,
+        "wins": 4600,
+        "losses": 13321,
+        "wr": 0.2567,
+        "pf_pnl": 0.388,
+        "avg_pnl": -1.374,
+        "ci": [
+          0.25,
+          0.263
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_EARLY",
+          "h1_ema_bear": 1
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_bear_early+below200+macd": {
+        "n": 14549,
+        "wins": 4675,
+        "losses": 9874,
+        "wr": 0.3213,
+        "pf_pnl": 0.525,
+        "avg_pnl": -0.958,
+        "ci": [
+          0.314,
+          0.329
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_EARLY",
+          "h1_above200": 0,
+          "macd_hist": [
+            null,
+            0
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_3x_bear": {
+        "n": 13327,
+        "wins": 5436,
+        "losses": 7891,
+        "wr": 0.4079,
+        "pf_pnl": 0.787,
+        "avg_pnl": -0.382,
+        "ci": [
+          0.4,
+          0.416
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_TREND",
+          "h1_ema_bear": 1,
+          "d1_bear": 1
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_3x_bear+rsi": {
+        "n": 1698,
+        "wins": 790,
+        "losses": 908,
+        "wr": 0.4653,
+        "pf_pnl": 1.081,
+        "avg_pnl": 0.149,
+        "ci": [
+          0.442,
+          0.489
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_TREND",
+          "h1_ema_bear": 1,
+          "rsi": [
+            60,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_SHORT_3x_bear+wick": {
+        "n": 6189,
+        "wins": 2509,
+        "losses": 3680,
+        "wr": 0.4054,
+        "pf_pnl": 0.862,
+        "avg_pnl": -0.279,
+        "ci": [
+          0.393,
+          0.418
+        ],
+        "conditions": {
+          "h4_regime": "BEAR_TREND",
+          "h1_ema_bear": 1,
+          "wick_up_ratio": [
+            1.5,
+            null
+          ]
+        },
+        "direction": "SHORT"
+      },
+      "COMBO_LONG_bull_trend+rsi_os": {
+        "n": 1156,
+        "wins": 422,
+        "losses": 734,
+        "wr": 0.3651,
+        "pf_pnl": 0.969,
+        "avg_pnl": -0.104,
+        "ci": [
+          0.338,
+          0.393
+        ],
+        "conditions": {
+          "h4_regime": "BULL_TREND",
+          "rsi": [
+            null,
+            35
+          ]
+        },
+        "direction": "LONG"
+      },
+      "COMBO_LONG_bull_trend+ema_bull": {
+        "n": 15752,
+        "wins": 5550,
+        "losses": 10202,
+        "wr": 0.3523,
+        "pf_pnl": 0.77,
+        "avg_pnl": -0.658,
+        "ci": [
+          0.345,
+          0.36
+        ],
+        "conditions": {
+          "h4_regime": "BULL_TREND",
+          "ema20_slope": [
+            0.05,
+            null
+          ]
+        },
+        "direction": "LONG"
+      },
+      "COMBO_LONG_bull_trend+bb_low": {
+        "n": 3150,
+        "wins": 1127,
+        "losses": 2023,
+        "wr": 0.3578,
+        "pf_pnl": 0.846,
+        "avg_pnl": -0.474,
+        "ci": [
+          0.341,
+          0.375
+        ],
+        "conditions": {
+          "h4_regime": "BULL_TREND",
+          "bb_pct": [
+            null,
+            0.15
+          ]
+        },
+        "direction": "LONG"
+      },
+      "COMBO_LONG_bull_early+h1bull": {
+        "n": 27131,
+        "wins": 9124,
+        "losses": 18007,
+        "wr": 0.3363,
+        "pf_pnl": 0.63,
+        "avg_pnl": -0.786,
+        "ci": [
+          0.331,
+          0.342
+        ],
+        "conditions": {
+          "h4_regime": "BULL_EARLY",
+          "h1_ema_bull": 1
+        },
+        "direction": "LONG"
+      },
+      "COMBO_LONG_bull_early+above200": {
+        "n": 35099,
+        "wins": 12195,
+        "losses": 22904,
+        "wr": 0.3474,
+        "pf_pnl": 0.662,
+        "avg_pnl": -0.709,
+        "ci": [
+          0.342,
+          0.352
+        ],
+        "conditions": {
+          "h4_regime": "BULL_EARLY",
+          "h1_above200": 1
+        },
+        "direction": "LONG"
+      },
+      "COMBO_LONG_h1bull+d1bull": {
+        "n": 52478,
+        "wins": 17828,
+        "losses": 34650,
+        "wr": 0.3397,
+        "pf_pnl": 0.687,
+        "avg_pnl": -0.756,
+        "ci": [
+          0.336,
+          0.344
+        ],
+        "conditions": {
+          "h1_ema_bull": 1,
+          "d1_bull": 1
+        },
+        "direction": "LONG"
+      },
+      "COMBO_LONG_h1bull+d1bull+rsi_os": {
+        "n": 2598,
+        "wins": 869,
+        "losses": 1729,
+        "wr": 0.3345,
+        "pf_pnl": 0.734,
+        "avg_pnl": -0.722,
+        "ci": [
+          0.317,
+          0.353
+        ],
+        "conditions": {
+          "h1_ema_bull": 1,
+          "d1_bull": 1,
+          "rsi": [
+            null,
+            35
+          ]
+        },
+        "direction": "LONG"
+      },
+      "COMBO_LONG_3x_bull": {
+        "n": 23988,
+        "wins": 8552,
+        "losses": 15436,
+        "wr": 0.3565,
+        "pf_pnl": 0.785,
+        "avg_pnl": -0.608,
+        "ci": [
+          0.35,
+          0.363
+        ],
+        "conditions": {
+          "h4_regime": "BULL_TREND",
+          "h1_ema_bull": 1,
+          "d1_bull": 1
+        },
+        "direction": "LONG"
+      },
+      "COMBO_LONG_3x_bull+wick_dn": {
+        "n": 6603,
+        "wins": 2301,
+        "losses": 4302,
+        "wr": 0.3485,
+        "pf_pnl": 0.752,
+        "avg_pnl": -0.725,
+        "ci": [
+          0.337,
+          0.36
+        ],
+        "conditions": {
+          "h4_regime": "BULL_TREND",
+          "h1_ema_bull": 1,
+          "wick_dn_ratio": [
+            1.5,
+            null
+          ]
+        },
+        "direction": "LONG"
+      },
+      "COMBO_LONG_chop_high+h1bull+rsi_os": {
+        "n": 893,
+        "wins": 354,
+        "losses": 539,
+        "wr": 0.3964,
+        "pf_pnl": 0.778,
+        "avg_pnl": -0.387,
+        "ci": [
+          0.365,
+          0.429
+        ],
+        "conditions": {
+          "h4_regime": "CHOP_HIGH",
+          "h1_ema_bull": 1,
+          "rsi": [
+            null,
+            40
+          ]
+        },
+        "direction": "LONG"
+      }
+    }
+  }
+}

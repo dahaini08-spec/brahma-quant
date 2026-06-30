@@ -1,0 +1,22 @@
+{
+  "symbol": "TESTXXX",
+  "created": "2026-05-13T21:43:50.151711+00:00",
+  "updated": "2026-05-13T21:43:50.152013+00:00",
+  "key_facts": [],
+  "recent_rounds": [],
+  "summary": "",
+  "win_count": 0,
+  "loss_count": 0,
+  "total_signals": 0,
+  "best_interval": null,
+  "worst_interval": null,
+  "fake_breakout_rate": 0.0,
+  "best_direction": null,
+  "interval_stats": {},
+  "monthly_bias": {},
+  "last_analysis_date": null,
+  "consec_losses": 0,
+  "last_loss_ts": 1778708630.1517591,
+  "cooldown_until": 0,
+  "last_win_ts": 1778708630.1520116
+}

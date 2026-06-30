@@ -1,0 +1,110 @@
+{
+  "generated_at": "20260513_0820",
+  "config": {
+    "trade_usdt": 500,
+    "leverage": 10,
+    "sl_pct": 0.02,
+    "tp1_pct": 0.04,
+    "tp2_pct": 0.08
+  },
+  "summary_by_tier": {
+    "T1_主力": {
+      "total": 5903,
+      "winrate": 29.5,
+      "total_pnl_usdt": 9654.0,
+      "best": [
+        {
+          "sym": "ETHUSDT",
+          "interval": "4h",
+          "winrate": 30.6,
+          "total": 1404
+        },
+        {
+          "sym": "ETHUSDT",
+          "interval": "1d",
+          "winrate": 30.5,
+          "total": 1618
+        }
+      ]
+    }
+  },
+  "nn_training": {
+    "trained": 177090,
+    "train_count": 179750,
+    "avg_loss": 0.003689
+  },
+  "insights": {
+    "best_intervals": [
+      {
+        "interval": "1d",
+        "winrate": 29.8,
+        "total": 3153,
+        "total_pnl_usdt": 12000.0
+      },
+      {
+        "interval": "4h",
+        "winrate": 29.1,
+        "total": 2750,
+        "total_pnl_usdt": -2347.0
+      }
+    ],
+    "best_regimes": [
+      {
+        "regime_dir": "RANGING/SHORT",
+        "winrate": 32.5,
+        "n": 664
+      },
+      {
+        "regime_dir": "TRENDING_UP/LONG",
+        "winrate": 32.1,
+        "n": 773
+      },
+      {
+        "regime_dir": "TRENDING_DOWN/LONG",
+        "winrate": 31.0,
+        "n": 1759
+      },
+      {
+        "regime_dir": "TRENDING_UP/SHORT",
+        "winrate": 27.1,
+        "n": 2180
+      },
+      {
+        "regime_dir": "RANGING/LONG",
+        "winrate": 26.9,
+        "n": 527
+      }
+    ],
+    "score_analysis": [
+      {
+        "score_range": "6.0~7.0",
+        "winrate": 30.4,
+        "n": 5100
+      },
+      {
+        "score_range": "7.0~8.0",
+        "winrate": 24.0,
+        "n": 803
+      }
+    ],
+    "best_symbols": [
+      {
+        "sym": "ETHUSDT",
+        "winrate": 30.5,
+        "total": 3022,
+        "total_pnl_usdt": 12387.0
+      },
+      {
+        "sym": "BTCUSDT",
+        "winrate": 28.5,
+        "total": 2881,
+        "total_pnl_usdt": -2733.0
+      }
+    ],
+    "key_rules": [
+      "最优周期: 1d 胜率29.8%",
+      "最优制度: RANGING/SHORT 胜率32.5%",
+      "最优币种: ETHUSDT 胜率30.5%"
+    ]
+  }
+}

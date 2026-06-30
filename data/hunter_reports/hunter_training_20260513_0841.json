@@ -1,0 +1,213 @@
+{
+  "generated_at": "20260513_0841",
+  "config": {
+    "trade_usdt": 500,
+    "leverage": 10,
+    "sl_pct": 0.02,
+    "tp1_pct": 0.04,
+    "tp2_pct": 0.08
+  },
+  "summary_by_tier": {
+    "T1_主力": {
+      "total": 10206,
+      "winrate": 29.6,
+      "total_pnl_usdt": 49351.0,
+      "best": [
+        {
+          "sym": "SOLUSDT",
+          "interval": "15m",
+          "winrate": 44.7,
+          "total": 38
+        },
+        {
+          "sym": "BNBUSDT",
+          "interval": "15m",
+          "winrate": 37.1,
+          "total": 35
+        }
+      ]
+    },
+    "T2_10亿": {
+      "total": 10985,
+      "winrate": 29.9,
+      "total_pnl_usdt": 77339.0,
+      "best": [
+        {
+          "sym": "LINKUSDT",
+          "interval": "4h",
+          "winrate": 37.3,
+          "total": 695
+        },
+        {
+          "sym": "ADAUSDT",
+          "interval": "4h",
+          "winrate": 33.2,
+          "total": 725
+        }
+      ]
+    },
+    "T3_1亿": {
+      "total": 8865,
+      "winrate": 27.1,
+      "total_pnl_usdt": -19761.0,
+      "best": [
+        {
+          "sym": "CHZUSDT",
+          "interval": "4h",
+          "winrate": 37.1,
+          "total": 746
+        },
+        {
+          "sym": "INJUSDT",
+          "interval": "1h",
+          "winrate": 36.2,
+          "total": 315
+        }
+      ]
+    },
+    "T4_小市值": {
+      "total": 4278,
+      "winrate": 28.3,
+      "total_pnl_usdt": 5725.0,
+      "best": [
+        {
+          "sym": "RENDERUSDT",
+          "interval": "15m",
+          "winrate": 66.7,
+          "total": 3
+        },
+        {
+          "sym": "GMXUSDT",
+          "interval": "15m",
+          "winrate": 37.5,
+          "total": 8
+        }
+      ]
+    }
+  },
+  "nn_training": {
+    "trained": 1030020,
+    "train_count": 1209770,
+    "avg_loss": 0.003612
+  },
+  "insights": {
+    "best_intervals": [
+      {
+        "interval": "4h",
+        "winrate": 32.6,
+        "total": 10002,
+        "total_pnl_usdt": 69669.0
+      },
+      {
+        "interval": "1h",
+        "winrate": 31.4,
+        "total": 3348,
+        "total_pnl_usdt": 12914.0
+      },
+      {
+        "interval": "15m",
+        "winrate": 30.1,
+        "total": 569,
+        "total_pnl_usdt": 3591.0
+      },
+      {
+        "interval": "1d",
+        "winrate": 28.2,
+        "total": 17941,
+        "total_pnl_usdt": 102478.0
+      },
+      {
+        "interval": "1w",
+        "winrate": 15.0,
+        "total": 2474,
+        "total_pnl_usdt": -76000.0
+      }
+    ],
+    "best_regimes": [
+      {
+        "regime_dir": "TRENDING_DOWN/SHORT",
+        "winrate": 30.1,
+        "n": 17459
+      },
+      {
+        "regime_dir": "TRENDING_UP/LONG",
+        "winrate": 27.7,
+        "n": 16875
+      }
+    ],
+    "score_analysis": [
+      {
+        "score_range": "7.0~8.0",
+        "winrate": 28.9,
+        "n": 34334
+      }
+    ],
+    "best_symbols": [
+      {
+        "sym": "BTCUSDT",
+        "winrate": 31.6,
+        "total": 1779,
+        "total_pnl_usdt": 14582.0
+      },
+      {
+        "sym": "RENDERUSDT",
+        "winrate": 31.0,
+        "total": 613,
+        "total_pnl_usdt": 5626.0
+      },
+      {
+        "sym": "DOTUSDT",
+        "winrate": 30.5,
+        "total": 1894,
+        "total_pnl_usdt": 18688.0
+      },
+      {
+        "sym": "ADAUSDT",
+        "winrate": 30.3,
+        "total": 2491,
+        "total_pnl_usdt": 21322.0
+      },
+      {
+        "sym": "LINKUSDT",
+        "winrate": 30.2,
+        "total": 2417,
+        "total_pnl_usdt": 16601.0
+      },
+      {
+        "sym": "BNBUSDT",
+        "winrate": 30.1,
+        "total": 2265,
+        "total_pnl_usdt": 15261.0
+      },
+      {
+        "sym": "GMXUSDT",
+        "winrate": 29.8,
+        "total": 1009,
+        "total_pnl_usdt": 6850.0
+      },
+      {
+        "sym": "ETHUSDT",
+        "winrate": 29.7,
+        "total": 2324,
+        "total_pnl_usdt": 14428.0
+      },
+      {
+        "sym": "XRPUSDT",
+        "winrate": 29.7,
+        "total": 2122,
+        "total_pnl_usdt": 16448.0
+      },
+      {
+        "sym": "CHZUSDT",
+        "winrate": 29.6,
+        "total": 2277,
+        "total_pnl_usdt": 15230.0
+      }
+    ],
+    "key_rules": [
+      "最优周期: 4h 胜率32.6%",
+      "最优制度: TRENDING_DOWN/SHORT 胜率30.1%",
+      "最优币种: BTCUSDT 胜率31.6%"
+    ]
+  }
+}

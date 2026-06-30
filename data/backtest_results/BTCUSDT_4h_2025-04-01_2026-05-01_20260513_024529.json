@@ -1,0 +1,355 @@
+{
+  "stats": {
+    "symbol": "BTCUSDT",
+    "interval": "4h",
+    "period": "2025-04-01 ~ 2026-05-01",
+    "total_trades": 22,
+    "long_trades": 22,
+    "short_trades": 0,
+    "win_trades": 12,
+    "loss_trades": 10,
+    "win_rate_pct": 54.55,
+    "avg_win_pct": 2.7002,
+    "avg_loss_pct": -2.4111,
+    "profit_factor": 1.12,
+    "max_win_pct": 7.5462,
+    "max_loss_pct": -5.0,
+    "max_consec_losses": 4,
+    "max_drawdown_pct": 13.2897,
+    "total_pnl_pct": 8.2919,
+    "sharpe_ratio": 0.1121,
+    "monthly_stats": {
+      "2025-02": {
+        "win_rate": 100.0,
+        "wins": 1,
+        "total": 1
+      },
+      "2025-03": {
+        "win_rate": 50.0,
+        "wins": 1,
+        "total": 2
+      },
+      "2025-04": {
+        "win_rate": 0.0,
+        "wins": 0,
+        "total": 1
+      },
+      "2025-05": {
+        "win_rate": 100.0,
+        "wins": 2,
+        "total": 2
+      },
+      "2025-06": {
+        "win_rate": 0.0,
+        "wins": 0,
+        "total": 2
+      },
+      "2025-07": {
+        "win_rate": 50.0,
+        "wins": 1,
+        "total": 2
+      },
+      "2025-09": {
+        "win_rate": 100.0,
+        "wins": 2,
+        "total": 2
+      },
+      "2025-11": {
+        "win_rate": 0.0,
+        "wins": 0,
+        "total": 1
+      },
+      "2025-12": {
+        "win_rate": 100.0,
+        "wins": 1,
+        "total": 1
+      },
+      "2026-01": {
+        "win_rate": 75.0,
+        "wins": 3,
+        "total": 4
+      },
+      "2026-03": {
+        "win_rate": 0.0,
+        "wins": 0,
+        "total": 3
+      },
+      "2026-04": {
+        "win_rate": 100.0,
+        "wins": 1,
+        "total": 1
+      }
+    },
+    "exit_reasons": {
+      "TIMEOUT": 19,
+      "STOP_LOSS": 3
+    }
+  },
+  "trades": [
+    {
+      "signal_open_time": "2025-02-12 16:00",
+      "entry_time": "2025-02-12 16:00",
+      "exit_time": "2025-02-14 20:00",
+      "direction": "LONG",
+      "entry_price": 97156.7,
+      "exit_price": 97445.1,
+      "exit_reason": "TIMEOUT",
+      "pnl_pct": 0.2968,
+      "tp1_hit": false,
+      "signal_score": 66
+    },
+    {
+      "signal_open_time": "2025-03-02 12:00",
+      "entry_time": "2025-03-02 12:00",
+      "exit_time": "2025-03-04 00:00",
+      "direction": "LONG",
+      "entry_price": 87390.1,
+      "exit_price": 83020.595,
+      "exit_reason": "STOP_LOSS",
+      "pnl_pct": 1.5,
+      "tp1_hit": true,
+      "signal_score": 73
+    },
+    {
+      "signal_open_time": "2025-03-14 12:00",
+      "entry_time": "2025-03-14 12:00",
+      "exit_time": "2025-03-16 16:00",
+      "direction": "LONG",
+      "entry_price": 84692.1,
+      "exit_price": 83064.3,
+      "exit_reason": "TIMEOUT",
+      "pnl_pct": -1.922,
+      "tp1_hit": false,
+      "signal_score": 66
+    },
+    {
+      "signal_open_time": "2025-04-01 08:00",
+      "entry_time": "2025-04-01 08:00",
+      "exit_time": "2025-04-03 12:00",
+      "direction": "LONG",
+      "entry_price": 83880.0,
+      "exit_price": 82001.8,
+      "exit_reason": "TIMEOUT",
+      "pnl_pct": -2.2392,
+      "tp1_hit": false,
+      "signal_score": 73
+    },
+    {
+      "signal_open_time": "2025-05-07 16:00",
+      "entry_time": "2025-05-07 16:00",
+      "exit_time": "2025-05-09 20:00",
+      "direction": "LONG",
+      "entry_price": 96124.5,
+      "exit_price": 102941.9,
+      "exit_reason": "TIMEOUT",
+      "pnl_pct": 7.5462,
+      "tp1_hit": true,
+      "signal_score": 70
+    },
+    {
+      "signal_open_time": "2025-05-18 16:00",
+      "entry_time": "2025-05-18 16:00",
+      "exit_time": "2025-05-20 20:00",
+      "direction": "LONG",
+      "entry_price": 103834.1,
+      "exit_price": 106800.1,
+      "exit_reason": "TIMEOUT",
+      "pnl_pct": 2.8565,
+      "tp1_hit": false,
+      "signal_score": 70
+    },
+    {
+      "signal_open_time": "2025-06-03 12:00",
+      "entry_time": "2025-06-03 12:00",
+      "exit_time": "2025-06-05 16:00",
+      "direction": "LONG",
+      "entry_price": 106556.1,
+      "exit_price": 101872.9,
+      "exit_reason": "TIMEOUT",
+      "pnl_pct": -4.3951,
+      "tp1_hit": false,
+      "signal_score": 73
+    },
+    {
+      "signal_open_time": "2025-06-16 20:00",
+      "entry_time": "2025-06-16 20:00",
+      "exit_time": "2025-06-19 00:00",
+      "direction": "LONG",
+      "entry_price": 106750.1,
+      "exit_price": 105054.4,
+      "exit_reason": "TIMEOUT",
+      "pnl_pct": -1.5885,
+      "tp1_hit": false,
+      "signal_score": 80
+    },
+    {
+      "signal_open_time": "2025-07-18 12:00",
+      "entry_time": "2025-07-18 12:00",
+      "exit_time": "2025-07-20 16:00",
+      "direction": "LONG",
+      "entry_price": 117830.1,
+      "exit_price": 118131.2,
+      "exit_reason": "TIMEOUT",
+      "pnl_pct": 0.2555,
+      "tp1_hit": false,
+      "signal_score": 66
+    },
+    {
+      "signal_open_time": "2025-07-22 08:00",
+      "entry_time": "2025-07-22 08:00",
+      "exit_time": "2025-07-24 12:00",
+      "direction": "LONG",
+      "entry_price": 119142.2,
+      "exit_price": 119074.1,
+      "exit_reason": "TIMEOUT",
+      "pnl_pct": -0.0572,
+      "tp1_hit": false,
+      "signal_score": 70
+    },
+    {
+      "signal_open_time": "2025-09-02 00:00",
+      "entry_time": "2025-09-02 00:00",
+      "exit_time": "2025-09-04 04:00",
+      "direction": "LONG",
+      "entry_price": 110286.0,
+      "exit_price": 110417.3,
+      "exit_reason": "TIMEOUT",
+      "pnl_pct": 0.1191,
+      "tp1_hit": false,
+      "signal_score": 66
+    },
+    {
+      "signal_open_time": "2025-09-28 20:00",
+      "entry_time": "2025-09-28 20:00",
+      "exit_time": "2025-10-01 00:00",
+      "direction": "LONG",
+      "entry_price": 112119.7,
+      "exit_price": 114135.9,
+      "exit_reason": "TIMEOUT",
+      "pnl_pct": 1.7983,
+      "tp1_hit": false,
+      "signal_score": 66
+    },
+    {
+      "signal_open_time": "2025-11-09 12:00",
+      "entry_time": "2025-11-09 12:00",
+      "exit_time": "2025-11-11 16:00",
+      "direction": "LONG",
+      "entry_price": 103715.8,
+      "exit_price": 103073.6,
+      "exit_reason": "TIMEOUT",
+      "pnl_pct": -0.6192,
+      "tp1_hit": false,
+      "signal_score": 66
+    },
+    {
+      "signal_open_time": "2025-12-30 16:00",
+      "entry_time": "2025-12-30 16:00",
+      "exit_time": "2026-01-01 20:00",
+      "direction": "LONG",
+      "entry_price": 88189.8,
+      "exit_price": 88800.0,
+      "exit_reason": "TIMEOUT",
+      "pnl_pct": 0.6919,
+      "tp1_hit": false,
+      "signal_score": 73
+    },
+    {
+      "signal_open_time": "2026-01-12 00:00",
+      "entry_time": "2026-01-12 00:00",
+      "exit_time": "2026-01-14 04:00",
+      "direction": "LONG",
+      "entry_price": 91766.2,
+      "exit_price": 95166.6,
+      "exit_reason": "TIMEOUT",
+      "pnl_pct": 3.7055,
+      "tp1_hit": false,
+      "signal_score": 80
+    },
+    {
+      "signal_open_time": "2026-01-12 12:00",
+      "entry_time": "2026-01-12 12:00",
+      "exit_time": "2026-01-14 16:00",
+      "direction": "LONG",
+      "entry_price": 91618.6,
+      "exit_price": 97221.8,
+      "exit_reason": "TIMEOUT",
+      "pnl_pct": 6.1158,
+      "tp1_hit": false,
+      "signal_score": 66
+    },
+    {
+      "signal_open_time": "2026-01-13 04:00",
+      "entry_time": "2026-01-13 04:00",
+      "exit_time": "2026-01-15 08:00",
+      "direction": "LONG",
+      "entry_price": 91908.0,
+      "exit_price": 96548.9,
+      "exit_reason": "TIMEOUT",
+      "pnl_pct": 5.0495,
+      "tp1_hit": false,
+      "signal_score": 80
+    },
+    {
+      "signal_open_time": "2026-01-27 20:00",
+      "entry_time": "2026-01-27 20:00",
+      "exit_time": "2026-01-29 12:00",
+      "direction": "LONG",
+      "entry_price": 89197.8,
+      "exit_price": 84737.91,
+      "exit_reason": "STOP_LOSS",
+      "pnl_pct": -5.0,
+      "tp1_hit": false,
+      "signal_score": 66
+    },
+    {
+      "signal_open_time": "2026-03-24 12:00",
+      "entry_time": "2026-03-24 12:00",
+      "exit_time": "2026-03-26 16:00",
+      "direction": "LONG",
+      "entry_price": 69837.6,
+      "exit_price": 68502.7,
+      "exit_reason": "TIMEOUT",
+      "pnl_pct": -1.9114,
+      "tp1_hit": false,
+      "signal_score": 76
+    },
+    {
+      "signal_open_time": "2026-03-25 12:00",
+      "entry_time": "2026-03-25 12:00",
+      "exit_time": "2026-03-27 08:00",
+      "direction": "LONG",
+      "entry_price": 70792.4,
+      "exit_price": 67252.78,
+      "exit_reason": "STOP_LOSS",
+      "pnl_pct": -5.0,
+      "tp1_hit": false,
+      "signal_score": 80
+    },
+    {
+      "signal_open_time": "2026-03-31 16:00",
+      "entry_time": "2026-03-31 16:00",
+      "exit_time": "2026-04-02 20:00",
+      "direction": "LONG",
+      "entry_price": 67803.0,
+      "exit_price": 66868.5,
+      "exit_reason": "TIMEOUT",
+      "pnl_pct": -1.3783,
+      "tp1_hit": false,
+      "signal_score": 66
+    },
+    {
+      "signal_open_time": "2026-04-21 12:00",
+      "entry_time": "2026-04-21 12:00",
+      "exit_time": "2026-04-23 16:00",
+      "direction": "LONG",
+      "entry_price": 75800.0,
+      "exit_price": 77670.5,
+      "exit_reason": "TIMEOUT",
+      "pnl_pct": 2.4677,
+      "tp1_hit": false,
+      "signal_score": 70
+    }
+  ],
+  "signals_count": 22
+}

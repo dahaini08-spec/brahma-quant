@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "Signal Lifecycle - Xingshu System",
+    "subtitle": "brahma gate -> ws_guardian -> WIN / LOSS / EXPIRED / SUPERSEDED",
+    "output": "docs/signal_lifecycle.html",
+    "viewBox": [1000, 660]
+  },
+  "lanes": [
+    { "id": "main",     "label": "Main Phase Rail" },
+    { "id": "waiting",  "label": "Interrupts / Side Exits" },
+    { "id": "terminal", "label": "Terminal Exits" }
+  ],
+  "states": [
+    { "id": "pending",    "type": "start",    "label": "PENDING",    "sublabel": "brahma scoring",      "lane": "main",     "col": 0, "step": "01", "tag": "entry" },
+    { "id": "dd1",        "type": "decision", "label": "DD1 Gate",   "sublabel": "grade>=50 RR>=1.5",   "lane": "main",     "col": 1, "step": "02", "tag": "check" },
+    { "id": "active",     "type": "active",   "label": "ACTIVE",     "sublabel": "ws_guardian watch",   "lane": "main",     "col": 2, "step": "03", "tag": "work" },
+    { "id": "breakeven",  "type": "active",   "label": "BREAKEVEN",  "sublabel": "pnl>=0.8% move SL",   "lane": "main",     "col": 3, "step": "04", "tag": "check" },
+    { "id": "win",        "type": "success",  "label": "WIN_T1/T2",  "sublabel": "TP1 or TP2 hit",      "lane": "main",     "col": 4, "step": "05", "tag": "done" },
+    { "id": "superseded", "type": "waiting",  "label": "SUPERSEDED", "sublabel": "new signal replaces", "lane": "waiting",  "col": 0, "tag": "pause" },
+    { "id": "blocked",    "type": "waiting",  "label": "BLOCKED",    "sublabel": "L1 dead-zone ban",    "lane": "waiting",  "col": 1, "yOffset": 80, "tag": "pause" },
+    { "id": "loss",       "type": "failure",  "label": "LOSS",       "sublabel": "SL hit",              "lane": "terminal", "col": 0, "tag": "terminal" },
+    { "id": "expired",    "type": "failure",  "label": "EXPIRED",    "sublabel": "TTL timeout",         "lane": "terminal", "col": 1, "tag": "terminal" },
+    { "id": "chop_zero",  "type": "failure",  "label": "CHOP-ZERO",  "sublabel": "CHOP regime block",   "lane": "terminal", "col": 2, "tag": "terminal" }
+  ],
+  "transitions": [
+    { "from": "pending",   "to": "dd1",       "variant": "default" },
+    { "from": "pending",   "to": "blocked",   "variant": "security", "fromSide": "bottom", "toSide": "top", "route": "straight" },
+    { "from": "pending",   "to": "chop_zero", "variant": "security", "fromSide": "bottom", "toSide": "top", "route": "drop" },
+    { "from": "dd1",       "to": "active",    "variant": "default" },
+    { "from": "dd1",       "to": "pending",   "variant": "security", "route": "drop" },
+    { "from": "active",    "to": "breakeven", "variant": "default" },
+    { "from": "active",    "to": "superseded","variant": "default",  "fromSide": "bottom", "toSide": "top", "route": "straight" },
+    { "from": "active",    "to": "loss",      "variant": "security", "fromSide": "bottom", "toSide": "top", "route": "straight" },
+    { "from": "active",    "to": "expired",   "variant": "security", "fromSide": "bottom", "toSide": "top", "route": "drop" },
+    { "from": "breakeven", "to": "win",       "variant": "default" },
+    { "from": "breakeven", "to": "loss",      "variant": "security", "fromSide": "bottom", "toSide": "top", "route": "straight" }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Entry Gate (Double Lock)",
+      "items": [
+        "brahma_core: threshold=100 (CHOP) or 138 (live)",
+        "DD1 gate: structure grade>=50 + RR>=1.5 required",
+        "Gate fail: return to PENDING or directly blocked"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Hold Guard",
+      "items": [
+        "ws_guardian moves SL to breakeven when pnl>=0.8%",
+        "SUPERSEDED: same symbol+direction new signal replaces old",
+        "External research signals: TTL=30min, weight<=8/150 pts"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Block Layer (STAR.md L0/L1)",
+      "items": [
+        "L1 dead-zone: BEAR_TREND_LONG (WR=45%) permanently banned",
+        "L2 CHOP: multiplier 0.5x, score<100, auto-zero",
+        "All blocks logged to audit trail, non-bypassable"
+      ]
+    }
+  ]
+}

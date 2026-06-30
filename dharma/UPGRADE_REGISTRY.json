@@ -1,0 +1,297 @@
+{
+  "_version": "1.0",
+  "_created": "2026-05-22T09:28:56.666769+00:00",
+  "upgrades": [
+    {
+      "id": "UP-001",
+      "ts": "2026-05-22T09:28:56.709403+00:00",
+      "name": "P0: signal_tier断裂修复",
+      "commit": "a374b6b 达摩院: 批量节点验证完成 10/10 READY→VALIDATED",
+      "files": [
+        "data/dharma_stream.py"
+      ],
+      "dim_deltas": {
+        "signal_quality": 5,
+        "stability": 3
+      },
+      "notes": "dharma_stream.py 同时写 score_tier+signal_tier 两字段，修复数据断裂",
+      "verified": true
+    },
+    {
+      "id": "UP-002",
+      "ts": "2026-05-22T09:29:12.202941+00:00",
+      "name": "P2: D11真实鲸鱼数据激活",
+      "commit": "a374b6b 达摩院: 批量节点验证完成 10/10 READY→VALIDATED",
+      "files": [
+        "brahma_brain/whale_engine.py",
+        "brahma_brain/brahma_brain.py"
+      ],
+      "dim_deltas": {
+        "intelligence": 6,
+        "signal_quality": 4
+      },
+      "notes": "新增 get_derivatives_smart_money()，资金费率/多空比/OI三维，whale_score 15→20，commit 1acae72",
+      "verified": true
+    },
+    {
+      "id": "UP-003",
+      "ts": "2026-05-22T09:29:12.260725+00:00",
+      "name": "达摩院10节点批量验证",
+      "commit": "a374b6b 达摩院: 批量节点验证完成 10/10 READY→VALIDATED",
+      "files": [
+        "dharma/dharma_batch_validator.py",
+        "dharma/DHARMA_NODES_REGISTRY.json"
+      ],
+      "dim_deltas": {
+        "signal_quality": 4,
+        "perception": 4,
+        "stability": 3
+      },
+      "notes": "10/10 READY→VALIDATED，100,797条数据，12/14全注册表VALIDATED，commit a374b6b",
+      "verified": true
+    },
+    {
+      "id": "UP-004",
+      "ts": "2026-05-22T09:29:12.316697+00:00",
+      "name": "v12.2: 基差引擎D08+ATR百分位D09",
+      "commit": "a374b6b 达摩院: 批量节点验证完成 10/10 READY→VALIDATED",
+      "files": [
+        "brahma_brain/brahma_brain.py"
+      ],
+      "dim_deltas": {
+        "intelligence": 4,
+        "perception": 3
+      },
+      "notes": "接入 data_cache.get_basis()/get_atr_percentile()，信号矩阵覆盖率 58%→65%",
+      "verified": true
+    },
+    {
+      "id": "UP-005",
+      "ts": "2026-05-22T09:29:12.375432+00:00",
+      "name": "成熟度全达标 21/21 avgScore=94.5",
+      "commit": "a374b6b 达摩院: 批量节点验证完成 10/10 READY→VALIDATED",
+      "files": [
+        "tests/test_core_modules.py"
+      ],
+      "dim_deltas": {
+        "stability": 5,
+        "execution": 4
+      },
+      "notes": "全21模块成熟度≥90，36/36单元测试通过，5维T/L/E/D/V全达标，commit 6aa8a2b",
+      "verified": true
+    },
+    {
+      "id": "UP-006",
+      "ts": "2026-05-22T10:02:52.056470+00:00",
+      "name": "执行链修复: realized_pnl字段补全",
+      "commit": "28785bb 设计院全面深度评估完成 2026-05-22",
+      "files": [
+        "ws_guardian.py",
+        "signal_settler.py"
+      ],
+      "dim_deltas": {
+        "execution": 10,
+        "stability": 2
+      },
+      "notes": "ws_guardian两处写入补realized_pnl；signal_settler结算时同步补写；历史101,229条100%回填；执行链ML闭环打通",
+      "verified": true
+    },
+    {
+      "id": "UP-007",
+      "ts": "2026-05-22T10:10:22.063338+00:00",
+      "name": "达摩院4项结论落地: UTC时段权重+顺势优先+4H加成+最优标的",
+      "commit": "1218d0b P0修复: realized_pnl执行链断裂 — ws_guardian+settler补字段，历史1",
+      "files": [
+        "executor.py",
+        "data/dharma_stream.py"
+      ],
+      "dim_deltas": {
+        "signal_quality": 8,
+        "execution": 4
+      },
+      "notes": "L1 UTC13-17H仓位×1.20; L2逆势×0.70; L3 4H×1.10; L4 DOGE/ADA/BNB×1.15; N06 OI字段补充dharma_stream",
+      "verified": true
+    },
+    {
+      "id": "UP-008",
+      "ts": "2026-05-22T10:13:20.228251+00:00",
+      "name": "ws_guardian进程守护 cron化（5min心跳）",
+      "commit": "9a8a5ce 达摩院4项结论落地 + N06 OI字段补充 [2026-05-22]",
+      "files": [],
+      "dim_deltas": {
+        "stability": 3
+      },
+      "notes": "新建cron f2d665de，每5分钟检测ws_guardian进程，挂掉自动重启，消除持仓无守护风险",
+      "verified": true
+    },
+    {
+      "id": "UP-009",
+      "ts": "2026-05-22T11:00:58.819094+00:00",
+      "name": "顶层设计修复: brahma_brain.rebase_params() — 入场价漂移止损重算",
+      "commit": "20c50b7 chore: 写入梵天系统长期记忆 + 一键刷新脚本 + 2026-05-22日志",
+      "files": [
+        "brahma_brain/brahma_brain.py"
+      ],
+      "dim_deltas": {
+        "signal_quality": 3,
+        "stability": 2
+      },
+      "notes": "根因:入场价改变时止损未重算导致止损。新增rebase_params(new_entry,atr,dir,sl_mult)函数，凡建议等待位入场必须调用此函数，禁止直接复用原始绝对价格参数",
+      "verified": true
+    },
+    {
+      "id": "UP-010",
+      "ts": "2026-05-22T11:09:17.325290+00:00",
+      "name": "系统性错误全面修复: lana体制读取+Kelly双轨+逆势CHOP中性+rebase_params",
+      "commit": "ecda8e9 顶层设计修复: brahma_brain.rebase_params() [2026-05-22]",
+      "files": [
+        "executor.py brahma_brain/brahma_brain.py"
+      ],
+      "dim_deltas": {
+        "signal_quality": 5,
+        "execution": 5,
+        "stability": 3
+      },
+      "notes": "E1:ws_guardian已双读sl_price/stop_loss安全; E2:lana返回dict用['state']非.name，体制识别从RANGING恢复正常; E3:L2逆势判断补入CHOP中性; E4:Kelly动态双轨制(实盘>=30笔切换); E5:rebase_params入场价漂移重算",
+      "verified": true
+    },
+    {
+      "id": "UP-011",
+      "ts": "2026-05-22T14:10:52.070357+00:00",
+      "name": "达摩院4节点实训: N-A体制方向+N-B高分加成+N-C执行效率+N-D时段精化",
+      "commit": "c88121c chore: 全升级VERIFIED + 综合评分77.5同步 [2026-05-22]",
+      "files": [
+        "executor.py dharma/DHARMA_NODES_REGISTRY.json"
+      ],
+      "dim_deltas": {
+        "signal_quality": 5,
+        "perception": 3,
+        "intelligence": 3,
+        "execution": 3
+      },
+      "notes": "N-A:逆势折扣×0.70已落地; N-B:score>=150×1.20,>=140×1.10; N-C:time_stop建议8H; N-D:UTC19H/21H最高PF,权重修正×1.25/1.20; 达摩院16/18 VALIDATED",
+      "verified": false
+    },
+    {
+      "id": "UP-012",
+      "ts": "2026-05-22T15:04:51.965813+00:00",
+      "name": "E1+E2+E3: time_stop精化+TP验证+实盘字段全量回填",
+      "commit": "f4cef03 E1+E3: time_stop 32H→8H + 实盘止损/时长字段全量回填 [2026-05-22]",
+      "files": [],
+      "dim_deltas": {
+        "execution": 8,
+        "signal_quality": 2
+      },
+      "notes": "E1:time_stop 32H→8H(N-C实证全部<1H平仓); E2:ws_guardian TP1/TP2完整验证OK; E3:32笔stop_loss/hold_hours/realized_pnl 100%回填; 13条时间止损>8H标记待ML学习",
+      "verified": false
+    },
+    {
+      "id": "UP-013",
+      "ts": "2026-05-22T15:12:02.538356+00:00",
+      "name": "达摩院8年ML预测层: 127节点预测表+混合Kelly+execution激活",
+      "commit": "48f17e9 chore: 写入心跳线程修复 + 今日持仓记录 v12.9b",
+      "files": [],
+      "dim_deltas": {
+        "execution": 6,
+        "intelligence": 2,
+        "signal_quality": 1
+      },
+      "notes": "100797条8年实证→127四维预测节点; 混合Kelly: live<50笔时8年数据辅助校准; 实盘>=50笔后完全切换; 预测20笔期望PF=2.120 WR=36.4%; data/ml_lookup_dharma8y.json已落盘",
+      "verified": false
+    },
+    {
+      "id": "UP-014",
+      "ts": "2026-05-22T15:21:52.248587+00:00",
+      "name": "P0信号质量修复: TP命中+tf_aligned字段+regime覆盖",
+      "commit": "8b54d69 P0修复: WebSocket TP检测+tf_aligned字段全链路+regime UNKNOWN ",
+      "files": [],
+      "dim_deltas": {
+        "signal_quality": 6,
+        "execution": 3,
+        "perception": 2
+      },
+      "notes": "WebSocket TP1/TP2检测补全(预期TP命中率0%→20%+); tf_aligned全链路写入(MISSING→有效); regime UNKNOWN fallback; 信号质量17分缺口修复最大项",
+      "verified": false
+    },
+    {
+      "id": "UP-015",
+      "ts": "2026-05-22T15:29:08.199854+00:00",
+      "name": "P1+P2+P3: NAV熔断+OI动量主链+达摩院全节点落地",
+      "commit": "35efbc3 chore: UP-014 评分同步 综合86.5 [高级] 🏆",
+      "files": [],
+      "dim_deltas": {
+        "stability": 4,
+        "perception": 4,
+        "signal_quality": 2
+      },
+      "notes": "P1:ws_guardian NAV峰值回撤≥5%熔断,降回4%自动解除,写nav_peak.json+brahma_state.nav_fuse; P2:data_cache OI历史5H变化率,market_state传入oi_change_pct/oi_momentum,brahma_brain D7顺势OI+4分; P3:16/18节点deployed=true",
+      "verified": false
+    },
+    {
+      "id": "UP-016",
+      "ts": "2026-05-22T15:34:06.623020+00:00",
+      "name": "全量缺口修复: executor熔断+brahma_core IMMORTAL+内存告警+ML更新+宏观stub+结构化日志",
+      "commit": "b1f426e P1+P2+P3: NAV熔断+OI动量+节点deployed — 综合88.2 [高级] [2026-",
+      "files": [],
+      "dim_deltas": {
+        "stability": 5,
+        "execution": 3,
+        "intelligence": 3,
+        "signal_quality": 2,
+        "perception": 1
+      },
+      "notes": "executor读nav_fuse熔断; brahma_core tf_aligned写入+IMMORTAL 3次重启; ws_guardian Gateway内存告警+结构化日志_log_json; ML refresh_ts+policy标记; 宏观情报stub接口; 全5维度同步推进",
+      "verified": false
+    },
+    {
+      "id": "UP-017",
+      "ts": "2026-05-22T15:40:26.044146+00:00",
+      "name": "CoinGlass链上数据全量接入: F&G+OI动量+清算热力图+资金费率OI加权",
+      "commit": "abca12f fix: brahma_state修复 — ETH持仓schema补全+SL移保本+portfolio_",
+      "files": [],
+      "dim_deltas": {
+        "perception": 4,
+        "intelligence": 4,
+        "signal_quality": 2,
+        "stability": 1
+      },
+      "notes": "coinglass_engine.py: F&G/OI/Liq/FR全量; brahma_brain Step4接入+D8链上加成_oc_bonus; BTC onchain_score=+1 F&G=27[FEAR] BTC空头清算7.78M BULLISH_SQUEEZE; ETH FR=0.79%/8H RISING",
+      "verified": false
+    },
+    {
+      "id": "UP-020",
+      "name": "龙虎榜特征达摩院统计验证 EXP-DRAGON-V1",
+      "date": "2026-05-23",
+      "status": "VALIDATED",
+      "summary": {
+        "dataset": "19 coins × 8yr local parquet, n=35,515 events",
+        "base_hit_rate": "44.9%",
+        "top_features": {
+          "BB>40% + RSI>60": "68.3% (+23.4%)",
+          "BB>40%_only": "64.3% (+19.4%)",
+          "RSI>70_only": "60.0% (+15.1%)",
+          "20D>30%_only": "58.5% (+13.6%)",
+          "UP019_LIVE": "59.0% (+14.1%)"
+        },
+        "invalidated": [
+          "BB<10%(37.7%)",
+          "量比(随机)",
+          "RSI<50(42.0%)"
+        ],
+        "year_stability": "2021/2024稳定+15%~+26%，2020/2022弱（BB>40%样本过少）",
+        "key_finding": "OBV>100%命中率61.1%（被低估），应从辅助提升为次核心维度",
+        "action": "UP-021: OBV评分从5分提升至15分"
+      }
+    }
+  ],
+  "current_scores": {
+    "signal_quality": 95,
+    "execution": 81,
+    "perception": 99,
+    "intelligence": 98,
+    "stability": 96
+  },
+  "last_sync": "2026-05-22T15:40:26.048578+00:00",
+  "blueprint_composite": 77.5,
+  "grade": "中高级"
+}

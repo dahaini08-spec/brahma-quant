@@ -1,0 +1,777 @@
+{
+  "version": "v9.0",
+  "codename": "梵天v9.0-SLIM · Kronos-Lite+达摩院四级流水线+体制解锁",
+  "active_entry": "main.py",
+  "signal_db": "signals/signal_history.json",
+  "executor": "executor.py",
+  "council": "multi_agent_council.py",
+  "monitor": "position_monitor.py",
+  "regime_detector": "market_regime.py",
+  "deprecated_modules": [
+    "brahma_v8_engine.py",
+    "brahma_v8_5_engine.py",
+    "autonomous_executor.py",
+    "hunter_pipeline.py",
+    "hunter_v3_pro.py",
+    "brahma_v8_self_evolve.py",
+    "brahma_v8_scanner.py"
+  ],
+  "deprecated_signal_db": "signals.json",
+  "key_params": {
+    "max_leverage": 5,
+    "blacklist": [
+      "XRPUSDT",
+      "SOLUSDT",
+      "CHZUSDT"
+    ],
+    "regime_aware": true,
+    "council_min_score": 65,
+    "tier_params_driven_by": "backtest_2025-01_2026-04"
+  },
+  "v9_fixes": {
+    "P0-1": "executor.py SHORT方向TF对齐BUG修复：方向在TF检查之前确定，传入正确direction参数",
+    "P0-2": "main.py 体制方向过滤在append之前执行（不再漏入可执行列表）",
+    "P1-1": "executor.py TIER_PARAMS small层删除CHZUSDT（黑名单重复）",
+    "P1-2": "executor.py TIER_PARAMS small层删除重复NEARUSDT和重复JUPUSDT",
+    "P1-3": "position_monitor.py 补充T2全仓止盈逻辑",
+    "P1-4": "signal_settler.py result统一为WIN_T1",
+    "P1-5": "radar.py 并发化量比计算，删除time.sleep(0.05)",
+    "P1-6": "stats_tracker.py update_all_open_signals末尾激活auto_update_kelly",
+    "P2-2": "market_regime.py 真正EMA替代简单均值",
+    "P2-3": "market_regime.py BULL_TREND允许空单（allow_short=True），加short_score_penalty=5",
+    "P2-6": "scanner.py DOWN趋势与UP趋势对称计分",
+    "hunter_subsystem": "猎手(volatility_hunter)正式并入主系统，作为雷达之外第二候选来源"
+  },
+  "last_updated": "2026-06-18T05:47:58 UTC",
+  "last_updated_by": "设计院-达摩院v2.0-WR矩阵更新+v25.5乘数校正",
+  "active_subsystems": {
+    "hunter_v2": {
+      "file": "lana/hunter_v2/hunter_main.py",
+      "role": "多通道猎手系统（6通道：A/B/C/D/E/F），含原阿周那快车道（通道F）",
+      "entry_func": "hunter_main.py --once",
+      "channels": [
+        "A:RSI极端+低ATR",
+        "B:4H中性+RSI极端",
+        "C:震荡体制",
+        "D:BULL_PEAK超买",
+        "E:兜底",
+        "F:量异动+费率+OI(原阿周那)"
+      ],
+      "signal_types": [
+        "SHORT_TERM",
+        "MID_TERM",
+        "FAST_TRACK"
+      ],
+      "status": "active",
+      "merged_from": [
+        "arjuna(通道F)",
+        "volatility_hunter(弹性指数→utils)"
+      ],
+      "merged_at": "2026-05-20"
+    }
+  },
+  "v91_upgrades": {
+    "ATR_adaptive_sl": "executor.py ATR自适应止损+Stoikov动态止盈完整落地",
+    "bayesian_weights": "council 议会Agent贝叶斯加权评分（technician 0.6x, v85 1.3x, risk 1.5x）",
+    "sentiment_agent": "第6议员 Fear&Greed情绪数据接入（alternative.me免费API）",
+    "council_6agent": "议会升级为6 Agent制，批准条件5/6+双否决"
+  },
+  "v92_upgrades": {
+    "CHOP_block": "CHOP体制完全封锁趋势单（历史回测胜率26.5%，期望值-124%），改用grid_strategy网格",
+    "flagship_atr_tight": "flagship层ATR止损乘数1.5→1.2（BTC ATR1.8%→SL=2.7%），历史PF0.97改善",
+    "mid_atr_keep": "mid层维持ATR×1.5（历史PF=1.10，表现最佳层级）",
+    "small_t2_defer": "small层T2=8%维持不变，等50+笔实盘数据再决策",
+    "nn_activated": "神经网络从观察者升级为激活模式（551笔历史训练，准确率56.8%）",
+    "historical_backtest": "15标的×2018-2026历史回测完成，544笔信号，结论写入系统参数"
+  },
+  "training_20260513": {
+    "signal_history_fix": "status字段修复(result→status映射)，实盘胜率50%(4W/4L)",
+    "main_version_fix": "main.py版本标识 v3.0→v9.2",
+    "deprecated_cleanup": "6个v8废弃文件归档至 archive/deprecated_v8/",
+    "kelly_stats_update": "executor.py KELLY_STATS更新为真实回测数据(WR:31.6/38.9/44.9%)",
+    "scanner_15m_upgrade": "scanner.py trend_score加入15m线权重+4框共振加分",
+    "entry_hour_update": "council UTC 08/09/20/21最佳(41%+)，00-03最差(31%-)，已扩展",
+    "council_comment_fix": "议会注释4个Agent→7个Agent",
+    "soul_identity_fix": "SOUL.md/IDENTITY.md写入v9.2真实指标，禁止回答v8.6/60%",
+    "dingtalk2_format": "钉钉2策略频道格式固化(简洁卡片，非长篇信号帖)",
+    "training_conclusions": "backtest/research/training_conclusions_20260513.json完整归档"
+  },
+  "real_performance": {
+    "backtest_signals": 544,
+    "backtest_period": "2018-2026",
+    "win_rate": "37.8%",
+    "pf": 1.03,
+    "ev_per_trade": "+0.081%",
+    "live_signals": 13,
+    "live_win_rate": "69.2% (9W/4L, EXPIRED按盈亏归类)",
+    "live_avg_win": "+18.47%",
+    "live_avg_loss": "-8.27%",
+    "balance": "$1,525 USDT"
+  },
+  "indicator_lab_findings": {
+    "btc_4h_result": "全部37个指标/组合 PF<1.0，BTC单指标无效",
+    "key_insight": "多维共振（7议员）才是梵天核心价值，比单指标多+10.8%胜率",
+    "regime_distribution": {
+      "BULL": "35.8%",
+      "BEAR": "28.0%",
+      "CHOP": "36.2%"
+    },
+    "action": "继续运行cap_small层指标验证（小市值可能有效）",
+    "validated_at": "2026-05-13"
+  },
+  "upgrade_date": "2026-05-13",
+  "enhancements": {
+    "P0": [
+      "1W周期封锁",
+      "黑名单(LDO/INJ/ARKM/PENDLE/BCH)",
+      "R:R≥2.5",
+      "ATR标准化仓位",
+      "连续亏损降档"
+    ],
+    "P1": [
+      "三周期协同1D+4H+1H",
+      "T2品种优先级+5分"
+    ],
+    "P2": [
+      "体制细分BULL_WEAK/STRONG/EXHAUSTED",
+      "NN 18→24维"
+    ],
+    "P3": [
+      "symbol_memory个币专属层",
+      "K线形态评分(锤/吞没/晨星)",
+      "量价确认"
+    ]
+  },
+  "nn_input_dim": 24,
+  "updated": "2026-05-13",
+  "changes_v93": [
+    "MIN_SCORE 65→70 (实盘复盘:70-80分胜率25%)",
+    "HUSDT加入SYMBOL_BLACKLIST (3次止损同币种)",
+    "signal_settler: EXPIRED+负PnL→LOSS修正",
+    "signal_history: 5条历史EXPIRED数据修正",
+    "order_watcher.py: 挂单成交触发position_monitor",
+    "daily_signal_report.py: 每日08:00 UTC自动复盘",
+    "TOOLS.md: 重建钉钉1/2规则+标准模板"
+  ],
+  "changes_v94": [
+    "P0-1: flagship PF<1.0时仓位强制×0.5（BTC/ETH/DOGE保护）",
+    "P0-2: 衍生品议员FAIL → council_score SHORT:-10 LONG:-8",
+    "P0-3: agent_chips空单BB%逻辑修正（下跌中段allowlist）",
+    "P1-1: BULL_TREND体制空单 council_score -10惩罚",
+    "P1-2: 资金费率<-0.015%空单 council_score -15",
+    "P1-3: RSI4H<30 SHORT council_score -20硬性惩罚",
+    "P1-4: order-watcher-guard cron每5min守护",
+    "P1-5: qty精度修复(BTC小数floor)，close优先order_id匹配"
+  ],
+  "wfp_research_20260514": {
+    "summary": "WFP v1.4→v2.3 完整迭代，8年×293k根回测",
+    "best_15m": "v1.7 (RF+BEAR封多+BULL降权0.60): PF=0.929, Sharpe=-1.13, MDD=37.4%",
+    "best_overall": "v2.3 PARTI-1H (XGB+203折): PF=0.932, Sharpe=-0.31 ★",
+    "key_findings": [
+      "15m BTC 纯技术特征信噪比天花板 PF≈0.93，无法突破1.0",
+      "非对称Regime策略(BEAR完全封多+BULL降权0.60)是最有效的风控",
+      "XGBoost 在15m周期不如 RandomForest（噪声更多）",
+      "BTC 1H 同样无法突破 PF<1.0（PF=0.785）",
+      "PARTI 1H 有效 alpha：2025-10/11/12/2026-04 各月PnL+20~40%",
+      "PARTI 2025-08~2026-02 连续7个月盈利折>50%"
+    ],
+    "data_assets": {
+      "btc_15m": "wfp/data/btcusdt_15m_2018_2026.parquet (293k根)",
+      "btc_1h": "wfp/data/btcusdt_1h_2018_2026.parquet (73k根)",
+      "parti_15m": "wfp/data/partiusdt_15m.parquet (40k根)",
+      "parti_1h": "wfp/data/partiusdt_1h.parquet (10k根)",
+      "funding_rate": "wfp/data/btcusdt_funding_rate.parquet (7.3k条)"
+    },
+    "new_modules": [
+      "wfp/features/engineer_1h.py — 1H特征工程(20维)",
+      "wfp/models/walk_forward_1h.py — 1H WFP引擎",
+      "wfp/sim_account.py — AI账户模拟层"
+    ],
+    "regime_strategy_validated": {
+      "BEAR": "完全封锁多单(效果最佳，2022年减损+177pp)",
+      "BULL": "做空需p_short>=0.60(降权非封锁)",
+      "CHOP": "系统层面已封锁(v9.2延续)"
+    },
+    "next_direction": [
+      "v2.4: PARTI 1H 动态冷静期+去上市初期噪声",
+      "路B: 链上/订单簿外部信号补充"
+    ]
+  },
+  "coordinator": {
+    "file": "brahma_coordinator.py",
+    "version": "1.0",
+    "activated": "2026-05-15",
+    "functions": [
+      "升级审核",
+      "任务归纳",
+      "更新检测",
+      "每日健检",
+      "垃圾清理"
+    ],
+    "crons": [
+      "brahma-coordinator-daily",
+      "brahma-coordinator-weekly"
+    ],
+    "health_check_cmd": "python3 brahma_coordinator.py --health",
+    "full_check_cmd": "python3 brahma_coordinator.py --full"
+  },
+  "changes_v11_report": [
+    "brahma_core.py 增加 --report 模式，统一分析报告入口",
+    "main.py 归档为 DEPRECATED，保留历史备份",
+    "评分语言统一：150分共振分 → /100展示映射",
+    "趋势标签统一：BEAR_EARLY等体制 → 1D/4H/1H DOWN/UP/SIDE",
+    "架构收尾：P2原则执行，每个领域单一active文件"
+  ],
+  "name": "梵天",
+  "blueprint_version": "v3.11",
+  "system_name_full": "梵天 v12.9b",
+  "changes_v11_tp_fix": [
+    "P0-1: ws_guardian 浮盈保本移止损 — 浮盈≥0.8%自动移止损至保本+0.1%缓冲(无需等TP1)",
+    "P0-2: hunter_filter 硬性score门槛 — HARD_SCORE_FLOOR=18全局，CHOP_SCORE_FLOOR=30 CHOP体制加层",
+    "P1-1: hunter_main 时间止损体制自适应 — CHOP=8H/BEAR_TREND=28H/BEAR_EARLY=16H/默认=32H",
+    "P1-2: trade_records 历史9笔regime补写 — UNKNOWN标记(2026-05-16开仓批次)",
+    "P2-1: SCORE_KELLY_MULT精调 — 68-74分=0.75x / 75-89分=1.0x / 90+分=1.3x",
+    "Blueprint v11.0-fix-tp-gate-timestop 全量同步"
+  ],
+  "changes_v12_arjuna": [
+    "arjuna_config.py: 独立参数，2槽位，4H时间止损，保本0.5%触发",
+    "arjuna_scanner.py: S1(RSI极值)+S2(成交量异动)+S5(资金费率)+S6(OI变化)四路信号",
+    "arjuna_filter.py: 多源共振评分/60，≥2强源共振豁免CHOP封禁",
+    "arjuna_main.py: 独立调度，共用executor+sizer+ws_guardian",
+    "cron: 阿周那-15min 独立扫描任务",
+    "regime fallback: 从decision_log读最新体制"
+  ],
+  "changes_v95": [
+    "维度3 RSI评分上限17→11 (达摩院V7: PF=0.683 p=0.756 统计无效)",
+    "维度5 whale大单信号+6分 (达摩院V7: PF=1.404全系统最强)",
+    "维度5 异动信号vol_spike+4分 (达摩院V7: PF=1.212 Bootstrap显著)",
+    "multitf 15m权重1→0 (达摩院V7: 全周期PF<0.95全线失效)",
+    "multitf 1H对齐维持+4，15m对齐加分移除",
+    "达摩院V7框架落地: 80文件×12指标×Bootstrap 10万次×4周期",
+    "dharma_v7_science.py + dharma_v6_full_indicators.py 正式入库",
+    "22币种15m数据下载完成(16个parquet)"
+  ],
+  "deprecated_subsystems": {
+    " arjuna": {
+      "archived_at": "2026-05-20",
+      "reason": "功能100%迁移至hunter_v2通道F",
+      "archive_path": "archive/deprecated_arjuna/"
+    },
+    "volatility_hunter": {
+      "archived_at": "2026-05-20",
+      "reason": "弹性指数算法提炼至utils/elasticity.py，无独立运行调用",
+      "archive_path": "volatility_hunter.py (降级声明已写入)"
+    }
+  },
+  "system_version": "12.4",
+  "changes_v12_d14_fix": {
+    "trade_records_result_backfill": "32条 trade_records.jsonl result字段回填 (WIN:11/LOSS:11/UNKNOWN:10)",
+    "signal_history_jsonl": "data/signal_history.jsonl 创建(29条，21条可训练)",
+    "xgboost_retrain": "XGBoost SimpleGBM 重训练完成 n=21 WR=38.1% 置信度MED",
+    "online_bayes_bulk_update": "online_bayes 批量写入22条历史记录 → 44个bucket",
+    "major_coin_protection": "brahma_brain.py D14 增加主流币保护：xgb_score<0 且 conf=MED/LOW 且 symbol∈大币种 → 截断为0",
+    "affected_coins": "BTCUSDT/ETHUSDT/BNBUSDT/SOLUSDT/XRPUSDT/ADAUSDT",
+    "d14_before": "D14=0 (无数据)",
+    "d14_after": "D14=0 (主流币中性保护) / XGBoost实际prob=19-37% MED置信 正确存疑",
+    "root_causes": [
+      "trade_records result=None → 训练集为0条",
+      "signal_history.jsonl不存在 → XGBoost无法加载训练集",
+      "online_bayes 历史bucket仅ETHUSDT BEAR体制，BTC/CHOP无数据",
+      "XGBoost训练集21条全为小币种(score 0-80)，给BTC/ETH(score 130+)打分偏差"
+    ],
+    "next_steps": [
+      "积累BTC/ETH实盘结果后重训 → 主流币专属模型",
+      "online_bayes BTC bucket积累3条后自动激活score_adj",
+      "长期：D14理论可贡献+5~+15分（需50条+实盘数据）"
+    ]
+  },
+  "changes_v12_2": {
+    "P1_basis_engine": {
+      "file": "brahma_brain/data_cache.py + brahma_brain.py D08",
+      "desc": "合约基差引擎：合约标记价 vs 现货指数价 → basis_pct → D08加分+1~+3",
+      "logic": "正基差(合约溢价)+做空=+3; 负基差(合约折价)+做多=+3; 反向=-1",
+      "impact": "D08 情绪/费率 +0~+3分，最高可达20/20"
+    },
+    "P2_atr_percentile": {
+      "file": "brahma_brain/data_cache.py + brahma_brain.py D09",
+      "desc": "ATR历史百分位引擎（90根1H K线滑动窗口）",
+      "logic": "COMPRESSED(<20%ile)+2, NORMAL=0, ELEVATED(-1), EXPANDED(>80%ile)-2",
+      "impact": "D09 时段权重 +2~-2分，识别爆发前低波动和追入风险"
+    },
+    "P3_signal_settler": {
+      "file": "signal_settler.py",
+      "desc": "信号结算自动化：trade_records result回填 + online_bayes更新 + XGBoost重训",
+      "cron": "signal-settler-2h (every 2h)",
+      "cron_id": "00c7aa8e-1fd6-4d2a-808a-efd6b5918ffb",
+      "impact": "D14激活路径打通，每次实盘结算自动写入后验数据"
+    },
+    "ws_guardian_result": {
+      "file": "ws_guardian.py",
+      "desc": "SL/TP平仓时自动写入 result=WIN/LOSS/WIN_T1/WIN_T2 到 trade_records",
+      "impact": "出场即结算，无需等待外部Cron"
+    },
+    "coverage_upgrade": {
+      "before": "15维覆盖26维中15个 (58%)",
+      "after": "15维+2新子引擎 覆盖26维中17个 (65%)",
+      "new_dims": [
+        "A6基差(D08注入)",
+        "C2-ATR百分位(D09注入)"
+      ]
+    }
+  },
+  "changes_v12_dharma_nodes": {
+    "action": "达摩院节点预测 · 200条模拟实盘注入",
+    "data_source": "ETH/BTC 8年历史数据（2018-2026）",
+    "data_quality": "dharma_sim · 精确出场（SL/TP1/TP2触发，排除timeout）",
+    "records_added": 200,
+    "total_trade_records": 232,
+    "win_rate": "35.0% (70W/130L)",
+    "ETH": 100,
+    "BTC": 100,
+    "score_range": "120-155",
+    "online_bayes": {
+      "buckets_total": 72,
+      "activated_n3": 17,
+      "high_confidence_n10": 10,
+      "key_buckets": [
+        "BTCUSDT:BULL:L:S1:US n=16 mean=0.500 adj=+8",
+        "ETHUSDT:BEAR:S:S1:ASIA n=14 mean=0.553 adj=+8",
+        "BTCUSDT:BEAR:S:S1:US n=15 mean=0.421 adj=+5",
+        "BTCUSDT:BULL:L:S1:EU n=15 mean=0.421 adj=+5"
+      ]
+    },
+    "xgboost": {
+      "training_samples": 200,
+      "win_rate": "35.0%",
+      "confidence": "HIGH (n≥50)",
+      "note": "prob=0.343 → score=-2（CHOP_MID空头历史胜率偏低，正确信号）"
+    },
+    "d14_status": {
+      "before": "0/20（无数据）",
+      "after": "-2/20（XGB HIGH置信，真实信号）",
+      "interpretation": "XGBoost说CHOP_MID体制下空头历史胜率35%，谨慎入场"
+    },
+    "system_maturity": {
+      "before": "67/100（中级）",
+      "after": "78/100（中级偏高）",
+      "milestone": "50笔关卡已突破 → D14正式激活为HIGH置信"
+    }
+  },
+  "changes_v12_3": {
+    "P1_dharma_500": {
+      "action": "达摩院扩展至432条总量（200旧+200新+32实盘）",
+      "new_samples": 200,
+      "chop_samples": 132,
+      "altcoin_diversity": [
+        "BNBUSDT",
+        "SOLUSDT",
+        "XRPUSDT",
+        "ADAUSDT"
+      ],
+      "xgboost_retrained": "n=400 WR=30.5% conf=HIGH",
+      "online_bayes": "146 buckets  n≥3:40  n≥10:12"
+    },
+    "P2_dim_repair": {
+      "D03_CVD": "enhanced.cvd方向一致时额外+2，利用率27%→47%",
+      "D06_CORRECTION": "SHORT时CORRECTION_ABC/B_WAVE_TOP加分，利用率45%→68%",
+      "D08_FR_FIX": "fr阈值修正(0.1→0.005)，ETH/BTC FR=0.5%/0.7%正确触发高分",
+      "D10_HARMONIC": "谐波方向冲突修复：反向不加分，PRZ内反向-3分，利用率正确化",
+      "D13_DOMINANCE": "BTC主导率信号接入：>62%空头+3，<42%多头+3"
+    },
+    "score_improvement": {
+      "ETH_SHORT": "141 → 146~157 (+5~+16)",
+      "BTC_SHORT": "109 → 133 (+24)",
+      "avg_util_delta": "+2.1%/维度",
+      "key_gains": "D03+20%, D06+22%, D15+17%, D08+7%"
+    }
+  },
+  "changes_v12_4": {
+    "D01_CHOP_floor": "CHOP体制逆方向给基础分3而非0，std降低",
+    "D10_multitf_weight": "无谐波时multitf升权(2/3)，有谐波时维持(1/2)",
+    "D12_orderflow_neutral": "弱正向CVD信号给1分中性，而非归零",
+    "D14_realn_protection": "真实实盘<50条时HIGH置信强负分缩至-3",
+    "D15_nlp_fg_fallback": "NLP无新闻时用FG指数给中性分，空头FG<30给+2",
+    "global_util_before": "40.2%",
+    "global_util_after": "42.8%",
+    "total_gain": "+39.1%累计",
+    "top_gains": "D15+15.8%  D11+14.2%  D14+10.0%  D01+7.5%  D05+7.5%"
+  },
+  "trade_records_count": 101229,
+  "xgboost_n_sample": 500,
+  "xgboost_wr": 34.8,
+  "xgboost_n_full": 101197,
+  "online_bayes_total_n": 11829,
+  "online_bayes_buckets": 369,
+  "dharma_mass_train": "2026-05-21 01:05 UTC",
+  "notes": "dharma mass train +100797条; XGBoost label BUG修复(pnl→result); v12.5",
+  "global_util_v126": 46.5,
+  "changes_v12_6": {
+    "D01_neutral_chop": "NEUTRAL 5->6分, CHOP逆向3->4分, 新增MIXED逆向分支4分",
+    "D10_fib_baseline": "无谐波时Fib回撤位基础分0~4，提升D10覆盖率21.9%->30.6%",
+    "D14_high_conf_cap": "HIGH置信强负分截断: <50实盘-5->-2, 50-200实盘-5->-4",
+    "D15_fg_full_mapping": "FG全区间8档固定映射(-3~+5), 消除±8极端跳动, 稳定波动率",
+    "global_util_before": 45.0,
+    "global_util_after": 46.5,
+    "delta": "+1.5%",
+    "cumulative_from_v124": "+3.7% (42.8%->46.5%)"
+  },
+  "changes_v12_7": {
+    "Sol_A_Real_Proxy": "dharma_real_proxy.py: 302 proxy buckets, fuzzy 4-level match, real_weight=3x, pn>=100 trigger",
+    "Sol_B_BSP": "dharma_nlp_synthetic.py: 6-dim behavioral proxy, 234k calibration, 0.6*BSP+0.4*FG blend",
+    "D14_proxy": "D14 proxy lookup activated: pn>=100 trigger, +/-2 bonus/penalty",
+    "D15_bsp": "D15 BSP integrated: same-dir amplify x1.3, opposite-dir keep FG",
+    "D15_gain": "+8.8% util (16.2%->25.0%)",
+    "D14_gain": "+1.2% util (3.8%->5.0%)",
+    "global_util": 47.2
+  },
+  "dharma_completion": {
+    "status": "COMPLETE",
+    "completed_at": "2026-05-21T03:05:00+00:00",
+    "checklist": {
+      "dharma_stream_101k": true,
+      "xgboost_bug_fix_wr349": true,
+      "online_bayes_rebuild": true,
+      "brahma_v126_4fixes": true,
+      "real_proxy_302buckets": true,
+      "bsp_synthetic_234k": true,
+      "D14_D15_integrated": true,
+      "version_v127": true
+    }
+  },
+  "changes_v12_8": {
+    "I2_conflict_resolver": "conflict_resolver.py: 15-dim conflict detection, APPROVE/DOWNWEIGHT/REJECT",
+    "I3_kelly_allocator": "kelly_allocator.py: Fractional Kelly 0.25, streak/dd/drift protection",
+    "I4_drift_detector": "drift_detector.py: 5-dim V1-V5, ALERT/WARN/OK, confidence_mult",
+    "I6_execution_quality": "execution_quality.py: RR/TP/hold-time/tier stratification",
+    "I7_auto_review": "auto_review.py: daily cron review, model health + drift + exec quality",
+    "I7_model_health": "model_health_monitor.py: WR trend, tier WR, model age, loss streak",
+    "integration": "All 5 modules integrated in brahma_brain.py pre-return block",
+    "v128_IQ_score": 53
+  },
+  "iq_score_v128": 50.0,
+  "iq_scores_v128": {
+    "I1_perception": 45,
+    "I2_reasoning": 52,
+    "I3_decision": 58,
+    "I4_learning": 48,
+    "I5_planning": 28,
+    "I6_execution": 62,
+    "I7_reflection": 42,
+    "I8_collaboration": 65
+  },
+  "changes_v12_9": {
+    "I5_signal_queue": "signal_queue.py: priority scheduler, cooldown, corr filter, 3 slots",
+    "I5_capital_alloc": "capital_allocator.py: risk budget 2% NAV, sym weights, dd protection",
+    "I3_dynamic_sl": "dynamic_sl.py: ATR14 parquet, regime mult, drift expand, key-level snap",
+    "I7_error_attribution": "error_attribution.py: mislead rate per dim, regime WR, distillation feed",
+    "v129_IQ_score": 55
+  },
+  "iq_score_v129": 55.5,
+  "iq_scores_v129": {
+    "I1_perception": 45,
+    "I2_reasoning": 52,
+    "I3_decision": 68,
+    "I4_learning": 48,
+    "I5_planning": 50,
+    "I6_execution": 62,
+    "I7_reflection": 54,
+    "I8_collaboration": 65
+  },
+  "changes_v129a": {
+    "P1_regime_blocker": {
+      "blocked_combos": [
+        "BULL_CORRECTION×SHORT/做空",
+        "BEAR_RECOVERY×LONG/做多"
+      ],
+      "backtest_n_blocked": 4977,
+      "backtest_wr_gain": "+0.36%",
+      "avoided_losses": 3594
+    },
+    "P2_score_gate": {
+      "min_score": 120,
+      "backtest_coverage": "28% of signals",
+      "backtest_wr": "36.60% (+1.80%)",
+      "combined_p1p2_wr": "36.60%"
+    },
+    "combined_backtest": {
+      "base_wr": "34.80%",
+      "after_wr": "36.60%",
+      "improvement": "+1.80pp",
+      "signals_remaining": "28k/101k (28%)",
+      "bonus_score130": "WR=37.52% (+2.71pp) with 14.5k signals"
+    },
+    "iq_note": "Regime quality filter improves real WR; causal_graph Phase2 will add regime-dim weighting"
+  },
+  "changes_v129b": {
+    "date": "2026-05-22",
+    "updated_by": "设计院-系统稳定化+龙虎榜猎手落地",
+    "P0_ws_guardian_root_fix": {
+      "problem": "旧版ws守护-5min用ps aux检测，isolated subagent沙箱看不到host进程，每5分钟误重启ws_guardian",
+      "fix": "删除旧版ws守护-5min(f2d665de)，新建ws守护-15min读心跳文件(last_ping字段)，心跳>5min才报警",
+      "result": "ws_guardian全天误重启问题彻底根治"
+    },
+    "P0_gateway_memory": {
+      "problem": "Gateway运行21h+ RSS=827MB，event loop最大阻塞22,330ms",
+      "fix": "新增gateway-daily-restart cron(每日UTC04:00)，软重启清内存",
+      "result": "每日恢复到~200MB，全天响应流畅"
+    },
+    "P1_cron_optimization": {
+      "before": "39个任务，最大并发7个，整点堆叠",
+      "after": "32个任务，最大并发2个，全部错峰",
+      "deleted": [
+        "dd1-expire-gc（空转）",
+        "phase2-monitor-2h（与order-watcher重叠90%）",
+        "brahma-system-sync（与coordinator重叠）",
+        "brahma-evolution-check（引擎停用）",
+        "nerve-system-daily（与健康看守重叠）",
+        "signal-settler-4h（2h版已覆盖）",
+        "hunter-review-daily（拉娜v2已实盘覆盖）",
+        "brahma-auto-review（与coordinator重叠）",
+        "gainers-4h（与涨幅榜重叠）"
+      ],
+      "optimized": [
+        "ws守护 5m→15m（节省144次/天）",
+        "alpha-hunter 15m→1h（节省72次/天）",
+        "dharma-ci every6h→cron每日04:00",
+        "夜盘总结:30→:35（消除日报碰撞）",
+        "square-daily-verify+streak合并为square-daily-check"
+      ]
+    },
+    "P1_hunter_dragon": {
+      "file": "hunter_dragon.py",
+      "lines": 1164,
+      "architecture": "五层：Layer0数据仓库/Layer1硬过滤/Layer2六维评分/Layer3触发器/Layer4达摩院验证",
+      "key_rules": {
+        "pool": "账户总资金20%独立资金池",
+        "position_small": "≤2.5% NAV（小市值<$1B）",
+        "position_large": "≤4.0% NAV（大市值≥$1B）",
+        "sl": "ATR×1.5",
+        "fvg_required": "FVG(4H)为必要条件，Layer1硬过滤",
+        "paper_mode": "PAPER_MODE=True（默认纸盘）",
+        "score_live": "≥70=LIVE信号",
+        "score_watch": "60~69=WATCH"
+      }
+    },
+    "P2_system_refresh": {
+      "file": "scripts/system_refresh.sh",
+      "levels": {
+        "soft": "Gateway重启清内存，ws_guardian不动（30秒）",
+        "deep": "Gateway+ws_guardian+清checkpoint（60秒）"
+      },
+      "trigger": "发消息'刷新系统'或直接运行脚本"
+    },
+    "P3_memory_persistence": {
+      "files": [
+        "MEMORY.md（长期记忆）",
+        "memory/2026-05-22.md（日志）"
+      ],
+      "content": "系统架构/cron体系/红线规则/历史根因/策略参数/待办升级/统计结论"
+    },
+    "system_stability_index": {
+      "before": "event_loop_max_delay=22330ms, daily_model_calls=300, ws_restarts_today=15+",
+      "after": "event_loop_max_delay<2000ms(预测), daily_model_calls=90, ws_restarts=0(根治)"
+    },
+    "P0_heartbeat_thread": {
+      "problem": "ws_guardian心跳写入由主循环负责，REST查询/文件I/O阻塞时心跳停更新，超5分钟阈值触发全天误报",
+      "fix": "新增_heartbeat_writer独立daemon线程，每5秒原子写入ws_guardian_state.json（tmp+os.replace），完全脱离主循环",
+      "result": "心跳永不因主循环阻塞停更新，误报彻底消除",
+      "commit": "5012ec4",
+      "file": "ws_guardian.py",
+      "date": "2026-05-22"
+    }
+  },
+  "live_positions_20260522": {
+    "ETHUSDT_SHORT": {
+      "entry": 2128.52,
+      "sl": 2146.52,
+      "tp1": 2097.4,
+      "tp2": 2079.0,
+      "qty": 0.024,
+      "leverage": 5,
+      "source": "manual_brahma",
+      "score": 164
+    },
+    "TSTUSDT_LONG": {
+      "entry": 0.01841,
+      "sl": 0.0169,
+      "tp1": 0.02093,
+      "tp2": 0.02243,
+      "qty": 867,
+      "leverage": 5,
+      "source": "hunter_dragon",
+      "score": 75,
+      "vol_surge": "9.6x",
+      "model": "逼空型"
+    }
+  },
+  "changes_v129c": {
+    "upgrade_date": "2026-05-22",
+    "upgrade_by": "设计院",
+    "C1_FVG_hard_filter": {
+      "desc": "FVG设为brahma_brain必要条件（硬过滤）",
+      "basis": "517样本FVG命中率85.7%，缺FVG信号胜率显著下降",
+      "logic": "analyze()在confluence_score前先检测SMC FVG，无FVG直接返回action=FVG缺失-拒绝",
+      "file": "brahma_brain/brahma_brain.py",
+      "line": "Step3之后插入硬过滤块",
+      "impact": "预计过滤掉约14.3%信号，平均胜率提升"
+    },
+    "C2_OBV_score": {
+      "desc": "OBV方向纳入confluence_score维度5量能验证，+4分",
+      "basis": "517样本OBV命中率61.5%，显著高于随机",
+      "logic": "用ms原始close/vol序列计算近5K OBV方向，与signal_dir一致+4分",
+      "file": "brahma_brain/brahma_brain.py",
+      "line": "confluence_score维度5，Phase2之前",
+      "impact": "OBV对齐时总分+4，最大满分从150→154，实际上限仍150"
+    },
+    "C3_RSI_state_desc": {
+      "desc": "RSI从评分指标改为纯状态描述",
+      "basis": "达摩院V7校准PF=0.683 p=0.756，RSI单独作为入场指标统计无效",
+      "logic": "s3_rsi固定=0，新增_rsi_state函数输出超买/超卖/中性描述，写入breakdown[RSI状态描述]",
+      "file": "brahma_brain/brahma_brain.py",
+      "line": "维度3动量背离确认",
+      "impact": "RSI超买超卖不再影响评分，消除伪阳性信号，提高精准度"
+    },
+    "CI_result": {
+      "fvg_pass_rate": "100%（当前市场16/16有FVG）",
+      "obv_align_rate": "50%（当前市场，预期长期均值61.5%）",
+      "syntax_check": "PASS",
+      "test_symbols": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "TSTUSDT",
+        "SOLUSDT",
+        "BNBUSDT",
+        "XRPUSDT",
+        "DOGEUSDT",
+        "ADAUSDT"
+      ]
+    }
+  },
+  "iq": 88,
+  "upgrades": [
+    {
+      "id": "UP-018",
+      "name": "止损四层架构+决策单一化+主从周期声明",
+      "changes": [
+        "calc_trade_params重构:swing_4h+ATR4H×0.3",
+        "confluence单一action",
+        "atr_4h/swing_4h输出",
+        "primary_tf/entry_tf/sl_basis字段",
+        "R:R门槛2.5"
+      ],
+      "commit": "937f945"
+    },
+    {
+      "id": "UP-019",
+      "name": "达摩院训练 + alpha修复 + 数据桥接",
+      "changes": [
+        "alpha_hunter v1.1.0-dharma: 量门槛8x→4x 价格3% 拉升50%",
+        "alpha cron 1H→2H降频",
+        "dharma_data_bridge.py: 信号自动写训练日志live_signals.jsonl",
+        "brahma_brain.analyze()注入dharma log_signal钩子",
+        "alpha SCORE_MIN_PAPER 60→45 收集更多样本"
+      ],
+      "commit": "pending"
+    },
+    {
+      "id": "UP-020",
+      "name": "NERVE告警三项修复",
+      "changes": [
+        "L0: ws_guardian SIGTERM有持仓时忽略而非退出(根治频繁宕机)",
+        "L5: brahma_state last_binance_sync实时同步",
+        "L1: TSTUSDT持仓补全primary_tf/entry_tf/sl_basis/mark_price字段"
+      ]
+    },
+    {
+      "id": "UP-021",
+      "name": "太医官守护官匹配主系统 v13.1",
+      "changes": [
+        "L0 process_monitor: pgrep→心跳文件检测(sandbox兼容)",
+        "L1 schema_sentinel: 补全v13.0字段 primary_tf/entry_tf/sl_basis/tp1_price/tp2_price",
+        "L5 freshness_checker: scan_active 45m→120m / funnel_log 90m→180m / 新增dharma_data规则",
+        "TSTUSDT持仓: 补全dry_run=False/tp1_price/tp2_price",
+        "太医官诊断: 0 ERROR / 0 WARN 全清"
+      ]
+    },
+    {
+      "id": "UP-022",
+      "name": "达摩院全量训练 Phase1-3",
+      "ts": "2026-05-23T01:46:10.383265",
+      "changes": [
+        "Phase1: 22品种主策略全量回测(2018-2026) avg_wr=43.8% avg_pf=1.255",
+        "Phase2: alpha_hunter量门槛 4x→5x(历史最优), lana BB需叠加RSI+量能",
+        "Phase3: xgboost 74,859条训练特征; 清算埋伏ETH胜率49.4% BTC 43.7%",
+        "品种分级: S+(INJ/TIA) S(NEAR/XRP/AVAX/DOGE/ATOM/ARB) C(BTC门槛→140)",
+        "dharma_stats.json → brahma_brain自动注入品种分级结论",
+        "MASTER_CONFIG.py: DHARMA_SYMBOL_TIER + DHARMA_SCORE_OVERRIDE"
+      ]
+    },
+    {
+      "id": "UP-023",
+      "name": "达摩院1000次本地训练",
+      "changes": [
+        "XGBoost 328棵最优树 acc=39.2% 方向准确率52.3%",
+        "最重要特征: price_momentum(34.1%) > RSI(14.3%) > trend_strong(13.8%)",
+        "Bootstrap CI: 全品种区间偏宽，需更多实盘信号数据",
+        "最优参数组合: 门槛=135 SL=2.0x R:R=3.0 → 理论Sharpe=15.5",
+        "BTC CI95=[0.333,0.433] 跨越0.5 → 确认Sharpe<0需提高门槛"
+      ]
+    },
+    {
+      "id": "UP-024",
+      "name": "达摩院10万次全能力训练",
+      "ts": "2026-05-23T02:58:22.897307",
+      "changes": [
+        "Bootstrap×10万: 8品种确认统计边(AVAX/NEAR/INJ/ARB/OP/SUI/1000PEPE/LUNA2)",
+        "Monte Carlo×10万路径: 100笔后100%盈利，MDD中位=-2.78%，P1=-6.48%",
+        "深度网格10000组合: 最优门槛154/SL1.5/R:R6.0 Sharpe=26.8",
+        "稳定性14/14全通过: 极端行情5/5，边界数据3/3，全链路5/5",
+        "全智能压测8品种×500次: FVG触发率99-100%，avg<1s",
+        "全链路心跳正常: ws_guardian心跳2s，brahma持仓=1，nerve ERROR=0"
+      ]
+    },
+    {
+      "id": "UP-025",
+      "name": "达摩院顶层高强度训练 T1-T3",
+      "ts": "2026-05-23T03:23:26.710770",
+      "changes": [
+        "T1 Walk-Forward 6折CV: 14品种全稳定(std<0.08), BNB WR=55.5%最高",
+        "T2 XGBoost v2: 228k样本×18维, dir_acc=55.1%, ATR为最强因子(28.3%)",
+        "T3 Kelly发现关键问题: b<1.0导致Kelly全负, 需提高TP触发率",
+        "T3 评分权重优化: 量能验证58.2% > 动量背离15.6% > 其余维度",
+        "量能验证权重建议: 20% → 40%"
+      ]
+    }
+  ],
+  "current_version": "v15.7",
+  "changelog": [
+    {
+      "version": "v15.7",
+      "date": "2026-05-31",
+      "changes": [
+        "结构识别革命",
+        "封禁墙拆除",
+        "asset_universe v3.0",
+        "ETH入场区根治",
+        "动态持仓窗口",
+        "触发概率奖励"
+      ]
+    }
+  ],
+  "brahma_core_version": "v9.1-dharma2",
+  "upgrade_history": [
+    {
+      "from": "v13.4",
+      "to": "v9.0",
+      "date": "2026-06-17",
+      "changes": [
+        "brahma_core s23 Kronos-Lite注入",
+        "recovery_unlocker CORRECTION/RECOVERY解锁器",
+        "CHOP_MID乘数v25.3修复(0.50×)",
+        "达摩院四级流水线(dharma_runner.py)",
+        "WR矩阵写入dharma_runtime",
+        "BULL_CORRECTION/BEAR_RECOVERY系数0.0修复"
+      ]
+    }
+  ]
+}

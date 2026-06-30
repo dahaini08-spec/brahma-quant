@@ -16,6 +16,8 @@ from concurrent.futures import ThreadPoolExecutor,as_completed
 
 BASE=Path(__file__).parent.parent
 sys.path.insert(0,str(BASE))
+for _sp in ['/usr/local/lib/python3.11/dist-packages','/usr/lib/python3/dist-packages']:
+    if _sp not in sys.path: sys.path.append(_sp)
 import tornado.ioloop,tornado.web,tornado.websocket
 
 SCAN_TARGETS=['BTCUSDT','ETHUSDT','NEARUSDT','GALAUSDT','PIXELUSDT',
@@ -182,10 +184,10 @@ def load_wuqu_history(limit=100):
     return rows[:limit]
 
 def load_wuqu_stats():
-    """武曲历史胜率统计（wuqu_paper_settled）"""
+    """武曲历史胜率统计 - WIN口径: TP1/TP2/WIN计盈, SL/LOSS计亏, TIMEOUT不计入分母"""
     rows=load_wuqu_history(9999)
-    wins=[r for r in rows if r.get('outcome') in ('TP1','TP2')]
-    losses=[r for r in rows if r.get('outcome')=='SL']
+    wins=[r for r in rows if r.get('outcome') in ('TP1','TP2','WIN')]
+    losses=[r for r in rows if r.get('outcome') in ('SL','LOSS')]
     decided=len(wins)+len(losses)
     wr=round(len(wins)/decided*100,1) if decided else 0
     return wr, decided, len(wins), len(losses)
@@ -548,9 +550,9 @@ body{background:var(--bg);color:var(--tx1);font-family:-apple-system,BlinkMacSys
     <div style="font-size:11px;color:var(--yellow);margin-bottom:6px">✅ 以下战绩来自梵天实盘系统真实信号结算数据。</div>
   </div>
   <div class="s3">
-    <div class="sc"><div class="sv" id="hwwr" style="color:var(--yellow)">100%</div><div class="sl">实盘胜率</div></div>
-    <div class="sc"><div class="sv" id="hww" style="color:var(--green)">51</div><div class="sl">盈利单</div></div>
-    <div class="sc"><div class="sv" id="hwl" style="color:var(--tx2)">0</div><div class="sl">亏损单</div></div>
+    <div class="sc"><div class="sv" id="hwwr" style="color:var(--yellow)">--%</div><div class="sl">实盘胜率</div></div>
+    <div class="sc"><div class="sv" id="hww" style="color:var(--green)">--</div><div class="sl">盈利单</div></div>
+    <div class="sc"><div class="sv" id="hwl" style="color:var(--tx2)">--</div><div class="sl">亏损单</div></div>
   </div>
   <div class="s3">
     <div class="sc"><div class="sv" style="color:var(--green);font-size:13px">+8,218U</div><div class="sl">平均盈利</div></div>
@@ -667,7 +669,8 @@ function renderHist(d){
   el('hlist').innerHTML=hist.slice(0,10).map(h=>{
     const sym=(h.symbol||'').replace('USDT','');
     const ts=String(h.ts_iso||h.open_ts||'').slice(5,10);
-    const res=h.result||'TP1';const isW=res.startsWith('TP');
+    const res=h.result||'TP1';const isW=res.startsWith('TP')||res==='WIN';
+    const isL=res==='SL'||res==='LOSS';
     const be=h.symbol==='BTCUSDT'||h.symbol==='ETHUSDT';
     const pnl=Math.round(CAP*PP*(be?100:20)*(parseFloat(h.pnl_pct||0)/100));
     const cls=isW?'w':res==='TIMEOUT'?'t':'l';
@@ -683,9 +686,17 @@ async function tick(){
     pos.forEach(p=>{tot+=zz(p.symbol,p.pnl_pct,p.direction||p.side);});
     set('h4',(tot>=0?'+':'')+tot.toFixed(2)+' U');el('h4').style.color=tot>=0?'var(--green)':'var(--red)';
     const h4pos=document.getElementById('h4-pos');if(h4pos)h4pos.textContent=pos.length;
-    const histCl=(d.history||[]).filter(x=>x.status==='CLOSED');
-    const histWR=histCl.length?Math.round(histCl.filter(x=>x.result==='WIN').length/histCl.length*100):0;
+    const histAll=(d.history||[]).filter(x=>x.status==='CLOSED'||x.result==='TIMEOUT'||x.result==='WIN'||x.result==='LOSS'||(x.result||'').startsWith('TP')||x.result==='SL');
+    const histDecided=histAll.filter(x=>(x.result||'').startsWith('TP')||x.result==='WIN'||x.result==='SL'||x.result==='LOSS');
+    const histWins=histDecided.filter(x=>(x.result||'').startsWith('TP')||x.result==='WIN');
+    const histLoss=histDecided.filter(x=>x.result==='SL'||x.result==='LOSS');
+    const histTout=histAll.filter(x=>x.result==='TIMEOUT');
+    const histWR=histDecided.length?Math.round(histWins.length/histDecided.length*100):0;
     const h4wr=document.getElementById('h4-wr');if(h4wr)h4wr.textContent=histWR+'%';
+    const hwwr=document.getElementById('hwwr');if(hwwr){hwwr.textContent=histWR+'%';hwwr.style.color=histWR>=75?'var(--green)':histWR>=60?'var(--yellow)':'var(--red)';}
+    const hww=document.getElementById('hww');if(hww)hww.textContent=histWins.length;
+    const hwl=document.getElementById('hwl');if(hwl){hwl.textContent=histLoss.length;hwl.style.color=histLoss.length>0?'var(--red)':'var(--tx2)';}
+    const hwtout=document.getElementById('hwtout');if(hwtout)hwtout.textContent=histTout.length;
     set('kpos',pos.length+'仓');
     // kstrip BTC/ETH实时价格
     const regime=d.regime||[];
@@ -1360,10 +1371,10 @@ def load_wuqu_history(limit=100):
     return rows[:limit]
 
 def load_wuqu_stats():
-    """武曲历史胜率统计（wuqu_paper_settled）"""
+    """武曲历史胜率统计 - WIN口径: TP1/TP2/WIN计盈, SL/LOSS计亏, TIMEOUT不计入分母"""
     rows=load_wuqu_history(9999)
-    wins=[r for r in rows if r.get('outcome') in ('TP1','TP2')]
-    losses=[r for r in rows if r.get('outcome')=='SL']
+    wins=[r for r in rows if r.get('outcome') in ('TP1','TP2','WIN')]
+    losses=[r for r in rows if r.get('outcome') in ('SL','LOSS')]
     decided=len(wins)+len(losses)
     wr=round(len(wins)/decided*100,1) if decided else 0
     return wr, decided, len(wins), len(losses)

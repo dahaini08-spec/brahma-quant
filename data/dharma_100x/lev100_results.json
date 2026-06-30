@@ -1,0 +1,121 @@
+[
+  {
+    "name": "BTC 15m BB_EDGE_LONG",
+    "wr": 0.757,
+    "n": 19479,
+    "daily": 7.6,
+    "atr_usd": 180,
+    "price": 67000,
+    "tf": "15m",
+    "best": {
+      "tp_atr": 3.0,
+      "sl_atr": 1.0,
+      "exp": 38.483582089552236,
+      "monthly_roi": 4489869.6496132575,
+      "half_kelly": 12.5,
+      "rr": "TP3.0:SL1.0"
+    }
+  },
+  {
+    "name": "BTC 15m BB_EDGE_SHORT",
+    "wr": 0.75,
+    "n": 34728,
+    "daily": 13.6,
+    "atr_usd": 180,
+    "price": 67000,
+    "tf": "15m",
+    "best": {
+      "tp_atr": 3.0,
+      "sl_atr": 1.0,
+      "exp": 37.73134328358209,
+      "monthly_roi": 14656466549.753242,
+      "half_kelly": 12.5,
+      "rr": "TP3.0:SL1.0"
+    }
+  },
+  {
+    "name": "BTC 15m TRIPLE_LONG",
+    "wr": 0.754,
+    "n": 14836,
+    "daily": 5.8,
+    "atr_usd": 180,
+    "price": 67000,
+    "tf": "15m",
+    "best": {
+      "tp_atr": 3.0,
+      "sl_atr": 1.0,
+      "exp": 38.16119402985074,
+      "monthly_roi": 332051.2508803467,
+      "half_kelly": 12.5,
+      "rr": "TP3.0:SL1.0"
+    }
+  },
+  {
+    "name": "BTC 15m RSI_BB_SHORT",
+    "wr": 0.727,
+    "n": 65320,
+    "daily": 25.6,
+    "atr_usd": 180,
+    "price": 67000,
+    "tf": "15m",
+    "best": {
+      "tp_atr": 3.0,
+      "sl_atr": 1.0,
+      "exp": 35.2597014925373,
+      "monthly_roi": 2.4312184851017544e+16,
+      "half_kelly": 12.5,
+      "rr": "TP3.0:SL1.0"
+    }
+  },
+  {
+    "name": "ETH 15m BB_EDGE_SHORT",
+    "wr": 0.752,
+    "n": 11292,
+    "daily": 4.4,
+    "atr_usd": 11,
+    "price": 2050,
+    "tf": "15m",
+    "best": {
+      "tp_atr": 3.0,
+      "sl_atr": 1.0,
+      "exp": 91.74634146341464,
+      "monthly_roi": 167485742.40278426,
+      "half_kelly": 12.5,
+      "rr": "TP3.0:SL1.0"
+    }
+  },
+  {
+    "name": "ETH 15m TRIPLE_LONG",
+    "wr": 0.746,
+    "n": 15622,
+    "daily": 6.1,
+    "atr_usd": 11,
+    "price": 2050,
+    "tf": "15m",
+    "best": {
+      "tp_atr": 3.0,
+      "sl_atr": 1.0,
+      "exp": 90.45853658536586,
+      "monthly_roi": 32646738157.352818,
+      "half_kelly": 12.5,
+      "rr": "TP3.0:SL1.0"
+    }
+  },
+  {
+    "name": "ETH 15m RSI_BB_S",
+    "wr": 0.722,
+    "n": 66997,
+    "daily": 26.2,
+    "atr_usd": 11,
+    "price": 2050,
+    "tf": "15m",
+    "best": {
+      "tp_atr": 3.0,
+      "sl_atr": 1.0,
+      "exp": 85.30731707317075,
+      "monthly_roi": 3.865417590428277e+36,
+      "half_kelly": 12.5,
+      "rr": "TP3.0:SL1.0"
+    }
+  }
+]

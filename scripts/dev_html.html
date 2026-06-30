@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>梵天AI · 开发者终端</title>
+<script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#04090f;--bg2:#070e1a;--bg3:#0a1222;--bg4:#0d1528;--bd:#1a2540;--bd2:#243250;--tx:#e2e8f0;--tx2:#94a3b8;--tx3:#475569;--tx4:#2d3f5a;--green:#22c55e;--red:#ef4444;--orange:#f97316;--blue:#3b82f6;--purple:#8b5cf6;--yellow:#fbbf24;--cyan:#06b6d4}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--tx);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* TOP BAR */
+#topbar{flex-shrink:0;background:rgba(4,9,15,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--bd);height:48px;display:flex;align-items:center;padding:0 16px;gap:10px}
+.tb-logo{display:flex;align-items:center;gap:8px;min-width:120px}
+.tb-icon{width:26px;height:26px;background:linear-gradient(135deg,#f97316,#dc2626);border-radius:7px;display:grid;place-items:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0}
+.tb-name{font-weight:800;font-size:14px}
+.tb-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:.5px;text-transform:uppercase;background:#7c3aed;color:#fff}
+.tb-divider{width:1px;height:24px;background:var(--bd)}
+.kpi-strip{display:flex;align-items:center;gap:6px;flex:1;overflow-x:auto}
+.kpi{display:flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--bd);border-radius:7px;padding:3px 10px;white-space:nowrap}
+.kpi-l{font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px}
+.kpi-v{font-size:12px;font-weight:800;color:var(--tx)}
+.tb-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.ws-pill{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--tx3);background:var(--bg3);border:1px solid var(--bd);padding:3px 9px;border-radius:12px}
+.ws-dot{width:7px;height:7px;border-radius:50%;background:var(--tx4);transition:all .3s}
+.ws-dot.ok{background:var(--green);box-shadow:0 0 6px #22c55e70}
+.cd-pill{font-size:11px;color:var(--tx3);background:var(--bg3);border:1px solid var(--bd);padding:3px 9px;border-radius:12px;font-variant-numeric:tabular-nums}
+.cd-v{color:var(--orange);font-weight:700}
+
+/* LAYOUT */
+#app{flex:1;display:flex;overflow:hidden}
+#sidebar{width:180px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow-y:auto}
+.sb-section{padding:10px 0}
+.sb-label{font-size:9px;font-weight:700;color:var(--tx4);letter-spacing:1.2px;text-transform:uppercase;padding:0 14px;margin-bottom:4px}
+.sb-item{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;color:var(--tx3);font-size:12px;font-weight:600;transition:all .15s;border-left:2px solid transparent}
+.sb-item:hover{background:var(--bg3);color:var(--tx2)}
+.sb-item.active{background:linear-gradient(90deg,#f9731615,transparent);color:var(--orange);border-left-color:var(--orange)}
+.sb-icon{width:16px;text-align:center;font-size:13px}
+.sb-badge{margin-left:auto;background:var(--bg4);color:var(--blue);font-size:9px;font-weight:700;padding:1px 5px;border-radius:6px}
+.sb-item.active .sb-badge{background:#f97316;color:#fff}
+#content{flex:1;overflow-y:auto;background:var(--bg)}
+.page{display:none;padding:16px;animation:fadeIn .15s}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+
+/* COMMON */
+.sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sec-title{font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:1.5px;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+.sec-title i{width:3px;height:12px;background:var(--orange);border-radius:2px;display:inline-block}
+.card{background:var(--bg3);border:1px solid var(--bd);border-radius:10px;overflow:hidden}
+.card-header{padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--bd);font-size:11px;font-weight:700;color:var(--tx2);display:flex;align-items:center;gap:6px}
+
+/* OVERVIEW */
+.ov-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:800px){.ov-grid{grid-template-columns:repeat(2,1fr)}}
+.ov-card{background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden}
+.ov-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.ov-card.sig::after{background:var(--orange)}
+.ov-card.wr::after{background:var(--green)}
+.ov-card.health::after{background:var(--blue)}
+.ov-card.scan::after{background:var(--purple)}
+.ov-val{font-size:26px;font-weight:900;margin-bottom:2px}
+.ov-lbl{font-size:10px;color:var(--tx3);font-weight:600;text-transform:uppercase;letter-spacing:.7px}
+.ov-sub{font-size:11px;color:var(--tx3);margin-top:4px}
+.regime-radar-row{display:grid;grid-template-columns:220px 1fr;gap:12px;margin-bottom:16px}
+@media(max-width:800px){.regime-radar-row{grid-template-columns:1fr}}
+.radar-card{background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:14px;text-align:center}
+.log-wrap{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:12px;font-family:'Fira Code','Courier New',monospace;font-size:11px;max-height:240px;overflow-y:auto;line-height:1.7}
+.ll{padding:1px 0;border-bottom:1px solid #0a0f1e}
+.lt{color:var(--tx4)}
+.lm{color:var(--tx3)}
+.lm.ok{color:#4ade80}.lm.warn{color:#fbbf24}.lm.err{color:#f87171}.lm.sig{color:#f97316;font-weight:700}
+
+/* SIGNAL TABLE */
+.tbl-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.tbl-filter{background:var(--bg3);border:1px solid var(--bd);color:var(--tx2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;transition:all .15s}
+.tbl-filter:hover,.tbl-filter.active{background:var(--orange);border-color:var(--orange);color:#fff}
+.tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--bd)}
+.dtbl{width:100%;border-collapse:collapse}
+.dtbl thead tr{background:var(--bg2)}
+.dtbl th{padding:8px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--tx3);letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid var(--bd);white-space:nowrap}
+.dtbl td{padding:7px 10px;border-bottom:1px solid #080d18;font-size:11px;white-space:nowrap}
+.dtbl tbody tr:hover{background:var(--bg2)}
+.dtbl tbody tr.valid-row{background:#0a1a0a}
+.sym-c{font-weight:800;color:var(--tx)}
+.dir-pill{font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px}
+.dir-pill.SHORT{background:#3f0a0a;color:#f87171;border:1px solid #7f1d1d}
+.dir-pill.LONG{background:#052e1a;color:#4ade80;border:1px solid #14532d}
+.valid-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:5px}
+.valid-true{background:#052e1a;color:#4ade80}
+.valid-false{background:#1e293b;color:#475569}
+
+/* MATRIX */
+.matrix-row{display:grid;grid-template-columns:200px 1fr;gap:12px}
+@media(max-width:800px){.matrix-row{grid-template-columns:1fr}}
+
+/* K-LINE */
+.kline-layout{display:grid;grid-template-columns:180px 1fr;gap:10px;height:calc(100vh - 160px)}
+.kline-sidebar{background:var(--bg3);border:1px solid var(--bd);border-radius:10px;overflow-y:auto}
+.kli{padding:9px 12px;cursor:pointer;border-bottom:1px solid #080d18;transition:background .1s;border-left:2px solid transparent}
+.kli:hover{background:var(--bg2)}
+.kli.active{background:#1a0f00;border-left-color:var(--orange)}
+.kli-sym{font-weight:800;font-size:12px;margin-bottom:2px;display:flex;align-items:center;gap:6px}
+.kli-meta{font-size:10px;color:var(--tx3)}
+.kline-main{background:var(--bg3);border:1px solid var(--bd);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.kline-hd{padding:9px 14px;background:var(--bg2);border-bottom:1px solid var(--bd);font-size:11px;font-weight:600;color:var(--tx2)}
+#kline-box{flex:1;min-height:400px}
+.kline-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--tx4)}
+
+/* POSITIONS */
+.pos-header-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:700px){.pos-header-grid{grid-template-columns:repeat(2,1fr)}}
+.pos-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.pos-card{background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:14px;transition:border-color .2s}
+.pos-card:hover{border-color:var(--bd2)}
+.pos-card.profit{border-top:2px solid var(--green)}
+.pos-card.loss{border-top:2px solid var(--red)}
+.pc-sym{font-size:15px;font-weight:900;margin-bottom:4px}
+.pc-pnl{font-size:20px;font-weight:900}
+.pc-pnl.pos{color:var(--green)}.pc-pnl.neg{color:var(--red)}
+.pc-rows{margin-top:8px;display:flex;flex-direction:column;gap:3px}
+.pc-row{display:flex;justify-content:space-between;font-size:11px}
+.pc-row .pc-l{color:var(--tx3)}.pc-row .pc-v{font-weight:600;color:var(--tx2)}
+.pnl-bar{height:4px;background:var(--bd);border-radius:2px;margin-top:8px;overflow:hidden}
+.pnl-bar-inner{height:100%;border-radius:2px;transition:width .4s}
+.pnl-bar-inner.pos{background:linear-gradient(90deg,#16a34a,var(--green))}
+.pnl-bar-inner.neg{background:linear-gradient(90deg,#dc2626,var(--red))}
+
+/* HISTORY */
+.hist-filters{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.hist-stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:700px){.hist-stat-row{grid-template-columns:repeat(2,1fr)}}
+.hs-card{background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:12px 14px}
+.hs-v{font-size:22px;font-weight:900;margin-bottom:2px}
+.hs-l{font-size:10px;color:var(--tx3);font-weight:600;text-transform:uppercase;letter-spacing:.7px}
+.status-pill{font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px}
+.sp-WIN{background:#052e1a;color:#4ade80}.sp-LOSS{background:#3f0a0a;color:#f87171}.sp-TIMEOUT{background:#1c1400;color:#fbbf24}.sp-OPEN{background:#0c1a3b;color:#60a5fa}.sp-RE{background:#1e293b;color:#94a3b8}
+
+/* HEALTH */
+.health-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.hc{background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:14px;text-align:center}
+.hc-v{font-size:22px;font-weight:900;margin-bottom:4px}
+.hc-l{font-size:9px;color:var(--tx3);font-weight:600;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+.hs-ok{background:#052e1a;color:#4ade80;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;display:inline-block}
+.hs-warn{background:#1c1400;color:#fbbf24;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;display:inline-block}
+.hs-err{background:#3f0a0a;color:#f87171;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;display:inline-block}
+</style>
+</head>
+<body>
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="tb-logo">
+    <div class="tb-icon">⚡</div>
+    <div class="tb-name">梵天AI</div>
+    <span class="tb-badge">DEV</span>
+  </div>
+  <div class="tb-divider"></div>
+  <div class="kpi-strip">
+    <div class="kpi"><span class="kpi-l">NAV</span><span class="kpi-v" id="kpi-nav">--</span></div>
+    <div class="kpi"><span class="kpi-l">浮盈</span><span class="kpi-v" id="kpi-pnl" style="color:var(--green)">--</span></div>
+    <div class="kpi"><span class="kpi-l">信号</span><span class="kpi-v" id="kpi-sig" style="color:var(--orange)">0</span></div>
+    <div class="kpi"><span class="kpi-l">持仓</span><span class="kpi-v" id="kpi-pos">0</span></div>
+    <div class="kpi"><span class="kpi-l">胜率</span><span class="kpi-v" id="kpi-wr" style="color:var(--green)">--%</span></div>
+    <div class="kpi"><span class="kpi-l">体制</span><span class="kpi-v" id="kpi-regime">--</span></div>
+  </div>
+  <div class="tb-right">
+    <div class="cd-pill">刷新 <span class="cd-v" id="cd">60</span>s</div>
+    <div class="ws-pill"><div class="ws-dot" id="ws-dot"></div><span id="ws-txt">连接中</span></div>
+  </div>
+</div>
+
+<div id="app">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sb-section">
+      <div class="sb-label">监控</div>
+      <div class="sb-item active" onclick="nav('overview',this)"><span class="sb-icon">📊</span>概览<span class="sb-badge" id="sb-ov">—</span></div>
+      <div class="sb-item" onclick="nav('signals',this)"><span class="sb-icon">📡</span>信号监控<span class="sb-badge" id="sb-sig">0</span></div>
+      <div class="sb-item" onclick="nav('matrix',this)"><span class="sb-icon">🧩</span>体制矩阵<span class="sb-badge" id="sb-mat">0</span></div>
+      <div class="sb-item" onclick="nav('kline',this)"><span class="sb-icon">📈</span>K线Panel</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">账户</div>
+      <div class="sb-item" onclick="nav('positions',this)"><span class="sb-icon">💼</span>持仓PnL<span class="sb-badge" id="sb-pos">0</span></div>
+      <div class="sb-item" onclick="nav('history',this)"><span class="sb-icon">📋</span>历史记录<span class="sb-badge" id="sb-hist">0</span></div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">系统</div>
+      <div class="sb-item" onclick="nav('health',this)"><span class="sb-icon">💚</span>系统健康</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content">
+    <!-- 概览 -->
+    <div class="page active" id="pg-overview">
+      <div class="ov-grid">
+        <div class="ov-card sig"><div class="ov-val" id="ov-sig" style="color:var(--orange)">0</div><div class="ov-lbl">有效信号</div><div class="ov-sub" id="ov-sig-sub">Score ≥ 138</div></div>
+        <div class="ov-card wr"><div class="ov-val" id="ov-wr" style="color:var(--green)">--%</div><div class="ov-lbl">历史胜率</div><div class="ov-sub" id="ov-wr-sub">铁证数据</div></div>
+        <div class="ov-card health"><div class="ov-val" id="ov-scan" style="color:var(--blue)">0</div><div class="ov-lbl">扫描标的</div><div class="ov-sub" id="ov-scan-sub">上次耗时 --s</div></div>
+        <div class="ov-card scan"><div class="ov-val" id="ov-upd" style="color:var(--purple);font-size:18px">--:--</div><div class="ov-lbl">最后更新</div><div class="ov-sub">梵天核心输出</div></div>
+      </div>
+      <div class="regime-radar-row">
+        <div class="radar-card"><div style="font-size:10px;color:var(--tx3);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">体制分布雷达</div><svg id="radar-svg" width="180" height="180" viewBox="-95 -95 190 190"></svg></div>
+        <div class="card"><div class="card-header">📜 实时扫描日志</div><div class="log-wrap" id="scan-log"><div class="ll"><span class="lt">[--:--:--]</span> <span class="lm">等待连接...</span></div></div></div>
+      </div>
+    </div>
+
+    <!-- 信号监控 -->
+    <div class="page" id="pg-signals">
+      <div class="tbl-toolbar">
+        <span class="sec-title"><i></i>信号监控</span>
+        <button class="tbl-filter active" id="f-all" onclick="filterSig('all',this)">全部</button>
+        <button class="tbl-filter" id="f-valid" onclick="filterSig('valid',this)">仅有效信号</button>
+        <button class="tbl-filter" id="f-short" onclick="filterSig('short',this)">SHORT</button>
+        <button class="tbl-filter" id="f-long" onclick="filterSig('long',this)">LONG</button>
+      </div>
+      <div class="tbl-wrap">
+        <table class="dtbl">
+          <thead><tr><th>标的</th><th>方向</th><th>体制</th><th>Valid</th><th>Score</th><th>Grade</th><th>WR</th><th>R:R</th><th>价格</th><th>入场区</th><th>止损</th><th>TP1</th><th>FR</th><th>LSR</th><th>Vol$M</th><th>流动性</th><th>来源</th></tr></thead>
+          <tbody id="sig-tbody"><tr><td colspan="17" style="text-align:center;color:var(--tx3);padding:30px">等待数据...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 体制矩阵 -->
+    <div class="page" id="pg-matrix">
+      <div class="matrix-row">
+        <div class="radar-card" style="background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:14px">
+          <div style="font-size:10px;color:var(--tx3);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">体制雷达图</div>
+          <svg id="radar-svg2" width="180" height="180" viewBox="-95 -95 190 190"></svg>
+          <div style="margin-top:12px" id="regime-summary"></div>
+        </div>
+        <div class="tbl-wrap">
+          <table class="dtbl">
+            <thead><tr><th>标的</th><th>体制</th><th>方向</th><th>Score</th><th>Delta ▲▼</th><th>铁证WR</th><th>流动性</th><th>涨幅(顺势)</th></tr></thead>
+            <tbody id="matrix-tbody"><tr><td colspan="8" style="text-align:center;color:var(--tx3);padding:30px">等待数据...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- K线 -->
+    <div class="page" id="pg-kline">
+      <div class="kline-layout">
+        <div class="kline-sidebar" id="kline-list"><div style="padding:20px;color:var(--tx3);text-align:center;font-size:12px">暂无信号</div></div>
+        <div class="kline-main">
+          <div class="kline-hd" id="kline-hd">选择左侧信号查看K线图</div>
+          <div id="kline-box"><div class="kline-empty"><div style="font-size:32px;margin-bottom:8px">📈</div><div style="font-size:12px">点击左侧信号加载K线</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 持仓 -->
+    <div class="page" id="pg-positions">
+      <div class="pos-header-grid" id="pos-hdr"></div>
+      <div class="pos-cards" id="pos-cards"><div style="text-align:center;color:var(--tx3);padding:60px">暂无持仓</div></div>
+    </div>
+
+    <!-- 历史 -->
+    <div class="page" id="pg-history">
+      <div class="hist-stat-row" id="hist-stats"></div>
+      <div class="tbl-wrap">
+        <table class="dtbl">
+          <thead><tr><th>标的</th><th>方向</th><th>体制</th><th>WR</th><th>Score</th><th>入场价</th><th>现价/出场</th><th>顺势涨幅</th><th>状态</th><th>结果</th><th>来源</th><th>时间</th></tr></thead>
+          <tbody id="hist-tbody"><tr><td colspan="12" style="text-align:center;color:var(--tx3);padding:30px">暂无记录</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 健康 -->
+    <div class="page" id="pg-health">
+      <div class="health-grid" id="health-grid"></div>
+      <div class="sec-hd"><div class="sec-title"><i></i>扫描日志</div></div>
+      <div class="log-wrap" id="health-log" style="max-height:400px"><div class="ll"><span class="lt">[--:--:--]</span> <span class="lm">等待连接...</span></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Constants ──
+const IRON_WR={'BEAR_EARLY_SHORT':{wr:66.5,n:5896,good:true},'BEAR_TREND_SHORT':{wr:71.8,n:2413,good:true},'BULL_EARLY_LONG':{wr:64.4,n:5396,good:true},'BULL_TREND_LONG':{wr:70.3,n:3046,good:true},'BEAR_RECOVERY_LONG':{wr:72.5,n:430,good:true},'BULL_CORRECTION_SHORT':{wr:73.9,n:494,good:true},'BEAR_TREND_LONG':{wr:45.0,n:3322,good:false},'BULL_TREND_SHORT':{wr:47.7,n:4999,good:false}};
+function getWR(r,d){return IRON_WR[r+'_'+d]||null;}
+function fmt(v){if(!v||v==0)return'—';let n=parseFloat(v);if(isNaN(n))return'—';return n<0.01?n.toFixed(6):n<1?n.toFixed(4):n<100?n.toFixed(3):n.toFixed(2);}
+function fmtPct(v){let n=parseFloat(v);if(isNaN(n))return'—';let s=(n>=0?'+':'')+n.toFixed(2)+'%';return'<span style="color:'+(n>=0?'#22c55e':'#ef4444')+';font-weight:700">'+s+'</span>';}
+function regClr(r){if(!r)return'#64748b';if(r.includes('BULL'))return'#4ade80';if(r.includes('BEAR'))return'#f87171';return'#94a3b8';}
+function liqClr(l){return l==='HIGH'?'#22c55e':l==='MID'?'#60a5fa':'#f59e0b';}
+function deltaHTML(sym,sd){let d=sd&&sd[sym]||0;if(!d)return'<span style="color:var(--tx4)">—</span>';return d>0?'<span style="color:#22c55e">↑+'+d.toFixed(1)+'</span>':'<span style="color:#ef4444">↓'+d.toFixed(1)+'</span>';}
+
+// ── State ──
+let _s=[],_r=[],_p=[],_h=[],_hist=[],_sd={},_kSigs=[],_chart=null,_cd=60,_sigFilter='all',_logs=[],_ws;
+
+// ── Nav ──
+function nav(id,el){
+  document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(e=>e.classList.remove('active'));
+  document.getElementById('pg-'+id).classList.add('active');
+  if(el)el.classList.add('active');
+  if(id==='kline'&&_s.length) buildKlineList(_s);
+  if(id==='matrix') buildRadar2(_r);
+}
+
+// ── KPI Bar ──
+function updateKPI(d){
+  if(d.health){
+    const nav=d.health.find(h=>h.metric==='NAV');if(nav)document.getElementById('kpi-nav').textContent=nav.value;
+    const wr=d.health.find(h=>h.metric==='历史胜率');if(wr)document.getElementById('kpi-wr').textContent=wr.value.split(' ')[0];
+  }
+  if(d.signals!==undefined)document.getElementById('kpi-sig').textContent=d.signals.length;
+  if(d.positions!==undefined)document.getElementById('kpi-pos').textContent=d.positions.length;
+  if(d.positions){const pnl=d.positions.reduce((a,p)=>a+(p.uPnL||0),0);const el=document.getElementById('kpi-pnl');el.textContent=(pnl>=0?'+':'')+pnl.toFixed(2);el.style.color=pnl>=0?'#22c55e':'#ef4444';}
+  if(d.regime&&d.regime.length){
+    const cnt={};d.regime.forEach(r=>{if(r.regime)cnt[r.regime]=(cnt[r.regime]||0)+1;});
+    const dom=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0]||'--';
+    document.getElementById('kpi-regime').innerHTML='<span style="color:'+regClr(dom)+'">'+dom+'</span>';
+  }
+}
+
+// ── Overview ──
+function buildOverview(d){
+  if(d.signals!==undefined){document.getElementById('ov-sig').textContent=d.signals.length;document.getElementById('ov-sig-sub').textContent=d.signals.length>0?'🚨 有效信号':'Score ≥ 138';}
+  if(d.health){
+    const wr=d.health.find(h=>h.metric==='历史胜率');if(wr){document.getElementById('ov-wr').textContent=wr.value.split(' ')[0];document.getElementById('ov-wr-sub').textContent=wr.value;}
+    const sc=d.health.find(h=>h.metric==='扫描标的');if(sc)document.getElementById('ov-scan').textContent=sc.value;
+    const et=d.health.find(h=>h.metric==='扫描耗时');if(et)document.getElementById('ov-scan-sub').textContent='耗时 '+et.value;
+    const up=d.health.find(h=>h.metric==='最后更新');if(up)document.getElementById('ov-upd').textContent=up.value.replace(' UTC','');
+  }
+  if(d.regime) buildRadar(d.regime);
+}
+
+// ── Radar ──
+function drawRadar(svgId,regime){
+  const svg=document.getElementById(svgId);if(!svg)return;
+  const LABELS=['BULL_TREND','BEAR_TREND','BULL_EARLY','BEAR_EARLY','CHOP'];
+  const DISP=['牛势','熊势','牛初','熊初','震荡'];
+  const cnt={};LABELS.forEach(k=>cnt[k]=0);
+  (regime||[]).forEach(r=>{if(r.regime)LABELS.forEach(k=>{if(r.regime.startsWith(k))cnt[k]++;});});
+  const max=Math.max(...Object.values(cnt),1);
+  const pts=LABELS.map((k,i)=>{const a=(i/LABELS.length)*Math.PI*2-Math.PI/2;const rv=(cnt[k]/max)*72+5;return[Math.cos(a)*rv,Math.sin(a)*rv];});
+  const axPts=LABELS.map((_,i)=>{const a=(i/LABELS.length)*Math.PI*2-Math.PI/2;return[Math.cos(a)*80,Math.sin(a)*80];});
+  let h='';
+  [0.25,0.5,0.75,1].forEach(f=>h+='<polygon points="'+axPts.map(p=>(p[0]*f)+','+(p[1]*f)).join(' ')+'" fill="none" stroke="#1a2540" stroke-width="1"/>');
+  axPts.forEach((p,i)=>{h+='<line x1="0" y1="0" x2="'+p[0]+'" y2="'+p[1]+'" stroke="#1a2540" stroke-width="1"/>';h+='<text x="'+(p[0]*1.2)+'" y="'+(p[1]*1.2)+'" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-size="9">'+DISP[i]+'</text>';});
+  const clr=LABELS.map(k=>{if(k.includes('BULL'))return'#4ade80';if(k.includes('BEAR'))return'#f87171';return'#94a3b8';});
+  pts.forEach((p,i)=>h+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="4" fill="'+clr[i]+'" opacity="0.8"/>');
+  h+='<polygon points="'+pts.map(p=>p.join(',')).join(' ')+'" fill="#f9731620" stroke="#f97316" stroke-width="1.5" stroke-linejoin="round"/>';
+  svg.innerHTML=h;
+}
+function buildRadar(regime){drawRadar('radar-svg',regime);}
+function buildRadar2(regime){drawRadar('radar-svg2',regime);
+  // regime summary
+  const cnt={};(regime||[]).forEach(r=>{if(r.regime)cnt[r.regime]=(cnt[r.regime]||0)+1;});
+  const s=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).slice(0,5).map(k=>'<div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid #1a2540"><span style="color:'+regClr(k)+'">'+k+'</span><span style="color:var(--tx3)">'+cnt[k]+'</span></div>').join('');
+  document.getElementById('regime-summary').innerHTML=s;
+}
+
+// ── Log ──
+function addLog(msg,cls,dual){
+  const now=new Date().toLocaleTimeString('zh',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  const line='<div class="ll"><span class="lt">['+now+']</span> <span class="lm '+(cls||'')+'">'+msg+'</span></div>';
+  _logs.push(line);if(_logs.length>40)_logs=_logs.slice(-40);
+  ['scan-log','health-log'].forEach(id=>{const el=document.getElementById(id);if(el){el.innerHTML=_logs.join('');el.scrollTop=el.scrollHeight;}});
+}
+
+// ── Signal Table ──
+function filterSig(f,el){
+  _sigFilter=f;
+  document.querySelectorAll('.tbl-filter').forEach(e=>e.classList.remove('active'));
+  if(el)el.classList.add('active');
+  buildSigTable(_s,_sd);
+}
+function buildSigTable(signals,sd){
+  const tbody=document.getElementById('sig-tbody');
+  let rows=signals||[];
+  if(_sigFilter==='valid')rows=rows.filter(s=>s.valid==='True'||s.valid===true||parseFloat(s.score||0)>=138);
+  else if(_sigFilter==='short')rows=rows.filter(s=>s.direction==='SHORT');
+  else if(_sigFilter==='long')rows=rows.filter(s=>s.direction==='LONG');
+  rows=rows.slice().sort((a,b)=>parseFloat(b.score||0)-parseFloat(a.score||0));
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="17" style="text-align:center;color:var(--tx3);padding:30px">无数据</td></tr>';return;}
+  const is_valid=s=>s.valid==='True'||s.valid===true||parseFloat(s.score||0)>=138;
+  const rr=s=>(s.tp1&&s.entry_lo&&s.stop_loss)?Math.abs((parseFloat(s.tp1)-parseFloat(s.entry_lo))/(parseFloat(s.entry_lo)-parseFloat(s.stop_loss))).toFixed(2):'—';
+  tbody.innerHTML=rows.map(s=>{
+    const wr=getWR(s.regime,s.direction);
+    const v=is_valid(s);
+    return'<tr class="'+(v?'valid-row':'')+'"><td class="sym-c">'+s.symbol.replace('USDT','')+'</td><td><span class="dir-pill '+s.direction+'">'+s.direction+'</span></td><td style="color:'+regClr(s.regime)+';font-size:11px">'+s.regime+'</td><td><span class="valid-badge valid-'+(v?'true':'false')+'">'+(v?'✅ YES':'— NO')+'</span></td><td style="color:var(--orange);font-weight:800">'+parseFloat(s.score||0).toFixed(1)+'</td><td>'+parseFloat(s.grade||0).toFixed(0)+'</td><td>'+(wr?'<span style="color:'+(wr.good?'#22c55e':'#ef4444')+';font-weight:700">'+wr.wr+'%</span>':'—')+'</td><td>'+rr(s)+'</td><td>'+fmt(s.price)+'</td><td style="color:#60a5fa;font-size:10px">'+fmt(s.entry_lo)+'~'+fmt(s.entry_hi)+'</td><td style="color:#ef4444">'+fmt(s.stop_loss)+'</td><td style="color:#22c55e">'+fmt(s.tp1)+'</td><td>'+(s.fr||0)+'%</td><td>'+(s.lsr||0)+'</td><td>'+(s.vol||0)+'</td><td style="color:'+liqClr(s.liq)+'">'+s.liq+'</td><td style="font-size:9px;color:var(--tx3)">vantian_core</td></tr>';
+  }).join('');
+  document.getElementById('sb-sig').textContent=signals.length;
+}
+
+// ── Matrix ──
+function buildMatrix(regime,sd){
+  if(!regime||!regime.length)return;
+  document.getElementById('sb-mat').textContent=regime.length;
+  const rows=regime.slice().sort((a,b)=>parseFloat(b.score||0)-parseFloat(a.score||0));
+  document.getElementById('matrix-tbody').innerHTML=rows.map(r=>{
+    const wr=getWR(r.regime,r.direction);
+    const effPct=r.direction==='SHORT'?-(r.chg||0):(r.chg||0);
+    return'<tr><td style="font-weight:800">'+r.symbol.replace('USDT','')+'</td><td style="color:'+regClr(r.regime)+';font-size:11px;font-weight:600">'+r.regime+'</td><td><span class="dir-pill '+r.direction+'">'+r.direction+'</span></td><td style="color:var(--orange);font-weight:800">'+parseFloat(r.score||0).toFixed(1)+'</td><td>'+deltaHTML(r.symbol,sd)+'</td><td>'+(wr?'<span style="color:'+(wr.good?'#22c55e':'#ef4444')+'">'+wr.wr+'% <span style="color:var(--tx3);font-size:9px">n='+wr.n+'</span></span>':'—')+'</td><td style="color:'+liqClr(r.liq)+'">'+r.liq+'</td><td>'+fmtPct(effPct)+'</td></tr>';
+  }).join('');
+}
+
+// ── K-Line ──
+function buildKlineList(sigs){
+  _kSigs=sigs;
+  const el=document.getElementById('kline-list');
+  if(!sigs||!sigs.length){el.innerHTML='<div style="padding:20px;color:var(--tx3);text-align:center;font-size:12px">无信号可展示</div>';return;}
+  el.innerHTML=sigs.map((s,i)=>'<div class="kli" id="kli-'+i+'" onclick="loadKline('+i+')"><div class="kli-sym">'+s.symbol.replace('USDT','')+' <span class="dir-pill '+s.direction+'" style="font-size:9px;padding:1px 5px">'+s.direction+'</span></div><div class="kli-meta">'+s.regime+'<br>Score '+parseFloat(s.score||0).toFixed(0)+'</div></div>').join('');
+}
+async function loadKline(idx){
+  const s=_kSigs[idx];if(!s)return;
+  document.querySelectorAll('.kli').forEach(e=>e.classList.remove('active'));
+  const el=document.getElementById('kli-'+idx);if(el)el.classList.add('active');
+  document.getElementById('kline-hd').textContent=s.symbol+' · 1H · 近7天  |  入场:'+fmt(s.entry_lo)+'~'+fmt(s.entry_hi)+'  止损:'+fmt(s.stop_loss)+'  TP1:'+fmt(s.tp1);
+  const box=document.getElementById('kline-box');
+  box.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:400px;color:var(--tx3);font-size:12px">加载中...</div>';
+  try{
+    const resp=await fetch('https://fapi.binance.com/fapi/v1/klines?symbol='+s.symbol+'&interval=1h&limit=168');
+    const data=await resp.json();
+    const bars=data.map(k=>({time:Math.floor(k[0]/1000),open:parseFloat(k[1]),high:parseFloat(k[2]),low:parseFloat(k[3]),close:parseFloat(k[4])}));
+    box.innerHTML='';box.style.height='460px';
+    if(_chart){try{_chart.remove();}catch(e){}_chart=null;}
+    _chart=LightweightCharts.createChart(box,{layout:{background:{type:'solid',color:'#04090f'},textColor:'#94a3b8'},grid:{vertLines:{color:'#1a2540'},horzLines:{color:'#1a2540'}},crosshair:{mode:LightweightCharts.CrosshairMode.Normal},rightPriceScale:{borderColor:'#1a2540'},timeScale:{borderColor:'#1a2540',timeVisible:true},width:box.clientWidth,height:460});
+    const series=_chart.addSeries(LightweightCharts.CandlestickSeries,{upColor:'#22c55e',downColor:'#ef4444',borderUpColor:'#22c55e',borderDownColor:'#ef4444',wickUpColor:'#22c55e80',wickDownColor:'#ef444480'});
+    series.setData(bars);
+    const addLine=(val,clr,style)=>{if(!val||parseFloat(val)===0)return;const ls=_chart.addSeries(LightweightCharts.LineSeries,{color:clr,lineWidth:1,lineStyle:style});ls.setData([{time:bars[0].time,value:parseFloat(val)},{time:bars[bars.length-1].time,value:parseFloat(val)}]);};
+    addLine(s.entry_lo,'#22c55e88',2);addLine(s.entry_hi,'#22c55e44',2);addLine(s.stop_loss,'#ef4444',1);addLine(s.tp1,'#3b82f6',1);
+    _chart.timeScale().fitContent();
+  }catch(e){box.innerHTML='<div style="padding:20px;color:#ef4444;text-align:center">K线加载失败: '+e.message+'</div>';}
+}
+
+// ── Positions ──
+function buildPositions(positions,health){
+  document.getElementById('sb-pos').textContent=positions?positions.length:0;
+  document.getElementById('kpi-pos').textContent=positions?positions.length:0;
+  const hdr=document.getElementById('pos-hdr');
+  const totalPnL=(positions||[]).reduce((a,p)=>a+(p.uPnL||0),0);
+  const nav=health?health.find(h=>h.metric==='NAV'):null;
+  const avail=health?health.find(h=>h.metric==='可用余额'):null;
+  hdr.innerHTML='<div class="ov-card sig"><div class="ov-val" style="color:var(--blue)">'+(nav?nav.value:'--')+'</div><div class="ov-lbl">NAV</div></div><div class="ov-card wr"><div class="ov-val '+(totalPnL>=0?'":"' )+'" style="color:'+(totalPnL>=0?'#22c55e':'#ef4444');font-size:22px">'+(totalPnL>=0?'+':'')+totalPnL.toFixed(2)+'</div><div class="ov-lbl">总浮盈</div></div><div class="ov-card health"><div class="ov-val">'+(positions?positions.length:0)+'</div><div class="ov-lbl">持仓数</div></div><div class="ov-card scan"><div class="ov-val" style="color:var(--green)">'+(positions?positions.filter(p=>(p.uPnL||0)>0).length:0)+'</div><div class="ov-lbl">盈利仓位</div></div>';
+  const cards=document.getElementById('pos-cards');
+  if(!positions||!positions.length){cards.innerHTML='<div style="text-align:center;color:var(--tx3);padding:60px">暂无持仓</div>';return;}
+  cards.innerHTML=positions.map(p=>{
+    const pos=(p.uPnL||0)>=0;
+    const barW=Math.min(100,Math.abs(p.pnl_pct||0)*5);
+    return'<div class="pos-card '+(pos?'profit':'loss')+'"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="pc-sym">'+p.symbol.replace('USDT','')+'</div><span class="dir-pill '+p.direction+'" style="font-size:10px;padding:2px 7px">'+p.direction+'</span></div><div class="pc-pnl '+(pos?'pos':'neg')+'">'+(pos?'+':'')+( p.uPnL||0).toFixed(2)+'</div></div><div class="pc-rows"><div class="pc-row"><span class="pc-l">入场</span><span class="pc-v">'+fmt(p.entry)+'</span></div><div class="pc-row"><span class="pc-l">现价</span><span class="pc-v">'+fmt(p.cur_price)+'</span></div><div class="pc-row"><span class="pc-l">数量</span><span class="pc-v">'+p.amount+'</span></div><div class="pc-row"><span class="pc-l">收益率</span><span class="pc-v" style="color:'+(pos?'#22c55e':'#ef4444')+'">'+(pos?'+':'')+( p.pnl_pct||0).toFixed(2)+'%</span></div></div><div class="pnl-bar"><div class="pnl-bar-inner '+(pos?'pos':'neg')+'" style="width:'+barW+'%"></div></div></div>';
+  }).join('');
+}
+
+// ── History ──
+function buildHistory(history){
+  document.getElementById('sb-hist').textContent=history?history.length:0;
+  if(!history||!history.length)return;
+  const closed=history.filter(h=>h.status==='CLOSED');
+  const wins=closed.filter(h=>(h.result||'').includes('WIN'));
+  const wr=closed.length?Math.round(wins.length/closed.length*100):0;
+  const pnl=closed.reduce((a,h)=>a+(h.pnl||0),0);
+  const stats=document.getElementById('hist-stats');
+  stats.innerHTML='<div class="hs-card"><div class="hs-v">'+history.length+'</div><div class="hs-l">总记录</div></div><div class="hs-card"><div class="hs-v" style="color:'+(wr>=60?'#22c55e':'#ef4444')+'">'+wr+'%</div><div class="hs-l">历史胜率</div></div><div class="hs-card"><div class="hs-v" style="color:'+(pnl>=0?'#22c55e':'#ef4444')+'">'+(pnl>=0?'+':'')+pnl.toFixed(2)+'</div><div class="hs-l">已结算PnL</div></div><div class="hs-card"><div class="hs-v" style="color:var(--blue)">'+history.filter(h=>h.status==='OPEN').length+'</div><div class="hs-l">进行中</div></div>';
+  const tbody=document.getElementById('hist-tbody');
+  tbody.innerHTML=history.map(h=>{
+    const wr2=getWR(h.regime,h.direction);
+    const effPct=h.direction==='SHORT'?-(h.chg||0):(h.chg||0);
+    const st=h.status==='CLOSED'?(h.result||'CLOSED'):(h.status||'OPEN');
+    const stcls=st.includes('WIN')?'sp-WIN':st.includes('LOSS')?'sp-LOSS':st.includes('TIMEOUT')?'sp-TIMEOUT':st==='OPEN'?'sp-OPEN':'sp-RE';
+    return'<tr><td style="font-weight:800">'+( h.symbol||'').replace('USDT','')+'</td><td><span class="dir-pill '+(h.direction||'')+'">'+( h.direction||'')+'</span></td><td style="color:'+regClr(h.regime)+';font-size:10px">'+( h.regime||'—')+'</td><td>'+(wr2?'<span style="color:'+(wr2.good?'#22c55e':'#ef4444')+'">'+wr2.wr+'%</span>':'—')+'</td><td style="color:var(--orange);font-weight:700">'+parseFloat(h.score||0).toFixed(0)+'</td><td>'+fmt(h.entry_lo||h.entry)+'</td><td>'+fmt(h.cur_price||h.exit_price)+'</td><td>'+fmtPct(effPct)+'</td><td><span class="status-pill '+stcls+'">'+st+'</span></td><td style="color:'+(h.result==='WIN'?'#22c55e':h.result==='LOSS'?'#ef4444':'#475569')+'">'+( h.result||'—')+'</td><td style="font-size:9px;color:var(--tx3)">vantian_core</td><td style="font-size:10px;color:var(--tx3)">'+( h.ts||h.updated_at||'—')+'</td></tr>';
+  }).join('');
+}
+
+// ── Health ──
+function buildHealth(health){
+  if(!health||!health.length)return;
+  document.getElementById('health-grid').innerHTML=health.map(h=>{
+    const sc=h.status==='OK'||h.status==='✅'?'hs-ok':h.status.includes('⚠️')||h.status.includes('慢')?'hs-warn':h.status.includes('🚨')?'hs-warn':'hs-ok';
+    return'<div class="hc"><div class="hc-v">'+h.value+'</div><div class="hc-l">'+h.metric+'</div><span class="'+sc+'">'+h.status+'</span></div>';
+  }).join('');
+}
+
+// ── Countdown ──
+setInterval(()=>{_cd=Math.max(0,_cd-1);document.getElementById('cd').textContent=_cd;},1000);
+
+// ── WebSocket ──
+function connect(){
+  const proto=location.protocol==='https:'?'wss:':'ws:';
+  _ws=new WebSocket(proto+'//'+location.host+'/ws');
+  _ws.onopen=()=>{document.getElementById('ws-dot').className='ws-dot ok';document.getElementById('ws-txt').textContent='已连接';addLog('WebSocket 已连接','ok');};
+  _ws.onclose=()=>{document.getElementById('ws-dot').className='ws-dot';document.getElementById('ws-txt').textContent='重连中';addLog('断开，重连中...','warn');setTimeout(connect,3000);};
+  _ws.onerror=()=>addLog('连接错误','err');
+  _ws.onmessage=(e)=>{
+    try{
+      const d=JSON.parse(e.data);_cd=60;
+      if(d.score_delta)_sd=d.score_delta;
+      if(d.signals!==undefined){_s=d.signals||[];buildSigTable(_s,_sd);}
+      if(d.regime!==undefined){_r=d.regime||[];buildMatrix(_r,_sd);if(document.getElementById('pg-matrix').classList.contains('active'))buildRadar2(_r);}
+      if(d.positions!==undefined){_p=d.positions||[];buildPositions(_p,d.health);}
+      if(d.history!==undefined){_hist=d.history||[];buildHistory(_hist);}
+      if(d.health!==undefined){_h=d.health||[];buildHealth(_h);}
+      buildOverview(d);updateKPI(d);
+      addLog('数据刷新 | '+(_s.length)+'信号 | '+(_r.length)+'标的 | '+(_p.length)+'持仓',_s.length>0?'sig':'ok');
+    }catch(ex){addLog('解析错误: '+ex.message,'err');}
+  };
+}
+connect();
+</script>
+</body>
+</html>

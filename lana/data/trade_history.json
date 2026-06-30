@@ -1,0 +1,282 @@
+[
+  {
+    "id": "mock_0",
+    "symbol": "SOLUSDT",
+    "pnl": 2.35,
+    "score": 65,
+    "utc_hour": 7,
+    "close_time": 1778898162.8960996
+  },
+  {
+    "id": "mock_1",
+    "symbol": "AVAXUSDT",
+    "pnl": 2.19,
+    "score": 107,
+    "utc_hour": 17,
+    "close_time": 1778894562.8961084
+  },
+  {
+    "id": "mock_2",
+    "symbol": "SOLUSDT",
+    "pnl": -0.58,
+    "score": 55,
+    "utc_hour": 6,
+    "close_time": 1778890962.8961148
+  },
+  {
+    "id": "mock_3",
+    "symbol": "AVAXUSDT",
+    "pnl": 1.9,
+    "score": 95,
+    "utc_hour": 20,
+    "close_time": 1778887362.8961227
+  },
+  {
+    "id": "mock_4",
+    "symbol": "LINKUSDT",
+    "pnl": -1.05,
+    "score": 87,
+    "utc_hour": 8,
+    "close_time": 1778883762.8961265
+  },
+  {
+    "id": "mock_5",
+    "symbol": "SOLUSDT",
+    "pnl": 2.25,
+    "score": 71,
+    "utc_hour": 8,
+    "close_time": 1778880162.8961341
+  },
+  {
+    "id": "mock_6",
+    "symbol": "AVAXUSDT",
+    "pnl": 2.89,
+    "score": 71,
+    "utc_hour": 3,
+    "close_time": 1778876562.8961365
+  },
+  {
+    "id": "mock_7",
+    "symbol": "SOLUSDT",
+    "pnl": -0.74,
+    "score": 104,
+    "utc_hour": 11,
+    "close_time": 1778872962.896144
+  },
+  {
+    "id": "mock_8",
+    "symbol": "LINKUSDT",
+    "pnl": 2.52,
+    "score": 96,
+    "utc_hour": 14,
+    "close_time": 1778869362.896147
+  },
+  {
+    "id": "mock_9",
+    "symbol": "LINKUSDT",
+    "pnl": 2.93,
+    "score": 74,
+    "utc_hour": 2,
+    "close_time": 1778865762.8961494
+  },
+  {
+    "id": "mock_10",
+    "symbol": "LINKUSDT",
+    "pnl": 2.57,
+    "score": 89,
+    "utc_hour": 11,
+    "close_time": 1778862162.896152
+  },
+  {
+    "id": "mock_11",
+    "symbol": "LINKUSDT",
+    "pnl": 2.26,
+    "score": 52,
+    "utc_hour": 21,
+    "close_time": 1778858562.8961544
+  },
+  {
+    "id": "mock_12",
+    "symbol": "AVAXUSDT",
+    "pnl": 2.96,
+    "score": 104,
+    "utc_hour": 7,
+    "close_time": 1778854962.8961568
+  },
+  {
+    "id": "mock_13",
+    "symbol": "SOLUSDT",
+    "pnl": -1.19,
+    "score": 90,
+    "utc_hour": 11,
+    "close_time": 1778851362.896159
+  },
+  {
+    "id": "mock_14",
+    "symbol": "AVAXUSDT",
+    "pnl": 1.39,
+    "score": 92,
+    "utc_hour": 8,
+    "close_time": 1778847762.896161
+  },
+  {
+    "id": "mock_15",
+    "symbol": "SOLUSDT",
+    "pnl": 1.84,
+    "score": 65,
+    "utc_hour": 5,
+    "close_time": 1778844162.8961632
+  },
+  {
+    "id": "mock_16",
+    "symbol": "BNBUSDT",
+    "pnl": -1.17,
+    "score": 109,
+    "utc_hour": 20,
+    "close_time": 1778840562.8961656
+  },
+  {
+    "id": "mock_17",
+    "symbol": "LINKUSDT",
+    "pnl": 2.21,
+    "score": 103,
+    "utc_hour": 1,
+    "close_time": 1778836962.8961682
+  },
+  {
+    "id": "mock_18",
+    "symbol": "AVAXUSDT",
+    "pnl": 2.51,
+    "score": 75,
+    "utc_hour": 8,
+    "close_time": 1778833362.8961704
+  },
+  {
+    "id": "mock_19",
+    "symbol": "SOLUSDT",
+    "pnl": 2.78,
+    "score": 86,
+    "utc_hour": 22,
+    "close_time": 1778829762.8961744
+  },
+  {
+    "id": "mock_20",
+    "symbol": "DOGEUSDT",
+    "pnl": 2.14,
+    "score": 75,
+    "utc_hour": 20,
+    "close_time": 1778826162.8961766
+  },
+  {
+    "id": "mock_21",
+    "symbol": "BNBUSDT",
+    "pnl": 1.16,
+    "score": 65,
+    "utc_hour": 23,
+    "close_time": 1778822562.8961792
+  },
+  {
+    "id": "mock_22",
+    "symbol": "LINKUSDT",
+    "pnl": 2.37,
+    "score": 77,
+    "utc_hour": 18,
+    "close_time": 1778818962.896184
+  },
+  {
+    "id": "mock_23",
+    "symbol": "BNBUSDT",
+    "pnl": 1.05,
+    "score": 58,
+    "utc_hour": 16,
+    "close_time": 1778815362.896186
+  },
+  {
+    "id": "mock_24",
+    "symbol": "BNBUSDT",
+    "pnl": 2.39,
+    "score": 105,
+    "utc_hour": 3,
+    "close_time": 1778811762.8961885
+  },
+  {
+    "id": "mock_25",
+    "symbol": "AVAXUSDT",
+    "pnl": 2.48,
+    "score": 77,
+    "utc_hour": 19,
+    "close_time": 1778808162.8961904
+  },
+  {
+    "id": "mock_26",
+    "symbol": "SOLUSDT",
+    "pnl": -1.45,
+    "score": 79,
+    "utc_hour": 16,
+    "close_time": 1778804562.8961928
+  },
+  {
+    "id": "mock_27",
+    "symbol": "DOGEUSDT",
+    "pnl": 2.2,
+    "score": 57,
+    "utc_hour": 21,
+    "close_time": 1778800962.8961952
+  },
+  {
+    "id": "mock_28",
+    "symbol": "LINKUSDT",
+    "pnl": 2.42,
+    "score": 71,
+    "utc_hour": 3,
+    "close_time": 1778797362.8961973
+  },
+  {
+    "id": "mock_29",
+    "symbol": "DOGEUSDT",
+    "pnl": -0.9,
+    "score": 50,
+    "utc_hour": 23,
+    "close_time": 1778793762.8961997
+  },
+  {
+    "id": "mock_30",
+    "symbol": "DOGEUSDT",
+    "pnl": 1.77,
+    "score": 56,
+    "utc_hour": 20,
+    "close_time": 1778790162.896202
+  },
+  {
+    "id": "mock_31",
+    "symbol": "DOGEUSDT",
+    "pnl": 0.88,
+    "score": 98,
+    "utc_hour": 5,
+    "close_time": 1778786562.8962042
+  },
+  {
+    "id": "mock_32",
+    "symbol": "LINKUSDT",
+    "pnl": 2.0,
+    "score": 81,
+    "utc_hour": 0,
+    "close_time": 1778782962.8962069
+  },
+  {
+    "id": "mock_33",
+    "symbol": "SOLUSDT",
+    "pnl": 2.7,
+    "score": 103,
+    "utc_hour": 9,
+    "close_time": 1778779362.8962092
+  },
+  {
+    "id": "mock_34",
+    "symbol": "AVAXUSDT",
+    "pnl": 1.1,
+    "score": 86,
+    "utc_hour": 2,
+    "close_time": 1778775762.8962111
+  }
+]

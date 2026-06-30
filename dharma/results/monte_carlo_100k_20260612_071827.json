@@ -1,0 +1,588 @@
+{
+  "_meta": {
+    "ts": "20260612_071827",
+    "version": "monte_carlo_100k_v1",
+    "n_trials_per_group": 25000,
+    "oos_from": "2024-01-01",
+    "total_trials": 100000,
+    "elapsed_s": 389.7
+  },
+  "results": {
+    "BTCUSDT": {
+      "SHORT": {
+        "total_trials": 18134,
+        "robust_count": 9650,
+        "robust_pct": 53.21,
+        "median_params": {
+          "sl": 1.2,
+          "tp": 3.34,
+          "rsi": 54.5,
+          "hold": 67
+        },
+        "sl_zone": {
+          "best_range": "(1.2, 1.8]",
+          "count": 2936,
+          "pct_in_best": 30.4
+        },
+        "tp_zone": {
+          "best_range": "(3.5, 5.0]",
+          "count": 4260,
+          "pct_in_best": 44.1
+        },
+        "rsi_zone": {
+          "best_range": "(50, 60]",
+          "count": 4851,
+          "pct_in_best": 50.3
+        },
+        "hold_zone": {
+          "best_range": "(24, 48]",
+          "count": 2382,
+          "pct_in_best": 24.7
+        },
+        "top10": [
+          {
+            "sl": 0.69,
+            "tp": 2.83,
+            "rsi": 66.9,
+            "hold": 74,
+            "is_pf": 1.9329,
+            "is_wr": 0.3311,
+            "oos_pf": 1.5799,
+            "oos_wr": 0.2745,
+            "oos_n": 51
+          },
+          {
+            "sl": 0.67,
+            "tp": 3.79,
+            "rsi": 62.6,
+            "hold": 96,
+            "is_pf": 1.7993,
+            "is_wr": 0.2605,
+            "oos_pf": 1.6243,
+            "oos_wr": 0.2471,
+            "oos_n": 85
+          },
+          {
+            "sl": 0.69,
+            "tp": 1.98,
+            "rsi": 66.9,
+            "hold": 40,
+            "is_pf": 1.9223,
+            "is_wr": 0.404,
+            "oos_pf": 1.5198,
+            "oos_wr": 0.3462,
+            "oos_n": 52
+          },
+          {
+            "sl": 0.67,
+            "tp": 1.24,
+            "rsi": 66.9,
+            "hold": 113,
+            "is_pf": 2.0554,
+            "is_wr": 0.5515,
+            "oos_pf": 1.3994,
+            "oos_wr": 0.434,
+            "oos_n": 53
+          },
+          {
+            "sl": 0.63,
+            "tp": 3.78,
+            "rsi": 66.5,
+            "hold": 59,
+            "is_pf": 1.8431,
+            "is_wr": 0.225,
+            "oos_pf": 1.555,
+            "oos_wr": 0.2105,
+            "oos_n": 57
+          },
+          {
+            "sl": 0.7,
+            "tp": 2.91,
+            "rsi": 66.9,
+            "hold": 23,
+            "is_pf": 2.0861,
+            "is_wr": 0.3381,
+            "oos_pf": 1.3525,
+            "oos_wr": 0.25,
+            "oos_n": 51
+          },
+          {
+            "sl": 0.5,
+            "tp": 4.36,
+            "rsi": 62.4,
+            "hold": 91,
+            "is_pf": 1.8636,
+            "is_wr": 0.1796,
+            "oos_pf": 1.4846,
+            "oos_wr": 0.1649,
+            "oos_n": 97
+          },
+          {
+            "sl": 0.63,
+            "tp": 3.64,
+            "rsi": 66.7,
+            "hold": 100,
+            "is_pf": 1.889,
+            "is_wr": 0.2342,
+            "oos_pf": 1.4513,
+            "oos_wr": 0.2,
+            "oos_n": 55
+          },
+          {
+            "sl": 0.61,
+            "tp": 1.24,
+            "rsi": 67.1,
+            "hold": 50,
+            "is_pf": 2.0336,
+            "is_wr": 0.5223,
+            "oos_pf": 1.3443,
+            "oos_wr": 0.4038,
+            "oos_n": 52
+          },
+          {
+            "sl": 0.67,
+            "tp": 3.09,
+            "rsi": 66.8,
+            "hold": 41,
+            "is_pf": 2.1399,
+            "is_wr": 0.3092,
+            "oos_pf": 1.2773,
+            "oos_wr": 0.2157,
+            "oos_n": 52
+          }
+        ]
+      },
+      "LONG": {
+        "total_trials": 19733,
+        "robust_count": 6473,
+        "robust_pct": 32.8,
+        "median_params": {
+          "sl": 1.35,
+          "tp": 2.97,
+          "rsi": 39.8,
+          "hold": 86
+        },
+        "sl_zone": {
+          "best_range": "(1.2, 1.8]",
+          "count": 2156,
+          "pct_in_best": 33.3
+        },
+        "tp_zone": {
+          "best_range": "(2.5, 3.5]",
+          "count": 2855,
+          "pct_in_best": 44.1
+        },
+        "rsi_zone": {
+          "best_range": "(20, 40]",
+          "count": 3311,
+          "pct_in_best": 51.2
+        },
+        "hold_zone": {
+          "best_range": "(96, 120]",
+          "count": 2243,
+          "pct_in_best": 34.7
+        },
+        "top10": [
+          {
+            "sl": 1.76,
+            "tp": 2.54,
+            "rsi": 34.0,
+            "hold": 117,
+            "is_pf": 1.446,
+            "is_wr": 0.5018,
+            "oos_pf": 1.6154,
+            "oos_wr": 0.52,
+            "oos_n": 101
+          },
+          {
+            "sl": 1.8,
+            "tp": 2.46,
+            "rsi": 34.7,
+            "hold": 106,
+            "is_pf": 1.3324,
+            "is_wr": 0.4966,
+            "oos_pf": 1.7431,
+            "oos_wr": 0.5392,
+            "oos_n": 104
+          },
+          {
+            "sl": 1.87,
+            "tp": 2.54,
+            "rsi": 36.3,
+            "hold": 100,
+            "is_pf": 1.328,
+            "is_wr": 0.4969,
+            "oos_pf": 1.7042,
+            "oos_wr": 0.5455,
+            "oos_n": 113
+          },
+          {
+            "sl": 1.67,
+            "tp": 2.49,
+            "rsi": 35.7,
+            "hold": 109,
+            "is_pf": 1.2701,
+            "is_wr": 0.4641,
+            "oos_pf": 1.7807,
+            "oos_wr": 0.5234,
+            "oos_n": 110
+          },
+          {
+            "sl": 1.93,
+            "tp": 2.46,
+            "rsi": 36.9,
+            "hold": 105,
+            "is_pf": 1.3797,
+            "is_wr": 0.5196,
+            "oos_pf": 1.6298,
+            "oos_wr": 0.547,
+            "oos_n": 120
+          },
+          {
+            "sl": 1.77,
+            "tp": 2.63,
+            "rsi": 36.6,
+            "hold": 100,
+            "is_pf": 1.3383,
+            "is_wr": 0.479,
+            "oos_pf": 1.6441,
+            "oos_wr": 0.5089,
+            "oos_n": 114
+          },
+          {
+            "sl": 1.9,
+            "tp": 2.44,
+            "rsi": 36.4,
+            "hold": 84,
+            "is_pf": 1.3525,
+            "is_wr": 0.5149,
+            "oos_pf": 1.6224,
+            "oos_wr": 0.5455,
+            "oos_n": 114
+          },
+          {
+            "sl": 1.84,
+            "tp": 2.58,
+            "rsi": 37.3,
+            "hold": 96,
+            "is_pf": 1.3318,
+            "is_wr": 0.4809,
+            "oos_pf": 1.6356,
+            "oos_wr": 0.5254,
+            "oos_n": 121
+          },
+          {
+            "sl": 1.93,
+            "tp": 2.37,
+            "rsi": 34.6,
+            "hold": 110,
+            "is_pf": 1.3956,
+            "is_wr": 0.5267,
+            "oos_pf": 1.5476,
+            "oos_wr": 0.5437,
+            "oos_n": 104
+          },
+          {
+            "sl": 2.09,
+            "tp": 2.59,
+            "rsi": 34.7,
+            "hold": 97,
+            "is_pf": 1.4779,
+            "is_wr": 0.5387,
+            "oos_pf": 1.4545,
+            "oos_wr": 0.52,
+            "oos_n": 102
+          }
+        ]
+      }
+    },
+    "ETHUSDT": {
+      "SHORT": {
+        "total_trials": 16912,
+        "robust_count": 12154,
+        "robust_pct": 71.87,
+        "median_params": {
+          "sl": 1.2,
+          "tp": 3.11,
+          "rsi": 58.7,
+          "hold": 68
+        },
+        "sl_zone": {
+          "best_range": "(1.2, 1.8]",
+          "count": 3579,
+          "pct_in_best": 29.4
+        },
+        "tp_zone": {
+          "best_range": "(3.5, 5.0]",
+          "count": 4543,
+          "pct_in_best": 37.4
+        },
+        "rsi_zone": {
+          "best_range": "(60, 70]",
+          "count": 5376,
+          "pct_in_best": 44.2
+        },
+        "hold_zone": {
+          "best_range": "(48, 72]",
+          "count": 3067,
+          "pct_in_best": 25.2
+        },
+        "top10": [
+          {
+            "sl": 0.53,
+            "tp": 2.85,
+            "rsi": 69.3,
+            "hold": 113,
+            "is_pf": 2.7681,
+            "is_wr": 0.3288,
+            "oos_pf": 3.1221,
+            "oos_wr": 0.3654,
+            "oos_n": 52
+          },
+          {
+            "sl": 0.56,
+            "tp": 4.47,
+            "rsi": 68.9,
+            "hold": 92,
+            "is_pf": 2.7336,
+            "is_wr": 0.2286,
+            "oos_pf": 2.9801,
+            "oos_wr": 0.2642,
+            "oos_n": 55
+          },
+          {
+            "sl": 0.58,
+            "tp": 2.9,
+            "rsi": 69.4,
+            "hold": 118,
+            "is_pf": 2.9201,
+            "is_wr": 0.3472,
+            "oos_pf": 2.7815,
+            "oos_wr": 0.3462,
+            "oos_n": 52
+          },
+          {
+            "sl": 0.55,
+            "tp": 2.86,
+            "rsi": 69.1,
+            "hold": 67,
+            "is_pf": 2.7674,
+            "is_wr": 0.3333,
+            "oos_pf": 2.8688,
+            "oos_wr": 0.3704,
+            "oos_n": 55
+          },
+          {
+            "sl": 0.53,
+            "tp": 2.6,
+            "rsi": 69.6,
+            "hold": 49,
+            "is_pf": 2.599,
+            "is_wr": 0.3385,
+            "oos_pf": 2.9894,
+            "oos_wr": 0.3725,
+            "oos_n": 52
+          },
+          {
+            "sl": 0.5,
+            "tp": 4.14,
+            "rsi": 69.4,
+            "hold": 92,
+            "is_pf": 2.4113,
+            "is_wr": 0.2121,
+            "oos_pf": 3.2166,
+            "oos_wr": 0.2941,
+            "oos_n": 52
+          },
+          {
+            "sl": 0.53,
+            "tp": 3.65,
+            "rsi": 68.8,
+            "hold": 79,
+            "is_pf": 2.218,
+            "is_wr": 0.2329,
+            "oos_pf": 3.4456,
+            "oos_wr": 0.3276,
+            "oos_n": 59
+          },
+          {
+            "sl": 0.58,
+            "tp": 3.27,
+            "rsi": 69.4,
+            "hold": 116,
+            "is_pf": 2.5813,
+            "is_wr": 0.2941,
+            "oos_pf": 2.9465,
+            "oos_wr": 0.3333,
+            "oos_n": 51
+          },
+          {
+            "sl": 0.55,
+            "tp": 2.32,
+            "rsi": 69.6,
+            "hold": 69,
+            "is_pf": 2.5237,
+            "is_wr": 0.3731,
+            "oos_pf": 2.9745,
+            "oos_wr": 0.4038,
+            "oos_n": 52
+          },
+          {
+            "sl": 0.57,
+            "tp": 4.02,
+            "rsi": 69.2,
+            "hold": 108,
+            "is_pf": 2.455,
+            "is_wr": 0.2388,
+            "oos_pf": 3.0562,
+            "oos_wr": 0.3137,
+            "oos_n": 52
+          }
+        ]
+      },
+      "LONG": {
+        "total_trials": 18884,
+        "robust_count": 3402,
+        "robust_pct": 18.02,
+        "median_params": {
+          "sl": 1.54,
+          "tp": 2.96,
+          "rsi": 36.9,
+          "hold": 91
+        },
+        "sl_zone": {
+          "best_range": "(1.8, 2.5]",
+          "count": 1083,
+          "pct_in_best": 31.8
+        },
+        "tp_zone": {
+          "best_range": "(2.5, 3.5]",
+          "count": 1605,
+          "pct_in_best": 47.2
+        },
+        "rsi_zone": {
+          "best_range": "(20, 40]",
+          "count": 2350,
+          "pct_in_best": 69.1
+        },
+        "hold_zone": {
+          "best_range": "(96, 120]",
+          "count": 1433,
+          "pct_in_best": 42.1
+        },
+        "top10": [
+          {
+            "sl": 1.24,
+            "tp": 1.51,
+            "rsi": 28.3,
+            "hold": 71,
+            "is_pf": 1.1132,
+            "is_wr": 0.4731,
+            "oos_pf": 1.5459,
+            "oos_wr": 0.5455,
+            "oos_n": 66
+          },
+          {
+            "sl": 1.1,
+            "tp": 1.92,
+            "rsi": 29.2,
+            "hold": 114,
+            "is_pf": 1.2974,
+            "is_wr": 0.4103,
+            "oos_pf": 1.2832,
+            "oos_wr": 0.4051,
+            "oos_n": 79
+          },
+          {
+            "sl": 0.69,
+            "tp": 3.07,
+            "rsi": 29.7,
+            "hold": 94,
+            "is_pf": 1.1546,
+            "is_wr": 0.2037,
+            "oos_pf": 1.4346,
+            "oos_wr": 0.2222,
+            "oos_n": 90
+          },
+          {
+            "sl": 0.81,
+            "tp": 3.46,
+            "rsi": 29.8,
+            "hold": 85,
+            "is_pf": 1.1311,
+            "is_wr": 0.205,
+            "oos_pf": 1.4604,
+            "oos_wr": 0.2262,
+            "oos_n": 84
+          },
+          {
+            "sl": 0.65,
+            "tp": 3.44,
+            "rsi": 30.1,
+            "hold": 81,
+            "is_pf": 1.128,
+            "is_wr": 0.1767,
+            "oos_pf": 1.4611,
+            "oos_wr": 0.202,
+            "oos_n": 99
+          },
+          {
+            "sl": 0.78,
+            "tp": 2.94,
+            "rsi": 30.1,
+            "hold": 88,
+            "is_pf": 1.3224,
+            "is_wr": 0.2441,
+            "oos_pf": 1.2426,
+            "oos_wr": 0.2308,
+            "oos_n": 91
+          },
+          {
+            "sl": 0.7,
+            "tp": 3.37,
+            "rsi": 29.7,
+            "hold": 72,
+            "is_pf": 1.1383,
+            "is_wr": 0.1916,
+            "oos_pf": 1.4388,
+            "oos_wr": 0.2093,
+            "oos_n": 87
+          },
+          {
+            "sl": 0.66,
+            "tp": 4.39,
+            "rsi": 31.8,
+            "hold": 109,
+            "is_pf": 1.2026,
+            "is_wr": 0.157,
+            "oos_pf": 1.3605,
+            "oos_wr": 0.1727,
+            "oos_n": 111
+          },
+          {
+            "sl": 0.71,
+            "tp": 4.53,
+            "rsi": 30.3,
+            "hold": 117,
+            "is_pf": 1.1577,
+            "is_wr": 0.1493,
+            "oos_pf": 1.412,
+            "oos_wr": 0.1839,
+            "oos_n": 88
+          },
+          {
+            "sl": 1.1,
+            "tp": 1.73,
+            "rsi": 29.7,
+            "hold": 100,
+            "is_pf": 1.1999,
+            "is_wr": 0.4218,
+            "oos_pf": 1.3619,
+            "oos_wr": 0.4512,
+            "oos_n": 82
+          }
+        ]
+      }
+    }
+  }
+}

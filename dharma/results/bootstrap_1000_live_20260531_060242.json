@@ -1,0 +1,23 @@
+{
+  "tag": "20260531_060242",
+  "method": "bootstrap_1000_live_signals",
+  "system": "brahma_v6.1",
+  "data_quality": "clean_52_no_legacy",
+  "n_triggered": 52,
+  "n_tp": 42,
+  "n_sl": 10,
+  "base_wr": 0.8076923076923077,
+  "mc_wr_mean": 80.83076923076923,
+  "mc_wr_p5": 71.15384615384616,
+  "mc_wr_p50": 80.76923076923077,
+  "mc_wr_p95": 90.38461538461539,
+  "mc_wr_ci95": [
+    69.23076923076923,
+    90.38461538461539
+  ],
+  "mc_pf_mean": 19.56138427282004,
+  "mc_pf_p5": 10.324355587917994,
+  "mc_pf_p50": 17.71896618857742,
+  "verdict": "DEPLOYABLE",
+  "note": "基于干净52条实盘信号（排除216条历史污染），B2 v2+StructureGate+BEAR_TREND封锁"
+}

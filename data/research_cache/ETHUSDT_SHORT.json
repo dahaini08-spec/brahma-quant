@@ -1,0 +1,27 @@
+{
+  "score": 0,
+  "sources": [
+    "timesfm_lite"
+  ],
+  "reason": "TimesFM-Lite: p_dir=0.52 conf=LOW pred=1531.40 Q10=1459.39~Q90=1613.41",
+  "details": {
+    "timesfm_lite": {
+      "score": 0.2,
+      "p_direction": 0.52,
+      "confidence": "LOW",
+      "pred_price": 1531.4,
+      "q10": 1459.39,
+      "q25": 1494.53,
+      "q75": 1575.48,
+      "q90": 1613.41,
+      "band_pct": 9.72,
+      "r_sq": 0.591,
+      "vol_h": 62.02,
+      "regime_coeff": 0.8
+    }
+  },
+  "ts": 1782813533.7068982,
+  "expires": 1782817133.7068985,
+  "symbol": "ETHUSDT",
+  "direction": "SHORT"
+}

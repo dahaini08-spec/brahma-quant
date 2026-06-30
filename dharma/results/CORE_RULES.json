@@ -1,0 +1,410 @@
+{
+  "generated": "2026-05-26T09:37:38.489523",
+  "rules": [
+    {
+      "id": "R01",
+      "name": "RSI_1H极超卖做多(<20)",
+      "bootstrap": {
+        "mean": 0.2862,
+        "ci_low": 0.2423,
+        "ci_high": 0.3325,
+        "std": 0.0227,
+        "n": 555,
+        "grade": "🔴无效",
+        "p_value": 0.0
+      },
+      "permutation": {
+        "p_value": 0.0,
+        "observed_wr": 0.2865,
+        "null_mean": 0.4999,
+        "null_std": 0.02125,
+        "significant": true,
+        "significance_level": "***"
+      },
+      "universal_score": {
+        "total": 50.0,
+        "level": "B",
+        "label": "✅B级 参考有效",
+        "breakdown": {
+          "wr_score": 0.0,
+          "n_score": 20.0,
+          "sig_score": 20.0,
+          "stab_score": 5.0,
+          "gen_score": 5.0
+        }
+      },
+      "profit_factor": 2.0274,
+      "kelly_fraction": 0.0,
+      "n": 555,
+      "rule": "BEAR_EARLY+SHORT 是系统核心Alpha，实盘WR=80%（n=10 BTC）/ WR=86%（n=12 DOGE）",
+      "updated": "2026-06-07",
+      "source": "live_signal_log n=30 结算"
+    },
+    {
+      "id": "R02",
+      "name": "RSI_1H超卖做多(<25)",
+      "bootstrap": {
+        "mean": 0.248,
+        "ci_low": 0.2266,
+        "ci_high": 0.2704,
+        "std": 0.0112,
+        "n": 2088,
+        "grade": "🔴无效",
+        "p_value": 0.0
+      },
+      "permutation": {
+        "p_value": 0.0,
+        "observed_wr": 0.2481,
+        "null_mean": 0.4998,
+        "null_std": 0.0109,
+        "significant": true,
+        "significance_level": "***"
+      },
+      "universal_score": {
+        "total": 50.0,
+        "level": "B",
+        "label": "✅B级 参考有效",
+        "breakdown": {
+          "wr_score": 0.0,
+          "n_score": 20.0,
+          "sig_score": 20.0,
+          "stab_score": 5.0,
+          "gen_score": 5.0
+        }
+      },
+      "profit_factor": 1.4154,
+      "kelly_fraction": 0.0,
+      "n": 2088,
+      "rule": "BEAR_TREND+SHORT 谨慎，ETH/BEAR_TREND被封禁（WR=0%），BTC/BEAR_TREND可开（门槛提至160+）",
+      "updated": "2026-06-07",
+      "source": "live_signal_log n=30 结算"
+    },
+    {
+      "id": "R03",
+      "name": "RSI_1H超买做空(>75)",
+      "bootstrap": {
+        "mean": 0.2582,
+        "ci_low": 0.2367,
+        "ci_high": 0.2794,
+        "std": 0.0109,
+        "n": 2312,
+        "grade": "🔴无效",
+        "p_value": 0.0
+      },
+      "permutation": {
+        "p_value": 0.0,
+        "observed_wr": 0.2582,
+        "null_mean": 0.4998,
+        "null_std": 0.01018,
+        "significant": true,
+        "significance_level": "***"
+      },
+      "universal_score": {
+        "total": 50.0,
+        "level": "B",
+        "label": "✅B级 参考有效",
+        "breakdown": {
+          "wr_score": 0.0,
+          "n_score": 20.0,
+          "sig_score": 20.0,
+          "stab_score": 5.0,
+          "gen_score": 5.0
+        }
+      },
+      "profit_factor": 0.6552,
+      "kelly_fraction": 0.0,
+      "n": 2312,
+      "rule": "structure_grade≥70(A级) 胜率显著高于grade<50，GapGate 1.5~4% WR=100%",
+      "updated": "2026-06-07",
+      "source": "live_signal_log n=30 结算"
+    },
+    {
+      "id": "R04",
+      "name": "RSI极端+低ATR(<33%)",
+      "bootstrap": {
+        "mean": 0.2646,
+        "ci_low": 0.239,
+        "ci_high": 0.2922,
+        "std": 0.0138,
+        "n": 1424,
+        "grade": "🔴无效",
+        "p_value": 0.0
+      },
+      "permutation": {
+        "p_value": 0.0,
+        "observed_wr": 0.2647,
+        "null_mean": 0.5,
+        "null_std": 0.01303,
+        "significant": true,
+        "significance_level": "***"
+      },
+      "universal_score": {
+        "total": 50.0,
+        "level": "B",
+        "label": "✅B级 参考有效",
+        "breakdown": {
+          "wr_score": 0.0,
+          "n_score": 20.0,
+          "sig_score": 20.0,
+          "stab_score": 5.0,
+          "gen_score": 5.0
+        }
+      },
+      "profit_factor": 0.8056,
+      "kelly_fraction": 0.0,
+      "n": 1424,
+      "rule": "BEAR_RECOVERY 黑名单体制，实盘WR=11%（n=28），永不开单",
+      "updated": "2026-06-07",
+      "source": "live_signal_log n=30 结算"
+    },
+    {
+      "id": "R05",
+      "name": "RSI极端+低ATR+非黑名单",
+      "bootstrap": {
+        "mean": 0.2933,
+        "ci_low": 0.2591,
+        "ci_high": 0.3288,
+        "std": 0.0176,
+        "n": 943,
+        "grade": "🔴无效",
+        "p_value": 0.0
+      },
+      "permutation": {
+        "p_value": 0.0,
+        "observed_wr": 0.2937,
+        "null_mean": 0.4999,
+        "null_std": 0.01618,
+        "significant": true,
+        "significance_level": "***"
+      },
+      "universal_score": {
+        "total": 50.0,
+        "level": "B",
+        "label": "✅B级 参考有效",
+        "breakdown": {
+          "wr_score": 0.0,
+          "n_score": 20.0,
+          "sig_score": 20.0,
+          "stab_score": 5.0,
+          "gen_score": 5.0
+        }
+      },
+      "profit_factor": 0.8687,
+      "kelly_fraction": 0.0,
+      "n": 943,
+      "rule": "SOL/BEAR_EARLY WR=0%（n=3），禁止；SOL/CHOP_LOW WR=100%（n=4），正常开单",
+      "updated": "2026-06-07",
+      "source": "live_signal_log n=30 结算"
+    },
+    {
+      "id": "R06",
+      "name": "CHOP_HIGH+RSI极端",
+      "bootstrap": {
+        "mean": 0.2717,
+        "ci_low": 0.2412,
+        "ci_high": 0.304,
+        "std": 0.0159,
+        "n": 1138,
+        "grade": "🔴无效",
+        "p_value": 0.0
+      },
+      "permutation": {
+        "p_value": 0.0,
+        "observed_wr": 0.2715,
+        "null_mean": 0.5001,
+        "null_std": 0.01464,
+        "significant": true,
+        "significance_level": "***"
+      },
+      "universal_score": {
+        "total": 50.0,
+        "level": "B",
+        "label": "✅B级 参考有效",
+        "breakdown": {
+          "wr_score": 0.0,
+          "n_score": 20.0,
+          "sig_score": 20.0,
+          "stab_score": 5.0,
+          "gen_score": 5.0
+        }
+      },
+      "profit_factor": 1.1351,
+      "kelly_fraction": 0.0,
+      "n": 1138,
+      "rule": "CHOP_HIGH做空高风险：实盘n=1 WR=0%，评分需≥160才入场",
+      "updated": "2026-06-07",
+      "source": "live_signal_log n=30 结算"
+    },
+    {
+      "id": "R07",
+      "name": "CHOP_HIGH+RSI极端+低ATR+非黑名单",
+      "bootstrap": {
+        "mean": 0.3286,
+        "ci_low": 0.2679,
+        "ci_high": 0.3884,
+        "std": 0.0316,
+        "n": 320,
+        "grade": "🔴无效",
+        "p_value": 0.0
+      },
+      "permutation": {
+        "p_value": 0.0,
+        "observed_wr": 0.3281,
+        "null_mean": 0.5004,
+        "null_std": 0.02801,
+        "significant": true,
+        "significance_level": "***"
+      },
+      "universal_score": {
+        "total": 50.0,
+        "level": "B",
+        "label": "✅B级 参考有效",
+        "breakdown": {
+          "wr_score": 0.0,
+          "n_score": 20.0,
+          "sig_score": 20.0,
+          "stab_score": 5.0,
+          "gen_score": 5.0
+        }
+      },
+      "profit_factor": 0.8451,
+      "kelly_fraction": 0.0,
+      "n": 320,
+      "rule": "gap<0.5% WR=3%（GapGate正确封禁）；gap1.5~4% WR=100%（A级甜点区）",
+      "updated": "2026-06-07",
+      "source": "live_signal_log n=30 结算"
+    },
+    {
+      "id": "R08",
+      "name": "评分>=13+RSI极端",
+      "bootstrap": {
+        "mean": 0.2545,
+        "ci_low": 0.2279,
+        "ci_high": 0.2808,
+        "std": 0.0136,
+        "n": 1486,
+        "grade": "🔴无效",
+        "p_value": 0.0
+      },
+      "permutation": {
+        "p_value": 0.0,
+        "observed_wr": 0.2544,
+        "null_mean": 0.4999,
+        "null_std": 0.01299,
+        "significant": true,
+        "significance_level": "***"
+      },
+      "universal_score": {
+        "total": 50.0,
+        "level": "B",
+        "label": "✅B级 参考有效",
+        "breakdown": {
+          "wr_score": 0.0,
+          "n_score": 20.0,
+          "sig_score": 20.0,
+          "stab_score": 5.0,
+          "gen_score": 5.0
+        }
+      },
+      "profit_factor": 0.9963,
+      "kelly_fraction": 0.0,
+      "n": 1486,
+      "rule": "DOGE/BEAR_EARLY 是系统最强标的：n=12 WR=86% 均分168.6",
+      "updated": "2026-06-07",
+      "source": "live_signal_log n=30 结算"
+    },
+    {
+      "id": "R09",
+      "name": "评分>=13+RSI极端+低ATR",
+      "bootstrap": {
+        "mean": 0.2499,
+        "ci_low": 0.2054,
+        "ci_high": 0.2976,
+        "std": 0.0236,
+        "n": 480,
+        "grade": "🔴无效",
+        "p_value": 0.0
+      },
+      "permutation": {
+        "p_value": 0.0,
+        "observed_wr": 0.25,
+        "null_mean": 0.5,
+        "null_std": 0.02318,
+        "significant": true,
+        "significance_level": "***"
+      },
+      "universal_score": {
+        "total": 50.0,
+        "level": "B",
+        "label": "✅B级 参考有效",
+        "breakdown": {
+          "wr_score": 0.0,
+          "n_score": 20.0,
+          "sig_score": 20.0,
+          "stab_score": 5.0,
+          "gen_score": 5.0
+        }
+      },
+      "profit_factor": 0.8426,
+      "kelly_fraction": 0.0,
+      "n": 480,
+      "rule": "BTC/BEAR_EARLY 次强：n=10 WR=80% 均分150.2（系统真正Alpha核心）",
+      "updated": "2026-06-07",
+      "source": "live_signal_log n=30 结算"
+    },
+    {
+      "id": "R10",
+      "name": "LTC全体制禁止",
+      "rule": "LTC所有体制WR=0%（实盘验证），永久回避",
+      "source": "live_validated",
+      "wr": 0.0,
+      "n": 0
+    },
+    {
+      "id": "R11",
+      "name": "BULL_TREND做多体系缺失",
+      "rule": "系统无BULL_TREND做多逻辑，牛市期间信号停止，Phase3开发目标",
+      "source": "architectural",
+      "wr": null,
+      "n": 0
+    }
+  ],
+  "top_rule": {
+    "id": "R01",
+    "name": "RSI_1H极超卖做多(<20)",
+    "bootstrap": {
+      "mean": 0.2862,
+      "ci_low": 0.2423,
+      "ci_high": 0.3325,
+      "std": 0.0227,
+      "n": 555,
+      "grade": "🔴无效",
+      "p_value": 0.0
+    },
+    "permutation": {
+      "p_value": 0.0,
+      "observed_wr": 0.2865,
+      "null_mean": 0.4999,
+      "null_std": 0.02125,
+      "significant": true,
+      "significance_level": "***"
+    },
+    "universal_score": {
+      "total": 50.0,
+      "level": "B",
+      "label": "✅B级 参考有效",
+      "breakdown": {
+        "wr_score": 0.0,
+        "n_score": 20.0,
+        "sig_score": 20.0,
+        "stab_score": 5.0,
+        "gen_score": 5.0
+      }
+    },
+    "profit_factor": 2.0274,
+    "kelly_fraction": 0.0,
+    "n": 555
+  },
+  "updated": "2026-06-07",
+  "live_validated": true
+}

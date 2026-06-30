@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>梵天AI · 信号订阅</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#060d1a;--bg2:#0a1222;--bg3:#0d1528;--bd:#1e293b;--tx:#e2e8f0;--tx2:#94a3b8;--tx3:#475569;--green:#22c55e;--red:#ef4444;--orange:#f97316;--blue:#3b82f6;--yellow:#fbbf24}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(6,13,26,.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--bd);height:54px;display:flex;align-items:center;padding:0 20px;gap:12px}
+.nav-logo{display:flex;align-items:center;gap:10px}
+.nav-icon{width:30px;height:30px;background:linear-gradient(135deg,#f97316,#dc2626);border-radius:9px;display:grid;place-items:center;font-size:15px;font-weight:900;color:#fff}
+.nav-name{font-weight:800;font-size:16px;letter-spacing:.3px}
+.nav-sub{font-size:10px;color:var(--tx3);background:var(--bg3);border:1px solid var(--bd);padding:2px 8px;border-radius:10px;font-weight:600;letter-spacing:.5px}
+.nav-sp{flex:1}
+.nav-right{display:flex;align-items:center;gap:10px}
+.ws-badge{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx3);background:var(--bg3);border:1px solid var(--bd);padding:4px 10px;border-radius:20px}
+.ws-dot{width:7px;height:7px;border-radius:50%;background:#374151;transition:all .3s}
+.ws-dot.ok{background:var(--green);box-shadow:0 0 8px #22c55e80}
+.ws-dot.err{background:var(--red);box-shadow:0 0 8px #ef444480}
+.nav-time{font-size:11px;color:var(--tx3)}
+
+/* MAIN */
+main{max-width:900px;margin:0 auto;padding:20px 16px;display:flex;flex-direction:column;gap:16px}
+
+/* SYSTEM STATUS CARD */
+.status-card{border-radius:14px;padding:24px;position:relative;overflow:hidden;transition:all .4s}
+.status-card.standby{background:linear-gradient(135deg,#0d1528,#111827);border:1px solid var(--bd)}
+.status-card.active{background:linear-gradient(135deg,#052e1a,#064e3b);border:1px solid #16a34a}
+.status-card.warn{background:linear-gradient(135deg,#1c0f00,#1a0a0a);border:1px solid #b45309}
+.status-glow{position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;filter:blur(60px);opacity:.15;pointer-events:none}
+.status-glow.standby{background:#475569}
+.status-glow.active{background:#22c55e}
+.status-glow.warn{background:#f97316}
+.status-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.status-indicator{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.status-indicator.standby{background:#475569;box-shadow:0 0 0 4px #47556940}
+.status-indicator.active{background:#22c55e;box-shadow:0 0 0 4px #22c55e40;animation:pulse 2s infinite}
+.status-indicator.warn{background:#f97316;box-shadow:0 0 0 4px #f9731640;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 4px var(--c,#22c55e40)}50%{box-shadow:0 0 0 8px transparent}}
+.status-title{font-size:20px;font-weight:800}
+.status-title.active{color:var(--green)}
+.status-title.standby{color:var(--tx2)}
+.status-title.warn{color:var(--orange)}
+.status-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:500px){.status-meta{grid-template-columns:1fr 1fr}}
+.sm-item{display:flex;flex-direction:column;gap:3px}
+.sm-l{font-size:10px;color:var(--tx3);font-weight:600;text-transform:uppercase;letter-spacing:.8px}
+.sm-v{font-size:13px;font-weight:700;color:var(--tx)}
+
+/* SIGNAL AREA */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.section-title{font-size:12px;font-weight:700;color:var(--tx3);letter-spacing:1.5px;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+.section-title::before{content:'';width:3px;height:14px;background:var(--orange);border-radius:2px}
+.sig-count{background:#1a0f00;color:var(--orange);font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px}
+.no-signal-box{background:var(--bg3);border:1px solid var(--bd);border-radius:12px;padding:32px 24px;text-align:center}
+.no-sig-icon{font-size:36px;margin-bottom:12px}
+.no-sig-title{font-size:15px;font-weight:700;color:var(--tx2);margin-bottom:6px}
+.no-sig-desc{font-size:12px;color:var(--tx3);line-height:1.7;max-width:360px;margin:0 auto}
+.no-sig-criteria{display:flex;justify-content:center;gap:16px;margin-top:14px;flex-wrap:wrap}
+.criteria-chip{background:var(--bg2);border:1px solid var(--bd);border-radius:8px;padding:4px 12px;font-size:11px;color:var(--tx3)}
+.criteria-chip b{color:var(--tx2)}
+
+/* Signal Card */
+.sig-cards{display:flex;flex-direction:column;gap:10px}
+.sig-card{background:var(--bg3);border-radius:12px;overflow:hidden;border:1px solid var(--bd)}
+.sig-card.SHORT{border-left:4px solid var(--red)}
+.sig-card.LONG{border-left:4px solid var(--green)}
+.sig-card-top{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--bg2);border-bottom:1px solid var(--bd)}
+.sc-sym{font-size:17px;font-weight:900}
+.sc-tags{display:flex;align-items:center;gap:6px}
+.dir-tag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px}
+.dir-tag.SHORT{background:#3f0a0a;color:#f87171;border:1px solid #7f1d1d}
+.dir-tag.LONG{background:#052e1a;color:#4ade80;border:1px solid #14532d}
+.regime-tag{font-size:10px;padding:3px 8px;border-radius:8px;font-weight:600;border:1px solid transparent}
+.sc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--bd)}
+.sc-cell{background:var(--bg3);padding:10px 14px;display:flex;flex-direction:column;gap:3px}
+.sc-cell-l{font-size:10px;color:var(--tx3);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.sc-cell-v{font-size:13px;font-weight:700}
+.sig-card-footer{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bg2)}
+.wr-row{display:flex;align-items:center;gap:6px}
+.wr-bar{width:72px;height:5px;background:var(--bd);border-radius:3px;overflow:hidden}
+.wr-fill{height:100%;border-radius:3px}
+.score-badge{background:#1a0f00;border:1px solid #92400e;color:var(--orange);font-size:12px;font-weight:800;padding:3px 10px;border-radius:8px}
+.source-tag{font-size:9px;color:var(--tx3);background:var(--bg);border:1px solid var(--bd);padding:2px 6px;border-radius:5px}
+
+/* PNL ROW */
+.pnl-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:500px){.pnl-row{grid-template-columns:1fr}}
+.pnl-card{background:var(--bg3);border:1px solid var(--bd);border-radius:12px;padding:18px}
+.pnl-card-label{font-size:10px;color:var(--tx3);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.pnl-val{font-size:24px;font-weight:900;margin-bottom:4px}
+.pnl-val.pos{color:var(--green)}
+.pnl-val.neg{color:var(--red)}
+.pnl-val.neu{color:var(--tx2)}
+.pnl-sub{font-size:11px;color:var(--tx3)}
+.pos-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.pos-item{display:flex;justify-content:space-between;align-items:center;font-size:12px;background:var(--bg2);border-radius:6px;padding:6px 10px}
+.pos-sym-sm{font-weight:700;color:var(--tx)}
+.pos-pnl-sm{font-weight:700}
+
+/* HISTORY TABLE */
+.hist-card{background:var(--bg3);border:1px solid var(--bd);border-radius:12px;overflow:hidden}
+.hist-table{width:100%;border-collapse:collapse}
+.hist-table th{padding:8px 12px;font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.7px;background:var(--bg2);text-align:left;border-bottom:1px solid var(--bd)}
+.hist-table td{padding:8px 12px;font-size:12px;border-bottom:1px solid #0a0f1e}
+.hist-table tbody tr:last-child td{border-bottom:none}
+.hist-table tbody tr:hover{background:var(--bg2)}
+.result-win{color:var(--green);font-weight:700}
+.result-loss{color:var(--red);font-weight:700}
+.result-to{color:var(--yellow)}
+.result-open{color:var(--blue)}
+
+/* Footer */
+footer{text-align:center;padding:20px;font-size:11px;color:var(--tx3)}
+footer span{color:var(--tx3);background:var(--bg3);border:1px solid var(--bd);padding:2px 8px;border-radius:6px}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-logo">
+    <div class="nav-icon">⚡</div>
+    <div class="nav-name">梵天AI</div>
+    <span class="nav-sub">SUBSCRIBER</span>
+  </div>
+  <div class="nav-sp"></div>
+  <div class="nav-right">
+    <div class="ws-badge"><div class="ws-dot" id="ws-dot"></div><span id="ws-text">连接中...</span></div>
+    <div class="nav-time" id="nav-time">--:--:--</div>
+  </div>
+</nav>
+
+<main>
+  <!-- 系统状态卡片 -->
+  <div class="status-card standby" id="status-card">
+    <div class="status-glow standby" id="status-glow"></div>
+    <div class="status-header">
+      <div class="status-indicator standby" id="status-dot"></div>
+      <div class="status-title standby" id="status-title">待机中 · 正在扫描市场</div>
+    </div>
+    <div class="status-meta">
+      <div class="sm-item"><span class="sm-l">当前体制</span><span class="sm-v" id="sm-regime">--</span></div>
+      <div class="sm-item"><span class="sm-l">最后更新</span><span class="sm-v" id="sm-updated">--</span></div>
+      <div class="sm-item"><span class="sm-l">下次扫描</span><span class="sm-v" id="sm-next">约60秒后</span></div>
+    </div>
+  </div>
+
+  <!-- 当前信号 -->
+  <div>
+    <div class="section-header">
+      <div class="section-title">当前有效信号 <span class="sig-count" id="sig-count">0</span></div>
+    </div>
+    <div id="signal-area">
+      <div class="no-signal-box">
+        <div class="no-sig-icon">⏳</div>
+        <div class="no-sig-title">暂无有效信号</div>
+        <div class="no-sig-desc">系统正在严格筛选高质量机会，仅在同时满足以下条件时推送信号</div>
+        <div class="no-sig-criteria">
+          <div class="criteria-chip"><b>Score ≥ 138</b></div>
+          <div class="criteria-chip"><b>Valid = true</b></div>
+          <div class="criteria-chip"><b>顺势体制</b></div>
+          <div class="criteria-chip"><b>流动性 ≥ MID</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 持仓与PnL -->
+  <div>
+    <div class="section-header">
+      <div class="section-title">持仓与收益</div>
+    </div>
+    <div class="pnl-row">
+      <div class="pnl-card">
+        <div class="pnl-card-label">账户状态</div>
+        <div class="pnl-val neu" id="pnl-nav">$--</div>
+        <div class="pnl-sub">NAV · <span id="pnl-avail">--</span> 可用</div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <div style="font-size:11px;background:var(--bg2);border:1px solid var(--bd);padding:4px 10px;border-radius:8px;color:var(--tx3)">持仓 <b style="color:var(--tx)" id="pnl-pos-cnt">0</b> 个</div>
+          <div style="font-size:11px;background:var(--bg2);border:1px solid var(--bd);padding:4px 10px;border-radius:8px;color:var(--tx3)">胜率 <b style="color:var(--green)" id="pnl-wr">--%</b></div>
+        </div>
+      </div>
+      <div class="pnl-card">
+        <div class="pnl-card-label">当前持仓浮盈</div>
+        <div class="pnl-val" id="pnl-float">$0.00</div>
+        <div class="pnl-sub" id="pnl-closed-info">今日已结算 0 笔</div>
+        <div class="pos-list" id="pos-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 近期历史 -->
+  <div>
+    <div class="section-header">
+      <div class="section-title">近期有效交易</div>
+    </div>
+    <div class="hist-card">
+      <table class="hist-table">
+        <thead><tr><th>标的</th><th>方向</th><th>体制</th><th>结果</th><th>PnL</th><th>时间</th></tr></thead>
+        <tbody id="hist-tbody"><tr><td colspan="6" style="text-align:center;color:var(--tx3);padding:24px">暂无历史记录</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<footer>数据来源 <span>vantian_core</span> · 梵天设计院 · 仅供参考</footer>
+
+<script>
+const IRON_WR={'BEAR_EARLY_SHORT':{wr:66.5,good:true},'BEAR_TREND_SHORT':{wr:71.8,good:true},'BULL_EARLY_LONG':{wr:64.4,good:true},'BULL_TREND_LONG':{wr:70.3,good:true},'BEAR_RECOVERY_LONG':{wr:72.5,good:true},'BULL_CORRECTION_SHORT':{wr:73.9,good:true},'BEAR_TREND_LONG':{wr:45.0,good:false},'BULL_TREND_SHORT':{wr:47.7,good:false}};
+function getWR(r,d){return IRON_WR[r+'_'+d]||null;}
+function fmt(v){if(!v||v==0)return'—';let n=parseFloat(v);if(isNaN(n))return'—';return n<0.01?n.toFixed(6):n<1?n.toFixed(4):n<100?n.toFixed(3):n.toFixed(2);}
+function regimeColor(r){if(!r)return'#64748b';if(r.includes('BULL'))return'#4ade80';if(r.includes('BEAR'))return'#f87171';return'#94a3b8';}
+function regimeBg(r){if(!r)return'#1e293b22';if(r.includes('BULL'))return'#052e1a';if(r.includes('BEAR'))return'#1a0505';return'#0f1929';}
+function dominantRegime(regime){const cnt={};regime.forEach(r=>{const base=r.regime||'?';cnt[base]=(cnt[base]||0)+1;});return Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0]||'--';}
+
+let _cd=60,_lastTs=0,_ws,_logLines=[];
+
+// Time
+setInterval(()=>{document.getElementById('nav-time').textContent=new Date().toLocaleTimeString('zh',{hour12:false});},1000);
+// Countdown
+setInterval(()=>{_cd=Math.max(0,_cd-1);document.getElementById('sm-next').textContent='约'+_cd+'秒后';},1000);
+
+function updateStatus(signals,health,regime){
+  const hasSignal=signals&&signals.length>0;
+  const card=document.getElementById('status-card');
+  const dot=document.getElementById('status-dot');
+  const title=document.getElementById('status-title');
+  const glow=document.getElementById('status-glow');
+  const mode=hasSignal?'active':'standby';
+  card.className='status-card '+mode;
+  dot.className='status-indicator '+mode;
+  title.className='status-title '+mode;
+  glow.className='status-glow '+mode;
+  title.textContent=hasSignal?`🔥 发现 ${signals.length} 个有效信号！`:'● 待机中 · 正在扫描市场';
+  // regime
+  const dom=regime&&regime.length?dominantRegime(regime):'--';
+  const rc=regimeColor(dom);
+  document.getElementById('sm-regime').innerHTML='<span style="color:'+rc+';font-weight:700">'+dom+'</span>';
+  // updated
+  if(health){const u=health.find(h=>h.metric==='最后更新');if(u)document.getElementById('sm-updated').textContent=u.value;}
+}
+
+function buildSignals(signals){
+  const area=document.getElementById('signal-area');
+  document.getElementById('sig-count').textContent=signals?signals.length:0;
+  if(!signals||!signals.length){
+    area.innerHTML='<div class="no-signal-box"><div class="no-sig-icon">⏳</div><div class="no-sig-title">暂无有效信号</div><div class="no-sig-desc">系统正在严格筛选高质量机会，仅在同时满足以下条件时推送信号</div><div class="no-sig-criteria"><div class="criteria-chip"><b>Score ≥ 138</b></div><div class="criteria-chip"><b>Valid = true</b></div><div class="criteria-chip"><b>顺势体制</b></div><div class="criteria-chip"><b>流动性 ≥ MID</b></div></div></div>';
+    return;
+  }
+  let html='<div class="sig-cards">';
+  signals.forEach(s=>{
+    const wr=getWR(s.regime,s.direction);
+    const rc=regimeColor(s.regime);
+    const rb=regimeBg(s.regime);
+    const rr=(s.tp1&&s.entry_lo&&s.stop_loss)?Math.abs((parseFloat(s.tp1)-parseFloat(s.entry_lo))/(parseFloat(s.entry_lo)-parseFloat(s.stop_loss))).toFixed(2):'—';
+    html+='<div class="sig-card '+s.direction+'">';
+    html+='<div class="sig-card-top"><div class="sc-sym">'+s.symbol.replace('USDT','/<small style="font-size:12px;color:var(--tx3)">USDT</small>')+'</div>';
+    html+='<div class="sc-tags"><span class="dir-tag '+s.direction+'">'+s.direction+'</span><span class="regime-tag" style="background:'+rb+';color:'+rc+';border-color:'+rc+'44">'+s.regime+'</span></div></div>';
+    html+='<div class="sc-grid">';
+    html+='<div class="sc-cell"><span class="sc-cell-l">当前价格</span><span class="sc-cell-v">'+fmt(s.price)+'</span></div>';
+    html+='<div class="sc-cell"><span class="sc-cell-l">入场区间</span><span class="sc-cell-v" style="color:#60a5fa;font-size:12px">'+fmt(s.entry_lo)+'~'+fmt(s.entry_hi)+'</span></div>';
+    html+='<div class="sc-cell"><span class="sc-cell-l">止损</span><span class="sc-cell-v" style="color:#ef4444">'+fmt(s.stop_loss)+'</span></div>';
+    html+='<div class="sc-cell"><span class="sc-cell-l">目标 TP1</span><span class="sc-cell-v" style="color:#22c55e">'+fmt(s.tp1)+'</span></div>';
+    html+='<div class="sc-cell"><span class="sc-cell-l">R:R 比</span><span class="sc-cell-v">'+rr+'</span></div>';
+    html+='<div class="sc-cell"><span class="sc-cell-l">资金费率</span><span class="sc-cell-v">'+(s.fr||0)+'%</span></div>';
+    html+='</div>';
+    html+='<div class="sig-card-footer">';
+    if(wr){html+='<div class="wr-row"><span style="font-size:10px;color:var(--tx3)">铁证WR</span><span style="color:'+(wr.good?'#22c55e':'#ef4444')+';font-weight:800;font-size:13px;margin-left:4px">'+wr.wr+'%</span><div class="wr-bar" style="margin-left:6px"><div class="wr-fill" style="width:'+wr.wr+'%;background:'+(wr.good?'#22c55e':'#ef4444')+'"></div></div></div>';}else{html+='<div></div>';}
+    html+='<div style="display:flex;align-items:center;gap:8px"><span class="score-badge">Score '+parseFloat(s.score||0).toFixed(1)+'</span><span class="source-tag">vantian_core</span></div>';
+    html+='</div></div>';
+  });
+  html+='</div>';
+  area.innerHTML=html;
+}
+
+function buildPositions(positions,health){
+  const nav=health?health.find(h=>h.metric==='NAV'):null;
+  const avail=health?health.find(h=>h.metric==='可用余额'):null;
+  const wr=health?health.find(h=>h.metric==='历史胜率'):null;
+  if(nav) document.getElementById('pnl-nav').textContent=nav.value;
+  if(avail) document.getElementById('pnl-avail').textContent=avail.value;
+  if(wr) document.getElementById('pnl-wr').textContent=wr.value;
+  document.getElementById('pnl-pos-cnt').textContent=positions?positions.length:0;
+  const totalPnL=(positions||[]).reduce((a,p)=>a+(p.uPnL||0),0);
+  const el=document.getElementById('pnl-float');
+  el.textContent=(totalPnL>=0?'+':'')+totalPnL.toFixed(2)+' USDT';
+  el.className='pnl-val '+(totalPnL>0?'pos':totalPnL<0?'neg':'neu');
+  const list=document.getElementById('pos-list');
+  if(!positions||!positions.length){list.innerHTML='<div style="font-size:11px;color:var(--tx3);text-align:center;padding:8px">暂无持仓</div>';return;}
+  list.innerHTML=positions.slice(0,4).map(p=>'<div class="pos-item"><div><span class="pos-sym-sm">'+p.symbol.replace('USDT','')+'</span> <span style="font-size:10px;color:'+(p.direction==='SHORT'?'#f87171':'#4ade80')+'">'+p.direction+'</span></div><div class="pos-pnl-sm" style="color:'+((p.uPnL||0)>=0?'#22c55e':'#ef4444')+'">'+(( p.uPnL||0)>=0?'+':'')+( p.uPnL||0).toFixed(2)+'</div></div>').join('');
+}
+
+function buildHistory(history){
+  const tbody=document.getElementById('hist-tbody');
+  const valid=(history||[]).filter(h=>h.status==='CLOSED').slice(0,8);
+  if(!valid.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--tx3);padding:24px">暂无历史记录</td></tr>';return;}
+  tbody.innerHTML=valid.map(h=>{
+    const rc=h.result==='WIN'?'result-win':h.result==='LOSS'?'result-loss':h.result==='TIMEOUT'?'result-to':'result-open';
+    const pnl=h.pnl||h.uPnL||0;
+    return'<tr><td style="font-weight:700">'+( h.symbol||'').replace('USDT','')+'</td><td><span class="dir-tag '+(h.direction||'')+'" style="font-size:10px;padding:2px 7px">'+(h.direction||'')+'</span></td><td style="font-size:11px;color:'+regimeColor(h.regime)+'">'+( h.regime||'—')+'</td><td class="'+rc+'">'+(h.result||'—')+'</td><td style="color:'+( pnl>=0?'#22c55e':'#ef4444')+'">'+( pnl>=0?'+':'')+pnl.toFixed(2)+'</td><td style="color:var(--tx3);font-size:11px">'+( h.ts||h.updated_at||'—')+'</td></tr>';
+  }).join('');
+}
+
+// WebSocket
+function connect(){
+  const proto=location.protocol==='https:'?'wss:':'ws:';
+  _ws=new WebSocket(proto+'//'+location.host+'/ws');
+  _ws.onopen=()=>{document.getElementById('ws-dot').className='ws-dot ok';document.getElementById('ws-text').textContent='已连接';};
+  _ws.onclose=()=>{document.getElementById('ws-dot').className='ws-dot err';document.getElementById('ws-text').textContent='重连中...';setTimeout(connect,3000);};
+  _ws.onmessage=(e)=>{
+    try{
+      const d=JSON.parse(e.data);_cd=60;_lastTs=d.ts||Date.now()/1000;
+      if(d.signals!==undefined&&d.regime!==undefined&&d.health!==undefined){
+        updateStatus(d.signals,d.health,d.regime);
+        buildSignals(d.signals);
+        buildPositions(d.positions||[],d.health);
+        buildHistory(d.history||[]);
+      }
+    }catch(ex){}
+  };
+}
+connect();
+</script>
+</body></html>

@@ -93,9 +93,10 @@ def scan_d3_processes() -> list:
         r = subprocess.run(['ps', 'aux'], capture_output=True, text=True, timeout=5)
         ps = r.stdout
         procs = {
-            'ws_guardian.py':    {'level': 'CRITICAL', 'fix': 'restart_ws_guardian'},
-            'arjuna':            {'level': 'WARN',     'fix': 'none'},   # 可选执行引擎
-            'pump_hunter':       {'level': 'WARN',     'fix': 'none'},
+            'ws_guardian.py':         {'level': 'CRITICAL', 'fix': 'restart_ws_guardian'},
+            # arjuna/pump_hunter 通过脚本文件名匹配（可选进程，不告警）
+            # 'live_signal_settler': {'level': 'WARN', 'fix': 'none'},
+            # 'scan_and_alert':      {'level': 'WARN', 'fix': 'none'},
         }
         for proc, cfg in procs.items():
             if proc not in ps:
@@ -252,23 +253,25 @@ def scan_d9_signal_pipeline() -> list:
         age_min = (time.time() - ts) / 60 if ts else 999
 
         # 检查关键字段是否在最近输出中出现
-        required_keys = ['regime', 'score', 'action']
+        # brahma_state.json 是仓位状态文件，检查系统运行健康字段
+        required_keys = ['regime', 'nav', 'positions']
         missing_keys = [k for k in required_keys if k not in state]
         if missing_keys:
             issues.append({
                 'dim': 'D9_pipeline', 'level': 'WARN',
-                'msg': f'信号快照缺失字段: {missing_keys}',
+                'msg': f'系统状态快照缺失字段: {missing_keys}',
                 'auto_fix': False,
             })
 
-        # 检查RSM是否在运行
+        # 检查RSM是否在运行（字段是 [symbol]['confirmed']）
         rsm_state = _DATA / 'regime_state.json'
         if rsm_state.exists():
             rsm = json.loads(rsm_state.read_text())
-            if not rsm.get('current_regime'):
+            btc_regime = rsm.get('BTCUSDT', {}).get('confirmed', '')
+            if not btc_regime:
                 issues.append({
                     'dim': 'D9_pipeline', 'level': 'WARN',
-                    'msg': 'RSM状态机无有效体制记录',
+                    'msg': 'RSM状态机无有效体制记录(BTCUSDT)',
                     'auto_fix': False,
                 })
     except Exception as e:
@@ -532,10 +535,27 @@ def run_360(auto_fix: bool = True, push: bool = False) -> dict:
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='梵天360健康管理')
-    parser.add_argument('--fix',    action='store_true', help='自动修复')
-    parser.add_argument('--push',   action='store_true', help='推送告警')
-    parser.add_argument('--report', action='store_true', help='只输出报告')
+    parser.add_argument('--fix',      action='store_true', help='自动修复')
+    parser.add_argument('--push',     action='store_true', help='推送告警（异常才推）')
+    parser.add_argument('--report',   action='store_true', help='只输出报告')
+    parser.add_argument('--autopush', action='store_true', help='systemEvent模式：异常自动推送，正常静默')
     args = parser.parse_args()
 
-    result = run_360(auto_fix=args.fix or True, push=args.push)
+    result = run_360(auto_fix=True, push=args.push)
     print('\n' + result['report'])
+
+    # --autopush: systemEvent专用入口，有ERROR/CRITICAL才推送，正常静默
+    if args.autopush:
+        scan = result['scan']
+        critical = scan['level_counts'].get('CRITICAL', 0) + scan['level_counts'].get('ERROR', 0)
+        if critical > 0:
+            import subprocess as _sp
+            _sp.run(
+                ['openclaw', 'message', 'send',
+                 '--channel', 'jarvis',
+                 '--target', '73295708:t:019f1797-6c60-7541-ad72-ec34ed14dfc4',
+                 '--message', result['report']],
+                capture_output=True, timeout=15
+            )
+            print(f'[brahma-360] 🚨 推送异常告警 (CRITICAL/ERROR={critical})')
+        # 正常(score=100) → 完全静默，不推送，不消耗AI

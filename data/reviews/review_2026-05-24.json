@@ -1,0 +1,59 @@
+{
+  "date": "2026-05-24",
+  "generated_at": "2026-05-24T01:33:12.892844+00:00",
+  "sections": {
+    "S1_today": {
+      "date": "2026-05-24",
+      "total_trades": 0,
+      "wins": 0,
+      "wr": 0.0,
+      "pnl_usdt": 0,
+      "cumulative_real_n": 32,
+      "real_n_progress": "32/50 (need 18 more)"
+    },
+    "S2_drift": {
+      "BTCUSDT": {
+        "alert": "WARN",
+        "drift_score": 0.2,
+        "confidence_mult": 0.85,
+        "summary": "Mild drift (score=+0.20) — confidence reduced to 85%"
+      },
+      "ETHUSDT": {
+        "alert": "WARN",
+        "drift_score": 0.2,
+        "confidence_mult": 0.85,
+        "summary": "Mild drift (score=+0.20) — confidence reduced to 85%"
+      }
+    },
+    "S3_model_health": {
+      "status": "HEALTHY",
+      "score": 100,
+      "recommendations": [
+        "All health checks passed"
+      ]
+    },
+    "S4_execution": {
+      "status": "GOOD",
+      "eq_score": 92,
+      "insights": [
+        "TP rate: 34% | Avg hold: 12.9h",
+        "Realized RR=1.01 below MIN_RR=1.5 target"
+      ],
+      "metrics": {
+        "M1_tp_rate": 0.344,
+        "M2_avg_hold_h": 12.93,
+        "M3_realized_rr": 1.006
+      }
+    },
+    "S5_retrain": {
+      "real_n": 32,
+      "retrain_needed": false,
+      "threshold": 50,
+      "note": "Need 18 more real trades"
+    },
+    "S6_summary": {
+      "text": "🗓️ 梵天日报 2026-05-24\n📊 今日: 0笔 W0 WR=0% PnL=+0.00u\n📈 累计实盘: 32笔 (32/50 (need 18 more))\n🔬 体制漂移: ⚠️  [BTCUSDT WARN] [ETHUSDT WARN]\n🧠 模型健康: HEALTHY 100/100\n⚡ 执行质量: GOOD 92/100\n📝 建议: All health checks passed"
+    }
+  },
+  "summary": "🗓️ 梵天日报 2026-05-24\n📊 今日: 0笔 W0 WR=0% PnL=+0.00u\n📈 累计实盘: 32笔 (32/50 (need 18 more))\n🔬 体制漂移: ⚠️  [BTCUSDT WARN] [ETHUSDT WARN]\n🧠 模型健康: HEALTHY 100/100\n⚡ 执行质量: GOOD 92/100\n📝 建议: All health checks passed"
+}

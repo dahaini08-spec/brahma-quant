@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Research Injection Flow",
+    "subtitle": "QuantDinger research signal -> gate -> cache -> brahma_core",
+    "output": "docs/research_injection_flow.html",
+    "viewBox": [
+      860,
+      680
+    ]
+  },
+  "participants": [
+    {
+      "id": "qd",
+      "label": "QuantDinger",
+      "type": "external",
+      "sublabel": "Docker isolated"
+    },
+    {
+      "id": "bridge",
+      "label": "rb_bridge",
+      "type": "security",
+      "sublabel": "STAR.md gate"
+    },
+    {
+      "id": "cache",
+      "label": "ext_signal",
+      "type": "database",
+      "sublabel": "TTL 30min"
+    },
+    {
+      "id": "core",
+      "label": "brahma_core",
+      "type": "backend",
+      "sublabel": "s_research"
+    },
+    {
+      "id": "audit",
+      "label": "audit_log",
+      "type": "database",
+      "sublabel": "append-only"
+    }
+  ],
+  "segments": [
+    {
+      "from": 140,
+      "to": 350,
+      "label": "Push + STAR.md Gate (L0/L1/L2)"
+    },
+    {
+      "from": 350,
+      "to": 480,
+      "label": "Cache Write + Audit"
+    },
+    {
+      "from": 510,
+      "to": 620,
+      "label": "brahma_core read next cycle"
+    }
+  ],
+  "messages": [
+    {
+      "from": "qd",
+      "to": "bridge",
+      "y": 160,
+      "label": "POST research signal JSON",
+      "variant": "default"
+    },
+    {
+      "from": "bridge",
+      "to": "audit",
+      "y": 210,
+      "label": "L0 format+TTL / L1 dead-zone / L2 CHOP gate",
+      "variant": "security"
+    },
+    {
+      "from": "bridge",
+      "to": "qd",
+      "y": 270,
+      "label": "BLOCKED or ZERO (if gate fails)",
+      "variant": "return"
+    },
+    {
+      "from": "bridge",
+      "to": "cache",
+      "y": 360,
+      "label": "ext_write: score_delta capped 8pt",
+      "variant": "default"
+    },
+    {
+      "from": "bridge",
+      "to": "audit",
+      "y": 420,
+      "label": "append bridge_log.jsonl",
+      "variant": "dashed"
+    },
+    {
+      "from": "bridge",
+      "to": "qd",
+      "y": 470,
+      "label": "injected=True score_delta reason",
+      "variant": "return"
+    },
+    {
+      "from": "core",
+      "to": "cache",
+      "y": 520,
+      "label": "ext_get(symbol, dir) < 1ms",
+      "variant": "default"
+    },
+    {
+      "from": "cache",
+      "to": "core",
+      "y": 555,
+      "label": "score sources reason",
+      "variant": "return"
+    },
+    {
+      "from": "core",
+      "to": "audit",
+      "y": 575,
+      "label": "breakdown[research] = +score",
+      "variant": "dashed"
+    }
+  ],
+  "activations": [],
+  "cards": [
+    {
+      "dot": "rose",
+      "title": "STAR.md Gate (L0/L1/L2)",
+      "items": [
+        "L0: format + TTL 30min structural validity",
+        "L1: WR dead-zone ban (BEAR_TREND*LONG etc.)",
+        "L2: CHOP regime forces score to zero"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Weight Budget",
+      "items": [
+        "quantdinger=8pt  trading_agents=6pt  kronos=4pt",
+        "Total ceiling MAX_TOTAL_INJECT = 8pt (hard)",
+        "conf < 0.5: score_delta halved automatically"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Fail-Safe",
+      "items": [
+        "Any exception -> score=0, never blocks core",
+        "dry_run=True default, ADMIN_TOKEN to activate",
+        "All injections logged to audit trail"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,710 @@
+{
+  "BTCUSDT": {
+    "status": "done",
+    "sym": "BTCUSDT",
+    "threshold": 130,
+    "long": {
+      "n": 315,
+      "wr": 0.4779,
+      "avg_pnl": 0.00247,
+      "pf": 1.504,
+      "sharpe": 2.74,
+      "max_dd": -0.0219,
+      "exit_tp_pct": 0.286,
+      "exit_sl_pct": 0.419
+    },
+    "short": {
+      "n": 316,
+      "wr": 0.4051,
+      "avg_pnl": -0.00022,
+      "pf": 0.959,
+      "sharpe": -0.01,
+      "max_dd": -0.0273,
+      "exit_tp_pct": 0.225,
+      "exit_sl_pct": 0.491
+    },
+    "all": {
+      "n": 631,
+      "wr": 0.4425,
+      "avg_pnl": 0.00116,
+      "pf": 1.226,
+      "sharpe": 1.44,
+      "max_dd": -0.0273,
+      "exit_tp_pct": 0.255,
+      "exit_sl_pct": 0.455
+    },
+    "dim_contrib": {
+      "关键位精确度": {
+        "wr_high": 0.615,
+        "wr_low": 0.44,
+        "delta": 0.175,
+        "n_high": 13,
+        "n_low": 618
+      },
+      "动量背离": {
+        "wr_high": 0.449,
+        "wr_low": 0.403,
+        "delta": 0.047,
+        "n_high": 554,
+        "n_low": 77
+      },
+      "量能验证": {
+        "wr_high": 0.437,
+        "wr_low": 0.52,
+        "delta": -0.083,
+        "n_high": 581,
+        "n_low": 50
+      },
+      "形态成熟度": {
+        "wr_high": 0.2,
+        "wr_low": 0.446,
+        "delta": -0.246,
+        "n_high": 5,
+        "n_low": 626
+      },
+      "清算/OI": {
+        "wr_high": 0.2,
+        "wr_low": 0.446,
+        "delta": -0.246,
+        "n_high": 5,
+        "n_low": 626
+      },
+      "谐波+多周期": {
+        "wr_high": 0.375,
+        "wr_low": 0.445,
+        "delta": -0.07,
+        "n_high": 8,
+        "n_low": 623
+      },
+      "鲸鱼+跨市场+微观": {
+        "wr_high": 0.446,
+        "wr_low": 0.427,
+        "delta": 0.02,
+        "n_high": 542,
+        "n_low": 89
+      },
+      "期权+订单流": {
+        "wr_high": 0.487,
+        "wr_low": 0.424,
+        "delta": 0.064,
+        "n_high": 199,
+        "n_low": 432
+      },
+      "L2+贝叶斯+宏观": {
+        "wr_high": 0.444,
+        "wr_low": 0.4,
+        "delta": 0.044,
+        "n_high": 626,
+        "n_low": 5
+      },
+      "LSTM+NLP情绪": {
+        "wr_high": 0.568,
+        "wr_low": 0.434,
+        "delta": 0.134,
+        "n_high": 44,
+        "n_low": 587
+      }
+    },
+    "signal_density": 14.41,
+    "avg_score": 88.7,
+    "n_signals": 631
+  },
+  "BTCUSDT_threshold_scan": {
+    "80": {
+      "n": 5202,
+      "wr": 0.4179,
+      "avg_pnl": -8e-05,
+      "pf": 0.983,
+      "sharpe": 0.02,
+      "max_dd": -0.0417,
+      "exit_tp_pct": 0.189,
+      "exit_sl_pct": 0.456
+    },
+    "100": {
+      "n": 2912,
+      "wr": 0.421,
+      "avg_pnl": 0.00019,
+      "pf": 1.037,
+      "sharpe": 0.35,
+      "max_dd": -0.0417,
+      "exit_tp_pct": 0.207,
+      "exit_sl_pct": 0.46
+    },
+    "120": {
+      "n": 1113,
+      "wr": 0.4049,
+      "avg_pnl": 3e-05,
+      "pf": 1.006,
+      "sharpe": 0.14,
+      "max_dd": -0.0417,
+      "exit_tp_pct": 0.223,
+      "exit_sl_pct": 0.479
+    },
+    "130": {
+      "n": 631,
+      "wr": 0.4425,
+      "avg_pnl": 0.00116,
+      "pf": 1.226,
+      "sharpe": 1.44,
+      "max_dd": -0.0273,
+      "exit_tp_pct": 0.255,
+      "exit_sl_pct": 0.455
+    },
+    "140": {
+      "n": 372,
+      "wr": 0.4479,
+      "avg_pnl": 0.00112,
+      "pf": 1.223,
+      "sharpe": 1.55,
+      "max_dd": -0.0224,
+      "exit_tp_pct": 0.253,
+      "exit_sl_pct": 0.441
+    },
+    "150": {
+      "n": 169,
+      "wr": 0.4615,
+      "avg_pnl": 0.00163,
+      "pf": 1.312,
+      "sharpe": 2.06,
+      "max_dd": -0.0219,
+      "exit_tp_pct": 0.272,
+      "exit_sl_pct": 0.444
+    },
+    "160": {
+      "n": 67,
+      "wr": 0.5012,
+      "avg_pnl": 0.0027,
+      "pf": 1.582,
+      "sharpe": 3.53,
+      "max_dd": -0.0137,
+      "exit_tp_pct": 0.313,
+      "exit_sl_pct": 0.418
+    }
+  },
+  "BTCUSDT_best_threshold": 160,
+  "ETHUSDT": {
+    "status": "done",
+    "sym": "ETHUSDT",
+    "threshold": 130,
+    "long": {
+      "n": 265,
+      "wr": 0.3995,
+      "avg_pnl": 0.00087,
+      "pf": 1.137,
+      "sharpe": 0.76,
+      "max_dd": -0.0232,
+      "exit_tp_pct": 0.223,
+      "exit_sl_pct": 0.498
+    },
+    "short": {
+      "n": 296,
+      "wr": 0.4562,
+      "avg_pnl": 0.00178,
+      "pf": 1.3,
+      "sharpe": 1.74,
+      "max_dd": -0.0388,
+      "exit_tp_pct": 0.314,
+      "exit_sl_pct": 0.432
+    },
+    "all": {
+      "n": 561,
+      "wr": 0.4286,
+      "avg_pnl": 0.00133,
+      "pf": 1.218,
+      "sharpe": 1.28,
+      "max_dd": -0.0388,
+      "exit_tp_pct": 0.271,
+      "exit_sl_pct": 0.463
+    },
+    "dim_contrib": {
+      "关键位精确度": {
+        "wr_high": 0.4,
+        "wr_low": 0.428,
+        "delta": -0.028,
+        "n_high": 10,
+        "n_low": 551
+      },
+      "动量背离": {
+        "wr_high": 0.427,
+        "wr_low": 0.439,
+        "delta": -0.012,
+        "n_high": 504,
+        "n_low": 57
+      },
+      "量能验证": {
+        "wr_high": 0.423,
+        "wr_low": 0.5,
+        "delta": -0.077,
+        "n_high": 525,
+        "n_low": 36
+      },
+      "形态成熟度": {
+        "wr_high": 0.333,
+        "wr_low": 0.429,
+        "delta": -0.095,
+        "n_high": 6,
+        "n_low": 555
+      },
+      "清算/OI": {
+        "wr_high": 0.4,
+        "wr_low": 0.428,
+        "delta": -0.028,
+        "n_high": 5,
+        "n_low": 556
+      },
+      "谐波+多周期": {
+        "wr_high": 0.5,
+        "wr_low": 0.427,
+        "delta": 0.073,
+        "n_high": 6,
+        "n_low": 555
+      },
+      "鲸鱼+跨市场+微观": {
+        "wr_high": 0.416,
+        "wr_low": 0.516,
+        "delta": -0.099,
+        "n_high": 497,
+        "n_low": 64
+      },
+      "期权+订单流": {
+        "wr_high": 0.409,
+        "wr_low": 0.444,
+        "delta": -0.036,
+        "n_high": 257,
+        "n_low": 304
+      },
+      "L2+贝叶斯+宏观": {
+        "wr_high": 0.433,
+        "wr_low": 0.278,
+        "delta": 0.155,
+        "n_high": 543,
+        "n_low": 18
+      },
+      "LSTM+NLP情绪": {
+        "wr_high": 0.519,
+        "wr_low": 0.418,
+        "delta": 0.1,
+        "n_high": 54,
+        "n_low": 507
+      }
+    },
+    "signal_density": 12.81,
+    "avg_score": 86.6,
+    "n_signals": 561
+  },
+  "ETHUSDT_threshold_scan": {
+    "80": {
+      "n": 5035,
+      "wr": 0.4015,
+      "avg_pnl": -0.00044,
+      "pf": 0.93,
+      "sharpe": -0.43,
+      "max_dd": -0.0605,
+      "exit_tp_pct": 0.184,
+      "exit_sl_pct": 0.482
+    },
+    "100": {
+      "n": 2788,
+      "wr": 0.4042,
+      "avg_pnl": -7e-05,
+      "pf": 0.988,
+      "sharpe": -0.03,
+      "max_dd": -0.0605,
+      "exit_tp_pct": 0.205,
+      "exit_sl_pct": 0.482
+    },
+    "120": {
+      "n": 1023,
+      "wr": 0.4157,
+      "avg_pnl": 0.00055,
+      "pf": 1.089,
+      "sharpe": 0.59,
+      "max_dd": -0.0605,
+      "exit_tp_pct": 0.24,
+      "exit_sl_pct": 0.472
+    },
+    "130": {
+      "n": 561,
+      "wr": 0.4286,
+      "avg_pnl": 0.00133,
+      "pf": 1.218,
+      "sharpe": 1.28,
+      "max_dd": -0.0388,
+      "exit_tp_pct": 0.271,
+      "exit_sl_pct": 0.463
+    },
+    "140": {
+      "n": 303,
+      "wr": 0.4316,
+      "avg_pnl": 0.0015,
+      "pf": 1.254,
+      "sharpe": 1.44,
+      "max_dd": -0.0347,
+      "exit_tp_pct": 0.267,
+      "exit_sl_pct": 0.452
+    },
+    "150": {
+      "n": 134,
+      "wr": 0.4443,
+      "avg_pnl": 0.00196,
+      "pf": 1.348,
+      "sharpe": 1.9,
+      "max_dd": -0.0227,
+      "exit_tp_pct": 0.284,
+      "exit_sl_pct": 0.455
+    },
+    "160": {
+      "n": 44,
+      "wr": 0.4021,
+      "avg_pnl": 0.00144,
+      "pf": 1.272,
+      "sharpe": 1.26,
+      "max_dd": -0.0147,
+      "exit_tp_pct": 0.273,
+      "exit_sl_pct": 0.5
+    }
+  },
+  "ETHUSDT_best_threshold": 150,
+  "SOLUSDT": {
+    "status": "done",
+    "sym": "SOLUSDT",
+    "threshold": 130,
+    "long": {
+      "n": 222,
+      "wr": 0.4382,
+      "avg_pnl": 0.00192,
+      "pf": 1.183,
+      "sharpe": 1.03,
+      "max_dd": -0.0606,
+      "exit_tp_pct": 0.243,
+      "exit_sl_pct": 0.486
+    },
+    "short": {
+      "n": 188,
+      "wr": 0.4254,
+      "avg_pnl": 0.00018,
+      "pf": 1.017,
+      "sharpe": -0.02,
+      "max_dd": -0.0738,
+      "exit_tp_pct": 0.229,
+      "exit_sl_pct": 0.452
+    },
+    "all": {
+      "n": 410,
+      "wr": 0.4324,
+      "avg_pnl": 0.00113,
+      "pf": 1.108,
+      "sharpe": 0.55,
+      "max_dd": -0.0738,
+      "exit_tp_pct": 0.237,
+      "exit_sl_pct": 0.471
+    },
+    "dim_contrib": {
+      "动量背离": {
+        "wr_high": 0.44,
+        "wr_low": 0.286,
+        "delta": 0.154,
+        "n_high": 389,
+        "n_low": 21
+      },
+      "量能验证": {
+        "wr_high": 0.432,
+        "wr_low": 0.429,
+        "delta": 0.003,
+        "n_high": 403,
+        "n_low": 7
+      },
+      "鲸鱼+跨市场+微观": {
+        "wr_high": 0.435,
+        "wr_low": 0.25,
+        "delta": 0.185,
+        "n_high": 402,
+        "n_low": 8
+      },
+      "期权+订单流": {
+        "wr_high": 0.422,
+        "wr_low": 0.471,
+        "delta": -0.049,
+        "n_high": 325,
+        "n_low": 85
+      },
+      "L2+贝叶斯+宏观": {
+        "wr_high": 0.428,
+        "wr_low": 0.44,
+        "delta": -0.013,
+        "n_high": 276,
+        "n_low": 134
+      },
+      "LSTM+NLP情绪": {
+        "wr_high": 0.43,
+        "wr_low": 0.433,
+        "delta": -0.003,
+        "n_high": 135,
+        "n_low": 275
+      }
+    },
+    "signal_density": 9.36,
+    "avg_score": 78.8,
+    "n_signals": 410
+  },
+  "SOLUSDT_threshold_scan": {
+    "80": {
+      "n": 4223,
+      "wr": 0.4327,
+      "avg_pnl": 0.00054,
+      "pf": 1.054,
+      "sharpe": 0.26,
+      "max_dd": -0.077,
+      "exit_tp_pct": 0.19,
+      "exit_sl_pct": 0.449
+    },
+    "100": {
+      "n": 2062,
+      "wr": 0.4418,
+      "avg_pnl": 0.00098,
+      "pf": 1.099,
+      "sharpe": 0.48,
+      "max_dd": -0.077,
+      "exit_tp_pct": 0.211,
+      "exit_sl_pct": 0.448
+    },
+    "120": {
+      "n": 730,
+      "wr": 0.4387,
+      "avg_pnl": 0.00091,
+      "pf": 1.088,
+      "sharpe": 0.45,
+      "max_dd": -0.077,
+      "exit_tp_pct": 0.236,
+      "exit_sl_pct": 0.471
+    },
+    "130": {
+      "n": 410,
+      "wr": 0.4324,
+      "avg_pnl": 0.00113,
+      "pf": 1.108,
+      "sharpe": 0.55,
+      "max_dd": -0.0738,
+      "exit_tp_pct": 0.237,
+      "exit_sl_pct": 0.471
+    },
+    "140": {
+      "n": 180,
+      "wr": 0.4537,
+      "avg_pnl": 0.00147,
+      "pf": 1.144,
+      "sharpe": 0.75,
+      "max_dd": -0.0738,
+      "exit_tp_pct": 0.25,
+      "exit_sl_pct": 0.461
+    },
+    "150": {
+      "n": 58,
+      "wr": 0.3793,
+      "avg_pnl": -2e-05,
+      "pf": 0.999,
+      "sharpe": -0.01,
+      "max_dd": -0.0372,
+      "exit_tp_pct": 0.276,
+      "exit_sl_pct": 0.552
+    },
+    "160": {
+      "n": 15,
+      "wr": 0.4,
+      "avg_pnl": 0.00074,
+      "pf": 1.079,
+      "sharpe": 0.55,
+      "max_dd": -0.0224,
+      "exit_tp_pct": 0.333,
+      "exit_sl_pct": 0.6
+    }
+  },
+  "SOLUSDT_best_threshold": 140,
+  "BNBUSDT": {
+    "status": "done",
+    "sym": "BNBUSDT",
+    "threshold": 130,
+    "long": {
+      "n": 229,
+      "wr": 0.3953,
+      "avg_pnl": 5e-05,
+      "pf": 1.007,
+      "sharpe": 0.03,
+      "max_dd": -0.0249,
+      "exit_tp_pct": 0.205,
+      "exit_sl_pct": 0.528
+    },
+    "short": {
+      "n": 248,
+      "wr": 0.383,
+      "avg_pnl": -0.00014,
+      "pf": 0.978,
+      "sharpe": 0.14,
+      "max_dd": -0.0352,
+      "exit_tp_pct": 0.262,
+      "exit_sl_pct": 0.472
+    },
+    "all": {
+      "n": 477,
+      "wr": 0.3891,
+      "avg_pnl": -5e-05,
+      "pf": 0.993,
+      "sharpe": 0.08,
+      "max_dd": -0.0352,
+      "exit_tp_pct": 0.235,
+      "exit_sl_pct": 0.499
+    },
+    "dim_contrib": {
+      "关键位精确度": {
+        "wr_high": 0.0,
+        "wr_low": 0.399,
+        "delta": -0.399,
+        "n_high": 8,
+        "n_low": 469
+      },
+      "动量背离": {
+        "wr_high": 0.41,
+        "wr_low": 0.267,
+        "delta": 0.143,
+        "n_high": 417,
+        "n_low": 60
+      },
+      "量能验证": {
+        "wr_high": 0.403,
+        "wr_low": 0.111,
+        "delta": 0.292,
+        "n_high": 459,
+        "n_low": 18
+      },
+      "形态成熟度": {
+        "wr_high": 0.0,
+        "wr_low": 0.397,
+        "delta": -0.397,
+        "n_high": 6,
+        "n_low": 471
+      },
+      "谐波+多周期": {
+        "wr_high": 0.0,
+        "wr_low": 0.397,
+        "delta": -0.397,
+        "n_high": 6,
+        "n_low": 471
+      },
+      "鲸鱼+跨市场+微观": {
+        "wr_high": 0.384,
+        "wr_low": 0.487,
+        "delta": -0.104,
+        "n_high": 438,
+        "n_low": 39
+      },
+      "期权+订单流": {
+        "wr_high": 0.515,
+        "wr_low": 0.383,
+        "delta": 0.132,
+        "n_high": 33,
+        "n_low": 444
+      },
+      "L2+贝叶斯+宏观": {
+        "wr_high": 0.396,
+        "wr_low": 0.294,
+        "delta": 0.102,
+        "n_high": 460,
+        "n_low": 17
+      },
+      "LSTM+NLP情绪": {
+        "wr_high": 0.378,
+        "wr_low": 0.393,
+        "delta": -0.015,
+        "n_high": 37,
+        "n_low": 440
+      }
+    },
+    "signal_density": 10.89,
+    "avg_score": 86.1,
+    "n_signals": 477
+  },
+  "BNBUSDT_threshold_scan": {
+    "80": {
+      "n": 5045,
+      "wr": 0.4097,
+      "avg_pnl": -0.00044,
+      "pf": 0.928,
+      "sharpe": -0.39,
+      "max_dd": -0.0539,
+      "exit_tp_pct": 0.182,
+      "exit_sl_pct": 0.471
+    },
+    "100": {
+      "n": 2578,
+      "wr": 0.3986,
+      "avg_pnl": -0.00036,
+      "pf": 0.942,
+      "sharpe": -0.23,
+      "max_dd": -0.0539,
+      "exit_tp_pct": 0.202,
+      "exit_sl_pct": 0.483
+    },
+    "120": {
+      "n": 888,
+      "wr": 0.3984,
+      "avg_pnl": 9e-05,
+      "pf": 1.015,
+      "sharpe": 0.19,
+      "max_dd": -0.0362,
+      "exit_tp_pct": 0.233,
+      "exit_sl_pct": 0.493
+    },
+    "130": {
+      "n": 477,
+      "wr": 0.3891,
+      "avg_pnl": -5e-05,
+      "pf": 0.993,
+      "sharpe": 0.08,
+      "max_dd": -0.0352,
+      "exit_tp_pct": 0.235,
+      "exit_sl_pct": 0.499
+    },
+    "140": {
+      "n": 252,
+      "wr": 0.3918,
+      "avg_pnl": 0.00106,
+      "pf": 1.172,
+      "sharpe": 1.18,
+      "max_dd": -0.028,
+      "exit_tp_pct": 0.266,
+      "exit_sl_pct": 0.496
+    },
+    "150": {
+      "n": 78,
+      "wr": 0.4206,
+      "avg_pnl": 0.00263,
+      "pf": 1.509,
+      "sharpe": 2.52,
+      "max_dd": -0.0159,
+      "exit_tp_pct": 0.269,
+      "exit_sl_pct": 0.474
+    },
+    "160": {
+      "n": 18,
+      "wr": 0.4196,
+      "avg_pnl": 0.00169,
+      "pf": 1.316,
+      "sharpe": 1.3,
+      "max_dd": -0.0119,
+      "exit_tp_pct": 0.222,
+      "exit_sl_pct": 0.556
+    }
+  },
+  "BNBUSDT_best_threshold": 150,
+  "_meta": {
+    "ts": "2026-06-01 04:40 UTC",
+    "syms": [
+      "BTCUSDT",
+      "ETHUSDT",
+      "SOLUSDT",
+      "BNBUSDT"
+    ],
+    "fast": true,
+    "elapsed_s": 80.6
+  }
+}

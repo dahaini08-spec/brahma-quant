@@ -1,0 +1,199 @@
+{
+  "symbol": "GUAUSDT",
+  "created": "2026-05-13T04:29:29.793825+00:00",
+  "updated": "2026-05-13T13:34:01.950544+00:00",
+  "key_facts": [
+    "[05-13] SHORT 评分:69 入场:1.419~1.43035 SL:1.48995 R:R=3.0",
+    "[05-13] 筹码位: POC=1.2259 VAL=1.00591 VAH=1.43839",
+    "[05-13] SHORT 评分:69 入场:1.4547~1.46634 SL:1.52744 R:R=3.0",
+    "[05-13] 筹码位: POC=1.2259 VAL=1.10242 VAH=1.48181",
+    "[05-13] SHORT 评分:69 入场:1.4586~1.47027 SL:1.53153 R:R=3.0",
+    "[S202605130429] SHORT WIN +17.0%"
+  ],
+  "recent_rounds": [
+    {
+      "ts": "2026-05-13T04:29:29.793859+00:00",
+      "signal_id": "?",
+      "direction": "SHORT",
+      "entry": {
+        "low": 1.419,
+        "high": 1.430352,
+        "mid": 1.424676,
+        "worst": 1.419
+      },
+      "stop_loss": 1.48995,
+      "targets": {
+        "t1": {
+          "price": 1.30548,
+          "chg_pct": -8.0,
+          "rr": 1.6,
+          "note": "VAH突破确认位"
+        },
+        "t2": {
+          "price": 1.20615,
+          "chg_pct": -15.0,
+          "rr": 3.0,
+          "note": "等幅延伸目标"
+        },
+        "t3": {
+          "price": 1.099725,
+          "note": "扩展目标（部分止盈后持有）"
+        }
+      },
+      "score": 69,
+      "council_approved": true,
+      "council_score": 75,
+      "council_votes": {
+        "technician": "FAIL",
+        "chips": "PASS",
+        "derivatives": "PASS",
+        "risk_control": "PASS"
+      },
+      "levels": {
+        "poc": 1.2259,
+        "vah": 1.438385,
+        "val": 1.00591,
+        "hvn": [
+          1.10242,
+          1.12006,
+          1.1377,
+          1.1449,
+          1.1539
+        ],
+        "lvn": [
+          0.879695,
+          0.888685,
+          0.897675,
+          0.901575,
+          0.903725
+        ]
+      },
+      "outcome": null,
+      "pnl_pct": null
+    },
+    {
+      "ts": "2026-05-13T04:46:05.684405+00:00",
+      "signal_id": "?",
+      "direction": "SHORT",
+      "entry": {
+        "low": 1.4547,
+        "high": 1.4663376,
+        "mid": 1.4605188,
+        "worst": 1.4547
+      },
+      "stop_loss": 1.527435,
+      "targets": {
+        "t1": {
+          "price": 1.338324,
+          "chg_pct": -8.0,
+          "rr": 1.6,
+          "note": "VAH突破确认位"
+        },
+        "t2": {
+          "price": 1.236495,
+          "chg_pct": -15.0,
+          "rr": 3.0,
+          "note": "等幅延伸目标"
+        },
+        "t3": {
+          "price": 1.1273925,
+          "note": "扩展目标（部分止盈后持有）"
+        }
+      },
+      "score": 69,
+      "council_approved": true,
+      "council_score": 75,
+      "council_votes": {
+        "technician": "FAIL",
+        "chips": "PASS",
+        "derivatives": "PASS",
+        "risk_control": "PASS"
+      },
+      "levels": {
+        "poc": 1.2259,
+        "vah": 1.48181,
+        "val": 1.10242,
+        "hvn": [
+          1.10242,
+          1.12006,
+          1.1377,
+          1.1449,
+          1.1539
+        ],
+        "lvn": [
+          0.87679,
+          0.879695,
+          0.88377,
+          0.888685,
+          0.89075
+        ]
+      },
+      "outcome": null,
+      "pnl_pct": null
+    },
+    {
+      "ts": "2026-05-13T04:46:24.747209+00:00",
+      "signal_id": "?",
+      "direction": "SHORT",
+      "entry": {
+        "low": 1.4586,
+        "high": 1.4702688,
+        "mid": 1.4644344,
+        "worst": 1.4586
+      },
+      "stop_loss": 1.53153,
+      "targets": {
+        "t1": {
+          "price": 1.341912,
+          "chg_pct": -8.0,
+          "rr": 1.6,
+          "note": "VAH突破确认位"
+        },
+        "t2": {
+          "price": 1.23981,
+          "chg_pct": -15.0,
+          "rr": 3.0,
+          "note": "等幅延伸目标"
+        },
+        "t3": {
+          "price": 1.130415,
+          "note": "扩展目标（部分止盈后持有）"
+        }
+      },
+      "score": 69,
+      "council_approved": true,
+      "council_score": 75,
+      "council_votes": {
+        "technician": "FAIL",
+        "chips": "PASS",
+        "derivatives": "PASS",
+        "risk_control": "PASS"
+      },
+      "levels": {
+        "poc": 1.2259,
+        "vah": 1.48181,
+        "val": 1.10242,
+        "hvn": [
+          1.10242,
+          1.12006,
+          1.1377,
+          1.1449,
+          1.1539
+        ],
+        "lvn": [
+          0.87679,
+          0.879695,
+          0.88377,
+          0.888685,
+          0.89075
+        ]
+      },
+      "outcome": null,
+      "pnl_pct": null
+    }
+  ],
+  "summary": "",
+  "win_count": 1,
+  "loss_count": 0,
+  "total_signals": 3
+}

@@ -1,0 +1,1114 @@
+{
+  "_meta": {
+    "ts": "20260607_053712",
+    "version": "M03",
+    "syms": 17
+  },
+  "matrix": {
+    "BTCUSDT": {
+      "BEAR_TREND": {
+        "best_dir": "SHORT",
+        "long_pf": 0.72,
+        "short_pf": 1.95,
+        "long_wr": 0.487,
+        "short_wr": 0.539,
+        "confidence": "HIGH",
+        "note": "N14铁证做空优先"
+      },
+      "BULL_TREND": {
+        "best_dir": "LONG",
+        "long_pf": 1.814,
+        "short_pf": 0.85,
+        "long_wr": 0.539,
+        "short_wr": 0.487,
+        "confidence": "HIGH",
+        "note": "N14铁证做多优先"
+      },
+      "BEAR_RECOVERY": {
+        "best_dir": "LONG",
+        "long_pf": 1.56,
+        "short_pf": 0.9,
+        "long_wr": 0.539,
+        "short_wr": 0.487,
+        "confidence": "HIGH",
+        "note": "反弹期做多为主"
+      },
+      "BULL_PEAK": {
+        "best_dir": "SHORT",
+        "long_pf": 0.8,
+        "short_pf": 1.44,
+        "long_wr": 0.487,
+        "short_wr": 0.539,
+        "confidence": "HIGH",
+        "note": "顶部区域偏空"
+      },
+      "CHOP": {
+        "best_dir": "BOTH",
+        "long_pf": 1.32,
+        "short_pf": 1.32,
+        "long_wr": 0.487,
+        "short_wr": 0.487,
+        "confidence": "HIGH",
+        "note": "震荡双向"
+      },
+      "BEAR_CRASH": {
+        "best_dir": "SHORT",
+        "long_pf": 0.4,
+        "short_pf": 0.6,
+        "long_wr": 0.487,
+        "short_wr": 0.539,
+        "confidence": "HIGH",
+        "note": "崩盘全面禁止"
+      },
+      "UNKNOWN": {
+        "best_dir": "BOTH",
+        "long_pf": 1.0,
+        "short_pf": 1.0,
+        "long_wr": 0.487,
+        "short_wr": 0.487,
+        "confidence": "HIGH",
+        "note": "未知体制中性"
+      }
+    },
+    "ETHUSDT": {
+      "BEAR_TREND": {
+        "best_dir": "SHORT",
+        "long_pf": 0.72,
+        "short_pf": 1.95,
+        "long_wr": 0.503,
+        "short_wr": 0.557,
+        "confidence": "HIGH",
+        "note": "N14铁证做空优先"
+      },
+      "BULL_TREND": {
+        "best_dir": "LONG",
+        "long_pf": 1.814,
+        "short_pf": 0.85,
+        "long_wr": 0.557,
+        "short_wr": 0.503,
+        "confidence": "HIGH",
+        "note": "N14铁证做多优先"
+      },
+      "BEAR_RECOVERY": {
+        "best_dir": "LONG",
+        "long_pf": 1.56,
+        "short_pf": 0.9,
+        "long_wr": 0.557,
+        "short_wr": 0.503,
+        "confidence": "HIGH",
+        "note": "反弹期做多为主"
+      },
+      "BULL_PEAK": {
+        "best_dir": "SHORT",
+        "long_pf": 0.8,
+        "short_pf": 1.44,
+        "long_wr": 0.503,
+        "short_wr": 0.557,
+        "confidence": "HIGH",
+        "note": "顶部区域偏空"
+      },
+      "CHOP": {
+        "best_dir": "BOTH",
+        "long_pf": 1.32,
+        "short_pf": 1.32,
+        "long_wr": 0.503,
+        "short_wr": 0.503,
+        "confidence": "HIGH",
+        "note": "震荡双向"
+      },
+      "BEAR_CRASH": {
+        "best_dir": "SHORT",
+        "long_pf": 0.4,
+        "short_pf": 0.6,
+        "long_wr": 0.503,
+        "short_wr": 0.557,
+        "confidence": "HIGH",
+        "note": "崩盘全面禁止"
+      },
+      "UNKNOWN": {
+        "best_dir": "BOTH",
+        "long_pf": 1.0,
+        "short_pf": 1.0,
+        "long_wr": 0.503,
+        "short_wr": 0.503,
+        "confidence": "HIGH",
+        "note": "未知体制中性"
+      }
+    },
+    "DOGEUSDT": {
+      "BEAR_TREND": {
+        "best_dir": "SHORT",
+        "long_pf": 0.72,
+        "short_pf": 1.95,
+        "long_wr": 0.592,
+        "short_wr": 0.654,
+        "confidence": "HIGH",
+        "note": "N14铁证做空优先"
+      },
+      "BULL_TREND": {
+        "best_dir": "LONG",
+        "long_pf": 1.814,
+        "short_pf": 0.85,
+        "long_wr": 0.654,
+        "short_wr": 0.592,
+        "confidence": "HIGH",
+        "note": "N14铁证做多优先"
+      },
+      "BEAR_RECOVERY": {
+        "best_dir": "LONG",
+        "long_pf": 1.56,
+        "short_pf": 0.9,
+        "long_wr": 0.654,
+        "short_wr": 0.592,
+        "confidence": "HIGH",
+        "note": "反弹期做多为主"
+      },
+      "BULL_PEAK": {
+        "best_dir": "SHORT",
+        "long_pf": 0.8,
+        "short_pf": 1.44,
+        "long_wr": 0.592,
+        "short_wr": 0.654,
+        "confidence": "HIGH",
+        "note": "顶部区域偏空"
+      },
+      "CHOP": {
+        "best_dir": "BOTH",
+        "long_pf": 1.32,
+        "short_pf": 1.32,
+        "long_wr": 0.592,
+        "short_wr": 0.592,
+        "confidence": "HIGH",
+        "note": "震荡双向"
+      },
+      "BEAR_CRASH": {
+        "best_dir": "SHORT",
+        "long_pf": 0.4,
+        "short_pf": 0.6,
+        "long_wr": 0.592,
+        "short_wr": 0.654,
+        "confidence": "HIGH",
+        "note": "崩盘全面禁止"
+      },
+      "UNKNOWN": {
+        "best_dir": "BOTH",
+        "long_pf": 1.0,
+        "short_pf": 1.0,
+        "long_wr": 0.592,
+        "short_wr": 0.592,
+        "confidence": "HIGH",
+        "note": "未知体制中性"
+      }
+    },
+    "SOLUSDT": {
+      "BEAR_TREND": {
+        "best_dir": "SHORT",
+        "long_pf": 0.72,
+        "short_pf": 1.95,
+        "long_wr": 0.482,
+        "short_wr": 0.532,
+        "confidence": "HIGH",
+        "note": "N14铁证做空优先"
+      },
+      "BULL_TREND": {
+        "best_dir": "LONG",
+        "long_pf": 1.814,
+        "short_pf": 0.85,
+        "long_wr": 0.532,
+        "short_wr": 0.482,
+        "confidence": "HIGH",
+        "note": "N14铁证做多优先"
+      },
+      "BEAR_RECOVERY": {
+        "best_dir": "LONG",
+        "long_pf": 1.56,
+        "short_pf": 0.9,
+        "long_wr": 0.532,
+        "short_wr": 0.482,
+        "confidence": "HIGH",
+        "note": "反弹期做多为主"
+      },
+      "BULL_PEAK": {
+        "best_dir": "SHORT",
+        "long_pf": 0.8,
+        "short_pf": 1.44,
+        "long_wr": 0.482,
+        "short_wr": 0.532,
+        "confidence": "HIGH",
+        "note": "顶部区域偏空"
+      },
+      "CHOP": {
+        "best_dir": "BOTH",
+        "long_pf": 1.32,
+        "short_pf": 1.32,
+        "long_wr": 0.482,
+        "short_wr": 0.482,
+        "confidence": "HIGH",
+        "note": "震荡双向"
+      },
+      "BEAR_CRASH": {
+        "best_dir": "SHORT",
+        "long_pf": 0.4,
+        "short_pf": 0.6,
+        "long_wr": 0.482,
+        "short_wr": 0.532,
+        "confidence": "HIGH",
+        "note": "崩盘全面禁止"
+      },
+      "UNKNOWN": {
+        "best_dir": "BOTH",
+        "long_pf": 1.0,
+        "short_pf": 1.0,
+        "long_wr": 0.482,
+        "short_wr": 0.482,
+        "confidence": "HIGH",
+        "note": "未知体制中性"
+      }
+    },
+    "LINKUSDT": {
+      "BEAR_TREND": {
+        "best_dir": "SHORT",
+        "long_pf": 0.72,
+        "short_pf": 1.95,
+        "long_wr": 0.661,
+        "short_wr": 0.731,
+        "confidence": "MED",
+        "note": "N14铁证做空优先"
+      },
+      "BULL_TREND": {
+        "best_dir": "LONG",
+        "long_pf": 1.814,
+        "short_pf": 0.85,
+        "long_wr": 0.731,
+        "short_wr": 0.661,
+        "confidence": "MED",
+        "note": "N14铁证做多优先"
+      },
+      "BEAR_RECOVERY": {
+        "best_dir": "LONG",
+        "long_pf": 1.56,
+        "short_pf": 0.9,
+        "long_wr": 0.731,
+        "short_wr": 0.661,
+        "confidence": "MED",
+        "note": "反弹期做多为主"
+      },
+      "BULL_PEAK": {
+        "best_dir": "SHORT",
+        "long_pf": 0.8,
+        "short_pf": 1.44,
+        "long_wr": 0.661,
+        "short_wr": 0.731,
+        "confidence": "MED",
+        "note": "顶部区域偏空"
+      },
+      "CHOP": {
+        "best_dir": "BOTH",
+        "long_pf": 1.32,
+        "short_pf": 1.32,
+        "long_wr": 0.661,
+        "short_wr": 0.661,
+        "confidence": "MED",
+        "note": "震荡双向"
+      },
+      "BEAR_CRASH": {
+        "best_dir": "SHORT",
+        "long_pf": 0.4,
+        "short_pf": 0.6,
+        "long_wr": 0.661,
+        "short_wr": 0.731,
+        "confidence": "MED",
+        "note": "崩盘全面禁止"
+      },
+      "UNKNOWN": {
+        "best_dir": "BOTH",
+        "long_pf": 1.0,
+        "short_pf": 1.0,
+        "long_wr": 0.661,
+        "short_wr": 0.661,
+        "confidence": "MED",
+        "note": "未知体制中性"
+      }
+    },
+    "WLDUSDT": {
+      "BEAR_TREND": {
+        "best_dir": "SHORT",
+        "long_pf": 0.72,
+        "short_pf": 1.95,
+        "long_wr": 0.534,
+        "short_wr": 0.59,
+        "confidence": "HIGH",
+        "note": "N14铁证做空优先"
+      },
+      "BULL_TREND": {
+        "best_dir": "LONG",
+        "long_pf": 1.814,
+        "short_pf": 0.85,
+        "long_wr": 0.59,
+        "short_wr": 0.534,
+        "confidence": "HIGH",
+        "note": "N14铁证做多优先"
+      },
+      "BEAR_RECOVERY": {
+        "best_dir": "LONG",
+        "long_pf": 1.56,
+        "short_pf": 0.9,
+        "long_wr": 0.59,
+        "short_wr": 0.534,
+        "confidence": "HIGH",
+        "note": "反弹期做多为主"
+      },
+      "BULL_PEAK": {
+        "best_dir": "SHORT",
+        "long_pf": 0.8,
+        "short_pf": 1.44,
+        "long_wr": 0.534,
+        "short_wr": 0.59,
+        "confidence": "HIGH",
+        "note": "顶部区域偏空"
+      },
+      "CHOP": {
+        "best_dir": "BOTH",
+        "long_pf": 1.32,
+        "short_pf": 1.32,
+        "long_wr": 0.534,
+        "short_wr": 0.534,
+        "confidence": "HIGH",
+        "note": "震荡双向"
+      },
+      "BEAR_CRASH": {
+        "best_dir": "SHORT",
+        "long_pf": 0.4,
+        "short_pf": 0.6,
+        "long_wr": 0.534,
+        "short_wr": 0.59,
+        "confidence": "HIGH",
+        "note": "崩盘全面禁止"
+      },
+      "UNKNOWN": {
+        "best_dir": "BOTH",
+        "long_pf": 1.0,
+        "short_pf": 1.0,
+        "long_wr": 0.534,
+        "short_wr": 0.534,
+        "confidence": "HIGH",
+        "note": "未知体制中性"
+      }
+    },
+    "DOTUSDT": {
+      "BEAR_TREND": {
+        "best_dir": "SHORT",
+        "long_pf": 0.72,
+        "short_pf": 1.95,
+        "long_wr": 0.468,
+        "short_wr": 0.518,
+        "confidence": "HIGH",
+        "note": "N14铁证做空优先"
+      },
+      "BULL_TREND": {
+        "best_dir": "LONG",
+        "long_pf": 1.814,
+        "short_pf": 0.85,
+        "long_wr": 0.518,
+        "short_wr": 0.468,
+        "confidence": "HIGH",
+        "note": "N14铁证做多优先"
+      },
+      "BEAR_RECOVERY": {
+        "best_dir": "LONG",
+        "long_pf": 1.56,
+        "short_pf": 0.9,
+        "long_wr": 0.518,
+        "short_wr": 0.468,
+        "confidence": "HIGH",
+        "note": "反弹期做多为主"
+      },
+      "BULL_PEAK": {
+        "best_dir": "SHORT",
+        "long_pf": 0.8,
+        "short_pf": 1.44,
+        "long_wr": 0.468,
+        "short_wr": 0.518,
+        "confidence": "HIGH",
+        "note": "顶部区域偏空"
+      },
+      "CHOP": {
+        "best_dir": "BOTH",
+        "long_pf": 1.32,
+        "short_pf": 1.32,
+        "long_wr": 0.468,
+        "short_wr": 0.468,
+        "confidence": "HIGH",
+        "note": "震荡双向"
+      },
+      "BEAR_CRASH": {
+        "best_dir": "SHORT",
+        "long_pf": 0.4,
+        "short_pf": 0.6,
+        "long_wr": 0.468,
+        "short_wr": 0.518,
+        "confidence": "HIGH",
+        "note": "崩盘全面禁止"
+      },
+      "UNKNOWN": {
+        "best_dir": "BOTH",
+        "long_pf": 1.0,
+        "short_pf": 1.0,
+        "long_wr": 0.468,
+        "short_wr": 0.468,
+        "confidence": "HIGH",
+        "note": "未知体制中性"
+      }
+    },
+    "ATOMUSDT": {
+      "BEAR_TREND": {
+        "best_dir": "SHORT",
+        "long_pf": 0.72,
+        "short_pf": 1.95,
+        "long_wr": 0.424,
+        "short_wr": 0.468,
+        "confidence": "HIGH",
+        "note": "N14铁证做空优先"
+      },
+      "BULL_TREND": {
+        "best_dir": "LONG",
+        "long_pf": 1.814,
+        "short_pf": 0.85,
+        "long_wr": 0.468,
+        "short_wr": 0.424,
+        "confidence": "HIGH",
+        "note": "N14铁证做多优先"
+      },
+      "BEAR_RECOVERY": {
+        "best_dir": "LONG",
+        "long_pf": 1.56,
+        "short_pf": 0.9,
+        "long_wr": 0.468,
+        "short_wr": 0.424,
+        "confidence": "HIGH",
+        "note": "反弹期做多为主"
+      },
+      "BULL_PEAK": {
+        "best_dir": "SHORT",
+        "long_pf": 0.8,
+        "short_pf": 1.44,
+        "long_wr": 0.424,
+        "short_wr": 0.468,
+        "confidence": "HIGH",
+        "note": "顶部区域偏空"
+      },
+      "CHOP": {
+        "best_dir": "BOTH",
+        "long_pf": 1.32,
+        "short_pf": 1.32,
+        "long_wr": 0.424,
+        "short_wr": 0.424,
+        "confidence": "HIGH",
+        "note": "震荡双向"
+      },
+      "BEAR_CRASH": {
+        "best_dir": "SHORT",
+        "long_pf": 0.4,
+        "short_pf": 0.6,
+        "long_wr": 0.424,
+        "short_wr": 0.468,
+        "confidence": "HIGH",
+        "note": "崩盘全面禁止"
+      },
+      "UNKNOWN": {
+        "best_dir": "BOTH",
+        "long_pf": 1.0,
+        "short_pf": 1.0,
+        "long_wr": 0.424,
+        "short_wr": 0.424,
+        "confidence": "HIGH",
+        "note": "未知体制中性"
+      }
+    },
+    "ADAUSDT": {
+      "BEAR_TREND": {
+        "best_dir": "SHORT",
+        "long_pf": 0.72,
+        "short_pf": 1.95,
+        "long_wr": 0.462,
+        "short_wr": 0.51,
+        "confidence": "HIGH",
+        "note": "N14铁证做空优先"
+      },
+      "BULL_TREND": {
+        "best_dir": "LONG",
+        "long_pf": 1.814,
+        "short_pf": 0.85,
+        "long_wr": 0.51,
+        "short_wr": 0.462,
+        "confidence": "HIGH",
+        "note": "N14铁证做多优先"
+      },
+      "BEAR_RECOVERY": {
+        "best_dir": "LONG",
+        "long_pf": 1.56,
+        "short_pf": 0.9,
+        "long_wr": 0.51,
+        "short_wr": 0.462,
+        "confidence": "HIGH",
+        "note": "反弹期做多为主"
+      },
+      "BULL_PEAK": {
+        "best_dir": "SHORT",
+        "long_pf": 0.8,
+        "short_pf": 1.44,
+        "long_wr": 0.462,
+        "short_wr": 0.51,
+        "confidence": "HIGH",
+        "note": "顶部区域偏空"
+      },
+      "CHOP": {
+        "best_dir": "BOTH",
+        "long_pf": 1.32,
+        "short_pf": 1.32,
+        "long_wr": 0.462,
+        "short_wr": 0.462,
+        "confidence": "HIGH",
+        "note": "震荡双向"
+      },
+      "BEAR_CRASH": {
+        "best_dir": "SHORT",
+        "long_pf": 0.4,
+        "short_pf": 0.6,
+        "long_wr": 0.462,
+        "short_wr": 0.51,
+        "confidence": "HIGH",
+        "note": "崩盘全面禁止"
+      },
+      "UNKNOWN": {
+        "best_dir": "BOTH",
+        "long_pf": 1.0,
+        "short_pf": 1.0,
+        "long_wr": 0.462,
+        "short_wr": 0.462,
+        "confidence": "HIGH",
+        "note": "未知体制中性"
+      }
+    },
+    "LTCUSDT": {
+      "BEAR_TREND": {
+        "best_dir": "SHORT",
+        "long_pf": 0.72,
+        "short_pf": 1.95,
+        "long_wr": 0.47,
+        "short_wr": 0.52,
+        "confidence": "HIGH",
+        "note": "N14铁证做空优先"
+      },
+      "BULL_TREND": {
+        "best_dir": "LONG",
+        "long_pf": 1.814,
+        "short_pf": 0.85,
+        "long_wr": 0.52,
+        "short_wr": 0.47,
+        "confidence": "HIGH",
+        "note": "N14铁证做多优先"
+      },
+      "BEAR_RECOVERY": {
+        "best_dir": "LONG",
+        "long_pf": 1.56,
+        "short_pf": 0.9,
+        "long_wr": 0.52,
+        "short_wr": 0.47,
+        "confidence": "HIGH",
+        "note": "反弹期做多为主"
+      },
+      "BULL_PEAK": {
+        "best_dir": "SHORT",
+        "long_pf": 0.8,
+        "short_pf": 1.44,
+        "long_wr": 0.47,
+        "short_wr": 0.52,
+        "confidence": "HIGH",
+        "note": "顶部区域偏空"
+      },
+      "CHOP": {
+        "best_dir": "BOTH",
+        "long_pf": 1.32,
+        "short_pf": 1.32,
+        "long_wr": 0.47,
+        "short_wr": 0.47,
+        "confidence": "HIGH",
+        "note": "震荡双向"
+      },
+      "BEAR_CRASH": {
+        "best_dir": "SHORT",
+        "long_pf": 0.4,
+        "short_pf": 0.6,
+        "long_wr": 0.47,
+        "short_wr": 0.52,
+        "confidence": "HIGH",
+        "note": "崩盘全面禁止"
+      },
+      "UNKNOWN": {
+        "best_dir": "BOTH",
+        "long_pf": 1.0,
+        "short_pf": 1.0,
+        "long_wr": 0.47,
+        "short_wr": 0.47,
+        "confidence": "HIGH",
+        "note": "未知体制中性"
+      }
+    },
+    "BNBUSDT": {
+      "BEAR_TREND": {
+        "best_dir": "SHORT",
+        "long_pf": 0.72,
+        "short_pf": 1.95,
+        "long_wr": 0.446,
+        "short_wr": 0.493,
+        "confidence": "HIGH",
+        "note": "N14铁证做空优先"
+      },
+      "BULL_TREND": {
+        "best_dir": "LONG",
+        "long_pf": 1.814,
+        "short_pf": 0.85,
+        "long_wr": 0.493,
+        "short_wr": 0.446,
+        "confidence": "HIGH",
+        "note": "N14铁证做多优先"
+      },
+      "BEAR_RECOVERY": {
+        "best_dir": "LONG",
+        "long_pf": 1.56,
+        "short_pf": 0.9,
+        "long_wr": 0.493,
+        "short_wr": 0.446,
+        "confidence": "HIGH",
+        "note": "反弹期做多为主"
+      },
+      "BULL_PEAK": {
+        "best_dir": "SHORT",
+        "long_pf": 0.8,
+        "short_pf": 1.44,
+        "long_wr": 0.446,
+        "short_wr": 0.493,
+        "confidence": "HIGH",
+        "note": "顶部区域偏空"
+      },
+      "CHOP": {
+        "best_dir": "BOTH",
+        "long_pf": 1.32,
+        "short_pf": 1.32,
+        "long_wr": 0.446,
+        "short_wr": 0.446,
+        "confidence": "HIGH",
+        "note": "震荡双向"
+      },
+      "BEAR_CRASH": {
+        "best_dir": "SHORT",
+        "long_pf": 0.4,
+        "short_pf": 0.6,
+        "long_wr": 0.446,
+        "short_wr": 0.493,
+        "confidence": "HIGH",
+        "note": "崩盘全面禁止"
+      },
+      "UNKNOWN": {
+        "best_dir": "BOTH",
+        "long_pf": 1.0,
+        "short_pf": 1.0,
+        "long_wr": 0.446,
+        "short_wr": 0.446,
+        "confidence": "HIGH",
+        "note": "未知体制中性"
+      }
+    },
+    "TIAUSDT": {
+      "BEAR_TREND": {
+        "best_dir": "SHORT",
+        "long_pf": 0.72,
+        "short_pf": 1.95,
+        "long_wr": 0.52,
+        "short_wr": 0.574,
+        "confidence": "HIGH",
+        "note": "N14铁证做空优先"
+      },
+      "BULL_TREND": {
+        "best_dir": "LONG",
+        "long_pf": 1.814,
+        "short_pf": 0.85,
+        "long_wr": 0.574,
+        "short_wr": 0.52,
+        "confidence": "HIGH",
+        "note": "N14铁证做多优先"
+      },
+      "BEAR_RECOVERY": {
+        "best_dir": "LONG",
+        "long_pf": 1.56,
+        "short_pf": 0.9,
+        "long_wr": 0.574,
+        "short_wr": 0.52,
+        "confidence": "HIGH",
+        "note": "反弹期做多为主"
+      },
+      "BULL_PEAK": {
+        "best_dir": "SHORT",
+        "long_pf": 0.8,
+        "short_pf": 1.44,
+        "long_wr": 0.52,
+        "short_wr": 0.574,
+        "confidence": "HIGH",
+        "note": "顶部区域偏空"
+      },
+      "CHOP": {
+        "best_dir": "BOTH",
+        "long_pf": 1.32,
+        "short_pf": 1.32,
+        "long_wr": 0.52,
+        "short_wr": 0.52,
+        "confidence": "HIGH",
+        "note": "震荡双向"
+      },
+      "BEAR_CRASH": {
+        "best_dir": "SHORT",
+        "long_pf": 0.4,
+        "short_pf": 0.6,
+        "long_wr": 0.52,
+        "short_wr": 0.574,
+        "confidence": "HIGH",
+        "note": "崩盘全面禁止"
+      },
+      "UNKNOWN": {
+        "best_dir": "BOTH",
+        "long_pf": 1.0,
+        "short_pf": 1.0,
+        "long_wr": 0.52,
+        "short_wr": 0.52,
+        "confidence": "HIGH",
+        "note": "未知体制中性"
+      }
+    },
+    "XAUUSDT": {
+      "BEAR_TREND": {
+        "best_dir": "SHORT",
+        "long_pf": 0.72,
+        "short_pf": 1.95,
+        "long_wr": 0.511,
+        "short_wr": 0.565,
+        "confidence": "MED",
+        "note": "N14铁证做空优先"
+      },
+      "BULL_TREND": {
+        "best_dir": "LONG",
+        "long_pf": 1.814,
+        "short_pf": 0.85,
+        "long_wr": 0.565,
+        "short_wr": 0.511,
+        "confidence": "MED",
+        "note": "N14铁证做多优先"
+      },
+      "BEAR_RECOVERY": {
+        "best_dir": "LONG",
+        "long_pf": 1.56,
+        "short_pf": 0.9,
+        "long_wr": 0.565,
+        "short_wr": 0.511,
+        "confidence": "MED",
+        "note": "反弹期做多为主"
+      },
+      "BULL_PEAK": {
+        "best_dir": "SHORT",
+        "long_pf": 0.8,
+        "short_pf": 1.44,
+        "long_wr": 0.511,
+        "short_wr": 0.565,
+        "confidence": "MED",
+        "note": "顶部区域偏空"
+      },
+      "CHOP": {
+        "best_dir": "BOTH",
+        "long_pf": 1.32,
+        "short_pf": 1.32,
+        "long_wr": 0.511,
+        "short_wr": 0.511,
+        "confidence": "MED",
+        "note": "震荡双向"
+      },
+      "BEAR_CRASH": {
+        "best_dir": "SHORT",
+        "long_pf": 0.4,
+        "short_pf": 0.6,
+        "long_wr": 0.511,
+        "short_wr": 0.565,
+        "confidence": "MED",
+        "note": "崩盘全面禁止"
+      },
+      "UNKNOWN": {
+        "best_dir": "BOTH",
+        "long_pf": 1.0,
+        "short_pf": 1.0,
+        "long_wr": 0.511,
+        "short_wr": 0.511,
+        "confidence": "MED",
+        "note": "未知体制中性"
+      }
+    },
+    "AVAXUSDT": {
+      "BEAR_TREND": {
+        "best_dir": "SHORT",
+        "long_pf": 0.72,
+        "short_pf": 1.832,
+        "long_wr": 0.513,
+        "short_wr": 0.567,
+        "confidence": "HIGH",
+        "note": "N14铁证做空优先"
+      },
+      "BULL_TREND": {
+        "best_dir": "LONG",
+        "long_pf": 1.704,
+        "short_pf": 0.85,
+        "long_wr": 0.567,
+        "short_wr": 0.513,
+        "confidence": "HIGH",
+        "note": "N14铁证做多优先"
+      },
+      "BEAR_RECOVERY": {
+        "best_dir": "LONG",
+        "long_pf": 1.465,
+        "short_pf": 0.9,
+        "long_wr": 0.567,
+        "short_wr": 0.513,
+        "confidence": "HIGH",
+        "note": "反弹期做多为主"
+      },
+      "BULL_PEAK": {
+        "best_dir": "SHORT",
+        "long_pf": 0.8,
+        "short_pf": 1.353,
+        "long_wr": 0.513,
+        "short_wr": 0.567,
+        "confidence": "HIGH",
+        "note": "顶部区域偏空"
+      },
+      "CHOP": {
+        "best_dir": "BOTH",
+        "long_pf": 1.24,
+        "short_pf": 1.24,
+        "long_wr": 0.513,
+        "short_wr": 0.513,
+        "confidence": "HIGH",
+        "note": "震荡双向"
+      },
+      "BEAR_CRASH": {
+        "best_dir": "SHORT",
+        "long_pf": 0.4,
+        "short_pf": 0.6,
+        "long_wr": 0.513,
+        "short_wr": 0.567,
+        "confidence": "HIGH",
+        "note": "崩盘全面禁止"
+      },
+      "UNKNOWN": {
+        "best_dir": "BOTH",
+        "long_pf": 1.0,
+        "short_pf": 1.0,
+        "long_wr": 0.513,
+        "short_wr": 0.513,
+        "confidence": "HIGH",
+        "note": "未知体制中性"
+      }
+    },
+    "TRXUSDT": {
+      "BEAR_TREND": {
+        "best_dir": "SHORT",
+        "long_pf": 0.72,
+        "short_pf": 1.862,
+        "long_wr": 0.488,
+        "short_wr": 0.54,
+        "confidence": "HIGH",
+        "note": "N14铁证做空优先"
+      },
+      "BULL_TREND": {
+        "best_dir": "LONG",
+        "long_pf": 1.732,
+        "short_pf": 0.85,
+        "long_wr": 0.54,
+        "short_wr": 0.488,
+        "confidence": "HIGH",
+        "note": "N14铁证做多优先"
+      },
+      "BEAR_RECOVERY": {
+        "best_dir": "LONG",
+        "long_pf": 1.49,
+        "short_pf": 0.9,
+        "long_wr": 0.54,
+        "short_wr": 0.488,
+        "confidence": "HIGH",
+        "note": "反弹期做多为主"
+      },
+      "BULL_PEAK": {
+        "best_dir": "SHORT",
+        "long_pf": 0.8,
+        "short_pf": 1.375,
+        "long_wr": 0.488,
+        "short_wr": 0.54,
+        "confidence": "HIGH",
+        "note": "顶部区域偏空"
+      },
+      "CHOP": {
+        "best_dir": "BOTH",
+        "long_pf": 1.26,
+        "short_pf": 1.26,
+        "long_wr": 0.488,
+        "short_wr": 0.488,
+        "confidence": "HIGH",
+        "note": "震荡双向"
+      },
+      "BEAR_CRASH": {
+        "best_dir": "SHORT",
+        "long_pf": 0.4,
+        "short_pf": 0.6,
+        "long_wr": 0.488,
+        "short_wr": 0.54,
+        "confidence": "HIGH",
+        "note": "崩盘全面禁止"
+      },
+      "UNKNOWN": {
+        "best_dir": "BOTH",
+        "long_pf": 1.0,
+        "short_pf": 1.0,
+        "long_wr": 0.488,
+        "short_wr": 0.488,
+        "confidence": "HIGH",
+        "note": "未知体制中性"
+      }
+    },
+    "RENDERUSDT": {
+      "BEAR_TREND": {
+        "best_dir": "SHORT",
+        "long_pf": 0.72,
+        "short_pf": 1.883,
+        "long_wr": 0.429,
+        "short_wr": 0.475,
+        "confidence": "MED",
+        "note": "N14铁证做空优先"
+      },
+      "BULL_TREND": {
+        "best_dir": "LONG",
+        "long_pf": 1.752,
+        "short_pf": 0.85,
+        "long_wr": 0.475,
+        "short_wr": 0.429,
+        "confidence": "MED",
+        "note": "N14铁证做多优先"
+      },
+      "BEAR_RECOVERY": {
+        "best_dir": "LONG",
+        "long_pf": 1.506,
+        "short_pf": 0.9,
+        "long_wr": 0.475,
+        "short_wr": 0.429,
+        "confidence": "MED",
+        "note": "反弹期做多为主"
+      },
+      "BULL_PEAK": {
+        "best_dir": "SHORT",
+        "long_pf": 0.8,
+        "short_pf": 1.39,
+        "long_wr": 0.429,
+        "short_wr": 0.475,
+        "confidence": "MED",
+        "note": "顶部区域偏空"
+      },
+      "CHOP": {
+        "best_dir": "BOTH",
+        "long_pf": 1.275,
+        "short_pf": 1.275,
+        "long_wr": 0.429,
+        "short_wr": 0.429,
+        "confidence": "MED",
+        "note": "震荡双向"
+      },
+      "BEAR_CRASH": {
+        "best_dir": "SHORT",
+        "long_pf": 0.4,
+        "short_pf": 0.6,
+        "long_wr": 0.429,
+        "short_wr": 0.475,
+        "confidence": "MED",
+        "note": "崩盘全面禁止"
+      },
+      "UNKNOWN": {
+        "best_dir": "BOTH",
+        "long_pf": 1.0,
+        "short_pf": 1.0,
+        "long_wr": 0.429,
+        "short_wr": 0.429,
+        "confidence": "MED",
+        "note": "未知体制中性"
+      }
+    },
+    "1000PEPEUSDT": {
+      "BEAR_TREND": {
+        "best_dir": "SHORT",
+        "long_pf": 0.72,
+        "short_pf": 1.95,
+        "long_wr": 0.442,
+        "short_wr": 0.488,
+        "confidence": "HIGH",
+        "note": "N14铁证做空优先"
+      },
+      "BULL_TREND": {
+        "best_dir": "LONG",
+        "long_pf": 1.814,
+        "short_pf": 0.85,
+        "long_wr": 0.488,
+        "short_wr": 0.442,
+        "confidence": "HIGH",
+        "note": "N14铁证做多优先"
+      },
+      "BEAR_RECOVERY": {
+        "best_dir": "LONG",
+        "long_pf": 1.56,
+        "short_pf": 0.9,
+        "long_wr": 0.488,
+        "short_wr": 0.442,
+        "confidence": "HIGH",
+        "note": "反弹期做多为主"
+      },
+      "BULL_PEAK": {
+        "best_dir": "SHORT",
+        "long_pf": 0.8,
+        "short_pf": 1.44,
+        "long_wr": 0.442,
+        "short_wr": 0.488,
+        "confidence": "HIGH",
+        "note": "顶部区域偏空"
+      },
+      "CHOP": {
+        "best_dir": "BOTH",
+        "long_pf": 1.32,
+        "short_pf": 1.32,
+        "long_wr": 0.442,
+        "short_wr": 0.442,
+        "confidence": "HIGH",
+        "note": "震荡双向"
+      },
+      "BEAR_CRASH": {
+        "best_dir": "SHORT",
+        "long_pf": 0.4,
+        "short_pf": 0.6,
+        "long_wr": 0.442,
+        "short_wr": 0.488,
+        "confidence": "HIGH",
+        "note": "崩盘全面禁止"
+      },
+      "UNKNOWN": {
+        "best_dir": "BOTH",
+        "long_pf": 1.0,
+        "short_pf": 1.0,
+        "long_wr": 0.442,
+        "short_wr": 0.442,
+        "confidence": "HIGH",
+        "note": "未知体制中性"
+      }
+    }
+  }
+}

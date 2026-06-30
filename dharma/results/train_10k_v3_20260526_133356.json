@@ -1,0 +1,1327 @@
+{
+  "_meta": {
+    "stamp": "20260526_133356",
+    "n_iter": 10000,
+    "fast": false,
+    "version": "v3"
+  },
+  "N07_adaptive_thr": {
+    "fixed_130": {
+      "n": 2222,
+      "pf": 1.2098,
+      "ci": [
+        1.0573,
+        1.373
+      ],
+      "stable": true
+    },
+    "adaptive": {
+      "n": 1095,
+      "pf": 1.2443,
+      "ci": [
+        1.044,
+        1.4704
+      ],
+      "stable": true
+    },
+    "delta_pf": 0.0345,
+    "adaptive_thresholds": {
+      "BULL_TREND": 120,
+      "BULL_PEAK": 130,
+      "BEAR_TREND": 150,
+      "BEAR_CRASH": 130,
+      "RECOVERY": 130,
+      "CHOP": 150,
+      "DEFAULT": 130
+    }
+  },
+  "N08_rsi_layers": {
+    "by_rsi_range": {
+      "超卖<25": {
+        "all": {
+          "n": 297,
+          "pf": 1.3077,
+          "ci": [
+            0.9158,
+            1.8367
+          ],
+          "stable": false
+        },
+        "long": {
+          "n": 2,
+          "pf": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ]
+        },
+        "short": {
+          "n": 295,
+          "pf": 1.3078,
+          "ci": [
+            0.913,
+            1.7983
+          ],
+          "stable": false
+        }
+      },
+      "25~35": {
+        "all": {
+          "n": 600,
+          "pf": 1.1075,
+          "ci": [
+            0.8617,
+            1.4078
+          ],
+          "stable": false
+        },
+        "long": {
+          "n": 14,
+          "pf": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ],
+          "stable": false
+        },
+        "short": {
+          "n": 586,
+          "pf": 1.1099,
+          "ci": [
+            0.8537,
+            1.4051
+          ],
+          "stable": false
+        }
+      },
+      "35~45": {
+        "all": {
+          "n": 432,
+          "pf": 1.0967,
+          "ci": [
+            0.8109,
+            1.4445
+          ],
+          "stable": false
+        },
+        "long": {
+          "n": 8,
+          "pf": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ]
+        },
+        "short": {
+          "n": 424,
+          "pf": 1.0922,
+          "ci": [
+            0.8155,
+            1.4266
+          ],
+          "stable": false
+        }
+      },
+      "45~55": {
+        "all": {
+          "n": 144,
+          "pf": 1.3031,
+          "ci": [
+            0.8007,
+            2.0002
+          ],
+          "stable": false
+        },
+        "long": {
+          "n": 74,
+          "pf": 1.3173,
+          "ci": [
+            0.6588,
+            2.2563
+          ],
+          "stable": false
+        },
+        "short": {
+          "n": 70,
+          "pf": 1.3595,
+          "ci": [
+            0.6338,
+            2.5701
+          ],
+          "stable": false
+        }
+      },
+      "55~65": {
+        "all": {
+          "n": 412,
+          "pf": 1.3597,
+          "ci": [
+            1.0317,
+            1.7398
+          ],
+          "stable": true
+        },
+        "long": {
+          "n": 406,
+          "pf": 1.3143,
+          "ci": [
+            0.9943,
+            1.6899
+          ],
+          "stable": false
+        },
+        "short": {
+          "n": 6,
+          "pf": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "65~75": {
+        "all": {
+          "n": 586,
+          "pf": 1.2757,
+          "ci": [
+            1.0109,
+            1.5823
+          ],
+          "stable": true
+        },
+        "long": {
+          "n": 573,
+          "pf": 1.2897,
+          "ci": [
+            1.0213,
+            1.6123
+          ],
+          "stable": true
+        },
+        "short": {
+          "n": 13,
+          "pf": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ],
+          "stable": false
+        }
+      },
+      "超买>75": {
+        "all": {
+          "n": 369,
+          "pf": 1.4309,
+          "ci": [
+            1.0712,
+            1.8444
+          ],
+          "stable": true
+        },
+        "long": {
+          "n": 369,
+          "pf": 1.433,
+          "ci": [
+            1.0709,
+            1.8755
+          ],
+          "stable": true
+        },
+        "short": {
+          "n": 0,
+          "pf": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ]
+        }
+      }
+    },
+    "by_rsi_regime": {
+      "BULL_TREND": {
+        "best_range": "45~55",
+        "best_pf": 2.1015
+      },
+      "BULL_PEAK": {
+        "best_range": null,
+        "best_pf": 0.0
+      },
+      "BEAR_TREND": {
+        "best_range": "超卖<25",
+        "best_pf": 1.7249
+      },
+      "BEAR_CRASH": {
+        "best_range": null,
+        "best_pf": 0.0
+      },
+      "RECOVERY": {
+        "best_range": null,
+        "best_pf": 0.0
+      },
+      "CHOP": {
+        "best_range": "55~65",
+        "best_pf": 1.4798
+      }
+    },
+    "optimal_rsi": {
+      "LONG": {
+        "best_range": "超买>75",
+        "best_pf": 1.4214
+      },
+      "SHORT": {
+        "best_range": "超卖<25",
+        "best_pf": 1.2916
+      }
+    }
+  },
+  "N09_hour_regime": {
+    "matrix": {
+      "0": {
+        "BULL_TREND": {
+          "n": 14,
+          "pf": 0.0,
+          "stable": false
+        },
+        "BULL_PEAK": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 16,
+          "pf": 0.0,
+          "stable": false
+        },
+        "BEAR_CRASH": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 65,
+          "pf": 1.1533,
+          "stable": false
+        }
+      },
+      "1": {
+        "BULL_TREND": {
+          "n": 23,
+          "pf": 0.5539,
+          "stable": false
+        },
+        "BULL_PEAK": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 14,
+          "pf": 0.0,
+          "stable": false
+        },
+        "BEAR_CRASH": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 115,
+          "pf": 1.5654,
+          "stable": false
+        }
+      },
+      "2": {
+        "BULL_TREND": {
+          "n": 12,
+          "pf": 0.0,
+          "stable": false
+        },
+        "BULL_PEAK": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 3,
+          "pf": 0.0
+        },
+        "BEAR_CRASH": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 22,
+          "pf": 0.9493,
+          "stable": false
+        }
+      },
+      "3": {
+        "BULL_TREND": {
+          "n": 4,
+          "pf": 0.0
+        },
+        "BULL_PEAK": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 10,
+          "pf": 0.0,
+          "stable": false
+        },
+        "BEAR_CRASH": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 33,
+          "pf": 1.3871,
+          "stable": false
+        }
+      },
+      "4": {
+        "BULL_TREND": {
+          "n": 13,
+          "pf": 0.0,
+          "stable": false
+        },
+        "BULL_PEAK": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 13,
+          "pf": 0.0,
+          "stable": false
+        },
+        "BEAR_CRASH": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 82,
+          "pf": 1.3063,
+          "stable": false
+        }
+      },
+      "5": {
+        "BULL_TREND": {
+          "n": 10,
+          "pf": 0.0,
+          "stable": false
+        },
+        "BULL_PEAK": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 2,
+          "pf": 0.0
+        },
+        "BEAR_CRASH": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 25,
+          "pf": 1.5205,
+          "stable": false
+        }
+      },
+      "6": {
+        "BULL_TREND": {
+          "n": 23,
+          "pf": 405014.2177,
+          "stable": false
+        },
+        "BULL_PEAK": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 23,
+          "pf": 1.6994,
+          "stable": false
+        },
+        "BEAR_CRASH": {
+          "n": 4,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 67,
+          "pf": 1.1301,
+          "stable": false
+        }
+      },
+      "7": {
+        "BULL_TREND": {
+          "n": 14,
+          "pf": 0.0,
+          "stable": false
+        },
+        "BULL_PEAK": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 11,
+          "pf": 0.0,
+          "stable": false
+        },
+        "BEAR_CRASH": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 106,
+          "pf": 1.8626,
+          "stable": true
+        }
+      },
+      "8": {
+        "BULL_TREND": {
+          "n": 10,
+          "pf": 0.0,
+          "stable": false
+        },
+        "BULL_PEAK": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 3,
+          "pf": 0.0
+        },
+        "BEAR_CRASH": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 34,
+          "pf": 0.8985,
+          "stable": false
+        }
+      },
+      "9": {
+        "BULL_TREND": {
+          "n": 11,
+          "pf": 0.0,
+          "stable": false
+        },
+        "BULL_PEAK": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 23,
+          "pf": 624611.9567,
+          "stable": true
+        },
+        "BEAR_CRASH": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 72,
+          "pf": 0.7804,
+          "stable": false
+        }
+      },
+      "10": {
+        "BULL_TREND": {
+          "n": 18,
+          "pf": 0.0,
+          "stable": false
+        },
+        "BULL_PEAK": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 12,
+          "pf": 0.0,
+          "stable": false
+        },
+        "BEAR_CRASH": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 2,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 110,
+          "pf": 1.1677,
+          "stable": false
+        }
+      },
+      "11": {
+        "BULL_TREND": {
+          "n": 20,
+          "pf": 373653.9866,
+          "stable": false
+        },
+        "BULL_PEAK": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 9,
+          "pf": 0.0
+        },
+        "BEAR_CRASH": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 56,
+          "pf": 1.5689,
+          "stable": false
+        }
+      },
+      "12": {
+        "BULL_TREND": {
+          "n": 26,
+          "pf": 1.1815,
+          "stable": false
+        },
+        "BULL_PEAK": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 23,
+          "pf": 447677.7856,
+          "stable": true
+        },
+        "BEAR_CRASH": {
+          "n": 5,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 118,
+          "pf": 1.289,
+          "stable": false
+        }
+      },
+      "13": {
+        "BULL_TREND": {
+          "n": 47,
+          "pf": 1.0978,
+          "stable": false
+        },
+        "BULL_PEAK": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 21,
+          "pf": 3.7776,
+          "stable": false
+        },
+        "BEAR_CRASH": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 5,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 234,
+          "pf": 0.9491,
+          "stable": false
+        }
+      },
+      "14": {
+        "BULL_TREND": {
+          "n": 30,
+          "pf": 1.7669,
+          "stable": false
+        },
+        "BULL_PEAK": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 3,
+          "pf": 0.0
+        },
+        "BEAR_CRASH": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 71,
+          "pf": 1.2234,
+          "stable": false
+        }
+      },
+      "15": {
+        "BULL_TREND": {
+          "n": 45,
+          "pf": 1.604,
+          "stable": false
+        },
+        "BULL_PEAK": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 39,
+          "pf": 1.876,
+          "stable": false
+        },
+        "BEAR_CRASH": {
+          "n": 7,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 2,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 163,
+          "pf": 1.8131,
+          "stable": true
+        }
+      },
+      "16": {
+        "BULL_TREND": {
+          "n": 42,
+          "pf": 0.8888,
+          "stable": false
+        },
+        "BULL_PEAK": {
+          "n": 2,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 32,
+          "pf": 2.1157,
+          "stable": false
+        },
+        "BEAR_CRASH": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 2,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 265,
+          "pf": 1.2724,
+          "stable": false
+        }
+      },
+      "17": {
+        "BULL_TREND": {
+          "n": 13,
+          "pf": 0.0,
+          "stable": false
+        },
+        "BULL_PEAK": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 2,
+          "pf": 0.0
+        },
+        "BEAR_CRASH": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 38,
+          "pf": 1.1745,
+          "stable": false
+        }
+      },
+      "18": {
+        "BULL_TREND": {
+          "n": 19,
+          "pf": 0.0,
+          "stable": false
+        },
+        "BULL_PEAK": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 18,
+          "pf": 0.0,
+          "stable": false
+        },
+        "BEAR_CRASH": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 71,
+          "pf": 1.6058,
+          "stable": false
+        }
+      },
+      "19": {
+        "BULL_TREND": {
+          "n": 23,
+          "pf": 1.4611,
+          "stable": false
+        },
+        "BULL_PEAK": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 17,
+          "pf": 0.0,
+          "stable": false
+        },
+        "BEAR_CRASH": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 149,
+          "pf": 0.8709,
+          "stable": false
+        }
+      },
+      "20": {
+        "BULL_TREND": {
+          "n": 7,
+          "pf": 0.0
+        },
+        "BULL_PEAK": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "BEAR_CRASH": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 25,
+          "pf": 1.3791,
+          "stable": false
+        }
+      },
+      "21": {
+        "BULL_TREND": {
+          "n": 15,
+          "pf": 0.0,
+          "stable": false
+        },
+        "BULL_PEAK": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 19,
+          "pf": 0.0,
+          "stable": false
+        },
+        "BEAR_CRASH": {
+          "n": 2,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 26,
+          "pf": 0.7791,
+          "stable": false
+        }
+      },
+      "22": {
+        "BULL_TREND": {
+          "n": 9,
+          "pf": 0.0
+        },
+        "BULL_PEAK": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 2,
+          "pf": 0.0
+        },
+        "BEAR_CRASH": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 52,
+          "pf": 0.9961,
+          "stable": false
+        }
+      },
+      "23": {
+        "BULL_TREND": {
+          "n": 9,
+          "pf": 0.0
+        },
+        "BULL_PEAK": {
+          "n": 2,
+          "pf": 0.0
+        },
+        "BEAR_TREND": {
+          "n": 1,
+          "pf": 0.0
+        },
+        "BEAR_CRASH": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "RECOVERY": {
+          "n": 0,
+          "pf": 0.0
+        },
+        "CHOP": {
+          "n": 14,
+          "pf": 0.0,
+          "stable": false
+        }
+      }
+    },
+    "golden_cells": [
+      {
+        "hour": 7,
+        "regime": "CHOP",
+        "pf": 1.8626,
+        "n": 106
+      },
+      {
+        "hour": 15,
+        "regime": "CHOP",
+        "pf": 1.8131,
+        "n": 163
+      }
+    ],
+    "best_hour_by_regime": {
+      "BULL_TREND": {
+        "best_hour": 6,
+        "best_pf": 405014.2177
+      },
+      "BEAR_TREND": {
+        "best_hour": 9,
+        "best_pf": 624611.9567
+      },
+      "CHOP": {
+        "best_hour": 7,
+        "best_pf": 1.8626
+      }
+    }
+  },
+  "N10_signal_depth": {
+    "by_n_signals": {
+      "4": {
+        "n": 1,
+        "pf": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "stable": false
+      },
+      "5": {
+        "n": 21,
+        "pf": 0.597,
+        "ci": [
+          0.0,
+          1.7574
+        ],
+        "stable": false
+      },
+      "6": {
+        "n": 759,
+        "pf": 1.0948,
+        "ci": [
+          0.8911,
+          1.3229
+        ],
+        "stable": false
+      },
+      "7": {
+        "n": 2059,
+        "pf": 1.3631,
+        "ci": [
+          1.2138,
+          1.5247
+        ],
+        "stable": true
+      }
+    },
+    "by_n_per_regime": {
+      "BULL_TREND": {
+        "best_n": 7,
+        "best_pf": 1.8095
+      },
+      "BEAR_TREND": {
+        "best_n": 7,
+        "best_pf": 1.6144
+      },
+      "BEAR_CRASH": {
+        "best_n": 6,
+        "best_pf": 0.475
+      },
+      "CHOP": {
+        "best_n": 7,
+        "best_pf": 1.2502
+      }
+    }
+  },
+  "N11_sl_optimize": {
+    "by_sl_mult": {
+      "0.8": {
+        "n": 2222,
+        "pf": 1.0597,
+        "ci": [
+          0.9409,
+          1.1877
+        ],
+        "stable": false
+      },
+      "1.0": {
+        "n": 2222,
+        "pf": 1.1148,
+        "ci": [
+          0.9826,
+          1.2635
+        ],
+        "stable": false
+      },
+      "1.2": {
+        "n": 2222,
+        "pf": 1.1462,
+        "ci": [
+          1.0109,
+          1.3037
+        ],
+        "stable": true
+      },
+      "1.5": {
+        "n": 2222,
+        "pf": 1.2093,
+        "ci": [
+          1.0636,
+          1.3762
+        ],
+        "stable": true
+      },
+      "2.0": {
+        "n": 2222,
+        "pf": 1.2704,
+        "ci": [
+          1.1028,
+          1.4515
+        ],
+        "stable": true
+      },
+      "2.5": {
+        "n": 2222,
+        "pf": 1.3053,
+        "ci": [
+          1.1249,
+          1.5114
+        ],
+        "stable": true
+      },
+      "3.0": {
+        "n": 2222,
+        "pf": 1.3119,
+        "ci": [
+          1.1272,
+          1.5155
+        ],
+        "stable": true
+      }
+    },
+    "best_sl": {
+      "global": {
+        "sl_mult": 3.0,
+        "pf": 1.3119
+      },
+      "BULL_TREND": {
+        "sl_mult": 0.8,
+        "pf": 1.3881
+      },
+      "BEAR_TREND": {
+        "sl_mult": 0.8,
+        "pf": 1.9695
+      },
+      "BEAR_CRASH": {
+        "sl_mult": 0.8,
+        "pf": 0.3038
+      },
+      "CHOP": {
+        "sl_mult": 0.8,
+        "pf": 1.1434
+      }
+    }
+  },
+  "N12_bb_entry": {
+    "by_bb_range": {
+      "下沿<0.1": {
+        "all": {
+          "n": 992,
+          "pf": 1.2608,
+          "ci": [
+            1.0394,
+            1.5093
+          ],
+          "stable": true
+        },
+        "long": {
+          "n": 16,
+          "pf": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ],
+          "stable": false
+        },
+        "short": {
+          "n": 976,
+          "pf": 1.268,
+          "ci": [
+            1.04,
+            1.5263
+          ],
+          "stable": true
+        }
+      },
+      "下区0.1~0.3": {
+        "all": {
+          "n": 326,
+          "pf": 0.8792,
+          "ci": [
+            0.6205,
+            1.2146
+          ],
+          "stable": false
+        },
+        "long": {
+          "n": 12,
+          "pf": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ],
+          "stable": false
+        },
+        "short": {
+          "n": 314,
+          "pf": 0.8851,
+          "ci": [
+            0.6118,
+            1.2215
+          ],
+          "stable": false
+        }
+      },
+      "中下0.3~0.5": {
+        "all": {
+          "n": 87,
+          "pf": 1.1774,
+          "ci": [
+            0.6003,
+            2.0015
+          ],
+          "stable": false
+        },
+        "long": {
+          "n": 16,
+          "pf": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ],
+          "stable": false
+        },
+        "short": {
+          "n": 71,
+          "pf": 1.0707,
+          "ci": [
+            0.4961,
+            2.045
+          ],
+          "stable": false
+        }
+      },
+      "中上0.5~0.7": {
+        "all": {
+          "n": 87,
+          "pf": 1.1015,
+          "ci": [
+            0.5483,
+            1.8876
+          ],
+          "stable": false
+        },
+        "long": {
+          "n": 78,
+          "pf": 1.2593,
+          "ci": [
+            0.6038,
+            2.2442
+          ],
+          "stable": false
+        },
+        "short": {
+          "n": 9,
+          "pf": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "上区0.7~0.9": {
+        "all": {
+          "n": 360,
+          "pf": 1.1466,
+          "ci": [
+            0.841,
+            1.5248
+          ],
+          "stable": false
+        },
+        "long": {
+          "n": 350,
+          "pf": 1.1294,
+          "ci": [
+            0.8255,
+            1.5004
+          ],
+          "stable": false
+        },
+        "short": {
+          "n": 10,
+          "pf": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ],
+          "stable": false
+        }
+      },
+      "上沿>0.9": {
+        "all": {
+          "n": 988,
+          "pf": 1.4179,
+          "ci": [
+            1.1945,
+            1.67
+          ],
+          "stable": true
+        },
+        "long": {
+          "n": 974,
+          "pf": 1.4234,
+          "ci": [
+            1.1985,
+            1.6855
+          ],
+          "stable": true
+        },
+        "short": {
+          "n": 14,
+          "pf": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ],
+          "stable": false
+        }
+      }
+    },
+    "optimal_bb": {
+      "LONG": {
+        "best_range": "上沿>0.9",
+        "best_pf": 1.414
+      },
+      "SHORT": {
+        "best_range": "下沿<0.1",
+        "best_pf": 1.2633
+      }
+    },
+    "by_bb_direction": {}
+  }
+}

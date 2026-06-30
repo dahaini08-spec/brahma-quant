@@ -1,0 +1,75 @@
+{
+  "symbol": "SOLVUSDT",
+  "created": "2026-05-12T10:55:17.415942+00:00",
+  "updated": "2026-05-12T10:55:17.415983+00:00",
+  "key_facts": [
+    "[05-12] SHORT 评分:100 入场:0.0055~0.005544 SL:0.00575179 R:R=2.7",
+    "[05-12] 筹码位: POC=0.0048855 VAL=0.0044195 VAH=0.0055245"
+  ],
+  "recent_rounds": [
+    {
+      "ts": "2026-05-12T10:55:17.415976+00:00",
+      "signal_id": "?",
+      "direction": "SHORT",
+      "entry": {
+        "low": 0.0055,
+        "high": 0.005544,
+        "mid": 0.005522,
+        "worst": 0.0055
+      },
+      "stop_loss": 0.00575179,
+      "targets": {
+        "t1": {
+          "price": 0.00508036,
+          "chg_pct": -7.63,
+          "rr": 1.67,
+          "note": "VAH突破确认位"
+        },
+        "t2": {
+          "price": 0.00482857,
+          "chg_pct": -12.21,
+          "rr": 2.67,
+          "note": "等幅延伸目标"
+        },
+        "t3": {
+          "price": 0.00449286,
+          "note": "扩展目标（部分止盈后持有）"
+        }
+      },
+      "score": 100,
+      "council_approved": true,
+      "council_score": 75,
+      "council_votes": {
+        "technician": "FAIL",
+        "chips": "PASS",
+        "derivatives": "PASS",
+        "risk_control": "PASS"
+      },
+      "levels": {
+        "poc": 0.0048855,
+        "vah": 0.0055245,
+        "val": 0.0044195,
+        "hvn": [
+          0.004619,
+          0.004657,
+          0.004695,
+          0.004733,
+          0.004771
+        ],
+        "lvn": [
+          0.0044535,
+          0.0044545,
+          0.0044605,
+          0.004463,
+          0.0044645
+        ]
+      },
+      "outcome": null,
+      "pnl_pct": null
+    }
+  ],
+  "summary": "",
+  "win_count": 0,
+  "loss_count": 0,
+  "total_signals": 1
+}
