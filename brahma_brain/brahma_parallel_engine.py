@@ -110,7 +110,7 @@ def pump_hunter_parallel_scan(symbols: list = None) -> list:
             all_syms = [s['symbol'] for s in resp.json()['symbols']
                         if s['quoteAsset'] == 'USDT' and s['status'] == 'TRADING'
                         and s['symbol'] not in {'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT'}]
-            # 过滤流动性（用 24H 成交额）
+            # 过滤流动性（24H成交额）
             resp2 = requests.get('https://fapi.binance.com/fapi/v1/ticker/24hr', timeout=8)
             vol_map = {t['symbol']: float(t['quoteVolume']) for t in resp2.json()}
             symbols = [s for s in all_syms if vol_map.get(s, 0) >= 1_500_000][:200]

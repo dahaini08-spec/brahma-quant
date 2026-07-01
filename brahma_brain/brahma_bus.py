@@ -281,3 +281,87 @@ if __name__ == '__main__':
     stats = bus.cache_stats()
     print(f'缓存统计: {stats}')
     print('BrahmaBus 自测通过 ✅')
+
+
+# ══════════════════════════════════════════════════════════════
+# [B2 设计院 2026-06-30] 全局数据一致性守卫
+# 提供统一价格查询接口，供所有模块调用
+# 不强制monkey-patch（高风险），而是提供标准函数供迁移
+# ══════════════════════════════════════════════════════════════
+
+def get_price(symbol: str) -> float:
+    """统一价格查询 — bus缓存优先，fallback裸HTTP，所有模块应迁移到此接口"""
+    try:
+        return bus.price(symbol)
+    except Exception:
+        import urllib.request, json
+        with urllib.request.urlopen(
+            f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}', timeout=5
+        ) as r:
+            return float(json.loads(r.read()).get('lastPrice', 0))
+
+
+def get_klines(symbol: str, interval: str = '1h', limit: int = 100) -> list:
+    """统一K线查询 — bus缓存优先"""
+    try:
+        return bus.klines(symbol, interval, limit)
+    except Exception:
+        import urllib.request, json
+        url = f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}'
+        with urllib.request.urlopen(url, timeout=10) as r:
+            return json.loads(r.read())
+
+
+def get_funding(symbol: str) -> float:
+    """统一资金费率查询"""
+    try:
+        return bus.funding_rate(symbol)
+    except Exception:
+        return 0.0
+
+
+def get_oi(symbol: str) -> float:
+    """统一OI查询"""
+    try:
+        return bus.open_interest(symbol)
+    except Exception:
+        return 0.0
+
+# 迁移状态追踪（记录哪些文件已完成迁移）
+_MIGRATED_FILES = set()
+
+def mark_migrated(filename: str):
+    """标记文件已完成数据层迁移"""
+    _MIGRATED_FILES.add(filename)
+
+def migration_status() -> dict:
+    """返回数据层迁移状态"""
+    total_target = 65
+    migrated = len(_MIGRATED_FILES)
+    return {
+        'total_target': total_target,
+        'migrated': migrated,
+        'remaining': total_target - migrated,
+        'pct': round(migrated / total_target * 100, 1),
+        'migrated_files': sorted(_MIGRATED_FILES),
+    }
+
+
+def flush_stale(max_age_seconds: float = 300.0) -> int:
+    """
+    清理BrahmaBus全局单例中陈旧缓存条目
+    设计院·自愈机制 2026-07-01
+    返回：清理条目数
+    """
+    import time
+    bus = BrahmaBus()
+    now = time.time()
+    stale_keys = [
+        k for k, v in bus._cache.items()
+        if isinstance(v, dict) and 'ts' in v and now - v['ts'] > max_age_seconds
+    ]
+    for k in stale_keys:
+        del bus._cache[k]
+    if stale_keys:
+        print(f'[BrahmaBus] flush_stale: 清理{len(stale_keys)}条陈旧缓存')
+    return len(stale_keys)

@@ -24,7 +24,7 @@ causal_regime_verifier.py · 体制边界因果验证器 v1.0
   }
 
 接入位置：brahma_core.analyze() Step 1（ms_analyze之后，Step 2方向确认之前）
-权重：causal_confidence < 0.4 → score_adj = -20（降权，不封禁）
+权重：causal_confidence < 0.35 → score_adj = -12（惩罚减半 2026-07-01）/ 0.35~0.50 → -15 / ≥0.70 → +5
 
 设计院原则：
   - 轻量异步，失败不阻断主流（fail-safe返回默认通过）
@@ -209,56 +209,56 @@ def _get_indicator_series(symbol: str, signal_dir: str) -> Tuple[list, list, lis
     """
     获取价格变化、OI变化、FR序列用于 Granger 检验。
     返回 (price_changes, oi_changes, fr_series, vol_changes)
+    [2026-07-01 修复] 备用路径直接拉取API，不依赖本地文件缓存
     """
     try:
-        from data_cache import get_klines, klines_to_ohlcv, get_open_interest
-        import os
-
-        raw_1h = get_klines(symbol, '1h', 50)
+        import requests as _rq
+        # ── K线（1H，50根）
+        raw_1h = _rq.get(
+            f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=1h&limit=50',
+            timeout=8
+        ).json()
         if not raw_1h or len(raw_1h) < 20:
             return [], [], [], []
 
         closes = [float(k[4]) for k in raw_1h]
         volumes = [float(k[5]) for k in raw_1h]
+        price_changes = [(closes[i]-closes[i-1])/closes[i-1]*100 for i in range(1,len(closes))]
+        vol_changes   = [(volumes[i]-volumes[i-1])/(volumes[i-1]+1e-9)*100 for i in range(1,len(volumes))]
 
-        price_changes = [
-            (closes[i] - closes[i-1]) / closes[i-1] * 100
-            for i in range(1, len(closes))
-        ]
-        vol_changes = [
-            (volumes[i] - volumes[i-1]) / (volumes[i-1] + 1e-9) * 100
-            for i in range(1, len(volumes))
-        ]
-
-        # OI序列（从文件缓存读）
-        oi_changes = []
+        # ── OI History（Binance公开接口）
+        oi_changes = vol_changes  # fallback
         try:
-            oi_dir = BASE / 'data' / 'coinglass'
-            oi_files = sorted(oi_dir.glob(f'{symbol}_oi_*.json'))
-            if oi_files:
-                oi_data = json.loads(oi_files[-1].read_text())
-                oi_vals = [float(x.get('oi', 0)) for x in oi_data[-50:] if x.get('oi')]
-                if len(oi_vals) >= 10:
-                    oi_changes = [
-                        (oi_vals[i] - oi_vals[i-1]) / (oi_vals[i-1] + 1e-9) * 100
-                        for i in range(1, len(oi_vals))
-                    ]
+            oi_r = _rq.get(
+                f'https://fapi.binance.com/futures/data/openInterestHist?symbol={symbol}&period=1h&limit=50',
+                timeout=8
+            ).json()
+            if isinstance(oi_r, list) and len(oi_r) >= 10:
+                oi_vals = [float(x['sumOpenInterest']) for x in oi_r]
+                oi_changes = [(oi_vals[i]-oi_vals[i-1])/(oi_vals[i-1]+1e-9)*100 for i in range(1,len(oi_vals))]
         except Exception:
-            # OI数据不可用时使用成交量代替
-            oi_changes = vol_changes
+            pass
 
-        # FR序列（使用 K线中的代理）
-        fr_series = []
+        # ── FR序列（Binance fapi/v1/fundingRate）
+        fr_series = vol_changes  # fallback
         try:
-            funding_dir = BASE / 'data' / 'funding_rate'
-            fr_files = sorted(funding_dir.glob(f'{symbol}_*.json'))
-            if fr_files:
-                fr_data = json.loads(fr_files[-1].read_text())
-                fr_vals = [float(x.get('fundingRate', 0)) * 100 for x in fr_data[-50:]]
-                fr_series = fr_vals
+            fr_r = _rq.get(
+                f'https://fapi.binance.com/fapi/v1/fundingRate?symbol={symbol}&limit=50',
+                timeout=8
+            ).json()
+            if isinstance(fr_r, list) and len(fr_r) >= 10:
+                # FR每8H一个，对齐到价格序列：取最近N个和价格变化对齐
+                fr_vals = [float(x['fundingRate'])*100 for x in fr_r]
+                # FR数据条数比价格少，用插展对齐
+                if len(fr_vals) >= 5:
+                    # 每个FR对应9H价格内，用重复值对齐
+                    fr_extended = []
+                    for fv in fr_vals:
+                        fr_extended.extend([fv]*8)  # 8个1H bar对应一个8H周期
+                    n = min(len(price_changes), len(fr_extended))
+                    fr_series = fr_extended[-n:]
         except Exception:
-            # FR不可用时用成交量变化代替
-            fr_series = vol_changes
+            pass
 
         return price_changes, oi_changes, fr_series, vol_changes
 
@@ -374,11 +374,13 @@ def _compute_verify(
     fr_conf      = max(0.0, min(1.0, 1.0 - p_fr * 2))
     te_conf      = te_vol_to_price
 
-    # 加权组合
+    # 加权组合 [修复 2026-07-01] statsmodels已装，FR Granger有效，提高FR权重降低TE依赖
+    # 原: oi*0.35 + fr*0.20 + te*0.15 + stability*0.30
+    # 新: oi*0.30 + fr*0.30 + te*0.10 + stability*0.30  (FR因果显著p≈0.07 → 权重提升)
     causal_conf = (
-        granger_conf * 0.35 +
-        fr_conf      * 0.20 +
-        te_conf      * 0.15 +
+        granger_conf * 0.30 +
+        fr_conf      * 0.30 +
+        te_conf      * 0.10 +
         stability    * 0.30
     )
 
@@ -424,7 +426,8 @@ def _build_result(
         score_adj = -15      # 弱因果 → 降权-15
     else:
         verdict = 'BLOCKED'
-        score_adj = -25      # 因果结构断裂 → 强降权-25（不封禁，让门控决定）
+        score_adj = -12      # [惩罚减半 2026-07-01] 四方共识: -25过度惩罚(17%score) → -12
+                             # BTC/ETH因果conf=0.27仅比阈值低0.03，-25封死信号过严厉
 
     # 方向一致性
     regime_dir_map = {

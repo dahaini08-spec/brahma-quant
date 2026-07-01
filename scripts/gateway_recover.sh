@@ -3,7 +3,7 @@
 BASE="/root/.openclaw/workspace/trading-system"
 LOG="$BASE/logs/gateway_recover.log"
 # SSOT: alerts/.env JARVIS_USER_ID + JARVIS_THREAD_ID
-TARGET="73295708:t:019e0213-193a-7660-9c4a-14b8889f4efa"
+TARGET="73295708:t:019f1797-6c60-7541-ad72-ec34ed14dfc4"
 
 ts() { date -u '+%Y-%m-%d %H:%M:%S UTC'; }
 log() { echo "[$(ts)] $1" >> "$LOG"; }

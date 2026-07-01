@@ -188,13 +188,19 @@ def get_liq_density(symbol: str, current_price: float) -> dict:
     else:
         liq_bias = 'NEUTRAL'
 
-    # 5. 评分建议
-    # 做空：下方清算多（可以砸到）→ 加分；上方清算多（容易被逼空）→ 扣分
+    # 5. 评分建议（方向性加权 2026-07-01 四方共识落地）
+    # 清算集群是双刃剑：顺势=加速，逆势=拦截
+    # 做空：
+    #   ✅ 下方多头密集（多头即将被清算）→ 下行惯性+加分
+    #   ❌ 上方空头密集 且 紧贴价格（<3%）→ 先拉升逼空再下跌风险 → 扣分
+    #   ⚠️  上方空头密集 但 距离>3% → 中性，远端阻力暂不计
     score_adj = 0
+    nearest_above_dist = abs(above_walls[0][0] - current_price) / current_price if above_walls else 1.0
+
     if below_total > 500_000:
-        score_adj += min(3, int(below_total / 1_000_000))
-    if above_total > 1_000_000:
-        score_adj -= min(2, int(above_total / 2_000_000))
+        score_adj += min(4, int(below_total / 800_000))   # 顺势：下方多头清算 → 加速下跌
+    if above_total > 1_000_000 and nearest_above_dist < 0.03:  # 逆势：空头止损紧上方<3%
+        score_adj -= min(4, int(above_total / 1_500_000))  # 先逼空再下行风险
 
     confidence = min(1.0, sources_ok / 2 * 0.7 + (0.3 if okx_oi else 0))
 

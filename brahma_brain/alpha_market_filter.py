@@ -4,6 +4,11 @@ alpha_market_filter.py
 从全市场合约中筛选小市值Alpha标的池
 2026-05-22 设计院
 """
+
+# ── STATUS: STANDBY ──────────────────────────────────────────────
+# 市场过滤器，被enhanced_signal_engine调用，辅助路径
+# LAST_REVIEW: 2026-07-01 | 调用前运行 auto_review.py 确认引用关系
+# ─────────────────────────────────────────────────────────────────
 import sys, os, json, time
 # 并入 brahma_brain (设计院 2026-05-23)
 # 参数直接内联（原来自 alpha_hunter_config）

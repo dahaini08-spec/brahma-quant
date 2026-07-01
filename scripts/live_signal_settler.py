@@ -186,9 +186,18 @@ def settle(dry_run=False) -> dict:
     def _get_cur_price(sym):
         if sym not in _price_cache:
             try:
+                try:
+                    from brahma_brain.brahma_bus import get_price as _gp_bus
+                    _px_val = _gp_bus(sym)
+                    if _px_val:
+                        _price_cache[sym] = _px_val
+                        return _px_val
+                except Exception:
+                    pass
                 _resp = _ur.urlopen(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}', timeout=3)
                 _price_cache[sym] = float(_json.loads(_resp.read())['price'])
-            except: _price_cache[sym] = None
+            except:
+                _price_cache[sym] = None
         return _price_cache[sym]
 
     n_price_expired = 0
@@ -786,6 +795,15 @@ def settle(dry_run=False) -> dict:
                         print(f'[Settler] 🔍 loss_autopsy: {rec.get("symbol")} 主因={_la_result.get("primary_cause","?")} 置信度={_la_result.get("confidence",0):.0%}')
                     except Exception as _la_e:
                         print(f'[WARN][loss_autopsy] {type(_la_e).__name__}: {_la_e}')
+                # ── [B1 设计院 2026-06-30] EV实时反馈 → 达摩院自我进化 ─────
+                # 每笔结算触发EV矩阵更新，参数微调建议写入nudge文件（非阻断）
+                try:
+                    import sys as _ev_sys
+                    _ev_sys.path.insert(0, str(BASE / 'brahma_brain'))
+                    from ev_feedback import on_settlement as _ev_cb
+                    _ev_cb(rec, outcome)
+                except Exception as _ev_e:
+                    print(f'[WARN][EV-Feedback] {type(_ev_e).__name__}: {_ev_e}')
 
     if not dry_run and n_settled > 0:
         _save(records)

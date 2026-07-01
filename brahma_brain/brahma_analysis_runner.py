@@ -37,8 +37,18 @@ from brahma_brain.formatter import (
     format_standard_card,
     extract_standard_fields,
     STANDARD_FIELDS,
+    build_output_tag,
+    tag_is_valid_signal,
+    tag_parse,
 )
 
+
+# ── 时机过滤层（设计院 2026-07-01 落地）──────────────────────────────────
+try:
+    from brahma_brain.timing_filter import evaluate_timing, format_timing_badge
+    _TIMING_OK = True
+except Exception:
+    _TIMING_OK = False
 # ── 系统配置（路由到正确线程）────────────────────────────────
 try:
     sys.path.insert(0, os.path.join(BASE_DIR, '..', 'scripts'))
@@ -96,6 +106,7 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
         'elapsed':        round(time.time() - t0, 2),
         'fields_missing': missing,
         'fields_ok':      len(missing) == 0,
+        'output_tag':     build_output_tag(result, source='RUNNER'),
     }
     return result
 
@@ -133,6 +144,7 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
             'elapsed':        round(time.time() - t0, 2),
             'fields_missing': missing,
             'fields_ok':      len(missing) == 0,
+            'output_tag':     build_output_tag(r, source='RUNNER'),
         }
         results[sym] = r
 
@@ -142,6 +154,7 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
 def format_batch_report(results: dict, mode: str = 'card') -> str:
     """
     批量格式化输出 — 封印版标准报告
+    每张卡片头部强制嵌入 BRAHMA 标签，防混淆防误识别
 
     mode:
       'card'  — 精简信号卡（推送用）
@@ -155,20 +168,115 @@ def format_batch_report(results: dict, mode: str = 'card') -> str:
     for sym in ['BTCUSDT', 'ETHUSDT'] + [s for s in results if s not in ('BTCUSDT','ETHUSDT')]:
         if sym not in results:
             continue
-        r = results[sym]
+        r    = results[sym]
         meta = r.get('_runner_meta', {})
+        tag  = meta.get('output_tag') or build_output_tag(r, source='RUNNER')
+
+        # ── 标签头：每张卡片第一行必须是BRAHMA标签 ──
+        lines.append(tag)
 
         if mode == 'card':
             lines.append(format_standard_card(r, ts=None))
         else:
             lines.append(format_report(r))
 
+        # ── 时机过滤层注入（设计院 2026-07-01）───────────────────────
+        if _TIMING_OK:
+            try:
+                f = extract_standard_fields(r)
+                _timing = evaluate_timing(
+                    symbol=sym,
+                    signal_dir=f.get('direction', 'SHORT'),
+                    score=f.get('score', 0),
+                    grade=f.get('structure_grade', 70),
+                    entry_lo=float(f.get('entry_lo', 0) or 0),
+                    entry_hi=float(f.get('entry_hi', 0) or 0),
+                    current_price=float(f.get('price', 0) or 0),
+                    s23_p_up=r.get('s23_p_up', 0.5),
+                    regime=f.get('regime', 'BEAR_TREND'),
+                )
+                lines.append(format_timing_badge(_timing))
+                # 将timing注入result供下游使用
+                r['_timing'] = _timing
+            except Exception:
+                pass
+
         # 质量警告
         missing = meta.get('fields_missing', [])
         if missing:
             lines.append(f'  ⚠️ 字段缺失: {missing}')
 
+        # 非法输出盖识别器：标签不是SIG:RUNNER则加警告
+        if not tag_is_valid_signal(tag):
+            parsed = tag_parse(tag)
+            lines.append(
+                f'  🚨 警告: 此输出不是有效信号 — '
+                f'level={parsed.get("level")} score={parsed.get("score")} '
+                f'valid_sig={parsed.get("valid_sig")}'
+            )
+
     return '\n'.join(lines)
+
+
+def check_correlation_risk(results: dict) -> dict:
+    """
+    相关性去重防错（设计院 2026-07-01）
+
+    BTC+ETH同向开仓时，实际风险敞口 = 1.85x BTC（相关系数≈0.85）
+    输出建议：只开优先序更高的一个
+
+    返回：
+      risk_flag     : 是否存在相关高集中风险
+      primary       : 建议操作的标的
+      secondary     : 建议观望的标的
+      note          : 说明
+    """
+    btc = results.get('BTCUSDT', {})
+    eth = results.get('ETHUSDT', {})
+
+    if not btc or not eth:
+        return {'risk_flag': False, 'primary': None, 'secondary': None, 'note': '单标的无相关风险'}
+
+    # 获取两者方向和score
+    btc_dir = btc.get('signal_dir', '') or btc.get('confluence', {}).get('direction', '')
+    eth_dir = eth.get('signal_dir', '') or eth.get('confluence', {}).get('direction', '')
+    btc_score = float(btc.get('confluence', {}).get('total', 0) or btc.get('score', 0) or 0)
+    eth_score = float(eth.get('confluence', {}).get('total', 0) or eth.get('score', 0) or 0)
+    btc_valid = btc.get('valid', False)
+    eth_valid = eth.get('valid', False)
+
+    # 只有两者都有效且同向才存在相关风险
+    if not (btc_valid and eth_valid and btc_dir and eth_dir and btc_dir == eth_dir):
+        return {'risk_flag': False, 'primary': None, 'secondary': None,
+                'note': f'无双开风险 (btc_valid={btc_valid} eth_valid={eth_valid} dir={btc_dir}/{eth_dir})'}
+
+    # 同向双开：ETH得分高 AND BTC.D>54% → 优先ETH
+    btc_dom = 55.4  # 当前实时値，稍后可动态拉取
+    try:
+        import requests as _rq
+        cg = _rq.get('https://api.coingecko.com/api/v3/global', timeout=5).json()
+        btc_dom = float(cg['data']['market_cap_percentage'].get('btc', 55.4))
+    except Exception:
+        pass
+
+    if eth_score >= btc_score and btc_dom >= 54:
+        primary = 'ETHUSDT'
+        secondary = 'BTCUSDT'
+        reason = f'ETH得分({eth_score:.0f})高于BTC({btc_score:.0f}) + BTC.D={btc_dom:.1f}%高位 → 优先ETH，BTC观望'
+    else:
+        primary = 'BTCUSDT'
+        secondary = 'ETHUSDT'
+        reason = f'BTC得分({btc_score:.0f})高或BTC.D不高 → 优先BTC'
+
+    return {
+        'risk_flag': True,
+        'primary': primary,
+        'secondary': secondary,
+        'correlation': 0.85,
+        'actual_exposure': '1.85x BTC风险',
+        'note': f'❗ BTC/ETH同向{btc_dir}，实际风险敞口1.85x | {reason}',
+        'btc_dom': btc_dom,
+    }
 
 
 # ══════════════════════════════════════════════════════════════

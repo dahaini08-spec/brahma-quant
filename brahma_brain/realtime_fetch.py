@@ -11,6 +11,11 @@ realtime_fetch.py — 梵天实时数据层
     # data['1h'], data['4h'], data['ticker'], data['fr'] ...
 """
 
+# ── STATUS: STANDBY ──────────────────────────────────────────────
+# 已被brahma_bus统一替代，保留兼容
+# LAST_REVIEW: 2026-07-01 | 调用前运行 auto_review.py 确认引用关系
+# ─────────────────────────────────────────────────────────────────
+
 import urllib.request, json, time, os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
