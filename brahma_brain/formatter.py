@@ -367,3 +367,102 @@ if __name__ == '__main__':
         print(format_report(r))
         print(f'耗时: {r.get("elapsed", "?")}s')
     assert VERSION, 'brahma_brain version ok'
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 设计院顶层标签体系 v1.0  ·  2026-06-30 封印
+# 每一条梵天输出必须携带独有标签，标签不对 = 拒绝识别
+# ══════════════════════════════════════════════════════════════════════════════
+
+# 标签格式：  [BRAHMA:{级别}:{来源}:{符号}:{评分}:{方向}:{体制}:{时间戳}]
+# 级别:    SIG  = 有效信号（score≥140 valid=True）
+#          WATCH= 观察信号（score 120~139 / neutral）
+#          WARN = 警告（score<120 / 字段缺失）
+#          ERR  = 系统错误（异常 / inline污染 / 字段missing）
+# 来源:    RUNNER=brahma_analysis_runner（唯一合法来源）
+#          INLINE=裸HTTP临时计算（非法，强制标 ERR）
+# 时间戳:  UTC YYYYMMDDHHmm（6位分钟精度，防重放）
+
+import hashlib as _hashlib
+from datetime import datetime as _dt, timezone as _tz
+
+
+def build_output_tag(r: dict, source: str = 'RUNNER') -> str:
+    """
+    为每条梵天输出生成唯一防混淆标签
+
+    规则：
+      - source='RUNNER' + valid=True + score≥140  → SIG
+      - source='RUNNER' + score 120~139            → WATCH
+      - source='RUNNER' + score<120 或字段缺失     → WARN
+      - source!='RUNNER' 或 error 或 inline估算   → ERR
+      - 每条标签含 sha8 校验（前8位md5），防止篡改
+
+    返回: 形如 [BRAHMA:SIG:RUNNER:BTC:151.8:SHORT:BEAR_TREND:202606301112:a3f9c1d2]
+    """
+    ts = _dt.now(_tz.utc).strftime('%Y%m%d%H%M')
+
+    # ── 错误/非法来源 ──────────────────────────────────────
+    if r.get('error') or source != 'RUNNER':
+        level = 'ERR'
+        sym   = r.get('symbol', 'UNKNOWN').replace('USDT', '')
+        score = '0'
+        direction = 'ERR'
+        regime    = 'ERR'
+        payload   = f'ERR:{sym}:{ts}'
+        sha8 = _hashlib.md5(payload.encode()).hexdigest()[:8]
+        return f'[BRAHMA:{level}:{source}:{sym}:{score}:{direction}:{regime}:{ts}:{sha8}]'
+
+    # ── 正常路径：提取标准字段 ─────────────────────────────
+    f         = extract_standard_fields(r)
+    sym       = (f.get('symbol') or r.get('symbol', '?')).replace('USDT', '')
+    score_raw = f.get('score') or 0
+    score     = round(float(score_raw), 1)
+    direction = f.get('direction') or 'NEUTRAL'
+    regime    = f.get('regime') or 'UNKNOWN'
+    valid     = bool(f.get('valid'))
+    missing   = [k for k in ['regime','score','direction','entry_lo','sl','tp1'] if f.get(k) is None]
+
+    # ── 级别判定 ───────────────────────────────────────────
+    if missing:
+        level = 'WARN'
+    elif source != 'RUNNER':
+        level = 'ERR'
+    elif valid and score >= 140:
+        level = 'SIG'
+    elif score >= 120:
+        level = 'WATCH'
+    else:
+        level = 'WARN'
+
+    # ── sha8 防篡改校验 ───────────────────────────────────
+    payload = f'{level}:{sym}:{score}:{direction}:{regime}:{ts}'
+    sha8 = _hashlib.md5(payload.encode()).hexdigest()[:8]
+
+    return f'[BRAHMA:{level}:{source}:{sym}:{score}:{direction}:{regime}:{ts}:{sha8}]'
+
+
+def tag_is_valid_signal(tag: str) -> bool:
+    """快速检查标签是否为有效信号（SIG级别 + RUNNER来源）"""
+    return tag.startswith('[BRAHMA:SIG:RUNNER:') and ':ERR:' not in tag
+
+
+def tag_parse(tag: str) -> dict:
+    """解析标签为结构化字典，便于下游系统识别"""
+    try:
+        inner = tag.strip('[]').replace('BRAHMA:', '', 1)
+        parts = inner.split(':')
+        # parts: level, source, sym, score, direction, regime, ts, sha8
+        return {
+            'level':     parts[0],
+            'source':    parts[1],
+            'symbol':    parts[2] + 'USDT',
+            'score':     float(parts[3]),
+            'direction': parts[4],
+            'regime':    parts[5],
+            'ts':        parts[6],
+            'sha8':      parts[7] if len(parts) > 7 else '',
+            'valid_sig': parts[0] == 'SIG' and parts[1] == 'RUNNER',
+        }
+    except Exception as e:
+        return {'level': 'ERR', 'error': str(e), 'raw': tag}

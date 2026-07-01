@@ -29,6 +29,11 @@ tardis_liq_layer.py — Tardis 清算墙真实数据层 v1.0
     }
 """
 
+# ── STATUS: STANDBY ──────────────────────────────────────────────
+# 清算数据层，被tardis_engine代理，直接引用少
+# LAST_REVIEW: 2026-07-01 | 调用前运行 auto_review.py 确认引用关系
+# ─────────────────────────────────────────────────────────────────
+
 import gzip
 import json
 import os

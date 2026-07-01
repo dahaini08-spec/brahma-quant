@@ -261,6 +261,12 @@ def check_orphan_modules():
             's7_liq_config',
             # D类：已归档模块（s24归档，设计院2026-06-26封印）
             'trading_agents_bridge',  # s24已归档，由s25替代，保留文件供回滚
+            # E类：独立入口模块（AI直接调用 / 被非brahma_core模块调用）
+            'brahma_analysis_runner', # 设计院唯一分析入口，AI/CLI直接调用，不被brahma_core静态引用
+            'ic_tracker',             # IC信息系数追踪，被live_signal_settler调用，独立数据生命周期
+            # F类：结算闭环链路（live_signal_settler → ev_feedback → dharma_online_learner）
+            'ev_feedback',            # 结算回调，被live_signal_settler动态import，不被brahma_core静态引用
+            'dharma_online_learner',  # 在线学习，被ev_feedback每10笔触发，设计院方案B/C级落地
         }
     
     orphans = []
@@ -281,17 +287,65 @@ def check_orphan_modules():
         print(f"[AutoReview] ✅ 架构债务巡检通过，无孤儿模块")
         return []
 
+
+def check_standby_violations() -> list:
+    """
+    扫描 STATUS: STANDBY 模块是否被非白名单文件引用
+    设计院 2026-07-01
+    """
+    import ast
+    from pathlib import Path
+
+    brain = Path(__file__).parent
+    standby_mods = set()
+    for f in brain.glob('*.py'):
+        if 'STATUS: STANDBY' in f.read_text():
+            standby_mods.add(f.stem)
+
+    if not standby_mods:
+        return []
+
+    # 扫描哪些活跃模块引用了STANDBY模块
+    violations = []
+    skip_self = standby_mods | {'__init__', 'auto_review'}
+    for f in brain.glob('*.py'):
+        if f.stem in skip_self:
+            continue
+        try:
+            src = f.read_text()
+            tree = ast.parse(src)
+            for node in ast.walk(tree):
+                if isinstance(node, (ast.Import, ast.ImportFrom)):
+                    names = [a.name for a in getattr(node, 'names', [])]
+                    module = getattr(node, 'module', '') or ''
+                    for name in names + [module.split('.')[-1]]:
+                        if name in standby_mods:
+                            violations.append(f'{f.stem} → {name}(STANDBY)')
+        except Exception:
+            pass
+
+    if violations:
+        print(f'[AutoReview] ⚠️ STANDBY模块被引用 {len(violations)}处: {violations[:5]}')
+    return violations
+
+
 if __name__ == '__main__':
     result = check_orphan_modules()
-    # 自推送：发现孤儿模块才推送，正常静默
+    standby_v = check_standby_violations()
+    # 自推送：发现孤儿或STANDBY违规才推送，正常静默
+    issues = []
     if result:
+        issues.append(f'🔴 发现孤儿模块 {len(result)}个\n' + '\n'.join(f'  - {m}' for m in result))
+    if standby_v:
+        issues.append(f'⚠️ STANDBY模块被引用 {len(standby_v)}处\n' + '\n'.join(f'  - {v}' for v in standby_v[:5]))
+    if issues:
         import subprocess as _sp
-        msg = f'🔴 梵天架构已发现孤儿模块 {len(result)}个\n' + '\n'.join(f'  - {m}' for m in result)
+        msg = '🏛️ 架构债务巡检 (' + ', '.join(['孤儿' if result else '', 'STANDBY违规' if standby_v else '']).strip(', ') + ')\n\n' + '\n\n'.join(issues)
         _sp.run(
             ['openclaw', 'message', 'send',
              '--channel', 'jarvis',
-             '--target', '73295708:thread:019f1797-6c60-7541-ad72-ec34ed14dfc4',
+             '--target', '73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075',
              '--message', msg],
             capture_output=True, timeout=15
         )
-    # 正常(无孤儿) → 完全静默
+    # 正常(无问题) → 完全静默

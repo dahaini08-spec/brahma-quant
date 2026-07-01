@@ -17,6 +17,11 @@ brahma_orchestrator.py — 梵天分析编排器 v24.0
     → gates.check()
     → emitter.emit()
 """
+
+# ── STATUS: STANDBY ──────────────────────────────────────────────
+# 已被brahma_analysis_runner取代，保留兼容
+# LAST_REVIEW: 2026-07-01 | 调用前运行 auto_review.py 确认引用关系
+# ─────────────────────────────────────────────────────────────────
 import sys, os
 
 # 确保包路径正确

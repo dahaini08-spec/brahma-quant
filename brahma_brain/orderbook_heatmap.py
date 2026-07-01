@@ -148,8 +148,12 @@ def get_ob_score(symbol: str, signal_dir: str) -> tuple[int, str]:
     """
     返回 (加分, 描述) 供 brahma_core 调用
 
+    [订单簿失衡权重升级 2026-07-01 四方共识落地]
+    压倒性失衡 (>10倍) 顺势 = +15 / 逆势做多 = -20否决权
+    一般不对称 (3~10倍) 顺势 = +8~12 / 逆势 = -5~8
+
     做空时：卖单墙强 → 正确方向加分，买单墙强 → 扣分
-    做多时：买单墙强 → 正确方向加分，卖单墙强 → 扣分
+    做多时：买单墙强 → 正确方向加分，卖单墙强 → 扣分（>10倍=否决权）
     """
     data = get_orderbook_heatmap(symbol)
     if data.get('source') == 'error':
@@ -157,24 +161,34 @@ def get_ob_score(symbol: str, signal_dir: str) -> tuple[int, str]:
 
     bias = data['pressure_bias']
     imb = data['imbalance_pct']
+    bid_usd = data.get('bid_wall_usd', 1) or 1
+    ask_usd = data.get('ask_wall_usd', 1) or 1
+    ask_bid_ratio = ask_usd / bid_usd  # >1=卖墙强
+    bid_ask_ratio = bid_usd / ask_usd  # >1=买墙强
 
     if signal_dir == 'SHORT':
-        if bias == 'SELL_WALL':
-            pts = min(4, int(abs(imb) / 10) + 2)
-            return pts, f'卖单墙强({imb:.0f}%) +{pts}'
-        elif bias == 'BUY_WALL':
-            pts = -min(3, int(abs(imb) / 15) + 1)
-            return pts, f'买单墙阻力({imb:.0f}%) {pts}'
-        return 0, f'订单簿中性({imb:.0f}%)'
+        if ask_bid_ratio >= 10:
+            return 15, f'卖墙压倒性({ask_bid_ratio:.1f}倍) 顺势做空 +15'
+        elif ask_bid_ratio >= 3 or bias == 'SELL_WALL':
+            pts = min(12, 8 + int((max(ask_bid_ratio, 1) - 3) / 2))
+            return pts, f'卖单墙强(ask/bid={ask_bid_ratio:.1f}) +{pts}'
+        elif bid_ask_ratio >= 3 or bias == 'BUY_WALL':
+            pts = -min(8, 5 + int((max(bid_ask_ratio, 1) - 3) / 2))
+            return pts, f'买单墙逆势({bid_ask_ratio:.1f}倍买墙) {pts}'
+        return 0, f'订单簿中性(imb={imb:.0f}%)'
 
     elif signal_dir == 'LONG':
-        if bias == 'BUY_WALL':
-            pts = min(4, int(abs(imb) / 10) + 2)
-            return pts, f'买单墙强({imb:.0f}%) +{pts}'
-        elif bias == 'SELL_WALL':
-            pts = -min(3, int(abs(imb) / 15) + 1)
-            return pts, f'卖单墙压制({imb:.0f}%) {pts}'
-        return 0, f'订单簿中性({imb:.0f}%)'
+        if ask_bid_ratio >= 10:
+            return -20, f'卖墙压倒性({ask_bid_ratio:.1f}倍)封死做多 否决权 -20'
+        elif bid_ask_ratio >= 10:
+            return 15, f'买墙压倒性({bid_ask_ratio:.1f}倍) 顺势做多 +15'
+        elif bid_ask_ratio >= 3 or bias == 'BUY_WALL':
+            pts = min(12, 8 + int((max(bid_ask_ratio, 1) - 3) / 2))
+            return pts, f'买单墙强(bid/ask={bid_ask_ratio:.1f}) +{pts}'
+        elif ask_bid_ratio >= 3 or bias == 'SELL_WALL':
+            pts = -min(8, 5 + int((max(ask_bid_ratio, 1) - 3) / 2))
+            return pts, f'卖单墙压制做多(ask/bid={ask_bid_ratio:.1f}) {pts}'
+        return 0, f'订单簿中性(imb={imb:.0f}%)'
 
     return 0, 'unknown_dir'
 

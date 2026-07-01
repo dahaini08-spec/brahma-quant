@@ -1,27 +1,27 @@
 {
-  "score": -1,
+  "score": 0,
   "sources": [
     "timesfm_lite"
   ],
-  "reason": "TimesFM-Lite: p_dir=0.45 conf=LOW pred=0.07 Q10=0.07~Q90=0.07",
+  "reason": "TimesFM-Lite: p_dir=0.49 conf=LOW pred=0.07 Q10=0.07~Q90=0.07",
   "details": {
     "timesfm_lite": {
-      "score": -0.6,
-      "p_direction": 0.454,
+      "score": -0.1,
+      "p_direction": 0.492,
       "confidence": "LOW",
       "pred_price": 0.07,
       "q10": 0.07,
       "q25": 0.07,
       "q75": 0.07,
       "q90": 0.07,
-      "band_pct": 7.78,
-      "r_sq": 0.772,
+      "band_pct": 9.75,
+      "r_sq": 0.76,
       "vol_h": 0.0,
       "regime_coeff": 0.8
     }
   },
-  "ts": 1782813534.5162091,
-  "expires": 1782817134.5162094,
+  "ts": 1782866238.2596748,
+  "expires": 1782869838.2596755,
   "symbol": "DOGEUSDT",
   "direction": "LONG"
 }

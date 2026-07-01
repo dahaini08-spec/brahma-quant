@@ -1,0 +1,20 @@
+{
+  "LIQ_LEVEL": [
+    {
+      "ts": "2026-07-01T00:00:20.945146+00:00",
+      "symbol": "BTCUSDT",
+      "type": "LIQ_LEVEL",
+      "price": 60347.5,
+      "timeframe": "4H",
+      "note": "空头密集止损区",
+      "raw": {
+        "symbol": "BTCUSDT",
+        "type": "LIQ_LEVEL",
+        "price": 60347.5,
+        "timeframe": "4H",
+        "note": "空头密集止损区"
+      }
+    }
+  ],
+  "_last_updated": "2026-07-01T00:00:20.945146+00:00"
+}

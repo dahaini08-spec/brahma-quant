@@ -1,27 +1,27 @@
 {
-  "score": 0,
+  "score": 1,
   "sources": [
     "timesfm_lite"
   ],
-  "reason": "TimesFM-Lite: p_dir=0.52 conf=LOW pred=1.77 Q10=1.67~Q90=1.88",
+  "reason": "TimesFM-Lite: p_dir=0.58 conf=LOW pred=1.78 Q10=1.66~Q90=1.91",
   "details": {
     "timesfm_lite": {
-      "score": 0.2,
-      "p_direction": 0.52,
+      "score": 1.0,
+      "p_direction": 0.581,
       "confidence": "LOW",
-      "pred_price": 1.77,
-      "q10": 1.67,
+      "pred_price": 1.78,
+      "q10": 1.66,
       "q25": 1.71,
-      "q75": 1.83,
-      "q90": 1.88,
-      "band_pct": 11.51,
-      "r_sq": 0.598,
-      "vol_h": 0.09,
+      "q75": 1.84,
+      "q90": 1.91,
+      "band_pct": 13.92,
+      "r_sq": 0.545,
+      "vol_h": 0.1,
       "regime_coeff": 0.8
     }
   },
-  "ts": 1782813534.9207087,
-  "expires": 1782817134.920709,
+  "ts": 1782866238.6094942,
+  "expires": 1782869838.6094944,
   "symbol": "NEARUSDT",
   "direction": "SHORT"
 }

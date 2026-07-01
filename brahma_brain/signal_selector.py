@@ -30,6 +30,11 @@ signal_selector.py — 梵天方向裁决器 v1.0
   震荡（乘数=0.7）→ 6H强平
 """
 
+# ── STATUS: STANDBY ──────────────────────────────────────────────
+# 信号选择器，被signal_watcher间接调用，非核心路径
+# LAST_REVIEW: 2026-07-01 | 调用前运行 auto_review.py 确认引用关系
+# ─────────────────────────────────────────────────────────────────
+
 import sys
 from pathlib import Path
 

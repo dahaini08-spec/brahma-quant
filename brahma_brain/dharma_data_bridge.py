@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 """
+
+# ── STATUS: AUXILIARY ──────────────────────────────────────────
+# 达摩院数据桥接，训练辅助
+# LAST_REVIEW: 2026-07-01 | 属于辅助计算层，修改前确认调用链
+# ─────────────────────────────────────────────────────────────
 dharma_data_bridge.py — 达摩院数据桥接器 v2.0
 设计院 × 达摩院 2026-06-18
 
@@ -154,6 +159,15 @@ def log_signal(result: dict) -> bool:
             'exit_price':     None,
             'pnl_pct':        None,
             'settled_at':     None,
+
+            # [设计院 A2 2026-06-30] BRAHMA标签 + 饱满字段集（防混淤防误执行）
+            'output_tag':      result.get('_runner_meta', {}).get('output_tag', ''),
+            'structure_grade': int(float(cf.get('effective_grade', cf.get('structure_grade', 0)) or 0)),
+            'gex_min':         (cf.get('breakdown', {}) or {}).get('_gex_min'),
+            'trigger_conf':    (result.get('extra', {}) or {}).get('trigger', {}).get('confidence'),
+            'consensus':       (result.get('extra', {}) or {}).get('multitf', {}).get('consensus', ''),
+            'rsi_1h':          (result.get('momentum', {}) or {}).get('rsi_1h'),
+            'rsi_4h':          (result.get('momentum', {}) or {}).get('rsi_4h'),
         }
 
         # ── [v25.5] entry_price 窗口去重（同标的同方向入场区间偏差<0.5%视为重复） ──

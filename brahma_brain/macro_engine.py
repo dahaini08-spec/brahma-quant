@@ -146,3 +146,118 @@ if __name__ == '__main__':
     dom = r['raw']['btc_dominance']
     print(f"恐惧贪婪: {fg['value']} {fg['label']}  趋势:{fg['trend']}")
     print(f"BTC主导率: {dom['btc_dom']}%  {dom['signal']}")
+
+
+# ═══════════════════════════════════════════════════════════════
+# [s_macro_v2 2026-07-01] DXY实时 + BTC.D精准加权
+# 设计院·四方共识落地：全要素宏观层升级
+# ═══════════════════════════════════════════════════════════════
+
+def get_dxy_realtime() -> dict:
+    """
+    DXY 美元指数实时（Yahoo Finance /v8，免费）
+    返回：price, chg_1h_pct, chg_24h_pct, direction
+    """
+    default = {'price': 0.0, 'chg_1h_pct': 0.0, 'chg_24h_pct': 0.0, 'direction': 'NEUTRAL'}
+    url = 'https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?interval=1h&range=2d'
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=8) as r:
+            data = json.loads(r.read())
+        closes = data['chart']['result'][0]['indicators']['quote'][0]['close']
+        closes = [x for x in closes if x is not None]
+        if len(closes) < 2:
+            return default
+        now_p  = closes[-1]
+        prev1h = closes[-2]
+        prev24 = closes[-25] if len(closes) >= 25 else closes[0]
+        chg1h  = round((now_p - prev1h) / prev1h * 100, 3)
+        chg24  = round((now_p - prev24) / prev24 * 100, 3)
+        direction = 'UP' if chg1h > 0.05 else ('DOWN' if chg1h < -0.05 else 'FLAT')
+        return {'price': round(now_p, 2), 'chg_1h_pct': chg1h, 'chg_24h_pct': chg24, 'direction': direction}
+    except Exception:
+        return default
+
+
+def get_nasdaq_realtime() -> dict:
+    """
+    纳指期货 NQ=F 实时（Yahoo Finance，免费）
+    BTC与纳指相关系数≈0.7，宏观共振确认
+    """
+    default = {'price': 0.0, 'chg_1h_pct': 0.0, 'direction': 'NEUTRAL'}
+    url = 'https://query1.finance.yahoo.com/v8/finance/chart/NQ=F?interval=1h&range=2d'
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=8) as r:
+            data = json.loads(r.read())
+        closes = data['chart']['result'][0]['indicators']['quote'][0]['close']
+        closes = [x for x in closes if x is not None]
+        if len(closes) < 2:
+            return default
+        chg = round((closes[-1] - closes[-2]) / closes[-2] * 100, 3)
+        direction = 'UP' if chg > 0.1 else ('DOWN' if chg < -0.1 else 'FLAT')
+        return {'price': round(closes[-1], 0), 'chg_1h_pct': chg, 'direction': direction}
+    except Exception:
+        return default
+
+
+def macro_score_v2(symbol: str, signal_dir: str) -> dict:
+    """
+    全要素宏观评分 v2（在原 macro_score 基础上叠加）
+
+    新增维度：
+      DXY实时方向（Yahoo Finance）
+      纳指期货方向（Yahoo Finance）
+      BTC.D精准阈值加权（CoinGecko已有，精细化）
+
+    返回：
+      score_addon   : 新增宏观加分（叠加到原 macro_score 上）
+      dxy           : DXY数据
+      nasdaq        : 纳指数据
+      notes         : 描述列表
+    """
+    is_short = (signal_dir == 'SHORT')
+    is_btc   = ('BTC' in symbol.upper())
+    score    = 0
+    notes    = []
+
+    # ── DXY 实时 ──
+    dxy = get_dxy_realtime()
+    if dxy['price'] > 0:
+        if is_short and dxy['direction'] == 'UP':
+            pts = 3 if abs(dxy['chg_1h_pct']) >= 0.15 else 2
+            score += pts; notes.append(f'DXY={dxy["price"]:.2f}(+{dxy["chg_1h_pct"]:.2f}%) 美元走强→加密承压 +{pts}')
+        elif is_short and dxy['direction'] == 'DOWN':
+            score -= 1; notes.append(f'DXY={dxy["price"]:.2f}({dxy["chg_1h_pct"]:.2f}%) 美元走弱→做空逆风 -1')
+        elif not is_short and dxy['direction'] == 'DOWN':
+            pts = 2
+            score += pts; notes.append(f'DXY={dxy["price"]:.2f}({dxy["chg_1h_pct"]:.2f}%) 美元走弱→加密利好 +{pts}')
+
+    # ── 纳指期货 ──
+    nq = get_nasdaq_realtime()
+    if nq['price'] > 0:
+        if is_short and nq['direction'] == 'DOWN':
+            score += 2; notes.append(f'NQ={nq["price"]:.0f}({nq["chg_1h_pct"]:.2f}%) 纳指下跌→BTC共振 +2')
+        elif is_short and nq['direction'] == 'UP':
+            score -= 1; notes.append(f'NQ={nq["price"]:.0f}({nq["chg_1h_pct"]:.2f}%) 纳指上涨→做空逆风 -1')
+        elif not is_short and nq['direction'] == 'UP':
+            score += 2; notes.append(f'NQ={nq["price"]:.0f}({nq["chg_1h_pct"]:.2f}%) 纳指上涨→BTC利好 +2')
+
+    # ── BTC.D 精准加权（山寨做空叠加）──
+    if not is_btc and is_short:
+        try:
+            dom_data = get_btc_dominance()
+            btc_d = dom_data.get('btc_dom', 0)
+            if btc_d >= 56:
+                score += 4; notes.append(f'BTC.D={btc_d:.1f}% 高位吸血→山寨更弱 +4')
+            elif btc_d >= 53:
+                score += 2; notes.append(f'BTC.D={btc_d:.1f}% 偏高→山寨承压 +2')
+        except Exception:
+            pass
+
+    return {
+        'score_addon': min(max(score, -3), 6),  # 限制范围 -3~+6
+        'dxy':    dxy,
+        'nasdaq': nq,
+        'notes':  notes,
+    }

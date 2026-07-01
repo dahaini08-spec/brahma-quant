@@ -28,6 +28,11 @@ brahma_brain/trading_agents_bridge.py — TradingAgents × 梵天 桥接层 v1.0
   MODE=live     → 完整注入（需达摩院 M1 认证后才允许）
 """
 
+# ── STATUS: STANDBY ──────────────────────────────────────────────
+# 多智能体桥接，实验性功能，未接入主流程
+# LAST_REVIEW: 2026-07-01 | 调用前运行 auto_review.py 确认引用关系
+# ─────────────────────────────────────────────────────────────────
+
 import sys
 import os
 import time
