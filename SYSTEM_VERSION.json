@@ -773,5 +773,40 @@
         "BULL_CORRECTION/BEAR_RECOVERY系数0.0修复"
       ]
     }
-  ]
+  ],
+  "upgrades_v16_design_institute": {
+    "date": "2026-07-01",
+    "author": "设计院·达摩院 对标顶级量化系统优化",
+    "modules": {
+      "P0_1_realistic_cost_model": {
+        "file": "dharma/realistic_cost_model.py",
+        "status": "ACTIVE",
+        "desc": "回测真实成本建模(手续费+滑点+资金费)，消除回测vs实盘WR虚高差距",
+        "cost_per_trade": "≈0.24%",
+        "fix": "backtest WR修正: -2pp更真实"
+      },
+      "P0_2_regime_aware_augmentor": {
+        "file": "dharma/regime_aware_augmentor.py",
+        "status": "ACTIVE",
+        "desc": "体制感知合成数据扩充，解决XGB训练样本n<500瓶颈",
+        "data_source": "xgb_train_v2_features.parquet (228k行)",
+        "target": "n≥5000，WR矩阵校正标签"
+      },
+      "P1_1_llm_council_bridge": {
+        "file": "brahma_brain/llm_council_bridge.py",
+        "status": "SHADOW",
+        "desc": "LLM二次审查层，score≥140触发Risk+Macro两Agent",
+        "trigger": "score >= 140 (≈5%信号)",
+        "mode": "shadow → M1验证 → live",
+        "cost": "≈2000 tokens/次，每日上限50次"
+      },
+      "P1_2_portfolio_optimizer": {
+        "file": "brahma_brain/portfolio_optimizer.py",
+        "status": "ACTIVE",
+        "desc": "组合相关性优化，30天滚动相关性矩阵，贪心最优子集选择",
+        "corr_threshold": 0.75,
+        "fix": "消除BTC+ETH同时持有1.85x隐性风险敞口"
+      }
+    }
+  }
 }
