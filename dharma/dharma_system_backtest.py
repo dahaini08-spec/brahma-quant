@@ -665,6 +665,27 @@ def backtest_symbol(sym: str, interval: str = '1h',
                 exit_price = df.iloc[exit_bar]['close']
                 pnl = (exit_price - entry_price) / entry_price * (1 if direction == 'LONG' else -1)
 
+            # ── [设计院 v16] realistic_cost_model 成本校正 ──────────────────
+            try:
+                import sys as _sys_rcm, os as _os_rcm
+                _rcm_dir = _os_rcm.path.dirname(_os_rcm.path.abspath(__file__))
+                if _rcm_dir not in _sys_rcm.path:
+                    _sys_rcm.path.insert(0, _rcm_dir)
+                from realistic_cost_model import CostModel as _CostModel
+                _rcm = _CostModel()
+                _entry_px = float(row.get('close', row.get('open', 1000)))
+                _atr      = float(row.get('atr', _entry_px * 0.015))
+                _hold_h   = hold_bars * (0.25 if '15m' in str(sym) else 1.0)
+                _cost_detail = _rcm.adjust_pnl(
+                    raw_pnl=pnl, entry_price=_entry_px, atr=_atr,
+                    direction=direction, regime=sig.get('regime', 'UNKNOWN'),
+                    hold_hours=_hold_h
+                )
+                pnl = _cost_detail['adj_pnl']  # 用成本校正后的pnl
+            except Exception:
+                pass  # 成本模型不可用时使用原始pnl
+            # ── [realistic_cost_model END] ───────────────────────────────
+
             trade = {
                 'direction': direction,
                 'score': total,
