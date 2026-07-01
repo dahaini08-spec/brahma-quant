@@ -269,7 +269,8 @@ def extract_standard_fields(r: dict) -> dict:
         'tp1':             pa.get('tp1'),
         'tp2':             pa.get('tp2'),
         'rr':              pa.get('rr1'),
-        'structure_grade': r.get('effective_grade') or r.get('structure_grade'),
+        'structure_grade': (r.get('effective_grade') or r.get('structure_grade')
+                             or r.get('ms', {}).get('structure', {}).get('grade')),
         'gex_min':         gex_min,
         'trigger_conf':    trigger_conf,
         'valid':           r.get('valid_signal') or r.get('valid'),
@@ -353,6 +354,26 @@ def format_standard_card(r: dict, ts: str = None) -> str:
         lines.append(f'  GEX磁铁 ${gex_min:,.0f}  |  15M置信 {tconf}/100')
     elapsed_str = f' ({elapsed:.1f}s)' if elapsed else ''
     lines.append(f'  {valid_icon} 触发状态: {"有效信号" if valid else "等待15M确认"}{elapsed_str}')
+
+    # ── [SOP固化 2026-07-01] 有效期 + 重评触发条件 ──────────────────────
+    import math as _math
+    from datetime import datetime as _dt, timezone as _tz, timedelta as _td
+    _now = _dt.now(_tz.utc)
+    # TTL标准：grade≥95→90min / grade≥80→60min / WATCH→30min / 价格偏离>1%立即失效
+    _ttl_min = 90 if (grade or 0) >= 95 else (60 if (grade or 0) >= 80 else 30)
+    _expires = (_now + _td(minutes=_ttl_min)).strftime('%H:%M UTC')
+    # 体制版本号从result获取
+    _regime_ver = r.get('_regime_version', r.get('regime_version', '?'))
+    _regime_tag = f'{regime}@v{_regime_ver}' if _regime_ver and _regime_ver != '?' else regime
+    # 结构失效价（止损基础+缓冲）
+    _p_now = float(p or 0)
+    _sl_f  = float(sl or 0)
+    _inval_price = _sl_f if _sl_f else (_p_now * 1.03 if direction=='SHORT' else _p_now * 0.97)
+    lines += [
+        f'',
+        f'  ⏱️ 有效期: {_expires}（{_ttl_min}min）| 体制: {_regime_tag}',
+        f'  🔄 重评条件: ①价格穿越${_inval_price:,.2f} ②Kronos p_up变化>0.15 ③体制切换',
+    ]
     lines.append(SEP)
 
     return '\n'.join(lines)

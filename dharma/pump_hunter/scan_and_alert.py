@@ -264,7 +264,10 @@ if __name__ == '__main__':
         # 高分信号同时写入 pump_signal_queue，供独立执行器消费
         try:
             import sys as _sys_ph
-            _sys_ph.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            # 修复: 需要三层dirname（pump_hunter/ → dharma/ → trading-system/）
+            _root_ph = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            if _root_ph not in _sys_ph.path:
+                _sys_ph.path.insert(0, _root_ph)
             from scripts.pump_signal_executor import emit_pump_signal
             import time as _time_ph
 

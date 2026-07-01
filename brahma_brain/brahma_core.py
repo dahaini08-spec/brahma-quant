@@ -2036,6 +2036,33 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # Step 2: 确定方向
     if signal_dir is None:
         signal_dir = ms['signal_bias']
+
+    # ── [SOP固化 2026-07-01] 体制×方向硬封锁 ─────────────────────────────
+    # 6方联合裁决：死穴组合直接HARD_BLOCK，不走完整计算流程
+    # 触发条件：体制乘数≤0.35 AND 历史WR<48%（达摩院10K铁证）
+    _regime_now = ms.get('regime', 'CHOP_MID')
+    _DIRECTION_HARD_BLOCK = {
+        ('BEAR_TREND',      'LONG'):  True,   # WR=45% n=2413 乘数0.35 → 死穴
+        ('BULL_CORRECTION', 'LONG'):  True,   # PF=0.687 强惩罚区
+    }
+    _block_key = (_regime_now, signal_dir)
+    if _DIRECTION_HARD_BLOCK.get(_block_key, False):
+        _block_reason = f'{_regime_now}×{signal_dir}禁区（WR<48% 死穴，6方联合封印）'
+        print(f'[HARD_BLOCK] ❌ {_sym} {_block_reason}')
+        return {
+            'symbol':     _sym,
+            'action':     'HARD_BLOCK',
+            'valid':      False,
+            'regime':     _regime_now,
+            'signal_dir': signal_dir,
+            'score':      0,
+            'reason':     _block_reason,
+            'confluence': {'total': 0, 'direction': signal_dir, 'breakdown': {'HARD_BLOCK': _block_reason}},
+            'trade_params': {},
+            'ms':         ms,
+            '_hard_blocked': True,
+        }
+    # ── [HARD_BLOCK END] ──────────────────────────────────────────────────
     _rcn = {'BULL_TREND':'牛市趋势','BULL_EARLY':'牛市初期','BULL_PEAK':'牛市末期','BULL_CORRECTION':'牛市回调','BEAR_TREND':'熊市趋势','BEAR_EARLY':'熊市初期','BEAR_CRASH':'暴跌体制','BEAR_RECOVERY':'熊市反弹','CHOP_HIGH':'高位震荡','CHOP_LOW':'低位震荡','CHOP_MID':'中位震荡','BREAKOUT':'突破体制'}
     _reg_raw = ms.get('regime','?')
     _reg_display = f'{_reg_raw}({_rcn.get(_reg_raw,_reg_raw)})'

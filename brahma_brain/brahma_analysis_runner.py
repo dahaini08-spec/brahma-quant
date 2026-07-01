@@ -49,6 +49,12 @@ try:
     _TIMING_OK = True
 except Exception:
     _TIMING_OK = False
+# ── [SOP固化 2026-07-01] 分析快照锁定──────────────────────────────
+try:
+    from brahma_brain.analysis_snapshot import BatchSnapshot as _BatchSnapshot
+    _SNAPSHOT_OK = True
+except Exception:
+    _SNAPSHOT_OK = False
 # ── 系统配置（路由到正确线程）────────────────────────────────
 try:
     sys.path.insert(0, os.path.join(BASE_DIR, '..', 'scripts'))
@@ -130,7 +136,11 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
             s = s + 'USDT'
         norm_syms.append(s)
 
+    # ── [SOP固化] 创建批量快照，确保BTC/ETH时序一致 ──
+    _batch_snap = _BatchSnapshot(norm_syms) if _SNAPSHOT_OK else None
     raw_results = _batch_analyze(norm_syms)
+    if _batch_snap:
+        _batch_snap.lock_all(raw_results)
     ts = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
 
     results = {}
