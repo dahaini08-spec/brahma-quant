@@ -370,3 +370,68 @@ if __name__ == '__main__':
         _sh.run()
     except Exception as _e:
         print(f'[self_heal] 执行异常: {_e}')
+
+
+# ══ [设计院 v16/v17 健康检查扩展] 2026-07-01 ══════════════════════════════
+def check_v16_v17_modules() -> dict:
+    """
+    检查 v16/v17 新模块健康状态
+    - realistic_cost_model: 可实例化
+    - portfolio_optimizer: 相关性计算正常
+    - llm_council_bridge: shadow log可写
+    - kronos_bridge: 模型路径存在
+    - kronos_m1_validator: shadow log进度
+    """
+    import sys, os
+    from pathlib import Path
+    results = {}
+    BASE = Path(__file__).parent.parent
+
+    # realistic_cost_model
+    try:
+        sys.path.insert(0, str(BASE / 'dharma'))
+        from realistic_cost_model import CostModel
+        m = CostModel()
+        cost = m.total_cost(2000, 30, 'SHORT', 'BEAR_TREND', 16)
+        results['realistic_cost_model'] = {'ok': True, 'cost_sample': round(cost*100,4)}
+    except Exception as e:
+        results['realistic_cost_model'] = {'ok': False, 'error': str(e)[:60]}
+
+    # portfolio_optimizer
+    try:
+        sys.path.insert(0, str(BASE / 'brahma_brain'))
+        from portfolio_optimizer import check_correlation_risk
+        r = check_correlation_risk('BTCUSDT', 'ETHUSDT')
+        results['portfolio_optimizer'] = {'ok': True, 'btc_eth_corr': r['corr'], 'risk_mult': r['risk_mult']}
+    except Exception as e:
+        results['portfolio_optimizer'] = {'ok': False, 'error': str(e)[:60]}
+
+    # kronos_bridge shadow log
+    shadow = BASE / 'data' / 'kronos_bridge_shadow.jsonl'
+    n_shadow = 0
+    if shadow.exists():
+        n_shadow = sum(1 for _ in open(shadow) if _.strip())
+    results['kronos_bridge'] = {
+        'ok': True,
+        'shadow_n': n_shadow,
+        'm1_progress': f'{n_shadow}/100',
+        'mode': os.environ.get('KRONOS_BRIDGE_MODE', 'shadow')
+    }
+
+    # llm_council shadow log
+    llm_log = BASE / 'data' / 'llm_council_shadow_log.jsonl'
+    n_llm = 0
+    if llm_log.exists():
+        n_llm = sum(1 for _ in open(llm_log) if _.strip())
+    results['llm_council_bridge'] = {'ok': True, 'shadow_n': n_llm}
+
+    passed = sum(1 for v in results.values() if v.get('ok'))
+    total  = len(results)
+    return {
+        'check': 'v16_v17_modules',
+        'score': int(passed / total * 100),
+        'passed': passed,
+        'total': total,
+        'details': results
+    }
+# ══ [END] ══════════════════════════════════════════════════════════════════

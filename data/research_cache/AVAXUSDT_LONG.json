@@ -1,27 +1,27 @@
 {
-  "score": 0,
+  "score": 1,
   "sources": [
     "timesfm_lite"
   ],
-  "reason": "TimesFM-Lite: p_dir=0.52 conf=LOW pred=6.62 Q10=6.34~Q90=6.93",
+  "reason": "TimesFM-Lite: p_dir=0.54 conf=LOW pred=6.64 Q10=6.41~Q90=6.91",
   "details": {
     "timesfm_lite": {
-      "score": 0.3,
-      "p_direction": 0.524,
+      "score": 0.6,
+      "p_direction": 0.542,
       "confidence": "LOW",
-      "pred_price": 6.62,
-      "q10": 6.34,
-      "q25": 6.48,
+      "pred_price": 6.64,
+      "q10": 6.41,
+      "q25": 6.52,
       "q75": 6.79,
-      "q90": 6.93,
-      "band_pct": 8.85,
-      "r_sq": 0.384,
-      "vol_h": 0.23,
+      "q90": 6.91,
+      "band_pct": 7.52,
+      "r_sq": 0.386,
+      "vol_h": 0.2,
       "regime_coeff": 0.8
     }
   },
-  "ts": 1782909420.9671774,
-  "expires": 1782913020.9671776,
+  "ts": 1782938235.7027185,
+  "expires": 1782941835.702719,
   "symbol": "AVAXUSDT",
   "direction": "LONG"
 }

@@ -9,11 +9,11 @@
   "PIXELUSDT": {
     "symbol": "PIXELUSDT",
     "direction": "SHORT",
-    "sl_price": 0.004739,
+    "sl_price": 0.004711,
     "tsl_updated": "2026-07-01T10:09:33.391155+00:00",
     "reason": "自主决策：TP1已穿越，SL追踪至TP1~TP2中间位锁利",
-    "updated_at": 1782916234.6624315,
-    "note": "浮盈14.5%→SL收紧至px*1.02 by APM"
+    "updated_at": 1782918047.57576,
+    "note": "浮盈15.0%→SL收紧至px*1.02 by APM"
   },
   "ZECUSDT": {
     "symbol": "ZECUSDT",

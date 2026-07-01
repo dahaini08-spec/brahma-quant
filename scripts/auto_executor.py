@@ -202,6 +202,30 @@ def find_executable_signals() -> list[dict]:
 
     # 按评分降序排列
     candidates.sort(key=lambda x: -float(x.get('score', 0) or 0))
+
+    # ══ [设计院 v16] portfolio_optimizer 相关性过滤 ══════════════════════
+    # 多信号时，用30天滚动相关性矩阵选出最优子集（max 3个，corr<0.75）
+    # 单信号时直接通过（不增加延迟）
+    if len(candidates) > 1:
+        try:
+            import sys as _sys_po, os as _os_po
+            _po_root = str(Path(__file__).parent.parent)
+            _po_brain = str(Path(__file__).parent.parent / 'brahma_brain')
+            for _pp in [_po_brain, _po_root]:
+                if _pp not in _sys_po.path:
+                    _sys_po.path.insert(0, _pp)
+            from portfolio_optimizer import filter_signals as _po_filter
+            _approved, _rejected = _po_filter(candidates)
+            if _approved:
+                for _r in _rejected:
+                    _rsym = _r.get('symbol', '?')
+                    print(f'[PortfolioOpt] ❌ {_rsym} 因相关性过滤（与已选标的相关性>0.75）')
+                candidates = _approved
+                print(f'[PortfolioOpt] ✅ 组合优化后保留 {len(candidates)} 个信号')
+        except Exception as _e_po:
+            pass  # portfolio_optimizer不可用时保持原candidates
+    # ══ [portfolio_optimizer END] ════════════════════════════════════════
+
     return candidates
 
 
