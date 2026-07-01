@@ -1,69 +1,8 @@
 {
-  "scan_time": "2026-07-01T02:04:10.370928",
-  "elapsed_sec": 128.5,
-  "total_scanned": 431,
-  "alerts": [
-    {
-      "symbol": "GLMUSDT",
-      "score": 77,
-      "price": 0.10454,
-      "chg_24h": 7.9,
-      "vol_m": 24.6,
-      "oi_chg": 63.2,
-      "funding": -0.3,
-      "short_pct": 46.9,
-      "compression": 21.6,
-      "vol_ratio": 3.52,
-      "rsi": 64.3,
-      "reasons": [
-        "OI暴增+63%",
-        "极端负费率-0.300%",
-        "MODERATE压缩22%"
-      ],
-      "scan_time": "2026-07-01T02:02:33.438954"
-    },
-    {
-      "symbol": "SAHARAUSDT",
-      "score": 75,
-      "price": 0.01009,
-      "chg_24h": -5.4,
-      "vol_m": 10.1,
-      "oi_chg": -5.7,
-      "funding": -0.0274,
-      "short_pct": 67.6,
-      "compression": 11.5,
-      "vol_ratio": 1.06,
-      "rsi": 20.8,
-      "reasons": [
-        "负费率-0.027%",
-        "空头拥挤68%",
-        "TIGHT压缩12%",
-        "RSI超卖21"
-      ],
-      "scan_time": "2026-07-01T02:03:12.048716"
-    }
-  ],
-  "new_alerts": [
-    {
-      "symbol": "SAHARAUSDT",
-      "score": 75,
-      "price": 0.01009,
-      "chg_24h": -5.4,
-      "vol_m": 10.1,
-      "oi_chg": -5.7,
-      "funding": -0.0274,
-      "short_pct": 67.6,
-      "compression": 11.5,
-      "vol_ratio": 1.06,
-      "rsi": 20.8,
-      "reasons": [
-        "负费率-0.027%",
-        "空头拥挤68%",
-        "TIGHT压缩12%",
-        "RSI超卖21"
-      ],
-      "scan_time": "2026-07-01T02:03:12.048716"
-    }
-  ],
-  "need_push": true
+  "scan_time": "2026-07-01T05:32:21.247578",
+  "elapsed_sec": 127.1,
+  "total_scanned": 422,
+  "alerts": [],
+  "new_alerts": [],
+  "need_push": false
 }
