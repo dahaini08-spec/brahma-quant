@@ -234,26 +234,68 @@ def format_report(r: dict) -> str:
 
 
 # ════════════════════════════════════════════════════════════════
+# 自推送：直接推送到 Jarvis，绕开AI渲染层
+# ════════════════════════════════════════════════════════════════
+
+JARVIS_TARGET  = '73295708:thread:019f1797-6c60-7541-ad72-ec34ed14dfc4'
+JARVIS_CHANNEL = 'jarvis'
+
+
+def _push(message: str):
+    """openclaw message send 直接推送，保留换行格式"""
+    import subprocess
+    subprocess.run(
+        ['openclaw', 'message', 'send',
+         '--channel', JARVIS_CHANNEL,
+         '--target',  JARVIS_TARGET,
+         '--message', message],
+        capture_output=True, timeout=15
+    )
+
+
+# ════════════════════════════════════════════════════════════════
 # 主入口
 # ════════════════════════════════════════════════════════════════
 
 def main():
     import argparse
+    from datetime import datetime, timezone
+
     parser = argparse.ArgumentParser(description='四维市场结构扫描器')
-    parser.add_argument('--symbol', default='BTCUSDT', help='交易对（默认BTCUSDT）')
-    parser.add_argument('--json',   action='store_true', help='输出原始JSON')
-    parser.add_argument('--both',   action='store_true', help='同时扫描BTC+ETH')
+    parser.add_argument('--symbol',  default='BTCUSDT', help='交易对（默认BTCUSDT）')
+    parser.add_argument('--json',    action='store_true', help='输出原始JSON')
+    parser.add_argument('--both',    action='store_true', help='同时扫描BTC+ETH')
+    parser.add_argument('--push',    action='store_true', help='自推送到Jarvis（绕开AI渲染）')
     args = parser.parse_args()
 
     symbols = ['BTCUSDT', 'ETHUSDT'] if args.both else [args.symbol]
 
+    # 扫描所有标的
+    reports = []
     for sym in symbols:
         result = scan_structure(sym)
         if args.json:
             print(json.dumps(result, indent=2, ensure_ascii=False, default=str))
         else:
-            print(format_report(result))
-            print()
+            reports.append(format_report(result))
+
+    if args.json:
+        return
+
+    # 拼接完整播报内容
+    now_utc = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
+    sep = '━' * 19
+    body = f'\n\n'.join(reports)
+    full_msg = f'📊 市场结构 {now_utc}\n{sep}\n{body}\n{sep}'
+
+    if args.push:
+        # 自推送模式：直接发到Jarvis，保留换行
+        _push(full_msg)
+        print(f'[market-structure] 推送完成 → {JARVIS_TARGET}')
+        print(full_msg)  # 同时输出到log
+    else:
+        # 直接输出（供手动调用）
+        print(full_msg)
 
 
 if __name__ == '__main__':
