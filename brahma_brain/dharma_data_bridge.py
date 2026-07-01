@@ -69,6 +69,15 @@ def log_signal(result: dict) -> bool:
         if not symbol or not direction or score < 60:
             return False
 
+        # ── v5.0 Step5: BB宽度过滤（设计院2026-07-01 苏摩111批准）──────────
+        # BB宽度<0.5%=极度压缩期，方向未定，信号噪音极高，强制跳过写入
+        # 节省积分：过滤掉压缩期产生的低质量信号
+        _bb_w = float(result.get('bb_width', 1.0) or result.get('confluence', {}).get('bb_width', 1.0) or 1.0)
+        if _bb_w < 0.5 and score < 155:
+            print(f'[DharmaBridge-v5.0] {symbol} BB宽度={_bb_w:.2f}%<0.5% 压缩期过滤，score={score:.0f}<155 → 跳过写入')
+            return False
+        # ────────────────────────────────────────────────────────────────────
+
         # TTL（基于timeframe + score + 体制）
         # [v25.7 P0b 2026-06-21] 动态TTL：高分信号 + 顺势体制 多等
         _ttl_map = {'4H': 8*3600, '1H': 2*3600, '1D': 24*3600}
