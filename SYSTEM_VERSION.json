@@ -808,5 +808,22 @@
         "fix": "消除BTC+ETH同时持有1.85x隐性风险敞口"
       }
     }
+  },
+  "upgrades_v17_kronos": {
+    "date": "2026-07-01",
+    "author": "设计院·自主决策落地",
+    "modules": {
+      "kronos_bridge": {
+        "file": "brahma_brain/kronos_bridge.py",
+        "status": "SHADOW",
+        "model": "NeoQuasar/Kronos-mini (4.1M CPU)",
+        "desc": "Kronos大模型并联s23, shadow模式A/B对比 Kronos vs Kronos-Lite",
+        "L1": "p_up推理→s23评分(shadow)",
+        "L2": "volatility_forecast→dynamic_sl注入接口",
+        "L3": "generate_synthetic_klines→augmentor合成数据升级接口",
+        "latency_ms": "~3000ms CPU（缓存后0ms）",
+        "upgrade_path": "shadow→M1(n≥100,WR+2pp)→live"
+      }
+    }
   }
 }
