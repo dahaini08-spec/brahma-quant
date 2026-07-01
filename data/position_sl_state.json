@@ -9,9 +9,11 @@
   "PIXELUSDT": {
     "symbol": "PIXELUSDT",
     "direction": "SHORT",
-    "sl_price": 0.004786,
+    "sl_price": 0.00475,
     "tsl_updated": "2026-07-01T10:09:33.391155+00:00",
-    "reason": "自主决策：TP1已穿越，SL追踪至TP1~TP2中间位锁利"
+    "reason": "自主决策：TP1已穿越，SL追踪至TP1~TP2中间位锁利",
+    "updated_at": 1782914594.6401408,
+    "note": "SL上移至0.004750 保护13%利润 by 设计院自主"
   },
   "ZECUSDT": {
     "symbol": "ZECUSDT",
@@ -30,12 +32,14 @@
     "side": "SHORT",
     "qty": 0.11,
     "entry": 570.6,
-    "sl_price": 549.0,
+    "sl_price": 576.31,
     "tp_price": 544.57,
     "registered_at": "2026-06-25T05:18:51.947746+00:00",
     "source": "hunter_executor",
     "reason": "自主决策：极近TP1(543.85距544.57仅0.14%)，SL收至549锁定≥3.9%",
-    "tsl_updated": "2026-07-01T10:50:21.524611+00:00"
+    "tsl_updated": "2026-07-01T10:50:21.524611+00:00",
+    "updated_at": 1782914594.6401315,
+    "note": "SL收紧至entry+1% by 设计院自主 2026-07-01"
   },
   "BTCUSDT": {
     "symbol": "BTCUSDT",

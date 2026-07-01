@@ -46,6 +46,16 @@ CONFIDENCE_TABLE = {
     ('ETHUSDT',  '160+',  'SHORT'): ('EXPLORING',  0.5),   # [v24.3] WR=0% n=6污染数据 → 极小仓探索
 }
 
+# ── v4.2 改进④ 7月减半仓策略 2026-07-01 苏摩111批准 ──────────────────────────
+# score 160~169 区间在7月1~15日临时从EXPLORING(2%/3%)降至1%
+# score ≥170 维持正常执行
+# 有效期: 2026-07-01 ~ 2026-07-15
+JULY_HALF_POSITION = True   # 到2026-07-15自动失效（由get_position_pct内部检查）
+JULY_HALF_SCORE_RANGE = (160, 169)  # score区间
+JULY_HALF_NAV = 1.0  # 降至1%NAV
+
+_JULY_HALF_TABLE_SHADOW = {
+
 # 默认规则（未明确映射的组合）
 DEFAULT_BY_SCORE = {
     '160+':   ('EXPLORING', 2.0),
@@ -74,6 +84,9 @@ def get_position_pct(symbol: str, score: float, direction: str,
       'allowed': True/False
     }
     """
+    import datetime as _dt_ps
+    _now_ps = _dt_ps.datetime.utcnow()
+
     sr = _score_range(score)
     dir_upper = direction.upper() if direction else 'ANY'
 
@@ -92,6 +105,19 @@ def get_position_pct(symbol: str, score: float, direction: str,
         bkt = '160+' if sr in ('160+','175+') else sr
         level, max_pct = DEFAULT_BY_SCORE.get(bkt, ('EXPLORING', 1.0))
 
+    # ── v4.2 改进④ 7月减半仓策略 ─────────────────────────────────────────
+    # 有效期 2026-07-01 ~ 2026-07-15，score 160~169 → 强制1%NAV
+    _july_half_active = (
+        JULY_HALF_POSITION
+        and _now_ps.month == 7
+        and 1 <= _now_ps.day <= 15
+        and JULY_HALF_SCORE_RANGE[0] <= score <= JULY_HALF_SCORE_RANGE[1]
+    )
+    if _july_half_active and max_pct > JULY_HALF_NAV:
+        max_pct = JULY_HALF_NAV
+        level = f'{level}+7月减半'
+    # ──────────────────────────────────────────────────────────────────────
+
     allowed = (max_pct > 0)
     usdt = nav * max_pct / 100 if nav > 0 else 0
 
@@ -99,7 +125,8 @@ def get_position_pct(symbol: str, score: float, direction: str,
         'pct':     max_pct,
         'usdt':    round(usdt, 2),
         'level':   level,
-        'reason':  f'{symbol} score={score:.0f}({sr}) dir={direction} → {level}',
+        'reason':  f'{symbol} score={score:.0f}({sr}) dir={direction} → {level}'
+                   + (' [7月上旬减半仓]' if _july_half_active else ''),
         'allowed': allowed,
     }
 

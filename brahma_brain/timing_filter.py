@@ -1,6 +1,7 @@
 """
 timing_filter.py — 梵天三层感知 · 第二层：时机过滤器
 设计院自主决策落地 · 2026-07-01
+v4.2固化 2026-07-01 苏摩111批准: 改进①BTC单边下行豁免通道(WAIT阈值62→55)
 
 ╔══════════════════════════════════════════════════════════════════╗
 ║  核心哲学：高分信号 + 错误时机 = 亏损                          ║
@@ -29,6 +30,55 @@ from typing import Optional
 
 _CACHE: dict = {}
 _TTL = 60  # 1分钟缓存
+
+
+def _get_rsi_4h(symbol: str, period: int = 14) -> float:
+    """拉取4H RSI，用于单边下行豁免通道判断"""
+    cache_key = f'rsi_{symbol}_4h_v42'
+    now = time.time()
+    if cache_key in _CACHE and now - _CACHE[cache_key]['ts'] < 300:
+        return _CACHE[cache_key]['data']
+    try:
+        r = requests.get(
+            f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=4h&limit={period+5}',
+            timeout=8
+        ).json()
+        closes = [float(x[4]) for x in r]
+        gains = [max(closes[i]-closes[i-1], 0) for i in range(1, len(closes))]
+        losses = [max(closes[i-1]-closes[i], 0) for i in range(1, len(closes))]
+        ag = sum(gains[-period:]) / period
+        al = sum(losses[-period:]) / period
+        rsi = round(100 - 100/(1+ag/al), 1) if al > 0 else 100.0
+        _CACHE[cache_key] = {'data': rsi, 'ts': now}
+        return rsi
+    except Exception:
+        return 50.0
+
+
+def _check_bearish_4h_streak(symbol: str, min_candles: int = 3) -> bool:
+    """检查4H是否连续N根收阴（收盘<开盘）—— v4.2改进① 单边下行豁免通道"""
+    cache_key = f'bear4h_streak_{symbol}_v42'
+    now = time.time()
+    if cache_key in _CACHE and now - _CACHE[cache_key]['ts'] < 300:
+        return _CACHE[cache_key]['data']
+    try:
+        r = requests.get(
+            f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=4h&limit=7',
+            timeout=8
+        ).json()
+        # 排除最新未完成K线（最后一根），检查前面的
+        candles = [(float(x[1]), float(x[4])) for x in r[:-1]]
+        streak = 0
+        for o, c in reversed(candles):
+            if c < o:
+                streak += 1
+            else:
+                break
+        result = streak >= min_candles
+        _CACHE[cache_key] = {'data': result, 'ts': now}
+        return result
+    except Exception:
+        return False
 
 
 def _get_rsi(symbol: str, interval: str = '1h', period: int = 14) -> float:
@@ -108,6 +158,20 @@ def evaluate_timing(
     # ── 2. 计算gap ──
     gap_pct = _get_ob_gap(entry_lo, entry_hi, current_price)
 
+    # ── 2.5 单边下行豁免通道（v4.2 改进① 苏摩111批准）──
+    # BTC/ETH 在4H连续3根收阴 + RSI_4H<40 时，RSI_1H门槛从65降至55
+    _rsi_ready_threshold = 65  # 默认READY门槛
+    _wait_exemption = False
+    if is_short:
+        try:
+            _rsi_4h = _get_rsi_4h(symbol)
+            _bear_streak = _check_bearish_4h_streak(symbol)
+            if _bear_streak and _rsi_4h < 40:
+                _rsi_ready_threshold = 55
+                _wait_exemption = True
+        except Exception:
+            pass
+
     # ── 3. 时机评分（0~100）──
     timing_score = 0
     reasons = []
@@ -130,7 +194,7 @@ def evaluate_timing(
         timing_score += 0
         reasons.append(f'距OB区{gap_pct:.2f}% 较远 0')
 
-    # 条件B: RSI位置
+    # 条件B: RSI位置（支持豁免通道动态门槛）
     if is_short:
         if rsi_1h >= 75:
             timing_score += 35
@@ -139,11 +203,19 @@ def evaluate_timing(
             timing_score += 25
             reasons.append(f'RSI1H={rsi_1h} 超买区 +25')
         elif rsi_1h >= 55:
-            timing_score += 10
-            reasons.append(f'RSI1H={rsi_1h} 偏高 +10')
+            if _wait_exemption:
+                timing_score += 22  # 豁免通道：55~65视同65+
+                reasons.append(f'RSI1H={rsi_1h} 豁免通道激活(4H连阴+RSI4H<40) +22✅')
+            else:
+                timing_score += 10
+                reasons.append(f'RSI1H={rsi_1h} 偏高 +10')
         elif rsi_1h <= 40:
-            timing_score -= 15
-            reasons.append(f'RSI1H={rsi_1h} 偏低做空逆风 -15')
+            if _wait_exemption:
+                timing_score += 0  # 豁免时不惩罚低RSI
+                reasons.append(f'RSI1H={rsi_1h} 豁免通道激活，跳过低RSI惩罚')
+            else:
+                timing_score -= 15
+                reasons.append(f'RSI1H={rsi_1h} 偏低做空逆风 -15')
     else:  # LONG
         if rsi_1h <= 25:
             timing_score += 35
@@ -193,24 +265,29 @@ def evaluate_timing(
         action_hint = _action_hint(is_short, gap_pct, rsi_1h, s23_p_up, 'MONITOR')
     elif timing_score >= 10:
         status = 'WAIT'
-        action_hint = _action_hint(is_short, gap_pct, rsi_1h, s23_p_up, 'WAIT')
+        action_hint = _action_hint(is_short, gap_pct, rsi_1h, s23_p_up, 'WAIT',
+                                   wait_exemption=_wait_exemption,
+                                   rsi_threshold=_rsi_ready_threshold)
     else:
         status = 'STANDBY'
         action_hint = '条件不足，挂单等待'
 
     return {
-        'status':      status,
-        'confidence':  confidence,
-        'timing_score': timing_score,
-        'gap_pct':     gap_pct,
-        'rsi_1h':      rsi_1h,
-        'p_up':        s23_p_up,
-        'reason':      ' | '.join(reasons),
-        'action_hint': action_hint,
+        'status':        status,
+        'confidence':    confidence,
+        'timing_score':  timing_score,
+        'gap_pct':       gap_pct,
+        'rsi_1h':        rsi_1h,
+        'p_up':          s23_p_up,
+        'reason':        ' | '.join(reasons),
+        'action_hint':   action_hint,
+        'wait_exemption': _wait_exemption,        # v4.2 改进①
+        'rsi_threshold':  _rsi_ready_threshold,   # v4.2 改进①
     }
 
 
-def _action_hint(is_short: bool, gap: float, rsi: float, p_up: float, status: str) -> str:
+def _action_hint(is_short: bool, gap: float, rsi: float, p_up: float, status: str,
+                 wait_exemption: bool = False, rsi_threshold: int = 65) -> str:
     """生成人类可读的操作提示"""
     dir_str = '空入' if is_short else '多入'
     if status == 'READY':
@@ -226,8 +303,10 @@ def _action_hint(is_short: bool, gap: float, rsi: float, p_up: float, status: st
         else:
             return f'⏳ 时机未完全成熟，监控中'
     elif status == 'WAIT':
-        if rsi < 55 and is_short:
-            return f'⏸ RSI={rsi}偏低，等RSI拉升到65+ → 再{dir_str}'
+        if wait_exemption and is_short:
+            return f'⏸ 豁免通道激活(4H连阴)，等RSI拉升到{rsi_threshold}+ → 再{dir_str}'
+        elif rsi < 55 and is_short:
+            return f'⏸ RSI={rsi}偏低，等RSI拉升到{rsi_threshold}+ → 再{dir_str}'
         elif gap > 2:
             return f'⏸ 距入场区{gap:.1f}%，等价格反弹 → {dir_str}'
         else:
