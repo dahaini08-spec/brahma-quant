@@ -1,0 +1,47 @@
+{
+  "GALAUSDT": {
+    "symbol": "GALAUSDT",
+    "direction": "SHORT",
+    "sl_price": 0.002392,
+    "tsl_updated": "2026-07-01T10:09:33.391155+00:00",
+    "reason": "自主决策：TP1已穿越，SL追踪至TP1~TP2中间位锁利"
+  },
+  "PIXELUSDT": {
+    "symbol": "PIXELUSDT",
+    "direction": "SHORT",
+    "sl_price": 0.004786,
+    "tsl_updated": "2026-07-01T10:09:33.391155+00:00",
+    "reason": "自主决策：TP1已穿越，SL追踪至TP1~TP2中间位锁利"
+  },
+  "ZECUSDT": {
+    "symbol": "ZECUSDT",
+    "side": "SHORT",
+    "qty": 0.164,
+    "entry": 414.38,
+    "sl_price": 425.11,
+    "tp_price": 392.0,
+    "registered_at": "2026-06-24T23:13:31.795851+00:00",
+    "source": "hunter_executor",
+    "stop_loss": 425.11,
+    "sl_note": "4H结构止损：近5根最高423×1.005"
+  },
+  "BNBUSDT": {
+    "symbol": "BNBUSDT",
+    "side": "SHORT",
+    "qty": 0.11,
+    "entry": 570.6,
+    "sl_price": 549.0,
+    "tp_price": 544.57,
+    "registered_at": "2026-06-25T05:18:51.947746+00:00",
+    "source": "hunter_executor",
+    "reason": "自主决策：极近TP1(543.85距544.57仅0.14%)，SL收至549锁定≥3.9%",
+    "tsl_updated": "2026-07-01T10:50:21.524611+00:00"
+  },
+  "BTCUSDT": {
+    "symbol": "BTCUSDT",
+    "direction": "SHORT",
+    "sl_price": 59200.0,
+    "tsl_updated": "2026-07-01T10:08:46.987537+00:00",
+    "reason": "自主决策：接近TP1，SL收紧至59200锁利"
+  }
+}
