@@ -20,6 +20,17 @@ auto_executor.py — 梵天自动开单触发器
   - 异常自动推送苏摩
 
 运行方式：由 signal-watcher-1h cron 每2H调用，也可手动触发
+
+开单模式（ORDER_MODE）：
+  market  - 市价单立即成交（原方式）
+  limit   - 分批挂单（3档，入场区间均匀分布）
+  auto    - 自动选择：高波动用市价，低波动用挂单（默认）
+
+分批挂单逻辑（limit/auto模式）：
+  第1档：entry_lo（25% NAV）
+  第2档：(entry_lo+entry_hi)/2（50% NAV）
+  第3档：entry_hi（25% NAV）
+  超时：30分钟未成交自动撤单
 """
 
 import sys, os, json, time, hmac, hashlib, math, requests
@@ -37,6 +48,19 @@ MAX_SL_PCT           = 5.0       # 最大止损（保护性上限）
 NAV_SIZE_PCT         = 0.02      # 每笔仓位 NAV×2%
 DEFAULT_LEV          = 3         # 默认杠杆
 MIN_NOTIONAL         = 10.0      # 最小开单金额 USDT
+
+# 开单模式：market / limit / auto（默认）
+# auto = 有entry区间且区间>0.1%用limit；否则用market
+ORDER_MODE           = 'auto'
+
+# 分批挂单参数
+LIMIT_ORDER_TIMEOUT_SEC = 1800   # 挂单超时秒数（30分钟）
+# 3档比例：[25%, 50%, 25%] 合计=100%
+BATCH_RATIOS         = [0.25, 0.50, 0.25]
+# 3档价格偏移：SHORT时越低越激进（相对entry_lo），LONG时越高越激进
+# SHORT: [entry_lo, mid, entry_hi]  → 越低越好入场
+# LONG:  [entry_hi, mid, entry_lo]  → 越高越好入场（反转）
+BATCH_CANCEL_OVERSHOOT = True    # 价格完全突破挂单区间时自动撤单
 EXECUTED_SET_PATH    = Path(__file__).parent.parent / 'data/auto_executed_signals.json'
 LOG_PATH             = Path(__file__).parent.parent / 'data/auto_executor_log.jsonl'
 SIGNAL_LOG_PATH      = Path(__file__).parent.parent / 'data/live_signal_log.jsonl'
@@ -146,6 +170,15 @@ def find_executable_signals() -> list[dict]:
         direction = s.get('direction') or s.get('signal_dir', '')
         if (regime, direction) in DEAD_ZONE:
             continue
+        # ⑤b [设计院 A3 2026-06-30] BRAHMA标签验证：拒绝执行WARN/ERR信号
+        _tag = s.get('output_tag', '')
+        if _tag:
+            # 有标签时必须是SIG:RUNNER才得执行
+            if not _tag.startswith('[BRAHMA:SIG:RUNNER:'):
+                _tag_level = _tag.split(':')[1] if ':' in _tag else 'ERR'
+                print(f'[死穴-标签拒绝] {s.get("symbol")} 标签级别={_tag_level}，非 SIG:RUNNER，跳过')
+                continue
+        # (output_tag为空 = 老信号延续兼容，不拒绝)
         # ⑤⑥ 持仓检查在execute阶段做
         # ⑧ 过期检测
         exp = s.get('expires_at')
@@ -175,6 +208,128 @@ def find_executable_signals() -> list[dict]:
 # ════════════════════════════════════════════════════
 # 执行单笔开单
 # ════════════════════════════════════════════════════
+
+# ════════════════════════════════════════════════════
+# 分批挂单辅助函数
+# ════════════════════════════════════════════════════
+
+def _should_use_limit(entry_lo: float, entry_hi: float, px: float) -> bool:
+    """判断是否应该用挂单：入场区间宽度>0.1% 且当前价在区间附近"""
+    if not entry_lo or not entry_hi or not px:
+        return False
+    spread = abs(entry_hi - entry_lo) / ((entry_hi + entry_lo) / 2)
+    if spread < 0.001:  # 区间小于0.1%不必挂单
+        return False
+    # 当前价距区间中点不超过5%，否则改市价
+    max_dist = (entry_hi + entry_lo) / 2 * 0.05
+    return abs(px - (entry_lo + entry_hi) / 2) <= max_dist
+
+
+def _calc_batch_prices(entry_lo: float, entry_hi: float, direction: str) -> list:
+    """
+    计算分批3档挂单价格
+    SHORT: [entry_lo(最优), mid, entry_hi(最差)]
+    LONG:  [entry_hi(最优), mid, entry_lo(最差)]
+    """
+    mid = (entry_lo + entry_hi) / 2
+    if direction == 'SHORT':
+        return [entry_lo, mid, entry_hi]
+    else:
+        return [entry_hi, mid, entry_lo]
+
+
+def _place_limit_orders(sym: str, side: str, total_qty: float,
+                        prices: list, qty_prec: int, sig_id: str) -> dict:
+    """
+    下3档挂单，返回 {status, order_ids, filled_qty, avg_price, cancelled}
+    比例BATCH_RATIOS=[0.25,0.50,0.25]
+    超时LIMIT_ORDER_TIMEOUT_SEC尚未成交的挂单全部撤销
+    """
+    order_ids = []
+    placed_prices = []
+
+    for i, (ratio, price) in enumerate(zip(BATCH_RATIOS, prices)):
+        qty_i = round(math.floor(total_qty * ratio * 10**qty_prec) / 10**qty_prec, qty_prec)
+        if qty_i <= 0:
+            continue
+        price_str = f'{price:.8f}'.rstrip('0').rstrip('.')
+        r = _signed('POST', '/fapi/v1/order', {
+            'symbol':      sym,
+            'side':        side,
+            'type':        'LIMIT',
+            'price':       price_str,
+            'quantity':    qty_i,
+            'timeInForce': 'GTC',
+            'reduceOnly':  'false',
+        })
+        if 'orderId' in r:
+            order_ids.append(r['orderId'])
+            placed_prices.append(price)
+            print(f'  [挂单] 第{i+1}档 {sym} {side} qty={qty_i} @{price:.4f} id={r["orderId"]}')
+        else:
+            print(f'  [挂单失败] 第{i+1}档 {sym} {r.get("msg", str(r))}')
+
+    if not order_ids:
+        return {'status': 'FAILED', 'reason': '全部分批挂单失败', 'order_ids': [], 'filled_qty': 0, 'avg_price': 0}
+
+    # 轮询等待成交
+    deadline = time.time() + LIMIT_ORDER_TIMEOUT_SEC
+    filled_qty = 0.0
+    total_value = 0.0
+    pending_ids = list(order_ids)
+
+    print(f'  [分批挂单] 等待成交 timeout={LIMIT_ORDER_TIMEOUT_SEC}s 共{len(order_ids)}单...')
+    while time.time() < deadline and pending_ids:
+        time.sleep(15)
+        still_pending = []
+        for oid in pending_ids:
+            try:
+                oi = _signed('GET', '/fapi/v1/order', {'symbol': sym, 'orderId': oid})
+                status = oi.get('status', '')
+                fq = float(oi.get('executedQty', 0))
+                fp = float(oi.get('avgPrice', 0) or 0)
+                if status == 'FILLED':
+                    filled_qty  += fq
+                    total_value += fq * fp
+                    print(f'    ✅ 单{oid} 全额成交 qty={fq} @{fp:.4f}')
+                elif status == 'PARTIALLY_FILLED':
+                    if fq > 0 and fp > 0:
+                        filled_qty  += fq
+                        total_value += fq * fp
+                    still_pending.append(oid)
+                else:
+                    still_pending.append(oid)
+            except Exception:
+                still_pending.append(oid)
+        pending_ids = still_pending
+
+    # 撤销超时未成交挂单
+    cancelled = []
+    for oid in pending_ids:
+        try:
+            _signed('DELETE', '/fapi/v1/order', {'symbol': sym, 'orderId': oid})
+            cancelled.append(oid)
+            print(f'    ⚠️  超时撤单 {oid}')
+        except Exception as e:
+            print(f'    [撤单失败] {oid}: {e}')
+
+    avg_fill_px = (total_value / filled_qty) if filled_qty > 0 else 0.0
+    if filled_qty > 0 and cancelled:
+        final_status = 'PARTIAL'
+    elif filled_qty > 0:
+        final_status = 'FILLED'
+    else:
+        final_status = 'FAILED'
+
+    return {
+        'status':     final_status,
+        'order_ids':  order_ids,
+        'filled_qty': filled_qty,
+        'avg_price':  avg_fill_px,
+        'cancelled':  cancelled,
+        'reason':     '' if filled_qty > 0 else '全部超时未成交',
+    }
+
 
 def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     """执行单笔信号开单，返回执行结果"""
@@ -266,22 +421,48 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     # 开单方向
     side = 'SELL' if direction == 'SHORT' else 'BUY'
 
-    # 市价开单
-    order_r = _signed('POST', '/fapi/v1/order', {
-        'symbol':     sym,
-        'side':       side,
-        'type':       'MARKET',
-        'quantity':   qty,
-        'reduceOnly': 'false',
-    })
+    # ── 判断开单模式（ORDER_MODE: market/limit/auto）──────────────
+    use_limit = False
+    if ORDER_MODE == 'limit':
+        use_limit = True
+    elif ORDER_MODE == 'auto':
+        use_limit = _should_use_limit(entry_lo, entry_hi, px)
 
-    if 'orderId' not in order_r:
-        result['reason'] = f'开单失败: {order_r.get("msg", str(order_r))}'
-        return result
+    if use_limit and entry_lo and entry_hi:
+        # ── 分批挂单模式 ─────────────────────────────────────────
+        batch_prices = _calc_batch_prices(entry_lo, entry_hi, direction)
+        print(f'  [分批挂单] {sym} {direction} 3档: {[f"{p:.4f}" for p in batch_prices]}')
+        batch_result = _place_limit_orders(sym, side, qty, batch_prices, qty_prec, sig_id)
 
-    fill_px  = float(order_r.get('avgPrice', px))
-    fill_qty = float(order_r.get('executedQty', qty))
-    order_id = order_r['orderId']
+        if batch_result['status'] == 'FAILED':
+            result['reason'] = f'分批挂单全部失败: {batch_result["reason"]}'
+            return result
+
+        fill_px  = batch_result['avg_price']
+        fill_qty = batch_result['filled_qty']
+        order_id = batch_result['order_ids'][0] if batch_result['order_ids'] else 0
+        order_mode_used = f'LIMIT_BATCH({batch_result["status"]})'
+        result['batch_order_ids'] = batch_result['order_ids']
+        result['batch_cancelled'] = batch_result['cancelled']
+        result['order_mode'] = order_mode_used
+    else:
+        # ── 市价开单模式（原逻辑）────────────────────────────────
+        order_r = _signed('POST', '/fapi/v1/order', {
+            'symbol':     sym,
+            'side':       side,
+            'type':       'MARKET',
+            'quantity':   qty,
+            'reduceOnly': 'false',
+        })
+
+        if 'orderId' not in order_r:
+            result['reason'] = f'开单失败: {order_r.get("msg", str(order_r))}'
+            return result
+
+        fill_px  = float(order_r.get('avgPrice', px))
+        fill_qty = float(order_r.get('executedQty', qty))
+        order_id = order_r['orderId']
+        result['order_mode'] = 'MARKET'
 
     # 止损价（基于成交价重算，确保SL≥2%）
     if direction == 'SHORT':
