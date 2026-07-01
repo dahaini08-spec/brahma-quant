@@ -3,25 +3,25 @@
   "sources": [
     "timesfm_lite"
   ],
-  "reason": "TimesFM-Lite: p_dir=0.47 conf=LOW pred=1547.25 Q10=1483.05~Q90=1614.24",
+  "reason": "TimesFM-Lite: p_dir=0.53 conf=LOW pred=1550.79 Q10=1490.54~Q90=1613.48",
   "details": {
     "timesfm_lite": {
-      "score": -0.5,
-      "p_direction": 0.465,
+      "score": 0.3,
+      "p_direction": 0.527,
       "confidence": "LOW",
-      "pred_price": 1547.25,
-      "q10": 1483.05,
-      "q25": 1513.16,
-      "q75": 1582.11,
-      "q90": 1614.24,
-      "band_pct": 8.2,
-      "r_sq": 0.444,
-      "vol_h": 52.88,
+      "pred_price": 1550.79,
+      "q10": 1490.54,
+      "q25": 1518.82,
+      "q75": 1583.44,
+      "q90": 1613.48,
+      "band_pct": 7.82,
+      "r_sq": 0.405,
+      "vol_h": 48.57,
       "regime_coeff": 0.8
     }
   },
-  "ts": 1782881233.821482,
-  "expires": 1782884833.8214824,
+  "ts": 1782895015.3562903,
+  "expires": 1782898615.3562908,
   "symbol": "ETHUSDT",
   "direction": "SHORT"
 }
