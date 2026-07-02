@@ -142,8 +142,17 @@ def _run_inference(klines_15m: list, symbol: str) -> Tuple[float, float]:
     from datetime import datetime, timedelta
 
     # 准备 DataFrame
+    # klines 格式: [ts_ms, open, high, low, close, volume, ...] 或 [open, high, low, close, volume]
+    _raw = [k for k in klines_15m[-200:] if k]
+    if _raw and isinstance(_raw[0], (list, tuple)):
+        _ncols = len(_raw[0])
+        if _ncols >= 6 and isinstance(_raw[0][0], (int, float)) and _raw[0][0] > 1e12:
+            # 第一列是时间戳ms
+            _raw = [[r[1], r[2], r[3], r[4], r[5]] for r in _raw]
+        elif _ncols >= 5:
+            _raw = [[r[0], r[1], r[2], r[3], r[4]] for r in _raw]
     df = pd.DataFrame(
-        klines_15m[-200:],
+        _raw,
         columns=["open", "high", "low", "close", "volume"]
     ).astype(float)
 
@@ -153,9 +162,13 @@ def _run_inference(klines_15m: list, symbol: str) -> Tuple[float, float]:
     current_close = df['close'].iloc[-1]
 
     # 构造时间戳（15m间隔，不需要精确，Kronos需要时间特征）
+    # calc_time_stamps 需要 pd.Series（不是 list/DatetimeIndex）
+    import pandas as _pd_ke
     base_ts = datetime(2026, 1, 1)
-    x_timestamps = [base_ts + timedelta(minutes=15 * i) for i in range(len(df))]
-    y_timestamps = [x_timestamps[-1] + timedelta(minutes=15 * (i + 1)) for i in range(16)]
+    _x_list = [base_ts + timedelta(minutes=15 * i) for i in range(len(df))]
+    _y_list = [_x_list[-1] + timedelta(minutes=15 * (i + 1)) for i in range(16)]
+    x_timestamps = _pd_ke.Series(_pd_ke.to_datetime(_x_list))
+    y_timestamps = _pd_ke.Series(_pd_ke.to_datetime(_y_list))
 
     # 执行推理（20条路径）
     t0 = time.time()
