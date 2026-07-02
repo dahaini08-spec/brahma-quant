@@ -103,6 +103,15 @@ try:
 except Exception:
     _MSS_OK = False
 
+# signal_trace: 信号轨迹审计日志（设计院 2026-07-02）──────────────────────
+try:
+    from signal_trace import trace_generated, trace_skipped
+    _TRACE_OK = True
+except Exception:
+    _TRACE_OK = False
+    def trace_generated(r, **kw): pass
+    def trace_skipped(r): pass
+
 # llm_council_bridge: score≥130触发LLM二次审查（shadow模式）
 try:
     from llm_council_bridge import review as _llm_review
@@ -232,8 +241,21 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
             'portfolio_opt':   _PORTFOLIO_OK,
             'mss':             _MSS_OK,
             'llm_council':     _LLM_COUNCIL_OK,
+            'signal_trace':    _TRACE_OK,
         }
     }
+
+    # ── signal_trace: 轨迹审计注入 ──────────────────────────────
+    if _TRACE_OK:
+        try:
+            _f2 = extract_standard_fields(result)
+            if _f2.get('valid', False):
+                trace_generated(result)
+            else:
+                trace_skipped(result)
+        except Exception:
+            pass
+    # ─────────────────────────────────────────────────────────────────
 
     # ── analysis_snapshot: 保存结果快照 ──────────────────────────────
     if _SNAPSHOT_OK:
