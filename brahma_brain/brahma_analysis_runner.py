@@ -45,10 +45,70 @@ from brahma_brain.formatter import (
 
 # ── 时机过滤层（设计院 2026-07-01 落地）──────────────────────────────────
 try:
-    from brahma_brain.timing_filter import evaluate_timing, format_timing_badge
+    from timing_filter import evaluate_timing, format_timing_badge
     _TIMING_OK = True
 except Exception:
-    _TIMING_OK = False
+    try:
+        from brahma_brain.timing_filter import evaluate_timing, format_timing_badge
+        _TIMING_OK = True
+    except Exception:
+        _TIMING_OK = False
+
+# ── 孤儿模块接入层（设计院 2026-07-02 AutoReview修复）────────────────────
+# analysis_snapshot: 结果快照缓存（防止重复推理）
+try:
+    _scripts_dir = os.path.join(BASE_DIR, '..', 'scripts')
+    if _scripts_dir not in sys.path:
+        sys.path.insert(0, _scripts_dir)
+    from analysis_snapshot import (
+        save_snapshot as _snap_save,
+        load_snapshot as _snap_load,
+        is_fresh as _snap_fresh,
+        clear_stale as _snap_clear,
+    )
+    _SNAPSHOT_OK = True
+except Exception:
+    _SNAPSHOT_OK = False
+
+# brainlog: 统一日志系统
+try:
+    from brainlog import get_logger as _get_logger, binfo, bwarn, berror
+    _brain_logger = _get_logger('runner')
+    _BRAINLOG_OK = True
+except Exception:
+    _BRAINLOG_OK = False
+
+# portfolio_optimizer: 多标的相关性过滤（run_batch层）
+try:
+    from portfolio_optimizer import filter_signals as _po_filter
+    _PORTFOLIO_OK = True
+except Exception:
+    _PORTFOLIO_OK = False
+
+# brahma_health: 健康检查（run_batch完成后触发轻量健康ping）
+try:
+    from brahma_health import _check_and_gc as _health_gc
+    _HEALTH_OK = True
+except Exception:
+    try:
+        from brahma360_guardian import check_v16_v17_modules as _health_v16
+        _HEALTH_OK = True
+    except Exception:
+        _HEALTH_OK = False
+
+# market_structure_scanner: 高分信号补充SMC结构扫描
+try:
+    from market_structure_scanner import scan_structure as _mss_scan
+    _MSS_OK = True
+except Exception:
+    _MSS_OK = False
+
+# llm_council_bridge: score≥140触发LLM二次审查（shadow模式）
+try:
+    from llm_council_bridge import review as _llm_review
+    _LLM_COUNCIL_OK = True
+except Exception:
+    _LLM_COUNCIL_OK = False
 # ── 系统配置（路由到正确线程）────────────────────────────────
 try:
     sys.path.insert(0, os.path.join(BASE_DIR, '..', 'scripts'))
@@ -95,11 +155,56 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
     if not sym.endswith('USDT'):
         sym = sym + 'USDT'
 
+    # ── analysis_snapshot: 15分钟内有缓存则复用（减少重复推理）──────
+    _cached_dir = None
+    if _SNAPSHOT_OK:
+        try:
+            _cf = extract_standard_fields({}) if False else None
+            _dir_guess = 'SHORT'  # 快照按方向存储，先尝试SHORT再LONG
+            for _d in ['SHORT', 'LONG']:
+                if _snap_fresh(sym, _d, max_age_min=10):
+                    _cached = _snap_load(sym, _d, max_age_min=10)
+                    if _cached:
+                        _cached['_from_cache'] = True
+                        return _cached
+        except Exception:
+            pass
+    # ─────────────────────────────────────────────────────────────────
+
     result = _core_analyze(sym, deep=deep)
     missing = _validate_result(result)
 
+    # ── market_structure_scanner: score≥130时补充SMC结构扫描 ──────────
+    if _MSS_OK:
+        try:
+            _f = extract_standard_fields(result)
+            _sc = float(_f.get('score', 0) or 0)
+            if _sc >= 130:
+                _mss = _mss_scan(sym)
+                if _mss and not _mss.get('error'):
+                    result['_mss'] = {
+                        'trend':      _mss.get('trend_bias'),
+                        'bos_count':  _mss.get('bos_count', 0),
+                        'ob_quality': _mss.get('ob_quality'),
+                        'fvg_active': _mss.get('fvg_active', False),
+                    }
+        except Exception:
+            pass
+    # ─────────────────────────────────────────────────────────────────
+
+    # ── llm_council_bridge: score≥140触发LLM二次审查（shadow模式）────
+    if _LLM_COUNCIL_OK:
+        try:
+            _f = extract_standard_fields(result)
+            _sc = float(_f.get('score', 0) or 0)
+            if _sc >= 140:
+                result = _llm_review(result)
+        except Exception:
+            pass
+    # ─────────────────────────────────────────────────────────────────
+
     result['_runner_meta'] = {
-        'runner_version': '1.0',
+        'runner_version': '1.1',
         'entry':          'brahma_analysis_runner.run_analysis',
         'symbol':         sym,
         'ts':             datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC'),
@@ -107,7 +212,26 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
         'fields_missing': missing,
         'fields_ok':      len(missing) == 0,
         'output_tag':     build_output_tag(result, source='RUNNER'),
+        'modules_active': {
+            'timing_filter':   _TIMING_OK,
+            'snapshot':        _SNAPSHOT_OK,
+            'brainlog':        _BRAINLOG_OK,
+            'portfolio_opt':   _PORTFOLIO_OK,
+            'mss':             _MSS_OK,
+            'llm_council':     _LLM_COUNCIL_OK,
+        }
     }
+
+    # ── analysis_snapshot: 保存结果快照 ──────────────────────────────
+    if _SNAPSHOT_OK:
+        try:
+            _f = extract_standard_fields(result)
+            _dir = _f.get('direction', 'SHORT')
+            _snap_save(sym, _dir, result)
+        except Exception:
+            pass
+    # ─────────────────────────────────────────────────────────────────
+
     return result
 
 
@@ -153,7 +277,7 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
     for sym, r in raw_results.items():
         missing = _validate_result(r)
         r['_runner_meta'] = {
-            'runner_version': '1.0',
+            'runner_version': '1.1',
             'entry':          'brahma_analysis_runner.run_batch',
             'symbol':         sym,
             'ts':             ts,
@@ -163,6 +287,42 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
             'output_tag':     build_output_tag(r, source='RUNNER'),
         }
         results[sym] = r
+
+    # ── portfolio_optimizer: 多标的时过滤相关性>0.75的重复风险敞口 ────
+    if _PORTFOLIO_OK and len(results) > 1:
+        try:
+            _valid_sigs = [r for r in results.values()
+                           if r.get('valid_signal') or
+                           float((r.get('confluence') or {}).get('score', r.get('score', 0)) or 0) >= 138]
+            if len(_valid_sigs) > 1:
+                _approved, _rejected = _po_filter(_valid_sigs)
+                _rejected_syms = {r.get('symbol','') for r in _rejected}
+                for sym in _rejected_syms:
+                    if sym in results:
+                        results[sym]['_portfolio_filtered'] = True
+                        results[sym]['_portfolio_filter_reason'] = '相关性>0.75，组合优化过滤'
+        except Exception:
+            pass
+    # ─────────────────────────────────────────────────────────────────
+
+    # ── brainlog: 记录batch分析摘要 ──────────────────────────────────
+    if _BRAINLOG_OK:
+        try:
+            _valid_n = sum(1 for r in results.values() if r.get('valid_signal'))
+            _high_n  = sum(1 for r in results.values()
+                          if float((r.get('confluence') or {}).get('score', r.get('score',0)) or 0) >= 130)
+            binfo('runner', f"batch完成: {len(results)}标的 valid={_valid_n} high_score={_high_n} elapsed={round(time.time()-t0,1)}s")
+        except Exception:
+            pass
+    # ─────────────────────────────────────────────────────────────────
+
+    # ── brahma_health: batch结束后轻量GC（清理过期缓存/信号）────────
+    if _HEALTH_OK:
+        try:
+            _health_gc()
+        except Exception:
+            pass
+    # ─────────────────────────────────────────────────────────────────
 
     return results
 

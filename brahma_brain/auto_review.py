@@ -263,6 +263,16 @@ def check_orphan_modules():
             'trading_agents_bridge',  # s24已归档，由s25替代，保留文件供回滚
             # E类：独立入口模块（AI直接调用 / 被非brahma_core模块调用）
             'brahma_analysis_runner', # 设计院唯一分析入口，AI/CLI直接调用，不被brahma_core静态引用
+            # ── [设计院 v18 AutoReview修复 2026-07-02] ──────────────────
+            # 以下模块已接入 brahma_analysis_runner（orchestrator层），非孤儿
+            'timing_filter',          # 接入runner.run_analysis timing层
+            'analysis_snapshot',      # 接入runner.run_analysis 快照缓存
+            'brainlog',               # 接入runner.run_batch 日志层
+            'portfolio_optimizer',    # 接入runner.run_batch + auto_executor 相关性过滤
+            'brahma_health',          # 接入runner.run_batch 健康GC
+            'market_structure_scanner', # 接入runner.run_analysis score≥130 SMC补充扫描
+            'llm_council_bridge',     # 接入runner.run_analysis score≥140 LLM二次审查
+            # ────────────────────────────────────────────────────────────
             'ic_tracker',             # IC信息系数追踪，被live_signal_settler调用，独立数据生命周期
             # F类：结算闭环链路（live_signal_settler → ev_feedback → dharma_online_learner）
             'ev_feedback',            # 结算回调，被live_signal_settler动态import，不被brahma_core静态引用
