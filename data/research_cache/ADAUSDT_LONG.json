@@ -3,25 +3,25 @@
   "sources": [
     "timesfm_lite"
   ],
-  "reason": "TimesFM-Lite: p_dir=0.58 conf=LOW pred=0.15 Q10=0.14~Q90=0.16",
+  "reason": "TimesFM-Lite: p_dir=0.54 conf=LOW pred=0.15 Q10=0.14~Q90=0.16",
   "details": {
     "timesfm_lite": {
-      "score": 1.1,
-      "p_direction": 0.585,
+      "score": 0.6,
+      "p_direction": 0.543,
       "confidence": "LOW",
       "pred_price": 0.15,
       "q10": 0.14,
       "q25": 0.14,
       "q75": 0.15,
       "q90": 0.16,
-      "band_pct": 11.74,
-      "r_sq": 0.006,
+      "band_pct": 10.77,
+      "r_sq": 0.034,
       "vol_h": 0.01,
       "regime_coeff": 0.8
     }
   },
-  "ts": 1782952726.4092193,
-  "expires": 1782956326.4092195,
+  "ts": 1782967036.7404604,
+  "expires": 1782970636.740461,
   "symbol": "ADAUSDT",
   "direction": "LONG"
 }

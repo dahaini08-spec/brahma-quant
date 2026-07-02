@@ -273,6 +273,11 @@ if __name__ == '__main__':
                     break  # 找到 trading-system 根目录
             if _root_ph not in _sys_ph.path:
                 _sys_ph.path.insert(0, _root_ph)
+            # v5.0 fix 2026-07-02: 强制插入 trading-system 根目录确保 scripts 可导入
+            import os as _os_ph2
+            _ts_root = _os_ph2.path.abspath(_os_ph2.path.join(_os_ph2.path.dirname(__file__), '..', '..'))
+            if _ts_root not in _sys_ph.path:
+                _sys_ph.path.insert(0, _ts_root)
             from scripts.pump_signal_executor import emit_pump_signal
             import time as _time_ph
 
