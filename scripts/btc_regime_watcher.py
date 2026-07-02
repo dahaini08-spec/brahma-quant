@@ -164,27 +164,62 @@ def main():
     prev_above_h50  = state.get('price_above_high50h')
     prev_above_l50  = state.get('price_above_low50h')
 
-    price_above_ema = price > ema20_4h
-    price_above_h50 = price > high_50h
-    price_above_l50 = price > low_50h
+    # ── 防抖三重门控（设计院 2026-07-02 封印）──────────────
+    # 问题根因：BTC在EMA附近震荡，每5分钟反复触发矛盾穿越信号
+    # 修复：0.3%缓冲区 + 1H冷却期 + 2根K线收盘确认
+    MIN_CROSS_PCT = 0.003   # 0.3%缓冲带
+    COOLDOWN_SEC  = 3600    # 同方向1小时内不重复推送
+    CONFIRM_BARS  = 2       # 需要连续2根已收盘1H K线确认
+
+    # 缓冲区判断：偏离EMA超0.3%才识别为穿越
+    ema_diff_pct = (price - ema20_4h) / ema20_4h
+    if ema_diff_pct > MIN_CROSS_PCT:
+        price_above_ema = True
+    elif ema_diff_pct < -MIN_CROSS_PCT:
+        price_above_ema = False
+    else:
+        price_above_ema = prev_above_ema  # 缓冲区内保持上次状态
+
+    price_above_h50 = price > high_50h * (1 + MIN_CROSS_PCT)
+    price_above_l50 = price > low_50h  * (1 - MIN_CROSS_PCT)
+
+    last_ema_dir = state.get('last_ema_direction', None)
+    last_ema_ts  = state.get('last_ema_trigger_ts', 0)
+
+    def confirm_cross_bars(above_val, ema_val, bars=CONFIRM_BARS):
+        """K线确认：连续N根已收盘1H K线均在EMA同侧"""
+        try:
+            import requests as _rq
+            kc = _rq.get('https://fapi.binance.com/fapi/v1/klines',
+                params={'symbol':'BTCUSDT','interval':'1h','limit':bars+2},timeout=5).json()
+            closed = [float(c[4]) for c in kc[:-1]][-bars:]
+            buf = ema_val * MIN_CROSS_PCT * 0.5
+            return all(c > ema_val + buf for c in closed) if above_val else all(c < ema_val - buf for c in closed)
+        except Exception:
+            return True
 
     triggered    = False
     alert_lines  = []
 
-    # ── 1. EMA20_4H 多空主控线穿越 ───────────────────────
+    # ── 1. EMA20_4H 穿越（三重门控）──────────────────────
     if prev_above_ema is not None and prev_above_ema != price_above_ema:
-        triggered = True
-        if price_above_ema:
-            target = calc_target(price, ema20_4h, 'up')
-            alert_lines.append(
-                f"📈 BTC 突破 EMA20_4H ${ema20_4h:,.1f} → 目标 ${target:,.1f}"
-            )
+        cur_dir     = 'up' if price_above_ema else 'down'
+        in_cooldown = (cur_dir == last_ema_dir) and ((now - last_ema_ts) < COOLDOWN_SEC)
+        confirmed   = confirm_cross_bars(price_above_ema, ema20_4h)
+        if in_cooldown:
+            print(f'[Watcher] 冷却中({cur_dir}) {now-last_ema_ts:.0f}s/{COOLDOWN_SEC}s')
+        elif not confirmed:
+            print(f'[Watcher] 未确认 需{CONFIRM_BARS}根1H已收盘K线')
         else:
-            target = calc_target(price, ema20_4h, 'down')
-            alert_lines.append(
-                f"📉 BTC 跌破 EMA20_4H ${ema20_4h:,.1f} → 目标 ${target:,.1f}"
-            )
-
+            triggered = True
+            if price_above_ema:
+                target = calc_target(price, ema20_4h, 'up')
+                alert_lines.append(f"📈 BTC 突破 EMA20_4H ${ema20_4h:,.1f} → 目标 ${target:,.1f}")
+            else:
+                target = calc_target(price, ema20_4h, 'down')
+                alert_lines.append(f"📉 BTC 跌破 EMA20_4H ${ema20_4h:,.1f} → 目标 ${target:,.1f}")
+            state['last_ema_direction']  = cur_dir
+            state['last_ema_trigger_ts'] = now
     # ── 2. 50H 高点突破（做多信号）───────────────────────
     if prev_above_h50 is not None and not prev_above_h50 and price_above_h50:
         triggered = True
