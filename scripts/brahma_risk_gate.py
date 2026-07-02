@@ -163,36 +163,42 @@ def record_trade_result(symbol: str, outcome: str, pnl_pct: float, nav: float):
     outcome: 'WIN'/'LOSS'/'TIMEOUT'
     pnl_pct: 盈亏百分比（负数=亏损）
     """
-    state = _load_state()
-    state = _reset_daily_if_needed(state)
+    try:
+        state = _load_state()
+        state = _reset_daily_if_needed(state)
 
-    if outcome in ("LOSS", "SL"):
-        state["consec_losses"] = state.get("consec_losses", 0) + 1
-        state["daily_loss_pct"] = state.get("daily_loss_pct", 0) + abs(pnl_pct)
+        if outcome in ("LOSS", "SL"):
+            state["consec_losses"] = state.get("consec_losses", 0) + 1
+            state["daily_loss_pct"] = state.get("daily_loss_pct", 0) + abs(pnl_pct)
 
-        # 连亏熔断
-        if state["consec_losses"] >= RISK_RULES["max_consec_losses"]:
-            pause_s = RISK_RULES["consec_loss_pause_h"] * 3600
-            state["paused_until"] = time.time() + pause_s
-            logger.warning(
-                f"🚨 RiskGate 连亏{state['consec_losses']}笔 → "
-                f"暂停{RISK_RULES['consec_loss_pause_h']}小时"
-            )
+            # 连亏熔断
+            if state["consec_losses"] >= RISK_RULES["max_consec_losses"]:
+                pause_s = RISK_RULES["consec_loss_pause_h"] * 3600
+                state["paused_until"] = time.time() + pause_s
+                logger.warning(
+                    f"🚨 RiskGate 连亏{state['consec_losses']}笔 → "
+                    f"暂停{RISK_RULES['consec_loss_pause_h']}小时"
+                )
 
-        # 日亏损熔断
-        if state["daily_loss_pct"] >= RISK_RULES["max_daily_loss_pct"]:
-            state["circuit_breaker"] = True
-            logger.critical(
-                f"🚨 RiskGate 熔断器激活！日亏损 "
-                f"{state['daily_loss_pct']:.1%} ≥ {RISK_RULES['max_daily_loss_pct']:.0%}"
-            )
+            # 日亏损熔断
+            if state["daily_loss_pct"] >= RISK_RULES["max_daily_loss_pct"]:
+                state["circuit_breaker"] = True
+                logger.critical(
+                    f"🚨 RiskGate 熔断器激活！日亏损 "
+                    f"{state['daily_loss_pct']:.1%} ≥ {RISK_RULES['max_daily_loss_pct']:.0%}"
+                )
 
-    elif outcome in ("WIN", "TP1", "TP2"):
-        state["consec_losses"] = 0  # 盈利重置连亏计数
+        elif outcome in ("WIN", "TP1", "TP2"):
+            state["consec_losses"] = 0  # 盈利重置连亏计数
 
-    _save_state(state)
-    logger.info(f"RiskGate 记录结果: {symbol} {outcome} pnl={pnl_pct:+.2%} "
-                f"连亏={state['consec_losses']} 日亏={state['daily_loss_pct']:.2%}")
+        _save_state(state)
+        logger.info(f"RiskGate 记录结果: {symbol} {outcome} pnl={pnl_pct:+.2%} "
+                    f"连亏={state['consec_losses']} 日亏={state['daily_loss_pct']:.2%}")
+    except Exception as _e:
+        import logging as _log
+        _log.getLogger('brahma.execution').error(
+            f'[EXEC_GUARD] record_trade_result 执行异常: {_e}', exc_info=True)
+        return {'error': str(_e), 'func': 'record_trade_result', 'status': 'FAILED'}
 
 
 def reset_circuit_breaker(manual: bool = True):

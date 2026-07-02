@@ -250,7 +250,7 @@ def probe_data_freshness():
         ('data/live_prices.json',      0.5,    'WARN',   '实时价格'),
         ('data/live_signal_log.jsonl', 12,     'WARN',   '信号日志'),
         ('data/wuqu_positions.json',   24,     'WARN',   '持仓记录'),
-        ('brahma_brain/brahma_state.json', 48, 'WARN',   '系统状态'),
+        ('data/brahma_state.json', 48, 'WARN',   '系统状态'),
     ]
     for fpath, max_h, level, name in checks:
         fp = BASE / fpath

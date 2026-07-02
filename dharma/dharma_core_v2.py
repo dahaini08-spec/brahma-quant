@@ -564,27 +564,33 @@ class DharmaExperiment:
         raise NotImplementedError
 
     def execute(self, save: bool = True) -> Dict:
-        self._t0 = time.time()
-        print(f"\n{'═'*68}")
-        print(f"  🧪 [{self.name}]  v{self.version}")
-        print(f"  📋 {self.description}")
-        print(f"  🔢 Bootstrap: {self.N_BOOTSTRAP:,} 次重采样")
-        print(f"{'═'*68}")
-        results = self.run()
-        elapsed = time.time() - self._t0
-        results['_meta'] = {
-            'name': self.name,
-            'version': self.version,
-            'description': self.description,
-            'elapsed_s': round(elapsed, 2),
-            'timestamp': datetime.now(timezone.utc).isoformat(),
-            'node_count': len(self.db.nodes),
-            'n_bootstrap': self.N_BOOTSTRAP,
-        }
-        print(f"\n  ⏱  耗时: {elapsed:.1f}s")
-        if save:
-            self._save(results)
-        return results
+        try:
+            self._t0 = time.time()
+            print(f"\n{'═'*68}")
+            print(f"  🧪 [{self.name}]  v{self.version}")
+            print(f"  📋 {self.description}")
+            print(f"  🔢 Bootstrap: {self.N_BOOTSTRAP:,} 次重采样")
+            print(f"{'═'*68}")
+            results = self.run()
+            elapsed = time.time() - self._t0
+            results['_meta'] = {
+                'name': self.name,
+                'version': self.version,
+                'description': self.description,
+                'elapsed_s': round(elapsed, 2),
+                'timestamp': datetime.now(timezone.utc).isoformat(),
+                'node_count': len(self.db.nodes),
+                'n_bootstrap': self.N_BOOTSTRAP,
+            }
+            print(f"\n  ⏱  耗时: {elapsed:.1f}s")
+            if save:
+                self._save(results)
+            return results
+        except Exception as _e:
+            import logging as _log
+            _log.getLogger(__name__).error(
+                f'[Dharma] execute 执行失败: {_e}', exc_info=True)
+            return None
 
     def _save(self, results: Dict):
         fname = f"{self.name}_v{self.version.replace('.','_')}.json"
