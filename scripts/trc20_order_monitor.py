@@ -27,8 +27,8 @@ TRON_ADDRESS    = "TMJ9n9bL1ZJbMQmqyhCx2Eg7EyRVM9LFMg"
 USDT_CONTRACT   = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"  # TRC20 USDT
 MIN_AMOUNT      = 199.0
 STATE_FILE      = Path(__file__).parent.parent / "data" / "pro_orders.json"
-JARVIS_USER     = "73295708"
-JARVIS_THREAD   = "019f181f-e4d1-7576-85ca-77f4a7fa8075"
+JARVIS_USER     = os.environ.get("JARVIS_USER_ID", "YOUR_USER_ID")
+JARVIS_THREAD   = os.environ.get("JARVIS_THREAD_ID", "YOUR_THREAD_ID")
 ZIP_PATH        = Path(__file__).parent.parent.parent / "brahma_pro_weights_v7.zip"
 
 def load_state() -> dict:

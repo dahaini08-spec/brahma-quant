@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 auto_position_manager.py — 梵天自动仓位管理器
@@ -33,7 +34,7 @@ SL_PATH  = BASE / 'data' / 'position_sl_state.json'
 LOG_PATH = BASE / 'data' / 'auto_position_manager.log'
 
 FAPI        = 'https://fapi.binance.com'
-PUSH_TARGET = '73295708:thread:019f1797-6c60-7541-ad72-ec34ed14dfc4'
+PUSH_TARGET = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_ID')
 
 # ── API ───────────────────────────────────────────────────────
 sys.path.insert(0, str(BASE))

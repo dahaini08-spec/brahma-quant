@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 regime_switch_monitor.py · 梵天体制切换监控 v3
@@ -24,7 +25,7 @@ STATE_FILE = os.path.join(BASE_DIR, 'data', 'regime_switch_state.json')
 LOG_FILE   = os.path.join(BASE_DIR, 'data', 'regime_log.json')
 
 # 推送目标（Jarvis 用户ID）
-PUSH_TARGET = '73295708:t:019f1797-6c60-7541-ad72-ec34ed14dfc4'
+PUSH_TARGET = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_ID')
 PUSH_CHANNEL = 'jarvis'
 
 # ── 监控标的 ──────────────────────────────────────────────

@@ -112,7 +112,7 @@ def _jarvis(text: str, dedup_ttl: int = 0):
         _mod = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_mod)
         _targets = [_mod.JARVIS_TARGET]
     except Exception:
-        _targets = ['73295708:t:019f1797-6c60-7541-ad72-ec34ed14dfc4']  # SSOT fallback
+        _targets = [os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_ID')]  # SSOT fallback
 
     for _to in _targets:
         try:

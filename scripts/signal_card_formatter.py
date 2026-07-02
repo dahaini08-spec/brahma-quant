@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 signal_card_formatter.py — Brahma 信号卡片格式化器
@@ -168,7 +169,7 @@ def run():
     _sp.run(
         ['openclaw', 'message', 'send',
          '--channel', 'jarvis',
-         '--target', '73295708:t:019f1797-6c60-7541-ad72-ec34ed14dfc4',
+         '--target', os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_ID'),
          '--message', card],
         capture_output=True, timeout=15
     )

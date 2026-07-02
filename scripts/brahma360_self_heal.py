@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 brahma360_self_heal.py — 梵天360 系统化自愈 + 🚨告警引擎 v1.0
@@ -34,7 +35,7 @@ CONF    = BASE / 'supervisor.conf'
 CST     = timezone(timedelta(hours=8))
 
 # ── 告警发送（Jarvis）───────────────────────────────────────
-JARVIS_USER = '73295708'
+JARVIS_USER = os.environ.get('JARVIS_USER_ID', 'YOUR_USER_ID')
 JARVIS_THREAD = '019ed32f-c46d-72ab-9d5e-92e47b4bdcc5'
 
 def _now_cst() -> str:
