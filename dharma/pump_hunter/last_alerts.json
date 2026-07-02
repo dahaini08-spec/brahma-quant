@@ -1,8 +1,51 @@
 {
-  "scan_time": "2026-07-01T21:38:04.803263",
-  "elapsed_sec": 81.1,
-  "total_scanned": 422,
-  "alerts": [],
+  "scan_time": "2026-07-02T03:38:32.623902",
+  "elapsed_sec": 128.0,
+  "total_scanned": 431,
+  "alerts": [
+    {
+      "symbol": "BELUSDT",
+      "score": 87,
+      "price": 0.09475,
+      "chg_24h": -8.7,
+      "vol_m": 5.4,
+      "oi_chg": -14.3,
+      "funding": -0.0661,
+      "short_pct": 62.1,
+      "compression": 22.9,
+      "vol_ratio": 0.44,
+      "rsi": 21.3,
+      "reasons": [
+        "极端负费率-0.066%",
+        "空头拥挤62%",
+        "MODERATE压缩23%",
+        "量能萎缩0.44x",
+        "RSI超卖21"
+      ],
+      "scan_time": "2026-07-02T03:36:32.708701"
+    },
+    {
+      "symbol": "POWRUSDT",
+      "score": 75,
+      "price": 0.04405,
+      "chg_24h": 1.0,
+      "vol_m": 9.1,
+      "oi_chg": -9.7,
+      "funding": -0.0419,
+      "short_pct": 57.4,
+      "compression": 14.7,
+      "vol_ratio": 0.17,
+      "rsi": 17.4,
+      "reasons": [
+        "负费率-0.042%",
+        "空头偏多57%",
+        "TIGHT压缩15%",
+        "量能萎缩0.17x",
+        "RSI超卖17"
+      ],
+      "scan_time": "2026-07-02T03:36:45.294837"
+    }
+  ],
   "new_alerts": [],
   "need_push": false
 }

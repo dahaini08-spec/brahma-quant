@@ -1,27 +1,27 @@
 {
-  "score": 1,
+  "score": 0,
   "sources": [
     "timesfm_lite"
   ],
-  "reason": "TimesFM-Lite: p_dir=0.56 conf=LOW pred=1.03 Q10=1.00~Q90=1.07",
+  "reason": "TimesFM-Lite: p_dir=0.50 conf=LOW pred=1.03 Q10=1.00~Q90=1.08",
   "details": {
     "timesfm_lite": {
-      "score": 0.7,
-      "p_direction": 0.556,
+      "score": 0.1,
+      "p_direction": 0.503,
       "confidence": "LOW",
       "pred_price": 1.03,
       "q10": 1.0,
       "q25": 1.01,
       "q75": 1.06,
-      "q90": 1.07,
-      "band_pct": 7.47,
-      "r_sq": 0.319,
+      "q90": 1.08,
+      "band_pct": 7.92,
+      "r_sq": 0.263,
       "vol_h": 0.03,
       "regime_coeff": 0.8
     }
   },
-  "ts": 1782938236.1697762,
-  "expires": 1782941836.1697764,
+  "ts": 1782952727.5935218,
+  "expires": 1782956327.593522,
   "symbol": "XRPUSDT",
   "direction": "LONG"
 }

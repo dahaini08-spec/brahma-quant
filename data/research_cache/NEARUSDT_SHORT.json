@@ -3,25 +3,25 @@
   "sources": [
     "timesfm_lite"
   ],
-  "reason": "TimesFM-Lite: p_dir=0.46 conf=LOW pred=1.79 Q10=1.68~Q90=1.90",
+  "reason": "TimesFM-Lite: p_dir=0.47 conf=LOW pred=1.79 Q10=1.68~Q90=1.91",
   "details": {
     "timesfm_lite": {
-      "score": -0.5,
-      "p_direction": 0.464,
+      "score": -0.4,
+      "p_direction": 0.468,
       "confidence": "LOW",
       "pred_price": 1.79,
       "q10": 1.68,
       "q25": 1.73,
       "q75": 1.85,
-      "q90": 1.9,
-      "band_pct": 11.98,
-      "r_sq": 0.419,
+      "q90": 1.91,
+      "band_pct": 12.48,
+      "r_sq": 0.379,
       "vol_h": 0.09,
       "regime_coeff": 0.8
     }
   },
-  "ts": 1782938236.0026767,
-  "expires": 1782941836.002677,
+  "ts": 1782952727.2299862,
+  "expires": 1782956327.2299867,
   "symbol": "NEARUSDT",
   "direction": "SHORT"
 }

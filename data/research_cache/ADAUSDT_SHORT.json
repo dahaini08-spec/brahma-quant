@@ -7,21 +7,21 @@
   "details": {
     "timesfm_lite": {
       "score": -1.1,
-      "p_direction": 0.411,
+      "p_direction": 0.415,
       "confidence": "LOW",
       "pred_price": 0.15,
       "q10": 0.14,
       "q25": 0.14,
       "q75": 0.15,
       "q90": 0.16,
-      "band_pct": 13.56,
-      "r_sq": 0.003,
+      "band_pct": 11.74,
+      "r_sq": 0.006,
       "vol_h": 0.01,
       "regime_coeff": 0.8
     }
   },
-  "ts": 1782938235.5501184,
-  "expires": 1782941835.5501187,
+  "ts": 1782952726.4133308,
+  "expires": 1782956326.413331,
   "symbol": "ADAUSDT",
   "direction": "SHORT"
 }
