@@ -1,0 +1,12 @@
+🏛️ **梵天智能日报** | 07-02 06:27 UTC
+
+**⚡ 体制监控**
+  • [Watcher] ✅ 触发 | 📉 BTC 跌破 EMA20_4H $59,561.0 → 目标 $58,220.9
+  • [Watcher] ✅ 触发 | 📈 BTC 突破 EMA20_4H $59,570.6 → 目标 $60,910.9
+
+**🧠 梵天信号(24h)**: 生成4个 跳过0个
+  • BTCUSDT score=0 CHOP_MID ?
+  • BTCUSDT score=0 CHOP_MID ?
+  • BTC score=72.0 CHOP_MID SHORT
+
+**💚 系统**: 运行正常 | 下次汇报6h后

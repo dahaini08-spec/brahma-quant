@@ -41,61 +41,67 @@ def signed_post(endpoint, params):
 
 
 def execute_short():
-    px = bus.price('BTCUSDT')
-    print(f'当前价: ${px:.2f}  入场区: ${ENTRY_LO:.0f}~${ENTRY_HI:.0f}')
+    try:
+        px = bus.price('BTCUSDT')
+        print(f'当前价: ${px:.2f}  入场区: ${ENTRY_LO:.0f}~${ENTRY_HI:.0f}')
 
-    if not (ENTRY_LO * 0.998 <= px <= ENTRY_HI * 1.002):
-        print(f'❌ 价格不在入场区，取消执行')
-        return False
+        if not (ENTRY_LO * 0.998 <= px <= ENTRY_HI * 1.002):
+            print(f'❌ 价格不在入场区，取消执行')
+            return False
 
-    # 1. 设置杠杆
-    lev = signed_post('/fapi/v1/leverage', {'symbol': 'BTCUSDT', 'leverage': LEVERAGE})
-    print(f'杠杆设置: {lev}')
+        # 1. 设置杠杆
+        lev = signed_post('/fapi/v1/leverage', {'symbol': 'BTCUSDT', 'leverage': LEVERAGE})
+        print(f'杠杆设置: {lev}')
 
-    # 2. 市价做空
-    order = signed_post('/fapi/v1/order', {
-        'symbol':   'BTCUSDT',
-        'side':     'SELL',
-        'type':     'MARKET',
-        'quantity': QTY,
-        'reduceOnly': 'false',
-    })
-    print(f'开仓结果: {json.dumps(order, ensure_ascii=False)}')
+        # 2. 市价做空
+        order = signed_post('/fapi/v1/order', {
+            'symbol':   'BTCUSDT',
+            'side':     'SELL',
+            'type':     'MARKET',
+            'quantity': QTY,
+            'reduceOnly': 'false',
+        })
+        print(f'开仓结果: {json.dumps(order, ensure_ascii=False)}')
 
-    if order.get('status') in ('FILLED', 'NEW', 'PARTIALLY_FILLED'):
-        fill_price = float(order.get('avgPrice', order.get('price', px)))
-        print(f'✅ 开仓成功！fill={fill_price:.2f}  qty={QTY}  方向=SHORT')
+        if order.get('status') in ('FILLED', 'NEW', 'PARTIALLY_FILLED'):
+            fill_price = float(order.get('avgPrice', order.get('price', px)))
+            print(f'✅ 开仓成功！fill={fill_price:.2f}  qty={QTY}  方向=SHORT')
 
-        # 3. 写入 wuqu_positions
-        with open('data/wuqu_positions.json') as f:
-            wp = json.load(f)
-        wp['BTCUSDT'] = {
-            'symbol': 'BTCUSDT', 'direction': 'SHORT',
-            'qty': QTY, 'entry_price': fill_price,
-            'stop_loss': STOP_LOSS, 'tp1': TP1, 'tp2': TP2,
-            'leverage': LEVERAGE, 'opened_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
-            'source': 'brahma_auto_execute',
-        }
-        with open('data/wuqu_positions.json', 'w') as f:
-            json.dump(wp, f, indent=2, ensure_ascii=False)
+            # 3. 写入 wuqu_positions
+            with open('data/wuqu_positions.json') as f:
+                wp = json.load(f)
+            wp['BTCUSDT'] = {
+                'symbol': 'BTCUSDT', 'direction': 'SHORT',
+                'qty': QTY, 'entry_price': fill_price,
+                'stop_loss': STOP_LOSS, 'tp1': TP1, 'tp2': TP2,
+                'leverage': LEVERAGE, 'opened_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+                'source': 'brahma_auto_execute',
+            }
+            with open('data/wuqu_positions.json', 'w') as f:
+                json.dump(wp, f, indent=2, ensure_ascii=False)
 
-        # 4. 写入 position_sl_state
-        with open('data/position_sl_state.json') as f:
-            sl = json.load(f)
-        sl['BTCUSDT'] = {
-            'sl_price': STOP_LOSS, 'tp_price': TP1,
-            'direction': 'SHORT', 'regime': 'BEAR_TREND',
-            'score': 141.7, 'registered_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
-            'source': 'brahma_auto_execute',
-        }
-        with open('data/position_sl_state.json', 'w') as f:
-            json.dump(sl, f, indent=2, ensure_ascii=False)
+            # 4. 写入 position_sl_state
+            with open('data/position_sl_state.json') as f:
+                sl = json.load(f)
+            sl['BTCUSDT'] = {
+                'sl_price': STOP_LOSS, 'tp_price': TP1,
+                'direction': 'SHORT', 'regime': 'BEAR_TREND',
+                'score': 141.7, 'registered_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+                'source': 'brahma_auto_execute',
+            }
+            with open('data/position_sl_state.json', 'w') as f:
+                json.dump(sl, f, indent=2, ensure_ascii=False)
 
-        print(f'✅ 止损登记完成  SL=${STOP_LOSS:.0f}  TP1=${TP1:.0f}')
-        return True
-    else:
-        print(f'❌ 开仓失败: {order}')
-        return False
+            print(f'✅ 止损登记完成  SL=${STOP_LOSS:.0f}  TP1=${TP1:.0f}')
+            return True
+        else:
+            print(f'❌ 开仓失败: {order}')
+            return False
+    except Exception as _e:
+        import logging as _log
+        _log.getLogger('brahma.execution').error(
+            f'[EXEC_GUARD] execute_short 执行异常: {_e}', exc_info=True)
+        return {'error': str(_e), 'func': 'execute_short', 'status': 'FAILED'}
 
 
 if __name__ == '__main__':

@@ -107,56 +107,62 @@ def push_m01(results: dict, min_n: int = 30, min_pf: float = 1.3):
     M01训练结果 → 品种专项参数
     输入格式: {sym: {n, wr, pf, ev, params, best_thr, best_sl, best_mh}}
     """
-    state = _load()
-    updated = 0
-    skipped_blacklist = 0
+    try:
+        state = _load()
+        updated = 0
+        skipped_blacklist = 0
 
-    for sym, v in results.items():
-        if sym in BLACKLIST_PERMANENT:
-            skipped_blacklist += 1
-            continue
-        n   = v.get('n', 0)
-        pf  = v.get('pf', 0.0)
-        wr  = v.get('wr', 0.0)
-        ev  = v.get('ev', 0.0)
-        params_str = v.get('params', '')
+        for sym, v in results.items():
+            if sym in BLACKLIST_PERMANENT:
+                skipped_blacklist += 1
+                continue
+            n   = v.get('n', 0)
+            pf  = v.get('pf', 0.0)
+            wr  = v.get('wr', 0.0)
+            ev  = v.get('ev', 0.0)
+            params_str = v.get('params', '')
 
-        if n < min_n or pf < min_pf:
-            continue
+            if n < min_n or pf < min_pf:
+                continue
 
-        # 解析参数字符串 "thr=160,sl=2.0,mh=16"
-        thr, sl, mh = 160, 2.0, 12
-        for part in params_str.split(','):
-            k, _, val = part.partition('=')
-            k = k.strip()
-            if k == 'thr':   thr = int(val)
-            elif k == 'sl':  sl  = float(val)
-            elif k == 'mh':  mh  = int(val)
+            # 解析参数字符串 "thr=160,sl=2.0,mh=16"
+            thr, sl, mh = 160, 2.0, 12
+            for part in params_str.split(','):
+                k, _, val = part.partition('=')
+                k = k.strip()
+                if k == 'thr':   thr = int(val)
+                elif k == 'sl':  sl  = float(val)
+                elif k == 'mh':  mh  = int(val)
 
-        kelly = _quarter_kelly(wr, pf)
-        grade = _confidence_grade(n, pf, wr)
+            kelly = _quarter_kelly(wr, pf)
+            grade = _confidence_grade(n, pf, wr)
 
-        state['sym_params'][sym] = {
-            'thr':        thr,
-            'sl_mult':    sl,
-            'mh':         mh,
-            'kelly_pos':  kelly,
-            'wr':         round(wr, 4),
-            'pf':         round(pf, 4),
-            'ev':         round(ev, 4),
-            'n':          n,
-            'grade':      grade,
-            'source':     'M01',
-            'ts':         _ts(),
-        }
-        updated += 1
+            state['sym_params'][sym] = {
+                'thr':        thr,
+                'sl_mult':    sl,
+                'mh':         mh,
+                'kelly_pos':  kelly,
+                'wr':         round(wr, 4),
+                'pf':         round(pf, 4),
+                'ev':         round(ev, 4),
+                'n':          n,
+                'grade':      grade,
+                'source':     'M01',
+                'ts':         _ts(),
+            }
+            updated += 1
 
-    # 更新全局最优 MIN_SCORE（基于M01铁证 thr=160品种均PF最高）
-    state['global']['min_score'] = 158  # M01铁证安全边际
+        # 更新全局最优 MIN_SCORE（基于M01铁证 thr=160品种均PF最高）
+        state['global']['min_score'] = 158  # M01铁证安全边际
 
-    _save(state)
-    print(f'[M01] 写入{updated}品种专项参数 | 跳过黑名单{skipped_blacklist}个')
-    return updated
+        _save(state)
+        print(f'[M01] 写入{updated}品种专项参数 | 跳过黑名单{skipped_blacklist}个')
+        return updated
+    except Exception as _e:
+        import logging as _log
+        _log.getLogger(__name__).error(
+            f'[DharmaBus] push_m01 执行失败: {_e}', exc_info=True)
+        return None
 
 
 # ══════════════════════════════════════════════════════
@@ -168,47 +174,53 @@ def push_m02(boot_results: dict):
     M02 Bootstrap结果 → 仓位上限
     输入: {sym: {ci95: [low, high], ci99: [...], median_pf, n}}
     """
-    state = _load()
-    unlocked = []
-    downgraded = []
+    try:
+        state = _load()
+        unlocked = []
+        downgraded = []
 
-    for sym, b in boot_results.items():
-        if sym in BLACKLIST_PERMANENT:
-            continue
-        ci95_low  = b.get('ci95', [0, 0])[0]
-        ci99_low  = b.get('ci99', [0, 0])[0]
-        med_pf    = b.get('median_pf', 0)
-        n         = b.get('n', 0)
+        for sym, b in boot_results.items():
+            if sym in BLACKLIST_PERMANENT:
+                continue
+            ci95_low  = b.get('ci95', [0, 0])[0]
+            ci99_low  = b.get('ci99', [0, 0])[0]
+            med_pf    = b.get('median_pf', 0)
+            n         = b.get('n', 0)
 
-        if ci95_low >= 1.5:
-            pos = 0.07   # 高置信 → 满仓
-            tier = 'GOLD'
-        elif ci95_low >= 1.3:
-            pos = 0.05   # 中置信 → 标准仓
-            tier = 'SILVER'
-        elif ci95_low >= 1.0:
-            pos = 0.03   # 低置信 → 轻仓
-            tier = 'BRONZE'
-        else:
-            pos = 0.0    # 置信下限<1.0 → 禁用
-            tier = 'DISABLED'
-            downgraded.append(sym)
+            if ci95_low >= 1.5:
+                pos = 0.07   # 高置信 → 满仓
+                tier = 'GOLD'
+            elif ci95_low >= 1.3:
+                pos = 0.05   # 中置信 → 标准仓
+                tier = 'SILVER'
+            elif ci95_low >= 1.0:
+                pos = 0.03   # 低置信 → 轻仓
+                tier = 'BRONZE'
+            else:
+                pos = 0.0    # 置信下限<1.0 → 禁用
+                tier = 'DISABLED'
+                downgraded.append(sym)
 
-        state['pos_limits'][sym] = {
-            'max_pos':  pos,
-            'ci95_low': ci95_low,
-            'ci99_low': ci99_low,
-            'tier':     tier,
-            'source':   'M02',
-            'ts':       _ts(),
-        }
-        if pos >= 0.05:
-            unlocked.append(f'{sym}({tier})')
+            state['pos_limits'][sym] = {
+                'max_pos':  pos,
+                'ci95_low': ci95_low,
+                'ci99_low': ci99_low,
+                'tier':     tier,
+                'source':   'M02',
+                'ts':       _ts(),
+            }
+            if pos >= 0.05:
+                unlocked.append(f'{sym}({tier})')
 
-    _save(state)
-    print(f'[M02] 仓位解锁: {unlocked}')
-    if downgraded:
-        print(f'[M02] ⚠️ 降级品种: {downgraded}')
+        _save(state)
+        print(f'[M02] 仓位解锁: {unlocked}')
+        if downgraded:
+            print(f'[M02] ⚠️ 降级品种: {downgraded}')
+    except Exception as _e:
+        import logging as _log
+        _log.getLogger(__name__).error(
+            f'[DharmaBus] push_m02 执行失败: {_e}', exc_info=True)
+        return None
 
 
 # ══════════════════════════════════════════════════════
@@ -220,45 +232,51 @@ def push_m03(regime_matrix: dict):
     M03体制矩阵 → 方向过滤
     输入: {sym: {regime: {long: {wr,pf,n}, short: {wr,pf,n}}}}
     """
-    state = _load()
-    rules = {}
+    try:
+        state = _load()
+        rules = {}
 
-    for sym, regimes in regime_matrix.items():
-        if sym in BLACKLIST_PERMANENT:
-            continue
-        rules[sym] = {}
-        for regime, dirs in regimes.items():
-            long_pf  = dirs.get('long',  {}).get('pf', 0)
-            short_pf = dirs.get('short', {}).get('pf', 0)
-            long_wr  = dirs.get('long',  {}).get('wr', 0)
-            short_wr = dirs.get('short', {}).get('wr', 0)
-            long_n   = dirs.get('long',  {}).get('n',  0)
-            short_n  = dirs.get('short', {}).get('n',  0)
+        for sym, regimes in regime_matrix.items():
+            if sym in BLACKLIST_PERMANENT:
+                continue
+            rules[sym] = {}
+            for regime, dirs in regimes.items():
+                long_pf  = dirs.get('long',  {}).get('pf', 0)
+                short_pf = dirs.get('short', {}).get('pf', 0)
+                long_wr  = dirs.get('long',  {}).get('wr', 0)
+                short_wr = dirs.get('short', {}).get('wr', 0)
+                long_n   = dirs.get('long',  {}).get('n',  0)
+                short_n  = dirs.get('short', {}).get('n',  0)
 
-            # 方向评分：PF×WR加权
-            long_score  = long_pf  * long_wr  if long_n  >= 10 else 0
-            short_score = short_pf * short_wr if short_n >= 10 else 0
+                # 方向评分：PF×WR加权
+                long_score  = long_pf  * long_wr  if long_n  >= 10 else 0
+                short_score = short_pf * short_wr if short_n >= 10 else 0
 
-            if long_score > short_score * 1.2:
-                best_dir = 'LONG'
-            elif short_score > long_score * 1.2:
-                best_dir = 'SHORT'
-            else:
-                best_dir = 'BOTH'
+                if long_score > short_score * 1.2:
+                    best_dir = 'LONG'
+                elif short_score > long_score * 1.2:
+                    best_dir = 'SHORT'
+                else:
+                    best_dir = 'BOTH'
 
-            rules[sym][regime] = {
-                'best_dir':   best_dir,
-                'long_pf':    round(long_pf, 3),
-                'short_pf':   round(short_pf, 3),
-                'long_wr':    round(long_wr, 3),
-                'short_wr':   round(short_wr, 3),
-                'confidence': 'HIGH' if max(long_n, short_n) >= 30 else 'LOW',
-            }
+                rules[sym][regime] = {
+                    'best_dir':   best_dir,
+                    'long_pf':    round(long_pf, 3),
+                    'short_pf':   round(short_pf, 3),
+                    'long_wr':    round(long_wr, 3),
+                    'short_wr':   round(short_wr, 3),
+                    'confidence': 'HIGH' if max(long_n, short_n) >= 30 else 'LOW',
+                }
 
-    state['regime_matrix'] = rules
-    state['regime_matrix']['_ts'] = _ts()
-    _save(state)
-    print(f'[M03] 体制矩阵写入: {len(rules)}品种')
+        state['regime_matrix'] = rules
+        state['regime_matrix']['_ts'] = _ts()
+        _save(state)
+        print(f'[M03] 体制矩阵写入: {len(rules)}品种')
+    except Exception as _e:
+        import logging as _log
+        _log.getLogger(__name__).error(
+            f'[DharmaBus] push_m03 执行失败: {_e}', exc_info=True)
+        return None
 
 
 # ══════════════════════════════════════════════════════
@@ -270,11 +288,17 @@ def push_m04(tp_matrix: dict):
     M04 TP矩阵 → 最优RR
     输入: {sym: {regime: {score_range: best_rr}}}
     """
-    state = _load()
-    state['tp_matrix'] = tp_matrix
-    state['tp_matrix']['_ts'] = _ts()
-    _save(state)
-    print(f'[M04] TP动态矩阵写入: {len(tp_matrix)-1}品种')
+    try:
+        state = _load()
+        state['tp_matrix'] = tp_matrix
+        state['tp_matrix']['_ts'] = _ts()
+        _save(state)
+        print(f'[M04] TP动态矩阵写入: {len(tp_matrix)-1}品种')
+    except Exception as _e:
+        import logging as _log
+        _log.getLogger(__name__).error(
+            f'[DharmaBus] push_m04 执行失败: {_e}', exc_info=True)
+        return None
 
 
 # ══════════════════════════════════════════════════════
@@ -286,11 +310,17 @@ def push_m05(drawdown_data: dict):
     M05连败分析 → 风险上限
     输入: {sym: {max_streak_p5, max_streak_p95, max_dd_p95}}
     """
-    state = _load()
-    state['drawdown_limits'] = drawdown_data
-    state['drawdown_limits']['_ts'] = _ts()
-    _save(state)
-    print(f'[M05] 连败风险写入: {len(drawdown_data)-1}品种')
+    try:
+        state = _load()
+        state['drawdown_limits'] = drawdown_data
+        state['drawdown_limits']['_ts'] = _ts()
+        _save(state)
+        print(f'[M05] 连败风险写入: {len(drawdown_data)-1}品种')
+    except Exception as _e:
+        import logging as _log
+        _log.getLogger(__name__).error(
+            f'[DharmaBus] push_m05 执行失败: {_e}', exc_info=True)
+        return None
 
 
 # ══════════════════════════════════════════════════════
@@ -302,13 +332,19 @@ def push_m06(corr_matrix: dict, best_trio: list = None):
     M06相关矩阵 → 最优同持组合
     输入: {sym_a: {sym_b: corr_coef}}
     """
-    state = _load()
-    state['correlation_matrix'] = corr_matrix
-    if best_trio:
-        state['correlation_matrix']['_best_trio'] = best_trio
-    state['correlation_matrix']['_ts'] = _ts()
-    _save(state)
-    print(f'[M06] 相关矩阵写入 | 最优三组合: {best_trio}')
+    try:
+        state = _load()
+        state['correlation_matrix'] = corr_matrix
+        if best_trio:
+            state['correlation_matrix']['_best_trio'] = best_trio
+        state['correlation_matrix']['_ts'] = _ts()
+        _save(state)
+        print(f'[M06] 相关矩阵写入 | 最优三组合: {best_trio}')
+    except Exception as _e:
+        import logging as _log
+        _log.getLogger(__name__).error(
+            f'[DharmaBus] push_m06 执行失败: {_e}', exc_info=True)
+        return None
 
 
 # ══════════════════════════════════════════════════════
@@ -320,20 +356,26 @@ def push_m07(time_effects: dict):
     M07时间窗口 → 禁用时段
     输入: {weekday: {0..6: pf}, hour_utc: {0..23: pf}, month: {1..12: pf}}
     """
-    state = _load()
-    blackout = {}
+    try:
+        state = _load()
+        blackout = {}
 
-    # 自动识别禁用时段（PF < 0.95）
-    for dim, data in time_effects.items():
-        blackout[dim] = [k for k, v in data.items() if isinstance(v, (int, float)) and v < 0.95]
+        # 自动识别禁用时段（PF < 0.95）
+        for dim, data in time_effects.items():
+            blackout[dim] = [k for k, v in data.items() if isinstance(v, (int, float)) and v < 0.95]
 
-    state['time_blackout'] = {
-        'rules':   blackout,
-        'raw':     time_effects,
-        '_ts':     _ts(),
-    }
-    _save(state)
-    print(f'[M07] 时间窗口写入 | 禁用时段: {blackout}')
+        state['time_blackout'] = {
+            'rules':   blackout,
+            'raw':     time_effects,
+            '_ts':     _ts(),
+        }
+        _save(state)
+        print(f'[M07] 时间窗口写入 | 禁用时段: {blackout}')
+    except Exception as _e:
+        import logging as _log
+        _log.getLogger(__name__).error(
+            f'[DharmaBus] push_m07 执行失败: {_e}', exc_info=True)
+        return None
 
 
 # ══════════════════════════════════════════════════════
@@ -345,18 +387,24 @@ def push_m08(champion: dict):
     M08最终认证 → 全局参数锁定
     输入: {thr, sl, mh, tp, median_pf, ci99_low, certified_syms}
     """
-    state = _load()
-    state['champion_params'] = champion
-    state['champion_params']['_ts'] = _ts()
-    # 更新全局默认参数
-    if champion.get('ci99_low', 0) >= 1.5:
-        state['global']['min_score']  = champion.get('thr', 158)
-        state['global']['default_sl'] = champion.get('sl',  2.0)
-        state['global']['default_mh'] = champion.get('mh',  12)
-        print(f'[M08] 🏆 冠军参数已锁定: {champion}')
-    else:
-        print(f'[M08] ⚠️ CI99下限<1.5，冠军认证未通过')
-    _save(state)
+    try:
+        state = _load()
+        state['champion_params'] = champion
+        state['champion_params']['_ts'] = _ts()
+        # 更新全局默认参数
+        if champion.get('ci99_low', 0) >= 1.5:
+            state['global']['min_score']  = champion.get('thr', 158)
+            state['global']['default_sl'] = champion.get('sl',  2.0)
+            state['global']['default_mh'] = champion.get('mh',  12)
+            print(f'[M08] 🏆 冠军参数已锁定: {champion}')
+        else:
+            print(f'[M08] ⚠️ CI99下限<1.5，冠军认证未通过')
+        _save(state)
+    except Exception as _e:
+        import logging as _log
+        _log.getLogger(__name__).error(
+            f'[DharmaBus] push_m08 执行失败: {_e}', exc_info=True)
+        return None
 
 
 # ══════════════════════════════════════════════════════
@@ -373,16 +421,22 @@ def push_m09(dim_weight_map: dict):
     weight=2.0  强正向维度双倍（如ETH背离+0.277）
     来源: full_universe_backtest dim_contrib铁证
     """
-    state = _load()
-    state['dim_weight'] = dim_weight_map
-    state['dim_weight']['_ts'] = _ts()
-    total_zeros = sum(
-        1 for sym_d in dim_weight_map.values()
-        if isinstance(sym_d, dict)
-        for w in sym_d.values() if w == 0.0
-    )
-    _save(state)
-    print(f'[M09] ✅ 品种×维度权重写入 | {len(dim_weight_map)-0}品种 | {total_zeros}个维度清零')
+    try:
+        state = _load()
+        state['dim_weight'] = dim_weight_map
+        state['dim_weight']['_ts'] = _ts()
+        total_zeros = sum(
+            1 for sym_d in dim_weight_map.values()
+            if isinstance(sym_d, dict)
+            for w in sym_d.values() if w == 0.0
+        )
+        _save(state)
+        print(f'[M09] ✅ 品种×维度权重写入 | {len(dim_weight_map)-0}品种 | {total_zeros}个维度清零')
+    except Exception as _e:
+        import logging as _log
+        _log.getLogger(__name__).error(
+            f'[DharmaBus] push_m09 执行失败: {_e}', exc_info=True)
+        return None
 
 
 def get_dim_weight(sym: str, dim_name: str) -> float:
@@ -403,23 +457,29 @@ def push_m11(ci_discount_map: dict):
     折扣规则: CI>6.0→×0.55  CI>4.0→×0.70  CI>2.5→×0.85
     来源: M02 Bootstrap CI95数据
     """
-    state = _load()
-    state['ci_discount'] = ci_discount_map
-    state['ci_discount']['_ts'] = _ts()
-    # 同步更新 pos_limits（叠加折扣）
-    applied = []
-    for sym, info in ci_discount_map.items():
-        if not isinstance(info, dict): continue
-        discount = info.get('discount', 1.0)
-        if sym in state['pos_limits']:
-            base_pos = state['pos_limits'][sym]['max_pos']
-            new_pos  = round(base_pos * discount, 3)
-            state['pos_limits'][sym]['max_pos_raw'] = base_pos   # 保留原始值
-            state['pos_limits'][sym]['max_pos']     = new_pos    # 折扣后值
-            state['pos_limits'][sym]['ci_discount']  = discount
-            applied.append(f'{sym}:{base_pos:.0%}→{new_pos:.1%}')
-    _save(state)
-    print(f'[M11] ✅ CI折扣写入 | 仓位调整: {applied}')
+    try:
+        state = _load()
+        state['ci_discount'] = ci_discount_map
+        state['ci_discount']['_ts'] = _ts()
+        # 同步更新 pos_limits（叠加折扣）
+        applied = []
+        for sym, info in ci_discount_map.items():
+            if not isinstance(info, dict): continue
+            discount = info.get('discount', 1.0)
+            if sym in state['pos_limits']:
+                base_pos = state['pos_limits'][sym]['max_pos']
+                new_pos  = round(base_pos * discount, 3)
+                state['pos_limits'][sym]['max_pos_raw'] = base_pos   # 保留原始值
+                state['pos_limits'][sym]['max_pos']     = new_pos    # 折扣后值
+                state['pos_limits'][sym]['ci_discount']  = discount
+                applied.append(f'{sym}:{base_pos:.0%}→{new_pos:.1%}')
+        _save(state)
+        print(f'[M11] ✅ CI折扣写入 | 仓位调整: {applied}')
+    except Exception as _e:
+        import logging as _log
+        _log.getLogger(__name__).error(
+            f'[DharmaBus] push_m11 执行失败: {_e}', exc_info=True)
+        return None
 
 
 def get_pos_with_ci_discount(sym: str) -> float:
@@ -440,11 +500,17 @@ def push_m10(regime_timing_rules: dict):
     例: {'5~10': {'delta': +6, 'label': '黄金窗口', 'pf': 1.625}}
     来源: N14_regime_timing铁证
     """
-    state = _load()
-    state['regime_timing'] = regime_timing_rules
-    state['regime_timing']['_ts'] = _ts()
-    _save(state)
-    print(f'[M10] ✅ 体制时机规则写入 | {len(regime_timing_rules)-1}个dist区间')
+    try:
+        state = _load()
+        state['regime_timing'] = regime_timing_rules
+        state['regime_timing']['_ts'] = _ts()
+        _save(state)
+        print(f'[M10] ✅ 体制时机规则写入 | {len(regime_timing_rules)-1}个dist区间')
+    except Exception as _e:
+        import logging as _log
+        _log.getLogger(__name__).error(
+            f'[DharmaBus] push_m10 执行失败: {_e}', exc_info=True)
+        return None
 
 
 # ══════════════════════════════════════════════════════
@@ -453,7 +519,13 @@ def push_m10(regime_timing_rules: dict):
 
 def load_runtime() -> dict:
     """梵天大脑加载运行时配置"""
-    return _load()
+    try:
+        return _load()
+    except Exception as _e:
+        import logging as _log
+        _log.getLogger(__name__).error(
+            f'[DharmaBus] load_runtime 执行失败: {_e}', exc_info=True)
+        return None
 
 
 def get_sym_params(sym: str) -> dict:

@@ -80,37 +80,43 @@ def place_order(symbol: str, side: str, order_type: str,
     tick_size: 价格步长（用于精确对齐，防止-4014）
     返回: (result, error)
     """
-    params = {
-        'symbol':       symbol,
-        'side':         side,
-        'type':         order_type,
-        'positionSide': 'BOTH',
-    }
-    # 数量：LIMIT用quantity，STOP_MARKET/TAKE_PROFIT_MARKET也用quantity
-    params['quantity'] = round(qty, qty_precision)
+    try:
+        params = {
+            'symbol':       symbol,
+            'side':         side,
+            'type':         order_type,
+            'positionSide': 'BOTH',
+        }
+        # 数量：LIMIT用quantity，STOP_MARKET/TAKE_PROFIT_MARKET也用quantity
+        params['quantity'] = round(qty, qty_precision)
 
-    if order_type == 'LIMIT':
-        params['timeInForce'] = 'GTC'
-        if price:
-            if tick_size:
-                # 严格tick对齐，防止-4014
-                params['price'] = _round_to_tick(price, tick_size)
-            elif price_precision is not None:
-                params['price'] = round(price, price_precision)
-            else:
-                params['price'] = round(price, 8)  # fallback（可能触发-4014）
-    elif order_type in ('STOP_MARKET', 'TAKE_PROFIT_MARKET'):
-        if stop_price:
-            if tick_size:
-                params['stopPrice'] = _round_to_tick(stop_price, tick_size)
-            elif price_precision is not None:
-                params['stopPrice'] = round(stop_price, price_precision)
-            else:
-                params['stopPrice'] = round(stop_price, 8)
-        params['reduceOnly'] = 'true' if reduce_only else 'false'
-        # 不传price字段，用市价成交
+        if order_type == 'LIMIT':
+            params['timeInForce'] = 'GTC'
+            if price:
+                if tick_size:
+                    # 严格tick对齐，防止-4014
+                    params['price'] = _round_to_tick(price, tick_size)
+                elif price_precision is not None:
+                    params['price'] = round(price, price_precision)
+                else:
+                    params['price'] = round(price, 8)  # fallback（可能触发-4014）
+        elif order_type in ('STOP_MARKET', 'TAKE_PROFIT_MARKET'):
+            if stop_price:
+                if tick_size:
+                    params['stopPrice'] = _round_to_tick(stop_price, tick_size)
+                elif price_precision is not None:
+                    params['stopPrice'] = round(stop_price, price_precision)
+                else:
+                    params['stopPrice'] = round(stop_price, 8)
+            params['reduceOnly'] = 'true' if reduce_only else 'false'
+            # 不传price字段，用市价成交
 
-    return _req('POST', '/fapi/v1/order', params=params)
+        return _req('POST', '/fapi/v1/order', params=params)
+    except Exception as _e:
+        import logging as _log
+        _log.getLogger('brahma.execution').error(
+            f'[EXEC_GUARD] place_order 执行异常: {_e}', exc_info=True)
+        return {'error': str(_e), 'func': 'place_order', 'status': 'FAILED'}
 
 def cancel_order(symbol: str, order_id: int) -> tuple:
     params = {'symbol': symbol, 'orderId': order_id}

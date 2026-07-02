@@ -285,17 +285,18 @@ def emit_pump_signal(scan_result: dict, regime: str, nav_usdt: float = 130.0) ->
 
 def format_pump_alert(signal: dict) -> str:
     """暴涨猎手独立推送格式"""
-    score = signal['score']
-    level = '💣 三级预警' if score >= 85 else '🚨 二级预警'
-    regime = signal.get('regime', '?')
-    regime_hint = {
-        'BEAR_TREND':    '⚠️ 逆势妖币（轻仓1%）',
-        'BEAR_RECOVERY': '🟢 顺势反弹（重仓3%）',
-        'CHOP_MID':      '🟡 震荡妖币（标准仓2%）',
-        'BULL_TREND':    '🚀 顺势爆发（标准仓2%）',
-    }.get(regime, f'体制:{regime}')
+    try:
+        score = signal['score']
+        level = '💣 三级预警' if score >= 85 else '🚨 二级预警'
+        regime = signal.get('regime', '?')
+        regime_hint = {
+            'BEAR_TREND':    '⚠️ 逆势妖币（轻仓1%）',
+            'BEAR_RECOVERY': '🟢 顺势反弹（重仓3%）',
+            'CHOP_MID':      '🟡 震荡妖币（标准仓2%）',
+            'BULL_TREND':    '🚀 顺势爆发（标准仓2%）',
+        }.get(regime, f'体制:{regime}')
 
-    return f"""{level} 暴涨猎手预警
+        return f"""{level} 暴涨猎手预警
 ━━━━━━━━━━━━━━━━━━━━
 标的：{signal['symbol']}
 现价：${signal['price']:.5f}
@@ -316,6 +317,10 @@ def format_pump_alert(signal: dict) -> str:
   仓位：  NAV×{signal['size_pct']*100:.0f}% = ${signal['notional']:.1f} | {signal['leverage']}x
 ━━━━━━━━━━━━━━━━━━━━
 ⚡ PUMP_SIGNAL 独立通道 · 不受梵天死穴约束"""
+    except Exception as _e:
+        import logging as _lg
+        _lg.getLogger(__name__).warning(f"[PumpAlert] 格式化失败: {_e}")
+        return f"暴涨预警: {signal.get('symbol','?')}"
 
 
 # ════════════════════════════════════════════════════════

@@ -249,39 +249,45 @@ def apply_cost_to_trades(
     Returns:
         list: 同格式，新增 'adj_pnl', 'cost_detail' 字段
     """
-    model = CostModel()
-    adjusted = []
+    try:
+        model = CostModel()
+        adjusted = []
 
-    for t in trades:
-        raw_pnl   = t.get('pnl', 0.0)
-        direction = t.get('direction', 'LONG')
-        t_regime  = t.get('regime', regime)
-        entry_price = t.get('entry_price', 100.0)  # 如无entry_price用100做归一化
+        for t in trades:
+            raw_pnl   = t.get('pnl', 0.0)
+            direction = t.get('direction', 'LONG')
+            t_regime  = t.get('regime', regime)
+            entry_price = t.get('entry_price', 100.0)  # 如无entry_price用100做归一化
 
-        # ATR估算
-        atr_val = t.get(atr_col, None)
-        if atr_val is None:
-            atr_val = entry_price * default_atr_pct
+            # ATR估算
+            atr_val = t.get(atr_col, None)
+            if atr_val is None:
+                atr_val = entry_price * default_atr_pct
 
-        # 持仓时间估算（exit_bar - entry_bar）× bar_hours
-        hold_bars  = t.get('hold_bars', 12)
-        hold_hours = hold_bars * bar_hours
+            # 持仓时间估算（exit_bar - entry_bar）× bar_hours
+            hold_bars  = t.get('hold_bars', 12)
+            hold_hours = hold_bars * bar_hours
 
-        detail = model.adjust_pnl(
-            raw_pnl     = raw_pnl,
-            entry_price = entry_price,
-            atr         = atr_val,
-            direction   = direction,
-            regime      = t_regime,
-            hold_hours  = hold_hours
-        )
+            detail = model.adjust_pnl(
+                raw_pnl     = raw_pnl,
+                entry_price = entry_price,
+                atr         = atr_val,
+                direction   = direction,
+                regime      = t_regime,
+                hold_hours  = hold_hours
+            )
 
-        new_t = dict(t)
-        new_t['adj_pnl']     = detail['adj_pnl']
-        new_t['cost_detail'] = detail
-        adjusted.append(new_t)
+            new_t = dict(t)
+            new_t['adj_pnl']     = detail['adj_pnl']
+            new_t['cost_detail'] = detail
+            adjusted.append(new_t)
 
-    return adjusted
+        return adjusted
+    except Exception as _e:
+        import logging as _log
+        _log.getLogger(__name__).error(
+            f'[Dharma] apply_cost_to_trades 执行失败: {_e}', exc_info=True)
+        return None
 
 
 def calc_stats_with_cost(trades: list, use_adj: bool = True) -> dict:
