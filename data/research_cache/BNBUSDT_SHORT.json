@@ -3,25 +3,25 @@
   "sources": [
     "timesfm_lite"
   ],
-  "reason": "TimesFM-Lite: p_dir=0.53 conf=LOW pred=544.71 Q10=528.57~Q90=563.60",
+  "reason": "TimesFM-Lite: p_dir=0.49 conf=LOW pred=544.94 Q10=528.33~Q90=564.33",
   "details": {
     "timesfm_lite": {
-      "score": 0.3,
-      "p_direction": 0.525,
+      "score": -0.1,
+      "p_direction": 0.491,
       "confidence": "LOW",
-      "pred_price": 544.71,
-      "q10": 528.57,
-      "q25": 536.68,
-      "q75": 555.09,
-      "q90": 563.6,
-      "band_pct": 6.4,
-      "r_sq": 0.623,
-      "vol_h": 13.7,
+      "pred_price": 544.94,
+      "q10": 528.33,
+      "q25": 536.65,
+      "q75": 555.58,
+      "q90": 564.33,
+      "band_pct": 6.51,
+      "r_sq": 0.594,
+      "vol_h": 14.23,
       "regime_coeff": 0.8
     }
   },
-  "ts": 1782952726.1931062,
-  "expires": 1782956326.1931067,
+  "ts": 1782967036.5289156,
+  "expires": 1782970636.5289161,
   "symbol": "BNBUSDT",
   "direction": "SHORT"
 }
