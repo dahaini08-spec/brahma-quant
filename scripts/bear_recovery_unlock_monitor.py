@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 bear_recovery_unlock_monitor.py · BEAR_RECOVERY 解封监控 v1.0
@@ -17,7 +18,7 @@ import sys, os, json, subprocess, time, urllib.request, urllib.parse
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATE_FILE = os.path.join(BASE_DIR, 'data', 'bear_recovery_unlock_state.json')
 
-PUSH_TARGET  = '73295708:t:019f1797-6c60-7541-ad72-ec34ed14dfc4'
+PUSH_TARGET  = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_ID')
 PUSH_CHANNEL = 'jarvis'
 
 TARGETS = [

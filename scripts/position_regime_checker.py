@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 position_regime_checker.py · 梵天P1 · 持仓体制匹配器 v1.0
@@ -24,7 +25,7 @@ BASE_DIR   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATE_FILE = os.path.join(BASE_DIR, 'data', 'position_regime_state.json')
 
 # ── 推送目标 ──────────────────────────────────────────────
-PUSH_TARGET  = '73295708:t:019f1797-6c60-7541-ad72-ec34ed14dfc4'
+PUSH_TARGET  = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_ID')
 PUSH_CHANNEL = 'jarvis'
 
 # ── API配置 ───────────────────────────────────────────────

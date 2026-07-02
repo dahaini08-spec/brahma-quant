@@ -26,7 +26,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 
 BASE    = Path(__file__).parent.parent
-JARVIS  = "73295708:thread:019f1797-6c60-7541-ad72-ec34ed14dfc4"
+JARVIS  = os.environ.get("JARVIS_TARGET", "YOUR_USER_ID:thread:YOUR_THREAD_ID")
 VERSION = "v1.0"
 
 sys.path.insert(0, str(BASE))

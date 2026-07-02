@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 notify_jarvis.py — 统一Jarvis推送入口
@@ -9,7 +10,7 @@ try:
     import sys as _s; _s.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
     from system_config import JARVIS_TARGET
 except Exception:
-    JARVIS_TARGET = '73295708:thread:019f1797-6c60-7541-ad72-ec34ed14dfc4'  # fallback
+    JARVIS_TARGET = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_ID')  # fallback
 
 def send(msg: str) -> bool:
     """通过openclaw message发送到Jarvis"""

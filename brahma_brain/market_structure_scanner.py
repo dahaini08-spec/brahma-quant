@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 market_structure_scanner.py — 四维市场结构扫描器
@@ -237,7 +238,7 @@ def format_report(r: dict) -> str:
 # 自推送：直接推送到 Jarvis，绕开AI渲染层
 # ════════════════════════════════════════════════════════════════
 
-JARVIS_TARGET  = '73295708:thread:019f1797-6c60-7541-ad72-ec34ed14dfc4'
+JARVIS_TARGET  = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_ID')
 JARVIS_CHANNEL = 'jarvis'
 
 

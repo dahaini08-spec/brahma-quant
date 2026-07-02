@@ -5,7 +5,7 @@ update_jarvis_thread.py — 智能适配主线程 SSOT
 
 用法：
   python3 scripts/update_jarvis_thread.py <thread_id>
-  python3 scripts/update_jarvis_thread.py 019f1797-6c60-7541-ad72-ec34ed14dfc4
+  python3 scripts/update_jarvis_thread.py YOUR_THREAD_ID
 
 苏摩每次切换对话线程后，AI 自动调用此脚本更新 system_config.py
 全系统所有推送路由立即生效，无需重启任何进程。

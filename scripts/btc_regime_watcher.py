@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 btc_regime_watcher.py · 梵天P1升级版 · BTC价格关键位穿越监控 v2.0
@@ -26,7 +27,7 @@ CHECKER    = os.path.join(BASE_DIR, 'scripts', 'position_regime_checker.py')
 
 FAPI = 'https://fapi.binance.com'
 
-PUSH_TARGET  = '73295708:t:019f1797-6c60-7541-ad72-ec34ed14dfc4'
+PUSH_TARGET  = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_ID')
 PUSH_CHANNEL = 'jarvis'
 
 # 心跳间隔：30分钟刷新 regime_state.json，防360误报"陈旧"

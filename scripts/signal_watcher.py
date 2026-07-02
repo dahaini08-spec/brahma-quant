@@ -70,7 +70,7 @@ try:
     from scripts.system_config import JARVIS_USER_ID
     _USER_ID = JARVIS_USER_ID
 except Exception:
-    _USER_ID = "73295708"  # fallback, see system_config
+    _USER_ID = os.environ.get("JARVIS_USER_ID", "YOUR_USER_ID")  # fallback, see system_config
 
 # 当前对话线程（主线程）
 _THREAD_ID = "019ed32f-c46d-72ab-9d5e-92e47b4bdcc5"  # fallback, see system_config

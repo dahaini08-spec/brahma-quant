@@ -321,7 +321,7 @@ if __name__ == '__main__':
         subprocess.run(
             ['openclaw', 'message', 'send',
              '--channel', 'jarvis',
-             '--to', '73295708:thread:019f1797-6c60-7541-ad72-ec34ed14dfc4',
+             '--to', 'YOUR_USER_ID:thread:YOUR_THREAD_ID',
              '--message', output],
             capture_output=True
         )

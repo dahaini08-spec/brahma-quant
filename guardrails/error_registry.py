@@ -74,7 +74,7 @@ def _jarvis(msg: str):
         subprocess.Popen([
             'openclaw', 'message', 'send',
             '--channel', 'jarvis',
-            '--to', '73295708',
+            '--to', os.environ.get('JARVIS_USER_ID', 'YOUR_USER_ID'),
             '--message', msg,
         ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception:

@@ -28,7 +28,7 @@ oi_surge_scanner.py · OI持仓量驱动拉升猎手 v1.0
 
 输出：
   data/oi_candidates.json   → brahma_core.py 读取加分
-  推送通道：73295708:t:019f1797-6c60-7541-ad72-ec34ed14dfc4
+  推送通道：YOUR_USER_ID:t:YOUR_THREAD_ID
 """
 
 import os, sys, json, time, requests
@@ -41,7 +41,7 @@ sys.path.insert(0, os.path.join(BASE_DIR, 'brahma_brain'))
 
 FAPI         = 'https://fapi.binance.com'
 OUT_FILE     = os.path.join(BASE_DIR, 'data', 'oi_candidates.json')
-PUSH_TARGET  = '73295708:t:019f1797-6c60-7541-ad72-ec34ed14dfc4'
+PUSH_TARGET  = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_ID')
 PUSH_CHANNEL = 'jarvis'
 
 # ── 扫描范围 ─────────────────────────────────────────────────────
