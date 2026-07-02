@@ -32,14 +32,14 @@
     "side": "SHORT",
     "qty": 0.11,
     "entry": 570.6,
-    "sl_price": 576.31,
+    "sl_price": 573.45,
     "tp_price": 544.57,
     "registered_at": "2026-06-25T05:18:51.947746+00:00",
     "source": "hunter_executor",
     "reason": "自主决策：极近TP1(543.85距544.57仅0.14%)，SL收至549锁定≥3.9%",
     "tsl_updated": "2026-07-01T10:50:21.524611+00:00",
-    "updated_at": 1782914594.6401315,
-    "note": "SL收紧至entry+1% by 设计院自主 2026-07-01"
+    "updated_at": 1782979051.4229937,
+    "note": "BEAR_RECOVERY体制，SL收紧至entry+0.5% 573.45"
   },
   "BTCUSDT": {
     "symbol": "BTCUSDT",

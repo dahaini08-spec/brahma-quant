@@ -61,10 +61,11 @@ DAILY_RUNS = {
     'brahma-scan-guard':    2,
     'rsi-structure-watcher': 288,  # 每5m
     'ws-guardian-keepalive': 96,
-    'pump-hunter':          48,
+    'pump-hunter':          48,    # 每30m = 48次/天（已优化）
+    'regime-switch-monitor': 48,   # 新增 每30m
     'oi-surge-scanner':     6,
     'signal-watcher-6h':    4,
-    'btc-regime-watcher':   288,
+    'btc-regime-watcher':   288,   # 零成本守望，0 tokens
     'brahma-360-health':    12,
     'auto-executor-1h':     12,
     'live-signal-settle-2h': 12,
