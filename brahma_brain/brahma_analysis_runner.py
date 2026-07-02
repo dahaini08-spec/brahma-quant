@@ -103,12 +103,24 @@ try:
 except Exception:
     _MSS_OK = False
 
-# llm_council_bridge: score≥140触发LLM二次审查（shadow模式）
+# llm_council_bridge: score≥130触发LLM二次审查（shadow模式）
 try:
     from llm_council_bridge import review as _llm_review
     _LLM_COUNCIL_OK = True
 except Exception:
     _LLM_COUNCIL_OK = False
+
+# Kronos依赖自动检查（重启后自愈）────────────────────────────
+try:
+    import torch as _torch  # noqa
+except ImportError:
+    import subprocess as _sp, sys as _sys
+    _pip = [_sys.executable, '-m', 'pip', 'install', '--break-system-packages', '-q',
+            '--index-url', 'https://download.pytorch.org/whl/cpu', 'torch']
+    _sp.run(_pip, capture_output=True)
+    _pip2 = [_sys.executable, '-m', 'pip', 'install', '--break-system-packages', '-q',
+             'huggingface_hub', 'safetensors', 'einops', 'python-dotenv']
+    _sp.run(_pip2, capture_output=True)
 # ── 系统配置（路由到正确线程）────────────────────────────────
 try:
     sys.path.insert(0, os.path.join(BASE_DIR, '..', 'scripts'))
