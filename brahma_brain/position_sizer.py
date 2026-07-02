@@ -1,160 +1,175 @@
 #!/usr/bin/env python3
 """
+position_sizer.py — 梵天仓位计算引擎
+Brahma-Quant Open Source v3.0 | 设计院封印 2026-07-02
 
-# ── STATUS: AUXILIARY ──────────────────────────────────────────
-# 仓位计算器，执行层
-# LAST_REVIEW: 2026-07-01 | 属于辅助计算层，修改前确认调用链
-# ─────────────────────────────────────────────────────────────
-position_sizer.py — 梵天仓位定量器 v1.0
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-设计院 2026-05-30 | 第1周落地
+⚠️  PRO 版说明
+════════════════════════════════════════════════
+本文件为框架骨架（Open Core 版本）。
 
-原则：仓位大小必须从真实结算数据推导，不得拍脑袋
-真相基线（2026-05-30 统计）：
-  总样本: 83条真实结算
-  整体WR: 51.8%  平均RR: 3.23  全Kelly: 36.9%  半Kelly: 18.4%
+核心参数（kelly分率、WR矩阵、体制乘数、v4.2铁证出场参数）
+属于 Brahma-Quant Pro 私有配置，不在开源版中提供。
 
-币种置信等级（基于真实结算，需>=30条才升级）：
-  BTC 120~159分: WR=92% n=25 → PROVEN（接近门槛，维持现有5%）
-  SOL 120~159分: WR=80% n=5  → EXPLORING（样本不足，限1%）
-  LTC 160+分:    WR=0%  n=13 → BANNED（做空假设未验证，暂停）
-  SOL 160+分:    WR=0%  n=9  → BANNED
-  ETH 160+分:    WR=0%  n=6  → BANNED
+Pro 版获取方式：参见 CONTRIBUTING.md
+════════════════════════════════════════════════
+
+框架说明：
+  - get_position_pct(): 根据信号质量 + 体制 + NAV 计算仓位百分比
+  - kelly_position():   Kelly 公式仓位（需传入 WR 和 RR）
+  - JULY_HALF_POSITION: 7月减半策略开关
+
+接口完全兼容 Pro 版，替换 Pro 配置文件后即可激活完整功能。
 """
-from __future__ import annotations
-import json, os, time
-from pathlib import Path
+import os
+import logging
+from typing import Optional, Dict, Any
 
-BASE = Path(__file__).parent.parent
+logger = logging.getLogger(__name__)
 
-# ── 置信等级 ─────────────────────────────────────────────
-#  PROVEN    >= 30条真实结算 + WR >= 55%  → 半Kelly，最高10%
-#  VALIDATED >= 10条真实结算 + WR >= 50%  → 标准仓，5%
-#  EXPLORING <  10条或样本不足            → 探索仓，1~2%
-#  BANNED    WR < 35% 且 n >= 6           → 暂停，0%（待验证）
+# ── 仓位上限（公开配置） ─────────────────────────────────────────
+MAX_POS_PCT_NAV = float(os.environ.get('MAX_POS_PCT_NAV', '10.0'))  # PIXEL教训：单笔上限
+MIN_SCORE_THRESHOLD = float(os.environ.get('MIN_SCORE_THRESHOLD', '120.0'))
 
-CONFIDENCE_TABLE = {
-    # (symbol, score_range, direction): (level, max_pct)
-    ('BTCUSDT',  '120~159', 'ANY'): ('VALIDATED',  5.0),   # n=25 WR=92%
-    ('BTCUSDT',  '160+',    'ANY'): ('EXPLORING',  3.0),   # 高分段待验证
-    ('SOLUSDT',  '120~159', 'ANY'): ('EXPLORING',  2.0),   # n=5 样本不足
-    ('BNBUSDT',  '120~159', 'ANY'): ('EXPLORING',  2.0),   # n=3 样本不足
-    ('DOGEUSDT', '160+',    'ANY'): ('EXPLORING',  2.0),   # n=17 WR=59%
-    # 已知失效组合 → 暂停
-    ('LTCUSDT',  '160+',  'SHORT'): ('EXPLORING',  0.5),   # [v24.3] WR=0% n=13污染数据 → 极小仓探索
-    ('SOLUSDT',  '160+',  'SHORT'): ('EXPLORING',  0.5),   # [v24.3] WR=0% n=9污染数据 → 极小仓探索
-    ('ETHUSDT',  '160+',  'SHORT'): ('EXPLORING',  0.5),   # [v24.3] WR=0% n=6污染数据 → 极小仓探索
+# ── Pro 配置占位符 ───────────────────────────────────────────────
+# 以下参数在 Pro 版中由训练好的权重矩阵填充
+# 开源版返回基于 Kelly 公式的理论值
+
+# 7月减半策略（Pro版可覆盖）
+JULY_HALF_POSITION = os.environ.get('JULY_HALF_POSITION', 'false').lower() == 'true'
+
+# 体制乘数（Pro版: 从训练矩阵加载；开源版: 均等乘数）
+_REGIME_MULTIPLIERS = {
+    # Pro版: BEAR_TREND=0.10x(多) / 1.6x(空), BULL_TREND=1.6x(多) / 0.15x(空) 等
+    # 开源版占位（替换为 Pro 配置后激活）
+    'BEAR_TREND':    {'LONG': 0.10, 'SHORT': 1.0},   # TODO: Pro值
+    'BULL_TREND':    {'LONG': 1.0,  'SHORT': 0.15},  # TODO: Pro值
+    'CHOP_MID':      {'LONG': 0.50, 'SHORT': 0.88},  # TODO: Pro值
+    'BEAR_EARLY':    {'LONG': 0.35, 'SHORT': 1.2},   # TODO: Pro值
+    'BEAR_RECOVERY': {'LONG': 1.2,  'SHORT': 0.30},  # TODO: Pro值
 }
 
-# ── v4.2 改进④ 7月减半仓策略 2026-07-01 苏摩111批准 ──────────────────────────
-# score 160~169 区间在7月1~15日临时从EXPLORING(2%/3%)降至1%
-# score ≥170 维持正常执行
-# 有效期: 2026-07-01 ~ 2026-07-15
-JULY_HALF_POSITION = True   # 到2026-07-15自动失效（由get_position_pct内部检查）
-JULY_HALF_SCORE_RANGE = (160, 169)  # score区间
-JULY_HALF_NAV = 1.0  # 降至1%NAV
-
-_JULY_HALF_TABLE_SHADOW = {}  # shadow占位，待填充
-
-# 默认规则（未明确映射的组合）
-DEFAULT_BY_SCORE = {
-    '160+':   ('EXPLORING', 2.0),
-    '140~159':('EXPLORING', 3.0),
-    '120~139':('EXPLORING', 2.0),
-    '<120':   ('EXPLORING', 0.3),   # [v24.3] score<120不硬封，超保守探索0.3%（grade<70已被BridgeGate过滤）
+# 出场参数（Pro版: v4.2铁证参数；开源版: 保守默认）
+_EXIT_PARAMS_PRO = {
+    # Pro版封印值 (SL/RR/EV 均为实盘统计结果，不公开)
+    # 开源版使用保守默认值
+    'BEAR_TREND':    {'sl_pct': 2.0, 'rr': 1.0},  # Pro: EV=+0.578%/笔
+    'CHOP_MID':      {'sl_pct': 2.5, 'rr': 1.0},  # Pro: EV=+0.811%/笔
+    'BULL_TREND':    {'sl_pct': 2.0, 'rr': 1.2},
+    'BEAR_EARLY':    {'sl_pct': 2.2, 'rr': 1.0},
+    'BEAR_RECOVERY': {'sl_pct': 2.0, 'rr': 1.1},
 }
 
 
-def _score_range(score: float) -> str:
-    if score >= 175: return '175+'   # 合并入160+
-    if score >= 160: return '160+'
-    if score >= 140: return '140~159'
-    if score >= 120: return '120~139'
-    return '<120'
-
-
-def get_position_pct(symbol: str, score: float, direction: str,
-                     nav: float = 0.0) -> dict:
+def kelly_position(wr: float, rr: float, half: bool = True,
+                   max_pct: float = 25.0) -> float:
     """
-    返回：{
-      'pct': 建议仓位百分比（0~10）,
-      'usdt': 对应金额（如传入nav）,
-      'level': 置信等级,
-      'reason': 说明,
-      'allowed': True/False
-    }
+    Kelly 公式仓位计算
+
+    Args:
+        wr:      胜率 (0~1)
+        rr:      盈亏比
+        half:    True=使用 1/2 Kelly（推荐，降低方差）
+        max_pct: 最大仓位上限（%）
+
+    Returns:
+        仓位百分比（0~max_pct）
+
+    Kelly 公式：f* = WR - (1-WR)/RR
     """
-    import datetime as _dt_ps
-    _now_ps = _dt_ps.datetime.utcnow()
-
-    sr = _score_range(score)
-    dir_upper = direction.upper() if direction else 'ANY'
-
-    # 精确匹配
-    key_exact  = (symbol, sr, dir_upper)
-    key_any    = (symbol, sr, 'ANY')
-    key_175    = (symbol, '160+', dir_upper) if sr == '175+' else None
-
-    level, max_pct = None, None
-    for k in [key_exact, key_any, key_175]:
-        if k and k in CONFIDENCE_TABLE:
-            level, max_pct = CONFIDENCE_TABLE[k]
-            break
-
-    if level is None:
-        bkt = '160+' if sr in ('160+','175+') else sr
-        level, max_pct = DEFAULT_BY_SCORE.get(bkt, ('EXPLORING', 1.0))
-
-    # ── v4.2 改进④ 7月减半仓策略 ─────────────────────────────────────────
-    # 有效期 2026-07-01 ~ 2026-07-15，score 160~169 → 强制1%NAV
-    _july_half_active = (
-        JULY_HALF_POSITION
-        and _now_ps.month == 7
-        and 1 <= _now_ps.day <= 15
-        and JULY_HALF_SCORE_RANGE[0] <= score <= JULY_HALF_SCORE_RANGE[1]
-    )
-    if _july_half_active and max_pct > JULY_HALF_NAV:
-        max_pct = JULY_HALF_NAV
-        level = f'{level}+7月减半'
-    # ──────────────────────────────────────────────────────────────────────
-
-    allowed = (max_pct > 0)
-    usdt = nav * max_pct / 100 if nav > 0 else 0
-
-    return {
-        'pct':     max_pct,
-        'usdt':    round(usdt, 2),
-        'level':   level,
-        'reason':  f'{symbol} score={score:.0f}({sr}) dir={direction} → {level}'
-                   + (' [7月上旬减半仓]' if _july_half_active else ''),
-        'allowed': allowed,
-    }
+    try:
+        f = wr - (1 - wr) / max(rr, 1e-6)
+        f = max(f, 0.0)
+        if half:
+            f *= 0.5
+        # 转换为百分比并应用上限
+        result = min(f * 100, max_pct)
+        return round(result, 2)
+    except Exception as e:
+        logger.warning(f"[PositionSizer] kelly_position 计算异常: {e}")
+        return 0.0
 
 
-def kelly_position(wr: float, rr: float, half: bool = True) -> float:
-    """Kelly公式计算理论最优仓位"""
-    if rr <= 0: return 0
-    k = wr - (1 - wr) / rr
-    return max(0, k / 2 if half else k) * 100
+def get_position_pct(symbol: str,
+                     score: float,
+                     direction: str,
+                     nav: float = 10000.0,
+                     regime: Optional[str] = None,
+                     **kwargs) -> Dict[str, Any]:
+    """
+    计算仓位百分比
+
+    Args:
+        symbol:    交易对 (e.g. 'BTCUSDT')
+        score:     梵天信号总分 (0~200+)
+        direction: 'LONG' 或 'SHORT'
+        nav:       账户净值 USDT
+        regime:    当前体制 (可选，影响乘数)
+
+    Returns:
+        {
+          'pct':   仓位百分比 (0~10.0),
+          'usdt':  仓位 USDT,
+          'level': 评级 ('EXPLORING'/'STANDARD'/'AGGRESSIVE'),
+          'regime_multiplier': 体制乘数,
+        }
+
+    Pro 版：从训练好的 WR 矩阵 + v4.2 铁证参数计算精确仓位
+    开源版：基于 score 线性映射 + Kelly 公式的理论值
+    """
+    try:
+        if score < MIN_SCORE_THRESHOLD:
+            return {'pct': 0.0, 'usdt': 0.0, 'level': 'BLOCKED',
+                    'reason': f'score {score} < threshold {MIN_SCORE_THRESHOLD}'}
+
+        # 评级映射（开源版线性映射）
+        if score >= 175:
+            base_pct = 3.0
+            level = 'AGGRESSIVE'
+        elif score >= 160:
+            base_pct = 2.0
+            level = 'STANDARD'
+        elif score >= 145:
+            base_pct = 1.5
+            level = 'EXPLORING'
+        elif score >= 130:
+            base_pct = 1.0
+            level = 'EXPLORING'
+        else:
+            base_pct = 0.5
+            level = 'MINIMAL'
+
+        # 体制乘数
+        regime_mult = 1.0
+        if regime and regime in _REGIME_MULTIPLIERS:
+            dir_key = 'LONG' if direction == 'LONG' else 'SHORT'
+            regime_mult = _REGIME_MULTIPLIERS[regime].get(dir_key, 1.0)
+
+        # 7月减半
+        july_mult = 0.5 if JULY_HALF_POSITION and 155 <= score <= 169 else 1.0
+
+        pct = round(min(base_pct * regime_mult * july_mult, MAX_POS_PCT_NAV), 2)
+        usdt = round(nav * pct / 100, 2)
+
+        return {
+            'pct': pct,
+            'usdt': usdt,
+            'level': level,
+            'regime_multiplier': regime_mult,
+            'july_mult': july_mult,
+            'base_pct': base_pct,
+            '_pro_note': 'Pro版使用v4.2铁证参数，精度更高',
+        }
+
+    except Exception as e:
+        logger.error(f"[PositionSizer] get_position_pct 异常: {e}", exc_info=True)
+        return {'pct': 0.0, 'usdt': 0.0, 'level': 'ERROR', 'error': str(e)}
 
 
-if __name__ == '__main__':
-    # 自测
-    print("=== 仓位定量器自测 ===")
-    cases = [
-        ('BTCUSDT',  145, 'LONG'),
-        ('BTCUSDT',  162, 'SHORT'),
-        ('LTCUSDT',  168, 'SHORT'),
-        ('SOLUSDT',  165, 'SHORT'),
-        ('ETHUSDT',  170, 'SHORT'),
-        ('SOLUSDT',  135, 'LONG'),
-        ('DOGEUSDT', 172, 'SHORT'),
-    ]
-    nav = 127.37
-    for sym, sc, d in cases:
-        r = get_position_pct(sym, sc, d, nav)
-        flag = '✅' if r['allowed'] else '🚫'
-        print(f"  {flag} {sym:12} sc={sc} {d:6} → {r['level']:12} {r['pct']:.0f}% (${r['usdt']:.2f})")
+def get_exit_params(regime: str) -> Dict[str, float]:
+    """
+    获取出场参数 (SL/TP)
 
-    print(f"\n  Kelly基准(WR=51.8% RR=3.23):")
-    print(f"  全Kelly={kelly_position(0.518,3.23,False):.1f}%  半Kelly={kelly_position(0.518,3.23):.1f}%")
+    Pro 版：返回实盘统计的 v4.2 铁证参数
+    开源版：返回保守默认值
+    """
+    return _EXIT_PARAMS_PRO.get(regime, {'sl_pct': 2.0, 'rr': 1.0})

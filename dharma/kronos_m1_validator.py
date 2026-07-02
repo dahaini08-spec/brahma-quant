@@ -1,3 +1,7 @@
+# ⚠️ Brahma-Quant Open Source v3.0
+# PRO私有内容: Kronos M1升级阈值（n_threshold=100，WR提升2pp）
+# 开源版：框架公开，参数需自行调参或获取Pro版
+
 """
 kronos_m1_validator.py — 达摩院 Kronos M1 验证器 v1.0
 ══════════════════════════════════════════════════════
