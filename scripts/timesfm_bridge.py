@@ -47,7 +47,23 @@ def get_klines(sym, interval='1h', limit=200):
     try:
         r = requests.get('https://fapi.binance.com/fapi/v1/klines',
             params={'symbol': sym, 'interval': interval, 'limit': limit}, timeout=6)
-        return r.json() if r.status_code == 200 else []
+        klines = r.json() if r.status_code == 200 else []
+        if not klines:
+            return klines
+        # [P0修复 2026-07-02] 用实时ticker价格覆盖最后一根未收盘K线的收盘价
+        # 避免预测基准价格滞后（1H K线最后一根可能是59分钟前的价格）
+        try:
+            tr = requests.get(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}', timeout=4)
+            if tr.status_code == 200:
+                live_px = tr.json()['price']
+                last = list(klines[-1])
+                last[4] = live_px   # 覆盖收盘价 index=4
+                last[2] = str(max(float(last[2]), float(live_px)))  # 更新最高价
+                last[3] = str(min(float(last[3]), float(live_px)))  # 更新最低价
+                klines[-1] = last
+        except:
+            pass  # 实时价格拉取失败时使用原始K线数据
+        return klines
     except:
         return []
 
