@@ -249,7 +249,12 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
     if _TRACE_OK:
         try:
             _f2 = extract_standard_fields(result)
-            if _f2.get('valid', False):
+            _sc2 = float(_f2.get('score', 0) or 0)
+            _valid2 = bool(_f2.get('valid', False))
+            # 将评分注入result供 signal_trace字段映射使用
+            result['_score_for_trace'] = _sc2
+            result['_direction_for_trace'] = _f2.get('direction', '?')
+            if _valid2:
                 trace_generated(result)
             else:
                 trace_skipped(result)
