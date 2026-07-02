@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 """
+# ╔══ INTERFACE CONTRACT ════════════════════════════════════════════╗
+# 入口: get_macro_score(symbol) -> dict
+# 输出: {score, fear_greed, btc_dominance, source, detail}
+# 依赖: 公开API (alternative.me / coinglass)
+# 设计院封印 2026-07-02
+# ╚═══════════════════════════════════════════════════════════════════╝
 ╔══════════════════════════════════════════════════════════════════╗
 ║  梵天大脑 · macro_engine.py  · P2d 宏观量化引擎                  ║
 ║  数据源：免费公开 API（无需KEY）                                  ║

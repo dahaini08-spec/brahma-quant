@@ -2,6 +2,13 @@
 cross_market_engine.py · 跨市场相关性引擎
 brahma_brain · P2
 
+# ╔══ INTERFACE CONTRACT ═══════════════════════════════════════╗
+# 入口: get_cross_market_signals(symbol) -> dict
+# 输出: {btc_corr, dxy_corr, spx_proxy, vix_proxy, score_adj, source}
+# 依赖: brahma_bus (TTL缓存), requests
+# 设计院封印 2026-07-02
+# ╚═══════════════════════════════════════╝
+
 覆盖：BTC / ETH / DXY / SPY(代理) / VIX(代理)
 输出：
   corr_btc_eth   : BTC-ETH相关系数（高→山寨跟随强）
