@@ -277,6 +277,9 @@ def check_orphan_modules():
             # F类：结算闭环链路（live_signal_settler → ev_feedback → dharma_online_learner）
             'ev_feedback',            # 结算回调，被live_signal_settler动态import，不被brahma_core静态引用
             'dharma_online_learner',  # 在线学习，被ev_feedback每10笔触发，设计院方案B/C级落地
+            # [设计院 v19 2026-07-02] ─────────────────────────────────────────────────────────
+            'signal_trace',           # 接入runner._TRACE_OK 信号轨迹审计日志，非静态引用模式
+            # ─────────────────────────────────────────────────────────────────────────────────
         }
     
     orphans = []

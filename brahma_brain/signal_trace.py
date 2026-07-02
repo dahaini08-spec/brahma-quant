@@ -54,7 +54,7 @@ def _parse_tag(tag: str) -> dict:
                 'level':     parts[1],
                 'source':    parts[2],
                 'symbol':    parts[3],
-                'score':     int(parts[4]),
+                'score':     int(float(parts[4])),  # fix: '72.0' → 72
                 'direction': parts[5],
                 'regime':    parts[6],
                 'ts_tag':    parts[7],
@@ -79,10 +79,11 @@ def log_signal_trace(
         timing = result.get('_timing', {})
         tag_d  = _parse_tag(tag)
 
-        symbol    = tag_d.get('symbol') or fields.get('symbol', '?')
-        score     = tag_d.get('score')  or fields.get('score', 0)
-        direction = tag_d.get('direction') or fields.get('direction', '?')
-        regime    = tag_d.get('regime')    or fields.get('regime', '?')
+        # 优先使用runner注入的字段（更准确）
+        symbol    = result.get('_direction_for_trace') and tag_d.get('symbol') or tag_d.get('symbol') or fields.get('symbol', '?')
+        score     = result.get('_score_for_trace') or tag_d.get('score') or fields.get('score', 0)
+        direction = result.get('_direction_for_trace') or tag_d.get('direction') or fields.get('direction', '?')
+        regime    = tag_d.get('regime') or fields.get('regime', '?')
         sha8      = tag_d.get('sha8', _sha8(f'{symbol}{score}{direction}'))
 
         record = {
