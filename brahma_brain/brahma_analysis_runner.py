@@ -130,6 +130,22 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
             s = s + 'USDT'
         norm_syms.append(s)
 
+    # ── [设计院 v17] Kronos 预热（主线程加载，子线程复用单例）──────────
+    try:
+        import sys as _sys_kw, os as _os_kw
+        _os_kw.environ.setdefault('TOKENIZERS_PARALLELISM', 'false')
+        _kw_root = _os_kw.path.dirname(_os_kw.path.dirname(_os_kw.path.abspath(__file__)))
+        for _p in [_os_kw.path.join(_kw_root,'brahma_brain'),
+                   _os_kw.path.join(_kw_root,'external','Kronos')]:
+            if _p not in _sys_kw.path:
+                _sys_kw.path.insert(0, _p)
+        from kronos_engine import _load_model as _kw_load, _model_loaded as _kw_ready
+        if not _kw_ready:
+            _kw_load()   # 主线程预热，ThreadPoolExecutor子线程复用同一单例
+    except Exception:
+        pass  # Kronos不可用时不阻塞分析
+    # ── [END Kronos预热] ───────────────────────────────────────────────────
+
     raw_results = _batch_analyze(norm_syms)
     ts = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
 
