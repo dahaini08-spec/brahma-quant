@@ -16,7 +16,11 @@ tests/test_brahma_params.py
 import sys, os, unittest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from brahma_brain.brahma_brain import calc_trade_params, rebase_params
+from brahma_brain.brahma_brain import calc_trade_params
+try:
+    from brahma_brain.brahma_core_entry import rebase_params
+except ImportError:
+    from brahma_brain.brahma_brain import rebase_params
 
 VERSION = 'v1.0'
 
@@ -282,7 +286,7 @@ if __name__ == '__main__':
 # ══════════════════════════════════════════════════════
 # ErrorRegistry 回归适配器
 # ══════════════════════════════════════════════════════
-def test_rr_not_from_current_price(test_input: str) -> bool:
+def test_rr_not_from_current_price() -> bool:
     """ERR-005 回归：验证R:R不从当前价算（返回True=通过）"""
     import sys, os
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -307,7 +311,7 @@ def test_rr_not_from_current_price(test_input: str) -> bool:
 # ══════════════════════════════════════════════════════
 # ERR-008 回归：极端低价SL方向验证
 # ══════════════════════════════════════════════════════
-def test_extreme_low_price_sl_direction(test_input: str) -> bool:
+def test_extreme_low_price_sl_direction() -> bool:
     """ERR-008 回归：price=0.0001 SL方向必须正确（True=通过）"""
     import sys, os
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -333,5 +337,5 @@ def test_extreme_low_price_sl_direction(test_input: str) -> bool:
 class TestExtremeLowPrice(unittest.TestCase):
     def test_extreme_low_price(self):
         """ERR-008: 极端低价SL方向不得与入场方向相反"""
-        result = test_extreme_low_price_sl_direction('')
+        result = test_extreme_low_price_sl_direction()
         self.assertTrue(result, "极端低价时SL方向错误，精度截断Bug未修复")
