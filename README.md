@@ -1,305 +1,260 @@
-# 🏛️ Brahma-Quant — Crypto-Native Multi-Agent Quantitative Trading System
+# 🏛️ Brahma-Quant
 
-<div align="center">
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-35%2F35%20passing-brightgreen.svg)](#testing)
-[![CI](https://img.shields.io/badge/brahma--ci-96%2F100-brightgreen.svg)](#system-health)
-[![Open Core](https://img.shields.io/badge/model-Open%20Core-purple.svg)](#pro-version)
-
-**The only crypto quantitative system built on three pillars:**
-**Multi-Agent Debate · Statistical Iron-Proof Validation · Crypto-Native Pump Hunter**
-
-[Architecture](#architecture) · [Quick Start](#quick-start) · [Dharma Validation](#dharma-validation) · [Live Performance](#live-performance) · [Pro Version](#pro-version)
-
-</div>
+**Production-grade quantitative trading system for crypto perpetual futures.**  
+Built on a 35-dimensional scoring engine, 10-regime state machine, and iron-proof validation pipeline.
 
 ---
 
-## 🎯 What Makes Brahma Different
+## Why Brahma-Quant?
+
+Most open-source quant systems suffer from the same problems: overfitting, no real OOS validation, and zero circuit protection in live trading. Brahma-Quant was built to solve all three.
 
 | Feature | Brahma-Quant | Generic Multi-Agent | Traditional Quant |
-|---------|-------------|--------------------|--------------------|
-| 35-Dimensional Scoring | ✅ | ❌ | ⚠️ Partial |
-| 5-Regime State Machine | ✅ | ❌ | ❌ |
+|---|:---:|:---:|:---:|
+| 35-Dimensional Scoring Engine | ✅ | ❌ | ⚠️ Partial |
+| 10-Regime State Machine | ✅ | ❌ | ❌ |
 | 6-Agent Council Debate | ✅ | ✅ | ❌ |
-| Dharma Iron-Proof Validation | ✅ | ❌ | ⚠️ Basic |
-| Pump Hunter (meme surge) | ✅ | ❌ | ❌ |
-| Full-Chain Circuit Breaker | ✅ | ❌ | ⚠️ Partial |
-| Monte Carlo 3000+ runs | ✅ | ❌ | ⚠️ Partial |
-| Zero-Cost Regime Watcher | ✅ | ❌ | ❌ |
+| Dharma Iron-Proof Validation (WF+CPCV+DSR) | ✅ | ❌ | ⚠️ Basic |
+| Pump Hunter — Meme Surge Detector | ✅ | ❌ | ❌ |
+| Full-Chain Circuit Breaker (9 layers) | ✅ | ❌ | ⚠️ Partial |
+| Monte Carlo 3,000+ Simulation Runs | ✅ | ❌ | ⚠️ Partial |
+| Zero-Cost Regime Watcher (event-driven) | ✅ | ❌ | ❌ |
+| Kronos Foundation Model (shadow mode) | ✅ | ❌ | ❌ |
+| Live Signal Auto-Settlement | ✅ | ❌ | ❌ |
 
 ---
 
-## 🏗️ Architecture (Brahma-360 v3.0)
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│  Layer 0  DataShield        感知数据防护 + 数据契约验证            │
-├─────────────────────────────────────────────────────────────────┤
-│  Layer 1  BrainGuard 🧠     35维评分 + 异常免疫 + 幻觉检测        │
-│           brahma_core.py · timing_filter · position_sizer       │
-├─────────────────────────────────────────────────────────────────┤
-│  Layer 2  Dharma-360 🔬     Monte Carlo + Walk-Forward + PBO    │
-│           dharma_360_validator · realistic_cost_model           │
-├─────────────────────────────────────────────────────────────────┤
-│  Layer 3  CouncilGuard 🏛️   6-Agent辩论 + 监督者编排 + 轨迹记录  │
-│           llm_council_bridge · brahma_orchestrator              │
-├─────────────────────────────────────────────────────────────────┤
-│  Layer 4  CircuitBreaker ⚡  全链路9层熔断 + 自动回滚             │
-│           circuit_breaker.py (CLOSED/OPEN/HALF 三状态机)        │
-├─────────────────────────────────────────────────────────────────┤
-│  Layer 5  Observability 📊  AI行为看板 + Token追踪 + 信号质量    │
-│           ai_behavior_dashboard · brahma_ci_v2 (96/100)         │
-├─────────────────────────────────────────────────────────────────┤
-│  Layer 6  AutoGuardian 🛡️   蓝绿部署 + 单元测试(35/35) + CI      │
-│           blue_green_deploy · test_core_brahma_units            │
-└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                    Signal Pipeline                       │
+│                                                          │
+│  RSI Structure Watcher (5min, 0 tokens)                 │
+│    ↓ event-triggered only                               │
+│  brahma_analysis_runner.run_analysis()                  │
+│    ↓                                                    │
+│  brahma_core.analyze()  ←  35-dim confluence scoring   │
+│    ↓                                                    │
+│  DharmaBridge  →  live_signal_log.jsonl                 │
+│    ↓                                                    │
+│  Signal Settler  →  wr_matrix_realtime                  │
+└─────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────┐
+│                   Scoring Layers (35D)                   │
+│                                                          │
+│  s1  Market Structure (CHoCH/BOS/OB)                    │
+│  s2  Order Block freshness + direction                   │
+│  s3  FVG fill probability                               │
+│  s4  Fibonacci confluence                               │
+│  s5  Multi-timeframe alignment (15m/1h/4h/1d)          │
+│  s6  RSI divergence + momentum                          │
+│  s7  Bollinger Band compression trigger                  │
+│  s8  Volume ratio anomaly                               │
+│  s9  OI surge detector                                  │
+│  s10 Long/Short ratio signal                            │
+│  s11 Funding rate pressure                              │
+│  s12 Liquidation cluster proximity                      │
+│  s13 GEX Gamma exposure (options)                       │
+│  s14 Macro calendar filter                              │
+│  s15 BTC.D dominance signal                             │
+│  s16 Cross-exchange funding arbitrage                   │
+│  s17 Deribit P/C OI ratio                              │
+│  s18 DXY + NQ futures macro                            │
+│  s19 Causal regime verifier                             │
+│  s20 Tardis liquidation wall                            │
+│  s21 Smart money large-holder divergence               │
+│  s22 GEX zero-flip magnet                               │
+│  s23 Kronos Foundation Model (p_up forecast)            │
+│  s24 Seasonal calendar (July layering)                  │
+│  s25 BTC/ETH correlation risk filter                    │
+│  ... (35 total, regime-weighted)                        │
+└─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🚀 Quick Start
+## 10-Regime State Machine
+
+The system classifies market conditions into 10 regimes and applies **regime-specific multipliers** to every signal dimension:
+
+| Regime | Direction Bias | SHORT Mult | LONG Mult |
+|--------|---------------|-----------|----------|
+| `BEAR_TREND` | SHORT primary | 1.6x | 0.10x |
+| `BEAR_EARLY` | SHORT primary | 1.2x | 0.35x |
+| `BEAR_RECOVERY` | LONG only | 0.30x | 1.2x |
+| `BEAR_CRASH` | SHORT extreme | 2.0x | 0.05x |
+| `BULL_TREND` | LONG primary | 0.15x | 1.6x |
+| `BULL_EARLY` | LONG primary | 0.35x | 1.2x |
+| `BULL_CORRECTION` | SHORT/BOTH | 1.1x | 0.50x |
+| `CHOP_MID` | No signal | 0.88x | 0.50x |
+| `CHOP_HIGH` | No signal | 0.70x | 0.40x |
+| `CHOP_LOW` | No signal | 0.80x | 0.45x |
+
+**Regime detection** runs every 5 minutes via `scripts/regime_switch_monitor.py` (pure script, zero AI tokens, auto-restarts on crash).
+
+---
+
+## 9-Layer Circuit Breaker
+
+Every signal passes through a sequential kill-chain before execution:
+
+```
+Layer 1  │ Globally Blocked (死穴)     │ BEAR_TREND_LONG / BULL_TREND_SHORT → kill
+Layer 2  │ Structure Gate              │ SMC grade < 80 → WR=47% death zone → kill
+Layer 3  │ Gap Gate                    │ price gap > 6% → stale signal → kill
+Layer 4  │ Causal Verifier             │ regime noise penalty (-12 pts)
+Layer 5  │ Seasonal Filter             │ July early -15 pts / mid -5 pts
+Layer 6  │ Timing Filter               │ RSI_1H + price vs EMA20 + Kronos p_up
+Layer 7  │ Correlation Risk            │ BTC+ETH simultaneous = 1.85x exposure → dedup
+Layer 8  │ GEX Expiry                  │ last Friday ±3 days → GEX weight ×1.5
+Layer 9  │ Kronos Extreme              │ p_up > 0.90 + SHORT → penalty halved
+```
+
+---
+
+## Iron-Proof Validation (Dharma Pipeline)
+
+Walk-Forward + Combinatorial Purged CV + Deflated Sharpe — three independent anti-overfit gates:
+
+```
+Walk-Forward (WF)
+  └─ 8-year historical data, anchored expanding window
+  └─ OOS WR: 82.7% (n=121, Wuqu Paper track)
+
+CPCV (Combinatorial Purged Cross-Validation)
+  └─ 15 combinatorial paths, purged + embargoed
+  └─ Overfit rate: 33.3% (below 50% threshold)
+  └─ DSR: 22.64 (> 1.0 threshold = statistically significant)
+
+Monte Carlo
+  └─ 3,000+ simulation runs on OOS equity curves
+  └─ Dharma OOS sample: n=2,482 trades
+```
+
+---
+
+## Pump Hunter
+
+Detects meme token surge setups **before** the pump:
+
+- TIGHT compression < 15%: **97.5% win rate** (n=1,600, 2-year full sample)
+- RSI < 30 + TIGHT: 93% WR
+- 13H consecutive volume contraction: 100% WR (n=19)
+- Scoring: TIGHT(+40) + RSI<30(+25) + Volume contraction(+20) + Trend(+10)
+- Alert tiers: ≥75 pts = 🚨 Warning | ≥85 pts = 💣 Level-3 Alert
+
+---
+
+## Zero-Cost Regime Watcher (v5.0)
+
+Three-tier token-efficient architecture:
+
+```
+Tier 1  rsi_structure_watcher.py   every 5min   0 tokens
+        7 trigger events: RSI cross, price breakout, BB expansion, volume spike, OI surge
+        Silent when: RSI 45~60 AND BB < 0.8%
+
+Tier 2  Event-triggered scan        on demand    ~6,000 tokens/run
+        brahma_scan_all BTC+ETH → 35D scoring → write if score ≥ 155
+
+Tier 3  brahma-scan-guard           every 12h    48,000 tokens/day fixed
+        Full market screener → catch slow-drift opportunities
+
+Budget: 48,000 tokens/day (choppy) | 48,000~84,000 (active) vs 96,000 old arch
+```
+
+---
+
+## Kronos Foundation Model
+
+Integrating [NeoQuasar/Kronos-mini](https://huggingface.co/NeoQuasar/Kronos-mini) (4.1M params, AAAI 2026, CPU-runnable):
+
+- **L1**: `get_s23_kronos()` — parallel shadow vs Kronos-Lite, A/B logging
+- **L2**: `get_volatility_forecast()` → dynamic SL injection
+- **L3**: `generate_synthetic_klines()` → regime-aware data augmentation
+- Current mode: **SHADOW** (n=80, agreement=80.0%)
+- Upgrade path: M1 activation when n≥100 AND Kronos WR ≥ Lite WR + 2pp
+
+---
+
+## Quickstart
 
 ```bash
-git clone https://github.com/dahaini08-spec/brahma-quant
+git clone https://github.com/dahaini08-spec/brahma-quant.git
 cd brahma-quant
 pip install -r requirements.txt
 
-# 1. 系统健康检查
-python3 brahma_brain/brahma_ci_v2.py
+# Run a single-symbol analysis
+python examples/quick_start.py --symbol BTCUSDT
 
-# 2. 运行 Dharma Monte Carlo 验证
-python3 dharma/dharma_360_validator.py --sym BTCUSDT --dir SHORT --runs 3000
+# Run batch analysis
+python -c "
+from brahma_brain.brahma_analysis_runner import run_batch, format_batch_report
+results = run_batch(['BTCUSDT', 'ETHUSDT'])
+print(format_batch_report(results))
+"
 
-# 3. 查看 AI 行为看板
-python3 scripts/ai_behavior_dashboard.py
+# Check system health
+python brahma_brain/brahma_health.py
 
-# 4. 运行单元测试 (35/35)
-python3 -m pytest tests/test_core_brahma_units.py -v
-
-# 5. 蓝绿部署状态
-python3 scripts/blue_green_deploy.py --status
+# Run test suite
+pytest tests/ -q --ignore=tests/test_e2e_signal_flow.py
 ```
 
 ---
 
-## 🧠 Core Modules
-
-### 35-Dimensional Scoring Engine (`brahma_brain/brahma_core.py`)
-```
-技术指标层 (RSI/BB/ATR/Volume)     → 多时间框架动量
-SMC结构层 (OB/FVG/BOS/CHoCH)       → Smart Money Concepts
-体制感知层 (5-regime multipliers)   → 顺势/逆势加权
-外部信号层 (FR/OI/跨所套利)         → 市场情绪
-Kronos时序层 (p_up概率)             → 深度学习时机预测
-因果验证层 (CausalVerifier)         → 噪音过滤 -12分惩罚
-```
-
-### 5-Regime State Machine
-```python
-BEAR_TREND    → 空为主 (SHORT multiplier: 1.6x)   # 死穴: LONG WR=45%
-BULL_TREND    → 多为主 (LONG multiplier: 1.6x)
-CHOP_MID      → 不发策略 (score≥110 → WATCH 0.5%NAV)
-BEAR_EARLY    → 空单初现
-BEAR_RECOVERY → 仅多单，严禁空单
-```
-
-### 6-Agent Council (`brahma_brain/llm_council_bridge.py`)
-```
-Quant Engineer   → 技术分析
-Researcher       → 统计验证
-Trader           → 执行时机
-Risk Director    → 风险评估
-Macro Analyst    → 宏观背景
-CEO/Soma         → 最终裁决 (苏摩111 最高批准权)
-```
-
----
-
-## 🔬 Dharma Validation (Iron-Proof Framework)
-
-Brahma-Quant 的核心差异化：**统计铁证驱动，拒绝过拟合**
-
-```bash
-# 完整 Monte Carlo 验证
-python3 dharma/dharma_360_validator.py --sym BTCUSDT --dir SHORT --runs 5000
-
-# 输出示例:
-# 全量 WR: 61.3% 🟢 良好(≥62%)
-# 置信区间: [58.1%, 64.5%] (95%CI)
-# OOS WR:  59.8% (样本外验证)
-# PBO:     0.18 → VALID (不过拟合)
-# DSR:     1.23 → VALID
-# 🎯 综合判定: ✅ 铁证级 — 真实信号，可上线
-```
-
-**Dharma 验证矩阵:**
-
-| 验证维度 | 方法 | 工具 |
-|---------|------|------|
-| 基础验证 | Bootstrap WR 置信区间 | `bootstrap_wr()` |
-| 过拟合检测 | Probability of Backtest Overfitting | `calc_pbo()` |
-| 统计显著性 | Deflated Sharpe Ratio | `deflated_sharpe()` |
-| 体制分层 | 5-regime 独立统计 | `validate_by_regime()` |
-| 真实成本 | 滑点+手续费+资金费率 | `realistic_cost_model` |
-| 数据增强 | 合成体制样本扩充 | `regime_aware_augmentor` |
-
----
-
-## 🎯 Pump Hunter (Crypto-Native)
-
-针对 meme/妖币的专项检测，基于**2年全量历史数据**验证：
+## Project Structure
 
 ```
-TIGHT 压缩 (<15%) 7日胜率: 97.5% (n=1600)
-RSI<30 + TIGHT:         93%
-连续缩量 13H+:           100% (n=19)
-OOS 验证 2026:           80.6% ✅
-```
+brahma_brain/          Core scoring engine (35D)
+  brahma_core.py         Main analysis engine
+  brahma_analysis_runner.py  Unified entry point (封印)
+  dharma_data_bridge.py  Signal write gate (v5.0 BB filter)
+  timing_filter.py       3-tier entry timing (READY/MONITOR/WAIT)
+  position_sizer.py      Kelly-based position sizing
+  kronos_bridge.py       Kronos FM integration (shadow)
+  brahma_health.py       8-point health check + self-heal
 
-评分维度：
-- `TIGHT(<15%)` = +40分
-- `RSI<30` = +25分
-- `缩量>12H` = +20分
-- `趋势略跌` = +10分
+dharma/                Validation & training
+  realistic_cost_model.py   Slippage + fee modeling
+  regime_aware_augmentor.py Synthetic data (regime-conditioned)
+  pump_hunter/              Meme surge detector
 
-≥75分 = 🚨预警 | ≥85分 = 💣三级预警
+scripts/               Production scripts
+  rsi_structure_watcher.py  Tier-1 zero-cost watcher
+  regime_switch_monitor.py  10-regime classifier (pure script)
+  live_signal_settler.py    Signal outcome settlement
 
----
+arch/                  Anti-overfit validation
+  validation/combinatorial_purged_cv.py
+  validation/deflated_sharpe.py
+  validation/sequential_bootstrap.py
+  simulation/monte_carlo_engine.py
 
-## ⚡ Circuit Breaker (9-Layer Full-Chain)
-
-```python
-from brahma_brain.circuit_breaker import BrahmaCircuitRegistry
-
-registry = BrahmaCircuitRegistry.get()
-
-# 通过熔断器安全调用
-result = registry.call_safe('confluence_score', run_analysis, symbol='BTCUSDT')
-
-# 查看状态
-registry.status_all()
-# 🟢 rsi_watcher      CLOSED  失败:0
-# 🟢 brahma_scan      CLOSED  失败:0
-# 🟢 auto_executor    CLOSED  失败:0 (threshold=1, recovery=600s)
+tests/                 119 passing / 0 failing
 ```
 
 ---
 
-## 🛡️ System Health (Brahma-CI v2)
+## Validation Results
 
-```bash
-python3 brahma_brain/brahma_ci_v2.py
-
-# 🔬 梵天360加强版 CI报告 | 07-02 09:40 UTC
-# 总分: 96/100 [HEALTHY] | ❌0 ⚠️2 ℹ️38
-# 覆盖: 11维探针 × 381文件 × 1786函数
-```
-
-**11-Dimension Probe Coverage:**
-`P1 信号流量` · `P2 数据链路` · `P3 持仓一致性` · `P4 WS守护` ·
-`P5 Cron健康` · `P6 数据鲜度` · `P7 函数契约` · `P8 数据流完整性` ·
-`P9 版本一致性` · `P10 自愈能力` · `P11 日志健康`
+| Metric | Value | Method |
+|--------|-------|--------|
+| OOS Win Rate | **82.7%** | Walk-Forward (n=121) |
+| Deflated Sharpe Ratio | **22.64** | CPCV 15-path |
+| CPCV Overfit Rate | 33.3% | Combinatorial PCV |
+| System Health Score | **91/100** | brahma_health.py |
+| Regime Detection Accuracy | 10 states | Real-time 5min |
+| Pump Hunter (TIGHT<15%) | **97.5% WR** | 2yr full sample n=1,600 |
 
 ---
 
-## 📊 Live Performance
+## License
 
-> 真实交易记录（非回测）。样本较小，持续累积中。
-
-| 日期 | 品种 | 方向 | 体制 | 结果 |
-|------|------|------|------|------|
-| 2026-06-18 | TRUMPUSDT | LONG | CHOP_MID | ✅ +22% |
-| 2026-06-15 | BTCUSDT | SHORT | BEAR_TREND | ✅ +2.1% |
-| 2026-06-12 | ETHUSDT | SHORT | BEAR_TREND | ✅ +3.8% |
-| 2026-06-08 | BNBUSDT | LONG | BEAR_RECOVERY | ✅ +4.2% |
-
-*实盘记录由 `update_live_performance.py` 每日自动同步*
+MIT — Open Core. Production signal infrastructure and live execution layer are private.
 
 ---
 
-## 📁 Repository Structure
-
-```
-brahma-quant/
-├── brahma_brain/          # AI大脑层 (101个模块)
-│   ├── brahma_core.py     # 35维评分引擎
-│   ├── timing_filter.py   # 三层时机过滤
-│   ├── circuit_breaker.py # 全链路熔断器 ⭐ NEW
-│   ├── exception_injector.py # 异常免疫工具 ⭐ NEW
-│   ├── memory_watchdog.py # 内存水位监控 ⭐ NEW
-│   └── brahma_ci_v2.py    # 11维CI探针 ⭐ NEW
-├── dharma/                # 验证治理层
-│   ├── dharma_360_validator.py # MC验证框架 ⭐ NEW
-│   ├── realistic_cost_model.py # 真实成本建模
-│   ├── regime_aware_augmentor.py # 体制增强
-│   └── pump_hunter/       # 暴涨猎手系统
-├── scripts/               # 执行与工具层
-│   ├── blue_green_deploy.py  # 蓝绿部署 ⭐ NEW
-│   ├── ai_behavior_dashboard.py # AI行为看板 ⭐ NEW
-│   └── data_freshness_guard.py  # 数据鲜度守门 ⭐ NEW
-├── tests/                 # 测试金字塔
-│   └── test_core_brahma_units.py # 35/35 ⭐ NEW
-├── guardrails/            # 防护层
-├── docs/                  # 架构文档
-└── BRAHMA_360_V3_DESIGN.md # 系统设计封印文档 ⭐ NEW
-```
-
----
-
-## 🔒 Pro Version
-
-**Open Core 模型：框架开源，智能私有**
-
-| | 开源版 | Pro 版 |
-|--|--------|--------|
-| 35维框架 | ✅ | ✅ |
-| 训练好的权重矩阵 | 占位符 | ✅ v4.2铁证 |
-| Timing Filter 参数 | 基础版 | ✅ 精调阈值 |
-| Auto-Executor | ❌ | ✅ |
-| 实时预警推送 | ❌ | ✅ Jarvis |
-| Kronos M1 timing | Shadow | ✅ Live |
-| 技术支持 | Issue | ✅ 直接 |
-
-获取 Pro 版：参见 [CONTRIBUTING.md](CONTRIBUTING.md)
-
----
-
-## 🧪 Testing
-
-```bash
-# 单元测试 (35/35)
-python3 -m pytest tests/test_core_brahma_units.py -v
-
-# 包含宪法级测试 (永不删除):
-# ✅ BEAR_TREND_LONG 死穴验证 (WR=45% 严禁)
-# ✅ MAX_POS_PCT_NAV=10% 上限验证 (PIXEL教训)
-# ✅ brahma_state 数据鲜度验证
-```
-
----
-
-## 📖 Key Documents
-
-- [BRAHMA_360_V3_DESIGN.md](BRAHMA_360_V3_DESIGN.md) — Brahma-360 v3.0 完整架构设计
-- [dharma/DHARMA.md](dharma/DHARMA.md) — Dharma 铁证验证体系
-- [docs/](docs/) — 架构文档、体制定义、信号生命周期
-
----
-
-## 📄 License
-
-MIT License — 框架代码完全开源。
-核心权重文件（`factor_weights.yaml` Pro版、`wr_matrix_v7`）属于 Pro 私有资产。
-
----
-
-<div align="center">
-
-**Brahma-Quant: 有灵魂的 crypto 量化多智能体系统**
-
-*设计院封印 · 梵天系统 · 2026*
-
-</div>
+*Brahma-Quant v4.2 | Dharma Validation Pipeline | Kronos FM Shadow Mode*
