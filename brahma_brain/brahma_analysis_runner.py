@@ -192,12 +192,13 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
             pass
     # ─────────────────────────────────────────────────────────────────
 
-    # ── llm_council_bridge: score≥140触发LLM二次审查（shadow模式）────
+    # ── llm_council_bridge: score≥130触发LLM二次审查（shadow模式）────
+    # 设计院 2026-07-02: 阈值 140→130（覆盖更多高质量信号，约15%触发率）
     if _LLM_COUNCIL_OK:
         try:
             _f = extract_standard_fields(result)
             _sc = float(_f.get('score', 0) or 0)
-            if _sc >= 140:
+            if _sc >= 130:
                 result = _llm_review(result)
         except Exception:
             pass
