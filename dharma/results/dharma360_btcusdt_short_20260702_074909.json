@@ -1,0 +1,82 @@
+{
+  "symbol": "BTCUSDT",
+  "direction": "SHORT",
+  "timestamp": "2026-07-02T07:49:09.064182+00:00",
+  "elapsed_sec": 3.5,
+  "n_mc_runs": 3000,
+  "data_range": "2018-01-01 ~ 2026-06-20",
+  "total_trades": 409,
+  "is_n": 286,
+  "oos_n": 123,
+  "augmented_count": 0,
+  "all_bootstrap": {
+    "n": 409,
+    "mean": 0.4352,
+    "ci_low": 0.3887,
+    "ci_high": 0.4841,
+    "std": 0.0248,
+    "p_value_vs_50pct": 0.9967,
+    "grade": "🔴 无效(<50%)",
+    "n_runs": 3000
+  },
+  "oos_bootstrap": {
+    "n": 123,
+    "mean": 0.4634,
+    "ci_low": 0.374,
+    "ci_high": 0.5528,
+    "std": 0.0461,
+    "p_value_vs_50pct": 0.7883,
+    "grade": "🔴 无效(<50%)",
+    "n_runs": 3000
+  },
+  "pbo": {
+    "is_wr": 0.4231,
+    "oos_wr": 0.4634,
+    "degradation": -0.0403,
+    "pbo_estimate": 0.4321,
+    "verdict": "OVERFIT",
+    "is_n": 286,
+    "oos_n": 123
+  },
+  "deflated_sharpe": {
+    "sr": -2.79,
+    "dsr": -4.365,
+    "n_trials": 10,
+    "verdict": "SUSPECT"
+  },
+  "regime_breakdown": {
+    "BEAR_TREND": {
+      "n": 0,
+      "insufficient": true
+    },
+    "BULL_TREND": {
+      "n": 0,
+      "insufficient": true
+    },
+    "CHOP_MID": {
+      "n": 274,
+      "wr": 0.4307,
+      "wr_ci": "[0.372, 0.489]",
+      "ev_per_trade": -0.2633,
+      "expected_ev": 0.811,
+      "ev_delta": -1.0743,
+      "grade": "🔴 无效(<50%)",
+      "valid": false
+    },
+    "BEAR_EARLY": {
+      "n": 0,
+      "insufficient": true
+    },
+    "BEAR_RECOVERY": {
+      "n": 135,
+      "wr": 0.4444,
+      "wr_ci": "[0.363, 0.533]",
+      "ev_per_trade": -0.3232,
+      "expected_ev": 0.52,
+      "ev_delta": -0.8432,
+      "grade": "🔴 无效(<50%)",
+      "valid": false
+    }
+  },
+  "verdict": "🔴 无效 — 信号不可信"
+}
