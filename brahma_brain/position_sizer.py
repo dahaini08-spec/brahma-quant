@@ -54,7 +54,7 @@ JULY_HALF_POSITION = True   # 到2026-07-15自动失效（由get_position_pct内
 JULY_HALF_SCORE_RANGE = (160, 169)  # score区间
 JULY_HALF_NAV = 1.0  # 降至1%NAV
 
-_JULY_HALF_TABLE_SHADOW = {
+_JULY_HALF_TABLE_SHADOW = {}  # shadow占位，待填充
 
 # 默认规则（未明确映射的组合）
 DEFAULT_BY_SCORE = {
