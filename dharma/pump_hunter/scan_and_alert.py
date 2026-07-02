@@ -263,9 +263,14 @@ if __name__ == '__main__':
         # ── [P2-6 架构重构 2026-06-30] 写入独立信号通道 ──
         # 高分信号同时写入 pump_signal_queue，供独立执行器消费
         try:
-            import sys as _sys_ph
-            # 修复: 需要三层dirname（pump_hunter/ → dharma/ → trading-system/）
-            _root_ph = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            import sys as _sys_ph, importlib.util as _ilu
+            # 修复: 多层备用路径解析，确保 trading-system 根目录加入 sys.path
+            _cur_ph = os.path.abspath(__file__)
+            _root_ph = _cur_ph
+            for _ in range(5):  # 最多向上找5层
+                _root_ph = os.path.dirname(_root_ph)
+                if os.path.isfile(os.path.join(_root_ph, 'ws_guardian.py')):
+                    break  # 找到 trading-system 根目录
             if _root_ph not in _sys_ph.path:
                 _sys_ph.path.insert(0, _root_ph)
             from scripts.pump_signal_executor import emit_pump_signal
