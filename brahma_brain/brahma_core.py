@@ -8,6 +8,11 @@ brahma_brain · Phase 1 完整整合
   3. confluence_score → 150分共振评分
   4. 输出精确交易参数 + 钉钉1格式文本
 """
+
+# ⚠️ 开源版 | Pro版权重通过 factor_weights.yaml 注入
+_OSS_MODE = True  # Pro版设为False以启用训练权重
+
+
 import os, sys, time
 import copy  # [P1-C audit-fix] deepcopy for cf dict
 import json  # [D1-fix] 提升到顶部

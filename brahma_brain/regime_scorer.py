@@ -1,3 +1,7 @@
+# ⚠️ Brahma-Quant Open Source v3.0
+# PRO私有内容: 5-regime分类器阈值（实盘精调值，Pro私有）
+# 开源版：框架公开，参数需自行调参或获取Pro版
+
 #!/usr/bin/env python3
 """
 regime_scorer.py — 梵天三层体制概率评估 v1.0
