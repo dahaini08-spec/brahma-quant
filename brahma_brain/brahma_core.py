@@ -2944,6 +2944,38 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['rr_gate']    = 'FAIL'
             cf['rr_min_used'] = _rr_min
         else:
+            # ── 修复C：最小SL=1×ATR_1H，防止紧SL被针形K线振出 ───────────────
+            # 根因：6/13月6/14 ETH LONG sl_pct=0.8~0.9%，6/14 14:00被针形振出
+            #       6/14 20:00 ETH暴涨至1732 → 如果SL够宽能等到TP
+            # 规则：SL必须≥1×ATR_1H，优先保护SL不过项，RR重算
+            try:
+                _c_atr_1h = float(ms.get('momentum', {}).get('atr_1h', 0) or
+                                  ms.get('atr_1h', 0) or 0) if ms else 0
+                _c_price  = float(ms.get('price', 0) or 0)
+                _c_entry_mid = (float(params.get('entry_lo', _c_price) or _c_price) +
+                                float(params.get('entry_hi', _c_price) or _c_price)) / 2
+                if _c_atr_1h > 0 and _c_entry_mid > 0:
+                    _c_min_sl_pct = _c_atr_1h / _c_entry_mid * 100  # 1×ATR_1H百分比
+                    _c_cur_sl_pct = float(params.get('sl_pct', 0) or 0)
+                    if 0 < _c_cur_sl_pct < _c_min_sl_pct:
+                        # SL太紧，拖到ATR_1H宽度
+                        _c_new_risk = _c_entry_mid * _c_min_sl_pct / 100
+                        _c_tp1 = float(params.get('tp1', 0) or 0)
+                        _c_tp_dist = abs(_c_tp1 - _c_entry_mid) if _c_tp1 else 0
+                        _c_new_rr1 = _c_tp_dist / _c_new_risk if _c_new_risk > 0 else 0
+                        if _c_new_rr1 >= _rr_min * 0.8:  # 拖宽后仍满足肠门槛皀80%才执行
+                            if signal_dir == 'LONG':
+                                params = dict(params)
+                                params['stop_loss'] = round(_c_entry_mid - _c_new_risk, 4)
+                            else:
+                                params = dict(params)
+                                params['stop_loss'] = round(_c_entry_mid + _c_new_risk, 4)
+                            params['sl_pct'] = round(_c_min_sl_pct, 3)
+                            params['rr1']    = round(_c_new_rr1, 2)
+                            params['sl_basis'] = f'min1xATR_1H(orig={_c_cur_sl_pct:.2f}%)'
+                            print(f'[修复C] {signal_dir} SL拖宽: {_c_cur_sl_pct:.2f}%→{_c_min_sl_pct:.2f}%(1×ATR_1H={_c_atr_1h:.4f}) rr1={_c_new_rr1:.2f}')
+            except Exception as _c_err:
+                pass  # 静默
             cf['action']  = 'ENTER_FULL'
             cf['rr_gate'] = 'PASS'
             cf['rr_min_used'] = _rr_min
