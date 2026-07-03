@@ -327,3 +327,38 @@ if __name__ == '__main__':
     # 保存结果
     out = BASE / 'data' / 'brahma_ci_latest.json'
     out.write_text(json.dumps({'ts': time.time(), **r}, ensure_ascii=False, indent=2, default=str))
+
+def push_ci_report():
+    """CI结果直推Jarvis，只在异常时推送"""
+    import sys
+    sys.path.insert(0, str(BASE.parent))
+    from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
+    r = run_ci()
+    score = r['score']
+    status = r['status']
+    report = r['report']
+    # 保存
+    out = BASE / 'data' / 'brahma_ci_latest.json'
+    out.write_text(json.dumps({'ts': time.time(), **r}, ensure_ascii=False, indent=2, default=str))
+    # 只在异常时推送
+    if score < 85 or r.get('issues'):
+        prefix = '🚨CI告警' if score < 70 else '⚠️CI警告'
+        msg = f'{prefix} | {score}/100\n{report}'
+        target = f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}'
+        subprocess.run(
+            ['openclaw','message','send','--channel','jarvis','--target',target,'--message',msg],
+            capture_output=True, text=True, timeout=15
+        )
+        print(f'[CI] 推送告警 score={score}')
+    else:
+        print(f'[CI] HEALTHY score={score}/100，静默')
+
+if __name__ == '__main__':
+    import sys
+    if '--push' in sys.argv:
+        push_ci_report()
+    else:
+        r = run_ci()
+        print(r['report'])
+        out = BASE / 'data' / 'brahma_ci_latest.json'
+        out.write_text(json.dumps({'ts': time.time(), **r}, ensure_ascii=False, indent=2, default=str))
