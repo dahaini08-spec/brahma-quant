@@ -88,6 +88,7 @@ DEAD_ZONE = {
 API_KEY    = 'sDqoRAyeYHHzevKNxSj5JfkWpNUd6v8qPAhVy0Y8wbWGwC48eC7uhFOENAlVqV7b'
 API_SECRET = 'hXQnzQco9SNVgKgF2m3xvBGlJjOHBVtlzqRlxOTkp0kiJAwAOTeUiGLQSAopqIj7'
 FAPI_BASE  = 'https://fapi.binance.com'
+BASE       = Path(__file__).parent.parent  # workspace根目录
 
 
 def _signed(method: str, path: str, params: dict = {}) -> dict:
