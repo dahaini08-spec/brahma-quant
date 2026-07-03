@@ -477,6 +477,24 @@ def run_oi_executor(nav: float, active_pos: list) -> list:
 # ════════════════════════════════════════════════════════════
 
 def run():
+    # ── 文件锁：防止多实例并发（P1加固 2026-07-03）──────────────
+    import fcntl
+    _lock_path = BASE / 'data/.sub_executor.lock'
+    try:
+        _lock_fd = open(_lock_path, 'w')
+        fcntl.flock(_lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except (BlockingIOError, OSError):
+        print('[SubExecutor] ⚠️ 已有实例运行中，跳过')
+        print('HEARTBEAT_OK')
+        return
+    try:
+        _run_sub_locked()
+    finally:
+        fcntl.flock(_lock_fd, fcntl.LOCK_UN)
+        _lock_fd.close()
+
+
+def _run_sub_locked():
     now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
     print(f'[SubExecutor] 启动 {now}')
 

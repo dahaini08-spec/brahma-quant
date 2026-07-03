@@ -794,6 +794,39 @@ def sense_liquidation_and_gex(state: dict) -> list:
     return alerts
 
 
+def sense_order_anomaly(state: dict) -> list:
+    """P0加固：挂单异常检测（设计院 2026-07-03）"""
+    alerts = []
+    try:
+        orders = _signed('GET', '/fapi/v1/openOrders')
+        if not isinstance(orders, list) or not orders:
+            return alerts
+        open_orders = [o for o in orders if not o.get('reduceOnly', False)]
+        from collections import defaultdict
+        by_sym = defaultdict(list)
+        for o in open_orders:
+            by_sym[o['symbol']].append(o)
+        for sym, sym_orders in by_sym.items():
+            if len(sym_orders) > 3:  # >3张即告警
+                total_notional = sum(
+                    float(o.get('origQty',0)) * float(o.get('price',0) or 0)
+                    for o in sym_orders
+                )
+                alerts.append({
+                    'priority': 0,
+                    'type': 'ORDER_ANOMALY',
+                    'symbol': sym,
+                    'msg': (f'🚨 {sym} 挂单异常：{len(sym_orders)}张未成交开仓单'
+                            f'（名义合计${total_notional:.0f}）\n'
+                            f'建议立即检查，防止全部成交导致超仓'),
+                    'action': 'CHECK_ORDERS',
+                })
+                print(f'[NerveCenter] 🚨 {sym} 挂单异常: {len(sym_orders)}张')
+    except Exception as e:
+        print(f'[NerveCenter] 挂单检测异常: {e}')
+    return alerts
+
+
 def main():
     print(f'[NerveCenter] 启动 {datetime.utcnow().strftime("%H:%M UTC")}')
     state = _load_state()
@@ -806,6 +839,7 @@ def main():
     all_alerts += sense_position_lifecycle(state)
     all_alerts += sense_signal_validity(state)
     all_alerts += sense_liquidation_and_gex(state)  # OPT-D
+    all_alerts += sense_order_anomaly(state)         # P0加固 2026-07-03
 
     # 保存状态
     state['last_run'] = time.time()

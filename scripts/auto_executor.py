@@ -402,6 +402,28 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
         result['reason'] = f'{sym}已有持仓'
         return result
 
+    # ⑦ P0 单标的名义敞口上限（含已挂单+已持仓 ≤ NAV×10%）
+    try:
+        _open_orders = _signed('GET', '/fapi/v1/openOrders', {'symbol': sym})
+        _open_notional = sum(
+            float(o.get('origQty', 0)) * float(o.get('price', 0) or 0)
+            for o in (_open_orders if isinstance(_open_orders, list) else [])
+            if not o.get('reduceOnly', False)
+        )
+        _pos_notional = sum(
+            abs(float(p.get('qty', 0))) * float(p.get('entry_price', 0) or 0)
+            for p in active_positions if p.get('symbol') == sym
+        )
+        _total_exposure = _open_notional + _pos_notional
+        _max_exposure   = nav * 0.10  # NAV×10% 单标的上限
+        if _total_exposure >= _max_exposure * 0.9:  # 90%即预警并拦截
+            result['reason'] = (f'P0_ExposureCap: {sym} 已有敞口'
+                                f'${_total_exposure:.1f} >= NAV×10%=${_max_exposure:.1f}')
+            print(f'[P0] 🚨 {sym} 敞口${_total_exposure:.1f} 已达NAV×10%上限，拦截开单')
+            return result
+    except Exception as _e:
+        print(f'[P0] 敞口检查异常（放行）: {_e}')
+
     # 获取当前价
     try:
         from brahma_brain.brahma_bus import bus

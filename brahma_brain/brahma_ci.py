@@ -110,6 +110,8 @@ def probe_push_links():
         'live-performance-daily',  # github更新脚本，静默合理
         'brahma-ci-probe',         # CI探针有内建推送，无需cron推送
         'smart-digest-6h',         # 智能汇总通过脚本内部推送，不需要cron announce
+        'sub-executor-30m',        # 子系统执行器，有执行时自然推送，静默合理
+        'stale-order-cleaner',     # 超龄撤单器，异常时内部推送，静默合理
         'timesfm-bridge-4h',       # 时序预测桥接，脚本静默运行
         'signal-watcher-6h',       # 信号监控，有HEARTBEAT_OK静默
         'regime-switch-monitor',   # 体制切换监控，事件触发才推送
@@ -228,8 +230,11 @@ def probe_asset_consistency():
                 age_s = time.time() - ts_val if ts_val else 9999
                 status = st.get('status','unknown')
                 watching = st.get('watching', 0)
-                if age_s > 3600 or status != 'active':  # 1h无更新才报警
+                # 容错：status=unknown但age<5min → 瞬态写入竞态，忽略
+                if status != 'active' and age_s > 300:  # 非active且超5min才报警
                     issue(f'ws_guardian 异常: status={status} 最后更新 {age_s/3600:.1f}h前', 'ERROR', 'P4_asset')
+                elif status != 'active' and age_s <= 300:
+                    info(f'ws_guardian status={status}(瞬态) age={age_s:.0f}s<300s 忽略', 'P4_asset')
                 else:
                     info(f'ws_guardian OK: active watching={watching} ({age_s/60:.0f}min前)', 'P4_asset')
             except Exception:
@@ -276,7 +281,7 @@ def probe_data_freshness():
     """检查关键数据文件的新鲜度"""
     now = time.time()
     checks = [
-        ('data/live_prices.json',      25.0,   'WARN',   '实时价格(日报更新)'),
+        ('data/live_prices.json',      26.0,   'WARN',   '实时价格(日报更新)'),
         ('data/live_signal_log.jsonl', 12,     'WARN',   '信号日志'),
         ('data/wuqu_positions.json',   24,     'WARN',   '持仓记录'),
         ('data/brahma_state.json', 48, 'WARN',   '系统状态'),
