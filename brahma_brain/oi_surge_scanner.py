@@ -45,15 +45,28 @@ PUSH_TARGET  = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_
 PUSH_CHANNEL = 'jarvis'
 
 # ── 扫描范围 ─────────────────────────────────────────────────────
-SCAN_SYMBOLS = [
-    'BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT','DOGEUSDT',
-    'ADAUSDT','AVAXUSDT','LINKUSDT','DOTUSDT','ARBUSDT','OPUSDT',
-    'NEARUSDT','INJUSDT','SUIUSDT','APTUSDT','SEIUSDT','TIAUSDT',
-    'JUPUSDT','EIGENUSDT','TAOUSDT','RUNEUSDT','AAVEUSDT','CRVUSDT',
-    'LDOUSDT','HYPEUSDT','ENAUSDT','PENDLEUSDT','WIFUSDT','BONKUSDT',
-    'MOODENGUSDT','MSTRUSDT','ORDIUSDT','BLURUSDT','ALTUSDT',
-    '1000PEPEUSDT','TRUMPUSDT','MOVEUSDT','ZROUSDT','STXUSDT',
-]
+# [全市场模式 2026-07-03] 苏摩授权：动态拉取成交量Top150，覆盖全市场
+def _get_dynamic_symbols(top_n: int = 150) -> list:
+    """动态获取成交量前N的USDT永续合约"""
+    try:
+        tickers = requests.get('https://fapi.binance.com/fapi/v1/ticker/24hr', timeout=10).json()
+        usdt = [(t['symbol'], float(t.get('quoteVolume', 0)))
+                for t in tickers
+                if t['symbol'].endswith('USDT')
+                and 'UP' not in t['symbol'] and 'DOWN' not in t['symbol']
+                and float(t.get('quoteVolume', 0)) > 1_000_000]  # 最低100万U/天
+        usdt.sort(key=lambda x: -x[1])
+        return [s for s, _ in usdt[:top_n]]
+    except Exception:
+        pass
+    # fallback: 原固定列表
+    return [
+        'BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT','DOGEUSDT',
+        'ADAUSDT','AVAXUSDT','LINKUSDT','DOTUSDT','HYPEUSDT','ENAUSDT',
+        '1000PEPEUSDT','SUIUSDT','NEARUSDT','BNBUSDT','MSTRUSDT',
+    ]
+
+SCAN_SYMBOLS = _get_dynamic_symbols(150)  # 动态，运行时更新
 
 # ── 过滤阈值（铁证驱动，可调参） ────────────────────────────────
 CFG = {
@@ -358,7 +371,8 @@ def analyze(sym):
 # ────────────────────────────────────────────────────────────────
 
 def scan(symbols=None):
-    syms = symbols or SCAN_SYMBOLS
+    # [全市场模式] 每次运行时动态更新扫描列表
+    syms = symbols or _get_dynamic_symbols(150)
     print(f'[OI-Scanner] 扫描 {len(syms)} 个标的...')
     t0 = time.time()
 

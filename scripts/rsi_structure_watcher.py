@@ -302,7 +302,8 @@ def run():
         # 层关1事件触发后：扫描完成即触发auto_executor（缩短延迟）
         scan_cmd = (
             f'cd {BASE} && '
-            f'python3 scripts/brahma_scan_all.py && '
+            f'python3 scripts/market_screener.py && '
+            f'python3 scripts/brahma_scan_all.py --candidates && '
             f'python3 scripts/auto_executor.py 2>&1 | tail -5'
         )
         try:

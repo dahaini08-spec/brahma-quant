@@ -41,8 +41,8 @@ SUB_EXEC_SET    = BASE / 'data/sub_executed_set.json'
 
 # ── 配置（苏摩授权 2026-07-03）────────────────────────────────
 MAX_POSITIONS        = 20     # 全局最大持仓，与主系统共享
-PUMP_SCORE_THRESHOLD = 85     # 暴涨猎手最低score（铁证门槛）
-OI_LAYERS_THRESHOLD  = 4      # OI猎手最低通过层数（全层通过才执行）
+PUMP_SCORE_THRESHOLD = 75     # 暴涨猎手最低score（全力模式 苏摩授权：85→75）
+OI_LAYERS_THRESHOLD  = 3      # OI猎手最低通过层数（苏摩授权全力模式：4→3）
 OI_SCORE_THRESHOLD   = 15.0   # OI最低oi_score
 OI_MAX_AGE_H         = 4.0    # OI信号最大有效期（小时）
 MIN_NOTIONAL         = 10.0   # 最小开单名义
