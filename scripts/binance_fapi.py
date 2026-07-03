@@ -90,6 +90,10 @@ def place_order(symbol: str, side: str, order_type: str,
         # 数量：LIMIT用quantity，STOP_MARKET/TAKE_PROFIT_MARKET也用quantity
         params['quantity'] = round(qty, qty_precision)
 
+        # [P0修复 2026-07-03] MARKET单也需要reduceOnly，防止反向开仓
+        if order_type == 'MARKET' and reduce_only:
+            params['reduceOnly'] = 'true'
+
         if order_type == 'LIMIT':
             params['timeInForce'] = 'GTC'
             if price:
