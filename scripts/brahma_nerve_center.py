@@ -798,7 +798,7 @@ def sense_order_anomaly(state: dict) -> list:
     """P0加固：挂单异常检测（设计院 2026-07-03）"""
     alerts = []
     try:
-        orders = _signed('GET', '/fapi/v1/openOrders')
+        orders = _signed('/fapi/v1/openOrders')
         if not isinstance(orders, list) or not orders:
             return alerts
         open_orders = [o for o in orders if not o.get('reduceOnly', False)]
