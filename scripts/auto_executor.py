@@ -46,8 +46,8 @@ MAX_POSITIONS        = 20        # 最大持仓数（苏摩授权 2026-06-30）
 MIN_SL_PCT           = 2.0       # v4.0铁证最低止损
 MAX_SL_PCT           = 5.0       # 标准最大止损（保护性上限）
 MAX_SL_PCT_HIGH_VOL  = 9.0       # 高波动信号上限（score≥145，仓位×0.7）
-NAV_SIZE_PCT         = 0.02      # 每笔仓位 NAV×2%
-DEFAULT_LEV          = 3         # 默认杠杆
+NAV_SIZE_PCT         = 0.05      # 每笔仓位 NAV×5%（苏摩授权 2026-07-03）
+DEFAULT_LEV          = 5         # 默认杠杆（苏摩授权 2026-07-03 3x→5x）
 MIN_NOTIONAL         = 10.0      # 最小开单金额 USDT
 
 # 开单模式：market / limit / auto（默认）
@@ -433,7 +433,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
 
     # 仓位计算（高波动丁单自动缩小）
     _hv_discount = float(signal.get('_high_vol_discount', 1.0))
-    notional = nav * NAV_SIZE_PCT * _hv_discount  # NAV×2%，高波动乘以系数
+    notional = nav * NAV_SIZE_PCT * _hv_discount  # NAV×5%，高波动乘以折扣系数
     if _hv_discount < 1.0:
         print(f'[高波动模式] {sym} sl={signal.get("sl_pct",0):.1f}% 仓位系数×{_hv_discount} 实际仓位=${notional:.1f}')
     if notional < MIN_NOTIONAL:
