@@ -44,7 +44,8 @@ AUTO_SCORE_THRESHOLD = 138       # 最低评分
 MIN_RR               = 1.0       # 最低RR
 MAX_POSITIONS        = 20        # 最大持仓数（苏摩授权 2026-06-30）
 MIN_SL_PCT           = 2.0       # v4.0铁证最低止损
-MAX_SL_PCT           = 5.0       # 最大止损（保护性上限）
+MAX_SL_PCT           = 5.0       # 标准最大止损（保护性上限）
+MAX_SL_PCT_HIGH_VOL  = 9.0       # 高波动信号上限（score≥145，仓位×0.7）
 NAV_SIZE_PCT         = 0.02      # 每笔仓位 NAV×2%
 DEFAULT_LEV          = 3         # 默认杠杆
 MIN_NOTIONAL         = 10.0      # 最小开单金额 USDT
@@ -193,10 +194,17 @@ def find_executable_signals() -> list[dict]:
         if s.get('result') or s.get('settled'):
             continue
 
-        # SL验证
+        # SL验证（动态上限：score≥145高波动信号允许至 MAX_SL_PCT_HIGH_VOL）
         sl_pct = float(s.get('sl_pct', 0) or 0)
-        if sl_pct < MIN_SL_PCT or sl_pct > MAX_SL_PCT:
+        _effective_max_sl = MAX_SL_PCT_HIGH_VOL if score >= 145 else MAX_SL_PCT
+        if sl_pct < MIN_SL_PCT or sl_pct > _effective_max_sl:
+            if sl_pct > MAX_SL_PCT and sl_pct <= MAX_SL_PCT_HIGH_VOL and score < 145:
+                print(f'[SL过滤] {s.get("symbol")} sl={sl_pct:.1f}%>标准上限 score={score:.0f}<145 跳过'
+                      f'（提示score需≥1450才能用高波动通道）')
             continue
+        # 高波动通道：标记传递给execute阶段做仓位缩小
+        if sl_pct > MAX_SL_PCT:
+            s['_high_vol_discount'] = 0.7  # 仓位系数×0.7
 
         candidates.append(s)
 
@@ -398,12 +406,36 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
         result['reason'] = '获取价格失败'
         return result
 
+    # ⑦b GapGate实时检查：价格超出入场区 > GAP_MAX 则信号过期
+    GAP_MAX = 0.03  # 3% 价格偏离上限
+    if entry_lo and entry_hi:
+        if direction in ('LONG', 'BUY'):
+            # 多单：价格超出入场区上沿太多 = 追高
+            if px > entry_hi * (1 + GAP_MAX):
+                overshoot = (px - entry_hi) / entry_hi * 100
+                result['reason'] = f'GapGate: 价格{px:.4f}超出入场区上沿{overshoot:.1f}%>{GAP_MAX*100:.0f}%'
+                return result
+            # 多单：价格大幅低于入场区 = 下方破位，信号失效
+            if px < entry_lo * (1 - GAP_MAX):
+                undershoot = (entry_lo - px) / entry_lo * 100
+                result['reason'] = f'GapGate: 价格{px:.4f}跌破入场区下沿{undershoot:.1f}%'
+                return result
+        else:
+            # 空单：价格跌破入场区下沿太多 = 追空
+            if px < entry_lo * (1 - GAP_MAX):
+                overshoot = (entry_lo - px) / entry_lo * 100
+                result['reason'] = f'GapGate: 价格{px:.4f}跌破入场区下沿{overshoot:.1f}%>{GAP_MAX*100:.0f}%'
+                return result
+
     # ⑦ 可用余额
     avail = float(_signed('GET', '/fapi/v2/balance',
                           {'asset':'USDT'})[:1] and 0 or nav * 0.3)  # 估算fallback
 
-    # 仓位计算
-    notional = nav * NAV_SIZE_PCT          # NAV×2%
+    # 仓位计算（高波动丁单自动缩小）
+    _hv_discount = float(signal.get('_high_vol_discount', 1.0))
+    notional = nav * NAV_SIZE_PCT * _hv_discount  # NAV×2%，高波动乘以系数
+    if _hv_discount < 1.0:
+        print(f'[高波动模式] {sym} sl={signal.get("sl_pct",0):.1f}% 仓位系数×{_hv_discount} 实际仓位=${notional:.1f}')
     if notional < MIN_NOTIONAL:
         result['reason'] = f'仓位${notional:.2f} < 最小${MIN_NOTIONAL}'
         return result
