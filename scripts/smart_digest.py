@@ -107,11 +107,12 @@ def get_realtime_prices():
         return {}
 
 def load_active_positions():
-    """读取当前持仓（Binance fapi格式）并附加实时价格计算PnL"""
+    """读取当前持仓 + 实时拉取markPrice计算PnL（不信任文件缓存）"""
     pos_file = BASE / 'data' / 'wuqu_positions.json'
     if not pos_file.exists():
         return []
     try:
+        import requests as _rq
         raw = json.loads(pos_file.read_text())
         rows = raw if isinstance(raw, list) else raw.get('positions', [])
         result = []
@@ -119,19 +120,26 @@ def load_active_positions():
             amt = float(p.get('positionAmt', 0))
             if amt == 0:
                 continue
+            sym   = p.get('symbol', '?')
             entry = float(p.get('entryPrice', 0))
-            mark  = float(p.get('markPrice', entry))
-            upnl  = float(p.get('unRealizedProfit', 0))
             side  = 'SHORT' if amt < 0 else 'LONG'
+            lev   = p.get('leverage', '?')
+            # 实时拉取markPrice，不用文件缓存
+            try:
+                r = _rq.get(f'https://fapi.binance.com/fapi/v1/premiumIndex?symbol={sym}', timeout=4)
+                mark = float(r.json()['markPrice'])
+            except:
+                mark = float(p.get('markPrice', entry))
+            upnl  = (entry - mark) * abs(amt) if side == 'SHORT' else (mark - entry) * abs(amt)
             pct   = (mark - entry) / entry * 100 * (1 if side == 'LONG' else -1)
             result.append({
-                'symbol':      p.get('symbol', '?'),
+                'symbol':      sym,
                 'side':        side,
                 'entry_price': entry,
                 'mark_price':  mark,
                 'upnl':        upnl,
                 'pct':         pct,
-                'leverage':    p.get('leverage', '?'),
+                'leverage':    lev,
             })
         return result
     except:
@@ -228,32 +236,6 @@ def format_digest():
     lines.append('**💚 系统**: 运行正常 | 下次汇报6h后')
 
     return '\n'.join(lines)
-
-if __name__ == '__main__':
-    digest = format_digest()
-    print(digest)
-    # 写入推送队列
-    out_file = BASE / 'data' / 'smart_digest_latest.txt'
-    out_file.write_text(digest)
-
-def push_digest():
-    """直接推送到Jarvis，不经过AI层"""
-    import subprocess
-    from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
-    digest = format_digest()
-    # 写缓存
-    out_file = BASE / 'data' / 'smart_digest_latest.txt'
-    out_file.write_text(digest)
-    # 直接推送
-    target = f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}'
-    subprocess.run(
-        ['openclaw','message','send',
-         '--channel','jarvis',
-         '--target', target,
-         '--message', digest],
-        capture_output=True, text=True, timeout=15
-    )
-    print(f'[SmartDigest] ✅ 已推送 {len(digest)}chars → {target}')
 
 if __name__ == '__main__':
     import sys
