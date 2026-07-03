@@ -30,9 +30,10 @@ kronos_bridge.py — Kronos 大模型 × 梵天 集成桥接层 v1.0
 # 并联 s23，记录 vs Kronos-Lite 差异，不影响主流程
 # LAST_REVIEW: 2026-07-01 | 设计院自主决策封印
 # ─────────────────────────────────────────────────────────────
-
 from __future__ import annotations
 import os, sys, time, json, logging
+
+STATUS = 'SHADOW'  # 对外导出状态标识（360评估用）
 import numpy as np
 import pandas as pd
 from pathlib import Path
