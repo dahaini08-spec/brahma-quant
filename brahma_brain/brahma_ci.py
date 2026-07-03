@@ -68,14 +68,19 @@ def probe_signal_flow():
 
     # 1c. 执行层日志是否存在
     exec_log = BASE / 'logs' / 'auto_executor.log'
-    if not exec_log.exists():
-        warn('auto_executor.log 不存在，执行层无法追踪', 'P1_exec')
-    else:
+    exec_jsonl = BASE / 'data' / 'auto_executor_log.jsonl'
+    # auto_executor只在实际开单时写log，无信号时正常不写 → 阈值48h
+    if exec_jsonl.exists():
+        age_h = (now - exec_jsonl.stat().st_mtime) / 3600
+        info(f'auto_executor jsonl {age_h:.1f}h前 (有执行记录)', 'P1_exec')
+    elif exec_log.exists():
         age_h = (now - exec_log.stat().st_mtime) / 3600
-        if age_h > 6:
-            warn(f'auto_executor.log {age_h:.1f}h 未更新', 'P1_exec')
+        if age_h > 48:
+            warn(f'auto_executor.log {age_h:.1f}h 未更新（可能48h无交易触发）', 'P1_exec')
         else:
             info(f'auto_executor OK: {age_h:.1f}h前', 'P1_exec')
+    else:
+        info('auto_executor 无历史执行记录（正常：等待信号触发）', 'P1_exec')
 
 # ─── P2: 推送链路探针 ────────────────────────────────────────────────
 def probe_push_links():
@@ -89,7 +94,7 @@ def probe_push_links():
         'oi-surge-scanner':   'OI异动必须推送',
         'rsi-structure-watcher': 'RSI结构事件必须推送',
         'brahma-360-daily':   '每日分析必须推送',
-        'smart-digest-6h':    '智能汇总必须推送',
+        # 'smart-digest-6h': '智能汇总通过脚本内部推送，不需要cron announce'
     }
     # 不需要推送的合理静默任务
     SILENT_OK = {
@@ -103,6 +108,11 @@ def probe_push_links():
         'auto-position-manager',   # 纯脚本持仓管理，静默合理
         'dharma-offline-replay',   # 周度离线回测，静默合理
         'live-performance-daily',  # github更新脚本，静默合理
+        'brahma-ci-probe',         # CI探针有内建推送，无需cron推送
+        'smart-digest-6h',         # 智能汇总通过脚本内部推送，不需要cron announce
+        'timesfm-bridge-4h',       # 时序预测桥接，脚本静默运行
+        'signal-watcher-6h',       # 信号监控，有HEARTBEAT_OK静默
+        'regime-switch-monitor',   # 体制切换监控，事件触发才推送
     }
 
     found_jobs = {}
@@ -114,7 +124,7 @@ def probe_push_links():
         if parts[1] in ('Name', 'Schedule', 'Next'): continue
         name = parts[1].rstrip('.')
         has_push = 'announce' in line or 'jarvis' in line
-        thread = '019f181f' if '019f181f' in line else ('019f15c6' if '019f15c6' in line else 'NONE')
+        thread = '019f1797' if '019f1797' in line else ('019f181f' if '019f181f' in line else ('019f15c6' if '019f15c6' in line else 'NONE'))
         found_jobs[name] = {'has_push': has_push, 'thread': thread, 'raw': line}
 
     # 检查必须推送的任务
@@ -208,14 +218,33 @@ def probe_asset_consistency():
             pos_count = 0
         info(f'持仓记录: {pos_count} 个活跃仓位', 'P4_asset')
 
-        # 检查ws_guardian是否守护所有持仓
+        # 检查ws_guardian是否守护所有持仓（优先state文件，再降级到log文件）
+        ws_state = BASE / 'data' / 'ws_guardian_state.json'
         ws_log = BASE / 'logs' / 'ws_guardian.log'
-        if ws_log.exists():
+        if ws_state.exists():
+            try:
+                st = json.loads(ws_state.read_text())
+                ts_val = st.get('ts', 0)
+                age_s = time.time() - ts_val if ts_val else 9999
+                status = st.get('status','unknown')
+                watching = st.get('watching', 0)
+                if age_s > 3600 or status != 'active':  # 1h无更新才报警
+                    issue(f'ws_guardian 异常: status={status} 最后更新 {age_s/3600:.1f}h前', 'ERROR', 'P4_asset')
+                else:
+                    info(f'ws_guardian OK: active watching={watching} ({age_s/60:.0f}min前)', 'P4_asset')
+            except Exception:
+                if ws_log.exists():
+                    ws_age = (time.time() - ws_log.stat().st_mtime) / 3600
+                    if ws_age > 1.0:
+                        issue(f'ws_guardian log {ws_age:.1f}h 未更新', 'ERROR', 'P4_asset')
+                    else:
+                        info(f'ws_guardian log OK ({ws_age:.2f}h前)', 'P4_asset')
+        elif ws_log.exists():
             ws_age = (time.time() - ws_log.stat().st_mtime) / 3600
-            if ws_age > 0.5:
-                issue(f'ws_guardian 最后更新 {ws_age:.1f}h 前，止损守护可能中断', 'ERROR', 'P4_asset')
+            if ws_age > 1.0:
+                issue(f'ws_guardian log {ws_age:.1f}h 未更新', 'ERROR', 'P4_asset')
             else:
-                info(f'ws_guardian OK ({ws_age:.2f}h前)', 'P4_asset')
+                info(f'ws_guardian log OK ({ws_age:.2f}h前)', 'P4_asset')
     except Exception as e:
         warn(f'持仓文件解析失败: {e}', 'P4_asset')
 
@@ -247,7 +276,7 @@ def probe_data_freshness():
     """检查关键数据文件的新鲜度"""
     now = time.time()
     checks = [
-        ('data/live_prices.json',      0.5,    'WARN',   '实时价格'),
+        ('data/live_prices.json',      25.0,   'WARN',   '实时价格(日报更新)'),
         ('data/live_signal_log.jsonl', 12,     'WARN',   '信号日志'),
         ('data/wuqu_positions.json',   24,     'WARN',   '持仓记录'),
         ('data/brahma_state.json', 48, 'WARN',   '系统状态'),

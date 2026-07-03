@@ -1,11 +1,4 @@
 {
-  "GALAUSDT": {
-    "symbol": "GALAUSDT",
-    "direction": "SHORT",
-    "sl_price": 0.002392,
-    "tsl_updated": "2026-07-01T10:09:33.391155+00:00",
-    "reason": "自主决策：TP1已穿越，SL追踪至TP1~TP2中间位锁利"
-  },
   "PIXELUSDT": {
     "symbol": "PIXELUSDT",
     "direction": "SHORT",
@@ -14,18 +7,6 @@
     "reason": "自主决策：TP1已穿越，SL追踪至TP1~TP2中间位锁利",
     "updated_at": 1782918047.57576,
     "note": "浮盈15.0%→SL收紧至px*1.02 by APM"
-  },
-  "ZECUSDT": {
-    "symbol": "ZECUSDT",
-    "side": "SHORT",
-    "qty": 0.164,
-    "entry": 414.38,
-    "sl_price": 425.11,
-    "tp_price": 392.0,
-    "registered_at": "2026-06-24T23:13:31.795851+00:00",
-    "source": "hunter_executor",
-    "stop_loss": 425.11,
-    "sl_note": "4H结构止损：近5根最高423×1.005"
   },
   "BNBUSDT": {
     "symbol": "BNBUSDT",
