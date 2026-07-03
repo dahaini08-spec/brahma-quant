@@ -297,18 +297,20 @@ def run():
     save_state(state)
 
     if triggered_syms:
-        print(f'[RSI-Watcher] ✅ 触发事件: {triggered_syms} → 建议立即运行 brahma_scan_all')
-        # 直接触发扫描（层2）
+        print(f'[RSI-Watcher] ✅ 触发事件: {triggered_syms} → 扫描+执行链路已启动')
         import subprocess
-        # [Headroom修复 2026-07-03] brahma_scan_all不接受位置参数
-        # 默认运行FAST_SYMBOLS（含BTC/ETH）而非传入symbol名
-        scan_cmd = f'cd {BASE} && python3 scripts/brahma_scan_all.py'
+        # 层关1事件触发后：扫描完成即触发auto_executor（缩短延迟）
+        scan_cmd = (
+            f'cd {BASE} && '
+            f'python3 scripts/brahma_scan_all.py && '
+            f'python3 scripts/auto_executor.py 2>&1 | tail -5'
+        )
         try:
             proc = subprocess.Popen(scan_cmd, shell=True,
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            print(f'[RSI-Watcher] 🚀 已触发扫描 PID={proc.pid}')
+            print(f'[RSI-Watcher] 🚀 扫描+执行已启动 PID={proc.pid}')
         except Exception as e:
-            print(f'[RSI-Watcher] 扫描触发失败: {e}')
+            print(f'[RSI-Watcher] 链路启动失败: {e}')
     elif not silent_syms:
         print(f'[RSI-Watcher] {now_str} 无触发，市场等待中')
 
