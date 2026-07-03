@@ -61,25 +61,79 @@ def load_oi_signals():
     return signals[:5]
 
 def load_regime_alerts():
-    """读取体制切换告警（24h内）"""
+    """读取体制切换告警（24h内，仅24h内的真实触发记录）"""
     alerts = []
     log_file = BASE / 'logs' / 'regime_watcher.log'
     if not log_file.exists():
         return alerts
-    lines = log_file.read_text().splitlines()[-50:]
-    for line in lines[-20:]:
-        if '触发' in line or '切换' in line or 'BEAR_TREND' in line or 'BULL_TREND' in line:
+    cutoff = time.time() - 86400  # 只取24h内
+    lines = log_file.read_text().splitlines()[-100:]
+    import re
+    for line in lines:
+        if '触发' in line or '切换' in line:
+            # 尝试从行里提取时间戳判断新鲜度
+            ts_m = re.search(r'(\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2})', line)
+            if ts_m:
+                try:
+                    from datetime import datetime
+                    t = datetime.strptime(ts_m.group(1), '%Y-%m-%dT%H:%M') if 'T' in ts_m.group(1) else datetime.strptime(ts_m.group(1), '%Y-%m-%d %H:%M')
+                    import calendar
+                    ts_epoch = calendar.timegm(t.timetuple())
+                    if time.time() - ts_epoch > 86400:
+                        continue  # 超过24h跳过
+                except:
+                    pass
             alerts.append(line.strip()[-120:])
     return alerts[-3:]
 
+
+def get_realtime_prices():
+    """获取主流币实时价格（运行时直接拉取）"""
+    try:
+        import requests as _rq
+        syms = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT']
+        result = {}
+        for sym in syms:
+            r = _rq.get(f'https://fapi.binance.com/fapi/v1/ticker/24hr?symbol={sym}', timeout=5)
+            d = r.json()
+            result[sym] = {
+                'price': float(d['lastPrice']),
+                'chg':   float(d['priceChangePercent']),
+                'high':  float(d['highPrice']),
+                'low':   float(d['lowPrice']),
+            }
+        return result
+    except:
+        return {}
+
 def load_active_positions():
-    """读取当前持仓（ws_guardian状态）"""
+    """读取当前持仓（Binance fapi格式）并附加实时价格计算PnL"""
     pos_file = BASE / 'data' / 'wuqu_positions.json'
     if not pos_file.exists():
         return []
     try:
-        data = json.loads(pos_file.read_text())
-        return data if isinstance(data, list) else data.get('positions', [])
+        raw = json.loads(pos_file.read_text())
+        rows = raw if isinstance(raw, list) else raw.get('positions', [])
+        result = []
+        for p in rows:
+            amt = float(p.get('positionAmt', 0))
+            if amt == 0:
+                continue
+            entry = float(p.get('entryPrice', 0))
+            mark  = float(p.get('markPrice', entry))
+            upnl  = float(p.get('unRealizedProfit', 0))
+            side  = 'SHORT' if amt < 0 else 'LONG'
+            pct   = (mark - entry) / entry * 100 * (1 if side == 'LONG' else -1)
+            result.append({
+                'symbol':      p.get('symbol', '?'),
+                'side':        side,
+                'entry_price': entry,
+                'mark_price':  mark,
+                'upnl':        upnl,
+                'pct':         pct,
+                'leverage':    p.get('leverage', '?'),
+            })
+        return result
     except:
         return []
 
@@ -106,15 +160,20 @@ def format_digest():
     lines.append(f'🏛️ **梵天智能日报** | {now_str}')
     lines.append('')
 
-    # ── 持仓状态 ──────────────────────────────────────────
+    # ── 持仓状态（实时mark price + PnL）─────────────────────
     positions = load_active_positions()
     if positions:
-        lines.append('**📍 当前持仓**')
+        lines.append('**📍 当前持仓（实时）**')
         for p in positions:
-            sym = p.get('symbol','?')
-            dir_ = p.get('direction', p.get('side','?'))
-            entry = p.get('entry_price', p.get('avg_price', 0))
-            lines.append(f'  • {sym} {dir_} @ ${entry:.4g}')
+            sym   = p['symbol']
+            side  = p['side']
+            entry = p['entry_price']
+            mark  = p['mark_price']
+            upnl  = p['upnl']
+            pct   = p['pct']
+            lev   = p['leverage']
+            pnl_icon = '🟢' if upnl >= 0 else '🔴'
+            lines.append(f'  • {sym} {side} {lev}x | 入场 ${entry:,.2f} | 现价 ${mark:,.2f} | {pnl_icon} {pct:+.2f}% (${upnl:+.2f})')
         lines.append('')
 
     # ── 暴涨猎手观察池 ────────────────────────────────────
@@ -134,13 +193,26 @@ def format_digest():
             lines.append(f'  • {s["symbol"]} OI {arrow}{s["oi_chg"]:+.1f}%')
         lines.append('')
 
-    # ── 体制告警 ──────────────────────────────────────────
-    regime_alerts = load_regime_alerts()
-    if regime_alerts:
-        lines.append('**⚡ 体制监控**')
-        for a in regime_alerts[-2:]:
-            lines.append(f'  • {a[-80:]}')
+    # ── 实时行情播报（替换历史log）─────────────────────
+    prices = get_realtime_prices()
+    if prices:
+        lines.append('**📊 实时行情**')
+        for sym, d in prices.items():
+            name = sym.replace('USDT','')
+            icon = '🟢' if d['chg'] >= 0 else '🔴'
+            lines.append(f'  {icon} {name} ${d["price"]:,.2f} ({d["chg"]:+.2f}%) | 24H ${d["low"]:,.0f}~${d["high"]:,.0f}')
         lines.append('')
+
+    # 体制状态（只显示当前，不展示历史log）
+    try:
+        with open(BASE / 'data' / 'brahma_state.json') as f:
+            bstate = json.load(f)
+        regime_now = bstate.get('regime', bstate.get('regime_label', '?'))
+        updated = bstate.get('updated_at', '')[:16]
+        lines.append(f'**🧠 当前体制**: `{regime_now}` | 更新: {updated} UTC')
+        lines.append('')
+    except:
+        pass
 
     # ── 信号trace摘要 ─────────────────────────────────────
     traces = load_signal_trace()
