@@ -164,5 +164,45 @@
     "sl_note": "BEAR_RECOVERY体制+RSI_4H=44，SL=1680(+3.9%)为最大容忍亏损",
     "reason": "设计院裁决：ETH结构偏强，给回本窗口但设硬顶止损",
     "updated_at": 1782987161.128464
+  },
+  "BTCUSDT_long_v3": {
+    "type": "PENDING_LONG",
+    "symbol": "BTCUSDT",
+    "side": "LONG",
+    "entry_zone": [
+      61200.0,
+      61350.0,
+      61500.0
+    ],
+    "sl_price": 60500.0,
+    "tp1": 62500.0,
+    "tp2": 63000.0,
+    "order_ids": [
+      1059287873963,
+      1059287875669,
+      1059287880884
+    ],
+    "updated_at": 1783006961.397245,
+    "note": "重挂 EMA20回调区 梵天自主 15:43UTC"
+  },
+  "ETHUSDT_long_v2": {
+    "type": "PENDING_LONG",
+    "symbol": "ETHUSDT",
+    "side": "LONG",
+    "entry_zone": [
+      1670.0,
+      1678.0,
+      1685.0
+    ],
+    "sl_price": 1640.0,
+    "tp1": 1750.0,
+    "tp2": 1800.0,
+    "order_ids": [
+      8389766223920767081,
+      8389766223920768505,
+      8389766223920770240
+    ],
+    "updated_at": 1783006961.3972487,
+    "note": "重挂 GEX MAX下方支撑 梵天自主 15:43UTC"
   }
 }
