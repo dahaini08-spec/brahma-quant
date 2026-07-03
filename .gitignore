@@ -4,6 +4,16 @@ __pycache__/
 *.pyo
 *.pyd
 
+# 私有设计文档
+*.pdf
+DESIGN_INSTITUTE*.json
+FANTAN_BLUEPRINT*.json
+SYSTEM_MANIFEST.json
+system_constants.json
+system_params*.json
+auto_mode.flag
+prototype_subscriber.html
+
 # 备份文件（改用git管理版本）
 *.bak
 *.bak_*
