@@ -40,7 +40,7 @@ from datetime import datetime, timezone
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # ── 配置 ──────────────────────────────────────────────
-AUTO_SCORE_THRESHOLD = 138       # 最低评分
+AUTO_SCORE_THRESHOLD = 135       # 最低评分（全力模式 苏摩授权：138→135）
 MIN_RR               = 1.0       # 最低RR
 MAX_POSITIONS        = 20        # 最大持仓数（苏摩授权 2026-07-03，1→20）
 MIN_SL_PCT           = 2.0       # v4.0铁证最低止损
