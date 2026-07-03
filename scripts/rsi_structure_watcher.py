@@ -300,8 +300,10 @@ def run():
         print(f'[RSI-Watcher] ✅ 触发事件: {triggered_syms} → 扫描+执行链路已启动')
         import subprocess
         # 层关1事件触发后：扫描完成即触发auto_executor（缩短延迟）
+        # ulimit限制单条Python链内存上限（防止OOM）
         scan_cmd = (
             f'cd {BASE} && '
+            f'ulimit -v 1048576 2>/dev/null; '
             f'python3 scripts/market_screener.py && '
             f'python3 scripts/brahma_scan_all.py --candidates && '
             f'python3 scripts/auto_executor.py 2>&1 | tail -5'
