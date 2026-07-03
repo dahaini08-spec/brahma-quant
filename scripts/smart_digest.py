@@ -235,3 +235,32 @@ if __name__ == '__main__':
     # 写入推送队列
     out_file = BASE / 'data' / 'smart_digest_latest.txt'
     out_file.write_text(digest)
+
+def push_digest():
+    """直接推送到Jarvis，不经过AI层"""
+    import subprocess
+    from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
+    digest = format_digest()
+    # 写缓存
+    out_file = BASE / 'data' / 'smart_digest_latest.txt'
+    out_file.write_text(digest)
+    # 直接推送
+    target = f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}'
+    subprocess.run(
+        ['openclaw','message','send',
+         '--channel','jarvis',
+         '--target', target,
+         '--message', digest],
+        capture_output=True, text=True, timeout=15
+    )
+    print(f'[SmartDigest] ✅ 已推送 {len(digest)}chars → {target}')
+
+if __name__ == '__main__':
+    import sys
+    if '--push' in sys.argv:
+        push_digest()
+    else:
+        digest = format_digest()
+        print(digest)
+        out_file = BASE / 'data' / 'smart_digest_latest.txt'
+        out_file.write_text(digest)
