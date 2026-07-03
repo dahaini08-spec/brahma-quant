@@ -1,0 +1,84 @@
+
+  BRAHMA-QUANT — Full Automation Pipeline
+  ─────────────────────────────────────────────────────────────────────
+
+  SCAN LAYER (Zero-Cost)
+  ┌─────────────────────────────────────────────────────────┐
+  │  rsi_structure_watcher.py   every 5min   0 tokens      │
+  │                                                          │
+  │  7 triggers: RSI cross / price breakout /               │
+  │              BB expand / volume spike / OI surge         │
+  │                                                          │
+  │  Silent when: RSI 45~60 AND BB < 0.8% → NO TOKENS      │
+  └──────────────────┬──────────────────────────────────────┘
+                     │ event triggered
+                     ▼
+  SCORE LAYER (35 Dimensions)
+  ┌─────────────────────────────────────────────────────────┐
+  │  brahma_analysis_runner.run_analysis()                  │
+  │                                                          │
+  │  s1  Market Structure (CHoCH/BOS/OB)                   │
+  │  s6  RSI Divergence + Momentum                          │
+  │  s9  OI Surge Detector                                  │
+  │  s11 Funding Rate Pressure                              │
+  │  s13 GEX Gamma Exposure                                 │
+  │  s23 Kronos FM forecast (p_up)                         │
+  │  s27 Gap Up / Gap Down Pattern        ← NEW             │
+  │  s28 Bounce Setup (3red+RSI35+support)← NEW             │
+  │  s29 First Red Day (short entry)      ← NEW             │
+  │  ... 35 total, regime-weighted                          │
+  └──────────────────┬──────────────────────────────────────┘
+                     │ score≥155
+                     ▼
+  DEBATE LAYER (6-Agent Council)
+  ┌─────────────────────────────────────────────────────────┐
+  │  Agent 1: Trend Analyst      (multi-timeframe)         │
+  │  Agent 2: Risk Manager       (SL/TP/RR calc)           │
+  │  Agent 3: Regime Specialist  (body language)            │
+  │  Agent 4: SMC Expert         (OB/FVG/liquidity)        │
+  │  Agent 5: Causal Verifier    (anti-overfit)             │
+  │  Agent 6: Kronos Observer    (FM shadow vote)           │
+  │                                                          │
+  │  Consensus required: 4/6 agree → proceed               │
+  └──────────────────┬──────────────────────────────────────┘
+                     │ consensus reached
+                     ▼
+  GATE LAYER (9-Layer Circuit Breaker)
+  ┌─────────────────────────────────────────────────────────┐
+  │  ① Globally Blocked  ② StructureGate  ③ GapGate       │
+  │  ④ CausalVerifier   ⑤ SeasonalFilter ⑥ TimingFilter  │
+  │  ⑦ CorrelRisk       ⑧ GEX Expiry    ⑨ Kronos Extreme│
+  └──────────────────┬──────────────────────────────────────┘
+                     │ all gates pass
+                     ▼
+  SIGNAL OUTPUT
+  ┌─────────────────────────────────────────────────────────┐
+  │  DharmaBridge writes → live_signal_log.jsonl           │
+  │                                                          │
+  │  ┌─────────────────────────────────────────────┐       │
+  │  │ 🔴 BTCUSDT SHORT  score=162  grade=A        │       │
+  │  │ Entry:  $62,000 ~ $62,500                   │       │
+  │  │ Stop:   $64,200  (+3.5%)                    │       │
+  │  │ TP1:    $59,500  R:R 1.8x                   │       │
+  │  │ Regime: BEAR_TREND  Timing: READY           │       │
+  │  └─────────────────────────────────────────────┘       │
+  └──────────────────┬──────────────────────────────────────┘
+                     │
+          ┌──────────┴──────────┐
+          ▼                     ▼
+  AUTO PUSH                AUTO EXECUTE
+  openclaw message         binance-cli order
+  → Jarvis thread          → position open
+  → Binance Square         → SL/TP monitor
+  (signal card PNG)        (position_tsl_monitor)
+          │                     │
+          └──────────┬──────────┘
+                     ▼
+  SETTLEMENT LAYER
+  ┌─────────────────────────────────────────────────────────┐
+  │  live_signal_settler.py   every 2h                      │
+  │  → outcome_tracking.json                               │
+  │  → wr_matrix_realtime.json  (rolling WR update)        │
+  │  → CONFIDENCE_TABLE auto-refresh                        │
+  └─────────────────────────────────────────────────────────┘
+
