@@ -101,13 +101,23 @@ def write_cache(sym, direction, score, meta, dry=False):
     if 'CHOP' in meta.get('regime', ''):
         return  # CHOP体制不写入
 
+    # [P0修复 2026-07-03] 获取实时价作为cur_price，与pred_price明确区分
+    try:
+        _tr = requests.get(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}', timeout=4)
+        cur_px = float(_tr.json()['price']) if _tr.status_code == 200 else meta.get('cur_price', 0)
+    except:
+        cur_px = meta.get('cur_price', 0)
+
+    pred_px = meta.get('pred_price', 0)
+    pred_chg = round((pred_px - cur_px) / cur_px * 100, 2) if cur_px > 0 else 0
+
     payload = {
         'score':   int(round(max(-8, min(8, score)))),  # 硬上限8分
         'sources': ['timesfm_lite'],
         'reason':  (
             f"TimesFM-Lite: p_dir={meta.get('p_direction',0.5):.2f} "
             f"conf={meta.get('confidence','?')} "
-            f"pred={meta.get('pred_price',0):.2f} "
+            f"cur={cur_px:.2f} pred={pred_px:.2f}({pred_chg:+.2f}%) "
             f"Q10={meta.get('q10',0):.2f}~Q90={meta.get('q90',0):.2f}"
         ),
         'details': {
@@ -115,7 +125,9 @@ def write_cache(sym, direction, score, meta, dry=False):
                 'score':        score,
                 'p_direction':  meta.get('p_direction'),
                 'confidence':   meta.get('confidence'),
+                'cur_price':    cur_px,   # 实时价格（修复 2026-07-03）
                 'pred_price':   meta.get('pred_price'),
+                'pred_chg_pct': pred_chg,
                 'q10':          meta.get('q10'),
                 'q25':          meta.get('q25'),
                 'q75':          meta.get('q75'),
@@ -145,8 +157,8 @@ def run(symbols, dry=False):
     print(f"\n{'='*60}")
     print(f"🧠 TimesFM-Lite Bridge  {now.strftime('%Y-%m-%d %H:%M UTC')}")
     print(f"{'='*60}")
-    print(f"{'标的':<14} {'方向':<7} {'score':>6} {'p_dir':>7} {'conf':>6} {'pred':>10} {'Q25~Q75'}")
-    print(f"{'─'*75}")
+    print(f"{'标的':<14} {'方向':<7} {'score':>6} {'p_dir':>7} {'conf':>6} {'当前价':>10} {'预测价(8H)':>12} {'Q25~Q75'}")
+    print(f"{'─'*80}")
 
     written = 0
     for sym in symbols:
@@ -170,12 +182,18 @@ def run(symbols, dry=False):
             pred = meta.get('pred_price', 0)
             p_dir = meta.get('p_direction', 0.5)
             conf = meta.get('confidence', '?')
-            cur = meta.get('cur_price', 0)
+            # [修复 2026-07-03] 实时获取cur_price，不依赖meta缓存
+            try:
+                _tr2 = requests.get(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}',timeout=4)
+                cur = float(_tr2.json()['price']) if _tr2.status_code==200 else meta.get('cur_price',0)
+            except:
+                cur = meta.get('cur_price', 0)
+            pred_chg = f"{(pred-cur)/cur*100:+.1f}%" if cur>0 else ""
 
             score_str = f"{score:+.1f}"
             print(f"  {sym:<14} {direction:<7} {score_str:>6} "
                   f"{p_dir:>7.3f} {conf:>6} "
-                  f"${pred:>9,.2f}  ${q25:,.2f}~${q75:,.2f}")
+                  f"${cur:>9,.2f}  ${pred:>9,.2f}({pred_chg})  ${q25:,.2f}~${q75:,.2f}")
 
             write_cache(sym, direction, score, {**meta, 'regime': regime}, dry=dry)
             written += 1
