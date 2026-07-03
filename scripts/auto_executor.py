@@ -206,12 +206,26 @@ def find_executable_signals() -> list[dict]:
 
         # SL验证（动态上限：score≥145高波动信号允许至 MAX_SL_PCT_HIGH_VOL）
         sl_pct = float(s.get('sl_pct', 0) or 0)
-        _effective_max_sl = MAX_SL_PCT_HIGH_VOL if score >= 145 else MAX_SL_PCT
+        # [v5.1 设计院 2026-07-03] 小币宽止损通道：score≥155+BULL_TREND允许sl≤15%（仓位×0.5）
+        _is_altcoin_bull = (
+            score >= 155
+            and regime == 'BULL_TREND'
+            and direction == 'LONG'
+            and sl_pct <= 15.0
+        )
+        _effective_max_sl = (
+            15.0 if _is_altcoin_bull else
+            MAX_SL_PCT_HIGH_VOL if score >= 145 else
+            MAX_SL_PCT
+        )
         if sl_pct < MIN_SL_PCT or sl_pct > _effective_max_sl:
             if sl_pct > MAX_SL_PCT and sl_pct <= MAX_SL_PCT_HIGH_VOL and score < 145:
                 print(f'[SL过滤] {s.get("symbol")} sl={sl_pct:.1f}%>标准上限 score={score:.0f}<145 跳过'
-                      f'（提示score需≥1450才能用高波动通道）')
+                      f'（提示score需≥145才能用高波动通道）')
             continue
+        # 小币宽止损：仓位系数×0.5
+        if _is_altcoin_bull and sl_pct > MAX_SL_PCT_HIGH_VOL:
+            s['_high_vol_discount'] = 0.5
         # 高波动通道：标记传递给execute阶段做仓位缩小
         if sl_pct > MAX_SL_PCT:
             s['_high_vol_discount'] = 0.7  # 仓位系数×0.7

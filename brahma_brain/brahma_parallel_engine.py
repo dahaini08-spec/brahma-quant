@@ -41,7 +41,7 @@ def batch_analyze(symbols: list, signal_dir: str = None,
 
     with ThreadPoolExecutor(max_workers=max_workers) as ex:
         futs = {ex.submit(analyze, sym, signal_dir): sym for sym in symbols}
-        for fut in as_completed(futs, timeout=30):
+        for fut in as_completed(futs, timeout=120):  # v1.1: 30→120s，每标的~15s×多标的
             sym = futs[fut]
             try:
                 results[sym] = fut.result(timeout=_ENGINE_TIMEOUT * 3)
@@ -207,3 +207,45 @@ if __name__ == '__main__':
     for r in results:
         print(f'  {r["symbol"]:<12} score={r["score"]:5.1f} valid={r["valid"]} '
               f'regime={r["regime"]} mult={r["asset_weight_mult"]}')
+
+
+def batch_analyze_with_regime(symbols: list, max_workers: int = _MAX_WORKERS) -> dict:
+    """
+    v5.1 体制感知批量分析 — 每个标的按confirmed体制强制方向
+    BULL_TREND/BULL_EARLY/BEAR_RECOVERY → LONG
+    BEAR_TREND/BEAR_EARLY → SHORT
+    其他 → AUTO(None)
+    """
+    import json as _json
+    from pathlib import Path as _Path
+    from brahma_brain.brahma_core import analyze
+
+    # 读取体制状态
+    _reg_map = {}
+    try:
+        _rf = _Path(__file__).parent.parent / 'data' / 'regime_state.json'
+        if _rf.exists():
+            _rd = _json.loads(_rf.read_text())
+            for sym in symbols:
+                _rc = _rd.get(sym, {}).get('confirmed', '')
+                if _rc in ('BULL_TREND', 'BULL_EARLY', 'BEAR_RECOVERY'):
+                    _reg_map[sym] = 'LONG'
+                elif _rc in ('BEAR_TREND', 'BEAR_EARLY'):
+                    _reg_map[sym] = 'SHORT'
+                else:
+                    _reg_map[sym] = None
+                if _reg_map[sym]:
+                    print(f'[RegimePreset] {sym} {_rc} → 强制方向={_reg_map[sym]}')
+    except Exception:
+        pass
+
+    results = {}
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        futs = {ex.submit(analyze, sym, _reg_map.get(sym)): sym for sym in symbols}
+        for fut in as_completed(futs, timeout=120):
+            sym = futs[fut]
+            try:
+                results[sym] = fut.result(timeout=_ENGINE_TIMEOUT * 3)
+            except Exception as e:
+                results[sym] = {'symbol': sym, 'error': str(e), 'score_final': 0, 'valid': False}
+    return results

@@ -3859,7 +3859,16 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         # [v25.4 死穴修复 2026-06-27] StructureGate 门槛 70→80
         # 设计院达摩院六方裁决：grade70-80 实测WR=47%（死亡区），与grade<70同性质
         # 真正优质结构从 grade≥80 开始（WR=69.8%）
-        if _sq['grade'] < 80:   # [v25.4] 70→80 铁证：grade70-80 WR=47% 与低grade同级
+        # [v5.1 设计院 2026-07-03] BULL_TREND三重特例通道（苏摩授权）
+        # 条件：BULL_TREND体制 + grade≥75 + score≥155 + EMA200宏观通过
+        # 依据：grade70-80的WR=47%统计混入大量逆势SHORT，BULL×LONG实际WR更高
+        _bull_grade_exception = (
+            'BULL_TREND' in _regime_key
+            and signal_dir == 'LONG'
+            and _sq['grade'] >= 75
+            and _score_raw >= 155
+        )
+        if _sq['grade'] < 80 and not _bull_grade_exception:
             # grade<80: 包含grade70-79死亡区（WR=47%）全部封堵
             _score_raw = 0
             cf['total'] = 0
@@ -3867,6 +3876,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['kelly_mult'] = 0
             cf['structure_reject'] = f'grade={_sq["grade"]}({_sq["label"]}) grade<80 WR=47%死亡区封堵 [v25.4]'
             print(f'[StructureGate] 🚫 {_sym} {signal_dir}: {_sq["label"]} grade={_sq["grade"]}<80 → WR=47%死亡区封堵')
+        elif _sq['grade'] < 80 and _bull_grade_exception:
+            # BULL_TREND特例通道：grade75~79允许通过（三重条件保护）
+            print(f'[StructureGate] ⚡ {_sym} LONG: BULL_TREND特例 grade={_sq["grade"]}(≥75) score≥155 → 允许通过')
         elif _sq['grade'] >= 90:
             _sq_bonus = round((_sq['grade'] - 80) * 0.3, 1)
             _score_raw = round(_score_raw + _sq_bonus, 1)
