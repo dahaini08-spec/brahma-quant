@@ -65,6 +65,37 @@ def main():
     if conf2 and 'structure_grade' in conf2:
         grade = _sf(conf2['structure_grade'])
 
+    # ── [设计院 P0 2026-07-03] bull_regime_injector 注入 ──────────────────────
+    # 根因修复：brahma_analyze 直接调用 brahma_core，绕过 runner 层注入
+    # 因此必须在此处补充注入 BULL_TREND 感知加分
+    try:
+        from brahma_brain.bull_regime_injector import (
+            get_regime_context_bonus, get_event_timing_bonus
+        )
+        _total_bonus = 0
+        _inj_dir = str(sig_dir or args.dir or '')
+        _inj_reg = str(regime or '')
+
+        # P0-B: BULL体制顺势加分（LONG方向）
+        if 'BULL' in _inj_reg and _inj_dir == 'LONG':
+            _rb = get_regime_context_bonus(sym, _inj_reg)
+            if _rb['bonus'] > 0:
+                _total_bonus += _rb['bonus']
+                sys.stderr.write(f'[BullBonus·Analyze] {sym} LONG +{_rb["bonus"]}分 | {_rb["reasons"]}\n')
+
+        # P0-C: rsi_trigger_event 事件窗口加分
+        _eb = get_event_timing_bonus(sym)
+        if _eb['active'] and _eb['bonus'] > 0:
+            _total_bonus += _eb['bonus']
+            sys.stderr.write(f'[EventBonus·Analyze] {sym} +{_eb["bonus"]}分 | {_eb["events"]}\n')
+
+        if _total_bonus > 0:
+            score = score + _total_bonus
+            sys.stderr.write(f'[RegimeInject·Analyze] {sym} {_inj_dir} 原始{score-_total_bonus:.1f}+{_total_bonus}→{score:.1f}\n')
+    except Exception as _inj_e:
+        sys.stderr.write(f'[BullBonus·Skip] {_inj_e}\n')
+    # ─────────────────────────────────────────────────────────────────────────
+
     if args.json:
         out = {
             'symbol':    r.get('symbol', args.symbol),

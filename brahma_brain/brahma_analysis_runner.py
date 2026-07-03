@@ -195,6 +195,51 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
     result = _core_analyze(sym, deep=deep)
     missing = _validate_result(result)
 
+    # ── [P0-B设计院 2026-07-03] BULL_TREND体制感知加分注入 ──────────────────────
+    # 解决根因：brahma_core原始分对体制无感知，BULL_TREND多单天然偏低≈79分
+    # 改造：外层注入 regime_context_bonus（EMA结构+RSI+动能），最高+35分
+    # + [P0-C] rsi_trigger_event 2H有效窗口事件加分，最高+40分
+    try:
+        from brahma_brain.bull_regime_injector import (
+            get_regime_context_bonus, get_event_timing_bonus
+        )
+        _rf = result
+        _reg = str(_rf.get('regime', _rf.get('market_state', {}).get('regime', '')) or '')
+        _dir = str(_rf.get('signal_dir', _rf.get('direction', '')) or '')
+        _cur_score = float(_rf.get('total', _rf.get('score', 0)) or 0)
+
+        # P0-B: BULL体制顺势加分（仅LONG方向）
+        _total_bonus = 0
+        if 'BULL' in _reg and _dir in ('LONG', 'AUTO', ''):
+            _rb = get_regime_context_bonus(sym, _reg)
+            if _rb['bonus'] > 0:
+                _total_bonus += _rb['bonus']
+                _rf['_regime_context_bonus'] = _rb
+                print(f'[BullBonus] {sym} +{_rb["bonus"]}分 | {_rb["reasons"]}')
+
+        # P0-C: rsi_trigger_event 事件窗口加分（所有方向）
+        _eb = get_event_timing_bonus(sym)
+        if _eb['active'] and _eb['bonus'] > 0:
+            _total_bonus += _eb['bonus']
+            _rf['_event_timing_bonus'] = _eb
+            print(f'[EventBonus] {sym} +{_eb["bonus"]}分 | {_eb["events"]}')
+
+        # ── 同步写入所有评分字段（覆盖 extract_standard_fields 所有读取路径）──
+        if _total_bonus > 0:
+            _new_score = _cur_score + _total_bonus
+            _rf['total']       = _new_score  # brahma_core返回路径
+            _rf['score']       = _new_score  # 通用路径
+            _rf['score_final'] = _new_score  # extract_standard_fields 首选字段
+            # confluence 字典同步（signal_selector / LLM council 读取路径）
+            if isinstance(_rf.get('confluence'), dict):
+                _rf['confluence']['score']    = _new_score
+                _rf['confluence']['total']    = _new_score
+                _rf['confluence']['grade_num']= int(_new_score)
+            print(f'[RegimeInject] {sym} {_cur_score:.1f}+{_total_bonus}→{_new_score:.1f} (regime={_reg} dir={_dir})')
+    except Exception as _inj_err:
+        pass  # 注入失败不阻断主流程
+    # ────────────────────────────────────────────────────────────────────────
+
     # ── market_structure_scanner: score≥130时补充SMC结构扫描 ──────────
     if _MSS_OK:
         try:

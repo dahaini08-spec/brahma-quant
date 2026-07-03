@@ -30,8 +30,8 @@ os.chdir(str(BASE))
 
 # ── 配置 ──────────────────────────────────────────
 MIN_VOLUME_USD   = 100e6   # 最低成交额门槛 $100M
-TOP_N            = 8       # 输出候选数量
-SCORE_THRESHOLD  = 40      # 最低评分门槛
+TOP_N            = 20      # [P1-E设计院 2026-07-03] 8→20扩大覆盖
+SCORE_THRESHOLD  = 30      # [P1-D 2026-07-03] 40→30扩大候选覆盖
 MAX_WORKERS      = 6       # 并发线程数（不超过10避免rate limit）
 FAPI             = 'https://fapi.binance.com'
 
@@ -41,7 +41,7 @@ BLACKLIST = {
 }
 
 # 强制保留（主力标的，无论评分）
-FORCE_INCLUDE = {'BTCUSDT', 'ETHUSDT'}
+FORCE_INCLUDE = {'BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'DOGEUSDT', 'XRPUSDT'}  # [P1-E 2026-07-03] 永久置顶主力币
 
 
 def _fetch(url: str, retries: int = 2) -> object:
@@ -133,43 +133,96 @@ def _score_symbol(sym: str, ticker: dict) -> dict | None:
     score += d1
     detail['liquidity'] = d1
 
-    # 维度2: RSI位置 (−5~+20)
-    if 40 <= rsi <= 65:
-        d2 = 20
-    elif 35 <= rsi < 40 or 65 < rsi <= 70:
-        d2 = 12
-    elif rsi > 75:
-        d2 = -5   # 超买，不做空
-    elif rsi < 28:
-        d2 = 5    # 超卖，风险大
+    # ── [P1-D 2026-07-03] 体制感知双模式评分 ──
+    # 读取当前主要体制
+    try:
+        import json as _json_ms
+        _reg_f = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                               'data', 'regime_state.json')
+        _reg_data = _json_ms.loads(open(_reg_f).read()) if os.path.exists(_reg_f) else {}
+        _sym_reg = _reg_data.get(sym, {}).get('confirmed', 'BEAR_TREND') if isinstance(_reg_data.get(sym), dict) else 'BEAR_TREND'
+    except Exception:
+        _sym_reg = 'BEAR_TREND'
+
+    _bull_mode = 'BULL' in _sym_reg  # BULL_TREND / BULL_EARLY
+
+    # 维度2: RSI位置 (−5~+25) — 双模式
+    if _bull_mode:
+        # BULL模式：RSI 50~70 = 最佳多头区
+        if 50 <= rsi <= 70:
+            d2 = 25   # 黄金多头区 ← BULL特供
+        elif 45 <= rsi < 50:
+            d2 = 15
+        elif rsi > 70:
+            d2 = 10   # 超买回调等入场（不惩罚）
+        elif 35 <= rsi < 45:
+            d2 = 5
+        else:
+            d2 = 0
     else:
-        d2 = 8
+        # BEAR/CHOP模式：原始逻辑
+        if 40 <= rsi <= 65:
+            d2 = 20
+        elif 35 <= rsi < 40 or 65 < rsi <= 70:
+            d2 = 12
+        elif rsi > 75:
+            d2 = -5   # 超买，不做空
+        elif rsi < 28:
+            d2 = 5    # 超卖，风险大
+        else:
+            d2 = 8
     score += d2
     detail['rsi'] = d2
 
-    # 维度3: 双TF趋势对齐 (0-25)
-    if bear4h and bear1h:
-        d3 = 25
-    elif bear4h:
-        d3 = 15
-    elif bear1h:
-        d3 = 8
+    # 维度3: 双TF趋势对齐 (0-25) — 双模式
+    if _bull_mode:
+        # BULL模式：多头排列加分
+        bull1h = not bear1h  # 价格>EMA20_1H
+        bull4h = not bear4h
+        if bull4h and bull1h:
+            d3 = 25   # 完美多头
+        elif bull4h:
+            d3 = 15
+        elif bull1h:
+            d3 = 8
+        else:
+            d3 = 0
     else:
-        d3 = 0
+        if bear4h and bear1h:
+            d3 = 25
+        elif bear4h:
+            d3 = 15
+        elif bear1h:
+            d3 = 8
+        else:
+            d3 = 0
     score += d3
     detail['trend'] = d3
 
-    # 维度4: 价格动量 (−10~+15)
-    if -10 < pct24h <= -1:
-        d4 = 15
-    elif -20 < pct24h <= -10:
-        d4 = 6    # 过度下跌，反弹风险
-    elif pct24h > 10:
-        d4 = -10  # 强涨，不做空
-    elif pct24h > 3:
-        d4 = -5
+    # 维度4: 价格动量 (-10~+15) — 双模式
+    if _bull_mode:
+        # BULL模式：涨幅适中最佳，不惩罚强涨
+        if 0 < pct24h <= 8:
+            d4 = 15   # 有多头动能
+        elif pct24h > 8:
+            d4 = 8    # 强涨，不惩罚
+        elif -3 < pct24h <= 0:
+            d4 = 5    # 轻微回调，多头入场机会
+        elif -8 < pct24h <= -3:
+            d4 = 8    # 回调更深，买入机会增加
+        else:
+            d4 = 3
     else:
-        d4 = 5
+        if -10 < pct24h <= -1:
+            d4 = 15
+        elif -20 < pct24h <= -10:
+            d4 = 6    # 过度下跌，反弹风险
+        elif pct24h > 10:
+            d4 = -10  # 强涨，不做空
+        elif pct24h > 3:
+            d4 = -5
+        else:
+            d4 = 5
     score += d4
     detail['momentum'] = d4
 

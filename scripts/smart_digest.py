@@ -237,6 +237,39 @@ def format_digest():
 
     return '\n'.join(lines)
 
+def push_digest():
+    """格式化摘要并推送到Jarvis线程"""
+    digest = format_digest()
+    # 写入本地文件
+    out_file = BASE / 'data' / 'smart_digest_latest.txt'
+    out_file.write_text(digest)
+    # 判断是否有实质性内容需要推送
+    if not digest.strip() or '无活跃' in digest:
+        print('HEARTBEAT_OK')
+        return
+    # 读取推送配置
+    try:
+        cfg_file = BASE / 'scripts' / 'system_config.py'
+        import importlib.util
+        spec = importlib.util.spec_from_file_location('system_config', cfg_file)
+        cfg = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cfg)
+        user_id = getattr(cfg, 'JARVIS_USER_ID', '73295708')
+        thread_id = getattr(cfg, 'JARVIS_THREAD_ID', '')
+        to = f'{user_id}:thread:{thread_id}' if thread_id else user_id
+    except Exception:
+        to = '73295708'
+    import subprocess
+    result = subprocess.run(
+        ['openclaw', 'message', 'send', '--channel', 'jarvis', '--to', to, '--message', digest],
+        capture_output=True, text=True
+    )
+    if result.returncode == 0:
+        print(f'[smart-digest] 推送完成 → {to}')
+    else:
+        print(f'[smart-digest] 推送失败: {result.stderr[:200]}')
+        print(digest)
+
 if __name__ == '__main__':
     import sys
     if '--push' in sys.argv:
