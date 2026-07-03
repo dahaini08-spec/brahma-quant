@@ -204,5 +204,23 @@
     ],
     "updated_at": 1783006961.3972487,
     "note": "重挂 GEX MAX下方支撑 梵天自主 15:43UTC"
+  },
+  "ETHUSDT_long_v3": {
+    "type": "PENDING_LONG",
+    "symbol": "ETHUSDT",
+    "side": "LONG",
+    "entry_zone": [
+      1695.0,
+      1703.0
+    ],
+    "sl_price": 1668.0,
+    "tp1": 1780.0,
+    "tp2": 1820.0,
+    "order_ids": [
+      8389766224335606048,
+      8389766224335607052
+    ],
+    "updated_at": 1783045747.2048647,
+    "note": "重挂 GEX MAX下方 $1,695~1,710 梵天自主 02:28UTC"
   }
 }

@@ -399,6 +399,20 @@ def settle(dry_run=False) -> dict:
     if n_regime_exp > 0 and not dry_run:
         _save(records)
         print(f'[Settler] 🔄 REGIME_EXPIRED: {n_regime_exp}条体制不匹配信号清理')
+        # ── [学习闭环修复 2026-07-03] REGIME_EXPIRED → ev_feedback ──
+        # 断点A修复：体制切换清理的信号也需要写入EV反馈（负信号，WR统计不可缺）
+        try:
+            import sys as _re_sys
+            _re_sys.path.insert(0, str(BASE / 'brahma_brain'))
+            from ev_feedback import on_settlement as _re_ev_cb
+            for _re_rec in records:
+                if (_re_rec.get('settled') and
+                    _re_rec.get('outcome') == 'REGIME_EXPIRED' and
+                    not _re_rec.get('_ev_feedback_done')):
+                    _re_ev_cb(_re_rec, 'TIMEOUT')  # REGIME_EXPIRED视为TIMEOUT（不计WR）
+                    _re_rec['_ev_feedback_done'] = True
+        except Exception as _re_ev_e:
+            print(f'[WARN][REGIME_EXPIRED-EV] {type(_re_ev_e).__name__}: {_re_ev_e}')
 
     # ── [C] SL突破 → SL_BREACHED ─────────────────────────────
     # SHORT信号：当前价格 > stop_loss → 方向已错，立刻清理
