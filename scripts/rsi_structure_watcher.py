@@ -307,10 +307,34 @@ def run():
             f'python3 scripts/auto_executor.py 2>&1 | tail -5'
         )
         try:
+            # ── 防积压：检查是否已有扫描链在运行 ──────────────────
+            import os, glob
+            lock_file = BASE / 'data/.rsi_scan_chain.lock'
+            if lock_file.exists():
+                lock_age = time.time() - lock_file.stat().st_mtime
+                if lock_age < 240:   # 4min内认为上一轮还在跑
+                    print(f'[RSI-Watcher] ⚠️ 上一轮扫描链仍在运行({lock_age:.0f}s)，跳过')
+                    return
+                else:
+                    lock_file.unlink(missing_ok=True)  # 超时残留锁，强制清除
+            lock_file.write_text(str(os.getpid()))
             proc = subprocess.Popen(scan_cmd, shell=True,
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             print(f'[RSI-Watcher] 🚀 扫描+执行已启动 PID={proc.pid}')
+            # 非阻塞：让进程在后台运行，定时清理锁
+            def _cleanup_lock(p, lf):
+                try:
+                    p.wait(timeout=240)  # 最多等4min
+                except Exception:
+                    p.kill()
+                finally:
+                    try: lf.unlink(missing_ok=True)
+                    except: pass
+            import threading
+            threading.Thread(target=_cleanup_lock, args=(proc, lock_file), daemon=True).start()
         except Exception as e:
+            try: Path(BASE / 'data/.rsi_scan_chain.lock').unlink(missing_ok=True)
+            except: pass
             print(f'[RSI-Watcher] 链路启动失败: {e}')
     elif not silent_syms:
         print(f'[RSI-Watcher] {now_str} 无触发，市场等待中')
