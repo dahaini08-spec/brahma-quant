@@ -42,13 +42,22 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 # ── 配置 ──────────────────────────────────────────────
 AUTO_SCORE_THRESHOLD = 138       # 最低评分
 MIN_RR               = 1.0       # 最低RR
-MAX_POSITIONS        = 20        # 最大持仓数（苏摩授权 2026-06-30）
+MAX_POSITIONS        = 20        # 最大持仓数（苏摩授权 2026-07-03，1→20）
 MIN_SL_PCT           = 2.0       # v4.0铁证最低止损
 MAX_SL_PCT           = 5.0       # 标准最大止损（保护性上限）
 MAX_SL_PCT_HIGH_VOL  = 9.0       # 高波动信号上限（score≥145，仓位×0.7）
-NAV_SIZE_PCT         = 0.05      # 每笔仓位 NAV×5%（苏摩授权 2026-07-03）
-DEFAULT_LEV          = 5         # 默认杠杆（苏摩授权 2026-07-03 3x→5x）
+NAV_SIZE_PCT         = 0.05      # 默认仓位 NAV×5%（苏摩授权 2026-07-03）
+DEFAULT_LEV          = 5         # 默认杠杆 5x（苏摩授权 2026-07-03）
 MIN_NOTIONAL         = 10.0      # 最小开单金额 USDT
+
+# BTC/ETH 动态仓位配置（梵天自主评判，苏摩授权 2026-07-03）
+# score≥155 → 10% NAV | score 140~154 → 7.5% NAV | score 138~139 → 5% NAV
+BIG_SYMBOLS          = {'BTCUSDT', 'ETHUSDT'}   # 大仓位标的
+BIG_SYM_NAV_HIGH     = 0.10     # score≥155 → 10%
+BIG_SYM_NAV_MID      = 0.075    # score 140~154 → 7.5%
+BIG_SYM_NAV_BASE     = 0.05     # score 138~139 → 5%（与其他标的一致）
+BIG_SYM_SCORE_HIGH   = 155      # 高档触发分
+BIG_SYM_SCORE_MID    = 140      # 中档触发分
 
 # 开单模式：market / limit / auto（默认）
 # auto = 有entry区间且区间>0.1%用limit；否则用market
@@ -431,9 +440,20 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     avail = float(_signed('GET', '/fapi/v2/balance',
                           {'asset':'USDT'})[:1] and 0 or nav * 0.3)  # 估算fallback
 
-    # 仓位计算（高波动丁单自动缩小）
+    # 仓位计算（动态分档：BTC/ETH梵天评判，高波动自动缩小）
     _hv_discount = float(signal.get('_high_vol_discount', 1.0))
-    notional = nav * NAV_SIZE_PCT * _hv_discount  # NAV×5%，高波动乘以折扣系数
+    # BTC/ETH大仓位动态NAV分档
+    if sym in BIG_SYMBOLS:
+        if score >= BIG_SYM_SCORE_HIGH:
+            _nav_pct = BIG_SYM_NAV_HIGH   # 10%
+        elif score >= BIG_SYM_SCORE_MID:
+            _nav_pct = BIG_SYM_NAV_MID    # 7.5%
+        else:
+            _nav_pct = BIG_SYM_NAV_BASE   # 5%
+        print(f'[BTC/ETH动态仓位] {sym} score={score:.0f} → NAV×{_nav_pct*100:.1f}%')
+    else:
+        _nav_pct = NAV_SIZE_PCT           # 其他标的固定5%
+    notional = nav * _nav_pct * _hv_discount
     if _hv_discount < 1.0:
         print(f'[高波动模式] {sym} sl={signal.get("sl_pct",0):.1f}% 仓位系数×{_hv_discount} 实际仓位=${notional:.1f}')
     if notional < MIN_NOTIONAL:
