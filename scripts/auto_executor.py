@@ -638,6 +638,25 @@ def run(dry_run: bool = False) -> list[dict]:
     主执行函数
     dry_run=True：只扫描不执行，用于测试
     """
+    # ── 文件锁：防止多实例并发（根因修复 2026-07-03）──────────────
+    import fcntl
+    _lock_path = BASE / 'data/.auto_executor.lock'
+    try:
+        _lock_fd = open(_lock_path, 'w')
+        fcntl.flock(_lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except (BlockingIOError, OSError):
+        print('[AutoExecutor] ⚠️ 已有实例运行中，本次跳过（防并发重复挂单）')
+        print('HEARTBEAT_OK')
+        return []
+    try:
+        return _run_locked(dry_run=dry_run)
+    finally:
+        fcntl.flock(_lock_fd, fcntl.LOCK_UN)
+        _lock_fd.close()
+
+
+def _run_locked(dry_run: bool = False) -> list[dict]:
+    """实际执行体（文件锁保护内）"""
     now_iso = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
 
     # 账户状态
@@ -676,6 +695,18 @@ def run(dry_run: bool = False) -> list[dict]:
         if dry_run:
             print(f'  [DRY-RUN] 跳过执行')
             results.append({'signal_id': sig_id, 'status': 'DRY_RUN', 'symbol': sym})
+            continue
+
+        # ── 防重复挂单：检查当前是否已有该symbol的未平仓开仓挂单 ──
+        open_orders = _signed('GET', '/fapi/v1/openOrders', {'symbol': sym})
+        existing_open = [o for o in open_orders
+                         if isinstance(open_orders, list)
+                         and not o.get('reduceOnly', False)
+                         and o.get('status') in ('NEW', 'PARTIALLY_FILLED')]
+        if existing_open:
+            print(f'  [防重复] {sym} 已有{len(existing_open)}张未成交开仓挂单，跳过')
+            executed_set.add(sig_id)
+            _save_executed(executed_set)
             continue
 
         exec_result = execute_signal(sig, nav, active_pos)
