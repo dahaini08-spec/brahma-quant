@@ -1,0 +1,92 @@
+# QuantDinger 研究增强层 · Docker 隔离部署方案
+# =====================================================
+# 设计院 · 2026-06-17 v1.0
+#
+# 架构原则（STAR.md L0）：
+#   - 完全独立网络（quant_research_net），禁止与 trading_core_net 直连
+#   - QuantDinger 容器不持有 Binance 交易 API Key（只读市场数据）
+#   - 研究输出通过 research_bridge.py 单向写入 data/research_cache/
+#   - 信号 TTL = 30min，过期自动归零
+#
+# 使用方式：
+#   docker compose -f docker-compose.research.yml up -d
+#
+# 验证隔离：
+#   docker network inspect quant_research_net  # 确认 trading 容器不在此网络
+#   docker exec quantdinger_research env | grep -i binance  # 应只有 MARKET_DATA 相关
+
+version: "3.9"
+
+networks:
+  # 研究专用网络 — 与核心交易网络物理隔离
+  quant_research_net:
+    name: quant_research_net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+
+volumes:
+  research_cache:
+    name: xingshu_research_cache
+
+services:
+
+  # ── QuantDinger 研究服务 ─────────────────────────────────────
+  quantdinger_research:
+    image: ghcr.io/brokermr810/quantdinger:latest
+    container_name: quantdinger_research
+    restart: unless-stopped
+    networks:
+      - quant_research_net
+    ports:
+      - "8889:8888"          # 研究 UI（与主系统 8888 分开）
+    environment:
+      # ── 安全约束：仅只读市场数据，无交易权限 ──
+      BINANCE_API_KEY: "${QUANTDINGER_READONLY_API_KEY:-}"   # 只读 key（无交易权限）
+      BINANCE_API_SECRET: "${QUANTDINGER_READONLY_SECRET:-}"
+      AGENT_LIVE_TRADING_ENABLED: "false"                    # 永久禁用实盘执行
+      PAPER_TRADING_DEFAULT: "true"
+      SECRET_KEY: "${QUANTDINGER_SECRET_KEY:-xingshu_research_2026}"
+      # ── 研究输出配置 ──
+      RESEARCH_OUTPUT_DIR: "/research_output"
+      RESEARCH_TTL_MINUTES: "30"
+      RESEARCH_WEBHOOK_URL: "http://host.docker.internal:8890/research/signal"
+    volumes:
+      - research_cache:/research_output
+      - ./config/quantdinger_research.json:/app/config/custom.json:ro
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8888/health"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+    labels:
+      xingshu.role: "research_wing"
+      xingshu.trading_enabled: "false"
+      xingshu.network_policy: "isolated"
+
+  # ── Research Webhook 接收器 ──────────────────────────────────
+  # 接收 QuantDinger 研究输出，通过 research_bridge 写入梵天缓存
+  research_webhook:
+    build:
+      context: .
+      dockerfile: Dockerfile.research_webhook
+    container_name: research_webhook
+    restart: unless-stopped
+    networks:
+      - quant_research_net
+    ports:
+      - "8890:8890"
+    environment:
+      BRIDGE_DRY_RUN: "true"         # 默认 dry_run，手动切换为 false 激活注入
+      BRIDGE_LOG_LEVEL: "INFO"
+      TRADING_SYSTEM_PATH: "/app/trading-system"
+    volumes:
+      - .:/app/trading-system:ro     # 只读挂载（webhook 不写核心代码）
+      - ./data/research_cache:/app/trading-system/data/research_cache  # 缓存读写
+      - ./data/research_bridge_log.jsonl:/app/trading-system/data/research_bridge_log.jsonl
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8890/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

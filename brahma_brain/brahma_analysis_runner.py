@@ -31,7 +31,10 @@ sys.path.insert(0, os.path.join(BASE_DIR, '..'))
 
 # ── 唯一数据入口（封印）────────────────────────────────────────
 from brahma_brain.brahma_core import analyze as _core_analyze
-from brahma_brain.brahma_parallel_engine import batch_analyze as _batch_analyze
+from brahma_brain.brahma_parallel_engine import (
+    batch_analyze as _batch_analyze,
+    batch_analyze_with_regime as _batch_analyze_regime,
+)
 from brahma_brain.formatter import (
     format_report,
     format_standard_card,
@@ -186,13 +189,47 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
                 if _snap_fresh(sym, _d, max_age_min=10):
                     _cached = _snap_load(sym, _d, max_age_min=10)
                     if _cached:
+                        # v5.1修复：验证缓存方向与体制一致
+                        try:
+                            import json as _jc; from pathlib import Path as _Pc
+                            _rf = _Pc(__file__).parent.parent/'data'/'regime_state.json'
+                            _rc = _jc.loads(_rf.read_text()).get(sym,{}).get('confirmed','')
+                            _bull_regimes = ('BULL_TREND','BULL_EARLY','BEAR_RECOVERY')
+                            _bear_regimes = ('BEAR_TREND','BEAR_EARLY')
+                            if (_rc in _bull_regimes and _d == 'SHORT') or \
+                               (_rc in _bear_regimes and _d == 'LONG'):
+                                continue  # 体制方向矛盾，不复用缓存
+                        except Exception:
+                            pass
                         _cached['_from_cache'] = True
                         return _cached
         except Exception:
             pass
     # ─────────────────────────────────────────────────────────────────
 
-    result = _core_analyze(sym, deep=deep)
+    # ── [设计院 2026-07-03 v5.1] 体制感知方向预注入 ────────────────────────────
+    # 根因修复：BULL_TREND下AUTO方向被market_structure误判为SHORT
+    # → StructureGate以BULL×SHORT封杀(grade<80) → bull_bonus条件不满足(dir!=LONG)
+    # 解决：从regime_state读取confirmed体制，顺势体制下强制传入正确方向
+    _forced_dir = None
+    try:
+        import json as _json
+        from pathlib import Path as _Path
+        _reg_file = _Path(__file__).parent.parent / 'data' / 'regime_state.json'
+        if _reg_file.exists():
+            _reg_data = _json.loads(_reg_file.read_text())
+            _sym_regime = _reg_data.get(sym, {}).get('confirmed', '')
+            if _sym_regime in ('BULL_TREND', 'BULL_EARLY', 'BEAR_RECOVERY'):
+                _forced_dir = 'LONG'   # 顺势：多头体制强制LONG
+            elif _sym_regime in ('BEAR_TREND', 'BEAR_EARLY'):
+                _forced_dir = 'SHORT'  # 顺势：空头体制强制SHORT
+            if _forced_dir:
+                print(f'[RegimePreset] {sym} {_sym_regime} → 强制方向={_forced_dir}')
+    except Exception:
+        pass
+    # ────────────────────────────────────────────────────────────────────────
+
+    result = _core_analyze(sym, signal_dir=_forced_dir, deep=deep)
     missing = _validate_result(result)
 
     # ── [P0-B设计院 2026-07-03] BULL_TREND体制感知加分注入 ──────────────────────
@@ -355,7 +392,7 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
         pass  # Kronos不可用时不阻塞分析
     # ── [END Kronos预热] ───────────────────────────────────────────────────
 
-    raw_results = _batch_analyze(norm_syms)
+    raw_results = _batch_analyze_regime(norm_syms)
     ts = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
 
     results = {}

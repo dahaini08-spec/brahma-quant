@@ -311,6 +311,8 @@ def sense_price_structure(state: dict) -> list:
                 alerts.append({
                     'priority': 1,
                     'type': 'PRICE_SURGE',
+                    'symbol': sym,
+                    'price': price,
                     'msg': (f"{direction} **{short_sym} 1H大幅波动**\n"
                             f"  {prev_close:,.1f} → {price:,.1f} ({chg_1h:+.1f}%)"),
                     'dedup_key': f'{sym}_surge_{int(now//3600)}',
@@ -322,6 +324,8 @@ def sense_price_structure(state: dict) -> list:
                 alerts.append({
                     'priority': 1,
                     'type': 'BREAKOUT_HIGH',
+                    'symbol': sym,
+                    'price': price,
                     'msg': (f"🚀 **{short_sym} 突破50H高点**\n"
                             f"  ${high50:,.1f} → 现价${price:,.1f}\n"
                             f"  做多信号增强 | 下一目标+3%"),
@@ -352,6 +356,8 @@ def sense_price_structure(state: dict) -> list:
                     alerts.append({
                         'priority': 1,
                         'type': 'EMA_CROSS_UP',
+                        'symbol': sym,
+                        'price': price,
                         'msg': (f"📈 **{short_sym} 突破EMA20_4H**\n"
                                 f"  EMA=${ema20_4h:,.1f} 现价=${price:,.1f}\n"
                                 f"  多头结构确认 | BULL_TREND倾向增强"),
@@ -674,19 +680,88 @@ def _get_noise_level() -> int:
     return 0
 
 
-def _format_and_push(all_alerts: list):
-    """按优先级分组推送（含自适应噪音过滤）"""
+def _get_active_position_syms() -> set:
+    """获取当前持仓标的（用于改造C：持仓相关推送提权）"""
+    try:
+        pos_file = BASE / 'data' / 'wuqu_positions.json'
+        if pos_file.exists():
+            pos = json.loads(pos_file.read_text())
+            if isinstance(pos, list):
+                return {p['symbol'] for p in pos if float(p.get('positionAmt', 0)) != 0}
+            return {k for k, v in pos.items() if v.get('active')}
+    except Exception:
+        pass
+    return set()
+
+
+def _is_event_sustained(state: dict, event_key: str, price: float,
+                        price_threshold_pct: float = 1.5) -> bool:
+    """
+    改造B: 判断事件是否为「持续状态」而非「新事件」
+    - 若已在 active_events 中 且 价格变化 < threshold → 持续中 → 静默
+    - 若价格变化 >= threshold → 视为新阶段 → 允许推送
+    返回 True = 持续中（应静默）
+    """
+    active = state.setdefault('active_events', {})
+    now = time.time()
+    if event_key in active:
+        prev = active[event_key]
+        prev_price = prev.get('price', price)
+        age = now - prev.get('ts', 0)
+        chg = abs(price - prev_price) / prev_price * 100
+        if chg < price_threshold_pct and age < 14400:  # 4H内价格变化<1.5% = 持续
+            return True  # 静默
+        else:
+            # 价格变化超阈值 → 更新记录，视为新事件
+            active[event_key] = {'ts': now, 'price': price}
+            return False
+    else:
+        # 首次触发
+        active[event_key] = {'ts': now, 'price': price}
+        return False
+
+
+def _format_and_push(all_alerts: list, state: dict = None):
+    """按优先级分组推送（改造B/C：事件去重 + 持仓提权）"""
     if not all_alerts:
         return
 
+    state = state or {}
+    position_syms = _get_active_position_syms()
+
     # OPT-B: 噪音等级 → 动态调整 P1 dedup_ttl
     noise = _get_noise_level()
-    noise_mult = {0: 1, 1: 2, 2: 3}[noise]  # 低/中/高噪音 → 1x/2x/3x去重窗口
+    noise_mult = {0: 1, 1: 2, 2: 3}[noise]
 
     # 分组
     p0 = [a for a in all_alerts if a['priority'] == 0]
-    p1 = [a for a in all_alerts if a['priority'] == 1]
+    p1_raw = [a for a in all_alerts if a['priority'] == 1]
     p2 = [a for a in all_alerts if a['priority'] == 2]
+
+    # ── 改造B/C: P1 过滤 ─────────────────────────────────────
+    p1_filtered = []
+    p1_sustained = []
+    for alert in p1_raw:
+        sym = alert.get('symbol', '')
+        event_key = alert.get('dedup_key', alert.get('type', 'unknown'))
+        atype = alert.get('type', '')
+        price = alert.get('price', 0.0)
+
+        # 改造C: 非持仓标的的普通价格事件 → 降为P2静默
+        if sym and sym not in position_syms and position_syms:
+            non_pos_types = {'PRICE_SURGE', 'EMA_CROSS_UP'}
+            if atype in non_pos_types:
+                p2.append(alert)
+                continue
+
+        # 改造B: 检查是否为持续中的事件
+        sustained_types = {'EMA_CROSS_UP', 'PRICE_SURGE'}
+        if atype in sustained_types and price:
+            if _is_event_sustained(state, event_key, price):
+                p1_sustained.append(alert)
+                continue
+
+        p1_filtered.append(alert)
 
     # P0: 立即逐条推送
     for alert in p0:
@@ -694,20 +769,27 @@ def _format_and_push(all_alerts: list):
               alert.get('dedup_key'), alert.get('dedup_ttl', 3600))
         print(f'[NerveCenter] 🔴 P0推送: {alert["type"]}')
 
-    # P1: 合并推送（最多5条）
-    if p1:
+    # P1: 合并推送（过滤后，最多5条）
+    if p1_filtered:
         lines = ['⚡ **梵天神经中枢 · 市场感知**', '']
-        for a in p1[:5]:
-            lines.append(a['msg'])
+        for a in p1_filtered[:5]:
+            # 改造C: 持仓标的 → 附加RSI超买提示
+            msg_body = a['msg']
+            sym = a.get('symbol', '')
+            if sym in position_syms:
+                msg_body += '\n  📌 *持仓标的 | 关注止盈时机*'
+            lines.append(msg_body)
             lines.append('')
         msg = '\n'.join(lines)
-        # OPT-B: 高噪音体制下延长去重窗口
         dedup = f'nerve_p1_{int(time.time()//(300*noise_mult))}'
         pushed = _push(msg, 1, dedup, 300)
         if pushed:
-            print(f'[NerveCenter] 🟡 P1合并推送: {len(p1)}条')
+            print(f'[NerveCenter] 🟡 P1推送: {len(p1_filtered)}条有效 '
+                  f'(过滤持续中{len(p1_sustained)}条 降级{len(p2)-len([a for a in all_alerts if a["priority"]==2])}条)')
+    elif p1_raw:
+        print(f'[NerveCenter] 🟢 P1全部为持续事件或降级，静默 ({len(p1_raw)}条)')
 
-    # P2: 静默记录（不推送）
+    # P2: 静默记录
     for a in p2:
         print(f'[NerveCenter] 🟢 P2静默: {a["type"]} - {a["msg"][:50]}')
 
@@ -846,7 +928,7 @@ def main():
     _save_state(state)
 
     # 推送
-    _format_and_push(all_alerts)
+    _format_and_push(all_alerts, state)
 
     p0 = len([a for a in all_alerts if a['priority'] == 0])
     p1 = len([a for a in all_alerts if a['priority'] == 1])

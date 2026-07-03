@@ -3,25 +3,27 @@
   "sources": [
     "timesfm_lite"
   ],
-  "reason": "TimesFM-Lite: p_dir=0.56 conf=LOW pred=60227.61 Q10=58936.53~Q90=61546.97",
+  "reason": "TimesFM-Lite: p_dir=0.57 conf=LOW cur=61951.20 pred=60415.55(-2.48%) Q10=59044.37~Q90=61818.57",
   "details": {
     "timesfm_lite": {
-      "score": 0.8,
-      "p_direction": 0.563,
+      "score": 0.9,
+      "p_direction": 0.567,
       "confidence": "LOW",
-      "pred_price": 60227.61,
-      "q10": 58936.53,
-      "q25": 59545.35,
-      "q75": 60917.68,
-      "q90": 61546.97,
-      "band_pct": 4.23,
-      "r_sq": 0.01,
-      "vol_h": 1043.59,
+      "cur_price": 61951.2,
+      "pred_price": 60415.55,
+      "pred_chg_pct": -2.48,
+      "q10": 59044.37,
+      "q25": 59690.74,
+      "q75": 61149.16,
+      "q90": 61818.57,
+      "band_pct": 4.48,
+      "r_sq": 0.04,
+      "vol_h": 1109.38,
       "regime_coeff": 0.8
     }
   },
-  "ts": 1783067840.2766774,
-  "expires": 1783071440.2766776,
+  "ts": 1783082860.1526997,
+  "expires": 1783086460.1527,
   "symbol": "BTCUSDT",
   "direction": "LONG"
 }

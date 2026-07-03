@@ -54,7 +54,7 @@ CRON_WATCHLIST = {
 CRITICAL_FILES = {
     'data/regime_state.json':       60,
     'data/scan_candidates.json':    90,
-    'data/rsi_watcher_state.json':  15,
+    'data/rsi_watcher_state.json':  20,   # v1.1: 从15→20min，避免与5min刷新频率临界竞争
 }
 
 
@@ -437,18 +437,27 @@ def heal(fault_type: str, context: dict) -> dict:
             result.update({'healed': True, 'output': f'清理{removed}条脏数据'})
 
     elif fault_type == 'PUSH_ROUTE_FIX':
-        # 修复旧线程推送路由
-        OLD = '019f181f-e4d1-7576-85ca-77f4a7fa8075'
-        NEW = '019f1797-6c60-7541-ad72-ec34ed14dfc4'
+        # [v1.1 2026-07-03] 修复旧线程推送路由 — 从system_config读取SSOT线程ID
+        try:
+            import importlib.util as _ilu
+            _sc_path = BASE / 'scripts' / 'system_config.py'
+            _spec = _ilu.spec_from_file_location('system_config', _sc_path)
+            _sc = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_sc)
+            OLD = '019f181f-e4d1-7576-85ca-77f4a7fa8075'
+            NEW = getattr(_sc, 'JARVIS_THREAD_ID', '019f1797-6c60-7541-ad72-ec34ed14dfc4')
+        except Exception:
+            OLD = '019f181f-e4d1-7576-85ca-77f4a7fa8075'
+            NEW = '019f1797-6c60-7541-ad72-ec34ed14dfc4'
         jobs_file = Path.home() / '.openclaw/cron/jobs.json'
         if jobs_file.exists():
-            raw = json.loads(jobs_file.read_text())
-            jobs_txt = json.dumps(raw)
+            jobs_txt = jobs_file.read_text()
             if OLD in jobs_txt:
-                jobs_file.write_text(jobs_txt.replace(OLD, NEW))
-                result.update({'healed': True, 'output': f'旧线程→019f1797 修复完成'})
+                fixed_txt = jobs_txt.replace(OLD, NEW)
+                jobs_file.write_text(fixed_txt)
+                fixed_n = jobs_txt.count(OLD)
+                result.update({'healed': True, 'output': f'旧线程→{NEW[:8]} 修复{fixed_n}处'})
             else:
-                result.update({'healed': True, 'output': '无需修复'})
+                result.update({'healed': True, 'output': '无需修复（路由已正确）'})
 
     elif fault_type == 'SCAN_CANDIDATES_REFRESH':
         ok, out = _run(['python3', 'scripts/market_screener.py'], timeout=60)
