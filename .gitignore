@@ -34,3 +34,8 @@ logs/
 *.key
 core.*
 core
+
+# 根目录遗留文件（已归入子目录）
+/dharma_data_bridge.py
+/tz_utils.py
+/ws_guardian.py
