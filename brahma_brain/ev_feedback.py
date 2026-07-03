@@ -160,6 +160,12 @@ def _trigger_param_nudge(matrix_key: str, m: dict):
             _dl_run()
         except Exception:
             pass
+        # ── 断点B修复：同步更新 CONFIDENCE_TABLE（2026-07-03）──
+        try:
+            from position_sizer import sync_confidence_table_from_wr as _sync_ct
+            _sync_ct(min_n=10)
+        except Exception as _ct_e:
+            print(f'[EV-Feedback] ConfidenceSync 失败（不阻断）: {_ct_e}')
     except Exception:
         pass
 

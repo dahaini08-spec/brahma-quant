@@ -300,7 +300,9 @@ def run():
         print(f'[RSI-Watcher] ✅ 触发事件: {triggered_syms} → 建议立即运行 brahma_scan_all')
         # 直接触发扫描（层2）
         import subprocess
-        scan_cmd = f'cd {BASE} && python3 scripts/brahma_scan_all.py {" ".join(triggered_syms)}'
+        # [Headroom修复 2026-07-03] brahma_scan_all不接受位置参数
+        # 默认运行FAST_SYMBOLS（含BTC/ETH）而非传入symbol名
+        scan_cmd = f'cd {BASE} && python3 scripts/brahma_scan_all.py'
         try:
             proc = subprocess.Popen(scan_cmd, shell=True,
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
