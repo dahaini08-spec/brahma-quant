@@ -254,6 +254,17 @@ def main():
             if do_regime_heartbeat():
                 state['last_heartbeat_ts'] = now
 
+    # 同步brahma_state.json SSOT（防止体制滖后超过20H）
+    try:
+        import importlib.util as _ilu
+        _sp = os.path.join(BASE_DIR, 'scripts', 'sync_brahma_state.py')
+        _spec = _ilu.spec_from_file_location('sync_brahma_state', _sp)
+        _mod = _ilu.module_from_spec(_spec)
+        _spec.loader.exec_module(_mod)
+        _mod.sync()
+    except Exception as _se:
+        pass  # SSOT同步失败不影响主流程
+
     # 更新状态
     state['price_above_ema20_4h'] = price_above_ema
     state['price_above_high50h']  = price_above_h50
