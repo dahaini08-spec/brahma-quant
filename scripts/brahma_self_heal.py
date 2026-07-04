@@ -420,6 +420,22 @@ def heal(fault_type: str, context: dict) -> dict:
         ok, out = _run(['python3', 'guardrails/brahma_state_refresh.py'], timeout=30)
         result.update({'healed': ok, 'output': out[:200]})
 
+    elif fault_type == 'DEPS_CHECK':
+        # 检查并自动修复缺失的Python依赖
+        try:
+            import importlib.util as _ilu
+            _spec = _ilu.spec_from_file_location('ensure_deps',
+                BASE / 'scripts' / 'ensure_deps.py')
+            _mod = _ilu.module_from_spec(_spec)
+            _spec.loader.exec_module(_mod)
+            _r = _mod.check_and_fix()
+            if _r['fixed']:
+                result.update({'healed': True, 'output': f'依赖已修复: {_r["fixed"]}'})
+            else:
+                result.update({'ok': True, 'output': '依赖完整'})
+        except Exception as _e:
+            result.update({'ok': False, 'output': f'deps_check异常: {_e}'})
+
     elif fault_type == 'DATA_FILE_REFRESH':
         ok, out = _run(['python3', 'scripts/brahma_state_refresh.py'], timeout=30)
         result.update({'healed': ok, 'output': out[:200]})

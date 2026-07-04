@@ -36,7 +36,13 @@ STATE_FILE  = BASE / 'data' / 'rsi_watcher_state.json'
 TRIGGER_FILE = BASE / 'data' / 'rsi_trigger_event.json'
 FAPI = 'https://fapi.binance.com'
 
-SYMBOLS = ['BTCUSDT', 'ETHUSDT']
+SYMBOLS = [
+    # 主力（趋势锚点）
+    'BTCUSDT', 'ETHUSDT',
+    # MacroGate可通过的BULL_TREND标的（price>EMA200_1D）
+    'NEARUSDT', 'HYPEUSDT', 'JTOUSDT', 'SYNUSDT',
+    'BEATUSDT', 'BASUSDT', 'TACUSDT',
+]  # v5.2 2026-07-03: 扩展至7个小币（MacroGate可通过）
 COOLDOWN_SECONDS = 7200   # 2H冷却
 SILENT_RSI_LOW   = 45.0
 SILENT_RSI_HIGH  = 60.0
@@ -314,7 +320,7 @@ def run():
             lock_file = BASE / 'data/.rsi_scan_chain.lock'
             if lock_file.exists():
                 lock_age = time.time() - lock_file.stat().st_mtime
-                if lock_age < 240:   # 4min内认为上一轮还在跑
+                if lock_age < 120:   # v5.2: 2min内认为上一轮还在跑（原4min，gateway重启导致残留）
                     print(f'[RSI-Watcher] ⚠️ 上一轮扫描链仍在运行({lock_age:.0f}s)，跳过')
                     return
                 else:

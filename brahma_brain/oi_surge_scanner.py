@@ -41,7 +41,7 @@ sys.path.insert(0, os.path.join(BASE_DIR, 'brahma_brain'))
 
 FAPI         = 'https://fapi.binance.com'
 OUT_FILE     = os.path.join(BASE_DIR, 'data', 'oi_candidates.json')
-PUSH_TARGET  = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_ID')
+PUSH_TARGET  = os.environ.get('JARVIS_TARGET', '73295708:thread:019f1797-6c60-7541-ad72-ec34ed14dfc4')  # SSOT v2
 PUSH_CHANNEL = 'jarvis'
 
 # ── 扫描范围 ─────────────────────────────────────────────────────
@@ -315,8 +315,8 @@ def analyze(sym):
         regime = 'UNKNOWN'
 
     action_map = {
-        'BEAR_TREND':    ('watchlist', 0),
-        'BEAR_EARLY':    ('watchlist', 0),
+        'BEAR_TREND':    ('buy_light', 1),   # [方案A 2026-07-04] BEAR_TREND下OI异常=逼空信号，1%轻仓放行（原:watchlist封禁）
+        'BEAR_EARLY':    ('buy_light', 1),   # [方案A 2026-07-04] 同上，1%轻仓
         'CHOP_MID':      ('buy_light', 3),   # SIZE=3%
         'BEAR_RECOVERY': ('buy_light', 2),   # SIZE=2%
         'BULL_TREND':    ('buy_full',  4),   # SIZE=4%
@@ -421,7 +421,7 @@ def format_push(candidates):
             )
 
     if watchlist and not high_quality:
-        lines.append('\n👁 监控池（BEAR_TREND封禁，等待体制切换）:')
+        lines.append('\n👁 监控池（低优先级，等待更优体制）:')
         for c in watchlist[:3]:
             lines.append(
                 f"  {c['symbol']:<14} OI+{c['oi_score']:.1f}% 大户L={c['whale_l']:.0f}%↑ "
@@ -504,3 +504,50 @@ if __name__ == '__main__':
         print(f'\n[OI-Scanner] ✅ 推送完成')
     else:
         print(f'\n[OI-Scanner] 无高质量信号，静默')
+
+    # [v2.0 设计院 2026-07-03] 修复断链：buy候选写入rsi_trigger_event触发扫描链
+    buy_syms = [c['symbol'] for c in candidates
+                if c.get('action') in ('buy_full', 'buy_light')]
+    if buy_syms:
+        trigger_file = os.path.join(BASE_DIR, 'data', 'rsi_trigger_event.json')
+        trigger = {
+            'ts':      time.time(),
+            'symbol':  buy_syms[0],
+            'symbols': buy_syms[:6],
+            'source':  'oi_surge_scanner',
+            'events':  ['OI_BUY_SIGNAL'],
+        }
+        with open(trigger_file, 'w') as _tf:
+            import json as _json
+            _json.dump(trigger, _tf, ensure_ascii=False)
+        print(f'[OI-Scanner] 🔗 触发扫描链: {buy_syms[:6]}')
+        # [v2.0] 同时写入signal_bus
+        try:
+            import sys as _s; _s.path.insert(0, str(Path(BASE_DIR)/'scripts'))
+            from signal_bus import write as _bw
+            for _c in candidates:
+                if _c.get('action') in ('buy_full','buy_light'):
+                    _bw({'source':'oi','symbol':_c['symbol'],'direction':'LONG',
+                         'score':float(_c.get('oi_bonus',10))+100,
+                         'valid':True,'regime':'OI_SURGE',
+                         'entry_lo':float(_c.get('price',0))*0.995,
+                         'entry_hi':float(_c.get('price',0))*1.005,
+                         'sl':float(_c.get('price',0))*0.95,
+                         'sl_pct':5.0,'tp1':float(_c.get('price',0))*1.10,
+                         'rr1':2.0,'expires_at':None})
+        except Exception: pass
+        # 同时写入scan_candidates让brahma_scan_guard直接识别
+        cands_file = os.path.join(BASE_DIR, 'data', 'scan_candidates.json')
+        try:
+            with open(cands_file, 'r') as _cf:
+                existing = _json.load(_cf)
+        except Exception:
+            existing = {'candidates': [], 'ts': 0}
+        existing_syms = {c.get('symbol') for c in existing.get('candidates', [])}
+        for c in candidates:
+            if c.get('action') in ('buy_full', 'buy_light') and c['symbol'] not in existing_syms:
+                existing['candidates'].append({'symbol': c['symbol'], 'score': c.get('oi_bonus', 10), 'source': 'oi'})
+        existing['ts'] = int(time.time())
+        with open(cands_file, 'w') as _cf:
+            _json.dump(existing, _cf, ensure_ascii=False, indent=2)
+        print(f'[OI-Scanner] 📋 scan_candidates更新: +{len(buy_syms)}个OI候选')

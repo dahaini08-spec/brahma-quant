@@ -24,6 +24,14 @@ data/*.jsonl
 data/*.json
 dharma/cache/
 dharma/pump_hunter/*.db
+data/brahma_cache/
+data/research_cache/
+data/tardis/
+data/backups/
+data/.*.lock
+*.tar.gz
+gen_long_map.py
+gen_precision_map.py
 
 # 日志
 *.log

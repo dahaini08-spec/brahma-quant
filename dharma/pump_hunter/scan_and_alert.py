@@ -17,10 +17,11 @@ LAST  = os.path.join(DIR, 'last_alerts.json')
 LOG   = os.path.join(DIR, 'scan_log.jsonl')
 
 EXCLUDE     = {'BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT','XRPUSDT'}
-MIN_VOL     = 1_500_000    # 最低24H成交额
+MIN_VOL     = 20_000_000   # 最低24H成交额 v2: 150万→2000万，控制候选<100个防超时
 MAX_VOL     = 800_000_000  # 排除超大盘
 MAX_CHG_ABS = 25.0         # 排除已大幅波动
 PUSH_SCORE  = 75           # 触发推送的评分门槛
+EXEC_SCORE  = 85           # 触发开单的评分门槛（v2.1 设计院 2026-07-03）
 
 def get_symbols():
     info = requests.get(f'{API}/fapi/v1/exchangeInfo', timeout=12).json()
@@ -186,15 +187,40 @@ def scan():
                          if a['score'] >= PUSH_SCORE}
         except: pass
 
-    new_alerts = [a for a in alerts if a['symbol'] not in last_syms]
+    # [v2.1 设计院 2026-07-04] 时间窗口去重：6H内同标的不重复推送
+    # 原逻辑：只要上次见过就永远不推 → 持续高分标的永远被去重
+    import time as _time_dedup
+    _DEDUP_WINDOW = 6 * 3600  # 6小时
+    _now_ts = _time_dedup.time()
+    _last_ts = {}
+    try:
+        _last_ts = {a['symbol']: last_data.get('scan_ts', _now_ts - 99999)
+                    for a in last_data.get('alerts', []) if a.get('score', 0) >= PUSH_SCORE}
+    except: pass
+    new_alerts = [a for a in alerts
+                  if (_now_ts - _last_ts.get(a['symbol'], 0)) > _DEDUP_WINDOW]
 
     # ── 梵天体制感知（设计院修正版 2026-06-29）──────────────────────
     # 设计哲学：体制只调整「仓位+止盈」，不折损信号分，不屏蔽妖币
     # 原因：BEAR_TREND逆势妖往往是最强逼空，不能因体制压制信号本身
-    _REGIME_POS = {'BEAR_RECOVERY': 3.0, 'BULL_TREND': 2.5, 'CHOP_MID': 2.0,
-                   'BULL_EARLY': 2.0, 'BEAR_EARLY': 1.5, 'BEAR_TREND': 1.0}
-    _REGIME_TP  = {'BEAR_RECOVERY': 2.0, 'BULL_TREND': 1.5, 'CHOP_MID': 1.2,
-                   'BULL_EARLY': 1.2, 'BEAR_EARLY': 1.0, 'BEAR_TREND': 0.8}
+    # [v2.1 设计院 2026-07-03] 体制仓位/止盈完全重构
+    # 核心逻辑：BEAR_TREND是逼仓最肥沃的土壤，仓位最高；BULL_TREND空头少，仓位最低
+    _REGIME_POS = {
+        'BEAR_TREND':    2.5,  # ⬆️ 熊市逼仓最猛
+        'BEAR_RECOVERY': 2.0,  # 反弹适中
+        'CHOP_MID':      2.0,  # 震荡适中
+        'BEAR_EARLY':    1.5,  # 熊初保守
+        'BULL_EARLY':    2.0,  # 牛初适中
+        'BULL_TREND':    1.5,  # ⬇️ 牛市空头少
+    }
+    _REGIME_TP  = {
+        'BEAR_TREND':    1.8,  # ⬆️ 熊市逼仓最暴力，追主升浪
+        'BEAR_RECOVERY': 1.5,  # 适中
+        'CHOP_MID':      1.3,  # 保守
+        'BEAR_EARLY':    1.2,
+        'BULL_EARLY':    1.3,
+        'BULL_TREND':    1.2,  # ⬇️ 牛市快进快出
+    }
     try:
         from brahma_brain.universal_asset_router import get_regime_cached
         _btc_regime = get_regime_cached('BTCUSDT')
@@ -204,7 +230,7 @@ def scan():
             a['brahma_regime']         = _btc_regime
             a['exec_pos_pct']          = _pos   # 仓位参考，不改信号分
             a['exec_tp_mult']          = _tp    # 止盈倍数参考
-            a['exec_eligible']         = a.get('score', 0) >= PUSH_SCORE  # 门槛不变
+            a['exec_eligible']         = a.get('score', 0) >= EXEC_SCORE   # v2.1: 75→85
             a['brahma_weighted_score'] = a.get('score', 0)  # 分数不折损
             if _btc_regime == 'BEAR_TREND':
                 a['regime_note'] = '❗熊市逆势，仓位1%，止盈目标保守'
@@ -221,6 +247,7 @@ def scan():
         'alerts':       alerts,
         'new_alerts':   new_alerts,
         'need_push':    len(new_alerts) > 0,
+        'scan_ts':      __import__('time').time(),
     }
 
     json.dump(result, open(OUT, 'w'),  indent=2, ensure_ascii=False)
@@ -254,7 +281,7 @@ if __name__ == '__main__':
         _sp.run(
             ['openclaw', 'message', 'send',
              '--channel', 'jarvis',
-             '--target', os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_ID'),
+             '--target', os.environ.get('JARVIS_TARGET', '73295708:thread:019f1797-6c60-7541-ad72-ec34ed14dfc4'),
              '--message', msg],
             capture_output=True, timeout=15
         )
@@ -281,7 +308,7 @@ if __name__ == '__main__':
             from scripts.pump_signal_executor import emit_pump_signal
             import time as _time_ph
 
-            _regime_ph = r['new_alerts'][0].get('brahma_regime', 'BEAR_TREND') if r['new_alerts'] else 'BEAR_TREND'
+            _regime_ph = r['new_alerts'][0].get('brahma_regime', 'BULL_TREND') if r['new_alerts'] else 'BULL_TREND'
             for _a in r['new_alerts']:
                 _scan_fmt = {
                     'symbol':    _a['symbol'],
@@ -304,6 +331,29 @@ if __name__ == '__main__':
                     _sig = emit_pump_signal(_scan_fmt, _regime_ph)
                     if _sig:
                         print(f'[pump-hunter] PUMP_SIGNAL写入独立队列: {_a["symbol"]} score={_a["score"]}')
+                    # [v2.1 设计院 2026-07-04] 同步写入signal_bus
+                    try:
+                        import sys as _sb_sys, os as _sb_os
+                        _sb_sys.path.insert(0, _sb_os.path.join(BASE_DIR,'scripts'))
+                        from signal_bus import write as _sb_write
+                        _px = float(_scan_fmt['price'])
+                        _atr = float(_scan_fmt['atr_pct'])/100
+                        _sb_write({
+                            'source':    'pump',
+                            'symbol':    _scan_fmt['symbol'],
+                            'direction': 'LONG',
+                            'score':     float(_scan_fmt['score']),
+                            'valid':     True,
+                            'regime':    _regime_ph,
+                            'entry_lo':  round(_px*0.995,6),
+                            'entry_hi':  round(_px*1.005,6),
+                            'sl':        round(_px*(1-_atr*1.5),6),
+                            'sl_pct':    round(_atr*150,2),
+                            'tp1':       round(_px*1.15,6),
+                            'rr1':       1.8,
+                            'expires_at':None,
+                        })
+                    except Exception: pass
         except Exception as _e_ph:
             print(f'[pump-hunter] 独立通道写入失败（不影响主流）: {_e_ph}')
         # ── [END 独立通道] ──
