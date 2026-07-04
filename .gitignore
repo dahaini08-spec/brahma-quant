@@ -47,3 +47,8 @@ core
 /dharma_data_bridge.py
 /tz_utils.py
 /ws_guardian.py
+-e 
+# Python虚拟环境
+venv/
+.venv/
+env/
