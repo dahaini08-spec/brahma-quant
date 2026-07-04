@@ -17,7 +17,7 @@ LAST  = os.path.join(DIR, 'last_alerts.json')
 LOG   = os.path.join(DIR, 'scan_log.jsonl')
 
 EXCLUDE     = {'BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT','XRPUSDT'}
-MIN_VOL     = 20_000_000   # 最低24H成交额 v2: 150万→2000万，控制候选<100个防超时
+MIN_VOL     = 50_000_000  # 内存优化: 2000万→5000万，候选池~50个   # 最低24H成交额 v2: 150万→2000万，控制候选<100个防超时
 MAX_VOL     = 800_000_000  # 排除超大盘
 MAX_CHG_ABS = 25.0         # 排除已大幅波动
 PUSH_SCORE  = 75           # 触发推送的评分门槛
