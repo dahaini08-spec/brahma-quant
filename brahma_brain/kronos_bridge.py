@@ -201,7 +201,9 @@ def _run_kronos(
     """
     now = time.time()
 
-    # 缓存命中
+    # 缓存命中（symbol必须为str）
+    if not isinstance(symbol, str):
+        symbol = str(symbol)
     if symbol in _cache:
         ts, p_up, vol = _cache[symbol]
         if now - ts < CACHE_TTL:

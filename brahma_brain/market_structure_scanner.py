@@ -238,8 +238,13 @@ def format_report(r: dict) -> str:
 # 自推送：直接推送到 Jarvis，绕开AI渲染层
 # ════════════════════════════════════════════════════════════════
 
-JARVIS_TARGET  = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_ID')
-JARVIS_CHANNEL = 'jarvis'
+import sys as _sys
+_sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
+try:
+    from system_config import JARVIS_TARGET, JARVIS_CHANNEL  # type: ignore
+except Exception:
+    JARVIS_TARGET  = os.environ.get('JARVIS_TARGET', '73295708:thread:019f1797-6c60-7541-ad72-ec34ed14dfc4')
+    JARVIS_CHANNEL = 'jarvis'
 
 
 def _push(message: str):

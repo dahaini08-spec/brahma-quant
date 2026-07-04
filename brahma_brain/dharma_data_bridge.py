@@ -123,8 +123,17 @@ def log_signal(result: dict) -> bool:
             'grade':          grade,
             'action':         action,
             # [FIX-v25.5] valid单一来源: params['valid']（brahma_core正确计算RR的结果）
-            # 删除旧逻辑 score>=138 and action in ENTER （与 brahma_core 不同步）
-            'valid':          bool(params.get('valid', False)),
+            # [v5.2 设计院 2026-07-03] BULL_TREND特例: score≥138+rr1≥1.0+sl≤15% -> valid=True
+            'valid': (
+                bool(params.get('valid', False))
+                or (
+                    'BULL_TREND' in (regime or '') and (direction or '') == 'LONG'
+                    and float(score or 0) >= 138
+                    and float(params.get('rr1', 0) or 0) >= 1.0
+                    and float(params.get('sl_pct', 0) or 0) <= 15.0
+                    and action in ('ENTER', 'ENTER_FULL', 'WATCH')
+                )
+            ),
 
             # 价格参数
             'price':          price,
@@ -203,6 +212,32 @@ def log_signal(result: dict) -> bool:
         line = json.dumps(signal, ensure_ascii=False) + '\n'
         with open(LOG_PATH, 'a', encoding='utf-8') as f:
             f.write(line)
+
+        # [v5.2 设计院 2026-07-04] 同步写入统一信号总线
+        if signal.get('valid') and float(signal.get('score', 0)) >= 100:
+            try:
+                import sys as _sys
+                _sys.path.insert(0, str(BASE / 'scripts'))
+                from signal_bus import write as _bus_write
+                _bus_write({
+                    'source':     'main',
+                    'symbol':     signal.get('symbol'),
+                    'direction':  signal.get('direction') or signal.get('signal_dir'),
+                    'score':      signal.get('score'),
+                    'valid':      signal.get('valid'),
+                    'regime':     signal.get('regime'),
+                    'entry_lo':   signal.get('entry_lo'),
+                    'entry_hi':   signal.get('entry_hi'),
+                    'sl':         signal.get('stop_loss') or signal.get('sl'),
+                    'sl_pct':     signal.get('sl_pct'),
+                    'tp1':        signal.get('tp1'),
+                    'tp2':        signal.get('tp2'),
+                    'rr1':        signal.get('rr1'),
+                    'expires_at': signal.get('expires_at'),
+                    'signal_id':  signal.get('signal_id') or signal.get('output_tag'),
+                })
+            except Exception:
+                pass  # 不阻断主流程
 
         return True
 
