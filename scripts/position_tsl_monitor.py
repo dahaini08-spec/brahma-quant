@@ -206,6 +206,11 @@ def update_stop_loss(symbol: str, new_sl: float, position_side: str,
             sl_state[symbol]['tsl_old_sl']  = old_sl
             sl_state_path.write_text(json.dumps(sl_state, ensure_ascii=False, indent=2))
             log(f'  ✅ {symbol} 软止损已更新 {old_sl:.6g} → {new_sl:.6g} (ws_guardian持仓监控将生效)', 'TSL')
+            # P0推送：止损移动通知
+            import subprocess as _sp
+            from system_config import JARVIS_TARGET, JARVIS_CHANNEL
+            _msg = f'🔒 TSL移动 {symbol}\n止损: {old_sl:.4f} → {new_sl:.4f}\n(ws_guardian软止损已更新)'
+            _sp.Popen(['openclaw','message','send','--channel',JARVIS_CHANNEL,'--to',JARVIS_TARGET,'--message',_msg])
         else:
             # 新增软止损记录
             sl_state[symbol] = {

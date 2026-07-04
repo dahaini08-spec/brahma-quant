@@ -1,207 +1,43 @@
 {
-  "PIXELUSDT": {
-    "symbol": "PIXELUSDT",
+  "SUIUSDT": {
+    "symbol": "SUIUSDT",
+    "direction": "LONG",
+    "entry_price": 0.762,
+    "sl_price": 0.73914,
+    "tsl_updated": null,
+    "updated_at": 1783165133.1032841
+  },
+  "RENDERUSDT": {
+    "symbol": "RENDERUSDT",
+    "direction": "LONG",
+    "entry_price": 1.595,
+    "sl_price": 1.54715,
+    "tsl_updated": null,
+    "updated_at": 1783165133.1032841
+  },
+  "LDOUSDT": {
+    "symbol": "LDOUSDT",
+    "direction": "LONG",
+    "entry_price": 0.2658,
+    "sl_price": 0.257826,
+    "tsl_updated": null,
+    "updated_at": 1783165133.1032841
+  },
+  "NEARUSDT": {
+    "symbol": "NEARUSDT",
+    "direction": "LONG",
+    "entry_price": 2.001,
+    "sl_price": 1.94097,
+    "tsl_updated": null,
+    "updated_at": 1783165133.1032841
+  },
+  "HYPEUSDT": {
+    "symbol": "HYPEUSDT",
     "direction": "SHORT",
-    "sl_price": 0.004711,
-    "tsl_updated": "2026-07-01T10:09:33.391155+00:00",
-    "reason": "自主决策：TP1已穿越，SL追踪至TP1~TP2中间位锁利",
-    "updated_at": 1782918047.57576,
-    "note": "浮盈15.0%→SL收紧至px*1.02 by APM"
-  },
-  "BNBUSDT": {
-    "symbol": "BNBUSDT",
-    "side": "SHORT",
-    "qty": 0.11,
-    "entry": 570.6,
-    "sl_price": 558.07,
-    "tp_price": 544.57,
-    "registered_at": "2026-06-25T05:18:51.947746+00:00",
-    "source": "hunter_executor",
-    "reason": "自主决策：极近TP1(543.85距544.57仅0.14%)，SL收至549锁定≥3.9%",
-    "tsl_updated": "2026-07-01T10:50:21.524611+00:00",
-    "updated_at": 1782986104.7903388,
-    "note": "BEAR_RECOVERY体制TSL收紧 px=549.82 SL=558.07"
-  },
-  "BTCUSDT": {
-    "symbol": "BTCUSDT",
-    "side": "SHORT",
-    "entry": 60223.33,
-    "sl_price": 62000.0,
-    "tp_price": 60223.33,
-    "registered_at": "2026-07-02T10:12:00+00:00",
-    "source": "设计院自主决策",
-    "sl_note": "4H结构顶62000为硬止损，RSI_1H=34+缩量预计回调至回本",
-    "reason": "设计院裁决：持有等回本，SL=62000",
-    "updated_at": 1782987161.128466
-  },
-  "BTCUSDT_pending": {
-    "type": "PENDING",
-    "symbol": "BTCUSDT",
-    "side": "SHORT",
-    "entry_zone": [
-      60050.0,
-      60200.0,
-      60420.0
-    ],
-    "sl_price": 61100.0,
-    "tp1": 59419.0,
-    "tp2": 58800.0,
-    "order_ids": [
-      1058628715341,
-      1058628717757,
-      1058628720519
-    ],
-    "updated_at": 1782951398.608255,
-    "note": "梵天自主 OB上沿+GEX MAX 3档挂空"
-  },
-  "ETHUSDT_pending": {
-    "type": "PENDING",
-    "symbol": "ETHUSDT",
-    "side": "SHORT",
-    "entry_zone": [
-      1614.0,
-      1617.0,
-      1620.0
-    ],
-    "sl_price": 1638.0,
-    "tp1": 1591.0,
-    "tp2": 1583.0,
-    "order_ids": [
-      8389766223314900809,
-      8389766223314901300,
-      8389766223314906680
-    ],
-    "updated_at": 1782951398.6082585,
-    "note": "梵天自主 空头OB回测 3档挂空"
-  },
-  "BTCUSDT_long_pending": {
-    "type": "PENDING_LONG",
-    "symbol": "BTCUSDT",
-    "side": "LONG",
-    "entry_zone": [
-      59850.0,
-      59950.0,
-      60050.0
-    ],
-    "sl_price": 59200.0,
-    "tp1": 60448.0,
-    "tp2": 60900.0,
-    "order_ids": [
-      1058912090749,
-      1058912091258,
-      1058912091733
-    ],
-    "updated_at": 1782979217.531726,
-    "note": "BEAR_RECOVERY多头猎杀 EMA20回调入场"
-  },
-  "BTCUSDT_long_v2": {
-    "type": "PENDING_LONG",
-    "symbol": "BTCUSDT",
-    "side": "LONG",
-    "entry_zone": [
-      60700.0,
-      60850.0,
-      61000.0
-    ],
-    "sl_price": 60200.0,
-    "tp1": 61800.0,
-    "tp2": 63000.0,
-    "order_ids": [
-      1058987563709,
-      1058987572056,
-      1058987578168
-    ],
-    "updated_at": 1782986104.7903485,
-    "note": "BEAR_RECOVERY GEX MAX转支撑回调多 梵天自主 09:53UTC"
-  },
-  "ETHUSDT_long_v1": {
-    "type": "PENDING_LONG",
-    "symbol": "ETHUSDT",
-    "side": "LONG",
-    "entry_zone": [
-      1625.0,
-      1630.0,
-      1635.0
-    ],
-    "sl_price": 1598.0,
-    "tp1": 1680.0,
-    "tp2": 1720.0,
-    "order_ids": [
-      8389766223643571495,
-      8389766223643572682,
-      8389766223643574001
-    ],
-    "updated_at": 1782986104.790353,
-    "note": "BEAR_RECOVERY GEX MAX回调多 梵天自主 09:53UTC"
-  },
-  "ETHUSDT": {
-    "symbol": "ETHUSDT",
-    "side": "SHORT",
-    "entry": 1617.0,
-    "sl_price": 1680.0,
-    "tp_price": 1617.0,
-    "registered_at": "2026-07-02T10:12:00+00:00",
-    "source": "设计院自主决策",
-    "sl_note": "BEAR_RECOVERY体制+RSI_4H=44，SL=1680(+3.9%)为最大容忍亏损",
-    "reason": "设计院裁决：ETH结构偏强，给回本窗口但设硬顶止损",
-    "updated_at": 1782987161.128464
-  },
-  "BTCUSDT_long_v3": {
-    "type": "PENDING_LONG",
-    "symbol": "BTCUSDT",
-    "side": "LONG",
-    "entry_zone": [
-      61200.0,
-      61350.0,
-      61500.0
-    ],
-    "sl_price": 60500.0,
-    "tp1": 62500.0,
-    "tp2": 63000.0,
-    "order_ids": [
-      1059287873963,
-      1059287875669,
-      1059287880884
-    ],
-    "updated_at": 1783006961.397245,
-    "note": "重挂 EMA20回调区 梵天自主 15:43UTC"
-  },
-  "ETHUSDT_long_v2": {
-    "type": "PENDING_LONG",
-    "symbol": "ETHUSDT",
-    "side": "LONG",
-    "entry_zone": [
-      1670.0,
-      1678.0,
-      1685.0
-    ],
-    "sl_price": 1640.0,
-    "tp1": 1750.0,
-    "tp2": 1800.0,
-    "order_ids": [
-      8389766223920767081,
-      8389766223920768505,
-      8389766223920770240
-    ],
-    "updated_at": 1783006961.3972487,
-    "note": "重挂 GEX MAX下方支撑 梵天自主 15:43UTC"
-  },
-  "ETHUSDT_long_v3": {
-    "type": "PENDING_LONG",
-    "symbol": "ETHUSDT",
-    "side": "LONG",
-    "entry_zone": [
-      1695.0,
-      1703.0
-    ],
-    "sl_price": 1668.0,
-    "tp1": 1780.0,
-    "tp2": 1820.0,
-    "order_ids": [
-      8389766224335606048,
-      8389766224335607052
-    ],
-    "updated_at": 1783045747.2048647,
-    "note": "重挂 GEX MAX下方 $1,695~1,710 梵天自主 02:28UTC"
+    "entry_price": 72.006,
+    "sl_price": 72.006,
+    "tsl_updated": "2026-07-04T11:41:39Z",
+    "updated_at": 1783165133.1032841,
+    "tsl_stage": "breakeven"
   }
 }
