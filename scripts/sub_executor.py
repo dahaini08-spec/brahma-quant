@@ -478,6 +478,41 @@ def run_oi_executor(nav: float, active_pos: list) -> list:
 # 主入口
 # ════════════════════════════════════════════════════════════
 
+def _sync_wuqu_positions():
+    """开仓后实时同步 wuqu_positions.json（设计院修复 2026-07-05）"""
+    try:
+        import time as _time
+        from scripts.binance_fapi import get_positions
+        import json as _json
+        positions, _ = get_positions()
+        active = [p for p in (positions or []) if abs(float(p.get('positionAmt', 0))) > 0]
+        sl_state_path = WUQU_PATH.parent / 'position_sl_state.json'
+        sl_data = _json.loads(sl_state_path.read_text()) if sl_state_path.exists() else {}
+        wuqu = []
+        for p in active:
+            sym  = p.get('symbol', '')
+            amt  = float(p.get('positionAmt', 0))
+            side = 'LONG' if amt > 0 else 'SHORT'
+            entry= float(p.get('entryPrice', 0))
+            mark = float(p.get('markPrice', entry))
+            pnl  = float(p.get('unRealizedProfit', 0))
+            sl_d = sl_data.get(sym, {})
+            wuqu.append({
+                'symbol': sym, 'side': side, 'size': abs(amt),
+                'entry_price': entry, 'mark_price': mark,
+                'stop_loss':   sl_d.get('sl_price',  round(entry*(0.97 if side=='LONG' else 1.03),4)),
+                'take_profit': sl_d.get('tp1_price', round(entry*(1.03 if side=='LONG' else 0.97),4)),
+                'leverage': float(p.get('leverage', 5)),
+                'notional_usdt': round(abs(amt)*mark, 4),
+                'unrealized_pnl': round(pnl, 4),
+                'updated_at': _time.time(), 'success': True,
+            })
+        WUQU_PATH.write_text(_json.dumps(wuqu, ensure_ascii=False, indent=2))
+        print(f'[SubExecutor] wuqu_positions.json 已同步: {len(wuqu)}个持仓')
+    except Exception as _e:
+        print(f'[SubExecutor] wuqu_sync失败: {_e}')
+
+
 def run():
     # ── 文件锁：防止多实例并发（P1加固 2026-07-03）──────────────
     import fcntl
@@ -529,6 +564,8 @@ def _run_sub_locked():
             fqty  = r.get('fill_qty', 0)
             nom   = r.get('notional', 0)
             print(f'  [{sub}] {sym} qty={fqty} @${fpx:.4f} 名义=${nom:.2f}')
+        # 设计院修复 2026-07-05: 开仓成功后实时同步 wuqu_positions.json
+        _sync_wuqu_positions()
     else:
         skipped_pump = len([r for r in pump_results if r['status'] == 'FAILED'])
         skipped_oi   = len([r for r in oi_results if r['status'] == 'FAILED'])
