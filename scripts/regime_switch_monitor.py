@@ -168,8 +168,10 @@ f"""🔄 梵天体制升级
                 new_regime = m.group(1)
                 try:
                     import sys as _sys, os as _os
-                    _BASE = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
-                    _sys.path.insert(0, str(_BASE))
+                    # 修复 2026-07-05: 用固定绝对路径，避免 cron isolated 环境 __file__ 解析偏移
+                    _TRADING_ROOT = '/root/.openclaw/workspace/trading-system'
+                    if _TRADING_ROOT not in _sys.path:
+                        _sys.path.insert(0, _TRADING_ROOT)
                     from scripts.regime_position_hook import apply_regime_hook
                     hook_actions = apply_regime_hook(new_regime, dry_run=False)
                     if hook_actions:
