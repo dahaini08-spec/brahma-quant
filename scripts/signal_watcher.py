@@ -381,7 +381,10 @@ def run():
             print(f"[SignalWatcher] 📡 即将触发: {sym} gap={gap_pct:.3f}%")
 
     _save_state(state)
-    print(f"[SignalWatcher] 完成  有效信号={len(signals)}  通知记录={len(state['notified'])}")
+    if len(signals) == 0:
+        print('HEARTBEAT_OK')
+    else:
+        print(f"[SignalWatcher] 完成  有效信号={len(signals)}  通知记录={len(state['notified'])}")
 
     # [Zone Watcher v1.0 2026-06-10] Layer 2: 高分低级信号待触达监控
     try:

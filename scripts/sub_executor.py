@@ -533,7 +533,7 @@ def _run_sub_locked():
         print(f'[SubExecutor] 无执行 | PUMP跳过={skipped_pump} OI跳过={skipped_oi}')
         print('HEARTBEAT_OK')
 
-    print(f'[SubExecutor] 完成')
+    print('HEARTBEAT_OK')  # 设计院：无论有无执行，最终输出HEARTBEAT_OK避免AI生成冗余播报
 
 
 if __name__ == '__main__':

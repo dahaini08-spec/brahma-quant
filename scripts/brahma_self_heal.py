@@ -34,7 +34,11 @@ BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(BASE / 'brahma_brain'))
 
-PUSH_TARGET   = '73295708:t:019f1797-6c60-7541-ad72-ec34ed14dfc4'
+try:
+    import scripts.system_config as _sc
+    PUSH_TARGET = f"{_sc.JARVIS_USER_ID}:t:{_sc.JARVIS_THREAD_ID}"
+except Exception:
+    PUSH_TARGET   = '73295708:t:019f309c-609b-7a75-a195-e221e5927c63'
 PUSH_CHANNEL  = 'jarvis'
 HEAL_LOG_FILE = BASE / 'logs' / 'self_heal.log'
 STATE_FILE    = BASE / 'data' / 'self_heal_state.json'
@@ -366,8 +370,11 @@ def check_cron_precise() -> dict:
 
 def check_push_routing() -> dict:
     """推送路由正确性：确认所有cron任务使用正确线程"""
-    CORRECT_THREAD = '019f1797-6c60-7541-ad72-ec34ed14dfc4'
-    OLD_THREAD     = '019f181f-e4d1-7576-85ca-77f4a7fa8075'
+    CORRECT_THREAD = '019f309c-609b-7a75-a195-e221e5927c63'
+    OLD_THREADS    = [
+        '019f181f-e4d1-7576-85ca-77f4a7fa8075',
+        '019f1797-6c60-7541-ad72-ec34ed14dfc4',
+    ]
     issues = []
     try:
         jobs_file = Path.home() / '.openclaw/cron/jobs.json'
@@ -382,7 +389,7 @@ def check_push_routing() -> dict:
                 continue
             delivery = j.get('delivery', {})
             to = delivery.get('to', '')
-            if OLD_THREAD in to:
+            if any(old in to for old in OLD_THREADS):
                 issues.append(j.get('name', '?'))
     except Exception as e:
         return {'ok': False, 'detail': str(e)}
@@ -460,10 +467,10 @@ def heal(fault_type: str, context: dict) -> dict:
             _spec = _ilu.spec_from_file_location('system_config', _sc_path)
             _sc = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_sc)
             OLD = '019f181f-e4d1-7576-85ca-77f4a7fa8075'
-            NEW = getattr(_sc, 'JARVIS_THREAD_ID', '019f1797-6c60-7541-ad72-ec34ed14dfc4')
+            NEW = getattr(_sc, 'JARVIS_THREAD_ID', '019f309c-609b-7a75-a195-e221e5927c63')
         except Exception:
             OLD = '019f181f-e4d1-7576-85ca-77f4a7fa8075'
-            NEW = '019f1797-6c60-7541-ad72-ec34ed14dfc4'
+            NEW = '019f309c-609b-7a75-a195-e221e5927c63'
         jobs_file = Path.home() / '.openclaw/cron/jobs.json'
         if jobs_file.exists():
             jobs_txt = jobs_file.read_text()

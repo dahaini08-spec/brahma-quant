@@ -41,7 +41,7 @@ sys.path.insert(0, os.path.join(BASE_DIR, 'brahma_brain'))
 
 FAPI         = 'https://fapi.binance.com'
 OUT_FILE     = os.path.join(BASE_DIR, 'data', 'oi_candidates.json')
-PUSH_TARGET  = os.environ.get('JARVIS_TARGET', '73295708:thread:019f1797-6c60-7541-ad72-ec34ed14dfc4')  # SSOT v2
+PUSH_TARGET  = os.environ.get('JARVIS_TARGET', '73295708:thread:019f309c-609b-7a75-a195-e221e5927c63')  # SSOT v2
 PUSH_CHANNEL = 'jarvis'
 
 # ── 扫描范围 ─────────────────────────────────────────────────────

@@ -167,8 +167,9 @@ f"""🔄 梵天体制升级
             if m:
                 new_regime = m.group(1)
                 try:
-                    import sys as _sys
-                    _sys.path.insert(0, str(BASE))
+                    import sys as _sys, os as _os
+                    _BASE = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+                    _sys.path.insert(0, str(_BASE))
                     from scripts.regime_position_hook import apply_regime_hook
                     hook_actions = apply_regime_hook(new_regime, dry_run=False)
                     if hook_actions:

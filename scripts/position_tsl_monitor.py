@@ -72,12 +72,32 @@ def log(msg, level='INFO'):
 
 # ── 获取当前持仓 ──────────────────────────────────────────────────
 def get_positions():
+    """读取真实持仓（修复2026-07-04）:
+    优先读 wuqu_positions.json（Binance实盘同步，唯一真相），
+    brahma_state.positions 已证实包含幽灵数据，禁止再用。
+    """
+    wuqu_path = DATA_DIR / 'wuqu_positions.json'
     try:
-        state = json.load(open(DATA_DIR / 'brahma_state.json'))
-        return [p for p in state.get('positions', []) if p.get('status') == 'OPEN']
+        raw = json.load(open(wuqu_path))
+        positions = []
+        for p in raw:
+            # 标准化字段名（wuqu用side/entry_price，TSL内部用direction/entry_price）
+            pos = dict(p)
+            pos['direction'] = pos.get('direction') or pos.get('side', '')
+            pos['entry_price'] = float(pos.get('entry_price') or pos.get('entry', 0))
+            pos['stop_loss'] = float(pos.get('stop_loss') or pos.get('sl_price', 0))
+            pos['tp1'] = float(pos.get('take_profit') or pos.get('tp1') or pos.get('tp1_price', 0))
+            pos['status'] = 'OPEN'
+            positions.append(pos)
+        return positions
     except Exception as e:
-        log(f'读取brahma_state失败: {e}', 'ERROR')
-        return []
+        log(f'读取wuqu_positions失败: {e}，降级尝试brahma_state', 'WARN')
+        try:
+            state = json.load(open(DATA_DIR / 'brahma_state.json'))
+            return [p for p in state.get('positions', []) if p.get('status') == 'OPEN']
+        except Exception as e2:
+            log(f'读取brahma_state也失败: {e2}', 'ERROR')
+            return []
 
 
 def get_sl_state():

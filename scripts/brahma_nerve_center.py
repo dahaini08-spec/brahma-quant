@@ -29,7 +29,11 @@ sys.path.insert(0, str(BASE / 'brahma_brain'))
 sys.path.insert(0, str(BASE / 'scripts'))
 
 # ── 推送配置 ─────────────────────────────────────────────────
-PUSH_TARGET  = '73295708:t:019f1797-6c60-7541-ad72-ec34ed14dfc4'
+try:
+    import scripts.system_config as _sc
+    PUSH_TARGET = f"{_sc.JARVIS_USER_ID}:t:{_sc.JARVIS_THREAD_ID}"
+except Exception:
+    PUSH_TARGET   = '73295708:t:019f309c-609b-7a75-a195-e221e5927c63'
 PUSH_CHANNEL = 'jarvis'
 STATE_FILE   = BASE / 'data' / 'nerve_center_state.json'
 API_KEY = 'sDqoRAyeYHHzevKNxSj5JfkWpNUd6v8qPAhVy0Y8wbWGwC48eC7uhFOENAlVqV7b'
