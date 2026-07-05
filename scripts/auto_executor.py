@@ -48,7 +48,7 @@ MAX_SL_PCT           = 5.0       # 标准最大止损（保护性上限）
 MAX_SL_PCT_HIGH_VOL  = 9.0       # 高波动信号上限（score≥145，仓位×0.7）
 NAV_SIZE_PCT         = 0.05      # 默认仓位 NAV×5%（苏摩授权 2026-07-03）
 DEFAULT_LEV          = 5         # 默认杠杆 5x（苏摩授权 2026-07-03）
-MIN_NOTIONAL         = 10.0      # 最小开单金额 USDT
+MIN_NOTIONAL         = 5.0       # 最小开单金额 USDT（设计院修复 2026-07-05：NAV=100时5%=5.15即可执行）
 
 # BTC/ETH 动态仓位配置（梵天自主评判，苏摩授权 2026-07-03）
 # score≥155 → 10% NAV | score 140~154 → 7.5% NAV | score 138~139 → 5% NAV

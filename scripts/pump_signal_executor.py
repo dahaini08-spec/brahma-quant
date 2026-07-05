@@ -36,16 +36,17 @@ STATE_PATH   = Path(__file__).parent.parent / 'data/brahma_state.json'
 RUNTIME_PATH = Path(__file__).parent.parent / 'data/dharma_runtime.json'
 
 # ── 体制路由表（铁证封印）──
+# 设计院修复 2026-07-05: size_pct统一为5%（NAV=100时notional=$5.15，>=MIN_NOTIONAL=$5）
 REGIME_PUMP_PARAMS = {
-    'BEAR_TREND':     {'size_pct': 0.01, 'tp_mult': 0.8,  'sl_atr': 2.0, 'lev': 3},
-    'BEAR_EARLY':     {'size_pct': 0.015,'tp_mult': 1.2,  'sl_atr': 2.0, 'lev': 3},
-    'BEAR_RECOVERY':  {'size_pct': 0.03, 'tp_mult': 2.0,  'sl_atr': 2.0, 'lev': 5},
-    'CHOP_MID':       {'size_pct': 0.02, 'tp_mult': 1.2,  'sl_atr': 2.5, 'lev': 3},
-    'CHOP_HIGH_VOL':  {'size_pct': 0.015,'tp_mult': 1.0,  'sl_atr': 2.5, 'lev': 3},
-    'BULL_TREND':     {'size_pct': 0.02, 'tp_mult': 1.5,  'sl_atr': 2.0, 'lev': 5},
-    'BULL_EARLY':     {'size_pct': 0.02, 'tp_mult': 1.5,  'sl_atr': 2.0, 'lev': 5},
+    'BEAR_TREND':     {'size_pct': 0.05, 'tp_mult': 0.8,  'sl_atr': 2.0, 'lev': 3},
+    'BEAR_EARLY':     {'size_pct': 0.05, 'tp_mult': 1.2,  'sl_atr': 2.0, 'lev': 3},
+    'BEAR_RECOVERY':  {'size_pct': 0.05, 'tp_mult': 2.0,  'sl_atr': 2.0, 'lev': 5},
+    'CHOP_MID':       {'size_pct': 0.05, 'tp_mult': 1.2,  'sl_atr': 2.5, 'lev': 3},
+    'CHOP_HIGH_VOL':  {'size_pct': 0.05, 'tp_mult': 1.0,  'sl_atr': 2.5, 'lev': 3},
+    'BULL_TREND':     {'size_pct': 0.05, 'tp_mult': 1.5,  'sl_atr': 2.0, 'lev': 5},
+    'BULL_EARLY':     {'size_pct': 0.05, 'tp_mult': 1.5,  'sl_atr': 2.0, 'lev': 5},
 }
-DEFAULT_PUMP_PARAMS = {'size_pct': 0.01, 'tp_mult': 1.0, 'sl_atr': 2.0, 'lev': 3}
+DEFAULT_PUMP_PARAMS = {'size_pct': 0.05, 'tp_mult': 1.0, 'sl_atr': 2.0, 'lev': 3}
 
 # ── API ──
 try:
@@ -248,6 +249,7 @@ def emit_pump_signal(scan_result: dict, regime: str, nav_usdt: float = 130.0) ->
         'direction':    'LONG',
         'regime':       regime,
         'score':        score,
+        'valid':        True,  # emit时已通过valid阈值，必须设为True（设计院修复 2026-07-05）
         'price':        px,
         'entry_lo':     round(px * 0.995, 6),
         'entry_hi':     round(px * 1.005, 6),
