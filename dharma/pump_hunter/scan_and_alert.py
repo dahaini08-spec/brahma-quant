@@ -7,8 +7,26 @@
   3. 与上次结果对比，只有「新出现」的高分信号才标记为需推送
   4. cron读取 need_push 标志，有则推送，无则HEARTBEAT_OK
 """
-import requests, json, datetime, os, time
+import requests, json, datetime, os, time, sys
 from collections import defaultdict
+from pathlib import Path
+
+# ── SSOT推送地址：动态读取，永不硬编码 ──
+def _get_jarvis_target() -> str:
+    """从SSOT读取推送目标，环境变量→system_config→硬编码兜底"""
+    if os.environ.get('JARVIS_TARGET'):
+        return os.environ['JARVIS_TARGET']
+    try:
+        _ts = Path(__file__).parent.parent.parent
+        if str(_ts) not in sys.path:
+            sys.path.insert(0, str(_ts))
+        from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
+        return f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}'
+    except Exception:
+        pass
+    return '73295708:thread:019f309c-609b-7a75-a195-e221e5927c63'  # 最终兜底
+
+JARVIS_TARGET = _get_jarvis_target()
 
 API   = 'https://fapi.binance.com'
 DIR   = os.path.dirname(os.path.abspath(__file__))
@@ -281,7 +299,7 @@ if __name__ == '__main__':
         _sp.run(
             ['openclaw', 'message', 'send',
              '--channel', 'jarvis',
-             '--target', os.environ.get('JARVIS_TARGET', '73295708:thread:019f309c-609b-7a75-a195-e221e5927c63'),
+             '--target', JARVIS_TARGET,  # 动态SSOT，永不硬编码
              '--message', msg],
             capture_output=True, timeout=15
         )
