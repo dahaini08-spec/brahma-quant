@@ -277,6 +277,46 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
         pass  # 注入失败不阻断主流程
     # ────────────────────────────────────────────────────────────────────────
 
+    # ── [设计院 2026-07-04] P2: switch_count_24h>50 → 体制噪音惩罚 ─────
+    # BTC 24H体制翻转>50次 = 行情震荡，即便confirmed=BULL_TREND也降噪
+    try:
+        import json as _sjson; from pathlib import Path as _sPath
+        _rsf = _sPath(__file__).parent.parent / 'data' / 'regime_state.json'
+        _rs = _sjson.loads(_rsf.read_text())
+        _btc_sw = _rs.get('BTCUSDT', {}).get('switch_count_24h', 0)
+        _sym_sw = _rs.get(sym, {}).get('switch_count_24h', 0)
+        _sw_max = max(_btc_sw, _sym_sw)
+        if _sw_max > 50:
+            _sw_penalty = -15  # 高频翻转 → 降15分
+            _f_sw = extract_standard_fields(result)
+            _sc_sw = float(_f_sw.get('score', 0) or 0)
+            _new_sw = _sc_sw + _sw_penalty
+            result['total']       = _new_sw
+            result['score']       = _new_sw
+            result['score_final'] = _new_sw
+            if isinstance(result.get('confluence'), dict):
+                result['confluence']['score'] = _new_sw
+                result['confluence']['total'] = _new_sw
+            result['_switch_noise_penalty'] = {'btc_sw': _btc_sw, 'sym_sw': _sym_sw, 'penalty': _sw_penalty}
+            print(f'[SwitchNoise] {sym} sw={_sw_max}>50 → -{abs(_sw_penalty)}分 ({_sc_sw:.1f}→{_new_sw:.1f})')
+        elif _sw_max > 30:
+            # 中等噪音 → 降5分
+            _sw_penalty = -5
+            _f_sw = extract_standard_fields(result)
+            _sc_sw = float(_f_sw.get('score', 0) or 0)
+            _new_sw = _sc_sw + _sw_penalty
+            result['total']       = _new_sw
+            result['score']       = _new_sw
+            result['score_final'] = _new_sw
+            if isinstance(result.get('confluence'), dict):
+                result['confluence']['score'] = _new_sw
+                result['confluence']['total'] = _new_sw
+            result['_switch_noise_penalty'] = {'btc_sw': _btc_sw, 'sym_sw': _sym_sw, 'penalty': _sw_penalty}
+            print(f'[SwitchNoise] {sym} sw={_sw_max}>30 → -{abs(_sw_penalty)}分 ({_sc_sw:.1f}→{_new_sw:.1f})')
+    except Exception:
+        pass
+    # ────────────────────────────────────────────────────────────────────────
+
     # ── market_structure_scanner: score≥130时补充SMC结构扫描 ──────────
     if _MSS_OK:
         try:

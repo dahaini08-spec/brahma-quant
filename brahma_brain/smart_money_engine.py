@@ -163,10 +163,16 @@ def get_smart_money_signal(symbol: str = 'BTCUSDT') -> dict:
 
 if __name__ == '__main__':
     import json
+    alerts = []
     for sym in ['BTCUSDT', 'ETHUSDT']:
         r = get_smart_money_signal(sym)
-        print(f'\n=== {sym} 聪明钱信号 ===')
-        print(f'  大户账户多={r["big_acct_long"]:.2%} 持仓多={r["big_pos_long"]:.2%} 散户多={r["retail_long"]:.2%}')
-        print(f'  大户-散户背离={r["whale_retail_gap"]:+.4f}  持仓趋势5H={r["pos_trend_5h"]:+.4f}')
-        print(f'  信号={r["signal"]}  score_adj={r["score_adj"]:+d}')
-        print(f'  说明={r["note"]}')
+        sig = r.get('signal', 'NEUTRAL')
+        score_adj = r.get('score_adj', 0)
+        # 只有明确背离才算ALERT（非中性且分值有意义）
+        if sig != 'NEUTRAL' and abs(score_adj) >= 10:
+            alerts.append(f'[ALERT] {sym} 大户背离={sig} score_adj={score_adj:+d} {r.get("note","")}')
+    if alerts:
+        for a in alerts:
+            print(a)
+    else:
+        print('HEARTBEAT_OK')

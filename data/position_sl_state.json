@@ -3,25 +3,28 @@
     "symbol": "SUIUSDT",
     "direction": "LONG",
     "entry_price": 0.762,
-    "sl_price": 0.73914,
-    "tsl_updated": null,
-    "updated_at": 1783165133.1032841
+    "sl_price": 0.7627619999999999,
+    "tsl_updated": "2026-07-04T21:35:16.971582+00:00",
+    "updated_at": 1783165133.1032841,
+    "tsl_old_sl": 0.73914
   },
   "RENDERUSDT": {
     "symbol": "RENDERUSDT",
     "direction": "LONG",
     "entry_price": 1.595,
-    "sl_price": 1.54715,
-    "tsl_updated": null,
-    "updated_at": 1783165133.1032841
+    "sl_price": 1.5965949999999998,
+    "tsl_updated": "2026-07-04T21:35:17.098171+00:00",
+    "updated_at": 1783165133.1032841,
+    "tsl_old_sl": 1.54715
   },
   "LDOUSDT": {
     "symbol": "LDOUSDT",
     "direction": "LONG",
     "entry_price": 0.2658,
-    "sl_price": 0.257826,
-    "tsl_updated": null,
-    "updated_at": 1783165133.1032841
+    "sl_price": 0.26606579999999996,
+    "tsl_updated": "2026-07-04T21:35:17.177647+00:00",
+    "updated_at": 1783165133.1032841,
+    "tsl_old_sl": 0.257826
   },
   "NEARUSDT": {
     "symbol": "NEARUSDT",
@@ -35,9 +38,10 @@
     "symbol": "HYPEUSDT",
     "direction": "SHORT",
     "entry_price": 72.006,
-    "sl_price": 72.006,
-    "tsl_updated": "2026-07-04T11:41:39Z",
+    "sl_price": 69.12576,
+    "tsl_updated": "2026-07-05T01:35:48.767438+00:00",
     "updated_at": 1783165133.1032841,
-    "tsl_stage": "breakeven"
+    "tsl_stage": "breakeven_1",
+    "tsl_old_sl": 71.28594000000001
   }
 }

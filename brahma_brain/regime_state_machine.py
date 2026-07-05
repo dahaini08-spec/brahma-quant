@@ -134,11 +134,11 @@ class RegimeStateMachine:
             try:
                 data = json.loads(STATE_FILE.read_text())
                 state = data.get(self.symbol, self._default_state())
-                # [防抖迁移] 旧版 state 没有 last_update_ts 字段
+                # [防抖迁移] 旧版 state 没有 last_update_ts 字段，或 last_update_ts=0
                 # 迁移策略：用 confirmed_at 作为基准，防止历史 symbols 立刻绕过门控
-                if 'last_update_ts' not in state:
+                if 'last_update_ts' not in state or state.get('last_update_ts', 0) == 0:
                     # confirmed_at 存在则用它，否则用当前时间（视为刚刚更新过）
-                    state['last_update_ts'] = state.get('confirmed_at', time.time())
+                    state['last_update_ts'] = state.get('confirmed_at') or time.time()
                 return state
             except Exception:
                 pass

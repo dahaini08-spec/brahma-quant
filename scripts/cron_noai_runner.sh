@@ -7,7 +7,7 @@
 TASK="$1"
 BASE="/root/.openclaw/workspace/trading-system"
 LOG="$BASE/logs/noai_runner.log"
-JARVIS_TARGET="73295708:thread:019f1797-6c60-7541-ad72-ec34ed14dfc4"
+JARVIS_TARGET="73295708:thread:019f309c-609b-7a75-a195-e221e5927c63"
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] [$TASK] $1" >> "$LOG"; }
 

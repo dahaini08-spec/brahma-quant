@@ -233,11 +233,27 @@ def detect_events(data, prev_state, sym):
             'priority': 'MEDIUM',
         })
 
+    # ── E8/E9: ETH 价格阈值告警（替代 eth-alert cron，0 tokens） ──
+    # 原 eth-alert-1773 / eth-alert-1745 逻辑迁移至此（2026-07-05 苏摩111授权）
+    if sym == 'ETHUSDT':
+        if px >= 1773:
+            events.append({
+                'event': 'E8_ETH_BREAK_1773',
+                'desc': f'🟢 ETH突破1773 EMA20_1H！当前${px:.2f}，短线反弹确认，WATCH状态',
+                'priority': 'HIGH',
+            })
+        elif px <= 1745:
+            events.append({
+                'event': 'E9_ETH_BREAK_1745',
+                'desc': f'🔴 ETH跌破1745三重支撑告急！当前${px:.2f}，EMA50_1H+BB下轨同时破位，加速下行警报',
+                'priority': 'HIGH',
+            })
+
     return events, 'ACTIVE' if events else 'NO_EVENT'
 
 
 def write_trigger(sym, events, data):
-    """写入触发事件文件（供scan_all读取）"""
+    """写入触发事件文件（供scan_all读取）+ 高优先级事件推送Jarvis"""
     try:
         existing = {}
         if TRIGGER_FILE.exists():
@@ -257,6 +273,28 @@ def write_trigger(sym, events, data):
             'high_priority': any(e['priority'] == 'HIGH' for e in events),
         }
         TRIGGER_FILE.write_text(json.dumps(existing, indent=2, ensure_ascii=False))
+
+        # ── [设计院 2026-07-05] 高优先级事件直推Jarvis ──────────────────
+        high_events = [e for e in events if e.get('priority') in ('HIGH', 'P0', 'P1')]
+        if high_events:
+            try:
+                import subprocess as _sp
+                from scripts.system_config import JARVIS_TARGET
+                ev_lines = '\n'.join([f"  [{e['priority']}] {e['event']}: {e['desc']}" for e in high_events])
+                msg = (
+                    f"🔔 RSI结构事件 · {sym}\n"
+                    f"价格: ${data['px']:,.2f} | RSI_1H={data['rsi_1h']:.1f} | BB={data['bb_width']:.2f}%\n"
+                    f"{ev_lines}\n"
+                    f"→ 梵天扫描链已启动"
+                )
+                _sp.Popen(
+                    ['openclaw', 'message', 'send', '--to', JARVIS_TARGET, '--channel', 'jarvis', '--message', msg],
+                    stdout=_sp.DEVNULL, stderr=_sp.DEVNULL
+                )
+                print(f'[RSI-Watcher] 📤 Jarvis推送: {sym} {len(high_events)}个高优先级事件')
+            except Exception as _pe:
+                print(f'[RSI-Watcher] 推送失败(非致命): {_pe}')
+        # ────────────────────────────────────────────────────────────────
         return True
     except Exception as e:
         print(f'[RSI-Watcher] 写入trigger失败: {e}')

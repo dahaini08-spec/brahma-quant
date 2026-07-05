@@ -17,7 +17,7 @@ sys.path.insert(0, str(BASE / 'brahma_brain'))
 try:
     from system_config import JARVIS_TARGET, JARVIS_CHANNEL
 except:
-    JARVIS_TARGET  = os.environ.get('JARVIS_TARGET','73295708:thread:019f1797-6c60-7541-ad72-ec34ed14dfc4')
+    JARVIS_TARGET  = os.environ.get('JARVIS_TARGET','73295708:thread:019f309c-609b-7a75-a195-e221e5927c63')
     JARVIS_CHANNEL = 'jarvis'
 
 now_utc = datetime.now(timezone.utc).strftime('%m-%d %H:%M')
@@ -173,12 +173,12 @@ def build_report():
     eth_gap = whale['eth_gap']
     whale_alert = abs(btc_gap) > 0.05 or abs(eth_gap) > 0.05
 
-    # 判断是否有内容推送（全静默则HEARTBEAT_OK）
+    # 判断是否有内容推送（无信号+无大户背离 → 静默，不推同质化内容）
     has_content = bool(oi_lines or sig_lines or whale_alert)
 
     if not has_content:
-        # 结构速报每4H都推（即使无信号，结构是有价值的参考）
-        pass
+        # 无有效信号+无异动 → 静默，避免同质化播报
+        return None
 
     # 构建消息
     lines = [f"📡 梵天速报 {now_utc} UTC"]
@@ -219,16 +219,18 @@ def build_report():
 # ─── 主执行 ──────────────────────────────────────────────────
 if __name__ == '__main__':
     report = build_report()
-    print(report)
-
-    # 推送
-    try:
-        subprocess.run([
-            'openclaw', 'message', 'send',
-            '--channel', JARVIS_CHANNEL,
-            '--to', JARVIS_TARGET,
-            '--message', report
-        ], timeout=10, cwd=str(BASE))
-        print(f'\n✅ 推送完成')
-    except Exception as e:
-        print(f'推送失败: {e}')
+    if report is None:
+        print('HEARTBEAT_OK')  # 无有效内容，静默不推
+    else:
+        print(report)
+        # 推送
+        try:
+            subprocess.run([
+                'openclaw', 'message', 'send',
+                '--channel', JARVIS_CHANNEL,
+                '--to', JARVIS_TARGET,
+                '--message', report
+            ], timeout=10, cwd=str(BASE))
+            print(f'\n✅ 推送完成')
+        except Exception as e:
+            print(f'推送失败: {e}')

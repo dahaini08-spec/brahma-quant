@@ -256,7 +256,8 @@ def push_digest():
         spec.loader.exec_module(cfg)
         user_id = getattr(cfg, 'JARVIS_USER_ID', '73295708')
         thread_id = getattr(cfg, 'JARVIS_THREAD_ID', '')
-        to = f'{user_id}:thread:{thread_id}' if thread_id else user_id
+        # smart_digest是P2内容，路由到日报线程(019f15c9)，不打扰主线程
+        to = f'{user_id}:thread:019f15c9-c68e-72f3-9c61-9df4e9ea8d62' if user_id else user_id
     except Exception:
         to = '73295708'
     import subprocess

@@ -1,18 +1,16 @@
 #!/bin/bash
-# 清理2H前的completed isolated sessions
+# 清理2H前的completed isolated sessions（含trajectory文件）
 SESSIONS="/root/.openclaw/agents/main/sessions"
-KEEP_TOPIC="019f1797"
-CUTOFF=$(python3 -c "import time; print(int(time.time()-2*3600))")
+KEEP_TOPIC="019f309c"
+KEEP_TOPIC2="019ed32f"
 COUNT=0
-for f in $SESSIONS/*.jsonl $SESSIONS/*.json; do
-    [ -f "$f" ] || continue
-    fname=$(basename "$f")
-    [[ "$fname" == *"$KEEP_TOPIC"* ]] && continue
-    [[ "$fname" == *"trajectory-path"* ]] && continue
-    mtime=$(stat -c %Y "$f" 2>/dev/null || echo 9999999999)
-    if [ "$mtime" -lt "$CUTOFF" ]; then
-        rm -f "$f"
-        COUNT=$((COUNT+1))
-    fi
-done
-echo "cleaned $COUNT sessions"
+
+# 清理2H前的所有session文件（.jsonl / .trajectory-path.json / .trajectory.jsonl）
+find "$SESSIONS" -maxdepth 1 -type f \
+  ! -name "sessions.json*" \
+  ! -name "*${KEEP_TOPIC}*" \
+  ! -name "*${KEEP_TOPIC2}*" \
+  -mmin +120 \
+  -delete 2>/dev/null
+COUNT=$(find "$SESSIONS" -maxdepth 1 -type f ! -name "sessions.json*" | wc -l)
+echo "session_cleanup: remaining=$COUNT"

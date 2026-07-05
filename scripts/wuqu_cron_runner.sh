@@ -22,5 +22,5 @@ fi
 openclaw message send \
     --channel jarvis \
     -t "73295708" \
-    --thread-id '019f1797-6c60-7541-ad72-ec34ed14dfc4' \
+    --thread-id '019f309c-609b-7a75-a195-e221e5927c63' \
     --message "$OUTPUT"

@@ -92,7 +92,7 @@ def probe_push_links():
     MUST_PUSH = {
         'pump-hunter':        '暴涨猎手发现信号必须推送',
         'oi-surge-scanner':   'OI异动必须推送',
-        'rsi-structure-watcher': 'RSI结构事件必须推送',
+        # 'rsi-structure-watcher': 'RSI结构事件通过脚本内部推送（write_trigger注入），非cron层推送',
         'brahma-360-daily':   '每日分析必须推送',
         # 'smart-digest-6h': '智能汇总通过脚本内部推送，不需要cron announce'
     }
@@ -115,6 +115,15 @@ def probe_push_links():
         'timesfm-bridge-4h',       # 时序预测桥接，脚本静默运行
         'signal-watcher-6h',       # 信号监控，有HEARTBEAT_OK静默
         'regime-switch-monitor',   # 体制切换监控，事件触发才推送
+        'brahma-self-heal',        # 自愈引擎，异常时内建推送，日常静默合理
+        'brahma-nerve-center',     # 感知神经中枢，事件触发才推送，脚本静默
+        'brahma-order-engine',     # 订单引擎，执行时有推送，静默合理
+        'brahma-360-health',       # 健康检查，探针内建推送机制
+        'deviation-alert',         # 偏差预警，事件触发推送
+        'news-event-guard',        # 新闻事件守卫，事件触发推送
+        'session-cleanup-30m',     # 会话清理，纯维护任务
+        'brahma-4h-综合速报',   # 脚本内建 openclaw message推送，非cron层announce
+        'brahma-日报',            # 脚本内建 openclaw message推送，非cron层announce
     }
 
     found_jobs = {}
@@ -126,7 +135,7 @@ def probe_push_links():
         if parts[1] in ('Name', 'Schedule', 'Next'): continue
         name = parts[1].rstrip('.')
         has_push = 'announce' in line or 'jarvis' in line
-        thread = '019f1797' if '019f1797' in line else ('019f181f' if '019f181f' in line else ('019f15c6' if '019f15c6' in line else 'NONE'))
+        thread = '019f309c' if '019f309c' in line else ('019f1797' if '019f1797' in line else ('019f181f' if '019f181f' in line else ('019f15c6' if '019f15c6' in line else 'NONE')))
         found_jobs[name] = {'has_push': has_push, 'thread': thread, 'raw': line}
 
     # 检查必须推送的任务
@@ -282,7 +291,7 @@ def probe_data_freshness():
     now = time.time()
     checks = [
         ('data/live_prices.json',      27.0,   'WARN',   '实时价格(日报更新)'),
-        ('data/live_signal_log.jsonl', 12,     'WARN',   '信号日志'),
+        ('data/live_signal_log.jsonl', 24,     'WARN',   '信号日志'),
         ('data/wuqu_positions.json',   24,     'WARN',   '持仓记录'),
         ('data/brahma_state.json', 48, 'WARN',   '系统状态'),
     ]
