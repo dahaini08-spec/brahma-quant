@@ -198,7 +198,29 @@ def run(symbols, dry=False):
             write_cache(sym, direction, score, {**meta, 'regime': regime}, dry=dry)
             written += 1
 
-    print(f"\n✅ 完成: {written}条缓存写入 → data/research_cache/")
+    # 设计院修复 2026-07-05: 只在有强信号时输出推送行，否则静默
+    # 收集 score>=4 的强信号（外部信号满分8分，4分=置信度约0.6）
+    strong = []
+    for sym in syms:
+        for d in ('LONG', 'SHORT'):
+            cache_file = Path('data/research_cache') / f'{sym}_{d}.json'
+            if cache_file.exists():
+                try:
+                    import json as _j
+                    c = _j.loads(cache_file.read_text())
+                    sc = float(c.get('score', 0) or 0)
+                    p_d = float(c.get('meta', {}).get('p_direction', 0.5) or 0.5)
+                    if sc >= 4 and p_d >= 0.60:
+                        strong.append((sym, d, sc, p_d))
+                except: pass
+
+    if strong:
+        strong.sort(key=lambda x: -x[2])
+        parts = ' | '.join(f'{s} {d} +{sc:.1f}({pd:.3f})' for s, d, sc, pd in strong[:3])
+        print(f'⏱️TimesFM强信号 | {parts}')
+    else:
+        print('HEARTBEAT_OK')
+
     return written
 
 
