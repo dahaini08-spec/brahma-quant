@@ -10,12 +10,13 @@
   },
   "RENDERUSDT": {
     "symbol": "RENDERUSDT",
-    "direction": "LONG",
-    "entry_price": 1.595,
-    "sl_price": 1.5965949999999998,
-    "tsl_updated": "2026-07-04T21:35:17.098171+00:00",
-    "updated_at": 1783165133.1032841,
-    "tsl_old_sl": 1.54715
+    "side": "LONG",
+    "qty": 16.2,
+    "entry": 1.588,
+    "sl_price": 1.468,
+    "tp_price": 1.769,
+    "registered_at": "2026-07-05T11:44:31.785254+00:00",
+    "source": "hunter_executor"
   },
   "LDOUSDT": {
     "symbol": "LDOUSDT",
