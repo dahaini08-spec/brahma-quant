@@ -92,6 +92,15 @@ LOCK_AFTER_SWITCH = {
 }
 DEFAULT_LOCK = 4 * 3600
 
+# ── 防抖：最短更新间隔（秒）────────────────────────────────────
+# 根因修复 [设计院 2026-07-05]：
+# RegimeStateMachine.update() 每次 brahma_core 被调用都会执行。
+# eth-alert(每3min x2)、rsi-watcher(每5min) 等高频任务导致 confirm_count
+# 在 6~10 分钟内就累积到 DEFAULT_CONFIRM=2，远低于设计的4H节奏。
+# 修复：同一 symbol 两次有效计数之间必须间隔 ≥ MIN_UPDATE_INTERVAL。
+# 这样 CONFIRM_WINDOW=2 实际对应 2*30min=60min，近似1根4H的节奏。
+MIN_UPDATE_INTERVAL = 30 * 60   # 30分钟：防止高频任务快速堆积confirm_count
+
 # ── 体制中文映射 ─────────────────────────────────────────────────
 REGIME_CN = {
     'BULL_TREND':     '牛市趋势',
@@ -124,7 +133,13 @@ class RegimeStateMachine:
         if STATE_FILE.exists():
             try:
                 data = json.loads(STATE_FILE.read_text())
-                return data.get(self.symbol, self._default_state())
+                state = data.get(self.symbol, self._default_state())
+                # [防抖迁移] 旧版 state 没有 last_update_ts 字段
+                # 迁移策略：用 confirmed_at 作为基准，防止历史 symbols 立刻绕过门控
+                if 'last_update_ts' not in state:
+                    # confirmed_at 存在则用它，否则用当前时间（视为刚刚更新过）
+                    state['last_update_ts'] = state.get('confirmed_at', time.time())
+                return state
             except Exception:
                 pass
         return self._default_state()
@@ -138,6 +153,7 @@ class RegimeStateMachine:
             'confirmed_at':   0,              # 上次确认时间
             'switch_count_24h': 0,            # 24H内切换次数（监控用）
             'last_raw':       None,           # 上一次原始体制
+            'last_update_ts': 0,              # [防抖] 上次有效计数更新时间戳
         }
 
     def _save_state(self):
@@ -174,7 +190,18 @@ class RegimeStateMachine:
             s['candidate'] = None
             s['confirm_count'] = 0
             s['last_raw'] = raw_regime
+            # 更新最后有效更新时间（体制不变也算）
+            s['last_update_ts'] = now
             self._save_state()
+            return confirmed
+
+        # ── 防抖门控：距上次有效计数更新 < MIN_UPDATE_INTERVAL，直接返回 ──
+        # [设计院 2026-07-05] 防止高频任务（eth-alert每3min, rsi-watcher每5min）
+        # 在几分钟内快速堆积 confirm_count，导致74次/天的体制抖动
+        last_update_ts = s.get('last_update_ts', 0)
+        if now - last_update_ts < MIN_UPDATE_INTERVAL:
+            # 时间间隔不足，不允许计数更新，静默返回已确认体制
+            # 注意：不重置 candidate/confirm_count，等待足够时间后继续
             return confirmed
 
         # ── 情况2：在锁定期内，强制返回已确认体制 ─────────────────
@@ -191,6 +218,9 @@ class RegimeStateMachine:
         else:
             # 同一候选体制继续积累
             s['confirm_count'] = s.get('confirm_count', 0) + 1
+
+        # 记录本次有效计数更新时间
+        s['last_update_ts'] = now
 
         # ── 情况4：检查是否达到确认窗口 ────────────────────────────
         required = CONFIRM_WINDOWS.get(
