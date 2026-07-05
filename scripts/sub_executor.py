@@ -45,28 +45,30 @@ PUMP_SCORE_THRESHOLD = 75     # 暴涨猎手最低score（全力模式 苏摩授
 OI_LAYERS_THRESHOLD  = 3      # OI猎手最低通过层数（苏摩授权全力模式：4→3）
 OI_SCORE_THRESHOLD   = 15.0   # OI最低oi_score
 OI_MAX_AGE_H         = 4.0    # OI信号最大有效期（小时）
-MIN_NOTIONAL         = 10.0   # 最小开单名义
+MIN_NOTIONAL         = 5.0   # 最小开单名义（设计院修复 2026-07-05：NAV=100时多档位均可执行）
 FAPI_BASE            = 'https://fapi.binance.com'
 
 # ── 体制路由表：PUMP（铁证封印）────────────────────────────────
+# 设计院修复 2026-07-05: size_pct统一为5%（NAV=100时notional=$5.15，恰好>=MIN_NOTIONAL=$5）
 PUMP_PARAMS = {
-    'BEAR_TREND':    {'size_pct': 0.01, 'tp_mult': 0.8, 'sl_atr': 2.0, 'lev': 3},
-    'BEAR_EARLY':    {'size_pct': 0.015,'tp_mult': 1.2, 'sl_atr': 2.0, 'lev': 3},
-    'BEAR_RECOVERY': {'size_pct': 0.03, 'tp_mult': 2.0, 'sl_atr': 2.0, 'lev': 5},
-    'CHOP_MID':      {'size_pct': 0.02, 'tp_mult': 1.2, 'sl_atr': 2.5, 'lev': 3},
-    'BULL_TREND':    {'size_pct': 0.02, 'tp_mult': 1.5, 'sl_atr': 2.0, 'lev': 5},
-    'BULL_EARLY':    {'size_pct': 0.02, 'tp_mult': 1.5, 'sl_atr': 2.0, 'lev': 5},
+    'BEAR_TREND':    {'size_pct': 0.05, 'tp_mult': 0.8, 'sl_atr': 2.0, 'lev': 3},
+    'BEAR_EARLY':    {'size_pct': 0.05, 'tp_mult': 1.2, 'sl_atr': 2.0, 'lev': 3},
+    'BEAR_RECOVERY': {'size_pct': 0.05, 'tp_mult': 2.0, 'sl_atr': 2.0, 'lev': 5},
+    'CHOP_MID':      {'size_pct': 0.05, 'tp_mult': 1.2, 'sl_atr': 2.5, 'lev': 3},
+    'BULL_TREND':    {'size_pct': 0.05, 'tp_mult': 1.5, 'sl_atr': 2.0, 'lev': 5},
+    'BULL_EARLY':    {'size_pct': 0.05, 'tp_mult': 1.5, 'sl_atr': 2.0, 'lev': 5},
 }
-DEFAULT_PUMP_PARAMS = {'size_pct': 0.01, 'tp_mult': 1.0, 'sl_atr': 2.0, 'lev': 3}
+DEFAULT_PUMP_PARAMS = {'size_pct': 0.05, 'tp_mult': 1.0, 'sl_atr': 2.0, 'lev': 3}
 
 # ── 体制路由表：OI（mode路由）──────────────────────────────────
+# 设计院修复 2026-07-05: size_pct统一为5%（NAV=100时notional=$5.15，恰好>=MIN_NOTIONAL=$5）
 OI_PARAMS = {
-    'A_BULL': {'size_pct': 0.02, 'sl_pct': 2.5, 'tp_mult': 1.5, 'lev': 5},  # mode A + 牛市
-    'A_BEAR': {'size_pct': 0.01, 'sl_pct': 3.0, 'tp_mult': 1.0, 'lev': 3},  # mode A + 熊市
-    'B':      {'size_pct': 0.015,'sl_pct': 2.5, 'tp_mult': 1.2, 'lev': 3},  # mode B
-    'C':      {'size_pct': 0.01, 'sl_pct': 3.0, 'tp_mult': 1.0, 'lev': 3},  # mode C
+    'A_BULL': {'size_pct': 0.05, 'sl_pct': 2.5, 'tp_mult': 1.5, 'lev': 5},  # mode A + 牛市
+    'A_BEAR': {'size_pct': 0.05, 'sl_pct': 3.0, 'tp_mult': 1.0, 'lev': 3},  # mode A + 熊市
+    'B':      {'size_pct': 0.05, 'sl_pct': 2.5, 'tp_mult': 1.2, 'lev': 3},  # mode B
+    'C':      {'size_pct': 0.05, 'sl_pct': 3.0, 'tp_mult': 1.0, 'lev': 3},  # mode C
 }
-DEFAULT_OI_PARAMS   = {'size_pct': 0.01, 'sl_pct': 2.5, 'tp_mult': 1.0, 'lev': 3}
+DEFAULT_OI_PARAMS   = {'size_pct': 0.05, 'sl_pct': 2.5, 'tp_mult': 1.0, 'lev': 3}
 
 # ── API ───────────────────────────────────────────────────────
 try:
@@ -343,7 +345,7 @@ def run_oi_executor(nav: float, active_pos: list) -> list:
 
     try:
         cache    = json.loads(OI_CACHE.read_text())
-        age_h    = (time.time() - cache.get('scanned_at', 0)) / 3600
+        age_h    = (time.time() - (cache.get('scanned_at') or cache.get('updated_at', 0))) / 3600
         if age_h > OI_MAX_AGE_H:
             print(f'[OI] 缓存过期 {age_h:.1f}h > {OI_MAX_AGE_H}h，跳过')
             return []
@@ -382,7 +384,7 @@ def run_oi_executor(nav: float, active_pos: list) -> list:
                 break
 
             # 防重：基于symbol+时间窗口（4h内同标的不重复）
-            oi_sig_id = f'OI_{sym}_{int(cache.get("scanned_at",0)//3600)*3600}'
+            oi_sig_id = f'OI_{sym}_{int((cache.get("scanned_at") or cache.get("updated_at",0))//3600)*3600}'
             if oi_sig_id in executed:
                 continue
 
