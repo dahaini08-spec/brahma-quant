@@ -7,6 +7,7 @@ auto_execute_gate.py — 梵天自动执行门控 v1.1
 入口：auto_execute(signal_dict)
 """
 import json, time, pathlib, datetime
+from pathlib import Path
 
 # ── 苏摩授权边界常量 ──────────────────────────────────────────────
 MIN_SCORE          = 138

@@ -170,8 +170,8 @@ def execute_open(signal: dict, sizing: dict, dry_run: bool = True) -> dict:
         result['qty'] = qty
         return result
     except Exception as _e:
-        import logging as _log
-        _log.getLogger('brahma.execution').error(
+        import logging as _logging
+        _logging.getLogger('brahma.execution').error(
             f'[EXEC_GUARD] execute_open 执行异常: {_e}', exc_info=True)
         return {'error': str(_e), 'func': 'execute_open', 'status': 'FAILED'}
 
@@ -192,7 +192,7 @@ def execute_close(symbol: str, reason: str = 'manual') -> dict:
         _log({'type':'close', 'symbol': symbol, 'reason': reason, 'qty': qty, 'result': r})
         return {'status': 'OK', 'result': r, 'error': e2}
     except Exception as _e:
-        import logging as _log
-        _log.getLogger('brahma.execution').error(
+        import logging as _logging
+        _logging.getLogger('brahma.execution').error(
             f'[EXEC_GUARD] execute_close 执行异常: {_e}', exc_info=True)
         return {'error': str(_e), 'func': 'execute_close', 'status': 'FAILED'}
