@@ -41,14 +41,14 @@ _SESS.headers.update({'X-MBX-APIKEY': _BN_KEY})
 # TTL 配置（秒）
 # ─────────────────────────────────────────────────────────
 TTL = {
-    'price':    5,      # 价格 5s（高频）
-    'ticker':   10,     # 24H ticker 10s
-    'klines':   60,     # K线 1分钟
-    'funding':  120,    # 资金费率 2分钟
-    'oi':       60,     # 持仓量 1分钟
-    'lsr':      60,     # 多空比 1分钟
-    'depth':    30,     # 订单簿 30s
-    'trades':   10,     # 成交 10s
+    'price':    30,     # [2026-07-06] 5s→30s 防418限速：3任务×5min并发时节省80%请求
+    'ticker':   60,     # [2026-07-06] 10s→60s 24H ticker低频刷新即可
+    'klines':   120,    # [2026-07-06] 60s→120s K线分析不需要秒级更新
+    'funding':  180,    # 资金费率 3分钟
+    'oi':       90,     # [2026-07-06] 60s→90s OI变化慢
+    'lsr':      90,     # [2026-07-06] 60s→90s 多空比变化慢
+    'depth':    60,     # [2026-07-06] 30s→60s 订单簿深度
+    'trades':   30,     # [2026-07-06] 10s→30s 成交流
 }
 
 
@@ -79,21 +79,40 @@ class BrahmaBus:
                 self._cache[key] = {'data': data, 'ts': now}
             return data
         except Exception as e:
-            # 返回过期缓存（降级）
+            # [2026-07-06] 418/429限速期间：返回过期缓存（最长24H容忍），避免分析链崩溃
             with self._lock:
                 cached = self._cache.get(key)
-                if cached:
+                if cached and (now - cached['ts']) < 86400:  # 24H内的缓存均可降级使用
                     return cached['data']
             return None
 
     # ── 价格 ────────────────────────────────────────────────
 
     def price(self, symbol: str) -> float:
-        """实时最新价（5s缓存）"""
+        """实时最新价（TTL缓存）— Binance主源，418限速时自动切换OKX/Bybit"""
         def _fetch():
-            r = _SESS.get(f'{_FAPI}/fapi/v1/ticker/price',
-                          params={'symbol': symbol}, timeout=5)
-            return float(r.json()['price'])
+            try:
+                r = _SESS.get(f'{_FAPI}/fapi/v1/ticker/price',
+                              params={'symbol': symbol}, timeout=5)
+                if r.status_code == 418 or r.status_code == 429:
+                    raise Exception(f'Binance {r.status_code}')
+                return float(r.json()['price'])
+            except Exception as _e1:
+                # [2026-07-06] 备用源：OKX → Bybit → 报错
+                _base = symbol.replace('USDT', '')
+                try:
+                    _r2 = _SESS.get(f'https://www.okx.com/api/v5/market/ticker',
+                                    params={'instId': f'{_base}-USDT-SWAP'}, timeout=5)
+                    return float(_r2.json()['data'][0]['last'])
+                except Exception:
+                    pass
+                try:
+                    _r3 = _SESS.get('https://api.bybit.com/v5/market/tickers',
+                                    params={'category': 'linear', 'symbol': symbol}, timeout=5)
+                    return float(_r3.json()['result']['list'][0]['lastPrice'])
+                except Exception:
+                    pass
+                raise _e1  # 全部失败才抛出
         val = self._get(f'price:{symbol}', _fetch, TTL['price'])
         return val or 0.0
 
