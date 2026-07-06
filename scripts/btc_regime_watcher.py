@@ -85,8 +85,36 @@ def load_state():
         }
 
 
+def get_eth_regime():
+    """计算ETH实时体制 (EMA20_4H + RSI_1H)"""
+    try:
+        r4 = requests.get(f'{FAPI}/fapi/v1/klines',
+            params={'symbol': 'ETHUSDT', 'interval': '4h', 'limit': 30}, timeout=8)
+        c4 = [float(k[4]) for k in r4.json()]
+        k_f = 2 / (20 + 1); ema20 = c4[0]
+        for v in c4[1:]: ema20 = v * k_f + ema20 * (1 - k_f)
+        price = c4[-1]
+        r1 = requests.get(f'{FAPI}/fapi/v1/klines',
+            params={'symbol': 'ETHUSDT', 'interval': '1h', 'limit': 20}, timeout=8)
+        c1 = [float(k[4]) for k in r1.json()]
+        gains  = [max(0, c1[i] - c1[i-1]) for i in range(1, len(c1))]
+        losses = [max(0, c1[i-1] - c1[i]) for i in range(1, len(c1))]
+        ag = sum(gains[-14:]) / 14; al = sum(losses[-14:]) / 14
+        rsi = 100 - 100 / (1 + ag / al) if al > 0 else 100
+        phase = 'BULL' if price > ema20 else 'BEAR'
+        if phase == 'BULL' and rsi > 55: return 'BULL_TREND'
+        elif phase == 'BULL': return 'BULL_EARLY'
+        elif phase == 'BEAR' and rsi < 45: return 'BEAR_TREND'
+        else: return 'BEAR_RECOVERY'
+    except Exception:
+        return 'UNKNOWN'
+
+
 def save_state(state):
     os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
+    # [设计院 2026-07-06] 同步写入ETH体制
+    state['eth_regime'] = get_eth_regime()
+    state['eth_regime_updated_at'] = time.time()
     with open(STATE_FILE, 'w') as f:
         json.dump(state, f, indent=2, ensure_ascii=False)
 

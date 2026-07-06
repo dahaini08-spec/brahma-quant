@@ -142,6 +142,33 @@ def check_binance_api() -> dict:
         return {'ok': False, 'detail': str(e)}
 
 
+def check_brahma_analyze() -> dict:
+    """信号链核心文件 brahma_analyze.py 存在性检查（设计院 2026-07-06）"""
+    analyze_file = BASE / 'brahma_analyze.py'
+    bak_file     = BASE / 'brahma_analyze.py.bak_20260703'
+    if not analyze_file.exists():
+        # 自愈：从备份恢复
+        if bak_file.exists():
+            import shutil
+            shutil.copy2(str(bak_file), str(analyze_file))
+            _push(
+                '🔧 [SelfHeal] brahma_analyze.py 丢失 → 已从.bak自动恢复 \n信号链恢复正常',
+                dedup_key='brahma_analyze_missing', dedup_ttl=3600
+            )
+            return {'ok': True, 'detail': '⚠️ 丢失 → 已从bak自动恢复', 'healed': True}
+        else:
+            _push(
+                '🚨 [SelfHeal] brahma_analyze.py 丢失且无备份！信号链完全中断',
+                dedup_key='brahma_analyze_no_bak', dedup_ttl=3600
+            )
+            return {'ok': False, 'detail': '❌ 丢失且无备份，信号链中断！'}
+    try:
+        ast.parse(analyze_file.read_text())
+        return {'ok': True, 'detail': '存在+语法正常'}
+    except SyntaxError as e:
+        return {'ok': False, 'detail': f'语法错误L{e.lineno}: {e.msg}'}
+
+
 def check_scoring_engine() -> dict:
     """评分引擎（brahma_core.py）语法健康"""
     core = BASE / 'brahma_brain' / 'brahma_core.py'
@@ -501,6 +528,7 @@ def run_self_heal():
 
     # ── 执行所有检测 ─────────────────────────────────────────
     checks = {
+        'brahma_analyze':  check_brahma_analyze(),   # [设计院 2026-07-06] 信号链核心文件保护
         'binance_api':     check_binance_api(),
         'scoring_engine':  check_scoring_engine(),
         'regime_state':    check_regime_state(),

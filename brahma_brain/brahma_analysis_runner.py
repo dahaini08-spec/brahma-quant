@@ -243,7 +243,11 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
         _rf = result
         _reg = str(_rf.get('regime', _rf.get('market_state', {}).get('regime', '')) or '')
         _dir = str(_rf.get('signal_dir', _rf.get('direction', '')) or '')
-        _cur_score = float(_rf.get('total', _rf.get('score', 0)) or 0)
+        _cur_score = float(
+            _rf.get('score_final',
+            _rf.get('total',
+            _rf.get('score', 0))) or 0
+        )  # [FIX 2026-07-06] 优先取score_final，兼容brahma_core返回结构
 
         # P0-B: BULL体制顺势加分（仅LONG方向）
         _total_bonus = 0
@@ -273,6 +277,19 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
                 _rf['confluence']['total']    = _new_score
                 _rf['confluence']['grade_num']= int(_new_score)
             print(f'[RegimeInject] {sym} {_cur_score:.1f}+{_total_bonus}→{_new_score:.1f} (regime={_reg} dir={_dir})')
+            # [FIX 2026-07-06] 注入后validation重算:
+            # P0B封锁只是设 valid_signal=False，但params['valid']=True+score达门 就应该是valid
+            _params_valid = bool((_rf.get('params') or {}).get('valid', False))
+            _kelly_ok = float((_rf.get('confluence') or {}).get('kelly_mult', 1) or 1) > 0
+            # P0B封锁在brahma_core里设置val=False，但它不存入标记字段
+            # 只要 params.valid=True + kelly>0 + 新score>=155 就是有效信号
+            _MIN_VALID = 155
+            if _params_valid and _kelly_ok and _new_score >= _MIN_VALID:
+                _rf['valid_signal'] = True
+                print(f'[RegimeInject-Valid] {sym} score={_new_score:.1f}>={_MIN_VALID} params.valid=True → valid_signal=True')
+            elif _new_score >= _MIN_VALID:
+                # score达问但params.valid=False，说明RR问题
+                print(f'[RegimeInject-Valid] {sym} score={_new_score:.1f} 但params.valid=False，RR问题，不解除')
     except Exception as _inj_err:
         pass  # 注入失败不阻断主流程
     # ────────────────────────────────────────────────────────────────────────
@@ -393,6 +410,32 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
         except Exception:
             pass
     # ─────────────────────────────────────────────────────────────────
+
+    # ── [设计院 2026-07-06] P3: timing_filter 注入顶层字段 ──────────────────
+    # 根因: evaluate_timing只在format_batch_report调用，brahma_analyze.py拿不到
+    # 修复: run_analysis返回前直接计算并写入result['timing_status']
+    if _TIMING_OK:
+        try:
+            _tf = extract_standard_fields(result)
+            _timing_result = evaluate_timing(
+                symbol        = sym,
+                signal_dir    = _tf.get('direction', 'SHORT'),
+                score         = float(_tf.get('score', 0) or 0),
+                grade         = float(_tf.get('structure_grade', 70) or 70),
+                entry_lo      = float(_tf.get('entry_lo', 0) or 0),
+                entry_hi      = float(_tf.get('entry_hi', 0) or 0),
+                current_price = float(_tf.get('price', 0) or 0),
+                s23_p_up      = result.get('s23_p_up', 0.5),
+                regime        = _tf.get('regime', 'BEAR_TREND'),
+            )
+            result['timing_status'] = _timing_result.get('status', 'UNKNOWN')
+            result['timing_badge']  = _timing_result.get('badge', '')
+            result['timing_score']  = _timing_result.get('score', 0)
+            result['_timing']       = _timing_result
+            print(f'[TimingFilter] {sym} {result["timing_status"]} score={result["timing_score"]}')
+        except Exception:
+            result['timing_status'] = 'UNKNOWN'
+    # ────────────────────────────────────────────────────────────────────────
 
     return result
 

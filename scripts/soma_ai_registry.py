@@ -296,7 +296,7 @@ def _review_card(task: dict, all_tasks: list) -> str:
     current_daily = sum(t.get('est_daily', 0) for t in active)
     new_daily     = task.get('est_daily', 0)
     total_after   = current_daily + new_daily
-    budget_pct    = total_after / 150000 * 100
+    budget_pct    = total_after / 300000 * 100
 
     p_label = PRIORITY_LABELS.get(task['priority'], f'P{task["priority"]}')
 
@@ -311,9 +311,9 @@ def _review_card(task: dict, all_tasks: list) -> str:
          {task['est_daily']:,} tokens/天
 
 📊 预算影响：
-  当前每日消耗: {current_daily:,} tokens ({current_daily/150000*100:.1f}%)
+  当前每日消耗: {current_daily:,} tokens ({current_daily/300000*100:.1f}%)
   新增后每日:   {total_after:,} tokens ({budget_pct:.1f}%)
-  剩余预算:     {150000-total_after:,} tokens
+  剩余预算:     {300000-total_after:,} tokens
 ━━━━━━━━━━━━━━━━━━━
 回复 111 批准激活此任务"""
 
@@ -326,7 +326,7 @@ def format_registry() -> str:
     suspended = [t for t in reg if t['status'] == 'SUSPENDED']
 
     total_daily = sum(t.get('est_daily', 0) for t in active)
-    budget_pct  = total_daily / 150000 * 100
+    budget_pct  = total_daily / 300000 * 100
     bar = '█' * int(budget_pct / 5) + '░' * (20 - int(budget_pct / 5))
 
     lines = [
