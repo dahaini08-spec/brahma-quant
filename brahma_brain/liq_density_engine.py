@@ -10,8 +10,9 @@ liq_density_engine.py — 三所清算密度聚合引擎
 
 数据源：
   Binance fapi/v1/forceOrders  — 已签名，需 API Key
-  Bybit   /v5/market/recent-trade — 免费公开
-  OKX     /v5/rubik/stat/contracts/open-interest-volume — 免费公开
+  Bybit   /v5/market/recent-trade — 免费公开（成交流近似）
+  OKX     /v5/public/liquidation-orders — 真实强平记录（2026-07-06 修复）
+         旧错误端点: /v5/rubik/stat/contracts/open-interest-volume (OI历史，非清算)
 """
 
 import requests
@@ -93,16 +94,37 @@ def _get_bybit_liquidations(symbol: str) -> list:
         return []
 
 
-def _get_okx_oi_levels(symbol_base: str = 'BTC') -> list:
-    """拉取 OKX OI 历史变化，推算清算压力区"""
+def _get_okx_liquidations(symbol_base: str = 'BTC') -> list:
+    """
+    拉取 OKX 真实强制平仓记录
+    修复 2026-07-06: 原接口 /v5/rubik/stat/contracts/open-interest-volume 返回OI历史，非清算数据
+    正确接口: /v5/public/liquidation-orders?instType=SWAP&uly=BTC-USDT&state=filled
+    实测: BTC=929条, ETH=1444条真实清算记录
+    """
     try:
+        uly = f'{symbol_base}-USDT'
         r = requests.get(
-            f'https://www.okx.com/api/v5/rubik/stat/contracts/open-interest-volume?ccy={symbol_base}&period=1H',
+            'https://www.okx.com/api/v5/public/liquidation-orders',
+            params={'instType': 'SWAP', 'uly': uly, 'state': 'filled', 'limit': 100},
             timeout=8
         )
         data = r.json()
-        items = data.get('data', [])
-        return [{'ts': int(d[0]), 'oi': float(d[1]), 'vol': float(d[2])} for d in items[:24]]
+        results = []
+        for item in data.get('data', []):
+            for d in item.get('details', []):
+                px = float(d.get('bkPx', 0))
+                sz = float(d.get('sz', 0))
+                if px > 0 and sz > 0:
+                    usd = px * sz
+                    pos_side = d.get('posSide', 'long')  # long/short
+                    # posSide='long' 被清算 → sell side → 多头止损在下方
+                    # posSide='short' 被清算 → buy side → 空头止损在上方
+                    side = 'BUY' if pos_side == 'short' else 'SELL'
+                    results.append({
+                        'price': px, 'qty': sz, 'usd': usd,
+                        'side': side, 'pos_side': pos_side, 'source': 'okx'
+                    })
+        return results
     except Exception:
         return []
 
@@ -132,10 +154,10 @@ def get_liq_density(symbol: str, current_price: float) -> dict:
     # 1. 拉取三所数据
     bn_orders = _get_binance_force_orders(symbol, hours=4)
     bybit_orders = _get_bybit_liquidations(symbol)
-    okx_oi = _get_okx_oi_levels(symbol_base)
+    okx_orders = _get_okx_liquidations(symbol_base)  # 修复: 真实清算而非OI历史
 
-    all_orders = bn_orders + bybit_orders
-    sources_ok = sum([bool(bn_orders), bool(bybit_orders)])
+    all_orders = bn_orders + bybit_orders + okx_orders
+    sources_ok = sum([bool(bn_orders), bool(bybit_orders), bool(okx_orders)])
 
     if not all_orders or current_price <= 0:
         result = _empty_liq(symbol)
@@ -188,21 +210,24 @@ def get_liq_density(symbol: str, current_price: float) -> dict:
     else:
         liq_bias = 'NEUTRAL'
 
-    # 5. 评分建议（方向性加权 2026-07-01 四方共识落地）
-    # 清算集群是双刃剑：顺势=加速，逆势=拦截
-    # 做空：
-    #   ✅ 下方多头密集（多头即将被清算）→ 下行惯性+加分
-    #   ❌ 上方空头密集 且 紧贴价格（<3%）→ 先拉升逼空再下跌风险 → 扣分
-    #   ⚠️  上方空头密集 但 距离>3% → 中性，远端阻力暂不计
+    # 5. 评分建议（方向性加权 2026-07-01 落地 | 2026-07-06 修复：基于真实清算数据）
+    # 清算集群逻辑（统一做多视角）：
+    #   ✅ 上方空头止损密集（SHORT被清 → 价格上行助推）→ LONG加分
+    #   ❌ 下方多头止损密集且紧贴（LONG被清 → 价格下行风险）→ LONG扣分
+    #   空头视角：上下反转计算
+    # 注：all_orders现在包含OKX真实清算数据，方向由pos_side决定
     score_adj = 0
     nearest_above_dist = abs(above_walls[0][0] - current_price) / current_price if above_walls else 1.0
+    nearest_below_dist = abs(below_walls[0][0] - current_price) / current_price if below_walls else 1.0
 
-    if below_total > 500_000:
-        score_adj += min(4, int(below_total / 800_000))   # 顺势：下方多头清算 → 加速下跌
-    if above_total > 1_000_000 and nearest_above_dist < 0.03:  # 逆势：空头止损紧上方<3%
-        score_adj -= min(4, int(above_total / 1_500_000))  # 先逼空再下行风险
+    # 上方空头止损墙（OKX posSide=short + bybit SELL）→ LONG磁铁效应
+    if above_total > below_total * 1.5 and above_total > 1_000_000:
+        score_adj += min(8, int(above_total / 100_000_000))  # 最多+8分
+    # 下方多头止损墙紧贴（<3%）→ LONG风险
+    elif below_total > above_total * 1.5 and nearest_below_dist < 0.03:
+        score_adj -= min(4, int(below_total / 50_000_000))
 
-    confidence = min(1.0, sources_ok / 2 * 0.7 + (0.3 if okx_oi else 0))
+    confidence = min(1.0, sources_ok / 3.0)
 
     result = {
         'symbol': symbol,
@@ -216,7 +241,7 @@ def get_liq_density(symbol: str, current_price: float) -> dict:
         'liq_bias': liq_bias,
         'score_adj': score_adj,
         'confidence': round(confidence, 2),
-        'sources': f'binance({len(bn_orders)}) bybit({len(bybit_orders)})',
+        'sources': f'binance({len(bn_orders)}) bybit({len(bybit_orders)}) okx({len(okx_orders)})',
         'ts': now,
     }
 

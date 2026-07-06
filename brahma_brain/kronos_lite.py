@@ -447,6 +447,66 @@ def get_s23_score(
             }
             return score, meta
 
+    # [设计院 Phase3-1 2026-07-06] 升级: 优先使用本地WF-LightGBM模型
+    try:
+        import sys as _sys_ke, os as _os_ke
+        _brain_dir = _os_ke.path.dirname(_os_ke.path.abspath(__file__))
+        if _brain_dir not in _sys_ke.path:
+            _sys_ke.path.insert(0, _brain_dir)
+        from kronos_engine import _load_model as _ke_load, _predictor as _ke_pred, _model_loaded as _ke_ok
+        if not _ke_ok:
+            _ke_load()  # 尝试加载
+        # 重新获取最新状态
+        import brahma_brain.kronos_engine as _ke_mod
+        if _ke_mod._model_loaded and _ke_mod._predictor is not None:
+            _pred_lgbm = _ke_mod._predictor
+            # 用klines计算特征
+            _closes = [float(k[4]) for k in klines_15m]
+            _vols   = [float(k[5]) for k in klines_15m] if len(klines_15m[0]) > 5 else [1.0]*len(klines_15m)
+            _highs  = [float(k[2]) for k in klines_15m]
+            _lows   = [float(k[3]) for k in klines_15m]
+            _price  = _closes[-1]
+            _gains  = [max(0, _closes[i]-_closes[i-1]) for i in range(1, len(_closes))]
+            _losses = [max(0, _closes[i-1]-_closes[i]) for i in range(1, len(_closes))]
+            _ag = sum(_gains[-14:])/14; _al = sum(_losses[-14:])/14
+            _rsi_v = (100-100/(1+_ag/_al))/100 if _al > 0 else 0.5
+            _ema14 = _closes[0]
+            for _c in _closes[1:]: _ema14 = _c*(2/15)+_ema14*(1-2/15)
+            _vol_avg = sum(_vols[-10:])/10
+            _h48 = max(_highs[-48:]) if len(_highs)>=48 else max(_highs)
+            _l48 = min(_lows[-48:])  if len(_lows)>=48  else min(_lows)
+            _feat = {
+                'p_momentum': min(1.0, max(0.0, (_price - _closes[-5]) / (_closes[-5]+1e-9) / 0.05 + 0.5)),
+                'p_ema':      float(_price > _ema14),
+                'p_rsi':      _rsi_v,
+                'p_candle':   1.0 if _closes[-1] > _closes[-2] else 0.0,
+                'p_volume':   min(1.0, _vols[-1] / (_vol_avg+1e-9) / 2),
+                'p_bos':      float((_price - _l48) / (_h48 - _l48 + 1e-9)),
+                'regime':     {'BULL_TREND':0.9,'BEAR_TREND':0.1,'CHOP_MID':0.5,
+                               'BULL_EARLY':0.75,'BEAR_RECOVERY':0.35}.get(regime, 0.5),
+                'direction':  1.0 if direction == 'LONG' else 0.0,
+                'lsr':        0.5,
+                'fr':         0.5,
+            }
+            if btc_p_up is not None:
+                _feat['p_bos'] = (_feat['p_bos'] + float(btc_p_up)) / 2  # BTC领先信号融入
+            _p_up_lgbm = float(_pred_lgbm.predict(_feat))
+            _CACHE[cache_key] = (now, _p_up_lgbm, 0.0)
+            _raw_lgbm   = _p_up_to_score(_p_up_lgbm, direction)
+            _coeff_lgbm = REGIME_COEFF.get(regime, 1.0)
+            _score_lgbm = max(-12, min(15, int(_raw_lgbm * _coeff_lgbm)))
+            _meta_lgbm  = {
+                'p_up': _p_up_lgbm,
+                'direction_conflict': (direction=='LONG' and _p_up_lgbm < 0.4) or
+                                      (direction=='SHORT' and _p_up_lgbm > 0.6),
+                'reason': f'lgbm_wf p_up={_p_up_lgbm:.3f} score={_score_lgbm}',
+                'source': 'kronos_lgbm_wf',
+            }
+            print(f'[s23-Kronos] {symbol} {direction} p_up={_p_up_lgbm:.3f} score={_score_lgbm} src=kronos_lgbm_wf')
+            return _score_lgbm, _meta_lgbm
+    except Exception as _ke_e:
+        pass  # lgbm失败就继续用lite
+
     # 尝试升级到完整 Kronos（仅当torch可用时才有效）
     try:
         _kronos_path = os.path.join(os.path.dirname(__file__), '..', 'external', 'Kronos')
