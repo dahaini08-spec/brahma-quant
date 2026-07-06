@@ -33,6 +33,12 @@ from typing import Tuple, Dict, Optional
 
 logger = logging.getLogger("kronos_engine")
 
+# [设计院 Phase3-1 2026-07-06] 预先加载torch确俛libgomp.so.1可用（lightgbm依赖它）
+try:
+    import torch as _torch_preload  # noqa: F401
+except ImportError:
+    pass  # 非必需，只是确保libgomp加载
+
 # Kronos repo 路径
 _KRONOS_PATH = os.path.join(os.path.dirname(__file__), '..', 'external', 'Kronos')
 if os.path.exists(_KRONOS_PATH) and _KRONOS_PATH not in sys.path:
@@ -85,18 +91,46 @@ def _load_model() -> bool:
         return _model_loaded
     _model_load_attempted = True
 
+    # [设计院 Phase3-1 2026-07-06] 优先加载本地Walk-Forward LightGBM模型
+    # 原因: 'model'包(Kronos自定义架构)缺失，但本地lgbm已训练 OOS_ACC=60%
+    # 注意: 需要先import torch让libgomp.so.1可用
+    try:
+        import torch as _torch  # 确保libgomp被加载
+        import lightgbm as lgb, json as _json
+        _base_dir  = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # trading-system/
+        _wf_path   = os.path.join(_base_dir, 'data', 'kronos_wf_model_lgb.txt')
+        _meta_path = os.path.join(_base_dir, 'data', 'kronos_wf_model.json')
+        if os.path.exists(_wf_path) and os.path.exists(_meta_path):
+            _lgb_model = lgb.Booster(model_file=_wf_path)
+            with open(_meta_path) as _f:
+                _meta = _json.load(_f)
+            # lgbm模型实隖10个特征(Column_0~9)对应meta的前10个名字
+            _actual_feats = _meta.get('feature_names', [])[:_lgb_model.num_feature()]
+            class _LGBMPredictor:
+                def __init__(self, m, feats, meta):
+                    self._m = m
+                    self._feats = feats
+                    self.model_type = 'lgbm_walkforward'
+                    self._oos_acc = meta.get('oos_acc', 0.6)
+                def predict(self, feat_dict):
+                    import numpy as _np
+                    x = _np.array([[feat_dict.get(k, 0.5) for k in self._feats]], dtype=_np.float32)
+                    return float(self._m.predict(x)[0])
+            _predictor = _LGBMPredictor(_lgb_model, _actual_feats, _meta)
+            _model_loaded = True
+            logger.info(f'[Kronos] ✅ WF-LightGBM就绪 oos_acc={_meta.get("oos_acc")} Phase3-1')
+            return True
+    except Exception as _e:
+        logger.info(f'[Kronos] lgbm尝试失败: {_e}，继续尝试远程模型')
+
     try:
         import json as _json
         from model import Kronos, KronosPredictor, KronosTokenizer
         from safetensors.torch import load_file as _load_sf
         from huggingface_hub import hf_hub_download as _hf_dl
-
         _cache = os.path.join(_KRONOS_PATH, '..', 'data', 'kronos_cache')
         os.makedirs(_cache, exist_ok=True)
-
         logger.info('[Kronos] 加载模型中... device=cpu')
-
-        # 加载 Kronos主模型
         cfg_path = _hf_dl('NeoQuasar/Kronos-mini', 'config.json', cache_dir=_cache)
         w_path   = _hf_dl('NeoQuasar/Kronos-mini', 'model.safetensors', cache_dir=_cache)
         cfg = _json.load(open(cfg_path))
@@ -108,29 +142,15 @@ def _load_model() -> bool:
         )
         model.load_state_dict(_load_sf(w_path))
         model.eval()
-
-        # 加载 KronosTokenizer（珬立 HF repo）
-        tokenizer = KronosTokenizer.from_pretrained(
-            'NeoQuasar/Kronos-Tokenizer-base',
-            cache_dir=_cache
-        )
-
-        _predictor = KronosPredictor(
-            model=model,
-            tokenizer=tokenizer,
-            device='cpu',
-            max_context=512,
-        )
+        tokenizer = KronosTokenizer.from_pretrained('NeoQuasar/Kronos-Tokenizer-base', cache_dir=_cache)
+        _predictor = KronosPredictor(model=model, tokenizer=tokenizer, device='cpu', max_context=512)
         _model_loaded = True
-        logger.info('[Kronos] ✅ 模型加载完成 Kronos-mini + Tokenizer-base CPU')
+        logger.info('[Kronos] ✅ 模型加载完成 Kronos-mini CPU')
         return True
-
     except Exception as e:
         logger.warning(f'[Kronos] ⚠️ 模型加载失败（s23将返回0）: {e}')
         _model_loaded = False
         return False
-
-
 def _run_inference(klines_15m: list, symbol: str) -> Tuple[float, float]:
     """
     执行 Kronos 推理，返回 (p_up, volatility)

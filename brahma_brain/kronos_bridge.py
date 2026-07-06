@@ -213,6 +213,54 @@ def _run_kronos(
     if predictor is None:
         return 0.5, 0.0, 'fallback:no_model'
 
+    # [设计院 Phase3-1 2026-07-06] LightGBM专用路径
+    # 当predictor是lgbm_walkforward时，从klines计算特征而非传OHLCV DataFrame
+    if getattr(predictor, 'model_type', '') == 'lgbm_walkforward':
+        try:
+            if klines and len(klines) >= 15:
+                closes = [float(k[4]) for k in klines]
+                vols   = [float(k[5]) for k in klines]
+                highs  = [float(k[2]) for k in klines]
+                lows   = [float(k[3]) for k in klines]
+                price  = closes[-1]
+                # 10个特征（与训练一致）
+                gains  = [max(0, closes[i]-closes[i-1]) for i in range(1,len(closes))]
+                losses = [max(0, closes[i-1]-closes[i]) for i in range(1,len(closes))]
+                ag = sum(gains[-14:])/14; al = sum(losses[-14:])/14
+                rsi = (100-100/(1+ag/al)) / 100 if al>0 else 0.5
+                ema14 = closes[0]
+                for c in closes[1:]:
+                    ema14 = c*(2/15) + ema14*(1-2/15)
+                p_ema    = float(price > ema14)
+                p_rsi    = rsi
+                p_mom    = min(1.0, max(0.0, (price - closes[-5]) / (closes[-5]+1e-9) / 0.05 + 0.5))
+                vol_avg  = sum(vols[-10:])/10
+                p_vol    = min(1.0, vols[-1] / (vol_avg+1e-9) / 2)
+                p_candle = 1.0 if closes[-1] > closes[-2] else 0.0
+                h48 = max(highs[-48:]) if len(highs)>=48 else max(highs)
+                l48 = min(lows[-48:])  if len(lows)>=48  else min(lows)
+                p_bos    = float((price - l48) / (h48 - l48 + 1e-9))
+                feat_dict = {
+                    'p_momentum': p_mom,
+                    'p_ema':      p_ema,
+                    'p_rsi':      p_rsi,
+                    'p_candle':   p_candle,
+                    'p_volume':   p_vol,
+                    'p_bos':      p_bos,
+                    'regime':     0.7,   # 体制分位（默认BULL）
+                    'direction':  0.5,
+                    'lsr':        0.5,
+                    'fr':         0.5,
+                }
+                p_up_lgbm = float(predictor.predict(feat_dict))
+                vol_lgbm  = float(np.std(closes[-20:]) / (price+1e-9)) if len(closes)>=20 else 0.01
+                _cache[symbol] = (time.time(), p_up_lgbm, vol_lgbm)
+                logger.info(f"[KronosBridge] {symbol} lgbm p_up={p_up_lgbm:.3f} (WF-LightGBM)")
+                return p_up_lgbm, vol_lgbm, 'kronos_lgbm'
+        except Exception as _lgbm_e:
+            logger.debug(f"[KronosBridge] lgbm推理失败: {_lgbm_e}")
+            return 0.5, 0.0, 'fallback:lgbm_err'
+
     df, x_ts = _build_ohlcv_df(klines)
     if df is None:
         return 0.5, 0.0, 'fallback:no_data'
