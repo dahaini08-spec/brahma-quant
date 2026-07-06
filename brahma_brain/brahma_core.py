@@ -548,7 +548,9 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
             _ld = _get_liq_dens(_sym, _cur_px)
             _ld_adj = _ld.get('score_adj', 0)
             if signal_dir == 'LONG':
-                _ld_adj = -_ld_adj  # 反转：做多时下方清算密集是负面（商以近期下行）
+                # LONG视角：上方空头止损墙(ABOVE_HEAVY)=利好→保持正分；下方多头止损墙(BELOW_HEAVY)=利空→取反
+                # score_adj已经是LONG视角（+代表ABOVE_HEAVY）无需反转，直接使用
+                pass  # _ld_adj不变：正分=上方清算墙支撑多头，负分=下方清算墙压制多头
             if _ld_adj != 0 and _ld.get('confidence', 0) >= 0.3:
                 s7 = max(0, min(15, s7 + _ld_adj))
                 print(f'[s7-LiqDens] {_sym} {signal_dir}: {_ld_adj:+d} | bias={_ld["liq_bias"]} conf={_ld["confidence"]} above={_ld.get("above_total_usd",0)/1e6:.1f}M below={_ld.get("below_total_usd",0)/1e6:.1f}M')
@@ -2147,6 +2149,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     k4h = klines_to_ohlcv(get_klines(symbol, '4h', 200))
     extra_data = {
         '_symbol': _sym,
+        'price': price,  # [2026-07-06] s7-LiqDens需要price字段
         '_k4h_closes':  list(k4h['c'][-20:]) if k4h and k4h.get('c') else [],
         '_k4h_volumes': list(k4h['v'][-20:]) if k4h and k4h.get('v') else [],
         '_klines_1h':   k1h,  # [v25.1 2026-06-14] s20/s21/s22初始化即提前注入，避免流程中断导致三个维度全部归零
