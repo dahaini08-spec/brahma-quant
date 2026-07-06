@@ -167,12 +167,17 @@ f"""🔄 梵天体制升级
             if m:
                 new_regime = m.group(1)
                 try:
-                    import sys as _sys, os as _os
-                    # 修复 2026-07-05: 用固定绝对路径，避免 cron isolated 环境 __file__ 解析偏移
+                    import sys as _sys, os as _os, importlib as _il
+                    # 修复 2026-07-06: 强制清除缓存模块，防止半初始化 BASE 未定义
                     _TRADING_ROOT = '/root/.openclaw/workspace/trading-system'
                     if _TRADING_ROOT not in _sys.path:
                         _sys.path.insert(0, _TRADING_ROOT)
-                    from scripts.regime_position_hook import apply_regime_hook
+                    # 清除旧缓存，确保重新加载
+                    for _mk in ['scripts.regime_position_hook', 'regime_position_hook']:
+                        _sys.modules.pop(_mk, None)
+                    import scripts.regime_position_hook as _hook_mod
+                    _il.reload(_hook_mod)
+                    apply_regime_hook = _hook_mod.apply_regime_hook
                     hook_actions = apply_regime_hook(new_regime, dry_run=False)
                     if hook_actions:
                         hook_report = '\n'.join(hook_actions)
