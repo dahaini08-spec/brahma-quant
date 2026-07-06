@@ -339,6 +339,9 @@ def get_cross_fr_basis(symbol: str = 'BTCUSDT') -> dict:
         'fr_avg': 0.0, 'fr_extreme': False,
         'basis_pct': 0.0, 'bias': 'NEUTRAL',
         'score_adj': 0, 'note': 'N/A',
+        # [2026-07-06] 多所OI聚合（免费公开接口）
+        'oi_binance_b': 0.0, 'oi_okx_b': 0.0, 'oi_bybit_b': 0.0,
+        'oi_total_b': 0.0, 'oi_dom_pct': 0.0,  # Binance主导比例
     }
 
     # ── Bybit FR ──
@@ -422,12 +425,32 @@ def get_cross_fr_basis(symbol: str = 'BTCUSDT') -> dict:
     else:
         result['bias'] = 'NEUTRAL'
 
+    # ── 多所OI聚合（三所公开接口，免费）[2026-07-06 设计院封印] ──
+    try:
+        import requests as _rq
+        _px_r = _rq.get(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}', timeout=4)
+        _px = float(_px_r.json()['price'])
+        # Binance
+        _bn_r = _rq.get(f'https://fapi.binance.com/fapi/v1/openInterest?symbol={symbol}', timeout=4)
+        _bn_oi = float(_bn_r.json().get('openInterest', 0)) * _px
+        # OKX
+        _okx_r = _rq.get(f'https://www.okx.com/api/v5/public/open-interest?instType=SWAP&uly={sym_base}-USDT', timeout=5)
+        _okx_oi = float(_okx_r.json()['data'][0]['oiUsd']) if _okx_r.status_code == 200 and _okx_r.json().get('data') else 0.0
+        # Bybit
+        _by_r = _rq.get(f'https://api.bybit.com/v5/market/open-interest?category=linear&symbol={symbol}&intervalTime=1h&limit=1', timeout=5)
+        _by_list = _by_r.json().get('result', {}).get('list', []) if _by_r.status_code == 200 else []
+        _by_oi = float(_by_list[0]['openInterest']) * _px if _by_list else 0.0
+        _total = _bn_oi + _okx_oi + _by_oi
+        result['oi_binance_b'] = round(_bn_oi / 1e9, 2)
+        result['oi_okx_b']     = round(_okx_oi / 1e9, 2)
+        result['oi_bybit_b']   = round(_by_oi / 1e9, 2)
+        result['oi_total_b']   = round(_total / 1e9, 2)
+        result['oi_dom_pct']   = round(_bn_oi / _total * 100, 1) if _total > 0 else 0.0
+    except Exception:
+        pass
+
     _CACHE[cache_key] = {'data': result, 'ts': now}
     return result
-
-
-# ═══════════════════════════════════════════════════════════════
-# [s_options 2026-07-01] Deribit Put/Call OI Ratio
 # 设计院·四方共识落地：免费公开API，期权市场情绪层
 # ═══════════════════════════════════════════════════════════════
 

@@ -49,9 +49,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 
 # ── 宏观参数 ───────────────────────────────────────────────
-EMA200_PENALTY_LONG  = -10  # 价格低于EMA200 → 做多惩罚
+EMA200_PENALTY_LONG  = -6   # [2026-07-06 设计院自主决策] -10→-6：RECOVERY区间有回归EMA200趋势，过重惩罚会错杀早期反弹信号
 EMA200_BONUS_SHORT   = +8   # 价格低于EMA200 → 做空加分
-EMA55_PENALTY_LONG   = -5   # 价格低于EMA55日线 → 做多额外惩罚
+EMA55_PENALTY_LONG   = -3   # [2026-07-06 设计院自主决策] -5→-3：EMA55低于不是强居炱空，减轻惩罚
 
 WEEKLY_RSI_OVERSOLD     = 35   # 周线RSI≤35 = 接近底部，做多加权
 WEEKLY_RSI_NEUTRAL_HIGH = 55   # 周线RSI≥55 = 非底部，做多减权
@@ -273,8 +273,8 @@ def fib_macro_score(symbol: str, price: float, signal_dir: str,
         # 5. 体制标签加成
         regime_pts = {
             'BULL_EMA200':  {'LONG': +5, 'SHORT': -5},
-            'RECOVERY':     {'LONG': +2, 'SHORT': -2},
-            'BEAR_BOUNCE':  {'LONG': -3, 'SHORT': +3},
+            'RECOVERY':     {'LONG': +3, 'SHORT': -3},   # [2026-07-06] +2→+3: RECOVERY正确识别应适当加分
+            'BEAR_BOUNCE':  {'LONG': -2, 'SHORT': +2},   # [2026-07-06] -3→-2: 反弹早期过度惩罚会错杀信号
             'DEEP_BEAR':    {'LONG': -8, 'SHORT': +8},
         }.get(regime_tag, {})
 
@@ -285,7 +285,7 @@ def fib_macro_score(symbol: str, price: float, signal_dir: str,
                 total += pts
 
         # ── 汇总 ────────────────────────────────────────────
-        total = int(max(-25, min(20, total)))
+        total = int(max(-20, min(20, total)))  # [2026-07-06] 下限-25→-20：防止多项惩罚叠加极端截断错杀反弹信号
         result['score']     = total
         result['breakdown'] = breakdown
 

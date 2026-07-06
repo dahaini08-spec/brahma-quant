@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
 """
+import sys as _sys_ph, os as _os_ph
+# [2026-07-06] 设计院修复: 独立通道 'No module named scripts' 根因
+_ph_root = _os_ph.path.dirname(_os_ph.path.dirname(_os_ph.path.abspath(__file__)))
+if _ph_root not in _sys_ph.path:
+    _sys_ph.path.insert(0, _ph_root)
+_ph_scripts = _os_ph.path.join(_ph_root, 'scripts')
+if _ph_scripts not in _sys_ph.path:
+    _sys_ph.path.insert(0, _ph_scripts)
+del _sys_ph, _os_ph, _ph_root, _ph_scripts
+
 暴涨猎手 · 纯脚本扫描器（零AI token消耗）
 运行逻辑：
   1. 扫描全市场TIGHT形态+OI异动
