@@ -405,9 +405,19 @@ def check_analysis_chain() -> dict:
     """
     [2026-07-06] 分析链路端到端健康检查
     验证: run_analysis()能正常执行 + 关键字段完整 + score>0
+    [修复] 418限速期间返回warn而非fail，避免误触发自愈告警
     """
     try:
-        import subprocess as _sp
+        import subprocess as _sp, requests as _rq
+        # 418预检 — 限速期间分析链降级是预期行为，非故障
+        try:
+            _ping = _rq.get('https://fapi.binance.com/fapi/v1/ping', timeout=5)
+            if _ping.status_code in (418, 429):
+                _ra = _ping.headers.get('Retry-After', _ping.headers.get('retry-after', '?'))
+                return {'ok': True, 'warn': True,
+                        'detail': f'Binance 限速中({_ping.status_code}) Retry-After={_ra}s — 分析链降级属预期行为'}
+        except Exception:
+            pass
         _res = _sp.run(
             ['python3', '-c',
              'import sys; sys.path.insert(0,".");'
