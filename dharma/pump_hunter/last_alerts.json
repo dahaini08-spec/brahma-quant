@@ -1,29 +1,31 @@
 {
-  "scan_time": "2026-07-06T03:31:06.121783",
-  "elapsed_sec": 8.8,
-  "total_scanned": 47,
+  "scan_time": "2026-07-06T09:37:24.978490",
+  "elapsed_sec": 9.8,
+  "total_scanned": 51,
   "alerts": [
     {
       "symbol": "REUSDT",
-      "score": 75,
-      "price": 0.6305,
-      "chg_24h": -5.7,
-      "vol_m": 65.4,
-      "oi_chg": -5.5,
-      "funding": -0.0719,
-      "short_pct": 63.5,
-      "compression": 12.1,
-      "vol_ratio": 0.6,
-      "rsi": 52.3,
+      "score": 90,
+      "price": 0.6075,
+      "chg_24h": -4.5,
+      "vol_m": 54.8,
+      "oi_chg": -6.1,
+      "funding": -0.1362,
+      "short_pct": 64.3,
+      "compression": 13.6,
+      "vol_ratio": 0.47,
+      "rsi": 42.4,
       "reasons": [
-        "极端负费率-0.072%",
-        "空头拥挤63%",
-        "TIGHT压缩12%"
+        "极端负费率-0.136%",
+        "空头拥挤64%",
+        "TIGHT压缩14%",
+        "量能萎缩0.47x",
+        "RSI低位42"
       ],
-      "scan_time": "2026-07-06T03:31:05.408244"
+      "scan_time": "2026-07-06T09:37:24.258679"
     }
   ],
   "new_alerts": [],
   "need_push": false,
-  "scan_ts": 1783308666.1217968
+  "scan_ts": 1783330644.9785018
 }
