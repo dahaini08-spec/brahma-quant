@@ -199,6 +199,15 @@ class RegimeStateMachine:
         # [设计院 2026-07-05] 防止高频任务（eth-alert每3min, rsi-watcher每5min）
         # 在几分钟内快速堆积 confirm_count，导致74次/天的体制抖动
         last_update_ts = s.get('last_update_ts', 0)
+
+        # [设计院 2026-07-06] sw24h 每日重置修复
+        # 原bug: switch_count_24h 从未重置，历史累积（BTC=77,ETH=43）
+        # 修复: 检查上次重置时间，超过24H则清零
+        _last_sw_reset = s.get('last_sw_reset', 0)
+        if now - _last_sw_reset >= 86400:
+            s['switch_count_24h'] = 0
+            s['last_sw_reset'] = now
+
         if now - last_update_ts < MIN_UPDATE_INTERVAL:
             # 时间间隔不足，不允许计数更新，静默返回已确认体制
             # 注意：不重置 candidate/confirm_count，等待足够时间后继续

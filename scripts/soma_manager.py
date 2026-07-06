@@ -52,7 +52,7 @@ _STATE_FILE = _DIR / 'data' / 'soma_state.json'
 # 配置
 # ══════════════════════════════════════════════════════════
 
-DAILY_BUDGET = 150_000      # 每日token预算
+DAILY_BUDGET = 300_000      # 每日token预算
 P0_RESERVE   = 50_000       # P0保留区（前5万无条件给核心信号）
 
 PRIORITY_THRESHOLD = {

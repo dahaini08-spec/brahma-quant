@@ -214,3 +214,12 @@ def evaluate_timing(symbol: str,
         logger.error(f"[TimingFilter] evaluate_timing 异常: {e}", exc_info=True)
         return {'status': 'WAIT', 'score': 0,
                 'badge': '⏸ WAIT', 'error': str(e)}
+
+
+# [设计院 2026-07-06] format_timing_badge 兼容补丁
+def format_timing_badge(timing_result: dict) -> str:
+    """格式化时机徽章为可读字符串"""
+    status = timing_result.get('status', 'UNKNOWN')
+    score  = timing_result.get('score', 0)
+    badge  = timing_result.get('badge', status)
+    return f'  {badge} timing_score={score}'

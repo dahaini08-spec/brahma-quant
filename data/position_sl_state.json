@@ -22,10 +22,10 @@
     "symbol": "LDOUSDT",
     "direction": "LONG",
     "entry_price": 0.2658,
-    "sl_price": 0.26606579999999996,
-    "tsl_updated": "2026-07-04T21:35:17.177647+00:00",
+    "sl_price": 0.27377399999999996,
+    "tsl_updated": "2026-07-06T00:48:44.361296+00:00",
     "updated_at": 1783165133.1032841,
-    "tsl_old_sl": 0.257826
+    "tsl_old_sl": 0.26606579999999996
   },
   "NEARUSDT": {
     "symbol": "NEARUSDT",
