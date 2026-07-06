@@ -29,6 +29,23 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, BASE_DIR)
 sys.path.insert(0, os.path.join(BASE_DIR, '..'))
 
+# [2026-07-06] Kronos模块预注入：确保 brahma_core 中的动态 import 拿到正确实例
+# 根因： brahma_core 用 `from kronos_bridge import`（非包式），会创建独立模块实例
+#         导致 kronos_engine._predictor 无法共享，出现 lgbm_err
+try:
+    import brahma_brain.kronos_bridge as _kb_mod
+    sys.modules.setdefault('kronos_bridge', _kb_mod)   # 预注入平名属引用
+except Exception:
+    pass
+try:
+    import brahma_brain.kronos_engine as _ke_mod
+    _ke_mod._model_load_attempted = False  # 允许重新加载（libgomp已修复）
+    _ke_mod._model_loaded = False
+    _ke_mod._predictor = None
+    sys.modules.setdefault('kronos_engine', _ke_mod)   # 预注入平名属引用
+except Exception:
+    pass
+
 # ── 唯一数据入口（封印）────────────────────────────────────────
 from brahma_brain.brahma_core import analyze as _core_analyze
 from brahma_brain.brahma_parallel_engine import (
