@@ -13,6 +13,29 @@ CORE_MODULES = [
     'brahma_brain.regime_state_machine',
     'brahma_brain.dharma_data_bridge',
     'brahma_brain.brahma_bus',
+    'brahma_brain.math_utils',
+    'brahma_brain.universal_asset_router',
+    'brahma_brain.position_sizer',
+    'brahma_brain.dynamic_sl',
+]
+
+# 信号链子引擎（try/except降级可接受）
+SIGNAL_CHAIN_MODULES = [
+    'brahma_brain.smc_engine',
+    'brahma_brain.divergence_engine',
+    'brahma_brain.volume_exhaustion_engine',
+    'brahma_brain.multitf_engine',
+    'brahma_brain.gex_engine',
+    'brahma_brain.liq_scanner',
+    'brahma_brain.orderbook_heatmap',
+    'brahma_brain.orderbook_engine',
+    'brahma_brain.order_flow_engine',
+    'brahma_brain.whale_engine',
+    'brahma_brain.onchain_engine',
+    'brahma_brain.options_engine',
+    'brahma_brain.kronos_engine',
+    'brahma_brain.signal_selector',
+    'brahma_brain.brahma_parallel_engine',
 ]
 
 # runner层注入（try/except降级可接受）
@@ -21,6 +44,31 @@ RUNNER_MODULES = [
     'macro_engine',
     'kronos_bridge',
     'upgrade_v2.v2_integrator',
+]
+
+# 分析辅助模块（不在信号链）
+ANALYTICS_MODULES = [
+    'brahma_brain.portfolio_optimizer',
+    'brahma_brain.capital_allocator',
+    'brahma_brain.causal_regime_verifier',
+    'brahma_brain.brahma_health',
+    'brahma_brain.ev_feedback',
+    'brahma_brain.ic_tracker',
+    'brahma_brain.auto_review',
+    'brahma_brain.brainlog',
+    'brahma_brain.brahma_360',
+    'brahma_brain.brahma_orchestrator',
+    'brahma_brain.llm_council_bridge',
+]
+
+# 数据基础设施
+DATA_INFRA_MODULES = [
+    'brahma_brain.brahma_event_bus',
+    'brahma_brain.data_cache',
+    'brahma_brain.live_price_feed',
+    'brahma_brain.realtime_fetch',
+    'brahma_brain.market_state',
+    'brahma_brain.smart_money_engine',
 ]
 
 # 辅助监控模块（不在信号链，不影响有效性）
@@ -50,8 +98,15 @@ def get_module_status():
     """返回所有模块的导入状态"""
     import importlib
     status = {}
-    all_mods = [('CORE', CORE_MODULES), ('RUNNER', RUNNER_MODULES), ('OPTIONAL', OPTIONAL_MODULES)]
-    for tier, mods in all_mods:
+    all_tiers = [
+        ('CORE',         CORE_MODULES),
+        ('SIGNAL_CHAIN', SIGNAL_CHAIN_MODULES),
+        ('RUNNER',       RUNNER_MODULES),
+        ('ANALYTICS',    ANALYTICS_MODULES),
+        ('DATA_INFRA',   DATA_INFRA_MODULES),
+        ('OPTIONAL',     OPTIONAL_MODULES),
+    ]
+    for tier, mods in all_tiers:
         for mod in mods:
             try:
                 importlib.import_module(mod)
