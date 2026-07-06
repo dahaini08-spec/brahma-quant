@@ -284,6 +284,9 @@ def analyze(sym):
     if mode is None:
         return None  # 不满足任何模式
 
+    # ── [2026-07-06] OI Score 防溢出截断（KORUUSDT score=27590 BUG修复）──
+    oi_score = max(-200.0, min(500.0, oi_score))
+
     # ── L2: 大户方向过滤 ──────────────────────────────────────
     l2_pass = (whale_l >= CFG['whale_l_min'] and whale_trend >= 0)
     if CFG['whale_vs_retail']:
