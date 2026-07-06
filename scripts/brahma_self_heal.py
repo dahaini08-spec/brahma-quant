@@ -51,7 +51,7 @@ CRON_WATCHLIST = {
     'btc-regime-watcher':      15,
     'ws-guardian-keepalive':   15,
     'auto-position-manager':   45,
-    'regime-switch-monitor':   45,
+    'regime-switch-monitor':   75,  # [FIX 2026-07-06] cron漂移允许±15min，设剡1h任务阈值75min
 }
 
 # 关键数据文件 → 最大陈旧分钟
