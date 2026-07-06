@@ -201,7 +201,7 @@ def log_signal(result: dict) -> bool:
                         and (_r.get('signal_dir') or _r.get('direction')) == direction
                         and _r.get('status') == STATUS_OPEN
                         and abs(float(_r.get('entry_lo', 0) or 0) - _entry_lo_new) / max(_entry_lo_new, 1) < _dedup_window
-                        and (time.time() - float(_r.get('ts', 0) or 0)) < 4 * 3600  # 4H内
+                        and (time.time() - float(_r.get('ts', 0) or 0)) < 6 * 3600  # [设计院 2026-07-06] 4H→6H，防止新信号被早期信号去重屏蔽
                     ):
                         print(f'[DharmaBridge] 去重跳过 {symbol} {direction} entry_lo重复 差异={abs(float(_r.get("entry_lo",0) or 0)-_entry_lo_new)/_entry_lo_new*100:.3f}%')
                         return False

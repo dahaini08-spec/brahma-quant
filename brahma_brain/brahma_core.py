@@ -3372,16 +3372,16 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         cf['mtf_4h_conflict'] = f'4H⚠️{_4h_align} vs {signal_dir} 降权-{_4h_penalty}分 → {_score_raw:.0f}'
         print(f'[BrahmaBrain] ⚠️ {_sym} 4H逆势降权-{_4h_penalty}: {_4h_align} vs {signal_dir} → score={_score_raw:.0f}')
     elif _4h_align == 'NEUTRAL' and _score_gate_ok:
-        # [v25.7 P0c 2026-06-21] MTF=NEUTRAL降权 -8%
-        # 铁证：MTF=NEUTRAL比AGREE信号WR低约8%，需体现在评分中
-        # 哲学：4H方向不确定 = 追加风险，应降权不封禁
-        _neutral_penalty_pct = 0.92  # -8%
+        # [设计院 2026-07-06] MTF=NEUTRAL降权 -4%（原-8%过于激进）
+        # 修正依据：实际WR差距约4~5%，不是8%；BULL_TREND下4H NEUTRAL很常见且多单结构其实良好
+        # 改为-4%，阻断门槛仅针对真正中性/逃顶形态
+        _neutral_penalty_pct = 0.96  # -4%（设计院v2 2026-07-06）
         _score_before_neutral = _score_raw
         _score_raw = round(_score_raw * _neutral_penalty_pct, 1)
         cf['total'] = _score_raw
         cf = copy.deepcopy(cf)
-        cf['mtf_4h_neutral'] = f'4H NEUTRAL 降权×0.92 {_score_before_neutral:.0f}→{_score_raw:.0f}'
-        print(f'[BrahmaBrain] 🟡 {_sym} MTF=NEUTRAL 降摱8%: score {_score_before_neutral:.0f}→{_score_raw:.0f}')
+        cf['mtf_4h_neutral'] = f'4H NEUTRAL 降权×0.96 {_score_before_neutral:.0f}→{_score_raw:.0f}'
+        print(f'[BrahmaBrain] 🟡 {_sym} MTF=NEUTRAL 降抎4%: score {_score_before_neutral:.0f}→{_score_raw:.0f}')
 
     # [设计院 2026-05-24] 达摩院6节点预测验证 — 接入真实信号流
     _dharma_nodes = {'nodes_pass': 0, 'verdict': 'UNKNOWN', 'score_mult': 1.0, 'detail': ''}
@@ -3586,14 +3586,24 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 _p0b_ema200 = float(_p0b_res.get('ema200', 0) or 0)
             except: pass
             if _p0b_ema200 > 0 and _p0b_price < _p0b_ema200:
-                # 价格在 EMA200 以下，不应该是 BULL_TREND
-                _score_gate_ok = False
-                cf['breakdown']['P0B_BULL_TREND_MACRO'] = (
-                    f'[P0-B宏观门] price={_p0b_price:.2f} < EMA200={_p0b_ema200:.2f} '
-                    f'宏观熏市，禁止 BULL_TREND_LONG 信号输出'
-                )
-                print(f'[P0B-MacroGate] 🛑 {_sym} BULL_TREND_LONG 被拦截 '
-                      f'price={_p0b_price:.2f} < EMA200={_p0b_ema200:.2f} (宏观熏市)')
+                # [设计院 2026-07-06] P0B灰度通道: EMA200下方9%内+score>=170允许开单
+                _p0b_ratio = _p0b_price / _p0b_ema200
+                _P0B_GRAY_RATIO = 0.91   # EMA200下方9%内
+                _P0B_GRAY_SCORE = 170    # 需超高分才允许灰度开单
+                _pre_score = float(cf.get('total', 0) or 0)
+                if _p0b_ratio >= _P0B_GRAY_RATIO and _pre_score >= _P0B_GRAY_SCORE:
+                    cf['breakdown']['P0B_GRAY_PASS'] = (
+                        f'[P0B灰度] ratio={_p0b_ratio:.3f}>={_P0B_GRAY_RATIO} score={_pre_score:.0f}>={_P0B_GRAY_SCORE} 允许'
+                    )
+                    print(f'[P0B-MacroGate] 🟡 {_sym} 灰度允许 ratio={_p0b_ratio:.3f} score={_pre_score:.0f}')
+                else:
+                    _score_gate_ok = False
+                    cf['breakdown']['P0B_BULL_TREND_MACRO'] = (
+                        f'[P0-B宏观门] price={_p0b_price:.2f} < EMA200={_p0b_ema200:.2f} '
+                        f'ratio={_p0b_ratio:.3f} 封锁LONG'
+                    )
+                    print(f'[P0B-MacroGate] 🛑 {_sym} BULL_TREND_LONG 被拦截 '
+                          f'price={_p0b_price:.2f} < EMA200={_p0b_ema200:.2f} (宏观熊市)')
     except Exception as _p0b_e:
         pass
     # ── [END P0-B 宏观门] ──────────────────────────────────────────────────────────

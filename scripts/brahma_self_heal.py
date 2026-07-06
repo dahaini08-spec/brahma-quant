@@ -127,6 +127,26 @@ def _run(cmd: list, timeout: int = 30) -> tuple:
 # 检测模块
 # ══════════════════════════════════════════════════════════════
 
+def check_module_registry() -> dict:
+    """[设计院 2026-07-06] 模块注册表健康检查 — CORE模块全量验证"""
+    try:
+        import sys, os
+        _base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        for _p in [_base, os.path.join(_base, 'brahma_brain')]:
+            if _p not in sys.path:
+                sys.path.insert(0, _p)
+        from brahma_brain.module_registry import check_core_modules
+        missing = check_core_modules()
+        if missing:
+            _push(
+                f'🚨 [SelfHeal] CORE模块缺失: {missing}',
+                dedup_key='core_module_missing', dedup_ttl=3600
+            )
+            return {'ok': False, 'detail': f'CORE缺失: {missing}'}
+        return {'ok': True, 'detail': f'17/17模块正常'}
+    except Exception as e:
+        return {'ok': False, 'detail': str(e)}
+
 def check_binance_api() -> dict:
     """Binance API 连通性 + 延迟"""
     t0 = time.time()
@@ -529,6 +549,7 @@ def run_self_heal():
     # ── 执行所有检测 ─────────────────────────────────────────
     checks = {
         'brahma_analyze':  check_brahma_analyze(),   # [设计院 2026-07-06] 信号链核心文件保护
+        'module_registry': check_module_registry(),   # [设计院 2026-07-06] CORE模块全量验证
         'binance_api':     check_binance_api(),
         'scoring_engine':  check_scoring_engine(),
         'regime_state':    check_regime_state(),

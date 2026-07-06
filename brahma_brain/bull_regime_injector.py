@@ -79,7 +79,7 @@ def get_regime_context_bonus(sym: str, regime: str) -> dict:
     except Exception as e:
         return {'bonus': 0, 'reasons': [f'计算异常:{e}'], 'regime': regime}
 
-    return {'bonus': min(bonus, 35), 'reasons': reasons, 'regime': regime}
+    return {'bonus': min(bonus, 25), 'reasons': reasons, 'regime': regime}  # [设计院 2026-07-06] 上限+35→+25，防止单模块主导信号
 
 
 def get_event_timing_bonus(sym: str) -> dict:
