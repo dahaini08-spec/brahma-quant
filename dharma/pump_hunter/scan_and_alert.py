@@ -71,9 +71,12 @@ def scan():
     syms = get_symbols()
 
     # 批量获取24H行情（1次请求）
-    tickers = {t['symbol']: t for t in
-               requests.get(f'{API}/fapi/v1/ticker/24hr', timeout=15).json()
-               if t['symbol'].endswith('USDT')}
+    # [2026-07-07 防御修复] API偶发返回dict/error时转为list，防止TypeError: string indices
+    _raw_tickers = requests.get(f'{API}/fapi/v1/ticker/24hr', timeout=15).json()
+    if not isinstance(_raw_tickers, list):
+        _raw_tickers = []  # API异常返回，降级为空，本次扫描跳过
+    tickers = {t['symbol']: t for t in _raw_tickers
+               if isinstance(t, dict) and t.get('symbol', '').endswith('USDT')}
 
     # 过滤候选
     candidates = [s for s in syms
