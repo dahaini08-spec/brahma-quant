@@ -259,7 +259,7 @@ def push_digest():
         # smart_digest是P2内容，路由到日报线程(019f15c9)，不打扰主线程
         to = f'{user_id}:thread:019f15c9-c68e-72f3-9c61-9df4e9ea8d62' if user_id else user_id
     except Exception:
-        to = '73295708'
+        to = '73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075'  # [BUG-3 修复] 外层异常时精确地址即SSOT
     import subprocess
     result = subprocess.run(
         ['openclaw', 'message', 'send', '--channel', 'jarvis', '--to', to, '--message', digest],

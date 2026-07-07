@@ -38,7 +38,7 @@ try:
     import scripts.system_config as _sc
     PUSH_TARGET = f"{_sc.JARVIS_USER_ID}:t:{_sc.JARVIS_THREAD_ID}"
 except Exception:
-    PUSH_TARGET   = '73295708:t:019f309c-609b-7a75-a195-e221e5927c63'
+    PUSH_TARGET   = '73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075'  # SSOT v10 [BUG-5修复 2026-07-07]
 PUSH_CHANNEL  = 'jarvis'
 HEAL_LOG_FILE = BASE / 'logs' / 'self_heal.log'
 STATE_FILE    = BASE / 'data' / 'self_heal_state.json'
@@ -541,11 +541,23 @@ def check_cron_precise() -> dict:
 
 def check_push_routing() -> dict:
     """推送路由正确性：确认所有cron任务使用正确线程"""
-    CORRECT_THREAD = '019f309c-609b-7a75-a195-e221e5927c63'
+    # [BUG-5 封印修复 2026-07-07] CORRECT_THREAD曾错误设为旧线程，导致自愈反向覆盖正确路由
+    # SSOT: 始终从 system_config.py 动态读取正确线程并不硬编码
+    try:
+        import importlib.util as _ilu
+        _sc_path = BASE / 'scripts' / 'system_config.py'
+        _spec = _ilu.spec_from_file_location('system_config', _sc_path)
+        _sc = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_sc)
+        CORRECT_THREAD = getattr(_sc, 'JARVIS_THREAD_ID', '019f181f-e4d1-7576-85ca-77f4a7fa8075')
+    except Exception:
+        CORRECT_THREAD = '019f181f-e4d1-7576-85ca-77f4a7fa8075'
+    
+    # 旧线程列表：除CORRECT_THREAD外的应该被替换的
     OLD_THREADS    = [
-        '019f181f-e4d1-7576-85ca-77f4a7fa8075',
-        '019f1797-6c60-7541-ad72-ec34ed14dfc4',
+        '019f309c-609b-7a75-a195-e221e5927c63',  # 旧线程 v1
+        '019f1797-6c60-7541-ad72-ec34ed14dfc4',  # 旧线程 v0
     ]
+    OLD_THREADS = [t for t in OLD_THREADS if t != CORRECT_THREAD]  # 防止正确线程被当作旧线程
     issues = []
     try:
         jobs_file = Path.home() / '.openclaw/cron/jobs.json'
@@ -637,19 +649,24 @@ def heal(fault_type: str, context: dict) -> dict:
             _sc_path = BASE / 'scripts' / 'system_config.py'
             _spec = _ilu.spec_from_file_location('system_config', _sc_path)
             _sc = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_sc)
-            OLD = '019f181f-e4d1-7576-85ca-77f4a7fa8075'
-            NEW = getattr(_sc, 'JARVIS_THREAD_ID', '019f309c-609b-7a75-a195-e221e5927c63')
+            NEW = getattr(_sc, 'JARVIS_THREAD_ID', '019f181f-e4d1-7576-85ca-77f4a7fa8075')
         except Exception:
-            OLD = '019f181f-e4d1-7576-85ca-77f4a7fa8075'
-            NEW = '019f309c-609b-7a75-a195-e221e5927c63'
+            NEW = '019f181f-e4d1-7576-85ca-77f4a7fa8075'
+        # [BUG-5修复] OLD_LIST不含NEW，防止覆盖正确线程
+        OLD_LIST = ['019f309c-609b-7a75-a195-e221e5927c63', '019f1797-6c60-7541-ad72-ec34ed14dfc4']
+        OLD_LIST = [o for o in OLD_LIST if o != NEW]
         jobs_file = Path.home() / '.openclaw/cron/jobs.json'
         if jobs_file.exists():
             jobs_txt = jobs_file.read_text()
-            if OLD in jobs_txt:
-                fixed_txt = jobs_txt.replace(OLD, NEW)
-                jobs_file.write_text(fixed_txt)
-                fixed_n = jobs_txt.count(OLD)
-                result.update({'healed': True, 'output': f'旧线程→{NEW[:8]} 修复{fixed_n}处'})
+            total_fixed = 0
+            for OLD in OLD_LIST:
+                if OLD in jobs_txt:
+                    cnt = jobs_txt.count(OLD)
+                    jobs_txt = jobs_txt.replace(OLD, NEW)
+                    total_fixed += cnt
+            if total_fixed > 0:
+                jobs_file.write_text(jobs_txt)
+                result.update({'healed': True, 'output': f'旧线程→{NEW[:8]} 修复{total_fixed}处'})
             else:
                 result.update({'healed': True, 'output': '无需修复（路由已正确）'})
 
