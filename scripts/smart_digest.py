@@ -257,7 +257,8 @@ def push_digest():
         user_id = getattr(cfg, 'JARVIS_USER_ID', '73295708')
         thread_id = getattr(cfg, 'JARVIS_THREAD_ID', '')
         # smart_digest是P2内容，路由到日报线程(019f15c9)，不打扰主线程
-        to = f'{user_id}:thread:019f15c9-c68e-72f3-9c61-9df4e9ea8d62' if user_id else user_id
+        thread_id = getattr(cfg, 'JARVIS_THREAD_ID', '019f181f-e4d1-7576-85ca-77f4a7fa8075')
+        to = f'{user_id}:thread:{thread_id}' if user_id and thread_id else f'{user_id}:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075'
     except Exception:
         to = '73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075'  # [BUG-3 修复] 外层异常时精确地址即SSOT
     import subprocess
