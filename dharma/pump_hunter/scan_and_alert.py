@@ -51,6 +51,12 @@ MAX_CHG_ABS = 25.0         # 排除已大幅波动
 PUSH_SCORE  = 75           # 触发推送的评分门槛
 EXEC_SCORE  = 85           # 触发开单的评分门槛（v2.1 设计院 2026-07-03）
 
+# ── [P0 设计院 2026-07-07] 暴涨已发生防漏判 ────────────
+VOL_RATIO_EXPIRED   = 5.0   # vol_ratio超过此值=暴涨已发生，信号作废
+PRICE_FROM_LOW_MAX  = 15.0  # 价格距近期最低点涨幅超过此值=追高风险，信号静默
+SIGNAL_VALID_MIN    = 30    # 信号有效窗口（分钟），超时发二次提醒
+SIGNAL_EXPIRY_FILE  = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'signal_expiry.json')
+
 def get_symbols():
     info = requests.get(f'{API}/fapi/v1/exchangeInfo', timeout=12).json()
     return [s['symbol'] for s in info['symbols']
@@ -156,36 +162,62 @@ def scan():
                 vol_base   = sum(qvols[-24:-6]) / 18 if len(qvols) >= 24 else vol_recent
                 vol_ratio  = vol_recent / vol_base if vol_base > 0 else 1
 
-                if comp < 15:
-                    score += 25; reasons.append(f'TIGHT压缩{comp:.0f}%')
-                elif comp < 25:
-                    score += 12; reasons.append(f'MODERATE压缩{comp:.0f}%')
+                # ── [P0修复 2026-07-07] 暴涨已发生检测 ─────────────────
+                # vol_ratio>=5x = 量能已炸裂，暴涨正在或已结束，信号过期
+                if vol_ratio >= VOL_RATIO_EXPIRED:
+                    reasons.append(f'⚠️SKIP:暴涨已发生(vol_ratio={vol_ratio:.1f}x>5x)')
+                    score = -999  # 标记为无效，后面 if score >= PUSH_SCORE 自然过滤
+                    comp = 99; rsi = 50; dist = 0
+                    # 不break，继续让后续正常退出
+                else:
+                    # ── 价格离地距离检测 ──────────────────────────────────
+                    price_from_low_pct = (price - min(lows[-6:])) / min(lows[-6:]) * 100 if min(lows[-6:]) > 0 else 0
+                    if price_from_low_pct > PRICE_FROM_LOW_MAX:
+                        reasons.append(f'⚠️SKIP:价格已离起跳点+{price_from_low_pct:.1f}%>{PRICE_FROM_LOW_MAX}%')
+                        score = -999
+                        comp = 99; rsi = 50; dist = 0
+                    else:
+                        if comp < 15:
+                            score += 25; reasons.append(f'TIGHT压缩{comp:.0f}%')
+                        elif comp < 25:
+                            score += 12; reasons.append(f'MODERATE压缩{comp:.0f}%')
 
-                if vol_ratio < 0.5:
-                    score += 10; reasons.append(f'量能萎缩{vol_ratio:.2f}x')
+                        if vol_ratio < 0.5:
+                            score += 10; reasons.append(f'量能萎缩{vol_ratio:.2f}x')
 
-                # RSI简算
-                d = [closes[i]-closes[i-1] for i in range(1,len(closes))]
-                g = [max(0,x) for x in d[-14:]]; lo = [max(0,-x) for x in d[-14:]]
-                ag = sum(g)/14; al = sum(lo)/14
-                rsi = 100-100/(1+ag/al) if al>0 else 50
-                if rsi < 30:
-                    score += 15; reasons.append(f'RSI超卖{rsi:.0f}')
-                elif rsi < 50:
-                    score += 5; reasons.append(f'RSI低位{rsi:.0f}')
+                # RSI简算（仅在score有效时计算）
+                if score != -999:
+                    d = [closes[i]-closes[i-1] for i in range(1,len(closes))]
+                    g = [max(0,x) for x in d[-14:]]; lo = [max(0,-x) for x in d[-14:]]
+                    ag = sum(g)/14; al = sum(lo)/14
+                    rsi = 100-100/(1+ag/al) if al>0 else 50
+                    if rsi < 30:
+                        score += 15; reasons.append(f'RSI超卖{rsi:.0f}')
+                    elif rsi < 50:
+                        score += 5; reasons.append(f'RSI低位{rsi:.0f}')
 
-                # 距历史高点
-                hist_high = max(highs)
-                dist = (price - hist_high) / hist_high * 100
-                if dist < -60:
-                    score += 10; reasons.append(f'深度低位{dist:.0f}%')
-                elif dist < -40:
-                    score += 5
+                    # 距历史高点
+                    hist_high = max(highs)
+                    dist = (price - hist_high) / hist_high * 100
+                    if dist < -60:
+                        score += 10; reasons.append(f'深度低位{dist:.0f}%')
+                    elif dist < -40:
+                        score += 5
 
             else:
                 comp = 99; vol_ratio = 1; rsi = 50; dist = 0
 
             if score >= PUSH_SCORE:
+                # ── [P1修复 2026-07-07] 计算入场区+SL+TP+有效窗口 ──────
+                _atr_pct = comp * 0.3 if comp < 99 else 5.0   # 简算ATR%
+                _sl_pct  = max(_atr_pct * 1.5, 4.0)
+                _tp_mult = 1.8
+                _entry_lo = round(price * 0.995, 6)
+                _entry_hi = round(price * 1.005, 6)
+                _sl_price = round(price * (1 - _sl_pct/100), 6)
+                _tp_price = round(price * (1 + _sl_pct * _tp_mult / 100), 6)
+                _price_from_low = round((price - min(lows[-6:])) / min(lows[-6:]) * 100, 1) if (isinstance(kl, list) and len(kl) >= 12 and min([float(k[3]) for k in kl[-6:]]) > 0) else 0
+                _expire_ts = time.time() + SIGNAL_VALID_MIN * 60
                 alerts.append({
                     'symbol': sym, 'score': score,
                     'price': price, 'chg_24h': round(chg,1),
@@ -196,6 +228,11 @@ def scan():
                     'compression': round(comp,1),
                     'vol_ratio': round(vol_ratio,2),
                     'rsi': round(rsi,1),
+                    'entry_lo': _entry_lo, 'entry_hi': _entry_hi,
+                    'sl_price': _sl_price, 'sl_pct': round(_sl_pct,1),
+                    'tp_price': _tp_price, 'rr': _tp_mult,
+                    'price_from_low_pct': _price_from_low,
+                    'expire_ts': _expire_ts,
                     'reasons': reasons,
                     'scan_time': datetime.datetime.utcnow().isoformat(),
                 })
@@ -296,96 +333,179 @@ if __name__ == '__main__':
     r = scan()
     print(f'扫描完成 {r["elapsed_sec"]:.1f}s | 高分信号={len(r["alerts"])} | 新信号={len(r["new_alerts"])} | 需推送={r["need_push"]}')
 
-    # 自推送逻辑：need_push=true时直接调openclaw推送，无需AI中间人
-    if r['need_push'] and r['new_alerts']:
-        lines = [f'🎯 暴涨猎手预警 · {r["scan_time"][:16]}']
-        for a in r['new_alerts'][:5]:
-            lvl = '💣' if a.get('score', 0) >= 85 else '🚨'
-            reasons = ' | '.join(a.get('reasons', [])[:2])
-            lines.append(f'{lvl} {a["symbol"]:<16} score={a["score"]} | {reasons}')
-        lines.append(f'\n共{len(r["new_alerts"])}个新信号 · 暴涨猎手系统')
-        msg = '\n'.join(lines)
-        import subprocess as _sp
-        _sp.run(
-            ['openclaw', 'message', 'send',
-             '--channel', 'jarvis',
-             '--target', JARVIS_TARGET,  # 动态SSOT，永不硬编码
-             '--message', msg],
-            capture_output=True, timeout=15
+    # ── [P1+P2+P3 设计院全面升级 2026-07-07] ─────────────────────────────
+    # P1: 新版推送格式（含价格+入场区+有效窗口+测距）
+    # P2: score≥85 + brahma valid → 自动执行
+    # P3: 写入signal_expiry.json，供30分钟后二次提醒检测
+    import subprocess as _sp
+    import time as _time_push
+
+    def _send_jarvis(msg):
+        _sp.run(['openclaw','message','send','--channel','jarvis','--target',JARVIS_TARGET,'--message',msg],
+                capture_output=True, timeout=15)
+
+    def _format_alert_v3(a, auto_executed=False, exec_result=None):
+        """新版推送格式 v3.0：含完整决策信息"""
+        lvl = '💣' if a.get('score',0) >= 85 else '🚨'
+        regime = a.get('brahma_regime','?')
+        pos_pct = a.get('exec_pos_pct', 1.0)
+        sym = a['symbol']
+        price = a.get('price', 0)
+        score = a.get('score', 0)
+        oi_chg = a.get('oi_chg', 0)
+        funding = a.get('funding', 0)
+        short_pct = a.get('short_pct', 50)
+        entry_lo = a.get('entry_lo', price * 0.995)
+        entry_hi = a.get('entry_hi', price * 1.005)
+        sl_price = a.get('sl_price', 0)
+        sl_pct   = a.get('sl_pct', 5.0)
+        tp_price = a.get('tp_price', 0)
+        rr       = a.get('rr', 1.8)
+        from_low = a.get('price_from_low_pct', 0)
+        reasons_str = ' | '.join(a.get('reasons',[])[:3])
+        expire_min = SIGNAL_VALID_MIN
+
+        from_low_tag = f'+{from_low:.1f}%（安全范围✅）' if from_low <= 8 else f'+{from_low:.1f}%（注意追高⚠️）'
+
+        exec_line = ''
+        if auto_executed and exec_result:
+            status = exec_result.get('status','?')
+            fill   = exec_result.get('fill_price', price)
+            exec_line = f'\n🤖 已自动执行：{status} | 成交={fill:.6f}'
+        elif score >= EXEC_SCORE:
+            exec_line = f'\n🤖 score≥{EXEC_SCORE}→梵天验证中...'
+
+        return (
+            f'{lvl} 暴涨猎手 · {sym}\n'
+            f'⏰ {datetime.datetime.utcnow().strftime("%H:%M")} UTC | ⚡ 有效窗口：{expire_min}分钟\n'
+            f'📍 当前价：{price:.6g} | 距起跳点：{from_low_tag}\n'
+            f'📊 score={score} | OI+{oi_chg:.0f}% | FR={funding:.4f}% | 空头{short_pct:.0f}%\n'
+            f'📈 {reasons_str}\n'
+            f'🎯 入场区：{entry_lo:.6g}~{entry_hi:.6g}\n'
+            f'   止损：{sl_price:.6g}（-{sl_pct:.1f}%）  目标：{tp_price:.6g}  R:R={rr}\n'
+            f'   仓位：{pos_pct:.1f}% NAV | 体制：{regime}'
+            f'{exec_line}\n'
+            f'--------------------\n'
+            f'⚠️ 超{expire_min}分钟未操作→信号自动作废'
         )
-        print(f'[pump-hunter] 推送完成 {len(r["new_alerts"])}个信号')
 
-        # ── [P2-6 架构重构 2026-06-30] 写入独立信号通道 ──
-        # 高分信号同时写入 pump_signal_queue，供独立执行器消费
+    if r['need_push'] and r['new_alerts']:
+        # 写入过期追踪文件（P3用）
+        _expiry_data = {}
         try:
-            import sys as _sys_ph, importlib.util as _ilu
-            # 修复: 多层备用路径解析，确保 trading-system 根目录加入 sys.path
-            _cur_ph = os.path.abspath(__file__)
-            _root_ph = _cur_ph
-            for _ in range(5):  # 最多向上找5层
-                _root_ph = os.path.dirname(_root_ph)
-                if os.path.isfile(os.path.join(_root_ph, 'ws_guardian.py')):
-                    break  # 找到 trading-system 根目录
-            if _root_ph not in _sys_ph.path:
-                _sys_ph.path.insert(0, _root_ph)
-            # v5.0 fix 2026-07-02: 强制插入 trading-system 根目录确保 scripts 可导入
-            import os as _os_ph2
-            _ts_root = _os_ph2.path.abspath(_os_ph2.path.join(_os_ph2.path.dirname(__file__), '..', '..'))
-            if _ts_root not in _sys_ph.path:
-                _sys_ph.path.insert(0, _ts_root)
-            from scripts.pump_signal_executor import emit_pump_signal
-            import time as _time_ph
+            if os.path.exists(SIGNAL_EXPIRY_FILE):
+                _expiry_data = json.load(open(SIGNAL_EXPIRY_FILE))
+        except: pass
 
-            _regime_ph = r['new_alerts'][0].get('brahma_regime', 'BULL_TREND') if r['new_alerts'] else 'BULL_TREND'
-            for _a in r['new_alerts']:
-                _scan_fmt = {
-                    'symbol':    _a['symbol'],
-                    'score':     _a['score'],
-                    'valid':     _a['score'] >= 85,    # 独立通道门槛提升至85
-                    'direction': 'LONG',
-                    'signal_type': 'PUMP_SIGNAL',
-                    'tight7d':   _a.get('tight_7d', 0),
-                    'tight8h':   _a.get('tight_8h', 0),
-                    'rsi':       _a.get('rsi', 50),
-                    'shrink_h':  _a.get('shrink_hours', 0),
-                    'vol_ratio': _a.get('vol_ratio', 1.0),
-                    'chg24':     _a.get('chg_24h', 0),
-                    'atr':       _a.get('atr', 0),
-                    'atr_pct':   _a.get('atr_pct', 3.0),
-                    'price':     _a.get('price', 0),
-                    'ts':        _time_ph.time(),
-                }
-                if _scan_fmt['valid'] and _scan_fmt['price'] and _scan_fmt['atr']:
-                    _sig = emit_pump_signal(_scan_fmt, _regime_ph)
-                    if _sig:
-                        print(f'[pump-hunter] PUMP_SIGNAL写入独立队列: {_a["symbol"]} score={_a["score"]}')
-                    # [v2.1 设计院 2026-07-04] 同步写入signal_bus
-                    try:
-                        import sys as _sb_sys, os as _sb_os
-                        _sb_sys.path.insert(0, _sb_os.path.join(BASE_DIR,'scripts'))
-                        from signal_bus import write as _sb_write
-                        _px = float(_scan_fmt['price'])
-                        _atr = float(_scan_fmt['atr_pct'])/100
-                        _sb_write({
-                            'source':    'pump',
-                            'symbol':    _scan_fmt['symbol'],
-                            'direction': 'LONG',
-                            'score':     float(_scan_fmt['score']),
-                            'valid':     True,
-                            'regime':    _regime_ph,
-                            'entry_lo':  round(_px*0.995,6),
-                            'entry_hi':  round(_px*1.005,6),
-                            'sl':        round(_px*(1-_atr*1.5),6),
-                            'sl_pct':    round(_atr*150,2),
-                            'tp1':       round(_px*1.15,6),
-                            'rr1':       1.8,
-                            'expires_at':None,
-                        })
-                    except Exception: pass
-        except Exception as _e_ph:
-            print(f'[pump-hunter] 独立通道写入失败（不影响主流）: {_e_ph}')
-        # ── [END 独立通道] ──
-
-    elif r['new_alerts']:
         for a in r['new_alerts'][:5]:
-            print(f'  🚨{a["symbol"]:<18} score={a["score"]} | {" | ".join(a["reasons"][:2])}')
+            sym = a['symbol']
+            score = a.get('score', 0)
+            auto_executed = False
+            exec_result = None
+
+            # ── P2: score≥85 → 梵天验证 → 自动执行 ──────────────
+            if score >= EXEC_SCORE:
+                try:
+                    import sys as _sys_exec
+                    _ts_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+                    if _ts_root not in _sys_exec.path:
+                        _sys_exec.path.insert(0, _ts_root)
+                    from brahma_brain.brahma_analysis_runner import run_analysis
+                    _result = run_analysis(sym)
+                    _valid = _result.get('valid_signal', False)
+                    _brahma_score = _result.get('score', 0)
+                    print(f'[pump-hunter] P2梵天验证 {sym}: valid={_valid} score={_brahma_score}')
+                    if _valid:
+                        # 自动执行（写入signal_bus，由sub-executor消费）
+                        try:
+                            from scripts.signal_bus import write as _sb_write
+                            _px = float(a.get('price', 0))
+                            _atr = float(a.get('sl_pct', 5.0)) / 100
+                            _sb_write({
+                                'source':    'pump_auto',
+                                'symbol':    sym,
+                                'direction': 'LONG',
+                                'score':     float(score),
+                                'valid':     True,
+                                'regime':    a.get('brahma_regime','?'),
+                                'entry_lo':  a.get('entry_lo', _px*0.995),
+                                'entry_hi':  a.get('entry_hi', _px*1.005),
+                                'sl':        a.get('sl_price', _px*(1-_atr*1.5)),
+                                'sl_pct':    a.get('sl_pct', 5.0),
+                                'tp1':       a.get('tp_price', _px*1.15),
+                                'rr1':       a.get('rr', 1.8),
+                                'expires_at': _time_push.time() + SIGNAL_VALID_MIN*60,
+                                'pos_pct':   a.get('exec_pos_pct', 1.0),
+                            })
+                            auto_executed = True
+                            exec_result = {'status': '已写入执行队列', 'fill_price': a.get('price',0)}
+                            print(f'[pump-hunter] P2自动执行写入信号总线: {sym}')
+                        except Exception as _e_sb:
+                            print(f'[pump-hunter] P2信号总线写入失败: {_e_sb}')
+                    else:
+                        print(f'[pump-hunter] P2梵天验证未通过 {sym}: valid=False')
+                except Exception as _e_exec:
+                    print(f'[pump-hunter] P2梵天验证异常 {sym}: {_e_exec}')
+
+            # ── P1: 发送新版格式推送 ──────────────────────────────
+            msg = _format_alert_v3(a, auto_executed=auto_executed, exec_result=exec_result)
+            _send_jarvis(msg)
+            print(f'[pump-hunter] P1推送完成: {sym} score={score}')
+
+            # ── P3: 记录信号过期时间，用于30分钟后二次提醒 ────────
+            _expiry_data[sym] = {
+                'score': score,
+                'price': a.get('price', 0),
+                'entry_lo': a.get('entry_lo', 0),
+                'entry_hi': a.get('entry_hi', 0),
+                'sl_price': a.get('sl_price', 0),
+                'tp_price': a.get('tp_price', 0),
+                'expire_ts': a.get('expire_ts', _time_push.time() + SIGNAL_VALID_MIN*60),
+                'pushed_ts': _time_push.time(),
+                'auto_executed': auto_executed,
+                'reminded': False,
+            }
+
+        # 保存过期追踪
+        try:
+            json.dump(_expiry_data, open(SIGNAL_EXPIRY_FILE, 'w'), indent=2)
+        except: pass
+
+        print(f'[pump-hunter] 推送完成 {len(r["new_alerts"])}个信号（新版格式v3.0）')
+
+    # ── P3: 检查即将过期的信号，发二次提醒 ───────────────────────
+    try:
+        _now_ts = _time_push.time()
+        _expiry_data = {}
+        if os.path.exists(SIGNAL_EXPIRY_FILE):
+            _expiry_data = json.load(open(SIGNAL_EXPIRY_FILE))
+        _updated = False
+        for _sym, _info in list(_expiry_data.items()):
+            _expire_ts = _info.get('expire_ts', 0)
+            _reminded  = _info.get('reminded', False)
+            _pushed_ts = _info.get('pushed_ts', 0)
+            _auto_exec = _info.get('auto_executed', False)
+            # 窗口剩余<5分钟 且 未提醒 且 非自动执行
+            _remaining = _expire_ts - _now_ts
+            if 0 < _remaining < 300 and not _reminded and not _auto_exec:
+                _remind_msg = (
+                    f'⏰ 信号即将过期：{_sym}\n'
+                    f'   score={_info.get("score")} | 入场={_info.get("entry_lo"):.6g}~{_info.get("entry_hi"):.6g}\n'
+                    f'   还剩约{int(_remaining/60)}分钟 | 未操作将自动作废'
+                )
+                _send_jarvis(_remind_msg)
+                _expiry_data[_sym]['reminded'] = True
+                _updated = True
+                print(f'[pump-hunter] P3二次提醒发送: {_sym}')
+            elif _remaining <= 0:
+                # 已过期，清理
+                del _expiry_data[_sym]
+                _updated = True
+        if _updated:
+            json.dump(_expiry_data, open(SIGNAL_EXPIRY_FILE,'w'), indent=2)
+    except Exception as _e_p3:
+        print(f'[pump-hunter] P3过期检查异常: {_e_p3}')
+
+    if r.get('alerts') and not r['need_push']:
+        for a in r['alerts'][:3]:
+            print(f'  ⚠️{a["symbol"]:<18} score={a["score"]} | skip原因: {" | ".join(a["reasons"][:2])}')
