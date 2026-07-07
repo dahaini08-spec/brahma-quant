@@ -218,10 +218,12 @@ def _run_kronos(
     if getattr(predictor, 'model_type', '') == 'lgbm_walkforward':
         try:
             if klines and len(klines) >= 15:
-                closes = [float(k[4]) for k in klines]
-                vols   = [float(k[5]) for k in klines]
-                highs  = [float(k[2]) for k in klines]
-                lows   = [float(k[3]) for k in klines]
+                # [修复 2026-07-07] klines格式为(O,H,L,C,V)5元组
+                # close=k[3], vol=k[4] (原代码k[4]取的是vol而非close)
+                closes = [float(k[3]) for k in klines]
+                vols   = [float(k[4]) for k in klines]
+                highs  = [float(k[1]) for k in klines]
+                lows   = [float(k[2]) for k in klines]
                 price  = closes[-1]
                 # 10个特征（与训练一致）
                 gains  = [max(0, closes[i]-closes[i-1]) for i in range(1,len(closes))]

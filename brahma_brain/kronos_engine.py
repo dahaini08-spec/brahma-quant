@@ -93,9 +93,14 @@ def _load_model() -> bool:
 
     # [设计院 Phase3-1 2026-07-06] 优先加载本地Walk-Forward LightGBM模型
     # 原因: 'model'包(Kronos自定义架构)缺失，但本地lgbm已训练 OOS_ACC=60%
-    # 注意: 需要先import torch让libgomp.so.1可用
+    # [修复 2026-07-07] 将torch import从lgbm加载块剥离，避免torch→model依赖链
+    # 污染导致lgbm永远无法加载（ModuleNotFoundError: No module named 'model'）
     try:
-        import torch as _torch  # 确保libgomp被加载
+        # torch单独try，失败不影响lgbm加载
+        try:
+            import torch as _torch  # 确保libgomp.so.1可用（可选）
+        except Exception:
+            pass
         import lightgbm as lgb, json as _json
         _base_dir  = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # trading-system/
         _wf_path   = os.path.join(_base_dir, 'data', 'kronos_wf_model_lgb.txt')
