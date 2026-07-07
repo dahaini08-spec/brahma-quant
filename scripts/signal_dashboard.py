@@ -1,633 +1,422 @@
 #!/usr/bin/env python3
 """
-signal_dashboard.py v2.0 — 梵天信号仪表盘
-设计院 · 达摩院 · 2026-06-06
+🏛️ 梵天信号仪表盘 v1.0 — 三系统统一信号追踪
+设计院封印 2026-07-07
 
-架构：零AI纯Python，cron每30m执行
-  - 三源合并：signal_queue / live_signal_log / pipeline_watch
-  - 策略详情：入场区 / 止损 / T1 / T2 / R:R / 结构分
-  - 表格化排版：紧凑列对齐
-  - 推送规则：有新高分→推送；无新信号→HEARTBEAT_OK
+三大信号系统：
+  A. 主系统 (brahma_analysis_runner) → signal_bus.jsonl
+  B. OI猎手 (oi_surge_scanner)       → data/oi_candidates.json
+  C. 暴涨猎手 (pump_hunter)          → dharma/pump_hunter/new_alerts.json
+
+功能：
+  1. 实时聚合三系统信号
+  2. 计算今日/近7日信号统计
+  3. 推送日报仪表盘（含新增/过期/实时信号）
+  4. 写入 data/signal_dashboard_v2.json 供外部查询
 """
-import sys, os, json, time
-from datetime import datetime, timezone, timedelta
-from collections import defaultdict
+import os, sys, json, time, datetime
+import subprocess
 from pathlib import Path
 
-BASE       = Path('/root/.openclaw/workspace/trading-system')
-STATE_FILE = Path('/root/.openclaw/workspace/trading-system/data/signal_dashboard_state.json')
-ZONES_FILE = BASE / 'data' / 'price_zones.json'
+BASE = Path(__file__).parent.parent
+sys.path.insert(0, str(BASE))
+sys.path.insert(0, str(BASE / 'scripts'))
 
-SCORE_HQ   = 155   # 高质量门槛
-SCORE_MID  = 140   # 有效门槛
-COOLDOWN   = 1800  # 30min同标的不重复推送
+# ── 路由 SSOT ──────────────────────────────────────────────────
+try:
+    from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
+    JARVIS_TARGET = f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}'
+except Exception:
+    JARVIS_TARGET = os.environ.get('JARVIS_TARGET', '73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075')
 
-# ══════════════════════════════════════════════════════════════
-# 模块A: 状态管理
-# ══════════════════════════════════════════════════════════════
-def load_state():
-    try: return json.load(open(STATE_FILE))
-    except: return {'last_push': {}, 'last_run_ts': 0}
+PUSH_CHANNEL = 'jarvis'
 
-def save_state(s):
-    s['last_run_ts'] = time.time()
-    json.dump(s, open(STATE_FILE, 'w'))
+# ── 文件路径 ───────────────────────────────────────────────────
+SIGNAL_BUS_FILE    = BASE / 'data' / 'signal_bus.jsonl'
+OI_CANDIDATES_FILE = BASE / 'data' / 'oi_candidates.json'
+PUMP_ALERTS_FILE   = BASE / 'dharma' / 'pump_hunter' / 'new_alerts.json'
+PUMP_LOG_FILE      = BASE / 'dharma' / 'pump_hunter' / 'scan_log.jsonl'
+DASHBOARD_STATE    = BASE / 'data' / 'signal_dashboard_v2.json'
 
-# ══════════════════════════════════════════════════════════════
-# 模块B: 数据读取（三源合并）
-# ══════════════════════════════════════════════════════════════
-def _load_price_zones():
-    try: return json.load(open(ZONES_FILE))
-    except: return {}
+NOW = time.time()
+NOW_DT = datetime.datetime.utcnow()
 
-def load_source_queue(hours=24):
-    """源A: signal_queue.jsonl — 猎手拉娜/on_demand候选信号"""
-    results = {}
-    cutoff  = time.time() - hours * 3600
-    zones   = _load_price_zones()
+# ────────────────────────────────────────────────────────────────
+# 数据采集
+# ────────────────────────────────────────────────────────────────
+
+def load_main_signals(hours=24):
+    """读取主系统signal_bus，返回最近N小时的信号"""
+    signals = []
+    cutoff = NOW - hours * 3600
+    if not SIGNAL_BUS_FILE.exists():
+        return signals
     try:
-        for raw in open(BASE / 'data' / 'signal_queue.jsonl'):
-            if not raw.strip(): continue
-            d = json.loads(raw)
-            ts_str = str(d.get('ts', ''))
+        for line in SIGNAL_BUS_FILE.read_text().strip().split('\n'):
+            if not line.strip():
+                continue
             try:
-                ts_epoch = datetime.fromisoformat(
-                    ts_str.replace('Z', '+00:00')).timestamp()
-                if ts_epoch < cutoff: continue
-            except: continue
-            score = float(d.get('score', 0) or 0)
-            if score < SCORE_MID: continue
-            sym = d.get('symbol', '')
-            di  = d.get('signal_dir', 'SHORT')
-            key = f"{sym}_{di}"
-            if key in results and score <= results[key]['score']:
-                continue
-            # 从price_zones补入场区参数
-            z = zones.get(sym, {})
-            results[key] = {
-                'source':    'queue',
-                'symbol':    sym,
-                'direction': di,
-                'score':     score,
-                'ts':        ts_str,
-                'regime':    d.get('regime', ''),
-                'valid':     None,
-                'status':    'candidate',
-                'entry_lo':  z.get('last_entry_lo'),
-                'entry_hi':  z.get('last_entry_hi'),
-                'sl':        None,
-                'tp1':       None,
-                'tp2':       None,
-                'sl_pct':    None,
-                'rr1':       None,
-                'structure_grade': None,
-                'breakdown': {},
-                'recent_wr': d.get('recent_wr'),
-            }
-    except: pass
-    return results
+                s = json.loads(line)
+                ts = s.get('ts', 0)
+                if ts > cutoff:
+                    signals.append(s)
+            except:
+                pass
+    except Exception:
+        pass
+    return signals
 
-def load_source_livelog(hours=24):
-    """源B: live_signal_log.jsonl — brahma_brain完整分析结果"""
-    results = {}
-    cutoff  = time.time() - hours * 3600
+def load_oi_signals():
+    """读取OI猎手缓存"""
+    if not OI_CANDIDATES_FILE.exists():
+        return [], 0
     try:
-        for raw in open(BASE / 'data' / 'live_signal_log.jsonl'):
-            if not raw.strip(): continue
-            d = json.loads(raw)
-            ts_str = str(d.get('ts', '') or d.get('signal_id', ''))
+        d = json.loads(OI_CANDIDATES_FILE.read_text())
+        age = NOW - d.get('updated_at', 0)
+        cands = list(d.get('candidates', {}).values())
+        return cands, age
+    except:
+        return [], 9999
+
+def load_pump_signals(hours=24):
+    """读取暴涨猎手近期信号"""
+    signals = []
+    cutoff = NOW - hours * 3600
+    if not PUMP_LOG_FILE.exists():
+        return signals
+    try:
+        for line in PUMP_LOG_FILE.read_text().strip().split('\n'):
+            if not line.strip():
+                continue
             try:
-                ts_epoch = datetime.fromisoformat(
-                    ts_str.replace('Z', '+00:00')).timestamp()
-                if ts_epoch < cutoff: continue
-            except: continue
-            score = float(d.get('score', 0) or 0)
-            if score < SCORE_MID: continue
-            sym = d.get('symbol', '')
-            di  = d.get('signal_dir', '') or d.get('direction', '')
-            key = f"{sym}_{di}"
-            if key in results and score <= results[key]['score']:
-                continue
-            bd  = d.get('_breakdown', {}) or {}
-            results[key] = {
-                'source':    'live_log',
-                'symbol':    sym,
-                'direction': di,
-                'score':     score,
-                'ts':        ts_str,
-                'regime':    d.get('regime', ''),
-                'valid':     d.get('valid_signal') or d.get('valid'),
-                'status':    'settled' if d.get('settled') else 'active',
-                'entry_lo':  d.get('entry_lo'),
-                'entry_hi':  d.get('entry_hi'),
-                'sl':        d.get('stop_loss'),
-                'stop_loss': d.get('stop_loss'),
-                'tp1':       d.get('tp1'),
-                'tp2':       d.get('tp2'),
-                'sl_pct':    d.get('sl_pct'),
-                'rr1':       d.get('rr1'),
-                'structure_grade': d.get('structure_grade'),
-                'outcome':   d.get('outcome'),
-                'settled':   d.get('settled'),
-                'breakdown': bd,
-                'price':     d.get('price'),
-                'rsi_1h':    d.get('rsi_1h'),
-                'recent_wr': None,
-            }
-    except: pass
-    return results
+                entry = json.loads(line)
+                ts_str = entry.get('ts', '')
+                try:
+                    ts = datetime.datetime.fromisoformat(ts_str).timestamp()
+                except:
+                    ts = NOW
+                if ts > cutoff:
+                    entry['_ts'] = ts
+                    signals.append(entry)
+            except:
+                pass
+    except:
+        pass
+    return signals
 
-def load_source_pipeline():
-    """源C: pipeline_watch.json — 进入流水线的信号"""
-    results = {}
+def load_pump_latest():
+    """读取暴涨猎手最新扫描结果"""
+    if not PUMP_ALERTS_FILE.exists():
+        return {}, 9999
     try:
-        pw = json.load(open(BASE / 'data' / 'pipeline_watch.json'))
-        for k, d in pw.items():
-            if d.get('status') in ('expired', 'done', 'cancelled'):
-                continue
-            score = float(d.get('score', 0) or 0)
-            if score < SCORE_MID: continue
-            sym = d.get('symbol', '')
-            di  = d.get('direction', 'SHORT')
-            key = f"{sym}_{di}"
-            results[key] = {
-                'source':    'pipeline',
-                'symbol':    sym,
-                'direction': di,
-                'score':     score,
-                'ts':        d.get('added_at', ''),
-                'regime':    d.get('regime', ''),
-                'valid':     True,
-                'status':    d.get('status', 'watching'),
-                'entry_lo':  d.get('entry_lo'),
-                'entry_hi':  d.get('entry_hi'),
-                'sl':        d.get('stop_loss'),
-                'stop_loss': d.get('stop_loss'),
-                'tp1':       d.get('tp1'),
-                'tp2':       d.get('tp2'),
-                'sl_pct':    None,
-                'rr1':       2.5,
-                'structure_grade': None,
-                'breakdown': {},
-                'trigger_price': d.get('trigger_price'),
-                'recent_wr': None,
-            }
-    except: pass
-    return results
+        d = json.loads(PUMP_ALERTS_FILE.read_text())
+        age = NOW - d.get('scan_ts', 0)
+        return d, age
+    except:
+        return {}, 9999
 
-def merge_sources():
-    """三源合并，pipeline > live_log > queue 优先级
-    同品种：优先取最新信号（ts最大），分数相同时取最近生成的
-    """
-    q  = load_source_queue()
-    ll = load_source_livelog()
-    pl = load_source_pipeline()
-    merged = {}
-    for d in [q, ll, pl]:
-        for key, sig in d.items():
-            if key not in merged:
-                merged[key] = sig
-            else:
-                # 优先最新ts，ts相同时取更高分
-                old_ts = merged[key].get('ts','')
-                new_ts = sig.get('ts','')
-                if new_ts > old_ts:
-                    merged[key] = sig
-                elif new_ts == old_ts and sig['score'] > merged[key]['score']:
-                    merged[key] = sig
-    # 额外：同品种只保留最新一条（防止多版本残留）
+# ────────────────────────────────────────────────────────────────
+# 统计分析
+# ────────────────────────────────────────────────────────────────
+
+def analyze_main_signals(signals):
+    """分析主系统信号质量"""
+    if not signals:
+        return {'total': 0, 'valid': 0, 'active': 0, 'expired': 0, 'by_symbol': {}}
+
+    valid = [s for s in signals if s.get('valid', False)]
+    expired_cutoff = NOW
+    active = []
+    expired = []
+    for s in valid:
+        exp_str = s.get('expires_at')
+        if exp_str:
+            try:
+                from datetime import timezone
+                exp_ts = datetime.datetime.fromisoformat(str(exp_str).replace('Z', '+00:00'))
+                if exp_ts.tzinfo:
+                    exp_epoch = exp_ts.timestamp()
+                else:
+                    exp_epoch = exp_ts.timestamp()
+                if exp_epoch > expired_cutoff:
+                    active.append(s)
+                else:
+                    expired.append(s)
+            except:
+                expired.append(s)
+        else:
+            expired.append(s)
+
     by_sym = {}
-    for key, sig in merged.items():
-        sym = sig.get('symbol','')
-        if sym not in by_sym or sig.get('ts','') > by_sym[sym][1].get('ts',''):
-            by_sym[sym] = (key, sig)
-    return [v for _, v in by_sym.values()]
-
-# ══════════════════════════════════════════════════════════════
-# 模块C: 信号分类
-# ══════════════════════════════════════════════════════════════
-def classify(signals):
-    active, settled = [], []
     for s in signals:
-        if s.get('settled') or s.get('status') == 'settled':
-            settled.append(s)
-        else:
-            active.append(s)
-    active.sort(key=lambda x: -x['score'])
-    settled.sort(key=lambda x: -x['score'])
-    return active, settled
-def bj(ts_iso=None):
-    if ts_iso:
+        sym = s.get('symbol', '?')
+        by_sym.setdefault(sym, 0)
+        by_sym[sym] += 1
+
+    # 最新有效信号（按时间排序）
+    latest = sorted(valid, key=lambda x: x.get('ts', 0), reverse=True)[:3]
+
+    return {
+        'total': len(signals),
+        'valid': len(valid),
+        'active': len(active),
+        'expired': len(expired),
+        'by_symbol': by_sym,
+        'latest': latest,
+        'active_signals': active[:5],
+    }
+
+def analyze_oi_signals(candidates, age_sec):
+    """分析OI猎手信号"""
+    if not candidates:
+        return {'total': 0, 'high_quality': 0, 'watchlist': 0, 'buy_ready': 0,
+                'data_age_min': age_sec/60, 'stale': age_sec > 3600}
+
+    high = [c for c in candidates if c.get('layers_pass', 0) >= 4]
+    watch = [c for c in candidates if c.get('layers_pass', 0) >= 3]
+    buy_ready = [c for c in candidates if c.get('action') in ('buy_full', 'buy_light')]
+
+    return {
+        'total': len(candidates),
+        'high_quality': len(high),
+        'watchlist': len(watch),
+        'buy_ready': len(buy_ready),
+        'data_age_min': round(age_sec / 60, 1),
+        'stale': age_sec > 7200,
+        'top': sorted(candidates, key=lambda x: x.get('layers_pass', 0) * 100 + x.get('oi_score', 0), reverse=True)[:5],
+    }
+
+def analyze_pump_signals(log_entries, latest_data, latest_age):
+    """分析暴涨猎手信号"""
+    today_start = NOW - 86400
+    today_entries = [e for e in log_entries if e.get('_ts', 0) > today_start]
+    total_today = sum(e.get('alerts', 0) for e in today_entries)
+    new_today = sum(e.get('new', 0) for e in today_entries)
+    scans_today = len(today_entries)
+
+    # 最新告警
+    latest_alerts = latest_data.get('new_alerts', [])
+    all_alerts = latest_data.get('alerts', [])
+
+    return {
+        'scans_today': scans_today,
+        'total_alerts_today': total_today,
+        'new_alerts_today': new_today,
+        'latest_scan_age_min': round(latest_age / 60, 1),
+        'current_alerts': len(all_alerts),
+        'current_new': len(latest_alerts),
+        'stale': latest_age > 1800,  # 30分钟未扫描=陈旧
+        'top_alerts': all_alerts[:3],
+    }
+
+# ────────────────────────────────────────────────────────────────
+# 仪表盘格式化
+# ────────────────────────────────────────────────────────────────
+
+def format_dashboard(main_stat, oi_stat, pump_stat, state):
+    """生成完整仪表盘报告"""
+    ts_str = NOW_DT.strftime('%Y-%m-%d %H:%M UTC')
+    today_str = NOW_DT.strftime('%m-%d')
+
+    # 系统健康状态
+    main_ok   = main_stat['valid'] > 0 or main_stat['total'] > 0
+    oi_ok     = not oi_stat['stale'] and oi_stat['total'] > 0
+    pump_ok   = not pump_stat['stale']
+
+    def health(ok): return '🟢' if ok else '🔴'
+
+    lines = [
+        f'📊 梵天信号仪表盘 · {ts_str}',
+        f'━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        f'',
+        f'系统健康: 主系统{health(main_ok)} | OI猎手{health(oi_ok)} | 暴涨猎手{health(pump_ok)}',
+        f'',
+        f'── 📈 主系统信号（近24H）──────────────',
+        f'  总信号: {main_stat["total"]} | 有效: {main_stat["valid"]} | 实时有效: {main_stat["active"]} | 已过期: {main_stat["expired"]}',
+    ]
+
+    # 主系统实时有效信号
+    if main_stat['active_signals']:
+        lines.append('  🟢 当前有效信号:')
+        for s in main_stat['active_signals'][:3]:
+            sym = s.get('symbol', '?')
+            dir_ = s.get('direction', '?')
+            score = s.get('score', 0)
+            regime = s.get('regime', '?')
+            src = s.get('source', 'main')
+            icon = '🟢' if dir_ == 'LONG' else '🔴'
+            lines.append(f'    {icon} {sym} {dir_} score={score:.0f} [{regime}] src={src}')
+    elif main_stat['total'] == 0:
+        lines.append('  ⚪ 无信号（主系统未产生任何信号）')
+    else:
+        lines.append('  ⚠️ 无实时有效信号（信号已全部过期）')
+
+    # 按标的统计
+    if main_stat['by_symbol']:
+        top_syms = sorted(main_stat['by_symbol'].items(), key=lambda x: -x[1])[:5]
+        lines.append(f'  信号分布: {" | ".join(f"{sym}×{cnt}" for sym,cnt in top_syms)}')
+
+    lines += [
+        f'',
+        f'── 🏹 OI猎手（数据更新: {oi_stat["data_age_min"]:.0f}分钟前）──────',
+        f'  候选标的: {oi_stat["total"]} | 高质量(4层): {oi_stat["high_quality"]} | 监控池: {oi_stat["watchlist"]} | 可买入: {oi_stat["buy_ready"]}',
+    ]
+
+    if oi_stat.get('stale'):
+        lines.append('  🔴 数据陈旧！超过2小时未更新')
+    elif oi_stat['top']:
+        lines.append('  Top信号:')
+        for c in oi_stat['top'][:4]:
+            act = c.get('action', '?')
+            mode = c.get('mode', '?')
+            oi_score = c.get('oi_score', 0)
+            layers = c.get('layers_pass', 0)
+            whale = c.get('whale_l', 0)
+            act_icon = '🟢' if act in ('buy_full', 'buy_light') else '👁'
+            lines.append(f'    {act_icon} {c["symbol"]:<14} 模式{mode} OI+{oi_score:.1f}% 大户{whale:.0f}% {layers}/4层 [{act}]')
+
+    lines += [
+        f'',
+        f'── 🚨 暴涨猎手（每15分钟扫描）──────────',
+        f'  今日扫描: {pump_stat["scans_today"]}次 | 今日告警: {pump_stat["total_alerts_today"]} | 新信号: {pump_stat["new_alerts_today"]}',
+        f'  最近扫描: {pump_stat["latest_scan_age_min"]:.0f}分钟前 | 当前活跃告警: {pump_stat["current_alerts"]}',
+    ]
+
+    if pump_stat['stale']:
+        lines.append('  🔴 扫描陈旧！超过30分钟未运行')
+    elif pump_stat['top_alerts']:
+        lines.append('  当前信号:')
+        for a in pump_stat['top_alerts'][:3]:
+            sym = a.get('symbol', '?')
+            score = a.get('score', 0)
+            reasons = ' | '.join(a.get('reasons', [])[:2])
+            vr = a.get('vol_ratio', 1)
+            ok = '✅' if vr < 5 else '⚠️过期'
+            lines.append(f'    🔸 {sym} score={score} {ok} | {reasons}')
+
+    # 7日趋势（从state读取）
+    hist = state.get('history', [])
+    if hist:
+        lines += ['', '── 📅 近7日信号趋势 ──────────────────────']
+        for entry in hist[-7:]:
+            d_str = entry.get('date', '?')
+            total = entry.get('main_total', 0)
+            valid = entry.get('main_valid', 0)
+            oi = entry.get('oi_total', 0)
+            pump = entry.get('pump_new', 0)
+            lines.append(f'  {d_str}: 主={total}(✓{valid}) OI={oi} 暴涨={pump}')
+
+    lines += [
+        f'',
+        f'━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        f'🏛️ 仪表盘更新: {ts_str} | 梵天设计院',
+    ]
+
+    return '\n'.join(lines)
+
+# ────────────────────────────────────────────────────────────────
+# 状态持久化
+# ────────────────────────────────────────────────────────────────
+
+def load_state():
+    if DASHBOARD_STATE.exists():
         try:
-            t = datetime.fromisoformat(ts_iso.replace('Z', '+00:00'))
-            return (t + timedelta(hours=8)).strftime('%H:%M')
-        except: return '--:--'
-    return (datetime.now(timezone.utc) + timedelta(hours=8)).strftime('%m/%d %H:%M')
+            return json.loads(DASHBOARD_STATE.read_text())
+        except:
+            pass
+    return {'history': [], 'last_push': 0}
 
-def score_tag(s):
-    s = int(s)
-    if s >= 165: return '🔴神'
-    if s >= 155: return '🟠强'
-    if s >= 145: return '🟡中'
-    return '🟢有'
+def save_state(state):
+    DASHBOARD_STATE.parent.mkdir(exist_ok=True)
+    DASHBOARD_STATE.write_text(json.dumps(state, ensure_ascii=False, indent=2))
 
-def dir_tag(d):
-    d = str(d).upper()
-    return '空↓' if ('SHORT' in d or '做空' in str(d) or '空' in str(d)) else '多↑'
+def update_daily_history(state, main_stat, oi_stat, pump_stat):
+    """每日追加一条历史记录"""
+    today = NOW_DT.strftime('%m-%d')
+    hist = state.get('history', [])
+    # 去重（同一天只保留最新）
+    hist = [h for h in hist if h.get('date') != today]
+    hist.append({
+        'date': today,
+        'main_total': main_stat['total'],
+        'main_valid': main_stat['valid'],
+        'main_active': main_stat['active'],
+        'oi_total': oi_stat['total'],
+        'oi_buy_ready': oi_stat['buy_ready'],
+        'pump_scans': pump_stat['scans_today'],
+        'pump_new': pump_stat['new_alerts_today'],
+    })
+    state['history'] = hist[-14:]  # 保留14天
+    return state
 
-def src_tag(s):
-    return {'queue': '候选', 'live_log': '分析', 'pipeline': '流水'}.get(s, '?')
-
-def status_tag(s):
-    m = {'watching':'监控','triggered':'触发','confirmed':'确认',
-         'active':'活跃','candidate':'候选','settled':'结算'}
-    return m.get(s, s or '-')
-
-def fmt_price(v, decimals=4):
-    if v is None: return '-'
-    f = float(v)
-    if f >= 10000: return f'{f:,.0f}'
-    if f >= 1000:  return f'{f:,.1f}'
-    if f >= 100:   return f'{f:.2f}'
-    if f >= 10:    return f'{f:.3f}'
-    if f >= 1:     return f'{f:.4f}'
-    if f >= 0.1:   return f'{f:.4f}'
-    if f >= 0.01:  return f'{f:.5f}'
-    return f'{f:.6f}'
-def strategy_line(s):
-    """单行策略详情：入场/止损/T1/T2/RR/结构分"""
-    parts = []
-    elo = s.get('entry_lo')
-    ehi = s.get('entry_hi')
-    sl  = s.get('sl') or s.get('stop_loss')
-    tp1 = s.get('tp1')
-    tp2 = s.get('tp2')
-    slp = s.get('sl_pct')
-    rr  = s.get('rr1')
-    sg  = s.get('structure_grade')
-
-    if elo and ehi:
-        parts.append(f'入场:{fmt_price(elo)}~{fmt_price(ehi)}')
-    if sl:
-        parts.append(f'SL:{fmt_price(sl)}' + (f'({float(slp):.1f}%)' if slp else ''))
-    if tp1:
-        parts.append(f'T1:{fmt_price(tp1)}')
-    if tp2:
-        parts.append(f'T2:{fmt_price(tp2)}')
-    if rr:
-        parts.append(f'RR:{float(rr):.1f}x')
-    if sg is not None:
-        parts.append(f'结构:{int(sg)}')
-    return '  '.join(parts) if parts else '  （等待brahma完整分析）'
-
-def breakdown_summary(s):
-    """关键评分维度摘要（仅live_log来源有）"""
-    bd = s.get('breakdown', {}) or {}
-    if not bd: return None
-    key_dims = ['趋势一致性','动量背离','SMC结构','量能验证','情绪/费率','多周期对齐']
-    items = []
-    for dim in key_dims:
-        v = bd.get(dim)
-        if v is not None and str(v) != '0':
-            items.append(f'{dim}:{v}')
-    regime_mult = bd.get('_regime_mult')
-    if regime_mult and regime_mult != 1.0:
-        items.append(f'体制系数:×{regime_mult}')
-    return ' | '.join(items[:4]) if items else None
-
-def fmt_table_header():
-    return (
-        '序  品种    分数  评级  方向  体制      状态  来源  时间BJ\n'
-        + '-' * 60
-    )
-
-def fmt_table_row(idx, s):
-    sym   = s['symbol'].replace('USDT', '').ljust(6)
-    score = f"{s['score']:.0f}".rjust(4)
-    tag   = score_tag(s['score'])
-    di    = dir_tag(s.get('direction', ''))
-    reg   = str(s.get('regime', '')).replace('BEAR_', 'B_').replace('BULL_', 'U_').replace('CHOP_', 'C_')[:8].ljust(8)
-    st    = status_tag(s.get('status', ''))[:4].ljust(4)
-    src   = src_tag(s.get('source', ''))
-    t     = bj(s.get('ts', ''))
-    row1  = f'{str(idx).rjust(2)}  {sym} {score}  {tag}  {di}  {reg}  {st}  {src}  {t}'
-    row2  = f'    ↳ {strategy_line(s)}'
-    bd    = breakdown_summary(s)
-    if bd:
-        return f'{row1}\n{row2}\n    📊 {bd}'
-    return f'{row1}\n{row2}'
-
-# ══════════════════════════════════════════════════════════════
-# 模块E: 持仓快照
-# ══════════════════════════════════════════════════════════════
-def position_block():
+def push_msg(msg):
     try:
-        bs = json.load(open(BASE / 'data' / 'brahma_state.json'))
-        positions = bs.get('positions', [])
-        if not positions: return None
-        lines = ['━━ 💼 持仓 ━━']
-        for p in positions:
-            sym   = p.get('symbol', '').replace('USDT', '')
-            di    = dir_tag(p.get('direction', ''))
-            entry = fmt_price(p.get('entry_price'))
-            sl    = fmt_price(p.get('sl'))
-            tp1   = fmt_price(p.get('tp1'))
-            score = p.get('score', '-')
-            regime= str(p.get('regime', '')).replace('BEAR_', 'B_')
-            lines.append(
-                f'  {sym} {di} 入{entry} SL{sl} T1{tp1}  '
-                f'score={score} {regime}'
-            )
-        return '\n'.join(lines)
-    except: return None
-
-# ══════════════════════════════════════════════════════════════
-# 模块F: 主程序
-# ══════════════════════════════════════════════════════════════
-import urllib.request
-
-SCORE_ELITE = 170
-BRAHMA_FILE = BASE / 'data' / 'brahma_state.json'
-
-def _get_price(sym):
-    try:
-        r = urllib.request.urlopen(
-            f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}', timeout=3)
-        return float(json.loads(r.read())['price'])
-    except: return 0.0
-
-def _get_fr(sym):
-    try:
-        r = urllib.request.urlopen(
-            f'https://fapi.binance.com/fapi/v1/premiumIndex?symbol={sym}', timeout=3)
-        return float(json.loads(r.read()).get('lastFundingRate', 0)) * 100
-    except: return 0.0
-
-def age_str(ts_iso):
-    try:
-        ts = datetime.fromisoformat(ts_iso.replace('Z','+00:00')).timestamp()
-        h = (time.time() - ts) / 3600
-        return f'{h:.1f}H'
-    except: return '?H'
-
-def fmt_row_v3(idx, s, price, fr, ep_val):
-    """双行信号卡片 — 手机宽度友好"""
-    sym   = s['symbol'].replace('USDT','')
-    score = float(s.get('score', 0))
-    dtag  = '空↓' if 'SHORT' in str(s.get('signal_dir') or s.get('direction','')).upper() else '多↑'
-    lo    = float(s.get('entry_lo') or 0)
-    sl    = float(s.get('stop_loss') or s.get('sl') or 0)
-    tp1   = float(s.get('tp1') or 0)
-
-    gap = (lo - price) / price * 100 if price and lo else 0
-    gap_icon = '⚡' if abs(gap) <= 0.3 else ('📍' if 0 < gap <= 1.5 else ('🔴' if gap > 1.5 else '⬇'))
-
-    # R:R
-    rr_s = f'R:R={abs(tp1-lo)/abs(sl-lo):.1f}' if lo and sl and tp1 and abs(sl-lo)>0 else ''
-    sl_s  = f'SL{abs(sl-lo)/lo*100:.1f}%' if sl and lo else ''
-    fr_s  = f'FR{fr:+.3f}%' if fr else ''
-
-    # 行1：核心数据（不超过28字符）
-    px_s  = f'${fmt_price(price)}' if price else '--'
-    lo_s  = f'${fmt_price(lo)}'   if lo    else '--'
-    line1 = f'{idx}. {sym} {dtag}  现{px_s}  入{lo_s}'
-
-    # 行2：入场要素（止损+R:R+FR）
-    line2_parts = [f'gap{gap:+.2f}%{gap_icon}', f'{score:.0f}分']
-    if sl_s:  line2_parts.append(sl_s)
-    if rr_s:  line2_parts.append(rr_s)
-    if fr_s:  line2_parts.append(fr_s)
-    line2 = '   ' + '  '.join(line2_parts)
-
-    # 行3：止损价+目标价（只在有数据时显示）
-    line3 = ''
-    if sl and tp1:
-        line3 = f'   止损${fmt_price(sl)}  目标${fmt_price(tp1)}'
-
-    if line3:
-        return line1 + '\n' + line2 + '\n' + line3
-    return line1 + '\n' + line2
-
-
-def decision_card(active, prices, brahma):
-    """决策卡：前3行核心信息"""
-    nav     = float(brahma.get('nav', 0))
-    regime  = brahma.get('regime', 'UNKNOWN')
-    pos     = brahma.get('positions', [])
-    gate3   = len(pos)
-    gate_s  = f'Gate3:{gate3}/1占用' if gate3 else 'Gate3:空闲'
-
-    # 体制emoji
-    r_emoji = '🐻' if 'BEAR' in regime else ('🟢' if 'BULL' in regime else '⚡')
-
-    # BTC预警距离
-    try:
-        btcp = _get_price('BTCUSDT')
-        warn = 63500
-        dist = (warn - btcp) / btcp * 100
-        warn_s = f'BTC${btcp:,.0f} 预警{dist:+.1f}%'
-    except: warn_s = ''
-
-    _now_bj = datetime.now(timezone(timedelta(hours=8))).strftime("%m/%d %H:%M")
-    # 拆成两行，避免手机折行
-    line1 = f'📊 梵天  {_now_bj}BJ  {r_emoji}{regime}'
-    line1b = f'💰 NAV${nav:.1f}  {gate_s}'
-    line2 = ''
-    # 持仓PNL
-    if pos:
-        p = pos[0]
-        sym  = p.get('symbol','').replace('USDT','')
-        entr = float(p.get('entry_price') or p.get('entry',0))
-        sl   = float(p.get('sl') or p.get('stop_loss',0))
-        tp1  = float(p.get('tp1',0))
-        pr   = prices.get(p.get('symbol',''), 0)
-        if pr and entr:
-            pnl = (entr-pr)/entr*100
-            tp1_diff = (pr-tp1)/pr*100 if tp1 else 0
-            line2 = f'💼 {sym}空↓  入${entr:.5f}→现${pr:.5f}  PNL{pnl:+.2f}%  SL${sl:.5f}  T1差{tp1_diff:+.2f}%'
-
-    # 下一单建议（EP最高且gate3有空时）
-    # 今日市场背景
-    try:
-        btcp  = _get_price('BTCUSDT')
-        ethp  = _get_price('ETHUSDT')
-        btc24 = json.loads(urllib.request.urlopen(
-            urllib.request.Request('https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=BTCUSDT',
-            headers={'User-Agent':'x'}), timeout=4).read())
-        eth24 = json.loads(urllib.request.urlopen(
-            urllib.request.Request('https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=ETHUSDT',
-            headers={'User-Agent':'x'}), timeout=4).read())
-        btc_chg = float(btc24['priceChangePercent'])
-        eth_chg = float(eth24['priceChangePercent'])
-        if btc_chg > 2 or eth_chg > 2:
-            mkt_bias = f'⚠️ 今日反弹BTC{btc_chg:+.1f}% ETH{eth_chg:+.1f}%→短期多势，入场等高位'
-        elif btc_chg < -2:
-            mkt_bias = f'✅ 今日下跌BTC{btc_chg:+.1f}%→空头顺势，信号可靠性↑'
-        else:
-            mkt_bias = f'今日BTC{btc_chg:+.1f}% ETH{eth_chg:+.1f}%  震荡等方向'
-    except:
-        mkt_bias = ''
-
-    # 最优单推荐
-    line3 = ''
-    if gate3 == 0 and active:
-        best = active[0]
-        bsym = best['symbol'].replace('USDT','')
-        bep  = best.get('_ep_val', float(best.get('score',0)))
-        blo  = float(best.get('entry_lo') or 0)
-        bsl  = float(best.get('stop_loss') or best.get('sl') or 0)
-        btp1 = float(best.get('tp1') or 0)
-        bgap = best.get('_gap', 0)
-        # R:R
-        rr_txt = ''
-        if blo and bsl and btp1:
-            risk = abs(bsl-blo); rew = abs(btp1-blo)
-            if risk > 0: rr_txt = f' R:R={rew/risk:.1f}'
-        # 最大亏损
-        loss_txt = ''
-        if bsl and blo and nav > 0:
-            loss_u = nav * 0.02
-            loss_txt = f' 最大亏损≈${loss_u:.1f}'
-        line3 = (f'⚡ 首选: {bsym} EP{bep:.0f}  入场差{bgap:+.2f}%{rr_txt}{loss_txt}  {warn_s}')
-    elif pos:
-        cands = [s for s in active if s['symbol'] != pos[0].get('symbol','')]
-        if cands:
-            nxt = cands[0]
-            nsym = nxt['symbol'].replace('USDT','')
-            nep  = nxt.get('_ep_val', float(nxt.get('score',0)))
-            line3 = f'🔜 T1后下一单: {nsym} EP{nep:.0f}  {warn_s}'
-
-    # Paper进度（支持Phase0重置显示历史数据）
-    try:
-        wp = json.load(open(str(BASE/'data'/'wuqu_paper_state.json')))
-        wn  = wp.get('wins',0) + wp.get('losses',0)
-        wwr = wp.get('wins',0)/wn*100 if wn else 0
-        # Phase0重置后用legacy数据显示历史成绩
-        if wp.get('phase') == 'phase0_reset' and wn == 0:
-            leg_n  = wp.get('reset_legacy_count', 0)
-            leg_wr = wp.get('reset_legacy_wr', 0) * 100
-            target = wp.get('target_n', 200)
-            paper_s = f'Paper 新周期0/{target} | 历史{leg_n}条WR={leg_wr:.0f}% | 三铁律✅'
-        else:
-            target = wp.get('target_n', 200)
-            paper_s = f'Paper {wn}/{target} WR={wwr:.0f}% | 三铁律✅'
-    except:
-        paper_s = ''
-
-    line4 = f'📌 {mkt_bias}' if mkt_bias else ''
-    line5 = f'🔧 {paper_s}' if paper_s else ''
-
-    return '\n'.join(filter(None, [line1, line1b, line2, line3, line4, line5]))
-
-
-def main():
-    state = load_state()
-    now   = time.time()
-
-    all_signals     = merge_sources()
-    active, settled = classify(all_signals)
-
-    # ── 拉取实时价格 ──────────────────────────────
-    syms   = list({s['symbol'] for s in active[:12]})
-    prices = {}
-    for sym in syms:
-        prices[sym] = _get_price(sym)
-
-    # ── EP Score排名 ──────────────────────────────
-    sys.path.insert(0, str(BASE / 'scripts'))
-    try:
-        from ep_score import calc_ep
-        for s in active:
-            sym = s['symbol']
-            p   = prices.get(sym, 0)
-            fr  = _get_fr(sym)
-            ep  = calc_ep(s, price=p, fr=fr)
-            s['_ep_val'] = ep['ep']
-            s['_gap']    = ep['gap_pct']
-            s['_fr']     = fr
-        active.sort(key=lambda x: -x.get('_ep_val', x['score']))
+        subprocess.run(
+            ['openclaw', 'message', 'send',
+             '--channel', PUSH_CHANNEL,
+             '--target', JARVIS_TARGET,
+             '--message', msg],
+            capture_output=True, timeout=15
+        )
     except Exception as e:
-        for s in active:
-            s['_ep_val'] = float(s.get('score',0))
-            lo = float(s.get('entry_lo') or 0)
-            p  = prices.get(s['symbol'], 0)
-            s['_gap'] = (lo-p)/p*100 if p and lo else 99
+        print(f'[Dashboard] 推送失败: {e}')
 
-    # ── 有变化才推逻辑 ────────────────────────────
-    last_gaps = state.get('last_gaps', {})
-    brahma    = json.load(open(BRAHMA_FILE)) if BRAHMA_FILE.exists() else {}
-    has_pos   = len(brahma.get('positions',[])) > 0
+# ────────────────────────────────────────────────────────────────
+# 主入口
+# ────────────────────────────────────────────────────────────────
 
-    changed = False
-    new_gaps = {}
-    for s in active:
-        sym = s['symbol']
-        g   = round(s.get('_gap', 99), 2)
-        new_gaps[sym] = g
-        prev = last_gaps.get(sym, 99)
-        if abs(g - prev) >= 0.3:
-            changed = True
+def run(force_push=False):
+    print(f'[Dashboard] 开始生成仪表盘 {NOW_DT.strftime("%H:%M UTC")}')
 
-    if not changed and not has_pos and active:
+    # 采集
+    main_signals  = load_main_signals(hours=24)
+    oi_cands, oi_age = load_oi_signals()
+    pump_log      = load_pump_signals(hours=24)
+    pump_latest, pump_age = load_pump_latest()
+
+    # 分析
+    main_stat  = analyze_main_signals(main_signals)
+    oi_stat    = analyze_oi_signals(oi_cands, oi_age)
+    pump_stat  = analyze_pump_signals(pump_log, pump_latest, pump_age)
+
+    # 状态
+    state = load_state()
+    state = update_daily_history(state, main_stat, oi_stat, pump_stat)
+
+    # 格式化
+    report = format_dashboard(main_stat, oi_stat, pump_stat, state)
+    print(report)
+
+    # 推送逻辑：
+    # 1. 有实时有效信号 → 立即推送
+    # 2. 强制推送标志 → 推送
+    # 3. 距上次推送>4H → 定期汇总
+    last_push = state.get('last_push', 0)
+    has_active = main_stat['active'] > 0 or oi_stat['buy_ready'] > 0 or pump_stat['current_new'] > 0
+    time_elapsed = NOW - last_push
+
+    should_push = force_push or has_active or (time_elapsed > 4 * 3600)
+
+    if should_push:
+        push_msg(report)
+        state['last_push'] = NOW
+        print(f'[Dashboard] ✅ 仪表盘已推送')
+    else:
+        print(f'[Dashboard] 无新信号，距上次推送{time_elapsed/3600:.1f}H，静默')
         print('HEARTBEAT_OK')
-        return
 
-    # ── 构建输出 ──────────────────────────────────
-    out = []
-    out.append(decision_card(active, prices, brahma))
-    out.append('')
-
-    hq  = [s for s in active if s['score'] >= SCORE_HQ]
-    mid = [s for s in active if SCORE_MID <= s['score'] < SCORE_HQ]
-
-    if not active:
-        print('HEARTBEAT_OK')
-        return
-
-    if hq:
-        out.append('🔥 高质量信号（≥155分）')
-        for i, s in enumerate(hq[:6], 1):
-            p  = prices.get(s['symbol'], 0)
-            fr = s.get('_fr', 0)
-            ep = s.get('_ep_val', s['score'])
-            out.append(fmt_row_v3(i, s, p, fr, ep))
-        out.append('')
-
-    if mid:
-        out.append('✅ 有效信号（140~154分）')
-        for i, s in enumerate(mid[:4], 1):
-            p  = prices.get(s['symbol'], 0)
-            fr = s.get('_fr', 0)
-            ep = s.get('_ep_val', s['score'])
-            out.append(fmt_row_v3(i, s, p, fr, ep))
-        out.append('')
-
-    if settled:
-        out.append('━━ ❌ 结算/失效 ━━')
-        for s in settled[:3]:
-            sym = s['symbol'].replace('USDT','')
-            out.append(f'  {sym} {s["score"]:.0f}分 → {s.get("outcome","?")}')
-        out.append('')
-
-    # ── 清算数据模块 ──────────────────────────────
-    try:
-        import sys as _sys
-        _sys.path.insert(0, str(BASE / 'scripts'))
-        from liquidation_module import fmt_liq_block
-        # 主要品种 + 有持仓的品种
-        liq_syms = list({'BTCUSDT','ETHUSDT'} | {p['symbol'] for p in brahma.get('positions',[]) if p.get('status')=='OPEN'})
-        # 收集当前信号入场区供预警
-        entry_zones = {s['symbol']: float(s.get('entry_lo') or 0) for s in active if s.get('entry_lo')}
-        out.append(fmt_liq_block(liq_syms, entry_zones))
-    except Exception as _e:
-        out.append(f'⚡ 清算数据 暂不可用')
-
-    print('\n'.join(out))
-
-    state['last_gaps']      = new_gaps
-    state['last_full_push'] = now
+    # 保存完整state（含统计数据）
+    state['last_run'] = NOW
+    state['last_stats'] = {
+        'main': {k: v for k, v in main_stat.items() if k not in ('latest', 'active_signals')},
+        'oi': {k: v for k, v in oi_stat.items() if k != 'top'},
+        'pump': {k: v for k, v in pump_stat.items() if k != 'top_alerts'},
+    }
     save_state(state)
 
+    return {'main': main_stat, 'oi': oi_stat, 'pump': pump_stat}
 
 if __name__ == '__main__':
-    main()
+    import sys
+    force = '--force' in sys.argv or '-f' in sys.argv
+    run(force_push=force)

@@ -33,7 +33,7 @@ try:
     import scripts.system_config as _sc
     PUSH_TARGET = f"{_sc.JARVIS_USER_ID}:t:{_sc.JARVIS_THREAD_ID}"
 except Exception:
-    PUSH_TARGET   = '73295708:t:019f309c-609b-7a75-a195-e221e5927c63'
+    PUSH_TARGET   = '73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075'  # SSOT [2026-07-07]
 PUSH_CHANNEL = 'jarvis'
 STATE_FILE   = BASE / 'data' / 'nerve_center_state.json'
 API_KEY = 'sDqoRAyeYHHzevKNxSj5JfkWpNUd6v8qPAhVy0Y8wbWGwC48eC7uhFOENAlVqV7b'

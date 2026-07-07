@@ -41,7 +41,7 @@ sys.path.insert(0, os.path.join(BASE_DIR, 'brahma_brain'))
 
 FAPI         = 'https://fapi.binance.com'
 OUT_FILE     = os.path.join(BASE_DIR, 'data', 'oi_candidates.json')
-PUSH_TARGET  = os.environ.get('JARVIS_TARGET', '73295708:thread:019f309c-609b-7a75-a195-e221e5927c63')  # SSOT v2
+PUSH_TARGET  = os.environ.get('JARVIS_TARGET', '73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075')  # SSOT v3 [2026-07-07]
 PUSH_CHANNEL = 'jarvis'
 
 # ── 扫描范围 ─────────────────────────────────────────────────────
@@ -404,9 +404,15 @@ def format_push(candidates):
     """格式化推送内容（极简，只推有价值的信息）"""
     # 只推 L2+L3+L4 都通过的（真正的聪明钱潜伏信号）
     high_quality = [c for c in candidates if c['layers_pass'] >= 4]
-    # watchlist (BEAR_TREND下)
-    watchlist    = [c for c in candidates if c['layers_pass'] >= 3 and c['action'] == 'watchlist']
+    # watchlist (layers>=3，扩大推送范围让苏摩看到候选池)
+    watchlist    = [c for c in candidates if c['layers_pass'] >= 3 and c['action'] in ('watchlist', 'buy_light', 'buy_full')]
 
+    # [2026-07-07] 修复：有candidates就推送，不再要求4层
+    if not candidates:
+        return None
+    if not high_quality and not watchlist:
+        # 至少有2层的也推
+        watchlist = [c for c in candidates if c['layers_pass'] >= 2][:5]
     if not high_quality and not watchlist:
         return None
 
