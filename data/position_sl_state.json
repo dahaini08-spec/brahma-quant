@@ -13,10 +13,12 @@
     "side": "LONG",
     "qty": 16.2,
     "entry": 1.588,
-    "sl_price": 1.468,
+    "sl_price": 1.6479999999999997,
     "tp_price": 1.769,
     "registered_at": "2026-07-05T11:44:31.785254+00:00",
-    "source": "hunter_executor"
+    "source": "hunter_executor",
+    "tsl_updated": "2026-07-07T01:48:18.551946+00:00",
+    "tsl_old_sl": 1.468
   },
   "LDOUSDT": {
     "symbol": "LDOUSDT",
@@ -44,5 +46,17 @@
     "updated_at": 1783165133.1032841,
     "tsl_stage": "breakeven_1",
     "tsl_old_sl": 71.28594000000001
+  },
+  "DOTUSDT": {
+    "symbol": "DOTUSDT",
+    "direction": "LONG",
+    "sl_price": 0.8809999999999998,
+    "tsl_updated": "2026-07-06T17:48:15.833612+00:00"
+  },
+  "ETHUSDT": {
+    "symbol": "ETHUSDT",
+    "direction": "LONG",
+    "sl_price": 1777.5057299999999,
+    "tsl_updated": "2026-07-07T01:48:18.468685+00:00"
   }
 }

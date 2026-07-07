@@ -33,7 +33,7 @@ kronos_bridge.py — Kronos 大模型 × 梵天 集成桥接层 v1.0
 from __future__ import annotations
 import os, sys, time, json, logging
 
-STATUS = 'SHADOW'  # 对外导出状态标识（360评估用）
+STATUS = 'BLEND'   # 对外导出状态标识（360评估用）[2026-07-06] shadow→blend
 import numpy as np
 import pandas as pd
 from pathlib import Path

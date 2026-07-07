@@ -134,7 +134,9 @@ def get_qty_precision(symbol: str) -> int:
 def close_position(symbol: str, qty: float, reason: str) -> dict:
     """市价平仓（reduceOnly）"""
     side = _signed('GET', '/fapi/v2/positionRisk')
-    pos  = next((p for p in side if p['symbol'] == symbol and abs(float(p.get('positionAmt',0))) > 0), None)
+    # [BUG-1其他处 修复 2026-07-07] 防御非列表返回
+    if not isinstance(side, list): return {'status': 'ERROR', 'reason': f'API异常: {str(side)[:80]}'}
+    pos  = next((p for p in side if isinstance(p, dict) and p.get('symbol') == symbol and abs(float(p.get('positionAmt',0))) > 0), None)
     if not pos:
         return {'status': 'SKIP', 'reason': '无持仓'}
     amt      = float(pos['positionAmt'])
@@ -173,7 +175,11 @@ def run():
 
     # 获取所有持仓
     pos_list = _signed('GET', '/fapi/v2/positionRisk')
-    active   = [p for p in pos_list if abs(float(p.get('positionAmt', 0))) > 0]
+    # [BUG-1 修复 2026-07-07] API偷发返回dict(错误)/非列表时防崩溃
+    if not isinstance(pos_list, list):
+        _log(f'positionRisk返回异常: {str(pos_list)[:100]}，跳过本次')
+        print('HEARTBEAT_OK'); return
+    active   = [p for p in pos_list if isinstance(p, dict) and abs(float(p.get('positionAmt', 0))) > 0]
 
     if not active:
         _log('无持仓 → HEARTBEAT_OK')

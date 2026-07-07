@@ -16,6 +16,14 @@ brahma_analyze.py — 梵天分析CLI入口 v24.0
 """
 import sys, os, json, argparse
 
+# [修复 2026-07-06] Kronos LightGBM预注入：必须在kronos_engine import前先import lightgbm
+# 否则_model_load_attempted=True后lgbm路径被跳过，导致fallback:lgbm_err
+try:
+    import lightgbm as _lgbm_pre
+    sys.modules['lightgbm'] = _lgbm_pre
+except ImportError:
+    pass
+
 _base = os.path.dirname(os.path.abspath(__file__))
 for p in [_base, os.path.join(_base,'scripts'), os.path.join(_base,'brahma_brain')]:
     if p not in sys.path: sys.path.insert(0, p)
