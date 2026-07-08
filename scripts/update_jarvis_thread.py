@@ -28,7 +28,7 @@ def update_thread(new_thread_id: str) -> bool:
     content = CONFIG_PATH.read_text()
     
     # 找到当前值
-    match = re.search(r'JARVIS_THREAD_ID\s*=\s*"([^"]+)"', content)
+    match = re.search(r"JARVIS_THREAD_ID.*?['\"]([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})['\"]", content)
     if not match:
         print(f'❌ 未找到 JARVIS_THREAD_ID 字段')
         return False
