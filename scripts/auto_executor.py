@@ -223,6 +223,20 @@ def find_executable_signals() -> list[dict]:
                 print(f'[SL过滤] {s.get("symbol")} sl={sl_pct:.1f}%>标准上限 score={score:.0f}<145 跳过'
                       f'（提示score需≥145才能用高波动通道）')
             continue
+        # ── [P3-A 设计院 2026-07-08] HMM Regime概率化 — 附加置信度字段 ──
+        try:
+            from brahma_brain.regime_hmm_v2 import predict_regime_proba, get_weighted_multiplier
+            _hmm = predict_regime_proba(sym)
+            s['_hmm_dominant']   = _hmm.get('dominant', '')
+            s['_hmm_confidence'] = _hmm.get('confidence', 0)
+            s['_hmm_method']     = _hmm.get('method', '')
+            # HMM置信度<0.40时降为MONITOR（不拒绝，仅标记）
+            if _hmm.get('confidence', 1.0) < 0.40:
+                s['_hmm_low_conf'] = True
+                print(f'[HMM] {sym} confidence={_hmm["confidence"]:.2f}<0.40 → 低置信标记')
+        except Exception:
+            pass
+
         # [v6.0 设计院 2026-07-08] 小币BEAR_TREND做多禁止（实盘复盘: SYN/NEAR/RENDER均亏损）
         # BTC/ETH已有死穴规则，小币缺失导致 43.8%胜率 根因
         _sym_regime = s.get('regime', '')
@@ -824,6 +838,23 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
         regime = sig.get('regime', '')
 
         print(f'[AutoExecutor] 候选: {sym} {direct} score={score:.0f} regime={regime} id={sig_id}')
+
+        # ── [P3-B 设计院 2026-07-08] RL A/B仓位分流 ──────────────────
+        try:
+            from brahma_brain.rl_position_ab import decide_position_size
+            _std_nav_pct = BIG_SYM_NAV_HIGH if score >= 155 else (
+                BIG_SYM_NAV_MID if score >= 140 else BIG_SYM_NAV_LOW
+            ) if sym in ('BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT') else 0.03
+            _ab = decide_position_size(
+                signal_id=sig_id, symbol=sym,
+                score=score, direction=direct, regime=regime,
+                std_nav_pct=_std_nav_pct,
+            )
+            sig['_rl_nav_pct'] = _ab['nav_pct']
+            sig['_rl_group']   = _ab['group']
+            print(f'  [RL_AB] {_ab["group"]} mult={_ab["rl_mult"]} → nav_pct={_ab["nav_pct"]:.3f}')
+        except Exception:
+            pass  # RL异常不影响主流程
 
         if dry_run:
             print(f'  [DRY-RUN] 跳过执行')
