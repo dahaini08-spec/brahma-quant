@@ -53,3 +53,4 @@ venv/
 .venv/
 env/
 .secrets
+.venv/
