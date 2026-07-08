@@ -223,6 +223,21 @@ def find_executable_signals() -> list[dict]:
                 print(f'[SL过滤] {s.get("symbol")} sl={sl_pct:.1f}%>标准上限 score={score:.0f}<145 跳过'
                       f'（提示score需≥145才能用高波动通道）')
             continue
+        # [v6.0 设计院 2026-07-08] 小币BEAR_TREND做多禁止（实盘复盘: SYN/NEAR/RENDER均亏损）
+        # BTC/ETH已有死穴规则，小币缺失导致 43.8%胜率 根因
+        _sym_regime = s.get('regime', '')
+        _sym_dir    = s.get('direction') or s.get('signal_dir', '')
+        _is_small_cap = sym not in ('BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT')
+        if _is_small_cap and 'BEAR_TREND' in _sym_regime and _sym_dir in ('LONG', 'BUY'):
+            print(f'[SmallCapGuard] {sym} BEAR_TREND_LONG 小币死穴 → 跳过（实盘WR<50%）')
+            continue
+
+        # [v6.0 设计院 2026-07-08] 非梵天BRAHMA标签信号仓位上限: NAV×3%（原5%）
+        # 依据: 亏损品种（SYN/CRCL/SAMSUNG等）多来自外部信号，仓位需收紧
+        _brahma_tag = s.get('brahma_tag', '') or s.get('source', '')
+        if _is_small_cap and 'BRAHMA' not in str(_brahma_tag).upper():
+            s['_small_cap_pct'] = 0.03  # 3% NAV（收紧）
+
         # 小币宽止损：仓位系数×0.5
         if _is_altcoin_bull and sl_pct > MAX_SL_PCT_HIGH_VOL:
             s['_high_vol_discount'] = 0.5
@@ -295,6 +310,41 @@ def _calc_batch_prices(entry_lo: float, entry_hi: float, direction: str) -> list
 
 
 BINANCE_MIN_NOTIONAL = 20.0  # Binance合约最小名义值限制(USDT)
+
+# ── [v6.0 设计院 2026-07-08] ATR动态断路器 ────────────────────────────────
+def _calc_atr_dynamic_gate(sym: str, base_score: float = 135.0, base_sl: float = 5.0):
+    """
+    基于ATR_14动态调整执行门槛
+    高波动市场: score门槛上调+2, sl上限收紧
+    低波动市场: score门槛不变, sl上限放宽
+    返回: (dynamic_score_threshold, dynamic_sl_max)
+    """
+    try:
+        klines = _signed('GET', '/fapi/v1/klines', {'symbol': sym, 'interval': '4h', 'limit': 30})
+        if not isinstance(klines, list) or len(klines) < 15:
+            return base_score, base_sl
+        
+        # 计算ATR_14
+        trs = []
+        for i in range(1, len(klines)):
+            h = float(klines[i][2]); l = float(klines[i][3]); pc = float(klines[i-1][4])
+            tr = max(h - l, abs(h - pc), abs(l - pc))
+            trs.append(tr)
+        atr14 = sum(trs[-14:]) / 14
+        price = float(klines[-1][4])
+        atr_pct = atr14 / price * 100  # ATR百分比
+        
+        # 分位数判断（简化：>4%=高波动, <2%=低波动）
+        if atr_pct > 4.0:
+            # 高波动：提高score门槛+2，保留SL上限
+            return base_score + 2, base_sl
+        elif atr_pct < 2.0:
+            # 低波动：放宽SL上限至6%
+            return base_score, min(base_sl + 1.0, 6.0)
+        else:
+            return base_score, base_sl
+    except Exception:
+        return base_score, base_sl
 
 
 def _place_limit_orders(sym: str, side: str, total_qty: float,
@@ -494,8 +544,16 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     GAP_MAX = 0.03  # 3% 价格偏离上限
     if entry_lo and entry_hi:
         if direction in ('LONG', 'BUY'):
-            # 多单：价格超出入场区上沿太多 = 追高
-            if px > entry_hi * (1 + GAP_MAX):
+            # [v6.0 设计院 2026-07-08] 价格轻微超出入场区(0~0.5%) → 自动追踪到区间边缘下限单
+            # 避免"现价1739 > 区间上沿1738 → 永远等不到成交"的死循环
+            PRICE_CHASE_MAX = 0.005  # 0.5%内自动追踪
+            if entry_hi * (1 + PRICE_CHASE_MAX) >= px > entry_hi:
+                # 价格略高于区间上沿，将LIMIT挂单价调整到区间上沿（等回踩）
+                chase_gap = (px - entry_hi) / entry_hi * 100
+                print(f'[GapGate] ℹ️ {sym} LONG 价格超出区间{chase_gap:.2f}%(<0.5%) → 追踪至区间上沿{entry_hi:.4f}')
+                # entry_hi作为挂单价（不修改entry区，只影响batch价格基准）
+                signal['_chase_price'] = entry_hi
+            elif px > entry_hi * (1 + GAP_MAX):
                 overshoot = (px - entry_hi) / entry_hi * 100
                 result['reason'] = f'GapGate: 价格{px:.4f}超出入场区上沿{overshoot:.1f}%>{GAP_MAX*100:.0f}%'
                 return result
