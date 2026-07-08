@@ -294,36 +294,74 @@ def _calc_batch_prices(entry_lo: float, entry_hi: float, direction: str) -> list
         return [entry_hi, mid, entry_lo]
 
 
+BINANCE_MIN_NOTIONAL = 20.0  # Binance合约最小名义值限制(USDT)
+
+
 def _place_limit_orders(sym: str, side: str, total_qty: float,
                         prices: list, qty_prec: int, sig_id: str) -> dict:
     """
     下3档挂单，返回 {status, order_ids, filled_qty, avg_price, cancelled}
     比例BATCH_RATIOS=[0.25,0.50,0.25]
     超时LIMIT_ORDER_TIMEOUT_SEC尚未成交的挂单全部撤销
+    名义值检查：任何一档低于BINANCE_MIN_NOTIONAL(20 USDT)时，
+    自动降级为单档LIMIT单（合并全量）避免-4164错误
     """
     order_ids = []
     placed_prices = []
 
-    for i, (ratio, price) in enumerate(zip(BATCH_RATIOS, prices)):
-        qty_i = round(math.floor(total_qty * ratio * 10**qty_prec) / 10**qty_prec, qty_prec)
-        if qty_i <= 0:
-            continue
-        price_str = f'{price:.8f}'.rstrip('0').rstrip('.')
+    # ── 名义值预检查：计算每档名义值 ──────────────────────────────
+    mid_price = prices[1] if len(prices) > 1 else prices[0]
+    min_batch_notional = min(
+        round(math.floor(total_qty * ratio * 10**qty_prec) / 10**qty_prec, qty_prec) * price
+        for ratio, price in zip(BATCH_RATIOS, prices)
+        if round(math.floor(total_qty * ratio * 10**qty_prec) / 10**qty_prec, qty_prec) > 0
+    ) if total_qty > 0 else 0
+
+    if min_batch_notional < BINANCE_MIN_NOTIONAL:
+        # 分批会有档低于20 USDT，合并为单档LIMIT单（用中间价）
+        total_notional = total_qty * mid_price
+        print(f'  [分批降级] {sym} 最小档名义值${min_batch_notional:.2f}<${BINANCE_MIN_NOTIONAL}，'
+              f'合并为单档LIMIT @{mid_price:.4f} qty={total_qty} notional=${total_notional:.2f}')
+        price_str = f'{mid_price:.8f}'.rstrip('0').rstrip('.')
         r = _signed('POST', '/fapi/v1/order', {
             'symbol':      sym,
             'side':        side,
             'type':        'LIMIT',
             'price':       price_str,
-            'quantity':    qty_i,
+            'quantity':    total_qty,
             'timeInForce': 'GTC',
             'reduceOnly':  'false',
         })
         if 'orderId' in r:
-            order_ids.append(r['orderId'])
-            placed_prices.append(price)
-            print(f'  [挂单] 第{i+1}档 {sym} {side} qty={qty_i} @{price:.4f} id={r["orderId"]}')
+            print(f'  [单档挂单] {sym} {side} qty={total_qty} @{mid_price:.4f} id={r["orderId"]}')
+            # 直接返回已挂单状态（后续轮询逻辑沿用）
+            order_ids = [r['orderId']]
+            placed_prices = [mid_price]
         else:
-            print(f'  [挂单失败] 第{i+1}档 {sym} {r.get("msg", str(r))}')
+            print(f'  [单档挂单失败] {sym} {r.get("msg", str(r))}')
+            return {'status': 'FAILED', 'reason': f'单档LIMIT失败: {r.get("msg",str(r))}',
+                    'order_ids': [], 'filled_qty': 0, 'avg_price': 0, 'cancelled': []}
+    else:
+        for i, (ratio, price) in enumerate(zip(BATCH_RATIOS, prices)):
+            qty_i = round(math.floor(total_qty * ratio * 10**qty_prec) / 10**qty_prec, qty_prec)
+            if qty_i <= 0:
+                continue
+            price_str = f'{price:.8f}'.rstrip('0').rstrip('.')
+            r = _signed('POST', '/fapi/v1/order', {
+                'symbol':      sym,
+                'side':        side,
+                'type':        'LIMIT',
+                'price':       price_str,
+                'quantity':    qty_i,
+                'timeInForce': 'GTC',
+                'reduceOnly':  'false',
+            })
+            if 'orderId' in r:
+                order_ids.append(r['orderId'])
+                placed_prices.append(price)
+                print(f'  [挂单] 第{i+1}档 {sym} {side} qty={qty_i} @{price:.4f} id={r["orderId"]}')
+            else:
+                print(f'  [挂单失败] 第{i+1}档 {sym} {r.get("msg", str(r))}')
 
     if not order_ids:
         return {'status': 'FAILED', 'reason': '全部分批挂单失败', 'order_ids': [], 'filled_qty': 0, 'avg_price': 0}
