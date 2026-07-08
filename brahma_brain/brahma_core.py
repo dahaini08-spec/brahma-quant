@@ -3422,13 +3422,13 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         # [设计院 2026-07-06] MTF=NEUTRAL降权 -4%（原-8%过于激进）
         # 修正依据：实际WR差距约4~5%，不是8%；BULL_TREND下4H NEUTRAL很常见且多单结构其实良好
         # 改为-4%，阻断门槛仅针对真正中性/逃顶形态
-        _neutral_penalty_pct = 0.96  # -4%（设计院v2 2026-07-06）
+        _neutral_penalty_pct = 0.98  # -2%（设计院v6.0 2026-07-08 外部审计建议）
         _score_before_neutral = _score_raw
         _score_raw = round(_score_raw * _neutral_penalty_pct, 1)
         cf['total'] = _score_raw
         cf = copy.deepcopy(cf)
-        cf['mtf_4h_neutral'] = f'4H NEUTRAL 降权×0.96 {_score_before_neutral:.0f}→{_score_raw:.0f}'
-        print(f'[BrahmaBrain] 🟡 {_sym} MTF=NEUTRAL 降抎4%: score {_score_before_neutral:.0f}→{_score_raw:.0f}')
+        cf['mtf_4h_neutral'] = f'4H NEUTRAL 降权×0.98 {_score_before_neutral:.0f}→{_score_raw:.0f}'
+        print(f'[BrahmaBrain] 🟡 {_sym} MTF=NEUTRAL 降抎2%[v6.0]: score {_score_before_neutral:.0f}→{_score_raw:.0f}')
 
     # [设计院 2026-05-24] 达摩院6节点预测验证 — 接入真实信号流
     _dharma_nodes = {'nodes_pass': 0, 'verdict': 'UNKNOWN', 'score_mult': 1.0, 'detail': ''}
@@ -3624,7 +3624,11 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     try:
         _p0b_regime = str(ms.get('regime', '') or '').upper()
         _p0b_price  = float(ms.get('price', 0) or 0)
-        if 'BULL_TREND' in _p0b_regime and signal_dir == 'LONG' and _p0b_price > 0:
+        # [v6.0 设计院 2026-07-08] BEAR_RECOVERY体制豁免P0B宏观门控
+        # 依据：BEAR_RECOVERY体制本身就是宏观熊市中的反弹，EMA200必然在上方
+        # 该体制LONG WR=72.5%(n=603)，P0B拦截是误伤
+        _is_bear_recovery = 'BEAR_RECOVERY' in _p0b_regime
+        if 'BULL_TREND' in _p0b_regime and not _is_bear_recovery and signal_dir == 'LONG' and _p0b_price > 0:
             # 尝试拉取 EMA200日线（式 fib_macro结果已有）
             _p0b_ema200 = 0.0
             try:
@@ -3951,8 +3955,14 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         # [v5.1 设计院 2026-07-03] BULL_TREND三重特例通道（苏摩授权）
         # 条件：BULL_TREND体制 + grade≥75 + score≥155 + EMA200宏观通过
         # 依据：grade70-80的WR=47%统计混入大量逆势SHORT，BULL×LONG实际WR更高
+        # [v6.0 设计院 2026-07-08] 新增BEAR_RECOVERY特例通道
+        # 依据：BEAR_RECOVERY体制LONG WR=72.5%(n=603)，grade75-79实测WR=65%+
+        # 条件：BEAR_RECOVERY体制 + grade≥75 + score≥155（保留三重防护）
         _bull_grade_exception = (
-            'BULL_TREND' in _regime_key
+            (
+                'BULL_TREND' in _regime_key
+                or 'BEAR_RECOVERY' in _regime_key  # [v6.0] BEAR_RECOVERY WR=72.5%
+            )
             and signal_dir == 'LONG'
             and _sq['grade'] >= 75
             and _score_raw >= 155

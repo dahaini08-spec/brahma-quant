@@ -225,6 +225,25 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
         import logging as _lg
         _lg.getLogger('auto_execute_gate').warning(f'RiskGate v2 检查异常（跳过）: {_rg_err}')
 
+    # ── 门控3c：Layer 9~12（设计院 v6.0 2026-07-08）───────────────────────────
+    try:
+        from guardrails.layer_9_12 import check_layer9_12
+        _l912_price = float(signal.get('price', 0) or 0)
+        _l912_result = check_layer9_12(sym, _l912_price, direction)
+        if not _l912_result['pass']:
+            r = f'Layer9-12拦截[{_l912_result["blocked_by"]}]: {_l912_result["reasons"][-1] if _l912_result["reasons"] else ""}'
+            _log('BLOCKED', signal, r)
+            return {'executed': False, 'reason': r, 'order': None}
+        # Layer9 仓位折扣
+        if _l912_result.get('discount', 1.0) < 1.0:
+            signal['_layer9_discount'] = _l912_result['discount']
+            print(f'[Layer9-12] {sym} 仓位折扣×{_l912_result["discount"]}')
+    except ImportError:
+        pass  # Layer9-12 模块未安装时跳过
+    except Exception as _l912_err:
+        import logging as _lg
+        _lg.getLogger('auto_execute_gate').warning(f'Layer9-12检查异常（跳过）: {_l912_err}')
+
     # ── 门控4：持仓数量上限 + 总保证金率上限 ──────────────────────
     open_pos = _open_positions()
     # [设计院修复 2026-06-23] NAV 实时从交易所获取，避免 brahma_state 旧值导致误拦截
