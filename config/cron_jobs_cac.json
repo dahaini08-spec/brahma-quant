@@ -1,0 +1,897 @@
+{
+  "version": "cac-v1.1",
+  "updated": "2026-07-08",
+  "jobs": [
+    {
+      "id": "7b9d646c-0d02-4491-a87c-cb69115ef9cf",
+      "name": "zhao-7-pricemap-1700",
+      "enabled": true,
+      "deleteAfterRun": true,
+      "createdAtMs": 1783458945877,
+      "schedule": {
+        "kind": "at",
+        "at": "2026-07-08T09:00:00.000Z"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "You are 姓赵不宣 crypto KOL. Post an afternoon price map to Binance Square. (1) Fetch BTC/ETH realtime: python3 -c \"import json,urllib.request; btc=json.loads(urllib.request.urlopen(\\\"https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT\\\",timeout=8).read()); eth=json.loads(urllib.request.urlopen(\\\"https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT\\\",timeout=8).read()); print(\\\"BTC\\\",btc[\\\"lastPrice\\\"],\\\"H\\\",btc[\\\"highPrice\\\"],\\\"L\\\",btc[\\\"lowPrice\\\"],\\\"ETH\\\",eth[\\\"lastPrice\\\"])\" (2) Write Chinese post: title 姓赵不宣·今日价位地图（截图保存）, ASCII price map showing: resistance levels above current price, current price line, support levels below (use actual prices from API to calculate EMA20_4H approx), 3 operation plans (A wait for support B enter on breakout C reduce before CPI), total position cap 30% today, tonight CPI at 20:30 Beijing. End: 有预案才不慌. Hashtags #价位地图 #BTC #ETH #姓赵不宣 #操作计划. (3) Read SQUARE_KEY_2 POST to Square. (4) Reply: ✅ 价位地图篇 已发布 ID:<id>",
+        "lightContext": true
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+      },
+      "state": {}
+    },
+    {
+      "id": "a6249a4e-8a00-493b-989b-0efe25080b6c",
+      "name": "zhao-8-cpi-countdown-1900",
+      "enabled": true,
+      "deleteAfterRun": true,
+      "createdAtMs": 1783458960701,
+      "schedule": {
+        "kind": "at",
+        "at": "2026-07-08T11:00:00.000Z"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "You are 姓赵不宣 crypto KOL. CPI releases in about 1.5 hours (20:30 Beijing). Post urgent pre-CPI alert to Binance Square. (1) Fetch BTC ETH prices from Binance API. (2) Write Chinese post: title 🚨姓赵不宣·CPI倒计时90分钟, current BTC ETH price, reminder to REDUCE POSITION to 25-30% before data (protect capital), 3 scenarios recap in brief, what time exactly CPI releases (20:30 Beijing tonight), instruction: set price alerts at $64700 (BTC breakout) and $61000 (BTC support), after CPI I will post real-time analysis immediately. Story: the difference between the trader who is prepared vs the one scrambling when CPI hits. End: 数据来了我第一时间解读，关注我. Hashtags #CPI #🚨紧急 #BTC #ETH #姓赵不宣. (3) Read SQUARE_KEY_2 POST to Square. (4) Reply: ✅ CPI倒计时篇 已发布 ID:<id>",
+        "lightContext": true
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+      },
+      "state": {}
+    },
+    {
+      "id": "0fa322fb-e641-4b55-9490-36630e2cb618",
+      "name": "square-weekly-report",
+      "enabled": true,
+      "createdAtMs": 1780978920628,
+      "schedule": {
+        "kind": "cron",
+        "tz": "UTC",
+        "expr": "0 8 * * 1"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "执行广场周报：\n1. 运行 cd /root/.openclaw/workspace/trading-system && python3 scripts/dharma_weekly_report.py 2>&1 | tail -30\n2. 获取 BTCUSDT ETHUSDT 当前价格和本周涨跌\n3. 读取 data/live_signal_log.jsonl 统计上周信号战绩（WIN/LOSS/TIMEOUT数量，WR）\n4. 按以下格式发布到币安广场：\n\n📈 梵天周报 · {本周日期范围}\n\n📊 上周信号战绩\n  信号总数：{n}条  已结算：{settled}条\n  胜率：{wr}%（WR = WIN / WIN+LOSS，TIMEOUT不计入）\n  主体制：{regime}\n\n🔍 市场回顾\n  BTC：{上周涨跌}%  现价：${btc}\n  ETH：{上周涨跌}%  现价：${eth}\n\n📅 本周展望\n  BTC关键位：${key_level}\n  ETH体制：{regime}，{信号或待机}\n  等待触发：{条件描述}\n\n{3句总结，中文金融媒体风格}\n\n#量化交易 #梵天系统 #周报 #BTC #ETH\n\n发布成功→回复广场URL；NO_DATA→NO_REPLY",
+        "lightContext": true
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
+        "threadId": "019eaabf-d731-75b5-82e5-95d640c617d3",
+        "failureDestination": "none"
+      },
+      "state": {}
+    },
+    {
+      "id": "b9eaa28d-a066-4829-9324-98d3d5d414a1",
+      "name": "data-backup-6h",
+      "enabled": true,
+      "createdAtMs": 1781577655713,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 21600000,
+        "anchorMs": 1781577655713
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "exec:cd /root/.openclaw/workspace/trading-system && tar czf data/backups/backup_$(date +%Y%m%d_%H%M).tar.gz data/live_signal_log.jsonl data/brahma_state.json data/dharma_runtime.json 2>/dev/null || true; echo HEARTBEAT_OK"
+      },
+      "state": {}
+    },
+    {
+      "id": "7584a7c1-6b23-4274-9827-63d0d24cbed9",
+      "name": "dharma-offline-replay-weekly",
+      "enabled": true,
+      "createdAtMs": 1781761583646,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 1 * * 0"
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "exec:cd /root/.openclaw/workspace/trading-system && mkdir -p logs && setsid python3 dharma/offline_brahma_replay.py --symbols BTCUSDT ETHUSDT >> logs/replay_weekly.log 2>&1; echo HEARTBEAT_OK"
+      },
+      "state": {}
+    },
+    {
+      "id": "975e5bbe-7d5c-4a18-9cbf-e2ddda6317ac",
+      "name": "timesfm-bridge-4h",
+      "enabled": true,
+      "createdAtMs": 1782015742934,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 14400000,
+        "anchorMs": 1782022942934
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "exec:cd /root/.openclaw/workspace/trading-system && python3 scripts/timesfm_bridge.py >> logs/timesfm_bridge.log 2>&1; echo HEARTBEAT_OK"
+      },
+      "delivery": {},
+      "state": {}
+    },
+    {
+      "id": "4060a078-2a4e-4e2f-8ed9-0917e8daf82c",
+      "name": "live-signal-settle-2h",
+      "enabled": true,
+      "createdAtMs": 1782204071616,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 7200000,
+        "anchorMs": 1782204071616
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "cd /root/.openclaw/workspace/trading-system && python3 scripts/live_signal_settler.py >> logs/settler.log 2>&1; echo HEARTBEAT_OK"
+      },
+      "state": {}
+    },
+    {
+      "id": "627a01f4-f4be-4c0e-a533-e78078e349dc",
+      "name": "⚡午盘快讯-Square",
+      "enabled": true,
+      "createdAtMs": 1782275602929,
+      "schedule": {
+        "kind": "cron",
+        "expr": "15 4 * * *",
+        "tz": "Asia/Shanghai",
+        "staggerMs": 0
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "获取BTC和ETH实时价格，以「姓赵不宣」个人IP口吻，严格按以下格式发Binance Square午盘更新（square-post主账户）。禁止出现\"梵天\"\"量化\"字样，全部第一人称：\n\n⚡ 午盘更新 · 北京12:15\n\n大饼 $[BTC价格] · [涨跌%]\n方向没变：[做多↑/做空↓/横盘观望]\n🎯 我盯的位置：[入场区间] 守 [止损]\n📍 目标：[TP1]  胜率：[WR%]\n\n以太 $[ETH价格] · [涨跌%]\n🎯 关键位：[入场区间] 守 [止损]\n📍 目标：[TP1]\n\n━━━━━━━━━━━━━\n[用1句话说现在盘面最值得注意的事，第一人称]\n\n今晚20:15复盘，关注不迷路 👇\n#BTC #ETH #合约",
+        "model": "litellm/Qwen3.5-397B-A17B-SGLang",
+        "lightContext": true
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+      },
+      "state": {}
+    },
+    {
+      "id": "21ca0fc2-e30c-4567-8059-062d385fe9be",
+      "name": "🌿晚盘深度帖-Square",
+      "enabled": true,
+      "createdAtMs": 1782275680821,
+      "schedule": {
+        "kind": "cron",
+        "expr": "15 20 * * *",
+        "tz": "Asia/Shanghai",
+        "staggerMs": 0
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "获取BTC实时价格和今日行情数据，以「姓赵不宣」个人IP口吻，严格按以下格式发Binance Square晚盘复盘（square-post主账户）。禁止出现\"梵天\"\"量化\"字样，全部第一人称个人风格：\n\n🌿 晚盘复盘 · 北京20:15\n\n今天BTC $[价格]，[一句话描述今天涨跌走势]。\n\n今日我的判断：\n  方向 → [做多↑/做空↓/观望]\n  理由 → [1句话，第一人称，说清楚逻辑]\n  信号 → [是否进场/未进场原因]\n\n明天关注：\n  上方压力 → $[阻力位]\n  下方支撑 → $[支撑位]\n  我的入场区 → $[入场区间]\n\n【预判存档】我认为明天会到 $[TP1]\n⏰ 明早08:30播报结果，关注不迷路\n\n[结尾：30字以内，有温度的一句话，像老交易员总结今天]\n\n#BTC #晚盘复盘 #合约交易",
+        "model": "litellm/bedrock-claude-4-6-sonnet",
+        "lightContext": true
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+      },
+      "state": {}
+    },
+    {
+      "id": "8aabb031-14c1-458a-9261-3bffe981a794",
+      "name": "gateway-restart-daily",
+      "enabled": true,
+      "createdAtMs": 1782305365539,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 5 * * *"
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "gateway:restart"
+      },
+      "state": {}
+    },
+    {
+      "id": "3dfd0a7b-10dc-4429-8284-3c78e67aeba5",
+      "name": "互动钩子帖-Square",
+      "enabled": true,
+      "createdAtMs": 1782433207164,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 172800000,
+        "anchorMs": 1782648898831
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "获取BTC当前实时价格和技术数据，以「姓赵不宣」个人IP口吻，严格按以下格式发Binance Square互动帖（square-post主账户）。禁止出现\"梵天\"\"量化\"字样，全部第一人称：\n\n💬 今晚问你一个问题\n\nBTC现在 $[价格]，今天[涨/跌/横]了[涨跌%]\n\n你觉得明天会：\nA. 涨破 $[当前价×1.02取整]\nB. 跌破 $[当前价×0.98取整]\nC. 继续在这区间磨\n\n我的判断是 [A/B/C]，理由是[一句话，第一人称，不超过20字]\n\n你呢？评论区见 👇\n明早08:30我来公布结果\n\n关注不错过 #BTC #合约",
+        "model": "litellm/Qwen3.5-397B-A17B-SGLang",
+        "lightContext": true
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+      },
+      "state": {}
+    },
+    {
+      "id": "25dc79e4-95a0-4291-a984-5a9bead321cd",
+      "name": "ws-guardian-keepalive",
+      "enabled": true,
+      "createdAtMs": 1782706962017,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 300000,
+        "anchorMs": 1783005900252
+      },
+      "sessionTarget": "main",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "exec:cd /root/.openclaw/workspace/trading-system && if ! ps aux | grep -v grep | grep -q ws_guardian.py; then nohup python3 ws_guardian.py >> logs/ws_guardian.log 2>&1 & echo \"[ws-guardian] $(date -u +%H:%M) restarted\" >> logs/ws_guardian.log; fi; echo HEARTBEAT_OK"
+      },
+      "state": {}
+    },
+    {
+      "id": "8be97614-7758-4843-a513-f69c2089956d",
+      "name": "session-cleanup-daily",
+      "enabled": true,
+      "createdAtMs": 1782728430286,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 86400000,
+        "anchorMs": 1782728430286
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "exec:find /root/.openclaw/agents/main/sessions/ -name '*.jsonl' -mtime +3 -not -name '*019ed32f*' -not -name '*019ed350*' -not -name '*019efa32*' -not -name '*019efc35*' -not -name '*019f04e3*' -delete 2>/dev/null; echo HEARTBEAT_OK"
+      },
+      "delivery": {},
+      "state": {}
+    },
+    {
+      "id": "d0f6aff3-3a99-472d-a2ea-def99bf61324",
+      "name": "btc-regime-watcher",
+      "enabled": true,
+      "createdAtMs": 1782773688799,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 300000,
+        "anchorMs": 1782826911831
+      },
+      "sessionTarget": "main",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "exec:cd /root/.openclaw/workspace/trading-system && python3 scripts/btc_regime_watcher.py >> logs/regime_watcher.log 2>&1; echo HEARTBEAT_OK"
+      },
+      "state": {}
+    },
+    {
+      "id": "5ff8a272-7d42-4a58-bae7-d3355c5893c3",
+      "name": "kronos-deps-restore",
+      "enabled": true,
+      "createdAtMs": 1782776369367,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 86400000,
+        "anchorMs": 1782776369367
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "exec:bash /root/.openclaw/workspace/trading-system/scripts/ensure_deps.sh >> /root/.openclaw/workspace/trading-system/logs/deps_restore.log 2>&1; echo HEARTBEAT_OK"
+      },
+      "delivery": {},
+      "state": {}
+    },
+    {
+      "id": "339f2c08-b0a6-4a2c-acde-f7ac6caab023",
+      "name": "brahma-arch-review",
+      "enabled": true,
+      "createdAtMs": 1782780189990,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 86400000,
+        "anchorMs": 1782780189990
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "exec:cd /root/.openclaw/workspace/trading-system && python3 brahma_brain/auto_review.py >> logs/arch_review.log 2>&1; echo HEARTBEAT_OK"
+      },
+      "delivery": {
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
+        "channel": "jarvis"
+      },
+      "state": {}
+    },
+    {
+      "id": "bc8523d8-6081-4bd8-b79a-9660bf4ee9fe",
+      "name": "brahma-360-daily",
+      "enabled": true,
+      "createdAtMs": 1782781320742,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 86400000,
+        "anchorMs": 1782781320742
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "执行梵天360日报（强制实时，禁止读缓存）：\n\nStep1: 拉取实时价格\npython3 -c \"import requests; [print(s+' $'+requests.get('https://fapi.binance.com/fapi/v1/ticker/24hr?symbol='+s+'USDT',timeout=5).json()['lastPrice']+' ('+requests.get('https://fapi.binance.com/fapi/v1/ticker/24hr?symbol='+s+'USDT',timeout=5).json()['priceChangePercent']+'%)') for s in ['BTC','ETH','BNB']]\"\n\nStep2: 健康检查\ncd /root/.openclaw/workspace/trading-system && python3 brahma_brain/brahma_health.py 2>/dev/null | tail -5\n\nStep3: 读取当前持仓\npython3 -c \"import json; d=json.load(open('data/wuqu_positions.json')); [print(p['symbol'],('SHORT' if float(p['positionAmt'])<0 else 'LONG'),'entry='+p['entryPrice'],'mark='+p['markPrice'],'upnl='+p['unRealizedProfit']) for p in d if float(p['positionAmt'])!=0]\"\n\nStep4: 体制状态\npython3 -c \"import json; d=json.load(open('data/brahma_state.json')); print('体制:', d.get('regime','?'), '更新:', str(d.get('updated_at',''))[:16])\"\n\n将以上Step1-4的实时输出整合为简洁的中文360日报推送，包含：实时行情/持仓状态/系统健康/当前体制。格式简洁，不超过300字。",
+        "model": "litellm/Qwen3.5-397B-A17B-SGLang",
+        "lightContext": true
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+      },
+      "state": {}
+    },
+    {
+      "id": "71ba6754-1b22-40fc-bfeb-c7d6ec645ebf",
+      "name": "dharma-param-review-weekly",
+      "enabled": true,
+      "createdAtMs": 1782829978453,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 604800000,
+        "anchorMs": 1782829978453
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "读取 /root/.openclaw/workspace/trading-system/data/param_recommendations.json，提取所有建议和警报，用中文简洁输出：\n1. CRITICAL警报（若有）\n2. HIGH优先建议（前3条）\n3. 当前EV矩阵最佳/最差组合\n格式：📊 达摩院参数审核\\n[建议内容]\\n需要苏摩确认后手动应用。",
+        "lightContext": true
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+      },
+      "state": {}
+    },
+    {
+      "id": "1bbecec6-06db-4317-8b8b-7086d23e8171",
+      "name": "brahma-360-health",
+      "enabled": true,
+      "createdAtMs": 1782899617982,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 7200000,
+        "anchorMs": 1782899617982
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "exec:cd /root/.openclaw/workspace/trading-system && python3 brahma_brain/brahma_health.py --full 2>&1 | head -3; echo HEARTBEAT_OK"
+      },
+      "state": {}
+    },
+    {
+      "id": "70b7807f-5691-4af0-baf6-5ea55ea6278c",
+      "name": "dharma-causal-discovery-weekly",
+      "enabled": true,
+      "createdAtMs": 1782899671990,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 604800000,
+        "anchorMs": 1782899671990
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Run the causal discovery pipeline for the Brahma trading system. Execute: cd /root/.openclaw/workspace/trading-system && python3 dharma/causal_discovery.py --min-n 30. Then read data/causal_discovery_report.json and summarize: 1) Granger-significant dimensions, 2) LiNGAM top causal dims, 3) any regime drift warnings. Reply in Chinese with conclusions and recommended weight adjustments (if n>=100).",
+        "model": "litellm/Qwen3.5-397B-A17B-SGLang",
+        "lightContext": true
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+      },
+      "state": {}
+    },
+    {
+      "id": "cdbb3d8a-2720-4928-96a8-efc58f1d1072",
+      "name": "market-structure-4h",
+      "enabled": true,
+      "createdAtMs": 1782906674243,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 14400000,
+        "anchorMs": 1782906674243
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "exec:cd /root/.openclaw/workspace/trading-system && timeout 30 python3 brahma_brain/market_structure_scanner.py --both --push >> logs/market_structure.log 2>&1; echo HEARTBEAT_OK"
+      },
+      "state": {}
+    },
+    {
+      "id": "8771c412-7311-40e5-909b-cf1eed36cc9b",
+      "name": "trc20-order-monitor",
+      "enabled": true,
+      "createdAtMs": 1782908308135,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 900000,
+        "anchorMs": 1782908308135
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "exec:cd /root/.openclaw/workspace/trading-system && python3 scripts/trc20_order_monitor.py 2>&1"
+      },
+      "state": {}
+    },
+    {
+      "id": "b9f9cd58-ebbf-4b33-af11-ff9cd740334d",
+      "name": "auto-position-manager-30m",
+      "enabled": true,
+      "createdAtMs": 1782916222590,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 1800000,
+        "anchorMs": 1782916222590
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "exec:cd /root/.openclaw/workspace/trading-system && python3 scripts/auto_position_manager.py >> logs/auto_position_manager.log 2>&1; echo HEARTBEAT_OK"
+      },
+      "state": {}
+    },
+    {
+      "id": "ac09bbe3-64f6-4061-bc2c-15b5dabac6ef",
+      "name": "kronos-m1-check",
+      "enabled": true,
+      "createdAtMs": 1782949372509,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 86400000,
+        "anchorMs": 1782949372509
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "cd /root/.openclaw/workspace/trading-system && python3 dharma/kronos_m1_validator.py --fill-results --check. If M1 conditions are met, report upgrade to blend. Otherwise show current shadow log progress: n_validated/100. Push result.",
+        "lightContext": true
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+      },
+      "state": {}
+    },
+    {
+      "id": "2cfcb359-521e-47fc-a717-2f8e285ed79a",
+      "name": "早间综合-Square",
+      "enabled": true,
+      "createdAtMs": 1782951403051,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 8 * * *",
+        "tz": "Asia/Shanghai"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "执行早间双任务（按顺序各发一篇，共2篇）：\n\n【第一篇·早间热点】获取币安合约24H涨幅榜TOP3和BTC实时价格，以「姓赵不宣」个人IP口吻发Binance Square（square-post主账户）。禁止出现梵天量化等字样，全部用个人判断口吻。格式：🌅 早安·北京08:00 今天重点盯这几个：🔥[标的1][涨跌%][一句话观点] 大盘方向：BTC$[价格]—[第一人称判断] 今天继续跟，关注不迷路👇 #BTC #早间布局 #合约\n\n第一篇发布成功后等待5秒，再执行：\n\n【第二篇·双线日报】获取BTC和ETH实时价格，以「姓赵不宣」口吻发Binance Square。格式：📊今日布局·北京08:30 🟡大饼$[BTC价格][涨跌%] 我的判断：[做多↑/做空↓/观望] 关键位：[入场区间] 止损：[止损价] 目标：[TP1] 🟡以太$[ETH价格][涨跌%] 我的判断：[方向] 关键位：[区间] 今天的逻辑：[2句第一人称说明] #BTC #ETH #合约布局",
+        "model": "litellm/bedrock-claude-4-6-sonnet",
+        "lightContext": true
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+      },
+      "state": {}
+    },
+    {
+      "id": "97d525ff-b888-4e3e-939a-b5e6dff700d4",
+      "name": "live-performance-daily",
+      "enabled": true,
+      "createdAtMs": 1782964901908,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 86400000,
+        "anchorMs": 1782964901908
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "运行脚本: cd /root/.openclaw/workspace/trading-system && python3 scripts/update_live_performance.py 2>&1 | tail -3。完成后回复HEARTBEAT_OK",
+        "lightContext": true
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+      },
+      "state": {}
+    },
+    {
+      "id": "e047d1c6-123b-4883-936f-3fc33d0d6152",
+      "name": "pump-hunter",
+      "enabled": true,
+      "createdAtMs": 1782973578505,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 1800000,
+        "anchorMs": 1783090953052
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "cd /root/.openclaw/workspace/trading-system && python3 dharma/pump_hunter/scan_and_alert.py 2>&1 | grep -E '推送完成|PUMP_SIGNAL|高分信号=[^0]|新信号=[^0]' | tail -5。若输出包含新信号或高分信号则推送摘要格式：🚀暴涨猎手 [SYMBOL] score=XX 注明是否为新信号，否则回复HEARTBEAT_OK",
+        "lightContext": true,
+        "timeoutSeconds": 45
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
+        "announce": true
+      },
+      "state": {}
+    },
+    {
+      "id": "e61946ac-d86c-4758-b2c6-108fb4452288",
+      "name": "regime-switch-monitor",
+      "enabled": true,
+      "createdAtMs": 1782987349912,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 1800000,
+        "anchorMs": 1783091553052
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Run: cd /root/.openclaw/workspace/trading-system && python3 scripts/regime_switch_monitor.py 2>/dev/null | tail -5. If the output explicitly says a regime switch was detected, report it with details. Otherwise reply HEARTBEAT_OK.",
+        "lightContext": true,
+        "timeoutSeconds": 45
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+      },
+      "state": {}
+    },
+    {
+      "id": "825b2fca-8bd5-4413-b207-b7f37acd23d6",
+      "name": "smart-digest-6h",
+      "enabled": true,
+      "createdAtMs": 1783041198062,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 21600000,
+        "anchorMs": 1783041198062
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "exec:cd /root/.openclaw/workspace/trading-system && python3 scripts/smart_digest.py --push >> logs/smart_digest.log 2>&1; echo HEARTBEAT_OK"
+      },
+      "state": {}
+    },
+    {
+      "id": "68d52169-9782-48dd-9d01-1d95d092e198",
+      "name": "brahma-ci-probe",
+      "enabled": true,
+      "createdAtMs": 1783041218666,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 21600000,
+        "anchorMs": 1783041218666
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "exec:cd /root/.openclaw/workspace/trading-system && python3 brahma_brain/brahma_ci.py --push >> logs/ci_probe.log 2>&1; echo HEARTBEAT_OK"
+      },
+      "state": {}
+    },
+    {
+      "id": "2c630a60-3550-462b-8194-43ac14057e0c",
+      "name": "rsi-structure-watcher",
+      "enabled": true,
+      "createdAtMs": 1783041792007,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 300000,
+        "anchorMs": 1783090353052
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "执行RSI结构监控：cd /root/.openclaw/workspace/trading-system && python3 scripts/rsi_structure_watcher.py 2>&1 | tail -3。若有高优先级触发事件则报告，否则HEARTBEAT_OK",
+        "lightContext": true,
+        "timeoutSeconds": 25
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
+        "announce": true
+      },
+      "state": {}
+    },
+    {
+      "id": "1796e619-5fc7-4724-8517-ac6feaf46fb4",
+      "name": "auto-executor-1h",
+      "enabled": true,
+      "createdAtMs": 1783063161054,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 3600000,
+        "anchorMs": 1783063161054
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "exec:cd /root/.openclaw/workspace/trading-system && python3 scripts/auto_executor.py 2>&1 | tail -5; echo HEARTBEAT_OK"
+      },
+      "state": {}
+    },
+    {
+      "id": "57d3f1ea-41cd-4287-8067-3d30e4c1cb7e",
+      "name": "sub-executor-30m",
+      "enabled": true,
+      "createdAtMs": 1783065983429,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 1800000,
+        "anchorMs": 1783065983429
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "exec:cd /root/.openclaw/workspace/trading-system && python3 scripts/sub_executor.py 2>&1 | tail -8; echo HEARTBEAT_OK"
+      },
+      "state": {}
+    },
+    {
+      "id": "1848591d-e3ef-4968-85aa-8b0258501242",
+      "name": "stale-order-cleaner",
+      "enabled": true,
+      "createdAtMs": 1783068364804,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 900000,
+        "anchorMs": 1783042242007
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "exec:cd /root/.openclaw/workspace/trading-system && python3 scripts/stale_order_cleaner.py 2>&1 | tail -5"
+      },
+      "state": {}
+    },
+    {
+      "id": "48e8d279-7d2f-45d5-af81-5dc453ccd6d7",
+      "name": "signal-watcher-6h",
+      "enabled": true,
+      "createdAtMs": 1783086668118,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 21600000,
+        "anchorMs": 1783086668118
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "cd /root/.openclaw/workspace/trading-system && python3 scripts/market_screener.py --top 30 2>&1 | grep -E 'TOP|候选|Screener' | tail -5。然后运行：timeout 120 python3 scripts/signal_watcher.py 2>&1 | tail -20。若发现score>=135的新信号，推送给苏摩：🔍6H扫描 [SYM] score=X dir方向 valid=T/F。无有效信号则HEARTBEAT_OK",
+        "lightContext": true
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
+        "announce": true
+      },
+      "state": {}
+    },
+    {
+      "id": "a25e1db2-d5f6-4ab5-a47e-a9038d381277",
+      "name": "brahma-nerve-center",
+      "enabled": true,
+      "createdAtMs": 1783089268013,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 900000,
+        "anchorMs": 1783090473052
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_nerve_center.py 2>&1 | tail -5。若有P0/P1告警推送给苏摩，否则回复HEARTBEAT_OK",
+        "lightContext": true,
+        "timeoutSeconds": 25
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
+        "announce": true
+      },
+      "state": {}
+    },
+    {
+      "id": "03d85e40-eb1b-4aed-ae1b-a6aeb0f12c98",
+      "name": "brahma-self-heal",
+      "enabled": true,
+      "createdAtMs": 1783089294029,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 900000,
+        "anchorMs": 1783090773052
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_self_heal.py 2>&1 | tail -5。若有故障上报给苏摩，否则回复HEARTBEAT_OK",
+        "lightContext": true,
+        "timeoutSeconds": 30
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+      },
+      "state": {}
+    },
+    {
+      "id": "6df8374d-d402-499d-a301-52c708ec1bcd",
+      "name": "brahma-scan-guard",
+      "enabled": true,
+      "createdAtMs": 1783115812870,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 43200000,
+        "anchorMs": 1783115812870
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "cd /root/.openclaw/workspace/trading-system && python3 scripts/market_screener.py --top 30 2>&1 | tail -3 && timeout 90 python3 brahma_brain/brahma_analysis_runner.py NEARUSDT HYPEUSDT JTOUSDT SYNUSDT BEATUSDT BASUSDT TACUSDT SLXUSDT GWEIUSDT --card 2>&1 | grep -E 'SIGNAL-SUMMARY|valid=True|ENTER|Runner.*完成|score=' | tail -15。有score>=135信号推送摘要：🔍保底扫描 [SYM] score方向，无则HEARTBEAT_OK"
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
+        "announce": true
+      },
+      "state": {}
+    },
+    {
+      "id": "3fee86dc-70bb-4413-972b-b86ccaddc45d",
+      "name": "oi-surge-scanner",
+      "enabled": true,
+      "createdAtMs": 1783116565118,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 14400000,
+        "anchorMs": 1783116565118
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "cd /root/.openclaw/workspace/trading-system && timeout 60 python3 brahma_brain/oi_surge_scanner.py 2>&1 | tail -10。检查输出：若含buy_full/buy_light候选，立即推送：📊 OI猎手 [SYM列表] buy_full/buy_light 等待扫描；若含'无高质量信号'则HEARTBEAT_OK；报错则⚠️oi异常[摘要]"
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
+        "announce": true
+      },
+      "state": {}
+    },
+    {
+      "id": "2f8c23d4-e43c-43a6-b900-b69f20a96f8b",
+      "name": "main-signal-watcher",
+      "enabled": true,
+      "createdAtMs": 1783499159404,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 1800000,
+        "anchorMs": 1783499159404
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Check live_signal_log for valid trading signals. Run: python3 /root/.openclaw/workspace/trading-system/scripts/signal_watcher.py and report any valid=True signals with score>=155. If none, reply HEARTBEAT_OK."
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
+        "announce": true
+      },
+      "state": {}
+    },
+    {
+      "id": "805c1ca2-9925-4de4-af15-eb5aafdbe0d3",
+      "name": "brahma-constitutional-guardian",
+      "enabled": true,
+      "createdAtMs": 1783499744744,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 1800000,
+        "anchorMs": 1783499744744
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_constitutional_guardian.py. If any drifts found and fixed, report them. If all healthy, reply HEARTBEAT_OK."
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+      },
+      "state": {}
+    }
+  ]
+}
