@@ -35,7 +35,7 @@ TOKEN_ESTIMATES = {
     'brahma-ci-probe':      500,
     'brahma-scan-guard':    6000,
     'rsi-structure-watcher': 0,    # 零成本守望
-    'ws-guardian-keepalive': 0,
+    # 'ws-guardian-keepalive'  # 已删除 2026-07-08: 0,
     'pump-hunter':          500,
     'oi-surge-scanner':     800,
     'signal-watcher-6h':    200,
@@ -60,7 +60,7 @@ DAILY_RUNS = {
     'brahma-ci-probe':      4,
     'brahma-scan-guard':    2,
     'rsi-structure-watcher': 288,  # 每5m
-    'ws-guardian-keepalive': 96,
+    # 'ws-guardian-keepalive'  # 已删除 2026-07-08: 96,
     'pump-hunter':          48,    # 每30m = 48次/天（已优化）
     'regime-switch-monitor': 48,   # 新增 每30m
     'oi-surge-scanner':     6,
