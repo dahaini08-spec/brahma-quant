@@ -157,8 +157,12 @@ class RegimeStateMachine:
         }
 
     def _save_state(self):
-        """持久化状态"""
+        """持久化状态（始终同步confirmed_cn，防止历史遗留字段错位）"""
         try:
+            # [BUG-1 fix 2026-07-08] 每次保存前强制同步confirmed_cn
+            self._state['confirmed_cn'] = REGIME_CN.get(
+                self._state.get('confirmed', ''), self._state.get('confirmed', '')
+            )
             existing = {}
             if STATE_FILE.exists():
                 existing = json.loads(STATE_FILE.read_text())
