@@ -36,8 +36,8 @@ except Exception:
     PUSH_TARGET   = '73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075'  # SSOT [2026-07-07]
 PUSH_CHANNEL = 'jarvis'
 STATE_FILE   = BASE / 'data' / 'nerve_center_state.json'
-API_KEY = 'sDqoRAyeYHHzevKNxSj5JfkWpNUd6v8qPAhVy0Y8wbWGwC48eC7uhFOENAlVqV7b'
-SECRET  = 'hXQnzQco9SNVgKgF2m3xvBGlJjOHBVtlzqRlxOTkp0kiJAwAOTeUiGLQSAopqIj7'
+API_KEY = os.environ.get('BINANCE_API_KEY', '')  # [安全修复 2026-07-08]
+SECRET  = os.environ.get('BINANCE_SECRET', '')  # [安全修复 2026-07-08]
 FAPI    = 'https://fapi.binance.com'
 
 # ── 感知标的列表 ──────────────────────────────────────────────

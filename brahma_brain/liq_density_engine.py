@@ -43,8 +43,8 @@ _CACHE: dict = {}
 _CACHE_TTL = 120  # 秒
 
 # Binance API（从环境变量或直接引用）
-_BN_KEY = os.environ.get('BINANCE_API_KEY', 'sDqoRAyeYHHzevKNxSj5JfkWpNUd6v8qPAhVy0Y8wbWGwC48eC7uhFOENAlVqV7b')
-_BN_SEC = os.environ.get('BINANCE_SECRET', 'hXQnzQco9SNVgKgF2m3xvBGlJjOHBVtlzqRlxOTkp0kiJAwAOTeUiGLQSAopqIj7')
+_BN_KEY = os.environ.get('BINANCE_API_KEY', '')
+_BN_SEC = os.environ.get('BINANCE_SECRET', '')
 
 
 def _get_binance_force_orders(symbol: str, hours: float = 4) -> list:

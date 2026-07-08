@@ -1,0 +1,44 @@
+# ═══════════════════════════════════════════════════════════════
+# config/safety.yaml — 梵天全局安全闸
+# 设计院 2026-07-08 | 第三方审计P0-0修复
+#
+# 原则: fail_closed = 任何异常默认禁止执行
+# ═══════════════════════════════════════════════════════════════
+
+global:
+  # 信号模式: true=仅生成信号,不执行
+  signal_only: false
+  # 论文交易: true=不使用真实资金
+  paper_only: false
+  # 实盘交易总开关: 必须显式设为true才允许真实下单
+  live_trading_enabled: true
+  # 任何异常默认拒绝 (fail-closed原则)
+  fail_closed: true
+
+execution:
+  # 是否允许导入执行器模块
+  allow_import_executor: true
+  # 是否允许市价单(高风险)
+  allow_market_order: true
+  # 是否允许限价单开仓
+  allow_limit_order: true
+  # 要求人工确认(生产环境建议false,依赖自动门控)
+  require_manual_confirm: false
+  # 要求风控内核审批
+  require_risk_approval: true
+  # 仅允许reduce-only平仓(设为false=允许开仓)
+  reduce_only_close_only: false
+
+risk:
+  # 单笔最大NAV比例
+  max_single_nav_pct: 0.10
+  # 每日最大亏损(NAV比例)
+  max_daily_loss_pct: 0.05
+  # 最大同时持仓品种数
+  max_concurrent_positions: 3
+  # 最低score门槛(全局兜底)
+  min_score_threshold: 130
+
+environment:
+  # 当前运行环境: production | staging | research | paper
+  mode: production

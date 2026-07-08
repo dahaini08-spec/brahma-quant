@@ -28,10 +28,9 @@ from typing import Optional
 # ─────────────────────────────────────────────────────────
 # API 配置
 # ─────────────────────────────────────────────────────────
-_BN_KEY = os.environ.get('BINANCE_API_KEY',
-    'sDqoRAyeYHHzevKNxSj5JfkWpNUd6v8qPAhVy0Y8wbWGwC48eC7uhFOENAlVqV7b')
-_BN_SEC = os.environ.get('BINANCE_SECRET',
-    'hXQnzQco9SNVgKgF2m3xvBGlJjOHBVtlzqRlxOTkp0kiJAwAOTeUiGLQSAopqIj7')
+# [安全修复 2026-07-08 设计院] 移除硬编码默认值，纯环境变量
+_BN_KEY = os.environ.get('BINANCE_API_KEY', '')
+_BN_SEC = os.environ.get('BINANCE_SECRET', '')
 
 _FAPI = 'https://fapi.binance.com'
 _SESS = requests.Session()

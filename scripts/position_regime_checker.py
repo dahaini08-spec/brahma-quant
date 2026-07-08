@@ -29,8 +29,8 @@ PUSH_TARGET  = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_
 PUSH_CHANNEL = 'jarvis'
 
 # ── API配置 ───────────────────────────────────────────────
-API_KEY = 'sDqoRAyeYHHzevKNxSj5JfkWpNUd6v8qPAhVy0Y8wbWGwC48eC7uhFOENAlVqV7b'
-SECRET  = 'hXQnzQco9SNVgKgF2m3xvBGlJjOHBVtlzqRlxOTkp0kiJAwAOTeUiGLQSAopqIj7'
+API_KEY = os.environ.get('BINANCE_API_KEY', '')  # [安全修复 2026-07-08]
+SECRET  = os.environ.get('BINANCE_SECRET', '')  # [安全修复 2026-07-08]
 FAPI    = 'https://fapi.binance.com'
 
 # ── 体制风险定义 ──────────────────────────────────────────

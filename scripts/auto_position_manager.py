@@ -41,8 +41,8 @@ sys.path.insert(0, str(BASE))
 try:
     from scripts.system_config import API_KEY, API_SECRET as SECRET
 except Exception:
-    API_KEY = 'sDqoRAyeYHHzevKNxSj5JfkWpNUd6v8qPAhVy0Y8wbWGwC48eC7uhFOENAlVqV7b'
-    SECRET  = 'hXQnzQco9SNVgKgF2m3xvBGlJjOHBVtlzqRlxOTkp0kiJAwAOTeUiGLQSAopqIj7'
+    API_KEY = os.environ.get('BINANCE_API_KEY', '')  # [安全修复 2026-07-08]
+    SECRET  = os.environ.get('BINANCE_SECRET', '')  # [安全修复 2026-07-08]
 
 # ── 阈值 ─────────────────────────────────────────────────────
 RSI_FULL_CLOSE   = 72.0   # RSI超买 → 全平
