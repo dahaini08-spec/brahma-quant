@@ -277,7 +277,14 @@ def check_signal_pipeline() -> dict:
         jobs_file = Path.home() / '.openclaw/cron/jobs.json'
         raw_jobs = json.loads(jobs_file.read_text())
         all_jobs = raw_jobs.get('jobs', raw_jobs) if isinstance(raw_jobs, dict) else raw_jobs
-        job_map = {j.get('name'):j for j in all_jobs if isinstance(j, dict)}
+        # 优先取有ID的已注册任务，跳过孤儿（无ID残留）
+        job_map = {}
+        for j in all_jobs:
+            if not isinstance(j, dict): continue
+            name_ = j.get('name', '')
+            # 有ID的任务优先（孤儿=无ID的旧残留，不应参与健康检测）
+            if name_ not in job_map or j.get('id'):
+                job_map[name_] = j
         
         for name in KEY_JOBS:
             j = job_map.get(name)
@@ -378,9 +385,11 @@ def check_cron_jobs() -> dict:
         jobs_file = Path.home() / '.openclaw/cron/jobs.json'
         raw_jobs  = json.loads(jobs_file.read_text())
         all_jobs  = raw_jobs.get('jobs', raw_jobs) if isinstance(raw_jobs, dict) else raw_jobs
-        job_map   = {j.get('name'): j for j in all_jobs if isinstance(j, dict)}
+        # 只取有ID的已注册任务，跳过无ID孤儿（旧版残留），防止孤儿delivery={}误报
+        job_map   = {j.get('name'): j for j in all_jobs if isinstance(j, dict) and j.get('id')}
     except Exception as e:
-        return {'ok': False, 'detail': f'jobs.json读取失败: {e}'}
+        job_map = {}
+        issues.append(f'jobs.json读取失败: {e}')
 
     for job_name, max_idle_min in CRON_WATCHLIST.items():
         if job_name not in job_map:
@@ -404,7 +413,8 @@ def check_cron_jobs() -> dict:
         jobs_file = Path.home() / '.openclaw/cron/jobs.json'
         raw_jobs  = json.loads(jobs_file.read_text())
         all_jobs  = raw_jobs.get('jobs', raw_jobs) if isinstance(raw_jobs, dict) else raw_jobs
-        job_map   = {j.get('name'): j for j in all_jobs if isinstance(j, dict)}
+        # 只取有ID的已注册任务，跳过孤儿（无ID旧残留会导致delivery={}误报）
+        job_map   = {j.get('name'): j for j in all_jobs if isinstance(j, dict) and j.get('id')}
         for name in KEY_SIGNAL_JOBS:
             j = job_map.get(name)
             if not j:
