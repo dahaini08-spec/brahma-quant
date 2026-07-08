@@ -51,7 +51,12 @@ CRON_WATCHLIST = {
     'btc-regime-watcher':      15,
     'ws-guardian-keepalive':   15,
     'auto-position-manager':   45,
-    'regime-switch-monitor':   75,  # [FIX 2026-07-06] cron漂移允许±15min，设剡1h任务阈值75min
+    'regime-switch-monitor':   75,
+    # ── 信号推送系统（2026-07-08 自愈盲区补入）──────────────────
+    'main-signal-watcher':     45,   # 每30min，45min未跑=故障
+    'pump-hunter':             45,   # 每30min
+    'brahma-nerve-center':     25,   # 每15min
+    'oi-surge-scanner':        300,  # 每4H
 }
 
 # 关键数据文件 → 最大陈旧分钟
@@ -227,32 +232,109 @@ def check_regime_state() -> dict:
 
 
 def check_signal_pipeline() -> dict:
-    """信号管道健康：live_signal_log + signal_queue"""
+    """
+    信号推送链完整性检查（2026-07-08 自愈系统重写）
+    
+    之前只检查「有没有信号文件」→ 完全无法发现推送链断裂
+    现在检查：push_hub存在 + cron message非空 + announce=True + 路由正确
+    任何一项不通 → ok=False + 自动触发告警推送
+    """
+    issues = []
+    details = []
+
+    # ── 检查1：push_hub.py 存在 ────────────────────────────────────
+    pb1 = BASE / 'push_hub.py'
+    pb2 = BASE / 'scripts' / 'push_hub.py'
+    if not pb1.exists() and not pb2.exists():
+        issues.append('CRITICAL: push_hub.py 缺失，推送出口完全断开')
+    else:
+        details.append('push_hub: ✅')
+
+    # ── 检查2：信号日志新鲜度 ────────────────────────────────────────
     sig = BASE / 'data' / 'live_signal_log.jsonl'
-    if not sig.exists():
-        return {'ok': True, 'detail': '无信号文件（正常）'}
+    if sig.exists():
+        try:
+            raw_lines = sig.read_text().strip().split('\n')
+            now = time.time()
+            recent_4h = sum(
+                1 for l in raw_lines
+                if l.strip() and time.time() - json.loads(l).get('ts', 0) < 14400
+            )
+            if recent_4h == 0:
+                issues.append('WARN: 4H内无新信号写入（分析引擎可能停止）')
+            else:
+                details.append(f'signal_log 4H新信号: {recent_4h}条 ✅')
+        except Exception as e:
+            details.append(f'signal_log: 读取异常({e})')
+    else:
+        issues.append('WARN: live_signal_log.jsonl 不存在')
+
+    # ── 检查3：关键Cron的 message + announce + 路由 ─────────────────
+    KEY_JOBS = ['main-signal-watcher', 'pump-hunter', 'brahma-nerve-center',
+                'oi-surge-scanner', 'rsi-structure-watcher']
+    CORRECT_THREAD = '019f181f-e4d1-7576-85ca-77f4a7fa8075'
     try:
-        lines = sig.read_text().strip().split('\n')
-        recent = 0
-        now = time.time()
-        for l in lines:
-            try:
-                r = json.loads(l)
-                if now - r.get('ts', 0) < 86400:
-                    recent += 1
-            except Exception:
-                pass
-        return {
-            'ok': True,
-            'recent_24h': recent,
-            'detail': f'24H内信号={recent}条'
-        }
+        jobs_file = Path.home() / '.openclaw/cron/jobs.json'
+        raw_jobs = json.loads(jobs_file.read_text())
+        all_jobs = raw_jobs.get('jobs', raw_jobs) if isinstance(raw_jobs, dict) else raw_jobs
+        job_map = {j.get('name'):j for j in all_jobs if isinstance(j, dict)}
+        
+        for name in KEY_JOBS:
+            j = job_map.get(name)
+            if not j:
+                issues.append(f'CRITICAL: {name} cron任务不存在')
+                continue
+            msg = (j.get('message') or '').strip()
+            delivery = j.get('delivery') or {}
+            announce = delivery.get('announce', False)
+            to = delivery.get('to', '')
+            
+            if not msg:
+                issues.append(f'CRITICAL: {name} message为空→任务从不执行')
+            if not announce:
+                issues.append(f'ERROR: {name} announce=False→结果不推送到Jarvis')
+            if CORRECT_THREAD not in to:
+                issues.append(f'ERROR: {name} 路由错误→消息发到旧线程')
+            
+            if msg and announce and CORRECT_THREAD in to:
+                details.append(f'{name}: ✅')
     except Exception as e:
-        return {'ok': False, 'detail': str(e)}
+        issues.append(f'ERROR: cron jobs读取失败({e})')
+
+    # ── 如果发现问题，立即推送告警 ──────────────────────────────────
+    if issues:
+        try:
+            alert_msg = (
+                "🚨 [梵天自愈] 信号推送链故障检测\n"
+                + "\n".join(f"  • {i}" for i in issues)
+                + f"\n\n时间: {__import__('datetime').datetime.utcnow().strftime('%Y-%m-%d %H:%M')} UTC"
+            )
+            # 尝试通过 push_hub 推送
+            try:
+                sys.path.insert(0, str(BASE))
+                from push_hub import _jarvis
+                _jarvis(alert_msg, dedup_key='signal_pipeline_fault', dedup_ttl=1800)
+            except Exception:
+                # push_hub不可用时直接调openclaw
+                _tgt = '73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075'
+                subprocess.run(
+                    ['openclaw','message','send','--channel','jarvis',
+                     '--target', _tgt, '--message', alert_msg],
+                    capture_output=True, timeout=15
+                )
+        except Exception:
+            pass
+
+    return {
+        'ok': len(issues) == 0,
+        'issues': issues,
+        'details': details,
+        'detail': f'问题={len(issues)}项 | ' + ' | '.join(details[:3])
+    }
 
 
 def check_cron_jobs() -> dict:
-    """cron任务存活检测"""
+    """cron任务存活检测 + message/announce完整性检测（2026-07-08 架构缺口修复）"""
     issues = []
     try:
         r = subprocess.run(
@@ -286,6 +368,34 @@ def check_cron_jobs() -> dict:
                     break
     except Exception as e:
         return {'ok': False, 'detail': str(e)}
+
+    # [2026-07-08] 额外检测：关键任务的 message/announce 完整性
+    # check_cron_jobs 之前只看「有没有运行」，不检测「message是否为空」
+    # message为空 → Agent收到空任务直接HEARTBEAT_OK → 信号永远不推送
+    KEY_SIGNAL_JOBS = ['main-signal-watcher', 'pump-hunter', 'brahma-nerve-center',
+                       'oi-surge-scanner', 'rsi-structure-watcher']
+    CORRECT_THREAD  = '019f181f-e4d1-7576-85ca-77f4a7fa8075'
+    try:
+        jobs_file = Path.home() / '.openclaw/cron/jobs.json'
+        raw_jobs  = json.loads(jobs_file.read_text())
+        all_jobs  = raw_jobs.get('jobs', raw_jobs) if isinstance(raw_jobs, dict) else raw_jobs
+        job_map   = {j.get('name'): j for j in all_jobs if isinstance(j, dict)}
+        for name in KEY_SIGNAL_JOBS:
+            j = job_map.get(name)
+            if not j:
+                continue   # 「未注册」已在上面检测
+            msg      = (j.get('message') or '').strip()
+            delivery = j.get('delivery') or {}
+            announce = delivery.get('announce', False)
+            to       = delivery.get('to', '')
+            if not msg:
+                issues.append(f'{name}: message为空(Agent收到空任务→永远静默)')
+            if not announce:
+                issues.append(f'{name}: announce=False(结果不推送到Jarvis)')
+            if CORRECT_THREAD not in to:
+                issues.append(f'{name}: 路由错误(to={to[:40] if to else "空"})')
+    except Exception as _e:
+        issues.append(f'cron jobs.json读取异常: {_e}')
 
     return {
         'ok': len(issues) == 0,
@@ -577,6 +687,25 @@ def check_push_routing() -> dict:
     except Exception as e:
         return {'ok': False, 'detail': str(e)}
 
+    # ── push_hub.py 存在性检查（2026-07-08 盲区补入）──
+    push_hub_ok = (BASE / 'push_hub.py').exists() or (BASE / 'scripts' / 'push_hub.py').exists()
+    if not push_hub_ok:
+        issues.append('push_hub.py 缺失（推送出口断开）')
+
+    # ── Cron message 非空检查（2026-07-08 盲区补入）──
+    KEY_SIGNAL_JOBS = ['main-signal-watcher','pump-hunter','brahma-nerve-center',
+                       'oi-surge-scanner','rsi-structure-watcher','signal-watcher-6h']
+    try:
+        jobs_file = Path.home() / '.openclaw/cron/jobs.json'
+        raw2 = json.loads(jobs_file.read_text())
+        all_jobs = raw2.get('jobs', raw2) if isinstance(raw2, dict) else raw2
+        for j in all_jobs:
+            if not isinstance(j, dict): continue
+            if j.get('name') in KEY_SIGNAL_JOBS and not j.get('message','').strip():
+                issues.append(f"{j['name']}: message为空(任务不执行)")
+    except Exception:
+        pass
+
     return {
         'ok': len(issues) == 0,
         'warn': len(issues) > 0,
@@ -641,6 +770,27 @@ def heal(fault_type: str, context: dict) -> dict:
             ps.write_text(json.dumps(cleaned, indent=2, ensure_ascii=False))
             removed = before - len(cleaned)
             result.update({'healed': True, 'output': f'清理{removed}条脏数据'})
+
+    elif fault_type == 'PUSH_HUB_MISSING':
+        # push_hub.py 缺失 → 自动从备份或重建
+        _pb = BASE / 'push_hub.py'
+        _pb_s = BASE / 'scripts' / 'push_hub.py'
+        if not _pb.exists() and not _pb_s.exists():
+            _content = '''import subprocess, json, time, os\nfrom pathlib import Path\ntry:\n    import sys; sys.path.insert(0, str(Path(__file__).parent / "scripts"))\n    from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID, JARVIS_CHANNEL\n    _TARGET = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"\n    _CHANNEL = JARVIS_CHANNEL\nexcept Exception:\n    _TARGET = "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"\n    _CHANNEL = "jarvis"\n_DEDUP_FILE = Path(__file__).parent / "data" / "push_dedup.json"\ndef _load_dedup():\n    try: return json.loads(_DEDUP_FILE.read_text())\n    except: return {}\ndef _save_dedup(d):\n    try: _DEDUP_FILE.parent.mkdir(exist_ok=True); _DEDUP_FILE.write_text(json.dumps(d))\n    except: pass\ndef _jarvis(msg, dedup_key=None, dedup_ttl=3600):\n    if not msg: return False\n    if dedup_key:\n        dedup = _load_dedup(); now = time.time()\n        if now - dedup.get(dedup_key, 0) < dedup_ttl: return False\n        dedup[dedup_key] = now; _save_dedup(dedup)\n    try:\n        r = subprocess.run(["openclaw","message","send","--channel",_CHANNEL,"--target",_TARGET,"--message",msg], capture_output=True, text=True, timeout=15)\n        return r.returncode == 0\n    except: return False\n'''
+            _pb.write_text(_content)
+            _pb_s.write_text(_content)
+            return {'healed': True, 'action': 'push_hub.py重建'}
+        return {'healed': False, 'action': 'push_hub已存在'}
+
+    elif fault_type == 'CRON_MESSAGE_EMPTY':
+        # Cron message 为空 → 推送告警，不自动修改（需人工确认message内容）
+        _msg = "⚠️ [自愈告警] 发现Cron信号任务 message 为空，推送链断裂，请检查修复。"
+        try:
+            from push_hub import _jarvis as _pj
+            _pj(_msg, dedup_key='cron_msg_empty', dedup_ttl=3600)
+        except Exception:
+            pass
+        return {'healed': False, 'action': '已发送告警', 'detail': '需人工修复message'}
 
     elif fault_type == 'PUSH_ROUTE_FIX':
         # [v1.1 2026-07-03] 修复旧线程推送路由 — 从system_config读取SSOT线程ID
@@ -720,6 +870,71 @@ def heal(fault_type: str, context: dict) -> dict:
                 result.update({'healed': True,
                                'output': 'libgomp已存在 + MODE=blend，Kronos状态正常'})
 
+    elif fault_type == 'SIGNAL_PIPELINE_FIX':
+        # [2026-07-08 架构缺口修复] 信号推送链故障自动修复
+        # 处理：push_hub缺失 + cron message为空 + announce=False
+        issues = context.get('issues', [])
+        fixed = []
+        errors = []
+
+        # 修复1: push_hub.py 缺失
+        _pb = BASE / 'push_hub.py'
+        if not _pb.exists() and 'push_hub' in str(issues):
+            try:
+                _content = '''import subprocess, json, time, os\nfrom pathlib import Path\ntry:\n    import sys; sys.path.insert(0, str(Path(__file__).parent / "scripts"))\n    from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID\n    _TARGET = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"\nexcept Exception:\n    _TARGET = "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"\n_CHANNEL = "jarvis"\n_DEDUP_FILE = Path(__file__).parent / "data" / "push_dedup.json"\ndef _load_dedup():\n    try: return json.loads(_DEDUP_FILE.read_text())\n    except: return {}\ndef _save_dedup(d):\n    try: _DEDUP_FILE.parent.mkdir(exist_ok=True); _DEDUP_FILE.write_text(json.dumps(d))\n    except: pass\ndef _jarvis(msg, dedup_key=None, dedup_ttl=3600):\n    if not msg: return False\n    if dedup_key:\n        dedup = _load_dedup(); now = time.time()\n        if now - dedup.get(dedup_key, 0) < dedup_ttl: return False\n        dedup[dedup_key] = now; _save_dedup(dedup)\n    try:\n        r = subprocess.run(["openclaw","message","send","--channel",_CHANNEL,"--target",_TARGET,"--message",msg], capture_output=True, text=True, timeout=15)\n        return r.returncode == 0\n    except: return False\n'''
+                _pb.write_text(_content)
+                fixed.append('push_hub.py重建')
+            except Exception as _e:
+                errors.append(f'push_hub重建失败:{_e}')
+
+        # 修复2: cron message 为空 + announce=False
+        KEY_JOBS_MSG = {
+            'pump-hunter': 'Run trading-system pump hunter scan. Check dharma/pump_hunter/scan_and_alert.py for high-score pre-pump signals. If score>=85 found, report ticker+score+entry zone. If none, reply HEARTBEAT_OK.',
+            'brahma-nerve-center': 'Run brahma nerve center check. Execute scripts/brahma_nerve_center.py and report any P0/P1 alerts found. If no alerts, reply HEARTBEAT_OK.',
+            'main-signal-watcher': 'Check live_signal_log for valid trading signals. Run: python3 trading-system/scripts/signal_watcher.py and report any valid=True signals with score>=155. If none, reply HEARTBEAT_OK.',
+            'oi-surge-scanner': 'Run OI surge scanner. Execute scripts/oi_surge_scanner.py and report any OI anomalies >5%. If none, reply HEARTBEAT_OK.',
+            'rsi-structure-watcher': 'Check RSI structure events. Run scripts/rsi_structure_watcher.py --once and report any triggered events (E1-E9). If none, reply HEARTBEAT_OK.',
+        }
+        CORRECT_THREAD = '019f181f-e4d1-7576-85ca-77f4a7fa8075'
+        try:
+            import json as _json
+            jobs_file = Path.home() / '.openclaw/cron/jobs.json'
+            raw_jobs = _json.loads(jobs_file.read_text())
+            all_jobs = raw_jobs.get('jobs', raw_jobs) if isinstance(raw_jobs, dict) else raw_jobs
+            changed = False
+            for j in all_jobs:
+                if not isinstance(j, dict): continue
+                name = j.get('name', '')
+                if name not in KEY_JOBS_MSG: continue
+                msg = (j.get('message') or '').strip()
+                delivery = j.get('delivery') or {}
+                needs_fix = (not msg) or (not delivery.get('announce')) or (CORRECT_THREAD not in delivery.get('to',''))
+                if needs_fix:
+                    if not msg:
+                        j['message'] = KEY_JOBS_MSG[name]
+                    delivery['announce'] = True
+                    if CORRECT_THREAD not in delivery.get('to',''):
+                        delivery['to'] = f'73295708:thread:{CORRECT_THREAD}'
+                        delivery['channel'] = 'jarvis'
+                    j['delivery'] = delivery
+                    changed = True
+                    fixed.append(f'{name}:message+announce修复')
+            if changed:
+                if isinstance(raw_jobs, dict):
+                    raw_jobs['jobs'] = all_jobs
+                    jobs_file.write_text(_json.dumps(raw_jobs, indent=2, ensure_ascii=False))
+                else:
+                    jobs_file.write_text(_json.dumps(all_jobs, indent=2, ensure_ascii=False))
+        except Exception as _e:
+            errors.append(f'cron修复失败:{_e}')
+
+        if fixed:
+            result.update({'healed': True, 'output': f'已修复: {", ".join(fixed)}'})
+        elif errors:
+            result.update({'healed': False, 'output': f'修复失败: {", ".join(errors)}'})
+        else:
+            result.update({'healed': True, 'output': '信号推送链正常，无需修复'})
+
     elif fault_type == 'ANALYSIS_CHAIN_FAIL':
         # 分析链路失败：尝试刷新brahma_bus缓存
         ok, out = _run(['python3', '-c',
@@ -778,6 +993,8 @@ def run_self_heal():
         ('liq_density',   lambda c: not c.get('ok'),                                  'LIQ_DENSITY_FIX',    True),
         ('kronos_lgbm',   lambda c: not c.get('ok'),                                  'KRONOS_LGBM_FIX',    True),
         ('analysis_chain',lambda c: not c.get('ok'),                                  'ANALYSIS_CHAIN_FAIL',True),
+        # [2026-07-08 架构缺口修复] signal_pipeline 检测结果纳入自愈矩阵
+        ('signal_pipeline', lambda c: not c.get('ok') and len(c.get('issues',[])) > 0, 'SIGNAL_PIPELINE_FIX', True),
     ]
 
     for check_key, condition, fault_type, report_on_fail in fault_heal_map:
