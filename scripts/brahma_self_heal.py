@@ -284,7 +284,7 @@ def check_signal_pipeline() -> dict:
             if not j:
                 issues.append(f'CRITICAL: {name} cron任务不存在')
                 continue
-            msg = (j.get('message') or '').strip()
+            msg = (j.get('payload', {}).get('message') or j.get('message') or '').strip()
             delivery = j.get('delivery') or {}
             announce = delivery.get('announce', False)
             to = delivery.get('to', '')
@@ -384,7 +384,7 @@ def check_cron_jobs() -> dict:
             j = job_map.get(name)
             if not j:
                 continue   # 「未注册」已在上面检测
-            msg      = (j.get('message') or '').strip()
+            msg      = (j.get('payload', {}).get('message') or j.get('message') or '').strip()
             delivery = j.get('delivery') or {}
             announce = delivery.get('announce', False)
             to       = delivery.get('to', '')
@@ -701,7 +701,7 @@ def check_push_routing() -> dict:
         all_jobs = raw2.get('jobs', raw2) if isinstance(raw2, dict) else raw2
         for j in all_jobs:
             if not isinstance(j, dict): continue
-            if j.get('name') in KEY_SIGNAL_JOBS and not j.get('message','').strip():
+            if j.get('name') in KEY_SIGNAL_JOBS and not (j.get('payload',{}).get('message') or j.get('message','')).strip():
                 issues.append(f"{j['name']}: message为空(任务不执行)")
     except Exception:
         pass
@@ -915,12 +915,15 @@ def heal(fault_type: str, context: dict) -> dict:
                 if not isinstance(j, dict): continue
                 name = j.get('name', '')
                 if name not in KEY_JOBS_MSG: continue
-                msg = (j.get('message') or '').strip()
+                msg = (j.get('payload', {}).get('message') or j.get('message') or '').strip()
                 delivery = j.get('delivery') or {}
                 needs_fix = (not msg) or (not delivery.get('announce')) or (CORRECT_THREAD not in delivery.get('to',''))
                 if needs_fix:
                     if not msg:
-                        j['message'] = KEY_JOBS_MSG[name]
+                        # 写入 payload.message（正确字段），不写顶层message
+                        payload = j.get('payload') or {}
+                        payload['message'] = KEY_JOBS_MSG[name]
+                        j['payload'] = payload
                     delivery['announce'] = True
                     if CORRECT_THREAD not in delivery.get('to',''):
                         delivery['to'] = f'73295708:thread:{CORRECT_THREAD}'
