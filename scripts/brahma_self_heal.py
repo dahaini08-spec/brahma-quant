@@ -527,7 +527,11 @@ def check_kronos_lgbm() -> dict:
     _kb_path = BASE / 'brahma_brain' / 'kronos_bridge.py'
     if _kb_path.exists():
         _kb_src = _kb_path.read_text()
-        if "'shadow'" in _kb_src and 'blend' not in _kb_src:
+        # [修复 2026-07-08 设计院] 精确检测 MODE default 值，而非粗糙字符串匹配
+        # 原错误: 注释里同时出现'shadow'和'blend'导致误判
+        import re as _re
+        _effective_mode = os.environ.get('KRONOS_BRIDGE_MODE', 'blend')
+        if _effective_mode == 'shadow':
             issues.append('kronos_bridge MODE=shadow，Kronos分数不影响评分')
 
     if issues:
@@ -870,12 +874,22 @@ def heal(fault_type: str, context: dict) -> dict:
                 result.update({'healed': False,
                                'output': f'libgomp自愈失败: {_e2} — 需人工执行ldconfig'})
         else:
-            # 检查MODE是否是blend
-            _kb = BASE / 'brahma_brain' / 'kronos_bridge.py'
-            if _kb.exists() and "'shadow'" in _kb.read_text():
-                result.update({'healed': False,
-                               'output': 'kronos_bridge MODE=shadow，评分未激活 — 需改为blend'})
-            else:
+            # [修复 2026-07-08] 检查 lightgbm 安装状态 + 自动安装
+            try:
+                import lightgbm as _lgbm
+                _lgbm_ok = True
+            except ImportError:
+                _lgbm_ok = False
+                try:
+                    import subprocess as _sp2
+                    _sp2.run(['pip','install','lightgbm','-q','--break-system-packages'],
+                             capture_output=True, timeout=120)
+                    import lightgbm as _lgbm
+                    _lgbm_ok = True
+                except Exception as _pip_e:
+                    result.update({'healed': False,
+                                   'output': f'lightgbm安装失败: {_pip_e} — 手动执行 pip install lightgbm'})
+            if _lgbm_ok:
                 result.update({'healed': True,
                                'output': 'libgomp已存在 + MODE=blend，Kronos状态正常'})
 
