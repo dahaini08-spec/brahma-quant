@@ -50,7 +50,7 @@ CRON_WATCHLIST = {
     'brahma-scan-guard':       800,  # 每12H
     'btc-regime-watcher':      15,
     'ws-guardian-keepalive':   15,
-    'auto-position-manager':   45,
+    'auto-position-manager-30m': 45,   # 正确任务名（auto-position-manager不存在）
     'regime-switch-monitor':   75,
     # ── 信号推送系统（2026-07-08 自愈盲区补入）──────────────────
     'main-signal-watcher':     45,   # 每30min，45min未跑=故障

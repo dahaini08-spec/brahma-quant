@@ -1,8 +1,8 @@
 {
   "version": "cac-v1.1",
-  "updated": "2026-07-08T09:12:30Z",
+  "updated": "2026-07-08T09:36:22Z",
   "job_count": 41,
-  "sha256": "1e1d9d7e95b8cf12",
+  "sha256": "9e9e0d8857e40ce3",
   "jobs": [
     {
       "id": "a6249a4e-8a00-493b-989b-0efe25080b6c",
@@ -758,7 +758,7 @@
       "createdAtMs": 1783089294029,
       "schedule": {
         "kind": "every",
-        "everyMs": 900000,
+        "everyMs": 1800000,
         "anchorMs": 1783090773052
       },
       "sessionTarget": "isolated",
@@ -767,7 +767,7 @@
         "kind": "agentTurn",
         "message": "cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_self_heal.py 2>&1 | tail -5。若有故障上报给苏摩，否则回复HEARTBEAT_OK",
         "lightContext": true,
-        "timeoutSeconds": 30
+        "timeoutSeconds": 90
       },
       "delivery": {
         "mode": "announce",
@@ -792,30 +792,6 @@
       "payload": {
         "kind": "agentTurn",
         "message": "cd /root/.openclaw/workspace/trading-system && python3 scripts/market_screener.py --top 30 2>&1 | tail -3 && timeout 90 python3 brahma_brain/brahma_analysis_runner.py NEARUSDT HYPEUSDT JTOUSDT SYNUSDT BEATUSDT BASUSDT TACUSDT SLXUSDT GWEIUSDT --card 2>&1 | grep -E 'SIGNAL-SUMMARY|valid=True|ENTER|Runner.*完成|score=' | tail -15。有score>=135信号推送摘要：🔍保底扫描 [SYM] score方向，无则HEARTBEAT_OK"
-      },
-      "delivery": {
-        "mode": "announce",
-        "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
-        "announce": true
-      },
-      "state": {}
-    },
-    {
-      "id": "3fee86dc-70bb-4413-972b-b86ccaddc45d",
-      "name": "oi-surge-scanner",
-      "enabled": true,
-      "createdAtMs": 1783116565118,
-      "schedule": {
-        "kind": "every",
-        "everyMs": 14400000,
-        "anchorMs": 1783116565118
-      },
-      "sessionTarget": "isolated",
-      "wakeMode": "now",
-      "payload": {
-        "kind": "agentTurn",
-        "message": "cd /root/.openclaw/workspace/trading-system && timeout 60 python3 brahma_brain/oi_surge_scanner.py 2>&1 | tail -10。检查输出：若含buy_full/buy_light候选，立即推送：📊 OI猎手 [SYM列表] buy_full/buy_light 等待扫描；若含'无高质量信号'则HEARTBEAT_OK；报错则⚠️oi异常[摘要]"
       },
       "delivery": {
         "mode": "announce",
@@ -889,7 +865,32 @@
       "wakeMode": "now",
       "payload": {
         "kind": "agentTurn",
-        "message": "cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_system_integrity.py. If HEALTHY, reply HEARTBEAT_OK. If DEGRADED or CRITICAL, report the failed layers with details."
+        "message": "cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_system_integrity.py. If HEALTHY, reply HEARTBEAT_OK. If DEGRADED or CRITICAL, report the failed layers with details.",
+        "lightContext": true
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+      },
+      "state": {}
+    },
+    {
+      "id": "cd8c20e0-cc49-47ee-8405-6992832262ef",
+      "name": "oi-surge-scanner",
+      "enabled": true,
+      "createdAtMs": 1783503354509,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 14400000,
+        "anchorMs": 1783503354509
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "cd /root/.openclaw/workspace/trading-system && timeout 60 python3 brahma_brain/oi_surge_scanner.py 2>&1 | tail -10。检查输出：若含buy_full/buy_light候选，立即推送：📊 OI猎手 [SYM列表] buy_full/buy_light 等待扫描；若含无高质量信号则HEARTBEAT_OK；报错则⚠️oi异常[摘要]",
+        "lightContext": true
       },
       "delivery": {
         "mode": "announce",
