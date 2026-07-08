@@ -80,7 +80,8 @@ def log_signal(result: dict) -> bool:
 
         # TTL（基于timeframe + score + 体制）
         # [v25.7 P0b 2026-06-21] 动态TTL：高分信号 + 顺势体制 多等
-        _ttl_map = {'4H': 8*3600, '1H': 2*3600, '1D': 24*3600}
+        # [v5.3 2026-07-08] TTL硬上限6H，信号窗口最长30min，15H的TTL导致过期信号反复被扫描
+        _ttl_map = {'4H': 3*3600, '1H': 1*3600, '1D': 6*3600}
         primary_tf = cf.get('primary_tf', params.get('primary_tf', '1H'))
         ttl = _ttl_map.get(str(primary_tf).upper(), 2*3600)
         # 动态延长：评分越高 + 顺势体制 → 多等
@@ -90,8 +91,8 @@ def log_signal(result: dict) -> bool:
         # 评分加成（神级信号多等一天）
         if _score_for_ttl >= 165:
             ttl = int(ttl * 2.0)   # 神级：2倍（最多48H居察期）
-        elif _score_for_ttl >= 138:
-            ttl = int(ttl * 1.5)   # 标准门槛以上：1.5倍
+        elif _score_for_ttl >= 155:
+            ttl = int(ttl * 1.2)   # 标准门槛: 1.2倍
         # 顺势体制加成（铁证顺势方向多等待）
         _strong_regimes = {
             ('BEAR_TREND', 'SHORT'), ('BEAR_EARLY', 'SHORT'),
@@ -105,7 +106,7 @@ def log_signal(result: dict) -> bool:
         if _regime_for_ttl in _ttl_ceil:
             ttl = min(ttl, _ttl_ceil[_regime_for_ttl])
         else:
-            ttl = min(ttl, 48*3600)  # 非震荡体制上限48H
+            ttl = min(ttl, 6*3600)   # 硬上限6H（v5.3）
 
         signal = {
             # 基础标识
@@ -123,15 +124,17 @@ def log_signal(result: dict) -> bool:
             'grade':          grade,
             'action':         action,
             # [FIX-v25.5] valid单一来源: params['valid']（brahma_core正确计算RR的结果）
-            # [v5.2 设计院 2026-07-03] BULL_TREND特例: score≥138+rr1≥1.0+sl≤15% -> valid=True
+                        # [v5.3 2026-07-08 设计院封印] BULL_TREND特例门槛修复
+            # v5.2设置 score≥138 → 导致 score=144 被强制valid=True，与宪法(score≥155)冲突
+            # v5.3修复: 门槛与宪法一致，score≥155
             'valid': (
                 bool(params.get('valid', False))
                 or (
                     'BULL_TREND' in (regime or '') and (direction or '') == 'LONG'
-                    and float(score or 0) >= 138
+                    and float(score or 0) >= 155
                     and float(params.get('rr1', 0) or 0) >= 1.0
                     and float(params.get('sl_pct', 0) or 0) <= 15.0
-                    and action in ('ENTER', 'ENTER_FULL', 'WATCH')
+                    and action in ('ENTER', 'ENTER_FULL')
                 )
             ),
 
