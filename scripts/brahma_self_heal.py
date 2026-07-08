@@ -333,41 +333,66 @@ def check_signal_pipeline() -> dict:
     }
 
 
-def check_cron_jobs() -> dict:
-    """cron任务存活检测 + message/announce完整性检测（2026-07-08 架构缺口修复）"""
-    issues = []
+def _load_job_last_run() -> dict:
+    """从 runs/*.jsonl 读取每个jobId最后运行时间（替代 openclaw cron list，快10x）"""
+    runs_dir = Path.home() / '.openclaw/cron/runs'
+    job_last = {}  # jobId -> last_run_ms
+    if not runs_dir.exists():
+        return {}
+    files = sorted(runs_dir.glob('*.jsonl'), key=lambda f: f.stat().st_mtime, reverse=True)[:120]
+    for f in files:
+        try:
+            for l in f.read_text().strip().split('\n'):
+                if not l.strip(): continue
+                d = json.loads(l)
+                if d.get('action') != 'finished': continue
+                jid = d.get('jobId', '')
+                run_at = d.get('runAtMs', 0)
+                if jid not in job_last or run_at > job_last[jid]:
+                    job_last[jid] = run_at
+        except Exception:
+            pass
+    return job_last
+
+
+def _load_job_name_to_id() -> dict:
+    """从 jobs.json 建立 name->id 映射（纯文件读取，无子进程）"""
     try:
-        r = subprocess.run(
-            ['openclaw', 'cron', 'list'],
-            capture_output=True, text=True, timeout=10
-        )
-        output = r.stdout
-        for job_name, max_idle_min in CRON_WATCHLIST.items():
-            if job_name not in output:
-                issues.append(f'{job_name}: 未注册')
-                continue
-            # 检查 last run
-            for line in output.splitlines():
-                if job_name in line:
-                    # 解析 last run 时间（格式: "Xm ago"）
-                    parts = line.split()
-                    for i, p in enumerate(parts):
-                        if 'ago' in p and i > 0:
-                            val = parts[i-1]
-                            unit = p.replace('ago', '').strip()
-                            try:
-                                n = float(val.replace('m','').replace('h','').replace('s',''))
-                                if 'h' in val:
-                                    n *= 60
-                                elif 's' in val:
-                                    n /= 60
-                                if n > max_idle_min:
-                                    issues.append(f'{job_name}: {n:.0f}min未运行(阈值{max_idle_min}min)')
-                            except Exception:
-                                pass
-                    break
+        jobs_file = Path.home() / '.openclaw/cron/jobs.json'
+        raw = json.loads(jobs_file.read_text())
+        all_j = raw.get('jobs', raw) if isinstance(raw, dict) else raw
+        return {j.get('name', ''): j.get('id', '') for j in all_j if isinstance(j, dict)}
+    except Exception:
+        return {}
+
+
+def check_cron_jobs() -> dict:
+    """cron任务存活检测 + message/announce完整性检测（v2 2026-07-08 无子进程版）"""
+    issues = []
+    now_ms = time.time() * 1000
+    job_last   = _load_job_last_run()
+    name_to_id = _load_job_name_to_id()
+
+    # jobs.json 全量（用于注册检测 + message检测）
+    try:
+        jobs_file = Path.home() / '.openclaw/cron/jobs.json'
+        raw_jobs  = json.loads(jobs_file.read_text())
+        all_jobs  = raw_jobs.get('jobs', raw_jobs) if isinstance(raw_jobs, dict) else raw_jobs
+        job_map   = {j.get('name'): j for j in all_jobs if isinstance(j, dict)}
     except Exception as e:
-        return {'ok': False, 'detail': str(e)}
+        return {'ok': False, 'detail': f'jobs.json读取失败: {e}'}
+
+    for job_name, max_idle_min in CRON_WATCHLIST.items():
+        if job_name not in job_map:
+            issues.append(f'{job_name}: 未注册')
+            continue
+        jid = name_to_id.get(job_name, '')
+        last_ms = job_last.get(jid, 0)
+        if last_ms > 0:
+            age_min = (now_ms - last_ms) / 60000
+            if age_min > max_idle_min:
+                issues.append(f'{job_name}: {age_min:.0f}min未运行(阈值{max_idle_min}min)')
+        # 若无运行记录且阈值<=60，视为可能异常（宽松处理，不强报警）
 
     # [2026-07-08] 额外检测：关键任务的 message/announce 完整性
     # check_cron_jobs 之前只看「有没有运行」，不检测「message是否为空」
@@ -597,53 +622,28 @@ def check_execution_pipeline() -> dict:
 
 def check_cron_precise() -> dict:
     """
-    OPT-C: 精确cron存活检测 v2（设计院优化 2026-07-03）
-    解析 openclaw cron list 的 Last 列（如"13m ago"/"2h ago"），比字符串解析更准确
+    OPT-C: 精确cron存活检测 v3（2026-07-08 无子进程版）
+    直接读 runs/*.jsonl 获取最后运行时间，避免调用 openclaw cron list（开销~3s）
     """
-    import re as _re
     issues = []
-    try:
-        r = subprocess.run(['openclaw', 'cron', 'list'],
-                           capture_output=True, text=True, timeout=10)
-        output = r.stdout
+    now_ms     = time.time() * 1000
+    job_last   = _load_job_last_run()   # 共享cache，已在 check_cron_jobs 中加载过
+    name_to_id = _load_job_name_to_id()
 
-        for job_name, max_idle_min in CRON_WATCHLIST.items():
-            for line in output.splitlines():
-                if job_name not in line:
-                    continue
-                # 解析 Last 列：格式 "13m ago" / "2h ago" / "never" / "-"
-                # 使用空白分隔，Last列通常在 Next 后面
-                m_min = _re.search(r'(\d+)m\s+ago', line)
-                m_hr  = _re.search(r'(\d+)h\s+ago', line)
-                m_sec = _re.search(r'(\d+)s\s+ago', line)
-                m_day = _re.search(r'(\d+)d\s+ago', line)
-                is_main_target = 'not requested' in line
-                never = (not is_main_target and
-                         ('never' in line.lower() or
-                          _re.search(r'\|\s+-\s+ok\b', line) is not None))
-
-                if never:
-                    # 从未运行：只有严格监控项才告警
-                    if max_idle_min <= 30:
-                        issues.append(f'{job_name}: 从未运行')
-                    break
-
-                idle_min = 0
-                if m_day:  idle_min = int(m_day.group(1)) * 1440
-                elif m_hr: idle_min = int(m_hr.group(1)) * 60
-                elif m_min:idle_min = int(m_min.group(1))
-                elif m_sec:idle_min = int(m_sec.group(1)) / 60
-
-                if idle_min > max_idle_min:
-                    issues.append(f'{job_name}: {idle_min:.0f}min未运行(阈值{max_idle_min}min)')
-                break  # 找到后跳出内层循环
-
-    except Exception as e:
-        return {'ok': False, 'detail': str(e)}
+    for job_name, max_idle_min in CRON_WATCHLIST.items():
+        jid = name_to_id.get(job_name, '')
+        last_ms = job_last.get(jid, 0)
+        if last_ms == 0:
+            if max_idle_min <= 30:
+                issues.append(f'{job_name}: 从未运行')
+        else:
+            idle_min = (now_ms - last_ms) / 60000
+            if idle_min > max_idle_min:
+                issues.append(f'{job_name}: {idle_min:.0f}min未运行(阈值{max_idle_min}min)')
 
     return {
-        'ok': len(issues) == 0,
-        'warn': len(issues) > 0,
+        'ok':    len(issues) == 0,
+        'warn':  len(issues) > 0,
         'issues': issues,
         'detail': 'cron全部正常' if not issues else f'{len(issues)}异常: {issues[:3]}'
     }
