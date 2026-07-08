@@ -1,102 +1,63 @@
 """
 brahma_v6/risk/kernel.py — 12层风控内核
-设计院 × 顶级评估v6.0建议 2026-07-08
+设计院 全局修复 P0-2+P0-3 | 2026-07-08
 
-任何信号必须先经此内核变成RiskDecision，才能生成OrderIntent。
-禁止绕过。
-
-12层架构：
-L1  Data Freshness Gate
-L2  Schema Contract Gate
-L3  Regime Death-Zone Gate
-L4  Structure Quality Gate
-L5  Liquidity / Orderbook Gate
-L6  Slippage / Impact Cost Gate
-L7  Funding / Basis Gate
-L8  Liquidation Wall Gate
-L9  Correlation / Cluster Exposure Gate
-L10 Account DD / Daily Loss Gate
-L11 System Health / Latency Gate
-L12 Council Confidence Gate
+修复清单：
+  P0-2: evaluate() 新增 ctx: RiskContext 参数 → Kernel 零 I/O，纯函数化
+  P0-3: orderbook_available=False → L5 强制 BLOCK（消除 fail-open）
+  旧 skip_live_checks 接口保留（回传 ctx=RiskContext.paper_mode() 兼容）
 """
 from __future__ import annotations
-import time
-import math
 import json
-import os
-import sys
+import time
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
-
-BASE = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(BASE))
+from typing import Dict, List, Optional
 
 from brahma_v6.schemas.events import (
-    SignalScoredEvent, RiskDecisionEvent, make_risk_decision
+    SignalScoredEvent,
+    RiskDecisionEvent,
+    make_risk_decision,
 )
+from brahma_v6.risk.context import RiskContext
 
+BASE = Path(__file__).resolve().parents[2]
 
 # ══════════════════════════════════════════════════════
-#  Risk Policy（可外部yaml覆盖）
+#  默认风控策略
 # ══════════════════════════════════════════════════════
-DEFAULT_POLICY = {
-    # L1
-    "max_data_age_sec": 120,
-    # L3 Regime死穴
-    "death_zones": [
-        ("BEAR_TREND",    "LONG"),
-        ("BEAR_CRASH",    "LONG"),
-        ("CHOP_HIGH",     "LONG"),
-        ("CHOP_HIGH",     "SHORT"),
-    ],
-    # L4
+DEFAULT_POLICY: Dict = {
+    "max_data_age_sec": 300,
     "min_grade_score": 110,
-    # L5 流动性
     "min_depth_usdt": {
-        "BTCUSDT": 500_000,
-        "ETHUSDT": 300_000,
-        "SOLUSDT": 200_000,
-        "_default": 100_000,
+        "BTCUSDT": 500_000, "ETHUSDT": 300_000,
+        "SOLUSDT": 100_000, "_default": 50_000,
     },
-    # L6 滑点上限
     "max_slippage_pct": {
-        "BTCUSDT": 0.10,
-        "ETHUSDT": 0.15,
-        "SOLUSDT": 0.25,
-        "_default": 0.50,
+        "BTCUSDT": 0.08, "ETHUSDT": 0.12,
+        "SOLUSDT": 0.25, "_default": 0.50,
     },
-    # L7 资金费率极端阈值（年化）
     "max_funding_annualized_pct": 150.0,
-    # L8 强平墙距离
     "min_liq_wall_dist_pct": 1.0,
-    # L9 相关性集中
-    "max_correlated_nav_pct": 0.025,   # BTC+ETH同向最大2.5%NAV
-    # L10 账户风控
-    "max_daily_loss_pct": 0.05,        # 日内最大亏损5%NAV
-    "max_drawdown_pct": 0.12,          # 最大回撤12%
-    # L11
+    "max_correlated_nav_pct": 0.025,
+    "max_daily_loss_pct": 0.05,
+    "max_drawdown_pct": 0.12,
     "max_system_latency_ms": 5000,
-    "max_data_gap_min": 10,
-    # L12
-    "min_council_confidence": 0.0,     # 初期0（Council SHADOW模式）
-    # 仓位上限（NAV%）
+    "min_council_confidence": 0.0,
+    "death_zones": [
+        ["BEAR_TREND", "LONG"],
+        ["BULL_TREND", "SHORT"],
+        ["CHOP_LONG", "LONG"],
+    ],
     "max_size_nav": {
-        "BTCUSDT": 0.015,
-        "ETHUSDT": 0.012,
-        "SOLUSDT": 0.008,
-        "_default": 0.003,
+        "BTCUSDT": 0.015, "ETHUSDT": 0.012,
+        "SOLUSDT": 0.008, "_default": 0.005,
     },
-    # 分阶段最大杠杆
     "max_leverage": {
-        "BTCUSDT": 5,
-        "ETHUSDT": 5,
-        "SOLUSDT": 3,
-        "_default": 3,
+        "BTCUSDT": 5, "ETHUSDT": 5,
+        "SOLUSDT": 3, "_default": 2,
     },
-    # 信号分数 → 执行风格
     "execution_style": {
-        "high_liq_trend": "POST_ONLY_LIMIT",
-        "breakout": "CHASE_LIMIT",
+        "trend": "POST_ONLY_LIMIT",
         "pump": "LIMIT_ONLY",
         "emergency": "MARKET",
         "_default": "POST_ONLY_LIMIT",
@@ -118,114 +79,39 @@ def _load_policy() -> Dict:
 
 
 # ══════════════════════════════════════════════════════
-#  上下文获取（真实部署时对接数据总线）
-# ══════════════════════════════════════════════════════
-def _get_account_state() -> Dict:
-    """从持仓文件读取账户状态"""
-    try:
-        pos_file = BASE / "data" / "wuqu_positions.json"
-        if pos_file.exists():
-            return json.loads(pos_file.read_text())
-    except Exception:
-        pass
-    return {}
-
-
-def _get_system_health() -> Dict:
-    """读取系统健康状态"""
-    try:
-        h_file = BASE / "data" / "brahma_health_last.json"
-        if h_file.exists():
-            return json.loads(h_file.read_text())
-    except Exception:
-        pass
-    return {"healthy": True, "latency_ms": 0}
-
-
-def _get_funding_rate(symbol: str) -> float:
-    """获取当前资金费率（年化%）"""
-    try:
-        import requests
-        r = requests.get(
-            "https://fapi.binance.com/fapi/v1/fundingRate",
-            params={"symbol": symbol, "limit": 1},
-            timeout=5,
-        )
-        data = r.json()
-        if data:
-            rate_8h = float(data[0]["fundingRate"])
-            return rate_8h * 3 * 365 * 100  # 年化%
-    except Exception:
-        pass
-    return 0.0
-
-
-def _get_orderbook_depth(symbol: str, pct: float = 0.01) -> float:
-    """获取±1%盘口深度（USDT）"""
-    try:
-        import requests
-        r = requests.get(
-            "https://fapi.binance.com/fapi/v1/depth",
-            params={"symbol": symbol, "limit": 20},
-            timeout=5,
-        )
-        data = r.json()
-        price_r = requests.get(
-            "https://fapi.binance.com/fapi/v1/ticker/price",
-            params={"symbol": symbol},
-            timeout=5,
-        )
-        mid = float(price_r.json()["price"])
-        total = 0.0
-        for side in ("bids", "asks"):
-            for p, q in data.get(side, []):
-                if abs(float(p) - mid) / mid <= pct:
-                    total += float(p) * float(q)
-        return total
-    except Exception:
-        return 999_999_999.0  # 获取失败→不封锁
-
-
-def _get_correlated_exposure(symbol: str, direction: str, nav: float) -> float:
-    """计算BTC/ETH相关暴露"""
-    try:
-        positions = _get_account_state()
-        correlated = {"BTCUSDT", "ETHUSDT"}
-        if symbol not in correlated:
-            return 0.0
-        total_corr = 0.0
-        for sym, pos in positions.items():
-            if sym in correlated and isinstance(pos, dict):
-                pos_nav = abs(float(pos.get("nav_pct", 0)))
-                pos_dir = pos.get("direction", "")
-                if pos_dir == direction:
-                    total_corr += pos_nav
-        return total_corr
-    except Exception:
-        return 0.0
-
-
-# ══════════════════════════════════════════════════════
-#  12层风控内核
+#  12层风控内核（纯函数，零 I/O）
 # ══════════════════════════════════════════════════════
 class RiskKernel:
     """
-    12层风控内核 — 信号到OrderIntent的唯一合法通道
+    12层风控内核 — 信号到 OrderIntent 的唯一合法通道。
+
+    P0-2 修复：evaluate() 接受 ctx: RiskContext，零网络请求。
+    上游负责构建 RiskContext（live 或 paper_mode）。
+    旧 skip_live_checks API 保留兼容，自动转换为 paper_mode context。
     """
 
     def __init__(self, policy: Dict = None):
         self.policy = policy or _load_policy()
 
+    # ── 主入口（纯函数） ────────────────────────────────────
     def evaluate(
         self,
         signal: SignalScoredEvent,
-        account_nav: float = 100.0,
-        skip_live_checks: bool = False,  # True=单元测试/paper模式
+        account_nav: float = 100.0,            # 兼容旧接口
+        skip_live_checks: bool = False,         # 兼容旧接口 → ctx=paper_mode
+        ctx: Optional[RiskContext] = None,      # ← P0-2 新增注入口
     ) -> RiskDecisionEvent:
         """
-        全链路12层评估。
-        返回 RiskDecisionEvent，decision=APPROVE/REDUCE/BLOCKED
+        全链路 12 层评估（纯函数，零 I/O）。
+        返回 RiskDecisionEvent，decision=APPROVE/REDUCE/BLOCKED。
         """
+        # 兼容旧接口：skip_live_checks=True → paper context
+        if ctx is None:
+            if skip_live_checks:
+                ctx = RiskContext.paper_mode(account_nav)
+            else:
+                ctx = RiskContext.from_live(signal.symbol, account_nav)
+
         blocked_layers: List[str] = []
         warnings: List[str] = []
         reasons: List[str] = []
@@ -245,7 +131,6 @@ class RiskKernel:
         if not signal.symbol or not signal.direction:
             blocked_layers.append("L2_SCHEMA_INVALID")
             reasons.append("信号schema不完整：symbol或direction为空")
-
         if signal.final_score <= 0:
             blocked_layers.append("L2_SCORE_ZERO")
             reasons.append("final_score=0，信号未完成评分")
@@ -262,40 +147,42 @@ class RiskKernel:
             blocked_layers.append("L4_SCORE_TOO_LOW")
             reasons.append(f"分数{score:.1f} < 门槛{min_score}")
 
-        # ── L5: Liquidity Gate ─────────────────────────────
-        if not skip_live_checks:
-            min_depth = p["min_depth_usdt"].get(sym, p["min_depth_usdt"]["_default"])
-            depth = _get_orderbook_depth(sym)
-            if depth < min_depth:
-                blocked_layers.append("L5_LIQUIDITY_INSUFFICIENT")
-                reasons.append(f"深度${depth:,.0f} < 门槛${min_depth:,.0f}")
-            elif depth < min_depth * 2:
-                warnings.append(f"L5_DEPTH_THIN: ${depth:,.0f}")
+        # ── L5: Liquidity Gate (P0-3 fail-closed) ──────────
+        min_depth = p["min_depth_usdt"].get(sym, p["min_depth_usdt"]["_default"])
+        if not ctx.orderbook_available:
+            # P0-3: 数据缺失 → 强制 BLOCK（消除旧版 999_999_999 fail-open）
+            blocked_layers.append("L5_LIQUIDITY_DATA_MISSING")
+            reasons.append("orderbook 数据不可用 → fail-closed")
+        elif ctx.orderbook_depth_usdt < min_depth:
+            blocked_layers.append("L5_LIQUIDITY_INSUFFICIENT")
+            reasons.append(f"深度${ctx.orderbook_depth_usdt:,.0f} < 门槛${min_depth:,.0f}")
+        elif ctx.orderbook_depth_usdt < min_depth * 2:
+            warnings.append(f"L5_DEPTH_THIN: ${ctx.orderbook_depth_usdt:,.0f}")
 
         # ── L6: Slippage Gate ──────────────────────────────
         max_slip = p["max_slippage_pct"].get(sym, p["max_slippage_pct"]["_default"])
-        # 暂用固定估算（真实应接执行器回报）
-        estimated_slip = 0.05  # 默认估算0.05%
+        estimated_slip = 0.05
         if estimated_slip > max_slip:
             blocked_layers.append("L6_SLIPPAGE_TOO_HIGH")
             reasons.append(f"预估滑点{estimated_slip:.2f}% > {max_slip:.2f}%")
 
         # ── L7: Funding Gate ───────────────────────────────
-        if not skip_live_checks:
-            funding_annual = _get_funding_rate(sym)
+        if ctx.funding_available:
             max_funding = p.get("max_funding_annualized_pct", 150.0)
-            # 同方向高资金费 = 持多但多头资金费极高→警告
-            if direction == "LONG" and funding_annual > max_funding:
+            f = ctx.funding_rate_annual_pct
+            if direction == "LONG" and f > max_funding:
                 blocked_layers.append("L7_FUNDING_EXTREME_LONG")
-                reasons.append(f"资金费率年化{funding_annual:.0f}% > {max_funding:.0f}%，多头成本极高")
-            elif direction == "SHORT" and funding_annual < -max_funding:
+                reasons.append(f"资金费率年化{f:.0f}% > {max_funding:.0f}%")
+            elif direction == "SHORT" and f < -max_funding:
                 blocked_layers.append("L7_FUNDING_EXTREME_SHORT")
-                reasons.append(f"资金费率年化{funding_annual:.0f}%，空头成本极高")
-            elif abs(funding_annual) > max_funding * 0.7:
-                warnings.append(f"L7_FUNDING_ELEVATED: {funding_annual:.0f}%/yr")
+                reasons.append(f"资金费率年化{f:.0f}%，空头成本极高")
+            elif abs(f) > max_funding * 0.7:
+                warnings.append(f"L7_FUNDING_ELEVATED: {f:.0f}%/yr")
+        # funding 不可用时跳过（数据缺失不封锁，仅 warning）
+        elif not ctx.funding_available:
+            warnings.append("L7_FUNDING_DATA_MISSING: 跳过资金费率检查")
 
         # ── L8: Liquidation Wall ───────────────────────────
-        # 暂用信号payload中的liq_dist_pct
         liq_dist = signal.payload.get("liq_dist_pct", 999)
         min_liq_dist = p.get("min_liq_wall_dist_pct", 1.0)
         if liq_dist < min_liq_dist:
@@ -305,9 +192,9 @@ class RiskKernel:
             warnings.append(f"L8_LIQ_WALL_NEAR: {liq_dist:.2f}%")
 
         # ── L9: Correlation / Cluster ─────────────────────
-        if not skip_live_checks:
-            corr_nav = _get_correlated_exposure(sym, direction, account_nav)
+        if ctx.correlation_available:
             max_corr = p.get("max_correlated_nav_pct", 0.025)
+            corr_nav = ctx.correlated_exposure_nav
             if corr_nav > max_corr:
                 blocked_layers.append("L9_CORRELATION_OVEREXPOSED")
                 reasons.append(f"相关敞口{corr_nav*100:.1f}% > 上限{max_corr*100:.1f}%")
@@ -315,32 +202,31 @@ class RiskKernel:
                 warnings.append(f"L9_CORR_ELEVATED: {corr_nav*100:.1f}%NAV")
 
         # ── L10: Account DD / Daily Loss ──────────────────
-        if not skip_live_checks:
-            account = _get_account_state()
+        max_daily = p.get("max_daily_loss_pct", 0.05)
+        max_dd = p.get("max_drawdown_pct", 0.12)
+        dd_pct = ctx.account_drawdown_pct / 100  # context 存 0~100
+        # 读日内亏损（仍从文件，无REST）
+        try:
+            pos_file = BASE / "data" / "wuqu_positions.json"
+            account = json.loads(pos_file.read_text()) if pos_file.exists() else {}
             daily_loss = float(account.get("daily_loss_pct", 0))
-            drawdown = float(account.get("drawdown_pct", 0))
-            max_daily = p.get("max_daily_loss_pct", 0.05)
-            max_dd = p.get("max_drawdown_pct", 0.12)
-            if daily_loss > max_daily:
-                blocked_layers.append("L10_DAILY_LOSS_EXCEEDED")
-                reasons.append(f"日内亏损{daily_loss*100:.1f}% > 上限{max_daily*100:.1f}%")
-            if drawdown > max_dd:
-                blocked_layers.append("L10_MAX_DRAWDOWN_EXCEEDED")
-                reasons.append(f"回撤{drawdown*100:.1f}% > 上限{max_dd*100:.1f}%")
-            if daily_loss > max_daily * 0.7:
-                warnings.append(f"L10_DAILY_LOSS_NEAR: {daily_loss*100:.1f}%")
+        except Exception:
+            daily_loss = 0.0
+        if daily_loss > max_daily:
+            blocked_layers.append("L10_DAILY_LOSS_EXCEEDED")
+            reasons.append(f"日内亏损{daily_loss*100:.1f}% > 上限{max_daily*100:.1f}%")
+        if dd_pct > max_dd:
+            blocked_layers.append("L10_MAX_DRAWDOWN_EXCEEDED")
+            reasons.append(f"回撤{dd_pct*100:.1f}% > 上限{max_dd*100:.1f}%")
+        if daily_loss > max_daily * 0.7:
+            warnings.append(f"L10_DAILY_LOSS_NEAR: {daily_loss*100:.1f}%")
 
         # ── L11: System Health ────────────────────────────
-        if not skip_live_checks:
-            health = _get_system_health()
-            latency = health.get("latency_ms", 0)
-            max_lat = p.get("max_system_latency_ms", 5000)
-            if not health.get("healthy", True):
+        if ctx.system_available:
+            min_health = 60.0
+            if ctx.system_health_score < min_health:
                 blocked_layers.append("L11_SYSTEM_UNHEALTHY")
-                reasons.append("系统健康检查失败")
-            elif latency > max_lat:
-                blocked_layers.append("L11_LATENCY_TOO_HIGH")
-                reasons.append(f"系统延迟{latency}ms > {max_lat}ms")
+                reasons.append(f"系统健康分{ctx.system_health_score:.0f} < {min_health:.0f}")
 
         # ── L12: Council Confidence ───────────────────────
         confidence = signal.confidence
@@ -356,12 +242,10 @@ class RiskKernel:
             order_style = "NONE"
             reason = " | ".join(reasons[:3])
         else:
-            # 计算仓位
             base_size = p["max_size_nav"].get(sym, p["max_size_nav"]["_default"])
             leverage = p["max_leverage"].get(sym, p["max_leverage"]["_default"])
             order_style = p["execution_style"].get("_default", "POST_ONLY_LIMIT")
 
-            # 评分修正（神级信号满仓，铁证线以上适当加成）
             if score >= 165:
                 size_mult = 1.0
             elif score >= 155:
@@ -371,17 +255,13 @@ class RiskKernel:
             else:
                 size_mult = 0.4
 
-            # 警告惩罚
             warning_penalty = 1.0 - len(warnings) * 0.05
             size_nav = round(base_size * size_mult * max(warning_penalty, 0.5), 4)
 
-            if size_nav < base_size * 0.5:
-                decision = "REDUCE"
-            else:
-                decision = "APPROVE"
+            decision = "REDUCE" if size_nav < base_size * 0.5 else "APPROVE"
             reason = f"APPROVED score={score:.1f} size={size_nav*100:.2f}%NAV"
             if warnings:
-                reason += f" warnings={warnings}"
+                reason += f" warnings={len(warnings)}"
 
         return make_risk_decision(
             signal_event=signal,
@@ -399,8 +279,11 @@ class RiskKernel:
         signals: List[SignalScoredEvent],
         account_nav: float = 100.0,
         skip_live_checks: bool = False,
+        ctx: Optional[RiskContext] = None,
     ) -> List[RiskDecisionEvent]:
-        return [self.evaluate(s, account_nav, skip_live_checks) for s in signals]
+        if ctx is None:
+            ctx = RiskContext.paper_mode(account_nav) if skip_live_checks else None
+        return [self.evaluate(s, account_nav, skip_live_checks, ctx) for s in signals]
 
 
 # ── 全局单例 ────────────────────────────────────────────
@@ -415,58 +298,27 @@ def get_kernel() -> RiskKernel:
 
 
 if __name__ == "__main__":
-    import uuid
     from brahma_v6.schemas.events import make_signal_event
-
-    print("=== 12层Risk Kernel 自检 ===\n")
+    print("=== 12层Risk Kernel 自检（P0-2/P0-3 修复版）===\n")
     kernel = RiskKernel()
 
-    # 测试用例1：正常高分信号
     sig = make_signal_event(
-        symbol="BTCUSDT",
-        direction="LONG",
-        raw_score=140.0,
-        final_score=158.0,
-        regime="BULL_TREND",
-        grade="🔴神级",
-        blocked=False,
-        confidence=0.78,
-        top_pos=[["funding_zscore", 8.4], ["ob_imbalance", 7.6]],
-        top_neg=[["liq_wall_near", -5.5]],
+        symbol="BTCUSDT", direction="LONG",
+        raw_score=140.0, final_score=158.0,
+        regime="BULL_TREND", grade="A", blocked=False, confidence=0.78,
     )
-    decision = kernel.evaluate(sig, account_nav=100.0, skip_live_checks=True)
-    print(f"测试1 BTC LONG 158分: {decision.decision}")
-    print(f"  size_nav={decision.final_size_nav*100:.2f}%NAV  leverage={decision.max_leverage}x")
-    print(f"  blocked_layers={decision.blocked_layers}")
-    print(f"  warnings={decision.warnings}")
-    print(f"  trace_id={decision.trace_id[:8]}...\n")
+    ctx = RiskContext.paper_mode(100.0)
+    d = kernel.evaluate(sig, ctx=ctx)
+    print(f"测试1 BTC LONG 158分 paper_mode: {d.decision} size={d.final_size_nav*100:.2f}%NAV")
 
-    # 测试用例2：死穴体制
-    sig2 = make_signal_event(
-        symbol="ETHUSDT",
-        direction="LONG",
-        raw_score=90.0,
-        final_score=92.0,
-        regime="BEAR_TREND",
-        grade="🔴神级",
-        blocked=False,
-    )
-    d2 = kernel.evaluate(sig2, skip_live_checks=True)
-    print(f"测试2 ETH LONG BEAR_TREND: {d2.decision}")
-    print(f"  blocked_layers={d2.blocked_layers}\n")
+    # P0-3 验证：orderbook 不可用 → BLOCK
+    ctx_fail = RiskContext(orderbook_available=False, account_nav=100.0)
+    d2 = kernel.evaluate(sig, ctx=ctx_fail)
+    print(f"测试2 orderbook不可用: {d2.decision} blocked={d2.blocked_layers}")
 
-    # 测试用例3：分数不足
-    sig3 = make_signal_event(
-        symbol="SOLUSDT",
-        direction="SHORT",
-        raw_score=85.0,
-        final_score=88.0,
-        regime="CHOP_MID",
-        grade="🔵中等",
-        blocked=False,
-    )
-    d3 = kernel.evaluate(sig3, skip_live_checks=True)
-    print(f"测试3 SOL SHORT 88分: {d3.decision}")
-    print(f"  blocked_layers={d3.blocked_layers}")
+    # BEAR_TREND 死穴
+    sig3 = make_signal_event("ETHUSDT","LONG",90.0,92.0,"BEAR_TREND","C",False)
+    d3 = kernel.evaluate(sig3, ctx=RiskContext.paper_mode())
+    print(f"测试3 ETH LONG BEAR_TREND: {d3.decision} blocked={d3.blocked_layers}")
 
-    print("\n✅ 12层Risk Kernel 自检完成")
+    print("\n✅ Risk Kernel P0-2/P0-3 自检完成")

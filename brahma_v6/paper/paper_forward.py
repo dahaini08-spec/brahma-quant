@@ -209,19 +209,13 @@ class PaperPortfolio:
         }
 
     def _persist(self, trade: PaperTrade) -> None:
+        """
+        P0-5修复：改为 append-only 写入，消除 O(n²) 全量重写占用。
+        每次只追加一行，百万次推演时不卡死。
+        """
         try:
-            lines = []
-            if self._log_file.exists():
-                for line in self._log_file.read_text().splitlines():
-                    if line.strip():
-                        try:
-                            d = json.loads(line)
-                            if d.get("trade_id") != trade.trade_id:
-                                lines.append(line)
-                        except Exception:
-                            lines.append(line)
-            lines.append(json.dumps(trade.to_dict(), ensure_ascii=False))
-            self._log_file.write_text("\n".join(lines) + "\n")
+            with self._log_file.open("a", encoding="utf-8") as f:
+                f.write(json.dumps(trade.to_dict(), ensure_ascii=False) + "\n")
         except Exception:
             pass
 
@@ -240,21 +234,44 @@ class PaperExecutor:
 
     def execute_signal(
         self,
-        symbol: str,
-        direction: str,
-        signal_score: float,
-        regime: str,
-        entry_price: float,
-        stop_loss: float,
-        take_profit: Optional[float],
-        size_nav_pct: float,
+        signal_or_symbol,                          # SignalScoredEvent 或旧式 symbol str
+        intent_or_direction=None,                  # OrderIntentEvent 或旧式 direction str
+        signal_score: float = 0.0,
+        regime: str = "",
+        entry_price: float = 0.0,
+        stop_loss: float = 0.0,
+        take_profit: Optional[float] = None,
+        size_nav_pct: float = 0.0,
         leverage: int = 3,
         trace_id: str = "",
     ) -> PaperTrade:
         """
-        从信号直接创建 paper trade。
-        模拟滑点（entry稍差于信号价格）。
+        P0-1 修复：双模式入口。
+        新式：execute_signal(signal: SignalScoredEvent, intent: OrderIntentEvent)
+        旧式：execute_signal(symbol, direction, signal_score, ...) 保持兼容。
         """
+        # ── 模式判断 ──────────────────────────────────────
+        from brahma_v6.schemas.events import SignalScoredEvent as _SSE
+        from brahma_v6.schemas.events import OrderIntentEvent as _OIE
+
+        if isinstance(signal_or_symbol, _SSE) and isinstance(intent_or_direction, _OIE):
+            # 新式：v6 事件注入
+            sig_ev: _SSE = signal_or_symbol
+            intent_ev: _OIE = intent_or_direction
+            symbol = sig_ev.symbol
+            direction = intent_ev.direction or sig_ev.direction
+            signal_score = sig_ev.final_score
+            regime = sig_ev.regime
+            entry_price = intent_ev.entry_price or 0.0
+            stop_loss = intent_ev.stop_loss
+            take_profit = intent_ev.take_profit
+            size_nav_pct = intent_ev.size_nav * 100  # size_nav 是小数，转为 %
+            leverage = intent_ev.leverage
+            trace_id = intent_ev.trace_id
+        else:
+            # 旧式兼容
+            symbol = signal_or_symbol
+            direction = intent_or_direction or "LONG"
         import random
         p = COST_PARAMS.get(symbol, COST_PARAMS["_default"])
         # 模拟滑点
