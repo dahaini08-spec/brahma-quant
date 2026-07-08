@@ -85,8 +85,27 @@ DEAD_ZONE = {
 }
 
 # ── API ───────────────────────────────────────────────
-API_KEY    = 'sDqoRAyeYHHzevKNxSj5JfkWpNUd6v8qPAhVy0Y8wbWGwC48eC7uhFOENAlVqV7b'
-API_SECRET = 'hXQnzQco9SNVgKgF2m3xvBGlJjOHBVtlzqRlxOTkp0kiJAwAOTeUiGLQSAopqIj7'
+# [安全修复 2026-07-08 设计院] 硬编码密钥已移除
+# 密钥必须通过环境变量或 TOOLS.md / .env 注入，禁止任何硬编码
+API_KEY    = os.environ.get('BINANCE_API_KEY', '')
+API_SECRET = os.environ.get('BINANCE_SECRET', '')
+
+# ── [P0-2] 全局安全闸 ─────────────────────────────────────────────
+try:
+    from brahma_brain.safety import require_api_keys, safety_report as _sr
+    require_api_keys()
+except RuntimeError as _safety_err:
+    import logging as _sl
+    _sl.getLogger('auto_executor').critical(f'[SAFETY] {_safety_err}')
+    # 不中断导入，但 _signed() 调用时会因空 KEY 失败
+except ImportError:
+    pass
+
+if not API_KEY or not API_SECRET:
+    import logging as _sec_log
+    _sec_log.getLogger('auto_executor').warning(
+        '[SECURITY] BINANCE_API_KEY/SECRET 未配置环境变量，执行层不可用'
+    )
 FAPI_BASE  = 'https://fapi.binance.com'
 BASE       = Path(__file__).parent.parent  # workspace根目录
 

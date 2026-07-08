@@ -25,8 +25,8 @@ SCAN_TARGETS=['BTCUSDT','ETHUSDT','NEARUSDT','GALAUSDT','PIXELUSDT',
 SCORE_THRESHOLD=138
 REFRESH_INTERVAL = 600  # 设计院优化: 120s→600s，减少80%内存峰值频率
 import os as _os
-API_KEY=_os.environ.get("BINANCE_API_KEY","sDqoRAyeYHHzevKNxSj5JfkWpNUd6v8qPAhVy0Y8wbWGwC48eC7uhFOENAlVqV7b")
-API_SECRET=_os.environ.get("BINANCE_API_SECRET","hXQnzQco9SNVgKgF2m3xvBGlJjOHBVtlzqRlxOTkp0kiJAwAOTeUiGLQSAopqIj7")
+API_KEY=_os.environ.get("BINANCE_API_KEY","")
+API_SECRET=_os.environ.get("BINANCE_API_SECRET","")
 BURL="https://fapi.binance.com"
 
 _regime_data=[];_signal_data=[];_position_data=[];_health_data=[]
@@ -1212,8 +1212,8 @@ SCAN_TARGETS=['BTCUSDT','ETHUSDT','NEARUSDT','GALAUSDT','PIXELUSDT',
 SCORE_THRESHOLD=138
 REFRESH_INTERVAL = 600  # 设计院优化: 120s→600s，减少80%内存峰值频率
 import os as _os
-API_KEY=_os.environ.get("BINANCE_API_KEY","sDqoRAyeYHHzevKNxSj5JfkWpNUd6v8qPAhVy0Y8wbWGwC48eC7uhFOENAlVqV7b")
-API_SECRET=_os.environ.get("BINANCE_API_SECRET","hXQnzQco9SNVgKgF2m3xvBGlJjOHBVtlzqRlxOTkp0kiJAwAOTeUiGLQSAopqIj7")
+API_KEY=_os.environ.get("BINANCE_API_KEY","")
+API_SECRET=_os.environ.get("BINANCE_API_SECRET","")
 BURL="https://fapi.binance.com"
 
 _regime_data=[];_signal_data=[];_position_data=[];_health_data=[]

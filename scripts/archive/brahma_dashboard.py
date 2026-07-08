@@ -15,8 +15,8 @@ BASE = Path(__file__).parent.parent
 DATA = BASE / 'data'
 
 # ── Binance API ──────────────────────────────
-_API_KEY = os.environ.get('BINANCE_API_KEY', 'sDqoRAyeYHHzevKNxSj5JfkWpNUd6v8qPAhVy0Y8wbWGwC48eC7uhFOENAlVqV7b')
-_SECRET  = os.environ.get('BINANCE_SECRET',  'hXQnzQco9SNVgKgF2m3xvBGlJjOHBVtlzqRlxOTkp0kiJAwAOTeUiGLQSAopqIj7')
+_API_KEY = os.environ.get('BINANCE_API_KEY', '')
+_SECRET  = os.environ.get('BINANCE_SECRET',  '')
 
 def _fetch_pub(url, timeout=6):
     try:
