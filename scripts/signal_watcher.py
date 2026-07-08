@@ -115,6 +115,8 @@ def _save_state(state: dict):
 def _load_valid_signals() -> list:
     """加载所有有效信号（valid=True, grade≥70, score≥140）
     [v24.2] grade门槛 50→70：B级TO率=73%，仅A/S级(≥70)有意义
+    [修复三 2026-07-08] timing_status=MONITOR不推送VIP（胜率约40%，应内部记录不推送）
+    只有 READY(≥65) 或 UNKNOWN/空 才允许推送给VIP
     """
     if not LOG_PATH.exists():
         return []
@@ -133,6 +135,13 @@ def _load_valid_signals() -> list:
                 grade = s.get("structure_grade", 0) or 0
                 s["grade"] = grade  # 修正为数字，供后续使用
             if grade >= 70 and score >= 140:  # [v24.2] 50→70
+                # [修复三] timing_status=MONITOR时机未到，不推送VIP
+                # MONITOR=55: "信号存在但时机不对"，推送给VIP是错误的
+                # 只有 READY(≥65)/STANDBY系统封堵/UNKNOWN 才允许继续
+                timing = s.get('timing_status', '') or ''
+                if 'MONITOR' in timing.upper():
+                    print(f'[SignalWatcher] ⏸ timing=MONITOR，跳过VIP推送: {s.get("symbol")} score={score}')
+                    continue
                 signals.append(s)
         except Exception:
             continue
