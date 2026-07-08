@@ -28,3 +28,7 @@ TESTNET   = os.environ.get('BINANCE_TESTNET', 'false').lower() == 'true'
 # ── Jarvis 推送路由（SSOT）────────────────────────────────────────
 JARVIS_USER_ID   = os.environ.get('JARVIS_USER_ID',   '73295708')
 JARVIS_THREAD_ID = os.environ.get('JARVIS_THREAD_ID', '019f181f-e4d1-7576-85ca-77f4a7fa8075')
+
+# ── 兼容旧代码（别名）────────────────────────────────────────────
+JARVIS_TARGET  = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"
+JARVIS_CHANNEL = 'jarvis'
