@@ -290,7 +290,7 @@ def run():
             continue
 
         # ── Layer 0：新信号检测（<10分钟，且未通知过）───────────
-        if age_min < 10 and sig_id not in state["notified"]:
+        if age_min < 240 and sig_id not in state["notified"]:  # [修复 2026-07-08] 10min→240min(4H)，防止信号写入延迟被漏推
             price = _fetch_price(sym)
             if price <= 0:
                 continue
