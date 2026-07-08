@@ -815,8 +815,17 @@ def heal(fault_type: str, context: dict) -> dict:
                     jobs_txt = jobs_txt.replace(OLD, NEW)
                     total_fixed += cnt
             if total_fixed > 0:
-                jobs_file.write_text(jobs_txt)
-                result.update({'healed': True, 'output': f'旧线程→{NEW[:8]} 修复{total_fixed}处'})
+                # [2026-07-08 地基层升级] 原子写入，防止截断
+                import tempfile, shutil as _shutil
+                try:
+                    _shutil.copy2(str(jobs_file), str(jobs_file) + '.bak')
+                    _fd, _tmp = tempfile.mkstemp(dir=str(jobs_file.parent), suffix='.tmp')
+                    with open(_fd, 'w') as _f:
+                        _f.write(jobs_txt); _f.flush(); os.fsync(_f.fileno())
+                    os.replace(_tmp, str(jobs_file))
+                    result.update({'healed': True, 'output': f'旧线程→{NEW[:8]} 修复{total_fixed}处'})
+                except Exception as _e:
+                    result.update({'healed': False, 'output': f'原子写入失败: {_e}'})
             else:
                 result.update({'healed': True, 'output': '无需修复（路由已正确）'})
 
@@ -920,11 +929,21 @@ def heal(fault_type: str, context: dict) -> dict:
                     changed = True
                     fixed.append(f'{name}:message+announce修复')
             if changed:
-                if isinstance(raw_jobs, dict):
-                    raw_jobs['jobs'] = all_jobs
-                    jobs_file.write_text(_json.dumps(raw_jobs, indent=2, ensure_ascii=False))
-                else:
-                    jobs_file.write_text(_json.dumps(all_jobs, indent=2, ensure_ascii=False))
+                # [2026-07-08 地基层升级] 原子写入
+                import tempfile as _tf, shutil as _sh
+                try:
+                    _final = _json.dumps(raw_jobs['jobs'] if isinstance(raw_jobs, dict) else all_jobs,
+                                         indent=2, ensure_ascii=False)
+                    if isinstance(raw_jobs, dict):
+                        raw_jobs['jobs'] = all_jobs
+                        _final = _json.dumps(raw_jobs, indent=2, ensure_ascii=False)
+                    _sh.copy2(str(jobs_file), str(jobs_file) + '.bak')
+                    _fd, _tmp = _tf.mkstemp(dir=str(jobs_file.parent), suffix='.tmp')
+                    with open(_fd, 'w') as _f:
+                        _f.write(_final); _f.flush(); os.fsync(_f.fileno())
+                    os.replace(_tmp, str(jobs_file))
+                except Exception as _we:
+                    errors.append(f'原子写入失败:{_we}')
         except Exception as _e:
             errors.append(f'cron修复失败:{_e}')
 

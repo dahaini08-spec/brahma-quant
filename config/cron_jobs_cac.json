@@ -1,6 +1,8 @@
 {
   "version": "cac-v1.1",
-  "updated": "2026-07-08",
+  "updated": "2026-07-08T08:48:47Z",
+  "job_count": 42,
+  "sha256": "b11c85c88ea5affc",
   "jobs": [
     {
       "id": "7b9d646c-0d02-4491-a87c-cb69115ef9cf",
@@ -794,7 +796,8 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
+        "announce": true
       },
       "state": {}
     },
@@ -885,6 +888,30 @@
       "payload": {
         "kind": "agentTurn",
         "message": "cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_constitutional_guardian.py. If any drifts found and fixed, report them. If all healthy, reply HEARTBEAT_OK."
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "jarvis",
+        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
+        "announce": true
+      },
+      "state": {}
+    },
+    {
+      "id": "b7564bc6-3e7d-441b-a6d5-db0898138880",
+      "name": "brahma-integrity-check",
+      "enabled": true,
+      "createdAtMs": 1783500506620,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 21600000,
+        "anchorMs": 1783500506620
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_system_integrity.py. If HEALTHY, reply HEARTBEAT_OK. If DEGRADED or CRITICAL, report the failed layers with details."
       },
       "delivery": {
         "mode": "announce",
