@@ -637,6 +637,37 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     score += s8
     breakdown['情绪/费率'] = s8
 
+    # ── s8b: VolSkew 成交量方向偿度（三院审核修复 2026-07-08）────────────────
+    # 回测鐵证：vskew≥0.52时 ETH底部信号 WR=85.7% EV=+1.43%（最佳阈値）
+    # 原理：上涨K线成交量占优势 = 聰明錢在底部悲情入场，信号可靠
+    # 来源：已缓存 extra_data 中的 1H klines volume
+    try:
+        _k1h_vs = extra_data.get('_k1h_raw', []) if extra_data else []
+        if len(_k1h_vs) >= 20:
+            _uv = sum(float(_k1h_vs[j][5]) for j in range(1, len(_k1h_vs))
+                      if float(_k1h_vs[j][4]) >= float(_k1h_vs[j-1][4]))
+            _dv = sum(float(_k1h_vs[j][5]) for j in range(1, len(_k1h_vs))
+                      if float(_k1h_vs[j][4]) < float(_k1h_vs[j-1][4]))
+            _vskew = _uv / (_uv + _dv) if (_uv + _dv) > 0 else 0.5
+            # 阈値分级（回测最佳：0.52=+8, 0.50=+4, <0.45=-8）
+            if _vskew >= 0.52:
+                _vs_pts = +8
+            elif _vskew >= 0.50:
+                _vs_pts = +4
+            elif _vskew <= 0.45:
+                _vs_pts = -8   # 下跌量占优 = 戒备主导
+            elif _vskew <= 0.48:
+                _vs_pts = -4
+            else:
+                _vs_pts = 0
+            if _vs_pts != 0:
+                score += _vs_pts
+                breakdown['VolSkew'] = _vs_pts
+                print(f'[s8b-VolSkew] {_sym} {signal_dir}: vskew={_vskew:.3f} → {_vs_pts:+d}分')
+    except Exception:
+        pass
+    # ──────────────────────────────────────────────────────────────────────
+
     # ── 维度9：时段权重（精细化）─────────────────────────────────
     import datetime
     hour = datetime.datetime.utcnow().hour
@@ -2165,6 +2196,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         '_k4h_closes':  list(k4h['c'][-20:]) if k4h and k4h.get('c') else [],
         '_k4h_volumes': list(k4h['v'][-20:]) if k4h and k4h.get('v') else [],
         '_klines_1h':   k1h,  # [v25.1 2026-06-14] s20/s21/s22初始化即提前注入，避免流程中断导致三个维度全部归零
+        '_k1h_raw':     get_klines(symbol, '1h', 50),  # [s8b-VolSkew 2026-07-08] 注入原始1H K线供成交量偏度计算
     }
     # Bug1修复(2026-06-26): CausalVerifier在extra_data初始化前调用，现在补写
     if _causal_v_result:

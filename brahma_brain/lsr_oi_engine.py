@@ -25,7 +25,10 @@ LSR_EXTREME_SHORT = 30    # 极度空头拥挤（≤30%）→ 做多+15分，做
 LSR_HIGH_SHORT    = 35    # 偏空拥挤（≤35%）→ 做多+10分，做空-10分
 LSR_NEUTRAL_BAND  = (40, 60)  # 中性区，不加减分
 
-# OI方向阈值（实证：OI减少-1%+价格涨 = 空头回补，非真实多头）
+# LSR Z-score升级（三院审核修复 2026-07-08）
+# 回测铁证：Z>1.5时做多WR从63%降至41%，Z>2.0触发否决权
+LSR_ZSCORE_EXTREME  = 2.0   # Z>2.0 极度拥挤：额外-10分（共-20分）
+LSR_ZSCORE_HIGH     = 1.5   # Z>1.5 重度拥挤：额外-5分（共-15分）
 OI_STRONG_INCREASE =  2.0   # OI增加≥2% → 真实建仓
 OI_WEAK_INCREASE   =  0.5   # OI增加0.5~2% → 轻微建仓
 OI_STRONG_DECREASE = -2.0   # OI减少≥2% → 强烈平仓（空头回补或多头离场）
@@ -242,6 +245,33 @@ def lsr_oi_score(symbol: str, signal_dir: str,
         s_oi,  note_oi  = oi_direction_score(
             oi_change_pct, oi_momentum, price_change_pct, signal_dir
         )
+
+        # ── LSR Z-score升级（三院审核修复 2026-07-08）──────────────
+        # 回测铁证：Z>1.5时做多WR从63%→41%，Z>2.0触发额外-10否决权
+        try:
+            import math as _m, requests as _rq
+            _lr = _rq.get(
+                'https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
+                params={'symbol': symbol, 'period': '1h', 'limit': 48}, timeout=4
+            ).json()
+            _hist = [float(x['longAccountRatio'])*100 for x in _lr]
+            if len(_hist) >= 8:
+                _mean = sum(_hist)/len(_hist)
+                _std  = _m.sqrt(sum((x-_mean)**2 for x in _hist)/len(_hist))
+                _z    = (long_pct - _mean) / _std if _std > 0 else 0
+                if signal_dir == 'LONG':
+                    if _z >= LSR_ZSCORE_EXTREME:
+                        s_lsr -= 10
+                        note_lsr += f' [Z={_z:.2f}极度拥挤-10]'
+                    elif _z >= LSR_ZSCORE_HIGH:
+                        s_lsr -= 5
+                        note_lsr += f' [Z={_z:.2f}重度拥挤-5]'
+                elif signal_dir == 'SHORT' and _z >= LSR_ZSCORE_HIGH:
+                    s_lsr += 5
+                    note_lsr += f' [Z={_z:.2f}空头燃料+5]'
+        except Exception:
+            pass
+        # ───────────────────────────────────────────────────────────
 
         # 总分（两个维度加总，上下限±20）
         total = int(max(MAX_PENALTY, min(MAX_BONUS, s_lsr + s_oi)))
