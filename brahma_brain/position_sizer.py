@@ -73,8 +73,32 @@ def _score_range(score: float) -> str:
     return '<120'
 
 
+# ── FearGreed_PositionGuard (修复二 2026-07-08 设计院自主决策) ────────────────
+# 极度恐惧环境下自动缩减仓位上限，防止在恐慌市场开大仓
+# FG ≤ 20: 上限0.5%NAV + 额外-10分惩罚（由brahma_core注入fg_penalty后调用）
+# FG 21~25: 上限1.0%NAV
+# FG 26~40: 上限2.0%NAV
+# FG > 40: 正常规则，不限制
+FEAR_GREED_POSITION_CAPS = [
+    (0,  20, 0.5,  'FG极度恐惧上限'),
+    (21, 25, 1.0,  'FG恐惧上限'),
+    (26, 40, 2.0,  'FG偏恐惧上限'),
+]
+
+
+def get_fg_position_cap(fear_greed_index: float) -> tuple:
+    """根据恐贪指数返回仓位上限和说明
+    返回: (cap_pct: float, reason: str) | None表示不限制"""
+    if fear_greed_index is None:
+        return None, ''
+    for lo, hi, cap, reason in FEAR_GREED_POSITION_CAPS:
+        if lo <= fear_greed_index <= hi:
+            return cap, f'{reason}(FG={fear_greed_index:.0f})'
+    return None, ''
+
+
 def get_position_pct(symbol: str, score: float, direction: str,
-                     nav: float = 0.0) -> dict:
+                     nav: float = 0.0, fear_greed: float = None) -> dict:
     """
     返回：{
       'pct': 建议仓位百分比（0~10）,
@@ -116,7 +140,17 @@ def get_position_pct(symbol: str, score: float, direction: str,
     if _july_half_active and max_pct > JULY_HALF_NAV:
         max_pct = JULY_HALF_NAV
         level = f'{level}+7月减半'
-    # ──────────────────────────────────────────────────────────────────────
+    # ──────────────────────────────────────────────────────
+
+    # ── FearGreed_PositionGuard (修复二 2026-07-08) ───────────────────────────
+    # 恐贪指数小于等于40时强制容网仓位上限，防止恐慌市场开大仓五项修复之一
+    _fg_cap, _fg_reason = get_fg_position_cap(fear_greed)
+    _fg_applied = False
+    if _fg_cap is not None and max_pct > _fg_cap:
+        max_pct = _fg_cap
+        level = f'{level}+FG仓位容网'
+        _fg_applied = True
+    # ──────────────────────────────────────────────────────
 
     allowed = (max_pct > 0)
     usdt = nav * max_pct / 100 if nav > 0 else 0
@@ -126,8 +160,11 @@ def get_position_pct(symbol: str, score: float, direction: str,
         'usdt':    round(usdt, 2),
         'level':   level,
         'reason':  f'{symbol} score={score:.0f}({sr}) dir={direction} → {level}'
-                   + (' [7月上旬减半仓]' if _july_half_active else ''),
+                   + (' [7月上旬减半仓]' if _july_half_active else '')
+                   + (f' [{_fg_reason}]' if _fg_applied else ''),
         'allowed': allowed,
+        'fg_cap':  _fg_cap,
+        'fg_applied': _fg_applied,
     }
 
 
