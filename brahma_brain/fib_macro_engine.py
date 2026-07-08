@@ -154,6 +154,29 @@ def fib_macro_score(symbol: str, price: float, signal_dir: str,
         result['ema200']   = round(ema200_1d, 2)
         result['ema55_1d'] = round(ema55_1d, 2)
 
+        # ── EMA200多周期支撇层（三院审核修复 2026-07-08）─────────────────
+        # 核心发现：现价可能在日线EMA200下方，但已达1H/4H EMA200（短期支撇）
+        # 这种情况系统之前漏掉，现在注入支撇加分
+        try:
+            from data_cache import get_klines as _get_kl_fib
+            _k1h_fib = _get_kl_fib(symbol, '1h', 205)
+            _k4h_fib = _get_kl_fib(symbol, '4h', 205)
+            if _k1h_fib and len(_k1h_fib) >= 100:
+                _c1h_fib = [float(k[4]) for k in _k1h_fib]
+                _ema200_1h = _ema(_c1h_fib, min(200, len(_c1h_fib)))
+                result['ema200_1h'] = round(_ema200_1h, 2)
+                # 价格在1H EMA200上方，且在日线EMA200下方 = 短期支撇加分
+                if price > _ema200_1h and price < ema200_1d:
+                    result['ema200_1h_support'] = True
+            if _k4h_fib and len(_k4h_fib) >= 100:
+                _c4h_fib = [float(k[4]) for k in _k4h_fib]
+                _ema200_4h = _ema(_c4h_fib, min(200, len(_c4h_fib)))
+                result['ema200_4h'] = round(_ema200_4h, 2)
+                if price > _ema200_4h and price < ema200_1d:
+                    result['ema200_4h_support'] = True
+        except Exception:
+            pass
+
         # ── 周线RSI ─────────────────────────────────────────
         weekly_rsi = 50.0
         if k1w_raw and len(k1w_raw) >= 15:
@@ -191,6 +214,20 @@ def fib_macro_score(symbol: str, price: float, signal_dir: str,
                 pts = EMA200_BONUS_SHORT
                 breakdown['ema200'] = f'价格低于EMA200(${ema200_1d:,.0f})做空{pts:+d}'
             total += pts
+
+            # ── 1H/4H EMA200支撇层（三院审核修复 2026-07-08）─────────────────────
+            # 日线EMA200下方，但已到达1H EMA200 = 短期均线支撇，不应该全局封堕
+            if signal_dir == 'LONG' and result.get('ema200_1h_support'):
+                _ema200_1h_v = result.get('ema200_1h', 0)
+                pts_1h = +4  # 短期均线支撇，补偿部分日线惩罚
+                breakdown['ema200_1h'] = f'1H EMA200(${_ema200_1h_v:,.0f})支撇做多{pts_1h:+d}'
+                total += pts_1h
+            if signal_dir == 'LONG' and result.get('ema200_4h_support'):
+                _ema200_4h_v = result.get('ema200_4h', 0)
+                pts_4h = +3  # 4H均线支撇
+                breakdown['ema200_4h'] = f'4H EMA200(${_ema200_4h_v:,.0f})支撇做多{pts_4h:+d}'
+                total += pts_4h
+            # ──────────────────────────────────────────────────────────────────────
         else:
             if signal_dir == 'LONG':
                 pts = +8

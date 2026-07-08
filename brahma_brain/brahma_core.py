@@ -560,7 +560,19 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     score += s7
     breakdown['清算/OI'] = s7
 
-    # ── 维度8：资金费率+情绪+链上（0~15）────────────────────────────
+    # ── s8增强层: Volume Profile 成交密度分析（三院审核修复 2026-07-08）────────────────
+    # 职责：识别当前价格区间是高密度支撑区还是低密度空洞
+    # 高密度区(>1.5x)→做多+8 / 空洞区(<0.6x)→做多-15（踩踏风险）
+    try:
+        from brahma_brain.volume_profile import get_vp_score as _vp_score_fn
+        _vp_pts, _vp_desc = _vp_score_fn(_sym, float(extra_data.get('price', price) if extra_data else price), signal_dir)
+        if _vp_pts != 0:
+            s7_vp = max(-15, min(8, _vp_pts))  # 边界保护
+            score += s7_vp
+            breakdown['VolProfile'] = s7_vp
+            print(f'[s8-VolProfile] {_sym} {signal_dir}: {_vp_pts:+d} | {_vp_desc}')
+    except Exception:
+        pass
     # [UP-017] CoinGlass 链上评分接入
     if extra_data and extra_data.get('coinglass') and extra_data['coinglass'].get('available'):
         _cg_d = extra_data['coinglass']
@@ -4031,12 +4043,20 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # 实证：ETH多头70.9%→空头做空+15分，OI减少+价格涨→做多-12分
     try:
         from lsr_oi_engine import lsr_oi_score as _lsr_oi_fn
+        # [修复 2026-07-08 设计院] 补传 price_change_pct（4H价格变化）
+        # 修复前：N20自行拉取API，丢失上下文，OI方向解读可能错误
+        # 修复后：从已缓存的k4h计算精确4H变化，区分「多头离场」vs「空头建仓」
+        _k4h_cls = extra_data.get('_k4h_closes', []) if extra_data else []
+        _price_chg_4h = round(
+            (_k4h_cls[-1] - _k4h_cls[-5]) / _k4h_cls[-5] * 100, 2
+        ) if len(_k4h_cls) >= 5 else 0.0
         _lsr_oi_res  = _lsr_oi_fn(
             symbol    = _sym,
             signal_dir= signal_dir,
             long_pct  = ms.get('sentiment', {}).get('long_short_ratio'),
             oi_change_pct = ms.get('sentiment', {}).get('oi_change_pct'),
             oi_momentum   = ms.get('sentiment', {}).get('oi_momentum'),
+            price_change_pct = _price_chg_4h,  # [修复] 精确4H变化传入
         )
         _lsr_oi_pts = _lsr_oi_res.get('score', 0)
         if _lsr_oi_pts != 0 and _score_raw > 0:
