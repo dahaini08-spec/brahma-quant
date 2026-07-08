@@ -1,62 +1,14 @@
 {
-  "SUIUSDT": {
-    "symbol": "SUIUSDT",
-    "direction": "LONG",
-    "entry_price": 0.762,
-    "sl_price": 0.7627619999999999,
-    "tsl_updated": "2026-07-04T21:35:16.971582+00:00",
-    "updated_at": 1783165133.1032841,
-    "tsl_old_sl": 0.73914
-  },
-  "RENDERUSDT": {
-    "symbol": "RENDERUSDT",
-    "side": "LONG",
-    "qty": 16.2,
-    "entry": 1.588,
-    "sl_price": 1.6479999999999997,
-    "tp_price": 1.769,
-    "registered_at": "2026-07-05T11:44:31.785254+00:00",
-    "source": "hunter_executor",
-    "tsl_updated": "2026-07-07T01:48:18.551946+00:00",
-    "tsl_old_sl": 1.468
-  },
-  "LDOUSDT": {
-    "symbol": "LDOUSDT",
-    "direction": "LONG",
-    "entry_price": 0.2658,
-    "sl_price": 0.27377399999999996,
-    "tsl_updated": "2026-07-06T00:48:44.361296+00:00",
-    "updated_at": 1783165133.1032841,
-    "tsl_old_sl": 0.26606579999999996
-  },
-  "NEARUSDT": {
-    "symbol": "NEARUSDT",
-    "direction": "LONG",
-    "entry_price": 2.001,
-    "sl_price": 1.94097,
-    "tsl_updated": null,
-    "updated_at": 1783165133.1032841
-  },
-  "HYPEUSDT": {
-    "symbol": "HYPEUSDT",
-    "direction": "SHORT",
-    "entry_price": 72.006,
-    "sl_price": 69.12576,
-    "tsl_updated": "2026-07-05T01:35:48.767438+00:00",
-    "updated_at": 1783165133.1032841,
-    "tsl_stage": "breakeven_1",
-    "tsl_old_sl": 71.28594000000001
-  },
-  "DOTUSDT": {
-    "symbol": "DOTUSDT",
-    "direction": "LONG",
-    "sl_price": 0.8809999999999998,
-    "tsl_updated": "2026-07-06T17:48:15.833612+00:00"
-  },
   "ETHUSDT": {
     "symbol": "ETHUSDT",
     "direction": "LONG",
-    "sl_price": 1777.5057299999999,
-    "tsl_updated": "2026-07-07T01:48:18.468685+00:00"
+    "entry_price": 1735.02,
+    "soft_sl": 1701.53,
+    "tp1": 1770.97,
+    "qty": 0.021,
+    "registered_at": "2026-07-08T14:38:37.246267+00:00",
+    "fomc_watch": true,
+    "fomc_time": "2026-07-08T18:00:00+00:00",
+    "note": "111授权持仓 - 等FOMC结果"
   }
 }
