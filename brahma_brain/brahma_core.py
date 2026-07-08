@@ -1942,14 +1942,17 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
 
     # [v13.0] 单一化输出裁决：评分决定唯一行动，不再并列多方案
     # 裁决规则：评分主导， R:R 在 analyze() 层做最终覆盖
+    # [v14.0 设计院 2026-07-08] action阈值与宪法门槛对齐
+    # 宪法：valid_signal需score≥155；action=ENTER不应在score<138时触发
+    # 修复：ENTER_FULL≥155，ENTER≥138（铁证线），WATCH≥100，低分→WATCH_ONLY
     if score >= 155:
         grade = '🔴神级';  kelly_mult = 2.0;  action = 'ENTER_FULL'  # [N18] 顶级信号全仓
-    elif score >= 140:
-        grade = '🟠极强';   kelly_mult = 1.5;  action = 'ENTER'       # [N18] 高分强信号
-    elif score >= 120:
-        grade = '🟡强';    kelly_mult = 1.0;  action = 'ENTER'        # [N18] 标准信号
+    elif score >= 138:
+        grade = '🟠极强';   kelly_mult = 1.5;  action = 'ENTER'       # [N18] 铁证线以上
+    elif score >= 110:
+        grade = '🟡强';    kelly_mult = 0.5;  action = 'WATCH'        # [v14.0] 110-138降为WATCH
     elif score >= 80:
-        grade = '🔵中等';   kelly_mult = 0.5;  action = 'WATCH'
+        grade = '🔵中等';   kelly_mult = 0.3;  action = 'WATCH'
     else:
         grade = '⚫放弃';   kelly_mult = 0.0;  action = 'SKIP'
 

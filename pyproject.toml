@@ -18,6 +18,7 @@ lightgbm        = "^4.0"
 torch           = {version = "^2.0", optional = true}
 vectorbt        = {version = "^0.26", optional = true}
 statsmodels     = "^0.14"
+ta              = "^0.10"
 ccxt            = "^4.0"
 websocket-client = "^1.6"
 
