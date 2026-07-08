@@ -317,6 +317,22 @@ def _push_signal(r: dict, dry_run: bool = False) -> bool:
         print(f'[Notifier] {sym} {d} 参数缺失，跳过推送 entry={entry} sl={sl} tp1={tp1}')
         return False
 
+    # [2026-07-08 设计院封印] 推送前实时价格偏离检查
+    # 信号有效窗口=入场区±3%，超出则信号过期，不推送
+    try:
+        import requests as _req
+        _pr = _req.get(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}', timeout=5)
+        _cur = float(_pr.json().get('price', 0))
+        if _cur > 0 and entry_lo > 0 and entry_hi > 0:
+            _gap_long  = (_cur - entry_hi) / entry_hi  if d == 'LONG'  else 0
+            _gap_short = (entry_lo - _cur) / entry_lo  if d == 'SHORT' else 0
+            _gap = max(_gap_long, _gap_short)
+            if _gap > 0.03:  # 偏离入场区>3% → 信号窗口已失效
+                print(f'[Notifier] ⏩ {sym} {d} 价格偏离入场区 {_gap*100:.1f}%>3%，信号过期跳过推送')
+                return False
+    except Exception:
+        pass  # 价格检查失败不阻断推送（保守策略）
+
     # RR计算
     if d == 'SHORT':
         risk   = sl - entry
