@@ -245,14 +245,14 @@ def find_executable_signals() -> list[dict]:
         # ── [P3-A 设计院 2026-07-08] HMM Regime概率化 — 附加置信度字段 ──
         try:
             from brahma_brain.regime_hmm_v2 import predict_regime_proba, get_weighted_multiplier
-            _hmm = predict_regime_proba(sym)
+            _hmm = predict_regime_proba(s.get('symbol', ''))
             s['_hmm_dominant']   = _hmm.get('dominant', '')
             s['_hmm_confidence'] = _hmm.get('confidence', 0)
             s['_hmm_method']     = _hmm.get('method', '')
             # HMM置信度<0.40时降为MONITOR（不拒绝，仅标记）
             if _hmm.get('confidence', 1.0) < 0.40:
                 s['_hmm_low_conf'] = True
-                print(f'[HMM] {sym} confidence={_hmm["confidence"]:.2f}<0.40 → 低置信标记')
+                print(f'[HMM] {s.get("symbol","")} confidence={_hmm["confidence"]:.2f}<0.40 → 低置信标记')
         except Exception:
             pass
 
@@ -260,9 +260,10 @@ def find_executable_signals() -> list[dict]:
         # BTC/ETH已有死穴规则，小币缺失导致 43.8%胜率 根因
         _sym_regime = s.get('regime', '')
         _sym_dir    = s.get('direction') or s.get('signal_dir', '')
-        _is_small_cap = sym not in ('BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT')
+        _sym        = s.get('symbol', '')
+        _is_small_cap = _sym not in ('BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT')
         if _is_small_cap and 'BEAR_TREND' in _sym_regime and _sym_dir in ('LONG', 'BUY'):
-            print(f'[SmallCapGuard] {sym} BEAR_TREND_LONG 小币死穴 → 跳过（实盘WR<50%）')
+            print(f'[SmallCapGuard] {_sym} BEAR_TREND_LONG 小币死穴 → 跳过（实盘WR<50%）')
             continue
 
         # [v6.0 设计院 2026-07-08] 非梵天BRAHMA标签信号仓位上限: NAV×3%（原5%）
@@ -830,10 +831,16 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
     nav       = float(acct.get('totalMarginBalance', 0))
     avail     = float(acct.get('availableBalance', 0))
     pos_list  = _signed('GET', '/fapi/v2/positionRisk')
+    # [修复 2026-07-08] 安全守卫：API KEY未配置时 _signed() 返回str/dict(error)
+    # 确保 pos_list 是可迭代的 list[dict]，避免 'str'.get() AttributeError
+    if not isinstance(pos_list, list):
+        print(f'[AutoExecutor] ⚠️ positionRisk响应异常: {str(pos_list)[:80]} — 跳过持仓检查')
+        pos_list = []
     active_pos = [
         {'symbol': p['symbol'], 'side': 'SHORT' if float(p['positionAmt']) < 0 else 'LONG',
          'qty': abs(float(p['positionAmt'])), 'entry_price': float(p['entryPrice'])}
-        for p in pos_list if abs(float(p.get('positionAmt', 0))) > 0
+        for p in pos_list
+        if isinstance(p, dict) and abs(float(p.get('positionAmt', 0))) > 0
     ]
 
     # 找候选信号
