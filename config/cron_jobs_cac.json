@@ -1,33 +1,9 @@
 {
   "version": "cac-v1.1",
-  "updated": "2026-07-08T08:48:47Z",
-  "job_count": 42,
-  "sha256": "b11c85c88ea5affc",
+  "updated": "2026-07-08T09:12:30Z",
+  "job_count": 41,
+  "sha256": "1e1d9d7e95b8cf12",
   "jobs": [
-    {
-      "id": "7b9d646c-0d02-4491-a87c-cb69115ef9cf",
-      "name": "zhao-7-pricemap-1700",
-      "enabled": true,
-      "deleteAfterRun": true,
-      "createdAtMs": 1783458945877,
-      "schedule": {
-        "kind": "at",
-        "at": "2026-07-08T09:00:00.000Z"
-      },
-      "sessionTarget": "isolated",
-      "wakeMode": "now",
-      "payload": {
-        "kind": "agentTurn",
-        "message": "You are 姓赵不宣 crypto KOL. Post an afternoon price map to Binance Square. (1) Fetch BTC/ETH realtime: python3 -c \"import json,urllib.request; btc=json.loads(urllib.request.urlopen(\\\"https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT\\\",timeout=8).read()); eth=json.loads(urllib.request.urlopen(\\\"https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT\\\",timeout=8).read()); print(\\\"BTC\\\",btc[\\\"lastPrice\\\"],\\\"H\\\",btc[\\\"highPrice\\\"],\\\"L\\\",btc[\\\"lowPrice\\\"],\\\"ETH\\\",eth[\\\"lastPrice\\\"])\" (2) Write Chinese post: title 姓赵不宣·今日价位地图（截图保存）, ASCII price map showing: resistance levels above current price, current price line, support levels below (use actual prices from API to calculate EMA20_4H approx), 3 operation plans (A wait for support B enter on breakout C reduce before CPI), total position cap 30% today, tonight CPI at 20:30 Beijing. End: 有预案才不慌. Hashtags #价位地图 #BTC #ETH #姓赵不宣 #操作计划. (3) Read SQUARE_KEY_2 POST to Square. (4) Reply: ✅ 价位地图篇 已发布 ID:<id>",
-        "lightContext": true
-      },
-      "delivery": {
-        "mode": "announce",
-        "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
-      },
-      "state": {}
-    },
     {
       "id": "a6249a4e-8a00-493b-989b-0efe25080b6c",
       "name": "zhao-8-cpi-countdown-1900",
@@ -863,7 +839,8 @@
       "wakeMode": "now",
       "payload": {
         "kind": "agentTurn",
-        "message": "Check live_signal_log for valid trading signals. Run: python3 /root/.openclaw/workspace/trading-system/scripts/signal_watcher.py and report any valid=True signals with score>=155. If none, reply HEARTBEAT_OK."
+        "message": "Check live_signal_log for valid trading signals. Run: python3 /root/.openclaw/workspace/trading-system/scripts/signal_watcher.py and report any valid=True signals with score>=155. If none, reply HEARTBEAT_OK.",
+        "lightContext": true
       },
       "delivery": {
         "mode": "announce",
@@ -887,7 +864,8 @@
       "wakeMode": "now",
       "payload": {
         "kind": "agentTurn",
-        "message": "cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_constitutional_guardian.py. If any drifts found and fixed, report them. If all healthy, reply HEARTBEAT_OK."
+        "message": "cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_constitutional_guardian.py. If any drifts found and fixed, report them. If all healthy, reply HEARTBEAT_OK.",
+        "lightContext": true
       },
       "delivery": {
         "mode": "announce",
