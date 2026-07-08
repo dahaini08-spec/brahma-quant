@@ -54,3 +54,4 @@ venv/
 env/
 .secrets
 .venv/
+.github/workflows/
