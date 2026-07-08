@@ -232,16 +232,45 @@ class FileEventBus:
         return subject == pattern
 
     def _persist(self, msg: BusMessage) -> None:
-        """持久化到按日分片的JSONL文件"""
+        """
+        P0-4 修复：持久化到按日分片的 JSONL 文件。
+        1. fcntl 文件锁（Linux）防多进程写入竞争。
+        2. 写入失败时 fail-closed：抨入死信队列，不再静默吃掉。
+        """
+        import os
         date_str = time.strftime("%Y-%m-%d", time.gmtime(msg.ts_published))
         log_file = self._bus_dir / f"events_{date_str}.jsonl"
+        line = json.dumps(msg.to_dict(), ensure_ascii=False) + "\n"
         try:
             with self._lock:
-                with log_file.open("a", encoding="utf-8") as f:
-                    f.write(json.dumps(msg.to_dict(), ensure_ascii=False) + "\n")
+                fd = os.open(str(log_file), os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o644)
+                try:
+                    try:
+                        import fcntl
+                        fcntl.flock(fd, fcntl.LOCK_EX)
+                    except ImportError:
+                        pass  # Windows 不支持 fcntl，单进程时依赖 threading.Lock
+                    os.write(fd, line.encode("utf-8"))
+                finally:
+                    try:
+                        import fcntl
+                        fcntl.flock(fd, fcntl.LOCK_UN)
+                    except ImportError:
+                        pass
+                    os.close(fd)
                 self._seq += 1
-        except Exception:
-            pass
+        except Exception as e:
+            # P0-4: fail-closed — 写入失败就进死信队列，不再静默吃掉
+            msg.redelivery_count += 1
+            self._dead_letter.append(msg)
+            # 死信队列持久化（防重启丢失）
+            try:
+                dlq_file = self._bus_dir / "dead_letter.jsonl"
+                dlq_entry = {"ts": time.time(), "error": str(e), **msg.to_dict()}
+                with open(str(dlq_file), "a", encoding="utf-8") as df:
+                    df.write(json.dumps(dlq_entry, ensure_ascii=False) + "\n")
+            except Exception:
+                pass  # DLQ 自身写入失败时不再抓持
 
     def _load_seq(self) -> int:
         """加载当前序号"""
