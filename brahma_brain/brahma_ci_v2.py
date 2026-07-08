@@ -56,7 +56,7 @@ MUST_PUSH = {
     'brahma-ci-probe':       'CI探针报告',
 }
 SILENT_OK = {
-    'btc-regime-watcher','ws-guardian-keepalive','live-signal-settle-2h',
+    'btc-regime-watcher',# # 'ws-guardian-keepalive'  # 已删除 2026-07-08,  # 已删除 2026-07-08 从未注册'live-signal-settle-2h',
     'trc20-order-monitor','auto-position-manager','market-structure-4h',
     'data-backup-6h','gateway-restart-daily','dharma-offline-replay',
     'auto-executor-1h','brahma-360-health','live-performance-daily',
