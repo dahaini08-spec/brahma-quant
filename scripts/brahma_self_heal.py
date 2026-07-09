@@ -48,14 +48,14 @@ FAPI          = 'https://fapi.binance.com'
 CRON_WATCHLIST = {
     'rsi-structure-watcher':   15,   # 每5min，15min没跑 = 故障
     'brahma-scan-guard':       800,  # 每12H
-    'btc-regime-watcher':      15,
+    # btc-regime-watcher: 已删除 (2026-07-09 从未在cron注册，持续虚假告警)
     # ws-guardian-keepalive: 已删除 (2026-07-08 从未注册，无对应脚本，持续虚假告警)
     'auto-position-manager-30m': 45,   # 正确任务名（auto-position-manager不存在）
     'regime-switch-monitor':   75,
     # ── 信号推送系统（2026-07-08 自愈盲区补入）──────────────────
     'main-signal-watcher':     45,   # 每30min，45min未跑=故障
     'pump-hunter':             45,   # 每30min
-    'brahma-nerve-center':     25,   # 每15min
+    'brahma-nerve-center':     35,   # 每30min，阈值35min（原25min触发虚假告警）
     'oi-surge-scanner':        300,  # 每4H
 }
 
@@ -408,7 +408,13 @@ def check_cron_jobs() -> dict:
     # message为空 → Agent收到空任务直接HEARTBEAT_OK → 信号永远不推送
     KEY_SIGNAL_JOBS = ['main-signal-watcher', 'pump-hunter', 'brahma-nerve-center',
                        'oi-surge-scanner', 'rsi-structure-watcher']
-    CORRECT_THREAD  = '019f181f-e4d1-7576-85ca-77f4a7fa8075'
+    try:
+        import importlib.util as _ilu2
+        _sc2 = _ilu2.module_from_spec(_ilu2.spec_from_file_location('sc2', BASE / 'scripts' / 'system_config.py'))
+        _ilu2.spec_from_file_location('sc2', BASE / 'scripts' / 'system_config.py').loader.exec_module(_sc2)
+        CORRECT_THREAD = getattr(_sc2, 'JARVIS_THREAD_ID', '019f443a-b891-70f1-8cb0-ed031a80e68b')
+    except Exception:
+        CORRECT_THREAD  = '019f443a-b891-70f1-8cb0-ed031a80e68b'
     try:
         jobs_file = Path.home() / '.openclaw/cron/jobs.json'
         raw_jobs  = json.loads(jobs_file.read_text())
