@@ -512,15 +512,15 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
                     _liq_bonus, _liq_level = get_liq_bonus(_long_usd)
                     s7 = min(s7 + _liq_bonus, 15)
                     if _liq_bonus > 0:
-                        print(f'[s7-LiveLiq] SHORT确认: 多头爆仓${_long_usd/1e6:.1f}M [{_liq_level}] +{_liq_bonus}')
+                        pass  # [静默]
                 elif signal_dir == 'LONG' and _short_usd > _long_usd * LIQ_DIRECTION_RATIO:
                     _liq_bonus, _liq_level = get_liq_bonus(_short_usd)
                     s7 = min(s7 + _liq_bonus, 15)
                     if _liq_bonus > 0:
-                        print(f'[s7-LiveLiq] LONG确认: 空头爆仓${_short_usd/1e6:.1f}M [{_liq_level}] +{_liq_bonus}')
+                        pass  # [静默]
                 elif _total_usd > LIQ_CHAOS_THRESHOLD:
                     s7 = max(s7 + int(LIQ_CHAOS_PENALTY), 0)
-                    print(f'[s7-LiveLiq] 双向极端爆仓${_total_usd/1e6:.1f}M {int(LIQ_CHAOS_PENALTY)}')
+                    pass  # [静默]
     except Exception:
         pass  # ws_guardian 未启动时静默降级
 
@@ -534,7 +534,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
                 s7 = max(-20, s7 + _ob_pts)  # 下限-20
             else:
                 s7 = min(15, s7 + _ob_pts)   # 上限保持15
-            print(f'[s7-OBHeatmap] {_sym} {signal_dir}: {_ob_pts:+d} | {_ob_desc}')
+            pass  # [静默]
     except Exception:
         pass
 
@@ -553,7 +553,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
                 pass  # _ld_adj不变：正分=上方清算墙支撑多头，负分=下方清算墙压制多头
             if _ld_adj != 0 and _ld.get('confidence', 0) >= 0.3:
                 s7 = max(0, min(15, s7 + _ld_adj))
-                print(f'[s7-LiqDens] {_sym} {signal_dir}: {_ld_adj:+d} | bias={_ld["liq_bias"]} conf={_ld["confidence"]} above={_ld.get("above_total_usd",0)/1e6:.1f}M below={_ld.get("below_total_usd",0)/1e6:.1f}M')
+                pass  # [静默]
     except Exception:
         pass
 
@@ -570,7 +570,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
             s7_vp = max(-15, min(8, _vp_pts))  # 边界保护
             score += s7_vp
             breakdown['VolProfile'] = s7_vp
-            print(f'[s8-VolProfile] {_sym} {signal_dir}: {_vp_pts:+d} | {_vp_desc}')
+            pass  # [静默]
     except Exception:
         pass
     # [UP-017] CoinGlass 链上评分接入
@@ -663,7 +663,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
             if _vs_pts != 0:
                 score += _vs_pts
                 breakdown['VolSkew'] = _vs_pts
-                print(f'[s8b-VolSkew] {_sym} {signal_dir}: vskew={_vskew:.3f} → {_vs_pts:+d}分')
+                pass  # [静默]
     except Exception:
         pass
     # ──────────────────────────────────────────────────────────────────────
@@ -1755,7 +1755,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
                         break
                 except Exception as _e:
                         if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                            print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
+                            pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
         # 当无regime_switch_state时，保d原 N14逻辑
         elif 'BEAR_TREND' in _regime_upper and not _is_long_v4 and _rsi_v4 < 42:
             _n14_delta = 5
@@ -1763,7 +1763,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         if _n14_delta != 0:
             score = max(0, min(int(score) + _n14_delta, 175))
             breakdown['N14_体制切换时机'] = f'{_n14_delta:+d} ({_n14_label} dist={_dist_min if "_dist_min" in dir() else "?":.0f}min PF={_rt14.get(str(int(_dist_min))+"~"+str(int(_dist_min)+5),{}).get("pf","?")})'
-            print(f'[N14-Timing] {_sym}: {_n14_delta:+d}分 {_n14_label}')
+            pass  # [静默] f'[N14-Timing] {_sym}: {_n14_delta:+d}分 {_n14_label}'
     except Exception:
         # 安全回退：保留原 N14逻辑
         if 'BEAR_TREND' in _regime_upper and not _is_long_v4 and _rsi_v4 < 42 and _atr_v4 > 0.012 and not _direction_block and score > 0:
@@ -1856,7 +1856,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         if _m09_delta != 0:
             score = max(0, min(score + _m09_delta, 175))
             breakdown['M09_维度权重'] = f'Δ{_m09_delta:+d}分 [{" | ".join(_m09_log[:4])}]'
-            print(f'[M09-DimWeight] {_sym}: {_m09_delta:+d}分 | {" | ".join(_m09_log)}')
+            pass  # [静默] f'[M09-DimWeight] {_sym}: {_m09_delta:+d}分 | {" | ".join(_m09_log)}'
     except Exception as _e09:
         pass
     # ══════════════════════════════════════════════════════════════
@@ -2010,7 +2010,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     """
     t0 = time.time()
     _sym = symbol.upper()
-    print(f'[BrahmaBrain] 开始分析 {_sym} dir={signal_dir or "AUTO"}')
+    pass  # [静默] f'[BrahmaBrain] 开始分析 {_sym} dir={signal_dir or "AUTO"}'
 
     # ══ [设计院 2026-06-30 P3] BrahmaBus 数据总线初始化 ══════════════════════
     # 模块: brahma_bus · TTL缓存单例，0.01ms命中 vs HTTP 50ms
@@ -2032,14 +2032,14 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _lpf_sys.path.insert(0, _lpf_base)
         from live_price_feed import bulk_update_from_api as _lpf_bulk
         _lpf_bulk([_sym])
-        print(f'[PriceFix] {_sym} 入口强制刷新价格 ✅')
+        pass  # [静默] f'[PriceFix] {_sym} 入口强制刷新价格 ✅'
     except Exception as _lpf_e:
-        print(f'[PriceFix] 价格刷新异常（不阻断）: {_lpf_e}')
+        pass  # [静默] f'[PriceFix] 价格刷新异常（不阻断）: {_lpf_e}'
 
     # Step 1: 市场状态分析
     ms = ms_analyze(symbol)
     if 'error' in ms:
-        print(f'[BrahmaBrain] ✗ {_sym} ms_analyze失败: {ms["error"]}')
+        pass  # [静默] f'[BrahmaBrain] ✗ {_sym} ms_analyze失败: {ms["error"]}'
         return {'error': ms['error']}
 
     # ── [设计院 2026-06-30 P0-A] RegimeStateMachine 体制防抖接入 ────────
@@ -2056,12 +2056,12 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _raw_regime = ms.get('regime', 'CHOP_MID')
         _stable_regime = _rsm.update(_raw_regime)
         if _stable_regime != _raw_regime:
-            print(f'[RSM] {_sym} 体制防抖: {_raw_regime}→{_stable_regime}（状态机稳定输出，已过滤伪切换）')
+            pass  # [静默] f'[RSM] {_sym} 体制防抖: {_raw_regime}→{_stable_regime}（状态机稳定输出，已过滤伪切换）'
         else:
-            print(f'[RSM] {_sym} 体制稳定: {_stable_regime}（无切换）')
+            pass  # [静默] f'[RSM] {_sym} 体制稳定: {_stable_regime}（无切换）'
         ms['regime'] = _stable_regime
     except Exception as _rsm_e:
-        print(f'[RSM] 状态机异常（不阻断，维持原始体制）: {_rsm_e}')
+        pass  # [静默] f'[RSM] 状态机异常（不阻断，维持原始体制）: {_rsm_e}'
     # ── [P0-A END] ────────────────────────────────────────────────────────
 
     # ── [因果AI P0-A] Causal Regime Verifier ────────────────────
@@ -2081,10 +2081,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _cv_adj = _causal_v_result.get('score_adj', 0)
         _cv_verdict = _causal_v_result.get('verdict', '?')
         if _cv_verdict not in ('STRONG', 'MODERATE'):
-            print(f'[CausalVerifier] ⚡ {_sym} verdict={_cv_verdict} conf={_causal_v_result.get("causal_confidence",0):.2f} adj={_cv_adj:+d}')
+            pass  # [静默] f'[CausalVerifier] ⚡ {_sym} verdict={_cv_verdict} conf={_causal_v_result.get("ca
         pass  # extra_data5c1a672a521d59cb5316Ff0c7ed3679c5b585728_causal_v_result4e2d
     except Exception as _cv_e:
-        print(f'[CausalVerifier] ⚠ 异常（不阻断）: {_cv_e}')
+        pass  # [静默] f'[CausalVerifier] ⚠ 异常（不阻断）: {_cv_e}'
 
     # Step 2: 确定方向
     if signal_dir is None:
@@ -2094,9 +2094,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     _rcn = {'BULL_TREND':'牛市趋势','BULL_EARLY':'牛市初期','BULL_PEAK':'牛市末期','BULL_CORRECTION':'牛市回调','BEAR_TREND':'熊市趋势','BEAR_EARLY':'熊市初期','BEAR_CRASH':'暴跌体制','BEAR_RECOVERY':'熊市反弹','CHOP_HIGH':'高位震荡','CHOP_LOW':'低位震荡','CHOP_MID':'中位震荡','BREAKOUT':'突破体制'}
     _reg_raw = ms.get('regime','?')
     _reg_display = f'{_reg_raw}({_rcn.get(_reg_raw,_reg_raw)})'
-    print(f'[BrahmaBrain] {_sym} 体制={_reg_display} 方向={signal_dir} RSI_1H={ms.get("momentum",{}).get("rsi_1h",0):.0f}')
+    pass  # [静默] f'[BrahmaBrain] {_sym} 体制={_reg_display} 方向={signal_dir} RSI_1H={ms.get("momentu
     if signal_dir == 'NEUTRAL':
-        print(f'[BrahmaBrain] {_sym} 方向中性，不入场')
+        pass  # [静默] f'[BrahmaBrain] {_sym} 方向中性，不入场'
         if not deep:
             return {
                 'symbol': symbol,
@@ -2116,7 +2116,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             signal_dir = 'SHORT'
         else:
             signal_dir = 'LONG'
-        print(f'[BrahmaBrain][deep] {_sym} 深度模式强制方向={signal_dir}（bear={_bear_p:.1%} bull={_bull_p:.1%}）')
+        pass  # [静默] f'[BrahmaBrain][deep] {_sym} 深度模式强制方向={signal_dir}（bear={_bear_p:.1%} bull={_bul
 
     # Step 3: SMC结构分析
     price = float(ms.get('price', 0))  # [v21.0 fix] MTF路由器需要price变量
@@ -2136,11 +2136,11 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             if _tf_used == '4H':
                 _mtf_lo = _mtf_result['entry_lo']
                 _mtf_hi = _mtf_result['entry_hi']
-                print(f'[MTF-v21.0] {symbol} 升级至4H入场区 [{_mtf_lo:.4g}~{_mtf_hi:.4g}] {_tf_upgrade[:60]}')
+                pass  # [静默]
                 if _tf_warn:
-                    print(f'[MTF-v21.0] 警告: {_tf_warn[:80]}')
+                    pass  # [静默]
         except Exception as _mtf_err:
-            print(f'[MTF-v21.0] 路由器异常（非阻断）: {_mtf_err}')
+            pass  # [静默]
             _mtf_result = None
 
         # [旧逻辑兼容] 如果MTF路由未激活，保留原1H→4H降级逻辑
@@ -2150,10 +2150,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 _fvg4h = _smc_4h.get('fvg', {}).get('nearest_bear')
                 if _ob4h:
                     smc['order_blocks']['nearest_bear_ob'] = _ob4h
-                    print(f'[SMC-4H] {symbol} 1H无OB，使用4H Bear OB [{_ob4h.get("low",0):.4g}~{_ob4h.get("high",0):.4g}]')
+                    pass  # [静默] f'[SMC-4H] {symbol} 1H无OB，使用4H Bear OB [{_ob4h.get("low",0):.4g}~{_ob4h.get("hig
                 if _fvg4h:
                     smc['fvg']['nearest_bear'] = _fvg4h
-                    print(f'[SMC-4H] {symbol} 1H无FVG，使用4H Bear FVG')
+                    pass  # [静默] f'[SMC-4H] {symbol} 1H无FVG，使用4H Bear FVG'
             if not smc.get('fvg', {}).get('nearest_bull') and not smc.get('order_blocks', {}).get('nearest_bull_ob'):
                 _ob4h_bull = _smc_4h.get('order_blocks', {}).get('nearest_bull_ob')
                 _fvg4h_bull = _smc_4h.get('fvg', {}).get('nearest_bull')
@@ -2163,7 +2163,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                     smc['fvg']['nearest_bull'] = _fvg4h_bull
     except Exception as _e:
             if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
+                pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
 
     # ══════════════════════════════════════════════════════════
     # [达摩院v12.9c 修订 设计院 2026-05-30] FVG 条件升级
@@ -2185,10 +2185,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     )
     # 只有FVG和OB都没有才是真正「无结构」，Fib始终存在所以允许降级
     if not _fvg_exists and not _ob_exists:
-        print(f'[BrahmaBrain] ⚠️ FVG/OB均无 {_sym}: {signal_dir}方向无SMC结构 → 降级用Fib入场')
+        pass  # [静默] f'[BrahmaBrain] ⚠️ FVG/OB均无 {_sym}: {signal_dir}方向无SMC结构 → 降级用Fib入场'
         # 不拒绝，继续走Fib降级路径（calc_trade_params会处理）
     elif not _fvg_exists:
-        print(f'[BrahmaBrain] ℹ️ {_sym} 无有效FVG，使用OB入场')
+        pass  # [静默] f'[BrahmaBrain] ℹ️ {_sym} 无有效FVG，使用OB入场'
 
     # Step 4: Phase 2 额外引擎
     k1h = klines_to_ohlcv(get_klines(symbol, '1h', 200))
@@ -2219,9 +2219,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         extra_data['coinglass'] = _cg_snap
         extra_data['fear_greed'] = _cg_snap['fear_greed']
         extra_data['onchain_score'] = _cg_snap['onchain_score']
-        print(f'[BrahmaBrain] CoinGlass: F&G={_cg_snap["fear_greed"]["value"]} '
-              f'OI={_cg_snap["oi_momentum"]["oi_change_pct"]:+.2f}% '
-              f'onchain={_cg_snap["onchain_score"]:+d}')
+        pass  # [静默多行print]
     except Exception as _cg_e:
         # [设计院 2026-05-30] 降级链：尝试备用数据源
         try:
@@ -2231,9 +2229,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             extra_data['fear_greed']    = _cg_snap_fb['fear_greed']
             extra_data['onchain_score'] = _cg_snap_fb.get('onchain_score', 0)
             _src = _cg_snap_fb['fear_greed'].get('source','?')
-            print(f'[BrahmaBrain] CoinGlass降级[{_src}]: F&G={_cg_snap_fb["fear_greed"]["value"]} FR={_cg_snap_fb["funding_rate"]:+.4f}%')
+            pass  # [静默] f'[BrahmaBrain] CoinGlass降级[{_src}]: F&G={_cg_snap_fb["fear_greed"]["value"]} FR
         except Exception as _fb_e:
-            print(f'[BrahmaBrain] CoinGlass+降级均失败: {_cg_e}')
+            pass  # [静默] f'[BrahmaBrain] CoinGlass+降级均失败: {_cg_e}'
     # ── liq_scanner 补充清算数据（Binance公开接口，无需Coinglass Key）────
     try:
         from liq_scanner import get_liq_snapshot
@@ -2252,9 +2250,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             }
         # 始终补充Binance公开数据字段
         extra_data['liq_snap'] = _liq_snap
-        print(f'[BrahmaBrain] LiqScan: 散户多{_liq_snap["long_pct"]:.0f}% 大户多{_liq_snap["top_long_pct"]:.0f}% 偏向={_liq_snap["liq_bias"]}')
+        pass  # [静默] f'[BrahmaBrain] LiqScan: 散户多{_liq_snap["long_pct"]:.0f}% 大户多{_liq_snap["top_long
     except Exception as _liq_e:
-        print(f'[BrahmaBrain] LiqScan跳过: {_liq_e}')
+        pass  # [静默] f'[BrahmaBrain] LiqScan跳过: {_liq_e}'
     # ─────────────────────────────────────────────────────────────
     try:
         # 达摩院 v3 升级：传入 volumes + regime + 当前时间戳
@@ -2293,7 +2291,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _rp = extra_data['divergence']['regime_adj']
         _vb = max(div_1h.get('vol_bonus',0), div_4h.get('vol_bonus',0))
         if _tp or _rp or _vb:
-            print(f'[D03-v3] 实训修正: 时间惩罚={-_tp} 体制调整={-_rp} 量缩奖励=+{_vb} 最终分={best_s}')
+            pass  # [静默] f'[D03-v3] 实训修正: 时间惩罚={-_tp} 体制调整={-_rp} 量缩奖励=+{_vb} 最终分={best_s}'
         # [v25.2 2026-06-16 P1] 1H+4H双重背离共振加分
         # 离线铁证: 1H信号WR=58% vs 15M WR=52.8%（+5.2%）
         # 当1H和4H背离评分都有效时（各≥6），双重共振+3分
@@ -2302,7 +2300,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             extra_data['divergence']['score'] = min(best_s + _dual_div_bonus, 18)
             extra_data['divergence']['score_long'] = min(extra_data['divergence'].get('score_long',0) + _dual_div_bonus, 18) if signal_dir=='LONG' else extra_data['divergence'].get('score_long',0)
             extra_data['divergence']['score_short'] = min(extra_data['divergence'].get('score_short',0) + _dual_div_bonus, 18) if signal_dir=='SHORT' else extra_data['divergence'].get('score_short',0)
-            print(f'[v25.2-P1] 1H+4H双重背离共振+3分: s_1h={s_1h} s_4h={s_4h}')
+            pass  # [静默]
     except Exception:
         pass
     try:
@@ -2361,23 +2359,23 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         try: extra_data['onchain'] = _f_oc.result(timeout=8)
         except Exception as _e:
                 if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                    print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
+                    pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
         try:
             _pt = _f_pt.result(timeout=8)
             if _pt: extra_data['pattern'] = _pt
         except Exception as _e:
                 if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                    print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
+                    pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
         try:
             _of = _f_of.result(timeout=8)
             if _of: extra_data['order_flow'] = _of
         except Exception as _e:
                 if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                    print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
+                    pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
         try: extra_data['macro'] = _f_mc.result(timeout=8)
         except Exception as _e:
                 if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                    print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
+                    pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
 
     # P0-NEW: 谐波形态引擎（4H + 日线双重扫描）
     try:
@@ -2393,14 +2391,14 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                         h_res = h_res_1d
             extra_data['harmonic'] = h_res
             if h_res.get('score', 0) > 0:
-                print(f'[HarmonicEngine] {symbol} {signal_dir}: {h_res.get("patterns",[])} score={h_res["score"]}')
+                pass  # [静默] f'[HarmonicEngine] {symbol} {signal_dir}: {h_res.get("patterns",[])} score={h_re
     except Exception as _e:
         extra_data['harmonic_err'] = str(_e)
         try:
             from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'harmonic','err':str(_e)[:80]})
         except Exception as _e:
                 if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                    print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
+                    pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
 
     # P0-NEW: 多周期对齐引擎
     try:
@@ -2413,7 +2411,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'multitf','err':str(_e)[:80]})
         except Exception as _e:
                 if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                    print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
+                    pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
 
     # P1-NEW: 增强信号引擎（CVD+清算+多空比趋势+时段）
     try:
@@ -2426,7 +2424,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'enhanced','err':str(_e)[:80]})
         except Exception as _e:
                 if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                    print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
+                    pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
 
     # P2-NEW: 鲸鱼引擎（链上大单+交易所流向）
     try:
@@ -2439,7 +2437,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'whale','err':str(_e)[:80]})
         except Exception as _e:
                 if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                    print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
+                    pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
 
     # P2-NEW: 跨市场引擎（BTC-ETH相关/DXY/风险偏好）
     try:
@@ -2452,7 +2450,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'cross','err':str(_e)[:80]})
         except Exception as _e:
                 if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                    print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
+                    pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
 
     # [s_cross 2026-07-01] 跨所FR+Basis（设计院三项外部路由落地）
     try:
@@ -2460,7 +2458,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _cfb = _get_cfb(symbol)
         extra_data['cross_fr_basis'] = _cfb
         if _cfb.get('score_adj', 0) != 0:
-            print(f'[s_cross-FR+Basis] {symbol} {signal_dir}: {_cfb["score_adj"]:+d} | {_cfb["note"]}')
+            pass  # [静默]
     except Exception:
         pass
 
@@ -2470,7 +2468,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _dpc = _get_dpc(symbol)
         extra_data['deribit_pc'] = _dpc
         if _dpc.get('score_adj', 0) != 0:
-            print(f'[s_options-PC] {symbol} {signal_dir}: {_dpc["score_adj"]:+d} | {_dpc["note"]}')
+            pass  # [静默]
     except Exception:
         pass
 
@@ -2496,7 +2494,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'micro','err':str(_e)[:80]})
         except Exception as _e:
                 if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                    print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
+                    pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
 
     # ─── Phase NEW: 量能衰竭 + 多周期背离共振 ────────────────────────
     # VOL-EXH: 量能衰竭引擎（底部识别核心）
@@ -2508,7 +2506,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             )
             extra_data['vol_exhaustion'] = _v_res
             if _v_res.get('score', 0) > 0:
-                print(f'[VolExh] {symbol} {signal_dir}: {_v_res["exhaustion_level"]} score={_v_res["score"]} {_v_res["notes"][:1]}')
+                pass  # [静默] f'[VolExh] {symbol} {signal_dir}: {_v_res["exhaustion_level"]} score={_v_res["sc
     except Exception as _e:
         extra_data['vol_exh_err'] = str(_e)[:80]
 
@@ -2518,7 +2516,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _md_res = _multitf_div_score(symbol, signal_dir)
             extra_data['multitf_div'] = _md_res
             if _md_res.get('resonance', 'NONE') not in ('NONE',):
-                print(f'[MultiTFDiv] {symbol} {signal_dir}: {_md_res["resonance"]} score={_md_res["score"]}')
+                pass  # [静默] f'[MultiTFDiv] {symbol} {signal_dir}: {_md_res["resonance"]} score={_md_res["sco
     except Exception as _e:
         extra_data['multitf_div_err'] = str(_e)[:80]
 
@@ -2666,12 +2664,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                     f'{_cfc_adj:+d}(因果归因:{_cfc_verdict} '
                     f'因果维度{_cfc_result.get("causal_ratio",0):.0%})'
                 )
-                print(f'[CounterfactualCheck] {_sym} {_cfc_verdict} adj={_cfc_adj:+d} '
-                      f'score:{_cf_score:.0f}→{cf["score"]:.0f} '
-                      f'因果{_cfc_result.get("causal_ratio",0):.0%}/相关{_cfc_result.get("spurious_ratio",0):.0%}')
+                pass  # [静默多行print]
             extra_data['counterfactual'] = _cfc_result
     except Exception as _cfc_e:
-        print(f'[CounterfactualCheck] ⚠ 异常（不阻断）: {_cfc_e}')
+        pass  # [静默] f'[CounterfactualCheck] ⚠ 异常（不阻断）: {_cfc_e}'
 
     # ── Causal Verifier 评分叠加 ─────────────────────────────
     # 将 P0-A 的 score_adj 运用到最终评分
@@ -2683,7 +2679,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             f'{_cv_adj:+d}(体制因果:{extra_data.get("causal_verifier",{}).get("verdict","?")} '
             f'conf={extra_data.get("causal_verifier",{}).get("causal_confidence",0):.2f})'
         )
-        print(f'[CausalVerifier] {_sym} 评分叠加: {_cf_score_pre:.0f}→{cf["score"]:.0f} ({_cv_adj:+d})')
+        pass  # [静默] f'[CausalVerifier] {_sym} 评分叠加: {_cf_score_pre:.0f}→{cf["score"]:.0f} ({_cv_adj:
 
     # ── [s_cross 2026-07-01] 跨所FR+Basis 评分叠加 ──────────────────
     _cfb_adj = extra_data.get('cross_fr_basis', {}).get('score_adj', 0)
@@ -2696,7 +2692,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             f'{_cfb_adj:+d}(FR均值={extra_data.get("cross_fr_basis",{}).get("fr_avg",0):.4f}% '
             f'Basis={extra_data.get("cross_fr_basis",{}).get("basis_pct",0):.3f}%)'
         )
-        print(f'[s_cross] {_sym} 评分叠加: {_cfb_pre:.0f}→{cf["score"]:.0f} ({_cfb_adj:+d})')
+        pass  # [静默]
 
     # ── [s_options 2026-07-01] Deribit P/C OI 评分叠加 ──────────────────
     _dpc_adj = extra_data.get('deribit_pc', {}).get('score_adj', 0)
@@ -2709,7 +2705,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             f'{_dpc_adj:+d}(P/C={extra_data.get("deribit_pc",{}).get("pc_oi_ratio",0):.2f} '
             f'{extra_data.get("deribit_pc",{}).get("signal","")})'
         )
-        print(f'[s_options] {_sym} Deribit叠加: {_dpc_pre:.0f}→{cf["score"]:.0f} ({_dpc_adj:+d})')
+        pass  # [静默]
 
     # ── [s_macro_v2 2026-07-01] DXY实时+纳指+BTC.D 评分叠加 ────────────
     _mv2_adj = extra_data.get('macro_v2', {}).get('score_addon', 0)
@@ -2823,7 +2819,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         if _regime_sl_val:
             _sym_spec_map[_sym] = dict(_spec_tmp)
             _sym_spec_map[_sym]['sl_mult_override'] = _regime_sl_val
-            print(f'[N17体制SL] {_sym} {_current_regime} sl覆盖={_regime_sl_val}x')
+            pass  # [静默]
 
     # [N19] BTC传导系数 — 低传导标的在BTC突破时降权
     # 数据来源: train_10k_v5.py N19节点，15标的分析
@@ -2877,7 +2873,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 '_spec_override': f'{_sym} 专项sl={_sl_ov}x mh={_spec["mh_override"]}h PF={_spec["pf_evidence"]}',
                 'valid': _rr1_new >= 1.2,  # [六方修复 2026-06-25] 最低门槛1.2
             })
-            print(f'[N17专项] {_sym} sl覆盖={_sl_ov}x rr1={_rr1_new} sl_pct={_sl_pct_new}%')
+            pass  # [静默]
 
     # ── [v4.0出场后置层 2026-06-28] N17专项覆写后再次应用exit_params_v4 ──
     # 原因：N17专项 tp_mult_override 会把RR重新拉高（如BTC tp=1.964x → rr=1.9+）
@@ -2926,7 +2922,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 _v4b_applied = True
             if _v4b_applied:
                 params['valid'] = params.get('rr1', 0) >= 1.0  # v4.0体制下1.0已有正期望
-                print(f'[v4.0后置] {_regime_v4b}→{_v4b_key} SL={params["sl_pct"]:.2f}% RR={params["rr1"]:.2f} (N17后覆写)')
+                pass  # [静默]
     except Exception as _ev4b:
         pass  # 静默失败，不影响主流程
     # ── [END v4.0出场后置层] ──
@@ -3059,7 +3055,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         # [P1-A audit-fix 2026-06-17 DISABLED] _drift = {'drift': False}  # [DEAD: drift_detector removed]
         extra_data['drift'] = _drift
         if _drift['alert'] == 'ALERT':
-            print(f'[BrahmaBrain] ⚠️ DRIFT ALERT {_sym}: {_drift["summary"]}')
+            pass  # [静默] f'[BrahmaBrain] ⚠️ DRIFT ALERT {_sym}: {_drift["summary"]}'
     except Exception as _de:
         pass
 
@@ -3070,7 +3066,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _conflict = _cr_resolve(_bd, signal_dir, cf.get('total', 0))
         extra_data['conflict'] = _conflict
         if _conflict['verdict'] == 'REJECT':
-            print(f'[BrahmaBrain] 🚫 CONFLICT REJECT {_sym}: {_conflict["conflict_summary"]}')
+            pass  # [静默] f'[BrahmaBrain] 🚫 CONFLICT REJECT {_sym}: {_conflict["conflict_summary"]}'
             cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
             cf['kelly_mult'] = 0.0
             cf['conflict_reject'] = True
@@ -3130,7 +3126,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         # [v24.5-debug] 临时打印，确认修复后grade值
         import os
         if os.environ.get('BRAHMA_DEBUG'):
-            print(f'[PRE-SQE] {_sym} price={ms.get("price",0):.0f} entry={params.get("entry_lo",0):.0f}~{params.get("entry_hi",0):.0f} grade={cf["structure_grade"]} sources={_pre_sq_result.get("sources",[])}')
+            pass  # [静默] f'[PRE-SQE] {_sym} price={ms.get("price",0):.0f} entry={params.get("entry_lo",0)
     except Exception as _pre_sq_err:
         pass  # 失败不影响主流程
 
@@ -3152,7 +3148,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         )
         extra_data['signal_queue'] = _sq_result
         if not _sq_result.get('accepted', True):
-            print(f'[BrahmaBrain] 🚫 Queue reject {_sym}: {_sq_result["reason"]}')
+            pass  # [静默] f'[BrahmaBrain] 🚫 Queue reject {_sym}: {_sq_result["reason"]}'
             cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
             cf['kelly_mult'] = 0.0
             cf['queue_reject'] = _sq_result['reason']
@@ -3241,7 +3237,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         if _globally_blocked:
             # v2 硬封锁 → 评分归零0，不退出，让analyze()完整构建返回结构
             _block_reason = _v2_result.get('block_reason', 'v2封锁')
-            print(f'[BrahmaBrain-v2] 🛡️ 封锁 {_sym} {signal_dir}: {_block_reason[:60]}')
+            pass  # [静默] f'[BrahmaBrain-v2] 🛡️ 封锁 {_sym} {signal_dir}: {_block_reason[:60]}'
             cf['total']         = 0
             cf['score_final']   = 0
             cf['action']        = 'SKIP'
@@ -3252,7 +3248,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             # v2 通过 → 更新评分和仓位
             _v2_final_score = _v2_result.get('final_score', cf.get('total', 0))
             if _v2_final_score != cf.get('total', 0):
-                print(f'[BrahmaBrain-v2] 📊 {_sym} 评分调整: {cf.get("total",0):.0f}→{_v2_final_score:.0f} ({_v2_result.get("mode","")})')
+                pass  # [静默] f'[BrahmaBrain-v2] 📊 {_sym} 评分调整: {cf.get("total",0):.0f}→{_v2_final_score:.0f} 
                 cf['total'] = _v2_final_score
             # 仓位由v2接管
             cf['v2_pos_pct'] = _v2_result.get('pos_pct', 0)
@@ -3360,10 +3356,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     if _is_chop_long_watch:
         _score_gate_ok = True   # 豁免score gate
         cf['chop_long_watch'] = f'CHOP_MID做多WATCH通道: score={_score_raw:.0f}≥100 → 0.5%NAV观察仓'
-        print(f'[CHOP-WATCH] {_sym} CHOP_MID做多: score={_score_raw:.0f}≥100 WATCH信号解锁（A1修正）')
+        pass  # [静默] f'[CHOP-WATCH] {_sym} CHOP_MID做多: score={_score_raw:.0f}≥100 WATCH信号解锁（A1修正）'
 
     if not _score_gate_ok:
-        print(f'[BrahmaBrain] ⚠️ Score gate {_sym}: {_score_raw:.0f} < {_MIN_SCORE_EFFECTIVE} (低于S1门槛{"+动态boost" if _thr_boost else ""})')
+        pass  # [静默] f'[BrahmaBrain] ⚠️ Score gate {_sym}: {_score_raw:.0f} < {_MIN_SCORE_EFFECTIVE} 
         cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
         cf['score_gate_reject'] = True
         cf['score_gate_min'] = MIN_SCORE_OPEN
@@ -3405,12 +3401,12 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _score_raw = round(_score_raw * 1.05, 1)
         cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
         cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用; cf['mtf_4h_confirm'] = f'4H✅BULL RSI={_rsi_4h:.0f} +5%'
-        print(f'[BrahmaBrain] 📊 {_sym} 4H共振BULL: score×1.05 → {_score_raw:.0f}')
+        pass  # [静默] f'[BrahmaBrain] 📊 {_sym} 4H共振BULL: score×1.05 → {_score_raw:.0f}'
     elif _4h_align == 'BEAR' and signal_dir == 'SHORT' and _score_gate_ok:
         _score_raw = round(_score_raw * 1.05, 1)
         cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
         cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用; cf['mtf_4h_confirm'] = f'4H✅BEAR RSI={_rsi_4h:.0f} +5%'
-        print(f'[BrahmaBrain] 📊 {_sym} 4H共振BEAR: score×1.05 → {_score_raw:.0f}')
+        pass  # [静默] f'[BrahmaBrain] 📊 {_sym} 4H共振BEAR: score×1.05 → {_score_raw:.0f}'
     elif _4h_align != 'NEUTRAL' and _4h_align == ('BEAR' if signal_dir=='LONG' else 'BULL'):
         # [v24.3-fix] 4H方向冲突 → 降权-25分（哲学: 降权不封禁）
         # 4H逆势是风险因子，用分数惩罚体现，grade≥70仍可通过
@@ -3420,7 +3416,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
         cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
         cf['mtf_4h_conflict'] = f'4H⚠️{_4h_align} vs {signal_dir} 降权-{_4h_penalty}分 → {_score_raw:.0f}'
-        print(f'[BrahmaBrain] ⚠️ {_sym} 4H逆势降权-{_4h_penalty}: {_4h_align} vs {signal_dir} → score={_score_raw:.0f}')
+        pass  # [静默] f'[BrahmaBrain] ⚠️ {_sym} 4H逆势降权-{_4h_penalty}: {_4h_align} vs {signal_dir} → sc
     elif _4h_align == 'NEUTRAL' and _score_gate_ok:
         # [设计院 2026-07-06] MTF=NEUTRAL降权 -4%（原-8%过于激进）
         # 修正依据：实际WR差距约4~5%，不是8%；BULL_TREND下4H NEUTRAL很常见且多单结构其实良好
@@ -3431,7 +3427,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         cf['total'] = _score_raw
         cf = copy.deepcopy(cf)
         cf['mtf_4h_neutral'] = f'4H NEUTRAL 降权×0.98 {_score_before_neutral:.0f}→{_score_raw:.0f}'
-        print(f'[BrahmaBrain] 🟡 {_sym} MTF=NEUTRAL 降抎2%[v6.0]: score {_score_before_neutral:.0f}→{_score_raw:.0f}')
+        pass  # [静默] f'[BrahmaBrain] 🟡 {_sym} MTF=NEUTRAL 降抎2%[v6.0]: score {_score_before_neutral:.0
 
     # [设计院 2026-05-24] 达摩院6节点预测验证 — 接入真实信号流
     _dharma_nodes = {'nodes_pass': 0, 'verdict': 'UNKNOWN', 'score_mult': 1.0, 'detail': ''}
@@ -3449,13 +3445,13 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             # [v24.3-fix] 达摩院节点0/1 → 降权-30分（哲学: 不归零）
             _score_raw = max(0, _score_raw - 30)
             cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
-            print(f'[Dharma] ⚠️ 节点不足 {_sym}: {_dharma_nodes["nodes_pass"]}/6节点 → -30分 score={_score_raw:.0f}')
+            pass  # [静默] f'[Dharma] ⚠️ 节点不足 {_sym}: {_dharma_nodes["nodes_pass"]}/6节点 → -30分 score={_scor
         elif _node_mult != 1.0:
             _score_raw = round(_score_raw * _node_mult, 1)
             cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
-            print(f'[Dharma] 🔱 {_sym} 节点={_dharma_nodes["nodes_pass"]}/6 mult={_node_mult} score: {cf.get("total",0):.0f}→{_score_raw:.0f} {_dharma_nodes["detail"]}')
+            pass  # [静默] f'[Dharma] 🔱 {_sym} 节点={_dharma_nodes["nodes_pass"]}/6 mult={_node_mult} score: 
         else:
-            print(f'[Dharma] ✅ {_sym} 节点={_dharma_nodes["nodes_pass"]}/6 verdict={_dharma_nodes["verdict"]} {_dharma_nodes["detail"]}')
+            pass  # [静默] f'[Dharma] ✅ {_sym} 节点={_dharma_nodes["nodes_pass"]}/6 verdict={_dharma_nodes["v
         # [v24.3-fix] 节点数<3 → 额外-15分而非强制拒绝（哲学: 降权）
         if _dharma_nodes['nodes_pass'] < 3:
             _score_raw = max(0, _score_raw - 15)
@@ -3465,7 +3461,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         if _dharma_nodes.get('verdict') == 'HIGH_CONF':
             _score_raw = round(_score_raw * 1.05, 1)  # +5%加成
             cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
-            print(f'[Dharma] 🌟 HIGH_CONF {_sym}: score加成 ×1.05 → {_score_raw:.0f}')
+            pass  # [静默] f'[Dharma] 🌟 HIGH_CONF {_sym}: score加成 ×1.05 → {_score_raw:.0f}'
     except Exception as _dne:
         pass  # 节点验证失败不阻断主流
 
@@ -3494,20 +3490,20 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 _gap_penalty = max(-40, round(_gap_dist * 3))  # -2% → -6分，-10% → -30分
                 _score_raw = round(_score_raw + _gap_penalty, 1)
                 cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
-                print(f'[v22.1-Gap惩罚] {_sym} SHORT: 价格已下穿入场区 gap={_gap_dist:.1f}% {_gap_penalty:+d}分 → {_score_raw:.0f}')
+                pass  # [静默]
             elif _gap_dist > 5.0:
                 # 入场区距现价>5%，很难触达
                 _gap_penalty = max(-20, round(-((_gap_dist - 5.0) * 2)))
                 _score_raw = round(_score_raw + _gap_penalty, 1)
                 cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
-                print(f'[v22.1-Gap惩罚] {_sym} SHORT: 入场区偏远 gap={_gap_dist:.1f}% {_gap_penalty:+d}分 → {_score_raw:.0f}')
+                pass  # [静默]
         elif _gap_price > 0 and _gap_elo > 0 and signal_dir == 'LONG':
             _gap_dist_l = (_gap_price - params.get('entry_hi', _gap_elo)) / _gap_price * 100
             if _gap_dist_l < -2.0:
                 _gap_penalty_l = max(-40, round(_gap_dist_l * 3))
                 _score_raw = round(_score_raw + _gap_penalty_l, 1)
                 cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
-                print(f'[v22.1-Gap惩罚] {_sym} LONG: 价格已上穿入场区 gap={_gap_dist_l:.1f}% {_gap_penalty_l:+d}分 → {_score_raw:.0f}')
+                pass  # [静默]
     except Exception:
         pass  # gap惩罚失败不阻断主流程
 
@@ -3547,7 +3543,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         if (_is_chop_short and _tc_align_short) or (_is_chop_long and _tc_align_long):
             # tc_strong 反转方向：WR=70~78%，完全解除上限（苏摩审批通过）
             _chop_cap_applied = None  # 无上限
-            print(f'[P2-CHOP-UNLOCK] {ms.get("symbol","?")} CHOP×tc_strong反转: score={_score:.0f} 无上限 WR=70~78%')
+            pass  # [静默] f'[P2-CHOP-UNLOCK] {ms.get("symbol","?")} CHOP×tc_strong反转: score={_score:.0f} 无
             cf['breakdown']['CHOP解锁'] = f'tc_strong反转 tc={_tc_val} WR=70~78% 无上限'
         elif (_is_chop_short and _tc_lean_short) or (_is_chop_long and _tc_lean_long):
             # tc_lean 反转方向：WR=61~63%，上限放宽至105
@@ -3555,21 +3551,21 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             if _score > 105:
                 _score = 105
                 cf['breakdown']['CHOP上限'] = f'tc_lean反转 tc={_tc_val} WR=61~63% 上限105: {_score_before_cap:.0f}→105'
-                print(f'[P2-CHOP-CAP] {ms.get("symbol","?")} CHOP×tc_lean: {_score_before_cap:.0f}→105')
+                pass  # [静默] f'[P2-CHOP-CAP] {ms.get("symbol","?")} CHOP×tc_lean: {_score_before_cap:.0f}→105
         elif (_is_chop_short and _tc_reverse_short) or (_is_chop_long and _tc_reverse_long):
             # 同向顺势（全空做空/全多做多）：WR=30~46%！极危险，上限收紧至75
             _chop_cap_applied = 75
             if _score > 75:
                 _score = 75
                 cf['breakdown']['CHOP危险'] = f'tc同向顺势 tc={_tc_val} WR=30~46% 上限75: {_score_before_cap:.0f}→75'
-                print(f'[P2-CHOP-DANGER] {ms.get("symbol","?")} CHOP×tc同向: {_score_before_cap:.0f}→75')
+                pass  # [静默] f'[P2-CHOP-DANGER] {ms.get("symbol","?")} CHOP×tc同向: {_score_before_cap:.0f}→75'
         else:
             # tc_neutral(0)：维持原90上限
             _chop_cap_applied = 90
             if _score > 90:
                 _score = 90
                 cf['breakdown']['CHOP硬性上限'] = f'P2保护tc_neutral: {_score_before_cap:.0f}→90（CHOP整体EV=-0.11%）'
-                print(f'[P2-CHOP-CAP] {ms.get("symbol","?")} CHOP体制tc_neutral上限: {_score_before_cap:.0f}→90')
+                pass  # [静默] f'[P2-CHOP-CAP] {ms.get("symbol","?")} CHOP体制tc_neutral上限: {_score_before_cap:.0
     # ── 死穴精英解锁通道（苏摩哲学校正 2026-06-30）────────────────────────────
     # 哲学：梵天为交易而生，体制=仓位权重调节器，不是封禁系统
     # 极端结构识别场景（RSI极值+高score+高grade）允许精英解锁
@@ -3649,15 +3645,14 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                     cf['breakdown']['P0B_GRAY_PASS'] = (
                         f'[P0B灰度] ratio={_p0b_ratio:.3f}>={_P0B_GRAY_RATIO} score={_pre_score:.0f}>={_P0B_GRAY_SCORE} 允许'
                     )
-                    print(f'[P0B-MacroGate] 🟡 {_sym} 灰度允许 ratio={_p0b_ratio:.3f} score={_pre_score:.0f}')
+                    pass  # [静默] f'[P0B-MacroGate] 🟡 {_sym} 灰度允许 ratio={_p0b_ratio:.3f} score={_pre_score:.0f}'
                 else:
                     _score_gate_ok = False
                     cf['breakdown']['P0B_BULL_TREND_MACRO'] = (
                         f'[P0-B宏观门] price={_p0b_price:.2f} < EMA200={_p0b_ema200:.2f} '
                         f'ratio={_p0b_ratio:.3f} 封锁LONG'
                     )
-                    print(f'[P0B-MacroGate] 🛑 {_sym} BULL_TREND_LONG 被拦截 '
-                          f'price={_p0b_price:.2f} < EMA200={_p0b_ema200:.2f} (宏观熊市)')
+                    pass  # [静默多行print]
     except Exception as _p0b_e:
         pass
     # ── [END P0-B 宏观门] ──────────────────────────────────────────────────────────
@@ -3688,7 +3683,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _score_raw = round(_score_raw * 1.04, 1)
             cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
             cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用; cf['n14_early_bird'] = f'BEAR_TREND早鸟({_regime_age_h:.1f}h) ×1.04'
-            print(f'[BrahmaBrain] 🦅 {_sym} N14早鸟: {_regime_now} {_regime_age_h:.1f}h 进入 score→{_score_raw:.0f}')
+            pass  # [静默] f'[BrahmaBrain] 🦅 {_sym} N14早鸟: {_regime_now} {_regime_age_h:.1f}h 进入 score→{_sc
 
         # ── [P3 TREND_fresh Elite v3.0 苏摩111 2026-06-28] ─────────────────
         # 铁证：TREND体制刚进入1-2根4H K线时 WR=75.6% EV=+0.687%（v3.0实盘对齐 n=334）
@@ -3716,7 +3711,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['total'] = _score_raw
             cf.setdefault('breakdown', {})['p1_rsi60_short'] = (
                 f'RSI>60做空({_rsi_for_p1:.0f}) +{_p1_bonus}分 WR=68.1%(v3.0)')
-            print(f'[P1-RSI60] 🎯 {_sym} RSI={_rsi_for_p1:.0f} BEAR_TREND SHORT: +{_p1_bonus}分 score→{_score_raw:.0f}')
+            pass  # [静默] f'[P1-RSI60] 🎯 {_sym} RSI={_rsi_for_p1:.0f} BEAR_TREND SHORT: +{_p1_bonus}分 scor
         # ── [END P1 RSI>60] ──────────────────────────────────────────────────
 
         if (_bars_est <= 2
@@ -3728,8 +3723,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['total'] = _score_raw
             cf.setdefault('breakdown', {})['p3_trend_fresh'] = (
                 f'TREND_fresh({_regime_now} age≈{_bars_est}根) +{_fresh_bonus}分 WR=75.6%(v3.0)')
-            print(f'[P3-TrendFresh] 🔥 {_sym} {_regime_now}×{signal_dir}: '
-                  f'age≈{_bars_est}根4H +{_fresh_bonus}分 WR=75.6% EV=+0.687% score→{_score_raw:.0f}')
+            pass  # [静默多行print]
         elif (_bars_est in (3, 4)
                 and _tf_expected_dir == signal_dir
                 and _score_gate_ok
@@ -3740,8 +3734,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['total'] = _score_raw
             cf.setdefault('breakdown', {})['p3_trend_early'] = (
                 f'TREND_early({_regime_now} age≈{_bars_est}根) +{_early_bonus}分 WR=62.6%(v3.0)')
-            print(f'[P3-TrendEarly] 📈 {_sym} {_regime_now}×{signal_dir}: '
-                  f'age≈{_bars_est}根4H +{_early_bonus}分 WR=62.6% EV=+0.282% score→{_score_raw:.0f}')
+            pass  # [静默多行print]
         # ── [END P3 TREND_fresh/early] ────────────────────────────────────────
     except Exception: pass
 
@@ -3801,7 +3794,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
             if _score_raw < 0: _score_raw = 0
             cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用; cf['total'] = _score_raw
-            print(f'[B2-Structure] {"⚠️" if _b2_bonus < 0 else "✅"} {_sym}: gap={_gap_b2:.2f}% {_b2_bonus:+d}分 → {_score_raw:.0f}')
+            pass  # [静默] f'[B2-Structure] {"⚠️" if _b2_bonus < 0 else "✅"} {_sym}: gap={_gap_b2:.2f}% {_b
 
         # ── [B2 v5 V2.0报告P0-A修复 2026-06-05] GapGate逻辑倒转
         # Round2铁证：BTC/ETH全部55+58条成功信号 gap均<0.5%（gap越小=最优入场）
@@ -3819,7 +3812,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 if _gap_check < 0:
                     # 价格已在入场区内 → 最佳状态，直接通过
                     cf['gap_gate'] = f'gap={_gap_check:.2f}% 价格在入场区内 命中 通过'
-                    print(f'[GapGate] ✅ {_sym}: gap={_gap_check:.2f}% 价格在入场区内，允许')
+                    pass  # [静默] f'[GapGate] ✅ {_sym}: gap={_gap_check:.2f}% 价格在入场区内，允许'
                 # [v24.3-fix] GapGate: score=0清零 → 按gap比例降权
                 # 哲学：距入场区越远惩罚越重，但不清零——让grade门控最终拍板
                 elif _gap_check < 0.5:   _gap_penalty = 0   # 贴近：不惩罚
@@ -3840,10 +3833,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                     cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
                     cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
                     cf['gap_gate'] = f'gap={_gap_check:.2f}% -惩罚{_gap_penalty}分 → score={_score_raw:.0f}'
-                    print(f'[GapGate] ⚠️ {_sym}: gap={_gap_check:.2f}% -{_gap_penalty}分 score={_score_raw:.0f}')
+                    pass  # [静默] f'[GapGate] ⚠️ {_sym}: gap={_gap_check:.2f}% -{_gap_penalty}分 score={_score_raw:
                 else:
                     cf['gap_gate'] = f'gap={_gap_check:.2f}%<0.5% 贴近 通过'
-                    print(f'[GapGate] ✅ {_sym}: gap={_gap_check:.2f}% 贴近')
+                    pass  # [静默] f'[GapGate] ✅ {_sym}: gap={_gap_check:.2f}% 贴近'
         except Exception: pass
     except Exception: pass
     # ── [END B2 v3] | B2 v3 段结束 ──────────────────────────────────────────────────────────
@@ -3949,7 +3942,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         cf['effective_grade'] = _eff_grade
         cf['grade_mult']      = _mult
         if _mult < 1.00:
-            print(f'[RegimeGrade] {_sym} {_regime_key}×{signal_dir}: grade {_raw_grade}×{_mult}={_eff_grade:.1f}')
+            pass  # [静默] f'[RegimeGrade] {_sym} {_regime_key}×{signal_dir}: grade {_raw_grade}×{_mult}={_
         # StructureGate 使用 effective_grade
         _sq = {'grade': _eff_grade, 'label': cf.get('structure_label', f'grade={_eff_grade:.0f}')}
         # [v25.4 死穴修复 2026-06-27] StructureGate 门槛 70→80
@@ -3977,20 +3970,20 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['action'] = 'SKIP'
             cf['kelly_mult'] = 0
             cf['structure_reject'] = f'grade={_sq["grade"]}({_sq["label"]}) grade<80 WR=47%死亡区封堵 [v25.4]'
-            print(f'[StructureGate] 🚫 {_sym} {signal_dir}: {_sq["label"]} grade={_sq["grade"]}<80 → WR=47%死亡区封堵')
+            pass  # [静默] f'[StructureGate] 🚫 {_sym} {signal_dir}: {_sq["label"]} grade={_sq["grade"]}<80 
         elif _sq['grade'] < 80 and _bull_grade_exception:
             # BULL_TREND特例通道：grade75~79允许通过（三重条件保护）
-            print(f'[StructureGate] ⚡ {_sym} LONG: BULL_TREND特例 grade={_sq["grade"]}(≥75) score≥155 → 允许通过')
+            pass  # [静默] f'[StructureGate] ⚡ {_sym} LONG: BULL_TREND特例 grade={_sq["grade"]}(≥75) score≥15
         elif _sq['grade'] >= 90:
             _sq_bonus = round((_sq['grade'] - 80) * 0.3, 1)
             _score_raw = round(_score_raw + _sq_bonus, 1)
             cf['total'] = _score_raw
-            print(f'[StructureGate] ✅ {_sym} {signal_dir}: {_sq["label"]} grade={_sq["grade"]} +{_sq_bonus}分 → {_score_raw:.0f}')
+            pass  # [静默] f'[StructureGate] ✅ {_sym} {signal_dir}: {_sq["label"]} grade={_sq["grade"]} +{_
         else:  # grade 80-89
             _sq_bonus = round((_sq['grade'] - 80) * 0.15, 1)
             _score_raw = round(_score_raw + _sq_bonus, 1)
             cf['total'] = _score_raw
-            print(f'[StructureGate] ✅ {_sym} {signal_dir}: {_sq["label"]} grade={_sq["grade"]} +{_sq_bonus}分 → {_score_raw:.0f}')
+            pass  # [静默] f'[StructureGate] ✅ {_sym} {signal_dir}: {_sq["label"]} grade={_sq["grade"]} +{_
         # [v25.4] grade 80-89: 正常通过，小额加分
         # else分支不需要（grade<70已在if分支封堵）
 
@@ -4078,7 +4071,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _score_gate_ok = False
             cf['p0_reject'] = _p0_reason
             cf['kelly_mult'] = 0
-            print(f'[P0SpecialFilter] 🚫 {_sym} {signal_dir}: {_p0_reason[:80]}')
+            pass  # [静默] f'[P0SpecialFilter] 🚫 {_sym} {signal_dir}: {_p0_reason[:80]}'
 
     except Exception as _p0e:
         pass  # P0过滤器异常不阻塞主流程
@@ -4108,7 +4101,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _score_raw = round(_score_raw + _lsr_oi_pts, 1)
             cf['total'] = _score_raw
             cf['n20_lsr_oi'] = _lsr_oi_res.get('note', '')
-            print(f'[N20-LSR/OI] {_sym} {signal_dir}: {_lsr_oi_pts:+d}分 → {_score_raw:.0f} | {_lsr_oi_res.get("note","")[:60]}')
+            pass  # [静默]
     except Exception as _lsr_e:
         pass
     # ── [END N20 LSR+OI] | N20 多空比+持仓量段结束 ─────────────────────────────────────────────────────
@@ -4128,7 +4121,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _score_raw = round(_score_raw + _fib_pts, 1)
             cf['total'] = _score_raw
             cf['n21_fib_macro'] = f"regime={_fib_res.get('regime_tag','')} ema200=${_fib_res.get('ema200',0):,.0f} wRSI={_fib_res.get('weekly_rsi',0):.0f} {_fib_pts:+d}pts"
-            print(f'[N21-FibMacro] {_sym} {signal_dir}: {_fib_pts:+d}分 → {_score_raw:.0f} | {_fib_res.get("regime_tag","")} ema200=${_fib_res.get("ema200",0):,.0f}')
+            pass  # [静默] f'[N21-FibMacro] {_sym} {signal_dir}: {_fib_pts:+d}分 → {_score_raw:.0f} | {_fib_
     except Exception as _fib_e:
         pass
     # ── [END N21 宏观Fib] ────────────────────────────────────────────────────
@@ -4163,7 +4156,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         if _pts22b != 0:
             _score_raw += _pts22b
             cf['n22b_wr_matrix'] = f'N22b_WR矩阵:{_pts22b:+d}({_combo22} wr={_wr22b:.1%} n={_n22b})'
-            print(f'[N22b-WRMatrix] {_sym} {_combo22}: {_pts22b:+d}分 WR={_wr22b:.1%} n={_n22b}')
+            pass  # [静默] f'[N22b-WRMatrix] {_sym} {_combo22}: {_pts22b:+d}分 WR={_wr22b:.1%} n={_n22b}'
     except Exception:
         pass
     # ── [END N22b] ──────────────────────────────────────────────────────────
@@ -4198,9 +4191,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 f'EarlyTrendGate[v25.4-P1fix]: {_etg_regime}×{_etg_dir} '
                 f'逆势 RSI={_etg_rsi1h:.0f} {_etg_penalty:+d}分({"N22b已惩罚,仅补充" if _etg_n22b_applied else "独立惩罚"}) → {_score_raw:.0f}'
             )
-            print(f'[EarlyTrendGate] {_sym} {_etg_regime}×{_etg_dir}: {_etg_penalty:+d}分 RSI={_etg_rsi1h:.0f} N22b已惩罚={_etg_n22b_applied}')
+            pass  # [静默] f'[EarlyTrendGate] {_sym} {_etg_regime}×{_etg_dir}: {_etg_penalty:+d}分 RSI={_etg
         elif _etg_active and _etg_exempt:
-            print(f'[EarlyTrendGate] {_sym} {_etg_regime}×{_etg_dir}: RSI极值豁免 RSI={_etg_rsi1h:.0f}')
+            pass  # [静默] f'[EarlyTrendGate] {_sym} {_etg_regime}×{_etg_dir}: RSI极值豁免 RSI={_etg_rsi1h:.0f}
     except Exception:
         pass
     # ── [END EarlyTrendGate] ─────────────────────────────────────────────────
@@ -4220,17 +4213,17 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 cf['total'] = _score_raw
                 cf.setdefault('breakdown', {})['p0_bear_early_tc'] = (
                     f'BEAR_EARLY+tc={_tc_p0:+d}(空头排列) +{_p0_bonus}分 WR=91.9%(v4.0)')
-                print(f'[P0-BearEarlyTC] 🎯 {_sym} BEAR_EARLY tc={_tc_p0:+d}: +{_p0_bonus}分 score→{_score_raw:.0f}')
+                pass  # [静默] f'[P0-BearEarlyTC] 🎯 {_sym} BEAR_EARLY tc={_tc_p0:+d}: +{_p0_bonus}分 score→{_sco
             elif _tc_p0 <= -2:
                 _p0_penalty = -10
                 _score_raw = max(0, round(_score_raw + _p0_penalty, 1))
                 cf['total'] = _score_raw
                 cf.setdefault('breakdown', {})['p0_bear_early_tc'] = (
                     f'BEAR_EARLY+tc={_tc_p0:+d}(多头排列做空) {_p0_penalty}分 WR=53.8%')
-                print(f'[P0-BearEarlyTC] ⚠️ {_sym} BEAR_EARLY tc={_tc_p0:+d}: {_p0_penalty}分 score→{_score_raw:.0f}')
+                pass  # [静默] f'[P0-BearEarlyTC] ⚠️ {_sym} BEAR_EARLY tc={_tc_p0:+d}: {_p0_penalty}分 score→{_s
     except Exception as _e:
             if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
+                pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
 
     # ══════════════════════════════════════════════════════════════
     # [P1 苏摩111 2026-06-28] BTC领先ETH（跨标的领先指标）
@@ -4253,14 +4246,14 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                         cf['total'] = _score_raw
                         cf.setdefault('breakdown', {})['p1_btc_lead'] = (
                             f'BTC_TP领先{_bh:.1f}H +{_p1v}分 WR=85.7%(宪法级)')
-                        print(f'[P1-BTCLead] 🚀 ETH BTC_TP {_bh:.1f}H前: +{_p1v}分 score→{_score_raw:.0f}')
+                        pass  # [静默] f'[P1-BTCLead] 🚀 ETH BTC_TP {_bh:.1f}H前: +{_p1v}分 score→{_score_raw:.0f}'
                     elif _bres == 'SL':
                         _p1v = -25
                         _score_raw = max(0, round(_score_raw + _p1v, 1))
                         cf['total'] = _score_raw
                         cf.setdefault('breakdown', {})['p1_btc_lead'] = (
                             f'BTC_SL领先{_bh:.1f}H {_p1v}分 WR=21.8%')
-                        print(f'[P1-BTCLead] ☠️ ETH BTC_SL {_bh:.1f}H前: {_p1v}分 score→{_score_raw:.0f}')
+                        pass  # [静默] f'[P1-BTCLead] ☠️ ETH BTC_SL {_bh:.1f}H前: {_p1v}分 score→{_score_raw:.0f}'
     except Exception: pass
 
     # ══════════════════════════════════════════════════════════════
@@ -4296,10 +4289,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 cf.setdefault('breakdown', {})['p2_seasonal'] = (
                     f'{_p2lbl} {_p2v:+d}分 (p=0.001 OOS稳定) [{_now_p2.strftime("%m-%d")}]')
                 if abs(_p2v) >= 5:
-                    print(f'[P2-Seasonal] 📅 {_sym} {_p2lbl}: {_p2v:+d}分 score→{_score_raw:.0f}')
+                    pass  # [静默] f'[P2-Seasonal] 📅 {_sym} {_p2lbl}: {_p2v:+d}分 score→{_score_raw:.0f}'
     except Exception as _e:
             if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                print(f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}')  # [可观测-v2]
+                pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
     # ── [END P0/P1/P2 苏摩111 2026-06-28] ────────────────────────
 
 
@@ -4473,7 +4466,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         cf.setdefault('breakdown', {})['P2_RegimeCap'] = f'score capped @165 (regime={_regime_str} dir={signal_dir})'
     # ── [END P2] | P2 主流程段结束 ─────────────────────────────────────────────────────────────
 
-    print(f'[BrahmaBrain] ✓ {_sym} {signal_dir} score={_score:.0f} rr1={params["rr1"]} rr_gate={cf.get("rr_gate","?")} regime={ms.get("regime","?")} valid={_valid} 耗时={elapsed}s')
+    pass  # [静默] f'[BrahmaBrain] ✓ {_sym} {signal_dir} score={_score:.0f} rr1={params["rr1"]} rr_
 
     _REGIME_CN = {
         'BULL_TREND':'牛市趋势','BULL_EARLY':'牛市初期','BULL_PEAK':'牛市末期',
@@ -4526,9 +4519,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         from dharma_data_bridge import log_signal as _log_dharma
         _logged = _log_dharma(_result)
         if _logged:
-            print(f'[DharmaBridge] ✓ {_sym} score={_score:.0f} 已写入 live_signal_log')
+            pass  # [静默] f'[DharmaBridge] ✓ {_sym} score={_score:.0f} 已写入 live_signal_log'
     except Exception as _e:
-        print(f'[DharmaBridge] ⚠ 写入失败（不阻断主流）: {_e}')
+        pass  # [静默] f'[DharmaBridge] ⚠ 写入失败（不阻断主流）: {_e}'
 
     # ── FIX-I1: CHOP体制智能过滤（设计院 2026-06-06）────────────────
     # alpha_market_filter模块接入：CHOP噪音降级
@@ -4549,7 +4542,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _cf['score'] = _chop_score - _chop_penalty
             _cf.setdefault('breakdown', {})['_chop_filter'] = f'-{_chop_penalty}(CHOP噪音降级:grade={_chop_grade}<60,s16={_chop_s16}<8)'
             _result['confluence'] = _cf
-            print(f"[BrahmaBrain] 🔇 CHOP过滤: {_chop_score:.0f}→{_cf['score']:.0f} (grade={_chop_grade} s16={_chop_s16})")
+            pass  # [静默] f"[BrahmaBrain] 🔇 CHOP过滤: {_chop_score:.0f}→{_cf['score']:.0f} (grade={_chop_gra
     except Exception as _chop_e:
         try:
             import sys as _sys; _sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent / 'scripts'))
@@ -4566,7 +4559,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _overheat_penalty = min(int((float(_final_score) - 175) * 2), 30)
         _result['confluence']['score'] = float(_final_score) - _overheat_penalty
         _result['confluence']['_overheat_penalty'] = _overheat_penalty
-        print(f"[BrahmaBrain] ⚠️ score过热惩罚: {_final_score:.0f}→{_result['confluence']['score']:.0f} (-{_overheat_penalty}分)")
+        pass  # [静默] f"[BrahmaBrain] ⚠️ score过热惩罚: {_final_score:.0f}→{_result['confluence']['score']
 
     # ── s20: Tardis清算墙维度（星枢引擎 Phase1）────────────
     try:
@@ -5011,8 +5004,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _uar_mult = _result.get('asset_weight_mult', 1.0)
         _uar_type = _result.get('asset_type', '?')
         if _uar_mult != 1.0:
-            print(f'[AssetRouter] {_sym} type={_uar_type} mult={_uar_mult}x '
-                  f'score {_result.get("score_final_raw",0):.0f}→{_result.get("score_final",0):.0f}')
+            pass  # [静默多行print]
     except Exception:
         pass
 
@@ -5038,8 +5030,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _result['pos_pct_sizer']    = _pos_res.get('pct', 0)
             _result['pos_level_sizer']  = _pos_res.get('level', '')
             _result['pos_reason_sizer'] = _pos_res.get('reason', '')
-            print(f'[PositionSizer] {_sym} {_pos_res.get("level","?")} '
-                  f'{_pos_res.get("pct",0):.1f}% — {_pos_res.get("reason","")[:40]}')
+            pass  # [静默多行print]
     except Exception:
         pass
     # ══ [PositionSizer END] ════════════════════════════════════════════════════
@@ -5094,7 +5085,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # ══ [可观测-v2] ══
     try:
         _s=_result.get('score_final',_result.get('score',0))
-        print(f'[SIGNAL-SUMMARY] {_sym} {signal_dir} score={_s:.0f} action={_result.get("action","?")}')
+        pass  # [静默] f'[SIGNAL-SUMMARY] {_sym} {signal_dir} score={_s:.0f} action={_result.get("actio
     except Exception: pass
     return _result
 

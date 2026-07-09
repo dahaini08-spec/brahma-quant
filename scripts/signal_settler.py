@@ -53,7 +53,7 @@ def get_hold_hours(symbol: str) -> int:
 
 def settle():
     if not LOG.exists():
-        print('[Settler] live_signal_log.jsonl 不存在')
+        pass  # [静默]
         return
 
     signals = []
@@ -62,12 +62,12 @@ def settle():
             if line.strip():
                 signals.append(json.loads(line))
     except Exception as e:
-        print(f'[Settler] 读取失败: {e}')
+        pass  # [静默]
         return
 
     now = time.time()
     pending = [s for s in signals if s.get('status') is None and not s.get('_data_quality')]
-    print(f'[Settler] 扫描 {len(pending)} 条PENDING信号...')
+    pass  # [静默]
 
     updated = 0
     stats = {'WIN': 0, 'LOSS': 0, 'TIMEOUT': 0, 'skip': 0}
@@ -96,7 +96,7 @@ def settle():
             s['settle_note'] = 'entry_price=0，无法结算，已标记DATA_ERROR'
             stats['skip'] += 1
             updated += 1
-            print(f'  [DATA_ERROR] {sym} {direction} entry=0，跳过结算')
+            pass  # [静默]
             continue
 
         # 获取当前价（带缓存）
@@ -115,7 +115,7 @@ def settle():
             s['settle_note'] = f'超过{hold_h}H持仓期未触发'
             stats['TIMEOUT'] += 1
             updated += 1
-            print(f'  [TIMEOUT] {sym} {direction} hold={hold_h}H price={price:.4f}')
+            pass  # [静默]
             continue
 
         # WIN/LOSS判断
@@ -155,7 +155,7 @@ def settle():
             for s in signals:
                 f.write(json.dumps(s, ensure_ascii=False) + '\n')
         tmp.replace(LOG)
-        print(f'[Settler] ✅ 结算完成: WIN={stats["WIN"]} LOSS={stats["LOSS"]} TIMEOUT={stats["TIMEOUT"]} skip={stats["skip"]}')
+        pass  # [静默]
 
         # 触发经验引擎归档
         settled_sigs = [s for s in signals if s.get('status') in ('WIN','LOSS') and s.get('settled_at')]
@@ -164,18 +164,18 @@ def settle():
                 sys.path.insert(0, str(BASE / 'scripts'))
                 from brahma_experience_engine import save_decision_snapshot
                 # 经验引擎：将新结算的信号快照归档
-                print(f'[Settler] 触发经验引擎归档 {len(settled_sigs)} 条...')
+                pass  # [静默]
             except Exception as e:
-                print(f'[Settler] 经验引擎触发失败: {e}')
+                pass  # [静默]
     else:
-        print(f'[Settler] 无新结算（PENDING={len(pending)} 条，价格未触发）')
+        pass  # [静默]
 
     # 统计报告
     all_settled = [s for s in signals if s.get('status') in ('WIN','LOSS')]
     wins = sum(1 for s in all_settled if s.get('status') == 'WIN')
     total = len(all_settled)
     wr = wins / total if total > 0 else 0
-    print(f'[Settler] 累计战绩: WIN={wins} LOSS={total-wins} 总={total} WR={wr:.1%}')
+    pass  # [静默]
 
     return stats
 

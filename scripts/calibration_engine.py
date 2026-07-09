@@ -139,10 +139,7 @@ def calibrate(
         report['reason'] += f' 置信差={direction_conviction:+.1f}({conv_label}) → 调整{total_adj:+d}分'
 
     if verbose:
-        print(f'[Calibration] {base_score:.0f}→{final_score:.0f} '
-              f'({report["base_label"]}→{report["final_label"]}) '
-              f'bull={bull_score:.0f} bear={bear_score:.0f} '
-              f'conv={conviction:+.1f} adj={total_adj:+d}')
+        pass  # [静默]
 
     return final_score, report
 
@@ -173,7 +170,7 @@ def full_calibration_pipeline(
         bb_result = debate(symbol)
     except Exception as e:
         bb_result['error'] = str(e)
-        print(f'[Calibration] bull_bear_engine失败，跳过校准: {e}')
+        pass  # [静默]
         return base_score, {'base_score': base_score, 'final_score': base_score,
                             'reason': f'bull_bear失败: {e}'}, bb_result
 

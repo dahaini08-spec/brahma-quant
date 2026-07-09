@@ -53,7 +53,7 @@ def main():
 
     opens = [s for s in signals if s.get('status') == 'OPEN']
     if not opens:
-        print('HEARTBEAT_OK')
+        pass  # [静默]
         return
 
     alerts = []
@@ -112,7 +112,7 @@ def main():
             pass
 
     if not alerts:
-        print('HEARTBEAT_OK')
+        pass  # [静默]
         alerted = {k: v for k, v in alerted.items() if now - v < 14400}
         save_state({'alerted': alerted})
         return
@@ -203,7 +203,7 @@ def main():
         else:
             print(msg)
 
-    print('HEARTBEAT_OK')
+    pass  # [静默]
     save_state({'alerted': alerted})
 
 if __name__ == '__main__':

@@ -101,7 +101,7 @@ def update_ev(record: dict, outcome: str) -> dict:
         with open(EV_LOG_PATH, 'a') as f:
             f.write(json.dumps(log_entry, ensure_ascii=False) + '\n')
 
-        print(f'[EV-Feedback] {sym} {matrix_key} → EV={m["ev"]:+.3f}% WR={m["wr"]:.1%} n={m["n"]}')
+        pass  # [静默]
 
         # 触发参数微调（每10笔触发一次）
         if m['n'] % 10 == 0:
@@ -110,7 +110,7 @@ def update_ev(record: dict, outcome: str) -> dict:
         return {'updated': True, 'ev_delta': m['ev'], 'matrix_key': matrix_key, 'wr': m['wr']}
 
     except Exception as e:
-        print(f'[EV-Feedback] ⚠ 更新失败（不阻断）: {e}')
+        pass  # [静默]
         return {'updated': False, 'error': str(e)}
 
 
@@ -151,7 +151,7 @@ def _trigger_param_nudge(matrix_key: str, m: dict):
         }
         with open(nudge_path, 'a') as f:
             f.write(json.dumps(suggestion, ensure_ascii=False) + '\n')
-        print(f'[EV-Feedback] 📊 参数微调建议已写入: {matrix_key} → {suggestion["suggestion"]}')
+        pass  # [静默]
         # 同步触发达摩院在线学习
         try:
             import sys as _dl_sys
@@ -165,7 +165,7 @@ def _trigger_param_nudge(matrix_key: str, m: dict):
             from position_sizer import sync_confidence_table_from_wr as _sync_ct
             _sync_ct(min_n=10)
         except Exception as _ct_e:
-            print(f'[EV-Feedback] ConfidenceSync 失败（不阻断）: {_ct_e}')
+            pass  # [静默]
     except Exception:
         pass
 

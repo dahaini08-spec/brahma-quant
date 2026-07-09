@@ -199,7 +199,7 @@ def check_event_risk(
 
     if verbose:
         status = '🚨BLOCKED' if blocked else f'score={score:+.0f}'
-        print(f'[NewsEventGuard] {symbol} {direction} {status} ({report["label"]})')
+        pass  # [静默]
         for d in details:
             print(f'  · {d}')
 

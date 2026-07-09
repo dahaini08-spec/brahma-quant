@@ -631,7 +631,7 @@ def _build_summary(consensus: dict, regime: str, wave: dict,
 if __name__ == '__main__':
     import json, sys
     sym = sys.argv[1] if len(sys.argv) > 1 else 'ETHUSDT'
-    print(f'[MarketState] 分析 {sym}...')
+    pass  # [静默]
     result = analyze(sym)
 
     if 'error' in result:

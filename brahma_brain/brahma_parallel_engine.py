@@ -235,7 +235,7 @@ def batch_analyze_with_regime(symbols: list, max_workers: int = _MAX_WORKERS) ->
                 else:
                     _reg_map[sym] = None
                 if _reg_map[sym]:
-                    print(f'[RegimePreset] {sym} {_rc} → 强制方向={_reg_map[sym]}')
+                    pass  # [静默]
     except Exception:
         pass
 

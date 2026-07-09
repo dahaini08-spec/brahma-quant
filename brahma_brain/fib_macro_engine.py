@@ -349,7 +349,7 @@ if __name__ == '__main__':
 
     for direction in ['LONG', 'SHORT']:
         r = fib_macro_score('ETHUSDT', price, direction)
-        print(f"\n[ETH ${price:.2f} {direction}]")
+        pass  # [静默]
         print(f"  总分: {r['score']:+d}")
         print(f"  体制: {r['regime_tag']}")
         print(f"  EMA200=${r['ema200']:,.0f}  EMA55=${r['ema55_1d']:,.0f}")

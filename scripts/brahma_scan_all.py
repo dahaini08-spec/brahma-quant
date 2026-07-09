@@ -57,9 +57,9 @@ if args.sector:
         for s in cand_syms:
             symbols_set.add(s)
         source_info.append(f'screener({len(cand_syms)}个/{cand_data.get("generated","?")})')
-        print(f'[ScanAll] screener候选: {cand_syms}')
+        pass  # [静默]
     except Exception as e:
-        print(f'[ScanAll] ⚠️ screener候选读取失败: {e}')
+        pass  # [静默]
 
     # 2. 加载sector_candidates板块联动候选
     sector_path = BASE / 'data' / 'sector_candidates.json'
@@ -76,16 +76,16 @@ if args.sector:
                     sector_new += 1
             pump_syms = sec_data.get('pumped_syms', [])
             source_info.append(f'sector_relay({sector_new}新增/触发:{pump_syms[:3]})')
-            print(f'[ScanAll] 板块联动新增: {[s for s in sec_syms if s not in set(cand_syms if "cand_syms" in dir() else [])]}')
+            pass  # [静默]
         except Exception as e:
-            print(f'[ScanAll] ⚠️ sector_candidates读取失败: {e}')
+            pass  # [静默]
 
     # 3. 强制保留主力标的
     for s in ['BTCUSDT', 'ETHUSDT']:
         symbols_set.add(s)
 
     symbols = list(symbols_set)
-    print(f'[ScanAll] 板块联动模式 | 合并候选 {len(symbols)} 个 | 来源: {" + ".join(source_info)}')
+    pass  # [静默]
 
 elif args.candidates:
     # 读取 market_screener 输出的动态候选
@@ -96,16 +96,16 @@ elif args.candidates:
         cand_ts  = cand_data.get('generated', 'unknown')
         if not symbols:
             raise ValueError('candidates列表为空')
-        print(f'[ScanAll] 动态候选模式 | 来源: {cand_ts} | {len(symbols)}个标的')
+        pass  # [静默]
     except Exception as e:
-        print(f'[ScanAll] ⚠️ 读取candidates失败({e})，回退FAST_SYMBOLS')
+        pass  # [静默]
         symbols = FAST_SYMBOLS
 elif args.full:
     symbols = ALL_SYMBOLS
 else:
     symbols = FAST_SYMBOLS
 
-print(f'[ScanAll] 开始扫描 {len(symbols)} 个标的 | full={args.full} candidates={args.candidates}')
+pass  # [静默]
 t0 = time.time()
 
 from trade_gateway import run as gateway_run
@@ -118,9 +118,9 @@ for sym in symbols:
         pushed = result.get('pushed', 0)
         total_new += pushed
         scan_detail.append({'symbol': sym, 'pushed': pushed, 'decision': result.get('decision','?')})
-        print(f'[ScanAll] {sym}: pushed={pushed} | {result.get("decision","?")}')
+        pass  # [静默]
     except Exception as e:
-        print(f'[ScanAll] {sym}: ERROR {e}')
+        pass  # [静默]
         scan_detail.append({'symbol': sym, 'pushed': 0, 'error': str(e)})
 
 elapsed = time.time() - t0
@@ -136,4 +136,4 @@ log_path = BASE / 'data/multi_scan_log.jsonl'
 with open(log_path, 'a') as f:
     f.write(json.dumps(log_entry) + '\n')
 
-print(f'[ScanAll] 完成 | 标的={len(symbols)} 新信号={total_new} 耗时={elapsed:.0f}s')
+pass  # [静默]

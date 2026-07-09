@@ -101,7 +101,7 @@ def is_structure_failed(item: dict, current_price: float, current_regime: str) -
 def clean_dd1_pending(dry_run=False):
     pending_file = BASE / 'data' / 'dd1_pending.json'
     if not pending_file.exists():
-        print('[DD1] dd1_pending.json 不存在')
+        pass  # [静默]
         return 0
 
     q = json.loads(pending_file.read_text())
@@ -132,13 +132,13 @@ def clean_dd1_pending(dry_run=False):
         else:
             kept.append(item)
 
-    print(f'[DD1] 扫描 {len(q)} 条 | 结构失效 {len(removed)} 条 | 保留 {len(kept)} 条')
+    pass  # [静默]
     for tid, sym, d, reason in removed:
         print(f'  清除 [{tid}] {sym} {d}: {reason}')
 
     if not dry_run and removed:
         pending_file.write_text(json.dumps(kept, indent=2, ensure_ascii=False))
-        print(f'[DD1] ✅ 已写入（保留{len(kept)}条）')
+        pass  # [静默]
 
     return len(removed)
 
@@ -146,7 +146,7 @@ def clean_dd1_pending(dry_run=False):
 def clean_queue_state(dry_run=False):
     qs_file = BASE / 'data' / 'queue_state.json'
     if not qs_file.exists():
-        print('[QS] queue_state.json 不存在')
+        pass  # [静默]
         return 0
 
     qs = json.loads(qs_file.read_text())
@@ -174,14 +174,14 @@ def clean_queue_state(dry_run=False):
         else:
             kept.append(item)
 
-    print(f'[QS] 扫描 {len(queue)} 条 | 结构失效 {len(removed)} 条 | 保留 {len(kept)} 条')
+    pass  # [静默]
     for sym, d, reg, reason in removed:
         print(f'  清除 {sym} {d} ({reg}): {reason}')
 
     if not dry_run and removed:
         qs['queue'] = kept
         qs_file.write_text(json.dumps(qs, indent=2, ensure_ascii=False))
-        print(f'[QS] ✅ 已写入（保留{len(kept)}条）')
+        pass  # [静默]
 
     return len(removed)
 

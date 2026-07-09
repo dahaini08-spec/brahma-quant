@@ -38,4 +38,4 @@ if alerts:
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
     )
 else:
-    print('HEARTBEAT_OK')
+    pass  # [静默]

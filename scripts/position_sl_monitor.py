@@ -68,7 +68,7 @@ except Exception:
 def main():
     SL_CONFIG = load_sl_config()
     if not SL_CONFIG:
-        print('HEARTBEAT_OK')
+        pass  # [静默]
         return
 
     triggered = []
@@ -150,7 +150,7 @@ def main():
                 _pj(warn, dedup_ttl=3600)
 
     if not triggered:
-        print('HEARTBEAT_OK')
+        pass  # [静默]
 
 if __name__ == '__main__':
     main()

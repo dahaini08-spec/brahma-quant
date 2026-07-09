@@ -245,7 +245,7 @@ f"""⚠️ 梵天P1 · 持仓体制逆势告警
     if alerts:
         full_msg = '\n\n─────────────────\n\n'.join(alerts)
         push(full_msg)
-        print(f"[P1 PositionRegimeChecker] ✅ 推送 {len(alerts)} 条告警")
+        pass  # [静默]
     # 无告警 → 完全静默
 
 

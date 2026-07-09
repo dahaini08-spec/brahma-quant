@@ -252,7 +252,7 @@ def find_executable_signals() -> list[dict]:
             # HMM置信度<0.40时降为MONITOR（不拒绝，仅标记）
             if _hmm.get('confidence', 1.0) < 0.40:
                 s['_hmm_low_conf'] = True
-                print(f'[HMM] {s.get("symbol","")} confidence={_hmm["confidence"]:.2f}<0.40 → 低置信标记')
+                pass  # [静默]
         except Exception:
             pass
 
@@ -263,7 +263,7 @@ def find_executable_signals() -> list[dict]:
         _sym        = s.get('symbol', '')
         _is_small_cap = _sym not in ('BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT')
         if _is_small_cap and 'BEAR_TREND' in _sym_regime and _sym_dir in ('LONG', 'BUY'):
-            print(f'[SmallCapGuard] {_sym} BEAR_TREND_LONG 小币死穴 → 跳过（实盘WR<50%）')
+            pass  # [静默]
             continue
 
         # [v6.0 设计院 2026-07-08] 非梵天BRAHMA标签信号仓位上限: NAV×3%（原5%）
@@ -300,9 +300,9 @@ def find_executable_signals() -> list[dict]:
             if _approved:
                 for _r in _rejected:
                     _rsym = _r.get('symbol', '?')
-                    print(f'[PortfolioOpt] ❌ {_rsym} 因相关性过滤（与已选标的相关性>0.75）')
+                    pass  # [静默]
                 candidates = _approved
-                print(f'[PortfolioOpt] ✅ 组合优化后保留 {len(candidates)} 个信号')
+                pass  # [静默]
         except Exception as _e_po:
             pass  # portfolio_optimizer不可用时保持原candidates
     # ══ [portfolio_optimizer END] ════════════════════════════════════════
@@ -556,10 +556,10 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
         if _total_exposure >= _max_exposure * 0.9:  # 90%即预警并拦截
             result['reason'] = (f'P0_ExposureCap: {sym} 已有敞口'
                                 f'${_total_exposure:.1f} >= NAV×10%=${_max_exposure:.1f}')
-            print(f'[P0] 🚨 {sym} 敞口${_total_exposure:.1f} 已达NAV×10%上限，拦截开单')
+            pass  # [静默]
             return result
     except Exception as _e:
-        print(f'[P0] 敞口检查异常（放行）: {_e}')
+        pass  # [静默]
 
     # 获取当前价
     try:
@@ -584,7 +584,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
             if entry_hi * (1 + PRICE_CHASE_MAX) >= px > entry_hi:
                 # 价格略高于区间上沿，将LIMIT挂单价调整到区间上沿（等回踩）
                 chase_gap = (px - entry_hi) / entry_hi * 100
-                print(f'[GapGate] ℹ️ {sym} LONG 价格超出区间{chase_gap:.2f}%(<0.5%) → 追踪至区间上沿{entry_hi:.4f}')
+                pass  # [静默]
                 # entry_hi作为挂单价（不修改entry区，只影响batch价格基准）
                 signal['_chase_price'] = entry_hi
             elif px > entry_hi * (1 + GAP_MAX):
@@ -812,8 +812,8 @@ def run(dry_run: bool = False) -> list[dict]:
         _lock_fd = open(_lock_path, 'w')
         fcntl.flock(_lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except (BlockingIOError, OSError):
-        print('[AutoExecutor] ⚠️ 已有实例运行中，本次跳过（防并发重复挂单）')
-        print('HEARTBEAT_OK')
+        pass  # [静默]
+        pass  # [静默]
         return []
     try:
         return _run_locked(dry_run=dry_run)
@@ -834,7 +834,7 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
     # [修复 2026-07-08] 安全守卫：API KEY未配置时 _signed() 返回str/dict(error)
     # 确保 pos_list 是可迭代的 list[dict]，避免 'str'.get() AttributeError
     if not isinstance(pos_list, list):
-        print(f'[AutoExecutor] ⚠️ positionRisk响应异常: {str(pos_list)[:80]} — 跳过持仓检查')
+        pass  # [静默]
         pos_list = []
     active_pos = [
         {'symbol': p['symbol'], 'side': 'SHORT' if float(p['positionAmt']) < 0 else 'LONG',
@@ -846,11 +846,10 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
     # 找候选信号
     candidates = find_executable_signals()
 
-    print(f'[AutoExecutor] {now_iso} | NAV=${nav:.2f} 可用=${avail:.2f} '
-          f'持仓={len(active_pos)} | 候选信号={len(candidates)}')
+    pass  # [静默]
 
     if not candidates:
-        print('[AutoExecutor] 无满足条件的信号 → HEARTBEAT_OK')
+        pass  # [静默]
         return []
 
     executed_set = _load_executed()
@@ -863,7 +862,7 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
         direct = sig.get('direction') or sig.get('signal_dir', '')
         regime = sig.get('regime', '')
 
-        print(f'[AutoExecutor] 候选: {sym} {direct} score={score:.0f} regime={regime} id={sig_id}')
+        pass  # [静默]
 
         # ── [P3-B 设计院 2026-07-08] RL A/B仓位分流 ──────────────────
         try:
@@ -878,12 +877,12 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
             )
             sig['_rl_nav_pct'] = _ab['nav_pct']
             sig['_rl_group']   = _ab['group']
-            print(f'  [RL_AB] {_ab["group"]} mult={_ab["rl_mult"]} → nav_pct={_ab["nav_pct"]:.3f}')
+            pass  # [静默]
         except Exception:
             pass  # RL异常不影响主流程
 
         if dry_run:
-            print(f'  [DRY-RUN] 跳过执行')
+            pass  # [静默]
             results.append({'signal_id': sig_id, 'status': 'DRY_RUN', 'symbol': sym})
             continue
 
@@ -969,6 +968,6 @@ if __name__ == '__main__':
     else:
         results = run(dry_run=args.dry)
         ok = [r for r in results if r.get('status') == 'EXECUTED']
-        print(f'\n[AutoExecutor] 完成: 执行={len(ok)} / 候选={len(results)}')
+        pass  # [静默]
         if not ok:
-            print('HEARTBEAT_OK')
+            pass  # [静默]

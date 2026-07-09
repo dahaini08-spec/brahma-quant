@@ -408,6 +408,6 @@ if __name__ == '__main__':
             print_report(r)
         except Exception as e:
             import traceback
-            print(f'[ERROR] {sym}: {e}')
+            pass  # [静默]
             traceback.print_exc()
         time.sleep(0.5)

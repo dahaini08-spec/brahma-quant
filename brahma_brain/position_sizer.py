@@ -263,7 +263,7 @@ def sync_confidence_table_from_wr(min_n: int = 10, dry_run: bool = False) -> dic
         'skipped_keys': skipped,
     }
     if updates:
-        print(f'[ConfidenceSync] 更新{len(updates)}条 CONFIDENCE_TABLE 记录')
+        pass  # [静默]
         for u in updates:
             print(f'  {u["key"]}: {u["old"]} → {u["new"]} (n={u["n"]} WR={u["wr"]:.1%})')
     return result

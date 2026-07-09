@@ -101,7 +101,7 @@ def _run_brahma_analyze(symbol: str, direction: str, timeout: int = 30) -> dict:
                 })
                 return d
     except Exception as e:
-        print(f'[Gateway] brahma_analyze {direction} 失败: {e}')
+        pass  # [静默]
     return {}
 
 
@@ -127,12 +127,12 @@ def run(symbol: str, force_regime: bool = False, zone: dict = None) -> dict:
         from soma_manager import record_usage as _soma_rec
         _soma_rec('trade_gateway', tokens=3000, priority=0)
     except Exception as _e_ignored:
-        print(f'[WARN][trade_gateway] {type(_e_ignored).__name__}: {_e_ignored}')
+        pass  # [静默]
     sym = symbol.upper()
     if not sym.endswith('USDT'):
         sym += 'USDT'
 
-    print(f'[Gateway] ── {sym} 分析开始 ──')
+    pass  # [静默]
     t0 = time.time()
 
     # ── Step 1: 体制评估 [FIX-SSOT 2026-06-14] 统一使用 market_state.detect_regime ──
@@ -182,15 +182,15 @@ def run(symbol: str, force_regime: bool = False, zone: dict = None) -> dict:
         'rsi_4h':     _mom.get('rsi_4h', 0),
     }
     _cn = _REGIME_CN.get(_regime_label, _regime_label)
-    print(f'[Gateway] 体制: {_regime_label}({_cn}) 4H={regime["phase"]} 1H={regime["momentum"]} SHORT×{_mult["SHORT"]} LONG×{_mult["LONG"]}')
+    pass  # [静默]
 
     # ── Step 2: 双向分析 ──
-    print(f'[Gateway] 双向分析中...')
+    pass  # [静默]
     short_ana = _run_brahma_analyze(sym, 'SHORT')
     long_ana  = _run_brahma_analyze(sym, 'LONG')
 
     if not short_ana and not long_ana:
-        print(f'[Gateway] 双向分析均失败，退出')
+        pass  # [静默]
         return {'pushed': 0, 'signals': [], 'regime': regime, 'decision': '分析失败'}
 
     # 如果有zone信息，用zone的入场参数覆盖（更精确）
@@ -207,10 +207,10 @@ def run(symbol: str, force_regime: bool = False, zone: dict = None) -> dict:
     # ── Step 3: 方向裁决 ──
     from signal_selector import select, format_signal_card
     sel = select(short_ana or {}, long_ana or {}, regime)
-    print(f'[Gateway] 裁决: {sel["decision"]}')
+    pass  # [静默]
 
     if not sel['signals']:
-        print(f'[Gateway] 无有效信号，结束')
+        pass  # [静默]
         return {'pushed': 0, 'signals': [], 'regime': regime,
                 'decision': sel['decision']}
 
@@ -231,7 +231,7 @@ def run(symbol: str, force_regime: bool = False, zone: dict = None) -> dict:
         # 推送去重
         if dedup_key in _push_dedup and now_ts - _push_dedup[dedup_key] < PUSH_COOLDOWN:
             remain = int((PUSH_COOLDOWN - (now_ts - _push_dedup[dedup_key])) / 3600)
-            print(f'[Gateway] {sym} {direction} 推送冷却中（剩余~{remain}H）')
+            pass  # [静默]
             continue
 
         # 五关门控
@@ -248,7 +248,7 @@ def run(symbol: str, force_regime: bool = False, zone: dict = None) -> dict:
             should_trade = gate_result.get('should_trade', False)
 
             if not should_trade:
-                print(f'[Gateway] {sym} {direction} 五关 {gate_pass}/5 未全过，静默')
+                pass  # [静默]
                 # grade≥70且3关+时推送参考提示 [v24.2]
                 if sig.get('grade', 0) >= 70 and gate_pass >= 3:
                     from push_hub import _jarvis as _pj_gw
@@ -260,7 +260,7 @@ def run(symbol: str, force_regime: bool = False, zone: dict = None) -> dict:
         else:
             # 无法运行五关时，仅检查加权分
             if sig['weighted'] < MIN_WEIGHTED:
-                print(f'[Gateway] {sym} {direction} 加权分不足 weighted={sig["weighted"]}')
+                pass  # [静默]
                 continue
 
         # ── Step 5: 推送信号 ──
@@ -270,10 +270,10 @@ def run(symbol: str, force_regime: bool = False, zone: dict = None) -> dict:
         _save_dedup(_push_dedup)  # [v25.3-fix] 持久化，进程重启后冷却仍有效
         final_signals.append(sig)
         pushed += 1
-        print(f'[Gateway] ✅ {sym} {direction} {sig["chain"]} 信号推送 weighted={sig["weighted"]:.0f} pos={sig["position_pct"]}%')
+        pass  # [静默]
 
     elapsed = round(time.time() - t0, 1)
-    print(f'[Gateway] ── 完成 推送={pushed}条 耗时={elapsed}s ──')
+    pass  # [静默]
 
     return {
         'pushed':   pushed,

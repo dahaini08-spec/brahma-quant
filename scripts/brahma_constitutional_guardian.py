@@ -63,7 +63,7 @@ def _log(msg: str):
     ts = datetime.utcnow().strftime('%m-%d %H:%M UTC')
     with open(LOG_FILE, 'a') as f:
         f.write(f'[{ts}] {msg}\n')
-    print(f'[ConstitGuard] {msg}')
+    pass  # [静默]
 
 
 def _push(msg: str, dedup_key: str = None, dedup_ttl: int = 3600) -> bool:

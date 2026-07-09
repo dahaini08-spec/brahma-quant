@@ -175,7 +175,7 @@ def settle(dry_run=False) -> dict:
                     rec['closed_ts'] = now_utc.isoformat()
                 n_force_expired += 1
         except Exception as _fe:
-            print(f'[Settler] ⚠️ force_expire异常: {_fe}')
+            pass  # [静默]
     if n_force_expired > 0 and not dry_run:
         _save(records)
 
@@ -227,7 +227,7 @@ def settle(dry_run=False) -> dict:
             n_price_expired += 1
     if n_price_expired > 0 and not dry_run:
         _save(records)
-        print(f'[Settler] 💨 价格偏离清理: {n_price_expired}条 PRICE_EXPIRED')
+        pass  # [静默]
 
     # ══════════════════════════════════════════════════════════
     # [v4.0] 信号池五维自愈闭环  · 识别哲学 · 2026-06-10
@@ -303,7 +303,7 @@ def settle(dry_run=False) -> dict:
 
     if n_superseded > 0 and not dry_run:
         _save(records)
-        print(f'[Settler] ♻️  SUPERSEDED: {n_superseded}条旧信号被新信号替代')
+        pass  # [静默]
 
     # ── [B] 体制切换 → REGIME_EXPIRED ──────────────────────────
     # [FIX v25.6 2026-06-20] per-symbol 体制判断，不再用全局BTC体制一刀切
@@ -398,7 +398,7 @@ def settle(dry_run=False) -> dict:
 
     if n_regime_exp > 0 and not dry_run:
         _save(records)
-        print(f'[Settler] 🔄 REGIME_EXPIRED: {n_regime_exp}条体制不匹配信号清理')
+        pass  # [静默]
         # ── [学习闭环修复 2026-07-03] REGIME_EXPIRED → ev_feedback ──
         # 断点A修复：体制切换清理的信号也需要写入EV反馈（负信号，WR统计不可缺）
         try:
@@ -412,7 +412,7 @@ def settle(dry_run=False) -> dict:
                     _re_ev_cb(_re_rec, 'TIMEOUT')  # REGIME_EXPIRED视为TIMEOUT（不计WR）
                     _re_rec['_ev_feedback_done'] = True
         except Exception as _re_ev_e:
-            print(f'[WARN][REGIME_EXPIRED-EV] {type(_re_ev_e).__name__}: {_re_ev_e}')
+            pass  # [静默]
 
     # ── [C] SL突破 → SL_BREACHED ─────────────────────────────
     # SHORT信号：当前价格 > stop_loss → 方向已错，立刻清理
@@ -445,7 +445,7 @@ def settle(dry_run=False) -> dict:
 
     if n_sl_breach > 0 and not dry_run:
         _save(records)
-        print(f'[Settler] 🛡️  SL_BREACHED: {n_sl_breach}条止损被突破信号清理')
+        pass  # [静默]
 
     # ── [D] valid=False 信号处理 ─────────────────────────────
     # [v4.0 P0修复] valid=False = 价格未进入入场区 → 结果为 MISS，不是TIMEOUT
@@ -514,7 +514,7 @@ def settle(dry_run=False) -> dict:
 
     if n_invalid_clean > 0 and not dry_run:
         _save(records)
-        print(f'[Settler] 🧹 INVALID清理: {n_invalid_clean}条')
+        pass  # [静默]
 
     # ── [E] 自愈事件日志 ──────────────────────────────────────
     if _selfheal_events and not dry_run:
@@ -527,9 +527,7 @@ def settle(dry_run=False) -> dict:
             _lf.write(_json.dumps(_entry, ensure_ascii=False) + '\n')
 
     if any([n_superseded, n_regime_exp, n_sl_breach, n_invalid_clean]):
-        print(f'[Settler] 📊 自愈汇总: SUPERSEDED={n_superseded} '
-              f'REGIME_EXP={n_regime_exp} SL_BREACH={n_sl_breach} '
-              f'INVALID={n_invalid_clean}')
+        pass  # [静默]
 
     unsettled = [r for r in records if not r.get('settled') and r.get('ts')]
     unsettled = unsettled[-SETTLE_LOOKBACK:]  # 最近N条
@@ -740,7 +738,7 @@ def settle(dry_run=False) -> dict:
                         outcome   = outcome,
                     )
                 except Exception as _e_ignored:
-                    print(f'[WARN][live_signal_settler] {type(_e_ignored).__name__}: {_e_ignored}')
+                    pass  # [静默]
                 # ── RiskGate v2 结算通知（vnpy借鉴，苏摩111批准 2026-06-28）──
                 try:
                     import sys as _rg_sys
@@ -748,7 +746,7 @@ def settle(dry_run=False) -> dict:
                     from brahma_risk_gate import record_trade_result as _rg_record
                     _rg_record(symbol=rec.get('symbol',''), outcome=outcome, pnl_pct=(pnl_pct or 0)/100, nav=473.0)
                 except Exception as _rg_e:
-                    print(f'[WARN][RiskGate] {_rg_e}')
+                    pass  # [静默]
                 # ── EventBus 广播平仓事件（vnpy借鉴，苏摩111批准 2026-06-28）──
                 try:
                     import sys as _eb_sys
@@ -756,7 +754,7 @@ def settle(dry_run=False) -> dict:
                     from brahma_brain.brahma_event_bus import bus as _eb_bus
                     _eb_bus.emit_position_close(symbol=rec.get('symbol',''), outcome=outcome, pnl_pct=pnl_pct or 0, signal_id=rec.get('signal_id',''))
                 except Exception as _eb_e:
-                    print(f'[WARN][EventBus] {_eb_e}')
+                    pass  # [静默]
                 # ── [P2 设计院 2026-06-21] 归因日志直接写入 attribution_log.jsonl ─────────────
                 # 原因： lana/attribution.py 依赖 hunter_v2_trades.json（实盘）
                 # Paper模式下交易记录在 live_signal_log，用此处直接写入
@@ -784,7 +782,7 @@ def settle(dry_run=False) -> dict:
                     with open(_attr_f, 'a') as _af:
                         _af.write(_attr_json.dumps(_attr_record, ensure_ascii=False) + '\n')
                 except Exception as _attr_e:
-                    print(f'[WARN][attribution] {type(_attr_e).__name__}: {_attr_e}')
+                    pass  # [静默]
                 # ── [END attribution] ──────────────────────────────────────────
                 # ── engine_attribution: 引擎贡献率追踪 ─────────────
                 try:
@@ -796,7 +794,7 @@ def settle(dry_run=False) -> dict:
                     if outcome in ('TP1', 'TP2', 'SL'):
                         _ea_record(rec, outcome)
                 except Exception as _e_ignored:
-                    print(f'[WARN][live_signal_settler] {type(_e_ignored).__name__}: {_e_ignored}')
+                    pass  # [静默]
                 # ── loss_autopsy: LOSS 引发自动五大根因解剖 ─────────────────
                 if outcome == 'SL':
                     try:
@@ -806,9 +804,9 @@ def settle(dry_run=False) -> dict:
                         from dharma.loss_autopsy import autopsy
                         _la_result = autopsy(rec)
                         rec['loss_autopsy'] = _la_result
-                        print(f'[Settler] 🔍 loss_autopsy: {rec.get("symbol")} 主因={_la_result.get("primary_cause","?")} 置信度={_la_result.get("confidence",0):.0%}')
+                        pass  # [静默]
                     except Exception as _la_e:
-                        print(f'[WARN][loss_autopsy] {type(_la_e).__name__}: {_la_e}')
+                        pass  # [静默]
                 # ── [B1 设计院 2026-06-30] EV实时反馈 → 达摩院自我进化 ─────
                 # 每笔结算触发EV矩阵更新，参数微调建议写入nudge文件（非阻断）
                 try:
@@ -817,7 +815,7 @@ def settle(dry_run=False) -> dict:
                     from ev_feedback import on_settlement as _ev_cb
                     _ev_cb(rec, outcome)
                 except Exception as _ev_e:
-                    print(f'[WARN][EV-Feedback] {type(_ev_e).__name__}: {_ev_e}')
+                    pass  # [静默]
 
     if not dry_run and n_settled > 0:
         _save(records)
@@ -888,4 +886,4 @@ if __name__ == '__main__':
         r = settle(dry_run=args.dry)
         print(f"结算完成: 处理{r['total']}条 结算{r['settled']}条 TP1={r['tp1']} SL={r['sl']} T={r['timeout']} 跳过={r['skip']}")
         if r['settled'] == 0:
-            print('HEARTBEAT_OK')
+            pass  # [静默]

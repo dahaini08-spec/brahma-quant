@@ -83,7 +83,7 @@ def save_decision_snapshot(signal: dict, market_ctx: dict = None) -> str:
     with open(REVIEW_QUEUE, 'a') as f:
         f.write(json.dumps({'snap_id': snap_id, 'review_at': snapshot['review_at']}) + '\n')
 
-    print(f'[ExpEngine] 📸 决策快照 {snap_id}: {snapshot["symbol"]} {snapshot["direction"]} score={snapshot["score"]}')
+    pass  # [静默]
     return snap_id
 
 
@@ -110,7 +110,7 @@ def run_24h_review():
     if not pending:
         return
 
-    print(f'[ExpEngine] 🔍 开始复盘 {len(pending)} 条快照...')
+    pass  # [静默]
 
     import urllib.request
     for item in pending:
@@ -233,7 +233,7 @@ def _archive_experience(snap: dict):
         f.write(json.dumps(exp, ensure_ascii=False) + '\n')
 
     _update_index(exp)
-    print(f'  [ExpEngine] 📚 归档经验: {exp["symbol"]} {exp["direction"]} {exp["verdict"]} PnL={exp["actual_pnl"]:+.2f}%')
+    pass  # [静默]
 
 
 def _update_index(exp: dict):

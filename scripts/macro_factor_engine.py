@@ -253,8 +253,7 @@ def get_macro_score(
     }
 
     if verbose:
-        print(f'[MacroFactor] score={score:+.0f} F&G={fg_val} dom={btc_dom:.1f}% '
-              f'event={event["event"]}({event["days_to"]}d) dir={direction}')
+        pass  # [静默]
         for d in details:
             print(f'  · {d}')
 

@@ -361,7 +361,7 @@ def scan_and_emit(symbols: list[str], push: bool = True) -> list[dict]:
             continue
 
         triggered.append(signal)
-        print(f"[PumpHunter] {sym} score={result['score']} regime={regime} → PUMP_SIGNAL emitted")
+        pass  # [静默]
 
         # 推送
         if push:
@@ -376,7 +376,7 @@ def scan_and_emit(symbols: list[str], push: bool = True) -> list[dict]:
                     '--message', msg
                 ], capture_output=True)
             except Exception as e:
-                print(f'[PumpHunter] push failed: {e}')
+                pass  # [静默]
 
     return triggered
 

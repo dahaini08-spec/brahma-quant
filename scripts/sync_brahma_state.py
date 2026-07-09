@@ -34,9 +34,9 @@ def sync():
         bs['regime_source'] = 'sync_from_regime_switch_state'
         with open(BST, 'w') as f:
             json.dump(bs, f, indent=2, ensure_ascii=False)
-        print(f'[SSOT-SYNC] {old} → {dominant} | votes={votes}')
+        pass  # [静默]
     else:
-        print(f'[SSOT-SYNC] 体制未变 {dominant} (HEARTBEAT_OK)')
+        pass  # [静默]
 
 if __name__ == '__main__':
     sync()

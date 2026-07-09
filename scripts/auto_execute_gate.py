@@ -114,7 +114,7 @@ def _add_wuqu_position(symbol: str, direction: str, entry: float, qty: float):
         bs['wuqu_positions'] = wuqu_pos
         state_path.write_text(json.dumps(bs, ensure_ascii=False, indent=2))
     except Exception as e:
-        print(f'[AutoExec] 写入 wuqu_positions 异常: {e}')
+        pass  # [静默]
 
 
 def _log(event: str, signal: dict, reason: str, result: dict = None):
@@ -237,7 +237,7 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
         # Layer9 仓位折扣
         if _l912_result.get('discount', 1.0) < 1.0:
             signal['_layer9_discount'] = _l912_result['discount']
-            print(f'[Layer9-12] {sym} 仓位折扣×{_l912_result["discount"]}')
+            pass  # [静默]
     except ImportError:
         pass  # Layer9-12 模块未安装时跳过
     except Exception as _l912_err:
@@ -360,7 +360,7 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
     }
 
     # ── 执行 ───────────────────────────────────────────────────────
-    print(f'[AutoExec] {sym} {direction} score={score} pos=${pos_usdt:.2f} dry_run={dry_run}')
+    pass  # [静默]
 
     try:
         import sys

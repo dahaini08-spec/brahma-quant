@@ -102,7 +102,7 @@ def _push(msg: str, priority: int = 1, dedup_key: str = None, dedup_ttl: int = 3
         )
         return True
     except Exception as e:
-        print(f'[NerveCenter] 推送失败: {e}')
+        pass  # [静默]
         return False
 
 
@@ -219,7 +219,7 @@ def sense_btc_regime_change(state: dict) -> list:
                 })
 
     except Exception as e:
-        print(f'[NerveCenter] 体制感知异常: {e}')
+        pass  # [静默]
     return alerts
 
 
@@ -251,7 +251,7 @@ def _check_positions_vs_regime(btc_regime: str, eth_regime: str) -> list:
                 risks.append(risk_map[risk_key].format(
                     s=sym.replace('USDT', ''), u=upnl))
     except Exception as e:
-        print(f'[NerveCenter] 持仓检查异常: {e}')
+        pass  # [静默]
     return risks
 
 
@@ -407,7 +407,7 @@ def sense_price_structure(state: dict) -> list:
                     })
 
         except Exception as e:
-            print(f'[NerveCenter] 价格结构感知 {sym}: {e}')
+            pass  # [静默]
 
     return alerts
 
@@ -494,7 +494,7 @@ def sense_market_microstructure(state: dict) -> list:
                     })
 
         except Exception as e:
-            print(f'[NerveCenter] 微观结构感知 {sym}: {e}')
+            pass  # [静默]
 
     return alerts
 
@@ -582,7 +582,7 @@ def sense_position_lifecycle(state: dict) -> list:
                     })
 
     except Exception as e:
-        print(f'[NerveCenter] 持仓感知异常: {e}')
+        pass  # [静默]
     return alerts
 
 
@@ -660,7 +660,7 @@ def sense_signal_validity(state: dict) -> list:
                 continue
 
     except Exception as e:
-        print(f'[NerveCenter] 信号感知异常: {e}')
+        pass  # [静默]
     return alerts
 
 
@@ -771,7 +771,7 @@ def _format_and_push(all_alerts: list, state: dict = None):
     for alert in p0:
         _push(alert['msg'], 0,
               alert.get('dedup_key'), alert.get('dedup_ttl', 3600))
-        print(f'[NerveCenter] 🔴 P0推送: {alert["type"]}')
+        pass  # [静默]
 
     # P1: 合并推送（过滤后，最多5条）
     if p1_filtered:
@@ -788,14 +788,13 @@ def _format_and_push(all_alerts: list, state: dict = None):
         dedup = f'nerve_p1_{int(time.time()//(300*noise_mult))}'
         pushed = _push(msg, 1, dedup, 300)
         if pushed:
-            print(f'[NerveCenter] 🟡 P1推送: {len(p1_filtered)}条有效 '
-                  f'(过滤持续中{len(p1_sustained)}条 降级{len(p2)-len([a for a in all_alerts if a["priority"]==2])}条)')
+            pass  # [静默]
     elif p1_raw:
-        print(f'[NerveCenter] 🟢 P1全部为持续事件或降级，静默 ({len(p1_raw)}条)')
+        pass  # [静默]
 
     # P2: 静默记录
     for a in p2:
-        print(f'[NerveCenter] 🟢 P2静默: {a["type"]} - {a["msg"][:50]}')
+        pass  # [静默]
 
 
 # ══════════════════════════════════════════════════════════════
@@ -907,14 +906,14 @@ def sense_order_anomaly(state: dict) -> list:
                             f'建议立即检查，防止全部成交导致超仓'),
                     'action': 'CHECK_ORDERS',
                 })
-                print(f'[NerveCenter] 🚨 {sym} 挂单异常: {len(sym_orders)}张')
+                pass  # [静默]
     except Exception as e:
-        print(f'[NerveCenter] 挂单检测异常: {e}')
+        pass  # [静默]
     return alerts
 
 
 def main():
-    print(f'[NerveCenter] 启动 {datetime.utcnow().strftime("%H:%M UTC")}')
+    pass  # [静默]
     state = _load_state()
     all_alerts = []
 
@@ -936,7 +935,7 @@ def main():
 
     p0 = len([a for a in all_alerts if a['priority'] == 0])
     p1 = len([a for a in all_alerts if a['priority'] == 1])
-    print(f'[NerveCenter] 完成 | 感知结果: P0={p0} P1={p1} 总={len(all_alerts)}')
+    pass  # [静默]
 
 
 if __name__ == '__main__':

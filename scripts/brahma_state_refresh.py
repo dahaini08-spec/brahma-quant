@@ -87,7 +87,7 @@ def main():
             for _stale_key in ('bear_prob', 'bull_prob', 'chop_prob'):
                 state.pop(_stale_key, None)
         except Exception as _re:
-            print(f'[WARN] regime refresh failed: {_re}', file=sys.stderr)
+            pass  # [静默]
             # regime刷新失败不影响价格刷新
 
         # FIX: 同步ws_guardian实时ping（ws_guardian写ws_guardian_state.json，这里同步到brahma_state）

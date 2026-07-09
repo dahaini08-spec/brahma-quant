@@ -53,7 +53,7 @@ def fetch_trc20_txs(address: str, limit: int = 50) -> list:
         data = r.json()
         return data.get("data", [])
     except Exception as e:
-        print(f"[TRC20] fetch error: {e}")
+        pass  # [静默]
         return []
 
 def push_to_jarvis(msg: str):
@@ -66,7 +66,7 @@ def push_to_jarvis(msg: str):
             "--message", msg,
         ], capture_output=True, timeout=15)
     except Exception as e:
-        print(f"[Jarvis] push error: {e}")
+        pass  # [静默]
 
 def main():
     state = load_state()
@@ -75,7 +75,7 @@ def main():
 
     txs = fetch_trc20_txs(TRON_ADDRESS)
     if not txs:
-        print("HEARTBEAT_OK")
+        pass  # [静默]
         return
 
     for tx in txs:
@@ -120,7 +120,7 @@ def main():
             push_to_jarvis(msg)
             print(f"[新订单] ${order['amount']} USDT from {order['sender'][:12]}...")
     else:
-        print("HEARTBEAT_OK")
+        pass  # [静默]
 
 if __name__ == "__main__":
     main()

@@ -69,16 +69,16 @@ def write(signal: dict) -> bool:
     # 验证必须字段
     missing = [f for f in REQUIRED if f not in signal or signal[f] is None]
     if missing:
-        print(f'[SignalBus] ❌ 缺少必须字段: {missing}')
+        pass  # [静默]
         return False
 
     if not _lock():
-        print('[SignalBus] ❌ 获取锁超时')
+        pass  # [静默]
         return False
     try:
         with open(BUS_FILE, 'a') as f:
             f.write(json.dumps(signal, ensure_ascii=False) + '\n')
-        print(f'[SignalBus] ✅ 写入: {sym} {direction} score={score:.0f} source={source}')
+        pass  # [静默]
         return True
     finally:
         _unlock()

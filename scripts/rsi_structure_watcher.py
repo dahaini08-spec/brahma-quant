@@ -126,7 +126,7 @@ def get_market_data(sym):
             oi_chg_1h=round(oi_chg_1h, 2),
         )
     except Exception as e:
-        print(f'[RSI-Watcher] {sym} 数据拉取失败: {e}')
+        pass  # [静默]
         return None
 
 
@@ -291,13 +291,13 @@ def write_trigger(sym, events, data):
                     ['openclaw', 'message', 'send', '--to', JARVIS_TARGET, '--channel', 'jarvis', '--message', msg],
                     stdout=_sp.DEVNULL, stderr=_sp.DEVNULL
                 )
-                print(f'[RSI-Watcher] 📤 Jarvis推送: {sym} {len(high_events)}个高优先级事件')
+                pass  # [静默]
             except Exception as _pe:
-                print(f'[RSI-Watcher] 推送失败(非致命): {_pe}')
+                pass  # [静默]
         # ────────────────────────────────────────────────────────────────
         return True
     except Exception as e:
-        print(f'[RSI-Watcher] 写入trigger失败: {e}')
+        pass  # [静默]
         return False
 
 
@@ -312,7 +312,7 @@ def run():
         if check_cooldown(state, sym):
             last_ts = state.get(f'{sym}_last_trigger', 0)
             remaining = int((COOLDOWN_SECONDS - (time.time() - last_ts)) / 60)
-            print(f'[RSI-Watcher] {sym} 冷却中 剩余{remaining}分钟')
+            pass  # [静默]
             continue
 
         data = get_market_data(sym)
@@ -327,21 +327,21 @@ def run():
 
         if status.startswith('SILENT'):
             silent_syms.append(f"{sym}({status})")
-            print(f'[RSI-Watcher] {sym} 静默 → {status} RSI={data["rsi_1h"]:.1f} BB={data["bb_width"]:.2f}%')
+            pass  # [静默]
         elif events:
             # 有触发事件
             write_trigger(sym, events, data)
             state[f'{sym}_last_trigger'] = time.time()
             triggered_syms.append(sym)
             for ev in events:
-                print(f'[RSI-Watcher] 🔔 {sym} [{ev["priority"]}] {ev["event"]}: {ev["desc"]}')
+                pass  # [静默]
         else:
-            print(f'[RSI-Watcher] {sym} 无事件 RSI={data["rsi_1h"]:.1f} BB={data["bb_width"]:.2f}% Vol={data["vol_ratio"]:.1f}x OI={data["oi_chg_1h"]:+.1f}%')
+            pass  # [静默]
 
     save_state(state)
 
     if triggered_syms:
-        print(f'[RSI-Watcher] ✅ 触发事件: {triggered_syms} → 扫描+执行链路已启动')
+        pass  # [静默]
         import subprocess
         # 层关1事件触发后：扫描完成即触发auto_executor（缩短延迟）
         # ulimit限制单条Python链内存上限（防止OOM）
@@ -359,14 +359,14 @@ def run():
             if lock_file.exists():
                 lock_age = time.time() - lock_file.stat().st_mtime
                 if lock_age < 120:   # v5.2: 2min内认为上一轮还在跑（原4min，gateway重启导致残留）
-                    print(f'[RSI-Watcher] ⚠️ 上一轮扫描链仍在运行({lock_age:.0f}s)，跳过')
+                    pass  # [静默]
                     return
                 else:
                     lock_file.unlink(missing_ok=True)  # 超时残留锁，强制清除
             lock_file.write_text(str(os.getpid()))
             proc = subprocess.Popen(scan_cmd, shell=True,
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            print(f'[RSI-Watcher] 🚀 扫描+执行已启动 PID={proc.pid}')
+            pass  # [静默]
             # 非阻塞：让进程在后台运行，定时清理锁
             def _cleanup_lock(p, lf):
                 try:
@@ -381,12 +381,12 @@ def run():
         except Exception as e:
             try: Path(BASE / 'data/.rsi_scan_chain.lock').unlink(missing_ok=True)
             except: pass
-            print(f'[RSI-Watcher] 链路启动失败: {e}')
+            pass  # [静默]
     elif not silent_syms:
-        print(f'[RSI-Watcher] {now_str} 无触发，市场等待中')
+        pass  # [静默]
 
     if not triggered_syms and not silent_syms:
-        print('HEARTBEAT_OK')
+        pass  # [静默]
 
 
 if __name__ == '__main__':

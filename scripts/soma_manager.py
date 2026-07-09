@@ -125,7 +125,7 @@ def _save_state(s: dict):
         _STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
         _STATE_FILE.write_text(json.dumps(s, ensure_ascii=False, indent=2))
     except Exception as e:
-        print(f'[Soma] 状态保存失败: {e}')
+        pass  # [静默]
 
 
 # ══════════════════════════════════════════════════════════
@@ -164,14 +164,11 @@ def can_run(priority: int = 2, task: str = 'unknown') -> bool:
     threshold     = PRIORITY_THRESHOLD.get(priority, 0.20)
 
     if remaining_pct >= threshold:
-        print(f'[Soma] ✅ {task} P{priority} 允许运行 '
-              f'余量={remaining_pct:.0%} 门槛={threshold:.0%}')
+        pass  # [静默]
         return True
     else:
         remaining = get_remaining()
-        print(f'[Soma] ⛔ {task} P{priority} 积分不足跳过 '
-              f'余量={remaining_pct:.0%}<{threshold:.0%} '
-              f'剩余={remaining:,}tokens')
+        pass  # [静默]
         return False
 
 
@@ -202,12 +199,11 @@ def record_usage(task: str, tokens: int = 0, priority: int = 2):
 
     remaining = s['budget'] - s['used']
     pct       = remaining / s['budget']
-    print(f'[Soma] 📊 {task} 消耗={tokens:,} 今日已用={s["used"]:,} '
-          f'剩余={remaining:,}({pct:.0%})')
+    pass  # [静默]
 
     # 低余额预警
     if pct < 0.15:
-        print(f'[Soma] ⚠️ 能量告急！剩余{pct:.0%}，P3/P4任务已自动暂停')
+        pass  # [静默]
 
 
 def daily_summary() -> dict:
@@ -280,7 +276,7 @@ if __name__ == '__main__':
         print(format_summary())
     elif cmd == 'reset':
         _save_state(_fresh_state())
-        print('[Soma] 状态已重置')
+        pass  # [静默]
     elif cmd == 'test':
         print('=== 苏摩调度测试 ===')
         print(f'P0: {can_run(0, "trade_gateway")}')

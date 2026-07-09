@@ -241,7 +241,7 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
             elif _sym_regime in ('BEAR_TREND', 'BEAR_EARLY'):
                 _forced_dir = 'SHORT'  # 顺势：空头体制强制SHORT
             if _forced_dir:
-                print(f'[RegimePreset] {sym} {_sym_regime} → 强制方向={_forced_dir}')
+                pass  # [静默] f'[RegimePreset] {sym} {_sym_regime} → 强制方向={_forced_dir}'
     except Exception:
         pass
     # ────────────────────────────────────────────────────────────────────────
@@ -273,14 +273,14 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
             if _rb['bonus'] > 0:
                 _total_bonus += _rb['bonus']
                 _rf['_regime_context_bonus'] = _rb
-                print(f'[BullBonus] {sym} +{_rb["bonus"]}分 | {_rb["reasons"]}')
+                pass  # [静默] f'[BullBonus] {sym} +{_rb["bonus"]}分 | {_rb["reasons"]}'
 
         # P0-C: rsi_trigger_event 事件窗口加分（所有方向）
         _eb = get_event_timing_bonus(sym)
         if _eb['active'] and _eb['bonus'] > 0:
             _total_bonus += _eb['bonus']
             _rf['_event_timing_bonus'] = _eb
-            print(f'[EventBonus] {sym} +{_eb["bonus"]}分 | {_eb["events"]}')
+            pass  # [静默] f'[EventBonus] {sym} +{_eb["bonus"]}分 | {_eb["events"]}'
 
         # ── 同步写入所有评分字段（覆盖 extract_standard_fields 所有读取路径）──
         if _total_bonus > 0:
@@ -293,7 +293,7 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
                 _rf['confluence']['score']    = _new_score
                 _rf['confluence']['total']    = _new_score
                 _rf['confluence']['grade_num']= int(_new_score)
-            print(f'[RegimeInject] {sym} {_cur_score:.1f}+{_total_bonus}→{_new_score:.1f} (regime={_reg} dir={_dir})')
+            pass  # [静默] f'[RegimeInject] {sym} {_cur_score:.1f}+{_total_bonus}→{_new_score:.1f} (regime=
             # [FIX 2026-07-06] 注入后validation重算:
             # P0B封锁只是设 valid_signal=False，但params['valid']=True+score达门 就应该是valid
             _params_valid = bool((_rf.get('params') or {}).get('valid', False))
@@ -303,10 +303,10 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
             _MIN_VALID = 155
             if _params_valid and _kelly_ok and _new_score >= _MIN_VALID:
                 _rf['valid_signal'] = True
-                print(f'[RegimeInject-Valid] {sym} score={_new_score:.1f}>={_MIN_VALID} params.valid=True → valid_signal=True')
+                pass  # [静默] f'[RegimeInject-Valid] {sym} score={_new_score:.1f}>={_MIN_VALID} params.valid=T
             elif _new_score >= _MIN_VALID:
                 # score达问但params.valid=False，说明RR问题
-                print(f'[RegimeInject-Valid] {sym} score={_new_score:.1f} 但params.valid=False，RR问题，不解除')
+                pass  # [静默] f'[RegimeInject-Valid] {sym} score={_new_score:.1f} 但params.valid=False，RR问题，不解除
     except Exception as _inj_err:
         pass  # 注入失败不阻断主流程
     # ────────────────────────────────────────────────────────────────────────
@@ -332,7 +332,7 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
                 result['confluence']['score'] = _new_sw
                 result['confluence']['total'] = _new_sw
             result['_switch_noise_penalty'] = {'btc_sw': _btc_sw, 'sym_sw': _sym_sw, 'penalty': _sw_penalty}
-            print(f'[SwitchNoise] {sym} sw={_sw_max}>50 → -{abs(_sw_penalty)}分 ({_sc_sw:.1f}→{_new_sw:.1f})')
+            pass  # [静默] f'[SwitchNoise] {sym} sw={_sw_max}>50 → -{abs(_sw_penalty)}分 ({_sc_sw:.1f}→{_new
         elif _sw_max > 30:
             # 中等噪音 → 降5分
             _sw_penalty = -5
@@ -346,7 +346,7 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
                 result['confluence']['score'] = _new_sw
                 result['confluence']['total'] = _new_sw
             result['_switch_noise_penalty'] = {'btc_sw': _btc_sw, 'sym_sw': _sym_sw, 'penalty': _sw_penalty}
-            print(f'[SwitchNoise] {sym} sw={_sw_max}>30 → -{abs(_sw_penalty)}分 ({_sc_sw:.1f}→{_new_sw:.1f})')
+            pass  # [静默] f'[SwitchNoise] {sym} sw={_sw_max}>30 → -{abs(_sw_penalty)}分 ({_sc_sw:.1f}→{_new
     except Exception:
         pass
     # ────────────────────────────────────────────────────────────────────────
@@ -449,7 +449,7 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
             result['timing_badge']  = _timing_result.get('badge', '')
             result['timing_score']  = _timing_result.get('score', 0)
             result['_timing']       = _timing_result
-            print(f'[TimingFilter] {sym} {result["timing_status"]} score={result["timing_score"]}')
+            pass  # [静默] f'[TimingFilter] {sym} {result["timing_status"]} score={result["timing_score"]}'
         except Exception:
             result['timing_status'] = 'UNKNOWN'
     # ────────────────────────────────────────────────────────────────────────
@@ -695,8 +695,8 @@ if __name__ == '__main__':
     mode = 'full' if args.full else 'card'
     t0 = time.time()
 
-    print(f'[Runner] 启动 | 标的: {args.symbols} | 模式: {mode}')
-    print(f'[Runner] 入口: brahma_parallel_engine.batch_analyze (并发4x加速)')
+    pass  # [静默] f'[Runner] 启动 | 标的: {args.symbols} | 模式: {mode}'
+    pass  # [静默] f'[Runner] 入口: brahma_parallel_engine.batch_analyze (并发4x加速)'
     print()
 
     results = run_batch(args.symbols)
@@ -726,7 +726,7 @@ if __name__ == '__main__':
     else:
         print(format_batch_report(results, mode=mode))
         print()
-        print(f'[Runner] 完成 | 耗时 {total}s | {len(results)} 标的')
+        pass  # [静默] f'[Runner] 完成 | 耗时 {total}s | {len(results)} 标的'
         for sym, r in results.items():
             meta = r.get('_runner_meta', {})
             ok_icon = '✅' if meta.get('fields_ok') else '⚠️'

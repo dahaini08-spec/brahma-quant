@@ -109,7 +109,7 @@ def _save_state(state: dict):
     try:
         STATE_PATH.write_text(json.dumps(state, ensure_ascii=False, indent=2))
     except Exception as _e_ignored:
-        print(f'[WARN][signal_watcher] {type(_e_ignored).__name__}: {_e_ignored}')
+        pass  # [静默]
 
 
 def _load_valid_signals() -> list:
@@ -140,7 +140,7 @@ def _load_valid_signals() -> list:
                 # 只有 READY(≥65)/STANDBY系统封堵/UNKNOWN 才允许继续
                 timing = s.get('timing_status', '') or ''
                 if 'MONITOR' in timing.upper():
-                    print(f'[SignalWatcher] ⏸ timing=MONITOR，跳过VIP推送: {s.get("symbol")} score={score}')
+                    pass  # [静默]
                     continue
                 signals.append(s)
         except Exception:
@@ -238,7 +238,7 @@ def _is_chop_regime() -> bool:
 def run():
     # ── CHOP预检门控 ─────────────────────────────────────────────
     if _is_chop_regime():
-        print('[SignalWatcher] 全标的CHOP体制，跳过信号扫描（0 token节省）')
+        pass  # [静默]
         return
 
     state   = _load_state()
@@ -246,7 +246,7 @@ def run():
     now     = _now_ts()
 
     if not signals:
-        print("[SignalWatcher] 无有效信号")
+        pass  # [静默]
         return
 
     # 清理24H前的已通知记录
@@ -285,7 +285,7 @@ def run():
                 if now > exp_ts:
                     continue  # 已过TTL，僵尸信号，跳过
             except Exception as _e_ignored:
-                print(f'[WARN][signal_watcher] {type(_e_ignored).__name__}: {_e_ignored}')
+                pass  # [静默]
         elif age_min > 2880:  # 无expires_at时fallback：48H过期
             continue
 
@@ -312,7 +312,7 @@ def run():
                 from push_hub import _jarvis as _pj_sw; _pj_sw(f"🔔 新信号\n{card}", dedup_ttl=86400)
             except Exception: pass
             state["notified"][sig_id] = now
-            print(f"[SignalWatcher] ✅ 新信号推送: {sym} score={s.get('score')} grade={s.get('grade')}")
+            pass  # [静默]
             continue
 
         # ── Layer 1：价格贴近预警（只对24H内信号）────────────────
@@ -369,7 +369,7 @@ def run():
             try:
                 from push_hub import _jarvis as _pj; _pj(_push_msg, dedup_ttl=14400)  # 4H去重
             except Exception: pass
-            print(f"[SignalWatcher] 🚨 入场区触发: {sym} price={price:.2f}")
+            pass  # [静默]
 
         # gap < 0.1%（极度贴近）
         elif 0 <= gap_pct < 0.1 and warn_key_01 not in state["warned"]:
@@ -378,7 +378,7 @@ def run():
                 from push_hub import _jarvis as _pj_sw; _pj_sw(f"⚡ 价格极度贴近入场区！\n{card}", dedup_ttl=3600)
             except Exception: pass
             state["warned"][warn_key_01] = now
-            print(f"[SignalWatcher] ⚡ 极度贴近: {sym} gap={gap_pct:.3f}%")
+            pass  # [静默]
 
         # gap < 0.5%（即将触发）
         elif 0.1 <= gap_pct < 0.5 and warn_key_05 not in state["warned"]:
@@ -387,13 +387,13 @@ def run():
                 from push_hub import _jarvis as _pj_sw; _pj_sw(f"📡 信号即将触发\n{card}", dedup_ttl=3600)
             except Exception: pass
             state["warned"][warn_key_05] = now
-            print(f"[SignalWatcher] 📡 即将触发: {sym} gap={gap_pct:.3f}%")
+            pass  # [静默]
 
     _save_state(state)
     if len(signals) == 0:
-        print('HEARTBEAT_OK')
+        pass  # [静默]
     else:
-        print(f"[SignalWatcher] 完成  有效信号={len(signals)}  通知记录={len(state['notified'])}")
+        pass  # [静默]
 
     # [Zone Watcher v1.0 2026-06-10] Layer 2: 高分低级信号待触达监控
     try:
@@ -404,7 +404,7 @@ def run():
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
             )
     except Exception as _ze:
-        print(f'[SignalWatcher] ZoneWatcher调用失败: {_ze}')
+        pass  # [静默]
 
 
 if __name__ == "__main__":

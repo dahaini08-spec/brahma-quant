@@ -103,8 +103,7 @@ def select(short_analysis: dict, long_analysis: dict, regime: dict) -> dict:
     short_ok = short_valid and short_w >= MIN_WEIGHTED
     long_ok  = long_valid  and long_w  >= MIN_WEIGHTED
 
-    print(f'[Selector] {sym} SHORT raw={short_raw:.0f}×{mult_short}={short_w:.0f}({("✅" if short_ok else "❌")})'
-          f' LONG raw={long_raw:.0f}×{mult_long}={long_w:.0f}({("✅" if long_ok else "❌")})')
+    pass  # [静默]
 
     # ── [v25.2 2026-06-14 FIX-SSOT] BEAR_TREND/BEAR_EARLY LONG硬封禁（宪法级死穴） ──
     # 铁证：BEAR_TREND_LONG  n=86,120  WR=45.0% avgPnL=-0.265（最惨死穴）
@@ -116,9 +115,9 @@ def select(short_analysis: dict, long_analysis: dict, regime: dict) -> dict:
     if _bear_block:
         long_ok = False
         long_w  = 0.0
-        print(f'[Selector] ⚠️ {primary_regime} LONG硬封禁（铁证死穴）')
+        pass  # [静默]
     elif 'BEAR_RECOVERY' in primary_regime:
-        print(f'[Selector] ✅ BEAR_RECOVERY LONG允许（反直觉alpha WR=72.5% n=430）')
+        pass  # [静默]
 
     signals = []
     decision = ''

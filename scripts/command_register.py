@@ -59,7 +59,7 @@ def check_override(domain: str) -> tuple:
         from command_register import check_override, DOMAIN_CIRCUIT_BREAKER
         silenced, reason = check_override(DOMAIN_CIRCUIT_BREAKER)
         if silenced:
-            print(f'HEARTBEAT_OK (指令覆盖: {reason})')
+            pass  # [静默]
             sys.exit(0)
     """
     reg = _load()
