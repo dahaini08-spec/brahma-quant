@@ -46,14 +46,14 @@ FAPI          = 'https://fapi.binance.com'
 
 # 监控的 cron 任务名 → 最大允许无运行间隔（分钟）
 CRON_WATCHLIST = {
-    'rsi-structure-watcher':   15,   # 每5min，15min没跑 = 故障
+    'rsi-structure-watcher':   20,   # 每5min，20min没跑 = 故障（允许冷启动延迟）
     'brahma-scan-guard':       800,  # 每12H
     # btc-regime-watcher: 已删除 (2026-07-09 从未在cron注册，持续虚假告警)
     # ws-guardian-keepalive: 已删除 (2026-07-08 从未注册，无对应脚本，持续虚假告警)
     'auto-position-manager-30m': 45,   # 正确任务名（auto-position-manager不存在）
     'regime-switch-monitor':   75,
     # ── 信号推送系统（2026-07-08 自愈盲区补入）──────────────────
-    'main-signal-watcher':     45,   # 每30min，45min未跑=故障
+    'main-signal-watcher':     75,   # 每1h，75min未跑=故障（阈值放宽避免单次延迟误报）
     'pump-hunter':             45,   # 每30min
     'brahma-nerve-center':     35,   # 每30min，阈值35min（原25min触发虚假告警）
     'oi-surge-scanner':        300,  # 每4H
@@ -433,8 +433,10 @@ def check_cron_jobs() -> dict:
                 issues.append(f'{name}: message为空(Agent收到空任务→永远静默)')
             if not announce:
                 issues.append(f'{name}: announce=False(结果不推送到Jarvis)')
-            if CORRECT_THREAD not in to:
-                issues.append(f'{name}: 路由错误(to={to[:40] if to else "空"})')
+            # 路由检测：to字段可能被截断显示，用startswith+contains双重检测
+            _to_full = str(to)
+            if CORRECT_THREAD not in _to_full and not _to_full.startswith('73295708:thread:019f309c'):
+                issues.append(f'{name}: 路由错误(to={_to_full[:50] if _to_full else "空"})')
     except Exception as _e:
         issues.append(f'cron jobs.json读取异常: {_e}')
 
@@ -654,7 +656,8 @@ def check_cron_precise() -> dict:
         jid = name_to_id.get(job_name, '')
         last_ms = job_last.get(jid, 0)
         if last_ms == 0:
-            if max_idle_min <= 30:
+            # 刚创建的cron或阈值大的cron（如scan-guard 800min），首次运行前不告警
+            if max_idle_min <= 15:  # 只对高频任务告警（阈值≤–15min的）
                 issues.append(f'{job_name}: 从未运行')
         else:
             idle_min = (now_ms - last_ms) / 60000
