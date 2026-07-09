@@ -23,7 +23,7 @@ from brahma_v6.runtime.signal_consumer import RawSignal
 logger = logging.getLogger(__name__)
 
 # 默认日志路径
-_DEFAULT_LOG = Path(__file__).resolve().parents[3] / "data" / "live_signal_log.jsonl"
+_DEFAULT_LOG = Path(__file__).resolve().parents[2] / "data" / "live_signal_log.jsonl"
 
 # 信号有效期上限（秒）：超过此时间不再执行
 MAX_SIGNAL_AGE_S: float = 4 * 3600   # 4h
