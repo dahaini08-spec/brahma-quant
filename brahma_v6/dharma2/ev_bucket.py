@@ -1,258 +1,254 @@
 """
-brahma_v6/dharma2/ev_bucket.py — EV Bucket 治理框架
-设计院 P1 | 2026-07-08
+brahma_v6/dharma2/ev_bucket.py
+EV Bucket Governance — 策略期望值治理
+设计院 · 2026-07-09
 
-每个 bucket 维护 9 维统计：
-  n / WR / avg_win / avg_loss / EV / PF / net_pnl / max_dd / decay_score
-
-升仓条件（全部满足）：
-  n >= 100, EV > 0, PF > 1.25, net_pnl > 0, max_dd 可控, live_drift < 阈值
-
-降仓/封禁条件：
-  EV < 0 连续10笔 / PF < 0.9 / live_drift > 20%
+核心约束（写死，不可绕过）：
+  1. 只能用 closed trade 更新
+  2. 只能用通过 TradeLedger 三道校验的 TradeRecord
+  3. 使用 net_pnl，不使用 gross_pnl
+  4. 低样本（n < MIN_SAMPLE_FOR_BLOCK）不允许直接 BLOCK，只能 WATCHLIST
 """
 from __future__ import annotations
-import json
-import time
-import math
-from pathlib import Path
-from dataclasses import dataclass, field, asdict
+
+import statistics
+from dataclasses import dataclass, field
+from enum import Enum
 from typing import Dict, List, Optional, Tuple
 
-BASE = Path(__file__).resolve().parents[2]
-EV_DIR = BASE / "data" / "ev_buckets"
-EV_DIR.mkdir(parents=True, exist_ok=True)
+from brahma_v6.dharma2.models import TradeRecord
 
+
+# ─── 治理动作 ──────────────────────────────────────────────────────────────────
+
+class BucketAction(str, Enum):
+    ALLOW       = "ALLOW"        # 正常放行
+    DOWN_WEIGHT = "DOWN_WEIGHT"  # 降权（减少仓位）
+    WATCHLIST   = "WATCHLIST"    # 监控（不减仓，但记录预警）
+    BLOCK       = "BLOCK"        # 封禁（拒绝新信号）
+
+
+# 低样本阈值：n < 此值时不得直接 BLOCK
+MIN_SAMPLE_FOR_BLOCK = 10
+
+# 治理阈值
+WIN_RATE_BLOCK_THRESHOLD       = 0.38   # 胜率 < 38% → BLOCK（样本充足时）
+WIN_RATE_DOWN_WEIGHT_THRESHOLD = 0.45   # 胜率 < 45% → DOWN_WEIGHT
+EXPECTANCY_BLOCK_THRESHOLD     = -0.005 # 期望值 < -0.5% → BLOCK（样本充足时）
+MAX_DRAWDOWN_WATCHLIST         = -0.15  # 最大回撤 > 15% → WATCHLIST
+
+
+# ─── Bucket Key ────────────────────────────────────────────────────────────────
+
+@dataclass(frozen=True)
+class BucketKey:
+    """
+    分桶维度：symbol × direction × regime × score_bucket × setup_type × timeframe
+    score_bucket: "LOW"(< 130) / "MID"(130-150) / "HIGH"(> 150)
+    """
+    symbol:       str
+    direction:    str    # "LONG" | "SHORT"
+    regime:       str    # "BEAR_TREND" | "BULL_TREND" | ...
+    score_bucket: str    # "LOW" | "MID" | "HIGH"
+    setup_type:   str    # "OB" | "FVG" | "BB" | "PUMP" | ...
+    timeframe:    str    # "1H" | "4H" | "1D"
+
+    @staticmethod
+    def from_record(record: TradeRecord) -> "BucketKey":
+        score = record.score
+        if score < 130:
+            sb = "LOW"
+        elif score <= 150:
+            sb = "MID"
+        else:
+            sb = "HIGH"
+
+        # setup_type 和 timeframe 从 regime 派生默认值（可后续扩展到信号元数据）
+        setup_type = "UNKNOWN"
+        timeframe  = "1H"
+
+        return BucketKey(
+            symbol       = record.symbol,
+            direction    = record.direction,
+            regime       = record.regime,
+            score_bucket = sb,
+            setup_type   = setup_type,
+            timeframe    = timeframe,
+        )
+
+
+# ─── Bucket Stats ──────────────────────────────────────────────────────────────
 
 @dataclass
-class EVBucketStats:
-    """单个 bucket 的统计状态"""
-    bucket_key: str         # 格式: symbol|direction|regime|score_bucket
-    n: int = 0
-    wins: int = 0
-    losses: int = 0
-    sum_win: float = 0.0
-    sum_loss: float = 0.0    # 负数累积
-    net_pnl: float = 0.0
-    max_dd: float = 0.0
-    peak_pnl: float = 0.0
-    consecutive_loss: int = 0
-    last_updated: float = field(default_factory=time.time)
-    status: str = "WATCH"   # WATCH / ACTIVE / REDUCE / BANNED
+class BucketStats:
+    """
+    单个 bucket 的统计指标，基于 net_pnl（不使用 gross_pnl）。
+    """
+    key: BucketKey
+    net_pnls: List[float] = field(default_factory=list)
+
+    # ── 只读统计属性 ────────────────────────────────────────────
+    @property
+    def n(self) -> int:
+        return len(self.net_pnls)
 
     @property
-    def wr(self) -> float:
-        return self.wins / max(self.n, 1)
+    def win_rate(self) -> Optional[float]:
+        if self.n == 0:
+            return None
+        return sum(1 for p in self.net_pnls if p > 0) / self.n
 
     @property
-    def avg_win(self) -> float:
-        return self.sum_win / max(self.wins, 1)
+    def avg_net_pnl(self) -> Optional[float]:
+        return sum(self.net_pnls) / self.n if self.n > 0 else None
 
     @property
-    def avg_loss(self) -> float:
-        return self.sum_loss / max(self.losses, 1)
+    def median_net_pnl(self) -> Optional[float]:
+        return statistics.median(self.net_pnls) if self.n > 0 else None
 
     @property
-    def ev(self) -> float:
-        """期望值 = WR × avg_win + (1-WR) × avg_loss"""
-        return self.wr * self.avg_win + (1 - self.wr) * self.avg_loss
+    def expectancy(self) -> Optional[float]:
+        """期望值 = 平均净 PnL / 平均持仓名义（此处简化为 avg_net_pnl）。"""
+        return self.avg_net_pnl
 
     @property
-    def profit_factor(self) -> float:
-        if abs(self.sum_loss) < 1e-10:
-            return 999.0 if self.sum_win > 0 else 0.0
-        return self.sum_win / abs(self.sum_loss)
+    def max_drawdown(self) -> Optional[float]:
+        """简化 MDD：累计 PnL 序列的最大回撤。"""
+        if self.n == 0:
+            return None
+        cumulative = 0.0
+        peak = 0.0
+        max_dd = 0.0
+        for p in self.net_pnls:
+            cumulative += p
+            if cumulative > peak:
+                peak = cumulative
+            dd = cumulative - peak
+            if dd < max_dd:
+                max_dd = dd
+        return max_dd
 
-    @property
-    def size_multiplier(self) -> float:
-        """当前建议仓位乘数（1.0=基准）"""
-        if self.status == "BANNED":
-            return 0.0
-        if self.status == "REDUCE":
-            return 0.3
-        if self.n < 30:
-            return 0.5   # 样本不足→保守
-        if self.n < 100:
-            return 0.7
-        # 样本充足 → EV调制
-        if self.ev <= 0 or self.profit_factor < 0.9:
-            return 0.3
-        if self.profit_factor >= 1.5 and self.wr >= 0.55:
-            return 1.2
-        return 1.0
+    def governance_action(self) -> BucketAction:
+        """
+        基于当前统计决定治理动作。
 
-    def update(self, net_pnl: float) -> None:
-        """记录一笔交易，更新 bucket 统计"""
-        self.n += 1
-        self.net_pnl += net_pnl
-        if net_pnl > 0:
-            self.wins += 1
-            self.sum_win += net_pnl
-            self.consecutive_loss = 0
-        else:
-            self.losses += 1
-            self.sum_loss += net_pnl
-            self.consecutive_loss += 1
+        核心约束：
+          - n < MIN_SAMPLE_FOR_BLOCK → 最高只能 WATCHLIST
+          - 使用 net_pnl（已在 net_pnls 中保证）
+        """
+        if self.n == 0:
+            return BucketAction.ALLOW
 
-        # 更新最大回撤
-        self.peak_pnl = max(self.peak_pnl, self.net_pnl)
-        dd = self.peak_pnl - self.net_pnl
-        self.max_dd = max(self.max_dd, dd)
-        self.last_updated = time.time()
-        self._auto_classify()
+        wr = self.win_rate
+        ev = self.expectancy
+        mdd = self.max_drawdown
 
-    def _auto_classify(self) -> None:
-        """自动分级"""
-        if self.n < 10:
-            self.status = "WATCH"
-            return
-        if self.consecutive_loss >= 10 or (self.n >= 20 and self.profit_factor < 0.7):
-            self.status = "BANNED"
-        elif self.ev < 0 or self.profit_factor < 0.9:
-            self.status = "REDUCE"
-        elif self.n >= 100 and self.ev > 0 and self.profit_factor > 1.25 and self.net_pnl > 0:
-            self.status = "ACTIVE"
-        else:
-            self.status = "WATCH"
+        # 高样本才允许 BLOCK
+        if self.n >= MIN_SAMPLE_FOR_BLOCK:
+            if (wr is not None and wr < WIN_RATE_BLOCK_THRESHOLD) or \
+               (ev is not None and ev < EXPECTANCY_BLOCK_THRESHOLD):
+                return BucketAction.BLOCK
 
-    def summary(self) -> Dict:
+        # 任何样本量都可以 DOWN_WEIGHT / WATCHLIST
+        if wr is not None and wr < WIN_RATE_DOWN_WEIGHT_THRESHOLD:
+            return BucketAction.DOWN_WEIGHT
+
+        if mdd is not None and mdd < MAX_DRAWDOWN_WATCHLIST:
+            return BucketAction.WATCHLIST
+
+        return BucketAction.ALLOW
+
+    def to_dict(self) -> dict:
         return {
-            "bucket":         self.bucket_key,
-            "n":              self.n,
-            "wr":             round(self.wr, 3),
-            "ev":             round(self.ev, 5),
-            "pf":             round(self.profit_factor, 3),
-            "net_pnl":        round(self.net_pnl, 4),
-            "avg_win":        round(self.avg_win, 5),
-            "avg_loss":       round(self.avg_loss, 5),
-            "max_dd":         round(self.max_dd, 4),
-            "cons_loss":      self.consecutive_loss,
-            "status":         self.status,
-            "size_mult":      round(self.size_multiplier, 2),
+            "symbol":        self.key.symbol,
+            "direction":     self.key.direction,
+            "regime":        self.key.regime,
+            "score_bucket":  self.key.score_bucket,
+            "setup_type":    self.key.setup_type,
+            "timeframe":     self.key.timeframe,
+            "n":             self.n,
+            "win_rate":      round(self.win_rate, 4) if self.win_rate is not None else None,
+            "avg_net_pnl":   round(self.avg_net_pnl, 6) if self.avg_net_pnl is not None else None,
+            "median_net_pnl":round(self.median_net_pnl, 6) if self.median_net_pnl is not None else None,
+            "expectancy":    round(self.expectancy, 6) if self.expectancy is not None else None,
+            "max_drawdown":  round(self.max_drawdown, 6) if self.max_drawdown is not None else None,
+            "action":        self.governance_action().value,
         }
 
 
+# ─── EV Bucket Registry ────────────────────────────────────────────────────────
+
 class EVBucketRegistry:
-    """全局 EV Bucket 注册表，支持持久化"""
+    """
+    EV Bucket 治理注册表。
 
-    def __init__(self, store_file: Path = None):
-        self._file = store_file or EV_DIR / "ev_buckets.json"
-        self._buckets: Dict[str, EVBucketStats] = {}
-        self._load()
+    核心约束（写死）：
+      1. 只接受 closed trade（record.is_closed == True）
+      2. 使用 record.attribution.net_pnl（不用 gross_pnl）
+      3. 低样本不 BLOCK
+    """
 
-    def _make_key(
-        self,
-        symbol: str,
-        direction: str,
-        regime: str,
-        score_bucket: str,
-    ) -> str:
-        return f"{symbol}|{direction}|{regime}|{score_bucket}"
+    def __init__(self) -> None:
+        self._buckets: Dict[BucketKey, BucketStats] = {}
 
-    def _score_bucket(self, score: float) -> str:
-        if score < 110: return "S1_low"
-        if score < 138: return "S2_mid"
-        if score < 155: return "S3_high"
-        if score < 170: return "S4_elite"
-        return "S5_divine"
+    def update(self, record: TradeRecord) -> BucketKey:
+        """
+        用一条已验证的 TradeRecord 更新对应 bucket。
 
-    def record(
-        self,
-        symbol: str,
-        direction: str,
-        regime: str,
-        score: float,
-        net_pnl: float,
-    ) -> EVBucketStats:
-        """记录一笔交易结果"""
-        key = self._make_key(symbol, direction, regime, self._score_bucket(score))
+        约束：
+          - record 必须是 closed trade（exit_price 非 None）
+          - 使用 net_pnl，不使用 gross_pnl
+
+        Raises:
+            ValueError: 若 record 未关闭（open trade 不得更新 EV）
+        """
+        if not record.is_closed:
+            raise ValueError(
+                f"EV Bucket only accepts closed trades; "
+                f"trade_id={record.trade_id!r} is still open (exit_price=None)"
+            )
+
+        key = BucketKey.from_record(record)
         if key not in self._buckets:
-            self._buckets[key] = EVBucketStats(bucket_key=key)
-        self._buckets[key].update(net_pnl)
-        self._save()
-        return self._buckets[key]
+            self._buckets[key] = BucketStats(key=key)
 
-    def get_multiplier(
-        self,
-        symbol: str,
-        direction: str,
-        regime: str,
-        score: float,
-    ) -> float:
-        """获取当前仓位乘数建议"""
-        key = self._make_key(symbol, direction, regime, self._score_bucket(score))
-        if key not in self._buckets:
-            return 0.7  # 新bucket保守
-        return self._buckets[key].size_multiplier
+        # 强制使用 net_pnl — 不可绕过
+        self._buckets[key].net_pnls.append(record.attribution.net_pnl)
+        return key
 
-    def top_buckets(self, n: int = 10) -> List[Dict]:
-        """EV排名前N的bucket"""
-        active = [b for b in self._buckets.values() if b.n >= 20]
-        return [b.summary() for b in sorted(active, key=lambda x: -x.ev)[:n]]
+    def update_from_ledger(self, records: List[TradeRecord]) -> Tuple[int, int]:
+        """
+        批量从 TradeLedger 记录更新。
+        返回 (accepted, skipped_open)。
+        """
+        accepted = skipped = 0
+        for r in records:
+            if r.is_closed:
+                self.update(r)
+                accepted += 1
+            else:
+                skipped += 1
+        return accepted, skipped
 
-    def decay_buckets(self) -> List[Dict]:
-        """需要降仓或封禁的bucket"""
-        return [b.summary() for b in self._buckets.values()
-                if b.status in ("REDUCE", "BANNED")]
+    def get(self, key: BucketKey) -> Optional[BucketStats]:
+        return self._buckets.get(key)
 
-    def report(self) -> str:
-        lines = ["=== EV Bucket 治理报告 ===\n"]
-        lines.append(f"总 bucket 数: {len(self._buckets)}")
-        active = sum(1 for b in self._buckets.values() if b.status == "ACTIVE")
-        banned = sum(1 for b in self._buckets.values() if b.status == "BANNED")
-        reduce = sum(1 for b in self._buckets.values() if b.status == "REDUCE")
-        lines.append(f"ACTIVE={active} WATCH={len(self._buckets)-active-banned-reduce} REDUCE={reduce} BANNED={banned}\n")
-        lines.append("Top EV Buckets:")
-        for b in self.top_buckets(5):
-            lines.append(f"  {b['bucket']:<50} WR={b['wr']:.1%} EV={b['ev']:.5f} PF={b['pf']:.2f} n={b['n']} mult={b['size_mult']}")
-        if self.decay_buckets():
-            lines.append("\n⚠️ Decay Buckets (降仓/封禁):")
-            for b in self.decay_buckets()[:5]:
-                lines.append(f"  ❌ {b['bucket']:<50} {b['status']} EV={b['ev']:.5f}")
-        return "\n".join(lines)
+    def action_for(self, key: BucketKey) -> BucketAction:
+        """查询指定 bucket 的治理动作；未知 bucket 默认 ALLOW。"""
+        stats = self._buckets.get(key)
+        return stats.governance_action() if stats else BucketAction.ALLOW
 
-    def _load(self) -> None:
-        if self._file.exists():
-            try:
-                data = json.loads(self._file.read_text())
-                for k, v in data.items():
-                    b = EVBucketStats(**v)
-                    self._buckets[k] = b
-            except Exception:
-                pass
+    def all_stats(self) -> List[BucketStats]:
+        return list(self._buckets.values())
 
-    def _save(self) -> None:
-        try:
-            data = {k: asdict(v) for k, v in self._buckets.items()}
-            self._file.write_text(json.dumps(data, ensure_ascii=False, indent=2))
-        except Exception:
-            pass
+    def blocked_buckets(self) -> List[BucketStats]:
+        return [s for s in self._buckets.values()
+                if s.governance_action() == BucketAction.BLOCK]
 
-
-# 全局单例
-_registry: Optional[EVBucketRegistry] = None
-
-
-def get_registry() -> EVBucketRegistry:
-    global _registry
-    if _registry is None:
-        _registry = EVBucketRegistry()
-    return _registry
-
-
-if __name__ == "__main__":
-    import tempfile
-    with tempfile.TemporaryDirectory() as d:
-        reg = EVBucketRegistry(Path(d) / "test.json")
-        # 模拟100笔交易
-        import random; random.seed(42)
-        for _ in range(120):
-            pnl = random.gauss(0.002, 0.015)
-            reg.record("BTCUSDT", "LONG", "BEAR_RECOVERY", 162.0, pnl)
-
-        bucket = reg._buckets[list(reg._buckets.keys())[0]]
-        print(f"BTCUSDT LONG BEAR_RECOVERY n=120:")
-        print(f"  WR={bucket.wr:.1%} EV={bucket.ev:.5f} PF={bucket.profit_factor:.2f}")
-        print(f"  status={bucket.status} size_mult={bucket.size_multiplier}")
-        print(reg.report())
-        print("✅ EV Bucket 自检完成")
+    def summary(self) -> dict:
+        total = len(self._buckets)
+        actions: Dict[str, int] = {}
+        for s in self._buckets.values():
+            a = s.governance_action().value
+            actions[a] = actions.get(a, 0) + 1
+        return {"total_buckets": total, "actions": actions}
