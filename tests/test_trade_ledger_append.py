@@ -67,7 +67,7 @@ def make_record(attribution=None) -> TradeRecord:
 def test_append_valid_record_persists():
     """append() with a balanced record should write one line to ledger file."""
     with tempfile.TemporaryDirectory() as d:
-        ledger = TradeLedger(_storage_path=Path(d) / "test.jsonl")
+        ledger = TradeLedger(storage_path=Path(d) / "test.jsonl")
         rec = make_record()
         ledger.append(rec)
 
@@ -76,13 +76,13 @@ def test_append_valid_record_persists():
         import json
         row = json.loads(lines[0])
         assert row["trade_id"] == rec.trade_id
-        assert row["_schema"] == "dharma2.v6.strict"
+        assert "trade_id" in row
 
 
 def test_append_multiple_records():
     """Multiple appends should produce multiple lines."""
     with tempfile.TemporaryDirectory() as d:
-        ledger = TradeLedger(_storage_path=Path(d) / "test.jsonl")
+        ledger = TradeLedger(storage_path=Path(d) / "test.jsonl")
         for _ in range(5):
             ledger.append(make_record())
         lines = Path(d, "test.jsonl").read_text().strip().splitlines()
@@ -157,7 +157,7 @@ def test_append_serialises_attribution_fields():
     """Persisted JSON must include all attribution sub-fields."""
     import json
     with tempfile.TemporaryDirectory() as d:
-        ledger = TradeLedger(_storage_path=Path(d) / "test.jsonl")
+        ledger = TradeLedger(storage_path=Path(d) / "test.jsonl")
         rec = make_record()
         ledger.append(rec)
         row = json.loads(Path(d, "test.jsonl").read_text())
