@@ -71,8 +71,7 @@ class TestPaperTrade:
 class TestPaperPortfolio:
 
     def test_nav_updates_on_close(self, tmp_path):
-        port = PaperPortfolio(initial_nav=100.0)
-        port._log_file = tmp_path / "trades.jsonl"
+        port = PaperPortfolio(initial_nav=100.0, log_file=tmp_path / "trades.jsonl")
         exec_ = PaperExecutor(port)
         trade = exec_.execute_signal("BTCUSDT","LONG",162.0,"BULL_TREND",
                                       62000.0, 60500.0, 64000.0, 0.8, 3)
@@ -82,16 +81,14 @@ class TestPaperPortfolio:
         assert port.nav != initial_nav
 
     def test_drawdown_calculation(self, tmp_path):
-        port = PaperPortfolio(initial_nav=100.0)
-        port._log_file = tmp_path / "trades.jsonl"
+        port = PaperPortfolio(initial_nav=100.0, log_file=tmp_path / "trades.jsonl")
         port.peak_nav = 105.0
         port.nav = 100.0
         dd = port.drawdown()
         assert abs(dd - 4.76) < 0.1
 
     def test_summary_with_trades(self, tmp_path):
-        port = PaperPortfolio(initial_nav=100.0)
-        port._log_file = tmp_path / "trades.jsonl"
+        port = PaperPortfolio(initial_nav=100.0, log_file=tmp_path / "trades.jsonl")
         exec_ = PaperExecutor(port)
         for i in range(5):
             t = exec_.execute_signal("BTCUSDT","LONG",160.0,"BULL_TREND",
@@ -103,8 +100,7 @@ class TestPaperPortfolio:
         assert "profit_factor" in s
 
     def test_simulate_exit_sl(self, tmp_path):
-        port = PaperPortfolio(initial_nav=100.0)
-        port._log_file = tmp_path / "trades.jsonl"
+        port = PaperPortfolio(initial_nav=100.0, log_file=tmp_path / "trades.jsonl")
         exec_ = PaperExecutor(port)
         trade = exec_.execute_signal("ETHUSDT","LONG",155.0,"BULL_TREND",
                                       1720.0, 1680.0, 1800.0, 0.5, 3)
@@ -113,8 +109,7 @@ class TestPaperPortfolio:
         assert closed.exit_reason == "SL"
 
     def test_simulate_exit_tp(self, tmp_path):
-        port = PaperPortfolio(initial_nav=100.0)
-        port._log_file = tmp_path / "trades.jsonl"
+        port = PaperPortfolio(initial_nav=100.0, log_file=tmp_path / "trades.jsonl")
         exec_ = PaperExecutor(port)
         trade = exec_.execute_signal("ETHUSDT","LONG",162.0,"BULL_TREND",
                                       1720.0, 1680.0, 1800.0, 0.6, 3)
@@ -127,8 +122,7 @@ class TestForwardValidator:
 
     def _build_portfolio(self, tmp_path, n_trades=10, wr=0.65):
         import random
-        port = PaperPortfolio(initial_nav=100.0)
-        port._log_file = tmp_path / "trades.jsonl"
+        port = PaperPortfolio(initial_nav=100.0, log_file=tmp_path / "trades.jsonl")
         exec_ = PaperExecutor(port)
         for i in range(n_trades):
             t = exec_.execute_signal("BTCUSDT","LONG",162.0,"BULL_TREND",

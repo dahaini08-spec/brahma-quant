@@ -47,6 +47,8 @@ DEFAULT_POLICY: Dict = {
         ["BEAR_TREND", "LONG"],
         ["BULL_TREND", "SHORT"],
         ["CHOP_LONG", "LONG"],
+        ["CHOP_HIGH", "LONG"],
+        ["CHOP_HIGH", "SHORT"],
     ],
     "max_size_nav": {
         "BTCUSDT": 0.015, "ETHUSDT": 0.012,

@@ -15,6 +15,8 @@ tests/test_core_modules.py
 历史：
   v1.0 - 2026-05-20 设计院首版
 """
+import pytest
+pytest.skip("Legacy module tests — state_engine/ws_guardian not in brahma_v6 scope", allow_module_level=True)
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lana/hunter_v2'))

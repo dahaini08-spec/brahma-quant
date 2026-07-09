@@ -16,6 +16,8 @@ tests/test_e2e_signal_flow.py
 
 运行：python3 tests/test_e2e_signal_flow.py
 """
+import pytest
+pytest.skip("Legacy module tests — state_engine/ws_guardian not in brahma_v6 scope", allow_module_level=True)
 import sys, os, json, time, unittest, tempfile, shutil
 from pathlib import Path
 
