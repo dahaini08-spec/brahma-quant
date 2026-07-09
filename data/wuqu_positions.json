@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "symbol": "ETHUSDT",
+    "side": "LONG",
+    "qty": 0.021,
+    "entry_price": 1735.02,
+    "unrealized_pnl": 0.34936023,
+    "signal_id": "e88bb12a4f04",
+    "opened_at": "2026-07-09T07:35:43.401138+00:00",
+    "status": "OPEN",
+    "source": "wuqu_sync_repair"
+  }
+]
