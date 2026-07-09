@@ -1,10 +1,12 @@
 """
 brahma_v6/execution/order_state.py
-Order State Machine — Brahma v6 硬链路封口
+Order State Machine — 单一真相源
 设计院 · 2026-07-09
 """
+from __future__ import annotations
+
 from enum import Enum
-from typing import Dict, Set
+from typing import Dict, Set, Union
 
 
 class OrderState(str, Enum):
@@ -65,7 +67,7 @@ ALLOWED_TRANSITIONS: Dict[OrderState, Set[OrderState]] = {
     },
     OrderState.CANCEL_PENDING: {
         OrderState.CANCELLED,
-        OrderState.FILLED,   # cancel race: already filled
+        OrderState.FILLED,    # cancel race: exchange filled before ACK
         OrderState.UNKNOWN,
     },
     OrderState.UNKNOWN: {
@@ -78,7 +80,7 @@ ALLOWED_TRANSITIONS: Dict[OrderState, Set[OrderState]] = {
         OrderState.REJECTED,
         OrderState.EXPIRED,
     },
-    # Terminal — no outgoing transitions
+    # Terminal states — no outgoing transitions
     OrderState.FILLED:      set(),
     OrderState.CANCELLED:   set(),
     OrderState.EXPIRED:     set(),
@@ -91,18 +93,23 @@ class IllegalTransitionError(RuntimeError):
     """Raised when an order state transition is not permitted."""
 
 
-def validate_transition(current: OrderState, next_state: OrderState) -> None:
+def validate_transition(
+    current: Union[OrderState, str],
+    next_state: Union[OrderState, str],
+) -> None:
     """
     Assert that (current → next_state) is a legal transition.
-    Raises IllegalTransitionError on violation — never silently passes.
+    Accepts both OrderState enum values and plain strings.
+    Raises IllegalTransitionError on violation.
     """
-    allowed = ALLOWED_TRANSITIONS.get(current, set())
-    if next_state not in allowed:
+    current_state = OrderState(current)
+    target_state  = OrderState(next_state)
+    if target_state not in ALLOWED_TRANSITIONS.get(current_state, set()):
         raise IllegalTransitionError(
-            f"Illegal order transition: {current.value} → {next_state.value}"
+            f"Illegal order transition: {current_state.value} -> {target_state.value}"
         )
 
 
-def is_terminal(state: OrderState) -> bool:
+def is_terminal(state: Union[OrderState, str]) -> bool:
     """Return True if state is a terminal (no-exit) state."""
-    return state in TERMINAL_STATES
+    return OrderState(state) in TERMINAL_STATES

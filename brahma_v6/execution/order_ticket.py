@@ -139,7 +139,7 @@ class BrahmaOrderTicket:
             source=source,
         )
         self.events.append(event)
-        self.status = to_status
+        self.status = OrderState(to_status).value  # 规范化为枚举 value
         self.updated_at = time.time()
         return event
 
