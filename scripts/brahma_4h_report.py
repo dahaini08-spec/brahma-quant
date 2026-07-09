@@ -17,7 +17,7 @@ sys.path.insert(0, str(BASE / 'brahma_brain'))
 try:
     from system_config import JARVIS_TARGET, JARVIS_CHANNEL
 except:
-    JARVIS_TARGET  = os.environ.get('JARVIS_TARGET','73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075')
+    JARVIS_TARGET  = os.environ.get('JARVIS_TARGET','73295708:thread:019f443a-b891-70f1-8cb0-ed031a80e68b')
     JARVIS_CHANNEL = 'jarvis'
 
 now_utc = datetime.now(timezone.utc).strftime('%m-%d %H:%M')

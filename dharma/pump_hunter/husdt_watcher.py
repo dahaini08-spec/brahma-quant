@@ -44,7 +44,7 @@ def _get_target():
         from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
         return f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}'
     except Exception:
-        return '73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075'
+        return '73295708:thread:019f443a-b891-70f1-8cb0-ed031a80e68b'
 
 def fetch(url, params=None, timeout=8):
     r = requests.get(url, params=params, headers={'User-Agent': 'Mozilla/5.0'}, timeout=timeout)

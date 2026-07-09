@@ -15,7 +15,7 @@ try:
     _TARGET  = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"
     _CHANNEL = JARVIS_CHANNEL
 except Exception:
-    _TARGET  = "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+    _TARGET  = "73295708:thread:019f443a-b891-70f1-8cb0-ed031a80e68b"
     _CHANNEL = "jarvis"
 
 _DEDUP_FILE = Path(__file__).parent / "data" / "push_dedup.json"
