@@ -16,6 +16,16 @@ from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Dict, List, Optional
 
+# v6 强类型 TradeRecord（带 PnLAttribution 自动校验）
+try:
+    from brahma_v6.dharma2.models import (
+        TradeRecord as StrictTradeRecord,
+        PnLAttribution,
+    )
+    _STRICT_MODELS_AVAILABLE = True
+except ImportError:
+    _STRICT_MODELS_AVAILABLE = False
+
 BASE = Path(__file__).resolve().parents[2]
 LEDGER_DIR = BASE / "data" / "dharma2"
 LEDGER_DIR.mkdir(parents=True, exist_ok=True)
@@ -271,7 +281,54 @@ class TradeLedger:
             result[k]["net_pnl"] = round(result[k]["net_pnl"], 4)
         return result
 
+    # ── 公开 append：接收 v6 StrictTradeRecord，含二次 PnL 校验 ────────
+    def append(self, record: "StrictTradeRecord") -> None:
+        """
+        Append 强类型 TradeRecord（来自 brahma_v6.dharma2.models）。
+        强制执行二次 attribution.validate() 保险：
+          - 第一次在 TradeRecord.__post_init__ 已触发
+          - 这里再触发一次，防止反序列化/手动构造绕过
+        """
+        record.attribution.validate()   # 二次保险 — 不可绕过
+        try:
+            d = {
+                "trade_id":   record.trade_id,
+                "trace_id":   record.trace_id,
+                "signal_id":  record.signal_id,
+                "risk_id":    record.risk_id,
+                "intent_id":  record.intent_id,
+                "ticket_id":  record.ticket_id,
+                "order_event_ids": list(record.order_event_ids),
+                "symbol":     record.symbol,
+                "direction":  record.direction,
+                "regime":     record.regime,
+                "score":      record.score,
+                "entry_price":  record.entry_price,
+                "exit_price":   record.exit_price,
+                "quantity":     record.quantity,
+                "attribution":  {
+                    "gross_pnl":     record.attribution.gross_pnl,
+                    "fee_drag":      record.attribution.fee_drag,
+                    "slippage_drag": record.attribution.slippage_drag,
+                    "funding_drag":  record.attribution.funding_drag,
+                    "impact_drag":   record.attribution.impact_drag,
+                    "net_pnl":       record.attribution.net_pnl,
+                },
+                "mae":                  record.mae,
+                "mfe":                  record.mfe,
+                "holding_time_seconds": record.holding_time_seconds,
+                "opened_at":  record.opened_at.isoformat(),
+                "closed_at":  record.closed_at.isoformat() if record.closed_at else None,
+                "created_at": record.created_at.isoformat(),
+                "_schema": "dharma2.v6.strict",
+            }
+            with self._file.open("a", encoding="utf-8") as f:
+                f.write(json.dumps(d, ensure_ascii=False) + "\n")
+        except Exception as exc:
+            raise RuntimeError(f"TradeLedger.append persist failed: {exc}") from exc
+
     def _append(self, record: TradeRecord) -> None:
+        """Legacy internal persist for old-style TradeRecord dataclass."""
         try:
             with self._file.open("a", encoding="utf-8") as f:
                 f.write(json.dumps(record.to_dict(), ensure_ascii=False, default=str) + "\n")
