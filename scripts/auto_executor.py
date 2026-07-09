@@ -899,7 +899,16 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
             _save_executed(executed_set)
             continue
 
-        exec_result = execute_signal(sig, nav, active_pos)
+        try:
+            exec_result = execute_signal(sig, nav, active_pos)
+        except Exception as _exec_err:
+            exec_result = {
+                'signal_id': sig_id, 'symbol': sym, 'direction': direct,
+                'score': score, 'event': 'FAILED',
+                'ts': __import__('datetime').datetime.utcnow().isoformat(),
+                'reason': str(_exec_err),
+                'result': {'error': str(_exec_err)},
+            }
         _log(exec_result)
         executed_set.add(sig_id)
         _save_executed(executed_set)
