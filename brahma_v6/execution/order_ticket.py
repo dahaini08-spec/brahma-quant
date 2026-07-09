@@ -21,6 +21,9 @@ import uuid
 from dataclasses import dataclass, field, asdict
 from typing import List, Optional, Literal, Dict
 from datetime import datetime, timezone
+from brahma_v6.execution.order_state import (
+    OrderState, ALLOWED_TRANSITIONS, validate_transition, IllegalTransitionError
+)
 
 OrderSide   = Literal["BUY", "SELL"]
 OrderType   = Literal["LIMIT", "MARKET", "STOP", "TRAILING_STOP", "POST_ONLY_LIMIT"]
@@ -31,21 +34,12 @@ TicketStatus = Literal[
     "EXPIRED", "UNKNOWN", "RECONCILED",
 ]
 
-# ── 合法状态转移 ────────────────────────────────────────────
+# ── 合法状态转移：单一真相来自 order_state.py ─────────────────
+# VALID_TICKET_TRANSITIONS 已废弃，统一使用 ALLOWED_TRANSITIONS
+# 保留 string-key 兼容层供旧代码过渡
 VALID_TICKET_TRANSITIONS: Dict[str, List[str]] = {
-    "CREATED":          ["RISK_APPROVED", "REJECTED"],
-    "RISK_APPROVED":    ["SUBMITTING", "CANCELLED"],
-    "SUBMITTING":       ["SUBMITTED", "REJECTED", "UNKNOWN"],
-    "SUBMITTED":        ["ACCEPTED", "REJECTED", "UNKNOWN", "CANCEL_PENDING"],
-    "ACCEPTED":         ["PARTIALLY_FILLED", "FILLED", "CANCEL_PENDING", "EXPIRED"],
-    "PARTIALLY_FILLED": ["FILLED", "CANCEL_PENDING", "EXPIRED"],
-    "FILLED":           ["RECONCILED"],
-    "CANCEL_PENDING":   ["CANCELLED", "FILLED", "PARTIALLY_FILLED"],
-    "CANCELLED":        ["RECONCILED"],
-    "REJECTED":         ["RECONCILED"],
-    "EXPIRED":          ["RECONCILED"],
-    "UNKNOWN":          ["RECONCILED", "FILLED", "CANCELLED"],
-    "RECONCILED":       [],
+    s.value: [t.value for t in targets]
+    for s, targets in ALLOWED_TRANSITIONS.items()
 }
 
 TERMINAL_TICKET_STATUSES = {"FILLED", "CANCELLED", "REJECTED", "EXPIRED", "RECONCILED"}
@@ -129,10 +123,11 @@ class BrahmaOrderTicket:
         执行状态转移，返回产生的 BrahmaOrderEvent。
         非法转移：记录 violation，返回 None。
         """
-        allowed = VALID_TICKET_TRANSITIONS.get(self.status, [])
-        if to_status not in allowed:
+        try:
+            validate_transition(OrderState(self.status), OrderState(to_status))
+        except (IllegalTransitionError, ValueError) as exc:
             self.violations.append(
-                f"ILLEGAL_TRANSITION: {self.status}→{to_status} ticket={self.ticket_id[:8]}"
+                f"ILLEGAL_TRANSITION: {self.status}→{to_status} ticket={self.ticket_id[:8]} ({exc})"
             )
             return None
 
