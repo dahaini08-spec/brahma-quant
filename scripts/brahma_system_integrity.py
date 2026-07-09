@@ -42,8 +42,8 @@ try:
     PUSH_TARGET  = f"{_sc.JARVIS_USER_ID}:thread:{_sc.JARVIS_THREAD_ID}"
     CORRECT_THREAD = _sc.JARVIS_THREAD_ID
 except Exception:
-    PUSH_TARGET    = '73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075'
-    CORRECT_THREAD = '019f181f-e4d1-7576-85ca-77f4a7fa8075'
+    PUSH_TARGET    = '73295708:thread:019f443a-b891-70f1-8cb0-ed031a80e68b'
+    CORRECT_THREAD = '019f443a-b891-70f1-8cb0-ed031a80e68b'
 
 PUSH_CHANNEL = 'jarvis'
 
