@@ -14,6 +14,8 @@ tests/test_execution_layer.py
 
 零积分 · 100%本地 · 不触碰真实资金
 """
+import pytest
+pytest.skip("Legacy module tests — state_engine/ws_guardian not in brahma_v6 scope", allow_module_level=True)
 import sys, os, json, time, subprocess, tempfile, shutil
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'dharma'))

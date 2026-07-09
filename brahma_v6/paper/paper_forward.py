@@ -134,12 +134,12 @@ class PaperPortfolio:
     NAV / DD / PnL 追踪 + 验收标准检测
     """
 
-    def __init__(self, initial_nav: float = 100.0):
+    def __init__(self, initial_nav: float = 100.0, log_file=None):
         self.initial_nav = initial_nav
         self.nav = initial_nav
         self.peak_nav = initial_nav
         self.trades: List[PaperTrade] = []
-        self._log_file = PAPER_DIR / "paper_trades.jsonl"
+        self._log_file = Path(log_file) if log_file else PAPER_DIR / "paper_trades.jsonl"
         self._load_existing()
 
     def _load_existing(self) -> None:

@@ -1,0 +1,1 @@
+# live_binance_adapter_readiness

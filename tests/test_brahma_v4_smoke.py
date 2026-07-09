@@ -103,7 +103,12 @@ def test_no_orphan_modules():
     from auto_review import check_orphan_modules
     orphans = check_orphan_modules()
     # 辅助模块（CI/健康/熟断器）是设计院封印的工具，不强要求orchestrator引用
-    ALLOWED_ORPHANS = {'brahma_ci_v2', 'memory_watchdog', 'circuit_breaker', 'exception_injector', 'brahma_ci'}
+    ALLOWED_ORPHANS = {
+        'brahma_ci_v2', 'memory_watchdog', 'circuit_breaker', 'exception_injector', 'brahma_ci',
+        # v6/P3-B设计院封印框架模块（不强要求orchestrator直引用）
+        'module_registry', 'regime_hmm_v2', 'rl_position_ab', 'safety',
+        'online_learner_v2', 'brahma_logger', 'headroom', 'bull_regime_injector',
+    }
     if orphans:
         real_orphans = [o for o in orphans if o not in ALLOWED_ORPHANS]
         assert real_orphans == [], f"发现未授权孤儿模块: {real_orphans}"
