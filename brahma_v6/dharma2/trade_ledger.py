@@ -46,6 +46,7 @@ class TradeLedger:
     """
     _records: List[TradeRecord] = field(default_factory=list)
     _storage_path: Optional[Path] = None
+    _id_set: set = field(default_factory=set)  # O(1) 重复检测
 
     # ── 公开写入口（唯一入口，不可绕过）────────────────────────
     def append(self, record: TradeRecord) -> None:
@@ -66,6 +67,7 @@ class TradeLedger:
 
         # 通过全部校验 → 写入
         self._records.append(record)
+        self._id_set.add(record.trade_id)
         if self._storage_path:
             self._persist(record)
 
@@ -93,9 +95,9 @@ class TradeLedger:
 
     def _check_duplicate(self, record: TradeRecord) -> None:
         """
-        简单重复保护（O(n)，可后续升级为布隆过滤器或 DB 唯一约束）。
+        O(1) 重复保护（set 查找，可升级为布隆过滤器或 DB 唯一约束）。
         """
-        if any(r.trade_id == record.trade_id for r in self._records):
+        if record.trade_id in self._id_set:
             raise ValueError(
                 f"Duplicate trade_id detected: {record.trade_id}"
             )
