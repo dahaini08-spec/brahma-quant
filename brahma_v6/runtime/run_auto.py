@@ -27,7 +27,7 @@ import hashlib
 import urllib.request
 from pathlib import Path
 
-BASE = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).resolve().parents[2]   # trading-system/
 sys.path.insert(0, str(BASE))
 
 logging.basicConfig(
