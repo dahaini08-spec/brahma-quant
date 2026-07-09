@@ -182,16 +182,16 @@ f"""🔄 梵天体制升级
                     if hook_actions:
                         hook_report = '\n'.join(hook_actions)
                         push(f'🔧 体制钉子执行 ({new_regime}):\n{hook_report}')
-                        print(f'[RegimeMonitor] 体制钉子: {len(hook_actions)}项操作')
+                        pass  # [静默]
                 except Exception as _he:
-                    print(f'[RegimeMonitor] 体制钉子失败: {_he}')
+                    pass  # [静默]
                 break  # 只取第一个体制切换处理
 
     # 有预警才推送
     if alerts:
         full_msg = '\n\n─────────────────────\n\n'.join(alerts)
         push(full_msg)
-        print(f"[RegimeMonitor] ✅ 推送 {len(alerts)} 条预警")
+        pass  # [静默]
     else:
         # 纯静默，不输出，crond 日志也干净
         pass

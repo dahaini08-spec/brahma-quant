@@ -128,7 +128,7 @@ def route_signal(symbol, direction, score, entry_lo, entry_hi,
         f'  {symbol} {direction} score={score:.0f}\n'
         f'  入场={entry_lo}~{entry_hi}  止损={stop_loss}  目标={tp1}  R:R={rr}'
     )
-    print(f'[SignalRouter] QUEUED {symbol} {direction} score={score} source={source}')
+    pass  # [静默]
     return 'QUEUED'
 
 
@@ -254,8 +254,7 @@ def update_watch_entry(symbol: str = None) -> dict:
         sig['track_count'] = sig.get('track_count', 0) + 1
         watch[key] = sig
 
-        print(f'[DynEntry] {sym} {direction} 入场区追踪 shift={shift:.4f} '
-              f'新区间={new_lo:.4f}~{new_hi:.4f} 总移={total_shifted+shift:.4f}')
+        pass  # [静默]
         results[sym] = 'UPDATED'
 
     if any(v == 'UPDATED' for v in results.values()):

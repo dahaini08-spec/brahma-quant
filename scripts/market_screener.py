@@ -266,12 +266,12 @@ def _score_symbol(sym: str, ticker: dict) -> dict | None:
 
 def run(top_n: int = TOP_N) -> list:
     t0 = time.time()
-    print(f'[Screener] 启动 · 目标=TOP {top_n} · 门槛=$100M', flush=True)
+    pass  # [静默]
 
     # Step 1: 拉取全量ticker
     tickers = _fetch(f'{FAPI}/fapi/v1/ticker/24hr')
     if not isinstance(tickers, list):
-        print('[Screener] ❌ 无法获取ticker数据')
+        pass  # [静默]
         return []
 
     usdt_tickers = {
@@ -280,7 +280,7 @@ def run(top_n: int = TOP_N) -> list:
         and float(t['quoteVolume']) >= MIN_VOLUME_USD
         and t['symbol'] not in BLACKLIST
     }
-    print(f'[Screener] 候选池: {len(usdt_tickers)}个 (>$100M, 黑名单已排除)', flush=True)
+    pass  # [静默]
 
     # Step 2: 并发评分
     results = []
@@ -298,7 +298,7 @@ def run(top_n: int = TOP_N) -> list:
                     results.append(r)
             except Exception as e:
                 errors += 1
-                print(f'[Screener] ⚠️ {sym} 评分失败: {e}', flush=True)
+                pass  # [静默]
 
     # Step 3: 排序 + 强制保留
     results.sort(key=lambda x: x['score'], reverse=True)
@@ -321,7 +321,7 @@ def run(top_n: int = TOP_N) -> list:
 
     # Step 4: 打印摘要
     elapsed = round(time.time() - t0, 1)
-    print(f'\n[Screener] TOP {top_n} 候选 ({elapsed}s, 错误={errors}):')
+    pass  # [静默]
     print(f'  {"Symbol":<18} {"Score":>5} {"Price":>12} {"24H%":>7} {"RSI":>5} {"趋势":>7} {"OI%":>6} {"FR%":>8}')
     print(f'  {"-"*75}')
     for r in top:
@@ -345,7 +345,7 @@ def run(top_n: int = TOP_N) -> list:
     }
     out_path = DATA / 'scan_candidates.json'
     out_path.write_text(json.dumps(output, ensure_ascii=False, indent=2))
-    print(f'[Screener] ✅ 已写入 {out_path}', flush=True)
+    pass  # [静默]
 
     # Step 5b: 暴涨检测 → pump_detected.json（供 pump_sector_relay.py 板块联动使用）
     # 设计院 2026-06-29 | 零AI消耗，纯REST数据
@@ -370,7 +370,7 @@ def run(top_n: int = TOP_N) -> list:
     }
     pump_path = DATA / 'pump_detected.json'
     pump_path.write_text(json.dumps(pump_out, ensure_ascii=False, indent=2))
-    print(f'[Screener] 🔥 暴涨检测: {len(pumped)}个标的涨幅≥{PUMP_THRESHOLD}% → pump_detected.json', flush=True)
+    pass  # [静默]
 
     # Step 6: 追加日志
     log_path = LOG / 'screener.log'
@@ -396,4 +396,4 @@ if __name__ == '__main__':
 
     MIN_VOLUME_USD = args.min_vol * 1e6
     candidates = run(top_n=args.top)
-    print(f'\n[Screener] 最终候选: {[r["symbol"] for r in candidates]}')
+    pass  # [静默]

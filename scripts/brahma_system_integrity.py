@@ -304,7 +304,7 @@ LEVEL_WEIGHTS = {
 
 def run_integrity_check(push_result: bool = True) -> dict:
     ts = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
-    print(f'[Integrity] 梵天系统一致性自检 {ts}')
+    pass  # [静默]
 
     checks = {
         'L0': check_l0_filesystem(),
@@ -335,7 +335,7 @@ def run_integrity_check(push_result: bool = True) -> dict:
         status = '✅' if c['ok'] else ('❌' if LEVEL_WEIGHTS[level] == 'CRITICAL' else '⚠️')
         print(f'  {status} {level} {c["name"]}: {c["detail"][:80]}')
 
-    print(f'\n[Integrity] 总体: {icon} {overall} | CRITICAL={len(critical_failed)} DEGRADED={len(degraded)}')
+    pass  # [静默]
 
     # 推送告警
     if push_result and overall != 'HEALTHY':

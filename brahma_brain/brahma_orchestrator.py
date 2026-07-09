@@ -57,7 +57,7 @@ def analyze_with_selector(symbol: str) -> dict:
         _selected['signal_card'] = _fmt_card(_selected)
         return _selected
     except Exception as _e:
-        print(f'[Orchestrator] signal_selector降级: {_e}')
+        pass  # [静默]
         return _core_analyze(symbol, signal_dir=signal_dir, deep=deep)
 
 

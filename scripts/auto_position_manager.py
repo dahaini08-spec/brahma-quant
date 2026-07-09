@@ -178,12 +178,12 @@ def run():
     # [BUG-1 修复 2026-07-07] API偷发返回dict(错误)/非列表时防崩溃
     if not isinstance(pos_list, list):
         _log(f'positionRisk返回异常: {str(pos_list)[:100]}，跳过本次')
-        print('HEARTBEAT_OK'); return
+        pass  # [静默]
     active   = [p for p in pos_list if isinstance(p, dict) and abs(float(p.get('positionAmt', 0))) > 0]
 
     if not active:
         _log('无持仓 → HEARTBEAT_OK')
-        print('HEARTBEAT_OK')
+        pass  # [静默]
         return
 
     acct = _signed('GET', '/fapi/v2/account')
@@ -294,7 +294,7 @@ def run():
         _log(f'已推送 {len(actions)} 条动作')
     else:
         _log('无触发 → HEARTBEAT_OK')
-        print('HEARTBEAT_OK')
+        pass  # [静默]
 
 
 if __name__ == '__main__':

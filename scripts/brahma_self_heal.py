@@ -77,7 +77,7 @@ def _log(msg: str):
     ts = datetime.utcnow().strftime('%m-%d %H:%M UTC')
     with open(HEAL_LOG_FILE, 'a') as f:
         f.write(f'[{ts}] {msg}\n')
-    print(f'[SelfHeal] {msg}')
+    pass  # [静默]
 
 
 def _push(msg: str, dedup_key: str = None, dedup_ttl: int = 3600) -> bool:
@@ -1134,4 +1134,4 @@ def run_self_heal():
 
 if __name__ == '__main__':
     result = run_self_heal()
-    print(f'\n[SelfHeal] 完成 | 自愈={len(result["healed"])} 失败={len(result["failed"])} 上报={result["reported"]}')
+    pass  # [静默]

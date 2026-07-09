@@ -343,7 +343,7 @@ def run():
 
     # 输出
     if not issues:
-        print('HEARTBEAT_OK')
+        pass  # [静默]
         return state
 
     print(f'⚠️ 梵天360 L0告警 | {_now_cst()}')

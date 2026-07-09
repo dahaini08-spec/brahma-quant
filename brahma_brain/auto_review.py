@@ -293,11 +293,11 @@ def check_orphan_modules():
             orphans.append(mod)
     
     if orphans:
-        print(f"[AutoReview] 🔴 发现孤儿模块 {len(orphans)}个: {orphans}")
-        print(f"[AutoReview] 提示: 以上模块存在于brahma_brain/但未被brahma_core/orchestrator引用")
+        pass  # [静默]
+        pass  # [静默]
         return orphans
     else:
-        print(f"[AutoReview] ✅ 架构债务巡检通过，无孤儿模块")
+        pass  # [静默]
         return []
 
 
@@ -338,7 +338,7 @@ def check_standby_violations() -> list:
             pass
 
     if violations:
-        print(f'[AutoReview] ⚠️ STANDBY模块被引用 {len(violations)}处: {violations[:5]}')
+        pass  # [静默]
     return violations
 
 

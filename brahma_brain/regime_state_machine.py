@@ -259,10 +259,7 @@ class RegimeStateMachine:
             # 统计切换
             s['switch_count_24h'] = s.get('switch_count_24h', 0) + 1
 
-            print(f'[RegimeSM] ✅ {self.symbol} 体制确认切换: '
-                  f'{old_regime}({REGIME_CN.get(old_regime,"?")}) → '
-                  f'{raw_regime}({REGIME_CN.get(raw_regime,"?")}) '
-                  f'[确认{required}根] 锁定{lock_sec//3600}H')
+            pass  # [静默]
 
             self._save_state()
             return raw_regime

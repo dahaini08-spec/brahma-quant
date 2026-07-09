@@ -43,7 +43,7 @@ def _register_soft_sl(symbol: str, direction: str, qty: float,
     with open(tmp, 'w') as f:
         json.dump(state, f, indent=2, ensure_ascii=False)
     os.replace(tmp, str(sl_file))
-    print(f'[Executor] 📋 软止损已注册: {symbol} SL={sl:.6f} TP={tp:.6f}')
+    pass  # [静默]
 
 
 def _save_state(state: dict):
@@ -90,7 +90,7 @@ def execute_open(signal: dict, sizing: dict, dry_run: bool = True) -> dict:
             ]
             _log({'type':'paper_open', 'symbol': symbol, 'direction': direction,
                   'entry': entry_p, 'sl': sl_p, 'tp1': tp1_p, 'qty': qty, 'notional': notional})
-            print(f'[Executor] 🟡 PAPER: {symbol} {direction} qty={qty} entry={entry_p:.6f} sl={sl_p:.6f} tp1={tp1_p:.6f}')
+            pass  # [静默]
             result['success'] = True
             result['fill_price'] = entry_p
             result['qty'] = qty
@@ -116,7 +116,7 @@ def execute_open(signal: dict, sizing: dict, dry_run: bool = True) -> dict:
         order_ids['entry'] = r1.get('orderId')
         result['orders'].append({'type':'LIMIT', 'side': entry_side, 'qty': qty,
                                   'price': entry_p, 'orderId': order_ids['entry']})
-        print(f'[Executor] ✅ 入场单 orderId={order_ids["entry"]} {symbol} {entry_side} qty={qty} @{entry_p:.6f}')
+        pass  # [静默]
 
         # ── Step2/3: 止损 & 止盈 ──────────────────────────────────────────
         # [P2-4 设计院 2026-06-24] 账户核查结果：multiAssetsMargin=False，非PM账户
@@ -129,24 +129,24 @@ def execute_open(signal: dict, sizing: dict, dry_run: bool = True) -> dict:
             # 降级：止损下单失败时回退到软止损（避免裸露持仓）
             _register_soft_sl(symbol, direction, qty, entry_p, sl_p, tp1_p)
             result['errors'].append(f'止损单失败(降级软止损): {e2}')
-            print(f'[Executor] ⚠️  止损单失败，降级软止损 SL={sl_p:.6f}  err={e2}')
+            pass  # [静默]
         else:
             order_ids['stop_loss'] = r2.get('orderId')
             result['orders'].append({'type':'STOP_MARKET', 'side': close_side, 'qty': qty,
                                       'stopPrice': sl_p, 'orderId': order_ids['stop_loss']})
-            print(f'[Executor] ✅ 止损单 orderId={order_ids["stop_loss"]} stopPrice={sl_p:.6f}')
+            pass  # [静默]
 
         r3, e3 = bf.place_order(symbol, close_side, 'TAKE_PROFIT_MARKET', qty,
                                  stop_price=tp1_p, reduce_only=True,
                                  qty_precision=qp, tick_size=sizing.get('tick_size'))
         if e3:
             result['errors'].append(f'止盈单失败: {e3}')
-            print(f'[Executor] ⚠️  止盈单失败: {e3}')
+            pass  # [静默]
         else:
             order_ids['take_profit'] = r3.get('orderId')
             result['orders'].append({'type':'TAKE_PROFIT_MARKET', 'side': close_side, 'qty': qty,
                                       'stopPrice': tp1_p, 'orderId': order_ids['take_profit']})
-            print(f'[Executor] ✅ 止盈单 orderId={order_ids["take_profit"]} stopPrice={tp1_p:.6f}')
+            pass  # [静默]
 
         # 同时保留软止损作为双重保险（防止交易所侧条件单失效）
         _register_soft_sl(symbol, direction, qty, entry_p, sl_p, tp1_p)

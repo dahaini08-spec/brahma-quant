@@ -74,7 +74,7 @@ def log_signal(result: dict) -> bool:
         # 节省积分：过滤掉压缩期产生的低质量信号
         _bb_w = float(result.get('bb_width', 1.0) or result.get('confluence', {}).get('bb_width', 1.0) or 1.0)
         if _bb_w < 0.5 and score < 155:
-            print(f'[DharmaBridge-v5.0] {symbol} BB宽度={_bb_w:.2f}%<0.5% 压缩期过滤，score={score:.0f}<155 → 跳过写入')
+            pass  # [静默]
             return False
         # ────────────────────────────────────────────────────────────────────
 
@@ -206,7 +206,7 @@ def log_signal(result: dict) -> bool:
                         and abs(float(_r.get('entry_lo', 0) or 0) - _entry_lo_new) / max(_entry_lo_new, 1) < _dedup_window
                         and (time.time() - float(_r.get('ts', 0) or 0)) < 6 * 3600  # [设计院 2026-07-06] 4H→6H，防止新信号被早期信号去重屏蔽
                     ):
-                        print(f'[DharmaBridge] 去重跳过 {symbol} {direction} entry_lo重复 差异={abs(float(_r.get("entry_lo",0) or 0)-_entry_lo_new)/_entry_lo_new*100:.3f}%')
+                        pass  # [静默] f'[DharmaBridge] 去重跳过 {symbol} {direction} entry_lo重复 差异={abs(float(_r.get("entr
                         return False
             except Exception:
                 pass  # 去重检查失败不阻断
@@ -247,7 +247,7 @@ def log_signal(result: dict) -> bool:
     except Exception as e:
         # 不阻断主流程
         import sys
-        print(f'[DharmaBridge] ⚠ 写入失败: {e}', file=sys.stderr)
+        pass  # [静默] f'[DharmaBridge] ⚠ 写入失败: {e}', file=sys.stderr
         return False
 
 

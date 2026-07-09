@@ -41,11 +41,11 @@ def run(dry_run=False):
         real_pos = {p['symbol']: p for p in acct.get('positions',[])
                     if abs(float(p.get('positionAmt',0))) > 0}
     except Exception as e:
-        print(f'[Reconciler] ❌ 无法拉取交易所持仓: {e}')
+        pass  # [静默]
         return
 
     real_syms = set(real_pos.keys())
-    print(f'[Reconciler] 交易所真实持仓: {list(real_syms)}')
+    pass  # [静默]
 
     # 2. 读取 brahma_state
     state_path = BASE / 'data' / 'brahma_state.json'
@@ -64,11 +64,11 @@ def run(dry_run=False):
                     p['status'] = 'CLOSED'
                     p['close_reason'] = f'auto_reconcile {now}'
                     p['closed_at'] = now
-            print(f'[Reconciler] ✅ 幽灵持仓已清除: {list(ghost)}')
+            pass  # [静默]
 
     if missing:
         issues.append(f'缺失持仓: {list(missing)}')
-        print(f'[Reconciler] ⚠️ 交易所有但state无: {list(missing)} (需人工核实入场价)')
+        pass  # [静默]
 
     # 3. 同步 wuqu_positions.json
     wuqu_path = BASE / 'data' / 'wuqu_positions.json'
@@ -91,10 +91,10 @@ def run(dry_run=False):
         state['last_reconciled'] = now
         with open(state_path, 'w') as f:
             json.dump(state, f, indent=2, ensure_ascii=False)
-        print(f'[Reconciler] ✅ wuqu_positions + brahma_state 已同步 ({len(real_syms)}个持仓)')
+        pass  # [静默]
 
     if not issues:
-        print('[Reconciler] ✅ 状态完全一致，无需修复')
+        pass  # [静默]
     return issues
 
 if __name__ == '__main__':

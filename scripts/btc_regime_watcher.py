@@ -167,7 +167,7 @@ def do_regime_heartbeat():
         os.replace(tmp, regime_file)
         return True
     except Exception as e:
-        print(f'[Watcher] ⚠️ 心跳写入失败: {e}')
+        pass  # [静默]
         return False
 
 
@@ -236,9 +236,9 @@ def main():
         in_cooldown = (cur_dir == last_ema_dir) and ((now - last_ema_ts) < COOLDOWN_SEC)
         confirmed   = confirm_cross_bars(price_above_ema, ema20_4h)
         if in_cooldown:
-            print(f'[Watcher] 冷却中({cur_dir}) {now-last_ema_ts:.0f}s/{COOLDOWN_SEC}s')
+            pass  # [静默]
         elif not confirmed:
-            print(f'[Watcher] 未确认 需{CONFIRM_BARS}根1H已收盘K线')
+            pass  # [静默]
         else:
             triggered = True
             if price_above_ema:
@@ -273,7 +273,7 @@ def main():
         trigger_position_check()
         state['last_trigger_ts']   = now
         state['last_heartbeat_ts'] = now
-        print(f"[Watcher] ✅ 触发 | {summary}")
+        pass  # [静默]
 
     # ── 心跳写入（无穿越时每30m刷新时间戳）──────────────
     else:

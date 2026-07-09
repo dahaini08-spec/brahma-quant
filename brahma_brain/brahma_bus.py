@@ -381,5 +381,5 @@ def flush_stale(max_age_seconds: float = 300.0) -> int:
     for k in stale_keys:
         del bus._cache[k]
     if stale_keys:
-        print(f'[BrahmaBus] flush_stale: 清理{len(stale_keys)}条陈旧缓存')
+        pass  # [静默]
     return len(stale_keys)

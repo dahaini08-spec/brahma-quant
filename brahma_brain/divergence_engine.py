@@ -733,7 +733,7 @@ if __name__ == '__main__':
     k1h = klines_to_ohlcv(get_klines(sym, '1h', 200))
     k4h = klines_to_ohlcv(get_klines(sym, '4h', 200))
 
-    print(f'[Divergence] {sym} 方向={direction}')
+    pass  # [静默]
 
     for label, k in [('1H', k1h), ('4H', k4h)]:
         res = divergence_score(k['o'], k['h'], k['l'], k['c'], direction, label)
@@ -741,4 +741,4 @@ if __name__ == '__main__':
         for d in res['details']:
             print(f'    {d}')
 
-    print('\n[Divergence] ✅ 测试完成')
+    pass  # [静默]

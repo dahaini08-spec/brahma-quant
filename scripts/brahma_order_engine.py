@@ -106,21 +106,21 @@ def push(msg: str):
     except: pass
 
 def run(dry_run=False):
-    print(f'[OrderEngine] 启动 dry_run={dry_run} | {time.strftime("%H:%M UTC", time.gmtime())}')
+    pass  # [静默]
 
     # 1. 读取信号
     signals = read_pending(max_age_h=12, min_score=MIN_SCORE)
     if not signals:
-        print('[OrderEngine] 无待执行信号')
+        pass  # [静默]
         return
 
     # 2. 当前持仓
     positions = get_open_positions()
     pos_syms  = {p['symbol'] for p in positions}
-    print(f'[OrderEngine] 信号={len(signals)}个 持仓={len(positions)}个')
+    pass  # [静默]
 
     if len(positions) >= MAX_POSITIONS:
-        print(f'[OrderEngine] 持仓已达{MAX_POSITIONS}个上限，跳过')
+        pass  # [静默]
         return
 
     nav = get_nav()
@@ -137,39 +137,39 @@ def run(dry_run=False):
         entry_hi  = float(sig.get('entry_hi', 0))
         source    = sig.get('source', '?')
 
-        print(f'\n[SignalFilter] {sym} score={score:.0f} dir={direction} regime={regime} source={source}')
+        pass  # [静默]
 
         # 死穴过滤
         if (regime, direction) in DEAD_ZONES:
-            print(f'[SignalFilter] ❌ 死穴: {regime}×{direction}')
+            pass  # [静默]
             continue
 
         # RR过滤
         if rr1 < MIN_RR:
-            print(f'[SignalFilter] ❌ RR={rr1:.2f} < {MIN_RR}')
+            pass  # [静默]
             continue
 
         # 已持仓过滤
         if sym in pos_syms:
-            print(f'[SignalFilter] ❌ {sym} 已有持仓')
+            pass  # [静默]
             continue
 
         # 持仓上限
         if len(positions) + executed >= MAX_POSITIONS:
-            print(f'[SignalFilter] ❌ 持仓上限')
+            pass  # [静默]
             break
 
         # 价格检查
         price = get_price(sym)
         if not price:
-            print(f'[EntryDecider] ❌ 获取价格失败')
+            pass  # [静默]
             continue
 
         # 入场区判断
         in_zone = entry_lo <= price <= entry_hi
         above_zone = price > entry_hi * 1.02
         if above_zone:
-            print(f'[EntryDecider] ❌ 价格{price:.4f}已偏离入场区{entry_hi:.4f}+2%')
+            pass  # [静默]
             mark_status(sig['signal_id'], 'expired')
             continue
 
@@ -185,18 +185,18 @@ def run(dry_run=False):
         info  = get_symbol_info(sym)
         qty   = round_step(qty, info['step'])
         if qty < info['minQty']:
-            print(f'[PositionSizer] ❌ qty={qty} < minQty={info["minQty"]}')
+            pass  # [静默]
             continue
 
-        print(f'[EntryDecider] 现价={price:.4f} 入场区={entry_lo:.4f}~{entry_hi:.4f} 类型={order_type}')
-        print(f'[PositionSizer] NAV={nav:.0f} × {pos_pct*100:.1f}% = {notional:.1f} USDT → qty={qty}')
+        pass  # [静默]
+        pass  # [静默]
 
         # 下单
         result = place_order(sym, 'BUY' if direction=='LONG' else 'SELL',
                              qty, order_price, order_type, dry_run)
 
         if result.get('error'):
-            print(f'[OrderExecutor] ❌ 下单失败: {result["error"]}')
+            pass  # [静默]
             continue
 
         order_id = str(result.get('orderId',''))
@@ -206,10 +206,10 @@ def run(dry_run=False):
         prefix = '📋[DryRun]' if dry_run else '✅'
         msg = (f'{prefix} 开单: {sym} {direction} @{price:.4f} '
                f'qty={qty} score={score:.0f} source={source}')
-        print(f'[OrderExecutor] {msg}')
+        pass  # [静默]
         push(msg)
 
-    print(f'\n[OrderEngine] 完成: 执行{executed}笔')
+    pass  # [静默]
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

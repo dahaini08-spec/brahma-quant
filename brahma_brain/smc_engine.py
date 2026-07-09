@@ -454,7 +454,7 @@ if __name__ == '__main__':
     import sys
     sym = sys.argv[1] if len(sys.argv) > 1 else 'ETHUSDT'
     direction = sys.argv[2] if len(sys.argv) > 2 else 'SHORT'
-    print(f'[SMC] 分析 {sym} · 方向={direction}')
+    pass  # [静默]
     r = analyze_smc(sym, direction)
 
     if 'error' in r:

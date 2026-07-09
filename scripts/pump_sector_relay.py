@@ -97,7 +97,7 @@ def run():
     # 1. 读取pump_detected.json
     pump_path = DATA / 'pump_detected.json'
     if not pump_path.exists():
-        print('[SectorRelay] ⚠️ pump_detected.json不存在，跳过')
+        pass  # [静默]
         return False
 
     pump_data = json.loads(pump_path.read_text())
@@ -105,13 +105,13 @@ def run():
     gen_ts = pump_data.get('generated', '?')
 
     if not pumped_list:
-        print('[SectorRelay] ℹ️ 无暴涨标的，跳过板块联动')
+        pass  # [静默]
         _write_empty(gen_ts)
         return False
 
     pumped_syms = {p['symbol'] for p in pumped_list}
     pumped_pct  = {p['symbol']: p['pct24h'] for p in pumped_list}
-    print(f'[SectorRelay] 检测到 {len(pumped_list)} 个暴涨标的: {[p["symbol"] for p in pumped_list[:5]]}...')
+    pass  # [静默]
 
     # 2. 读取实时ticker（过滤已暴涨的联动候选）
     import urllib.request
@@ -122,7 +122,7 @@ def run():
         tickers = json.loads(raw)
         ticker_map = {t['symbol']: float(t['priceChangePercent']) for t in tickers}
     except Exception as e:
-        print(f'[SectorRelay] ⚠️ 获取ticker失败: {e}，跳过联动过滤')
+        pass  # [静默]
         ticker_map = {}
 
     # 3. 板块联动扩展
@@ -136,7 +136,7 @@ def run():
                 continue   # 已暴涨，不纳入
             rel_pct = ticker_map.get(rel_sym, 0)
             if rel_pct >= PUMP_EXCLUDE_PCT:
-                print(f'[SectorRelay]   跳过 {rel_sym}（已涨{rel_pct:.1f}%）')
+                pass  # [静默]
                 continue
             relay_set.add(rel_sym)
             if rel_sym not in relay_detail:
@@ -147,7 +147,7 @@ def run():
 
     # 4. 无联动候选 → 也写空文件（让brahma_scan_all正常运行）
     if not relay_set:
-        print('[SectorRelay] ℹ️ 板块联动无新候选（已暴涨或无映射）')
+        pass  # [静默]
         _write_empty(gen_ts)
         return False
 
@@ -179,7 +179,7 @@ def run():
     out_path.write_text(json.dumps(output, ensure_ascii=False, indent=2))
 
     elapsed = round(time.time() - t0, 1)
-    print(f'[SectorRelay] ✅ 板块联动候选 {len(candidates)} 个 ({elapsed}s) → sector_candidates.json')
+    pass  # [静默]
     for c in candidates[:8]:
         print(f'  {c["symbol"]:<18} 触发: {" / ".join(c["triggered_by"][:2])}  当前{c["current_pct"]:+.1f}%')
     return True
@@ -198,10 +198,10 @@ def _write_empty(source_ts: str):
     }
     out_path = DATA / 'sector_candidates.json'
     out_path.write_text(json.dumps(output, ensure_ascii=False, indent=2))
-    print('[SectorRelay] 写入空sector_candidates.json')
+    pass  # [静默]
 
 
 if __name__ == '__main__':
     result = run()
     if not result:
-        print('HEARTBEAT_OK')
+        pass  # [静默]

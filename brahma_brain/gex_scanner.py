@@ -55,7 +55,7 @@ def _fetch(url: str, timeout: int = 12) -> dict:
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return json.loads(r.read())
     except Exception as e:
-        print(f'[GEX] API请求失败: {url[:80]} → {e}')
+        pass  # [静默]
         return {}
 
 
@@ -294,12 +294,12 @@ def scan_gex(currency: str = 'BTC', force: bool = False) -> dict:
             cached = state.get(currency, {})
             age = time.time() - cached.get('scan_ts', 0)
             if age < CACHE_TTL_SEC:
-                print(f'[GEX] {currency} 使用缓存 (更新于{age/60:.0f}分钟前)')
+                pass  # [静默]
                 return cached
         except Exception:
             pass
 
-    print(f'[GEX] {currency} 开始扫描 Deribit 期权链...')
+    pass  # [静默]
     t0 = time.time()
 
     # 获取数据
@@ -308,15 +308,15 @@ def scan_gex(currency: str = 'BTC', force: bool = False) -> dict:
     books       = get_book_summary(currency)
 
     if not spot or not books:
-        print(f'[GEX] {currency} 数据获取失败')
+        pass  # [静默]
         return {}
 
-    print(f'[GEX] {currency} spot=${spot:,.2f} 合约数={len(instruments)} 有OI={sum(1 for b in books if b.get("open_interest",0)>0)}')
+    pass  # [静默]
 
     # 计算GEX
     profile = compute_gex_profile(books, instruments, spot, currency)
     if not profile:
-        print(f'[GEX] {currency} GEX计算失败（数据不足）')
+        pass  # [静默]
         return {}
 
     # 写入状态文件
@@ -333,7 +333,7 @@ def scan_gex(currency: str = 'BTC', force: bool = False) -> dict:
     state[currency] = profile
     _GEX_STATE_FILE.write_text(json.dumps(state, indent=2))
 
-    print(f'[GEX] {currency} 扫描完成 ({profile["elapsed_sec"]}s)')
+    pass  # [静默]
     print(f'  MAX GEX: ${profile["max_gex_strike"]:,.0f}  '
           f'MIN GEX: ${profile["min_gex_strike"]:,.0f}  '
           f'ZeroFlip: ${profile.get("zero_flip","?"):,.0f}' if profile.get("zero_flip") else

@@ -119,9 +119,9 @@ if __name__ == '__main__':
     import sys
     new_regime = sys.argv[1] if len(sys.argv) > 1 else 'BEAR_RECOVERY'
     dry = '--dry-run' in sys.argv
-    print(f'[RegimeHook] 体制={new_regime} dry_run={dry}')
+    pass  # [静默]
     actions = apply_regime_hook(new_regime, dry_run=dry)
     if actions:
         for a in actions: print(a)
     else:
-        print('[RegimeHook] 无需操作（KEEP）')
+        pass  # [静默]

@@ -245,7 +245,7 @@ def push_digest():
     out_file.write_text(digest)
     # 判断是否有实质性内容需要推送
     if not digest.strip() or '无活跃' in digest:
-        print('HEARTBEAT_OK')
+        pass  # [静默]
         return
     # 读取推送配置
     try:

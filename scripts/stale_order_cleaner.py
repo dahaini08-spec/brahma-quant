@@ -64,7 +64,7 @@ def run():
     now = time.time()
     orders = _signed('GET', '/fapi/v1/openOrders')
     if not isinstance(orders, list) or not orders:
-        print('HEARTBEAT_OK')
+        pass  # [静默]
         return
 
     # 只处理开仓挂单（非reduceOnly）
@@ -72,7 +72,7 @@ def run():
                    and o.get('status') in ('NEW', 'PARTIALLY_FILLED')]
 
     if not open_orders:
-        print('HEARTBEAT_OK')
+        pass  # [静默]
         return
 
     signal_expires = _load_signal_expires()
@@ -94,7 +94,7 @@ def run():
                 r = _signed('DELETE', '/fapi/v1/order', {'symbol': sym, 'orderId': o['orderId']})
                 if r.get('status') == 'CANCELED':
                     cancelled.append(f"{sym} qty={o['origQty']} @{o['price']} [超上限]")
-                    print(f'[StaleClean] ✅ 撤销超量挂单 {sym} @{o["price"]}')
+                    pass  # [静默]
 
             anomalies.append(f'🚨 {sym} 挂单{len(sym_orders)}张超上限{MAX_ORDERS_PER_SYM}，已撤{len(to_cancel)}张')
             sym_orders = sym_orders_sorted[:MAX_ORDERS_PER_SYM]
@@ -115,18 +115,18 @@ def run():
                 r = _signed('DELETE', '/fapi/v1/order', {'symbol': sym, 'orderId': o['orderId']})
                 if r.get('status') == 'CANCELED':
                     cancelled.append(f"{sym} qty={o['origQty']} @{o['price']} [超龄{age_min:.0f}min]")
-                    print(f'[StaleClean] ✅ 撤销超龄挂单 {sym} @{o["price"]} ({age_min:.0f}min)')
+                    pass  # [静默]
 
     if anomalies:
         msg = '⚠️ 梵天挂单异常清理:\\n' + '\\n'.join(anomalies)
         if cancelled:
             msg += '\\n已撤销:\\n' + '\\n'.join(cancelled)
         _push(msg)
-        print(f'[StaleClean] 推送告警: {len(anomalies)}个异常')
+        pass  # [静默]
     elif cancelled:
-        print(f'[StaleClean] 静默撤销超龄挂单 {len(cancelled)}张')
+        pass  # [静默]
     else:
-        print('HEARTBEAT_OK')
+        pass  # [静默]
 
 if __name__ == '__main__':
     run()

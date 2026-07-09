@@ -305,10 +305,10 @@ def auto_reset_on_restart() -> None:
             if cb.get('l1'):
                 cb['l1'] = False
                 changed = True
-                print('[CB-AutoReset] L1熔断自动解除（回撤<5%，非真实亏损触发）')
+                pass  # [静默]
             if cb.get('l2'):
                 cb['l2'] = False
                 changed = True
-                print('[CB-AutoReset] L2熔断自动解除（回撤<5%，非真实亏损触发）')
+                pass  # [静默]
             if changed:
                 _save_cb(cb)

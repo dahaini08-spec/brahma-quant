@@ -106,7 +106,7 @@ def log_decision(
     with open(LOG_FILE, 'a', encoding='utf-8') as f:
         f.write(json.dumps(record, ensure_ascii=False) + '\n')
 
-    print(f'[DecisionLog] ✅ {symbol} {direction} score={score:.0f} {signal_label} → {LOG_FILE.name}')
+    pass  # [静默]
     return record
 
 

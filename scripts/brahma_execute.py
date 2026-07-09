@@ -35,7 +35,7 @@ def run(symbol: str, direction: str, dry_run: bool = True, nav_override: float =
     score   = conf.get('total', 0)
     regime  = r.get('regime', '?')
 
-    print(f'[BrahmaExec] {symbol} {sig_dir}  price=${price:.4f}  score={score}/150  regime={regime}')
+    pass  # [静默]
     print(f'  入场区: ${params["entry_lo"]:.4f} ~ ${params["entry_hi"]:.4f}')
     print(f'  止损:   ${params["stop_loss"]:.4f}  (-{params["sl_pct"]}%)')
     print(f'  TP1:    ${params["tp1"]:.4f}  RR={params["rr1"]}')
@@ -58,7 +58,7 @@ def run(symbol: str, direction: str, dry_run: bool = True, nav_override: float =
     print(f'  NAV:    ${nav:.2f}  模式: {"纸盘DRY_RUN" if dry_run else "🔴实盘"}')
 
     if dry_run:
-        print('[BrahmaExec] DRY_RUN 模式，不实际下单')
+        pass  # [静默]
         return {'status': 'DRY_RUN', 'score': score}
 
     # ── 构造signal/sizing ─────────────────────────────────────────
@@ -95,7 +95,7 @@ def run(symbol: str, direction: str, dry_run: bool = True, nav_override: float =
         from position_sizer import get_position_pct
         _pos = get_position_pct(f'{symbol.upper().replace("USDT","")}USDT', score, sig_dir, nav)
         if not _pos['allowed']:
-            print(f'🚫 [PositionSizer] {_pos["reason"]}')
+            pass  # [静默]
             print(f'   此币种/方向/评分组合已暂停（数据不足或历史WR<35%）')
             if not dry_run:
                 return None
@@ -160,16 +160,16 @@ def run(symbol: str, direction: str, dry_run: bool = True, nav_override: float =
         )
         _tg_approval = _get_tg().request_open(_tg_req)
         if not _tg_approval.approved:
-            print(f'[BrahmaExec] ⚠️  国库官拒绝: {_tg_approval.reason}')
+            pass  # [静默]
             return {'status': 'REJECTED_BY_TREASURY', 'reason': _tg_approval.reason}
         signal['_treasury_position_id'] = _tg_approval.position_id
-        print(f'[BrahmaExec] ✅ 国库官批准: A_BRAHMA {sym} pos_id={_tg_approval.position_id}')
+        pass  # [静默]
     except ImportError:
-        print('[BrahmaExec] ⚠️  treasury_gate 未找到，跳过国库官（降级模式）')
+        pass  # [静默]
 
     # ── 执行开仓 ──────────────────────────────────────────────────
     result = execute_open(signal, sizing, dry_run=False)
-    print(f'\n[BrahmaExec] 执行结果: {result.get("status")}')
+    pass  # [静默]
     for o in result.get('orders', []):
         print(f'  ✅ {o["type"]:5} qty={o["qty"]} @{o["price"]}')
     for e in result.get('errors', []):

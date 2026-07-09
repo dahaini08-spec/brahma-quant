@@ -175,4 +175,4 @@ if __name__ == '__main__':
         for a in alerts:
             print(a)
     else:
-        print('HEARTBEAT_OK')
+        pass  # [静默]

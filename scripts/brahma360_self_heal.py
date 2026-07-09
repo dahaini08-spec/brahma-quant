@@ -365,7 +365,7 @@ def run():
     os.replace(tmp, '/tmp/self_heal_state.json')
 
     if not triggered_faults:
-        print('HEARTBEAT_OK')
+        pass  # [静默]
 
     return state
 

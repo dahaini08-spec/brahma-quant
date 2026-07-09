@@ -145,7 +145,7 @@ def write_cache(sym, direction, score, meta, dry=False):
     }
 
     if dry:
-        print(f"  [DRY] {sym}_{direction}: score={payload['score']} reason={payload['reason'][:60]}")
+        pass  # [静默]
         return
 
     path = CACHE_DIR / f"{sym}_{direction}.json"
@@ -219,7 +219,7 @@ def run(symbols, dry=False):
         parts = ' | '.join(f'{s} {d} +{sc:.1f}({pd:.3f})' for s, d, sc, pd in strong[:3])
         print(f'⏱️TimesFM强信号 | {parts}')
     else:
-        print('HEARTBEAT_OK')
+        pass  # [静默]
 
     return written
 

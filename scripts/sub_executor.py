@@ -239,9 +239,7 @@ def _execute_pump(signal: dict, nav: float, active_pos: list, executed: set) -> 
     sl_px   = round(px * (1 - sl_pct / 100), 6)
     tp1_px  = round(px * (1 + tp_pct / 100), 6)
 
-    print(f'[PUMP] {sym} score={signal.get("score")} regime={regime} '
-          f'qty={qty} @${px:.4f} sl={sl_pct:.1f}% tp={tp_pct:.1f}% '
-          f'NAV×{params["size_pct"]*100:.0f}% {lev}x')
+    pass  # [静默]
 
     # ⑩ 下单（市价）
     try:
@@ -266,7 +264,7 @@ def _execute_pump(signal: dict, nav: float, active_pos: list, executed: set) -> 
                 'regime':   regime,
             })
             executed.add(sig_id)
-            print(f'[PUMP] ✅ {sym} FILLED qty={fill_qty} @${fill_px:.4f} | SL=${sl_px:.4f} TP1=${tp1_px:.4f}')
+            pass  # [静默]
         else:
             result['reason'] = f'下单失败: {order.get("msg", str(order))}'
     except Exception as e:
@@ -295,11 +293,11 @@ def run_pump_executor(nav: float, active_pos: list) -> list:
             pass
 
     pending.sort(key=lambda x: -float(x.get('score', 0)))
-    print(f'[PUMP] 待执行信号: {len(pending)}个')
+    pass  # [静默]
 
     for sig in pending:
         if len(active_pos) >= MAX_POSITIONS:
-            print('[PUMP] MAX_POSITIONS已达上限，停止')
+            pass  # [静默]
             break
         r = _execute_pump(sig, nav, active_pos, executed)
         results.append(r)
@@ -347,7 +345,7 @@ def run_oi_executor(nav: float, active_pos: list) -> list:
         cache    = json.loads(OI_CACHE.read_text())
         age_h    = (time.time() - (cache.get('scanned_at') or cache.get('updated_at', 0))) / 3600
         if age_h > OI_MAX_AGE_H:
-            print(f'[OI] 缓存过期 {age_h:.1f}h > {OI_MAX_AGE_H}h，跳过')
+            pass  # [静默]
             return []
 
         candidates = cache.get('candidates', {})
@@ -376,11 +374,11 @@ def run_oi_executor(nav: float, active_pos: list) -> list:
 
         # 按oi_score降序
         eligible.sort(key=lambda x: -float(x[1].get('oi_score', 0)))
-        print(f'[OI] 候选信号: {len(eligible)}个（已过滤 layers<{OI_LAYERS_THRESHOLD} 或 score<{OI_SCORE_THRESHOLD}）')
+        pass  # [静默]
 
         for sym, c, mode in eligible:
             if len(active_pos) >= MAX_POSITIONS:
-                print('[OI] MAX_POSITIONS已达上限，停止')
+                pass  # [静默]
                 break
 
             # 防重：基于symbol+时间窗口（4h内同标的不重复）
@@ -389,7 +387,7 @@ def run_oi_executor(nav: float, active_pos: list) -> list:
                 continue
 
             if any(p['symbol'] == sym for p in active_pos):
-                print(f'[OI] {sym}已有持仓，跳过')
+                pass  # [静默]
                 continue
 
             # 参数路由
@@ -407,7 +405,7 @@ def run_oi_executor(nav: float, active_pos: list) -> list:
                                  params={'symbol': sym}, timeout=5)
                 px = float(r.json()['price'])
             except Exception as e:
-                print(f'[OI] {sym} 价格获取失败: {e}')
+                pass  # [静默]
                 continue
 
             # 仓位
@@ -429,8 +427,7 @@ def run_oi_executor(nav: float, active_pos: list) -> list:
             tp1_px = round(px * (1 + tp_pct / 100), 6)
 
             oi_sc = float(c.get('oi_score', 0))
-            print(f'[OI] {sym} mode={mode} oi_score={oi_sc:.1f}% regime={regime} '
-                  f'qty={qty} @${px:.4f} sl={sl_pct}% lev={lev}x')
+            pass  # [静默]
 
             result = {'signal_id': oi_sig_id, 'symbol': sym, 'sub': 'OI',
                       'status': 'FAILED', 'reason': '', 'ts': time.time(),
@@ -458,7 +455,7 @@ def run_oi_executor(nav: float, active_pos: list) -> list:
                     })
                     executed.add(oi_sig_id)
                     active_pos.append({'symbol': sym})
-                    print(f'[OI] ✅ {sym} FILLED qty={fill_qty} @${fill_px:.4f}')
+                    pass  # [静默]
                 else:
                     result['reason'] = str(order.get('msg', order))
             except Exception as e:
@@ -468,7 +465,7 @@ def run_oi_executor(nav: float, active_pos: list) -> list:
             _write_log(result)
 
     except Exception as e:
-        print(f'[OI] 执行异常: {e}')
+        pass  # [静默]
 
     _save_executed_set(executed)
     return results
@@ -508,9 +505,9 @@ def _sync_wuqu_positions():
                 'updated_at': _time.time(), 'success': True,
             })
         WUQU_PATH.write_text(_json.dumps(wuqu, ensure_ascii=False, indent=2))
-        print(f'[SubExecutor] wuqu_positions.json 已同步: {len(wuqu)}个持仓')
+        pass  # [静默]
     except Exception as _e:
-        print(f'[SubExecutor] wuqu_sync失败: {_e}')
+        pass  # [静默]
 
 
 def run():
@@ -521,8 +518,8 @@ def run():
         _lock_fd = open(_lock_path, 'w')
         fcntl.flock(_lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except (BlockingIOError, OSError):
-        print('[SubExecutor] ⚠️ 已有实例运行中，跳过')
-        print('HEARTBEAT_OK')
+        pass  # [静默]
+        pass  # [静默]
         return
     try:
         _run_sub_locked()
@@ -533,16 +530,16 @@ def run():
 
 def _run_sub_locked():
     now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
-    print(f'[SubExecutor] 启动 {now}')
+    pass  # [静默]
 
     nav        = _get_nav()
     active_pos = _load_active_positions()
     regime     = _get_regime()
-    print(f'[SubExecutor] NAV=${nav:.2f} | 体制={regime} | 活跃持仓={len(active_pos)}个')
+    pass  # [静默]
 
     if len(active_pos) >= MAX_POSITIONS:
-        print(f'[SubExecutor] MAX_POSITIONS={MAX_POSITIONS}已达上限')
-        print('HEARTBEAT_OK')
+        pass  # [静默]
+        pass  # [静默]
         return
 
     # ── 子系统一：暴涨猎手 ───────────────────────────────────
@@ -556,7 +553,7 @@ def _run_sub_locked():
     # ── 汇报 ─────────────────────────────────────────────────
     total_filled = len(pump_filled) + len(oi_filled)
     if total_filled > 0:
-        print(f'\n[SubExecutor] 本轮执行: PUMP={len(pump_filled)}笔 OI={len(oi_filled)}笔')
+        pass  # [静默]
         for r in pump_filled + oi_filled:
             sub   = r.get('sub', '?')
             sym   = r.get('symbol', '?')
@@ -569,10 +566,10 @@ def _run_sub_locked():
     else:
         skipped_pump = len([r for r in pump_results if r['status'] == 'FAILED'])
         skipped_oi   = len([r for r in oi_results if r['status'] == 'FAILED'])
-        print(f'[SubExecutor] 无执行 | PUMP跳过={skipped_pump} OI跳过={skipped_oi}')
-        print('HEARTBEAT_OK')
+        pass  # [静默]
+        pass  # [静默]
 
-    print('HEARTBEAT_OK')  # 设计院：无论有无执行，最终输出HEARTBEAT_OK避免AI生成冗余播报
+    pass  # [静默]
 
 
 if __name__ == '__main__':

@@ -306,7 +306,7 @@ if __name__ == '__main__':
     sym = sys.argv[1] if len(sys.argv) > 1 else 'ETHUSDT'
     direction = sys.argv[2] if len(sys.argv) > 2 else 'SHORT'
 
-    print(f'[Options/Sentiment] {sym} 方向={direction}')
+    pass  # [静默]
 
     fg = get_fear_greed()
     print(f'  恐惧贪婪指数: {fg["value"]} ({fg["label"]})')
@@ -319,4 +319,4 @@ if __name__ == '__main__':
     for d in score['details']:
         print(f'  + {d}')
 
-    print('[Options/Sentiment] ✅ 测试完成')
+    pass  # [静默]

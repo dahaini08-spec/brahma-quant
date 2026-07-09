@@ -69,7 +69,7 @@ def _fetch_15m(symbol: str, limit: int = 96) -> list:
             'v':   float(d[5]),
         } for d in data]
     except Exception as e:
-        print(f'[Trigger15M] 数据获取失败: {e}')
+        pass  # [静默] f'[Trigger15M] 数据获取失败: {e}'
         return []
 
 
@@ -436,12 +436,12 @@ def analyze_trigger(
     if verbose:
         flag = '✅ 触发确认' if trigger_valid else '⏳ 等待触发'
         zone_tag = '📍在区' if in_zone else ('📏贴近' if near_zone else '📐偏远')
-        print(f'[Trigger15M] {sym} {signal_dir} {flag}')
-        print(f'  价格=${price:.4f}  入场区=${entry_lo_1h:.4f}~${entry_hi_1h:.4f}  {zone_tag}(gap={gap_to_entry:+.2f}%)')
-        print(f'  15M入场=${entry_15m:.4f}  15M止损=${stop_15m:.4f}  SL={sl_pct_15m:.2f}%  R:R={rr_15m:.1f}')
+        pass  # [静默] f'[Trigger15M] {sym} {signal_dir} {flag}'
+        pass  # [静默]
+        pass  # [静默]
         _wick_s = wick_rej.get("type","?") if wick_rej else "无"
         _bos_s  = bos_15m.get("type","?") if bos_15m else "无"
-        print(f'  CHoCH={choch.get("type","?") if choch else "无"}  OB15M={"有" if ob_15m else "无"}  Wick={_wick_s}  BOS={_bos_s}  置信={confidence}/100')
+        pass  # [静默]
 
     return result
 

@@ -392,9 +392,9 @@ def push_ci_report():
             ['openclaw','message','send','--channel','jarvis','--target',target,'--message',msg],
             capture_output=True, text=True, timeout=15
         )
-        print(f'[CI] 推送告警 score={score}')
+        pass  # [静默]
     else:
-        print(f'[CI] HEALTHY score={score}/100，静默')
+        pass  # [静默]
 
 if __name__ == '__main__':
     import sys

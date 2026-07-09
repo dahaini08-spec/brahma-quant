@@ -191,7 +191,7 @@ def get_klines(symbol: str, interval: str, limit: int = 200) -> list:
         _cache_set(key, data, TTL.get(interval, 300))
         return data
     except Exception as e:
-        print(f'[Cache] klines失败 {symbol}/{interval}: {e}')
+        pass  # [静默]
         return []
 
 def get_ticker(symbol: str) -> dict:
@@ -210,7 +210,7 @@ def get_ticker(symbol: str) -> dict:
         _cache_set(key, data, TTL['ticker'])
         return data
     except Exception as e:
-        print(f'[Cache] ticker失败 {symbol}: {e}')
+        pass  # [静默]
         return {}
 
 def get_funding_rate(symbol: str) -> float:
@@ -305,7 +305,7 @@ def get_all_active_symbols() -> list:
         _cache_set(key, symbols, 1800)
         return symbols
     except Exception as e:
-        print(f'[Cache] symbols失败: {e}')
+        pass  # [静默]
         return []
 
 def prefetch_symbol(symbol: str) -> dict:
@@ -324,7 +324,7 @@ def prefetch_symbol(symbol: str) -> dict:
                 result[key] = f.result()
             except Exception as e:
                 result[key] = None
-                print(f'[Cache] prefetch {symbol}/{key} 失败: {e}')
+                pass  # [静默]
     return result
 
 def clear_expired():
@@ -349,7 +349,7 @@ def clear_expired():
                     os.remove(fpath)
                     purged += 1
         if purged:
-            print(f'[Cache] 磁盘清理: 删除{purged}个过期文件(>{_DISK_MAX_AGE//86400}天)')
+            pass  # [静默]
     except Exception as _e:
         pass  # 磁盘清理失败不影响主流程
 
@@ -474,7 +474,7 @@ def get_atr_percentile(symbol: str, interval: str = '1h', window: int = 90) -> d
 
 # ─── 快速测试 ────────────────────────────────────────────────
 if __name__ == '__main__':
-    print('[DataCache] 测试拉取 BTCUSDT...')
+    pass  # [静默]
     t0 = time.time()
     data = prefetch_symbol('BTCUSDT')
     elapsed = time.time() - t0
@@ -492,7 +492,7 @@ if __name__ == '__main__':
     t1 = time.time()
     _ = prefetch_symbol('BTCUSDT')
     print(f'  缓存命中耗时: {time.time()-t1:.3f}s')
-    print('[DataCache] ✅ 测试通过')
+    pass  # [静默]
     assert VERSION, 'data_cache version ok'
 
 

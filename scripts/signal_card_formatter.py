@@ -162,7 +162,7 @@ def run():
     card = format_vip_card(best)
     print(card)
     print()
-    print(f"[SignalCardFormatter] 找到 {len(signals)} 个有效信号，输出最高分: {best.get('symbol')} score={best.get('score')}")
+    pass  # [静默]
 
     # 自推送：systemEvent模式下直接推送，无需AI中间人
     import subprocess as _sp

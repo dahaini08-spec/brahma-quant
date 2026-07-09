@@ -110,7 +110,7 @@ def compute_all_ic() -> dict:
     返回：{regime: {dim_key: ic_value}}
     """
     records = load_signal_data()
-    print(f'[IC] 加载信号: {len(records)}条 (有breakdown+outcome)')
+    pass  # [静默]
 
     # 按体制分组
     by_regime = defaultdict(list)

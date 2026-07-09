@@ -95,13 +95,13 @@ def gate_check(
 
     if reasons:
         if verbose:
-            print(f'[PostGate] 🚫 {symbol} {direction} 拦截:')
+            pass  # [静默]
             for r in reasons:
                 print(f'  → {r}')
         return False, ' | '.join(reasons)
 
     if verbose:
-        print(f'[PostGate] ✅ {symbol} {direction} 通过 (R:R={rr1:.1f}x)')
+        pass  # [静默]
     return True, 'OK'
 
 

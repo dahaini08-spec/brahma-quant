@@ -161,7 +161,7 @@ def run(dry_run: bool = False, stats_only: bool = False):
     notified_set = set(state.get('notified', []))
 
     if not LOG_PATH.exists():
-        print('HEARTBEAT_OK')
+        pass  # [静默]
         return
 
     with open(LOG_PATH) as f:
@@ -191,7 +191,7 @@ def run(dry_run: bool = False, stats_only: bool = False):
     new_signals = [r for r in clean_open if _fingerprint(r) not in notified_set]
 
     if not new_signals:
-        print('HEARTBEAT_OK')
+        pass  # [静默]
         return
 
     # 输出到 stdout（Cron 会把这些内容转发到对话框）
@@ -314,7 +314,7 @@ def _push_signal(r: dict, dry_run: bool = False) -> bool:
 
     # 安全检查
     if entry <= 0 or sl <= 0 or tp1 <= 0:
-        print(f'[Notifier] {sym} {d} 参数缺失，跳过推送 entry={entry} sl={sl} tp1={tp1}')
+        pass  # [静默]
         return False
 
     # [2026-07-08 设计院封印] 推送前实时价格偏离检查
@@ -328,7 +328,7 @@ def _push_signal(r: dict, dry_run: bool = False) -> bool:
             _gap_short = (entry_lo - _cur) / entry_lo  if d == 'SHORT' else 0
             _gap = max(_gap_long, _gap_short)
             if _gap > 0.03:  # 偏离入场区>3% → 信号窗口已失效
-                print(f'[Notifier] ⏩ {sym} {d} 价格偏离入场区 {_gap*100:.1f}%>3%，信号过期跳过推送')
+                pass  # [静默]
                 return False
     except Exception:
         pass  # 价格检查失败不阻断推送（保守策略）
@@ -359,10 +359,10 @@ def _push_signal(r: dict, dry_run: bool = False) -> bool:
     }
     regime_cn = REGIME_CN.get(regime, regime)
 
-    print(f'[Notifier] 推送: {sym} {d} entry={entry:.4f} sl={sl:.4f} tp1={tp1:.4f} score={score:.0f} grade={grade}')
+    pass  # [静默]
 
     if dry_run:
-        print(f'  [DRY] 不实际推送')
+        pass  # [静默]
         return True
 
     try:
@@ -381,7 +381,7 @@ def _push_signal(r: dict, dry_run: bool = False) -> bool:
         )
         return ok
     except Exception as e:
-        print(f'[Notifier] 推送失败: {e}')
+        pass  # [静默]
         return False
 
 
@@ -392,7 +392,7 @@ def run(dry_run: bool = False, stats_only: bool = False):
 
     # 读取信号日志
     if not LOG_PATH.exists():
-        print('[Notifier] live_signal_log.jsonl 不存在')
+        pass  # [静默]
         return
 
     with open(LOG_PATH) as f:
@@ -408,7 +408,7 @@ def run(dry_run: bool = False, stats_only: bool = False):
     ]
 
     if stats_only:
-        print(f'[Notifier Stats]')
+        pass  # [静默]
         print(f'  总记录: {len(records)}')
         print(f'  干净未结算(grade≥70,score≥138): {len(clean_open)}')
         print(f'  已通知: {len(notified_set)}')
@@ -445,7 +445,7 @@ def run(dry_run: bool = False, stats_only: bool = False):
     if not dry_run:
         _save_state(state)
 
-    print(f'[Notifier] 完成 | 新推送={pushed} 失败={failed} 已有={len(notified_set)-pushed}')
+    pass  # [静默]
 
 
 if __name__ == '__main__':

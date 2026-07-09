@@ -220,7 +220,7 @@ def build_report():
 if __name__ == '__main__':
     report = build_report()
     if report is None:
-        print('HEARTBEAT_OK')  # 无有效内容，静默不推
+        pass  # [静默]
     else:
         print(report)
         # 推送

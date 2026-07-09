@@ -238,8 +238,7 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
                 _clo_lo = max(_clo_lo, entry_lo * 0.995)
                 _clo_hi = min(_clo_hi, entry_hi)
                 if _clo_lo < _clo_hi and _clo_hi < price:
-                    print(f'[v22.1-ATR] {symbol} LONG: OB宽{_ob_width_l/price*100:.2f}%→压缩到{(_clo_hi-_clo_lo)/price*100:.2f}% '
-                          f'[{_clo_lo:.4g}~{_clo_hi:.4g}]')
+                    pass  # [静默]
                     entry_lo = _clo_lo
                     entry_hi = _clo_hi
         except Exception as _audit_e:  # [S1-fix] 原静默except
@@ -258,8 +257,7 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
                 _new_hi = entry_hi + _expand_l * 0.4    # 向上少扩（防追高）
                 # 安全护栏：扩展后不能超过现价
                 if _new_lo > 0 and _new_hi < price:
-                    print(f'[v25.7-P0a] {symbol} LONG: 入场区{_cur_width_l/price*100:.3f}%'
-                          f'→{(_new_hi-_new_lo)/price*100:.3f}% (min={_min_width_l/price*100:.3f}%)')
+                    pass  # [静默]
                     entry_lo = _new_lo
                     entry_hi = _new_hi
         except Exception:
@@ -313,7 +311,7 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
                 ob_mid = (ob_lo + ob_hi) / 2
                 entry_lo = max(ob_lo, price * 1.001)   # 略高于现价即可触发
                 entry_hi = ob_mid                       # 入场区上限收到中段（原来是ob_hi顶部）
-                print(f'[BrahmaBrain] ℹ️ 价格在OB区间内，用OB中段入场(触发率优化) [{entry_lo:.4g}~{entry_hi:.4g}]')
+                pass  # [静默] f'[BrahmaBrain] ℹ️ 价格在OB区间内，用OB中段入场(触发率优化) [{entry_lo:.4g}~{entry_hi:.4g}]'
             elif _ob_above:
                 # [B级宽松规则 2026-06-06] B级信号OB偏远时扩宽入场区
                 # 根因：B级gap均值1.44%，73%在1~2%区间 → 触发率仅27%
@@ -334,7 +332,7 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
                     # 保留代码防止万一fallback grade=55绕过时有安全处理
                     entry_lo = price * 1.003   # 现价上方0.3%即可触发
                     entry_hi = ob_lo           # 入场区上限维持OB下沿
-                    print(f'[BrahmaBrain] ℹ️ B级宽松入场区(gap={_ob_gap_pct:.1f}%>1%): [{entry_lo:.6g}~{entry_hi:.6g}]')
+                    pass  # [静默] f'[BrahmaBrain] ℹ️ B级宽松入场区(gap={_ob_gap_pct:.1f}%>1%): [{entry_lo:.6g}~{entry_hi
                 else:
                     entry_lo = ob_lo; entry_hi = ob_hi * 1.003  # [FIX-TO-2026-06-11] 入场区上沿+0.3% buffer，减少TIMEOUT
             else:
@@ -368,8 +366,7 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
                 if _compressed_lo < _compressed_hi and _compressed_lo > price * 1.001:
                     _old_width = _ob_width / price * 100
                     _new_width = (_compressed_hi - _compressed_lo) / price * 100
-                    print(f'[v22.1-ATR] {symbol} SHORT: OB宽{_old_width:.2f}%→压缩至{_new_width:.2f}% '
-                          f'[{_compressed_lo:.4g}~{_compressed_hi:.4g}] (ATR4H={atr_4h:.4g})')
+                    pass  # [静默]
                     entry_lo = _compressed_lo
                     entry_hi = _compressed_hi
         except Exception:
@@ -388,8 +385,7 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
                 _new_hi_s = entry_hi + _expand_s          # 向上扩（反弹方向）
                 # 安全护栏：扩展后下沿必须在现价上方
                 if _new_lo_s > price * 1.001 and _new_hi_s > _new_lo_s:
-                    print(f'[v25.7-P0a] {symbol} SHORT: 入场区{_cur_width_s/price*100:.3f}%'
-                          f'→{(_new_hi_s-_new_lo_s)/price*100:.3f}% (min={_min_width_s/price*100:.3f}%)')
+                    pass  # [静默]
                     entry_lo = _new_lo_s
                     entry_hi = _new_hi_s
         except Exception:
@@ -402,7 +398,7 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
             if _mtf_lo > price * 1.001 and _mtf_hi > _mtf_lo:
                 entry_lo = _mtf_lo
                 entry_hi = _mtf_hi
-                print(f'[MTF-v21.0] SHORT入场区已覆盖 → 4H [{entry_lo:.4g}~{entry_hi:.4g}]')
+                pass  # [静默]
 
         # Layer 2+3: 止损 = 入场区上方最近4H摆高 + ATR4H×0.3
         struct_high = _nearest_swing_above(sw4h_h, entry_hi) if sw4h_h else entry_hi * 1.015
@@ -545,9 +541,9 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
                 sl_atr_mult = round(risk / max(atr_4h, 1e-9), 2)
                 _v4_applied = True
             if _v4_applied:
-                print(f'[v4.0出场] {_regime_v4}→{_v4_key} SL={sl_pct:.2f}% RR={rr1:.2f} TP1={tp1:.4f} (exit_params_v4)')
+                pass  # [静默]
     except Exception as _ev4:
-        print(f'[v4.0出场] 读取失败，维持原参数: {_ev4}')
+        pass  # [静默]
     # ── [END exit_params_v4] ─────────────────────────────────────────────────
 
     # 动态精度：防止0.0001等极端低价被 round(...,4) 戒断到相同小数
@@ -609,7 +605,7 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
                 (signal_dir == 'LONG'  and _sl_15m_candidate < entry_lo)
             )
             if not _l6_ok:
-                print(f'[Trigger15M] ⚠️ L6抦截: 15M止损${_sl_15m_candidate:.4f}在入场区内部/错误方向，维持4H止损${_sl_old:.4f}')
+                pass  # [静默] f'[Trigger15M] ⚠️ L6抦截: 15M止损${_sl_15m_candidate:.4f}在入场区内部/错误方向，维持4H止损${_sl_old
             else:
                 stop_loss = _sl_15m_candidate
                 entry_lo  = min(entry_lo, _t15m['entry_15m'])
@@ -626,12 +622,12 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
                     tp2 = tp1 - risk
                 rr1     = round(abs(tp1 - entry_mid) / max(risk, 1e-9), 2)
                 rr2     = round(abs(tp2 - entry_mid) / max(risk, 1e-9), 2)
-                print(f'[Trigger15M] ✅ 止损收窄: {_sl_old:.4f}→{stop_loss:.4f} SL={sl_pct:.2f}% R:R={rr1:.1f}')
+                pass  # [静默] f'[Trigger15M] ✅ 止损收窄: {_sl_old:.4f}→{stop_loss:.4f} SL={sl_pct:.2f}% R:R={rr1:.
         # [v24.5-fix] trigger_15m_confidence 存入局部变量，在 return 时写入 params
         # BUG修复: calc_trade_params 函数作用域内无 cf 变量，原 cf=dict(cf) 触发 UnboundLocalError
         _t15m_confidence = int(_t15m.get('confidence', 0))
     except Exception as _e15:
-        print(f'[Trigger15M] ⚠️ 跳过: {_e15}')
+        pass  # [静默] f'[Trigger15M] ⚠️ 跳过: {_e15}'
         _t15m_confidence = 0
     # ── [END Trigger15M] | 15分钟触发器结束
 

@@ -97,7 +97,7 @@ def _load_experience_pool():
                 pool[key]['total'] += 1
             # REGIME_EXPIRED/EXPIRED/PRICE_EXPIRED → 不计入经验池（方向无法判断）
     except Exception as e:
-        print(f"[OnlineBayes] ⚠️ 经验池加载失败: {e}")
+        pass  # [静默]
         return {}
 
     _cache = {'data': dict(pool), 'ts': now}

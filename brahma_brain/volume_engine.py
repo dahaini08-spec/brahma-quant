@@ -290,11 +290,11 @@ if __name__ == '__main__':
     k1h = klines_to_ohlcv(get_klines(sym, '1h', 200))
     res = volume_score(k1h['h'], k1h['l'], k1h['c'], k1h['v'], direction)
 
-    print(f'[Volume] {sym} 方向={direction}')
+    pass  # [静默]
     print(f'  量能评分: {res["score"]}/20')
     print(f'  VWAP:    ${res["vwap"]["vwap"]:,.4f}  {res["vwap"]["note"]}')
     print(f'  POC:     ${res["vp"]["poc"]:,.4f}')
     print(f'  量比:    {res["vol"]["vol_ratio"]}x')
     for d in res['details']:
         print(f'  + {d}')
-    print('[Volume] ✅ 测试完成')
+    pass  # [静默]
