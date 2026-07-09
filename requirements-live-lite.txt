@@ -1,0 +1,16 @@
+# requirements-live-lite.txt
+# Live Host ONLY — No-Swap LowMem Live Lite
+# 禁止安装: torch / lightgbm / sklearn / statsmodels / scipy / numba / pyarrow / polars / matplotlib
+# 裁决封印: 2026-07-09
+
+requests>=2.31
+websocket-client>=1.5
+websockets>=12.0
+python-dotenv>=1.0
+pydantic>=2.5
+PyYAML>=6.0
+structlog>=24.1
+
+# 暂时保留（live executor 尚未完全解耦）
+numpy==1.26.4
+pandas==2.3.3
