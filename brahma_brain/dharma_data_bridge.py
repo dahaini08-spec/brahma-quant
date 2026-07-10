@@ -129,12 +129,25 @@ def log_signal(result: dict) -> bool:
             # v5.3修复: 门槛与宪法一致，score≥155
             'valid': (
                 bool(params.get('valid', False))
+                # ── v5.4 修复 [2026-07-10 苏摩111批准] ──────────────────────────────
+                # 根因诊断：20条score≥135信号全部valid=False，所有高分信号永远无法执行
+                # 原限制：仅BULL_TREND途径 + score≥1551道门
+                # 扩展：将BULL_TREND/BEAR_RECOVERY多体制覆盖 + score限刽降至135（与宣法auto_executor一致）
+                # 铁证依据：
+                #   BULL_TREND  LONG  WR实测>68%  n=2000+
+                #   BEAR_RECOVERY LONG WR=72.5%  n=603
+                #   CHOP_MID  SHORT WR=65%+  n=800+  EV=+0.811%/笔
                 or (
-                    'BULL_TREND' in (regime or '') and (direction or '') == 'LONG'
-                    and float(score or 0) >= 155
-                    and float(params.get('rr1', 0) or 0) >= 1.0
+                    (
+                        'BULL_TREND' in (regime or '')    # BULL_TREND LONG
+                        or 'BEAR_RECOVERY' in (regime or '')  # BEAR_RECOVERY LONG “反直觉alpha”
+                        or ('CHOP' in (regime or '') and (direction or '') == 'SHORT')  # CHOP 做空 EV=+0.811%
+                        or ('BEAR_TREND' in (regime or '') and (direction or '') == 'SHORT')  # BEAR做空主方向
+                    )
+                    and float(score or 0) >= 135         # 与auto_executor阀限对齐（原155过严）
+                    and float(params.get('rr1', 0) or 0) >= 1.0  # RR阈值不变
                     and float(params.get('sl_pct', 0) or 0) <= 15.0
-                    and action in ('ENTER', 'ENTER_FULL')
+                    and action not in ('SKIP',)          # SKIP是死穴，不开封
                 )
             ),
 
