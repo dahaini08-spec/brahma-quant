@@ -1,1 +1,19 @@
-[]
+{
+  "SLXUSDT": {
+    "symbol": "SLXUSDT",
+    "direction": "LONG",
+    "entry_price": 0.18225,
+    "quantity": 137,
+    "notional": 24.97,
+    "leverage": 5,
+    "sl_price": 0.177694,
+    "tp_price": 0.186806,
+    "sl_pct": 2.5,
+    "tp_pct": 2.5,
+    "source": "oi_hunter_A",
+    "opened_at": 1783691859.5503402,
+    "opened_iso": "2026-07-10T13:57:39.550343+00:00",
+    "success": true,
+    "soft_stop": true
+  }
+}
