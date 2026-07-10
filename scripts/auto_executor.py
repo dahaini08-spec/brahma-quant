@@ -50,6 +50,14 @@ NAV_SIZE_PCT         = 0.05      # 默认仓位 NAV×5%（苏摩授权 2026-07-0
 DEFAULT_LEV          = 5         # 默认杠杆 5x（苏摩授权 2026-07-03）
 MIN_NOTIONAL         = 5.0       # 最小开单金额 USDT（设计院修复 2026-07-05：NAV=100时5%=5.15即可执行）
 
+# ── blacktea风控门（2026-07-10 苏摩111批准）─────────────────────────────
+# 对标: nmrtn/blacktea x402支付控制 + 人工审批 + 审计日志
+# 逻辑: 单笔名义>NAV×8% → 推送苏摩审批 → 30min无回复自动降仓至5%执行
+APPROVAL_THRESHOLD   = 0.08     # 超过NAV×8%触发审批门
+APPROVAL_REDUCED     = 0.05     # 30min无回复降仓至NAV×5%
+APPROVAL_TIMEOUT_MIN = 30       # 审批等待窗口（分钟）
+APPROVAL_RECORD_PATH = Path(__file__).parent.parent / 'data' / 'approval_pending.json'
+
 # BTC/ETH 动态仓位配置（梵天自主评判，苏摩授权 2026-07-03）
 # score≥155 → 10% NAV | score 140~154 → 7.5% NAV | score 138~139 → 5% NAV
 BIG_SYMBOLS          = {'BTCUSDT', 'ETHUSDT'}   # 大仓位标的
@@ -626,6 +634,78 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     if notional < MIN_NOTIONAL:
         result['reason'] = f'仓位${notional:.2f} < 最小${MIN_NOTIONAL}'
         return result
+
+    # ── blacktea审批门（苏摩111 2026-07-10）─────────────────────────────────
+    # 单笔>NAV×8% → 推送审批请求 → 30min无回复自动降仓
+    _approval_threshold = nav * APPROVAL_THRESHOLD
+    if notional > _approval_threshold:
+        try:
+            import json as _j
+            # 检查是否已有此单的审批记录
+            _pending = {}
+            if APPROVAL_RECORD_PATH.exists():
+                try: _pending = _j.loads(APPROVAL_RECORD_PATH.read_text())
+                except: pass
+
+            _key = f'{sym}_{direction}_{int(notional)}'
+            _rec = _pending.get(_key, {})
+            _req_ts = _rec.get('requested_at', 0)
+            _approved = _rec.get('approved', False)
+            _age_min = (time.time() - _req_ts) / 60
+
+            if _approved:
+                # 苏摩已批准，直接执行
+                print(f'[blacktea] {sym} 已获审批 正常执行 ${notional:.1f}')
+            elif _req_ts > 0 and _age_min >= APPROVAL_TIMEOUT_MIN:
+                # 30min无回复 → 降仓执行
+                notional = nav * APPROVAL_REDUCED
+                print(f'[blacktea] {sym} {APPROVAL_TIMEOUT_MIN}min无回复 → 降仓${notional:.1f}(NAV×{APPROVAL_REDUCED*100:.0f}%)')
+                _pending.pop(_key, None)
+                APPROVAL_RECORD_PATH.write_text(_j.dumps(_pending, indent=2))
+            elif _req_ts > 0 and _age_min < APPROVAL_TIMEOUT_MIN:
+                # 审批请求已发出，等待中
+                remaining = int(APPROVAL_TIMEOUT_MIN - _age_min)
+                result['reason'] = f'blacktea: 等待审批 还剩{remaining}min（到期自动降仓执行）'
+                return result
+            else:
+                # 首次触发：发送审批请求
+                _pending[_key] = {'requested_at': time.time(), 'symbol': sym,
+                                  'direction': direction, 'notional': notional,
+                                  'score': score, 'approved': False}
+                APPROVAL_RECORD_PATH.write_text(_j.dumps(_pending, indent=2))
+                # 推送苏摩
+                _msg = (
+                    f'❗️ [blacktea审批门] {sym} {direction}\n'
+                    f'单笔名义: ${notional:.1f} > NAV×8%=${_approval_threshold:.1f}\n'
+                    f'score={score:.0f} | SL={signal.get("sl_pct",0):.1f}%\n'
+                    f'✅ 回复 「111」或「批准」 → 立即执行\n'
+                    f'⏳ {APPROVAL_TIMEOUT_MIN}min无回复 → 自动降仓至${nav*APPROVAL_REDUCED:.1f}执行'
+                )
+                import subprocess as _sp
+                _sp.Popen(
+                    ['openclaw','message','send',
+                     '--channel','jarvis',
+                     '--to', f'{_pending[_key].get("symbol",sym)}',
+                     '--message', _msg],
+                    stdout=_sp.DEVNULL, stderr=_sp.DEVNULL
+                )
+                # 尝试发送到正确地址
+                try:
+                    from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
+                    _sp.Popen(
+                        ['openclaw','message','send',
+                         '--channel','jarvis',
+                         '--to', f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}',
+                         '--message', _msg],
+                        stdout=_sp.DEVNULL, stderr=_sp.DEVNULL
+                    )
+                except: pass
+                result['reason'] = f'blacktea: 审批请求已发出，等待30min'
+                return result
+        except Exception as _be:
+            print(f'[blacktea] 审批门异常(降级执行): {_be}')
+            notional = min(notional, nav * APPROVAL_REDUCED)  # 异常时安全降仓
+    # ── end blacktea ───────────────────────────────────────────────────
 
     # 获取合约精度
     try:
