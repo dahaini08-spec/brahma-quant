@@ -529,6 +529,35 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     entry_hi  = float(signal.get('entry_hi', 0) or 0)
     sig_id    = signal.get('signal_id', '')
 
+    # ── P0: 波动率自适应止损（2026-07-10 6方联合推理封印）─────────────────
+    # 原理: 固定 SL_PCT 不考虑市场当前波动率
+    #         ATR自适应：max(固定SL, 1.5×ATR_1H/价格)
+    #         低波动期: SL紧缩(更多机会) | 高波动期: SL放宽(不被震出)
+    try:
+        _kl_1h = requests.get(
+            f'{FAPI_BASE}/fapi/v1/klines?symbol={sym}&interval=1h&limit=16',
+            timeout=5
+        ).json()
+        if isinstance(_kl_1h, list) and len(_kl_1h) >= 15:
+            _trs = []
+            for _i in range(1, len(_kl_1h)):
+                _h = float(_kl_1h[_i][2]); _l = float(_kl_1h[_i][3])
+                _pc = float(_kl_1h[_i-1][4])
+                _trs.append(max(_h-_l, abs(_h-_pc), abs(_l-_pc)))
+            _atr_1h = sum(_trs[-14:]) / 14
+            _px_ref = float(requests.get(
+                f'{FAPI_BASE}/fapi/v1/ticker/price?symbol={sym}', timeout=4
+            ).json()['price'])
+            _atr_sl_pct = round(_atr_1h * 1.5 / _px_ref * 100, 2)
+            # 取最大值：保证至少覆盖固定 SL，不超过上限
+            _atr_adjusted = min(max(sl_pct, _atr_sl_pct), MAX_SL_PCT)
+            if abs(_atr_adjusted - sl_pct) > 0.1:  # 有意义的调整才刷日志
+                print(f'[波动率SL] {sym} 固定SL={sl_pct:.1f}% ATR自适应SL={_atr_adjusted:.1f}% (ATR={_atr_1h:.0f} 价格={_px_ref:.2f})')
+            sl_pct = _atr_adjusted
+    except Exception as _atr_e:
+        pass  # ATR获取失败时关退固定SL，不阻断执行
+    # ── end 波动率自适应止损 ──────────────────────────────────────────
+
     result = {
         'signal_id': sig_id, 'symbol': sym, 'direction': direction,
         'score': score, 'ts': time.time(),
