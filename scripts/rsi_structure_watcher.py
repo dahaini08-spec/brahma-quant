@@ -49,6 +49,13 @@ SILENT_RSI_HIGH  = 60.0
 SILENT_BB_MAX    = 0.80   # BB宽度<0.8%时死水封印
 EXTREME_BB_MIN   = 0.50   # BB宽度<0.5%极度压缩，方向未定
 
+# ── P1: 15min层E8事件（2026-07-10 6方联合推理）──────────────────────────
+# 15min BB极度压缩(弹簧) + 1H主趋势向上 = 高概率向上爆发
+E8_BB_15M_MAX    = 0.80   # 15min BBW < 0.8%
+E8_RSI_1H_MIN    = 50.0   # 1H RSI > 50 = 主趋势向上
+E8_VOL_RATIO_MAX = 0.70   # 15min 量比 < 0.7x = 量能委缩
+
+
 # 触发阈值
 RSI_CROSS_UP_FROM  = 50.0   # E1: 从<50
 RSI_CROSS_UP_TO    = 62.0   # E1: 穿越到≥62
