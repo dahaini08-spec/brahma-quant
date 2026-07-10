@@ -1,9 +1,9 @@
 {
-  "scan_time": "2026-07-09T23:15:00.808307",
-  "elapsed_sec": 7.8,
-  "total_scanned": 42,
+  "scan_time": "2026-07-10T08:46:31.103440",
+  "elapsed_sec": 8.0,
+  "total_scanned": 43,
   "alerts": [],
   "new_alerts": [],
   "need_push": false,
-  "scan_ts": 1783638900.8083236
+  "scan_ts": 1783673191.1034555
 }

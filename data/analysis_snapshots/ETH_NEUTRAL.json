@@ -1,20 +1,20 @@
 {
   "symbol": "ETHUSDT",
   "direction": "NEUTRAL",
-  "ts": 1783639549,
-  "dt": "2026-07-09 23:25 UTC",
+  "ts": 1783646988,
+  "dt": "2026-07-10 01:29 UTC",
   "result": {
     "symbol": "ETHUSDT",
     "signal_dir": "NEUTRAL",
     "action": "不入场",
     "reason": "三框架方向中性，无共识",
-    "summary": "中性 | 中位震荡 | 震荡修正中，等待方向",
+    "summary": "中性 | 中位震荡 | B浪反弹区域，最佳做空入场",
     "_runner_meta": {
       "runner_version": "1.1",
       "entry": "brahma_analysis_runner.run_analysis",
       "symbol": "ETHUSDT",
-      "ts": "2026-07-09 23:25 UTC",
-      "elapsed": 0.61,
+      "ts": "2026-07-10 01:29 UTC",
+      "elapsed": 1.58,
       "fields_missing": [
         "regime",
         "score",
@@ -25,7 +25,7 @@
         "rr"
       ],
       "fields_ok": false,
-      "output_tag": "[BRAHMA:WARN:RUNNER:ETH:0.0:NEUTRAL:UNKNOWN:202607092325:dd415ebf]",
+      "output_tag": "[BRAHMA:WARN:RUNNER:ETH:0.0:NEUTRAL:UNKNOWN:202607100129:393cf897]",
       "modules_active": {
         "timing_filter": true,
         "snapshot": true,
