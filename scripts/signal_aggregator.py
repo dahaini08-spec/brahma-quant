@@ -376,6 +376,52 @@ def main(push=True):
     else:
         print("HEARTBEAT_OK - 无有效信号")
 
+    # 4.5 桥接：将pump_auto+OI高分信号写入live_signal_log（让auto_executor可执行）
+    # 设计院2026-07-10: 修复全链路盲区——三源信号无法汇聚到auto_executor
+    _bridged = 0
+    try:
+        _sig_log = BASE / 'data' / 'live_signal_log.jsonl'
+        _existing_ids = set()
+        if _sig_log.exists():
+            for _l in open(_sig_log):
+                try: _existing_ids.add(json.loads(_l).get('signal_id',''))
+                except: pass
+
+        _bridge_candidates = [
+            s for s in enhanced
+            if s.get('source') not in ('brahma_main',)  # 非主系统来源
+            and s.get('score', 0) >= 135                # 达到auto_executor门槛
+            and s.get('exec_priority') in ('IMMEDIATE', 'HIGH')
+            and s.get('signal_id','') not in _existing_ids
+        ]
+        for _bs in _bridge_candidates[:3]:  # 每次最多桥接3条，防止洪流
+            _bridge_record = {
+                'signal_id':  _bs.get('signal_id', f'bridge_{int(time.time())}_{_bs["symbol"]}'),
+                'symbol':     _bs['symbol'],
+                'direction':  _bs['direction'],
+                'score':      _bs['score'],
+                'valid':      True,   # 已经过enhance过滤，标记为valid
+                'regime':     _bs.get('regime', 'UNKNOWN'),
+                'entry_lo':   _bs.get('entry_lo', 0),
+                'entry_hi':   _bs.get('entry_hi', _bs.get('entry_lo', 0) * 1.005),
+                'stop_loss':  _bs.get('entry_lo', 0) * (0.975 if _bs['direction']=='LONG' else 1.025),
+                'sl_pct':     _bs.get('sl_pct', 2.5),
+                'tp1':        _bs.get('tp1', 0),
+                'rr1':        _bs.get('rr1', 1.0),
+                'ts':         time.time(),
+                'source':     _bs['source'],
+                'action':     'ENTER',
+                'expires_at': time.time() + 3600,  # 1H有效期
+                '_bridge':    True,   # 标记为桥接信号
+            }
+            with open(_sig_log, 'a') as _f:
+                _f.write(json.dumps(_bridge_record, ensure_ascii=False) + '\n')
+            _bridged += 1
+        if _bridged > 0:
+            print(f'  🌉 信号桥接: {_bridged}条 [{[s["symbol"] for s in _bridge_candidates[:3]]}] → live_signal_log')
+    except Exception as _e:
+        print(f'  ⚠️ 桥接异常(不影响主流程): {_e}')
+
     # 5. 保存聚合结果
     output = {
         'ts':        time.time(),
