@@ -56,7 +56,7 @@ CRON_WATCHLIST = {
     'main-signal-watcher':     75,   # 每1h，75min未跑=故障（阈值放宽避免单次延迟误报）
     'pump-hunter':             45,   # 每30min
     'brahma-nerve-center':     35,   # 每30min，阈值35min（原25min触发虚假告警）
-    'oi-surge-scanner':        300,  # 每4H
+    'oi-advanced-scanner':     35,   # 每30min（替代oi-surge-scanner 2026-07-10）
 }
 
 # 关键数据文件 → 最大陈旧分钟
@@ -271,7 +271,7 @@ def check_signal_pipeline() -> dict:
 
     # ── 检查3：关键Cron的 message + announce + 路由 ─────────────────
     KEY_JOBS = ['main-signal-watcher', 'pump-hunter', 'brahma-nerve-center',
-                'oi-surge-scanner', 'rsi-structure-watcher']
+                'oi-advanced-scanner', 'rsi-structure-watcher']
     CORRECT_THREAD = '019f309c-609b-7a75-a195-e221e5927c63'
     try:
         jobs_file = Path.home() / '.openclaw/cron/jobs.json'
@@ -407,7 +407,7 @@ def check_cron_jobs() -> dict:
     # check_cron_jobs 之前只看「有没有运行」，不检测「message是否为空」
     # message为空 → Agent收到空任务直接HEARTBEAT_OK → 信号永远不推送
     KEY_SIGNAL_JOBS = ['main-signal-watcher', 'pump-hunter', 'brahma-nerve-center',
-                       'oi-surge-scanner', 'rsi-structure-watcher']
+                       'oi-advanced-scanner', 'rsi-structure-watcher']
     try:
         import importlib.util as _ilu2
         _sc2 = _ilu2.module_from_spec(_ilu2.spec_from_file_location('sc2', BASE / 'scripts' / 'system_config.py'))
@@ -717,7 +717,7 @@ def check_push_routing() -> dict:
 
     # ── Cron message 非空检查（2026-07-08 盲区补入）──
     KEY_SIGNAL_JOBS = ['main-signal-watcher','pump-hunter','brahma-nerve-center',
-                       'oi-surge-scanner','rsi-structure-watcher','signal-watcher-6h']
+                       'oi-advanced-scanner','rsi-structure-watcher','signal-watcher-6h']
     try:
         jobs_file = Path.home() / '.openclaw/cron/jobs.json'
         raw2 = json.loads(jobs_file.read_text())
@@ -934,7 +934,7 @@ def heal(fault_type: str, context: dict) -> dict:
             'pump-hunter': 'Run trading-system pump hunter scan. Check dharma/pump_hunter/scan_and_alert.py for high-score pre-pump signals. If score>=85 found, report ticker+score+entry zone. If none, reply HEARTBEAT_OK.',
             'brahma-nerve-center': 'Run brahma nerve center check. Execute scripts/brahma_nerve_center.py and report any P0/P1 alerts found. If no alerts, reply HEARTBEAT_OK.',
             'main-signal-watcher': 'Check live_signal_log for valid trading signals. Run: python3 trading-system/scripts/signal_watcher.py and report any valid=True signals with score>=155. If none, reply HEARTBEAT_OK.',
-            'oi-surge-scanner': 'Run OI surge scanner. Execute scripts/oi_surge_scanner.py and report any OI anomalies >5%. If none, reply HEARTBEAT_OK.',
+            'oi-advanced-scanner': 'Run OI advanced scanner: execute python3 /root/.openclaw/workspace/trading-system/scripts/oi_advanced_scanner.py and report A/B/C class signals found. If none, reply HEARTBEAT_OK.',
             'rsi-structure-watcher': 'Check RSI structure events. Run scripts/rsi_structure_watcher.py --once and report any triggered events (E1-E9). If none, reply HEARTBEAT_OK.',
         }
         CORRECT_THREAD = '019f309c-609b-7a75-a195-e221e5927c63'
