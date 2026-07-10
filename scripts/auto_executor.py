@@ -781,6 +781,52 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     except Exception:
         pass
 
+    # ── CubeSandbox对标: 开单后合法性验证 + 异常自动回滚 (v5.5 最小改动) ─────
+    # 设计院2026-07-10: 对标CubeSandbox快照回滚机制
+    # 原理: 开单成功后立即验证方向×体制的合法性
+    #       若发现死穴(如BEAR_TREND+LONG), 立即市价平仓+告警
+    #       最小改动: 仅在EXECUTED后追加, 不修改开单流程
+    try:
+        _rollback_needed = False
+        _rollback_reason  = ''
+        # 死穴检测: BEAR_TREND下的多单 / BULL_TREND下的空单
+        _r_check = json.loads(
+            (Path(__file__).parent.parent / 'data' / 'regime_state.json').read_text()
+        ).get(sym, {})
+        _regime_now = _r_check.get('confirmed', '') if isinstance(_r_check, dict) else ''
+        if _regime_now == 'BEAR_TREND' and direction == 'LONG':
+            _rollback_needed = True
+            _rollback_reason = f'BEAR_TREND+LONG死穴: 体制={_regime_now}'
+        # 也保护: 成交价严重偏离预期(>3%滑点)
+        if entry_lo and fill_px:
+            _slippage = abs(fill_px - entry_lo) / entry_lo * 100
+            if _slippage > 3.0:
+                _rollback_needed = True
+                _rollback_reason = f'滑点过大={_slippage:.2f}%>3%(fill={fill_px} expected≈{entry_lo})'
+
+        if _rollback_needed:
+            print(f'[回滚守卫] {sym} {direction}: {_rollback_reason}')
+            # 立即市价平仓
+            _close_side = 'SELL' if direction == 'LONG' else 'BUY'
+            _rb = _signed('POST', '/fapi/v1/order', {
+                'symbol': sym, 'side': _close_side,
+                'type': 'MARKET', 'quantity': fill_qty, 'reduceOnly': 'true',
+            })
+            print(f'[回滚守卫] 平仓结果: {_rb.get("status",_rb.get("msg","?"))}')
+            # 从wuqu_positions移除
+            try:
+                _wq = json.loads(WUQU_PATH.read_text())
+                _wq.pop(sym, None)
+                WUQU_PATH.write_text(json.dumps(_wq, indent=2, ensure_ascii=False))
+            except Exception:
+                pass
+            result['rollback'] = True
+            result['rollback_reason'] = _rollback_reason
+            result['reason'] = f'ROLLED_BACK: {_rollback_reason}'
+    except Exception as _e:
+        pass  # 回滚守卫异常不影响主流程
+    # ── end CubeSandbox回滚守卫 ─────────────────────────────────────────────
+
     result.update({
         'status':      'EXECUTED',
         'order_id':    order_id,
