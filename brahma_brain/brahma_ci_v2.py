@@ -50,7 +50,7 @@ def p1_signal_flow():
 # ═══════════════════════════════════════════════════════════════════════
 MUST_PUSH = {
     'pump-hunter':           '暴涨信号',
-    'oi-surge-scanner':      'OI异动',
+    'oi-advanced-scanner':      'OI异动',
     'brahma-360-daily':      '每日分析',
     'smart-digest-6h':       '智能汇总',
     'brahma-ci-probe':       'CI探针报告',

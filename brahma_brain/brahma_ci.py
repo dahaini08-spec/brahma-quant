@@ -91,7 +91,7 @@ def probe_push_links():
     # 必须有推送的关键任务
     MUST_PUSH = {
         'pump-hunter':        '暴涨猎手发现信号必须推送',
-        'oi-surge-scanner':   'OI异动必须推送',
+        'oi-advanced-scanner':   'OI异动必须推送',
         # 'rsi-structure-watcher': 'RSI结构事件通过脚本内部推送（write_trigger注入），非cron层推送',
         'brahma-360-daily':   '每日分析必须推送',
         # 'smart-digest-6h': '智能汇总通过脚本内部推送，不需要cron announce'

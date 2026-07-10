@@ -157,7 +157,7 @@ def load_current_jobs() -> dict:
 CRITICAL_JOB_NAMES = {
     # 信号推送系统（宪法级保护）
     'pump-hunter', 'rsi-structure-watcher', 'brahma-nerve-center',
-    'oi-surge-scanner', 'main-signal-watcher', 'brahma-self-heal',
+    'oi-advanced-scanner', 'main-signal-watcher', 'brahma-self-heal',
     'brahma-scan-guard', 'signal-watcher-6h',
     # 日报/周报
     'brahma-360-daily', 'live-performance-daily',

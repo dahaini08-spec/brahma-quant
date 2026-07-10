@@ -37,7 +37,7 @@ TOKEN_ESTIMATES = {
     'rsi-structure-watcher': 0,    # 零成本守望
     # 'ws-guardian-keepalive'  # 已删除 2026-07-08: 0,
     'pump-hunter':          500,
-    'oi-surge-scanner':     800,
+    'oi-advanced-scanner':     800,
     'signal-watcher-6h':    200,
     'btc-regime-watcher':   0,
     'brahma-360-health':    200,
@@ -63,7 +63,7 @@ DAILY_RUNS = {
     # 'ws-guardian-keepalive'  # 已删除 2026-07-08: 96,
     'pump-hunter':          48,    # 每30m = 48次/天（已优化）
     'regime-switch-monitor': 48,   # 新增 每30m
-    'oi-surge-scanner':     6,
+    'oi-advanced-scanner':     6,
     'signal-watcher-6h':    4,
     'btc-regime-watcher':   288,   # 零成本守望，0 tokens
     'brahma-360-health':    12,

@@ -198,7 +198,7 @@ def check_l3_data() -> dict:
 
 KEY_CRON_JOBS = [
     'pump-hunter', 'rsi-structure-watcher', 'brahma-nerve-center',
-    'oi-surge-scanner', 'main-signal-watcher', 'brahma-self-heal',
+    'oi-advanced-scanner', 'main-signal-watcher', 'brahma-self-heal',
     'brahma-constitutional-guardian',
 ]
 
