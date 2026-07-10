@@ -42,9 +42,9 @@ SUB_EXEC_SET    = BASE / 'data/sub_executed_set.json'
 # ── 配置（苏摩授权 2026-07-03）────────────────────────────────
 MAX_POSITIONS        = 20     # 全局最大持仓，与主系统共享
 PUMP_SCORE_THRESHOLD = 75     # 暴涨猎手最低score（全力模式 苏摩授权：85→75）
-OI_LAYERS_THRESHOLD  = 3      # OI猎手最低通过层数（苏摩授权全力模式：4→3）
-OI_SCORE_THRESHOLD   = 15.0   # OI最低oi_score
-OI_MAX_AGE_H         = 4.0    # OI信号最大有效期（小时）
+OI_LAYERS_THRESHOLD  = 2      # OI猎手最低通过层数（v3: 3→2，配合oi_advanced_scanner新评分体系）
+OI_SCORE_THRESHOLD   = 30.0   # OI最低oi_score（v3: 15→30，满分100新体系）
+OI_MAX_AGE_H         = 2.0    # OI信号最大有效期（v3: 4→2，与30min cron对齐）
 MIN_NOTIONAL         = 5.0   # 最小开单名义（设计院修复 2026-07-05：NAV=100时多档位均可执行）
 FAPI_BASE            = 'https://fapi.binance.com'
 
@@ -345,7 +345,15 @@ def run_oi_executor(nav: float, active_pos: list) -> list:
         cache    = json.loads(OI_CACHE.read_text())
         age_h    = (time.time() - (cache.get('scanned_at') or cache.get('updated_at', 0))) / 3600
         if age_h > OI_MAX_AGE_H:
-            pass  # [静默]
+            # [v3修复] 数据过期时触发自动重新扫描，而非静默跳过
+            try:
+                import subprocess
+                subprocess.Popen(
+                    ['python3', str(BASE / 'scripts/oi_advanced_scanner.py')],
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                )
+            except Exception:
+                pass
             return []
 
         candidates = cache.get('candidates', {})
