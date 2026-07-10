@@ -1,0 +1,22 @@
+{
+  "REUSDT": {
+    "last_push_ts": 1783691202.7101314,
+    "last_score": 107,
+    "last_push_at": "2026-07-10T13:46:56.202331"
+  },
+  "1000BONKUSDT": {
+    "last_push_ts": 1783691202.7101314,
+    "last_score": 84,
+    "last_push_at": "2026-07-10T13:46:58.641703"
+  },
+  "TLMUSDT": {
+    "last_push_ts": 1783691202.7101314,
+    "last_score": 76,
+    "last_push_at": "2026-07-10T13:47:00.862278"
+  },
+  "METAUSDT": {
+    "last_push_ts": 1783695699.9328835,
+    "last_score": 70,
+    "last_push_at": "2026-07-10T15:01:42.101632"
+  }
+}
