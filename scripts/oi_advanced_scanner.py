@@ -46,10 +46,17 @@ import sys, os, json, time, math, hmac, hashlib, requests
 from pathlib import Path
 from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from brahma_brain.math_utils import calc_rsi as _calc_rsi, ema as _calc_ema  # 统一数学库 v1.0
 
+# [v7.0 设计院 2026-07-11] sys.path必须在brahma_brain import之前注入
 BASE = Path(__file__).parent.parent
-sys.path.insert(0, str(BASE))
+if str(BASE) not in sys.path:
+    sys.path.insert(0, str(BASE))
+if str(BASE / 'brahma_brain') not in sys.path:
+    sys.path.insert(0, str(BASE / 'brahma_brain'))
+if str(BASE / 'scripts') not in sys.path:
+    sys.path.insert(0, str(BASE / 'scripts'))
+
+from brahma_brain.math_utils import calc_rsi as _calc_rsi, ema as _calc_ema  # 统一数学库 v1.0
 
 try:
     from scripts.system_config import (
