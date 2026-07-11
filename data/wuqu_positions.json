@@ -112,20 +112,6 @@
     "success": true
   },
   {
-    "symbol": "EDGEUSDT",
-    "side": "LONG",
-    "size": 39.0,
-    "entry_price": 0.3817,
-    "mark_price": 0.3817,
-    "stop_loss": 0.3702,
-    "take_profit": 0.3932,
-    "leverage": 3.0,
-    "notional_usdt": 14.8863,
-    "unrealized_pnl": 0.0,
-    "updated_at": 1783768687.5636783,
-    "success": true
-  },
-  {
     "symbol": "SPYUSDT",
     "side": "LONG",
     "size": 0.01,

@@ -1,13 +1,13 @@
 {
-  "TLMUSDT": {
-    "score": 83,
-    "price": 0.001806,
-    "entry_lo": 0.001799,
-    "entry_hi": 0.001813,
-    "sl_price": 0.001761,
-    "tp1_price": 0.001874,
-    "expire_ts": 1783782087.353291,
-    "pushed_ts": 1783780298.8881435,
+  "REUSDT": {
+    "score": 84,
+    "price": 0.5862,
+    "entry_lo": 0.583855,
+    "entry_hi": 0.588545,
+    "sl_price": 0.571545,
+    "tp1_price": 0.608183,
+    "expire_ts": 1783785697.4466407,
+    "pushed_ts": 1783783898.164738,
     "auto_executed": false,
     "reminded": false
   }
