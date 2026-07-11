@@ -1,0 +1,12 @@
+# requirements-dev.txt
+# 开发/测试环境
+# 封印: Brahma 2.0 P0-Plus 2026-07-11
+
+-r requirements-core.txt
+
+pytest>=8.0
+pytest-asyncio>=0.23
+black>=24.0
+ruff>=0.5
+mypy>=1.10
+types-PyYAML
