@@ -352,6 +352,13 @@ def run():
         import subprocess
         # 层关1事件触发后：扫描完成即触发auto_executor（缩短延迟）
         # ulimit限制单条Python链内存上限（防止OOM）
+        # E5/E6/E7触发时，同步触发 pump-hunter 加速扫描（1H兜底之外的事件驱动加速）
+        pump_trigger_events = {'E5_BB_EXPANSION', 'E6_VOLUME_SURGE', 'E7_OI_SURGE'}
+        has_pump_trigger = any(
+            ev.get('event','') in pump_trigger_events
+            for sym_evs in [events] for ev in sym_evs
+        ) if events else False
+
         scan_cmd = (
             f'cd {BASE} && '
             f'ulimit -v 1048576 2>/dev/null; '
@@ -359,6 +366,16 @@ def run():
             f'python3 scripts/brahma_scan_all.py --candidates && '
             f'python3 scripts/auto_executor.py 2>&1 | tail -5'
         )
+        # E5/E6/E7触发时附加 pump-hunter 扫描
+        if has_pump_trigger:
+            scan_cmd = (
+                f'cd {BASE} && '
+                f'ulimit -v 1048576 2>/dev/null; '
+                f'python3 dharma/pump_hunter/scan_and_alert.py --dry-run 2>&1 | tail -3 & '
+                f'python3 scripts/market_screener.py && '
+                f'python3 scripts/brahma_scan_all.py --candidates && '
+                f'python3 scripts/auto_executor.py 2>&1 | tail -5'
+            )
         try:
             # ── 防积压：检查是否已有扫描链在运行 ──────────────────
             import os, glob
