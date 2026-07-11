@@ -78,7 +78,26 @@ def write(signal: dict) -> bool:
     try:
         with open(BUS_FILE, 'a') as f:
             f.write(json.dumps(signal, ensure_ascii=False) + '\n')
-        pass  # [静默]
+        # [v7.0 设计院 2026-07-11 六方封印]
+        # 同步写入 live_signal_log.jsonl，主系统和暴涨猎手信号都能被 auto_executor 消费
+        # 断层根因：signal_bus.jsonl vs live_signal_log.jsonl 两个文件完全分离
+        try:
+            _live_log = BASE / 'data' / 'live_signal_log.jsonl'
+            # 构造合规 live_signal_log 格式（与 brahma_analysis_runner 输出对齐）
+            _live_entry = dict(signal)
+            _live_entry.setdefault('ts', signal.get('ts', __import__('time').time()))
+            _live_entry.setdefault('ts_iso', __import__('datetime').datetime.utcfromtimestamp(
+                _live_entry['ts']).strftime('%Y-%m-%dT%H:%M:%SZ'))
+            _live_entry.setdefault('regime', signal.get('regime', ''))
+            _live_entry.setdefault('direction', signal.get('direction', 'LONG'))
+            _live_entry.setdefault('action', signal.get('action', 'ENTER'))
+            _live_entry.setdefault('rr1', signal.get('rr1', signal.get('rr', 1.8)))
+            _live_entry.setdefault('sl_pct', signal.get('sl_pct', 2.0))
+            _live_entry['_bus_sync'] = True   # 标记来源为signal_bus
+            with open(str(_live_log), 'a') as _lf:
+                _lf.write(__import__('json').dumps(_live_entry, ensure_ascii=False) + '\n')
+        except Exception as _sync_e:
+            pass  # 同步失败不影响主写入
         return True
     finally:
         _unlock()
