@@ -133,17 +133,14 @@ def format_vip_card(s):
     signal_id = s.get("signal_id", "-")
     
     card = f"""🏯 梵天信号 · {sym}/USDT {dir_label}
-━━━━━━━━━━━━━━━━━━━
-🆔 {signal_id}
-评分: {score:.0f}  等级: {grade_raw}  体制: {regime}
-
+───────────────────────
+评分 {score:.0f}  {grade_raw}  {regime}
 {entry_desc}
-止损:   {p(sl)}
-T1:     {p(tp1)}  R:R={rr}x
-T2:     {p(tp2)}
-━━━━━━━━━━━━━━━━━━━
-信号时间: {ts} UTC
-⚠️ 仅供参考，注意风控"""
+止损  {p(sl)}
+T1    {p(tp1)}    RR={rr}x
+T2    {p(tp2)}
+───────────────────────
+{ts} UTC  ⚠️注意风控"""
     
     return card
 

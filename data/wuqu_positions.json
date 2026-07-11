@@ -14,20 +14,6 @@
     "success": true
   },
   {
-    "symbol": "SLXUSDT",
-    "side": "LONG",
-    "size": 147.0,
-    "entry_price": 0.16752,
-    "mark_price": 0.16741251,
-    "stop_loss": 0.1625,
-    "take_profit": 0.1725,
-    "leverage": 5.0,
-    "notional_usdt": 24.6096,
-    "unrealized_pnl": -0.0158,
-    "updated_at": 1783768687.563631,
-    "success": true
-  },
-  {
     "symbol": "AMDUSDT",
     "side": "LONG",
     "size": 0.02,
@@ -179,20 +165,6 @@
     "notional_usdt": 25.3662,
     "unrealized_pnl": 0.6968,
     "updated_at": 1783768687.5636876,
-    "success": true
-  },
-  {
-    "symbol": "XPINUSDT",
-    "side": "LONG",
-    "size": 7290.0,
-    "entry_price": 0.002045,
-    "mark_price": 0.00219,
-    "stop_loss": 0.002,
-    "take_profit": 0.0021,
-    "leverage": 3.0,
-    "notional_usdt": 15.9651,
-    "unrealized_pnl": 1.0571,
-    "updated_at": 1783768687.563691,
     "success": true
   },
   {

@@ -207,96 +207,154 @@ def _has_changes(data: dict, state: dict, now: datetime) -> tuple[bool, list[str
 
 # ── 格式化输出 ────────────────────────────────────────────
 def _format(data: dict) -> str:
-    now  = data['now']
-    ts   = now.strftime('%m-%d %H:%M UTC')
-    lines = []
+    """
+    美化输出 v2.0 — 设计院 2026-07-11
+    原则:
+      · 每块用标题行+内容行，无多余分隔线
+      · 关键数字右对齐或固定宽度
+      · 每条信号压缩到3行以内
+      · 移动端友好：行宽≤28个全角字符
+    """
+    now = data['now']
+    ts  = now.strftime('%m-%d %H:%M UTC')
+    L   = []
 
-    # BLOCK A — 账户 + 体制
-    lines.append(f'📊 梵天仪表盘 · {ts}')
-    lines.append('─' * 32)
-    lines.append(f'💰 NAV ${data["nav"]:.2f} | 可用 ${data["avail"]:.2f} | 持仓 {data["pos_cnt"]}个')
-    lines.append(f'📈 总PnL {data["total_pnl"]:+.3f} USDT')
-    lines.append('')
+    def sep():
+        L.append('───────────────────────')
 
-    # BLOCK B — 暴涨猎手
+    # ═══ HEADER ═══════════════════════════════════════
+    L.append(f'📊 梵天仪表盘  {ts}')
+    sep()
+    nav   = data.get('nav', 0)
+    avail = data.get('avail', 0)
+    pnl   = data.get('total_pnl', 0)
+    pcnt  = data.get('pos_cnt', 0)
+    pnl_icon = '📈' if pnl >= 0 else '📉'
+    L.append(f'💰 NAV ${nav:.2f}  可用 ${avail:.2f}')
+    L.append(f'{pnl_icon} 持仓 {pcnt}个  总PnL {pnl:+.3f} USDT')
+
+    # ═══ BLOCK B — 暴涨猎手 ═══════════════════════════
+    L.append('')
     exec_alerts = data.get('pump_exec_alerts', [])
     all_alerts  = data.get('pump_alerts', [])
-    lines.append(f'🐯 暴涨猎手  {data.get("pump_scan_time","?")}  扫{data.get("pump_scanned",0)}个')
-    lines.append('─' * 32)
+    scan_t = data.get('pump_scan_time', '')
+    scan_n = data.get('pump_scanned', 0)
+    L.append(f'🐯 暴涨猎手  {scan_t}  扫{scan_n}个')
+    sep()
+
     if exec_alerts:
         for a in exec_alerts:
-            exp_ts = a.get('expire_ts', 0)
-            remain = max(0, int((exp_ts - time.time()) / 60)) if exp_ts else 0
-            exp_str = f'有效{remain}分钟' if remain > 0 else '⚠️即将过期'
-            lines.append(f'✅ {a["symbol"]}  score={a["score"]}  ⚡ENTER')
-            lines.append(f'   入场 ${a["entry_lo"]:.5g}~${a["entry_hi"]:.5g}')
-            lines.append(f'   止损 ${a["sl_price"]:.5g}  TP1 ${a["tp1_price"]:.5g}  RR={a["rr"]}')
-            lines.append(f'   FR={a["funding"]:+.4f}% 空头{a["short_pct"]:.0f}%  {exp_str}')
+            exp_ts  = a.get('expire_ts', 0)
+            remain  = max(0, int((exp_ts - time.time()) / 60)) if exp_ts else 0
+            exp_str = f'{remain}分钟' if remain > 0 else '⚠️过期'
+            sym     = a.get('symbol', '?')
+            sc      = a.get('score', '?')
+            el = a.get('entry_lo', 0); eh = a.get('entry_hi', 0)
+            sl = a.get('sl_price', 0); tp = a.get('tp1_price', 0)
+            rr = a.get('rr', '?')
+            fr = a.get('funding', 0)
+            sp = a.get('short_pct', 0)
+            L.append(f'✅ {sym}  score={sc}  ⚡ENTER  {exp_str}')
+            L.append(f'   进场 {el:.5g}~{eh:.5g}')
+            L.append(f'   SL {sl:.5g}  TP {tp:.5g}  RR={rr}')
+            L.append(f'   FR {fr:+.4f}%  空{sp:.0f}%')
     else:
-        lines.append('  暂无 exec=✅ 信号')
+        L.append('  暂无 exec=✅ 信号')
 
     watch_alerts = [a for a in all_alerts if not a.get('exec_eligible')]
     if watch_alerts:
-        watch_str = ' '.join([f'{a["symbol"]}({a["score"]})' for a in watch_alerts[:3]])
-        lines.append(f'👀 待触发: {watch_str}')
-    lines.append(f'今日扫描{data.get("pump_today_total",0)}次 推送{data.get("pump_today_push",0)}次')
-    lines.append('')
+        watch_str = '  '.join(f'{a["symbol"]}({a["score"]})' for a in watch_alerts[:4])
+        L.append(f'👀 待触: {watch_str}')
+    td_t = data.get('pump_today_total', 0)
+    td_p = data.get('pump_today_push', 0)
+    L.append(f'  今日扫{td_t}次  推{td_p}次')
 
-    # BLOCK C — OI猎手
-    lines.append(f'🔬 OI猎手v3  {data.get("oi_generated","?")}  {data.get("oi_count",0)}候选')
-    lines.append('─' * 32)
+    # ═══ BLOCK C — OI猎手 ════════════════════════════
+    L.append('')
+    oi_gen = data.get('oi_generated', '?')
+    oi_cnt = data.get('oi_count', 0)
+    L.append(f'🔬 OI猎手v3  {oi_gen}  {oi_cnt}候选')
+    sep()
+
     oi_a = data.get('oi_a', [])
+    oi_b = data.get('oi_b', [])
     if oi_a:
-        lines.append('🏛 A类机构信号:')
-        for sym, d in oi_a[:4]:
-            lines.append(f'  {sym}  score={d.get("oi_score",0):.0f}  大户{d.get("whale_l",0):.0f}%  FR={d.get("fr",0):+.4f}%  RSI{d.get("rsi_1h",0):.0f}  {d.get("action","?")}')
+        for sym, v in oi_a[:3]:
+            sc  = v.get('oi_score', 0)
+            fr  = v.get('fr', 0)
+            rsi = v.get('rsi_1h', 0)
+            act = v.get('action', '?')
+            wl  = v.get('whale_l', 0)
+            L.append(f'🏛 {sym}  sc={sc:.0f}  FR{fr:+.3f}%  RSI{rsi:.0f}  {act}')
     neg_fr = data.get('oi_neg_fr', [])
     if neg_fr:
-        lines.append('🔥 极端负费率(轧空候选):')
-        for sym, d in neg_fr:
-            lines.append(f'  {sym}  FR={d.get("fr",0):+.4f}%  RSI{d.get("rsi_1h",0):.0f}')
-    lines.append(f'A类{len(oi_a)} B类{len(data.get("oi_b",[]))}')
-    lines.append('')
+        L.append('🔥 极端负FR:')
+        for sym, v in neg_fr[:3]:
+            fr  = v.get('fr', 0)
+            rsi = v.get('rsi_1h', 0)
+            L.append(f'   {sym}  FR{fr:+.4f}%  RSI{rsi:.0f}')
+    L.append(f'  A类{len(oi_a)}  B类{len(oi_b)}')
 
-    # BLOCK D — 梵天主脑
+    # ═══ BLOCK D — 梵天主脑 ══════════════════════════
+    L.append('')
+    bt_total = data.get('brahma_today_total', 0)
+    bt_valid = data.get('brahma_today_valid', 0)
+    L.append(f'🧠 梵天主脑  今日{bt_total}条  有效{bt_valid}条')
+    sep()
+
     brahma_sigs = data.get('brahma_valid_sigs', [])
-    lines.append(f'🧠 梵天主脑  今日{data.get("brahma_today_total",0)}条 有效{data.get("brahma_today_valid",0)}条')
-    lines.append('─' * 32)
     if brahma_sigs:
         for s in brahma_sigs[-3:]:
-            action  = s.get('action', '?')
-            icon    = '🟢' if action == 'ENTER' else ('🟡' if action == 'WATCH' else '⚪')
+            action = s.get('action', '?')
+            icon   = '🟢' if 'ENTER' in action else ('🟡' if 'WATCH' in action else '⚪')
+            sym    = s.get('symbol', '?')
+            sc     = s.get('score', '?')
+            regime = s.get('regime', '?')
+            el = s.get('entry_lo', '?'); eh = s.get('entry_hi', '?')
+            sl = s.get('stop_loss') or s.get('sl_price', '?')
+            tp = s.get('tp1') or s.get('tp1_price', '?')
+            rr = s.get('rr1', '?')
+            # 有效时间
             exp_iso = s.get('expires_at', '')
             try:
-                from datetime import datetime
-                exp_dt  = datetime.fromisoformat(exp_iso.replace('Z', '+00:00'))
+                from datetime import datetime as _dt
+                exp_dt  = _dt.fromisoformat(exp_iso.replace('Z', '+00:00'))
                 remain  = max(0, int((exp_dt - now).total_seconds() / 60))
-                exp_str = f'有效{remain}分钟' if remain > 0 else '⚠️已过期'
+                exp_str = f'剩{remain}分钟'
             except Exception:
                 exp_str = ''
-            lines.append(f'{icon} {s.get("symbol","")}  score={s.get("score","?")}  {action}')
-            lines.append(f'   入场 ${s.get("entry_lo","?")}~${s.get("entry_hi","?")}')
-            lines.append(f'   止损 ${s.get("stop_loss") or s.get("sl_price","?")}  TP1 ${s.get("tp1") or s.get("tp1_price","?")}')
-            lines.append(f'   {s.get("regime","?")}  {exp_str}')
-            if s.get('consensus') == 'BEAR' and s.get('direction') == 'LONG':
-                lines.append(f'   ⚠️ consensus=BEAR 多空分歧')
+            L.append(f'{icon} {sym}  sc={sc}  {action}  {exp_str}')
+            L.append(f'   进场 {el}~{eh}')
+            try:
+                sl_v = float(sl) if sl and sl != 'None' else 0
+                tp_v = float(tp) if tp and tp != 'None' else 0
+                sl_s = f'${sl_v:.5g}' if sl_v else '待设置'
+                tp_s = f'${tp_v:.5g}' if tp_v else '待设置'
+                L.append(f'   SL {sl_s}  TP {tp_s}  RR={rr}')
+            except Exception:
+                L.append(f'   SL {sl}  TP {tp}  RR={rr}')
+            L.append(f'   {regime}')
     else:
-        lines.append('  暂无有效信号')
-    lines.append('')
+        L.append('  暂无有效信号')
 
-    # BLOCK E — 持仓风险雷达
+    # ═══ BLOCK E — 持仓风险 ══════════════════════════
     risk_list = data.get('risk_list', [])
-    lines.append(f'🎯 持仓风险雷达  {data["pos_cnt"]}个持仓')
-    lines.append('─' * 32)
     if risk_list:
-        for r in risk_list[:6]:
-            lines.append(f'{r["icon"]} {r["sym"]:14s}  PnL={r["pnl"]:+.3f}  SL距{r["sl_dist"]:.1f}%')
-        if len(risk_list) > 6:
-            rest_pnl = sum(r['pnl'] for r in risk_list[6:])
-            lines.append(f'   ...另{len(risk_list)-6}个持仓  PnL合计{rest_pnl:+.3f}')
-    lines.append(f'总PnL {data["total_pnl"]:+.3f} USDT  {"⚠️风险预警" if data.get("risk_alert") else "✅无清算风险"}')
+        L.append('')
+        L.append(f'🎯 持仓风险  {pcnt}个')
+        sep()
+        for r in risk_list[:8]:
+            sym_s = r['sym'][:12]
+            pnl_r = r['pnl']
+            sld   = r['sl_dist']
+            L.append(f'{r["icon"]} {sym_s:<12}  PnL{pnl_r:+.3f}  SL距{sld:.1f}%')
+        if len(risk_list) > 8:
+            rest_pnl = sum(r['pnl'] for r in risk_list[8:])
+            L.append(f'   另{len(risk_list)-8}个  合计{rest_pnl:+.3f}')
+        risk_tag = '⚠️ 风险预警' if data.get('risk_alert') else '✅ 无清算风险'
+        L.append(f'{risk_tag}  总PnL {pnl:+.3f}')
 
-    return '\n'.join(lines)
+    return '\n'.join(L)
 
 
 # ── 主入口 ────────────────────────────────────────────────
