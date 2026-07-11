@@ -1,0 +1,17 @@
+{
+  "symbol": "ETHUSDT",
+  "timeframe": "4h",
+  "taker_pct": 0.05,
+  "maker_pct": 0.02,
+  "slippage_pct": 0.05,
+  "cost_one_way_pct": 0.1,
+  "cost_round_pct": 0.2,
+  "funding_per_hold_pct": 0.005,
+  "funding_8h_pct": 0.01,
+  "total_cost_pct": 0.205,
+  "avg_price_usd": 2136.77,
+  "avg_daily_vol": 3514782.22,
+  "bars_count": 14447,
+  "date_start": "2019-11-27 04:00:00+00:00",
+  "date_end": "2026-06-30 20:00:00+00:00"
+}
