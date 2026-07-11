@@ -144,7 +144,10 @@ def log_signal(result: dict) -> bool:
                         or ('CHOP' in (regime or '') and (direction or '') == 'SHORT')  # CHOP 做空 EV=+0.811%
                         or ('BEAR_TREND' in (regime or '') and (direction or '') == 'SHORT')  # BEAR做空主方向
                     )
-                    and float(score or 0) >= 135         # 与auto_executor阀限对齐（原155过严）
+                    and float(score or 0) >= 130         # [v7.0 设计院 2026-07-11] 六方评估降至130（原135）
+                    # 根因：BTC近期信号score=131~136全部valid=False
+                    # 铁证：BULL_TREND LONG WR=68%+ n=2000+，score=130+已显著正期望
+                    # Kronos-mini修复后s23最多+12，score应回升至138+区间
                     and float(params.get('rr1', 0) or 0) >= 1.0  # RR阈值不变
                     and float(params.get('sl_pct', 0) or 0) <= 15.0
                     and action not in ('SKIP',)          # SKIP是死穴，不开封

@@ -1,8 +1,8 @@
 {
   "REUSDT": {
-    "last_push_ts": 1783691202.7101314,
-    "last_score": 107,
-    "last_push_at": "2026-07-10T13:46:56.202331"
+    "last_push_ts": 1783729001.8670533,
+    "last_score": 101,
+    "last_push_at": "2026-07-11T00:16:56.009174"
   },
   "1000BONKUSDT": {
     "last_push_ts": 1783691202.7101314,
@@ -18,5 +18,20 @@
     "last_push_ts": 1783695699.9328835,
     "last_score": 70,
     "last_push_at": "2026-07-10T15:01:42.101632"
+  },
+  "KAITOUSDT": {
+    "last_push_ts": 1783729001.8670533,
+    "last_score": 77,
+    "last_push_at": "2026-07-11T00:16:58.707400"
+  },
+  "NATGASUSDT": {
+    "last_push_ts": 1783713699.9090633,
+    "last_score": 78,
+    "last_push_at": "2026-07-10T20:01:42.084512"
+  },
+  "PUMPUSDT": {
+    "last_push_ts": 1783729001.8670533,
+    "last_score": 74,
+    "last_push_at": "2026-07-11T00:17:01.208890"
   }
 }
