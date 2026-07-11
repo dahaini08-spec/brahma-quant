@@ -56,7 +56,7 @@ CRON_WATCHLIST = {
     'main-signal-watcher':     75,   # 每1h，75min未跑=故障（阈值放宽避免单次延迟误报）
     'pump-hunter':             45,   # 每30min
     'brahma-nerve-center':     35,   # 每30min，阈值35min（原25min触发虚假告警）
-    'oi-advanced-scanner':     35,   # 每30min（替代oi-surge-scanner 2026-07-10）
+    'oi-advanced-scanner':     70,   # [v7.0 2026-07-11] 35→70min: cron实际间隔60min，35min阈值持续误报
 }
 
 # 关键数据文件 → 最大陈旧分钟
