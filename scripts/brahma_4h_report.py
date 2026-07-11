@@ -9,6 +9,7 @@ brahma_4h_report.py — 梵天4H综合速报
 import sys, os, json, subprocess, time
 from pathlib import Path
 from datetime import datetime, timezone
+from brahma_brain.math_utils import rsi as _mu_rsi, ema as _mu_ema  # INT-1统一实现
 
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE / 'scripts'))

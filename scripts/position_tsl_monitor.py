@@ -34,6 +34,7 @@ import sys, os, json, time, argparse
 import urllib.request
 from pathlib import Path
 from datetime import datetime, timezone
+from brahma_brain.math_utils import rsi as _mu_rsi, ema as _mu_ema  # INT-1统一实现
 
 # ── brahma_bus 总线接入（设计院 2026-06-29）──
 try:
@@ -129,17 +130,8 @@ def get_recent_klines(symbol: str, interval='1h', limit=10) -> list:
         return []
 
 
-# ── 技术指标 ─────────────────────────────────────────────────────
-def calc_rsi(closes, period=14):
-    import numpy as np
-    c = np.array(closes)
-    d = np.diff(c, prepend=c[0])
-    g = np.where(d > 0, d, 0.); l = np.where(d < 0, -d, 0.)
-    ag = g[:period+1].mean(); al = l[:period+1].mean()
-    for i in range(period+1, len(c)):
-        ag = (ag*(period-1)+g[i])/period
-        al = (al*(period-1)+l[i])/period
-    return 100 - 100/(1 + ag/(al+1e-10)) if al > 0 else 100.0
+# ── 技术指标 ────────────────────────────────────────────────────
+from brahma_brain.math_utils import calc_rsi  # 统一实现 v1.0 [INT-1 2026-07-11]
 
 
 def detect_exhaustion(klines: list, direction: str) -> dict:

@@ -47,6 +47,8 @@ def _ema(s: pd.Series, n: int) -> pd.Series:
     return s.ewm(span=n, adjust=False).mean()
 
 def _rsi(c: pd.Series, n: int = 14) -> pd.Series:
+
+    # [INT-1] 统一实现已移至 math_utils.rsi，此函数保留兼容
     d = c.diff()
     g = d.clip(lower=0).ewm(com=n-1, adjust=False).mean()
     l = (-d).clip(lower=0).ewm(com=n-1, adjust=False).mean()

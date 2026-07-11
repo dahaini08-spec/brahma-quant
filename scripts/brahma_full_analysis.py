@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import requests
 import numpy as np
 from brahma_brain import brahma_core as bc
+from brahma_brain.math_utils import rsi as _mu_rsi, ema as _mu_ema  # INT-1统一实现
 
 # ══════════════════════════════════════════════════════════
 # 辅助工具
@@ -33,12 +34,9 @@ def _klines(sym, interval, limit):
              {'symbol': sym, 'interval': interval, 'limit': limit})
     return d if isinstance(d, list) else []
 
-def _ema(arr, n):
-    k = 2 / (n + 1); e = [arr[0]]
-    for x in arr[1:]: e.append(x * k + e[-1] * (1 - k))
-    return np.array(e)
-
 def _rsi(closes, n=14):
+
+    # [INT-1] 统一实现已移至 math_utils.rsi，此函数保留兼容
     d = np.diff(np.array(closes[-(n+2):], dtype=float))
     g = np.where(d > 0, d, 0); lo = np.where(d < 0, -d, 0)
     ag = g.mean(); al = lo.mean()

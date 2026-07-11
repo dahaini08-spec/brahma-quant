@@ -62,15 +62,6 @@ FIB_SUPPORT_ZONE    = 0.03    # 距Fib支撑±3% = 支撑区
 
 
 # [math_utils] _ema 已统一到 brahma_brain.math_utils，此处保留备用
-def _ema(data: list, n: int) -> float:
-    """简单EMA计算"""
-    k = 2 / (n + 1)
-    e = data[0]
-    for v in data[1:]:
-        e = v * k + e * (1 - k)
-    return e
-
-
 def _rsi14(closes: list) -> float:
     """RSI14计算 — Wilder EMA [FIX-RSI-WILDER 2026-06-14]"""
     if len(closes) < 15: return 50.0

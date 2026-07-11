@@ -21,6 +21,7 @@ market_screener.py — 全市场纯脚本预筛器 v1.0
 import sys, os, json, time, math, urllib.request
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from brahma_brain.math_utils import calc_rsi as _calc_rsi, ema as _calc_ema  # 统一数学库 v1.0
 
 BASE = Path(__file__).parent.parent
 DATA = BASE / 'data'
@@ -59,26 +60,6 @@ def _fetch(url: str, retries: int = 2) -> object:
     return None
 
 
-def _calc_rsi(closes: list, period: int = 14) -> float:
-    if len(closes) < period + 1:
-        return 50.0
-    gains  = [max(closes[i] - closes[i-1], 0) for i in range(1, len(closes))]
-    losses = [max(closes[i-1] - closes[i], 0) for i in range(1, len(closes))]
-    ag = sum(gains[-period:])  / period
-    al = sum(losses[-period:]) / period
-    if al == 0:
-        return 100.0
-    return round(100 - 100 / (1 + ag / al), 2)
-
-
-def _calc_ema(closes: list, period: int = 20) -> float:
-    if not closes:
-        return 0.0
-    k = 2 / (period + 1)
-    ema = closes[0]
-    for c in closes[1:]:
-        ema = ema * (1 - k) + c * k
-    return ema
 
 
 def _score_symbol(sym: str, ticker: dict) -> dict | None:

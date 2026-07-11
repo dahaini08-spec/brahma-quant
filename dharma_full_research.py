@@ -12,6 +12,7 @@ import time
 import math
 from datetime import datetime, timezone
 from scipy import stats as scipy_stats
+from brahma_brain.math_utils import rsi as _mu_rsi, ema as _mu_ema  # INT-1统一实现
 
 # ============================================================
 # 工具函数
@@ -51,6 +52,8 @@ def get_klines_all(symbol, interval, start_ts, end_ts):
 
 
 def calc_ema(prices, period):
+
+    # [INT-1] 统一实现已移至 math_utils.ema，此函数保留兼容
     """计算EMA，返回最后一个值"""
     if len(prices) < period:
         return prices[-1]
@@ -73,6 +76,8 @@ def calc_ema_series(prices, period):
 
 
 def calc_rsi(prices, period=14):
+
+    # [INT-1] 统一实现已移至 math_utils.rsi，此函数保留兼容
     """计算RSI"""
     if len(prices) < period + 1:
         return 50.0

@@ -20,16 +20,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'
 from data_cache import get_klines, klines_to_ohlcv
 
 # [math_utils] _ema 已统一到 brahma_brain.math_utils，此处保留备用
-def _ema(arr, n):
-    if len(arr) < n:
-        return arr[-1] if arr else 0
-    k = 2 / (n + 1)
-    e = sum(arr[:n]) / n
-    for x in arr[n:]:
-        e = x * k + e * (1 - k)
-    return e
-
 def _rsi(closes, n=14):
+
+    # [INT-1] 统一实现已移至 math_utils.rsi，此函数保留兼容
     if len(closes) < n + 1:
         return 50.0
     gains, losses = [], []

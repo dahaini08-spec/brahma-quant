@@ -21,6 +21,7 @@ import json
 import time
 import math
 from datetime import datetime, timezone, timedelta
+from brahma_brain.math_utils import rsi as _mu_rsi, ema as _mu_ema  # INT-1统一实现
 
 # ============================================================
 # 配置
@@ -131,6 +132,8 @@ def calc_ema(prices, period):
     return result
 
 def calc_rsi(prices, period=14):
+
+    # [INT-1] 统一实现已移至 math_utils.rsi，此函数保留兼容
     result = np.full(len(prices), 50.0)
     deltas = np.diff(prices)
     if len(deltas) < period:

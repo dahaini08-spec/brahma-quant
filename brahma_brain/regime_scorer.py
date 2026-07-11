@@ -51,6 +51,8 @@ def _klines(symbol: str, interval: str, limit: int = 100) -> list:  # [FIX 2026-
 
 
 def _rsi(closes: list, period: int = 14) -> float:
+
+    # [INT-1] 统一实现已移至 math_utils.rsi，此函数保留兼容
     """Wilder RSI — 与 market_state.rsi 算法对齐（修复根因：旧SMA简化版与Wilder相差最大13点）"""
     if len(closes) < period + 1:
         return 50.0
@@ -66,16 +68,6 @@ def _rsi(closes: list, period: int = 14) -> float:
         ag = (ag * (period - 1) + gains[i]) / period
         al = (al * (period - 1) + losses[i]) / period
     return round(100 - 100 / (1 + ag / max(al, 1e-9)), 2)
-
-
-def _ema(values: list, period: int) -> float:
-    if len(values) < period:
-        return values[-1] if values else 0
-    k = 2 / (period + 1)
-    e = sum(values[:period]) / period
-    for v in values[period:]:
-        e = v * k + e * (1 - k)
-    return round(e, 6)
 
 
 def _higher_highs(klines: list, n: int = 5) -> bool:

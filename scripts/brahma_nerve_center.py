@@ -22,6 +22,7 @@ brahma_nerve_center.py · 梵天动态感知神经中枢 v1.0
 import sys, os, json, time, requests, hmac, hashlib, subprocess
 from pathlib import Path
 from datetime import datetime, timezone
+from brahma_brain.math_utils import calc_rsi as _calc_rsi, ema as _calc_ema  # 统一数学库 v1.0
 
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
@@ -120,25 +121,6 @@ def _save_state(state: dict):
     STATE_FILE.write_text(json.dumps(state, indent=2, ensure_ascii=False))
 
 
-def _calc_rsi(closes, n=14):
-    if len(closes) < n + 1:
-        return 50.0
-    g = [max(closes[i] - closes[i-1], 0) for i in range(1, len(closes))]
-    l = [max(closes[i-1] - closes[i], 0) for i in range(1, len(closes))]
-    ag = sum(g[-n:]) / n
-    al = sum(l[-n:]) / n
-    for i in range(n, len(g)):
-        ag = (ag * (n-1) + g[i]) / n
-        al = (al * (n-1) + l[i]) / n
-    return round(100 - 100 / (1 + ag / al), 1) if al else 100.0
-
-
-def _calc_ema(closes, n):
-    k = 2 / (n + 1)
-    v = closes[0]
-    for c in closes[1:]:
-        v = c * k + v * (1 - k)
-    return round(v, 2)
 
 
 # ══════════════════════════════════════════════════════════════

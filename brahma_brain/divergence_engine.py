@@ -1,4 +1,5 @@
 """
+from brahma_brain.math_utils import calc_rsi, ema  # 统一标量版 v1.0 (calc_rsi_series = 序列版，仅本文件使用)
 
 # ── STATUS: AUXILIARY ──────────────────────────────────────────
 # 背离检测引擎，SMC辅助

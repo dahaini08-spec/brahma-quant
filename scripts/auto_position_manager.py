@@ -90,30 +90,24 @@ def _log(msg: str):
 
 def get_rsi(symbol: str, interval: str = '1h', period: int = 14) -> float:
     try:
+        from brahma_brain.math_utils import calc_rsi as _mu_rsi  # 统一数学库 v1.0
         r = requests.get(f'{FAPI}/fapi/v1/klines',
                          params={'symbol': symbol, 'interval': interval, 'limit': 50},
                          timeout=5).json()
         closes = [float(c[4]) for c in r]
-        gains, losses = [], []
-        for i in range(1, len(closes)):
-            d = closes[i] - closes[i-1]
-            gains.append(max(d, 0)); losses.append(max(-d, 0))
-        ag = sum(gains[-period:]) / period
-        al = sum(losses[-period:]) / period
-        return round(100 - 100 / (1 + ag / al), 1) if al > 0 else 100.0
+        return round(float(_mu_rsi(closes, period)), 1)
     except Exception:
         return 50.0
 
 
 def get_ema20_4h(symbol: str) -> float:
     try:
+        from brahma_brain.math_utils import ema as _mu_ema  # 统一数学库 v1.0
         r = requests.get(f'{FAPI}/fapi/v1/klines',
                          params={'symbol': symbol, 'interval': '4h', 'limit': 30},
                          timeout=5).json()
         closes = [float(c[4]) for c in r]
-        k = 2 / 21; ema = closes[0]
-        for c in closes[1:]: ema = c * k + ema * (1 - k)
-        return ema
+        return float(_mu_ema(closes, 20))
     except Exception:
         return 0.0
 

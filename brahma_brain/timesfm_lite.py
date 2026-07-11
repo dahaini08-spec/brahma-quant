@@ -75,6 +75,8 @@ _CACHE_TTL = 3600  # 1H刷新
 
 
 def _ema(arr: np.ndarray, alpha: float) -> np.ndarray:
+
+    # [INT-1] 统一实现已移至 math_utils.ema，此函数保留兼容
     """指数平滑序列"""
     result = np.zeros_like(arr, dtype=float)
     result[0] = arr[0]

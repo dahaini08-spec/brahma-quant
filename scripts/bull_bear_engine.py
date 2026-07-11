@@ -14,6 +14,7 @@ bull_bear_engine.py — P2 Bull/Bear双视角评分引擎（TradingAgents启发�
 import json
 import urllib.request
 from typing import Tuple
+from brahma_brain.math_utils import rsi as _mu_rsi, ema as _mu_ema  # INT-1统一实现
 
 def _fetch(url: str) -> dict:
     try:
@@ -31,6 +32,8 @@ def _klines(sym: str, interval: str, limit: int = 50):
     return c, h, l, v
 
 def _rsi(c, n=14):
+
+    # [INT-1] 统一实现已移至 math_utils.rsi，此函数保留兼容
     # [FIX-RSI-WILDER 2026-06-14] 统一Wilder EMA算法，与market_state.rsi对齐
     if len(c) < n + 1: return 50.0
     g = [max(c[i]-c[i-1], 0) for i in range(1, len(c))]
@@ -44,11 +47,6 @@ def _bb(c, n=20):
     if len(c) < n: return c[-1], c[-1], c[-1]
     m = sum(c[-n:])/n; s = (sum((x-m)**2 for x in c[-n:])/n)**0.5
     return m+2*s, m, m-2*s
-
-def _ema(c, n):
-    e = c[0]; k = 2/(n+1)
-    for x in c[1:]: e = x*k + e*(1-k)
-    return e
 
 def _macd(c):
     if len(c) < 26: return 0, 0

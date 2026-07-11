@@ -27,6 +27,7 @@ if _root not in sys.path:
 
 import requests, json, time, datetime
 from pathlib import Path
+from brahma_brain.math_utils import calc_rsi as get_rsi  # 统一数学库 v1.0
 
 SYMBOL  = 'HUSDT'
 API     = 'https://fapi.binance.com'
@@ -51,18 +52,6 @@ def fetch(url, params=None, timeout=8):
     r.raise_for_status()
     return r.json()
 
-def get_rsi(closes, period=14):
-    if len(closes) < period + 1:
-        return 50.0
-    d = [closes[i] - closes[i-1] for i in range(1, len(closes))]
-    gains = [max(0, x) for x in d[-period:]]
-    losses = [max(0, -x) for x in d[-period:]]
-    ag = sum(gains) / period
-    al = sum(losses) / period
-    if al == 0:
-        return 100.0
-    rs = ag / al
-    return round(100 - 100 / (1 + rs), 1)
 
 def scan():
     score = 0

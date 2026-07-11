@@ -18,6 +18,8 @@ from data_cache import get_klines, get_ticker, get_funding_rate, \
 # ═══════════════════════════════════════════════════════════════
 
 def ema(closes: list, n: int) -> float:
+
+    # [INT-1] 统一实现已移至 math_utils.ema，此函数保留兼容
     if len(closes) < n:
         return closes[-1] if closes else 0.0
     k = 2 / (n + 1)
@@ -37,21 +39,6 @@ def ema_series(closes: list, n: int) -> list:
         e = c * k + e * (1 - k)
         result.append(e)
     return result
-
-def rsi(closes: list, n: int = 14) -> float:
-    if len(closes) < n + 1:
-        return 50.0
-    gains, losses = [], []
-    for i in range(1, len(closes)):
-        d = closes[i] - closes[i-1]
-        gains.append(max(d, 0))
-        losses.append(max(-d, 0))
-    ag = sum(gains[:n]) / n
-    al = sum(losses[:n]) / n
-    for i in range(n, len(gains)):
-        ag = (ag * (n-1) + gains[i]) / n
-        al = (al * (n-1) + losses[i]) / n
-    return round(100 - 100 / (1 + ag / al), 2) if al else 100.0
 
 def atr(highs: list, lows: list, closes: list, n: int = 14) -> float:
     trs = []

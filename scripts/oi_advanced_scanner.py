@@ -46,6 +46,7 @@ import sys, os, json, time, math, hmac, hashlib, requests
 from pathlib import Path
 from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from brahma_brain.math_utils import calc_rsi as _calc_rsi, ema as _calc_ema  # 统一数学库 v1.0
 
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
@@ -126,23 +127,6 @@ def _fetch(url, timeout=7, retries=2):
     return None
 
 
-def _calc_rsi(closes, period=14):
-    if len(closes) < period + 1:
-        return 50.0
-    g = [max(closes[i]-closes[i-1], 0) for i in range(1, len(closes))]
-    l = [max(closes[i-1]-closes[i], 0) for i in range(1, len(closes))]
-    ag = sum(g[-period:]) / period
-    al = sum(l[-period:]) / period
-    return round(100 - 100/(1 + ag/al), 2) if al > 0 else 100.0
-
-
-def _calc_ema(closes, period=20):
-    if not closes: return 0.0
-    k = 2/(period+1)
-    ema = closes[0]
-    for c in closes[1:]:
-        ema = ema*(1-k) + c*k
-    return ema
 
 
 def send_message(msg):
