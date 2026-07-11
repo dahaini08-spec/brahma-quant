@@ -527,16 +527,11 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
                 if signal_dir == 'SHORT' and _long_usd > _short_usd * LIQ_DIRECTION_RATIO:
                     _liq_bonus, _liq_level = get_liq_bonus(_long_usd)
                     s7 = min(s7 + _liq_bonus, 15)
-                    if _liq_bonus > 0:
-                        pass  # [静默]
                 elif signal_dir == 'LONG' and _short_usd > _long_usd * LIQ_DIRECTION_RATIO:
                     _liq_bonus, _liq_level = get_liq_bonus(_short_usd)
                     s7 = min(s7 + _liq_bonus, 15)
-                    if _liq_bonus > 0:
-                        pass  # [静默]
                 elif _total_usd > LIQ_CHAOS_THRESHOLD:
                     s7 = max(s7 + int(LIQ_CHAOS_PENALTY), 0)
-                    pass  # [静默]
     except Exception:
         pass  # ws_guardian 未启动时静默降级
 
@@ -550,7 +545,6 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
                 s7 = max(-20, s7 + _ob_pts)  # 下限-20
             else:
                 s7 = min(15, s7 + _ob_pts)   # 上限保持15
-            pass  # [静默]
     except Exception:
         pass
 
@@ -569,7 +563,6 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
                 pass  # _ld_adj不变：正分=上方清算墙支撑多头，负分=下方清算墙压制多头
             if _ld_adj != 0 and _ld.get('confidence', 0) >= 0.3:
                 s7 = max(0, min(15, s7 + _ld_adj))
-                pass  # [静默]
     except Exception:
         pass
 
@@ -592,7 +585,6 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
             s7_vp = max(-15, min(8, _vp_pts))  # 边界保护
             score += s7_vp
             breakdown['VolProfile'] = s7_vp
-            pass  # [静默]
     except Exception:
         pass
     # [UP-017] CoinGlass 链上评分接入
@@ -685,7 +677,6 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
             if _vs_pts != 0:
                 score += _vs_pts
                 breakdown['VolSkew'] = _vs_pts
-                pass  # [静默]
     except Exception:
         pass
     # ──────────────────────────────────────────────────────────────────────
@@ -2052,7 +2043,6 @@ def rebase_params(params: dict, current_price: float,
     raise ImportError('brahma_core_entry not available')
 
 
-
 # ═══════════════════════════════════════════════════════════════
 # 主分析入口
 # ═══════════════════════════════════════════════════════════════
@@ -2192,11 +2182,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             if _tf_used == '4H':
                 _mtf_lo = _mtf_result['entry_lo']
                 _mtf_hi = _mtf_result['entry_hi']
-                pass  # [静默]
                 if _tf_warn:
                     pass  # [静默]
         except Exception as _mtf_err:
-            pass  # [静默]
             _mtf_result = None
 
         # [旧逻辑兼容] 如果MTF路由未激活，保留原1H→4H降级逻辑
@@ -2275,7 +2263,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         extra_data['coinglass'] = _cg_snap
         extra_data['fear_greed'] = _cg_snap['fear_greed']
         extra_data['onchain_score'] = _cg_snap['onchain_score']
-        pass  # [静默多行print]
     except Exception as _cg_e:
         # [设计院 2026-05-30] 降级链：尝试备用数据源
         try:
@@ -2356,7 +2343,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             extra_data['divergence']['score'] = min(best_s + _dual_div_bonus, 18)
             extra_data['divergence']['score_long'] = min(extra_data['divergence'].get('score_long',0) + _dual_div_bonus, 18) if signal_dir=='LONG' else extra_data['divergence'].get('score_long',0)
             extra_data['divergence']['score_short'] = min(extra_data['divergence'].get('score_short',0) + _dual_div_bonus, 18) if signal_dir=='SHORT' else extra_data['divergence'].get('score_short',0)
-            pass  # [静默]
     except Exception:
         pass
     try:
@@ -2436,7 +2422,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # P0-NEW: 谐波形态引擎（4H + 日线双重扫描）
     try:
         if _HARMONIC_OK:
-            # [P1-A audit-fix 2026-06-17 DISABLED] h_res = {'pattern': None, 'score': 0, 'prz': None}  # [DEAD: harmonic_engine removed]
             # 若4H无结果，降级用日线数据扫描
             if not h_res.get('patterns'):
                 _k1d = klines_to_ohlcv(get_klines(symbol, '1d', 60))
@@ -2583,7 +2568,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _bd = _os_ob.path.join(_os_ob.path.dirname(_os_ob.path.abspath(__file__)))
         if _bd not in _sys_ob.path: _sys_ob.path.insert(0, _bd)
         from orderbook_engine import analyze_orderbook as _ob_fn
-        # [P1-A audit-fix 2026-06-17 DISABLED] extra_data['orderbook'] = {}  # [DEAD: online_bayes removed]
     except Exception as _e:
         extra_data['orderbook_err'] = str(_e)[:80]
 
@@ -2626,7 +2610,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _bd = _os_xgb.path.join(_os_xgb.path.dirname(_os_xgb.path.abspath(__file__)))
         if _bd not in _sys_xgb.path: _sys_xgb.path.insert(0, _bd)
 # [CLEANED 2026-06-11] from xgboost_engine import predict_win_prob as _xgb_fn
-        # [P1-A audit-fix 2026-06-17 DISABLED] extra_data['xgboost'] = {}  # [DEAD: xgboost_engine removed]
     except Exception as _e:
         extra_data['xgboost_err'] = str(_e)[:80]
 
@@ -2643,7 +2626,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _nav = 124.97
         _kelly = 0.05
         _notional = _nav * _kelly * float(ms.get('leverage', 10))
-        # [P1-A audit-fix 2026-06-17 DISABLED] extra_data['slippage'] = {'slippage_pct': 0}  # [DEAD: slippage_model removed]
     except Exception as _e:
         extra_data['slippage_err'] = str(_e)[:80]
 
@@ -2669,7 +2651,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     try:
 # [CLEANED 2026-06-11] from lstm_engine import analyze as _lstm_fn
         _klines_1h = extra_data.get('_klines_1h') or ms.get('klines_1h')
-        # [P1-A audit-fix 2026-06-17 DISABLED] extra_data['lstm'] = {'score': 0}  # [DEAD: lstm_engine removed]
     except Exception as _e:
         extra_data['lstm_err'] = str(_e)[:80]
 
@@ -2758,7 +2739,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                     f'{_cfc_adj:+d}(因果归因:{_cfc_verdict} '
                     f'因果维度{_cfc_result.get("causal_ratio",0):.0%})'
                 )
-                pass  # [静默多行print]
             extra_data['counterfactual'] = _cfc_result
     except Exception as _cfc_e:
         pass  # [静默] f'[CounterfactualCheck] ⚠ 异常（不阻断）: {_cfc_e}'
@@ -2786,7 +2766,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             f'{_cfb_adj:+d}(FR均值={extra_data.get("cross_fr_basis",{}).get("fr_avg",0):.4f}% '
             f'Basis={extra_data.get("cross_fr_basis",{}).get("basis_pct",0):.3f}%)'
         )
-        pass  # [静默]
 
     # ── [s_options 2026-07-01] Deribit P/C OI 评分叠加 ──────────────────
     _dpc_adj = extra_data.get('deribit_pc', {}).get('score_adj', 0)
@@ -2799,7 +2778,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             f'{_dpc_adj:+d}(P/C={extra_data.get("deribit_pc",{}).get("pc_oi_ratio",0):.2f} '
             f'{extra_data.get("deribit_pc",{}).get("signal","")})'
         )
-        pass  # [静默]
 
     # ── [s_macro_v2 2026-07-01] DXY实时+纳指+BTC.D 评分叠加 ────────────
     _mv2_adj = extra_data.get('macro_v2', {}).get('score_addon', 0)
@@ -2913,7 +2891,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         if _regime_sl_val:
             _sym_spec_map[_sym] = dict(_spec_tmp)
             _sym_spec_map[_sym]['sl_mult_override'] = _regime_sl_val
-            pass  # [静默]
 
     # [N19] BTC传导系数 — 低传导标的在BTC突破时降权
     # 数据来源: train_10k_v5.py N19节点，15标的分析
@@ -2946,7 +2923,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 _risk_ov = abs(_entry_mid_ov - _sl_new)
                 _tp1_new = round(_entry_mid_ov + _risk_ov * _tp_ov, 6)
                 _tp2_new = round(_entry_mid_ov + _risk_ov * (_tp_ov * 1.8), 6)
-            # [BUG-FIX 2026-05-29] R:R必须从「入场中点」算，不能用当前价
             # 用当前价算R:R会因为「价格离入场区还有距离」导致分母虚大，R:R严重失真
             # ETH实测: 当前价基准R:R=1.41 vs 入场中点基准R:R=4.66
             _sl_pct_new = round(abs(_sl_new - _entry_mid_ov) / _entry_mid_ov * 100, 3)
@@ -2967,7 +2943,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 '_spec_override': f'{_sym} 专项sl={_sl_ov}x mh={_spec["mh_override"]}h PF={_spec["pf_evidence"]}',
                 'valid': _rr1_new >= 1.2,  # [六方修复 2026-06-25] 最低门槛1.2
             })
-            pass  # [静默]
 
     # ── [v4.0出场后置层 2026-06-28] N17专项覆写后再次应用exit_params_v4 ──
     # 原因：N17专项 tp_mult_override 会把RR重新拉高（如BTC tp=1.964x → rr=1.9+）
@@ -3016,7 +2991,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 _v4b_applied = True
             if _v4b_applied:
                 params['valid'] = params.get('rr1', 0) >= 1.0  # v4.0体制下1.0已有正期望
-                pass  # [静默]
     except Exception as _ev4b:
         pass  # 静默失败，不影响主流程
     # ── [END v4.0出场后置层] ──
@@ -3146,7 +3120,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # I4/I7: 漂移检测
     try:
 # [CLEANED 2026-06-11] from drift_detector import detect as _drift_detect
-        # [P1-A audit-fix 2026-06-17 DISABLED] _drift = {'drift': False}  # [DEAD: drift_detector removed]
         extra_data['drift'] = _drift
         if _drift['alert'] == 'ALERT':
             pass  # [静默] f'[BrahmaBrain] ⚠️ DRIFT ALERT {_sym}: {_drift["summary"]}'
@@ -3326,7 +3299,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         cf['v2_pos_pct']   = _v2_result.get('pos_pct', 0)
         cf['v2_breakdown'] = _v2_result.get('breakdown_ext', {})
 
-        # [P0-A audit-fix 2026-06-17] _globally_blocked 标志：v2封锁后阻止后续门控覆盖清零
         _globally_blocked = not _v2_result.get('allowed', True)
         if _globally_blocked:
             # v2 硬封锁 → 评分归零0，不退出，让analyze()完整构建返回结构
@@ -3372,7 +3344,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     MIN_SCORE_S3   = 100   # S3门槛：观察记录，不开仓
     _score_raw = cf.get('total', 0)
 
-    # [P0-A audit-fix 2026-06-17] 全局封锁短路：v2已封锁时跳过所有后续评分门控
     # 防止后续 StructureGate/DharmaFactor/N20/N21 等重新写入 cf['total'] 覆盖清零
     if _globally_blocked:
         _score_raw = 0
@@ -3399,7 +3370,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # 原则：不封禁，但低WR组合需要更高评分才能通过（精化筛选）
     # 数据：BEAR_EARLY_LONG WR=50.4% / BULL_EARLY_SHORT WR=51.9%（n>6000铁证）
     # 解决：提高这些组合的动态门控阈值，要求信号质量更高才入场
-    # [BUG-FIX 2026-06-18] _matched_regime_key 是 confluence_score() 的局部变量，
     # analyze() 作用域内不存在。改从 cf(breakdown) 读取 _regime_v4_key。
     _regime_dir_key = f"{(cf or {}).get('_regime_v4_key','') or ''}_{signal_dir}"
     _DYNAMIC_THRESHOLD_BOOST = {
@@ -3584,20 +3554,17 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 _gap_penalty = max(-40, round(_gap_dist * 3))  # -2% → -6分，-10% → -30分
                 _score_raw = round(_score_raw + _gap_penalty, 1)
                 cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
-                pass  # [静默]
             elif _gap_dist > 5.0:
                 # 入场区距现价>5%，很难触达
                 _gap_penalty = max(-20, round(-((_gap_dist - 5.0) * 2)))
                 _score_raw = round(_score_raw + _gap_penalty, 1)
                 cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
-                pass  # [静默]
         elif _gap_price > 0 and _gap_elo > 0 and signal_dir == 'LONG':
             _gap_dist_l = (_gap_price - params.get('entry_hi', _gap_elo)) / _gap_price * 100
             if _gap_dist_l < -2.0:
                 _gap_penalty_l = max(-40, round(_gap_dist_l * 3))
                 _score_raw = round(_score_raw + _gap_penalty_l, 1)
                 cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
-                pass  # [静默]
     except Exception:
         pass  # gap惩罚失败不阻断主流程
 
@@ -3746,7 +3713,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                         f'[P0-B宏观门] price={_p0b_price:.2f} < EMA200={_p0b_ema200:.2f} '
                         f'ratio={_p0b_ratio:.3f} 封锁LONG'
                     )
-                    pass  # [静默多行print]
     except Exception as _p0b_e:
         pass
     # ── [END P0-B 宏观门] ──────────────────────────────────────────────────────────
@@ -3817,7 +3783,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['total'] = _score_raw
             cf.setdefault('breakdown', {})['p3_trend_fresh'] = (
                 f'TREND_fresh({_regime_now} age≈{_bars_est}根) +{_fresh_bonus}分 WR=75.6%(v3.0)')
-            pass  # [静默多行print]
         elif (_bars_est in (3, 4)
                 and _tf_expected_dir == signal_dir
                 and _score_gate_ok
@@ -3828,7 +3793,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['total'] = _score_raw
             cf.setdefault('breakdown', {})['p3_trend_early'] = (
                 f'TREND_early({_regime_now} age≈{_bars_est}根) +{_early_bonus}分 WR=62.6%(v3.0)')
-            pass  # [静默多行print]
         # ── [END P3 TREND_fresh/early] ────────────────────────────────────────
     except Exception: pass
 
@@ -3960,7 +3924,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass
     # ── [END 可交易性辅助] ────────────────────────────────────────────────────
 
-    # [P0-A audit-fix 2026-06-17] 全局封锁保护——structure_gate模块：v2封锁时跳过
     # ── [设计院 2026-05-31] L0 结构质量门（Structure Quality Gate）─────────
     # 哲学：好信号的本质是「入场区有真实价格结构」，而非「评分高」
     # 无结构入场(grade<30) = 拒绝，无论评分多高
@@ -4035,8 +3998,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _eff_grade = round(_raw_grade * _mult, 1)
         cf['effective_grade'] = _eff_grade
         cf['grade_mult']      = _mult
-        if _mult < 1.00:
-            pass  # [静默] f'[RegimeGrade] {_sym} {_regime_key}×{signal_dir}: grade {_raw_grade}×{_mult}={_
         # StructureGate 使用 effective_grade
         _sq = {'grade': _eff_grade, 'label': cf.get('structure_label', f'grade={_eff_grade:.0f}')}
         # [v25.4 死穴修复 2026-06-27] StructureGate 门槛 70→80
@@ -4170,7 +4131,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _p0e:
         pass  # P0过滤器异常不阻塞主流程
 
-    # [P0-A audit-fix 2026-06-17] 全局封锁保护——n20模块：v2封锁时跳过
     # ── [设计院 2026-06-07] N20 LSR+OI联合评分（六方辩论落地）────────────────
     # 实证：ETH多头70.9%→空头做空+15分，OI减少+价格涨→做多-12分
     try:
@@ -4195,12 +4155,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _score_raw = round(_score_raw + _lsr_oi_pts, 1)
             cf['total'] = _score_raw
             cf['n20_lsr_oi'] = _lsr_oi_res.get('note', '')
-            pass  # [静默]
     except Exception as _lsr_e:
         pass
     # ── [END N20 LSR+OI] | N20 多空比+持仓量段结束 ─────────────────────────────────────────────────────
 
-    # [P0-A audit-fix 2026-06-17] 全局封锁保护——n21模块：v2封锁时跳过
     # ── [设计院 2026-06-07] N21 宏观Fib+EMA200+周线RSI（六方辩论落地）────────
     # 实证：ETH低于EMA200(-14.8%)→做多-10，周线RSI=50(非底部)→做多-8
     try:
@@ -4390,14 +4348,12 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # ── [END P0/P1/P2 苏摩111 2026-06-28] ────────────────────────
 
 
-    # [P0-A audit-fix 2026-06-17] 全局封锁保护——n22模块：v2封锁时跳过
     # ── [设计院 2026-06-07] N22 做市商轨道B评分（六方辩论落地）────────────────
     # 实证：LAB处于派发阶段→做空+18，吸筹阶段→做多+10
     # 轨道B品种不走主流评分框架加成，而是单独做市商阶段加分
     try:
 # [CLEANED 2026-06-11] from market_maker_engine import market_maker_score as _mm_fn, is_track_b as _is_tb
         if _is_tb(_sym):
-            # [P1-A audit-fix 2026-06-17 DISABLED] _mm_res  = {'score': 0}  # [DEAD: market_maker_engine removed]
             _mm_pts  = _mm_res.get('score', 0)
             if _mm_pts != 0 and _score_raw > 0:
                 _score_raw = round(_score_raw + _mm_pts, 1)
@@ -4408,7 +4364,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass
     # ── [END N22 做市商轨道B] ────────────────────────────────────────────────
 
-    # [P0-A audit-fix 2026-06-17] 全局封锁保护——dharma_factor模块：v2封锁时跳过
     # ── [达摩院因子引擎 2026-06-03] DharmaFactorEngine 标准化落地层 ──────────
     # 读取 dharma/factor_weights.yaml，应用所有 pending/live 因子
     # 规则：YAML数据驱动，不改代码，达摩院发现直接更新YAML即可
@@ -4481,7 +4436,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _dfe_e:
         pass   # 引擎失败静默，不影响主流程
 
-    # [P0-A audit-fix 2026-06-17] 全局封锁保护——sig15m模块：v2封锁时跳过
     # ── [15m信号层 P1-B 2026-06-05] ─────────────────────────────────────────
     # 训练铁证：BB_EDGE_LONG k=2.5 WR=75.7% n=19,479 | TRIPLE WR=75.5% n=13,778
     # 直接从ms['bb_15m']读取15m指标（若trigger_15m已计算）
@@ -4542,7 +4496,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # ── [END DharmaFactorEngine] | 达摩因子引擎段结束 ──────────────────────────────────────────────────────────
 
-    # [P0-A audit-fix 2026-06-17] 全局封锁保护——p2_cal模块：v2封锁时跳过
     # ── [P2 评分校准 2026-06-05] 高分段体制适配门 ───────────────────────────
     # 实盘数据：160+分WR=63% < 150-160分WR=80% → 高分段过拟合修正
     # 规则：评分>160且体制不强烈支持该方向 → 封顶165
@@ -5097,8 +5050,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _result = _uar(_result)
         _uar_mult = _result.get('asset_weight_mult', 1.0)
         _uar_type = _result.get('asset_type', '?')
-        if _uar_mult != 1.0:
-            pass  # [静默多行print]
     except Exception:
         pass
 
@@ -5124,7 +5075,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _result['pos_pct_sizer']    = _pos_res.get('pct', 0)
             _result['pos_level_sizer']  = _pos_res.get('level', '')
             _result['pos_reason_sizer'] = _pos_res.get('reason', '')
-            pass  # [静默多行print]
     except Exception:
         pass
     # ══ [PositionSizer END] ════════════════════════════════════════════════════
