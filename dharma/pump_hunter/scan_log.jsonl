@@ -273,3 +273,5 @@
 {"ts": "2026-07-11T12:31:39.012934", "alerts": 4, "new": 0, "elapsed": 15.908122777938843, "regime": "CHOP_MID"}
 {"ts": "2026-07-11T13:01:39.814814", "alerts": 3, "new": 0, "elapsed": 16.1823992729187, "regime": "CHOP_MID"}
 {"ts": "2026-07-11T13:31:39.507457", "alerts": 3, "new": 0, "elapsed": 15.962104558944702, "regime": "CHOP_MID"}
+{"ts": "2026-07-11T14:01:39.136343", "alerts": 3, "new": 0, "elapsed": 16.08922052383423, "regime": "CHOP_MID"}
+{"ts": "2026-07-11T14:31:38.888145", "alerts": 3, "new": 1, "elapsed": 15.588822603225708, "regime": "CHOP_MID"}

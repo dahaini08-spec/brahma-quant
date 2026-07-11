@@ -525,10 +525,10 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
             _total_usd = _long_usd + _short_usd
             if _total_usd > 0:
                 if signal_dir == 'SHORT' and _long_usd > _short_usd * LIQ_DIRECTION_RATIO:
-                    _liq_bonus, _liq_level = get_liq_bonus(_long_usd)
+                    _liq_bonus, _liq_level = get_liq_bonus(_long_usd, _sym)  # P0-B: L1~L5差异化
                     s7 = min(s7 + _liq_bonus, 15)
                 elif signal_dir == 'LONG' and _short_usd > _long_usd * LIQ_DIRECTION_RATIO:
-                    _liq_bonus, _liq_level = get_liq_bonus(_short_usd)
+                    _liq_bonus, _liq_level = get_liq_bonus(_short_usd, _sym)  # P0-B: L1~L5差异化
                     s7 = min(s7 + _liq_bonus, 15)
                 elif _total_usd > LIQ_CHAOS_THRESHOLD:
                     s7 = max(s7 + int(LIQ_CHAOS_PENALTY), 0)

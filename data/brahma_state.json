@@ -1,7 +1,7 @@
 {
   "version": 5814,
   "schema": "brahma_state_v1",
-  "last_updated": "2026-07-11T13:06:21.922427+00:00",
+  "last_updated": "2026-07-11T14:36:22.094420+00:00",
   "last_writer": "ghost_cleanup_20260704_wuqu",
   "last_binance_sync": "2026-06-26T01:01:15Z",
   "positions": [
@@ -360,14 +360,14 @@
     "regime": "BULL_TREND",
     "phase": "CORRECTION",
     "momentum": "LONG",
-    "rsi_1h": 56.41,
-    "rsi_4h": 60.59,
-    "rsi_1d": 53.79,
+    "rsi_1h": 65.89,
+    "rsi_4h": 63.52,
+    "rsi_1d": 54.88,
     "trend_1h": "BULL",
     "trend_4h": "BULL",
     "trend_1d": "BEAR",
     "source": "market_state.detect_regime",
-    "ts": 1783767981.8687494
+    "ts": 1783780582.877637
   },
   "realized_pnl": [],
   "last_close": {
@@ -382,8 +382,8 @@
     "note": "设计院CONFIRM执行-即时平仓(LIMIT单触发)"
   },
   "market_prices": {
-    "BTCUSDT": 64155.1,
-    "ETHUSDT": 1798.51
+    "BTCUSDT": 64442.2,
+    "ETHUSDT": 1812.21
   },
   "audit_log": [
     {
@@ -888,21 +888,21 @@
     }
   ],
   "prices": {
-    "BTCUSDT": 64155.1,
-    "ETHUSDT": 1798.5,
-    "DOGEUSDT": 0.07454,
-    "BNBUSDT": 579.78,
-    "SOLUSDT": 78.01
+    "BTCUSDT": 64236.9,
+    "ETHUSDT": 1803.0,
+    "DOGEUSDT": 0.07491,
+    "BNBUSDT": 582.0,
+    "SOLUSDT": 78.22
   },
   "refresh_source": "brahma_state_refresh",
   "_last_health_check": "2026-06-05",
   "paper_nav": 130.46588703,
   "available_balance": 393.05,
   "_last_binance_sync": "2026-06-17T02:17:37.645507+00:00",
-  "timestamp": 1783775181.9230173,
-  "updated_at": "2026-07-11T13:06:21.922427+00:00",
-  "last_scan_ts": "2026-07-11T13:06:21.922427+00:00",
-  "last_update": 1783775181.9230168,
+  "timestamp": 1783780582.0950997,
+  "updated_at": "2026-07-11T14:36:22.094420+00:00",
+  "last_scan_ts": "2026-07-11T14:36:22.094420+00:00",
+  "last_update": 1783780582.095099,
   "regime_label": "BULL_TREND",
   "position_open": true,
   "positions_updated_at": "2026-06-18T15:08:11Z",
@@ -926,10 +926,10 @@
   },
   "position_sync_ts": "2026-06-22T03:12:23Z",
   "last_wuqu_sync": "2026-06-22T14:26:58Z",
-  "last_price": 64155.1,
-  "btc_price": 64155.1,
-  "price": 64155.1,
-  "eth_price": 1798.51,
+  "last_price": 64442.2,
+  "btc_price": 64442.2,
+  "price": 64442.2,
+  "eth_price": 1812.21,
   "last_reconciled": "2026-06-28T09:00:07.606910+00:00",
   "regime_votes": {
     "BULL_TREND": 1,

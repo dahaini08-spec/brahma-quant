@@ -385,11 +385,11 @@ def run_vbt_sim(signals: List[Dict], symbol: str,
             'engine':        'vectorbt',
             'symbol':        symbol,
             'total_trades':  int(pf.trades.count()),
-            'win_rate':      round(float(pf.trades.win_rate) * 100, 1),
-            'total_return':  round(float(pf.total_return) * 100, 3),
-            'sharpe':        round(float(pf.sharpe_ratio), 3),
-            'max_drawdown':  round(float(pf.max_drawdown) * 100, 2),
-            'final_value':   round(float(pf.final_value), 2),
+            'win_rate':      round(float(pf.trades.win_rate()) * 100, 1),  # vbt 1.1.0: 方法调用
+            'total_return':  round(float(pf.total_return()) * 100, 3),
+            'sharpe':        round(float(pf.sharpe_ratio()), 3),
+            'max_drawdown':  round(float(pf.max_drawdown()) * 100, 2),
+            'final_value':   round(float(pf.final_value()), 2),
         }
     except Exception as e:
         return {'engine': 'vectorbt', 'error': str(e)}
