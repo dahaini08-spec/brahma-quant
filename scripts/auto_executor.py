@@ -40,13 +40,13 @@ from datetime import datetime, timezone
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # ── 配置 ──────────────────────────────────────────────
-AUTO_SCORE_THRESHOLD = 130       # 最低评分 [v7.0 2026-07-11 苏摩111] 与brahma_core ENTER_WATCH层对
+AUTO_SCORE_THRESHOLD = 120       # 最低评分 [P0-C 2026-07-11] 130→120，与DharmaBridge valid门槛同步
 # ── P1-A 分流封印（设计院六方联合 2026-07-11）────────────────────
 # auto_executor 专责 score≥155 的 ENTER_FULL 信号（最高置信度）
 # score 130~154 的 ENTER_WATCH 信号由 sub_executor 处理
 # 分流好处：彻底消除双执行器重复下单风险
 AUTO_ENTER_FULL_THRESHOLD = 155    # auto专区：ENTER_FULL
-AUTO_ENTER_WATCH_MIN      = 130    # sub专区下界（本文件不处理此区间）齐（135→130）
+AUTO_ENTER_WATCH_MIN      = 120    # sub专区下界（P0-C: 130→120，与valid门槛同步）
 MIN_RR               = 1.0       # 最低RR
 MAX_POSITIONS        = 20        # 最大持仓数（苏摩授权 2026-07-03，1→20）
 MIN_SL_PCT           = 1.0       # [v7.0 苏摩111 2026-07-11] 2.0→1.0; BTC低波动ATR=0.02%时SL=1.2%正常，不应强制>=2.0%
@@ -205,6 +205,13 @@ def find_executable_signals() -> list[dict]:
         score = float(s.get('score', 0) or 0)
         if score < AUTO_SCORE_THRESHOLD:
             continue
+        # ②-P1A 执行器分流：auto专责 ENTER_FULL(score≥155)，ENTER_WATCH路由到sub_executor
+        # [P1-A 设计院六方联合 2026-07-11] 消除双执行器重复下单风险
+        _sig_action = s.get('action', '')
+        if _sig_action == 'ENTER_WATCH':
+            continue  # ENTER_WATCH由sub_executor处理，auto不执行
+        if score < AUTO_ENTER_FULL_THRESHOLD and _sig_action not in ('ENTER_FULL', 'ENTER', ''):
+            continue  # score<155且非明确ENTER_FULL → 跳过
         # ③ RR门槛
         rr1 = float(s.get('rr1', 0) or 0)
         if rr1 < MIN_RR:
