@@ -382,7 +382,7 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
     # ─────────────────────────────────────────────────────────────────
 
     result['_runner_meta'] = {
-        'runner_version': '1.1',
+        'runner_version': '1.2',
         'entry':          'brahma_analysis_runner.run_analysis',
         'symbol':         sym,
         'ts':             datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC'),
@@ -400,6 +400,43 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
             'signal_trace':    _TRACE_OK,
         }
     }
+
+    # [v7.0 设计院 2026-07-11 六方自主决策封印]
+    # 修复1: result['valid']未显式赋値问题
+    # valid_signal=True已设定，但run_analysis返回的valid字段为None
+    # 修复：将valid_signal同步到result['valid']
+    _vs = result.get('valid_signal', False)
+    if not isinstance(_vs, bool):
+        _vs = bool(_vs)
+    result['valid'] = _vs
+
+    # 修复2: action字段未同步问题
+    # brahma_core已更新score>=130→ENTER_WATCH，score>=138→ENTER
+    # 但confluence.action可能还是旧字段的归因值
+    # 修复：基于最终score重新计算action
+    try:
+        _final_score = float((result.get('confluence') or {}).get('total', result.get('score', 0)) or 0)
+        _cf_ref = result.get('confluence') or {}
+        if _final_score >= 155:
+            _correct_action = 'ENTER_FULL'
+        elif _final_score >= 138:
+            _correct_action = 'ENTER'
+        elif _final_score >= 130:
+            _correct_action = 'ENTER_WATCH'
+        elif _final_score >= 110:
+            _correct_action = 'WATCH'
+        elif _final_score >= 80:
+            _correct_action = 'WATCH'
+        else:
+            _correct_action = 'SKIP'
+        # 只覆盖如果brahma_core返回的是旧的WATCH但score已在更高层级
+        _cur_action = _cf_ref.get('action', '')
+        if _cur_action == 'WATCH' and _final_score >= 130:
+            if isinstance(result.get('confluence'), dict):
+                result['confluence']['action'] = _correct_action
+            result['action'] = _correct_action
+    except Exception:
+        pass
 
     # ── signal_trace: 轨迹审计注入 ──────────────────────────────
     if _TRACE_OK:
