@@ -168,20 +168,6 @@
     "success": true
   },
   {
-    "symbol": "LABUSDT",
-    "side": "LONG",
-    "size": 1.0,
-    "entry_price": 0.7486999999999999,
-    "mark_price": 0.85277275,
-    "stop_loss": 0.7262,
-    "take_profit": 0.7712,
-    "leverage": 5.0,
-    "notional_usdt": 0.8528,
-    "unrealized_pnl": 0.1041,
-    "updated_at": 1783768687.5636973,
-    "success": true
-  },
-  {
     "symbol": "ORCLUSDT",
     "side": "LONG",
     "size": 0.17,
