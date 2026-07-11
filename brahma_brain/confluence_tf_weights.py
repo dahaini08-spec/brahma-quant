@@ -32,10 +32,11 @@ def _get_tier(symbol: str) -> int:
     if symbol in LIQUIDITY_TIER:
         return LIQUIDITY_TIER[symbol]
     sym = symbol.upper().replace('USDT', '').replace('PERP', '')
-    if len(sym) <= 3:   return 2   # 短名默认L2
-    if len(sym) <= 4:   return 3   # 4字符L3
+    # 长度层级默认判断（未在字典中的标的）
+    if len(sym) <= 3:   return 3   # 3字符L3（如SOL在字典里，未在的也是L3级别）
+    if len(sym) <= 4:   return 4   # 4字符L4
     if len(sym) <= 5:   return 4   # 5字符L4
-    return 5                        # 超长名L5超小币
+    return 5                        # 超长名L5超小庁
 
 
 # ── 周期权重矩阵 [15M, 1H, 4H, 1D] ────────────────────────
