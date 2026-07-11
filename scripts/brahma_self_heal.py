@@ -259,8 +259,17 @@ def check_signal_pipeline() -> dict:
                 1 for l in raw_lines
                 if l.strip() and time.time() - json.loads(l).get('ts', 0) < 14400
             )
-            if recent_4h == 0:
-                issues.append('WARN: 4H内无新信号写入（分析引擎可能停止）')
+            recent_8h = sum(
+                1 for l in raw_lines
+                if l.strip() and time.time() - json.loads(l).get('ts', 0) < 28800
+            )
+            # [v7.0 2026-07-11 苏摩111] 静默期豁免
+            # 极度低波动期(BTC BB_W<0.008 + RSI在45~60)下v5.0零触发是设计行为
+            # 阈值从4H改为8H，避免静默期持续误报
+            if recent_8h == 0:
+                issues.append('WARN: 8H内无新信号写入（分析引擎可能停止）')
+            elif recent_4h == 0:
+                details.append(f'signal_log 4H无新信号(8H内有{recent_8h}条) — 静默期正常 ✅')
             else:
                 details.append(f'signal_log 4H新信号: {recent_4h}条 ✅')
         except Exception as e:
