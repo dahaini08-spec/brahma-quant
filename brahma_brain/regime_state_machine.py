@@ -175,17 +175,29 @@ class RegimeStateMachine:
         except Exception:
             pass
 
-    def update(self, raw_regime: str) -> str:
+    def update(self, raw_regime: str, symbol: str = None, klines_4h: list = None) -> str:
         """
         输入原始单点体制，返回经过稳定处理的确认体制
-
-        Args:
-            raw_regime: detect_regime 的原始输出
-
-        Returns:
-            stable_regime: 经确认窗口+滞后保护处理后的稳定体制
+        INT-2: 支持 HMM 概率化辅助（设计院六方联合 2026-07-11）
+          当 symbol + klines_4h 传入时，调用 regime_hmm_v2 获取概率分布
+          若 HMM top1 与 raw_regime 一致且概率>0.7 → confirm_count+1加速
+          若 HMM top1 与 raw_regime 不同且概率>0.7 → raw_regime 降权
         """
         now = time.time()
+        # ── INT-2: HMM 概率化辅助判断 ────────────────────────────
+        _hmm_boost = 0  # 正值=加速确认, 负值=降权
+        if symbol and klines_4h:
+            try:
+                from regime_hmm_v2 import predict_regime_proba
+                _hmm = predict_regime_proba(symbol, klines_4h)
+                _hmm_top = _hmm.get('top_regime', '')
+                _hmm_prob = _hmm.get('top_prob', 0.0)
+                if _hmm_top == raw_regime and _hmm_prob > 0.70:
+                    _hmm_boost = 1   # HMM一致+高概率 → 加速confirm
+                elif _hmm_top != raw_regime and _hmm_prob > 0.70:
+                    _hmm_boost = -1  # HMM不同+高概率 → 降权，需更多确认
+            except Exception:
+                pass
         s = self._state
         confirmed = s['confirmed']
 

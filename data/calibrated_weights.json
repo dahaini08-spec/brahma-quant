@@ -1,0 +1,73 @@
+{
+  "s1_trend": {
+    "mult": 1.0,
+    "note": "趋势维度",
+    "last_calib": null
+  },
+  "s2_ob": {
+    "mult": 1.0,
+    "note": "OB关键位",
+    "last_calib": null
+  },
+  "s3_momentum": {
+    "mult": 1.0,
+    "note": "动量背离",
+    "last_calib": null
+  },
+  "s4_smc": {
+    "mult": 1.0,
+    "note": "SMC结构",
+    "last_calib": null
+  },
+  "s5_range": {
+    "mult": 1.0,
+    "note": "区间结构",
+    "last_calib": null
+  },
+  "s7_liquidation": {
+    "mult": 1.0,
+    "note": "清算OI",
+    "last_calib": null
+  },
+  "s9_session": {
+    "mult": 1.0,
+    "note": "时段权重",
+    "last_calib": null
+  },
+  "s13_btcd": {
+    "mult": 1.0,
+    "note": "BTC.D",
+    "last_calib": null
+  },
+  "s17_oi": {
+    "mult": 1.0,
+    "note": "OI情绪",
+    "last_calib": null
+  },
+  "s19_macro": {
+    "mult": 1.0,
+    "note": "宏观",
+    "last_calib": null
+  },
+  "s21_rsi_extreme": {
+    "mult": 1.0,
+    "note": "RSI极值",
+    "last_calib": null
+  },
+  "s22_volume": {
+    "mult": 1.0,
+    "note": "量能",
+    "last_calib": null
+  },
+  "s23_kronos": {
+    "mult": 1.0,
+    "note": "Kronos预测",
+    "last_calib": null
+  },
+  "_meta": {
+    "version": "1.0",
+    "created": "2026-07-11",
+    "note": "online_learner_v2 每24H自动校准，偏差>15%时调整mult",
+    "calib_cron": "brahma-online-calibrate every 24h"
+  }
+}

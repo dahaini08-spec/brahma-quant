@@ -36,6 +36,22 @@ except Exception:
     _MATH_UTILS_OK = False
 from options_engine    import sentiment_score, analyze_funding_trend
 # [CLEANED 2026-06-11] from elliott_engine    import analyze_elliott, format_elliott
+# ══ INT-1: online_learner 校准权重热加载（设计院六方联合 2026-07-11）══
+import json as _json_calib
+_CALIB_WEIGHTS: dict = {}
+try:
+    _calib_path = Path(__file__).parent.parent / 'data' / 'calibrated_weights.json'
+    if _calib_path.exists():
+        import time as _time_calib
+        if _time_calib.time() - _calib_path.stat().st_mtime < 72 * 3600:
+            _CALIB_WEIGHTS = _json_calib.loads(_calib_path.read_text())
+except Exception:
+    _CALIB_WEIGHTS = {}
+
+def _apply_calib(dim_key: str, raw_score: float) -> float:
+    mult = _CALIB_WEIGHTS.get(dim_key, {}).get('mult', 1.0)
+    return round(raw_score * float(mult), 3)
+
 try:
     from onchain_engine import onchain_score as _onchain_score
     _ONCHAIN_OK = True
