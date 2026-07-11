@@ -45,7 +45,7 @@ PUMP_SCORE_THRESHOLD = 75     # 暴涨猎手最低score（全力模式 苏摩授
 OI_LAYERS_THRESHOLD  = 2      # OI猎手最低通过层数（v3: 3→2，配合oi_advanced_scanner新评分体系）
 OI_SCORE_THRESHOLD   = 30.0   # OI最低oi_score（v3: 15→30，满分100新体系）
 OI_MAX_AGE_H         = 2.0    # OI信号最大有效期（v3: 4→2，与30min cron对齐）
-MIN_NOTIONAL         = 5.0   # 最小开单名义（设计院修复 2026-07-05：NAV=100时多档位均可执行）
+MIN_NOTIONAL         = 4.5   # [v7.0 2026-07-11 苏摩111] 5.0→4.5（NAV=99时notional=4.96被错误拦截，差额仅$0.04）
 FAPI_BASE            = 'https://fapi.binance.com'
 
 # ── 体制路由表：PUMP（铁证封印）────────────────────────────────
