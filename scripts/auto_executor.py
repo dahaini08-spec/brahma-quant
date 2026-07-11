@@ -43,7 +43,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 AUTO_SCORE_THRESHOLD = 130       # 最低评分 [v7.0 2026-07-11 苏摩111] 与brahma_core ENTER_WATCH层对齐（135→130）
 MIN_RR               = 1.0       # 最低RR
 MAX_POSITIONS        = 20        # 最大持仓数（苏摩授权 2026-07-03，1→20）
-MIN_SL_PCT           = 2.0       # v4.0铁证最低止损
+MIN_SL_PCT           = 1.0       # [v7.0 苏摩111 2026-07-11] 2.0→1.0; BTC低波动ATR=0.02%时SL=1.2%正常，不应强制>=2.0%
 MAX_SL_PCT           = 5.0       # 标准最大止损（保护性上限）
 MAX_SL_PCT_HIGH_VOL  = 9.0       # 高波动信号上限（score≥145，仓位×0.7）
 NAV_SIZE_PCT         = 0.05      # 默认仓位 NAV×5%（苏摩授权 2026-07-03）
