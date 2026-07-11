@@ -1949,8 +1949,10 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         grade = '🔴神级';  kelly_mult = 2.0;  action = 'ENTER_FULL'  # [N18] 顶级信号全仓
     elif score >= 138:
         grade = '🟠极强';   kelly_mult = 1.5;  action = 'ENTER'       # [N18] 铁证线以上
+    elif score >= 130:
+        grade = '🟡强+';   kelly_mult = 1.0;  action = 'ENTER_WATCH'  # [v7.0 2026-07-11] 六方封印 130-138新层
     elif score >= 110:
-        grade = '🟡强';    kelly_mult = 0.5;  action = 'WATCH'        # [v14.0] 110-138降为WATCH
+        grade = '🟡强';    kelly_mult = 0.5;  action = 'WATCH'        # [v14.0] 110-130降为WATCH
     elif score >= 80:
         grade = '🔵中等';   kelly_mult = 0.3;  action = 'WATCH'
     else:

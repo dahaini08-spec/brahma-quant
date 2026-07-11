@@ -85,55 +85,18 @@ _model_load_attempted = False
 
 
 def _load_model() -> bool:
-    """懒加载模型（首次调用时初始化）"""
+    """懒加载模型（首次调用时初始化）
+    [v7.0 设计院 2026-07-11 六方评估封印]
+    优先级重排：Kronos-mini（大模型）> WF-LightGBM（fallback）
+    根因：external/Kronos已克隆，model包可用，不应再用lgbm覆盖
+    """
     global _predictor, _model_loaded, _model_load_attempted
     if _model_load_attempted:
         return _model_loaded
     _model_load_attempted = True
 
-    # [设计院 Phase3-1 2026-07-06] 优先加载本地Walk-Forward LightGBM模型
-    # 原因: 'model'包(Kronos自定义架构)缺失，但本地lgbm已训练 OOS_ACC=60%
-    # [修复 2026-07-07] 将torch import从lgbm加载块剥离，避免torch→model依赖链
-    # 污染导致lgbm永远无法加载（ModuleNotFoundError: No module named 'model'）
-    # [修复 2026-07-08 设计院] lightgbm 先独立验证可用性，完全隔离 torch/model 依赖链
-    try:
-        # torch单独try，完全隔离，不影响lgbm加载路径
-        try:
-            import torch as _torch
-        except Exception:
-            pass
-        # lightgbm 独立导入 — 与 'model' 包完全解耦
-        try:
-            import lightgbm as lgb
-        except ImportError as _lgb_ie:
-            raise RuntimeError(f'lightgbm未安装: {_lgb_ie}')
-        import json as _json
-        _base_dir  = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # trading-system/
-        _wf_path   = os.path.join(_base_dir, 'data', 'kronos_wf_model_lgb.txt')
-        _meta_path = os.path.join(_base_dir, 'data', 'kronos_wf_model.json')
-        if os.path.exists(_wf_path) and os.path.exists(_meta_path):
-            _lgb_model = lgb.Booster(model_file=_wf_path)
-            with open(_meta_path) as _f:
-                _meta = _json.load(_f)
-            # lgbm模型实隖10个特征(Column_0~9)对应meta的前10个名字
-            _actual_feats = _meta.get('feature_names', [])[:_lgb_model.num_feature()]
-            class _LGBMPredictor:
-                def __init__(self, m, feats, meta):
-                    self._m = m
-                    self._feats = feats
-                    self.model_type = 'lgbm_walkforward'
-                    self._oos_acc = meta.get('oos_acc', 0.6)
-                def predict(self, feat_dict):
-                    import numpy as _np
-                    x = _np.array([[feat_dict.get(k, 0.5) for k in self._feats]], dtype=_np.float32)
-                    return float(self._m.predict(x)[0])
-            _predictor = _LGBMPredictor(_lgb_model, _actual_feats, _meta)
-            _model_loaded = True
-            logger.info(f'[Kronos] ✅ WF-LightGBM就绪 oos_acc={_meta.get("oos_acc")} Phase3-1')
-            return True
-    except Exception as _e:
-        logger.info(f'[Kronos] lgbm尝试失败: {_e}，继续尝试远程模型')
-
+    # ── P0：优先 Kronos-mini 真正大模型推理 ─────────────────────────────
+    # [v7.0] external/Kronos已克隆，model包可用，优先使用
     try:
         import json as _json
         from model import Kronos, KronosPredictor, KronosTokenizer
@@ -159,9 +122,38 @@ def _load_model() -> bool:
         logger.info('[Kronos] ✅ 模型加载完成 Kronos-mini CPU')
         return True
     except Exception as e:
-        logger.warning(f'[Kronos] ⚠️ 模型加载失败（s23将返回0）: {e}')
-        _model_loaded = False
-        return False
+        logger.warning(f'[Kronos] ⚠️ Kronos-mini加载失败，尝试WF-LightGBM fallback: {e}')
+
+    # ── Fallback：WF-LightGBM（OOS_ACC=60%）──────────────────────────────
+    try:
+        import lightgbm as lgb
+        import json as _json2
+        _base_dir  = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        _wf_path   = os.path.join(_base_dir, 'data', 'kronos_wf_model_lgb.txt')
+        _meta_path = os.path.join(_base_dir, 'data', 'kronos_wf_model.json')
+        if os.path.exists(_wf_path) and os.path.exists(_meta_path):
+            _lgb_model = lgb.Booster(model_file=_wf_path)
+            with open(_meta_path) as _f:
+                _meta = _json2.load(_f)
+            _actual_feats = _meta.get('feature_names', [])[:_lgb_model.num_feature()]
+            class _LGBMPredictor:
+                def __init__(self, m, feats, meta):
+                    self._m = m; self._feats = feats
+                    self.model_type = 'lgbm_walkforward'
+                    self._oos_acc = meta.get('oos_acc', 0.6)
+                def predict(self, feat_dict):
+                    import numpy as _np
+                    x = _np.array([[feat_dict.get(k, 0.5) for k in self._feats]], dtype=_np.float32)
+                    return float(self._m.predict(x)[0])
+            _predictor = _LGBMPredictor(_lgb_model, _actual_feats, _meta)
+            _model_loaded = True
+            logger.info(f'[Kronos] ✅ WF-LightGBM fallback就绪 oos_acc={_meta.get("oos_acc")}')
+            return True
+    except Exception as _e2:
+        logger.warning(f'[Kronos] lgbm fallback失败: {_e2}')
+
+    _model_loaded = False
+    return False
 def _run_inference(klines_15m: list, symbol: str) -> Tuple[float, float]:
     """
     执行 Kronos 推理，返回 (p_up, volatility)
