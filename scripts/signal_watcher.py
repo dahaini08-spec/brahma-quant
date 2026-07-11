@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 """
 # ── 全局内存优化（工程师建议 P1）──
+# [v7.0 path-fix 2026-07-11] sys.path必须在brahma_brain import之前
+import sys as _sys, os as _os
+_BASE = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+for _p in [_BASE, _os.path.join(_BASE,'brahma_brain'), _os.path.join(_BASE,'scripts')]:
+    if _p not in _sys.path: _sys.path.insert(0, _p)
+del _sys, _os, _BASE, _p
+
 import gc as _gc_mod
 import psutil as _psutil_mod
 _gc_mod.enable()

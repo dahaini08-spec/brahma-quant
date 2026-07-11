@@ -6,6 +6,13 @@ brahma_4h_report.py — 梵天4H综合速报
 合并：market_structure_scanner + oi_surge_scanner + whale/smart_money
 输出：单条20行内速报，推送到Jarvis
 """
+# [v7.0 path-fix 2026-07-11] sys.path必须在brahma_brain import之前
+import sys as _sys, os as _os
+_BASE = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+for _p in [_BASE, _os.path.join(_BASE,'brahma_brain'), _os.path.join(_BASE,'scripts')]:
+    if _p not in _sys.path: _sys.path.insert(0, _p)
+del _sys, _os, _BASE, _p
+
 import sys, os, json, subprocess, time
 from pathlib import Path
 from datetime import datetime, timezone

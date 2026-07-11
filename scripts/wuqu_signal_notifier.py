@@ -15,6 +15,13 @@ wuqu_signal_notifier.py — 武曲信号开单通知脚本 v1.1
   python3 scripts/wuqu_signal_notifier.py --stats  # 统计状态
 """
 
+# [v7.0 path-fix 2026-07-11] sys.path必须在brahma_brain import之前
+import sys as _sys, os as _os
+_BASE = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+for _p in [_BASE, _os.path.join(_BASE,'brahma_brain'), _os.path.join(_BASE,'scripts')]:
+    if _p not in _sys.path: _sys.path.insert(0, _p)
+del _sys, _os, _BASE, _p
+
 from brahma_brain.math_utils import _ema, _rsi, calc_rsi, rsi, ema  # 统一数学库
 
 import sys, os, json, time, argparse, hashlib, requests
