@@ -557,6 +557,12 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     except Exception:
         pass
 
+    # ── P0-A 全局上限封印（设计院六方联合 2026-07-11）────────────────
+    # 问题：s7基础(max15)+增强层①(max15)+增强层②(max15)=理论最高45分
+    #       清算层权重严重失控，导致高清算密集区评分虚高
+    # 封印：s7全局上限=20（设计上限10→适度放开20，但禁止三层叠加超额）
+    #       下限=-20（已有，保留否决权机制）
+    s7 = max(-20, min(20, s7))
     score += s7
     breakdown['清算/OI'] = s7
 
@@ -2647,6 +2653,21 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # ── [因果AI P0-B] Counterfactual Score Check ───────────────
     # 设计院因果增强 v1.0 · 2026-06-18
+    # ── P2-A 多周期权重调整（设计院六方联合 2026-07-11）────────────
+    # 根据合约流动性层级和信号周期，对最终score做轻度调整
+    # L1/L2主流=不变, L4小币4H信号=×0.85, L4小币15M=×1.05
+    try:
+        from confluence_tf_weights import get_score_multiplier as _get_tf_mult
+        _ptf = ms.get('primary_tf', '1h') or '1h'
+        _ssrc = extra_data.get('signal_source', 'default') if extra_data else 'default'
+        _tf_mult = _get_tf_mult(ms.get('symbol', ''), score, _ptf, _ssrc)
+        if abs(_tf_mult - 1.0) > 0.01:
+            _score_before_tf = score
+            score = round(score * _tf_mult, 1)
+            breakdown['TF权重调整'] = f'×{_tf_mult:.2f} {_score_before_tf:.0f}→{score:.0f}'
+    except Exception:
+        pass  # TF权重调整失败不影响主流程
+
     # 对 score ≥ 100 的信号执行维度因果归因，识别相关性掃车维度
     # fail-safe: 异常不阻断主流程
     try:

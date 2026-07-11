@@ -152,6 +152,31 @@ def get_position_pct(symbol: str, score: float, direction: str,
         _fg_applied = True
     # ──────────────────────────────────────────────────────
 
+    # ── P0-B 流动性分级乘数（设计院六方联合 2026-07-11）────────────
+    # 流动性越低，高周期信号噪音越大，仓位需等比压缩
+    # L1主流(BTC/ETH): ×1.0  L2次主(SOL/BNB): ×0.9
+    # L3中等: ×0.7  L4小币: ×0.5  L5超小(ATR极小): ×0.3
+    _LIQUIDITY_TIER = {
+        'BTCUSDT': 1.0, 'ETHUSDT': 1.0,
+        'SOLUSDT': 0.9, 'BNBUSDT': 0.9, 'XRPUSDT': 0.9,
+        'LINKUSDT': 0.7, 'UNIUSDT': 0.7, 'AAVEUSDT': 0.7,
+        'DOTUSDT': 0.7, 'AVAXUSDT': 0.7, 'MATICUSDT': 0.7,
+    }
+    # 默认：按合约名长度估算（短名=知名度高=流动性好）
+    _sym_upper = (symbol or '').upper().replace('USDT', '')
+    if symbol in _LIQUIDITY_TIER:
+        _liq_mult = _LIQUIDITY_TIER[symbol]
+    elif len(_sym_upper) <= 3:      # BTC/ETH/SOL类
+        _liq_mult = 0.9
+    elif len(_sym_upper) <= 4:      # LINK/AAVE类
+        _liq_mult = 0.7
+    elif len(_sym_upper) <= 5:      # MATIC类
+        _liq_mult = 0.5
+    else:                           # XPIN/VANRY/PARTI类超小币
+        _liq_mult = 0.3
+    max_pct = round(max_pct * _liq_mult, 2)
+    max_pct = max(max_pct, 0.3)  # 最低0.3%（不归零）
+
     allowed = (max_pct > 0)
     usdt = nav * max_pct / 100 if nav > 0 else 0
 
