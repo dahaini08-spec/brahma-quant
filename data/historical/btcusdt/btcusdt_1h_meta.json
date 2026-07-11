@@ -1,0 +1,17 @@
+{
+  "symbol": "BTCUSDT",
+  "timeframe": "1h",
+  "taker_pct": 0.05,
+  "maker_pct": 0.02,
+  "slippage_pct": 0.03,
+  "cost_one_way_pct": 0.08,
+  "cost_round_pct": 0.16,
+  "funding_per_hold_pct": 0.00125,
+  "funding_8h_pct": 0.01,
+  "total_cost_pct": 0.1612,
+  "avg_price_usd": 48172.26,
+  "avg_daily_vol": 318972.22,
+  "bars_count": 58416,
+  "date_start": "2019-11-01 00:00:00+00:00",
+  "date_end": "2026-06-30 23:00:00+00:00"
+}
