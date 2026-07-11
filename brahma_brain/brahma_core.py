@@ -1475,6 +1475,38 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     else:
         _regime_mult = 0.85  # 未知体制，保守降权
 
+    # ── [P1-B 苏摩111批准 2026-07-11] regime_hmm_v2 概率化乘数接入 ──────────────────
+    # 架构: HMM概率分布 → get_weighted_multiplier() → 概率加权乘数
+    # 降级策略: HMM失败 / confidence<0.55 → 保留规则乘数（零侵入）
+    # 效果: 消除硬切换噪声，体制转换期平滑过渡
+    _hmm_mult_applied = False
+    try:
+        import sys as _hmm_sys, os as _hmm_os
+        _hmm_sys.path.insert(0, _hmm_os.path.dirname(_hmm_os.path.abspath(__file__)))
+        from regime_hmm_v2 import predict_regime_proba, get_weighted_multiplier as _get_hmm_mult
+        _hmm_result = predict_regime_proba(_sym, (extra_data or {}).get('_klines_4h'))
+        _hmm_conf   = _hmm_result.get('confidence', 0)
+        _hmm_method = _hmm_result.get('method', '')
+        # 仅当HMM置信度>=0.55时使用概率乘数，否则保留规则乘数
+        if _hmm_conf >= 0.55 and _hmm_method != 'rule_fallback':
+            _hmm_mult = _get_hmm_mult(_sym, 'LONG' if _is_long_signal else 'SHORT')
+            # 安全阀：HMM乘数偏离规则乘数超过40%时降权混合
+            _mult_dev = abs(_hmm_mult - _regime_mult) / max(_regime_mult, 0.01)
+            if _mult_dev > 0.40:
+                # 混合: 60%规则 + 40%HMM（平滑过渡）
+                _final_mult = _regime_mult * 0.60 + _hmm_mult * 0.40
+                breakdown['HMM乘数'] = f'混合({_hmm_mult:.3f}×0.4+{_regime_mult:.3f}×0.6={_final_mult:.3f}) conf={_hmm_conf:.2f}'
+            else:
+                _final_mult = _hmm_mult
+                breakdown['HMM乘数'] = f'{_hmm_mult:.3f} conf={_hmm_conf:.2f} [{_hmm_method}]'
+            _regime_mult = _final_mult
+            _hmm_mult_applied = True
+        else:
+            breakdown['HMM乘数'] = f'降级(规则乘数={_regime_mult:.3f}) conf={_hmm_conf:.2f}'
+    except Exception:
+        pass  # HMM不可用时静默降级，完全不影响主流程
+    # ── [P1-B END] ────────────────────────────────────────────────────────────
+
     score = int(score * _regime_mult)
     breakdown['_regime_mult'] = _regime_mult
     breakdown['_regime_v4_key'] = _matched_regime_key or 'UNKNOWN'
@@ -2683,6 +2715,29 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             breakdown['TF权重调整'] = f'×{_tf_mult:.2f} {_score_before_tf:.0f}→{score:.0f}'
     except Exception:
         pass  # TF权重调整失败不影响主流程
+
+    # ── [P2-A增强版 苏摩111批准 2026-07-11] confluence_by_tf 多周期共振奖励 ──────
+    # 架构: 分析breakdown各维度所属周期 → 计算共振奖励(+0~+8)
+    # 双周期共振=+3, 三周期=+6, 四周期全共振=+8
+    # L4/L5小币奖励减半（高周期信号可信度低）
+    try:
+        import sys as _p2a_sys, os as _p2a_os
+        _p2a_sys.path.insert(0, _p2a_os.path.dirname(_p2a_os.path.abspath(__file__)))
+        from confluence_by_tf import apply_tf_confluence as _apply_tf_cf
+        _ptf2  = ms.get('primary_tf', '1h') or '1h'
+        _ssrc2 = extra_data.get('signal_source', 'default') if extra_data else 'default'
+        _sym2  = ms.get('symbol', '') or ''
+        _adj_score, _tf_meta = _apply_tf_cf(
+            float(score), breakdown, _sym2, signal_dir, _ptf2, _ssrc2
+        )
+        if _tf_meta.get('tf_boost', 0) > 0:
+            score = _adj_score
+            breakdown['TF共振奖励'] = f"+{_tf_meta['tf_boost']} [{_tf_meta['summary']}]"
+            if extra_data is not None:
+                extra_data['tf_confluence'] = _tf_meta
+    except Exception:
+        pass  # 多周期共振失败不影响主流程
+    # ── [P2-A END] ────────────────────────────────────────────────────────────
 
     # 对 score ≥ 100 的信号执行维度因果归因，识别相关性掃车维度
     # fail-safe: 异常不阻断主流程
