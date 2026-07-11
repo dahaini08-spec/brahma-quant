@@ -252,6 +252,35 @@ def update_stop_loss(symbol: str, new_sl: float, position_side: str,
         return False
 
 
+def _sync_wuqu_close_tsl(symbol: str, closed_qty: float, reason: str) -> None:
+    """
+    TSL 触发平仓后同步更新 wuqu_positions.json
+    封印: P1 wuqu平仓回写 2026-07-11
+    """
+    wuqu_path = DATA_DIR / 'wuqu_positions.json'
+    if not wuqu_path.exists():
+        return
+    try:
+        positions = json.loads(wuqu_path.read_text())
+        updated = []
+        for p in positions:
+            if p.get('symbol') != symbol:
+                updated.append(p)
+                continue
+            remaining = float(p.get('size', 0)) - closed_qty
+            if remaining <= 0:
+                log(f'  [wuqu_sync] {symbol} 全平移除 (closed={closed_qty:.4f}, reason={reason})', 'TSL')
+                continue
+            p['size'] = round(remaining, 8)
+            p['updated_at'] = time.time()
+            p['last_close_reason'] = reason
+            updated.append(p)
+            log(f'  [wuqu_sync] {symbol} 减仓后remaining={remaining:.4f}', 'TSL')
+        wuqu_path.write_text(json.dumps(updated, indent=2, ensure_ascii=False))
+    except Exception as e:
+        log(f'  [wuqu_sync] ERROR {symbol}: {e}', 'WARN')
+
+
 def partial_close(symbol: str, size_pct: float, direction: str,
                   reason: str, dry_run: bool = True) -> bool:
     """分批止盈：按比例平仓"""
@@ -291,6 +320,8 @@ def partial_close(symbol: str, size_pct: float, direction: str,
             log(f'  ❌ 分批止盈失败: {err}', 'ERROR')
             return False
         log(f'  ✅ {symbol} 分批止盈 {close_qty}张 ({reason}) orderId={result.get("orderId","?")}', 'TSL')
+        # P1: wuqu_positions 平仓回写
+        _sync_wuqu_close_tsl(symbol, close_qty, f'TSL_PARTIAL:{reason[:40]}')
         return True
     except Exception as e:
         log(f'  ❌ 分批止盈失败: {e}', 'ERROR')

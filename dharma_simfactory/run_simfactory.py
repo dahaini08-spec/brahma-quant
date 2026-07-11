@@ -23,6 +23,7 @@ from pathlib import Path
 
 from .data_audit import run_data_audit
 from .baseline_replay import run_baseline
+from .brahma_signal_replay import run_signal_replay
 
 
 def _find_file(data_root: str, symbol: str, timeframe: str) -> Path:
@@ -69,6 +70,13 @@ def main() -> None:
         "--output-dir", default="reports/simfactory/baseline"
     )
 
+    # --- signal-replay ---
+    p_replay = sub.add_parser("signal-replay", help="Replay real Brahma signals from live_signal_log")
+    p_replay.add_argument("--signal-log", default="data/live_signal_log.jsonl")
+    p_replay.add_argument("--output", default="reports/simfactory/signal_replay_report.json")
+    p_replay.add_argument("--max-signals", type=int, default=100)
+    p_replay.add_argument("--all", dest="all_signals", action="store_true", help="Include invalid signals")
+
     args = parser.parse_args()
 
     if args.mode == "data-audit":
@@ -95,6 +103,21 @@ def main() -> None:
                     print(json.dumps(report, ensure_ascii=False, indent=2))
                 except FileNotFoundError as e:
                     print(f"[SKIP] {symbol}_{tf}: {e}")
+
+
+    elif args.mode == "signal-replay":
+        report = run_signal_replay(
+            signal_log=args.signal_log,
+            output=args.output,
+            max_signals=args.max_signals,
+            only_valid=not args.all_signals,
+        )
+        summary = {
+            "signals_replayed": report.get("signals_replayed", 0),
+            "metrics":          report.get("metrics", {}),
+            "sealed_comparison": report.get("sealed_comparison", {}),
+        }
+        print(json.dumps(summary, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":

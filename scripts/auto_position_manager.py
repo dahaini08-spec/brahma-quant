@@ -29,9 +29,10 @@ import sys, os, json, time, hmac, hashlib, math, requests, subprocess
 from pathlib import Path
 from datetime import datetime, timezone
 
-BASE     = Path(__file__).parent.parent
-SL_PATH  = BASE / 'data' / 'position_sl_state.json'
-LOG_PATH = BASE / 'data' / 'auto_position_manager.log'
+BASE          = Path(__file__).parent.parent
+SL_PATH       = BASE / 'data' / 'position_sl_state.json'
+LOG_PATH      = BASE / 'data' / 'auto_position_manager.log'
+WUQU_PATH     = BASE / 'data' / 'wuqu_positions.json'
 
 FAPI        = 'https://fapi.binance.com'
 PUSH_TARGET = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_ID')
@@ -152,6 +153,38 @@ def close_position(symbol: str, qty: float, reason: str) -> dict:
             'fill': float(r.get('avgPrice', 0)), 'qty': close_qty}
 
 
+def _sync_wuqu_close(symbol: str, closed_qty: float, reason: str) -> None:
+    """
+    平仓后同步更新 wuqu_positions.json
+    场景: FULL_CLOSE / REDUCE_HALF / SL触发 / APM软止损
+    封印: P1 wuqu_positions平仓回写 2026-07-11
+    """
+    if not WUQU_PATH.exists():
+        return
+    try:
+        positions = json.loads(WUQU_PATH.read_text())
+        updated = []
+        for p in positions:
+            if p.get('symbol') != symbol:
+                updated.append(p)
+                continue
+            remaining = float(p.get('size', 0)) - closed_qty
+            if remaining <= 0:
+                # 全平 → 从列表移除
+                _log(f'  [wuqu_sync] {symbol} 全平移除 (closed={closed_qty:.4f}, reason={reason})')
+                continue
+            else:
+                # 减仓 → 更新数量
+                p['size'] = round(remaining, 8)
+                p['updated_at'] = time.time()
+                p['last_close_reason'] = reason
+                updated.append(p)
+                _log(f'  [wuqu_sync] {symbol} 减仓 remaining={remaining:.4f} (reason={reason})')
+        WUQU_PATH.write_text(json.dumps(updated, indent=2, ensure_ascii=False))
+    except Exception as e:
+        _log(f'  [wuqu_sync] ERROR {symbol}: {e}', 'WARN')
+
+
 def update_sl(symbol: str, new_sl: float, note: str):
     """更新软止损价"""
     sl_state = {}
@@ -265,12 +298,16 @@ def run():
             status = '✅' if result['status'] == 'OK' else '❌'
             actions.append(f'{status} {sym} 全平 @${result.get("fill",0):.5g} | {detail}')
             _log(f'  FULL_CLOSE {sym}: {result}')
+            if result['status'] == 'OK':  # P1: wuqu平仓回写
+                _sync_wuqu_close(sym, result.get('qty', qty), f'APM_FULL:{detail[:40]}')
 
         elif decision == 'REDUCE_HALF':
             result = close_position(sym, qty * 0.5, detail)
             status = '✅' if result['status'] == 'OK' else '❌'
             actions.append(f'{status} {sym} 减仓50% qty={result.get("qty")} @${result.get("fill",0):.5g} | {detail}')
             _log(f'  REDUCE_HALF {sym}: {result}')
+            if result['status'] == 'OK':  # P1: wuqu平仓回写
+                _sync_wuqu_close(sym, result.get('qty', qty * 0.5), f'APM_REDUCE:{detail[:40]}')
 
         elif decision in ('TSL_TIGHT', 'TSL_LOCK'):
             actions.append(f'🔒 {sym} SL收紧 | {detail}')
