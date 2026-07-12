@@ -11,7 +11,12 @@ brahma_brain · P0
 输出: 六框架方向共识 + 对齐评分 + 大周期偏差预警
 """
 
-from brahma_brain.math_utils import _ema, _rsi, calc_rsi, rsi, ema  # 统一数学库
+from brahma_brain.math_utils import _ema as _ema_list, _rsi, calc_rsi, rsi, ema  # 统一数学库
+# P1修复(2026-07-12): _ema返回list，此处需scalar版本
+def _ema(series, period):
+    """scalar版EMA，返回最后一个值"""
+    vals = _ema_list(series, period)
+    return float(vals[-1]) if vals else float('nan')
 
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))

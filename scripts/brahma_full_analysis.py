@@ -18,6 +18,7 @@ import requests
 import numpy as np
 from brahma_brain import brahma_core as bc
 from brahma_brain.math_utils import rsi as _mu_rsi, ema as _mu_ema  # INT-1统一实现
+from brahma_brain.math_utils import _ema  # P1修复(2026-07-12): 补充_ema导入，修复NameError
 
 # ══════════════════════════════════════════════════════════
 # 辅助工具
