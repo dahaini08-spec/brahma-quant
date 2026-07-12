@@ -126,20 +126,6 @@
     "success": true
   },
   {
-    "symbol": "MMTUSDT",
-    "side": "LONG",
-    "size": 134.0,
-    "entry_price": 0.18409999999999999,
-    "mark_price": 0.1893,
-    "stop_loss": 0.1786,
-    "take_profit": 0.1896,
-    "leverage": 5.0,
-    "notional_usdt": 25.3662,
-    "unrealized_pnl": 0.6968,
-    "updated_at": 1783768687.5636876,
-    "success": true
-  },
-  {
     "symbol": "MSTRUSDT",
     "side": "LONG",
     "size": 0.15,
