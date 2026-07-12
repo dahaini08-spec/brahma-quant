@@ -33,8 +33,8 @@ ADAPTIVE_DIMS = {
 CALIB_CONFIG = {
     'schedule_weekday': 6,        # 每周日(0=Mon)
     'schedule_hour_utc': 3,
-    'min_samples':       20,      # 最少样本数
-    'rolling_window':    60,      # 滚动窗口
+    'min_samples':       10,      # [P2修复 2026-07-12] 20→10，当前实盘数据尚在积累期
+    'rolling_window':    90,      # [P2修复 2026-07-12] 60→90天，扩大训练窗口
     'deviation_trigger': 0.15,    # 实盘偏差>15%触发紧急校准
     'learning_rate':     0.1,     # 权重更新步长
 }
@@ -62,7 +62,7 @@ def load_signal_outcomes(days: int = 60) -> list:
                 ts_str = d.get('ts_iso', '')
                 if not ts_str: continue
                 ts = datetime.fromisoformat(ts_str.replace('Z', '+00:00')).timestamp()
-                if ts >= cutoff and d.get('valid'):
+                if ts >= cutoff and (d.get('valid') or d.get('settled')):  # [P2修复 2026-07-12] 放宽：已结算信号都可训练
                     sigs[d.get('signal_id', '')] = d
             except Exception:
                 pass

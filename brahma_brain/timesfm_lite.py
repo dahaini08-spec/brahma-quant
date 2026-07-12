@@ -326,7 +326,15 @@ def get_timesfm_score(
         if not klines_1h or len(klines_1h) < 30:
             return 0, {'error': 'insufficient_data', 'n': len(klines_1h) if klines_1h else 0}
 
-        prices = np.array([float(k[4]) for k in klines_1h], dtype=float)
+        # [潜力释放 2026-07-12] 封山密碹格式收敛层
+        # klines_1h可能是: [[ts,o,h,l,c,v],...] / [{'o':...,'c':...},...] / [float,...]
+        def _extract_close(k):
+            if isinstance(k, (int, float)): return float(k)
+            if isinstance(k, dict):         return float(k.get('c', k.get('close', 0)))
+            try:                             return float(k[4])   # [ts,o,h,l,c,v]
+            except Exception:               return float(k[-1])  # fallback
+        prices = np.array([_extract_close(k) for k in klines_1h], dtype=float)
+        prices = prices[prices > 0]  # 过滤非正值
         if np.any(prices <= 0):
             return 0, {'error': 'invalid_prices'}
 
