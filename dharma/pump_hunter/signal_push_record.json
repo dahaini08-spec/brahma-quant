@@ -1,8 +1,8 @@
 {
   "REUSDT": {
-    "last_push_ts": 1783783898.164738,
-    "last_score": 84,
-    "last_push_at": "2026-07-11T15:31:41.731156"
+    "last_push_ts": 1783814497.3361497,
+    "last_score": 74,
+    "last_push_at": "2026-07-12T00:01:41.811016"
   },
   "1000BONKUSDT": {
     "last_push_ts": 1783691202.7101314,
@@ -10,9 +10,9 @@
     "last_push_at": "2026-07-10T13:46:58.641703"
   },
   "TLMUSDT": {
-    "last_push_ts": 1783780298.8881435,
+    "last_push_ts": 1783807295.5268083,
     "last_score": 83,
-    "last_push_at": "2026-07-11T14:31:43.549445"
+    "last_push_at": "2026-07-11T22:01:39.408773"
   },
   "METAUSDT": {
     "last_push_ts": 1783695699.9328835,
@@ -30,9 +30,9 @@
     "last_push_at": "2026-07-10T20:01:42.084512"
   },
   "PUMPUSDT": {
-    "last_push_ts": 1783771300.1023893,
+    "last_push_ts": 1783793106.6081955,
     "last_score": 80,
-    "last_push_at": "2026-07-11T12:01:42.306848"
+    "last_push_at": "2026-07-11T18:05:06.702458"
   },
   "IOTAUSDT": {
     "last_push_ts": 1783756902.6058164,
@@ -43,5 +43,30 @@
     "last_push_ts": 1783756902.6058164,
     "last_score": 77,
     "last_push_at": "2026-07-11T08:02:07.287821"
+  },
+  "VANRYUSDT": {
+    "last_push_ts": 1783785698.8313882,
+    "last_score": 77,
+    "last_push_at": "2026-07-11T16:01:41.306563"
+  },
+  "INTCUSDT": {
+    "last_push_ts": 1783785698.8313882,
+    "last_score": 70,
+    "last_push_at": "2026-07-11T16:01:43.524055"
+  },
+  "MUUSDT": {
+    "last_push_ts": 1783814497.3361497,
+    "last_score": 74,
+    "last_push_at": "2026-07-12T00:01:39.567135"
+  },
+  "SPCXUSDT": {
+    "last_push_ts": 1783814497.3361497,
+    "last_score": 70,
+    "last_push_at": "2026-07-12T00:01:44.066035"
+  },
+  "KORUUSDT": {
+    "last_push_ts": 1783814497.3361497,
+    "last_score": 70,
+    "last_push_at": "2026-07-12T00:01:46.313749"
   }
 }
