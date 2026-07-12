@@ -1,8 +1,8 @@
 {
   "REUSDT": {
-    "last_push_ts": 1783814497.3361497,
-    "last_score": 74,
-    "last_push_at": "2026-07-12T00:01:41.811016"
+    "last_push_ts": 1783843446.130061,
+    "last_score": 88,
+    "last_push_at": "2026-07-12T08:04:48.249280"
   },
   "1000BONKUSDT": {
     "last_push_ts": 1783691202.7101314,
@@ -10,9 +10,9 @@
     "last_push_at": "2026-07-10T13:46:58.641703"
   },
   "TLMUSDT": {
-    "last_push_ts": 1783807295.5268083,
-    "last_score": 83,
-    "last_push_at": "2026-07-11T22:01:39.408773"
+    "last_push_ts": 1783828898.30688,
+    "last_score": 84,
+    "last_push_at": "2026-07-12T04:01:40.737774"
   },
   "METAUSDT": {
     "last_push_ts": 1783695699.9328835,
@@ -30,9 +30,9 @@
     "last_push_at": "2026-07-10T20:01:42.084512"
   },
   "PUMPUSDT": {
-    "last_push_ts": 1783793106.6081955,
-    "last_score": 80,
-    "last_push_at": "2026-07-11T18:05:06.702458"
+    "last_push_ts": 1783843446.130061,
+    "last_score": 78,
+    "last_push_at": "2026-07-12T08:04:48.265461"
   },
   "IOTAUSDT": {
     "last_push_ts": 1783756902.6058164,
@@ -60,13 +60,53 @@
     "last_push_at": "2026-07-12T00:01:39.567135"
   },
   "SPCXUSDT": {
-    "last_push_ts": 1783814497.3361497,
+    "last_push_ts": 1783843446.130061,
     "last_score": 70,
-    "last_push_at": "2026-07-12T00:01:44.066035"
+    "last_push_at": "2026-07-12T08:04:48.308976"
   },
   "KORUUSDT": {
-    "last_push_ts": 1783814497.3361497,
+    "last_push_ts": 1783836116.659229,
+    "last_score": 80,
+    "last_push_at": "2026-07-12T06:01:59.600814"
+  },
+  "CLUSDT": {
+    "last_push_ts": 1783828898.30688,
+    "last_score": 76,
+    "last_push_at": "2026-07-12T04:01:42.952796"
+  },
+  "SYNUSDT": {
+    "last_push_ts": 1783828898.30688,
+    "last_score": 72,
+    "last_push_at": "2026-07-12T04:01:45.143178"
+  },
+  "ALLOUSDT": {
+    "last_push_ts": 1783828898.30688,
     "last_score": 70,
-    "last_push_at": "2026-07-12T00:01:46.313749"
+    "last_push_at": "2026-07-12T04:01:47.651286"
+  },
+  "SKHYNIXUSDT": {
+    "last_push_ts": 1783828898.30688,
+    "last_score": 70,
+    "last_push_at": "2026-07-12T04:01:49.933519"
+  },
+  "AVAXUSDT": {
+    "last_push_ts": 1783843446.130061,
+    "last_score": 73,
+    "last_push_at": "2026-07-12T08:04:48.279562"
+  },
+  "XPLUSDT": {
+    "last_push_ts": 1783843446.130061,
+    "last_score": 72,
+    "last_push_at": "2026-07-12T08:04:48.294701"
+  },
+  "ANKRUSDT": {
+    "last_push_ts": 1783858092.5445254,
+    "last_score": 72,
+    "last_push_at": "2026-07-12T12:08:12.576280"
+  },
+  "SNDKUSDT": {
+    "last_push_ts": 1783858092.5445254,
+    "last_score": 70,
+    "last_push_at": "2026-07-12T12:08:12.590530"
   }
 }

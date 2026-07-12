@@ -69,5 +69,14 @@
     "created": "2026-07-11",
     "note": "online_learner_v2 每24H自动校准，偏差>15%时调整mult",
     "calib_cron": "brahma-online-calibrate every 24h"
-  }
+  },
+  "N21_fib_macro": 6,
+  "N22_vol_exh": 15,
+  "s7_ob_heatmap": 8,
+  "s_cross_fr": 3,
+  "bull_bonus_cap": 25,
+  "mtf_neutral_mult": 0.979,
+  "_calibrated_at": "2026-07-12T08:34:30.183169+00:00",
+  "_actual_wr": 0.0,
+  "_n_samples": 66
 }
