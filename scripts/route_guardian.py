@@ -40,6 +40,9 @@ P1_MAIN_JOBS = {
     "brahma-strategy-doctor",
     "brahma-360-daily",
     "brahma-online-calibrate",
+    "auto-position-manager",
+    "route-guardian",
+    "signal-fast-exec",
 }
 
 def get_jobs():
