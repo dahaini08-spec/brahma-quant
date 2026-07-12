@@ -605,6 +605,22 @@ def analyze(symbol: str) -> dict:
         # [v13.0 OBV修复] OBV计算用原始K线数据
         'raw_closes':  list(k1h['c'][-20:]),
         'raw_volumes': list(k1h['v'][-20:]) if k1h.get('v') else [],
+
+        # [P0修复 2026-07-12] klines_15m注入 — 供s23 Kronos时序预测使用
+        # 根因：brahma_core s23段读取ms.get('klines_15m',[])，market_state之前未写入
+        'klines_15m': [
+            {'o': float(k[1]), 'h': float(k[2]), 'l': float(k[3]),
+             'c': float(k[4]), 'v': float(k[5]), 't': int(k[0])}
+            for k in get_klines(symbol, '15m', 200)
+        ] if k15.get('c') else list(zip(
+            k15.get('c',[]), k15.get('h',[]), k15.get('l',[]), k15.get('v',[])
+        )),
+
+        # [P0修复 2026-07-12] atr_pct顶层写入 — brahma_core FIX1/N16读ms.get('atr_pct')
+        # 根因：atr_pct只在momentum子字典，顶层为空→FIX1/N16用fallback=0触发误惩罚
+        'atr_pct':  round(atr_1h / price, 6) if price else 0.01,
+        'atr_1h':   round(atr_1h, 4),
+        'atr_4h':   round(atr_4h, 4),
     }
 
 def _build_summary(consensus: dict, regime: str, wave: dict,

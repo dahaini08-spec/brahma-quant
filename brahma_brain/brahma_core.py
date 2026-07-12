@@ -1724,10 +1724,20 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     # ─────────────────────────────────────────────
     # FIX-1: 极低波动率假牛市惩罚（精确版v2）
     _atr_pct_val = float(ms.get('atr_pct', ms.get('atr_1h', 15) / max(ms.get('price', 1), 1)) if ms else 0.01)
+    # [潜力释放 P1 2026-07-12] 暴涨猎手豆免通道：FR极度负值 + ATR压缩 = 爆发前元，不应惩罚
+    _fr_val = float(ms.get('sentiment', {}).get('funding_rate', 0) if ms else 0)
+    _pump_hunter_exempt = (
+        _atr_pct_val < 0.005 and          # ATR压缩条件
+        _fr_val < -0.0001 and             # FR负值（空头付费）
+        signal_dir == 'LONG'              # 做多方向
+    )
     if ('BULL_TREND' in _regime_upper and signal_dir == 'LONG'
             and _atr_pct_val < 0.005 and not _direction_block and score > 0):
-        score = int(score * 0.88)
-        breakdown['FIX1_假牛市'] = f'×0.88 (ATR_pct={_atr_pct_val:.4f} 极低波动假趋势)'
+        if _pump_hunter_exempt:
+            breakdown['FIX1_假牛市'] = f'豆免(暴涨猎手) ATR={_atr_pct_val:.4f} FR={_fr_val:.4f}负值压缩=爆发前元'
+        else:
+            score = int(score * 0.88)
+            breakdown['FIX1_假牛市'] = f'×0.88 (ATR_pct={_atr_pct_val:.4f} 极低波动假趋势)'
 
     # FIX-2: CHOP超卖<25做空惩罚（精确版v2）
     _rsi_chop = float(ms.get('rsi_1h', 50) if ms else 50)
@@ -1742,6 +1752,8 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     _atr_v4 = float(ms.get('atr_pct', ms.get('atr_1h', 15) / max(ms.get('price', 1), 1)) if ms else 0.01)
     _rsi_v4 = float(ms.get('rsi_1h', 50) if ms else 50)
     _is_long_v4 = (signal_dir == 'LONG')
+    # [潜力释放 P1 2026-07-12] N16暴涨猎手豆免：与FIX1共用同一豆免标记
+    _n16_pump_exempt = _pump_hunter_exempt  # 继承FIX1的判断结果
 
     # ══════════════════════════════════════════════════════════════
     # [达摩院v2.0 ATR体制过滤器] N16完整版 — 基于 N16_atr_layers 铁证
@@ -1751,8 +1763,11 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     if 'BULL_TREND' in _regime_upper:
         # BULL_TREND(牛市趋势) ATR禁区：<0.010 PF=0.567（铁证）
         if _atr_v4 < 0.010 and not _direction_block and score > 0:
-            score = int(score * 0.80)
-            _atr_regime_tag = f'N16_ATR禁区 ×0.80 (BULL ATR={_atr_v4:.4f}<0.010, PF=0.567)'
+            if _n16_pump_exempt:
+                _atr_regime_tag = f'N16_豁免(暴涨猎手) ATR={_atr_v4:.4f} FR负值压缩=爆发前元'
+            else:
+                score = int(score * 0.80)
+                _atr_regime_tag = f'N16_ATR禁区 ×0.80 (BULL ATR={_atr_v4:.4f}<0.010, PF=0.567)'
         # BULL_TREND(牛市趋势) ATR黄金区：0.010~0.015
         elif 0.010 <= _atr_v4 <= 0.015 and _is_long_v4 and not _direction_block and score > 0:
             score = min(int(score * 1.05), 175)
@@ -2005,6 +2020,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
 
     return {
         'total':      score,
+        'score':      score,    # [P1修复 2026-07-12] 补充score别名 — analyze()/run_analysis读.get('score')，原只有'total'导致永远None
         'max':        150,
         'grade':      grade,
         'grade_num':  score,   # [设计院 2026-06-30 G修复] brahma_analyze.py期期得此字段，补入整数评分
@@ -2568,6 +2584,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _bd = _os_ob.path.join(_os_ob.path.dirname(_os_ob.path.abspath(__file__)))
         if _bd not in _sys_ob.path: _sys_ob.path.insert(0, _bd)
         from orderbook_engine import analyze_orderbook as _ob_fn
+        # [潜力释放 P1 2026-07-12] 实际调用 analyze_orderbook 并写入 extra_data
+        # 根因：之前只 import 不调用，l2贝叶斯永远拿不到 orderbook 数据
+        _ob_result = _ob_fn(symbol, signal_dir)
+        extra_data['orderbook'] = _ob_result
     except Exception as _e:
         extra_data['orderbook_err'] = str(_e)[:80]
 
@@ -2679,6 +2699,8 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # Step 5: 共振评分
     cf = confluence_score(ms, smc, signal_dir, extra_data)
+    # [根本修复 2026-07-12 设计院封印] cf 将在_result初始化后立即写入
+    # 见 L4550后: _result['confluence'] = cf  (平现注入，不在这里操作_result)
 
     # ── [因果AI P0-B] Counterfactual Score Check ───────────────
     # 设计院因果增强 v1.0 · 2026-06-18
@@ -4710,6 +4732,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _sys23.path.insert(0, _bb23)
         from kronos_lite import get_s23_score as _get_s23
         from recovery_unlocker import check_unlock as _check_unlock
+        # [根本修复 2026-07-12] _sym_t/_dir_t可能因s20 try异常而未定义，这里就地定义
+        _sym_t  = _result.get('symbol', symbol)
+        _dir_t  = _result.get('signal_dir', signal_dir)
 
         _kl15m = ms.get('klines_15m', [])
         # 如果ms中没有klines_15m，尝试从extra_data或直接获取
@@ -4721,6 +4746,18 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 _kl15m = [[float(c[1]),float(c[2]),float(c[3]),float(c[4]),float(c[5])] for c in _raw15]
             except Exception:
                 _kl15m = []
+        # [潜力释放 P1 2026-07-12] klines格式强制转换，避免Kronos klines含NaN报错
+        # 根因: ms.klines_15m是dict格式或字符串数字，Kronos需要float列表
+        if _kl15m and isinstance(_kl15m[0], dict):
+            _kl15m = [[float(_k.get('o',0)),float(_k.get('h',0)),
+                       float(_k.get('l',0)),float(_k.get('c',0)),float(_k.get('v',0))]
+                      for _k in _kl15m]
+        elif _kl15m and isinstance(_kl15m[0], (list, tuple)):
+            try:
+                _kl15m = [[float(_v) for _v in _k[:5]] for _k in _kl15m]
+            except Exception:
+                _kl15m = []
+
         if len(_kl15m) >= 60:
 
             # ① 计算Kronos-Lite s23基础分 (v2.0: 体制自适应+BTC领先信号)
