@@ -26,6 +26,8 @@ regime_scorer.py — 梵天三层体制概率评估 v1.0
 
 
 from brahma_brain.math_utils import _ema, _rsi, calc_rsi, rsi, ema  # 统一数学库
+# [P0修复 2026-07-12] _ema返回list，直接与float运算会TypeError；改用取末值的ema()封装
+def _ema_scalar(series, period): return ema(series, period)  # 返回float
 
 import json
 import time
@@ -104,7 +106,7 @@ def _score_daily(kd: list) -> dict:
         bear += 10
 
     # 价格 vs EMA50
-    ema50 = _ema(closes, 50)
+    ema50 = _ema_scalar(closes, 50)  # [P0修复] 使用scalar版本避免list×float TypeError
     if price > ema50 * 1.01:
         bull += 20
     elif price > ema50:
@@ -115,7 +117,7 @@ def _score_daily(kd: list) -> dict:
         bear += 8
 
     # 价格 vs EMA20
-    ema20 = _ema(closes, 20)
+    ema20 = _ema_scalar(closes, 20)  # [P0修复]
     if price > ema20:
         bull += 15
     else:
@@ -153,8 +155,8 @@ def _score_4h(k4: list) -> dict:
     price  = closes[-1]
 
     rsi_4h = _rsi(closes)
-    ema20  = _ema(closes, 20)
-    ema9   = _ema(closes, 9)
+    ema20  = _ema_scalar(closes, 20)  # [P0修复] scalar
+    ema9   = _ema_scalar(closes, 9)   # [P0修复] scalar
 
     # EMA位置
     above_ema20 = price > ema20
@@ -214,7 +216,7 @@ def _score_1h(k1: list) -> dict:
     price  = closes[-1]
 
     rsi_1h = _rsi(closes)
-    ema20  = _ema(closes, 20)
+    ema20  = _ema_scalar(closes, 20)  # [P0修复] scalar
 
     # RSI | RSI指标评分
     if rsi_1h > 55:   bull += 20

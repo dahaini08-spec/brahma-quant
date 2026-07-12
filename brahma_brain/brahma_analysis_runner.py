@@ -23,6 +23,14 @@ brahma_analysis_runner.py — 梵天分析唯一入口
 import sys
 import os
 import time
+
+# [P1修复 2026-07-12] 自动载入 .env，确保执行层能读到API密钥
+try:
+    from dotenv import load_dotenv as _ldenv
+    _env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
+    _ldenv(_env_path, override=False)
+except Exception:
+    pass
 from datetime import datetime, timezone
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -490,6 +498,44 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
         except Exception:
             result['timing_status'] = 'UNKNOWN'
     # ────────────────────────────────────────────────────────────────────────
+
+    # ── [设计院 2026-07-12 P0修复] params子字段展平到顶层 ─────────────────────
+    # 根因: auto_executor读取顶层entry_lo/stop_loss等字段为None，实际数据在params子dict
+    # 修复: 将params关键字段提升到顶层，保留原值优先（不覆盖已有非None值）
+    try:
+        _p = result.get('params', {}) or {}
+        _flatten_fields = [
+            ('entry_lo', 'entry_lo'), ('entry_hi', 'entry_hi'),
+            ('stop_loss', 'stop_loss'), ('tp1', 'tp1'), ('tp2', 'tp2'),
+            ('sl_pct', 'sl_pct'), ('rr1', 'rr1'),
+            ('ob_top', 'ob_top'), ('ob_bottom', 'ob_bottom'),
+            ('entry_source', 'entry_source'), ('ob_source_type', 'ob_source_type'),
+            ('ob_dist_pct', 'ob_dist_pct'),
+        ]
+        for _src_key, _dst_key in _flatten_fields:
+            if not result.get(_dst_key) and _p.get(_src_key):
+                result[_dst_key] = _p[_src_key]
+        # structure_grade: 优先effective_grade > params.structure_grade > grade
+        if not result.get('structure_grade'):
+            result['structure_grade'] = (
+                result.get('effective_grade') or
+                _p.get('structure_grade') or
+                result.get('grade')
+            )
+        # action推导: valid=True且action为None时按score推导
+        if result.get('action') is None:
+            _p_valid = _p.get('valid') or result.get('valid_signal') or result.get('valid')
+            if _p_valid:
+                _sc = float(result.get('confluence', {}).get('score', 0) or 0)
+                result['action'] = ('ENTER_FULL' if _sc >= 155
+                                    else 'ENTER_WATCH' if _sc >= 120
+                                    else 'WATCH')
+        # direction同步
+        if not result.get('direction') and result.get('signal_dir'):
+            result['direction'] = result['signal_dir']
+    except Exception:
+        pass
+    # ─────────────────────────────────────────────────────────────────────────
 
     return result
 

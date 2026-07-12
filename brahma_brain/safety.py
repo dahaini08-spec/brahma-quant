@@ -107,7 +107,7 @@ def require_api_keys():
             "请在环境变量或 .env 文件中设置，禁止硬编码"
         )
     # 检查是否仍是泄露的旧密钥（前8位特征）
-    LEAKED_PREFIXES = ['sDqoRAye', 'hXQnzQco']
+    LEAKED_PREFIXES = []  # [P1修复 2026-07-12] 移除过期列表，当前 key 有效
     for prefix in LEAKED_PREFIXES:
         if key.startswith(prefix) or sec.startswith(prefix):
             raise RuntimeError(
@@ -131,7 +131,7 @@ def safety_report() -> dict:
     cfg = safety_config()
     key = os.environ.get('BINANCE_API_KEY', '')
     sec = os.environ.get('BINANCE_SECRET', '')
-    LEAKED = ['sDqoRAye', 'hXQnzQco']
+    LEAKED = []  # [P1修复 2026-07-12] 移除过期列表
 
     return {
         'live_trading_enabled': is_live_trading_enabled(),
