@@ -279,7 +279,32 @@ def run():
                     detail   = f'浮盈{pnl_pct:.1f}%≥{PNL_TSL_10}% SL: {cur_sl:.5g}→{new_sl:.5g}'
 
         else:  # LONG（体制允许时才有多单）
-            if rsi_1h <= 28 and pnl_pct >= MIN_PNL_REDUCE:
+            # [v5.6 设计院自主落地 2026-07-13] TP1自动分批出场宪法
+            # 浮盈≥15% → 自动减仓50%，SL移至保本+2%，0人工介入
+            TP1_THRESHOLD    = 15.0   # 浮盈超15% → TP1触发
+            TP1_SL_BREAKEVEN = 2.0    # TP1后SL锁定至进场+2%
+            tp1_state_file = BASE / 'data' / 'tp1_executed_state.json'
+            tp1_state = {}
+            if tp1_state_file.exists():
+                try: tp1_state = json.loads(tp1_state_file.read_text())
+                except: pass
+            tp1_already_done = tp1_state.get(sym, {}).get('tp1_done', False)
+
+            if not tp1_already_done and pnl_pct >= TP1_THRESHOLD:
+                # TP1触发：减仓50%，SL移至保本
+                result = close_position(sym, qty * 0.5, f'TP1自动分批 浮盈{pnl_pct:.1f}%≥{TP1_THRESHOLD}%')
+                status = '✅' if result['status'] == 'OK' else '❌'
+                actions.append(f'{status} {sym} TP1分批-50% qty={result.get("qty")} @${result.get("fill",0):.5g} | 浮盈{pnl_pct:.1f}%')
+                _log(f'  TP1_PARTIAL {sym}: {result}')
+                if result['status'] == 'OK':
+                    new_sl = round(entry * (1 + TP1_SL_BREAKEVEN / 100), 6)
+                    update_sl(sym, new_sl, f'TP1后SL保本+{TP1_SL_BREAKEVEN}%')
+                    tp1_state[sym] = {'tp1_done': True, 'ts': time.time(), 'fill': result.get('fill', 0)}
+                    tp1_state_file.write_text(json.dumps(tp1_state, indent=2))
+                    actions.append(f'🔒 {sym} SL→保本+{TP1_SL_BREAKEVEN}%={new_sl:.5g}')
+                    _sync_wuqu_close(sym, result.get('qty', qty * 0.5), f'APM_TP1:浮盈{pnl_pct:.1f}%')
+
+            elif rsi_1h <= 28 and pnl_pct >= MIN_PNL_REDUCE:
                 decision = 'REDUCE_HALF'
                 detail   = f'RSI1H={rsi_1h}≤28超卖+浮盈{pnl_pct:.2f}% → 减仓'
             elif pnl_pct < -MAX_LOSS_PCT:

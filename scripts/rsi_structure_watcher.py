@@ -359,12 +359,16 @@ def run():
             for sym_evs in [events] for ev in sym_evs
         ) if events else False
 
+        # [v5.6 设计院自主落地 2026-07-13] 触发链末尾追加 signal_dashboard 事件驱动推送
+        # 原理：E1-E9事件触发时，扫描完成后立即检查仪表盘（T1-T4条件），无变化静默
+        # 效果：signal_dashboard 从30min定时 → 事件驱动（活跃市场8-12次/天，非活跃趋近0）
         scan_cmd = (
             f'cd {BASE} && '
             f'ulimit -v 1048576 2>/dev/null; '
             f'python3 scripts/market_screener.py && '
             f'python3 scripts/brahma_scan_all.py --candidates && '
-            f'python3 scripts/auto_executor.py 2>&1 | tail -5'
+            f'python3 scripts/auto_executor.py 2>&1 | tail -5 && '
+            f'python3 scripts/signal_dashboard.py 2>&1 | tail -3'
         )
         # E5/E6/E7触发时附加 pump-hunter 扫描
         if has_pump_trigger:
@@ -374,7 +378,8 @@ def run():
                 f'python3 dharma/pump_hunter/scan_and_alert.py --dry-run 2>&1 | tail -3 & '
                 f'python3 scripts/market_screener.py && '
                 f'python3 scripts/brahma_scan_all.py --candidates && '
-                f'python3 scripts/auto_executor.py 2>&1 | tail -5'
+                f'python3 scripts/auto_executor.py 2>&1 | tail -5 && '
+                f'python3 scripts/signal_dashboard.py 2>&1 | tail -3'
             )
         try:
             # ── 防积压：检查是否已有扫描链在运行 ──────────────────
