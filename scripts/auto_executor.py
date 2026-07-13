@@ -994,8 +994,17 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
 
     # 账户状态
     acct      = _signed('GET', '/fapi/v2/account')
+    # [修复 2026-07-13] P0_ExposureCap bug: API失败时acct非dict→nav=0→_max_exposure=0→永远触发
+    # 必须验证acct是有效dict且totalMarginBalance有实际值
+    if not isinstance(acct, dict) or 'totalMarginBalance' not in acct:
+        pass  # [静默]
+        return  # API失败，本轮跳过，不执行任何开单
     nav       = float(acct.get('totalMarginBalance', 0))
     avail     = float(acct.get('availableBalance', 0))
+    # 额外守卫：nav=0说明账户API异常，禁止开单
+    if nav <= 0:
+        pass  # [静默]
+        return
     pos_list  = _signed('GET', '/fapi/v2/positionRisk')
     # [修复 2026-07-08] 安全守卫：API KEY未配置时 _signed() 返回str/dict(error)
     # 确保 pos_list 是可迭代的 list[dict]，避免 'str'.get() AttributeError

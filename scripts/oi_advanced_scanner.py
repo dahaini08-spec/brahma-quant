@@ -590,11 +590,20 @@ def scan_symbol(sym, ticker_data):
         result['lev_range']   = sig_info['lev']
         result['layers_pass'] = 3 if score >= 40 else (2 if score >= 25 else 1)
 
-        # action字段（sub_executor读取）
+        # [P1修复 2026-07-13 设计院] action字段双向化（sub_executor读取）
+        # 修复前：做空方向一律写watchlist→sub_executor白名单过滤跳过
+        # 修复后：根据direction_bias决定BUY/SELL类 action
+        _dir = sig_info.get('direction_bias', 'LONG')
         if score >= THRESHOLD['A']['score_min'] and sig_info['mode'] == 'A':
-            result['action'] = 'buy_full' if score >= 70 else 'buy_light'
+            if _dir == 'LONG':
+                result['action'] = 'buy_full' if score >= 70 else 'buy_light'
+            else:
+                result['action'] = 'sell_full' if score >= 70 else 'sell_light'
         elif score >= THRESHOLD['B']['score_min'] and sig_info['mode'] == 'B':
-            result['action'] = 'buy_full' if score >= 60 else 'buy_light'
+            if _dir == 'LONG':
+                result['action'] = 'buy_full' if score >= 60 else 'buy_light'
+            else:
+                result['action'] = 'sell_full' if score >= 60 else 'sell_light'
         elif score >= THRESHOLD['C']['score_min']:
             result['action'] = 'watchlist'
     else:

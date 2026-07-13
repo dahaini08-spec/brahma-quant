@@ -359,24 +359,39 @@ def run_oi_executor(nav: float, active_pos: list) -> list:
         candidates = cache.get('candidates', {})
         regime     = _get_regime()
 
-        # 筛选：layers_pass≥4 + oi_score≥阈值 + action为buy_light/ENTER
+        # [P1修复 2026-07-13 设计院] 筛选：layers_pass≥4 + oi_score≥阈值 + action双向白名单
+        # 修复前：只允许buy_light/buy_full/ENTER/buy → SHORT_BUILD信号全部被过滤
+        # 修复后：做多白名单 + 做空白名单，方向由direction_bias/action决定
+        LONG_ACTIONS  = ('buy_light', 'buy_full', 'ENTER', 'buy')
+        SHORT_ACTIONS = ('sell_light', 'sell_full', 'SHORT', 'sell', 'short_enter')
+
         eligible = []
         for sym, c in candidates.items():
             layers = c.get('layers_pass', 0)
             oi_sc  = float(c.get('oi_score', 0) or 0)
             action = c.get('action', '')
             mode   = c.get('mode', 'C')
+            direction_bias = c.get('direction_bias', c.get('direction', ''))
 
             if layers < OI_LAYERS_THRESHOLD:
                 continue
             if oi_sc < OI_SCORE_THRESHOLD:
                 continue
-            if action not in ('buy_light', 'buy_full', 'ENTER', 'buy'):
-                continue
+
+            # 判断方向：action或direction_bias任一匹配即可
+            is_long_signal  = action in LONG_ACTIONS  or direction_bias in ('LONG', 'BUY', 'bull')
+            is_short_signal = action in SHORT_ACTIONS or direction_bias in ('SHORT', 'SELL', 'bear', 'SHORT_BUILD')
+
+            if not is_long_signal and not is_short_signal:
+                continue  # 无法判断方向，跳过
+
+            # 确定最终方向
+            final_direction = 'SHORT' if is_short_signal else 'LONG'
+            c['_exec_direction'] = final_direction  # 注入方向标记
 
             # 熊市OI信号：大幅降权（OI异常多数是空头堆积，需谨慎做多）
-            if regime in ('BEAR_TREND', 'BEAR_EARLY') and mode != 'A':
-                continue  # 熊市只执行mode A（逼空型）
+            if regime in ('BEAR_TREND', 'BEAR_EARLY') and mode != 'A' and final_direction == 'LONG':
+                continue  # 熊市只执行做空 或 mode A（逼空型）
 
             eligible.append((sym, c, mode))
 
@@ -441,10 +456,24 @@ def run_oi_executor(nav: float, active_pos: list) -> list:
                       'status': 'FAILED', 'reason': '', 'ts': time.time(),
                       'oi_score': oi_sc, 'mode': mode, 'regime': regime}
 
+            # [P1修复 2026-07-13] 根据_exec_direction决定开单方向
+            exec_direction = c.get('_exec_direction', 'LONG')
+            order_side = 'BUY' if exec_direction == 'LONG' else 'SELL'
+
+            # [P1修复] 做空时SL/TP方向相反
+            if exec_direction == 'SHORT':
+                sl_px  = round(px * (1 + sl_pct / 100), 6)   # 做空SL在上方
+                tp1_px = round(px * (1 - tp_pct / 100), 6)   # 做空TP在下方
+            else:
+                sl_px  = round(px * (1 - sl_pct / 100), 6)   # 做多SL在下方
+                tp1_px = round(px * (1 + tp_pct / 100), 6)   # 做多TP在上方
+
+            result['direction'] = exec_direction
+
             try:
                 order = _signed('POST', '/fapi/v1/order', {
                     'symbol':   sym,
-                    'side':     'BUY',
+                    'side':     order_side,  # [P1修复] BUY或SELL
                     'type':     'MARKET',
                     'quantity': qty,
                 })
