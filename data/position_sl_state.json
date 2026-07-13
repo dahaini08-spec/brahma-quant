@@ -1,14 +1,14 @@
 {
   "ETHUSDT": {
-    "symbol": "ETHUSDT",
-    "direction": "LONG",
-    "entry_price": 1735.02,
-    "soft_sl": 1701.53,
-    "tp1": 1770.97,
-    "qty": 0.021,
-    "registered_at": "2026-07-08T14:38:37.246267+00:00",
-    "fomc_watch": true,
-    "fomc_time": "2026-07-08T18:00:00+00:00",
-    "note": "111授权持仓 - 等FOMC结果"
+    "sl_price": 1745.821,
+    "side": "LONG",
+    "tp1": 1848.0,
+    "tp2": 1900.0,
+    "entry": 1781.45,
+    "qty": 0.012,
+    "ts": 1783938905.883467,
+    "regime": "BULL_EARLY",
+    "score": 163,
+    "source": "brahma_autonomous"
   }
 }
