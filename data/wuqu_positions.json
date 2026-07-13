@@ -112,20 +112,6 @@
     "success": true
   },
   {
-    "symbol": "EVAAUSDT",
-    "side": "SHORT",
-    "size": 18.3,
-    "entry_price": 0.7369,
-    "mark_price": 0.7373,
-    "stop_loss": 0.759,
-    "take_profit": 0.7148,
-    "leverage": 3.0,
-    "notional_usdt": 13.4926,
-    "unrealized_pnl": -0.0073,
-    "updated_at": 1783950818.7229497,
-    "success": true
-  },
-  {
     "symbol": "EWYUSDT",
     "side": "SHORT",
     "size": 0.07,
@@ -195,19 +181,5 @@
     "updated_at": 1783957833.996277,
     "success": true,
     "last_close_reason": "APM_TP1:浮盈15.1%"
-  },
-  {
-    "symbol": "KITEUSDT",
-    "side": "LONG",
-    "size": 99.0,
-    "entry_price": 0.13569,
-    "mark_price": 0.1356487,
-    "stop_loss": 0.1316,
-    "take_profit": 0.1398,
-    "leverage": 3.0,
-    "notional_usdt": 13.4292,
-    "unrealized_pnl": -0.0041,
-    "updated_at": 1783950818.7229924,
-    "success": true
   }
 ]
