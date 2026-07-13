@@ -636,6 +636,29 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception:
         pass
 
+    # [v5.6 设计院封印 2026-07-13] 拡展能力三项集成
+    # P0: 清算热力图
+    try:
+        from scripts.liq_heatmap import get_liq_heatmap as _liq_hm
+        _lhm = _liq_hm(symbol)
+        extra_data['liq_heatmap'] = _lhm
+    except Exception:
+        pass
+    # P1b: 鲾鱼监控
+    try:
+        from scripts.whale_monitor import get_whale_signal as _whale_sig
+        _wh = _whale_sig(symbol)
+        extra_data['whale_v2'] = _wh
+    except Exception:
+        pass
+    # P2: 矿工卖压
+    try:
+        if symbol.startswith('BTC'):
+            from scripts.miner_pressure import get_miner_pressure as _mp
+            extra_data['miner_pressure'] = _mp()
+    except Exception:
+        pass
+
     # P2-NEW: 微观结构引擎（大单吸收/耗尽/停顿）
     try:
         if _MICRO_OK:
@@ -926,6 +949,47 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             print(f'[s_smart] {_sym} 聊明錢: {_sm_pre:.0f}→{cf["score"]:.0f} ({_sm_adj:+d}) | {_sm.get("note","")[:60]}')
     except Exception:
         pass
+
+    # ── [v5.6 设计院封印 2026-07-13] 新三项能力评分叠加 ──────────────────
+    # P0: 清算热力图评分（上方近距空头清算=轧空诱因）
+    _lhm = extra_data.get('liq_heatmap', {})
+    if _lhm and not _lhm.get('error'):
+        _lhm_bull = _lhm.get('liq_bull_score', 0)
+        _lhm_bear = _lhm.get('liq_bear_score', 0)
+        _lhm_adj  = (_lhm_bull - _lhm_bear) if signal_dir != 'SHORT' else (_lhm_bear - _lhm_bull)
+        if _lhm_adj != 0:
+            _lhm_pre = float(cf.get('score', 0) or 0)
+            cf['score'] = _lhm_pre + _lhm_adj
+            cf.setdefault('breakdown', {})['_liq_heatmap'] = (
+                f'{_lhm_adj:+d}(空头清算={_lhm.get("nearest_short_liq",0):,.0f} '
+                f'+{_lhm.get("dist_to_short_liq",0):.2f}%)'
+            )
+
+    # P1b: 鲸鱼监控评分
+    _wh2 = extra_data.get('whale_v2', {})
+    if _wh2 and not _wh2.get('error'):
+        _wh2_adj = _wh2.get('whale_score', 0)
+        if signal_dir == 'SHORT': _wh2_adj = -_wh2_adj
+        if _wh2_adj != 0:
+            _wh2_pre = float(cf.get('score', 0) or 0)
+            cf['score'] = _wh2_pre + _wh2_adj
+            cf.setdefault('breakdown', {})['_whale_v2'] = (
+                f'{_wh2_adj:+d}({_wh2.get("whale_direction","?")} '
+                f'LS={_wh2.get("whale_ls_trend","?")})'
+            )
+
+    # P2: 矿工卖压评分（BTC专属）
+    _mp = extra_data.get('miner_pressure', {})
+    if _mp and not _mp.get('error') and _sym.startswith('BTC'):
+        _mp_adj = _mp.get('miner_score', 0)
+        if signal_dir == 'SHORT': _mp_adj = -_mp_adj
+        if _mp_adj != 0:
+            _mp_pre = float(cf.get('score', 0) or 0)
+            cf['score'] = _mp_pre + _mp_adj
+            cf.setdefault('breakdown', {})['_miner_pressure'] = (
+                f'{_mp_adj:+d}(矿工利润={_mp.get("miner_margin_pct",0):+.1f}% '
+                f'{_mp.get("pressure_level","?")})'
+            )
     params = calc_trade_params(ms, smc, signal_dir, mtf_result=_mtf_result)
 
     # [N17专项] 标的专属SL/TP参数覆盖
