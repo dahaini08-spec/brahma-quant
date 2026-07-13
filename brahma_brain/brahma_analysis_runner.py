@@ -652,6 +652,17 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
         pass
     # ─────────────────────────────────────────────────────────────────────────
 
+    # ── [设计院 2026-07-13] 全景矩阵报告自动挂载 ─────────────────────────
+    # 每次 run_analysis() 返回时，自动生成 _panorama_card（精简）和 _panorama_full（完整）
+    # 下游可直接读取，无需再次调用 formatter
+    try:
+        from brahma_brain.formatter import brahma_panorama_report as _pano_fn
+        result['_panorama_card'] = _pano_fn(result, compact=True)
+        result['_panorama_full'] = _pano_fn(result, compact=False)
+    except Exception as _pano_err:
+        result['_panorama_err'] = str(_pano_err)
+    # ─────────────────────────────────────────────────────────────────────────
+
     return result
 
 
@@ -747,6 +758,62 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
     return results
 
 
+def run_analysis_full(symbol: str, deep: bool = True) -> dict:
+    """
+    全景分析接口 — 设计院 2026-07-13 封印
+    在 run_analysis() 基础上附加：
+      - _panorama_card : 精简全景卡（推送用）
+      - _panorama_full : 完整全景报告（审计用）
+      - _weight_matrix : 关键评分维度权重矩阵
+      - _risk_flags    : 当前风险标志列表
+
+    调用示例：
+      result = run_analysis_full('BTCUSDT')
+      print(result['_panorama_full'])
+    """
+    result = run_analysis(symbol, deep=deep)
+
+    # 全景报告已在 run_analysis 中自动挂载，此处补充额外字段
+    try:
+        cf_dict   = result.get('confluence', {}) or {}
+        breakdown = cf_dict.get('breakdown', {}) or {}
+
+        # 权重矩阵：提取 top10 贡献维度
+        score_items = []
+        for k, v in breakdown.items():
+            sv = str(v)
+            try:
+                val = float(sv.split('(')[0].replace('+','').strip())
+                score_items.append({'dim': k, 'contrib': val, 'detail': sv[:60]})
+            except:
+                pass
+        score_items.sort(key=lambda x: -abs(x['contrib']))
+        result['_weight_matrix'] = score_items[:15]
+
+        # 风险标志
+        risk_flags = []
+        if 'ATR禁区' in str(breakdown.get('N16_ATR体制','')):
+            risk_flags.append('LOW_ATR_VOLATILITY')
+        if 'OBV反向' in str(breakdown.get('OBV方向_v2','')):
+            risk_flags.append('OBV_DIVERGENCE')
+        try:
+            macro_v = breakdown.get('宏观+事件', 0)
+            if isinstance(macro_v, (int, float)) and float(macro_v) < -8:
+                risk_flags.append('MACRO_HEADWIND')
+        except:
+            pass
+        if 'FIX1' in str(breakdown.get('FIX1_假牛市', '')):
+            risk_flags.append('FAKE_BULL_DETECTED')
+        if result.get('_ext_score_detail', {}).get('whale', '') == 0:
+            risk_flags.append('WHALE_NO_HISTORY')
+        result['_risk_flags'] = risk_flags
+
+    except Exception as _fe:
+        result['_full_analysis_err'] = str(_fe)
+
+    return result
+
+
 def format_batch_report(results: dict, mode: str = 'card') -> str:
     """
     批量格式化输出 — 封印版标准报告
@@ -771,7 +838,17 @@ def format_batch_report(results: dict, mode: str = 'card') -> str:
         # ── 标签头：每张卡片第一行必须是BRAHMA标签 ──
         lines.append(tag)
 
-        if mode == 'card':
+        if mode == 'panorama':
+            # [设计院 2026-07-13] 全景矩阵模式
+            pano = r.get('_panorama_full') or r.get('_panorama_card', '')
+            if not pano:
+                try:
+                    from brahma_brain.formatter import brahma_panorama_report as _pano
+                    pano = _pano(r, compact=False)
+                except Exception:
+                    pano = format_standard_card(r, ts=None)
+            lines.append(pano)
+        elif mode == 'card':
             lines.append(format_standard_card(r, ts=None))
         else:
             lines.append(format_report(r))

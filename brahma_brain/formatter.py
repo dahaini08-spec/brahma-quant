@@ -468,3 +468,267 @@ def tag_parse(tag: str) -> dict:
         }
     except Exception as e:
         return {'level': 'ERR', 'error': str(e), 'raw': tag}
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 梵天全景矩阵报告 v1.0
+# 设计院六方联合封印 2026-07-13
+# 融合：35维评分权重 + 外部扩展层 + 时机过滤 + 顶级合约视角
+# 调用：from brahma_brain.formatter import brahma_panorama_report
+# ══════════════════════════════════════════════════════════════════════════════
+
+def brahma_panorama_report(r: dict, compact: bool = False) -> str:
+    """
+    梵天全景矩阵报告 — 完整版
+    将 run_analysis() 的所有维度格式化为可读的全景报告
+
+    compact=True → 精简版（推送用）
+    compact=False → 完整版（分析审计用）
+    """
+    from datetime import datetime, timezone
+
+    if r.get('error'):
+        return f'❌ 分析失败: {r["error"]}'
+
+    ts_now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
+
+    # ── 基础字段 ─────────────────────────────────────────────────────────
+    f         = extract_standard_fields(r)
+    sym_raw   = f['symbol'] or 'BTCUSDT'
+    sym       = sym_raw.replace('USDT', '')
+    regime    = f['regime'] or '?'
+    score     = float(f['score'] or 0)
+    direction = f['direction'] or 'NEUTRAL'
+    valid     = bool(f['valid'])
+    entry_lo  = f['entry_lo']
+    entry_hi  = f['entry_hi']
+    sl        = f['sl']
+    tp1       = f['tp1']
+    tp2       = f['tp2']
+    rr        = f['rr']
+    grade     = f['structure_grade']
+    rsi_1h    = f['rsi_1h']
+    rsi_4h    = f['rsi_4h']
+    price     = f['price']
+    consensus = f['consensus'] or '?'
+
+    # ── 扩展字段 ─────────────────────────────────────────────────────────
+    timing    = r.get('timing_status', 'UNKNOWN')
+    t_score   = r.get('timing_score', 0)
+    action    = r.get('action', 'WATCH')
+    ext_bonus = r.get('_ext_score_bonus', 0)
+    ext_det   = r.get('_ext_score_detail', {})
+
+    # 外部层数据
+    liq  = r.get('_liq_heatmap', {}) or {}
+    cfr  = r.get('_cross_fr', {}) or {}
+    wh   = r.get('_whale', {}) or {}
+    opc  = r.get('_options_pc', {}) or {}
+    mn   = r.get('_miner', {}) or {}
+
+    # breakdown（评分明细）
+    cf_dict  = r.get('confluence', {}) or {}
+    breakdown = cf_dict.get('breakdown', {}) or {}
+
+    # ── 图标计算 ─────────────────────────────────────────────────────────
+    dir_icon   = '🟢 LONG' if direction == 'LONG' else ('🔴 SHORT' if direction == 'SHORT' else '⚪ NEUTRAL')
+    valid_icon = '✅ 有效信号' if valid else '⏳ 等待确认'
+    score_icon = '🚨' if score >= 165 else ('🔥' if score >= 155 else ('⚠️' if score >= 130 else '📊'))
+    timing_icon = {'READY': '🟢', 'MONITOR': '🟡', 'WAIT': '⏸', 'STANDBY': '⚫'}.get(timing, '❓')
+
+    SEP = '─' * 44
+
+    lines = [
+        f'🏛️ **梵天全景矩阵** · {sym}/USDT  {ts_now}',
+        SEP,
+    ]
+
+    # ── A: 核心信号 ───────────────────────────────────────────────────────
+    lines += [
+        f'**A · 核心信号**',
+        f'  {score_icon} score={score:.1f}/175  {valid_icon}',
+        f'  方向: {dir_icon}  |  体制: {regime}',
+        f'  多周期共识: {consensus}  |  结构等级: {grade}',
+        f'  动作: {action}  |  {timing_icon} 时机: {timing}(得分={t_score})',
+        '',
+    ]
+
+    # ── B: 策略参数 ───────────────────────────────────────────────────────
+    if valid and entry_lo and sl and tp1:
+        lines += [
+            f'**B · VIP策略参数**',
+        ]
+        if price:
+            lines.append(f'  当前价: ${price:,.2f}')
+        lines += [
+            f'  📍 入场区: ${entry_lo:,.2f} ~ ${entry_hi:,.2f}',
+            f'  🛑 止损:   ${sl:,.2f}',
+            f'  🎯 TP1:    ${tp1:,.2f}' + (f'   TP2: ${tp2:,.2f}' if tp2 else ''),
+            f'  📐 R:R     {rr}',
+            '',
+        ]
+
+    # ── C: 评分权重矩阵（高贡献维度）─────────────────────────────────────
+    if not compact and breakdown:
+        lines.append(f'**C · 评分权重矩阵（实盘维度）**')
+
+        # 分类整理 breakdown
+        plus_items  = []
+        minus_items = []
+        mult_items  = []
+        for k, v in breakdown.items():
+            sv = str(v)
+            if sv.startswith('×') or '乘数' in k or 'mult' in k.lower() or '降级' in sv:
+                mult_items.append((k, sv))
+            elif sv.startswith('+') or (sv and sv[0].isdigit() and int(sv.split()[0]) > 0 if sv.split() and sv.split()[0].lstrip('+-').isdigit() else False):
+                try:
+                    val = float(sv.split('(')[0].replace('+','').strip())
+                    if val > 0:
+                        plus_items.append((k, sv, val))
+                except:
+                    if '+' in sv:
+                        plus_items.append((k, sv, 0))
+            elif sv.startswith('-') or (sv.startswith('0') and '(' not in sv):
+                minus_items.append((k, sv))
+
+        # 排序：贡献值高的先显示
+        try:
+            plus_items.sort(key=lambda x: -x[2])
+        except:
+            pass
+
+        lines.append('  🟢 得分贡献（主力）:')
+        for k, v, _ in plus_items[:8]:
+            lines.append(f'    {k[:18]:<18} {v[:30]}')
+
+        if minus_items:
+            lines.append('  🔴 扣分/风险项:')
+            for k, v in minus_items[:5]:
+                lines.append(f'    {k[:18]:<18} {v[:30]}')
+
+        if mult_items:
+            lines.append('  ⚙️ 体制/结构乘数:')
+            for k, v in mult_items[:4]:
+                lines.append(f'    {k[:18]:<18} {v[:30]}')
+        lines.append('')
+
+    # ── D: 外部扩展层（今日修复 2026-07-13）─────────────────────────────
+    lines += [
+        f'**D · 外部扩展层  +{ext_bonus}分**',
+    ]
+
+    # liq_heatmap
+    liq_b = ext_det.get('liq_heatmap', 0)
+    if not isinstance(liq_b, str):
+        nsl = liq.get('nearest_short_liq', 0)
+        nll = liq.get('nearest_long_liq', 0)
+        d_short = liq.get('dist_to_short_liq', 0)
+        d_long  = liq.get('dist_to_long_liq', 0)
+        liq_str = f'空头清算${nsl:,.0f}(+{d_short:.1f}%)  多头清算${nll:,.0f}(-{d_long:.1f}%)' if nsl else '数据获取中'
+        lines.append(f'  🔥 清算热力图  {liq_b:+d}分  {liq_str}')
+    else:
+        lines.append(f'  🔥 清算热力图  skip({liq_b})')
+
+    # cross_fr
+    fr_b = ext_det.get('cross_fr', 0)
+    if not isinstance(fr_b, str):
+        frs_str = ''
+        if cfr.get('frs'):
+            parts = [f'{ex}:{v:+.4f}%' for ex, v in cfr['frs'].items() if v is not None]
+            frs_str = '  '.join(parts[:3])
+        lines.append(f'  📊 跨所FR套利  {fr_b:+d}分  spread={cfr.get("spread",0):+.4f}%  [{frs_str}]')
+    else:
+        lines.append(f'  📊 跨所FR套利  skip')
+
+    # whale
+    wh_b = ext_det.get('whale', 0)
+    if not isinstance(wh_b, str):
+        wh_str = f'{wh.get("whale_direction","?")}  LS={wh.get("whale_ls_trend","?")}  OI_1h={wh.get("oi_1h_chg",0):+.2f}%'
+        lines.append(f'  🐋 鲸鱼监控    {wh_b:+d}分  {wh_str}')
+    else:
+        lines.append(f'  🐋 鲸鱼监控    skip({wh_b})')
+
+    # options_pc
+    pc_b = ext_det.get('options_pc', 0)
+    if not isinstance(pc_b, str):
+        pc_str = f'P/C={opc.get("pc_oi_ratio","?")}  {opc.get("interpretation_oi","?")}' if opc else '数据获取中'
+        lines.append(f'  📈 期权P/C比   {pc_b:+d}分  {pc_str}')
+    else:
+        lines.append(f'  📈 期权P/C比   skip')
+
+    # miner（BTC专属）
+    mn_b = ext_det.get('miner', 0)
+    if mn_b is not None and not isinstance(mn_b, str) and 'BTC' in sym_raw:
+        mn_str = f'利润率={mn.get("miner_margin_pct",0):+.1f}%  {mn.get("pressure_signal","?")}' if mn else '数据获取中'
+        lines.append(f'  ⛏️ 矿工卖压    {mn_b:+d}分  {mn_str}')
+
+    lines.append('')
+
+    # ── E: 市场感知层 ─────────────────────────────────────────────────────
+    rsi_1h_disp = f'{rsi_1h:.1f}' if rsi_1h else '?'
+    rsi_4h_disp = f'{rsi_4h:.1f}' if rsi_4h else '?'
+    fr_val = f['fr']
+    fr_str = f'  FR={fr_val:+.4f}%' if fr_val is not None else ''
+    lines += [
+        f'**E · 市场感知**',
+        f'  RSI  1H={rsi_1h_disp}  4H={rsi_4h_disp}{fr_str}',
+    ]
+
+    # Kronos
+    kronos_bd = breakdown.get('s23_kronos', '')
+    if kronos_bd:
+        lines.append(f'  Kronos: {str(kronos_bd)[:60]}')
+
+    # 宏观
+    macro_bd = breakdown.get('宏观+事件', '')
+    if macro_bd:
+        lines.append(f'  宏观层: {str(macro_bd)[:60]}')
+
+    # 智能钱
+    sm_bd = breakdown.get('_smart_money', '')
+    if sm_bd:
+        lines.append(f'  智能钱: {str(sm_bd)[:60]}')
+
+    lines.append('')
+
+    # ── F: 关键风险信号 ───────────────────────────────────────────────────
+    risks = []
+    atr_bd = breakdown.get('N16_ATR体制', '')
+    if 'ATR禁区' in str(atr_bd):
+        risks.append(f'⚠️ ATR低波动禁区: {str(atr_bd)[:50]}')
+    fix1_bd = breakdown.get('FIX1_假牛市', '')
+    if fix1_bd:
+        risks.append(f'⚠️ 假牛市检测: {str(fix1_bd)[:50]}')
+    obv_bd = breakdown.get('OBV方向_v2', '')
+    if 'OBV反向' in str(obv_bd):
+        risks.append('⚠️ OBV反向（量能未配合方向）')
+    if float(breakdown.get('宏观+事件', 0) if isinstance(breakdown.get('宏观+事件'), (int,float)) else 0) < -8:
+        risks.append(f'⚠️ 宏观环境不利: {breakdown.get("宏观+事件")}')
+
+    if risks:
+        lines.append(f'**F · 风险信号**')
+        for risk in risks:
+            lines.append(f'  {risk}')
+        lines.append('')
+
+    # ── G: 结论 ───────────────────────────────────────────────────────────
+    if valid:
+        if action == 'ENTER_FULL' and timing == 'READY':
+            conclusion = '🚀 信号完整，时机就绪，可执行建仓'
+        elif action in ('ENTER_FULL', 'ENTER') and timing == 'MONITOR':
+            conclusion = '🟡 信号有效，等待时机门（CHoCH/RSI确认）'
+        elif action == 'ENTER_WATCH':
+            conclusion = '👀 WATCH状态，监控入场条件'
+        else:
+            conclusion = f'✅ {action} | {timing}'
+    else:
+        gap = 155 - score
+        conclusion = f'⏳ 距有效信号门槛差 {gap:.1f}分（需score≥155）'
+
+    lines += [
+        f'**G · 结论**',
+        f'  {conclusion}',
+        SEP,
+    ]
+
+    return '\n'.join(lines)
