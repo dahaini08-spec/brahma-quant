@@ -119,6 +119,8 @@ def get_event_timing_bonus(sym: str) -> dict:
                 bonus += 20; active_events.append(f'E4跌破低点+20')
             elif etype == 'E6_VOLUME_SURGE':
                 bonus += 15; active_events.append(f'E6量能爆发+15')
+            elif etype == 'E10_RSI_BOUNCE_CONFIRM':
+                bonus += 30; active_events.append(f'E10RSI回弹确认+30')
             elif etype == 'E7_OI_SURGE':
                 bonus += 10; active_events.append(f'E7OI异动+10')
             elif etype == 'E5_BB_EXPAND':

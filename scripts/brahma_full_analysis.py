@@ -44,9 +44,9 @@ def _rsi(closes, n=14):
     return round(100 - 100 / (1 + ag / al), 1) if al > 0 else 99.0
 
 def _macd_hist(closes):
-    c = np.array(closes, dtype=float)
+    c = [float(x) for x in closes]  # 确保list而非numpy array传入_ema
     m12 = _ema(c, 12); m26 = _ema(c, 26)
-    ml = m12 - m26; sig = _ema(ml, 9)
+    ml = [a - b for a, b in zip(m12, m26)]; sig = _ema(ml, 9)
     return round(float(ml[-1] - sig[-1]), 4)
 
 def _swing_points(h, l, n=3):

@@ -40,9 +40,9 @@
     "last_push_at": "2026-07-11T08:02:03.942257"
   },
   "SKLUSDT": {
-    "last_push_ts": 1783756902.6058164,
-    "last_score": 77,
-    "last_push_at": "2026-07-11T08:02:07.287821"
+    "last_push_ts": 1783929977.852641,
+    "last_score": 80,
+    "last_push_at": "2026-07-13T08:06:17.879536"
   },
   "VANRYUSDT": {
     "last_push_ts": 1783785698.8313882,
@@ -65,9 +65,9 @@
     "last_push_at": "2026-07-12T16:25:02.948930"
   },
   "KORUUSDT": {
-    "last_push_ts": 1783909780.8475156,
-    "last_score": 76,
-    "last_push_at": "2026-07-13T02:29:46.381097"
+    "last_push_ts": 1783927883.1999075,
+    "last_score": 90,
+    "last_push_at": "2026-07-13T07:31:59.557843"
   },
   "CLUSDT": {
     "last_push_ts": 1783828898.30688,
@@ -125,14 +125,14 @@
     "last_push_at": "2026-07-13T01:31:33.286705"
   },
   "SKHYUSDT": {
-    "last_push_ts": 1783906251.3411362,
-    "last_score": 92,
-    "last_push_at": "2026-07-13T01:31:48.489723"
+    "last_push_ts": 1783922485.6123502,
+    "last_score": 125,
+    "last_push_at": "2026-07-13T06:01:50.231198"
   },
   "SAMSUNGUSDT": {
-    "last_push_ts": 1783906251.3411362,
-    "last_score": 87,
-    "last_push_at": "2026-07-13T01:32:03.548902"
+    "last_push_ts": 1783927883.1999075,
+    "last_score": 91,
+    "last_push_at": "2026-07-13T07:31:50.816967"
   },
   "DRAMUSDT": {
     "last_push_ts": 1783906251.3411362,
@@ -155,13 +155,23 @@
     "last_push_at": "2026-07-13T01:59:55.572431"
   },
   "EWYUSDT": {
-    "last_push_ts": 1783913391.7805388,
-    "last_score": 71,
-    "last_push_at": "2026-07-13T03:29:57.371404"
+    "last_push_ts": 1783927883.1999075,
+    "last_score": 105,
+    "last_push_at": "2026-07-13T07:31:41.042649"
   },
   "CRCLUSDT": {
     "last_push_ts": 1783917010.8638048,
     "last_score": 70,
     "last_push_at": "2026-07-13T04:30:13.147476"
+  },
+  "OUSDT": {
+    "last_push_ts": 1783929977.852641,
+    "last_score": 76,
+    "last_push_at": "2026-07-13T08:06:17.896029"
+  },
+  "1000SHIBUSDT": {
+    "last_push_ts": 1783933301.82368,
+    "last_score": 73,
+    "last_push_at": "2026-07-13T09:01:44.237599"
   }
 }

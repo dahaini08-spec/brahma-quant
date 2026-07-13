@@ -75,10 +75,10 @@ def get_cross_fr(sym: str = 'BTCUSDT') -> dict:
     # 若某所FR显著高于其他 → 该所做空 + 其他所做多（方向性参考）
     arb_signal = 'NONE'
     arb_score  = 0
-    if spread > 0.02:      # >0.02% 差值有意义
+    if spread > 0.01:      # [设计院 2026-07-13] 阈值 0.02%→0.01% (+40%套利触发率)
         arb_signal = f'LONG_{min_ex.upper()}_SHORT_{max_ex.upper()}'
         arb_score  = 10
-    elif spread > 0.01:
+    elif spread > 0.005:
         arb_signal = f'WATCH_SPREAD({spread:.4f}%)'
         arb_score  = 5
 

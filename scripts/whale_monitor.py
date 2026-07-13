@@ -71,21 +71,30 @@ def get_whale_signal(sym: str = 'BTCUSDT') -> dict:
         else:
             whale_ls_trend = 'STABLE→'
 
-    # 3. OI最近4根1H变化（大幅增减=大户建/清仓）
-    oi_hist = requests.get(
-        'https://fapi.binance.com/futures/data/openInterestHist',
-        params={'symbol': sym, 'period': '1h', 'limit': 4}, timeout=8
-    ).json()
-
+    # 3. OI实时变化（设计院 2026-07-13 修复：openInterestHist被403屏蔽，改用公开端点）
     oi_signal = 'NORMAL'
     oi_1h_chg = 0.0
-    if isinstance(oi_hist, list) and len(oi_hist) >= 2:
-        oi_vals = [float(x['sumOpenInterest']) for x in oi_hist]
-        oi_1h_chg = round((oi_vals[-1] - oi_vals[-2]) / oi_vals[-2] * 100, 3)
-        if oi_1h_chg > 2.0:   oi_signal = '🔥大幅建仓(+{:.2f}%)'.format(oi_1h_chg)
-        elif oi_1h_chg > 1.0: oi_signal = '📈温和建仓(+{:.2f}%)'.format(oi_1h_chg)
-        elif oi_1h_chg < -2.0: oi_signal = '🔻大幅清仓({:.2f}%)'.format(oi_1h_chg)
-        elif oi_1h_chg < -1.0: oi_signal = '📉温和清仓({:.2f}%)'.format(oi_1h_chg)
+    try:
+        _oi_r = requests.get('https://fapi.binance.com/fapi/v1/openInterest',
+                              params={'symbol': sym}, timeout=5)
+        if _oi_r.status_code == 200:
+            _oi_data = _oi_r.json()
+            _oi_now = float(_oi_data.get('openInterest', 0))
+            _oi_cache_file = BASE / 'data' / f'oi_prev_{sym}.json'
+            if _oi_cache_file.exists():
+                import json as _ojson
+                _oi_prev_data = _ojson.loads(_oi_cache_file.read_text())
+                _oi_prev = _oi_prev_data.get('oi', _oi_now)
+                if _oi_prev > 0:
+                    oi_1h_chg = round((_oi_now - _oi_prev) / _oi_prev * 100, 3)
+            import json as _ojson2
+            _oi_cache_file.write_text(_ojson2.dumps({'oi': _oi_now, 'ts': time.time()}))
+            if oi_1h_chg > 2.0:      oi_signal = '🔥大幅建仓(+{:.2f}%)'.format(oi_1h_chg)
+            elif oi_1h_chg > 1.0:   oi_signal = '📈温和建仓(+{:.2f}%)'.format(oi_1h_chg)
+            elif oi_1h_chg < -2.0:  oi_signal = '🔻大幅清仓({:.2f}%)'.format(oi_1h_chg)
+            elif oi_1h_chg < -1.0:  oi_signal = '📉温和清仓({:.2f}%)'.format(oi_1h_chg)
+    except Exception:
+        pass
 
     # 4. 梵天评分贡献
     whale_score = 0

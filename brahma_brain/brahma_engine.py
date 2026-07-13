@@ -636,25 +636,38 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception:
         pass
 
-    # [v5.6 设计院封印 2026-07-13] 拡展能力三项集成
+    # [v5.6 设计院封印 2026-07-13] 拡展能力三项集成（路径修复 2026-07-13）
+    # 修复: from scripts.xxx 在 brahma_brain/ 运行环境下不可用
+    # 改为: 动态注入 scripts/ 目录后再导入
+    _scripts_v56 = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'scripts')
+    if _scripts_v56 not in sys.path:
+        sys.path.insert(0, _scripts_v56)
     # P0: 清算热力图
     try:
-        from scripts.liq_heatmap import get_liq_heatmap as _liq_hm
+        from liq_heatmap import get_liq_heatmap as _liq_hm
         _lhm = _liq_hm(symbol)
         extra_data['liq_heatmap'] = _lhm
     except Exception:
         pass
-    # P1b: 鲾鱼监控
+    # P1b: 鲸鱼监控
     try:
-        from scripts.whale_monitor import get_whale_signal as _whale_sig
+        from whale_monitor import get_whale_signal as _whale_sig
         _wh = _whale_sig(symbol)
         extra_data['whale_v2'] = _wh
+    except Exception:
+        pass
+    # P1c: 期权P/C比（设计院 2026-07-13 补充集成）
+    try:
+        from options_pc_ratio import get_options_pc as _get_pc_v56
+        _cur_v56 = 'BTC' if 'BTC' in symbol else ('ETH' if 'ETH' in symbol else symbol.replace('USDT',''))
+        _pc_v56 = _get_pc_v56(_cur_v56)
+        extra_data['options_pc'] = _pc_v56
     except Exception:
         pass
     # P2: 矿工卖压
     try:
         if symbol.startswith('BTC'):
-            from scripts.miner_pressure import get_miner_pressure as _mp
+            from miner_pressure import get_miner_pressure as _mp
             extra_data['miner_pressure'] = _mp()
     except Exception:
         pass
@@ -990,6 +1003,19 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 f'{_mp_adj:+d}(矿工利润={_mp.get("miner_margin_pct",0):+.1f}% '
                 f'{_mp.get("pressure_level","?")})'
             )
+
+    # P1c: 期权P/C比评分（设计院 2026-07-13 补充）
+    _opc = extra_data.get('options_pc', {})
+    if _opc and not _opc.get('error'):
+        _opc_adj = int(_opc.get('pc_score', 0) or 0)
+        if _opc_adj != 0:
+            _opc_pre = float(cf.get('score', 0) or 0)
+            cf['score'] = _opc_pre + _opc_adj
+            cf.setdefault('breakdown', {})['_options_pc_v56'] = (
+                f'{_opc_adj:+d}(P/C OI={_opc.get("pc_oi_ratio",0):.3f} '
+                f'{_opc.get("interpretation_oi","")})'
+            )
+
     params = calc_trade_params(ms, smc, signal_dir, mtf_result=_mtf_result)
 
     # [N17专项] 标的专属SL/TP参数覆盖

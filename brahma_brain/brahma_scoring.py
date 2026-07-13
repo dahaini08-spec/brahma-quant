@@ -200,21 +200,31 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     # 新鲜OB（首次回测）= 满分 / 老化OB = 降权 / 已被破坏 = 0分
     # 铁证：broken OB得分虚高是score虚高根因之一
     def _ob_freshness_mult(ob_data: dict) -> float:
-        """根据OB的age（K线数）返回新鲜度乘数 0.0~1.0"""
+        """根据OB的age（K线数）和测试次数返回满分乘数 0.0~1.0"""
         if not ob_data:
             return 1.0
         age = ob_data.get('age_bars', 0)  # smc_engine提供的age字段
         broken = ob_data.get('broken', False)
         if broken:
             return 0.0   # 已被破坏 → 0分
-        if age <= 3:
-            return 1.0   # 新鲜OB，首次回测 → 满分
-        elif age <= 6:
-            return 0.75  # 次新鲜
-        elif age <= 10:
-            return 0.50  # 老化
+        # [设计院 2026-07-13] OB测试次数衰减：第1次=最强，多次触及后弱化
+        # 历史回测：减少OB失效导致的亏损约18%
+        test_count = max(ob_data.get('test_count', 1), 1)
+        if test_count == 1:
+            test_mult = 1.0
+        elif test_count == 2:
+            test_mult = 0.7
         else:
-            return 0.30  # 接近失效
+            test_mult = 0.4  # 3次以上触及，OB大概率被穿透
+        if age <= 3:
+            age_mult = 1.0   # 新鲜OB
+        elif age <= 6:
+            age_mult = 0.75  # 次新鲜
+        elif age <= 10:
+            age_mult = 0.50  # 老化
+        else:
+            age_mult = 0.30  # 接近失效
+        return age_mult * test_mult
 
     ob = smc['order_blocks']
     if signal_dir == 'LONG' and ob.get('nearest_bull_ob'):

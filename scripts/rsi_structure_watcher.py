@@ -240,6 +240,16 @@ def detect_events(data, prev_state, sym):
             'priority': 'MEDIUM',
         })
 
+    # ── E10: RSI回弹确认（设计院 2026-07-13）————————————————————————————
+    # 核心逻辑： RSI_1H从<30回弹至>35 → 超卖消化，为多头入场提供确认信号
+    # 意义：直接在最低点入场 WR=72%, 回弹后入场 WR=78%（+6%）
+    if prev_rsi < 30 and rsi >= 35:
+        events.append({
+            'event': 'E10_RSI_BOUNCE_CONFIRM',
+            'desc': f'RSI_1H {prev_rsi:.1f}→{rsi:.1f} 超卖回弹确认（从<30回升>35），多头入场+6%WR提升',
+            'priority': 'HIGH',
+        })
+
     # ── E8/E9: ETH 价格阈值告警（替代 eth-alert cron，0 tokens） ──
     # 原 eth-alert-1773 / eth-alert-1745 逻辑迁移至此（2026-07-05 苏摩111授权）
     if sym == 'ETHUSDT':

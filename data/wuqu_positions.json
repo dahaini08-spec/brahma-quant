@@ -72,7 +72,7 @@
   {
     "symbol": "LABUSDT",
     "side": "LONG",
-    "size": 17.0,
+    "size": 9.0,
     "entry_price": 0.3467,
     "mark_price": 0.3466,
     "stop_loss": 0.3363,
@@ -80,9 +80,9 @@
     "leverage": 5.0,
     "notional_usdt": 22.529,
     "unrealized_pnl": -0.0065,
-    "updated_at": 1783941781.4854708,
+    "updated_at": 1783942575.4803426,
     "success": true,
-    "last_close_reason": "APM_REDUCE:RSI1H=24.4≤28超卖+浮盈1.73% → 减仓"
+    "last_close_reason": "APM_REDUCE:RSI1H=24.4≤28超卖+浮盈2.08% → 减仓"
   },
   {
     "symbol": "AVAXUSDT",
