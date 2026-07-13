@@ -1,8 +1,8 @@
 {
   "REUSDT": {
-    "last_push_ts": 1783843446.130061,
-    "last_score": 88,
-    "last_push_at": "2026-07-12T08:04:48.249280"
+    "last_push_ts": 1783911266.125537,
+    "last_score": 70,
+    "last_push_at": "2026-07-13T02:54:26.191342"
   },
   "1000BONKUSDT": {
     "last_push_ts": 1783691202.7101314,
@@ -10,9 +10,9 @@
     "last_push_at": "2026-07-10T13:46:58.641703"
   },
   "TLMUSDT": {
-    "last_push_ts": 1783828898.30688,
-    "last_score": 84,
-    "last_push_at": "2026-07-12T04:01:40.737774"
+    "last_push_ts": 1783889710.6363873,
+    "last_score": 73,
+    "last_push_at": "2026-07-12T20:55:15.359147"
   },
   "METAUSDT": {
     "last_push_ts": 1783695699.9328835,
@@ -50,24 +50,24 @@
     "last_push_at": "2026-07-11T16:01:41.306563"
   },
   "INTCUSDT": {
-    "last_push_ts": 1783785698.8313882,
-    "last_score": 70,
-    "last_push_at": "2026-07-11T16:01:43.524055"
+    "last_push_ts": 1783907979.8819737,
+    "last_score": 74,
+    "last_push_at": "2026-07-13T01:59:50.995553"
   },
   "MUUSDT": {
-    "last_push_ts": 1783814497.3361497,
-    "last_score": 74,
-    "last_push_at": "2026-07-12T00:01:39.567135"
+    "last_push_ts": 1783907979.8819737,
+    "last_score": 80,
+    "last_push_at": "2026-07-13T01:59:45.443294"
   },
   "SPCXUSDT": {
-    "last_push_ts": 1783843446.130061,
+    "last_push_ts": 1783873499.3864768,
     "last_score": 70,
-    "last_push_at": "2026-07-12T08:04:48.308976"
+    "last_push_at": "2026-07-12T16:25:02.948930"
   },
   "KORUUSDT": {
-    "last_push_ts": 1783836116.659229,
-    "last_score": 80,
-    "last_push_at": "2026-07-12T06:01:59.600814"
+    "last_push_ts": 1783909780.8475156,
+    "last_score": 76,
+    "last_push_at": "2026-07-13T02:29:46.381097"
   },
   "CLUSDT": {
     "last_push_ts": 1783828898.30688,
@@ -105,8 +105,63 @@
     "last_push_at": "2026-07-12T12:08:12.576280"
   },
   "SNDKUSDT": {
-    "last_push_ts": 1783858092.5445254,
+    "last_push_ts": 1783906251.3411362,
+    "last_score": 95,
+    "last_push_at": "2026-07-13T01:31:16.841302"
+  },
+  "SXTUSDT": {
+    "last_push_ts": 1783889710.6363873,
+    "last_score": 82,
+    "last_push_at": "2026-07-12T20:55:13.094716"
+  },
+  "XAGUSDT": {
+    "last_push_ts": 1783895375.1367314,
     "last_score": 70,
-    "last_push_at": "2026-07-12T12:08:12.590530"
+    "last_push_at": "2026-07-12T22:29:40.653855"
+  },
+  "SOXLUSDT": {
+    "last_push_ts": 1783906251.3411362,
+    "last_score": 92,
+    "last_push_at": "2026-07-13T01:31:33.286705"
+  },
+  "SKHYUSDT": {
+    "last_push_ts": 1783906251.3411362,
+    "last_score": 92,
+    "last_push_at": "2026-07-13T01:31:48.489723"
+  },
+  "SAMSUNGUSDT": {
+    "last_push_ts": 1783906251.3411362,
+    "last_score": 87,
+    "last_push_at": "2026-07-13T01:32:03.548902"
+  },
+  "DRAMUSDT": {
+    "last_push_ts": 1783906251.3411362,
+    "last_score": 85,
+    "last_push_at": "2026-07-13T01:32:18.005454"
+  },
+  "HBARUSDT": {
+    "last_push_ts": 1783907979.8819737,
+    "last_score": 75,
+    "last_push_at": "2026-07-13T01:59:48.760956"
+  },
+  "MSTRUSDT": {
+    "last_push_ts": 1783907979.8819737,
+    "last_score": 74,
+    "last_push_at": "2026-07-13T01:59:53.274853"
+  },
+  "MRVLUSDT": {
+    "last_push_ts": 1783907979.8819737,
+    "last_score": 74,
+    "last_push_at": "2026-07-13T01:59:55.572431"
+  },
+  "EWYUSDT": {
+    "last_push_ts": 1783913391.7805388,
+    "last_score": 71,
+    "last_push_at": "2026-07-13T03:29:57.371404"
+  },
+  "CRCLUSDT": {
+    "last_push_ts": 1783917010.8638048,
+    "last_score": 70,
+    "last_push_at": "2026-07-13T04:30:13.147476"
   }
 }

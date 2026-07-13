@@ -1,1 +1,14 @@
-{}
+{
+  "CRCLUSDT": {
+    "score": 70,
+    "price": 64.46,
+    "entry_lo": 64.20216,
+    "entry_hi": 64.71784,
+    "sl_price": 62.8485,
+    "tp1_price": 66.87725,
+    "expire_ts": 1783918807.3501902,
+    "pushed_ts": 1783917010.8638048,
+    "auto_executed": false,
+    "reminded": true
+  }
+}

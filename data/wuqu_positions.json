@@ -1,47 +1,5 @@
 [
   {
-    "symbol": "KORUUSDT",
-    "side": "LONG",
-    "size": 0.02,
-    "entry_price": 550.5,
-    "mark_price": 548.75,
-    "stop_loss": 533.985,
-    "take_profit": 567.015,
-    "leverage": 3.0,
-    "notional_usdt": 10.975,
-    "unrealized_pnl": -0.035,
-    "updated_at": 1783768687.5636234,
-    "success": true
-  },
-  {
-    "symbol": "AMDUSDT",
-    "side": "LONG",
-    "size": 0.02,
-    "entry_price": 566.13,
-    "mark_price": 562.73,
-    "stop_loss": 549.1461,
-    "take_profit": 583.1139,
-    "leverage": 3.0,
-    "notional_usdt": 11.2546,
-    "unrealized_pnl": -0.068,
-    "updated_at": 1783768687.5636368,
-    "success": true
-  },
-  {
-    "symbol": "CRCLUSDT",
-    "side": "LONG",
-    "size": 0.37,
-    "entry_price": 67.14,
-    "mark_price": 67.07,
-    "stop_loss": 65.1258,
-    "take_profit": 69.1542,
-    "leverage": 5.0,
-    "notional_usdt": 24.8159,
-    "unrealized_pnl": -0.0259,
-    "updated_at": 1783768687.5636423,
-    "success": true
-  },
-  {
     "symbol": "NATGASUSDT",
     "side": "LONG",
     "size": 8.5,
@@ -53,48 +11,6 @@
     "notional_usdt": 24.6755,
     "unrealized_pnl": -0.0765,
     "updated_at": 1783768687.5636506,
-    "success": true
-  },
-  {
-    "symbol": "COINUSDT",
-    "side": "LONG",
-    "size": 0.09,
-    "entry_price": 161.01000000000002,
-    "mark_price": 160.53,
-    "stop_loss": 156.1797,
-    "take_profit": 165.8403,
-    "leverage": 3.0,
-    "notional_usdt": 14.4477,
-    "unrealized_pnl": -0.0432,
-    "updated_at": 1783768687.563659,
-    "success": true
-  },
-  {
-    "symbol": "SKHYNIXUSDT",
-    "side": "LONG",
-    "size": 0.01,
-    "entry_price": 1481.3500000000001,
-    "mark_price": 1480.7,
-    "stop_loss": 1436.9095,
-    "take_profit": 1525.7905,
-    "leverage": 5.0,
-    "notional_usdt": 14.807,
-    "unrealized_pnl": -0.0065,
-    "updated_at": 1783768687.5636678,
-    "success": true
-  },
-  {
-    "symbol": "SOXLUSDT",
-    "side": "LONG",
-    "size": 0.07,
-    "entry_price": 196.51000000000002,
-    "mark_price": 196.7066239,
-    "stop_loss": 190.6147,
-    "take_profit": 202.4053,
-    "leverage": 3.0,
-    "notional_usdt": 13.7695,
-    "unrealized_pnl": 0.0138,
-    "updated_at": 1783768687.5636718,
     "success": true
   },
   {
@@ -123,20 +39,6 @@
     "notional_usdt": 7.5666,
     "unrealized_pnl": -0.0018,
     "updated_at": 1783768687.5636814,
-    "success": true
-  },
-  {
-    "symbol": "MSTRUSDT",
-    "side": "LONG",
-    "size": 0.15,
-    "entry_price": 95.86000000000001,
-    "mark_price": 95.87,
-    "stop_loss": 92.9842,
-    "take_profit": 98.7358,
-    "leverage": 3.0,
-    "notional_usdt": 14.3805,
-    "unrealized_pnl": 0.0015,
-    "updated_at": 1783768687.5636945,
     "success": true
   },
   {
