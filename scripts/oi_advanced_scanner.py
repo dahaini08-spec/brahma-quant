@@ -422,7 +422,7 @@ def score_oi_signal(oi, basis, fr, whale_l, retail_l, direction, klines_1h):
     if klines_1h:
         closes_1h = [k['close'] for k in klines_1h]
         rsi_1h = _calc_rsi(closes_1h)
-        ema20  = _calc_ema(closes_1h[-20:])
+        ema20  = _calc_ema(closes_1h, 20)
         price  = closes_1h[-1]
 
         # RSI超卖区域（做多信号）
