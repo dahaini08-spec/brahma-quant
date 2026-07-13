@@ -192,6 +192,26 @@ CRITICAL_CRONS = [
         'priority': 'P1',
         'desc':     '6H信号监控'
     },
+    # ── 宏观状态刷新 [P2 2026-07-13] ──────────────────────────────────────
+    {
+        'name':     'macro-state-refresh',
+        'schedule': '--every 4h',
+        'to':       MAIN_TO,
+        'model':    '',
+        'message':  'Refresh macro state. Run: cd /root/.openclaw/workspace/trading-system && python3 brahma_brain/macro_engine.py 2>&1 | tail -5. Reply HEARTBEAT_OK if completed.',
+        'priority': 'P2',
+        'desc':     '宏观状态刷新 每4H'
+    },
+    # ── 学习闭环 [P0 2026-07-13] ─────────────────────────────────────────
+    {
+        'name':     'brahma-learning-loop',
+        'schedule': '--every 6h',
+        'to':       REP_TO,
+        'model':    '',
+        'message':  'Run brahma learning loop. Execute: cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_learning_loop.py 2>&1 | tail -10. Reply with one-line summary.',
+        'priority': 'P0',
+        'desc':     '学习闭环 每6H'
+    },
 ]
 
 # ══════════════════════════════════════════════════════════════════════

@@ -1,61 +1,13 @@
 {
-  "SKHYUSDT": {
-    "score": 115,
-    "price": 157.54,
-    "entry_lo": 156.90984,
-    "entry_hi": 158.17016,
-    "sl_price": 153.6015,
-    "tp1_price": 163.44775,
-    "expire_ts": 1783958567.2445724,
-    "pushed_ts": 1783956767.2455103,
-    "auto_executed": false,
-    "reminded": false
-  },
-  "EWYUSDT": {
-    "score": 94,
-    "price": 171.53,
-    "entry_lo": 170.84388,
-    "entry_hi": 172.21612,
-    "sl_price": 167.24175,
-    "tp1_price": 177.962375,
-    "expire_ts": 1783958563.0128074,
-    "pushed_ts": 1783956767.2455103,
-    "auto_executed": false,
-    "reminded": false
-  },
-  "XAUTUSDT": {
-    "score": 90,
-    "price": 4013.05,
-    "entry_lo": 3996.9978,
-    "entry_hi": 4029.1022,
-    "sl_price": 3912.72375,
-    "tp1_price": 4163.539375,
-    "expire_ts": 1783958563.7204127,
-    "pushed_ts": 1783956767.2455103,
-    "auto_executed": false,
-    "reminded": false
-  },
-  "SKLUSDT": {
-    "score": 84,
-    "price": 0.004289,
-    "entry_lo": 0.004272,
-    "entry_hi": 0.004306,
-    "sl_price": 0.004182,
-    "tp1_price": 0.00445,
-    "expire_ts": 1783958554.5102572,
-    "pushed_ts": 1783956767.2455103,
-    "auto_executed": false,
-    "reminded": false
-  },
-  "QQQUSDT": {
-    "score": 75,
-    "price": 718.52,
-    "entry_lo": 715.64592,
-    "entry_hi": 721.39408,
-    "sl_price": 700.557,
-    "tp1_price": 745.4645,
-    "expire_ts": 1783958564.2807765,
-    "pushed_ts": 1783956767.2455103,
+  "REUSDT": {
+    "score": 80,
+    "price": 0.5421,
+    "entry_lo": 0.539932,
+    "entry_hi": 0.544268,
+    "sl_price": 0.528548,
+    "tp1_price": 0.562429,
+    "expire_ts": 1783960420.3089275,
+    "pushed_ts": 1783958620.937608,
     "auto_executed": false,
     "reminded": false
   }

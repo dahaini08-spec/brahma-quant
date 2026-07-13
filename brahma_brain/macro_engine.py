@@ -267,3 +267,81 @@ def macro_score_v2(symbol: str, signal_dir: str) -> dict:
         'nasdaq': nq,
         'notes':  notes,
     }
+
+
+# ══════════════════════════════════════════════════════════════════
+# [P2 设计院 2026-07-13] macro_state.json 定时写入
+# 将宏观数据快照持久化，供 brahma_engine / 全景报告读取
+# ══════════════════════════════════════════════════════════════════
+
+def write_macro_state() -> dict:
+    """
+    写入 macro_state.json 宏观快照
+    调用: python3 -c "from brahma_brain.macro_engine import write_macro_state; write_macro_state()"
+    """
+    import json, time
+    from pathlib import Path
+    from datetime import datetime, timezone
+
+    BASE_DIR = Path(__file__).parent.parent
+    OUT_PATH = BASE_DIR / 'data' / 'macro_state.json'
+
+    snap = {'ts': datetime.now(timezone.utc).isoformat(), 'epoch': time.time()}
+
+    # DXY
+    try:
+        dxy = get_dxy_realtime()
+        snap['dxy'] = {
+            'value':  dxy.get('dxy'),
+            'change': dxy.get('dxy_change_1d'),
+            'signal': dxy.get('signal'),
+            'score':  dxy.get('score', 0),
+        }
+    except Exception as e:
+        snap['dxy'] = {'error': str(e)}
+
+    # BTC.D
+    try:
+        import urllib.request
+        _r = json.loads(urllib.request.urlopen(
+            'https://api.coingecko.com/api/v3/global', timeout=8).read())
+        btcd = _r.get('data', {}).get('market_cap_percentage', {}).get('btc', 0)
+        snap['btc_dominance'] = round(btcd, 2)
+        snap['btc_d_signal']  = 'BTC_STRONG' if btcd > 55 else ('ALT_SEASON' if btcd < 48 else 'NEUTRAL')
+    except Exception as e:
+        snap['btc_dominance'] = None
+        snap['btc_d_error']   = str(e)
+
+    # Fear & Greed
+    try:
+        _fg = json.loads(urllib.request.urlopen(
+            'https://api.alternative.me/fng/?limit=1', timeout=6).read())
+        fng_val = int(_fg['data'][0]['value'])
+        fng_lbl = _fg['data'][0]['value_classification']
+        snap['fear_greed'] = {'value': fng_val, 'label': fng_lbl}
+        snap['fng_score']  = 10 if fng_val < 20 else (5 if fng_val < 30 else (
+                            -5 if fng_val > 75 else (-10 if fng_val > 85 else 0)))
+    except Exception as e:
+        snap['fear_greed'] = {'error': str(e)}
+        snap['fng_score']  = 0
+
+    # 宏观综合分
+    macro_score = (snap.get('dxy', {}).get('score', 0) or 0)
+    macro_score += (snap.get('fng_score', 0) or 0)
+    snap['macro_score'] = int(macro_score)
+    snap['macro_bias']  = 'RISK_ON' if macro_score > 5 else ('RISK_OFF' if macro_score < -5 else 'NEUTRAL')
+
+    try:
+        OUT_PATH.write_text(json.dumps(snap, ensure_ascii=False, indent=2), encoding='utf-8')
+    except Exception as e:
+        snap['write_error'] = str(e)
+
+    return snap
+
+
+if __name__ == '__main__':
+    result = write_macro_state()
+    print(f"macro_state写入完成: score={result.get('macro_score')} bias={result.get('macro_bias')}")
+    print(f"  DXY: {result.get('dxy')}")
+    print(f"  BTC.D: {result.get('btc_dominance')}%  {result.get('btc_d_signal')}")
+    print(f"  F&G: {result.get('fear_greed')}")

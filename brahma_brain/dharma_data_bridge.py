@@ -215,25 +215,39 @@ def log_signal(result: dict) -> bool:
             'rsi_4h':          (result.get('momentum', {}) or {}).get('rsi_4h'),
         }
 
-        # ── [v25.5] entry_price 窗口去重(同标的同方向入场区间偏差<0.5%视为重复) ──
-        # 防止 ETH SHORT score=190/187 同 entry区间重复开仓
+        # ── [P2 设计院 2026-07-13] 信号去重修复版 ─────────────────────────────
+        # 修复：(1) 只读最近200行（不全量扫描），(2) entry_lo=0时走signal_id去重
+        # 修复：(3) 已结算(status!=OPEN)的记录不参与去重判断
         _entry_lo_new  = float(signal.get('entry_lo', 0) or 0)
         _dedup_window  = 0.005  # 0.5%
-        if _entry_lo_new > 0 and LOG_PATH.exists():
+        _dedup_ts_window = 3 * 3600  # 3H去重窗口（原6H过长）
+        if LOG_PATH.exists():
             try:
-                _recent = [json.loads(l) for l in LOG_PATH.open()]
+                # 只读最后200行，避免全量IO
+                _all_lines = LOG_PATH.read_text(encoding='utf-8').splitlines()
+                _recent = []
+                for _l in _all_lines[-200:]:
+                    try: _recent.append(json.loads(_l))
+                    except: pass
+                _now_ts = time.time()
                 for _r in _recent:
-                    if (
-                        _r.get('symbol') == symbol
-                        and (_r.get('signal_dir') or _r.get('direction')) == direction
-                        and _r.get('status') == STATUS_OPEN
-                        and abs(float(_r.get('entry_lo', 0) or 0) - _entry_lo_new) / max(_entry_lo_new, 1) < _dedup_window
-                        and (time.time() - float(_r.get('ts', 0) or 0)) < 6 * 3600  # [设计院 2026-07-06] 4H→6H,防止新信号被早期信号去重屏蔽
-                    ):
-                        pass  # [静默] f'[DharmaBridge] 去重跳过 {symbol} {direction} entry_lo重复 差异={abs(float(_r.get("entr
-                        return False
+                    if _r.get('symbol') != symbol: continue
+                    if (_r.get('signal_dir') or _r.get('direction')) != direction: continue
+                    if _r.get('status') != STATUS_OPEN: continue  # 跳过已结算
+                    _age = _now_ts - float(_r.get('ts', 0) or 0)
+                    if _age > _dedup_ts_window: continue           # 超过3H不去重
+                    # entry_lo去重
+                    if _entry_lo_new > 0:
+                        _entry_lo_r = float(_r.get('entry_lo', 0) or 0)
+                        if _entry_lo_r > 0 and abs(_entry_lo_r - _entry_lo_new) / max(_entry_lo_new, 1) < _dedup_window:
+                            return False  # 去重命中
+                    else:
+                        # entry_lo=0时用score+regime去重（防止无参数信号重复写入）
+                        _score_r = float(_r.get('score', 0) or 0)
+                        if abs(_score_r - score) < 5 and _r.get('regime') == regime:
+                            return False  # score近似+体制相同视为重复
             except Exception:
-                pass  # 去重检查失败不阻断
+                pass  # 去重失败不阻断
 
         # 写入(追加模式,原子写入)
         line = json.dumps(signal, ensure_ascii=False) + '\n'

@@ -182,20 +182,6 @@
     "success": true
   },
   {
-    "symbol": "1000XECUSDT",
-    "side": "LONG",
-    "size": 2058.0,
-    "entry_price": 0.006562999999999999,
-    "mark_price": 0.006563,
-    "stop_loss": 0.0064,
-    "take_profit": 0.0068,
-    "leverage": 3.0,
-    "notional_usdt": 13.5067,
-    "unrealized_pnl": 0.0,
-    "updated_at": 1783950818.7229786,
-    "success": true
-  },
-  {
     "symbol": "BILLUSDT",
     "side": "LONG",
     "size": 129.0,
