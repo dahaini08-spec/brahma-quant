@@ -211,14 +211,24 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
             r = f'score={score}疑似mock信号，拒绝执行'
             _log('BLOCKED', signal, r)
             return {'executed': False, 'reason': r, 'order': None}
-    # grade白名单：只允许 神级/极强/VIP策略 进入实盘（排除'强'及以下）
-    GRADE_WHITELIST = ('神级', '极强', 'VIP')
-    grade_str = str(signal.get('grade', ''))
-    if grade_str and not any(g in grade_str for g in GRADE_WHITELIST):
-        # 仅当grade字段有值且不在白名单时才拒绝（无grade字段时依赖score门控）
-        r = f'grade={grade_str} 不在白名单(神级/极强/VIP)，拒绝执行'
-        _log('BLOCKED', signal, r)
-        return {'executed': False, 'reason': r, 'order': None}
+    # [P0-A 设计院 2026-07-13] grade门控改为数值门控（原文字白名单导致8天0执行）
+    # 根因：grade字段为数值(75/87/93/100)，文字白名单'神级/极强/VIP'永远不匹配
+    # 修复：改为数值≥70即允许执行（结合score≥155双重保障）
+    grade_raw = signal.get('grade', None)
+    if grade_raw is not None:
+        try:
+            grade_num = float(grade_raw)
+            if grade_num < 70:
+                r = f'grade={grade_num:.0f} < 70，结构质量不足，拒绝执行'
+                _log('BLOCKED', signal, r)
+                return {'executed': False, 'reason': r, 'order': None}
+        except (ValueError, TypeError):
+            # grade为文字格式（'神级'/'极强'/'VIP'/'强'等），文字白名单兜底
+            GRADE_WHITELIST = ('神级', '极强', 'VIP', '强')
+            if not any(g in str(grade_raw) for g in GRADE_WHITELIST):
+                r = f'grade={grade_raw} 不满足质量要求，拒绝执行'
+                _log('BLOCKED', signal, r)
+                return {'executed': False, 'reason': r, 'order': None}
 
     # ── 门控1：score 门槛 ──────────────────────────────────────────
     if score < MIN_SCORE:
