@@ -132,8 +132,67 @@ def _log(event: str, signal: dict, reason: str, result: dict = None):
         f.write(json.dumps(entry, ensure_ascii=False) + '\n')
 
 
+# ─── [P1 设计院 2026-07-13] 信号去重门控 ─────────────────────────────────────
+_DEDUP_CACHE: dict = {}   # {dedup_key: last_ts}
+_DEDUP_TTL   = 120        # 120秒去重窗口（防止同信号1分钟内重复执行）
+
+def _dedup_check(signal: dict) -> tuple[bool, str]:
+    """返回 (is_dup, reason)"""
+    import time
+    now   = time.time()
+    sym   = signal.get('symbol', '?')
+    dir_  = signal.get('direction', signal.get('signal_dir', '?'))[:5]
+    score = int(float(signal.get('score_final', signal.get('score', 0)) or 0) // 10 * 10)
+    key   = f'{sym}:{dir_}:{score}'
+
+    # 清理过期条目
+    expired = [k for k, t in _DEDUP_CACHE.items() if now - t > _DEDUP_TTL]
+    for k in expired:
+        del _DEDUP_CACHE[k]
+
+    if key in _DEDUP_CACHE:
+        elapsed = round(now - _DEDUP_CACHE[key], 1)
+        return True, f'去重门控: {key} {elapsed}s内已发送'
+    _DEDUP_CACHE[key] = now
+    return False, ''
+# ─── [END P1] ─────────────────────────────────────────────────────────────────
+
+
 def auto_execute(signal: dict, dry_run: bool = False) -> dict:
     """
+
+    # [P1 去重门控]
+    _is_dup, _dup_reason = _dedup_check(signal)
+    if _is_dup:
+        return {'blocked': True, 'reason': _dup_reason, 'symbol': signal.get('symbol')}
+
+    # [P2 设计院 2026-07-13] 高分低WR修复门控
+    _score_p2   = float(signal.get('score_final', signal.get('score', 0)) or 0)
+    _timing_p2  = signal.get('timing_status', 'UNKNOWN')
+    _regime_p2  = signal.get('regime', '?')
+    _dir_p2     = signal.get('direction', signal.get('signal_dir', '?'))
+
+    # 规则1: score≥155 但 timing≠READY → 禁止执行（实盘WR=0%根因）
+    if _score_p2 >= 155 and _timing_p2 not in ('READY',):
+        return {'blocked': True,
+                'reason': f'P2高分强制READY: score={_score_p2:.0f} 但timing={_timing_p2}（实盘WR=0%）',
+                'symbol': signal.get('symbol')}
+
+    # 规则2: BULL_TREND LONG 140-154分 → EV=-0.705% 亏损区，降级为WATCH不执行
+    if _regime_p2 == 'BULL_TREND' and _dir_p2 == 'LONG' and 140 <= _score_p2 < 155:
+        # 需要外部层bonus≥10分才允许执行（确保真实信号质量）
+        _ext_p2 = float(signal.get('_ext_score_bonus', 0) or 0)
+        if _ext_p2 < 10:
+            return {'blocked': True,
+                    'reason': f'P2低EV区拦截: BULL_TREND LONG score={_score_p2:.0f} 外部层bonus={_ext_p2}<10（EV=-0.7%亏损区）',
+                    'symbol': signal.get('symbol')}
+
+    # 规则3: OBV反向时 score<165 禁止执行
+    _risk_p2 = signal.get('_risk_flags', [])
+    if 'OBV_DIVERGENCE' in _risk_p2 and _score_p2 < 165:
+        return {'blocked': True,
+                'reason': f'P2 OBV反向拦截: score={_score_p2:.0f}<165 量能未配合',
+                'symbol': signal.get('symbol')}
     五重门控 + 执行入口
     Returns: {'executed': bool, 'reason': str, 'order': dict|None}
     """
