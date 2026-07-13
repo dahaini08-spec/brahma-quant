@@ -590,7 +590,8 @@ def check_analysis_chain() -> dict:
              'r=run_analysis("BTCUSDT");'
              'assert r.get("regime"), "regime缺失";'
              'assert "score_final" in r, "score_final缺失";'
-             'sf=str(round(r["score_final"],1));rg=r["regime"];ts=r.get("timing_status","?");print("OK score="+sf+" regime="+rg+" timing="+ts)'],
+             'assert r.get("_panorama_full"), "全景矩阵字段缺失";'
+             'sf=str(round(r["score_final"],1));rg=r["regime"];ts=r.get("timing_status","?");pano=str(bool(r.get("_panorama_full")));print("OK score="+sf+" regime="+rg+" timing="+ts+" panorama="+pano)'],
             capture_output=True, text=True, timeout=45,
             cwd=str(BASE)
         )
@@ -1024,6 +1025,7 @@ def run_self_heal():
     # ── 执行所有检测 ─────────────────────────────────────────
     checks = {
         'brahma_analyze':    check_brahma_analyze(),
+        'panorama_output':   check_analysis_chain(),  # 全景矩阵输出检查（含_panorama_full字段验证）
         'module_registry':   check_module_registry(),
         'binance_api':       check_binance_api(),
         'scoring_engine':    check_scoring_engine(),

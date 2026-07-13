@@ -630,15 +630,69 @@ def print_report(r: dict):
 # ══════════════════════════════════════════════════════════
 # 主入口
 # ══════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════
+# [设计院 2026-07-13 封口封印] 全景矩阵输出替换
+# 所有分析数据按照全景矩阵格式输出（brahma_panorama_report）
+# print_report 保留兼容，但主入口已升级为全景模式
+# ══════════════════════════════════════════════════════════
+
+def print_panorama_report(r: dict):
+    """
+    全景矩阵报告输出 — 封口版（替代原 print_report）
+    融合：35维评分 + 外部扩展层 + 时机过滤 + 风险标志
+    """
+    try:
+        import sys as _psys, os as _pos
+        _psys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        from brahma_brain.brahma_analysis_runner import run_analysis_full as _raf
+        from brahma_brain.formatter import brahma_panorama_report as _pano
+
+        # 优先使用已有的 _panorama_full 字段（run_analysis_full 自动挂载）
+        pano_text = r.get('_panorama_full', '')
+        if not pano_text:
+            # fallback: 直接生成（brahma_full_analysis 的 r 与 run_analysis 格式略有差异，做适配）
+            _adapt = {
+                'symbol':       r.get('sym', 'BTCUSDT'),
+                'score_final':  r.get('score_final', 0),
+                'score':        r.get('score_final', 0),
+                'regime':       r.get('regime', '?'),
+                'direction':    r.get('_raw', {}).get('direction', r.get('signal_dir', 'LONG')),
+                'valid_signal': r.get('valid', False),
+                'valid':        r.get('valid', False),
+                'action':       r.get('action', 'WATCH'),
+                'timing_status': r.get('timing_status', 'UNKNOWN'),
+                'params':       {
+                    'entry_lo':  r.get('entry_lo'),
+                    'entry_hi':  r.get('entry_hi'),
+                    'stop_loss': r.get('sl'),
+                    'tp1':       r.get('tp1'),
+                    'tp2':       r.get('tp2'),
+                    'rr1':       r.get('rr1'),
+                },
+                'confluence':   {'score': r.get('score_final', 0), 'breakdown': {}},
+                '_ext_score_bonus': 0,
+                '_ext_score_detail': {},
+            }
+            pano_text = _pano(_adapt, compact=False)
+        print(pano_text)
+    except Exception as _pe:
+        # 降级：使用原始 print_report
+        print(f'[PANORAMA降级] {_pe}')
+        print_report(r)
+
+
 if __name__ == '__main__':
     symbols = sys.argv[1:] if len(sys.argv) > 1 else ['BTCUSDT', 'ETHUSDT']
-    for sym in symbols:
+    use_panorama = '--panorama' not in sys.argv  # 默认全景模式（--no-panorama 回退旧格式）
+    for sym in [s for s in symbols if not s.startswith('--')]:
         try:
-            print(f'\n⏳ 正在分析 {sym}（梵天35维全系统）...\n')
+            print(f'\n⏳ 正在分析 {sym}（梵天35维全系统 · 全景模式）...\n')
             r = full_analysis(sym)
-            print_report(r)
+            if use_panorama:
+                print_panorama_report(r)
+            else:
+                print_report(r)
         except Exception as e:
             import traceback
-            pass  # [静默]
             traceback.print_exc()
         time.sleep(0.5)

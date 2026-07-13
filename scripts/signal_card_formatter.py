@@ -84,7 +84,28 @@ def load_valid_signals():
 
 
 def format_vip_card(s):
-    """格式化为 VIP 策略卡片"""
+    """
+    格式化为 VIP 策略卡片 — 全景封口版（设计院 2026-07-13）
+    优先输出 _panorama_card（全景精简版），降级到原始卡片格式
+    """
+    # [封口] 优先使用全景矩阵字段
+    pano = s.get('_panorama_card', '')
+    if pano and len(pano) > 50:
+        return pano
+
+    # fallback: 尝试实时生成全景卡
+    try:
+        import sys as _sys_pano, os as _os_pano
+        _sys_pano.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent))
+        from brahma_brain.brahma_analysis_runner import run_analysis_full as _raf_pano
+        _sym = s.get('symbol', 'BTCUSDT')
+        _r_pano = _raf_pano(_sym)
+        if _r_pano.get('_panorama_card'):
+            return _r_pano['_panorama_card']
+    except Exception:
+        pass  # 降级到原始格式
+
+    # 原始格式兜底（保持向下兼容）
     sym = s.get("symbol", "").replace("USDT", "").upper()
     direction = s.get("direction", "LONG")
     score = s.get("score", 0)
