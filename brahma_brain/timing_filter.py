@@ -3,6 +3,14 @@
 timing_filter.py — 梵天时机过滤器
 Brahma-Quant Open Source v3.0 | 设计院封印 2026-07-02
 
+INTERFACE CONTRACT
+  get_timing_badge(symbol, direction, regime) -> str  # READY/MONITOR/WAIT/STANDBY
+  check_timing(symbol, direction, regime, score) -> dict  # {badge, score_adj, reason}
+  READY   : 三维评分≥65，可入场
+  MONITOR : 三维评分40~64，监控等待
+  WAIT    : 三维评分<40，明确等待
+  STANDBY : 体制死穴/极端风控，禁止入场
+
 ⚠️  PRO 版说明
 ════════════════════════════════════════════════
 时机过滤器三层感知架构（开源框架版）：
