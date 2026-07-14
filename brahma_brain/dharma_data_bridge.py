@@ -323,3 +323,16 @@ if __name__ == '__main__':
     else:
         print(f"DharmaBridge v2.0 | 日志路径: {LOG_PATH}")
         print(f"当前记录: {get_stats()['total']} 条")
+
+# 差异化阈值 [苏摩111批准 2026-07-14]
+REGIME_THRESHOLD = {
+    'BEAR_RECOVERY': 120,
+    'BULL_TREND':    160,
+    'BEAR_TREND':    138,
+    'CHOP_MID':      138,
+    'BEAR_EARLY':    138,
+    'BULL_EARLY':    150,
+}
+
+def get_threshold(regime: str) -> int:
+    return REGIME_THRESHOLD.get(regime, 155)
