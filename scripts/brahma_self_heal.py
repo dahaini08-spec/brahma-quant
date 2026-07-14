@@ -50,12 +50,12 @@ CRON_WATCHLIST = {
     'brahma-scan-guard':       800,  # 每12H
     # btc-regime-watcher: 已删除 (2026-07-09 从未在cron注册，持续虚假告警)
     # ws-guardian-keepalive: 已删除 (2026-07-08 从未注册，无对应脚本，持续虚假告警)
-    'auto-position-manager-30m': 45,   # 正确任务名（auto-position-manager不存在）
+    # 'auto-position-manager-30m': 45,  # [2026-07-14 废弃] 已由 position-guardian-5m 替代，从监控列表移除
     'regime-switch-monitor':   75,
     # ── 信号推送系统（2026-07-08 自愈盲区补入）──────────────────
     'main-signal-watcher':     75,   # 每1h，75min未跑=故障（阈值放宽避免单次延迟误报）
     'pump-hunter':             45,   # 每30min
-    'brahma-nerve-center':     35,   # 每30min，阈值35min（原25min触发虚假告警）
+    'brahma-nerve-center':     75,   # [2026-07-14] 实际调度every 1h，35min必然误报 → 改为75min
     'oi-advanced-scanner':     70,   # [v7.0 2026-07-11] 35→70min: cron实际间隔60min，35min阈值持续误报
 }
 
