@@ -591,11 +591,11 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
             f'**B · VIP策略参数**',
         ]
         if price:
-            lines.append(f'  当前价: ${price:,.2f}')
+            lines.append(f'  当前价: {_fmt_price(price)}')
         lines += [
-            f'  📍 入场区: ${entry_lo:,.2f} ~ ${entry_hi:,.2f}',
-            f'  🛑 止损:   ${sl:,.2f}',
-            f'  🎯 TP1:    ${tp1:,.2f}' + (f'   TP2: ${tp2:,.2f}' if tp2 else ''),
+            f'  📍 入场区: {_fmt_price(entry_lo)} ~ {_fmt_price(entry_hi)}',
+            f'  🛑 止损:   {_fmt_price(sl)}',
+            f'  🎯 TP1:    {_fmt_price(tp1)}' + (f'   TP2: {_fmt_price(tp2)}' if tp2 else ''),
             f'  📐 R:R     {rr}',
             '',
         ]
