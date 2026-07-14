@@ -568,6 +568,79 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
             '',
         ]
 
+    # ── B2: SMC结构细节（OB + FVG + 流动性）─────────────────────────────
+    if not compact:
+        smc_data = r.get('smc', {})
+        if isinstance(smc_data, dict):
+            ob_data  = smc_data.get('order_blocks', {})
+            fvg_data = smc_data.get('fvg', {})
+            liq_data = smc_data.get('liquidity', {})
+            pd_data  = smc_data.get('pd_zone', {})
+
+            smc_lines = ['**B2 · SMC结构细节**']
+
+            # OB展示（最近各1个）
+            bull_obs = ob_data.get('bull_obs', [])
+            bear_obs = ob_data.get('bear_obs', [])
+            if bull_obs or bear_obs:
+                smc_lines.append('  📦 Order Blocks:')
+                for ob in bull_obs[:2]:
+                    smc_lines.append(f'    🟢 做多OB ${ob["low"]:,.1f}~${ob["high"]:,.1f}  距当前{ob["dist_pct"]:.2f}%')
+                for ob in bear_obs[:2]:
+                    smc_lines.append(f'    🔴 做空OB ${ob["low"]:,.1f}~${ob["high"]:,.1f}  距当前{ob["dist_pct"]:.2f}%')
+
+            # FVG展示
+            bull_fvg = fvg_data.get('bull_fvg', [])
+            bear_fvg = fvg_data.get('bear_fvg', [])
+            if bull_fvg or bear_fvg:
+                smc_lines.append('  🕳️ FVG(公平价值缺口):')
+                for fvg in bull_fvg[:2]:
+                    filled = '✅已回填' if fvg.get('filled') else '⏳未回填'
+                    smc_lines.append(f'    🟢 多FVG ${fvg["bottom"]:,.1f}~${fvg["top"]:,.1f}  gap={fvg["gap_pct"]:.2f}%  {filled}')
+                for fvg in bear_fvg[:2]:
+                    filled = '✅已回填' if fvg.get('filled') else '⏳未回填'
+                    smc_lines.append(f'    🔴 空FVG ${fvg["bottom"]:,.1f}~${fvg["top"]:,.1f}  gap={fvg["gap_pct"]:.2f}%  {filled}')
+
+            # 流动性池
+            eq_highs = liq_data.get('equal_highs', [])
+            eq_lows  = liq_data.get('equal_lows', [])
+            if eq_highs or eq_lows:
+                smc_lines.append('  💧 流动性池:')
+                for h in eq_highs[:2]:
+                    smc_lines.append(f'    🔴 空头止损池(等高) ${h["level"]:,.1f}  距{h["dist_pct"]:.2f}%')
+                for l in eq_lows[:2]:
+                    smc_lines.append(f'    🟢 多头止损池(等低) ${l["level"]:,.1f}  距{l["dist_pct"]:.2f}%')
+
+            # PD区域
+            if pd_data:
+                smc_lines.append(f'  🎯 PD区域: {pd_data.get("zone","?")}  位置={pd_data.get("position",0):.1%}  {pd_data.get("note","")[:40]}')
+
+            if len(smc_lines) > 1:
+                lines += smc_lines
+                lines.append('')
+
+    # ── B3: 清算热力图集群（近距离展示）────────────────────────────────
+    if not compact:
+        liq_full = r.get('_liq_heatmap', {}) or {}
+        if liq_full:
+            short_map = liq_full.get('short_liq_map', {})
+            long_map  = liq_full.get('long_liq_map', {})
+            ask_cls   = liq_full.get('top_ask_clusters', [])
+            bid_cls   = liq_full.get('top_bid_clusters', [])
+            liq3_lines = ['**B3 · 清算集群地图**']
+            liq3_lines.append('  📊 空头清算墙(价格离当前%→清算位):')
+            for pct, lvl in sorted(short_map.items(), key=lambda x: int(x[0]))[:4]:
+                liq3_lines.append(f'    +{pct}% → ${lvl:,.0f}')
+            liq3_lines.append('  📊 多头清算墙:')
+            for pct, lvl in sorted(long_map.items(), key=lambda x: int(x[0]))[:4]:
+                liq3_lines.append(f'    -{pct}% → ${lvl:,.0f}')
+            if ask_cls:
+                liq3_lines.append(f'  📌 订单簿ASK密集: ${ask_cls[0][0]:,.1f}  量={ask_cls[0][1]/1e6:.2f}M')
+            if bid_cls:
+                liq3_lines.append(f'  📌 订单簿BID密集: ${bid_cls[0][0]:,.1f}  量={bid_cls[0][1]/1e6:.2f}M')
+            lines += liq3_lines
+            lines.append('')
+
     # ── C: 评分权重矩阵（高贡献维度）─────────────────────────────────────
     if not compact and breakdown:
         lines.append(f'**C · 评分权重矩阵（实盘维度）**')
