@@ -3,7 +3,7 @@
 路由守卫 route_guardian.py
 设计院封印 2026-07-12 苏摩111批准
 
-职责：检测并修复 cron 任务路由回退到 019f309c 旧线程的问题。
+职责：检测并修复 cron 任务路由回退到旧线程的问题。
 每次 gateway 重启后路由可能回退，此脚本作为自愈机制定期运行。
 
 用法：
@@ -13,10 +13,13 @@
 import subprocess, json, sys, os
 from datetime import datetime, timezone
 
-CORRECT_THREAD = "73295708:thread:019f4448-76b9-7a64-b879-0ce3207fa18d"
-OLD_THREAD_PREFIX = "019f309c"
+CORRECT_THREAD = "73295708:thread:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2"
+OLD_THREAD_PREFIXES = [
+    "019f309c", "019f443a", "019f4448", "019f15c9"
+]  # 所有旧线程前缀（2026-07-14全量封印）
+OLD_THREAD_PREFIX = OLD_THREAD_PREFIXES[0]  # 兼容旧代码
 
-# P1主线应路由到019f4448的任务名单
+# P1主线任务名单（全部路由到新线程019f5e0f）
 P1_MAIN_JOBS = {
     "rsi-structure-watcher",
     "auto-position-manager-30m",
@@ -81,7 +84,7 @@ def main():
             broken.append((jid, name, to))
 
     if not broken:
-        print(f"[route_guardian] {now} ✅ 路由正常，019f309c残留=0")
+        print(f"[route_guardian] {now} ✅ 路由正常，旧线程残留=0")
         return
 
     print(f"[route_guardian] {now} ⚠️ 发现{len(broken)}个路由异常:")
@@ -96,7 +99,7 @@ def main():
     fixed, failed = 0, 0
     for jid, name, to in broken:
         if fix_route(jid, name):
-            print(f"  ✅ 修复: {name} → 019f4448")
+            print(f"  ✅ 修复: {name} → 019f5e0f")
             fixed += 1
         else:
             print(f"  ❌ 修复失败: {name}")

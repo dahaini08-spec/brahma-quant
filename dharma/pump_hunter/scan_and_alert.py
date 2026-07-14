@@ -101,7 +101,7 @@ def _get_jarvis_target() -> str:
         return f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}'
     except Exception:
         pass
-    return '73295708:thread:019f309c-609b-7a75-a195-e221e5927c63'
+    return '73295708:thread:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'
 
 JARVIS_TARGET = _get_jarvis_target()
 
