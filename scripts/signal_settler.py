@@ -111,6 +111,18 @@ def settle():
         if ts > 0 and (now - ts) > hold_h * 3600:
             s['status'] = 'TIMEOUT'
             s['settled_at'] = datetime.utcnow().isoformat()
+            # 自动回填学习数据 [系统化治理 2026-07-14]
+            try:
+                import json as _j, time as _t
+                _fb = BASE / 'data' / 'calibration_feedback.jsonl'
+                _outcome = 'WIN' if s.get('status')=='WIN' else 'LOSS'
+                with open(str(_fb),'a') as _f:
+                    _f.write(_j.dumps({'ts':_t.time(),'symbol':s.get('symbol',''),
+                        'regime':s.get('regime',''),'score':s.get('score',0),
+                        'direction':s.get('direction','LONG'),'outcome':_outcome,
+                        'pnl_pct':s.get('pnl_pct',0) or 0,'grade':s.get('structure_grade',0),
+                        'source':'auto_settle'},ensure_ascii=False)+'\n')
+            except: pass
             s['settle_price'] = price
             s['settle_note'] = f'超过{hold_h}H持仓期未触发'
             stats['TIMEOUT'] += 1
@@ -134,6 +146,18 @@ def settle():
         if verdict:
             s['status'] = verdict
             s['settled_at'] = datetime.utcnow().isoformat()
+            # 自动回填学习数据 [系统化治理 2026-07-14]
+            try:
+                import json as _j, time as _t
+                _fb = BASE / 'data' / 'calibration_feedback.jsonl'
+                _outcome = 'WIN' if s.get('status')=='WIN' else 'LOSS'
+                with open(str(_fb),'a') as _f:
+                    _f.write(_j.dumps({'ts':_t.time(),'symbol':s.get('symbol',''),
+                        'regime':s.get('regime',''),'score':s.get('score',0),
+                        'direction':s.get('direction','LONG'),'outcome':_outcome,
+                        'pnl_pct':s.get('pnl_pct',0) or 0,'grade':s.get('structure_grade',0),
+                        'source':'auto_settle'},ensure_ascii=False)+'\n')
+            except: pass
             s['settle_price'] = price
             entry_mid = ((entry_lo or 0) + (entry_hi or 0)) / 2 if entry_lo else 0
             if entry_mid > 0:
