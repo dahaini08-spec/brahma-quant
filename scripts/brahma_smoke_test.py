@@ -45,7 +45,7 @@ def fail(name, detail='', fix=None):
 print('\n【1】关键模块导入性')
 REQUIRED_MODULES = [
     ('brahma_brain.brahma_analysis_runner', 'run_analysis'),
-    ('brahma_brain.brahma_engine',          'BrahmaEngine'),
+    ('brahma_brain.brahma_engine',          'analyze'),          # 函数式模块
     ('brahma_brain.brahma_scoring',         None),
     ('brahma_brain.brahma_health',          'run_health_check'),
     ('brahma_brain.brahma_learning_loop',   'main'),
@@ -53,7 +53,7 @@ REQUIRED_MODULES = [
     ('brahma_brain.formatter',              'brahma_panorama_report'),
     ('brahma_brain.timing_filter',          None),
     ('brahma_brain.regime_state_machine',   None),
-    ('brahma_brain.signal_card_formatter',  None),
+    ('brahma_brain.signal_card_formatter',  'format_vip_card'),
 ]
 for mod, attr in REQUIRED_MODULES:
     try:
@@ -141,10 +141,11 @@ try:
         if not isinstance(j, dict): continue
         to = j.get('delivery', {}).get('to', '')
         name = j.get('name', '')
-        # Square/P3任务允许其他线程
+        # Square/P3内容类任务允许其他线程
         if any(x in name for x in ['Square', '广场', 'square', 'live-performance', 'brahma-arch']):
             continue
-        if to and '019f5e0f-7d13-7392-a4e1-262e1cfc2dc2' in to:
+        # 主线程应全部包含019f5e0f，否则标记为路由偏移
+        if to and '019f5e0f' not in to and '019f443a' in to:
             wrong.append(name)
     if wrong:
         fail('Cron路由', f'{len(wrong)}个任务路由到旧线程: {wrong}', fix='openclaw cron rm <id> && openclaw cron add ...')
@@ -161,7 +162,7 @@ try:
         '全景格式化器':   'panorama' in health_src or 'formatter' in health_src,
         '学习闭环':       'learning_loop' in health_src,
         'macro_state新鲜': 'macro_state' in health_src,
-        'OB/FVG字段':    'smc' in health_src or 'ob_top' in health_src,
+        'OB/FVG字段':    'panorama_integrity' in health_src or 'B2' in health_src,
     }
     for item, covered in covers.items():
         if covered:

@@ -153,5 +153,22 @@
     "updated_at": 1783957833.996277,
     "success": true,
     "last_close_reason": "APM_TP1:浮盈15.1%"
+  },
+  {
+    "symbol": "BTCUSDT",
+    "side": "LONG",
+    "status": "pending",
+    "order_id": 1070972404396,
+    "entry_price": 62299.0,
+    "qty": 0.001,
+    "sl_price": 61133.0,
+    "tp1_price": 64146.0,
+    "tp2_price": 65736.0,
+    "leverage": 5,
+    "regime": "BULL_TREND",
+    "score": 170.8,
+    "grade": 87,
+    "note": "梵天自主决策 grade>=80白名单 score=170.8 [2026-07-14]",
+    "created_at": "2026-07-14T04:00:42Z"
   }
 ]

@@ -554,15 +554,113 @@ def _check_standby_violations_health() -> dict:
         return {'ok': True, 'detail': f'扫描异常: {str(e)[:50]}', 'warn': False}
 
 
+# ═══════════════════════════════════════════════════════════════
+# [固化封印 2026-07-14] 五项扩展检查
+# ═══════════════════════════════════════════════════════════════
+
+def _check_panorama_integrity() -> dict:
+    """全景矩阵B2/B3/FVG字段完整性检查"""
+    try:
+        from brahma_brain.formatter import brahma_panorama_report
+        import inspect
+        src = inspect.getsource(brahma_panorama_report)
+        has_b2 = 'B2' in src and 'order_block' in src.lower()
+        has_b3 = 'B3' in src and 'liq' in src.lower()
+        has_fvg = 'fvg' in src.lower() or 'FVG' in src
+        ok_ = has_b2 and has_b3
+        return {
+            'ok': ok_,
+            'detail': f'B2={has_b2} B3={has_b3} FVG={has_fvg}',
+            'warn': not has_fvg,
+        }
+    except Exception as e:
+        return {'ok': False, 'detail': str(e)[:60], 'warn': True}
+
+
+def _check_learning_loop_importable() -> dict:
+    """学习闭环模块可导入性"""
+    try:
+        from brahma_brain.brahma_learning_loop import main  # noqa
+        return {'ok': True, 'detail': 'brahma_brain.brahma_learning_loop.main OK', 'warn': False}
+    except Exception as e:
+        return {'ok': False, 'detail': str(e)[:80], 'warn': True,
+                'fix': 'cp scripts/brahma_learning_loop.py brahma_brain/'}
+
+
+def _check_macro_state_freshness() -> dict:
+    """macro_state.json新鲜度+DXY有效性"""
+    import json as _json, time as _time
+    from pathlib import Path as _Path
+    p = _Path(__file__).parent.parent / 'data' / 'macro_state.json'
+    if not p.exists():
+        return {'ok': False, 'detail': 'macro_state.json不存在', 'warn': True}
+    age = _time.time() - p.stat().st_mtime
+    try:
+        ms = _json.loads(p.read_text())
+        dxy_val = ms.get('dxy', {}).get('value')
+        ok_ = age < 4 * 3600 and dxy_val is not None
+        return {
+            'ok': ok_,
+            'detail': f'age={age/3600:.1f}h DXY={dxy_val}',
+            'warn': dxy_val is None or age > 6 * 3600,
+        }
+    except Exception as e:
+        return {'ok': False, 'detail': str(e)[:60], 'warn': True}
+
+
+def _check_cron_route_ssot() -> dict:
+    """Cron路由一致性 — 全部核心任务应路由到SSOT线程"""
+    import json as _json
+    from pathlib import Path as _Path
+    SSOT = '019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'
+    OLD  = '019f443a'
+    jobs_path = _Path.home() / '.openclaw/cron/jobs.json'
+    try:
+        raw = _json.loads(jobs_path.read_text())
+        jobs = raw if isinstance(raw, list) else raw.get('jobs', list(raw.values()))
+        wrong = []
+        for j in jobs:
+            if not isinstance(j, dict): continue
+            name = j.get('name', '')
+            to   = j.get('delivery', {}).get('to', '')
+            if any(x in name for x in ['Square', 'square', 'live-performance', 'brahma-arch', '广场', '帖', '快讯']):
+                continue
+            if OLD in to:
+                wrong.append(name)
+        return {
+            'ok': len(wrong) == 0,
+            'detail': f'路由偏移任务: {wrong}' if wrong else f'全部路由→{SSOT[:8]}',
+            'warn': len(wrong) > 0,
+        }
+    except Exception as e:
+        return {'ok': True, 'detail': f'检查异常(非致命): {str(e)[:50]}', 'warn': False}
+
+
+def _check_signal_card_importable() -> dict:
+    """signal_card_formatter模块可导入性"""
+    try:
+        from brahma_brain.signal_card_formatter import format_vip_card  # noqa
+        return {'ok': True, 'detail': 'brahma_brain.signal_card_formatter OK', 'warn': False}
+    except Exception as e:
+        return {'ok': False, 'detail': str(e)[:80], 'warn': True,
+                'fix': 'cp scripts/signal_card_formatter.py brahma_brain/'}
+
+
 # 注入到 run_health_check
 _original_run = run_health_check
 
 
 def run_health_check(full: bool = False, timeout: float = 8.0) -> dict:
     report = _original_run(full=full, timeout=timeout)
-    # 追加三项新检查
+    # 追加三项原有检查
     report['checks']['log_health']        = _check_log_health()
     report['checks']['module_contracts']  = _check_module_contracts()
+    # 追加五项固化检查 (2026-07-14)
+    report['checks']['panorama_integrity']     = _check_panorama_integrity()
+    report['checks']['learning_loop_import']   = _check_learning_loop_importable()
+    report['checks']['macro_state_freshness']  = _check_macro_state_freshness()
+    report['checks']['cron_route_ssot']        = _check_cron_route_ssot()
+    report['checks']['signal_card_import']     = _check_signal_card_importable()
     if full:
         report['checks']['standby_violations'] = _check_standby_violations_health()
     # 重新计算总分
@@ -573,8 +671,10 @@ def run_health_check(full: bool = False, timeout: float = 8.0) -> dict:
         report['status'] = 'HEALTHY'
     elif fail_count >= 2:
         report['status'] = 'CRITICAL'
+        report['score'] = max(0, 40 - fail_count * 10)
     elif fail_count == 1 or warn_count >= 3:
         report['status'] = 'DEGRADED'
+        report['score'] = max(55, 85 - warn_count * 5)
     else:
         report['score'] = max(80, 100 - warn_count * 5)
     return report

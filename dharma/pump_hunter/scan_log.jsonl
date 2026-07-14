@@ -398,3 +398,9 @@
 {"ts": "2026-07-14T01:56:17.862621", "alerts": 10, "new": 0, "elapsed": 26.840656995773315, "regime": "CHOP_MID"}
 {"ts": "2026-07-14T01:57:31.229703", "alerts": 10, "new": 0, "elapsed": 30.49298930168152, "regime": "CHOP_MID"}
 {"ts": "2026-07-14T02:26:08.730418", "alerts": 10, "new": 2, "elapsed": 18.668800115585327, "regime": "CHOP_MID"}
+{"ts": "2026-07-14T02:56:13.275302", "alerts": 10, "new": 0, "elapsed": 18.465518474578857, "regime": "CHOP_MID"}
+{"ts": "2026-07-14T03:26:14.456591", "alerts": 12, "new": 0, "elapsed": 19.45258378982544, "regime": "CHOP_MID"}
+{"ts": "2026-07-14T03:56:17.124463", "alerts": 10, "new": 0, "elapsed": 22.336613416671753, "regime": "CHOP_MID"}
+{"ts": "2026-07-14T04:26:12.037757", "alerts": 11, "new": 0, "elapsed": 17.61350703239441, "regime": "CHOP_MID"}
+{"ts": "2026-07-14T04:56:15.421430", "alerts": 9, "new": 0, "elapsed": 17.84011197090149, "regime": "CHOP_MID"}
+{"ts": "2026-07-14T05:26:12.235648", "alerts": 7, "new": 0, "elapsed": 17.85857629776001, "regime": "CHOP_MID"}

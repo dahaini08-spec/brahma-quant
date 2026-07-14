@@ -10,5 +10,16 @@
     "regime": "BULL_EARLY",
     "score": 163,
     "source": "brahma_autonomous"
+  },
+  "BTCUSDT": {
+    "symbol": "BTCUSDT",
+    "side": "LONG",
+    "entry": 62299.0,
+    "sl_price": 61133.0,
+    "tp_price": 64146.0,
+    "qty": 0.001,
+    "status": "pending_fill",
+    "order_id": 1070972404396,
+    "note": "限价单GTC 等待成交"
   }
 }
