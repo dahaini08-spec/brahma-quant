@@ -33,6 +33,7 @@ BASE          = Path(__file__).parent.parent
 SL_PATH       = BASE / 'data' / 'position_sl_state.json'
 LOG_PATH      = BASE / 'data' / 'auto_position_manager.log'
 WUQU_PATH     = BASE / 'data' / 'wuqu_positions.json'
+PUSH_DEDUP    = BASE / 'data' / 'apm_push_dedup.json'   # 推送去重状态文件
 
 FAPI        = 'https://fapi.binance.com'
 PUSH_TARGET = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_ID')
@@ -68,6 +69,45 @@ def _signed(method, path, params=None):
         return requests.get(url + '?' + qs, headers=h, timeout=5).json()
     elif method == 'POST':
         return requests.post(url, data=qs, headers=h, timeout=5).json()
+
+
+# ── 推送去重（TSL类：同标的同类型6小时内不重复推送）────────────────
+PUSH_COOLDOWN_SEC = 6 * 3600   # TSL/SL收紧：6小时冷却
+ACTION_COOLDOWN   = {           # 不同动作类型的冷却时间(秒)
+    'TSL_TIGHT'  : 6 * 3600,
+    'TSL_LOCK'   : 6 * 3600,
+    'REDUCE_HALF': 1 * 3600,
+    'FULL_CLOSE' : 0,            # 全平：不限制，立即推
+}
+
+def _load_dedup() -> dict:
+    if PUSH_DEDUP.exists():
+        try:
+            return json.loads(PUSH_DEDUP.read_text())
+        except Exception:
+            pass
+    return {}
+
+def _save_dedup(d: dict):
+    PUSH_DEDUP.write_text(json.dumps(d, ensure_ascii=False))
+
+def _check_dedup(sym: str, action_type: str) -> bool:
+    """返回 True = 已在冷却期内，应跳过推送"""
+    cooldown = ACTION_COOLDOWN.get(action_type, 0)
+    if cooldown == 0:
+        return False
+    d = _load_dedup()
+    key = f'{sym}:{action_type}'
+    last_ts = d.get(key, 0)
+    return (time.time() - last_ts) < cooldown
+
+def _mark_dedup(sym: str, action_type: str):
+    d = _load_dedup()
+    d[f'{sym}:{action_type}'] = time.time()
+    # 清理超过24小时的旧记录
+    cutoff = time.time() - 86400
+    d = {k: v for k, v in d.items() if v > cutoff}
+    _save_dedup(d)
 
 
 def _push(msg: str):
@@ -329,6 +369,10 @@ def run():
                 _sync_wuqu_close(sym, result.get('qty', qty * 0.5), f'APM_REDUCE:{detail[:40]}')
 
         elif decision in ('TSL_TIGHT', 'TSL_LOCK'):
+            if _check_dedup(sym, decision):
+                _log(f'  {decision} {sym}: 冷却中，跳过推送（6H防刷屏）')
+                continue
+            _mark_dedup(sym, decision)
             actions.append(f'🔒 {sym} SL收紧 | {detail}')
             _log(f'  {decision} {sym}: {detail}')
 
