@@ -761,11 +761,23 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
     else:
         lines.append(f'  📈 期权P/C比   skip')
 
-    # miner（BTC专属）
+    # miner BTC专属 / ETH用供应感知替代
     mn_b = ext_det.get('miner', 0)
-    if mn_b is not None and not isinstance(mn_b, str) and 'BTC' in sym_raw:
-        mn_str = f'利润率={mn.get("miner_margin_pct",0):+.1f}%  {mn.get("pressure_signal","?")}' if mn else '数据获取中'
-        lines.append(f'  ⛏️ 矿工卖压    {mn_b:+d}分  {mn_str}')
+    if mn_b is not None and not isinstance(mn_b, str):
+        if 'BTC' in sym_raw:
+            mn_str = f'利润率={mn.get("miner_margin_pct",0):+.1f}%  {mn.get("pressure_signal","?")}' if mn else '数据获取中'
+            lines.append(f'  ⛏️ 矿工卖压    {mn_b:+d}分  {mn_str}')
+        elif 'ETH' in sym_raw:
+            eth_spread = cfr.get('spread', 0) or 0
+            eth_oi1h   = wh.get('oi_1h_chg', 0) or 0
+            if eth_spread > 0.008:
+                supply_sig = f'正FR套利spread={eth_spread:+.4f}% 多头付费追切'
+            elif eth_spread < -0.008:
+                supply_sig = f'负费率 空头付费→自然强化多头'
+            else:
+                supply_sig = f'FR中性(spread={eth_spread:+.4f}%)'
+            oi_str = f'  OI_1h={eth_oi1h:+.2f}%' if abs(eth_oi1h) > 0.1 else ''
+            lines.append(f'  🟣 ETH供应感知  ——  {supply_sig}{oi_str}  (PoS无矿工卖压)')
 
     lines.append('')
 
@@ -779,10 +791,16 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
         f'  RSI  1H={rsi_1h_disp}  4H={rsi_4h_disp}{fr_str}',
     ]
 
-    # Kronos
+    # Kronos + 矛盾预警
     kronos_bd = breakdown.get('s23_kronos', '')
+    p_up_val  = float(r.get('s23_p_up', 0.5) or 0.5)
     if kronos_bd:
         lines.append(f'  Kronos: {str(kronos_bd)[:60]}')
+    # Kronos与score方向矛盾检测
+    if score >= 155 and direction == 'LONG' and p_up_val < 0.15:
+        lines.append(f'  ⚡ Kronos矛盾: score={score:.0f}看多 但p_up={p_up_val:.2f}极低 → 短期动量背离 建议等CHoCH确认')
+    elif score >= 155 and direction == 'SHORT' and p_up_val > 0.85:
+        lines.append(f'  ⚡ Kronos矛盾: score={score:.0f}看空 但p_up={p_up_val:.2f}极高 → 短期反弹风险 建议等回调确认')
 
     # 宏观
     macro_bd = breakdown.get('宏观+事件', '')

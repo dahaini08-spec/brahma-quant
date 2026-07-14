@@ -90,15 +90,21 @@ def get_liq_heatmap(sym: str = 'BTCUSDT') -> dict:
         dist_short = round((nearest_short_liq - px) / px * 100, 2)
         dist_long  = round((px - nearest_long_liq) / px * 100, 2)
 
-        # 评分逻辑：
+        # 评分逻辑：阶梯式评分（扩展触发层级）
         # 上方近距空头清算池 → 做市商有动力拉价轧空 → 多头加分
         # 下方近距多头清算池 → 做市商有动力压价洗盘 → 多头风险
         liq_bull_score = 0
         liq_bear_score = 0
-        if dist_short < 2.0:   liq_bull_score += 8   # 近距空头清算 → 拉升诱因强
-        elif dist_short < 3.5: liq_bull_score += 4
-        if dist_long < 2.0:    liq_bear_score += 8   # 近距多头清算 → 下压风险
-        elif dist_long < 3.5:  liq_bear_score += 4
+        # 空头清算墙距离阶梯（上方）
+        if   dist_short < 2.0:  liq_bull_score += 8
+        elif dist_short < 4.0:  liq_bull_score += 5
+        elif dist_short < 8.0:  liq_bull_score += 3
+        elif dist_short < 15.0: liq_bull_score += 1
+        # 多头清算墙距离阶梯（下方）
+        if   dist_long < 2.0:  liq_bear_score += 8
+        elif dist_long < 4.0:  liq_bear_score += 5
+        elif dist_long < 8.0:  liq_bear_score += 3
+        elif dist_long < 15.0: liq_bear_score += 1
 
         result = {
             'symbol'           : sym,
