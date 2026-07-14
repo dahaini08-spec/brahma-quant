@@ -263,6 +263,24 @@ def check_orphan_modules():
             'trading_agents_bridge',  # s24已归档，由s25替代，保留文件供回滚
             # E类：独立入口模块（AI直接调用 / 被非brahma_core模块调用）
             'brahma_analysis_runner', # 设计院唯一分析入口，AI/CLI直接调用，不被brahma_core静态引用
+            # F类：已迁移到brahma_brain/的独立模块，通过import或cron调用
+            'brahma_engine',          # 核心分析引擎，被brahma_analysis_runner调用
+            'brahma_scoring',         # 评分模块，被brahma_engine调用
+            'brahma_learning_loop',   # 学习闭环，被cron直接调用
+            'brahma_logger',          # 日志模块，被各模块动态引用
+            'brahma_trade',           # 执行模块，被auto_executor调用
+            'brahma_mem_compressor',  # 内存压缩，被AI任务调用
+            'signal_card_formatter',  # 信号卡片格式化，被推送层调用
+            'bull_regime_injector',   # 牛市体制注入，被rsi_watcher调用
+            'circuit_breaker',        # 熔断器，被执行层调用
+            'safety',                 # 安全检查，被执行层调用
+            'module_registry',        # 模块注册，元数据用途
+            'rl_position_ab',         # RL A/B分流，被position_sizer调用
+            'memory_watchdog',        # 内存监控，独立守护
+            'vectorbt_simfactory',    # 回测工厂，离线工具
+            'kronos_inference_v7_patch', # Kronos补丁，被kronos_bridge调用
+            'headroom',               # 风险余量计算，被capital_allocator调用
+            'exception_injector',     # 异常注入测试工具，非生产路径
             # ── [设计院 v18 AutoReview修复 2026-07-02] ──────────────────
             # 以下模块已接入 brahma_analysis_runner（orchestrator层），非孤儿
             'timing_filter',          # 接入runner.run_analysis timing层

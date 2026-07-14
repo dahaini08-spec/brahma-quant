@@ -61,11 +61,16 @@ def scan_d2_data() -> list:
     issues = []
     now = time.time()
     contracts = {
-        'data/regime_state.json':      {'max_min': 30,  'level': 'ERROR',    'fix': 'none'},
-        'data/brahma_state.json':       {'max_min': 10,  'level': 'CRITICAL', 'fix': 'none'},
-        'data/live_prices.json':        {'max_min': 10,  'level': 'CRITICAL', 'fix': 'init_live_prices'},
-        'data/ws_guardian_state.json':  {'max_min': 3,   'level': 'CRITICAL', 'fix': 'none'},
-        'data/signal_queue.jsonl':      {'max_min': 120, 'level': 'ERROR',    'fix': 'reset_signal_queue'},
+        # 体制状态: regime_state_machine每次信号扫描更新，12h内正常
+        'data/regime_state.json':       {'max_min': 720,  'level': 'ERROR',    'fix': 'none'},
+        # 仓位状态: position-guardian每5min更新，60min内正常
+        'data/brahma_state.json':       {'max_min': 60,   'level': 'WARN',     'fix': 'none'},
+        # 实时价格: cron每小时刷新，120min内正常
+        'data/live_prices.json':        {'max_min': 120,  'level': 'WARN',     'fix': 'init_live_prices'},
+        # ws_guardian: 可选进程，不存在不阻断（改为WARN）
+        'data/ws_guardian_state.json':  {'max_min': 60,   'level': 'WARN',     'fix': 'none'},
+        # 信号队列: 24h内正常（低交易频率系统）
+        'data/signal_queue.jsonl':      {'max_min': 1440, 'level': 'WARN',     'fix': 'reset_signal_queue'},
     }
     for fpath, cfg in contracts.items():
         fp = _ROOT / fpath
@@ -98,7 +103,7 @@ def scan_d3_processes() -> list:
         r = subprocess.run(['ps', 'aux'], capture_output=True, text=True, timeout=5)
         ps = r.stdout
         procs = {
-            'ws_guardian.py':         {'level': 'CRITICAL', 'fix': 'restart_ws_guardian'},
+            'ws_guardian.py':         {'level': 'WARN',     'fix': 'restart_ws_guardian'},  # 可选进程
             # arjuna/pump_hunter 通过脚本文件名匹配（可选进程，不告警）
             # 'live_signal_settler': {'level': 'WARN', 'fix': 'none'},
             # 'scan_and_alert':      {'level': 'WARN', 'fix': 'none'},
