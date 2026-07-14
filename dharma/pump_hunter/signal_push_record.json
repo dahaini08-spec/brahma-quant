@@ -1,13 +1,13 @@
 {
   "REUSDT": {
-    "last_push_ts": 1783958620.937608,
+    "last_push_ts": 1783992420.9462218,
     "last_score": 80,
-    "last_push_at": "2026-07-13T16:03:46.459647"
+    "last_push_at": "2026-07-14T01:27:46.515134"
   },
   "1000BONKUSDT": {
-    "last_push_ts": 1783691202.7101314,
-    "last_score": 84,
-    "last_push_at": "2026-07-10T13:46:58.641703"
+    "last_push_ts": 1783992420.9462218,
+    "last_score": 83,
+    "last_push_at": "2026-07-14T01:27:41.759806"
   },
   "TLMUSDT": {
     "last_push_ts": 1783889710.6363873,
@@ -125,14 +125,14 @@
     "last_push_at": "2026-07-13T01:31:33.286705"
   },
   "SKHYUSDT": {
-    "last_push_ts": 1783956767.2455103,
-    "last_score": 115,
-    "last_push_at": "2026-07-13T15:33:12.327865"
+    "last_push_ts": 1783992489.823104,
+    "last_score": 77,
+    "last_push_at": "2026-07-14T01:28:12.222067"
   },
   "SAMSUNGUSDT": {
-    "last_push_ts": 1783927883.1999075,
-    "last_score": 91,
-    "last_push_at": "2026-07-13T07:31:50.816967"
+    "last_push_ts": 1783960416.7495127,
+    "last_score": 70,
+    "last_push_at": "2026-07-13T16:33:40.396171"
   },
   "DRAMUSDT": {
     "last_push_ts": 1783906251.3411362,
@@ -155,9 +155,9 @@
     "last_push_at": "2026-07-13T01:59:55.572431"
   },
   "EWYUSDT": {
-    "last_push_ts": 1783956767.2455103,
-    "last_score": 94,
-    "last_push_at": "2026-07-13T15:33:31.410938"
+    "last_push_ts": 1783992420.9462218,
+    "last_score": 85,
+    "last_push_at": "2026-07-14T01:27:39.292363"
   },
   "CRCLUSDT": {
     "last_push_ts": 1783917010.8638048,
@@ -175,13 +175,48 @@
     "last_push_at": "2026-07-13T09:01:44.237599"
   },
   "XAUTUSDT": {
-    "last_push_ts": 1783956767.2455103,
+    "last_push_ts": 1783992420.9462218,
     "last_score": 90,
-    "last_push_at": "2026-07-13T15:33:50.322159"
+    "last_push_at": "2026-07-14T01:27:24.123783"
   },
   "QQQUSDT": {
     "last_push_ts": 1783956767.2455103,
     "last_score": 75,
     "last_push_at": "2026-07-13T15:33:56.678012"
+  },
+  "APTUSDT": {
+    "last_push_ts": 1783964017.3092384,
+    "last_score": 71,
+    "last_push_at": "2026-07-13T17:33:40.954680"
+  },
+  "PENGUUSDT": {
+    "last_push_ts": 1783964017.3092384,
+    "last_score": 70,
+    "last_push_at": "2026-07-13T17:33:43.164733"
+  },
+  "TRXUSDT": {
+    "last_push_ts": 1783992420.9462218,
+    "last_score": 81,
+    "last_push_at": "2026-07-14T01:27:44.112576"
+  },
+  "SENTUSDT": {
+    "last_push_ts": 1783992489.823104,
+    "last_score": 76,
+    "last_push_at": "2026-07-14T01:28:14.591826"
+  },
+  "PAXGUSDT": {
+    "last_push_ts": 1783992489.823104,
+    "last_score": 75,
+    "last_push_at": "2026-07-14T01:28:17.001382"
+  },
+  "SNXXUSDT": {
+    "last_push_ts": 1783992489.823104,
+    "last_score": 72,
+    "last_push_at": "2026-07-14T01:28:19.308749"
+  },
+  "AAPLUSDT": {
+    "last_push_ts": 1783992489.823104,
+    "last_score": 70,
+    "last_push_at": "2026-07-14T01:28:21.733035"
   }
 }

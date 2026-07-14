@@ -1,14 +1,62 @@
 {
-  "REUSDT": {
-    "score": 80,
-    "price": 0.5421,
-    "entry_lo": 0.539932,
-    "entry_hi": 0.544268,
-    "sl_price": 0.528548,
-    "tp1_price": 0.562429,
-    "expire_ts": 1783960420.3089275,
-    "pushed_ts": 1783958620.937608,
+  "SKHYUSDT": {
+    "score": 77,
+    "price": 160.26,
+    "entry_lo": 159.61896,
+    "entry_hi": 160.90104,
+    "sl_price": 156.2535,
+    "tp1_price": 166.26975,
+    "expire_ts": 1783994289.8221326,
+    "pushed_ts": 1783992489.823104,
     "auto_executed": false,
-    "reminded": false
+    "reminded": true
+  },
+  "SENTUSDT": {
+    "score": 76,
+    "price": 0.01413,
+    "entry_lo": 0.014073,
+    "entry_hi": 0.014187,
+    "sl_price": 0.013777,
+    "tp1_price": 0.01466,
+    "expire_ts": 1783994282.8527014,
+    "pushed_ts": 1783992489.823104,
+    "auto_executed": false,
+    "reminded": true
+  },
+  "PAXGUSDT": {
+    "score": 75,
+    "price": 3994.77,
+    "entry_lo": 3978.79092,
+    "entry_hi": 4010.74908,
+    "sl_price": 3894.90075,
+    "tp1_price": 4144.573875,
+    "expire_ts": 1783994279.6288936,
+    "pushed_ts": 1783992489.823104,
+    "auto_executed": false,
+    "reminded": true
+  },
+  "SNXXUSDT": {
+    "score": 72,
+    "price": 21.67,
+    "entry_lo": 21.58332,
+    "entry_hi": 21.75668,
+    "sl_price": 21.12825,
+    "tp1_price": 22.482625,
+    "expire_ts": 1783994289.6094832,
+    "pushed_ts": 1783992489.823104,
+    "auto_executed": false,
+    "reminded": true
+  },
+  "AAPLUSDT": {
+    "score": 70,
+    "price": 317.01,
+    "entry_lo": 315.74196,
+    "entry_hi": 318.27804,
+    "sl_price": 309.08475,
+    "tp1_price": 328.897875,
+    "expire_ts": 1783994286.5703447,
+    "pushed_ts": 1783992489.823104,
+    "auto_executed": false,
+    "reminded": true
   }
 }

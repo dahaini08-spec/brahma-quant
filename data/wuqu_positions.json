@@ -70,20 +70,6 @@
     "success": true
   },
   {
-    "symbol": "DODOXUSDT",
-    "side": "LONG",
-    "size": 604.0,
-    "entry_price": 0.022347,
-    "mark_price": 0.022347,
-    "stop_loss": 0.0217,
-    "take_profit": 0.023,
-    "leverage": 3.0,
-    "notional_usdt": 13.4976,
-    "unrealized_pnl": 0.0,
-    "updated_at": 1783950818.7229285,
-    "success": true
-  },
-  {
     "symbol": "SPYUSDT",
     "side": "LONG",
     "size": 0.01,
@@ -151,20 +137,6 @@
     "notional_usdt": 22.7578,
     "unrealized_pnl": 0.3089,
     "updated_at": 1783950818.7229693,
-    "success": true
-  },
-  {
-    "symbol": "TUSDT",
-    "side": "SHORT",
-    "size": 2823.0,
-    "entry_price": 0.0047859999999999995,
-    "mark_price": 0.004785,
-    "stop_loss": 0.0049,
-    "take_profit": 0.0046,
-    "leverage": 3.0,
-    "notional_usdt": 13.5081,
-    "unrealized_pnl": 0.0028,
-    "updated_at": 1783950818.7229743,
     "success": true
   },
   {
