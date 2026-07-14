@@ -170,5 +170,22 @@
     "grade": 87,
     "note": "梵天自主决策 grade>=80白名单 score=170.8 [2026-07-14]",
     "created_at": "2026-07-14T04:00:42Z"
+  },
+  {
+    "symbol": "ETHUSDT",
+    "side": "LONG",
+    "status": "open",
+    "order_id": 8389766233499376315,
+    "entry_price": 1785.5,
+    "qty": 0.02,
+    "sl_price": 1746.6,
+    "tp1_price": 1824.4,
+    "tp2_price": 1855.5,
+    "leverage": 5,
+    "regime": "BULL_TREND",
+    "score": 174.8,
+    "grade": 93,
+    "note": "梵天自主 score=174.8 grade=93 READY 苏摩111 [2026-07-14]",
+    "created_at": "2026-07-14T08:28:44Z"
   }
 ]

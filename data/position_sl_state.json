@@ -1,15 +1,13 @@
 {
   "ETHUSDT": {
-    "sl_price": 1745.821,
+    "symbol": "ETHUSDT",
     "side": "LONG",
-    "tp1": 1848.0,
-    "tp2": 1900.0,
-    "entry": 1781.45,
-    "qty": 0.012,
-    "ts": 1783938905.883467,
-    "regime": "BULL_EARLY",
-    "score": 163,
-    "source": "brahma_autonomous"
+    "entry": 1785.5,
+    "sl_price": 1746.6,
+    "tp_price": 1824.4,
+    "qty": 0.02,
+    "status": "active",
+    "order_id": 8389766233499376315
   },
   "BTCUSDT": {
     "symbol": "BTCUSDT",
