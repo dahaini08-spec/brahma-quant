@@ -288,14 +288,20 @@ def write_macro_state() -> dict:
 
     snap = {'ts': datetime.now(timezone.utc).isoformat(), 'epoch': time.time()}
 
-    # DXY
+    # DXY — 字段映射修正 (2026-07-14 科学落地)
     try:
         dxy = get_dxy_realtime()
+        direction = dxy.get('direction', 'FLAT')
+        chg1h     = dxy.get('chg_1h_pct', 0.0)
+        chg24     = dxy.get('chg_24h_pct', 0.0)
+        # 方向性评分：DXY涨→加密承压(-3)，DXY跌→加密利好(+3)
+        dxy_score = -3 if direction == 'UP' else (3 if direction == 'DOWN' else 0)
         snap['dxy'] = {
-            'value':  dxy.get('dxy'),
-            'change': dxy.get('dxy_change_1d'),
-            'signal': dxy.get('signal'),
-            'score':  dxy.get('score', 0),
+            'value':  dxy.get('price'),
+            'change': chg24,
+            'chg_1h': chg1h,
+            'signal': direction,
+            'score':  dxy_score,
         }
     except Exception as e:
         snap['dxy'] = {'error': str(e)}

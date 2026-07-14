@@ -130,9 +130,9 @@
     "last_push_at": "2026-07-14T01:28:12.222067"
   },
   "SAMSUNGUSDT": {
-    "last_push_ts": 1783960416.7495127,
-    "last_score": 70,
-    "last_push_at": "2026-07-13T16:33:40.396171"
+    "last_push_ts": 1783995968.7304175,
+    "last_score": 77,
+    "last_push_at": "2026-07-14T02:26:11.166112"
   },
   "DRAMUSDT": {
     "last_push_ts": 1783906251.3411362,
@@ -218,5 +218,10 @@
     "last_push_ts": 1783992489.823104,
     "last_score": 70,
     "last_push_at": "2026-07-14T01:28:21.733035"
+  },
+  "WDCUSDT": {
+    "last_push_ts": 1783995968.7304175,
+    "last_score": 72,
+    "last_push_at": "2026-07-14T02:26:13.881173"
   }
 }
