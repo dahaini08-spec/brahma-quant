@@ -79,7 +79,7 @@ def run_calibration_stats(dry: bool = False) -> dict:
         direc  = rec.get('direction', rec.get('matrix_key','?').split(':')[1] if rec.get('matrix_key','?').count(':') >= 1 else '?')
         score  = float(rec.get('score', 0))
         result = rec.get('result', rec.get('outcome', 'UNKNOWN'))
-        pnl    = float(rec.get('pnl', rec.get('pnl_pct', 0)))
+        pnl    = float(rec.get('pnl', rec.get('pnl_pct', 0)) or 0)
 
         # score 分桶
         if score >= 165:  bucket = '165+'

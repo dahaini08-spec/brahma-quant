@@ -94,8 +94,24 @@ def write(signal: dict) -> bool:
             _live_entry.setdefault('rr1', signal.get('rr1', signal.get('rr', 1.8)))
             _live_entry.setdefault('sl_pct', signal.get('sl_pct', 2.0))
             _live_entry['_bus_sync'] = True   # 标记来源为signal_bus
-            with open(str(_live_log), 'a') as _lf:
-                _lf.write(__import__('json').dumps(_live_entry, ensure_ascii=False) + '\n')
+            # sha8 去重 key: symbol+direction+score整数+1H时间窗口
+            import hashlib as _hs, time as _tt
+            _dedup_base = f"{signal.get('symbol','')}_{signal.get('direction','')}_{int(signal.get('score',0))}_{int(_tt.time()//3600)}"
+            _live_entry['sha8'] = _hs.md5(_dedup_base.encode()).hexdigest()[:8]
+            # 去重检查: 同sha8在过去1小时内已存在则跳过
+            _existing_shas = set()
+            if _live_log.exists():
+                _cutoff = _tt.time() - 3600
+                try:
+                    for _line in _live_log.read_text().split('\n')[-200:]:
+                        if not _line.strip(): continue
+                        _d = __import__('json').loads(_line)
+                        if _d.get('ts',0) > _cutoff:
+                            _existing_shas.add(_d.get('sha8',''))
+                except: pass
+            if _live_entry['sha8'] not in _existing_shas:
+                with open(str(_live_log), 'a') as _lf:
+                    _lf.write(__import__('json').dumps(_live_entry, ensure_ascii=False) + '\n')
         except Exception as _sync_e:
             pass  # 同步失败不影响主写入
         return True

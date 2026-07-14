@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+# sys.path 强制修复 — cron环境下路径不稳定根因修复 [设计院封印 2026-07-14]
+import sys as _sys, os as _os
+_TRADING_SYS = _os.path.abspath(_os.path.join(_os.path.dirname(__file__), '..', '..'))
+if _TRADING_SYS not in _sys.path:
+    _sys.path.insert(0, _TRADING_SYS)
 """
 暴涨猎手 v4.0 — 设计院全面完善
 2026-07-10 苏摩111授权
