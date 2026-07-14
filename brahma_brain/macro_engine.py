@@ -334,6 +334,22 @@ def write_macro_state() -> dict:
     # 宏观综合分
     macro_score = (snap.get('dxy', {}).get('score', 0) or 0)
     macro_score += (snap.get('fng_score', 0) or 0)
+    # DXY FLAT + 极度恐慌 → 加密反弹窗口 +2（低波动环境下做多机会）
+    dxy_sig = snap.get('dxy', {}).get('signal', '')
+    fng_val = snap.get('fear_greed', {}).get('value', 50)
+    if isinstance(fng_val, int) and dxy_sig == 'FLAT':
+        if fng_val < 25:
+            macro_score += 2
+            snap['macro_note'] = 'DXY平稳+极度恐慌→反弹窗口 +2'
+        elif fng_val < 35:
+            macro_score += 1
+            snap['macro_note'] = 'DXY平稳+恐慌→轻度反弹信号 +1'
+    # BTC.D > 55% 山寨承压额外记录
+    btc_d = snap.get('btc_dominance', 0) or 0
+    if btc_d > 55:
+        macro_score -= 2
+        snap.setdefault('macro_note', '')
+        snap['macro_note'] += f' BTC.D={btc_d:.1f}%高位吸血-2'
     snap['macro_score'] = int(macro_score)
     snap['macro_bias']  = 'RISK_ON' if macro_score > 5 else ('RISK_OFF' if macro_score < -5 else 'NEUTRAL')
 

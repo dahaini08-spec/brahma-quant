@@ -90,7 +90,7 @@ def get_liq_heatmap(sym: str = 'BTCUSDT') -> dict:
         dist_short = round((nearest_short_liq - px) / px * 100, 2)
         dist_long  = round((px - nearest_long_liq) / px * 100, 2)
 
-        # 评分逻辑：阶梯式评分（扩展触发层级）
+        # 评分逻辑：阶梯式评分 + 相对位置加分（解决大币清算墙永远33%+得0分问题）
         # 上方近距空头清算池 → 做市商有动力拉价轧空 → 多头加分
         # 下方近距多头清算池 → 做市商有动力压价洗盘 → 多头风险
         liq_bull_score = 0
@@ -105,6 +105,16 @@ def get_liq_heatmap(sym: str = 'BTCUSDT') -> dict:
         elif dist_long < 4.0:  liq_bear_score += 5
         elif dist_long < 8.0:  liq_bear_score += 3
         elif dist_long < 15.0: liq_bear_score += 1
+        # 相对位置加分（价格在多空清算区间内的相对位置）
+        # 无论距离，只要价格更靠近多头清算侧（偏折价区）→ 额外+1~+2
+        if dist_short > 0 and dist_long > 0:
+            total_range = dist_short + dist_long
+            # 折价率: 0=紧贴空头清算, 1=紧贴多头清算
+            rel_pos = dist_short / total_range
+            if rel_pos > 0.6:    liq_bull_score += 2  # 价格偏低侧，距多头清算更近
+            elif rel_pos > 0.5:  liq_bull_score += 1  # 略偏低侧
+            elif rel_pos < 0.4:  liq_bear_score += 2  # 价格偏高侧，距空头清算更近
+            elif rel_pos < 0.5:  liq_bear_score += 1
 
         result = {
             'symbol'           : sym,

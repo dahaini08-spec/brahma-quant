@@ -106,7 +106,7 @@ DATA_CHECKS = [
     ('data/live_signal_log.jsonl',  24*3600, '信号日志',   None),
     ('data/wuqu_positions.json',    24*3600, '持仓状态',   None),
     ('data/ic_tracker_state.json',  48*3600, 'IC统计',     'python3 scripts/brahma_learning_loop.py'),
-    ('brahma_brain/brahma_state.json', 6*3600, '体制状态', 'python3 scripts/rsi_structure_watcher.py'),
+    ('data/regime_state.json',          12*3600, '体制状态', 'python3 scripts/rsi_structure_watcher.py'),
 ]
 for rel, max_age, name, fix_cmd in DATA_CHECKS:
     p = BASE / rel
