@@ -8,6 +8,38 @@ brahma_brain/formatter.py — 分析报告格式化模块
 from typing import Any
 
 
+def _fmt_price(price: float) -> str:
+    """
+    动态价格精度格式化——小币补全小数位，比特币等大币保持整数格式
+    < 0.0001  → 8位小数   e.g. 0.00003412
+    < 0.01    → 6位小数   e.g. 0.003412
+    < 1       → 4位小数   e.g. 0.3412
+    < 10      → 3位小数   e.g. 2.341
+    < 1000    → 2位小数   e.g. 62.34
+    >= 1000   → 2位小数+逗号  e.g. 62,525.30
+    """
+    if price is None:
+        return '?'
+    try:
+        price = float(price)
+    except Exception:
+        return str(price)
+    if price == 0:
+        return '0'
+    if price < 0.0001:
+        return f'${price:.8f}'
+    elif price < 0.01:
+        return f'${price:.6f}'
+    elif price < 1:
+        return f'${price:.4f}'
+    elif price < 10:
+        return f'${price:.3f}'
+    elif price < 1000:
+        return f'${price:,.2f}'
+    else:
+        return f'${price:,.2f}'
+
+
 def format_report(r: dict) -> str:
     """生成完整分析报告文本 - 全能力六层版"""
     if 'error' in r:
@@ -585,9 +617,9 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
             if bull_obs or bear_obs:
                 smc_lines.append('  📦 Order Blocks:')
                 for ob in bull_obs[:2]:
-                    smc_lines.append(f'    🟢 做多OB ${ob["low"]:,.1f}~${ob["high"]:,.1f}  距当前{ob["dist_pct"]:.2f}%')
+                    smc_lines.append(f'    🟢 做多OB {_fmt_price(ob["low"])}~{_fmt_price(ob["high"])}  距当前{ob["dist_pct"]:.2f}%')
                 for ob in bear_obs[:2]:
-                    smc_lines.append(f'    🔴 做空OB ${ob["low"]:,.1f}~${ob["high"]:,.1f}  距当前{ob["dist_pct"]:.2f}%')
+                    smc_lines.append(f'    🔴 做空OB {_fmt_price(ob["low"])}~{_fmt_price(ob["high"])}  距当前{ob["dist_pct"]:.2f}%')
 
             # FVG展示
             bull_fvg = fvg_data.get('bull_fvg', [])
@@ -596,10 +628,10 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
                 smc_lines.append('  🕳️ FVG(公平价值缺口):')
                 for fvg in bull_fvg[:2]:
                     filled = '✅已回填' if fvg.get('filled') else '⏳未回填'
-                    smc_lines.append(f'    🟢 多FVG ${fvg["bottom"]:,.1f}~${fvg["top"]:,.1f}  gap={fvg["gap_pct"]:.2f}%  {filled}')
+                    smc_lines.append(f'    🟢 多FVG {_fmt_price(fvg["bottom"])}~{_fmt_price(fvg["top"])}  gap={fvg["gap_pct"]:.2f}%  {filled}')
                 for fvg in bear_fvg[:2]:
                     filled = '✅已回填' if fvg.get('filled') else '⏳未回填'
-                    smc_lines.append(f'    🔴 空FVG ${fvg["bottom"]:,.1f}~${fvg["top"]:,.1f}  gap={fvg["gap_pct"]:.2f}%  {filled}')
+                    smc_lines.append(f'    🔴 空FVG {_fmt_price(fvg["bottom"])}~{_fmt_price(fvg["top"])}  gap={fvg["gap_pct"]:.2f}%  {filled}')
 
             # 流动性池
             eq_highs = liq_data.get('equal_highs', [])
@@ -607,9 +639,9 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
             if eq_highs or eq_lows:
                 smc_lines.append('  💧 流动性池:')
                 for h in eq_highs[:2]:
-                    smc_lines.append(f'    🔴 空头止损池(等高) ${h["level"]:,.1f}  距{h["dist_pct"]:.2f}%')
+                    smc_lines.append(f'    🔴 空头止损池(等高) {_fmt_price(h["level"])}  距{h["dist_pct"]:.2f}%')
                 for l in eq_lows[:2]:
-                    smc_lines.append(f'    🟢 多头止损池(等低) ${l["level"]:,.1f}  距{l["dist_pct"]:.2f}%')
+                    smc_lines.append(f'    🟢 多头止损池(等低) {_fmt_price(l["level"])}  距{l["dist_pct"]:.2f}%')
 
             # PD区域
             if pd_data:
@@ -630,14 +662,14 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
             liq3_lines = ['**B3 · 清算集群地图**']
             liq3_lines.append('  📊 空头清算墙(价格离当前%→清算位):')
             for pct, lvl in sorted(short_map.items(), key=lambda x: int(x[0]))[:4]:
-                liq3_lines.append(f'    +{pct}% → ${lvl:,.0f}')
+                liq3_lines.append(f'    +{pct}% → {_fmt_price(lvl)}')
             liq3_lines.append('  📊 多头清算墙:')
             for pct, lvl in sorted(long_map.items(), key=lambda x: int(x[0]))[:4]:
-                liq3_lines.append(f'    -{pct}% → ${lvl:,.0f}')
+                liq3_lines.append(f'    -{pct}% → {_fmt_price(lvl)}')
             if ask_cls:
-                liq3_lines.append(f'  📌 订单簿ASK密集: ${ask_cls[0][0]:,.1f}  量={ask_cls[0][1]/1e6:.2f}M')
+                liq3_lines.append(f'  📌 订单簿ASK密集: {_fmt_price(ask_cls[0][0])}  量={ask_cls[0][1]/1e6:.2f}M')
             if bid_cls:
-                liq3_lines.append(f'  📌 订单簿BID密集: ${bid_cls[0][0]:,.1f}  量={bid_cls[0][1]/1e6:.2f}M')
+                liq3_lines.append(f'  📌 订单簿BID密集: {_fmt_price(bid_cls[0][0])}  量={bid_cls[0][1]/1e6:.2f}M')
             lines += liq3_lines
             lines.append('')
 
@@ -697,7 +729,7 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
         nll = liq.get('nearest_long_liq', 0)
         d_short = liq.get('dist_to_short_liq', 0)
         d_long  = liq.get('dist_to_long_liq', 0)
-        liq_str = f'空头清算${nsl:,.0f}(+{d_short:.1f}%)  多头清算${nll:,.0f}(-{d_long:.1f}%)' if nsl else '数据获取中'
+        liq_str = f'空头清算{_fmt_price(nsl)}(+{d_short:.1f}%)  多头清算{_fmt_price(nll)}(-{d_long:.1f}%)' if nsl else '数据获取中'
         lines.append(f'  🔥 清算热力图  {liq_b:+d}分  {liq_str}')
     else:
         lines.append(f'  🔥 清算热力图  skip({liq_b})')
