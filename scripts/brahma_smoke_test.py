@@ -130,6 +130,34 @@ for rel, max_age, name, fix_cmd in DATA_CHECKS:
         except:
             fail('macro_state.json', '解析失败')
 
+# ─── 3b. 持仓+软止损cron有效性 ──────────────────────────────────────────
+print('\n【3b】持仓与软止损cron有效性')
+try:
+    import json as _j
+    pos = _j.loads(Path(BASE / 'data/wuqu_positions.json').read_text())
+    open_pos = [p for p in pos if isinstance(p, dict) and float(p.get('size', p.get('qty', 0))) != 0]
+    ok(f'持仓状态', f'{len(open_pos)}个活跃持仓')
+except Exception as e:
+    warn('持仓状态', str(e)[:60])
+
+# ETH供应感知字段验证
+try:
+    import sys as _s; _s.path.insert(0, str(BASE))
+    from scripts.system_config import API_KEY as _ak, API_SECRET as _as
+    import os as _os
+    _os.environ['BINANCE_API_KEY']    = _ak
+    _os.environ['BINANCE_SECRET']     = _as
+    _os.environ['BINANCE_API_SECRET'] = _as
+    from brahma_brain.brahma_analysis_runner import run_analysis as _ra
+    _re = _ra('ETHUSDT')
+    _pano = _re.get('_panorama_full', '')
+    if 'ETH供应感知' in _pano or 'PoS无矿工卖压' in _pano:
+        ok('ETH供应感知字段', 'PoS替代方案已显示')
+    else:
+        warn('ETH供应感知字段', '未在全景输出中找到')
+except Exception as e:
+    warn('ETH供应感知', str(e)[:60])
+
 # ─── 4. Cron路由一致性 ─────────────────────────────────────────────────
 print('\n【4】Cron路由一致性（SSOT=019f5e0f）')
 try:

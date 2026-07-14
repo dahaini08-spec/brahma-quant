@@ -5,9 +5,9 @@
     "last_push_at": "2026-07-14T01:27:46.515134"
   },
   "1000BONKUSDT": {
-    "last_push_ts": 1783992420.9462218,
+    "last_push_ts": 1784015772.2332153,
     "last_score": 83,
-    "last_push_at": "2026-07-14T01:27:41.759806"
+    "last_push_at": "2026-07-14T07:56:17.768156"
   },
   "TLMUSDT": {
     "last_push_ts": 1783889710.6363873,
@@ -125,9 +125,9 @@
     "last_push_at": "2026-07-13T01:31:33.286705"
   },
   "SKHYUSDT": {
-    "last_push_ts": 1783992489.823104,
-    "last_score": 77,
-    "last_push_at": "2026-07-14T01:28:12.222067"
+    "last_push_ts": 1784017573.7075882,
+    "last_score": 107,
+    "last_push_at": "2026-07-14T08:26:38.403215"
   },
   "SAMSUNGUSDT": {
     "last_push_ts": 1783995968.7304175,
@@ -140,9 +140,9 @@
     "last_push_at": "2026-07-13T01:32:18.005454"
   },
   "HBARUSDT": {
-    "last_push_ts": 1783907979.8819737,
-    "last_score": 75,
-    "last_push_at": "2026-07-13T01:59:48.760956"
+    "last_push_ts": 1784017573.7075882,
+    "last_score": 81,
+    "last_push_at": "2026-07-14T08:26:43.070362"
   },
   "MSTRUSDT": {
     "last_push_ts": 1783907979.8819737,
@@ -155,9 +155,9 @@
     "last_push_at": "2026-07-13T01:59:55.572431"
   },
   "EWYUSDT": {
-    "last_push_ts": 1783992420.9462218,
-    "last_score": 85,
-    "last_push_at": "2026-07-14T01:27:39.292363"
+    "last_push_ts": 1784008572.3417184,
+    "last_score": 97,
+    "last_push_at": "2026-07-14T05:56:36.307072"
   },
   "CRCLUSDT": {
     "last_push_ts": 1783917010.8638048,
@@ -170,14 +170,14 @@
     "last_push_at": "2026-07-13T08:06:17.896029"
   },
   "1000SHIBUSDT": {
-    "last_push_ts": 1783933301.82368,
+    "last_push_ts": 1784017573.7075882,
     "last_score": 73,
-    "last_push_at": "2026-07-13T09:01:44.237599"
+    "last_push_at": "2026-07-14T08:26:45.334744"
   },
   "XAUTUSDT": {
-    "last_push_ts": 1783992420.9462218,
-    "last_score": 90,
-    "last_push_at": "2026-07-14T01:27:24.123783"
+    "last_push_ts": 1784008572.3417184,
+    "last_score": 92,
+    "last_push_at": "2026-07-14T05:56:52.123784"
   },
   "QQQUSDT": {
     "last_push_ts": 1783956767.2455103,
@@ -223,5 +223,15 @@
     "last_push_ts": 1783995968.7304175,
     "last_score": 72,
     "last_push_at": "2026-07-14T02:26:13.881173"
+  },
+  "1000XECUSDT": {
+    "last_push_ts": 1784017573.7075882,
+    "last_score": 82,
+    "last_push_at": "2026-07-14T08:26:40.637586"
+  },
+  "ARBUSDT": {
+    "last_push_ts": 1784017573.7075882,
+    "last_score": 73,
+    "last_push_at": "2026-07-14T08:26:47.518009"
   }
 }
