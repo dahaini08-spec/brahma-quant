@@ -6,8 +6,10 @@
     "sl_price": 1746.6,
     "tp_price": 1824.4,
     "qty": 0.02,
-    "status": "active",
-    "order_id": 8389766233499376315
+    "status": "closed",
+    "order_id": 8389766233499376315,
+    "closed_at": "2026-07-14T23:50:21Z",
+    "realized_pnl": 1.7269
   },
   "BTCUSDT": {
     "symbol": "BTCUSDT",

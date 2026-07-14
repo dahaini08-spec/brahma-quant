@@ -180,5 +180,20 @@
     "unrealized_pnl": 0.0,
     "updated_at": 1784036099.602691,
     "success": true
+  },
+  {
+    "symbol": "ETHUSDT",
+    "side": "LONG",
+    "status": "closed",
+    "entry_price": 1785.5,
+    "exit_price": 1871.85,
+    "qty": 0.02,
+    "realized_pnl": 1.7269,
+    "pnl_pct": 4.84,
+    "rr_realized": 2.22,
+    "regime": "BULL_TREND",
+    "score": 174.8,
+    "closed_at": "2026-07-14T23:50:21Z",
+    "note": "APM REDUCE_HALF×2 RSI_1H>62+浮盈>1.5% 自动止盈 [2026-07-14]"
   }
 ]
