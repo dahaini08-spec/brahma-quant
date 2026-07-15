@@ -631,14 +631,29 @@ def check_execution_pipeline() -> dict:
     else:
         issues.append('position_tsl_monitor.py 不存在')
 
-    # 检查 live_signal_log 队列是否积压（超100条未处理视为异常）
+    # 检查 live_signal_log 队列是否积压
+    # 正确逻辑: 只统计24H内 valid=True + score>=155 + 未推送的信号
     lsl = BASE / 'data' / 'live_signal_log.jsonl'
     if lsl.exists():
         try:
-            lines = lsl.read_text().strip().split('\n')
-            pending = sum(1 for l in lines if '"action":"ENTER"' in l or
-                          ('"valid":true' in l.lower() or '"valid": true' in l.lower()))
-            if pending > 50:
+            import json as _json
+            now_ts = time.time()
+            pending = 0
+            for l in lsl.read_text().strip().splitlines():
+                try:
+                    r = _json.loads(l)
+                    ts = float(r.get('ts', 0))
+                    # 仅统计24H内、有效、未推送的真实积压
+                    if (now_ts - ts < 86400
+                            and r.get('valid') is True
+                            and float(r.get('score', 0)) >= 155
+                            and not r.get('pushed')
+                            and not r.get('sent')):
+                        pending += 1
+                except Exception:
+                    pass
+            # 阈值提高到20条（真实积压）
+            if pending > 20:
                 issues.append(f'信号队列积压: {pending}条有效信号待处理')
         except Exception:
             pass
