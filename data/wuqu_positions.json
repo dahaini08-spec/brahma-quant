@@ -58,7 +58,7 @@
   {
     "symbol": "MAGMAUSDT",
     "side": "SHORT",
-    "size": 37.0,
+    "size": 1.0,
     "entry_price": 0.35695999999999994,
     "mark_price": 0.26440782,
     "stop_loss": 0.3677,
@@ -66,8 +66,9 @@
     "leverage": 3.0,
     "notional_usdt": 9.7831,
     "unrealized_pnl": 3.4244,
-    "updated_at": 1784036099.6026263,
-    "success": true
+    "updated_at": 1784086063.9316843,
+    "success": true,
+    "last_close_reason": "APM_REDUCE:RSI1H=63.4≥62.0 + 浮盈11.37% → 锁定利润"
   },
   {
     "symbol": "SKHYUSDT",

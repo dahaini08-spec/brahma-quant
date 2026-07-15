@@ -1,7 +1,7 @@
 {
   "version": 5814,
   "schema": "brahma_state_v1",
-  "last_updated": "2026-07-15T01:33:39.312811+00:00",
+  "last_updated": "2026-07-15T07:34:08.507932+00:00",
   "last_writer": "ghost_cleanup_20260704_wuqu",
   "last_binance_sync": "2026-06-26T01:01:15Z",
   "positions": [
@@ -360,14 +360,14 @@
     "regime": "BULL_TREND",
     "phase": "CORRECTION",
     "momentum": "LONG",
-    "rsi_1h": 69.14,
-    "rsi_4h": 62.59,
-    "rsi_1d": 55.23,
+    "rsi_1h": 57.65,
+    "rsi_4h": 59.95,
+    "rsi_1d": 54.38,
     "trend_1h": "BULL",
     "trend_4h": "BULL",
     "trend_1d": "BEAR",
     "source": "market_state.detect_regime",
-    "ts": 1784079219.9214993
+    "ts": 1784100848.9824257
   },
   "realized_pnl": [],
   "last_close": {
@@ -382,8 +382,8 @@
     "note": "设计院CONFIRM执行-即时平仓(LIMIT单触发)"
   },
   "market_prices": {
-    "BTCUSDT": 64758.7,
-    "ETHUSDT": 1876.33
+    "BTCUSDT": 64552.7,
+    "ETHUSDT": 1867.0
   },
   "audit_log": [
     {
@@ -899,10 +899,10 @@
   "paper_nav": 130.46588703,
   "available_balance": 393.05,
   "_last_binance_sync": "2026-06-17T02:17:37.645507+00:00",
-  "timestamp": 1784079219.3132699,
-  "updated_at": "2026-07-15T01:33:39.312811+00:00",
-  "last_scan_ts": "2026-07-15T01:33:39.312811+00:00",
-  "last_update": 1784079219.3132691,
+  "timestamp": 1784100848.508376,
+  "updated_at": "2026-07-15T07:34:08.507932+00:00",
+  "last_scan_ts": "2026-07-15T07:34:08.507932+00:00",
+  "last_update": 1784100848.5083756,
   "regime_label": "BULL_TREND",
   "position_open": true,
   "positions_updated_at": "2026-06-18T15:08:11Z",
@@ -926,10 +926,10 @@
   },
   "position_sync_ts": "2026-06-22T03:12:23Z",
   "last_wuqu_sync": "2026-06-22T14:26:58Z",
-  "last_price": 64758.7,
-  "btc_price": 64758.7,
-  "price": 64758.7,
-  "eth_price": 1876.33,
+  "last_price": 64552.7,
+  "btc_price": 64552.7,
+  "price": 64552.7,
+  "eth_price": 1867.0,
   "last_reconciled": "2026-06-28T09:00:07.606910+00:00",
   "regime_votes": {
     "BULL_TREND": 1,
