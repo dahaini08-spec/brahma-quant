@@ -1,13 +1,13 @@
 {
   "REUSDT": {
-    "last_push_ts": 1784109549.0273898,
-    "last_score": 74,
-    "last_push_at": "2026-07-15T09:59:14.323304"
+    "last_push_ts": 1784154551.166958,
+    "last_score": 82,
+    "last_push_at": "2026-07-15T22:29:16.740305"
   },
   "1000BONKUSDT": {
-    "last_push_ts": 1784100519.3708327,
-    "last_score": 85,
-    "last_push_at": "2026-07-15T07:29:16.287486"
+    "last_push_ts": 1784132948.637052,
+    "last_score": 79,
+    "last_push_at": "2026-07-15T16:29:35.194631"
   },
   "TLMUSDT": {
     "last_push_ts": 1783889710.6363873,
@@ -40,9 +40,9 @@
     "last_push_at": "2026-07-11T08:02:03.942257"
   },
   "SKLUSDT": {
-    "last_push_ts": 1783956767.2455103,
-    "last_score": 84,
-    "last_push_at": "2026-07-13T15:33:54.472928"
+    "last_push_ts": 1784156351.846455,
+    "last_score": 70,
+    "last_push_at": "2026-07-15T22:59:14.092170"
   },
   "VANRYUSDT": {
     "last_push_ts": 1784077084.4441535,
@@ -260,13 +260,18 @@
     "last_push_at": "2026-07-15T04:28:33.166530"
   },
   "ZBTUSDT": {
-    "last_push_ts": 1784118550.590556,
+    "last_push_ts": 1784149149.6711273,
     "last_score": 79,
-    "last_push_at": "2026-07-15T12:29:16.457481"
+    "last_push_at": "2026-07-15T20:59:12.140865"
   },
   "JTOUSDT": {
     "last_push_ts": 1784118550.590556,
     "last_score": 74,
     "last_push_at": "2026-07-15T12:29:20.869448"
+  },
+  "ARXUSDT": {
+    "last_push_ts": 1784132948.637052,
+    "last_score": 70,
+    "last_push_at": "2026-07-15T16:29:37.526260"
   }
 }
