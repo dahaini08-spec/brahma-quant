@@ -42,20 +42,6 @@
     "success": true
   },
   {
-    "symbol": "MUUSDT",
-    "side": "LONG",
-    "size": 0.01,
-    "entry_price": 978.0000000000001,
-    "mark_price": 978.15095038,
-    "stop_loss": 948.66,
-    "take_profit": 1007.34,
-    "leverage": 3.0,
-    "notional_usdt": 9.7815,
-    "unrealized_pnl": 0.0015,
-    "updated_at": 1784036099.6026185,
-    "success": true
-  },
-  {
     "symbol": "MAGMAUSDT",
     "side": "SHORT",
     "size": 1.0,
@@ -166,20 +152,6 @@
     "notional_usdt": 7.1783,
     "unrealized_pnl": -0.0,
     "updated_at": 1784036099.6026814,
-    "success": true
-  },
-  {
-    "symbol": "DRAMUSDT",
-    "side": "LONG",
-    "size": 0.22,
-    "entry_price": 60.440000000000005,
-    "mark_price": 60.44,
-    "stop_loss": 58.6268,
-    "take_profit": 62.2532,
-    "leverage": 3.0,
-    "notional_usdt": 13.2968,
-    "unrealized_pnl": 0.0,
-    "updated_at": 1784036099.602691,
     "success": true
   },
   {

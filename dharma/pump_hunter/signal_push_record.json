@@ -1,8 +1,8 @@
 {
   "REUSDT": {
-    "last_push_ts": 1783992420.9462218,
-    "last_score": 80,
-    "last_push_at": "2026-07-14T01:27:46.515134"
+    "last_push_ts": 1784109549.0273898,
+    "last_score": 74,
+    "last_push_at": "2026-07-15T09:59:14.323304"
   },
   "1000BONKUSDT": {
     "last_push_ts": 1784100519.3708327,
@@ -258,5 +258,15 @@
     "last_push_ts": 1784089710.703339,
     "last_score": 74,
     "last_push_at": "2026-07-15T04:28:33.166530"
+  },
+  "ZBTUSDT": {
+    "last_push_ts": 1784118550.590556,
+    "last_score": 79,
+    "last_push_at": "2026-07-15T12:29:16.457481"
+  },
+  "JTOUSDT": {
+    "last_push_ts": 1784118550.590556,
+    "last_score": 74,
+    "last_push_at": "2026-07-15T12:29:20.869448"
   }
 }
