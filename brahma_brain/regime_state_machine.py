@@ -69,7 +69,8 @@ CONFIRM_WINDOWS = {
     ('BEAR_RECOVERY', 'CHOP_MID'):      2,  # [P1-A] 3→2
     ('BULL_TREND',    'BEAR_RECOVERY'): 2,  # [P1-A] 新增：牛市→熊市反弹快速确认
     ('BULL_TREND',    'BEAR_EARLY'):    2,  # [P1-A] 新增
-    # 默认：其他切换需要2根确认
+    ('CHOP_MID',      'BULL_TREND'):   3,  # [P1修复 2026-07-15] CHOP→BULL需草3次确认，避免震荡期过频切入牛市
+    ('BULL_TREND',     'CHOP_MID'):    3,  # [P1修复 2026-07-15] BULL→CHOP需草3次确认，防止短暂回调误切震荡
 }
 DEFAULT_CONFIRM = 2  # [P1-A] 3→2
 
@@ -99,7 +100,7 @@ DEFAULT_LOCK = 4 * 3600
 # 在 6~10 分钟内就累积到 DEFAULT_CONFIRM=2，远低于设计的4H节奏。
 # 修复：同一 symbol 两次有效计数之间必须间隔 ≥ MIN_UPDATE_INTERVAL。
 # 这样 CONFIRM_WINDOW=2 实际对应 2*30min=60min，近似1根4H的节奏。
-MIN_UPDATE_INTERVAL = 30 * 60   # 30分钟：防止高频任务快速堆积confirm_count
+MIN_UPDATE_INTERVAL = 60 * 60   # [P1修复 2026-07-15] 30min→60min：CHOP_MID切换防抖，减少震荡期误切
 
 # ── 体制中文映射 ─────────────────────────────────────────────────
 REGIME_CN = {
