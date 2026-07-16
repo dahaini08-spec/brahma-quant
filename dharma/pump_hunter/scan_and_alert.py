@@ -67,8 +67,8 @@ MAX_VOL     = 800_000_000   # 排除超大盘
 MAX_CHG_ABS = 25.0          # 排除已大幅波动（±25%以内）
 
 # ── 评分阈值 ──────────────────────────────────────────────────
-PUSH_SCORE  = 70            # v4: 75→70，适当降低门槛提高覆盖
-EXEC_SCORE  = 85            # 触发梵天验证+自动执行的门槛
+PUSH_SCORE  = 78            # v4.1: 70→78 [苏摩111封印 2026-07-16]，提高信噪比，只推送有效三因子信号
+EXEC_SCORE  = 90            # v4.1: 85→90 [苏摩111封印 2026-07-16]，确保自动执行阈值更严格
 
 # ── 防漏判参数 ────────────────────────────────────────────────
 VOL_RATIO_EXPIRED   = 5.0   # vol_ratio≥5x = 暴涨已发生，信号作废
@@ -363,6 +363,15 @@ def scan():
                 regime_pos = 2.0; regime_tp = 1.5
 
             # ── 6. 构建信号对象 ────────────────────────────────
+            # ── v4.1 FR/空头比例强制门控（Short Squeeze逻辑必须成立）──────
+            # 规则：FR<-0.01% OR 空头%>62% 至少满足其一，否则降级为WATCH
+            # 原因：FR=0%且空头<60%时，无空头被迫平仓压力，暴涨逻辑不成立
+            squeeze_catalyst = (latest_fr < -0.01) or (short_pct > 62)
+            if not squeeze_catalyst and score < EXEC_SCORE:
+                # 不满足催化剂条件且分数未达EXEC门槛 → 降级为WATCH，不推送
+                reasons.append(f'[WATCH-仅压缩无催化剂: FR={latest_fr:.4f}% 空头={short_pct:.0f}%]')
+                score = min(score, PUSH_SCORE - 1)  # 强制压至门槛以下，不推送
+
             if score >= PUSH_SCORE:
                 # v4修复 BUG-2：止损用SL_PCT公式，不用comp*0.3
                 sl_pct   = _sl_pct_base
@@ -398,6 +407,7 @@ def scan():
                     'exec_eligible':   score >= EXEC_SCORE,
                     'expire_ts': time.time() + SIGNAL_VALID_MIN * 60,
                     'scan_time': datetime.datetime.utcnow().isoformat(),
+                    'squeeze_catalyst': squeeze_catalyst,  # v4.1
                     'reasons':  reasons,
                 })
 
@@ -615,6 +625,10 @@ def main():
                 'pushed_ts': now_ts,
                 'auto_executed': auto_executed,
                 'reminded': False,
+                # v4.1: 催化剂标记，供hunter_outcome_tracker.py分析
+                'squeeze_catalyst': a.get('squeeze_catalyst', False),
+                'funding':   a.get('funding', 0),
+                'short_pct': a.get('short_pct', 50),
             }
             json.dump(_expiry, open(EXPIRY_FILE, 'w'), indent=2)
 
