@@ -301,16 +301,21 @@ def check_signal_pipeline() -> dict:
                 continue
             msg = (j.get('payload', {}).get('message') or j.get('message') or '').strip()
             delivery = j.get('delivery') or {}
-            announce = delivery.get('announce', False)
+            # [修复 2026-07-16 苏摩111] openclaw cron add --announce 存为 delivery.mode="announce"
+            # 而非 delivery.announce=True，需兼容两种字段
+            announce = (
+                delivery.get('announce', False) or
+                delivery.get('mode', '') == 'announce'
+            )
             to = delivery.get('to', '')
-            
+
             if not msg:
                 issues.append(f'CRITICAL: {name} message为空→任务从不执行')
             if not announce:
                 issues.append(f'ERROR: {name} announce=False→结果不推送到Jarvis')
             if CORRECT_THREAD not in to:
                 issues.append(f'ERROR: {name} 路由错误→消息发到旧线程')
-            
+
             if msg and announce and CORRECT_THREAD in to:
                 details.append(f'{name}: ✅')
     except Exception as e:
@@ -435,7 +440,12 @@ def check_cron_jobs() -> dict:
                 continue   # 「未注册」已在上面检测
             msg      = (j.get('payload', {}).get('message') or j.get('message') or '').strip()
             delivery = j.get('delivery') or {}
-            announce = delivery.get('announce', False)
+            # [修复2 2026-07-16 苏摩111] openclaw --announce 存为 delivery.mode="announce"
+            # 不是 delivery.announce=True，需兼容两种字段
+            announce = (
+                delivery.get('announce', False) or
+                delivery.get('mode', '') == 'announce'
+            )
             to       = delivery.get('to', '')
             if not msg:
                 issues.append(f'{name}: message为空(Agent收到空任务→永远静默)')
@@ -974,7 +984,7 @@ def heal(fault_type: str, context: dict) -> dict:
                 if name not in KEY_JOBS_MSG: continue
                 msg = (j.get('payload', {}).get('message') or j.get('message') or '').strip()
                 delivery = j.get('delivery') or {}
-                needs_fix = (not msg) or (not delivery.get('announce')) or (CORRECT_THREAD not in delivery.get('to',''))
+                needs_fix = (not msg) or (not (delivery.get('announce') or delivery.get('mode','') == 'announce')) or (CORRECT_THREAD not in delivery.get('to',''))  # [修复2 2026-07-16] mode='announce'兼容
                 if needs_fix:
                     if not msg:
                         # 写入 payload.message（正确字段），不写顶层message
@@ -982,6 +992,7 @@ def heal(fault_type: str, context: dict) -> dict:
                         payload['message'] = KEY_JOBS_MSG[name]
                         j['payload'] = payload
                     delivery['announce'] = True
+                    delivery['mode'] = 'announce'  # [修复2 2026-07-16] 双字段写入
                     if CORRECT_THREAD not in delivery.get('to',''):
                         delivery['to'] = f'73295708:thread:{CORRECT_THREAD}'
                         delivery['channel'] = 'jarvis'
