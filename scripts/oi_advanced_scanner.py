@@ -612,28 +612,155 @@ def scan_symbol(sym, ticker_data):
     return result
 
 
+def _fmt_price(p: float) -> str:
+    """价格格式化：大价格用逗号分隔，小价格用科学计数消除"""
+    if p <= 0: return '?'
+    if p >= 1000:   return f'${p:,.2f}'
+    elif p >= 1:    return f'${p:.4f}'
+    elif p >= 0.001: return f'${p:.6f}'
+    else:           return f'${p:.8f}'
+
+
+def _calc_oi_strategy(r: dict) -> dict:
+    """[设计院封印 2026-07-16 苏摩111] OI信号7要素策略计算
+    宪法止损公式:
+      做多止损 = 进场价 × (1 - SL_PCT)
+      做空止损 = 进场价 × (1 + SL_PCT)
+    SL_PCT: 做多→2.0% / BULL做空→2.5% / BEAR做空→2.0% / CHOP做空→2.5%
+    """
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+
+    price    = float(r.get('price', 0) or 0)
+    direction = r.get('direction_bias', r.get('direction', 'LONG'))
+    regime   = r.get('regime', 'BULL_TREND')
+    mode     = r.get('mode', 'B')
+    score    = float(r.get('oi_score', 50))
+
+    if price <= 0:
+        return {}
+
+    # ── 止损参数 ──────────────────────────────────────────────
+    if direction == 'LONG':
+        sl_pct = 0.020
+    else:  # SHORT
+        sl_pct = 0.025 if 'BULL' in regime.upper() or 'CHOP' in regime.upper() else 0.020
+
+    # ── 入场区间（当前价±0.3%，避免追高） ────────────────────
+    entry_lo = round(price * 0.997, 6)
+    entry_hi = round(price * 1.003, 6)
+
+    # ── 止损价 ────────────────────────────────────────────────
+    if direction == 'LONG':
+        sl_price = round(entry_lo * (1 - sl_pct), 6)
+    else:
+        sl_price = round(entry_hi * (1 + sl_pct), 6)
+
+    # ── RR & TP（宪法：BEAR做空RR=1.0 / 其他RR=1.5-2.0） ────
+    exec_p = OI_EXEC_PARAMS.get(mode + ('_BULL' if 'BULL' in regime.upper() else
+                                        '_BEAR' if 'BEAR' in regime.upper() else ''),
+                                 OI_EXEC_PARAMS.get(mode, OI_EXEC_PARAMS.get('B', {})))
+    rr     = exec_p.get('tp_mult', 1.5)
+    lev    = exec_p.get('lev', 5)
+    hold   = exec_p.get('hold', '1-7天')
+
+    sl_dist = abs(price - sl_price)
+    if direction == 'LONG':
+        tp1 = round(entry_lo + sl_dist * rr, 6)
+        tp2 = round(entry_lo + sl_dist * rr * 2, 6)
+    else:
+        tp1 = round(entry_hi - sl_dist * rr, 6)
+        tp2 = round(entry_hi - sl_dist * rr * 2, 6)
+
+    # ── FG感知仓位 ────────────────────────────────────────────
+    try:
+        from position_sizer import get_position_pct
+        import json as _json
+        from pathlib import Path as _Path
+        _ms = _json.loads((_Path(__file__).parent.parent / 'data/macro_state.json').read_text())
+        fg  = float(_ms.get('fng_score', 50) or 50)
+        nav = 100.0  # 标准NAV基准
+        ep  = get_position_pct(r.get('symbol',''), score, direction, nav, fear_greed=fg, regime=regime)
+        size_pct = ep.get('pct', exec_p.get('size_pct', 5) * 100) / 100
+        fg_note  = f'FG={fg:.0f}' + ('(极度恐惧)' if fg <= 20 else ('(恐惧)' if fg <= 40 else ''))
+    except Exception:
+        size_pct = exec_p.get('size_pct', 0.05)
+        fg_note  = ''
+
+    # ── 有效期 ────────────────────────────────────────────────
+    import time as _t
+    expire_ts = _t.time() + {'A': 86400*3, 'B': 86400, 'C': 3600*4}.get(mode, 86400)
+    expire_str = _t.strftime('%m-%d %H:%M UTC', _t.gmtime(expire_ts))
+
+    # ── 触发条件 ──────────────────────────────────────────────
+    chg_1h = float(r.get('chg_1h', 0))
+    chg_4h = float(r.get('chg_4h', 0))
+    if direction == 'LONG':
+        if chg_1h > 3:
+            trigger = f'OI已建仓+价格站稳 {_fmt_price(entry_lo)} → 限价入场'
+        else:
+            trigger = f'等OI 1H再涨{max(0, 2-chg_1h):.1f}%确认 + 价格不低于 {_fmt_price(entry_lo)}'
+    else:
+        if chg_1h < -3:
+            trigger = f'OI空头已建仓+价格跌破 {_fmt_price(entry_hi)} → 限价入场'
+        else:
+            trigger = f'等OI 1H再降{max(0, 2+chg_1h):.1f}%确认 + 价格不超过 {_fmt_price(entry_hi)}'
+
+    return {
+        'entry_lo':  entry_lo, 'entry_hi':  entry_hi,
+        'sl_price':  sl_price, 'sl_pct':    round(sl_pct*100, 1),
+        'tp1':       tp1,       'tp2':       tp2,
+        'rr':        rr,        'lev':       lev,
+        'hold':      hold,      'size_pct':  size_pct,
+        'fg_note':   fg_note,   'trigger':   trigger,
+        'expire':    expire_str,
+    }
+
+
 def format_signal_card(sym, r, rank):
-    """格式化信号推送卡片（精简版，适合推送）"""
+    """[设计院封印 2026-07-16 苏摩111] OI信号卡片 — 7要素完整策略格式"""
     mode_icon = {'A': '🏆', 'B': '⚡', 'C': '📡'}.get(r['mode'], '👀')
     mode_name = {'A': '现货长线', 'B': '合约中线', 'C': '短线异动'}.get(r['mode'], '监控')
-    dir_icon  = {'LONG': '🟢多', 'SHORT': '🔴空'}.get(r.get('direction_bias', ''), '⚪')
+    dir_icon  = {'LONG': '🟢做多', 'SHORT': '🔴做空'}.get(r.get('direction_bias', ''), '⚪')
+
+    # 计算7要素策略
+    strat = _calc_oi_strategy(r)
+    price = float(r.get('price', 0))
+
+    # OI数据行
+    oi_line = (f"OI: 1H {r['chg_1h']:+.1f}% | 4H {r['chg_4h']:+.1f}% | "
+               f"24H {r['chg_24h']:+.1f}% | FR {r['fr']:+.5f}%")
 
     lines = [
-        f"{'─'*40}",
-        f"{mode_icon} #{rank} {sym} · {mode_name}信号",
-        f"方向: {dir_icon}  |  评分: {r['oi_score']}/100",
+        f"{'━'*40}",
+        f"{mode_icon} #{rank} {sym} · {mode_name}",
+        f"方向: {dir_icon}  |  OI评分: {r['oi_score']:.0f}/100",
+        f"体制: {r.get('regime','?')} | RSI_1H: {r['rsi_1h']:.0f} | 鲸鱼多: {r['whale_l']:.0f}%",
         f"",
-        f"OI变化: 1H {r['chg_1h']:+.1f}% | 4H {r['chg_4h']:+.1f}%",
-        f"       24H {r['chg_24h']:+.1f}% | 7D {r['chg_7d']:+.1f}%",
-        f"OI加速: {r['accel_4h']:+.1f}  |  规模: ${r['oi_usd_m']:.1f}M",
+        oi_line,
+        f"规模: ${r['oi_usd_m']:.1f}M | OI加速: {r['accel_4h']:+.1f}",
         f"",
-        f"价格: ${r['price']:,.4f}  24H: {r['pct24h']:+.1f}%",
-        f"基差: {r['basis']:+.3f}%  |  FR: {r['fr']:+.5f}%",
-        f"鲸鱼多: {r['whale_l']:.0f}%  |  RSI_1H: {r['rsi_1h']:.0f}",
-        f"",
-        f"建议: {r.get('lev_range','?')}  持仓: {r.get('hold','?')}",
-        f"评分明细: {' | '.join(r['score_details'][:3])}",
     ]
+
+    if strat:
+        lines += [
+            f"{'─'*40}",
+            f"⚡ 触发条件",
+            f"   {strat['trigger']}",
+            f"📍 入场区间: {_fmt_price(strat['entry_lo'])} ~ {_fmt_price(strat['entry_hi'])}",
+            f"🛡️ 止损:    {_fmt_price(strat['sl_price'])}  ({strat['sl_pct']:.1f}%)",
+            f"🎯 TP1:    {_fmt_price(strat['tp1'])}  (RR={strat['rr']:.1f}x)",
+            f"🎯 TP2:    {_fmt_price(strat['tp2'])}  (RR={strat['rr']*2:.1f}x)",
+            f"📦 仓位:   {strat['size_pct']*100:.1f}%NAV × {strat['lev']}x  {strat['fg_note']}",
+            f"⏰ 有效期: {strat['expire']}  持仓参考: {strat['hold']}",
+        ]
+    else:
+        lines += [
+            f"价格: ${price:,.4f}  24H: {r['pct24h']:+.1f}%",
+            f"建议: {r.get('lev_range','?')}  持仓: {r.get('hold','?')}",
+        ]
+
+    lines.append(f"评分明细: {' | '.join(r['score_details'][:3])}")
     return '\n'.join(lines)
 
 
@@ -743,20 +870,51 @@ def run():
                       if r['action'] in ('buy_full', 'buy_light') and
                       r['oi_score'] >= 40]
 
-    cooldown_h = {'A': 12, 'B': 4, 'C': 1}
+    # [设计院封印 2026-07-16 苏摩111] 状态哈希去重，替代纯时间窗口cooldown
+    # 哈希 = OI变化率5%桶 + direction + mode + regime大类
+    # 相同哈希内不重推；OI方向翻转立即推
+    import hashlib as _hl
+    OI_STATE_FILE = BASE / 'data' / 'oi_push_state.json'
+    try:
+        _oi_state = json.loads(OI_STATE_FILE.read_text())
+    except Exception:
+        _oi_state = {}
+
+    def _oi_hash(r_: dict) -> str:
+        chg_bucket = int(float(r_.get('chg_4h', 0)) / 5) * 5  # 5%桶
+        regime_major = ('BULL' if 'BULL' in str(r_.get('regime','')).upper()
+                        else 'BEAR_REC' if 'RECOVERY' in str(r_.get('regime','')).upper()
+                        else 'BEAR' if 'BEAR' in str(r_.get('regime','')).upper()
+                        else 'CHOP')
+        raw = f"{chg_bucket}|{r_.get('direction_bias','?')}|{r_.get('mode','?')}|{regime_major}"
+        return _hl.md5(raw.encode()).hexdigest()[:8]
+
+    SAME_HASH_TTL_OI = {'A': 86400*2, 'B': 86400, 'C': 3600*4}  # 同哈希冷却期
     push_signals = []
 
     for r in action_signals[:8]:
-        sym  = r['symbol']
-        mode = r['mode']
-        key  = f"{sym}_{mode}_{r.get('direction_bias','?')}"
-        last = cache.get(key, 0)
-        cd   = cooldown_h.get(mode, 2)
-        age  = (now.timestamp() - last) / 3600
+        sym      = r['symbol']
+        mode     = r['mode']
+        new_hash = _oi_hash(r)
+        sym_st   = _oi_state.get(sym, {})
+        old_hash = sym_st.get('hash', '')
+        last_push= sym_st.get('ts', 0)
+        ttl      = SAME_HASH_TTL_OI.get(mode, 86400)
 
-        if age >= cd:
+        hash_changed = (new_hash != old_hash)
+        cooldown_ok  = (now.timestamp() - last_push > ttl)
+
+        if hash_changed or cooldown_ok:
             push_signals.append(r)
-            cache[key] = now.timestamp()
+            _oi_state[sym] = {
+                'hash': new_hash, 'ts': now.timestamp(),
+                'direction': r.get('direction_bias','?'),
+                'score': r.get('oi_score', 0), 'mode': mode,
+            }
+        else:
+            print(f'  [{sym}] 哈希未变({new_hash})，距上次推送{(now.timestamp()-last_push)/3600:.1f}H，跳过')
+
+    OI_STATE_FILE.write_text(json.dumps(_oi_state, indent=2, ensure_ascii=False))
 
     save_cache(cache)
 
