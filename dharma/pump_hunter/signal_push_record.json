@@ -1,13 +1,13 @@
 {
   "REUSDT": {
-    "last_push_ts": 1784154551.166958,
-    "last_score": 82,
-    "last_push_at": "2026-07-15T22:29:16.740305"
+    "last_push_ts": 1784177945.3689656,
+    "last_score": 80,
+    "last_push_at": "2026-07-16T04:59:11.201502"
   },
   "1000BONKUSDT": {
-    "last_push_ts": 1784132948.637052,
+    "last_push_ts": 1784163545.5659802,
     "last_score": 79,
-    "last_push_at": "2026-07-15T16:29:35.194631"
+    "last_push_at": "2026-07-16T00:59:11.273478"
   },
   "TLMUSDT": {
     "last_push_ts": 1783889710.6363873,
@@ -273,5 +273,15 @@
     "last_push_ts": 1784132948.637052,
     "last_score": 70,
     "last_push_at": "2026-07-15T16:29:37.526260"
+  },
+  "TUSDT": {
+    "last_push_ts": 1784176145.260115,
+    "last_score": 90,
+    "last_push_at": "2026-07-16T04:29:22.264739"
+  },
+  "BCHUSDT": {
+    "last_push_ts": 1784174345.2584605,
+    "last_score": 73,
+    "last_push_at": "2026-07-16T03:59:07.740774"
   }
 }

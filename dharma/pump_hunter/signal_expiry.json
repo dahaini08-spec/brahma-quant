@@ -1,14 +1,1 @@
-{
-  "SKLUSDT": {
-    "score": 70,
-    "price": 0.004689,
-    "entry_lo": 0.00467,
-    "entry_hi": 0.004708,
-    "sl_price": 0.004572,
-    "tp1_price": 0.004865,
-    "expire_ts": 1784158134.9949014,
-    "pushed_ts": 1784156351.846455,
-    "auto_executed": false,
-    "reminded": false
-  }
-}
+{}
