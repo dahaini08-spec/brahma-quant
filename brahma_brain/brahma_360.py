@@ -67,8 +67,9 @@ def scan_d2_data() -> list:
         'data/brahma_state.json':       {'max_min': 60,   'level': 'WARN',     'fix': 'none'},
         # 实时价格: cron每小时刷新，120min内正常
         'data/live_prices.json':        {'max_min': 120,  'level': 'WARN',     'fix': 'init_live_prices'},
-        # ws_guardian: 可选进程，不存在不阻断（改为WARN）
-        'data/ws_guardian_state.json':  {'max_min': 60,   'level': 'WARN',     'fix': 'none'},
+        # ws_guardian_state: 空仓时 idle 状态，仅有持仓时才需新鲜（达摩院2026-07-16）
+        # 空仓期间 max_min=10080(7天)，有持仓时由 watchdog 守护保持新鲜
+        'data/ws_guardian_state.json':  {'max_min': 10080, 'level': 'WARN',    'fix': 'none'},
         # 信号队列: 24h内正常（低交易频率系统）
         'data/signal_queue.jsonl':      {'max_min': 1440, 'level': 'WARN',     'fix': 'reset_signal_queue'},
     }
