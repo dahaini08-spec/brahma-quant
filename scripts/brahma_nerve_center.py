@@ -52,7 +52,9 @@ FAPI    = 'https://fapi.binance.com'
 WATCH_SYMBOLS = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'HYPEUSDT']
 
 # ── 感知阈值 ──────────────────────────────────────────────────
-OI_SURGE_PCT       = 5.0    # OI 1H变化超5% → P1告警
+OI_SURGE_PCT       = 15.0   # [方案B 2026-07-16 苏摩111] P0极端异动阈值
+                             # 常规OI信号（5~15%）由 oi-advanced-scanner 统一处理
+                             # 神经中枢只负责极端异常（>15%/1H，黑天鹅级别）
 FR_EXTREME         = 0.05   # 资金费率超0.05% → P1告警
 PRICE_MOVE_1H_PCT  = 3.0    # 1H价格变动超3% → P1告警
 LIQUIDATION_USD    = 5e6    # 清算量超500万USD → P0告警
@@ -430,14 +432,16 @@ def sense_market_microstructure(state: dict) -> list:
                 prev_oi_chg = state.get(f'{sym}_prev_oi_chg', 0)
                 state[f'{sym}_prev_oi_chg'] = oi_chg
 
-                if abs(oi_chg) >= OI_SURGE_PCT and abs(oi_chg - prev_oi_chg) > 3:
+                # [方案B 2026-07-16] >15%/1H = P0极端异动（黑天鹅），常规由oi-advanced-scanner处理
+                if abs(oi_chg) >= OI_SURGE_PCT and abs(oi_chg - prev_oi_chg) > 5:
                     direction = '📈' if oi_chg > 0 else '📉'
                     alerts.append({
                         'priority': 1,
                         'type': 'OI_SURGE',
-                        'msg': (f"{direction} **{short_sym} OI异动 {oi_chg:+.1f}%/1H**\n"
+                        'msg': (f"🚨 P0极端OI异动 {direction} {short_sym} {oi_chg:+.1f}%/1H\n"
                                 f"  OI={oi_now/1e9:.2f}B → "
-                                f"{'多头加仓' if oi_chg > 0 else '去杠杆/空头加仓'}"),
+                                f"{'多头极端加仓(黑天鹅预警)' if oi_chg > 0 else '极端去杠杆/空头加仓(崩盘预警)'}\n"
+                                f"  [神经中枢P0级 非常规OI信号]"),
                         'dedup_key': f'{sym}_oi_{int(now//3600)}',
                         'dedup_ttl': 3600,
                     })
