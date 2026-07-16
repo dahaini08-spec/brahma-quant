@@ -98,7 +98,8 @@ def get_fg_position_cap(fear_greed_index: float) -> tuple:
 
 
 def get_position_pct(symbol: str, score: float, direction: str,
-                     nav: float = 0.0, fear_greed: float = None) -> dict:
+                     nav: float = 0.0, fear_greed: float = None,
+                     regime: str = '') -> dict:
     """
     返回：{
       'pct': 建议仓位百分比（0~10）,
@@ -128,6 +129,15 @@ def get_position_pct(symbol: str, score: float, direction: str,
     if level is None:
         bkt = '160+' if sr in ('160+','175+') else sr
         level, max_pct = DEFAULT_BY_SCORE.get(bkt, ('EXPLORING', 1.0))
+
+    # ── [达摩院修正 2026-07-16 苏摩111] BEAR_RECOVERY体制SIZE上限 → 6%NAV ──
+    # IC=0.76背书，方向准确度高，小幅提仓（原5%限 → 现6%）
+    # 1个月验证WR≥60%后可进一步升至7.5%
+    if regime and 'BEAR_RECOVERY' in str(regime).upper():
+        if max_pct < 6.0:  # 不向下覆盖已有高分据
+            max_pct = 6.0
+            level = f'{level}+BEAR_RECOVERY_6pct'
+    # ────────────────────────────────────────────────────────────────────────
 
     # ── v4.2 改进④ 7月减半仓策略 ─────────────────────────────────────────
     # 有效期 2026-07-01 ~ 2026-07-15，score 160~169 → 强制1%NAV

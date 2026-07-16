@@ -308,7 +308,9 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
             _kelly_ok = float((_rf.get('confluence') or {}).get('kelly_mult', 1) or 1) > 0
             # P0B封锁在brahma_core里设置val=False，但它不存入标记字段
             # 只要 params.valid=True + kelly>0 + 新score>=155 就是有效信号
-            _MIN_VALID = 155
+            # [达摩院修正 2026-07-16 苏摩111] BEAR_RECOVERY体制阈值降至120（IC=0.76背书）
+            _inj_regime = str((_rf.get('params') or {}).get('regime', '') or '')
+            _MIN_VALID = 120 if 'BEAR_RECOVERY' in _inj_regime.upper() else 155
             if _params_valid and _kelly_ok and _new_score >= _MIN_VALID:
                 _rf['valid_signal'] = True
                 pass  # [静默] f'[RegimeInject-Valid] {sym} score={_new_score:.1f}>={_MIN_VALID} params.valid=T
@@ -600,7 +602,9 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
             result['_ext_score_detail'] = _ext_detail
 
             # 重新校验 valid_signal（外部层加分后可能越过155门槛）
-            _MIN_VALID_EXT = 155
+            # [达摩院修正 2026-07-16 苏摩111] BEAR_RECOVERY体制阈值降至120（IC=0.76背书）
+            _regime_v2 = str((result.get('params') or {}).get('regime', '') or '')
+            _MIN_VALID_EXT = 120 if 'BEAR_RECOVERY' in _regime_v2.upper() else 155
             _params_v2 = bool((result.get('params') or {}).get('valid', False))
             _kelly_v2  = float((result.get('confluence') or {}).get('kelly_mult', 1) or 1) > 0
             if _params_v2 and _kelly_v2 and _new_ext_score >= _MIN_VALID_EXT:

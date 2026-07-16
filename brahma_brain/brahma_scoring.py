@@ -1782,8 +1782,14 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
             if _n16_pump_exempt:
                 _atr_regime_tag = f'N16_豁免(暴涨猎手) ATR={_atr_v4:.4f} FR负值压缩=爆发前元'
             else:
-                score = int(score * 0.80)
-                _atr_regime_tag = f'N16_ATR禁区 ×0.80 (BULL ATR={_atr_v4:.4f}<0.010, PF=0.567)'
+                # [达摩院修正 2026-07-16 苏摩111] BULL_TREND 155-164 + ATR<0.010
+                # WR=0% → 强制降级WATCH（不仅×0.80，直接降为130拦截ENTER_FULL）
+                if 155 <= score < 165:
+                    score = 130  # 强制落入ENTER_WATCH区，拦截ENTER_FULL
+                    _atr_regime_tag = f'N16_ATR禁区_WATCH强制 155-164降130 (BULL ATR={_atr_v4:.4f}<0.010, WR=0%)'
+                else:
+                    score = int(score * 0.80)
+                    _atr_regime_tag = f'N16_ATR禁区 ×0.80 (BULL ATR={_atr_v4:.4f}<0.010, PF=0.567)'
         # BULL_TREND(牛市趋势) ATR黄金区：0.010~0.015
         elif 0.010 <= _atr_v4 <= 0.015 and _is_long_v4 and not _direction_block and score > 0:
             score = min(int(score * 1.05), 175)
