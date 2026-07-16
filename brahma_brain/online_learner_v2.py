@@ -48,9 +48,45 @@ def load_weights() -> dict:
     return DEFAULT_WEIGHTS.copy()
 
 
+# [达摩院接入 2026-07-16 苏摩111] 维度映射表：online_learner_v2 → brahma_scoring INT-1 格式
+# brahma_scoring 读取 data/calibrated_weights.json，键名为 s1_trend~s8 格式
+_DIM_MAP = {
+    'regime'     : 's1_trend',
+    'structure'  : 's4_smc',
+    'timing'     : 's3_momentum',
+    'kronos'     : 's7_kronos',
+    'macro'      : 's5_macro',
+    'smart_money': 's6_whale',
+    'obv'        : 's2_ob',
+    'oi_signal'  : 's8_oi',
+}
+_CALIB_WEIGHTS_FILE = Path(__file__).parent.parent / 'data' / 'calibrated_weights.json'
+
+
 def save_weights(w: dict):
     WEIGHT_FILE.parent.mkdir(exist_ok=True)
     WEIGHT_FILE.write_text(json.dumps(w, indent=2, ensure_ascii=False))
+    # [达摩院接入 2026-07-16] 同步写入 calibrated_weights.json（brahma_scoring INT-1读取源）
+    try:
+        import time as _t
+        calib = {}
+        # 先加载现有文件保留未映射维度
+        if _CALIB_WEIGHTS_FILE.exists():
+            try:
+                calib = json.loads(_CALIB_WEIGHTS_FILE.read_text())
+            except Exception:
+                calib = {}
+        now_iso = _t.strftime('%Y-%m-%dT%H:%M:%SZ', _t.gmtime())
+        for src_dim, tgt_dim in _DIM_MAP.items():
+            if src_dim in w:
+                calib[tgt_dim] = {
+                    'mult'       : float(w[src_dim]),
+                    'note'       : f'{src_dim}→{tgt_dim} [online_learner_v2]',
+                    'last_calib' : now_iso,
+                }
+        _CALIB_WEIGHTS_FILE.write_text(json.dumps(calib, indent=2, ensure_ascii=False))
+    except Exception as _se:
+        pass  # 写入失败不阻断主流程
 
 
 def load_performance(days: int = 30) -> list:

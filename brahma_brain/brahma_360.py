@@ -96,20 +96,43 @@ def scan_d2_data() -> list:
     return issues
 
 
+def _has_open_positions() -> bool:
+    """检查是否有未平仓持仓（用于ws_guardian豁免逻辑）"""
+    try:
+        import json as _j
+        state = _j.load(open(_DATA / 'brahma_state.json'))
+        return any(p.get('status') == 'OPEN' for p in state.get('positions', []))
+    except Exception:
+        pass
+    try:
+        import json as _j
+        wp = _j.load(open(_DATA / 'wuqu_positions.json'))
+        return any(p.get('status') == 'OPEN' for p in wp)
+    except Exception:
+        pass
+    return False
+
+
 def scan_d3_processes() -> list:
     """D3: 关键进程存活"""
     issues = []
     try:
         r = subprocess.run(['ps', 'aux'], capture_output=True, text=True, timeout=5)
         ps = r.stdout
+        # ws_guardian: 空仓时正常退出（watchdog_guardian设计），不告警
+        # 有持仓时才需要确认进程存活
+        _ws_needed = _has_open_positions()
         procs = {
-            'ws_guardian.py':         {'level': 'WARN',     'fix': 'restart_ws_guardian'},  # 可选进程
-            # arjuna/pump_hunter 通过脚本文件名匹配（可选进程，不告警）
-            # 'live_signal_settler': {'level': 'WARN', 'fix': 'none'},
-            # 'scan_and_alert':      {'level': 'WARN', 'fix': 'none'},
+            'ws_guardian.py': {
+                'level': 'WARN' if _ws_needed else 'INFO',
+                'fix': 'restart_ws_guardian' if _ws_needed else 'none',
+                'skip_if_no_pos': True,   # 空仓豁免标记
+            },
         }
         for proc, cfg in procs.items():
             if proc not in ps:
+                if cfg.get('skip_if_no_pos') and not _ws_needed:
+                    continue  # [达摩院修正 2026-07-16] 空仓时ws_guardian退出属正常，跳过告警
                 issues.append({
                     'dim': 'D3_processes', 'level': cfg['level'],
                     'msg': f'进程未运行: {proc}',

@@ -297,6 +297,8 @@ def check_orphan_modules():
             'dharma_online_learner',  # 在线学习，被ev_feedback每10笔触发，设计院方案B/C级落地
             # [设计院 v19 2026-07-02] ─────────────────────────────────────────────────────────
             'signal_trace',           # 接入runner._TRACE_OK 信号轨迹审计日志，非静态引用模式
+            # ── [达摩院接入 2026-07-16 苏摩111] ──────────────────────────────────────────────
+            'online_learner_v2',      # 接入 brahma_scoring INT-1 (save_weights→calibrated_weights.json)，brahma-online-calibrate cron触发
             # ─────────────────────────────────────────────────────────────────────────────────
         }
     
