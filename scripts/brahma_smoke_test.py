@@ -200,6 +200,20 @@ try:
 except Exception as e:
     warn('自愈系统检查', str(e)[:60])
 
+# ─── 宪法守卫测试（持久化防复发）─────────────────────────────────────────
+try:
+    import subprocess as _sp_ct
+    _ct = _sp_ct.run(
+        ['python3', str(Path(__file__).parent.parent / 'brahma_brain' / 'brahma_constitutional_test.py')],
+        capture_output=True, text=True, timeout=15
+    )
+    if _ct.returncode == 0:
+        ok('宪法守卫测试 19/19')
+    else:
+        fail('宪法守卫测试', _ct.stdout.split('❌')[-1].strip()[:80] if '❌' in _ct.stdout else '失败')
+except Exception as _ct_e:
+    warn('宪法守卫测试', str(_ct_e)[:60])
+
 # ─── 汇总 ─────────────────────────────────────────────────────────────
 print('\n' + '─'*50)
 n_ok   = sum(1 for r in results if r[0] == '✅')

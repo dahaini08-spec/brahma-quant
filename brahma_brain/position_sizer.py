@@ -185,7 +185,12 @@ def get_position_pct(symbol: str, score: float, direction: str,
     else:                           # XPIN/VANRY/PARTI类超小币
         _liq_mult = 0.3
     max_pct = round(max_pct * _liq_mult, 2)
-    max_pct = max(max_pct, 0.3)  # 最低0.3%（不归零）
+    max_pct = max(max_pct, 0.3)
+    # [P1-7修复 2026-07-16 苏摩111] FG作为最终hard cap（流动性乘数之后再次强制）
+    if _fg_cap is not None and max_pct > _fg_cap:
+        max_pct = _fg_cap
+        if not _fg_applied:
+            level = f'{level}+FG最终封顶'  # 最低0.3%（不归零）
 
     allowed = (max_pct > 0)
     usdt = nav * max_pct / 100 if nav > 0 else 0

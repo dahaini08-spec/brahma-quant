@@ -366,20 +366,14 @@ def migration_status() -> dict:
 
 
 def flush_stale(max_age_seconds: float = 300.0) -> int:
-    """
-    清理BrahmaBus全局单例中陈旧缓存条目
-    设计院·自愈机制 2026-07-01
-    返回：清理条目数
-    """
-    import time
-    bus = BrahmaBus()
-    now = time.time()
-    stale_keys = [
-        k for k, v in bus._cache.items()
-        if isinstance(v, dict) and 'ts' in v and now - v['ts'] > max_age_seconds
-    ]
-    for k in stale_keys:
-        del bus._cache[k]
-    if stale_keys:
-        pass  # [静默]
-    return len(stale_keys)
+    """[P0-6修复 2026-07-16 苏摩111] 使用全局单例bus，不重新实例化"""
+    import time as _time_fs
+    now = _time_fs.time()
+    with bus._lock:
+        stale_keys = [
+            k for k, v in bus._cache.items()
+            if isinstance(v, dict) and 'ts' in v and now - v['ts'] > max_age_seconds
+        ]
+        for k in stale_keys:
+            del bus._cache[k]
+    return len(stale_keys)(stale_keys)

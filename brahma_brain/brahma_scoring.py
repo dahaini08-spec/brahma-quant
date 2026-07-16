@@ -184,6 +184,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         elif _is_chop:                  s1 = 4   # [v12.6] 3->4
         else:                           s1 = 0
     if adx_1h > 30: s1 = min(s1 + 3, 20)
+    s1 = _apply_calib('s1_trend', s1)  # [P1-2接入 2026-07-16 苏摩111] INT-1在线学习权重
     score += s1
     breakdown['趋势一致性'] = s1
 
@@ -465,7 +466,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         if wave.get('bias') == 'LONG':                       s6 += 4
     else:  # SHORT
         if wave.get('wave') in ('5W_TOP', 'B_WAVE'):         s6 += 8
-        if regime in ('CHOP_HIGH', 'BULL_PEAK', 'BEAR_RECOVERY'): s6 += 5
+        if regime in ('CHOP_HIGH', 'BULL_PEAK'): s6 += 5  # [P1-6修复 2026-07-16] 移除BEAR_RECOVERY做空加分，与乘数0.35×方向矛盾
         if wave.get('bias') == 'SHORT':                      s6 += 4
         # [D06实训修复] 做空时CORRECTION_ABC也是有利位置（浪B顶部做空）
         if wave.get('wave') in ('CORRECTION_ABC', 'B_WAVE_TOP'): s6 = max(s6, 8)
@@ -1127,7 +1128,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         _cal_score, _cal_rep, _bb = _fcp(symbol, signal_dir, score, regime=ms['regime'])
         # s18 = 校准后分差（限制-8~+8，非阻断）
         s18 = max(-8, min(8, round(_cal_score - score, 1)))
-        score = _cal_score  # 直接更新score（包含校准调整）
+        score += s18  # [P1-3修复 2026-07-16 苏摩111] 使用s18上限值不直接覆盖，保证breakdown可对账
         breakdown['bull_bear校准'] = s18
         if s18 != 0:
             print(f'[s18-校准] {symbol} {signal_dir} 调整{s18:+.1f}分 conviction={_cal_rep.get("conviction",0):.1f}')
@@ -1335,6 +1336,13 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     # 铁证：140,000次蒙特卡洛 + 8窗口WFV + 8年全周期。MDD>80%组降权0.75，不封锁。
     # _direction_block 永久废除 —— 封禁是懒人修复，降权是外科手术。
     _direction_block = False  # 永久保持False，历史遗留字段保留兼容性
+    # [P0-2修复 2026-07-16 苏摩111] 死穴标志：乘数后奖励层统一门控，防止后乘数奖励推升死穴信号
+    _in_dead_zone = (
+        (_regime_upper in ('BEAR_TREND', 'BEAR_EARLY') and signal_dir == 'LONG') or
+        (_regime_upper in ('BULL_TREND', 'BULL_EARLY') and signal_dir == 'SHORT') or
+        (_regime_upper == 'BEAR_RECOVERY' and signal_dir == 'SHORT') or
+        (_regime_upper == 'BULL_CORRECTION' and signal_dir == 'LONG')
+    )
 
     # ── BTC/ETH 双向 regime_mult 矩阵 v4.0 ─────────────────────
     _sym_upper = (ms.get('symbol') or ms.get('sym') or '').upper()
@@ -1780,16 +1788,17 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         # BULL_TREND(牛市趋势) ATR禁区：<0.010 PF=0.567（铁证）
         if _atr_v4 < 0.010 and not _direction_block and score > 0:
             if _n16_pump_exempt:
+                # [P0-3修复 2026-07-16 苏摩111] if/elif/else三分支，豁免后不再执行惩罚
                 _atr_regime_tag = f'N16_豁免(暴涨猎手) ATR={_atr_v4:.4f} FR负值压缩=爆发前元'
-            else:
+                # 不执行任何惩罚，直接跳过
+            elif 155 <= score < 165:
                 # [达摩院修正 2026-07-16 苏摩111] BULL_TREND 155-164 + ATR<0.010
-                # WR=0% → 强制降级WATCH（不仅×0.80，直接降为130拦截ENTER_FULL）
-                if 155 <= score < 165:
-                    score = 130  # 强制落入ENTER_WATCH区，拦截ENTER_FULL
-                    _atr_regime_tag = f'N16_ATR禁区_WATCH强制 155-164降130 (BULL ATR={_atr_v4:.4f}<0.010, WR=0%)'
-                else:
-                    score = int(score * 0.80)
-                    _atr_regime_tag = f'N16_ATR禁区 ×0.80 (BULL ATR={_atr_v4:.4f}<0.010, PF=0.567)'
+                # WR=0% → 强制降级WATCH
+                score = 130  # 强制落入ENTER_WATCH区，拦截ENTER_FULL
+                _atr_regime_tag = f'N16_ATR禁区_WATCH强制 155-164降130 (BULL ATR={_atr_v4:.4f}<0.010, WR=0%)'
+            else:
+                score = int(score * 0.80)
+                _atr_regime_tag = f'N16_ATR禁区 ×0.80 (BULL ATR={_atr_v4:.4f}<0.010, PF=0.567)'
         # BULL_TREND(牛市趋势) ATR黄金区：0.010~0.015
         elif 0.010 <= _atr_v4 <= 0.015 and _is_long_v4 and not _direction_block and score > 0:
             score = min(int(score * 1.05), 175)
@@ -2043,7 +2052,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     return {
         'total':      score,
         'score':      score,    # [P1修复 2026-07-12] 补充score别名 — analyze()/run_analysis读.get('score')，原只有'total'导致永远None
-        'max':        150,
+        'max':        175,   # [P0-7修复 2026-07-16 苏摩111] 与实际天花板min(score,175)对齐，原150导致归一化超界
         'grade':      grade,
         'grade_num':  score,   # [设计院 2026-06-30 G修复] brahma_analyze.py期期得此字段，补入整数评分
         'kelly_mult': kelly_mult,

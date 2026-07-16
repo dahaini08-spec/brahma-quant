@@ -946,6 +946,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     # 设计院封印 2026-06-26: exp_n=0时降权至50%（无实训样本先验不可信）
     try:
         from online_bayes import score as _ob_score
+        regime_label = str(ms.get('regime', '') or '')  # [P0-5修复 2026-07-16 苏摩111] regime_label未定义修复
         _ob_adj, _ob_detail = _ob_score(_sym, regime_label, signal_dir, score)
         _ob_n = _ob_detail.get('exp_n', 0)
         # 样本分级降权：n=0降50%，n<30降30%，n>=30全量
@@ -3666,6 +3667,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['breakdown']['死穴精英解锁'] = f'BEAR_TREND_LONG RSI={_dz_rsi1h:.0f}<20底部反弹 score={_dz_score:.0f}≥155 grade={_dz_grade}≥90 → 0.5%NAV'
         else:
             _valid = False
+            _score_gate_ok = False  # [P0-1修复 2026-07-16 苏摩111] 死穴封禁同步置零，防L3742覆盖
             cf['breakdown']['死穴封禁'] = f'BEAR_TREND_LONG WR=45%(铁证n=3322) 未达精英解锁[score≥155+grade≥90+RSI<20] score={_dz_score:.0f} RSI={_dz_rsi1h:.0f}'
             print(f'[死穴-封锁] {_sym} BEAR_TREND_LONG: score={_dz_score:.0f} grade={_dz_grade} RSI={_dz_rsi1h:.0f}')
     elif 'BULL_TREND' in _regime_str and _dir_check == 'SHORT':
@@ -3676,6 +3678,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['breakdown']['死穴精英解锁'] = f'BULL_TREND_SHORT RSI={_dz_rsi1h:.0f}>75顶部结构做空 score={_dz_score:.0f}≥155 grade={_dz_grade}≥90 → 0.5%NAV'
         else:
             _valid = False
+            _score_gate_ok = False  # [P0-1修复 2026-07-16 苏摩111] 死穴封禁同步置零，防L3742覆盖
             cf['breakdown']['死穴封禁'] = f'BULL_TREND_SHORT WR=47.7%(铁证n=4999) 未达精英解锁[score≥155+grade≥90+RSI>75] score={_dz_score:.0f} RSI={_dz_rsi1h:.0f}'
             print(f'[死穴-封锁] {_sym} BULL_TREND_SHORT: score={_dz_score:.0f} grade={_dz_grade} RSI={_dz_rsi1h:.0f}')
     elif 'BEAR_RECOVERY' in _regime_str and _dir_check == 'SHORT':
@@ -3683,12 +3686,13 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         # 达摩院铁证 n=233(BTC)/238(ETH) avg_pnl=-0.183/-0.305
         # 例外解锁：score>=145 AND grade>=90 AND Kronos p_up<0.2
         _br_score = cf.get('total', 0)
-        _br_grade = cf.get('grade', 0)
+        _br_grade = float(cf.get('grade_num', cf.get('structure_grade', 0)) or 0)  # [P1-1修复 2026-07-16] grade是emoji字符串需用grade_num
         _br_pup   = cf.get('s23_p_up', 1.0)
         # [v25.4b防封闭修复] 例外条件放宽：145→140, 90→85, 0.2→0.25
         # 理由：n=233次铁证，非宪法级死穴，不应过严封闭
         if not (_br_score >= 140 and _br_grade >= 85 and _br_pup < 0.25):
             _valid = False
+            _score_gate_ok = False  # [P0-1修复 2026-07-16 苏摩111] 死穴封禁同步置零，防L3742覆盖
             cf['breakdown']['死穴封禁'] = (
                 f'BEAR_RECOVERY_SHORT WR=46% 物理封锁[v25.4b] '
                 f'score={_br_score:.0f} grade={_br_grade} p_up={_br_pup:.2f}'

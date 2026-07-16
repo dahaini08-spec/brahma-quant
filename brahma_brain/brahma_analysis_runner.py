@@ -309,7 +309,10 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
             # P0B封锁在brahma_core里设置val=False，但它不存入标记字段
             # 只要 params.valid=True + kelly>0 + 新score>=155 就是有效信号
             # [达摩院修正 2026-07-16 苏摩111] BEAR_RECOVERY体制阈值降至120（IC=0.76背书）
-            _inj_regime = str((_rf.get('params') or {}).get('regime', '') or '')
+            _inj_regime = (
+                str((_rf.get('params') or {}).get('regime', '') or '')
+                or str(_rf.get('regime', '') or '')
+            )  # [P0-4修复 2026-07-16] 双路径: params.regime OR 顶层regime
             _MIN_VALID = 120 if 'BEAR_RECOVERY' in _inj_regime.upper() else 155
             if _params_valid and _kelly_ok and _new_score >= _MIN_VALID:
                 _rf['valid_signal'] = True
@@ -427,12 +430,15 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
     try:
         _final_score = float((result.get('confluence') or {}).get('total', result.get('score', 0)) or 0)
         _cf_ref = result.get('confluence') or {}
+        # [P1-8修复 2026-07-16 苏摩111] BEAR_RECOVERY体制action阈值感知
+        _action_regime = str((_rf.get('params') or {}).get('regime','') or _rf.get('regime','') or '')
+        _is_br_action  = 'BEAR_RECOVERY' in _action_regime.upper()
         if _final_score >= 155:
             _correct_action = 'ENTER_FULL'
         elif _final_score >= 138:
             _correct_action = 'ENTER'
-        elif _final_score >= 130:
-            _correct_action = 'ENTER_WATCH'
+        elif _final_score >= 130 or (_is_br_action and _final_score >= 120):
+            _correct_action = 'ENTER_WATCH'  # BEAR_RECOVERY 120-129 也给ENTER_WATCH
         elif _final_score >= 110:
             _correct_action = 'WATCH'
         elif _final_score >= 80:
@@ -603,7 +609,10 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
 
             # 重新校验 valid_signal（外部层加分后可能越过155门槛）
             # [达摩院修正 2026-07-16 苏摩111] BEAR_RECOVERY体制阈值降至120（IC=0.76背书）
-            _regime_v2 = str((result.get('params') or {}).get('regime', '') or '')
+            _regime_v2 = (
+                str((result.get('params') or {}).get('regime', '') or '')
+                or str(result.get('regime', '') or '')
+            )  # [P0-4修复 2026-07-16] 双路径: params.regime OR 顶层regime
             _MIN_VALID_EXT = 120 if 'BEAR_RECOVERY' in _regime_v2.upper() else 155
             _params_v2 = bool((result.get('params') or {}).get('valid', False))
             _kelly_v2  = float((result.get('confluence') or {}).get('kelly_mult', 1) or 1) > 0
@@ -758,6 +767,21 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
         except Exception:
             pass
     # ─────────────────────────────────────────────────────────────────
+
+    # [P0-8修复 2026-07-16 苏摩111] run_batch最小注入：BEAR_RECOVERY阈值120 + valid_signal同步
+    # 完整注入链(timing/ext/panorama)由未来重构到公共函数处理，此处先修复最高优先级
+    for _bs_sym, _bs_r in results.items():
+        try:
+            _bs_regime = str((_bs_r.get('params') or {}).get('regime', '') or _bs_r.get('regime', '') or '')
+            _bs_score  = float(_bs_r.get('score_final', _bs_r.get('score', 0)) or 0)
+            _bs_kelly  = float((_bs_r.get('confluence') or {}).get('kelly_mult', 1) or 1)
+            _bs_pvalid = bool((_bs_r.get('params') or {}).get('valid', False))
+            _bs_min    = 120 if 'BEAR_RECOVERY' in _bs_regime.upper() else 155
+            if _bs_pvalid and _bs_kelly > 0 and _bs_score >= _bs_min:
+                _bs_r['valid_signal'] = True
+                _bs_r['valid']        = True
+        except Exception:
+            pass
 
     return results
 
