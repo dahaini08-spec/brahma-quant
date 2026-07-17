@@ -190,6 +190,154 @@
 ---
 ---
 
+## TEMPLATE-E · 1号工程 · 35维矩阵 + 六方联合深度剖析
+
+> 适用：苏摩指令「1号工程实时分析」/「六方联合深度剖析」/「合约深度推理」
+> 调用路径：`scripts/brahma_1hao_analysis.py` → `brahma_engine.analyze(deep=True)`
+> 严禁使用curl+人工计算的V3.0简化路径
+
+---
+
+### 🏛️ 梵天设计院 · 六方联合深度剖析
+**{SYMBOL_A} {PRICE_A}U · {SYMBOL_B} {PRICE_B}U · {DATE} UTC · 35维全量矩阵**
+*设计院 × 量化工程师 × 顶级合约交易员 × SMC结构师 × 衍生品专家 × 宏观分析师*
+
+---
+
+**▌ GATE-0 · 体制与门控**
+
+- Regime: **{REGIME}** × mult={MULT}
+- score_final: **{SCORE}**（raw={RAW}）
+- grade_num: **{GRADE}** {GRADE_LABEL}
+- effective_grade: **{EFF_GRADE}**
+- 门控状态: **{GATE_STATUS}** ← {GATE_REASON}
+- 新宪法: {CONSTITUTION_NOTE}
+
+---
+
+**▌ 35维评分矩阵**
+
+*── 趋势层 ──*
+趋势一致性 / 多周期对齐 / OBV方向 / 动量背离 / QEW权重
+
+*── 结构层 ──*
+关键位精确度 / SMC结构 / 区间结构 / 区间Zone / 区间Zone_v2 / 区间底部做多
+
+*── RSI层 ──*
+RSI状态描述 / RSI极端加分_v2 / Phase2c / RSI极值_v2 / 布林带偏离_v2
+
+*── 量能层 ──*
+量能验证 / 量能衰竭+背离共振 / VolProfile / 成交量比率 / 形态成熟度
+
+*── 衍生品层 ──*
+清算/OI / 情绪/费率 / VolSkew / 期权+订单流 / _options_pc / _options_pc_v56
+
+*── 外部扩展层 ──*
+鲸鱼+微观 / _smart_money / _miner_pressure / _cross_fr_basis / _causal_regime
+
+*── AI/ML层 ──*
+s23_kronos / ML+在线贝叶斯 / LSTM+NLP / HMM乘数 / 研究增强层
+
+*── 宏观层 ──*
+L2+贝叶斯+宏观 / 宏观+事件
+
+*── 时段/体制层 ──*
+时段权重 / N03时段奖励 / N08 / N10 / N15_分层仓位 / N16_ATR体制 / _regime_mult
+
+---
+
+**▌ SMC结构 · FVG · OB · 流动性**
+
+- 市场结构: **{SMC_STRUCTURE}**
+- BOS: **{BOS}** — {BOS_NOTE}
+- CHoCH: **{CHOCH}** {CHOCH_ICON}
+- 最后摆动高点: {LAST_SH} / 摆动低点: {LAST_SL}
+
+**Order Blocks：**
+- Bull OB: {BULL_OB_COUNT}个 {BULL_OB_NOTE}
+- Bear OB: {BEAR_OB_COUNT}个（{BEAR_OB_LIST}）
+
+**FVG 价格缺口：**
+- {FVG_BULL_LIST}
+- {FVG_BEAR_LIST}
+- FVG磁铁目标: {FVG_MAGNET}
+
+**流动性猎杀区：**
+- 等高止损池（上）: {EQ_HIGH_LIST}
+- 等低止损池（下）: {EQ_LOW_LIST}
+
+**PD Zone：** {PD_ZONE} · Bias={PD_BIAS} · {PD_NOTE}
+
+**SMC综合评分：** {SMC_SCORE}/{SMC_MAX}（{SMC_GRADE}）
+
+---
+
+**▌ 六方联合深度推理**
+
+各层逐层解读格式：
+
+> **【层名称】六方推理**
+> 量化工程师：{QUANT_LAYER_NOTE}
+> 合约交易员：{TRADER_LAYER_NOTE}
+> SMC结构师：{SMC_LAYER_NOTE}
+> 衍生品专家：{DERIV_LAYER_NOTE}
+> AI/ML层：{AI_LAYER_NOTE}
+> 宏观分析师：{MACRO_LAYER_NOTE}
+
+---
+
+**▌ StructureGate 深度剖析**
+
+- confluence.score = {SCORE}（{SCORE_CHECK}）
+- grade_num = {GRADE}（{GRADE_CHECK}）
+- effective_grade = {EFF_GRADE}（{EFF_CHECK}）
+- 封禁根因: {GATE_ROOT_CAUSE}
+- 解封路径:
+  - 路径1（最快）: {UNLOCK_PATH_1}
+  - 路径2（较慢）: {UNLOCK_PATH_2}
+  - 路径3（强度）: {UNLOCK_PATH_3}
+
+---
+
+**▌ 六方最终联合封印结论**
+
+**做多概率：{LONG_PROB}%** 做空概率：{SHORT_PROB}%
+
+- 量化工程师：{QUANT_FINAL}
+- 顶级合约交易员：{TRADER_FINAL}
+- SMC结构师：{SMC_FINAL}
+- 衍生品专家：{DERIV_FINAL}
+- AI/ML层：{AI_FINAL}
+- 宏观分析师：{MACRO_FINAL}
+
+**最优策略：**
+- {SYMBOL_A}：{STRATEGY_A}
+  止损：{SL_A} 止盈1：{TP1_A} 止盈2：{TP2_A}
+- {SYMBOL_B}：{STRATEGY_B}
+  止损：{SL_B} 止盈1：{TP1_B} 止盈2：{TP2_B}
+
+**当前操作：{CURRENT_ACTION}**
+
+---
+*梵天设计院·六方联合·35维全量矩阵·brahma_engine.analyze()·{DATE} UTC*
+
+---
+
+## TEMPLATE-E 使用铁律（宪法级）
+
+| 规则 | 内容 |
+|------|------|
+| 调用入口 | 必须调用 `brahma_1hao_analysis.py` 或 `brahma_engine.analyze(deep=True)` |
+| 禁止路径 | 禁止curl+人工RSI/EMA计算的V3.0简化路径 |
+| 必含内容 | GATE-0 / 35维矩阵breakdown / SMC+FVG+OB+流动性 / 六方推理 / 封印结论 |
+| 六方身份 | 设计院×量化工程师×顶级合约交易员×SMC结构师×衍生品专家×宏观分析师 |
+| 深度要求 | 每层必须有实质性推理，不能只列数字 |
+| 结论要求 | 必须含做多/做空概率 + 具体入场止损止盈 + 当前操作状态 |
+| 封禁处理 | StructureGate封禁时必须给出三条解封路径 |
+
+---
+---
+
 ## 图标标准（统一规范）
 
 | 类别 | 图标 | 含义 |
