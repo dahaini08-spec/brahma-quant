@@ -372,6 +372,14 @@ def auto_open(signal: dict) -> dict:
     )
     push(msg)
     print(f'[lifecycle] 开仓成功 {sym} {dr} qty={qty} entry={entry:.4g}')
+
+    # 同步推送公域跟单卡片 [2026-07-17 苏摩111授权]
+    try:
+        from copy_signal_pusher import push_copy_signal
+        push_copy_signal(record)
+    except Exception as _ce:
+        print(f'[lifecycle] copy pusher warn: {_ce}')
+
     return dict(ok=True, sym=sym, record=record)
 
 
@@ -423,6 +431,11 @@ def monitor_and_execute():
                    f'下单: {"✅成交" if order.get("ok") else "❌失败: "+order.get("err","")[:60]}')
             push(msg)
             actions.append(f'SL {sym} {pnl_pct:+.1f}%')
+            # 公域平仓提醒
+            try:
+                from copy_signal_pusher import push_copy_close
+                push_copy_close(rec, 'SL', cp, pnl_pct)
+            except Exception: pass
 
         # ── TP2触发 → 剩余全量平仓 ─────────────────────────
         elif tp2_hit and tp1_closed:
@@ -438,6 +451,11 @@ def monitor_and_execute():
                    f'下单: {"✅" if order.get("ok") else "❌"}')
             push(msg)
             actions.append(f'TP2 {sym} {pnl_pct:+.1f}%')
+            # 公域平仓提醒
+            try:
+                from copy_signal_pusher import push_copy_close
+                push_copy_close(rec, 'TP2', cp, pnl_pct)
+            except Exception: pass
 
         # ── TP1触发且未做过 → 50%止盈 + 保本止损 ──────────────
         elif tp1_hit and not tp1_closed:
@@ -479,6 +497,11 @@ def monitor_and_execute():
                    f'止损单: {"✅algoId="+str(stop_res.get("algoId")) if stop_res.get("ok") else "⚠️止损单失败"}')
             push(msg)
             actions.append(f'TP1 {sym} {pnl_pct:+.1f}%')
+            # 公域平仓提醒
+            try:
+                from copy_signal_pusher import push_copy_close
+                push_copy_close(rec, 'TP1', cp, pnl_pct)
+            except Exception: pass
 
     # 更新DB
     update_db(db)
