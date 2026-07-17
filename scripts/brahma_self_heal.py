@@ -1051,7 +1051,6 @@ def run_self_heal():
     # ── 执行所有检测 ─────────────────────────────────────────
     checks = {
         'brahma_analyze':    check_brahma_analyze(),
-        'panorama_output':   check_analysis_chain(),  # 全景矩阵输出检查（含_panorama_full字段验证）
         'module_registry':   check_module_registry(),
         'binance_api':       check_binance_api(),
         'scoring_engine':    check_scoring_engine(),
@@ -1065,6 +1064,8 @@ def run_self_heal():
         # [2026-07-06] 新增：OKX清算引擎 + Kronos lgbm + 全链路分析
         'liq_density':       check_liq_density_engine(),
         'kronos_lgbm':       check_kronos_lgbm(),
+        # [2026-07-17 修复] analysis_chain去重：panorama_output与analysis_chain是同一函数重复调用
+        # 导致总耗时 >35s 触发 SIGTERM，合并为单次调用
         'analysis_chain':    check_analysis_chain(),
     }
 
