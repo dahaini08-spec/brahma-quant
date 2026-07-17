@@ -185,64 +185,11 @@ def check_real_positions(positions: list, state: dict, now: float) -> list:
 
 
 def check_signal_positions(sig_positions: list, state: dict, now: float) -> list:
-    """检查梵天纸面信号的SL/TP状态"""
-    alerts = []
-    for s in sig_positions:
-        sym = s.get('symbol', '')
-        dr  = s.get('direction', s.get('signal_dir', ''))
-        elo = float(s.get('entry_lo', 0) or 0)
-        sl  = float(s.get('stop_loss', 0) or 0)
-        tp1 = float(s.get('tp1', 0) or 0)
-        sc  = float(s.get('score_final', s.get('score', 0)) or 0)
-
-        if elo <= 0:
-            continue
-        # SL=0 时用默认2%兜底
-        if sl <= 0:
-            sl = elo * (1 - 0.02) if dr == 'LONG' else elo * (1 + 0.02)
-
-        cp = get_price(sym)
-        if cp <= 0:
-            continue
-
-        state_key_sl = f'sig_{sym}_sl'
-        state_key_tp = f'sig_{sym}_tp1'
-        last_sl = state.get(state_key_sl, 0)
-        last_tp = state.get(state_key_tp, 0)
-
-        sl_hit  = cp <= sl  if dr == 'LONG'  else cp >= sl
-        tp1_hit = cp >= tp1 if dr == 'LONG'  else cp <= tp1
-        pnl = (cp - elo) / elo * 100 if dr == 'LONG' else (elo - cp) / elo * 100
-
-        # 深度亏损检查（信号）
-        state_key_dd = f'sig_{sym}_dd'
-        last_dd = state.get(state_key_dd, 0)
-        if pnl <= -DRAWDOWN_WARN and not sl_hit and now - last_dd > 12 * 3600:
-            alerts.append({
-                'level': 'P2', 'sym': sym, 'trigger': 'DD',
-                'cp': cp, 'entry': elo, 'sl': sl, 'tp1': tp1,
-                'pnl': round(pnl, 2), 'dir': dr, 'score': sc,
-                'source': 'signal', 'state_key': state_key_dd,
-            })
-
-        if sl_hit and now - last_sl > 6 * 3600:
-            alerts.append({
-                'level': 'P0', 'sym': sym, 'trigger': 'SL',
-                'cp': cp, 'entry': elo, 'sl': sl, 'tp1': tp1,
-                'pnl': round(pnl, 2), 'dir': dr, 'score': sc,
-                'source': 'signal',
-                'state_key': state_key_sl,
-            })
-        elif tp1_hit and now - last_tp > 6 * 3600:
-            alerts.append({
-                'level': 'P1', 'sym': sym, 'trigger': 'TP1',
-                'cp': cp, 'entry': elo, 'sl': sl, 'tp1': tp1,
-                'pnl': round(pnl, 2), 'dir': dr, 'score': sc,
-                'source': 'signal',
-                'state_key': state_key_tp,
-            })
-
-    return alerts
+    """
+    [已废弃 2026-07-17 苏摩宣告：纸面信号追踪体系完全取消]
+    梵天只监控实盘持仓，不再追踪纸面信号
+    """
+    return []  # 永久返回空列表，不产生任何信号追踪告警
 
 
 def format_alert(a: dict) -> str:

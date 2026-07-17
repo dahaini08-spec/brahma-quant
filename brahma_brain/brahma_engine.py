@@ -1399,8 +1399,8 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
         cf['structure_grade'] = _pre_sq_result.get('grade', 0)
         # [v24.5-debug] 临时打印，确认修复后grade值
-        import os
-        if os.environ.get('BRAHMA_DEBUG'):
+        import os as _os_dbg
+        if _os_dbg.environ.get('BRAHMA_DEBUG'):
             pass  # [静默] f'[PRE-SQE] {_sym} price={ms.get("price",0):.0f} entry={params.get("entry_lo",0)
     except Exception as _pre_sq_err:
         pass  # 失败不影响主流程
