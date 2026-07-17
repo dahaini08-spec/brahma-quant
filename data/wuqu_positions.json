@@ -42,20 +42,6 @@
     "success": true
   },
   {
-    "symbol": "NBISUSDT",
-    "side": "SHORT",
-    "size": 0.08,
-    "entry_price": 164.96,
-    "mark_price": 162.30009644,
-    "stop_loss": 169.9088,
-    "take_profit": 160.0112,
-    "leverage": 3.0,
-    "notional_usdt": 12.984,
-    "unrealized_pnl": 0.2128,
-    "updated_at": 1784267054.5768595,
-    "success": true
-  },
-  {
     "symbol": "USUSDT",
     "side": "LONG",
     "size": 88.0,
@@ -138,20 +124,6 @@
     "notional_usdt": 12.4491,
     "unrealized_pnl": 0.8376,
     "updated_at": 1784267054.5768988,
-    "success": true
-  },
-  {
-    "symbol": "SNDKUSDT",
-    "side": "SHORT",
-    "size": 0.01,
-    "entry_price": 1360.3000000000002,
-    "mark_price": 1339.69,
-    "stop_loss": 1401.109,
-    "take_profit": 1319.491,
-    "leverage": 3.0,
-    "notional_usdt": 13.3969,
-    "unrealized_pnl": 0.2061,
-    "updated_at": 1784267054.576905,
     "success": true
   },
   {
