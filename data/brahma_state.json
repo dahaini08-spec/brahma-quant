@@ -1,7 +1,7 @@
 {
   "version": 5814,
   "schema": "brahma_state_v1",
-  "last_updated": "2026-07-17T08:24:34.395632+00:00",
+  "last_updated": "2026-07-17T10:05:50.386636+00:00",
   "last_writer": "ghost_cleanup_20260704_wuqu",
   "last_binance_sync": "2026-06-26T01:01:15Z",
   "positions": [
@@ -358,16 +358,16 @@
   "regime_snapshot": {
     "symbol": "BTCUSDT",
     "regime": "BULL_TREND",
-    "phase": "4W_OR_2W",
+    "phase": "UPTREND",
     "momentum": "SHORT",
-    "rsi_1h": 28.28,
-    "rsi_4h": 38.13,
-    "rsi_1d": 47.44,
+    "rsi_1h": 36.24,
+    "rsi_4h": 41.42,
+    "rsi_1d": 48.41,
     "trend_1h": "BEAR",
     "trend_4h": "BULL",
     "trend_1d": "BEAR",
     "source": "market_state.detect_regime",
-    "ts": 1784276674.9509227
+    "ts": 1784282750.9942164
   },
   "realized_pnl": [],
   "last_close": {
@@ -382,8 +382,8 @@
     "note": "设计院CONFIRM执行-即时平仓(LIMIT单触发)"
   },
   "market_prices": {
-    "BTCUSDT": 62811.9,
-    "ETHUSDT": 1826.01
+    "BTCUSDT": 63073.1,
+    "ETHUSDT": 1838.01
   },
   "audit_log": [
     {
@@ -899,10 +899,10 @@
   "paper_nav": 130.46588703,
   "available_balance": 393.05,
   "_last_binance_sync": "2026-06-17T02:17:37.645507+00:00",
-  "timestamp": 1784276674.3960793,
-  "updated_at": "2026-07-17T08:24:34.395632+00:00",
-  "last_scan_ts": "2026-07-17T08:24:34.395632+00:00",
-  "last_update": 1784276674.3960786,
+  "timestamp": 1784282750.387132,
+  "updated_at": "2026-07-17T10:05:50.386636+00:00",
+  "last_scan_ts": "2026-07-17T10:05:50.386636+00:00",
+  "last_update": 1784282750.3871315,
   "regime_label": "BULL_TREND",
   "position_open": true,
   "positions_updated_at": "2026-06-18T15:08:11Z",
@@ -926,10 +926,10 @@
   },
   "position_sync_ts": "2026-06-22T03:12:23Z",
   "last_wuqu_sync": "2026-06-22T14:26:58Z",
-  "last_price": 62811.9,
-  "btc_price": 62811.9,
-  "price": 62811.9,
-  "eth_price": 1826.01,
+  "last_price": 63073.1,
+  "btc_price": 63073.1,
+  "price": 63073.1,
+  "eth_price": 1838.01,
   "last_reconciled": "2026-06-28T09:00:07.606910+00:00",
   "regime_votes": {
     "BULL_TREND": 1,
