@@ -363,12 +363,25 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
         nav = float(_acct2['totalMarginBalance'])
     except Exception:
         nav = float(bs.get('nav_usdt', bs.get('nav', 130)))
-    sig_pos_pct = float(signal.get('pos_pct', MAX_POS_PCT_NAV * 100)) / 100
-    final_pct = min(sig_pos_pct, MAX_POS_PCT_NAV)
+    # [BTC专属 设计院2026-07-18 苏摩111封印]
+    # BTC最小单位0.001×价格≈65U，NAV=90U时标准10%×3x=27U不够
+    # BTC专属：pos_pct=15%，leverage=5x → notional=90×15%×5=67.5U > 65U ✅
+    _BTC_SYMBOLS = {'BTCUSDT', 'BTCPERP', 'BTC-PERP'}
+    if sym in _BTC_SYMBOLS:
+        _default_pct = 15.0   # BTC专属15%
+        _default_lev = 5      # BTC专属5x
+    else:
+        _default_pct = MAX_POS_PCT_NAV * 100  # 其他标的沿用10%
+        _default_lev = 5
+
+    sig_pos_pct = float(signal.get('pos_pct', _default_pct)) / 100
+    # BTC信号：允许最高15%；其他标的：硬上限10%
+    _pct_cap = 0.15 if sym in _BTC_SYMBOLS else MAX_POS_PCT_NAV
+    final_pct = min(sig_pos_pct, _pct_cap)
     pos_usdt = nav * final_pct
 
     entry_price = (entry_lo + entry_hi) / 2 if entry_hi > entry_lo else entry_lo
-    leverage    = int(signal.get('leverage', 5))  # 设计院封印：默认5倍
+    leverage    = int(signal.get('leverage', _default_lev))  # 设计院封印：BTC=5x, 其他=5x
     sl_price    = float(signal.get('stop_loss', 0))
     tp1_price   = float(signal.get('tp1', 0))
     tp2_price   = float(signal.get('tp2', 0))
