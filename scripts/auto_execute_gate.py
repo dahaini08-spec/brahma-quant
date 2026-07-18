@@ -416,16 +416,21 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
     if qty <= 0:
         # [P0-2 设计院修复 2026-07-18 苏摩111封印]
         # 根因：NAV=90U × 10% × 3x = 27U，BTC最小单位0.001 × 64500 = 64.5U，远超pos_usdt
-        # 修复：qty=0时自动使用min_step作为最小可执行数量（1手），并验证notional不超过NAV×30%
+        # [FIX-C7 2026-07-18] BTC专属通道：最小手=65U，上限用BTC专属pct_cap×NAV而非NAV×30%
+        # 非BTC：最小手通常<10U，NAV×30%=27U足够；BTC：最小手=65U，需要BTC专属上限
         _min_notional = min_step * entry_price
-        _max_notional_cap = nav * 0.30  # 最大单笔不超过NAV的30%（安全上限）
+        _btc_syms = {'BTCUSDT', 'BTCPERP', 'BTC-PERP'}
+        if sym in _btc_syms:
+            _max_notional_cap = nav * 0.15 * 5  # BTC专属：15%NAV×5x = 可承受最大notional
+        else:
+            _max_notional_cap = nav * 0.30  # 其他标的：NAV×30%
         if _min_notional <= _max_notional_cap:
             qty = min_step
             qty = round(qty, qty_precision)
             _log('WARN_QTY_FLOOR', signal,
-                 f'qty=0→floor to min_step={min_step}, notional={_min_notional:.2f}U (NAV*30%={_max_notional_cap:.1f}U)')
+                 f'qty=0→floor to min_step={min_step}, notional={_min_notional:.2f}U (cap={_max_notional_cap:.1f}U)')
         else:
-            r = f'qty=0且min_notional={_min_notional:.1f}U > NAV*30%={_max_notional_cap:.1f}U，拒绝执行（标的价格过高）'
+            r = f'qty=0且min_notional={_min_notional:.1f}U > cap={_max_notional_cap:.1f}U，拒绝执行（标的价格过高）'
             _log('BLOCKED', signal, r)
             return {'executed': False, 'reason': r, 'order': None}
 
