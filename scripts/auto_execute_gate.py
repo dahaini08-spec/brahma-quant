@@ -211,9 +211,9 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
             r = f'score={score}疑似mock信号，拒绝执行'
             _log('BLOCKED', signal, r)
             return {'executed': False, 'reason': r, 'order': None}
-    # [P0-A 设计院 2026-07-13] grade门控改为数值门控（原文字白名单导致8天0执行）
-    # 根因：grade字段为数值(75/87/93/100)，文字白名单'神级/极强/VIP'永远不匹配
-    # 修复：改为数值≥70即允许执行（结合score≥155双重保障）
+    # [P1-1 设计院 2026-07-18 苏摩111封印] grade门控统一为数值门控，彻底废除文字白名单
+    # 根因：文字白名单('神级'/'极强'/'VIP')导致数值grade永远不匹配 → 8天0执行
+    # v2修复：文字格式grade兜底路径也改为数值提取，提取失败直接放行（score≥155已是主要门控）
     grade_raw = signal.get('grade', None)
     if grade_raw is not None:
         try:
@@ -223,12 +223,16 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
                 _log('BLOCKED', signal, r)
                 return {'executed': False, 'reason': r, 'order': None}
         except (ValueError, TypeError):
-            # grade为文字格式（'神级'/'极强'/'VIP'/'强'等），文字白名单兜底
-            GRADE_WHITELIST = ('神级', '极强', 'VIP', '强')
-            if not any(g in str(grade_raw) for g in GRADE_WHITELIST):
-                r = f'grade={grade_raw} 不满足质量要求，拒绝执行'
-                _log('BLOCKED', signal, r)
-                return {'executed': False, 'reason': r, 'order': None}
+            # grade为文字格式，尝试提取数字；失败则直接放行（score是主门控）
+            import re as _re
+            _m = _re.search(r'(\d+)', str(grade_raw))
+            if _m:
+                _g = float(_m.group(1))
+                if _g < 70:
+                    r = f'grade_text={grade_raw}(数值={_g:.0f}) < 70，拒绝执行'
+                    _log('BLOCKED', signal, r)
+                    return {'executed': False, 'reason': r, 'order': None}
+            # 无数字可提取，放行（score≥155是真正门槛）
 
     # ── 门控1：score 门槛 ──────────────────────────────────────────
     if score < MIN_SCORE:
@@ -385,9 +389,20 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
     qty      = round(qty, qty_precision)
 
     if qty <= 0:
-        r = f'qty=0: pos_usdt={pos_usdt:.2f} entry={entry_price:.6f} step={min_step}'
-        _log('BLOCKED', signal, r)
-        return {'executed': False, 'reason': r, 'order': None}
+        # [P0-2 设计院修复 2026-07-18 苏摩111封印]
+        # 根因：NAV=90U × 10% × 3x = 27U，BTC最小单位0.001 × 64500 = 64.5U，远超pos_usdt
+        # 修复：qty=0时自动使用min_step作为最小可执行数量（1手），并验证notional不超过NAV×30%
+        _min_notional = min_step * entry_price
+        _max_notional_cap = nav * 0.30  # 最大单笔不超过NAV的30%（安全上限）
+        if _min_notional <= _max_notional_cap:
+            qty = min_step
+            qty = round(qty, qty_precision)
+            _log('WARN_QTY_FLOOR', signal,
+                 f'qty=0→floor to min_step={min_step}, notional={_min_notional:.2f}U (NAV*30%={_max_notional_cap:.1f}U)')
+        else:
+            r = f'qty=0且min_notional={_min_notional:.1f}U > NAV*30%={_max_notional_cap:.1f}U，拒绝执行（标的价格过高）'
+            _log('BLOCKED', signal, r)
+            return {'executed': False, 'reason': r, 'order': None}
 
     # 获取tick_size并对齐entry/sl/tp价格（防止-4014 / -1111）
     # [P0-fix 2026-06-24] _TICK_SIZE_CACHE 可能为空（进程内存缓存，子进程每次重启清空）

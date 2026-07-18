@@ -37,9 +37,15 @@ STATUS_EXPIRED   = 'EXPIRED'
 STATUS_SUPERSEDED = 'SUPERSEDED'
 
 
-def _make_signal_id(symbol: str, ts: float, direction: str) -> str:
-    """生成唯一信号ID(12位hex)"""
-    raw = f"{symbol}:{ts:.3f}:{direction}"
+def _make_signal_id(symbol: str, ts: float, direction: str, entry_lo: float = 0.0) -> str:
+    """生成唯一信号ID(12位hex)
+    [P1-2 设计院修复 2026-07-18 苏摩111封印]
+    加入entry_lo作为hash因子，防止同一entry区间在1s内重复写入产生不同signal_id
+    """
+    # ts精度到1s（原3ms导致同次扫描两路调用产生不同id）
+    # entry_lo取整数部分作为区分因子
+    _entry_bucket = int(entry_lo * 1000) if entry_lo > 0 else 0
+    raw = f"{symbol}:{int(ts)}:{direction}:{_entry_bucket}"
     return hashlib.md5(raw.encode()).hexdigest()[:12]
 
 
@@ -110,7 +116,7 @@ def log_signal(result: dict) -> bool:
 
         signal = {
             # 基础标识
-            'signal_id':      _make_signal_id(symbol, now_ts, direction),
+            'signal_id':      _make_signal_id(symbol, now_ts, direction, float(params.get('entry_lo', 0) or 0)),
             'ts':             now_ts,
             'ts_iso':         datetime.fromtimestamp(now_ts, tz=timezone.utc).isoformat(),
             'symbol':         symbol,
@@ -213,6 +219,12 @@ def log_signal(result: dict) -> bool:
             'consensus':       (result.get('extra', {}) or {}).get('multitf', {}).get('consensus', ''),
             'rsi_1h':          (result.get('momentum', {}) or {}).get('rsi_1h'),
             'rsi_4h':          (result.get('momentum', {}) or {}).get('rsi_4h'),
+            # [fix 2026-07-18 苏摩111] timing层字段回写：brahma_engine调用log_signal时从 result提取
+            # brahma_analysis_runner在run_analysis后把timing写入result，然后brahma_engine直接调用本函数
+            # result中可能已有timing字段或无，无则留空供后续回写
+            'timing_badge':    result.get('timing_badge', ''),
+            'timing_status':   result.get('timing_status', ''),
+            'timing_score':    result.get('timing_score', 0),
         }
 
         # ── [P2 设计院 2026-07-13] 信号去重修复版 ─────────────────────────────
