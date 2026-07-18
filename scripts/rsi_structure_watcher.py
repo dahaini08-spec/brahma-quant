@@ -161,10 +161,15 @@ def save_state(state):
 
 
 def check_cooldown(state, sym):
-    """检查冷却期，True=在冷却中，跳过"""
+    """检查冷却期，True=在冷却中，跳过
+    [修复3 2026-07-18 苏摩111] BTC/ETH豁免: 每4H强制检查一次，防止体制感知长期静默
+    """
     last_ts = state.get(f'{sym}_last_trigger', 0)
     elapsed = time.time() - last_ts
-    return elapsed < COOLDOWN_SECONDS
+    # BTC/ETH: 冷却期上限4H（14400s），防止15H+静默
+    _BTC_ETH = {'BTCUSDT', 'ETHUSDT'}
+    effective_cooldown = min(COOLDOWN_SECONDS, 14400) if sym in _BTC_ETH else COOLDOWN_SECONDS
+    return elapsed < effective_cooldown
 
 
 def detect_events(data, prev_state, sym):

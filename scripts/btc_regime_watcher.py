@@ -110,11 +110,46 @@ def get_eth_regime():
         return 'UNKNOWN'
 
 
+REGIME_HISTORY_FILE = os.path.join(BASE_DIR, 'data', 'regime_history.json')
+
+def _append_regime_history(old_regime: str, new_regime: str, trigger: str = ''):
+    """[修复2 2026-07-18 苏摩111] 体制切换历史持久化
+    每次体制变化追加到 data/regime_history.json
+    """
+    try:
+        from datetime import datetime, timezone
+        history = []
+        if os.path.exists(REGIME_HISTORY_FILE):
+            with open(REGIME_HISTORY_FILE) as f:
+                history = json.load(f)
+        if not isinstance(history, list):
+            history = []
+        history.append({
+            'ts':          datetime.now(tz=timezone.utc).isoformat(),
+            'prev_regime': old_regime,
+            'regime':      new_regime,
+            'trigger':     trigger,
+        })
+        # 保留最近200条
+        if len(history) > 200:
+            history = history[-200:]
+        with open(REGIME_HISTORY_FILE, 'w') as f:
+            json.dump(history, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
+
 def save_state(state):
     os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
     # [设计院 2026-07-06] 同步写入ETH体制
     state['eth_regime'] = get_eth_regime()
     state['eth_regime_updated_at'] = time.time()
+    # [修复2 2026-07-18] 体制切换时写入历史
+    _old = state.get('_prev_regime_for_history', state.get('regime', ''))
+    _new = state.get('regime', '')
+    if _old and _new and _old != _new:
+        _append_regime_history(_old, _new, state.get('regime_trigger', ''))
+    state['_prev_regime_for_history'] = _new
     with open(STATE_FILE, 'w') as f:
         json.dump(state, f, indent=2, ensure_ascii=False)
 
