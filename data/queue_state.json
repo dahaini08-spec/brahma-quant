@@ -1,0 +1,86 @@
+{
+  "queue": [],
+  "cooldowns": {
+    "1000PEPEUSDT": {
+      "ts": "2026-06-27T00:27:24.430618+00:00",
+      "regime": "BEAR_EARLY"
+    },
+    "SUIUSDT": {
+      "ts": "2026-06-27T00:27:29.640822+00:00",
+      "regime": "CHOP_MID"
+    },
+    "BTCUSDT": {
+      "ts": "2026-06-27T13:51:27.056206+00:00",
+      "regime": "CHOP_MID"
+    },
+    "ETHUSDT": {
+      "ts": "2026-06-27T13:50:52.430044+00:00",
+      "regime": "CHOP_MID"
+    },
+    "NEARUSDT": {
+      "ts": "2026-06-27T06:37:54.662445+00:00",
+      "regime": "BEAR_TREND"
+    },
+    "GALAUSDT": {
+      "ts": "2026-06-27T00:27:08.921975+00:00",
+      "regime": "BEAR_TREND"
+    },
+    "PIXELUSDT": {
+      "ts": "2026-06-27T00:27:14.410215+00:00",
+      "regime": "BEAR_TREND"
+    },
+    "TRUMPUSDT": {
+      "ts": "2026-06-27T00:27:19.476321+00:00",
+      "regime": "CHOP_MID"
+    },
+    "MSTRUSDT": {
+      "ts": "2026-06-26T18:37:31.846239+00:00",
+      "regime": "BEAR_TREND"
+    },
+    "SYNUSDT": {
+      "ts": "2026-06-26T18:37:41.897319+00:00",
+      "regime": "BULL_TREND"
+    },
+    "SKHYNIXUSDT": {
+      "ts": "2026-06-26T18:38:03.323002+00:00",
+      "regime": "BEAR_EARLY"
+    },
+    "DRAMUSDT": {
+      "ts": "2026-06-26T18:38:13.697205+00:00",
+      "regime": "BEAR_TREND"
+    },
+    "KORUUSDT": {
+      "ts": "2026-06-26T18:38:36.611419+00:00",
+      "regime": "BEAR_TREND"
+    },
+    "MUUSDT": {
+      "ts": "2026-06-26T18:38:46.398255+00:00",
+      "regime": "CHOP_MID"
+    },
+    "WLDUSDT": {
+      "ts": "2026-06-27T06:37:33.612546+00:00",
+      "regime": "BEAR_TREND"
+    },
+    "SOXLUSDT": {
+      "ts": "2026-06-27T06:37:43.926087+00:00",
+      "regime": "BEAR_TREND"
+    },
+    "HYPEUSDT": {
+      "ts": "2026-06-27T06:38:05.569164+00:00",
+      "regime": "BULL_CORRECTION"
+    },
+    "BEATUSDT": {
+      "ts": "2026-06-27T06:38:17.811921+00:00",
+      "regime": "CHOP_MID"
+    },
+    "MRVLUSDT": {
+      "ts": "2026-06-27T06:38:28.762981+00:00",
+      "regime": "BEAR_TREND"
+    }
+  },
+  "active_positions": [],
+  "last_updated": "2026-06-27T13:51:27.056261+00:00",
+  "_abolished": "2026-07-17T10:17:29Z",
+  "_cleared_at": "2026-07-18T09:07:00Z",
+  "_cleared_reason": "苏摩111封印：废弃队列清空，防止BEAR_TREND SHORT反向信号触发"
+}
