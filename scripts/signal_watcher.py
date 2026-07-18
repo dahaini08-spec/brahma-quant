@@ -120,10 +120,10 @@ def _save_state(state: dict):
 
 
 def _load_valid_signals() -> list:
-    """加载所有有效信号（valid=True, grade≥70, score≥140）
-    [v24.2] grade门槛 50→70：B级TO率=73%，仅A/S级(≥70)有意义
-    [修复三 2026-07-08] timing_status=MONITOR不推送VIP（胜率约40%，应内部记录不推送）
-    只有 READY(≥65) 或 UNKNOWN/空 才允许推送给VIP
+    """[FIX-M2 2026-07-18 苏摩111] 门槛统一为完整执行链一致标准
+    - score≥155（与宪法MIN_SCORE/auto_execute_gate一致，原≥140偏低）
+    - grade≥70（正则提取，兼容文字格式）
+    - timing=WAIT/STANDBY/MONITOR 不装载（与P2门控一致）
     """
     if not LOG_PATH.exists():
         return []
@@ -136,20 +136,23 @@ def _load_valid_signals() -> list:
             s = json.loads(l)
             if not s.get("valid"):
                 continue
-            grade = s.get("grade", 0)
             score = s.get("score", 0)
-            if isinstance(grade, str):  # grade存了emoji字符串，fallback到structure_grade
-                grade = s.get("structure_grade", 0) or 0
-                s["grade"] = grade  # 修正为数字，供后续使用
-            if grade >= 70 and score >= 140:  # [v24.2] 50→70
-                # [修复三] timing_status=MONITOR时机未到，不推送VIP
-                # MONITOR=55: "信号存在但时机不对"，推送给VIP是错误的
-                # 只有 READY(≥65)/STANDBY系统封堵/UNKNOWN 才允许继续
-                timing = s.get('timing_status', '') or ''
-                if 'MONITOR' in timing.upper():
-                    pass  # [静默]
-                    continue
-                signals.append(s)
+            if score < 155:  # [FIX-M2] 140→155，与宪法一致
+                continue
+            # grade统一为数字（处理文字格式）
+            grade = s.get("grade", 0)
+            if isinstance(grade, str):
+                import re as _re
+                _m = _re.search(r'(\d+)', grade)
+                grade = int(_m.group(1)) if _m else (s.get('structure_grade', 0) or 0)
+                s["grade"] = grade
+            if grade < 70:
+                continue
+            # timing过滤：WAIT/STANDBY/MONITOR不装载
+            timing = (s.get('timing_status') or s.get('timing_badge') or '').upper()
+            if timing in ('WAIT', 'STANDBY', 'MONITOR'):
+                continue
+            signals.append(s)
         except Exception:
             continue
     return signals

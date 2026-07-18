@@ -10,7 +10,7 @@ import json, time, pathlib, datetime
 from pathlib import Path
 
 # ── 苏摩授权边界常量 ──────────────────────────────────────────────
-MIN_SCORE          = 138
+MIN_SCORE          = 155  # [FIX-M2 2026-07-18 苏摩111] 138→155，与宪法/auto_executor TIER_1一致
 MAX_OPEN_POSITIONS = 999  # 设计院2026-06-23授权：不限制开仓数量
 MAX_POS_PCT_NAV    = 0.10  # 单笔最大10% NAV（保留风控）
 
@@ -132,70 +132,81 @@ def _log(event: str, signal: dict, reason: str, result: dict = None):
         f.write(json.dumps(entry, ensure_ascii=False) + '\n')
 
 
-# ─── [P1 设计院 2026-07-13] 信号去重门控 ─────────────────────────────────────
-_DEDUP_CACHE: dict = {}   # {dedup_key: last_ts}
-_DEDUP_TTL   = 120        # 120秒去重窗口（防止同信号1分钟内重复执行）
+# ─── [P1 设计院 2026-07-18 FIX-M4] 信号去重门控 · 文件持久化版 ─────────────────
+# 修复: _DEDUP_CACHE内存字典 → cron每次新进程清空 = 完全无效
+# 改用 auto_executed_signals.json 文件持久化，跨进程有效
+_DEDUP_FILE  = Path(__file__).parent.parent / 'data' / 'auto_executed_signals.json'
+_DEDUP_TTL   = 300   # 保留参数，不再使用（文件去重不设过期）
 
-def _dedup_check(signal: dict) -> tuple[bool, str]:
-    """返回 (is_dup, reason)"""
-    import time
-    now   = time.time()
-    sym   = signal.get('symbol', '?')
-    dir_  = signal.get('direction', signal.get('signal_dir', '?'))[:5]
-    score = int(float(signal.get('score_final', signal.get('score', 0)) or 0) // 10 * 10)
-    key   = f'{sym}:{dir_}:{score}'
+def _dedup_check(signal: dict) -> tuple:
+    """[FIX-M4] 文件持久化去重，返回 (is_dup, reason)"""
+    sig_id = signal.get('signal_id', '')
+    sym    = signal.get('symbol', '?')
+    dir_   = (signal.get('direction') or signal.get('signal_dir', '?'))[:5]
+    score  = int(float(signal.get('score', 0) or 0) // 10 * 10)
+    key    = sig_id if sig_id else f'{sym}:{dir_}:{score}'
 
-    # 清理过期条目
-    expired = [k for k, t in _DEDUP_CACHE.items() if now - t > _DEDUP_TTL]
-    for k in expired:
-        del _DEDUP_CACHE[k]
+    try:
+        _ids = json.loads(_DEDUP_FILE.read_text()) if _DEDUP_FILE.exists() else []
+        if not isinstance(_ids, list):
+            _ids = list(_ids) if hasattr(_ids, '__iter__') else []
+    except Exception:
+        _ids = []
 
-    if key in _DEDUP_CACHE:
-        elapsed = round(now - _DEDUP_CACHE[key], 1)
-        return True, f'去重门控: {key} {elapsed}s内已发送'
-    _DEDUP_CACHE[key] = now
+    if key in _ids:
+        return True, f'去重门控(文件): {key} 已在auto_executed_signals中'
+
+    # 写入（保留最近500条）
+    _ids.append(key)
+    if len(_ids) > 500:
+        _ids = _ids[-500:]
+    try:
+        _DEDUP_FILE.write_text(json.dumps(_ids, ensure_ascii=False))
+    except Exception:
+        pass
     return False, ''
 # ─── [END P1] ─────────────────────────────────────────────────────────────────
 
 
 def auto_execute(signal: dict, dry_run: bool = False) -> dict:
     """
-
-    # [P1 去重门控]
+    五重门控 + 执行入口
+    Returns: {'executed': bool, 'reason': str, 'order': dict|None}
+    [设计院2026-07-18 苏摩111封印] 全局矛盾修复版
+    """
+    # [P1 去重门控] 文件持久化去重（防cron进程重启后内存缓存失效）
     _is_dup, _dup_reason = _dedup_check(signal)
     if _is_dup:
-        return {'blocked': True, 'reason': _dup_reason, 'symbol': signal.get('symbol')}
+        return {'executed': False, 'reason': _dup_reason, 'order': None}  # FIX: blocked→executed统一
 
-    # [P2 设计院 2026-07-13] 高分低WR修复门控
+    # [P2 设计院 2026-07-13 修复 2026-07-18]
     _score_p2   = float(signal.get('score_final', signal.get('score', 0)) or 0)
-    _timing_p2  = signal.get('timing_status', 'UNKNOWN')
+    # FIX-M1: timing空字符串时get默认值不生效 → 改为 or 'UNKNOWN'
+    _timing_p2  = signal.get('timing_status') or signal.get('timing_badge') or 'UNKNOWN'
     _regime_p2  = signal.get('regime', '?')
     _dir_p2     = signal.get('direction', signal.get('signal_dir', '?'))
 
-    # 规则1: score≥155 但 timing≠READY → 禁止执行（实盘WR=0%根因）
-    if _score_p2 >= 155 and _timing_p2 not in ('READY',):
-        return {'blocked': True,
-                'reason': f'P2高分强制READY: score={_score_p2:.0f} 但timing={_timing_p2}（实盘WR=0%）',
-                'symbol': signal.get('symbol')}
+    # 规则1: score≥155 但 timing明确为WAIT/STANDBY → 禁止执行
+    # FIX-M1: 空字符串/UNKNOWN视为timing未注入，不触发拦截（auto_executor TIER_1逻辑一致）
+    if _score_p2 >= 155 and _timing_p2 in ('WAIT', 'STANDBY'):
+        return {'executed': False,
+                'reason': f'P2高分timing拦截: score={_score_p2:.0f} timing={_timing_p2}（等待入场时机）',
+                'order': None}
 
-    # 规则2: BULL_TREND LONG 140-154分 → EV=-0.705% 亏损区，降级为WATCH不执行
+    # 规则2: BULL_TREND LONG 140-154分 → EV=-0.705% 亏损区，需外部层bonus≥10
     if _regime_p2 == 'BULL_TREND' and _dir_p2 == 'LONG' and 140 <= _score_p2 < 155:
-        # 需要外部层bonus≥10分才允许执行（确保真实信号质量）
         _ext_p2 = float(signal.get('_ext_score_bonus', 0) or 0)
         if _ext_p2 < 10:
-            return {'blocked': True,
-                    'reason': f'P2低EV区拦截: BULL_TREND LONG score={_score_p2:.0f} 外部层bonus={_ext_p2}<10（EV=-0.7%亏损区）',
-                    'symbol': signal.get('symbol')}
+            return {'executed': False,
+                    'reason': f'P2低EV区拦截: BULL_TREND LONG score={_score_p2:.0f} 外部层bonus={_ext_p2}<10',
+                    'order': None}
 
     # 规则3: OBV反向时 score<165 禁止执行
     _risk_p2 = signal.get('_risk_flags', [])
     if 'OBV_DIVERGENCE' in _risk_p2 and _score_p2 < 165:
-        return {'blocked': True,
+        return {'executed': False,
                 'reason': f'P2 OBV反向拦截: score={_score_p2:.0f}<165 量能未配合',
-                'symbol': signal.get('symbol')}
-    五重门控 + 执行入口
-    Returns: {'executed': bool, 'reason': str, 'order': dict|None}
-    """
+                'order': None}
     sym       = signal.get('symbol', '')
     direction = signal.get('direction', '')
     score     = float(signal.get('score', 0))
@@ -203,14 +214,15 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
     entry_lo  = float(signal.get('entry_lo', 0))
     entry_hi  = float(signal.get('entry_hi', 0))
 
-    # ── 门控0：valid + grade 白名单 ──────────────────────────────────
-    # valid=False 的信号（含VIP策略mock、健康检查mock）一律拒绝
-    if not signal.get('valid', True):  # 无valid字段时默认放行（兼容旧格式）
-        # 特殊：score=999是mock/test，明确拒绝
-        if score >= 999:
-            r = f'score={score}疑似mock信号，拒绝执行'
-            _log('BLOCKED', signal, r)
-            return {'executed': False, 'reason': r, 'order': None}
+    # ── 门控0：valid + grade 门控 ──────────────────────────────────
+    # [FIX-M3 2026-07-18 苏摩111] valid=False逻辑修正：valid字段存在且为False时直接BLOCKED
+    # 原Bug: valid=False只拦截score≥999的mock，普通valid=False信号流入后续门控
+    # 修复: valid字段明确为False → 直接BLOCKED（无valid字段=旧格式，保持放行兼容）
+    _valid = signal.get('valid', None)
+    if _valid is False:  # 明确False，不含None/缺失
+        r = f'valid=False，信号未通过DharmaBridge质量门控（score={score:.0f}）'
+        _log('BLOCKED', signal, r)
+        return {'executed': False, 'reason': r, 'order': None}
     # [P1-1 设计院 2026-07-18 苏摩111封印] grade门控统一为数值门控，彻底废除文字白名单
     # 根因：文字白名单('神级'/'极强'/'VIP')导致数值grade永远不匹配 → 8天0执行
     # v2修复：文字格式grade兜底路径也改为数值提取，提取失败直接放行（score≥155已是主要门控）
