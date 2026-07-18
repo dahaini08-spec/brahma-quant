@@ -49,13 +49,25 @@ SYMBOLS = [
     'BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT',
     # 高OI山寨
     'XRPUSDT', 'ADAUSDT', 'DOTUSDT', 'LINKUSDT', 'AVAXUSDT',
-    'MATICUSDT', 'NEARUSDT', 'APTUSDT', 'ARBUSDT', 'OPUSDT',
+    'NEARUSDT', 'APTUSDT', 'ARBUSDT', 'OPUSDT', 'LTCUSDT',
+    'BCHUSDT', 'TAOUSDT', 'AAVEUSDT', 'UNIUSDT', 'ATOMUSDT',
     # 中等市值
-    'HYPEUSDT', 'LDOUSDT', 'INJUSDT', 'SUIUSDT', 'SEIUSDT',
-    'TIAUSDT', 'JUPUSDT', 'WIFUSDT', 'PENGUUSDT', 'ENAUSDT',
-    # 监控候选
-    'TONUSDT', 'FETUSDT', 'RENDERUSDT', 'WLDUSDT', 'STXUSDT',
-]
+    'HYPEUSDT', 'SUIUSDT', 'ENAUSDT', 'WLDUSDT', 'PENGUUSDT',
+    '1000PEPEUSDT', 'TRUMPUSDT', 'SYNUSDT', 'SNDKUSDT', 'INJUSDT',
+    'LDOUSDT', 'SEIUSDT', 'TIAUSDT', 'JUPUSDT', 'WIFUSDT',
+ 'FETUSDT', 'RENDERUSDT', 'STXUSDT', 'CRCLUSDT',
+    # Tokenized资产
+    'NVDAUSDT', 'TSLAUSDT', 'MSTRUSDT', 'XAUUSDT', 'XAGUSDT',
+    'QQQUSDT', 'SOXLUSDT', 'INTCUSDT', 'AMDUSDT', 'SAMSUNGUSDT',
+    'SKHYNIXUSDT', 'EWYUSDT',
+    # 活跃小币
+    'HYPEUSDT', 'LABUSDT', 'CLUSDT', 'USUSDT', 'BANKUSDT',
+    'NBISUSDT', 'KORUUSDT', 'PUMPUSDT', 'AKEUSDT', 'HOMEUSDT',
+    'BEATUSDT', 'BASUSDT', 'TACUSDT', 'JTOUSDT', 'ZECUSDT',
+    '1000XECUSDT', 'ESPORTSUSDT', 'EVAAUSDT', 'TUSDT', 'DRAMUSDT',
+    # 大市值补充
+ 'SANDUSDT', 'MANAUSDT', 'GALAUSDT',
+]  # Phase1扩展 2026-07-18 苏摩111：30→100标的
 
 # ── 阈值配置（全球顶级OI研究标准）────────────────────────────
 CFG = {
@@ -80,7 +92,6 @@ CFG = {
     'MIN_VOL_USD':         50.0,    # 最小24H成交额$50M
 }
 
-
 def safe_get(url, timeout=7, retries=2):
     for _ in range(retries):
         try:
@@ -91,7 +102,6 @@ def safe_get(url, timeout=7, retries=2):
             time.sleep(0.3)
     return None
 
-
 def get_oi_history(sym, period, limit):
     """获取OI历史序列"""
     d = safe_get(f'{FAPI_BASE}/futures/data/openInterestHist?symbol={sym}&period={period}&limit={limit}')
@@ -100,14 +110,12 @@ def get_oi_history(sym, period, limit):
     return [{'ts': int(x['timestamp']), 'oi': float(x['sumOpenInterest']),
              'oi_usd': float(x['sumOpenInterestValue'])} for x in d]
 
-
 def get_funding_rate(sym):
     """最新资金费率"""
     d = safe_get(f'{FAPI_BASE}/fapi/v1/premiumIndex?symbol={sym}')
     if isinstance(d, dict):
         return float(d.get('lastFundingRate', 0)) * 100
     return 0.0
-
 
 def get_mark_price(sym):
     """获取标记价格和指数价格（计算基差）"""
@@ -118,7 +126,6 @@ def get_mark_price(sym):
         basis_pct = (mark - index) / index * 100 if index > 0 else 0
         return mark, index, basis_pct
     return 0, 0, 0
-
 
 def get_ticker(sym):
     """24H行情"""
@@ -133,14 +140,12 @@ def get_ticker(sym):
         }
     return {}
 
-
 def get_long_short_ratio(sym):
     """全球多空比"""
     d = safe_get(f'{FAPI_BASE}/futures/data/globalLongShortAccountRatio?symbol={sym}&period=1h&limit=3')
     if isinstance(d, list) and d:
         return float(d[-1].get('longShortRatio', 1.0))
     return 1.0
-
 
 def calc_oi_trend(oi_list, n_bars):
     """计算n根K线内的OI变化率"""
@@ -149,7 +154,6 @@ def calc_oi_trend(oi_list, n_bars):
     cur = oi_list[-1]['oi']
     past = oi_list[-(n_bars+1)]['oi']
     return (cur - past) / past * 100 if past > 0 else 0.0
-
 
 def calc_oi_direction(oi_list, price_chg_pct):
     """
@@ -172,7 +176,6 @@ def calc_oi_direction(oi_list, price_chg_pct):
     elif oi_chg < 0 and price_chg_pct < 0:
         return 'LONG_UNWIND', -1    # 多头离场（弱空）
     return 'NEUTRAL', 0
-
 
 def calc_oi_score(oi_chg_1h, oi_chg_4h, oi_chg_24h, oi_chg_7d,
                   oi_direction, basis_pct, fr, ls_ratio, vol_spike):
@@ -257,7 +260,6 @@ def calc_oi_score(oi_chg_1h, oi_chg_4h, oi_chg_24h, oi_chg_7d,
 
     return min(100, score), details
 
-
 def classify_signal(score, oi_chg_7d, oi_chg_24h, oi_direction, basis_pct, fr):
     """
     信号分类:
@@ -293,7 +295,6 @@ def classify_signal(score, oi_chg_7d, oi_chg_24h, oi_direction, basis_pct, fr):
             hold_period = '14-60天'
 
     return sig_class, leverage_range, hold_period
-
 
 def format_signal(sym, sig_class, score, oi_data, ticker, basis_pct, fr,
                   oi_direction, leverage_range, hold_period, details):
@@ -351,7 +352,6 @@ def format_signal(sym, sig_class, score, oi_data, ticker, basis_pct, fr,
     lines.append(f"{'='*45}")
     return '\n'.join(lines)
 
-
 def send_message(msg):
     import subprocess
     subprocess.Popen(
@@ -362,7 +362,6 @@ def send_message(msg):
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
     )
 
-
 def load_cache():
     if CACHE_FILE.exists():
         try:
@@ -371,15 +370,12 @@ def load_cache():
             pass
     return {}
 
-
 def save_cache(cache):
     CACHE_FILE.write_text(json.dumps(cache, indent=2))
-
 
 def log_signal(data):
     with open(LOG_FILE, 'a') as f:
         f.write(json.dumps(data, ensure_ascii=False) + '\n')
-
 
 # ════════════════════════════════════════════════════════════
 def main():
@@ -505,7 +501,6 @@ def main():
         print("HEARTBEAT_OK")
 
     return len(signals_found)
-
 
 if __name__ == '__main__':
     main()

@@ -37,12 +37,24 @@ TRIGGER_FILE = BASE / 'data' / 'rsi_trigger_event.json'
 FAPI = 'https://fapi.binance.com'
 
 SYMBOLS = [
-    # 主力（趋势锚点）
+    # 主力锚点
     'BTCUSDT', 'ETHUSDT',
-    # MacroGate可通过的BULL_TREND标的（price>EMA200_1D）
-    'NEARUSDT', 'HYPEUSDT', 'JTOUSDT', 'SYNUSDT',
-    'BEATUSDT', 'BASUSDT', 'TACUSDT',
-]  # v5.2 2026-07-03: 扩展至7个小币（MacroGate可通过）
+    # 高流动性TOP标的
+    'SOLUSDT', 'BNBUSDT', 'XRPUSDT', 'ADAUSDT', 'AVAXUSDT',
+    'LINKUSDT', 'LTCUSDT', 'BCHUSDT', 'NEARUSDT', 'TAOUSDT',
+    # 高OI山寨
+    'HYPEUSDT', 'SUIUSDT', 'ENAUSDT', 'AAVEUSDT', 'WLDUSDT',
+    'PENGUUSDT', '1000PEPEUSDT', 'TRUMPUSDT', 'SYNUSDT', 'SNDKUSDT',
+    # 中等市值活跃
+    'NVDAUSDT', 'TSLAUSDT', 'MSTRUSDT', 'AMDUSDT', 'INTCUSDT',
+    'XAUUSDT', 'XAGUSDT', 'QQQUSDT', 'SOXLUSDT', 'ZECUSDT',
+    # 潜力候选
+    'LABUSDT', 'CLUSDT', 'USUSDT', 'BANKUSDT', 'NBISUSDT',
+    'SKHYNIXUSDT', 'SAMSUNGUSDT', 'KORUUSDT', 'EWYUSDT', 'PUMPUSDT',
+    # 原有标的保留
+    'JTOUSDT', 'BEATUSDT', 'BASUSDT', 'TACUSDT',
+    '1000XECUSDT', 'CRCLUSDT', 'AKEUSDT', 'HOMEUSDT', 'ESPORTSUSDT',
+]  # Phase1扩展 2026-07-18 苏摩111：9→50标的（TOP50 OI+成交量）
 COOLDOWN_SECONDS = 7200   # 2H冷却
 SILENT_RSI_LOW   = 45.0
 SILENT_RSI_HIGH  = 60.0

@@ -21,19 +21,33 @@ for p in [str(BASE), str(BASE/'scripts'), str(BASE/'brahma_brain')]:
 # ── 全量标的列表（来自 executor.py TIER_PARAMS）
 ALL_SYMBOLS = [
     # flagship
-    'BTCUSDT', 'ETHUSDT', 'DOGEUSDT',
-    # mid
-    'BNBUSDT', 'HYPEUSDT', 'NEARUSDT', 'TRUMPUSDT',
-    '1000PEPEUSDT', 'TONUSDT', 'SNDKUSDT', 'CRCLUSDT',
-    # small
-    'WIFUSDT', 'LDOUSDT', 'JUPUSDT', 'RENDERUSDT',
-    'AIOTUSDT', 'LAYERUSDT', 'POLUSDT',
+    'BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT',
+    # high OI
+    'XRPUSDT', 'ADAUSDT', 'AVAXUSDT', 'LINKUSDT', 'LTCUSDT', 'TAOUSDT',
+    # mid-cap active
+    'HYPEUSDT', 'SUIUSDT', 'ENAUSDT', 'AAVEUSDT', 'WLDUSDT',
+    'PENGUUSDT', '1000PEPEUSDT', 'TRUMPUSDT', 'SYNUSDT', 'NEARUSDT',
+    # tokenized/special
+    'NVDAUSDT', 'TSLAUSDT', 'MSTRUSDT', 'XAUUSDT', 'XAGUSDT',
+    'QQQUSDT', 'SOXLUSDT', 'SNDKUSDT', 'CRCLUSDT', 'HYPEUSDT',
 ]
 
-# 轻量级：仅扫 flagship + mid（5个高流动性）满足信号需求
-# 完整模式用 --full 参数
-FAST_SYMBOLS = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'DOGEUSDT', 'NEARUSDT',
-                'HYPEUSDT', 'TRUMPUSDT', '1000PEPEUSDT']
+# Phase1 FAST_SYMBOLS: 8→30（覆盖高流动性主力+活跃山寨）
+# [2026-07-18 苏摩111 Phase1封印]
+FAST_SYMBOLS = [
+    # 主力锚点
+    'BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT',
+    # 高OI山寨
+    'XRPUSDT', 'ADAUSDT', 'AVAXUSDT', 'LINKUSDT', 'LTCUSDT',
+    # 活跃山寨
+    'HYPEUSDT', 'SUIUSDT', 'ENAUSDT', '1000PEPEUSDT', 'TRUMPUSDT',
+    'PENGUUSDT', 'WLDUSDT', 'NEARUSDT', 'SYNUSDT', 'TAOUSDT',
+    # Tokenized资产
+    'NVDAUSDT', 'TSLAUSDT', 'MSTRUSDT', 'XAUUSDT', 'XAGUSDT',
+    'QQQUSDT', 'SOXLUSDT',
+    # 原有标的
+    'SNDKUSDT', 'CRCLUSDT', 'AAVEUSDT',
+]
 
 import argparse
 parser = argparse.ArgumentParser()
