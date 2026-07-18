@@ -102,17 +102,29 @@ if args.sector:
     pass  # [静默]
 
 elif args.candidates:
-    # 读取 market_screener 输出的动态候选
+    # [Phase2 2026-07-18 苏摩111] 合并 market_screener + pre_filter 双源候选池
+    symbols = list(FAST_SYMBOLS)  # 基线常驻标的
+    # 源A: market_screener输出
     cand_path = BASE / 'data' / 'scan_candidates.json'
     try:
         cand_data = json.loads(cand_path.read_text())
-        symbols = [r['symbol'] for r in cand_data.get('candidates', [])]
-        cand_ts  = cand_data.get('generated', 'unknown')
-        if not symbols:
-            raise ValueError('candidates列表为空')
-        pass  # [静默]
-    except Exception as e:
-        pass  # [静默]
+        for r in cand_data.get('candidates', []):
+            s = r['symbol']
+            if s not in symbols:
+                symbols.append(s)
+    except Exception:
+        pass
+    # 源B: pre_filter输出（全市圶65个零成本预筛）
+    pf_path = BASE / 'data' / 'pre_filter_candidates.json'
+    try:
+        pf_data = json.loads(pf_path.read_text())
+        for r in pf_data.get('candidates', []):
+            s = r['symbol']
+            if s not in symbols:
+                symbols.append(s)
+    except Exception:
+        pass
+    if not symbols:
         symbols = FAST_SYMBOLS
 elif args.full:
     symbols = ALL_SYMBOLS

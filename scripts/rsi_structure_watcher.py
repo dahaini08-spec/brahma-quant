@@ -330,13 +330,43 @@ def write_trigger(sym, events, data):
         return False
 
 
+def _load_pre_filter_symbols() -> list:
+    """[Phase2 2026-07-18 苏摩111] 加载 market_pre_filter 输出的候选标的
+    将外部预筛层的candidates合并进入监控池，实现零token成本全市圶65个监控
+    """
+    trigger_file = BASE / 'data' / 'pre_filter_trigger.json'
+    if not trigger_file.exists():
+        return []
+    try:
+        d = json.loads(trigger_file.read_text())
+        # 只返回最新一批candidates（20分钟内有效）
+        from datetime import datetime, timezone
+        gen = d.get('generated', '')
+        if gen:
+            dt = datetime.fromisoformat(gen.replace('Z','+00:00'))
+            age_s = (datetime.now(tz=timezone.utc) - dt).total_seconds()
+            if age_s > 1200:  # 20分钟过期
+                return []
+        return d.get('symbols', [])
+    except Exception:
+        return []
+
+
 def run():
     now_str = datetime.now(tz=timezone.utc).strftime('%H:%M UTC')
     state = load_state()
     triggered_syms = []
     silent_syms = []
 
-    for sym in SYMBOLS:
+    # [Phase2] 合并 pre_filter 候选标的（动态扩展监控池）
+    pre_syms = _load_pre_filter_symbols()
+    # 去重：已在SYMBOLS里的不重复添加
+    extra_syms = [s for s in pre_syms if s not in SYMBOLS]
+    effective_symbols = list(SYMBOLS) + extra_syms
+    if extra_syms:
+        pass  # 静默，每5分钟运行时合并候选标的
+
+    for sym in effective_symbols:
         # 冷却期检查
         if check_cooldown(state, sym):
             last_ts = state.get(f'{sym}_last_trigger', 0)
