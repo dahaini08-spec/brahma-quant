@@ -366,7 +366,9 @@ def scan_and_emit(symbols: list[str], push: bool = True) -> list[dict]:
         # 推送
         if push:
             try:
-                from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
+                import sys as _sys
+                _sys.path.insert(0, str(Path(__file__).parent))
+                from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
                 msg = format_pump_alert(signal)
                 import subprocess
                 subprocess.run([
@@ -402,6 +404,34 @@ if __name__ == '__main__':
         print(f'触发信号数: {len(results)}')
         for r in results:
             print(f"  {r['symbol']} score={r['score']} SL={r['sl_pct']:.2f}% TP1={r['tp1']}")
+
     else:
-        print('用法: python pump_signal_executor.py --score TAC')
-        print('      python pump_signal_executor.py --scan TAC SYN HUSDT')
+        # [fix 2026-07-18 苏摩111] 无参数运行：cron入口 — 调用 scan_and_alert.py 扫描全市场
+        # 根因：cron直接运行 pump_signal_executor.py，进入此分支
+        try:
+            import importlib.util, sys as _sys_sa, os as _os_sa
+            _sa_path = _os_sa.path.join(
+                _os_sa.path.dirname(_os_sa.path.abspath(__file__)),
+                '..', 'dharma', 'pump_hunter', 'scan_and_alert.py'
+            )
+            _sa_path = _os_sa.path.abspath(_sa_path)
+            _spec = importlib.util.spec_from_file_location('scan_and_alert', _sa_path)
+            _sa_mod = importlib.util.module_from_spec(_spec)
+            _spec.loader.exec_module(_sa_mod)
+            # 调用 scan_and_alert 的主扫描函数
+            if hasattr(_sa_mod, 'run_scan'):
+                _sa_mod.run_scan()
+            elif hasattr(_sa_mod, 'main'):
+                _sa_mod.main()
+            else:
+                # fallback: 直接运行脚本正文（已经 exec_module）
+                pass
+        except Exception as _e:
+            # 最后封廷：直接 subprocess 运行 scan_and_alert.py
+            import subprocess as _sp, os as _os_fb
+            _sa_fb = _os_fb.path.abspath(_os_fb.path.join(
+                _os_fb.path.dirname(_os_fb.path.abspath(__file__)),
+                '..', 'dharma', 'pump_hunter', 'scan_and_alert.py'
+            ))
+            result = _sp.run(['python3', _sa_fb], capture_output=False, timeout=60)
+            sys.exit(result.returncode)

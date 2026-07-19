@@ -127,6 +127,7 @@ def log_signal(result: dict) -> bool:
 
             # 评分
             'score':          score,
+            'score_final':    float(result.get('score_final', score) or score),  # [P0-3 fix 2026-07-18]
             'grade':          grade,
             'action':         action,
             # [FIX-v25.5] valid单一来源: params['valid'](brahma_core正确计算RR的结果)

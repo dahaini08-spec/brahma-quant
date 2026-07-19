@@ -43,7 +43,7 @@ SUB_EXEC_SET    = BASE / 'data/sub_executed_set.json'
 MAX_POSITIONS        = 20     # 全局最大持仓，与主系统共享
 PUMP_SCORE_THRESHOLD = 75     # 暴涨猎手最低score（全力模式 苏摩授权：85→75）
 OI_LAYERS_THRESHOLD  = 2      # OI猎手最低通过层数（v3: 3→2，配合oi_advanced_scanner新评分体系）
-OI_SCORE_THRESHOLD   = 30.0   # OI最低oi_score（v3: 15→30，满分100新体系）
+OI_SCORE_THRESHOLD   = 60.0   # OI最低oi_score [fix 2026-07-18 苏摩111] 30→60，过滤低质量信号
 OI_MAX_AGE_H         = 2.0    # OI信号最大有效期（v3: 4→2，与30min cron对齐）
 MIN_NOTIONAL         = 4.5   # [v7.0 2026-07-11 苏摩111] 5.0→4.5（NAV=99时notional=4.96被错误拦截，差额仅$0.04）
 FAPI_BASE            = 'https://fapi.binance.com'
@@ -251,7 +251,17 @@ def _execute_pump(signal: dict, nav: float, active_pos: list, executed: set) -> 
         })
         if order.get('orderId'):
             fill_px  = float(order.get('avgPrice', px) or px)
-            fill_qty = float(order.get('executedQty', qty) or qty)
+            fill_qty = float(order.get('executedQty', 0) or 0)
+            # [fix 2026-07-17] MARKET单瞬间executedQty可能=0，延迟回查
+            if fill_qty == 0:
+                try:
+                    time.sleep(2)
+                    q2 = _signed('GET', '/fapi/v1/order', {
+                        'symbol': sym, 'orderId': order['orderId']})
+                    fill_qty = float(q2.get('executedQty', 0) or 0)
+                    fill_px  = float(q2.get('avgPrice', fill_px) or fill_px)
+                except Exception:
+                    fill_qty = qty
             result.update({
                 'status':   'FILLED',
                 'order_id': order['orderId'],
@@ -479,7 +489,17 @@ def run_oi_executor(nav: float, active_pos: list) -> list:
                 })
                 if order.get('orderId'):
                     fill_px  = float(order.get('avgPrice', px) or px)
-                    fill_qty = float(order.get('executedQty', qty) or qty)
+                    fill_qty = float(order.get('executedQty', 0) or 0)
+                    # [fix 2026-07-17] MARKET订单瞬间executedQty可能=0，延迟回查确保填充
+                    if fill_qty == 0:
+                        try:
+                            time.sleep(2)
+                            q2 = _signed('GET', '/fapi/v1/order', {
+                                'symbol': sym, 'orderId': order['orderId']})
+                            fill_qty = float(q2.get('executedQty', 0) or 0)
+                            fill_px  = float(q2.get('avgPrice', fill_px) or fill_px)
+                        except Exception:
+                            fill_qty = qty  # fallback到预估qty
                     result.update({
                         'status':   'FILLED',
                         'order_id': order['orderId'],
@@ -568,6 +588,23 @@ def run():
 def _run_sub_locked():
     now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
     pass  # [静默]
+
+    # 设计院修复 2026-07-18：每次运行强制同步wuqu_positions缓存（防止平仓后缓存残留）
+    _sync_wuqu_positions()
+
+    # P0修复 2026-07-18：fuse门控 - DD>90%且fuse触发时禁止新开仓
+    try:
+        import json as _j
+        _nav_f = BASE / 'data' / 'nav_peak.json'
+        if _nav_f.exists():
+            _nv = _j.loads(_nav_f.read_text())
+            _fuse = _nv.get('fuse_triggered', False)
+            _dd = float(_nv.get('dd_pct', 0))
+            if _fuse and _dd > 90:
+                pass  # [静默-fuse阻断]
+                return  # fuse触发+DD>90% → 禁止开仓
+    except Exception:
+        pass
 
     nav        = _get_nav()
     active_pos = _load_active_positions()

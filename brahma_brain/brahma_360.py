@@ -491,6 +491,58 @@ def save_history(scan_result: dict, fix_log: list, verify_log: list):
         f.write(json.dumps(record) + '\n')
 
 
+# ════════════════════════════════════════════════════════════════
+# OI 胜率统计模块（寄生）2026-07-17 苏摩111封印
+# ════════════════════════════════════════════════════════════════
+
+def get_oi_win_rate_section() -> str:
+    """从 hunter_outcome_tracker 拉 OI 胜率，格式化为360日报一节"""
+    try:
+        import sys as _sys
+        scripts_dir = str(Path(__file__).parent.parent / 'scripts')
+        if scripts_dir not in _sys.path:
+            _sys.path.insert(0, scripts_dir)
+        from hunter_outcome_tracker import calc_oi_win_rate
+        data = calc_oi_win_rate()
+    except Exception as e:
+        return f'\n📊 OI猎手胜率: 数据获取失败 ({e})'
+
+    if data.get('error') or data.get('closed', 0) == 0:
+        note = data.get('note', data.get('error', '暂无已平仓记录'))
+        holding = data.get('holding', 0)
+        return f'\n📊 OI猎手胜率: 暂无已平仓记录 | 持仓中: {holding}单\n  {note}'
+
+    lines = ['', '📊 OI猎手胜率复盘']
+    ov = data.get('overall', {})
+    lines.append(f"  总计: {data['closed']}笔已平仓 | 持仓中: {data.get('holding',0)}单")
+    lines.append(f"  综合胜率: {ov.get('wr','?')}%  EV: {ov.get('ev','?')}%/笔")
+    lines.append(f"  均盈: +{ov.get('avg_win','?')}%  均亏: {ov.get('avg_loss','?')}%  最大DD: {ov.get('max_dd','?')}%")
+
+    # 按模式
+    mode_parts = []
+    for m in ('A','B','C'):
+        d = data.get(f'mode_{m}')
+        if d: mode_parts.append(f"{m}类WR={d['wr']}%({d['n']}笔)")
+    if mode_parts:
+        lines.append('  模式: ' + ' | '.join(mode_parts))
+
+    # 按方向
+    dir_parts = []
+    for dr in ('LONG','SHORT'):
+        d = data.get(f'dir_{dr}')
+        if d: dir_parts.append(f"{dr} WR={d['wr']}%({d['n']}笔)")
+    if dir_parts:
+        lines.append('  方向: ' + ' | '.join(dir_parts))
+
+    # 评分最高段
+    best = data.get('score_90_101') or data.get('score_80_90')
+    if best:
+        label = '90+分' if data.get('score_90_101') else '80-90分'
+        lines.append(f"  {label}: WR={best['wr']}% EV={best['ev']}%/笔({best['n']}笔)")
+
+    return '\n'.join(lines)
+
+
 def format_report(scan_result: dict, fix_log: list = None, verify_log: list = None) -> str:
     """格式化健康报告（用于Jarvis推送）"""
     s = scan_result
@@ -521,6 +573,14 @@ def format_report(scan_result: dict, fix_log: list = None, verify_log: list = No
 
     if not s['issues']:
         lines.append(f"\n✅ 系统运行正常，无待处理问题")
+
+    # OI胜率模块（寄生）
+    try:
+        oi_section = get_oi_win_rate_section()
+        if oi_section:
+            lines.append(oi_section)
+    except Exception:
+        pass
 
     return '\n'.join(lines)
 

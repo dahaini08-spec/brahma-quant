@@ -16,10 +16,21 @@ WUQU     = BASE / 'data' / 'wuqu_positions.json'
 
 
 def log_trade(record: dict):
-    """写入一条交易记录"""
+    """写入一条交易记录（dedup by order_id/signal_id）"""
     PERF_LOG.parent.mkdir(exist_ok=True)
     record.setdefault('ts', time.time())
     record.setdefault('ts_iso', time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()))
+    # [fix 2026-07-18 苏摩111] 写入前检查重复，防止同一笔重复入账
+    _dedup_key = str(record.get('order_id') or record.get('signal_id') or '')
+    if _dedup_key and PERF_LOG.exists():
+        for _line in PERF_LOG.read_text().strip().splitlines():
+            try:
+                _r = json.loads(_line)
+                _k = str(_r.get('order_id') or _r.get('signal_id') or '')
+                if _k and _k == _dedup_key:
+                    return  # 已记录，不重复写入
+            except Exception:
+                pass
     with open(PERF_LOG, 'a') as f:
         f.write(json.dumps(record, ensure_ascii=False) + '\n')
 

@@ -5,13 +5,13 @@ zero_cost_prescorer.py
 苏摩111封印 2026-07-19
 
 原理：在35维矩阵运行前，用RSI+BB+OI三维快筛
-      <50分直接丢弃，不跑35维矩阵
+      <20分直接丢弃，不跑35维矩阵（50→20修复：防止误过滤BTC/ETH）
       节省约70%算力，提升信号命中率
 
 调用方式：
     from zero_cost_prescorer import pre_score
     score, tags = pre_score(symbol)
-    if score < 50:
+    if score < 20:
         return  # 直接跳过35维分析
 """
 import requests
@@ -20,7 +20,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-PRE_SCORE_THRESHOLD = 50  # 低于此分直接跳过35维
+PRE_SCORE_THRESHOLD = 20  # 达摩院审计修复2026-07-19: 50过高会过滤BTC/ETH有效信号，降至20只过滤完全无特征标的
 
 
 def pre_score(symbol: str, regime: str = "BULL_TREND") -> tuple[float, list]:
@@ -55,10 +55,10 @@ def pre_score(symbol: str, regime: str = "BULL_TREND") -> tuple[float, list]:
                 score += 30; tags.append(f"RSI极度超卖({rsi:.1f})")
             elif rsi < 35:
                 score += 20; tags.append(f"RSI超卖({rsi:.1f})")
-            elif 40 <= rsi <= 65:
-                score += 15; tags.append(f"RSI健康({rsi:.1f})")
-            elif rsi > 75:
-                score -= 10; tags.append(f"RSI超买警告({rsi:.1f})")
+            elif 35 <= rsi <= 75:
+                score += 15; tags.append(f"RSI可用({rsi:.1f})")  # 扩展至75，ETH等高RSI标的不被误杀
+            elif rsi > 85:
+                score -= 5; tags.append(f"RSI极度超买({rsi:.1f})")  # 只在极端超买时轻微减分
         else:
             # 做空体制：超买加分，超卖减分
             if rsi > 75:

@@ -46,6 +46,11 @@ AUTO_SCORE_THRESHOLD = 120       # 最低评分 [P0-C 2026-07-11] 130→120，�
 # score 130~154 的 ENTER_WATCH 信号由 sub_executor 处理
 # 分流好处：彻底消除双执行器重复下单风险
 AUTO_ENTER_FULL_THRESHOLD = 155    # auto专区：ENTER_FULL
+# [fix 2026-07-18 苏摩111] 三档自主执行阈值
+TIER_1_SCORE  = 155   # ENTER_FULL → 全仓 5%NAV
+TIER_2_SCORE  = 138   # ENTER      → 标准仓 3%NAV
+TIER_3_SCORE  = 120   # BTC/ETH限定 → 轻仓 1.5%NAV
+TIER_3_SYMBOLS = frozenset({'BTCUSDT', 'ETHUSDT'})
 AUTO_ENTER_WATCH_MIN      = 120    # sub专区下界（P0-C: 130→120，与valid门槛同步）
 MIN_RR               = 1.0       # 最低RR
 MAX_POSITIONS        = 20        # 最大持仓数（苏摩授权 2026-07-03，1→20）
@@ -205,13 +210,37 @@ def find_executable_signals() -> list[dict]:
         score = float(s.get('score', 0) or 0)
         if score < AUTO_SCORE_THRESHOLD:
             continue
-        # ②-P1A 执行器分流：auto专责 ENTER_FULL(score≥155)，ENTER_WATCH路由到sub_executor
-        # [P1-A 设计院六方联合 2026-07-11] 消除双执行器重复下单风险
+        # ②-P1A 执行器分流：三档阈值自主执行（2026-07-18 苏摩111封印）
+        # TIER_1(≥155): ENTER_FULL → 全仓5%NAV（任意timing均执行）
+        # TIER_2(138-154): ENTER → 标准仓3%NAV（timing=READY/''才执行）
+        # TIER_3(120-137): BTC/ETH限定 → 轻仓1.5%NAV（timing=READY才执行）
+        # ENTER_WATCH 仍由 sub_executor 专责
         _sig_action = s.get('action', '')
+        _timing_badge = str(s.get('timing_badge', '') or '')
+
         if _sig_action == 'ENTER_WATCH':
             continue  # ENTER_WATCH由sub_executor处理，auto不执行
-        if score < AUTO_ENTER_FULL_THRESHOLD and _sig_action not in ('ENTER_FULL', 'ENTER', ''):
-            continue  # score<155且非明确ENTER_FULL → 跳过
+
+        if score >= TIER_1_SCORE:
+            # TIER_1: 强信号，无论timing均执行（STANDBY时等突破已发生）
+            s['_tier'] = 1
+            s['_tier_nav_pct'] = 0.05
+        elif score >= TIER_2_SCORE:
+            # TIER_2: 标准仓，timing=READY或空（未注入）才执行，STANDBY/WAIT拦截
+            if _timing_badge in ('STANDBY', 'WAIT', 'MONITOR'):
+                continue  # timing明确不佳，等待
+            s['_tier'] = 2
+            s['_tier_nav_pct'] = 0.03
+        elif score >= TIER_3_SCORE:
+            # TIER_3: 仅BTC/ETH，且必须 timing=READY 才执行
+            if s.get('symbol') not in TIER_3_SYMBOLS:
+                continue  # 小币低分信号不进TIER3
+            if _timing_badge != 'READY':
+                continue  # timing必须明确READY才执行轻仓
+            s['_tier'] = 3
+            s['_tier_nav_pct'] = 0.015
+        else:
+            continue  # score < 120，跳过
         # ③ RR门槛
         rr1 = float(s.get('rr1', 0) or 0)
         if rr1 < MIN_RR:
@@ -657,6 +686,8 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
 
     # 仓位计算（动态分档：BTC/ETH梵天评判，高波动自动缩小）
     _hv_discount = float(signal.get('_high_vol_discount', 1.0))
+    # [fix 2026-07-18 苏摩111] 三档NAV自主决策
+    _tier_nav_pct = float(signal.get('_tier_nav_pct', 0))
     # BTC/ETH大仓位动态NAV分档
     if sym in BIG_SYMBOLS:
         if score >= BIG_SYM_SCORE_HIGH:
@@ -665,9 +696,13 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
             _nav_pct = BIG_SYM_NAV_MID    # 7.5%
         else:
             _nav_pct = BIG_SYM_NAV_BASE   # 5%
-        print(f'[BTC/ETH动态仓位] {sym} score={score:.0f} → NAV×{_nav_pct*100:.1f}%')
+        # TIER3轻仓覆盖大仓位默认
+        if _tier_nav_pct > 0 and _tier_nav_pct < _nav_pct:
+            _nav_pct = _tier_nav_pct
+        print(f'[BTC/ETH动态仓位] {sym} score={score:.0f} tier_pct={_tier_nav_pct:.1%} → NAV×{_nav_pct*100:.1f}%')
     else:
-        _nav_pct = NAV_SIZE_PCT           # 其他标的固定5%
+        # 其他标的：优先用tier_nav_pct，否则用默认NAV_SIZE_PCT
+        _nav_pct = _tier_nav_pct if _tier_nav_pct > 0 else NAV_SIZE_PCT
     notional = nav * _nav_pct * _hv_discount
     if _hv_discount < 1.0:
         print(f'[高波动模式] {sym} sl={signal.get("sl_pct",0):.1f}% 仓位系数×{_hv_discount} 实际仓位=${notional:.1f}')
