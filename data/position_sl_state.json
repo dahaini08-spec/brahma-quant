@@ -21,5 +21,15 @@
     "status": "pending_fill",
     "order_id": 1070972404396,
     "note": "限价单GTC 等待成交"
+  },
+  "HYPEUSDT": {
+    "symbol": "HYPEUSDT",
+    "side": "LONG",
+    "qty": 0.75,
+    "entry": 59.074,
+    "sl_price": 58.007,
+    "tp_price": 68.265,
+    "registered_at": "2026-07-18T09:58:58.647612+00:00",
+    "source": "hunter_executor"
   }
 }
