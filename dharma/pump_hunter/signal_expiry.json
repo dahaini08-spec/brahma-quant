@@ -1,1 +1,17 @@
-{}
+{
+  "DEXEUSDT": {
+    "score": 83,
+    "price": 33.9,
+    "entry_lo": 33.7644,
+    "entry_hi": 34.0356,
+    "sl_price": 33.0525,
+    "tp1_price": 35.17125,
+    "expire_ts": 1784457294.1081111,
+    "pushed_ts": 1784455499.4997408,
+    "auto_executed": false,
+    "reminded": false,
+    "squeeze_catalyst": true,
+    "funding": -0.0031,
+    "short_pct": 71.1
+  }
+}
