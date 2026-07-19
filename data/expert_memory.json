@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "updated_at": "2026-07-19T05:00:28.644401+00:00",
+  "SMC结构师": {
+    "BTCUSDT": {
+      "key_ob_zones": [],
+      "last_choch_ts": null,
+      "structure_bias": "NEUTRAL"
+    },
+    "ETHUSDT": {
+      "key_ob_zones": [],
+      "last_choch_ts": null,
+      "structure_bias": "NEUTRAL"
+    }
+  },
+  "量化工程师": {
+    "recent_wr_30d": null,
+    "avg_score_threshold": 155,
+    "observation": "样本积累中，30天后自动更新"
+  },
+  "合约交易员": {
+    "position_bias": "NEUTRAL",
+    "preferred_leverage": 5,
+    "observation": "基于当前持仓和体制"
+  },
+  "衍生品专家": {
+    "avg_fr_7d_btc": null,
+    "avg_fr_7d_eth": null,
+    "oi_trend": "NEUTRAL",
+    "observation": "需7天数据积累"
+  }
+}

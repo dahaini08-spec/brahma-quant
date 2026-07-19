@@ -176,9 +176,10 @@ def fmt_entry(r: dict) -> str:
     return "\n".join(lines) if lines else "  (等待体制确认后计算)"
 
 
-def run_analysis(symbol: str, direction: str = 'LONG') -> str:
+def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) -> str:
     """
     执行单币种35维全量分析，返回格式化报告字符串
+    compact=True: 压缩输出（节省~35% token），用于cron/auto触发场景
     """
     t0 = time.time()
     r = analyze(symbol, signal_dir=direction, deep=True)
@@ -271,7 +272,36 @@ def run_analysis(symbol: str, direction: str = 'LONG') -> str:
             lines.append(f"    ④ FVG目标: {f0['bottom']}~{f0['top']}U（{f0['gap_pct']}% 未填满）")
 
     lines.append(sep)
-    return "\n".join(lines)
+
+    full_report = "\n".join(lines)
+
+    # compact模式：压缩35%输出（去除breakdown细节，保留核心结论）
+    if compact:
+        compact_lines = [
+            sep,
+            f"  🏛️ {symbol} · 梵天1号工程 · compact模式",
+            f"  体制: {regime}({regime_key}) mult={regime_mult}",
+            f"  score={score_final} grade={eff_grade} {'✅通过' if gate_pass else '⛔封禁'}",
+            f"  价格: {price}",
+        ]
+        # v5.1调整
+        v51 = r.get('v51_reason')
+        if v51:
+            compact_lines.append(f"  v5.1: {v51}")
+        # 入场参数（核心）
+        entry_lo = r.get('entry_lo'); entry_hi = r.get('entry_hi')
+        sl = r.get('stop_loss'); tp1 = r.get('tp1'); tp2 = r.get('tp2')
+        if entry_lo:
+            compact_lines.append(f"  入场: {entry_lo}~{entry_hi}  SL:{sl}  TP1:{tp1}  TP2:{tp2}")
+        # CHoCH状态
+        smc_st2 = smc.get('structure', {})
+        choch2 = smc_st2.get('choch', [])
+        if choch2:
+            compact_lines.append(f"  CHoCH: {choch2[0] if choch2 else 'None'}")
+        compact_lines.append(sep)
+        return "\n".join(compact_lines)
+
+    return full_report
 
 
 # ============================================================
