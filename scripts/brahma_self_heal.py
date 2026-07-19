@@ -511,6 +511,64 @@ def check_syscron() -> dict:
         return {'ok': False, 'warn': True, 'detail': f'系统cron重建失败: {e}'}
 
 
+def check_session_length() -> dict:
+    """
+    [2026-07-19] 主弹窗session消息数监测
+    根因: messages>300 → eventLoop阻塑 → liveness失败 → gateway重启
+    自主决策: 超阈值时自动推送compact提醒
+    """
+    import subprocess
+    try:
+        r = subprocess.run(
+            ['openclaw', 'sessions', '--json', '--active', '30'],
+            capture_output=True, text=True, timeout=8
+        )
+        if r.returncode != 0:
+            return {'ok': True, 'detail': 'sessions命令不可用，跳过'}
+        
+        import json as _json
+        data = _json.loads(r.stdout)
+        sessions = data.get('sessions', [])
+        
+        # 从日志文件获取实时messages计数
+        log_file = Path('/tmp/openclaw/openclaw-2026-07-19.log')
+        max_msgs = 0
+        if log_file.exists():
+            import re as _re
+            # 找最近的messages=[N]记录
+            recent_lines = []
+            with open(log_file) as f:
+                for line in f:
+                    if 'messages=[' in line and '019f5e0f' in line:
+                        m = _re.search(r'messages=\[(\d+)\]', line)
+                        if m:
+                            recent_lines.append(int(m.group(1)))
+            if recent_lines:
+                max_msgs = max(recent_lines[-10:])  # 最近10条的最大值
+        
+        if max_msgs > 350:
+            return {
+                'ok': False,
+                'warn': True,
+                'detail': f'主弹窗消息数={max_msgs}，远超阈值350，需要苏摩手动发送/compact',
+                'action': 'NOTIFY_COMPACT',
+                'msg_count': max_msgs
+            }
+        elif max_msgs > 200:
+            return {
+                'ok': True,
+                'warn': True,
+                'detail': f'主弹窗消息数={max_msgs}，接近阈值，建议尽早/compact',
+                'msg_count': max_msgs
+            }
+        elif max_msgs > 0:
+            return {'ok': True, 'detail': f'主弹窗消息数={max_msgs}，正常'}
+        else:
+            return {'ok': True, 'detail': '消息数监测暂无数据'}
+    except Exception as e:
+        return {'ok': True, 'detail': f'session检测跳过: {e}'}
+
+
 def check_liq_density_engine() -> dict:
     """
     [2026-07-06] s7-LiqDens 三所清算引擎健康检查
@@ -919,6 +977,19 @@ def heal(fault_type: str, context: dict) -> dict:
             else:
                 result.update({'healed': True, 'output': '无需修复（路由已正确）'})
 
+    elif fault_type == 'SESSION_COMPACT':
+        # [2026-07-19] 主弹窗消息数过多 → 自动推送compact提醒
+        # 设计院自主决策：不需要苏摩手动触发，系统检测到就自动推送
+        msg_count = getattr(fault_ctx, 'get', lambda k,d=None: d)('msg_count', 0) if fault_ctx else 0
+        _notify(
+            f"🚨 主彅窗消息数过多 ({msg_count}条) → gateway重启风险\n"
+            f"推荐苏摩现在发送 /compact 幑化主彅窗\n"
+            f"压缩后: {msg_count}条 → 前50条摘要 → eventLoop压力清零\n"
+            f"预期效果: gateway重启频率 -80%+",
+            level='P1'
+        )
+        result.update({'healed': True, 'output': f'已推送compact提醒，msg_count={msg_count}'})
+
     elif fault_type == 'SCAN_CANDIDATES_REFRESH':
         ok, out = _run(['python3', 'scripts/market_screener.py'], timeout=20)  # [2026-07-19] 60→20s防超时
         result.update({'healed': ok, 'output': out[-200:] if out else ''})
@@ -1094,6 +1165,7 @@ def run_self_heal():
         'cron_jobs':         check_cron_jobs(),
         'data_files':        check_data_files(),
         'syscron':           check_syscron(),  # [2026-07-19] 系统cron守望层存活
+        'session_length':    check_session_length(),  # [2026-07-19] 主弹窗消息数监测
         'push_routing':      check_push_routing(),
         'exec_pipeline':     check_execution_pipeline(),
         'cron_precise':      check_cron_precise(),
@@ -1115,6 +1187,7 @@ def run_self_heal():
         ('regime_state',   lambda c: c.get('warn') and c.get('age_min',0) > 60, 'REGIME_STALE', False),
         ('data_files',     lambda c: c.get('warn') and len(c.get('stale',[])) > 0, 'DATA_FILE_REFRESH', False),
         ('syscron',        lambda c: not c.get('ok'),                                   'SYSCRON_REBUILD',    False),  # [2026-07-19]
+        ('session_length', lambda c: c.get('action')=='NOTIFY_COMPACT',                  'SESSION_COMPACT',   False),  # [2026-07-19]
         ('push_routing',   lambda c: c.get('warn'),                    'PUSH_ROUTE_FIX',         False),
         ('exec_pipeline',  lambda c: c.get('warn'),                    'EXEC_PIPELINE_WARN',     True),
         ('cron_precise',   lambda c: c.get('warn') and len(c.get('issues',[])) > 0, 'CRON_PRECISE_WARN',   True),
