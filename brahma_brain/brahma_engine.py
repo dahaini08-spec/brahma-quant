@@ -2771,6 +2771,35 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _root = _os_b.path.dirname(_bd)
         if _root not in _sys_b.path:
             _sys_b.path.insert(0, _root)
+        # [fix 2026-07-18 苏摩111] timing层注入：在log_signal之前计算timing并写入_result
+        # 根因：timing通常由brahma_analysis_runner后处理，brahma_engine直接调用时timing字段缺失
+        try:
+            from timing_filter import evaluate_timing
+        except ImportError:
+            try:
+                from brahma_brain.timing_filter import evaluate_timing
+            except ImportError:
+                evaluate_timing = None
+        if evaluate_timing is not None and not _result.get('timing_badge'):
+            try:
+                _pa_tf = _result.get('params', {}) or {}
+                _cf_tf = _result.get('confluence', {}) or {}
+                _timing_res = evaluate_timing(
+                    symbol=_sym,
+                    signal_dir=_result.get('signal_dir', _result.get('direction', 'LONG')),
+                    score=float(_cf_tf.get('total', _result.get('score', 0)) or 0),
+                    grade=float(_cf_tf.get('effective_grade', _cf_tf.get('structure_grade', 70)) or 70),
+                    entry_lo=float(_pa_tf.get('entry_lo', 0) or 0),
+                    entry_hi=float(_pa_tf.get('entry_hi', 0) or 0),
+                    current_price=float(_result.get('price', 0) or 0),
+                    s23_p_up=_result.get('s23_p_up', 0.5),
+                    regime=_result.get('regime', 'BEAR_TREND'),
+                )
+                _result['timing_badge']  = _timing_res.get('badge', '')
+                _result['timing_status'] = _timing_res.get('status', 'UNKNOWN')
+                _result['timing_score']  = _timing_res.get('score', 0)
+            except Exception:
+                pass  # timing失败不阻断主流
         from dharma_data_bridge import log_signal as _log_dharma
         _logged = _log_dharma(_result)
         if _logged:
@@ -3354,6 +3383,32 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _s=_result.get('score_final',_result.get('score',0))
         pass  # [静默] f'[SIGNAL-SUMMARY] {_sym} {signal_dir} score={_s:.0f} action={_result.get("actio
     except Exception: pass
+
+    # ══ [v5.1 梵天历史引用层 + 中期记忆层] ══
+    try:
+        import sys as _s51, os as _o51
+        _r51 = _o51.path.dirname(_o51.path.dirname(_o51.path.abspath(__file__)))
+        if _r51 not in _s51.path: _s51.path.insert(0, _r51)
+        from scripts.regime_memory_7d import get_regime_score_adjustment
+        from scripts.signal_history_scorer import get_history_score_adjustment
+        _reg51 = _result.get('regime', 'BULL_TREND')
+        _dir51 = signal_dir or 'LONG'
+        _sym51 = symbol
+        # 中期体制记忆
+        _radj, _rreason = get_regime_score_adjustment(_reg51, _dir51)
+        # 历史胜率引用
+        _elo51 = float(_result.get('entry_lo', 0) or 0)
+        _ehi51 = float(_result.get('entry_hi', 0) or 0)
+        _hadj, _hreason = get_history_score_adjustment(_sym51, _reg51, _dir51, _elo51, _ehi51)
+        _total51 = _radj + _hadj
+        if _total51 != 0:
+            _result['score_final'] = (_result.get('score_final') or 0) + _total51
+            _result['v51_regime_adj'] = _radj
+            _result['v51_history_adj'] = _hadj
+            _result['v51_reason'] = f'regime:{_rreason} | history:{_hreason}'
+    except Exception:
+        pass  # v5.1层错误静默，不影响主流程
+
     return _result
 
 def format_report(r: dict) -> str:
