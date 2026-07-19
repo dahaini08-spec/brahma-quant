@@ -38,7 +38,7 @@ except Exception:
     JARVIS_USER_ID  = '73295708'
     JARVIS_THREAD_ID = '019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'
 
-JARVIS_TARGET = f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}'
+JARVIS_TARGET = f'{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}'  # [2026-07-19] thread:→t: 修复推送路由
 
 
 def load_state() -> dict:

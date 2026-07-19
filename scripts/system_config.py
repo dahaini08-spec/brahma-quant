@@ -30,5 +30,5 @@ JARVIS_USER_ID   = os.environ.get('JARVIS_USER_ID',   '73295708')
 JARVIS_THREAD_ID = os.environ.get('JARVIS_THREAD_ID', '019f5e0f-7d13-7392-a4e1-262e1cfc2dc2')
 
 # ── 兼容旧代码（别名）────────────────────────────────────────────
-JARVIS_TARGET  = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"
+JARVIS_TARGET  = f"{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}"
 JARVIS_CHANNEL = 'jarvis'

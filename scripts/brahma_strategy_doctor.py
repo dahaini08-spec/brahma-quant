@@ -25,9 +25,9 @@ sys.path.insert(0, str(BASE))
 
 try:
     from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID, JARVIS_CHANNEL
-    JARVIS_TARGET = f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}'
+    JARVIS_TARGET = f'{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}'
 except:
-    JARVIS_TARGET  = '73295708:thread:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'
+    JARVIS_TARGET  = '73295708:t:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'
     JARVIS_CHANNEL = 'jarvis'
 
 # ── 理论WR基准（来自梵天宪法封印数据）──────────────────────────

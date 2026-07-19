@@ -19,7 +19,7 @@ load_dotenv()
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
 
-CORRECT_THREAD = "73295708:thread:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2"
+CORRECT_THREAD = "73295708:t:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2"
 RED    = '\033[91m'
 GREEN  = '\033[92m'
 YELLOW = '\033[93m'

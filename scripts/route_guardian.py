@@ -13,7 +13,7 @@
 import subprocess, json, sys, os
 from datetime import datetime, timezone
 
-CORRECT_THREAD = "73295708:thread:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2"
+CORRECT_THREAD = "73295708:t:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2"
 OLD_THREAD_PREFIXES = [
     "019f309c", "019f443a", "019f4448", "019f15c9"
 ]  # 所有旧线程前缀（2026-07-14全量封印）

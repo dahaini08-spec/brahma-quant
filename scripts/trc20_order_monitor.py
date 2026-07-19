@@ -62,7 +62,7 @@ def push_to_jarvis(msg: str):
         subprocess.run([
             "openclaw", "message", "send",
             "--channel", "jarvis",
-            "--to", f"{JARVIS_USER}:thread:{JARVIS_THREAD}",
+            "--to", f"{JARVIS_USER}:t:{JARVIS_THREAD}",
             "--message", msg,
         ], capture_output=True, timeout=15)
     except Exception as e:

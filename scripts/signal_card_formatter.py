@@ -187,7 +187,7 @@ def run():
     _sp.run(
         ['openclaw', 'message', 'send',
          '--channel', 'jarvis',
-         '--target', os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_ID'),
+         '--target', os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:t:YOUR_THREAD_ID'),
          '--message', card],
         capture_output=True, timeout=15
     )

@@ -49,9 +49,9 @@ LOG_FILE  = BASE / 'logs' / 'constitutional_guardian.log'
 
 try:
     import scripts.system_config as _sc
-    PUSH_TARGET = f"{_sc.JARVIS_USER_ID}:thread:{_sc.JARVIS_THREAD_ID}"
+    PUSH_TARGET = f"{_sc.JARVIS_USER_ID}:t:{_sc.JARVIS_THREAD_ID}"
 except Exception:
-    PUSH_TARGET = '73295708:thread:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'
+    PUSH_TARGET = '73295708:t:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'
 PUSH_CHANNEL = 'jarvis'
 
 # ══════════════════════════════════════════════════════════════
@@ -229,7 +229,7 @@ def detect_drift(cac: dict, current: dict) -> list:
                 'name': name,
                 'severity': 'HIGH',
                 'detail': f'{name} 路由错误: to={cur_to[:50]}',
-                'correct_to': f'73295708:thread:{CORRECT_THREAD}',
+                'correct_to': f'73295708:t:{CORRECT_THREAD}',
             })
 
     return drifts

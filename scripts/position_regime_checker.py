@@ -25,7 +25,7 @@ BASE_DIR   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATE_FILE = os.path.join(BASE_DIR, 'data', 'position_regime_state.json')
 
 # ── 推送目标 ──────────────────────────────────────────────
-PUSH_TARGET  = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_ID')
+PUSH_TARGET  = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:t:YOUR_THREAD_ID')
 PUSH_CHANNEL = 'jarvis'
 
 # ── API配置 ───────────────────────────────────────────────

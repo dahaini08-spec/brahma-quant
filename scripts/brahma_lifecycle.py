@@ -65,9 +65,9 @@ HARD_BLOCK = {
 def _jarvis_target() -> str:
     try:
         from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
-        return f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}'
+        return f'{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}'
     except Exception:
-        return '73295708:thread:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'
+        return '73295708:t:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'
 
 
 def push(msg: str):

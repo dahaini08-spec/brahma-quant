@@ -374,7 +374,7 @@ def scan_and_emit(symbols: list[str], push: bool = True) -> list[dict]:
                 subprocess.run([
                     'openclaw', 'message', 'send',
                     '--channel', 'jarvis',
-                    '--to', f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}',
+                    '--to', f'{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}',
                     '--message', msg
                 ], capture_output=True)
             except Exception as e:

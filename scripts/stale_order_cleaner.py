@@ -40,7 +40,7 @@ def _signed(method, path, params={}):
     if method == 'DELETE': return requests.delete(f'{FAPI}{path}?{qs}', headers=h, timeout=8).json()
 
 def _push(msg: str):
-    to = f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}' if JARVIS_THREAD_ID else JARVIS_USER_ID
+    to = f'{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}' if JARVIS_THREAD_ID else JARVIS_USER_ID
     os.system(f'openclaw message send --channel jarvis --to "{to}" --message "{msg}"')
 
 def _load_signal_expires() -> dict:

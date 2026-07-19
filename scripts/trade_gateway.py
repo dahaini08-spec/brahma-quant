@@ -37,7 +37,7 @@ sys.path.insert(0, str(_DIR))
 sys.path.insert(0, str(_DIR / 'brahma_brain'))
 sys.path.insert(0, str(_DIR / 'scripts'))
 
-JARVIS_TARGET = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_ID')
+JARVIS_TARGET = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:t:YOUR_THREAD_ID')
 MIN_WEIGHTED  = 110   # 同 signal_selector 门槛
 
 # 推送去重：同symbol+direction 6H内不重复推送

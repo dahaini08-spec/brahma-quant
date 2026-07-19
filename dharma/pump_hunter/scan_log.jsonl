@@ -655,3 +655,7 @@
 {"ts": "2026-07-19T14:41:06.012819", "alerts": 4, "new": 0, "elapsed": 9.342745304107666, "regime": "CHOP_MID"}
 {"ts": "2026-07-19T15:10:24.351647", "alerts": 2, "new": 0, "elapsed": 9.81929087638855, "regime": "CHOP_MID"}
 {"ts": "2026-07-19T15:40:23.310313", "alerts": 1, "new": 0, "elapsed": 9.403348207473755, "regime": "CHOP_MID"}
+{"ts": "2026-07-19T16:10:23.634655", "alerts": 6, "new": 5, "elapsed": 9.209358215332031, "regime": "CHOP_MID"}
+{"ts": "2026-07-19T16:40:23.895348", "alerts": 7, "new": 6, "elapsed": 9.439789295196533, "regime": "CHOP_MID"}
+{"ts": "2026-07-19T17:10:24.131485", "alerts": 6, "new": 5, "elapsed": 9.51670217514038, "regime": "CHOP_MID"}
+{"ts": "2026-07-19T17:40:24.127806", "alerts": 6, "new": 5, "elapsed": 9.494182109832764, "regime": "CHOP_MID"}

@@ -25,7 +25,7 @@ STATE_FILE = os.path.join(BASE_DIR, 'data', 'regime_switch_state.json')
 LOG_FILE   = os.path.join(BASE_DIR, 'data', 'regime_log.json')
 
 # 推送目标（Jarvis 用户ID）
-PUSH_TARGET = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_ID')
+PUSH_TARGET = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:t:YOUR_THREAD_ID')
 PUSH_CHANNEL = 'jarvis'
 
 # ── 监控标的 ──────────────────────────────────────────────

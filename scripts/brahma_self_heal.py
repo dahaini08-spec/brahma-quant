@@ -38,7 +38,7 @@ try:
     import scripts.system_config as _sc
     PUSH_TARGET = f"{_sc.JARVIS_USER_ID}:t:{_sc.JARVIS_THREAD_ID}"
 except Exception:
-    PUSH_TARGET   = '73295708:thread:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'  # SSOT v11 [线程更新 2026-07-08]
+    PUSH_TARGET   = '73295708:t:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'  # SSOT v11 [线程更新 2026-07-08]
 PUSH_CHANNEL  = 'jarvis'
 HEAL_LOG_FILE = BASE / 'logs' / 'self_heal.log'
 STATE_FILE    = BASE / 'data' / 'self_heal_state.json'
@@ -336,7 +336,7 @@ def check_signal_pipeline() -> dict:
                 _jarvis(alert_msg, dedup_key='signal_pipeline_fault', dedup_ttl=1800)
             except Exception:
                 # push_hub不可用时直接调openclaw
-                _tgt = '73295708:thread:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'
+                _tgt = '73295708:t:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'
                 subprocess.run(
                     ['openclaw','message','send','--channel','jarvis',
                      '--target', _tgt, '--message', alert_msg],
@@ -924,7 +924,7 @@ def heal(fault_type: str, context: dict) -> dict:
         _pb = BASE / 'push_hub.py'
         _pb_s = BASE / 'scripts' / 'push_hub.py'
         if not _pb.exists() and not _pb_s.exists():
-            _content = '''import subprocess, json, time, os\nfrom pathlib import Path\ntry:\n    import sys; sys.path.insert(0, str(Path(__file__).parent / "scripts"))\n    from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID, JARVIS_CHANNEL\n    _TARGET = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"\n    _CHANNEL = JARVIS_CHANNEL\nexcept Exception:\n    _TARGET = "73295708:thread:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2"\n    _CHANNEL = "jarvis"\n_DEDUP_FILE = Path(__file__).parent / "data" / "push_dedup.json"\ndef _load_dedup():\n    try: return json.loads(_DEDUP_FILE.read_text())\n    except: return {}\ndef _save_dedup(d):\n    try: _DEDUP_FILE.parent.mkdir(exist_ok=True); _DEDUP_FILE.write_text(json.dumps(d))\n    except: pass\ndef _jarvis(msg, dedup_key=None, dedup_ttl=3600):\n    if not msg: return False\n    if dedup_key:\n        dedup = _load_dedup(); now = time.time()\n        if now - dedup.get(dedup_key, 0) < dedup_ttl: return False\n        dedup[dedup_key] = now; _save_dedup(dedup)\n    try:\n        r = subprocess.run(["openclaw","message","send","--channel",_CHANNEL,"--target",_TARGET,"--message",msg], capture_output=True, text=True, timeout=15)\n        return r.returncode == 0\n    except: return False\n'''
+            _content = '''import subprocess, json, time, os\nfrom pathlib import Path\ntry:\n    import sys; sys.path.insert(0, str(Path(__file__).parent / "scripts"))\n    from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID, JARVIS_CHANNEL\n    _TARGET = f"{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}"\n    _CHANNEL = JARVIS_CHANNEL\nexcept Exception:\n    _TARGET = "73295708:t:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2"\n    _CHANNEL = "jarvis"\n_DEDUP_FILE = Path(__file__).parent / "data" / "push_dedup.json"\ndef _load_dedup():\n    try: return json.loads(_DEDUP_FILE.read_text())\n    except: return {}\ndef _save_dedup(d):\n    try: _DEDUP_FILE.parent.mkdir(exist_ok=True); _DEDUP_FILE.write_text(json.dumps(d))\n    except: pass\ndef _jarvis(msg, dedup_key=None, dedup_ttl=3600):\n    if not msg: return False\n    if dedup_key:\n        dedup = _load_dedup(); now = time.time()\n        if now - dedup.get(dedup_key, 0) < dedup_ttl: return False\n        dedup[dedup_key] = now; _save_dedup(dedup)\n    try:\n        r = subprocess.run(["openclaw","message","send","--channel",_CHANNEL,"--target",_TARGET,"--message",msg], capture_output=True, text=True, timeout=15)\n        return r.returncode == 0\n    except: return False\n'''
             _pb.write_text(_content)
             _pb_s.write_text(_content)
             return {'healed': True, 'action': 'push_hub.py重建'}
@@ -1061,7 +1061,7 @@ def heal(fault_type: str, context: dict) -> dict:
         _pb = BASE / 'push_hub.py'
         if not _pb.exists() and 'push_hub' in str(issues):
             try:
-                _content = '''import subprocess, json, time, os\nfrom pathlib import Path\ntry:\n    import sys; sys.path.insert(0, str(Path(__file__).parent / "scripts"))\n    from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID\n    _TARGET = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"\nexcept Exception:\n    _TARGET = "73295708:thread:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2"\n_CHANNEL = "jarvis"\n_DEDUP_FILE = Path(__file__).parent / "data" / "push_dedup.json"\ndef _load_dedup():\n    try: return json.loads(_DEDUP_FILE.read_text())\n    except: return {}\ndef _save_dedup(d):\n    try: _DEDUP_FILE.parent.mkdir(exist_ok=True); _DEDUP_FILE.write_text(json.dumps(d))\n    except: pass\ndef _jarvis(msg, dedup_key=None, dedup_ttl=3600):\n    if not msg: return False\n    if dedup_key:\n        dedup = _load_dedup(); now = time.time()\n        if now - dedup.get(dedup_key, 0) < dedup_ttl: return False\n        dedup[dedup_key] = now; _save_dedup(dedup)\n    try:\n        r = subprocess.run(["openclaw","message","send","--channel",_CHANNEL,"--target",_TARGET,"--message",msg], capture_output=True, text=True, timeout=15)\n        return r.returncode == 0\n    except: return False\n'''
+                _content = '''import subprocess, json, time, os\nfrom pathlib import Path\ntry:\n    import sys; sys.path.insert(0, str(Path(__file__).parent / "scripts"))\n    from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID\n    _TARGET = f"{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}"\nexcept Exception:\n    _TARGET = "73295708:t:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2"\n_CHANNEL = "jarvis"\n_DEDUP_FILE = Path(__file__).parent / "data" / "push_dedup.json"\ndef _load_dedup():\n    try: return json.loads(_DEDUP_FILE.read_text())\n    except: return {}\ndef _save_dedup(d):\n    try: _DEDUP_FILE.parent.mkdir(exist_ok=True); _DEDUP_FILE.write_text(json.dumps(d))\n    except: pass\ndef _jarvis(msg, dedup_key=None, dedup_ttl=3600):\n    if not msg: return False\n    if dedup_key:\n        dedup = _load_dedup(); now = time.time()\n        if now - dedup.get(dedup_key, 0) < dedup_ttl: return False\n        dedup[dedup_key] = now; _save_dedup(dedup)\n    try:\n        r = subprocess.run(["openclaw","message","send","--channel",_CHANNEL,"--target",_TARGET,"--message",msg], capture_output=True, text=True, timeout=15)\n        return r.returncode == 0\n    except: return False\n'''
                 _pb.write_text(_content)
                 fixed.append('push_hub.py重建')
             except Exception as _e:
@@ -1098,7 +1098,7 @@ def heal(fault_type: str, context: dict) -> dict:
                     delivery['announce'] = True
                     delivery['mode'] = 'announce'  # [修复2 2026-07-16] 双字段写入
                     if CORRECT_THREAD not in delivery.get('to',''):
-                        delivery['to'] = f'73295708:thread:{CORRECT_THREAD}'
+                        delivery['to'] = f'73295708:t:{CORRECT_THREAD}'
                         delivery['channel'] = 'jarvis'
                     j['delivery'] = delivery
                     changed = True

@@ -27,7 +27,7 @@ CHECKER    = os.path.join(BASE_DIR, 'scripts', 'position_regime_checker.py')
 
 FAPI = 'https://fapi.binance.com'
 
-PUSH_TARGET  = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:thread:YOUR_THREAD_ID')
+PUSH_TARGET  = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:t:YOUR_THREAD_ID')
 PUSH_CHANNEL = 'jarvis'
 
 # 心跳间隔：30分钟刷新 regime_state.json，防360误报"陈旧"

@@ -380,7 +380,7 @@ if __name__ == '__main__':
                 from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
                 subprocess.run([
                     'openclaw', 'msg', 'send',
-                    '--to', f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}',
+                    '--to', f'{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}',
                     '--channel', 'jarvis',
                     '--message', dashboard
                 ])

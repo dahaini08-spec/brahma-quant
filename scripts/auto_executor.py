@@ -169,7 +169,7 @@ def _push(msg: str):
         subprocess.run([
             'openclaw', 'message', 'send',
             '--channel', 'jarvis',
-            '--to', f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}',
+            '--to', f'{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}',
             '--message', msg,
         ], capture_output=True, timeout=10)
     except Exception:
@@ -770,7 +770,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
                     _sp.Popen(
                         ['openclaw','message','send',
                          '--channel','jarvis',
-                         '--to', f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}',
+                         '--to', f'{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}',
                          '--message', _msg],
                         stdout=_sp.DEVNULL, stderr=_sp.DEVNULL
                     )
