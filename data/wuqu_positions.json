@@ -4,13 +4,13 @@
     "side": "LONG",
     "size": 0.97,
     "entry_price": 58.86998969072166,
-    "mark_price": 60.971,
+    "mark_price": 60.89599048,
     "stop_loss": 58.007,
     "take_profit": 60.6361,
     "leverage": 5.0,
-    "notional_usdt": 59.1419,
-    "unrealized_pnl": 2.038,
-    "updated_at": 1784458210.507713,
+    "notional_usdt": 59.0691,
+    "unrealized_pnl": 1.9652,
+    "updated_at": 1784465409.2529957,
     "success": true
   },
   {
@@ -18,13 +18,13 @@
     "side": "LONG",
     "size": 0.01,
     "entry_price": 1357.0400000000002,
-    "mark_price": 1364.31,
+    "mark_price": 1359.23,
     "stop_loss": 1316.3288,
     "take_profit": 1397.7512,
     "leverage": 5.0,
-    "notional_usdt": 13.6431,
-    "unrealized_pnl": 0.0727,
-    "updated_at": 1784458210.5077188,
+    "notional_usdt": 13.5923,
+    "unrealized_pnl": 0.0219,
+    "updated_at": 1784465409.253002,
     "success": true
   }
 ]
