@@ -486,6 +486,31 @@ def check_data_files() -> dict:
     }
 
 
+def check_syscron() -> dict:
+    """
+    [2026-07-19] 系统cron守望层存活检测
+    gateway重启后/etc/cron.d/brahma-watchers会丢失，自动重建
+    """
+    cron_file = Path('/etc/cron.d/brahma-watchers')
+    if cron_file.exists():
+        return {'ok': True, 'detail': '系统cron守望层正常'}
+    # 不存在 → 自动重建
+    try:
+        content = (
+            '# 梵天系统守望层 - 自愈重建 [2026-07-19]\n'
+            '*/3 * * * * root cd /root/.openclaw/workspace/trading-system && python3 scripts/live_sync.py --silent >> /tmp/brahma-watchers.log 2>&1\n'
+            '*/5 * * * * root cd /root/.openclaw/workspace/trading-system && python3 scripts/rsi_structure_watcher.py --silent >> /tmp/brahma-watchers.log 2>&1\n'
+            '*/10 * * * * root cd /root/.openclaw/workspace/trading-system && python3 scripts/btc_regime_updater.py --silent >> /tmp/brahma-watchers.log 2>&1\n'
+            '*/15 * * * * root cd /root/.openclaw/workspace/trading-system && python3 scripts/market_pre_filter.py --silent >> /tmp/brahma-watchers.log 2>&1\n'
+            '*/20 * * * * root cd /root/.openclaw/workspace/trading-system && python3 scripts/signal_change_detector.py --silent >> /tmp/brahma-watchers.log 2>&1\n'
+        )
+        cron_file.write_text(content)
+        cron_file.chmod(0o644)
+        return {'ok': True, 'warn': True, 'detail': '系统cron守望层已自动重建(原先丢失)'}
+    except Exception as e:
+        return {'ok': False, 'warn': True, 'detail': f'系统cron重建失败: {e}'}
+
+
 def check_liq_density_engine() -> dict:
     """
     [2026-07-06] s7-LiqDens 三所清算引擎健康检查
@@ -1068,6 +1093,7 @@ def run_self_heal():
         'signal_pipeline':   check_signal_pipeline(),
         'cron_jobs':         check_cron_jobs(),
         'data_files':        check_data_files(),
+        'syscron':           check_syscron(),  # [2026-07-19] 系统cron守望层存活
         'push_routing':      check_push_routing(),
         'exec_pipeline':     check_execution_pipeline(),
         'cron_precise':      check_cron_precise(),
@@ -1088,6 +1114,7 @@ def run_self_heal():
         ('binance_api',    lambda c: not c.get('ok'),                  'API_RECONNECT',          True),
         ('regime_state',   lambda c: c.get('warn') and c.get('age_min',0) > 60, 'REGIME_STALE', False),
         ('data_files',     lambda c: c.get('warn') and len(c.get('stale',[])) > 0, 'DATA_FILE_REFRESH', False),
+        ('syscron',        lambda c: not c.get('ok'),                                   'SYSCRON_REBUILD',    False),  # [2026-07-19]
         ('push_routing',   lambda c: c.get('warn'),                    'PUSH_ROUTE_FIX',         False),
         ('exec_pipeline',  lambda c: c.get('warn'),                    'EXEC_PIPELINE_WARN',     True),
         ('cron_precise',   lambda c: c.get('warn') and len(c.get('issues',[])) > 0, 'CRON_PRECISE_WARN',   True),
