@@ -887,7 +887,7 @@ def heal(fault_type: str, context: dict) -> dict:
                 result.update({'healed': True, 'output': '无需修复（路由已正确）'})
 
     elif fault_type == 'SCAN_CANDIDATES_REFRESH':
-        ok, out = _run(['python3', 'scripts/market_screener.py'], timeout=60)
+        ok, out = _run(['python3', 'scripts/market_screener.py'], timeout=20)  # [2026-07-19] 60→20s防超时
         result.update({'healed': ok, 'output': out[-200:] if out else ''})
 
     elif fault_type == 'LIQ_DENSITY_FIX':
@@ -936,7 +936,7 @@ def heal(fault_type: str, context: dict) -> dict:
                 try:
                     import subprocess as _sp2
                     _sp2.run(['pip','install','lightgbm','-q','--break-system-packages'],
-                             capture_output=True, timeout=120)
+                             capture_output=True, timeout=30)  # [2026-07-19] 120→30s防超时
                     import lightgbm as _lgbm
                     _lgbm_ok = True
                 except Exception as _pip_e:
@@ -1044,6 +1044,8 @@ def heal(fault_type: str, context: dict) -> dict:
 
 def run_self_heal():
     _log('自愈引擎启动')
+    _START_TIME = time.time()  # [2026-07-19] 整体运行时间保护
+    MAX_RUN_SECS = 45          # 超过45s直接退出，防被cron SIGTERM
     healed_items  = []
     failed_items  = []
     reported_items = []

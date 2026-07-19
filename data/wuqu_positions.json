@@ -2,29 +2,29 @@
   {
     "symbol": "HYPEUSDT",
     "side": "LONG",
+    "size": 0.97,
     "entry_price": 58.86998969072166,
-    "mark_price": 60.999,
-    "quantity": 0.97,
-    "unrealized_pnl": 2.0651,
-    "leverage": 5,
-    "notional_usdt": 59.1768,
-    "stop_loss": null,
-    "take_profit": null,
-    "updated_at": 1784456631,
-    "source": "LIVE_SYNC"
+    "mark_price": 60.971,
+    "stop_loss": 58.007,
+    "take_profit": 60.6361,
+    "leverage": 5.0,
+    "notional_usdt": 59.1419,
+    "unrealized_pnl": 2.038,
+    "updated_at": 1784458210.507713,
+    "success": true
   },
   {
     "symbol": "SNDKUSDT",
     "side": "LONG",
+    "size": 0.01,
     "entry_price": 1357.0400000000002,
-    "mark_price": 1367.71,
-    "quantity": 0.01,
-    "unrealized_pnl": 0.1067,
-    "leverage": 5,
-    "notional_usdt": 13.671,
-    "stop_loss": null,
-    "take_profit": null,
-    "updated_at": 1784456631,
-    "source": "LIVE_SYNC"
+    "mark_price": 1364.31,
+    "stop_loss": 1316.3288,
+    "take_profit": 1397.7512,
+    "leverage": 5.0,
+    "notional_usdt": 13.6431,
+    "unrealized_pnl": 0.0727,
+    "updated_at": 1784458210.5077188,
+    "success": true
   }
 ]
