@@ -1,17 +1,1 @@
-{
-  "SKLUSDT": {
-    "score": 69,
-    "price": 0.004001,
-    "entry_lo": 0.003985,
-    "entry_hi": 0.004017,
-    "sl_price": 0.003901,
-    "tp1_price": 0.004151,
-    "expire_ts": 1784468104.5357165,
-    "pushed_ts": 1784466311.2706897,
-    "auto_executed": false,
-    "reminded": false,
-    "squeeze_catalyst": true,
-    "funding": -0.5389,
-    "short_pct": 58.1
-  }
-}
+{}

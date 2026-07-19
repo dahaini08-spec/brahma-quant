@@ -435,3 +435,149 @@ def check_v16_v17_modules() -> dict:
         'details': results
     }
 # ══ [END] ══════════════════════════════════════════════════════════════════
+
+
+# ══════════════════════════════════════════════════════════════
+# 🏛️ 梵天360固化监测矩阵 v2026-07-19
+# 苏摩111授权 · 今日所有修复成果的持续验证层
+# ══════════════════════════════════════════════════════════════
+
+def run_solidification_checks() -> dict:
+    """
+    今日修复固化验证 - 每次360体检时自动运行
+    确保所有修复成果不被回退或破坏
+    """
+    import subprocess, time, json
+    from pathlib import Path
+
+    results = {}
+    issues = []
+
+    # ── 检测1: 系统cron守望层 ─────────────────────────────────
+    cron_ok = Path('/etc/cron.d/brahma-watchers').exists()
+    if not cron_ok:
+        # 自愈：自动重建
+        try:
+            content = (
+                '# 梵天系统守望层 - 自愈重建\n'
+                '*/3 * * * * root cd /root/.openclaw/workspace/trading-system && python3 scripts/live_sync.py --silent >> /tmp/brahma-watchers.log 2>&1\n'
+                '*/5 * * * * root cd /root/.openclaw/workspace/trading-system && python3 scripts/rsi_structure_watcher.py --silent >> /tmp/brahma-watchers.log 2>&1\n'
+                '*/10 * * * * root cd /root/.openclaw/workspace/trading-system && python3 scripts/btc_regime_updater.py --silent >> /tmp/brahma-watchers.log 2>&1\n'
+                '*/15 * * * * root cd /root/.openclaw/workspace/trading-system && python3 scripts/market_pre_filter.py --silent >> /tmp/brahma-watchers.log 2>&1\n'
+                '*/20 * * * * root cd /root/.openclaw/workspace/trading-system && python3 scripts/signal_change_detector.py --silent >> /tmp/brahma-watchers.log 2>&1\n'
+                '*/20 * * * * root cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_lifecycle.py entry --silent >> /tmp/brahma-watchers.log 2>&1\n'
+            )
+            Path('/etc/cron.d/brahma-watchers').write_text(content)
+            Path('/etc/cron.d/brahma-watchers').chmod(0o644)
+            results['syscron'] = '✅ 自愈重建成功'
+        except Exception as e:
+            results['syscron'] = f'❌ 自愈失败: {e}'
+            issues.append('syscron_rebuild_failed')
+    else:
+        results['syscron'] = '✅ 存在'
+
+    # ── 检测2: openclaw cron活跃任务数 ──────────────────────────
+    try:
+        jobs_file = Path('/root/.openclaw/cron/jobs.json')
+        cjobs = json.loads(jobs_file.read_text())
+        enabled = [j for j in cjobs.get('jobs', []) if j.get('enabled', True)]
+        wakeups = sum(1440/max(1,j.get('schedule',{}).get('everyMs',86400000)//60000) for j in enabled)
+        if wakeups > 900:
+            issues.append(f'唤醒次数过高: {wakeups:.0f}/天 > 900')
+            results['wakeups'] = f'⚠️ {wakeups:.0f}次/天（超阈值900）'
+        else:
+            results['wakeups'] = f'✅ {wakeups:.0f}次/天'
+    except Exception as e:
+        results['wakeups'] = f'❌ {e}'
+
+    # ── 检测3: lightContext覆盖率 ────────────────────────────────
+    try:
+        no_lc = []
+        for j in cjobs.get('jobs', []):
+            if not j.get('enabled', True): continue
+            every_ms = j.get('schedule',{}).get('everyMs', 0)
+            every_min = every_ms//60000 if every_ms else 1440
+            if every_min <= 60 and not j.get('payload',{}).get('lightContext', False):
+                no_lc.append(j.get('name','?'))
+        if no_lc:
+            issues.append(f'lightContext未覆盖: {no_lc}')
+            results['lightContext'] = f'⚠️ 未覆盖: {no_lc}'
+        else:
+            results['lightContext'] = '✅ 全覆盖'
+    except Exception as e:
+        results['lightContext'] = f'❌ {e}'
+
+    # ── 检测4: 推送任务沉默验证（11个噪音任务） ──────────────────
+    SILENT_TASKS = [
+        'live-sync-guardian','signal-fast-exec','rsi-structure-watcher',
+        'btc-regime-updater','market-pre-filter','hunter-outcome-tracker',
+        'gex-refresh','macro-state-refresh','brahma-learning-loop',
+        'data-backup-6h','session-cleanup-6h','lifecycle-entry',
+    ]
+    try:
+        not_silent = []
+        for j in cjobs.get('jobs', []):
+            name = j.get('name','')
+            if name in SILENT_TASKS:
+                if j.get('enabled', True):
+                    not_silent.append(name)
+        if not_silent:
+            issues.append(f'噪音任务未禁用: {not_silent}')
+            results['noise_tasks'] = f'⚠️ 仍活跃: {not_silent}'
+        else:
+            results['noise_tasks'] = f'✅ {len(SILENT_TASKS)}个全部禁用/静默'
+    except Exception as e:
+        results['noise_tasks'] = f'❌ {e}'
+
+    # ── 检测5: 持仓守护核心任务活跃 ─────────────────────────────
+    GUARDIAN_TASKS = ['position-guardian-unified','regime-switch-monitor','brahma-self-heal']
+    try:
+        enabled_names = {j.get('name') for j in cjobs.get('jobs',[]) if j.get('enabled',True)}
+        missing = [t for t in GUARDIAN_TASKS if t not in enabled_names]
+        if missing:
+            issues.append(f'守护任务缺失: {missing}')
+            results['guardian_tasks'] = f'❌ 缺失: {missing}'
+        else:
+            results['guardian_tasks'] = f'✅ 全部活跃'
+    except Exception as e:
+        results['guardian_tasks'] = f'❌ {e}'
+
+    # ── 检测6: CRON_WATCHLIST验证（rsi已移除） ──────────────────
+    try:
+        heal_script = Path('/root/.openclaw/workspace/trading-system/scripts/brahma_self_heal.py').read_text()
+        watchlist_section = heal_script[heal_script.find('CRON_WATCHLIST'):heal_script.find('CRON_WATCHLIST')+600]
+        # rsi-structure-watcher应该只出现在注释中
+        active_rsi = "'rsi-structure-watcher'" in watchlist_section and \
+                     watchlist_section.find("'rsi-structure-watcher'") > 0 and \
+                     watchlist_section[watchlist_section.find("'rsi-structure-watcher'")-5:watchlist_section.find("'rsi-structure-watcher'")].strip() != '#'
+        if active_rsi:
+            issues.append('CRON_WATCHLIST: rsi-structure-watcher仍活跃（应已注释）')
+            results['watchlist'] = '⚠️ rsi仍在监控'
+        else:
+            results['watchlist'] = '✅ rsi已从监控移除'
+    except Exception as e:
+        results['watchlist'] = f'❌ {e}'
+
+    return {
+        'ok': len(issues) == 0,
+        'issues': issues,
+        'checks': results,
+        'score': (len(results) - len(issues)) / len(results) * 100 if results else 0,
+        'timestamp': datetime.now(timezone.utc).isoformat()
+    }
+
+
+if __name__ == '__main__' and '--solidification' in __import__('sys').argv:
+    import json as _json
+    result = run_solidification_checks()
+    print(f"\n🏛️ 梵天360固化监测 · {result['timestamp'][:16]} UTC")
+    print(f"综合评分: {result['score']:.0f}/100 | 问题数: {len(result['issues'])}")
+    print()
+    for k, v in result['checks'].items():
+        print(f"  {v}  [{k}]")
+    if result['issues']:
+        print(f"\n⚠️ 发现{len(result['issues'])}个问题:")
+        for iss in result['issues']:
+            print(f"  ❌ {iss}")
+    else:
+        print(f"\n✅ 全部{len(result['checks'])}项固化指标通过")
