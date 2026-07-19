@@ -1,17 +1,1 @@
-{
-  "BCHUSDT": {
-    "score": 67,
-    "price": 216.26,
-    "entry_lo": 215.39496,
-    "entry_hi": 217.12504,
-    "sl_price": 210.8535,
-    "tp1_price": 224.36975,
-    "expire_ts": 1784473820.2610269,
-    "pushed_ts": 1784472030.6292496,
-    "auto_executed": false,
-    "reminded": false,
-    "squeeze_catalyst": true,
-    "funding": -0.0138,
-    "short_pct": 36.6
-  }
-}
+{}

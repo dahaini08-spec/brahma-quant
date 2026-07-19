@@ -1,27 +1,4 @@
 {
-  "ETHUSDT": {
-    "symbol": "ETHUSDT",
-    "side": "LONG",
-    "entry": 1785.5,
-    "sl_price": 1746.6,
-    "tp_price": 1824.4,
-    "qty": 0.02,
-    "status": "closed",
-    "order_id": 8389766233499376315,
-    "closed_at": "2026-07-14T23:50:21Z",
-    "realized_pnl": 1.7269
-  },
-  "BTCUSDT": {
-    "symbol": "BTCUSDT",
-    "side": "LONG",
-    "entry": 62299.0,
-    "sl_price": 61133.0,
-    "tp_price": 64146.0,
-    "qty": 0.001,
-    "status": "pending_fill",
-    "order_id": 1070972404396,
-    "note": "限价单GTC 等待成交"
-  },
   "HYPEUSDT": {
     "symbol": "HYPEUSDT",
     "side": "LONG",
