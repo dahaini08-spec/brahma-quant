@@ -602,7 +602,7 @@ def check_analysis_chain() -> dict:
              'assert "score_final" in r, "score_final缺失";'
              'assert r.get("_panorama_full"), "全景矩阵字段缺失";'
              'sf=str(round(r["score_final"],1));rg=r["regime"];ts=r.get("timing_status","?");pano=str(bool(r.get("_panorama_full")));print("OK score="+sf+" regime="+rg+" timing="+ts+" panorama="+pano)'],
-            capture_output=True, text=True, timeout=45,
+            capture_output=True, text=True, timeout=15,  # [2026-07-19] 降低timeout防SIGTERM
             cwd=str(BASE)
         )
         if _res.returncode == 0:
