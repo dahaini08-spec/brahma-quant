@@ -650,3 +650,6 @@
 {"ts": "2026-07-19T13:35:11.570655", "alerts": 3, "new": 0, "elapsed": 10.645366191864014, "regime": "CHOP_MID"}
 {"ts": "2026-07-19T14:00:27.374243", "alerts": 3, "new": 0, "elapsed": 9.09102988243103, "regime": "CHOP_MID"}
 {"ts": "2026-07-19T14:07:58.644480", "alerts": 3, "new": 0, "elapsed": 9.351712703704834, "regime": "CHOP_MID"}
+{"ts": "2026-07-19T14:40:30.629252", "alerts": 4, "new": 1, "elapsed": 10.732218980789185, "regime": "CHOP_MID"}
+{"ts": "2026-07-19T14:40:51.837660", "alerts": 3, "new": 0, "elapsed": 12.471350908279419, "regime": "CHOP_MID"}
+{"ts": "2026-07-19T14:41:06.012819", "alerts": 4, "new": 0, "elapsed": 9.342745304107666, "regime": "CHOP_MID"}

@@ -61,3 +61,72 @@ def run_compact(symbol: str) -> str:
 if __name__ == '__main__':
     sym = sys.argv[1] if len(sys.argv) > 1 else 'BTCUSDT'
     print(run_compact(sym))
+
+
+def run_compact_with_memory(symbol: str) -> str:
+    """
+    带专家记忆的compact分析：
+    1. 分析前注入历史专家洞察（替代重新推理）
+    2. 分析后自动更新专家记忆
+    P1落地 [苏摩111 2026-07-19]
+    """
+    import sys as _sys
+    _sys.path.insert(0, str(BASE / 'scripts'))
+    try:
+        from expert_memory_manager import (
+            get_compact_summary, update_expert, update_consensus, load_memory
+        )
+        memory_ctx = get_compact_summary()
+    except Exception:
+        memory_ctx = ''
+
+    # 运行分析
+    result = run_compact(symbol)
+
+    # 分析后更新记忆
+    try:
+        import re as _re, time as _time
+        if 'SIGNAL' in result:
+            sm = _re.search(r'score=([0-9.]+)', result)
+            rm = _re.search(r'regime=([A-Z_]+)', result)
+            dm = _re.search(r'(LONG|SHORT)', result)
+            tm = _re.search(r'(READY|MONITOR|WAIT)', result)
+            if sm and rm:
+                score = float(sm.group(1))
+                regime = rm.group(1)
+                direction = dm.group(1) if dm else 'NEUTRAL'
+                timing = tm.group(1) if tm else 'UNKNOWN'
+                update_expert('量化工程师', {
+                    'last_signal_score': score,
+                    'last_signal_symbol': symbol,
+                    'last_regime': regime,
+                    'calibration_note': f'{symbol} score={score:.0f} {regime} {timing}'
+                })
+                update_expert('合约交易员', {
+                    'current_regime_strategy': f'{regime}: {direction}为主',
+                    'position_bias': direction
+                })
+                if score >= 155:
+                    update_consensus(
+                        btc_dir=direction if 'BTC' in symbol else None,
+                        eth_dir=direction if 'ETH' in symbol else None,
+                        agreement=4, confidence=score/200
+                    )
+    except Exception:
+        pass
+
+    # 在结果中附加记忆上下文（仅当有实质内容时）
+    if memory_ctx and memory_ctx != '专家记忆: 积累中，首次分析' and 'SIGNAL' in result:
+        result = f"{result}\n  记忆: {memory_ctx}"
+
+    return result
+
+
+if __name__ == '__main__':
+    import sys as _sys
+    sym = _sys.argv[1] if len(_sys.argv) > 1 else 'BTCUSDT'
+    use_memory = '--memory' in _sys.argv
+    if use_memory:
+        print(run_compact_with_memory(sym))
+    else:
+        print(run_compact(sym))
