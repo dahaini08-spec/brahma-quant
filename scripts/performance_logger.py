@@ -82,23 +82,47 @@ def sync_closed_positions():
 
         result = 'WIN' if pnl > 0 else ('LOSS' if pnl < 0 else 'BE')
 
+        # MFE/MAE: 若仓位对象里有最高/最低价（由position_guardian填入）则计算
+        _high = float(pos.get('max_price', 0))
+        _low  = float(pos.get('min_price', 0))
+        _side = pos.get('side', 'LONG')
+        if entry > 0 and _high > 0 and _low > 0:
+            if _side == 'LONG':
+                mfe_pct = round((_high - entry) / entry * 100, 3)
+                mae_pct = round((entry - _low)  / entry * 100, 3)
+            else:
+                mfe_pct = round((entry - _low)  / entry * 100, 3)
+                mae_pct = round((_high - entry) / entry * 100, 3)
+        else:
+            mfe_pct = None
+            mae_pct = None
+
         record = {
-            'order_id'    : oid,
-            'symbol'      : pos.get('symbol'),
-            'side'        : pos.get('side'),
-            'entry_price' : entry,
-            'exit_price'  : exit_,
-            'sl_price'    : sl,
-            'qty'         : pos.get('qty', 0),
-            'realized_pnl': pnl,
-            'pnl_pct'     : pos.get('pnl_pct', 0),
-            'rr_realized' : round(rr_actual, 3),
-            'result'      : result,
-            'regime'      : pos.get('regime', ''),
-            'score'       : pos.get('score', 0),
-            'grade'       : pos.get('grade', 0),
-            'settled_at'  : time.time(),
-            'note'        : pos.get('note', ''),
+            'order_id'         : oid,
+            'symbol'           : pos.get('symbol'),
+            'side'             : _side,
+            'entry_price'      : entry,
+            'exit_price'       : exit_,
+            'sl_price'         : sl,
+            'qty'              : pos.get('qty', 0),
+            'realized_pnl'     : pnl,
+            'pnl_pct'          : pos.get('pnl_pct', 0),
+            'rr_realized'      : round(rr_actual, 3),
+            'result'           : result,
+            'regime'           : pos.get('regime', ''),
+            'score'            : pos.get('score', 0),
+            'grade'            : pos.get('grade', 0),
+            'direction'        : pos.get('direction', _side),
+            'tp1'              : pos.get('take_profit', 0),
+            'tp2'              : pos.get('tp2', 0),
+            'exit_reason'      : pos.get('exit_reason', ''),
+            'mfe_pct'          : mfe_pct,
+            'mae_pct'          : mae_pct,
+            'factors_snapshot' : pos.get('factors_snapshot', {}),
+            'timing_badge'     : pos.get('timing_badge', ''),
+            'hold_hours'       : round((time.time() - float(pos.get('opened_at', time.time()))) / 3600, 2),
+            'settled_at'       : time.time(),
+            'note'             : pos.get('note', ''),
         }
         log_trade(record)
         synced += 1

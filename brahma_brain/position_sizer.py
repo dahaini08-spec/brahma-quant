@@ -43,14 +43,14 @@ CONFIDENCE_TABLE = {
     # 已知失效组合 → 暂停
     ('LTCUSDT',  '160+',  'SHORT'): ('EXPLORING',  0.5),   # [v24.3] WR=0% n=13污染数据 → 极小仓探索
     ('SOLUSDT',  '160+',  'SHORT'): ('EXPLORING',  0.5),   # [v24.3] WR=0% n=9污染数据 → 极小仓探索
-    ('ETHUSDT',  '160+',  'SHORT'): ('EXPLORING',  0.5),   # [v24.3] WR=0% n=6污染数据 → 极小仓探索
+    ('ETHUSDT',  '160+',  'SHORT'): ('EXPLORING',  1.5),   # [2026-07-20 设计院自主] 原0.5%数据污染标注已过期，实际信号历史ETH SHORT=0条 → 1.5%探索
 }
 
 # ── v4.2 改进④ 7月减半仓策略 2026-07-01 苏摩111批准 ──────────────────────────
 # score 160~169 区间在7月1~15日临时从EXPLORING(2%/3%)降至1%
 # score ≥170 维持正常执行
 # 有效期: 2026-07-01 ~ 2026-07-15
-JULY_HALF_POSITION = True   # 到2026-07-15自动失效（由get_position_pct内部检查）
+JULY_HALF_POSITION = False  # 2026-07-20 设计院自主关闭：已过2026-07-15有效期，内部日期检查已失效
 JULY_HALF_SCORE_RANGE = (160, 169)  # score区间
 JULY_HALF_NAV = 1.0  # 降至1%NAV
 
