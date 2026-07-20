@@ -34,6 +34,92 @@
         "鲸鱼+跨市场+微观": 8
       },
       "notes": "BEAR_TREND体制空单，CHoCH确认后入场"
+    },
+    {
+      "ts": "2026-07-20T09:07:43.910565+00:00",
+      "regime": "BEAR_TREND",
+      "direction": "SHORT",
+      "score": 162.0,
+      "grade": 85.0,
+      "result": "WIN_T1",
+      "pnl_pct": 2.3,
+      "key_dims": {
+        "L2+贝叶斯+宏观": 11,
+        "鲸鱼+跨市场+微观": 12
+      },
+      "notes": ""
+    },
+    {
+      "ts": "2026-07-20T09:07:43.910957+00:00",
+      "regime": "BEAR_TREND",
+      "direction": "SHORT",
+      "score": 158.0,
+      "grade": 83.0,
+      "result": "LOSS",
+      "pnl_pct": -1.8,
+      "key_dims": {
+        "L2+贝叶斯+宏观": 11,
+        "鲸鱼+跨市场+微观": 12
+      },
+      "notes": ""
+    },
+    {
+      "ts": "2026-07-20T09:07:43.911398+00:00",
+      "regime": "BEAR_TREND",
+      "direction": "SHORT",
+      "score": 165.0,
+      "grade": 88.0,
+      "result": "WIN_T2",
+      "pnl_pct": 4.1,
+      "key_dims": {
+        "L2+贝叶斯+宏观": 11,
+        "鲸鱼+跨市场+微观": 12
+      },
+      "notes": ""
+    },
+    {
+      "ts": "2026-07-20T12:22:00.655501+00:00",
+      "regime": "BEAR_TREND",
+      "direction": "SHORT",
+      "score": 162.0,
+      "grade": 85.3,
+      "result": "WIN_T1",
+      "pnl_pct": 2.1,
+      "key_dims": {
+        "L2+贝叶斯+宏观": 12,
+        "鲸鱼+跨市场+微观": 8
+      },
+      "notes": "BEAR_TREND体制空单，CHoCH确认后入场"
+    }
+  ],
+  "ETHUSDT": [
+    {
+      "ts": "2026-07-20T09:07:43.911780+00:00",
+      "regime": "BULL_TREND",
+      "direction": "LONG",
+      "score": 155.0,
+      "grade": 80.0,
+      "result": "LOSS",
+      "pnl_pct": -2.1,
+      "key_dims": {
+        "L2+贝叶斯+宏观": 11,
+        "鲸鱼+跨市场+微观": 12
+      },
+      "notes": ""
+    },
+    {
+      "ts": "2026-07-20T09:07:43.912151+00:00",
+      "regime": "BULL_TREND",
+      "direction": "LONG",
+      "score": 157.0,
+      "grade": 81.0,
+      "result": "LOSS",
+      "pnl_pct": -1.9,
+      "key_dims": {
+        "L2+贝叶斯+宏观": 11,
+        "鲸鱼+跨市场+微观": 12
+      },
+      "notes": ""
     }
   ]
 }

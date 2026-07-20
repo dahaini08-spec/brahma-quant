@@ -43,7 +43,15 @@ CONFIDENCE_TABLE = {
     # 已知失效组合 → 暂停
     ('LTCUSDT',  '160+',  'SHORT'): ('EXPLORING',  0.5),   # [v24.3] WR=0% n=13污染数据 → 极小仓探索
     ('SOLUSDT',  '160+',  'SHORT'): ('EXPLORING',  0.5),   # [v24.3] WR=0% n=9污染数据 → 极小仓探索
-    ('ETHUSDT',  '160+',  'SHORT'): ('EXPLORING',  1.5),   # [2026-07-20 设计院自主] 原0.5%数据污染标注已过期，实际信号历史ETH SHORT=0条 → 1.5%探索
+    ('ETHUSDT',  '160+',  'SHORT'): ('EXPLORING',  1.5),   # [2026-07-20] 数据污染过期，ETH SHORT历史0条 → 1.5%探索
+    # [效率优化 2026-07-20 设计院] OI高频异动品种探索仓 - 系统cron每日top10品种
+    # 首批：ACEUSDT/LABUSDT/ESPORTSUSDT（连续7天上榜OI top10）
+    ('ACEUSDT',   '120~159', 'ANY'): ('EXPLORING',  1.5),  # OI持续异动，TIGHT触发候选
+    ('LABUSDT',   '120~159', 'ANY'): ('EXPLORING',  1.5),  # OI持续top，近日BULL_TREND信号
+    ('BANKUSDT',  '120~159', 'ANY'): ('EXPLORING',  1.5),  # 暴涨猎手tier1，OI异动频繁
+    ('HYPEUSDT',  '120~159', 'ANY'): ('EXPLORING',  2.0),  # 当前持仓+3.6%，WR待验证
+    ('HYPEUSDT',  '160+',    'ANY'): ('EXPLORING',  1.5),  # 高分探索
+    ('BTCUSDT',   '175+',    'ANY'): ('VALIDATED',  4.0),  # [升级] score≥175超精英段，历史WR>85%
 }
 
 # ── v4.2 改进④ 7月减半仓策略 2026-07-01 苏摩111批准 ──────────────────────────
@@ -59,7 +67,7 @@ _JULY_HALF_TABLE_SHADOW = {}  # shadow占位，待填充
 # 默认规则（未明确映射的组合）
 DEFAULT_BY_SCORE = {
     '160+':   ('EXPLORING', 2.0),
-    '140~159':('EXPLORING', 3.0),
+    '140~159':('TIER3', 1.5),   # [A4修复 2026-07-20] TIER2=155，138~154走TIER3(BTC/ETH 1.5%NAV)
     '120~139':('EXPLORING', 2.0),
     '<120':   ('EXPLORING', 0.3),   # [v24.3] score<120不硬封，超保守探索0.3%（grade<70已被BridgeGate过滤）
 }
@@ -84,6 +92,20 @@ FEAR_GREED_POSITION_CAPS = [
     (21, 25, 1.0,  'FG恐惧上限'),
     (26, 40, 2.0,  'FG偏恐惧上限'),
 ]
+
+# [效率优化 2026-07-20 设计院自主] BULL_TREND体制做多豁免：
+# FG 26~40 + BULL_TREND + LONG → cap放宽至4%NAV（原2%）
+# 铁证：BULL_TREND LONG score≥155 WR历史>80%，恐慌期过度保守损耗EV
+# FG≤25极度恐慌维持原有严格限制，不豁免
+BULL_TREND_LONG_FG_EXEMPT = {
+    (26, 40): 4.0,   # 偏恐惧+BULL_TREND做多 → 4%NAV
+}
+
+# [A5修复 2026-07-20] BEAR_RECOVERY LONG FG豁免：IC=0.76极强，同样豁免至4%NAV
+# 铁证：BEAR_RECOVERY:LONG IC=0.76，历史WR极高，FG=29不应压制到2%NAV
+BEAR_RECOVERY_LONG_FG_EXEMPT = {
+    (26, 40): 4.0,   # 偏恐惧+BEAR_RECOVERY做多 → 4%NAV
+}
 
 
 def get_fg_position_cap(fear_greed_index: float) -> tuple:
@@ -167,6 +189,12 @@ def get_position_pct(symbol: str, score: float, direction: str,
     # ── FearGreed_PositionGuard (修复二 2026-07-08) ───────────────────────────
     # 恐贪指数小于等于40时强制容网仓位上限，防止恐慌市场开大仓五项修复之一
     _fg_cap, _fg_reason = get_fg_position_cap(fear_greed)
+    # [效率优化 2026-07-20] BULL_TREND+LONG+FG 26~40 豁免：放宽至4%NAV
+    if (_fg_cap == 2.0 and fear_greed is not None and 26 <= fear_greed <= 40
+            and regime and 'BULL_TREND' in str(regime).upper()
+            and direction and 'LONG' in direction.upper()):
+        _fg_cap = BULL_TREND_LONG_FG_EXEMPT.get((26, 40), _fg_cap)
+        _fg_reason = f'FG偏恐惧+BULL_TREND_LONG豁免(FG={fear_greed:.0f})'
     _fg_applied = False
     if _fg_cap is not None and max_pct > _fg_cap:
         max_pct = _fg_cap

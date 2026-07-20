@@ -303,6 +303,14 @@ def check_orphan_modules():
             # ── [设计院 2026-07-16 苏摩111] ───────────────────────────────────────────────────────
             'brahma_constitutional_test',  # 宪法守卫单元测试，被brahma_smoke_test调用，独立测试入口
             # ─────────────────────────────────────────────────────────────────────────────────
+            # ── [协同融合 2026-07-20 设计院自主] ─────────────────────────────────────────────
+            'ssi_engine',             # ✅ 接入 brahma_engine 协同融合层，做空轧空门控
+            'brahma_coordinator',     # ✅ 接入 brahma_engine 协同总线 build_coord_context()
+            'mode_c_detector',        # ✅ 接入 pump_hunter_state.notify_brahma_mode_c()
+            'squeeze_lifecycle',      # ✅ 接入 ssi_engine compute_ssi() 轧空阶段识别
+            'condition_order_matrix', # ✅ 接入 brahma_lifecycle TP2条件单生成
+            'signal_expiry_tracker',  # ✅ 接入 brahma_coordinator TTL校验
+            # ─────────────────────────────────────────────────────────────────────────────────
         }
     
     orphans = []

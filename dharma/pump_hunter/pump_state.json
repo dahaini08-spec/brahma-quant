@@ -1,0 +1,16 @@
+{
+  "TEST_BANK": {
+    "tight_start_ts": 1784546963.8169246,
+    "tight_start_price": 0.042,
+    "tight_hours": 0.0,
+    "tight_latest_score": 80,
+    "tight_latest_ts": 1784546963.8169246
+  },
+  "BANKUSDT": {
+    "tight_start_ts": 1784546963.8184714,
+    "tight_start_price": 0.042,
+    "tight_hours": 0.0,
+    "tight_latest_score": 80,
+    "tight_latest_ts": 1784546963.8184714
+  }
+}

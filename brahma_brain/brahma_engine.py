@@ -2852,6 +2852,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 _result['timing_badge']  = _timing_res.get('badge', '')
                 _result['timing_status'] = _timing_res.get('status', 'UNKNOWN')
                 _result['timing_score']  = _timing_res.get('score', 0)
+                _result['_timing']       = _timing_res  # [自主决策 2026-07-20] signal_trace.py兼容字段
             except Exception:
                 pass  # timing失败不阻断主流
         from dharma_data_bridge import log_signal as _log_dharma
@@ -3532,6 +3533,73 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _mc_e:
         _result['mode_c'] = {'mode': 'MODE_A', 'note': f'[mode_c_detector异常,不阻断] {_mc_e}'}
     # ══ [Phase 1b END] ══════════════════════════════════════════════════════
+
+    # ── [协同融合总线 2026-07-20 设计院自主] brahma_coordinator全局协同 ──────
+    if 'coord' not in _result:  # [A1修复] 防止retry重复累加
+      try:
+        from brahma_brain.brahma_coordinator import build_coord_context, format_coord_summary
+        _coord_ctx = build_coord_context(symbol, signal_dir, _result.get('regime',''), _result.get('score',0))
+        _result['coord'] = _coord_ctx
+        # 应用协同总加成
+        _coord_bonus = _coord_ctx.get('total_bonus', 0)
+        if _coord_bonus != 0:
+            _result['score'] = round(_result.get('score', 0) + _coord_bonus, 1)
+            _result.setdefault('breakdown', {})['协同总线加成'] = f'{_coord_bonus:+d}分 ({format_coord_summary(_coord_ctx)})'
+        # 暴涨猎手MODE_C触发做空封禁
+        if _coord_ctx.get('short_ban_by_pump') and signal_dir == 'SHORT':
+            _result['globally_blocked'] = True
+            _result['blocked_reason'] = f'暴涨猎手MODE_C封禁做空 ({_coord_ctx["pump"]["mode_c_source"]})'
+      except Exception as _coord_e:
+          pass  # [静默，非阻断]
+    # ────────────────────────────────────────────────────────────────────────
+
+    # ── [协同融合 2026-07-20 设计院自主] 孤立资产接入层 ─────────────────────
+    # 1. SSI轧空风险门控
+    try:
+        from brahma_brain.ssi_engine import compute_ssi, get_ssi_level as _ssi_level_fn
+        # [SSI接口修复 2026-07-20] compute_ssi需要short_ratio/oi/price参数
+        import urllib.request as _uu, json as _jj
+        _oi_resp = _jj.loads(_uu.urlopen(f'https://fapi.binance.com/fapi/v1/openInterest?symbol={symbol}', timeout=3).read())
+        _pr_resp = _jj.loads(_uu.urlopen(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}', timeout=3).read())
+        _ls_resp = _jj.loads(_uu.urlopen(f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol={symbol}&period=1h&limit=1', timeout=3).read())
+        _oi_val = float(_oi_resp.get('openInterest', 0))
+        _pr_val = float(_pr_resp.get('price', 0))
+        _short_ratio = 1 - float(_ls_resp[0].get('longAccount', 0.5)) if _ls_resp else 0.5
+        _ssi_r = compute_ssi(symbol, _short_ratio, _oi_val, _pr_val)
+        if _ssi_r:
+            _ssi_val = _ssi_r.get('ssi', 0)
+            _ssi_name, _ssi_desc = _ssi_level_fn(_ssi_val)
+            _result['ssi_risk'] = _ssi_name
+            _result['ssi_val'] = round(_ssi_val, 4)
+            if _ssi_name in ('HIGH', 'EXTREME') and signal_dir == 'SHORT':
+                _ssi_penalty = -20 if _ssi_name == 'EXTREME' else -12
+                _result['score'] = round(_result.get('score', 0) + _ssi_penalty, 1)
+                _result['breakdown']['SSI轧空降权'] = f'{_ssi_name} ssi={_ssi_val:.3f} → {_ssi_penalty}分'
+    except Exception:
+        pass
+
+    # 2. IC权重乘数注入（来自signal_weights.json）
+    try:
+        import json as _sw_json
+        _sw_path = _BASE_DIR / 'data' / 'signal_weights.json'
+        if _sw_path.exists():
+            _sw = _sw_json.loads(_sw_path.read_text()).get('weights', {})
+            _cur_regime = _result.get('regime', '')
+            _cur_score = _result.get('score', 0)
+            # 按体制+方向+score区间查权重
+            _sw_key = None
+            if _cur_score >= 155: _sw_key = f'{_cur_regime}:{signal_dir}:155+'
+            elif _cur_score >= 140: _sw_key = f'{_cur_regime}:{signal_dir}:140-154'
+            elif _cur_score >= 120: _sw_key = f'{_cur_regime}:{signal_dir}:120-139'
+            if _sw_key and _sw_key in _sw:
+                _mult = float(_sw[_sw_key].get('multiplier', 1.0))
+                if abs(_mult - 1.0) > 0.05:
+                    _result['ic_weight_mult'] = _mult
+                    _result['score'] = round(_cur_score * _mult, 1)
+                    _result['breakdown']['IC权重乘数'] = f'{_sw_key} ×{_mult}'
+    except Exception:
+        pass
+    # ─────────────────────────────────────────────────────────────────────────
 
     return _result
 

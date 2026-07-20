@@ -10,6 +10,15 @@ performance_logger.py — 梵天交易结果持久化
 import json, time
 from pathlib import Path
 
+# [效率优化 2026-07-20 设计院自主] 接入EV反馈闭环
+try:
+    import sys as _sys_perf; _sys_perf.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+    from ev_feedback import on_settlement as _ev_on_settlement
+    _EV_FEEDBACK_ENABLED = True
+except Exception:
+    _EV_FEEDBACK_ENABLED = False
+    _ev_on_settlement = None
+
 BASE     = Path(__file__).parent.parent
 PERF_LOG = BASE / 'data' / 'live_performance_log.jsonl'
 WUQU     = BASE / 'data' / 'wuqu_positions.json'
@@ -33,6 +42,21 @@ def log_trade(record: dict):
                 pass
     with open(PERF_LOG, 'a') as f:
         f.write(json.dumps(record, ensure_ascii=False) + '\n')
+    # [效率优化 2026-07-20 设计院自主] EV反馈闭环 - 写入后自动更新wr_matrix_realtime
+    if _EV_FEEDBACK_ENABLED and _ev_on_settlement:
+        try:
+            _exit_reason = record.get('exit_reason', '')
+            if _exit_reason in ('TP1', 'TP2', 'SL', 'TIMEOUT'):
+                _outcome = _exit_reason
+            elif record.get('result') == 'WIN':
+                _outcome = 'TP1'
+            elif record.get('result') == 'LOSS':
+                _outcome = 'SL'
+            else:
+                _outcome = 'TIMEOUT'
+            _ev_on_settlement({**record, "score": record.get("score", record.get("entry_score", 0))}, _outcome)
+        except Exception:
+            pass  # [静默，非阻断]
 
 
 def sync_closed_positions():

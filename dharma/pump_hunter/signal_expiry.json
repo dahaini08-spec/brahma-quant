@@ -1,17 +1,1 @@
-{
-  "JTOUSDT": {
-    "score": 66,
-    "price": 0.588,
-    "entry_lo": 0.585648,
-    "entry_hi": 0.590352,
-    "sl_price": 0.5733,
-    "tp1_price": 0.61005,
-    "expire_ts": 1784538619.9495015,
-    "pushed_ts": 1784536827.0267613,
-    "auto_executed": false,
-    "reminded": false,
-    "squeeze_catalyst": true,
-    "funding": 0.005,
-    "short_pct": 69.2
-  }
-}
+{}

@@ -48,8 +48,8 @@ AUTO_SCORE_THRESHOLD = 120       # 最低评分 [P0-C 2026-07-11] 130→120，�
 AUTO_ENTER_FULL_THRESHOLD = 155    # auto专区：ENTER_FULL
 # [fix 2026-07-18 苏摩111] 三档自主执行阈值
 TIER_1_SCORE  = 155   # ENTER_FULL → 全仓 5%NAV
-TIER_2_SCORE  = 138   # ENTER      → 标准仓 3%NAV
-TIER_3_SCORE  = 120   # BTC/ETH限定 → 轻仓 1.5%NAV
+TIER_2_SCORE  = 155   # [IC铁证升级 2026-07-20] 138→155：BULL_TREND:LONG:140-154 WR=30% EV=-0.65% n=26，统计显著亏损
+TIER_3_SCORE  = 138   # [IC优化 2026-07-20] BTC/ETH限定 → 轻仓 1.5%NAV（120-137区间退出）
 TIER_3_SYMBOLS = frozenset({'BTCUSDT', 'ETHUSDT'})
 AUTO_ENTER_WATCH_MIN      = 120    # sub专区下界（P0-C: 130→120，与valid门槛同步）
 MIN_RR               = 1.0       # 最低RR
@@ -227,7 +227,7 @@ def find_executable_signals() -> list[dict]:
             s['_tier_nav_pct'] = 0.05
         elif score >= TIER_2_SCORE:
             # TIER_2: 标准仓，timing=READY或空（未注入）才执行，STANDBY/WAIT拦截
-            if _timing_badge in ('STANDBY', 'WAIT', 'MONITOR'):
+            if _timing_badge in ('STANDBY', 'WAIT', 'MONITOR') or _timing_badge == '':  # [P1修复 2026-07-20] 空timing也拦截，防TIMEOUT亏损
                 continue  # timing明确不佳，等待
             s['_tier'] = 2
             s['_tier_nav_pct'] = 0.03
