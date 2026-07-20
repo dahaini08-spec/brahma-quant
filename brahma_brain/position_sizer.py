@@ -99,7 +99,7 @@ def get_fg_position_cap(fear_greed_index: float) -> tuple:
 
 def get_position_pct(symbol: str, score: float, direction: str,
                      nav: float = 0.0, fear_greed: float = None,
-                     regime: str = '') -> dict:
+                     regime: str = '', transition_hint: str = '') -> dict:
     """
     返回：{
       'pct': 建议仓位百分比（0~10）,
@@ -138,6 +138,18 @@ def get_position_pct(symbol: str, score: float, direction: str,
             max_pct = 6.0
             level = f'{level}+BEAR_RECOVERY_6pct'
     # ────────────────────────────────────────────────────────────────────────
+
+    # ── [D: BEAR_RECOVERY_TRANSITION 前瞻仓位 2026-07-20 苏摩111批准] ────────
+    # 当体制仍为 BEAR_TREND 但探测到转势信号时，允许做多探索仓（0.8x → 0.35x乘数）
+    # 从永久封禁(0%) → 轻探索(0.35x = 0.35%NAV)，代价是轻仓
+    if (transition_hint == 'BEAR_RECOVERY_TRANSITION'
+            and direction == 'LONG'
+            and 'BEAR' in str(regime).upper()):
+        _trans_min = max_pct * 0.35  # 转势期做多仓位 = 标准仓的35%
+        _trans_min = max(_trans_min, 0.5)  # 至少0.5%NAV
+        max_pct = _trans_min
+        level = f'{level}+TRANSITION_LONG_35pct'
+    # ─────────────────────────────────────────────────────────────────────────
 
     # ── v4.2 改进④ 7月减半仓策略 ─────────────────────────────────────────
     # 有效期 2026-07-01 ~ 2026-07-15，score 160~169 → 强制1%NAV

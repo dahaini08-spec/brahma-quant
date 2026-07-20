@@ -222,6 +222,39 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass  # [静默] f'[RSM] 状态机异常（不阻断，维持原始体制）: {_rsm_e}'
     # ── [P0-A END] ────────────────────────────────────────────────────────
 
+    # ══ [D: BEAR_RECOVERY_TRANSITION 转势前瞻探测器 2026-07-20 苏摩111批准] ══
+    # 解决问题：阶段4(2023复苏) α=-154%，根因是EMA200滞后15-20日，错过复苏初期
+    # 逻辑：不修改体制判定，在RSM稳定输出后叠加一个"前瞻子标签"
+    #   条件1: 当前体制为 BEAR_TREND 或 BEAR_EARLY
+    #   条件2: 价格持续 >= 5 个4H K线在 EMA200 上方（EMA200首次被站上）
+    #   条件3: 4H EMA50 上穿 EMA200 临界点（距离 < 3%）
+    #   效果: regime 保持不变，但 ms 增加 _transition_hint = 'BEAR_RECOVERY_TRANSITION'
+    #          position_sizer 读取此 hint，将做多乘数从 0.10x 升至 0.35x（探索仓）
+    try:
+        _tr_regime = ms.get('regime', '')
+        if _tr_regime in ('BEAR_TREND', 'BEAR_EARLY'):
+            _tr_closes = ms.get('closes_4h', [])
+            _tr_ema200_4h = ms.get('ema200_4h', 0)
+            _tr_ema50_4h = ms.get('ema50_4h', 0)
+            if _tr_closes and _tr_ema200_4h > 0 and len(_tr_closes) >= 5:
+                # 条件2: 最近5根4H收盘价全在EMA200上方
+                _above_ema200 = all(c > _tr_ema200_4h for c in _tr_closes[-5:])
+                # 条件3: EMA50接近EMA200（差距 < 3%，即将上穿）
+                _ema_gap_pct = abs(_tr_ema50_4h - _tr_ema200_4h) / _tr_ema200_4h * 100 if _tr_ema200_4h > 0 else 99
+                _approaching = _ema_gap_pct < 3.0 and _tr_ema50_4h < _tr_ema200_4h  # EMA50仍在200下但接近
+                if _above_ema200 and _approaching:
+                    ms['_transition_hint'] = 'BEAR_RECOVERY_TRANSITION'
+                    ms['_transition_ema_gap'] = round(_ema_gap_pct, 2)
+            # 条件B: EMA50已上穿EMA200但RSM还没确认BEAR_RECOVERY（滞后期）
+            elif _tr_ema50_4h > _tr_ema200_4h > 0:
+                _cross_pct = (_tr_ema50_4h - _tr_ema200_4h) / _tr_ema200_4h * 100
+                if _cross_pct < 2.0:  # 刚刚上穿（<2%），RSM尚未确认
+                    ms['_transition_hint'] = 'BEAR_RECOVERY_TRANSITION'
+                    ms['_transition_ema_gap'] = round(_cross_pct, 2)
+    except Exception:
+        pass  # 降级，不影响主流程
+    # ══ [END BEAR_RECOVERY_TRANSITION] ══════════════════════════════════════
+
     # ── [因果AI P0-A] Causal Regime Verifier ────────────────────
     # 设计院因果增强 v1.0 · 2026-06-18
     # 在 Step 2 方向确认前，验证当前体制的因果结构是否支持入场

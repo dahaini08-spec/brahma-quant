@@ -546,6 +546,35 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
         pass  # [静默]
     # ── [END exit_params_v4] ─────────────────────────────────────────────────
 
+    # ══ [A: LIQ_MAP TP2 磁吸位优化 2026-07-20 苏摩111批准] ══════════════════
+    # 逻辑：用爆仓密集带参与 TP2 确认，提升 TP2 触及率 0%→15%
+    # 规则：SHORT下方清算密集带在 tp1~tp2 区间 → tp2对齐清算密集带
+    #       LONG上方清算密集带在 tp1~tp2 区间 → tp2对齐清算密集带
+    #       置信度 >= 0.3 才生效（至少有真实清算数据）
+    try:
+        from brahma_brain.liq_density_engine import get_liq_density as _get_ld_tp
+        _ld_tp = _get_ld_tp(symbol if symbol else ms.get('symbol', ''), entry_mid)
+        if _ld_tp and _ld_tp.get('confidence', 0) >= 0.3:
+            if signal_dir == 'SHORT':
+                _liq_nearest = _ld_tp.get('nearest_below', 0)
+                # 清算密集带在 tp1~tp2 区间 → 对齐到它下方 0.3% buffer
+                if _liq_nearest and tp1 > _liq_nearest > tp2 and _liq_nearest > entry_mid * 0.5:
+                    tp2_liq = _liq_nearest * 0.997
+                    if tp2_liq < tp1 and tp2_liq > entry_mid * 0.1:
+                        tp2 = tp2_liq
+                        rr2 = round(abs(tp2 - entry_mid) / max(risk, 1e-9), 2)
+            elif signal_dir == 'LONG':
+                _liq_nearest = _ld_tp.get('nearest_above', 0)
+                # 清算密集带在 tp1~tp2 区间 → 对齐到它上方 0.3% buffer
+                if _liq_nearest and tp2 > _liq_nearest > tp1 and _liq_nearest > entry_mid:
+                    tp2_liq = _liq_nearest * 1.003
+                    if tp2_liq > tp1 and tp2_liq < entry_mid * 20:
+                        tp2 = tp2_liq
+                        rr2 = round(abs(tp2 - entry_mid) / max(risk, 1e-9), 2)
+    except Exception:
+        pass  # LIQ_MAP 降级，失败不影响主流程
+    # ══ [END LIQ_MAP TP2] ════════════════════════════════════════════════════
+
     # 动态精度：防止0.0001等极端低价被 round(...,4) 戒断到相同小数
     import math as _m
     # [v21.1] tick感知精度（读SSOT instruments.tick）
