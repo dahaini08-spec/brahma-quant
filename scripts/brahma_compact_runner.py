@@ -21,8 +21,26 @@ def run_compact(symbol: str) -> str:
     score = re.search(r'score=([0-9.]+)', out)
     grade = re.search(r'grade=([0-9.]+)', out)
     direction = re.search(r'方向:\s*(LONG|SHORT)', out)
-    regime = re.search(r'(?:体制|REGIME)[：:]\s*([A-Z_]+)', out)
+    regime = (re.search(r'[（(]([A-Z_]{4,})[）)]', out) or
+               re.search(r'_regime\s+([A-Z_]{4,})', out) or
+               re.search(r'(?:体制|REGIME)[：:]\s*([A-Z_]+)', out))
     timing = re.search(r'(READY|MONITOR|WAIT|STANDBY)', out)
+    # timing_badge补充：若正则未匹配则调用timing_filter动态计算
+    if not timing:
+        try:
+            import sys as _sys; _sys.path.insert(0, str(BASE / 'brahma_brain'))
+            from timing_filter import evaluate_timing, format_timing_badge
+            import requests as _rq
+            _px = float(_rq.get('https://fapi.binance.com/fapi/v1/ticker/price?symbol=' + symbol, timeout=3).json()['price'])
+            _dir = (re.search(r'方向: *(LONG|SHORT)', out) or type('',(),{'group':lambda s,i:"LONG"})())
+            _d = _dir.group(1) if hasattr(_dir,'group') else 'LONG'
+            _s = float(score.group(1)) if score else 100
+            _g = float(grade.group(1)) if grade else 80
+            _tr = evaluate_timing(symbol, _d, current_price=_px, entry_lo=_px*0.99, entry_hi=_px*1.001, score=_s, grade=_g)
+            _tb = _tr.get('status', 'UNKNOWN')
+            timing = type('', (), {'group': lambda self, i: _tb})()
+        except Exception:
+            pass
     blocked = 'BLOCKED' in out or 'globally_blocked' in out or '封禁' in out
     entry = re.search(r'入场区[：:]\s*([^\n]+)', out)
     sl = re.search(r'参考止损[：:]\s*([^\n]+)', out)

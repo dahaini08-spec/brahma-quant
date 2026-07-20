@@ -500,8 +500,8 @@ def check_syscron() -> dict:
             '# 梵天系统守望层 - 自愈重建 [2026-07-19]\n'
             '*/3 * * * * root cd /root/.openclaw/workspace/trading-system && python3 scripts/live_sync.py --silent >> /tmp/brahma-watchers.log 2>&1\n'
             '*/5 * * * * root cd /root/.openclaw/workspace/trading-system && python3 scripts/rsi_structure_watcher.py --silent >> /tmp/brahma-watchers.log 2>&1\n'
-            '*/10 * * * * root cd /root/.openclaw/workspace/trading-system && python3 scripts/btc_regime_updater.py --silent >> /tmp/brahma-watchers.log 2>&1\n'
-            '*/15 * * * * root cd /root/.openclaw/workspace/trading-system && python3 scripts/market_pre_filter.py --silent >> /tmp/brahma-watchers.log 2>&1\n'
+            '*/10 * * * * root cd /root/.openclaw/workspace/trading-system && python3 scripts/btc_regime_watcher.py >> /tmp/brahma-watchers.log 2>&1\n'
+            '*/15 * * * * root cd /root/.openclaw/workspace/trading-system && python3 scripts/market_pre_filter.py >> /tmp/brahma-watchers.log 2>&1\n'
             '*/20 * * * * root cd /root/.openclaw/workspace/trading-system && python3 scripts/signal_change_detector.py --silent >> /tmp/brahma-watchers.log 2>&1\n'
         )
         cron_file.write_text(content)
