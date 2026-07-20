@@ -83,7 +83,7 @@ def check_rsi_trigger() -> bool:
 def run_analysis_safe(sym: str) -> dict:
     """安全执行分析，异常返回空"""
     try:
-        from brahma_analysis_runner import run_analysis
+        from brahma_brain.brahma_analysis_runner import run_analysis
         return run_analysis(sym) or {}
     except Exception as e:
         return {'_error': str(e)}
