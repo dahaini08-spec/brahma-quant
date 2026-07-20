@@ -1,0 +1,60 @@
+{
+  "meme_tier1": {
+    "description": "极品妖币 · 历史有+200%+极端行情，TIGHT触发WR极高",
+    "symbols": {
+      "BANKUSDT": {
+        "tier": 1,
+        "label": "极品妖币",
+        "peak_history": [
+          {"date": "2025-10", "high": 0.236, "gain_pct": 312, "from_low": 0.057},
+          {"date": "2026-07", "high": 0.286, "gain_pct": 340, "from_low": 0.065}
+        ],
+        "trigger_pattern": "TIGHT+缩量+RSI低位",
+        "base_vol_30d_M": 4.2,
+        "tight_wr": 0.975,
+        "note": "2026-07-20封印：07-12~14三级预警窗口，领先启动5~7天"
+      },
+      "PIPPINUSDT": {
+        "tier": 1,
+        "label": "极品妖币",
+        "peak_history": [],
+        "trigger_pattern": "TIGHT+缩量",
+        "base_vol_30d_M": 2.0,
+        "tight_wr": 0.95,
+        "note": "历史极端行情品种"
+      },
+      "SIRENUSDT": {
+        "tier": 1,
+        "label": "极品妖币",
+        "peak_history": [],
+        "trigger_pattern": "TIGHT+RSI低位",
+        "base_vol_30d_M": 1.5,
+        "tight_wr": 0.93,
+        "note": "历史极端行情品种"
+      },
+      "HUSDT": {
+        "tier": 1,
+        "label": "极品妖币",
+        "peak_history": [],
+        "trigger_pattern": "缩量+历史低位",
+        "base_vol_30d_M": 1.0,
+        "tight_wr": 0.92,
+        "note": "历史极端行情品种"
+      }
+    }
+  },
+  "meme_tier2": {
+    "description": "标准妖币 · 历史有+50%~+200%行情",
+    "symbols": {
+      "MYXUSDT": {"tier": 2, "base_vol_30d_M": 3.0, "tight_wr": 0.85},
+      "COAIUSDT": {"tier": 2, "base_vol_30d_M": 2.5, "tight_wr": 0.83}
+    }
+  },
+  "scoring_bonus": {
+    "tier1_bonus": 15,
+    "tier2_bonus": 8,
+    "note": "已知妖币品种在评分中获得额外加分"
+  },
+  "updated_at": "2026-07-20",
+  "updated_by": "设计院自主决策"
+}

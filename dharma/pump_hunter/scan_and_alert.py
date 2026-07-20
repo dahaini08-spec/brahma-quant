@@ -48,6 +48,15 @@ import requests, json, datetime, os, time, sys
 from collections import defaultdict
 from pathlib import Path
 
+# 暴涨猎手2.0 · 状态机+探测器（设计院 2026-07-20）
+try:
+    from dharma.pump_hunter.pump_hunter_state import get_score_addons, notify_brahma_mode_c
+    _HUNTER_STATE_OK = True
+except Exception:
+    _HUNTER_STATE_OK = False
+    def get_score_addons(*a, **k): return {"total_bonus":0,"pump_end":{"pump_end":False},"notes":""}
+    def notify_brahma_mode_c(*a, **k): pass
+
 # ── 配置 ─────────────────────────────────────────────────────
 API   = 'https://fapi.binance.com'
 DIR   = os.path.dirname(os.path.abspath(__file__))
@@ -62,11 +71,15 @@ EXPIRY_FILE = os.path.join(DIR, 'signal_expiry.json')
 
 # ── 候选过滤 ──────────────────────────────────────────────────
 EXCLUDE     = {'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT'}
-MIN_VOL     = 20_000_000    # 最低24H成交额$20M（适当降低覆盖）
-MAX_VOL     = 800_000_000   # 排除超大盘
-MAX_CHG_ABS = 8.0           # [设计院根治修复 2026-07-18 苏摩111] 25%→8%
-                             # 根因：MAX_CHG_ABS=25%把所有暴涨中的币踢出候选池
-                             # 暴涨猎手应捕捉「起涨前」状态：24H涨幅<8%但量能异动
+MIN_VOL     = 5_000_000     # 降至5M，覆盖低流动性妖币（BANK启动前日均3~20M）
+MAX_VOL     = 500_000_000   # 缩小上限避免大盘干扰
+# [设计院顶层重构 2026-07-20 苏摩111自主决策]
+# 废弃: MAX_CHG_ABS=8%（过滤掉所有有动能的币，正好是目标品种）
+# 正确哲学：「有历史动能+近期压缩整理」= 目标状态
+# BANK案例：07-11+13%后07-12~14横盘是最佳入场期，却被旧规则永久踢出
+MAX_CHG_24H = 30.0          # 仅排除当日已爆发的，保留历史动能币
+MAX_CHG_48H = 15.0          # 近期平静过滤：近48H涨幅<15%（消化整理中）
+MIN_CHG_7D  = 10.0          # 必须有基础动能：近7日涨幅>10%（排除死币）
 
 # ── 评分阈值 ──────────────────────────────────────────────────
 PUSH_SCORE  = 65            # [根治修复 2026-07-18] 78→65 降低门槛扩大有效信号覆盖
@@ -185,11 +198,32 @@ def scan():
     tickers = {t['symbol']: t for t in _raw
                if isinstance(t, dict) and t.get('symbol', '').endswith('USDT')}
 
-    # 候选过滤
-    candidates = [s for s in syms
-                  if s in tickers
-                  and MIN_VOL < float(tickers[s].get('quoteVolume', 0)) < MAX_VOL
-                  and abs(float(tickers[s].get('priceChangePercent', 0))) < MAX_CHG_ABS]
+    # 候选过滤 v5.0（设计院顶层重构 2026-07-20）
+    # 哲学：「有历史动能+近期压缩」= 目标，而非「没涨的死币」
+    # 两层过滤：第一层ticker快速筛（0额外API），第二层klines精确验证
+    _pre_candidates = [
+        s for s in syms
+        if s in tickers
+        and MIN_VOL < float(tickers[s].get('quoteVolume', 0)) < MAX_VOL
+        and abs(float(tickers[s].get('priceChangePercent', 0))) < MAX_CHG_24H
+    ]
+    candidates = []
+    for _s in _pre_candidates:
+        try:
+            _kl = requests.get(
+                f'{API}/fapi/v1/klines',
+                params={'symbol': _s, 'interval': '1h', 'limit': 170},
+                timeout=5
+            ).json()
+            if not isinstance(_kl, list) or len(_kl) < 48:
+                candidates.append(_s); continue
+            _cls = [float(c[4]) for c in _kl]
+            _chg48h = (_cls[-1] - _cls[-48]) / _cls[-48] * 100 if _cls[-48] > 0 else 0
+            _chg7d  = (_cls[-1] - _cls[0])  / _cls[0]  * 100 if _cls[0]  > 0 else 0
+            if abs(_chg48h) <= MAX_CHG_48H and _chg7d >= MIN_CHG_7D:
+                candidates.append(_s)
+        except Exception:
+            candidates.append(_s)  # API异常时保守纳入
 
     alerts = []
 
@@ -374,6 +408,23 @@ def scan():
                 reasons.append(f'[WATCH-仅压缩无催化剂: FR={latest_fr:.4f}% 空头={short_pct:.0f}%]')
                 score = min(score, PUSH_SCORE - 1)  # 强制压至门槛以下，不推送
 
+            # 状态机加成（TIGHT持续时间+已知妖币+暴涨结束检测）
+            _vol_list = [float(k[7]) for k in klines] if klines else []
+            _vol_prev = _vol_list[-2] if len(_vol_list) >= 2 else 0
+            _vol_avg20 = sum(_vol_list[-20:]) / min(20, len(_vol_list)) if _vol_list else 1
+            _addons = get_score_addons(
+                sym, comp, score, price,
+                vol_current=_vol_list[-1] if _vol_list else 0,
+                vol_prev=_vol_prev, vol_avg_20=_vol_avg20,
+                price_change_pct=chg,
+            )
+            if _addons['total_bonus'] > 0:
+                score += _addons['total_bonus']
+                reasons.append(_addons['notes'])
+            # 暴涨结束信号（单独推送，不影响常规预警流程）
+            if _addons['pump_end']['pump_end']:
+                reasons.append(_addons['pump_end']['signal'])
+
             if score >= PUSH_SCORE:
                 # v4修复 BUG-2：止损用SL_PCT公式，不用comp*0.3
                 sl_pct   = _sl_pct_base
@@ -383,6 +434,9 @@ def scan():
                 sl_price = round(price * (1 - sl_pct / 100), 6)  # 做多止损=入场下方
                 tp1_price= round(price * (1 + sl_pct * tp_mult / 100), 6)
 
+                # 梵天2.0联动：猎手预警→MODE_C写入
+                _alert_lv = 3 if score >= 95 else (2 if score >= 85 else 1)
+                notify_brahma_mode_c(sym, score, _alert_lv)
                 alerts.append({
                     'symbol':   sym,
                     'score':    score,
