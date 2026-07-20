@@ -3463,6 +3463,76 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception:
         pass  # v5.1层错误静默，不影响主流程
 
+    # ══ [梵天2.0 Phase 1b · MODE_C庄家行情识别+对冲健康注入] ══════════════
+    # 设计院×达摩院 封印 2026-07-20 · 最小侵入，fail-safe零阻断
+    # 积分消耗：0 tokens（纯本地计算）
+    try:
+        from brahma_brain.mode_c_detector import detect as _mc_detect, quick_mode_check as _mc_quick
+        _mc_ms = ms  # ms在analyze()作用域内全局可用
+
+        # 从klines_15m提取量能数据
+        _mc_kl15 = _mc_ms.get('klines_15m', [])
+        _mc_vol_cur  = float(_mc_kl15[-1]['v']) if _mc_kl15 else 0
+        _mc_vols20   = [float(k['v']) for k in _mc_kl15[-20:]] if _mc_kl15 else [1]
+        _mc_vol_avg  = sum(_mc_vols20) / len(_mc_vols20) if _mc_vols20 else 1
+        _mc_candle_h = float(_mc_kl15[-1]['h']) if _mc_kl15 else float(_mc_ms.get('price', 0)) * 1.01
+        _mc_candle_l = float(_mc_kl15[-1]['l']) if _mc_kl15 else float(_mc_ms.get('price', 0)) * 0.99
+
+        # low24h 从klines_15m[-96:]推算
+        _mc_lows24   = [float(k['l']) for k in _mc_kl15[-96:]] if len(_mc_kl15) >= 96 else [float(k['l']) for k in _mc_kl15]
+        _mc_low24h   = min(_mc_lows24) if _mc_lows24 else float(_mc_ms.get('price', 0)) * 0.5
+
+        # 多空比、FR
+        _mc_sent     = _mc_ms.get('sentiment', {}) or {}
+        _mc_lsr      = float(_mc_sent.get('long_short_ratio', 50) or 50)
+        _mc_short_r  = 1.0 - (_mc_lsr / 100.0)  # long_short_ratio是多头%
+        _mc_fr       = float(_mc_sent.get('funding_rate', 0) or 0)
+        _mc_fr_sat   = sum(1 for k in _mc_kl15[-24:] if False)  # FR满值由外部注入，默认0
+        # 用chg24估算FR满值期数（chg24>50%时大概率有FR满值）
+        _mc_chg24    = float(_mc_ms.get('chg24', 0) or 0)
+        if _mc_fr >= 0.000049 and _mc_chg24 > 30:
+            _mc_fr_sat = min(int(_mc_chg24 / 10), 6)  # 估算
+
+        _mc_price    = float(_mc_ms.get('price', 0))
+
+        # 运行MODE_C检测
+        _mc_result = _mc_detect(
+            symbol=_sym,
+            price=_mc_price,
+            price_low_24h=_mc_low24h,
+            short_ratio=_mc_short_r,
+            vol_current=_mc_vol_cur,
+            vol_avg_20=_mc_vol_avg,
+            candle_high=_mc_candle_h,
+            candle_low=_mc_candle_l,
+            fr_rate=_mc_fr,
+            fr_saturation_count=_mc_fr_sat,
+        )
+
+        # 注入结果到_result
+        _result['mode_c'] = _mc_result
+        _result['market_mode'] = _mc_result.get('mode', 'MODE_A')
+
+        # MODE_C激活时：对score_final施加降权
+        if _mc_result.get('mode') == 'MODE_C' and _mc_result.get('short_ban'):
+            _mc_wr_mult = _mc_result.get('wr_multiplier', 1.0)
+            _mc_dir     = _result.get('direction', signal_dir or 'LONG')
+            if _mc_dir == 'SHORT':
+                # 做空方向：score降权
+                _mc_penalty = int((_result.get('score_final', 0) or 0) * (1 - _mc_wr_mult))
+                _result['score_final'] = (_result.get('score_final') or 0) - _mc_penalty
+                _result['mode_c_penalty'] = _mc_penalty
+                _result['mode_c_note'] = f'MODE_C做空降权×{_mc_wr_mult}: -{_mc_penalty}分'
+            # 无论方向，记录封禁状态
+            _result['short_ban'] = True
+            _result['short_ban_reason'] = _mc_result.get('note', '')
+        else:
+            _result['short_ban'] = False
+
+    except Exception as _mc_e:
+        _result['mode_c'] = {'mode': 'MODE_A', 'note': f'[mode_c_detector异常,不阻断] {_mc_e}'}
+    # ══ [Phase 1b END] ══════════════════════════════════════════════════════
+
     return _result
 
 def format_report(r: dict) -> str:
