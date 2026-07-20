@@ -1,32 +1,17 @@
 {
-  "SAMSUNGUSDT": {
-    "score": 80,
-    "price": 171.08,
-    "entry_lo": 170.39568,
-    "entry_hi": 171.76432,
-    "sl_price": 166.803,
-    "tp1_price": 177.4955,
-    "expire_ts": 1784508024.8960757,
-    "pushed_ts": 1784506225.4185634,
+  "JTOUSDT": {
+    "score": 66,
+    "price": 0.588,
+    "entry_lo": 0.585648,
+    "entry_hi": 0.590352,
+    "sl_price": 0.5733,
+    "tp1_price": 0.61005,
+    "expire_ts": 1784538619.9495015,
+    "pushed_ts": 1784536827.0267613,
     "auto_executed": false,
     "reminded": false,
     "squeeze_catalyst": true,
-    "funding": -0.1182,
-    "short_pct": 23.3
-  },
-  "WLDUSDT": {
-    "score": 65,
-    "price": 0.3624,
-    "entry_lo": 0.36095,
-    "entry_hi": 0.36385,
-    "sl_price": 0.35334,
-    "tp1_price": 0.37599,
-    "expire_ts": 1784508017.5261736,
-    "pushed_ts": 1784506225.4185634,
-    "auto_executed": false,
-    "reminded": false,
-    "squeeze_catalyst": true,
-    "funding": -0.0466,
-    "short_pct": 48.1
+    "funding": 0.005,
+    "short_pct": 69.2
   }
 }

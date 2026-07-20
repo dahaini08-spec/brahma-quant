@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "created": "2026-07-20",
+    "desc": "每个币种的历史情境→结果记忆层。激活条件：该币种该体制n>=3时注入六方推理上下文",
+    "schema": {
+      "symbol": "币种如BTCUSDT",
+      "entries": [
+        {
+          "ts": "ISO时间戳",
+          "regime": "体制如BEAR_TREND",
+          "direction": "LONG/SHORT",
+          "score": "综合分",
+          "grade": "有效grade",
+          "result": "WIN/LOSS/WIN_T1/WIN_T2",
+          "pnl_pct": "收益率%",
+          "key_dims": "关键维度快照",
+          "notes": "六方推理摘要（可选）"
+        }
+      ]
+    }
+  },
+  "BTCUSDT": [
+    {
+      "ts": "2026-07-20T09:05:27.610611+00:00",
+      "regime": "BEAR_TREND",
+      "direction": "SHORT",
+      "score": 162.0,
+      "grade": 85.3,
+      "result": "WIN_T1",
+      "pnl_pct": 2.1,
+      "key_dims": {
+        "L2+贝叶斯+宏观": 12,
+        "鲸鱼+跨市场+微观": 8
+      },
+      "notes": "BEAR_TREND体制空单，CHoCH确认后入场"
+    }
+  ]
+}

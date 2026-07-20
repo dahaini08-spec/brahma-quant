@@ -1,0 +1,44 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "created": "2026-07-20",
+    "desc": "成功/失败模式提炼库。从历史情境中归纳可复用的pattern",
+    "schema": {
+      "pattern_name": "模式名称",
+      "conditions": "触发条件dict",
+      "hit_rate": "历史胜率",
+      "n": "样本数",
+      "last_updated": "最后更新时间",
+      "examples": "典型案例列表"
+    }
+  },
+  "patterns": [
+    {
+      "pattern_name": "CHOP_HIGH_WARNING",
+      "conditions": {"regime": "CHOP_HIGH"},
+      "hit_rate": 0.091,
+      "n": 11,
+      "last_updated": "2026-07-20",
+      "note": "实证封印：WR=9.1%，T检验p=0.016，峰度=3.82重尾，强方向负偏误",
+      "action": "强化封禁，score上限75"
+    },
+    {
+      "pattern_name": "BULL_TREND_WHALE_REVERSAL",
+      "conditions": {"regime": "BULL_TREND", "direction": "LONG", "whale_high_score": true},
+      "hit_rate": null,
+      "n": 0,
+      "last_updated": "2026-07-20",
+      "note": "实证发现：BULL_TREND做多鲸鱼高分(13.95)→LOSS，低分(11.13)→WIN，差值-2.82 p=0.083",
+      "action": "BULL_TREND_LONG鲸鱼分值降权×0.6"
+    },
+    {
+      "pattern_name": "L2_BAYES_MACRO_ALPHA",
+      "conditions": {"dim": "L2+贝叶斯+宏观", "high_score": true},
+      "hit_rate": null,
+      "n": 0,
+      "last_updated": "2026-07-20",
+      "note": "实证发现：WIN均值=11.57 vs LOSS均值=9.09，差值+2.47 p=0.082，最强正向alpha维度",
+      "action": "优先关注该维度高分信号"
+    }
+  ]
+}

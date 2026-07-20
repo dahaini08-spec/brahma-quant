@@ -1012,10 +1012,19 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             )
 
     # P1b: 鲸鱼监控评分
+    # [设计院统计修正 2026-07-20] 实证发现：BULL_TREND体制下做多方向鲸鱼高分→亏损率更高
+    # 数据：WIN均值=11.13 vs LOSS均值=13.95，差值-2.82，p=0.083（统计显著）
+    # 修正：BULL_TREND做多时鲸鱼分值降权×0.6（顺势鲸鱼/逆势鲸鱼需要区分）
     _wh2 = extra_data.get('whale_v2', {})
     if _wh2 and not _wh2.get('error'):
         _wh2_adj = _wh2.get('whale_score', 0)
         if signal_dir == 'SHORT': _wh2_adj = -_wh2_adj
+        # P0-修正：BULL_TREND做多降权×0.6（统计回归p=0.083，鲸鱼反转效应）
+        _wh2_regime = str(ms.get('regime', ''))
+        if 'BULL_TREND' in _wh2_regime and signal_dir == 'LONG' and _wh2_adj > 0:
+            _wh2_adj_orig = _wh2_adj
+            _wh2_adj = round(_wh2_adj * 0.6)
+            print(f'[鲸鱼降权] BULL_TREND_LONG 鲸鱼分值降权×0.6: {_wh2_adj_orig:+d}→{_wh2_adj:+d}')
         if _wh2_adj != 0:
             _wh2_pre = float(cf.get('score', 0) or 0)
             cf['score'] = _wh2_pre + _wh2_adj
@@ -1827,6 +1836,18 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # tc_同向CHOP（做多但全多共识）：上限收紧至75（反向逻辑，极危险）
     _is_chop_regime = any(x in str(ms.get('regime','')) for x in ('CHOP_MID','CHOP_HIGH','CHOP'))
     if _is_chop_regime:
+        # [设计院统计封印 2026-07-20] CHOP_HIGH专项强化封禁
+        # 实证数据：CHOP_HIGH WR=9.1%(n=11)，T检验p=0.016(★★强方向负偏误)
+        # 峰度=3.82（重尾，小亏多次+偶尔大亏模式），苏摩111批准封印
+        _chop_high_regime = 'CHOP_HIGH' in str(ms.get('regime',''))
+        if _chop_high_regime:
+            _ch_score_before = _score
+            _score = min(_score, 75)  # 硬性上限75（比tc同向CHOP一样处理）
+            if _ch_score_before > 75:
+                cf['breakdown']['CHOP_HIGH封禁'] = f'WR=9.1% T检验p=0.016 统计强负偏误: {_ch_score_before:.0f}→75'
+                print(f'[CHOP_HIGH封禁] score: {_ch_score_before:.0f}→75 WR=9.1% p=0.016')
+            else:
+                cf.setdefault('breakdown', {})['CHOP_HIGH警告'] = f'WR=9.1% 高危体制，score={_score:.0f} 仍低于75上限'
         _tc_val   = int(ms.get('tc', ms.get('trend_consensus', 0)) or 0)
         _dir_chop = str(ms.get('signal_dir', ms.get('direction', '')))
         # 方向与tc的关系：SHORT信号 + tc偏空(负) = 逆向做空（CHOP反转逻辑）
