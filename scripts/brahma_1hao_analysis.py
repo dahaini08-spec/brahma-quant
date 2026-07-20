@@ -268,7 +268,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         bear_obs_nearest = smc.get('order_blocks', {}).get('nearest_bear_ob', {})
         fvg_bull = smc.get('fvg', {}).get('bull_fvg', [])
 
-        lines.append(f"  ⛔ 当前封禁 — 等待解封条件：")
+        lines.append(f"  ⛔ 当前封禁 — 等待解封条件（score={score_final} grade={eff_grade}）：")
         if not has_choch:
             lines.append(f"    ① CHoCH出现（趋势结构转换信号）")
         if bear_obs_nearest:
