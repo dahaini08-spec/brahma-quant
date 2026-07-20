@@ -185,6 +185,13 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
     r = analyze(symbol, signal_dir=direction, deep=True)
     elapsed = round(time.time() - t0, 1)
 
+    # [设计院 2026-07-20] params展平修复：entry_lo/entry_hi在r['params']子dict里
+    # brahma_1hao_analysis直接调用analyze()绕过了brahma_analysis_runner的展平逻辑
+    _p = r.get('params', {}) or {}
+    for _k in ['entry_lo','entry_hi','sl','tp1','tp2','rr','rr1','sl_pct','stop_loss']:
+        if not r.get(_k) and _p.get(_k):
+            r[_k] = _p[_k]
+
     cf = r.get('confluence', {})
     bd = cf.get('breakdown', {}) if isinstance(cf, dict) else {}
     smc = r.get('smc', {})
