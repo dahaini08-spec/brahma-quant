@@ -273,21 +273,56 @@ def lsr_oi_score(symbol: str, signal_dir: str,
             pass
         # ───────────────────────────────────────────────────────────
 
+        # ── P1-L: Top Trader大户持仓比背离（2026-07-20 苏摩111批准）──────────
+        # 价值：大户vs散户背离 = 最经典逆向信号（clawby-quant S04核心策略）
+        _top_trader_bonus = 0
+        _top_note = ''
+        try:
+            import subprocess as _sp_tt, json as _json_tt
+            _tt_r = _sp_tt.run(
+                ['binance-cli','futures-usds','top-trader-long-short-ratio-positions',
+                 '--symbol', symbol, '--period','5m','--limit','1'],
+                capture_output=True, text=True, timeout=5
+            )
+            _tt_data = _json_tt.loads(_tt_r.stdout)
+            if _tt_data and isinstance(_tt_data, list) and len(_tt_data) > 0:
+                _top_long = float(_tt_data[0].get('longPosition', 0.5)) * 100
+                _divergence = _top_long - long_pct  # 大户long% - 散户long%
+                if abs(_divergence) >= 10:
+                    if signal_dir == 'SHORT' and _divergence < -10:
+                        _top_trader_bonus = min(8, int(abs(_divergence) / 5) * 2)
+                        _top_note = f'大户空头领先{abs(_divergence):.0f}%→SHORT+{_top_trader_bonus}'
+                    elif signal_dir == 'SHORT' and _divergence > 10:
+                        _top_trader_bonus = -4
+                        _top_note = f'大户多头领先{_divergence:.0f}%→SHORT-4'
+                    elif signal_dir == 'LONG' and _divergence > 10:
+                        _top_trader_bonus = min(8, int(_divergence / 5) * 2)
+                        _top_note = f'大户多头领先{_divergence:.0f}%→LONG+{_top_trader_bonus}'
+                    elif signal_dir == 'LONG' and _divergence < -10:
+                        _top_trader_bonus = -4
+                        _top_note = f'大户空头领先{abs(_divergence):.0f}%→LONG-4'
+        except Exception:
+            pass
+
+        s_lsr += _top_trader_bonus
         # 总分（两个维度加总，上下限±20）
         total = int(max(MAX_PENALTY, min(MAX_BONUS, s_lsr + s_oi)))
 
         return {
-            'score':         total,
-            'lsr_score':     s_lsr,
-            'oi_score':      s_oi,
-            'lsr_pct':       round(long_pct, 1),
-            'oi_change_pct': round(oi_change_pct, 2),
-            'oi_momentum':   oi_momentum,
-            'price_chg_4h':  round(price_change_pct, 2),
-            'note':          f'LSR[{note_lsr}] OI[{note_oi}]',
+            'score':              total,
+            'lsr_score':          s_lsr,
+            'oi_score':           s_oi,
+            'lsr_pct':            round(long_pct, 1),
+            'oi_change_pct':      round(oi_change_pct, 2),
+            'oi_momentum':        oi_momentum,
+            'price_chg_4h':       round(price_change_pct, 2),
+            'top_trader_bonus':   _top_trader_bonus,
+            'top_trader_note':    _top_note,
+            'note': f'LSR[{note_lsr}] OI[{note_oi}]' + (f' TT[{_top_note}]' if _top_note else ''),
             'breakdown': {
-                'lsr': note_lsr,
-                'oi':  note_oi,
+                'lsr':        note_lsr,
+                'oi':         note_oi,
+                'top_trader': _top_note,
             }
         }
 

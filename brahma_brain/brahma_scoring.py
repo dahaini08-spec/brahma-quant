@@ -583,6 +583,30 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     except Exception:
         pass
 
+    # ── s7增强层③: GEX Flip位置评分（2026-07-20 苏摩111批准）─────────────────
+    # 价值：GEX zero_flip是做市商中性线，Flip下方=负Gamma区（波动放大），上方=正Gamma区（波动压制）
+    # 当前: flip=$66,000 → BTC$64,800在Flip下方 → 负Gamma区，SHORT有利
+    try:
+        from brahma_brain.gex_engine import compute_gex as _gex_compute, score_gex as _gex_score
+        _gex_data = _gex_compute('BTC')
+        _gex_flip = float(_gex_data.get('zero_flip', 0) or _gex_data.get('flip_point', 0))
+        _gex_total = float(_gex_data.get('total_gex', 0) or _gex_data.get('net_gex', 0))
+        _cur_px_gex = float(extra_data.get('price', price) if extra_data else price) or price
+        if _gex_flip > 0 and _cur_px_gex > 0 and abs(_gex_total) > 1_000_000:
+            if signal_dir == 'SHORT':
+                if _cur_px_gex < _gex_flip * 0.995:    # 价格在Flip下方（负Gamma区）
+                    s7 = min(20, s7 + 6)               # 空头有利：负Gamma区波动放大
+                elif _cur_px_gex > _gex_flip * 1.005:  # 价格在Flip上方（正Gamma区）
+                    s7 = max(-20, s7 - 4)              # 空头不利：正Gamma区压制波动
+            elif signal_dir == 'LONG':
+                if _cur_px_gex > _gex_flip * 1.005:
+                    s7 = min(20, s7 + 6)               # 多头有利：正Gamma区
+                elif _cur_px_gex < _gex_flip * 0.995:
+                    s7 = max(-20, s7 - 4)              # 多头不利：负Gamma区，突破难
+    except Exception:
+        pass  # GEX降级，不影响主流程
+    # ── [END GEX Flip] ──────────────────────────────────────────────────────
+
     # ── P0-A 全局上限封印（设计院六方联合 2026-07-11）────────────────
     # 问题：s7基础(max15)+增强层①(max15)+增强层②(max15)=理论最高45分
     #       清算层权重严重失控，导致高清算密集区评分虚高
@@ -664,7 +688,76 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
             elif _basis_pct < -0.04: basis_bonus = 2
             elif _basis_pct < -0.01: basis_bonus = 1
             elif _basis_pct > 0.04:  basis_bonus = -1  # 已溢价，多头不利
-    s8 = min(s8_base + onchain_bonus + basis_bonus + _oc_bonus, 20)  # [UP-017] +CoinGlass链上
+    # ── s8增强层②: PCR机构押注信号（2026-07-20 苏摩111批准）─────────────────
+    # 价值：PCR=0.458 极度看多期权押注（机构买Call），完全未进入评分
+    # 规则：PCR<0.5=极度看多期权 → LONG+5 / PCR>1.5=极度看空期权 → SHORT+5
+    _pcr_bonus = 0
+    try:
+        from brahma_brain.options_engine import get_deribit_pcr as _get_pcr
+        _pcr_data = _get_pcr('BTC')
+        _pcr_val = float(_pcr_data.get('pcr', 1.0) or 1.0)
+        if signal_dir == 'LONG':
+            if _pcr_val < 0.5:    _pcr_bonus = 5   # 极度看多期权：机构押多
+            elif _pcr_val < 0.7:  _pcr_bonus = 3
+            elif _pcr_val > 1.5:  _pcr_bonus = -5  # 极度看空期权：机构押空
+            elif _pcr_val > 1.2:  _pcr_bonus = -3
+        else:  # SHORT
+            if _pcr_val > 1.5:    _pcr_bonus = 5   # 极度看空期权：机构押空
+            elif _pcr_val > 1.2:  _pcr_bonus = 3
+            elif _pcr_val < 0.5:  _pcr_bonus = -3  # 极度看多期权，做空不利
+    except Exception:
+        pass
+    # ── s8增强层③: 资金费率累积压力（2026-07-20 苏摩111批准）────────────
+    # 价值：8期累计费率≈0.035% → 多头持续付费，空头有利
+    _fr_accum_bonus = 0
+    try:
+        import subprocess as _sp_fr, json as _json_fr
+        _fr_r = _sp_fr.run(['binance-cli','futures-usds','get-funding-rate-history',
+            '--symbol', _sym if _sym else 'BTCUSDT', '--limit','8'],
+            capture_output=True, text=True, timeout=5)
+        _fr_hist = _json_fr.loads(_fr_r.stdout)
+        _fr_accum = sum(float(x['fundingRate']) for x in _fr_hist)
+        # 注意：fundingRate原始单位是小数（0.0001=0.01%/期），8期累计
+        # 正常范围约0.0002~0.0006，极端>0.001
+        if signal_dir == 'SHORT':
+            if _fr_accum > 0.0005:   _fr_accum_bonus = 4   # 累计>0.05% 多头持续付费
+            elif _fr_accum > 0.0003: _fr_accum_bonus = 2   # 累计>0.03%
+            elif _fr_accum < -0.0003: _fr_accum_bonus = -3 # 空头已累计付费
+        elif signal_dir == 'LONG':
+            if _fr_accum < -0.0005:  _fr_accum_bonus = 4
+            elif _fr_accum < -0.0003:_fr_accum_bonus = 2
+            elif _fr_accum > 0.0005: _fr_accum_bonus = -3  # 多头已大量付费
+    except Exception:
+        pass
+    # ── s8增强层④: OI×价格×CVD三角验证（2026-07-20 苏摩111批准）────────
+    # 价值：OI+价格+CVD三角是最精密的多空结构信号
+    # OI↓+价格↑+CVD↓ = 空头回补（弱多，不可持续）← 当前BTC状态
+    _triangle_bonus = 0
+    try:
+        from brahma_brain.cvd_engine import cvd_score_for_signal as _cvd_sig
+        _cvd_sc, _cvd_notes = _cvd_sig(_sym if _sym else 'BTCUSDT', signal_dir)
+        _oi_chg = float(extra_data.get('oi_change_pct', 0) if extra_data else 0)
+        _px_chg = float(extra_data.get('price_change_4h', 0) if extra_data else 0)
+        # 三角验证
+        _oi_up   = _oi_chg > 0.5
+        _oi_down = _oi_chg < -0.5
+        _px_up   = _px_chg > 0.3
+        _px_down = _px_chg < -0.3
+        _cvd_bull = _cvd_sc > 3
+        _cvd_bear = _cvd_sc < -3
+        if signal_dir == 'SHORT':
+            if _oi_up and _px_down and not _cvd_bull:
+                _triangle_bonus = 6   # OI增+价跌+CVD弱 = 真实空头建仓
+            elif _oi_down and _px_up:
+                _triangle_bonus = -4  # OI减+价涨 = 空头回补，做空不利
+        elif signal_dir == 'LONG':
+            if _oi_up and _px_up and _cvd_bull:
+                _triangle_bonus = 6   # OI增+价涨+CVD强 = 真实多头建仓
+            elif _oi_down and _px_down:
+                _triangle_bonus = -4  # OI减+价跌 = 多头止损，做多不利
+    except Exception:
+        pass
+    s8 = min(s8_base + onchain_bonus + basis_bonus + _oc_bonus + _pcr_bonus + _fr_accum_bonus + _triangle_bonus, 25)
     score += s8
     breakdown['情绪/费率'] = s8
 
