@@ -1,52 +1,33 @@
 {
   "positions": [
     {
-      "symbol": "SNDKUSDT",
-      "direction": "LONG",
-      "side": "LONG",
-      "status": "OPEN",
-      "entry_price": null,
-      "mark_price": 1390.11,
-      "qty": 0.01,
-      "positionAmt": 0.01,
-      "unrealizedPnl": 0.33,
-      "leverage": 5,
-      "stop_loss": null,
-      "tp": null,
-      "regime": "UNKNOWN",
-      "score": null,
-      "opened_at": null,
-      "last_updated": "2026-07-20T09:35:52.242967Z",
-      "source": "state_sync_2026-07-20"
-    },
-    {
       "symbol": "HYPEUSDT",
       "direction": "LONG",
       "side": "LONG",
       "status": "OPEN",
-      "entry_price": null,
-      "mark_price": 60.788,
-      "qty": 0.97,
-      "positionAmt": 0.97,
-      "unrealizedPnl": 1.87,
+      "entry_price": 58.879,
+      "mark_price": 63.146,
+      "qty": 0.86,
+      "positionAmt": 0.86,
+      "unrealizedPnl": 3.67,
+      "stop_loss": 56.524,
+      "tp1": 62.412,
+      "tp2": 65.944,
+      "sl_pct": 0.04,
       "leverage": 5,
-      "stop_loss": null,
-      "tp": null,
-      "regime": "UNKNOWN",
-      "score": null,
+      "regime": "BULL_TREND",
       "opened_at": null,
-      "last_updated": "2026-07-20T09:35:52.242987Z",
-      "source": "state_sync_2026-07-20"
+      "last_updated": "2026-07-21T06:59:30.119358+00:00Z",
+      "source": "state_sync_2026-07-21"
     }
   ],
   "wuqu_positions": [
-    "SNDKUSDT",
     "HYPEUSDT"
   ],
   "regime": "UNKNOWN",
-  "n_open": 2,
-  "total_pnl": 2.2,
-  "available_balance": 76.44,
-  "last_update": "2026-07-20T09:35:52.242989Z",
-  "_sync_note": "2026-07-20 设计院手动同步 - 原4个持仓(ZEC/GALA/BNB/PIXEL)已全部平仓"
+  "n_open": 1,
+  "total_pnl": 3.67,
+  "available_balance": 82.38,
+  "last_update": "2026-07-21T06:59:30.119385+00:00Z",
+  "_sync_note": "2026-07-21 07:00UTC 苏摩确认 - SNDKUSDT已平仓，HYPEUSDT持仓0.86，入场价推算58.87"
 }
