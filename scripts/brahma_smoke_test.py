@@ -19,7 +19,7 @@ load_dotenv()
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
 
-CORRECT_THREAD = "73295708:t:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2"
+CORRECT_THREAD = "73295708:t:019f79ff-b2f4-70e1-b19c-fbd6b324b892"
 RED    = '\033[91m'
 GREEN  = '\033[92m'
 YELLOW = '\033[93m'
@@ -159,7 +159,7 @@ except Exception as e:
     warn('ETH供应感知', str(e)[:60])
 
 # ─── 4. Cron路由一致性 ─────────────────────────────────────────────────
-print('\n【4】Cron路由一致性（SSOT=019f5e0f）')
+print('\n【4】Cron路由一致性（SSOT=019f79ff）')
 try:
     jobs_path = Path.home() / '.openclaw/cron/jobs.json'
     raw = json.loads(jobs_path.read_text())
@@ -172,8 +172,8 @@ try:
         # Square/P3内容类任务允许其他线程
         if any(x in name for x in ['Square', '广场', 'square', 'live-performance', 'brahma-arch']):
             continue
-        # 主线程应全部包含019f5e0f，否则标记为路由偏移
-        if to and '019f5e0f' not in to and '019f443a' in to:
+        # 主线程应全部包含019f79ff，否则标记为路由偏移
+        if to and '019f79ff' not in to and '019f443a' in to:
             wrong.append(name)
     if wrong:
         fail('Cron路由', f'{len(wrong)}个任务路由到旧线程: {wrong}', fix='openclaw cron rm <id> && openclaw cron add ...')

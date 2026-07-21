@@ -4,13 +4,13 @@
     "side": "LONG",
     "size": 0.86,
     "entry_price": 58.86998969072166,
-    "mark_price": 60.975,
+    "mark_price": 62.54097783,
     "stop_loss": 58.007,
     "take_profit": 60.6361,
     "leverage": 5.0,
-    "notional_usdt": 52.4385,
-    "unrealized_pnl": 1.8103,
-    "updated_at": 1784559013.9516673,
+    "notional_usdt": 53.7852,
+    "unrealized_pnl": 3.157,
+    "updated_at": 1784591448.7970994,
     "success": true
   }
 ]
