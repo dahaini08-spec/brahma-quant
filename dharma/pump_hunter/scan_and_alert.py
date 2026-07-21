@@ -79,7 +79,10 @@ MAX_VOL     = 500_000_000   # 缩小上限避免大盘干扰
 # BANK案例：07-11+13%后07-12~14横盘是最佳入场期，却被旧规则永久踢出
 MAX_CHG_24H = 30.0          # 仅排除当日已爆发的，保留历史动能币
 MAX_CHG_48H = 15.0          # 近期平静过滤：近48H涨幅<15%（消化整理中）
-MIN_CHG_7D  = 10.0          # 必须有基础动能：近7日涨幅>10%（排除死币）
+MIN_CHG_7D  = -15.0         # [设计院修复 2026-07-21] ACE案例根因修复
+# 原值10.0: 排除7日下跌的币 → 把漫长缓跌+TIGHT压缩型妖币全部踢出
+# 修复逻辑: TIGHT压缩才是核心信号，7日动能是辅助，不应作为必须条件
+# 新值-15.0: 仅排除快速暴跌死币（7日跌>15%），保留缓跌蓄力型
 
 # ── 评分阈值 ──────────────────────────────────────────────────
 PUSH_SCORE  = 65            # [根治修复 2026-07-18] 78→65 降低门槛扩大有效信号覆盖
@@ -220,7 +223,16 @@ def scan():
             _cls = [float(c[4]) for c in _kl]
             _chg48h = (_cls[-1] - _cls[-48]) / _cls[-48] * 100 if _cls[-48] > 0 else 0
             _chg7d  = (_cls[-1] - _cls[0])  / _cls[0]  * 100 if _cls[0]  > 0 else 0
-            if abs(_chg48h) <= MAX_CHG_48H and _chg7d >= MIN_CHG_7D:
+            # [设计院修复 2026-07-21] 双轨纳入逻辑
+            # 轨道A: 原始规则（有动能+近期平静）
+            # 轨道B: TIGHT豁免（缓跌但极度压缩+量能萎缩 = ACE型妖币）
+            _track_a = abs(_chg48h) <= MAX_CHG_48H and _chg7d >= MIN_CHG_7D
+            
+            # 轨道B: 7日缓跌(-30%~0%) + 48H平静(<15%) → 豁免7D要求（TIGHT评分决定）
+            _is_slow_decline = -30.0 <= _chg7d < 0
+            _track_b = _is_slow_decline and abs(_chg48h) <= MAX_CHG_48H
+            
+            if _track_a or _track_b:
                 candidates.append(_s)
         except Exception:
             candidates.append(_s)  # API异常时保守纳入
