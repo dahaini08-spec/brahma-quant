@@ -310,6 +310,13 @@ def compute_tradfi_context(symbol: str, direction: str, base_score: float,
         }
         with open(TRADFI_LOG, 'a') as f:
             f.write(json.dumps(log_entry, ensure_ascii=False) + '\n')
+        # 截断：超过1000行保留最新500条（防无限增长，约350KB上限）
+        try:
+            lines = TRADFI_LOG.read_text().strip().split('\n')
+            if len(lines) > 1000:
+                TRADFI_LOG.write_text('\n'.join(lines[-500:]) + '\n')
+        except Exception:
+            pass
     except Exception:
         pass
 
