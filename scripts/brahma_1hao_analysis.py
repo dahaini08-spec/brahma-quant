@@ -321,15 +321,24 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
 # ============================================================
 
 _TRADFI_SYMBOLS = {
-    'MUBUSDT', 'SNDKBUSDT', 'NVDABUSDT', 'TSLABUSDT', 'MSFTBUSDT',
-    'METABUSDT', 'GOOGLBUSDT', 'COINBUSDT', 'MSTRBUSDT', 'HOODBUSDT',
-    'PLTRBUSDT', 'SPYBUSDT', 'QQQBUSDT',
+    # 半导体存储（核心）
+    'MUUSDT','SNDKUSDT','SKHYNIXUSDT','SKHYUSDT','SOXLUSDT','SOXSUSDT',
+    'DRAMUSDT','AMDUSDT','NVDAUSDT','INTCUSDT','MRVLUSDT','SNXXUSDT',
+    'SAMSUNGUSDT','TSMUSDT',
+    # 贵金属
+    'XAUUSDT','XAGUSDT',
+    # 原油
+    'CLUSDT','BZUSDT',
+    # 指数/ETF
+    'SPCXUSDT','SPXUSDT','QQQUSDT','SPYUSDT','KORUUSDT','EWYUSDT','IWMUSDT',
+    # 科技巨头
+    'TSLAUSDT','METAUSDT','MSFTUSDT','GOOGLUSDT','COINUSDT','MSTRUSDT',
+    'HOODUSDT','PLTRUSDT','CRWDUSDT','NFLXUSDT','AMZNUSDT','AAPLUSDT',
 }
 
-_RWA_CONTRACTS = {
-    'MUBUSDT':   ('56', '0xcdf2f3e0fa43c47a6662a91c9e4a7c5f69762699'),
-    'SNDKBUSDT': ('56', '0x3ee4df61bd4f867e349beae8bfe07bc31b4850fb'),
-}
+# 基本面数据映射（仍保留对链上代币的支持）
+# TRADIFI_PERPETUAL合约无需RWA地址，直接读取PE数据通过其他渠道
+_RWA_CONTRACTS = {}  # TRADIFI_PERPETUAL合约不依赖RWA合约地址
 
 
 def _get_rwa_fundamentals(symbol: str) -> dict:

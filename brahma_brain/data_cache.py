@@ -164,18 +164,14 @@ def _signed_get(path: str, params: dict = None, timeout=8):
         return json.loads(r.read())
 
 # ─── 核心拉取函数 ────────────────────────────────────────────
-# [2026-07-22] 美股代币现货白名单（苏摩111批准，走现货API而非期货API）
-_SPOT_SYMBOLS = {
-    'MUBUSDT', 'SNDKBUSDT', 'NVDABUSDT', 'TSLABUSDT', 'MSFTBUSDT',
-    'METABUSDT', 'GOOGLBUSDT', 'COINBUSDT', 'MSTRBUSDT', 'HOODBUSDT',
-    'PLTRBUSDT', 'SPYBUSDT', 'QQQBUSDT',
-}
+# [2026-07-22 苏摩111修正封印] TRADIFI_PERPETUAL全部走期货API(fapi)，无需现货路由
+# 原美股代币现货路由已废弃（MUBUSDT/SNDKBUSDT等已更新为MUUSDT/SNDKUSDT）
 SPOT_API = 'https://api.binance.com'
 
 
 def _is_spot_symbol(symbol: str) -> bool:
-    """判断是否为美股代币现货，需走 Spot API"""
-    return symbol.upper() in _SPOT_SYMBOLS
+    """TRADIFI_PERPETUAL 合约均走 fapi，此函数保留为 False"""
+    return False
 
 
 def get_klines(symbol: str, interval: str, limit: int = 200) -> list:

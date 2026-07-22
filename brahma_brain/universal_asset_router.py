@@ -36,22 +36,52 @@ _TIER2 = {
     'HYPEUSDT', 'WLDUSDT', 'TAOUSDT', 'JUPUSDT', 'ENAUSDT',
 }
 
-# 传统金融美股代币白名单（Ondo RWA，Binance Web3现货）
-# 支持: MUBon/SNDKBon 及更多美股代币（命名规则: TICKER+B 合约型，TICKER+on 现货型）
+# [2026-07-22 苏摩111修正封印] 传统金融U本位永续合约白名单
+# contractType=TRADIFI_PERPETUAL，走期货API(fapi)，流动性极强
+# 核心半导体存储：MU/SNDK/SKHYNIX/SOXL | 贵金属：XAU/XAG | 原油：CL/BZ | 指数：SPX/QQQ
 _TRADFI_STOCK_SET = {
-    'MUBUSDT',    # 美光 Micron Technology
-    'SNDKBUSDT',  # 闪迪 SanDisk (重组)
-    'NVDABUSDT',  # 英伟达
-    'TSLABUSDT',  # 特斯拉
-    'MSFTBUSDT',  # 微软
-    'METABUSDT',  # Meta
-    'GOOGLBUSDT', # 谷歌
-    'COINBUSDT',  # Coinbase
-    'MSTRBUSDT',  # MicroStrategy
-    'HOODBUSDT',  # Robinhood
-    'PLTRBUSDT',  # Palantir
-    'SPYBUSDT',   # SPY ETF代币
-    'QQQBUSDT',   # QQQ ETF代币
+    # 半导体存储（核心，最高流动性）
+    'MUUSDT',       # 美光科技 $1.4B/天
+    'SNDKUSDT',     # 闪迪 $2.9B/天
+    'SKHYNIXUSDT',  # SK海力士 $1.8B/天
+    'SKHYUSDT',     # SK海力士（更低价合约）
+    'SOXLUSDT',     # Direxion半导体3x多 ETF $2.0B/天
+    'SOXSUSDT',     # Direxion半导体3x空 ETF
+    'DRAMUSDT',     # DRAM指数
+    'AMDUSDT',      # AMD
+    'NVDAUSDT',     # 英伟达
+    'INTCUSDT',     # 英特尔
+    'MRVLUSDT',     # Marvell
+    'SNXXUSDT',     # SNXX（闪迪衍生品）
+    'SAMSUNGUSDT',  # 三星电子
+    'TSMUSDT',      # 台积电
+    # 贵金属（传统金融核心）
+    'XAUUSDT',      # 黄金 $1.3B/天
+    'XAGUSDT',      # 白银
+    # 原油
+    'CLUSDT',       # WTI原油 $1.1B/天
+    'BZUSDT',       # 布伦特原油
+    # 指数/ETF
+    'SPCXUSDT',     # SPX指数 $703M/天
+    'SPXUSDT',      # SPX（旧合约）
+    'QQQUSDT',      # 纳斯达克100 ETF
+    'SPYUSDT',      # 标普500 ETF
+    'KORUUSDT',     # 韩国股票ETF $1.1B/天
+    'EWYUSDT',      # 韩国ETF
+    'IWMUSDT',      # 罗素2000
+    # 科技巨头
+    'TSLAUSDT',     # 特斯拉
+    'METAUSDT',     # Meta
+    'MSFTUSDT',     # 微软
+    'GOOGLUSDT',    # 谷歌
+    'COINUSDT',     # Coinbase
+    'MSTRUSDT',     # MicroStrategy
+    'HOODUSDT',     # Robinhood
+    'PLTRUSDT',     # Palantir
+    'CRWDUSDT',     # CrowdStrike
+    'NFLXUSDT',     # Netflix
+    'AMZNUSDT',     # 亚马逊
+    'AAPLUSDT',     # 苹果
 }
 
 # 暴涨猎手白名单（高频妖币，达摩院铁证）
