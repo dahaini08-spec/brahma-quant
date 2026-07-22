@@ -36,6 +36,24 @@ _TIER2 = {
     'HYPEUSDT', 'WLDUSDT', 'TAOUSDT', 'JUPUSDT', 'ENAUSDT',
 }
 
+# 传统金融美股代币白名单（Ondo RWA，Binance Web3现货）
+# 支持: MUBon/SNDKBon 及更多美股代币（命名规则: TICKER+B 合约型，TICKER+on 现货型）
+_TRADFI_STOCK_SET = {
+    'MUBUSDT',    # 美光 Micron Technology
+    'SNDKBUSDT',  # 闪迪 SanDisk (重组)
+    'NVDABUSDT',  # 英伟达
+    'TSLABUSDT',  # 特斯拉
+    'MSFTBUSDT',  # 微软
+    'METABUSDT',  # Meta
+    'GOOGLBUSDT', # 谷歌
+    'COINBUSDT',  # Coinbase
+    'MSTRBUSDT',  # MicroStrategy
+    'HOODBUSDT',  # Robinhood
+    'PLTRBUSDT',  # Palantir
+    'SPYBUSDT',   # SPY ETF代币
+    'QQQBUSDT',   # QQQ ETF代币
+}
+
 # 暴涨猎手白名单（高频妖币，达摩院铁证）
 _PUMP_WHITELIST = {
     'PIPPINUSDT', 'SIRENUSDT', 'HUSDT', 'MYXUSDT',
@@ -45,16 +63,18 @@ _PUMP_WHITELIST = {
 }
 
 # 资产类型常量
-ASSET_BTC_ETH  = 'BTC_ETH'
-ASSET_ALT_LARGE = 'ALT_LARGE'
-ASSET_ALT_SMALL = 'ALT_SMALL'
-ASSET_PUMP_HUNT = 'PUMP_HUNT'
+ASSET_BTC_ETH       = 'BTC_ETH'
+ASSET_ALT_LARGE     = 'ALT_LARGE'
+ASSET_ALT_SMALL     = 'ALT_SMALL'
+ASSET_PUMP_HUNT     = 'PUMP_HUNT'
+ASSET_TRADFI_STOCK  = 'TRADFI_STOCK'  # [2026-07-22] 美股代币（苏摩111批准）
 
 
 def classify_asset(symbol: str) -> str:
     """
     1行核心：根据 symbol 返回资产类型
     决定后续使用哪套权重矩阵和出场参数
+    [2026-07-22] 新增 TRADFI_STOCK 类型支持美股代币（苏摩111批准）
     """
     if symbol in _TIER1:
         return ASSET_BTC_ETH
@@ -62,6 +82,8 @@ def classify_asset(symbol: str) -> str:
         return ASSET_ALT_LARGE
     if symbol in _PUMP_WHITELIST:
         return ASSET_PUMP_HUNT
+    if symbol in _TRADFI_STOCK_SET:
+        return ASSET_TRADFI_STOCK
     return ASSET_ALT_SMALL
 
 
@@ -114,6 +136,29 @@ ASSET_PROFILES = {
         'tp_mult':      1.2,
         'pos_pct':      1.0,   # 小币仓位减半
     },
+    # [2026-07-22] 美股代币专属权重矩阵（苏摩111批准封印）
+    # 核心逻辑：基本面+Fib+RSI极值优先，OI/清算次之，Kronos降权（无期货数据）
+    ASSET_TRADFI_STOCK: {
+        '趋势一致性':   1.2,   # 美股趋势信号有效，但受行业轮动干扰
+        'SMC结构':      1.0,   # SMC对美股代币有效，与加密同等权重
+        '动量背离':     1.5,   # RSI极值（<15）对美股反弹预测最强 达摩院铁证
+        '量能验证':     1.3,   # 成交量比率关键（低量下跌 vs 放量下跌区别大）
+        '鲸鱼+微观':    0.5,   # 美股鲸鱼=机构，链上鲸鱼信号弱
+        '宏观+事件':    2.0,   # 宏观/财报/行业新闻驱动力最强 🔥
+        '清算/OI':      0.3,   # 现货代币无期货OI，此维度基本失效
+        '情绪/费率':    0.5,   # 无资金费率，情绪仅参考
+        'pump_weight':  0.0,   # 美股不走暴涨逻辑
+        'sl_pct':       2.5,   # CHOP体制 SL=2.5%（达摩院封印）
+        'tp_mult':      1.2,   # TP倍数略高（ATR大，目标放远）
+        'pos_pct':      1.5,   # 标准1.5%NAV（高波动适度减仓）
+        # 美股专属维度
+        'fib_weight':   2.0,   # 斐波那契在美股最有效
+        'pe_weight':    1.5,   # PE估值是美股核心门控
+        'sector_corr':  1.8,   # 行业联动（MU↔SNDK）共振验证
+        'macro_link':   2.0,   # 宏观指数（SPX）联动验证
+        'kronos_mult':  0.3,   # Kronos降权（无期货数据，模型精度低）
+    },
+
     ASSET_PUMP_HUNT: {
         '趋势一致性':   0.3,   # 暴涨前趋势可能是下跌
         'SMC结构':      0.3,

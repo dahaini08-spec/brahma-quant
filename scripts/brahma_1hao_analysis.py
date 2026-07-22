@@ -308,7 +308,152 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         compact_lines.append(sep)
         return "\n".join(compact_lines)
 
+    # [2026-07-22] TradFi补充层注入（美股代币专属）
+    if symbol.upper() in _TRADFI_SYMBOLS:
+        tradfi_lines = _build_tradfi_supplement(symbol, r)
+        full_report = full_report + "\n" + "\n".join(tradfi_lines)
+
     return full_report
+
+
+# ============================================================
+# [2026-07-22 苏摩111封印] 美股代币专属维度层
+# ============================================================
+
+_TRADFI_SYMBOLS = {
+    'MUBUSDT', 'SNDKBUSDT', 'NVDABUSDT', 'TSLABUSDT', 'MSFTBUSDT',
+    'METABUSDT', 'GOOGLBUSDT', 'COINBUSDT', 'MSTRBUSDT', 'HOODBUSDT',
+    'PLTRBUSDT', 'SPYBUSDT', 'QQQBUSDT',
+}
+
+_RWA_CONTRACTS = {
+    'MUBUSDT':   ('56', '0xcdf2f3e0fa43c47a6662a91c9e4a7c5f69762699'),
+    'SNDKBUSDT': ('56', '0x3ee4df61bd4f867e349beae8bfe07bc31b4850fb'),
+}
+
+
+def _get_rwa_fundamentals(symbol: str) -> dict:
+    """获取美股代币基本面（PE/52W高低/市值）"""
+    import urllib.request, json as _json
+    chain_id, contract = _RWA_CONTRACTS.get(symbol, ('', ''))
+    if not chain_id:
+        return {}
+    try:
+        url = (f'https://www.binance.com/bapi/defi/v2/public/wallet-direct/'
+               f'buw/wallet/market/token/rwa/dynamic/ai'
+               f'?chainId={chain_id}&contractAddress={contract}')
+        req = urllib.request.Request(url, headers={'Accept-Encoding': 'identity',
+                                                    'User-Agent': 'brahma/2.0'})
+        d = _json.loads(urllib.request.urlopen(req, timeout=8).read())
+        si = (d.get('data') or {}).get('stockInfo') or {}
+        ti = (d.get('data') or {}).get('tokenInfo') or {}
+        return {
+            'pe':          si.get('priceToEarnings'),
+            'h52w':        si.get('priceHigh52w'),
+            'l52w':        si.get('priceLow52w'),
+            'mktcap_b':    round(float(si.get('marketCap') or 0) / 1e9, 2),
+            'div_yield':   si.get('dividendYield'),
+            'stock_price': si.get('price'),
+        }
+    except Exception:
+        return {}
+
+
+def _build_tradfi_supplement(symbol: str, r: dict) -> list:
+    """美股代币专属补充维度层（梵天35维之后注入，苏摩111封印）"""
+    import urllib.request, json as _json
+    lines = []
+    fund = _get_rwa_fundamentals(symbol)
+    price = r.get('price', 0)
+
+    lines.append("")
+    lines.append("╌╌ 美股代币专属层（TradFi补充） " + "╌" * 18)
+
+    # 1. 基本面门控
+    if fund:
+        pe = fund.get('pe')
+        h52w = float(fund.get('h52w') or 0)
+        l52w = float(fund.get('l52w') or 0)
+        mktcap = fund.get('mktcap_b', 0)
+        pos_52w = round((price - l52w) / max(h52w - l52w, 1) * 100, 1) if h52w > l52w else 50
+        pe_flag = ''
+        if pe:
+            pe_f = float(pe)
+            pe_flag = ' ✅ 估值合理' if pe_f < 30 else (' ⚠️ 偏高' if pe_f < 60 else ' ❌ 远超合理')
+        lines.append(f"  PE估值: {pe}x{pe_flag}  市值: ${mktcap}B")
+        lines.append(f"  52W区间: ${l52w}~${h52w}  当前位置: {pos_52w}%")
+        if pos_52w < 30:
+            lines.append(f"  🔥 52W低位区域（<30%），历史价值投资区间")
+        elif pos_52w > 75:
+            lines.append(f"  ⚠️ 52W高位区域（>75%），机构出货压力区")
+
+    # 2. Fib回调级别（20日高低自动计算）
+    try:
+        from brahma_brain.data_cache import get_klines
+        kl1d = get_klines(symbol, '1d', 30)
+        if kl1d and len(kl1d) >= 6:
+            closes = [float(k[4]) for k in kl1d]
+            highs  = [float(k[2]) for k in kl1d[-20:]] if len(kl1d) >= 20 else [float(k[2]) for k in kl1d]
+            lows   = [float(k[3]) for k in kl1d[-20:]] if len(kl1d) >= 20 else [float(k[3]) for k in kl1d]
+            h20, l20 = max(highs), min(lows)
+            diff = h20 - l20
+            fibs = [
+                ('23.6%', round(h20 - diff * 0.236, 2)),
+                ('38.2%', round(h20 - diff * 0.382, 2)),
+                ('50.0%', round(h20 - diff * 0.500, 2)),
+                ('61.8%', round(h20 - diff * 0.618, 2)),
+                ('78.6%', round(h20 - diff * 0.786, 2)),
+            ]
+            fib_pos = f'100%支撑({l20})下方 ⚠️'
+            for fname, fval in fibs:
+                if price >= fval:
+                    fib_pos = f"{fname}({fval})上方 ✅"
+                    break
+            chg5d  = round((closes[-1] - closes[-6])  / closes[-6]  * 100, 2) if len(closes) >= 6  else 0
+            chg20d = round((closes[-1] - closes[-21]) / closes[-21] * 100, 2) if len(closes) >= 21 else 0
+            lines.append(f"  Fib当前位置: {fib_pos}")
+            lines.append(f"  20D区间: 高={h20}  低={l20}  5D{chg5d:+.2f}%  20D{chg20d:+.2f}%")
+    except Exception:
+        pass
+
+    # 3. 盘口深度
+    try:
+        ob = _json.loads(urllib.request.urlopen(
+            f'https://api.binance.com/api/v3/depth?symbol={symbol}&limit=5', timeout=5).read())
+        bid_vol = sum(float(b[1]) for b in ob['bids'][:5])
+        ask_vol = sum(float(a[1]) for a in ob['asks'][:5])
+        ratio = round(bid_vol / max(ask_vol, 0.001), 2)
+        ratio_flag = '✅ 买盘主导' if ratio > 1.5 else ('⚠️ 卖盘占优' if ratio < 0.8 else '中性')
+        lines.append(f"  盘口买卖比: {ratio}x {ratio_flag}")
+    except Exception:
+        pass
+
+    # 4. 宏观联动验证（SPXUSDT + XAUTUSDT）
+    try:
+        from brahma_brain.data_cache import get_ticker
+        spx = get_ticker('SPXUSDT')
+        xau = get_ticker('XAUTUSDT')
+        spx_chg = float((spx or {}).get('priceChangePercent', 0))
+        xau_chg = float((xau or {}).get('priceChangePercent', 0))
+        macro_ok = spx_chg > 0
+        xau_warn = f' 🟡 避险情绪上升' if xau_chg > 0.5 else ''
+        lines.append(f"  宏观门控: SPX{spx_chg:+.2f}% {'✅ 宏观多头' if macro_ok else '❌ 宏观失速'}  XAUT{xau_chg:+.2f}%{xau_warn}")
+    except Exception:
+        pass
+
+    # 5. 加密体制联动
+    btc_regime = r.get('regime', 'UNKNOWN')
+    btc_note = {
+        'BULL_TREND':    '加密牛市共振，科技/加密概念股往往同强',
+        'BEAR_TREND':    '加密熊市承压，美股反弹需更高确认门槛',
+        'CHOP_MID':      '加密震荡体制，美股各自找升降逻辑',
+        'BEAR_RECOVERY': '加密复苏早期，可在超卖美股适度配置',
+    }.get(btc_regime, '')
+    if btc_note:
+        lines.append(f"  加密体制: {btc_regime} → {btc_note}")
+
+    lines.append("╌" * 58)
+    return lines
 
 
 # ============================================================

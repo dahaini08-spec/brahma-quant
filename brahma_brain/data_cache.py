@@ -164,8 +164,24 @@ def _signed_get(path: str, params: dict = None, timeout=8):
         return json.loads(r.read())
 
 # ─── 核心拉取函数 ────────────────────────────────────────────
+# [2026-07-22] 美股代币现货白名单（苏摩111批准，走现货API而非期货API）
+_SPOT_SYMBOLS = {
+    'MUBUSDT', 'SNDKBUSDT', 'NVDABUSDT', 'TSLABUSDT', 'MSFTBUSDT',
+    'METABUSDT', 'GOOGLBUSDT', 'COINBUSDT', 'MSTRBUSDT', 'HOODBUSDT',
+    'PLTRBUSDT', 'SPYBUSDT', 'QQQBUSDT',
+}
+SPOT_API = 'https://api.binance.com'
+
+
+def _is_spot_symbol(symbol: str) -> bool:
+    """判断是否为美股代币现货，需走 Spot API"""
+    return symbol.upper() in _SPOT_SYMBOLS
+
+
 def get_klines(symbol: str, interval: str, limit: int = 200) -> list:
-    """拉取K线，带缓存（symbol 先 ASCII 校验，跳过 CJK 非法标的）"""
+    """拉取K线，带缓存（symbol 先 ASCII 校验，跳过 CJK 非法标的）
+    [2026-07-22] 自动路由：美股代币走现货API，其他走期货API
+    """
     try:
         symbol.encode('ascii')
     except UnicodeEncodeError:
@@ -185,9 +201,15 @@ def get_klines(symbol: str, interval: str, limit: int = 200) -> list:
     if OFFLINE_MODE:
         return []
     try:
-        data = _get(
-            f'{FAPI}/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}'
-        )
+        # [2026-07-22] 美股代币走现货API
+        if _is_spot_symbol(symbol):
+            data = _get(
+                f'{SPOT_API}/api/v3/klines?symbol={symbol}&interval={interval}&limit={limit}'
+            )
+        else:
+            data = _get(
+                f'{FAPI}/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}'
+            )
         _cache_set(key, data, TTL.get(interval, 300))
         return data
     except Exception as e:
@@ -196,7 +218,9 @@ def get_klines(symbol: str, interval: str, limit: int = 200) -> list:
 
 def get_ticker(symbol: str) -> dict:
     if OFFLINE_MODE: return OFFLINE_CTX.get('ticker', {})  # [offline]
-    """24H行情（symbol 先 ASCII 校验）"""
+    """24H行情（symbol 先 ASCII 校验）
+    [2026-07-22] 美股代币走现货API
+    """
     try:
         symbol.encode('ascii')
     except UnicodeEncodeError:
@@ -206,7 +230,10 @@ def get_ticker(symbol: str) -> dict:
     if cached is not None:
         return cached
     try:
-        data = _get(f'{FAPI}/fapi/v1/ticker/24hr?symbol={symbol}')
+        if _is_spot_symbol(symbol):
+            data = _get(f'{SPOT_API}/api/v3/ticker/24hr?symbol={symbol}')
+        else:
+            data = _get(f'{FAPI}/fapi/v1/ticker/24hr?symbol={symbol}')
         _cache_set(key, data, TTL['ticker'])
         return data
     except Exception as e:
