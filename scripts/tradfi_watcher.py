@@ -19,6 +19,8 @@ tradfi_watcher.py — TradFi守望层守护脚本
 静默规则：
   - 当前 overnight 且无 E_TF1~E_TF6 → HEARTBEAT_OK
   - 全部事件均未触发 → HEARTBEAT_OK（不推送）
+  - 同类事件组合冷却：相同触发事件组合 2H 内只推送一次（防刷屏）
+  - E_TF5（开盘窗口）每个交易日只推送一次
 """
 
 import sys
@@ -31,6 +33,57 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE_DIR))
+
+# ── 冷却门控配置 ────────────────────────────────────────────────────────────
+# 同类事件组合冷却时间（秒）
+_COOLDOWN_MAP = {
+    'E_TF1': 3600,    # SPY大波动：1H冷却
+    'E_TF2': 7200,    # 科技分化：2H冷却
+    'E_TF3': 7200,    # COIN爆涨：2H冷却（防持续刷屏）
+    'E_TF4': 7200,    # 加密背离：2H冷却
+    'E_TF5': 86400,   # 开盘窗口：每日1次
+    'E_TF6': 7200,    # MSTR爆涨：2H冷却
+}
+_COOLDOWN_STATE_FILE = BASE_DIR / 'data' / 'tradfi_cooldown_state.json'
+
+
+def _load_cooldown_state() -> dict:
+    try:
+        if _COOLDOWN_STATE_FILE.exists():
+            return json.loads(_COOLDOWN_STATE_FILE.read_text())
+    except Exception:
+        pass
+    return {}
+
+
+def _save_cooldown_state(state: dict):
+    try:
+        _COOLDOWN_STATE_FILE.write_text(json.dumps(state))
+    except Exception:
+        pass
+
+
+def _filter_cooled_triggers(triggers: list) -> list:
+    """过滤掉冷却期内的事件，返回允许推送的事件列表"""
+    now = time.time()
+    state = _load_cooldown_state()
+    allowed = []
+    for t in triggers:
+        event = t['event']
+        cooldown = _COOLDOWN_MAP.get(event, 3600)
+        last_push = state.get(event, 0)
+        if now - last_push >= cooldown:
+            allowed.append(t)
+    return allowed
+
+
+def _mark_triggers_pushed(triggers: list):
+    """记录已推送事件的时间戳"""
+    now = time.time()
+    state = _load_cooldown_state()
+    for t in triggers:
+        state[t['event']] = now
+    _save_cooldown_state(state)
 
 def fetch_btc_price() -> float:
     """获取BTC当前价格（用于计算COIN vs BTC背离）"""
@@ -141,6 +194,9 @@ def main():
 
     triggers = check_triggers(prices, btc_pct)
 
+    # ── 冷却门控：过滤掉 2H 内重复触发的事件（防刷屏核心逻辑）
+    triggers = _filter_cooled_triggers(triggers)
+
     if not triggers:
         print('HEARTBEAT_OK')
         return
@@ -180,6 +236,9 @@ def main():
             f.write(json.dumps(entry, ensure_ascii=False) + '\n')
     except Exception:
         pass
+
+    # 标记已推送（更新冷却状态）
+    _mark_triggers_pushed(triggers)
 
 
 if __name__ == '__main__':
