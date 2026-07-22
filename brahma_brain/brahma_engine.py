@@ -3601,6 +3601,39 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass
     # ─────────────────────────────────────────────────────────────────────────
 
+    # ── [TradFi信号层 Phase A 2026-07-22 设计院自主] 标签模式（不改score）────
+    # Phase A: 仅将TradFi信号注入breakdown标签，积累数据供达摩院验证
+    # Phase B/C: 达摩院统计验证50+条后升级为score注入
+    try:
+        from brahma_brain.tradfi_signal_layer import compute_tradfi_context
+        from brahma_brain.us_session_gate import get_us_session, get_session_regime_delta
+        _ssi_pen = 0
+        if _result.get('ssi_risk') == 'EXTREME': _ssi_pen = -20
+        elif _result.get('ssi_risk') == 'HIGH': _ssi_pen = -12
+        _tradfi = compute_tradfi_context(
+            symbol=symbol,
+            direction=signal_dir,
+            base_score=_result.get('score', 0),
+            regime=_result.get('regime', ''),
+            ssi_penalty=_ssi_pen,
+        )
+        # 注入breakdown标签（Phase A: delta=0，不修改score）
+        _result.setdefault('breakdown', {})['TradFi'] = _tradfi.get('breakdown_label', '')
+        _result['tradfi_phase'] = _tradfi.get('phase', 'A')
+        # 美股时段标签
+        _sess = get_us_session()
+        _result['us_session'] = _sess.get('session', 'unknown')
+        # Phase A下的时段block仅作标注（不硬性block，避免误伤）
+        if _sess.get('is_open_window'):
+            _result.setdefault('breakdown', {})['US时段'] = '⚠️ 开盘冲击波窗口 14:00-14:45 UTC（Phase A观察中）'
+        # 补丁1: CHOP_HIGH死穴重封（防止未来Phase B意外绕过）
+        if _tradfi.get('need_chop_high_recheck') and _result.get('score', 0) > 75:
+            _result['score'] = 75
+            _result.setdefault('breakdown', {})['CHOP_HIGH_REAPPLY'] = '死穴重封≤75'
+    except Exception:
+        pass  # TradFi层失败不阻断主链路
+    # ─────────────────────────────────────────────────────────────────────────
+
     return _result
 
 def format_report(r: dict) -> str:
