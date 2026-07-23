@@ -94,6 +94,10 @@ def write(signal: dict) -> bool:
             _live_entry.setdefault('rr1', signal.get('rr1', signal.get('rr', 1.8)))
             _live_entry.setdefault('sl_pct', signal.get('sl_pct', 2.0))
             _live_entry['_bus_sync'] = True   # 标记来源为signal_bus
+            # [P0-B 设计院封印 2026-07-23] output_tag透传修复
+            # 根因: brahma_engine return前已生成[BRAHMA:...]标签，但_live_entry未读取
+            # 导致live_signal_log中所有信号BRAHMA标签缺失，无法溯源校验
+            _live_entry.setdefault('output_tag', signal.get('output_tag', ''))
             # [FIX 2026-07-22] 字段别名统一: sl→stop_loss / sl_price→stop_loss
             if not _live_entry.get('stop_loss') and _live_entry.get('sl'):
                 _live_entry['stop_loss'] = _live_entry['sl']

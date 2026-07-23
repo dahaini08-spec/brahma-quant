@@ -682,12 +682,63 @@ def print_panorama_report(r: dict):
 
 
 if __name__ == '__main__':
-    symbols = sys.argv[1:] if len(sys.argv) > 1 else ['BTCUSDT', 'ETHUSDT']
-    use_panorama = '--panorama' not in sys.argv  # 默认全景模式（--no-panorama 回退旧格式）
-    for sym in [s for s in symbols if not s.startswith('--')]:
+    import time as _time_main
+    # [P1-A 设计院封印 2026-07-23 苏摩111] 播报模式优先
+    # 根因: brahma_1hao(30m)+brahma_full(1h)同时分析BTC/ETH → 每小时第0min双重推送
+    # 方案: 1H内已有有效信号 → 直接播报; 无信号才重新分析
+    _now_main = _time_main.time()
+    _DATA_MAIN = Path(__file__).parent.parent / 'data'
+    _lsl_main  = _DATA_MAIN / 'live_signal_log.jsonl'
+
+    def _recent_valid(syms, window_sec=3600):
+        """1H内有效信号列表"""
+        _res = []
+        if not _lsl_main.exists():
+            return _res
+        for _ln in _lsl_main.read_text().split('\n')[-500:]:
+            try:
+                _d = json.loads(_ln)
+                if _d.get('symbol','') not in syms: continue
+                if not _d.get('valid'): continue
+                _ts = float(_d.get('ts', 0) or 0)
+                if _now_main - _ts > window_sec: continue
+                _exp = _d.get('expires_at','')
+                if _exp:
+                    from datetime import timezone as _tz
+                    _exp_ts = datetime.fromisoformat(_exp.replace('Z','+00:00')).timestamp()
+                    if _now_main > _exp_ts: continue
+                _res.append(_d)
+            except: pass
+        return _res
+
+    symbols = [s for s in sys.argv[1:] if not s.startswith('--')]
+    if not symbols:
+        symbols = ['BTCUSDT', 'ETHUSDT']
+    use_panorama = '--no-panorama' not in sys.argv
+    _force = '--force' in sys.argv  # --force 强制重分析
+
+    for sym in symbols:
         try:
-            print(f'\n⏳ 正在分析 {sym}（梵天35维全系统 · 全景模式）...\n')
-            r = full_analysis(sym)
+            sym_u = sym.upper()
+            if not sym_u.endswith('USDT'):
+                sym_u += 'USDT'
+
+            # 播报模式：1H内已有有效信号且非强制
+            if not _force:
+                _existing = _recent_valid({sym_u}, window_sec=3600)
+                if _existing:
+                    _s = max(_existing, key=lambda x: x.get('score', 0))
+                    _age = int((_now_main - float(_s.get('ts', _now_main))) / 60)
+                    print(f'\n📊 [{sym_u}] 播报模式 (1H内已有信号，跳过重分析)')
+                    print(f'  信号: {_s.get("signal_id","")[:8]}  score={_s.get("score",0):.0f}  {_age}min前')
+                    print(f'  入场: ${_s.get("entry_lo",0)}~${_s.get("entry_hi",0)}')
+                    print(f'  体制: {_s.get("regime","")}  {_s.get("timing_badge","")}')
+                    print(f'  [播报模式] 避免与auto-1hao重复推送')
+                    continue
+
+            # 无有效信号 → 正常35维分析
+            print(f'\n⏳ 正在分析 {sym_u}（梵天35维全系统 · 全景模式）...\n')
+            r = full_analysis(sym_u)
             if use_panorama:
                 print_panorama_report(r)
             else:
@@ -695,4 +746,4 @@ if __name__ == '__main__':
         except Exception as e:
             import traceback
             traceback.print_exc()
-        time.sleep(0.5)
+        _time_main.sleep(0.5)
