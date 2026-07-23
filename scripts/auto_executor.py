@@ -59,7 +59,7 @@ MAX_SL_PCT           = 5.0       # 标准最大止损（保护性上限）
 MAX_SL_PCT_HIGH_VOL  = 9.0       # 高波动信号上限（score≥145，仓位×0.7）
 NAV_SIZE_PCT         = 0.05      # 默认仓位 NAV×5%（苏摩授权 2026-07-03）
 DEFAULT_LEV          = 5         # 默认杠杆 5x（苏摩授权 2026-07-03）
-MIN_NOTIONAL         = 4.5       # 最小开单金额 USDT（2026-07-13 与sub_executor统一：NAV=91时5%=4.56>=4.5通过）
+MIN_NOTIONAL         = 5.5       # 最小开单金额 USDT（2026-07-23 修复: Binance MIN_NOTIONAL=5，加0.5缓冲得5.5）
 
 # ── blacktea风控门（2026-07-10 苏摩111批准）─────────────────────────────
 # 对标: nmrtn/blacktea x402支付控制 + 人工审批 + 审计日志
@@ -107,7 +107,23 @@ DEAD_ZONE = {
 # [安全修复 2026-07-08 设计院] 硬编码密钥已移除
 # 密钥必须通过环境变量或 TOOLS.md / .env 注入，禁止任何硬编码
 API_KEY    = os.environ.get('BINANCE_API_KEY', '')
-API_SECRET = os.environ.get('BINANCE_SECRET', '')
+API_SECRET = os.environ.get('BINANCE_SECRET', '') or os.environ.get('BINANCE_API_SECRET', '')
+# [修复 2026-07-23] 如果环境变量未注入，尝试从 .env 读取
+if not API_KEY or not API_SECRET:
+    try:
+        _dot_env = Path(__file__).parent.parent / '.env'
+        if _dot_env.exists():
+            for _ln in _dot_env.read_text().splitlines():
+                _ln = _ln.strip()
+                if not _ln or _ln.startswith('#') or '=' not in _ln: continue
+                _k, _v = _ln.split('=', 1)
+                _k, _v = _k.strip(), _v.strip()
+                if _k == 'BINANCE_API_KEY' and not API_KEY:
+                    API_KEY = _v
+                elif _k in ('BINANCE_SECRET', 'BINANCE_API_SECRET') and not API_SECRET:
+                    API_SECRET = _v
+    except Exception:
+        pass
 
 # ── [P0-2] 全局安全闸 ─────────────────────────────────────────────
 try:
@@ -706,6 +722,11 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     notional = nav * _nav_pct * _hv_discount
     if _hv_discount < 1.0:
         print(f'[高波动模式] {sym} sl={signal.get("sl_pct",0):.1f}% 仓位系数×{_hv_discount} 实际仓位=${notional:.1f}')
+    # [修复 2026-07-23] TIER1课保: 高波动折扣后或仓位略低于MIN_NOTIONAL
+    # 且 score>=155(神级)，则忽略折扣，直接用MIN_NOTIONAL作为最小仓位
+    if notional < MIN_NOTIONAL and score >= 155:
+        notional = MIN_NOTIONAL  # 直接用最小仓位兜底
+        print(f'[TIER1课保] {sym} score={score:.0f} 仓位兜底至MIN_NOTIONAL=${notional:.1f}')
     if notional < MIN_NOTIONAL:
         result['reason'] = f'仓位${notional:.2f} < 最小${MIN_NOTIONAL}'
         return result
@@ -1119,11 +1140,14 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
                 'result': {'error': str(_exec_err)},
             }
         _log(exec_result)
-        executed_set.add(sig_id)
-        _save_executed(executed_set)
+        # [修复 2026-07-23] 只有真实成交才写入持久化executed_set
+        # FAILED不写入，防止下次cron运行时信号被错误去重
+        if exec_result.get('status') == 'EXECUTED':
+            executed_set.add(sig_id)
+            _save_executed(executed_set)
         results.append(exec_result)
 
-        if exec_result['status'] == 'EXECUTED':
+        if exec_result.get('status') == 'EXECUTED':
             # 刷新持仓列表（防止后续信号重复开同一标的）
             active_pos.append({
                 'symbol': sym, 'side': direct,
@@ -1177,7 +1201,7 @@ if __name__ == '__main__':
             print('暂无自动开单记录')
     else:
         results = run(dry_run=args.dry)
-        ok = [r for r in results if r.get('status') == 'EXECUTED']
+        ok = [r for r in (results or []) if r.get('status') == 'EXECUTED']
         pass  # [静默]
         if not ok:
             pass  # [静默]

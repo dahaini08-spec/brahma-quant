@@ -100,7 +100,25 @@ def require_live_trading(caller: str = ''):
 def require_api_keys():
     """检查API密钥是否从环境变量正确加载（非空）"""
     key = os.environ.get('BINANCE_API_KEY', '')
-    sec = os.environ.get('BINANCE_SECRET', '')
+    # [修复 2026-07-23] 兼容两种Secret变量名: BINANCE_SECRET 和 BINANCE_API_SECRET
+    sec = os.environ.get('BINANCE_SECRET', '') or os.environ.get('BINANCE_API_SECRET', '')
+    # 如果环境变量均未注入，尝试从 .env 文件读取
+    if not key or not sec:
+        try:
+            _dot_env = Path(__file__).parent.parent / '.env'
+            if _dot_env.exists():
+                for _line in _dot_env.read_text().splitlines():
+                    _line = _line.strip()
+                    if not _line or _line.startswith('#'): continue
+                    if '=' in _line:
+                        _k, _v = _line.split('=', 1)
+                        _k, _v = _k.strip(), _v.strip()
+                        if _k == 'BINANCE_API_KEY' and not key:
+                            key = _v
+                        elif _k in ('BINANCE_SECRET', 'BINANCE_API_SECRET') and not sec:
+                            sec = _v
+        except Exception:
+            pass  # fail-closed: 读取失败继续检查
     if not key or not sec:
         raise RuntimeError(
             "[SafetyGate] BINANCE_API_KEY / BINANCE_SECRET 未配置 — "
@@ -130,7 +148,7 @@ def safety_report() -> dict:
     """返回当前安全状态报告"""
     cfg = safety_config()
     key = os.environ.get('BINANCE_API_KEY', '')
-    sec = os.environ.get('BINANCE_SECRET', '')
+    sec = os.environ.get('BINANCE_SECRET', '') or os.environ.get('BINANCE_API_SECRET', '')
     LEAKED = []  # [P1修复 2026-07-12] 移除过期列表
 
     return {
