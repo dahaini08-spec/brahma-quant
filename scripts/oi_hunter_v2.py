@@ -37,7 +37,7 @@ try:
     from scripts.system_config import FAPI_BASE, JARVIS_TARGET, JARVIS_CHANNEL
 except:
     FAPI_BASE = 'https://fapi.binance.com'
-    JARVIS_TARGET = '73295708:t:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'
+    JARVIS_TARGET = '73295708:t:019f8768-6731-777d-8924-2426a5abd10f'
     JARVIS_CHANNEL = 'jarvis'
 
 CACHE_FILE = BASE / 'data' / 'oi_hunter_v2_cache.json'

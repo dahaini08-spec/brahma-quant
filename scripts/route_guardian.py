@@ -13,13 +13,14 @@
 import subprocess, json, sys, os
 from datetime import datetime, timezone
 
-CORRECT_THREAD = "73295708:t:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2"
+CORRECT_THREAD = "73295708:t:019f8768-6731-777d-8924-2426a5abd10f"
 OLD_THREAD_PREFIXES = [
-    "019f309c", "019f443a", "019f4448", "019f15c9"
-]  # 所有旧线程前缀（2026-07-14全量封印）
+    "019f309c", "019f443a", "019f4448", "019f15c9",
+    "019f5e0f", "019f7d6d", "019f79ff"  # 2026-07-22全量封印
+]  # 所有旧线程前缀（2026-07-22全量封印）
 OLD_THREAD_PREFIX = OLD_THREAD_PREFIXES[0]  # 兼容旧代码
 
-# P1主线任务名单（全部路由到新线程019f5e0f）
+# P1主线任务名单（全部路由到新线程019f8768）
 P1_MAIN_JOBS = {
     "rsi-structure-watcher",
     "auto-position-manager-30m",
@@ -99,7 +100,7 @@ def main():
     fixed, failed = 0, 0
     for jid, name, to in broken:
         if fix_route(jid, name):
-            print(f"  ✅ 修复: {name} → 019f5e0f")
+            print(f"  ✅ 修复: {name} → 019f8768")
             fixed += 1
         else:
             print(f"  ❌ 修复失败: {name}")

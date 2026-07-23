@@ -77,10 +77,14 @@ try:
     from scripts.system_config import JARVIS_USER_ID
     _USER_ID = JARVIS_USER_ID
 except Exception:
-    _USER_ID = os.environ.get("JARVIS_USER_ID", "YOUR_USER_ID")  # fallback, see system_config
+    _USER_ID = os.environ.get("JARVIS_USER_ID", "73295708")  # SSOT fallback
 
 # 当前对话线程（主线程）
-_THREAD_ID = "019ed32f-c46d-72ab-9d5e-92e47b4bdcc5"  # fallback, see system_config
+try:
+    from scripts.system_config import JARVIS_THREAD_ID as _TID_SSOT
+    _THREAD_ID = os.environ.get("JARVIS_THREAD_ID", _TID_SSOT)
+except Exception:
+    _THREAD_ID = os.environ.get("JARVIS_THREAD_ID", "019f8768-6731-777d-8924-2426a5abd10f")  # SSOT fallback
 _JARVIS_TO = f"{_USER_ID}:t:{_THREAD_ID}"
 
 TEST_MODE = "--test" in sys.argv
@@ -139,13 +143,19 @@ def _load_valid_signals() -> list:
             score = s.get("score", 0)
             if score < 155:  # [FIX-M2] 140→155，与宪法一致
                 continue
-            # grade统一为数字（处理文字格式）
-            grade = s.get("grade", 0)
-            if isinstance(grade, str):
-                import re as _re
-                _m = _re.search(r'(\d+)', grade)
-                grade = int(_m.group(1)) if _m else (s.get('structure_grade', 0) or 0)
-                s["grade"] = grade
+            # [FIX-ROOT 2026-07-22 苏摩111] grade统一解析 — 优先读grade_num整数字段
+            # grade_num由dharma_data_bridge.log_signal()在写入时同步注入
+            # fallback链: grade_num → parse_grade(grade) → structure_grade → effective_grade
+            try:
+                from brahma_brain.grade_utils import parse_grade as _pg
+            except ImportError:
+                from grade_utils import parse_grade as _pg
+            grade = s.get("grade_num") or _pg(
+                s.get("grade", 0),
+                structure_grade=int(s.get("structure_grade", 0) or 0),
+                effective_grade=float(s.get("effective_grade", 0) or 0),
+            )
+            s["grade"] = grade  # 回写，供_format_signal_card使用
             if grade < 70:
                 continue
             # timing过滤：WAIT/STANDBY/MONITOR不装载

@@ -15,7 +15,7 @@ try:
     _TARGET  = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"
     _CHANNEL = JARVIS_CHANNEL
 except Exception:
-    _TARGET  = "73295708:thread:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2"
+    _TARGET  = "73295708:thread:019f8768-6731-777d-8924-2426a5abd10f"  # 2026-07-22 updated
     _CHANNEL = "jarvis"
 
 _DEDUP_FILE = Path(__file__).parent / "data" / "push_dedup.json"
@@ -63,17 +63,26 @@ def _jarvis(msg, dedup_key=None, dedup_ttl=3600):
         print(f"[push_hub] 推送异常: {e}")
         return False
 
-def push_signal_card(sym, score, grade, direction, entry_lo, entry_hi, sl, tp1, timing="READY"):
-    """推送梵天VIP信号卡片"""
-    emoji = "🟢" if direction == "LONG" else "🔴"
-    tag = sym.replace("USDT", "")
-    ts = datetime.datetime.utcnow().strftime('%m-%d %H:%M')
+def push_signal_card(sym, score, grade, direction, entry_lo, entry_hi, sl, tp1, timing="READY", tp2=0, rr=1.0):
+    """推送梵天VIP信号卡片（事件驱动，score≥155立即推送）"""
+    emoji   = "🟢" if direction == "LONG" else "🔴"
+    tier    = "TIER1 🔴" if score >= 155 else "TIER2 🟠"
+    tag     = sym.replace("USDT", "")
+    ts      = datetime.datetime.utcnow().strftime('%m-%d %H:%M')
+    sl_pct  = round((entry_hi - sl) / entry_hi * 100, 1) if entry_hi else 2.0
+    tp2_line = f"  TP2:    ${tp2:,.2f}\n" if tp2 else ""
     msg = (
-        f"{emoji} **梵天信号 · {tag} {direction}**\n"
-        f"  score={score:.0f}  grade={grade}  timing={timing}\n"
-        f"  入场区: ${entry_lo:.2f}~${entry_hi:.2f}\n"
-        f"  止损: ${sl:.2f}  TP1: ${tp1:.2f}\n"
-        f"  时间: {ts} UTC"
+        f"🚨 **梵天信号 · {tier}**\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"{emoji} **{tag}/USDT {direction}** | score={score:.0f} {grade}\n"
+        f"  体制:   BULL_TREND | 时机: {timing}\n"
+        f"  入场:   ${entry_lo:,.2f} ~ ${entry_hi:,.2f}\n"
+        f"  止损:   ${sl:,.2f}  (-{sl_pct}%)\n"
+        f"  TP1:    ${tp1:,.2f}  RR={rr}x\n"
+        f"{tp2_line}"
+        f"  仓位:   5% NAV  LEV=5x\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"  {ts} UTC  [事件驱动]"
     )
-    dedup_key = f"signal_{sym}_{direction}_{int(entry_lo)}"
+    dedup_key = f"signal_{sym}_{direction}_{int(entry_lo)}_{int(score)}"
     return _jarvis(msg, dedup_key=dedup_key, dedup_ttl=14400)

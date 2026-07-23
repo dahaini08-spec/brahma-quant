@@ -37,7 +37,7 @@ def health_check():
         with open('/root/.openclaw/cron/jobs.json') as f:
             data = json.load(f)
         jobs = data if isinstance(data, list) else data.get('jobs', [])
-        new_t = '019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'
+        new_t = '019f8768-6731-777d-8924-2426a5abd10f'
         wrong = [j['name'] for j in jobs
                  if 'thread:' in j.get('delivery',{}).get('to','')
                  and new_t not in j.get('delivery',{}).get('to','')

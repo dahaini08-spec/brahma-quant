@@ -27,8 +27,13 @@ CHECKER    = os.path.join(BASE_DIR, 'scripts', 'position_regime_checker.py')
 
 FAPI = 'https://fapi.binance.com'
 
-PUSH_TARGET  = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:t:YOUR_THREAD_ID')
-PUSH_CHANNEL = 'jarvis'
+try:
+    from scripts.system_config import JARVIS_TARGET as _SSOT_TARGET, JARVIS_CHANNEL as _SSOT_CHANNEL
+    PUSH_TARGET  = os.environ.get('JARVIS_TARGET', _SSOT_TARGET)
+    PUSH_CHANNEL = _SSOT_CHANNEL
+except Exception:
+    PUSH_TARGET  = os.environ.get('JARVIS_TARGET', '73295708:t:019f8768-6731-777d-8924-2426a5abd10f')  # SSOT fallback
+    PUSH_CHANNEL = 'jarvis'
 
 # 心跳间隔：30分钟刷新 regime_state.json，防360误报"陈旧"
 HEARTBEAT_INTERVAL = 30 * 60

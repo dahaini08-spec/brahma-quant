@@ -273,6 +273,15 @@ def emit_pump_signal(scan_result: dict, regime: str, nav_usdt: float = 130.0) ->
         'result':       None,
     }
 
+    # [FIX-ROOT 2026-07-22] 注入grade_num（暴涨猎手信号无grade字段，直接用score映射）
+    try:
+        import sys as _sys2; _sys2.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        from grade_utils import parse_grade as _pg2
+        signal['grade'] = signal.get('grade', '🔴神级')   # 暴涨猎手信号默认神级
+        signal['grade_num'] = _pg2(signal['grade'], int(signal.get('structure_grade', 85)))
+    except Exception:
+        signal['grade_num'] = 85  # fallback
+
     # 写入队列
     QUEUE_PATH.parent.mkdir(parents=True, exist_ok=True)
     with open(QUEUE_PATH, 'a') as f:

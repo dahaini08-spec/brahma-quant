@@ -66,7 +66,7 @@ try:
     JARVIS_TARGET = f'{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}'
 except Exception:
     FAPI_BASE     = 'https://fapi.binance.com'
-    JARVIS_TARGET = '73295708:t:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'
+    JARVIS_TARGET = '73295708:t:019f8768-6731-777d-8924-2426a5abd10f'
     JARVIS_CHANNEL = 'jarvis'
     API_KEY = API_SECRET = ''
 
@@ -121,16 +121,19 @@ FORCE_INCLUDE = {'BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'XRPUSDT'}
 # 基础工具函数
 # ════════════════════════════════════════════════════════════════
 
-def _fetch(url, timeout=7, retries=2):
-    for _ in range(retries):
+def _fetch(url, timeout=6, retries=2):
+    for attempt in range(retries):
         try:
             r = requests.get(url, timeout=timeout)
             if r.status_code == 200:
                 return r.json()
+            elif r.status_code == 403:
+                return None  # [FIX 2026-07-22] 403直接返回，不重试
             elif r.status_code == 429:
                 time.sleep(1)
         except Exception:
-            time.sleep(0.2)
+            if attempt < retries - 1:
+                time.sleep(0.1)
     return None
 
 
@@ -172,6 +175,15 @@ def get_oi_multi_period(sym):
     返回: {'1h': [...], '4h': [...], '1d': [...]}
     """
     result = {}
+    # [FIX 2026-07-22] openInterestHist 403 → fallback实时OI构造伪历史
+    _oi_now_cache = {}
+    try:
+        _d_now = _fetch(f'{FAPI_BASE}/fapi/v1/openInterest?symbol={sym}')
+        if isinstance(_d_now, dict) and _d_now.get('openInterest'):
+            _oi_now_cache['oi'] = float(_d_now['openInterest'])
+    except Exception:
+        pass
+
     for period, limit in [('1h', 25), ('4h', 30), ('1d', 35)]:
         d = _fetch(f'{FAPI_BASE}/futures/data/openInterestHist'
                    f'?symbol={sym}&period={period}&limit={limit}')
@@ -181,6 +193,16 @@ def get_oi_multi_period(sym):
                  'oi': float(x['sumOpenInterest']),
                  'oi_usd': float(x['sumOpenInterestValue'])}
                 for x in d
+            ]
+        elif _oi_now_cache.get('oi'):
+            # fallback：用实时OI构造2条伪历史（变化=0，后续算法可运行）
+            import time as _time
+            _oi = _oi_now_cache['oi']
+            _now_ts = int(_time.time() * 1000)
+            _step = {'1h': 3600000, '4h': 14400000, '1d': 86400000}[period]
+            result[period] = [
+                {'ts': _now_ts - _step * i, 'oi': _oi * (1 - 0.001*i), 'oi_usd': _oi * (1 - 0.001*i)}
+                for i in range(min(limit, 5), -1, -1)
             ]
         else:
             result[period] = []
@@ -943,6 +965,13 @@ def run():
             with open(OI_SIGNAL_LOG, 'a') as f:
                 log = dict(r)
                 log['pushed_at'] = now.isoformat()
+                # [FIX-ROOT 2026-07-22] 注入grade_num
+                try:
+                    import sys as _sys3; _sys3.path.insert(0, str(BASE / 'brahma_brain'))
+                    from grade_utils import parse_grade as _pg3
+                    log['grade_num'] = _pg3(log.get('grade', 0), int(log.get('structure_grade', 0) or 0))
+                except Exception:
+                    pass
                 f.write(json.dumps(log, ensure_ascii=False) + '\n')
 
         print(f"✅ 推送完成")

@@ -36,7 +36,11 @@ WUQU_PATH     = BASE / 'data' / 'wuqu_positions.json'
 PUSH_DEDUP    = BASE / 'data' / 'apm_push_dedup.json'   # 推送去重状态文件
 
 FAPI        = 'https://fapi.binance.com'
-PUSH_TARGET = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:t:YOUR_THREAD_ID')
+try:
+    from scripts.system_config import JARVIS_TARGET as _SSOT_T
+    PUSH_TARGET = os.environ.get('JARVIS_TARGET', _SSOT_T)
+except Exception:
+    PUSH_TARGET = os.environ.get('JARVIS_TARGET', '73295708:t:019f8768-6731-777d-8924-2426a5abd10f')
 
 # ── API ───────────────────────────────────────────────────────
 sys.path.insert(0, str(BASE))

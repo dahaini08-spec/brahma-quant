@@ -10,7 +10,11 @@ try:
     import sys as _s; _s.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
     from system_config import JARVIS_TARGET
 except Exception:
-    JARVIS_TARGET = os.environ.get('JARVIS_TARGET', 'YOUR_USER_ID:t:YOUR_THREAD_ID')  # fallback
+    try:
+        from scripts.system_config import JARVIS_TARGET as _ssot
+        JARVIS_TARGET = os.environ.get('JARVIS_TARGET', _ssot)
+    except Exception:
+        JARVIS_TARGET = os.environ.get('JARVIS_TARGET', '73295708:t:019f8768-6731-777d-8924-2426a5abd10f')
 
 def send(msg: str) -> bool:
     """通过openclaw message发送到Jarvis"""

@@ -130,6 +130,74 @@ def run_compact_with_memory(symbol: str) -> str:
                         eth_dir=direction if 'ETH' in symbol else None,
                         agreement=4, confidence=score/200
                     )
+                # [FIX-ROOT 2026-07-23 苏摩111] score≥138时自动写入signal_bus
+                # 根因：compact_runner只输出stdout，signal_bus.write()从未被调用
+                # 修复：在这里直接写入，触发main-signal-watcher推送
+                if score >= 138:
+                    try:
+                        import sys as _sys2, time as _time2, re as _re2
+                        _sys2.path.insert(0, str(BASE/'scripts'))
+                        _sys2.path.insert(0, str(BASE/'brahma_brain'))
+                        _sys2.path.insert(0, str(BASE))
+                        from signal_bus import write as _bus_write
+                        # 从result文本提取入场参数
+                        _elo = _re2.search(r'(\d{3,6}\.?\d*)\s*~', result)
+                        _ehi = _re2.search(r'~\s*(\d{3,6}\.?\d*)', result)
+                        _slm = _re2.search(r'止损.*?(\d{3,6}\.?\d*)', result)
+                        _tp1 = _re2.search(r'TP1.*?(\d{3,6}\.?\d*)', result)
+                        _elo_v = float(_elo.group(1)) if _elo else 0
+                        _ehi_v = float(_ehi.group(1)) if _ehi else 0
+                        _sl_v  = float(_slm.group(1)) if _slm else (_elo_v*0.98 if _elo_v else 0)
+                        _tp1_v = float(_tp1.group(1)) if _tp1 else 0
+                        _rr    = round((_tp1_v-_ehi_v)/(_ehi_v-_sl_v),2) if (_ehi_v and _sl_v and _tp1_v and _ehi_v!=_sl_v) else 1.0
+                        _ts_now = _time2.time()
+                        import hashlib as _hlib
+                        _sid = _hlib.md5(f"{symbol}{direction}{score}{int(_ts_now//1800)}".encode()).hexdigest()[:12]
+                        _sig = {
+                            'source': 'brahma_compact_runner',
+                            'symbol': symbol,
+                            'direction': direction,
+                            'score': score,
+                            'grade': g if 'g' in dir() else 0,
+                            'structure_grade': int(score * 0.5),
+                            'effective_grade': float(score * 0.5),
+                            'regime': regime,
+                            'valid': True,
+                            'timing_badge': timing,
+                            'entry_lo': _elo_v,
+                            'entry_hi': _ehi_v,
+                            'stop_loss': _sl_v,
+                            'sl': _sl_v,
+                            'sl_pct': round((_ehi_v-_sl_v)/_ehi_v*100, 2) if _ehi_v else 2.0,
+                            'tp1': _tp1_v,
+                            'tp2': round(_tp1_v + (_tp1_v - _ehi_v), 2) if _tp1_v and _ehi_v else 0,
+                            'rr1': _rr,
+                            'action': 'ENTER',
+                            'signal_id': _sid,
+                            'output_tag': f'[BRAHMA:SIG:RUNNER:{symbol}:{score:.0f}:{direction}:{regime}:{int(_ts_now)}:{_sid[:8]}]',
+                        }
+                        _ok = _bus_write(_sig)
+                        # [事件驱动] score≥155立即直推，不等watcher轮询
+                        if score >= 155 and _ok:
+                            try:
+                                import sys as _sys3
+                                _sys3.path.insert(0, str(BASE/'scripts'))
+                                from push_hub import push_signal_card as _push_card
+                                _push_card(
+                                    sym=symbol,
+                                    score=score,
+                                    grade=_sig.get('grade', '?'),
+                                    direction=direction,
+                                    entry_lo=_elo_v,
+                                    entry_hi=_ehi_v,
+                                    sl=_sl_v,
+                                    tp1=_tp1_v,
+                                    timing=timing,
+                                )
+                            except Exception:
+                                pass  # 推送失败不影响主流程
+                    except Exception as _e_bus:
+                        pass  # signal_bus写入失败不影响主流程
     except Exception:
         pass
 

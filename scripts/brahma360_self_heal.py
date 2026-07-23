@@ -35,8 +35,13 @@ CONF    = BASE / 'supervisor.conf'
 CST     = timezone(timedelta(hours=8))
 
 # ── 告警发送（Jarvis）───────────────────────────────────────
-JARVIS_USER = os.environ.get('JARVIS_USER_ID', 'YOUR_USER_ID')
-JARVIS_THREAD = '019ed32f-c46d-72ab-9d5e-92e47b4bdcc5'
+try:
+    from scripts.system_config import JARVIS_USER_ID as _UID, JARVIS_THREAD_ID as _TID
+    JARVIS_USER   = os.environ.get('JARVIS_USER_ID', _UID)
+    JARVIS_THREAD = os.environ.get('JARVIS_THREAD_ID', _TID)
+except Exception:
+    JARVIS_USER   = os.environ.get('JARVIS_USER_ID', '73295708')
+    JARVIS_THREAD = '019f8768-6731-777d-8924-2426a5abd10f'
 
 def _now_cst() -> str:
     return datetime.now(CST).strftime('%m-%d %H:%M')

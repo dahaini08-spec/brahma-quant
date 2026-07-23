@@ -26,20 +26,37 @@ MIN_SCORE = 138
 MIN_GRADE = 70  # grade 数值门槛 (对应 🟠极强/🔴神级)
 
 
-def parse_grade(grade_val):
-    """解析 grade 字段，返回数值
-    🔴神级=100, 🟠极强=85, 🟡强=70, 其他=0
+def parse_grade(grade_val, structure_grade=0, effective_grade=0):
+    """[FIX-ROOT 2026-07-22 苏摩111] 统一grade解析 — 优先grade_num整数字段
+    grade_num由dharma_data_bridge写入时同步注入，是永久可靠来源。
+    fallback链: grade_num → 映射表 → 正则 → structure_grade → effective_grade
     """
+    # 如果传入的是dict（信号对象），先取grade_num
+    if isinstance(grade_val, dict):
+        if grade_val.get('grade_num'):
+            return int(grade_val['grade_num'])
+        return parse_grade(grade_val.get('grade', 0),
+                          int(grade_val.get('structure_grade', 0) or 0),
+                          float(grade_val.get('effective_grade', 0) or 0))
+    # 数字直接用
     if isinstance(grade_val, (int, float)):
-        return grade_val
-    if isinstance(grade_val, str):
-        if "神级" in grade_val or "🔴" in grade_val:
-            return 100
-        if "极强" in grade_val or "🟠" in grade_val:
-            return 85
-        if "强" in grade_val or "🟡" in grade_val:
-            return 70
-    return 0
+        n = int(grade_val)
+    elif isinstance(grade_val, str) and grade_val.strip():
+        _MAP = [('神级',95),('极强',85),('强+',78),('强',72),('中等',55),('放弃',0),
+                ('S',95),('A',85),('B',72),('C',55),('X',0)]
+        n = 0
+        for kw, val in _MAP:
+            if kw in grade_val:
+                n = val; break
+        if n == 0:
+            import re as _re
+            _m = _re.search(r'(\d+)', grade_val)
+            n = int(_m.group(1)) if _m else 0
+    else:
+        n = 0
+    if n == 0 and effective_grade: n = int(effective_grade)
+    if n == 0 and structure_grade: n = int(structure_grade)
+    return max(0, min(100, n))
 
 
 def load_valid_signals():

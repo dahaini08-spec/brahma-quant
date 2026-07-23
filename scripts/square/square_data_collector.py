@@ -89,17 +89,33 @@ def get_rsi_1h(symbol, period=14):
 
 
 def get_regime():
-    """读取当前体制"""
-    # 优先读regime_state.json，fallback到brahma_state.json
-    for f in [BASE / 'data' / 'regime_state.json', BASE / 'brahma_brain' / 'brahma_state.json']:
-        try:
-            if f.exists():
-                d = json.loads(f.read_text())
-                r = d.get('regime') or d.get('btc_regime')
-                if r and r != 'UNKNOWN':
-                    return r
-        except:
-            pass
+    """读取当前体制（BTC为主）"""
+    # 1. regime_state.json 是按symbol分层的，需读 BTCUSDT.confirmed
+    f1 = BASE / 'data' / 'regime_state.json'
+    try:
+        if f1.exists():
+            d = json.loads(f1.read_text())
+            # 按symbol分层格式
+            btc_d = d.get('BTCUSDT', {})
+            r = btc_d.get('confirmed') or btc_d.get('last_raw') or btc_d.get('regime')
+            if r and r != 'UNKNOWN':
+                return r
+            # 旧版扁平格式兜底
+            r2 = d.get('regime') or d.get('btc_regime')
+            if r2 and r2 != 'UNKNOWN':
+                return r2
+    except:
+        pass
+    # 2. fallback brahma_state.json
+    f2 = BASE / 'brahma_brain' / 'brahma_state.json'
+    try:
+        if f2.exists():
+            d = json.loads(f2.read_text())
+            r = d.get('regime') or d.get('btc_regime')
+            if r and r != 'UNKNOWN':
+                return r
+    except:
+        pass
     return 'UNKNOWN'
 
 
@@ -169,12 +185,19 @@ def get_smc_levels(symbol):
         pivot_high = max(highs[-10:])
         pivot_low = min(lows[-10:])
 
+        # 支撑 = 近期低点区(不与阻力重叠)
+        support_lo = min(lows[-10:])
+        support_hi = sorted(lows[-10:])[2]  # 第3低点
+        # 阻力 = 近期高点区
+        resist_lo = sorted(highs[-10:], reverse=True)[2]  # 第3高点
+        resist_hi = max(highs[-10:])
+
         return {
-            'bull_ob': f'{low_5:.4f}~{low_5*1.015:.4f}（4H低点区，估算）',
-            'bear_ob': f'{high_5*0.985:.4f}~{high_5:.4f}（4H高点区，估算）',
+            'bull_ob': f'{support_lo:.1f}~{support_hi:.1f}（4H低点支撑区）',
+            'bear_ob': f'{resist_lo:.1f}~{resist_hi:.1f}（4H高点阻力区）',
             'fvg_target': '',
-            'liq_above': f'{pivot_high:.4f}（10日高点流动性）',
-            'liq_below': f'{pivot_low:.4f}（10日低点流动性）',
+            'liq_above': f'{pivot_high:.1f}（10日高点流动性）',
+            'liq_below': f'{pivot_low:.1f}（10日低点流动性）',
             'source': 'price_structure',
         }
     except:

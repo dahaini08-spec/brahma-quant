@@ -129,6 +129,17 @@ def log_signal(result: dict) -> bool:
             'score':          score,
             'score_final':    float(result.get('score_final', score) or score),  # [P0-3 fix 2026-07-18]
             'grade':          grade,
+            # [FIX-ROOT 2026-07-22 苏摩111] grade_num 整数字段，彻底解决中文grade误杀问题
+            # 根因：grade='🔴神级'等中文emoji → 下游正则r'(\d+)' → 0 → 信号过滤
+            # 修复：在写入时同步注入grade_num整数，下游优先读grade_num
+            'grade_num':      (lambda g, sg, eg: (
+                __import__('brahma_brain.grade_utils', fromlist=['parse_grade']).parse_grade(g, sg, eg)
+                if True else 0
+            ))(
+                grade,
+                int(float(cf.get('effective_grade', cf.get('structure_grade', 0)) or 0)),
+                int(float(result.get('effective_grade', 0) or 0)),
+            ),
             'action':         action,
             # [FIX-v25.5] valid单一来源: params['valid'](brahma_core正确计算RR的结果)
                         # [v5.3 2026-07-08 设计院封印] BULL_TREND特例门槛修复
@@ -287,8 +298,14 @@ def log_signal(result: dict) -> bool:
                     'tp1':        signal.get('tp1'),
                     'tp2':        signal.get('tp2'),
                     'rr1':        signal.get('rr1'),
-                    'expires_at': signal.get('expires_at'),
-                    'signal_id':  signal.get('signal_id') or signal.get('output_tag'),
+                    'expires_at':      signal.get('expires_at'),
+                    'signal_id':       signal.get('signal_id') or signal.get('output_tag'),
+                    # [FIX-ROOT 2026-07-22] 写入grade供signal_bus注入grade_num
+                    'grade':           signal.get('grade', 0),
+                    'structure_grade': signal.get('structure_grade', 0),
+                    'effective_grade': signal.get('effective_grade', 0),
+                    'output_tag':      signal.get('output_tag', ''),
+                    'timing_badge':    signal.get('timing_badge', ''),
                 })
             except Exception:
                 pass  # 不阻断主流程

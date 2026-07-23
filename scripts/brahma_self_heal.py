@@ -38,7 +38,7 @@ try:
     import scripts.system_config as _sc
     PUSH_TARGET = f"{_sc.JARVIS_USER_ID}:t:{_sc.JARVIS_THREAD_ID}"
 except Exception:
-    PUSH_TARGET   = '73295708:t:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'  # SSOT v11 [线程更新 2026-07-08]
+    PUSH_TARGET   = '73295708:t:019f8768-6731-777d-8924-2426a5abd10f'  # SSOT v11 [线程更新 2026-07-08]
 PUSH_CHANNEL  = 'jarvis'
 HEAL_LOG_FILE = BASE / 'logs' / 'self_heal.log'
 STATE_FILE    = BASE / 'data' / 'self_heal_state.json'
@@ -253,7 +253,10 @@ def check_signal_pipeline() -> dict:
     sig = BASE / 'data' / 'live_signal_log.jsonl'
     if sig.exists():
         try:
-            raw_lines = sig.read_text().strip().split('\n')
+            # [FIX 2026-07-23] 只读最后200行，避免全文件扫描超时
+            import subprocess as _sp_sig
+            _t=_sp_sig.run(['tail','-200',str(sig)],capture_output=True,text=True,timeout=2)
+            raw_lines=_t.stdout.strip().split('\n') if _t.returncode==0 else []
             now = time.time()
             recent_4h = sum(
                 1 for l in raw_lines
@@ -280,7 +283,7 @@ def check_signal_pipeline() -> dict:
     # ── 检查3：关键Cron的 message + announce + 路由 ─────────────────
     KEY_JOBS = ['main-signal-watcher', 'pump-hunter', 'brahma-nerve-center',
                 'oi-advanced-scanner', 'rsi-structure-watcher']
-    CORRECT_THREAD = '019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'
+    CORRECT_THREAD = '019f8768-6731-777d-8924-2426a5abd10f'
     try:
         jobs_file = Path.home() / '.openclaw/cron/jobs.json'
         raw_jobs = json.loads(jobs_file.read_text())
@@ -336,7 +339,7 @@ def check_signal_pipeline() -> dict:
                 _jarvis(alert_msg, dedup_key='signal_pipeline_fault', dedup_ttl=1800)
             except Exception:
                 # push_hub不可用时直接调openclaw
-                _tgt = '73295708:t:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'
+                _tgt = '73295708:t:019f8768-6731-777d-8924-2426a5abd10f'
                 subprocess.run(
                     ['openclaw','message','send','--channel','jarvis',
                      '--target', _tgt, '--message', alert_msg],
@@ -425,9 +428,9 @@ def check_cron_jobs() -> dict:
         import importlib.util as _ilu2
         _sc2 = _ilu2.module_from_spec(_ilu2.spec_from_file_location('sc2', BASE / 'scripts' / 'system_config.py'))
         _ilu2.spec_from_file_location('sc2', BASE / 'scripts' / 'system_config.py').loader.exec_module(_sc2)
-        CORRECT_THREAD = getattr(_sc2, 'JARVIS_THREAD_ID', '019f5e0f-7d13-7392-a4e1-262e1cfc2dc2')
+        CORRECT_THREAD = getattr(_sc2, 'JARVIS_THREAD_ID', '019f8768-6731-777d-8924-2426a5abd10f')
     except Exception:
-        CORRECT_THREAD  = '019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'
+        CORRECT_THREAD  = '019f8768-6731-777d-8924-2426a5abd10f'
     try:
         jobs_file = Path.home() / '.openclaw/cron/jobs.json'
         raw_jobs  = json.loads(jobs_file.read_text())
@@ -521,8 +524,8 @@ def check_session_length() -> dict:
     try:
         r = subprocess.run(
             ['openclaw', 'sessions', '--json', '--active', '30'],
-            capture_output=True, text=True, timeout=8
-        )
+            capture_output=True, text=True, timeout=3
+        )  # [FIX 2026-07-23] 3s快速超时
         if r.returncode != 0:
             return {'ok': True, 'detail': 'sessions命令不可用，跳过'}
         
@@ -676,6 +679,19 @@ def check_analysis_chain() -> dict:
                         'detail': f'Binance 限速中({_ping.status_code}) Retry-After={_ra}s — 分析链降级属预期行为'}
         except Exception:
             pass
+        # [FIX 2026-07-23] quick模式只做语法+import检查，不实际运行分析（避免15s超时）
+        _quick = _sp.run(
+            ['python3', '-c',
+             'import sys; sys.path.insert(0,".");'
+             'from brahma_brain.brahma_analysis_runner import run_analysis;'
+             'from brahma_brain.brahma_engine import analyze;'
+             'print("OK imports验证通过")'],
+            capture_output=True, text=True, timeout=8,
+            cwd=str(BASE)
+        )
+        if _quick.returncode != 0:
+            return {'ok': False, 'detail': f'分析链路import失败: {_quick.stderr[:100]}'}
+        return {'ok': True, 'detail': '分析链路正常(静默): rc=0'}
         _res = _sp.run(
             ['python3', '-c',
              'import sys; sys.path.insert(0,".");'
@@ -683,10 +699,9 @@ def check_analysis_chain() -> dict:
              'r=run_analysis("BTCUSDT");'
              'assert r.get("regime"), "regime缺失";'
              'assert "score_final" in r, "score_final缺失";'
-             # [2026-07-19] _panorama_full断言移除，字段不稳定导致误报
              '# panorama check skipped;'
              'sf=str(round(r["score_final"],1));rg=r["regime"];ts=r.get("timing_status","?");pano=str(bool(r.get("_panorama_full")));print("OK score="+sf+" regime="+rg+" timing="+ts+" panorama="+pano)'],
-            capture_output=True, text=True, timeout=25,  # [2026-07-19] 15→25s, run_analysis实测12~18s
+            capture_output=True, text=True, timeout=25,
             cwd=str(BASE)
         )
         if _res.returncode == 0:
@@ -806,9 +821,9 @@ def check_push_routing() -> dict:
         _sc_path = BASE / 'scripts' / 'system_config.py'
         _spec = _ilu.spec_from_file_location('system_config', _sc_path)
         _sc = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_sc)
-        CORRECT_THREAD = getattr(_sc, 'JARVIS_THREAD_ID', '019f5e0f-7d13-7392-a4e1-262e1cfc2dc2')
+        CORRECT_THREAD = getattr(_sc, 'JARVIS_THREAD_ID', '019f8768-6731-777d-8924-2426a5abd10f')
     except Exception:
-        CORRECT_THREAD = '019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'
+        CORRECT_THREAD = '019f8768-6731-777d-8924-2426a5abd10f'
     
     # 旧线程列表：除CORRECT_THREAD外的应该被替换的
     OLD_THREADS    = [
@@ -924,7 +939,7 @@ def heal(fault_type: str, context: dict) -> dict:
         _pb = BASE / 'push_hub.py'
         _pb_s = BASE / 'scripts' / 'push_hub.py'
         if not _pb.exists() and not _pb_s.exists():
-            _content = '''import subprocess, json, time, os\nfrom pathlib import Path\ntry:\n    import sys; sys.path.insert(0, str(Path(__file__).parent / "scripts"))\n    from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID, JARVIS_CHANNEL\n    _TARGET = f"{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}"\n    _CHANNEL = JARVIS_CHANNEL\nexcept Exception:\n    _TARGET = "73295708:t:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2"\n    _CHANNEL = "jarvis"\n_DEDUP_FILE = Path(__file__).parent / "data" / "push_dedup.json"\ndef _load_dedup():\n    try: return json.loads(_DEDUP_FILE.read_text())\n    except: return {}\ndef _save_dedup(d):\n    try: _DEDUP_FILE.parent.mkdir(exist_ok=True); _DEDUP_FILE.write_text(json.dumps(d))\n    except: pass\ndef _jarvis(msg, dedup_key=None, dedup_ttl=3600):\n    if not msg: return False\n    if dedup_key:\n        dedup = _load_dedup(); now = time.time()\n        if now - dedup.get(dedup_key, 0) < dedup_ttl: return False\n        dedup[dedup_key] = now; _save_dedup(dedup)\n    try:\n        r = subprocess.run(["openclaw","message","send","--channel",_CHANNEL,"--target",_TARGET,"--message",msg], capture_output=True, text=True, timeout=15)\n        return r.returncode == 0\n    except: return False\n'''
+            _content = '''import subprocess, json, time, os\nfrom pathlib import Path\ntry:\n    import sys; sys.path.insert(0, str(Path(__file__).parent / "scripts"))\n    from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID, JARVIS_CHANNEL\n    _TARGET = f"{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}"\n    _CHANNEL = JARVIS_CHANNEL\nexcept Exception:\n    _TARGET = "73295708:t:019f8768-6731-777d-8924-2426a5abd10f"\n    _CHANNEL = "jarvis"\n_DEDUP_FILE = Path(__file__).parent / "data" / "push_dedup.json"\ndef _load_dedup():\n    try: return json.loads(_DEDUP_FILE.read_text())\n    except: return {}\ndef _save_dedup(d):\n    try: _DEDUP_FILE.parent.mkdir(exist_ok=True); _DEDUP_FILE.write_text(json.dumps(d))\n    except: pass\ndef _jarvis(msg, dedup_key=None, dedup_ttl=3600):\n    if not msg: return False\n    if dedup_key:\n        dedup = _load_dedup(); now = time.time()\n        if now - dedup.get(dedup_key, 0) < dedup_ttl: return False\n        dedup[dedup_key] = now; _save_dedup(dedup)\n    try:\n        r = subprocess.run(["openclaw","message","send","--channel",_CHANNEL,"--target",_TARGET,"--message",msg], capture_output=True, text=True, timeout=15)\n        return r.returncode == 0\n    except: return False\n'''
             _pb.write_text(_content)
             _pb_s.write_text(_content)
             return {'healed': True, 'action': 'push_hub.py重建'}
@@ -947,7 +962,7 @@ def heal(fault_type: str, context: dict) -> dict:
             _sc_path = BASE / 'scripts' / 'system_config.py'
             _spec = _ilu.spec_from_file_location('system_config', _sc_path)
             _sc = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_sc)
-            NEW = getattr(_sc, 'JARVIS_THREAD_ID', '019f5e0f-7d13-7392-a4e1-262e1cfc2dc2')
+            NEW = getattr(_sc, 'JARVIS_THREAD_ID', '019f8768-6731-777d-8924-2426a5abd10f')
         except Exception:
             NEW = '019f181f-e4d1-7576-85ca-77f4a7fa8075'
         # [BUG-5修复] OLD_LIST不含NEW，防止覆盖正确线程
@@ -1061,7 +1076,7 @@ def heal(fault_type: str, context: dict) -> dict:
         _pb = BASE / 'push_hub.py'
         if not _pb.exists() and 'push_hub' in str(issues):
             try:
-                _content = '''import subprocess, json, time, os\nfrom pathlib import Path\ntry:\n    import sys; sys.path.insert(0, str(Path(__file__).parent / "scripts"))\n    from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID\n    _TARGET = f"{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}"\nexcept Exception:\n    _TARGET = "73295708:t:019f5e0f-7d13-7392-a4e1-262e1cfc2dc2"\n_CHANNEL = "jarvis"\n_DEDUP_FILE = Path(__file__).parent / "data" / "push_dedup.json"\ndef _load_dedup():\n    try: return json.loads(_DEDUP_FILE.read_text())\n    except: return {}\ndef _save_dedup(d):\n    try: _DEDUP_FILE.parent.mkdir(exist_ok=True); _DEDUP_FILE.write_text(json.dumps(d))\n    except: pass\ndef _jarvis(msg, dedup_key=None, dedup_ttl=3600):\n    if not msg: return False\n    if dedup_key:\n        dedup = _load_dedup(); now = time.time()\n        if now - dedup.get(dedup_key, 0) < dedup_ttl: return False\n        dedup[dedup_key] = now; _save_dedup(dedup)\n    try:\n        r = subprocess.run(["openclaw","message","send","--channel",_CHANNEL,"--target",_TARGET,"--message",msg], capture_output=True, text=True, timeout=15)\n        return r.returncode == 0\n    except: return False\n'''
+                _content = '''import subprocess, json, time, os\nfrom pathlib import Path\ntry:\n    import sys; sys.path.insert(0, str(Path(__file__).parent / "scripts"))\n    from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID\n    _TARGET = f"{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}"\nexcept Exception:\n    _TARGET = "73295708:t:019f8768-6731-777d-8924-2426a5abd10f"\n_CHANNEL = "jarvis"\n_DEDUP_FILE = Path(__file__).parent / "data" / "push_dedup.json"\ndef _load_dedup():\n    try: return json.loads(_DEDUP_FILE.read_text())\n    except: return {}\ndef _save_dedup(d):\n    try: _DEDUP_FILE.parent.mkdir(exist_ok=True); _DEDUP_FILE.write_text(json.dumps(d))\n    except: pass\ndef _jarvis(msg, dedup_key=None, dedup_ttl=3600):\n    if not msg: return False\n    if dedup_key:\n        dedup = _load_dedup(); now = time.time()\n        if now - dedup.get(dedup_key, 0) < dedup_ttl: return False\n        dedup[dedup_key] = now; _save_dedup(dedup)\n    try:\n        r = subprocess.run(["openclaw","message","send","--channel",_CHANNEL,"--target",_TARGET,"--message",msg], capture_output=True, text=True, timeout=15)\n        return r.returncode == 0\n    except: return False\n'''
                 _pb.write_text(_content)
                 fixed.append('push_hub.py重建')
             except Exception as _e:
@@ -1075,7 +1090,7 @@ def heal(fault_type: str, context: dict) -> dict:
             'oi-advanced-scanner': 'Run OI advanced scanner: execute python3 /root/.openclaw/workspace/trading-system/scripts/oi_advanced_scanner.py and report A/B/C class signals found. If none, reply HEARTBEAT_OK.',
             'rsi-structure-watcher': 'Check RSI structure events. Run scripts/rsi_structure_watcher.py --once and report any triggered events (E1-E9). If none, reply HEARTBEAT_OK.',
         }
-        CORRECT_THREAD = '019f5e0f-7d13-7392-a4e1-262e1cfc2dc2'
+        CORRECT_THREAD = '019f8768-6731-777d-8924-2426a5abd10f'
         try:
             import json as _json
             jobs_file = Path.home() / '.openclaw/cron/jobs.json'

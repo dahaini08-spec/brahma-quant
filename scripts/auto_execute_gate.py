@@ -94,7 +94,16 @@ def _open_positions() -> list:
     修复：改读 brahma_state['wuqu_positions']，只计武曲自己的仓位
     """
     bs = _load_state()
-    return bs.get('wuqu_positions', [])
+    raw = bs.get('wuqu_positions', [])
+    # [FIX 2026-07-22] 兼容旧格式（字符串列表）和新格式（dict列表）
+    result = []
+    for p in raw:
+        if isinstance(p, dict):
+            result.append(p)
+        elif isinstance(p, str):
+            # 旧格式：只有symbol字符串，补全为dict
+            result.append({'symbol': p, 'side': 'LONG', 'entry': 0, 'qty': 0})
+    return result
 
 
 def _add_wuqu_position(symbol: str, direction: str, entry: float, qty: float):
@@ -226,25 +235,20 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
     # [P1-1 设计院 2026-07-18 苏摩111封印] grade门控统一为数值门控，彻底废除文字白名单
     # 根因：文字白名单('神级'/'极强'/'VIP')导致数值grade永远不匹配 → 8天0执行
     # v2修复：文字格式grade兜底路径也改为数值提取，提取失败直接放行（score≥155已是主要门控）
-    grade_raw = signal.get('grade', None)
-    if grade_raw is not None:
-        try:
-            grade_num = float(grade_raw)
-            if grade_num < 70:
-                r = f'grade={grade_num:.0f} < 70，结构质量不足，拒绝执行'
-                _log('BLOCKED', signal, r)
-                return {'executed': False, 'reason': r, 'order': None}
-        except (ValueError, TypeError):
-            # grade为文字格式，尝试提取数字；失败则直接放行（score是主门控）
-            import re as _re
-            _m = _re.search(r'(\d+)', str(grade_raw))
-            if _m:
-                _g = float(_m.group(1))
-                if _g < 70:
-                    r = f'grade_text={grade_raw}(数值={_g:.0f}) < 70，拒绝执行'
-                    _log('BLOCKED', signal, r)
-                    return {'executed': False, 'reason': r, 'order': None}
-            # 无数字可提取，放行（score≥155是真正门槛）
+    # [FIX-ROOT 2026-07-22 苏摩111] 优先读grade_num整数字段，彻底解决中文grade误杀
+    try:
+        from brahma_brain.grade_utils import parse_grade as _pg_gate
+    except ImportError:
+        from grade_utils import parse_grade as _pg_gate
+    _grade_num = signal.get('grade_num') or _pg_gate(
+        signal.get('grade', 0),
+        structure_grade=int(signal.get('structure_grade', 0) or 0),
+        effective_grade=float(signal.get('effective_grade', 0) or 0),
+    )
+    if _grade_num > 0 and _grade_num < 70:
+        r = f'grade={_grade_num} < 70，结构质量不足，拒绝执行'
+        _log('BLOCKED', signal, r)
+        return {'executed': False, 'reason': r, 'order': None}
 
     # ── 门控1：score 门槛 ──────────────────────────────────────────
     if score < MIN_SCORE:

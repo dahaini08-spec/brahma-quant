@@ -21,6 +21,12 @@ market_screener.py — 全市场纯脚本预筛器 v1.0
 import sys, os, json, time, math, urllib.request
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+# ── sys.path fix: 确保从任意目录运行均可找到 brahma_brain ──
+_BASE_EARLY = Path(__file__).parent.parent
+if str(_BASE_EARLY) not in sys.path:
+    sys.path.insert(0, str(_BASE_EARLY))
+
 from brahma_brain.math_utils import calc_rsi as _calc_rsi, ema as _calc_ema  # 统一数学库 v1.0
 
 BASE = Path(__file__).parent.parent

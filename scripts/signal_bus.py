@@ -94,6 +94,22 @@ def write(signal: dict) -> bool:
             _live_entry.setdefault('rr1', signal.get('rr1', signal.get('rr', 1.8)))
             _live_entry.setdefault('sl_pct', signal.get('sl_pct', 2.0))
             _live_entry['_bus_sync'] = True   # 标记来源为signal_bus
+            # [FIX 2026-07-22] 字段别名统一: sl→stop_loss / sl_price→stop_loss
+            if not _live_entry.get('stop_loss') and _live_entry.get('sl'):
+                _live_entry['stop_loss'] = _live_entry['sl']
+            if not _live_entry.get('stop_loss') and _live_entry.get('sl_price'):
+                _live_entry['stop_loss'] = _live_entry['sl_price']
+            # [FIX-ROOT 2026-07-22] signal_bus写入时注入grade_num
+            try:
+                import sys as _sysb; _sysb.path.insert(0, str(BASE/'brahma_brain'))
+                from grade_utils import parse_grade as _pg
+                _live_entry['grade_num'] = _pg(
+                    _live_entry.get('grade', 0),
+                    int(_live_entry.get('structure_grade', 0) or 0),
+                    float(_live_entry.get('effective_grade', 0) or 0),
+                )
+            except Exception:
+                pass
             # sha8 去重 key: symbol+direction+score整数+1H时间窗口
             import hashlib as _hs, time as _tt
             _dedup_base = f"{signal.get('symbol','')}_{signal.get('direction','')}_{int(signal.get('score',0))}_{int(_tt.time()//3600)}"

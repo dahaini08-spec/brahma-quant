@@ -27,8 +27,13 @@ TRON_ADDRESS    = "TMJ9n9bL1ZJbMQmqyhCx2Eg7EyRVM9LFMg"
 USDT_CONTRACT   = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"  # TRC20 USDT
 MIN_AMOUNT      = 199.0
 STATE_FILE      = Path(__file__).parent.parent / "data" / "pro_orders.json"
-JARVIS_USER     = os.environ.get("JARVIS_USER_ID", "YOUR_USER_ID")
-JARVIS_THREAD   = os.environ.get("JARVIS_THREAD_ID", "YOUR_THREAD_ID")
+try:
+    from scripts.system_config import JARVIS_USER_ID as _UID, JARVIS_THREAD_ID as _TID
+    JARVIS_USER     = os.environ.get("JARVIS_USER_ID", _UID)
+    JARVIS_THREAD   = os.environ.get("JARVIS_THREAD_ID", _TID)
+except Exception:
+    JARVIS_USER     = os.environ.get("JARVIS_USER_ID", "73295708")
+    JARVIS_THREAD   = os.environ.get("JARVIS_THREAD_ID", "019f8768-6731-777d-8924-2426a5abd10f")
 ZIP_PATH        = Path(__file__).parent.parent.parent / "brahma_pro_weights_v7.zip"
 
 def load_state() -> dict:
