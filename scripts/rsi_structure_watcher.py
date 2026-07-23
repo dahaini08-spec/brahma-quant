@@ -419,14 +419,32 @@ def run():
         # [v5.6 设计院自主落地 2026-07-13] 触发链末尾追加 signal_dashboard 事件驱动推送
         # 原理：E1-E9事件触发时，扫描完成后立即检查仪表盘（T1-T4条件），无变化静默
         # 效果：signal_dashboard 从30min定时 → 事件驱动（活跃市场8-12次/天，非活跃趋近0）
+        # [P2-C 设计院封印 2026-07-23 苏摩111] 层全1事件驱动接35维矩阵
+        # 根因: 事件触发后当前只走轻量路径(market_screener+brahma_scan_all)
+        # 修复: 探测到 E1/E2/E3/E4 时附加触发 brahma_1hao_analysis BTC ETH
+        # 效果: 价格穿越/RSI穿越事件发生时即制35维分析，而非等待30min定时轮询
+        _35dim_trigger_events = {'E1_RSI_CROSS_UP', 'E2_RSI_OVERBOUGHT_FALL',
+                                  'E3_PRICE_BREAKOUT_HIGH', 'E4_PRICE_BREAKDOWN_LOW',
+                                  'E10_RSI_BOUNCE'}
+        _has_35dim_trigger = any(
+            ev.get('event', '') in _35dim_trigger_events
+            for ev in (events if events else [])
+        )
+        # 获取触发事件对应的标的（只分析已触发的标的，防止过度消耗）
+        _35dim_syms = ' '.join(triggered_syms[:2]) if triggered_syms else 'BTCUSDT ETHUSDT'
+
         scan_cmd = (
             f'cd {BASE} && '
             f'ulimit -v 1048576 2>/dev/null; '
             f'python3 scripts/market_screener.py && '
             f'python3 scripts/brahma_scan_all.py --candidates && '
-            f'python3 scripts/auto_executor.py 2>&1 | tail -5 && '
-            f'python3 scripts/signal_dashboard.py 2>&1 | tail -3'
+            f'python3 scripts/auto_executor.py 2>&1 | tail -5'
         )
+        # E1/E2/E3/E4/E10 触发时附加 brahma_1hao_analysis 35维分析
+        if _has_35dim_trigger:
+            scan_cmd += (
+                f' && python3 scripts/brahma_1hao_analysis.py {_35dim_syms} 2>&1 | tail -5'
+            )
         # E5/E6/E7触发时附加 pump-hunter 扫描
         if has_pump_trigger:
             scan_cmd = (
@@ -435,9 +453,12 @@ def run():
                 f'python3 dharma/pump_hunter/scan_and_alert.py --dry-run 2>&1 | tail -3 & '
                 f'python3 scripts/market_screener.py && '
                 f'python3 scripts/brahma_scan_all.py --candidates && '
-                f'python3 scripts/auto_executor.py 2>&1 | tail -5 && '
-                f'python3 scripts/signal_dashboard.py 2>&1 | tail -3'
+                f'python3 scripts/auto_executor.py 2>&1 | tail -5'
             )
+            if _has_35dim_trigger:
+                scan_cmd += (
+                    f' && python3 scripts/brahma_1hao_analysis.py {_35dim_syms} 2>&1 | tail -5'
+                )
         try:
             # ── 防积压：检查是否已有扫描链在运行 ──────────────────
             import os, glob
