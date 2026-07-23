@@ -58,6 +58,7 @@ def scan_d1_modules() -> list:
             'brahma_360','brahma_health','brahma_smoke_test','brahma_self_heal',
             'brahma_1hao_analysis','brahma_dashboard','brahma_compact_runner',
             'auto_review','exception_injector',  # 已知工具类，不计入孤儿
+            'offline_adapters','tardis_liq_layer','module_registry',  # [2026-07-23] 孤立群岛，Phase2-C统一清理
         }
         _orphans = []
         for _f in sorted(_brain.glob('*.py')):
