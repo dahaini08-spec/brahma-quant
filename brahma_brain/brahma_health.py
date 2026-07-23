@@ -692,17 +692,21 @@ def run_health_check(full: bool = False, timeout: float = 8.0) -> dict:
 
 
 def _check_ws_guardian() -> dict:
-    """检查ws_guardian进程是否运行 [P1-2 2026-07-23 设计院]"""
-    import subprocess
+    """检查ws_guardian心跳日志新鲜度（cron模式，日志<30min即为正常）"""
+    import time
     try:
-        r = subprocess.run(['pgrep', '-f', 'ws_guardian'], capture_output=True, text=True)
-        running = r.returncode == 0
-        pid = r.stdout.strip().split('\n')[0] if running else None
+        base = os.path.dirname(os.path.abspath(__file__))
+        log_path = os.path.join(base, '..', 'logs', 'ws_guardian.log')
+        log_path = os.path.normpath(log_path)
+        if not os.path.exists(log_path):
+            return {'ok': False, 'detail': 'ws_guardian日志不存在', 'warn': True, 'pid': None}
+        age_min = (time.time() - os.path.getmtime(log_path)) / 60
+        running = age_min < 30
         return {
             'ok': running,
-            'detail': f'ws_guardian {"运行中 pid=" + pid if running else "未运行"}',
+            'detail': f'ws_guardian {f"心跳{age_min:.1f}min前" if running else f"心跳超时={age_min:.1f}min(>30min)"}',
             'warn': not running,
-            'pid': pid
+            'pid': None
         }
     except Exception as e:
         return {'ok': True, 'detail': f'检查失败(忽略): {e}', 'warn': False}
