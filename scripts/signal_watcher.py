@@ -282,6 +282,57 @@ def run():
     state["warned"]   = {k: v for k, v in state["warned"].items()
                          if now - v < 86400}  # 预警24H内不重复（之前1H导致每小时轰炸）
 
+    # ══ [P0-2 设计院封印 2026-07-23 苏摩111] 同标的下跌熔断机制 ══
+    # 根因: BULL_TREND下价格连续下跌，每次识别新OB即推送新多单，追跌做多
+    # 熔断触发: 同标的3H内已推送≥2条多单信号 + 价格比第1条信号净跌>3% → 新信号静默
+    _drop_fuse_state = state.setdefault('drop_fuse', {})
+    _drop_fuse_state = {
+        k: v for k, v in _drop_fuse_state.items()
+        if isinstance(v, dict) and now - float(v.get('first_ts', 0)) < 86400
+    }
+    state['drop_fuse'] = _drop_fuse_state
+
+    # 统计3H内同标的多单信号数量
+    import requests as _req_fuse
+    for _s_f in signals:
+        _sym_f = _s_f.get('symbol', '')
+        _dir_f = str(_s_f.get('direction', '') or '').upper()
+        if 'LONG' not in _dir_f:
+            continue
+        _ts_f = float(_s_f.get('ts', 0) or 0)
+        if _ts_f < now - 3 * 3600:
+            continue
+        _fk = f'{_sym_f}_LONG_fuse'
+        if _fk not in _drop_fuse_state:
+            _drop_fuse_state[_fk] = {
+                'first_ts':    _ts_f,
+                'first_price': float(_s_f.get('entry_lo', 0) or 0),
+                'count':       1,
+            }
+        elif _ts_f > _drop_fuse_state[_fk].get('first_ts', 0):
+            _drop_fuse_state[_fk]['count'] = _drop_fuse_state[_fk].get('count', 0) + 1
+
+    def _is_drop_fused(sym: str, direction: str) -> bool:
+        """返回 True 表示熔断触发，不推送"""
+        if 'LONG' not in direction.upper():
+            return False
+        fk = f'{sym}_LONG_fuse'
+        rec = _drop_fuse_state.get(fk, {})
+        if rec.get('count', 0) < 2:
+            return False  # 3H内信号<2条，不熔断
+        first_price = float(rec.get('first_price', 0) or 0)
+        if first_price <= 0:
+            return False
+        try:
+            cp = float(_req_fuse.get(
+                f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}',
+                timeout=4).json().get('price', 0))
+        except Exception:
+            return False
+        drop_pct = (first_price - cp) / first_price * 100
+        return drop_pct > 3.0  # 价格跌超3%触发熔断
+    # ════════════════════════════════════════════════════════════════════════
+
     for s in signals:
         sym    = s.get("symbol", "")
         ts_str = s.get("ts", "")
@@ -338,6 +389,15 @@ def run():
                     if _cross_key not in state.get('notified', {}):
                         state.setdefault('notified', {})[_cross_key] = now
                     continue  # 价格已穿越，跳过此信号
+        # ── [P0-2] 下跌熔断检查 ──────────────────────────────────────────────
+        _dir_for_fuse = str(s.get('direction', '') or '').upper()
+        if _is_drop_fused(sym, _dir_for_fuse):
+            # 熔断触发：同标的3H内≥2条多单+跌幅>3%，静默不推送
+            _fuse_key = f"{sym}_LONG_drop_fused"
+            if _fuse_key not in state.get('warned', {}):
+                state.setdefault('warned', {})[_fuse_key] = now
+            continue  # 熔断静默
+        # ─────────────────────────────────────────────────────────────────────
         # ── Layer 0：新信号检测（<10分钟，且未通知过）───────────
         if age_min < 240 and sig_id not in state["notified"]:  # [修复 2026-07-08] 10min→240min(4H)，防止信号写入延迟被漏推
             price = _cross_check_price if _cross_check_price > 0 else _fetch_price(sym)

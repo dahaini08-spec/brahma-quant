@@ -3640,6 +3640,71 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass  # TradFi层失败不阻断主链路
     # ─────────────────────────────────────────────────────────────────────────
 
+    # ══ [P0-1 设计院封印 2026-07-23 苏摩111] consensus=FULL_BEAR 封禁 LONG ══
+    # 根因: regime=BULL_TREND 会覆盖 consensus，强行产出多单
+    # 当六方推理结论为 FULL_BEAR 时，LONG 方向直接封禁
+    # 精英解锁通道: score≥170 AND structure_grade≥90 AND RSI_1H<35 → 0.5%NAV观察仓
+    try:
+        _consensus_val = str(_result.get('consensus', '') or '').upper()
+        _dir_val       = str(_result.get('direction', signal_dir or '') or '').upper()
+        if 'FULL_BEAR' in _consensus_val and 'LONG' in _dir_val:
+            _elite_score  = float(_result.get('score_final', _result.get('score', 0)) or 0)
+            _elite_struct = float(_result.get('structure_grade', 0) or 0)
+            _elite_rsi    = float(_result.get('rsi_1h', 99) or 99)
+            _elite_unlock = _elite_score >= 170 and _elite_struct >= 90 and _elite_rsi < 35
+            if not _elite_unlock:
+                _result['valid_signal']   = False
+                _result['globally_blocked'] = True
+                _result['blocked_reason'] = (
+                    f'consensus=FULL_BEAR封禁LONG '
+                    f'(score={_elite_score:.0f} struct={_elite_struct:.0f} rsi_1h={_elite_rsi:.1f})'
+                )
+                _result.setdefault('breakdown', {})['consensus门控'] = (
+                    f'🚫 FULL_BEAR→LONG封禁 '
+                    f'[精英解锁需score≥170+struct≥90+RSI_1H<35]'
+                )
+            else:
+                # 精英解锁：降级为观察仓标注
+                _result.setdefault('breakdown', {})['consensus门控'] = (
+                    f'⚡ FULL_BEAR精英解锁 score={_elite_score:.0f} '
+                    f'struct={_elite_struct:.0f} RSI={_elite_rsi:.1f} → 0.5%NAV观察仓'
+                )
+                _result['action'] = 'WATCH_ONLY_0.5NAV'
+    except Exception:
+        pass
+    # ══════════════════════════════════════════════════════════════════════════
+
+    # ══ [P1 设计院封印 2026-07-23] BRAHMA output_tag 写入修复 ══
+    # 根因: 5条SNDK信号全部缺失 [BRAHMA:...] 标签，无法溯源校验
+    # 修复: 在 return 前确保 output_tag 含有效 BRAHMA 标签
+    try:
+        import hashlib as _hlib
+        _ot = str(_result.get('output_tag', '') or '')
+        if '[BRAHMA:' not in _ot:
+            # 重新生成标签
+            _tag_score  = _result.get('score_final', _result.get('score', 0))
+            _tag_dir    = _result.get('direction', signal_dir or 'LONG')
+            _tag_regime = _result.get('regime', 'UNKNOWN')
+            _tag_sid    = str(_result.get('signal_id', '') or '')[:8]
+            _tag_ts     = str(int(_result.get('ts', 0) or 0))
+            _tag_level  = (
+                'DIVINE' if (_tag_score or 0) >= 170 else
+                'ELITE'  if (_tag_score or 0) >= 155 else
+                'STRONG' if (_tag_score or 0) >= 138 else 'WATCH'
+            )
+            _tag_src    = 'brahma_engine'
+            _tag_raw    = f'{symbol}:{_tag_dir}:{_tag_regime}:{_tag_ts}:{_tag_sid}'
+            _tag_sha8   = _hlib.sha256(_tag_raw.encode()).hexdigest()[:8]
+            _brahma_tag = (
+                f'[BRAHMA:{_tag_level}:{_tag_src}:{symbol}:'
+                f'{int(_tag_score or 0)}:{_tag_dir}:{_tag_regime}:'
+                f'{_tag_ts}:{_tag_sha8}]'
+            )
+            _result['output_tag'] = _brahma_tag
+    except Exception:
+        pass
+    # ══════════════════════════════════════════════════════════════════════════
+
     return _result
 
 def format_report(r: dict) -> str:
