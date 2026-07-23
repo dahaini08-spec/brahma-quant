@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="refresh" content="60">
+<title>梵天信号仪表盘</title>
+<style>
+:root {
+  --bg: #0a0e1a; --card: #111827; --border: #1e293b;
+  --text: #e2e8f0; --muted: #64748b; --accent: #6366f1;
+  --green: #00e676; --red: #ff4757; --orange: #ff6b35;
+  --yellow: #ffd32a; --blue: #38bdf8;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'SF Pro Display',system-ui,sans-serif;
+        font-size:13px; min-height:100vh; }
+.header { background:linear-gradient(135deg,#0f172a,#1e1b4b);
+           padding:16px 24px; border-bottom:1px solid var(--border);
+           display:flex; justify-content:space-between; align-items:center; }
+.header h1 { font-size:18px; font-weight:700; letter-spacing:.5px;
+               background:linear-gradient(90deg,#818cf8,#38bdf8); -webkit-background-clip:text;
+               -webkit-text-fill-color:transparent; }
+.ts { color:var(--muted); font-size:11px; }
+.grid-top { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+              gap:8px; padding:12px 16px; }
+.stat-card { background:var(--card); border:1px solid var(--border); border-radius:10px;
+               padding:12px 16px; }
+.stat-label { color:var(--muted); font-size:11px; margin-bottom:4px; }
+.stat-value { font-size:22px; font-weight:700; font-variant-numeric:tabular-nums; }
+.stat-sub { font-size:11px; color:var(--muted); margin-top:2px; }
+.systems { display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
+             gap:12px; padding:0 16px 16px; }
+.system-card { background:var(--card); border:1px solid var(--border); border-radius:12px;
+                 overflow:hidden; }
+.system-header { padding:12px 16px; border-bottom:1px solid var(--border);
+                   display:flex; align-items:center; gap:8px; }
+.system-badge { width:8px; height:8px; border-radius:50%; flex-shrink:0; animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+.system-title { font-weight:700; font-size:14px; }
+.system-meta { color:var(--muted); font-size:11px; margin-left:auto; }
+.signal-list { padding:8px 0; }
+.signal-row { padding:8px 16px; border-bottom:1px solid #1a2332;
+                display:grid; grid-template-columns:120px 60px 80px 80px 1fr;
+                gap:8px; align-items:center; transition:background .15s; cursor:default; }
+.signal-row:hover { background:#1a2332; }
+.signal-row:last-child { border-bottom:none; }
+.sym { font-weight:700; font-size:13px; font-family:monospace; }
+.score-badge { border-radius:6px; padding:2px 7px; font-size:11px; font-weight:700;
+                 text-align:center; white-space:nowrap; }
+.dir { font-size:11px; font-weight:600; }
+.timing { font-size:11px; }
+.details { font-size:10px; color:var(--muted); line-height:1.5; }
+.empty { padding:20px 16px; text-align:center; color:var(--muted); font-size:12px; }
+.positions-section { padding:0 16px 16px; }
+.pos-card { background:var(--card); border:1px solid var(--border); border-radius:12px;
+              overflow:hidden; }
+.pos-header { padding:12px 16px; border-bottom:1px solid var(--border); font-weight:700;
+                font-size:14px; display:flex; align-items:center; gap:8px; }
+.pos-row { padding:10px 16px; display:grid;
+             grid-template-columns:130px 80px 90px 90px 80px 1fr; gap:8px; align-items:center;
+             border-bottom:1px solid #1a2332; }
+.pos-row:last-child { border-bottom:none; }
+.regime-pill { display:inline-flex; align-items:center; gap:5px;
+                 background:#1e293b; border-radius:20px; padding:3px 10px; font-size:12px;
+                 border:1px solid var(--border); }
+.up { color:var(--green); } .dn { color:var(--red); }
+.neutral { color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>🦞 梵天信号仪表盘</h1>
+    <div class="ts">三大信号系统实时感知 · 自动60s刷新 · 2026-07-23 02:56 UTC</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="regime-pill">
+      <span style="width:7px;height:7px;border-radius:50%;background:#ff4757;flex-shrink:0;"></span>
+      <span style="font-weight:600;">BEAR_TREND</span>
+    </div>
+    <div class="ts" style="text-align:right;">体制更新 39min前</div>
+  </div>
+</div>
+
+<!-- 顶部统计 -->
+<div class="grid-top">
+  <div class="stat-card">
+    <div class="stat-label">账户NAV</div>
+    <div class="stat-value">$89.88</div>
+    <div class="stat-sub">可用 $84.93</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">未实现盈亏</div>
+    <div class="stat-value up">+$0.0161</div>
+    <div class="stat-sub">+0.02%</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">BTC</div>
+    <div class="stat-value">$65,763</div>
+    <div class="stat-sub dn">-0.83% 24H</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">ETH</div>
+    <div class="stat-value">$1,927</div>
+    <div class="stat-sub dn">-0.17% 24H</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">主信号(6H有效)</div>
+    <div class="stat-value">5</div>
+    <div class="stat-sub">最高 score=175</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">OI信号(2H)</div>
+    <div class="stat-value">0</div>
+    <div class="stat-sub">最高 0</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">猎手预警</div>
+    <div class="stat-value">1</div>
+    <div class="stat-sub">TIGHT压缩监控</div>
+  </div>
+</div>
+
+<!-- 三大信号系统 -->
+<div class="systems">
+<div class="system-card">
+  <div class="system-header">
+    <span class="system-badge" style="background:#ff4757"></span>
+    <span class="system-title">System-1 · 梵天主信号</span>
+    <span class="system-meta">35维矩阵 | 5条有效</span>
+  </div>
+  <div class="signal-list"><div class="signal-row">
+  <div class="sym">SNDKUSDT</div>
+  <div><span class="score-badge" style="background:#ff174422;color:#ff1744;border:1px solid #ff174444">175</span></div>
+  <div class="dir" style="color:#00e676">▲ LONG</div>
+  <div class="timing" style="color:#00e676">🟢 READY</div>
+  <div class="details">$1596~$1599 SL=6.8% RR=2.5 36min前</div>
+</div><div class="signal-row">
+  <div class="sym">ETHUSDT</div>
+  <div><span class="score-badge" style="background:#ffd32a22;color:#ffd32a;border:1px solid #ffd32a44">130</span></div>
+  <div class="dir" style="color:#00e676">▲ LONG</div>
+  <div class="timing" style="color:#00e676">🟢 READY</div>
+  <div class="details">$1932~$1936 SL=1.4% RR=1.8 5.0H前</div>
+</div><div class="signal-row">
+  <div class="sym">ETHUSDT</div>
+  <div><span class="score-badge" style="background:#ffd32a22;color:#ffd32a;border:1px solid #ffd32a44">121</span></div>
+  <div class="dir" style="color:#00e676">▲ LONG</div>
+  <div class="timing" style="color:#00e676">🟢 READY</div>
+  <div class="details">$1923~$1925 SL=1.3% RR=1.8 12min前</div>
+</div><div class="signal-row">
+  <div class="sym">ETHUSDT</div>
+  <div><span class="score-badge" style="background:#aaa22;color:#aaa;border:1px solid #aaa44">117</span></div>
+  <div class="dir" style="color:#00e676">▲ LONG</div>
+  <div class="timing" style="color:#aaa">⚫ STANDBY</div>
+  <div class="details">$1923~$1927 SL=1.4% RR=1.8 3.5H前</div>
+</div><div class="signal-row">
+  <div class="sym">BTCUSDT</div>
+  <div><span class="score-badge" style="background:#aaa22;color:#aaa;border:1px solid #aaa44">112</span></div>
+  <div class="dir" style="color:#00e676">▲ LONG</div>
+  <div class="timing" style="color:#aaa">⚫ STANDBY</div>
+  <div class="details">$6.617e+04~$6.624e+04 SL=1.2% RR=2.0 2.5H前</div>
+</div></div>
+</div>
+<div class="system-card"><div class="system-header"><span class="system-badge" style="background:#aaa"></span><span class="system-title">System-2 · OI持仓量扫描</span><span class="system-meta">暂无信号</span></div><div class="empty">2小时内暂无OI异动信号</div></div>
+<div class="system-card">
+  <div class="system-header">
+    <span class="system-badge" style="background:#ff1744"></span>
+    <span class="system-title">System-3 · 暴涨猎手</span>
+    <span class="system-meta">TIGHT压缩 97.5% | 1条预警</span>
+  </div>
+  <div class="signal-list"><div class="signal-row">
+  <div class="sym">BROCCOLIF3BUSDT ✅</div>
+  <div><span class="score-badge" style="background:#ff6b3522;color:#ff6b35;border:1px solid #ff6b3544">80</span></div>
+  <div class="dir" style="color:#00e676">▲ PUMP_DETEC</div>
+  <div class="timing" style="color:#aaa;font-size:10px;">7.9H前</div>
+  <div class="details">$0.007333~$0.007407 SL=0.0% RR=0.0 24H=+30.7%</div>
+</div></div>
+</div>
+</div>
+
+<!-- 当前持仓 -->
+<div class="positions-section">
+<div class="pos-card">
+  <div class="pos-header"><span style="color:#38bdf8;">📦</span> 当前持仓 (1)</div>
+  <div class="pos-row">
+  <div class="sym">HYPEUSDT</div>
+  <div style="color:#00e676;font-weight:700;">▲ LONG</div>
+  <div style="font-family:monospace;font-size:12px;">$58.8700</div>
+  <div class="up" style="font-family:monospace;font-size:12px;">+$0.0161</div>
+  <div class="up" style="font-size:12px;">+0.06%</div>
+  <div class="details">qty=0.42 SL=$58.007 TP=$60.6361 $24.74名义</div>
+</div>
+</div>
+</div>
+
+</body>
+</html>
