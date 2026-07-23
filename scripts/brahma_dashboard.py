@@ -611,7 +611,7 @@ def build_message() -> str:
         fmt_s2(s2, now_ts),
         fmt_s3(s3, s3_meta, now_ts),
         fmt_positions(positions),
-        f'\n{_sep("═", 36)}',
+        '\n' + '═' * 24,
     ]
     return '\n'.join(parts)
 
