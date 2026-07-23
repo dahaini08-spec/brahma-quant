@@ -60,6 +60,11 @@ MAX_SL_PCT_HIGH_VOL  = 9.0       # 高波动信号上限（score≥145，仓位�
 NAV_SIZE_PCT         = 0.05      # 默认仓位 NAV×5%（苏摩授权 2026-07-03）
 DEFAULT_LEV          = 5         # 默认杠杆 5x（苏摩授权 2026-07-03）
 MIN_NOTIONAL         = 5.5       # 最小开单金额 USDT（2026-07-23 修复: Binance MIN_NOTIONAL=5，加0.5缓冲得5.5）
+# Binance各标的实际最小名义值（来源: exchangeInfo filterType=MIN_NOTIONAL）
+SYMBOL_MIN_NOTIONAL  = {
+    'BTCUSDT': 50.0,   # Binance实际MIN=50
+    'ETHUSDT': 20.0,   # Binance实际MIN=20
+}  # 其他标的默认用MIN_NOTIONAL=5.5
 
 # ── blacktea风控门（2026-07-10 苏摩111批准）─────────────────────────────
 # 对标: nmrtn/blacktea x402支付控制 + 人工审批 + 审计日志
@@ -724,11 +729,13 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
         print(f'[高波动模式] {sym} sl={signal.get("sl_pct",0):.1f}% 仓位系数×{_hv_discount} 实际仓位=${notional:.1f}')
     # [修复 2026-07-23] TIER1课保: 高波动折扣后或仓位略低于MIN_NOTIONAL
     # 且 score>=155(神级)，则忽略折扣，直接用MIN_NOTIONAL作为最小仓位
-    if notional < MIN_NOTIONAL and score >= 155:
-        notional = MIN_NOTIONAL  # 直接用最小仓位兜底
-        print(f'[TIER1课保] {sym} score={score:.0f} 仓位兜底至MIN_NOTIONAL=${notional:.1f}')
-    if notional < MIN_NOTIONAL:
-        result['reason'] = f'仓位${notional:.2f} < 最小${MIN_NOTIONAL}'
+    # [修复 2026-07-23 v2] 使用per-symbol最低名义值（BTC=50, ETH=20）
+    _sym_min = SYMBOL_MIN_NOTIONAL.get(sym, MIN_NOTIONAL)
+    if notional < _sym_min and score >= 155:
+        notional = _sym_min  # 直接用symbol级别最小仓位兜底
+        print(f'[TIER1课保] {sym} score={score:.0f} 仓位兜底至{sym}MIN=${notional:.1f}')
+    if notional < _sym_min:
+        result['reason'] = f'仓位${notional:.2f} < {sym}最小${_sym_min}'
         return result
 
     # ── blacktea审批门（苏摩111 2026-07-10）─────────────────────────────────
