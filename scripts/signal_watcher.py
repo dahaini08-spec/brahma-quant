@@ -128,7 +128,9 @@ def _load_valid_signals() -> list:
     - score≥155（与宪法MIN_SCORE/auto_execute_gate一致，原≥140偏低）
     - grade≥70（正则提取，兼容文字格式）
     - timing=WAIT/STANDBY/MONITOR 不装载（与P2门控一致）
-    [Phase0 2026-07-23 设计院] 新增TIER1监控推送通道：score 130-154 推送但不执行
+    [IC铁证封印 2026-07-23 设计院自主] 删除TIER1通道 — score<155完全静默
+    根因: BULL_TREND:LONG:140-159 WR=20% EV=-1.04% (n=13) 持续产生噪音推送
+    方案A: score<155 → continue 完全屏蔽，无监控无推送
     """
     if not LOG_PATH.exists():
         return []
@@ -141,16 +143,13 @@ def _load_valid_signals() -> list:
             s = json.loads(l)
             score = s.get("score", 0)
             # TIER2：完整执行（宪法门槛）
-            # TIER1：监控推送，不自动执行 [Phase0 2026-07-23]
+            # [IC铁证 2026-07-23] score<155一律静默，无TIER1通道
             if score >= 155:
                 tier = 'TIER2'
                 if not s.get("valid"):  # TIER2必须 valid=True
                     continue
-            elif score >= 130:
-                tier = 'TIER1'  # 监控推送，不需要valid=True
-                s['_tier1_watch_only'] = True  # 标记：仅推送，不执行
             else:
-                continue  # score<130 完全屏蔽
+                continue  # [IC铁证 2026-07-23] score<155 完全静默，删除TIER1通道
             # [FIX-ROOT 2026-07-22 苏摩111] grade统一解析
             try:
                 from brahma_brain.grade_utils import parse_grade as _pg
@@ -416,17 +415,11 @@ def run():
                 gap_pct = 999
 
             card = _format_signal_card(s, price, gap_pct)
-            # [Phase0 2026-07-23] TIER1监控信号：标记不执行
-            if s.get('_tier1_watch_only'):
-                try:
-                    from push_hub import _jarvis as _pj_sw
-                    _pj_sw(f"📁 TIER1监控信号（仅观察，不执行）\n{card}", dedup_ttl=43200)
-                except Exception: pass
-            else:
-                # 唯一推送出口：push_hub._jarvis（dedup_ttl=86400，同信号24H内不重复）
-                try:
-                    from push_hub import _jarvis as _pj_sw; _pj_sw(f"🔔 新信号\n{card}", dedup_ttl=86400)
-                except Exception: pass
+            # 唯一推送出口：push_hub._jarvis（dedup_ttl=86400，同信号24H内不重复）
+            # [IC铁证 2026-07-23] TIER1通道已删除，此处只剩TIER2（score≥155）信号
+            try:
+                from push_hub import _jarvis as _pj_sw; _pj_sw(f"🔔 新信号\n{card}", dedup_ttl=86400)
+            except Exception: pass
             state["notified"][sig_id] = now
             pass  # [静默]
             continue

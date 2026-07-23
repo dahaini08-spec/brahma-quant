@@ -86,10 +86,10 @@ APPROVAL_RECORD_PATH = Path(__file__).parent.parent / 'data' / 'approval_pending
 # score≥155 → 10% NAV | score 140~154 → 7.5% NAV | score 138~139 → 5% NAV
 BIG_SYMBOLS          = {'BTCUSDT', 'ETHUSDT'}   # 大仓位标的
 BIG_SYM_NAV_HIGH     = 0.10     # score≥155 → 10%
-BIG_SYM_NAV_MID      = 0.075    # score 140~154 → 7.5%
+BIG_SYM_NAV_MID      = 0.075    # [IC铁证封印] score 140~154区间已从信号层拦截，此参数保留备用
 BIG_SYM_NAV_BASE     = 0.05     # score 138~139 → 5%（与其他标的一致）
 BIG_SYM_SCORE_HIGH   = 155      # 高档触发分
-BIG_SYM_SCORE_MID    = 140      # 中档触发分
+BIG_SYM_SCORE_MID    = 155      # [IC铁证 2026-07-23] 与高档对齐，140~154区间封印
 
 # 开单模式：market / limit / auto（默认）
 # auto = 有entry区间且区间>0.1%用limit；否则用market
@@ -1138,7 +1138,7 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
         try:
             from brahma_brain.rl_position_ab import decide_position_size
             _std_nav_pct = BIG_SYM_NAV_HIGH if score >= 155 else (
-                BIG_SYM_NAV_MID if score >= 140 else BIG_SYM_NAV_LOW
+                BIG_SYM_NAV_LOW  # [IC铁证 2026-07-23] score<155不应进入此分支，保守fallback
             ) if sym in ('BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT') else 0.03
             _ab = decide_position_size(
                 signal_id=sig_id, symbol=sym,
