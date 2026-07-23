@@ -793,15 +793,19 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
         _cag_map  = {}  # sym -> result
         for _cag_sym, _cag_r in results.items():
             _cag_entry = {
-                'symbol':    _cag_sym,
-                'direction': str((_cag_r.get('params') or {}).get('direction', '') or '').upper(),
-                'score':     float(_cag_r.get('score_final', _cag_r.get('score', 0)) or 0),
-                'entry_lo':  float((_cag_r.get('params') or {}).get('entry_lo', 0) or 0),
-                'entry_hi':  float((_cag_r.get('params') or {}).get('entry_hi', 0) or 0),
-                'sl':        float((_cag_r.get('params') or {}).get('sl', 0) or 0),
-                'sl_pct':    float((_cag_r.get('params') or {}).get('sl_pct', 0) or 0),
-                'rr1':       float((_cag_r.get('params') or {}).get('rr1', 2.0) or 2.0),
-                'valid':     bool(_cag_r.get('valid_signal') or _cag_r.get('valid')),
+                'symbol':     _cag_sym,
+                'direction':  str((_cag_r.get('params') or {}).get('direction', '') or '').upper(),
+                'score':      float(_cag_r.get('score_final', _cag_r.get('score', 0)) or 0),
+                'entry_lo':   float((_cag_r.get('params') or {}).get('entry_lo', 0) or 0),
+                'entry_hi':   float((_cag_r.get('params') or {}).get('entry_hi', 0) or 0),
+                'sl':         float((_cag_r.get('params') or {}).get('sl', 0) or 0),
+                'sl_pct':     float((_cag_r.get('params') or {}).get('sl_pct', 0) or 0),
+                'rr1':        float((_cag_r.get('params') or {}).get('rr1', 2.0) or 2.0),
+                'valid':      bool(_cag_r.get('valid_signal') or _cag_r.get('valid')),
+                # [FIX-ROOT 2026-07-23 苏摩111] 传递 expires_at + ts
+                # 根因: 缺少这两个字段导致 _is_signal_valid() 无法过滤历史旧信号
+                'expires_at': _cag_r.get('expires_at', ''),
+                'ts':         float(_cag_r.get('ts', 0) or 0),
             }
             _cag_list.append(_cag_entry)
             _cag_map[_cag_sym] = _cag_r

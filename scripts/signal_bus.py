@@ -125,7 +125,24 @@ def write(signal: dict) -> bool:
                         if _d.get('ts',0) > _cutoff:
                             _existing_shas.add(_d.get('sha8',''))
                 except: pass
-            if _live_entry['sha8'] not in _existing_shas:
+            # [FIX-ROOT 2026-07-23 苏摩111] 去重升级: 用 signal_id 代替 sha8
+            # 根因: sha8=symbol+direction+score+1H窗口，与 dharma_data_bridge 的 entry_lo去重
+            # 互不认识对方写的记录 → 同一信号在 live_signal_log 出现两次（105个重复）
+            # 修复: 先检查 signal_id 是否已存在，存在则跳过写入
+            _this_sid = _live_entry.get('signal_id', '')
+            _existing_sids = set()
+            if _live_log.exists():
+                try:
+                    for _line in _live_log.read_text().split('\n')[-300:]:
+                        if not _line.strip(): continue
+                        _d = __import__('json').loads(_line)
+                        _dsid = _d.get('signal_id', '')
+                        if _dsid:
+                            _existing_sids.add(_dsid)
+                except: pass
+            if _this_sid and _this_sid in _existing_sids:
+                pass  # signal_id 已存在，跳过写入（去重命中）
+            else:
                 with open(str(_live_log), 'a') as _lf:
                     _lf.write(__import__('json').dumps(_live_entry, ensure_ascii=False) + '\n')
         except Exception as _sync_e:

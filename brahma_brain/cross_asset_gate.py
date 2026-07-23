@@ -26,6 +26,7 @@ cross_asset_gate.py — 梵天跨资产联合推理门控 v1.0
 import sys, os, time, json, requests, urllib.parse
 from pathlib import Path
 from typing import Optional
+from datetime import datetime, timezone
 
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
@@ -188,15 +189,55 @@ class CrossAssetGate:
 
         return signal
 
+    @staticmethod
+    def _is_signal_valid(sig: dict) -> bool:
+        """
+        信号有效性检查 — 修复3大缺陷之首要门:
+          1. expires_at 字段存在且未过期
+          2. valid 字段为 True（或无此字段时默认通过）
+          3. ts 存在时，信号年龄不超过 24H（兜底）
+        """
+        now_ts = time.time()
+
+        # ── 检查 expires_at ──────────────────────────────────
+        expires = sig.get('expires_at', '')
+        if expires:
+            try:
+                exp_ts = datetime.fromisoformat(
+                    expires.replace('Z', '+00:00')
+                ).timestamp()
+                if now_ts > exp_ts:
+                    return False   # 已过期
+            except Exception:
+                pass  # 解析失败时不拦截
+
+        # ── 检查 valid 字段 ──────────────────────────────────
+        if 'valid' in sig and not sig['valid']:
+            return False
+
+        # ── 兜底：信号年龄超过 24H 视为过期 ─────────────────
+        ts = sig.get('ts', 0)
+        if ts and (now_ts - ts) > 86400:
+            return False
+
+        return True
+
     def _find_btc_entry(self, peer_signals: list) -> Optional[float]:
-        """从同批信号中找BTC的最佳入场区下沿"""
-        btc_sigs = [s for s in peer_signals
-                    if s.get('symbol') == 'BTCUSDT'
-                    and s.get('direction') == 'LONG'
-                    and s.get('entry_lo', 0) > 0]
+        """
+        从同批信号中找BTC的最佳入场区下沿。
+        修复: 只使用未过期 + valid=True 的BTC信号作为锚，
+              防止历史旧信号（如 $64,001）错误触发跨资产门控。
+        """
+        btc_sigs = [
+            s for s in peer_signals
+            if s.get('symbol') == 'BTCUSDT'
+            and s.get('direction') == 'LONG'
+            and s.get('entry_lo', 0) > 0
+            and self._is_signal_valid(s)   # ← 核心修复：过期信号被排除
+        ]
         if not btc_sigs:
             return None
-        # 取score最高的BTC信号
+        # 取 score 最高的有效 BTC 信号
         best = max(btc_sigs, key=lambda x: x.get('score', 0))
         return best.get('entry_lo', 0)
 
