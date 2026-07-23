@@ -434,12 +434,9 @@ def collect_scan_meta() -> dict:
 
 
 # ══════════════════════════════════════════════════════════════
-#  格式化层 — 现代简约 Jarvis 推送格式
+#  格式化层 — 移动端优先，短行，信息分层
+#  原则: 每行≤28字符, 标题独行, 禁止同行塞>3字段
 # ══════════════════════════════════════════════════════════════
-
-def _sep(char='─', n=36) -> str:
-    return char * n
-
 
 def fmt_market(m: dict) -> str:
     now_str = datetime.now(timezone.utc).strftime('%m-%d %H:%M UTC')
@@ -447,116 +444,108 @@ def fmt_market(m: dict) -> str:
     regime_icon = {
         'BULL_TREND': '🟢', 'BULL_EARLY': '🟩',
         'BEAR_TREND': '🔴', 'BEAR_EARLY': '🟥', 'BEAR_RECOVERY': '🟡',
-        'CHOP_MID':  '🟡',  'CHOP_HIGH': '🟠', 'CHOP_LOW': '⚪',
+        'CHOP_MID': '🟡', 'CHOP_HIGH': '🟠', 'CHOP_LOW': '⚪',
     }.get(regime, '⚫')
-
-    btc_icon = '▲' if m['btc_chg'] >= 0 else '▼'
-    eth_icon = '▲' if m['eth_chg'] >= 0 else '▼'
-
-    lines = [
+    btc_chg = f'+{m["btc_chg"]:.2f}%' if m["btc_chg"] >= 0 else f'{m["btc_chg"]:.2f}%'
+    eth_chg = f'+{m["eth_chg"]:.2f}%' if m["eth_chg"] >= 0 else f'{m["eth_chg"]:.2f}%'
+    return '\n'.join([
         f'📊 **梵天仪表盘** · {now_str}',
-        _sep(),
-        f'**体制** {regime_icon} `{regime}`',
-        f'BTC  ${m["btc"]:,.0f}  {btc_icon}{abs(m["btc_chg"]):.2f}%  RSI {m["btc_rsi"]}  FR {m["btc_fr"]:+.4f}%',
-        f'ETH  ${m["eth"]:,.2f}  {eth_icon}{abs(m["eth_chg"]):.2f}%  RSI {m["eth_rsi"]}  FR {m["eth_fr"]:+.4f}%',
-    ]
-    return '\n'.join(lines)
+        f'体制 {regime_icon} **{regime}**',
+        f'',
+        f'BTC **${m["btc"]:,.0f}** {btc_chg}',
+        f'RSI {m["btc_rsi"]}  FR {m["btc_fr"]:+.4f}%',
+        f'',
+        f'ETH **${m["eth"]:,.2f}** {eth_chg}',
+        f'RSI {m["eth_rsi"]}  FR {m["eth_fr"]:+.4f}%',
+    ])
 
 
 def fmt_s1(signals: list, now_ts: float) -> str:
-    lines = [f'\n🧠 **S1 · 梵天主信号** ({len(signals)}个当日有效)', _sep('─', 36)]
+    lines = ['', '━━━━━━━━━━━━━━━━━━━━━━━━',
+             f'🧠 **S1 梵天主信号** · {len(signals)}个有效']
     if not signals:
-        lines.append('  暂无当日有效信号')
+        lines.append('暂无当日有效信号')
         return '\n'.join(lines)
-
     for s in signals:
-        sym       = s.get('symbol', '')
-        score     = float(s.get('score', 0))
-        direction = _direction_icon(s.get('direction', s.get('signal_dir', '')))
-        tier      = _score_tier(score)
-        regime    = s.get('regime', '')
-        entry_lo  = float(s.get('entry_lo', 0) or 0)
-        entry_hi  = float(s.get('entry_hi', 0) or 0)
-        sl_pct    = float(s.get('sl_pct', 0) or 0)
-        rr1       = float(s.get('rr1', 0) or 0)
-        timing    = s.get('timing_badge', '')
-        action    = s.get('action', '')
-        ttl       = _ttl_label(s.get('expires_at', ''), now_ts)
-        age       = _age_label(float(s.get('ts', now_ts)), now_ts)
-
-        # 实时价格对比入场区
+        sym     = s.get('symbol', '')
+        score   = float(s.get('score', 0))
+        tier    = _score_tier(score)
+        dir_raw = str(s.get('direction', s.get('signal_dir', ''))).upper()
+        dir_str = '⬆ 做多' if 'LONG' in dir_raw else '⬇ 做空'
+        regime  = s.get('regime', '')
+        elo     = float(s.get('entry_lo', 0) or 0)
+        ehi     = float(s.get('entry_hi', 0) or 0)
+        sl_pct  = float(s.get('sl_pct', 0) or 0)
+        rr1     = float(s.get('rr1', 0) or 0)
+        timing  = (s.get('timing_badge','') or s.get('action','')).replace('🟢 ','').replace('⚠️ ','')
+        ttl     = _ttl_label(s.get('expires_at',''), now_ts)
+        age     = _age_label(float(s.get('ts', now_ts)), now_ts)
         try:
-            cp = float(_pub('/fapi/v1/ticker/price', {'symbol': sym}).get('price', 0))
-            gap = (cp - entry_lo) / cp * 100 if entry_lo and cp else 0
-            gap_str = f'当前${cp:,.2f}  {gap:+.1f}%'
+            cp  = float(_pub('/fapi/v1/ticker/price', {'symbol': sym}).get('price', 0))
+            gap = (cp - elo) / cp * 100 if elo and cp else 0
+            gap_icon = '✅在区间' if abs(gap) <= 0.5 else ('⬆超出' if gap > 0 else '⬇未到')
+            price_str = f'现价 ${cp:,.2f} {gap_icon}'
         except Exception:
-            gap_str = ''
-
-        # 入场区格式
-        entry_str = ''
-        if entry_lo and entry_hi:
-            entry_str = f'入场 ${entry_lo:,.2f}~${entry_hi:,.2f}'
-        elif entry_lo:
-            entry_str = f'入场 ${entry_lo:,.2f}+'
-
-        lines.append(
-            f'\n**{sym}** {direction}  {tier} {score:.0f}分'
-        )
-        lines.append(f'  {entry_str}   SL {sl_pct:.1f}%  RR {rr1:.1f}x')
-        if gap_str:
-            lines.append(f'  {gap_str}')
-        meta_parts = [p for p in [regime, timing or action, ttl, age] if p]
-        lines.append(f'  {" · ".join(meta_parts)}')
-
+            price_str = ''
+        lines += [
+            '',
+            f'**{sym}** {dir_str}',
+            f'{tier} {score:.0f}分  {regime}',
+        ]
+        if elo and ehi:
+            lines.append(f'入场 {elo:,.1f}~{ehi:,.1f}')
+        lines.append(f'SL {sl_pct:.1f}%  RR {rr1:.1f}x')
+        if price_str:
+            lines.append(price_str)
+        lines.append(f'{timing}  {ttl}  {age}')
     return '\n'.join(lines)
 
 
 def fmt_s2(signals: list, now_ts: float) -> str:
-    lines = [f'\n📈 **S2 · OI猎手** ({len(signals)}个近2H异动)', _sep('─', 36)]
+    lines = ['', '━━━━━━━━━━━━━━━━━━━━━━━━',
+             f'📈 **S2 OI猎手** · {len(signals)}个近2H异动']
     if not signals:
-        lines.append('  近2H无异动信号')
+        lines.append('近2H无异动信号')
         return '\n'.join(lines)
-
     for s in signals:
         sym      = s.get('symbol', '')
         oi_score = float(s.get('oi_score', s.get('score', 0)))
         oi_chg   = float(s.get('oi_change_pct', s.get('oi_pct', 0)) or 0)
-        direction= s.get('signal', s.get('direction', s.get('bias', '')))
+        direction = s.get('signal', s.get('direction', s.get('bias', '')))
         regime   = s.get('regime', '')
         age      = _age_label(float(s.get('ts', now_ts)), now_ts)
-
-        oi_icon = '⬆' if oi_chg >= 0 else '⬇'
-        dir_str = '多头建仓' if 'LONG' in str(direction).upper() else ('空头建仓' if 'SHORT' in str(direction).upper() else direction)
-
-        lines.append(f'\n**{sym}**  OI {oi_icon}{abs(oi_chg):.2f}%  得分{oi_score:.0f}  {dir_str}  {regime}  {age}')
-
+        oi_icon  = '⬆' if oi_chg >= 0 else '⬇'
+        dir_str  = '多头建仓' if 'LONG' in str(direction).upper() else (
+                   '空头建仓' if 'SHORT' in str(direction).upper() else str(direction))
+        lines += [
+            '',
+            f'**{sym}**  {dir_str}',
+            f'OI {oi_icon}{abs(oi_chg):.2f}%  得分{oi_score:.0f}',
+            f'{regime}  {age}',
+        ]
     return '\n'.join(lines)
 
 
 def fmt_s3(signals: list, meta: dict, now_ts: float) -> str:
-    scan_time = meta.get('scan_time', '')
-    total     = meta.get('total_scanned', 0)
-    btc_reg   = meta.get('btc_regime', '')
-    elapsed   = meta.get('elapsed_sec', 0)
-
-    scan_age  = ''
-    if scan_time:
+    total    = meta.get('total_scanned', 0)
+    btc_reg  = meta.get('btc_regime', '')
+    elapsed  = meta.get('elapsed_sec', 0)
+    scan_age = ''
+    if meta.get('scan_time'):
         try:
-            st = datetime.fromisoformat(scan_time).replace(tzinfo=timezone.utc).timestamp()
+            st = datetime.fromisoformat(meta['scan_time']).replace(tzinfo=timezone.utc).timestamp()
             scan_age = _age_label(st, now_ts)
         except Exception:
             pass
-
     lines = [
-        f'\n🔥 **S3 · 暴涨猎手** ({len(signals)}个当日预警)',
-        _sep('─', 36),
-        f'  上次扫描 {scan_age}  覆盖 {total}标的  {btc_reg}  耗时{elapsed:.0f}s',
+        '', '━━━━━━━━━━━━━━━━━━━━━━━━',
+        f'🔥 **S3 暴涨猎手** · {len(signals)}个预警',
+        f'扫描 {total}标的  {scan_age}',
+        f'体制 {btc_reg}  耗时{elapsed:.0f}s',
     ]
-
     if not signals:
-        lines.append('  当日无触发预警')
+        lines.append('当日无触发预警')
         return '\n'.join(lines)
-
     for s in signals:
         sym   = s.get('symbol', '')
         score = float(s.get('score', s.get('pump_score', 0)))
@@ -565,41 +554,39 @@ def fmt_s3(signals: list, meta: dict, now_ts: float) -> str:
         rsi   = s.get('rsi_1h', s.get('rsi', '?'))
         vol_h = s.get('vol_shrink_h', '?')
         age   = _age_label(float(s.get('ts', now_ts)), now_ts)
-
-        level_icon = '💣' if score >= 85 else '🚨'
-        lines.append(
-            f'\n{level_icon} **{sym}**  {score:.0f}分 {level}'
-        )
-        lines.append(f'  TIGHT {tight}%  RSI {rsi}  缩量{vol_h}H  {age}')
-
+        icon  = '💣' if score >= 85 else '🚨'
+        lines += [
+            '',
+            f'{icon} **{sym}**  {score:.0f}分 {level}',
+            f'TIGHT {tight}%  RSI {rsi}',
+            f'缩量{vol_h}H  {age}',
+        ]
     return '\n'.join(lines)
 
 
 def fmt_positions(positions: list) -> str:
-    lines = [f'\n💼 **持仓快照** ({len(positions)}个)', _sep('─', 36)]
+    lines = ['', '━━━━━━━━━━━━━━━━━━━━━━━━',
+             f'💼 **持仓** · {len(positions)}个']
     if not positions:
-        lines.append('  空仓')
+        lines.append('空仓')
         return '\n'.join(lines)
-
     for p in positions:
-        sym   = p['symbol']
-        side  = '⬆ LONG' if 'LONG' in p['side'] else '⬇ SHORT'
-        pnl   = p['pnl_pct']
-        pnl_icon = '✅' if pnl >= 0 else '⚠️'
-        entry = p['entry_price']
-        cur   = p['current']
-        sl    = p['sl']
-        tp1   = p['tp1']
-        lev   = p['leverage']
-
-        lines.append(f'\n**{sym}** {side} {lev}x  {pnl_icon} {pnl:+.2f}%')
-        lines.append(f'  进场 ${entry:,.4f}  现价 ${cur:,.4f}')
-        sl_str  = f'SL ${sl:,.4f}' if sl else ''
-        tp1_str = f'TP1 ${tp1:,.4f}' if tp1 else ''
-        extra   = '  '.join(p for p in [sl_str, tp1_str] if p)
-        if extra:
-            lines.append(f'  {extra}')
-
+        sym  = p['symbol']
+        side = '⬆ 做多' if 'LONG' in p['side'] else '⬇ 做空'
+        pnl  = p['pnl_pct']
+        pnl_icon = '✅' if pnl >= 0 else '🔻'
+        lev  = p['leverage']
+        lines += [
+            '',
+            f'**{sym}** {side} {lev}x',
+            f'{pnl_icon} {pnl:+.2f}%',
+            f'进场 ${p["entry_price"]:,.2f}',
+            f'现价 ${p["current"]:,.2f}',
+        ]
+        if p['sl']:
+            lines.append(f'SL ${p["sl"]:,.2f}')
+        if p['tp1']:
+            lines.append(f'TP1 ${p["tp1"]:,.2f}')
     return '\n'.join(lines)
 
 
