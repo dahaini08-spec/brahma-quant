@@ -13,9 +13,18 @@ brahma_smoke_test.py — 梵天系统启动冒烟测试
 """
 import sys, os, json, time, subprocess
 from pathlib import Path
-from dotenv import load_dotenv
 
-load_dotenv()
+# [设计院固化 2026-07-23] 屏蔽HF/transformers离线warning，加速smoke_test启动
+os.environ.setdefault('TRANSFORMERS_OFFLINE', '1')
+os.environ.setdefault('HF_DATASETS_OFFLINE', '1')
+os.environ.setdefault('HF_HUB_OFFLINE', '1')
+os.environ.setdefault('TOKENIZERS_PARALLELISM', 'false')
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # dotenv可选，不阻断smoke_test运行
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
 
@@ -54,6 +63,10 @@ REQUIRED_MODULES = [
     ('brahma_brain.timing_filter',          None),
     ('brahma_brain.regime_state_machine',   None),
     ('brahma_brain.signal_card_formatter',  'format_vip_card'),
+    # [2026-07-23 新模块]
+    ('brahma_brain.cross_asset_gate',       'CrossAssetGate'),
+    ('brahma_brain.tradfi_signal_layer',    None),
+    ('brahma_brain.brahma_bus',             'BrahmaBus'),
 ]
 for mod, attr in REQUIRED_MODULES:
     try:

@@ -177,8 +177,28 @@ def run_compact_with_memory(symbol: str) -> str:
                             'output_tag': f'[BRAHMA:SIG:RUNNER:{symbol}:{score:.0f}:{direction}:{regime}:{int(_ts_now)}:{_sid[:8]}]',
                         }
                         _ok = _bus_write(_sig)
+                        # [注入 2026-07-23] 跨资产联合推理门控
+                        # BTC未到位时ETH信号自动降级为WAIT，防止矛盾开单
+                        try:
+                            from brahma_brain.cross_asset_gate import get_gate as _get_cag
+                            _gate = _get_cag()
+                            # 收集当前批次所有信号（从signal_bus最近记录）
+                            import json as _json_cag
+                            _peer_lines = (BASE/'data'/'signal_bus.jsonl').read_text().strip().split('\n')[-20:]
+                            _peers = []
+                            for _pl in _peer_lines:
+                                try: _peers.append(_json_cag.loads(_pl))
+                                except: pass
+                            _peers.append(_sig)  # 含当前信号
+                            _sig = _gate.check(_sig, peer_signals=_peers)
+                            if _sig.get('cross_asset_triggered'):
+                                import logging as _log_cag
+                                _log_cag.warning('[cross_asset_gate] %s 降级WAIT: %s',
+                                                  symbol, _sig.get('cross_asset_reason',''))
+                        except Exception as _cag_e:
+                            pass  # 门控失败不阻断主流程
                         # [事件驱动] score≥155立即直推，不等watcher轮询
-                        if score >= 155 and _ok:
+                        if score >= 155 and _ok and not _sig.get('cross_asset_triggered'):
                             try:
                                 import sys as _sys3
                                 _sys3.path.insert(0, str(BASE/'scripts'))

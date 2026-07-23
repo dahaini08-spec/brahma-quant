@@ -4583,18 +4583,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     }
 
     # [WFV-v1 闭环 2026-05-28] 达摩院信号日志（live_signal_log.jsonl）
-    try:
-        import sys as _sys_b, os as _os_b
-        _bd = _os_b.path.dirname(_os_b.path.abspath(__file__))
-        _root = _os_b.path.dirname(_bd)
-        if _root not in _sys_b.path:
-            _sys_b.path.insert(0, _root)
-        from dharma_data_bridge import log_signal as _log_dharma
-        _logged = _log_dharma(_result)
-        if _logged:
-            pass  # [静默] f'[DharmaBridge] ✓ {_sym} score={_score:.0f} 已写入 live_signal_log'
-    except Exception as _e:
-        pass  # [静默] f'[DharmaBridge] ⚠ 写入失败（不阻断主流）: {_e}'
+    # [双写修复 2026-07-23 设计院] brahma_engine.analyze()已在外层写入，此处跳过防止重复
+    # brahma_core.analyze()是内层函数，由brahma_engine调用，写入责任在engine层
+    # pass  # 原log_signal调用已移至brahma_engine.py L2821
 
     # ── FIX-I1: CHOP体制智能过滤（设计院 2026-06-06）────────────────
     # alpha_market_filter模块接入：CHOP噪音降级

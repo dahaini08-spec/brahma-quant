@@ -1108,6 +1108,14 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
     # 找候选信号
     candidates = find_executable_signals()
 
+    # [注入 2026-07-23] 跨资产联合推理门控
+    # BTC未到位时，ETH信号自动降级为WAIT，防止矛盾开单
+    try:
+        from brahma_brain.cross_asset_gate import apply_cross_asset_gate
+        candidates = apply_cross_asset_gate(candidates)
+    except Exception as _cag_e:
+        pass  # 门控失败不阻断执行
+
     pass  # [静默]
 
     if not candidates:
