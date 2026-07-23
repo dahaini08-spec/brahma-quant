@@ -292,6 +292,15 @@ def _auto_heal_suggestions(report: dict) -> list:
             'command': None
         })
 
+    # ws_guardian进程未运行 [P1-2 2026-07-23 设计院]
+    wsg = checks.get('ws_guardian', {})
+    if not wsg.get('ok') or wsg.get('warn'):
+        suggestions.append({
+            'priority': 1, 'action': 'WS_GUARDIAN_RESTART',
+            'desc': 'ws_guardian进程未运行',
+            'command': 'cd /root/.openclaw/workspace/trading-system && python3 scripts/ws_guardian.py &'
+        })
+
     return sorted(suggestions, key=lambda x: x['priority'])
 
 
@@ -334,6 +343,7 @@ def run_health_check(
     if full:
         checks['brahma_bus']      = _check_brahma_bus()
         checks['external_routes'] = _check_external_routes()
+        checks['ws_guardian']      = _check_ws_guardian()  # [P1-2 2026-07-23]
 
     # 计算健康分
     critical_keys = ['binance_api', 'scoring_engine', 'data_files']
@@ -679,3 +689,20 @@ def run_health_check(full: bool = False, timeout: float = 8.0) -> dict:
     else:
         report['score'] = max(80, 100 - warn_count * 5)
     return report
+
+
+def _check_ws_guardian() -> dict:
+    """检查ws_guardian进程是否运行 [P1-2 2026-07-23 设计院]"""
+    import subprocess
+    try:
+        r = subprocess.run(['pgrep', '-f', 'ws_guardian'], capture_output=True, text=True)
+        running = r.returncode == 0
+        pid = r.stdout.strip().split('\n')[0] if running else None
+        return {
+            'ok': running,
+            'detail': f'ws_guardian {"运行中 pid=" + pid if running else "未运行"}',
+            'warn': not running,
+            'pid': pid
+        }
+    except Exception as e:
+        return {'ok': True, 'detail': f'检查失败(忽略): {e}', 'warn': False}

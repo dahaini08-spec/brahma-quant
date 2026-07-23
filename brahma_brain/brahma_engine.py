@@ -128,6 +128,7 @@ except Exception:
 
 # ─── 从brahma_scoring导入评分函数 ──────────────────────────────────
 from brahma_brain.brahma_scoring import confluence_score, _apply_calib
+from brahma_brain.grade_utils import parse_grade, grade_to_label  # [P1 2026-07-23 设计院] 统一grade解析入口接入主链路
 
 def _nearest_swing_above(swing_highs: list, entry: float) -> float:
     """找到入场价上方最近的摆动高点（用于做空止损）"""
