@@ -248,6 +248,48 @@ def probe_360_freshness() -> ProbeResult:
 
 # ── 探针注册表 ───────────────────────────────────────────────
 
+def probe_cron_gateway_conflict() -> ProbeResult:
+    """P2: 检测cron任务是否与gateway-daily-restart(12:00 UTC)时间冲突"""
+    try:
+        import json
+        from pathlib import Path
+        jobs_path = Path.home() / '.openclaw/cron/jobs.json'
+        if not jobs_path.exists():
+            return ProbeResult('cron_gateway_conflict', 'P2', True, 'jobs.json不存在')
+        data = json.loads(jobs_path.read_text())
+        jobs = data if isinstance(data, list) else data.get('jobs', list(data.values()))
+        conflicts = []
+        for j in jobs:
+            if not isinstance(j, dict): continue
+            name = j.get('name', '')
+            if 'gateway' in name.lower(): continue  # 跳过gateway自身
+            sched = j.get('schedule', {})
+            anchor_ms = sched.get('anchorMs', 0)
+            every_ms = sched.get('everyMs', 0)
+            if not (anchor_ms and every_ms): continue
+            # 间隔<=15min的任务不可避免，豆免检测
+            if every_ms <= 15 * 60 * 1000: continue
+            # 检查未来8次触发是否落在 11:50~12:10 UTC 窗口
+            for i in range(8):
+                t_ms = anchor_ms + i * every_ms
+                # 将ms转为当天小时
+                from datetime import datetime, timezone
+                dt = datetime.fromtimestamp(t_ms / 1000, tz=timezone.utc)
+                if dt.hour == 12 and dt.minute <= 10:
+                    conflicts.append(name)
+                    break
+                if dt.hour == 11 and dt.minute >= 50:
+                    conflicts.append(name)
+                    break
+        passed = len(conflicts) == 0
+        return ProbeResult(
+            'cron_gateway_conflict', 'P2', passed,
+            'Cron时间无冲突' if passed else f'与gateway-restart冲突: {conflicts[:3]}',
+        )
+    except Exception as e:
+        return ProbeResult('cron_gateway_conflict', 'P2', True, f'探针跳过: {e}')
+
+
 ALL_PROBES = [
     probe_engine_alive,
     probe_api_connectivity,
@@ -257,6 +299,7 @@ ALL_PROBES = [
     probe_signal_queue_drain,
     probe_cron_route_ssot,
     probe_360_freshness,
+    probe_cron_gateway_conflict,
 ]
 
 LEVEL_PRIORITY = {'P0': 0, 'P1': 1, 'P2': 2}
