@@ -69,6 +69,14 @@ DATA_INFRA_MODULES = [
     'brahma_brain.realtime_fetch',
     'brahma_brain.market_state',
     'brahma_brain.smart_money_engine',
+    # [2026-07-23 设计院修复] core_entry实际使用的引擎，补充注册
+    'brahma_brain.divergence_engine',
+    'brahma_brain.volume_engine',
+    'brahma_brain.range_engine',
+    'brahma_brain.cvd_engine',
+    'brahma_brain.liq_density_engine',
+    'brahma_brain.volume_profile',
+    'brahma_brain.volume_ratio_engine',
 ]
 
 # 辅助监控模块（不在信号链，不影响有效性）
