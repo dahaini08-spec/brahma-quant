@@ -128,6 +128,7 @@ def _load_valid_signals() -> list:
     - score≥155（与宪法MIN_SCORE/auto_execute_gate一致，原≥140偏低）
     - grade≥70（正则提取，兼容文字格式）
     - timing=WAIT/STANDBY/MONITOR 不装载（与P2门控一致）
+    [Phase0 2026-07-23 设计院] 新增TIER1监控推送通道：score 130-154 推送但不执行
     """
     if not LOG_PATH.exists():
         return []
@@ -138,14 +139,19 @@ def _load_valid_signals() -> list:
             continue
         try:
             s = json.loads(l)
-            if not s.get("valid"):
-                continue
             score = s.get("score", 0)
-            if score < 155:  # [FIX-M2] 140→155，与宪法一致
-                continue
-            # [FIX-ROOT 2026-07-22 苏摩111] grade统一解析 — 优先读grade_num整数字段
-            # grade_num由dharma_data_bridge.log_signal()在写入时同步注入
-            # fallback链: grade_num → parse_grade(grade) → structure_grade → effective_grade
+            # TIER2：完整执行（宪法门槛）
+            # TIER1：监控推送，不自动执行 [Phase0 2026-07-23]
+            if score >= 155:
+                tier = 'TIER2'
+                if not s.get("valid"):  # TIER2必须 valid=True
+                    continue
+            elif score >= 130:
+                tier = 'TIER1'  # 监控推送，不需要valid=True
+                s['_tier1_watch_only'] = True  # 标记：仅推送，不执行
+            else:
+                continue  # score<130 完全屏蔽
+            # [FIX-ROOT 2026-07-22 苏摩111] grade统一解析
             try:
                 from brahma_brain.grade_utils import parse_grade as _pg
             except ImportError:
@@ -155,13 +161,14 @@ def _load_valid_signals() -> list:
                 structure_grade=int(s.get("structure_grade", 0) or 0),
                 effective_grade=float(s.get("effective_grade", 0) or 0),
             )
-            s["grade"] = grade  # 回写，供_format_signal_card使用
+            s["grade"] = grade
             if grade < 70:
                 continue
             # timing过滤：WAIT/STANDBY/MONITOR不装载
             timing = (s.get('timing_status') or s.get('timing_badge') or '').upper()
             if timing in ('WAIT', 'STANDBY', 'MONITOR'):
                 continue
+            s['_tier'] = tier  # 注入tier标记
             signals.append(s)
         except Exception:
             continue
@@ -327,10 +334,17 @@ def run():
                 gap_pct = 999
 
             card = _format_signal_card(s, price, gap_pct)
-            # 唯一推送出口：push_hub._jarvis（dedup_ttl=86400，同信号24H内不重复）
-            try:
-                from push_hub import _jarvis as _pj_sw; _pj_sw(f"🔔 新信号\n{card}", dedup_ttl=86400)
-            except Exception: pass
+            # [Phase0 2026-07-23] TIER1监控信号：标记不执行
+            if s.get('_tier1_watch_only'):
+                try:
+                    from push_hub import _jarvis as _pj_sw
+                    _pj_sw(f"📁 TIER1监控信号（仅观察，不执行）\n{card}", dedup_ttl=43200)
+                except Exception: pass
+            else:
+                # 唯一推送出口：push_hub._jarvis（dedup_ttl=86400，同信号24H内不重复）
+                try:
+                    from push_hub import _jarvis as _pj_sw; _pj_sw(f"🔔 新信号\n{card}", dedup_ttl=86400)
+                except Exception: pass
             state["notified"][sig_id] = now
             pass  # [静默]
             continue

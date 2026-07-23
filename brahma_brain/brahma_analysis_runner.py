@@ -690,6 +690,22 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
 
     返回: {symbol: run_analysis结果}
     """
+    # [Phase0 2026-07-23 设计院] 熔断门控 — 连续亏损保护
+    try:
+        import sys as _cb_sys, os as _cb_os
+        _cb_root = _cb_os.path.dirname(_cb_os.path.dirname(_cb_os.path.abspath(__file__)))
+        if _cb_root not in _cb_sys.path:
+            _cb_sys.path.insert(0, _cb_root)
+        from brahma_brain.circuit_breaker import BrahmaCircuitRegistry as _CBR
+        _cb_registry = _CBR.get()
+        if _cb_registry.has_open_breakers():
+            import logging as _cb_log
+            _cb_log.getLogger(__name__).warning(
+                '[CircuitBreaker] 熳断开路→跳过本次分析（连续失败保护）')
+            return {s: {'error': 'CIRCUIT_BREAKER_OPEN', 'score': 0, '_skipped': True}
+                    for s in symbols}
+    except Exception:
+        pass  # 熔断检查失败不阻断主流程
     t0 = time.time()
     norm_syms = []
     for s in symbols:
