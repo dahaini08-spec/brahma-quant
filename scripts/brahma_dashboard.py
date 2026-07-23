@@ -263,7 +263,8 @@ def collect_s1() -> list:
 
     # 价格穿越失效过滤 [Fix-PriceCross 2026-07-23 设计院封印]
     # 做多信号: 现价已低于 entry_lo 超过 1.0% → 价格已跌过入场区，信号不再展示
-    # 不影响 valid 字段，仅从展示层移除
+    # 修复: API超时时用已知最近价格兑底，实在拿不到价格则跳过展示（宁缺毟误）
+    _price_cache: dict = {}
     valid_signals = []
     for sig in seen.values():
         direction = str(sig.get('direction', sig.get('signal_dir', '')) or '').upper()
@@ -271,17 +272,27 @@ def collect_s1() -> list:
         if entry_lo <= 0:
             valid_signals.append(sig)
             continue
-        try:
-            cp = float(_pub('/fapi/v1/ticker/price', {'symbol': sig.get('symbol','')}).get('price', 0))
-            if cp > 0:
-                if 'LONG' in direction:
-                    cross_gap = (entry_lo - cp) / cp * 100
-                else:
-                    cross_gap = (cp - entry_lo) / entry_lo * 100
-                if cross_gap > 1.0:
-                    continue  # 价格穿越超过 1%，不展示
-        except Exception:
-            pass
+        sym_key = sig.get('symbol', '')
+        cp = 0.0
+        # 先用缓存价格（同一模块内多信号多次调用避免API频繁）
+        if sym_key in _price_cache:
+            cp = _price_cache[sym_key]
+        else:
+            try:
+                cp = float(_pub('/fapi/v1/ticker/price', {'symbol': sym_key}).get('price', 0))
+                if cp > 0:
+                    _price_cache[sym_key] = cp
+            except Exception:
+                cp = 0.0
+        if cp <= 0:
+            # 实在拿不到价格 → 宁缺毟误，不展示（防止过期信号溢出）
+            continue
+        if 'LONG' in direction:
+            cross_gap = (entry_lo - cp) / cp * 100
+        else:
+            cross_gap = (cp - entry_lo) / entry_lo * 100
+        if cross_gap > 1.0:
+            continue  # 价格已穿越超过1%，不展示
         valid_signals.append(sig)
 
     valid_signals.sort(key=lambda x: -float(x.get('score', 0)))

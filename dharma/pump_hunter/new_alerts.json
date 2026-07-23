@@ -1,10 +1,10 @@
 {
-  "scan_time": "2026-07-23T11:32:18.301045",
-  "elapsed_sec": 54.0,
-  "total_scanned": 181,
+  "scan_time": "2026-07-23T13:47:37.690971",
+  "elapsed_sec": 52.9,
+  "total_scanned": 183,
   "alerts": [],
   "new_alerts": [],
   "need_push": false,
-  "scan_ts": 1784806338.3010423,
+  "scan_ts": 1784814457.6909685,
   "btc_regime": "CHOP_MID"
 }
