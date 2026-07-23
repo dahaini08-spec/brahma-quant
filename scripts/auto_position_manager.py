@@ -363,6 +363,32 @@ def run():
             _log(f'  FULL_CLOSE {sym}: {result}')
             if result['status'] == 'OK':  # P1: wuqu平仓回写
                 _sync_wuqu_close(sym, result.get('qty', qty), f'APM_FULL:{detail[:40]}')
+                # [Phase1 2026-07-23 设计院] 学习闭环钉子 — 全平后写入calibration_feedback
+                try:
+                    _fill_px = result.get('fill', 0)
+                    _entry_px = float(pos_data.get('entry_price', _fill_px) or _fill_px)
+                    _dir = pos_data.get('direction', 'LONG')
+                    _pnl_pct = ((_fill_px - _entry_px) / _entry_px * 100) if _entry_px else 0
+                    if _dir == 'SHORT': _pnl_pct = -_pnl_pct
+                    _feedback = {
+                        'symbol': sym, 'direction': _dir,
+                        'entry_price': _entry_px, 'exit_price': _fill_px,
+                        'pnl_pct': round(_pnl_pct, 4),
+                        'result': 'WIN' if _pnl_pct > 0 else 'LOSS',
+                        'close_reason': detail[:60],
+                        'signal_id': pos_data.get('signal_id', ''),
+                        'score': pos_data.get('score', 0),
+                        'regime': pos_data.get('regime', ''),
+                        'ts': time.time()
+                    }
+                    import json as _jl
+                    from pathlib import Path as _Pl
+                    _cal = _Pl(__file__).parent.parent / 'data' / 'calibration_feedback.jsonl'
+                    with open(_cal, 'a') as _f:
+                        _f.write(_jl.dumps(_feedback, ensure_ascii=False) + '\n')
+                    _log(f'  [LearningLoop] 写入calibration_feedback: {sym} {_feedback["result"]} pnl={_pnl_pct:.2f}%')
+                except Exception as _le:
+                    _log(f'  [LearningLoop] 写入失败(不阻断主流): {_le}', 'WARN')
 
         elif decision == 'REDUCE_HALF':
             result = close_position(sym, qty * 0.5, detail)

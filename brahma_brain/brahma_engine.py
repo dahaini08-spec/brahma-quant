@@ -1911,10 +1911,15 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             print(f'[死穴-封锁] {_sym} BEAR_TREND_LONG: score={_dz_score:.0f} grade={_dz_grade} RSI={_dz_rsi1h:.0f}')
     elif 'BULL_TREND' in _regime_str and _dir_check == 'SHORT':
         # 精英解锁：score≥155 AND grade≥90 AND RSI_1H>75（高RSI顶部结构做空）
-        _bu_elite = (_dz_score >= 155 and _dz_grade >= 90 and _dz_rsi1h > 75)
+        # [Phase1-3 2026-07-23 设计院] 扩展解锁通道：BTC.D<52%时降低score门槛至148
+        _btcd = float(cf.get('btc_dominance', 55) or 55)
+        _bu_elite_std  = (_dz_score >= 155 and _dz_grade >= 90 and _dz_rsi1h > 75)
+        _bu_elite_ext  = (_dz_score >= 148 and _dz_grade >= 85 and _dz_rsi1h > 72 and _btcd < 52)
+        _bu_elite = _bu_elite_std or _bu_elite_ext
         if _bu_elite:
-            print(f'[死穴-精英解锁] {_sym} BULL_TREND_SHORT: score={_dz_score:.0f}≥155 grade={_dz_grade}≥90 RSI={_dz_rsi1h:.0f}>75 → 0.5%NAV观察仓')
-            cf['breakdown']['死穴精英解锁'] = f'BULL_TREND_SHORT RSI={_dz_rsi1h:.0f}>75顶部结构做空 score={_dz_score:.0f}≥155 grade={_dz_grade}≥90 → 0.5%NAV'
+            _unlock_mode = 'std' if _bu_elite_std else f'ext(BTC.D={_btcd:.1f}%<52%)'
+            print(f'[死穴-精英解锁] {_sym} BULL_TREND_SHORT: score={_dz_score:.0f} grade={_dz_grade} RSI={_dz_rsi1h:.0f} mode={_unlock_mode} → 0.5%NAV观察仓')
+            cf['breakdown']['死穴精英解锁'] = f'BULL_TREND_SHORT RSI={_dz_rsi1h:.0f}>75顶部结构做空 score={_dz_score:.0f} grade={_dz_grade} mode={_unlock_mode} → 0.5%NAV'
         else:
             _valid = False
             cf['breakdown']['死穴封禁'] = f'BULL_TREND_SHORT WR=47.7%(铁证n=4999) 未达精英解锁[score≥155+grade≥90+RSI>75] score={_dz_score:.0f} RSI={_dz_rsi1h:.0f}'

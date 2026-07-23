@@ -278,6 +278,22 @@ def log_signal(result: dict) -> bool:
         with open(LOG_PATH, 'a', encoding='utf-8') as f:
             f.write(line)
 
+        # [Phase1-2 2026-07-23 设计院] 信号写入后发射SIGNAL_FIRED事件（事件驱动替代轮询）
+        if float(signal.get('score', 0)) >= 130:
+            try:
+                from brahma_brain.brahma_event_bus import BrahmaEventBus, BrahmaEvent, Event as _Evt
+                _bus = BrahmaEventBus.get_instance()
+                _bus.put(_Evt(BrahmaEvent.SIGNAL_FIRED, {
+                    'symbol':    signal.get('symbol'),
+                    'score':     signal.get('score'),
+                    'direction': signal.get('direction'),
+                    'regime':    signal.get('regime'),
+                    'signal_id': signal.get('signal_id', ''),
+                    'ts':        signal.get('ts', 0),
+                }))
+            except Exception:
+                pass  # 事件总线失败不阻断主流
+
         # [v5.2 设计院 2026-07-04] 同步写入统一信号总线
         if signal.get('valid') and float(signal.get('score', 0)) >= 100:
             try:
