@@ -85,12 +85,20 @@
     "ZECUSDT",
     "GALAUSDT",
     "BNBUSDT",
-    "PIXELUSDT"
+    "PIXELUSDT",
+    {
+      "symbol": "SNDKUSDT",
+      "side": "LONG",
+      "entry": 1597.46,
+      "qty": 0.02,
+      "open_ts": "2026-07-23T03:07:44Z",
+      "source": "wuqu_auto_execute"
+    }
   ],
-  "regime": "BEAR_TREND",
+  "regime": "BULL_TREND",
   "n_open": 5,
   "total_pnl": 31.6566,
-  "last_update": 1784773007.8330722,
+  "last_update": 1784786517.5577316,
   "source": "reconcile_rebuild_20260628",
   "ws_guardian_sync": true,
   "last_sync": "2026-06-29T04:35:35.517800+00:00",
@@ -100,17 +108,17 @@
   "_price_eth": 1870.73,
   "_refreshed_at": 1784527892.009376,
   "_refreshed_by": "design_institute_seal_2026-07-20",
-  "updated_at": "2026-07-23T02:19:25+00:00",
-  "last_updated": "2026-07-23T02:16:47.831159+00:00",
-  "last_scan_ts": "2026-07-23T02:16:47.831159+00:00",
-  "timestamp": 1784773007.8330727,
-  "last_price": 65709.7,
-  "btc_price": 65709.7,
-  "price": 65709.7,
-  "eth_price": 1924.03,
+  "updated_at": "2026-07-23T06:01:57.557534+00:00",
+  "last_updated": "2026-07-23T06:01:57.557534+00:00",
+  "last_scan_ts": "2026-07-23T06:01:57.557534+00:00",
+  "timestamp": 1784786517.557732,
+  "last_price": 65686.6,
+  "btc_price": 65686.6,
+  "price": 65686.6,
+  "eth_price": 1922.08,
   "market_prices": {
-    "BTCUSDT": 65709.7,
-    "ETHUSDT": 1924.03
+    "BTCUSDT": 65686.6,
+    "ETHUSDT": 1922.08
   },
   "regime_label": "BULL_TREND",
   "regime_snapshot": {
@@ -118,14 +126,14 @@
     "regime": "BULL_TREND",
     "phase": "3W_OR_5W",
     "momentum": "NEUTRAL",
-    "rsi_1h": 42.57,
-    "rsi_4h": 53.3,
-    "rsi_1d": 57.12,
+    "rsi_1h": 43.2,
+    "rsi_4h": 52.99,
+    "rsi_1d": 57.0,
     "trend_1h": "CHOP",
     "trend_4h": "BULL",
     "trend_1d": "CHOP",
     "source": "market_state.detect_regime",
-    "ts": 1784773008.6072152
+    "ts": 1784786518.032159
   },
   "ws_guardian": {
     "pid": 0,

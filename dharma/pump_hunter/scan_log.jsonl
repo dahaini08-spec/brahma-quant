@@ -821,3 +821,8 @@
 {"ts": "2026-07-23T01:02:02.325418", "alerts": 0, "new": 0, "elapsed": 42.84815216064453, "regime": "CHOP_MID"}
 {"ts": "2026-07-23T01:47:02.284868", "alerts": 0, "new": 0, "elapsed": 42.761903285980225, "regime": "CHOP_MID"}
 {"ts": "2026-07-23T02:32:02.676443", "alerts": 0, "new": 0, "elapsed": 43.31055951118469, "regime": "CHOP_MID"}
+{"ts": "2026-07-23T03:10:37.463701", "alerts": 0, "new": 0, "elapsed": 71.60602283477783, "regime": "CHOP_MID"}
+{"ts": "2026-07-23T03:17:03.767022", "alerts": 0, "new": 0, "elapsed": 43.882593631744385, "regime": "CHOP_MID"}
+{"ts": "2026-07-23T04:02:04.682874", "alerts": 0, "new": 0, "elapsed": 45.1786105632782, "regime": "CHOP_MID"}
+{"ts": "2026-07-23T04:47:05.669306", "alerts": 0, "new": 0, "elapsed": 45.63415741920471, "regime": "CHOP_MID"}
+{"ts": "2026-07-23T05:32:07.563558", "alerts": 0, "new": 0, "elapsed": 44.11652636528015, "regime": "CHOP_MID"}

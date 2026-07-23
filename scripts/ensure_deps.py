@@ -1,45 +1,33 @@
 #!/usr/bin/env python3
 """
-依赖自愈脚本 v1.0 2026-07-03
-在brahma_self_heal中调用，检测缺失依赖并自动重装
+ensure_deps.py — 运行时依赖自动安装
+在brahma系统启动时调用，确保关键依赖存在
 """
-import subprocess, sys, importlib
+import subprocess, sys
 
 REQUIRED = {
-    'statsmodels': 'statsmodels',
+    'yaml':        'pyyaml',
     'sklearn':     'scikit-learn',
-    'ta':          'ta',
-    'scipy':       'scipy',
-    'pandas':      'pandas',
-    'numpy':       'numpy',
-    'requests':    'requests',
+    'statsmodels': 'statsmodels',
+    'psutil':      'psutil',
 }
 
-def check_and_fix():
+def ensure():
     missing = []
     for mod, pkg in REQUIRED.items():
         try:
-            importlib.import_module(mod)
+            __import__(mod)
         except ImportError:
             missing.append(pkg)
-
-    if not missing:
-        return {'ok': True, 'missing': [], 'fixed': []}
-
-    print(f'[ensure_deps] 缺失: {missing}，开始安装...')
-    result = subprocess.run(
-        [sys.executable, '-m', 'pip', 'install'] + missing +
-        ['--break-system-packages', '-q'],
-        capture_output=True, text=True, timeout=120
-    )
-
-    if result.returncode == 0:
-        print(f'[ensure_deps] ✅ 已修复: {missing}')
-        return {'ok': True, 'missing': missing, 'fixed': missing}
-    else:
-        print(f'[ensure_deps] ❌ 安装失败: {result.stderr[:200]}')
-        return {'ok': False, 'missing': missing, 'fixed': [], 'error': result.stderr[:200]}
+    if missing:
+        print(f'[ensure_deps] 安装缺失依赖: {missing}')
+        subprocess.run(
+            [sys.executable, '-m', 'pip', 'install', '--break-system-packages', '-q'] + missing,
+            timeout=120
+        )
+        print('[ensure_deps] ✅ 安装完成')
+    return len(missing)
 
 if __name__ == '__main__':
-    r = check_and_fix()
-    print(r)
+    n = ensure()
+    print(f'[ensure_deps] 已安装{n}个缺失包' if n else '[ensure_deps] 所有依赖已就绪')

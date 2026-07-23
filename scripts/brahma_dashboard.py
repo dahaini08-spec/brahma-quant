@@ -678,3 +678,149 @@ if __name__ == '__main__':
     parser.add_argument('--no-html', action='store_true', help='仅终端输出')
     args = parser.parse_args()
     build_dashboard(output_html=not args.no_html)
+
+
+# ─── 线程推送模式 ──────────────────────────────────────────────────
+
+def build_push_message() -> str:
+    """生成适合Jarvis线程推送的Markdown仪表盘"""
+    account = collect_account()
+    market  = collect_market()
+    regime  = collect_regime()
+    s1      = collect_system1()
+    s2      = collect_system2()
+    s3      = collect_system3()
+    wuqu    = collect_wuqu()
+
+    nav   = account.get('nav', 0)
+    pnl   = account.get('pnl', 0)
+    avail = account.get('avail', 0)
+    btc   = market.get('BTCUSDT', {})
+    eth   = market.get('ETHUSDT', {})
+    reg   = regime.get('regime', '?')
+
+    def reg_emoji(r):
+        if 'BULL' in r: return '🟢'
+        if 'BEAR' in r and 'RECOVERY' not in r: return '🔴'
+        if 'RECOVERY' in r: return '🟡'
+        return '⚪'
+
+    def score_grade(s):
+        if s >= 175: return '🔴神级'
+        if s >= 155: return '🔴极强'
+        if s >= 138: return '🟠强'
+        if s >= 120: return '🟡中等'
+        return '⚪'
+
+    def oi_grade(s):
+        if s >= 90: return '🔴极强'
+        if s >= 75: return '🟠强'
+        if s >= 60: return '🟡中'
+        return '⚪'
+
+    def timing_emoji(t):
+        if 'READY' in (t or ''): return '🟢'
+        if 'MONITOR' in (t or ''): return '🟡'
+        if 'WAIT' in (t or ''): return '🟠'
+        return '⚫'
+
+    dir_map = {
+        'LONG_BUILD': '▲多建仓', 'SHORT_BUILD': '▼空建仓',
+        'LONG_UNWIND': '↓多平仓', 'SHORT_COVER': '↑空回补',
+        'NEUTRAL': '— 中性'
+    }
+
+    lines = []
+    lines.append(f"🦞 **梵天信号仪表盘** · {time.strftime('%m-%d %H:%M UTC', time.gmtime())}")
+    lines.append(f"━━━━━━━━━━━━━━━━━━━━━━━")
+    lines.append(f"{reg_emoji(reg)} 体制 `{reg}` · 更新 {_age_str(regime.get('last_update'))}")
+    btc_c = btc.get('pct24h', 0); eth_c = eth.get('pct24h', 0)
+    lines.append(f"BTC `${btc.get('price',0):,.0f}` ({btc_c:+.2f}%)  ETH `${eth.get('price',0):,.0f}` ({eth_c:+.2f}%)")
+    pnl_emoji = '📈' if pnl >= 0 else '📉'
+    lines.append(f"NAV `${nav:.2f}` | 可用 `${avail:.2f}` | uPnL {pnl_emoji} `{pnl:+.4f}`")
+
+    # System-1
+    lines.append(f"\n**📊 System-1 · 梵天主信号** ({len(s1)}条 · 6H有效)")
+    if not s1:
+        lines.append("  暂无有效信号")
+    else:
+        for sig in s1[:5]:
+            score = sig.get('score', 0); grade = score_grade(score)
+            sym = sig.get('symbol', '?'); dr = sig.get('direction', '?')
+            tm = timing_emoji(sig.get('timing_badge', ''))
+            age = _age_str(sig.get('ts'))
+            elo = sig.get('entry_lo', sig.get('price', 0))
+            ehi = sig.get('entry_hi', elo)
+            sl = sig.get('sl_pct', 0); rr = sig.get('rr1', 0)
+            lines.append(f"  {grade} `{sym}` {'▲' if dr=='LONG' else '▼'}{dr} {tm} score={score:.0f}")
+            lines.append(f"    入场 `${elo:.4g}~${ehi:.4g}` SL={sl:.1f}% RR={rr:.1f} · {age}")
+
+    # System-2
+    lines.append(f"\n**📈 System-2 · OI持仓量扫描** ({len(s2)}条 · 2H活跃)")
+    if not s2:
+        lines.append("  暂无OI异动 (2H内)")
+    else:
+        for sig in s2[:5]:
+            score = sig.get('oi_score', 0); grade = oi_grade(score)
+            sym = sig.get('symbol', '?')
+            dr = dir_map.get(sig.get('direction', ''), sig.get('direction', ''))
+            age = _age_str(sig.get('ts'))
+            chg4h = sig.get('chg_4h', 0); whale = sig.get('whale_l', 0)
+            lines.append(f"  {grade} `{sym}` {dr} score={score:.0f}")
+            lines.append(f"    OI4H={chg4h:+.1f}% 鲸鱼={whale:.0f}% · {age}")
+
+    # System-3
+    lines.append(f"\n**🚀 System-3 · 暴涨猎手** ({len(s3)}条预警)")
+    if not s3:
+        lines.append("  TIGHT压缩监控中 · 暂无预警")
+    else:
+        for sig in s3[:4]:
+            score = sig.get('score', 0)
+            grade = '🔴' if score >= 90 else '🟡'
+            sym = sig.get('symbol', '?')
+            valid = '✅' if sig.get('valid') else '⏳'
+            age = _age_str(sig.get('ts'))
+            sl = sig.get('sl_pct', 0); rr = sig.get('rr', 0); p24 = sig.get('pct24h', 0)
+            lines.append(f"  {grade} `{sym}` {valid} score={score}")
+            lines.append(f"    SL={sl:.1f}% RR={rr:.1f} 24H={p24:+.1f}% · {age}")
+
+    # 持仓
+    pos = account.get('positions', [])
+    wuqu_map = {p.get('symbol', ''): p for p in wuqu}
+    if pos:
+        lines.append(f"\n**📦 当前持仓** ({len(pos)}个)")
+        for p in pos:
+            sym = p['symbol']; side = p['side']
+            upnl = p['upnl']; pct = p['pnl_pct']
+            wq = wuqu_map.get(sym, {})
+            sl = wq.get('stop_loss', '—'); tp = wq.get('take_profit', '—')
+            pe = '📈' if upnl >= 0 else '📉'
+            lines.append(f"  {pe} `{sym}` {side} entry=`${p['entry']:.4f}`")
+            lines.append(f"    uPnL=`{upnl:+.4f}` ({pct:+.2f}%) | SL=${sl} TP=${tp}")
+    else:
+        lines.append(f"\n**📦 当前持仓** 无")
+
+    lines.append(f"\n━━━━━━━━━━━━━━━━━━━━━━━")
+    lines.append(f"🔄 每30min推送 · 梵天信号仪表盘")
+    return '\n'.join(lines)
+
+
+if __name__ == '__main__' and '--push' in sys.argv:
+    # --push 模式：直接推送到Jarvis线程
+    try:
+        from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID, JARVIS_CHANNEL
+        target = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"
+        channel = JARVIS_CHANNEL
+    except Exception:
+        target = '73295708:thread:019f8768-6731-777d-8924-2426a5abd10f'
+        channel = 'jarvis'
+
+    msg = build_push_message()
+    import subprocess
+    subprocess.run([
+        'openclaw', 'message', 'send',
+        '--channel', channel,
+        '--to', target,
+        '--message', msg,
+    ], timeout=15)
+    print('[dashboard] 推送完成')

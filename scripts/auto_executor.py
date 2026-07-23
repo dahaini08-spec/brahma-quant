@@ -464,10 +464,14 @@ def _place_limit_orders(sym: str, side: str, total_qty: float,
 
     # ── 名义值预检查：计算每档名义值 ──────────────────────────────
     mid_price = prices[1] if len(prices) > 1 else prices[0]
+    # [修复 2026-07-23] 加 default=0 防止 generator 为空时 min() 崩溃
     min_batch_notional = min(
-        round(math.floor(total_qty * ratio * 10**qty_prec) / 10**qty_prec, qty_prec) * price
-        for ratio, price in zip(BATCH_RATIOS, prices)
-        if round(math.floor(total_qty * ratio * 10**qty_prec) / 10**qty_prec, qty_prec) > 0
+        (
+            round(math.floor(total_qty * ratio * 10**qty_prec) / 10**qty_prec, qty_prec) * price
+            for ratio, price in zip(BATCH_RATIOS, prices)
+            if round(math.floor(total_qty * ratio * 10**qty_prec) / 10**qty_prec, qty_prec) > 0
+        ),
+        default=0
     ) if total_qty > 0 else 0
 
     if min_batch_notional < BINANCE_MIN_NOTIONAL:

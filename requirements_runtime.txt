@@ -1,0 +1,10 @@
+# 梵天系统运行时依赖 - 每次环境重置后需重新安装
+# 安装命令: pip install -r requirements_runtime.txt --break-system-packages
+pyyaml>=6.0
+scikit-learn>=1.3
+statsmodels>=0.14
+psutil>=5.9
+requests>=2.31
+pandas>=2.0
+numpy>=1.24
+lightgbm>=4.0
