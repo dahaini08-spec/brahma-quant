@@ -34,6 +34,14 @@ auto_executor.py — 梵天自动开单触发器
 """
 
 import sys, os, json, time, hmac, hashlib, math, requests
+
+# ── 运行时依赖自检 ────────────────────────────────
+try:
+    from scripts.ensure_deps import ensure as _ensure_deps
+    _ensure_deps()
+except Exception:
+    pass
+
 from pathlib import Path
 from datetime import datetime, timezone
 

@@ -17,11 +17,20 @@
 """
 import json, requests, hmac, hashlib, time
 from pathlib import Path
+import sys as _sys_sc
+_sys_sc.path.insert(0, str(Path(__file__).parent.parent))
+try:
+    from scripts.system_config import API_KEY, API_SECRET
+except Exception:
+    import os as _os_sc
+    API_KEY    = _os_sc.environ.get("BINANCE_API_KEY", "")
+    API_SECRET = _os_sc.environ.get("BINANCE_API_SECRET", "")
+
 from datetime import datetime, timezone
 
 now = datetime.now(timezone.utc)
-API_KEY = 'sDqoRAyeYHHzevKNxSj5JfkWpNUd6v8qPAhVy0Y8wbWGwC48eC7uhFOENAlVqV7b'
-API_SECRET = 'hXQnzQco9SNVgKgF2m3xvBGlJjOHBVtlzqRlxOTkp0kiJAwAOTeUiGLQSAopqIj7'
+API_KEY = API_KEY
+API_SECRET = API_SECRET
 FAPI_BASE = 'https://fapi.binance.com'
 
 PAPER_DIR = Path('data/paper_forward')

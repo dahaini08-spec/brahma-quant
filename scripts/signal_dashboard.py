@@ -24,6 +24,15 @@ import sys
 import os
 import requests
 from pathlib import Path
+import sys as _sys_sc
+_sys_sc.path.insert(0, str(Path(__file__).parent.parent))
+try:
+    from scripts.system_config import API_KEY, API_SECRET
+except Exception:
+    import os as _os_sc
+    API_KEY    = _os_sc.environ.get("BINANCE_API_KEY", "")
+    API_SECRET = _os_sc.environ.get("BINANCE_API_SECRET", "")
+
 from datetime import datetime, timezone
 from urllib.parse import urlencode
 
@@ -39,8 +48,8 @@ WUQU_POS     = BASE / 'data' / 'wuqu_positions.json'
 DASHBOARD_STATE = BASE / 'data' / 'dashboard_last_push.json'
 
 # ── API ───────────────────────────────────────────────────
-API_KEY = os.getenv('BINANCE_API_KEY', 'sDqoRAyeYHHzevKNxSj5JfkWpNUd6v8qPAhVy0Y8wbWGwC48eC7uhFOENAlVqV7b')
-SECRET  = os.getenv('BINANCE_SECRET',  'hXQnzQco9SNVgKgF2m3xvBGlJjOHBVtlzqRlxOTkp0kiJAwAOTeUiGLQSAopqIj7')
+API_KEY = os.getenv('BINANCE_API_KEY', API_KEY)
+SECRET  = os.getenv('BINANCE_SECRET',  API_SECRET)
 BASE_URL = 'https://fapi.binance.com'
 
 def _sign(params: dict) -> dict:
