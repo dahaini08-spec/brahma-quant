@@ -586,6 +586,18 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     """执行单笔信号开单，返回执行结果"""
     sym       = signal['symbol']
     direction = signal.get('direction') or signal.get('signal_dir', 'SHORT')
+
+    # [修复 2026-07-23] 美股代币(TRADFI_STOCK)走现货，不支持期货执行路径，直接跳过
+    try:
+        from brahma_brain.universal_asset_router import classify_asset, ASSET_TRADFI_STOCK
+        if classify_asset(sym) == ASSET_TRADFI_STOCK:
+            result = {'signal_id': signal.get('signal_id',''), 'symbol': sym,
+                      'direction': direction, 'score': float(signal.get('score',0)),
+                      'ts': time.time(), 'ts_iso': datetime.now(timezone.utc).isoformat(),
+                      'status': 'SKIPPED', 'reason': 'TRADFI_STOCK不支持期货执行路径，跳过'}
+            return result
+    except Exception:
+        pass  # 分类失败不阻断执行
     score     = float(signal.get('score', 0) or 0)
     sl_pct    = float(signal.get('sl_pct', MIN_SL_PCT) or MIN_SL_PCT)
     tp1       = float(signal.get('tp1', 0) or 0)

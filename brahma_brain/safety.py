@@ -105,8 +105,14 @@ def require_api_keys():
     # 如果环境变量均未注入，尝试从 .env 文件读取
     if not key or not sec:
         try:
-            _dot_env = Path(__file__).parent.parent / '.env'
-            if _dot_env.exists():
+            # 多路径探测：兼容cron子agent CWD为workspace根目录的情况
+            _candidates = [
+                Path(__file__).resolve().parent.parent / '.env',  # 绝对路径（最可靠）
+                Path(__file__).parent.parent / '.env',            # 相对__file__
+                Path('/root/.openclaw/workspace/trading-system/.env'),  # 硬编码兜底
+            ]
+            _dot_env = next((p for p in _candidates if p.exists()), None)
+            if _dot_env and _dot_env.exists():
                 for _line in _dot_env.read_text().splitlines():
                     _line = _line.strip()
                     if not _line or _line.startswith('#'): continue
