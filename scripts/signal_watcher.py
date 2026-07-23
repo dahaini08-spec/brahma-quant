@@ -316,9 +316,31 @@ def run():
         elif age_min > 2880:  # 无expires_at时fallback：48H过期
             continue
 
+        # ── [Fix-PriceCross 2026-07-23 设计院封印] 价格穿越失效检查 ──────
+        # 做多信号：现价已低于 entry_lo 超过 1.0% → 价格已跌过入场区，信号失去交易意义
+        # 做空信号：现价已高于 entry_lo 超过 1.0% → 同理
+        # 放在 Layer0/Layer1 之前，统一拦截，避免重复推送已穿越信号
+        _cross_check_price = _fetch_price(sym)
+        if _cross_check_price > 0:
+            _cross_entry_lo = float(s.get('entry_lo', 0) or 0)
+            if _cross_entry_lo > 0:
+                _is_short = s.get('direction', '') == 'SHORT'
+                if not _is_short:
+                    # 做多：现价跌穿入场区下沿 1.0% → 失效
+                    _cross_gap = (_cross_entry_lo - _cross_check_price) / _cross_check_price * 100
+                else:
+                    # 做空：现价涨穿入场区下沿 1.0% → 失效
+                    _cross_gap = (_cross_check_price - _cross_entry_lo) / _cross_entry_lo * 100
+                if _cross_gap > 1.0:
+                    # 标记穿越失效，不推送，不产生预警
+                    # 同时写入 notified 防止下次重复检查
+                    _cross_key = f"{sig_id}_price_crossed"
+                    if _cross_key not in state.get('notified', {}):
+                        state.setdefault('notified', {})[_cross_key] = now
+                    continue  # 价格已穿越，跳过此信号
         # ── Layer 0：新信号检测（<10分钟，且未通知过）───────────
         if age_min < 240 and sig_id not in state["notified"]:  # [修复 2026-07-08] 10min→240min(4H)，防止信号写入延迟被漏推
-            price = _fetch_price(sym)
+            price = _cross_check_price if _cross_check_price > 0 else _fetch_price(sym)
             if price <= 0:
                 continue
 

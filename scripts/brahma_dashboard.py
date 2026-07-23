@@ -232,14 +232,14 @@ def collect_s1() -> list:
     """
     System-1: 梵天主信号
     来源: live_signal_log.jsonl
-    过滤: valid=True + 未过期 + 当日 + signal_id去重 + score排序
+    过滤: valid=True + 未过期 + 当日 + signal_id去重 + 价格穿越失效 + score排序
     """
     f = DATA / 'live_signal_log.jsonl'
     if not f.exists():
         return []
 
-    now_ts    = _now()
-    today_ts  = _today_start_ts()
+    now_ts   = _now()
+    today_ts = _today_start_ts()
     seen: dict = {}  # signal_id -> record
 
     for line in f.read_text(encoding='utf-8').strip().split('\n'):
@@ -261,8 +261,31 @@ def collect_s1() -> list:
         except Exception:
             pass
 
-    signals = sorted(seen.values(), key=lambda x: -float(x.get('score', 0)))
-    return signals[:8]
+    # 价格穿越失效过滤 [Fix-PriceCross 2026-07-23 设计院封印]
+    # 做多信号: 现价已低于 entry_lo 超过 1.0% → 价格已跌过入场区，信号不再展示
+    # 不影响 valid 字段，仅从展示层移除
+    valid_signals = []
+    for sig in seen.values():
+        direction = str(sig.get('direction', sig.get('signal_dir', '')) or '').upper()
+        entry_lo  = float(sig.get('entry_lo', 0) or 0)
+        if entry_lo <= 0:
+            valid_signals.append(sig)
+            continue
+        try:
+            cp = float(_pub('/fapi/v1/ticker/price', {'symbol': sig.get('symbol','')}).get('price', 0))
+            if cp > 0:
+                if 'LONG' in direction:
+                    cross_gap = (entry_lo - cp) / cp * 100
+                else:
+                    cross_gap = (cp - entry_lo) / entry_lo * 100
+                if cross_gap > 1.0:
+                    continue  # 价格穿越超过 1%，不展示
+        except Exception:
+            pass
+        valid_signals.append(sig)
+
+    valid_signals.sort(key=lambda x: -float(x.get('score', 0)))
+    return valid_signals[:8]
 
 
 def collect_s2() -> list:
