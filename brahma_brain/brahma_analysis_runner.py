@@ -783,6 +783,55 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
         except Exception:
             pass
 
+    # ─── 跨资产联合推理门控（cross_asset_gate v1.0）────────────────────────
+    # 苏摩111批准 · 2026-07-23 · 设计院封印
+    # 在所有valid_signal产出后，做BTC/ETH跨资产一致性检查
+    # 矛盾信号（ETH多单但BTC未到位、联动跌幅会触发ETH止损）自动降级为WAIT_BTC_ANCHOR
+    try:
+        from brahma_brain.cross_asset_gate import apply_cross_asset_gate
+        _cag_list = []
+        _cag_map  = {}  # sym -> result
+        for _cag_sym, _cag_r in results.items():
+            _cag_entry = {
+                'symbol':    _cag_sym,
+                'direction': str((_cag_r.get('params') or {}).get('direction', '') or '').upper(),
+                'score':     float(_cag_r.get('score_final', _cag_r.get('score', 0)) or 0),
+                'entry_lo':  float((_cag_r.get('params') or {}).get('entry_lo', 0) or 0),
+                'entry_hi':  float((_cag_r.get('params') or {}).get('entry_hi', 0) or 0),
+                'sl':        float((_cag_r.get('params') or {}).get('sl', 0) or 0),
+                'sl_pct':    float((_cag_r.get('params') or {}).get('sl_pct', 0) or 0),
+                'rr1':       float((_cag_r.get('params') or {}).get('rr1', 2.0) or 2.0),
+                'valid':     bool(_cag_r.get('valid_signal') or _cag_r.get('valid')),
+            }
+            _cag_list.append(_cag_entry)
+            _cag_map[_cag_sym] = _cag_r
+        _cag_checked = apply_cross_asset_gate(_cag_list)
+        for _cag_item in _cag_checked:
+            _sym = _cag_item.get('symbol', '')
+            if _sym in _cag_map and _cag_item.get('cross_asset_triggered'):
+                # 回写降级标志到原始result
+                _cag_map[_sym]['cross_asset_triggered']  = True
+                _cag_map[_sym]['cross_asset_reason']     = _cag_item.get('cross_asset_reason', '')
+                _cag_map[_sym]['cross_asset_wait_entry'] = {
+                    'entry_lo': _cag_item.get('better_entry_lo', 0),
+                    'entry_hi': _cag_item.get('better_entry_hi', 0),
+                    'sl':       _cag_item.get('better_sl', 0),
+                    'rr':       _cag_item.get('better_rr', 0),
+                }
+                # 覆盖 timing_badge → WAIT
+                _cag_map[_sym]['timing_badge']  = '⚠️ WAIT_BTC_ANCHOR'
+                _cag_map[_sym]['timing_status'] = 'WAIT'
+                # 不改 valid_signal（信号本身有效，只是时机未到）
+            elif _sym in _cag_map:
+                _cag_map[_sym]['cross_asset_check'] = _cag_item.get('cross_asset_check', 'OK')
+    except Exception as _cag_err:
+        try:
+            from brahma_brain.brahma_log import berr
+            berr('cross_asset_gate', f'门控异常（不影响主流程）: {_cag_err}')
+        except Exception:
+            pass
+    # ─────────────────────────────────────────────────────────────────────────
+
     return results
 
 
