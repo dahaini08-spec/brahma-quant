@@ -203,12 +203,57 @@ def evaluate_timing(symbol: str,
         s_kronos = _score_kronos(s23_p_up, signal_dir)
         total    = s_price + s_rsi + s_kronos
 
-        # 体制感知阈值
+        # 体制感知阈値（必须先于下面的P0修复限刻定义）
         thresholds = _REGIME_THRESHOLDS.get(regime or '', {
             'ready': READY_THRESHOLD, 'monitor': MONITOR_THRESHOLD
         })
         ready_t   = thresholds['ready']
         monitor_t = thresholds['monitor']
+
+        # [P0修复 2026-07-24] SNDK复盘封印：FVG填充强制MONITOR耗戒门栖
+        # 问题：价格在FVG内向下运动时，timing_filter未感知，将MONITOR评为READY
+        # 修复：如果价格在进场区下方（已蹉入FVG），强制降层到MONITOR
+        # 视视標志：bull_fvg填充警告在kwargs中传入
+        fvg_active_fill = kwargs.get('fvg_active_fill_down', False)
+        if fvg_active_fill and signal_dir == 'LONG' and total >= ready_t:
+            # 强制MONITOR：FVG正在向下填充，不走FVG底部不入场
+            total = ready_t - 5  # 降至READY门山下方1分
+            status = 'MONITOR'
+            return {
+                'status': status,
+                'score': total,
+                'badge': _STATUS_BADGES[status],
+                'breakdown': {
+                    'price_position': s_price,
+                    'rsi_1h':         s_rsi,
+                    'kronos_p_up':    s_kronos,
+                    'total':          total,
+                    'ready_threshold': ready_t,
+                    'fvg_fill_penalty': '⚠️ FVG向下填充强制MONITOR，等FVG底部止跌再入场',
+                },
+            }
+
+        # [P0修复 2026-07-24] 价格偏弱进场区（已进入OB公塘1以下）时强化门栖
+        # 问题：价格跳过进场区下跌，RSI仅到中性区，timing仍给READY
+        # 修复：价格低于进场区下沿1.5%，且RSI在40~55底部確认区 → 强制MONITOR
+        price_below_entry = current_price < entry_lo * 0.985  # 进场区下方1.5%
+        rsi_mid_zone = rsi_1h is not None and 38 < rsi_1h < 55  # RSI未到超卖区
+        if signal_dir == 'LONG' and price_below_entry and rsi_mid_zone and total >= ready_t:
+            total = ready_t - 3
+            status = 'MONITOR'
+            return {
+                'status': status,
+                'score': total,
+                'badge': _STATUS_BADGES[status],
+                'breakdown': {
+                    'price_position': s_price,
+                    'rsi_1h':         s_rsi,
+                    'kronos_p_up':    s_kronos,
+                    'total':          total,
+                    'ready_threshold': ready_t,
+                    'price_entry_gap': f'⚠️ 价格{current_price:.2f}已跌至进场区下方{(entry_lo-current_price):.2f}({(entry_lo-current_price)/entry_lo*100:.1f}%)，RSI={rsi_1h:.1f}未超卖强制MONITOR',
+                },
+            }
 
         if total >= ready_t:
             status = 'READY'

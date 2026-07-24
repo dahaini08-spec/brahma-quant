@@ -119,7 +119,11 @@ def fmt_smc(smc: dict, price: float) -> str:
         lines.append("  无FVG（价格已完全填满所有缺口）")
     for f in bull_fvg[:2]:
         filled = "已填" if f.get('filled') else "未填满 🧲"
-        lines.append(f"    ▲Bull FVG: {f['bottom']}~{f['top']} gap={f['gap_pct']}% {filled}")
+        # [P1修复 2026-07-24] FVG主动填充警告
+        fill_warn = ""
+        if f.get('active_fill_down'):
+            fill_warn = f" ⚠️ 正在向下填充！目标FVG底={f.get('fill_target','?')}"
+        lines.append(f"    ▲Bull FVG: {f['bottom']}~{f['top']} gap={f['gap_pct']}% {filled}{fill_warn}")
     for f in bear_fvg[:2]:
         filled = "已填" if f.get('filled') else "未填满 🧲"
         lines.append(f"    ▼Bear FVG: {f['bottom']}~{f['top']} gap={f['gap_pct']}% {filled}")

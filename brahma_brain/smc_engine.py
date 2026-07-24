@@ -109,7 +109,15 @@ def find_order_blocks(opens: list, highs: list, lows: list,
 
     start = max(0, len(closes) - lookback)
 
-    for i in range(start, len(closes) - 3):
+    total_bars = len(closes)
+    for i in range(start, total_bars - 3):
+        age_bars = total_bars - 1 - i  # 距当前K棒的距离（新鲜度核心字段）
+
+        # [P0修复 2026-07-24] age_bars注入：OB新鲜度分层依赖此字段
+        # MEMORY.md封印：age≤3=1.0x / 4-6=0.75x / 7-10=0.5x / >10=0.3x / broken=0x
+        # 修复前：age_bars字段缺失 → brahma_core_entry.py的_ob_freshness_mult()始终取age=0 → 全部×1.0
+        # 修复后：age_bars正确传入 → 过期OB自动降权
+
         # 看多OB：下跌K线 + 随后出现向上BOS
         if closes[i] < opens[i]:   # 阴线
             # 检查后续是否出现价格大幅上涨（BOS）
@@ -118,14 +126,20 @@ def find_order_blocks(opens: list, highs: list, lows: list,
                 ob_high = highs[i]
                 ob_low  = lows[i]
                 if ob_low < price < ob_high * 1.05:   # 在OB附近或下方
+                    # [P0修复] OB被价格穿越(broken)时直接过滤 — 失效OB不应参与评分
+                    # Bull OB被穿越 = 价格曾经收盘在OB下方后重新进入 → 视为broken
+                    # 简化判断：若当前价格已在OB上沿1.5%以上，说明已经穿越走远，非回踩
+                    is_broken = (price > ob_high * 1.015)  # 穿越上方太远=已出OB范围
                     bull_obs.append({
-                        'type':   'BULL_OB',
-                        'high':   round(ob_high, 8),
-                        'low':    round(ob_low, 8),
-                        'mid':    round((ob_high + ob_low) / 2, 8),
-                        'idx':    i,
+                        'type':     'BULL_OB',
+                        'high':     round(ob_high, 8),
+                        'low':      round(ob_low, 8),
+                        'mid':      round((ob_high + ob_low) / 2, 8),
+                        'idx':      i,
+                        'age_bars': age_bars,  # [P0修复] 新鲜度字段
+                        'broken':   is_broken,
                         'dist_pct': round((price - ob_low) / ob_low * 100, 2),
-                        'note':   f'看多OB区间 ${ob_low:.4f}~${ob_high:.4f}',
+                        'note':     f'看多OB区间 ${ob_low:.4f}~${ob_high:.4f} age={age_bars}bars',
                     })
 
         # 看空OB：上涨K线 + 随后出现向下BOS
@@ -135,14 +149,17 @@ def find_order_blocks(opens: list, highs: list, lows: list,
                 ob_high = highs[i]
                 ob_low  = lows[i]
                 if ob_low * 0.95 < price < ob_high:
+                    is_broken = (price < ob_low * 0.985)  # 穿越下方太远=已出OB范围
                     bear_obs.append({
-                        'type':   'BEAR_OB',
-                        'high':   round(ob_high, 8),
-                        'low':    round(ob_low, 8),
-                        'mid':    round((ob_high + ob_low) / 2, 8),
-                        'idx':    i,
+                        'type':     'BEAR_OB',
+                        'high':     round(ob_high, 8),
+                        'low':      round(ob_low, 8),
+                        'mid':      round((ob_high + ob_low) / 2, 8),
+                        'idx':      i,
+                        'age_bars': age_bars,  # [P0修复] 新鲜度字段
+                        'broken':   is_broken,
                         'dist_pct': round((ob_high - price) / price * 100, 2),
-                        'note':   f'看空OB区间 ${ob_low:.4f}~${ob_high:.4f}',
+                        'note':     f'看空OB区间 ${ob_low:.4f}~${ob_high:.4f} age={age_bars}bars',
                     })
 
     # 按距离排序，取最近的
@@ -210,6 +227,16 @@ def find_fvg(highs: list, lows: list, closes: list, lookback: int = 50) -> dict:
                     'idx':      i,
                     'note':     f'看空FVG ${k3_high:.4f}~${k1_low:.4f} ({gap_pct:.2f}%)',
                 })
+
+    # [P1修复 2026-07-24] FVG填充方向阐检测：如果价格正在FVG区间内回落，说明在填充FVG，应标注确实填充目标
+    # Bull FVG填充方向标注：如果价格在FVG内且向下运动 → active_fill=True，目标是FVG底部
+    for f in bull_fvg:
+        if not f['filled'] and f['bottom'] < closes[-1] <= f['top']:
+            # 价格在FVG内，且最近4根收盘均在中为阴线 = 正在向下填充
+            recent_4_closes = closes[-4:]
+            down_count = sum(1 for j in range(1, len(recent_4_closes)) if recent_4_closes[j] < recent_4_closes[j-1])
+            f['active_fill_down'] = (down_count >= 2)  # 连续下跌→填充警示
+            f['fill_target'] = f['bottom']  # 填充目标 = FVG底部
 
     # 只保留未填补的FVG，按距离排序
     bull_fvg = [f for f in bull_fvg if not f['filled']]
