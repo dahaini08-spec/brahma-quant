@@ -27,12 +27,60 @@ def _rsi(closes, period=14):
     al = sum(losses[-period:]) / period
     return round(100 - 100/(1 + ag/al), 1) if al else 100
 
+def _get_cycle_anchor(symbol='BTCUSDT') -> dict:
+    """
+    第0步：必须先执行——获取本轮周期的ATH和cycle_low
+    从周线K线自动计算：ATH → ATH后的最低点 = cycle_low
+    这是所有宏观分析的基础坐标，不允许跳过。
+    """
+    try:
+        url = f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=1w&limit=104'
+        r = urllib.request.urlopen(url, timeout=8)
+        klines = json.loads(r.read())
+        records = [(int(k[0]), float(k[2]), float(k[3]), float(k[4])) for k in klines]
+        # 本轮ATH
+        ath_rec = max(records, key=lambda x: x[1])
+        ath_idx = records.index(ath_rec)
+        ath_price = ath_rec[1]
+        import datetime
+        ath_date = datetime.datetime.utcfromtimestamp(ath_rec[0]/1000).strftime('%Y-%m-%d')
+        # ATH之后的最低点 = cycle_low
+        post_ath = records[ath_idx:]
+        low_rec = min(post_ath, key=lambda x: x[2])
+        cycle_low = low_rec[2]
+        cycle_low_date = datetime.datetime.utcfromtimestamp(low_rec[0]/1000).strftime('%Y-%m-%d')
+        weeks_since_ath = len(post_ath) - 1
+        # 当前价
+        pr = urllib.request.urlopen(
+            f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}', timeout=5)
+        current = float(json.loads(pr.read())['price'])
+        drawdown_ath   = round((cycle_low - ath_price) / ath_price * 100, 2)
+        bounce_from_low = round((current - cycle_low) / cycle_low * 100, 2)
+        current_dd     = round((current - ath_price) / ath_price * 100, 2)
+        return {
+            'ok': True,
+            'ath': ath_price, 'ath_date': ath_date,
+            'cycle_low': cycle_low, 'cycle_low_date': cycle_low_date,
+            'weeks_since_ath': weeks_since_ath,
+            'drawdown_ath_pct': drawdown_ath,
+            'current': current,
+            'current_dd_pct': current_dd,
+            'bounce_from_low_pct': bounce_from_low,
+        }
+    except Exception as e:
+        return {'ok': False, 'error': str(e)}
+
+
 def check_macro_bottom(symbol='BTCUSDT') -> dict:
     """
     五大指标宏观底部检查。
-    返回 {status, score, signals, verdict, note}
+    第0步强制：先调用_get_cycle_anchor()获取本轮ATH和cycle_low。
+    返回 {status, score, signals, verdict, note, cycle_anchor}
     """
     signals = {}
+
+    # ── 第0步（强制）：获取本轮周期坐标 ─────────────────────
+    anchor = _get_cycle_anchor(symbol)
 
     # 指标1: 周线RSI < 32（历史底部区间）
     closes_w = _get_closes(symbol, '1w', 30)
@@ -119,15 +167,27 @@ def check_macro_bottom(symbol='BTCUSDT') -> dict:
         status  = 'NOT_BOTTOM'
         verdict = '🔴 远未到底部 — 1H信号仅短线有效，勿宏观抄底'
 
+    # cycle_anchor 注入到输出 — 宏观分析必须展示本轮坐标
+    cycle_info = ''
+    if anchor.get('ok'):
+        cycle_info = (
+            f'本轮ATH=${anchor["ath"]:,.0f}({anchor["ath_date"]}) '
+            f'→ 本轮最低点=${anchor["cycle_low"]:,.0f}({anchor["cycle_low_date"]}) '
+            f'最大回撤={anchor["drawdown_ath_pct"]}% '
+            f'当前从低点反弹={anchor["bounce_from_low_pct"]:+.1f}%'
+        )
+
     return {
-        'symbol':  symbol,
-        'status':  status,
-        'score':   f'{passed}/{total}',
-        'signals': signals,
-        'verdict': verdict,
-        'rsi_w':   rsi_w,
-        'ts':      time.time(),
-        'note':    '此模块是宏观底部的唯一判断入口，独立于梵天35维矩阵'
+        'symbol':       symbol,
+        'status':       status,
+        'score':        f'{passed}/{total}',
+        'signals':      signals,
+        'verdict':      verdict,
+        'rsi_w':        rsi_w,
+        'cycle_anchor': anchor,
+        'cycle_info':   cycle_info,
+        'ts':           time.time(),
+        'note':         '此模块是宏观底部的唯一判断入口，独立于梵天35维矩阵'
     }
 
 if __name__ == '__main__':
@@ -138,6 +198,8 @@ if __name__ == '__main__':
     print(f'状态: {result["status"]}')
     print(f'达标: {result["score"]}')
     print(f'裁定: {result["verdict"]}')
+    if result.get('cycle_info'):
+        print(f'\n📍 本轮坐标: {result["cycle_info"]}')
     print()
     for k, v in result['signals'].items():
         print(f'  {v["desc"]}')

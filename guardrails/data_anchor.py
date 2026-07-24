@@ -79,20 +79,45 @@ def fetch_current_price(symbol: str = 'BTCUSDT') -> float:
 def get_market_anchor(symbol: str = 'BTC') -> dict:
     """
     统一数据锚点 — 所有宏观分析的起点
-    返回：ATH / ATL / 当前价 / 已跌幅 / 距ATH
+    强制包含：cycle_low（本轮最低点）+ bounce_from_low
+    返回：ATH / ATL / 当前价 / 已跌幅 / 距ATH / cycle_low / bounce_from_low
     """
     sym = f'{symbol}USDT'
     ath_data = fetch_btc_ath()
     cur = fetch_current_price(sym)
-    
+
+    # 强制调取本轮cycle_low（不允许跳过）
+    cycle_low = None
+    cycle_low_date = None
+    bounce_from_low = None
+    try:
+        r = urllib.request.urlopen(
+            f'https://fapi.binance.com/fapi/v1/klines?symbol={sym}&interval=1w&limit=104',
+            timeout=8
+        )
+        klines = json.loads(r.read())
+        records = [(int(k[0]), float(k[2]), float(k[3])) for k in klines]
+        ath_rec = max(records, key=lambda x: x[1])
+        post_ath = records[records.index(ath_rec):]
+        low_rec = min(post_ath, key=lambda x: x[2])
+        cycle_low = low_rec[2]
+        cycle_low_date = datetime.fromtimestamp(low_rec[0]/1000, tz=timezone.utc).strftime('%Y-%m-%d')
+        if cur and cycle_low:
+            bounce_from_low = round((cur - cycle_low) / cycle_low * 100, 2)
+    except Exception:
+        pass
+
     result = {
-        'symbol': symbol,
-        'current': cur,
-        'ath': ath_data.get('ath'),
-        'ath_date': ath_data.get('ath_date'),
-        'drawdown_pct': round((cur - ath_data['ath']) / ath_data['ath'] * 100, 2) if ath_data.get('ath') else None,
-        'verified': ath_data.get('verified', False),
-        'source': 'binance_fapi_realtime'
+        'symbol':          symbol,
+        'current':         cur,
+        'ath':             ath_data.get('ath'),
+        'ath_date':        ath_data.get('ath_date'),
+        'drawdown_pct':    round((cur - ath_data['ath']) / ath_data['ath'] * 100, 2) if ath_data.get('ath') else None,
+        'cycle_low':       cycle_low,
+        'cycle_low_date':  cycle_low_date,
+        'bounce_from_low': bounce_from_low,
+        'verified':        ath_data.get('verified', False),
+        'source':          'binance_fapi_realtime'
     }
     return result
 
