@@ -173,6 +173,45 @@ def fmt_entry(r: dict) -> str:
         lines.append(f"  参考TP1: {tp1}U (+2.0%)")
         lines.append(f"  参考TP2: {tp2}U (+4.0%)")
 
+    # [P1修复 2026-07-24 设计院] 清算集群→自动TP/SL优化建议
+    try:
+        import urllib.request as _ur, json as _jx
+        _sym = r.get('symbol', '')
+        _p   = float(r.get('price', 0))
+        if _sym and _p > 0:
+            _r4h = _jx.loads(_ur.urlopen(
+                f'https://fapi.binance.com/fapi/v1/klines?symbol={_sym}&interval=4h&limit=14',
+                timeout=5).read())
+            _highs = [float(k[2]) for k in _r4h[:-1]]
+            _lows  = [float(k[3]) for k in _r4h[:-1]]
+            # 聚类（±0.3%容差）
+            def _cluster(vals, tol=0.003):
+                s = sorted(vals)
+                cs = []
+                for v in s:
+                    placed = False
+                    for c in cs:
+                        if abs(v - c[0]) / c[0] <= tol: c.append(v); placed = True; break
+                    if not placed: cs.append([v])
+                return [(round(sum(c)/len(c), 2), len(c)) for c in cs]
+            _hc = sorted(_cluster(_highs), key=lambda x: x[0], reverse=True)
+            _lc = sorted(_cluster(_lows),  key=lambda x: x[0], reverse=True)
+            # 上方密集止损山（做空止损=多头TP目标）
+            _tp_hints = [(p,n) for p,n in _hc if p > _p*1.005 and n >= 2][:2]
+            # 下方密集止损池（做多止损=SL应在其下方）
+            _sl_hints = [(p,n) for p,n in _lc if p < _p*0.995 and n >= 2][:2]
+            if _tp_hints or _sl_hints:
+                lines.append("  --- 清算集群优化建议 ---")
+            for p, n in _tp_hints:
+                dist = (p - _p) / _p * 100
+                lines.append(f"  💡 TP参考(止损山{n}次密集): {p:.2f} (+{dist:.2f}%)")
+            for p, n in _sl_hints:
+                dist = (_p - p) / _p * 100
+                sl_rec = round(p * 0.985, 2)  # 止损池下方1.5%
+                lines.append(f"  💡 SL参考(止损池{n}次密集下方): {sl_rec:.2f} (-{(_p-sl_rec)/_p*100:.2f}%)")
+    except Exception:
+        pass
+
     return "\n".join(lines) if lines else "  (等待体制确认后计算)"
 
 

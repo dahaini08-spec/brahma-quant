@@ -246,6 +246,26 @@ def lsr_oi_score(symbol: str, signal_dir: str,
             oi_change_pct, oi_momentum, price_change_pct, signal_dir
         )
 
+        # ── [P0修复 2026-07-24 设计院] TRADFI资产OI解读例外规则 ──────────────
+        # 问题：OI减少+价涨对普通加密币=空头回补虚假反弹(-12分)
+        # 但对SNDK/MU等低流动性美股代币：OI减=主力清除做空对手盘，价涨=主力控盘拉升
+        # 适用条件：TRADFI_STOCK白名单 且 OI减少>5% 且 价格上涨
+        _TRADFI_SYMS_LSR = {
+            'SNDKUSDT','MUUSDT','NVDAUSDT','TSLAUSDT','DRAMUSDT','TSMUSDT',
+            'MSTRBUSDT','COINBUSDT','METABUSDT','MSFTBUSDT','GOOGLBUSDT',
+            'HOODBUSDT','PLTRBUSDT','SPYBUSDT','QQQBUSDT','IWMUSDT',
+            'SKHYUSDT','SKHYNIXUSDT','KORUUSDT','SAMSUNGUSDT','ERAUSDT',
+        }
+        if symbol.upper() in _TRADFI_SYMS_LSR and oi_change_pct is not None:
+            if oi_change_pct <= -5.0 and (price_change_pct or 0) > 0 and signal_dir == 'LONG':
+                _orig_oi = s_oi
+                s_oi = 0
+                note_oi = (f'[TRADFI例外] OI减{oi_change_pct:.1f}%+价涨→主力控盘宣泄'
+                           f'，中性化(原{_orig_oi:+.0f}→0)')
+            elif oi_change_pct <= -5.0 and (price_change_pct or 0) > 0 and signal_dir == 'SHORT':
+                s_oi = max(s_oi, -3)
+                note_oi = f'[TRADFI例外] 主力拉升中做空需谨慎(限-3)'
+
         # ── LSR Z-score升级（三院审核修复 2026-07-08）──────────────
         # 回测铁证：Z>1.5时做多WR从63%→41%，Z>2.0触发额外-10否决权
         try:
