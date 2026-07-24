@@ -863,6 +863,41 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _e:
         extra_data['sentiment_nlp_err'] = str(_e)[:80]
 
+    # ══ [Kronos环境感知器 2026-07-24 设计院封印] ══════════════════════════════
+    # 定位: 信号生成层最前端 — 在35维评分之前判断时序环境
+    # 核心思想(六方联合): Kronos不只是打分项，应该是环境感知器
+    #   p_up高度对齐体制 → 放行+记录共振标记
+    #   p_up严重逆体制   → 直接WAIT，不进入35维评分（节省计算+防噪音）
+    # 规则（三层）:
+    #   L1 强势WAIT: LONG方向 + p_up<0.35 + 非BEAR_RECOVERY → 环境看空，直接返回WAIT
+    #   L2 共振奖励: LONG方向 + p_up>0.65 + BEAR_RECOVERY → 时序与体制共振，+环境标记
+    #   L3 中性放行: 其余情况 → 继续正常35维评分
+    _kronos_env_badge = 'NEUTRAL'
+    try:
+        _ke_regime = ms.get('regime', 'CHOP_MID')
+        _ke_dir    = str(signal_dir or 'LONG').upper()
+        _ke_p_up   = ms.get('s23_p_up', 0.5)  # 已在前序步骤写入ms
+        if _ke_p_up and 0.0 < _ke_p_up < 1.0:
+            if _ke_dir == 'LONG' and _ke_p_up < 0.35 and 'BEAR_RECOVERY' not in _ke_regime:
+                # L1: 时序强看空 + 非复苏体制 → 直接WAIT
+                return {
+                    'symbol': symbol, 'direction': signal_dir,
+                    'score': 0, 'score_final': 0, 'valid': False,
+                    'regime': _ke_regime,
+                    'kronos_env': 'BLOCKED',
+                    'kronos_p_up': _ke_p_up,
+                    'reason': f'[Kronos环境感知器] p_up={_ke_p_up:.2f}<0.35 时序强看空，禁止做多',
+                    'timing_status': 'WAIT',
+                    'timing_badge': '⏸ WAIT(Kronos环境感知)',
+                }
+            elif _ke_dir == 'LONG' and _ke_p_up > 0.65 and 'BEAR_RECOVERY' in _ke_regime:
+                _kronos_env_badge = 'RESONANCE'  # 时序与体制共振，35维评分后额外加权
+            elif _ke_dir == 'SHORT' and _ke_p_up > 0.65:
+                _kronos_env_badge = 'SHORT_CONFIRM'  # 空单方向Kronos确认
+    except Exception:
+        pass  # 环境感知失败不阻断主链路
+    # ══ [Kronos环境感知器 END] ══════════════════════════════════════════════════
+
     # Step 5: 共振评分
     cf = confluence_score(ms, smc, signal_dir, extra_data)
     # [根本修复 2026-07-12 设计院封印] cf 将在_result初始化后立即写入
