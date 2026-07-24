@@ -1,16 +1,1 @@
-[
-  {
-    "symbol": "HYPEUSDT",
-    "side": "LONG",
-    "entry_price": 58.86998969072166,
-    "mark_price": 59.953,
-    "quantity": 0.42,
-    "unrealized_pnl": 0.4549,
-    "leverage": 5,
-    "notional_usdt": 25.1576,
-    "stop_loss": null,
-    "take_profit": null,
-    "updated_at": 1784817624.2284257,
-    "source": "LIVE_SYNC"
-  }
-]
+[]

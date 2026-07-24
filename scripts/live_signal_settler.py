@@ -627,6 +627,13 @@ def settle(dry_run=False) -> dict:
                 # 12H内价格从未回调到入场区 → 信号等待中，不结算
                 n_skip += 1
                 continue
+            # [P0-B修复 2026-07-24] 价格进入入场区 → 标记ENTERED执行确认
+            # 只有ENTERED才是真实学习数据，PENDING/SKIP不进结算池
+            if not rec.get('_entered'):
+                if ((sig_dir == 'SHORT' and high >= entry_lo) or
+                    (sig_dir == 'LONG'  and low  <= entry_hi)):
+                    rec['_entered'] = True
+                    rec['_entered_ts'] = datetime.now(timezone.utc).isoformat()
 
         outcome = None
         exit_price = None

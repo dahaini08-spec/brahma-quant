@@ -441,10 +441,30 @@ def run():
             f'python3 scripts/auto_executor.py 2>&1 | tail -5'
         )
         # E1/E2/E3/E4/E10 触发时附加 brahma_1hao_analysis 35维分析
+        # [P1-B修复 2026-07-24 苏摩确认] 根据触发事件类型决定分析方向
+        # E2(RSI超买回落)/E4(跌破48H低) → SHORT方向
+        # E1(RSI上穿)/E3(突破48H高)/E10(RSI反弹确认) → LONG方向
         if _has_35dim_trigger:
-            scan_cmd += (
-                f' && python3 scripts/brahma_1hao_analysis.py {_35dim_syms} 2>&1 | tail -5'
-            )
+            _short_events = {'E2_RSI_OVERBOUGHT_PULLBACK', 'E4_PRICE_BREAK_48H_LOW'}
+            _long_events  = {'E1_RSI_CROSS_UP_SHORT_WINDOW', 'E3_PRICE_BREAK_48H_HIGH', 'E10_RSI_BOUNCE_CONFIRM'}
+            _triggered_event_names = {ev.get('event','') for ev in (events if events else [])}
+            _has_short_trigger = bool(_triggered_event_names & _short_events)
+            _has_long_trigger  = bool(_triggered_event_names & _long_events)
+            # 优先SHORT（空信号更稀缺，优先恢复）
+            if _has_short_trigger:
+                scan_cmd += (
+                    f' && python3 scripts/brahma_1hao_analysis.py {_35dim_syms} --direction SHORT 2>&1 | tail -5'
+                )
+            if _has_long_trigger:
+                scan_cmd += (
+                    f' && python3 scripts/brahma_1hao_analysis.py {_35dim_syms} --direction LONG 2>&1 | tail -5'
+                )
+            if not _has_short_trigger and not _has_long_trigger:
+                # 混合事件或未分类 → 双向均分析
+                scan_cmd += (
+                    f' && python3 scripts/brahma_1hao_analysis.py {_35dim_syms} --direction LONG 2>&1 | tail -3'
+                    f' && python3 scripts/brahma_1hao_analysis.py {_35dim_syms} --direction SHORT 2>&1 | tail -3'
+                )
         # E5/E6/E7触发时附加 pump-hunter 扫描
         if has_pump_trigger:
             scan_cmd = (
@@ -456,9 +476,17 @@ def run():
                 f'python3 scripts/auto_executor.py 2>&1 | tail -5'
             )
             if _has_35dim_trigger:
-                scan_cmd += (
-                    f' && python3 scripts/brahma_1hao_analysis.py {_35dim_syms} 2>&1 | tail -5'
-                )
+                # [P1-B修复 同步] 备用路径同样注入方向感知
+                _short_ev2 = {'E2_RSI_OVERBOUGHT_PULLBACK', 'E4_PRICE_BREAK_48H_LOW'}
+                _long_ev2  = {'E1_RSI_CROSS_UP_SHORT_WINDOW', 'E3_PRICE_BREAK_48H_HIGH', 'E10_RSI_BOUNCE_CONFIRM'}
+                _trig_ev2  = {ev.get('event','') for ev in (events if events else [])}
+                if _trig_ev2 & _short_ev2:
+                    scan_cmd += (f' && python3 scripts/brahma_1hao_analysis.py {_35dim_syms} --direction SHORT 2>&1 | tail -5')
+                if _trig_ev2 & _long_ev2:
+                    scan_cmd += (f' && python3 scripts/brahma_1hao_analysis.py {_35dim_syms} --direction LONG 2>&1 | tail -5')
+                if not (_trig_ev2 & (_short_ev2 | _long_ev2)):
+                    scan_cmd += (f' && python3 scripts/brahma_1hao_analysis.py {_35dim_syms} --direction LONG 2>&1 | tail -3'
+                                 f' && python3 scripts/brahma_1hao_analysis.py {_35dim_syms} --direction SHORT 2>&1 | tail -3')
         try:
             # ── 防积压：检查是否已有扫描链在运行 ──────────────────
             import os, glob

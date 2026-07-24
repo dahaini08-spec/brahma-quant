@@ -158,6 +158,40 @@ def save_state(state):
     with open(STATE_FILE, 'w') as f:
         json.dump(state, f, indent=2, ensure_ascii=False)
 
+    # ── [P2-B修复 2026-07-24 苏摩确认] 强制同步写入 regime_state.json ────────
+    # brahma_engine读取的是 regime_state_machine.RegimeStateMachine
+    # 其STATE_FILE = data/regime_state.json — 与本文件完全独立
+    # 修复：每次运行后强制将当前体制写入 regime_state.json（SSOT桥接）
+    try:
+        import time as _time_sync
+        _rsf = os.path.join(BASE_DIR, 'data', 'regime_state.json')
+        _existing_rs = {}
+        if os.path.exists(_rsf):
+            with open(_rsf) as _f: _existing_rs = json.load(_f)
+        _btc_rs = _existing_rs.get('BTCUSDT', {})
+        _new_regime = state.get('regime', _btc_rs.get('confirmed', 'UNKNOWN'))
+        if _new_regime and _new_regime != '?':
+            _btc_rs.update({
+                'confirmed':      _new_regime,
+                'confirmed_cn':   {'BEAR_TREND':'熊市趋势','BULL_TREND':'牛市趋势',
+                                   'CHOP_MID':'震荡','BEAR_RECOVERY':'熊市反弹',
+                                   'BEAR_EARLY':'熊市初期','BULL_EARLY':'牛市初期'}.get(_new_regime, _new_regime),
+                'candidate':      None,
+                'confirm_count':  3,   # 已确认
+                'locked_until':   _time_sync.time() + 600,  # 10分钟防抖
+                'confirmed_at':   _time_sync.time(),
+                'switch_count_24h': _btc_rs.get('switch_count_24h', 0),
+                'last_raw':       _new_regime,
+                'synced_from':    'btc_regime_watcher',
+            })
+            _existing_rs['BTCUSDT'] = _btc_rs
+            _tmp_rs = _rsf + '.tmp'
+            with open(_tmp_rs, 'w') as _f: json.dump(_existing_rs, _f, ensure_ascii=False, indent=2)
+            os.replace(_tmp_rs, _rsf)
+    except Exception as _e_sync:
+        pass  # 同步失败不影响主流程
+    # ─────────────────────────────────────────────────────────────────────────
+
 
 def push_alert(msg):
     try:
