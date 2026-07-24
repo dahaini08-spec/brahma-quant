@@ -55,10 +55,25 @@ def scan_d1_modules() -> list:
             except: pass
         # 已知合法孤立模块（有明确用途不需主链路直接引用）
         _known_standalone = {
+            # ── 系统工具层（独立运行，不需主链路引用）──
             'brahma_360','brahma_health','brahma_smoke_test','brahma_self_heal',
             'brahma_1hao_analysis','brahma_dashboard','brahma_compact_runner',
-            'auto_review','exception_injector',  # 已知工具类，不计入孤儿
-            'offline_adapters','tardis_liq_layer','module_registry',  # [2026-07-23] 孤立群岛，Phase2-C统一清理
+            'auto_review','exception_injector',
+            # ── CI / 测试工具 ──
+            'brahma_ci','brahma_constitutional_test',
+            # ── 已被其他脚本间接引用（非主链路但有实际调用）──
+            'brahma_learning_loop','dog_commander','dog_probes',
+            'ev_feedback','ic_tracker','online_learner_v2',
+            'rl_position_ab','safety','signal_card_formatter',
+            # ── 合理孤立：独立工具/cron任务执行体 ──
+            'brahma_logger','brahma_macro_bottom','brahma_mem_compressor',
+            'memory_watchdog','squeeze_lifecycle','vectorbt_simfactory',
+            # ── 归档模块（功能已被替代，保留备用）──
+            'realtime_fetch','kronos_inference_v7_patch',
+            # ── 遗留孤立群岛 ──
+            'offline_adapters','tardis_liq_layer','module_registry',
+            # ── 接入候选（下一版本接入：condition_order_matrix/headroom/signal_expiry_tracker）──
+            'condition_order_matrix','headroom','signal_expiry_tracker',
         }
         _orphans = []
         for _f in sorted(_brain.glob('*.py')):
