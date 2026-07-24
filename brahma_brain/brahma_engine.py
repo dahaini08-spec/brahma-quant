@@ -3762,6 +3762,15 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception:
         pass
     # ══════════════════════════════════════════════════════════════════════════
+    # [Kronos环境感知器] 将badge注入最终结果
+    try:
+        _result['kronos_env'] = _kronos_env_badge
+        if 's23_p_up' not in _result:
+            _result['kronos_p_up'] = ms.get('s23_p_up', None) if ms else None
+        else:
+            _result['kronos_p_up'] = _result.get('s23_p_up')
+    except Exception:
+        pass
 
     return _result
 
