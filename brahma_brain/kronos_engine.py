@@ -33,11 +33,23 @@ from typing import Tuple, Dict, Optional
 
 logger = logging.getLogger("kronos_engine")
 
-# [设计院 Phase3-1 2026-07-06] 预先加载torch确俛libgomp.so.1可用（lightgbm依赖它）
+# [Phase3-1 2026-07-06] 预先加载torch确俛libgomp.so.1可用（lightgbm依赖它）
+# [自愈层 2026-07-24] gateway重启后libgomp软链丢失，自动恢复
 try:
     import torch as _torch_preload  # noqa: F401
 except ImportError:
-    pass  # 非必需，只是确保libgomp加载
+    pass  # 非必需，只是确保 libgomp 加载
+
+# 容器重启后libgomp软链可能丢失，自动修复
+try:
+    import glob as _glob, os as _os_link
+    _gomp_candidates = _glob.glob('/usr/local/lib/python3.11/dist-packages/torch/lib/libgomp.so*')
+    _gomp_target = '/usr/local/lib/libgomp.so.1'
+    if _gomp_candidates and not _os_link.path.exists(_gomp_target):
+        _os_link.symlink(_gomp_candidates[0], _gomp_target)
+        logger.info('[Kronos] 自愈: libgomp软链已恢复')
+except Exception:
+    pass
 
 # Kronos repo 路径
 _KRONOS_PATH = os.path.join(os.path.dirname(__file__), '..', 'external', 'Kronos')
