@@ -313,6 +313,20 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         tradfi_lines = _build_tradfi_supplement(symbol, r)
         full_report = full_report + "\n" + "\n".join(tradfi_lines)
 
+    # [2026-07-24 设计院自主决策] OB+清算集群MIX层注入（全标的通用）
+    try:
+        current_price = float(r.get('mark_price', r.get('price', 0)))
+        if current_price <= 0:
+            import urllib.request as _ur, json as _jj
+            _pt = _jj.loads(_ur.urlopen(
+                f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}',
+                timeout=5).read())
+            current_price = float(_pt['price'])
+        ob_liq_lines = _build_ob_liquidation_layer(symbol, current_price)
+        full_report = full_report + "\n" + "\n".join(ob_liq_lines)
+    except Exception as _e:
+        full_report = full_report + f"\n  [OB清算层] 跳过: {_e}"
+
     return full_report
 
 
@@ -366,6 +380,152 @@ def _get_rwa_fundamentals(symbol: str) -> dict:
         }
     except Exception:
         return {}
+
+
+def _build_ob_liquidation_layer(symbol: str, price: float) -> list:
+    """一号工程 MIX层：OB + 清算集群 + OI变化 + 多空比
+    [2026-07-24 设计院自主决策 苳天一号工程 MIX 封印]
+    """
+    import urllib.request, json as _json, time
+    from datetime import datetime, timezone
+    lines = []
+    lines.append("╬" + "═" * 58)
+    lines.append("  🎯 OB + 清算集群 + OI异动层 (MIX增强)")
+    lines.append("╬" + "═" * 58)
+
+    # ── 1. L2订单簿估单量 + 买卖壁 ───────────────────────────────
+    try:
+        r_book = urllib.request.urlopen(
+            f'https://fapi.binance.com/fapi/v1/depth?symbol={symbol}&limit=20', timeout=5)
+        book = _json.loads(r_book.read())
+        bids = [(float(p), float(q)) for p, q in book['bids']]
+        asks = [(float(p), float(q)) for p, q in book['asks']]
+        total_bid10 = sum(q for _, q in bids[:10])
+        total_ask10 = sum(q for _, q in asks[:10])
+        ba_ratio = round(total_bid10 / max(total_ask10, 0.001), 2)
+        ratio_tag = '✅ 多头占优' if ba_ratio > 1.3 else ('⚠️ 空头占优' if ba_ratio < 0.8 else '中性')
+        # 找最大买啤/卖啤
+        max_bid = max(bids[:10], key=lambda x: x[1], default=(0,0))
+        max_ask = min(asks[:10], key=lambda x: x[0], default=(0,0))  # 最近卖啤
+        big_ask = max(asks[:10], key=lambda x: x[1], default=(0,0))
+        lines.append(f"  L2买啤比(top10): {ba_ratio}x {ratio_tag}")
+        lines.append(f"  最大买坤: \${max_bid[0]:.2f} ({max_bid[1]:.2f}张)  "
+                     f"最大卖坤: \${big_ask[0]:.2f} ({big_ask[1]:.2f}张)")
+    except Exception as e:
+        lines.append(f"  L2订单簿: 获取失败 ({e})")
+        bids, asks = [], []
+
+    # ── 2. OI历叵8H变化 ──────────────────────────────────────────
+    try:
+        r_oi = urllib.request.urlopen(
+            f'https://fapi.binance.com/futures/data/openInterestHist?symbol={symbol}&period=1h&limit=8',
+            timeout=5)
+        oi_hist = _json.loads(r_oi.read())
+        oi_vals = [float(x['sumOpenInterest']) for x in oi_hist]
+        if len(oi_vals) >= 2:
+            oi_chg1h = (oi_vals[-1] - oi_vals[-2]) / oi_vals[-2] * 100
+            oi_chg8h = (oi_vals[-1] - oi_vals[0])  / oi_vals[0]  * 100
+            oi_trend = '▲唐OI外流入包' if oi_chg1h > 0.5 else ('▼弱OI减仓' if oi_chg1h < -0.5 else '─OI扁平')
+            lines.append(f"  OI 1H变化: {oi_chg1h:+.2f}% {oi_trend}  8H常态: {oi_chg8h:+.2f}%")
+        else:
+            lines.append(f"  OI: 当前持仓量={oi_vals[-1]:.0f}张")
+    except Exception as e:
+        lines.append(f"  OI层: 获取失败 ({e})")
+        oi_vals = []
+
+    # ── 3. 多空比(LSR) ───────────────────────────────────────────────
+    try:
+        r_lsr = urllib.request.urlopen(
+            f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio'
+            f'?symbol={symbol}&period=1h&limit=2', timeout=5)
+        lsr_data = _json.loads(r_lsr.read())
+        if lsr_data:
+            latest = lsr_data[-1]
+            long_pct  = float(latest['longAccount']) * 100
+            short_pct = float(latest['shortAccount']) * 100
+            lsr_val   = float(latest['longShortRatio'])
+            lsr_tag = ''
+            if long_pct > 65:  lsr_tag = ' ⚠️ 多头拥挤(>65%), 踩踏风险升'
+            elif long_pct < 40: lsr_tag = ' ✅ 多头种実, 反弹动能充足'
+            lines.append(f"  多空比: {lsr_val:.3f}  多={long_pct:.1f}% 空={short_pct:.1f}%{lsr_tag}")
+    except Exception as e:
+        lines.append(f"  多空比: 获取失败 ({e})")
+
+    # ── 4. 清算集群估算(基于4H高低点+杠杆分布) ────────────────────────────────
+    try:
+        r_4h = urllib.request.urlopen(
+            f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=4h&limit=14',
+            timeout=5)
+        kl4h = _json.loads(r_4h.read())
+        highs4h = [float(k[2]) for k in kl4h[:-1]]  # 除当前未完成根
+        lows4h  = [float(k[3]) for k in kl4h[:-1]]
+        # 识别止损池：重复出现的高点/低点簇(±0.3%)
+        def find_clusters(vals, tol_pct=0.003):
+            vals_s = sorted(vals)
+            clusters = []
+            for v in vals_s:
+                found = False
+                for c in clusters:
+                    if abs(v - c[0]) / c[0] <= tol_pct:
+                        c.append(v); found = True; break
+                if not found: clusters.append([v])
+            return [(round(sum(c)/len(c),2), len(c)) for c in clusters if len(c)>=1]
+
+        high_clusters = sorted(find_clusters(highs4h), key=lambda x: x[0], reverse=True)
+        low_clusters  = sorted(find_clusters(lows4h),  key=lambda x: x[0], reverse=True)
+
+        # 按价格分返上方/下方
+        above = [(p, n) for p, n in high_clusters if p > price * 1.002][:4]
+        below = [(p, n) for p, n in low_clusters  if p < price * 0.998][:4]
+
+        lines.append("  《清算集群地图》")
+        if above:
+            lines.append("  上方(空头止损山):")
+            for p, n in above:
+                dist = (p - price) / price * 100
+                density = '🔴密集' if n >= 3 else ('⚠️中等' if n == 2 else '')
+                lines.append(f"    \${p:,.2f} (+{dist:.2f}%) 出现{n}次 {density}")
+        if below:
+            lines.append("  下方(多头止损池):")
+            for p, n in below:
+                dist = (price - p) / price * 100
+                density = '🟢密集' if n >= 3 else ('⚠️中等' if n == 2 else '')
+                lines.append(f"    \${p:,.2f} (-{dist:.2f}%) 出现{n}次 {density}")
+    except Exception as e:
+        lines.append(f"  清算集群: 计算失败 ({e})")
+
+    # ── 5. 杠杆清算价位(基于杯杆数展算) ──────────────────────────────────
+    try:
+        lines.append("  《杯杆清算价位估算(5x为主)》")
+        # 5x空头：入场均价 × (1 + 1/5 - 0.005) ≈ 入场价上斷清算
+        # 5x多头：入场均价 × (1 - 1/5 + 0.005) ≈ 入场价下斷清算
+        # 假设市场多头入场区间为近3日高低平均
+        r1d = urllib.request.urlopen(
+            f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=1d&limit=5',
+            timeout=5)
+        kl1d = _json.loads(r1d.read())
+        recent_prices = [float(k[4]) for k in kl1d[-4:]]
+        entry_samples = [
+            max(recent_prices),      # 高位入场
+            sum(recent_prices)/len(recent_prices),  # 均价入场
+            min(recent_prices),      # 低位入场
+        ]
+        liq_long  = sorted(set([round(e*(1-1/5+0.005), 0) for e in entry_samples]))
+        liq_short = sorted(set([round(e*(1+1/5-0.005), 0) for e in entry_samples]), reverse=True)
+
+        for liq in liq_long:
+            dist = (price - liq) / price * 100
+            if 0 < dist < 25:
+                lines.append(f"    5x多头清算区: \${liq:.0f} (-{dist:.2f}%)")
+        for liq in liq_short:
+            dist = (liq - price) / price * 100
+            if 0 < dist < 25:
+                lines.append(f"    5x空头清算区: \${liq:.0f} (+{dist:.2f}%)")
+    except Exception as e:
+        lines.append(f"  杯杆清算: 计算失败 ({e})")
+
+    lines.append("╬" + "═" * 58)
+    return lines
 
 
 def _build_tradfi_supplement(symbol: str, r: dict) -> list:
