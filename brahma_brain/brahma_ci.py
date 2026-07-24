@@ -313,6 +313,80 @@ def probe_data_freshness():
         else:
             info(f'{name} 鲜度OK ({age_h:.2f}h)', 'P6_freshness')
 
+
+# ─── P7: OB/FVG数据质量探针 ─────────────────────────────────────────
+def probe_ob_fvg_quality():
+    """
+    P7: OB/FVG数据质量探针——防止「设计与实现脱节」再次发生
+
+    SNDK教训封印 2026-07-24:
+    根因：smc_engine从未注入age_bars字段 → brahma_core的_ob_freshness_mult()
+    始终age=0 → 全部×1.0 → 所有降权代码形同虚设 → 评分持续虚高
+
+    检查内容：
+    1. OB必须包含age_bars字段（否则降权逻辑全部失效）
+    2. OB必须包含broken字段（否则失效OB无法识别）
+    3. age_bars与idx一致性验证（防止计算错误）
+    4. FVG必须包含filled字段（否则填充状态无法检测）
+    """
+    try:
+        from brahma_brain.smc_engine import find_order_blocks, find_fvg
+        from brahma_brain.brahma_bus import get_klines
+
+        klines = get_klines('BTCUSDT', '1h', limit=50)
+        if not klines or len(klines) < 20:
+            warn('BTC 1H K线不足，无法验证OB质量', 'P7_ob_fvg')
+            return
+
+        opens  = [float(k[1]) for k in klines]
+        highs  = [float(k[2]) for k in klines]
+        lows   = [float(k[3]) for k in klines]
+        closes = [float(k[4]) for k in klines]
+
+        obs  = find_order_blocks(opens, highs, lows, closes)
+        fvgs = find_fvg(highs, lows, closes)
+
+        # 检查1：所有OB必须有age_bars字段
+        all_obs = obs.get('bull_obs', []) + obs.get('bear_obs', [])
+        missing_age = [ob for ob in all_obs if 'age_bars' not in ob]
+        if missing_age:
+            issue(
+                f'OB缺少age_bars字段({len(missing_age)}个)——降权逻辑全部失效！SNDK教训重现',
+                'ERROR', 'P7_ob_fvg'
+            )
+        else:
+            info(f'✅ OB age_bars字段完整({len(all_obs)}个全部包含)', 'P7_ob_fvg')
+
+        # 检查2：所有OB必须有broken字段
+        missing_broken = [ob for ob in all_obs if 'broken' not in ob]
+        if missing_broken:
+            issue(
+                f'OB缺少broken字段({len(missing_broken)}个)——失效OB无法识别',
+                'ERROR', 'P7_ob_fvg'
+            )
+        else:
+            info(f'✅ OB broken字段完整', 'P7_ob_fvg')
+
+        # 检查3：age_bars与idx一致性
+        nb = obs.get('nearest_bull_ob')
+        if nb and 'idx' in nb and 'age_bars' in nb:
+            expected_age = len(closes) - 1 - nb['idx']
+            actual_age   = nb['age_bars']
+            if abs(expected_age - actual_age) > 2:
+                warn(f'nearest_bull_ob age不一致: 实际={actual_age} 期望={expected_age}', 'P7_ob_fvg')
+            else:
+                info(f'✅ Bull OB age一致性通过: age={actual_age}', 'P7_ob_fvg')
+
+        # 检查4：FVG必须有filled字段
+        bull_fvgs = fvgs.get('bull_fvg', [])
+        if bull_fvgs and 'filled' not in bull_fvgs[0]:
+            issue('Bull FVG缺少filled字段——填充状态无法检测', 'ERROR', 'P7_ob_fvg')
+        else:
+            info(f'✅ FVG filled字段存在', 'P7_ob_fvg')
+
+    except Exception as e:
+        issue(f'P7探针异常: {e}', 'ERROR', 'P7_ob_fvg')
+
 # ─── 主入口 ──────────────────────────────────────────────────────────
 def run_ci(level='full') -> dict:
     global ISSUES, WARNINGS, INFOS
@@ -324,6 +398,7 @@ def run_ci(level='full') -> dict:
     probe_asset_consistency()
     probe_execution_layer()
     probe_data_freshness()
+    probe_ob_fvg_quality()  # [P7 SNDK教训封印 2026-07-24]
 
     # 评分
     score = 100

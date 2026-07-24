@@ -89,6 +89,33 @@ try:
         ok('全景B2·OB', f'做多/做空OB已展示')
     else:
         fail('全景B2·OB', 'OB段缺失', fix='检查formatter.py B2模块')
+    # [P7 SNDK教训封印 2026-07-24] OB字段完整性验证
+    # 防止「设计与实现脱节」：age_bars缺失 → 降权逻辑形同虚设
+    try:
+        from brahma_brain.smc_engine import find_order_blocks
+        from brahma_brain.brahma_bus import get_klines
+        _kl = get_klines('BTCUSDT', '1h', limit=30)
+        if _kl:
+            _opens  = [float(k[1]) for k in _kl]
+            _highs  = [float(k[2]) for k in _kl]
+            _lows   = [float(k[3]) for k in _kl]
+            _closes = [float(k[4]) for k in _kl]
+            _obs = find_order_blocks(_opens, _highs, _lows, _closes)
+            _all_obs = _obs.get('bull_obs', []) + _obs.get('bear_obs', [])
+            _missing_age = [o for o in _all_obs if 'age_bars' not in o]
+            _missing_broken = [o for o in _all_obs if 'broken' not in o]
+            if _missing_age:
+                fail('OB·age_bars字段', f'{len(_missing_age)}个OB缺失age_bars——降权逻辑失效(SNDK教训)',
+                     fix='检查smc_engine.py find_order_blocks是否注入age_bars')
+            else:
+                ok('OB·age_bars字段', f'全部{len(_all_obs)}个OB均含age_bars字段')
+            if _missing_broken:
+                fail('OB·broken字段', f'{len(_missing_broken)}个OB缺失broken字段',
+                     fix='检查smc_engine.py find_order_blocks是否注入broken')
+            else:
+                ok('OB·broken字段', f'全部OB均含broken字段')
+    except Exception as _e:
+        warn('OB字段完整性', f'验证异常: {_e}')
     # B3 清算集群
     if 'B3' in pano and '清算集群' in pano:
         ok('全景B3·清算', '清算墙已展示')
