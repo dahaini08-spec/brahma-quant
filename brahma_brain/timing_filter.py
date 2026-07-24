@@ -32,6 +32,7 @@ Pro 版私有内容：
 """
 import os
 import logging
+import requests
 from typing import Optional, Dict, Any
 
 logger = logging.getLogger(__name__)
@@ -196,6 +197,43 @@ def evaluate_timing(symbol: str,
                 'badge': _STATUS_BADGES['STANDBY'],
                 'breakdown': {'reason': f'score={score}/grade={grade} 低于门槛'},
             }
+
+        # ── [P0 v4.2宪法落地 2026-07-24 设计院封印] EMA20_1H 做多封禁 ──────────
+        # 规则：价格 < EMA20_1H 且 RSI_1H > 20（未到精英超卖解锁区）→ 禁止做多
+        # 根因：SNDK $1,592多单在价格<EMA20_1H环境入场，直接导致被套
+        # 参考：MEMORY.md v4.2宪法："RSI_1H达标 AND 价格<EMA20_1H → 才允许做空入场"（反向同理）
+        if signal_dir == 'LONG':
+            try:
+                _ema20_kl = requests.get(
+                    f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=1h&limit=21',
+                    timeout=3
+                ).json()
+                if isinstance(_ema20_kl, list) and len(_ema20_kl) >= 5:
+                    _closes_ema = [float(k[4]) for k in _ema20_kl]
+                    _n = min(20, len(_closes_ema))
+                    _k_val = 2 / (_n + 1)
+                    _ema20 = _closes_ema[0]
+                    for _p in _closes_ema[1:]:
+                        _ema20 = _p * _k_val + _ema20 * (1 - _k_val)
+                    _rsi_for_gate = rsi_1h if rsi_1h is not None else 50.0
+                    _price_below_ema = current_price < _ema20 * 0.999
+                    _not_elite_oversold = _rsi_for_gate > 20  # 精英解锁：RSI<20超卖
+                    if _price_below_ema and _not_elite_oversold:
+                        return {
+                            'status': 'WAIT',
+                            'score': 0,
+                            'badge': _STATUS_BADGES['WAIT'],
+                            'breakdown': {
+                                'reason': f'[v4.2宪法] 价格{current_price:.2f} < EMA20_1H={_ema20:.2f}，RSI={_rsi_for_gate:.1f}>20未超卖，禁止做多入场',
+                                'ema20_1h': round(_ema20, 2),
+                                'price_vs_ema': round((current_price - _ema20) / _ema20 * 100, 2),
+                                'rsi_1h': _rsi_for_gate,
+                                'elite_unlock': 'RSI<20可解锁',
+                            },
+                        }
+            except Exception as _ema_e:
+                logger.warning(f'[TimingFilter] EMA20门控获取失败({symbol}): {_ema_e}，跳过门控')
+        # ── end EMA20_1H 做多封禁 ────────────────────────────────────────────────
 
         # 三层评分
         s_price  = _score_price_position(current_price, entry_lo, entry_hi)

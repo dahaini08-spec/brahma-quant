@@ -397,6 +397,34 @@ def run():
                 state.setdefault('warned', {})[_fuse_key] = now
             continue  # 熔断静默
         # ─────────────────────────────────────────────────────────────────────
+        # ── [P2 2026-07-24 设计院封印] 持仓方向感知 ──────────────────────────────────
+        # 规则：同标的已有同向持仓 → 标注"已持仓补充信号"，不重复推送
+        # 根因：SNDK连续多单信号轰炸，用户误判为新机会，实为加仓陷阱
+        _sig_dir_p2 = str(s.get('direction', '')).upper()
+        try:
+            from brahma_brain import wuqu_position_tracker as _wpt_p2
+            _active_p2 = _wpt_p2.get_positions()
+            _same_dir_p2 = [p for p in _active_p2
+                            if p.get('symbol') == sym and
+                            str(p.get('direction', p.get('side', ''))).upper() == _sig_dir_p2]
+            if _same_dir_p2:
+                _pos_entry_p2 = _same_dir_p2[0].get('entry_price', '?')
+                _hold_key_p2 = f"{sig_id}_holding_note"
+                if _hold_key_p2 not in state.get('notified', {}):
+                    try:
+                        from push_hub import _jarvis as _pj_p2
+                        _pj_p2(
+                            f"⚠️ 已持{sym} {_sig_dir_p2}仓（入场={_pos_entry_p2}）\n"
+                            f"新信号 score={s.get('score','?')} — 请评估是否加仓，系统不自动执行",
+                            dedup_ttl=3600
+                        )
+                    except Exception:
+                        pass
+                    state.setdefault('notified', {})[_hold_key_p2] = now
+                continue  # 已持仓信号不进入正常推送流
+        except Exception:
+            pass  # 持仓获取失败不阻断正常推送
+        # ── end 持仓方向感知 ──────────────────────────────────────────────────────────
         # ── Layer 0：新信号检测（<10分钟，且未通知过）───────────
         if age_min < 240 and sig_id not in state["notified"]:  # [修复 2026-07-08] 10min→240min(4H)，防止信号写入延迟被漏推
             price = _cross_check_price if _cross_check_price > 0 else _fetch_price(sym)

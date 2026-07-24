@@ -606,7 +606,53 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
             return result
     except Exception:
         pass  # 分类失败不阻断执行
-    score     = float(signal.get('score', 0) or 0)
+
+    # ── [P1 Phase3 MTF落地 2026-07-24 设计院封印] 4H体制环境否决 ─────────────
+    # 规则：做多信号 + 4H趋势为BEAR/DOWN → 拒绝执行（宏观逆势不入场）
+    # 根因：SNDK被套根本原因是1H BULL信号在4H BEAR环境直接执行，无环境层否决
+    # 精英解锁：score≥170 + structure_grade≥90 可突破（极高置信度信号）
+    _dir_upper = str(direction).upper()
+    if _dir_upper == 'LONG':
+        try:
+            _kl_4h = requests.get(
+                f'{FAPI_BASE}/fapi/v1/klines?symbol={sym}&interval=4h&limit=8',
+                timeout=4
+            ).json()
+            if isinstance(_kl_4h, list) and len(_kl_4h) >= 5:
+                _c4h = [float(k[4]) for k in _kl_4h]
+                # 4H趋势：近3根收盘价 vs 前3根收盘价
+                _trend_4h_bear = _c4h[-1] < _c4h[-4]  # 下跌趋势
+                # 4H EMA9简单判断（快速）
+                _ema9_4h = sum(_c4h[-9:]) / min(9, len(_c4h))
+                _price_4h_below_ema = _c4h[-1] < _ema9_4h
+                _is_4h_bear_env = _trend_4h_bear and _price_4h_below_ema
+                if _is_4h_bear_env:
+                    # 精英解锁检查
+                    _score_f = float(signal.get('score', 0) or 0)
+                    _grade_f = float(signal.get('structure_grade', signal.get('grade', 0)) or 0)
+                    _elite = _score_f >= 170 and _grade_f >= 90
+                    if not _elite:
+                        _reason = (f'[Phase3 MTF] 4H体制BEAR环境，禁止做多执行 '
+                                   f'(4H trend={"DOWN"}, price={_c4h[-1]:.2f}<EMA9_4H={_ema9_4h:.2f}) '
+                                   f'score={_score_f}/grade={_grade_f}，精英解锁需score≥170+grade≥90')
+                        print(f'[4H门控] {sym} LONG被拒: {_reason}')
+                        return {
+                            'signal_id': signal.get('signal_id', ''),
+                            'symbol': sym, 'direction': direction,
+                            'score': float(signal.get('score', 0)),
+                            'ts': time.time(),
+                            'ts_iso': datetime.now(timezone.utc).isoformat(),
+                            'status': 'BLOCKED',
+                            'reason': _reason,
+                        }
+                    else:
+                        print(f'[4H门控] {sym} LONG精英解锁通过 score={_score_f} grade={_grade_f}')
+        except Exception as _4h_e:
+            # 获取失败不阻断执行，记录警告
+            import logging as _lg
+            _lg.getLogger(__name__).warning(f'[4H门控] {sym} 4H数据获取失败({_4h_e})，跳过门控')
+    # ── end 4H体制环境否决 ─────────────────────────────────────────────────────
+
     sl_pct    = float(signal.get('sl_pct', MIN_SL_PCT) or MIN_SL_PCT)
     tp1       = float(signal.get('tp1', 0) or 0)
     sl_price  = float(signal.get('stop_loss', 0) or 0)
