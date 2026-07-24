@@ -388,6 +388,24 @@ def scan():
                         elif rsi > 70:
                             score -= 5;  reasons.append(f'RSI超买-5')
 
+                        # ── [Alpha158 2026-07-24 设计院] rsv_5 + std_5 两项因子 ──
+                        # rsv_5: 5根K棒随机值(KDJ的K分子)，压缩形态时极低→暴涨概率↑
+                        # std_5: 5根收盘价标准差/收盘价，波动率极低→能量蓄积
+                        if len(closes) >= 5:
+                            _rsv5_h = max(highs[-5:]); _rsv5_l = min(lows[-5:])
+                            rsv5 = (price - _rsv5_l) / (_rsv5_h - _rsv5_l + 1e-12)
+                            if rsv5 < 0.15:
+                                score += 12; reasons.append(f'rsv5极低{rsv5:.2f}(Alpha158)')
+                            elif rsv5 < 0.30:
+                                score += 7;  reasons.append(f'rsv5低位{rsv5:.2f}(Alpha158)')
+                            import statistics as _st
+                            std5 = _st.stdev(closes[-5:]) / closes[-1] if closes[-1] > 0 else 0
+                            if std5 < 0.008:
+                                score += 10; reasons.append(f'std5极低{std5:.4f}(Alpha158)')
+                            elif std5 < 0.015:
+                                score += 5;  reasons.append(f'std5低{std5:.4f}(Alpha158)')
+                        # ── end Alpha158 ──
+
                         # 距历史高点
                         hist_high = max(highs)
                         dist = (price - hist_high) / hist_high * 100
