@@ -361,7 +361,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
                 f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}',
                 timeout=5).read())
             current_price = float(_pt['price'])
-        ob_liq_lines = _build_ob_liquidation_layer(symbol, current_price)
+        ob_liq_lines = _build_ob_liquidation_layer(symbol, current_price, engine_result=r)
         full_report = full_report + "\n" + "\n".join(ob_liq_lines)
     except Exception as _e:
         full_report = full_report + f"\n  [OB清算层] 跳过: {_e}"
@@ -421,7 +421,7 @@ def _get_rwa_fundamentals(symbol: str) -> dict:
         return {}
 
 
-def _build_ob_liquidation_layer(symbol: str, price: float) -> list:
+def _build_ob_liquidation_layer(symbol: str, price: float, engine_result: dict = None) -> list:
     """一号工程 MIX层：OB + 清算集群 + OI变化 + 多空比
     [2026-07-24 设计院自主决策 苳天一号工程 MIX 封印]
     """
@@ -432,24 +432,32 @@ def _build_ob_liquidation_layer(symbol: str, price: float) -> list:
     lines.append("  🎯 OB + 清算集群 + OI异动层 (MIX增强)")
     lines.append("╬" + "═" * 58)
 
-    # ── 1. L2订单簿估单量 + 买卖壁 ───────────────────────────────
+    # ── 1. L2订单簿[P2修复:3快照均值防失真 2026-07-24] ─────────────
     try:
-        r_book = urllib.request.urlopen(
-            f'https://fapi.binance.com/fapi/v1/depth?symbol={symbol}&limit=20', timeout=5)
-        book = _json.loads(r_book.read())
-        bids = [(float(p), float(q)) for p, q in book['bids']]
-        asks = [(float(p), float(q)) for p, q in book['asks']]
-        total_bid10 = sum(q for _, q in bids[:10])
-        total_ask10 = sum(q for _, q in asks[:10])
-        ba_ratio = round(total_bid10 / max(total_ask10, 0.001), 2)
+        import time as _time
+        _ratios = []; _bids_last = []; _asks_last = []
+        for _snap in range(3):
+            _r = urllib.request.urlopen(
+                f'https://fapi.binance.com/fapi/v1/depth?symbol={symbol}&limit=20', timeout=5)
+            _bk = _json.loads(_r.read())
+            _b = [(float(p), float(q)) for p,q in _bk['bids']]
+            _a = [(float(p), float(q)) for p,q in _bk['asks']]
+            _tb = sum(q for _,q in _b[:10]); _ta = sum(q for _,q in _a[:10])
+            _ratios.append(_tb / max(_ta, 0.001))
+            _bids_last, _asks_last = _b, _a
+            if _snap < 2: _time.sleep(0.35)
+        ba_ratio = round(sum(_ratios)/len(_ratios), 2)
+        ba_vol   = round(max(_ratios)-min(_ratios), 2)
+        bids, asks = _bids_last, _asks_last
         ratio_tag = '✅ 多头占优' if ba_ratio > 1.3 else ('⚠️ 空头占优' if ba_ratio < 0.8 else '中性')
-        # 找最大买啤/卖啤
+        vol_note  = f' (波动幅{ba_vol:.2f},高波动)' if ba_vol > 0.5 else ''
         max_bid = max(bids[:10], key=lambda x: x[1], default=(0,0))
-        max_ask = min(asks[:10], key=lambda x: x[0], default=(0,0))  # 最近卖啤
         big_ask = max(asks[:10], key=lambda x: x[1], default=(0,0))
-        lines.append(f"  L2买啤比(top10): {ba_ratio}x {ratio_tag}")
-        lines.append(f"  最大买坤: \${max_bid[0]:.2f} ({max_bid[1]:.2f}张)  "
-                     f"最大卖坤: \${big_ask[0]:.2f} ({big_ask[1]:.2f}张)")
+        lines2 = []
+        lines2.append(f"  L2买卖比(3快照均值): {ba_ratio}x {ratio_tag}{vol_note}")
+        lines2.append(f"  最大买墙: ${max_bid[0]:.2f} ({max_bid[1]:.2f}张)  "
+                     f"最大卖墙: ${big_ask[0]:.2f} ({big_ask[1]:.2f}张)")
+        lines.extend(lines2)
     except Exception as e:
         lines.append(f"  L2订单簿: 获取失败 ({e})")
         bids, asks = [], []
@@ -464,29 +472,52 @@ def _build_ob_liquidation_layer(symbol: str, price: float) -> list:
         if len(oi_vals) >= 2:
             oi_chg1h = (oi_vals[-1] - oi_vals[-2]) / oi_vals[-2] * 100
             oi_chg8h = (oi_vals[-1] - oi_vals[0])  / oi_vals[0]  * 100
-            oi_trend = '▲唐OI外流入包' if oi_chg1h > 0.5 else ('▼弱OI减仓' if oi_chg1h < -0.5 else '─OI扁平')
-            lines.append(f"  OI 1H变化: {oi_chg1h:+.2f}% {oi_trend}  8H常态: {oi_chg8h:+.2f}%")
+            oi_trend = '\u25b2OI流入' if oi_chg1h > 0.5 else ('\u25bcOI减仓' if oi_chg1h < -0.5 else '\u2500OI扁平')
+            # [P1修复 2026-07-24] 1H连续验测OI斜率（解决ETH OI滞后问题）
+            # 若连续3H OI下降且总幅度>1%，即使1H变化扁平也发出警告
+            if len(oi_vals) >= 4:
+                oi_3h_slope = [oi_vals[-(i+1)] - oi_vals[-(i+2)] for i in range(3)]
+                oi_3h_all_down = all(v < 0 for v in oi_3h_slope)
+                oi_3h_total = (oi_vals[-1] - oi_vals[-4]) / oi_vals[-4] * 100
+                if oi_3h_all_down and oi_3h_total < -1.0:
+                    oi_trend += f'  ⚠️连续3H下降斜率={oi_3h_total:.2f}%(持仓耗尽预警)'
+            lines.append(f"  OI 1H变化: {oi_chg1h:+.2f}% {oi_trend}  8H: {oi_chg8h:+.2f}%")
         else:
             lines.append(f"  OI: 当前持仓量={oi_vals[-1]:.0f}张")
     except Exception as e:
         lines.append(f"  OI层: 获取失败 ({e})")
         oi_vals = []
 
-    # ── 3. 多空比(LSR) ───────────────────────────────────────────────
+    # ── 3. 多空比(LSR) ─ 优先使用引擎缓存，降低双源时间差 ────────────────────
+    # [P0修复 2026-07-24] 统一LSR数据源：先尝试从engine_result读取，再实时拉
     try:
-        r_lsr = urllib.request.urlopen(
-            f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio'
-            f'?symbol={symbol}&period=1h&limit=2', timeout=5)
-        lsr_data = _json.loads(r_lsr.read())
-        if lsr_data:
-            latest = lsr_data[-1]
-            long_pct  = float(latest['longAccount']) * 100
-            short_pct = float(latest['shortAccount']) * 100
-            lsr_val   = float(latest['longShortRatio'])
-            lsr_tag = ''
-            if long_pct > 65:  lsr_tag = ' ⚠️ 多头拥挤(>65%), 踩踏风险升'
-            elif long_pct < 40: lsr_tag = ' ✅ 多头种実, 反弹动能充足'
-            lines.append(f"  多空比: {lsr_val:.3f}  多={long_pct:.1f}% 空={short_pct:.1f}%{lsr_tag}")
+        # 优先从外层engine_result获取（与N20同源，无时间差）
+        _cached_long = None
+        if engine_result is not None:
+            _sent = engine_result.get('sentiment', {})
+            _cached_long = _sent.get('long_short_ratio')
+
+        if _cached_long is not None:
+            long_pct  = float(_cached_long)
+            short_pct = round(100 - long_pct, 1)
+            lsr_val   = round(long_pct / max(short_pct, 0.01), 3)
+            _src_tag  = '(引擎同源)'
+        else:
+            # 回退：实时拉取
+            r_lsr = urllib.request.urlopen(
+                f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio'
+                f'?symbol={symbol}&period=1h&limit=2', timeout=5)
+            lsr_data = _json.loads(r_lsr.read())
+            latest   = lsr_data[-1] if lsr_data else {}
+            long_pct  = float(latest.get('longAccount', 0.5)) * 100
+            short_pct = float(latest.get('shortAccount', 0.5)) * 100
+            lsr_val   = float(latest.get('longShortRatio', 1.0))
+            _src_tag  = '(实时拉取)'
+
+        lsr_tag = ''
+        if long_pct > 65:   lsr_tag = ' ⚠️ 多头拥挤(>65%), 踩踏风险升'
+        elif long_pct < 40: lsr_tag = ' ✅ 多头种实, 反弹动能充足'
+        lines.append(f"  多空比: {lsr_val:.3f}  多={long_pct:.1f}% 空={short_pct:.1f}%{lsr_tag} {_src_tag}")
     except Exception as e:
         lines.append(f"  多空比: 获取失败 ({e})")
 

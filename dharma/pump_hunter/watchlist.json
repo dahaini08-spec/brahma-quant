@@ -6,8 +6,18 @@
         "tier": 1,
         "label": "极品妖币",
         "peak_history": [
-          {"date": "2025-10", "high": 0.236, "gain_pct": 312, "from_low": 0.057},
-          {"date": "2026-07", "high": 0.286, "gain_pct": 340, "from_low": 0.065}
+          {
+            "date": "2025-10",
+            "high": 0.236,
+            "gain_pct": 312,
+            "from_low": 0.057
+          },
+          {
+            "date": "2026-07",
+            "high": 0.286,
+            "gain_pct": 340,
+            "from_low": 0.065
+          }
         ],
         "trigger_pattern": "TIGHT+缩量+RSI低位",
         "base_vol_30d_M": 4.2,
@@ -46,8 +56,48 @@
   "meme_tier2": {
     "description": "标准妖币 · 历史有+50%~+200%行情",
     "symbols": {
-      "MYXUSDT": {"tier": 2, "base_vol_30d_M": 3.0, "tight_wr": 0.85},
-      "COAIUSDT": {"tier": 2, "base_vol_30d_M": 2.5, "tight_wr": 0.83}
+      "MYXUSDT": {
+        "tier": 2,
+        "base_vol_30d_M": 3.0,
+        "tight_wr": 0.85
+      },
+      "COAIUSDT": {
+        "tier": 2,
+        "base_vol_30d_M": 2.5,
+        "tight_wr": 0.83
+      },
+      "RIFUSDT": {
+        "tier": 2,
+        "label": "今日实证妖币",
+        "peak_history": [
+          {
+            "date": "2026-07-23",
+            "high": 0.1049,
+            "gain_pct": 75,
+            "from_low": 0.0597
+          }
+        ],
+        "trigger_pattern": "TIGHT+OI异动",
+        "base_vol_30d_M": 2.0,
+        "tight_wr": 0.88,
+        "note": "2026-07-23 单日+75.86%, OI异动提前12:29预警，补入watchlist"
+      },
+      "ONUSDT": {
+        "tier": 2,
+        "label": "今日实证妖币",
+        "peak_history": [
+          {
+            "date": "2026-07-23",
+            "high": 0.1689,
+            "gain_pct": 50,
+            "from_low": 0.113
+          }
+        ],
+        "trigger_pattern": "OI突增+量能放大",
+        "base_vol_30d_M": 1.5,
+        "tight_wr": 0.85,
+        "note": "2026-07-23 单日+49.99%，OI异动08:29预警，补入watchlist"
+      }
     }
   },
   "scoring_bonus": {
@@ -55,6 +105,6 @@
     "tier2_bonus": 8,
     "note": "已知妖币品种在评分中获得额外加分"
   },
-  "updated_at": "2026-07-20",
-  "updated_by": "设计院自主决策"
+  "updated_at": "2026-07-24",
+  "updated_by": "设计院自主决策 2026-07-24 顶层修复"
 }
