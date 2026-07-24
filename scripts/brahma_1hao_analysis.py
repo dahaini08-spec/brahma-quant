@@ -370,6 +370,68 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
     except Exception as _e:
         full_report = full_report + f"\n  [OB清算层] 跳过: {_e}"
 
+    # ── [P0~P4 设计院封印 2026-07-24 苏摩111批准] ──────────────────────────────
+    try:
+        import sys as _sys
+        _sys.path.insert(0, str(__file__ and __import__('pathlib').Path(__file__).parent.parent / 'brahma_brain'))
+        from anomaly_guards import (
+            detect_vol_price_anomaly, detect_correlation_alert,
+            detect_regime_switch_warning, fmt_no_bull_ob_template
+        )
+        from position_guard import fmt_position_guard
+
+        _price  = float(r.get('price', 0))
+        _regime = r.get('regime', '')
+        _smc    = r.get('smc', {})
+        _bull_obs = _smc.get('order_blocks', {}).get('bull_obs', [])
+        _bear_obs = _smc.get('order_blocks', {}).get('bear_obs', [])
+        _choch_list = _smc.get('structure', {}).get('choch', [])
+        _choch_dir  = _choch_list[0] if _choch_list else ''
+        _grade  = float(str(r.get('effective_grade', 0)).replace('?','0') or 0)
+        _score  = float(str(r.get('score_final', 0)).replace('?','0') or 0)
+
+        # P0: 持仓风控
+        _pos_guard = fmt_position_guard(symbol, _price, _regime)
+        if _pos_guard:
+            full_report = full_report + "\n" + _pos_guard
+
+        # P1: 量价异常检测
+        _vol_anom = detect_vol_price_anomaly(symbol)
+        if _vol_anom.get('anomaly'):
+            full_report = full_report + (
+                f"\n\n▌ P1 · 量价异常预警\n  {_vol_anom['message']}")
+
+        # P2: 多币联动预警（1H跌幅估算）
+        try:
+            import urllib.request as _ur2, json as _jj2
+            _kl1h = _jj2.loads(_ur2.urlopen(
+                f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=1h&limit=3',
+                timeout=5).read())
+            _1h_chg = (float(_kl1h[-2][4]) - float(_kl1h[-2][1])) / float(_kl1h[-2][1])
+        except Exception:
+            _1h_chg = 0.0
+        _corr = detect_correlation_alert(symbol, _1h_chg)
+        if _corr.get('alert'):
+            full_report = full_report + (
+                f"\n\n▌ P2 · 联动预警\n  {_corr['message']}")
+
+        # P3: 框架切换机制
+        _sw = detect_regime_switch_warning(_regime, str(_choch_dir), _grade, _score)
+        if _sw.get('warning'):
+            full_report = full_report + (
+                f"\n\n▌ P3 · 框架切换\n  {_sw['message']}")
+
+        # P4: Bull OB=0 模板重写（替换进场区外推建议）
+        if len(_bull_obs) == 0 and _price > 0:
+            # 从已有MIX层提取止损池信息（简化：直接给Bear OB）
+            _liq_pools = {}
+            _p4_note = fmt_no_bull_ob_template(symbol, _price, _bear_obs, _liq_pools)
+            full_report = full_report + f"\n\n▌ P4 · 结构真空区提示\n  {_p4_note}"
+
+    except Exception as _pg_e:
+        pass  # P0~P4异常不阻断主输出
+    # ── [P0~P4 END] ──────────────────────────────────────────────────────────
+
     return full_report
 
 
