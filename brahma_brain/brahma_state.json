@@ -24,10 +24,19 @@
   "wuqu_positions": [
     "HYPEUSDT"
   ],
-  "regime": "UNKNOWN",
+  "regime": "BEAR_TREND",
   "n_open": 1,
   "total_pnl": 3.67,
   "available_balance": 82.38,
   "last_update": "2026-07-21T06:59:30.119385+00:00Z",
-  "_sync_note": "2026-07-21 07:00UTC 苏摩确认 - SNDKUSDT已平仓，HYPEUSDT持仓0.86，入场价推算58.87"
+  "_sync_note": "2026-07-21 07:00UTC 苏摩确认 - SNDKUSDT已平仓，HYPEUSDT持仓0.86，入场价推算58.87",
+  "regime_updated_at": 1784854073.5073566,
+  "regime_source": "realtime_calc_P0A_fix",
+  "regime_price": 64895.4,
+  "regime_ema20_4h": 65395.4,
+  "regime_ema50_4h": 64937.8,
+  "regime_rsi_4h": 26.8,
+  "regime_rsi_1h": 30.0,
+  "regime_rsi_1w": 39.3,
+  "ts": 1784854073.5073566
 }

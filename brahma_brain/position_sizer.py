@@ -232,19 +232,54 @@ def get_position_pct(symbol: str, score: float, direction: str,
         if not _fg_applied:
             level = f'{level}+FG最终封顶'  # 最低0.3%（不归零）
 
+    # ── P1-A修复：总仓位风险上限检查（2026-07-24 苏摩确认）────────────────
+    # 在输出前查询 wuqu_positions，确认「当前已用风险 + 本次 ≤ 总上限25%NAV」
+    # 防止BTC+ETH+其他多仓叠加导致实际风险敞口超限
+    MAX_PORTFOLIO_RISK_PCT = 25.0   # 总仓位风险上限：25%NAV
+    _current_used_pct = 0.0
+    _portfolio_capped = False
+    try:
+        _pos_path = BASE / 'data' / 'wuqu_positions.json'
+        if _pos_path.exists():
+            _positions = json.load(open(_pos_path))
+            if isinstance(_positions, list):
+                _current_used_pct = sum(
+                    abs(float(p.get('size_pct', p.get('pct', 0)) or 0))
+                    for p in _positions
+                    if p.get('success', True)
+                )
+            elif isinstance(_positions, dict):
+                _current_used_pct = sum(
+                    abs(float(v.get('size_pct', v.get('pct', 0)) or 0))
+                    for v in _positions.values()
+                    if v.get('success', True)
+                )
+        _remaining = max(0, MAX_PORTFOLIO_RISK_PCT - _current_used_pct)
+        if max_pct > _remaining:
+            max_pct = round(_remaining, 2)
+            level = f'{level}+PORTFOLIO_CAP({_current_used_pct:.1f}%used)'
+            _portfolio_capped = True
+    except Exception:
+        _portfolio_capped = False
+        _current_used_pct = 0.0
+    # ─────────────────────────────────────────────────────────────────────────
+
     allowed = (max_pct > 0)
     usdt = nav * max_pct / 100 if nav > 0 else 0
 
     return {
-        'pct':     max_pct,
-        'usdt':    round(usdt, 2),
-        'level':   level,
-        'reason':  f'{symbol} score={score:.0f}({sr}) dir={direction} → {level}'
-                   + (' [7月上旬减半仓]' if _july_half_active else '')
-                   + (f' [{_fg_reason}]' if _fg_applied else ''),
-        'allowed': allowed,
-        'fg_cap':  _fg_cap,
-        'fg_applied': _fg_applied,
+        'pct':             max_pct,
+        'usdt':            round(usdt, 2),
+        'level':           level,
+        'reason':          f'{symbol} score={score:.0f}({sr}) dir={direction} → {level}'
+                           + (' [7月上旬减半仓]' if _july_half_active else '')
+                           + (f' [{_fg_reason}]' if _fg_applied else '')
+                           + (f' [总风险{_current_used_pct:.1f}%/25%NAV]' if _portfolio_capped else ''),
+        'allowed':         allowed,
+        'fg_cap':          _fg_cap,
+        'fg_applied':      _fg_applied,
+        'portfolio_used_pct':   _current_used_pct,
+        'portfolio_capped':     _portfolio_capped,
     }
 
 
