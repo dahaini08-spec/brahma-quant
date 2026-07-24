@@ -3097,11 +3097,34 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 # p_up极高 + 做多 = 顺势，保留完整加分
                 pass
             if _s23 != 0:
-                _s23_w = round(_s23 * 0.5)  # 50%降权
+                # [Kronos体制自适应权重 2026-07-24 设计院封印]
+                # 根因: IC数据显示不同体制下Kronos预测力差异巨大
+                # BEAR_RECOVERY:LONG IC=0.762 vs BULL_TREND:LONG IC=0.154
+                # 用固定0.5x无法释放BEAR_RECOVERY下Kronos的真实价值
+                _KRONOS_REGIME_WEIGHT = {
+                    'BEAR_RECOVERY': 1.5,  # IC=0.762，高度信任
+                    'BULL_TREND':    0.8,  # IC=0.154，中等信任
+                    'BEAR_EARLY':    0.8,  # 与BULL_TREND同级
+                    'BEAR_TREND':    0.4,  # n=1样本过少，保守
+                    'CHOP_MID':      0.3,  # 震荡期Kronos噪音大
+                }
+                # 样本门控：n<10的体制回退到0.5x，防止小样本IC过度信任
+                _IC_SAMPLE_MIN = {
+                    'BEAR_RECOVERY': 6, 'BULL_TREND': 39,
+                    'BEAR_TREND': 1,    'CHOP_MID': 3,
+                }
+                _cur_regime_key = str(_regime_t).upper().replace(' ', '_') if '_regime_t' in dir() else ''
+                _regime_mult = 0.5  # 默认
+                for _rk, _rw in _KRONOS_REGIME_WEIGHT.items():
+                    if _rk in _cur_regime_key:
+                        _n_sample = _IC_SAMPLE_MIN.get(_rk, 99)
+                        _regime_mult = _rw if _n_sample >= 10 else 0.5  # 样本不足→保守
+                        break
+                _s23_w = round(_s23 * _regime_mult)
                 _result['confluence']['score'] = _cur_score23 + _s23_w
                 _result['confluence']['_s23_kronos'] = _s23_w
                 _result['confluence'].setdefault('breakdown', {})['s23_kronos'] = (
-                    f"{_s23_w:+d}(原{_s23:+d}×50%) ({_s23_meta.get('reason','')[:60]})"
+                    f"{_s23_w:+d}(原{_s23:+d}×{_regime_mult}) ({_s23_meta.get('reason','')[:60]})"
                 )
                 # [CHOP专项 2026-06-27] 写入 p_up 供 offline_replay 三维分层使用
                 _result['s23_p_up'] = _p_up_raw

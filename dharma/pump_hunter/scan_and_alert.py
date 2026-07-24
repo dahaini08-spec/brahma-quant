@@ -406,6 +406,27 @@ def scan():
                                 score += 5;  reasons.append(f'std5低{std5:.4f}(Alpha158)')
                         # ── end Alpha158 ──
 
+                        # ── [Alpha158 × Kronos 联合门控 2026-07-24 设计院封印] ──
+                        # 规则: rsv5<0.15(压缩到位) AND Kronos p_up>0.65(时序启动) → 双重确认+15分
+                        # 依据: 形态分析(Alpha158)与时序预测(Kronos)同向共振=最高置信暴涨预警
+                        try:
+                            if rsv5 < 0.15:  # 压缩已到位
+                                import sys as _sys_ph; _sys_ph.path.insert(0, '.')
+                                from brahma_brain.kronos_bridge import get_s23_kronos as _ph_kronos
+                                _ph_kl = requests.get(
+                                    f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=15m&limit=64',
+                                    timeout=3
+                                ).json()
+                                _ph_kr = _ph_kronos(klines_15m=_ph_kl, symbol=symbol)
+                                _ph_pup = (_ph_kr[1] if isinstance(_ph_kr, tuple) else _ph_kr).get('p_up', 0.5)
+                                if _ph_pup > 0.65:
+                                    score += 15
+                                    reasons.append(f'Alpha158×Kronos共振p_up={_ph_pup:.2f}(+15联合奖励)')
+                        except Exception:
+                            pass  # Kronos不可用时不阻断暴涨猎手
+                        # ── end 联合门控 ──
+
+
                         # 距历史高点
                         hist_high = max(highs)
                         dist = (price - hist_high) / hist_high * 100
