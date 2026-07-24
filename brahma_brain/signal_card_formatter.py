@@ -178,6 +178,8 @@ def format_vip_card(s):
 T1    {p(tp1)}    RR={rr}x
 T2    {p(tp2)}
 ───────────────────────
+⏱️ 有效期: 4~24H（1H体制信号）
+🌐 宏观趋势: 需用brahma_macro_bottom验证
 {ts} UTC  ⚠️注意风控"""
     
     return card

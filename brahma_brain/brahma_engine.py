@@ -3710,3 +3710,87 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 def format_report(r: dict) -> str:
     """[shim] 已迁移到 brahma_brain/formatter.py · v25.0"""
     from brahma_brain.formatter import format_report as _fmt
+
+
+# ============================================================
+# [第36维 Phase3 2026-07-24 设计院·苏摩确认]
+# 多时间框架一致性层 (Multi-Timeframe Alignment Layer)
+# 解决根因：1H体制信号被错误外推为宏观底部判断
+# ============================================================
+def _calc_mtf_alignment(symbol: str, regime_1h: str, score: float,
+                         cf: dict = None) -> dict:
+    """
+    计算多时间框架一致性，防止时间框架混淆。
+    返回 mtf_result 注入 confluence breakdown。
+    """
+    import urllib.request, json as _json
+    try:
+        def _rsi(closes, period=14):
+            gains = [max(closes[i]-closes[i-1],0) for i in range(1,len(closes))]
+            losses = [max(closes[i-1]-closes[i],0) for i in range(1,len(closes))]
+            ag = sum(gains[-period:])/period if gains else 1
+            al = sum(losses[-period:])/period if losses else 1
+            return round(100-100/(1+ag/al), 1) if al else 100
+
+        def _get_closes(sym, interval, limit=20):
+            is_futures = True
+            try:
+                url = f'https://fapi.binance.com/fapi/v1/klines?symbol={sym}&interval={interval}&limit={limit}'
+                r = urllib.request.urlopen(url, timeout=4)
+                return [float(k[4]) for k in _json.loads(r.read())]
+            except:
+                return []
+
+        closes_1d = _get_closes(symbol, '1d', 20)
+        closes_1w = _get_closes(symbol, '1w', 20)
+
+        rsi_1d = _rsi(closes_1d) if closes_1d else 50
+        rsi_1w = _rsi(closes_1w) if closes_1w else 50
+
+        # 判断各层方向
+        dir_1h = 'BULL' if 'RECOVERY' in regime_1h or 'BULL' in regime_1h else 'BEAR'
+        dir_1d = 'BULL' if rsi_1d > 50 else 'BEAR'
+        dir_1w = 'BULL' if rsi_1w > 50 else 'BEAR'
+
+        aligned = (dir_1h == dir_1d == dir_1w)
+        mixed   = not aligned
+
+        if aligned and dir_1h == 'BULL':
+            alignment = 'ALL_ALIGNED_BULL'
+            label = '✅多时间框架共振做多'
+            confidence = 'HIGH'
+            ttf_note = '1H+1D+1W均偏多，宏观支撑'
+        elif aligned and dir_1h == 'BEAR':
+            alignment = 'ALL_ALIGNED_BEAR'
+            label = '✅多时间框架共振做空'
+            confidence = 'HIGH'
+            ttf_note = '1H+1D+1W均偏空，宏观顺势'
+        elif dir_1h != dir_1w:
+            alignment = 'SHORT_ONLY'
+            label = '⚠️仅短线有效，宏观趋势相反'
+            confidence = 'LOW'
+            ttf_note = f'1H={dir_1h} vs 1W={dir_1w}，时间框架冲突'
+        else:
+            alignment = 'MIXED'
+            label = '⚠️混合信号，中等置信度'
+            confidence = 'MEDIUM'
+            ttf_note = f'1H={dir_1h} 1D={dir_1d} 1W={dir_1w}'
+
+        return {
+            'alignment': alignment,
+            'label': label,
+            'confidence': confidence,
+            'rsi_1d': rsi_1d,
+            'rsi_1w': rsi_1w,
+            'dir_1h': dir_1h,
+            'dir_1d': dir_1d,
+            'dir_1w': dir_1w,
+            'ttf_note': ttf_note,
+            'valid_for_macro': aligned,  # 是否可用于宏观级别决策
+        }
+    except Exception as e:
+        return {
+            'alignment': 'UNKNOWN', 'label': '无法获取多周期数据',
+            'confidence': 'LOW', 'rsi_1d': 50, 'rsi_1w': 50,
+            'valid_for_macro': False, 'ttf_note': str(e)[:50]
+        }
