@@ -170,6 +170,12 @@ def format_vip_card(s):
     
     signal_id = s.get("signal_id", "-")
     
+    # [ai-berkshire 芒格式反偏见 2026-07-24 设计院封印]
+    # 失败场景：强制列出多单/空单被打止损的最可能原因
+    _fail_dir = '多' if 'LONG' in str(s.get('direction','')).upper() else '空'
+    _regime_risk = '4H仍为BEAR结构' if 'BULL' in regime else ('4H反弹突破') if 'BEAR' in regime else '区间失效'
+    _fail_scene = f'4H逆势持续→{_regime_risk}→止损{p(sl)}'
+
     card = f"""🏯 梵天信号 · {sym}/USDT {dir_label}
 ───────────────────────
 评分 {score:.0f}  {grade_raw}  {regime}
@@ -178,8 +184,8 @@ def format_vip_card(s):
 T1    {p(tp1)}    RR={rr}x
 T2    {p(tp2)}
 ───────────────────────
+✅ 建议: 可入场  ❌ 失败场景: {_fail_scene}
 ⏱️ 有效期: 4~24H（1H体制信号）
-🌐 宏观趋势: 需用brahma_macro_bottom验证
 {ts} UTC  ⚠️注意风控"""
     
     return card
