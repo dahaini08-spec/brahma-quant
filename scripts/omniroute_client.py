@@ -3,19 +3,14 @@
 OmniRoute × 梵天 适配层
 设计院 2026-07-24 苏摩111封印
 
-职责：
-  1. chat_completion()  → 通用LLM推断（Kronos辅助/摘要）
-  2. get_embedding()    → 文本向量化（LightRAG前置）
-  3. kronos_infer()     → Kronos信号辅助推断（替代本地torch）
+Embedding策略（优先级）：
+  1. fastembed本地模型（BAAI/bge-small-en-v1.5，384维，纯CPU，无需Key）✅ 已验证
+  2. OmniRoute云端（需config/omniroute.json中有api_key）
+  3. 降级返回None
 
-配置：config/omniroute.json
-  - 不存在 → 静默返回 None（不阻断主流）
-  - 存在   → 接入OmniRoute网关
-
-调用规范：
-  - 所有接口均返回 None 时不报错，主流降级处理
-  - TTL缓存（5分钟）减少API调用
-  - fallback_chain：按序尝试3个免费模型
+配置：config/omniroute.json（可选）
+  - 不存在 → embedding用本地fastembed，chat返回None
+  - 存在   → chat + embedding均走OmniRoute网关
 """
 
 import os
@@ -29,15 +24,12 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-# ─── 路径 ────────────────────────────────────────────────────
-BASE = Path(__file__).parent.parent
+BASE        = Path(__file__).parent.parent
 CONFIG_PATH = BASE / "config" / "omniroute.json"
-CACHE_FILE  = BASE / "data" / "omniroute_cache.json"
 
-# ─── 默认配置（未配置时使用公共OpenRouter端点）────────────────
 DEFAULT_CONFIG = {
     "base_url": "https://openrouter.ai/api/v1",
-    "api_key": "",  # 空时为只读模式，仅embedding可能免费
+    "api_key": "",
     "chat_model": "mistralai/mistral-7b-instruct:free",
     "embedding_model": "text-embedding-3-small",
     "kronos_model": "mistralai/mistral-7b-instruct:free",
@@ -47,16 +39,14 @@ DEFAULT_CONFIG = {
         "meta-llama/llama-3.2-3b-instruct:free"
     ],
     "cache_ttl_seconds": 300,
-    "timeout_seconds": 10,
+    "timeout_seconds": 15,
     "max_retries": 2
 }
 
-# ─── 内存缓存 ─────────────────────────────────────────────────
 _cache: dict = {}
 
 
 def _load_config() -> Optional[dict]:
-    """加载OmniRoute配置。不存在则返回None（静默降级）"""
     if not CONFIG_PATH.exists():
         return None
     try:
@@ -71,18 +61,16 @@ def _cache_key(text: str, model: str) -> str:
     return hashlib.md5(f"{model}:{text}".encode()).hexdigest()[:12]
 
 
-def _cache_get(key: str, ttl: int) -> Optional[any]:
+def _cache_get(key: str, ttl: int) -> Optional[object]:
     entry = _cache.get(key)
     if entry and (time.time() - entry["ts"]) < ttl:
         return entry["val"]
     return None
 
 
-def _cache_set(key: str, val: any):
+def _cache_set(key: str, val: object):
     _cache[key] = {"ts": time.time(), "val": val}
 
-
-# ─── 核心接口 ─────────────────────────────────────────────────
 
 def chat_completion(
     prompt: str,
@@ -91,19 +79,7 @@ def chat_completion(
     max_tokens: int = 256,
     temperature: float = 0.1,
 ) -> Optional[str]:
-    """
-    通用LLM推断。失败时返回None，不抛异常。
-
-    Args:
-        prompt: 用户输入
-        system: 系统提示
-        model: 指定模型（None=使用配置默认）
-        max_tokens: 最大输出tokens
-        temperature: 温度（推断任务用低值）
-
-    Returns:
-        str | None
-    """
+    """通用LLM推断。需要OmniRoute配置，失败返回None。"""
     cfg = _load_config()
     if not cfg or not cfg.get("api_key"):
         return None
@@ -125,7 +101,6 @@ def chat_completion(
         timeout=cfg["timeout_seconds"],
     )
 
-    # fallback loop
     models_to_try = [use_model] + [m for m in cfg["fallback_chain"] if m != use_model]
     for m in models_to_try[:cfg["max_retries"] + 1]:
         try:
@@ -152,8 +127,32 @@ def get_embedding(text: str, model: Optional[str] = None) -> Optional[list]:
     """
     文本向量化。返回 list[float] 或 None。
 
-    用于 LightRAG 知识库入库。
+    优先级：
+      1. fastembed 本地模型（无需Key，纯CPU，384维）
+      2. OmniRoute 云端（需api_key）
+      3. 降级返回 None
     """
+    # 优先走本地fastembed
+    try:
+        from fastembed import TextEmbedding
+        _fe_model_name = "BAAI/bge-small-en-v1.5"
+        cache_k = _cache_key(text[:200], f"fastembed:{_fe_model_name}")
+        cached = _cache_get(cache_k, 3600)
+        if cached is not None:
+            return cached
+        # 单例模式，避免重复加载
+        if not hasattr(get_embedding, '_fe_model'):
+            get_embedding._fe_model = TextEmbedding(_fe_model_name)
+        vecs = list(get_embedding._fe_model.embed([text]))
+        vec = [float(v) for v in vecs[0]]
+        _cache_set(cache_k, vec)
+        return vec
+    except ImportError:
+        pass
+    except Exception as e:
+        logger.debug(f"[OmniRoute] fastembed失败: {e}")
+
+    # fallback: OmniRoute云端
     cfg = _load_config()
     if not cfg or not cfg.get("api_key"):
         return None
@@ -165,7 +164,7 @@ def get_embedding(text: str, model: Optional[str] = None) -> Optional[list]:
 
     use_model = model or cfg.get("embedding_model", "text-embedding-3-small")
     cache_k = _cache_key(text[:200], f"emb:{use_model}")
-    cached = _cache_get(cache_k, 3600)  # embedding缓存1小时
+    cached = _cache_get(cache_k, 3600)
     if cached is not None:
         return cached
 
@@ -190,27 +189,11 @@ def kronos_infer(
     features: dict,
     direction: str = "LONG",
 ) -> Optional[dict]:
-    """
-    Kronos信号辅助推断（替代本地torch/lgbm）。
-
-    Args:
-        symbol:    交易对（如 BTCUSDT）
-        features:  特征字典（RSI/EMA/OI等）
-        direction: LONG | SHORT
-
-    Returns:
-        {
-            "p_up": float,      # 0~1, 上涨概率
-            "confidence": float, # 置信度
-            "src": str          # 来源标识
-        }
-        None = 推断失败，主流使用fallback
-    """
+    """Kronos信号辅助推断（替代本地torch/lgbm）。需要OmniRoute配置。"""
     cfg = _load_config()
     if not cfg or not cfg.get("api_key"):
         return None
 
-    # 构建特征摘要提示
     feat_str = "\n".join([f"  {k}: {v}" for k, v in features.items() if v is not None])
     prompt = f"""你是加密货币量化交易信号分析器。
 
@@ -235,86 +218,68 @@ def kronos_infer(
         return None
 
     try:
-        # 提取JSON
         import re
         m = re.search(r'\{[^}]+\}', result_str)
         if m:
             data = json.loads(m.group())
             p_up = float(data.get("p_up", 0.5))
             conf = float(data.get("confidence", 0.5))
-            # 置信度过滤：<0.6时返回NEUTRAL(0.5)
             if conf < 0.6:
                 p_up = 0.5
             return {"p_up": p_up, "confidence": conf, "src": "omniroute_cloud"}
     except Exception as e:
-        logger.debug(f"[OmniRoute] kronos_infer 解析失败: {e} raw={result_str}")
+        logger.debug(f"[OmniRoute] kronos_infer 解析失败: {e}")
 
     return None
 
 
 def health_check() -> dict:
-    """冒烟测试：验证OmniRoute连接状态"""
+    """冒烟测试：验证embedding和chat状态"""
+    # 测试embedding（本地fastembed）
+    emb_result = get_embedding("test signal BTCUSDT BEAR_TREND")
+    emb_ok = emb_result is not None and len(emb_result) > 0
+    emb_src = "fastembed_local" if emb_ok else "none"
+
+    # 测试chat（需要OmniRoute key）
     cfg = _load_config()
-    if not cfg:
-        return {"status": "no_config", "msg": "config/omniroute.json 不存在"}
-
-    if not cfg.get("api_key"):
-        return {"status": "no_key", "msg": "api_key 未配置"}
-
-    # 测试chat
     chat_ok = False
-    chat_result = chat_completion("用一个词回复：OK", max_tokens=10)
-    if chat_result:
-        chat_ok = True
+    chat_result = None
+    if cfg and cfg.get("api_key"):
+        chat_result = chat_completion("用一个词回复：OK", max_tokens=10)
+        chat_ok = chat_result is not None
 
-    # 测试embedding
-    emb_ok = False
-    emb_result = get_embedding("test")
-    if emb_result and len(emb_result) > 0:
-        emb_ok = True
+    if not cfg:
+        status = "embedding_only" if emb_ok else "no_config"
+    elif not cfg.get("api_key"):
+        status = "embedding_only" if emb_ok else "no_key"
+    else:
+        status = "ok" if (chat_ok or emb_ok) else "failed"
 
     return {
-        "status": "ok" if (chat_ok or emb_ok) else "failed",
+        "status": status,
         "chat": chat_ok,
+        "chat_sample": chat_result[:50] if chat_result else None,
         "embedding": emb_ok,
         "emb_dim": len(emb_result) if emb_result else 0,
-        "chat_sample": chat_result[:50] if chat_result else None,
-        "base_url": cfg["base_url"],
-        "model": cfg["chat_model"],
+        "emb_src": emb_src,
+        "has_config": cfg is not None,
+        "has_key": bool(cfg and cfg.get("api_key")),
     }
 
 
-# ─── CLI冒烟测试 ──────────────────────────────────────────────
 if __name__ == "__main__":
-    import sys
     print("🔧 OmniRoute × 梵天 冒烟测试")
-    print("=" * 40)
+    print("=" * 45)
     result = health_check()
     print(json.dumps(result, indent=2, ensure_ascii=False))
 
-    if result["status"] == "no_config":
-        print()
-        print("📋 使用方法：")
-        print("  1. 到 https://openrouter.ai 注册免费账号")
-        print("  2. 创建 API Key")
-        print(f"  3. 写入配置: {CONFIG_PATH}")
-        print()
-        print("  配置示例：")
-        example = {
-            "base_url": "https://openrouter.ai/api/v1",
-            "api_key": "sk-or-v1-YOUR_KEY_HERE",
-            "chat_model": "mistralai/mistral-7b-instruct:free",
-            "embedding_model": "text-embedding-3-small"
-        }
-        print(json.dumps(example, indent=2))
-    elif result["status"] == "ok":
-        print()
-        print("✅ OmniRoute连接正常")
-        if result["embedding"]:
-            print(f"✅ Embedding可用，维度: {result['emb_dim']}")
-            print("   → LightRAG等待条件达成！")
-        if result["chat"]:
-            print(f"✅ Chat可用: {result['chat_sample']}")
-            print("   → Kronos云端推断可接入")
-    else:
-        print("❌ 连接失败，请检查API Key和网络")
+    print()
+    if result["embedding"]:
+        print(f"✅ Embedding已解锁 | 来源: {result['emb_src']} | 维度: {result['emb_dim']}")
+        print("   → LightRAG等待条件达成！可立即建立知识图谱")
+    if result["chat"]:
+        print(f"✅ Chat已解锁 | {result['chat_sample']}")
+        print("   → Kronos云端推断可接入")
+    if not result["chat"]:
+        print("⚠️  Chat未配置 | 提供OmniRoute API Key后解锁Kronos云端推断")
+        print(f"   写入: {CONFIG_PATH}")
