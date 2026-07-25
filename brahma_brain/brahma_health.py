@@ -35,6 +35,14 @@ for _p in [_BB, _ROOT]:
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+# 自动注入venv site-packages，确保requests等依赖可用
+_VENV_SITE = os.path.join(_ROOT, 'venv', 'lib')
+if os.path.isdir(_VENV_SITE):
+    for _entry in os.listdir(_VENV_SITE):
+        _sp = os.path.join(_VENV_SITE, _entry, 'site-packages')
+        if os.path.isdir(_sp) and _sp not in sys.path:
+            sys.path.insert(0, _sp)
+
 # ═══════════════════════════════════════════════════════════════
 # 核心检查项（按优先级排列）
 # ═══════════════════════════════════════════════════════════════
