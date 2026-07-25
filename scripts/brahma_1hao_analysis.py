@@ -104,8 +104,17 @@ def fmt_smc(smc: dict, price: float) -> str:
     lines.append(f"  Bull OB: {len(bull_obs)}个  Bear OB: {len(bear_obs)}个")
     if not bull_obs:
         lines.append("  ⚠️ 无Bull OB（当前价格下方无机构成本锚定区）")
-    for ob in bull_obs[:2]:
-        lines.append(f"    ▲Bull OB: {ob['low']}~{ob['high']} (距{ob['dist_pct']}%) {ob.get('note','')}")
+    # [苏摩111批准 2026-07-25] OB新鲜度标注升级
+    _AGE_MULT = {(0,3):(1.00,'🔥最新鲜'), (4,6):(0.75,'🟡较新鲜'),
+                 (7,10):(0.50,'⚠️中等'), (11,49):(0.30,'⚠️较老'), (50,9999):(0.00,'❌已过期')}
+    def _age_tag(age):
+        for (lo,hi),(mult,label) in _AGE_MULT.items():
+            if lo <= age <= hi: return f"age={age}bars ×{mult} {label}"
+        return f"age={age}bars"
+    for ob in bull_obs[:3]:
+        age = ob.get('age_bars', ob.get('age', 0))
+        age_str = _age_tag(age)
+        lines.append(f"    ▲Bull OB: {ob['low']}~{ob['high']} (距{ob['dist_pct']}%) [{age_str}]")
     for ob in bear_obs[:3]:
         flag = " ← 最近阻力" if ob == bear_obs[0] else ""
         lines.append(f"    ▼Bear OB: {ob['low']}~{ob['high']} (距{ob['dist_pct']}%){flag}")
@@ -134,10 +143,22 @@ def fmt_smc(smc: dict, price: float) -> str:
     # 流动性
     liq = smc.get('liquidity', {})
     lines.append(f"\n  [流动性猎杀区]")
-    for x in liq.get('equal_highs', [])[:3]:
-        lines.append(f"    等高止损池(上): {x['level']}U  dist={x['dist_pct']}%")
-    for x in liq.get('equal_lows', [])[:3]:
-        lines.append(f"    等低止损池(下): {x['level']}U  dist={x['dist_pct']}%")
+    # [苏摩111批准 2026-07-25] 极近止损池警告（<0.5%触发）
+    _near_warn = []
+    _eq_highs = liq.get('equal_highs', [])
+    _eq_lows  = liq.get('equal_lows', [])
+    for x in _eq_highs[:3]:
+        dist = abs(float(str(x.get('dist_pct','99')).replace('%','').replace('+','').replace('-','')))
+        flag = ' 🚨极近！双边猎杀风险' if dist < 0.5 else ''
+        lines.append(f"    等高止损池(上): {x['level']}U  dist={x['dist_pct']}%{flag}")
+        if dist < 0.5: _near_warn.append(f"上${x['level']}(+{x['dist_pct']}%)")
+    for x in _eq_lows[:3]:
+        dist = abs(float(str(x.get('dist_pct','99')).replace('%','').replace('+','').replace('-','')))
+        flag = ' 🚨极近！双边猎杀风险' if dist < 0.5 else ''
+        lines.append(f"    等低止损池(下): {x['level']}U  dist={x['dist_pct']}%{flag}")
+        if dist < 0.5: _near_warn.append(f"下${x['level']}(-{x['dist_pct']}%)")
+    if _near_warn:
+        lines.append(f"  ⚡ 极近止损池警告：{' / '.join(_near_warn)} → 价格正在猎杀双边止损，方向选择即将发生！")
 
     # PD Zone
     pd = smc.get('pd_zone', {})
@@ -205,14 +226,21 @@ def fmt_entry(r: dict) -> str:
             # 下方密集止损池（做多止损=SL应在其下方）
             _sl_hints = [(p,n) for p,n in _lc if p < _p*0.995 and n >= 2][:2]
             if _tp_hints or _sl_hints:
-                lines.append("  --- 清算集群优化建议 ---")
-            for p, n in _tp_hints:
-                dist = (p - _p) / _p * 100
-                lines.append(f"  💡 TP参考(止损山{n}次密集): {p:.2f} (+{dist:.2f}%)")
-            for p, n in _sl_hints:
-                dist = (_p - p) / _p * 100
-                sl_rec = round(p * 0.985, 2)  # 止损池下方1.5%
-                lines.append(f"  💡 SL参考(止损池{n}次密集下方): {sl_rec:.2f} (-{(_p-sl_rec)/_p*100:.2f}%)")
+                lines.append("  --- 清算集群地图（苏摩111升级 2026-07-25） ---")
+            if _tp_hints:
+                lines.append("  上方(空头止损山 → 多头TP目标):")
+                for p, n in _tp_hints:
+                    dist = (p - _p) / _p * 100
+                    near = " ⭐最近" if p == _tp_hints[0][0] else ""
+                    lines.append(f"    💡 TP参考(止损山{n}次密集): {p:.2f} (+{dist:.2f}%){near}")
+            if _sl_hints:
+                lines.append("  下方(多头止损池 → SL应在其下方):")
+                for p, n in _sl_hints:
+                    dist = (_p - p) / _p * 100
+                    sl_rec = round(p * 0.985, 2)
+                    sl_dist = (_p - sl_rec) / _p * 100
+                    near = " ⭐最近" if p == _sl_hints[0][0] else ""
+                    lines.append(f"    💡 SL封印(止损池{n}次密集下方): {sl_rec:.2f} (-{sl_dist:.2f}%){near}")
     except Exception:
         pass
 
@@ -312,14 +340,30 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         fvg_bull = smc.get('fvg', {}).get('bull_fvg', [])
 
         lines.append(f"  ⛔ 当前封禁 — 等待解封条件（score={score_final} grade={eff_grade}）：")
+        grade_gap = round(80.0 - float(str(eff_grade).replace('?','0') or 0), 1)
         if not has_choch:
             lines.append(f"    ① CHoCH出现（趋势结构转换信号）")
         if bear_obs_nearest:
-            lines.append(f"    ② 突破最近Bear OB: {bear_obs_nearest.get('high','')}U")
-        lines.append(f"    ③ effective_grade 反弹至 ≥ 80")
+            nearest_high = bear_obs_nearest.get('high','')
+            nearest_dist = bear_obs_nearest.get('dist_pct', '?')
+            lines.append(f"    ② 突破Bear OB: {nearest_high}U（当前距+{nearest_dist}%）")
+        if grade_gap > 0:
+            lines.append(f"    ③ grade还差{grade_gap}分解封（{eff_grade}→目标≥〈80〉")
+            # 分析grade皮颉是哪个模块
+            causal = bd.get('_causal_regime', '')
+            if 'BLOCKED' in str(causal):
+                lines.append(f"       └ 主要阻碍: _causal_regime BLOCKED（-25分，体制因果封锁）")
+            bear_mult = float(str(regime_mult))
+            if bear_mult <= 0.35:
+                lines.append(f"       └ 体制乘数{regime_mult}重击，所有分数不足原始得分的{int(bear_mult*100)}%")
         if fvg_bull:
             f0 = fvg_bull[0]
-            lines.append(f"    ④ FVG目标: {f0['bottom']}~{f0['top']}U（{f0['gap_pct']}% 未填满）")
+            lines.append(f"    ④ FVG磁吸目标: {f0['bottom']}~{f0['top']}U（未填满{f0['gap_pct']}%）")
+        # OB刷新目标
+        if bull_obs:
+            ob0 = bull_obs[0]
+            age0 = ob0.get('age_bars', ob0.get('age', 0))
+            lines.append(f"    ① 当前Bull OB锁定: {ob0['low']}~{ob0['high']}（age={age0}，待价格回踩确认）")
 
     lines.append(sep)
 
