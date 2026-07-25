@@ -1286,12 +1286,31 @@ def run_self_heal():
         state['last_summary_ts'] = time.time()
         _save_state(state)
 
-    return {
+    _final = {
         'checks': checks,
         'healed': healed_items,
         'failed': failed_items,
         'reported': len(reported_items),
     }
+    # 写缓存供 brahma_autonomous_core 读取统一健康视图
+    try:
+        import json as _jj, time as _tt
+        from pathlib import Path as _P
+        _ok_count = sum(1 for v in checks.values() if isinstance(v, dict) and v.get('ok'))
+        _total    = max(len(checks), 1)
+        _cache = {
+            'ts':     _tt.time(),
+            'score':  _ok_count * 100 // _total,
+            'status': 'HEALTHY' if not failed_items else 'DEGRADED',
+            'checks': _ok_count,
+            'total':  _total,
+            'failed': failed_items,
+        }
+        (_P(__file__).parent.parent / 'data' / 'self_heal_last.json').write_text(
+            _jj.dumps(_cache, default=str))
+    except Exception:
+        pass
+    return _final
 
 
 if __name__ == '__main__':

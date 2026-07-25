@@ -298,6 +298,19 @@ def run_full_check() -> dict:
 
     print(f"\n总分: {score}/100 ({passed}/{total}通过)")
 
+    # ── self_heal深度检查状态（每2h跑，此处只读缓存）──────────
+    try:
+        sh_status = BASE / 'data' / 'self_heal_last.json'
+        if sh_status.exists():
+            import time as _t
+            _sh = json.loads(sh_status.read_text())
+            _age_m = (_t.time() - _sh.get('ts', 0)) / 60
+            _sh_score = _sh.get('score', '?')
+            _sh_status = _sh.get('status', '?')
+            print(f"  └ self_heal深度: {_sh_status} {_sh_score}/100 ({_age_m:.0f}min前)")
+    except Exception:
+        pass
+
     result = {
         "ts": ts,
         "score": score,
