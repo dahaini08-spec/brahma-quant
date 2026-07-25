@@ -98,10 +98,14 @@ def get_rss_mb() -> float:
 def get_gateway_rss_mb() -> float:
     """获取gateway进程RSS"""
     try:
-        for proc in psutil.process_iter(['name', 'cmdline', 'memory_info']):
-            cmd = ' '.join(proc.info.get('cmdline') or [])
-            if 'openclaw' in cmd.lower() and 'gateway' in cmd.lower():
-                return proc.info['memory_info'].rss / 1024 / 1024
+        # 用ps aux找最大的gateway node进程（psutil读共享内存不准）
+        import subprocess as _sp
+        r = _sp.run(['ps','aux','--sort=-%mem'], capture_output=True, text=True, timeout=5)
+        for l in r.stdout.splitlines():
+            if 'dist/index.js' in l and 'gateway' in l:
+                parts = l.split()
+                if len(parts) >= 6:
+                    return int(parts[5]) / 1024  # KB→MB
         return 0.0
     except Exception:
         return 0.0
