@@ -22,7 +22,21 @@ brahma_autonomous_core.py — 梵天全自主运行总控
   - 过热阈值：RSS>1200MB OR context>180k tokens → 触发优雅重启
 """
 
-import sys, os, json, time, subprocess, requests, psutil
+import sys, os, json, time, subprocess, requests
+
+# psutil延迟安全加载（gateway重启后自动恢复）
+def _get_psutil():
+    try:
+        import psutil as _ps
+        return _ps
+    except ImportError:
+        subprocess.run([sys.executable,'-m','pip','install','psutil',
+                        '--break-system-packages','-q'],
+                       capture_output=True, timeout=60)
+        import psutil as _ps
+        return _ps
+
+psutil = _get_psutil()
 from pathlib import Path
 from datetime import datetime, timezone
 
