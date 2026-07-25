@@ -1,0 +1,50 @@
+[
+  {
+    "time": "2026-05-15T15:12:17Z",
+    "exp_id": "EXP-18",
+    "bp_path": "domains.D6_portfolio_manager.health",
+    "old": 65,
+    "new": 75,
+    "note": "EXP-18 health提升",
+    "source": "/root/.openclaw/workspace/trading-system/lana/soul_db/exp18_kelly.json"
+  },
+  {
+    "ts": "2026-05-21T05:26Z",
+    "written": 0,
+    "skipped": 25,
+    "changes": []
+  },
+  {
+    "ts": "2026-05-25T06:03Z",
+    "written": 3,
+    "skipped": 0,
+    "changes": [
+      {
+        "path": "_runtime_config.kelly.base_pct",
+        "old": 0.1,
+        "new": 0.055,
+        "reason": "BULL_TREND胜率60%，略提Kelly",
+        "stype": "kelly_adjust"
+      },
+      {
+        "path": "_runtime_config.score_min",
+        "old": 80,
+        "new": 9,
+        "reason": "低分段WR<30%，建议提高门槛",
+        "stype": "score_raise"
+      },
+      {
+        "path": "_runtime_config.avoid_list",
+        "old": [
+          "TONUSDT",
+          "DOGSUSDT"
+        ],
+        "new": [
+          "CHZUSDT"
+        ],
+        "reason": "CHOP_HIGH+CHZ  连亏3次",
+        "stype": "avoid_add"
+      }
+    ]
+  }
+]
