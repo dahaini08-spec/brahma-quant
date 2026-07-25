@@ -26,6 +26,19 @@ import sys, os, json, time, subprocess, requests, psutil
 from pathlib import Path
 from datetime import datetime, timezone
 
+# ─── 启动依赖自检（gateway重启后自动恢复）────────────────
+def _ensure_startup_deps():
+    for pkg in ['psutil', 'fastembed', 'chromadb']:
+        try:
+            __import__(pkg)
+        except ImportError:
+            import subprocess as _sp
+            _sp.run([sys.executable, '-m', 'pip', 'install', pkg,
+                     '--break-system-packages', '-q'],
+                    capture_output=True, timeout=60)
+_ensure_startup_deps()
+# ──────────────────────────────────────────────────────────
+
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(BASE / 'scripts'))
@@ -170,10 +183,26 @@ def check_brahma_engine() -> dict:
     """检查梵天引擎可用性"""
     try:
         from brahma_brain.brahma_engine import analyze
-        # 轻量测试：不发网络请求，只检查import
         return {"ok": True, "importable": True}
     except Exception as e:
         return {"ok": False, "error": str(e)}
+
+def ensure_fastembed() -> dict:
+    """确保fastembed可用，不可用则自动安装"""
+    try:
+        import fastembed
+        return {"ok": True, "version": fastembed.__version__, "action": "already_installed"}
+    except ImportError:
+        try:
+            subprocess.run(
+                [sys.executable, '-m', 'pip', 'install', 'fastembed',
+                 '--break-system-packages', '-q'],
+                capture_output=True, timeout=60
+            )
+            import fastembed
+            return {"ok": True, "version": fastembed.__version__, "action": "auto_installed"}
+        except Exception as e:
+            return {"ok": False, "error": str(e)}
 
 # ─── 自愈模块 ──────────────────────────────────────────────
 
@@ -232,6 +261,7 @@ def run_full_check() -> dict:
     print(f"  {ts}")
     print(f"{'='*55}")
 
+    ensure_fastembed()  # 确保embedding可用
     checks = {
         "api":           check_api(),
         "signal_log":    check_signal_log(),
