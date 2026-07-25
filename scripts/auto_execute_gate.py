@@ -86,43 +86,42 @@ def _load_state() -> dict:
 
 
 def _open_positions() -> list:
-    """返回武曲自己开的持仓（从 brahma_state.wuqu_positions）
-    
-    设计院修复 v1.1 (2026-06-19):
-    原来读 brahma_state['positions'] = 全局实盘持仓（含梵天/人工）
-    → 导致武曲被外来持仓封死，从未成功执行任何订单
-    修复：改读 brahma_state['wuqu_positions']，只计武曲自己的仓位
+    """返回武曲自己开的持仓
+    [B2修复 2026-07-24]: 统一读 wuqu_positions.json（SSOT）
+    不再读brahma_state.wuqu_positions（存在旧字符串鬼数据，已证实会导致拥堵开单）
     """
-    bs = _load_state()
-    raw = bs.get('wuqu_positions', [])
-    # [FIX 2026-07-22] 兼容旧格式（字符串列表）和新格式（dict列表）
-    result = []
-    for p in raw:
-        if isinstance(p, dict):
-            result.append(p)
-        elif isinstance(p, str):
-            # 旧格式：只有symbol字符串，补全为dict
-            result.append({'symbol': p, 'side': 'LONG', 'entry': 0, 'qty': 0})
-    return result
+    wuqu_path = DATA_DIR / 'wuqu_positions.json'
+    try:
+        raw = json.loads(wuqu_path.read_text())
+        if isinstance(raw, list):
+            return raw
+        elif isinstance(raw, dict):
+            return list(raw.values())
+    except Exception:
+        pass
+    return []
 
 
 def _add_wuqu_position(symbol: str, direction: str, entry: float, qty: float):
-    """武曲开仓后写入 brahma_state.wuqu_positions"""
+    """武曲开仓后写入 wuqu_positions.json
+    [B2修复 2026-07-24]: 不再写 brahma_state，统一写 wuqu_positions.json
+    """
+    wuqu_path = DATA_DIR / 'wuqu_positions.json'
     try:
-        state_path = DATA_DIR / 'brahma_state.json'
-        bs = json.loads(state_path.read_text())
-        wuqu_pos = bs.get('wuqu_positions', [])
-        wuqu_pos.append({
+        raw = json.loads(wuqu_path.read_text()) if wuqu_path.exists() else []
+        if not isinstance(raw, list):
+            raw = list(raw.values()) if isinstance(raw, dict) else []
+        raw = [p for p in raw if p.get('symbol') != symbol]  # 去重
+        raw.append({
             'symbol': symbol,
             'side': direction,
-            'entry': entry,
-            'qty': qty,
+            'entry_price': entry,
+            'size': qty,
             'open_ts': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
-            'source': 'wuqu_auto_execute',
+            'source': 'auto_execute_gate',
         })
-        bs['wuqu_positions'] = wuqu_pos
-        state_path.write_text(json.dumps(bs, ensure_ascii=False, indent=2))
-    except Exception as e:
+        wuqu_path.write_text(json.dumps(raw, ensure_ascii=False, indent=2))
+    except Exception:
         pass  # [静默]
 
 

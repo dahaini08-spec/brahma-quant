@@ -30,8 +30,8 @@ sys.path.insert(0, str(BASE))
 BASELINE = {
     # 执行层
     'TIER_1_SCORE':        (155, 145, 175,  'auto_executor.py'),
-    'TIER_2_SCORE':        (138, 120, 154,  'auto_executor.py'),
-    'TIER_3_SCORE':        (120, 110, 137,  'auto_executor.py'),
+    'TIER_2_SCORE':        (155, 138, 160,  'auto_executor.py'),   # IC铁证封印 2026-07-20: BULL_TREND:LONG:140-154 WR=30% EV=-0.65%
+    'TIER_3_SCORE':        (138, 120, 145,  'auto_executor.py'),   # IC优化 2026-07-20
     'MAX_POSITIONS':       (20,  10,  25,   'auto_executor.py'),
     'MIN_NOTIONAL':        (4.5, 3.0, 10.0, 'auto_executor.py'),
     'OI_SCORE_THRESHOLD':  (60,  50,  100,  'sub_executor.py'),

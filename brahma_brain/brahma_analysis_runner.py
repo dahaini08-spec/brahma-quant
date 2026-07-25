@@ -676,7 +676,16 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
         result['_panorama_err'] = str(_pano_err)
     # ─────────────────────────────────────────────────────────────────────────
 
-    return result
+
+    # [P1 signal_log 自动注入 2026-07-24]
+    try:
+        import sys, os
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'scripts'))
+        from p1_signal_log import write_signal as _write_signal
+        _write_signal(result, symbol=symbol)
+    except Exception:
+        pass
+        return result
 
 
 def run_batch(symbols: list, deep: bool = True) -> dict:

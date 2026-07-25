@@ -988,30 +988,35 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     }
     POS_STATE_PATH.write_text(json.dumps(sl_state, indent=2, ensure_ascii=False))
 
-    # wuqu_positions 更新
-    wuqu = {}
+    # wuqu_positions 更新 [B1修复 2026-07-24: 统一为LIST格式，与sub_executor/APM保持一致]
+    wuqu_list = []
     if WUQU_PATH.exists():
         try:
-            wuqu = json.loads(WUQU_PATH.read_text())
+            raw = json.loads(WUQU_PATH.read_text())
+            if isinstance(raw, list):
+                wuqu_list = [p for p in raw if p.get('symbol') != sym]  # 去重
+            elif isinstance(raw, dict):
+                # 旧dict格式兼容读取，转为list
+                wuqu_list = [v for k, v in raw.items() if k != sym]
         except Exception:
             pass
-    wuqu[sym] = {
+    wuqu_list.append({
         'symbol':      sym,
         'side':        direction,
-        'qty':         fill_qty,
+        'size':        fill_qty,
         'entry_price': fill_px,
         'stop_loss':   sl_final,
         'tp1':         tp_final,
         'sl_pct':      max(sl_pct, MIN_SL_PCT),
         'leverage':    lev,
-        'notional':    fill_qty * fill_px,
+        'notional_usdt': fill_qty * fill_px,
         'signal_id':   sig_id,
         'order_id':    order_id,
         'ts':          time.time(),
         'source':      'auto_executor',
         'success':     True,
-    }
-    WUQU_PATH.write_text(json.dumps(wuqu, indent=2, ensure_ascii=False))
+    })
+    WUQU_PATH.write_text(json.dumps(wuqu_list, indent=2, ensure_ascii=False))
 
     # 更新信号日志中的状态
     try:
@@ -1066,10 +1071,14 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
                 'type': 'MARKET', 'quantity': fill_qty, 'reduceOnly': 'true',
             })
             print(f'[回滚守卫] 平仓结果: {_rb.get("status",_rb.get("msg","?"))}')
-            # 从wuqu_positions移除
+            # 从wuqu_positions移除 [B1修复: list格式]
             try:
                 _wq = json.loads(WUQU_PATH.read_text())
-                _wq.pop(sym, None)
+                if isinstance(_wq, list):
+                    _wq = [p for p in _wq if p.get('symbol') != sym]
+                elif isinstance(_wq, dict):
+                    _wq.pop(sym, None)
+                    _wq = list(_wq.values())  # 转list
                 WUQU_PATH.write_text(json.dumps(_wq, indent=2, ensure_ascii=False))
             except Exception:
                 pass

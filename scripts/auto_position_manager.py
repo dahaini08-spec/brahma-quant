@@ -124,7 +124,7 @@ def _push(msg: str):
     )
 
 
-def _log(msg: str):
+def _log(msg: str, level: str = 'INFO'):
     ts = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
     line = f'[{ts}] {msg}'
     print(line)
@@ -288,6 +288,13 @@ def run():
 
         decision = None
         detail   = ''
+
+        # wuqu_positions 补充字段（signal_id/score/regime/direction）
+        try:
+            _wuqu_raw = json.loads(WUQU_PATH.read_text()) if WUQU_PATH.exists() else []
+            pos_data = next((p for p in _wuqu_raw if p.get('symbol') == sym), {})
+        except Exception:
+            pos_data = {}
 
         if side == 'SHORT':
             # ── 🔴 全平条件 ──────────────────────────────────────

@@ -55,3 +55,4 @@ env/
 .secrets
 .venv/
 .github/workflows/
+config/omniroute.json
