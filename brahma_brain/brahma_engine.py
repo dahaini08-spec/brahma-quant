@@ -3663,6 +3663,25 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                     _result['breakdown']['IC权重乘数'] = f'{_sw_key} ×{_mult}'
     except Exception:
         pass
+
+    # 3. 量价异常门控（anomaly_guards → 第36维）[设计院自主 2026-07-25]
+    # 异常量价信号：vol_mult>2.5 + 方向背离 → 降权；vol_mult>3 → 硬性-15封禁
+    try:
+        from brahma_brain.anomaly_guards import detect_vol_price_anomaly as _detect_anomaly
+        _anomaly = _detect_anomaly(symbol)
+        _vol_mult = _anomaly.get('vol_mult', 1.0)
+        _anomaly_level = _anomaly.get('level', 'OK')
+        _result['vol_anomaly'] = _anomaly_level
+        _result['vol_mult'] = round(_vol_mult, 2)
+        if _anomaly.get('anomaly') and _vol_mult >= 2.5:
+            # 量价背离：做多方向 + 价量背离 → 降权
+            _anomaly_penalty = -15 if _vol_mult >= 3.0 else -8
+            _result['score'] = round(_result.get('score', 0) + _anomaly_penalty, 1)
+            _result.setdefault('breakdown', {})['量价异常'] = (
+                f'vol_mult={_vol_mult:.1f}x {_anomaly.get("message","")} → {_anomaly_penalty}分'
+            )
+    except Exception:
+        pass
     # ─────────────────────────────────────────────────────────────────────────
 
     # ── [TradFi信号层 Phase A 2026-07-22 设计院自主] 标签模式（不改score）────

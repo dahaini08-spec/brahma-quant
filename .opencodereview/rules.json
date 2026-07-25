@@ -1,0 +1,12 @@
+{
+  "rules": [
+    {
+      "pattern": "brahma_brain/**/*.py",
+      "content": "## 止损计算安全（CRITICAL）\n- 做空止损必须 = 进场区上沿 × (1 + SL_PCT)，做多止损必须 = 进场区下沿 × (1 - SL_PCT)\n- 禁止用 atr * 小乘数（如 atr * 0.28）计算止损\n- SL距离必须 ≥ 1.5×ATR4H，否则标注 CRITICAL\n\n## 体制封禁规则（CRITICAL）\n- BEAR_TREND_LONG 全局封禁，禁止绕过 StructureGate\n- 任何绕过 grade<80 门控的入场逻辑：标注 CRITICAL\n\n## 梵天架构规则（ERROR）\n- 禁止在 brahma_analysis_runner 外新建裸 HTTP 分析调用\n- wuqu_positions 写入必须依赖 success=True\n- 单笔仓位 NAV 上限 10%，超出标注 ERROR\n\n## 代码质量（WARN）\n- 外部 API 调用必须有 timeout 参数\n- venv/bin/python 而非系统 python3 用于生产脚本"
+    },
+    {
+      "pattern": "scripts/**/*.py",
+      "content": "## 止损计算安全（CRITICAL）\n- 做空止损必须 = 进场区上沿 × (1 + SL_PCT)\n- 禁止用 atr * 小乘数计算止损\n\n## 风控规则（ERROR）\n- 所有 cron 推送必须带 --channel jarvis\n- 止损监控脚本必须有 except + logging，禁止裸 except: pass\n\n## 代码质量（WARN）\n- 外部 API 调用必须有 timeout 参数"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "rules": [
+    {
+      "pattern": "brahma_brain/**/*.py",
+      "content": "## 梵天止损安全（CRITICAL）\n止损不得用ATR小乘数，做空SL=entry*(1+SL_PCT)，做多SL=entry*(1-SL_PCT)\n\n## 体制封禁（CRITICAL）\nBEAR_TREND_LONG禁止绕过StructureGate，grade<80不得入场\n\n## 风控（ERROR）\n单仓NAV≤10%，wuqu_positions写入须success=True，API调用须有timeout"
+    },
+    {
+      "pattern": "scripts/**/*.py",
+      "content": "## Cron推送规则（ERROR）\ncron必须带--channel jarvis --to userId:thread:threadId\n\n## 止损安全（CRITICAL）\n止损不得用ATR小乘数\n\n## 代码质量（WARN）\nAPI调用须有timeout，避免裸except:pass"
+    }
+  ]
+}

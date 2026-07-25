@@ -1,0 +1,4 @@
+{
+  "name": "梵天交易系统专属规则",
+  "content": "## 止损计算安全（CRITICAL）\n- 做空止损必须 = 进场区上沿 × (1 + SL_PCT)；做多止损必须 = 进场区下沿 × (1 - SL_PCT)\n- 禁止用 atr * 小乘数（如 atr * 0.28）计算止损，会产生 <0.5% 噪音级止损\n- SL 距离必须 ≥ 1.5×ATR4H，否则标注 CRITICAL\n\n## 体制封禁规则（CRITICAL）\n- BEAR_TREND_LONG（熊市趋势做多）WR=45%，全局封禁，禁止绕过\n- 任何绕过 StructureGate（grade<80）的入场逻辑：标注 CRITICAL\n\n## 梵天架构规则（ERROR）\n- 禁止在 brahma_analysis_runner 入口之外新建裸 HTTP 分析调用\n- wuqu_positions 写入必须依赖 success=True，禁止无条件写入\n- 单笔仓位 NAV 上限 10%，超出标注 ERROR\n- 所有 cron 必须带 --channel jarvis --to userId:thread:threadId\n\n## 代码质量（WARN）\n- 外部 API 调用必须有 timeout 参数\n- 生产脚本应使用 venv/bin/python 而非系统 python3\n- 止损监控脚本禁止裸 except: pass，须有 logging"
+}
