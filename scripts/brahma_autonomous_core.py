@@ -174,7 +174,7 @@ def check_memory() -> dict:
         elif gw_rss > RSS_WARN_MB or used_pct > 80:
             level = "warn"
         return {
-            "ok": level == "ok",
+            "ok": level in ("ok", "warn"),  # warn=预警但不算失败
             "level": level,
             "system_used_pct": round(used_pct, 1),
             "gateway_rss_mb": round(gw_rss, 1),
@@ -185,11 +185,12 @@ def check_memory() -> dict:
         return {"ok": False, "error": str(e)}
 
 def check_eth_gate() -> dict:
-    """检查ETH EMA门控cron状态"""
+    """检查ETH EMA门控状态（嵌入rsi_structure_watcher的E8/E9逻辑）"""
     try:
         r = subprocess.run(['openclaw', 'cron', 'list'], capture_output=True, text=True, timeout=10)
-        has_gate = 'eth-ema-gate' in r.stdout
-        return {"ok": has_gate, "running": has_gate}
+        has_rsi_watcher = 'rsi-structure-watcher' in r.stdout
+        # eth-ema-gate已嵌入rsi_watcher（E8/E9），不再是独立cron
+        return {"ok": has_rsi_watcher, "running": has_rsi_watcher, "mode": "embedded_in_rsi_watcher"}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
@@ -384,6 +385,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='梵天全自主核心')
     parser.add_argument('--mode', choices=['check','heal','status'], default='check')
     args = parser.parse_args()
+    print(f'[brahma-autonomous-core] 启动 mode={args.mode}', flush=True)
 
     if args.mode == 'status':
         if STATUS_FILE.exists():
