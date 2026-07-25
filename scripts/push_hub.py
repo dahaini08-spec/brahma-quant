@@ -12,10 +12,10 @@ try:
     import sys
     sys.path.insert(0, str(Path(__file__).parent / 'scripts'))
     from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID, JARVIS_CHANNEL
-    _TARGET  = f"{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}"
+    _TARGET  = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"
     _CHANNEL = JARVIS_CHANNEL
 except Exception:
-    _TARGET  = "73295708:t:019f8768-6731-777d-8924-2426a5abd10f"  # 2026-07-22 updated
+    _TARGET  = "73295708:thread:019f8768-6731-777d-8924-2426a5abd10f"  # 2026-07-22 updated
     _CHANNEL = "jarvis"
 
 _DEDUP_FILE = Path(__file__).parent / "data" / "push_dedup.json"
