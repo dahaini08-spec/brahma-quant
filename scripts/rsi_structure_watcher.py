@@ -267,19 +267,30 @@ def detect_events(data, prev_state, sym):
             'priority': 'HIGH',
         })
 
-    # ── E8/E9: ETH 价格阈值告警（替代 eth-alert cron，0 tokens） ──
-    # 原 eth-alert-1773 / eth-alert-1745 逻辑迁移至此（2026-07-05 苏摩111授权）
+    # ── E8/E9: ETH EMA门控嵌入（取代eth-ema-gate独立cron，零额外负担）──
+    # 2026-07-25 设计院自主：三重门控 + 止损池预警，复用rsi_watcher现有10min节奏
     if sym == 'ETHUSDT':
-        if px >= 1773:
+        _ema20   = data.get('ema20', 0)  # 复用现有ema20字段
+        _rsi_now = data.get('rsi_1h', rsi)
+        _sl_pool = 1855.0
+        # C1: 价格站稳EMA20_1H（新宪法铁律）
+        # C2: RSI超卖修复（复用现有RSI，不增加额外请求）
+        # C3: 止损池预警
+        _c1 = px > _ema20 if _ema20 else False
+        _c2 = _rsi_now > 32
+        if _c1 and _c2:
             events.append({
-                'event': 'E8_ETH_BREAK_1773',
-                'desc': f'🟢 ETH突破1773 EMA20_1H！当前${px:.2f}，短线反弹确认，WATCH状态',
+                'event': 'E8_ETH_LONG_GATE_OPEN',
+                'desc': (f'🔔 ETH LONG门控通过! '
+                         f'价格${px:.2f}>EMA20${_ema20:.2f} '
+                         f'RSI={_rsi_now:.1f} '
+                         f'入场$1858~$1861 SL=$1812 TP1=$1904 TP2=$1928 — 苏摩是否执行?'),
                 'priority': 'HIGH',
             })
-        elif px <= 1745:
+        elif px < _sl_pool:
             events.append({
-                'event': 'E9_ETH_BREAK_1745',
-                'desc': f'🔴 ETH跌破1745三重支撑告急！当前${px:.2f}，EMA50_1H+BB下轨同时破位，加速下行警报',
+                'event': 'E9_ETH_SL_POOL_BREAK',
+                'desc': f'🚨 ETH止损池跌破! 价格${px:.2f}<${_sl_pool} 多头止损级联风险，LONG计划暂停',
                 'priority': 'HIGH',
             })
 
