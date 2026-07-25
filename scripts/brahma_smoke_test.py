@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """
-brahma_smoke_test.py — 梵天系统启动冒烟测试
+brahma_smoke_test.py - 梵天系统启动冒烟测试
 设计院固化封印 2026-07-14
 
-用途：
+用途:
   每次封口前、重启后、疑似偏移时运行
-  快速发现：模块缺失 / 字段丢失 / 数据陈旧 / cron路由偏移
+  快速发现:模块缺失 / 字段丢失 / 数据陈旧 / cron路由偏移
 
-运行：
+运行:
   python3 scripts/brahma_smoke_test.py
   python3 scripts/brahma_smoke_test.py --fix   # 自动修复可修复项
 """
 import sys, os, json, time, subprocess
 from pathlib import Path
 
-# [设计院固化 2026-07-23] 屏蔽HF/transformers离线warning，加速smoke_test启动
+# [设计院固化 2026-07-23] 屏蔽HF/transformers离线warning,加速smoke_test启动
 os.environ.setdefault('TRANSFORMERS_OFFLINE', '1')
 os.environ.setdefault('HF_DATASETS_OFFLINE', '1')
 os.environ.setdefault('HF_HUB_OFFLINE', '1')
@@ -24,11 +24,11 @@ try:
     from dotenv import load_dotenv
     load_dotenv()
 except ImportError:
-    pass  # dotenv可选，不阻断smoke_test运行
+    pass  # dotenv可选,不阻断smoke_test运行
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
 
-CORRECT_THREAD = "73295708:t:019f93b0-c154-73fd-91a3-4e755d3289af"
+CORRECT_THREAD = "73295708:thread:019f933d-d67a-7237-8cbd-7923bbf336fa"
 RED    = '\033[91m'
 GREEN  = '\033[92m'
 YELLOW = '\033[93m'
@@ -79,7 +79,7 @@ for mod, attr in REQUIRED_MODULES:
         fail(mod, str(e)[:80], fix=f'cp scripts/{mod.split(".")[-1]}.py brahma_brain/')
 
 # ─── 2. 全景矩阵字段完整性 ─────────────────────────────────────────────
-print('\n【2】全景矩阵字段完整性（快速分析BTC）')
+print('\n【2】全景矩阵字段完整性(快速分析BTC)')
 try:
     from brahma_brain.brahma_analysis_runner import run_analysis
     r = run_analysis('BTCUSDT')
@@ -90,7 +90,7 @@ try:
     else:
         fail('全景B2·OB', 'OB段缺失', fix='检查formatter.py B2模块')
     # [P7 SNDK教训封印 2026-07-24] OB字段完整性验证
-    # 防止「设计与实现脱节」：age_bars缺失 → 降权逻辑形同虚设
+    # 防止「设计与实现脱节」:age_bars缺失 → 降权逻辑形同虚设
     try:
         from brahma_brain.smc_engine import find_order_blocks
         from brahma_brain.brahma_bus import get_klines
@@ -105,7 +105,7 @@ try:
             _missing_age = [o for o in _all_obs if 'age_bars' not in o]
             _missing_broken = [o for o in _all_obs if 'broken' not in o]
             if _missing_age:
-                fail('OB·age_bars字段', f'{len(_missing_age)}个OB缺失age_bars——降权逻辑失效(SNDK教训)',
+                fail('OB·age_bars字段', f'{len(_missing_age)}个OB缺失age_bars--降权逻辑失效(SNDK教训)',
                      fix='检查smc_engine.py find_order_blocks是否注入age_bars')
             else:
                 ok('OB·age_bars字段', f'全部{len(_all_obs)}个OB均含age_bars字段')
@@ -125,13 +125,13 @@ try:
     if 'FVG' in pano or '公平价值' in pano:
         ok('全景FVG', 'FVG字段已展示')
     else:
-        warn('全景FVG', '无FVG数据（可能无缺口，非错误）')
+        warn('全景FVG', '无FVG数据(可能无缺口,非错误)')
     # 外部层得分
     ext = r.get('_ext_score_bonus', 0)
     if ext > 0:
         ok('外部扩展层', f'+{ext}分有效')
     else:
-        warn('外部扩展层', f'得分={ext}，检查期权/矿工数据源')
+        warn('外部扩展层', f'得分={ext},检查期权/矿工数据源')
     # score合理
     score = r.get('score', 0)
     ok('评分引擎', f'score={score:.1f}')
@@ -166,7 +166,7 @@ for rel, max_age, name, fix_cmd in DATA_CHECKS:
             if dxy_val:
                 ok('DXY数据有效', f'value={dxy_val}')
             else:
-                fail('DXY数据有效', 'value=null，字段映射错误', fix='检查macro_engine.write_macro_state()')
+                fail('DXY数据有效', 'value=null,字段映射错误', fix='检查macro_engine.write_macro_state()')
         except:
             fail('macro_state.json', '解析失败')
 
@@ -199,21 +199,24 @@ except Exception as e:
     warn('ETH供应感知', str(e)[:60])
 
 # ─── 4. Cron路由一致性 ─────────────────────────────────────────────────
-print('\n【4】Cron路由一致性（SSOT=019f93b0）')
+print('\n【４】Cron路由一致性（SSOT=019f933d）')
 try:
     jobs_path = Path.home() / '.openclaw/cron/jobs.json'
     raw = json.loads(jobs_path.read_text())
     jobs = raw if isinstance(raw, list) else raw.get('jobs', list(raw.values()))
     wrong = []
+    # 只检查分析推送类5个核心任务，其余系统级任务允许路由到主线程
+    ANALYSIS_PUSH_TASKS = {
+        'main-signal-watcher', 'rsi-structure-watcher',
+        'oi-advanced-scanner', 'pump-hunter', 'brahma-nerve-center'
+    }
     for j in jobs:
         if not isinstance(j, dict): continue
         to = j.get('delivery', {}).get('to', '')
         name = j.get('name', '')
-        # Square/P3内容类任务允许其他线程
-        if any(x in name for x in ['Square', '广场', 'square', 'live-performance', 'brahma-arch']):
+        if name not in ANALYSIS_PUSH_TASKS:
             continue
-        # 主线程应全部包含019f79ff，否则标记为路由偏移
-        if to and '019f93b0' not in to:
+        if to and '019f933d' not in to:
             wrong.append(name)
     if wrong:
         fail('Cron路由', f'{len(wrong)}个任务路由到旧线程: {wrong}', fix='openclaw cron rm <id> && openclaw cron add ...')
@@ -240,7 +243,7 @@ try:
 except Exception as e:
     warn('自愈系统检查', str(e)[:60])
 
-# ─── 宪法守卫测试（持久化防复发）─────────────────────────────────────────
+# ─── 宪法守卫测试(持久化防复发)─────────────────────────────────────────
 try:
     import subprocess as _sp_ct
     _ct = _sp_ct.run(

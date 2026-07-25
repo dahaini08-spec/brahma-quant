@@ -3772,6 +3772,14 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception:
         pass
 
+    # [修复2 B3清算集群 2026-07-25 苏摩111批准] 注入liq_heatmap到顶层
+    try:
+        _lhm_top = extra_data.get('liq_heatmap', {})
+        if _lhm_top:
+            _result['_liq_heatmap'] = _lhm_top
+    except Exception:
+        pass
+
     return _result
 
 def format_report(r: dict) -> str:
