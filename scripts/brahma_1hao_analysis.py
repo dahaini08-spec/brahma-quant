@@ -234,13 +234,31 @@ def fmt_entry(r: dict) -> str:
                     near = " ⭐最近" if p == _tp_hints[0][0] else ""
                     lines.append(f"    💡 TP参考(止损山{n}次密集): {p:.2f} (+{dist:.2f}%){near}")
             if _sl_hints:
-                lines.append("  下方(多头止损池 → SL应在其下方):")
-                for p, n in _sl_hints:
-                    dist = (_p - p) / _p * 100
-                    sl_rec = round(p * 0.985, 2)
-                    sl_dist = (_p - sl_rec) / _p * 100
-                    near = " ⭐最近" if p == _sl_hints[0][0] else ""
-                    lines.append(f"    💡 SL封印(止损池{n}次密集下方): {sl_rec:.2f} (-{sl_dist:.2f}%){near}")
+                # [设计院 Fix 2026-07-26] 区分方向：LONG的SL在下方，SHORT的SL在上方
+                _direction = r.get('direction', r.get('signal_dir', 'LONG'))
+                if _direction == 'SHORT':
+                    # SHORT做空：下方止损池 = 止盈目标参考，不是止损！
+                    lines.append("  下方密集区(做空TP参考 · ⚠️非做空止损):")
+                    for p, n in _sl_hints:
+                        dist = (_p - p) / _p * 100
+                        near = " ⭐最近" if p == _sl_hints[0][0] else ""
+                        lines.append(f"    🎯 TP参考(多头止损池{n}次密集): {p:.2f} (-{dist:.2f}%){near}")
+                    # 提示正确的做空止损位置
+                    if _tp_hints:
+                        real_sl = round(_tp_hints[0][0] * 1.01, 2)
+                        real_sl_dist = (real_sl - _p) / _p * 100
+                        lines.append(f"  ⚠️ 做空真实止损(应在上方阻力区外): ≈{real_sl:.2f} (+{real_sl_dist:.2f}%)")
+                    else:
+                        lines.append(f"  ⚠️ 做空止损应在入场区上方约2-2.5%处")
+                else:
+                    # LONG做多：下方止损池 = 真实SL参考
+                    lines.append("  下方(多头止损池 → SL应在其下方):")
+                    for p, n in _sl_hints:
+                        dist = (_p - p) / _p * 100
+                        sl_rec = round(p * 0.985, 2)
+                        sl_dist = (_p - sl_rec) / _p * 100
+                        near = " ⭐最近" if p == _sl_hints[0][0] else ""
+                        lines.append(f"    💡 SL参考(止损池{n}次密集下方): {sl_rec:.2f} (-{sl_dist:.2f}%){near}")
     except Exception:
         pass
 
@@ -312,6 +330,17 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
     if ema20_1h_note:
         lines.append(f"  {ema20_1h_note}")
 
+    # [Fix 2026-07-26] BULL_CHOCH + SHORT 矛盾检测
+    _choch_list_fx = smc.get('structure', {}).get('choch', [])
+    _has_bull_choch = any('BULL' in str(c).upper() for c in _choch_list_fx)
+    _choch_conflict_warn = ''
+    if direction == 'SHORT' and _has_bull_choch:
+        _choch_conflict_warn = (
+            '  WARNING: BULL_CHoCH + SHORT = 结构逆势！\n'
+            '  BULL_CHoCH表明趋势正在转多，做空面临结构对抗\n'
+            '  建议: 等CHoCH回测失败确认后再入场，或仓位减半'
+        )
+
     lines += [
         "",
         "▌ 35维评分矩阵",
@@ -321,6 +350,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         fmt_smc(smc, price),
         "",
         "▌ 入场参数",
+        _choch_conflict_warn,
         fmt_entry(r),
     ]
 
@@ -386,7 +416,18 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         entry_lo = r.get('entry_lo'); entry_hi = r.get('entry_hi')
         sl = r.get('stop_loss'); tp1 = r.get('tp1'); tp2 = r.get('tp2')
         if entry_lo:
-            compact_lines.append(f"  入场: {entry_lo}~{entry_hi}  SL:{sl}  TP1:{tp1}  TP2:{tp2}")
+            # [Fix 2026-07-26] 验证SL方向：SHORT的SL应在入场区上方
+            _d = r.get('direction', r.get('signal_dir', 'LONG'))
+            _sl_ok = True
+            if _d == 'SHORT' and sl and entry_hi and float(str(sl).replace('?','0') or 0) < float(str(entry_hi).replace('?','0') or 0):
+                _sl_ok = False
+                _sl_warn = f"⚠️SL方向错误(应>{entry_hi})"
+            elif _d == 'LONG' and sl and entry_lo and float(str(sl).replace('?','0') or 0) > float(str(entry_lo).replace('?','0') or 0):
+                _sl_ok = False
+                _sl_warn = f"⚠️SL方向错误(应<{entry_lo})"
+            else:
+                _sl_warn = ''
+            compact_lines.append(f"  入场: {entry_lo}~{entry_hi}  SL:{sl}{' '+_sl_warn if not _sl_ok else ''}  TP1:{tp1}  TP2:{tp2}")
         # CHoCH状态
         smc_st2 = smc.get('structure', {})
         choch2 = smc_st2.get('choch', [])
@@ -485,7 +526,8 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
             _lc_lines = []
             for _a in _lc_alerts:
                 lvl = _a.get('level', 'INFO')
-                _lc_lines.append(f"  {'\ud83d\udea8' if lvl=='CRITICAL' else '\u2705' if lvl=='SUCCESS' else '\u23f0'} {_a['msg']}")
+                _icon = '🚨' if lvl=='CRITICAL' else '✅' if lvl=='SUCCESS' else '⏰'
+                _lc_lines.append(f"  {_icon} {_a['msg']}")
             full_report = full_report + (
                 f"\n\n\u258c P3 \u00b7 \u4fe1\u53f7\u751f\u547d\u5468\u671f\n" + '\n'.join(_lc_lines))
         # P5: \u5173\u952e\u7ef4\u5ea6\u5b9e\u65f6\u6570\u636e\u5ba1\u8ba1
@@ -496,16 +538,25 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
             if _rt and 'error' not in _rt:
                 _vol_data = _rt.get('\u91cf\u80fd\u8870\u7aed_\u5b9e\u6d4b', {})
                 _div_data = _rt.get('\u5e95\u80cc\u79bb_\u5b9e\u6d4b', {})
+                _k_cur1h = '\u5f53\u524d1H\u91cf'
+                _k_ma5 = 'MA5\u5747\u91cf'
+                _k_decay = '\u8870\u51cf\u7387'
+                _k_obv = 'OBV\u65b9\u5411'
+                _k_valid = '\u8bc4\u5206\u662f\u5426\u5408\u7406'
+                _k_rsi1h = '\u5f53\u524dRSI_1H'
+                _k_plow_cur = '\u4ef7\u683c\u4f4e\u70b9_\u5f53\u524d'
+                _k_plow_prev = '\u4ef7\u683c\u4f4e\u70b9_\u524d\u671f'
+                _k_div_ok = '\u5e95\u80cc\u79bb_\u662f\u5426\u6210\u7acb'
                 _p5_lines = [
-                    f"  \u91cf\u80fd\u5b9e\u6d4b({_rt.get('ts','')}): "
-                    f"\u5f53\u524d1H\u91cf={_vol_data.get('\u5f53\u524d1H\u91cf','?')} "
-                    f"MA5={_vol_data.get('MA5\u5747\u91cf','?')} "
-                    f"\u8870\u51cf\u7387={_vol_data.get('\u8870\u51cf\u7387','?')} "
-                    f"OBV={_vol_data.get('OBV\u65b9\u5411','?')} "
-                    f"[{_vol_data.get('\u8bc4\u5206\u662f\u5426\u5408\u7406','?')}]",
-                    f"  \u5e95\u80cc\u79bb\u5b9e\u6d4b: RSI1H={_div_data.get('\u5f53\u524dRSI_1H','?')} "
-                    f"\u4ef7\u683c\u4f4e\u70b9({_div_data.get('\u4ef7\u683c\u4f4e\u70b9_\u5f53\u524d','?')} vs {_div_data.get('\u4ef7\u683c\u4f4e\u70b9_\u524d\u671f','?')}) "
-                    f"[{_div_data.get('\u5e95\u80cc\u79bb_\u662f\u5426\u6210\u7acb','?')}]",
+                    (f"  \u91cf\u80fd\u5b9e\u6d4b({_rt.get('ts','')}): "
+                     f"\u5f53\u524d1H\u91cf={_vol_data.get(_k_cur1h,'?')} "
+                     f"MA5={_vol_data.get(_k_ma5,'?')} "
+                     f"\u8870\u51cf\u7387={_vol_data.get(_k_decay,'?')} "
+                     f"OBV={_vol_data.get(_k_obv,'?')} "
+                     f"[{_vol_data.get(_k_valid,'?')}]"),
+                    (f"  \u5e95\u80cc\u79bb\u5b9e\u6d4b: RSI1H={_div_data.get(_k_rsi1h,'?')} "
+                     f"\u4ef7\u683c\u4f4e\u70b9({_div_data.get(_k_plow_cur,'?')} vs {_div_data.get(_k_plow_prev,'?')}) "
+                     f"[{_div_data.get(_k_div_ok,'?')}]"),
                 ]
                 full_report = full_report + (
                     f"\n\n\u258c P5 \u00b7 \u8bc4\u5206\u5b9e\u65f6\u5ba1\u8ba1\n" + '\n'.join(_p5_lines))
