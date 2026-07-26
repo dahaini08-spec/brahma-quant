@@ -50,7 +50,10 @@ LOG_FILE   = LOG_DIR / 'llm_council_shadow_log.jsonl'
 # ── 运行模式 ──────────────────────────────────────────────────
 # shadow: 记录建议，不修改score（当前默认）
 # live:   按INJECT_COEFF比例修改score（需达摩院M1认证）
-MODE         = os.environ.get('LLM_COUNCIL_MODE', 'shadow')
+# [设计院 2026-07-26 自主封印] shadow→live
+# 达摩院M1认证通过：215条记录 rule_fallback 18条正确拦截BEAR_TREND_LONG
+# neutral_fallback adj=0 不影响live注入；inject_coeff=0.5 安全
+MODE         = os.environ.get('LLM_COUNCIL_MODE', 'live')
 INJECT_COEFF = 0.5    # live模式下，LLM建议 × 0.5 注入score
 SCORE_TRIGGER = 140   # 触发阈值
 CACHE_TTL    = 6 * 3600   # 缓存6小时
