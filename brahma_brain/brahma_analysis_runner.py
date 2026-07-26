@@ -384,7 +384,9 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
 
     # ── llm_council_bridge: score≥130触发LLM二次审查（shadow模式）────
     # 设计院 2026-07-02: 阈值 140→130（覆盖更多高质量信号，约15%触发率）
-    if _LLM_COUNCIL_OK:
+    # [设计院 2026-07-26 性能修复] BRAHMA_SKIP_COUNCIL=1 跳过LLM审查（避免超时）
+    _skip_council = __import__('os').environ.get('BRAHMA_SKIP_COUNCIL', '0') == '1'
+    if _LLM_COUNCIL_OK and not _skip_council:
         try:
             _f = extract_standard_fields(result)
             _sc = float(_f.get('score', 0) or 0)
