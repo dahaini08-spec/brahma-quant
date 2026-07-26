@@ -968,7 +968,23 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # ── Causal Verifier 评分叠加 ─────────────────────────────
     # 将 P0-A 的 score_adj 运用到最终评分
+    # [设计院 2026-07-26] 决策B: CHoCH趋势转换时惩罚减半（grade≥80门控）
+    # 铁证: ETH CHoCH 20/20结构被-25完全封死，悖论：体制转换初期恰是最优入场
     _cv_adj = extra_data.get('causal_verifier', {}).get('score_adj', 0)
+    if _cv_adj < 0:
+        # 检查SMC结构是否有CHoCH信号（趋势转换）
+        _smc_res = extra_data.get('smc', {})
+        _has_choch = bool(_smc_res.get('choch') or
+                         (isinstance(_smc_res, dict) and
+                          any('CHOCH' in str(v).upper() or 'CHoCH' in str(v)
+                              for v in _smc_res.values())))
+        _cv_grade = float(cf.get('grade', 0) or ms.get('grade', 0) or 0)
+        if _has_choch and _cv_grade >= 80:
+            _cv_adj_orig = _cv_adj
+            _cv_adj = _cv_adj // 2  # 减半：-25→-12, -12→-6
+            cf.setdefault('breakdown', {})['_causal_choch_halved'] = (
+                f'CHoCH趋势转换已确认(grade={_cv_grade:.0f}≥80)→惩罚减半{_cv_adj_orig:+d}→{_cv_adj:+d}'
+            )
     if _cv_adj != 0:
         _cf_score_pre = float(cf.get('score', 0) or 0)
         cf['score'] = _cf_score_pre + _cv_adj

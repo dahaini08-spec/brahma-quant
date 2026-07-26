@@ -394,6 +394,23 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
             pass
     # ─────────────────────────────────────────────────────────────────
 
+    # ── [设计院 2026-07-26] 决策C: signal_lifecycle结算闭环接入 ────────────
+    # 职责: 对已存在的OPEN信号做实时TTL/SL/TP检查，填补result=null盲点
+    # fail-safe: 任何异常不阻断主流程
+    try:
+        import sys as _sl_sys, os as _sl_os
+        _sl_dir = _sl_os.path.dirname(_sl_os.path.abspath(__file__))
+        if _sl_dir not in _sl_sys.path: _sl_sys.path.insert(0, _sl_dir)
+        from signal_lifecycle import tick_signal_lifecycle as _tick_lc
+        _lc_price = float(result.get('price', 0) or 0)
+        if _lc_price > 0 and sym:
+            _lc_alerts = _tick_lc(sym, _lc_price)
+            if _lc_alerts:
+                result['_lifecycle_alerts'] = _lc_alerts
+    except Exception:
+        pass
+    # ── [END signal_lifecycle] ───────────────────────────────────────────
+
     result['_runner_meta'] = {
         'runner_version': '1.2',
         'entry':          'brahma_analysis_runner.run_analysis',
