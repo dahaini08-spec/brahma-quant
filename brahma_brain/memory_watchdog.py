@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# STATUS: AUXILIARY — 独立工具模块，不接入主链路 [设计院 2026-07-26]
 """
 memory_watchdog.py — 梵天内存水位监控
 设计院封印 2026-07-02

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# STATUS: AUXILIARY — 独立工具模块，不接入主链路 [设计院 2026-07-26]
 """
 exception_injector.py — 梵天异常免疫工具
 设计院封印 2026-07-02

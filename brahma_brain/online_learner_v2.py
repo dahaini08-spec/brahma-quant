@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# STATUS: AUXILIARY — 独立工具模块，不接入主链路 [设计院 2026-07-26]
 """
 online_learner_v2.py — 梵天在线学习引擎 v2.0
 设计院 · 苏摩111批准 · 2026-07-15

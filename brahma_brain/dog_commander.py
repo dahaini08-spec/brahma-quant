@@ -1,3 +1,4 @@
+# STATUS: AUXILIARY — 独立工具模块，不接入主链路 [设计院 2026-07-26]
 """
 犬系统 · Layer 4 指挥中心
 dog_commander.py

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# STATUS: AUXILIARY — 独立工具模块，不接入主链路 [设计院 2026-07-26]
 """
 vectorbt_simfactory.py — 梵天信号Replay × SimFactory
 设计院 P3 | 2026-07-11

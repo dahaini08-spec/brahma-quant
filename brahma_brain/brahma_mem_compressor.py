@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# STATUS: AUXILIARY — 独立工具模块，不接入主链路 [设计院 2026-07-26]
 """
 brahma_mem_compressor.py — 梵天记忆压缩器
 对标: claude-mem (会话记忆压缩注入)

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# STATUS: AUXILIARY — 独立工具模块，不接入主链路 [设计院 2026-07-26]
 """
 brahma_constitutional_test.py — 梵天宪法守卫单元测试
 设计院六方联合封印 2026-07-16 苏摩111批准

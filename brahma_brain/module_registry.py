@@ -1,3 +1,4 @@
+# STATUS: AUXILIARY — 独立工具模块，不接入主链路 [设计院 2026-07-26]
 """
 brahma_brain/module_registry.py
 梵天系统模块注册表 — 设计院封印 2026-07-06

@@ -1,3 +1,4 @@
+# STATUS: AUXILIARY — 独立工具模块，不接入主链路 [设计院 2026-07-26]
 """
 kronos_engine.py _run_inference v7.0 补丁
 设计院 2026-07-11 六方联合自主决策
