@@ -66,7 +66,7 @@ try:
     JARVIS_TARGET = f'{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}'
 except Exception:
     FAPI_BASE     = 'https://fapi.binance.com'
-    JARVIS_TARGET = '73295708:t:019f8768-6731-777d-8924-2426a5abd10f'
+    JARVIS_TARGET = '73295708:t:019f93b0-c154-73fd-91a3-4e755d3289af'
     JARVIS_CHANNEL = 'jarvis'
     API_KEY = API_SECRET = ''
 
@@ -612,6 +612,46 @@ def scan_symbol(sym, ticker_data):
         result['lev_range']   = sig_info['lev']
         result['layers_pass'] = 3 if score >= 40 else (2 if score >= 25 else 1)
 
+        # ── [设计院 Fix-4 2026-07-26] 梵天死穴冲突检测 ─────────────────────────
+        # 铁证: 1000PEPEUSDT regime=BEAR_TREND + direction_bias=LONG = 死穴
+        # BEAR_TREND + LONG / BULL_TREND + SHORT → 降级为WATCH
+        _regime_up = str(regime).upper()
+        _dir_bias  = sig_info.get('direction_bias', 'LONG')
+        _is_dead   = (
+            ('BEAR_TREND' in _regime_up and _dir_bias == 'LONG') or
+            ('BULL_TREND' in _regime_up and _dir_bias == 'SHORT') or
+            ('CHOP' in _regime_up and _dir_bias == 'LONG' and score < 110)
+        )
+        if _is_dead:
+            result['action']           = 'watchlist'
+            result['_dead_zone_note']  = f'死穴:{_regime_up}+{_dir_bias}→降级WATCH'
+            result['size_pct']         = 0
+        # ── [END Fix-4] ──────────────────────────────────────────────────────────
+
+        # ── [设计院 Fix-2 2026-07-26] FOMC宏观仓位降权 ──────────────────────────
+        # 铁证: size_pct=5%硬编码，FOMC T+3天应为2.5%
+        if not _is_dead and result.get('size_pct', 0) > 0:
+            try:
+                import sys as _oi_sys, os as _oi_os
+                _oi_brain = _oi_os.path.join(_oi_os.path.dirname(_oi_os.path.dirname(
+                    _oi_os.path.abspath(__file__))), 'brahma_brain')
+                if _oi_brain not in _oi_sys.path: _oi_sys.path.insert(0, _oi_brain)
+                from macro_calendar import get_upcoming_events as _oi_ev
+                _macro_factor = 1.0
+                for _ev in _oi_ev(days_ahead=7):
+                    _d = _ev.get('days_to', 99)
+                    if _ev.get('impact') == 'CRITICAL':
+                        if _d <= 1:   _macro_factor = min(_macro_factor, 0.3)
+                        elif _d <= 3: _macro_factor = min(_macro_factor, 0.5)
+                        elif _d <= 7: _macro_factor = min(_macro_factor, 0.7)
+                if _macro_factor < 1.0:
+                    result['size_pct'] = round(result['size_pct'] * _macro_factor, 2)
+                    result['_macro_factor'] = _macro_factor
+                    result['_macro_note']   = f'FOMC降权×{_macro_factor}'
+            except Exception:
+                pass
+        # ── [END Fix-2] ──────────────────────────────────────────────────────────
+
         # [P1修复 2026-07-13 设计院] action字段双向化（sub_executor读取）
         # 修复前：做空方向一律写watchlist→sub_executor白名单过滤跳过
         # 修复后：根据direction_bias决定BUY/SELL类 action
@@ -741,6 +781,9 @@ def _calc_oi_strategy(r: dict) -> dict:
 
 def format_signal_card(sym, r, rank):
     """[设计院封印 2026-07-16 苏摩111] OI信号卡片 — 7要素完整策略格式"""
+    # [Fix-5 设计院 2026-07-26] 来源标识行
+    from datetime import datetime, timezone as _tz
+    now_str = datetime.now(_tz.utc).strftime('%m-%d %H:%M UTC')
     mode_icon = {'A': '🏆', 'B': '⚡', 'C': '📡'}.get(r['mode'], '👀')
     mode_name = {'A': '现货长线', 'B': '合约中线', 'C': '短线异动'}.get(r['mode'], '监控')
     dir_icon  = {'LONG': '🟢做多', 'SHORT': '🔴做空'}.get(r.get('direction_bias', ''), '⚪')
@@ -754,6 +797,7 @@ def format_signal_card(sym, r, rank):
                f"24H {r['chg_24h']:+.1f}% | FR {r['fr']:+.5f}%")
 
     lines = [
+        f"[OI猎手 {mode_icon}{mode_name}类] · {now_str}",
         f"{'━'*40}",
         f"{mode_icon} #{rank} {sym} · {mode_name}",
         f"方向: {dir_icon}  |  OI评分: {r['oi_score']:.0f}/100",

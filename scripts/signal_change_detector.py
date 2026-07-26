@@ -36,7 +36,7 @@ try:
     from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
 except Exception:
     JARVIS_USER_ID  = '73295708'
-    JARVIS_THREAD_ID = '019f8768-6731-777d-8924-2426a5abd10f'
+    JARVIS_THREAD_ID = '019f93b0-c154-73fd-91a3-4e755d3289af'
 
 JARVIS_TARGET = f'{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}'  # [2026-07-19] thread:→t: 修复推送路由
 

@@ -40,7 +40,7 @@ try:
     from scripts.system_config import JARVIS_TARGET as _SSOT_T
     PUSH_TARGET = os.environ.get('JARVIS_TARGET', _SSOT_T)
 except Exception:
-    PUSH_TARGET = os.environ.get('JARVIS_TARGET', '73295708:t:019f8768-6731-777d-8924-2426a5abd10f')
+    PUSH_TARGET = os.environ.get('JARVIS_TARGET', '73295708:t:019f93b0-c154-73fd-91a3-4e755d3289af')
 
 # ── API ───────────────────────────────────────────────────────
 sys.path.insert(0, str(BASE))
