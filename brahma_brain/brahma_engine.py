@@ -978,7 +978,11 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                          (isinstance(_smc_res, dict) and
                           any('CHOCH' in str(v).upper() or 'CHoCH' in str(v)
                               for v in _smc_res.values())))
-        _cv_grade = float(cf.get('grade', 0) or ms.get('grade', 0) or 0)
+        # [Fix 2026-07-26] grade字段可能是中文字符串 '⚫放弃'，需安全转换
+        def _safe_grade(v):
+            try: return float(v)
+            except: return 0.0
+        _cv_grade = _safe_grade(cf.get('grade', 0) or ms.get('grade', 0) or 0)
         if _has_choch and _cv_grade >= 80:
             _cv_adj_orig = _cv_adj
             _cv_adj = _cv_adj // 2  # 减半：-25→-12, -12→-6
