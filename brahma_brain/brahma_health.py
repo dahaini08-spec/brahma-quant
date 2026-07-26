@@ -339,7 +339,29 @@ def run_health_check(
 
     checks = {}
 
+    # venv依赖检查（P0级 2026-07-26封印）
+    def _check_venv_deps() -> dict:
+        """检查venv核心依赖是否可用，重启后丢失时触发自愈"""
+        try:
+            import subprocess
+            from pathlib import Path as _Path
+            _venv_py = _Path(_ROOT) / 'venv' / 'bin' / 'python'
+            if not _venv_py.exists():
+                return {'ok': False, 'warn': True, 'msg': 'venv/bin/python不存在'}
+            result = subprocess.run(
+                [str(_venv_py), '-c', 'import requests, numpy, pandas; print("ok")'],
+                capture_output=True, text=True, timeout=5
+            )
+            if result.stdout.strip() == 'ok':
+                return {'ok': True, 'msg': 'venv依赖正常'}
+            else:
+                return {'ok': False, 'warn': True,
+                        'msg': f'venv依赖缺失: {result.stderr[:80]}'}
+        except Exception as e:
+            return {'ok': False, 'warn': True, 'msg': f'venv检查失败: {e}'}
+
     # 核心检查（必须）
+    checks['venv_deps']       = _check_venv_deps()
     checks['binance_api']     = _check_binance_api(timeout)
     checks['scoring_engine']  = _check_scoring_engine()
     checks['signal_queue']    = _check_signal_queue()
@@ -354,7 +376,7 @@ def run_health_check(
         checks['ws_guardian']      = _check_ws_guardian()  # [P1-2 2026-07-23]
 
     # 计算健康分
-    critical_keys = ['binance_api', 'scoring_engine', 'data_files']
+    critical_keys = ['venv_deps', 'binance_api', 'scoring_engine', 'data_files']
     warn_keys     = ['signal_queue', 'memory', 'brahma_bus', 'external_routes']
 
     critical_fail = sum(1 for k in critical_keys if not checks.get(k, {}).get('ok', True))

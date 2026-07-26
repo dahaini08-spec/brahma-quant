@@ -7,6 +7,11 @@ LOG="/tmp/brahma_startup.log"
 
 echo "[$(date)] 梵天启动脚本开始..." >> $LOG
 
+# 0. venv依赖自愈（P0级，2026-07-26封印）
+# 根因：容器重启后venv/site-packages为空，brahma_engine/1号工程不可用
+bash "${WORK_DIR}/scripts/venv_restore.sh" >> $LOG 2>&1
+echo "[$(date)] venv_restore完成" >> $LOG
+
 # 1. 安装核心依赖
 pip install tornado requests numpy pandas websocket-client -q --break-system-packages >> $LOG 2>&1
 echo "[$(date)] ✅ 依赖安装完成" >> $LOG
