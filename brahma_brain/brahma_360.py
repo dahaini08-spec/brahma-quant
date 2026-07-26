@@ -74,6 +74,8 @@ def scan_d1_modules() -> list:
             'offline_adapters','tardis_liq_layer','module_registry',
             # ── 接入候选（下一版本接入：condition_order_matrix/headroom/signal_expiry_tracker）──
             'condition_order_matrix','headroom','signal_expiry_tracker',
+            # ── 已通过brahma_1hao_analysis接入主链路（2026-07-25封印）──
+            'position_guard','anomaly_guards',
         }
         _orphans = []
         for _f in sorted(_brain.glob('*.py')):

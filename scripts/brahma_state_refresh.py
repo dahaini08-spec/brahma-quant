@@ -108,6 +108,35 @@ def main():
             json.dump(state, f, ensure_ascii=False, indent=2)
         os.replace(tmp, str(STATE_FILE))
         print(f'OK BTC={btc:.0f} ETH={eth:.2f} ts={now_iso}')
+
+        # [P2-SSOT 2026-07-25 设计院] 同步写入regime_state.json，统一体制来源
+        try:
+            _regime_btc = state.get('regime', state.get('regime_label', 'CHOP_MID'))
+            _rs_path = BASE / 'data' / 'regime_state.json'
+            _rs = {}
+            if _rs_path.exists():
+                try: _rs = json.loads(_rs_path.read_text())
+                except: pass
+            import time as _t
+            _now_ts = _t.time()
+            # 更新BTC/ETH体制（以brahma_state_refresh的market_state.analyze为权威）
+            for _sym, _price in [('BTCUSDT', btc), ('ETHUSDT', eth)]:
+                if _sym not in _rs or not isinstance(_rs[_sym], dict):
+                    _rs[_sym] = {}
+                _rs[_sym].update({
+                    'regime': _regime_btc,
+                    'price': _price,
+                    'ts': now_iso,
+                    'source': 'brahma_state_refresh_ssot',
+                    'updated_at': _now_ts,
+                })
+            _rs_tmp = str(_rs_path) + '.tmp'
+            with open(_rs_tmp, 'w') as _f:
+                json.dump(_rs, _f, ensure_ascii=False, indent=2)
+            os.replace(_rs_tmp, str(_rs_path))
+        except Exception as _rs_e:
+            pass  # 静默失败，不影响主流程
+
     except Exception as e:
         print(f'ERR {e}', file=sys.stderr)
         try:

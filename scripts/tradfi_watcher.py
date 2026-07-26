@@ -240,6 +240,47 @@ def main():
     # 标记已推送（更新冷却状态）
     _mark_triggers_pushed(triggers)
 
+    # ── P1接入: TradFi触发 → rsi_trigger_event（驱动梵天1号工程方向判断）
+    try:
+        import time as _time
+        _rsi_event_file = BASE_DIR / 'data' / 'rsi_trigger_event.json'
+        _rsi_events = {}
+        if _rsi_event_file.exists():
+            try: _rsi_events = json.loads(_rsi_event_file.read_text())
+            except: pass
+
+        # BEAR信号触发SHORT方向（E_TF1跌/E_TF4背离）
+        _bear_triggers = [t for t in triggers if t['event'] in ('E_TF1',) and btc_pct < -1.5]
+        _bull_triggers = [t for t in triggers if t['event'] in ('E_TF3','E_TF6')]
+
+        _now_ts = _time.time()
+        for sym in ['BTCUSDT', 'ETHUSDT']:
+            if _bear_triggers:
+                _rsi_events[f'TF_{sym}'] = {
+                    'ts': _now_ts,
+                    'ts_iso': datetime.now(timezone.utc).isoformat(),
+                    'symbol': sym,
+                    'source': 'tradfi_watcher',
+                    'events': [{'event': 'E_TF_BEAR_SHORT', 'desc': f'TradFi BEAR信号: {_bear_triggers[0]["desc"]}', 'priority': 'HIGH'}],
+                    'high_priority': True,
+                    'direction': 'SHORT',
+                }
+            elif _bull_triggers:
+                _rsi_events[f'TF_{sym}'] = {
+                    'ts': _now_ts,
+                    'ts_iso': datetime.now(timezone.utc).isoformat(),
+                    'symbol': sym,
+                    'source': 'tradfi_watcher',
+                    'events': [{'event': 'E_TF_BULL_LONG', 'desc': f'TradFi BULL信号: {_bull_triggers[0]["desc"]}', 'priority': 'HIGH'}],
+                    'high_priority': True,
+                    'direction': 'LONG',
+                }
+
+        if _bear_triggers or _bull_triggers:
+            _rsi_event_file.write_text(json.dumps(_rsi_events, ensure_ascii=False, indent=2))
+    except Exception as _tf_e:
+        pass  # 静默失败，不影响主流程
+
 
 if __name__ == '__main__':
     main()

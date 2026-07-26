@@ -51,6 +51,10 @@ try:
 except Exception:
     pass
 
+# [设计院 2026-07-26 封印] 模型已本地缓存，强制离线模式跳过HF网络检查（解决import 30s阻塞）
+os.environ.setdefault('HF_HUB_OFFLINE', '1')
+os.environ.setdefault('TRANSFORMERS_OFFLINE', '1')
+
 # Kronos repo 路径
 _KRONOS_PATH = os.path.join(os.path.dirname(__file__), '..', 'external', 'Kronos')
 if os.path.exists(_KRONOS_PATH) and _KRONOS_PATH not in sys.path:
