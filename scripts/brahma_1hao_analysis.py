@@ -474,7 +474,44 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
 
     except Exception as _pg_e:
         pass  # P0~P4异常不阻断主输出
-    # ── [P0~P4 END] ──────────────────────────────────────────────────────────
+    # ── [P0~P4 END] ────────────────────────────────────────────────────────
+
+    # ── [P3信号生命周期+P5实时审计 2026-07-26 苏摩授权封印] ──────────
+    try:
+        from brahma_brain.signal_lifecycle import tick_signal_lifecycle, audit_score_with_realtime
+        # P3: 生命周期检查
+        _lc_alerts = tick_signal_lifecycle(symbol, _price)
+        if _lc_alerts:
+            _lc_lines = []
+            for _a in _lc_alerts:
+                lvl = _a.get('level', 'INFO')
+                _lc_lines.append(f"  {'\ud83d\udea8' if lvl=='CRITICAL' else '\u2705' if lvl=='SUCCESS' else '\u23f0'} {_a['msg']}")
+            full_report = full_report + (
+                f"\n\n\u258c P3 \u00b7 \u4fe1\u53f7\u751f\u547d\u5468\u671f\n" + '\n'.join(_lc_lines))
+        # P5: \u5173\u952e\u7ef4\u5ea6\u5b9e\u65f6\u6570\u636e\u5ba1\u8ba1
+        _bd = r.get('breakdown', {})
+        if _bd:
+            _p5 = audit_score_with_realtime(symbol, _bd)
+            _rt = _p5.get('_P5_realtime', {})
+            if _rt and 'error' not in _rt:
+                _vol_data = _rt.get('\u91cf\u80fd\u8870\u7aed_\u5b9e\u6d4b', {})
+                _div_data = _rt.get('\u5e95\u80cc\u79bb_\u5b9e\u6d4b', {})
+                _p5_lines = [
+                    f"  \u91cf\u80fd\u5b9e\u6d4b({_rt.get('ts','')}): "
+                    f"\u5f53\u524d1H\u91cf={_vol_data.get('\u5f53\u524d1H\u91cf','?')} "
+                    f"MA5={_vol_data.get('MA5\u5747\u91cf','?')} "
+                    f"\u8870\u51cf\u7387={_vol_data.get('\u8870\u51cf\u7387','?')} "
+                    f"OBV={_vol_data.get('OBV\u65b9\u5411','?')} "
+                    f"[{_vol_data.get('\u8bc4\u5206\u662f\u5426\u5408\u7406','?')}]",
+                    f"  \u5e95\u80cc\u79bb\u5b9e\u6d4b: RSI1H={_div_data.get('\u5f53\u524dRSI_1H','?')} "
+                    f"\u4ef7\u683c\u4f4e\u70b9({_div_data.get('\u4ef7\u683c\u4f4e\u70b9_\u5f53\u524d','?')} vs {_div_data.get('\u4ef7\u683c\u4f4e\u70b9_\u524d\u671f','?')}) "
+                    f"[{_div_data.get('\u5e95\u80cc\u79bb_\u662f\u5426\u6210\u7acb','?')}]",
+                ]
+                full_report = full_report + (
+                    f"\n\n\u258c P5 \u00b7 \u8bc4\u5206\u5b9e\u65f6\u5ba1\u8ba1\n" + '\n'.join(_p5_lines))
+    except Exception as _lc_e:
+        pass  # P3/P5\u5f02\u5e38\u4e0d\u963b\u65ad\u4e3b\u8f93\u51fa
+    # ── [P3/P5 END] ───────────────────────────────────────────────────
 
     return full_report
 

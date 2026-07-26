@@ -2020,6 +2020,32 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass
     # ── [END P0-B 宏观门] ──────────────────────────────────────────────────────────
 
+    # ══════════════════════════════════════════════════════════
+    # [P0~P1 SignalIntegrityGate 2026-07-26 苏摩授权自主执行]
+    # 在_valid计算前执行：consensus互锁+timing互锁+SL硬封禁
+    # ══════════════════════════════════════════════════════════
+    try:
+        from brahma_brain.signal_integrity_gate import gate_check, get_dynamic_regime_mult
+        _sig_pass, _sig_reason = gate_check(cf, params, ms)
+        if not _sig_pass:
+            _score_gate_ok = False
+            cf.setdefault('breakdown', {})['SignalIntegrityGate'] = _sig_reason
+            print(f'[SignalIntegrityGate] ⛔ BLOCKED: {_sig_reason}')
+        # P2: 体制动态衰减注入到regime_mult
+        _p2_price = float(params.get('entry_hi', 0) or ms.get('price', 0) or 0)
+        _p2_regime = str(ms.get('regime', '') or '')
+        _p2_base_mult = float(ms.get('regime_mult', 1.0) or 1.0)
+        if _p2_price > 0 and _p2_regime:
+            _p2_adj_mult, _p2_note = get_dynamic_regime_mult(
+                _p2_regime, _p2_base_mult, symbol, _p2_price)
+            if _p2_adj_mult != _p2_base_mult:
+                ms['regime_mult'] = _p2_adj_mult
+                cf.setdefault('breakdown', {})['P2_DynamicDecay'] = _p2_note
+                print(f'[P2动态衰减] {_p2_note}')
+    except Exception as _sig_e:
+        pass  # 门控异常不阻断主流程
+    # ══════════════════════════════════════════════════════════
+
     _valid = cf['kelly_mult'] > 0 and params['valid'] and _score_gate_ok
     # [P2-B] N14体制边界追踪 — 记录当前体制稳定度（供brahma_core判断早鸟加成）
     _regime_now = str(ms.get('regime','') or '')
