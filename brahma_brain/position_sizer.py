@@ -264,6 +264,41 @@ def get_position_pct(symbol: str, score: float, direction: str,
         _current_used_pct = 0.0
     # ─────────────────────────────────────────────────────────────────────────
 
+    # ── [设计院 2026-07-26] P2 FOMC宏观事件自动降权门控 ────────────────────────
+    # 铁证：macro_calendar已有FOMC日历，but position_sizer未接入！
+    # 修复：FOMC T≤3天→仓位×0.5；其他CRITICAL T≤1天→×0.3
+    _macro_factor = 1.0
+    _macro_note = ''
+    try:
+        import sys as _sys_ps, os as _os_ps
+        _ps_dir = _os_ps.path.dirname(_os_ps.path.abspath(__file__))
+        if _ps_dir not in _sys_ps.path: _sys_ps.path.insert(0, _ps_dir)
+        from macro_calendar import get_upcoming_events as _get_macro_ev
+        _upcoming = _get_macro_ev(days_ahead=7)
+        for _ev in _upcoming:
+            _days = _ev.get('days_to', 99)
+            _impact = _ev.get('impact', 'LOW')
+            _ev_name = _ev.get('event', '')
+            if _impact == 'CRITICAL':
+                if _days <= 1:
+                    _macro_factor = min(_macro_factor, 0.3)
+                    _macro_note = f'{_ev_name} T{_days:+d}d →仓位×0.3'
+                elif _days <= 3:
+                    _macro_factor = min(_macro_factor, 0.5)
+                    _macro_note = f'{_ev_name} T+{_days}d →仓位×0.5'
+                elif _days <= 7:
+                    _macro_factor = min(_macro_factor, 0.7)
+                    _macro_note = _macro_note or f'{_ev_name} T+{_days}d →仓位×0.7'
+            elif _impact == 'HIGH' and _days <= 1:
+                _macro_factor = min(_macro_factor, 0.6)
+                _macro_note = _macro_note or f'{_ev_name} T{_days:+d}d →仓位×0.6'
+        if _macro_factor < 1.0:
+            max_pct = round(max_pct * _macro_factor, 2)
+            level = f'{level}+MACRO_GATE'
+    except Exception:
+        pass
+    # ── [END P2 宏观门控] ──────────────────────────────────────────────────────────────
+
     allowed = (max_pct > 0)
     usdt = nav * max_pct / 100 if nav > 0 else 0
 
@@ -274,10 +309,13 @@ def get_position_pct(symbol: str, score: float, direction: str,
         'reason':          f'{symbol} score={score:.0f}({sr}) dir={direction} → {level}'
                            + (' [7月上旬减半仓]' if _july_half_active else '')
                            + (f' [{_fg_reason}]' if _fg_applied else '')
-                           + (f' [总风险{_current_used_pct:.1f}%/25%NAV]' if _portfolio_capped else ''),
+                           + (f' [总风险{_current_used_pct:.1f}%/25%NAV]' if _portfolio_capped else '')
+                           + (f' [{_macro_note}]' if _macro_note else ''),
         'allowed':         allowed,
         'fg_cap':          _fg_cap,
         'fg_applied':      _fg_applied,
+        'macro_factor':    _macro_factor,
+        'macro_note':      _macro_note,
         'portfolio_used_pct':   _current_used_pct,
         'portfolio_capped':     _portfolio_capped,
     }

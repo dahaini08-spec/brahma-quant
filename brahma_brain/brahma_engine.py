@@ -2507,6 +2507,71 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass
     # ── [END N21 宏观Fib] ────────────────────────────────────────────────────
 
+    # ── [设计院 2026-07-26] N22a MTF多周期共振门控（终极架构P0）────────────────
+    # 铁证：7/23 ETH$1,958做多 周/日/4H全线BEAR → 四周期逆向做多 → 损失
+    # 规则：multitf_score已在extra_data['multitf']，注入评分+分裂检测
+    try:
+        _mtf_res = extra_data.get('multitf', {})
+        _mtf_pts = _mtf_res.get('score', 0)
+        _mtf_notes = _mtf_res.get('notes', [])
+        # 分裂检测：从multitf_engine的tfs获取大周期方向
+        _mtf_tfs = _mtf_res.get('detail', {}).get('tfs', {})
+        _dir_val = 1 if signal_dir == 'LONG' else -1
+        # 大周期反向（周/日任一反向做多/空）→ 分裂惩罚
+        _big_tf_dirs = [_mtf_tfs.get(tf, {}).get('dir', 0) for tf in ['1W', '1D']]
+        _top_oppose = sum(1 for d in _big_tf_dirs if d != 0 and d != _dir_val)
+        if _top_oppose >= 2:
+            # 周线+日线双重反向：严重分裂 → 追加-15分
+            _split_penalty = -15
+            _mtf_pts += _split_penalty
+            _mtf_notes.append(f'周日双反向{signal_dir}→分裂-15')
+        elif _top_oppose == 1:
+            # 单一大周期反向：轻度分裂 → 追加-8分
+            _split_penalty = -8
+            _mtf_pts += _split_penalty
+            _mtf_notes.append(f'大周期1项反向→分裂-8')
+        # 注入评分（上限±20，不替代原35维趋势维度，而是叠加）
+        _mtf_pts = max(-20, min(20, _mtf_pts))
+        if _mtf_pts != 0 and _score_raw > 0:
+            _score_raw = round(_score_raw + _mtf_pts, 1)
+            cf['total'] = _score_raw
+            cf['n22a_mtf_consensus'] = f'MTF共振:{_mtf_pts:+d}分 | {", ".join(_mtf_notes[:3])}'
+    except Exception as _mtf_e:
+        pass
+    # ── [END N22a MTF共振门控] ────────────────────────────────────────────────
+
+    # ── [设计院 2026-07-26] N22c 日线Fib高位惩罚（维度41终极架构P3）──────────────
+    # 铁证：ETH日线Fib=81.8% → 接近前高$1,958，做多空间只奩4.4%
+    # 独立计算（不依赖fib_macro_engine），直接拉日线K线
+    try:
+        from data_cache import get_klines as _gc_p3
+        _k1d_p3 = _gc_p3(_sym, '1d', limit=95)
+        if _k1d_p3 and len(_k1d_p3) >= 20:
+            _h1d_p3 = [float(k[2]) for k in _k1d_p3]
+            _l1d_p3 = [float(k[3]) for k in _k1d_p3]
+            _cur_p = float(ms.get('price', 0))
+            # 用20日窗口（近期通道），准确捕捉'接近近期高位'状态
+            _d_high = max(_h1d_p3[-20:]) if len(_h1d_p3) >= 20 else max(_h1d_p3)
+            _d_low  = min(_l1d_p3[-20:]) if len(_l1d_p3) >= 20 else min(_l1d_p3)
+            if _d_high > _d_low and _cur_p > 0:
+                _dfib = (_cur_p - _d_low) / (_d_high - _d_low) * 100
+                _fib_pts_p3 = 0
+                if signal_dir == 'LONG':
+                    if _dfib >= 90:   _fib_pts_p3 = -20
+                    elif _dfib >= 80: _fib_pts_p3 = -12
+                    elif _dfib >= 70: _fib_pts_p3 = -5
+                    elif _dfib <= 20: _fib_pts_p3 = +8
+                elif signal_dir == 'SHORT':
+                    if _dfib >= 80:   _fib_pts_p3 = +8
+                    elif _dfib <= 20: _fib_pts_p3 = -5
+                if _fib_pts_p3 != 0 and _score_raw > 0:
+                    _score_raw = round(_score_raw + _fib_pts_p3, 1)
+                    cf['total'] = _score_raw
+                    cf['n22c_daily_fib'] = f'日线Fib={_dfib:.0f}%{signal_dir}{_fib_pts_p3:+d}分'
+    except Exception as _dfib_e:
+        pass
+    # ── [END N22c 日线Fib高位] ──────────────────────────────────────────────────
+
 
     # ── [N22b] WR矩阵动态加成层 [设计院封印 2026-06-27] ──────────────────────
     # 职责：读取 dharma_runtime.wr_matrix_v7，为主战场体制提供实证WR加分
@@ -2819,6 +2884,24 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['total'] = _score_raw
             _score = _score_raw
             cf.setdefault('breakdown', {})['15mLayer'] = '+'.join(_score15_note) + f' total=+{_score15}'
+
+        # ── [设计院 2026-07-26] P1 BBW极度压缩主动标注 ─────────────────────────
+        # 铁证：BBW<0.35%时收缩蓄力，突破概率高，主动写入breakdown供议会层识别
+        try:
+            _bbw_raw = _bb15.get('width_pct', None)  # 尝试从bb_15m读取
+            if _bbw_raw is None:
+                # 手动计算：(upper-lower)/mid
+                if _p15_lo > 0 and _p15_up > 0 and _p15_mid > 0:
+                    _bbw_raw = (_p15_up - _p15_lo) / _p15_mid * 100
+            if _bbw_raw is not None:
+                _bbw_f = float(_bbw_raw)
+                if _bbw_f < 0.35:
+                    cf.setdefault('breakdown', {})['P1_BBW_SQUEEZE'] = f'⚡极度压缩BBW={_bbw_f:.2f}%(<0.35%)_突破蓄力'
+                elif _bbw_f < 0.60:
+                    cf.setdefault('breakdown', {})['P1_BBW_SQUEEZE'] = f'压缩BBW={_bbw_f:.2f}%(<0.60%)_关注突破'
+        except Exception:
+            pass
+        # ── [END P1 BBW压缩标注] ──────────────────────────────────────────────
     except Exception as _15m_e:
         pass  # 15m层失败不影响主流程
     # ── [END 15m信号层] ────────────────────────────────────────────────────────
