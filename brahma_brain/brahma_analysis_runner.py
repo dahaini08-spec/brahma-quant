@@ -394,6 +394,35 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
             pass
     # ─────────────────────────────────────────────────────────────────
 
+    # ── [设计院 2026-07-26] 逻辑验证器强制门控 ──────────────────────────────
+    # 铁律: 每条信号推送前必须通过 validate_signal
+    # 铁证: ETH SHORT SL在入场下方被苏摩误读，根因是从未调用验证器
+    try:
+        import sys as _cv_sys, os as _cv_os
+        _cv_scripts = _cv_os.path.join(
+            _cv_os.path.dirname(_cv_os.path.dirname(_cv_os.path.abspath(__file__))),
+            'scripts')
+        if _cv_scripts not in _cv_sys.path: _cv_sys.path.insert(0, _cv_scripts)
+        from content_validator import validate_signal as _validate_sig
+        _cv_entry   = float(result.get('entry_lo', 0) or 0)
+        _cv_stop    = float(result.get('stop_loss', 0) or 0)
+        _cv_tp1     = float(result.get('tp1', 0) or 0)
+        _cv_score   = float(result.get('score_final', result.get('score', 0)) or 0)
+        _cv_dir     = str(result.get('direction', '') or '')
+        if _cv_entry > 0 and _cv_stop > 0 and _cv_tp1 > 0:
+            _cv_ok, _cv_issues = _validate_sig(_cv_score, _cv_dir, _cv_entry, _cv_stop, _cv_tp1)
+            if not _cv_ok:
+                result['_logic_errors'] = [i['msg'] for i in _cv_issues if i['level'] == 'ERROR']
+                result['_logic_warnings'] = [i['msg'] for i in _cv_issues if i['level'] != 'ERROR']
+                # 有ERROR级逻辑矛盾 → 强制降级，不推送
+                _err_ids = [i['id'] for i in _cv_issues if i['level'] == 'ERROR']
+                if _err_ids:
+                    result['action'] = 'LOGIC_ERROR_BLOCKED'
+                    result['_blocked_reason'] = f'逻辑验证失败[{",".join(_err_ids)}]: {result["_logic_errors"][0]}'
+    except Exception:
+        pass
+    # ── [END 逻辑验证器] ─────────────────────────────────────────────────────
+
     # ── [设计院 2026-07-26] 决策C: signal_lifecycle结算闭环接入 ────────────
     # 职责: 对已存在的OPEN信号做实时TTL/SL/TP检查，填补result=null盲点
     # fail-safe: 任何异常不阻断主流程
