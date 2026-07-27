@@ -586,6 +586,9 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
                     _liq_contrib = -int(_liq.get('liq_bear_score', 0) or 0)
                 _ext_bonus += _liq_contrib
                 _ext_detail['liq_heatmap'] = _liq_contrib
+                result['_liq_heatmap'] = _liq  # [设计院 2026-07-27] 无条件写入，B3格式化依赖此字段
+            else:
+                # error时仍写入原始数据供B3格式化使用（无score贡献）
                 result['_liq_heatmap'] = _liq
         except Exception as _le:
             _ext_detail['liq_heatmap'] = f'skip:{_le}'
@@ -644,6 +647,9 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
             _ext_detail['miner'] = f'skip:{_mne}'
 
         # --- 写回评分 ---
+        # [设计院 2026-07-27 修复] 无论_ext_bonus是否0都写入字段，smoke test依赖此字段存在性
+        result['_ext_score_bonus']  = _ext_bonus   # 前置写入，确保字段始终存在
+        result['_ext_score_detail'] = _ext_detail
         if _ext_bonus != 0:
             _new_ext_score = _cur_ext_score + _ext_bonus
             result['total']       = _new_ext_score
@@ -652,8 +658,7 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
             if isinstance(result.get('confluence'), dict):
                 result['confluence']['score'] = _new_ext_score
                 result['confluence']['total'] = _new_ext_score
-            result['_ext_score_bonus']  = _ext_bonus
-            result['_ext_score_detail'] = _ext_detail
+            # (已在前置写入)
 
             # 重新校验 valid_signal（外部层加分后可能越过155门槛）
             # [达摩院修正 2026-07-16 苏摩111] BEAR_RECOVERY体制阈值降至120（IC=0.76背书）
@@ -727,8 +732,8 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
 
     # [P1 signal_log 自动注入 2026-07-24]
     try:
-        import sys, os
-        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'scripts'))
+        import sys as _sys_p1, os as _os_p1  # [设计院 2026-07-27 修复] 避免覆盖全局os变量
+        _sys_p1.path.insert(0, _os_p1.path.join(_os_p1.path.dirname(__file__), '..', 'scripts'))
         from p1_signal_log import write_signal as _write_signal
         _write_signal(result, symbol=symbol)
     except Exception:

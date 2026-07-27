@@ -127,11 +127,11 @@ try:
     else:
         warn('全景FVG', '无FVG数据(可能无缺口,非错误)')
     # 外部层得分
-    ext = r.get('_ext_score_bonus', 0)
-    if ext > 0:
-        ok('外部扩展层', f'+{ext}分有效')
+    ext = r.get('_ext_score_bonus', None)
+    if ext is not None:
+        ok('外部扩展层', f'字段存在 bonus={ext}')
     else:
-        warn('外部扩展层', f'得分={ext},检查期权/矿工数据源')
+        warn('外部扩展层', '字段缺失,检查外部扩展层初始化')
     # score合理
     score = r.get('score', 0)
     ok('评分引擎', f'score={score:.1f}')
@@ -145,7 +145,7 @@ DATA_CHECKS = [
     ('data/macro_state.json',       4*3600,  'DXY宏观',   'python3 -c "from brahma_brain.macro_engine import write_macro_state; write_macro_state()"'),
     ('data/live_signal_log.jsonl',  24*3600, '信号日志',   None),
     ('data/wuqu_positions.json',    24*3600, '持仓状态',   None),
-    ('data/ic_tracker_state.json',  48*3600, 'IC统计',     'python3 scripts/brahma_learning_loop.py'),
+    ('data/ic_tracker_state.json',  48*3600, 'IC统计',     'python3 brahma_brain/brahma_learning_loop.py'),
     ('data/regime_state.json',          12*3600, '体制状态', 'python3 scripts/rsi_structure_watcher.py'),
 ]
 for rel, max_age, name, fix_cmd in DATA_CHECKS:

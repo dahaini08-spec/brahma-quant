@@ -2535,7 +2535,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _mtf_pts = _mtf_res.get('score', 0)
         _mtf_notes = _mtf_res.get('notes', [])
         # 分裂检测：从multitf_engine的tfs获取大周期方向
-        _mtf_tfs = _mtf_res.get('detail', {}).get('tfs', {})
+        # [设计院 2026-07-27 修复] multitf_score返回raw.tfs，不是detail.tfs
+        _mtf_tfs_raw = _mtf_res.get('raw', {}).get('tfs', {})
+        # raw.tfs的value可能是dict(含dir字段)或直接int
+        _mtf_tfs = {k: (v if isinstance(v, dict) else {'dir': v}) for k, v in _mtf_tfs_raw.items()}
         _dir_val = 1 if signal_dir == 'LONG' else -1
         # 大周期反向（周/日任一反向做多/空）→ 分裂惩罚
         _big_tf_dirs = [_mtf_tfs.get(tf, {}).get('dir', 0) for tf in ['1W', '1D']]
@@ -2552,10 +2555,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _mtf_notes.append(f'大周期1项反向→分裂-8')
         # 注入评分（上限±20，不替代原35维趋势维度，而是叠加）
         _mtf_pts = max(-20, min(20, _mtf_pts))
-        if _mtf_pts != 0 and _score_raw > 0:
-            _score_raw = round(_score_raw + _mtf_pts, 1)
-            cf['total'] = _score_raw
-            cf['n22a_mtf_consensus'] = f'MTF共振:{_mtf_pts:+d}分 | {", ".join(_mtf_notes[:3])}'
+        # [设计院 2026-07-27 修复] _score_raw被StructureGate清零时，改用cf.score作为存活判断
+        _n22a_base = _score_raw if _score_raw > 0 else float(cf.get('score', 0) or 0)
+        if _mtf_pts != 0 and _n22a_base > 0:
+            cf.setdefault('breakdown', {})['n22a_mtf_consensus'] = f'MTF共振:{_mtf_pts:+d}分 | {", ".join(_mtf_notes[:3])}'
     except Exception as _mtf_e:
         pass
     # ── [END N22a MTF共振门控] ────────────────────────────────────────────────
@@ -2584,10 +2587,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 elif signal_dir == 'SHORT':
                     if _dfib >= 80:   _fib_pts_p3 = +8
                     elif _dfib <= 20: _fib_pts_p3 = -5
-                if _fib_pts_p3 != 0 and _score_raw > 0:
-                    _score_raw = round(_score_raw + _fib_pts_p3, 1)
-                    cf['total'] = _score_raw
-                    cf['n22c_daily_fib'] = f'日线Fib={_dfib:.0f}%{signal_dir}{_fib_pts_p3:+d}分'
+                # [设计院 2026-07-27 修复] _score_raw被StructureGate清零时，改用cf.score作为存活判断
+                _n22c_base = _score_raw if _score_raw > 0 else float(cf.get('score', 0) or 0)
+                if _fib_pts_p3 != 0 and _n22c_base > 0:
+                    cf.setdefault('breakdown', {})['n22c_daily_fib'] = f'日线Fib={_dfib:.0f}%{signal_dir}{_fib_pts_p3:+d}分'
     except Exception as _dfib_e:
         pass
     # ── [END N22c 日线Fib高位] ──────────────────────────────────────────────────
