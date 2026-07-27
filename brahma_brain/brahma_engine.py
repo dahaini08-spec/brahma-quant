@@ -3853,6 +3853,81 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass  # TradFi层失败不阻断主链路
     # ─────────────────────────────────────────────────────────────────────────
 
+    # ── [TradFiDump识别层 2026-07-28 设计院封印 苏摩111批准] ──────────────────
+    # M1~M5 新信号模块 + TYPE-1/2/3 事件识别
+    # 根因修复：SNDK 7月27日两次止损的系统性缺陷
+    try:
+        from brahma_brain.tradfi_dump_detector import analyze_tradfi_dump, is_tradfi_token as _is_tf
+        if _is_tf(symbol):
+            # 转换K线格式
+            _raw1h = extra_data.get('_k1h_raw') or get_klines(symbol, '1h', 50)
+            _dump_klines = []
+            for _rk in (_raw1h or []):
+                if isinstance(_rk, (list, tuple)) and len(_rk) >= 6:
+                    _dump_klines.append({
+                        'open': float(_rk[1]), 'high': float(_rk[2]),
+                        'low': float(_rk[3]), 'close': float(_rk[4]),
+                        'volume': float(_rk[5]),
+                    })
+            # 30日收益率
+            _ret30d = 0.0
+            try:
+                _k1d_ret = get_klines(symbol, '1d', 32)
+                if _k1d_ret and len(_k1d_ret) >= 30:
+                    _p_s = float(_k1d_ret[-30][4])
+                    _p_e = float(_k1d_ret[-1][4])
+                    _ret30d = (_p_e - _p_s) / _p_s * 100 if _p_s > 0 else 0.0
+            except Exception:
+                pass
+            # SPX代理
+            _spx24h = 0.0
+            try:
+                from brahma_brain.tradfi_signal_layer import _fetch_rwa_price as _frp
+                _spy = _frp('SPY')
+                _spx24h = float(_spy.get('pct24h', 0) or 0) if _spy else 0.0
+            except Exception:
+                pass
+            # 当前量倍
+            _cur_vr = 1.0
+            if _dump_klines and len(_dump_klines) >= 25:
+                _hist_vols = _dump_klines[-40:-20] if len(_dump_klines) >= 40 else _dump_klines[:-20]
+                _ma_v = sum(k['volume'] for k in _hist_vols) / len(_hist_vols) if _hist_vols else 1
+                _cur_vr = _dump_klines[-1]['volume'] / _ma_v if _ma_v > 0 else 1.0
+            _dump_res = analyze_tradfi_dump(
+                symbol=symbol,
+                klines_1h=_dump_klines,
+                direction=signal_dir,
+                ret_30d=_ret30d,
+                price_chg_24h=float(_result.get('price_change_24h', 0) or 0),
+                spx_chg_24h=_spx24h,
+                vol_ratio_current=_cur_vr,
+                oi_chg_1h=float(_result.get('oi_change_1h', 0) or 0),
+                rsi_1h=float(_result.get('rsi_1h', 50) or 50),
+            )
+            _result.setdefault('breakdown', {})['TradFiDump'] = _dump_res.get('summary_label', '')
+            _result['tradfi_dump_type'] = _dump_res.get('dump_type', 'NORMAL')
+            _result['tradfi_ret30d'] = round(_ret30d, 2)
+            _dd = _dump_res.get('score_delta', 0)
+            if _dd != 0:
+                _result['score'] = _result.get('score', 0) + _dd
+                _result.setdefault('breakdown', {})['TradFiDump_delta'] = f'{_dd:+d}'
+            if not _dump_res.get('allow_long', True) and signal_dir == 'LONG':
+                _result['valid_signal'] = False
+                _result['globally_blocked'] = True
+                _result.setdefault('breakdown', {})['TradFiDump_block'] = (
+                    f'封禁LONG: {_dump_res.get("dump_type")} ret30d={_ret30d:.1f}%'
+                )
+            if _dump_res.get('force_direction') == 'SHORT' and signal_dir == 'LONG':
+                _result.setdefault('breakdown', {})['TradFiDump_force'] = (
+                    f'月线崩溃{_ret30d:.1f}% → 建议SHORT（等反弹入空）'
+                )
+            _kw = _dump_res.get('kronos_weight', 1.0)
+            if _kw < 1.0:
+                _result['kronos_weight_override'] = _kw
+    except Exception:
+        pass  # TradFiDump层失败不阻断主链路
+    # ─────────────────────────────────────────────────────────────────────────
+
     # ══ [P0-1 设计院封印 2026-07-23 苏摩111] consensus=FULL_BEAR 封禁 LONG ══
     # 根因: regime=BULL_TREND 会覆盖 consensus，强行产出多单
     # 当六方推理结论为 FULL_BEAR 时，LONG 方向直接封禁
