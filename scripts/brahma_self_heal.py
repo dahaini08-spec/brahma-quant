@@ -1310,6 +1310,10 @@ def run_self_heal():
             _jj.dumps(_cache, default=str))
     except Exception:
         pass
+    # [设计院 2026-07-27 修复] 输出stdout摘要，防止cron误报"异常沉默"
+    _ok = sum(1 for v in checks.values() if isinstance(v, dict) and v.get('ok'))
+    _status = 'HEALTHY' if not failed_items else 'DEGRADED'
+    print(f'brahma_self_heal: {_status} {_ok}/{len(checks)} healed={len(healed_items)} failed={len(failed_items)}')
     return _final
 
 
