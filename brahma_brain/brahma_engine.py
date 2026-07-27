@@ -3429,7 +3429,11 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         # P1b 2026-06-29：去掉CHOP排除 → CHOP体制也允许reasoning增强
         #   reasoning_gate会自动WARN/BLOCK低质量信号，不会误放，无副作用
         #   仅保留 score≥100（原120降低）提高边缘信号捕获率
+        # [设计院 2026-07-27 性能根治] BRAHMA_SKIP_S25=1 跳过s25 LLM调用（4个并发LLM = 13s延迟根因）
+        import os as _os_s25_check
+        _s25_skip = _os_s25_check.environ.get('BRAHMA_SKIP_S25', '0') == '1'
         _s25_should = (
+            not _s25_skip and
             bool(_s25_key) and
             _s25_score >= 100 and   # 原120，按需放开至100
             _s25_valid and

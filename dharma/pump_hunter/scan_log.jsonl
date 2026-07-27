@@ -918,3 +918,5 @@
 {"ts": "2026-07-26T16:30:11.770119", "alerts": 0, "new": 0, "elapsed": 43.60435247421265, "regime": "CHOP_MID"}
 {"ts": "2026-07-26T19:30:07.666977", "alerts": 0, "new": 0, "elapsed": 39.714367628097534, "regime": "CHOP_MID"}
 {"ts": "2026-07-26T23:30:05.850911", "alerts": 0, "new": 0, "elapsed": 40.09629034996033, "regime": "CHOP_MID"}
+{"ts": "2026-07-27T01:00:06.472970", "alerts": 0, "new": 0, "elapsed": 39.63811278343201, "regime": "CHOP_MID"}
+{"ts": "2026-07-27T02:30:06.450902", "alerts": 0, "new": 0, "elapsed": 40.33381772041321, "regime": "CHOP_MID"}

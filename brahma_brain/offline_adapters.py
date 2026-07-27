@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# STATUS: AUXILIARY — 独立工具模块 [brahma_auto_heal]
 """
 offline_adapters.py — 达摩院全性能测试 · 实时引擎离线化适配器 v1.0
 ═══════════════════════════════════════════════════════════════════

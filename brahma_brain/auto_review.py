@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# STATUS: AUXILIARY — 独立工具模块 [brahma_auto_heal]
 """
 梵天信号复盘引擎 v1.0 (I7反省层)
 功能：
