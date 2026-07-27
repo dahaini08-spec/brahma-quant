@@ -99,9 +99,13 @@ def tick_signal_lifecycle(symbol: str, current_price: float) -> list:
             if tp1_hit and sig.get('tp1_hit') != True:
                 sig['tp1_hit'] = True
                 sig['tp1_ts'] = now_ts
+                sig['result'] = 'TP1'          # [fix 2026-07-27 闭环TP1写入]
+                sig['settled_price'] = current_price
+                sig['settled_ts'] = now_ts
                 pnl = ((current_price - entry_price) / entry_price * 100
                        if direction == 'LONG'
                        else (entry_price - current_price) / entry_price * 100)
+                sig['pnl_pct'] = round(pnl, 3)
                 alerts.append({
                     'level': 'SUCCESS',
                     'msg': (f'✅ [{symbol}] 信号{sig_id} TP1触达！\n'

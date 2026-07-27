@@ -4318,7 +4318,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 _bts  = float(_bst.get('last_ts', 0))
                 _bh   = (_tl1.time() - _bts) / 3600
                 if 0 < _bh <= 4:
-                    if _bres == 'TP':
+                    if _bres in ('TP1', 'TP2', 'TP'):  # [fix 2026-07-27 兼容TP1/TP2]
                         _p1v = 20
                         _score_raw = min(175, round(_score_raw + _p1v, 1))
                         cf['total'] = _score_raw
