@@ -1,1 +1,19 @@
-[]
+[
+  {
+    "symbol": "ETHUSDT",
+    "side": "SHORT",
+    "entry_price": 1954.0,
+    "size": 0.02,
+    "sl": 2005.0,
+    "tp1": 1912.0,
+    "tp2": 1878.78,
+    "sl_pct": 0.025,
+    "leverage": 5,
+    "notional_usdt": 39.08,
+    "order_id": 8389766242887807095,
+    "status": "PENDING_FILL",
+    "ts": 1785125785.7851882,
+    "source": "manual_exec_27Jul",
+    "note": "ETH SHORT | 限价1954等待成交 | SL软止损2005 | TP1=1912 TP2=1879"
+  }
+]
