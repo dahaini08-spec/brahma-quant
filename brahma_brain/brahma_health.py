@@ -157,7 +157,7 @@ def _check_live_signals() -> dict:
             'ok': True,
             'detail': f'最近信号={last.get("symbol","?")} {age_h}H前',
             'last_signal_age_h': age_h,
-            'warn': age_h > 48 and age_h > 0
+            'warn': age_h > 72 and age_h > 0  # BEAR_TREND封禁期间正常静默，阈值72H
         }
     except Exception as e:
         return {'ok': False, 'detail': f'信号日志异常: {str(e)[:50]}',
