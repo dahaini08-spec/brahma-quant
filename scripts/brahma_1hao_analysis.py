@@ -9,7 +9,17 @@
   - 支持双币（BTC+ETH）并行分析
   - 输出格式：专业合约衍生品深度分析报告
 """
-import sys, os, time
+import sys, os, time, re as _re
+# ── [2026-07-28 设计院全局修复] safe_float: 处理emoji/字符串/None → float ────
+def _safe_float(v, default=0.0):
+    """安全float转换，处理emoji字符串如'🔵中等'/'🔴神级'等"""
+    if v is None: return default
+    if isinstance(v, (int, float)): return float(v)
+    import re as _sfre
+    nums = _sfre.findall(r'\d+\.?\d*', str(v))
+    return float(nums[0]) if nums else default
+# ─────────────────────────────────────────────────────────────────────────────
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from brahma_brain.brahma_engine import analyze
@@ -296,7 +306,12 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
     regime_mult = bd.get('_regime_mult', '?')
 
     # 是否解封
-    gate_pass = eff_grade and float(str(eff_grade).replace('?','0') or 0) >= 80
+    # 修复：eff_grade可能包含如『🔵中等』的emoji字符，提取纯数字部分
+    import re as _re
+    _eg_str = str(eff_grade) if eff_grade is not None else '0'
+    _eg_nums = _re.findall(r'\d+\.?\d*', _eg_str)
+    _eg_num = float(_eg_nums[0]) if _eg_nums else 0.0
+    gate_pass = _eg_num >= 80
     gate_str  = "✅ StructureGate 通过 → 可入场" if gate_pass else \
                 f"⛔ StructureGate 封禁（grade={eff_grade} < 80）"
 
@@ -370,7 +385,8 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         fvg_bull = smc.get('fvg', {}).get('bull_fvg', [])
 
         lines.append(f"  ⛔ 当前封禁 — 等待解封条件（score={score_final} grade={eff_grade}）：")
-        grade_gap = round(80.0 - float(str(eff_grade).replace('?','0') or 0), 1)
+        _eg2 = _re.findall(r'\d+\.?\d*', str(eff_grade) if eff_grade is not None else '0')
+        grade_gap = round(80.0 - (float(_eg2[0]) if _eg2 else 0.0), 1)
         if not has_choch:
             lines.append(f"    ① CHoCH出现（趋势结构转换信号）")
         if bear_obs_nearest:
@@ -383,7 +399,8 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
             causal = bd.get('_causal_regime', '')
             if 'BLOCKED' in str(causal):
                 lines.append(f"       └ 主要阻碍: _causal_regime BLOCKED（-25分，体制因果封锁）")
-            bear_mult = float(str(regime_mult))
+            _rm_nums = _re.findall(r'\d+\.?\d*', str(regime_mult) if regime_mult else '1')
+            bear_mult = float(_rm_nums[0]) if _rm_nums else 1.0
             if bear_mult <= 0.35:
                 lines.append(f"       └ 体制乘数{regime_mult}重击，所有分数不足原始得分的{int(bear_mult*100)}%")
         if fvg_bull:
@@ -419,10 +436,10 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
             # [Fix 2026-07-26] 验证SL方向：SHORT的SL应在入场区上方
             _d = r.get('direction', r.get('signal_dir', 'LONG'))
             _sl_ok = True
-            if _d == 'SHORT' and sl and entry_hi and float(str(sl).replace('?','0') or 0) < float(str(entry_hi).replace('?','0') or 0):
+            if _d == 'SHORT' and sl and entry_hi and _safe_float(sl) < _safe_float(entry_hi):
                 _sl_ok = False
                 _sl_warn = f"⚠️SL方向错误(应>{entry_hi})"
-            elif _d == 'LONG' and sl and entry_lo and float(str(sl).replace('?','0') or 0) > float(str(entry_lo).replace('?','0') or 0):
+            elif _d == 'LONG' and sl and entry_lo and _safe_float(sl) > _safe_float(entry_lo):
                 _sl_ok = False
                 _sl_warn = f"⚠️SL方向错误(应<{entry_lo})"
             else:
@@ -472,8 +489,10 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         _bear_obs = _smc.get('order_blocks', {}).get('bear_obs', [])
         _choch_list = _smc.get('structure', {}).get('choch', [])
         _choch_dir  = _choch_list[0] if _choch_list else ''
-        _grade  = float(str(r.get('effective_grade', 0)).replace('?','0') or 0)
-        _score  = float(str(r.get('score_final', 0)).replace('?','0') or 0)
+        _eg3 = _re.findall(r'\d+\.?\d*', str(r.get('effective_grade', 0) or 0))
+        _grade  = float(_eg3[0]) if _eg3 else 0.0
+        _eg4 = _re.findall(r'\d+\.?\d*', str(r.get('score_final', 0) or 0))
+        _score  = float(_eg4[0]) if _eg4 else 0.0
 
         # P0: 持仓风控
         _pos_guard = fmt_position_guard(symbol, _price, _regime)

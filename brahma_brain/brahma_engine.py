@@ -19,7 +19,7 @@ brahma_brain · Phase 1 完整整合
 _OSS_MODE = True  # Pro版设为False以启用训练权重
 
 
-import os, sys, time
+import os, sys, time, re
 import copy  # [P1-C audit-fix] deepcopy for cf dict
 import json  # [D1-fix] 提升到顶部
 from datetime import datetime, timezone, timedelta  # [D1-fix] 提升到顶部
@@ -1515,8 +1515,8 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             signal_dir=signal_dir,
             score=float(cf.get('total', 100)),
             regime=str(ms.get('regime','')),
-            grade=int(cf.get('structure_grade', 0) or 0),
-            effective_grade=round(float(cf.get('effective_grade', cf.get('structure_grade', 0)) or 0), 1),
+            grade=int(re.search(r'\d+', str(cf.get('structure_grade', cf.get('grade', 0)) or 0)).group()) if re.search(r'\d+', str(cf.get('structure_grade', cf.get('grade', 0)) or 0)) else 0,
+            effective_grade=(lambda v: round(float(re.search(r'\d+\.?\d*', str(v)).group()), 1) if re.search(r'\d+\.?\d*', str(v or 0)) else 0.0)(cf.get('effective_grade', cf.get('structure_grade', cf.get('grade', 0)))),
             grade_mult=round(float(cf.get('grade_mult', 1.0) or 1.0), 2),
         )
         extra_data['signal_queue'] = _sq_result
@@ -2998,8 +2998,8 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         'nodes_verdict':_dharma_nodes.get('verdict', 'UNKNOWN'),
         'score_final':  _score,
         # [v25.4c effective_grade] 体制感知grade写入顶层，供offline_replay使用
-        'grade':          int(cf.get('structure_grade', 0) or 0),
-        'effective_grade': round(float(cf.get('effective_grade', cf.get('structure_grade', 0)) or 0), 1),
+        'grade':          (lambda v: int(re.search(r'\d+', str(v)).group()) if re.search(r'\d+', str(v or 0)) else 0)(cf.get('structure_grade', cf.get('grade', 0))),
+        'effective_grade': (lambda v: round(float(re.search(r'\d+\.?\d*', str(v)).group()), 1) if re.search(r'\d+\.?\d*', str(v or 0)) else 0.0)(cf.get('effective_grade', cf.get('structure_grade', cf.get('grade', 0)))),
         'grade_mult':      round(float(cf.get('grade_mult', 1.0) or 1.0), 2),
     }
 
@@ -4022,6 +4022,13 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception:
         pass
 
+    # ── [2026-07-28 设计院全局修复] 最终出口：统一清洗grade字段，确保全部为数字 ──
+    for _gk in ('grade', 'effective_grade', 'grade_num'):
+        _gv = _result.get(_gk)
+        if _gv is not None and not isinstance(_gv, (int, float)):
+            _gnums = re.findall(r'\d+\.?\d*', str(_gv))
+            _result[_gk] = round(float(_gnums[0]), 1) if _gnums else 0.0
+    # ─────────────────────────────────────────────────────────────────────────
     return _result
 
 def format_report(r: dict) -> str:
