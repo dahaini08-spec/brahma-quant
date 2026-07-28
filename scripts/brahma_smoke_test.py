@@ -28,7 +28,12 @@ except ImportError:
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
 
-CORRECT_THREAD = "73295708:thread:019f933d-d67a-7237-8cbd-7923bbf336fa"
+# SSOT: 从system_config.py读取，不硬编码 (2026-07-28 设计院修复)
+try:
+    from scripts.system_config import JARVIS_USER_ID as _UID, JARVIS_THREAD_ID as _TID
+    CORRECT_THREAD = f"{_UID}:thread:{_TID}"
+except Exception:
+    CORRECT_THREAD = "73295708:thread:019f93b0-c154-73fd-91a3-4e755d3289af"  # fallback
 RED    = '\033[91m'
 GREEN  = '\033[92m'
 YELLOW = '\033[93m'
@@ -199,7 +204,8 @@ except Exception as e:
     warn('ETH供应感知', str(e)[:60])
 
 # ─── 4. Cron路由一致性 ─────────────────────────────────────────────────
-print('\n【４】Cron路由一致性（SSOT=019f933d）')
+_SSOT_TID = _TID if '_TID' in dir() else '019f93b0-c154-73fd-91a3-4e755d3289af'
+print(f'\n【４】Cron路由一致性（SSOT={_SSOT_TID[:8]}...）')
 try:
     jobs_path = Path.home() / '.openclaw/cron/jobs.json'
     raw = json.loads(jobs_path.read_text())
@@ -216,7 +222,7 @@ try:
         name = j.get('name', '')
         if name not in ANALYSIS_PUSH_TASKS:
             continue
-        if to and '019f933d' not in to:
+        if to and _SSOT_TID not in to:
             wrong.append(name)
     if wrong:
         fail('Cron路由', f'{len(wrong)}个任务路由到旧线程: {wrong}', fix='openclaw cron rm <id> && openclaw cron add ...')
