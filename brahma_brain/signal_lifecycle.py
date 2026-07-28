@@ -113,6 +113,28 @@ def tick_signal_lifecycle(symbol: str, current_price: float) -> list:
                             f'  PnL: {pnl:+.2f}%  建议：移动止损至保本位')
                 })
 
+        # TP2触发检查（TP1已触达后才检查TP2）[fix 2026-07-28 TP2闭环]
+        tp2_price = float(sig.get('tp2') or sig.get('tp2_price') or 0)
+        if tp2_price > 0 and sig.get('tp1_hit') and not sig.get('tp2_hit'):
+            tp2_hit = (direction == 'LONG' and current_price >= tp2_price) or \
+                      (direction == 'SHORT' and current_price <= tp2_price)
+            if tp2_hit:
+                sig['tp2_hit'] = True
+                sig['tp2_ts'] = now_ts
+                sig['result'] = 'TP2'
+                sig['settled_price'] = current_price
+                sig['settled_ts'] = now_ts
+                pnl2 = ((current_price - entry_price) / entry_price * 100
+                        if direction == 'LONG'
+                        else (entry_price - current_price) / entry_price * 100)
+                sig['pnl_pct'] = round(pnl2, 3)
+                alerts.append({
+                    'level': 'SUCCESS',
+                    'msg': (f'🎯 [{symbol}] 信号{sig_id} TP2触达！\n'
+                            f'  入场: ${entry_price:.4f} → TP2: ${tp2_price:.4f}\n'
+                            f'  PnL: {pnl2:+.2f}%  满仓出场')
+                })
+
         updated_lines.append(json.dumps(sig, ensure_ascii=False))
 
     # 写回

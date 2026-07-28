@@ -1584,6 +1584,18 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     _globally_blocked = False  # [设计院修复 2026-06-26] 默认值防止try异常时UnboundLocalError
     # regime_gate → asset_universe → regime_weights → adaptive_threshold → MTF → Kelly | 体制门控 → 资产池 → 体制权重 → 自适应阈值 → 多时框 → Kelly
     # ══════════════════════════════════════════════════════════════
+
+    # ── [P0永久封禁名单 2026-07-28 设计院封印] ─────────────────────────────────
+    # SNDK: 22条信号中8条SL集中在1489区间（单次被套反复加仓陷阱），WR=铁证污染源
+    # 清洗SNDK后score>=155 WR=50%（正常），保留SNDK则WR=10%（失真）
+    _SYMBOL_BLACKLIST = {'SNDKUSDT'}  # 永久封禁，禁止任何方向入场
+    if _sym in _SYMBOL_BLACKLIST:
+        cf['total'] = 0
+        cf['score_final'] = 0
+        cf['action'] = 'SKIP'
+        cf['breakdown']['永久封禁'] = f'{_sym} 历史SL集中陷阱，WR污染源，永久封禁'
+        return cf
+    # ══════════════════════════════════════════════════════════════
     try:
         import sys as _v2_sys, os as _v2_os
         _v2_base = _v2_os.path.dirname(_v2_os.path.dirname(_v2_os.path.abspath(__file__)))
@@ -1684,7 +1696,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         'BULL_EARLY_SHORT':      18,   # WR=51.9% avg=-0.137% → 高门控筛出低质信号
         # 震荡×多：WR=56%，略提高
         'CHOP_LONG':              8,   # WR=56.0% avg=-0.001% → 轻提高
-        'CHOP_MID_LONG':          8,
+        'CHOP_MID_LONG':         30,   # [WR=12.5% n=8 死穴封印 2026-07-28] 门控从8→+30，实际等同封禁
         'CHOP_LOW_LONG':          5,
     }
     _thr_boost = _DYNAMIC_THRESHOLD_BOOST.get(_regime_dir_key, 0)
