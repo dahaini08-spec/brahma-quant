@@ -1,0 +1,102 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-07-20T12:59:52Z",
+  "source": "IC追踪器+达摩院统计回归 2026-07-20 + BEAR_TREND:SHORT系列(2026-07-28设计院补充)",
+  "weights": {
+    "BULL_TREND:LONG:155+": {
+      "multiplier": 1.0,
+      "note": "基准",
+      "ev_basis": 0.0
+    },
+    "BULL_TREND:LONG:140-154": {
+      "multiplier": 0.3,
+      "note": "IC铁证WR=30%降权",
+      "ev_basis": -0.65
+    },
+    "BULL_TREND:LONG:120-139": {
+      "multiplier": 0.7,
+      "note": "WR=62%轻度降权",
+      "ev_basis": -0.09
+    },
+    "BEAR_RECOVERY:LONG:165+": {
+      "multiplier": 1.5,
+      "note": "IC=0.76极强加权",
+      "ev_basis": 0.28
+    },
+    "CHOP_MID:LONG": {
+      "multiplier": 0.0,
+      "note": "DEAD_ZONE封禁",
+      "ev_basis": -99
+    },
+    "BEAR_TREND:SHORT:155+": {
+      "multiplier": 1.0,
+      "note": "基准，BEAR_TREND做空铁证WR=72%",
+      "ev_basis": 0.578
+    },
+    "BEAR_TREND:SHORT:140-154": {
+      "multiplier": 0.88,
+      "note": "CHOP SHORT乘数封印，略降权",
+      "ev_basis": 0.3
+    },
+    "BEAR_TREND:SHORT:120-139": {
+      "multiplier": 0.7,
+      "note": "中分段降权",
+      "ev_basis": 0.1
+    },
+    "BEAR_TREND:LONG:155+": {
+      "multiplier": 0.3,
+      "note": "BEAR_TREND逆势多单严重降权(WR=45%)",
+      "ev_basis": -0.65
+    },
+    "BEAR_TREND:LONG:140-154": {
+      "multiplier": 0.1,
+      "note": "BEAR_TREND逆势多单极度降权",
+      "ev_basis": -0.9
+    },
+    "CHOP_MID:SHORT": {
+      "multiplier": 0.88,
+      "note": "CHOP做空乘数(EV=+0.811%)",
+      "ev_basis": 0.811
+    },
+    "CHOP_MID:SHORT:155+": {
+      "multiplier": 0.88,
+      "note": "CHOP做空高分段",
+      "ev_basis": 0.811
+    },
+    "CHOP_MID:LONG:155+": {
+      "multiplier": 0.0,
+      "note": "CHOP_HIGH死穴封禁",
+      "ev_basis": -0.11
+    }
+  },
+  "next_calibration": "24h后由brahma-online-calibrate触发",
+  "BULL_TREND:LONG:140-154": {
+    "multiplier": 0.3,
+    "basis": "IC铁证 n=26 WR=30% EV=-0.650% [样本充足，降权维持 2026-07-23]",
+    "action": "DEMOTE",
+    "updated": "2026-07-24"
+  },
+  "BEAR_RECOVERY:LONG:165+": {
+    "multiplier": 1.0,
+    "basis": "IC铁证 n=6 WR=100% [n<15样本不足，降为观察 2026-07-24 6方联合]",
+    "action": "WATCH",
+    "min_n_required": 15,
+    "updated": "2026-07-24"
+  },
+  "CHOP_MID:LONG:<120": {
+    "multiplier": 1.0,
+    "basis": "IC铁证 n=3 WR=100% [n<15样本极小，降为观察 2026-07-24 6方联合]",
+    "action": "WATCH",
+    "min_n_required": 15,
+    "updated": "2026-07-24"
+  },
+  "_ic_policy": {
+    "min_n_for_watch": 1,
+    "min_n_for_soft_adjust": 15,
+    "min_n_for_adjust": 30,
+    "min_n_for_major": 50,
+    "note": "6方联合封印 2026-07-24: n<15不升权，n<30谨慎，n≥50完全信任",
+    "updated": "2026-07-24"
+  },
+  "updated_at": "2026-07-28T02:25:00Z"
+}

@@ -3797,7 +3797,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         if _sw_path.exists():
             _sw = _sw_json.loads(_sw_path.read_text()).get('weights', {})
             _cur_regime = _result.get('regime', '')
-            _cur_score = _result.get('score', 0)
+            _cur_score = float(_result.get('score_final') or _result.get('score') or 0)
             # 按体制+方向+score区间查权重
             _sw_key = None
             if _cur_score >= 155: _sw_key = f'{_cur_regime}:{signal_dir}:155+'
@@ -3921,7 +3921,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _result['tradfi_ret30d'] = round(_ret30d, 2)
             _dd = _dump_res.get('score_delta', 0)
             if _dd != 0:
-                _result['score'] = _result.get('score', 0) + _dd
+                _result['score_final'] = round(float(_result.get('score_final') or _result.get('score') or 0) + _dd, 1)
                 _result.setdefault('breakdown', {})['TradFiDump_delta'] = f'{_dd:+d}'
             if not _dump_res.get('allow_long', True) and signal_dir == 'LONG':
                 _result['valid_signal'] = False
