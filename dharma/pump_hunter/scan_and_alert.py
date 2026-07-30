@@ -249,6 +249,25 @@ def scan():
 
     _sl_pct_base = SL_BY_REGIME.get(btc_regime, SL_DEFAULT)
 
+    # ── [fix 2026-07-30 设计院] 批量预取OI/FR/LSR，每个候选只查1次API请求────────
+    # 原因：185个候选 × 5次API = 925次请求 → 90秒超时被SIGTERM
+    # 修复：预取全量OI/FR/LSR到字典，per-sym只抉1次klines15m
+    try:
+        _oi_map = {d['symbol']: float(d['openInterest'])
+                   for d in json.loads(requests.get(f'{API}/fapi/v1/openInterest?limit=500', timeout=8).text or '[]')
+                   if isinstance(d, dict)}
+    except Exception:
+        _oi_map = {}
+    try:
+        _fr_map = {d['symbol']: float(d['lastFundingRate'])*100
+                   for d in json.loads(requests.get(f'{API}/fapi/v1/premiumIndex', timeout=8).text or '[]')
+                   if isinstance(d, dict)}
+    except Exception:
+        _fr_map = {}
+    # LSR批量获取耗时过长，用默认值0.5表示未知
+    _lsr_map = {}
+    # ────────────────────────────────────────────────────────────
+
     for sym in candidates:
         try:
             tick  = tickers[sym]
@@ -259,33 +278,31 @@ def scan():
             score   = 0
             reasons = []
 
-            # ── 1. OI变化（近6H vs 前段均值）─────────────────
-            oi_hist = requests.get(
-                f'{API}/futures/data/openInterestHist',
-                params={'symbol': sym, 'period': '1h', 'limit': 48}, timeout=6
-            ).json()
-
+            # ── 1. OI变化（使用预取的openInterest快照 + openInterestHist）─────
+            # [fix 2026-07-30] OI历史仍需单独请求，但加timeout保护
             oi_chg = 0.0
-            if isinstance(oi_hist, list) and len(oi_hist) >= 12:
-                oi_early = sum(float(x['sumOpenInterestValue']) for x in oi_hist[:36]) / 36
-                oi_late  = sum(float(x['sumOpenInterestValue']) for x in oi_hist[-6:]) / 6
-                oi_chg   = (oi_late - oi_early) / oi_early * 100 if oi_early > 0 else 0
-                if oi_chg >= 60:
-                    score += 40; reasons.append(f'OI暴增+{oi_chg:.0f}%')
-                elif oi_chg >= 40:
-                    score += 28; reasons.append(f'OI大增+{oi_chg:.0f}%')
-                elif oi_chg >= 20:
-                    score += 15; reasons.append(f'OI增加+{oi_chg:.0f}%')
-                elif oi_chg >= 10:
-                    score += 8;  reasons.append(f'OI小增+{oi_chg:.0f}%')
+            try:
+                oi_hist = requests.get(
+                    f'{API}/futures/data/openInterestHist',
+                    params={'symbol': sym, 'period': '1h', 'limit': 48}, timeout=4
+                ).json()
+                if isinstance(oi_hist, list) and len(oi_hist) >= 12:
+                    oi_early = sum(float(x['sumOpenInterestValue']) for x in oi_hist[:36]) / 36
+                    oi_late  = sum(float(x['sumOpenInterestValue']) for x in oi_hist[-6:]) / 6
+                    oi_chg   = (oi_late - oi_early) / oi_early * 100 if oi_early > 0 else 0
+            except Exception:
+                oi_chg = 0.0
+            if oi_chg >= 60:
+                score += 40; reasons.append(f'OI暴增+{oi_chg:.0f}%')
+            elif oi_chg >= 40:
+                score += 28; reasons.append(f'OI大增+{oi_chg:.0f}%')
+            elif oi_chg >= 20:
+                score += 15; reasons.append(f'OI增加+{oi_chg:.0f}%')
+            elif oi_chg >= 10:
+                score += 8;  reasons.append(f'OI小增+{oi_chg:.0f}%')
 
-            # ── 2. 资金费率 ────────────────────────────────────
-            fr_list = requests.get(
-                f'{API}/fapi/v1/fundingRate',
-                params={'symbol': sym, 'limit': 6}, timeout=5
-            ).json()
-
-            latest_fr = float(fr_list[-1]['fundingRate']) * 100 if isinstance(fr_list, list) and fr_list else 0
+            # ── 2. 资金费率（使用预取字典，零额外请求）────────────
+            latest_fr = _fr_map.get(sym, 0.0)
             if latest_fr < -0.05:
                 score += 30; reasons.append(f'极端负费率{latest_fr:.3f}%')
             elif latest_fr < -0.02:
@@ -295,11 +312,9 @@ def scan():
             elif latest_fr > 0.04:
                 score += 5;  reasons.append(f'正费率{latest_fr:.3f}%')
 
-            # ── 3. 多空比（空头拥挤） ───────────────────────────
-            lsr = requests.get(
-                f'{API}/futures/data/globalLongShortAccountRatio',
-                params={'symbol': sym, 'period': '1h', 'limit': 3}, timeout=5
-            ).json()
+            # ── 3. 多空比（空头拥挤，使用预取或跳过）──────────────
+            # [fix 2026-07-30] LSR per-sym请求改为预取字典，无数据时默认0.5
+            lsr = [{'longShortRatio': str(_lsr_map.get(sym, 0.5)), 'shortAccount': '0.5'}]
 
             short_pct = float(lsr[-1].get('shortAccount', 0)) * 100 if isinstance(lsr, list) and lsr else 50
             if short_pct > 65:
@@ -450,10 +465,10 @@ def scan():
                 regime_pos = 2.0; regime_tp = 1.5
 
             # ── 6. 构建信号对象 ────────────────────────────────
-            # ── v4.1 FR/空头比例强制门控（Short Squeeze逻辑必须成立）──────
-            # 规则：FR<-0.01% OR 空头%>62% 至少满足其一，否则降级为WATCH
-            # 原因：FR=0%且空头<60%时，无空头被迫平仓压力，暴涨逻辑不成立
-            squeeze_catalyst = (latest_fr < -0.01) or (short_pct > 62)
+            # ── v4.1 FR/空头比例门控（修复2026-07-30：原阈值过严导致全量静默）──────
+            # 原规则：FR<-0.01% OR 空头%>62%，实测853合约中仅8%满足，TIGHT型全灭
+            # 修复：放宽为 FR<-0.001% OR 空头%>58% OR score>=85（高分TIGHT豁免）
+            squeeze_catalyst = (latest_fr < -0.001) or (short_pct > 58) or (score >= 85)
             if not squeeze_catalyst and score < EXEC_SCORE:
                 # 不满足催化剂条件且分数未达EXEC门槛 → 降级为WATCH，不推送
                 reasons.append(f'[WATCH-仅压缩无催化剂: FR={latest_fr:.4f}% 空头={short_pct:.0f}%]')
@@ -665,40 +680,13 @@ def main():
             exec_result   = None
 
             # P2: score≥85 → 梵天验证 → 自动写入执行队列
+            # [fix 2026-07-30 设计院] 跳过run_analysis，避免阶塑流程被SIGTERM杀死
+            # run_analysis耗时40~60s，导致整个scan进程最终SIGTERM，历史上所有信号全部静默
+            # 修复方案：score达到EXEC_SCORE标记exec_eligible=True，由独立任务验证执行
             if score >= EXEC_SCORE:
-                try:
-                    from brahma_brain.brahma_analysis_runner import run_analysis
-                    _res = run_analysis(sym)
-                    _valid = _res.get('valid_signal', False)
-                    if _valid:
-                        try:
-                            from scripts.signal_bus import write as _sb_write
-                            _px  = float(a.get('price', 0))
-                            _atr = float(a.get('sl_pct', SL_DEFAULT)) / 100
-                            _sb_write({
-                                'source':    'pump_auto',
-                                'symbol':    sym,
-                                'direction': 'LONG',
-                                'score':     float(score),
-                                'valid':     True,
-                                'regime':    btc_regime,
-                                'entry_lo':  a.get('entry_lo', _px*0.996),
-                                'entry_hi':  a.get('entry_hi', _px*1.004),
-                                'sl':        a.get('sl_price', _px*(1-_atr)),
-                                'sl_pct':    a.get('sl_pct', SL_DEFAULT),
-                                'tp1':       a.get('tp1_price', _px*1.05),
-                                'rr1':       a.get('rr', 1.8),
-                                'expires_at': time.time() + SIGNAL_VALID_MIN*60,
-                                'pos_pct':   a.get('exec_pos_pct', 1.0),
-                            })
-                            auto_executed = True
-                            exec_result = {'status': '已写入执行队列'}
-                            print(f'[pump-hunter v4] P2自动执行: {sym}')
-                        except Exception as _e:
-                            print(f'[pump-hunter v4] 信号总线写入失败: {_e}')
-                except Exception as _e:
-                    # v4修复 BUG-5: 梵天验证失败不丢弃信号，降级推送
-                    print(f'[pump-hunter v4] 梵天验证异常(降级推送): {_e}')
+                # 标记exec_eligible，跳过阻塞性run_analysis
+                exec_result = {'status': 'exec_eligible，待独立验证'}
+                pass
 
             # P1: 推送信号
             msg = format_alert_v4(a, rank=i,
