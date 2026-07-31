@@ -196,17 +196,30 @@ def fmt_entry(r: dict) -> str:
         if k in r and r[k]:
             lines.append(f"  {k}: {r[k]}")
 
-    # 计算默认止损
+    # 计算默认止损 [设计院 2026-08-01 修复] 区分方向，SHORT TP在下方
     if not lines and price:
-        sl = round(price * 0.98, 2)
-        tp1 = round(price * 1.02, 2)
-        tp2 = round(price * 1.04, 2)
+        _dir = r.get('direction', 'LONG')
+        if _dir == 'SHORT':
+            sl  = round(price * 1.02, 2)   # 做空SL在上方
+            tp1 = round(price * 0.98, 2)   # 做空TP1在下方 -2%
+            tp2 = round(price * 0.96, 2)   # 做空TP2在下方 -4%
+            sl_label  = '+2.0%'
+            tp1_label = '-2.0%'
+            tp2_label = '-4.0%'
+        else:
+            sl  = round(price * 0.98, 2)   # 做多SL在下方
+            tp1 = round(price * 1.02, 2)   # 做多TP1在上方 +2%
+            tp2 = round(price * 1.04, 2)   # 做多TP2在上方 +4%
+            sl_label  = '-2.0%'
+            tp1_label = '+2.0%'
+            tp2_label = '+4.0%'
         atr = r.get('atr_1h', 400)
-        sl_atr = round((price - sl) / max(atr, 1), 2) if atr else '?'
+        sl_atr = round(abs(price - sl) / max(atr, 1), 2) if atr else '?'
         lines.append(f"  入场区: 等待解封条件满足")
-        lines.append(f"  参考止损: {sl}U (-2.0%, {sl_atr}x ATR)")
-        lines.append(f"  参考TP1: {tp1}U (+2.0%)")
-        lines.append(f"  参考TP2: {tp2}U (+4.0%)")
+        lines.append(f"  参考止损: {sl}U ({sl_label}, {sl_atr}x ATR)")
+        lines.append(f"  参考TP1: {tp1}U ({tp1_label})")
+        lines.append(f"  参考TP2: {tp2}U ({tp2_label})")
+        del _dir, sl_label, tp1_label, tp2_label
 
     # [P1修复 2026-07-24 设计院] 清算集群→自动TP/SL优化建议
     try:

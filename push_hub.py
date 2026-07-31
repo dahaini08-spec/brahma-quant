@@ -69,7 +69,9 @@ def push_signal_card(sym, score, grade, direction, entry_lo, entry_hi, sl, tp1, 
     tier    = "TIER1 🔴" if score >= 155 else "TIER2 🟠"
     tag     = sym.replace("USDT", "")
     ts      = datetime.datetime.utcnow().strftime('%m-%d %H:%M')
-    sl_pct  = round((entry_hi - sl) / entry_hi * 100, 1) if entry_hi else 2.0
+    sl_pct  = round(abs(sl - entry_hi) / entry_hi * 100, 1) if entry_hi else 2.0
+    # [设计院 2026-08-01] SHORT: SL在entry_hi上方，sl_pct为正；LONG: SL在entry_lo下方
+    sl_dir_label = f"+{sl_pct}%" if direction == 'SHORT' else f"-{sl_pct}%"
     tp2_line = f"  TP2:    ${tp2:,.2f}\n" if tp2 else ""
     msg = (
         f"🚨 **梵天信号 · {tier}**\n"
@@ -77,7 +79,7 @@ def push_signal_card(sym, score, grade, direction, entry_lo, entry_hi, sl, tp1, 
         f"{emoji} **{tag}/USDT {direction}** | score={score:.0f} {grade}\n"
         f"  体制:   BULL_TREND | 时机: {timing}\n"
         f"  入场:   ${entry_lo:,.2f} ~ ${entry_hi:,.2f}\n"
-        f"  止损:   ${sl:,.2f}  (-{sl_pct}%)\n"
+        f"  止损:   ${sl:,.2f}  ({sl_dir_label})\n"
         f"  TP1:    ${tp1:,.2f}  RR={rr}x\n"
         f"{tp2_line}"
         f"  仓位:   5% NAV  LEV=5x\n"
