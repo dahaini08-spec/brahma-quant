@@ -2142,6 +2142,11 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     else:
         grade = '⚫放弃';   kelly_mult = 0.0;  action = 'SKIP'
 
+    # [2026-07-28 设计院全局修复] grade emoji → 数字，保留grade_label供展示
+    _GRADE_MAP = {'🔴神级':170,'🟠极强':145,'🟡强+':133,'🟡强':118,'🔵中等':85,'⚫放弃':0}
+    grade_label = grade  # 保留emoji供展示
+    grade = _GRADE_MAP.get(grade, max(int(score), 0))  # emoji → 数字
+
     return {
         'total':      score,
         'score':      score,    # [P1修复 2026-07-12] 补充score别名 — analyze()/run_analysis读.get('score')，原只有'total'导致永远None
@@ -2151,6 +2156,10 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         'kelly_mult': kelly_mult,
         'action':     action,   # 注意：若params.valid=False，analyze()会覆盖此字段
         'breakdown':  breakdown,
+        # [2026-07-28 设计院全局修复] 补充price/regime，下游字段防御
+        'price':      ms.get('price'),
+        'regime':     ms.get('regime'),
+        'symbol':     ms.get('symbol'),
     }
 
 # ═══════════════════════════════════════════════════════════════

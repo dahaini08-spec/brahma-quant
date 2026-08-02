@@ -33,7 +33,7 @@ try:
     from scripts.system_config import JARVIS_USER_ID as _UID, JARVIS_THREAD_ID as _TID
     CORRECT_THREAD = f"{_UID}:thread:{_TID}"
 except Exception:
-    CORRECT_THREAD = "73295708:thread:019f93b0-c154-73fd-91a3-4e755d3289af"  # fallback
+    CORRECT_THREAD = "73295708:thread:019fb612-d570-7f0b-89c5-2065284157e0"  # fallback
 RED    = '\033[91m'
 GREEN  = '\033[92m'
 YELLOW = '\033[93m'
@@ -204,7 +204,7 @@ except Exception as e:
     warn('ETH供应感知', str(e)[:60])
 
 # ─── 4. Cron路由一致性 ─────────────────────────────────────────────────
-_SSOT_TID = _TID if '_TID' in dir() else '019f93b0-c154-73fd-91a3-4e755d3289af'
+_SSOT_TID = _TID if '_TID' in dir() else '019fb612-d570-7f0b-89c5-2065284157e0'
 print(f'\n【４】Cron路由一致性（SSOT={_SSOT_TID[:8]}...）')
 try:
     jobs_path = Path.home() / '.openclaw/cron/jobs.json'

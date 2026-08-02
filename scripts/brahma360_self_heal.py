@@ -315,6 +315,316 @@ def check_f5_dd1_queue() -> dict:
 
 
 # ══════════════════════════════════════════
+# F6: brahma_engine 可导入性检查
+# ══════════════════════════════════════════
+def check_f6_engine_importable() -> dict:
+    result = {'fault': 'F6', 'triggered': False, 'healed': True, 'detail': ''}
+    try:
+        import ast
+        engine_path = SCRIPTS.parent / 'brahma_brain' / 'brahma_engine.py'
+        runner_path = SCRIPTS.parent / 'brahma_brain' / 'brahma_analysis_runner.py'
+        hao_path    = SCRIPTS / 'brahma_1hao_analysis.py'
+        errors = []
+        for p in [engine_path, runner_path, hao_path]:
+            if not p.exists():
+                errors.append(f'{p.name} 文件不存在')
+                continue
+            try:
+                ast.parse(p.read_text())
+            except SyntaxError as e:
+                errors.append(f'{p.name} 语法错误 L{e.lineno}: {e.msg}')
+        if errors:
+            result['triggered'] = True
+            result['healed']    = False  # 语法错误必须人工修复
+            result['detail']    = ' | '.join(errors)
+        else:
+            result['detail'] = '引擎文件语法OK'
+    except Exception as e:
+        result['detail'] = f'检测异常: {e}'
+    return result
+
+
+# ══════════════════════════════════════════
+# F7: brahma_state 体制时效检查
+# ══════════════════════════════════════════
+def check_f7_regime_freshness() -> dict:
+    result = {'fault': 'F7', 'triggered': False, 'healed': True, 'detail': ''}
+    try:
+        bs = json.loads((DATA / 'brahma_state.json').read_text())
+        ts = float(bs.get('ts', 0))
+        regime = bs.get('regime', 'UNKNOWN')
+        age_min = (time.time() - ts) / 60 if ts > 1000000000 else 9999
+        STALE_THRESHOLD = 90  # 分钟
+        if age_min > STALE_THRESHOLD:
+            result['triggered'] = True
+            result['detail']    = f'体制={regime} 已{age_min:.0f}min未更新（阈值{STALE_THRESHOLD}min）'
+            # 自愈：触发 brahma_state_refresh.py
+            refresh = SCRIPTS / 'brahma_state_refresh.py'
+            if refresh.exists():
+                import subprocess
+                r = subprocess.run(['python3', str(refresh)], capture_output=True, timeout=30)
+                if r.returncode == 0:
+                    result['healed'] = True
+                    result['detail'] += ' → 已触发刷新'
+                else:
+                    result['healed'] = False
+                    result['detail'] += f' → 刷新失败: {r.stderr.decode()[:80]}'
+            else:
+                result['healed'] = False
+                result['detail'] += ' → 刷新脚本不存在'
+        else:
+            result['detail'] = f'体制={regime} {age_min:.0f}min前更新，正常'
+    except Exception as e:
+        result['detail'] = f'检测异常: {e}'
+    return result
+
+
+# ══════════════════════════════════════════
+# F8: live_signal_log 写入活跃性检查
+# ══════════════════════════════════════════
+def check_f8_signal_log_active() -> dict:
+    result = {'fault': 'F8', 'triggered': False, 'healed': True, 'detail': ''}
+    try:
+        log_path = DATA / 'live_signal_log.jsonl'
+        if not log_path.exists():
+            result['triggered'] = True
+            result['healed']    = False
+            result['detail']    = 'live_signal_log.jsonl 文件不存在'
+            return result
+        lines = log_path.read_text().strip().split('\n')
+        last_line = ''
+        for l in reversed(lines):
+            if l.strip():
+                last_line = l; break
+        if not last_line:
+            result['triggered'] = True
+            result['healed']    = False
+            result['detail']    = 'signal_log 为空'
+            return result
+        last = json.loads(last_line)
+        ts_raw = last.get('created_at', last.get('ts', 0))
+        last_ts = float(ts_raw) if isinstance(ts_raw, (int,float)) else 0
+        age_h = (time.time() - last_ts) / 3600 if last_ts > 1000000000 else 999
+        STALE_H = 4  # 超4小时无新信号
+        if age_h > STALE_H:
+            result['triggered'] = True
+            result['healed']    = False  # 引擎挂起，无法自动恢复
+            result['detail']    = f'最新信号距今{age_h:.1f}h（阈值{STALE_H}h），引擎可能挂起'
+        else:
+            total = len([l for l in lines if l.strip()])
+            result['detail'] = f'{total}条记录，最新{age_h:.1f}h前，正常'
+    except Exception as e:
+        result['detail'] = f'检测异常: {e}'
+    return result
+
+
+# ══════════════════════════════════════════
+# F9: rsi_trigger_event 时效检查
+# ══════════════════════════════════════════
+def check_f9_rsi_trigger_fresh() -> dict:
+    result = {'fault': 'F9', 'triggered': False, 'healed': True, 'detail': ''}
+    try:
+        evt_path = DATA / 'rsi_trigger_event.json'
+        if not evt_path.exists():
+            result['detail'] = 'rsi_trigger_event.json 不存在（首次运行正常）'
+            return result
+        evt = json.loads(evt_path.read_text())
+        ts_raw = evt.get('ts', evt.get('timestamp', 0))
+        age_min = (time.time() - float(ts_raw)) / 60 if ts_raw else 9999
+        STALE_MIN = 60
+        silent = evt.get('silent', False)
+        if age_min > STALE_MIN and not silent:
+            result['triggered'] = True
+            # 自愈：触发 rsi_structure_watcher
+            watcher = SCRIPTS / 'rsi_structure_watcher.py'
+            if watcher.exists():
+                import subprocess
+                r = subprocess.run(['python3', str(watcher)], capture_output=True, timeout=30)
+                result['healed'] = r.returncode == 0
+                result['detail'] = f'rsi_trigger_event {age_min:.0f}min未更新 → {"已刷新" if result["healed"] else "刷新失败"}'
+            else:
+                result['healed'] = False
+                result['detail'] = f'rsi_trigger_event {age_min:.0f}min未更新，watcher不存在'
+        else:
+            result['detail'] = f'rsi_trigger_event {age_min:.0f}min前更新，silent={silent}，正常'
+    except Exception as e:
+        result['detail'] = f'检测异常: {e}'
+    return result
+
+
+# ══════════════════════════════════════════
+# F10: auto_executed_signals 闭环检查
+# ══════════════════════════════════════════
+def check_f10_signal_lifecycle() -> dict:
+    result = {'fault': 'F10', 'triggered': False, 'healed': True, 'detail': ''}
+    try:
+        sig_path = DATA / 'auto_executed_signals.json'
+        if not sig_path.exists():
+            result['detail'] = 'auto_executed_signals.json 不存在'
+            return result
+        sigs = json.loads(sig_path.read_text())
+        if not isinstance(sigs, (list, dict)):
+            result['detail'] = '格式异常'
+            return result
+        items = sigs if isinstance(sigs, list) else list(sigs.values())
+        now = time.time()
+        stale_open = []
+        for s in items:
+            status = s.get('status', s.get('state', ''))
+            ts_raw = s.get('ts', s.get('created_at', s.get('open_ts', 0)))
+            ts = float(ts_raw) if ts_raw else 0
+            age_h = (now - ts) / 3600 if ts > 1000000000 else 0
+            if status in ('OPEN','open','active') and age_h > 48:
+                stale_open.append({'sym': s.get('symbol','?'), 'age_h': age_h})
+        if stale_open:
+            result['triggered'] = True
+            result['healed']    = False
+            result['detail']    = f'{len(stale_open)}个信号OPEN>48h未结算: {stale_open[:3]}'
+        else:
+            result['detail'] = f'{len(items)}个信号，无异常滞留'
+    except Exception as e:
+        result['detail'] = f'检测异常: {e}'
+    return result
+
+# ══════════════════════════════════════════
+# F11: 清算集群(liq_heatmap) 时效检查
+# ══════════════════════════════════════════
+def check_f11_liq_heatmap() -> dict:
+    """清算集群热力图时效性检查 — BTC/ETH必须在 30min 内更新"""
+    result = {'fault': 'F11', 'triggered': False, 'healed': True, 'detail': ''}
+    try:
+        STALE_MIN = 30
+        core_syms = ['BTCUSDT', 'ETHUSDT']
+        stale = []
+        for sym in core_syms:
+            f = DATA / f'liq_heatmap_{sym}.json'
+            if not f.exists():
+                stale.append(f'{sym}(文件不存在)')
+                continue
+            d = json.loads(f.read_text())
+            ts = float(d.get('ts', 0))
+            age_min = (time.time() - ts) / 60 if ts > 1e9 else 9999
+            if age_min > STALE_MIN:
+                stale.append(f'{sym}({age_min:.0f}min未更新)')
+        if stale:
+            result['triggered'] = True
+            # 自愈：触发 OI scanner 重度计算清算集群
+            scanner = SCRIPTS / 'oi_advanced_scanner.py'
+            if scanner.exists():
+                import subprocess
+                r = subprocess.run(['python3', str(scanner), '--symbols', 'BTCUSDT', 'ETHUSDT'],
+                                   capture_output=True, timeout=30)
+                result['healed'] = r.returncode == 0
+                result['detail'] = f'清算集群陈旧: {", ".join(stale)} → {"已刷新" if result["healed"] else "刷新失败"}'
+            else:
+                result['healed'] = False
+                result['detail'] = f'清算集群陈旧: {", ".join(stale)}，自愈脚本不存在'
+        else:
+            ages = []
+            for sym in core_syms:
+                f = DATA / f'liq_heatmap_{sym}.json'
+                d = json.loads(f.read_text())
+                age_min = (time.time() - float(d.get('ts',0)))/60
+                ages.append(f'{sym}({age_min:.0f}min)')
+            result['detail'] = f'清算集群新鲜: {", ".join(ages)}'
+    except Exception as e:
+        result['detail'] = f'检测异常: {e}'
+    return result
+
+
+# ══════════════════════════════════════════
+# F12: SMC结构完整性验证(OB/FVG/CHoCH)
+# ══════════════════════════════════════════
+def check_f12_smc_structure() -> dict:
+    """验证最近一次成功运行的分析中 OB/FVG 字段完整性"""
+    result = {'fault': 'F12', 'triggered': False, 'healed': True, 'detail': ''}
+    try:
+        struct_log = DATA / 'brahma_structured.jsonl'
+        if not struct_log.exists():
+            result['detail'] = 'brahma_structured.jsonl 不存在'
+            return result
+        lines = struct_log.read_text().strip().split('\n')
+        # 找最近一条有 metrics 的记录
+        last_full = None
+        for l in reversed(lines):
+            if not l.strip(): continue
+            try:
+                d = json.loads(l)
+                if d.get('metrics'):
+                    last_full = d
+                    break
+            except: pass
+        if not last_full:
+            result['detail'] = 'structured_log 无 metrics 记录'
+            return result
+        metrics = last_full.get('metrics', {})
+        # 检查关键字段
+        required_keys = ['ob_score', 'fvg_score', 'structure_score']
+        missing = [k for k in required_keys if k not in metrics]
+        age_min = (time.time() - float(last_full.get('ts', 0))) / 60
+        if missing:
+            result['triggered'] = True
+            result['healed']    = False
+            result['detail']    = f'SMC字段缺失: {", ".join(missing)} (分析层可能已降级)'
+        elif age_min > 120:
+            result['triggered'] = True
+            result['healed']    = False
+            result['detail']    = f'SMC最近分析{age_min:.0f}min前，过旧(阈值120min)'
+        else:
+            ob = metrics.get('ob_score', '?')
+            fvg = metrics.get('fvg_score', '?')
+            st = metrics.get('structure_score', '?')
+            sym = last_full.get('symbol', '?')
+            result['detail'] = f'{sym} OB={ob} FVG={fvg} Structure={st} ({age_min:.0f}min前)'
+    except Exception as e:
+        result['detail'] = f'检测异常: {e}'
+    return result
+
+
+# ══════════════════════════════════════════
+# F13: live_prices 实时价格 时效检查
+# ══════════════════════════════════════════
+def check_f13_live_prices() -> dict:
+    """实时价格时效，>5min则自愈刷新"""
+    result = {'fault': 'F13', 'triggered': False, 'healed': True, 'detail': ''}
+    try:
+        price_file = DATA / 'live_prices.json'
+        if not price_file.exists():
+            result['triggered'] = True
+            result['healed']    = False
+            result['detail']    = 'live_prices.json 不存在'
+            return result
+        d = json.loads(price_file.read_text())
+        ts = float(d.get('ts', d.get('timestamp', 0)))
+        age_min = (time.time() - ts) / 60 if ts > 1e9 else 9999
+        STALE_MIN = 5
+        if age_min > STALE_MIN:
+            result['triggered'] = True
+            # 自愈：直接调 Binance 价格接口刷新
+            try:
+                import urllib.request
+                prices = {}
+                for sym in ['BTCUSDT', 'ETHUSDT', 'BNBUSDT']:
+                    url = f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}'
+                    with urllib.request.urlopen(url, timeout=5) as r:
+                        prices[sym] = float(json.loads(r.read())['price'])
+                prices['ts'] = time.time()
+                price_file.write_text(json.dumps(prices, ensure_ascii=False))
+                result['healed'] = True
+                result['detail'] = f'实时价格{age_min:.0f}min陈旧 → 已自愈刷新 BTC=${prices["BTCUSDT"]:.1f}'
+            except Exception as e2:
+                result['healed'] = False
+                result['detail'] = f'实时价格{age_min:.0f}min陈旧，刷新失败: {e2}'
+        else:
+            btc = d.get('BTCUSDT', d.get('btc', '?'))
+            eth = d.get('ETHUSDT', d.get('eth', '?'))
+            result['detail'] = f'实时价格新鲜({age_min:.0f}min) BTC=${btc} ETH=${eth}'
+    except Exception as e:
+        result['detail'] = f'检测异常: {e}'
+    return result
+
+
+# ══════════════════════════════════════════
 # 主运行入口
 # ══════════════════════════════════════════
 def run():
@@ -324,14 +634,30 @@ def run():
         check_f3_nav,
         check_f4_oi_fr,
         check_f5_dd1_queue,
+        check_f6_engine_importable,
+        check_f7_regime_freshness,
+        check_f8_signal_log_active,
+        check_f9_rsi_trigger_fresh,
+        check_f10_signal_lifecycle,
+        check_f11_liq_heatmap,
+        check_f12_smc_structure,
+        check_f13_live_prices,
     ]
 
     fault_names = {
-        'F1': '🚨 有持仓时ws_guardian宕机',
-        'F2': '🚨 开单失败未回滚',
-        'F3': '🚨 NAV异常',
-        'F4': '🚨 OI/FR数据断流>30min',
-        'F5': '🚨 DD1队列丢失',
+        'F1':  '🚨 有持仓时ws_guardian宕机',
+        'F2':  '🚨 开单失败未回滚',
+        'F3':  '🚨 NAV异常',
+        'F4':  '🚨 OI/FR数据断流>30min',
+        'F5':  '🚨 DD1队列丢失',
+        'F6':  '🚨 一号引擎语法错误',
+        'F7':  '⚠️ 体制数据陈旧>90min',
+        'F8':  '🚨 信号日志>4h无新增',
+        'F9':  '⚠️ rsi_trigger_event陈旧',
+        'F10': '⚠️ 信号生命周期滞留>48h',
+        'F11': '⚠️ 清算集群热力图陈旧>30min',
+        'F12': '🚨 SMC结构(OB/FVG)字段缺失或过旧',
+        'F13': '⚠️ 实时价格陈旧>5min',
     }
 
     triggered_faults = []

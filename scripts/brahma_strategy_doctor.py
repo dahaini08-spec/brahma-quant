@@ -27,7 +27,7 @@ try:
     from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID, JARVIS_CHANNEL
     JARVIS_TARGET = f'{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}'
 except:
-    JARVIS_TARGET  = '73295708:t:019f93b0-c154-73fd-91a3-4e755d3289af'
+    JARVIS_TARGET  = '73295708:t:019fb612-d570-7f0b-89c5-2065284157e0'
     JARVIS_CHANNEL = 'jarvis'
 
 # ── 理论WR基准（来自梵天宪法封印数据）──────────────────────────

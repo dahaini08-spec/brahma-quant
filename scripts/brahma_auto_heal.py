@@ -31,7 +31,7 @@ try:
     from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
     JARVIS_TARGET = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"
 except Exception:
-    JARVIS_TARGET = '73295708:thread:019f93b0-c154-73fd-91a3-4e755d3289af'
+    JARVIS_TARGET = '73295708:thread:019fb612-d570-7f0b-89c5-2065284157e0'
 
 CHECK_ONLY = '--check' in sys.argv
 QUIET      = '--quiet' in sys.argv

@@ -42,10 +42,12 @@ _FAVORABLE = {
 
 # 开源版调整值（Pro 版：从统计矩阵精确读取）
 _OSS_SCORE_ADJ = {
-    'dead_zone':    -25,   # Pro版: 更精确的分层惩罚
-    'adverse':      -12,   # Pro版: CausalVerifier -12
-    'neutral':        0,
-    'favorable':     +5,   # Pro版: 顺势加分
+    'dead_zone':        -25,   # 真正熊市中段 RSI_4H<40 — 宦法级死穴
+    'dead_zone_border': -15,   # 体制边界 40≤RSI_4H<50 — 六方封印 2026-07-30
+    'dead_zone_weak':    -8,   # 体制塬化期 RSI_4H≥50 — 死穴豆免通道
+    'adverse':          -12,   # Pro版: CausalVerifier -12
+    'neutral':            0,
+    'favorable':         +5,   # Pro版: 顺势加分
 }
 
 
@@ -79,14 +81,32 @@ def verify(symbol: str,
     try:
         combo = (regime, signal_dir)
 
-        # 死穴检查（宪法级）
+        # 死穴检查（宦法级）—六方封印 2026-07-30：加入RSI_4H边界豆免条件
         if combo in _DEAD_ZONES:
+            # BEAR_TREND+LONG 边界体制动态豆免：当RSI_4H在边界区不再简单-25
+            rsi_4h = float((ms or {}).get('rsi_4h', (ms or {}).get('RSI_4H', 50)) or 50)
+            if combo == ('BEAR_TREND', 'LONG') and rsi_4h >= 50:
+                # RSI_4H≥50：体制塬化期，岞弱惩罚
+                adj_key = 'dead_zone_weak'
+                verdict = 'WARN'
+                reason = f'体制塬化期豆免: {regime}+{signal_dir} RSI_4H={rsi_4h:.0f}≥50，容许CHoCH入场'
+            elif combo == ('BEAR_TREND', 'LONG') and rsi_4h >= 40:
+                # RSI_4H 40~50：边界区，渐进惩罚
+                adj_key = 'dead_zone_border'
+                verdict = 'WARN'
+                reason = f'边界体制豆免: {regime}+{signal_dir} RSI_4H={rsi_4h:.0f}⋈40~50，惩罚减半'
+            else:
+                # RSI_4H<40：真正熊市中段，保持死穴
+                adj_key = 'dead_zone'
+                verdict = 'BLOCKED'
+                reason = f'死穴: {regime}+{signal_dir} RSI_4H={rsi_4h:.0f}<40，WR过低严禁入场'
             return {
-                'verdict':      'BLOCKED',
-                'score_adj':    _OSS_SCORE_ADJ['dead_zone'],
-                'reason':       f'死穴: {regime}+{signal_dir} WR过低，严禁入场',
-                'is_dead_zone': True,
-                '_pro_note':    'Pro版含精确分层惩罚逻辑',
+                'verdict':            verdict,
+                'score_adj':          _OSS_SCORE_ADJ[adj_key],
+                'reason':             reason,
+                'is_dead_zone':       adj_key == 'dead_zone',
+                'causal_confidence':  rsi_4h / 100,
+                '_pro_note':          'Pro版含精确分层惩罚逻辑|六方封印 2026-07-30',
             }
 
         # 顺势检查

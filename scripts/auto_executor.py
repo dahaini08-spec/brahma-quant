@@ -53,11 +53,11 @@ AUTO_SCORE_THRESHOLD = 120       # 最低评分 [P0-C 2026-07-11] 130→120，�
 # auto_executor 专责 score≥155 的 ENTER_FULL 信号（最高置信度）
 # score 130~154 的 ENTER_WATCH 信号由 sub_executor 处理
 # 分流好处：彻底消除双执行器重复下单风险
-AUTO_ENTER_FULL_THRESHOLD = 155    # auto专区：ENTER_FULL
-# [fix 2026-07-18 苏摩111] 三档自主执行阈值
-TIER_1_SCORE  = 155   # ENTER_FULL → 全仓 5%NAV
-TIER_2_SCORE  = 155   # [IC铁证升级 2026-07-20] 138→155：BULL_TREND:LONG:140-154 WR=30% EV=-0.65% n=26，统计显著亏损
-TIER_3_SCORE  = 138   # [IC优化 2026-07-20] BTC/ETH限定 → 轻仓 1.5%NAV（120-137区间退出）
+AUTO_ENTER_FULL_THRESHOLD = 148    # [设计院自主 2026-07-31] 155→148
+# [fix 2026-07-18 苏摩111 | 设计院自主修订 2026-07-31] 三档自主执行阈值
+TIER_1_SCORE  = 155   # ENTER_FULL → 全仓 5%NAV（最高置信度）
+TIER_2_SCORE  = 148   # [设计院自主 2026-07-31] 155→148：IC死亡区仅封禁BULL_TREND:LONG，BEAR_TREND空单148+可执行
+TIER_3_SCORE  = 138   # BTC/ETH限定 → 轻仓，仓位自动课保至MIN_NOTIONAL
 TIER_3_SYMBOLS = frozenset({'BTCUSDT', 'ETHUSDT'})
 AUTO_ENTER_WATCH_MIN      = 120    # sub专区下界（P0-C: 130→120，与valid门槛同步）
 MIN_RR               = 1.0       # 最低RR
@@ -108,6 +108,9 @@ LOG_PATH             = Path(__file__).parent.parent / 'data/auto_executor_log.js
 SIGNAL_LOG_PATH      = Path(__file__).parent.parent / 'data/live_signal_log.jsonl'
 POS_STATE_PATH       = Path(__file__).parent.parent / 'data/position_sl_state.json'
 WUQU_PATH            = Path(__file__).parent.parent / 'data/wuqu_positions.json'
+
+# ── 永久黑名单（executor层，无论score多高永远跳过）────────────────
+EXECUTOR_BLACKLIST = frozenset({'SNDKUSDT'})  # [设计院自主 2026-07-31] TRADFI股票代币永远SKIP，排除污染
 
 # ── 死穴：禁止自动执行的体制×方向组合 ──────────────────
 DEAD_ZONE = {
@@ -228,6 +231,10 @@ def find_executable_signals() -> list[dict]:
             continue
 
         sig_id = s.get('signal_id', '')
+
+        # ① 永久黑名单（TRADFI股票代币等永远不执行）
+        if s.get('symbol', '') in EXECUTOR_BLACKLIST:
+            continue
 
         # ① 防重复
         if sig_id in executed:
@@ -801,12 +808,9 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     # 且 score>=155(神级)，则忽略折扣，直接用MIN_NOTIONAL作为最小仓位
     # [修复 2026-07-23 v2] 使用per-symbol最低名义值（BTC=50, ETH=20）
     _sym_min = SYMBOL_MIN_NOTIONAL.get(sym, MIN_NOTIONAL)
-    if notional < _sym_min and score >= 155:
-        notional = _sym_min  # 直接用symbol级别最小仓位兜底
-        print(f'[TIER1课保] {sym} score={score:.0f} 仓位兜底至{sym}MIN=${notional:.1f}')
     if notional < _sym_min:
-        result['reason'] = f'仓位${notional:.2f} < {sym}最小${_sym_min}'
-        return result
+        notional = _sym_min  # [设计院自主 2026-07-31] 任意tier均课保至symbol MIN_NOTIONAL
+        print(f'[MIN_NOTIONAL课保] {sym} score={score:.0f} tier={signal.get("_tier","?")} 仓位课保至{sym}MIN=${notional:.1f}')
 
     # ── blacktea审批门（苏摩111 2026-07-10）─────────────────────────────────
     # 单笔>NAV×8% → 推送审批请求 → 30min无回复自动降仓

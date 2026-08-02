@@ -1594,6 +1594,13 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         cf['score_final'] = 0
         cf['action'] = 'SKIP'
         cf['breakdown']['永久封禁'] = f'{_sym} 历史SL集中陷阱，WR污染源，永久封禁'
+        # [2026-07-28 设计院全局修复] 补充early-return缺失字段
+        cf.setdefault('price',          float(ms.get('price', 0) or 0))
+        cf.setdefault('regime',         ms.get('regime', ''))
+        cf.setdefault('effective_grade', float(cf.get('grade', 0) or 0))
+        cf.setdefault('grade_num',       float(cf.get('grade', 0) or 0))
+        cf.setdefault('valid_signal',    False)
+        cf.setdefault('globally_blocked', True)
         return cf
     # ══════════════════════════════════════════════════════════════
     try:
@@ -4022,12 +4029,26 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception:
         pass
 
-    # ── [2026-07-28 设计院全局修复] 最终出口：统一清洗grade字段，确保全部为数字 ──
+    # ── [2026-07-28 设计院全局修复] 最终出口：统一清洗grade字段 + price/regime补丁 ──
     for _gk in ('grade', 'effective_grade', 'grade_num'):
-        _gv = _result.get(_gk)
-        if _gv is not None and not isinstance(_gv, (int, float)):
+        _gv = _result.get(_gk)  # None or missing
+        if _gv is None:
+            # 尝试从兄弟字段补充
+            if _gk == 'effective_grade':
+                _gv = _result.get('grade') or _result.get('structure_grade') or 0
+            else:
+                _gv = 0
+        if not isinstance(_gv, (int, float)):
             _gnums = re.findall(r'\d+\.?\d*', str(_gv))
-            _result[_gk] = round(float(_gnums[0]), 1) if _gnums else 0.0
+            _gv = round(float(_gnums[0]), 1) if _gnums else 0.0
+        _result[_gk] = float(_gv)
+    # price/regime 兜底：从confluence或market_state补充
+    if not _result.get('price'):
+        _cf0 = _result.get('confluence', {})
+        _result['price'] = (_cf0.get('price') if isinstance(_cf0, dict) else None) or 0
+    if not _result.get('regime'):
+        _cf0 = _result.get('confluence', {})
+        _result['regime'] = (_cf0.get('regime') if isinstance(_cf0, dict) else None) or ''
     # ─────────────────────────────────────────────────────────────────────────
     return _result
 

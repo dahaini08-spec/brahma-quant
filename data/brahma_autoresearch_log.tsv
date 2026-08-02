@@ -1,0 +1,4 @@
+ts	iteration	action	param	old_val	new_val	wr_before	wr_after	wr_delta	reason
+2026-08-01T14:42:25.850324+00:00	1	DRY-RUN	_tp1_mult	2.5	2.0	0.328	N/A	N/A	dry-run
+2026-08-01T14:42:25.850522+00:00	2	DRY-RUN	CHOP.*tp1	2.5	2.0	0.328	N/A	N/A	dry-run
+2026-08-01T14:42:25.850622+00:00	3	DRY-RUN	READY_THRESHOLD	65	60	0.328	N/A	N/A	dry-run

@@ -48,6 +48,7 @@ class SignalIntegrityGate:
         sl_pct: float,
         regime: str,
         score: float,
+        symbol: str = '',  # [2026-07-28] RWA代币SL放宽需要symbol
     ) -> tuple:
         """
         Returns (True, '') if signal passes all gates
@@ -70,10 +71,13 @@ class SignalIntegrityGate:
             return False, f'[P0-B] timing_status={timing_status} 时禁止 {action} → REJECT'
 
         # ── P1: SL距离硬封禁 ────────────────────────────────
-        if sl_pct > SL_PCT_HARD_CAP:
+        # [2026-07-28 设计院封印] RWA/TradFi代币波动更大，放宽至6%
+        from brahma_brain.tradfi_dump_detector import is_tradfi_token as _is_tf
+        _sl_cap = 6.0 if _is_tf(symbol) else SL_PCT_HARD_CAP
+        if sl_pct > _sl_cap:
             return False, (
-                f'[P1] SL距离={sl_pct:.2f}% 超过硬上限{SL_PCT_HARD_CAP}% → REJECT'
-                f'（SL距离铁律：BEAR/BULL体制≤2.5%，绝对上限≤5%）'
+                f'[P1] SL距离={sl_pct:.2f}% 超过硬上限{_sl_cap}% → REJECT'
+                f'（SL距离铁律：BEAR/BULL体制≤2.5%，绝对上限≤{_sl_cap}%）'
             )
 
         return True, ''
@@ -157,7 +161,9 @@ def gate_check(cf: dict, params: dict, ms: dict) -> tuple:
     regime        = str(ms.get('regime', '') or '')
     score         = float(cf.get('score_final', 0) or 0)
 
+    symbol        = ms.get('symbol', cf.get('symbol', ''))
+
     return SignalIntegrityGate.validate(
         direction, action, consensus, timing_status,
-        sl_pct, regime, score
+        sl_pct, regime, score, symbol=symbol
     )

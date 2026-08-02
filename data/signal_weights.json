@@ -14,8 +14,8 @@
       "ev_basis": -0.65
     },
     "BULL_TREND:LONG:120-139": {
-      "multiplier": 0.7,
-      "note": "WR=62%轻度降权",
+      "multiplier": 0.75,
+      "note": "WR=61.5% n=39 brahma-online-calibrate上调 2026-08-01",
       "ev_basis": -0.09
     },
     "BEAR_RECOVERY:LONG:165+": {
@@ -98,5 +98,5 @@
     "note": "6方联合封印 2026-07-24: n<15不升权，n<30谨慎，n≥50完全信任",
     "updated": "2026-07-24"
   },
-  "updated_at": "2026-07-28T02:25:00Z"
+  "updated_at": "2026-08-01T01:03:00Z"
 }

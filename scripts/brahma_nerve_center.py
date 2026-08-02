@@ -41,7 +41,7 @@ try:
     import scripts.system_config as _sc
     PUSH_TARGET = f"{_sc.JARVIS_USER_ID}:t:{_sc.JARVIS_THREAD_ID}"
 except Exception:
-    PUSH_TARGET   = '73295708:t:019f93b0-c154-73fd-91a3-4e755d3289af'  # SSOT [2026-07-07]
+    PUSH_TARGET   = '73295708:t:019fb612-d570-7f0b-89c5-2065284157e0'  # SSOT [2026-07-07]
 PUSH_CHANNEL = 'jarvis'
 STATE_FILE   = BASE / 'data' / 'nerve_center_state.json'
 API_KEY = os.environ.get('BINANCE_API_KEY', '')  # [安全修复 2026-07-08]
