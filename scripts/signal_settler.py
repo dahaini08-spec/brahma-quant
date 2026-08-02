@@ -243,6 +243,22 @@ def main():
         except Exception as _ev_e:
             print(f'[settler] ev_feedback跳过: {_ev_e}')
 
+        # [协同接入 2026-08-02 设计院自主] online_learner_v2 结算后维度权重重校准
+        # 每次有新结算数据时，触发维度偏差计算→权重调整→写入calibrated_weights.json
+        # brahma_engine.py INT-1 热加载此文件，下次分析自动生效
+        try:
+            _ol2_sys = __import__('sys')
+            _ol2_sys.path.insert(0, str(BASE / 'brahma_brain'))
+            from online_learner_v2 import run as _ol2_run
+            _ol2_result = _ol2_run(dry_run=False)
+            _ol2_status = _ol2_result.get('status', '?')
+            if _ol2_status not in ('SKIP', 'ERROR'):
+                _ol2_n = _ol2_result.get('actions_taken', 0)
+                print(f'[settler] online_learner_v2: {_ol2_status} 调整{_ol2_n}个维度权重')
+            # status=SKIP → 样本不足，正常静默
+        except Exception as _ol2_e:
+            print(f'[settler] online_learner_v2跳过: {_ol2_e}')
+
         # 推送简报
         if args.push and settled_new:
             wins  = sum(1 for s in settled_new if s['outcome'] in ('TP1','TP2'))

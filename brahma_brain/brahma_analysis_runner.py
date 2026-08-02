@@ -778,7 +778,38 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         _write_signal(result, symbol=symbol)
     except Exception:
         pass
-        return result
+
+    # [协同接入 2026-08-02 设计院自主] condition_order_matrix 条件单计划卡
+    # 当score≥120 且有有效params时，生成条件单计划卡存入data/condition_orders.json
+    # 供position_guardian/auto_executor读取作为执行参考
+    try:
+        _com_score = float(result.get('score_final', 0) or 0)
+        _com_params = result.get('params', {})
+        _com_dir    = result.get('signal_dir', '') or result.get('direction', '')
+        _com_price  = float(result.get('price', 0) or 0)
+        if _com_score >= 120 and _com_params and _com_dir and _com_price > 0:
+            import sys as _com_sys
+            _com_sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
+            from condition_order_matrix import create_trade_plan as _create_plan
+            _sl  = float(_com_params.get('stop_loss', 0) or 0)
+            _tp1 = float(_com_params.get('tp1', 0) or 0)
+            _liq = _sl * 0.85 if _sl > 0 else _com_price * (0.85 if _com_dir == 'SHORT' else 1.15)
+            if _sl > 0 and _tp1 > 0:
+                if _com_dir == 'SHORT':
+                    _plan = _create_plan(
+                        symbol=symbol, short_entry=_com_price, long_entry=0,
+                        short_notional=_com_params.get('notional', 50),
+                        long_notional=0, liq_price=_liq)
+                else:
+                    _plan = _create_plan(
+                        symbol=symbol, short_entry=0, long_entry=_com_price,
+                        short_notional=0, long_notional=_com_params.get('notional', 50),
+                        liq_price=_liq)
+                result['_condition_plan'] = _plan
+    except Exception:
+        pass  # 非阻断
+
+    return result
 
 
 def run_batch(symbols: list, deep: bool = True) -> dict:
