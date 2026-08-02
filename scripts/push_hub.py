@@ -8,14 +8,18 @@ import subprocess, json, time, os, datetime
 from pathlib import Path
 
 # SSOT 路由
+# [FIX 2026-08-02] path修复：push_hub在scripts/目录，system_config也在scripts/，直接用parent
 try:
     import sys
-    sys.path.insert(0, str(Path(__file__).parent / 'scripts'))
+    _sc_dir = str(Path(__file__).parent)  # = .../scripts/
+    if _sc_dir not in sys.path:
+        sys.path.insert(0, _sc_dir)
     from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID, JARVIS_CHANNEL
     _TARGET  = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"
     _CHANNEL = JARVIS_CHANNEL
-except Exception:
-    _TARGET  = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"  # 2026-07-25 统一从system_config读取，SSOT
+except Exception as _e:
+    # 硬编码fallback（与system_config保持同步）
+    _TARGET  = "73295708:thread:019fb612-d570-7f0b-89c5-2065284157e0"
     _CHANNEL = "jarvis"
 
 _DEDUP_FILE = Path(__file__).parent / "data" / "push_dedup.json"
