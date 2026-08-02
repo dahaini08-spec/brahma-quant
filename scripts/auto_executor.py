@@ -297,8 +297,9 @@ def find_executable_signals() -> list[dict]:
             from brahma_brain.position_sizer import get_position_pct as _ps_fes
             _fg_fes = None
             try:
-                from brahma_brain.options_engine import get_fear_greed_index as _fg_fn
-                _fg_fes = _fg_fn()
+                from brahma_brain.options_engine import get_fear_greed as _fg_fn
+                _fg_raw = _fg_fn()
+                _fg_fes = float(_fg_raw.get('value', 50)) if isinstance(_fg_raw, dict) else float(_fg_raw or 50)
             except Exception:
                 pass
             _ps_res_fes = _ps_fes(
