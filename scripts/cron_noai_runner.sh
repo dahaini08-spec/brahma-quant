@@ -267,16 +267,15 @@ except Exception as e:
     ;;
 
   pump-hunter)
-    # 脚本自带push，正常静默
-    PUMP_SCRIPT="$BASE/scripts/pump_signal_executor.py"
-    SCAN_SCRIPT="$BASE/scripts/scan_and_alert.py"
+    # [设计院封印 2026-08-02] 修复路径：正确脚本在 dharma/pump_hunter/scan_and_alert.py
+    # 旧路径 scripts/pump_signal_executor.py 和 scripts/scan_and_alert.py 均已移除
+    PUMP_SCRIPT="$BASE/dharma/pump_hunter/scan_and_alert.py"
     if [ -f "$PUMP_SCRIPT" ]; then
-        OUT=$(cd "$BASE" && timeout 60 python3 scripts/pump_signal_executor.py 2>&1 | tail -5)
-    elif [ -f "$SCAN_SCRIPT" ]; then
-        OUT=$(cd "$BASE" && timeout 60 python3 scripts/scan_and_alert.py 2>&1 | tail -5)
+        OUT=$(cd "$BASE" && timeout 90 python3 dharma/pump_hunter/scan_and_alert.py 2>&1 | tail -5)
     else
-        log "pump-hunter: 脚本不存在，跳过"
-        exit 0
+        log "pump-hunter: 脚本不存在 $PUMP_SCRIPT，跳过"
+        send_alert "🚨 [pump-hunter] 脚本缺失: $PUMP_SCRIPT"
+        exit 1
     fi
     log "$OUT"
     if echo "$OUT" | grep -qiE 'traceback|exception'; then

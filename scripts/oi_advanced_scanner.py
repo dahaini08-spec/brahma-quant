@@ -955,8 +955,11 @@ def run():
         raw = f"{chg_bucket}|{r_.get('direction_bias','?')}|{r_.get('mode','?')}|{regime_major}"
         return _hl.md5(raw.encode()).hexdigest()[:8]
 
-    SAME_HASH_TTL_OI = {'A': 86400*2, 'B': 86400, 'C': 3600*4}  # 同哈希冷却期
+    # [设计院封印 2026-08-02] TTL大幅缩短：A类48H→12H，B类24H→6H，防止信号被去重死锁
+    # 原设计哲学：哈希不变=信号未变=不重推；修复后：持续有效的信号每12H提醒一次
+    SAME_HASH_TTL_OI = {'A': 3600*12, 'B': 3600*6, 'C': 3600*2}  # [修复] 同哈希冷却期大幅缩短
     push_signals = []
+    persisted_signals = []  # 哈希未变但TTL到期的「持续有效」信号
 
     for r in action_signals[:8]:
         sym      = r['symbol']
@@ -965,47 +968,85 @@ def run():
         sym_st   = _oi_state.get(sym, {})
         old_hash = sym_st.get('hash', '')
         last_push= sym_st.get('ts', 0)
-        ttl      = SAME_HASH_TTL_OI.get(mode, 86400)
+        ttl      = SAME_HASH_TTL_OI.get(mode, 3600*12)
 
         hash_changed = (new_hash != old_hash)
         cooldown_ok  = (now.timestamp() - last_push > ttl)
 
+        # [C] 体制标注：BEAR_TREND+LONG → 标注WATCH，不计入主推送但发提醒
+        _regime_bias = str(r.get('regime', '')).upper()
+        _dir_bias    = str(r.get('direction_bias', 'LONG')).upper()
+        _is_dead_zone = ('BEAR_TREND' in _regime_bias and _dir_bias == 'LONG')
+        if _is_dead_zone:
+            r = dict(r)  # 浅拷贝避免污染原对象
+            r['_watch_only'] = True
+            r['_watch_reason'] = f'⚠️WATCH: BEAR_TREND+LONG死穴，不执行，仅观察'
+
         if hash_changed or cooldown_ok:
-            push_signals.append(r)
+            if hash_changed:
+                push_signals.append(r)
+            else:
+                # 哈希未变但TTL到期 → 「信号持续有效」提醒
+                persisted_signals.append(r)
             _oi_state[sym] = {
                 'hash': new_hash, 'ts': now.timestamp(),
                 'direction': r.get('direction_bias','?'),
                 'score': r.get('oi_score', 0), 'mode': mode,
             }
         else:
-            print(f'  [{sym}] 哈希未变({new_hash})，距上次推送{(now.timestamp()-last_push)/3600:.1f}H，跳过')
+            age_h = (now.timestamp()-last_push)/3600
+            print(f'  [{sym}] 哈希未变({new_hash})，距上次推送{age_h:.1f}H，跳过（TTL={ttl//3600}H）')
 
     OI_STATE_FILE.write_text(json.dumps(_oi_state, indent=2, ensure_ascii=False))
 
     save_cache(cache)
 
-    if push_signals:
-        # 构建推送消息
-        header = (
-            f"🎯 OI猎手v3.0 · 信号报告\n"
-            f"{now.strftime('%Y-%m-%d %H:%M UTC')}\n"
-            f"{'─'*40}\n"
-            f"发现 {len(push_signals)} 个可执行信号\n"
-            f"  A类(长线): {sum(1 for x in push_signals if x['mode']=='A')}个\n"
-            f"  B类(中线): {sum(1 for x in push_signals if x['mode']=='B')}个\n"
-            f"  C类(短线): {sum(1 for x in push_signals if x['mode']=='C')}个\n"
-        )
+    if push_signals or persisted_signals:
+        # ── 新信号推送 ──────────────────────────────────────────
+        if push_signals:
+            header = (
+                f"🎯 OI猎手v3.1 · 新信号报告\n"
+                f"{now.strftime('%Y-%m-%d %H:%M UTC')}\n"
+                f"{'─'*40}\n"
+                f"发现 {len(push_signals)} 个新信号\n"
+                f"  A类(长线): {sum(1 for x in push_signals if x['mode']=='A')}个\n"
+                f"  B类(中线): {sum(1 for x in push_signals if x['mode']=='B')}个\n"
+                f"  C类(短线): {sum(1 for x in push_signals if x['mode']=='C')}个\n"
+            )
+            cards = []
+            for i, r in enumerate(push_signals[:6], 1):
+                card = format_signal_card(r['symbol'], r, i)
+                if r.get('_watch_only'):
+                    card += f"\n⚠️ {r.get('_watch_reason','BEAR_TREND+LONG 仅观察')}"
+                cards.append(card)
+            msg = header + '\n' + '\n\n'.join(cards)
+            print(f"\n📤 推送 {len(push_signals)} 个新信号到苏摩...")
+            send_message(msg)
 
-        cards = []
-        for i, r in enumerate(push_signals[:6], 1):
-            cards.append(format_signal_card(r['symbol'], r, i))
+        # ── 持续有效信号提醒（哈希未变但TTL到期）──────────────
+        if persisted_signals:
+            try:
+                _rstate = json.loads((BASE/'data/regime_state.json').read_text())
+                _regime_now = _rstate.get('BTCUSDT', {}).get('confirmed', 'UNKNOWN') if isinstance(_rstate.get('BTCUSDT'), dict) else str(_rstate.get('BTCUSDT','UNKNOWN'))
+            except Exception:
+                _regime_now = 'UNKNOWN'
+            persist_lines = []
+            for r in persisted_signals[:5]:
+                score_p = r.get('oi_score', r.get('score', 0))
+                dir_p   = r.get('direction_bias', '?')
+                watch_tag = ' ⚠️WATCH' if r.get('_watch_only') else ''
+                persist_lines.append(f"  {r['symbol']}[{r['mode']}] score={float(score_p):.0f} {dir_p}{watch_tag}")
+            persist_msg = (
+                f"📌 OI信号持续有效 ({now.strftime('%H:%M UTC')})\n"
+                f"以下信号方向未变，依然有效：\n" +
+                '\n'.join(persist_lines) +
+                f"\n当前体制: {_regime_now} | 每12H自动提醒"
+            )
+            print(f"\n📤 推送 {len(persisted_signals)} 个持续有效信号提醒...")
+            send_message(persist_msg)
 
-        msg = header + '\n' + '\n\n'.join(cards)
-        print(f"\n📤 推送 {len(push_signals)} 个信号到苏摩...")
-        send_message(msg)
-
-        # 写入信号日志
-        for r in push_signals:
+        # ── 写入信号日志 ────────────────────────────────────────
+        for r in push_signals + persisted_signals:
             with open(OI_SIGNAL_LOG, 'a') as f:
                 log = dict(r)
                 log['pushed_at'] = now.isoformat()
