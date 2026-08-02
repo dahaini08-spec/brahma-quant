@@ -1,65 +1,80 @@
-# factor_weights.yaml — 梵天因子权重配置
-# Brahma-Quant Open Source v3.0 | 设计院封印 2026-07-02
-#
-# ⚠️  PRO 版说明
-# ════════════════════════════════════════════════
-# 本文件为权重模板（Open Core 版本）。
-# 所有权重值均为占位符 (0.0)。
-#
-# Pro 版训练好的因子权重通过以下方式获取：
-#   - 完成 Dharma 回测验证流程
-#   - 使用 brahma_brain/dharma_online_learner.py 在线学习
-#   - 参见 CONTRIBUTING.md 中的 Pro 版获取方式
-# ════════════════════════════════════════════════
-
-version: "3.0-oss"
-pro_note: "Pro版权重通过在线学习器训练，不在开源版中提供"
-
-# ── 技术指标层权重 ─────────────────────────────────────────────
-technical:
-  rsi_1h:    0.0   # Pro: 实盘统计后的RSI权重
-  rsi_4h:    0.0
-  rsi_1d:    0.0
-  bb_width:  0.0   # Bollinger Band 宽度
-  bb_pos:    0.0   # BB 位置
-  atr_pct:   0.0   # ATR 百分比
-  volume_ratio: 0.0
-
-# ── SMC 结构层权重 ─────────────────────────────────────────────
-smc:
-  ob_score:    0.0  # Order Block 评分权重
-  fvg_score:   0.0  # Fair Value Gap 权重
-  bos_score:   0.0  # Break of Structure 权重
-  choch_score: 0.0  # Change of Character 权重
-  grade:       0.0  # 结构综合评级权重
-
-# ── 体制感知层权重 ─────────────────────────────────────────────
-regime:
-  BEAR_TREND:
-    short_multiplier: 0.0  # Pro: 1.6x
-    long_multiplier:  0.0  # Pro: 0.10x
-  BULL_TREND:
-    short_multiplier: 0.0  # Pro: 0.15x
-    long_multiplier:  0.0  # Pro: 1.6x
-  CHOP_MID:
-    short_multiplier: 0.0  # Pro: 0.88x
-    long_multiplier:  0.0  # Pro: 0.50x
-  BEAR_EARLY:
-    short_multiplier: 0.0  # Pro: 1.2x
-    long_multiplier:  0.0  # Pro: 0.35x
-  BEAR_RECOVERY:
-    short_multiplier: 0.0  # Pro: 0.30x
-    long_multiplier:  0.0  # Pro: 1.2x
-
-# ── 外部信号层权重 ─────────────────────────────────────────────
-external:
-  s_cross:    0.0  # 跨所FR+Basis权重
-  s_options:  0.0  # Deribit P/C OI权重
-  s_macro_v2: 0.0  # DXY+NQ+BTC.D权重
-  oi_change:  0.0  # OI变化率权重
-  funding:    0.0  # 资金费率权重
-
-# ── Kronos 时序模型权重 ────────────────────────────────────────
-kronos:
-  p_up_weight:  0.0  # Kronos上涨概率权重
-  shadow_mode:  true # shadow模式，不影响评分（等待n≥100验证）
+_meta:
+  source: 设计院自主 2026-08-02 基于MEMORY.md铁证
+  version: '4.2'
+rsi:
+- id: RSI_OVERBOUGHT
+  status: live
+  score: 12
+  note: RSI>70 SHORT BEAR_TREND WR=68.1% → +12分
+- id: RSI_60_70
+  status: live
+  score: 6
+  note: RSI 60-70 做空警惕区
+- id: RSI_50_60
+  status: live
+  score: 3
+  note: RSI 50-60 中性偏强
+- id: RSI_OVERSOLD
+  status: live
+  score: 10
+  note: RSI<30 LONG 超卖反弹
+- id: RSI_30_40
+  status: live
+  score: 5
+  note: RSI 30-40 LONG
+volume:
+- id: VOL_EXTREME_HIGH
+  status: live
+  score: 10
+  note: 连续缩量13H+后量比>2x WR=100%
+- id: VOL_HIGH
+  status: live
+  score: 7
+  note: 量比1.5-2x 放量确认
+- id: VOL_MEDIUM
+  status: live
+  score: 4
+  note: 量比1.2-1.5x 温和放量
+- id: VOL_LOW
+  status: live
+  score: -5
+  note: 缩量<0.8 信号可信度低
+gates:
+- id: GATE_ATR_Q4
+  status: live
+  action: SCORE_PENALTY
+  score: -8
+  note: ATR极高分位 波动率过大
+- id: GATE_SESSION_DEAD
+  status: live
+  action: SCORE_PENALTY
+  score: -6
+  note: 死亡时段 UTC 0/22/23点 流动性低
+resonance:
+- id: TRIPLE_RESONANCE_SHORT
+  status: live
+  score: 15
+  note: '三重共振做空: OB+FVG+RSI同向 高置信'
+- id: TRIPLE_RESONANCE_LONG
+  status: live
+  score: 15
+  note: 三重共振做多
+- id: RSI_BB_DUAL_SHORT
+  status: live
+  score: 8
+  note: RSI+BB双重共振做空
+- id: RSI_BB_DUAL_LONG
+  status: live
+  score: 8
+  note: RSI+BB双重共振做多
+- id: FVG_DIRECTIONAL_SHORT
+  status: live
+  score: 6
+  note: FVG方向性做空（active_retest今日修复）
+- id: FVG_DIRECTIONAL_LONG
+  status: live
+  score: 6
+  note: FVG方向性做多
+meta:
+  atr_q4_thresh: 0.531
+  version: '4.2'

@@ -896,4 +896,14 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
         SEP,
     ]
 
+    # ── 全景摘要卡 (_panorama_card) ──────────────────────────────────
+    if not compact:
+        _pc = r.get('_panorama_card', '') or ''
+        if _pc and len(str(_pc)) > 20:
+            lines.append('**全景摘要**')
+            for _pl in str(_pc).split('\n')[:8]:
+                if _pl.strip():
+                    lines.append(f'  {_pl[:80]}')
+            lines.append('')
+
     return '\n'.join(lines)

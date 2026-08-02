@@ -18,22 +18,68 @@ ctx 字段（brahma_core.py 已传入）：
 """
 
 import os
-import yaml
+try:
+    import yaml as _yaml
+except ImportError:
+    # [P2修复 2026-08-02 设计院] 系统 python3 可能无pyyaml，fallback到json解析器
+    class _yaml:  # type: ignore
+        @staticmethod
+        def safe_load(f):
+            """YAML fallback: 支持简单key:value格式，不支持嵌套列表"""
+            import re
+            result = {}
+            current_section = result
+            current_key = None
+            for line in f:
+                line = line.rstrip()
+                if not line or line.startswith('#'): continue
+                # 二级 key
+                m2 = re.match(r'^  (\w+):\s*(.*)', line)
+                if m2 and current_key:
+                    k, v = m2.group(1), m2.group(2).strip()
+                    try: v = float(v) if '.' in v else (int(v) if v.lstrip('-').isdigit() else (True if v=='true' else (False if v=='false' else v)))
+                    except: pass
+                    current_section[k] = v
+                    continue
+                # 一级 key
+                m1 = re.match(r'^(\w+):\s*(.*)', line)
+                if m1:
+                    current_key = m1.group(1)
+                    v1 = m1.group(2).strip()
+                    if not v1:
+                        result[current_key] = {}
+                        current_section = result[current_key]
+                    else:
+                        try: v1 = float(v1) if '.' in v1 else (True if v1=='true' else (False if v1=='false' else v1))
+                        except: pass
+                        result[current_key] = v1
+                        current_section = result
+            return result
 
 _YAML_PATH = os.path.join(os.path.dirname(__file__), "factor_weights.yaml")
+_JSON_PATH = os.path.join(os.path.dirname(__file__), "factor_weights.json")
 _CACHE: dict = {}
 _CACHE_MTIME: float = 0.0
 
 
 def _load_factors() -> dict:
-    """加载 factor_weights.yaml，带 mtime 缓存"""
+    """加载 factor_weights，优先JSON（无yaml依赖），回落yaml，带mtime缓存"""
+    # [P2修复 2026-08-02 设计院] yaml在系统python3缺失时fallback解析器解析列表有bug
+    # 优先用JSON格式（精确），回落yaml（需要pyyaml）
     global _CACHE, _CACHE_MTIME
+    import json as _json
+    # 优先JSON
+    _path = _JSON_PATH if os.path.exists(_JSON_PATH) else _YAML_PATH
     try:
-        mtime = os.path.getmtime(_YAML_PATH)
+        mtime = os.path.getmtime(_path)
         if mtime == _CACHE_MTIME and _CACHE:
             return _CACHE
-        with open(_YAML_PATH, encoding="utf-8") as f:
-            data = yaml.safe_load(f)
+        if _path.endswith('.json'):
+            with open(_path, encoding='utf-8') as f:
+                data = _json.load(f)
+        else:
+            with open(_path, encoding='utf-8') as f:
+                data = _yaml.safe_load(f)
         _CACHE = data or {}
         _CACHE_MTIME = mtime
         return _CACHE

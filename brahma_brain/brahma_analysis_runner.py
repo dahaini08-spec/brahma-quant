@@ -563,6 +563,23 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
             result['timing_status'] = 'UNKNOWN'
     # ────────────────────────────────────────────────────────────────────────
 
+    # ── nerve_system freshness_checker 数据质量守护（非阻断）────────────
+    # [协同接入 2026-08-02 设计院自主] 分析前检查关键数据文件新鲜度
+    _freshness_warnings = []
+    try:
+        import sys as _nv_sys, os as _nv_os
+        _nv_root = _nv_os.path.join(_nv_os.path.dirname(__file__), '..', 'nerve_system')
+        if _nv_root not in _nv_sys.path:
+            _nv_sys.path.insert(0, _nv_root)
+        from freshness_checker import run as _fc_run
+        _fc_alerts = _fc_run()
+        _freshness_warnings = [
+            f"{a['check']}: {a['issue']}"
+            for a in _fc_alerts if a.get('level') in ('ERROR', 'WARN')
+        ][:3]
+    except Exception:
+        pass
+
     # ── [设计院 2026-07-13 P0修复] 外部扩展层评分集成 ─────────────────────────
     # 根因：liq_heatmap/cross_exchange_fr/whale_monitor/options_pc_ratio/miner_pressure
     #       均已在 scripts/ 实现，但其score贡献未集成到 run_analysis() 返回的 score_final
@@ -809,6 +826,8 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
     except Exception:
         pass  # 非阻断
 
+    if _freshness_warnings:
+        result['_data_freshness_warnings'] = _freshness_warnings
     return result
 
 

@@ -1,0 +1,105 @@
+{
+  "_meta": {
+    "source": "设计院自主 2026-08-02",
+    "version": "4.2"
+  },
+  "rsi": [
+    {
+      "id": "RSI_OVERBOUGHT",
+      "status": "live",
+      "score": 12
+    },
+    {
+      "id": "RSI_60_70",
+      "status": "live",
+      "score": 6
+    },
+    {
+      "id": "RSI_50_60",
+      "status": "live",
+      "score": 3
+    },
+    {
+      "id": "RSI_OVERSOLD",
+      "status": "live",
+      "score": 10
+    },
+    {
+      "id": "RSI_30_40",
+      "status": "live",
+      "score": 5
+    }
+  ],
+  "volume": [
+    {
+      "id": "VOL_EXTREME_HIGH",
+      "status": "live",
+      "score": 10
+    },
+    {
+      "id": "VOL_HIGH",
+      "status": "live",
+      "score": 7
+    },
+    {
+      "id": "VOL_MEDIUM",
+      "status": "live",
+      "score": 4
+    },
+    {
+      "id": "VOL_LOW",
+      "status": "live",
+      "score": -5
+    }
+  ],
+  "gates": [
+    {
+      "id": "GATE_ATR_Q4",
+      "status": "live",
+      "action": "SCORE_PENALTY",
+      "score": -8
+    },
+    {
+      "id": "GATE_SESSION_DEAD",
+      "status": "live",
+      "action": "SCORE_PENALTY",
+      "score": -6
+    }
+  ],
+  "resonance": [
+    {
+      "id": "TRIPLE_RESONANCE_SHORT",
+      "status": "live",
+      "score": 15
+    },
+    {
+      "id": "TRIPLE_RESONANCE_LONG",
+      "status": "live",
+      "score": 15
+    },
+    {
+      "id": "RSI_BB_DUAL_SHORT",
+      "status": "live",
+      "score": 8
+    },
+    {
+      "id": "RSI_BB_DUAL_LONG",
+      "status": "live",
+      "score": 8
+    },
+    {
+      "id": "FVG_DIRECTIONAL_SHORT",
+      "status": "live",
+      "score": 6
+    },
+    {
+      "id": "FVG_DIRECTIONAL_LONG",
+      "status": "live",
+      "score": 6
+    }
+  ],
+  "meta": {
+    "atr_q4_thresh": 0.531,
+    "version": "4.2"
+  }
+}
