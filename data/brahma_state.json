@@ -1,30 +1,58 @@
 {
-  "positions": [],
-  "wuqu_positions": {},
+  "positions": [
+    {
+      "symbol": "ETHUSDT",
+      "direction": "SHORT",
+      "qty": -0.03,
+      "entry": 1876.15,
+      "sl": 1909.2,
+      "tp1": 1847.4
+    }
+  ],
+  "wuqu_positions": [
+    {
+      "symbol": "ETHUSDT",
+      "direction": "SHORT",
+      "side": "SELL",
+      "qty": 0.03,
+      "entry_price": 1876.15,
+      "sl_price": 1909.2,
+      "tp1_price": 1847.4,
+      "tp2_price": 1815.6,
+      "rr1": 0.87,
+      "regime": "BEAR_TREND",
+      "score": 32.8,
+      "grade": 85.0,
+      "notional": 56.2845,
+      "opened_at": 1785637427.9972465,
+      "source": "\u8bbe\u8ba1\u9662\u9876\u7ea7\u5408\u7ea6\u4ea4\u6613\u5458\u81ea\u4e3b\u51b3\u7b56 2026-08-02",
+      "success": true
+    }
+  ],
   "regime": "BEAR_TREND",
   "n_open": 0,
   "total_pnl": 0.0,
-  "last_update": 1785628303.4922335,
+  "last_update": 1785636711.988376,
   "source": "reconcile_rebuild_20260628",
   "ws_guardian_sync": true,
   "last_sync": "2026-06-29T04:35:35.517800+00:00",
   "_last_manual_refresh": "cleared_by_design_institute_20260725",
-  "_refresh_reason": "设计院封口固化 2026-07-20 手动刷新",
+  "_refresh_reason": "\u8bbe\u8ba1\u9662\u5c01\u53e3\u56fa\u5316 2026-07-20 \u624b\u52a8\u5237\u65b0",
   "_price_btc": 64117.9,
   "_price_eth": 1870.73,
   "_refreshed_at": 1784527892.009376,
   "_refreshed_by": "design_institute_seal_2026-07-20",
-  "updated_at": "2026-08-01T23:51:43.490654+00:00",
-  "last_updated": "2026-08-01T23:51:43.490654+00:00",
-  "last_scan_ts": "2026-08-01T23:51:43.490654+00:00",
-  "timestamp": 1785628303.4922338,
-  "last_price": 62784.2,
-  "btc_price": 62784.2,
-  "price": 62784.2,
-  "eth_price": 1844.25,
+  "updated_at": "2026-08-02T02:11:51.988178+00:00",
+  "last_updated": "2026-08-02T02:11:51.988178+00:00",
+  "last_scan_ts": "2026-08-02T02:11:51.988178+00:00",
+  "timestamp": 1785636711.9883766,
+  "last_price": 63357.1,
+  "btc_price": 63357.1,
+  "price": 63357.1,
+  "eth_price": 1874.41,
   "market_prices": {
-    "BTCUSDT": 62784.2,
-    "ETHUSDT": 1844.25
+    "BTCUSDT": 63357.1,
+    "ETHUSDT": 1874.41
   },
   "regime_label": "BEAR_TREND",
   "regime_snapshot": {
@@ -32,14 +60,14 @@
     "regime": "BEAR_TREND",
     "phase": "CORRECTION",
     "momentum": "SHORT",
-    "rsi_1h": 41.89,
-    "rsi_4h": 38.46,
-    "rsi_1d": 43.86,
+    "rsi_1h": 63.28,
+    "rsi_4h": 47.18,
+    "rsi_1d": 46.78,
     "trend_1h": "BEAR",
     "trend_4h": "BEAR",
     "trend_1d": "CHOP",
     "source": "market_state.detect_regime",
-    "ts": 1785628304.2820792
+    "ts": 1785636712.9247463
   },
   "ws_guardian": {
     "pid": 0,

@@ -18,5 +18,15 @@
     "tp_price": 1868.26,
     "registered_at": "2026-07-23T03:07:44.842612+00:00",
     "source": "hunter_executor"
+  },
+  "ETHUSDT": {
+    "symbol": "ETHUSDT",
+    "direction": "SHORT",
+    "entry": 1876.15,
+    "sl": 1909.2,
+    "tp1": 1847.4,
+    "qty": 0.03,
+    "updated_at": 1785637427.998272,
+    "active": true
   }
 }
