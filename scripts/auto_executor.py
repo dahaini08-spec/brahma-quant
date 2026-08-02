@@ -277,6 +277,19 @@ def find_executable_signals() -> list[dict]:
             s['_tier_nav_pct'] = 0.015
         else:
             continue  # score < 120，跳过
+        # [协同接入 2026-08-02 设计院自主] pos_pct_sizer 动态仓位覆盖
+        # brahma_engine已计算精确仓位建议(pos_pct_sizer)，优先于固定tier值
+        # 规则: pos_pct_sizer存在且>0 → 用它覆盖_tier_nav_pct（但不超过tier上限）
+        _pos_pct_sizer = float(s.get('pos_pct_sizer', 0) or 0)
+        if _pos_pct_sizer > 0:
+            _tier_cap = s.get('_tier_nav_pct', 0.05)
+            # 转换百分比单位(sizer返回的是%如0.3%=0.003，tier用的是小数如0.05=5%)
+            _sizer_nav = _pos_pct_sizer / 100.0
+            if _sizer_nav > 0 and _sizer_nav <= _tier_cap:
+                s['_tier_nav_pct'] = _sizer_nav
+                s['_pos_source'] = 'pos_pct_sizer'
+            # else: sizer建议超出tier上限，维持tier值（保守原则）
+
         # ③ RR门槛
         rr1 = float(s.get('rr1', 0) or 0)
         if rr1 < MIN_RR:

@@ -651,7 +651,25 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
                 lines += smc_lines
                 lines.append('')
 
-    # ── B3: 清算热力图集群（近距离展示）────────────────────────────────
+    # ── B2.5: 达摩院节点裁决 (nodes_verdict) ────────────────────────────
+    if not compact:
+        _dv = r.get('nodes_verdict', '')
+        _dn = r.get('dharma_nodes', {}) or {}
+        if _dv and _dn:
+            _dn_detail = _dn.get('detail', '') if isinstance(_dn, dict) else ''
+            _dn_mult   = _dn.get('score_mult', 1.0) if isinstance(_dn, dict) else 1.0
+            _dn_pass   = _dn.get('nodes_pass', True) if isinstance(_dn, dict) else True
+            _dn_icon   = '✅' if _dn_pass else '⚠️'
+            dv_lines = [f'**B2.5 · 达摩院裁决**  {_dn_icon} {_dv}  (score×{_dn_mult:.2f})']
+            if _dn_detail:
+                for _dl in str(_dn_detail).split('|')[:3]:
+                    _dl = _dl.strip()
+                    if _dl:
+                        dv_lines.append(f'  {_dl[:70]}')
+            lines += dv_lines
+            lines.append('')
+
+        # ── B3: 清算热力图集群（近距离展示）────────────────────────────────
     if not compact:
         liq_full = r.get('_liq_heatmap', {}) or {}
         if liq_full:
