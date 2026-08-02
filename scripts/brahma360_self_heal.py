@@ -582,6 +582,49 @@ def check_f12_smc_structure() -> dict:
 
 
 # ══════════════════════════════════════════
+
+# ══════════════════════════════════════════
+# F14: tardis 清算数据月份自动刷新
+# ══════════════════════════════════════════
+def check_f14_tardis_freshness() -> dict:
+    """检查tardis清算CSV是否为当月最新，若仍是上月则触发自愈刷新"""
+    result = {'fault': 'F14', 'triggered': False, 'healed': True, 'detail': ''}
+    try:
+        import sys as _sys
+        _sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        from tardis_liq_layer import _get_free_date, CACHE_DIR, get_tardis_liq_walls
+        year, month, day = _get_free_date()
+        expected_date = f'{year}{month}01'
+        # 检查BTC/ETH是否已有当月CSV
+        core_syms = ['BTCUSDT', 'ETHUSDT']
+        missing = []
+        for sym in core_syms:
+            cache_file = CACHE_DIR / f'binance-futures_{sym}_{expected_date}.csv.gz'
+            if not cache_file.exists():
+                missing.append(sym)
+        if missing:
+            result['triggered'] = True
+            # 自愈：主动下载当月数据
+            healed_syms = []
+            for sym in missing:
+                try:
+                    r = get_tardis_liq_walls(sym)
+                    if r.get('available') and r.get('date', '') >= expected_date[:7]:
+                        healed_syms.append(sym)
+                except Exception:
+                    pass
+            result['healed'] = len(healed_syms) == len(missing)
+            result['detail'] = (
+                f'tardis数据缺失({expected_date}): {missing} → '
+                f'{"已下载: " + str(healed_syms) if healed_syms else "下载失败"}'
+            )
+        else:
+            result['detail'] = f'tardis数据最新 ({expected_date}) BTC/ETH ✅'
+    except Exception as e:
+        result['detail'] = f'tardis检查异常: {e}'
+    return result
+
+
 # F13: live_prices 实时价格 时效检查
 # ══════════════════════════════════════════
 def check_f13_live_prices() -> dict:
@@ -642,6 +685,7 @@ def run():
         check_f11_liq_heatmap,
         check_f12_smc_structure,
         check_f13_live_prices,
+        check_f14_tardis_freshness,
     ]
 
     fault_names = {
@@ -658,6 +702,7 @@ def run():
         'F11': '⚠️ 清算集群热力图陈旧>30min',
         'F12': '🚨 SMC结构(OB/FVG)字段缺失或过旧',
         'F13': '⚠️ 实时价格陈旧>5min',
+        'F14': '⚠️ tardis清算数据未刷新至当月',
     }
 
     triggered_faults = []
