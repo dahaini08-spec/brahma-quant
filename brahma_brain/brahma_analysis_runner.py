@@ -905,6 +905,34 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
     except Exception:
         pass
 
+    # ── [P1 第五轮 2026-08-02] brahma_mem_compressor 接入 ────────────────────
+    # score>=120 时压缩信号上下文写入 data/signal_context_memory.jsonl
+    # 为后续LLM调用提供压缩上下文，避免重传完整result
+    try:
+        _final_score = float(result.get('score_final', result.get('score', 0)) or 0)
+        if _final_score >= 120:
+            from brahma_brain.brahma_mem_compressor import compress_signal_context
+            _sym_mc = result.get('symbol', sym)
+            _ctx = compress_signal_context(_sym_mc)
+            # 写入 data/signal_context_memory.jsonl
+            import json as _mcjson
+            from pathlib import Path as _mcPath
+            _mc_path = _mcPath(__file__).parent.parent / 'data' / 'signal_context_memory.jsonl'
+            _mc_path.parent.mkdir(exist_ok=True)
+            _mc_entry = {
+                'symbol':     _sym_mc,
+                'score':      _final_score,
+                'ts':         __import__('datetime').datetime.utcnow().isoformat(),
+                'ctx_budget': _ctx.get('context_budget', 0),
+                'signals_n':  len(_ctx.get('recent_signals', [])),
+            }
+            with open(_mc_path, 'a', encoding='utf-8') as _mcf:
+                _mcf.write(_mcjson.dumps(_mc_entry, ensure_ascii=False) + '\n')
+            result['_mem_ctx'] = _mc_entry
+    except Exception:
+        pass  # mem_compressor失败不影响主流程
+    # ── [P1 END] ─────────────────────────────────────────────────────────────
+
     return result
 
 

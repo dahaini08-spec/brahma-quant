@@ -675,9 +675,22 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
             _cached = ' (缓存)' if _llc.get('cached') else ''
             b22_lines.append(f'  LLM裁决{_cached}: {_llc["verdict"][:50]}  adj={_llc.get("adj",0):+.0f}')
 
-        # 条件单计划卡
-        if _cp.get('legs'):
-            b22_lines.append(f'  条件单: P0止损 P1止盈 P2调仓 → {len(_cp.get("legs",[]))}条腿')
+        # 条件单计划卡 [FIX 2026-08-02: condition_order_matrix返回triggers而非legs]
+        _cp_triggers = _cp.get('triggers', {})
+        if _cp_triggers or _cp.get('symbol'):
+            _n_trig = len(_cp_triggers)
+            _cp_sym = _cp.get('symbol', '')
+            _imm_warn = _cp.get('immediate_warnings', [])
+            b22_lines.append(f'  🎯 条件单计划[{_cp_sym}]: {_n_trig}条触发规则')
+            if _imm_warn:
+                b22_lines.append(f'  ⚠️ 立即警告: {_imm_warn[0][:50]}')
+            # 展示P0/P3关键触发
+            if 'P0_生死线' in _cp_triggers:
+                _p0 = _cp_triggers['P0_生死线']
+                b22_lines.append(f"    P0生死线: {str(_p0.get('condition',''))[:40]}")
+            if 'P3_时间止损' in _cp_triggers:
+                _p3 = _cp_triggers['P3_时间止损']
+                b22_lines.append(f"    P3时间线: {str(_p3.get('deadline',''))[:25]}")
 
         if b22_lines:
             lines += b22_lines

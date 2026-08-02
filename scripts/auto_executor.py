@@ -1307,6 +1307,22 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
     executed_set = _load_executed()
     results = []
 
+    # ── [P2 第五轮 2026-08-02] capital_allocator 资金分配检查 ───────────────────
+    # 预执行所有候选信号的资金分配计算，防止多标的时过度集中
+    _alloc_cache = {}  # symbol -> compute()结果
+    try:
+        from brahma_brain.capital_allocator import compute as _cap_compute
+        for _sig_pre in candidates:
+            _sym_pre   = _sig_pre.get('symbol', '')
+            _score_pre = float(_sig_pre.get('score', 0) or 0)
+            _alloc     = _cap_compute(_sym_pre, signal_score=_score_pre)
+            _alloc_cache[_sym_pre] = _alloc
+            if not _alloc.get('allowed', True):
+                pass  # 待执行循环内再決策
+    except Exception:
+        pass  # capital_allocator失败不阻断执行
+    # ── [P2 END] ─────────────────────────────────────────────────────────────
+
     for sig in candidates:
         sig_id = sig.get('signal_id', '')
         sym    = sig.get('symbol', '')
@@ -1315,6 +1331,18 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
         regime = sig.get('regime', '')
 
         pass  # [静默]
+
+        # ── [P2 capital_allocator 单信号预算检查] ─────────────────────────────
+        # 将资金预算注入信号，供 execute_signal 参考（我尺过律failsafe）
+        try:
+            _alloc_res = _alloc_cache.get(sym)
+            if _alloc_res:
+                sig['_capital_alloc'] = _alloc_res
+                if not _alloc_res.get('allowed', True):
+                    pass  # 不阻断执行，让 execute_signal 自行判断
+        except Exception:
+            pass  # 失败降级，不阻断执行
+        # ── [P2 END] ───────────────────────────────────────────────────
 
         # ── [P3-B 设计院 2026-07-08] RL A/B仓位分流 ──────────────────
         try:
