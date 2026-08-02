@@ -39,8 +39,12 @@ def _bus_price(symbol: str) -> float:
     """统一价格获取：优先走 brahma_bus 缓存，降级走直接HTTP"""
     if _brahma_bus:
         return _brahma_bus.price(symbol)
-    import requests
-    r = requests.get(f'https://fapi.binance.com/fapi/v1/ticker/price',
+    import requests as _req_cg
+    try:
+        from brahma_bus import _SESS as _HTTP_cg  # [HTTP Session共享 2026-08-02]
+    except ImportError:
+        _HTTP_cg = _req_cg
+    r = _HTTP_cg.get(f'https://fapi.binance.com/fapi/v1/ticker/price',
                      params={'symbol': symbol}, timeout=5)
     return float(r.json()['price'])
 

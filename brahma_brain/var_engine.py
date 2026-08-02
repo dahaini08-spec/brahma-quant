@@ -10,6 +10,10 @@ var_engine.py — VaR单仓风险量化引擎
 """
 
 import requests
+try:
+    from brahma_bus import _SESS as _HTTP  # [HTTP Session共享 2026-08-02 设计院自主]
+except ImportError:
+    _HTTP = requests  # fallback
 import numpy as np
 from datetime import datetime, timezone
 
@@ -24,7 +28,7 @@ def _get_returns(symbol: str, interval: str = '1h', limit: int = 168) -> list:
     """获取近N根K线收益率序列（默认7天小时数据）"""
     try:
         url = f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}'
-        r = requests.get(url, timeout=6).json()
+        r = _HTTP.get(url, timeout=6).json()
         closes = [float(k[4]) for k in r]
         returns = [np.log(closes[i] / closes[i-1]) for i in range(1, len(closes))]
         return returns
@@ -90,7 +94,7 @@ def single_position_var(
     # 方向性调整（空单在上涨时VaR更高）
     try:
         price_url = f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}'
-        cur_price = float(requests.get(price_url, timeout=4).json().get('price', 0))
+        cur_price = float(_HTTP.get(price_url, timeout=4).json().get('price', 0))
     except Exception:
         cur_price = 0
 

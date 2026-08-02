@@ -1,3 +1,10 @@
+import sys as _liq_sys, os as _liq_os
+_liq_sys.path.insert(0, _liq_os.path.join(_liq_os.path.dirname(__file__),'..','brahma_brain'))
+try:
+    from brahma_bus import _SESS as _HTTP
+except ImportError:
+    import requests as _HTTP
+
 #!/usr/bin/env python3
 """
 P0: 实时清算热力图 — liq_heatmap.py
@@ -39,13 +46,13 @@ def get_liq_heatmap(sym: str = 'BTCUSDT') -> dict:
     """
     try:
         # 1. 实时价格
-        px = float(requests.get(
+        px = float(_HTTP.get(
             'https://fapi.binance.com/fapi/v1/ticker/price',
             params={'symbol': sym}, timeout=5
         ).json()['price'])
 
         # 2. 订单簿深度（获取大额挂单聚集区）
-        depth = requests.get(
+        depth = _HTTP.get(
             'https://fapi.binance.com/fapi/v1/depth',
             params={'symbol': sym, 'limit': 100}, timeout=8
         ).json()

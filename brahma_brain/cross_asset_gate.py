@@ -44,7 +44,7 @@ FAPI = 'https://fapi.binance.com'
 def _pub(path, params={}):
     qs = urllib.parse.urlencode(params)
     try:
-        r = requests.get(f'{FAPI}{path}?{qs}', timeout=6)
+        r = _HTTP.get(f'{FAPI}{path}?{qs}', timeout=6)
         return r.json()
     except Exception:
         return {}
@@ -297,7 +297,11 @@ def apply_cross_asset_gate(signals: list) -> list:
 # ─── 测试 ─────────────────────────────────────────────────
 
 if __name__ == '__main__':
-    import requests as req
+    import requests
+try:
+    from brahma_bus import _SESS as _HTTP  # [HTTP Session共享 2026-08-02 设计院自主]
+except ImportError:
+    _HTTP = requests  # fallback as req
 
     print('=== cross_asset_gate 实时测试 ===\n')
 

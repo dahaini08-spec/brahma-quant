@@ -24,6 +24,10 @@ smart_money_engine.py — 聪明钱流向分析引擎
 # ║ Deps      : requests(fapi futures/data)
 # ╚════════════════════════════════════════════════════════════════╝
 import requests
+try:
+    from brahma_bus import _SESS as _HTTP  # [HTTP Session共享 2026-08-02 设计院自主]
+except ImportError:
+    _HTTP = requests  # fallback
 import time
 from typing import Optional
 
@@ -36,7 +40,7 @@ def _get(url: str, timeout: int = 8) -> Optional[list]:
     if url in _CACHE and now - _CACHE[url]['ts'] < _CACHE_TTL:
         return _CACHE[url]['data']
     try:
-        r = requests.get(url, timeout=timeout)
+        r = _HTTP.get(url, timeout=timeout)
         r.raise_for_status()
         data = r.json()
         _CACHE[url] = {'data': data, 'ts': now}

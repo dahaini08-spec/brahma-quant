@@ -735,6 +735,42 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
 
     except Exception as _ext_err:
         result['_ext_integration_error'] = str(_ext_err)
+    # ── s12: oi_advanced_scanner OI多所聚合信号 [协同接入 2026-08-02 设计院自主] ──
+    try:
+        import sys as _oi_sys, os as _oi_os
+        _oi_scripts = _oi_os.path.join(_oi_os.path.dirname(__file__), '..', 'scripts')
+        if _oi_scripts not in _oi_sys.path:
+            _oi_sys.path.insert(0, _oi_scripts)
+        from oi_advanced_scanner import (
+            get_oi_multi_period as _oi_multi,
+            get_premium_info as _oi_prem,
+            get_ls_ratio as _oi_ls,
+            score_oi_signal as _oi_score,
+        )
+        _oi_data = _oi_multi(sym)
+        _oi_basis = _oi_prem(sym)
+        _oi_ls_r  = _oi_ls(sym)
+        _oi_fr    = _oi_basis.get('funding_rate', 0) if isinstance(_oi_basis, dict) else 0
+        _oi_whale = _oi_ls_r.get('longShortRatio', 1.0) if isinstance(_oi_ls_r, dict) else 1.0
+        _oi_retail= 1.0 / _oi_whale if _oi_whale else 1.0
+        _klines   = result.get('_klines_1h', result.get('klines', []))
+        _oi_s = _oi_score(
+            oi=_oi_data, basis=_oi_basis, fr=_oi_fr,
+            whale_l=_oi_whale, retail_l=_oi_retail,
+            direction=signal_dir, klines_1h=_klines
+        )
+        _oi_score_val = _oi_s.get('score', 0) if isinstance(_oi_s, dict) else 0
+        _oi_details   = _oi_s.get('details', []) if isinstance(_oi_s, dict) else []
+        if abs(_oi_score_val) > 5:
+            # OI信号显著时才注入（>5分阈值，避免噪音）
+            _s12_bonus = round(_oi_score_val * 0.15, 2)  # OI权重15%，最大±15分
+            result['score_final'] = round(float(result.get('score_final', 0) or 0) + _s12_bonus, 2)
+            result['_oi_score']   = _oi_score_val
+            result['_oi_details'] = _oi_details[:3]
+            result.setdefault('_ext_scores', {})['s12_oi'] = _s12_bonus
+    except Exception as _oi_e:
+        pass  # 非阻断
+
     # ── [END 外部扩展层集成] ──────────────────────────────────────────────────
 
     # ── [设计院 2026-07-12 P0修复] params子字段展平到顶层 ─────────────────────
