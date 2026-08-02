@@ -302,6 +302,18 @@ except Exception as e:
     fi
     ;;
 
+  live-performance-daily)
+    # 每日战绩报告，有新交易时推送，无新交易静默
+    OUT=$(cd "$BASE" && timeout 30 python3 scripts/performance_logger.py 2>/dev/null)
+    log "$OUT"
+    if echo "$OUT" | grep -qE 'sync完成: [1-9]|新记录|pnl='; then
+        send_alert "📊 [每日战绩] $(echo "$OUT" | tail -5)"
+    fi
+    if echo "$OUT" | grep -qiE 'traceback|exception'; then
+        send_alert "🚨 [performance-logger异常] $(echo "$OUT" | tail -2)"
+    fi
+    ;;
+
   *)
     log "未知任务: $TASK"
     exit 1
