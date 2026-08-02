@@ -655,23 +655,47 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
     if not compact:
         liq_full = r.get('_liq_heatmap', {}) or {}
         if liq_full:
-            short_map = liq_full.get('short_liq_map', {})
-            long_map  = liq_full.get('long_liq_map', {})
-            ask_cls   = liq_full.get('top_ask_clusters', [])
-            bid_cls   = liq_full.get('top_bid_clusters', [])
             liq3_lines = ['**B3 · 清算集群地图**']
-            liq3_lines.append('  📊 空头清算墙(价格离当前%→清算位):')
-            for pct, lvl in sorted(short_map.items(), key=lambda x: int(x[0]))[:4]:
-                liq3_lines.append(f'    +{pct}% → {_fmt_price(lvl)}')
-            liq3_lines.append('  📊 多头清算墙:')
-            for pct, lvl in sorted(long_map.items(), key=lambda x: int(x[0]))[:4]:
-                liq3_lines.append(f'    -{pct}% → {_fmt_price(lvl)}')
+
+            # 优先使用tardis真实历史清算数据
+            if liq_full.get('_has_tardis'):
+                _tdate = liq_full.get('tardis_date', '?')
+                liq3_lines.append(f'  [数据源: Tardis真实清算 {_tdate}]')
+                _tw_short = liq_full.get('tardis_short_walls', {})
+                _tw_long  = liq_full.get('tardis_long_walls', {})
+                if _tw_short:
+                    liq3_lines.append(' 📈 空头爆仓密集区（价格下跌触发，做空TP参考）:')
+                    for _pct, _entry in sorted(_tw_short.items(), key=lambda x: float(x[0]))[:5]:
+                        _wp, _wv = _entry
+                        liq3_lines.append(f'    -{_pct}% → {_fmt_price(_wp)}  💥{_wv:.1f}M')
+                if _tw_long:
+                    liq3_lines.append(' 📉 多头爆仓密集区（价格下跌触发，下方支撑区）:')
+                    for _pct, _entry in sorted(_tw_long.items(), key=lambda x: float(x[0]))[:5]:
+                        _wp, _wv = _entry
+                        liq3_lines.append(f'    -{_pct}% → {_fmt_price(_wp)}  💥{_wv:.1f}M')
+            else:
+                # 回落到估算数据
+                short_map = liq_full.get('short_liq_map', {})
+                long_map  = liq_full.get('long_liq_map', {})
+                if short_map or long_map:
+                    liq3_lines.append('  📊 空头清算墙(价格离当前%→清算位):')
+                    for pct, lvl in sorted(short_map.items(), key=lambda x: float(x[0]))[:4]:
+                        liq3_lines.append(f'    +{pct}% → {_fmt_price(lvl)}')
+                    liq3_lines.append('  📊 多头清算墙:')
+                    for pct, lvl in sorted(long_map.items(), key=lambda x: float(x[0]))[:4]:
+                        liq3_lines.append(f'    -{pct}% → {_fmt_price(lvl)}')
+
+            # 订单簿信息（共用）
+            ask_cls = liq_full.get('top_ask_clusters', [])
+            bid_cls = liq_full.get('top_bid_clusters', [])
             if ask_cls:
                 liq3_lines.append(f'  📌 订单簿ASK密集: {_fmt_price(ask_cls[0][0])}  量={ask_cls[0][1]/1e6:.2f}M')
             if bid_cls:
                 liq3_lines.append(f'  📌 订单簿BID密集: {_fmt_price(bid_cls[0][0])}  量={bid_cls[0][1]/1e6:.2f}M')
-            lines += liq3_lines
-            lines.append('')
+
+            if len(liq3_lines) > 1:
+                lines += liq3_lines
+                lines.append('')
 
     # ── C: 评分权重矩阵（高贡献维度）─────────────────────────────────────
     if not compact and breakdown:

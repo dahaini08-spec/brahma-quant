@@ -600,6 +600,38 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                 result['_liq_heatmap'] = _liq
         except Exception as _le:
             _ext_detail['liq_heatmap'] = f'skip:{_le}'
+            result.setdefault('_liq_heatmap', {})
+
+        # [P1修复 2026-08-02 设计院] 用tardis_walls真实清算集群覆盖B3显示数据
+        # 根因: liq_heatmap的short_liq_map/long_liq_map是按固定比例估算的假数据
+        #       tardis_walls才是真实历史清算密集区（价格桶聚合），应优先显示
+        try:
+            _tw_raw = result.get('extra', {}).get('liq_snap', {}).get('tardis_walls', {})
+            if isinstance(_tw_raw, str):
+                import json as _json_tw
+                _tw_raw = _json_tw.loads(_tw_raw)
+            if _tw_raw and _tw_raw.get('available'):
+                _price_now = float(result.get('price', 0) or 0)
+                # 构建按距离分组的清算集群map
+                _s_walls = _tw_raw.get('short_walls', [])  # 空头爆仓（价格上涨触发）
+                _l_walls = _tw_raw.get('long_walls', [])   # 多头爆仓（价格下跌触发）
+                _tardis_short_map = {}  # pct -> (price, usd)
+                _tardis_long_map  = {}
+                for _wp, _wv in sorted(_s_walls, key=lambda x: abs(x[0]-_price_now))[:6]:
+                    _d = round(abs(_wp - _price_now) / _price_now * 100, 1) if _price_now else 0
+                    _tardis_short_map[str(_d)] = (_wp, round(_wv/1e6, 2))
+                for _wp, _wv in sorted(_l_walls, key=lambda x: abs(x[0]-_price_now))[:6]:
+                    _d = round(abs(_wp - _price_now) / _price_now * 100, 1) if _price_now else 0
+                    _tardis_long_map[str(_d)] = (_wp, round(_wv/1e6, 2))
+                # 写入_liq_heatmap供B3节使用
+                _lhm = result.get('_liq_heatmap') or {}
+                _lhm['tardis_short_walls'] = _tardis_short_map  # {pct: (price, usd_m)}
+                _lhm['tardis_long_walls']  = _tardis_long_map
+                _lhm['tardis_date']        = _tw_raw.get('date', '?')
+                _lhm['_has_tardis']        = True
+                result['_liq_heatmap'] = _lhm
+        except Exception as _twe:
+            pass  # tardis注入失败不影响主流程
 
         # --- 2. 跨所FR套利信号 cross_exchange_fr (0~9分) ---
         try:

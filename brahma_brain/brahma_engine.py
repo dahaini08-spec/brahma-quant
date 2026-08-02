@@ -4042,10 +4042,19 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass
 
     # [修复2 B3清算集群 2026-07-25 苏摩111批准] 注入liq_heatmap到顶层
+    # [P1修复 2026-08-02 设计院] 合并而非覆盖：保留runner已注入的tardis字段
     try:
         _lhm_top = extra_data.get('liq_heatmap', {})
         if _lhm_top:
-            _result['_liq_heatmap'] = _lhm_top
+            _existing = _result.get('_liq_heatmap') or {}
+            if _existing and _existing.get('_has_tardis'):
+                # 已有tardis注入，仅补充liq_heatmap的score/map字段，不覆盖
+                for _k, _v in _lhm_top.items():
+                    if _k not in _existing:  # 只填充缺失字段
+                        _existing[_k] = _v
+                _result['_liq_heatmap'] = _existing
+            else:
+                _result['_liq_heatmap'] = _lhm_top
     except Exception:
         pass
 
