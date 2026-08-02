@@ -118,6 +118,7 @@ def log_signal(result: dict) -> bool:
             # 基础标识
             'signal_id':      _make_signal_id(symbol, now_ts, direction, float(params.get('entry_lo', 0) or 0)),
             'ts':             now_ts,
+            'timestamp':      now_ts,  # [FIX 2026-08-02] 同步ts别名，防止strategy_doctor等脚本用timestamp过滤导致'last7d=0'假象
             'ts_iso':         datetime.fromtimestamp(now_ts, tz=timezone.utc).isoformat(),
             'symbol':         symbol,
             'signal_dir':     direction,

@@ -188,7 +188,7 @@ def _validate_result(r: dict) -> list:
 # 公开 API（所有调用者使用此接口）
 # ══════════════════════════════════════════════════════════════
 
-def run_analysis(symbol: str, deep: bool = True) -> dict:
+def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict:
     """
     单标的分析 — 封印版唯一入口
 
@@ -196,6 +196,10 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
       - 必须走 brahma_core.analyze(deep=True)
       - 不得绕过此函数直接调用 brahma_core
       - 返回值包含 _runner_meta 字段标记来源
+
+    参数:
+      signal_dir: 强制方向 (LONG/SHORT)，None=体制感知自动决定
+                  [FIX 2026-08-02] 修复 brahma_analyze.py --dir 参数被丢弃的根因
 
     返回: analyze() 原始结果 + _runner_meta
     """
@@ -236,22 +240,26 @@ def run_analysis(symbol: str, deep: bool = True) -> dict:
     # 根因修复：BULL_TREND下AUTO方向被market_structure误判为SHORT
     # → StructureGate以BULL×SHORT封杀(grade<80) → bull_bonus条件不满足(dir!=LONG)
     # 解决：从regime_state读取confirmed体制，顺势体制下强制传入正确方向
-    _forced_dir = None
-    try:
-        import json as _json
-        from pathlib import Path as _Path
-        _reg_file = _Path(__file__).parent.parent / 'data' / 'regime_state.json'
-        if _reg_file.exists():
-            _reg_data = _json.loads(_reg_file.read_text())
-            _sym_regime = _reg_data.get(sym, {}).get('confirmed', '')
-            if _sym_regime in ('BULL_TREND', 'BULL_EARLY', 'BEAR_RECOVERY'):
-                _forced_dir = 'LONG'   # 顺势：多头体制强制LONG
-            elif _sym_regime in ('BEAR_TREND', 'BEAR_EARLY'):
-                _forced_dir = 'SHORT'  # 顺势：空头体制强制SHORT
-            if _forced_dir:
-                pass  # [静默] f'[RegimePreset] {sym} {_sym_regime} → 强制方向={_forced_dir}'
-    except Exception:
-        pass
+    # [FIX 2026-08-02 设计院] 外部传入signal_dir优先级最高，不被体制感知覆盖
+    # 根因：trade_gateway/brahma_analyze.py传入--dir SHORT时，被_forced_dir体制感知覆盖，导致SHORT信号全部丢失
+    # 修复：signal_dir参数非None时直接用，跳过体制感知逻辑
+    _forced_dir = signal_dir if signal_dir else None
+    if _forced_dir is None:
+        try:
+            import json as _json
+            from pathlib import Path as _Path
+            _reg_file = _Path(__file__).parent.parent / 'data' / 'regime_state.json'
+            if _reg_file.exists():
+                _reg_data = _json.loads(_reg_file.read_text())
+                _sym_regime = _reg_data.get(sym, {}).get('confirmed', '')
+                if _sym_regime in ('BULL_TREND', 'BULL_EARLY', 'BEAR_RECOVERY'):
+                    _forced_dir = 'LONG'   # 顺势：多头体制强制LONG
+                elif _sym_regime in ('BEAR_TREND', 'BEAR_EARLY'):
+                    _forced_dir = 'SHORT'  # 顺势：空头体制强制SHORT
+                if _forced_dir:
+                    pass  # [静默] f'[RegimePreset] {sym} {_sym_regime} → 强制方向={_forced_dir}'
+        except Exception:
+            pass
     # ────────────────────────────────────────────────────────────────────────
 
     result = _core_analyze(sym, signal_dir=_forced_dir, deep=deep)

@@ -33,6 +33,16 @@ kronos_bridge.py — Kronos 大模型 × 梵天 集成桥接层 v1.0
 from __future__ import annotations
 import os, sys, time, json, logging
 
+# [FIX 2026-08-02 设计院] 确保 venv 路径，解决 cron 隔离环境中 torch/lightgbm 找不到的根因
+# 根因：上次修复(42a808f)将ensure_venv_path放在scripts/，但kronos_bridge在brahma_brain/下，没有自动导入
+try:
+    _venv_site = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                              'venv', 'lib', 'python3.11', 'site-packages')
+    if os.path.exists(_venv_site) and _venv_site not in sys.path:
+        sys.path.insert(1, _venv_site)
+except Exception:
+    pass
+
 STATUS = 'BLEND'   # 对外导出状态标识（360评估用）[2026-07-06] shadow→blend
 import numpy as np
 import pandas as pd

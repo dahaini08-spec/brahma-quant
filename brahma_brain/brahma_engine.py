@@ -3192,6 +3192,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _bb23 = _os23.path.dirname(_os23.path.abspath(__file__))
         if _bb23 not in _sys23.path:
             _sys23.path.insert(0, _bb23)
+        # [FIX 2026-08-02 设计院] s23段同步注入venv路径，确保 cron隔离环境能读到 torch/lightgbm
+        _venv_site23 = _os23.path.join(_os23.path.dirname(_bb23), 'venv', 'lib', 'python3.11', 'site-packages')
+        if _os23.path.exists(_venv_site23) and _venv_site23 not in _sys23.path:
+            _sys23.path.insert(1, _venv_site23)
         from kronos_lite import get_s23_score as _get_s23
         from recovery_unlocker import check_unlock as _check_unlock
         # [根本修复 2026-07-12] _sym_t/_dir_t可能因s20 try异常而未定义，这里就地定义

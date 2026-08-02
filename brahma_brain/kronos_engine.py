@@ -33,6 +33,15 @@ from typing import Tuple, Dict, Optional
 
 logger = logging.getLogger("kronos_engine")
 
+# [FIX 2026-08-02 设计院] 确保 venv 路径在 cron 隔离环境中可用
+try:
+    _venv_site_ke = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                  'venv', 'lib', 'python3.11', 'site-packages')
+    if os.path.exists(_venv_site_ke) and _venv_site_ke not in sys.path:
+        sys.path.insert(1, _venv_site_ke)
+except Exception:
+    pass
+
 # [Phase3-1 2026-07-06] 预先加载torch确俛libgomp.so.1可用（lightgbm依赖它）
 # [自愈层 2026-07-24] gateway重启后libgomp软链丢失，自动恢复
 try:

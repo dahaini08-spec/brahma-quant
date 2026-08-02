@@ -54,7 +54,9 @@ def main():
         from brahma_brain.brahma_analysis_runner import run_analysis
         _log_buf = io.StringIO()
         with contextlib.redirect_stdout(_log_buf):
-            r = run_analysis(sym)
+            # [FIX 2026-08-02 设计院] 传入signal_dir=args.dir，修复--dir参数被静默丢弃的根因
+            # 根因：run_analysis旧版未接收signal_dir，内部_forced_dir被体制感知覆盖导致SHORT全部变LONG
+            r = run_analysis(sym, signal_dir=args.dir)
         sys.stderr.write(_log_buf.getvalue())
     except Exception as _runner_err:
         # 降级到裸analyze（兼容保障）
