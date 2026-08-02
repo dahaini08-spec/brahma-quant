@@ -226,6 +226,21 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
                     'order': None}
 
     # 规则3: OBV反向时 score<165 禁止执行
+    # 规则2b: Kronos方向置信度门控 [顶层决策 2026-08-02 设计院自主]
+    # 根因: 历史BULL_TREND LONG 192条 WR=32.8%，主因是p_up方向不匹配
+    # 门控: 做多需p_up>0.55，做空需p_up<0.45
+    _p_up_gate = float(signal.get('s23_p_up', -1) or -1)
+    if _p_up_gate >= 0:  # 有有效p_up数据才门控
+        if _dir_p2 == 'LONG'  and _p_up_gate < 0.55:
+            return {'executed': False,
+                    'reason': f'Kronos方向门控: LONG需p_up>0.55，当前p_up={_p_up_gate:.2f}',
+                    'order': None}
+        if _dir_p2 == 'SHORT' and _p_up_gate > 0.45:
+            return {'executed': False,
+                    'reason': f'Kronos方向门控: SHORT需p_up<0.45，当前p_up={_p_up_gate:.2f}',
+                    'order': None}
+
+    # 规则3 OBV门控:
     _risk_p2 = signal.get('_risk_flags', [])
     if 'OBV_DIVERGENCE' in _risk_p2 and _score_p2 < 165:
         return {'executed': False,
