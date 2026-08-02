@@ -864,6 +864,47 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
 
     if _freshness_warnings:
         result['_data_freshness_warnings'] = _freshness_warnings
+
+    # [Fix-2 2026-08-02 设计院] llm_council_bridge LLM二次审查（score≥140，非阻断）
+    # 540行高价值模块，封印2026-07-01，今日接入主链路
+    # 触发条件: score≥140 + 有效grade≥80（约5%信号，控制token成本）
+    # 输出: 分数微调(-15~+10) + 风险摘要 → result['_llm_council']
+    try:
+        _lc_score = float(result.get('score_final', 0) or 0)
+        _lc_grade = float(result.get('grade', 0) or 0)
+        if _lc_score >= 140 and _lc_grade >= 80:
+            import sys as _lc_sys
+            _lc_sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
+            from llm_council_bridge import review as _lc_review
+            _lc_result = _lc_review(result, market_ctx=None, force=False)
+            if _lc_result and not _lc_result.get('error'):
+                _lc_adj = float(_lc_result.get('score_adj', 0) or 0)
+                if _lc_adj != 0:
+                    result['score_final'] = round(_lc_score + _lc_adj, 2)
+                result['_llm_council'] = {
+                    'adj':     _lc_adj,
+                    'verdict': _lc_result.get('verdict', ''),
+                    'risk':    _lc_result.get('risk_summary', '')[:100],
+                    'cached':  _lc_result.get('from_cache', False),
+                }
+    except Exception:
+        pass  # 非阻断
+
+    # [Fix-1 2026-08-02 设计院] score_final审计trail：记录各层贡献，防止覆写混乱
+    try:
+        _sf_final = float(result.get('score_final', 0) or 0)
+        _sf_raw   = float(result.get('score_final_raw', _sf_final) or _sf_final)
+        _sf_ext   = round(_sf_final - _sf_raw, 2)
+        _sf_oi    = round(float(result.get('_oi_score', 0) or 0) * 0.15, 2)
+        result['_score_audit'] = {
+            'raw':      _sf_raw,
+            'ext_adj':  _sf_ext,
+            'oi_bonus': _sf_oi,
+            'final':    _sf_final,
+        }
+    except Exception:
+        pass
+
     return result
 
 

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh" data-ha-style="dashboard">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIP策略模板预览</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0d0f14;
+    color: #e8eaf0;
+    font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
+    padding: 24px 16px;
+    min-height: 100vh;
+  }
+
+  /* ── 卡片容器 ── */
+  .card {
+    background: #161920;
+    border: 1px solid #252932;
+    border-radius: 16px;
+    padding: 20px;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  /* ── 头部 ── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .brand {
+    font-size: 13px;
+    color: #6b7280;
+    letter-spacing: 0.5px;
+  }
+  .brand span { color: #4ade80; font-weight: 600; }
+  .regime-badge {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: rgba(239,68,68,0.15);
+    color: #f87171;
+    border: 1px solid rgba(239,68,68,0.3);
+  }
+  .date-line {
+    font-size: 11px;
+    color: #4b5563;
+    margin-bottom: 16px;
+  }
+
+  /* ── 币种区块 ── */
+  .coin-block { margin-bottom: 16px; }
+  .coin-header {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .coin-dot { font-size: 14px; }
+  .coin-name { font-size: 15px; font-weight: 700; color: #f3f4f6; }
+  .coin-price { font-size: 15px; font-weight: 600; color: #f3f4f6; }
+  .coin-chg { font-size: 12px; color: #4ade80; }
+  .coin-chg.neg { color: #f87171; }
+
+  /* ── 策略行 ── */
+  .strategy {
+    background: #1e2230;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    border-left: 3px solid #ef4444;
+  }
+  .strategy.long { border-left-color: #22c55e; }
+
+  .strat-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .strat-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #9ca3af;
+    letter-spacing: 0.5px;
+  }
+  .strat-label .dot { font-size: 10px; }
+  .strat-tag {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .tag-short { background: rgba(239,68,68,0.2); color: #fca5a5; }
+  .tag-long  { background: rgba(34,197,94,0.2);  color: #86efac; }
+
+  .strat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 12px;
+  }
+  .strat-item {}
+  .strat-item .lbl {
+    font-size: 10px;
+    color: #6b7280;
+    letter-spacing: 0.5px;
+    margin-bottom: 1px;
+  }
+  .strat-item .val {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e5e7eb;
+    font-variant-numeric: tabular-nums;
+  }
+  .strat-item .val.entry { color: #fbbf24; }
+  .strat-item .val.sl    { color: #f87171; }
+  .strat-item .val.tp    { color: #4ade80; }
+
+  .strat-meta {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #2d3344;
+  }
+  .meta-item {
+    font-size: 11px;
+    color: #6b7280;
+  }
+  .meta-item span { color: #d1d5db; font-weight: 600; }
+
+  /* ── 分隔线 ── */
+  .divider {
+    border: none;
+    border-top: 1px solid #1f2535;
+    margin: 14px 0;
+  }
+
+  /* ── 底部 ── */
+  .footer {
+    background: #1a1e2a;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 4px;
+  }
+  .footer-main {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+  .footer-main strong { color: #fbbf24; }
+  .wr-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .wr-item {
+    font-size: 10px;
+    color: #4b5563;
+  }
+  .wr-item span { color: #6b7280; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- ── 模板A · 完整版 ── -->
+<div class="card" id="templateA">
+
+  <div class="header">
+    <div class="brand">🌿 <span>姓赵不宣</span> · VIP策略播报</div>
+    <div class="regime-badge">BEAR</div>
+  </div>
+  <div class="date-line">2026-08-02 &nbsp;·&nbsp; 熊市趋势</div>
+
+  <!-- BTC -->
+  <div class="coin-block">
+    <div class="coin-header">
+      <span class="coin-dot">🟡</span>
+      <span class="coin-name">BTC</span>
+      <span class="coin-price">$63,380</span>
+      <span class="coin-chg">+0.67%</span>
+    </div>
+
+    <div class="strategy">
+      <div class="strat-head">
+        <div class="strat-label"><span class="dot">🔴</span> 主策略</div>
+        <span class="strat-tag tag-short">做空</span>
+      </div>
+      <div class="strat-grid">
+        <div class="strat-item">
+          <div class="lbl">进场区</div>
+          <div class="val entry">63,577 — 63,923</div>
+        </div>
+        <div class="strat-item">
+          <div class="lbl">止损</div>
+          <div class="val sl">64,534</div>
+        </div>
+        <div class="strat-item">
+          <div class="lbl">目标</div>
+          <div class="val tp">62,965 → 62,785</div>
+        </div>
+        <div class="strat-item">
+          <div class="lbl">R:R</div>
+          <div class="val">1.0</div>
+        </div>
+      </div>
+      <div class="strat-meta">
+        <div class="meta-item">仓位 <span>5%</span></div>
+        <div class="meta-item">杠杆 <span>5x</span></div>
+      </div>
+    </div>
+
+    <div class="strategy long">
+      <div class="strat-head">
+        <div class="strat-label"><span class="dot">🟢</span> 辅策略</div>
+        <span class="strat-tag tag-long">轻多（猎杀后）</span>
+      </div>
+      <div class="strat-grid">
+        <div class="strat-item">
+          <div class="lbl">进场区</div>
+          <div class="val entry">62,785 — 62,966</div>
+        </div>
+        <div class="strat-item">
+          <div class="lbl">止损</div>
+          <div class="val sl">62,319</div>
+        </div>
+        <div class="strat-item">
+          <div class="lbl">目标</div>
+          <div class="val tp">63,370 → 63,577</div>
+        </div>
+        <div class="strat-item">
+          <div class="lbl"></div>
+          <div class="val"></div>
+        </div>
+      </div>
+      <div class="strat-meta">
+        <div class="meta-item">仓位 <span>2%</span></div>
+        <div class="meta-item">杠杆 <span>3x</span></div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ETH -->
+  <div class="coin-block">
+    <div class="coin-header">
+      <span class="coin-dot">🟡</span>
+      <span class="coin-name">ETH</span>
+      <span class="coin-price">$1,875</span>
+      <span class="coin-chg">+0.44%</span>
+    </div>
+
+    <div class="strategy">
+      <div class="strat-head">
+        <div class="strat-label"><span class="dot">🔴</span> 主策略</div>
+        <span class="strat-tag tag-short">做空 · 等突破</span>
+      </div>
+      <div class="strat-grid">
+        <div class="strat-item">
+          <div class="lbl">进场区</div>
+          <div class="val entry">1,887 — 1,891</div>
+        </div>
+        <div class="strat-item">
+          <div class="lbl">止损</div>
+          <div class="val sl">1,920</div>
+        </div>
+        <div class="strat-item">
+          <div class="lbl">目标</div>
+          <div class="val tp">1,865 → 1,860</div>
+        </div>
+        <div class="strat-item">
+          <div class="lbl">R:R</div>
+          <div class="val">1.0</div>
+        </div>
+      </div>
+      <div class="strat-meta">
+        <div class="meta-item">仓位 <span>3%</span></div>
+        <div class="meta-item">杠杆 <span>5x</span></div>
+      </div>
+    </div>
+
+    <div class="strategy">
+      <div class="strat-head">
+        <div class="strat-label"><span class="dot">🔴</span> 辅策略</div>
+        <span class="strat-tag tag-short">破位追空</span>
+      </div>
+      <div class="strat-grid">
+        <div class="strat-item">
+          <div class="lbl">进场区</div>
+          <div class="val entry">1,868 — 1,871</div>
+        </div>
+        <div class="strat-item">
+          <div class="lbl">止损</div>
+          <div class="val sl">1,876</div>
+        </div>
+        <div class="strat-item">
+          <div class="lbl">目标</div>
+          <div class="val tp">1,860 → 1,847</div>
+        </div>
+        <div class="strat-item">
+          <div class="lbl"></div>
+          <div class="val"></div>
+        </div>
+      </div>
+      <div class="strat-meta">
+        <div class="meta-item">仓位 <span>2%</span></div>
+        <div class="meta-item">杠杆 <span>5x</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部 -->
+  <div class="footer">
+    <div class="footer-main">
+      ⚠️ <strong>空为主线</strong> · BTC 等反弹触 Bear OB 再空 &nbsp;/&nbsp; ETH 等方向确认
+    </div>
+    <div class="wr-row">
+      <div class="wr-item">历史回测 <span>WR 72.3%(BTC) / 73.7%(ETH)</span></div>
+      <div class="wr-item">实测 <span>WR 42%（n=120）</span></div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -34,7 +34,7 @@ try:
 except Exception:
     API_KEY       = os.environ.get('BINANCE_API_KEY', '')
     API_SECRET    = os.environ.get('BINANCE_API_SECRET', '')
-    JARVIS_TARGET = '73295708:thread:019fb612-d570-7f0b-89c5-2065284157e0'  # 2026-07-28 SSOT修复
+    JARVIS_TARGET = '73295708:thread:019f8768-6731-777d-8924-2426a5abd10f'  # 2026-07-28 SSOT修复
 
 FAPI = 'https://fapi.binance.com'
 

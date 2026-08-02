@@ -66,7 +66,7 @@ try:
     JARVIS_TARGET = f'{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}'
 except Exception:
     FAPI_BASE     = 'https://fapi.binance.com'
-    JARVIS_TARGET = '73295708:t:019fb612-d570-7f0b-89c5-2065284157e0'
+    JARVIS_TARGET = '73295708:t:019f8768-6731-777d-8924-2426a5abd10f'
     JARVIS_CHANNEL = 'jarvis'
     API_KEY = API_SECRET = ''
 

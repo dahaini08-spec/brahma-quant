@@ -33,7 +33,7 @@ try:
     JARVIS_THREAD   = os.environ.get("JARVIS_THREAD_ID", _TID)
 except Exception:
     JARVIS_USER     = os.environ.get("JARVIS_USER_ID", "73295708")
-    JARVIS_THREAD   = os.environ.get("JARVIS_THREAD_ID", "019fb612-d570-7f0b-89c5-2065284157e0")  # 2026-07-28 SSOT修复
+    JARVIS_THREAD   = os.environ.get("JARVIS_THREAD_ID", "019f8768-6731-777d-8924-2426a5abd10f")  # 2026-07-28 SSOT修复
 ZIP_PATH        = Path(__file__).parent.parent.parent / "brahma_pro_weights_v7.zip"
 
 def load_state() -> dict:
