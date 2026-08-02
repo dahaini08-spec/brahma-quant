@@ -25,34 +25,34 @@
       "grade": 85.0,
       "notional": 56.2845,
       "opened_at": 1785637427.9972465,
-      "source": "\u8bbe\u8ba1\u9662\u9876\u7ea7\u5408\u7ea6\u4ea4\u6613\u5458\u81ea\u4e3b\u51b3\u7b56 2026-08-02",
+      "source": "设计院顶级合约交易员自主决策 2026-08-02",
       "success": true
     }
   ],
   "regime": "BEAR_TREND",
   "n_open": 0,
   "total_pnl": 0.0,
-  "last_update": 1785636711.988376,
+  "last_update": 1785638538.9893599,
   "source": "reconcile_rebuild_20260628",
   "ws_guardian_sync": true,
   "last_sync": "2026-06-29T04:35:35.517800+00:00",
   "_last_manual_refresh": "cleared_by_design_institute_20260725",
-  "_refresh_reason": "\u8bbe\u8ba1\u9662\u5c01\u53e3\u56fa\u5316 2026-07-20 \u624b\u52a8\u5237\u65b0",
+  "_refresh_reason": "设计院封口固化 2026-07-20 手动刷新",
   "_price_btc": 64117.9,
   "_price_eth": 1870.73,
   "_refreshed_at": 1784527892.009376,
   "_refreshed_by": "design_institute_seal_2026-07-20",
-  "updated_at": "2026-08-02T02:11:51.988178+00:00",
-  "last_updated": "2026-08-02T02:11:51.988178+00:00",
-  "last_scan_ts": "2026-08-02T02:11:51.988178+00:00",
-  "timestamp": 1785636711.9883766,
-  "last_price": 63357.1,
-  "btc_price": 63357.1,
-  "price": 63357.1,
-  "eth_price": 1874.41,
+  "updated_at": "2026-08-02T02:42:18.989156+00:00",
+  "last_updated": "2026-08-02T02:42:18.989156+00:00",
+  "last_scan_ts": "2026-08-02T02:42:18.989156+00:00",
+  "timestamp": 1785638538.9893606,
+  "last_price": 63323.7,
+  "btc_price": 63323.7,
+  "price": 63323.7,
+  "eth_price": 1872.69,
   "market_prices": {
-    "BTCUSDT": 63357.1,
-    "ETHUSDT": 1874.41
+    "BTCUSDT": 63323.7,
+    "ETHUSDT": 1872.69
   },
   "regime_label": "BEAR_TREND",
   "regime_snapshot": {
@@ -60,14 +60,14 @@
     "regime": "BEAR_TREND",
     "phase": "CORRECTION",
     "momentum": "SHORT",
-    "rsi_1h": 63.28,
-    "rsi_4h": 47.18,
-    "rsi_1d": 46.78,
+    "rsi_1h": 62.38,
+    "rsi_4h": 46.7,
+    "rsi_1d": 46.64,
     "trend_1h": "BEAR",
     "trend_4h": "BEAR",
     "trend_1d": "CHOP",
     "source": "market_state.detect_regime",
-    "ts": 1785636712.9247463
+    "ts": 1785638539.5893307
   },
   "ws_guardian": {
     "pid": 0,
@@ -81,5 +81,7 @@
   "regime_source": "sync_from_regime_switch_state",
   "nav": 89.57791302,
   "available": 81.0375252,
-  "nav_updated": "2026-07-20T13:34:31Z"
+  "nav_updated": "2026-07-20T13:34:31Z",
+  "btc_regime": "BEAR_TREND",
+  "eth_regime": "BEAR_TREND"
 }
