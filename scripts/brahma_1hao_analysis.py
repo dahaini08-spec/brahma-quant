@@ -351,8 +351,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         "▌ GATE-0 · 体制与门控",
         f"  Regime:        {regime}（{regime_key}）× mult={regime_mult}",
         f"  score_final:   {score_final}（raw={score_raw}）",
-        f"  grade_num:     {grade_num} {grade_label}",
-        f"  effective_grade: {eff_grade}",
+        "  grade_num:     " + str(grade_num) + "  structure_grade=" + str(cf.get("structure_grade","?")) + "  effective_grade=" + str(eff_grade) + "  grade_mult=" + str(cf.get("grade_mult","?")),  # #6 fix 2026-08-02
         f"  {gate_str}",
     ]
     if ema20_1h_note:
@@ -385,10 +384,18 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
     # 封印结论
     lines += ["", sep2, "▌ 封印结论"]
     if gate_pass:
-        lines += [
-            f"  ✅ 信号有效  score={score_final}  grade={eff_grade}",
-            f"  方向: {direction}  入场条件具备",
-        ]
+        # [FIX 2026-08-02 #3] BULL_CHoCH + SHORT = 结构对抗，降级标注
+        if _has_bull_choch and direction == 'SHORT':
+            lines += [
+                f"  ⚠️ 信号有效（结构对抗）  score={score_final}  grade={eff_grade}",
+                f"  方向: {direction}  入场条件具备，但存在BULL_CHoCH结构风险",
+                f"  建议: 半仓入场，等CHoCH回测失败后加仓",
+            ]
+        else:
+            lines += [
+                f"  ✅ 信号有效  score={score_final}  grade={eff_grade}",
+                f"  方向: {direction}  入场条件具备",
+            ]
     else:
         # 给出解封条件
         smc_st = smc.get('structure', {})

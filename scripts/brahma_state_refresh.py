@@ -68,6 +68,13 @@ def main():
             _trend = _ms.get('trend', {})
             state['regime'] = _regime_label
             state['regime_label'] = _regime_label  # [FIX v25.6 2026-06-20] regime_label与regime保持一致，消除双字段冲突
+            # [FIX 2026-08-02] 补写btc_regime/eth_regime兼容字段（brahma_dashboard/square_data_collector依赖）
+            try:
+                _eth_regime_val = _rss.get('ETHUSDT', {}).get('regime', '') or _regime_label
+            except Exception:
+                _eth_regime_val = _regime_label
+            state['btc_regime'] = _regime_label
+            state['eth_regime'] = _eth_regime_val
             # 构建 regime_snapshot（与 market_state 结构对齐）
             state['regime_snapshot'] = {
                 'symbol':     'BTCUSDT',
