@@ -632,18 +632,24 @@ def check_kronos_lgbm() -> dict:
         else:
             issues.append('libgomp.so.1不可用，torch/lib路径也缺失')
 
-    # 2. 检查lightgbm import
+    # 2. 检查lightgbm import（通过venv路径自注入）
+    # [FIX 2026-08-02 设计院] 自愈脚本拆立运行时没有venv路径，裸import lgbm会失败
+    # 修复：先注入venv site-packages，再 import
     try:
+        import sys as _sys_lgbm, os as _os_lgbm
+        _venv_sp = str(BASE / 'venv' / 'lib' / 'python3.11' / 'site-packages')
+        if _os_lgbm.path.exists(_venv_sp) and _venv_sp not in _sys_lgbm.path:
+            _sys_lgbm.path.insert(1, _venv_sp)
         import lightgbm as lgb  # noqa
     except ImportError as _e:
         issues.append(f'lightgbm import失败: {str(_e)[:60]}')
         return {'ok': False, 'warn': True, 'issues': issues,
                 'detail': ' | '.join(issues)}
 
-    # 3. 检查模型文件
+    # 3. 检查模型文件（lgbm训练模型，Kronos在线预测用NeoQuasar/Kronos-mini，不是必须）
     _wf_model = BASE / 'data' / 'kronos_wf_model_lgb.txt'
     if not _wf_model.exists():
-        issues.append('kronos_wf_model_lgb.txt不存在')
+        pass  # [FIX 2026-08-02] 在线预测用Kronos-mini模型，lgb.txt是离线训练文件，不影响运行
 
     # 4. 检查MODE
     _kb_path = BASE / 'brahma_brain' / 'kronos_bridge.py'
@@ -685,7 +691,9 @@ def check_analysis_chain() -> dict:
              'import sys; sys.path.insert(0,".");'
              'from brahma_brain.brahma_analysis_runner import run_analysis;'
              'from brahma_brain.brahma_engine import analyze;'
-             'print("OK imports验证通过")'],
+             'import inspect; sig=str(inspect.signature(run_analysis));'
+             'assert "signal_dir" in sig, "REGRESSION:signal_dir参数缺失!";'
+             'print("OK imports+signal_dir验证通过")'],
             capture_output=True, text=True, timeout=8,
             cwd=str(BASE)
         )
