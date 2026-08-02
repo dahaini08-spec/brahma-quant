@@ -782,6 +782,24 @@ def check_execution_pipeline() -> dict:
         except Exception:
             pass
 
+    # [FIX 2026-08-02 设计院] WR门控自愈检查：防止BULL_TREND LONG WR<45%时仍被执行
+    try:
+        import json as _wr_j
+        _wr_records = [_wr_j.loads(l) for l in (BASE/'data'/'live_signal_log.jsonl').read_text().strip().splitlines() if l.strip()]
+        _wr_bull = [r for r in _wr_records if r.get('regime')=='BULL_TREND' and r.get('direction')=='LONG' and r.get('outcome') in ('TP1','SL')]
+        _wr_tp = sum(1 for r in _wr_bull if r.get('outcome')=='TP1')
+        _wr_n = len(_wr_bull)
+        if _wr_n >= 20:
+            _wr_val = _wr_tp / _wr_n
+            # 检查auto_executor是否有WR门控代码
+            _exec_src = (BASE/'scripts'/'auto_executor.py').read_text()
+            if 'WR门控-OBSERVE' not in _exec_src:
+                issues.append(f'REGRESSION: auto_executor缺失WR门控，BULL_TREND LONG WR={_wr_val*100:.1f}%仍会执行')
+            elif _wr_val < 0.45:
+                pass  # WR<45%但门控存在，正常OBSERVE状态
+    except Exception:
+        pass
+
     return {
         'ok': len(issues) == 0,
         'warn': len(issues) > 0,
