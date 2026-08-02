@@ -106,7 +106,7 @@ $(echo "$OUT" | grep -E '清除|保留|总计|失效' | head -10)"
 
   market-screener)
     # 更新scan_candidates.json，正常完全静默
-    OUT=$(cd "$BASE" && timeout 60 python3 scripts/market_screener.py --silent 2>&1 | tail -3)
+    OUT=$(cd "$BASE" && timeout 60 python3 scripts/market_screener.py 2>&1 | tail -3)
     log "$OUT"
     if echo "$OUT" | grep -qiE 'traceback|exception|error.*failed'; then
         send_alert "🚨 [market-screener失败] $(echo "$OUT" | tail -2)"
