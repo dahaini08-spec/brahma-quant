@@ -77,8 +77,9 @@ def _get_free_date() -> tuple[str, str, str]:
     now = datetime.now(timezone.utc)
     # 当月1日
     first_this = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    # 数据导出通常延迟1-2天，当月1日若<2天前则用上月1日
-    if (now - first_this).total_seconds() < 2 * 86400:
+    # 数据导出通常延迟约24h，当月1日若<1天前则用上月1日
+    # [P2修复 2026-08-02 设计院] 阈值从2天→1天：8月2日距8月1日已>24h，数据已可用
+    if (now - first_this).total_seconds() < 1 * 86400:
         # 用上月1日
         if now.month == 1:
             y, m = now.year - 1, 12
