@@ -242,28 +242,50 @@ def find_fvg(highs: list, lows: list, closes: list, lookback: int = 50) -> dict:
     bull_fvg = [f for f in bull_fvg if not f['filled']]
     bear_fvg = [f for f in bear_fvg if not f['filled']]
 
-    # [设计院 2026-05-30] 方向约束：做空FVG必须在当前价上方，做多FVG必须在下方
-    # 原排序「按距离最近」会选出当前价旁的micro-FVG，导致入场区逻辑倒置
-    # 修复：先过滤方向，再按距离排序
-    bull_fvg_valid = [f for f in bull_fvg if f['mid'] < price * 0.999]   # [A2修复] 做多：FVG在价格下方0.1%+(原0.3%过严)
-    bear_fvg_valid = [f for f in bear_fvg if f['mid'] > price * 1.001]   # [A2修复] 做空：FVG在价格上方0.1%+(原0.3%过严)
+    # [FIX 2026-08-02 设计院自主] FVG双语义分类
+    # BEAR FVG分两类：
+    #   supply_bear = FVG在价格上方（供给区/阻力，做空最优入场区）
+    #   target_bear = FVG在价格下方（未填充磁铁目标，做空TP参考）
+    # BULL FVG同理（demand_bull=下方支撑，target_bull=上方磁铁）
+    # nearest_bear 优先选supply（价格上方），无供给时退化为全局最近
 
-    # 有效FVG按距离排序，降级用原始列表
-    bull_fvg_valid.sort(key=lambda x: abs(x['mid'] - price))
-    bear_fvg_valid.sort(key=lambda x: abs(x['mid'] - price))
-    bull_fvg.sort(key=lambda x: abs(x['mid'] - price))
-    bear_fvg.sort(key=lambda x: abs(x['mid'] - price))
+    supply_bear  = [f for f in bear_fvg if f['mid'] > price * 1.001]   # 供给区（上方阻力）
+    target_bear  = [f for f in bear_fvg if f['mid'] < price * 0.999]   # 目标区（下方磁铁）
+    demand_bull  = [f for f in bull_fvg if f['mid'] < price * 0.999]   # 需求区（下方支撑）
+    target_bull  = [f for f in bull_fvg if f['mid'] > price * 1.001]   # 目标区（上方磁铁）
 
-    nearest_bull = bull_fvg_valid[0] if bull_fvg_valid else None   # 有效FVG优先
-    nearest_bear = bear_fvg_valid[0] if bear_fvg_valid else None   # 有效FVG优先
+    # [P0修复 2026-08-02 设计院] 价格在FVG内部时的边界盲区修复
+    # 当price在FVG区间内（bottom < price < top），mid可能处于price附近±0.1%内
+    # 导致既不进supply也不进target → nearest_bear=None BUG
+    # 修复：将「价格穿行中的BEAR FVG」归入supply_bear（回测供给区，做空最高优先级）
+    # 同理BULL FVG穿行中归入demand_bull
+    for f in bear_fvg:
+        if f['bottom'] < price < f['top'] and f not in supply_bear and f not in target_bear:
+            f['active_retest'] = True  # 标注为「价格回测供给区」
+            supply_bear.append(f)
+    for f in bull_fvg:
+        if f['bottom'] < price < f['top'] and f not in demand_bull and f not in target_bull:
+            f['active_retest'] = True  # 标注为「价格回测需求区」
+            demand_bull.append(f)
+
+    for lst in (supply_bear, target_bear, demand_bull, target_bull, bull_fvg, bear_fvg):
+        lst.sort(key=lambda x: abs(x['mid'] - price))
+
+    # nearest_bear：优先供给区（上方+穿行中），无则取最近已穿越目标
+    nearest_bear = supply_bear[0] if supply_bear else (target_bear[0] if target_bear else (bear_fvg[0] if bear_fvg else None))
+    nearest_bull = demand_bull[0] if demand_bull else (target_bull[0] if target_bull else (bull_fvg[0] if bull_fvg else None))
 
     return {
-        'bull_fvg':     bull_fvg[:3],
-        'bear_fvg':     bear_fvg[:3],
-        'nearest_bull': nearest_bull,
-        'nearest_bear': nearest_bear,
-        'magnet_up':    nearest_bear['mid'] if nearest_bear and nearest_bear['mid'] > price else None,
-        'magnet_down':  nearest_bull['mid'] if nearest_bull and nearest_bull['mid'] < price else None,
+        'bull_fvg':      bull_fvg[:3],
+        'bear_fvg':      bear_fvg[:3],
+        'supply_bear':   supply_bear[:2],   # 上方供给FVG（做空入场区）
+        'target_bear':   target_bear[:2],   # 下方目标FVG（做空TP参考）
+        'demand_bull':   demand_bull[:2],   # 下方需求FVG（做多入场区）
+        'target_bull':   target_bull[:2],   # 上方目标FVG（做多TP参考）
+        'nearest_bull':  nearest_bull,
+        'nearest_bear':  nearest_bear,
+        'magnet_up':     target_bull[0]['mid'] if target_bull else (nearest_bear['mid'] if nearest_bear and nearest_bear['mid'] > price else None),
+        'magnet_down':   target_bear[0]['mid'] if target_bear else (nearest_bull['mid'] if nearest_bull and nearest_bull['mid'] < price else None),
     }
 
 # ═══════════════════════════════════════════════════════════════
