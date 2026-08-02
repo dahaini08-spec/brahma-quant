@@ -286,6 +286,30 @@ def find_executable_signals() -> list[dict]:
         direction = s.get('direction') or s.get('signal_dir', '')
         if (regime, direction) in DEAD_ZONE:
             continue
+        # ④+ [FIX 2026-08-02 设计院自主] BULL_TREND LONG WR门控
+        # 根据：真实WR=33.6%(n=192)，严重低于饱和线45%，继续自动执行EV为负
+        # 键入OBSERVE模式：只记录不执行，直到真实WR重新校准超过45%
+        if regime == 'BULL_TREND' and direction == 'LONG':
+            _wr_ok = False
+            try:
+                import json as _wr_j
+                from pathlib import Path as _wr_P
+                _wr_records = [_wr_j.loads(l) for l in _wr_P('data/live_signal_log.jsonl').read_text().strip().split('\n') if l.strip()]
+                _wr_bull = [r for r in _wr_records if r.get('regime')=='BULL_TREND' and r.get('direction')=='LONG' and r.get('outcome') in ('TP1','SL')]
+                _wr_tp   = sum(1 for r in _wr_bull if r.get('outcome')=='TP1')
+                _wr_n    = len(_wr_bull)
+                _wr_val  = _wr_tp/_wr_n if _wr_n >= 20 else None  # n<20数据不足，不强制拦截
+                if _wr_val is not None and _wr_val >= 0.45:
+                    _wr_ok = True  # WR达标，允许执行
+                elif _wr_val is not None and _wr_val < 0.45:
+                    _wr_ok = False
+                    print(f'[WR门控-OBSERVE] BULL_TREND LONG WR={_wr_val*100:.1f}%({_wr_n}条)<45% 事实不达标，降级OBSERVE不执行')
+                else:
+                    _wr_ok = True  # 数据不足，不拦截
+            except Exception:
+                _wr_ok = True  # 读取失败不拦截
+            if not _wr_ok:
+                continue  # OBSERVE模式：展示信号但不执行
         # ⑤b [设计院 A3 2026-06-30] BRAHMA标签验证：拒绝执行WARN/ERR信号
         _tag = s.get('output_tag', '')
         if _tag:
