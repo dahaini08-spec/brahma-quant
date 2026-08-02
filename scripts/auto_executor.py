@@ -290,6 +290,35 @@ def find_executable_signals() -> list[dict]:
                 s['_pos_source'] = 'pos_pct_sizer'
             # else: sizer建议超出tier上限，维持tier值（保守原则）
 
+        # ══ [P1接入 2026-08-02 设计院自主] position_sizer Kelly动态仓位 ═══════════════════════
+        # 规则：Kelly动态仓位作为参考，与tier_nav_pct取最小值（保守原则）
+        # 接入点：_tier_nav_pct确定后，pos_pct_sizer覆盖后
+        try:
+            from brahma_brain.position_sizer import get_position_pct as _ps_fes
+            _fg_fes = None
+            try:
+                from brahma_brain.options_engine import get_fear_greed_index as _fg_fn
+                _fg_fes = _fg_fn()
+            except Exception:
+                pass
+            _ps_res_fes = _ps_fes(
+                symbol=s.get('symbol', ''),
+                score=float(s.get('score', 0) or 0),
+                direction=s.get('direction') or s.get('signal_dir', ''),
+                fear_greed=_fg_fes,
+                regime=s.get('regime', ''),
+            )
+            if _ps_res_fes.get('allowed'):
+                _kelly_nav = (_ps_res_fes.get('pct', 0) or 0) / 100.0  # % → 小数
+                _cur_tier_pct = s.get('_tier_nav_pct', 0.05)
+                # 保守原则：Kelly建议低于tier上限时才覆盖
+                if 0 < _kelly_nav < _cur_tier_pct:
+                    s['_tier_nav_pct'] = round(_kelly_nav, 5)
+                    s['_pos_source'] = (s.get('_pos_source', '') + '+kelly_sizer').lstrip('+')
+        except Exception:
+            pass  # position_sizer失败不阻断
+        # ══ [position_sizer END] ═══════════════════════════════════════════════════════════════
+
         # ③ RR门槛
         rr1 = float(s.get('rr1', 0) or 0)
         if rr1 < MIN_RR:
@@ -848,6 +877,44 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     if notional < _sym_min:
         notional = _sym_min  # [设计院自主 2026-07-31] 任意tier均课保至symbol MIN_NOTIONAL
         print(f'[MIN_NOTIONAL课保] {sym} score={score:.0f} tier={signal.get("_tier","?")} 仓位课保至{sym}MIN=${notional:.1f}')
+
+    # ── [P1接入 2026-08-02 设计院自主] var_engine VaR风控 ─────────────────────
+    # 规则：var_99 > 35%NAV → 强制降仓至max(MIN_NOTIONAL, notional×0.5)（硬限）
+    #        var_99 > 20%NAV → 告警但不阻断
+    # 接入点：notional最终确定后（MIN_NOTIONAL课保后，blacktea前）
+    try:
+        from brahma_brain.var_engine import single_position_var as _var_exe
+        _pos_pct_nav = notional / nav if nav > 0 else 0
+        _var_res = _var_exe(
+            symbol=sym,
+            confidence=0.05,
+            signal_dir=direction,
+            pos_pct_nav=_pos_pct_nav,
+            nav_usd=nav,
+        )
+        if _var_res.get('available'):
+            _var99_usd = _var_res.get('var_99_usd', 0) or 0
+            _var99_pct_nav = _var99_usd / nav * 100 if nav > 0 else 0
+            _var_grade = _var_res.get('risk_grade', 'UNKNOWN')
+            if _var99_pct_nav > 35.0:
+                # 强制降仓：硬限，不可绕过
+                _old_notional = notional
+                notional = max(_sym_min, notional * 0.5)
+                print(f'[VaR硬限] {sym} var99={_var99_pct_nav:.1f}%NAV>35% '
+                      f'grade={_var_grade} 强制降仓 ${_old_notional:.1f}→${notional:.1f}')
+                result['_var_forced'] = True
+                result['_var_note']   = _var_res.get('note', '')
+            elif _var99_pct_nav > 20.0:
+                # 告警：记录但不阻断
+                print(f'[VaR告警] {sym} var99={_var99_pct_nav:.1f}%NAV>20% '
+                      f'grade={_var_grade} {_var_res.get("note","")}')
+                result['_var_warn']   = True
+                result['_var_note']   = _var_res.get('note', '')
+            result['_var_grade']      = _var_grade
+            result['_var99_pct_nav']  = round(_var99_pct_nav, 2)
+    except Exception as _var_e:
+        pass  # VaR计算失败不阻断执行
+    # ── [P1 var_engine END] ───────────────────────────────────────────────────
 
     # ── blacktea审批门（苏摩111 2026-07-10）─────────────────────────────────
     # 单笔>NAV×8% → 推送审批请求 → 30min无回复自动降仓

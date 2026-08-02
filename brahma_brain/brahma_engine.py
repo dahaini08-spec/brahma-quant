@@ -3625,6 +3625,42 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass
     # ══ [PositionSizer END] ════════════════════════════════════════════════════
 
+    # ══ [P2接入 2026-08-02 设计院自主] divergence_engine 背离信号字段输出 ══════════
+    # 职责：将extra_data中的背离维度结果注入_result，供下游直接读取
+    # 效果：auto_executor/signal_trace可直接检查div_signal字段感知背离状态
+    try:
+        _div_data = extra_data.get('divergence') if extra_data else None
+        if _div_data and _div_data.get('score', 0) > 0:
+            _div_sc   = _div_data.get('score', 0)
+            _rsi_div  = _div_data.get('rsi_div', {}) or {}
+            _macd_div = _div_data.get('macd_div', {}) or {}
+            # 背离类型判断：常规背离 > 隐藏背离 > MACD背离
+            _div_type = 'NONE'
+            if _rsi_div.get('regular_bull') or _rsi_div.get('regular_bear'):
+                _div_type = 'RSI_REGULAR'
+            elif _rsi_div.get('hidden_bull') or _rsi_div.get('hidden_bear'):
+                _div_type = 'RSI_HIDDEN'
+            elif _macd_div.get('regular_bull') or _macd_div.get('regular_bear'):
+                _div_type = 'MACD_REGULAR'
+            elif _macd_div.get('hidden_bull') or _macd_div.get('hidden_bear'):
+                _div_type = 'MACD_HIDDEN'
+            _div_active = _div_type != 'NONE'
+            _result['div_signal']    = _div_active
+            _result['div_type']      = _div_type
+            _result['div_score']     = round(float(_div_sc), 2)
+            _result['div_rsi_bull']  = bool(_rsi_div.get('regular_bull') or _rsi_div.get('hidden_bull'))
+            _result['div_rsi_bear']  = bool(_rsi_div.get('regular_bear') or _rsi_div.get('hidden_bear'))
+            _result['div_macd_zero'] = _div_data.get('macd_zero', '')
+            if _div_active:
+                print(f'[div_signal] {_sym} {signal_dir}: {_div_type} score={_div_sc:.1f}')
+        else:
+            _result['div_signal'] = False
+            _result['div_type']   = 'NONE'
+            _result['div_score']  = 0
+    except Exception:
+        pass
+    # ══ [divergence_engine P2 END] ═════════════════════════════════════════════
+
     # ══ [设计院 2026-06-30 全量接入] BrahmaEventBus 信号事件发布 ══════════════
     # 模块: brahma_event_bus · 信号发出时publish，解耦跨模块通信
     try:
