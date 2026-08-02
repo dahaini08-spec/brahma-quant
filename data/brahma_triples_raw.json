@@ -1,0 +1,527 @@
+[
+  {
+    "subject": "梵天1号工程",
+    "predicate": "包含",
+    "object": "run_health_check"
+  },
+  {
+    "subject": "梵天1号工程",
+    "predicate": "包含",
+    "object": "brahma_360.py"
+  },
+  {
+    "subject": "梵天1号工程",
+    "predicate": "包含",
+    "object": "brahma_smoke_test.py"
+  },
+  {
+    "subject": "梵天1号工程",
+    "predicate": "包含",
+    "object": "封口宪法5道门控"
+  },
+  {
+    "subject": "苏摩111",
+    "predicate": "门控",
+    "object": "重大改动落地"
+  },
+  {
+    "subject": "brahma_smoke_test.py",
+    "predicate": "门控",
+    "object": "封口"
+  },
+  {
+    "subject": "梵天系统",
+    "predicate": "策略是",
+    "object": "唯一分析与执行入口"
+  },
+  {
+    "subject": "BEAR_TREND_LONG",
+    "predicate": "封禁",
+    "object": "做多"
+  },
+  {
+    "subject": "BEAR_TREND_LONG",
+    "predicate": "属于",
+    "object": "死穴"
+  },
+  {
+    "subject": "CHOP_LONG",
+    "predicate": "属于",
+    "object": "死穴"
+  },
+  {
+    "subject": "BULL_TREND_SHORT",
+    "predicate": "属于",
+    "object": "死穴"
+  },
+  {
+    "subject": "AI Cron",
+    "predicate": "约束",
+    "object": "--channel jarvis"
+  },
+  {
+    "subject": "BEAR_TREND体制",
+    "predicate": "策略是",
+    "object": "空为主+轻多"
+  },
+  {
+    "subject": "BULL_TREND体制",
+    "predicate": "策略是",
+    "object": "多为主+轻空"
+  },
+  {
+    "subject": "CHOP_MID体制",
+    "predicate": "策略是",
+    "object": "不发策略"
+  },
+  {
+    "subject": "BEAR_RECOVERY体制",
+    "predicate": "封禁",
+    "object": "空单"
+  },
+  {
+    "subject": "BEAR体制",
+    "predicate": "包含",
+    "object": "SL=2.0% EV=+0.578%"
+  },
+  {
+    "subject": "CHOP体制",
+    "predicate": "包含",
+    "object": "SL=2.5% EV=+0.811%"
+  },
+  {
+    "subject": "CHOP SHORT",
+    "predicate": "约束",
+    "object": "乘数0.88 min_score=120"
+  },
+  {
+    "subject": "wr_matrix_v7",
+    "predicate": "包含",
+    "object": "BEAR_fresh BTC WR=75.6%"
+  },
+  {
+    "subject": "RSI>60做空BEAR_TREND",
+    "predicate": "计算",
+    "object": "WR=68.1%"
+  },
+  {
+    "subject": "atr4h×小乘数",
+    "predicate": "封禁",
+    "object": "止损计算"
+  },
+  {
+    "subject": "做空止损",
+    "predicate": "策略是",
+    "object": "进场区上沿×(1+SL_PCT)"
+  },
+  {
+    "subject": "做多止损",
+    "predicate": "策略是",
+    "object": "进场区下沿×(1-SL_PCT)"
+  },
+  {
+    "subject": "止损距离",
+    "predicate": "约束",
+    "object": "≥1.5×ATR4H"
+  },
+  {
+    "subject": "暴涨猎手系统",
+    "predicate": "计算",
+    "object": "TIGHT压缩WR=97.5%"
+  },
+  {
+    "subject": "TIGHT(<15%)",
+    "predicate": "计算",
+    "object": "评分+40"
+  },
+  {
+    "subject": "RSI<30",
+    "predicate": "计算",
+    "object": "评分+25"
+  },
+  {
+    "subject": "评分≥75",
+    "predicate": "告警",
+    "object": "暴涨预警"
+  },
+  {
+    "subject": "评分≥85",
+    "predicate": "告警",
+    "object": "三级预警"
+  },
+  {
+    "subject": "CHOP_MID体制",
+    "predicate": "约束",
+    "object": "score≥110→WATCH 0.5%NAV"
+  },
+  {
+    "subject": "P0紧急信号",
+    "predicate": "输出",
+    "object": "直推Jarvis线程"
+  },
+  {
+    "subject": "P1重要信号",
+    "predicate": "包含",
+    "object": "OI异动/score≥138/暴涨预警"
+  },
+  {
+    "subject": "P4静默信号",
+    "predicate": "输出",
+    "object": "HEARTBEAT_OK"
+  },
+  {
+    "subject": "OB新鲜度age≤3",
+    "predicate": "对应",
+    "object": "权重1.0x"
+  },
+  {
+    "subject": "OB新鲜度age4-6",
+    "predicate": "对应",
+    "object": "权重0.75x"
+  },
+  {
+    "subject": "OB新鲜度age7-10",
+    "predicate": "对应",
+    "object": "权重0.5x"
+  },
+  {
+    "subject": "OB新鲜度age>10",
+    "predicate": "对应",
+    "object": "权重0.3x"
+  },
+  {
+    "subject": "OB新鲜度broken",
+    "predicate": "对应",
+    "object": "权重0x"
+  },
+  {
+    "subject": "CausalVerifier惩罚",
+    "predicate": "修复了",
+    "object": "BLOCKED -25→-12减半"
+  },
+  {
+    "subject": "timing_filter.py",
+    "predicate": "包含",
+    "object": "三层感知时机门控"
+  },
+  {
+    "subject": "READY状态",
+    "predicate": "约束",
+    "object": "score≥65"
+  },
+  {
+    "subject": "READY状态",
+    "predicate": "策略是",
+    "object": "等CHoCH入场"
+  },
+  {
+    "subject": "MONITOR状态",
+    "predicate": "约束",
+    "object": "score 40-64"
+  },
+  {
+    "subject": "WAIT状态",
+    "predicate": "约束",
+    "object": "score<40"
+  },
+  {
+    "subject": "时机门控三维评分",
+    "predicate": "包含",
+    "object": "价格位置40分+RSI_1H35分+Kronos p_up20分"
+  },
+  {
+    "subject": "check_correlation_risk()",
+    "predicate": "计算",
+    "object": "BTC/ETH相关性去重"
+  },
+  {
+    "subject": "双向同时有效信号",
+    "predicate": "对应",
+    "object": "1.85x BTC风险敞口"
+  },
+  {
+    "subject": "GEX到期日",
+    "predicate": "触发",
+    "object": "GEX权重×1.5"
+  },
+  {
+    "subject": "BTC单边下行豁免通道",
+    "predicate": "修复了",
+    "object": "WAIT阈值65→55"
+  },
+  {
+    "subject": "分批出场策略",
+    "predicate": "包含",
+    "object": "50%@TP1(2%)+50%追踪止损"
+  },
+  {
+    "subject": "BTC 4H反弹",
+    "predicate": "触发",
+    "object": "ETH空单仓位自动×0.5"
+  },
+  {
+    "subject": "新宪法做空入场规则",
+    "predicate": "约束",
+    "object": "RSI_1H达标AND价格<EMA20_1H"
+  },
+  {
+    "subject": "rsi_structure_watcher.py",
+    "predicate": "监控",
+    "object": "every 5min 0tokens"
+  },
+  {
+    "subject": "E4事件",
+    "predicate": "触发",
+    "object": "价格跌破48H低"
+  },
+  {
+    "subject": "静默封印",
+    "predicate": "约束",
+    "object": "RSI_1H 45~60且BB<0.8%→完全静默"
+  },
+  {
+    "subject": "brahma_scan_all",
+    "predicate": "计算",
+    "object": "35维评分"
+  },
+  {
+    "subject": "score≥155",
+    "predicate": "触发",
+    "object": "写入信号日志"
+  },
+  {
+    "subject": "brahma-scan-guard",
+    "predicate": "监控",
+    "object": "every 12H 48000tokens/天"
+  },
+  {
+    "subject": "35维矩阵",
+    "predicate": "包含",
+    "object": "趋势层"
+  },
+  {
+    "subject": "35维矩阵",
+    "predicate": "包含",
+    "object": "结构层/RSI层/量能层/衍生品层"
+  },
+  {
+    "subject": "35维矩阵",
+    "predicate": "包含",
+    "object": "AI-ML层/宏观层/时段体制层"
+  },
+  {
+    "subject": "35维矩阵",
+    "predicate": "包含",
+    "object": "SMC结构/FVG/Order Blocks/PD Zone"
+  },
+  {
+    "subject": "brahma_engine.analyze(deep=True)",
+    "predicate": "调用",
+    "object": "confluence.breakdown"
+  },
+  {
+    "subject": "P0-2",
+    "predicate": "根因是",
+    "object": "brahma_analyze.py未传signal_dir→_forced_dir被覆盖"
+  },
+  {
+    "subject": "P0-2",
+    "predicate": "触发",
+    "object": "324条信号323条LONG BEAR_TREND缺席"
+  },
+  {
+    "subject": "P0-2修复",
+    "predicate": "修复了",
+    "object": "run_analysis(sym, signal_dir=args.dir)"
+  },
+  {
+    "subject": "P1-2修复",
+    "predicate": "修复了",
+    "object": "kronos_bridge s23自注入venv site-packages"
+  },
+  {
+    "subject": "P1-3修复",
+    "predicate": "修复了",
+    "object": "dharma_data_bridge同步写timestamp=ts"
+  },
+  {
+    "subject": "globally_blocked死穴层",
+    "predicate": "封禁",
+    "object": "逆势死亡信号"
+  },
+  {
+    "subject": "StructureGate",
+    "predicate": "封禁",
+    "object": "grade<80 WR=47%死亡区"
+  },
+  {
+    "subject": "GapGate",
+    "predicate": "封禁",
+    "object": "gap>6%信号过期"
+  },
+  {
+    "subject": "CausalVerifier因果层",
+    "predicate": "封禁",
+    "object": "-12分以下体制噪音"
+  },
+  {
+    "subject": "SSI轧空门控",
+    "predicate": "门控",
+    "object": "做空HIGH=-12分 EXTREME=-20分"
+  },
+  {
+    "subject": "ssi_engine.py",
+    "predicate": "调用",
+    "object": "brahma_engine主链路"
+  },
+  {
+    "subject": "BULL_TREND:LONG:140-154",
+    "predicate": "证明",
+    "object": "WR=30% EV=-0.65%(n=26)"
+  },
+  {
+    "subject": "IC铁证封印",
+    "predicate": "触发",
+    "object": "auto_executor TIER2 138→155封禁"
+  },
+  {
+    "subject": "冒烟测试",
+    "predicate": "证明",
+    "object": "34/34全绿"
+  },
+  {
+    "subject": "ETH SHORT首单",
+    "predicate": "证明",
+    "object": "BEAR_TREND SHORT信号链路全闭环"
+  },
+  {
+    "subject": "BULL_TREND LONG",
+    "predicate": "计算",
+    "object": "WR=32.8%(n=192) 低于理论68%"
+  },
+  {
+    "subject": "系统建议",
+    "predicate": "策略是",
+    "object": "暂缓BULL LONG自动执行"
+  },
+  {
+    "subject": "brahma_bus.py",
+    "predicate": "属于",
+    "object": "梵天总线架构核心文件"
+  },
+  {
+    "subject": "math_utils.py",
+    "predicate": "属于",
+    "object": "梵天总线架构核心文件"
+  },
+  {
+    "subject": "brahma_bus",
+    "predicate": "包含",
+    "object": "TTL缓存 命中0.01ms"
+  },
+  {
+    "subject": "所有数学运算",
+    "predicate": "依赖",
+    "object": "math_utils"
+  },
+  {
+    "subject": "universal_asset_router",
+    "predicate": "策略是",
+    "object": "配置驱动"
+  },
+  {
+    "subject": "brahma_analysis_runner.py",
+    "predicate": "属于",
+    "object": "分析流程唯一入口"
+  },
+  {
+    "subject": "标准字段集",
+    "predicate": "包含",
+    "object": "18字段 12必需+6附加"
+  },
+  {
+    "subject": "字段验证失败",
+    "predicate": "门控",
+    "object": "信号推送"
+  },
+  {
+    "subject": "BRAHMA标签",
+    "predicate": "包含",
+    "object": "[BRAHMA:level:source:sym:score:dir:regime:ts:sha8]"
+  },
+  {
+    "subject": "timing_filter",
+    "predicate": "输出",
+    "object": "READY/MONITOR/WAIT/STANDBY时机徽章"
+  },
+  {
+    "subject": "brahma_health.py",
+    "predicate": "包含",
+    "object": "8项健康检查+自愈矩阵"
+  },
+  {
+    "subject": "自愈矩阵",
+    "predicate": "修复了",
+    "object": "API断/引擎崩/缓存陈旧"
+  },
+  {
+    "subject": "brahma-360-health",
+    "predicate": "约束",
+    "object": "检查频率12H→2H 延迟-83%"
+  },
+  {
+    "subject": "eth_ema_gate.py",
+    "predicate": "监控",
+    "object": "ETH价格vs EMA20_1H every 5min"
+  },
+  {
+    "subject": "OmniRoute",
+    "predicate": "依赖",
+    "object": "openrouter.ai API Key"
+  },
+  {
+    "subject": "omniroute_client.py",
+    "predicate": "包含",
+    "object": "chat/embedding/kronos_infer适配层"
+  },
+  {
+    "subject": "gateway-daily-restart",
+    "predicate": "触发",
+    "object": "state清零死循环×16次"
+  },
+  {
+    "subject": "22个整点并发cron",
+    "predicate": "触发",
+    "object": "event_loop_delay=2260ms"
+  },
+  {
+    "subject": "event_loop_delay",
+    "predicate": "触发",
+    "object": "health-monitor重启"
+  },
+  {
+    "subject": "修复方案",
+    "predicate": "封禁",
+    "object": "gateway-daily-restart永久DISABLED"
+  },
+  {
+    "subject": "梵天三禁",
+    "predicate": "封禁",
+    "object": "主观情绪/低胜率搏运/无数据决策"
+  },
+  {
+    "subject": "梵天三必",
+    "predicate": "约束",
+    "object": "35维验证/体制匹配/风控门控"
+  },
+  {
+    "subject": "梵天输出标准",
+    "predicate": "包含",
+    "object": "信号卡片+执行参数+风险评估"
+  },
+  {
+    "subject": "梵天顶层定义",
+    "predicate": "属于",
+    "object": "苏摩111亲定永久封印"
+  }
+]
