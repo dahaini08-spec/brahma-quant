@@ -224,6 +224,25 @@ def main():
         }, indent=2, ensure_ascii=False))
         print(f'[settler] WR矩阵已更新 → {WR_F}')
 
+        # [协同接入 2026-08-02 设计院自主] ev_feedback 结算闭环
+        # 每笔结算后立即更新EV矩阵(regime×direction×score_bin → WR/EV)
+        # 非阻断：任何异常不影响主结算流程
+        try:
+            sys.path.insert(0, str(BASE / 'brahma_brain'))
+            from ev_feedback import on_settlement as _ev_settle
+            _ev_updated = 0
+            for _s in settled_new:
+                _oc = _s.get('outcome', '')
+                if _oc in ('TP1', 'TP2', 'SL', 'EXPIRED_NO_TOUCH'):
+                    _norm_oc = 'TP1' if _oc in ('TP1','TP2') else ('SL' if _oc == 'SL' else 'TIMEOUT')
+                    _ev_r = _ev_settle(_s, _norm_oc)
+                    if _ev_r.get('updated'):
+                        _ev_updated += 1
+            if _ev_updated:
+                print(f'[settler] EV矩阵已更新 {_ev_updated} 条 → data/wr_matrix_realtime.json')
+        except Exception as _ev_e:
+            print(f'[settler] ev_feedback跳过: {_ev_e}')
+
         # 推送简报
         if args.push and settled_new:
             wins  = sum(1 for s in settled_new if s['outcome'] in ('TP1','TP2'))
