@@ -361,13 +361,24 @@ def review(
     _call_count_today['count'] += 1
 
     # 构造完整signal字典（供Agent使用）
+    # [接入 2026-08-02 设计院自主] headroom 压缩：减少LLM token消耗
+    _raw_breakdown = signal_result.get('confluence', {}).get('breakdown',
+                     signal_result.get('breakdown', {}))
+    try:
+        from brahma_brain.headroom import compress_signal_card as _compress_card
+        _compressed_ctx = _compress_card({
+            'symbol': symbol, 'direction': dir_, 'score': score,
+            'regime': regime, 'breakdown': _raw_breakdown,
+        }, mode='compact')
+    except Exception:
+        _compressed_ctx = ''
     flat_signal = {
         'symbol':    symbol,
         'direction': dir_,
         'score':     score,
         'regime':    regime,
-        'breakdown': signal_result.get('confluence', {}).get('breakdown',
-                     signal_result.get('breakdown', {})),
+        'breakdown': _raw_breakdown,
+        '_compressed': _compressed_ctx,  # headroom压缩版，供Agent prompt使用
     }
     ctx = market_ctx or {}
 

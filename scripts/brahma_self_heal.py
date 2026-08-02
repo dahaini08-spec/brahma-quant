@@ -800,6 +800,15 @@ def check_execution_pipeline() -> dict:
     except Exception:
         pass
 
+    # [F17 2026-08-02 设计院] signal_expiry_tracker 接入验证
+    # 确认 auto_executor.py 在成交后调用了 register()
+    try:
+        _exec_src2 = (BASE/'scripts'/'auto_executor.py').read_text()
+        if 'expiry_tracker' not in _exec_src2 or '_expiry_register' not in _exec_src2:
+            issues.append('REGRESSION: auto_executor缺失signal_expiry_tracker接入，成交后未注册信号有效期')
+    except Exception:
+        pass
+
     return {
         'ok': len(issues) == 0,
         'warn': len(issues) > 0,

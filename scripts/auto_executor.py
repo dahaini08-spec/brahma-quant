@@ -1142,6 +1142,25 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
         'notional':    round(fill_qty * fill_px, 2),
         'reason':      'OK',
     })
+
+    # ── [接入 2026-08-02 设计院自主] signal_expiry_tracker 开单后注册 ──────
+    # 根因：signal_expiry_tracker 完全孤立（0次import），成交后无法追踪信号有效期
+    # 修复：EXECUTED后立即注册，记录信号有效期供 sense_signal_validity 感知
+    try:
+        from brahma_brain.signal_expiry_tracker import register as _expiry_register
+        _sig_type = signal.get('signal_type', signal.get('primary_signal', 'DEFAULT'))
+        _expiry_register(
+            symbol=sym,
+            signal_type=str(_sig_type) if _sig_type else 'DEFAULT',
+            direction=direction,
+            entry_price=fill_px,
+            entry_ts=datetime.now(timezone.utc).isoformat(),
+        )
+        print(f'[expiry_tracker] {sym} {direction} 信号已注册 type={_sig_type}')
+    except Exception as _et_e:
+        pass  # 注册失败不影响主流程
+    # ── end signal_expiry_tracker ────────────────────────────────────────────
+
     return result
 
 

@@ -651,6 +651,38 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
                 lines += smc_lines
                 lines.append('')
 
+    # ── B2.2: score审计 + OI信号 + LLM裁决 ────────────────────────────────
+    if not compact:
+        _sa = r.get('_score_audit', {}) or {}
+        _oi_sc = r.get('_oi_score')
+        _oi_dt = r.get('_oi_details', []) or []
+        _llc   = r.get('_llm_council', {}) or {}
+        _cp    = r.get('_condition_plan', {}) or {}
+        b22_lines = []
+
+        # score审计trail
+        if _sa.get('raw') is not None:
+            b22_lines.append(f'**B2.2 · 评分审计**')
+            b22_lines.append(f'  原始分={_sa.get("raw")} 外部层{_sa.get("ext_adj",0):+.1f} OI{_sa.get("oi_bonus",0):+.1f} → **最终={_sa.get("final")}**')
+
+        # OI信号
+        if _oi_sc is not None:
+            _oi_icon = '📈' if _oi_sc > 0 else '📉'
+            b22_lines.append(f'  OI信号: {_oi_icon} {_oi_sc:+.1f}分  {" | ".join(str(d)[:40] for d in _oi_dt[:2])}')
+
+        # LLM裁决
+        if _llc.get('verdict'):
+            _cached = ' (缓存)' if _llc.get('cached') else ''
+            b22_lines.append(f'  LLM裁决{_cached}: {_llc["verdict"][:50]}  adj={_llc.get("adj",0):+.0f}')
+
+        # 条件单计划卡
+        if _cp.get('legs'):
+            b22_lines.append(f'  条件单: P0止损 P1止盈 P2调仓 → {len(_cp.get("legs",[]))}条腿')
+
+        if b22_lines:
+            lines += b22_lines
+            lines.append('')
+
     # ── B2.5: 达摩院节点裁决 (nodes_verdict) ────────────────────────────
     if not compact:
         _dv = r.get('nodes_verdict', '')

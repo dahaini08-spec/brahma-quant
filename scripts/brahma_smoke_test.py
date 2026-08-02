@@ -72,6 +72,10 @@ REQUIRED_MODULES = [
     ('brahma_brain.cross_asset_gate',       'CrossAssetGate'),
     ('brahma_brain.tradfi_signal_layer',    None),
     ('brahma_brain.brahma_bus',             'BrahmaBus'),
+    # [2026-08-02 接入验证] 今日接入的关键模块
+    ('brahma_brain.signal_expiry_tracker',  'register'),
+    ('brahma_brain.headroom',               'compress_signal_card'),
+    ('brahma_brain.llm_council_bridge',     'review'),
 ]
 for mod, attr in REQUIRED_MODULES:
     try:
