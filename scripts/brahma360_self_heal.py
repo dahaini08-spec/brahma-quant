@@ -583,6 +583,51 @@ def check_f12_smc_structure() -> dict:
 
 # ══════════════════════════════════════════
 
+
+# ══════════════════════════════════════════
+# F15: BULL_TREND LONG WR门控完整性检查
+# ══════════════════════════════════════════
+def check_f15_wr_gate_integrity() -> dict:
+    """确保signal_weights.json中BULL_TREND LONG的WR门控配置未被意外覆盖"""
+    result = {'fault': 'F15', 'triggered': False, 'healed': True, 'detail': ''}
+    try:
+        import json as _j, os as _o
+        sw_path = DATA / 'signal_weights.json'
+        if not sw_path.exists():
+            result['detail'] = 'signal_weights.json 不存在'
+            return result
+        sw = _j.loads(sw_path.read_text())
+        # 必须封禁的区间
+        required_blocks = {
+            'BULL_TREND:LONG:120-139': ('BLOCK', 0.45),   # WR=26.1% 死亡区
+            'BULL_TREND:LONG:140-154': ('BLOCK', 0.45),   # WR=28.6% 死亡区
+            'BULL_TREND:LONG:160+':    ('BLOCK', 0.45),   # WR=15.4% 死亡区
+        }
+        violations = []
+        for key, (required_action, max_mult) in required_blocks.items():
+            entry = sw.get(key, {})
+            action = entry.get('action', 'NONE')
+            mult   = float(entry.get('multiplier', 1.0))
+            if action not in ('BLOCK', 'OBSERVE') or mult > max_mult:
+                violations.append(f'{key}(action={action},mult={mult})')
+        if violations:
+            result['triggered'] = True
+            # 自愈：重写封禁配置
+            for key, (required_action, _) in required_blocks.items():
+                if key not in sw or sw[key].get('action') not in ('BLOCK','OBSERVE'):
+                    sw.setdefault(key, {})['action'] = required_action
+                    sw[key]['multiplier'] = 0.3
+                    sw[key]['basis'] = f'F15自愈恢复 铁证WR<45% [2026-08-02]'
+            sw_path.write_text(_j.dumps(sw, indent=2, ensure_ascii=False))
+            result['healed'] = True
+            result['detail'] = f'WR门控配置异常已恢复: {violations}'
+        else:
+            result['detail'] = f'WR门控完整 BULL_TREND LONG全线BLOCK/OBSERVE ✅'
+    except Exception as e:
+        result['detail'] = f'WR门控检查异常: {e}'
+    return result
+
+
 # ══════════════════════════════════════════
 # F14: tardis 清算数据月份自动刷新
 # ══════════════════════════════════════════
@@ -686,6 +731,7 @@ def run():
         check_f12_smc_structure,
         check_f13_live_prices,
         check_f14_tardis_freshness,
+        check_f15_wr_gate_integrity,
     ]
 
     fault_names = {
@@ -703,6 +749,7 @@ def run():
         'F12': '🚨 SMC结构(OB/FVG)字段缺失或过旧',
         'F13': '⚠️ 实时价格陈旧>5min',
         'F14': '⚠️ tardis清算数据未刷新至当月',
+        'F15': '🚨 BULL_TREND LONG WR门控配置异常',
     }
 
     triggered_faults = []

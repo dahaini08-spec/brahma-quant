@@ -201,12 +201,28 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
                 'reason': f'P2高分timing拦截: score={_score_p2:.0f} timing={_timing_p2}（等待入场时机）',
                 'order': None}
 
-    # 规则2: BULL_TREND LONG 140-154分 → EV=-0.705% 亏损区，需外部层bonus≥10
-    if _regime_p2 == 'BULL_TREND' and _dir_p2 == 'LONG' and 140 <= _score_p2 < 155:
-        _ext_p2 = float(signal.get('_ext_score_bonus', 0) or 0)
-        if _ext_p2 < 10:
+    # 规则2: BULL_TREND LONG WR门控 [铁证封印 2026-08-02 设计院自主]
+    # 实盘数据 n=192: 全区间WR均<45% (120-139: WR=26.1%, 140-154: WR=28.6%, 160+: WR=15.4%)
+    # BULL_TREND LONG = 系统性亏损方向，全线进入OBSERVE模式，暂停自动执行
+    if _regime_p2 == 'BULL_TREND' and _dir_p2 == 'LONG':
+        _sw_p2 = {}
+        try:
+            import json as _json_sw, os as _os_sw
+            _sw_file = _os_sw.path.join(_os_sw.path.dirname(__file__), '..', 'data', 'signal_weights.json')
+            if _os_sw.path.exists(_sw_file):
+                _sw_all = _json_sw.loads(open(_sw_file).read())
+                if _score_p2 >= 160:   _sw_p2 = _sw_all.get('BULL_TREND:LONG:160+', {})
+                elif _score_p2 >= 155: _sw_p2 = _sw_all.get('BULL_TREND:LONG:155-159', {})
+                elif _score_p2 >= 140: _sw_p2 = _sw_all.get('BULL_TREND:LONG:140-154', {})
+                elif _score_p2 >= 120: _sw_p2 = _sw_all.get('BULL_TREND:LONG:120-139', {})
+                else:                  _sw_p2 = _sw_all.get('BULL_TREND:LONG:<120', {})
+        except Exception:
+            pass
+        _action_p2 = _sw_p2.get('action', 'BLOCK')
+        _min_n_p2  = _sw_p2.get('min_n_required', 0)
+        if _action_p2 in ('BLOCK', 'OBSERVE'):
             return {'executed': False,
-                    'reason': f'P2低EV区拦截: BULL_TREND LONG score={_score_p2:.0f} 外部层bonus={_ext_p2}<10',
+                    'reason': f'P2 WR门控: BULL_TREND LONG score={_score_p2:.0f} action={_action_p2} WR全线<45% 暂停执行（等WR≥55%自动解锁）',
                     'order': None}
 
     # 规则3: OBV反向时 score<165 禁止执行
