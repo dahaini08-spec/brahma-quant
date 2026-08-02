@@ -170,6 +170,15 @@ def _build_ohlcv_df(klines: list) -> Tuple[Optional[pd.DataFrame], Optional[pd.D
                     'close':  float(k[4]),
                     'volume': float(k[5]),
                 })
+            elif isinstance(k, (list, tuple)) and len(k) == 5:
+                # [FIX 2026-08-02 设计院] s23段传入格式为 [o,h,l,c,v] 5元素
+                rows.append({
+                    'open':   float(k[0]),
+                    'high':   float(k[1]),
+                    'low':    float(k[2]),
+                    'close':  float(k[3]),
+                    'volume': float(k[4]),
+                })
             elif isinstance(k, dict):
                 rows.append({
                     'open':   float(k.get('open', k.get('o', 0))),

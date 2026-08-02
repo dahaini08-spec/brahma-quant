@@ -3347,42 +3347,58 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass
     # ══ [KronosEngine END] ═════════════════════════════════════════════════════
 
-    # ══ [KronosBridge SHADOW] 设计院 v17 达摩院验证路径 2026-07-01 ══════════
-    # shadow模式：并联记录 Kronos大模型 vs Kronos-Lite 差异
-    # 不修改任何分数；积累n≥100后达摩院M1验证 → blend → live
+    # ══ [KronosBridge BLEND] 设计院 v18 升级 2026-08-02 自主决策 ══════════════════
+    # [升级依据] shadow日志src=kronos真实推理可用，今日venv修复后klines正常传入
+    # blend模式：Kronos真实p_up替换kronos_lite的p_up，重新计算s23分
+    # fail-safe：Kronos失败时保留原有kronos_lite分数不变
     try:
         import sys as _sys_kb, os as _os_kb
         _kb_brain = _os_kb.path.dirname(_os_kb.path.abspath(__file__))
         _kb_root  = _os_kb.path.dirname(_kb_brain)
-        for _kb_p in [_kb_brain, _kb_root, _kb_root + '/external/Kronos']:
-            if _kb_p not in _sys_kb.path:
+        for _kb_p in [_kb_brain, _kb_root, _kb_root + '/external/Kronos',
+                      _kb_root + '/venv/lib/python3.11/site-packages']:
+            if _os_kb.path.exists(_kb_p) and _kb_p not in _sys_kb.path:
                 _sys_kb.path.insert(0, _kb_p)
         from kronos_bridge import get_s23_kronos as _kb_fn
-        # 获取 kronos_lite 的原始分和 p_up（用于对比记录）
         _kb_lite_score = _s23 if '_s23' in dir() else None
         _kb_lite_p_up  = _p_up_raw if '_p_up_raw' in dir() else None
         _kb_klines     = _kl15m if '_kl15m' in dir() and _kl15m else []
+        _kb_regime     = ms.get('regime', 'UNKNOWN') if 'ms' in dir() else 'UNKNOWN'
+        _kb_dir        = _dir_t if '_dir_t' in dir() else 'LONG'
         if _kb_klines and len(_kb_klines) >= 32:
             _kb_score, _kb_meta = _kb_fn(
                 klines_15m = _kb_klines,
                 symbol     = _sym_t,
-                direction  = _dir_t if '_dir_t' in dir() else 'LONG',
-                regime     = ms.get('regime', 'UNKNOWN') if 'ms' in dir() else 'UNKNOWN',
+                direction  = _kb_dir,
+                regime     = _kb_regime,
                 lite_score = _kb_lite_score,
                 lite_p_up  = _kb_lite_p_up,
             )
-            # shadow模式：只打印，不修改score
+            _kb_src  = _kb_meta.get('source', 'fallback')
+            _kb_p_up = _kb_meta.get('p_up', 0.5)
             _kb_delta = _kb_meta.get('kronos_score', 0) - (_kb_lite_score or 0)
-            if abs(_kb_delta) >= 2:  # 差异≥2分才打印，减少噪音
-                print(f'[KronosBridge·SHADOW] {_sym_t}: '
-                      f'Kronos={_kb_meta["kronos_score"]:+d} '
-                      f'Lite={_kb_lite_score:+d} '
-                      f'Δ={_kb_delta:+d} '
-                      f'p_up={_kb_meta["p_up"]:.3f} '
-                      f'src={_kb_meta["source"]}')
+            # [FIX 2026-08-02] BLEND模式：Kronos真实推理时用其p_up重新计算s23分
+            if _kb_src not in ('fallback:no_model', 'fallback:no_data', 'fallback') and _kb_p_up != 0.5:
+                # Kronos真实运行，用Kronos p_up覆盖s23原始分，重新注入总分
+                _old_s23_w = _result['confluence'].get('_s23_kronos', 0)
+                _old_total = _result['confluence']['score']
+                _kb_new_w  = _kb_meta.get('final_score', _kb_score)
+                _result['confluence']['score'] = _old_total - _old_s23_w + _kb_new_w
+                _result['confluence']['_s23_kronos'] = _kb_new_w
+                _result['confluence'].setdefault('breakdown', {})['s23_kronos'] = (
+                    f"{_kb_new_w:+d}(KronosFull p_up={_kb_p_up:.3f} src={_kb_src})"
+                )
+                _result['s23_p_up'] = _kb_p_up
+                print(f'[KronosBridge·BLEND] {_sym_t}: 覆盖s23 {_old_s23_w:+d}→{_kb_new_w:+d}'
+                      f' p_up={_kb_p_up:.3f} src={_kb_src} 总分{_old_total}→{_result["confluence"]["score"]}')
+            else:
+                # Kronos fallback，记录但不修改分数
+                print(f'[KronosBridge·SHADOW] {_sym_t}: Kronos={_kb_meta.get("kronos_score",0):+d}'
+                      f' Lite={_kb_lite_score} Δ={_kb_delta:+d}'
+                      f' p_up={_kb_p_up:.3f} src={_kb_src}')
     except Exception as _e_kb:
-        pass  # KronosBridge shadow不影响主流程
-    # ══ [KronosBridge SHADOW END] ══════════════════════════════════════════════
+        pass  # KronosBridge失败不影响主流程
+    # ══ [KronosBridge BLEND END] ═══════════════════════════════════════════════
 
     # ── s24: 已归档 (2026-06-26 设计院封印) ────────────────────────────
     pass  # s24已归档
