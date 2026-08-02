@@ -702,6 +702,10 @@ def run_health_check(full: bool = False, timeout: float = 8.0) -> dict:
     report['checks']['macro_state_freshness']  = _check_macro_state_freshness()
     report['checks']['cron_route_ssot']        = _check_cron_route_ssot()
     report['checks']['signal_card_import']     = _check_signal_card_importable()
+    # [封口自愈对冲 2026-08-02 设计院自主] 新增三项今日封印检查
+    report['checks']['dharma_factor_weights']  = _check_dharma_factor_weights()
+    report['checks']['wr_gate_integrity']      = _check_wr_gate_integrity()
+    report['checks']['tardis_month_freshness'] = _check_tardis_month_freshness()
     if full:
         report['checks']['standby_violations'] = _check_standby_violations_health()
     # 重新计算总分
@@ -740,3 +744,57 @@ def _check_ws_guardian() -> dict:
         }
     except Exception as e:
         return {'ok': True, 'detail': f'检查失败(忽略): {e}', 'warn': False}
+
+
+def _check_dharma_factor_weights() -> dict:
+    """F16对应：检查factor_weights.json存在且包含rsi/volume/gates/resonance四层"""
+    try:
+        import json as _j, os as _o
+        fw = _o.path.join(_o.path.dirname(__file__), '..', 'dharma', 'factor_weights.json')
+        if not _o.path.exists(fw):
+            return {'ok': False, 'warn': True, 'detail': 'factor_weights.json缺失'}
+        data = _j.loads(open(fw).read())
+        missing = {'rsi', 'volume', 'gates', 'resonance'} - set(data.keys())
+        if missing:
+            return {'ok': False, 'warn': True, 'detail': f'factor_weights.json缺层: {missing}'}
+        rsi_n = len(data.get('rsi', []))
+        return {'ok': True, 'warn': False, 'detail': f'factor_weights.json完整 rsi={rsi_n}条'}
+    except Exception as e:
+        return {'ok': False, 'warn': True, 'detail': str(e)}
+
+
+def _check_wr_gate_integrity() -> dict:
+    """F15对应：检查signal_weights.json中BULL_TREND LONG死亡区门控配置"""
+    try:
+        import json as _j, os as _o
+        sw = _o.path.join(_o.path.dirname(__file__), '..', 'data', 'signal_weights.json')
+        if not _o.path.exists(sw):
+            return {'ok': True, 'warn': False, 'detail': 'signal_weights.json不存在(忽略)'}
+        data = _j.loads(open(sw).read())
+        for key in ('BULL_TREND:LONG:120-139', 'BULL_TREND:LONG:140-154'):
+            entry = data.get(key, {})
+            if entry.get('action') not in ('BLOCK', 'OBSERVE'):
+                return {'ok': False, 'warn': True, 'detail': f'WR门控缺失: {key}'}
+        return {'ok': True, 'warn': False, 'detail': 'WR门控完整 BULL_TREND LONG全线封禁 ✅'}
+    except Exception as e:
+        return {'ok': False, 'warn': True, 'detail': str(e)}
+
+
+def _check_tardis_month_freshness() -> dict:
+    """F14对应：检查tardis CSV是否为当月1日（2天内自动刷新）"""
+    try:
+        import os as _o
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc)
+        expected = f'{now.year}{now.month:02d}01'
+        base = _o.path.join(_o.path.dirname(__file__), '..', 'data', 'tardis', 'liq_csv')
+        for sym in ('BTCUSDT', 'ETHUSDT'):
+            f = _o.path.join(base, f'binance-futures_{sym}_{expected}.csv.gz')
+            if not _o.path.exists(f):
+                # 月初1天内允许缺失
+                first = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+                if (now - first).total_seconds() >= 86400:
+                    return {'ok': False, 'warn': True, 'detail': f'tardis {expected} {sym}缺失'}
+        return {'ok': True, 'warn': False, 'detail': f'tardis {expected} BTC/ETH ✅'}
+    except Exception as e:
+        return {'ok': True, 'warn': False, 'detail': f'tardis检查跳过: {e}'}

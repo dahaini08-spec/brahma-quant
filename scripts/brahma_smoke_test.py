@@ -240,6 +240,9 @@ try:
         '学习闭环':       'learning_loop' in health_src,
         'macro_state新鲜': 'macro_state' in health_src,
         'OB/FVG字段':    'panorama_integrity' in health_src or 'B2' in health_src,
+        'DharmaFactor权重': '_check_dharma_factor_weights' in health_src,
+        'WR门控完整性':     '_check_wr_gate_integrity' in health_src,
+        'Tardis月份刷新':   '_check_tardis_month_freshness' in health_src,
     }
     for item, covered in covers.items():
         if covered:

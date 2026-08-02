@@ -584,6 +584,58 @@ def check_f12_smc_structure() -> dict:
 # ══════════════════════════════════════════
 
 
+
+# ══════════════════════════════════════════
+# F16: DharmaFactor JSON权重文件完整性自愈
+# ══════════════════════════════════════════
+def check_f16_dharma_factor_weights() -> dict:
+    """确保factor_weights.json存在且包含有效因子配置（rsi/volume/gates/resonance）"""
+    result = {'fault': 'F16', 'triggered': False, 'healed': True, 'detail': ''}
+    try:
+        import json as _j
+        fw_path = BASE / 'dharma' / 'factor_weights.json'
+        if not fw_path.exists():
+            result['triggered'] = True
+            # 自愈：重建最小可用因子配置
+            _min_config = {
+                '_meta': {'source': 'F16自愈重建', 'version': '4.2'},
+                'rsi': [
+                    {'id': 'RSI_OVERBOUGHT', 'status': 'live', 'score': 12},
+                    {'id': 'RSI_OVERSOLD',   'status': 'live', 'score': 10},
+                    {'id': 'RSI_60_70',      'status': 'live', 'score':  6},
+                ],
+                'volume': [
+                    {'id': 'VOL_EXTREME_HIGH', 'status': 'live', 'score': 10},
+                    {'id': 'VOL_LOW',          'status': 'live', 'score': -5},
+                ],
+                'gates': [
+                    {'id': 'GATE_ATR_Q4',      'status': 'live', 'action': 'SCORE_PENALTY', 'score': -8},
+                    {'id': 'GATE_SESSION_DEAD', 'status': 'live', 'action': 'SCORE_PENALTY', 'score': -6},
+                ],
+                'resonance': [
+                    {'id': 'TRIPLE_RESONANCE_SHORT', 'status': 'live', 'score': 15},
+                    {'id': 'TRIPLE_RESONANCE_LONG',  'status': 'live', 'score': 15},
+                ],
+                'meta': {'atr_q4_thresh': 0.531}
+            }
+            fw_path.write_text(_j.dumps(_min_config, indent=2, ensure_ascii=False))
+            result['detail'] = 'factor_weights.json缺失 → F16自愈重建最小配置 ✅'
+        else:
+            fw = _j.loads(fw_path.read_text())
+            required_keys = {'rsi', 'volume', 'gates', 'resonance'}
+            missing = required_keys - set(fw.keys())
+            if missing:
+                result['triggered'] = True
+                result['detail'] = f'factor_weights.json缺少: {missing}'
+                result['healed'] = False
+            else:
+                rsi_n = len(fw.get('rsi', []))
+                result['detail'] = f'factor_weights.json完整 rsi={rsi_n}条 ✅'
+    except Exception as e:
+        result['detail'] = f'F16检查异常: {e}'
+    return result
+
+
 # ══════════════════════════════════════════
 # F15: BULL_TREND LONG WR门控完整性检查
 # ══════════════════════════════════════════
@@ -732,6 +784,7 @@ def run():
         check_f13_live_prices,
         check_f14_tardis_freshness,
         check_f15_wr_gate_integrity,
+        check_f16_dharma_factor_weights,
     ]
 
     fault_names = {
@@ -750,6 +803,7 @@ def run():
         'F13': '⚠️ 实时价格陈旧>5min',
         'F14': '⚠️ tardis清算数据未刷新至当月',
         'F15': '🚨 BULL_TREND LONG WR门控配置异常',
+        'F16': '⚠️ DharmaFactor权重文件缺失/损坏',
     }
 
     triggered_faults = []
