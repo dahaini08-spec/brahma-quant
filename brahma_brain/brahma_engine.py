@@ -3853,6 +3853,61 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception:
         pass
 
+    # 1b. SqueezeLifecycle阶段判断（轧空生命周期，复用SSI数据）
+    # [第六轮深度挖掘 2026-08-02 设计院自主] squeeze_lifecycle接入
+    # 当SSI检测到轧空风险时，进一步判断生命周期阶段（1积累→5反转）
+    # 阶段4/5（瓦解/反转）才允许做空，前三阶段封禁短单
+    try:
+        from brahma_brain.squeeze_lifecycle import update as _sq_update
+        _sq_oi  = _result.get('_sq_oi',  0)
+        _sq_pr  = _result.get('_sq_pr',  0)
+        _sq_sr  = _result.get('_sq_sr',  0.5)
+        # 尝试复用SSI已取得的数据（若SSI block成功则已设置ssi_val）
+        if not _sq_pr and ms:
+            _sq_pr = float(ms.get('price') or 0)
+        if not _sq_pr:
+            import urllib.request as _squu, json as _sqjj
+            _sq_pr = float(_sqjj.loads(_squu.urlopen(
+                f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}', timeout=3).read()).get('price', 0))
+        # volume: 取k1h最后一根和均值
+        _sq_vols = list(k1h.get('v', [])) if k1h and k1h.get('v') else []
+        _sq_vol_cur = float(_sq_vols[-1]) if _sq_vols else 1.0
+        _sq_vol_avg = float(sum(_sq_vols[-20:]) / len(_sq_vols[-20:])) if len(_sq_vols) >= 2 else 1.0
+        # short_ratio: 尝试从result取，否则用LSR API
+        _sq_sr = 1 - float(_result.get('lsr', {}).get('long_ratio', 0.5) if _result.get('lsr') else 0.5)
+        if not 0.3 < _sq_sr < 0.9:  # 异常值fallback
+            import urllib.request as _squu2, json as _sqjj2
+            _ls2 = _sqjj2.loads(_squu2.urlopen(
+                f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol={symbol}&period=1h&limit=1',
+                timeout=3).read())
+            _sq_sr = 1 - float(_ls2[0].get('longAccount', 0.5)) if _ls2 else 0.5
+        # oi
+        if _sq_oi <= 0:
+            import urllib.request as _squu3, json as _sqjj3
+            _sq_oi = float(_sqjj3.loads(_squu3.urlopen(
+                f'https://fapi.binance.com/fapi/v1/openInterest?symbol={symbol}', timeout=3).read()).get('openInterest', 0))
+        _sq_r = _sq_update(symbol, _sq_sr, _sq_oi, _sq_pr, _sq_vol_cur, _sq_vol_avg)
+        if _sq_r:
+            _sq_phase = _sq_r.get('phase', 1)
+            _sq_phase_name = _sq_r.get('phase_name', '积累期')
+            _sq_short_allowed = _sq_r.get('short_allowed', False)
+            _result['squeeze_phase'] = _sq_phase
+            _result['squeeze_phase_name'] = _sq_phase_name
+            # 阶段1-3禁止做空（加强SSI封禁逻辑）
+            if not _sq_short_allowed and signal_dir == 'SHORT' and _sq_sr > 0.60:
+                _sq_penalty = -15 if _sq_phase <= 2 else -8
+                _result['score'] = round(_result.get('score', 0) + _sq_penalty, 1)
+                _result.setdefault('breakdown', {})['轧空生命周期'] = (
+                    f'阶段{_sq_phase}({_sq_phase_name}) short_ratio={_sq_sr:.2f} → {_sq_penalty}分'
+                )
+            elif _sq_short_allowed and signal_dir == 'SHORT':
+                # 阶段4/5确认做空窗口，小幅加分
+                _result.setdefault('breakdown', {})['轧空生命周期'] = (
+                    f'✅ 阶段{_sq_phase}({_sq_phase_name}) 做空窗口已开'
+                )
+    except Exception:
+        pass
+
     # 2. IC权重乘数注入（来自signal_weights.json）
     try:
         import json as _sw_json
