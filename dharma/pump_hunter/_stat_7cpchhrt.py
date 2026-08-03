@@ -85,7 +85,7 @@ MIN_CHG_7D  = -15.0         # [设计院修复 2026-07-21] ACE案例根因修复
 # 新值-15.0: 仅排除快速暴跌死币（7日跌>15%），保留缓跌蓄力型
 
 # ── 评分阈值 ──────────────────────────────────────────────────
-PUSH_SCORE  = 65            # [设计院修复 2026-08-03 v2] 恢复65：ERR修复后高分=293，需保持高门槛
+PUSH_SCORE  = 45            # [设计院修复 2026-08-03] 65→45：CHOP体制下OI萎缩，TIGHT+催化剂=43分<65永远不触发
 EXEC_SCORE  = 90            # v4.1: 85→90 [苏摩111封印 2026-07-16]，确保自动执行阈值更严格
 
 # ── 防漏判参数 ────────────────────────────────────────────────
@@ -192,7 +192,6 @@ def get_symbols():
 
 def scan():
     t0 = time.time()
-    _err_sym_log = []  # [FIX 2026-08-03] 记录异常标的
     syms = get_symbols()
 
     # 批量行情
@@ -478,7 +477,7 @@ def scan():
                 # 不再强制压分 → TIGHT+催化剂缺失仍可推送（PUSH_SCORE=45接管）
 
             # 状态机加成（TIGHT持续时间+已知妖币+暴涨结束检测）
-            _vol_list = [float(k[7]) for k in kl] if kl else []
+            _vol_list = [float(k[7]) for k in klines] if klines else []
             _vol_prev = _vol_list[-2] if len(_vol_list) >= 2 else 0
             _vol_avg20 = sum(_vol_list[-20:]) / min(20, len(_vol_list)) if _vol_list else 1
             _addons = get_score_addons(
@@ -537,14 +536,15 @@ def scan():
                 })
 
         except Exception as e:
-            # [FIX 2026-08-03 v2] 记录异常日志，但ERR信号不入alerts（数据不完整）
-            _err_sym_log.append(f"{sym}:{type(e).__name__}:{str(e)[:60]}")
-            pass
+            # [FIX 2026-08-03] 改为记录异常而非静默pass，方便调试
+            import traceback as _tb
+            reasons.append(f'[ERR:{type(e).__name__}:{str(e)[:40]}]')
+            # 若score已有基础分，仍可入alerts
+            if score >= PUSH_SCORE:
+                alerts.append({'symbol':sym,'score':score,'reasons':reasons,'price':price})
 
     alerts.sort(key=lambda x: -x['score'])
     elapsed = time.time() - t0
-    if _err_sym_log:
-        print(f'[SCAN-ERR] {len(_err_sym_log)}个标的异常(不推送): {_err_sym_log[:3]}')
     return alerts, elapsed, len(candidates), btc_regime
 
 
@@ -676,7 +676,18 @@ def main():
             print(f'  {a["symbol"]:18} score={a["score"]:3d} | {" | ".join(a["reasons"][:2])}')
 
     # ── 推送逻辑 ──────────────────────────────────────────────
-    if result['need_push'] and new_alerts:
+    # [TEMP STAT] score分布
+    from collections import Counter
+    buckets = Counter()
+    for a in alerts:
+        s = a['score']
+        if s>=90: buckets['90+']+=1
+        elif s>=75: buckets['75-89']+=1
+        elif s>=60: buckets['60-74']+=1
+        elif s>=45: buckets['45-59']+=1
+        else: buckets['<45']+=1
+    print(f'score分布: {dict(sorted(buckets.items()))}')
+    if result['need_push'] and new_alerts and False:  # TEMP DISABLED
         push_record = _load_push_record()
         stats       = _load_stats()
 
@@ -707,7 +718,7 @@ def main():
                 'last_push_ts': now_ts,
                 'last_score':   score,
                 'last_push_at': datetime.datetime.utcnow().isoformat(),
-                'push_price':   a.get('price', 0),   # [FIX 2026-08-03] 记录推送时价格，用于outcome追踪
+                'push_price':   price,   # [FIX 2026-08-03] 记录推送时价格，用于outcome追踪
             }
 
             # P3: 写入过期追踪

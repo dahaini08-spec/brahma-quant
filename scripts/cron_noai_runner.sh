@@ -313,6 +313,14 @@ except Exception as e:
     fi
     ;;
 
+  pump-outcome-tracker)
+    OUT=$(cd "$BASE" && timeout 30 python3 dharma/pump_hunter/outcome_tracker_cron.py 2>&1)
+    log "$OUT"
+    if echo "$OUT" | grep -qiE 'traceback|exception'; then
+        send_alert "🚨 [outcome-tracker异常] $(echo "$OUT" | tail -2)"
+    fi
+    ;;
+
   *)
     log "未知任务: $TASK"
     exit 1

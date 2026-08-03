@@ -3610,6 +3610,22 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass
     # ══ [coingecko_client END] ═════════════════════════════════════════════════
 
+    # ══ [P0-B 设计院铁证 2026-08-03 苏摩111封印] 孤立模块分数 consensus一致性前置标记 ══════
+    # 铁证：FULL_BULL共识+LONG信号时，孤立模块无差别加分 → score虚高 → 7月23日全止损
+    # 修复：LONG信号需consensus在[FULL_BEAR/BEAR/NEUTRAL]才允许孤立模块叠加分
+    #        SHORT信号需consensus在[FULL_BULL/BULL/NEUTRAL]才允许孤立模块叠加分
+    # 否则：模块分数不叠加（不主动从score_final减分，只是禁止后续模块加分）
+    _p0b_consensus = str(_result.get('consensus', '') or '')
+    _p0b_dir = signal_dir or _result.get('signal_dir', 'LONG')
+    _p0b_module_add_allowed = (
+        (_p0b_dir in ('LONG', 'BUY') and _p0b_consensus in ('FULL_BEAR', 'BEAR', 'NEUTRAL', '')) or
+        (_p0b_dir in ('SHORT', 'SELL') and _p0b_consensus in ('FULL_BULL', 'BULL', 'NEUTRAL', '')) or
+        (_p0b_consensus == '')  # 无共识字段的老信号兼容
+    )
+    if not _p0b_module_add_allowed:
+        print(f'[P0-B consensus饰制] {_sym} {_p0b_dir} consensus={_p0b_consensus}，孤立模块分数锁定，不叠加外部模块加分')
+    # ══ [P0-B END] ═══════════════════════════════════════════════════════════════════════
+
     # ══ [设计院 2026-06-30 全量接入] PositionSizer ════════════════════════════
     # 模块: position_sizer · 替代手算仓位，基于评分+体制+Kelly公式
     try:
@@ -3699,7 +3715,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _s28 = s28_bounce_setup(_sp_sym, _sp_k1h, _sp_k4h, _sp_reg) if _sp_k1h else 0
         _s29 = s29_first_red_day(_sp_sym, _sp_k1h, _sp_reg) if _sp_k1h else 0
         _sp_total = _s27 + _s28 + _s29
-        if _sp_total != 0:
+        if _sp_total != 0 and _p0b_module_add_allowed:
             _result['score_final'] = (_result.get('score_final') or 0) + _sp_total
             _result['s27_gap_up']       = _s27
             _result['s28_bounce_setup'] = _s28
@@ -3731,7 +3747,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _ehi51 = float(_result.get('entry_hi', 0) or 0)
         _hadj, _hreason = get_history_score_adjustment(_sym51, _reg51, _dir51, _elo51, _ehi51)
         _total51 = _radj + _hadj
-        if _total51 != 0:
+        if _total51 != 0 and _p0b_module_add_allowed:
             _result['score_final'] = (_result.get('score_final') or 0) + _total51
             _result['v51_regime_adj'] = _radj
             _result['v51_history_adj'] = _hadj

@@ -432,6 +432,16 @@ def find_executable_signals() -> list[dict]:
         if sl_pct > MAX_SL_PCT:
             s['_high_vol_discount'] = 0.7  # 仓位系数×0.7
 
+        # ══ [P0-A 设计院铁证 2026-08-03 苏摩111封印] ob_dist追单陷阱区过滤 ═══════
+        # 铁证：ob_dist 0.1%~0.5% = 价格已离开OB但未正确候单，WR=20%（陷阱区）
+        # 正确区间：<0.1%（已在OB内）OR >=0.5%（正确候单）
+        # 来源：31天327条信号统计，n=50 WR=20% vs n=70 WR=45.7%
+        _ob_dist_exec = float(s.get('ob_dist_pct', 0) or 0)
+        if 0.1 <= _ob_dist_exec < 0.5:
+            print(f'[P0-A OB_CHASE] {s.get("symbol")} ob_dist={_ob_dist_exec:.2f}%在追单陷阱区(0.1~0.5%)，跳过')
+            continue  # 追单陷阱区，拒绝执行
+        # ══ [P0-A END] ═══════════════════════════════════════════════════════════
+
         candidates.append(s)
 
     # 按评分降序排列
