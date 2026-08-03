@@ -36,7 +36,7 @@ from pathlib import Path
 
 FAPI   = 'https://fapi.binance.com'
 _CACHE = {}          # {symbol: {ts, result}} | 缓存结构：标的 → {时间戳, 结果}
-_TTL   = 1800        # 30分钟缓存
+_TTL   = 600         # [P0修复 2026-08-03] 10分钟缓存（原30分钟→缓存过长导致反弹时仍用熊市RSI）
 
 
 # ══════════════════════════════════════════════════════════════
@@ -44,10 +44,13 @@ _TTL   = 1800        # 30分钟缓存
 # ══════════════════════════════════════════════════════════════
 
 def _klines(symbol: str, interval: str, limit: int = 100) -> list:  # [FIX 2026-06-14] 30→100 保证Wilder RSI初始化稳定
-    url = f'{FAPI}/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}'
+    # [P0修复 2026-08-03 苏摩111] limit+1拉取，去除最后一根未收盘K线
+    # 根因：未收盘K线的收盘价是当前实时价，会导致RSI虚高/虚低
+    url = f'{FAPI}/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit+1}'
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     with urllib.request.urlopen(req, timeout=6) as r:
         raw = json.loads(r.read())
+        raw = raw[:-1]  # 去除最后一根未收盘K线，确保无穿越
         return [{'o': float(k[1]), 'h': float(k[2]), 'l': float(k[3]),
                  'c': float(k[4]), 'v': float(k[5])} for k in raw]
 
