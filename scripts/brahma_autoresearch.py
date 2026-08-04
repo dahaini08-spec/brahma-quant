@@ -16,6 +16,16 @@ brahma_autoresearch.py — 梵天AutoLoop v1.0
   python3 scripts/brahma_autoresearch.py --status          # 查看历史迭代
 """
 
+# ── 内存门控（设计院2026-08-04封印）───────────────────
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'scripts') if '/scripts/' not in __file__ else _os.path.dirname(_os.path.abspath(__file__)))
+try:
+    from brahma_mem_manager import mem_gate as _mem_gate
+    _mem_gate(700)
+except (ImportError, SystemExit) as _e:
+    if isinstance(_e, SystemExit): raise
+# ──────────────────────────────────────────────────────
+
 import argparse, json, subprocess, sys, time, csv
 from datetime import datetime, timezone
 from pathlib import Path

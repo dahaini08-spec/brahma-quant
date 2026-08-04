@@ -5,9 +5,10 @@
     "last_push_at": "2026-07-20T04:10:32.849535"
   },
   "1000BONKUSDT": {
-    "last_push_ts": 1784435663.0471258,
-    "last_score": 73,
-    "last_push_at": "2026-07-19T04:34:26.760367"
+    "last_push_ts": 1785852264.6437316,
+    "last_score": 110,
+    "last_push_at": "2026-08-04T14:04:36.756468",
+    "push_price": 0.002781
   },
   "TLMUSDT": {
     "last_push_ts": 1785850300.5097504,
@@ -361,10 +362,10 @@
     "last_push_at": "2026-07-20T08:10:31.973373"
   },
   "KSTRUSDT": {
-    "last_push_ts": 1785785952.6149402,
-    "last_score": 99,
-    "last_push_at": "2026-08-03T19:39:19.760316",
-    "push_price": 22.67
+    "last_push_ts": 1785852264.6437316,
+    "last_score": 112,
+    "last_push_at": "2026-08-04T14:04:29.335843",
+    "push_price": 23.47
   },
   "ERAUSDT": {
     "last_push_ts": 1785749820.2650068,
@@ -583,10 +584,10 @@
     "push_price": 59.68
   },
   "KSMUSDT": {
-    "last_push_ts": 1785829153.0898712,
-    "last_score": 106,
-    "last_push_at": "2026-08-04T07:39:23.294195",
-    "push_price": 3.1
+    "last_push_ts": 1785852264.6437316,
+    "last_score": 110,
+    "last_push_at": "2026-08-04T14:04:34.421422",
+    "push_price": 3.116
   },
   "TQQQUSDT": {
     "last_push_ts": 1785814752.8482583,
@@ -659,5 +660,17 @@
     "last_score": 117,
     "last_push_at": "2026-08-04T13:31:40.595383",
     "push_price": 3.409
+  },
+  "RENDERUSDT": {
+    "last_push_ts": 1785852264.6437316,
+    "last_score": 115,
+    "last_push_at": "2026-08-04T14:04:27.043702",
+    "push_price": 1.343
+  },
+  "XLMUSDT": {
+    "last_push_ts": 1785852264.6437316,
+    "last_score": 110,
+    "last_push_at": "2026-08-04T14:04:31.933473",
+    "push_price": 0.16878
   }
 }

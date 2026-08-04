@@ -18,6 +18,16 @@ market_screener.py — 全市场纯脚本预筛器 v1.0
 输出：data/scan_candidates.json
 苏摩宪法：无agentTurn，不计入AI任务配额
 """
+# ── 内存门控（设计院2026-08-04封印）───────────────────
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'scripts') if '/scripts/' not in __file__ else _os.path.dirname(_os.path.abspath(__file__)))
+try:
+    from brahma_mem_manager import mem_gate as _mem_gate
+    _mem_gate(700)
+except (ImportError, SystemExit) as _e:
+    if isinstance(_e, SystemExit): raise
+# ──────────────────────────────────────────────────────
+
 import sys, os, json, time, math, urllib.request
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed

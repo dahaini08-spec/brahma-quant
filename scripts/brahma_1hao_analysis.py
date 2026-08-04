@@ -9,6 +9,16 @@
   - 支持双币（BTC+ETH）并行分析
   - 输出格式：专业合约衍生品深度分析报告
 """
+# ── 内存门控（设计院2026-08-04封印）───────────────────
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'scripts') if '/scripts/' not in __file__ else _os.path.dirname(_os.path.abspath(__file__)))
+try:
+    from brahma_mem_manager import mem_gate as _mem_gate
+    _mem_gate(800)
+except (ImportError, SystemExit) as _e:
+    if isinstance(_e, SystemExit): raise
+# ──────────────────────────────────────────────────────
+
 import sys, os, time, re as _re
 # ── [2026-07-28 设计院全局修复] safe_float: 处理emoji/字符串/None → float ────
 def _safe_float(v, default=0.0):

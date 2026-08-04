@@ -42,6 +42,16 @@ OI高级扫描器 v3.0 — 设计院全局深度完善
   BUG-4: 无独立推送，OI信号从未推给苏摩做决策
 ─────────────────────────────────────────────────
 """
+# ── 内存门控（设计院2026-08-04封印）───────────────────
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'scripts') if '/scripts/' not in __file__ else _os.path.dirname(_os.path.abspath(__file__)))
+try:
+    from brahma_mem_manager import mem_gate as _mem_gate
+    _mem_gate(700)
+except (ImportError, SystemExit) as _e:
+    if isinstance(_e, SystemExit): raise
+# ──────────────────────────────────────────────────────
+
 import sys, os, json, time, math, hmac, hashlib, requests
 from pathlib import Path
 from datetime import datetime, timezone
