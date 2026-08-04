@@ -32,7 +32,7 @@
   "regime": "BEAR_TREND",
   "n_open": 0,
   "total_pnl": 0.0,
-  "last_update": 1785828747.9217498,
+  "last_update": 1785832352.011081,
   "source": "reconcile_rebuild_20260628",
   "ws_guardian_sync": true,
   "last_sync": "2026-06-29T04:35:35.517800+00:00",
@@ -42,37 +42,37 @@
   "_price_eth": 1870.73,
   "_refreshed_at": 1784527892.009376,
   "_refreshed_by": "design_institute_seal_2026-07-20",
-  "updated_at": "2026-08-04T07:32:27.921555+00:00",
-  "last_updated": "2026-08-04T07:32:27.921555+00:00",
-  "last_scan_ts": "2026-08-04T07:32:27.921555+00:00",
-  "timestamp": 1785828747.9217508,
-  "last_price": 63666.9,
-  "btc_price": 63666.9,
-  "price": 63666.9,
-  "eth_price": 1859.93,
+  "updated_at": "2026-08-04T08:32:32.010906+00:00",
+  "last_updated": "2026-08-04T08:32:32.010906+00:00",
+  "last_scan_ts": "2026-08-04T08:32:32.010906+00:00",
+  "timestamp": 1785832352.0110815,
+  "last_price": 63561.5,
+  "btc_price": 63561.5,
+  "price": 63561.5,
+  "eth_price": 1857.24,
   "market_prices": {
-    "BTCUSDT": 63666.9,
-    "ETHUSDT": 1859.93
+    "BTCUSDT": 63561.5,
+    "ETHUSDT": 1857.24
   },
   "regime_label": "BEAR_TREND",
   "regime_snapshot": {
     "symbol": "BTCUSDT",
     "regime": "BEAR_TREND",
     "phase": "UPTREND",
-    "momentum": "LONG",
+    "momentum": "NEUTRAL",
     "rsi_1h": 44.82,
     "rsi_4h": 54.38,
-    "rsi_1d": 62.36,
+    "rsi_1d": 47.83,
     "trend_1h": "BULL",
     "trend_4h": "CHOP",
-    "trend_1d": "BULL",
+    "trend_1d": "CHOP",
     "source": "market_state.detect_regime",
-    "ts": 1785828748.4916568
+    "ts": 1785832352.573014
   },
   "ws_guardian": {
     "pid": 0,
-    "status": "idle",
-    "last_ping": "2026-07-30T02:37:34Z"
+    "status": "ok",
+    "last_ping": 1785830767.3902209
   },
   "regime_votes": {
     "BULL_TREND": 2,

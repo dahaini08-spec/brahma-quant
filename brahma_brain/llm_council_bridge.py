@@ -503,6 +503,8 @@ def review(
 
         council_output['injected_adj'] = inj_adj
         logger.info(f"[LLMCouncil LIVE] {symbol} score调整: {score:.0f}→{score+inj_adj:.0f} ({inj_adj:+d})")
+        # [2026-08-04] live模式也写shadow_log，用于裁决有效性追踪
+        _shadow_log(flat_signal, council_output)
 
     elif MODE == 'shadow':
         # shadow模式：只记录，不修改
