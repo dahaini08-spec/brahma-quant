@@ -22,7 +22,21 @@ QTY       = 0.012
 
 BEAR_TRIGGER = 1855.0   # 跌破此价位 → 情景B预警
 
+STATE_FILE = '/root/.openclaw/workspace/trading-system/data/eth_ema_gate_state.json'
+
+def _load_state():
+    try:
+        import json as _j
+        return _j.load(open(STATE_FILE))
+    except Exception:
+        return {}
+
+def _save_state(s):
+    import json as _j
+    open(STATE_FILE,'w').write(_j.dumps(s))
+
 def main():
+    import time as _time
     # ETH价格 + K线
     r1 = requests.get('https://fapi.binance.com/fapi/v1/premiumIndex',
                       params={'symbol':'ETHUSDT'}, timeout=5)
@@ -75,6 +89,15 @@ def main():
     )
 
     if cond1 and cond2 and cond3:
+        # ─── 去重：同一突破只推送一次 ──────────────────────
+        state = _load_state()
+        last_fired = state.get('last_fired_ts', 0)
+        now_ts = _time.time()
+        # 6小时内同方向不重复推送
+        if now_ts - last_fired < 6 * 3600:
+            print(f'HEARTBEAT_OK | 已推送过(距上次{(now_ts-last_fired)/3600:.1f}H) | {status_str}')
+            return
+        _save_state({'last_fired_ts': now_ts, 'price': price, 'ema': round(ema,2)})
         print(f'🔔 ETH LONG 三重门控全部通过！')
         print(f'   {status_str}')
         print(f'   入场: ${ENTRY_LO}~${ENTRY_HI} | SL=${SL} | TP1=${TP1} | TP2=${TP2}')
