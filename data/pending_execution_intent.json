@@ -1,0 +1,23 @@
+{
+  "symbol": "SNDKUSDT",
+  "direction": "LONG",
+  "status": "EXPIRED",
+  "score": 165.4,
+  "grade": 80.0,
+  "regime": "BULL_TREND",
+  "entry_lo": 1595,
+  "entry_hi": 1605,
+  "sl": 1557,
+  "tp1": 1649,
+  "tp2": 1798,
+  "leverage": 5,
+  "size_pct_nav": 6,
+  "created_at": 1784865556.5334778,
+  "created_ts": "2026-07-24T03:59:16.533485+00:00",
+  "created_by": "苏摩111确认 2026-07-24 02:09 UTC",
+  "note": "Gateway重启导致执行延误，意图持久化，等待价格回进场区",
+  "trigger_condition": "价格回升至$1,595 OR RSI_1H<32+Fib0.618守住",
+  "invalidate_if": "价格跌破$1,548（今日最低）",
+  "expired_at": 1785835328.2145457,
+  "expired_reason": "SNDK不在Binance现货 + 体制切换BEAR_TREND + 已过11.2天 + 设计院评估2026-08-04"
+}
