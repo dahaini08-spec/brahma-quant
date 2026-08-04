@@ -343,17 +343,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _confluence = calc_confluence(_multi_inputs, signal_dir)
         except Exception:
             _confluence = {}
-        # [P2升级 2026-08-04] 清算集群精度算法（多重前高/前低聚类）
-        _liq_clusters = {}
-        try:
-            from data_cache import get_klines, klines_to_ohlcv as _k2o_lc
-            _k4h_lc = _k2o_lc(get_klines(symbol, '4h', 300))
-            if _k4h_lc and _k4h_lc.get('c'):
-                _liq_clusters = find_liquidity_clusters(
-                    _k4h_lc['h'], _k4h_lc['l'], _k4h_lc['c'],
-                    lookback=200, cluster_eps_pct=0.8)
-        except Exception:
-            _liq_clusters = {}
+        # [P2] _liq_clusters已移至try块外独立计算
         # [v21.0] MTF路由：4H战略区优先，1H确认（自顶向下）
         try:
             from brahma_brain.multi_timeframe_router import route_entry_zone as _mtf_route
@@ -390,6 +380,19 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _e:
             if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
                 pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
+
+    # [P2升级 2026-08-04 FIX] 清算集群独立计算（移出外层try，保证必定执行）
+    _liq_clusters = {}
+    try:
+        _k4h_lc2 = klines_to_ohlcv(get_klines(symbol, '4h', 300))
+        if _k4h_lc2 and _k4h_lc2.get('c'):
+            _liq_clusters = find_liquidity_clusters(
+                _k4h_lc2['h'], _k4h_lc2['l'], _k4h_lc2['c'],
+                lookback=200, cluster_eps_pct=0.8)
+    except Exception as _liq_e:
+        import sys as _sys_liq
+        print(f'[P2-LIQ-DEBUG] Exception: {type(_liq_e).__name__}: {str(_liq_e)[:100]}', file=_sys_liq.stderr)
+        _liq_clusters = {}
 
     # ══════════════════════════════════════════════════════════
     # [达摩院v12.9c 修订 设计院 2026-05-30] FVG 条件升级
@@ -3154,6 +3157,73 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # 铁证：score>175 WR=0%，score 150~160 WR=96%（武曲Paper 121条）
     # score过高=多维叠加但gap收缩=结构被侵蚀，反而是风险信号
     _final_score = _result.get('confluence', {}).get('score', 0)
+    # ── s22b: 清算集群流动性猎杀评分 [设计院自主 2026-08-04]
+    # P2升级数据层已注入 _liq_clusters，现在让它真正参与评分
+    # 合约逻辑：上方prime集群密集 + LONG方向 → 机构推价猎空 → 做多信号+
+    #           下方prime集群密集 + SHORT方向 → 机构推价猎多 → 做空信号+
+    try:
+        # [FIX] _dir_t/_sym_t在s23前可能未定义，直接从_result取
+        _s22b_dir = _result.get('signal_dir', signal_dir or 'NEUTRAL')
+        _s22b_sym = _result.get('symbol', symbol)
+        # [FIX2] 直接使用_liq_clusters局部变量，不经extra_data（传递链丢失问题）
+        import sys as _sys_s22b
+        print(f'[S22B-DEBUG] _liq_clusters type={type(_liq_clusters).__name__} len={len(_liq_clusters) if isinstance(_liq_clusters,dict) else "N/A"} hunt_up={_liq_clusters.get("hunt_score_up","MISSING") if isinstance(_liq_clusters,dict) else "N/A"}', file=_sys_s22b.stderr)
+        _lc_data = _liq_clusters if isinstance(_liq_clusters, dict) and _liq_clusters else {}
+        if _lc_data:
+            _hunt_up   = _lc_data.get('hunt_score_up', 0)
+            _hunt_dn   = _lc_data.get('hunt_score_down', 0)
+            _prime_s   = _lc_data.get('prime_short', [])
+            _prime_l   = _lc_data.get('prime_long', [])
+            _ns_lc     = _lc_data.get('nearest_short_liq')
+            _nl_lc     = _lc_data.get('nearest_long_liq')
+            _s22b      = 0
+            _s22b_desc = ''
+
+            if _s22b_dir == 'LONG':
+                # 上方密集空头清算 → 机构大概率推价猎空 → 利好多头
+                if _hunt_up >= 8:
+                    _s22b += 8
+                    _s22b_desc += f'上方空头集群hunt={_hunt_up:.0f}→+8 '
+                elif _hunt_up >= 5:
+                    _s22b += 4
+                    _s22b_desc += f'上方空头集群hunt={_hunt_up:.0f}→+4 '
+                # prime集群加成（≥3重密集）
+                if len(_prime_s) >= 2:
+                    _s22b += 5
+                    _s22b_desc += f'prime空头集群n={len(_prime_s)}→+5 '
+                elif len(_prime_s) == 1:
+                    _s22b += 2
+                    _s22b_desc += f'prime空头集群n=1→+2 '
+                # 距离修正：上方清算集群太近（<1%）可能已被触发
+                if _ns_lc and abs(_ns_lc.get('dist_pct', 99)) < 1.0:
+                    _s22b = max(0, _s22b - 3)
+                    _s22b_desc += '(极近集群-3) '
+            elif _s22b_dir == 'SHORT':
+                # 下方密集多头清算 → 机构推价猎多 → 利好空头
+                if _hunt_dn >= 8:
+                    _s22b += 8
+                    _s22b_desc += f'下方多头集群hunt={_hunt_dn:.0f}→+8 '
+                elif _hunt_dn >= 5:
+                    _s22b += 4
+                    _s22b_desc += f'下方多头集群hunt={_hunt_dn:.0f}→+4 '
+                if len(_prime_l) >= 2:
+                    _s22b += 5
+                    _s22b_desc += f'prime多头集群n={len(_prime_l)}→+5 '
+                elif len(_prime_l) == 1:
+                    _s22b += 2
+                    _s22b_desc += f'prime多头集群n=1→+2 '
+                if _nl_lc and abs(_nl_lc.get('dist_pct', 99)) < 1.0:
+                    _s22b = max(0, _s22b - 3)
+                    _s22b_desc += '(极近集群-3) '
+
+            _s22b = min(_s22b, 13)  # 上限13分
+            if _s22b > 0:
+                _result['confluence']['score'] = _result['confluence'].get('score', 0) + _s22b
+                _result['confluence']['_s22b_liq'] = _s22b
+                _result['confluence'].setdefault('breakdown', {})['清算/OI'] =                     _result['confluence']['breakdown'].get('清算/OI', 0) + _s22b
+                print(f'[s22b-LiqCluster] {_s22b_sym} {_s22b_dir}: +{_s22b} | {_s22b_desc.strip()}')
+    except Exception:
+        pass  # 清算集群不影响主流评分
     if _final_score and float(_final_score) > 175:
         _overheat_penalty = min(int((float(_final_score) - 175) * 2), 30)
         _result['confluence']['score'] = float(_final_score) - _overheat_penalty
@@ -3251,70 +3321,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
 
 
-    # ── s22b: 清算集群流动性猎杀评分 [设计院自主 2026-08-04]
-    # P2升级数据层已注入 _liq_clusters，现在让它真正参与评分
-    # 合约逻辑：上方prime集群密集 + LONG方向 → 机构推价猎空 → 做多信号+
-    #           下方prime集群密集 + SHORT方向 → 机构推价猎多 → 做空信号+
-    try:
-        # [FIX] _dir_t/_sym_t在s23前可能未定义，直接从_result取
-        _s22b_dir = _result.get('signal_dir', signal_dir or 'NEUTRAL')
-        _s22b_sym = _result.get('symbol', symbol)
-        _lc_data = extra_data.get('_liq_clusters', {}) if extra_data else {}
-        if _lc_data:
-            _hunt_up   = _lc_data.get('hunt_score_up', 0)
-            _hunt_dn   = _lc_data.get('hunt_score_down', 0)
-            _prime_s   = _lc_data.get('prime_short', [])
-            _prime_l   = _lc_data.get('prime_long', [])
-            _ns_lc     = _lc_data.get('nearest_short_liq')
-            _nl_lc     = _lc_data.get('nearest_long_liq')
-            _s22b      = 0
-            _s22b_desc = ''
-
-            if _s22b_dir == 'LONG':
-                # 上方密集空头清算 → 机构大概率推价猎空 → 利好多头
-                if _hunt_up >= 8:
-                    _s22b += 8
-                    _s22b_desc += f'上方空头集群hunt={_hunt_up:.0f}→+8 '
-                elif _hunt_up >= 5:
-                    _s22b += 4
-                    _s22b_desc += f'上方空头集群hunt={_hunt_up:.0f}→+4 '
-                # prime集群加成（≥3重密集）
-                if len(_prime_s) >= 2:
-                    _s22b += 5
-                    _s22b_desc += f'prime空头集群n={len(_prime_s)}→+5 '
-                elif len(_prime_s) == 1:
-                    _s22b += 2
-                    _s22b_desc += f'prime空头集群n=1→+2 '
-                # 距离修正：上方清算集群太近（<1%）可能已被触发
-                if _ns_lc and abs(_ns_lc.get('dist_pct', 99)) < 1.0:
-                    _s22b = max(0, _s22b - 3)
-                    _s22b_desc += '(极近集群-3) '
-            elif _s22b_dir == 'SHORT':
-                # 下方密集多头清算 → 机构推价猎多 → 利好空头
-                if _hunt_dn >= 8:
-                    _s22b += 8
-                    _s22b_desc += f'下方多头集群hunt={_hunt_dn:.0f}→+8 '
-                elif _hunt_dn >= 5:
-                    _s22b += 4
-                    _s22b_desc += f'下方多头集群hunt={_hunt_dn:.0f}→+4 '
-                if len(_prime_l) >= 2:
-                    _s22b += 5
-                    _s22b_desc += f'prime多头集群n={len(_prime_l)}→+5 '
-                elif len(_prime_l) == 1:
-                    _s22b += 2
-                    _s22b_desc += f'prime多头集群n=1→+2 '
-                if _nl_lc and abs(_nl_lc.get('dist_pct', 99)) < 1.0:
-                    _s22b = max(0, _s22b - 3)
-                    _s22b_desc += '(极近集群-3) '
-
-            _s22b = min(_s22b, 13)  # 上限13分
-            if _s22b > 0:
-                _result['confluence']['score'] = _result['confluence'].get('score', 0) + _s22b
-                _result['confluence']['_s22b_liq'] = _s22b
-                _result['confluence'].setdefault('breakdown', {})['清算/OI'] =                     _result['confluence']['breakdown'].get('清算/OI', 0) + _s22b
-                print(f'[s22b-LiqCluster] {_s22b_sym} {_s22b_dir}: +{_s22b} | {_s22b_desc.strip()}')
-    except Exception:
-        pass  # 清算集群不影响主流评分
 
     # ── s23: Kronos-Lite × 体制解锁器 × CHOP过滤器 ─────────────────────
     # 设计院 × 达摩院 v9.0-SLIM · 2026-06-17
