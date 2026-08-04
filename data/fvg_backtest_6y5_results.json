@@ -1,0 +1,110 @@
+{
+  "BTCUSDT": {
+    "15m": {
+      "tf": "15m",
+      "bull_total": 6737,
+      "bull_touched": 5725,
+      "bull_touch_rate": 84.97847706694375,
+      "bull_wr": 96.75109170305677,
+      "bull_avg_gap": 0.39489074033756894,
+      "bear_total": 6251,
+      "bear_touched": 5328,
+      "bear_touch_rate": 85.23436250199968,
+      "bear_wr": 96.56531531531532,
+      "bear_avg_gap": 0.3993929659554381
+    },
+    "1h": {
+      "tf": "1h",
+      "bull_total": 2777,
+      "bull_touched": 2365,
+      "bull_touch_rate": 85.16384587684551,
+      "bull_wr": 97.3784355179704,
+      "bull_avg_gap": 0.6045872446100357,
+      "bear_total": 2614,
+      "bear_touched": 2246,
+      "bear_touch_rate": 85.92195868400918,
+      "bear_wr": 96.92787177203918,
+      "bear_avg_gap": 0.6046267786126737
+    },
+    "4h": {
+      "tf": "4h",
+      "bull_total": 1040,
+      "bull_touched": 836,
+      "bull_touch_rate": 80.38461538461539,
+      "bull_wr": 96.41148325358851,
+      "bull_avg_gap": 1.0323343283234536,
+      "bear_total": 881,
+      "bear_touched": 704,
+      "bear_touch_rate": 79.90919409761634,
+      "bear_wr": 95.88068181818183,
+      "bear_avg_gap": 1.074924431275255
+    },
+    "1d": {
+      "tf": "1d",
+      "bull_total": 237,
+      "bull_touched": 166,
+      "bull_touch_rate": 70.042194092827,
+      "bull_wr": 93.97590361445783,
+      "bull_avg_gap": 2.1316643517872556,
+      "bear_total": 181,
+      "bear_touched": 139,
+      "bear_touch_rate": 76.79558011049724,
+      "bear_wr": 90.64748201438849,
+      "bear_avg_gap": 2.211089677074984
+    }
+  },
+  "ETHUSDT": {
+    "15m": {
+      "tf": "15m",
+      "bull_total": 9009,
+      "bull_touched": 7656,
+      "bull_touch_rate": 84.98168498168498,
+      "bull_wr": 96.98275862068965,
+      "bull_avg_gap": 0.44039904156967746,
+      "bear_total": 8442,
+      "bear_touched": 7270,
+      "bear_touch_rate": 86.11703387822791,
+      "bear_wr": 96.767537826685,
+      "bear_avg_gap": 0.4415445195693172
+    },
+    "1h": {
+      "tf": "1h",
+      "bull_total": 3435,
+      "bull_touched": 2961,
+      "bull_touch_rate": 86.20087336244542,
+      "bull_wr": 97.12934819317798,
+      "bull_avg_gap": 0.7029669497247898,
+      "bear_total": 3119,
+      "bear_touched": 2665,
+      "bear_touch_rate": 85.44405258095543,
+      "bear_wr": 96.58536585365853,
+      "bear_avg_gap": 0.7312183808533377
+    },
+    "4h": {
+      "tf": "4h",
+      "bull_total": 1182,
+      "bull_touched": 976,
+      "bull_touch_rate": 82.57191201353638,
+      "bull_wr": 96.10655737704919,
+      "bull_avg_gap": 1.2076783453720685,
+      "bear_total": 1015,
+      "bear_touched": 823,
+      "bear_touch_rate": 81.08374384236453,
+      "bear_wr": 94.89671931956258,
+      "bear_avg_gap": 1.2717513666293543
+    },
+    "1d": {
+      "tf": "1d",
+      "bull_total": 261,
+      "bull_touched": 189,
+      "bull_touch_rate": 72.41379310344827,
+      "bull_wr": 94.17989417989418,
+      "bull_avg_gap": 2.4573544517347474,
+      "bear_total": 186,
+      "bear_touched": 142,
+      "bear_touch_rate": 76.34408602150538,
+      "bear_wr": 95.07042253521126,
+      "bear_avg_gap": 2.8325594095030677
+    }
+  }
+}
