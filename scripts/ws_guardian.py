@@ -111,6 +111,25 @@ def check_positions() -> list[str]:
                 f"当前体制={regime} upnl={upnl_pct:+.2f}%"
             )
 
+        # ④ TP1接近预警（设计院复盘封印 2026-08-04）
+        tp1 = float(pos.get('tp1', 0) or 0)
+        if tp1 > 0 and mark > 0:
+            if side == 'SHORT':
+                tp_dist_pct = (mark - tp1) / mark * 100
+            else:
+                tp_dist_pct = (tp1 - mark) / mark * 100
+
+            if 0 <= tp_dist_pct <= 0.5:
+                alerts.append(
+                    f"🎯 {symbol} {side} TP1极近！"
+                    f"mark={mark:.4f} TP1={tp1:.4f} 距离={tp_dist_pct:.2f}% upnl={upnl_pct:+.2f}%"
+                )
+            elif 0 <= tp_dist_pct <= 1.5:
+                alerts.append(
+                    f"💡 {symbol} {side} TP1接近 "
+                    f"mark={mark:.4f} TP1={tp1:.4f} 距离={tp_dist_pct:.2f}% upnl={upnl_pct:+.2f}%"
+                )
+
     return alerts
 
 
