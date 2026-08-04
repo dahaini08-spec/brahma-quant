@@ -530,6 +530,361 @@ def analyze_smc(symbol: str, signal_dir: str = 'LONG',
         'score':       score,
     }
 
+
+
+def find_ob_smc_standard(opens: list, highs: list, lows: list,
+                          closes: list, lookback: int = 200) -> dict:
+    """[P1升级 设计院 2026-08-04 苏摩111批准] SMC公认标准OB定义
+    
+    与 find_order_blocks() 的核心差异：
+    - 旧法：反向K线 + 后续价格反转（近似定义）
+    - 新法：找摆动高/低点 → 往前找「结构突破前最后一根反向K线」
+            这才是机构真正建仓的位置（ICT/SMC公认标准）
+    
+    BULL OB = 上涨BOS前，最后一根下跌K线（阴线）的high~low区间
+    BEAR OB = 下跌BOS前，最后一根上涨K线（阳线）的high~low区间
+    """
+    price = closes[-1]
+    bull_obs = []
+    bear_obs = []
+
+    n = len(closes)
+    start = max(4, n - lookback)
+
+    # Step1: 找摆动高点（swing high）和摆动低点（swing low）
+    swing_highs = []
+    swing_lows  = []
+    for i in range(start + 2, n - 2):
+        # 摆动高点：左右各2根都低于它
+        if (highs[i] > highs[i-1] and highs[i] > highs[i-2] and
+                highs[i] > highs[i+1] and highs[i] > highs[i+2]):
+            swing_highs.append({'idx': i, 'price': highs[i]})
+        # 摆动低点：左右各2根都高于它
+        if (lows[i] < lows[i-1] and lows[i] < lows[i-2] and
+                lows[i] < lows[i+1] and lows[i] < lows[i+2]):
+            swing_lows.append({'idx': i, 'price': lows[i]})
+
+    # Step2: 对每个摆动高点，找其后发生BOS向上的情况
+    # BOS向上 = 后续价格突破该摆动高点 → 找摆动高点前最后一根阴线 = BULL OB
+    for sh in swing_highs[-12:]:
+        sh_idx   = sh['idx']
+        sh_price = sh['price']
+        # 在sh_idx之后寻找BOS（价格收盘突破sh_price）
+        bos_confirmed = False
+        for j in range(sh_idx + 1, min(sh_idx + 25, n)):
+            if closes[j] > sh_price:
+                bos_confirmed = True
+                break
+        if not bos_confirmed:
+            continue
+        # 找sh_idx前最后一根下跌K线（阴线）作为BULL OB
+        for k in range(sh_idx, max(sh_idx - 8, start), -1):
+            if closes[k] < opens[k]:  # 阴线
+                ob_lo = round(lows[k], 8)
+                ob_hi = round(highs[k], 8)
+                age   = n - 1 - k
+                # 未被缓解（price还在OB上方或内部）
+                is_broken = price < ob_lo * 0.99
+                if not is_broken:
+                    bull_obs.append({
+                        'type':      'BULL_OB_SMC',
+                        'high':      ob_hi,
+                        'low':       ob_lo,
+                        'mid':       round((ob_hi + ob_lo) / 2, 8),
+                        'age_bars':  age,
+                        'broken':    is_broken,
+                        'dist_pct':  round((price - ob_lo) / ob_lo * 100, 2),
+                        'note':      f'SMC标准BULL_OB ${ob_lo:.4f}~${ob_hi:.4f} age={age}',
+                        'method':    'smc_standard',
+                    })
+                break
+
+    # Step3: 对每个摆动低点，找其后发生BOS向下的情况
+    # BOS向下 = 后续价格跌破该摆动低点 → 找摆动低点前最后一根阳线 = BEAR OB
+    for sl in swing_lows[-12:]:
+        sl_idx   = sl['idx']
+        sl_price = sl['price']
+        bos_confirmed = False
+        for j in range(sl_idx + 1, min(sl_idx + 25, n)):
+            if closes[j] < sl_price:
+                bos_confirmed = True
+                break
+        if not bos_confirmed:
+            continue
+        for k in range(sl_idx, max(sl_idx - 8, start), -1):
+            if closes[k] > opens[k]:  # 阳线
+                ob_lo = round(lows[k], 8)
+                ob_hi = round(highs[k], 8)
+                age   = n - 1 - k
+                is_broken = price > ob_hi * 1.01
+                if not is_broken:
+                    bear_obs.append({
+                        'type':      'BEAR_OB_SMC',
+                        'high':      ob_hi,
+                        'low':       ob_lo,
+                        'mid':       round((ob_hi + ob_lo) / 2, 8),
+                        'age_bars':  age,
+                        'broken':    is_broken,
+                        'dist_pct':  round((ob_hi - price) / price * 100, 2),
+                        'note':      f'SMC标准BEAR_OB ${ob_lo:.4f}~${ob_hi:.4f} age={age}',
+                        'method':    'smc_standard',
+                    })
+                break
+
+    # 去重 + 按距离排序
+    seen_b, seen_s = set(), set()
+    bull_unique, bear_unique = [], []
+    for ob in sorted(bull_obs, key=lambda x: abs(x['dist_pct'])):
+        k = (round(ob['low'], 0), round(ob['high'], 0))
+        if k not in seen_b:
+            seen_b.add(k)
+            bull_unique.append(ob)
+    for ob in sorted(bear_obs, key=lambda x: abs(x['dist_pct'])):
+        k = (round(ob['low'], 0), round(ob['high'], 0))
+        if k not in seen_s:
+            seen_s.add(k)
+            bear_unique.append(ob)
+
+    return {
+        'bull_obs_smc': bull_unique[:4],
+        'bear_obs_smc': bear_unique[:4],
+        'nearest_bull_smc': bull_unique[0] if bull_unique else None,
+        'nearest_bear_smc': bear_unique[0] if bear_unique else None,
+    }
+
+
+# ═══════════════════════════════════════════════════════════════
+# 六、多周期共振层（P1升级 设计院 2026-08-04 苏摩111批准）
+# 核心逻辑：同一价格区域在日线/4H/1H同时存在FVG/OB → 权重叠加
+# 日线FVG权重×3，4H权重×2，1H权重×1
+# 三层共振 = 机构核心操作区，信号质量最高
+# ═══════════════════════════════════════════════════════════════
+
+def _zones_overlap(lo1: float, hi1: float, lo2: float, hi2: float) -> bool:
+    """判断两个区间是否重叠"""
+    return lo1 < hi2 and lo2 < hi1
+
+
+def _overlap_ratio(lo1: float, hi1: float, lo2: float, hi2: float) -> float:
+    """计算重叠比例（相对于较小区间）"""
+    overlap = max(0.0, min(hi1, hi2) - max(lo1, lo2))
+    smaller = min(hi1 - lo1, hi2 - lo2)
+    return overlap / smaller if smaller > 0 else 0.0
+
+
+def calc_confluence(multi_results: dict, signal_dir: str = 'LONG') -> dict:
+    """[设计院 P1升级 2026-08-04] 多周期FVG/OB共振评分
+    
+    Args:
+        multi_results: {'1d': smc_result, '4h': smc_result, '1h': smc_result}
+        signal_dir: 'LONG' or 'SHORT'
+    
+    Returns:
+        {
+          'confluence_zones': [...],  # 共振区列表，含权重
+          'top_zone': {...},          # 最强共振区
+          'score': float,             # 总共振评分 0~10
+          'grade': str,               # S/A/B/C/D
+          'detail': [...]             # 评分明细
+        }
+    """
+    weights = {'1d': 3.0, '4h': 2.0, '1h': 1.0}
+    all_zones = []
+
+    for tf, result in multi_results.items():
+        if not result or 'error' in result:
+            continue
+        w = weights.get(tf, 1.0)
+        price = result.get('price', 0)
+
+        # FVG层
+        fvg = result.get('fvg', {})
+        if signal_dir == 'LONG':
+            fvg_list = fvg.get('bull_fvg', []) + fvg.get('demand_bull', [])
+        else:
+            fvg_list = fvg.get('bear_fvg', []) + fvg.get('supply_bear', [])
+
+        seen_fvg = set()
+        for f in fvg_list:
+            key = (round(f['bottom'], 0), round(f['top'], 0))
+            if key in seen_fvg:
+                continue
+            seen_fvg.add(key)
+            in_zone = f['bottom'] <= price <= f['top']
+            all_zones.append({
+                'tf': tf, 'type': 'FVG', 'dir': signal_dir,
+                'lo': f['bottom'], 'hi': f['top'],
+                'mid': f['mid'], 'weight': w,
+                'in_zone': in_zone,
+                'gap_pct': f.get('gap_pct', 0),
+                'merged': f.get('merged', False),
+            })
+
+        # OB层
+        obs = result.get('order_blocks', {})
+        if signal_dir == 'LONG':
+            ob_list = [obs['nearest_bull_ob']] if obs.get('nearest_bull_ob') else []
+            ob_list += obs.get('bull_obs', [])
+        else:
+            ob_list = [obs['nearest_bear_ob']] if obs.get('nearest_bear_ob') else []
+            ob_list += obs.get('bear_obs', [])
+
+        seen_ob = set()
+        for ob in ob_list:
+            if not ob:
+                continue
+            key = (round(ob['low'], 0), round(ob['high'], 0))
+            if key in seen_ob:
+                continue
+            seen_ob.add(key)
+            in_zone = ob['low'] <= price <= ob['high']
+            all_zones.append({
+                'tf': tf, 'type': 'OB', 'dir': signal_dir,
+                'lo': ob['low'], 'hi': ob['high'],
+                'mid': ob['mid'], 'weight': w * 0.8,  # OB权重略低于FVG
+                'in_zone': in_zone,
+                'age_bars': ob.get('age_bars', 0),
+                'broken': ob.get('broken', False),
+            })
+
+    # ── 聚类：找重叠区域，叠加权重 ──
+    confluence_zones = []
+    used = [False] * len(all_zones)
+
+    for i, z in enumerate(all_zones):
+        if used[i]:
+            continue
+        cluster = [z]
+        total_weight = z['weight']
+        tfs_hit = {z['tf']}
+        types_hit = {z['type']}
+
+        for j, z2 in enumerate(all_zones):
+            if i == j or used[j]:
+                continue
+            if _zones_overlap(z['lo'], z['hi'], z2['lo'], z2['hi']):
+                ratio = _overlap_ratio(z['lo'], z['hi'], z2['lo'], z2['hi'])
+                if ratio >= 0.3:  # 至少30%重叠才算共振
+                    cluster.append(z2)
+                    total_weight += z2['weight']
+                    tfs_hit.add(z2['tf'])
+                    types_hit.add(z2['type'])
+                    used[j] = True
+
+        used[i] = True
+
+        # 共振区边界取集群的并集
+        lo = min(c['lo'] for c in cluster)
+        hi = max(c['hi'] for c in cluster)
+        mid = (lo + hi) / 2
+
+        # 多周期加成：覆盖周期数决定等级
+        tf_bonus = (len(tfs_hit) - 1) * 1.5  # 每多一个周期+1.5分
+        fvg_ob_bonus = 1.0 if len(types_hit) > 1 else 0.0  # FVG+OB同时命中+1
+
+        confluence_zones.append({
+            'lo': round(lo, 2),
+            'hi': round(hi, 2),
+            'mid': round(mid, 2),
+            'weight': round(total_weight + tf_bonus + fvg_ob_bonus, 2),
+            'tfs': sorted(tfs_hit),
+            'types': sorted(types_hit),
+            'n_tfs': len(tfs_hit),
+            'n_zones': len(cluster),
+            'tf_bonus': tf_bonus,
+            'any_in_zone': any(c.get('in_zone') for c in cluster),
+        })
+
+    # 按权重排序
+    confluence_zones.sort(key=lambda x: x['weight'], reverse=True)
+
+    # 评分归一化 0~10
+    max_possible = weights['1d'] + weights['4h'] + weights['1h'] + 3.0 + 1.0  # 9.0
+    top_w = confluence_zones[0]['weight'] if confluence_zones else 0
+    score = round(min(top_w / max_possible * 10, 10.0), 2)
+
+    # 等级
+    if score >= 8.0:   grade = 'S（三周期共振）'
+    elif score >= 6.0: grade = 'A（双周期共振）'
+    elif score >= 4.0: grade = 'B（单周期有效）'
+    elif score >= 2.0: grade = 'C（弱信号）'
+    else:              grade = 'D（无共振）'
+
+    detail = []
+    for cz in confluence_zones[:3]:
+        detail.append(
+            f'[{"+".join(cz["tfs"])}] {cz["lo"]}~{cz["hi"]}  '
+            f'w={cz["weight"]}  tfs={cz["n_tfs"]}  types={"+".join(cz["types"])}'
+        )
+
+    return {
+        'confluence_zones': confluence_zones[:5],
+        'top_zone': confluence_zones[0] if confluence_zones else None,
+        'score': score,
+        'grade': grade,
+        'detail': detail,
+    }
+
+
+def analyze_smc_multi(symbol: str, signal_dir: str = 'LONG') -> dict:
+    """[P1升级 设计院 2026-08-04 苏摩111批准] 三周期联合SMC分析
+    
+    替代单一 analyze_smc()，提供日线+4H+1H三层融合视角：
+      1D → 宏观结构 + 历史级FVG/OB（权重×3）
+      4H → 中期结构 + 核心FVG/OB（权重×2）
+      1H → 入场精确FVG/OB（权重×1）
+    
+    核心价值：多周期共振评分，三层叠加=机构核心操作区
+    """
+    tfs_config = [
+        ('1d', 365),
+        ('4h', 400),
+        ('1h', 500),
+    ]
+    results = {}
+    for tf, limit in tfs_config:
+        try:
+            results[tf] = analyze_smc(symbol, signal_dir, tf, limit)
+        except Exception as e:
+            results[tf] = {'error': str(e)}
+
+    # 多周期共振评分
+    confluence = calc_confluence(results, signal_dir)
+
+    # 主结构取1H（入场精度），宏观背景取1D
+    primary   = results.get('1h', {})
+    macro     = results.get('1d', {})
+    mid_term  = results.get('4h', {})
+
+    # 综合价格地图：收集所有周期的FVG，按与当前价的距离分层
+    price = primary.get('price', 0) or mid_term.get('price', 0) or macro.get('price', 0)
+    all_fvg_map = []
+    for tf, res in results.items():
+        if 'error' in res or not res:
+            continue
+        fvg = res.get('fvg', {})
+        w = {'1d': 3, '4h': 2, '1h': 1}[tf]
+        for f in fvg.get('bull_fvg', [])[:4]:
+            all_fvg_map.append({**f, 'tf': tf, 'direction': 'LONG', 'weight': w})
+        for f in fvg.get('bear_fvg', [])[:4]:
+            all_fvg_map.append({**f, 'tf': tf, 'direction': 'SHORT', 'weight': w})
+    all_fvg_map.sort(key=lambda x: abs(x['mid'] - price) if price else 0)
+
+    return {
+        'symbol':       symbol,
+        'price':        price,
+        'signal_dir':   signal_dir,
+        '1d':           macro,
+        '4h':           mid_term,
+        '1h':           primary,
+        'confluence':   confluence,
+        'fvg_map':      all_fvg_map[:12],   # 全周期FVG价格地图
+        'top_zone':     confluence.get('top_zone'),
+        'smc_grade':    confluence.get('grade', 'D'),
+        'smc_score':    confluence.get('score', 0),
+    }
+
+
 # ─── 快速测试 ────────────────────────────────────────────────
 if __name__ == '__main__':
     import sys

@@ -31,7 +31,7 @@ sys.path.insert(0, os.path.join(BASE_DIR, '..'))
 
 from data_cache        import prefetch_symbol, get_klines, klines_to_ohlcv
 from market_state      import analyze   as ms_analyze
-from smc_engine        import analyze_smc
+from smc_engine        import analyze_smc, analyze_smc_multi, calc_confluence, find_ob_smc_standard  # [P1升级 2026-08-04]
 from divergence_engine import divergence_score
 from volume_engine     import volume_score
 from range_engine      import range_score  # [Phase2a] 区间结构引擎
@@ -324,6 +324,23 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _smc_1d = analyze_smc(symbol, signal_dir, '1d', 365)
         except Exception:
             _smc_1d = {}
+        # [P1升级 2026-08-04] SMC标准OB（结构突破前最后反向K线）
+        _ob_smc_std = {}
+        try:
+            from data_cache import get_klines, klines_to_ohlcv as _k2o
+            _k1h_ob = _k2o(get_klines(symbol, '1h', 500))
+            if _k1h_ob and _k1h_ob.get('c'):
+                _ob_smc_std = find_ob_smc_standard(
+                    _k1h_ob['o'], _k1h_ob['h'], _k1h_ob['l'], _k1h_ob['c'], 400)
+        except Exception:
+            _ob_smc_std = {}
+        # [P1升级 2026-08-04] 多周期confluence
+        _confluence = {}
+        try:
+            _multi_inputs = {'1d': _smc_1d, '4h': _smc_4h, '1h': smc}
+            _confluence = calc_confluence(_multi_inputs, signal_dir)
+        except Exception:
+            _confluence = {}
         # [v21.0] MTF路由：4H战略区优先，1H确认（自顶向下）
         try:
             from brahma_brain.multi_timeframe_router import route_entry_zone as _mtf_route
@@ -391,7 +408,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     k4h = klines_to_ohlcv(get_klines(symbol, '4h', 200))
     extra_data = {
         '_symbol': _sym,
-        '_smc_1d': _smc_1d,   # [设计院升级 2026-08-04] 日线SMC结构注入
+        '_smc_1d': _smc_1d,        # [设计院升级 2026-08-04] 日线SMC结构
+        '_ob_smc_std': _ob_smc_std, # [P1升级 2026-08-04] SMC标准OB
+        '_confluence': _confluence,  # [P1升级 2026-08-04] 多周期共振评分
         'price': price,  # [2026-07-06] s7-LiqDens需要price字段
         '_k4h_closes':  list(k4h['c'][-20:]) if k4h and k4h.get('c') else [],
         '_k4h_volumes': list(k4h['v'][-20:]) if k4h and k4h.get('v') else [],
