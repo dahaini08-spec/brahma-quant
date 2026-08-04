@@ -1,38 +1,10 @@
 {
-  "positions": [
-    {
-      "symbol": "ETHUSDT",
-      "direction": "SHORT",
-      "qty": -0.03,
-      "entry": 1876.15,
-      "sl": 1909.2,
-      "tp1": 1847.4
-    }
-  ],
-  "wuqu_positions": [
-    {
-      "symbol": "ETHUSDT",
-      "direction": "SHORT",
-      "side": "SELL",
-      "qty": 0.03,
-      "entry_price": 1876.15,
-      "sl_price": 1909.2,
-      "tp1_price": 1847.4,
-      "tp2_price": 1815.6,
-      "rr1": 0.87,
-      "regime": "BEAR_TREND",
-      "score": 32.8,
-      "grade": 85.0,
-      "notional": 56.2845,
-      "opened_at": 1785637427.9972465,
-      "source": "设计院顶级合约交易员自主决策 2026-08-02",
-      "success": true
-    }
-  ],
+  "positions": [],
+  "wuqu_positions": [],
   "regime": "BEAR_TREND",
   "n_open": 0,
-  "total_pnl": 0.0,
-  "last_update": 1785835098.6035662,
+  "total_pnl": 0.26959999999999695,
+  "last_update": 1785841903.5418987,
   "source": "reconcile_rebuild_20260628",
   "ws_guardian_sync": true,
   "last_sync": "2026-06-29T04:35:35.517800+00:00",
@@ -42,32 +14,32 @@
   "_price_eth": 1870.73,
   "_refreshed_at": 1784527892.009376,
   "_refreshed_by": "design_institute_seal_2026-07-20",
-  "updated_at": "2026-08-04T09:18:18.603021+00:00",
-  "last_updated": "2026-08-04T09:18:18.603021+00:00",
-  "last_scan_ts": "2026-08-04T09:18:18.603021+00:00",
-  "timestamp": 1785835098.6035664,
-  "last_price": 63501.8,
-  "btc_price": 63501.8,
-  "price": 63501.8,
-  "eth_price": 1853.33,
+  "updated_at": "2026-08-04T11:12:00.000000+00:00",
+  "last_updated": "2026-08-04T11:02:06.187813+00:00",
+  "last_scan_ts": "2026-08-04T11:02:06.187813+00:00",
+  "timestamp": 1785841326.187993,
+  "last_price": 63775.7,
+  "btc_price": 63775.7,
+  "price": 63775.7,
+  "eth_price": 1867.87,
   "market_prices": {
-    "BTCUSDT": 63501.8,
-    "ETHUSDT": 1853.33
+    "BTCUSDT": 63775.7,
+    "ETHUSDT": 1867.87
   },
   "regime_label": "BEAR_TREND",
   "regime_snapshot": {
     "symbol": "BTCUSDT",
     "regime": "BEAR_TREND",
-    "phase": "4W_OR_2W",
+    "phase": "UPTREND",
     "momentum": "NEUTRAL",
-    "rsi_1h": 49.33,
-    "rsi_4h": 50.75,
-    "rsi_1d": 47.51,
-    "trend_1h": "BEAR",
+    "rsi_1h": 56.36,
+    "rsi_4h": 54.13,
+    "rsi_1d": 48.98,
+    "trend_1h": "BULL",
     "trend_4h": "CHOP",
     "trend_1d": "CHOP",
     "source": "market_state.detect_regime",
-    "ts": 1785835099.3624828
+    "ts": 1785841326.7716644
   },
   "ws_guardian": {
     "pid": 0,
@@ -83,5 +55,8 @@
   "available": 81.0375252,
   "nav_updated": "2026-07-20T13:34:31Z",
   "btc_regime": "BEAR_TREND",
-  "eth_regime": "BEAR_TREND"
+  "eth_regime": "BEAR_TREND",
+  "_close_reason": "BEAR_RECOVERY体制+价格逼近入场价，设计院自主决策全平 2026-08-04",
+  "_close_price_eth": 1866.31,
+  "_close_pnl": 0.26959999999999695
 }

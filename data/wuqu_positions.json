@@ -1,14 +1,1 @@
-[
-  {
-    "symbol": "ETHUSDT",
-    "side": "SHORT",
-    "entry_price": 1876.15,
-    "stop_loss": 1909.2,
-    "tp1": 1847.4,
-    "tp2": 1815.6,
-    "qty": 0.03,
-    "active": true,
-    "source": "设计院顶级合约交易员自主决策 2026-08-02",
-    "opened_at": 1785637427.9972465
-  }
-]
+[]
