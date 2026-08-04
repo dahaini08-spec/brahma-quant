@@ -274,6 +274,20 @@ def find_fvg(highs: list, lows: list, closes: list, lookback: int = 500) -> dict
     bull_fvg = _merge_fvg_list(bull_fvg, gap_pct_threshold=0.8)
     bear_fvg = _merge_fvg_list(bear_fvg, gap_pct_threshold=0.8)
 
+    # [P3升级 2026-08-04 苏摩111批准] 历史FVG过滤
+    # 距当前价>50%的FVG标记为historical_only，不参与nearest/supply/demand逻辑
+    # 解决BTC日线扫到2020年$9k级FVG干扰当前交易决策的问题
+    for f in bull_fvg:
+        dist_from_price = abs(f['mid'] - price) / price
+        f['historical_only'] = dist_from_price > 0.50
+    for f in bear_fvg:
+        dist_from_price = abs(f['mid'] - price) / price
+        f['historical_only'] = dist_from_price > 0.50
+
+    # 过滤掉historical_only再进行分类（保留原始列表用于完整性输出）
+    bull_fvg_active = [f for f in bull_fvg if not f.get('historical_only')]
+    bear_fvg_active = [f for f in bear_fvg if not f.get('historical_only')]
+
     # [FIX 2026-08-02 设计院自主] FVG双语义分类
     # BEAR FVG分两类：
     #   supply_bear = FVG在价格上方（供给区/阻力，做空最优入场区）
@@ -281,21 +295,21 @@ def find_fvg(highs: list, lows: list, closes: list, lookback: int = 500) -> dict
     # BULL FVG同理（demand_bull=下方支撑，target_bull=上方磁铁）
     # nearest_bear 优先选supply（价格上方），无供给时退化为全局最近
 
-    supply_bear  = [f for f in bear_fvg if f['mid'] > price * 1.001]   # 供给区（上方阻力）
-    target_bear  = [f for f in bear_fvg if f['mid'] < price * 0.999]   # 目标区（下方磁铁）
-    demand_bull  = [f for f in bull_fvg if f['mid'] < price * 0.999]   # 需求区（下方支撑）
-    target_bull  = [f for f in bull_fvg if f['mid'] > price * 1.001]   # 目标区（上方磁铁）
+    supply_bear  = [f for f in bear_fvg_active if f['mid'] > price * 1.001]   # 供给区（上方阻力）
+    target_bear  = [f for f in bear_fvg_active if f['mid'] < price * 0.999]   # 目标区（下方磁铁）
+    demand_bull  = [f for f in bull_fvg_active if f['mid'] < price * 0.999]   # 需求区（下方支撑）
+    target_bull  = [f for f in bull_fvg_active if f['mid'] > price * 1.001]   # 目标区（上方磁铁）
 
     # [P0修复 2026-08-02 设计院] 价格在FVG内部时的边界盲区修复
     # 当price在FVG区间内（bottom < price < top），mid可能处于price附近±0.1%内
     # 导致既不进supply也不进target → nearest_bear=None BUG
     # 修复：将「价格穿行中的BEAR FVG」归入supply_bear（回测供给区，做空最高优先级）
     # 同理BULL FVG穿行中归入demand_bull
-    for f in bear_fvg:
+    for f in bear_fvg_active:
         if f['bottom'] < price < f['top'] and f not in supply_bear and f not in target_bear:
             f['active_retest'] = True  # 标注为「价格回测供给区」
             supply_bear.append(f)
-    for f in bull_fvg:
+    for f in bull_fvg_active:
         if f['bottom'] < price < f['top'] and f not in demand_bull and f not in target_bull:
             f['active_retest'] = True  # 标注为「价格回测需求区」
             demand_bull.append(f)
@@ -308,8 +322,10 @@ def find_fvg(highs: list, lows: list, closes: list, lookback: int = 500) -> dict
     nearest_bull = demand_bull[0] if demand_bull else (target_bull[0] if target_bull else (bull_fvg[0] if bull_fvg else None))
 
     return {
-        'bull_fvg':      bull_fvg[:3],
-        'bear_fvg':      bear_fvg[:3],
+        'bull_fvg':      bull_fvg_active[:3],   # 近期有效（已过滤历史级别）
+        'bear_fvg':      bear_fvg_active[:3],   # 近期有效（已过滤历史级别）
+        'bull_fvg_all':  bull_fvg[:5],          # 全量含historical_only
+        'bear_fvg_all':  bear_fvg[:5],          # 全量含historical_only
         'supply_bear':   supply_bear[:2],   # 上方供给FVG（做空入场区）
         'target_bear':   target_bear[:2],   # 下方目标FVG（做空TP参考）
         'demand_bull':   demand_bull[:2],   # 下方需求FVG（做多入场区）

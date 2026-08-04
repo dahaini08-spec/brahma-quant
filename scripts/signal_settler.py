@@ -142,6 +142,37 @@ def settle_signal(sig: dict, dry_run: bool = False) -> dict | None:
     updated['settled_at'] = exit_ts
     updated['settled_by'] = 'signal_settler_v1'
 
+    # [设计院 2026-08-04] 回填 LLM Council 裁决有效性
+    # verdict_correct: True=裁决HIGH时信号确实SL / False=裁决HIGH但信号TP
+    try:
+        import json as _j
+        from pathlib import Path as _P
+        _sl_p = _P(__file__).parent.parent / 'data' / 'llm_council_shadow_log.jsonl'
+        if _sl_p.exists():
+            _sig_id = sig.get('id') or sig.get('signal_id') or sig.get('ts')
+            _sym    = sig.get('symbol','')
+            _lines  = _sl_p.read_text().strip().splitlines()
+            _updated_lines = []
+            for _line in _lines:
+                try:
+                    _rec = _j.loads(_line)
+                    # 匹配：symbol + ts接近（±5min）
+                    _match_sym = _rec.get('symbol') == _sym
+                    _match_ts  = abs(float(_rec.get('ts','0')[:10] if isinstance(_rec.get('ts'),str) else 0) - float(str(_sig_id)[:10] if _sig_id else 0)) < 300
+                    if _match_sym and _match_ts and _rec.get('outcome') is None:
+                        _rec['outcome'] = new_outcome
+                        _is_high = _rec.get('verdict') == 'RISK_HIGH' or _rec.get('risk_level') == 'HIGH'
+                        _is_loss = new_outcome in ('SL',)
+                        _rec['verdict_correct'] = bool(_is_high == _is_loss)
+                    _updated_lines.append(_j.dumps(_rec, ensure_ascii=False))
+                except Exception:
+                    _updated_lines.append(_line)
+            _sl_p.write_text('
+'.join(_updated_lines) + '
+')
+    except Exception:
+        pass
+
     return updated
 
 

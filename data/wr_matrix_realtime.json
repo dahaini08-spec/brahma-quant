@@ -195,5 +195,22 @@
     "avg_pnl_win": 0.038,
     "avg_pnl_loss": 0.0,
     "last_updated": "2026-08-02T09:08:10.600871+00:00"
+  },
+  "BULL_TREND:LONG:140-159": {
+    "regime": "BULL_TREND",
+    "direction": "LONG",
+    "score_bin": "140-159",
+    "n": 1,
+    "n_win": 1,
+    "n_loss": 0,
+    "n_timeout": 0,
+    "sum_pnl": 2.0668,
+    "sum_pnl_win": 2.0668,
+    "sum_pnl_loss": 0.0,
+    "wr": 1.0,
+    "ev": 2.0668,
+    "avg_pnl_win": 2.0668,
+    "avg_pnl_loss": 0.0,
+    "last_updated": "2026-08-04T06:46:29.392438+00:00"
   }
 }

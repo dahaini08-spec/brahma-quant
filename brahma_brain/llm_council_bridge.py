@@ -355,6 +355,21 @@ def review(
         if now - cached_ts < CACHE_TTL:
             signal_result['llm_council'] = cached_result
             signal_result['llm_council']['from_cache'] = True
+            # [2026-08-04] 缓存路径也注入宏观数据
+            try:
+                import json as _jc; from pathlib import Path as _Pc
+                _ms = _Pc(__file__).parent.parent / 'data' / 'macro_state.json'
+                if _ms.exists():
+                    _mc = _jc.loads(_ms.read_text())
+                    signal_result['_macro_ctx'] = {
+                        'fg':          _mc.get('fear_greed',{}).get('value',50) if isinstance(_mc.get('fear_greed'),dict) else _mc.get('fear_greed',50),
+                        'btc_d':       float(_mc.get('btc_dominance',52) or 52),
+                        'macro_score': int(_mc.get('macro_score',0) or 0),
+                        'macro_note':  str(_mc.get('macro_note',''))[:80],
+                        'dxy':         _mc.get('dxy',{}).get('value',100) if isinstance(_mc.get('dxy'),dict) else _mc.get('dxy',100),
+                    }
+            except Exception: pass
+            signal_result['_llm_council'] = cached_result
             return signal_result
 
     # ── 两个Agent并行审查 ─────────────────────────────────────
@@ -381,6 +396,57 @@ def review(
         '_compressed': _compressed_ctx,  # headroom压缩版，供Agent prompt使用
     }
     ctx = market_ctx or {}
+
+    # [设计院 2026-08-04] 注入1: 宏观叙事 — 从 macro_state.json 读取实时数据
+    try:
+        import json as _json
+        from pathlib import Path as _Path
+        _ms = _Path(__file__).parent.parent / 'data' / 'macro_state.json'
+        if _ms.exists():
+            _macro = _json.loads(_ms.read_text())
+            # 自动补全 ctx 里缺失的宏观字段
+            ctx.setdefault('fear_greed',    _macro.get('fear_greed', {}).get('value', 50) if isinstance(_macro.get('fear_greed'), dict) else _macro.get('fear_greed', 50))
+            ctx.setdefault('btc_dominance', float(_macro.get('btc_dominance', 52) or 52))
+            ctx.setdefault('macro_score',   int(_macro.get('macro_score', 0) or 0))
+            ctx.setdefault('macro_bias',    _macro.get('macro_bias', 'NEUTRAL'))
+            ctx.setdefault('macro_note',    _macro.get('macro_note', ''))
+            ctx.setdefault('dxy',           _macro.get('dxy', {}).get('value', 100) if isinstance(_macro.get('dxy'), dict) else _macro.get('dxy', 100))
+            flat_signal['_macro_ctx'] = {
+                'fg': ctx['fear_greed'], 'btc_d': ctx['btc_dominance'],
+                'macro_score': ctx['macro_score'], 'macro_note': str(ctx.get('macro_note',''))[:80],
+                'dxy': ctx.get('dxy', 100),
+            }
+    except Exception:
+        pass
+
+    # [设计院 2026-08-04] 注入2: 历史相似信号 — 找最近10条同体制同方向已结算信号
+    try:
+        import json as _json2
+        from pathlib import Path as _Path2
+        _log_p = _Path2(__file__).parent.parent / 'data' / 'live_signal_log.jsonl'
+        if _log_p.exists():
+            _all = [_json2.loads(l) for l in _log_p.read_text().strip().splitlines() if l.strip()]
+            _regime_key = regime
+            _dir_key    = dir_
+            _similar = [
+                r for r in _all
+                if r.get('regime') == _regime_key
+                and r.get('signal_dir', r.get('direction', '')) == _dir_key
+                and r.get('outcome') and r.get('outcome') not in (None, '')
+            ][-10:]  # 最近10条
+            if _similar:
+                _tp = sum(1 for r in _similar if r.get('outcome') in ('TP1','TP2'))
+                _sl = sum(1 for r in _similar if r.get('outcome') == 'SL')
+                _recent_wr = _tp / len(_similar) * 100
+                flat_signal['_similar_signals'] = {
+                    'n': len(_similar),
+                    'tp': _tp,
+                    'sl': _sl,
+                    'recent_wr': round(_recent_wr, 1),
+                    'summary': f'最近{len(_similar)}条{_regime_key}{_dir_key}: WR={_recent_wr:.1f}% TP={_tp} SL={_sl}',
+                }
+    except Exception:
+        pass
 
     t0 = time.time()
     risk_result  = _risk_agent_review(flat_signal)
@@ -410,6 +476,22 @@ def review(
         'from_cache': False,
     }
 
+    # [设计院 2026-08-04] 将注入字段透传回 signal_result
+    for _inject_key in ('_macro_ctx', '_similar_signals', '_compressed'):
+        if _inject_key in flat_signal:
+            signal_result[_inject_key] = flat_signal[_inject_key]
+    # 将完整 council 结果挂回
+    signal_result['_llm_council'] = {
+        'verdict':     council_output.get('risk',{}).get('risk_level','?'),
+        'final_adj':   council_output.get('final_adj', 0),
+        'risk_level':  council_output.get('risk',{}).get('risk_level','?'),
+        'top_risk':    council_output.get('risk',{}).get('top_risk',''),
+        'macro_bias':  council_output.get('macro',{}).get('macro_bias','?'),
+        'key_factor':  council_output.get('macro',{}).get('key_factor',''),
+        'similar_wr':  flat_signal.get('_similar_signals',{}).get('recent_wr'),
+        'adj':         council_output.get('final_adj', 0),
+    }
+
     # ── 根据模式决定是否注入 ──────────────────────────────────
     if MODE == 'live' and not veto:
         # live模式：实际调整score
@@ -431,7 +513,18 @@ def review(
     disk_cache[ck] = {'ts': now, 'result': council_output}
     _save_cache(disk_cache)
 
-    signal_result['llm_council'] = council_output
+    signal_result['llm_council']  = council_output
+    signal_result['_llm_council'] = {
+        'verdict':    council_output.get('risk',{}).get('risk_level','?'),
+        'final_adj':  council_output.get('final_adj',0),
+        'adj':        council_output.get('final_adj',0),
+        'risk_level': council_output.get('risk',{}).get('risk_level','?'),
+        'top_risk':   council_output.get('risk',{}).get('top_risk',''),
+        'macro_bias': council_output.get('macro',{}).get('macro_bias','?'),
+        'key_factor': council_output.get('macro',{}).get('key_factor',''),
+        'similar_wr': flat_signal.get('_similar_signals',{}).get('recent_wr'),
+        'risk_src':   council_output.get('risk',{}).get('source','?'),
+    }
     return signal_result
 
 
@@ -440,7 +533,7 @@ def review(
 # ════════════════════════════════════════════════════════════════
 
 def _shadow_log(signal: Dict, council: Dict):
-    """记录shadow模式建议，供达摩院M1验证使用"""
+    """记录shadow模式建议 [升级 2026-08-04: 完整字段+裁决追踪]"""
     try:
         LOG_DIR.mkdir(exist_ok=True)
         record = {
@@ -449,6 +542,20 @@ def _shadow_log(signal: Dict, council: Dict):
             'direction': signal.get('direction'),
             'score':     signal.get('score'),
             'regime':    signal.get('regime'),
+            # 裁决核心字段
+            'verdict':        'RISK_HIGH' if council.get('risk',{}).get('risk_level')=='HIGH' else ('RISK_LOW' if (council.get('final_adj',0)>=0) else 'RISK_MED'),
+            'risk_level':     council.get('risk',{}).get('risk_level','?'),
+            'top_risk':       council.get('risk',{}).get('top_risk',''),
+            'macro_bias':     council.get('macro',{}).get('macro_bias','?'),
+            'key_factor':     council.get('macro',{}).get('key_factor',''),
+            # 注入的上下文
+            'macro_ctx':      signal.get('_macro_ctx',{}),
+            'similar_wr':     signal.get('_similar_signals',{}).get('recent_wr'),
+            'similar_n':      signal.get('_similar_signals',{}).get('n',0),
+            'similar_summary':signal.get('_similar_signals',{}).get('summary',''),
+            # 有效性追踪（事后由 signal_settler 回填）
+            'outcome':        None,
+            'verdict_correct':None,
             'risk_adj':  council.get('risk', {}).get('score_adj', 0),
             'macro_adj': council.get('macro', {}).get('score_adj', 0),
             'final_adj': council.get('final_adj', 0),
