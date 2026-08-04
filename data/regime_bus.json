@@ -1,0 +1,20 @@
+{
+  "BTCUSDT": {
+    "CONFIRMED": "BEAR_TREND",
+    "CONFIRMED_ts": 1785887549.8265626,
+    "CONFIRMED_source": "btc_regime_watcher",
+    "CONFIRMED_score": 0.0,
+    "updated_at": 1785887549.8265638
+  },
+  "ETHUSDT": {
+    "CONFIRMED": "BEAR_TREND",
+    "CONFIRMED_ts": 1785887549.8267732,
+    "CONFIRMED_source": "btc_regime_watcher",
+    "CONFIRMED_score": 0.0,
+    "updated_at": 1785887556.2819514,
+    "CANDIDATE": "BEAR_RECOVERY",
+    "CANDIDATE_ts": 1785887556.2819495,
+    "CANDIDATE_source": "eth_ema_gate",
+    "CANDIDATE_score": 0.0
+  }
+}
