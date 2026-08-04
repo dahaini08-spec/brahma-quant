@@ -73,5 +73,50 @@
     "squeeze_catalyst": true,
     "funding": -0.0019,
     "short_pct": 50.0
+  },
+  "MIRAUSDT": {
+    "score": 123,
+    "price": 0.04035,
+    "entry_lo": 0.040189,
+    "entry_hi": 0.040511,
+    "sl_price": 0.039341,
+    "tp1_price": 0.041863,
+    "expire_ts": 1785838143.3192184,
+    "pushed_ts": 1785836363.0916564,
+    "auto_executed": false,
+    "reminded": false,
+    "squeeze_catalyst": true,
+    "funding": -0.1124,
+    "short_pct": 50.0
+  },
+  "CHIPUSDT": {
+    "score": 117,
+    "price": 0.02432,
+    "entry_lo": 0.024223,
+    "entry_hi": 0.024417,
+    "sl_price": 0.023712,
+    "tp1_price": 0.025232,
+    "expire_ts": 1785838153.594571,
+    "pushed_ts": 1785836363.0916564,
+    "auto_executed": false,
+    "reminded": false,
+    "squeeze_catalyst": true,
+    "funding": -0.0011,
+    "short_pct": 50.0
+  },
+  "KSTRUSDT": {
+    "score": 112,
+    "price": 23.36,
+    "entry_lo": 23.26656,
+    "entry_hi": 23.45344,
+    "sl_price": 22.776,
+    "tp1_price": 24.236,
+    "expire_ts": 1785838161.4763763,
+    "pushed_ts": 1785836363.0916564,
+    "auto_executed": false,
+    "reminded": false,
+    "squeeze_catalyst": true,
+    "funding": -0.2078,
+    "short_pct": 50.0
   }
 }
