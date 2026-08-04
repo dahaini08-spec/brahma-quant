@@ -377,6 +377,164 @@ def find_liquidity_pools(highs: list, lows: list, closes: list,
         'nearest_below': unique_el[0] if unique_el else None,
     }
 
+
+# ═══════════════════════════════════════════════════════════════
+# 七、清算集群精度升级（P2升级 设计院 2026-08-04 苏摩111批准）
+# 旧法：简单等高/等低点配对（lookback=100，仅两两比较）
+# 新法：多重摆动高/低点聚类 → 密度评分 → 分级猎杀目标
+# ═══════════════════════════════════════════════════════════════
+
+def find_liquidity_clusters(highs: list, lows: list, closes: list,
+                             lookback: int = 200,
+                             cluster_eps_pct: float = 0.8) -> dict:
+    """[P2升级 设计院 2026-08-04 苏摩111批准] 清算集群精度算法
+    
+    原理：
+      机构猎杀止损 = 把价格推到止损密集区
+      前高附近  = 空头止损密集 → 价格突破前高=猎空止损
+      前低附近  = 多头止损密集 → 价格跌破前低=猎多止损
+      多个前高/前低聚集在同一价格区域 → 密度越高 = 猎杀价值越大
+    
+    算法：
+      1. 识别所有摆动高/低点（严格定义：左右各2根）
+      2. 按价格聚类（eps=cluster_eps_pct%）
+      3. 计算每个集群的密度（点数/区间宽度）
+      4. 按密度排序输出猎杀优先级
+    
+    Returns:
+        {
+          'short_liq': [...],    # 上方空头止损集群（猎空目标）
+          'long_liq': [...],     # 下方多头止损集群（猎多目标）
+          'nearest_short_liq': {...},
+          'nearest_long_liq': {...},
+          'hunt_score_up': float,   # 上方猎杀吸引力 0~10
+          'hunt_score_down': float, # 下方猎杀吸引力 0~10
+        }
+    """
+    price = closes[-1]
+    n     = len(closes)
+    start = max(4, n - lookback)
+
+    # ── Step1: 识别摆动高/低点 ──
+    s_highs, s_lows = [], []
+    for i in range(start + 2, n - 2):
+        if (highs[i] > highs[i-1] and highs[i] > highs[i-2] and
+                highs[i] > highs[i+1] and highs[i] > highs[i+2]):
+            s_highs.append({'price': highs[i], 'idx': i, 'age': n - 1 - i})
+        if (lows[i] < lows[i-1] and lows[i] < lows[i-2] and
+                lows[i] < lows[i+1] and lows[i] < lows[i+2]):
+            s_lows.append({'price': lows[i], 'idx': i, 'age': n - 1 - i})
+
+    # ── Step2: 价格聚类（eps = cluster_eps_pct% 内的点合并） ──
+    def cluster_points(pts: list, eps_pct: float) -> list:
+        """按价格聚类，返回集群列表"""
+        if not pts:
+            return []
+        pts = sorted(pts, key=lambda x: x['price'])
+        clusters = []
+        cur = [pts[0]]
+        for p in pts[1:]:
+            gap = abs(p['price'] - cur[-1]['price']) / cur[-1]['price'] * 100
+            if gap <= eps_pct:
+                cur.append(p)
+            else:
+                clusters.append(cur)
+                cur = [p]
+        clusters.append(cur)
+        return clusters
+
+    # ── Step3: 计算集群属性 ──
+    def calc_cluster(cluster: list, direction: str, price: float) -> dict:
+        prices = [c['price'] for c in cluster]
+        lo = min(prices)
+        hi = max(prices)
+        mid = (lo + hi) / 2
+        n_pts = len(prices)
+        width_pct = (hi - lo) / lo * 100 if lo > 0 else 0
+
+        # 密度：点数越多、区间越窄 = 密度越高 = 猎杀价值越大
+        density = n_pts / max(width_pct, 0.01)
+
+        # 新鲜度：近期形成的集群权重更高
+        avg_age = sum(c['age'] for c in cluster) / n_pts
+        freshness = max(0.0, 1.0 - avg_age / lookback)
+
+        # 距离
+        dist_pct = (mid - price) / price * 100
+
+        # 综合评分 0~10
+        score = min(10.0, round(
+            n_pts * 1.5            # 点数加成
+            + density * 0.5        # 密度加成
+            + freshness * 2.0      # 新鲜度加成
+            + (1.0 if n_pts >= 3 else 0)  # 三重以上+1
+        , 2))
+
+        return {
+            'lo':         round(lo, 2),
+            'hi':         round(hi, 2),
+            'mid':        round(mid, 2),
+            'n_pts':      n_pts,
+            'density':    round(density, 3),
+            'freshness':  round(freshness, 3),
+            'avg_age':    round(avg_age, 1),
+            'score':      score,
+            'dist_pct':   round(dist_pct, 2),
+            'direction':  direction,
+            'note':       (
+                f'{"🔴空头止损集群" if direction=="SHORT" else "🟢多头止损集群"} '
+                f'${lo:.2f}~${hi:.2f}  n={n_pts}  score={score}'
+            ),
+        }
+
+    # ── Step4: 分方向聚类 ──
+    # 上方：前高聚集 = 空头止损集群（猎空目标）
+    above_highs = [p for p in s_highs if p['price'] > price]
+    below_lows  = [p for p in s_lows  if p['price'] < price]
+
+    sh_clusters_raw = cluster_points(above_highs, cluster_eps_pct)
+    sl_clusters_raw = cluster_points(below_lows,  cluster_eps_pct)
+
+    short_liq = []
+    for cl in sh_clusters_raw:
+        if cl:
+            short_liq.append(calc_cluster(cl, 'SHORT', price))
+
+    long_liq = []
+    for cl in sl_clusters_raw:
+        if cl:
+            long_liq.append(calc_cluster(cl, 'LONG', price))
+
+    # 按评分降序排列（猎杀价值最高的在前）
+    short_liq.sort(key=lambda x: x['score'], reverse=True)
+    long_liq.sort(key=lambda x:  x['score'], reverse=True)
+
+    # ── Step5: 猎杀方向吸引力评分 ──
+    # 上方猎杀吸引力 = 最近上方集群评分 × 密度加成
+    nearest_short = min(short_liq, key=lambda x: abs(x['dist_pct'])) if short_liq else None
+    nearest_long  = min(long_liq,  key=lambda x: abs(x['dist_pct'])) if long_liq  else None
+
+    hunt_up   = nearest_short['score'] if nearest_short else 0
+    hunt_down = nearest_long['score']  if nearest_long  else 0
+
+    # 三重以上集群标记为「高价值猎杀目标」
+    prime_short = [c for c in short_liq if c['n_pts'] >= 3]
+    prime_long  = [c for c in long_liq  if c['n_pts'] >= 3]
+
+    return {
+        'short_liq':        short_liq[:5],     # 上方空头止损集群
+        'long_liq':         long_liq[:5],      # 下方多头止损集群
+        'prime_short':      prime_short[:3],   # 高密度空头集群（≥3重）
+        'prime_long':       prime_long[:3],    # 高密度多头集群（≥3重）
+        'nearest_short_liq': nearest_short,
+        'nearest_long_liq':  nearest_long,
+        'hunt_score_up':    round(hunt_up, 2),
+        'hunt_score_down':  round(hunt_down, 2),
+        'n_sh_swings':      len(s_highs),
+        'n_sl_swings':      len(s_lows),
+    }
+
+
 # ═══════════════════════════════════════════════════════════════
 # 五、Premium / Discount 区域
 # ═══════════════════════════════════════════════════════════════
