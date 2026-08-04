@@ -878,15 +878,22 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
             from llm_council_bridge import review as _lc_review
             _lc_result = _lc_review(result, market_ctx=None, force=False)
             if _lc_result and not _lc_result.get('error'):
-                _lc_adj = float(_lc_result.get('score_adj', 0) or 0)
+                # [2026-08-04 对齐新字段] _llm_council 由 review() 直接写入 result
+                _lc_council = _lc_result.get('_llm_council', {}) or {}
+                _lc_adj = float(_lc_council.get('final_adj', _lc_council.get('adj', 0)) or 0)
                 if _lc_adj != 0:
                     result['score_final'] = round(_lc_score + _lc_adj, 2)
-                result['_llm_council'] = {
-                    'adj':     _lc_adj,
-                    'verdict': _lc_result.get('verdict', ''),
-                    'risk':    _lc_result.get('risk_summary', '')[:100],
-                    'cached':  _lc_result.get('from_cache', False),
-                }
+                # 透传 review() 注入的所有上下文字段
+                for _k in ('_llm_council', '_macro_ctx', '_similar_signals', '_compressed'):
+                    if _k in _lc_result and _lc_result[_k] is not None:
+                        result[_k] = _lc_result[_k]
+                if '_llm_council' not in result or not result['_llm_council']:
+                    result['_llm_council'] = {
+                        'adj':     _lc_adj,
+                        'verdict': _lc_council.get('verdict', _lc_council.get('risk_level', '')),
+                        'risk':    _lc_council.get('top_risk', '')[:100],
+                        'cached':  _lc_council.get('from_cache', False),
+                    }
     except Exception:
         pass  # 非阻断
 

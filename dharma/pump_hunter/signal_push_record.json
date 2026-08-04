@@ -480,10 +480,10 @@
     "push_price": 848.39
   },
   "NOWUSDT": {
-    "last_push_ts": 1785749820.2650068,
-    "last_score": 98,
-    "last_push_at": "2026-08-03T09:37:00.462313",
-    "push_price": 114.12
+    "last_push_ts": 1785832630.240168,
+    "last_score": 114,
+    "last_push_at": "2026-08-04T08:37:10.377076",
+    "push_price": 113.24
   },
   "WALUSDT": {
     "last_push_ts": 1785749947.6008635,
@@ -628,5 +628,29 @@
     "last_score": 104,
     "last_push_at": "2026-08-04T07:37:04.302497",
     "push_price": 0.04661
+  },
+  "KERNELUSDT": {
+    "last_push_ts": 1785832630.240168,
+    "last_score": 116,
+    "last_push_at": "2026-08-04T08:37:10.315513",
+    "push_price": 0.03141
+  },
+  "AMZNUSDT": {
+    "last_push_ts": 1785832630.240168,
+    "last_score": 114,
+    "last_push_at": "2026-08-04T08:37:10.358988",
+    "push_price": 279.6
+  },
+  "XTZUSDT": {
+    "last_push_ts": 1785832630.240168,
+    "last_score": 110,
+    "last_push_at": "2026-08-04T08:37:10.392742",
+    "push_price": 0.1987
+  },
+  "ONDOUSDT": {
+    "last_push_ts": 1785832630.240168,
+    "last_score": 110,
+    "last_push_at": "2026-08-04T08:37:10.409220",
+    "push_price": 0.3677
   }
 }

@@ -1,0 +1,43 @@
+{
+  "symbol": "BTCUSDT",
+  "direction": "NEUTRAL",
+  "ts": 1785832838,
+  "dt": "2026-08-04 08:40 UTC",
+  "result": {
+    "symbol": "BTCUSDT",
+    "signal_dir": "NEUTRAL",
+    "action": "不入场",
+    "reason": "三框架方向中性，无共识",
+    "summary": "中性 | 熊市反弹 | HH+HL上升结构",
+    "_runner_meta": {
+      "runner_version": "1.2",
+      "entry": "brahma_analysis_runner.run_analysis",
+      "symbol": "BTCUSDT",
+      "ts": "2026-08-04 08:40 UTC",
+      "elapsed": 0.56,
+      "fields_missing": [
+        "regime",
+        "score",
+        "entry_lo",
+        "entry_hi",
+        "sl",
+        "tp1",
+        "rr"
+      ],
+      "fields_ok": false,
+      "output_tag": "[BRAHMA:WARN:RUNNER:BTC:0.0:NEUTRAL:UNKNOWN:202608040840:28e61b44]",
+      "modules_active": {
+        "timing_filter": true,
+        "snapshot": true,
+        "brainlog": true,
+        "portfolio_opt": true,
+        "mss": true,
+        "llm_council": true,
+        "signal_trace": true
+      }
+    },
+    "valid": false,
+    "_score_for_trace": 0.0,
+    "_direction_for_trace": "NEUTRAL"
+  }
+}
