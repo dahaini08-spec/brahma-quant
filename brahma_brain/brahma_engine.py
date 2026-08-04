@@ -3165,10 +3165,17 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         # [FIX] _dir_t/_sym_t在s23前可能未定义，直接从_result取
         _s22b_dir = _result.get('signal_dir', signal_dir or 'NEUTRAL')
         _s22b_sym = _result.get('symbol', symbol)
-        # [FIX2] 直接使用_liq_clusters局部变量，不经extra_data（传递链丢失问题）
-        import sys as _sys_s22b
-        print(f'[S22B-DEBUG] _liq_clusters type={type(_liq_clusters).__name__} len={len(_liq_clusters) if isinstance(_liq_clusters,dict) else "N/A"} hunt_up={_liq_clusters.get("hunt_score_up","MISSING") if isinstance(_liq_clusters,dict) else "N/A"}', file=_sys_s22b.stderr)
-        _lc_data = _liq_clusters if isinstance(_liq_clusters, dict) and _liq_clusters else {}
+        # [FIX3 2026-08-04] s22b自主拉取数据，不依赖外部_liq_clusters变量
+        _lc_data = {}
+        try:
+            _sym_s22b = _result.get('symbol', '') or symbol
+            _k4h_s22b = klines_to_ohlcv(get_klines(_sym_s22b, '4h', 200))
+            if _k4h_s22b and _k4h_s22b.get('c'):
+                _lc_data = find_liquidity_clusters(
+                    _k4h_s22b['h'], _k4h_s22b['l'], _k4h_s22b['c'],
+                    lookback=150, cluster_eps_pct=0.8)
+        except Exception:
+            _lc_data = {}
         if _lc_data:
             _hunt_up   = _lc_data.get('hunt_score_up', 0)
             _hunt_dn   = _lc_data.get('hunt_score_down', 0)
