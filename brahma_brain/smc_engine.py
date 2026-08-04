@@ -1103,3 +1103,4 @@ if __name__ == '__main__':
         print(f'\nSMC评分: {sc["score"]}/20 ({sc["grade"]})')
         for d in sc['details']:
             print(f'  + {d}')
+# P3封印标记 2026-08-04T08:34:06Z
