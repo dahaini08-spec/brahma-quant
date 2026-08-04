@@ -96,13 +96,39 @@ def detect_bos_choch(highs: list, lows: list, closes: list) -> dict:
         'last_sl':   sl[-1]['price'] if sl else None,
     }
 
+
+def _merge_fvg_list(fvg_list: list, gap_pct_threshold: float = 0.8) -> list:
+    """[设计院升级 2026-08-04] 相邻FVG聚合：间距<gap_pct_threshold%时合并为大框
+    解决图表显示「一个大蓝框」而梵天显示「10个碎片」的视觉差异
+    """
+    if not fvg_list:
+        return []
+    fvg_list = sorted(fvg_list, key=lambda x: x['bottom'])
+    merged = [dict(fvg_list[0])]
+    for f in fvg_list[1:]:
+        last = merged[-1]
+        gap = (f['bottom'] - last['top']) / last['top'] * 100
+        if gap < gap_pct_threshold:
+            last['top']     = max(last['top'], f['top'])
+            last['bottom']  = min(last['bottom'], f['bottom'])
+            last['mid']     = round((last['top'] + last['bottom']) / 2, 8)
+            last['gap_pct'] = round((last['top'] - last['bottom']) / last['bottom'] * 100, 3)
+            last['note']    = f'合并FVG ${last["bottom"]:.4f}~${last["top"]:.4f} ({last["gap_pct"]:.2f}%)'
+            last['merged']  = True
+        else:
+            merged.append(dict(f))
+    return merged
+
+
 # ═══════════════════════════════════════════════════════════════
 # 二、Order Block 识别
 # ═══════════════════════════════════════════════════════════════
 
 def find_order_blocks(opens: list, highs: list, lows: list,
-                      closes: list, lookback: int = 50) -> dict:
-    """识别最近有效Order Block"""
+                      closes: list, lookback: int = 200) -> dict:
+    """识别最近有效Order Block
+    [设计院升级 2026-08-04] lookback 50→200，覆盖完整结构历史
+    """
     price   = closes[-1]
     bull_obs = []   # 看多OB（在当前价下方）
     bear_obs = []   # 看空OB（在当前价上方）
@@ -177,8 +203,10 @@ def find_order_blocks(opens: list, highs: list, lows: list,
 # 三、FVG 公平价值缺口识别
 # ═══════════════════════════════════════════════════════════════
 
-def find_fvg(highs: list, lows: list, closes: list, lookback: int = 50) -> dict:
-    """识别FVG（公平价值缺口）"""
+def find_fvg(highs: list, lows: list, closes: list, lookback: int = 500) -> dict:
+    """识别FVG（公平价值缺口）
+    [设计院升级 2026-08-04] lookback 50→500，全量扫描历史级别FVG
+    """
     price    = closes[-1]
     bull_fvg = []   # 看多FVG（K1高 < K3低）
     bear_fvg = []   # 看空FVG（K1低 > K3高）
@@ -238,9 +266,13 @@ def find_fvg(highs: list, lows: list, closes: list, lookback: int = 50) -> dict:
             f['active_fill_down'] = (down_count >= 2)  # 连续下跌→填充警示
             f['fill_target'] = f['bottom']  # 填充目标 = FVG底部
 
-    # 只保留未填补的FVG，按距离排序
+    # 只保留未填补的FVG
     bull_fvg = [f for f in bull_fvg if not f['filled']]
     bear_fvg = [f for f in bear_fvg if not f['filled']]
+
+    # [设计院升级 2026-08-04] FVG聚合：合并相邻小FVG为大框，与图表视觉对齐
+    bull_fvg = _merge_fvg_list(bull_fvg, gap_pct_threshold=0.8)
+    bear_fvg = _merge_fvg_list(bear_fvg, gap_pct_threshold=0.8)
 
     # [FIX 2026-08-02 设计院自主] FVG双语义分类
     # BEAR FVG分两类：

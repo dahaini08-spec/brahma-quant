@@ -317,7 +317,13 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     _smc_4h = {}
     _mtf_result = None  # multi_timeframe_router结果
     try:
-        _smc_4h = analyze_smc(symbol, signal_dir, '4h', 60)
+        _smc_4h = analyze_smc(symbol, signal_dir, '4h', 400)  # [设计院升级 2026-08-04] 60→400，覆盖4H完整结构
+        # [设计院升级 2026-08-04] 补充日线(1D)SMC分析 — 宏观FVG/OB不可缺少
+        _smc_1d = {}
+        try:
+            _smc_1d = analyze_smc(symbol, signal_dir, '1d', 365)
+        except Exception:
+            _smc_1d = {}
         # [v21.0] MTF路由：4H战略区优先，1H确认（自顶向下）
         try:
             from brahma_brain.multi_timeframe_router import route_entry_zone as _mtf_route
@@ -385,6 +391,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     k4h = klines_to_ohlcv(get_klines(symbol, '4h', 200))
     extra_data = {
         '_symbol': _sym,
+        '_smc_1d': _smc_1d,   # [设计院升级 2026-08-04] 日线SMC结构注入
         'price': price,  # [2026-07-06] s7-LiqDens需要price字段
         '_k4h_closes':  list(k4h['c'][-20:]) if k4h and k4h.get('c') else [],
         '_k4h_volumes': list(k4h['v'][-20:]) if k4h and k4h.get('v') else [],
