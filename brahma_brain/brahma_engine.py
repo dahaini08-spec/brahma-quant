@@ -2469,6 +2469,34 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         # ── P0-A: BULL_CORRECTION（牛市回调）× LONG ────────────────────────
         # 根因：接刀问题（回调未到OB支撑位就做多）+ ob_dist>1.5%失去锚点
         # 修复：强制要求 ob_dist_pct<1.5%（B级以上精准支撑）
+        # [P4升级 2026-08-04 设计院自主] SMC标准OB替换旧OB精度
+        # find_ob_smc_standard()识别的是机构真正建仓的K线，精度更高
+        try:
+            _ob_std = extra_data.get('_ob_smc_std', {}) if extra_data else {}
+            if _ob_std:
+                if _dir_t == 'LONG':
+                    _nb_smc = _ob_std.get('nearest_bull_smc')
+                    if _nb_smc and not _nb_smc.get('broken'):
+                        _smc_dist = abs(_nb_smc.get('dist_pct', 99))
+                        if _smc_dist < cf.get('ob_dist_pct', 99):
+                            cf['ob_dist_pct'] = round(_smc_dist, 2)
+                            cf['ob_top']      = _nb_smc['high']
+                            cf['ob_bottom']   = _nb_smc['low']
+                            cf['ob_source_type'] = 'BULL_OB_SMC'
+                            print(f'[OB_SMC_PATCH] {_sym_t} LONG: 升级OB→SMC标准 dist={_smc_dist:.2f}%')
+                elif _dir_t == 'SHORT':
+                    _ns_smc = _ob_std.get('nearest_bear_smc')
+                    if _ns_smc and not _ns_smc.get('broken'):
+                        _smc_dist = abs(_ns_smc.get('dist_pct', 99))
+                        if _smc_dist < cf.get('ob_dist_pct', 99):
+                            cf['ob_dist_pct'] = round(_smc_dist, 2)
+                            cf['ob_top']      = _ns_smc['high']
+                            cf['ob_bottom']   = _ns_smc['low']
+                            cf['ob_source_type'] = 'BEAR_OB_SMC'
+                            print(f'[OB_SMC_PATCH] {_sym_t} SHORT: 升级OB→SMC标准 dist={_smc_dist:.2f}%')
+        except Exception:
+            pass
+
         if _regime_now == 'BULL_CORRECTION' and signal_dir == 'LONG':
             _ob_dist = cf.get('ob_dist_pct', 99)
             if _ob_dist is None: _ob_dist = 99
@@ -3220,6 +3248,73 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 print(f'[s22-GEX] {_sym_t} {_dir_t}: {_s22:+d} | {_s22_res.get("reason","")}')
     except Exception as _e22:
         pass  # GEX不影响主流评分
+
+
+
+    # ── s22b: 清算集群流动性猎杀评分 [设计院自主 2026-08-04]
+    # P2升级数据层已注入 _liq_clusters，现在让它真正参与评分
+    # 合约逻辑：上方prime集群密集 + LONG方向 → 机构推价猎空 → 做多信号+
+    #           下方prime集群密集 + SHORT方向 → 机构推价猎多 → 做空信号+
+    try:
+        # [FIX] _dir_t/_sym_t在s23前可能未定义，直接从_result取
+        _s22b_dir = _result.get('signal_dir', signal_dir or 'NEUTRAL')
+        _s22b_sym = _result.get('symbol', symbol)
+        _lc_data = extra_data.get('_liq_clusters', {}) if extra_data else {}
+        if _lc_data:
+            _hunt_up   = _lc_data.get('hunt_score_up', 0)
+            _hunt_dn   = _lc_data.get('hunt_score_down', 0)
+            _prime_s   = _lc_data.get('prime_short', [])
+            _prime_l   = _lc_data.get('prime_long', [])
+            _ns_lc     = _lc_data.get('nearest_short_liq')
+            _nl_lc     = _lc_data.get('nearest_long_liq')
+            _s22b      = 0
+            _s22b_desc = ''
+
+            if _s22b_dir == 'LONG':
+                # 上方密集空头清算 → 机构大概率推价猎空 → 利好多头
+                if _hunt_up >= 8:
+                    _s22b += 8
+                    _s22b_desc += f'上方空头集群hunt={_hunt_up:.0f}→+8 '
+                elif _hunt_up >= 5:
+                    _s22b += 4
+                    _s22b_desc += f'上方空头集群hunt={_hunt_up:.0f}→+4 '
+                # prime集群加成（≥3重密集）
+                if len(_prime_s) >= 2:
+                    _s22b += 5
+                    _s22b_desc += f'prime空头集群n={len(_prime_s)}→+5 '
+                elif len(_prime_s) == 1:
+                    _s22b += 2
+                    _s22b_desc += f'prime空头集群n=1→+2 '
+                # 距离修正：上方清算集群太近（<1%）可能已被触发
+                if _ns_lc and abs(_ns_lc.get('dist_pct', 99)) < 1.0:
+                    _s22b = max(0, _s22b - 3)
+                    _s22b_desc += '(极近集群-3) '
+            elif _s22b_dir == 'SHORT':
+                # 下方密集多头清算 → 机构推价猎多 → 利好空头
+                if _hunt_dn >= 8:
+                    _s22b += 8
+                    _s22b_desc += f'下方多头集群hunt={_hunt_dn:.0f}→+8 '
+                elif _hunt_dn >= 5:
+                    _s22b += 4
+                    _s22b_desc += f'下方多头集群hunt={_hunt_dn:.0f}→+4 '
+                if len(_prime_l) >= 2:
+                    _s22b += 5
+                    _s22b_desc += f'prime多头集群n={len(_prime_l)}→+5 '
+                elif len(_prime_l) == 1:
+                    _s22b += 2
+                    _s22b_desc += f'prime多头集群n=1→+2 '
+                if _nl_lc and abs(_nl_lc.get('dist_pct', 99)) < 1.0:
+                    _s22b = max(0, _s22b - 3)
+                    _s22b_desc += '(极近集群-3) '
+
+            _s22b = min(_s22b, 13)  # 上限13分
+            if _s22b > 0:
+                _result['confluence']['score'] = _result['confluence'].get('score', 0) + _s22b
+                _result['confluence']['_s22b_liq'] = _s22b
+                _result['confluence'].setdefault('breakdown', {})['清算/OI'] =                     _result['confluence']['breakdown'].get('清算/OI', 0) + _s22b
+                print(f'[s22b-LiqCluster] {_s22b_sym} {_s22b_dir}: +{_s22b} | {_s22b_desc.strip()}')
+    except Exception:
+        pass  # 清算集群不影响主流评分
 
     # ── s23: Kronos-Lite × 体制解锁器 × CHOP过滤器 ─────────────────────
     # 设计院 × 达摩院 v9.0-SLIM · 2026-06-17
@@ -4226,6 +4321,29 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _cf0 = _result.get('confluence', {})
         _result['regime'] = (_cf0.get('regime') if isinstance(_cf0, dict) else None) or ''
     # ─────────────────────────────────────────────────────────────────────────
+    # [P4升级 2026-08-04 设计院自主] top_zone共振区优化入场精度
+    # 当三周期共振区与当前entry重叠时，以共振区边界为准（更精准）
+    try:
+        _cf_data = extra_data.get('_confluence', {}) if extra_data else {}
+        _top_zone = _cf_data.get('top_zone') if _cf_data else None
+        if _top_zone and _result.get('entry_lo') and _result.get('entry_hi'):
+            _tz_lo = _top_zone.get('lo', 0)
+            _tz_hi = _top_zone.get('hi', 0)
+            _e_lo  = _result['entry_lo']
+            _e_hi  = _result['entry_hi']
+            # 检查是否重叠
+            if _tz_lo < _e_hi and _tz_hi > _e_lo:
+                # 取交集作为更精准的入场区
+                _new_lo = max(_e_lo, _tz_lo)
+                _new_hi = min(_e_hi, _tz_hi)
+                if _new_hi > _new_lo:
+                    _result['entry_lo'] = round(_new_lo, 4)
+                    _result['entry_hi'] = round(_new_hi, 4)
+                    _result['entry_source'] = _result.get('entry_source','') + '+TopZone'
+                    print(f'[TOP_ZONE_PATCH] {_result.get("symbol","")} 入场区精化: {_e_lo:.4f}~{_e_hi:.4f} → {_new_lo:.4f}~{_new_hi:.4f}')
+    except Exception:
+        pass
+
     return _result
 
 def format_report(r: dict) -> str:

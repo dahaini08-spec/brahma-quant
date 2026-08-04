@@ -294,6 +294,55 @@ def detect_events(data, prev_state, sym):
                 'priority': 'HIGH',
             })
 
+    # ── E11/E12: BEAR_TREND专用做空触发（设计院 2026-08-04 苏摩111执行）──────────
+    # 问题：BEAR_TREND体制下，E1/E2/E3触发率极低（RSI很少到70，反弹幅度有限）
+    # 解法：增加BEAR_TREND特有的反弹顶部识别模式
+    #
+    # E11: BEAR_TREND + RSI_1H从>60回落到<55（反弹失败，做空确认）
+    #      意义：BEAR体制里RSI能到60已是强反弹，回落到55说明反弹顶部已确认
+    #      历史验证：BEAR体制反弹后RSI回落 WR=68.1%（来自wr_matrix_v7）
+    #
+    # E12: BEAR_TREND + 价格反弹至EMA20_1H ±1.5%（新宪法规则：EMA20是做空入场参考位）
+    #      意义：梵天新宪法要求"价格<EMA20_1H才允许做空入场"
+    #      此事件触发=价格刚触碰EMA20，是最优做空入场时机
+
+    # 读取当前体制（复用 regime_state.json，不增加API调用）
+    try:
+        import json as _j
+        _regime_f = Path(__file__).parent.parent / 'data' / 'regime_state.json'
+        _regime_data = _j.loads(_regime_f.read_text()) if _regime_f.exists() else {}
+        _sym_regime = _regime_data.get(sym, {})
+        _cur_regime = _sym_regime.get('regime', _sym_regime.get('confirmed', '')) if isinstance(_sym_regime, dict) else ''
+    except Exception:
+        _cur_regime = ''
+
+    if 'BEAR' in _cur_regime:
+        # E11: RSI从>60回落到<55（反弹失败）
+        if prev_rsi > 60.0 and rsi < 55.0:
+            events.append({
+                'event': 'E11_BEAR_RSI_PULLBACK',
+                'desc': (f'🐻 BEAR_TREND RSI_1H {prev_rsi:.1f}→{rsi:.1f} 反弹失败回落，'
+                         f'做空窗口打开 (BEAR_WR≈68%) '
+                         f'价格${px:,.2f} EMA20=${ema20:,.2f}'),
+                'priority': 'HIGH',
+                'regime': _cur_regime,
+                'direction': 'SHORT',
+            })
+
+        # E12: 价格触碰EMA20_1H（±1.5% 范围内）
+        if ema20 > 0:
+            _dist_ema = abs(px - ema20) / ema20
+            if _dist_ema <= 0.015 and px < ema20 * 1.005:  # 在EMA20附近且略低于
+                events.append({
+                    'event': 'E12_BEAR_EMA20_TOUCH',
+                    'desc': (f'🐻 BEAR_TREND 价格${px:,.2f}触碰EMA20_1H${ema20:,.2f} '
+                             f'(dist={_dist_ema*100:.2f}%) — 新宪法做空参考位，'
+                             f'确认后可入场'),
+                    'priority': 'HIGH',
+                    'regime': _cur_regime,
+                    'direction': 'SHORT',
+                })
+
     return events, 'ACTIVE' if events else 'NO_EVENT'
 
 
@@ -458,6 +507,8 @@ def run():
         if _has_35dim_trigger:
             _short_events = {'E2_RSI_OVERBOUGHT_PULLBACK', 'E4_PRICE_BREAK_48H_LOW'}
             _long_events  = {'E1_RSI_CROSS_UP_SHORT_WINDOW', 'E3_PRICE_BREAK_48H_HIGH', 'E10_RSI_BOUNCE_CONFIRM'}
+            _short_events = {'E2_RSI_OVERBOUGHT_DROP', 'E4_PRICE_BREAK_48H_LOW',
+                             'E11_BEAR_RSI_PULLBACK', 'E12_BEAR_EMA20_TOUCH'}  # [2026-08-04 E11/E12新增]
             _triggered_event_names = {ev.get('event','') for ev in (events if events else [])}
             _has_short_trigger = bool(_triggered_event_names & _short_events)
             _has_long_trigger  = bool(_triggered_event_names & _long_events)
@@ -488,7 +539,7 @@ def run():
             )
             if _has_35dim_trigger:
                 # [P1-B修复 同步] 备用路径同样注入方向感知
-                _short_ev2 = {'E2_RSI_OVERBOUGHT_PULLBACK', 'E4_PRICE_BREAK_48H_LOW'}
+                _short_ev2 = {'E2_RSI_OVERBOUGHT_PULLBACK', 'E4_PRICE_BREAK_48H_LOW', 'E11_BEAR_RSI_PULLBACK', 'E12_BEAR_EMA20_TOUCH'}  # [2026-08-04]
                 _long_ev2  = {'E1_RSI_CROSS_UP_SHORT_WINDOW', 'E3_PRICE_BREAK_48H_HIGH', 'E10_RSI_BOUNCE_CONFIRM'}
                 _trig_ev2  = {ev.get('event','') for ev in (events if events else [])}
                 if _trig_ev2 & _short_ev2:
