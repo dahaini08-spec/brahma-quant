@@ -214,6 +214,19 @@ def main():
 
     pid_file = BASE / 'data' / 'liq_ws_multi.pid'
     pid_file.parent.mkdir(exist_ok=True)
+
+    # ── 单实例检查（设计院2026-08-05封印）──────────────────────────
+    if pid_file.exists():
+        try:
+            existing_pid = int(pid_file.read_text().strip())
+            os.kill(existing_pid, 0)  # 0=存活探测
+            # 进程存活 → 已有WS守护进程在运行，本次静默退出
+            print(f'HEARTBEAT_OK — liq_ws进程存活(PID={existing_pid})，跳过重启')
+            return
+        except (ProcessLookupError, ValueError):
+            pass  # 进程已死或PID无效 → 继续重启
+    # ────────────────────────────────────────────────────────────────
+
     pid_file.write_text(str(os.getpid()))
 
     def _sigterm(*_):
