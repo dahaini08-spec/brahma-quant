@@ -14,9 +14,18 @@ import sys as _sys, os as _os
 _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'scripts') if '/scripts/' not in __file__ else _os.path.dirname(_os.path.abspath(__file__)))
 try:
     from brahma_mem_manager import mem_gate as _mem_gate
-    _mem_gate(800)
+    _mem_gate(700)
 except (ImportError, SystemExit) as _e:
     if isinstance(_e, SystemExit): raise
+# ── 进程内存上限硬封（设计院P3 2026-08-05）──────────────
+try:
+    import resource as _resource
+    _RLIMIT_1500MB = 1500 * 1024 * 1024
+    _resource.setrlimit(_resource.RLIMIT_AS, (_RLIMIT_1500MB, _RLIMIT_1500MB))
+except Exception:
+    pass  # 容器环境不支持时静默跳过
+# ─────────────────────────────────────────────────────────
+
 # ──────────────────────────────────────────────────────
 
 import sys, os, time, re as _re
