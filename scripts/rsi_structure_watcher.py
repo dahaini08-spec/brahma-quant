@@ -257,6 +257,29 @@ def detect_events(data, prev_state, sym):
             'priority': 'MEDIUM',
         })
 
+    # ── E11: 清算墙逼近(<0.5%) — 轧空/踩踏即将触发 [设计院 2026-08-05] ────
+    try:
+        import sys as _sys_e11
+        _bb11 = str(BASE / 'brahma_brain')
+        if _bb11 not in _sys_e11.path:
+            _sys_e11.path.insert(0, _bb11)
+        from liq_density_engine import get_liq_density as _get_ld_e11
+        _ld11 = _get_ld_e11(symbol, price)
+        _ab11 = _ld11.get('above_walls', [])
+        _bl11 = _ld11.get('below_walls', [])
+        for _wp11, _wv11 in (_ab11 + _bl11):
+            _dist11 = abs(_wp11 - price) / price * 100
+            if _dist11 < 0.5 and _wv11 > 50_000_000:   # 距离<0.5% 且 量>$50M
+                _side11 = '上方空头清算墙' if _wp11 > price else '下方多头清算墙'
+                events.append({
+                    'event': 'E11_LIQ_WALL_NEAR',
+                    'desc': f'{_side11}逼近: {_wp11:,.0f}({_dist11:.2f}%, ${_wv11/1e6:.0f}M) — 触发点已近',
+                    'priority': 'HIGH',
+                })
+                break   # 只取最近一堵墙
+    except Exception:
+        pass
+
     # ── E10: RSI回弹确认（设计院 2026-07-13）————————————————————————————
     # 核心逻辑： RSI_1H从<30回弹至>35 → 超卖消化，为多头入场提供确认信号
     # 意义：直接在最低点入场 WR=72%, 回弹后入场 WR=78%（+6%）
