@@ -132,6 +132,7 @@ def main():
                     _rs[_sym] = {}
                 _rs[_sym].update({
                     'regime': _regime_btc,
+                    'confirmed': _regime_btc,  # [D9修复 2026-08-05] brahma_360 D9检查字段
                     'price': _price,
                     'ts': now_iso,
                     'source': 'brahma_state_refresh_ssot',
@@ -141,6 +142,13 @@ def main():
             with open(_rs_tmp, 'w') as _f:
                 json.dump(_rs, _f, ensure_ascii=False, indent=2)
             os.replace(_rs_tmp, str(_rs_path))
+            # [regime_bus同步 2026-08-05] state_refresh也将体制写入总线
+            try:
+                import sys as _rbs3; _rbs3.path.insert(0, str(BASE/'scripts'))
+                from regime_bus import update as _rb_upd3
+                _rb_upd3('BTCUSDT', _regime_btc, 'CONFIRMED', 'btc_regime_watcher')
+                _rb_upd3('ETHUSDT', _regime_btc, 'CONFIRMED', 'btc_regime_watcher')
+            except Exception: pass
         except Exception as _rs_e:
             pass  # 静默失败，不影响主流程
 
