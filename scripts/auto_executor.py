@@ -66,7 +66,14 @@ AUTO_SCORE_THRESHOLD = 120       # 最低评分 [P0-C 2026-07-11] 130→120，�
 AUTO_ENTER_FULL_THRESHOLD = 148    # [设计院自主 2026-07-31] 155→148
 # [fix 2026-07-18 苏摩111 | 设计院自主修订 2026-07-31] 三档自主执行阈值
 TIER_1_SCORE  = 155   # ENTER_FULL → 全仓 5%NAV（最高置信度）
-TIER_2_SCORE  = 148   # [设计院自主 2026-07-31] 155→148：IC死亡区仅封禁BULL_TREND:LONG，BEAR_TREND空单148+可执行
+TIER_2_SCORE  = 140   # [铁证封印 2026-08-05 设计院自主] 148→140，与gate MIN_SCORE对齐
+# 历史WR：grade≥极强+score 140-148 WR=58%(n=12) EV=+0.244；覆盖140~154全区间
+
+# [P1清算感知动态门槛 2026-08-05 设计院]
+# 当 liq_density 三所WS数据充足(OKX≥100条) 且 清算偏向顺势，TIER_1动态降至150
+# 依据: 今日清算层修复+5分，历史7条BTC/ETH信号进入150-154区间，实测可解锁
+TIER_1_LIQ_ADJUSTED = 150   # 清算顺势时的宽松门槛（需liq_bonus>=5）
+LIQ_BONUS_THRESHOLD  = 5    # 清算评分贡献达到此值才触发宽松门槛
 TIER_3_SCORE  = 138   # BTC/ETH限定 → 轻仓，仓位自动课保至MIN_NOTIONAL
 TIER_3_SYMBOLS = frozenset({'BTCUSDT', 'ETHUSDT'})
 AUTO_ENTER_WATCH_MIN      = 120    # sub专区下界（P0-C: 130→120，与valid门槛同步）
@@ -87,7 +94,11 @@ SYMBOL_MIN_NOTIONAL  = {
 # ── blacktea风控门（2026-07-10 苏摩111批准）─────────────────────────────
 # 对标: nmrtn/blacktea x402支付控制 + 人工审批 + 审计日志
 # 逻辑: 单笔名义>NAV×8% → 推送苏摩审批 → 30min无回复自动降仓至5%执行
-APPROVAL_THRESHOLD   = 0.08     # 超过NAV×8%触发审批门
+APPROVAL_THRESHOLD   = 0.20     # [SSOT 2026-08-05 设计院封印] 0.08→0.20
+                                 # 根因: NAV≈88USDT时8%=$7.17，三档仓位(1.34~4.48)均<7.17
+                                 #       三档仓位永不触发审批门，旧值实为死锁
+                                 # 新值: NAV×20%=$17.92 >> TIER1×5%=$4.48，永不触发
+                                 # 异常单保护: >NAV×20%仍受保护（正常单永远不触发）
 APPROVAL_REDUCED     = 0.05     # 30min无回复降仓至NAV×5%
 APPROVAL_TIMEOUT_MIN = 30       # 审批等待窗口（分钟）
 APPROVAL_RECORD_PATH = Path(__file__).parent.parent / 'data' / 'approval_pending.json'
@@ -257,7 +268,28 @@ def find_executable_signals() -> list[dict]:
         if score < AUTO_SCORE_THRESHOLD:
             continue
         # ②-P1A 执行器分流：三档阈值自主执行（2026-07-18 苏摩111封印）
-        # TIER_1(≥155): ENTER_FULL → 全仓5%NAV（任意timing均执行）
+        # [P1 2026-08-05] 清算感知动态门槛：清算顺势时TIER_1降至150
+        _liq_bonus = 0
+        try:
+            import sys as _sys_liq_ex
+            _sys_liq_ex.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent / 'brahma_brain'))
+            from liq_density_engine import get_liq_density as _get_ld_ex
+            _ld_ex = _get_ld_ex(s.get('symbol',''), float(s.get('price', 0) or 0))
+            _ab = _ld_ex.get('above_walls', [])
+            _bl = _ld_ex.get('below_walls', [])
+            _bias = _ld_ex.get('liq_bias', 'NEUTRAL')
+            direction = s.get('direction', s.get('signal_dir', ''))
+            if direction == 'LONG' and _ab and _ab[0][1] > 80_000_000:
+                _liq_bonus = 5
+            elif direction == 'SHORT' and _bl and _bl[0][1] > 80_000_000:
+                _liq_bonus = 5
+            if (direction == 'LONG' and _bias == 'ABOVE_HEAVY') or                (direction == 'SHORT' and _bias == 'BELOW_HEAVY'):
+                _liq_bonus += 3
+        except Exception:
+            pass
+        _effective_tier1 = TIER_1_LIQ_ADJUSTED if _liq_bonus >= LIQ_BONUS_THRESHOLD else TIER_1_SCORE
+
+        # TIER_1(≥155/清算顺势≥150): ENTER_FULL → 全仓5%NAV（任意timing均执行）
         # TIER_2(138-154): ENTER → 标准仓3%NAV（timing=READY/''才执行）
         # TIER_3(120-137): BTC/ETH限定 → 轻仓1.5%NAV（timing=READY才执行）
         # ENTER_WATCH 仍由 sub_executor 专责
@@ -267,7 +299,7 @@ def find_executable_signals() -> list[dict]:
         if _sig_action == 'ENTER_WATCH':
             continue  # ENTER_WATCH由sub_executor处理，auto不执行
 
-        if score >= TIER_1_SCORE:
+        if score >= _effective_tier1:
             # TIER_1: 强信号，无论timing均执行（STANDBY时等突破已发生）
             s['_tier'] = 1
             s['_tier_nav_pct'] = 0.05
@@ -281,7 +313,8 @@ def find_executable_signals() -> list[dict]:
             # TIER_3: 仅BTC/ETH，且必须 timing=READY 才执行
             if s.get('symbol') not in TIER_3_SYMBOLS:
                 continue  # 小币低分信号不进TIER3
-            if _timing_badge != 'READY':
+            # [修复 2026-08-05 设计院] timing_badge可能含emoji前缀如'🟢 READY'，需contains匹配
+            if 'READY' not in _timing_badge.upper():
                 continue  # timing必须明确READY才执行轻仓
             s['_tier'] = 3
             s['_tier_nav_pct'] = 0.015

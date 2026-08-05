@@ -240,7 +240,34 @@ def fmt_entry(r: dict) -> str:
         lines.append(f"  参考TP2: {tp2}U ({tp2_label})")
         del _dir, sl_label, tp1_label, tp2_label
 
-    # [P1修复 2026-07-24 设计院] 清算集群→自动TP/SL优化建议
+    # [P0升级 2026-08-05 设计院] 清算TP/SL — 优先用三所实时数据，降级klines聚类
+    try:
+        import sys as _sys_liq_tp; _sys_liq_tp.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent / 'brahma_brain'))
+        from liq_density_engine import get_liq_density as _get_ld_tp
+        _sym = r.get('symbol', '')
+        _p   = float(r.get('price', 0))
+        if _sym and _p > 0:
+            _ld_tp = _get_ld_tp(_sym, _p)
+            _ab_walls = _ld_tp.get('above_walls', [])  # 上方空头清算墙
+            _bl_walls = _ld_tp.get('below_walls', [])  # 下方多头清算墙
+            _ld_src   = _ld_tp.get('sources', '')
+            _ld_bias  = _ld_tp.get('liq_bias', 'NEUTRAL')
+            if _ab_walls or _bl_walls:
+                lines.append(f"  --- 清算集群地图（三所实时 · {_ld_src} · {_ld_bias}） ---")
+                if _ab_walls:
+                    lines.append("  🔴 上方空头爆仓墙（做多TP目标 / 做空止损警戒）:")
+                    for _wp, _wv in _ab_walls[:3]:
+                        _d = (_wp - _p) / _p * 100
+                        lines.append(f"    💡 {_wp:,.1f} (+{_d:.2f}%, ${_wv/1e6:.0f}M) {'⭐TP首选' if _ab_walls.index((_wp,_wv))==0 else ''}")
+                if _bl_walls:
+                    lines.append("  🟢 下方多头爆仓墙（做空TP目标 / 做多止损警戒）:")
+                    for _wp, _wv in _bl_walls[:3]:
+                        _d = (_p - _wp) / _p * 100
+                        lines.append(f"    🎯 {_wp:,.1f} (-{_d:.2f}%, ${_wv/1e6:.0f}M) {'⭐TP首选' if _bl_walls.index((_wp,_wv))==0 else ''}")
+    except Exception:
+        pass
+
+    # [P1修复 2026-07-24 klines聚类降级] 清算集群→自动TP/SL优化建议（当三所数据不足时）
     try:
         import urllib.request as _ur, json as _jx
         _sym = r.get('symbol', '')
@@ -962,6 +989,34 @@ def run_dual_analysis(symbols=None, direction='LONG'):
             report = run_analysis(sym, direction)
             results[sym] = report
             print(report)
+
+            # [全自动闭环 2026-08-05 设计院封印] 分析完成后写入信号池
+            # brahma_1hao_analysis 是事件驱动的高质量信号来源
+            # 写入 live_signal_log.jsonl → auto_executor(每小时:50) 自动捡起执行
+            try:
+                r_raw = analyze(sym, signal_dir=direction, deep=True)
+                _p = r_raw.get('params', {}) or {}
+                for _k in ['entry_lo','entry_hi','sl','tp1','tp2','rr','rr1','sl_pct','stop_loss']:
+                    if not r_raw.get(_k) and _p.get(_k):
+                        r_raw[_k] = _p[_k]
+                score = r_raw.get('score_final', r_raw.get('score', 0))
+                grade = r_raw.get('grade', 0)
+                # 只有 score≥138(TIER3入门) 且 grade≥80(StructureGate) 才写入
+                if float(score or 0) >= 138 and float(grade or 0) >= 80:
+                    from brahma_brain.dharma_data_bridge import log_signal
+                    r_raw['symbol'] = sym
+                    r_raw['direction'] = direction
+                    r_raw['source'] = 'brahma_1hao_auto'
+                    wrote = log_signal(r_raw)
+                    if wrote:
+                        print(f"[1hao→信号池] {sym} score={score:.0f} grade={grade:.0f} 已写入 live_signal_log ✅")
+                    else:
+                        print(f"[1hao→信号池] {sym} score={score:.0f} 写入去重拦截（重复信号）")
+                else:
+                    print(f"[1hao→信号池] {sym} score={score:.0f} grade={grade:.0f} < 阈值(138/80)，不写入")
+            except Exception as _e:
+                print(f"[1hao→信号池] 写入失败（不影响分析）: {_e}")
+
         except Exception as e:
             print(f"[{sym}] 分析失败: {e}")
             import traceback; traceback.print_exc()
