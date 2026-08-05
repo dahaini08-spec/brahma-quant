@@ -49,12 +49,11 @@ def _push(msg: str):
 WATCHED_JOBS = [
     ('01d580c0-c2e7-48c4-bb5a-4e907c537c0f', 'brahma-state-refresh',    2,  True),
     ('f7b7c55e-fcb8-4511-9d19-96fe996708fd', 'bbw-squeeze-monitor',      2,  False),
-    ('9c154cf8-e58f-4fe3-9110-01913ca92e51', 'main-signal-watcher',      2,  True),
     ('769cba3a-18df-47c9-858a-36fdf4251517', 'rsi-structure-watcher',    2,  True),
     ('2b9aa1b8-9afb-436e-b695-8acbd1002e0f', 'auto-1hao-trigger',        2,  True),
     ('312eabd8-40f2-4edf-8ba3-49f736150599', 'auto-executor-run',        2,  True),
     ('42114b1d-4487-491f-9f89-a93b7c6b0ae4', 'brahma-nerve-center',      1,  True),
-    ('6c836926-bdb4-4b0a-a5fd-267f6ef3baaa', 'signal-15m-scanner',       1,  True),
+    # main-signal-watcher / signal-15m-scanner 已于2026-08-05删除（脚本不存在）
     ('90218f0a-0a81-4906-8c9d-ebbe424d087c', 'brahma-auto-heal',         5,  False),
     ('9d1a7d1e-8462-4616-821d-179ffbd33da4', 'signal-settler',           5,  False),
     ('df290696-750f-4b7c-a1a5-c720842d6820', 'oi-advanced-scanner',      3,  False),
@@ -84,15 +83,32 @@ ERROR_PATTERNS = [
 
 # ── cron run 数据获取 ──────────────────────────────────────
 def get_recent_runs(job_id: str, limit: int = 3) -> list:
-    """调用 openclaw cron runs 获取最近 run 记录"""
+    """调用 openclaw cron runs 获取最近 run 记录
+
+    修复(2026-08-05 v2 设计院封印):
+    根因: 连续17次串行调用时，第11次左右Gateway限流导致subprocess
+          无限阻塞 → timeout=12秒后异常被吞 → 后续调用继续挂死
+    修复方案:
+      1. timeout 从12s→6s（更快失败）
+      2. sleep 从0.3s→0.5s（给Gateway更多恢复时间）
+      3. 捕获 subprocess.TimeoutExpired 并立即 return []
+      4. 加 preexec_fn=os.setsid 确保子进程可被kill
+    """
+    time.sleep(0.5)  # Gateway限流保护：串行调用间隔
     try:
         r = subprocess.run(
             ['openclaw', 'cron', 'runs', '--id', job_id],
-            capture_output=True, text=True, timeout=10
+            capture_output=True, text=True, timeout=6,
+            preexec_fn=os.setsid if hasattr(os, 'setsid') else None
         )
         if r.returncode != 0 or not r.stdout.strip():
             return []
-        data = json.loads(r.stdout)
+        # 跳过 config warnings 等非 JSON 前缀（定位第一个 '{'）
+        stdout = r.stdout
+        idx = stdout.find('{')
+        if idx < 0:
+            return []
+        data = json.loads(stdout[idx:])
         entries = data.get('entries', [])
         # 只看 finished/error 类型
         runs = [e for e in entries if e.get('action') in ('finished', 'error', 'timeout')]
