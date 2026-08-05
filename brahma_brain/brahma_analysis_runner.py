@@ -650,6 +650,37 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         except Exception as _twe:
             pass  # tardis注入失败不影响主流程
 
+        # --- 1b. liq_density_engine 三所实时强平数据注入 [Bug3修复 2026-08-05] ---
+        # 将三所实时强平结果注入 _liq_heatmap['_liq_density_walls']，供 formatter B3节使用
+        try:
+            import sys as _sys_ld
+            _bb_path = str(__import__('pathlib').Path(__file__).parent)
+            if _bb_path not in _sys_ld.path:
+                _sys_ld.path.insert(0, _bb_path)
+            from liq_density_engine import get_liq_density as _get_ld
+            _cur_px_ld = float(result.get('price', result.get('mark_price', 0)) or 0)
+            if _cur_px_ld <= 0:
+                import urllib.request as _ur_ld, json as _jl
+                _pr = _jl.loads(_ur_ld.urlopen(
+                    f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}',
+                    timeout=5).read())
+                _cur_px_ld = float(_pr['price'])
+            if _cur_px_ld > 0:
+                _ld_result = _get_ld(sym, _cur_px_ld)
+                _lhm_cur = result.get('_liq_heatmap') or {}
+                _lhm_cur['_liq_density_walls'] = {
+                    'above_walls':  _ld_result.get('above_walls', []),
+                    'below_walls':  _ld_result.get('below_walls', []),
+                    'nearest_above': _ld_result.get('nearest_above'),
+                    'nearest_below': _ld_result.get('nearest_below'),
+                    'liq_bias':     _ld_result.get('liq_bias', 'NEUTRAL'),
+                    'sources':      _ld_result.get('sources', ''),
+                    'score_adj':    _ld_result.get('score_adj', 0),
+                }
+                result['_liq_heatmap'] = _lhm_cur
+        except Exception as _lde:
+            pass  # 静默降级，不影响主流程
+
         # --- 2. 跨所FR套利信号 cross_exchange_fr (0~9分) ---
         try:
             from cross_exchange_fr import get_cross_fr as _get_fr

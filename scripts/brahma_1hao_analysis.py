@@ -811,35 +811,25 @@ def _build_ob_liquidation_layer(symbol: str, price: float, engine_result: dict =
     except Exception as e:
         lines.append(f"  清算集群: 计算失败 ({e})")
 
-    # ── 5. 杠杆清算价位(基于杯杆数展算) ──────────────────────────────────
+    # ── 5. 多档杠杆清算价位矩阵 [Bug2修复 2026-08-05] ─────────────────────
+    # 修复前：只算5x（±20%，完全超出交易视野）
+    # 修复后：10x/20x/50x/100x 全矩阵（覆盖±1%~±10%市场主流杠杆区间）
     try:
-        lines.append("  《杯杆清算价位估算(5x为主)》")
-        # 5x空头：入场均价 × (1 + 1/5 - 0.005) ≈ 入场价上斷清算
-        # 5x多头：入场均价 × (1 - 1/5 + 0.005) ≈ 入场价下斷清算
-        # 假设市场多头入场区间为近3日高低平均
-        r1d = urllib.request.urlopen(
-            f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=1d&limit=5',
-            timeout=5)
-        kl1d = _json.loads(r1d.read())
-        recent_prices = [float(k[4]) for k in kl1d[-4:]]
-        entry_samples = [
-            max(recent_prices),      # 高位入场
-            sum(recent_prices)/len(recent_prices),  # 均价入场
-            min(recent_prices),      # 低位入场
-        ]
-        liq_long  = sorted(set([round(e*(1-1/5+0.005), 0) for e in entry_samples]))
-        liq_short = sorted(set([round(e*(1+1/5-0.005), 0) for e in entry_samples]), reverse=True)
-
-        for liq in liq_long:
-            dist = (price - liq) / price * 100
-            if 0 < dist < 25:
-                lines.append(f"    5x多头清算区: \${liq:.0f} (-{dist:.2f}%)")
-        for liq in liq_short:
+        lines.append("  《高杠杆清算价位矩阵（市场真实清算区间）》")
+        lines.append("  上方空头清算（空头被扫→轧空）:")
+        for lev in [100, 50, 20, 10]:
+            liq = price * (1 + 0.95 / lev)
             dist = (liq - price) / price * 100
-            if 0 < dist < 25:
-                lines.append(f"    5x空头清算区: \${liq:.0f} (+{dist:.2f}%)")
+            bar = '▓' * max(1, 8 - lev // 15)
+            lines.append(f"    {lev:>3}x 空头清算: \${liq:>10,.1f} (+{dist:.2f}%) {bar}")
+        lines.append("  下方多头清算（多头被砸→洗盘）:")
+        for lev in [100, 50, 20, 10]:
+            liq = price * (1 - 0.95 / lev)
+            dist = (price - liq) / price * 100
+            bar = '▓' * max(1, 8 - lev // 15)
+            lines.append(f"    {lev:>3}x 多头清算: \${liq:>10,.1f} (-{dist:.2f}%) {bar}")
     except Exception as e:
-        lines.append(f"  杯杆清算: 计算失败 ({e})")
+        lines.append(f"  杠杆清算矩阵: 计算失败 ({e})")
 
     lines.append("╬" + "═" * 58)
     return lines

@@ -720,33 +720,60 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
         if liq_full:
             liq3_lines = ['**B3 · 清算集群地图**']
 
-            # 优先使用tardis真实历史清算数据
-            if liq_full.get('_has_tardis'):
+            # [Bug3/4修复 2026-08-05] 优先级: liq_density三所实单 > tardis历史 > 估算
+            # Bug4修复: 空头爆仓是"价格上涨触发"（不是"下跌"）
+            _ld_walls = liq_full.get('_liq_density_walls', {})
+            if _ld_walls and (_ld_walls.get('above_walls') or _ld_walls.get('below_walls')):
+                # 最高优先级：liq_density三所实时强平数据
+                _liq_bias = _ld_walls.get('liq_bias', 'NEUTRAL')
+                _sources  = _ld_walls.get('sources', '')
+                liq3_lines.append(f'  [数据源: 三所实时强平 {_sources} | 偏向={_liq_bias}]')
+                _ab = _ld_walls.get('above_walls', [])[:4]  # 上方空头清算墙
+                _bl = _ld_walls.get('below_walls', [])[:4]  # 下方多头清算墙
+                _px = liq_full.get('price', 0) or 0
+                if _ab:
+                    liq3_lines.append(' 🔴 上方空头爆仓墙（价格上涨触发→轧空目标）:')
+                    for _wp, _wv in _ab:
+                        _d = (_wp - _px) / _px * 100 if _px else 0
+                        liq3_lines.append(f'    +{_d:.2f}% → {_fmt_price(_wp)}  💥{_wv/1e6:.1f}M')
+                if _bl:
+                    liq3_lines.append(' 🟢 下方多头爆仓墙（价格下跌触发→洗盘风险）:')
+                    for _wp, _wv in _bl:
+                        _d = (_px - _wp) / _px * 100 if _px else 0
+                        liq3_lines.append(f'    -{_d:.2f}% → {_fmt_price(_wp)}  💥{_wv/1e6:.1f}M')
+            elif liq_full.get('_has_tardis'):
                 _tdate = liq_full.get('tardis_date', '?')
                 liq3_lines.append(f'  [数据源: Tardis真实清算 {_tdate}]')
                 _tw_short = liq_full.get('tardis_short_walls', {})
                 _tw_long  = liq_full.get('tardis_long_walls', {})
                 if _tw_short:
-                    liq3_lines.append(' 📈 空头爆仓密集区（价格下跌触发，做空TP参考）:')
+                    liq3_lines.append(' 📈 空头爆仓密集区（价格上涨触发→轧空目标）:')
                     for _pct, _entry in sorted(_tw_short.items(), key=lambda x: float(x[0]))[:5]:
                         _wp, _wv = _entry
-                        liq3_lines.append(f'    -{_pct}% → {_fmt_price(_wp)}  💥{_wv:.1f}M')
+                        liq3_lines.append(f'    +{_pct}% → {_fmt_price(_wp)}  💥{_wv:.1f}M')
                 if _tw_long:
-                    liq3_lines.append(' 📉 多头爆仓密集区（价格下跌触发，下方支撑区）:')
+                    liq3_lines.append(' 📉 多头爆仓密集区（价格下跌触发→洗盘风险）:')
                     for _pct, _entry in sorted(_tw_long.items(), key=lambda x: float(x[0]))[:5]:
                         _wp, _wv = _entry
                         liq3_lines.append(f'    -{_pct}% → {_fmt_price(_wp)}  💥{_wv:.1f}M')
             else:
-                # 回落到估算数据
+                # 回落到50x/100x杠杆估算数据（已修复Bug1：nearest用50x）
                 short_map = liq_full.get('short_liq_map', {})
                 long_map  = liq_full.get('long_liq_map', {})
+                _px = liq_full.get('price', 0) or 0
                 if short_map or long_map:
-                    liq3_lines.append('  📊 空头清算墙(价格离当前%→清算位):')
-                    for pct, lvl in sorted(short_map.items(), key=lambda x: float(x[0]))[:4]:
-                        liq3_lines.append(f'    +{pct}% → {_fmt_price(lvl)}')
-                    liq3_lines.append('  📊 多头清算墙:')
-                    for pct, lvl in sorted(long_map.items(), key=lambda x: float(x[0]))[:4]:
-                        liq3_lines.append(f'    -{pct}% → {_fmt_price(lvl)}')
+                    liq3_lines.append('  📊 杠杆清算估算（上方空头清算墙）:')
+                    for lev_k in ['50', '20', '10']:
+                        if lev_k in short_map:
+                            _lvl = short_map[lev_k]
+                            _d = (_lvl - _px) / _px * 100 if _px else 0
+                            liq3_lines.append(f'    {lev_k}x → {_fmt_price(_lvl)}  (+{_d:.2f}%)')
+                    liq3_lines.append('  📊 杠杆清算估算（下方多头清算墙）:')
+                    for lev_k in ['50', '20', '10']:
+                        if lev_k in long_map:
+                            _lvl = long_map[lev_k]
+                            _d = (_px - _lvl) / _px * 100 if _px else 0
+                            liq3_lines.append(f'    {lev_k}x → {_fmt_price(_lvl)}  (-{_d:.2f}%)')
 
             # 订单簿信息（共用）
             ask_cls = liq_full.get('top_ask_clusters', [])
@@ -809,14 +836,26 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
         f'**D · 外部扩展层  +{ext_bonus}分**',
     ]
 
-    # liq_heatmap
+    # liq_heatmap [Bug3修复 2026-08-05: 展示三所实时数据]
     liq_b = ext_det.get('liq_heatmap', 0)
     if not isinstance(liq_b, str):
-        nsl = liq.get('nearest_short_liq', 0)
-        nll = liq.get('nearest_long_liq', 0)
-        d_short = liq.get('dist_to_short_liq', 0)
-        d_long  = liq.get('dist_to_long_liq', 0)
-        liq_str = f'空头清算{_fmt_price(nsl)}(+{d_short:.1f}%)  多头清算{_fmt_price(nll)}(-{d_long:.1f}%)' if nsl else '数据获取中'
+        _ld_w = liq.get('_liq_density_walls', {})
+        if _ld_w and (_ld_w.get('above_walls') or _ld_w.get('below_walls')):
+            # 优先用三所实时强平数据
+            _ld_src = _ld_w.get('sources', '')
+            _ld_bias = _ld_w.get('liq_bias', 'N')
+            _ld_ab = _ld_w.get('above_walls', [])
+            _ld_bl = _ld_w.get('below_walls', [])
+            _ld_px = liq.get('price', 0) or 0
+            _nearest_short = f'{_fmt_price(_ld_ab[0][0])}(+{(_ld_ab[0][0]-_ld_px)/_ld_px*100:.1f}%,{_ld_ab[0][1]/1e6:.0f}M)' if _ld_ab and _ld_px else '无'
+            _nearest_long  = f'{_fmt_price(_ld_bl[0][0])}(-{(_ld_px-_ld_bl[0][0])/_ld_px*100:.1f}%,{_ld_bl[0][1]/1e6:.0f}M)' if _ld_bl and _ld_px else '无'
+            liq_str = f'三所={_ld_src}|{_ld_bias}|空头墙:{_nearest_short}  多头墙:{_nearest_long}'
+        else:
+            nsl = liq.get('nearest_short_liq', 0)
+            nll = liq.get('nearest_long_liq', 0)
+            d_short = liq.get('dist_to_short_liq', 0)
+            d_long  = liq.get('dist_to_long_liq', 0)
+            liq_str = f'50x空头{_fmt_price(nsl)}(+{d_short:.1f}%)  50x多头{_fmt_price(nll)}(-{d_long:.1f}%)' if nsl else '数据获取中'
         lines.append(f'  🔥 清算热力图  {liq_b:+d}分  {liq_str}')
     else:
         lines.append(f'  🔥 清算热力图  skip({liq_b})')
