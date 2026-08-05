@@ -92,8 +92,8 @@ def get_liq_heatmap(sym: str = 'BTCUSDT') -> dict:
 
         # 5. 梵天评分贡献
         # 上方最近清算密集区（3x空头）距离
-        nearest_short_liq = short_liq[3]   # 3x空头最近
-        nearest_long_liq  = long_liq[3]    # 3x多头最近
+        nearest_short_liq = short_liq[50]  # 50x空头最近（高杠杆主流清算区）
+        nearest_long_liq  = long_liq[50]   # 50x多头最近（高杠杆主流清算区）
         dist_short = round((nearest_short_liq - px) / px * 100, 2)
         dist_long  = round((px - nearest_long_liq) / px * 100, 2)
 
@@ -182,9 +182,9 @@ def format_report(r: dict) -> str:
     lines += [
         '',
         f'【梵天评分贡献】',
-        f'  近距空头清算(3x={r["nearest_short_liq"]:,.1f}, +{r["dist_to_short_liq"]}%): '
+        f'  近距空头清算(50x={r["nearest_short_liq"]:,.1f}, +{r["dist_to_short_liq"]}%): '
         f'多头加分={r["liq_bull_score"]}',
-        f'  近距多头清算(3x={r["nearest_long_liq"]:,.1f}, -{r["dist_to_long_liq"]}%): '
+        f'  近距多头清算(50x={r["nearest_long_liq"]:,.1f}, -{r["dist_to_long_liq"]}%): '
         f'空头风险={r["liq_bear_score"]}',
     ]
     return '\n'.join(lines)

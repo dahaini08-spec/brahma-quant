@@ -1,10 +1,10 @@
 {
   "BTCUSDT": {
     "CONFIRMED": "BULL_TREND",
-    "CONFIRMED_ts": 1785895369.5557828,
+    "CONFIRMED_ts": 1785896281.523668,
     "CONFIRMED_source": "brahma_engine",
-    "CONFIRMED_score": 88,
-    "updated_at": 1785895369.555784,
+    "CONFIRMED_score": 118.0,
+    "updated_at": 1785896281.5236692,
     "last_switch": {
       "from": "BEAR_TREND",
       "to": "BULL_TREND",
@@ -15,10 +15,10 @@
   },
   "ETHUSDT": {
     "CONFIRMED": "BEAR_RECOVERY",
-    "CONFIRMED_ts": 1785895369.556134,
-    "CONFIRMED_source": "brahma_engine",
-    "CONFIRMED_score": 70,
-    "updated_at": 1785895369.5564754,
+    "CONFIRMED_ts": 1785896184.5972428,
+    "CONFIRMED_source": "manual",
+    "CONFIRMED_score": 0,
+    "updated_at": 1785896184.5972443,
     "CANDIDATE": "BEAR_RECOVERY",
     "CANDIDATE_ts": 1785895369.5564742,
     "CANDIDATE_source": "eth_ema_gate",
@@ -32,5 +32,5 @@
     }
   },
   "_version": "2.0",
-  "_saved_at": 1785895369.5564764
+  "_saved_at": 1785896281.5236704
 }
