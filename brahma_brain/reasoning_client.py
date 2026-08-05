@@ -1,25 +1,60 @@
 #!/usr/bin/env python3
 """
 reasoning_client.py — 梵天 LLM 推理客户端
-设计院 2026-08-05
+设计院 2026-08-05 v2
 
 优先级:
-  1. OpenRouter (完整key可用时) → mistral-7b-instruct:free
-  2. OpenClaw bedrock-claude (openclaw ask CLI)
+  1. OpenClaw infer model run (bedrock-claude, 内置, 无需外部key) ✅
+  2. OpenRouter (完整key可用时)
   3. 规则降级 (保守JSON，不影响主流程)
+
+用法:
+  from reasoning_client import call_reasoning
+  result = call_reasoning(prompt="...", max_tokens=200, timeout=12)
 """
-import subprocess, json, os
+import subprocess
+import json
+import re
+import os
 from pathlib import Path
 
 BASE = Path(__file__).parent.parent
 
 
 def call_reasoning(prompt: str, max_tokens: int = 200,
-                   temperature: float = 0.1, timeout: int = 12) -> str | None:
+                   temperature: float = 0.1, timeout: int = 15) -> str | None:
     """
     调用 LLM 推理。返回字符串响应，失败返回 None。
     """
-    # 方案1: OpenRouter (key完整时)
+    # ── 方案1: OpenClaw infer model run (bedrock-claude 内置) ─────────────
+    try:
+        result = subprocess.run(
+            ['openclaw', 'infer', 'model', 'run',
+             '--prompt', prompt[:2000],   # 限制 prompt 长度
+             '--json'],
+            capture_output=True, text=True, timeout=30  # bedrock-claude 约9s
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            # 解析 {"outputs": [{"text": "..."}]} 结构
+            try:
+                data = json.loads(result.stdout)
+                outputs = data.get('outputs', data.get('turns', []))
+                if outputs:
+                    text = outputs[-1].get('text', '')
+                    # 去掉 markdown ```json ... ``` 包装
+                    text = re.sub(r'```(?:json)?\s*', '', text).strip()
+                    text = re.sub(r'```\s*$', '', text).strip()
+                    if text:
+                        return text
+            except (json.JSONDecodeError, KeyError):
+                # 非 JSON 输出，直接返回
+                return result.stdout.strip()
+    except subprocess.TimeoutExpired:
+        pass
+    except Exception:
+        pass
+
+    # ── 方案2: OpenRouter (key 完整时) ────────────────────────────────────
     try:
         cfg_path = BASE / 'config' / 'omniroute.json'
         if cfg_path.exists():
@@ -47,19 +82,7 @@ def call_reasoning(prompt: str, max_tokens: int = 200,
     except Exception:
         pass
 
-    # 方案2: OpenClaw bedrock-claude via CLI
-    try:
-        result = subprocess.run(
-            ['openclaw', 'ask', '--model', 'standard', '--timeout', str(timeout),
-             '--message', prompt[:1500]],  # 限制prompt长度
-            capture_output=True, text=True, timeout=timeout + 5
-        )
-        if result.returncode == 0 and result.stdout.strip():
-            return result.stdout.strip()
-    except Exception:
-        pass
-
-    # 方案3: 规则降级
+    # ── 方案3: 规则降级 ───────────────────────────────────────────────────
     return _rule_fallback(prompt)
 
 
@@ -69,8 +92,8 @@ def _rule_fallback(prompt: str) -> str:
     if '风控' in p or 'risk' in p:
         return json.dumps({
             "score_adj": 0, "risk_level": "MEDIUM",
-            "top_risk": "LLM不可用:规则降级",
-            "liq_insight": "清算数据已注入但LLM未响应",
+            "top_risk": "LLM降级:规则模式",
+            "liq_insight": "清算数据已注入但推理降级",
             "veto": False
         })
     if '宏观' in p or 'macro' in p:
