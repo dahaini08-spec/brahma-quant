@@ -186,7 +186,7 @@ def save_state(state):
                 _regime_ok = True
                 if _new_regime == 'BULL_TREND' and _rsi4h < 52:
                     _new_regime = 'BEAR_RECOVERY'  # 降级，RSI不足
-                elif _new_regime == 'BEAR_TREND' and _rsi4h > 48:
+                elif _new_regime == 'BEAR_TREND' and _rsi4h > 45:  # [2026-08-05 48→45收紧]
                     _new_regime = 'CHOP_MID'       # 降级，RSI未到空头区
             except Exception:
                 pass  # 网络失败则不降级，保留原判断
@@ -295,9 +295,17 @@ def main():
     # ── 防抖三重门控（设计院 2026-07-02 封印）──────────────
     # 问题根因：BTC在EMA附近震荡，每5分钟反复触发矛盾穿越信号
     # 修复：0.3%缓冲区 + 1H冷却期 + 2根K线收盘确认
-    MIN_CROSS_PCT = 0.003   # 0.3%缓冲带
-    COOLDOWN_SEC  = 3600    # 同方向1小时内不重复推送
-    CONFIRM_BARS  = 2       # 需要连续2根已收盘1H K线确认
+    MIN_CROSS_PCT   = 0.003   # 0.3%缓冲带
+    COOLDOWN_SEC    = 3600    # 同方向1小时内不重复推送
+    CONFIRM_BARS    = 2       # 需要连续2根已收盘1H K线确认
+    # [防误判升级 2026-08-05 苏摩111封印]
+    # 修复: 01:02 1H短暂下探触发BULL→BEAR误判
+    # A. 体制切换反向冷却: BULL确立后N秒内禁止切BEAR（4H=14400s≈4根4H K线）
+    SWITCH_LOCK_SEC = 14400   # 切换后4小时内禁止反向切换
+    # B. BEAR_TREND需4H级别确认（非1H）
+    BEAR_CONFIRM_4H = 2       # 需要连续2根已收盘4H K线在EMA下方
+    # C. RSI_4H严格门控（原48→收紧到45）
+    BEAR_RSI4H_MAX  = 45      # BEAR_TREND确认需RSI_4H<45（原48太宽松）
 
     # 缓冲区判断：偏离EMA超0.3%才识别为穿越
     ema_diff_pct = (price - ema20_4h) / ema20_4h
@@ -326,18 +334,48 @@ def main():
         except Exception:
             return True
 
+    def confirm_bear_4h(ema_val, bars=BEAR_CONFIRM_4H):
+        """[防误判升级] BEAR确认需连续N根已收盘4H K线在EMA下方 + RSI_4H<BEAR_RSI4H_MAX"""
+        try:
+            import requests as _rq
+            kc = _rq.get('https://fapi.binance.com/fapi/v1/klines',
+                params={'symbol':'BTCUSDT','interval':'4h','limit':bars+5},timeout=5).json()
+            closed4h = [float(c[4]) for c in kc[:-1]][-bars:]  # 已收盘的4H
+            buf = ema_val * MIN_CROSS_PCT
+            bars_ok = all(c < ema_val - buf for c in closed4h)
+            # RSI_4H严格门控
+            d4h=[closed4h[i]-closed4h[i-1] for i in range(1,len(closed4h))]
+            g=[max(0,x) for x in d4h]; l=[max(0,-x) for x in d4h]
+            ag=sum(g)/len(g) if g else 0; al=sum(l)/len(l) if l else 1
+            rsi4h = 100-100/(1+ag/al) if al>0 else 100
+            rsi_ok = rsi4h < BEAR_RSI4H_MAX
+            return bars_ok and rsi_ok
+        except Exception:
+            return False  # 失败时保守处理：不确认BEAR
+
     triggered    = False
     alert_lines  = []
 
-    # ── 1. EMA20_4H 穿越（三重门控）──────────────────────
+    # ── 1. EMA20_4H 穿越（四重门控 2026-08-05升级）──────────────────────
     if prev_above_ema is not None and prev_above_ema != price_above_ema:
         cur_dir     = 'up' if price_above_ema else 'down'
         in_cooldown = (cur_dir == last_ema_dir) and ((now - last_ema_ts) < COOLDOWN_SEC)
         confirmed   = confirm_cross_bars(price_above_ema, ema20_4h)
-        if in_cooldown:
-            pass  # [静默]
+
+        # [防误判门控A] 反向切换冷却：上次切换后SWITCH_LOCK_SEC内禁止反向
+        last_switch_ts  = state.get('last_switch_ts', 0)
+        last_switch_dir = state.get('last_switch_dir', None)
+        in_switch_lock  = (last_switch_dir and cur_dir != last_switch_dir
+                           and (now - last_switch_ts) < SWITCH_LOCK_SEC)
+
+        # [防误判门控B] 向下穿越(BEAR候选)需额外4H确认
+        if not price_above_ema:
+            confirmed = confirmed and confirm_bear_4h(ema20_4h)
+
+        if in_cooldown or in_switch_lock:
+            pass  # [静默：冷却中]
         elif not confirmed:
-            pass  # [静默]
+            pass  # [静默：未通过K线确认]
         else:
             triggered = True
             if price_above_ema:
@@ -348,6 +386,8 @@ def main():
                 alert_lines.append(f"📉 BTC 跌破 EMA20_4H ${ema20_4h:,.1f} → 目标 ${target:,.1f}")
             state['last_ema_direction']  = cur_dir
             state['last_ema_trigger_ts'] = now
+            state['last_switch_ts']      = now   # 记录本次切换时间
+            state['last_switch_dir']     = cur_dir
     # ── 2. 50H 高点突破（做多信号）───────────────────────
     if prev_above_h50 is not None and not prev_above_h50 and price_above_h50:
         triggered = True
