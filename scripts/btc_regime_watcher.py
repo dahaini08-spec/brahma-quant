@@ -171,6 +171,25 @@ def save_state(state):
         _btc_rs = _existing_rs.get('BTCUSDT', {})
         _new_regime = state.get('regime', _btc_rs.get('confirmed', 'UNKNOWN'))
         if _new_regime and _new_regime != '?':
+            # [防误判封印 2026-08-05] BULL_TREND/BEAR_TREND切换需双重RSI_4H确认
+            # 防止1H短暂噪音触发CONFIRMED体制切换
+            try:
+                import requests as _rq_rb
+                _kl = _rq_rb.get('https://fapi.binance.com/fapi/v1/klines',
+                                  params={'symbol':'BTCUSDT','interval':'4h','limit':20},timeout=5).json()
+                _c4h = [float(k[4]) for k in _kl]
+                _d4h = [_c4h[i]-_c4h[i-1] for i in range(1,len(_c4h))]
+                _g=[max(0,x) for x in _d4h]; _l=[max(0,-x) for x in _d4h]
+                _ag=sum(_g[-14:])/14; _al=sum(_l[-14:])/14
+                _rsi4h = 100-100/(1+_ag/_al) if _al>0 else 100
+                # 门控：BULL_TREND需RSI_4H>52，BEAR_TREND需RSI_4H<45
+                _regime_ok = True
+                if _new_regime == 'BULL_TREND' and _rsi4h < 52:
+                    _new_regime = 'BEAR_RECOVERY'  # 降级，RSI不足
+                elif _new_regime == 'BEAR_TREND' and _rsi4h > 48:
+                    _new_regime = 'CHOP_MID'       # 降级，RSI未到空头区
+            except Exception:
+                pass  # 网络失败则不降级，保留原判断
             _btc_rs.update({
                 'confirmed':      _new_regime,
                 'confirmed_cn':   {'BEAR_TREND':'熊市趋势','BULL_TREND':'牛市趋势',
@@ -188,6 +207,12 @@ def save_state(state):
             _tmp_rs = _rsf + '.tmp'
             with open(_tmp_rs, 'w') as _f: json.dump(_existing_rs, _f, ensure_ascii=False, indent=2)
             os.replace(_tmp_rs, _rsf)
+            # [regime_bus同步 2026-08-05] watcher写入同步到总线
+            try:
+                import sys as _sys_rb; _sys_rb.path.insert(0, os.path.join(BASE_DIR,'scripts'))
+                from regime_bus import update as _rb_upd_w
+                _rb_upd_w('BTCUSDT', _new_regime, 'CONFIRMED', 'btc_regime_watcher', score=0)
+            except Exception: pass
     except Exception as _e_sync:
         pass  # 同步失败不影响主流程
     # ─────────────────────────────────────────────────────────────────────────
