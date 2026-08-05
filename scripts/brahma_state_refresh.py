@@ -51,26 +51,23 @@ def main():
             from market_state import analyze as _ms_analyze
             _ms = _ms_analyze('BTCUSDT')
             _regime_label = _ms.get('regime', 'CHOP_MID')
-            # [FIX-SSOT-REGIME 2026-06-18] regime_switch_state 更实时，优先取 BTC 体制
-            # brahma_state_refresh 每30分钟跑一次，regime_switch_monitor 也是30分钟
-            # 但两者锚点不同，导致短暂不一致 → 以 regime_switch_state.BTCUSDT 为权威
-            try:
-                import json as _rj
-                _rss_path = Path(__file__).parent.parent / 'data' / 'regime_switch_state.json'
-                if _rss_path.exists():
-                    _rss = _rj.loads(_rss_path.read_text())
-                    _btc_regime = _rss.get('BTCUSDT', {}).get('regime', '')
-                    if _btc_regime:
-                        _regime_label = _btc_regime  # 以 regime_switch_state 为权威
-            except Exception:
-                pass  # fallback 到 market_state 结果
+            # [SSOT修复 2026-08-05 设计院封印] 废弃 regime_switch_state.json 权威地位
+            # 根因: regime_switch_state.json 由已停用的 regime_switch_monitor 写入
+            #       → 永久陈旧(79h+)，以它为权威导致体制倒退到旧值
+            # 修复: 直接使用 market_state.analyze() 结果，不再读 regime_switch_state
+            # regime_label 已由上方 market_state.analyze('BTCUSDT') 正确设置，无需覆盖
+            _rss = {}  # 保留变量避免下方 _rss.get() 报错，但不再读文件
+            pass  # regime_switch_state 已废弃为权威源
             _mom = _ms.get('momentum', {})
             _trend = _ms.get('trend', {})
             state['regime'] = _regime_label
             state['regime_label'] = _regime_label  # [FIX v25.6 2026-06-20] regime_label与regime保持一致，消除双字段冲突
             # [FIX 2026-08-02] 补写btc_regime/eth_regime兼容字段（brahma_dashboard/square_data_collector依赖）
+            # [SSOT修复 2026-08-05] ETH 独立调用 market_state.analyze()
+            # 修复根因: _rss={}空字典后 ETH会 fallback到 BTC体制 → 两者错误共享
             try:
-                _eth_regime_val = _rss.get('ETHUSDT', {}).get('regime', '') or _regime_label
+                _ms_eth = _ms_analyze('ETHUSDT')
+                _eth_regime_val = _ms_eth.get('regime', _regime_label)
             except Exception:
                 _eth_regime_val = _regime_label
             state['btc_regime'] = _regime_label
@@ -127,27 +124,11 @@ def main():
                 except: pass
 
             # [修复2026-08-05] 各symbol独立读取实时体制，不再共用_regime_btc
-            import requests as _rq_rf
-            def _calc_regime(sym, px):
-                try:
-                    _kl = _rq_rf.get('https://fapi.binance.com/fapi/v1/klines',
-                        params={'symbol':sym,'interval':'4h','limit':25},timeout=4).json()
-                    _c = [float(k[4]) for k in _kl]
-                    _ema = _c[0]
-                    for _v in _c[1:]: _ema = _v*(2/21)+_ema*(19/21)
-                    _d=[_c[i]-_c[i-1] for i in range(1,len(_c))]
-                    _g=[max(0,x) for x in _d[-14:]]; _l=[max(0,-x) for x in _d[-14:]]
-                    _ag=sum(_g)/14; _al=sum(_l)/14
-                    _rsi=100-100/(1+_ag/_al) if _al>0 else 50
-                    if px>_ema and _rsi>55: return 'BULL_TREND'
-                    if px>_ema and _rsi>45: return 'BEAR_RECOVERY'
-                    if px<_ema and _rsi<45: return 'BEAR_TREND'
-                    return 'CHOP_MID'
-                except: return state.get('regime','CHOP_MID')
-
+                # [SSOT封印 2026-08-05 设计院] 废弃 _calc_regime 自定义算法
+            # 使用主链路 market_state.analyze() 已计算的体制，与全系统 SSOT 一致
             _sym_regimes = {
-                'BTCUSDT': _calc_regime('BTCUSDT', btc),
-                'ETHUSDT': _calc_regime('ETHUSDT', eth),
+                'BTCUSDT': _regime_label,
+                'ETHUSDT': _eth_regime_val,
             }
             # 同步 regime_state.json（只更新regime/confirmed/ts，不覆盖其他字段）
             for _sym, _price in [('BTCUSDT', btc), ('ETHUSDT', eth)]:
