@@ -271,7 +271,10 @@ def get_liq_density(symbol: str, current_price: float) -> dict:
         'liq_bias': liq_bias,
         'score_adj': score_adj,
         'confidence': round(confidence, 2),
-        'sources': f'binance({len(bn_orders)}) bybit({len(bybit_orders)}) okx({len(okx_orders)})',
+        # sources标注: 带⚠️=代理大单(非100%清算), ✅=真实强平
+        'sources': (f'binance({len(bn_orders)}⚠️proxy) '
+                    f'bybit({len(bybit_orders)}⚠️proxy) '
+                    f'okx({len(okx_orders)}✅real)'),
         'ts': now,
     }
 
