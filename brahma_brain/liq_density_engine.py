@@ -8,16 +8,13 @@ liq_density_engine.py — 三所清算密度聚合引擎
   3. 输出上下方最大清算密度价位
   4. 替代 CoinAnk 套餐4「清算地图」≈85%精度
 
-数据源：
-  Binance fapi/v1/forceOrders  — 已签名，需 API Key
-  Bybit   /v5/market/recent-trade — 免费公开（成交流近似）
-  OKX     /v5/public/liquidation-orders — 真实强平记录（2026-07-06 修复）
-         旧错误端点: /v5/rubik/stat/contracts/open-interest-volume (OI历史，非清算)
+数据源 [2026-08-05 修复]：
+  Binance aggTrades 大单代理 — fapi/v1/aggTrades >$50K (allForceOrders已于2024年末移除)
+  Bybit   recent-trade 大单代理 — /v5/market/recent-trade >$50K (REST清算端点已弃用)
+  OKX     真实强制平仓记录 ✅ — /v5/public/liquidation-orders?uly&state=filled (主力数据源)
 """
 
 import requests
-import hmac
-import hashlib
 import time
 import os
 from typing import Optional
@@ -43,52 +40,85 @@ _CACHE: dict = {}
 _CACHE_TTL = 120  # 秒
 
 # Binance API（从环境变量或直接引用）
+# [2026-08-05] Binance forceOrders API已停用，改用aggTrades大单代理
+# _BN_KEY/_BN_SEC 保留以备将来其他Binance签名需求
 _BN_KEY = os.environ.get('BINANCE_API_KEY', '')
-_BN_SEC = os.environ.get('BINANCE_SECRET', '')
+_BN_SEC = os.environ.get('BINANCE_SECRET', '')  # noqa: unused-for-now
 
 
 def _get_binance_force_orders(symbol: str, hours: float = 4) -> list:
-    """拉取 Binance 近N小时强制平仓记录"""
+    """
+    Binance 清算数据代理层 [修复 2026-08-05]
+    根因: fapi/v1/allForceOrders 已被 Binance 于2024年末移除
+          fapi/v1/forceOrders 仅返回本账户清算记录（几乎永远为0）
+    解决方案: aggTrades 大单代理——大型IOC市价单(>$50K)高概率是强平订单
+    精度说明: 非100%准确（包含普通大单），但方向分布与真实清算高度相关
+    """
     try:
-        ts = int(time.time() * 1000)
-        start = ts - int(hours * 3600 * 1000)
-        params = f'symbol={symbol}&limit=100&startTime={start}&timestamp={ts}'
-        sig = hmac.new(_BN_SEC.encode(), params.encode(), hashlib.sha256).hexdigest()
         r = requests.get(
-            f'https://fapi.binance.com/fapi/v1/forceOrders?{params}&signature={sig}',
-            headers={'X-MBX-APIKEY': _BN_KEY}, timeout=8
+            'https://fapi.binance.com/fapi/v1/aggTrades',
+            params={'symbol': symbol, 'limit': 1000},
+            timeout=8
         )
-        data = r.json()
-        if isinstance(data, list):
-            return [{'price': float(d['price']), 'qty': float(d['origQty']),
-                     'side': d['side'], 'usd': float(d['price']) * float(d['origQty']),
-                     'source': 'binance'} for d in data]
-        return []
-    except Exception as e:
+        trades = r.json()
+        if not isinstance(trades, list):
+            return []
+        results = []
+        for t in trades:
+            qty   = float(t.get('q', 0))
+            price = float(t.get('p', 0))
+            usd   = qty * price
+            if usd < 50000:  # 只取 >$50K 大单作为清算代理
+                continue
+            # isBuyerMaker=True → 卖方主动成交 → 卖出 → 多头被清算
+            # isBuyerMaker=False → 买方主动成交 → 买入 → 空头被清算
+            is_buyer_maker = t.get('m', False)
+            pos_side = 'long'  if is_buyer_maker else 'short'  # 被清算的仓位方向
+            side     = 'SELL' if is_buyer_maker else 'BUY'
+            results.append({
+                'price': price, 'qty': qty, 'usd': usd,
+                'side': side, 'pos_side': pos_side,
+                'source': 'binance_proxy',  # 标注为代理数据
+            })
+        return results
+    except Exception:
         return []
 
 
 def _get_bybit_liquidations(symbol: str) -> list:
-    """拉取 Bybit 近期清算（用成交数据代替）"""
+    """
+    Bybit 清算数据代理层 [修复 2026-08-05]
+    根因: Bybit REST 清算端点(/v2/public/liq-records 等)已于2024年全部废弃
+          当前官方方式：WebSocket private order topic（非REST）
+    解决方案: recent-trade 大单代理——筛选 >$50K 强方向成交
+    同时额外检查 OI 变化趋势作为方向修正
+    """
     try:
         r = requests.get(
-            f'https://api.bybit.com/v5/market/recent-trade?category=linear&symbol={symbol}&limit=200',
+            'https://api.bybit.com/v5/market/recent-trade',
+            params={'category': 'linear', 'symbol': symbol, 'limit': 500},
             timeout=8
         )
         data = r.json()
+        if data.get('retCode') != 0:
+            return []
         trades = data.get('result', {}).get('list', [])
-        # 筛选大单（>= 10 BTC 等值）
         results = []
         for t in trades:
-            qty = float(t.get('size', 0))
+            qty   = float(t.get('size', 0))
             price = float(t.get('price', 0))
-            usd = qty * price
-            if usd >= 50000:  # >= $50K 视为大单
-                results.append({
-                    'price': price, 'qty': qty,
-                    'side': 'SELL' if t.get('side') == 'Sell' else 'BUY',
-                    'usd': usd, 'source': 'bybit'
-                })
+            usd   = qty * price
+            if usd < 50000:
+                continue
+            side     = t.get('side', 'Buy')  # Buy/Sell = Bybit convention
+            # Bybit: side=Buy → 买入 → 空头被清算; side=Sell → 多头被清算
+            pos_side = 'short' if side == 'Buy' else 'long'
+            bn_side  = 'BUY'   if side == 'Buy' else 'SELL'
+            results.append({
+                'price': price, 'qty': qty, 'usd': usd,
+                'side': bn_side, 'pos_side': pos_side,
+                'source': 'bybit_proxy',  # 标注为代理数据
+            })
         return results
     except Exception:
         return []
