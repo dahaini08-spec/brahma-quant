@@ -639,6 +639,18 @@ def format_alert_v4(a, rank=1, auto_executed=False, exec_result=None):
 # ════════════════════════════════════════════════════════════════
 
 def main():
+    # [P3 2026-08-05 设计院] BEAR体制下暂停暗涨猎手推送（压缩突破在BEAR方向可能向下）
+    try:
+        import json as _j3
+        from pathlib import Path as _P3
+        _rs3 = _j3.loads((_P3(__file__).parent.parent.parent / 'data' / 'regime_state.json').read_text())
+        _btc3 = _rs3.get('BTCUSDT',{}).get('confirmed','?') if isinstance(_rs3.get('BTCUSDT'),dict) else '?'
+        if _btc3 == 'BEAR_TREND':
+            print(f'[pump-hunter] BEAR_TREND体制下暂停推送 HEARTBEAT_OK')
+            return
+    except Exception:
+        pass  # 读取失败则不封禁
+
     # 扫描
     alerts, elapsed, n_candidates, btc_regime = scan()
 
@@ -703,11 +715,25 @@ def main():
             print(f'[pump-hunter v4] 推送: {sym} score={score}')
 
             # v4：更新独立推送记录（修复BUG-1核心）
+            # [P1 2026-08-05 设计院] 注入体制字段，用于WR按体制过滤
+            _regime_at_push = '?'
+            _btc_r = '?'; _eth_r = '?'
+            try:
+                import json as _j2
+                _rs2 = _j2.loads(open(os.path.join(os.path.dirname(os.path.dirname(DIR)),'data','regime_state.json')).read())
+                _btc_r = _rs2.get('BTCUSDT',{}).get('confirmed','?') if isinstance(_rs2.get('BTCUSDT'),dict) else '?'
+                _eth_r = _rs2.get('ETHUSDT',{}).get('confirmed','?') if isinstance(_rs2.get('ETHUSDT'),dict) else '?'
+                _regime_at_push = _btc_r  # 全局体制用BTC代表
+            except Exception:
+                pass
             push_record[sym] = {
                 'last_push_ts': now_ts,
                 'last_score':   score,
                 'last_push_at': datetime.datetime.utcnow().isoformat(),
-                'push_price':   a.get('price', 0),   # [FIX 2026-08-03] 记录推送时价格，用于outcome追踪
+                'push_price':   a.get('price', 0),
+                'regime':       _regime_at_push,   # [P1] 推送时体制
+                'btc_regime':   _btc_r,             # [P1] BTC体制
+                'eth_regime':   _eth_r,             # [P1] ETH体制
             }
 
             # P3: 写入过期追踪

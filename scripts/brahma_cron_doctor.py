@@ -60,6 +60,11 @@ WATCHED_JOBS = [
     ('df290696-750f-4b7c-a1a5-c720842d6820', 'oi-advanced-scanner',      3,  False),
     ('90dfe23c-977f-4a9a-b53a-e475d01003ef', 'pump-outcome-tracker',     5,  False),
     ('cfeee1bd-da62-451c-8dcb-25c7e5cb9c7f', 'ws-guardian-heartbeat',    1,  True),
+    # [2026-08-04 设计院新增]
+    ('cc930d31-5787-4ae9-87a7-ed303763078c', 'brahma-mem-watchdog',      1,  False),
+    ('b0f72757-348d-465b-800f-8ce0fe07cd59', 'log-rotation',            12,  False),
+    ('597949c3-e6bf-4071-83d6-d579326015f5', 'core-dump-cleaner',        4,  False),
+    ('55b5ed2f-d86f-4b67-9b00-298f7c8d1b87', 'brahma-disk-buffer',      12,  False),
 ]
 
 # ── 已知错误模式 → 自动修复动作 ──────────────────────────
