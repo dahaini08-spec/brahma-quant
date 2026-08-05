@@ -89,6 +89,16 @@ def get_rsi_1h(symbol, period=14):
 
 
 def get_regime():
+    # [regime_bus 2026-08-05] 统一体制总线优先
+    try:
+        import sys as _rbs_m, os as _rbo_m
+        _rbs_m.path.insert(0, _rbo_m.path.join(_rbo_m.path.dirname(_rbo_m.path.abspath(__file__)), '..', 'scripts'))
+        from regime_bus import get as _rb_get_m
+        _rb_r_m = _rb_get_m('BTCUSDT', layer='MONITOR')
+        if _rb_r_m and _rb_r_m != 'UNKNOWN':
+            return _rb_r_m
+    except Exception:
+        pass
     """读取当前体制（BTC为主）"""
     # 1. regime_state.json 是按symbol分层的，需读 BTCUSDT.confirmed
     f1 = BASE / 'data' / 'regime_state.json'

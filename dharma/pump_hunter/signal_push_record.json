@@ -27,10 +27,10 @@
     "last_push_at": "2026-07-11T00:16:58.707400"
   },
   "NATGASUSDT": {
-    "last_push_ts": 1785873858.6701741,
-    "last_score": 122,
-    "last_push_at": "2026-08-04T20:04:23.847192",
-    "push_price": 2.68
+    "last_push_ts": 1785888263.4533331,
+    "last_score": 114,
+    "last_push_at": "2026-08-05T00:04:39.269823",
+    "push_price": 2.69
   },
   "PUMPUSDT": {
     "last_push_ts": 1783843446.130061,
@@ -43,10 +43,10 @@
     "last_push_at": "2026-07-11T08:02:03.942257"
   },
   "SKLUSDT": {
-    "last_push_ts": 1785850300.5097504,
-    "last_score": 112,
-    "last_push_at": "2026-08-04T13:31:40.625464",
-    "push_price": 0.003641
+    "last_push_ts": 1785888342.6666653,
+    "last_score": 109,
+    "last_push_at": "2026-08-05T00:05:49.671581",
+    "push_price": 0.003613
   },
   "VANRYUSDT": {
     "last_push_ts": 1784502625.312871,
@@ -419,10 +419,10 @@
     "push_price": 0.827
   },
   "CFXUSDT": {
-    "last_push_ts": 1785873858.6701741,
-    "last_score": 113,
-    "last_push_at": "2026-08-04T20:04:26.140278",
-    "push_price": 0.03953
+    "last_push_ts": 1785888342.6666653,
+    "last_score": 112,
+    "last_push_at": "2026-08-05T00:05:45.024701",
+    "push_price": 0.03899
   },
   "RIFUSDT": {
     "last_push_ts": 1785742622.0759473,
@@ -629,10 +629,10 @@
     "push_price": 0.11441
   },
   "LAUSDT": {
-    "last_push_ts": 1785829024.19926,
-    "last_score": 104,
-    "last_push_at": "2026-08-04T07:37:04.302497",
-    "push_price": 0.04661
+    "last_push_ts": 1785888263.4533331,
+    "last_score": 122,
+    "last_push_at": "2026-08-05T00:04:28.484699",
+    "push_price": 0.04532
   },
   "KERNELUSDT": {
     "last_push_ts": 1785832630.240168,
@@ -677,10 +677,10 @@
     "push_price": 0.16997
   },
   "REZUSDT": {
-    "last_push_ts": 1785873858.6701741,
-    "last_score": 122,
-    "last_push_at": "2026-08-04T20:04:21.350092",
-    "push_price": 0.002537
+    "last_push_ts": 1785888263.4533331,
+    "last_score": 114,
+    "last_push_at": "2026-08-05T00:04:35.998947",
+    "push_price": 0.00252
   },
   "ALICEUSDT": {
     "last_push_ts": 1785853884.3585443,
@@ -759,5 +759,35 @@
     "last_score": 104,
     "last_push_at": "2026-08-04T22:05:54.427734",
     "push_price": 0.01041
+  },
+  "MMTUSDT": {
+    "last_push_ts": 1785888263.4533331,
+    "last_score": 116,
+    "last_push_at": "2026-08-05T00:04:30.971872",
+    "push_price": 0.1533
+  },
+  "LPTUSDT": {
+    "last_push_ts": 1785888263.4533331,
+    "last_score": 115,
+    "last_push_at": "2026-08-05T00:04:33.452859",
+    "push_price": 1.279
+  },
+  "MEUSDT": {
+    "last_push_ts": 1785888342.6666653,
+    "last_score": 112,
+    "last_push_at": "2026-08-05T00:05:47.321827",
+    "push_price": 0.05955
+  },
+  "INJUSDT": {
+    "last_push_ts": 1785888342.6666653,
+    "last_score": 109,
+    "last_push_at": "2026-08-05T00:05:52.172361",
+    "push_price": 4.869
+  },
+  "CAKEUSDT": {
+    "last_push_ts": 1785888342.6666653,
+    "last_score": 109,
+    "last_push_at": "2026-08-05T00:05:54.495016",
+    "push_price": 1.4116
   }
 }

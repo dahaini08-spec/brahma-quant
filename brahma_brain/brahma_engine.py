@@ -3122,6 +3122,17 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _logged = _log_dharma(_result)
         if _logged:
             pass  # [静默] f'[DharmaBridge] ✓ {_sym} score={_score:.0f} 已写入 live_signal_log'
+        # [regime_bus钩子 2026-08-05] 每次分析完成后自动同步体制到总线
+        try:
+            import sys as _rbs, os as _rbo
+            _rbs.path.insert(0, _rbo.path.join(_rbo.path.dirname(__file__),'..','scripts'))
+            from regime_bus import update as _rb_update
+            _rb_regime = str(_result.get('regime','') or '').strip()
+            if _rb_regime:
+                _rb_update(_sym, _rb_regime, 'CONFIRMED', 'brahma_engine',
+                           score=float(_result.get('score_final', _result.get('score',0)) or 0))
+        except Exception:
+            pass  # 不阻断主流
     except Exception as _e:
         pass  # [静默] f'[DharmaBridge] ⚠ 写入失败（不阻断主流）: {_e}'
 

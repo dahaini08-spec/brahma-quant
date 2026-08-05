@@ -38,6 +38,16 @@ def get_mark_price(symbol: str) -> float:
 
 
 def get_regime() -> str:
+    # [regime_bus 2026-08-05] 统一体制总线优先
+    try:
+        import sys as _rbs_m, os as _rbo_m
+        _rbs_m.path.insert(0, _rbo_m.path.join(_rbo_m.path.dirname(_rbo_m.path.abspath(__file__)), '..', 'scripts'))
+        from regime_bus import get as _rb_get_m
+        _rb_r_m = _rb_get_m('BTCUSDT', layer='SIGNAL')
+        if _rb_r_m and _rb_r_m != 'UNKNOWN':
+            return _rb_r_m
+    except Exception:
+        pass
     try:
         with open(STATE_FILE) as f:
             return json.load(f).get("regime", "UNKNOWN")
