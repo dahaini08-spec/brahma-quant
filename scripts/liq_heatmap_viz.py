@@ -81,8 +81,8 @@ def _make_heatmap(symbol: str, push: bool = False) -> str:
         return ''
 
     # ── 2. 价格范围计算 (±8%) ──────────────────────────────────────────────
-    price_lo = current_price * 0.92
-    price_hi = current_price * 1.08
+    price_lo = current_price * 0.80  # ±20% 覆盖历史清算密集区
+    price_hi = current_price * 1.20
     price_range = price_hi - price_lo
 
     # Build per-bucket data by exchange
@@ -93,12 +93,27 @@ def _make_heatmap(symbol: str, push: bool = False) -> str:
     )
     sym_base = symbol.replace('USDT', '').replace('BUSD', '')
 
+    # 优先 WS 缓存（真实强平），降级 REST proxy
+    from liq_density_engine import _get_binance_ws_cache
+    bn_ws = _get_binance_ws_cache(symbol)
+    bn_rest = _get_binance_force_orders(symbol) if not bn_ws else []
     all_orders = (
-        _get_binance_force_orders(symbol)
+        bn_ws + bn_rest
         + _get_bybit_liquidations(symbol)
         + _get_okx_liquidations(sym_base)
         + _get_hyperliquid_liquidations(sym_base)
     )
+    # 补充 WS cache 中的 BitMEX/Bitget 真实数据
+    try:
+        import json as _jcache
+        _cp = Path.home() / '.openclaw' / 'workspace' / 'trading-system' / 'data' / 'liq_flow_cache.json'
+        if _cp.exists():
+            _cache = _jcache.loads(_cp.read_text())
+            for _ex_src in ['bitmex_ws', 'bitget_ws']:
+                _ex_recs = [r for r in _cache.get(symbol, []) if r.get('source') == _ex_src]
+                all_orders += _ex_recs
+    except Exception:
+        pass
 
     # Filter to price range
     all_orders = [o for o in all_orders
@@ -200,9 +215,23 @@ def _make_heatmap(symbol: str, push: bool = False) -> str:
         cum_y   = MARGIN_T + CHART_H - int(CHART_H * 0.7 * cum_pct)
         cum_points.append((x_left + bar_w // 2, cum_y))
 
-    # Cumulative line
+    # 累计清算线（双向）
+    # 绿线: 从左到右累积（下方多头已清 → 从价格往左的已累积量）
+    # 红线: 从右到左的空头清算累积（上方目标区）
     if len(cum_points) >= 2:
-        draw.line(cum_points, fill=CUM_COLOR, width=2)
+        # 主累计线（已实现方向 = 绿）
+        draw.line(cum_points, fill=(80, 200, 80), width=2)
+    # 右侧空头累计（红）：从当前价格往右单独计算
+    px_bkt = int((current_price - price_lo) / bucket_size)
+    right_cum = []; rc_total = 0.0
+    for bkt_idx in range(px_bkt, n_buckets):
+        vol = sum(buckets.get(bkt_idx, {}).values())
+        rc_total += vol
+        x = MARGIN_L + int(CHART_W * bkt_idx / n_buckets)
+        rc_y = MARGIN_T + CHART_H - int(CHART_H * 0.5 * rc_total / max(total_all, 1))
+        right_cum.append((x, rc_y))
+    if len(right_cum) >= 2:
+        draw.line(right_cum, fill=CUM_COLOR, width=2)
 
     # Current price vertical line (dashed)
     px_x = MARGIN_L + int(CHART_W * (current_price - price_lo) / price_range)

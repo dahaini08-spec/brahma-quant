@@ -167,9 +167,7 @@ def settle_signal(sig: dict, dry_run: bool = False) -> dict | None:
                     _updated_lines.append(_j.dumps(_rec, ensure_ascii=False))
                 except Exception:
                     _updated_lines.append(_line)
-            _sl_p.write_text('
-'.join(_updated_lines) + '
-')
+            _sl_p.write_text('\n'.join(_updated_lines) + '\n')
     except Exception:
         pass
 

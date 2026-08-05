@@ -79,19 +79,27 @@ RISK_AGENT_PROMPT = """你是梵天量化系统的风控议员（Risk Agent）�
 - SMC结构评分: {smc_score}
 - 时机评分(Kronos): {kronos_score}
 
+清算集群数据（三所实时强平）：
+- 上方空头清算墙: {liq_above}
+- 下方多头清算墙: {liq_below}
+- 清算偏向: {liq_bias}
+- 数据源: {liq_sources}
+
 请从风险角度快速评估这个信号，输出JSON格式：
 {{
-  "score_adj": <整数，范围-15到0，风险越高扣分越多>,
+  "score_adj": <整数，范围-15到+5，清算顺势可加分，逆势扣分>,
   "risk_level": "<LOW|MEDIUM|HIGH>",
   "top_risk": "<最大风险因素，一句话>",
+  "liq_insight": "<清算数据对此信号的意义，一句话>",
   "veto": <true/false，极端风险时否决>
 }}
 
-评估重点：
-1. 体制与方向是否匹配（BEAR体制做多=高风险）
-2. 评分是否有虚高迹象（单维度贡献超过50%）
-3. 当前持仓相关性风险
-4. 仅输出JSON，不要其他文字。"""
+评估重点（清算视角优先）：
+1. LONG方向：上方空头清算墙密集→轧空动能强→+加分；下方多头清算墙密集→踩踏风险→扣分
+2. SHORT方向：下方多头清算墙密集→砸盘动能强→+加分；上方空头清算墙密集→轧空风险→扣分
+3. 体制与方向是否匹配（BEAR体制做多=高风险）
+4. 评分是否有虚高迹象（单维度贡献超过50%）
+5. 仅输出JSON，不要其他文字。"""
 
 MACRO_AGENT_PROMPT = """你是梵天量化系统的宏观议员（Macro Agent）。
 
@@ -231,11 +239,41 @@ def _risk_agent_review(signal: Dict) -> Dict:
             }
 
     # ── LLM 调用 ───────────────────────────────────────────
+    # 获取清算集群数据注入 LLM prompt
+    _liq_above_str = 'N/A'
+    _liq_below_str = 'N/A'
+    _liq_bias_str  = 'N/A'
+    _liq_src_str   = 'N/A'
+    try:
+        import sys as _sys_liq, os as _os_liq
+        _bb = _os_liq.path.join(_os_liq.path.dirname(__file__))
+        if _bb not in _sys_liq.path: _sys_liq.path.insert(0, _bb)
+        _scripts = _os_liq.path.join(_bb, '..', 'scripts')
+        if _scripts not in _sys_liq.path: _sys_liq.path.insert(0, _scripts)
+        from liq_density_engine import get_liq_density as _get_ld
+        _cur_px = signal.get('price', 0) or signal.get('mark_price', 0) or 0
+        if _cur_px > 0:
+            _ld = _get_ld(symbol + 'USDT' if not symbol.endswith('USDT') else symbol, float(_cur_px))
+            _ab = _ld.get('above_walls', [])
+            _bl = _ld.get('below_walls', [])
+            if _ab:
+                _liq_above_str = f'${_ab[0][0]:,.0f}(+{(_ab[0][0]-_cur_px)/_cur_px*100:.1f}%, ${_ab[0][1]/1e6:.0f}M)'
+            if _bl:
+                _liq_below_str = f'${_bl[0][0]:,.0f}(-{(_cur_px-_bl[0][0])/_cur_px*100:.1f}%, ${_bl[0][1]/1e6:.0f}M)'
+            _liq_bias_str = _ld.get('liq_bias', 'NEUTRAL')
+            _liq_src_str  = _ld.get('sources', 'N/A')
+    except Exception:
+        pass
+
     prompt = RISK_AGENT_PROMPT.format(
         symbol=symbol, direction=direction, score=score, regime=regime,
         key_level_score=breakdown.get('关键位精确度', 'N/A'),
         smc_score=breakdown.get('SMC结构', 'N/A'),
         kronos_score=breakdown.get('Kronos', breakdown.get('s23', 'N/A')),
+        liq_above=_liq_above_str,
+        liq_below=_liq_below_str,
+        liq_bias=_liq_bias_str,
+        liq_sources=_liq_src_str,
     )
 
     result = _call_llm(prompt, 'RiskAgent')

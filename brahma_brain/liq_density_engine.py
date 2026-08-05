@@ -15,6 +15,7 @@ liq_density_engine.py — 三所清算密度聚合引擎
 """
 
 import requests
+import json
 import time
 import os
 from typing import Optional
@@ -45,6 +46,33 @@ _CACHE_TTL = 120  # 秒
 _BN_KEY = os.environ.get('BINANCE_API_KEY', '')
 _BN_SEC = os.environ.get('BINANCE_SECRET', '')  # noqa: unused-for-now
 
+
+
+def _get_binance_ws_cache(symbol: str, max_age: float = 120.0) -> list:
+    """
+    读取 liq_ws_multi.py 写入的 Binance 真实强平缓存
+    [2026-08-05] data/liq_flow_cache.json TTL=4h 滚动窗口
+    max_age=120s: 若缓存超过2分钟未更新，视为WS断连，降级REST
+    返回: ✅real binance_ws 记录  (WS运行时)
+          []  (WS未启动时, 降级到REST proxy)
+    """
+    try:
+        cache_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'liq_flow_cache.json')
+        if not os.path.exists(cache_path):
+            return []
+        mtime = os.path.getmtime(cache_path)
+        if time.time() - mtime > max_age:
+            return []  # 缓存过期，WS可能已断连
+        with open(cache_path) as f:
+            cache = json.load(f)
+        recs = cache.get(symbol, [])
+        # 只取近4小时的记录
+        cutoff = time.time() - 4 * 3600
+        fresh  = [r for r in recs
+                  if r.get('ts', 0) >= cutoff and r.get('source') == 'binance_ws']
+        return fresh
+    except Exception:
+        return []
 
 def _get_binance_force_orders(symbol: str, hours: float = 4) -> list:
     """
@@ -181,11 +209,15 @@ def get_liq_density(symbol: str, current_price: float) -> dict:
 
     symbol_base = symbol.replace('USDT', '').replace('1000', '')
 
-    # 1. 拉取四所数据 [2026-08-05: 新增Hyperliquid]
-    bn_orders    = _get_binance_force_orders(symbol, hours=4)
-    bybit_orders = _get_bybit_liquidations(symbol)
-    okx_orders   = _get_okx_liquidations(symbol_base)
-    hl_orders    = _get_hyperliquid_liquidations(symbol_base)
+    # 1. 拉取数据：优先 WS 缓存(真实强平) → 降级 REST proxy
+    # [2026-08-05] liq_ws_multi.py 写入 data/liq_flow_cache.json
+    bn_orders = _get_binance_ws_cache(symbol)        # ✅real if WS running
+    if not bn_orders:
+        bn_orders = _get_binance_force_orders(symbol, hours=4)  # ⚠️proxy fallback
+
+    bybit_orders = _get_bybit_liquidations(symbol)   # ⚠️proxy (Bybit WS需账户权限)
+    okx_orders   = _get_okx_liquidations(symbol_base)  # ✅real (REST可用)
+    hl_orders    = _get_hyperliquid_liquidations(symbol_base)   # ⚠️proxy
 
     all_orders = bn_orders + bybit_orders + okx_orders + hl_orders
     sources_ok = sum([bool(bn_orders), bool(bybit_orders), bool(okx_orders)])
@@ -272,11 +304,13 @@ def get_liq_density(symbol: str, current_price: float) -> dict:
         'liq_bias': liq_bias,
         'score_adj': score_adj,
         'confidence': round(confidence, 2),
-        # sources标注: ⚠️=代理大单(非100%清算), ✅=真实强平
-        'sources': (f'binance({len(bn_orders)}⚠️proxy) '
-                    f'bybit({len(bybit_orders)}⚠️proxy) '
-                    f'okx({len(okx_orders)}✅real) '
-                    f'hl({len(hl_orders)}⚠️proxy)'),
+        'sources': (
+            f'binance({len([x for x in bn_orders if x.get("source")=="binance_ws"] or bn_orders)}'
+            + ('\u2705ws' if any(x.get('source')=='binance_ws' for x in bn_orders) else '\u26a0\ufe0fproxy') + ') '
+            f'bybit({len(bybit_orders)}\u26a0\ufe0fproxy) '
+            f'okx({len(okx_orders)}\u2705real) '
+            f'hl({len(hl_orders)}\u26a0\ufe0fproxy)'
+        ),
         'ts': now,
     }
 
