@@ -181,12 +181,13 @@ def get_liq_density(symbol: str, current_price: float) -> dict:
 
     symbol_base = symbol.replace('USDT', '').replace('1000', '')
 
-    # 1. 拉取三所数据
-    bn_orders = _get_binance_force_orders(symbol, hours=4)
+    # 1. 拉取四所数据 [2026-08-05: 新增Hyperliquid]
+    bn_orders    = _get_binance_force_orders(symbol, hours=4)
     bybit_orders = _get_bybit_liquidations(symbol)
-    okx_orders = _get_okx_liquidations(symbol_base)  # 修复: 真实清算而非OI历史
+    okx_orders   = _get_okx_liquidations(symbol_base)
+    hl_orders    = _get_hyperliquid_liquidations(symbol_base)
 
-    all_orders = bn_orders + bybit_orders + okx_orders
+    all_orders = bn_orders + bybit_orders + okx_orders + hl_orders
     sources_ok = sum([bool(bn_orders), bool(bybit_orders), bool(okx_orders)])
 
     if not all_orders or current_price <= 0:
@@ -271,10 +272,11 @@ def get_liq_density(symbol: str, current_price: float) -> dict:
         'liq_bias': liq_bias,
         'score_adj': score_adj,
         'confidence': round(confidence, 2),
-        # sources标注: 带⚠️=代理大单(非100%清算), ✅=真实强平
+        # sources标注: ⚠️=代理大单(非100%清算), ✅=真实强平
         'sources': (f'binance({len(bn_orders)}⚠️proxy) '
                     f'bybit({len(bybit_orders)}⚠️proxy) '
-                    f'okx({len(okx_orders)}✅real)'),
+                    f'okx({len(okx_orders)}✅real) '
+                    f'hl({len(hl_orders)}⚠️proxy)'),
         'ts': now,
     }
 
@@ -302,3 +304,77 @@ if __name__ == '__main__':
     ).json()['price'])
     result = get_liq_density('BTCUSDT', price)
     print(json.dumps(result, indent=2, ensure_ascii=False))
+
+
+# ── Hyperliquid 接入层 [2026-08-05 设计院] ──────────────────────────────────
+def _get_hyperliquid_liquidations(symbol_base: str = 'BTC') -> list:
+    """
+    Hyperliquid 清算数据
+    诊断结论 [2026-08-05]:
+      - HL REST /info 无公开清算端点 (所有 liquidation* type 均返回422)
+      - HL WS: 有 liquidations 订阅，但需长连接 (ws_guardian待实现)
+      - 当前策略: recentTrades大单代理 + OI+杠杆估算区间标注
+    精度: ⚠️proxy (recentTrades > $100K 可能含清算)
+    OI数据: ✅real — metaAndAssetCtxs 实时OI ($2.27B BTC)
+    """
+    results = []
+    try:
+        import requests as _req
+        HL = 'https://api.hyperliquid.xyz'
+
+        # 1. recentTrades 大单代理 (limit=10, 无分页)
+        r = _req.post(HL + '/info',
+                      json={'type': 'recentTrades', 'coin': symbol_base},
+                      timeout=8)
+        for t in (r.json() if r.ok else []):
+            px  = float(t.get('px', 0))
+            sz  = float(t.get('sz', 0))
+            usd = px * sz
+            if usd < 100_000:      # 只取 >$100K 超大单
+                continue
+            side     = t.get('side', 'A')   # A=ask aggressive=sell, B=bid=buy
+            pos_side = 'long' if side == 'A' else 'short'
+            bn_side  = 'SELL' if side == 'A' else 'BUY'
+            results.append({
+                'price': px, 'qty': sz, 'usd': usd,
+                'side': bn_side, 'pos_side': pos_side,
+                'source': 'hyperliquid_proxy',
+            })
+    except Exception:
+        pass
+    return results
+
+
+def get_hyperliquid_oi(symbol_base: str = 'BTC') -> dict:
+    """
+    获取 Hyperliquid 实时 OI + 资金费率 (✅real data)
+    用于 liq_density 补充多所OI总量，以及清算区间估算基准
+    """
+    try:
+        import requests as _req
+        r = _req.post('https://api.hyperliquid.xyz/info',
+                      json={'type': 'metaAndAssetCtxs'}, timeout=8)
+        meta, ctxs = r.json()
+        universe = meta.get('universe', [])
+        idx = next((i for i, a in enumerate(universe) if a['name'] == symbol_base), None)
+        if idx is None:
+            return {}
+        ctx = ctxs[idx]
+        mark  = float(ctx.get('markPx', 0))
+        oi    = float(ctx.get('openInterest', 0))
+        fr    = float(ctx.get('funding', 0))
+        return {
+            'exchange':     'hyperliquid',
+            'symbol':       symbol_base,
+            'mark_price':   mark,
+            'open_interest_contracts': oi,
+            'open_interest_usd': oi * mark,
+            'funding_rate': fr,
+            # 杠杆清算估算区间 (HL最大50x)
+            'liq_above_50x': round(mark * (1 + 0.95 / 50), 1),
+            'liq_below_50x': round(mark * (1 - 0.95 / 50), 1),
+            'liq_above_25x': round(mark * (1 + 0.95 / 25), 1),
+            'liq_below_25x': round(mark * (1 - 0.95 / 25), 1),
+        }
+    except Exception:
+        return {}
