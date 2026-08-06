@@ -171,6 +171,19 @@ def settle_signal(sig: dict, dry_run: bool = False) -> dict | None:
     except Exception:
         pass
 
+    # [Bandit SL学习钩子 2026-08-06 设计院封印]
+    # 每次结算后自动更新 sl_bandit 状态，驱动在线学习
+    try:
+        from sl_bandit import update_from_outcome as _bandit_update
+        _regime    = sig.get('regime', 'BULL_TREND')
+        _direction = sig.get('direction', 'LONG')
+        _sl_pct    = float(sig.get('sl_pct') or 0)
+        _pnl_pct   = round(pnl, 4)
+        if _sl_pct > 0:
+            _bandit_update(_regime, _direction, _sl_pct, new_outcome, _pnl_pct)
+    except Exception:
+        pass  # Bandit不可用时静默降级，不影响结算主链路
+
     return updated
 
 

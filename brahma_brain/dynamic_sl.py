@@ -180,6 +180,37 @@ def compute(
         f'{" SNAPPED" if snapped else ""}'
     )
 
+    # ── Bandit SL软约束注入（设计院2026-08-06封印）──────────────
+    # 原理: sl_bandit推荐值作为软约束，置信度加权混合
+    # 不覆盖v4铁证硬下限，只在高置信度时微调sl_pct
+    bandit_note = ''
+    try:
+        from sl_bandit import recommend_sl_pct as _bandit_rec
+        _br = _bandit_rec(
+            regime=regime or 'BULL_TREND',
+            direction=signal_dir or 'LONG',
+            base_sl_pct=sl_pct * 100,
+            score=float(score or 100),
+        )
+        _rec_pct = _br['recommended_sl_pct'] / 100   # 转回小数
+        _conf    = _br['confidence']
+        # 置信度加权混合：conf<0.3几乎不影响，conf>0.8主导
+        if _conf >= 0.3:
+            _blended = sl_pct * (1 - _conf * 0.4) + _rec_pct * (_conf * 0.4)
+            _blended = max(_blended, sl_pct * 0.85)  # 最多紧缩15%
+            _blended = min(_blended, sl_pct * 1.15)  # 最多放宽15%
+            sl_pct   = round(_blended, 5)
+            # 同步更新sl_price
+            if is_long:
+                sl_price_snapped = entry_price * (1 - sl_pct)
+            else:
+                sl_price_snapped = entry_price * (1 + sl_pct)
+            bandit_note = (f' BANDIT:arm={_br["arm"]}'
+                           f',conf={_conf:.2f},rec={_br["recommended_sl_pct"]:.2f}%')
+    except Exception:
+        pass  # Bandit不可用时静默降级，不影响主链路
+    # ────────────────────────────────────────────────────────
+
     return {
         'sl_price':    round(sl_price_snapped, 6),
         'sl_raw':      round(sl_price, 6),
@@ -190,7 +221,7 @@ def compute(
         'atr_source':  atr_source,
         'snapped_to_key': snapped,
         'trail_note':  trail_note,
-        'reasoning':   reasoning,
+        'reasoning':   reasoning + bandit_note,
         'ts': datetime.now(timezone.utc).isoformat(),
     }
 
