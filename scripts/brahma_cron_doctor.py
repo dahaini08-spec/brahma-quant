@@ -47,23 +47,22 @@ def _push(msg: str):
 # ── 核心 cron 任务监控列表 ─────────────────────────────────
 # 格式: (job_id, name, max_silence_hours, is_critical)
 WATCHED_JOBS = [
-    ('01d580c0-c2e7-48c4-bb5a-4e907c537c0f', 'brahma-state-refresh',    2,  True),
-    ('f7b7c55e-fcb8-4511-9d19-96fe996708fd', 'bbw-squeeze-monitor',      2,  False),
-    ('769cba3a-18df-47c9-858a-36fdf4251517', 'rsi-structure-watcher',    2,  True),
-    ('2b9aa1b8-9afb-436e-b695-8acbd1002e0f', 'auto-1hao-trigger',        2,  True),
-    ('312eabd8-40f2-4edf-8ba3-49f736150599', 'auto-executor-run',        2,  True),
-    ('42114b1d-4487-491f-9f89-a93b7c6b0ae4', 'brahma-nerve-center',      1,  True),
-    # main-signal-watcher / signal-15m-scanner 已于2026-08-05删除（脚本不存在）
-    ('90218f0a-0a81-4906-8c9d-ebbe424d087c', 'brahma-auto-heal',         5,  False),
-    ('9d1a7d1e-8462-4616-821d-179ffbd33da4', 'signal-settler',           5,  False),
-    ('df290696-750f-4b7c-a1a5-c720842d6820', 'oi-advanced-scanner',      3,  False),
-    ('90dfe23c-977f-4a9a-b53a-e475d01003ef', 'pump-outcome-tracker',     5,  False),
-    ('cfeee1bd-da62-451c-8dcb-25c7e5cb9c7f', 'ws-guardian-heartbeat',    1,  True),
-    # [2026-08-04 设计院新增]
-    ('cc930d31-5787-4ae9-87a7-ed303763078c', 'brahma-mem-watchdog',      1,  False),
-    ('b0f72757-348d-465b-800f-8ce0fe07cd59', 'log-rotation',            12,  False),
-    ('597949c3-e6bf-4071-83d6-d579326015f5', 'core-dump-cleaner',        4,  False),
-    ('55b5ed2f-d86f-4b67-9b00-298f7c8d1b87', 'brahma-disk-buffer',      12,  False),
+    # [2026-08-06 设计院封印] 全量迁移到019fb612后ID更新
+    ('514867c5-a404-42f6-aeca-c8673504fa34', 'brahma-state-refresh',    2,  True),
+    ('fb10b648-64b8-46ce-8510-3e4ce7dcb528', 'bbw-squeeze-monitor',      2,  False),
+    ('d270cd0f-c86f-4477-84e6-cad0bbb0bbcb', 'rsi-structure-watcher',    2,  True),
+    ('19ab5a6b-4010-494c-9134-83cf07aa9473', 'auto-1hao-trigger',        2,  True),
+    ('65dc29f6-f3fd-4008-ba3e-658854a130dd', 'auto-executor-run',        2,  True),
+    ('2c38088d-55cb-4bd6-92e6-38f9179be0a3', 'brahma-nerve-center',      1,  True),
+    ('33a74c09-da27-49d7-b02d-3c2542478793', 'brahma-auto-heal',         5,  False),
+    ('144035fa-d9fd-4513-a08c-6a21bd4f9fe5', 'signal-settler',           5,  False),
+    ('16cb0990-36dd-4494-9996-78d734011508', 'oi-advanced-scanner',      3,  False),
+    ('b990bad9-fae2-4cce-9d74-9f7fe7b5e3c3', 'pump-outcome-tracker',     5,  False),
+    ('74608be7-363d-48e0-8f44-463862b0a6f7', 'ws-guardian-heartbeat',    1,  True),
+    ('4eb1c2ec-4b22-4166-b4b6-072c77663451', 'brahma-mem-watchdog',      1,  False),
+    ('d55f0823-df41-4dd3-8d87-6cd94b40ade8', 'log-rotation',            12,  False),
+    ('22df48b0-dfdc-4cb1-bb7d-c98be7cabb00', 'core-dump-cleaner',        4,  False),
+    ('fb27e1df-5813-4e85-816b-3611b167c1f3', 'brahma-disk-buffer',      12,  False),
 ]
 
 # ── 已知错误模式 → 自动修复动作 ──────────────────────────
