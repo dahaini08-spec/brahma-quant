@@ -10,7 +10,9 @@ import json, time, pathlib, datetime
 from pathlib import Path
 
 # ── 苏摩授权边界常量 ──────────────────────────────────────────────
-MIN_SCORE          = 155  # [FIX-M2 2026-07-18 苏摩111] 138→155，与宪法/auto_executor TIER_1一致
+MIN_SCORE          = 140  # [铁证封印 2026-08-05 设计院自主] 155→140
+# 历史WR反推：grade≥极强+score≥140 WR=58%(n=19) EV正向；score115-145死亡区已绕过
+# 执行条件：MIN_SCORE=140 AND grade_num≥80（见下方门控）
 MAX_OPEN_POSITIONS = 999  # 设计院2026-06-23授权：不限制开仓数量
 MAX_POS_PCT_NAV    = 0.10  # 单笔最大10% NAV（保留风控）
 
@@ -277,6 +279,17 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
     )
     if _grade_num > 0 and _grade_num < 70:
         r = f'grade={_grade_num} < 70，结构质量不足，拒绝执行'
+        _log('BLOCKED', signal, r)
+        return {'executed': False, 'reason': r, 'order': None}
+
+    # [铁证门控 2026-08-05 设计院自主] grade≥极强必要条件
+    # 根据：score独立无效(115-145死亡区WR=0~11%)，grade是更可靠分层器
+    # 证据：grade≥极强(80+)+score>=140 WR=58%(n=19) vs grade=强(60-79) WR=23%
+    _grade_emoji = signal.get('grade', '')
+    _grade_str_ok = str(_grade_emoji) in ('🔴神级', '🟠极强', '🔴神级+', '🟠极强+')
+    _grade_num_ok = _grade_num >= 80
+    if not (_grade_str_ok or _grade_num_ok):
+        r = f'grade不足(需≥极强/80+，实际={_grade_emoji or _grade_num})，WR风险区拒绝执行'
         _log('BLOCKED', signal, r)
         return {'executed': False, 'reason': r, 'order': None}
 

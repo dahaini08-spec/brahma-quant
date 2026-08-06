@@ -321,6 +321,15 @@ except Exception as e:
     fi
     ;;
 
+  liq-paper-update)
+    # 清算集群TP纸面交易引擎：扫描新信号 + 结算到期仓位，脚本自带push，正常静默
+    OUT=$(cd "$BASE" && timeout 60 python3 scripts/liq_paper_trader.py 2>&1 | tail -5)
+    log "$OUT"
+    if echo "$OUT" | grep -qiE 'traceback|exception'; then
+        send_alert "🚨 [liq-paper-update异常] $(echo "$OUT" | tail -2)"
+    fi
+    ;;
+
   *)
     log "未知任务: $TASK"
     exit 1

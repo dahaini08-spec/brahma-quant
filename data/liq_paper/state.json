@@ -1,6 +1,15 @@
 {
-  "updated_at": 1785900377.3221414,
-  "updated_iso": "2026-08-05 03:26 UTC",
-  "open_count": 6,
-  "settled_count": 0
+  "updated_at": 1785983386.3194983,
+  "updated_iso": "2026-08-06 02:29 UTC",
+  "open_count": 10,
+  "settled_count": 67,
+  "leg_a_ev": 1.3658,
+  "leg_a_wr": 97.0,
+  "leg_a_n": 67,
+  "leg_b_ev": 1.4381,
+  "leg_b_wr": 97.0,
+  "leg_b_n": 67,
+  "avg_improvement": 0.0724,
+  "liq_better_pct": 31.3,
+  "liq_tp_hit_rate": 38.8
 }

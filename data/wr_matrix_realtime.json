@@ -212,5 +212,22 @@
     "avg_pnl_win": 2.0668,
     "avg_pnl_loss": 0.0,
     "last_updated": "2026-08-04T06:46:29.392438+00:00"
+  },
+  "BULL_EARLY:SHORT:<120": {
+    "regime": "BULL_EARLY",
+    "direction": "SHORT",
+    "score_bin": "<120",
+    "n": 1,
+    "n_win": 0,
+    "n_loss": 1,
+    "n_timeout": 0,
+    "sum_pnl": -2.0,
+    "sum_pnl_win": 0.0,
+    "sum_pnl_loss": 2.0,
+    "wr": 0.0,
+    "ev": -2.0,
+    "avg_pnl_win": 0.0,
+    "avg_pnl_loss": 2.0,
+    "last_updated": "2026-08-05T18:13:09.593128+00:00"
   }
 }
