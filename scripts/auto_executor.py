@@ -722,6 +722,46 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     sym       = signal['symbol']
     direction = signal.get('direction') or signal.get('signal_dir', 'SHORT')
 
+    # ── [A1 circuit_breaker 注入 2026-08-06 设计院自主决策] ──────────────
+    # 层9熔断器: auto_executor — failure_threshold=1, recovery_timeout=600s
+    # 极端行情/API连续失败时自动熔断10min，防止连续亏损
+    try:
+        from brahma_brain.circuit_breaker import BrahmaCircuitRegistry as _CBR
+        _cb = _CBR.get().get_breaker('auto_executor')
+        if _cb and _cb.is_open:
+            _cb_status = _CBR.get().get_breaker('auto_executor').status()
+            _reason = f"[circuit_breaker] auto_executor熔断中 state={_cb_status.get('state')} — 等待自动恢复"
+            print(f"🛑 {_reason}")
+            return {
+                'signal_id': signal.get('signal_id',''), 'symbol': sym,
+                'direction': direction, 'score': float(signal.get('score',0)),
+                'ts': time.time(), 'ts_iso': datetime.now(timezone.utc).isoformat(),
+                'status': 'CB_BLOCKED', 'reason': _reason,
+            }
+    except Exception:
+        pass  # CB不可用时静默降级，不阻断执行
+    # ── end circuit_breaker ──────────────────────────────────────────────
+
+
+    # ── [A2 相关性双开门控 2026-08-06 设计院自主决策] ──────────────────
+    # BTC/ETH相关性=0.86 → 双开=1.86x BTC风险敞口
+    # 规则: 同方向双开时检查相关性，高相关期总仓≤8%NAV
+    try:
+        from brahma_brain.brahma_engine import check_correlation_risk as _check_corr
+        _corr_result = _check_corr(sym, direction, active_positions, nav)
+        if _corr_result and not _corr_result.get('allowed', True):
+            _corr_reason = _corr_result.get('reason', '相关性门控拒绝')
+            print(f"⚠️ [相关性门控] {sym} {direction} 被拒: {_corr_reason}")
+            return {
+                'signal_id': signal.get('signal_id',''), 'symbol': sym,
+                'direction': direction, 'score': float(signal.get('score',0)),
+                'ts': time.time(), 'ts_iso': datetime.now(timezone.utc).isoformat(),
+                'status': 'CORR_BLOCKED', 'reason': _corr_reason,
+            }
+    except Exception:
+        pass  # 相关性检查失败时静默降级，不阻断执行
+    # ── end 相关性门控 ────────────────────────────────────────────────────
+
     # [修复 2026-07-23] 美股代币(TRADFI_STOCK)走现货，不支持期货执行路径，直接跳过
     try:
         from brahma_brain.universal_asset_router import classify_asset, ASSET_TRADFI_STOCK
