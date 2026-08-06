@@ -184,6 +184,32 @@ def settle_signal(sig: dict, dry_run: bool = False) -> dict | None:
     except Exception:
         pass  # Bandit不可用时静默降级，不影响结算主链路
 
+    # [设计院 2026-08-06] 暴涨猎手结果回写 — 建立实盘WR闭环
+    try:
+        import json as _j_ph, time as _t_ph
+        from pathlib import Path as _P_ph
+        _ph_log = _P_ph('data/hunter_outcome_log.jsonl')
+        _ph_rec = _P_ph('dharma/pump_hunter/signal_push_record.json')
+        if _ph_rec.exists():
+            _ph_data = _j_ph.loads(_ph_rec.read_text())
+            _sym = sig.get('symbol', '')
+            if _sym in _ph_data and _ph_data[_sym].get('exec_eligible'):
+                _rec = {
+                    'ts':              sig.get('ts'),
+                    'symbol':          _sym,
+                    'hunter_score':    _ph_data[_sym].get('last_score', 0),
+                    'regime_at_push':  _ph_data[_sym].get('regime_at_push', '?'),
+                    'direction':       sig.get('direction', '?'),
+                    'outcome':         new_outcome,
+                    'pnl_pct':         round(pnl, 4),
+                    'settled_ts':      _t_ph.time(),
+                }
+                _ph_log.parent.mkdir(parents=True, exist_ok=True)
+                with open(_ph_log, 'a', encoding='utf-8') as _fph:
+                    _fph.write(_j_ph.dumps(_rec, ensure_ascii=False) + '\n')
+    except Exception:
+        pass  # 猎手回写不影响主结算链路
+
     return updated
 
 

@@ -118,6 +118,12 @@ THRESHOLD = {
         'vol_spike':  1.3,    # 量比≥1.3x
         'score_min':  30,     # 综合评分≥30
     },
+    'D': {                    # [设计院 2026-08-06] D类: 趋势累积型 — 新增
+        '7d_oi_growth': 3.0,  # 7日OI持续正增长≥3%
+        'price_ema20':  True, # 价格在EMA20上方（方向确认）
+        'fr_max':       0.05, # 资金费率未过热
+        'score_min':    25,   # 综合评分≥25（观察级，仅推送不开单）
+    },
 }
 
 # ── 执行参数（对接sub_executor）─────────────────────────────
@@ -127,6 +133,7 @@ OI_EXEC_PARAMS = {
     'B_10X':  {'size_pct': 0.05, 'sl_pct': 2.5, 'tp_mult': 1.2, 'lev': 10, 'hold': '3-14天'},
     'B':      {'size_pct': 0.05, 'sl_pct': 2.5, 'tp_mult': 1.2, 'lev': 5,  'hold': '1-7天'},
     'C':      {'size_pct': 0.03, 'sl_pct': 2.0, 'tp_mult': 1.0, 'lev': 5,  'hold': '1-24H'},
+    'D':      {'size_pct': 0.00, 'sl_pct': 0.0, 'tp_mult': 0.0, 'lev': 0,  'hold': 'OBSERVE_ONLY'},  # D类仅推送
 }
 
 # ── 黑名单（稳定性差/无OI历史）──────────────────────────────

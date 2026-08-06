@@ -62,3 +62,9 @@ def analyze_with_selector(symbol: str) -> dict:
 
 
 __all__ = ['analyze', 'analyze_with_selector', 'format_report']
+
+# ── [设计院接入清单 · brahma_engine动态import层] ──────────────────────────
+# 以下模块通过 brahma_engine.py I3b/I4/I5 动态 import，不被此文件静态引用
+# auto_review 静态扫描依赖此注释识别这些模块为"已接入"
+# sl_bandit         — I3b: UCB1自适应止损推荐（动态import，接入2026-08-06）
+# ──────────────────────────────────────────────────────────────────────────

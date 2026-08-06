@@ -157,3 +157,37 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# ── [P0 2026-08-06 设计院] get_liq_stats() ──────────────────────────────
+# brahma_scoring.py s7段 `from ws_guardian import get_liq_stats` 的实现
+# 从 liq_flow_cache.json 读取近1H清算流统计
+# liq_ws_multi.py 负责写入；若未运行则返回 available=False
+
+def get_liq_stats(symbol: str) -> dict:
+    """
+    返回近1H清算流统计。
+    {'available': bool, 'events': int, 'long_usd_1h': float, 'short_usd_1h': float}
+    """
+    import time as _t
+    cache_path = BASE / 'data' / 'liq_flow_cache.json'
+    _empty = {'available': False, 'events': 0, 'long_usd_1h': 0.0, 'short_usd_1h': 0.0}
+    try:
+        if not cache_path.exists():
+            return _empty
+        age = _t.time() - cache_path.stat().st_mtime
+        if age > 3600:          # 缓存超过1小时视为失效
+            return _empty
+        data = json.loads(cache_path.read_text())
+        sym_data = data.get(symbol.upper(), {})
+        if not sym_data:
+            return _empty
+        return {
+            'available':    True,
+            'events':       sym_data.get('count', 0),
+            'long_usd_1h':  float(sym_data.get('long_usd_1h',  0)),
+            'short_usd_1h': float(sym_data.get('short_usd_1h', 0)),
+        }
+    except Exception:
+        return _empty
+# ── [END get_liq_stats] ─────────────────────────────────────────────────

@@ -375,6 +375,10 @@ def find_executable_signals() -> list[dict]:
         # ④+ [FIX 2026-08-02 设计院自主] BULL_TREND LONG WR门控
         # 根据：真实WR=33.6%(n=192)，严重低于饱和线45%，继续自动执行EV为负
         # 键入OBSERVE模式：只记录不执行，直到真实WR重新校准超过45%
+        # [设计院 2026-08-06] 暴涨猎手双确认信号豁免 OBSERVE
+        _observe_bypass = s.get('observe_bypass', False)
+        _observe_wr_gate = float(s.get('observe_wr_gate', 0.45))
+
         if regime == 'BULL_TREND' and direction == 'LONG':
             _wr_ok = False
             try:
@@ -385,11 +389,12 @@ def find_executable_signals() -> list[dict]:
                 _wr_tp   = sum(1 for r in _wr_bull if r.get('outcome')=='TP1')
                 _wr_n    = len(_wr_bull)
                 _wr_val  = _wr_tp/_wr_n if _wr_n >= 20 else None  # n<20数据不足，不强制拦截
-                if _wr_val is not None and _wr_val >= 0.45:
+                if _wr_val is not None and _wr_val >= _observe_wr_gate:
                     _wr_ok = True  # WR达标，允许执行
-                elif _wr_val is not None and _wr_val < 0.45:
+                elif _wr_val is not None and _wr_val < _observe_wr_gate:
                     _wr_ok = False
-                    print(f'[WR门控-OBSERVE] BULL_TREND LONG WR={_wr_val*100:.1f}%({_wr_n}条)<45% 事实不达标，降级OBSERVE不执行')
+                    _gate_label = '猎手豁免35%' if _observe_bypass else '标准45%'
+                    print(f'[WR门控-OBSERVE] BULL_TREND LONG WR={_wr_val*100:.1f}%({_wr_n}条)<{_observe_wr_gate*100:.0f}%({_gate_label}) 不达标，降级OBSERVE')
                 else:
                     _wr_ok = True  # 数据不足，不拦截
             except Exception:
@@ -489,6 +494,38 @@ def find_executable_signals() -> list[dict]:
 
     # 按评分降序排列
     candidates.sort(key=lambda x: -float(x.get('score', 0) or 0))
+
+    # [设计院 2026-08-06] 追加暴涨猎手双确认信号
+    try:
+        _pq_path = Path(__file__).parent.parent / 'data/pump_exec_queue.jsonl'
+        _pq_seen = {s.get('signal_id','') for s in candidates}
+        if _pq_path.exists():
+            for _pql in open(_pq_path):
+                try:
+                    _pqs = json.loads(_pql.strip())
+                    _pq_sym = _pqs.get('symbol','')
+                    _pq_sid = f"ph_{_pq_sym}_{int(_pqs.get('ts',0))}"
+                    if _pq_sid in _pq_seen: continue
+                    if time.time() - _pqs.get('ts',0) > 8*3600: continue
+                    candidates.append({
+                        'symbol':          _pq_sym,
+                        'score':           _pqs.get('brahma_score', 138),
+                        'direction':       _pqs.get('direction','LONG'),
+                        'regime':          _pqs.get('regime','BULL_TREND'),
+                        'params':          _pqs.get('params', {}),
+                        'timing':          {'status': _pqs.get('timing','READY')},
+                        'signal_id':       _pq_sid,
+                        'source':          'pump_hunter_executor',
+                        'observe_bypass':  _pqs.get('observe_bypass', False),
+                        'observe_wr_gate': _pqs.get('observe_wr_gate', 0.45),
+                        'ts':              _pqs.get('ts', 0),
+                        'valid':           True,
+                    })
+                    _pq_seen.add(_pq_sid)
+                except Exception:
+                    pass
+    except Exception:
+        pass
 
     # ══ [P2-B 设计院苏摩111 2026-07-11] portfolio_optimizer 相关性过滤 ══
     # 多信号时，用30天滚动相关性矩阵选出最优子集（max 3个，corr<0.75）

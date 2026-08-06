@@ -480,9 +480,26 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
 
     lines.append(sep)
 
-    full_report = "\n".join(lines)
+    # ── [P1 LLM Council 2026-08-06 设计院] 本地裁决层——————————————————
+    try:
+        import sys as _lsys
+        _lsys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent / 'brahma_brain'))
+        from llm_council import council_verdict, format_verdict_line as _fmt_vl
+        _liq_d = None
+        try:
+            import json as _ljson
+            _liq_p = __import__('pathlib').Path(__file__).parent.parent / f'data/liq_heatmap_{symbol}.json'
+            if _liq_p.exists():
+                _liq_d = _ljson.loads(_liq_p.read_text())
+        except Exception:
+            pass
+        _verdict = council_verdict(bd, direction, regime, score_final, _liq_d)
+        lines.insert(-1, f"  {_fmt_vl(_verdict, symbol)}")
+    except Exception as _lce:
+        lines.insert(-1, f"  LLM: 跡过 ({_lce})")
+    # ───────────────────────────────────────────────────
 
-    # compact模式：压缩35%输出（去除breakdown细节，保留核心结论）
+    full_report = "\n".join(lines)
     if compact:
         compact_lines = [
             sep,
