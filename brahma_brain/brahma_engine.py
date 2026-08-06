@@ -1610,6 +1610,29 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _dsle:
         pass
 
+    # I3b: SL Bandit 推荐（UCB1自适应止损优化）
+    try:
+        from sl_bandit import recommend_sl_pct as _sb_recommend
+        _sb_base = float(
+            params.get('sl_pct_dyn') or
+            params.get('sl_pct') or
+            extra_data.get('dynamic_sl', {}).get('sl_pct') or
+            2.0
+        )
+        _sb_result = _sb_recommend(
+            regime=str(ms.get('regime', '')),
+            direction=signal_dir,
+            base_sl_pct=_sb_base,
+            score=float(cf.get('total', 100)),
+        )
+        extra_data['sl_bandit'] = _sb_result
+        params = dict(params)
+        params['sl_pct_bandit']  = _sb_result['recommended_sl_pct']
+        params['sl_bandit_arm']  = _sb_result['arm']
+        params['sl_bandit_conf'] = round(_sb_result['confidence'], 2)
+    except Exception as _sbe:
+        pass
+
     # I7: 实时归因（轻量，从attribution.json读缓存而非重算）
     try:
         _attr_f = __import__('pathlib').Path('data/attribution.json')

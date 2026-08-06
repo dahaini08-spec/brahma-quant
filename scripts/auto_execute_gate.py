@@ -13,6 +13,24 @@ from pathlib import Path
 MIN_SCORE          = 140  # [铁证封印 2026-08-05 设计院自主] 155→140
 # 历史WR反推：grade≥极强+score≥140 WR=58%(n=19) EV正向；score115-145死亡区已绕过
 # 执行条件：MIN_SCORE=140 AND grade_num≥80（见下方门控）
+
+# [铁证封印 2026-08-06 设计院自主] 标的差异化阈值
+# BTC WR=33%(n=52) → 需要score≥145才有正EV；ETH WR=58%(n=19) → 140足够
+MIN_SCORE_BTC      = 145
+MIN_SCORE_ETH      = 140
+MIN_SCORE_OTHER    = 148
+
+# [铁证封印 2026-08-06 设计院自主] TRADFI代币硬封禁
+# 实证：22条信号WR=0%，梵天SMC/OB逻辑在美股代币上结构性失效
+TRADFI_HARD_BLOCK = {
+    'SNDKUSDT','TSLAUSDT','AAPLUSDT','NVDAUSDT','MSFTUSDT','GOOGLUSDT',
+    'AMZNUSDT','METAUSDT','AMDUSDT','SAMSUNGUSDT','SKHYNIXUSDT',
+    'SOXLUSDT','SOXSUSDT','MSTRUSDT','COINUSDT',
+}
+
+# [铁证封印 2026-08-06 设计院自主] rr1过高封禁
+# 实证：score 120-140 + rr1>1.5 → EV=-1.0（全亏），TP太远无法触达
+MAX_RR1_AUTO       = 1.8  # rr1>1.8 且 score<155 → 拒绝执行（神级除外）
 MAX_OPEN_POSITIONS = 999  # 设计院2026-06-23授权：不限制开仓数量
 MAX_POS_PCT_NAV    = 0.10  # 单笔最大10% NAV（保留风控）
 
@@ -255,6 +273,17 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
     entry_lo  = float(signal.get('entry_lo', 0))
     entry_hi  = float(signal.get('entry_hi', 0))
 
+    # ── 门控-1：时段硬封禁 22:00-01:00 UTC ─────────────────────────────
+    # [铁证封印 2026-08-06 设计院] 亚洲深夜低流动性时段，价格随机性高，技术信号可信度低
+    import datetime as _dt
+    _utc_hour = _dt.datetime.utcnow().hour
+    if _utc_hour >= 22 or _utc_hour < 1:
+        # 神级信号（score≥17 5）调过时段封禁
+        if score < 175:
+            r = f'时段封禁: UTC {_utc_hour:02d}:00 属亚洲深夜低流动性时段(22-01 UTC)，score={score:.0f}<175'
+            _log('BLOCKED', signal, r)
+            return {'executed': False, 'reason': r, 'order': None}
+
     # ── 门控0：valid + grade 门控 ──────────────────────────────────
     # [FIX-M3 2026-07-18 苏摩111] valid=False逻辑修正：valid字段存在且为False时直接BLOCKED
     # 原Bug: valid=False只拦截score≥999的mock，普通valid=False信号流入后续门控
@@ -293,9 +322,20 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
         _log('BLOCKED', signal, r)
         return {'executed': False, 'reason': r, 'order': None}
 
-    # ── 门控1：score 门槛 ──────────────────────────────────────────
-    if score < MIN_SCORE:
-        r = f'score={score} < {MIN_SCORE}'
+    # ── 门控1：score 门槛（标的差异化）─────────────────────────────
+    # [铁证封印 2026-08-06 设计院] BTC WR=33% → 需score≥145；ETH WR=58% → 140足够
+    if sym == 'BTCUSDT':
+        _min_score_eff = MIN_SCORE_BTC
+    elif sym == 'ETHUSDT':
+        _min_score_eff = MIN_SCORE_ETH
+    elif sym in TRADFI_HARD_BLOCK:
+        r = f'TRADFI_BLOCK: {sym} 代币化美股，梵天SMC逻辑结构性失效(22条信号WR=0%)'
+        _log('BLOCKED', signal, r)
+        return {'executed': False, 'reason': r, 'order': None}
+    else:
+        _min_score_eff = MIN_SCORE_OTHER
+    if score < _min_score_eff:
+        r = f'score={score} < {_min_score_eff}({sym}专属门槛)'
         _log('BLOCKED', signal, r)
         return {'executed': False, 'reason': r, 'order': None}
 
@@ -303,6 +343,14 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
     combo = f'{regime}_{direction}'
     if combo in HARD_BLOCK:
         r = f'HARD_BLOCK: {combo} 宪法级死穴'
+        _log('BLOCKED', signal, r)
+        return {'executed': False, 'reason': r, 'order': None}
+
+    # ── 门控2b：rr1过高封禁 ─────────────────────────────────────────
+    # [铁证封印 2026-08-06 设计院] score 120-140 + rr1>1.5 EV=-1.0，TP太远无法触达
+    _rr1 = float(signal.get('rr1', 0) or 0)
+    if _rr1 > MAX_RR1_AUTO and score < 155:
+        r = f'rr1={_rr1:.2f}>{MAX_RR1_AUTO} 且score={score:.0f}<155，TP太远历史EV=-1.0，拒绝执行'
         _log('BLOCKED', signal, r)
         return {'executed': False, 'reason': r, 'order': None}
 
