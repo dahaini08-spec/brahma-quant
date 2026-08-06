@@ -1,10 +1,10 @@
 {
   "BTCUSDT": {
     "CONFIRMED": "BULL_TREND",
-    "CONFIRMED_ts": 1785897628.2075834,
+    "CONFIRMED_ts": 1785985668.322467,
     "CONFIRMED_source": "brahma_engine",
-    "CONFIRMED_score": 111.5,
-    "updated_at": 1785897628.2075853,
+    "CONFIRMED_score": 104.5,
+    "updated_at": 1785985668.3224692,
     "last_switch": {
       "from": "BEAR_TREND",
       "to": "BULL_TREND",
@@ -14,23 +14,86 @@
     }
   },
   "ETHUSDT": {
-    "CONFIRMED": "BEAR_RECOVERY",
-    "CONFIRMED_ts": 1785897644.628393,
+    "CONFIRMED": "BULL_TREND",
+    "CONFIRMED_ts": 1785980080.2588558,
     "CONFIRMED_source": "brahma_engine",
-    "CONFIRMED_score": 75.2,
-    "updated_at": 1785897644.6283948,
+    "CONFIRMED_score": 71.0,
+    "updated_at": 1785980080.2588577,
     "CANDIDATE": "BEAR_RECOVERY",
     "CANDIDATE_ts": 1785895369.5564742,
     "CANDIDATE_source": "eth_ema_gate",
     "CANDIDATE_score": 0.0,
     "last_switch": {
-      "from": "BEAR_TREND",
-      "to": "BEAR_RECOVERY",
-      "ts": 1785895369.5561357,
+      "from": "BULL_EARLY",
+      "to": "BULL_TREND",
+      "ts": 1785919239.936961,
       "source": "brahma_engine",
-      "score": 70
+      "score": 104.3
     }
   },
   "_version": "2.0",
-  "_saved_at": 1785897644.6283967
+  "_saved_at": 1785985668.3224707,
+  "1000PEPEUSDT": {
+    "CONFIRMED": "CHOP_MID",
+    "CONFIRMED_ts": 1785940851.5604203,
+    "CONFIRMED_source": "brahma_engine",
+    "CONFIRMED_score": 59.3,
+    "updated_at": 1785940851.5604222
+  },
+  "BZUSDT": {
+    "CONFIRMED": "CHOP_MID",
+    "CONFIRMED_ts": 1785955294.5838242,
+    "CONFIRMED_source": "brahma_engine",
+    "CONFIRMED_score": 68.2,
+    "updated_at": 1785955294.5838256
+  },
+  "CLUSDT": {
+    "CONFIRMED": "CHOP_MID",
+    "CONFIRMED_ts": 1785926469.8910005,
+    "CONFIRMED_source": "brahma_engine",
+    "CONFIRMED_score": 90.0,
+    "updated_at": 1785926469.8910022
+  },
+  "DRAMUSDT": {
+    "CONFIRMED": "CHOP_MID",
+    "CONFIRMED_ts": 1785940861.0730567,
+    "CONFIRMED_source": "brahma_engine",
+    "CONFIRMED_score": 22.2,
+    "updated_at": 1785940861.0730584
+  },
+  "SAMSUNGUSDT": {
+    "CONFIRMED": "CHOP_MID",
+    "CONFIRMED_ts": 1785940872.2759914,
+    "CONFIRMED_source": "brahma_engine",
+    "CONFIRMED_score": 45.0,
+    "updated_at": 1785940872.2759948
+  },
+  "SNXXUSDT": {
+    "CONFIRMED": "CHOP_MID",
+    "CONFIRMED_ts": 1785979955.5831094,
+    "CONFIRMED_source": "brahma_engine",
+    "CONFIRMED_score": 40.2,
+    "updated_at": 1785979955.5831108
+  },
+  "SPCXUSDT": {
+    "CONFIRMED": "CHOP_MID",
+    "CONFIRMED_ts": 1785955280.4051082,
+    "CONFIRMED_source": "brahma_engine",
+    "CONFIRMED_score": 23.0,
+    "updated_at": 1785955280.4051101
+  },
+  "SOXLUSDT": {
+    "CONFIRMED": "CHOP_MID",
+    "CONFIRMED_ts": 1785979910.445015,
+    "CONFIRMED_source": "brahma_engine",
+    "CONFIRMED_score": 47.2,
+    "updated_at": 1785979910.4450169
+  },
+  "HOMEUSDT": {
+    "CONFIRMED": "CHOP_MID",
+    "CONFIRMED_ts": 1785979925.932564,
+    "CONFIRMED_source": "brahma_engine",
+    "CONFIRMED_score": 48.2,
+    "updated_at": 1785979925.9325655
+  }
 }

@@ -1,15 +1,15 @@
-🏛️ **梵天智能日报** | 08-04 06:47 UTC
+🏛️ **梵天智能日报** | 08-05 06:48 UTC
 
 **📊 实时行情**
-  🟢 BTC $63,680.00 (+1.69%) | 24H $62,268~$64,240
-  🟢 ETH $1,855.30 (+0.35%) | 24H $1,827~$1,876
-  🟢 BNB $591.10 (+1.46%) | 24H $581~$595
+  🟢 BTC $64,218.60 (+0.85%) | 24H $63,429~$64,513
+  🟢 ETH $1,867.99 (+0.67%) | 24H $1,853~$1,882
+  🟢 BNB $601.40 (+1.76%) | 24H $588~$606
 
-**🧠 当前体制**: `BEAR_TREND` | 更新: 2026-08-04T06:32 UTC
+**🧠 当前体制**: `BULL_TREND` | 更新: 2026-08-05T06:02 UTC
 
 **🧠 梵天信号(24h)**: 生成16个 跳过4个
-  • BTC score=29.0 BEAR_TREND SHORT
-  • ETH score=18.5 BEAR_TREND SHORT
-  • BTC score=159.0 BEAR_TREND SHORT
+  • BTC score=3.0 BEAR_TREND SHORT
+  • ETH score=23.0 BEAR_TREND SHORT
+  • BTC score=6.0 BEAR_TREND SHORT
 
 **💚 系统**: 运行正常 | 下次汇报6h后
