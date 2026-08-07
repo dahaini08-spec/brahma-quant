@@ -62,12 +62,12 @@ def scan_d1_modules() -> list:
             # ── CI / 测试工具 ──
             'brahma_ci','brahma_constitutional_test',
             # ── 已被其他脚本间接引用（非主链路但有实际调用）──
-            'brahma_learning_loop','dog_commander','dog_probes',
+            'brahma_learning_loop',
             'ev_feedback','ic_tracker','online_learner_v2',
             'rl_position_ab','safety','signal_card_formatter',
             # ── 合理孤立：独立工具/cron任务执行体 ──
             'brahma_logger','brahma_macro_bottom','brahma_mem_compressor',
-            'memory_watchdog','squeeze_lifecycle','vectorbt_simfactory',
+            'squeeze_lifecycle','vectorbt_simfactory',
             # ── 归档模块（功能已被替代，保留备用）──
             'realtime_fetch','kronos_inference_v7_patch',
             # ── 遗留孤立群岛 ──

@@ -151,7 +151,7 @@ def heal_orphan_modules():
     AUXILIARY_MODS = [
         'auto_review','brahma_ci','brahma_constitutional_test','brahma_logger',
         'brahma_mem_compressor','brahma_orchestrator','exception_injector',
-        'module_registry','offline_adapters','memory_watchdog','dog_commander',
+        'module_registry','offline_adapters',
         'safety','rl_position_ab','vectorbt_simfactory','kronos_inference_v7_patch',
         'online_learner_v2'
     ]
