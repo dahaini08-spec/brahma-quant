@@ -1,0 +1,57 @@
+{
+  "name": "方仓",
+  "name_en": "FangCang",
+  "description": "梵天设计院 · 6.5年BTC/ETH期货合约全量数据库",
+  "sealed_at": "2026-08-07",
+  "time_range": "2019-11-01 → 2026-07-30",
+  "purpose": [
+    "1. 全数据牛熊体制矩阵理解验证学习",
+    "2. 三种体制深度理解复盘，持续提升梵天能力",
+    "3. 6.5年数据分析验证，让系统贴近顶级合约交易员",
+    "4. 支撑达摩院量化矩阵（WR/EV/最优参数）的铁证基础"
+  ],
+  "contents": {
+    "BTCUSDT": {
+      "15m": {"n": 236544, "desc": "15分钟K线，近50小时分辨率"},
+      "1h":  {"n": 59136,  "desc": "1小时K线，近8.3天分辨率"},
+      "4h":  {"n": 14784,  "desc": "4小时K线，核心分析层"},
+      "1d":  {"n": 2464,   "desc": "日线K线，大周期体制判断"}
+    },
+    "ETHUSDT": {
+      "15m": {"n": 234017, "desc": "15分钟K线"},
+      "1h":  {"n": 58505,  "desc": "1小时K线"},
+      "4h":  {"n": 14627,  "desc": "4小时K线"},
+      "1d":  {"n": 2438,   "desc": "日线K线"}
+    },
+    "regime_labels": {
+      "BTCUSDT_4h": {"n": 14700, "desc": "BTC 4H体制标注：BULL/BEAR/CHOP/RECOVERY/EARLY"},
+      "ETHUSDT_4h": {"n": 14544, "desc": "ETH 4H体制标注"}
+    },
+    "matrices": {
+      "wr_matrix_v8_6y5.json":              "6.5年全样本WR矩阵（五体制×多空×RSI分层）",
+      "wr_matrix_15m_1h_quantitative.json": "15m×1h量化深挖矩阵（6因子组合）"
+    }
+  },
+  "total_records": 656219,
+  "total_size_mb": 72,
+  "key_findings": {
+    "BULL_TREND_LONG_RSI50_55":   {"wr": 61.8, "n": 710,  "ev": 0.473},
+    "BEAR_TREND_SHORT_RSI60_70":  {"wr": 62.8, "n": 613,  "ev": 0.512},
+    "BEAR_EARLY_LONG_RSI50_55":   {"wr": 75.0, "n": 76,   "ev": 1.000},
+    "RSI15m_20_30_BULL_LONG":     {"wr": 72.7, "n": 421,  "ev": 0.907},
+    "ULTIMATE_6FACTOR":           {"wr": 59.2, "n": 240,  "ev": 0.958},
+    "BEST_HOLDING":               {"hours": 48, "tp": "3%", "sl": "2%", "rr": 1.5}
+  },
+  "regime_distribution_btc": {
+    "BEAR_TREND":    {"pct": 39, "days": 957},
+    "BULL_TREND":    {"pct": 25, "days": 609},
+    "CHOP_MID":      {"pct": 21, "days": 524},
+    "BEAR_RECOVERY": {"pct": 9,  "days": 216},
+    "BEAR_EARLY":    {"pct": 6,  "days": 144}
+  },
+  "access_pattern": {
+    "body":     "data/historical/{SYMBOL}_{TF}.jsonl.gz",
+    "labels":   "data/historical/{SYMBOL}_regime_labels.jsonl.gz",
+    "matrices": "data/wr_matrix_v8_6y5.json / data/wr_matrix_15m_1h_quantitative.json"
+  }
+}
