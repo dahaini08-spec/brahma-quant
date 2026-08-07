@@ -310,6 +310,14 @@ def find_executable_signals() -> list[dict]:
             # TIER_2: 标准仓，timing=READY或空（未注入）才执行，STANDBY/WAIT拦截
             if _timing_badge in ('STANDBY', 'WAIT', 'MONITOR') or _timing_badge == '':  # [P1修复 2026-07-20] 空timing也拦截，防TIMEOUT亏损
                 continue  # timing明确不佳，等待
+            # [铁证封印 2026-08-07 设计院] READY+score>=138+RSI4H>55 追高陷阱门控
+            # 数据铁证：16条READY+score>=130信号 TP1=0 SL=16 WR=0%
+            # 根因：score高=趋势确认后期，READY=价格位置好，两者叠加=已在高位追高
+            if 'READY' in _timing_badge.upper():
+                _rsi_4h_val = float(s.get('rsi_4h', 0) or 0)
+                if _rsi_4h_val > 55 and score >= 138:
+                    s['_observe_reason'] = f'READY+score>=138+RSI4H={_rsi_4h_val:.1f}>55 追高陷阱WR=0%'
+                    continue
             s['_tier'] = 2
             s['_tier_nav_pct'] = 0.03
         elif score >= TIER_3_SCORE:
