@@ -31,11 +31,11 @@ SCRIPTS= BASE / 'scripts'
 
 # ── SSOT 推送配置 ──────────────────────────────────────────────────────
 JARVIS_USER_ID  = "73295708"
-MAIN_THREAD     = "019f8768-6731-777d-8924-2426a5abd10f"   # 主线程
-SIGNAL_THREAD   = "019f8768-6731-777d-8924-2426a5abd10f"  # 信号线程
-EXEC_THREAD     = "019f8768-6731-777d-8924-2426a5abd10f"  # 执行线程
-REPORT_THREAD   = "019f8768-6731-777d-8924-2426a5abd10f"  # 日报线程
-SQUARE_THREAD   = "019f8768-6731-777d-8924-2426a5abd10f"  # 广场线程
+MAIN_THREAD     = "019fd9dd-4b0f-71db-87fb-1e192ccb2291"   # 主线程
+SIGNAL_THREAD   = "019fd9dd-4b0f-71db-87fb-1e192ccb2291"  # 信号线程
+EXEC_THREAD     = "019fd9dd-4b0f-71db-87fb-1e192ccb2291"  # 执行线程
+REPORT_THREAD   = "019fd9dd-4b0f-71db-87fb-1e192ccb2291"  # 日报线程
+SQUARE_THREAD   = "019fd9dd-4b0f-71db-87fb-1e192ccb2291"  # 广场线程
 
 MAIN_TO  = f"{JARVIS_USER_ID}:t:{MAIN_THREAD}"
 SIG_TO   = f"{JARVIS_USER_ID}:t:{SIGNAL_THREAD}"

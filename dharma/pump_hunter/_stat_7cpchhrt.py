@@ -124,7 +124,7 @@ def _get_jarvis_target() -> str:
         return f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}'
     except Exception:
         pass
-    return '73295708:thread:019fb612-d570-7f0b-89c5-2065284157e0'  # [设计院 2026-07-26 修复] 同步system_config.py SSOT
+    return '73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291'  # [设计院 2026-07-26 修复] 同步system_config.py SSOT
 
 JARVIS_TARGET = _get_jarvis_target()
 

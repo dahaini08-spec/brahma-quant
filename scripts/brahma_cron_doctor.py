@@ -35,7 +35,7 @@ try:
     from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
     PUSH_TARGET = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"
 except Exception:
-    PUSH_TARGET = '73295708:thread:019f8768-6731-777d-8924-2426a5abd10f'
+    PUSH_TARGET = '73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291'
 
 def _push(msg: str):
     try:

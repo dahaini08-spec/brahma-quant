@@ -185,7 +185,7 @@ def probe_cron_route_ssot() -> ProbeResult:
     try:
         import json
         from pathlib import Path
-        SSOT = '73295708:t:019f8768-6731-777d-8924-2426a5abd10f'
+        SSOT = '73295708:t:019fd9dd-4b0f-71db-87fb-1e192ccb2291'
         jobs_path = Path.home() / '.openclaw/cron/jobs.json'
         if not jobs_path.exists():
             return ProbeResult('cron_route_ssot', 'P2', True, 'jobs.json不存在')

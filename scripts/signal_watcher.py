@@ -84,7 +84,7 @@ try:
     from scripts.system_config import JARVIS_THREAD_ID as _TID_SSOT
     _THREAD_ID = os.environ.get("JARVIS_THREAD_ID", _TID_SSOT)
 except Exception:
-    _THREAD_ID = os.environ.get("JARVIS_THREAD_ID", "019f8768-6731-777d-8924-2426a5abd10f")  # SSOT fallback
+    _THREAD_ID = os.environ.get("JARVIS_THREAD_ID", "019fd9dd-4b0f-71db-87fb-1e192ccb2291")  # SSOT fallback
 _JARVIS_TO = f"{_USER_ID}:t:{_THREAD_ID}"
 
 TEST_MODE = "--test" in sys.argv
