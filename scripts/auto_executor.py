@@ -88,7 +88,7 @@ MAX_POSITIONS        = 20        # 最大持仓数（苏摩授权 2026-07-03，1
 MIN_SL_PCT           = 1.0       # [v7.0 苏摩111 2026-07-11] 2.0→1.0; BTC低波动ATR=0.02%时SL=1.2%正常，不应强制>=2.0%
 MAX_SL_PCT           = 5.0       # 标准最大止损（保护性上限）
 MAX_SL_PCT_HIGH_VOL  = 9.0       # 高波动信号上限（score≥145，仓位×0.7）
-SL_PCT_GATE          = 2.0       # [BrahmaOptimizer v1.0 苏摩111 2026-08-07] 铁证：sl>2.0% WR=0% EV=-5.07% → 硬门控过滤wide_sl死亡区（WR 37.7%→50.0%）
+# SL_PCT_GATE 已迁移至 brahma_brain/signal_quality_engine.py（SQE唯一真相，2026-08-07）
 NAV_SIZE_PCT         = 0.05      # 默认仓位 NAV×5%（苏摩授权 2026-07-03）
 DEFAULT_LEV          = 5         # 默认杠杆 5x（苏摩授权 2026-07-03）
 MIN_NOTIONAL         = 5.5       # 最小开单金额 USDT（2026-07-23 修复: Binance MIN_NOTIONAL=5，加0.5缓冲得5.5）
@@ -464,16 +464,7 @@ def find_executable_signals() -> list[dict]:
 
         # SL验证（动态上限：score≥145高波动信号允许至 MAX_SL_PCT_HIGH_VOL）
         sl_pct = float(s.get('sl_pct', 0) or 0)
-        # [BrahmaOptimizer v1.0 苏摩111 2026-08-07] SL_PCT_GATE硬门控
-        # 铁证：sl>2.0% WR=0% EV=-5.07%（n=15），过滤wide_sl死亡区
-        # 豁免：小币高波动通道（score≥155+BULL_TREND）不受此门控约束
-        _is_wide_sl_death_zone = (
-            sl_pct > SL_PCT_GATE
-            and not (score >= 155 and regime == 'BULL_TREND' and direction == 'LONG')
-        )
-        if _is_wide_sl_death_zone:
-            print(f'[SL_PCT_GATE] {s.get("symbol")} sl={sl_pct:.2f}%>{SL_PCT_GATE}% wide_sl死亡区 WR=0% → 跳过')
-            continue
+        # [SQE 2026-08-07] SL质量门控已上移至brahma_brain/signal_quality_engine.py，此处无需重复
         # [v5.1 设计院 2026-07-03] 小币宽止损通道：score≥155+BULL_TREND允许sl≤15%（仓位×0.5）
         _is_altcoin_bull = (
             score >= 155
