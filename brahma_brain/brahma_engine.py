@@ -4434,6 +4434,21 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception:
         pass
 
+    # ── 方仓经验引擎注入 [设计院封印 2026-08-07] ─────────────────
+    # 每张信号卡片附带：历史相似案例概率矩阵
+    # 失败降级：异常时静默跳过，不影响主流程
+    try:
+        from brahma_brain.fangcang_engine import get_fangcang_context
+        _fc_regime = _result.get('market_state', {}).get('regime') or \
+                     _result.get('confluence', {}).get('_regime') or None
+        _fc = get_fangcang_context(
+            symbol=_result.get('symbol', symbol),
+            current_regime=_fc_regime,
+        )
+        _result['fangcang'] = _fc
+    except Exception:
+        _result['fangcang'] = {'status': 'unavailable', 'reason': 'engine_error'}
+
     return _result
 
 def format_report(r: dict) -> str:
