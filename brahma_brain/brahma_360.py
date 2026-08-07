@@ -78,6 +78,8 @@ def scan_d1_modules() -> list:
             'position_guard','anomaly_guards',
             # ── 独立信号流（15M层）— 封印P1-A 2026-08-03──
             'signal_15m_engine',  # 15M主框架信号生成器，不挂载主链路属正常架构
+            # ── 梵天纸交易沙盒 — 设计院自主 2026-08-07──
+            'dharma_simfactory',  # 轻量纸交易沙盒，独立运行，不需主链路引用
         }
         _orphans = []
         for _f in sorted(_brain.glob('*.py')):
