@@ -337,3 +337,11 @@ except Exception as e:
 esac
 
 exit 0
+  pump-gainer-monitor)
+    # 合约涨幅榜监控 — 新入榜妖币推送 [设计院封印 2026-08-07]
+    OUT=$(cd "$BASE" && timeout 60 python3 scripts/pump_gainer_monitor.py 2>&1 | tail -3)
+    log "$OUT"
+    if echo "$OUT" | grep -qiE 'traceback|exception'; then
+        send_alert "🚨 [gainer-monitor异常] $(echo "$OUT" | tail -2)"
+    fi
+    ;;

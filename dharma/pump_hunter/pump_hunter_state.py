@@ -76,15 +76,10 @@ def update_tight_state(
             sym_state['tight_latest_score'] = score
             sym_state['tight_latest_ts'] = now_ts
 
-            # 持续时间加分
-            if tight_hours >= 24:
-                bonus = 30; note = f"TIGHT持续{tight_hours:.0f}H +30"
-            elif tight_hours >= 12:
-                bonus = 20; note = f"TIGHT持续{tight_hours:.0f}H +20"
-            elif tight_hours >= 6:
-                bonus = 10; note = f"TIGHT持续{tight_hours:.0f}H +10"
-            else:
-                bonus = 0;  note = f"TIGHT持续{tight_hours:.1f}H"
+            # [设计院封印 2026-08-07 苏摩111] TIGHT持续时间加分归零
+            # 根因：持续不动反而是弱信号（僵尸压缩），越久分越高导致GOOGLUSDT/WLD永远占据TOP
+            # 改为：只记录状态用于调试，不给分
+            bonus = 0; note = f"TIGHT持续{tight_hours:.0f}H(不加分)"
 
             result = {"bonus": bonus, "tight_hours": round(tight_hours, 1), "note": note}
         else:
