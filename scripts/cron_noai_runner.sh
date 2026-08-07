@@ -1,9 +1,13 @@
 #!/bin/bash
-# cron_noai_runner.sh — 零AI cron执行器 v2.0
+# cron_noai_runner.sh — 零AI cron执行器 v2.1
 # 设计院 2026-06-09 | v1.1: 新增 clean-stale 2026-06-17
 # v2.0: 2026-08-02 — A类12个cron全部迁移，不走agentTurn，大幅降载
+# v2.1: 2026-08-07 — core dump永久封印 + 防御层
 # 职责：执行交易系统任务，只在异常时通过CLI发Jarvis告警，正常时完全静默
 # 用法：bash cron_noai_runner.sh <task_name>
+
+# ── 防御层：禁止产生core dump ─────────────────────────────────
+ulimit -c 0
 
 TASK="$1"
 BASE="/root/.openclaw/workspace/trading-system"
@@ -330,13 +334,6 @@ except Exception as e:
     fi
     ;;
 
-  *)
-    log "未知任务: $TASK"
-    exit 1
-    ;;
-esac
-
-exit 0
   pump-gainer-monitor)
     # 合约涨幅榜监控 — 新入榜妖币推送 [设计院封印 2026-08-07]
     OUT=$(cd "$BASE" && timeout 60 python3 scripts/pump_gainer_monitor.py 2>&1 | tail -3)
@@ -345,3 +342,40 @@ exit 0
         send_alert "🚨 [gainer-monitor异常] $(echo "$OUT" | tail -2)"
     fi
     ;;
+
+  system-guardian)
+    # [v2.1 合并] ws-guardian + liq-ws-guardian + brahma-mem-watchdog → 1个任务
+    BASE_SG="/root/.openclaw/workspace/trading-system"
+    # 内存检查
+    MEM_PCT=$(python3 -c "import psutil; m=psutil.virtual_memory(); print(int(m.percent))" 2>/dev/null || echo "0")
+    if [ "$MEM_PCT" -gt 85 ] 2>/dev/null; then
+      send_alert "🚨 [system-guardian] 内存告警: ${MEM_PCT}% > 85%"
+    fi
+    # Binance API连通性
+    API_OK=$(python3 -c "
+import urllib.request
+try:
+    urllib.request.urlopen('https://fapi.binance.com/fapi/v1/ping',timeout=5)
+    print('OK')
+except Exception as e:
+    print(f'FAIL:{e}')
+" 2>/dev/null)
+    if echo "$API_OK" | grep -q "FAIL"; then
+      send_alert "🚨 [system-guardian] Binance API不可达: $API_OK"
+    fi
+    # core dump防御性清理
+    CORE_CNT=$(find "$BASE_SG" -maxdepth 1 -name "core.*" 2>/dev/null | wc -l)
+    if [ "$CORE_CNT" -gt 0 ]; then
+      find "$BASE_SG" -maxdepth 1 -name "core.*" -delete
+      send_alert "🧹 [system-guardian] 清理${CORE_CNT}个core dump文件"
+    fi
+    log "system-guardian: mem=${MEM_PCT}% api=${API_OK} core_cleaned=${CORE_CNT}"
+    ;;
+
+  *)
+    log "未知任务: $TASK"
+    exit 1
+    ;;
+esac
+
+exit 0
