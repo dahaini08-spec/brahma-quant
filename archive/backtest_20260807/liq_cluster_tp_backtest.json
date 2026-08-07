@@ -1,0 +1,51 @@
+{
+  "meta": {
+    "description": "清算集群作为TP目标 Alpha验证",
+    "data_range": "2020-01-01 ~ 2026-07-10",
+    "method": "Vol Profile + 杠杆矩阵代理清算集群，无上帝视角"
+  },
+  "results": {
+    "BTCUSDT_1h": {
+      "total_trades": 14620,
+      "fixed_tp_wr": 38.4,
+      "fixed_tp_ev": -0.077,
+      "liq_tp_wr": 31.7,
+      "liq_tp_ev": -0.061,
+      "liq_hit_rate": 23.2,
+      "liq_avg_dist_pct": 4.08,
+      "improvement": 0.016
+    },
+    "BTCUSDT_4h": {
+      "total_trades": 4279,
+      "fixed_tp_wr": 54.1,
+      "fixed_tp_ev": -0.119,
+      "liq_tp_wr": 37.3,
+      "liq_tp_ev": -0.073,
+      "liq_hit_rate": 32.4,
+      "liq_avg_dist_pct": 6.42,
+      "improvement": 0.046
+    },
+    "ETHUSDT_1h": {
+      "total_trades": 15503,
+      "fixed_tp_wr": 44.1,
+      "fixed_tp_ev": -0.101,
+      "liq_tp_wr": 34.0,
+      "liq_tp_ev": -0.111,
+      "liq_hit_rate": 26.4,
+      "liq_avg_dist_pct": 4.91,
+      "improvement": -0.011
+    },
+    "ETHUSDT_4h": {
+      "total_trades": 4367,
+      "fixed_tp_wr": 60.4,
+      "fixed_tp_ev": -0.181,
+      "liq_tp_wr": 40.1,
+      "liq_tp_ev": -0.139,
+      "liq_hit_rate": 34.2,
+      "liq_avg_dist_pct": 7.84,
+      "improvement": 0.042
+    }
+  },
+  "verdict": "⚠️ 清算集群TP有边际改进，但不显著",
+  "avg_improvement": 0.023
+}
