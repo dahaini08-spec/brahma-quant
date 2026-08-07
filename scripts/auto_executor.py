@@ -404,6 +404,21 @@ def find_executable_signals() -> list[dict]:
                 _wr_ok = True  # 读取失败不拦截
             if not _wr_ok:
                 continue  # OBSERVE模式：展示信号但不执行
+
+            # ④++ [设计院铁证封印 2026-08-07] RSI_4H 精准门控
+            # 铁证: BULL_TREND LONG RSI_4H>60 WR=9%(n=54) EV严重为负 → 禁止执行
+            #       RSI_4H 50-60 WR=39%(n=90) → 需score>=148才执行
+            #       RSI_4H<50  WR=59%(n=61) → 维持score>=138
+            _rsi_4h = float(s.get('rsi_4h') or 0)
+            if _rsi_4h > 0:  # 有RSI_4H数据才执行门控
+                if _rsi_4h > 60:
+                    print(f'[RSI4H门控] {s.get("symbol")} RSI_4H={_rsi_4h:.1f}>60 WR=9% 强制OBSERVE')
+                    continue  # 死亡区，严禁做多
+                elif _rsi_4h >= 50:
+                    _r4h_min_score = 148
+                    if float(s.get('score', 0)) < _r4h_min_score and not _observe_bypass:
+                        print(f'[RSI4H门控] {s.get("symbol")} RSI_4H={_rsi_4h:.1f}(50-60) WR=39% score={s.get("score")}<{_r4h_min_score} 降级OBSERVE')
+                        continue
         # ⑤b [设计院 A3 2026-06-30] BRAHMA标签验证：拒绝执行WARN/ERR信号
         _tag = s.get('output_tag', '')
         if _tag:

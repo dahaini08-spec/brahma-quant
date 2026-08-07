@@ -1,0 +1,39 @@
+{
+  "_version": "2.0",
+  "BTCUSDT": {
+    "CONFIRMED": "BULL_TREND",
+    "CONFIRMED_ts": 1786063589.4292145,
+    "CONFIRMED_source": "brahma_engine",
+    "CONFIRMED_score": 48.0,
+    "updated_at": 1786063589.4292157
+  },
+  "_saved_at": 1786063609.5069203,
+  "ETHUSDT": {
+    "CONFIRMED": "BULL_TREND",
+    "CONFIRMED_ts": 1786063609.5069172,
+    "CONFIRMED_source": "brahma_engine",
+    "CONFIRMED_score": 50.0,
+    "updated_at": 1786063609.5069187
+  },
+  "SPCXUSDT": {
+    "CONFIRMED": "CHOP_MID",
+    "CONFIRMED_ts": 1786063414.2538254,
+    "CONFIRMED_source": "brahma_engine",
+    "CONFIRMED_score": 47.2,
+    "updated_at": 1786063414.253828
+  },
+  "EWYUSDT": {
+    "CONFIRMED": "CHOP_MID",
+    "CONFIRMED_ts": 1786063433.827998,
+    "CONFIRMED_source": "brahma_engine",
+    "CONFIRMED_score": 41.2,
+    "updated_at": 1786063433.827999
+  },
+  "MUUUSDT": {
+    "CONFIRMED": "CHOP_MID",
+    "CONFIRMED_ts": 1786063456.405935,
+    "CONFIRMED_source": "brahma_engine",
+    "CONFIRMED_score": 62.0,
+    "updated_at": 1786063456.4059381
+  }
+}
