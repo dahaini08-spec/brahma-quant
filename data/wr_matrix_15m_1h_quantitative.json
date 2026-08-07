@@ -1,0 +1,137 @@
+{
+  "generated_at": "2026-08-07 08:45 UTC",
+  "data_basis": "6.5年 BTC 15m/1h K线 × 236,544根15m × 59,136根1h",
+  "method": "多维特征仿真 TP=2%SL=2% 持仓6h(24根15m)",
+  "single_factor_15m": {
+    "RSI_15m_20_30_LONG_BULL": {
+      "wr": 72.7,
+      "n": 421,
+      "ev": 0.907
+    },
+    "RSI_15m_30_40_LONG_BULL": {
+      "wr": 66.6,
+      "n": 4226,
+      "ev": 0.665
+    },
+    "RSI_15m_40_50_LONG_BULL": {
+      "wr": 59.6,
+      "n": 16599,
+      "ev": 0.384
+    },
+    "RSI_15m_60_70_SHORT_BEAR": {
+      "wr": 56.3,
+      "n": 11414,
+      "ev": 0.253
+    },
+    "RSI_15m_70_80_SHORT_BEAR": {
+      "wr": 56.1,
+      "n": 2770,
+      "ev": 0.243
+    }
+  },
+  "multi_factor_combos": {
+    "G1_RSI_triple_resonance": {
+      "desc": "RSI15m<50+RSI1h<50+RSI4H<55+BULL",
+      "wr": 62.0,
+      "n": 3982,
+      "ev": 0.481
+    },
+    "G2_RSI_BBW_CVD": {
+      "desc": "RSI30-50+BBW<2%+CVD>0+BULL",
+      "wr": 61.4,
+      "n": 5709,
+      "ev": 0.455
+    },
+    "G3_EMA_alignment": {
+      "desc": "RSI30-50+15m EMA多排+1h EMA多排",
+      "wr": 56.4,
+      "n": 9174,
+      "ev": 0.254
+    },
+    "G4_bear_short_triple": {
+      "desc": "BEAR+RSI60-80+RSI4H>55+CVD<0",
+      "wr": 55.1,
+      "n": 1620,
+      "ev": 0.205
+    },
+    "G6_momentum_flip": {
+      "desc": "RSI7_15m<30+RSI1h>40+BULL",
+      "wr": 59.0,
+      "n": 3660,
+      "ev": 0.36
+    },
+    "ULTIMATE_6factor": {
+      "desc": "全因子对齐 TP3%SL2% 持仓48h",
+      "wr": 59.2,
+      "n": 240,
+      "ev": 0.958
+    }
+  },
+  "optimal_params": {
+    "tp_pct": 3.0,
+    "sl_pct": 2.0,
+    "rr": 1.5,
+    "hold_hours": 48,
+    "best_ev": 0.958,
+    "best_combo": "ULTIMATE_6factor"
+  },
+  "top_signals_ranked": [
+    {
+      "rank": 1,
+      "signal": "BULL_TREND + RSI_15m 20-30",
+      "wr": 72.7,
+      "n": 421,
+      "ev": 0.907,
+      "tier": "S"
+    },
+    {
+      "rank": 2,
+      "signal": "BULL_TREND + RSI_15m 30-40",
+      "wr": 66.6,
+      "n": 4226,
+      "ev": 0.665,
+      "tier": "S"
+    },
+    {
+      "rank": 3,
+      "signal": "RSI三周期共振 + BULL",
+      "wr": 62.0,
+      "n": 3982,
+      "ev": 0.481,
+      "tier": "A"
+    },
+    {
+      "rank": 4,
+      "signal": "RSI+BBW+CVD三因子 + BULL",
+      "wr": 61.4,
+      "n": 5709,
+      "ev": 0.455,
+      "tier": "A"
+    },
+    {
+      "rank": 5,
+      "signal": "RSI7<30动量转换 + BULL",
+      "wr": 59.0,
+      "n": 3660,
+      "ev": 0.36,
+      "tier": "A"
+    },
+    {
+      "rank": 6,
+      "signal": "全因子终极组合(TP3%)",
+      "wr": 59.2,
+      "n": 240,
+      "ev": 0.958,
+      "tier": "A+"
+    }
+  ],
+  "key_findings": [
+    "RSI_15m极低区(20-30)是BULL_TREND最强入场信号: WR=72.7% EV=+0.907%",
+    "RSI三周期共振(15m/1h/4h同时<50-55)显著提升WR至62%",
+    "CVD>0(买方主导)是做多的重要确认因子: 过滤后EV提升",
+    "BBW压缩(<2%)配合方向: 真实压缩后的爆发胜率更高",
+    "BULL_TREND RSI_15m>50时做多WR均<50%: 不是做多时机",
+    "最优持仓: 48小时 TP=3% SL=2% EV=+0.958%/笔",
+    "15m级别比4h级别多样本(×16倍)但EV略低: 需更严格过滤"
+  ]
+}
