@@ -8,7 +8,7 @@
 TASK="$1"
 BASE="/root/.openclaw/workspace/trading-system"
 LOG="$BASE/logs/noai_runner.log"
-JARVIS_TARGET="73295708:thread:019fb612-d570-7f0b-89c5-2065284157e0"
+JARVIS_TARGET="73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291"  # 2026-08-07 苏摩111更新 SSOT
 
 mkdir -p "$BASE/logs"
 

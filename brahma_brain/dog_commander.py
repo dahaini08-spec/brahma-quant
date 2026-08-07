@@ -28,7 +28,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 BASE_DIR     = Path(__file__).resolve().parent.parent
 HEAL_LOG     = BASE_DIR / 'data' / 'dog_heal_history.jsonl'
 SSOT_USER    = '73295708'
-SSOT_THREAD  = '019f8768-6731-777d-8924-2426a5abd10f'
+SSOT_THREAD  = '019fd9dd-4b0f-71db-87fb-1e192ccb2291'
 PROBE_INTERVAL  = 30      # 秒
 MAX_HEAL_TRIES  = 3       # 超出则熔断+上报
 ALERT_DEDUP_TTL = 86400   # 24H去重（ws_guardian除外，每次都报）

@@ -41,7 +41,7 @@ def _jarvis_target():
         from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
         return f'{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}'
     except Exception:
-        return '73295708:t:019f8768-6731-777d-8924-2426a5abd10f'
+        return '73295708:t:019fd9dd-4b0f-71db-87fb-1e192ccb2291'
 
 
 def send_jarvis(msg: str):

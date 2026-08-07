@@ -63,7 +63,7 @@ try:
     from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
     PUSH_TO = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"
 except Exception:
-    PUSH_TO = "73295708:thread:019f8768-6731-777d-8924-2426a5abd10f"
+    PUSH_TO = "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291"
 
 STATUS_FILE = BASE / "data" / "autonomous_core_status.json"
 RSS_WARN_MB  = 1200   # 警告阈值

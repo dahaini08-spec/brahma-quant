@@ -47,7 +47,7 @@ def main():
         subprocess.run([
             'openclaw', 'message', 'send',
             '--channel', 'jarvis',
-            '--to', '73295708:thread:019f8768-6731-777d-8924-2426a5abd10f',
+            '--to', '73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291',
             '--message', msg
         ], capture_output=True)
     print(msg)
