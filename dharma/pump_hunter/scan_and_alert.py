@@ -294,13 +294,13 @@ def scan():
             except Exception:
                 oi_chg = 0.0
             if oi_chg >= 60:
-                score += 40; reasons.append(f'OI暴增+{oi_chg:.0f}%')
+                score += 50; reasons.append(f'OI暴增+{oi_chg:.0f}%')  # [升级 40→50]
             elif oi_chg >= 40:
-                score += 28; reasons.append(f'OI大增+{oi_chg:.0f}%')
+                score += 35; reasons.append(f'OI大增+{oi_chg:.0f}%')  # [升级 28→35]
             elif oi_chg >= 20:
-                score += 15; reasons.append(f'OI增加+{oi_chg:.0f}%')
+                score += 20; reasons.append(f'OI增加+{oi_chg:.0f}%')  # [升级 15→20]
             elif oi_chg >= 10:
-                score += 8;  reasons.append(f'OI小增+{oi_chg:.0f}%')
+                score += 10;  reasons.append(f'OI小增+{oi_chg:.0f}%')  # [升级 8→10]
 
             # ── 2. 资金费率（使用预取字典，零额外请求）────────────
             latest_fr = _fr_map.get(sym, 0.0)
@@ -366,26 +366,32 @@ def scan():
                         score = -999
                         reasons.append(f'⚠️追高({price_from_low:.1f}%>{PRICE_FROM_LOW_MAX}%)')
                     else:
-                        # TIGHT压缩评分
+                    # [设计院封印 2026-08-07] TIGHT压缩评分放宽到<25%，并分离入场和压缩两种状态
+                        # 根因：ACE等妖币爆发前压缩度多在0~25%，原来<10才有分质量不尺
                         if comp < 10:
                             score += 35; reasons.append(f'极度TIGHT{comp:.0f}%')
                         elif comp < 15:
                             score += 25; reasons.append(f'TIGHT{comp:.0f}%')
                         elif comp < 20:
-                            score += 15; reasons.append(f'压缩{comp:.0f}%')
+                            score += 18; reasons.append(f'压缩{comp:.0f}%')  # 提升：15’18
                         elif comp < 25:
-                            score += 8;  reasons.append(f'轻压缩{comp:.0f}%')
+                            score += 12; reasons.append(f'轻压缩{comp:.0f}%')  # 提升：8’12
+                        elif comp < 35:
+                            score += 5;  reasons.append(f'横盘{comp:.0f}%')  # 新增：25-35%也给少量分
 
                         # ── v4新增：量比突破评分 ────────────────
+                        # [设计院升级 2026-08-07] 量能突破是妖币爆发最直接前兆
                         if vol_ratio < 0.4:
                             score += 15; reasons.append(f'量能极度萎缩{vol_ratio:.2f}x')
                         elif vol_ratio < 0.6:
                             score += 10; reasons.append(f'量能萎缩{vol_ratio:.2f}x')
+                        elif vol_ratio > 3.0:
+                            # 量比大幅放大（爆发启动信号，提升权重）
+                            score += 25; reasons.append(f'🚨量能暴增{vol_ratio:.1f}x⚡')
                         elif vol_ratio > 2.0:
-                            # 量比放大但未达到暴涨级（1.5~5x = 启动信号）
-                            score += 12; reasons.append(f'量比放大{vol_ratio:.1f}x⚡')
+                            score += 18; reasons.append(f'量比大增{vol_ratio:.1f}x⚡')  # 升级 12→18
                         elif vol_ratio > 1.5:
-                            score += 8;  reasons.append(f'量比提升{vol_ratio:.1f}x')
+                            score += 10;  reasons.append(f'量比提升{vol_ratio:.1f}x')  # 升级 8→10
 
                         # RSI
                         if len(closes) >= 15:
