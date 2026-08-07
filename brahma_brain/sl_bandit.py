@@ -311,6 +311,51 @@ def get_stats() -> dict:
     return summary
 
 
+def sync_from_simfactory() -> int:
+    """
+    从 dharma_simfactory.py 生成的 simfactory_trades.jsonl
+    批量喂给 Bandit，加速WR收敛（设计院 2026-08-07）
+    """
+    sim_path = BASE / 'data' / 'simfactory_trades.jsonl'
+    if not sim_path.exists():
+        return 0
+
+    state = _load_state()
+    seen_ids = set(state.get('_sim_seen_ids', []))
+    new_count = 0
+
+    for line in sim_path.read_text().splitlines():
+        try:
+            t = json.loads(line)
+            sid = t.get('signal_id', '')
+            if sid in seen_ids:
+                continue
+            result = t.get('result', '')
+            if result not in ('TP1', 'SL'):
+                continue
+            outcome = 'WIN' if result == 'TP1' else 'LOSS'
+            sl_pct  = float(t.get('sl_pct', 0) or 0)
+            pnl_pct = float(t.get('pnl_pct', 0) or 0)
+            if sl_pct <= 0:
+                continue
+            update_from_outcome(
+                t.get('regime', 'BULL_TREND'),
+                t.get('direction', 'LONG'),
+                sl_pct, outcome, pnl_pct
+            )
+            seen_ids.add(sid)
+            new_count += 1
+        except Exception:
+            pass
+
+    if new_count > 0:
+        state2 = _load_state()
+        state2['_sim_seen_ids'] = list(seen_ids)
+        _save_state(state2)
+
+    return new_count
+
+
 # ── 独立运行: 打印统计 + 同步 ────────────────────────────
 if __name__ == '__main__':
     import sys
@@ -318,6 +363,8 @@ if __name__ == '__main__':
     if '--sync' in sys.argv:
         n = sync_from_signal_log()
         print(f"[sl_bandit] 从信号日志同步: {n}条新记录")
+        n2 = sync_from_simfactory()
+        print(f"[sl_bandit] 从 simfactory同步: {n2}条新记录")
 
     print("\n[sl_bandit] 当前Bandit状态:")
     stats = get_stats()

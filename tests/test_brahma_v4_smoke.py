@@ -109,6 +109,8 @@ def test_no_orphan_modules():
         'signal_integrity_gate', 'anomaly_guards', 'signal_15m_engine', 'position_guard',
         # 2026-08-07 llm_council: 辅助AI议会模块，设计院封印工具
         'llm_council',
+        # 2026-08-07 dharma_simfactory: 轻量纸交易沙盒，设计院自主实现
+        'dharma_simfactory',
     }
     if orphans:
         real_orphans = [o for o in orphans if o not in ALLOWED_ORPHANS]
