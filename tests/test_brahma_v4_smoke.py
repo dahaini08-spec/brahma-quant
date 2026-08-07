@@ -107,6 +107,8 @@ def test_no_orphan_modules():
         'options_pc_ratio', 'cross_asset_gate', 'dharma_data_bridge', 'tradfi_signal_layer',
         'dog_commander', 'tradfi_dump_detector', 'signal_lifecycle',
         'signal_integrity_gate', 'anomaly_guards', 'signal_15m_engine', 'position_guard',
+        # 2026-08-07 llm_council: 辅助AI议会模块，设计院封印工具
+        'llm_council',
     }
     if orphans:
         real_orphans = [o for o in orphans if o not in ALLOWED_ORPHANS]

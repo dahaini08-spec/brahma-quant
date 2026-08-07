@@ -3,8 +3,10 @@ Brahma 2.0 P0-Plus — Import Smoke Test
 验证核心包在全新环境下可 import，不依赖 .env 或 API Key
 封印: 2026-07-11
 """
+import pytest
 
 
+@pytest.mark.skip(reason="brahma_v6 已删除（瘦身第一步 2026-07-12）")
 def test_import_brahma_v6():
     import brahma_v6  # noqa: F401
 
@@ -25,14 +27,17 @@ def test_import_brahma_brain():
     import brahma_brain  # noqa: F401
 
 
+@pytest.mark.skip(reason="dharma_simfactory 已删除（瘦身第一步 2026-07-12）")
 def test_import_dharma_simfactory():
     import dharma_simfactory  # noqa: F401
 
 
+@pytest.mark.skip(reason="dharma_simfactory 已删除")
 def test_simfactory_submodules():
     from dharma_simfactory import cost_model, metrics  # noqa: F401
 
 
+@pytest.mark.skip(reason="dharma_simfactory 已删除")
 def test_simfactory_cost_model_basic():
     from dharma_simfactory.cost_model import get_trade_cost, apply_cost
 
@@ -43,6 +48,7 @@ def test_simfactory_cost_model_basic():
     assert net < 0.01, "net return after cost should be less than gross"
 
 
+@pytest.mark.skip(reason="dharma_simfactory 已删除")
 def test_simfactory_metrics_basic():
     import pandas as pd
     from dharma_simfactory.metrics import calc_metrics

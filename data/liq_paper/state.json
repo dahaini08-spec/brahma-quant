@@ -1,15 +1,15 @@
 {
-  "updated_at": 1786001522.2104893,
-  "updated_iso": "2026-08-06 07:32 UTC",
-  "open_count": 9,
-  "settled_count": 106,
-  "leg_a_ev": 1.3489,
-  "leg_a_wr": 98.1,
-  "leg_a_n": 106,
-  "leg_b_ev": 1.4068,
-  "leg_b_wr": 98.1,
-  "leg_b_n": 106,
-  "avg_improvement": 0.058,
-  "liq_better_pct": 29.2,
-  "liq_tp_hit_rate": 36.8
+  "updated_at": 1786005119.8572042,
+  "updated_iso": "2026-08-06 08:31 UTC",
+  "open_count": 10,
+  "settled_count": 115,
+  "leg_a_ev": 1.3579,
+  "leg_a_wr": 98.3,
+  "leg_a_n": 115,
+  "leg_b_ev": 1.4125,
+  "leg_b_wr": 98.3,
+  "leg_b_n": 115,
+  "avg_improvement": 0.0547,
+  "liq_better_pct": 29.6,
+  "liq_tp_hit_rate": 37.4
 }
