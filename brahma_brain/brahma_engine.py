@@ -3141,6 +3141,33 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 _result['_timing']       = _timing_res  # [自主决策 2026-07-20] signal_trace.py兼容字段
             except Exception:
                 pass  # timing失败不阻断主流
+        # [三方联合 宏观感知层注入 2026-08-07] macro_overlay → score叠加
+        # macro_ai_bridge.py每240min写入data/macro_overlay.json
+        # RISK_ON → LONG+8分 | RISK_OFF → LONG-15分 + BEAR权重×1.5
+        try:
+            import os as _mo_os, json as _mo_json, time as _mo_time
+            _mo_path = _mo_os.path.join(_mo_os.path.dirname(_mo_os.path.abspath(__file__)),
+                                         '..', 'data', 'macro_overlay.json')
+            _mo_path = _mo_os.path.normpath(_mo_path)
+            if _mo_os.path.exists(_mo_path):
+                _mo_age = _mo_time.time() - _mo_os.path.getmtime(_mo_path)
+                if _mo_age < 14400:  # 4H内有效
+                    with open(_mo_path) as _mo_f:
+                        _mo = _mo_json.load(_mo_f)
+                    _mo_state = _mo.get('state', 'NEUTRAL')
+                    _mo_dir   = str(_result.get('direction', '') or _result.get('signal_dir', '') or '')
+                    _mo_bonus = 0
+                    if _mo_state == 'RISK_ON'  and _mo_dir == 'LONG':  _mo_bonus = +8
+                    if _mo_state == 'RISK_OFF' and _mo_dir == 'LONG':  _mo_bonus = -15
+                    if _mo_state == 'RISK_OFF' and _mo_dir == 'SHORT': _mo_bonus = +5
+                    if _mo_bonus != 0 and _score is not None:
+                        _score = float(_score) + _mo_bonus
+                        _result['score']         = _score
+                        _result['macro_overlay'] = _mo_state
+                        _result['macro_bonus']   = _mo_bonus
+        except Exception:
+            pass  # 宏观注入失败不阻断主流
+
         # [SQE 设计院自主决策 2026-08-07] 信号质量门控 — 唯一真相
         # 在写入前过 SignalQualityEngine，通过才写入；拒绝写入 rejected_signal_log
         _sqe_pass = True
