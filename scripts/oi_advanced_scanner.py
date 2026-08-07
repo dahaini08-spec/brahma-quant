@@ -592,6 +592,7 @@ def scan_symbol(sym, ticker_data):
 
     result = {
         'symbol':     sym,
+        'ts':         time.time(),  # [BUG-FIX 2026-08-07] ts=0修复，写入时注入unix时间戳
         'price':      price,
         'pct24h':     round(pct24h, 2),
         'vol_usdt_m': round(vol_usdt/1e6, 1),
