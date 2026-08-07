@@ -148,18 +148,20 @@ def build_vip_card(sym: str, direction: str = 'LONG') -> str:
 
     lines=[
         "",
-        "╔══════════════════════════════════════════╗",
-        "  🏯 梵天VIP · "+label+"/USDT "+dir_label,
-        "╠══════════════════════════════════════════╣",
-        "  "+timing+"  |  RSI4H="+str(round(rsi4h,1))+"  RSI7="+str(round(rsi7,1)),
-        "  当前价 $"+str(round(p,2))+"  EMA20_4H=$"+str(round(e20_4h,1)),
+        "╔══════════════════════════════════════════════╗",
+        "  🔱 姓赵不宣 · Binance AI Pro",
+        "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        "  📌 "+label+"/USDT 合约策略  "+dir_label,
+        "╠══════════════════════════════════════════════╣",
+        "  "+timing+"  RSI4H="+str(round(rsi4h,1))+"  RSI7="+str(round(rsi7,1)),
+        "  当前价  $"+str(round(p,2))+"   EMA20=$"+str(round(e20_4h,1)),
         "  "+SEP,
-        "  📍 入场  $"+str(e_lo)+" ~ $"+str(e_hi)+"  ["+e_src+"]",
-        "     宽度 $"+str(width)+"  距当前 -"+str(dist)+"%",
-        "  🛡  止损  $"+str(sl)+"  (-"+str(round((p-sl)/p*100 if direction=='LONG' else (sl-p)/p*100,1))+"%)",
-        "  🎯 TP1   $"+str(tp1)+"  (+"+str(round(abs(tp1-p)/p*100,1))+"%)",
-        "  🎯 TP2   $"+str(tp2)+"  (+"+str(round(abs(tp2-p)/p*100,1))+"%)",
-        "  ⚖  RR    "+str(rr)+"x  |  "+crowd,
+        "  📍 入场区   $"+str(e_lo)+" ~ $"+str(e_hi),
+        "     ["+e_src+"]  宽$"+str(width)+"  距当前-"+str(dist)+"%",
+        "  🛡  止  损   $"+str(sl)+"  (-"+str(round((p-sl)/p*100 if direction=='LONG' else (sl-p)/p*100,1))+"%)",
+        "  🎯 TP1      $"+str(tp1)+"  (+"+str(round(abs(tp1-p)/p*100,1))+"%)",
+        "  🎯 TP2      $"+str(tp2)+"  (+"+str(round(abs(tp2-p)/p*100,1))+"%)",
+        "  ⚖️  RR       "+str(rr)+"x   "+crowd,
         "  "+SEP,
     ]
 
@@ -171,7 +173,7 @@ def build_vip_card(sym: str, direction: str = 'LONG') -> str:
     if obs:
         o=obs[0]
         struct.append("  OB  $"+str(o['blo'])+"~$"+str(o['bhi'])+" 影线$"+str(o['lo']))
-    lines+=struct[:2]+["  "+SEP, fc_line]+fc_cases+["  "+ts,"╚══════════════════════════════════════════╝",""]
+    lines+=struct[:2]+["  "+SEP, fc_line]+fc_cases+["  "+SEP,"  🔱 @姓赵不宣  "+ts,"╚══════════════════════════════════════════════╝",""]
 
     return '\n'.join(lines)
 
