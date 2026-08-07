@@ -1593,6 +1593,31 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
                 f'signal_id: {sig_id}'
             )
             print(f'  ✅ 执行成功 fill=${fill_px:.4f} SL=${sl_price:.4f} TP=${tp_price:.4f}')
+            # [三方联合 内容变现层 2026-08-07] 执行成功 → 自动触发Square发布
+            try:
+                import subprocess as _sq_sub, json as _sq_json, os as _sq_os
+                _sq_script = _sq_os.path.join(_sq_os.path.dirname(_sq_os.path.abspath(__file__)), 'signal_to_square.py')
+                _sq_sig = {
+                    'symbol':    s.get('symbol'),
+                    'regime':    s.get('regime'),
+                    'direction': s.get('direction'),
+                    'score':     s.get('score'),
+                    'grade':     s.get('grade'),
+                    'rsi_4h':    s.get('rsi_4h'),
+                    'rsi_1h':    s.get('rsi_1h'),
+                    'sl_pct':    exec_result.get('sl_pct') or s.get('sl_pct'),
+                    'params':    {'entry_lo': exec_result.get('entry_lo'), 'entry_hi': exec_result.get('entry_hi'),
+                                  'sl': sl_price, 'tp1': tp_price, 'sl_pct': exec_result.get('sl_pct')},
+                    'timestamp': s.get('timestamp'),
+                    'macro_overlay': s.get('macro_overlay'),
+                }
+                _sq_sub.Popen(
+                    ['python3', _sq_script, '--signal', _sq_json.dumps(_sq_sig)],
+                    stdout=_sq_sub.DEVNULL, stderr=_sq_sub.DEVNULL
+                )
+                print(f'  📡 Square发布已触发（后台异步）')
+            except Exception:
+                pass  # Square发布失败不影响主执行流
         else:
             print(f'  ❌ 跳过: {exec_result["reason"]}')
 

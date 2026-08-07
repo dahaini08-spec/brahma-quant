@@ -98,6 +98,20 @@ if args.sector:
     for s in ['BTCUSDT', 'ETHUSDT']:
         symbols_set.add(s)
 
+    # [三方联合 AI Pro选币层 2026-08-07] 注入ai_pro_screener Top20候选
+    _aip_path = BASE / 'data' / 'ai_pro_candidates.json'
+    if _aip_path.exists():
+        try:
+            _aip_data = json.loads(_aip_path.read_text())
+            _aip_age  = __import__('time').time() - _aip_data.get('ts', 0)
+            if _aip_age < 14400:  # 4H内有效
+                _aip_syms = [c['symbol'] for c in _aip_data.get('candidates', [])[:10]]
+                for s in _aip_syms:
+                    symbols_set.add(s)
+                source_info.append(f'ai_pro({len(_aip_syms)}个候选)')
+        except Exception:
+            pass  # AI Pro候选注入失败不影响主扫描
+
     symbols = list(symbols_set)
     pass  # [静默]
 
