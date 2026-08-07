@@ -315,8 +315,16 @@ def find_executable_signals() -> list[dict]:
             # 根因：score高=趋势确认后期，READY=价格位置好，两者叠加=已在高位追高
             if 'READY' in _timing_badge.upper():
                 _rsi_4h_val = float(s.get('rsi_4h', 0) or 0)
+                # [铁证封印 2026-08-07] READY信号全面降权
+                # 数据：READY avg_RSI4H=58.8，avg_OB距离=0.39%（OB内部追高）
+                # READY+RSI4H>=50 = 价格在中高位 + timing确认 = 追高组合 WR<20%
+                # 只有 RSI4H<50 的 READY 才是真正低位时机信号
+                if _rsi_4h_val >= 50:
+                    s['_observe_reason'] = f'READY+RSI4H={_rsi_4h_val:.1f}>=50 价格中高位追高WR<20%'
+                    continue
+                # 极端情况：高分+RSI偏强双重封锁（保留原逻辑作为后备）
                 if _rsi_4h_val > 55 and score >= 138:
-                    s['_observe_reason'] = f'READY+score>=138+RSI4H={_rsi_4h_val:.1f}>55 追高陷阱WR=0%'
+                    s['_observe_reason'] = f'READY+score{score:.0f}+RSI4H={_rsi_4h_val:.1f}>55 追高陷阱WR=0%'
                     continue
             s['_tier'] = 2
             s['_tier_nav_pct'] = 0.03
