@@ -35,6 +35,9 @@ auto_executor.py — 梵天自动开单触发器
 
 # ── 内存门控（设计院2026-08-04封印）───────────────────
 import sys as _sys, os as _os
+
+import resource as _res_guard; _res_guard.setrlimit(_res_guard.RLIMIT_CORE,(0,0))
+
 _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'scripts') if '/scripts/' not in __file__ else _os.path.dirname(_os.path.abspath(__file__)))
 # pytest/import 环境跳过 mem_gate，避免 sys.exit 杀死测试进程
 _in_pytest = 'pytest' in _sys.modules or _sys.argv[0].endswith('pytest') or any('pytest' in str(a) for a in _sys.argv)

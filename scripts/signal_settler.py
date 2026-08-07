@@ -16,6 +16,9 @@ signal_settler.py — 梵天WR反馈闭环结算器
 """
 
 import json, time, argparse, sys, subprocess
+
+import resource as _res_guard; _res_guard.setrlimit(_res_guard.RLIMIT_CORE,(0,0))
+
 import urllib.request
 from pathlib import Path
 from datetime import datetime, timezone

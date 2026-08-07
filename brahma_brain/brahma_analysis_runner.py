@@ -22,6 +22,15 @@ brahma_analysis_runner.py — 梵天分析唯一入口
 
 import sys
 import os
+
+# ── 安全防护：禁止core dump（设计院封印2026-08-07）──────────────
+# 防止Python崩溃产生640MB+的core文件污染磁盘
+try:
+    import resource as _resource
+    _resource.setrlimit(_resource.RLIMIT_CORE, (0, 0))
+except Exception:
+    pass
+# ─────────────────────────────────────────────────────────────────
 import time
 
 # [P1修复 2026-07-12] 自动载入 .env，确保执行层能读到API密钥
@@ -147,17 +156,14 @@ try:
 except Exception:
     _LLM_COUNCIL_OK = False
 
-# Kronos依赖自动检查（重启后自愈）────────────────────────────
+# Kronos依赖检查（设计院封印2026-08-07: 静默跳过，不尝试安装）
+# 容器环境pip install torch会产生大量崩溃子进程→core dump→磁盘爆满
+# 解锁路径: OmniRoute api_key → 云端Kronos推断（不依赖本地torch）
 try:
     import torch as _torch  # noqa
+    _TORCH_OK = True
 except ImportError:
-    import subprocess as _sp, sys as _sys
-    _pip = [_sys.executable, '-m', 'pip', 'install', '--break-system-packages', '-q',
-            '--index-url', 'https://download.pytorch.org/whl/cpu', 'torch']
-    _sp.run(_pip, capture_output=True)
-    _pip2 = [_sys.executable, '-m', 'pip', 'install', '--break-system-packages', '-q',
-             'huggingface_hub', 'safetensors', 'einops', 'python-dotenv']
-    _sp.run(_pip2, capture_output=True)
+    _TORCH_OK = False  # 静默跳过，Kronos将使用lite_cache fallback
 # ── 系统配置（路由到正确线程）────────────────────────────────
 try:
     sys.path.insert(0, os.path.join(BASE_DIR, '..', 'scripts'))
