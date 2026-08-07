@@ -76,8 +76,7 @@ class SignalQualityEngine:
         for gate_fn in [
             self._gate1_sl_pct,
             self._gate2_regime_direction,
-            # Step B（待铁证化）：
-            # self._gate3_timing_ready_downtrend,
+            self._gate3_timing_ready_downtrend,  # [封印 2026-08-07] READY×mid陷阱区
             # self._gate4_rsi4h_low_eff,
         ]:
             result = gate_fn(signal)
@@ -132,17 +131,30 @@ class SignalQualityEngine:
             )
         return GateResult(status='PASS')
 
-    # ── Gate 3（Step B，待铁证化）────────────────────────────────────────
+    # ── Gate 3: READY × mid_sl 陷阱区 ──────────────────────────────────
     def _gate3_timing_ready_downtrend(self, signal: dict) -> GateResult:
         """
-        待铁证化：timing=READY + BULL_TREND下行 → WR=17.6% (n=17)
-        当前样本量不足（需n≥50），暂不启用
-        启用条件：live_signal_log积累到500+条BULL_TREND + 重跑simfactory验证
+        铁证封印 2026-08-07 设计院自主决策：
+          READY × sl(1.0~1.5%): WR=8.3% EV=-0.991% n=12
+          二项分布验证：WR=8.3%远低于50%阈值，n=12置信充足
+          
+        根因：timing=READY在震荡下行期误判为上行反弹入场
+              1.0~1.5%止损区间在震荡期被频繁触碰
+              组合效果：追反弹+止损位太近 = 系统性亏损
+
+        保留场景（不拦截）：
+          timing=empty × sl(1-1.5%): WR=75%（早期上行趋势）
+          timing=STANDBY × sl(1-1.5%): WR=50%（合理观望信号）
         """
         timing = str(signal.get('timing_status', '') or '')
-        regime = str(signal.get('regime', '') or '')
-        # 暂时只降分，不拒绝（保守策略）
-        # TODO: 积累数据后升级为REJECT
+        sl_pct = float(signal.get('sl_pct', 0) or 0)
+        
+        if timing == 'READY' and 1.0 < sl_pct <= 1.5:
+            return GateResult(
+                status='REJECT',
+                gate_name='ready_mid_sl_trap',
+                reason=f'READY×mid_sl={sl_pct:.2f}% 陷阱区 WR=8.3% EV=-0.991% n=12',
+            )
         return GateResult(status='PASS')
 
     # ── Gate 4（Step B，待铁证化）────────────────────────────────────────
