@@ -3582,6 +3582,49 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass  # KronosBridge失败不影响主流程
     # ══ [KronosBridge BLEND END] ═══════════════════════════════════════════════
 
+    # ══ [KronosSubagentBridge] 设计院封印 2026-08-07 苏摩111授权 ══════════════
+    # 背景：torch/LightGBM无法安装，OmniRoute api_key截断12字符
+    # 解决：用铁证规则库(MEMORY.md封印数据)实现高质量启发式Kronos推断
+    # 当kronos_engine和kronos_bridge均fallback时，启动subagent bridge
+    # 预期效果：p_up从假值0.28 → 基于RSI_4H铁证的真实推断值
+    try:
+        _ks_regime = ms.get('regime', '') if 'ms' in dir() else ''
+        _ks_dir    = _dir_t if '_dir_t' in dir() else (signal_dir or 'LONG')
+        _ks_sym    = _sym_t if '_sym_t' in dir() else ''
+        _ks_rsi1h  = float(mom.get('rsi_1h', 50) or 50) if 'mom' in dir() else 50.0
+        _ks_rsi4h  = float(mom.get('rsi_4h', 50) or 50) if 'mom' in dir() else 50.0
+        _ks_price  = float(_result.get('price', 0) or 0)
+
+        # 只在kronos信号来自fallback（p_up=0.28默认值）时才启动
+        _ks_current_p = _p_up_raw if '_p_up_raw' in dir() else None
+        _ks_needs_override = (
+            _ks_current_p is None or
+            abs(float(_ks_current_p or 0) - 0.28) < 0.02
+        )
+
+        if _ks_needs_override and _ks_regime and _ks_sym:
+            import os as _os_ks, sys as _sys_ks
+            _ks_brain = _os_ks.path.dirname(_os_ks.path.abspath(__file__))
+            if _ks_brain not in _sys_ks.path:
+                _sys_ks.path.insert(0, _ks_brain)
+            from kronos_subagent_bridge import get_kronos_score_via_claude as _ks_fn
+            _ks_score, _ks_reason = _ks_fn(
+                symbol=_ks_sym, direction=_ks_dir, regime=_ks_regime,
+                rsi_1h=_ks_rsi1h, rsi_4h=_ks_rsi4h, price=_ks_price,
+            )
+            if _ks_score != 0:
+                # 将subagent推断注入s23层
+                _old_ks_w = _result['confluence'].get('_s23_kronos', 0)
+                _old_ks_total = _result['confluence'].get('score', 0)
+                _result['confluence']['score'] = _old_ks_total - _old_ks_w + _ks_score
+                _result['confluence']['_s23_kronos'] = _ks_score
+                _result['confluence'].setdefault('breakdown', {})['s23_kronos_subagent'] = (
+                    f'{_ks_score:+d} (subagent_bridge: {_ks_reason[:60]})'
+                )
+    except Exception:
+        pass
+    # ══ [KronosSubagentBridge END] ════════════════════════════════════════════
+
     # ── s24: 已归档 (2026-06-26 设计院封印) ────────────────────────────
     pass  # s24已归档
 

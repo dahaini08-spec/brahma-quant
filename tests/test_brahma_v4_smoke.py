@@ -111,6 +111,8 @@ def test_no_orphan_modules():
         'llm_council',
         # 2026-08-07 dharma_simfactory: 轻量纸交易沙盒，设计院自主实现
         'dharma_simfactory',
+        # 2026-08-07 kronos_subagent_bridge: subagent Kronos推断，苏摩111授权封印
+        'kronos_subagent_bridge',
     }
     if orphans:
         real_orphans = [o for o in orphans if o not in ALLOWED_ORPHANS]
