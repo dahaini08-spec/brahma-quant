@@ -294,6 +294,38 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         s3_rsi = 3   # 超买区（对称逻辑）
         breakdown['RSI极端加分_v3'] = f'+3 (超买RSI1H={rsi1:.0f}≥75, 对称逻辑)'  # [P1-B audit-fix] 重复key加后缀
 
+    # [铁证封印 2026-08-07 设计院] RSI_4H时机权重注入
+    # 铁证: BULL_TREND:LONG n=322条实盘
+    #   RSI_4H <40  → WR=66.7% avg_score=129  ← 低分高WR的真正原因
+    #   RSI_4H 40-50→ WR=78.9% avg_score=120  ← 历史最高WR
+    #   RSI_4H 50-55→ WR=38.9%  (中性区)
+    #   RSI_4H 55-60→ WR=29.4%  (偏弱)
+    #   RSI_4H 60-65→ WR=5.9%   ← 死亡区
+    # 结论: RSI_4H是比score更准的WR预测因子
+    # score↔RSI_4H相关系数=-0.048（近零），说明评分系统完全忽略了此因子
+    s3_rsi4h = 0
+    if signal_dir == 'LONG':
+        if rsi4 < 40:
+            s3_rsi4h = 8   # WR=66.7% 深度回调区，真正的alpha
+            breakdown['RSI4H时机加分'] = f'+8 (RSI_4H={rsi4:.0f}<40 深度回调WR=66.7%铁证)'
+        elif rsi4 < 50:
+            s3_rsi4h = 6   # WR=78.9% 最优时机区
+            breakdown['RSI4H时机加分'] = f'+6 (RSI_4H={rsi4:.0f}<50 最优时机WR=78.9%铁证)'
+        elif rsi4 > 60:
+            s3_rsi4h = -10  # WR=5.9% 死亡区，强力惩罚
+            breakdown['RSI4H时机惩罚'] = f'-10 (RSI_4H={rsi4:.0f}>60 追高死亡区WR=5.9%铁证)'
+        elif rsi4 > 55:
+            s3_rsi4h = -5   # WR=29.4% 偏弱区
+            breakdown['RSI4H时机惩罚'] = f'-5 (RSI_4H={rsi4:.0f}>55 偏弱WR=29.4%铁证)'
+    elif signal_dir == 'SHORT':
+        if rsi4 > 65:
+            s3_rsi4h = 6   # 空单：RSI_4H高位对称逻辑
+            breakdown['RSI4H时机加分'] = f'+6 (RSI_4H={rsi4:.0f}>65 空单高位加分)'
+        elif rsi4 < 45:
+            s3_rsi4h = -8  # 空单：RSI低位惩罚
+            breakdown['RSI4H时机惩罚'] = f'-8 (RSI_4H={rsi4:.0f}<45 空单低位惩罚)'
+    s3_rsi += s3_rsi4h
+
     # Phase 2：背离检测引擎加分
     s3_div = 0
     if extra_data:
