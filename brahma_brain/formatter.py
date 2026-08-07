@@ -990,4 +990,18 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
                     lines.append(f'  {_pl[:80]}')
             lines.append('')
 
+    # ── 方仓经验引擎摘要 [设计院封印 2026-08-07] ─────────────────────
+    # 注入每张信号卡片：历史相似案例 + 概率矩阵
+    try:
+        _fc = r.get('fangcang', {})
+        if _fc and _fc.get('status') == 'ok':
+            from brahma_brain.fangcang_engine import format_fangcang_card
+            _fc_text = format_fangcang_card(_fc)
+            if _fc_text:
+                lines.append('')
+                for _fl in _fc_text.split('\n'):
+                    lines.append(_fl)
+    except Exception:
+        pass  # 降级静默，不影响主卡片
+
     return '\n'.join(lines)
