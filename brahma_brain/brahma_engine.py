@@ -3141,10 +3141,46 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 _result['_timing']       = _timing_res  # [自主决策 2026-07-20] signal_trace.py兼容字段
             except Exception:
                 pass  # timing失败不阻断主流
+        # [SQE 设计院自主决策 2026-08-07] 信号质量门控 — 唯一真相
+        # 在写入前过 SignalQualityEngine，通过才写入；拒绝写入 rejected_signal_log
+        _sqe_pass = True
+        try:
+            import os as _sqe_os, sys as _sqe_sys
+            _sqe_bd = _sqe_os.path.dirname(_sqe_os.path.abspath(__file__))
+            if _sqe_bd not in _sqe_sys.path:
+                _sqe_sys.path.insert(0, _sqe_bd)
+            from signal_quality_engine import evaluate_signal as _sqe_eval
+            _sqe_result = _sqe_eval(_result)
+            if _sqe_result.rejected:
+                _sqe_pass = False
+                # 写入 rejected_signal_log（可审计，不污染 live_signal_log）
+                try:
+                    import json as _sqe_json, time as _sqe_time
+                    _sqe_root = _sqe_os.path.dirname(_sqe_bd)
+                    _sqe_rej_path = _sqe_os.path.join(_sqe_root, 'data', 'rejected_signal_log.jsonl')
+                    _sqe_entry = {
+                        'ts': _sqe_time.time(),
+                        'symbol': _sym,
+                        'score': float(_score or 0),
+                        'regime': str(_result.get('regime', '')),
+                        'direction': str(_result.get('direction', '') or _result.get('signal_dir', '')),
+                        'sl_pct': float(_result.get('params', {}).get('sl_pct', 0) or _result.get('sl_pct', 0) or 0),
+                        'gate': _sqe_result.gate_name,
+                        'reason': _sqe_result.reason,
+                    }
+                    with open(_sqe_rej_path, 'a') as _sqe_f:
+                        _sqe_f.write(_sqe_json.dumps(_sqe_entry, ensure_ascii=False) + '\n')
+                except Exception:
+                    pass  # rejected_log写入失败不阻断
+        except Exception:
+            pass  # SQE失败降级：允许写入（宁可多写不漏真信号）
         from dharma_data_bridge import log_signal as _log_dharma
-        _logged = _log_dharma(_result)
-        if _logged:
-            pass  # [静默] f'[DharmaBridge] ✓ {_sym} score={_score:.0f} 已写入 live_signal_log'
+        if _sqe_pass:
+            _logged = _log_dharma(_result)
+            if _logged:
+                pass  # [静默] f'[DharmaBridge] ✓ {_sym} score={_score:.0f} 已写入 live_signal_log'
+        else:
+            pass  # [SQE] 信号被质量门控拒绝，不写入 live_signal_log
         # [regime_bus钩子 2026-08-05] 每次分析完成后自动同步体制到总线
         try:
             import sys as _rbs, os as _rbo
