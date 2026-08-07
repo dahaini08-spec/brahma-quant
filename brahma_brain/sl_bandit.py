@@ -51,7 +51,9 @@ V4_MIN_SL = {
 }
 
 # UCB1 探索常数（越大越探索，越小越利用）
-UCB_C = 1.5
+# 2026-08-07 设计院深度推理封印：iron arm WR=58.5%已验证是最优arm，
+# 降低C值 1.5→0.8加速收敛，减少对extreme(WR=7.9%)的无谓探索
+UCB_C = 0.8
 
 # 最少观测次数才信任该arm（否则视为未知，用先验）
 MIN_OBS = 5
@@ -62,7 +64,7 @@ PRIOR_FROM_SIM = {
     'BULL_TREND:LONG:tight':    (29,  90),   # WR=32%
     'BULL_TREND:LONG:standard': (15,  46),   # WR=33%
     'BULL_TREND:LONG:iron':     (31,  52),   # WR=60% ← 最优
-    'BULL_TREND:LONG:wide':     (0,    0),
+    'BULL_TREND:LONG:wide':     (2,   20),   # WR=10% 先验防止过度探索—宽止损历史较差
     'BULL_TREND:LONG:extreme':  (3,   26),   # WR=12%
     'BEAR_RECOVERY:LONG:iron':  (8,    8),   # WR=100%
     'CHOP_MID:LONG:extreme':    (1,   10),   # WR=10%
