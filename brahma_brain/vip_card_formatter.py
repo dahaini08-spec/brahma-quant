@@ -79,6 +79,34 @@ def _calc_entry(fvgs, obs, e20_1h, price):
     else:
         return round(e20_1h*0.999,2), round(e20_1h,2), "EMA20"
 
+
+def _find_valid_entry(fvgs, obs, e20_1h, e20_4h, price, max_dist_pct=4.0):
+    """动态入场区：自动追踪现价，只选在现价下方的有效结构"""
+    candidates=[]
+    for f in fvgs:
+        dist=(price-f['hi'])/price*100
+        if 0<=dist<=max_dist_pct:
+            candidates.append({'lo':f['lo'],'hi':f['hi'],'src':'FVG','dist':dist,'gap':f['gap_pct']})
+        elif -0.3<=dist<0:
+            candidates.append({'lo':f['lo'],'hi':f['hi'],'src':'FVG(已进入)','dist':dist,'gap':f['gap_pct']})
+    for o in obs:
+        dist=(price-o['bhi'])/price*100
+        if 0<=dist<=max_dist_pct:
+            candidates.append({'lo':o['blo'],'hi':o['bhi'],'src':'OB','dist':dist,'gap':round((o['bhi']-o['blo'])/price*100,3)})
+    for ev,en in [(e20_1h,'EMA20_1H'),(e20_4h,'EMA20_4H')]:
+        dist=(price-ev)/price*100
+        if 0<=dist<=max_dist_pct:
+            lo=round(ev*0.9985,2); hi=round(ev,2)
+            candidates.append({'lo':lo,'hi':hi,'src':en,'dist':dist,'gap':round((hi-lo)/price*100,3)})
+    if not candidates: return None
+    fvg_c=[c for c in candidates if 'FVG' in c['src']]
+    ob_c=[c for c in candidates if 'OB' in c['src']]
+    ema_c=[c for c in candidates if 'EMA' in c['src']]
+    if fvg_c: fvg_c.sort(key=lambda x:(x['dist'],-x['gap'])); return fvg_c[0]
+    if ob_c:  ob_c.sort(key=lambda x:x['dist']); return ob_c[0]
+    if ema_c: ema_c.sort(key=lambda x:x['dist']); return ema_c[0]
+    return candidates[0]
+
 def build_vip_card(sym: str, direction: str = 'LONG') -> str:
     """
     生成标准VIP策略卡片
@@ -104,7 +132,11 @@ def build_vip_card(sym: str, direction: str = 'LONG') -> str:
     highs=sorted([x['h'] for x in k1h[-60:]],reverse=True)
 
     # 精确入场区
-    e_lo, e_hi, e_src = _calc_entry(fvgs, obs, e20_1h, p)
+    _entry=_find_valid_entry(fvgs,obs,e20_1h,e20_4h,p)
+    if _entry:
+        e_lo=round(_entry["lo"],2); e_hi=round(_entry["hi"],2); e_src=_entry["src"]; _entry_dist=round(_entry["dist"],2)
+    else:
+        e_lo,e_hi,e_src=_calc_entry(fvgs,obs,e20_1h,p); _entry_dist=round((p-e_hi)/p*100,2)
     e_mid = (e_lo+e_hi)/2
 
     # 止损：使用止损池密集区（方仓铁证：SL=2%）
