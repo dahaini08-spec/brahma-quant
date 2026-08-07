@@ -157,11 +157,10 @@ def build_vip_card(sym: str, direction: str = 'LONG') -> str:
         "  当前价 $"+str(round(p,2))+"   EMA20=$"+str(round(e20_4h,1)),
         "  "+SEP,
         "  📍 入场区   $"+str(e_lo)+" ~ $"+str(e_hi)+"  ["+e_src+"]",
-        "     宽度 $"+str(width)+"  距当前 "+("-" if dist>0 else "+")+str(abs(dist))+"%",
         "  🛡  止  损   $"+str(sl)+"  (-"+str(round((p-sl)/p*100 if direction=='LONG' else (sl-p)/p*100,1))+"%)",
         "  🎯 TP1      $"+str(tp1)+"  (+"+str(round(abs(tp1-p)/p*100,1))+"%)",
         "  🎯 TP2      $"+str(tp2)+"  (+"+str(round(abs(tp2-p)/p*100,1))+"%)",
-        "  ⚖  RR       "+str(rr)+"x   "+crowd,
+        "  ⚖  RR       "+str(rr)+"x",
         "  "+SEP,
     ]
 
