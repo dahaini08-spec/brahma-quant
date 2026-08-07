@@ -123,15 +123,16 @@ def build_vip_card(sym: str, direction: str = 'LONG') -> str:
     ls=_fetch("https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol="+sym+"&period=5m&limit=1")
     long_p=float(ls[0]['longAccount'])*100 if ls else 50
     crowd="⚠️ 多头拥挤" if long_p>65 else "✅ 均衡"
+    regime='BULL_TREND' if e20_4h>e50_4h else 'BEAR_TREND'
 
     timing="⏳ 过热等回踩" if rsi7>80 else ("✅ 入场" if rsi4h<60 else "⚖️ 待确认")
-    dist=round((p-e_hi)/p*100,2)
+    dist=round((e_hi-p)/p*100,2)  # 正=在入场区下方待回踩
     width=round(e_hi-e_lo,2)
 
     # 方仓
     try:
         from brahma_brain.fangcang_engine import get_fangcang_context
-        regime='BULL_TREND' if e20_4h>e50_4h else 'BEAR_TREND'
+        # regime已在上方定义
         fc=get_fangcang_context(sym, regime)
         pm=fc['prob_matrix']
         top3=fc['top_similar'][:3]
@@ -152,10 +153,11 @@ def build_vip_card(sym: str, direction: str = 'LONG') -> str:
         "  ᯤ 姓赵不宣  "+label+"/USDT  "+dir_label,
         "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓",
         "  "+timing+"  |  RSI4H="+str(round(rsi4h,1))+"  RSI7="+str(round(rsi7,1)),
+        "  体制: "+str(regime)+"  多空="+str(round(long_p,1))+"%",
         "  当前价 $"+str(round(p,2))+"   EMA20=$"+str(round(e20_4h,1)),
         "  "+SEP,
         "  📍 入场区   $"+str(e_lo)+" ~ $"+str(e_hi)+"  ["+e_src+"]",
-        "     宽度 $"+str(width)+"  距当前 "+str(dist)+"%",
+        "     宽度 $"+str(width)+"  距当前 "+("-" if dist>0 else "+")+str(abs(dist))+"%",
         "  🛡  止  损   $"+str(sl)+"  (-"+str(round((p-sl)/p*100 if direction=='LONG' else (sl-p)/p*100,1))+"%)",
         "  🎯 TP1      $"+str(tp1)+"  (+"+str(round(abs(tp1-p)/p*100,1))+"%)",
         "  🎯 TP2      $"+str(tp2)+"  (+"+str(round(abs(tp2-p)/p*100,1))+"%)",
