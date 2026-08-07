@@ -26,6 +26,30 @@ ROTATION_RULES = {
 }
 
 
+def clean_core_dumps() -> float:
+    """紧急：清理trading-system目录下的core dump文件（每次log_rotation运行时）"""
+    import glob
+    freed = 0.0
+    count = 0
+    # trading-system根目录
+    for pattern in [
+        str(BASE / 'core.*'),
+        str(BASE.parent / 'core.*'),
+    ]:
+        for f in glob.glob(pattern):
+            try:
+                p = Path(f)
+                if p.is_file() and p.stat().st_size > 1024*1024:  # >1MB才是真core
+                    freed += p.stat().st_size
+                    p.unlink()
+                    count += 1
+            except Exception:
+                pass
+    if count > 0:
+        print(f"  [CORE] 清理{count}个core dump: 释放{freed/1024/1024/1024:.2f}GB")
+    return freed / 1024 / 1024
+
+
 def clean_cron_tmp() -> float:
     """P1: clean /root/.openclaw/cron/*.tmp orphan files (>1h old)"""
     cron_dir = Path('/root/.openclaw/cron')
