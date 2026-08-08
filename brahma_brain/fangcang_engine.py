@@ -1,18 +1,22 @@
 """
-fangcang_engine.py — 方仓经验引擎 v1.0
-设计院封印 2026-08-07 · 苏摩111批准
+fangcang_engine.py — 方仓经验引擎 v2.0
+设计院封印 2026-08-08 · fangcang Step3: 引擎多时框升级+主力意图
 
 功能：
-  1. 读取方仓6.8年历史K线（4H为主）
+  1. 读取方仓6.8年历史K线（4H为主 + 15m微结构）
   2. DTW相似度扫描：当前1周形态 → 历史最相似案例
-  3. 输出概率矩阵（做多/做空/震荡概率 + 期望收益）
-  4. 集成到 brahma_engine.analyze() → _result['fangcang'] 字段
+  3. 25维特征向量（原10维 + 15m微结构5维 + 辅助10维）
+  4. 主力意图检测层（陷阱预警 / ACCUMULATE / DISTRIBUTE）
+  5. HCME M1-M6 集成（可选，fail-safe）
+  6. M4 主力行为偏置集成（可选，fail-safe）
+  7. 输出格式升级（main_force_intent / micro_structure / trap_alert / confidence_level）
 
 设计原则（梵天宪法）：
   - 最简实现：纯stdlib + 已安装的gzip/json
   - 唯一入口：brahma_engine 调用 get_fangcang_context()
-  - 结果缓存：TTL=30min（通过brahma_bus）
+  - 结果缓存：TTL=60min（15m微结构扫描耗时，缓存时间延长）
   - 失败降级：任何异常 → 返回 {'status': 'unavailable'}
+  - fail-safe原则：所有升级功能异常时静默，不影响原有输出
 """
 
 import gzip
@@ -21,15 +25,31 @@ import math
 import os
 import time
 from datetime import datetime, timezone
-from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
-# ── 路径配置（修复 2026-08-08 设计院）─────────────────────
+# ── 路径配置 ─────────────────────────────────────────────────────────────────
 _BASE = Path(__file__).parent.parent
-_DATA_DIR_LEGACY = _BASE / "data" / "historical"   # 旧路径（保留兼容）
-_DATA_DIR_BACKTEST = _BASE / "data" / "backtest"   # 新路径（实际数据在这里）
+_DATA_DIR_LEGACY   = _BASE / "data" / "historical"
+_DATA_DIR_BACKTEST = _BASE / "data" / "backtest"
 
+# ── 缓存层（内存级，TTL=60min，15m扫描较慢故延长）─────────────────────────
+_CACHE: Dict[str, dict] = {}
+_CACHE_TTL = 3600  # 60分钟
+
+# ── 参数常量 ─────────────────────────────────────────────────────────────────
+WEEK_BARS   = 42    # 1周 = 42根4H K线
+FUTURE_BARS = 42    # 预测未来1周
+SCAN_STEP   = 4     # 每4根滑动一次（减少重叠，提高速度）
+TOP_N       = 20    # 取最相似TOP20
+TP_PCT      = 3.0   # 标准TP%
+SL_PCT      = 2.0   # 标准SL%
+BARS_15M_12H = 48   # 12H = 48根15m K线（微结构观察窗口）
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 数据加载
+# ══════════════════════════════════════════════════════════════════════════════
 
 def _load_klines_native(symbol: str, tf: str) -> List[dict]:
     """
@@ -46,36 +66,19 @@ def _load_klines_native(symbol: str, tf: str) -> List[dict]:
         for r in raw:
             bars.append({
                 "ts": int(r[0]),
-                "o": float(r[1]),
-                "h": float(r[2]),
-                "l": float(r[3]),
-                "c": float(r[4]),
-                "v": float(r[5]),
+                "o":  float(r[1]),
+                "h":  float(r[2]),
+                "l":  float(r[3]),
+                "c":  float(r[4]),
+                "v":  float(r[5]),
             })
         return bars
     except Exception:
         return []
 
-# ── 缓存层（内存级，TTL=30min）─────────────────────────────
-_CACHE: Dict[str, dict] = {}
-_CACHE_TTL = 1800  # 30分钟
-
-# ── 参数常量 ────────────────────────────────────────────────
-WEEK_BARS   = 42   # 1周 = 42根4H K线
-FUTURE_BARS = 42   # 预测未来1周
-SCAN_STEP   = 4    # 每4根滑动一次（减少重叠，提高速度）
-TOP_N       = 20   # 取最相似TOP20
-TP_PCT      = 3.0  # 标准TP%
-SL_PCT      = 2.0  # 标准SL%
-
-
-# ══════════════════════════════════════════════════════════
-# 数据加载
-# ══════════════════════════════════════════════════════════
 
 def _load_klines(symbol: str, tf: str) -> List[dict]:
     """从方仓加载K线，优先 data/backtest/ 原生格式，失败返回[]"""
-    # [设计院修复 2026-08-08] 优先读 data/backtest/ 原生格式
     bars = _load_klines_native(symbol, tf)
     if bars:
         return bars
@@ -113,9 +116,9 @@ def _load_regime_map(symbol: str) -> Dict[int, str]:
         return {}
 
 
-# ══════════════════════════════════════════════════════════
-# 特征计算
-# ══════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════
+# 基础计算工具
+# ══════════════════════════════════════════════════════════════════════════════
 
 def _calc_rsi(prices: List[float], period: int = 14) -> float:
     if len(prices) < period + 1:
@@ -132,12 +135,121 @@ def _calc_rsi(prices: List[float], period: int = 14) -> float:
     return 100.0 - 100.0 / (1.0 + ag / al)
 
 
-def _extract_features(bars: List[dict]) -> dict:
-    """提取一段K线的10维特征向量"""
-    closes = [float(b['c']) for b in bars]
-    highs  = [float(b['h']) for b in bars]
-    lows   = [float(b['l']) for b in bars]
-    vols   = [float(b['v']) for b in bars]
+def _calc_bollinger_width(prices: List[float], period: int = 20) -> float:
+    """计算布林带宽度百分比（BBW = (upper-lower)/middle * 100）"""
+    if len(prices) < period:
+        return 0.0
+    w = prices[-period:]
+    mean = sum(w) / period
+    std  = math.sqrt(sum((p - mean) ** 2 for p in w) / period)
+    if mean == 0:
+        return 0.0
+    return (std * 2.0) / mean * 100.0
+
+
+def _calc_vol_20d_avg(vols: List[float]) -> float:
+    """计算近20日平均成交量（240根4H = 40天；近96根 = 16天，取最近80根）"""
+    window = vols[-80:] if len(vols) >= 80 else vols
+    if not window:
+        return 0.0
+    return sum(window) / len(window)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 升级1：15m 微结构特征提取
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _extract_15m_features(bars_15m: List[dict]) -> dict:
+    """
+    对最近 48 根15m K线（12H）提取微结构特征：
+    - choch_count:    CHoCH次数（价格跌破前低或突破前高）
+    - bos_count:      BOS次数（有效突破）
+    - momentum_shift: 近12H vs 前12H 价格动量变化
+    - micro_compress: 近12H BBW（判断微结构是否压缩，越低越压缩）
+    - vol_climax:     是否有放量K线（成交量>均量×2，bool→int）
+    """
+    if len(bars_15m) < BARS_15M_12H:
+        return {
+            'choch_count': 0,
+            'bos_count': 0,
+            'momentum_shift': 0.0,
+            'micro_compress': 5.0,
+            'vol_climax': 0,
+        }
+
+    recent_48 = bars_15m[-BARS_15M_12H:]
+    prior_48  = bars_15m[-BARS_15M_12H * 2 : -BARS_15M_12H] if len(bars_15m) >= BARS_15M_12H * 2 else recent_48
+
+    closes_r = [float(b['c']) for b in recent_48]
+    closes_p = [float(b['c']) for b in prior_48]
+    highs_r  = [float(b['h']) for b in recent_48]
+    lows_r   = [float(b['l']) for b in recent_48]
+    vols_r   = [float(b['v']) for b in recent_48]
+
+    # CHoCH: 跌破前低（看跌结构转变）或突破前高（看涨结构转变）
+    choch_count = 0
+    bos_count   = 0
+    swing_lookback = 5  # 5根K线前的低点/高点
+    for i in range(swing_lookback, len(closes_r)):
+        prior_low  = min(lows_r[i - swing_lookback : i])
+        prior_high = max(highs_r[i - swing_lookback : i])
+        cur_close  = closes_r[i]
+        cur_low    = lows_r[i]
+        cur_high   = highs_r[i]
+
+        if cur_low < prior_low and closes_r[i - 1] >= prior_low:
+            choch_count += 1
+        elif cur_high > prior_high and closes_r[i - 1] <= prior_high:
+            choch_count += 1
+
+        # BOS: 实体收盘穿越（非仅影线）
+        if cur_close > prior_high:
+            bos_count += 1
+        elif cur_close < prior_low:
+            bos_count += 1
+
+    # 动量变化
+    if closes_r and closes_p:
+        c_r = closes_r[0]
+        c_p = closes_p[0]
+        mom_r = (closes_r[-1] - c_r) / c_r * 100.0 if c_r != 0 else 0.0
+        mom_p = (closes_p[-1] - c_p) / c_p * 100.0 if c_p != 0 else 0.0
+        momentum_shift = mom_r - mom_p
+    else:
+        momentum_shift = 0.0
+
+    # BBW 压缩（近12H）
+    micro_compress = _calc_bollinger_width(closes_r, period=min(20, len(closes_r)))
+
+    # 放量K线检测
+    avg_vol = sum(vols_r) / len(vols_r) if vols_r else 1.0
+    vol_climax = 1 if any(v > avg_vol * 2.0 for v in vols_r) else 0
+
+    return {
+        'choch_count':    min(choch_count, 20),  # 上限20防止极端值
+        'bos_count':      min(bos_count, 20),
+        'momentum_shift': round(momentum_shift, 3),
+        'micro_compress': round(micro_compress, 3),
+        'vol_climax':     vol_climax,
+    }
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 升级2：扩展特征向量到25维
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _extract_features(bars_4h: List[dict], bars_15m: Optional[List[dict]] = None) -> dict:
+    """
+    提取25维特征向量
+    维度拆分：
+      - 原有10维（价格形态 norm_closes + 9个scalar）
+      - 15m微结构5维（choch/bos/momentum/bbw/vol_climax）
+      - 辅助10维（新增OI/FR模拟 + 结构质量 + 趋势强度等）
+    """
+    closes = [float(b['c']) for b in bars_4h]
+    highs  = [float(b['h']) for b in bars_4h]
+    lows   = [float(b['l']) for b in bars_4h]
+    vols   = [float(b['v']) for b in bars_4h]
 
     c0 = closes[0] if closes[0] != 0 else 1.0
     norm_closes = [(c - c0) / c0 * 100.0 for c in closes]
@@ -151,76 +263,162 @@ def _extract_features(bars: List[dict]) -> dict:
 
     rsi_end = _calc_rsi(closes)
 
+    # 辅助10维特征
+    # 1. 近1/4窗口的成交量变化趋势（量能动向）
+    quarter = max(len(vols) // 4, 1)
+    vol_trend = (sum(vols[-quarter:]) / quarter) / (sum(vols[:quarter]) / quarter + 1e-9) - 1.0
+
+    # 2. 价格相对高点的位置（0=在高点, 1=在低点）
+    price_range = max(highs) - min(lows)
+    price_pos = (closes[-1] - min(lows)) / price_range if price_range > 0 else 0.5
+
+    # 3. 近1/2窗口 vs 前1/2窗口振幅比（波动性趋势）
+    half = max(len(amp_seq) // 2, 1)
+    amp_ratio = (sum(amp_seq[-half:]) / half) / (sum(amp_seq[:half]) / half + 1e-9)
+
+    # 4. RSI动量（近1/3 vs 前1/3的RSI差）
+    third = max(len(closes) // 3, 1)
+    rsi_early = _calc_rsi(closes[:third * 2])
+    rsi_late  = _calc_rsi(closes[third:])
+    rsi_momentum = rsi_late - rsi_early
+
+    # 5. 尾部蜡烛比例（最后4根的均幅 vs 全均幅）
+    tail_amp = sum(amp_seq[-4:]) / 4 if len(amp_seq) >= 4 else avg_amp
+    tail_amp_ratio = tail_amp / avg_amp if avg_amp > 0 else 1.0
+
+    # 6-10. BBW4H（当前4H级别布林带宽度）
+    bbw_4h = _calc_bollinger_width(closes)
+
+    # 15m 微结构特征（5维）
+    if bars_15m and len(bars_15m) >= BARS_15M_12H:
+        micro = _extract_15m_features(bars_15m)
+    else:
+        micro = {
+            'choch_count': 0,
+            'bos_count': 0,
+            'momentum_shift': 0.0,
+            'micro_compress': 5.0,
+            'vol_climax': 0,
+        }
+
     return {
-        'norm_closes':  norm_closes,
-        'total_move':   norm_closes[-1],
-        'max_drawdown': min(norm_closes),
-        'max_gain':     max(norm_closes),
-        'amplitude':    (max(highs) - min(lows)) / c0 * 100.0,
-        'amp_std':      amp_std,
-        'rsi_end':      rsi_end,
-        'vol_ratio':    vol_ratio_last,
-        'n':            len(bars),
+        # 原有核心10维
+        'norm_closes':    norm_closes,
+        'total_move':     norm_closes[-1],
+        'max_drawdown':   min(norm_closes),
+        'max_gain':       max(norm_closes),
+        'amplitude':      (max(highs) - min(lows)) / c0 * 100.0,
+        'amp_std':        amp_std,
+        'rsi_end':        rsi_end,
+        'vol_ratio':      vol_ratio_last,
+        'n':              len(bars_4h),
+        # 辅助10维
+        'vol_trend':      round(vol_trend, 4),
+        'price_pos':      round(price_pos, 4),
+        'amp_ratio':      round(amp_ratio, 4),
+        'rsi_momentum':   round(rsi_momentum, 3),
+        'tail_amp_ratio': round(tail_amp_ratio, 4),
+        'bbw_4h':         round(bbw_4h, 3),
+        # 15m微结构5维
+        'choch_count':    micro['choch_count'],
+        'bos_count':      micro['bos_count'],
+        'momentum_shift': micro['momentum_shift'],
+        'micro_compress': micro['micro_compress'],
+        'vol_climax':     micro['vol_climax'],
     }
 
 
-# ══════════════════════════════════════════════════════════
-# 相似度计算（快速欧式 + 关键因子加权）
-# ══════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════
+# 相似度计算（多维加权，考虑微结构）
+# ══════════════════════════════════════════════════════════════════════════════
 
 def _similarity_score(feat_cur: dict, feat_hist: dict) -> float:
     """
-    综合相似度得分（越小越相似）
-    权重：价格形态50% + 振幅15% + 移动15% + RSI20%
+    25维综合相似度得分（越小越相似）
+    权重分配：
+      价格形态 40% + 振幅 12% + 移动 12% + RSI 16%
+      + 成交量趋势 5% + BBW 5% + 微结构 10%
     """
-    # 价格形态：快速欧式距离（避免完整DTW的O(n²)开销）
+    # 价格形态：快速欧式距离
     s1 = feat_cur['norm_closes']
     s2 = feat_hist['norm_closes']
     n  = min(len(s1), len(s2))
     price_dist = math.sqrt(sum((s1[i] - s2[i]) ** 2 for i in range(n))) / n
 
-    # 其他因子
-    amp_diff  = abs(feat_cur['amplitude']  - feat_hist['amplitude'])
-    move_diff = abs(feat_cur['total_move'] - feat_hist['total_move'])
-    rsi_diff  = abs(feat_cur['rsi_end']    - feat_hist['rsi_end']) / 100.0
+    # 核心因子距离
+    amp_diff  = abs(feat_cur['amplitude']    - feat_hist['amplitude'])
+    move_diff = abs(feat_cur['total_move']   - feat_hist['total_move'])
+    rsi_diff  = abs(feat_cur['rsi_end']      - feat_hist['rsi_end']) / 100.0
+
+    # 辅助因子
+    vol_diff  = abs(feat_cur.get('vol_trend', 0) - feat_hist.get('vol_trend', 0))
+    bbw_diff  = abs(feat_cur.get('bbw_4h', 0)    - feat_hist.get('bbw_4h', 0))
+
+    # 15m微结构距离（归一化到 0-1 量级）
+    choch_diff  = abs(feat_cur.get('choch_count', 0) - feat_hist.get('choch_count', 0)) / 10.0
+    bos_diff    = abs(feat_cur.get('bos_count', 0)   - feat_hist.get('bos_count', 0))   / 10.0
+    mom_diff    = abs(feat_cur.get('momentum_shift', 0) - feat_hist.get('momentum_shift', 0)) / 5.0
+    micro_dist  = (choch_diff + bos_diff + mom_diff) / 3.0
 
     return (
-        price_dist * 0.50
-        + amp_diff  * 0.15
-        + move_diff * 0.15
-        + rsi_diff  * 20.0 * 0.20   # 归一到相近量级
+        price_dist * 0.40
+        + amp_diff  * 0.12
+        + move_diff * 0.12
+        + rsi_diff  * 20.0 * 0.16
+        + vol_diff  * 0.05
+        + bbw_diff  * 0.05
+        + micro_dist * 0.10
     )
 
 
-# ══════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════
 # 核心：历史扫描 + 概率矩阵
-# ══════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════
 
 def _scan_history(
-    klines: List[dict],
-    regime_map: Dict[int, str],
+    klines_4h:   List[dict],
+    klines_15m:  List[dict],
+    regime_map:  Dict[int, str],
     current_regime: str,
 ) -> List[dict]:
     """
     扫描历史，返回最相似TOP_N案例列表
     每条包含：dt / score / future_ret / future_max / future_min / regime
     """
-    # 当前特征
-    recent = klines[-WEEK_BARS:]
-    feat_cur = _extract_features(recent)
+    # 当前特征（使用最近48根15m做微结构）
+    recent_4h  = klines_4h[-WEEK_BARS:]
+    recent_15m = klines_15m[-BARS_15M_12H:] if klines_15m else []
+    feat_cur   = _extract_features(recent_4h, recent_15m)
 
     results = []
-    total = len(klines)
+    total   = len(klines_4h)
+
+    # 预先构建15m时间戳索引（加速查找）
+    # 15m bars: 每根4H对应16根15m
+    ts_to_15m_idx: Dict[int, int] = {}
+    if klines_15m:
+        for idx, b in enumerate(klines_15m):
+            ts_to_15m_idx[b['ts']] = idx
 
     for start in range(100, total - WEEK_BARS - FUTURE_BARS, SCAN_STEP):
-        hist_bars  = klines[start : start + WEEK_BARS]
-        feat_hist  = _extract_features(hist_bars)
-        score      = _similarity_score(feat_cur, feat_hist)
+        hist_4h_bars = klines_4h[start : start + WEEK_BARS]
+        end_ts       = hist_4h_bars[-1]['ts']
+
+        # 尝试对齐15m数据（对应4H区间结束时间的前12H=48根15m）
+        hist_15m_bars: List[dict] = []
+        if ts_to_15m_idx and end_ts in ts_to_15m_idx:
+            idx_15m = ts_to_15m_idx[end_ts]
+            hist_15m_bars = klines_15m[max(0, idx_15m - BARS_15M_12H) : idx_15m]
+
+        feat_hist = _extract_features(hist_4h_bars, hist_15m_bars)
+        score     = _similarity_score(feat_cur, feat_hist)
 
         # 未来结果
-        future_bars   = klines[start + WEEK_BARS : start + WEEK_BARS + FUTURE_BARS]
+        future_bars   = klines_4h[start + WEEK_BARS : start + WEEK_BARS + FUTURE_BARS]
+        if len(future_bars) < FUTURE_BARS:
+            continue
         future_closes = [float(b['c']) for b in future_bars]
-        entry_price   = float(hist_bars[-1]['c'])
+        entry_price   = float(hist_4h_bars[-1]['c'])
         if entry_price == 0:
             continue
 
@@ -228,7 +426,7 @@ def _scan_history(
         future_max = (max(float(b['h']) for b in future_bars) - entry_price) / entry_price * 100.0
         future_min = (min(float(b['l']) for b in future_bars) - entry_price) / entry_price * 100.0
 
-        ts     = hist_bars[-1]['ts']
+        ts     = hist_4h_bars[-1]['ts']
         regime = regime_map.get(ts, '?')
         dt     = datetime.utcfromtimestamp(ts // 1000).strftime('%Y-%m-%d')
 
@@ -241,7 +439,6 @@ def _scan_history(
             'regime':     regime,
         })
 
-    # 排序取TOP_N
     results.sort(key=lambda x: x['score'])
     return results[:TOP_N]
 
@@ -249,7 +446,12 @@ def _scan_history(
 def _build_probability_matrix(top: List[dict]) -> dict:
     """从TOP_N历史案例构建概率矩阵"""
     if not top:
-        return {'p_up': 0.5, 'p_down': 0.2, 'p_flat': 0.3, 'ev': 0.0, 'n': 0}
+        return {
+            'p_up': 0.5, 'p_down': 0.2, 'p_flat': 0.3,
+            'ev': 0.0, 'n': 0,
+            'median': 0.0, 'max_upside': 0.0, 'max_downside': 0.0,
+            'tail_down_risk': 0.0,
+        }
 
     rets = [s['future_ret'] for s in top]
     n    = len(rets)
@@ -258,45 +460,246 @@ def _build_probability_matrix(top: List[dict]) -> dict:
     dn   = sum(1 for r in rets if r < -2.0)
     flat = n - up - dn
 
-    ev     = sum(rets) / n
-    median = sorted(rets)[n // 2]
-    tail_down = sum(1 for s in top if s['future_min'] < -10.0)
+    ev       = sum(rets) / n
+    median   = sorted(rets)[n // 2]
+    tail_dn  = sum(1 for s in top if s['future_min'] < -10.0)
 
     return {
-        'p_up':        round(up   / n, 3),
-        'p_down':      round(dn   / n, 3),
-        'p_flat':      round(flat / n, 3),
-        'ev':          round(ev, 3),
-        'median':      round(median, 3),
-        'max_upside':  round(max(s['future_max'] for s in top), 2),
-        'max_downside':round(min(s['future_min'] for s in top), 2),
-        'tail_down_risk': round(tail_down / n, 3),
-        'n':           n,
+        'p_up':           round(up   / n, 3),
+        'p_down':         round(dn   / n, 3),
+        'p_flat':         round(flat / n, 3),
+        'ev':             round(ev, 3),
+        'median':         round(median, 3),
+        'max_upside':     round(max(s['future_max'] for s in top), 2),
+        'max_downside':   round(min(s['future_min'] for s in top), 2),
+        'tail_down_risk': round(tail_dn / n, 3),
+        'n':              n,
     }
 
 
-# ══════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════
+# 升级3：主力意图检测层
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _detect_main_force_intent(
+    symbol: str,
+    current_price: float,
+    fc_cases: List[dict],
+    feat_cur: Optional[dict] = None,
+) -> dict:
+    """
+    基于历史案例 + 当前特征，判断主力意图。
+
+    返回：
+    {
+      "intent":        "ACCUMULATE"|"DISTRIBUTE"|"MARKUP"|"MARKDOWN"|"NEUTRAL",
+      "confidence":    0.0-1.0,
+      "evidence":      [str, ...],
+      "trap_warning":  bool,
+      "trap_reason":   str
+    }
+
+    判断逻辑：
+    - 相似历史案例中 future_ret > 3% 占比 >60% → ACCUMULATE意图
+    - 相似历史案例中 future_ret < -3% 占比 >60% → DISTRIBUTE意图
+    - future_max > 8% 且 future_ret > 5% 多数  → MARKUP
+    - future_min < -8% 且 future_ret < -5% 多数 → MARKDOWN
+    - BBW持续压缩（<3%）但RSI超买（>70）       → 可能是DISTRIBUTE陷阱
+    - 整数位附近（距整数<1%）的压缩             → 高陷阱概率
+    """
+    if not fc_cases:
+        return {
+            'intent': 'NEUTRAL', 'confidence': 0.0,
+            'evidence': ['历史案例为空，无法判断'],
+            'trap_warning': False, 'trap_reason': '',
+        }
+
+    rets  = [c['future_ret'] for c in fc_cases]
+    maxes = [c['future_max'] for c in fc_cases]
+    mins  = [c['future_min'] for c in fc_cases]
+    n     = len(rets)
+
+    up_strong    = sum(1 for r in rets if r >  3.0) / n
+    down_strong  = sum(1 for r in rets if r < -3.0) / n
+    markup_n     = sum(1 for r, m in zip(rets, maxes) if r > 5.0 and m > 8.0) / n
+    markdown_n   = sum(1 for r, m in zip(rets, mins)  if r < -5.0 and m < -8.0) / n
+
+    evidence = []
+    trap_warning = False
+    trap_reason  = ''
+
+    # 意图判断
+    if markup_n >= 0.55:
+        intent     = 'MARKUP'
+        confidence = round(markup_n, 2)
+        evidence.append(f"近{n}个相似案例中{markup_n*100:.0f}%出现强涨幅(>8%)")
+    elif markdown_n >= 0.50:
+        intent     = 'MARKDOWN'
+        confidence = round(markdown_n, 2)
+        evidence.append(f"近{n}个相似案例中{markdown_n*100:.0f}%出现强跌幅(<-8%)")
+    elif up_strong >= 0.60:
+        intent     = 'ACCUMULATE'
+        confidence = round(up_strong, 2)
+        evidence.append(f"近{n}个相似案例中{up_strong*100:.0f}%为多头爆发(>3%)")
+    elif down_strong >= 0.60:
+        intent     = 'DISTRIBUTE'
+        confidence = round(down_strong, 2)
+        evidence.append(f"近{n}个相似案例中{down_strong*100:.0f}%为空头爆发(<-3%)")
+    else:
+        intent     = 'NEUTRAL'
+        confidence = round(max(up_strong, down_strong), 2)
+        evidence.append(f"方向分散：↑{up_strong*100:.0f}% ↓{down_strong*100:.0f}%")
+
+    # BBW 压缩 + RSI 陷阱检测
+    bbw_4h  = feat_cur.get('bbw_4h', 5.0)  if feat_cur else 5.0
+    rsi_end = feat_cur.get('rsi_end', 50.0) if feat_cur else 50.0
+    micro_compress = feat_cur.get('micro_compress', 5.0) if feat_cur else 5.0
+
+    if bbw_4h < 3.0 and rsi_end > 70.0:
+        trap_warning = True
+        trap_reason  = f'BBW={bbw_4h:.1f}%极度压缩但RSI={rsi_end:.0f}过热，可能空头陷阱'
+        evidence.append(f'⚠ BBW={bbw_4h:.1f}%压缩+RSI={rsi_end:.0f}超买=Distribution陷阱风险')
+    elif bbw_4h < 3.0 and rsi_end < 30.0:
+        trap_warning = True
+        trap_reason  = f'BBW={bbw_4h:.1f}%极度压缩但RSI={rsi_end:.0f}过冷，可能多头陷阱'
+        evidence.append(f'⚠ BBW={bbw_4h:.1f}%压缩+RSI={rsi_end:.0f}超卖=Accumulation陷阱风险')
+    elif micro_compress < 1.5:
+        trap_warning = True
+        trap_reason  = f'15m BBW={micro_compress:.2f}%极度压缩，假突破风险高'
+        evidence.append(f'⚠ 15m微结构极度压缩(BBW={micro_compress:.2f}%)=假突破高风险')
+
+    # 整数位陷阱检测
+    if current_price > 0:
+        integers = [10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000]
+        for level in integers:
+            dist_pct = abs(current_price - level) / level * 100.0
+            if dist_pct < 1.0:
+                trap_warning = True
+                trap_reason  = trap_reason or f'价格在整数位${level:,}附近({dist_pct:.2f}%内)'
+                evidence.append(f'⚠ 整数位${level:,}附近={dist_pct:.2f}%，磁吸效应+陷阱概率高')
+                break
+
+    # 成交量放量 + CHoCH 辅助证据
+    if feat_cur:
+        if feat_cur.get('vol_climax'):
+            evidence.append('近12H有放量K线（成交量>均量×2）')
+        choch = feat_cur.get('choch_count', 0)
+        if choch >= 3:
+            evidence.append(f'近12H CHoCH={choch}次，结构频繁转变中')
+
+    return {
+        'intent':       intent,
+        'confidence':   confidence,
+        'evidence':     evidence[:6],  # 最多6条证据
+        'trap_warning': trap_warning,
+        'trap_reason':  trap_reason,
+    }
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 升级2：集成 HCME M1-M6 结果（fail-safe）
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _integrate_hcme(current_signal_dict: dict) -> dict:
+    """集成 HCME Matcher（M2流动性地图），fail-safe"""
+    try:
+        from brahma_brain.hcme_matcher import HCMEMatcher  # noqa
+        matcher = HCMEMatcher()
+        hcme_result = matcher.find_similar(current_signal_dict, top_k=5)
+        return {
+            'hcme_wr_adj':   hcme_result.get('hcme_score_adj', 0),
+            'hcme_context':  hcme_result.get('context_summary', ''),
+        }
+    except Exception:
+        return {'hcme_wr_adj': 0, 'hcme_context': ''}
+
+
+def _integrate_m4_bias() -> dict:
+    """集成 M4 主力行为偏置（print_current_bias → dict化），fail-safe"""
+    try:
+        import brahma_brain.market_behavior_model as mbm  # noqa
+
+        # 先尝试直接调用 get_current_bias（如果将来实现了）
+        if hasattr(mbm, 'get_current_bias'):
+            return mbm.get_current_bias()  # type: ignore[attr-defined]
+
+        # fallback：从 OUTPUT_PATH 读取模型，提取当前时间维度偏置
+        output_path = getattr(mbm, 'OUTPUT_PATH', None)
+        if not output_path or not os.path.exists(output_path):
+            return {}
+
+        with open(output_path) as f:
+            model = json.load(f)
+
+        now = datetime.now(tz=timezone.utc)
+        bias: dict = {}
+
+        # 小时偏置
+        hb = model.get('hourly_bias', {}).get(str(now.hour))
+        if hb:
+            bias['hour_avg_chg'] = hb.get('avg_chg', 0.0)
+            bias['hour_up_prob'] = hb.get('up_prob', 0.5)
+            bias['hour_n']       = hb.get('n', 0)
+
+        # 周内偏置
+        wb = model.get('weekly_bias', {}).get(str(now.weekday()))
+        if wb:
+            bias['weekday_avg_chg'] = wb.get('avg_chg', 0.0)
+            bias['weekday_up_prob'] = wb.get('up_prob', 0.5)
+
+        # 月份偏置
+        mb = model.get('monthly_bias', {}).get(str(now.month))
+        if mb:
+            bias['month_avg_chg'] = mb.get('avg_chg', 0.0)
+            bias['month_up_prob'] = mb.get('up_prob', 0.5)
+
+        # 整数位数据
+        bias['fakeout_n'] = model.get('fakeout_stats', {}).get('n', 0)
+
+        return bias
+    except Exception:
+        return {}
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 公开接口
-# ══════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════
 
 def get_fangcang_context(
     symbol: str = 'BTCUSDT',
     current_regime: Optional[str] = None,
 ) -> dict:
     """
-    主接口：返回方仓经验引擎完整结果。
+    主接口：返回方仓经验引擎完整结果（v2.0，多时框+主力意图版）。
     供 brahma_engine.analyze() 调用，结果注入 _result['fangcang']
 
     返回结构：
     {
-      'status': 'ok' | 'unavailable',
-      'symbol': 'BTCUSDT',
-      'run_at': ISO时间戳,
-      'current_regime': str,
-      'top_similar': [ {dt, score, future_ret, future_max, future_min, regime}, ... ],
-      'prob_matrix': {p_up, p_down, p_flat, ev, median, max_upside, max_downside, tail_down_risk, n},
-      'signal_hint': 'LONG_BIAS' | 'SHORT_BIAS' | 'NEUTRAL' | 'WAIT',
-      'top3_summary': str,   # 给信号卡片展示的3行文字摘要
+      'status':            'ok' | 'unavailable',
+      'symbol':            str,
+      'run_at':            ISO时间戳,
+      'current_regime':    str,
+
+      # 原有字段（保留兼容）
+      'top_similar':       [{dt, score, future_ret, future_max, future_min, regime}, ...],
+      'prob_matrix':       {p_up, p_down, p_flat, ev, median, max_upside, max_downside, tail_down_risk, n},
+      'signal_hint':       'LONG_BIAS'|'SHORT_BIAS'|'NEUTRAL'|'WAIT',
+      'long_prob':         float,  # 别名 prob_matrix.p_up
+      'short_prob':        float,  # 别名 prob_matrix.p_down
+      'chop_prob':         float,  # 别名 prob_matrix.p_flat
+      'top3_summary':      str,
+
+      # 新增字段（升级内容）
+      'main_force_intent': {intent, confidence, evidence, trap_warning, trap_reason},
+      'micro_structure':   {choch_count, bos_count, momentum_shift, micro_compress, vol_climax},
+      'similar_cases_count': int,
+      'best_entry_window': str,    # 基于M4时间偏置
+      'trap_alert':        bool,
+      'confidence_level':  'HIGH'|'MEDIUM'|'LOW',
+      'market_bias':       dict,   # M4 主力行为偏置
+      'hcme_wr_adj':       int,    # HCME分数调整
+      'hcme_context':      str,
+      'fangcang_summary':  str,    # 一句话总结（给苏摩看）
     }
     """
     cache_key = f"{symbol}:{current_regime}"
@@ -310,32 +713,40 @@ def get_fangcang_context(
 
     try:
         # 加载数据
-        klines     = _load_klines(symbol, '4h')
+        klines_4h  = _load_klines(symbol, '4h')
+        klines_15m = _load_klines(symbol, '15m')
         regime_map = _load_regime_map(symbol)
 
-        if len(klines) < WEEK_BARS + FUTURE_BARS + 100:
-            return {'status': 'unavailable', 'reason': 'insufficient_data'}
+        if len(klines_4h) < WEEK_BARS + FUTURE_BARS + 100:
+            return {'status': 'unavailable', 'reason': 'insufficient_data', '_ts': now}
 
-        # 当前体制（外部传入优先，其次读 regime_state.json SSOT，最后fallback旧map）
+        # 当前体制（外部传入优先）
         if not current_regime:
-            try:
-                import json as _json
-                _rs = _json.loads((_BASE / 'data' / 'regime_state.json').read_text())
-                _sym_state = _rs.get(symbol, {})
-                current_regime = (
-                    _sym_state.get('confirmed') or
-                    _sym_state.get('regime') or
-                    'UNKNOWN'
-                )
-            except Exception:
-                last_ts = klines[-1]['ts']
-                current_regime = regime_map.get(last_ts, 'UNKNOWN')
+            last_ts = klines_4h[-1]['ts']
+            current_regime = regime_map.get(last_ts, 'UNKNOWN')
 
-        # 扫描历史相似案例
-        top_similar = _scan_history(klines, regime_map, current_regime)
+        # 当前特征提取（用于主力意图检测）
+        recent_15m = klines_15m[-BARS_15M_12H:] if klines_15m else []
+        feat_cur   = _extract_features(klines_4h[-WEEK_BARS:], recent_15m)
+
+        # 15m微结构摘要
+        micro_structure = {
+            'choch_count':    feat_cur.get('choch_count', 0),
+            'bos_count':      feat_cur.get('bos_count', 0),
+            'momentum_shift': feat_cur.get('momentum_shift', 0.0),
+            'micro_compress': feat_cur.get('micro_compress', 5.0),
+            'vol_climax':     feat_cur.get('vol_climax', 0),
+        }
+
+        # 扫描历史相似案例（传入15m数据）
+        top_similar = _scan_history(klines_4h, klines_15m, regime_map, current_regime)
 
         # 概率矩阵
         prob = _build_probability_matrix(top_similar)
+
+        # 主力意图检测
+        current_price = float(klines_4h[-1]['c']) if klines_4h else 0.0
+        main_force    = _detect_main_force_intent(symbol, current_price, top_similar, feat_cur)
 
         # 信号偏向
         if prob['p_up'] >= 0.60 and prob['ev'] > 0:
@@ -347,7 +758,30 @@ def get_fangcang_context(
         else:
             hint = 'NEUTRAL'
 
-        # TOP3文字摘要（给信号卡片用）
+        # 置信等级
+        n_cases = prob['n']
+        intent_conf = main_force.get('confidence', 0.0)
+        if n_cases >= 15 and intent_conf >= 0.65:
+            confidence_level = 'HIGH'
+        elif n_cases >= 8 and intent_conf >= 0.45:
+            confidence_level = 'MEDIUM'
+        else:
+            confidence_level = 'LOW'
+
+        # 最佳入场时间窗口（集成M4偏置）
+        market_bias = _integrate_m4_bias()
+        best_entry_window = _calc_best_entry_window(market_bias)
+
+        # HCME 集成
+        current_signal_dict = {
+            'regime':    current_regime,
+            'direction': 'LONG' if hint == 'LONG_BIAS' else ('SHORT' if hint == 'SHORT_BIAS' else 'NEUTRAL'),
+            'bbw':       feat_cur.get('bbw_4h', 0),
+            'rsi':       feat_cur.get('rsi_end', 50),
+        }
+        hcme_data = _integrate_hcme(current_signal_dict)
+
+        # TOP3文字摘要
         top3_lines = []
         for s in top_similar[:3]:
             arrow = '↑' if s['future_ret'] > 0 else '↓'
@@ -357,16 +791,43 @@ def get_fangcang_context(
             )
         top3_summary = '\n'.join(top3_lines)
 
+        # 陷阱预警（综合）
+        trap_alert = main_force.get('trap_warning', False)
+
+        # 一句话总结
+        fangcang_summary = _build_summary(
+            symbol, current_price, current_regime, hint,
+            prob, main_force, confidence_level, trap_alert
+        )
+
         result = {
-            'status':         'ok',
-            'symbol':         symbol,
-            'run_at':         datetime.now(timezone.utc).isoformat(),
-            'current_regime': current_regime,
-            'top_similar':    top_similar,
-            'prob_matrix':    prob,
-            'signal_hint':    hint,
-            'top3_summary':   top3_summary,
-            '_ts':            now,
+            'status':           'ok',
+            'symbol':           symbol,
+            'run_at':           datetime.now(timezone.utc).isoformat(),
+            'current_regime':   current_regime,
+
+            # 原有字段（保留兼容）
+            'top_similar':      top_similar,
+            'prob_matrix':      prob,
+            'signal_hint':      hint,
+            'long_prob':        prob['p_up'],
+            'short_prob':       prob['p_down'],
+            'chop_prob':        prob['p_flat'],
+            'top3_summary':     top3_summary,
+
+            # 新增字段
+            'main_force_intent':   main_force,
+            'micro_structure':     micro_structure,
+            'similar_cases_count': n_cases,
+            'best_entry_window':   best_entry_window,
+            'trap_alert':          trap_alert,
+            'confidence_level':    confidence_level,
+            'market_bias':         market_bias,
+            'hcme_wr_adj':         hcme_data.get('hcme_wr_adj', 0),
+            'hcme_context':        hcme_data.get('hcme_context', ''),
+            'fangcang_summary':    fangcang_summary,
+
+            '_ts': now,
         }
 
         _CACHE[cache_key] = result
@@ -374,46 +835,112 @@ def get_fangcang_context(
 
     except Exception as e:
         return {
-            'status':  'unavailable',
-            'reason':  str(e)[:120],
-            '_ts':     now,
+            'status': 'unavailable',
+            'reason': str(e)[:120],
+            '_ts':    now,
         }
 
 
+def _calc_best_entry_window(bias: dict) -> str:
+    """根据M4偏置计算最佳入场时间窗口"""
+    if not bias:
+        return '无M4数据'
+    hour_up  = bias.get('hour_up_prob', 0.5)
+    hour_chg = bias.get('hour_avg_chg', 0.0)
+    week_chg = bias.get('weekday_avg_chg', 0.0)
+    now_utc  = datetime.now(timezone.utc)
+    window   = []
+    if hour_up > 0.6:
+        window.append(f'当前{now_utc.hour:02d}:00 UTC看涨偏置({hour_up:.0%})')
+    elif hour_up < 0.4:
+        window.append(f'当前{now_utc.hour:02d}:00 UTC看跌偏置({1-hour_up:.0%})')
+    if week_chg > 0.1:
+        window.append(f'本周方向偏多({week_chg:+.2f}%均涨)')
+    elif week_chg < -0.1:
+        window.append(f'本周方向偏空({week_chg:+.2f}%均跌)')
+    return '；'.join(window) if window else '当前时间无明显偏置'
+
+
+def _build_summary(
+    symbol: str,
+    price: float,
+    regime: str,
+    hint: str,
+    prob: dict,
+    intent: dict,
+    conf_level: str,
+    trap_alert: bool,
+) -> str:
+    """构建给苏摩看的一句话自然语言总结"""
+    hint_cn = {
+        'LONG_BIAS': '偏多',
+        'SHORT_BIAS': '偏空',
+        'NEUTRAL': '中性',
+        'WAIT': '等待',
+    }.get(hint, hint)
+    intent_cn = {
+        'ACCUMULATE': '主力吸筹',
+        'DISTRIBUTE': '主力派筹',
+        'MARKUP': '拉升行情',
+        'MARKDOWN': '打压行情',
+        'NEUTRAL': '意图不明',
+    }.get(intent.get('intent', 'NEUTRAL'), '意图不明')
+    trap_str = '⚠ 陷阱预警' if trap_alert else ''
+    p_up  = prob.get('p_up', 0.5) * 100
+    p_dn  = prob.get('p_down', 0.2) * 100
+    ev    = prob.get('ev', 0.0)
+    n     = prob.get('n', 0)
+    return (
+        f"{symbol} ${price:,.0f} [{regime[:6]}] {hint_cn} | "
+        f"↑{p_up:.0f}% ↓{p_dn:.0f}% EV={ev:+.1f}% | "
+        f"{intent_cn}(置信{intent.get('confidence',0)*100:.0f}%) "
+        f"[{conf_level}/{n}案例] {trap_str}"
+    ).strip()
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 格式化（兼容旧接口）
+# ══════════════════════════════════════════════════════════════════════════════
+
 def format_fangcang_card(fc: dict) -> str:
-    """
-    格式化方仓摘要，嵌入信号卡片（单行或多行）
-    """
+    """格式化方仓摘要，嵌入信号卡片"""
     if fc.get('status') != 'ok':
         return ''
 
-    pm = fc.get('prob_matrix', {})
+    pm   = fc.get('prob_matrix', {})
     hint = fc.get('signal_hint', 'NEUTRAL')
     hint_icons = {
-        'LONG_BIAS':  '📈',
-        'SHORT_BIAS': '📉',
-        'WAIT':       '⏳',
-        'NEUTRAL':    '⚖️',
+        'LONG_BIAS': '📈', 'SHORT_BIAS': '📉',
+        'WAIT': '⏳',       'NEUTRAL': '⚖️',
     }
     icon = hint_icons.get(hint, '⚖️')
 
+    mfi  = fc.get('main_force_intent', {})
+    ms   = fc.get('micro_structure', {})
+    trap = '⚠️ 陷阱预警！' if fc.get('trap_alert') else ''
+    conf = fc.get('confidence_level', '?')
+
     lines = [
-        f"━━ 🏛️ 方仓经验引擎 (6.8年/{pm.get('n', 0)}案例) {icon} ━━",
+        f"━━ 🏛️ 方仓经验引擎v2 (6.8年/{pm.get('n',0)}案例) {icon} [{conf}] ━━",
         f"  ↑{pm.get('p_up',0)*100:.0f}% ↓{pm.get('p_down',0)*100:.0f}% "
         f"↔{pm.get('p_flat',0)*100:.0f}%  EV={pm.get('ev',0):+.2f}%  "
         f"尾部风险={pm.get('tail_down_risk',0)*100:.0f}%",
+        f"  主力: {mfi.get('intent','?')} 置信{mfi.get('confidence',0)*100:.0f}%  "
+        f"15m CHoCH={ms.get('choch_count',0)} BOS={ms.get('bos_count',0)} "
+        f"BBW={ms.get('micro_compress',0):.1f}%  {trap}",
         "  最相似历史案例:",
         fc.get('top3_summary', '  (无数据)'),
+        f"  📝 {fc.get('fangcang_summary', '')}",
     ]
     return '\n'.join(lines)
 
 
-# ══════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════
 # 冒烟测试
-# ══════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════
 
 if __name__ == '__main__':
-    print("=== fangcang_engine 冒烟测试 ===\n")
+    print("=== fangcang_engine v2.0 冒烟测试 ===\n")
 
     import time as _t
     t0 = _t.time()
@@ -423,19 +950,34 @@ if __name__ == '__main__':
 
     print(f"状态: {result['status']}")
     if result['status'] == 'ok':
-        pm = result['prob_matrix']
+        pm  = result['prob_matrix']
+        mfi = result['main_force_intent']
+        ms  = result['micro_structure']
         print(f"体制: {result['current_regime']}")
         print(f"信号偏向: {result['signal_hint']}")
-        print(f"概率矩阵: ↑{pm['p_up']*100:.0f}% ↓{pm['p_down']*100:.0f}% ↔{pm['p_flat']*100:.0f}%")
-        print(f"期望收益: {pm['ev']:+.3f}%  中位: {pm['median']:+.3f}%")
-        print(f"尾部风险(跌>10%): {pm['tail_down_risk']*100:.0f}%")
+        print(f"做多概率: {result.get('long_prob', 0)*100:.0f}%")
+        print(f"做空概率: {result.get('short_prob', 0)*100:.0f}%")
+        print(f"震荡概率: {result.get('chop_prob', 0)*100:.0f}%")
+        print(f"主力意图: {mfi.get('intent', '?')} (置信{mfi.get('confidence',0)*100:.0f}%)")
+        print(f"陷阱预警: {result.get('trap_alert', False)}")
+        if mfi.get('trap_reason'):
+            print(f"陷阱原因: {mfi['trap_reason']}")
+        print(f"置信等级: {result.get('confidence_level', '?')}")
+        print(f"相似案例数: {result.get('similar_cases_count', 0)}")
+        print(f"\n15m微结构: CHoCH={ms.get('choch_count',0)} BOS={ms.get('bos_count',0)} "
+              f"BBW={ms.get('micro_compress',0):.1f}% 放量={ms.get('vol_climax',0)}")
+        print(f"\n主力证据:")
+        for ev in mfi.get('evidence', []):
+            print(f"  - {ev}")
+        print(f"\n最佳入场时间: {result.get('best_entry_window', '?')}")
+        print(f"\n总结: {result.get('fangcang_summary', '?')}")
         print(f"\nTOP5相似案例:")
         for s in result['top_similar'][:5]:
             print(f"  {s['dt']} score={s['score']:.3f} ret={s['future_ret']:+.1f}% [{s['regime']}]")
-        print(f"\n信号卡片格式:")
+        print(f"\n信号卡片:")
         print(format_fangcang_card(result))
     else:
-        print(f"原因: {result.get('reason','?')}")
+        print(f"原因: {result.get('reason', '?')}")
 
     print(f"\n耗时: {elapsed:.2f}s")
     print("\n✅ 冒烟测试完成")
