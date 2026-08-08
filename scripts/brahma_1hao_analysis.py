@@ -499,6 +499,130 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         lines.insert(-1, f"  LLM: 跡过 ({_lce})")
     # ───────────────────────────────────────────────────
 
+    # ══ [设计院 2026-08-08] 方仓铁证层注入 ══════════════════════════════
+    try:
+        import sys as _fcsys
+        _fcsys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent / 'brahma_brain'))
+        from fangcang_engine import get_fangcang_context as _get_fc
+        _fc_regime = r.get('regime') or None
+        _fc_data = _get_fc(symbol=symbol, current_regime=_fc_regime)
+        if _fc_data and _fc_data.get('status') == 'ok':
+            _pm = _fc_data.get('prob_matrix', {})
+            _mf = _fc_data.get('main_force_intent', {})
+            _ms2 = _fc_data.get('micro_structure', {})
+            _top3 = _fc_data.get('top3_summary', '')
+            _ev = _pm.get('ev', 0)
+            _p_up = _pm.get('p_up', 0)
+            _p_dn = _pm.get('p_down', 0)
+            _n = _pm.get('n', 0)
+            _max_up = _pm.get('max_upside', 0)
+            _max_dn = _pm.get('max_downside', 0)
+            _intent = _mf.get('intent', 'N/A')
+            _conf = _mf.get('confidence', 0)
+            _trap = _fc_data.get('trap_alert', False)
+            _evidence = _mf.get('evidence', [])
+            _fc_lines = [
+                "",
+                "╬" + "═"*58,
+                "  🗃️ 方仓铁证层 (FangCang · 6.5年历史相似案例)",
+                "╬" + "═"*58,
+                f"  体制: {_fc_regime}  相似案例数: {_n}  置信度: {_conf:.0%}",
+                f"  概率矩阵: ↑{_p_up:.0%} ↓{_p_dn:.0%}  EV={_ev:+.2f}%",
+                f"  历史最大涨幅: +{_max_up:.1f}%  历史最大跌幅: {_max_dn:.1f}%",
+                f"  主力意图: {_intent}  {'⚠️ 陷阱预警' if _trap else '✅ 无陷阱'}",
+            ]
+            if _evidence:
+                for _ev_item in _evidence:
+                    _fc_lines.append(f"  · {_ev_item}")
+            if _top3:
+                _fc_lines.append("  Top3历史案例:")
+                for _tl in _top3.strip().split('\n'):
+                    _fc_lines.append(f"  {_tl}")
+            lines += _fc_lines
+    except Exception as _fc_err:
+        lines.append(f"  [方仓层] 跳过: {_fc_err}")
+    # ══ [END 方仓层] ══════════════════════════════════════════════════
+
+
+    # ══ [设计院 2026-08-08] HCME情境匹配层注入 ═══════════════════════════════
+    try:
+        import sys as _hcsys
+        _hcsys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent / 'brahma_brain'))
+        from hcme_matcher import HCMEMatcher as _HCMEMatcher
+        _hcme = _HCMEMatcher()
+        _hcme_signal = {
+            'symbol': symbol,
+            'direction': direction,
+            'regime': r.get('regime', ''),
+            'score': float(str(r.get('score_final', 0)).split()[0]) if r.get('score_final') else 0,
+            'rsi_1h': float(str(r.get('rsi_1h', 50)).split()[0]) if r.get('rsi_1h') else 50,
+            'rsi_4h': float(str(r.get('rsi_4h', 50)).split()[0]) if r.get('rsi_4h') else 50,
+            'bbw': float(str(r.get('bbw', 2.0)).split()[0]) if r.get('bbw') else 2.0,
+            'price': float(r.get('price', 0)),
+        }
+        _hcme_result = _hcme.find_similar(_hcme_signal, top_k=5)
+        if _hcme_result and isinstance(_hcme_result, dict):
+            _hwr = _hcme_result.get('historical_wr', 0)
+            _hconf = _hcme_result.get('confidence', 0)
+            _hadj = _hcme_result.get('hcme_score_adj', 0)
+            _hsims = _hcme_result.get('similar_cases', [])
+            _hcme_lines = [
+                "",
+                "╬" + "═"*58,
+                "  🔍 HCME情境匹配 (hcme_matcher · 历史相似信号对标)",
+                "╬" + "═"*58,
+                f"  相似案例数: {len(_hsims)}  历史WR: {_hwr:.1%}  置信度: {_hconf:.2f}",
+                f"  HCME评分调整: {'+' if _hadj>=0 else ''}{_hadj}分",
+            ]
+            for _hs in _hsims[:3]:
+                _outcome = _hs.get('outcome', '?')
+                _pnl = _hs.get('pnl_pct', 0)
+                _sim = _hs.get('similarity', 0)
+                _icon = '✅' if 'TP' in str(_outcome) or 'WIN' in str(_outcome) else '❌' if 'SL' in str(_outcome) or 'LOSS' in str(_outcome) else '⏳'
+                _hcme_lines.append(f"  {_icon} sim={_sim:.3f} outcome={_outcome} pnl={_pnl:+.2f}%")
+            lines += _hcme_lines
+    except Exception as _hcme_err:
+        lines.append(f"  [HCME匹配层] 跳过: {_hcme_err}")
+    # ══ [END HCME层] ══════════════════════════════════════════════════════
+
+    # ══ [设计院 2026-08-08] 决策树层注入 ════════════════════════════════
+    try:
+        import sys as _dtsys
+        _dtsys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent / 'brahma_brain'))
+        from brahma_decision_engine import get_decision_engine as _get_de
+        _de = _get_de()
+        _de_signal = {
+            'symbol': symbol,
+            'direction': direction,
+            'regime': r.get('regime', ''),
+            'score': float(str(r.get('score_final', 0)).split()[0]) if r.get('score_final') else 0,
+            'grade': float(str(r.get('effective_grade', 0)).split()[0]) if r.get('effective_grade') else 0,
+            'sl_pct': float(str(r.get('sl_pct', 2.0)).split()[0]) if r.get('sl_pct') else 2.0,
+            'timing': r.get('timing', ''),
+            'price': float(r.get('price', 0)),
+        }
+        _de_result = _de.decide(_de_signal)
+        _de_action = _de_result.get('action', 'SKIP')
+        _de_reason = _de_result.get('reason', '')
+        _de_step = _de_result.get('step_passed', 0)
+        _de_icon = '✅' if _de_action == 'EXECUTE' else '⏸️' if _de_action in ('WAIT_15M','WAIT_ENTRY') else '⛔'
+        _de_lines = [
+            "",
+            "╬" + "═"*58,
+            "  🌲 决策树裁决 (BrahmaDecisionEngine)",
+            "╬" + "═"*58,
+            f"  裁决: {_de_icon} {_de_action}",
+            f"  原因: {_de_reason}",
+            f"  通过步骤: {_de_step}/3",
+        ]
+        _ep = _de_result.get('entry_plan', {})
+        if _ep:
+            _de_lines.append(f"  入场计划: size={_ep.get('size_pct','?')}%NAV  SL={_ep.get('sl_pct','?')}%  TP1={_ep.get('tp1_pct','?')}%")
+        lines += _de_lines
+    except Exception as _dt_err:
+        lines.append(f"  [决策树层] 跳过: {_dt_err}")
+    # ══ [END 决策树层] ════════════════════════════════════════════════
+
     full_report = "\n".join(lines)
     if compact:
         compact_lines = [
@@ -1046,5 +1170,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='梵天1号工程 · 35维全量矩阵分析')
     parser.add_argument('--symbols', nargs='+', default=['BTCUSDT', 'ETHUSDT'])
     parser.add_argument('--direction', default='LONG', choices=['LONG', 'SHORT'])
+    parser.add_argument('--mode', default='standard', choices=['standard', 'altcoin'],
+                        help='altcoin模式: 跳过HCME层，32维分析山寨币')
     args = parser.parse_args()
+    # altcoin模式自动扩展候选池
+    if args.mode == 'altcoin' and args.symbols == ['BTCUSDT', 'ETHUSDT']:
+        args.symbols = ['XRPUSDT','DOGEUSDT','ADAUSDT','LINKUSDT',
+                        'CHZUSDT','OPUSDT','ARBUSDT','UNIUSDT','ZECUSDT']
     run_dual_analysis(args.symbols, args.direction)

@@ -420,3 +420,103 @@ def sync_confidence_table_from_wr(min_n: int = 10, dry_run: bool = False) -> dic
         for u in updates:
             print(f'  {u["key"]}: {u["old"]} → {u["new"]} (n={u["n"]} WR={u["wr"]:.1%})')
     return result
+
+
+# ══ [设计院 2026-08-08] headroom动态仓位压缩 — P1封印 ════════════════════════════
+# 根因：08-02 commit"headroom压缩"只是标题，功能从未实现
+# headroom = 当前净值回撤压缩系数，大回撤期保护NAV
+# 来源：Vercel团队铁律"动态仓位 > 固定仓位"
+
+def get_headroom_factor(nav_current: float, nav_peak: float,
+                        open_positions_pct: float = 0.0) -> dict:
+    """
+    动态仓位压缩系数
+    
+    参数:
+      nav_current: 当前NAV（USDT）
+      nav_peak: 历史最高NAV（USDT），用于计算回撤
+      open_positions_pct: 当前已开仓占NAV比例（0~1），防止过度集中
+    
+    返回:
+      {
+        'factor': 0.0~1.0  (1.0=满仓允许, 0.5=压缩至50%, 0.0=禁止开仓)
+        'reason': 说明
+        'drawdown_pct': 当前回撤百分比
+        'exposure_remaining': 剩余可用仓位比例
+      }
+    """
+    # 回撤计算
+    if nav_peak <= 0:
+        nav_peak = nav_current
+    drawdown_pct = max(0.0, (nav_peak - nav_current) / nav_peak * 100)
+
+    # 回撤压缩矩阵（铁证驱动，设计院2026-08-08封印）
+    # DD=0~5%:  正常，factor=1.0
+    # DD=5~10%: 轻度压缩，factor=0.75
+    # DD=10~15%: 中度压缩，factor=0.50
+    # DD=15~20%: 重度压缩，factor=0.25
+    # DD>20%:   禁止新开仓，factor=0.0
+    if drawdown_pct < 5.0:
+        dd_factor = 1.0
+        dd_reason = f'正常(DD={drawdown_pct:.1f}%)'
+    elif drawdown_pct < 10.0:
+        dd_factor = 0.75
+        dd_reason = f'轻度压缩(DD={drawdown_pct:.1f}%→×0.75)'
+    elif drawdown_pct < 15.0:
+        dd_factor = 0.50
+        dd_reason = f'中度压缩(DD={drawdown_pct:.1f}%→×0.50)'
+    elif drawdown_pct < 20.0:
+        dd_factor = 0.25
+        dd_reason = f'重度压缩(DD={drawdown_pct:.1f}%→×0.25)'
+    else:
+        dd_factor = 0.0
+        dd_reason = f'禁止开仓(DD={drawdown_pct:.1f}%≥20%)'
+
+    # 集中度压缩（当前持仓+新仓不超过30% NAV）
+    MAX_EXPOSURE = 0.30
+    exposure_remaining = max(0.0, MAX_EXPOSURE - open_positions_pct)
+    if open_positions_pct >= MAX_EXPOSURE:
+        exp_factor = 0.0
+        exp_reason = f'持仓集中({open_positions_pct*100:.0f}%≥30%上限)'
+    else:
+        exp_factor = min(1.0, exposure_remaining / 0.10)  # 剩余<10%时开始压缩
+        exp_reason = f'集中度OK(已用{open_positions_pct*100:.0f}%,剩余{exposure_remaining*100:.0f}%)'
+
+    # 综合系数：取最小值（最保守原则）
+    final_factor = min(dd_factor, exp_factor)
+
+    return {
+        'factor': round(final_factor, 3),
+        'reason': f'{dd_reason} | {exp_reason}',
+        'drawdown_pct': round(drawdown_pct, 2),
+        'exposure_remaining': round(exposure_remaining, 3),
+        'dd_factor': dd_factor,
+        'exp_factor': round(exp_factor, 3),
+    }
+
+
+def apply_headroom(base_pct: float, nav_current: float, nav_peak: float,
+                   open_positions_pct: float = 0.0) -> dict:
+    """
+    将headroom压缩系数应用到基础仓位
+    
+    参数:
+      base_pct: 原始仓位比例（如0.05 = 5%NAV）
+      nav_current, nav_peak, open_positions_pct: 传给 get_headroom_factor
+    
+    返回:
+      {
+        'adjusted_pct': 压缩后仓位,
+        'base_pct': 原始仓位,
+        'headroom': get_headroom_factor结果
+      }
+    """
+    hr = get_headroom_factor(nav_current, nav_peak, open_positions_pct)
+    adjusted = round(base_pct * hr['factor'], 5)
+    return {
+        'adjusted_pct': adjusted,
+        'base_pct': base_pct,
+        'headroom': hr,
+        'compressed': adjusted < base_pct,
+    }
+# ══ [END headroom] ════════════════════════════════════════════════════════════

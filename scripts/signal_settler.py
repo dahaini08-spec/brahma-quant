@@ -366,5 +366,21 @@ def main():
         print('[settler] 尚无已结算信号（WR数据积累中）')
 
 
+
+    # ══ [设计院 2026-08-08] ic_tracker 结算后自动计算IC ═══════════════
+    try:
+        import sys as _icsys
+        _icsys.path.insert(0, str(BASE / 'brahma_brain'))
+        from ic_tracker import compute_all_ic, save_ic_state
+        _ic_result = compute_all_ic()
+        if _ic_result:
+            save_ic_state(_ic_result)
+            print(f'[ic_tracker] IC计算完成: {len(_ic_result)}个维度')
+        else:
+            print('[ic_tracker] 样本不足，跳过IC计算（需>=20条结算记录）')
+    except Exception as _ic_e:
+        print(f'[ic_tracker] 跳过: {_ic_e}')
+    # ══ [END ic_tracker] ══════════════════════════════════════════════
+
 if __name__ == '__main__':
     main()
