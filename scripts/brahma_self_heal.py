@@ -862,8 +862,8 @@ def check_push_routing() -> dict:
     
     # 旧线程列表：除CORRECT_THREAD外的应该被替换的
     OLD_THREADS    = [
-        '019f181f-e4d1-7576-85ca-77f4a7fa8075',  # 旧线程 v1 [2026-07-08]
-        '019f1797-6c60-7541-ad72-ec34ed14dfc4',  # 旧线程 v0
+        '019fd9dd-4b0f-71db-87fb-1e192ccb2291',  # 旧线程 v1 [2026-07-08]
+        '019fd9dd-4b0f-71db-87fb-1e192ccb2291',  # 旧线程 v0
     ]
     OLD_THREADS = [t for t in OLD_THREADS if t != CORRECT_THREAD]  # 防止正确线程被当作旧线程
     issues = []
@@ -999,9 +999,9 @@ def heal(fault_type: str, context: dict) -> dict:
             _sc = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_sc)
             NEW = getattr(_sc, 'JARVIS_THREAD_ID', '019fd9dd-4b0f-71db-87fb-1e192ccb2291')
         except Exception:
-            NEW = '019f181f-e4d1-7576-85ca-77f4a7fa8075'
+            NEW = '019fd9dd-4b0f-71db-87fb-1e192ccb2291'
         # [BUG-5修复] OLD_LIST不含NEW，防止覆盖正确线程
-        OLD_LIST = ['019f181f-e4d1-7576-85ca-77f4a7fa8075', '019f1797-6c60-7541-ad72-ec34ed14dfc4']
+        OLD_LIST = ['019fd9dd-4b0f-71db-87fb-1e192ccb2291', '019fd9dd-4b0f-71db-87fb-1e192ccb2291']
         OLD_LIST = [o for o in OLD_LIST if o != NEW]
         jobs_file = Path.home() / '.openclaw/cron/jobs.json'
         if jobs_file.exists():

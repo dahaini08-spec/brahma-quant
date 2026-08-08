@@ -9,7 +9,7 @@ import sys, os, json, subprocess
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 USER_ID   = "73295708"
-THREAD_ID = "019f933d-d67a-7237-8cbd-7923bbf336fa"
+THREAD_ID = "019fd9dd-4b0f-71db-87fb-1e192ccb2291"
 ENTRY_LO  = 1863.68
 ENTRY_HI  = 1868.23
 SL        = 1826.98

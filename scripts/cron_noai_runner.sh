@@ -372,6 +372,35 @@ except Exception as e:
     log "system-guardian: mem=${MEM_PCT}% api=${API_OK} core_cleaned=${CORE_CNT}"
     ;;
 
+  futures-data-keep)
+    OUT=$(python3 -c "
+import urllib.request, json, time
+from pathlib import Path
+try:
+    url = 'https://fapi.binance.com/fapi/v1/ticker/price'
+    data = json.loads(urllib.request.urlopen(url, timeout=8).read())
+    btc = next((x['price'] for x in data if x['symbol']=='BTCUSDT'), '?')
+    eth = next((x['price'] for x in data if x['symbol']=='ETHUSDT'), '?')
+    Path('/root/.openclaw/workspace/trading-system/data/futures_price_cache.json').write_text(
+        json.dumps({'btc':btc,'eth':eth,'ts':time.time()}))
+    print('HEARTBEAT_OK')
+except Exception as e:
+    print(f'FAIL:{e}')
+" 2>&1)
+    log "$OUT"
+    if echo "$OUT" | grep -q "FAIL:"; then
+      send_alert "🚨 [futures-data-keep失败] $OUT"
+    fi
+    ;;
+
+  disk-buffer-check)
+    FREE=$(python3 -c "import shutil; s=shutil.disk_usage('/root'); print(int(s.free/1024**3))" 2>/dev/null || echo "0")
+    if [ "$FREE" -lt 5 ] 2>/dev/null; then
+      send_alert "🚨 [disk-buffer] /root磁盘不足: ${FREE}GB"
+    fi
+    log "disk-buffer: free=${FREE}GB"
+    ;;
+
   *)
     log "未知任务: $TASK"
     exit 1
