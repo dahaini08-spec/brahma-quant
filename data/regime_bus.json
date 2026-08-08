@@ -2,12 +2,12 @@
   "_version": "2.0",
   "BTCUSDT": {
     "CONFIRMED": "BULL_TREND",
-    "CONFIRMED_ts": 1786179059.8830023,
+    "CONFIRMED_ts": 1786182364.1494262,
     "CONFIRMED_source": "brahma_engine",
-    "CONFIRMED_score": 62.0,
-    "updated_at": 1786179059.8830042
+    "CONFIRMED_score": 120.5,
+    "updated_at": 1786182364.149436
   },
-  "_saved_at": 1786179059.8830066,
+  "_saved_at": 1786182364.1494377,
   "ETHUSDT": {
     "CONFIRMED": "BULL_TREND",
     "CONFIRMED_ts": 1786175552.6950078,

@@ -66,7 +66,7 @@ MODE          = os.environ.get('KRONOS_BRIDGE_MODE', 'blend')  # [2026-07-06] sh
 BLEND_WEIGHT  = 0.5      # blend模式下 Kronos 权重
 PRED_LEN      = 12       # 预测未来12根K线
 SAMPLE_COUNT  = 5        # 采样路径数（精度 vs 速度）
-CACHE_TTL     = 900      # 15分钟缓存
+CACHE_TTL     = 14400    # 4H持久缓存（prime-agent思路：网络不稳定时持久状态不丢）
 
 # ── 体制系数（与 kronos_engine.py 完全一致）──────────────────
 REGIME_COEFF = {
@@ -79,6 +79,39 @@ REGIME_COEFF = {
 # ── 缓存 ──────────────────────────────────────────────────────
 _cache: Dict[str, Tuple[float, float, float]] = {}
 # {symbol: (ts, p_up, volatility)}
+
+# ── 磁盘持久化缓存路径（容器重启后仍可读取）────────────────────────
+_DISK_CACHE_PATH = Path(BASE) / 'data' / 'kronos_p_up_cache.json'
+
+def _load_disk_cache() -> None:
+    """启动时从磁盘恢复缓存（容器重启保活）"""
+    global _cache
+    try:
+        if _DISK_CACHE_PATH.exists():
+            with open(_DISK_CACHE_PATH) as f:
+                raw = json.load(f)
+            now = time.time()
+            restored = 0
+            for sym, (ts, p_up, vol) in raw.items():
+                if now - ts < CACHE_TTL:
+                    _cache[sym] = (ts, p_up, vol)
+                    restored += 1
+            if restored:
+                logger.info(f'[KronosBridge] 磁盘缓存恢复 {restored}条')
+    except Exception as e:
+        logger.warning(f'[KronosBridge] 磁盘缓存读取失败（非致命）: {e}')
+
+def _save_disk_cache() -> None:
+    """写入磁盘缓存（异步友好，失败不崩溃）"""
+    try:
+        _DISK_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(_DISK_CACHE_PATH, 'w') as f:
+            json.dump({k: list(v) for k, v in _cache.items()}, f)
+    except Exception as e:
+        logger.warning(f'[KronosBridge] 磁盘缓存写入失败（非致命）: {e}')
+
+# 启动时立即恢复
+_load_disk_cache()
 
 # ── 模型单例 ──────────────────────────────────────────────────
 _predictor = None
@@ -230,6 +263,12 @@ def _run_kronos(
 
     predictor = _get_predictor()
     if predictor is None:
+        # [prime-agent缓存思路 2026-08-08] 模型不可用时返回磁盘持久化缓存，而非固定0.5
+        if symbol in _cache:
+            ts_c, p_up_c, vol_c = _cache[symbol]
+            age_h = (time.time() - ts_c) / 3600
+            logger.info(f'[KronosBridge] 模型不可用，返回缓存 {symbol} p_up={p_up_c:.3f} age={age_h:.1f}h')
+            return p_up_c, vol_c, f'cache_fallback({age_h:.1f}h)'
         return 0.5, 0.0, 'fallback:no_model'
 
     # [设计院 Phase3-1 2026-07-06] LightGBM专用路径
@@ -322,8 +361,9 @@ def _run_kronos(
         pred_ranges = (pred_df['high'] - pred_df['low']).values / (pred_df['close'].values + 1e-9)
         volatility  = float(pred_ranges.mean())
 
-        # 写缓存
+        # 写内存+磁盘双缓存
         _cache[symbol] = (now, p_up, volatility)
+        _save_disk_cache()  # 同步写磁盘，容器重启后可恢复
 
         logger.info(f"[KronosBridge] {symbol} p_up={p_up:.3f} vol={volatility:.4f} t={elapsed*1000:.0f}ms")
         return p_up, volatility, 'kronos'

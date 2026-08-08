@@ -54,10 +54,10 @@
     "eth_regime": "BULL_TREND"
   },
   "INJUSDT": {
-    "last_push_ts": 1786074408.6466782,
-    "last_score": 80,
-    "last_push_at": "2026-08-07T03:46:48.693356",
-    "push_price": 4.504,
+    "last_push_ts": 1786181469.7801285,
+    "last_score": 82,
+    "last_push_at": "2026-08-08T09:31:12.197572",
+    "push_price": 4.488,
     "regime": "BULL_TREND",
     "btc_regime": "BULL_TREND",
     "eth_regime": "BULL_TREND"
@@ -81,10 +81,10 @@
     "eth_regime": "BULL_TREND"
   },
   "EULUSDT": {
-    "last_push_ts": 1786123708.8888948,
-    "last_score": 83,
-    "last_push_at": "2026-08-07T17:28:38.609616",
-    "push_price": 1.2574,
+    "last_push_ts": 1786181388.0504136,
+    "last_score": 95,
+    "last_push_at": "2026-08-08T09:30:05.681788",
+    "push_price": 1.215,
     "regime": "BULL_TREND",
     "btc_regime": "BULL_TREND",
     "eth_regime": "BULL_TREND"
@@ -153,10 +153,10 @@
     "eth_regime": "BULL_TREND"
   },
   "UVXYUSDT": {
-    "last_push_ts": 1786116579.818791,
-    "last_score": 79,
-    "last_push_at": "2026-08-07T15:29:51.750474",
-    "push_price": 21.58,
+    "last_push_ts": 1786181388.0504136,
+    "last_score": 102,
+    "last_push_at": "2026-08-08T09:29:55.555378",
+    "push_price": 21.81,
     "regime": "BULL_TREND",
     "btc_regime": "BULL_TREND",
     "eth_regime": "BULL_TREND"
@@ -288,10 +288,10 @@
     "eth_regime": "BULL_TREND"
   },
   "BANKUSDT": {
-    "last_push_ts": 1786130906.7011077,
-    "last_score": 104,
-    "last_push_at": "2026-08-07T19:28:39.020053",
-    "push_price": 0.04094,
+    "last_push_ts": 1786181388.0504136,
+    "last_score": 101,
+    "last_push_at": "2026-08-08T09:29:58.414970",
+    "push_price": 0.03979,
     "regime": "BULL_TREND",
     "btc_regime": "BULL_TREND",
     "eth_regime": "BULL_TREND"
@@ -459,10 +459,10 @@
     "eth_regime": "BULL_TREND"
   },
   "MIRAUSDT": {
-    "last_push_ts": 1786152585.192754,
-    "last_score": 82,
-    "last_push_at": "2026-08-08T01:29:52.987383",
-    "push_price": 0.04176,
+    "last_push_ts": 1786181388.0504136,
+    "last_score": 91,
+    "last_push_at": "2026-08-08T09:30:09.080372",
+    "push_price": 0.04229,
     "regime": "BULL_TREND",
     "btc_regime": "BULL_TREND",
     "eth_regime": "BULL_TREND"
@@ -508,6 +508,51 @@
     "last_score": 85,
     "last_push_at": "2026-08-08T07:30:00.887524",
     "push_price": 0.01841,
+    "regime": "BULL_TREND",
+    "btc_regime": "BULL_TREND",
+    "eth_regime": "BULL_TREND"
+  },
+  "ACHUSDT": {
+    "last_push_ts": 1786181388.0504136,
+    "last_score": 95,
+    "last_push_at": "2026-08-08T09:30:02.041161",
+    "push_price": 0.004221,
+    "regime": "BULL_TREND",
+    "btc_regime": "BULL_TREND",
+    "eth_regime": "BULL_TREND"
+  },
+  "JTOUSDT": {
+    "last_push_ts": 1786181469.7801285,
+    "last_score": 81,
+    "last_push_at": "2026-08-08T09:31:14.857905",
+    "push_price": 0.4841,
+    "regime": "BULL_TREND",
+    "btc_regime": "BULL_TREND",
+    "eth_regime": "BULL_TREND"
+  },
+  "WENUSDT": {
+    "last_push_ts": 1786181469.7801285,
+    "last_score": 79,
+    "last_push_at": "2026-08-08T09:31:17.213422",
+    "push_price": 7.67,
+    "regime": "BULL_TREND",
+    "btc_regime": "BULL_TREND",
+    "eth_regime": "BULL_TREND"
+  },
+  "USDCUSDT": {
+    "last_push_ts": 1786181469.7801285,
+    "last_score": 77,
+    "last_push_at": "2026-08-08T09:31:19.543439",
+    "push_price": 1.00004,
+    "regime": "BULL_TREND",
+    "btc_regime": "BULL_TREND",
+    "eth_regime": "BULL_TREND"
+  },
+  "RIFUSDT": {
+    "last_push_ts": 1786181469.7801285,
+    "last_score": 76,
+    "last_push_at": "2026-08-08T09:31:21.911943",
+    "push_price": 0.06974,
     "regime": "BULL_TREND",
     "btc_regime": "BULL_TREND",
     "eth_regime": "BULL_TREND"

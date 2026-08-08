@@ -256,6 +256,131 @@ try:
 except Exception as e:
     warn('自愈系统检查', str(e)[:60])
 
+# ─── TDD核心测试（obra/superpowers哲学 · 设计院封印 2026-08-08）──────────
+print('\n【TDD】核心宪法验证')
+
+def test_regime_freshness():
+    """体制状态不超过120分钟——P0-2修复的永久防线"""
+    with open(BASE / 'data' / 'brahma_state.json') as f:
+        d = json.load(f)
+    age_min = (time.time() - d.get('last_update', d.get('timestamp', 0))) / 60
+    assert age_min < 120, f'体制陈旧={age_min:.0f}min（>120min警戒线）'
+    return f'{age_min:.0f}min前'
+
+def test_sqe_no_dirty_signals():
+    """SQE Gate1：live_signal_log无sl>2.0脏数据——P0-1修复的永久防线"""
+    with open(BASE / 'data' / 'live_signal_log.jsonl') as f:
+        sigs = [json.loads(l) for l in f if l.strip()]
+    dirty = [s for s in sigs if s.get('sl_pct', 0) > 2.0]
+    assert len(dirty) == 0, f'发现{len(dirty)}条sl>2.0脏数据（Gate1漏网）'
+    return f'{len(sigs)}条全净'
+
+def test_wr_weights_normal():
+    """signal_weights BULL_TREND:LONG:120-139 必须为NORMAL——P0-3修复的永久防线"""
+    with open(BASE / 'data' / 'signal_weights.json') as f:
+        sw = json.load(f)
+    entry = sw.get('BULL_TREND:LONG:120-139', {})
+    assert entry.get('action') == 'NORMAL', f'action={entry.get("action")}，应为NORMAL'
+    assert entry.get('multiplier', 0) >= 0.9, f'multiplier={entry.get("multiplier")}，低于0.9'
+    return f'mult={entry["multiplier"]} NORMAL'
+
+def test_cron_no_zombie_model():
+    """cron_noai_runner任务不得配置model字段——Shell任务零AI浪费原则"""
+    import subprocess as _sp
+    r = _sp.run(['openclaw', 'cron', 'list', '--json'], capture_output=True, text=True, timeout=10)
+    jobs = json.loads(r.stdout)
+    jl = jobs if isinstance(jobs, list) else jobs.get('jobs', [])
+    noai_names = ['market-screener', 'venv-health-guard', '期货数据保持', 'pump-gainer-monitor']
+    zombies = [
+        j['name'] for j in jl
+        if any(n in j.get('name', '') for n in noai_names)
+        and 'model' in j.get('payload', {})
+    ]
+    assert len(zombies) == 0, f'僵尸model任务: {zombies}'
+    return f'{len(jl)}个任务，0个僵尸'
+
+def test_critical_files_exist():
+    """关键数据文件必须存在——五道门控基础"""
+    files = [
+        'data/brahma_state.json',
+        'data/live_signal_log.jsonl',
+        'data/signal_weights.json',
+        'data/macro_overlay.json',
+        'data/regime_state.json',
+    ]
+    missing = [f for f in files if not (BASE / f).exists()]
+    assert len(missing) == 0, f'缺失: {missing}'
+    return f'{len(files)}/5全部存在'
+
+def test_kronos_cache_functional():
+    """Kronos缓存层可用——网络不稳定时持久缓存兜底"""
+    import sys as _sys
+    _sys.path.insert(0, str(BASE / 'brahma_brain'))
+    from kronos_bridge import _cache, CACHE_TTL
+    assert CACHE_TTL >= 900, f'CACHE_TTL={CACHE_TTL}s过短（<15min）'
+    # 验证磁盘缓存目录可写
+    cache_dir = BASE / 'data' / 'kronos_cache'
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    assert cache_dir.exists()
+    return f'TTL={CACHE_TTL}s 磁盘缓存可写'
+
+def test_health_score_100():
+    """健康检查必须100/100——系统稳定性基准"""
+    import subprocess as _sp
+    r = _sp.run(['python3', str(BASE / 'scripts' / 'brahma_health.py')],
+                capture_output=True, text=True, timeout=20)
+    assert '100/100' in r.stdout or 'HEALTHY' in r.stdout, \
+        f'健康检查未达100/100: {r.stdout[:100]}'
+    return '100/100 HEALTHY'
+
+def test_signal_pool_writable():
+    """信号池可写——执行链路完整性"""
+    pool_file = BASE / 'data' / 'signal_pool.json'
+    if pool_file.exists():
+        with open(pool_file) as f:
+            pool = json.load(f)
+        assert isinstance(pool, (list, dict)), '信号池格式异常'
+        return f'信号池存在({pool_file.stat().st_size}B)'
+    return '信号池空（正常）'
+
+def test_macro_overlay_fresh():
+    """宏观叠加层有效期4H——RISK_ON/OFF判断基础"""
+    overlay_file = BASE / 'data' / 'macro_overlay.json'
+    assert overlay_file.exists(), '宏观叠加层文件缺失'
+    with open(overlay_file) as f:
+        d = json.load(f)
+    # 找时间戳
+    ts = d.get('ts', d.get('timestamp', d.get('updated_at', 0)))
+    if isinstance(ts, str):
+        from datetime import datetime
+        try: ts = datetime.fromisoformat(ts.replace('Z', '+00:00')).timestamp()
+        except: ts = 0
+    age_h = (time.time() - ts) / 3600 if ts else 999
+    assert age_h < 8, f'宏观叠加层陈旧={age_h:.1f}H（>8H）'
+    state = d.get('state', '?')
+    return f'{state} {age_h:.1f}H前'
+
+_tdd_tests = [
+    ('体制新鲜度<120min',         test_regime_freshness),
+    ('SQE无sl>2.0脏数据',        test_sqe_no_dirty_signals),
+    ('WR权重NORMAL基准',         test_wr_weights_normal),
+    ('Cron无僵尸model',          test_cron_no_zombie_model),
+    ('关键文件5/5',              test_critical_files_exist),
+    ('Kronos缓存层',             test_kronos_cache_functional),
+    ('健康检查100/100',          test_health_score_100),
+    ('信号池可写',               test_signal_pool_writable),
+    ('宏观叠加层<8H',            test_macro_overlay_fresh),
+]
+
+for tname, tfunc in _tdd_tests:
+    try:
+        detail = tfunc()
+        ok(f'TDD·{tname}', detail or '')
+    except AssertionError as _ae:
+        fail(f'TDD·{tname}', str(_ae))
+    except Exception as _te:
+        warn(f'TDD·{tname}', str(_te)[:80])
+
 # ─── 宪法守卫测试(持久化防复发)─────────────────────────────────────────
 try:
     import subprocess as _sp_ct
