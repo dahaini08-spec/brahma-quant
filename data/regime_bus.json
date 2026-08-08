@@ -2,18 +2,18 @@
   "_version": "2.0",
   "BTCUSDT": {
     "CONFIRMED": "BULL_TREND",
-    "CONFIRMED_ts": 1786161066.0957289,
+    "CONFIRMED_ts": 1786175533.8030229,
     "CONFIRMED_source": "brahma_engine",
-    "CONFIRMED_score": 77.0,
-    "updated_at": 1786161066.0957305
+    "CONFIRMED_score": 63.0,
+    "updated_at": 1786175533.8030243
   },
-  "_saved_at": 1786161085.0811322,
+  "_saved_at": 1786175600.2846632,
   "ETHUSDT": {
     "CONFIRMED": "BULL_TREND",
-    "CONFIRMED_ts": 1786161085.0811296,
+    "CONFIRMED_ts": 1786175552.6950078,
     "CONFIRMED_source": "brahma_engine",
-    "CONFIRMED_score": 60.0,
-    "updated_at": 1786161085.0811307
+    "CONFIRMED_score": 63.0,
+    "updated_at": 1786175552.6950092
   },
   "SPCXUSDT": {
     "CONFIRMED": "CHOP_MID",
@@ -66,10 +66,10 @@
   },
   "SKHYUSDT": {
     "CONFIRMED": "CHOP_MID",
-    "CONFIRMED_ts": 1786150312.5772533,
+    "CONFIRMED_ts": 1786175568.4582856,
     "CONFIRMED_source": "brahma_engine",
     "CONFIRMED_score": -6.8,
-    "updated_at": 1786150312.5772555
+    "updated_at": 1786175568.458287
   },
   "HYPEUSDT": {
     "CONFIRMED": "CHOP_MID",
@@ -94,16 +94,16 @@
   },
   "HEIUSDT": {
     "CONFIRMED": "CHOP_MID",
-    "CONFIRMED_ts": 1786150330.5691743,
+    "CONFIRMED_ts": 1786175584.271332,
     "CONFIRMED_source": "brahma_engine",
-    "CONFIRMED_score": 69.0,
-    "updated_at": 1786150330.5691757
+    "CONFIRMED_score": 90.0,
+    "updated_at": 1786175584.2713337
   },
   "MUUSDT": {
     "CONFIRMED": "CHOP_MID",
-    "CONFIRMED_ts": 1786150349.0022485,
+    "CONFIRMED_ts": 1786175600.2846608,
     "CONFIRMED_source": "brahma_engine",
     "CONFIRMED_score": -6.8,
-    "updated_at": 1786150349.00225
+    "updated_at": 1786175600.2846622
   }
 }

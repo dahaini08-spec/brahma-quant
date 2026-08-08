@@ -191,7 +191,20 @@ def detect_events(data, prev_state, sym):
     events = []
 
     # ── 静默门控（优先判断，节省积分） ──────────────────────────
-    # 死水封印：RSI中性区 + BB极度压缩
+    # [设计院修复 2026-08-08] E8极度压缩事件优先于静默门控
+    # 根因: BBW=0.019是历史最低区间，原来被「死水封印」拦截导致30天未触发
+    # 修复: 极度压缩(BBW<2.5%)直接触发E8，跳过死水封印
+    BBW_EXTREME_ALERT = 2.5   # BBW<2.5% = 极度压缩警戒（尅5% 单位是百分比）
+    if bb < BBW_EXTREME_ALERT:
+        events.append({
+            'event': 'E8_BBW_EXTREME_COMPRESS',
+            'desc': f'BBW={bb:.3f}%极度压缩(历史最低区间) RSI={rsi:.1f} 弹簧即将释放',
+            'priority': 'HIGH',
+            'bbw_shrinking': prev_bb > bb,
+        })
+        return events, 'E8_EXTREME_BBW'
+
+    # 死水封印：RSI中性区 + BB压缩（已通过E8门控，此时BBW>2.5%）
     if SILENT_RSI_LOW <= rsi <= SILENT_RSI_HIGH and bb < SILENT_BB_MAX:
         return [], 'SILENT_DEAD_WATER'
 
