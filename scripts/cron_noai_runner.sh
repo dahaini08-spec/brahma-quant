@@ -118,36 +118,15 @@ $(echo "$OUT" | grep -E '清除|保留|总计|失效' | head -10)"
     ;;
 
   venv-health-guard)
-    # 检查venv依赖 + 补建libgomp软链，正常静默
-    OUT=$(cd "$BASE" && timeout 20 python3 -c "
-import sys, os, subprocess
-sys.path.insert(0,'scripts')
-
-# 补建libgomp软链（每次重启后可能丢失）
-gomp_dst = '/usr/local/lib/libgomp.so.1'
-gomp_src = 'venv/lib/python3.11/site-packages/torch/lib/libgomp.so.1'
-if not os.path.exists(gomp_dst) and os.path.exists(gomp_src):
-    try:
-        os.symlink(os.path.abspath(gomp_src), gomp_dst)
-        os.system('ldconfig 2>/dev/null')
-        print('FIXED: libgomp软链已补建')
-    except Exception as e:
-        print(f'WARN: libgomp软链失败: {e}')
-
-# 检查核心依赖
-r = subprocess.run(['venv/bin/python3','-c','import numpy,pandas,lightgbm,requests,chromadb;print(\"OK\")'],
-    capture_output=True, text=True, timeout=10)
-if 'OK' in r.stdout:
-    print('HEARTBEAT_OK')
-else:
-    print('FAIL: ' + r.stderr[:100])
-" 2>&1 | tail -3)
+    # 检查 venv 依赖 + 补建 libgomp，正常静默
+    # 2026-08-08 修复：libgomp 实际在 xgboost.libs，需设置 LD_LIBRARY_PATH
+    OUT=$(cd "$BASE" && timeout 20 python3 scripts/venv_health_check.py 2>&1 | tail -3)
     log "$OUT"
     if echo "$OUT" | grep -q 'FIXED:'; then
-        send_alert "🔧 [venv-health] libgomp软链已自动补建（重启后恢复）"
+        send_alert "🔧 [venv-health] libgomp 已自动补建（重启后恢复）"
     fi
     if echo "$OUT" | grep -q 'FAIL:'; then
-        send_alert "🚨 [venv-health失败] $(echo "$OUT" | tail -2)"
+        send_alert "🚨 [venv-health 失败] $(echo "$OUT" | tail -2)"
     fi
     ;;
 
