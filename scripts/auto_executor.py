@@ -386,6 +386,52 @@ def find_executable_signals() -> list[dict]:
             pass  # position_sizer失败不阻断
         # ══ [position_sizer END] ═══════════════════════════════════════════════════════════════
 
+
+
+        # ══ [P2 condition_order_matrix 2026-08-08 设计院封印] ════════════════════
+        # 根因修复：08-02 commit宣称接入，auto_executor从未调用check_triggers
+        # 在执行前检查条件单矩阵，处理已有计划的追踪止损/条件平仓
+        try:
+            from brahma_brain.condition_order_matrix import check_triggers as _check_cond
+            _cond_result = _check_cond(
+                symbol=s.get('symbol', ''),
+                current_price=float(s.get('price', 0) or 0),
+                short_notional=0.0,
+                long_notional=0.0,
+                short_pnl=0.0,
+                long_pnl=0.0,
+            )
+            if _cond_result.get('urgent'):
+                print(f"[condition_order] {s.get('symbol')} 紧急条件触发: {_cond_result.get('summary','')[:80]}")
+            for _trig in _cond_result.get('triggered', [])[:2]:
+                print(f"  [condition_order] 触发: {str(_trig)[:100]}")
+        except Exception as _cond_e:
+            pass  # 条件单检查失败不阻断
+        # ══ [END condition_order_matrix] ════════════════════════════════════════
+        # ══ [P1 headroom仓位压缩 2026-08-08 设计院封印] ════════════════════════
+        # 根因修复：08-02 commit宣称headroom接入，实际从未实现
+        # 在Kelly仓位确定后，叠加headroom回撤压缩系数
+        try:
+            from brahma_brain.position_sizer import apply_headroom as _apply_hr
+            _base_pct = s.get('_tier_nav_pct', 0.05)
+            _hr_result = _apply_hr(
+                base_pct=_base_pct,
+                nav_current=float(account_info.get('totalMarginBalance', 0) or 0) if 'account_info' in dir() else 0,
+                nav_peak=float(account_info.get('totalMarginBalance', 0) or 0) * 1.05 if 'account_info' in dir() else 0,
+                open_positions_pct=sum(float(p.get('notional', 0) or 0) for p in (positions or [])) /
+                                   max(float(account_info.get('totalMarginBalance', 1)), 1) if 'account_info' in dir() and 'positions' in dir() else 0.0,
+            )
+            if _hr_result['compressed']:
+                s['_tier_nav_pct'] = _hr_result['adjusted_pct']
+                s['_pos_source'] = (s.get('_pos_source', '') + '+headroom').lstrip('+')
+                print(f"[headroom] {s.get('symbol')} 仓位压缩 {_base_pct*100:.1f}%→{_hr_result['adjusted_pct']*100:.1f}% | {_hr_result['headroom']['reason'][:60]}")
+            if _hr_result['headroom']['factor'] == 0.0:
+                _skip_reason = f"headroom禁止开仓: {_hr_result['headroom']['reason']}"
+                print(f'[headroom] {s.get("symbol")} {_skip_reason}')
+                continue  # 跳过此信号
+        except Exception as _hr_e:
+            pass  # headroom失败不阻断
+        # ══ [END headroom] ══════════════════════════════════════════════════════
         # ③ RR门槛
         rr1 = float(s.get('rr1', 0) or 0)
         if rr1 < MIN_RR:
@@ -938,63 +984,81 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     entry_hi  = float(signal.get('entry_hi', 0) or 0)
     sig_id    = signal.get('signal_id', '')
 
-    # ── [P0-15m入场确认层 2026-08-08 设计院自主决策] ──────────────────────
-    # 核心逻辑：4H/1H信号触发后，等待15m出现方向确认根（CHoCH or 放量突破）
-    # 最多等4根15m（1H），超时放弃（避免追高）
-    # 铁证：15m确认可将入场点改善，WR预期提升3-5%
+    # ── [P0-15m入场确认层 signal_15m_engine 接入版 2026-08-08 设计院自主] ──
+    # 升级：用 signal_15m_engine.generate_15m_signal() 替代手写逻辑
+    # signal_15m_engine 包含：CHoCH/BOS/FVG/OB/成交量多维确认，精度更高
+    # 降级：engine调用失败时回退到手写简版（不阻断执行）
     try:
-        _15m_confirmed = False
-        _15m_skip_reason = ''
-        _kl15 = requests.get(
-            f'{FAPI_BASE}/fapi/v1/klines?symbol={sym}&interval=15m&limit=8',
-            timeout=5
-        ).json()
-        if isinstance(_kl15, list) and len(_kl15) >= 5:
-            # 取最近4根15m K线（排除当前未完结根）
-            _bars = _kl15[-5:-1]  # 最近4根已完结
-            _closes  = [float(b[4]) for b in _bars]
-            _highs   = [float(b[2]) for b in _bars]
-            _lows    = [float(b[3]) for b in _bars]
-            _vols    = [float(b[5]) for b in _bars]
-            _avg_vol = sum(_vols) / len(_vols) if _vols else 1
-
-            if direction == 'LONG':
-                # 确认条件1：最近1根收阳 + 收盘>前根高点（BOS向上）
-                _bos_up = _closes[-1] > _highs[-2] if len(_closes) >= 2 else False
-                # 确认条件2：放量（成交量>均量×1.5）
-                _vol_surge = _vols[-1] > _avg_vol * 1.5
-                # 确认条件3：连续2根收阳
-                _two_bull = all(c > o for c, o in zip(
-                    _closes[-2:], [float(b[1]) for b in _bars[-2:]]))
-                _15m_confirmed = _bos_up or _vol_surge or _two_bull
-                if not _15m_confirmed:
-                    _15m_skip_reason = f'15m无做多确认(BOS={_bos_up} 量能={_vol_surge:.0f} 连阳={_two_bull})'
-            else:  # SHORT
-                # 确认条件1：最近1根收阴 + 收盘<前根低点（BOS向下）
-                _bos_dn = _closes[-1] < _lows[-2] if len(_closes) >= 2 else False
-                # 确认条件2：放量
-                _vol_surge = _vols[-1] > _avg_vol * 1.5
-                # 确认条件3：连续2根收阴
-                _two_bear = all(c < o for c, o in zip(
-                    _closes[-2:], [float(b[1]) for b in _bars[-2:]]))
-                _15m_confirmed = _bos_dn or _vol_surge or _two_bear
-                if not _15m_confirmed:
-                    _15m_skip_reason = f'15m无做空确认(BOS={_bos_dn} 量能={_vol_surge:.0f} 连阴={_two_bear})'
-
-            if not _15m_confirmed:
-                print(f'[15m确认层] {sym} {direction} 信号被拦截 — {_15m_skip_reason}')
+        import sys as _15m_sys
+        _15m_sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent / 'brahma_brain'))
+        from signal_15m_engine import generate_15m_signal as _gen15m
+        _15m_sig = _gen15m(sym, verbose=False)
+        if _15m_sig is not None:
+            # engine返回信号：检查方向是否与主信号一致
+            _15m_dir = _15m_sig.get('direction', '')
+            if _15m_dir and _15m_dir != direction:
+                _skip_reason = f'15m信号方向冲突: engine={_15m_dir} main={direction}'
+                print(f'[15m确认层-engine] {sym} {_skip_reason}')
                 return {
                     'signal_id': sig_id, 'symbol': sym, 'direction': direction,
                     'score': score, 'ts': time.time(),
                     'ts_iso': datetime.now(timezone.utc).isoformat(),
-                    'status': 'SKIP_15M', 'reason': _15m_skip_reason,
+                    'status': 'SKIP_15M', 'reason': _skip_reason,
                 }
             else:
-                print(f'[15m确认层] {sym} {direction} ✅ 确认通过 — 继续执行')
+                print(f'[15m确认层-engine] {sym} {direction} ✅ 引擎确认通过 score={_15m_sig.get("score",0)}')
         else:
-            print(f'[15m确认层] {sym} K线数据不足，跳过确认（不拦截）')
+            # engine无信号 = 无确认根，拦截
+            _skip_reason = '15m引擎无确认信号（无BOS/放量/CHoCH）'
+            print(f'[15m确认层-engine] {sym} {direction} 信号被拦截 — {_skip_reason}')
+            return {
+                'signal_id': sig_id, 'symbol': sym, 'direction': direction,
+                'score': score, 'ts': time.time(),
+                'ts_iso': datetime.now(timezone.utc).isoformat(),
+                'status': 'SKIP_15M', 'reason': _skip_reason,
+            }
     except Exception as _15m_e:
-        pass  # 15m确认失败时不阻断，继续执行
+        # 降级：回退到简版手写逻辑
+        try:
+            _15m_confirmed = False
+            _15m_skip_reason = ''
+            _kl15 = requests.get(
+                f'{FAPI_BASE}/fapi/v1/klines?symbol={sym}&interval=15m&limit=8',
+                timeout=5
+            ).json()
+            if isinstance(_kl15, list) and len(_kl15) >= 5:
+                _bars = _kl15[-5:-1]
+                _closes = [float(b[4]) for b in _bars]
+                _highs  = [float(b[2]) for b in _bars]
+                _lows   = [float(b[3]) for b in _bars]
+                _vols   = [float(b[5]) for b in _bars]
+                _avg_vol = sum(_vols) / len(_vols) if _vols else 1
+                if direction == 'LONG':
+                    _bos_up = _closes[-1] > _highs[-2] if len(_closes) >= 2 else False
+                    _vol_surge = _vols[-1] > _avg_vol * 1.5
+                    _two_bull = all(c > o for c, o in zip(_closes[-2:], [float(b[1]) for b in _bars[-2:]]))
+                    _15m_confirmed = _bos_up or _vol_surge or _two_bull
+                    if not _15m_confirmed:
+                        _15m_skip_reason = f'15m无做多确认(降级版 BOS={_bos_up})'
+                else:
+                    _bos_dn = _closes[-1] < _lows[-2] if len(_closes) >= 2 else False
+                    _vol_surge = _vols[-1] > _avg_vol * 1.5
+                    _two_bear = all(c < o for c, o in zip(_closes[-2:], [float(b[1]) for b in _bars[-2:]]))
+                    _15m_confirmed = _bos_dn or _vol_surge or _two_bear
+                    if not _15m_confirmed:
+                        _15m_skip_reason = f'15m无做空确认(降级版 BOS={_bos_dn})'
+                if not _15m_confirmed:
+                    print(f'[15m确认层-fallback] {sym} {direction} 被拦截 — {_15m_skip_reason}')
+                    return {
+                        'signal_id': sig_id, 'symbol': sym, 'direction': direction,
+                        'score': score, 'ts': time.time(),
+                        'ts_iso': datetime.now(timezone.utc).isoformat(),
+                        'status': 'SKIP_15M', 'reason': _15m_skip_reason,
+                    }
+                else:
+                    print(f'[15m确认层-fallback] {sym} {direction} ✅ 通过')
+        except Exception:
+            pass  # 双层降级失败，不阻断
     # ── end 15m入场确认层 ──────────────────────────────────────────────────
 
     # ── P0: 波动率自适应止损（2026-07-10 6方联合推理封印）─────────────────
