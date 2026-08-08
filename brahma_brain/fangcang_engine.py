@@ -25,9 +25,36 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Optional
 
-# ── 路径配置 ───────────────────────────────────────────────
+# ── 路径配置（修复 2026-08-08 设计院）─────────────────────
 _BASE = Path(__file__).parent.parent
-_DATA_DIR = _BASE / "data" / "historical"
+_DATA_DIR_LEGACY = _BASE / "data" / "historical"   # 旧路径（保留兼容）
+_DATA_DIR_BACKTEST = _BASE / "data" / "backtest"   # 新路径（实际数据在这里）
+
+
+def _load_klines_native(symbol: str, tf: str) -> List[dict]:
+    """
+    读取 data/backtest/{symbol}_{tf}.json
+    原生格式: [[ts_ms, o, h, l, c, v, ...], ...]
+    转为 [{"ts": ms, "o": f, "h": f, "l": f, "c": f, "v": f}, ...]
+    """
+    path = _DATA_DIR_BACKTEST / f"{symbol}_{tf}.json"
+    if not path.exists():
+        return []
+    try:
+        raw = json.loads(path.read_text())
+        bars = []
+        for r in raw:
+            bars.append({
+                "ts": int(r[0]),
+                "o": float(r[1]),
+                "h": float(r[2]),
+                "l": float(r[3]),
+                "c": float(r[4]),
+                "v": float(r[5]),
+            })
+        return bars
+    except Exception:
+        return []
 
 # ── 缓存层（内存级，TTL=30min）─────────────────────────────
 _CACHE: Dict[str, dict] = {}
@@ -47,8 +74,13 @@ SL_PCT      = 2.0  # 标准SL%
 # ══════════════════════════════════════════════════════════
 
 def _load_klines(symbol: str, tf: str) -> List[dict]:
-    """从方仓加载K线，失败返回[]"""
-    path = _DATA_DIR / f"{symbol}_{tf}.jsonl.gz"
+    """从方仓加载K线，优先 data/backtest/ 原生格式，失败返回[]"""
+    # [设计院修复 2026-08-08] 优先读 data/backtest/ 原生格式
+    bars = _load_klines_native(symbol, tf)
+    if bars:
+        return bars
+    # fallback: 旧路径 jsonl.gz 格式
+    path = _DATA_DIR_LEGACY / f"{symbol}_{tf}.jsonl.gz"
     if not path.exists():
         return []
     try:
@@ -65,7 +97,7 @@ def _load_klines(symbol: str, tf: str) -> List[dict]:
 
 def _load_regime_map(symbol: str) -> Dict[int, str]:
     """从方仓加载体制标注，失败返回{}"""
-    path = _DATA_DIR / f"{symbol}_regime_labels.jsonl.gz"
+    path = _DATA_DIR_LEGACY / f"{symbol}_regime_labels.jsonl.gz"
     if not path.exists():
         return {}
     try:
@@ -284,10 +316,20 @@ def get_fangcang_context(
         if len(klines) < WEEK_BARS + FUTURE_BARS + 100:
             return {'status': 'unavailable', 'reason': 'insufficient_data'}
 
-        # 当前体制（外部传入优先）
+        # 当前体制（外部传入优先，其次读 regime_state.json SSOT，最后fallback旧map）
         if not current_regime:
-            last_ts = klines[-1]['ts']
-            current_regime = regime_map.get(last_ts, 'UNKNOWN')
+            try:
+                import json as _json
+                _rs = _json.loads((_BASE / 'data' / 'regime_state.json').read_text())
+                _sym_state = _rs.get(symbol, {})
+                current_regime = (
+                    _sym_state.get('confirmed') or
+                    _sym_state.get('regime') or
+                    'UNKNOWN'
+                )
+            except Exception:
+                last_ts = klines[-1]['ts']
+                current_regime = regime_map.get(last_ts, 'UNKNOWN')
 
         # 扫描历史相似案例
         top_similar = _scan_history(klines, regime_map, current_regime)
