@@ -4512,6 +4512,54 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception:
         _result['fangcang'] = {'status': 'unavailable', 'reason': 'engine_error'}
 
+    # [HCME 2026-08-08 设计院封印] 历史情境增强
+    # M5: 波动率历史分位 · M6: 多周期共振验证
+    try:
+        from brahma_brain.volatility_context import VolatilityContext
+        from brahma_brain.mtf_resonance import MTFResonance
+
+        # 获取当前ATR（优先4H，降级1H）和BBW
+        _hcme_momentum = ms.get('momentum', {}) if ms else {}
+        _hcme_atr = float(_hcme_momentum.get('atr_4h', 0) or
+                          _hcme_momentum.get('atr_1h', 0) or
+                          _result.get('atr_4h', 0) or
+                          _result.get('atr_1h', 0) or
+                          price * 0.015)
+        # BBW：从k4h计算，或从breakdown提取
+        _hcme_bbw = 2.0  # 默认2% BBW
+        try:
+            if k4h and k4h.get('c') and len(k4h['c']) >= 20:
+                import math as _hcme_math
+                _hcme_closes = list(k4h['c'][-20:])
+                _hcme_mid = sum(_hcme_closes) / 20
+                _hcme_std = _hcme_math.sqrt(sum((x - _hcme_mid) ** 2 for x in _hcme_closes) / 20)
+                _hcme_bbw = (2 * 2 * _hcme_std / _hcme_mid * 100) if _hcme_mid > 0 else 2.0
+        except Exception:
+            pass
+
+        _hcme_direction = signal_dir or _result.get('direction', 'LONG')
+        _hcme_price = float(price or _result.get('price', 0) or 0)
+        _hcme_symbol = _sym or symbol
+
+        vc = VolatilityContext()
+        vol_ctx = vc.get_percentile(_hcme_symbol, _hcme_atr, _hcme_bbw)
+
+        mtf = MTFResonance()
+        resonance = mtf.check(_hcme_symbol, _hcme_direction, _hcme_price)
+
+        # 注入score调整（使用score_final优先，降级score）
+        _hcme_score_key = 'score_final' if 'score_final' in _result else 'score'
+        _hcme_cur_score = float(_result.get(_hcme_score_key, 0) or 0)
+        _hcme_delta = resonance.get('score_bonus', 0) + vol_ctx.get('score_adj', 0)
+        if _hcme_delta != 0:
+            _result[_hcme_score_key] = round(_hcme_cur_score + _hcme_delta, 1)
+
+        # 注入到输出字段
+        _result['hcme_vol_context'] = vol_ctx
+        _result['hcme_mtf_resonance'] = resonance
+    except Exception:
+        pass  # HCME不可用时不阻断主流程
+
     return _result
 
 def format_report(r: dict) -> str:
