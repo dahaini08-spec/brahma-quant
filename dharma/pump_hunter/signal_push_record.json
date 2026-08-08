@@ -198,10 +198,10 @@
     "eth_regime": "BULL_TREND"
   },
   "KSTRUSDT": {
-    "last_push_ts": 1786096003.0225146,
+    "last_push_ts": 1786152585.192754,
     "last_score": 85,
-    "last_push_at": "2026-08-07T09:46:43.130901",
-    "push_price": 25.15,
+    "last_push_at": "2026-08-08T01:29:50.493623",
+    "push_price": 25.26,
     "regime": "BULL_TREND",
     "btc_regime": "BULL_TREND",
     "eth_regime": "BULL_TREND"
@@ -378,10 +378,10 @@
     "eth_regime": "BULL_TREND"
   },
   "APPUSDT": {
-    "last_push_ts": 1786138117.4758692,
-    "last_score": 100,
-    "last_push_at": "2026-08-07T21:28:42.269010",
-    "push_price": 348.2,
+    "last_push_ts": 1786152585.192754,
+    "last_score": 95,
+    "last_push_at": "2026-08-08T01:29:48.123065",
+    "push_price": 348.59,
     "regime": "BULL_TREND",
     "btc_regime": "BULL_TREND",
     "eth_regime": "BULL_TREND"
@@ -454,6 +454,33 @@
     "last_score": 87,
     "last_push_at": "2026-08-08T00:47:21.911064",
     "push_price": 0.0355,
+    "regime": "BULL_TREND",
+    "btc_regime": "BULL_TREND",
+    "eth_regime": "BULL_TREND"
+  },
+  "MIRAUSDT": {
+    "last_push_ts": 1786152585.192754,
+    "last_score": 82,
+    "last_push_at": "2026-08-08T01:29:52.987383",
+    "push_price": 0.04176,
+    "regime": "BULL_TREND",
+    "btc_regime": "BULL_TREND",
+    "eth_regime": "BULL_TREND"
+  },
+  "SNXUSDT": {
+    "last_push_ts": 1786152585.192754,
+    "last_score": 81,
+    "last_push_at": "2026-08-08T01:29:55.544157",
+    "push_price": 0.2102,
+    "regime": "BULL_TREND",
+    "btc_regime": "BULL_TREND",
+    "eth_regime": "BULL_TREND"
+  },
+  "POWRUSDT": {
+    "last_push_ts": 1786152585.192754,
+    "last_score": 80,
+    "last_push_at": "2026-08-08T01:29:57.982142",
+    "push_price": 0.03837,
     "regime": "BULL_TREND",
     "btc_regime": "BULL_TREND",
     "eth_regime": "BULL_TREND"
