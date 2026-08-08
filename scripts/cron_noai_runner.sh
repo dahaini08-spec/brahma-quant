@@ -8,6 +8,8 @@
 
 # ── 防御层：禁止产生core dump ─────────────────────────────────
 ulimit -c 0
+export PYTHONFAULTHANDLER=0          # 禁用Python fault handler（防止core dump）
+export PYTHONDONTWRITEBYTECODE=1     # 不写.pyc（减少IO）
 
 TASK="$1"
 BASE="/root/.openclaw/workspace/trading-system"
