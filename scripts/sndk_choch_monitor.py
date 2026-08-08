@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 BEAR_OB_THRESHOLD = 1581.0  # Bear OB突破目标
 USER_ID = "73295708"
-THREAD_ID = "019f933d-d67a-7237-8cbd-7923bbf336fa"
+THREAD_ID = "019fd9dd-4b0f-71db-87fb-1e192ccb2291"
 
 def get_sndk_data():
     import urllib.request, json

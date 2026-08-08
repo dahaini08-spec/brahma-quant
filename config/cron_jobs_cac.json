@@ -24,7 +24,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291"
       },
       "state": {}
     },
@@ -48,8 +48,8 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
-        "threadId": "019eaabf-d731-75b5-82e5-95d640c617d3",
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291",
+        "threadId": "019fd9dd-4b0f-71db-87fb-1e192ccb2291",
         "failureDestination": "none"
       },
       "state": {}
@@ -148,7 +148,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291"
       },
       "state": {}
     },
@@ -174,7 +174,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291"
       },
       "state": {}
     },
@@ -216,7 +216,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291"
       },
       "state": {}
     },
@@ -309,7 +309,7 @@
         "text": "exec:cd /root/.openclaw/workspace/trading-system && python3 brahma_brain/auto_review.py >> logs/arch_review.log 2>&1; echo HEARTBEAT_OK"
       },
       "delivery": {
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291",
         "channel": "jarvis"
       },
       "state": {}
@@ -335,7 +335,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291"
       },
       "state": {}
     },
@@ -359,7 +359,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291"
       },
       "state": {}
     },
@@ -402,7 +402,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291"
       },
       "state": {}
     },
@@ -480,7 +480,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291"
       },
       "state": {}
     },
@@ -505,7 +505,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291"
       },
       "state": {}
     },
@@ -529,7 +529,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291"
       },
       "state": {}
     },
@@ -554,7 +554,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291",
         "announce": true
       },
       "state": {}
@@ -580,7 +580,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291"
       },
       "state": {}
     },
@@ -641,7 +641,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291",
         "announce": true
       },
       "state": {}
@@ -720,7 +720,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291",
         "announce": true
       },
       "state": {}
@@ -746,7 +746,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291",
         "announce": true
       },
       "state": {}
@@ -772,7 +772,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291",
         "announce": true
       },
       "state": {}
@@ -796,7 +796,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291",
         "announce": true
       },
       "state": {}
@@ -821,7 +821,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291",
         "announce": true
       },
       "state": {}
@@ -846,7 +846,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075",
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291",
         "announce": true
       },
       "state": {}
@@ -871,7 +871,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291"
       },
       "state": {}
     },
@@ -895,7 +895,7 @@
       "delivery": {
         "mode": "announce",
         "channel": "jarvis",
-        "to": "73295708:thread:019f181f-e4d1-7576-85ca-77f4a7fa8075"
+        "to": "73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291"
       },
       "state": {}
     }
