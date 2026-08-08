@@ -15,7 +15,7 @@
     },
     "BULL_TREND:LONG:120-139": {
       "multiplier": 1.0,
-      "note": "脏数据清洗后 WR=51.5% n=33 恢复正常",
+      "note": "脏数据清洗后 WR=51.5% n=33 恢复正常 [P0-3封印]",
       "ev_basis": 0.03
     },
     "BEAR_RECOVERY:LONG:165+": {
@@ -101,7 +101,7 @@
   "updated_at": "2026-08-08T08:39:21Z",
   "BULL_TREND:LONG:120-139": {
     "multiplier": 1.0,
-    "basis": "脏数据清洗后 simfactory铁证 n=33 WR=51.5% → 恢复正常权重 [2026-08-08 设计院清洗修复]",
+    "basis": "脏数据清洗后 simfactory铁证 n=33 WR=51.5% → NORMAL [2026-08-08 P0-3封印 F15已修正不再封禁]",
     "action": "NORMAL",
     "updated": "2026-08-08"
   },
@@ -125,5 +125,6 @@
     "action": "BLOCK",
     "updated": "2026-08-02"
   },
-  "_last_clean": "2026-08-08 脏数据清洗：移除99条sl>2.0历史信号"
+  "_last_clean": "2026-08-08 脏数据清洗：移除99条sl>2.0历史信号",
+  "_p03_seal": "2026-08-08 F15自愈已被P0-3清洁数据覆盖，不得再改回BLOCK"
 }

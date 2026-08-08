@@ -581,3 +581,248 @@ if __name__ == '__main__' and '--solidification' in __import__('sys').argv:
             print(f"  ❌ {iss}")
     else:
         print(f"\n✅ 全部{len(result['checks'])}项固化指标通过")
+
+
+# ══════════════════════════════════════════════════════════════════════
+# 🏛️ brahma_360 v2.0 — 10模块标准化自检体系
+# mattpocock/skills原则：小而可组合，每个check做一件事
+# 设计院封印 2026-08-08
+# ══════════════════════════════════════════════════════════════════════
+
+import psutil as _psutil
+import requests as _req
+
+BASE_360 = Path('/root/.openclaw/workspace/trading-system')
+
+def _check_result(name: str, ok: bool, score: int, detail: str, fix: str = '') -> dict:
+    """标准CheckResult格式（mattpocock小而可组合接口）"""
+    return {'name': name, 'ok': ok, 'score': score, 'detail': detail, 'fix': fix}
+
+
+def check_01_regime_freshness() -> dict:
+    """体制状态 < 60min"""
+    try:
+        with open(BASE_360 / 'data' / 'brahma_state.json') as f:
+            d = json.load(f)
+        age = (time.time() - d.get('last_update', d.get('timestamp', 0))) / 60
+        ok = age < 60
+        score = 10 if age < 60 else (7 if age < 120 else 0)
+        return _check_result('体制新鲜度', ok, score,
+            f'{age:.0f}min BTC={d.get("regime","?")}',
+            'python3 scripts/brahma_state_refresh.py')
+    except Exception as e:
+        return _check_result('体制新鲜度', False, 0, f'读取失败:{e}',
+            'python3 scripts/brahma_state_refresh.py')
+
+
+def check_02_sqe_clean() -> dict:
+    """SQE信号日志无sl>2.0脏数据"""
+    try:
+        with open(BASE_360 / 'data' / 'live_signal_log.jsonl') as f:
+            sigs = [json.loads(l) for l in f if l.strip()]
+        dirty = [s for s in sigs if s.get('sl_pct', 0) > 2.0]
+        ok = len(dirty) == 0
+        return _check_result('SQE清洁度', ok, 10 if ok else 0,
+            f'{len(sigs)}条 脏数据={len(dirty)}条',
+            '清洗sl>2.0的历史信号')
+    except Exception as e:
+        return _check_result('SQE清洁度', False, 0, str(e))
+
+
+def check_03_wr_baseline() -> dict:
+    """WR权重基准正确（BULL:LONG:120-139=NORMAL）"""
+    try:
+        with open(BASE_360 / 'data' / 'signal_weights.json') as f:
+            sw = json.load(f)
+        e = sw.get('BULL_TREND:LONG:120-139', {})
+        ok = e.get('action') == 'NORMAL' and e.get('multiplier', 0) >= 0.9
+        return _check_result('WR权重基准', ok, 10 if ok else 5,
+            f'action={e.get("action")} mult={e.get("multiplier")}',
+            '更新signal_weights.json')
+    except Exception as e:
+        return _check_result('WR权重基准', False, 0, str(e))
+
+
+def check_04_cron_architecture() -> dict:
+    """Cron架构：noai_runner任务无model字段"""
+    try:
+        import subprocess
+        r = subprocess.run(['openclaw', 'cron', 'list', '--json'],
+                           capture_output=True, text=True, timeout=10)
+        jobs = json.loads(r.stdout)
+        jl = jobs if isinstance(jobs, list) else jobs.get('jobs', [])
+        zombies = [
+            j['name'] for j in jl
+            if 'cron_noai_runner' in j.get('payload', {}).get('message', '')
+            and 'model' in j.get('payload', {})
+        ]
+        ok = len(zombies) == 0
+        return _check_result('Cron架构', ok, 10 if ok else 0,
+            f'{len(jl)}个任务 僵尸model={len(zombies)}',
+            f'重建任务去除model字段: {zombies}')
+    except Exception as e:
+        return _check_result('Cron架构', False, 0, str(e))
+
+
+def check_05_critical_files() -> dict:
+    """关键文件完整性（10个必须存在）"""
+    files = [
+        'data/brahma_state.json', 'data/live_signal_log.jsonl',
+        'data/signal_weights.json', 'data/macro_overlay.json',
+        'data/regime_state.json', 'brahma_brain/brahma_engine.py',
+        'brahma_brain/fangcang_engine.py', 'brahma_brain/kronos_bridge.py',
+        'scripts/auto_executor.py', 'scripts/position_guardian.py',
+    ]
+    missing = [f for f in files if not (BASE_360 / f).exists()]
+    ok = len(missing) == 0
+    return _check_result('关键文件', ok, 10 if ok else max(0, 10 - len(missing)*2),
+        f'{len(files)-len(missing)}/{len(files)} 存在' + (f' 缺:{missing}' if missing else ''),
+        f'恢复缺失文件: {missing}')
+
+
+def check_06_kronos_cache() -> dict:
+    """Kronos缓存有效（TTL=4H，磁盘缓存存在）"""
+    try:
+        cache_file = BASE_360 / 'data' / 'kronos_p_up_cache.json'
+        if not cache_file.exists():
+            return _check_result('Kronos缓存', False, 3, '磁盘缓存文件不存在',
+                '运行brahma_1hao_analysis.py生成缓存')
+        with open(cache_file) as f:
+            kc = json.load(f)
+        btc = kc.get('BTCUSDT', [0, 0.5, 0])
+        age_min = (time.time() - btc[0]) / 60 if btc[0] else 999
+        valid = age_min < 240  # <4H
+        return _check_result('Kronos缓存', valid,
+            10 if age_min < 60 else (7 if age_min < 240 else 3),
+            f'BTC p_up={btc[1]:.3f} age={age_min:.0f}min',
+            '重新运行1号工程刷新缓存')
+    except Exception as e:
+        return _check_result('Kronos缓存', False, 0, str(e))
+
+
+def check_07_fangcang_coverage() -> dict:
+    """方仓引擎13币种K线数据覆盖"""
+    try:
+        required = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'XRPUSDT',
+                    'DOGEUSDT', 'ADAUSDT', 'OPUSDT', 'ARBUSDT']
+        bt_dir = BASE_360 / 'data' / 'backtest'
+        covered = [s for s in required
+                   if (bt_dir / f'{s}_15m.json').exists()]
+        ok = len(covered) >= 6
+        return _check_result('方仓数据覆盖', ok,
+            10 if len(covered) >= 8 else (7 if len(covered) >= 6 else 3),
+            f'{len(covered)}/{len(required)} 币种有数据',
+            'python3 scripts/fetch_fangcang_history.py --symbols ...')
+    except Exception as e:
+        return _check_result('方仓数据覆盖', False, 0, str(e))
+
+
+def check_08_api_latency() -> dict:
+    """Binance API延迟 < 500ms"""
+    try:
+        t0 = time.time()
+        r = _req.get('https://fapi.binance.com/fapi/v1/ping', timeout=5)
+        latency_ms = (time.time() - t0) * 1000
+        ok = r.status_code == 200 and latency_ms < 500
+        return _check_result('API延迟', ok,
+            10 if latency_ms < 200 else (7 if latency_ms < 500 else 3),
+            f'{latency_ms:.0f}ms (status={r.status_code})',
+            '检查网络连接')
+    except Exception as e:
+        return _check_result('API延迟', False, 0, f'API不可达:{e}')
+
+
+def check_09_disk_health() -> dict:
+    """磁盘空间 > 5GB"""
+    try:
+        disk = _psutil.disk_usage('/')
+        free_gb = disk.free / 1024**3
+        ok = free_gb > 5
+        return _check_result('磁盘健康', ok,
+            10 if free_gb > 20 else (7 if free_gb > 10 else (5 if free_gb > 5 else 0)),
+            f'剩余{free_gb:.1f}GB / 总{disk.total/1024**3:.0f}GB ({disk.percent}%)',
+            'python3 scripts/cron_noai_runner.sh ops-disk-clean')
+    except Exception as e:
+        return _check_result('磁盘健康', False, 0, str(e))
+
+
+def check_10_signal_quality() -> dict:
+    """近24H信号质量（WR基准+信号数合理）"""
+    try:
+        with open(BASE_360 / 'data' / 'live_signal_log.jsonl') as f:
+            sigs = [json.loads(l) for l in f if l.strip()]
+        recent = [s for s in sigs if time.time() - s.get('timestamp', 0) < 86400]
+        n = len(recent)
+        # 检查是否有明显异常（太多或太少）
+        ok = 0 <= n <= 200  # 正常范围：0~200条/天
+        return _check_result('信号质量', ok,
+            10 if 0 <= n <= 100 else (7 if n <= 200 else 3),
+            f'近24H={n}条 总计={len(sigs)}条',
+            '检查brahma_1hao是否异常频繁触发')
+    except Exception as e:
+        return _check_result('信号质量', False, 0, str(e))
+
+
+def run_brahma_360(mode: str = 'full') -> dict:
+    """
+    brahma_360 v2.0 统一入口
+    mode='light'  → check_01~05（<5s，无网络）
+    mode='full'   → check_01~10（含API+信号质量）
+    """
+    t0 = time.time()
+
+    light_checks = [
+        check_01_regime_freshness,
+        check_02_sqe_clean,
+        check_03_wr_baseline,
+        check_04_cron_architecture,
+        check_05_critical_files,
+    ]
+    full_checks = light_checks + [
+        check_06_kronos_cache,
+        check_07_fangcang_coverage,
+        check_08_api_latency,
+        check_09_disk_health,
+        check_10_signal_quality,
+    ]
+
+    checks = full_checks if mode == 'full' else light_checks
+    results = []
+    for fn in checks:
+        try:
+            results.append(fn())
+        except Exception as e:
+            results.append(_check_result(fn.__name__, False, 0, f'异常:{e}'))
+
+    total_score = sum(r['score'] for r in results)
+    max_score = len(results) * 10
+    issues = [r for r in results if not r['ok']]
+
+    return {
+        'score': total_score,
+        'max_score': max_score,
+        'pct': round(total_score / max_score * 100, 1) if max_score else 0,
+        'mode': mode,
+        'checks': results,
+        'issues': [r['name'] for r in issues],
+        'elapsed': round(time.time() - t0, 2),
+        'timestamp': datetime.now(timezone.utc).isoformat(),
+    }
+
+
+if __name__ == '__main__' and '--360' in __import__('sys').argv:
+    import sys as _sys
+    _mode = 'light' if '--light' in _sys.argv else 'full'
+    _res = run_brahma_360(_mode)
+    print(f"\n🏛️ 梵天360 v2.0 · {_res['timestamp'][:16]} UTC · mode={_mode}")
+    print(f"综合评分: {_res['score']}/{_res['max_score']} ({_res['pct']}%) | 耗时:{_res['elapsed']}s")
+    print()
+    for c in _res['checks']:
+        icon = '✅' if c['ok'] else '❌'
+        print(f"  {icon} {c['name']:14s} {c['score']:2d}/10  {c['detail']}")
+        if not c['ok'] and c.get('fix'):
+            print(f"     → 修复: {c['fix']}")
+    if not _res['issues']:
+        print(f"\n🔐 全部{len(_res['checks'])}项通过")
+    else:
+        print(f"\n⚠️ {len(_res['issues'])}项需关注: {_res['issues']}")

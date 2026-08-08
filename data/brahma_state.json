@@ -4,7 +4,7 @@
   "regime": "BULL_TREND",
   "n_open": 0,
   "total_pnl": 0.26959999999999695,
-  "last_update": 1786178245.5643034,
+  "last_update": 1786186403.2266078,
   "source": "reconcile_rebuild_20260628",
   "ws_guardian_sync": true,
   "last_sync": "2026-06-29T04:35:35.517800+00:00",
@@ -14,17 +14,17 @@
   "_price_eth": 1870.73,
   "_refreshed_at": 1784527892.009376,
   "_refreshed_by": "design_institute_seal_2026-07-20",
-  "updated_at": "2026-08-08T08:37:25.564091+00:00",
-  "last_updated": "2026-08-08T08:37:25.564091+00:00",
-  "last_scan_ts": "2026-08-08T08:37:25.564091+00:00",
-  "timestamp": 1786178245.5643039,
-  "last_price": 64975.1,
-  "btc_price": 64975.1,
-  "price": 64975.1,
-  "eth_price": 1916.07,
+  "updated_at": "2026-08-08T10:53:23.226430+00:00",
+  "last_updated": "2026-08-08T10:53:23.226430+00:00",
+  "last_scan_ts": "2026-08-08T10:53:23.226430+00:00",
+  "timestamp": 1786186403.226608,
+  "last_price": 64980.7,
+  "btc_price": 64980.7,
+  "price": 64980.7,
+  "eth_price": 1919.99,
   "market_prices": {
-    "BTCUSDT": 64975.1,
-    "ETHUSDT": 1916.07
+    "BTCUSDT": 64980.7,
+    "ETHUSDT": 1919.99
   },
   "regime_label": "BULL_TREND",
   "regime_snapshot": {
@@ -32,14 +32,14 @@
     "regime": "BULL_TREND",
     "phase": "4W_OR_2W",
     "momentum": "NEUTRAL",
-    "rsi_1h": 58.66,
-    "rsi_4h": 61.72,
-    "rsi_1d": 54.83,
+    "rsi_1h": 59.01,
+    "rsi_4h": 61.81,
+    "rsi_1d": 54.86,
     "trend_1h": "CHOP",
     "trend_4h": "BULL",
     "trend_1d": "CHOP",
     "source": "market_state.detect_regime",
-    "ts": 1786178246.7648194
+    "ts": 1786186404.2487395
   },
   "ws_guardian": {
     "pid": 0,
@@ -59,6 +59,6 @@
   "_close_reason": "BEAR_RECOVERY体制+价格逼近入场价，设计院自主决策全平 2026-08-04",
   "_close_price_eth": 1866.31,
   "_close_pnl": 0.26959999999999695,
-  "_regime_sync_ts": 1786178246.7655458,
+  "_regime_sync_ts": 1786186404.2493339,
   "_regime_sync_src": "brahma_state_refresh"
 }

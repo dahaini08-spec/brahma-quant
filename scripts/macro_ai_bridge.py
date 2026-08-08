@@ -219,6 +219,7 @@ def read_current_state() -> dict | None:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--read', action='store_true', help='只读取当前宏观状态')
+    parser.add_argument('--force', action='store_true', help='强制重新分析，忽略缓存')
     args = parser.parse_args()
 
     if args.read:
@@ -232,6 +233,26 @@ def main():
         else:
             print("⚠️ 无宏观状态数据，请先运行分析")
         return
+
+    # ── [prime-agent心跳思想 2026-08-08 设计院封印] 4H TTL缓存检查 ──
+    # cron每4H运行一次，若未到4H且数据新鲜，直接运用缓存并平静退出
+    _MACRO_CACHE_TTL = 14400  # 4H = cron频率
+    if not args.force and MACRO_FILE.exists():
+        try:
+            with open(MACRO_FILE) as _f:
+                _cached = json.load(_f)
+            _ts = _cached.get('ts', _cached.get('timestamp', 0))
+            if isinstance(_ts, str):
+                from datetime import datetime as _dt
+                try: _ts = _dt.fromisoformat(_ts.replace('Z','+00:00')).timestamp()
+                except: _ts = 0
+            _age = time.time() - _ts if _ts else 999999
+            if _age < _MACRO_CACHE_TTL:
+                print(f'[macro_ai_bridge] 缓存有效 age={_age/3600:.1f}h state={_cached.get("state")} — HEARTBEAT_OK')
+                return
+        except Exception:
+            pass  # 读取失败则继续重新分析
+    # ── end 缓存检查 ──
 
     print(f"[macro_ai_bridge] 开始宏观数据采集 {datetime.utcnow().strftime('%H:%M UTC')}")
 
