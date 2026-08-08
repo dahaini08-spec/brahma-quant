@@ -222,7 +222,7 @@ ICP_ANALYSIS = {
 {hook}
 
 {sym}/USDT 量化信号 · 机构视角
-体制: {regime} | 评分: {score}/150 | {ts_cst}
+体制: {regime_cn} | 评分: {score}/150 | {ts_cst}
 
 数据说了什么：
 • 体制共识: {regime} 趋势确认
