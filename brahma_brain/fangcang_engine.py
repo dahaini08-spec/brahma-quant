@@ -720,10 +720,16 @@ def get_fangcang_context(
         if len(klines_4h) < WEEK_BARS + FUTURE_BARS + 100:
             return {'status': 'unavailable', 'reason': 'insufficient_data', '_ts': now}
 
-        # 当前体制（外部传入优先）
+        # 当前体制（外部传入优先，其次读 regime_state.json SSOT，最后 fallback）
         if not current_regime:
-            last_ts = klines_4h[-1]['ts']
-            current_regime = regime_map.get(last_ts, 'UNKNOWN')
+            try:
+                import json as _j
+                _rs = _j.loads((_BASE / 'data' / 'regime_state.json').read_text())
+                _s = _rs.get(symbol, {})
+                current_regime = _s.get('confirmed') or _s.get('regime') or 'UNKNOWN'
+            except Exception:
+                last_ts = klines_4h[-1]['ts']
+                current_regime = regime_map.get(last_ts, 'UNKNOWN')
 
         # 当前特征提取（用于主力意图检测）
         recent_15m = klines_15m[-BARS_15M_12H:] if klines_15m else []
