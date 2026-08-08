@@ -1,0 +1,39 @@
+{
+  "btc": {
+    "symbol": "BTCUSDT",
+    "total_compress": 255,
+    "long_count": 32,
+    "long_wr_pct": 12.5,
+    "short_count": 32,
+    "short_wr_pct": 12.5,
+    "chop_count": 191
+  },
+  "eth": {
+    "symbol": "ETHUSDT",
+    "total_compress": 280,
+    "long_count": 45,
+    "long_wr_pct": 16.1,
+    "short_count": 41,
+    "short_wr_pct": 14.6,
+    "chop_count": 194
+  },
+  "avg_compress_hours": 125.5,
+  "avg_breakout_pct": 9.7636,
+  "best_case": {
+    "symbol": "BTCUSDT",
+    "compress_start_ts": 1583956800000,
+    "compress_end_ts": 1583985600000,
+    "compress_bars": 3,
+    "compress_bbw_min": 0.051262,
+    "compress_range_pct": 8.8283,
+    "volume_trend": "expand",
+    "rsi_at_end": 33.76,
+    "oi_change": 0.0,
+    "breakout_direction": "SHORT",
+    "breakout_pct": 50.6565,
+    "breakout_bars": 1,
+    "regime_guess": "downtrend",
+    "price_vs_ath_pct": -29.8112
+  },
+  "total_cases": 535
+}
