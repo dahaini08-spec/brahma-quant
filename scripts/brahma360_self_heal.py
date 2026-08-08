@@ -650,8 +650,13 @@ def check_f15_wr_gate_integrity() -> dict:
             return result
         sw = _j.loads(sw_path.read_text())
         # 必须封禁的区间
+        # ……………………………………………………………………………………………………………………………………
+        # ❗ 2026-08-08 P0-3封印修正：
+        #   BULL_TREND:LONG:120-139 脚数据清洗后 simfactory铁证 WR=51.5%(n=33)
+        #   不再是死亡区，已恢复NORMAL。F15不得再封禁此区间。
+        # ……………………………………………………………………………………………………………………………………
         required_blocks = {
-            'BULL_TREND:LONG:120-139': ('BLOCK', 0.45),   # WR=26.1% 死亡区
+            # 'BULL_TREND:LONG:120-139': 已与P0-3清洁数据封印证伯WR=51.5%，不得封禁
             'BULL_TREND:LONG:140-154': ('BLOCK', 0.45),   # WR=28.6% 死亡区
             'BULL_TREND:LONG:160+':    ('BLOCK', 0.45),   # WR=15.4% 死亡区
         }

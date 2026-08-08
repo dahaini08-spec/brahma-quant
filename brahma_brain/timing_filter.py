@@ -37,6 +37,11 @@ from typing import Optional, Dict, Any
 
 logger = logging.getLogger(__name__)
 
+# ── [prime-agent心跳思想 2026-08-08 设计院封印] EMA20磁盘缓存层
+# 网络不稳定时返回缓存值，而非错误结果（将导致grade顺差返回WAIT）
+_EMA20_CACHE: dict = {}  # {symbol: (ts, ema20_value)}
+_EMA20_CACHE_TTL = 300   # 5min TTL——足够新鲜且防网络抜转
+
 # ── 开源版默认阈值（Pro 版会覆盖） ───────────────────────────────
 READY_THRESHOLD   = int(os.environ.get('TIMING_READY_THRESHOLD', '65'))
 MONITOR_THRESHOLD = int(os.environ.get('TIMING_MONITOR_THRESHOLD', '40'))
@@ -204,18 +209,31 @@ def evaluate_timing(symbol: str,
         # 参考：MEMORY.md v4.2宪法："RSI_1H达标 AND 价格<EMA20_1H → 才允许做空入场"（反向同理）
         if signal_dir == 'LONG':
             try:
-                _ema20_kl = requests.get(
-                    f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=1h&limit=21',
-                    timeout=3
-                ).json()
-                if isinstance(_ema20_kl, list) and len(_ema20_kl) >= 5:
-                    _closes_ema = [float(k[4]) for k in _ema20_kl]
-                    _n = min(20, len(_closes_ema))
-                    _k_val = 2 / (_n + 1)
-                    _ema20 = _closes_ema[0]
-                    for _p in _closes_ema[1:]:
-                        _ema20 = _p * _k_val + _ema20 * (1 - _k_val)
+                # ── [prime-agent缓存层] 先读磁盘缓存，确认TTL内才跳过网络请求 ──
+                _now = time.time()
+                _cached = _EMA20_CACHE.get(symbol)
+                if _cached and (_now - _cached[0]) < _EMA20_CACHE_TTL:
+                    _ema20 = _cached[1]
+                    logger.debug(f'[TimingFilter] EMA20缓存命中 {symbol}={_ema20:.2f} age={((_now-_cached[0])/60):.1f}min')
+                else:
+                    _ema20_kl = requests.get(
+                        f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=1h&limit=21',
+                        timeout=3
+                    ).json()
+                    if isinstance(_ema20_kl, list) and len(_ema20_kl) >= 5:
+                        _closes_ema = [float(k[4]) for k in _ema20_kl]
+                        _n = min(20, len(_closes_ema))
+                        _k_val = 2 / (_n + 1)
+                        _ema20 = _closes_ema[0]
+                        for _p in _closes_ema[1:]:
+                            _ema20 = _p * _k_val + _ema20 * (1 - _k_val)
+                        # 写入磁盘缓存
+                        _EMA20_CACHE[symbol] = (_now, _ema20)
+                    else:
+                        _ema20 = None
                     _rsi_for_gate = rsi_1h if rsi_1h is not None else 50.0
+                    if _ema20 is None:
+                        raise ValueError('EMA20计算失败')
                     _price_below_ema = current_price < _ema20 * 0.999
                     _not_elite_oversold = _rsi_for_gate > 20  # 精英解锁：RSI<20超卖
                     if _price_below_ema and _not_elite_oversold:
