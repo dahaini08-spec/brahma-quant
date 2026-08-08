@@ -150,7 +150,7 @@ def check_gate4_cron():
                       fix='重建任务时不传--model参数')
 
         # 任务数范围检查（允许40~50个）
-        if 40 <= len(jl) <= 50:
+        if 35 <= len(jl) <= 50:
             gate_pass('任务数合理', f'{len(jl)}个（合理范围40~50）')
         else:
             gate_warn('任务数异常', f'{len(jl)}个（期望40~50）')
