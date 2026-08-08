@@ -202,13 +202,15 @@ def build_hot_tickers() -> str:
         bull_pct = int(bull / tot * 100)
         p = prices.get(sym.upper())
         price_str = f' ${p:,.2f}' if p else ''
-        lines.append(f'  {i}. ${sym}{price_str} | 提及{mention:,}次 | 看多{bull_pct}%')
+        # Limit $TICKER tags to top 3 to avoid Square coin-pair count limit (220095)
+        ticker_str = f'${sym}' if i <= 3 else sym
+        lines.append(f'  {i}. {ticker_str}{price_str} | 提及{mention:,}次 | 看多{bull_pct}%')
 
     lines.append('')
     lines.append(f'📊 当前体制：{regime_cn}')
     lines.append('热度就是资金方向——跟着流动性走。')
     lines.append('')
-    lines.append('#热度榜 #BTC #加密货币 #量化')
+    lines.append('#热度榜 #加密货币 #量化 #梵天')
     return '\n'.join(lines)
 
 
@@ -261,9 +263,9 @@ def build_top_gainers() -> str:
         sym = x.get('symbol', '').replace('USDT', '')
         chg = float(x.get('change', x.get('priceChangePercent', 0)))
         price = float(x.get('price', 0))
-        vol = float(x.get('volume', 0))
-        p_str = f'${price:,.4f}' if price < 1 else f'${price:,.2f}'
-        lines.append(f'  {i}. ${sym} {chg:+.2f}% | {p_str}')
+        # Use no $ prefix on price values to avoid Square API treating them as ticker tags
+        p_str = f'{price:,.4f} USDT' if price < 1 else f'{price:,.2f} USDT'
+        lines.append(f'  {i}. {sym} {chg:+.2f}% | {p_str}')
 
     lines.append('')
     lines.append('涨幅榜≠买入信号。追高前确认体制和结构。')
@@ -286,8 +288,9 @@ def build_top_losers() -> str:
         sym = x.get('symbol', '').replace('USDT', '')
         chg = float(x.get('change', x.get('priceChangePercent', 0)))
         price = float(x.get('price', 0))
-        p_str = f'${price:,.4f}' if price < 1 else f'${price:,.2f}'
-        lines.append(f'  {i}. ${sym} {chg:+.2f}% | {p_str}')
+        # Use no $ prefix on price values to avoid Square API treating them as ticker tags
+        p_str = f'{price:,.4f} USDT' if price < 1 else f'{price:,.2f} USDT'
+        lines.append(f'  {i}. {sym} {chg:+.2f}% | {p_str}')
 
     lines.append('')
     lines.append('跌幅榜≠做空信号。确认体制方向再入场。')
