@@ -52,8 +52,10 @@ def create_trade_plan(
     """
     now = entry_ts or datetime.now(timezone.utc).isoformat()
 
-    # P0：强平警戒线（强平价-15%）
-    p0_price = liq_price * 0.85
+    # P0：强平警戒线（强平价上方15%缓冲 → 做多单价格跌至此处触发减仓）
+    # 修复[2026-08-09]: 原来liq*0.85是强平价下方，触发条件>=永远成立
+    # 正确：做多单liq在入场价下方，警戒线=liq*1.15（比强平价高15%），触发条件<=
+    p0_price = liq_price * 1.15
 
     # P1：多单止盈目标（入场+8%×杠杆 = +40%保证金）
     p1_long_tp = long_entry * 1.40
@@ -79,9 +81,10 @@ def create_trade_plan(
         "liq_price": liq_price,
         "triggers": {
             "P0_生死线": {
-                "condition": f"价格 ≥ {p0_price:.5f}（强平价{liq_price:.4f}的85%）",
+                "condition": f"价格 ≤ {p0_price:.5f}（强平价{liq_price:.4f}的115%，上方15%缓冲）",
                 "action": "立即减仓50%，不商量",
                 "price": p0_price,
+                "trigger_dir": "lte",  # 做多单：价格跌至警戒线触发
                 "priority": 0,
             },
             "P1_多单止盈": {
@@ -142,12 +145,16 @@ def check_triggers(
         triggers = plan.get("triggers", {})
         fired = []
 
-        # P0 检查
+        # P0 检查（做多单：价格跌至警戒线 = 接近强平，立即减仓）
         p0 = triggers.get("P0_生死线", {})
-        if p0 and current_price >= p0.get("price", 9e9):
+        trigger_dir = p0.get("trigger_dir", "lte")  # 默认lte兼容旧数据
+        p0_price_val = p0.get("price", 0)
+        p0_hit = (trigger_dir == "lte" and current_price <= p0_price_val) or \
+                 (trigger_dir == "gte" and current_price >= p0_price_val)
+        if p0 and p0_price_val > 0 and p0_hit:
             fired.append({"name": "P0_生死线", "urgent": True,
                           "action": p0["action"],
-                          "detail": f"当前价{current_price:.4f} ≥ 警戒价{p0['price']:.4f}"})
+                          "detail": f"当前价{current_price:.4f} {'≤' if trigger_dir=='lte' else '≥'} 警戒价{p0_price_val:.4f}"})
 
         # P1 检查
         p1 = triggers.get("P1_多单止盈", {})
