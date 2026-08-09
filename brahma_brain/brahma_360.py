@@ -112,6 +112,7 @@ def scan_d1_modules() -> list:
             'tradfi_dump_detector',    # signal_integrity_gate 调用 ✅
             'mtf_resonance',           # brahma_decision_engine 多周期共振 ✅
             'kronos_subagent_bridge',  # 归档候选，kronos_engine已覆盖功能，加白名单避免误报 ✅
+            'brahma_wiring_check',      # 接线检测器本身，工具脚本不需要接入主链路 ✅
         }
         _orphans = []
         for _f in sorted(_brain.glob('*.py')):
@@ -127,6 +128,34 @@ def scan_d1_modules() -> list:
                 'msg': f'孤儿模块 {len(_orphans)}个未接入: {_orphans[:5]}',
                 'auto_fix': False,
             })
+
+        # ── 门3: wiring_check 高价值孤岛检测 (2026-08-09 设计院封印) ──
+        # 每次360体检自动跑接线检测器，高价值孤岛>0 = ERROR
+        try:
+            import importlib.util as _ilu
+            _wc_path = _Path(__file__).parent / 'brahma_wiring_check.py'
+            if _wc_path.exists():
+                _wc_spec = _ilu.spec_from_file_location('brahma_wiring_check', _wc_path)
+                _wc_mod = _ilu.module_from_spec(_wc_spec)
+                _wc_spec.loader.exec_module(_wc_mod)
+                _wc_islands = len(_wc_mod.HIGH_VALUE_ISLANDS)
+                _wc_fail = sum(1 for e in _wc_mod.WIRING_REGISTRY
+                               if not _wc_mod._check_import(e['module'])[0])
+                if _wc_islands > 0:
+                    issues.append({
+                        'dim': 'D1_wiring', 'level': 'ERROR',
+                        'msg': f'高价值孤岛 {_wc_islands}个 — 功能建好但未接通主链路',
+                        'auto_fix': False,
+                    })
+                elif _wc_fail > 0:
+                    issues.append({
+                        'dim': 'D1_wiring', 'level': 'WARN',
+                        'msg': f'wiring_check: {_wc_fail}个模块import失败',
+                        'auto_fix': False,
+                    })
+        except Exception as _wc_e:
+            pass  # wiring_check失败不影响360主流程
+
     except Exception as e:
         issues.append({'dim': 'D1_modules', 'level': 'WARN', 'msg': f'巡检异常: {e}', 'auto_fix': False})
     return issues
