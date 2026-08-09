@@ -1664,6 +1664,59 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
         pass  # [静默]
         return []
 
+    # ── [设计院 2026-08-09] 分级门槛：130=推送苏摩确认，155=自动执行 ────────
+    # 把候选信号分成两组，让苏摩看到所有机会，不再依赖纯自动
+    try:
+        from push_hub import push_signal_card as _push_sc
+        import re as _re
+        for _pre in candidates:
+            _s = float(_pre.get('score', 0) or 0)
+            _sym = _pre.get('symbol', '')
+            _dir = _pre.get('direction') or _pre.get('signal_dir', '')
+            _regime = _pre.get('regime', '')
+            _bd = _pre.get('confluence', {}).get('breakdown', {})
+            # 收集减分 Top3
+            neg = []
+            for k, v in _bd.items():
+                _m = _re.search(r'([+-]?\d+)', str(v))
+                if _m and int(_m.group(1)) < -3:
+                    neg.append(f"{int(_m.group(1)):+d} {k}: {str(v)[:30]}")
+            neg.sort(key=lambda x: int(x.split()[0]))
+            _params = _pre.get('params', {})
+            _entry_lo = float(_params.get('entry_lo') or _pre.get('entry_lo') or 0)
+            _entry_hi = float(_params.get('entry_hi') or _pre.get('entry_hi') or _entry_lo * 1.005)
+            _sl = float(_params.get('stop_loss') or _pre.get('sl') or 0)
+            _tp1 = float(_params.get('tp1') or _pre.get('tp1') or 0)
+            _rr  = float(_params.get('rr1') or _pre.get('rr') or 1.0)
+            _rsi4h = _pre.get('rsi_4h')
+            _fr    = _pre.get('fr')
+            _sl_basis = (_params.get('sl_basis') or '')
+            if 130 <= _s < 155 and _entry_lo > 0:
+                # WATCH区：推送苏摩确认，不自动开单
+                from push_hub import _jarvis as _phj
+                import datetime as _dt
+                _tag = _sym.replace('USDT', '')
+                _dir_cn = '做多' if _dir == 'LONG' else '做空'
+                _sl_pct = round(abs(_entry_lo - _sl) / _entry_lo * 100, 1) if _entry_lo else 2.0
+                _ts = _dt.datetime.utcnow().strftime('%m-%d %H:%M')
+                _watch_msg = (
+                    f"👁 **梵天WATCH信号 · 待苏摩确认**\n"
+                    f"━━━━━━━━━━━━━━━━━━━━━━\n"
+                    f"  {_tag}/USDT {_dir_cn} | score={_s:.0f} | {_regime}\n"
+                    f"  入场区: ${_entry_lo:,.4f} ~ ${_entry_hi:,.4f}\n"
+                    f"  止损:   ${_sl:,.4f}  -{_sl_pct}%\n"
+                    f"  止盈:   ${_tp1:,.4f}  RR={_rr}x\n"
+                    f"━━━━━━━━━━━━━━━━━━━━━━\n"
+                    f"  [操作指令]\n"
+                    f"  ⏳ 等15M触发后入场 — 回复「执行」开仓\n"
+                    f"  评分={_s:.0f}，需≥155自动开，当前等苏摩确认\n"
+                    f"  {_ts} UTC"
+                )
+                _phj(_watch_msg, dedup_key=f"watch_{_sym}_{_dir}_{int(_s)}", dedup_ttl=7200)
+    except Exception as _tier_e:
+        import logging as _lg; _lg.getLogger('brahma').warning(f'[tier_push] {_tier_e}')
+    # ── [分级门槛 END] ──────────────────────────────────────────────────────────
+
     executed_set = _load_executed()
     results = []
 
