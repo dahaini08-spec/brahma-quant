@@ -241,7 +241,9 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                         if 'decision' not in _cached or 'fangcang' not in _cached:
                             try:
                                 from brahma_brain.brahma_core import analyze as _rc_fn
-                                _fresh = _rc_fn(sym, signal_dir=_d, deep=True)
+                                # deep=True + signal_dir强制非NEUTRAL，避免提前return
+                                _sd_forced = _d if _d and _d != 'NEUTRAL' else None
+                                _fresh = _rc_fn(sym, signal_dir=_sd_forced, deep=True)
                                 for _fk in ('decision','decision_action','decision_reason',
                                             'decision_step','fangcang'):
                                     if _fk in _fresh:

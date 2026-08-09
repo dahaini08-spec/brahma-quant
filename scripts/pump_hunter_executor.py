@@ -79,7 +79,7 @@ def main():
     print(f"[pump_hunter_executor] {len(candidates)}个候选信号待验证")
 
     from universal_asset_router import pump_to_brahma_score, get_regime_cached
-    import brahma_engine
+    import brahma_brain.brahma_core as brahma_engine  # [设计院 2026-08-09] 统一指向brahma_core
 
     executed = 0
     for sym, ph_info in candidates:
