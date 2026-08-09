@@ -332,12 +332,33 @@ def _extract_features(bars_4h: List[dict], bars_15m: Optional[List[dict]] = None
 # 相似度计算（多维加权，考虑微结构）
 # ══════════════════════════════════════════════════════════════════════════════
 
+def _bbw_golden_zone_bonus(bbw: float) -> float:
+    """
+    [设计院封印 2026-08-09 苏摩111]
+    BBW黄金区间相似度奖励（减小相似度距离 = 提升优先级）
+
+    铁证：6.5年3071案例深度验证
+      bb1.5-2.0%: WR=59.6%  EV=+2.08%  ← 甜蜜区
+      bb1.0-1.5%: WR=53.5%  EV=+0.55%
+      bb<0.5%:    WR=48.7%  EV=-0.09%  ← 极压缩反而最差
+
+    奖励逻辑：黄金区间案例相似度提升，提高被选中概率
+    返回值：负数=奖励（降低距离），正数=惩罚（增加距离）
+    """
+    if 1.5 <= bbw < 2.0:   return -0.08   # 甜蜜区：最强奖励
+    if 1.0 <= bbw < 1.5:   return -0.05   # 黄金区：中等奖励
+    if 0.8 <= bbw < 1.0:   return -0.02   # 临近区：轻微奖励
+    if bbw < 0.3:           return +0.05   # 极压缩：轻微惩罚（容易假突破）
+    return 0.0
+
+
 def _similarity_score(feat_cur: dict, feat_hist: dict) -> float:
     """
     25维综合相似度得分（越小越相似）
     权重分配：
       价格形态 40% + 振幅 12% + 移动 12% + RSI 16%
       + 成交量趋势 5% + BBW 5% + 微结构 10%
+    [2026-08-09] + BBW黄金区间加成（-0.08~+0.05）
     """
     # 价格形态：快速欧式距离
     s1 = feat_cur['norm_closes']
@@ -360,6 +381,9 @@ def _similarity_score(feat_cur: dict, feat_hist: dict) -> float:
     mom_diff    = abs(feat_cur.get('momentum_shift', 0) - feat_hist.get('momentum_shift', 0)) / 5.0
     micro_dist  = (choch_diff + bos_diff + mom_diff) / 3.0
 
+    # [2026-08-09 封印] BBW黄金区间加成：历史案例在甜蜜区(1.5-2.0%)的优先匹配
+    bbw_hist_bonus = _bbw_golden_zone_bonus(feat_hist.get('bbw_4h', 0))
+
     return (
         price_dist * 0.40
         + amp_diff  * 0.12
@@ -368,6 +392,7 @@ def _similarity_score(feat_cur: dict, feat_hist: dict) -> float:
         + vol_diff  * 0.05
         + bbw_diff  * 0.05
         + micro_dist * 0.10
+        + bbw_hist_bonus  # 黄金区间奖励/极压缩惩罚
     )
 
 
