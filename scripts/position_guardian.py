@@ -39,9 +39,9 @@ def _jarvis_target():
     try:
         sys.path.insert(0, os.path.join(BASE, 'scripts'))
         from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
-        return f'{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}'
+        return f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}'
     except Exception:
-        return '73295708:t:019fd9dd-4b0f-71db-87fb-1e192ccb2291'
+        return '73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291'
 
 
 def send_jarvis(msg: str):
