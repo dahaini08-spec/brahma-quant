@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 square_hot_poster.py — 热度驱动广场发帖主引擎 v1.0
-设计院自主决策封印 2026-08-08 | 苏摩111批准
+姓赵不宣IP重塑 2026-08-09
 
 架构：
   单账户 SQUARE_KEY_0（姓赵不宣主账户）
@@ -145,7 +145,7 @@ def fetch_price(symbol: str) -> dict:
         return {'price': 0, 'chg24h': 0, 'fr': 0, 'ls_ratio': 1.0}
 
 
-# ── 体制读取 ──────────────────────────────────────────────────────
+# ── 市场状态读取 ──────────────────────────────────────────────────
 REGIME_CN = {
     'BULL_TREND': '牛市上行', 'BEAR_TREND': '熊市下行',
     'CHOP_MID': '震荡整理', 'CHOP_HIGH': '高位震荡',
@@ -207,10 +207,10 @@ def build_hot_tickers() -> str:
         lines.append(f'  {i}. {ticker_str}{price_str} | 提及{mention:,}次 | 看多{bull_pct}%')
 
     lines.append('')
-    lines.append(f'📊 当前体制：{regime_cn}')
-    lines.append('热度就是资金方向——跟着流动性走。')
+    lines.append(f'📊 当前市场偏{regime_cn}')
+    lines.append('这几个币在被集中讨论，值得盯着。')
     lines.append('')
-    lines.append('#热度榜 #加密货币 #量化 #梵天')
+    lines.append('#热门币种 #BTC #加密货币 #行情')
     return '\n'.join(lines)
 
 
@@ -243,9 +243,9 @@ def build_funding_rate() -> str:
             lines.append(f'  {sym}: FR:{fr:.4f}% | 多空比:{ls:.2f} {icon}')
 
     lines.append('')
-    lines.append('资金费率>0.01%=多头过热，历史上常见回调。')
+    lines.append('SOL资金费率已到警戒线，追多的朋友要注意了。')
     lines.append('')
-    lines.append('#资金费率 #合约交易 #量化 #BTC')
+    lines.append('#资金费率 #合约 #BTC #行情分析')
     return '\n'.join(lines)
 
 
@@ -269,9 +269,9 @@ def build_top_gainers() -> str:
         lines.append(f'  {i}. {sym_str} {chg:+.2f}% | {p_str}')
 
     lines.append('')
-    lines.append('涨幅榜≠买入信号。追高前确认体制和结构。')
+    lines.append('涨起来的不一定值得追，先看看它涨的理由。')
     lines.append('')
-    lines.append('#涨幅榜 #合约交易 #量化 #热点')
+    lines.append('#涨幅榜 #合约 #加密货币 #今日行情')
     return '\n'.join(lines)
 
 
@@ -295,9 +295,9 @@ def build_top_losers() -> str:
         lines.append(f'  {i}. {sym_str} {chg:+.2f}% | {p_str}')
 
     lines.append('')
-    lines.append('跌幅榜≠做空信号。确认体制方向再入场。')
+    lines.append('大跌的不一定是机会，也可能是陷阱。')
     lines.append('')
-    lines.append('#跌幅榜 #合约交易 #量化 #风险')
+    lines.append('#跌幅榜 #合约 #加密货币 #风险')
     return '\n'.join(lines)
 
 
@@ -324,10 +324,9 @@ def build_hot_news() -> str:
     if tickers:
         lines.append(f'相关标的: {" ".join("$"+t for t in tickers[:3])}')
     lines.append('')
-    lines.append('热点追踪仅供参考，决策依赖系统信号和体制判断。')
-    tags = ' '.join(hashtags) if hashtags else '#广场热点 #加密货币 #量化'
+    lines.append('看到这个消息，先别冲，等价格反应再说。')
     lines.append('')
-    lines.append(tags if '#' in tags else '#广场热点 #加密货币 #量化')
+    lines.append('#币圈热点 #加密货币 #BTC')
     return '\n'.join(lines)
 
 
@@ -336,7 +335,7 @@ def build_smart_money() -> str:
     # 用 arb-scan 获取多空比
     data = run_pro_cli(['workflow', 'arb-scan', '--symbols', 'BTC,ETH,SOL'])
 
-    lines = [f'🐋 资金流向速览 | {now_cst()} CST', '']
+    lines = [f'🐋 主力方向速览 | {now_cst()} CST', '']
     lines.append('主力资金当前方向：')
 
     if data and isinstance(data, dict):
@@ -351,10 +350,9 @@ def build_smart_money() -> str:
         lines.append('  数据获取中，请稍后查看...')
 
     lines.append('')
-    lines.append('多空比>1.5=极端多头，资金费率>0.01%=多头过热。')
-    lines.append('两者同时出现=高概率回调信号。')
+    lines.append('主力的钱在哪里，价格就往哪里走。这是我看盘的第一步。')
     lines.append('')
-    lines.append('#聪明钱 #资金流向 #多空比 #量化')
+    lines.append('#主力资金 #资金费率 #合约 #行情分析')
     return '\n'.join(lines)
 
 
@@ -377,7 +375,7 @@ def build_pump_alert() -> str:
         return ''
 
     lines = [f'🚨 暴涨预警 | {now_cst()} CST', '']
-    lines.append('梵天暴涨猎手检测到压缩形态：')
+    lines.append('注意到这几个币的波动率在收缩，历史上这种形态出现后通常会有方向性突破：')
     for c in candidates:
         sym = str(c.get('symbol', '')).replace('USDT', '')
         score = c.get('score', 0)
@@ -386,9 +384,9 @@ def build_pump_alert() -> str:
 
     lines.append('')
     lines.append('压缩形态 = 能量积累，等方向突破再介入。')
-    lines.append('切勿提前埋伏，等信号确认。')
+    lines.append('方向出来之前我不会动，等突破确认再说。')
     lines.append('')
-    lines.append('#暴涨预警 #量化 #突破 #加密货币')
+    lines.append('#行情预警 #突破信号 #加密货币 #技术分析')
     return '\n'.join(lines)
 
 
@@ -401,8 +399,7 @@ def build_market_summary() -> str:
     eth = fetch_price('ETHUSDT')
     regime_cn = get_regime_cn()
 
-    lines = [f'🧠 今日市场热度总结 | {now_cst()} CST', '']
-    lines.append(f'📊 体制：{regime_cn}')
+    lines = [f'📊 今日收盘复盘 | {now_cst()} CST', '']
     if btc['price'] > 0:
         lines.append(f'BTC ${btc["price"]:,.0f} ({btc["chg24h"]:+.2f}%) FR:{btc["fr"]:.4f}%')
     if eth['price'] > 0:
@@ -417,9 +414,9 @@ def build_market_summary() -> str:
             lines.append(f'  {i}. ${sym} 提及{mention:,}次')
 
     lines.append('')
-    lines.append('数据说话，系统判断，风险自控。')
+    lines.append('今天市场整体情绪如上，明天开盘我会重点关注BTC能否站稳。')
     lines.append('')
-    lines.append('#市场总结 #BTC #量化 #加密货币')
+    lines.append('#市场复盘 #BTC #加密货币 #今日行情')
     return '\n'.join(lines)
 
 
@@ -445,11 +442,9 @@ OB = 机构建仓前最后一根反向K线。
 • 看跌OB = 上涨段最后一根阳线（阻力）
 
 核心逻辑：机构在OB累积头寸。
-价格回踩OB = 二次建仓机会。
+价格回踩OB = 二次建仓机会。我用OB找入场点，不懂机构在哪建仓就不知道止损放哪。
 
-不懂机构在哪建仓，就不知道止损放哪。
-
-#SMC #量化 #技术分析 #OrderBlock""",
+#SMC #技术分析 #OrderBlock #加密货币""",
         f"""⚠️ 风险管理铁律 | {now_cst()} CST
 
 专业交易员与散户最大区别：
@@ -462,26 +457,26 @@ OB = 机构建仓前最后一根反向K线。
 2. 止损是计划的一部分，不是失败
 3. 连亏3笔，停下来复盘
 
-系统给信号，纪律保执行。
+这几条规则救了我很多次，纪律才是持续盈利的基础。
 
-#风险管理 #量化 #交易心态""",
+#风险管理 #交易心态 #加密货币 #交易技巧""",
         f"""📊 RSI进阶用法 | {now_cst()} CST
 
-RSI≠简单超买超卖信号。
+RSI不等于简单的超买超卖信号。
 
-关键：体制决定RSI的解读方式
+市场方向决定RSI的解读方式：
 
-熊市体制：
+下行市场中：
 • RSI>60做空 ✓（顺势）
 • RSI<30接多 ✗（逆势接刀）
 
-牛市体制：
+上行市场中：
 • RSI50-60回调做多 ✓
 • RSI>80追多 ✗（高位接盘）
 
-同样的RSI，不同体制=完全不同含义。
+同样的RSI，不同市场背景=完全不同含义。
 
-#RSI #量化 #技术指标 #梵天""",
+#RSI #技术分析 #加密货币 #行情分析""",
         f"""🎯 如何设置止损 | {now_cst()} CST
 
 止损不是随便放的。
@@ -490,31 +485,31 @@ RSI≠简单超买超卖信号。
 • 做空止损 = 入场区上沿×(1+SL%)
 • 做多止损 = 入场区下沿×(1-SL%)
 
-SL%参考（按体制）：
-• 顺势做空：2.0%
-• 逆势轻多：2.5%
+SL%参考：
+• 顺势方向：2.0%
+• 逆势轻仓：2.5%
 
 止损距离<1.5×ATR = 止损太近，会被扫
 止损距离>3×ATR = 止损太远，亏太多
 
 结构说话，不是感觉。
 
-#止损 #风险管理 #量化 #梵天""",
+#止损 #风险管理 #技术分析 #加密货币""",
         f"""💡 什么时候不该进场 | {now_cst()} CST
 
 比知道何时进场更重要的：
 知道什么时候不进场。
 
-高分信号也要跳过的情形：
-• 大级别体制与信号方向相反
+以下情形我会主动跳过：
+• 大趋势与当前方向相反
 • 距离关键支撑/阻力<0.5%
 • 即将到期日（月末周五）
 • 市场情绪极度恐慌或贪婪
 
-系统不出手也是一种赢法。
-不追，不抢，等系统给的位置。
+不出手也是一种赢法。
+不追，不抢，等到合适的位置再动。
 
-#量化 #交易纪律 #梵天 #不进场""",
+#交易纪律 #交易技巧 #加密货币 #风险管理""",
     ]
     return fallback[edu_id % len(fallback)]
 
@@ -598,7 +593,7 @@ POST_BUILDERS = {
 
 
 def main():
-    parser = argparse.ArgumentParser(description='梵天广场热度驱动发帖主引擎')
+    parser = argparse.ArgumentParser(description='广场热度驱动发帖主引擎')
     parser.add_argument('--type', required=True,
                         choices=list(POST_BUILDERS.keys()) + ['edu'],
                         help='帖子类型')
