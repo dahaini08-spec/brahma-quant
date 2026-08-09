@@ -589,6 +589,26 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     score += s7
     breakdown['清算/OI'] = s7
 
+    # ── s7增强层③: bybit_liq_adapter L/S拥挤度补充（2026-08-09 设计院接入）──
+    # 独立于liq_density_engine，提供L/S拥挤度方向性信号
+    # LONG_CROWDED(ratio>1.5) 做空 +3 / SHORT_CROWDED(ratio<0.7) 做多 +3
+    try:
+        from brahma_brain.bybit_liq_adapter import get_ls_ratio_signal as _bla_ls
+        _bla = _bla_ls(_sym)
+        _bla_pressure = _bla.get('liq_pressure', 'BALANCED')
+        _bla_delta = 0
+        if signal_dir == 'SHORT' and _bla_pressure == 'LONG_CROWDED':
+            _bla_delta = 3   # 多头过拥挤 → 顺势做空 +3
+        elif signal_dir == 'LONG' and _bla_pressure == 'SHORT_CROWDED':
+            _bla_delta = 3   # 空头过拥挤 → 顺势做多 +3
+        elif signal_dir == 'LONG' and _bla_pressure == 'LONG_CROWDED':
+            _bla_delta = -3  # 多头过拥挤 → 逆势做多 -3
+        if _bla_delta != 0:
+            score += _bla_delta
+            breakdown['L/S拥挤度'] = _bla_delta
+    except Exception:
+        pass
+
     # ── s8增强层: Volume Profile 成交密度分析（三院审核修复 2026-07-08）────────────────
     # 职责：识别当前价格区间是高密度支撑区还是低密度空洞
     # 高密度区(>1.5x)→做多+8 / 空洞区(<0.6x)→做多-15（踩踏风险）
