@@ -41,7 +41,7 @@ try:
     from scripts.system_config import JARVIS_TARGET as _SSOT_T
     JARVIS_TARGET = os.environ.get('JARVIS_TARGET', _SSOT_T)
 except Exception:
-    JARVIS_TARGET = os.environ.get('JARVIS_TARGET', '73295708:t:019fd9dd-4b0f-71db-87fb-1e192ccb2291')
+    JARVIS_TARGET = os.environ.get('JARVIS_TARGET', '73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291')
 MIN_WEIGHTED  = 110   # 同 signal_selector 门槛
 
 # 推送去重：同symbol+direction 6H内不重复推送

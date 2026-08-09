@@ -55,9 +55,9 @@ FAPI_BASE      = 'https://fapi.binance.com'
 # ── Jarvis推送目标（从system_config读取）──────────────────────
 try:
     from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
-    JARVIS_TARGET = f"{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}"
+    JARVIS_TARGET = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"
 except Exception:
-    JARVIS_TARGET = '73295708:t:019fd9dd-4b0f-71db-87fb-1e192ccb2291'
+    JARVIS_TARGET = '73295708:thread:019fd9dd-4b0f-71db-87fb-1e192ccb2291'
 
 
 # ─────────────────────────────────────────────────────────────
