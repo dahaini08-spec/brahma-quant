@@ -235,6 +235,43 @@ def main():
     all_alerts.sort(key=lambda x: {'P0': 0, 'P1': 1, 'P2': 2}.get(x['level'], 3))
 
     if not all_alerts:
+        # ── [设计院 2026-08-09] 被套预警：持仓逆体制主动推送 ──────────
+        try:
+            import json as _jj
+            _state_f = Path(__file__).parent.parent / 'data' / 'brahma_state.json'
+            _regime = ''
+            if _state_f.exists():
+                _bs = _jj.loads(_state_f.read_text())
+                _regime = _bs.get('regime', '')
+            if _regime and real_pos:
+                adverse_warns = []
+                for _p in real_pos:
+                    _side = _p.get('side', '')
+                    _sym  = _p.get('symbol', '')
+                    _pnl  = float(_p.get('unrealized_pnl_pct', _p.get('pnl_pct', 0)) or 0)
+                    # 逆体制判断
+                    _is_adverse = (
+                        (_side == 'LONG'  and 'BEAR_TREND' in _regime) or
+                        (_side == 'SHORT' and 'BULL_TREND' in _regime)
+                    )
+                    if _is_adverse:
+                        _dir_cn = '多单' if _side == 'LONG' else '空单'
+                        _regime_cn = '空头体制' if 'BEAR' in _regime else '多头体制'
+                        adverse_warns.append(
+                            f"⚠️ 被套预警\n"
+                            f"  {_sym} 持{_dir_cn}，但当前体制={_regime_cn}({_regime})，方向逆市场\n"
+                            f"  浮动盈亏: {_pnl:+.2f}%\n"
+                            f"  建议: 评估减仓或止损，避免逆势担充\n"
+                            f"  体制切换后将重新扫描新方向"
+                        )
+                if adverse_warns:
+                    for _w in adverse_warns:
+                        send_jarvis(_w)
+                    print(f'[guardian] 逆体制被套预警: {len(adverse_warns)}条')
+                    return
+        except Exception as _adv_e:
+            import logging as _lg2; _lg2.getLogger('brahma').warning(f'[adverse_regime] {_adv_e}')
+        # ── [逆体制检查 END] ──
         print('HEARTBEAT_OK')
         return
 

@@ -67,26 +67,89 @@ def _jarvis(msg, dedup_key=None, dedup_ttl=3600):
         print(f"[push_hub] 推送异常: {e}")
         return False
 
-def push_signal_card(sym, score, grade, direction, entry_lo, entry_hi, sl, tp1, timing="READY", tp2=0, rr=1.0):
-    """推送梵天VIP信号卡片（事件驱动，score≥155立即推送）"""
-    emoji   = "🟢" if direction == "LONG" else "🔴"
-    tier    = "TIER1 🔴" if score >= 155 else "TIER2 🟠"
-    tag     = sym.replace("USDT", "")
-    ts      = datetime.datetime.utcnow().strftime('%m-%d %H:%M')
-    sl_pct  = round((entry_hi - sl) / entry_hi * 100, 1) if entry_hi else 2.0
-    tp2_line = f"  TP2:    ${tp2:,.2f}\n" if tp2 else ""
+def push_signal_card(sym, score, grade, direction, entry_lo, entry_hi, sl, tp1,
+                     timing="READY", tp2=0, rr=1.0, regime='', sl_basis='', rsi_4h=None,
+                     oi_change=None, fr=None, score_tier=None):
+    """推送梵天VIP信号卡片 — v2.0 操作指南格式（苏摩看到的是行动，不是评分）"""
+    emoji    = "🟢" if direction == "LONG" else "🔴"
+    dir_cn   = "做多" if direction == "LONG" else "做空"
+    tag      = sym.replace("USDT", "")
+    ts       = datetime.datetime.utcnow().strftime('%m-%d %H:%M')
+    sl_pct   = round(abs(entry_lo - sl) / entry_lo * 100, 1) if entry_lo else 2.0
+    tp2_line = f"  TP2: ${tp2:,.4f}\n" if tp2 else ""
+
+    # ── 实时数据行（RSI/OI/FR）
+    data_parts = []
+    if rsi_4h is not None: data_parts.append(f"RSI_4H={rsi_4h:.1f}")
+    if oi_change is not None: data_parts.append(f"OI变化={oi_change:+.1f}%")
+    if fr is not None: data_parts.append(f"FR={fr:.4f}%")
+    data_line = "  📡 " + "  ".join(data_parts) + "\n" if data_parts else ""
+
+    # ── 止损依据说明
+    sl_note = f"（{sl_basis[:30]}）" if sl_basis else "（4H支撑+ATR缓冲）"
+
+    # ── 分级标识
+    tier = "TIER1 🔴" if score >= 155 else ("TIER2 🟠" if score >= 130 else "WATCH 🟡")
+
+    # ── 操作指令（核心：告诉苏摩现在该干什么）
+    if score >= 155:
+        action_block = (
+            f"【操作指令】\n"
+            f"  ✅ 现在：{dir_cn} {tag}\n"
+            f"  入场区：${entry_lo:,.4f} ~ ${entry_hi:,.4f}\n"
+            f"  止损：  ${sl:,.4f}  -{sl_pct}% {sl_note}\n"
+            f"  止盈：  TP1=${tp1:,.4f}  RR={rr}x\n"
+            f"{tp2_line}"
+            f"  仓位：  5% NAV  LEV=5x"
+        )
+    elif score >= 130:
+        action_block = (
+            f"【操作指令】\n"
+            f"  ⏳ 等15M触发后入场 ({dir_cn})\n"
+            f"  布局区：${entry_lo:,.4f} ~ ${entry_hi:,.4f}\n"
+            f"  触发：  15M出现CHoCH或强势突破\n"
+            f"  止损：  ${sl:,.4f}  -{sl_pct}% {sl_note}\n"
+            f"  止盈：  TP1=${tp1:,.4f}  RR={rr}x"
+        )
+    else:
+        action_block = (
+            f"【操作指令】\n"
+            f"  👁 监控中——不开仓\n"
+            f"  评分={score:.0f}，需≥155才自动执行\n"
+            f"  关注：${entry_lo:,.4f}区间是否出现结构信号"
+        )
+
     msg = (
         f"🚨 **梵天信号 · {tier}**\n"
         f"━━━━━━━━━━━━━━━━━━━━━━\n"
         f"{emoji} **{tag}/USDT {direction}** | score={score:.0f} {grade}\n"
-        f"  体制:   BULL_TREND | 时机: {timing}\n"
-        f"  入场:   ${entry_lo:,.2f} ~ ${entry_hi:,.2f}\n"
-        f"  止损:   ${sl:,.2f}  (-{sl_pct}%)\n"
-        f"  TP1:    ${tp1:,.2f}  RR={rr}x\n"
-        f"{tp2_line}"
-        f"  仓位:   5% NAV  LEV=5x\n"
+        f"  体制: {regime or 'CHOP_MID'} | 时机: {timing}\n"
+        f"{data_line}"
         f"━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"  {ts} UTC  [事件驱动]"
+        f"{action_block}\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"  {ts} UTC  [梵天事件驱动]"
     )
-    dedup_key = f"signal_{sym}_{direction}_{int(entry_lo)}_{int(score)}"
+    dedup_key = f"signal_{sym}_{direction}_{int(entry_lo*10000)}_{int(score)}"
     return _jarvis(msg, dedup_key=dedup_key, dedup_ttl=14400)
+
+
+def push_skip_card(sym, score, direction, regime, reason_top3, next_condition, price=None):
+    """推送SKIP状态通知 — 告诉苏摩为什么不入场+下一个窗口"""
+    tag  = sym.replace("USDT", "")
+    ts   = datetime.datetime.utcnow().strftime('%m-%d %H:%M')
+    dir_cn = "做多" if direction == "LONG" else "做空"
+    price_line = f"  当前价: ${price:.4f}\n" if price else ""
+    reasons = "\n".join(f"    {r}" for r in (reason_top3 or [])[:3])
+    msg = (
+        f"⚫ **梵天扫描 · SKIP**\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"  {tag}/USDT {dir_cn} | score={score:.0f} | {regime}\n"
+        f"{price_line}"
+        f"  主要阻制:\n{reasons}\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"  下一个窗口: {next_condition}\n"
+        f"  {ts} UTC"
+    )
+    dedup_key = f"skip_{sym}_{direction}_{int(score)}"
+    return _jarvis(msg, dedup_key=dedup_key, dedup_ttl=7200)
