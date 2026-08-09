@@ -154,5 +154,14 @@ def run(quick=False):
 
 if __name__ == '__main__':
     quick = '--quick' in sys.argv
-    score, status, _ = run(quick=quick)
+    score, status, results = run(quick=quick)
+    # [设计院 2026-08-09 苏摹111] 健康时静默，异常才推送
+    if score >= 85 and status == 'HEALTHY':
+        print('HEARTBEAT_OK')  # 静默，不刷屏
+    else:
+        # score<85 或 UNHEALTHY → 推送完整健康报告
+        failed = [f"{n}: {m}" for n, ok, m in results if not ok]
+        print(f"⚠️ 梵天健康告警 {status} {score}/100")
+        for f in failed[:5]:
+            print(f"  ❌ {f}")
     sys.exit(0 if status == 'HEALTHY' else 1)

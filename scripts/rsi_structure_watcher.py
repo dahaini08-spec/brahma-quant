@@ -404,24 +404,51 @@ def write_trigger(sym, events, data):
         }
         TRIGGER_FILE.write_text(json.dumps(existing, indent=2, ensure_ascii=False))
 
-        # ── [设计院 2026-07-05] 高优先级事件直推Jarvis ──────────────────
+        # ── [设计院 2026-08-09 苏摩111] 高优先级事件直推Jarvis + 去重 ────
+        # 修复根因：BB压缩持续时每5M推一次 → 2H内24条刷屏
+        # 解法：同类事件(sym+event_type) 4H内只推1次
         high_events = [e for e in events if e.get('priority') in ('HIGH', 'P0', 'P1')]
         if high_events:
             try:
-                import subprocess as _sp
+                import subprocess as _sp, json as _jj
+                from pathlib import Path as _Pth
                 from scripts.system_config import JARVIS_TARGET
-                ev_lines = '\n'.join([f"  [{e['priority']}] {e['event']}: {e['desc']}" for e in high_events])
-                msg = (
-                    f"🔔 RSI结构事件 · {sym}\n"
-                    f"价格: ${data['px']:,.2f} | RSI_1H={data['rsi_1h']:.1f} | BB={data['bb_width']:.2f}%\n"
-                    f"{ev_lines}\n"
-                    f"→ 梵天扫描链已启动"
-                )
-                _sp.Popen(
-                    ['openclaw', 'message', 'send', '--to', JARVIS_TARGET, '--channel', 'jarvis', '--message', msg],
-                    stdout=_sp.DEVNULL, stderr=_sp.DEVNULL
-                )
-                pass  # [静默]
+
+                # ── 去重检查 ────────────────────────────────────────────
+                _DEDUP_F = _Pth(__file__).parent.parent / 'data' / 'rsi_watcher_dedup.json'
+                _dedup = _jj.loads(_DEDUP_F.read_text()) if _DEDUP_F.exists() else {}
+                _now   = __import__('time').time()
+                _DEDUP_TTL = 4 * 3600  # 同类事件4H内不重复推送
+
+                # 过滤已推过的事件
+                _new_events = []
+                for e in high_events:
+                    _key = f"{sym}_{e.get('event','?')}"
+                    _last = _dedup.get(_key, 0)
+                    if _now - _last >= _DEDUP_TTL:
+                        _new_events.append(e)
+                    else:
+                        _remain = int((_DEDUP_TTL - (_now - _last)) / 60)
+                        print(f"[rsi_watcher] 去重跳过 {_key} (剩余{_remain}min)")
+
+                if _new_events:
+                    ev_lines = '\n'.join([f"  [{e['priority']}] {e['event']}: {e['desc']}" for e in _new_events])
+                    msg = (
+                        f"🔔 RSI结构事件 · {sym}\n"
+                        f"价格: ${data['px']:,.2f} | RSI_1H={data['rsi_1h']:.1f} | BB={data['bb_width']:.2f}%\n"
+                        f"{ev_lines}\n"
+                        f"→ 梵天扫描链已启动"
+                    )
+                    _sp.Popen(
+                        ['openclaw', 'message', 'send', '--to', JARVIS_TARGET, '--channel', 'jarvis', '--message', msg],
+                        stdout=_sp.DEVNULL, stderr=_sp.DEVNULL
+                    )
+                    # 写入去重记录
+                    for e in _new_events:
+                        _dedup[f"{sym}_{e.get('event','?')}"] = _now
+                    # 清理过期记录
+                    _dedup = {k: v for k, v in _dedup.items() if _now - v < 86400}
+                    _DEDUP_F.write_text(_jj.dumps(_dedup, indent=2))
             except Exception as _pe:
                 pass  # [静默]
         # ────────────────────────────────────────────────────────────────

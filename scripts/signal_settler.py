@@ -352,7 +352,8 @@ def main():
     elif args.dry_run:
         print(f'[settler] DRY-RUN: 发现 {len(settled_new)} 条可结算信号（未写入）')
     else:
-        print(f'[settler] 本次无新结算信号')
+        print('HEARTBEAT_OK')  # [设计院 2026-08-09] 无新结算信号→静默
+        import sys; sys.exit(0)  # 提前退出，不输出WR统计（无变化不刷屏）
 
     # 统计当前WR概况
     all_settled = [l for l in updated_lines if l.get('outcome') in ('TP1','SL','TP2')]
