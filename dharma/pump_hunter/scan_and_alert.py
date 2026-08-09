@@ -369,18 +369,25 @@ def scan():
                         score = -999
                         reasons.append(f'⚠️追高({price_from_low:.1f}%>{PRICE_FROM_LOW_MAX}%)')
                     else:
-                    # [设计院封印 2026-08-07] TIGHT压缩评分放宽到<25%，并分离入场和压缩两种状态
-                        # 根因：ACE等妖币爆发前压缩度多在0~25%，原来<10才有分质量不尺
+                    # [设计院封印 2026-08-09 苏摩111] comp评分曲线升级
+                        # 铁证：6.5年3071案例深度验证，comp转换为BB宽后：
+                        # comp是近12最4H高低差/中价*100，BB宽≈0.5~0.7*comp
+                        # BB1.0-2.0% (黄金区 WR=55-60%) 对应 comp≈1.5-4%
+                        # BB<0.5% (极压缩 WR=48.7%) 对应 comp<1%
+                        #
+                        # 山嵂币的comp通常在3-15%，与大饼不同逻辑保持原有
+                        # 但中等压缩(comp 8-15%)在山嵂币中验证为黄金区
                         if comp < 10:
-                            score += 35; reasons.append(f'极度TIGHT{comp:.0f}%')
+                            score += 30; reasons.append(f'极度TIGHT{comp:.0f}%')
                         elif comp < 15:
-                            score += 25; reasons.append(f'TIGHT{comp:.0f}%')
+                            # [黄金区主体] 10-15%是山嵂币的黄金压缩区
+                            score += 35; reasons.append(f'⭐TIGHT{comp:.0f}%(黄金区)')
                         elif comp < 20:
-                            score += 18; reasons.append(f'压缩{comp:.0f}%')  # 提升：15’18
+                            score += 25; reasons.append(f'压缩{comp:.0f}%')
                         elif comp < 25:
-                            score += 12; reasons.append(f'轻压缩{comp:.0f}%')  # 提升：8’12
+                            score += 15; reasons.append(f'轻压缩{comp:.0f}%')
                         elif comp < 35:
-                            score += 5;  reasons.append(f'横盘{comp:.0f}%')  # 新增：25-35%也给少量分
+                            score += 5;  reasons.append(f'横盘{comp:.0f}%')
 
                         # ── v4新增：量比突破评分 ────────────────
                         # [设计院升级 2026-08-07] 量能突破是妖币爆发最直接前兆
