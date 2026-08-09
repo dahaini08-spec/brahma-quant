@@ -330,6 +330,20 @@ def main():
         except Exception as _ol2_e:
             print(f'[settler] online_learner_v2跳过: {_ol2_e}')
 
+        # [设计院封印 2026-08-09 苏摩111] signal_weight_updater 结算闭环
+        # 闭环：信号结算 → 滚动WR计算 → 动态更新signal_weights.json
+        try:
+            sys.path.insert(0, str(BASE / 'brahma_brain'))
+            from signal_weight_updater import update_weights as _sw_update
+            _sw_result = _sw_update(dry_run=False)
+            _sw_upd = _sw_result.get('updated', 0)
+            if _sw_upd > 0:
+                print(f'[settler] signal_weights动态更新 {_sw_upd} 个key → data/signal_weights.json')
+            else:
+                print(f'[settler] signal_weights: 样本不足或无变化（n_trades={_sw_result.get("n_trades",0)}）')
+        except Exception as _sw_e:
+            print(f'[settler] signal_weight_updater跳过: {_sw_e}')
+
         # 推送简报
         if args.push and settled_new:
             wins  = sum(1 for s in settled_new if s['outcome'] in ('TP1','TP2'))
