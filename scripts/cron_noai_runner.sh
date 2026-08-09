@@ -382,6 +382,52 @@ except Exception as e:
     log "disk-buffer: free=${FREE}GB"
     ;;
 
+  log-rotation)
+    # ── 日志轮转清理（设计院 2026-08-09）──────────────────────────────
+    BASE_DIR="/root/.openclaw/workspace/trading-system"
+    LOG_DIR="$BASE_DIR/logs"
+    DATA_DIR="$BASE_DIR/data"
+    CLEANED=0
+
+    # 1. logs/ 目录：.log 文件超过 7 天删除；保留最近 7 天
+    while IFS= read -r f; do
+      rm -f "$f" && log "[log-rotation] 删除旧log: $f" && CLEANED=$((CLEANED+1))
+    done < <(find "$LOG_DIR" -name "*.log" -mtime +7 2>/dev/null)
+
+    # 2. logs/ 目录：.jsonl 超过 14 天删除
+    while IFS= read -r f; do
+      rm -f "$f" && log "[log-rotation] 删除旧jsonl: $f" && CLEANED=$((CLEANED+1))
+    done < <(find "$LOG_DIR" -name "*.jsonl" -mtime +14 2>/dev/null)
+
+    # 3. 活跃 .log 文件超过 50MB → 截断保留最后 5000 行
+    while IFS= read -r f; do
+      SIZE=$(du -k "$f" 2>/dev/null | cut -f1)
+      if [ "${SIZE:-0}" -gt 51200 ]; then
+        tail -n 5000 "$f" > "${f}.tmp" && mv "${f}.tmp" "$f"
+        log "[log-rotation] 截断大文件: $f (${SIZE}KB → 5000行)"
+        CLEANED=$((CLEANED+1))
+      fi
+    done < <(find "$LOG_DIR" -name "*.log" 2>/dev/null)
+
+    # 4. data/ 目录：低价值 .log 超过 3 天删除（auto_position_manager 等运维日志）
+    while IFS= read -r f; do
+      rm -f "$f" && log "[log-rotation] 删除data旧log: $f" && CLEANED=$((CLEANED+1))
+    done < <(find "$DATA_DIR" -maxdepth 1 -name "*.log" -mtime +3 2>/dev/null)
+
+    # 5. data/ 目录：noai_runner.log 超过 20MB → 截断
+    RUNNER_LOG="$LOG_DIR/noai_runner.log"
+    if [ -f "$RUNNER_LOG" ]; then
+      SIZE=$(du -k "$RUNNER_LOG" 2>/dev/null | cut -f1)
+      if [ "${SIZE:-0}" -gt 20480 ]; then
+        tail -n 3000 "$RUNNER_LOG" > "${RUNNER_LOG}.tmp" && mv "${RUNNER_LOG}.tmp" "$RUNNER_LOG"
+        log "[log-rotation] 截断noai_runner.log: ${SIZE}KB → 3000行"
+        CLEANED=$((CLEANED+1))
+      fi
+    fi
+
+    log "[log-rotation] 完成，清理/截断项目: ${CLEANED}个"
+    ;;
+
   *)
     log "未知任务: $TASK"
     exit 1
