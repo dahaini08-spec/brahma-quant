@@ -218,11 +218,20 @@ def format_report(r: dict) -> str:
     ]
     for k, v in cf['breakdown'].items():
         try:
-            vi = int(v) if v != '?' else 0
+            if v == '?' or v is None:
+                vi = 0
+            elif isinstance(v, (int, float)):
+                vi = int(v)
+            else:
+                # 从字符串中提取首个数字（含负号），如 "+6 CVD..." → 6，"-9(FR...)" → -9
+                import re as _re
+                _m = _re.search(r'([+-]?\d+)', str(v))
+                vi = int(_m.group(1)) if _m else 0
         except (TypeError, ValueError):
             vi = 0
-        bar = '█' * (vi // 3) + '░' * max(0, 7 - vi // 3)
-        lines.append(f'  {k:10s} {vi:3d}/30  {bar}')
+        bar = '█' * (abs(vi) // 3) + '░' * max(0, 7 - abs(vi) // 3)
+        sign = '-' if vi < 0 else '+' if vi > 0 else ' '
+        lines.append(f'  {k:10s} {sign}{abs(vi):2d}/30  {bar}')
 
     lines.append(f'╚══════════════════════════════════════════════════════╝')
     return '\n'.join(lines)
