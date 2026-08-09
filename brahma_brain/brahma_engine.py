@@ -4576,6 +4576,39 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception:
         pass  # HCME不可用时不阻断主流程
 
+    # ── [设计院 2026-08-09 苏摩111封印] 决策树接入主链路 ────────────────
+    # 修复根因： brahma_decision_engine.decide() 存在但从未被analyze()调用
+    # 苏摹看到的卡片里永远没有决策树结论
+    try:
+        from brahma_brain.brahma_decision_engine import decide as _dt_decide, \
+            get_decision_engine as _dt_engine
+        _dt_signal = {
+            'symbol':    _result.get('symbol', symbol),
+            'direction': _result.get('direction', signal_dir or 'LONG'),
+            'regime':    _result.get('regime', ''),
+            'score':     float(_result.get('score', 0) or 0),
+            'sl_pct':    float((_result.get('params') or {}).get('sl_pct', 0) or 0),
+            'grade':     float(_result.get('grade', _result.get('structure_grade', 0)) or 0),
+            'timing':    _result.get('timing_label', _result.get('timing', '')),
+            'rsi_4h':    float((_result.get('momentum') or {}).get('rsi_4h', 0) or 0),
+            'price':     float(_result.get('price', price or 0) or 0),
+            'entry_lo':  float((_result.get('params') or {}).get('entry_lo', 0) or 0),
+            'entry_hi':  float((_result.get('params') or {}).get('entry_hi', 0) or 0),
+            'sl':        float((_result.get('params') or {}).get('stop_loss', 0) or 0),
+            'tp1':       float((_result.get('params') or {}).get('tp1', 0) or 0),
+            'rr':        float((_result.get('params') or {}).get('rr1', 0) or 0),
+        }
+        _dt_result = _dt_decide(_dt_signal)
+        _result['decision'] = _dt_result
+        # 决策树行动嵌入主结果，方便后续格式化层直接读取
+        _result['decision_action'] = _dt_result.get('action', 'SKIP')
+        _result['decision_reason'] = _dt_result.get('reason', '')
+        _result['decision_step']   = _dt_result.get('step_passed', 0)
+    except Exception as _dt_e:
+        import logging as _lg; _lg.getLogger('brahma').warning(f'[decision_tree] {_dt_e}')
+        _result['decision'] = {'action': 'SKIP', 'reason': f'decision_engine_error: {_dt_e}', 'step_passed': 0}
+    # ── [决策树 END] ──────────────────────────────────────────────
+
     return _result
 
 def format_report(r: dict) -> str:
