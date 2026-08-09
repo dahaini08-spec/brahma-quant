@@ -326,6 +326,128 @@ def extract_standard_fields(r: dict) -> dict:
 
 SEP = '─' * 48
 
+
+def _build_action_guide(r: dict, f: dict) -> list:
+    """
+    操作指南层 — 苏摩看到的不是评分，而是「现在该怎么做」
+    返回 lines 列表，插入到 format_standard_card 尾部
+    """
+    import re as _re
+    lines = []
+
+    direction = f.get('direction', 'NEUTRAL')
+    valid     = bool(f.get('valid'))
+    score     = float(f.get('score') or 0)
+    entry_lo  = f.get('entry_lo')
+    entry_hi  = f.get('entry_hi')
+    sl        = f.get('sl')
+    tp1       = f.get('tp1')
+    rr        = f.get('rr')
+    rsi_1h    = f.get('rsi_1h')
+    rsi_4h    = f.get('rsi_4h')
+    price     = f.get('price')
+    regime    = f.get('regime', '')
+
+    # 体制分类
+    is_bear   = 'BEAR' in (regime or '')
+    is_bull   = 'BULL' in (regime or '')
+    is_chop   = 'CHOP' in (regime or '')
+
+    # 评分层级
+    score_level = 'SKIP' if score < 130 else ('WATCH' if score < 155 else 'ENTER')
+
+    # RSI状态
+    rsi4h_val = float(rsi_4h) if rsi_4h not in (None, '?', '') else 50
+    rsi1h_val = float(rsi_1h) if rsi_1h not in (None, '?', '') else 50
+    rsi_hot   = rsi4h_val > 70
+    rsi_cold  = rsi4h_val < 35
+
+    # breakdown里抽取止损依据
+    cf_dict   = r.get('confluence', {}) or {}
+    bd        = cf_dict.get('breakdown', {}) or {}
+    sl_basis  = (r.get('params') or {}).get('sl_basis', '')
+    if not sl_basis:
+        # 从 breakdown 找支摙1H/4H中最相关的
+        for k in ['RSI4H时机惩罚', 'N16_ATR体制', 'SMC结构', '关键位精确度']:
+            if k in bd and str(bd[k]) not in ('0', '', '?'):
+                sl_basis = f'{k}[{str(bd[k])[:30]}]'
+                break
+    if not sl_basis:
+        sl_basis = 'swing_4H支撑位+ATR缓冲'
+
+    lines.append('[操作指令]')
+
+    # 情况一：有效信号，直接入场
+    if valid and score_level == 'ENTER' and entry_lo and sl and tp1:
+        dir_cn = '做多' if direction == 'LONG' else '做空'
+        sl_pct = abs((float(sl) - float(entry_lo)) / float(entry_lo) * 100) if entry_lo else 0
+        lines += [
+            f'  ✅ 现在：可入场 {dir_cn}',
+            f'  入场区: {_fmt_price(entry_lo)} ~ {_fmt_price(entry_hi)}',
+            f'  止损:   {_fmt_price(sl)}  (宽{sl_pct:.1f}%，依据: {sl_basis[:40]})',
+            f'  止盈:   TP1={_fmt_price(tp1)}  R:R={rr}',
+            f'  仓位建议: NAV的5% 小仓验证，冲破确认后加仓',
+        ]
+
+    # 情况二：评分较高但等待15M触发
+    elif score_level == 'ENTER' and not valid:
+        dir_cn = '做多' if direction == 'LONG' else '做空'
+        lines += [
+            f'  ⏳ 等待15M触发再入场 ({dir_cn})',
+            f'  入场区: {_fmt_price(entry_lo)} ~ {_fmt_price(entry_hi)}',
+            f'  触发条件: 15M出现CHoCH或强势阳线破局部高点',
+            f'  止损:   {_fmt_price(sl)}  (SL依据: {sl_basis[:40]})',
+            f'  止盈:   TP1={_fmt_price(tp1)}  R:R={rr}',
+        ]
+
+    # 情况三：监控区（130-155）
+    elif score_level == 'WATCH':
+        wait_condition = ''
+        if rsi_hot and direction == 'LONG':
+            wait_condition = f'RSI_4H={rsi4h_val:.0f}→等回落至≠55后重新审视'
+        elif rsi_cold and direction == 'SHORT':
+            wait_condition = f'RSI_4H={rsi4h_val:.0f}→等回升至≥45后重新审视'
+        elif entry_lo:
+            dir_cn = '做多' if direction == 'LONG' else '做空'
+            wait_condition = f'等价格回踩到 {_fmt_price(entry_lo)} 布局{dir_cn}'
+        else:
+            wait_condition = '评分不足，等待更强信号'
+        lines += [
+            f'  👁 监控中——不开仓',
+            f'  条件: {wait_condition}',
+            f'  评分={score:.0f}，需要达到≥155才执行',
+        ]
+
+    # 情况四：Skip + 为什么 + 下一个窗口
+    else:
+        # 找出最大的减分因素向苏摩解释
+        neg_items = []
+        for k, v in bd.items():
+            m = _re.search(r'([+-]?\d+)', str(v))
+            if m:
+                n = int(m.group(1))
+                if n < -3:
+                    neg_items.append((n, k, str(v)[:40]))
+        neg_items.sort(key=lambda x: x[0])
+
+        next_condition = ''
+        if rsi_hot and direction == 'LONG':
+            next_condition = f'RSI_4H需从{rsi4h_val:.0f}降至≤55 预计{int((rsi4h_val-55)/3)}–{int((rsi4h_val-55)/2)}H'
+        elif entry_lo and price:
+            gap = abs((float(price) - float(entry_lo)) / float(price) * 100)
+            next_condition = f'价格需回调{gap:.1f}%至布局区 {_fmt_price(entry_lo)}'
+        else:
+            next_condition = '等待更强局面形成'
+
+        lines.append(f'  ⚫ SKIP —— 当前不入场')
+        if neg_items:
+            lines.append(f'  主要阭制:')
+            for n, k, desc in neg_items[:3]:
+                lines.append(f'    {n:+d}  {k}: {desc}')
+        lines.append(f'  下一个窗口条件: {next_condition}')
+
+    return lines
+
 def format_standard_card(r: dict, ts: str = None) -> str:
     """
     固化版标准信号卡 — 统一推送格式
@@ -356,11 +478,14 @@ def format_standard_card(r: dict, ts: str = None) -> str:
     consensus = f['consensus'] or '?'
     elapsed   = f.get('elapsed') or 0
 
-    if direction == 'NEUTRAL' or not valid:
+    if direction == 'NEUTRAL':
         return (
             f'📊 {sym}/USDT · {regime}\n'
-            f'   score={score} | RSI1H={rsi1h} | 无有效信号，等待'
+            f'   score={score} | RSI1H={rsi1h} | 无明确方向，等待'
         )
+
+    # SKIP/WATCH 状态仍然展示完整卡片+操作指令（苏摩需要知道为什么等和下一步条件）
+    # 不再因 valid=False 提前 return
 
     dir_icon   = '🔴 SHORT' if direction == 'SHORT' else '🟢 LONG'
     valid_icon = '✅' if valid else '⏳'
@@ -395,6 +520,11 @@ def format_standard_card(r: dict, ts: str = None) -> str:
         lines.append(f'  GEX磁铁 ${gex_min:,.0f}  |  15M置信 {tconf}/100')
     elapsed_str = f' ({elapsed:.1f}s)' if elapsed else ''
     lines.append(f'  {valid_icon} 触发状态: {"有效信号" if valid else "等待15M确认"}{elapsed_str}')
+
+    # ── 操作指令层（苏摩最需要的：当前该怎么做）──────────────────
+    lines.append('')
+    action_lines = _build_action_guide(r, f)
+    lines += action_lines
 
     lines.append(SEP)
 
