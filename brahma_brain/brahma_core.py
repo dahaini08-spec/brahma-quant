@@ -5178,7 +5178,13 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass  # [静默] f'[SIGNAL-SUMMARY] {_sym} {signal_dir} score={_s:.0f} action={_result.get("actio
     except Exception: pass
 
-    # ══ [设计院 2026-08-09 苏摩111封印] 方仓+决策树接入brahma_core主链路 ══
+    # ══ [设计院 2026-08-09 苏摩111封印] 方仓向量WR → score_final 架构接线 ══
+    # 铁证：Qdrant 3071案例 黄金区(bb1.5-2%+RSI60-75) WR=70.8% EV=+3.41%
+    # 接线逻辑：fangcang.vector_stats.wr_directional 影响最终执行评分
+    #   wr>=0.65 → +8分（高置信方仓确认，推过155执行门槛）
+    #   wr<=0.40 → -8分（低置信，过滤假信号）
+    # 注意：fangcang字段在下方代码块写入，此处读取时尚未写入，故在写入后接线
+    # ══ 方仓+决策树接入brahma_core主链路 ══
     # 根因修复：runner调用brahma_core.analyze()，今日修复误打到brahma_engine.py
     # 现在正确打到brahma_core.py的return _result前
     try:
@@ -5214,6 +5220,31 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _dt_e:
         import logging as _lg; _lg.getLogger('brahma').warning(f'[decision_tree] {_dt_e}')
         _result['decision'] = {'action': 'SKIP', 'reason': f'error:{_dt_e}', 'step_passed': 0}
+
+    # [设计院封印 2026-08-09 苏摩111] 方仓向量WR → score_final 架构接线
+    # 核心：fangcang/Qdrant的WR结果终于影响auto_executor的执行决策
+    # 铁证：黄金区(bb1.5-2%+RSI60-75) WR=70.8% EV=+3.41%
+    #         极压缩(bb<0.5%) WR=35% EV=-0.50%——区分度高
+    try:
+        _fc_wr = (
+            _result
+            .get('fangcang', {})
+            .get('vector_stats', {})
+            .get('wr_directional', 0.5)
+        )
+        if isinstance(_fc_wr, (int, float)) and _fc_wr > 0:
+            if _fc_wr >= 0.65:
+                _delta = 8
+            elif _fc_wr <= 0.40:
+                _delta = -8
+            else:
+                _delta = 0
+            if _delta != 0:
+                _result['score_final'] = (_result.get('score_final') or 0) + _delta
+                _result['fangcang_wr_delta'] = _delta
+                _result['fangcang_wr_used']  = round(_fc_wr, 3)
+    except Exception:
+        pass
     # ══ [END 方仓+决策树] ══
 
     return _result
