@@ -5163,6 +5163,45 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _s=_result.get('score_final',_result.get('score',0))
         pass  # [静默] f'[SIGNAL-SUMMARY] {_sym} {signal_dir} score={_s:.0f} action={_result.get("actio
     except Exception: pass
+
+    # ══ [设计院 2026-08-09 苏摩111封印] 方仓+决策树接入brahma_core主链路 ══
+    # 根因修复：runner调用brahma_core.analyze()，今日修复误打到brahma_engine.py
+    # 现在正确打到brahma_core.py的return _result前
+    try:
+        from brahma_brain.fangcang_engine import get_fangcang_context as _fc_fn
+        _fc_regime = _result.get('regime', '')
+        _fc_res = _fc_fn(_sym, current_regime=_fc_regime)
+        _result['fangcang'] = _fc_res
+    except Exception as _fc_e:
+        import logging as _lg; _lg.getLogger('brahma').warning(f'[fangcang] {_fc_e}')
+        _result['fangcang'] = {'status': 'unavailable', 'reason': str(_fc_e)[:60]}
+
+    try:
+        from brahma_brain.brahma_decision_engine import decide as _dt_decide
+        _dt_signal = {
+            'symbol':    _result.get('symbol', _sym),
+            'direction': _result.get('direction', signal_dir or 'LONG'),
+            'regime':    _result.get('regime', ''),
+            'score':     float(_result.get('score', 0) or 0),
+            'sl_pct':    float((_result.get('params') or {}).get('sl_pct', 0) or 0),
+            'grade':     float(_result.get('grade', _result.get('structure_grade', 0)) or 0),
+            'timing':    _result.get('timing_label', _result.get('timing', '')),
+            'price':     float(_result.get('price', 0) or 0),
+            'entry_lo':  float((_result.get('params') or {}).get('entry_lo', 0) or 0),
+            'sl':        float((_result.get('params') or {}).get('stop_loss', 0) or 0),
+            'tp1':       float((_result.get('params') or {}).get('tp1', 0) or 0),
+            'rr':        float((_result.get('params') or {}).get('rr1', 0) or 0),
+        }
+        _dt_res = _dt_decide(_dt_signal)
+        _result['decision']        = _dt_res
+        _result['decision_action'] = _dt_res.get('action', 'SKIP')
+        _result['decision_reason'] = _dt_res.get('reason', '')
+        _result['decision_step']   = _dt_res.get('step_passed', 0)
+    except Exception as _dt_e:
+        import logging as _lg; _lg.getLogger('brahma').warning(f'[decision_tree] {_dt_e}')
+        _result['decision'] = {'action': 'SKIP', 'reason': f'error:{_dt_e}', 'step_passed': 0}
+    # ══ [END 方仓+决策树] ══
+
     return _result
 
 def format_report(r: dict) -> str:

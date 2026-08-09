@@ -237,6 +237,17 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                         except Exception:
                             pass
                         _cached['_from_cache'] = True
+                        # [设计院 2026-08-09] 缓存命中时补充decision+fangcang（今日修复）
+                        if 'decision' not in _cached or 'fangcang' not in _cached:
+                            try:
+                                from brahma_brain.brahma_core import analyze as _rc_fn
+                                _fresh = _rc_fn(sym, signal_dir=_d, deep=True)
+                                for _fk in ('decision','decision_action','decision_reason',
+                                            'decision_step','fangcang'):
+                                    if _fk in _fresh:
+                                        _cached[_fk] = _fresh[_fk]
+                            except Exception:
+                                pass  # 补充失败不阻断缓存返回
                         return _cached
         except Exception:
             pass
