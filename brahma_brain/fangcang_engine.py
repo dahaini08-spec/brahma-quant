@@ -814,6 +814,26 @@ def get_fangcang_context(
         }
         hcme_data = _integrate_hcme(current_signal_dict)
 
+        # [2026-08-09 封印] 向量检索增强层：查询历史最相似TOP20案例
+        vector_stats = {}
+        try:
+            from brahma_brain.fangcang_vector_db import query_stats as _vq
+            _bbw    = feat_cur.get('bbw_4h', 1.0)
+            _sqbars = feat_cur.get('n', 42)      # 上一轮历史扫描的K线根数为代理
+            _burst  = feat_cur.get('amp_ratio', 1.0)
+            _vol    = feat_cur.get('vol_ratio', 2.0)
+            _rsi    = feat_cur.get('rsi_end', 50.0)
+            _dir    = 'UP' if hint == 'LONG_BIAS' else ('DOWN' if hint == 'SHORT_BIAS' else 'UP')
+            _sym    = symbol.replace('USDT','').replace('PERP','')
+            vector_stats = _vq(
+                bb_width=_bbw, squeeze_bars=_sqbars, burst_atr=_burst,
+                vol_ratio=_vol, rsi=_rsi, direction=_dir,
+                symbol=_sym if _sym in ('BTC','ETH','SOL') else None,
+                top_k=20,
+            )
+        except Exception:
+            pass
+
         # TOP3文字摘要
         top3_lines = []
         for s in top_similar[:3]:
@@ -859,6 +879,7 @@ def get_fangcang_context(
             'hcme_wr_adj':         hcme_data.get('hcme_wr_adj', 0),
             'hcme_context':        hcme_data.get('hcme_context', ''),
             'fangcang_summary':    fangcang_summary,
+            'vector_stats':        vector_stats,   # [2026-08-09] 向量检索增强结果
 
             '_ts': now,
         }
