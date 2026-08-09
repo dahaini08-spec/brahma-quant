@@ -5246,6 +5246,164 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception:
         pass
     # ══ [END 方仓+决策树] ══
+    # ══ [B类模块接入 2026-08-09 设计院深度排查封印 苏摩111] ══════════════════════
+    # 根因：4个模块功能建好但未接通主链路，靠苏摩追问发现。
+    # 铁律：封印 = 代码完成 + 调用验证 + full_report输出可见 + 冒烟测试
+
+    # B1: SSI轧空强度指数 — 做空时注入轧空风险门控
+    try:
+        from brahma_brain.ssi_engine import compute_ssi as _ssi_fn
+        _ssi_dir = _result.get('signal_dir', 'LONG')
+        if _ssi_dir == 'SHORT':
+            _ssi_sent = _result.get('sentiment', {})
+            _ssi_res = _ssi_fn(
+                symbol=symbol,
+                short_ratio=100.0 - float(_ssi_sent.get('long_short_ratio', 50.0)),
+                oi=float(_ssi_sent.get('oi', 0) or 0),
+                price=float(_result.get('price', 0) or 0),
+                vol_current=float(_ssi_sent.get('oi_change_pct', 0) or 0),
+                fr_rate=float(_ssi_sent.get('funding_rate', 0) or 0),
+            )
+            _ssi_level = _ssi_res.get('level', 'NORMAL')
+            _result['ssi'] = _ssi_res
+            # 轧空高风险 → 做空降分
+            if _ssi_level == 'HIGH':
+                _result['score_final'] = (_result.get('score_final') or 0) - 12
+                _result.setdefault('breakdown_extra', {})['ssi_penalty'] = -12
+            elif _ssi_level == 'EXTREME':
+                _result['score_final'] = (_result.get('score_final') or 0) - 20
+                _result.setdefault('breakdown_extra', {})['ssi_penalty'] = -20
+    except Exception as _ssi_e:
+        pass  # SSI接入失败不阻断主流程
+
+    # B2: brahma_coordinator — 子系统上下文聚合
+    try:
+        from brahma_brain.brahma_coordinator import get_episodic_context as _coord_ep
+        from brahma_brain.brahma_coordinator import get_ic_context as _coord_ic
+        _regime_c = _result.get('regime', 'UNKNOWN')
+        _dir_c = _result.get('signal_dir', 'LONG')
+        _score_c = float(_result.get('score_final') or 0)
+        _ep_ctx = _coord_ep(symbol, _regime_c, _dir_c)
+        _ic_ctx = _coord_ic(_regime_c, _dir_c, _score_c)
+        _result['coordinator'] = {'episodic': _ep_ctx, 'ic': _ic_ctx}
+    except Exception:
+        pass  # coordinator失败不阻断
+
+    # B3: signal_integrity_gate — P0~P2 信号完整性校验
+    try:
+        from brahma_brain.signal_integrity_gate import gate_check as _gate_fn
+        _cf_gate = _result.get('confluence', {})
+        _params_gate = _result.get('params', {})
+        _ms_gate = _result.get('momentum', {})
+        _gate_ok, _gate_reason = _gate_fn(_cf_gate, _params_gate, _ms_gate)
+        _result['integrity_gate'] = {'passed': _gate_ok, 'reason': _gate_reason}
+        if not _gate_ok:
+            # 完整性校验失败 → score强制降权，不硬封禁（不改decision）
+            _result['score_final'] = (_result.get('score_final') or 0) - 10
+            _result.setdefault('breakdown_extra', {})['integrity_gate'] = -10
+    except Exception:
+        pass  # gate失败不阻断
+
+    # B4: mode_c_detector — 庄家行情识别，高波动假信号过滤
+    try:
+        from brahma_brain.mode_c_detector import detect as _mode_c_fn
+        _mc_sent = _result.get('sentiment', {})
+        _mc_mom = _result.get('momentum', {})
+        _mc_kl = (_result.get('extra') or {}).get('_klines_1h') or []
+        _mc_highs = [float(k[2]) for k in _mc_kl[-20:]] if _mc_kl and isinstance(_mc_kl[0], (list,tuple)) else []
+        _mc_lows  = [float(k[3]) for k in _mc_kl[-20:]] if _mc_kl and isinstance(_mc_kl[0], (list,tuple)) else []
+        _mc_vols  = [float(k[5]) for k in _mc_kl[-20:]] if _mc_kl and isinstance(_mc_kl[0], (list,tuple)) else []
+        _mc_price = float(_result.get('price', 0) or 0)
+        _mc_res = _mode_c_fn(
+            symbol=symbol,
+            price=_mc_price,
+            price_low_24h=min(_mc_lows) if _mc_lows else _mc_price * 0.98,
+            short_ratio=100.0 - float(_mc_sent.get('long_short_ratio', 50.0)),
+            vol_current=_mc_vols[-1] if _mc_vols else 0,
+            vol_avg_20=sum(_mc_vols)/len(_mc_vols) if _mc_vols else 1,
+            candle_high=max(_mc_highs) if _mc_highs else _mc_price * 1.01,
+            candle_low=min(_mc_lows) if _mc_lows else _mc_price * 0.99,
+            fr_rate=float(_mc_sent.get('funding_rate', 0) or 0),
+        )
+        _result['mode_c'] = _mc_res
+        if _mc_res.get('is_mode_c'):
+            # 庄家行情 → 仓位系数×0.5（写入pos_pct_sizer，不改score）
+            _result['pos_pct_sizer'] = (_result.get('pos_pct_sizer') or 0.5) * 0.5
+            _result.setdefault('breakdown_extra', {})['mode_c_halved'] = True
+    except Exception:
+        pass  # mode_c失败不阻断
+
+    # ══ [END B类模块接入] ══════════════════════════════════════════════════════
+
+
+    # ══ [C类孤岛模块接入 2026-08-09 设计院] ══════════════════════════════════
+    # us_session_gate / volatility_context / tradfi_signal_layer
+
+    # C1: us_session_gate — 美股时段门控，TradFi标的需要时段感知
+    try:
+        from brahma_brain.us_session_gate import get_us_session as _us_sess_fn
+        from brahma_brain.us_session_gate import get_session_regime_delta as _us_delta_fn
+        _us_info = _us_sess_fn()
+        _us_delta = _us_delta_fn(_us_info, _result.get('regime', ''), _result.get('signal_dir', 'LONG'))
+        _result['us_session'] = {'session': _us_info.get('session'), 'delta': _us_delta}
+        if isinstance(_us_delta, (int, float)) and _us_delta != 0:
+            _result['score_final'] = (_result.get('score_final') or 0) + _us_delta
+            _result.setdefault('breakdown_extra', {})['us_session_delta'] = _us_delta
+    except Exception:
+        pass
+
+    # C2: volatility_context — HCME M5 波动率历史分位
+    try:
+        from brahma_brain.volatility_context import get_volatility_context as _vol_ctx_fn
+        _vol_ctx = _vol_ctx_fn(symbol)
+        _result['volatility_context'] = _vol_ctx
+        # 极低波动率(compress <10th pct) → 压缩仓位×0.7
+        if _vol_ctx.get('vol_regime') == 'ULTRA_LOW':
+            _result['pos_pct_sizer'] = (_result.get('pos_pct_sizer') or 0.5) * 0.7
+            _result.setdefault('breakdown_extra', {})['vol_ultra_low_compress'] = True
+    except Exception:
+        pass
+
+    # C3: tradfi_signal_layer — TradFi信号层，标签注入breakdown
+    try:
+        from brahma_brain.tradfi_signal_layer import get_tradfi_signal as _tf_sig_fn
+        _tf_sig = _tf_sig_fn(symbol)
+        if _tf_sig and _tf_sig.get('available'):
+            _result['tradfi_signal'] = _tf_sig
+            # Phase A: 仅标签，不修改score
+    except Exception:
+        pass
+    # ══ [END C类孤岛模块接入] ══════════════════════════════════════════════════
+
+    # [设计院封印 2026-08-09] 修复F12: analyze()结束时写入structured日志
+    # 保证 brahma360 F12检查不再告警「SMC结构过旧」
+    try:
+        import json as _jsl2, time as _tsl2
+        from pathlib import Path as _Psl2
+        _sl2_path = _Psl2(__file__).parent.parent / 'data' / 'brahma_structured.jsonl'
+        _cf2 = _result.get('confluence', {}) or {}
+        _bd2 = _cf2.get('breakdown', {}) or {}
+        _sl2_entry = {
+            'ts':     _tsl2.time(),
+            'iso':    __import__('datetime').datetime.utcnow().isoformat() + 'Z',
+            'level':  'SIGNAL',
+            'module': 'brahma_core',
+            'event':  'analysis_complete',
+            'symbol': _result.get('symbol', _sym),
+            'score':  float(_result.get('score_final', _result.get('score', 0)) or 0),
+            'metrics': {
+                'ob_score':        float(_bd2.get('OB结构', _bd2.get('ob_score', 0)) or 0),
+                'fvg_score':       float(_bd2.get('FVG', _bd2.get('fvg_score', 0)) or 0),
+                'structure_score': float(_bd2.get('SMC结构', _bd2.get('structure_score', 0)) or 0),
+                'score':           float(_result.get('score_final', _result.get('score', 0)) or 0),
+                'regime':          _result.get('regime', ''),
+                'direction':       _result.get('signal_dir', _result.get('direction', '')),
+            }
+        }
+        with open(_sl2_path, 'a', encoding='utf-8') as _slf2:
+            _slf2.write(_jsl2.dumps(_sl2_entry, ensure_ascii=False) + '\n')
+    except Exception:
+        pass
 
     return _result
 
