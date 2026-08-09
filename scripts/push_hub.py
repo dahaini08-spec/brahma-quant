@@ -104,8 +104,8 @@ def push_signal_card(sym, score, grade, direction, entry_lo, entry_hi, sl, tp1,
         )
     elif score >= 130:
         action_block = (
-            f"【操作指令】\n"
-            f"  ⏳ 等15M触发后入场 ({dir_cn})\n"
+            f"【操作指令】——待苏摩确认\n"
+            f"  ⏳ 等15M触发后入场 ({dir_cn})，回复「执行」开仓\n"
             f"  布局区：${entry_lo:,.4f} ~ ${entry_hi:,.4f}\n"
             f"  触发：  15M出现CHoCH或强势突破\n"
             f"  止损：  ${sl:,.4f}  -{sl_pct}% {sl_note}\n"
