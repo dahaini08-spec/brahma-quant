@@ -269,7 +269,7 @@ def build_top_gainers() -> str:
         lines.append(f'  {i}. {sym_str} {chg:+.2f}% | {p_str}')
 
     lines.append('')
-    lines.append('涨起来的不一定值得追，先看看它涨的理由。')
+    lines.append('涨得猛不代表值得追，我会先看它涨的理由是什么。')
     lines.append('')
     lines.append('#涨幅榜 #合约 #加密货币 #今日行情')
     return '\n'.join(lines)
@@ -295,7 +295,7 @@ def build_top_losers() -> str:
         lines.append(f'  {i}. {sym_str} {chg:+.2f}% | {p_str}')
 
     lines.append('')
-    lines.append('大跌的不一定是机会，也可能是陷阱。')
+    lines.append('大跌的先别冲，弄清楚是砸盘还是真出问题，再说。')
     lines.append('')
     lines.append('#跌幅榜 #合约 #加密货币 #风险')
     return '\n'.join(lines)
@@ -336,21 +336,45 @@ def build_smart_money() -> str:
     data = run_pro_cli(['workflow', 'arb-scan', '--symbols', 'BTC,ETH,SOL'])
 
     lines = [f'🐋 主力方向速览 | {now_cst()} CST', '']
-    lines.append('主力资金当前方向：')
+    lines.append('我看盘的第一步，就是确认主力资金在哪边：')
+    lines.append('')
 
+    has_data = False
     if data and isinstance(data, dict):
         for sym in ['BTC', 'ETH', 'SOL']:
             v = data.get(sym, data.get(f'{sym}USDT', {}))
             if isinstance(v, dict) and 'long_short_ratio' in v:
                 ls = float(v['long_short_ratio'])
                 fr = float(v.get('latest_funding_rate', 0)) * 100
-                icon = '📈' if ls > 1.2 else ('📉' if ls < 0.8 else '⚖️')
-                lines.append(f'  {icon} {sym}: 多空比={ls:.2f} | FR={fr:.4f}%')
-    else:
-        lines.append('  数据获取中，请稍后查看...')
+                if ls > 1.5:
+                    icon = '📈 多头主导，情绪偏热'
+                elif ls > 1.2:
+                    icon = '📈 多头占优'
+                elif ls < 0.8:
+                    icon = '📉 空头占优'
+                else:
+                    icon = '⚖️  多空均衡'
+                lines.append(f'  {sym}: 多空比={ls:.2f} | FR={fr:.4f}% | {icon}')
+                has_data = True
+
+    if not has_data:
+        # fallback：拉实时数据
+        import requests
+        for sym in ['BTC', 'ETH', 'SOL']:
+            try:
+                ls_data = requests.get('https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
+                    params={'symbol': f'{sym}USDT', 'period': '1h', 'limit': 1}, timeout=5).json()
+                fr_data = requests.get('https://fapi.binance.com/fapi/v1/premiumIndex',
+                    params={'symbol': f'{sym}USDT'}, timeout=5).json()
+                ls = float(ls_data[0]['longShortRatio']) if ls_data else 1.0
+                fr = float(fr_data.get('lastFundingRate', 0)) * 100
+                icon = '📈 多头占优' if ls > 1.2 else ('📉 空头占优' if ls < 0.8 else '⚖️  多空均衡')
+                lines.append(f'  {sym}: 多空比={ls:.2f} | FR={fr:.4f}% | {icon}')
+            except Exception:
+                pass
 
     lines.append('')
-    lines.append('主力的钱在哪里，价格就往哪里走。这是我看盘的第一步。')
+    lines.append('多空比>1.5多头过热，结合资金费率一起看，两个都高的时候要小心追多。')
     lines.append('')
     lines.append('#主力资金 #资金费率 #合约 #行情分析')
     return '\n'.join(lines)
