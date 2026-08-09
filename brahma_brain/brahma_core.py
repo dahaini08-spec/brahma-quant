@@ -5389,8 +5389,12 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # C3: tradfi_signal_layer — TradFi信号层，标签注入breakdown
     try:
-        from brahma_brain.tradfi_signal_layer import get_tradfi_signal as _tf_sig_fn
-        _tf_sig = _tf_sig_fn(symbol)
+        from brahma_brain.tradfi_signal_layer import compute_tradfi_context as _tf_sig_fn
+        _tf_sig = _tf_sig_fn(
+            symbol, _result.get('signal_dir','LONG'),
+            float(_result.get('score_final') or 0),
+            _result.get('regime','UNKNOWN'),
+        )
         if _tf_sig and _tf_sig.get('available'):
             _result['tradfi_signal'] = _tf_sig
             # Phase A: 仅标签，不修改score
