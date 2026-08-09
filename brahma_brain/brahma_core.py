@@ -124,6 +124,20 @@ except Exception:
 # 150分共振评分器（Phase 1 内置版）
 # ═══════════════════════════════════════════════════════════════
 
+def _calc_mtf_alignment(closes_1h, closes_4h, closes_1d):
+    """多周期趋势对齐 — 原brahma_engine独有函数，合并入brahma_core [2026-08-09]"""
+    def _trend(closes):
+        if len(closes) < 5: return 'NEUTRAL'
+        return 'UP' if closes[-1] > closes[-5] else 'DOWN'
+    t1h = _trend(closes_1h)
+    t4h = _trend(closes_4h)
+    t1d = _trend(closes_1d)
+    aligned = t1h == t4h == t1d
+    return {'1h': t1h, '4h': t4h, '1d': t1d,
+            'aligned': aligned,
+            'consensus': t1h if aligned else 'MIXED'}
+
+
 def confluence_score(ms: dict, smc: dict, signal_dir: str,
                      extra_data: dict = None) -> dict:
     """
