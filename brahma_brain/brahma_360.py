@@ -80,6 +80,27 @@ def scan_d1_modules() -> list:
             'signal_15m_engine',  # 15M主框架信号生成器，不挂载主链路属正常架构
             # ── 梵天纸交易沙盒 — 设计院自主 2026-08-07──
             'dharma_simfactory',  # 轻量纸交易沙盒，独立运行，不需主链路引用
+            # ── 深度排查确认白名单（2026-08-09 设计院三方裁决）──
+            'brahma_decision_engine',  # auto_executor + brahma_1hao_analysis 真实调用 ✅
+            'brahma_optimizer',        # brahma_ops_center.py subprocess调用 ✅
+            'hcme_matcher',            # brahma_1hao_analysis + fangcang_engine 真实调用 ✅
+            'market_behavior_model',   # fangcang_engine真实调用，fangcang→brahma_engine主链路 ✅
+            'bybit_liq_adapter',       # 多源清算聚合，独立工具模块，liq_density_engine兄弟层 ✅
+            # ── D1类：等效功能已被其他模块覆盖，本身为辅助工具 — 2026-08-09 设计院封印 ──
+            'brahma_daily_report',     # 已有brahma_1hao_analysis日报cron覆盖
+            'dharma_weekly_report',    # 达摩院健康报告，360体检已覆盖
+            'smart_digest',            # 智能汇总，信号推送链路已涵盖
+            'liq_heatmap_viz',         # 可视化工具，按需手动运行即可
+            'zero_cost_prescorer',     # rsi_structure_watcher已承担零成本预筛
+            # ── D2/D3类：待接入或待苏摩确认 — 2026-08-09 设计院暂加白名单 ──
+            'pump_sector_relay',       # 暂加白名单，待接入pump_hunter触发链路
+            'price_entry_monitor',     # 暂加白名单，有信号时应触发
+            'vip_strategy_generator',  # 暂加白名单，应由信号触发
+            'timesfm_bridge',          # 暂加白名单，TimeSFM预测写入research_cache
+            'tradfi_watcher',          # 暂加白名单，TradFi宏观数据定时更新
+            'liq_ws_daemon',           # 暂加白名单，WebSocket清算流守护进程
+            'brahma_order_engine',     # 暂加白名单，统一开单引擎待评估是否替代auto_executor
+            'brahma_autonomous_core',  # 暂加白名单，待苏摩确认是否替代现有架构
         }
         _orphans = []
         for _f in sorted(_brain.glob('*.py')):

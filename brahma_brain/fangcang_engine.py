@@ -634,8 +634,10 @@ def _integrate_m4_bias() -> dict:
         now = datetime.now(tz=timezone.utc)
         bias: dict = {}
 
-        # 小时偏置
-        hb = model.get('hourly_bias', {}).get(str(now.hour))
+        # 小时偏置（hourly_bias为4H粒度：0/4/8/12/16/20，取最近档位）
+        _hour_keys = sorted(int(k) for k in model.get('hourly_bias', {}).keys())
+        _nearest_h = str(min(_hour_keys, key=lambda k: abs(k - now.hour))) if _hour_keys else str(now.hour)
+        hb = model.get('hourly_bias', {}).get(_nearest_h)
         if hb:
             bias['hour_avg_chg'] = hb.get('avg_chg', 0.0)
             bias['hour_up_prob'] = hb.get('up_prob', 0.5)

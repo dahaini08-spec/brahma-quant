@@ -499,46 +499,67 @@ def scan():
             if _addons['total_bonus'] > 0:
                 score += _addons['total_bonus']
 
-    # ══ [设计院 2026-08-09 v3] 新增底部识别3维度 ══════════════
-    # 维度A: 持续压缩天数（磨底越久爆发越猛）
-    try:
-        _comp_days = 0
-        _daily_url = f'https://fapi.binance.com/fapi/v1/klines?symbol={sym}&interval=1d&limit=14'
-        import urllib.request as _ur2
-        _dk = __import__('json').loads(_ur2.urlopen(_daily_url, timeout=5).read())
-        _dc = [float(_k[4]) for _k in _dk]
-        _dh = [float(_k[2]) for _k in _dk]
-        _dl = [float(_k[3]) for _k in _dk]
-        for _di in range(len(_dc)-2, max(0, len(_dc)-8), -1):
-            _d_range = (_dh[_di] - _dl[_di]) / max(_dc[_di], 0.001) * 100
-            if _d_range < 5:
-                _comp_days += 1
-            else:
-                break
-        if _comp_days >= 5:
-            score += 15; reasons.append(f'磨底{_comp_days}天+15')
-        elif _comp_days >= 3:
-            score += 8;  reasons.append(f'磨底{_comp_days}天+8')
-        # 维度B: 距90日低点 <10%
-        _low90 = min(_dl[-90:] if len(_dl)>=90 else _dl)
-        _dist_low = (_dc[-1]/_low90 - 1)*100
-        if _dist_low < 5:
-            score += 15; reasons.append(f'极近90D低点{_dist_low:.1f}%+15')
-        elif _dist_low < 10:
-            score += 8;  reasons.append(f'近90D低点{_dist_low:.1f}%+8')
-        elif _dist_low < 20:
-            score += 3;  reasons.append(f'偏低位{_dist_low:.1f}%+3')
-        # 维度C: 近7日连续量能枯竭
-        _daily_vols = [float(_k[7]) for _k in _dk]
-        _avg_vol_long = sum(_daily_vols[:-7])/max(len(_daily_vols)-7, 1)
-        _recent_ratio = sum(_daily_vols[-7:])/7 / max(_avg_vol_long, 1)
-        if _recent_ratio < 0.2:
-            score += 10; reasons.append(f'连续7日枯竭{_recent_ratio:.2f}x+10')
-        elif _recent_ratio < 0.4:
-            score += 5;  reasons.append(f'量能持续萎缩{_recent_ratio:.2f}x+5')
-    except Exception as _dim_e:
-        pass
-    # ══ [END 新增3维度] ════════════════════════════════════════
+            # ══ [Phase1.5联动 2026-08-09 设计院自主] ═════════════════════
+            # squeeze_lifecycle Phase1.5临界期：空头拥挤+量能刚回升 = 轧空即将发动
+            # Phase1.5封印 2026-08-09，现在接入比分逻辑
+            try:
+                from brahma_brain.squeeze_lifecycle import update as _sq_update
+                _sq_r = _sq_update(
+                    sym,
+                    short_ratio=short_pct / 100 if short_pct > 0 else 0.5,
+                    oi=1e9,  # OI作为占位符，Phase判断不依赖绝对値
+                    price=price,
+                    vol_current=_vol_list[-1] if _vol_list else 1,
+                    vol_avg=_vol_avg20 if _vol_avg20 > 0 else 1,
+                )
+                if _sq_r.get('phase') == 1.5:
+                    score += 20
+                    reasons.append(f'⭐Phase1.5临界期(空{short_pct:.0f}%拥挤)+20')
+            except Exception:
+                pass
+            # ══ [END Phase1.5联动] ════════════════════════════════
+
+            # ══ [设计院 2026-08-09 v3] 新增底部识别3维度 ══════════════
+            # 维度A: 持续压缩天数（磨底越久爆发越猛）
+            try:
+                _comp_days = 0
+                _daily_url = f'https://fapi.binance.com/fapi/v1/klines?symbol={sym}&interval=1d&limit=14'
+                import urllib.request as _ur2
+                _dk = __import__('json').loads(_ur2.urlopen(_daily_url, timeout=5).read())
+                _dc = [float(_k[4]) for _k in _dk]
+                _dh = [float(_k[2]) for _k in _dk]
+                _dl = [float(_k[3]) for _k in _dk]
+                for _di in range(len(_dc)-2, max(0, len(_dc)-8), -1):
+                    _d_range = (_dh[_di] - _dl[_di]) / max(_dc[_di], 0.001) * 100
+                    if _d_range < 5:
+                        _comp_days += 1
+                    else:
+                        break
+                if _comp_days >= 5:
+                    score += 15; reasons.append(f'磨底{_comp_days}天+15')
+                elif _comp_days >= 3:
+                    score += 8;  reasons.append(f'磨底{_comp_days}天+8')
+                # 维度B: 距90日低点 <10%
+                _low90 = min(_dl[-90:] if len(_dl)>=90 else _dl)
+                _dist_low = (_dc[-1]/_low90 - 1)*100
+                if _dist_low < 5:
+                    score += 15; reasons.append(f'极近90D低点{_dist_low:.1f}%+15')
+                elif _dist_low < 10:
+                    score += 8;  reasons.append(f'近90D低点{_dist_low:.1f}%+8')
+                elif _dist_low < 20:
+                    score += 3;  reasons.append(f'偏低位{_dist_low:.1f}%+3')
+                # 维度C: 近7日连续量能枯竭
+                _daily_vols = [float(_k[7]) for _k in _dk]
+                _avg_vol_long = sum(_daily_vols[:-7])/max(len(_daily_vols)-7, 1)
+                _recent_ratio = sum(_daily_vols[-7:])/7 / max(_avg_vol_long, 1)
+                if _recent_ratio < 0.2:
+                    score += 10; reasons.append(f'连续7日枯竭{_recent_ratio:.2f}x+10')
+                elif _recent_ratio < 0.4:
+                    score += 5;  reasons.append(f'量能持续萎缩{_recent_ratio:.2f}x+5')
+            except Exception as _dim_e:
+                pass
+            # ══ [END 新增3维度] ════════════════════════════════════════
+
                 reasons.append(_addons['notes'])
             # 暴涨结束信号（单独推送，不影响常规预警流程）
             if _addons['pump_end']['pump_end']:

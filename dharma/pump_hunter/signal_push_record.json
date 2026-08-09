@@ -207,10 +207,10 @@
     "eth_regime": "BULL_TREND"
   },
   "ARBUSDT": {
-    "last_push_ts": 1786096003.0225146,
-    "last_score": 82,
-    "last_push_at": "2026-08-07T09:46:43.149484",
-    "push_price": 0.07787,
+    "last_push_ts": 1786243934.0276396,
+    "last_score": 101,
+    "last_push_at": "2026-08-09T02:52:14.132224",
+    "push_price": 0.07807,
     "regime": "BULL_TREND",
     "btc_regime": "BULL_TREND",
     "eth_regime": "BULL_TREND"
@@ -540,10 +540,10 @@
     "eth_regime": "BULL_TREND"
   },
   "USDCUSDT": {
-    "last_push_ts": 1786210183.4855728,
-    "last_score": 95,
-    "last_push_at": "2026-08-08T17:29:45.854110",
-    "push_price": 1.000039,
+    "last_push_ts": 1786243934.0276396,
+    "last_score": 99,
+    "last_push_at": "2026-08-09T02:52:14.148906",
+    "push_price": 1.000164,
     "regime": "BULL_TREND",
     "btc_regime": "BULL_TREND",
     "eth_regime": "BULL_TREND"
@@ -639,10 +639,10 @@
     "eth_regime": "BULL_TREND"
   },
   "VVVUSDT": {
-    "last_push_ts": 1786210183.4855728,
-    "last_score": 73,
-    "last_push_at": "2026-08-08T17:29:55.680305",
-    "push_price": 11.188,
+    "last_push_ts": 1786243934.0276396,
+    "last_score": 104,
+    "last_push_at": "2026-08-09T02:52:14.098605",
+    "push_price": 11.11,
     "regime": "BULL_TREND",
     "btc_regime": "BULL_TREND",
     "eth_regime": "BULL_TREND"
@@ -715,6 +715,24 @@
     "last_score": 81,
     "last_push_at": "2026-08-09T01:30:15.417271",
     "push_price": 0.08976,
+    "regime": "BULL_TREND",
+    "btc_regime": "BULL_TREND",
+    "eth_regime": "BULL_TREND"
+  },
+  "RUNEUSDT": {
+    "last_push_ts": 1786243934.0276396,
+    "last_score": 101,
+    "last_push_at": "2026-08-09T02:52:14.115928",
+    "push_price": 0.4321,
+    "regime": "BULL_TREND",
+    "btc_regime": "BULL_TREND",
+    "eth_regime": "BULL_TREND"
+  },
+  "BTCDOMUSDT": {
+    "last_push_ts": 1786243934.0276396,
+    "last_score": 98,
+    "last_push_at": "2026-08-09T02:52:14.164079",
+    "push_price": 5507.5,
     "regime": "BULL_TREND",
     "btc_regime": "BULL_TREND",
     "eth_regime": "BULL_TREND"

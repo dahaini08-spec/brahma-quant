@@ -394,6 +394,15 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         print(f'[P2-LIQ-DEBUG] Exception: {type(_liq_e).__name__}: {str(_liq_e)[:100]}', file=_sys_liq.stderr)
         _liq_clusters = {}
 
+    # [bybit_liq_adapter 接入 2026-08-09 设计院三方裁决]
+    # 提供L/S比率+大户持仓维度，liq_density_engine缺失该维度
+    _bybit_liq_ctx = {}
+    try:
+        from brahma_brain.bybit_liq_adapter import get_enhanced_liq_context as _get_bliq
+        _bybit_liq_ctx = _get_bliq(symbol, price)
+    except Exception:
+        _bybit_liq_ctx = {}
+
     # ══════════════════════════════════════════════════════════
     # [达摩院v12.9c 修订 设计院 2026-05-30] FVG 条件升级
     # 原逻辑：无FVG → 硬拒绝（导致OB/Fib降级路径被绕过）
@@ -428,6 +437,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         '_ob_smc_std': _ob_smc_std, # [P1升级 2026-08-04] SMC标准OB
         '_confluence':   _confluence,   # [P1升级 2026-08-04] 多周期共振评分
         '_liq_clusters': _liq_clusters, # [P2升级 2026-08-04] 清算集群精度
+        '_bybit_liq_ctx': _bybit_liq_ctx,  # [bybit_liq_adapter 2026-08-09] L/S比率+大户持仓
         'price': price,  # [2026-07-06] s7-LiqDens需要price字段
         '_k4h_closes':  list(k4h['c'][-20:]) if k4h and k4h.get('c') else [],
         '_k4h_volumes': list(k4h['v'][-20:]) if k4h and k4h.get('v') else [],
