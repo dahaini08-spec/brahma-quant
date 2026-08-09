@@ -85,7 +85,10 @@ MIN_CHG_7D  = -15.0         # [设计院修复 2026-07-21] ACE案例根因修复
 # 新值-15.0: 仅排除快速暴跌死币（7日跌>15%），保留缓跌蓄力型
 
 # ── 评分阈值 ──────────────────────────────────────────────────
-PUSH_SCORE  = 65            # [设计院修复 2026-08-03 v2] 恢复65：ERR修复后高分=293，需保持高门槛
+PUSH_SCORE  = 35            # [设计院 2026-08-09 v3] 三级阈值体系
+# WATCH  ≥35: 底部蓄力候场 → Jarvis私信（低噪音）
+# ALERT  ≥60: 蓄力+催化剂  → Jarvis高亮推送
+# FIRE   ≥90: 三层全满      → 梵天35维验证
 EXEC_SCORE  = 90            # v4.1: 85→90 [苏摩111封印 2026-07-16]，确保自动执行阈值更严格
 
 # ── 防漏判参数 ────────────────────────────────────────────────
@@ -495,12 +498,62 @@ def scan():
             )
             if _addons['total_bonus'] > 0:
                 score += _addons['total_bonus']
+
+    # ══ [设计院 2026-08-09 v3] 新增底部识别3维度 ══════════════
+    # 维度A: 持续压缩天数（磨底越久爆发越猛）
+    try:
+        _comp_days = 0
+        _daily_url = f'https://fapi.binance.com/fapi/v1/klines?symbol={sym}&interval=1d&limit=14'
+        import urllib.request as _ur2
+        _dk = __import__('json').loads(_ur2.urlopen(_daily_url, timeout=5).read())
+        _dc = [float(_k[4]) for _k in _dk]
+        _dh = [float(_k[2]) for _k in _dk]
+        _dl = [float(_k[3]) for _k in _dk]
+        for _di in range(len(_dc)-2, max(0, len(_dc)-8), -1):
+            _d_range = (_dh[_di] - _dl[_di]) / max(_dc[_di], 0.001) * 100
+            if _d_range < 5:
+                _comp_days += 1
+            else:
+                break
+        if _comp_days >= 5:
+            score += 15; reasons.append(f'磨底{_comp_days}天+15')
+        elif _comp_days >= 3:
+            score += 8;  reasons.append(f'磨底{_comp_days}天+8')
+        # 维度B: 距90日低点 <10%
+        _low90 = min(_dl[-90:] if len(_dl)>=90 else _dl)
+        _dist_low = (_dc[-1]/_low90 - 1)*100
+        if _dist_low < 5:
+            score += 15; reasons.append(f'极近90D低点{_dist_low:.1f}%+15')
+        elif _dist_low < 10:
+            score += 8;  reasons.append(f'近90D低点{_dist_low:.1f}%+8')
+        elif _dist_low < 20:
+            score += 3;  reasons.append(f'偏低位{_dist_low:.1f}%+3')
+        # 维度C: 近7日连续量能枯竭
+        _daily_vols = [float(_k[7]) for _k in _dk]
+        _avg_vol_long = sum(_daily_vols[:-7])/max(len(_daily_vols)-7, 1)
+        _recent_ratio = sum(_daily_vols[-7:])/7 / max(_avg_vol_long, 1)
+        if _recent_ratio < 0.2:
+            score += 10; reasons.append(f'连续7日枯竭{_recent_ratio:.2f}x+10')
+        elif _recent_ratio < 0.4:
+            score += 5;  reasons.append(f'量能持续萎缩{_recent_ratio:.2f}x+5')
+    except Exception as _dim_e:
+        pass
+    # ══ [END 新增3维度] ════════════════════════════════════════
                 reasons.append(_addons['notes'])
             # 暴涨结束信号（单独推送，不影响常规预警流程）
             if _addons['pump_end']['pump_end']:
                 reasons.append(_addons['pump_end']['signal'])
 
-            if score >= PUSH_SCORE:
+            # ══ [设计院 2026-08-09 v3] 三级推送逻辑 ══
+            _alert_lv = None
+            if score >= 90:
+                _alert_lv = '🔥FIRE'
+            elif score >= 60:
+                _alert_lv = '⚡ALERT'
+            elif score >= 35:
+                _alert_lv = '👀WATCH'
+
+            if _alert_lv and score >= PUSH_SCORE:
                 # v4修复 BUG-2：止损用SL_PCT公式，不用comp*0.3
                 sl_pct   = _sl_pct_base
                 tp_mult  = regime_tp
