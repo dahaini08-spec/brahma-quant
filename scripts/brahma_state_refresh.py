@@ -111,7 +111,21 @@ def main():
         with open(tmp, 'w') as f:
             json.dump(state, f, ensure_ascii=False, indent=2)
         os.replace(tmp, str(STATE_FILE))
-        print(f'OK BTC={btc:.0f} ETH={eth:.2f} ts={now_iso}')
+        # [设计院 2026-08-09 苏摩111] 体制变化才推送，无变化静默
+        try:
+            _prev_state = {}
+            if STATE_FILE.exists():
+                _prev_state = json.loads(STATE_FILE.read_text())
+            _prev_regime = _prev_state.get('regime', '')
+            _new_regime  = state.get('regime', '')
+            _regime_changed = _prev_regime != _new_regime
+        except:
+            _regime_changed = True  # 读取失败时保守推送
+
+        if _regime_changed and _prev_regime:
+            print(f'⚡ 体制切换: {_prev_regime} → {_new_regime} | BTC={btc:.0f} ETH={eth:.2f}')
+        else:
+            print('HEARTBEAT_OK')  # 体制无变化，静默
 
         # [P2-SSOT 2026-07-25 设计院] 同步三文件钩子（2026-08-05修复per-symbol独立体制）
         try:
