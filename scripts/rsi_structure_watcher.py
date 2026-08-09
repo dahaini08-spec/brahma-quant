@@ -643,10 +643,10 @@ def run():
             except: pass
             pass  # [静默]
     elif not silent_syms:
-        pass  # [静默]
+        pass  # triggered_syms已推送，无需重复
 
     if not triggered_syms and not silent_syms:
-        pass  # [静默]
+        print("HEARTBEAT_OK")
 
 
 if __name__ == '__main__':
