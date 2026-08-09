@@ -699,8 +699,8 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         extra_data['cross_fr_basis'] = _cfb
         if _cfb.get('score_adj', 0) != 0:
             pass  # [静默]
-    except Exception:
-        pass
+    except Exception as _e:
+        import logging as _lg; _lg.getLogger('brahma').warning(f'[s_cross_fr] {_e}')
 
     # [s_options 2026-07-01] Deribit P/C OI
     try:
@@ -709,8 +709,8 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         extra_data['deribit_pc'] = _dpc
         if _dpc.get('score_adj', 0) != 0:
             pass  # [静默]
-    except Exception:
-        pass
+    except Exception as _e:
+        import logging as _lg; _lg.getLogger('brahma').warning(f'[s_deribit_pc] {_e}')
 
     # [s_macro_v2 2026-07-01] DXY实时+纳指+BTC.D精准加权
     try:
@@ -720,8 +720,8 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         if _mv2.get('score_addon', 0) != 0:
             for _mn in _mv2.get('notes', []):
                 print(f'[s_macro_v2] {symbol} {signal_dir}: {_mn}')
-    except Exception:
-        pass
+    except Exception as _e:
+        import logging as _lg; _lg.getLogger('brahma').warning(f'[s_macro_v2] {_e}')
 
     # [v5.6 设计院封印 2026-07-13] 拡展能力三项集成（路径修复 2026-07-13）
     # 修复: from scripts.xxx 在 brahma_brain/ 运行环境下不可用
@@ -741,16 +741,16 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         from whale_monitor import get_whale_signal as _whale_sig
         _wh = _whale_sig(symbol)
         extra_data['whale_v2'] = _wh
-    except Exception:
-        pass
+    except Exception as _e:
+        import logging as _lg; _lg.getLogger('brahma').warning(f'[whale_monitor] {_e}')
     # P1c: 期权P/C比（设计院 2026-07-13 补充集成）
     try:
         from options_pc_ratio import get_options_pc as _get_pc_v56
         _cur_v56 = 'BTC' if 'BTC' in symbol else ('ETH' if 'ETH' in symbol else symbol.replace('USDT',''))
         _pc_v56 = _get_pc_v56(_cur_v56)
         extra_data['options_pc'] = _pc_v56
-    except Exception:
-        pass
+    except Exception as _e:
+        import logging as _lg; _lg.getLogger('brahma').warning(f'[options_pc_v56] {_e}')
     # P2: 矿工卖压
     try:
         if symbol.startswith('BTC'):
@@ -2627,8 +2627,14 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _score_raw = round(_score_raw + _lsr_oi_pts, 1)
             cf['total'] = _score_raw
             cf['n20_lsr_oi'] = _lsr_oi_res.get('note', '')
+        # [设计院修复 2026-08-09] N20 LSR+OI 写入breakdown，让苏摩在进度条里看到
+        _lsr_note = _lsr_oi_res.get('note', '')
+        if _lsr_note or _lsr_oi_pts != 0:
+            cf.setdefault('breakdown', {})['清算/OI'] = (
+                cf.get('breakdown', {}).get('清算/OI', 0) + _lsr_oi_pts
+            )
     except Exception as _lsr_e:
-        pass
+        import logging as _lg; _lg.getLogger('brahma').warning(f'[N20-lsr_oi] {_lsr_e}')
     # ── [END N20 LSR+OI] | N20 多空比+持仓量段结束 ─────────────────────────────────────────────────────
 
     # ── [设计院 2026-06-07] N21 宏观Fib+EMA200+周线RSI（六方辩论落地）────────
