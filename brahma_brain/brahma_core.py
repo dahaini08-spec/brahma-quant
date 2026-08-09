@@ -5309,10 +5309,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         from brahma_brain.mode_c_detector import detect as _mode_c_fn
         _mc_sent = _result.get('sentiment', {})
         _mc_mom = _result.get('momentum', {})
-        _mc_kl = (_result.get('extra') or {}).get('_klines_1h') or []
-        _mc_highs = [float(k[2]) for k in _mc_kl[-20:]] if _mc_kl and isinstance(_mc_kl[0], (list,tuple)) else []
-        _mc_lows  = [float(k[3]) for k in _mc_kl[-20:]] if _mc_kl and isinstance(_mc_kl[0], (list,tuple)) else []
-        _mc_vols  = [float(k[5]) for k in _mc_kl[-20:]] if _mc_kl and isinstance(_mc_kl[0], (list,tuple)) else []
+        _mc_kl_raw = (_result.get('extra') or {}).get('_k1h_raw') or []
+        _mc_highs = [float(k[2]) for k in _mc_kl_raw[-20:]] if _mc_kl_raw and isinstance(_mc_kl_raw[0],(list,tuple)) else []
+        _mc_lows  = [float(k[3]) for k in _mc_kl_raw[-20:]] if _mc_kl_raw and isinstance(_mc_kl_raw[0],(list,tuple)) else []
+        _mc_vols  = [float(k[5]) for k in _mc_kl_raw[-20:]] if _mc_kl_raw and isinstance(_mc_kl_raw[0],(list,tuple)) else []
         _mc_price = float(_result.get('price', 0) or 0)
         _mc_res = _mode_c_fn(
             symbol=symbol,
@@ -5326,7 +5326,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             fr_rate=float(_mc_sent.get('funding_rate', 0) or 0),
         )
         _result['mode_c'] = _mc_res
-        if _mc_res.get('is_mode_c'):
+        if _mc_res and _mc_res.get('is_mode_c'):
             # 庄家行情 → 仓位系数×0.5（写入pos_pct_sizer，不改score）
             _result['pos_pct_sizer'] = (_result.get('pos_pct_sizer') or 0.5) * 0.5
             _result.setdefault('breakdown_extra', {})['mode_c_halved'] = True
@@ -5355,7 +5355,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # C2: volatility_context — HCME M5 波动率历史分位
     try:
         from brahma_brain.volatility_context import get_volatility_context as _vol_ctx_fn
-        _vol_ctx = _vol_ctx_fn(symbol)
+        _vc_mom = _result.get('momentum', {})
+        _vc_atr = float(_vc_mom.get('atr_1h') or 0) / float(_result.get('price', 1) or 1)
+        _vc_bb  = (_result.get('extra') or {}).get('bb_width') or 0.01
+        _vol_ctx = _vol_ctx_fn(symbol, current_atr=_vc_atr, current_bbw=float(_vc_bb))
         _result['volatility_context'] = _vol_ctx
         # 极低波动率(compress <10th pct) → 压缩仓位×0.7
         if _vol_ctx.get('vol_regime') == 'ULTRA_LOW':

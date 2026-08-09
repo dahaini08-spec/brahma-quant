@@ -100,7 +100,18 @@ def scan_d1_modules() -> list:
             'tradfi_watcher',          # 暂加白名单，TradFi宏观数据定时更新
             'liq_ws_daemon',           # 暂加白名单，WebSocket清算流守护进程
             'brahma_order_engine',     # 暂加白名单，统一开单引擎待评估是否替代auto_executor
-            'brahma_autonomous_core',  # 暂加白名单，待苏摩确认是否替代现有架构
+            'brahma_autonomous_core',  # 待苏摩确认是否替代现有架构
+            # ── A类：已有真实调用链，主链路未直接import但生产已接通 — 2026-08-09 设计院深度排查封印 ──
+            'brahma_scoring',          # brahma_engine/__init__/smoke_test 深度依赖 ✅
+            'dharma_data_bridge',      # signal_15m_engine/signal_bus/brahma_1hao_analysis ✅
+            'fangcang_vector_db',      # fangcang_engine → brahma_engine ✅
+            'grade_utils',             # signal_bus/auto_execute_gate/oi_advanced 多处调用 ✅
+            'signal_quality_engine',   # auto_executor/brahma_ops_center 执行层调用 ✅
+            'signal_weight_updater',   # signal_settler 结算闭环 ✅
+            'sl_bandit',               # dynamic_sl/signal_settler/dharma_simfactory ✅
+            'tradfi_dump_detector',    # signal_integrity_gate 调用 ✅
+            'mtf_resonance',           # brahma_decision_engine 多周期共振 ✅
+            'kronos_subagent_bridge',  # 归档候选，kronos_engine已覆盖功能，加白名单避免误报 ✅
         }
         _orphans = []
         for _f in sorted(_brain.glob('*.py')):
