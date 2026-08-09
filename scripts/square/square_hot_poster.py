@@ -201,8 +201,8 @@ def build_hot_tickers() -> str:
         tot = bull + bear + 1
         bull_pct = int(bull / tot * 100)
         p = prices.get(sym.upper())
-        price_str = f' ${p:,.2f}' if p else ''
-        # Limit $TICKER tags to top 3 to avoid Square coin-pair count limit (220095)
+        # 修复220095: 价格用U后缀代替$前缀，$SYMBOL仅限TOP3
+        price_str = f'  {p:,.2f}U' if p else ''
         ticker_str = f'${sym}' if i <= 3 else sym
         lines.append(f'  {i}. {ticker_str}{price_str} | 提及{mention:,}次 | 看多{bull_pct}%')
 
@@ -263,9 +263,10 @@ def build_top_gainers() -> str:
         sym = x.get('symbol', '').replace('USDT', '')
         chg = float(x.get('change', x.get('priceChangePercent', 0)))
         price = float(x.get('price', 0))
-        # Use no $ prefix on price values to avoid Square API treating them as ticker tags
-        p_str = f'{price:,.4f} USDT' if price < 1 else f'{price:,.2f} USDT'
-        lines.append(f'  {i}. {sym} {chg:+.2f}% | {p_str}')
+        p_str = f'{price:,.4f}U' if price < 1 else f'{price:,.2f}U'
+        # 修复220095: $SYMBOL仅前2名，其余纯文本
+        sym_str = f'${sym}' if i <= 2 else sym
+        lines.append(f'  {i}. {sym_str} {chg:+.2f}% | {p_str}')
 
     lines.append('')
     lines.append('涨幅榜≠买入信号。追高前确认体制和结构。')
@@ -288,9 +289,10 @@ def build_top_losers() -> str:
         sym = x.get('symbol', '').replace('USDT', '')
         chg = float(x.get('change', x.get('priceChangePercent', 0)))
         price = float(x.get('price', 0))
-        # Use no $ prefix on price values to avoid Square API treating them as ticker tags
-        p_str = f'{price:,.4f} USDT' if price < 1 else f'{price:,.2f} USDT'
-        lines.append(f'  {i}. {sym} {chg:+.2f}% | {p_str}')
+        p_str = f'{price:,.4f}U' if price < 1 else f'{price:,.2f}U'
+        # 修复220095: $SYMBOL仅前2名
+        sym_str = f'${sym}' if i <= 2 else sym
+        lines.append(f'  {i}. {sym_str} {chg:+.2f}% | {p_str}')
 
     lines.append('')
     lines.append('跌幅榜≠做空信号。确认体制方向再入场。')
