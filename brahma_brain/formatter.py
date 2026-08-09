@@ -526,6 +526,39 @@ def format_standard_card(r: dict, ts: str = None) -> str:
     action_lines = _build_action_guide(r, f)
     lines += action_lines
 
+    # ── 方仓 + 决策树 [设计院封印 2026-08-09 苏摩111] ─────────────────
+    try:
+        _fc = r.get('fangcang', {})
+        if _fc and _fc.get('status') == 'ok':
+            from brahma_brain.fangcang_engine import format_fangcang_card
+            _fc_text = format_fangcang_card(_fc)
+            if _fc_text:
+                for _fl in _fc_text.split('\n'):
+                    lines.append(_fl)
+        else:
+            _fc_status = (_fc or {}).get('status', 'not_run')
+            _fc_reason = (_fc or {}).get('reason', '')
+            lines.append('  【方仓】 ' + _fc_status +
+                         ('：' + _fc_reason[:40] if _fc_reason else '：数据不足'))
+    except Exception:
+        pass
+    try:
+        _dt = r.get('decision', {})
+        _dt_action = _dt.get('action', '')
+        _dt_step   = _dt.get('step_passed', 0)
+        _dt_reason = _dt.get('reason', '')
+        if _dt_action:
+            _icons = {'EXECUTE':'🚀','WAIT_15M':'⏳','WAIT_ENTRY':'👀','SKIP':'❌'}
+            lines.append(f'  【决策树】 {_icons.get(_dt_action,"🌲")} {_dt_action} | 通过{_dt_step}/5步')
+            if _dt_reason:
+                lines.append(f'    {_dt_reason[:60]}')
+            _ep = _dt.get('entry_plan', {})
+            if _ep and _ep.get('price'):
+                lines.append(f'    入场:${_ep["price"]:,.2f} SL:${_ep.get("sl_price",0):,.2f} RR:{_ep.get("rr",0):.1f}x')
+    except Exception:
+        pass
+    # ── [END 方仓+决策树] ──────────────────────────────────────────────
+
     lines.append(SEP)
 
     return '\n'.join(lines)
@@ -1129,8 +1162,9 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
                     lines.append(f'  {_pl[:80]}')
             lines.append('')
 
-    # ── 方仓经验引擎摘要 [设计院封印 2026-08-07] ─────────────────────
+    # ── 方仓经验引擎摘要 [设计院封印 2026-08-09 苏摩111] ────────────────
     # 注入每张信号卡片：历史相似案例 + 概率矩阵
+    # [修复] unavailable时也要显示原因，不能静默跳过
     try:
         _fc = r.get('fangcang', {})
         if _fc and _fc.get('status') == 'ok':
@@ -1140,7 +1174,33 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
                 lines.append('')
                 for _fl in _fc_text.split('\n'):
                     lines.append(_fl)
+        else:
+            _fc_status = (_fc or {}).get('status', 'not_run')
+            _fc_reason = (_fc or {}).get('reason', '')
+            lines.append('')
+            lines.append('  【方仓引擎】 ' + _fc_status +
+                         ('：' + _fc_reason[:40] if _fc_reason else '：未运行或数据不足'))
     except Exception:
         pass  # 降级静默，不影响主卡片
+
+    # ── 决策树输出 [设计院封印 2026-08-09 苏摩111] ────────────────────
+    # [修复] brahma_engine.analyze()现已调用decide()，结果注入_result['decision']
+    try:
+        _dt = r.get('decision', {})
+        _dt_action = _dt.get('action', '')
+        _dt_reason = _dt.get('reason', '')
+        _dt_step   = _dt.get('step_passed', 0)
+        if _dt_action:
+            _dt_icons = {'EXECUTE': '🚀', 'WAIT_15M': '⏳', 'WAIT_ENTRY': '👀', 'SKIP': '❌'}
+            _dt_icon  = _dt_icons.get(_dt_action, '🌲')
+            lines.append('')
+            lines.append(f'  【决策树】 {_dt_icon} {_dt_action} | 通过{_dt_step}/5步')
+            if _dt_reason:
+                lines.append(f'    原因: {_dt_reason[:60]}')
+            _ep = _dt.get('entry_plan', {})
+            if _ep and _ep.get('price'):
+                lines.append(f'    入场: ${_ep["price"]:,.2f}  SL: ${_ep.get("sl_price",0):,.2f}  RR: {_ep.get("rr",0):.1f}x')
+    except Exception:
+        pass  # 决策树格式化失败不影响主卡片
 
     return '\n'.join(lines)
