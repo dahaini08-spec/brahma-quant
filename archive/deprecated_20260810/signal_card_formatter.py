@@ -188,17 +188,6 @@ T2    {p(tp2)}
 ⏱️ 有效期: 4~24H（1H体制信号）
 {ts} UTC  ⚠️注意风控"""
     
-    # ── 方仓经验引擎注入 [设计院封印 2026-08-07] ──
-    try:
-        _fc = s.get('fangcang', {})
-        if _fc and _fc.get('status') == 'ok':
-            from brahma_brain.fangcang_engine import format_fangcang_card
-            _fc_text = format_fangcang_card(_fc)
-            if _fc_text:
-                card = card + '\n' + _fc_text
-    except Exception:
-        pass
-
     return card
 
 
