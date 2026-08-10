@@ -170,47 +170,95 @@ def get_regime_cn() -> str:
 # ════════════════════════════════════════════════════════════════════
 
 def build_hot_tickers() -> str:
-    """热度币播报 — ticker-rank 4H TOP5"""
-    data = run_pro_cli(['square', 'ticker-rank', '--window', '4h', '--limit', '8'])
-    items = (data.get('items') or data.get('list', []))[:5] if data else []
+    """KOL热点即时反应帖 — 找出最有爆点的币，给出反直觉判断"""
+    import requests as _r
 
+    # 拉取4H热度榜
+    data = run_pro_cli(['square', 'ticker-rank', '--window', '4h', '--limit', '15'])
+    items = (data.get('items') or data.get('list', []))[:15] if data else []
     if not items:
         return ''
 
-    # 拉取价格
-    prices = {}
-    for x in items[:3]:
-        sym = x.get('ticker', '').upper()
-        if sym in ('BTC', 'ETH', 'SOL', 'BNB'):
-            try:
-                import requests
-                t = requests.get('https://api.binance.com/api/v3/ticker/price',
-                                 params={'symbol': f'{sym}USDT'}, timeout=4).json()
-                prices[sym] = float(t.get('price', 0))
-            except Exception:
-                pass
+    # 找出互动量最高 且 有合约数据的标的
+    candidates = sorted(items, key=lambda x: x.get('totalEngagement', 0), reverse=True)
+    hot_sym = None
+    hot_data = {}
+    for c in candidates:
+        sym = c.get('ticker', '').upper()
+        if not sym or sym in ('USD1', 'WLFI', 'USDT', 'USDC'):
+            continue
+        try:
+            t = _r.get('https://fapi.binance.com/fapi/v1/ticker/24hr',
+                       params={'symbol': f'{sym}USDT'}, timeout=4).json()
+            fr_r = _r.get('https://fapi.binance.com/fapi/v1/premiumIndex',
+                          params={'symbol': f'{sym}USDT'}, timeout=4).json()
+            ls_r = _r.get('https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
+                          params={'symbol': f'{sym}USDT', 'period': '1h', 'limit': 1}, timeout=4).json()
+            price = float(t.get('lastPrice', 0))
+            chg = float(t.get('priceChangePercent', 0))
+            if price > 0:
+                hot_sym = sym
+                hot_data = {
+                    'price': price,
+                    'chg': chg,
+                    'fr': float(fr_r.get('lastFundingRate', 0)) * 100,
+                    'ls': float(ls_r[0]['longShortRatio']) if ls_r else 1.0,
+                    'mention': c.get('mentionCount', 0),
+                    'engage': c.get('totalEngagement', 0),
+                    'bull_pct': int(c.get('bullishCount', 0) / max(c.get('bullishCount', 0) + c.get('bearishCount', 0) + 1, 1) * 100),
+                }
+                break
+        except Exception:
+            continue
 
-    regime_cn = get_regime_cn()
-    lines = [f'🔥 广场热度币 | {now_cst()} CST', '']
-    lines.append('过去4H社区最热话题：')
-    for i, x in enumerate(items, 1):
-        sym = x.get('ticker', '?')
-        mention = x.get('mentionCount', 0)
-        bull = x.get('bullishCount', 0)
-        bear = x.get('bearishCount', 0)
-        tot = bull + bear + 1
-        bull_pct = int(bull / tot * 100)
-        p = prices.get(sym.upper())
-        # 修复220095: 价格用U后缀代替$前缀，$SYMBOL仅限TOP3
-        price_str = f'  {p:,.2f}U' if p else ''
-        ticker_str = f'${sym}' if i <= 3 else sym
-        lines.append(f'  {i}. {ticker_str}{price_str} | 提及{mention:,}次 | 看多{bull_pct}%')
+    if not hot_sym or not hot_data:
+        return ''
 
-    lines.append('')
-    lines.append(f'📊 当前市场偏{regime_cn}')
-    lines.append('这几个币在被集中讨论，值得盯着。')
-    lines.append('')
-    lines.append('#热门币种 #BTC #加密货币 #行情')
+    price = hot_data['price']
+    chg = hot_data['chg']
+    fr = hot_data['fr']
+    ls = hot_data['ls']
+    mention = hot_data['mention']
+    bull_pct = hot_data['bull_pct']
+
+    # 价格格式
+    price_str = f'{price:,.4f}U' if price < 1 else f'{price:,.2f}U'
+
+    # 生成反直觉观点
+    if chg > 30 and fr > 0.05:
+        hook = f'${hot_sym} 今天涨了{chg:.0f}%，我没追。'
+        insight = f'资金费率已达 {fr:.4f}%——追多的成本在快速累积。\n历史规律：FR超过0.05%之后，通常24H内出现回调。'
+        question = '这里你会追吗？'
+    elif chg > 50 and fr < 0:
+        hook = f'${hot_sym} 暴涨{chg:.0f}%，但空头比多头还多。'
+        insight = f'资金费率 {fr:.4f}%（负值），说明这是空头止损触发的轧空行情。\n轧空结束后，没有新买盘接力，通常急跌开始。'
+        question = '你觉得这波涨完了吗？'
+    elif chg > 15:
+        hook = f'${hot_sym} 涨{chg:.0f}%，广场讨论量{mention:,}次，情绪很热。'
+        insight = f'多空比：{ls:.2f}，看多情绪占{bull_pct}%。\n资金费率：{fr:.4f}%。热度高不等于方向对，先看数据再说。'
+        question = '你会在这里追进去吗？'
+    elif chg < -15:
+        hook = f'${hot_sym} 今天跌了{abs(chg):.0f}%，广场上一片恐慌。'
+        insight = f'这种时候最容易做出冲动决定。\n数据：多空比 {ls:.2f}，FR {fr:.4f}%。\n跌幅大不等于可以抄底，方向没变之前我不会动。'
+        question = '你觉得这里是底吗？'
+    else:
+        hook = f'广场热度第一的 ${hot_sym}，这些数据我最关注。'
+        insight = f'提及{mention:,}次，看多{bull_pct}%——情绪偏一边的时候我反而要小心。\nFR {fr:.4f}%，多空比 {ls:.2f}，无极端信号。'
+        question = '你怎么看这个位置？'
+
+    lines = [
+        hook, '',
+        '📊 当前数据：',
+        f'  价格: {price_str} | 24H: {chg:+.2f}%',
+        f'  资金费率: {fr:.4f}% | 多空比: {ls:.2f}',
+        f'  广场提及: {mention:,}次 | 看多情绪: {bull_pct}%',
+        '',
+        insight,
+        '',
+        question,
+        '',
+        f'#{hot_sym} #合约交易 #加密货币 #行情分析',
+    ]
     return '\n'.join(lines)
 
 
@@ -295,7 +343,7 @@ def build_top_losers() -> str:
         lines.append(f'  {i}. {sym_str} {chg:+.2f}% | {p_str}')
 
     lines.append('')
-    lines.append('大跌的先别冲，弄清楚是砸盘还是真出问题，再说。')
+    lines.append('大跌的先别冲——我自己在下跌前先看清楚是砸盘还是真出了问题，再决定。')
     lines.append('')
     lines.append('#跌幅榜 #合约 #加密货币 #风险')
     return '\n'.join(lines)
@@ -324,7 +372,7 @@ def build_hot_news() -> str:
     if tickers:
         lines.append(f'相关标的: {" ".join("$"+t for t in tickers[:3])}')
     lines.append('')
-    lines.append('看到这个消息，先别冲，等价格反应再说。')
+    lines.append('看到热点我的第一反应是看数据，不是冲进去——等价格先反应，再说。')
     lines.append('')
     lines.append('#币圈热点 #加密货币 #BTC')
     return '\n'.join(lines)
