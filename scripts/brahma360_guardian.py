@@ -58,6 +58,8 @@ CST     = timezone(timedelta(hours=8))
 
 sys.path.insert(0, str(SCRIPTS))
 sys.path.insert(0, str(BASE / 'brahma_brain'))
+sys.path.insert(0, str(BASE))  # fix: 确保 import brahma_brain 可用（2026-08-10 设计院）
+sys.path.insert(1, str(BASE / 'venv/lib/python3.11/site-packages'))  # venv依赖
 
 def _check_stat_health() -> dict:
     """统计健康：WR/触发率是否正常（每次L0都检查，不只是L2）"""
