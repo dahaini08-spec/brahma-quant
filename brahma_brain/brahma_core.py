@@ -5270,11 +5270,15 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # 当分析标的是TradFi代币时，额外查询 fangcang_tradfi_db
     # wr>=0.65 → +6 / wr<=0.40 → -6（略低于BTC方仓±8，TradFi数据年限较短）
     try:
+        # [2026-08-10 验证封印] MSTR降权±6→±3 / TSLA降为B级暂停调整
+        # 铁证: MSTR历史WR=47% EV多次为负 异常BTC代理力学
+        #         TSLA OOS n=61样本量不足 衡减保守处理
         _tradfi_tokens = set([
-            'XAUUSDT','QQQUSDT','NVDAUSDT','MSTRUSDT','AAPLUSDT','MSFTUSDT','XAGUSDT',
-            'SNDKUSDT','MUUSDT','INTCUSDT','TSLAUSDT','GOOGLUSDT','AMDUSDT','CLUSDT',
-        ])
-        if _sym in _tradfi_tokens:
+            'XAUUSDT','QQQUSDT','NVDAUSDT','AAPLUSDT','MSFTUSDT','XAGUSDT',
+            'SNDKUSDT','MUUSDT','INTCUSDT','GOOGLUSDT','AMDUSDT','CLUSDT',
+        ])  # TSLAUSDT降为B级暂移出 / MSTRUSDT单独处理
+        _mstr_tokens = {'MSTRUSDT'}  # MSTR专属：权重±3（降半）
+        if _sym in _tradfi_tokens or _sym in _mstr_tokens:
             from brahma_brain.fangcang_tradfi_db import query_tradfi as _tfi_q
             _tfi_bbw  = _result.get('fangcang', {}).get('bbw_4h',
                         _result.get('confluence', {}).get('bbw_4h', 1.5))
@@ -5286,7 +5290,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 rsi=float(_tfi_rsi or 55), direction=_tfi_dir, top_k=20,
             )
             _tfi_wr = _tfi_res.get('wr_directional', 0.5)
-            _tfi_delta = 6 if _tfi_wr >= 0.65 else (-6 if _tfi_wr <= 0.40 else 0)
+            # MSTR权重降半：±3（验证: BTC代理工具，方仓逻辑与普通股票不同）
+            _max_delta = 3 if _sym in _mstr_tokens else 6
+            _tfi_delta = _max_delta if _tfi_wr >= 0.65 else (-_max_delta if _tfi_wr <= 0.40 else 0)
             if _tfi_delta != 0:
                 _result['score_final'] = (_result.get('score_final') or 0) + _tfi_delta
             _result['tradfi_wr']       = round(_tfi_wr, 3)
