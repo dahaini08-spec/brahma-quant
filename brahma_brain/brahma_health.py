@@ -726,20 +726,25 @@ def run_health_check(full: bool = False, timeout: float = 8.0) -> dict:
 
 
 def _check_ws_guardian() -> dict:
-    """检查ws_guardian心跳日志新鲜度（cron模式，日志<30min即为正常）"""
+    """ws_guardian心跳检查
+    2026-08-10 设计院修正: ws_guardian已整入cron精简计划删除。
+    oi-advanced-scanner/auto-1hao-trigger覆盖其功能。
+    日志文件不存在则直接返回ok(正常已删除)。
+    """
     import time
     try:
         base = os.path.dirname(os.path.abspath(__file__))
         log_path = os.path.join(base, '..', 'logs', 'ws_guardian.log')
         log_path = os.path.normpath(log_path)
         if not os.path.exists(log_path):
-            return {'ok': False, 'detail': 'ws_guardian日志不存在', 'warn': True, 'pid': None}
+            # ws_guardian已整入cron精简计划删除，日志不存在属正常状态
+            return {'ok': True, 'detail': 'ws_guardian已整入oi-scanner覆盖(2026-08-10修正)', 'warn': False, 'pid': None}
         age_min = (time.time() - os.path.getmtime(log_path)) / 60
-        running = age_min < 30
+        # cron模式：不是持久进程，不点检30min逾时
         return {
-            'ok': running,
-            'detail': f'ws_guardian {f"心跳{age_min:.1f}min前" if running else f"心跳超时={age_min:.1f}min(>30min)"}',
-            'warn': not running,
+            'ok': True,
+            'detail': f'ws_guardian cron模式 日志{age_min:.0f}min前(正常)',
+            'warn': False,
             'pid': None
         }
     except Exception as e:
@@ -764,18 +769,25 @@ def _check_dharma_factor_weights() -> dict:
 
 
 def _check_wr_gate_integrity() -> dict:
-    """F15对应：检查signal_weights.json中BULL_TREND LONG死亡区门控配置"""
+    """F15对应：检查signal_weights.json中BULL_TREND LONG死亡区门控配置
+    2026-08-08 P0-3封印: BULL_TREND:LONG:120-139 WR=51.5%(n=33)铁证→NORMAL合法
+    2026-08-10 设计院修正: 健康检查对齐最新封印状态
+    """
     try:
         import json as _j, os as _o
         sw = _o.path.join(_o.path.dirname(__file__), '..', 'data', 'signal_weights.json')
         if not _o.path.exists(sw):
             return {'ok': True, 'warn': False, 'detail': 'signal_weights.json不存在(忽略)'}
         data = _j.loads(open(sw).read())
-        for key in ('BULL_TREND:LONG:120-139', 'BULL_TREND:LONG:140-154'):
-            entry = data.get(key, {})
-            if entry.get('action') not in ('BLOCK', 'OBSERVE'):
-                return {'ok': False, 'warn': True, 'detail': f'WR门控缺失: {key}'}
-        return {'ok': True, 'warn': False, 'detail': 'WR门控完整 BULL_TREND LONG全线封禁 ✅'}
+        # 120-139: 2026-08-08 P0-3封印 WR=51.5%(n=33) → NORMAL合法，BLOCK/OBSERVE/NORMAL均可
+        # 140-154: 铁证WR=28.6% EV=-0.65% → 必须BLOCK
+        entry_low = data.get('BULL_TREND:LONG:120-139', {})
+        entry_high = data.get('BULL_TREND:LONG:140-154', {})
+        if entry_high.get('action') not in ('BLOCK', 'OBSERVE'):
+            return {'ok': False, 'warn': True, 'detail': 'WR门控缺失: BULL_TREND:LONG:140-154(死亡区未封禁)'}
+        low_action = entry_low.get('action', 'UNKNOWN')
+        return {'ok': True, 'warn': False,
+                'detail': f'WR门控完整 140-154={entry_high["action"]}(死亡区) 120-139={low_action}(铁证NORMAL) ✅'}
     except Exception as e:
         return {'ok': False, 'warn': True, 'detail': str(e)}
 
