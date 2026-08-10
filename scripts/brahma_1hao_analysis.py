@@ -40,6 +40,11 @@ def _safe_float(v, default=0.0):
 # ─────────────────────────────────────────────────────────────────────────────
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# [FIX 2026-08-10] 并行race condition修复：统一在模块顶部加brahma_brain到path
+# 避免各层try块里重复sys.path.insert导致并行时fangcang/hcme/decision_engine丢失
+_BRAHMA_BRAIN_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'brahma_brain')
+if _BRAHMA_BRAIN_PATH not in sys.path:
+    sys.path.insert(0, _BRAHMA_BRAIN_PATH)
 
 from brahma_brain.brahma_engine import analyze
 from datetime import datetime, timezone
@@ -482,9 +487,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
 
     # ── [P1 LLM Council 2026-08-06 设计院] 本地裁决层——————————————————
     try:
-        import sys as _lsys
-        _lsys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent / 'brahma_brain'))
-        from llm_council import council_verdict, format_verdict_line as _fmt_vl
+        from brahma_brain.llm_council import council_verdict, format_verdict_line as _fmt_vl
         _liq_d = None
         try:
             import json as _ljson
@@ -501,9 +504,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
 
     # ══ [设计院 2026-08-08] 方仓铁证层注入 ══════════════════════════════
     try:
-        import sys as _fcsys
-        _fcsys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent / 'brahma_brain'))
-        from fangcang_engine import get_fangcang_context as _get_fc
+        from brahma_brain.fangcang_engine import get_fangcang_context as _get_fc
         _fc_regime = r.get('regime') or None
         _fc_data = _get_fc(symbol=symbol, current_regime=_fc_regime)
         if _fc_data and _fc_data.get('status') == 'ok':
@@ -546,9 +547,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
 
     # ══ [设计院 2026-08-08] HCME情境匹配层注入 ═══════════════════════════════
     try:
-        import sys as _hcsys
-        _hcsys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent / 'brahma_brain'))
-        from hcme_matcher import HCMEMatcher as _HCMEMatcher
+        from brahma_brain.hcme_matcher import HCMEMatcher as _HCMEMatcher
         _hcme = _HCMEMatcher()
         _hcme_signal = {
             'symbol': symbol,
@@ -587,9 +586,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
 
     # ══ [设计院 2026-08-08] 决策树层注入 ════════════════════════════════
     try:
-        import sys as _dtsys
-        _dtsys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent / 'brahma_brain'))
-        from brahma_decision_engine import get_decision_engine as _get_de
+        from brahma_brain.brahma_decision_engine import get_decision_engine as _get_de
         _de = _get_de()
         _de_signal = {
             'symbol': symbol,
