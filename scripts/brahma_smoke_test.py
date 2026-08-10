@@ -395,6 +395,66 @@ try:
 except Exception as _ct_e:
     warn('宪法守卫测试', str(_ct_e)[:60])
 
+# ─── 并发安全测试（路线A 2026-08-10 设计院封印）────────────────────────────
+# 根因：并行双币分析时 sys.path.insert 竞争导致方仓/HCME/决策树层静默丢失
+# 这3个测试能直接拦截该类 race condition
+
+def _run_parallel_analysis(sym: str, direction: str = 'LONG') -> tuple:
+    """在子线程里跑一次完整分析，返回(sym, has_fangcang, has_hcme, has_decision)"""
+    try:
+        import sys as _s
+        _s.path.insert(0, str(Path(__file__).parent.parent))
+        _s.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        from scripts.brahma_1hao_analysis import run_analysis
+        report = run_analysis(sym, direction, compact=True)
+        return (
+            sym,
+            '方仓铁证' in report or 'EV=' in report,
+            'HCME' in report,
+            any(k in report for k in ['SKIP', 'ENTER', 'WATCH', '决策树', '裁决']),
+        )
+    except Exception as _e:
+        return (sym, False, False, False)
+
+try:
+    import concurrent.futures as _cf
+
+    # T1: 并行方仓完整性（10次）
+    _PARALLEL_ROUNDS = 5
+    _fc_miss = 0
+    _hcme_miss = 0
+    _dt_miss = 0
+    _symbols = ['BTCUSDT', 'ETHUSDT']
+
+    for _round in range(_PARALLEL_ROUNDS):
+        with _cf.ThreadPoolExecutor(max_workers=2) as _ex:
+            _futs = {_ex.submit(_run_parallel_analysis, s): s for s in _symbols}
+            for _f in _cf.as_completed(_futs):
+                _sym, _has_fc, _has_hcme, _has_dt = _f.result()
+                if not _has_fc:  _fc_miss += 1
+                if not _has_hcme: _hcme_miss += 1
+                if not _has_dt:  _dt_miss += 1
+
+    _total_runs = _PARALLEL_ROUNDS * len(_symbols)
+
+    if _fc_miss == 0:
+        ok(f'并行方仓完整性', f'{_total_runs}次并行 丢失=0/{_total_runs} ✅')
+    else:
+        fail(f'并行方仓完整性', f'丢失{_fc_miss}/{_total_runs}次 — race condition未修复!')
+
+    if _hcme_miss == 0:
+        ok(f'并行HCME完整性', f'{_total_runs}次并行 丢失=0/{_total_runs} ✅')
+    else:
+        fail(f'并行HCME完整性', f'丢失{_hcme_miss}/{_total_runs}次')
+
+    if _dt_miss == 0:
+        ok(f'并行决策树完整性', f'{_total_runs}次并行 丢失=0/{_total_runs} ✅')
+    else:
+        fail(f'并行决策树完整性', f'丢失{_dt_miss}/{_total_runs}次')
+
+except Exception as _par_e:
+    warn('并发安全测试', str(_par_e)[:80])
+
 # ─── 汇总 ─────────────────────────────────────────────────────────────
 print('\n' + '─'*50)
 n_ok   = sum(1 for r in results if r[0] == '✅')
