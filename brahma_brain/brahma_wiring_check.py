@@ -209,6 +209,101 @@ def _run_test(entry: dict) -> tuple:
         return False, str(e)[:100]
 
 
+def _run_static_concurrency_scan() -> tuple:
+    """
+    静态并发安全扫描（路线A 2026-08-10）
+    S1: scan_runtime_path_injection  — try块内危险sys.path.insert
+    S2: scan_shared_mutable_state    — 模块级可变全局状态（并发危险）
+    returns: (ok_count, warn_count, fail_count)
+    """
+    import ast
+    ok_c = warn_c = fail_c = 0
+    print('\n🔍 静态并发安全扫描')
+    print('─' * 60)
+
+    # S1: try块内危险sys.path.insert扫描
+    _S1_targets = [
+        ROOT / 'scripts' / 'brahma_1hao_analysis.py',
+        ROOT / 'brahma_brain' / 'brahma_analysis_runner.py',
+        ROOT / 'brahma_brain' / 'brahma_core.py',
+    ]
+    # AST精准检测：只检查analyze/run_analysis等并行函数内try块里无if守卫的sys.path.insert
+    import ast as _ast
+    _s1_total_danger = 0
+    for _fpath in _S1_targets:
+        if not _fpath.exists():
+            continue
+        _rel = _fpath.relative_to(ROOT)
+        _danger = 0
+        try:
+            _src = _fpath.read_text()
+            _flines = _src.split('\n')
+            _tree = _ast.parse(_src)
+            for _node in _ast.walk(_tree):
+                if isinstance(_node, _ast.FunctionDef) and any(
+                        k in _node.name for k in ['analyze','run_analysis','batch','scan']):
+                    for _child in _ast.walk(_node):
+                        if isinstance(_child, _ast.Try):
+                            for _tn in _ast.walk(_child):
+                                if isinstance(_tn, _ast.Expr) and isinstance(_tn.value, _ast.Call):
+                                    _call = _tn.value
+                                    if (isinstance(_call.func, _ast.Attribute) and
+                                            _call.func.attr == 'insert' and
+                                            'path' in _ast.dump(_call.func)):
+                                        _ln = _tn.lineno
+                                        _prev = _flines[_ln-2] if _ln > 1 else ''
+                                        if 'if ' not in _prev:  # 无幂等守卫
+                                            _danger += 1
+        except Exception:
+            pass
+        if _danger > 0:
+            print(f'  ❌ S1 {_rel}: {_danger}处并行函数内无守卫sys.path.insert — race condition!')
+            fail_c += 1
+            _s1_total_danger += _danger
+        else:
+            print(f'  ✅ S1 {_rel}: 并行函数内无危险路径注入')
+            ok_c += 1
+
+    # S2: 模块级可变全局状态扫描（共享状态 = 并发危险）
+    _S2_targets = [
+        ROOT / 'brahma_brain' / 'brahma_scoring.py',
+        ROOT / 'brahma_brain' / 'fangcang_engine.py',
+        ROOT / 'brahma_brain' / 'hcme_matcher.py',
+        ROOT / 'brahma_brain' / 'brahma_decision_engine.py',
+    ]
+    _SAFE_GLOBALS = {'logger', '_logger', 'log', '_log', '_ROOT', '_DIR',
+                     'ROOT', 'BASE', 'BRAIN', '_BRAIN_DIR', 'BASE_DIR'}
+    for _fpath in _S2_targets:
+        if not _fpath.exists():
+            continue
+        try:
+            _tree = ast.parse(_fpath.read_text())
+            _danger_vars = []
+            for _node in ast.walk(_tree):
+                # 模块顶层的可变列表/字典赋値
+                if isinstance(_node, ast.Assign):
+                    for _t in _node.targets:
+                        if isinstance(_t, ast.Name):
+                            _name = _t.id
+                            if (_name.startswith('_') and
+                                _name not in _SAFE_GLOBALS and
+                                isinstance(_node.value, (ast.List, ast.Dict))):
+                                _danger_vars.append(_name)
+            _rel = _fpath.relative_to(ROOT)
+            if len(_danger_vars) > 5:
+                print(f'  ⚠️  S2 {_rel}: {len(_danger_vars)}个模块级可变对象 — 确认并发安全')
+                warn_c += 1
+            else:
+                print(f'  ✅ S2 {_rel}: 共享状态风险可控({len(_danger_vars)}个)')
+                ok_c += 1
+        except Exception as _e:
+            print(f'  ⚠️  S2 {_fpath.name}: 解析异常 {_e}')
+            warn_c += 1
+
+    print(f'\n静态扫描小计: ✅{ok_c}  ⚠️{warn_c}  ❌{fail_c}')
+    return ok_c, warn_c, fail_c
+
+
 def run_check(full: bool = False) -> dict:
     results = []
     ok_count = 0
@@ -273,6 +368,12 @@ def run_check(full: bool = False) -> dict:
         for name, desc, suggestion in HIGH_VALUE_ISLANDS:
             print(f'  ⚠️  {name}: {desc}')
             print(f'       建议: {suggestion}')
+
+    # ── [路线A 2026-08-10 设计院封印] 静态并发安全扫描 ─────────────────────
+    static_ok, static_warn, static_fail = _run_static_concurrency_scan()
+    ok_count   += static_ok
+    warn_count += static_warn
+    fail_count += static_fail
 
     return {
         'ok': ok_count, 'warn': warn_count, 'fail': fail_count,

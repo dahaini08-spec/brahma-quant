@@ -431,7 +431,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         _cv_scripts = _cv_os.path.join(
             _cv_os.path.dirname(_cv_os.path.dirname(_cv_os.path.abspath(__file__))),
             'scripts')
-        if _cv_scripts not in _cv_sys.path: _cv_sys.path.insert(0, _cv_scripts)
+        if _cv_scripts not in _cv_sys.path: if _cv_scripts not in _cv_sys.path: _cv_sys.path.insert(0, _cv_scripts)
         from content_validator import validate_signal as _validate_sig
         _cv_entry   = float(result.get('entry_lo', 0) or 0)
         _cv_stop    = float(result.get('stop_loss', 0) or 0)
@@ -458,7 +458,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
     try:
         import sys as _sl_sys, os as _sl_os
         _sl_dir = _sl_os.path.dirname(_sl_os.path.abspath(__file__))
-        if _sl_dir not in _sl_sys.path: _sl_sys.path.insert(0, _sl_dir)
+        if _sl_dir not in _sl_sys.path: if _sl_dir not in _sl_sys.path: _sl_sys.path.insert(0, _sl_dir)
         from signal_lifecycle import tick_signal_lifecycle as _tick_lc
         _lc_price = float(result.get('price', 0) or 0)
         if _lc_price > 0 and sym:
@@ -589,7 +589,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         import sys as _nv_sys, os as _nv_os
         _nv_root = _nv_os.path.join(_nv_os.path.dirname(__file__), '..', 'nerve_system')
         if _nv_root not in _nv_sys.path:
-            _nv_sys.path.insert(0, _nv_root)
+            if _nv_root not in _nv_sys.path: _nv_sys.path.insert(0, _nv_root)
         from freshness_checker import run as _fc_run
         _fc_alerts = _fc_run()
         _freshness_warnings = [
@@ -790,7 +790,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         import sys as _oi_sys, os as _oi_os
         _oi_scripts = _oi_os.path.join(_oi_os.path.dirname(__file__), '..', 'scripts')
         if _oi_scripts not in _oi_sys.path:
-            _oi_sys.path.insert(0, _oi_scripts)
+            if _oi_scripts not in _oi_sys.path: _oi_sys.path.insert(0, _oi_scripts)
         from oi_advanced_scanner import (
             get_oi_multi_period as _oi_multi,
             get_premium_info as _oi_prem,
@@ -892,7 +892,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         _com_price  = float(result.get('price', 0) or 0)
         if _com_score >= 120 and _com_params and _com_dir and _com_price > 0:
             import sys as _com_sys
-            _com_sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
+            if str(__import__('pathlib' not in _com_sys.path: _com_sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
             from condition_order_matrix import create_trade_plan as _create_plan
             _sl  = float(_com_params.get('stop_loss', 0) or 0)
             _tp1 = float(_com_params.get('tp1', 0) or 0)
@@ -924,7 +924,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         _lc_grade = float(result.get('grade', 0) or 0)
         if _lc_score >= 140 and _lc_grade >= 80:
             import sys as _lc_sys
-            _lc_sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
+            if str(__import__('pathlib' not in _lc_sys.path: _lc_sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
             from llm_council_bridge import review as _lc_review
             _lc_result = _lc_review(result, market_ctx=None, force=False)
             if _lc_result and not _lc_result.get('error'):
@@ -1009,7 +1009,7 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
         import sys as _cb_sys, os as _cb_os
         _cb_root = _cb_os.path.dirname(_cb_os.path.dirname(_cb_os.path.abspath(__file__)))
         if _cb_root not in _cb_sys.path:
-            _cb_sys.path.insert(0, _cb_root)
+            if _cb_root not in _cb_sys.path: _cb_sys.path.insert(0, _cb_root)
         from brahma_brain.circuit_breaker import BrahmaCircuitRegistry as _CBR
         _cb_registry = _CBR.get()
         if _cb_registry.has_open_breakers():

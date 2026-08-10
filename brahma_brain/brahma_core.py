@@ -526,7 +526,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     # ws_guardian !forceOrder@arr → 近1H真实爆仓量
     try:
         import sys as _s7sys, os as _s7os
-        _s7sys.path.insert(0, _s7os.path.dirname(_s7os.path.dirname(__file__)))
+        if _s7os.path.dirname(_s7os.path.dirname(__file__)) not in _s7sys.path: _s7sys.path.insert(0, _s7os.path.dirname(_s7os.path.dirname(__file__)))
         from ws_guardian import get_liq_stats
         _live = get_liq_stats(_sym)
         if _live.get('available') and _live.get('events', 0) > 0:
@@ -1026,7 +1026,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         try:
             import sys as _sys
             if 'brahma_brain' not in _sys.path[0]:
-                _sys.path.insert(0, 'brahma_brain')
+                if 'brahma_brain' not in _sys.path: _sys.path.insert(0, 'brahma_brain')
             from dharma_nlp_synthetic import BehaviorSentiment as _BSP
             if not hasattr(analyze, '_bsp_engine') or analyze._bsp_engine is None:
                 analyze._bsp_engine = _BSP()
@@ -1508,7 +1508,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     _hmm_mult_applied = False
     try:
         import sys as _hmm_sys, os as _hmm_os
-        _hmm_sys.path.insert(0, _hmm_os.path.dirname(_hmm_os.path.abspath(__file__)))
+        if _hmm_os.path.dirname(_hmm_os.path.abspath(__file__)) not in _hmm_sys.path: _hmm_sys.path.insert(0, _hmm_os.path.dirname(_hmm_os.path.abspath(__file__)))
         from regime_hmm_v2 import predict_regime_proba, get_weighted_multiplier as _get_hmm_mult
         _hmm_result = predict_regime_proba(_sym, (extra_data or {}).get('_klines_4h'))
         _hmm_conf   = _hmm_result.get('confidence', 0)
@@ -1896,7 +1896,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         import sys as _pm_sys, os as _pm_os
         _pm_root = _pm_os.path.dirname(_pm_os.path.dirname(_pm_os.path.abspath(__file__)))
         if _pm_root not in _pm_sys.path:
-            _pm_sys.path.insert(0, _pm_root)
+            if _pm_root not in _pm_sys.path: _pm_sys.path.insert(0, _pm_root)
         from scripts.position_manager import get_position_multiplier as _get_pm
         _pm_mult = _get_pm()
         if _pm_mult > 1.0 and _pos_tier > 0:
@@ -2126,7 +2126,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         import sys as _lpf_sys, os as _lpf_os
         _lpf_base = _lpf_os.path.dirname(_lpf_os.path.abspath(__file__))
         if _lpf_base not in _lpf_sys.path:
-            _lpf_sys.path.insert(0, _lpf_base)
+            if _lpf_base not in _lpf_sys.path: _lpf_sys.path.insert(0, _lpf_base)
         from live_price_feed import bulk_update_from_api as _lpf_bulk
         _lpf_bulk([_sym])
         pass  # [静默] f'[PriceFix] {_sym} 入口强制刷新价格 ✅'
@@ -2147,7 +2147,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         import sys as _rsm_sys, os as _rsm_os
         _rsm_path = _rsm_os.path.dirname(_rsm_os.path.abspath(__file__))
         if _rsm_path not in _rsm_sys.path:
-            _rsm_sys.path.insert(0, _rsm_path)
+            if _rsm_path not in _rsm_sys.path: _rsm_sys.path.insert(0, _rsm_path)
         from regime_state_machine import RegimeStateMachine
         _rsm = RegimeStateMachine(_sym)
         _raw_regime = ms.get('regime', 'CHOP_MID')
@@ -2170,7 +2170,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         import sys as _cv_sys, os as _cv_os
         _cv_root = _cv_os.path.dirname(_cv_os.path.abspath(__file__))
         if _cv_root not in _cv_sys.path:
-            _cv_sys.path.insert(0, _cv_root)
+            if _cv_root not in _cv_sys.path: _cv_sys.path.insert(0, _cv_root)
         from causal_regime_verifier import verify as _cv_verify
         _cv_regime = ms.get('regime', '?')
         _cv_dir = signal_dir or ms.get('signal_bias', 'SHORT')
@@ -2760,7 +2760,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # L4/L5小币奖励减半（高周期信号可信度低）
     try:
         import sys as _p2a_sys, os as _p2a_os
-        _p2a_sys.path.insert(0, _p2a_os.path.dirname(_p2a_os.path.abspath(__file__)))
+        if _p2a_os.path.dirname(_p2a_os.path.abspath(__file__)) not in _p2a_sys.path: _p2a_sys.path.insert(0, _p2a_os.path.dirname(_p2a_os.path.abspath(__file__)))
         from confluence_by_tf import apply_tf_confluence as _apply_tf_cf
         _ptf2  = ms.get('primary_tf', '1h') or '1h'
         _ssrc2 = extra_data.get('signal_source', 'default') if extra_data else 'default'
@@ -2783,7 +2783,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         import sys as _cfc_sys, os as _cfc_os
         _cfc_root = _cfc_os.path.dirname(_cfc_os.path.abspath(__file__))
         if _cfc_root not in _cfc_sys.path:
-            _cfc_sys.path.insert(0, _cfc_root)
+            if _cfc_root not in _cfc_sys.path: _cfc_sys.path.insert(0, _cfc_root)
         from counterfactual_score_check import check as _cfc_check
         _cf_score = float(cf.get('score', 0) or 0)
         if _cf_score >= 100:
@@ -4431,7 +4431,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         import sys as _dfe_sys, os as _dfe_os
         _dfe_root = _dfe_os.path.dirname(_dfe_os.path.dirname(_dfe_os.path.abspath(__file__)))
         if _dfe_root not in _dfe_sys.path:
-            _dfe_sys.path.insert(0, _dfe_root)
+            if _dfe_root not in _dfe_sys.path: _dfe_sys.path.insert(0, _dfe_root)
         from dharma.dharma_factor_engine import apply_dharma_factors as _dfe_apply
         # [达摩院v2.0 2026-06-04] 计算新因子字段，传入DharmaFactorEngine
         _rsi_1h   = float(ms.get('momentum', {}).get('rsi_1h', 50) or 50)
