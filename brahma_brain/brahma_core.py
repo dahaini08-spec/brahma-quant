@@ -5265,6 +5265,35 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 _result['fangcang_wr_used']  = round(_fc_wr, 3)
     except Exception:
         pass
+
+    # [设计院封印 2026-08-10 苏摩111] TradFi专属方仓向量库接入
+    # 当分析标的是TradFi代币时，额外查询 fangcang_tradfi_db
+    # wr>=0.65 → +6 / wr<=0.40 → -6（略低于BTC方仓±8，TradFi数据年限较短）
+    try:
+        _tradfi_tokens = set([
+            'XAUUSDT','QQQUSDT','NVDAUSDT','MSTRUSDT','AAPLUSDT','MSFTUSDT','XAGUSDT',
+            'SNDKUSDT','MUUSDT','INTCUSDT','TSLAUSDT','GOOGLUSDT','AMDUSDT','CLUSDT',
+        ])
+        if _sym in _tradfi_tokens:
+            from brahma_brain.fangcang_tradfi_db import query_tradfi as _tfi_q
+            _tfi_bbw  = _result.get('fangcang', {}).get('bbw_4h',
+                        _result.get('confluence', {}).get('bbw_4h', 1.5))
+            _tfi_rsi  = _result.get('rsi_1h', 55.0)
+            _tfi_dir  = signal_dir or 'UP'
+            _tfi_res  = _tfi_q(
+                token=_sym, bb_width_raw=float(_tfi_bbw or 1.5),
+                squeeze_bars=42, burst_atr=0.9, vol_ratio=2.0,
+                rsi=float(_tfi_rsi or 55), direction=_tfi_dir, top_k=20,
+            )
+            _tfi_wr = _tfi_res.get('wr_directional', 0.5)
+            _tfi_delta = 6 if _tfi_wr >= 0.65 else (-6 if _tfi_wr <= 0.40 else 0)
+            if _tfi_delta != 0:
+                _result['score_final'] = (_result.get('score_final') or 0) + _tfi_delta
+            _result['tradfi_wr']       = round(_tfi_wr, 3)
+            _result['tradfi_wr_delta'] = _tfi_delta
+            _result['tradfi_n']        = _tfi_res.get('n', 0)
+    except Exception:
+        pass
     # ══ [END 方仓+决策树] ══
     # ══ [B类模块接入 2026-08-09 设计院深度排查封印 苏摩111] ══════════════════════
     # 根因：4个模块功能建好但未接通主链路，靠苏摩追问发现。
