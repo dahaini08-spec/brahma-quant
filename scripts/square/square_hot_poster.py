@@ -271,15 +271,15 @@ def build_hot_tickers() -> str:
 
 
 def build_funding_rate() -> str:
-    """资金费率 + 多空比播报"""
+    """资金费率播报 — 动态结尾，价格不用$前缀防220095"""
     syms = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT']
     data = {}
     for s in syms:
         d = fetch_price(s)
         data[s.replace('USDT', '')] = d
 
-    lines = [f'今天看了一下三大主力的资金费率，说说我的判断。', '', f'📊 {now_cst()} CST', '']
-    lines.append('当前永续合约资金费率：')
+    lines_out = [f'今天看了一下三大主力的资金费率，说说我的判断。', '', f'📊 {now_cst()} CST', '']
+    lines_out.append('当前永续合约资金费率：')
     for sym, d in data.items():
         fr = d['fr']
         ls = d['ls_ratio']
@@ -293,16 +293,29 @@ def build_funding_rate() -> str:
             icon = '📉 空头占优'
         else:
             icon = '⚖️  多空均衡'
+        # 价格用U后缀，不用$前缀（防220095 coin pair超限）
         if price > 0:
-            lines.append(f'  {sym}: ${price:,.2f} ({chg:+.2f}%) | FR:{fr:.4f}% | 多空比:{ls:.2f} {icon}')
+            p_str = f'{price:,.2f}U'
+            lines_out.append(f'  {sym}: {p_str} ({chg:+.2f}%) | FR:{fr:.4f}% | 多空比:{ls:.2f} {icon}')
         else:
-            lines.append(f'  {sym}: FR:{fr:.4f}% | 多空比:{ls:.2f} {icon}')
+            lines_out.append(f'  {sym}: FR:{fr:.4f}% | 多空比:{ls:.2f} {icon}')
 
-    lines.append('')
-    lines.append('SOL资金费率已到警戒线，追多的朋友要注意了。')
-    lines.append('')
-    lines.append('#资金费率 #合约 #BTC #行情分析')
-    return '\n'.join(lines)
+    # 动态结尾：基于实际最高FR给出准确判断
+    max_sym = max(data.items(), key=lambda x: x[1]['fr'])
+    top_sym, top_d = max_sym
+    top_fr = top_d['fr']
+    if top_fr > 0.01:
+        conclusion = f'{top_sym}资金费率达{top_fr:.4f}%，多头持仓成本在累积，这个位置追多要谨慎。'
+    elif top_fr > 0.007:
+        conclusion = f'{top_sym}资金费率小幅偏高，还在正常范围，但持续上升的话我会开始警惕。'
+    else:
+        conclusion = '三个主力币资金费率均处于正常范围，没有极端信号，当前多空博弈较为均衡。'
+
+    lines_out.append('')
+    lines_out.append(conclusion)
+    lines_out.append('')
+    lines_out.append('#资金费率 #合约 #BTC #行情分析')
+    return '\n'.join(lines_out)
 
 
 def build_top_gainers() -> str:
