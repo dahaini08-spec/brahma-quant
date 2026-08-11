@@ -324,28 +324,107 @@ def build_top_gainers() -> str:
 
 
 def build_top_losers() -> str:
-    """合约跌幅榜 TOP5"""
+    """合约跌幅榜 — 顶级交易员视角：利空分析+结构判断+操作建议"""
+    import requests as _r
+
     data = run_pro_cli(['search', 'price-change', 'um', '--sort', 'TOP_LOSERS', '--limit', '8'])
     items = (data.get('list') or data.get('items', []))[:5] if data else []
-
     if not items:
         return ''
 
-    lines = [f'📉 合约跌幅榜 | {now_cst()} CST', '']
-    lines.append('过去24H跌幅最大的合约：')
+    # 拉主力币BTC结构判断跌幅背景
+    btc_chg = 0.0
+    btc_fr = 0.0
+    btc_ls = 1.0
+    try:
+        bt = _r.get('https://fapi.binance.com/fapi/v1/ticker/24hr',
+                    params={'symbol': 'BTCUSDT'}, timeout=4).json()
+        bfr = _r.get('https://fapi.binance.com/fapi/v1/premiumIndex',
+                     params={'symbol': 'BTCUSDT'}, timeout=4).json()
+        bls = _r.get('https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
+                     params={'symbol': 'BTCUSDT', 'period': '1h', 'limit': 1}, timeout=4).json()
+        btc_chg = float(bt.get('priceChangePercent', 0))
+        btc_fr = float(bfr.get('lastFundingRate', 0)) * 100
+        btc_ls = float(bls[0]['longShortRatio']) if bls else 1.0
+    except Exception:
+        pass
+
+    # 对跌幅前2名拉OI和FR，判断是砸盘/轧多/恐慌
+    sym_analysis = {}
+    for x in items[:2]:
+        sym = x.get('symbol', '')
+        try:
+            fr_r = _r.get('https://fapi.binance.com/fapi/v1/premiumIndex',
+                          params={'symbol': sym}, timeout=4).json()
+            oi_r = _r.get('https://fapi.binance.com/fapi/v1/openInterest',
+                          params={'symbol': sym}, timeout=4).json()
+            ls_r = _r.get('https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
+                          params={'symbol': sym, 'period': '1h', 'limit': 1}, timeout=4).json()
+            sym_analysis[sym] = {
+                'fr': float(fr_r.get('lastFundingRate', 0)) * 100,
+                'oi': float(oi_r.get('openInterest', 0)) * float(x.get('price', 0)) / 1e6,
+                'ls': float(ls_r[0]['longShortRatio']) if ls_r else 1.0,
+            }
+        except Exception:
+            pass
+
+    # 判断大背景
+    if btc_chg < -2:
+        background = f'BTC今日跌{abs(btc_chg):.1f}%，整体偏弱，跌幅榜几乎全是被大盘拖下来的。'
+        btc_signal = '主因是大盘系统性下跌，不是个股利空。'
+    elif btc_chg < 0:
+        background = f'BTC今日小跌{abs(btc_chg):.1f}%，大盘承压。跌幅榜里有些是自身利空，要区分清楚。'
+        btc_signal = '注意区分大盘带跌和个币利空。'
+    else:
+        background = f'BTC今日微涨，但这些币逆势大跌，说明有自身利空，要单独分析。'
+        btc_signal = '大盘偏多但这些币逆势跌，大概率有利空事件或筹码砸盘。'
+
+    lines = [f'今日跌幅榜，说说我的看法。', '']
+    lines.append(f'📊 {now_cst()} CST | BTC {btc_chg:+.1f}%')
+    lines.append('')
+    lines.append('跌幅前5：')
+
     for i, x in enumerate(items, 1):
-        sym = x.get('symbol', '').replace('USDT', '')
+        sym_raw = x.get('symbol', '')
+        sym = sym_raw.replace('USDT', '')
         chg = float(x.get('change', x.get('priceChangePercent', 0)))
         price = float(x.get('price', 0))
         p_str = f'{price:,.4f}U' if price < 1 else f'{price:,.2f}U'
-        # 修复220095: $SYMBOL仅前2名
         sym_str = f'${sym}' if i <= 2 else sym
-        lines.append(f'  {i}. {sym_str} {chg:+.2f}% | {p_str}')
+
+        # 对前两名加结构判断
+        if sym_raw in sym_analysis:
+            a = sym_analysis[sym_raw]
+            fr = a['fr']; oi_m = a['oi']; ls = a['ls']
+            if fr < -0.01:
+                note = f'  ← FR负值({fr:.3f}%)，多头被轧'
+            elif oi_m > 50 and chg < -20:
+                note = f'  ← OI大+急跌，可能继续'
+            elif ls > 2.0:
+                note = f'  ← 多空比{ls:.2f}，多头过度，回调合理'
+            elif chg < -40:
+                note = f'  ← 跌幅极端，小心反弹陷阱'
+            else:
+                note = ''
+            lines.append(f'  {i}. {sym_str} {chg:+.1f}% | {p_str}{note}')
+        else:
+            lines.append(f'  {i}. {sym_str} {chg:+.1f}% | {p_str}')
 
     lines.append('')
-    lines.append('大跌的先别冲——我自己在下跌前先看清楚是砸盘还是真出了问题，再决定。')
+    lines.append(background)
     lines.append('')
-    lines.append('#跌幅榜 #合约 #加密货币 #风险')
+
+    # 操作建议（基于大盘方向）
+    if btc_chg < -1.5:
+        advice = '我的处理方式：大盘弱势时不抄底，等BTC稳住再看结构入场。'
+    elif any(float(x.get('change', 0)) < -30 for x in items[:2]):
+        advice = '跌超30%的别急着抄，先等量能萎缩、价格稳住，再谈入场。'
+    else:
+        advice = '跌幅榜的标的，先搞清楚是砸盘出货还是恐慌杀跌，逻辑不同，应对方式完全不一样。'
+
+    lines.append(advice)
+    lines.append('')
+    lines.append('#合约交易 #技术分析 #加密货币 #行情分析')
     return '\n'.join(lines)
 
 
@@ -463,32 +542,80 @@ def build_pump_alert() -> str:
 
 
 def build_market_summary() -> str:
-    """市场热度总结（每日收盘版）"""
-    data = run_pro_cli(['square', 'ticker-rank', '--window', '24h', '--limit', '10'])
-    items = (data.get('items') or data.get('list', []))[:5] if data else []
+    """收盘复盘 — 顶级交易员视角：结构分析+多空结论+明日关注点"""
+    import requests as _r
 
     btc = fetch_price('BTCUSDT')
     eth = fetch_price('ETHUSDT')
-    regime_cn = get_regime_cn()
+    sol = fetch_price('SOLUSDT')
 
-    lines = [f'📊 今日收盘复盘 | {now_cst()} CST', '']
+    # 拉BTC近3根4H K线判断结构
+    btc_structure = ''
+    btc_key_level = ''
+    try:
+        klines = _r.get('https://fapi.binance.com/fapi/v1/klines',
+                        params={'symbol': 'BTCUSDT', 'interval': '4h', 'limit': 6},
+                        timeout=5).json()
+        closes = [float(k[4]) for k in klines]
+        highs  = [float(k[2]) for k in klines]
+        lows   = [float(k[3]) for k in klines]
+        # 追高还是创新低
+        recent_high = max(highs[-3:])
+        recent_low  = min(lows[-3:])
+        prev_high   = max(highs[-6:-3])
+        prev_low    = min(lows[-6:-3])
+        if closes[-1] > prev_high:
+            btc_structure = '近3朹4H收在前高点上方，短期结构偏多'
+        elif closes[-1] < prev_low:
+            btc_structure = '近年3朹4H跌破前低点，短期结构偏空'
+        else:
+            btc_structure = f'在{recent_low:,.0f}–{recent_high:,.0f}区间内震荡，方向待确认'
+        btc_key_level = f'{recent_low:,.0f}'
+    except Exception:
+        pass
+
+    # 生成收盘判断
+    btc_chg = btc.get('chg24h', 0)
+    eth_chg = eth.get('chg24h', 0)
+    btc_fr  = btc.get('fr', 0)
+    eth_fr  = eth.get('fr', 0)
+    btc_ls  = btc.get('ls_ratio', 1.0)
+    eth_ls  = eth.get('ls_ratio', 1.0)
+
+    if btc_chg < -1.5 and eth_chg < -1.5:
+        mood = '两大主力币同步下滴，市场其实在用行动回答一个问题：多头到底有多少。'
+        tomorrow = f'BTC {btc_key_level} 是今晚最关键的支撑，守不住的话我会进一步降低多头仓位。'
+    elif btc_chg > 1.5 and eth_chg > 1.5:
+        mood = '两大主力币同步上涨，多头情绪在换手。但FR还尚正常，还没到过热的位置。'
+        tomorrow = f'BTC能否稳住并继续上攻，看量能。没量能拉不动。'
+    else:
+        mood = f'BTC和ETH分化明显，小币和山寨币各玩各的。整体市场方向未明。'
+        tomorrow = f'BTC站不稳{btc_key_level}，我不会贸然加仓。'
+
+    lines = [f'今日收盘，说一下我的判断。', '']
+    lines.append(f'📊 {now_cst()} CST')
+    lines.append('')
+
+    # 主力币数据
     if btc['price'] > 0:
-        lines.append(f'BTC ${btc["price"]:,.0f} ({btc["chg24h"]:+.2f}%) FR:{btc["fr"]:.4f}%')
+        btc_fr_note = '正常' if abs(btc_fr) < 0.005 else ('多头偏热' if btc_fr > 0.01 else '空头占优' if btc_fr < -0.005 else '')
+        lines.append(f'BTC {btc["price"]:,.0f}U ({btc_chg:+.1f}%) FR:{btc_fr:.4f}% 多空比:{btc_ls:.2f}')
     if eth['price'] > 0:
-        lines.append(f'ETH ${eth["price"]:,.2f} ({eth["chg24h"]:+.2f}%) FR:{eth["fr"]:.4f}%')
+        lines.append(f'ETH {eth["price"]:,.1f}U ({eth_chg:+.1f}%) FR:{eth_fr:.4f}% 多空比:{eth_ls:.2f}')
+    if sol['price'] > 0:
+        lines.append(f'SOL {sol["price"]:,.2f}U ({sol["chg24h"]:+.1f}%)')
 
-    if items:
+    # 4H结构判断
+    if btc_structure:
         lines.append('')
-        lines.append('24H社区热度TOP3：')
-        for i, x in enumerate(items[:3], 1):
-            sym = x.get('ticker', '?')
-            mention = x.get('mentionCount', 0)
-            lines.append(f'  {i}. ${sym} 提及{mention:,}次')
+        lines.append(f'BTC 4H结构：{btc_structure}。')
 
     lines.append('')
-    lines.append('今天市场整体情绪如上，明天开盘我会重点关注BTC能否站稳。')
+    lines.append(mood)
     lines.append('')
-    lines.append('#市场复盘 #BTC #加密货币 #今日行情')
+    lines.append(f'明天开盘我会盯着看：{tomorrow}')
+    lines.append('')
+    lines.append('#市场复盘 #BTC #合约交易 #行情分析')
     return '\n'.join(lines)
 
 
