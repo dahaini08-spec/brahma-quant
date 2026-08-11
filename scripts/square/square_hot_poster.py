@@ -95,6 +95,9 @@ def mark_posted(content: str):
 BLOCKED_WORDS = ['BEAR_TREND', 'CHOP_MID', 'BULL_TREND', 'BEAR_EARLY',
                  'DD1', '仅供内部', '新浪财经']
 
+# 百强KOL铁律：感叹号 = 广场违规词（自检机制）
+BLOCKED_PUNCTUATION = ['\uff01']  # ！全角感叹号
+
 
 def check_content(content: str) -> tuple:
     """返回 (ok, reason)"""
@@ -106,6 +109,11 @@ def check_content(content: str) -> tuple:
     for w in BLOCKED_WORDS:
         if w in content:
             return False, f'包含禁用词: {w}'
+    # 感叹号检查（百强KOL铁律）
+    for p in BLOCKED_PUNCTUATION:
+        count = content.count(p)
+        if count > 0:
+            return False, f'包含全角感叹号({count}个)，广场违规词'
     return True, ''
 
 
@@ -857,7 +865,17 @@ def main():
                         help='帖子类型')
     parser.add_argument('--edu-id', type=int, default=0, help='教育帖序号(0-based)')
     parser.add_argument('--dry-run', action='store_true', help='仅预览不发布')
+    parser.add_argument('--no-delay', action='store_true', help='跳过随机延迟（调试用）')
     args = parser.parse_args()
+
+    # ── 升级1：随机延迟（防定时限流）──
+    # 百强KOL铁律：「能手动发别定时，定时基本限流」
+    # 在目标时间±15分钟内随机触发，模拟手动发帖行为
+    if not args.dry_run and not args.no_delay:
+        import random
+        delay = random.uniform(0, 900)  # 0~15分钟随机延迟
+        print(f'[poster] 随机延迟 {delay:.0f}秒 后发布（防限流）')
+        time.sleep(delay)
 
     if args.type == 'edu':
         content = build_education(args.edu_id)
