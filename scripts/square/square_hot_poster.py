@@ -102,6 +102,11 @@ BLOCKED_PUNCTUATION = ['\uff01']  # ！全角感叹号
 def check_content(content: str) -> tuple:
     """返回 (ok, reason)"""
     n = len(content)
+    # 感叹号检查优先（百强KOL铁律）
+    for p in BLOCKED_PUNCTUATION:
+        count = content.count(p)
+        if count > 0:
+            return False, f'包含全角感叹号({count}个)，广场违规词'
     if n < 30:
         return False, f'字数不足({n}<30)'
     if n > 500:
@@ -109,11 +114,6 @@ def check_content(content: str) -> tuple:
     for w in BLOCKED_WORDS:
         if w in content:
             return False, f'包含禁用词: {w}'
-    # 感叹号检查（百强KOL铁律）——内容足够时才检查
-    for p in BLOCKED_PUNCTUATION:
-        count = content.count(p)
-        if count > 0:
-            return False, f'包含全角感叹号({count}个)，广场违规词'
     return True, ''
 
 
