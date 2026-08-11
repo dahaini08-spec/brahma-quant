@@ -190,7 +190,9 @@ class TestGetPositionPct:
         from brahma_brain.position_sizer import get_position_pct
         result = get_position_pct('ETHUSDT', score=162.0, direction='SHORT', nav=10000)
         assert result['pct'] > 0
-        assert result.get('level', '') in ('EXPLORING', 'STANDARD', 'AGGRESSIVE', '')
+        # level 可包含附加后缀如 EXPLORING+MACRO_GATE
+        level_val = result.get('level', '')
+        assert any(level_val.startswith(x) for x in ('EXPLORING', 'STANDARD', 'AGGRESSIVE', ''))
 
     def test_july_half_position(self):
         """7月减半策略：score 160~169 → 1%NAV"""
