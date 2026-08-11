@@ -431,7 +431,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         _cv_scripts = _cv_os.path.join(
             _cv_os.path.dirname(_cv_os.path.dirname(_cv_os.path.abspath(__file__))),
             'scripts')
-        if _cv_scripts not in _cv_sys.path: if _cv_scripts not in _cv_sys.path: _cv_sys.path.insert(0, _cv_scripts)
+        if _cv_scripts not in _cv_sys.path: _cv_sys.path.insert(0, _cv_scripts)
         from content_validator import validate_signal as _validate_sig
         _cv_entry   = float(result.get('entry_lo', 0) or 0)
         _cv_stop    = float(result.get('stop_loss', 0) or 0)
@@ -458,7 +458,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
     try:
         import sys as _sl_sys, os as _sl_os
         _sl_dir = _sl_os.path.dirname(_sl_os.path.abspath(__file__))
-        if _sl_dir not in _sl_sys.path: if _sl_dir not in _sl_sys.path: _sl_sys.path.insert(0, _sl_dir)
+        if _sl_dir not in _sl_sys.path: _sl_sys.path.insert(0, _sl_dir)
         from signal_lifecycle import tick_signal_lifecycle as _tick_lc
         _lc_price = float(result.get('price', 0) or 0)
         if _lc_price > 0 and sym:
@@ -892,7 +892,8 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         _com_price  = float(result.get('price', 0) or 0)
         if _com_score >= 120 and _com_params and _com_dir and _com_price > 0:
             import sys as _com_sys
-            if str(__import__('pathlib' not in _com_sys.path: _com_sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
+            _com_parent = str(__import__('pathlib').Path(__file__).parent)
+            if _com_parent not in _com_sys.path: _com_sys.path.insert(0, _com_parent)
             from condition_order_matrix import create_trade_plan as _create_plan
             _sl  = float(_com_params.get('stop_loss', 0) or 0)
             _tp1 = float(_com_params.get('tp1', 0) or 0)
@@ -924,7 +925,8 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         _lc_grade = float(result.get('grade', 0) or 0)
         if _lc_score >= 140 and _lc_grade >= 80:
             import sys as _lc_sys
-            if str(__import__('pathlib' not in _lc_sys.path: _lc_sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
+            _lc_parent = str(__import__('pathlib').Path(__file__).parent)
+            if _lc_parent not in _lc_sys.path: _lc_sys.path.insert(0, _lc_parent)
             from llm_council_bridge import review as _lc_review
             _lc_result = _lc_review(result, market_ctx=None, force=False)
             if _lc_result and not _lc_result.get('error'):

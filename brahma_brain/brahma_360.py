@@ -305,7 +305,7 @@ def scan_d5_params() -> list:
 
 
 def scan_d6_silent_failures() -> list:
-    """D6: 静默失败点趋势"""
+    """D6: 静默失败点趋势 + 并发安全检测"""
     issues = []
     try:
         core_file = _DIR / 'brahma_core.py'
@@ -328,6 +328,32 @@ def scan_d6_silent_failures() -> list:
                 })
     except Exception as e:
         issues.append({'dim': 'D6_silent', 'level': 'WARN', 'msg': f'静默检查异常: {e}', 'auto_fix': False})
+
+    # ── [2026-08-10 设计院封印] 并发安全检测：try块内危险sys.path.insert ──
+    # 根因：brahma_1hao_analysis并行分析时多线程sys.path.insert竞争 → 方仓层静默丢失
+    try:
+        import re as _re
+        _analysis_file = _ROOT / 'scripts' / 'brahma_1hao_analysis.py'
+        if _analysis_file.exists():
+            _src = _analysis_file.read_text()
+            # 检查try块内的sys.path.insert（模块顶部的是合法的）
+            # 精确检测：在try:后10行内查找sys.path.insert（避免跨函数误判）
+            _lines = _src.split('\n')
+            _dangerous = 0
+            for _i, _line in enumerate(_lines):
+                if _line.strip() == 'try:':
+                    _window = '\n'.join(_lines[_i:_i+10])
+                    if 'sys.path.insert' in _window:
+                        _dangerous += 1
+            if _dangerous > 0:
+                issues.append({
+                    'dim': 'D6_silent', 'level': 'WARN',
+                    'msg': f'brahma_1hao_analysis: {_dangerous}处try块内含sys.path.insert — 并行race condition风险',
+                    'auto_fix': False,
+                    'detail': '修复方案: 将path初始化移至模块顶部',
+                })
+    except Exception:
+        pass
     return issues
 
 
