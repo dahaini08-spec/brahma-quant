@@ -256,7 +256,7 @@ except Exception as e:
     # 旧路径 scripts/pump_signal_executor.py 和 scripts/scan_and_alert.py 均已移除
     PUMP_SCRIPT="$BASE/dharma/pump_hunter/scan_and_alert.py"
     if [ -f "$PUMP_SCRIPT" ]; then
-        OUT=$(cd "$BASE" && timeout 90 python3 dharma/pump_hunter/scan_and_alert.py 2>&1 | tail -5)
+        OUT=$(cd "$BASE" && timeout 150 python3 dharma/pump_hunter/scan_and_alert.py 2>&1 | tail -5)
     else
         log "pump-hunter: 脚本不存在 $PUMP_SCRIPT，跳过"
         send_alert "🚨 [pump-hunter] 脚本缺失: $PUMP_SCRIPT"
