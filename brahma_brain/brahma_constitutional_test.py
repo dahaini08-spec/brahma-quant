@@ -44,6 +44,8 @@ for fname in ['brahma_core.py','brahma_scoring.py','brahma_analysis_runner.py',
 # B. P0-1: 死穴封禁必须同步置零 _score_gate_ok
 # ══════════════════════════════════════════════════════════════════
 core_src = (BRAIN / 'brahma_core.py').read_text()
+# P0-5 检查时需要包含 block_c（regime_label 已迁移至此）
+_block_c_src = (BRAIN / 'brahma_core_block_c.py').read_text() if (BRAIN / 'brahma_core_block_c.py').exists() else ''
 dead_blocks = core_src.count('_score_gate_ok = False  # [P0-1')
 check('P0-1:死穴3处_score_gate_ok', dead_blocks == 3,
       f'期望3处，实际{dead_blocks}处，_valid=False可能被L3742覆盖')
@@ -71,7 +73,7 @@ check('P0-4:双路径regime兜底', "or str(_rf.get('regime'" in rn_src,
 # ══════════════════════════════════════════════════════════════════
 # F. P0-5: regime_label必须在使用前定义
 # ══════════════════════════════════════════════════════════════════
-check('P0-5:regime_label定义', 'regime_label = str(ms.get' in core_src,
+check('P0-5:regime_label定义', 'regime_label = str(ms.get' in core_src or 'regime_label = str(ms.get' in _block_c_src,
       'confluence_score()中regime_label NameError导致online_bayes永久静默')
 
 # ══════════════════════════════════════════════════════════════════
