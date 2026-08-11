@@ -243,13 +243,13 @@
     "eth_regime": "BULL_TREND"
   },
   "KAITOUSDT": {
-    "last_push_ts": 1786338273.003072,
-    "last_score": 95,
-    "last_push_at": "2026-08-10T05:04:33.215396",
-    "push_price": 0.673,
-    "regime": "BULL_TREND",
-    "btc_regime": "BULL_TREND",
-    "eth_regime": "BULL_TREND"
+    "last_push_ts": 1786416783.6386952,
+    "last_score": 109,
+    "last_push_at": "2026-08-11T02:53:03.752987",
+    "push_price": 0.6469,
+    "regime": "CHOP_MID",
+    "btc_regime": "CHOP_MID",
+    "eth_regime": "CHOP_MID"
   },
   "GRTUSDT": {
     "last_push_ts": 1786109379.774698,
@@ -594,13 +594,13 @@
     "eth_regime": "BULL_TREND"
   },
   "SKYUSDT": {
-    "last_push_ts": 1786239004.7116547,
-    "last_score": 95,
-    "last_push_at": "2026-08-09T01:30:09.785379",
-    "push_price": 0.05388,
-    "regime": "BULL_TREND",
-    "btc_regime": "BULL_TREND",
-    "eth_regime": "BULL_TREND"
+    "last_push_ts": 1786416783.6386952,
+    "last_score": 107,
+    "last_push_at": "2026-08-11T02:53:03.785890",
+    "push_price": 0.05274,
+    "regime": "CHOP_MID",
+    "btc_regime": "CHOP_MID",
+    "eth_regime": "CHOP_MID"
   },
   "AAPLUSDT": {
     "last_push_ts": 1786374409.451609,
@@ -738,13 +738,13 @@
     "eth_regime": "BULL_TREND"
   },
   "ZBTUSDT": {
-    "last_push_ts": 1786354441.0462213,
-    "last_score": 114,
-    "last_push_at": "2026-08-10T09:34:05.694004",
-    "push_price": 0.10093,
-    "regime": "BULL_TREND",
-    "btc_regime": "BULL_TREND",
-    "eth_regime": "BULL_TREND"
+    "last_push_ts": 1786416783.6386952,
+    "last_score": 109,
+    "last_push_at": "2026-08-11T02:53:03.769854",
+    "push_price": 0.10034,
+    "regime": "CHOP_MID",
+    "btc_regime": "CHOP_MID",
+    "eth_regime": "CHOP_MID"
   },
   "QNTUSDT": {
     "last_push_ts": 1786363064.7808995,
@@ -835,5 +835,23 @@
     "regime": "BULL_TREND",
     "btc_regime": "BULL_TREND",
     "eth_regime": "BULL_TREND"
+  },
+  "STORJUSDT": {
+    "last_push_ts": 1786416783.6386952,
+    "last_score": 110,
+    "last_push_at": "2026-08-11T02:53:03.719659",
+    "push_price": 0.04414,
+    "regime": "CHOP_MID",
+    "btc_regime": "CHOP_MID",
+    "eth_regime": "CHOP_MID"
+  },
+  "NXPCUSDT": {
+    "last_push_ts": 1786416783.6386952,
+    "last_score": 110,
+    "last_push_at": "2026-08-11T02:53:03.736597",
+    "push_price": 0.2257,
+    "regime": "CHOP_MID",
+    "btc_regime": "CHOP_MID",
+    "eth_regime": "CHOP_MID"
   }
 }
