@@ -101,6 +101,14 @@ MIN_SL_PCT           = 1.0       # [v7.0 苏摩111 2026-07-11] 2.0→1.0; BTC低
 MAX_SL_PCT           = 5.0       # 标准最大止损（保护性上限）
 MAX_SL_PCT_HIGH_VOL  = 9.0       # 高波动信号上限（score≥145，仓位×0.7）
 # SL_PCT_GATE 已迁移至 brahma_brain/signal_quality_engine.py（SQE唯一真相，2026-08-07）
+try:
+    import sys as _sqe_sys, os as _sqe_os
+    _sqe_sys.path.insert(0, _sqe_os.path.join(_sqe_os.path.dirname(_sqe_os.path.abspath(__file__)), '..', 'brahma_brain'))
+    from signal_quality_engine import evaluate_signal as _sqe_evaluate, get_sqe as _get_sqe
+    _SQE_OK = True
+except Exception as _sqe_e:
+    _SQE_OK = False
+    _sqe_evaluate = None  # type: ignore
 NAV_SIZE_PCT         = 0.05      # 默认仓位 NAV×5%（苏摩授权 2026-07-03）
 DEFAULT_LEV          = 5         # 默认杠杆 5x（苏摩授权 2026-07-03）
 MIN_NOTIONAL         = 5.5       # 最小开单金额 USDT（2026-07-23 修复: Binance MIN_NOTIONAL=5，加0.5缓冲得5.5）
