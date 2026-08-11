@@ -391,3 +391,97 @@ if __name__ == '__main__':
 
     summary = run_check(full=args.full)
     sys.exit(0 if summary['fail'] == 0 else 1)
+
+
+# ══════════════════════════════════════════════════════════════
+# [设计院 2026-08-11] Step1: 接入验证门升级
+# run_wiring_check() — 分级孤岛检测，接入健康评分
+# ══════════════════════════════════════════════════════════════
+
+import re as _re
+from pathlib import Path as _Path
+from collections import defaultdict as _defaultdict
+
+_BRAIN_DIR = _Path(__file__).parent
+_SCRIPTS_DIR = _BRAIN_DIR.parent / 'scripts'
+
+# 合理孤岛白名单（工具类/审计类，不需要被其他模块引用）
+_WHITELIST = frozenset([
+    'brahma_ci', 'brahma_ci_v2', 'brahma_constitutional_test',
+    'brahma_wiring_check', 'brahma_health', 'brahma_360',
+    'brahma_analysis_runner', 'brahma_core_entry', 'brahma_log',
+    'brainlog', '__init__',
+])
+
+# 高价值孤岛（写好但未接入，每个-5健康分）
+_HIGH_VALUE = frozenset([
+    'dynamic_sl', 'sl_bandit', 'ic_tracker',
+    'signal_quality_engine', 'online_learner_v2',
+    'divergence_engine', 'cross_market_engine',
+])
+
+
+def run_wiring_check() -> dict:
+    """
+    接入验证门：扫描零引用孤岛，分级报告。
+    返回:
+      {
+        'critical': [...],   # 高价值孤岛，健康扣分
+        'watch':    [...],   # 普通孤岛，记录不扣分
+        'ok':       [...],   # 合理孤岛（白名单）
+        'health_penalty': int,  # 扣分总计
+        'summary': str,
+      }
+    """
+    modules = {f.stem for f in _BRAIN_DIR.glob('*.py') if f.stem != '__init__'}
+
+    # 构建 callee_map: module → set(谁引用了它)
+    callee_map: dict = _defaultdict(set)
+    for mod in modules:
+        try:
+            content = (_BRAIN_DIR / f'{mod}.py').read_text(errors='ignore')
+            for dep_groups in _re.findall(
+                r'from brahma_brain\.(\w+)|from \.(\w+)|import brahma_brain\.(\w+)',
+                content
+            ):
+                dep = next((g for g in dep_groups if g), None)
+                if dep and dep in modules and dep != mod:
+                    callee_map[dep].add(mod)
+        except Exception:
+            pass
+
+    # scripts也算调用者
+    scripts_callers: set = set()
+    for s in _SCRIPTS_DIR.glob('*.py'):
+        try:
+            for g in _re.findall(r'from brahma_brain\.(\w+)', s.read_text(errors='ignore')):
+                scripts_callers.add(g)
+        except Exception:
+            pass
+
+    critical, watch, ok_list = [], [], []
+    for mod in sorted(modules):
+        if mod in _WHITELIST:
+            ok_list.append(mod)
+            continue
+        if callee_map[mod] or mod in scripts_callers:
+            continue  # 有引用，正常
+        # 零引用
+        if mod in _HIGH_VALUE:
+            critical.append(mod)
+        else:
+            watch.append(mod)
+
+    penalty = len(critical) * 5
+    summary = (
+        f"CRITICAL孤岛={len(critical)} WATCH孤岛={len(watch)} "
+        f"健康扣分={penalty} "
+        f"({'需立即接入: '+', '.join(critical) if critical else '无高价值孤岛'})"
+    )
+    return {
+        'critical': critical,
+        'watch':    watch,
+        'ok':       ok_list,
+        'health_penalty': penalty,
+        'summary':  summary,
+    }
