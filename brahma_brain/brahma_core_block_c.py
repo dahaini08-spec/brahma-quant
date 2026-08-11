@@ -24,6 +24,18 @@ s_research: 研究增强层 [timesfm_lite缺失→归零]
 import math
 import datetime
 
+# ─── 进程内 TTL 缓存（防止每次评分发 HTTP）────────────────────────────────
+import time as _time_bc
+_BC_CALL_CACHE: dict = {}
+
+def _bc_get(key: str):
+    e = _BC_CALL_CACHE.get(key)
+    return e[0] if e and _time_bc.time() < e[1] else None
+
+def _bc_set(key: str, val, ttl: float = 300.0):
+    _BC_CALL_CACHE[key] = (val, _time_bc.time() + ttl)
+
+
 
 def calc_block_c(ms: dict, smc: dict, signal_dir: str,
                  extra_data: dict, score: int, breakdown: dict) -> dict:
@@ -281,9 +293,18 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
     score += s16
     breakdown['量能衰竭+背离共振'] = s16
 
-    # ── 维17 资金费情绪 [DEAD_CODE 封印 2026-08-11 sentiment_engine缺失] ──
+    # ── 维17：资金费率+多空比情绪评分 ────────────────────────────────
     s17 = 0
-    breakdown['资金费情绪'] = 0
+    try:
+        import sys as _sys17, os as _os17
+        _sys17.path.insert(0, _os17.path.dirname(_os17.path.abspath(__file__)))
+        from sentiment_engine import get_sentiment_score as _get_sent
+        _s17_val, _s17_det = _get_sent(ms, signal_dir)
+        s17 = max(-8, min(8, _s17_val))
+        score += s17
+        breakdown['资金费情绪'] = s17
+    except Exception:
+        pass
 
     # ── 维18(NEW)：bull_bear多空辩论评分加权 ─────────────────────────
     s18 = 0
@@ -311,7 +332,13 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
         _macro_dir  = _macro_dir or ('SHORT' if ms.get('signal_dir','SHORT')=='SHORT' else 'LONG')
         _macro_reg  = ms.get('regime', '')
         _macro_sym  = ms.get('symbol', 'BTC')
-        _s19_val, _s19_rep = get_combined_guard_score(_macro_sym, _macro_dir, _macro_reg)
+        _s19_cache_key = f's19_{_macro_sym}_{_macro_dir}_{_macro_reg}'
+        _s19_cached = _bc_get(_s19_cache_key)
+        if _s19_cached is not None:
+            _s19_val, _s19_rep = _s19_cached
+        else:
+            _s19_val, _s19_rep = get_combined_guard_score(_macro_sym, _macro_dir, _macro_reg)
+            _bc_set(_s19_cache_key, (_s19_val, _s19_rep), ttl=300.0)  # 5min TTL
         # 限制第19维度对总分的影响范围 -12 ~ +10
         s19 = max(-12, min(10, round(_s19_val, 1)))
         score += s19
