@@ -612,3 +612,42 @@ def get_lsr_aggregated(symbol: str) -> dict:
         'sources':      [r['source'] for r in results],
         'count':        len(results),
     }
+
+
+def flush_stale_disk_cache(max_age_hours: float = 2.0) -> dict:
+    """
+    清理brahma_cache目录中所有已过期的磁盘缓存文件
+    [2026-08-11 修复] 根因: 旧K线缓存文件exp过期但被进程重启后读入
+    导致price=kline_close而非实时价格（TUT案例：差异-15.83%）
+
+    Args:
+        max_age_hours: 额外保护 — 即使exp未过期, 超过N小时的文件也删除
+    Returns:
+        {'removed': N, 'kept': M, 'errors': K}
+    """
+    import glob as _glob
+    cache_dir = _DISK_CACHE_DIR
+    now = time.time()
+    removed = kept = errors = 0
+    try:
+        for f in _glob.glob(os.path.join(cache_dir, '*.json')):
+            try:
+                data = json.loads(open(f).read())
+                exp = data.get('exp', 0)
+                # 条件1: exp已过期
+                # 条件2: 文件mtime超过max_age_hours（防止exp被篡改）
+                file_age_h = (now - os.path.getmtime(f)) / 3600
+                if exp < now or file_age_h > max_age_hours:
+                    os.remove(f)
+                    removed += 1
+                else:
+                    kept += 1
+            except Exception:
+                try:
+                    os.remove(f)
+                    removed += 1
+                except Exception:
+                    errors += 1
+    except Exception:
+        pass
+    return {'removed': removed, 'kept': kept, 'errors': errors}

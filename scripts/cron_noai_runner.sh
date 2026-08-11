@@ -425,6 +425,17 @@ except Exception as e:
       fi
     fi
 
+    # 6. brahma_cache/ 目录：清理过期磁盘K线缓存（防止stale price bug）
+    # [2026-08-11 修复] TUT价格差-15.83%根因：旧缓存文件被kline_close兜底
+    CACHE_CLEANED=$(cd "$BASE_DIR/brahma_brain" && python3 -c "
+import sys; sys.path.insert(0,'.')
+from data_cache import flush_stale_disk_cache
+r = flush_stale_disk_cache(max_age_hours=2.0)
+print(r['removed'])
+" 2>/dev/null || echo 0)
+    CLEANED=$((CLEANED+CACHE_CLEANED))
+    log "[log-rotation] brahma_cache过期文件清理: ${CACHE_CLEANED}个"
+
     log "[log-rotation] 完成，清理/截断项目: ${CLEANED}个"
     ;;
 
