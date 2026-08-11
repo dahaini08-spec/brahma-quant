@@ -581,53 +581,74 @@ def build_hot_news() -> str:
 
 
 def build_smart_money() -> str:
-    """聪明钱资金流向"""
-    # 用 arb-scan 获取多空比
-    data = run_pro_cli(['workflow', 'arb-scan', '--symbols', 'BTC,ETH,SOL'])
+    """主力方向 — 顶级合约交易员口吻，从多空比+FR读出实质判断"""
+    import requests as _r
 
-    lines = [f'🐋 主力方向速览 | {now_cst()} CST', '']
-    lines.append('我看盘的第一步，就是确认主力资金在哪边：')
-    lines.append('')
+    sym_data = {}
+    for sym in ['BTC', 'ETH', 'SOL']:
+        try:
+            ls_r = _r.get('https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
+                params={'symbol': f'{sym}USDT', 'period': '1h', 'limit': 1}, timeout=5).json()
+            fr_r = _r.get('https://fapi.binance.com/fapi/v1/premiumIndex',
+                params={'symbol': f'{sym}USDT'}, timeout=5).json()
+            t_r  = _r.get('https://fapi.binance.com/fapi/v1/ticker/24hr',
+                params={'symbol': f'{sym}USDT'}, timeout=5).json()
+            sym_data[sym] = {
+                'ls':  float(ls_r[0]['longShortRatio']) if ls_r else 1.0,
+                'fr':  float(fr_r.get('lastFundingRate', 0)) * 100,
+                'chg': float(t_r.get('priceChangePercent', 0)),
+            }
+        except Exception:
+            pass
 
-    has_data = False
-    if data and isinstance(data, dict):
-        for sym in ['BTC', 'ETH', 'SOL']:
-            v = data.get(sym, data.get(f'{sym}USDT', {}))
-            if isinstance(v, dict) and 'long_short_ratio' in v:
-                ls = float(v['long_short_ratio'])
-                fr = float(v.get('latest_funding_rate', 0)) * 100
-                if ls > 1.5:
-                    icon = '📈 多头主导，情绪偏热'
-                elif ls > 1.2:
-                    icon = '📈 多头占优'
-                elif ls < 0.8:
-                    icon = '📉 空头占优'
-                else:
-                    icon = '⚖️  多空均衡'
-                lines.append(f'  {sym}: 多空比={ls:.2f} | FR={fr:.4f}% | {icon}')
-                has_data = True
+    if not sym_data:
+        return ''
 
-    if not has_data:
-        # fallback：拉实时数据
-        import requests
-        for sym in ['BTC', 'ETH', 'SOL']:
-            try:
-                ls_data = requests.get('https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
-                    params={'symbol': f'{sym}USDT', 'period': '1h', 'limit': 1}, timeout=5).json()
-                fr_data = requests.get('https://fapi.binance.com/fapi/v1/premiumIndex',
-                    params={'symbol': f'{sym}USDT'}, timeout=5).json()
-                ls = float(ls_data[0]['longShortRatio']) if ls_data else 1.0
-                fr = float(fr_data.get('lastFundingRate', 0)) * 100
-                icon = '📈 多头占优' if ls > 1.2 else ('📉 空头占优' if ls < 0.8 else '⚖️  多空均衡')
-                lines.append(f'  {sym}: 多空比={ls:.2f} | FR={fr:.4f}% | {icon}')
-            except Exception:
-                pass
+    btc  = sym_data.get('BTC', {})
+    btc_ls  = btc.get('ls', 1.0)
+    btc_fr  = btc.get('fr', 0)
+    btc_chg = btc.get('chg', 0)
 
-    lines.append('')
-    lines.append('多空比>1.5多头过热，结合资金费率一起看，两个都高的时候要小心追多。')
-    lines.append('')
-    lines.append('#主力资金 #资金费率 #合约 #行情分析')
-    return '\n'.join(lines)
+    # 个性化开头（根据当前市场状态）
+    if btc_fr > 0.01 and btc_ls > 1.5:
+        hook = 'BTC多头情绪有点过热了，我来看看数据说什么。'
+    elif btc_fr < -0.005:
+        hook = '资金费率出负值了，这种情况不常见——说说我的判断。'
+    elif btc_chg < -1.5:
+        hook = 'BTC今天偏弱，看看主力资金在怎么动。'
+    elif btc_ls > 2.0:
+        hook = '多空比超过2了，一边倒的行情我见过很多次，说说风险。'
+    else:
+        hook = '每天看盘第一件事——确认主力资金站哪边。'
+
+    lines_out = [hook, '', f'📊 {now_cst()} CST', '']
+
+    for sym, d in sym_data.items():
+        ls  = d['ls']
+        fr  = d['fr']
+        chg = d['chg']
+        if ls > 1.5:   state = '多头主导'
+        elif ls > 1.2: state = '多头占优'
+        elif ls < 0.8: state = '空头占优'
+        else:          state = '多空均衡'
+        lines_out.append(f'  {sym}: 多空比 {ls:.2f} | FR {fr:.4f}% | {state} | {chg:+.1f}%')
+
+    lines_out.append('')
+
+    if btc_fr > 0.01 and btc_ls > 1.5:
+        conclusion = f'FR和多空比同时偏高，这种组合历史上回调概率不低，我不会在这里追多。'
+    elif btc_fr < 0 and btc_chg > 2:
+        conclusion = '价格涨但FR负——空头在被强制平仓，轧空结束后要小心没有接盘。'
+    elif btc_ls < 0.8:
+        conclusion = '多空比低于0.8，空头拥挤——历史上这个位置反弹的概率不低，但我不会马上追多，等结构确认。'
+    else:
+        conclusion = '目前没有极端信号，多空博弈均衡，静待方向。'
+
+    lines_out.append(conclusion)
+    lines_out.append('')
+    lines_out.append('#主力资金 #资金费率 #合约 #行情分析')
+    return '\n'.join(lines_out)
+
 
 
 def build_pump_alert() -> str:
