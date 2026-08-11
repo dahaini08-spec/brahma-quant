@@ -298,28 +298,87 @@ def build_funding_rate() -> str:
 
 
 def build_top_gainers() -> str:
-    """合约涨幅榜 TOP5"""
+    """合约涨幅榜 — 顶级交易员视角：利多分析+追高验证+操作建议"""
+    import requests as _r, re as _re
+
     data = run_pro_cli(['search', 'price-change', 'um', '--sort', 'TOP_GAINERS', '--limit', '8'])
-    items = (data.get('list') or data.get('items', []))[:5] if data else []
+    items_raw = (data.get('list') or data.get('items', []))[:6] if data else []
+
+    # 过滤乱码symbol（只保留纯 ASCII 字母+数字 symbol）
+    items = [x for x in items_raw
+             if _re.match(r'^[A-Z0-9]{2,12}USDT$', x.get('symbol', ''))]
+    items = items[:5]
 
     if not items:
         return ''
 
-    lines = [f'📈 合约涨幅榜 | {now_cst()} CST', '']
-    lines.append('过去24H涨幅最大的合约：')
+    # 拉主力币BTC背景
+    btc_chg = 0.0
+    try:
+        bt = _r.get('https://fapi.binance.com/fapi/v1/ticker/24hr',
+                    params={'symbol': 'BTCUSDT'}, timeout=4).json()
+        btc_chg = float(bt.get('priceChangePercent', 0))
+    except Exception:
+        pass
+
+    # 对前2名拉FR和OI判断涨幅性质
+    sym_analysis = {}
+    for x in items[:2]:
+        sym_r = x.get('symbol', '')
+        try:
+            fr_d = _r.get('https://fapi.binance.com/fapi/v1/premiumIndex',
+                          params={'symbol': sym_r}, timeout=4).json()
+            ls_d = _r.get('https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
+                          params={'symbol': sym_r, 'period': '1h', 'limit': 1}, timeout=4).json()
+            sym_analysis[sym_r] = {
+                'fr': float(fr_d.get('lastFundingRate', 0)) * 100,
+                'ls': float(ls_d[0]['longShortRatio']) if ls_d else 1.0,
+            }
+        except Exception:
+            pass
+
+    lines = ['今日涨幅榜，个人看法。', '']
+    lines.append(f'📊 {now_cst()} CST | BTC {btc_chg:+.1f}%')
+    lines.append('')
+    lines.append('涨幅前5：')
+
     for i, x in enumerate(items, 1):
-        sym = x.get('symbol', '').replace('USDT', '')
+        sym_raw = x.get('symbol', '')
+        sym = sym_raw.replace('USDT', '')
         chg = float(x.get('change', x.get('priceChangePercent', 0)))
         price = float(x.get('price', 0))
         p_str = f'{price:,.4f}U' if price < 1 else f'{price:,.2f}U'
-        # 修复220095: $SYMBOL仅前2名，其余纯文本
         sym_str = f'${sym}' if i <= 2 else sym
-        lines.append(f'  {i}. {sym_str} {chg:+.2f}% | {p_str}')
+
+        if sym_raw in sym_analysis:
+            a = sym_analysis[sym_raw]
+            fr = a['fr']; ls = a['ls']
+            if fr > 0.05:
+                note = f'  ← FR至{fr:.3f}%，追多成本高'
+            elif ls < 0.8:
+                note = f'  ← 空头被轧，谨慎追高'
+            elif chg > 50 and fr < 0.01:
+                note = f'  ← 涨幅大+FR正常，有真实买盘'
+            else:
+                note = ''
+            lines.append(f'  {i}. {sym_str} {chg:+.1f}% | {p_str}{note}')
+        else:
+            lines.append(f'  {i}. {sym_str} {chg:+.1f}% | {p_str}')
 
     lines.append('')
-    lines.append('涨得猛不代表值得追，我会先看它涨的理由是什么。')
+
+    # 操作建议
+    top_chg = float(items[0].get('change', 0))
+    if btc_chg > 1 and top_chg > 20:
+        advice = '大盘偏强带动小币涨，这种涨幅持续性要观察量能是否跟上。'
+    elif btc_chg < -0.5 and top_chg > 20:
+        advice = '大盘小跌但这些币逆势大涨，独立行情要看自身逻辑，不能盲目跟风。'
+    else:
+        advice = '涨幅榜不是买入信号，我会先弄清楚它涨的逻辑，再决定要不要参与。'
+
+    lines.append(advice)
     lines.append('')
-    lines.append('#涨幅榜 #合约 #加密货币 #今日行情')
+    lines.append('#合约交易 #技术分析 #加密货币 #行情分析')
     return '\n'.join(lines)
 
 
