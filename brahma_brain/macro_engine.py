@@ -331,6 +331,54 @@ def write_macro_state() -> dict:
         snap['fear_greed'] = {'error': str(e)}
         snap['fng_score']  = 0
 
+    # NQ期货（纳指，BTC相关系数≈0.7）+ QQQ vs MA20
+    # [2026-08-11 设计院封印] 为 macro_link TRADFI门控提供数据
+    try:
+        nq = get_nasdaq_realtime()
+        nq_chg = nq.get('chg_1h_pct', 0.0)
+        nq_price = nq.get('price', 0.0)
+        # QQQ实时（Yahoo Finance，免费，不用额外依赖）
+        import urllib.request as _ur
+        _qqq_url = 'https://query1.finance.yahoo.com/v8/finance/chart/QQQ?interval=1d&range=30d'
+        _req = _ur.Request(_qqq_url, headers={'User-Agent': 'Mozilla/5.0'})
+        with _ur.urlopen(_req, timeout=8) as _rp:
+            _qd = __import__('json').loads(_rp.read())
+        _qqq_closes = [x for x in _qd['chart']['result'][0]['indicators']['quote'][0]['close'] if x]
+        qqq_price = _qqq_closes[-1]
+        qqq_ma20  = sum(_qqq_closes[-20:]) / min(20, len(_qqq_closes))
+        qqq_vs_ma = (qqq_price - qqq_ma20) / qqq_ma20 * 100  # % 偏离MA20
+        # SPX日变化（用ES=F期货代替）
+        _spx_url = 'https://query1.finance.yahoo.com/v8/finance/chart/ES=F?interval=1d&range=3d'
+        _req2 = _ur.Request(_spx_url, headers={'User-Agent': 'Mozilla/5.0'})
+        with _ur.urlopen(_req2, timeout=8) as _rp2:
+            _sd = __import__('json').loads(_rp2.read())
+        _spx_cls = [x for x in _sd['chart']['result'][0]['indicators']['quote'][0]['close'] if x]
+        spx_chg_1d = (_spx_cls[-1] - _spx_cls[-2]) / _spx_cls[-2] * 100 if len(_spx_cls) >= 2 else 0.0
+        snap['nq']  = {'price': round(nq_price, 0), 'chg_1h_pct': round(nq_chg, 2)}
+        snap['qqq'] = {
+            'price':    round(qqq_price, 2),
+            'ma20':     round(qqq_ma20, 2),
+            'vs_ma20_pct': round(qqq_vs_ma, 2),    # 正数=在MA20上方
+            'above_ma20': qqq_price > qqq_ma20,
+        }
+        snap['spx'] = {'chg_1d_pct': round(spx_chg_1d, 2)}  # 日涨跌%
+        # [2026-08-11 设计院修复] spx_chg_1d=0时用^GSPC现货补充（ES=F非交易时段返回空）
+        if spx_chg_1d == 0.0:
+            try:
+                _gspc_url = 'https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=1d&range=3d'
+                _req3 = _ur.Request(_gspc_url, headers={'User-Agent': 'Mozilla/5.0'})
+                with _ur.urlopen(_req3, timeout=8) as _rp3:
+                    _gd = __import__('json').loads(_rp3.read())
+                _gspc_cls = [x for x in _gd['chart']['result'][0]['indicators']['quote'][0]['close'] if x]
+                spx_chg_1d = (_gspc_cls[-1] - _gspc_cls[-2]) / _gspc_cls[-2] * 100 if len(_gspc_cls) >= 2 else 0.0
+                snap['spx'] = {'chg_1d_pct': round(spx_chg_1d, 2), 'source': 'GSPC'}
+            except Exception:
+                pass
+    except Exception as _nq_e:
+        snap['nq']  = {'error': str(_nq_e)}
+        snap['qqq'] = {}
+        snap['spx'] = {}
+
     # 宏观综合分
     macro_score = (snap.get('dxy', {}).get('score', 0) or 0)
     macro_score += (snap.get('fng_score', 0) or 0)

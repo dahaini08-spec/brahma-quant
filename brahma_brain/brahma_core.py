@@ -5463,6 +5463,44 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass
     # ══ [TRADFI交易时段门控 END] ═══════════════════════════════════════════════
 
+    # ══ [设计院 2026-08-11 苏摩111] TRADFI整体落地：sector_corr + macro_link ══
+    # 仅在交易时段内（valid未被时段门控清除）才执行联动/宏观门控
+    # 避免非交易时段已valid=False时继续消耗计算资源
+    try:
+        if _result.get('asset_type') == 'TRADFI_STOCK' and _result.get('tradfi_in_session', True):
+            _direction = _result.get('direction', 'LONG')
+
+            # ── sector_corr：板块联动评分 ─────────────────────────────────────
+            from brahma_brain.tradfi_sector_engine import (
+                compute_tradfi_sector_score as _sector_fn,
+                get_quick_rsi_1h as _sector_rsi_fn,
+            )
+            _sector_result = _sector_fn(_sym, _direction, _sector_rsi_fn)
+            _sector_score  = float(_sector_result.get('score', 0))
+            if _sector_score != 0:
+                _result['score_final'] = float(_result.get('score_final') or 0) + _sector_score
+                _result['score']       = _result['score_final']
+                _result.setdefault('breakdown_extra', {})['sector_corr'] = _sector_score
+            _result['tradfi_sector'] = _sector_result
+
+            # ── macro_link：宏观门控 ───────────────────────────────────────────
+            from brahma_brain.tradfi_macro_gate import compute_tradfi_macro_gate as _macro_fn
+            _macro_result = _macro_fn(_sym, _direction, 'TRADFI_STOCK')
+            _macro_score  = float(_macro_result.get('score', 0))
+            if _macro_score != 0:
+                _result['score_final'] = float(_result.get('score_final') or 0) + _macro_score
+                _result['score']       = _result['score_final']
+                _result.setdefault('breakdown_extra', {})['macro_link'] = _macro_score
+                # 宏观重大利空时（总扣分≥30）强制降低valid门槛
+                if _macro_score <= -30:
+                    _result['valid'] = False
+                    _result['macro_gate_warn'] = _macro_result.get('detail', '')
+            _result['tradfi_macro'] = _macro_result
+    except Exception as _te:
+        import logging as _tlog
+        _tlog.getLogger(__name__).warning(f'TRADFI联动门控异常: {_te}')
+    # ══ [TRADFI整体落地 END] ══════════════════════════════════════════════════
+
     # [设计院封印 2026-08-09] 修复F12: analyze()结束时写入structured日志
     # 保证 brahma360 F12检查不再告警「SMC结构过旧」
     try:
