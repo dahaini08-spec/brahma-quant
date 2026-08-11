@@ -274,10 +274,15 @@ def detect_regime(closes: list, highs: list, lows: list,
 
     # [P0] 4H EMA修正：当CHOP体制下，但EMA明确偃空，降级为BEAR_EARLY
     # 防止CHOP_MID低估空头压力（实验证偏差+94.8%）
+    # [P0-PATCH 2026-08-11] 补全漏洞: d4h==BULL AND weight==1 未覆盖
+    #   场景: 1D=CHOP, 4H=BULL(均线多头), 但price<EMA20_4H → 短期失守 → BEAR_EARLY
     if _4h_bear_weight >= 1 and d1d != 'BULL':
         # 4H EMA空头修正：CHOP/混乱体制→降级为BEAR_EARLY
         if d4h == 'BULL' and _4h_bear_weight >= 2:
             # 4H周期投票BULL但EMA双倒空：修正为BEAR_EARLY
+            return 'BEAR_EARLY'
+        if d4h == 'BULL' and _4h_bear_weight >= 1 and d1d == 'CHOP':
+            # [P0-PATCH] 日线震荡+4H均线多头但价格跌破EMA20：BEAR_EARLY（空头初期）
             return 'BEAR_EARLY'
         if d4h == 'CHOP' and _4h_bear_weight >= 1:
             # CHOP+EMA空头：修正为BEAR_EARLY
