@@ -56,8 +56,13 @@ class TestOnlineBayes(unittest.TestCase):
 
 class TestSentimentEngine(unittest.TestCase):
     def setUp(self):
-        from sentiment_engine import analyze
-        self.analyze = analyze
+        from sentiment_engine import get_sentiment_score
+        # 兼容旧接口：包装成 analyze(symbol, direction) 形式
+        def _analyze(sym, direction):
+            ms = {'funding_rate': 0.01, 'oi_change_1h': 0.02}
+            score, detail = get_sentiment_score(ms, signal_dir=direction)
+            return {'score': score, 'fng_value': detail.get('fng_value', 50), 'source': detail.get('source', 'fng')}
+        self.analyze = _analyze
 
     def test_returns_dict(self):
         """analyze 必须返回 dict"""
@@ -91,7 +96,7 @@ class TestBrahmaCore(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """只加载一次，避免重复初始化"""
-        import brahma_brain.brahma_orchestrator as bo
+        import brahma_brain.brahma_core as bo
         cls.bo = bo
         cls.result = bo.analyze('BTCUSDT', deep=True)
 
@@ -155,7 +160,7 @@ class TestGapGate(unittest.TestCase):
     def test_extreme_gap_blocked(self):
         """gap > 20% 时信号必须被封锁（ESPORTSUSDT类场景）"""
         # 模拟 gap=161% 的情况：通过检查 ESPORTSUSDT 不会通过评分
-        import brahma_brain.brahma_orchestrator as bo
+        import brahma_brain.brahma_core as bo
         try:
             r = bo.analyze('ESPORTSUSDT', deep=True)
             # 如果能分析，评分应该 < 100（被 GapGate 抑制）
