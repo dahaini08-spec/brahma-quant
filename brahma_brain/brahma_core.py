@@ -5437,6 +5437,32 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass
     # ══ [END C类孤岛模块接入] ══════════════════════════════════════════════════
 
+    # ══ [P0 设计院封印 2026-08-11 苏摩111] TRADFI交易时段门控 ══════════════
+    # 美股代币非交易时段(亚洲白天)流动性极低，发信号有执行风险
+    # UTC 13:30~20:00 = 北京21:30~04:00 = 美股正常交易时段
+    try:
+        if _result.get('asset_type') == 'TRADFI_STOCK':
+            import datetime as _dt_trd
+            _utc_now = _dt_trd.datetime.utcnow()
+            _tot_min = _utc_now.hour * 60 + _utc_now.minute
+            # 美股交易时段: UTC 13:30(810min) ~ 20:00(1200min)
+            _in_us_session = (810 <= _tot_min <= 1200)
+            _result['tradfi_in_session'] = _in_us_session
+            if not _in_us_session:
+                # 非交易时段：score降60分，valid强制False，注入原因
+                _old_score = float(_result.get('score_final') or 0)
+                _result['score_final'] = _old_score - 60
+                _result['score']       = _result['score_final']
+                _result['valid']       = False
+                _result.setdefault('breakdown_extra', {})['tradfi_off_hours'] = -60
+                _result['tradfi_session_warn'] = (
+                    f'非交易时段(UTC {_utc_now.hour:02d}:{_utc_now.minute:02d})'
+                    f' score-60={_result["score_final"]:.1f} valid=False'
+                )
+    except Exception:
+        pass
+    # ══ [TRADFI交易时段门控 END] ═══════════════════════════════════════════════
+
     # [设计院封印 2026-08-09] 修复F12: analyze()结束时写入structured日志
     # 保证 brahma360 F12检查不再告警「SMC结构过旧」
     try:
