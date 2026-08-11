@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-# STATUS: ACTIVE"""
-online_learner_v2.py — 梵天在线学习引擎 v2.0
+# STATUS: ACTIVE
+"""
+online_learner_v2.py - 梵天在线学习引擎 v2.0
 设计院 · 苏摩111批准 · 2026-07-15
 
 职责：

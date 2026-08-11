@@ -1,5 +1,6 @@
-# STATUS: ACTIVE"""
-rl_position_ab.py — RL仓位A/B分流控制器 v1.0
+# STATUS: ACTIVE
+"""
+rl_position_ab.py - RL仓位A/B分流控制器 v1.0
 设计院 P3-B | 2026-07-08
 
 架构:
