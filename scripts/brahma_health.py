@@ -109,6 +109,11 @@ def check_engine(quick=False):
         return ok, f'文件{"存在" if ok else "缺失"} ({p.stat().st_size//1024}KB)' if p.exists() else '文件缺失'
     try:
         import importlib.util
+        # [FIX 2026-08-10] cron从任意目录运行时确保brahma_brain在path
+        _root = str(BASE)
+        _brain = str(BRAIN.parent)
+        if _root not in sys.path:    sys.path.insert(0, _root)
+        if _brain not in sys.path:   sys.path.insert(0, _brain)
         spec = importlib.util.spec_from_file_location('brahma_engine', BRAIN / 'brahma_engine.py')
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)

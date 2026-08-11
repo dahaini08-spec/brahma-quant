@@ -9,6 +9,10 @@ brahma_daily_report.py — 梵天日报
 import sys, os, json, subprocess, requests, time
 from pathlib import Path
 from datetime import datetime, timezone
+try:
+    from config import fmt_beijing
+except ImportError:
+    def fmt_beijing(): import datetime as _d; return _d.datetime.now(_d.timezone(_d.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M")+" CST"
 
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE / 'scripts'))
@@ -151,7 +155,7 @@ if __name__ == '__main__':
     pos     = get_open_positions()
     kronos  = get_kronos_status()
 
-    date_str = now_utc.strftime('%Y-%m-%d %H:%M UTC')
+    date_str = fmt_beijing()
 
     btc = market.get('BTCUSDT', {})
     eth = market.get('ETHUSDT', {})

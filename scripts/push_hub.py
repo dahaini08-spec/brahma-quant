@@ -74,7 +74,7 @@ def push_signal_card(sym, score, grade, direction, entry_lo, entry_hi, sl, tp1,
     emoji    = "🟢" if direction == "LONG" else "🔴"
     dir_cn   = "做多" if direction == "LONG" else "做空"
     tag      = sym.replace("USDT", "")
-    ts       = datetime.datetime.utcnow().strftime('%m-%d %H:%M')
+    ts       = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%m-%d %H:%M')
     sl_pct   = round(abs(entry_lo - sl) / entry_lo * 100, 1) if entry_lo else 2.0
     tp2_line = f"  TP2: ${tp2:,.4f}\n" if tp2 else ""
 
@@ -137,7 +137,7 @@ def push_signal_card(sym, score, grade, direction, entry_lo, entry_hi, sl, tp1,
 def push_skip_card(sym, score, direction, regime, reason_top3, next_condition, price=None):
     """推送SKIP状态通知 — 告诉苏摩为什么不入场+下一个窗口"""
     tag  = sym.replace("USDT", "")
-    ts   = datetime.datetime.utcnow().strftime('%m-%d %H:%M')
+    ts   = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%m-%d %H:%M')
     dir_cn = "做多" if direction == "LONG" else "做空"
     price_line = f"  当前价: ${price:.4f}\n" if price else ""
     reasons = "\n".join(f"    {r}" for r in (reason_top3 or [])[:3])
@@ -149,7 +149,7 @@ def push_skip_card(sym, score, direction, regime, reason_top3, next_condition, p
         f"  主要阻制:\n{reasons}\n"
         f"━━━━━━━━━━━━━━━━━━━━━━\n"
         f"  下一个窗口: {next_condition}\n"
-        f"  {ts} UTC"
+        f"  {ts} CST"
     )
     dedup_key = f"skip_{sym}_{direction}_{int(score)}"
     return _jarvis(msg, dedup_key=dedup_key, dedup_ttl=7200)

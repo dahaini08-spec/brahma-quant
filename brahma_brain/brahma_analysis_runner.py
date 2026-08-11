@@ -1198,8 +1198,8 @@ def run_analysis_full(symbol: str, deep: bool = True) -> dict:
             try:
                 val = float(sv.split('(')[0].replace('+','').strip())
                 score_items.append({'dim': k, 'contrib': val, 'detail': sv[:60]})
-            except:
-                pass
+            except Exception as _si_e:
+                logger.debug(f'[runner] score_item解析跳过 {k}: {_si_e}')
         score_items.sort(key=lambda x: -abs(x['contrib']))
         result['_weight_matrix'] = score_items[:15]
 
@@ -1213,8 +1213,8 @@ def run_analysis_full(symbol: str, deep: bool = True) -> dict:
             macro_v = breakdown.get('宏观+事件', 0)
             if isinstance(macro_v, (int, float)) and float(macro_v) < -8:
                 risk_flags.append('MACRO_HEADWIND')
-        except:
-            pass
+        except Exception as _rf_e:
+            logger.debug(f'[runner] risk_flags解析跳过: {_rf_e}')
         if 'FIX1' in str(breakdown.get('FIX1_假牛市', '')):
             risk_flags.append('FAKE_BULL_DETECTED')
         if result.get('_ext_score_detail', {}).get('whale', '') == 0:

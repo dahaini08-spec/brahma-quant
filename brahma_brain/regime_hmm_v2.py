@@ -128,9 +128,11 @@ def predict_regime_proba(symbol: str, klines_4h: list = None) -> dict:
     if klines_4h is None:
         try:
             sys.path.insert(0, str(Path(__file__).parent.parent))
-            from scripts.auto_executor import _signed
-            klines_4h = _signed('GET', '/fapi/v1/klines',
-                                 {'symbol': symbol, 'interval': '4h', 'limit': 100})
+            # [修复 2026-08-11] 改用brahma_bus获取klines，不再import auto_executor（顶层mem_gate会sys.exit）
+            from brahma_brain.brahma_bus import get_klines as _get_klines
+            klines_4h = _get_klines(symbol, '4h', limit=100)
+            if not klines_4h:
+                return _rule_fallback(symbol, ts_now)
         except Exception:
             return _rule_fallback(symbol, ts_now)
 
