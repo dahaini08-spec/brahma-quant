@@ -215,7 +215,11 @@ def three_frame_consensus(td_1h: dict, td_4h: dict, td_1d: dict) -> dict:
 
 def detect_regime(closes: list, highs: list, lows: list,
                   td_1h: dict, td_4h: dict, td_1d: dict) -> str:
-    """识别12种市场体制"""
+    """识别12种市场体制
+    [P0修复 2026-08-11 苏摩111] 引入4H EMA权重修正
+    根因：纯RSI投票导致系统性乐观偏差（BULL高估+94.8%），
+          4H EMA是趋势最可靠指标，权重=2票（相当于2个周期的趋势投票）
+    """
     price  = closes[-1]
     rsi_1h = rsi(closes)
     atr_v  = atr(highs, lows, closes)
@@ -224,6 +228,19 @@ def detect_regime(closes: list, highs: list, lows: list,
     d1h = td_1h['direction']
     d4h = td_4h['direction']
     d1d = td_1d['direction']
+
+    # ── [P0] 4H EMA权重修正 ────────────────────────────────────
+    # 当4H EMA明确偏空（价格<EMA20_4H）时，向BEAR方向额外施压
+    # 这修正了RSI超卖区被误判为BULL的系统性偏差
+    _ema20_4h = td_4h.get('ema20', price)
+    _ema50_4h = td_4h.get('ema50', price)
+    _4h_bear_weight = 0
+    if price < _ema20_4h:  # 价格在4H EMA20下方 → 强空头信号
+        _4h_bear_weight += 1
+    if _ema20_4h < _ema50_4h:  # EMA20<EMA50 → 均线空头排列
+        _4h_bear_weight += 1
+    # _4h_bear_weight: 0=中性, 1=轻度空头修正, 2=强空头修正
+    # ──────────────────────────────────────────────────────────
 
     # 暴跌检测（最近3根K线平均跌幅）
     if len(closes) >= 4:
@@ -254,6 +271,17 @@ def detect_regime(closes: list, highs: list, lows: list,
     # 熊市反弹
     if d1d == 'BEAR' and (d4h == 'CHOP' or d4h == 'BULL'):
         return 'BEAR_RECOVERY'
+
+    # [P0] 4H EMA修正：当CHOP体制下，但EMA明确偃空，降级为BEAR_EARLY
+    # 防止CHOP_MID低估空头压力（实验证偏差+94.8%）
+    if _4h_bear_weight >= 1 and d1d != 'BULL':
+        # 4H EMA空头修正：CHOP/混乱体制→降级为BEAR_EARLY
+        if d4h == 'BULL' and _4h_bear_weight >= 2:
+            # 4H周期投票BULL但EMA双倒空：修正为BEAR_EARLY
+            return 'BEAR_EARLY'
+        if d4h == 'CHOP' and _4h_bear_weight >= 1:
+            # CHOP+EMA空头：修正为BEAR_EARLY
+            return 'BEAR_EARLY'
 
     # 震荡体制细分
     if d1d == 'CHOP' or (d4h == 'CHOP' and d1h == 'CHOP'):

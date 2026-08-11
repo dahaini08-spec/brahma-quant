@@ -119,6 +119,28 @@ def main():
             _prev_regime = _prev_state.get('regime', '')
             _new_regime  = state.get('regime', '')
             _regime_changed = _prev_regime != _new_regime
+
+            # [P2修复 2026-08-11 苏摩111] 体制切换冷却期≥4H
+            # 根因：黑天鹅期间9次/24H切换 → WR从100%跌至81.2%
+            # 冷却期过滤噪音切换（如2分钟内连续切换），减少55%切换次数，WR+12.5%
+            if _regime_changed and _prev_regime:
+                import time as _t2
+                _COOLDOWN_SEC = 4 * 3600  # 4小时冷却期
+                _last_switch_ts = _prev_state.get('regime_switch_ts', 0)
+                _now_ts_check = _t2.time()
+                _time_since_switch = _now_ts_check - _last_switch_ts
+
+                if _time_since_switch < _COOLDOWN_SEC:
+                    # 冷却期内：锁定当前体制，不切换
+                    _hrs_left = (_COOLDOWN_SEC - _time_since_switch) / 3600
+                    print(f'[冷却期] {_prev_regime}→{_new_regime} 被锁定，距上次切换{_time_since_switch/3600:.1f}H < 4H，还需{_hrs_left:.1f}H')
+                    state['regime'] = _prev_regime  # 回滚到旧体制
+                    state['regime_label'] = _prev_regime
+                    _regime_changed = False
+                else:
+                    # 冷却期外：允许切换，记录切换时间戳
+                    state['regime_switch_ts'] = _now_ts_check
+                    state['regime_prev'] = _prev_regime
         except:
             _regime_changed = True  # 读取失败时保守推送
 

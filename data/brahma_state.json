@@ -1,7 +1,7 @@
 {
   "positions": [],
   "wuqu_positions": [],
-  "regime": "CHOP_MID",
+  "regime": "BEAR_EARLY",
   "n_open": 0,
   "total_pnl": 0.26959999999999695,
   "last_update": 1786411750.5290515,
@@ -26,7 +26,7 @@
     "BTCUSDT": 64030.3,
     "ETHUSDT": 1876.79
   },
-  "regime_label": "CHOP_MID",
+  "regime_label": "BEAR_EARLY",
   "regime_snapshot": {
     "symbol": "BTCUSDT",
     "regime": "CHOP_MID",
@@ -54,11 +54,16 @@
   "nav": 89.57791302,
   "available": 81.0375252,
   "nav_updated": "2026-07-20T13:34:31Z",
-  "btc_regime": "CHOP_MID",
+  "btc_regime": "BEAR_EARLY",
   "eth_regime": "CHOP_MID",
   "_close_reason": "BEAR_RECOVERY体制+价格逼近入场价，设计院自主决策全平 2026-08-04",
   "_close_price_eth": 1866.31,
   "_close_pnl": 0.26959999999999695,
   "_regime_sync_ts": 1786411751.504894,
-  "_regime_sync_src": "brahma_state_refresh"
+  "_regime_sync_src": "brahma_state_refresh",
+  "regime_prev": "CHOP_MID",
+  "regime_manual_override": true,
+  "regime_override_reason": "P3修复: 3/3空头信号(EMA/高点/RSI) → CHOP_MID低估空头压力，修正为BEAR_EARLY",
+  "regime_override_ts": 1786412719.9421496,
+  "regime_switch_ts": 1786412719.9421506
 }
