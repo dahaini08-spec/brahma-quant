@@ -237,6 +237,13 @@ def log_signal(result: dict) -> bool:
             'timing_badge':    result.get('timing_badge', ''),
             'timing_status':   result.get('timing_status', ''),
             'timing_score':    result.get('timing_score', 0),
+            # [IC-FIX 2026-08-11 苏摩111] breakdown字段写入——ic_tracker依赖此字段计算维度IC
+            # 根因：论迭除此字段，导致186条记录全部 confluence/breakdown=MISSING
+            'confluence': {
+                'breakdown': dict((cf.get('breakdown') or {})),
+                'score':     float(cf.get('total', score) or score),
+                'grade':     grade,
+            } if cf.get('breakdown') else None,
         }
 
         # ── [P2 设计院 2026-07-13] 信号去重修复版 ─────────────────────────────
