@@ -25,7 +25,7 @@ brahma_360.py — 梵天360全系统健康管理中心
 
 import os, sys, json, time, re, subprocess
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 # ── 路径 ────────────────────────────────────────────────────────
 _DIR   = Path(__file__).parent
@@ -472,7 +472,7 @@ def run_full_scan() -> dict:
 
     return {
         'ts': ts,
-        'datetime': datetime.fromtimestamp(ts, tz=timezone.utc).strftime('%Y-%m-%d %H:%M UTC'),
+        'datetime': datetime.fromtimestamp(ts, tz=timezone(timedelta(hours=8))).strftime('%Y-%m-%d %H:%M CST'),
         'health_score': score,
         'health_label': '🟢健康' if score >= 85 else ('🟡注意' if score >= 60 else ('🟠警告' if score >= 40 else '🔴危险')),
         'issues': all_issues,
@@ -722,7 +722,7 @@ def format_report(scan_result: dict, fix_log: list = None, verify_log: list = No
 
 def run_360(auto_fix: bool = True, push: bool = False) -> dict:
     """梵天360全流程入口"""
-    print(f'[梵天360] 开始全量体检 {datetime.now(timezone.utc).strftime("%H:%M UTC")}')
+    print(f'[梵天360] 开始全量体检 {datetime.now(timezone(timedelta(hours=8))).strftime("%H:%M CST")}')
 
     # Layer1: 扫描
     scan = run_full_scan()

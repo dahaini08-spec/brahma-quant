@@ -9,14 +9,20 @@
   - 支持双币（BTC+ETH）并行分析
   - 输出格式：专业合约衍生品深度分析报告
 """
-# ── 内存门控（设计院2026-08-04封印）───────────────────
+# ── 内存门控（设计院2026-08-11修复封印）───────────────────
+# [修复] 顶层mem_gate改为懒加载，import时不sys.exit，只在__main__时门控
 import sys as _sys, os as _os
 _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'scripts') if '/scripts/' not in __file__ else _os.path.dirname(_os.path.abspath(__file__)))
+_MEM_OK_FLAG = True
 try:
-    from brahma_mem_manager import mem_gate as _mem_gate
-    _mem_gate(700)
-except (ImportError, SystemExit) as _e:
-    if isinstance(_e, SystemExit): raise
+    from brahma_mem_manager import _available_mb as _avail_mb
+    _cur_avail = _avail_mb()
+    if _cur_avail < 400:
+        _MEM_OK_FLAG = False
+        import logging as _mg_log
+        _mg_log.getLogger('brahma_1hao_analysis').warning(f'[brahma_1hao_analysis] 内存危险{_cur_avail:.0f}MB<400MB，降级运行')
+except ImportError:
+    pass
 # ── 进程内存上限硬封（设计院P3 2026-08-05）──────────────
 try:
     import resource as _resource
@@ -48,6 +54,10 @@ if _BRAHMA_BRAIN_PATH not in sys.path:
 
 from brahma_brain.brahma_engine import analyze
 from datetime import datetime, timezone
+try:
+    from config import fmt_beijing
+except ImportError:
+    def fmt_beijing(): import datetime as _d; return _d.datetime.now(_d.timezone(_d.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M")+" CST"
 
 # ============================================================
 # 35维矩阵格式化输出
@@ -386,7 +396,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         ema_note = bd.get('RSI状态描述', '')
         ema20_1h_note = "⚠️ 新宪法：价格<EMA20_1H → 做多需等站稳确认"
 
-    now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    now_str = fmt_beijing()
 
     sep = "═" * 58
     sep2 = "─" * 58
@@ -1175,7 +1185,7 @@ def run_dual_analysis(symbols=None, direction='LONG'):
 
     print("=" * 60)
     print("  🏛️ 梵天设计院 · 双币35维全量矩阵分析启动")
-    print(f"  时间: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
+    print(f"  时间: {fmt_beijing()}")
     print("=" * 60)
 
     results = {}
@@ -1221,6 +1231,12 @@ def run_dual_analysis(symbols=None, direction='LONG'):
 
 
 if __name__ == '__main__':
+    # cron独立运行时的内存门控
+    try:
+        from brahma_mem_manager import mem_gate as _mg
+        _mg(700)
+    except (ImportError, SystemExit) as _mge:
+        if isinstance(_mge, SystemExit): raise
     import argparse
     parser = argparse.ArgumentParser(description='梵天1号工程 · 35维全量矩阵分析')
     parser.add_argument('--symbols', nargs='+', default=['BTCUSDT', 'ETHUSDT'])

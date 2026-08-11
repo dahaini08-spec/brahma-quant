@@ -42,14 +42,21 @@ OI高级扫描器 v3.0 — 设计院全局深度完善
   BUG-4: 无独立推送，OI信号从未推给苏摩做决策
 ─────────────────────────────────────────────────
 """
-# ── 内存门控（设计院2026-08-04封印）───────────────────
+# ── 内存门控（设计院2026-08-11修复封印）───────────────────
+# [BUG修复] 原顶层mem_gate(900)在sys.exit(0)时会杀死调用进程（analysis_runner/smoke_test）
+# 修复：改为函数内懒加载，import时不执行sys.exit
 import sys as _sys, os as _os
 _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'scripts') if '/scripts/' not in __file__ else _os.path.dirname(_os.path.abspath(__file__)))
+_OI_SCANNER_MEM_OK = True
 try:
-    from brahma_mem_manager import mem_gate as _mem_gate
-    _mem_gate(900)
-except (ImportError, SystemExit) as _e:
-    if isinstance(_e, SystemExit): raise
+    from brahma_mem_manager import _available_mb as _oi_avail_mb
+    _oi_mem_avail = _oi_avail_mb()
+    if _oi_mem_avail < 400:  # 只有危险级别才标记跳过
+        _OI_SCANNER_MEM_OK = False
+        import logging as _oi_log
+        _oi_log.getLogger('oi_scanner').warning(f'[oi_scanner] 内存危险{_oi_mem_avail:.0f}MB<400MB，功能降级')
+except ImportError:
+    pass  # brahma_mem_manager不可用时忽略内存检查
 # ── 进程内存上限硬封（设计院P3 2026-08-05）──────────────
 try:
     import resource as _resource

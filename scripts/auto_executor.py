@@ -39,9 +39,16 @@ import sys as _sys, os as _os
 import resource as _res_guard; _res_guard.setrlimit(_res_guard.RLIMIT_CORE,(0,0))
 
 _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'scripts') if '/scripts/' not in __file__ else _os.path.dirname(_os.path.abspath(__file__)))
-# pytest/import 环境跳过 mem_gate，避免 sys.exit 杀死测试进程
-_in_pytest = 'pytest' in _sys.modules or _sys.argv[0].endswith('pytest') or any('pytest' in str(a) for a in _sys.argv)
-if not _in_pytest:
+# pytest/smoke_test/import 环境跳过 mem_gate，避免 sys.exit 杀死测试进程
+# [修复 2026-08-11] 增加 brahma_smoke_test 豁免
+_in_test = (
+    'pytest' in _sys.modules
+    or _sys.argv[0].endswith('pytest')
+    or any('pytest' in str(a) for a in _sys.argv)
+    or 'brahma_smoke_test' in _sys.argv[0]
+    or any('smoke_test' in str(a) for a in _sys.argv)
+)
+if not _in_test:
     try:
         from brahma_mem_manager import mem_gate as _mem_gate
         _mem_gate(500)
@@ -60,6 +67,11 @@ except Exception:
 
 from pathlib import Path
 from datetime import datetime, timezone
+try:
+    from config import fmt_beijing
+except ImportError:
+    import datetime as _dti
+    def fmt_beijing(): return _dti.datetime.now(_dti.timezone(_dti.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M") + " CST"
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -1619,7 +1631,7 @@ def run(dry_run: bool = False) -> list[dict]:
 
 def _run_locked(dry_run: bool = False) -> list[dict]:
     """实际执行体（文件锁保护内）"""
-    now_iso = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
+    now_iso = fmt_beijing()
 
     # 账户状态
     acct      = _signed('GET', '/fapi/v2/account')
@@ -1698,7 +1710,7 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
                 _tag = _sym.replace('USDT', '')
                 _dir_cn = '做多' if _dir == 'LONG' else '做空'
                 _sl_pct = round(abs(_entry_lo - _sl) / _entry_lo * 100, 1) if _entry_lo else 2.0
-                _ts = _dt.datetime.utcnow().strftime('%m-%d %H:%M')
+                _ts = _dt.datetime.now(_dt.timezone(_dt.timedelta(hours=8))).strftime('%m-%d %H:%M')
                 _watch_msg = (
                     f"👁 **梵天WATCH信号 · 待苏摩确认**\n"
                     f"━━━━━━━━━━━━━━━━━━━━━━\n"
@@ -1710,7 +1722,7 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
                     f"  [操作指令]\n"
                     f"  ⏳ 等15M触发后入场 — 回复「执行」开仓\n"
                     f"  评分={_s:.0f}，需≥155自动开，当前等苏摩确认\n"
-                    f"  {_ts} UTC"
+                    f"  {_ts} CST"
                 )
                 _phj(_watch_msg, dedup_key=f"watch_{_sym}_{_dir}_{int(_s)}", dedup_ttl=7200)
     except Exception as _tier_e:

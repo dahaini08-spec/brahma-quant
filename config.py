@@ -207,3 +207,25 @@ try:
     )
 except ImportError:
     pass  # system_config可选，各模块仍可直接import system_config
+
+
+# ── [2026-08-11 苏摩111封印] 北京时间工具 ──────────────────────────────────
+# 全系统时间戳统一显示北京时间（UTC+8）
+# 所有报告输出使用 now_beijing() / fmt_beijing()
+import datetime as _dt_module
+from datetime import timezone as _tz, timedelta as _td
+
+_BEIJING_TZ = _tz(_td(hours=8))
+
+def now_beijing() -> _dt_module.datetime:
+    """返回当前北京时间 datetime 对象"""
+    return _dt_module.datetime.now(_BEIJING_TZ)
+
+def fmt_beijing(fmt: str = '%Y-%m-%d %H:%M') -> str:
+    """返回当前北京时间格式化字符串，默认格式 2026-08-11 09:05"""
+    return now_beijing().strftime(fmt) + ' CST'
+
+def utc_to_beijing(ts: float, fmt: str = '%Y-%m-%d %H:%M') -> str:
+    """Unix timestamp → 北京时间字符串"""
+    return _dt_module.datetime.fromtimestamp(ts, tz=_BEIJING_TZ).strftime(fmt) + ' CST'
+# ────────────────────────────────────────────────────────────────────────────

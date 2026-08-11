@@ -1,5 +1,6 @@
-# STATUS: ACTIVE"""
-safety.py — 梵天全局安全闸 v1.0
+# STATUS: ACTIVE
+"""
+safety.py -- 梵天全局安全闸 v1.0
 设计院 2026-07-08 | 第三方审计P0-0/P0-1修复
 
 用法:

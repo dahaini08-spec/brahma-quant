@@ -18,14 +18,20 @@ market_screener.py — 全市场纯脚本预筛器 v1.0
 输出：data/scan_candidates.json
 苏摩宪法：无agentTurn，不计入AI任务配额
 """
-# ── 内存门控（设计院2026-08-04封印）───────────────────
+# ── 内存门控（设计院2026-08-11修复封印）───────────────────
+# [修复] 顶层mem_gate改为懒加载，import时不sys.exit，只在__main__时门控
 import sys as _sys, os as _os
 _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'scripts') if '/scripts/' not in __file__ else _os.path.dirname(_os.path.abspath(__file__)))
+_MEM_OK_FLAG = True
 try:
-    from brahma_mem_manager import mem_gate as _mem_gate
-    _mem_gate(900)
-except (ImportError, SystemExit) as _e:
-    if isinstance(_e, SystemExit): raise
+    from brahma_mem_manager import _available_mb as _avail_mb
+    _cur_avail = _avail_mb()
+    if _cur_avail < 400:
+        _MEM_OK_FLAG = False
+        import logging as _mg_log
+        _mg_log.getLogger('market_screener').warning(f'[market_screener] 内存危险{_cur_avail:.0f}MB<400MB，降级运行')
+except ImportError:
+    pass
 # ── 进程内存上限硬封（设计院P3 2026-08-05）──────────────
 try:
     import resource as _resource
@@ -394,6 +400,12 @@ def run(top_n: int = TOP_N) -> list:
 
 
 if __name__ == '__main__':
+    # cron独立运行时的内存门控
+    try:
+        from brahma_mem_manager import mem_gate as _mg
+        _mg(900)
+    except (ImportError, SystemExit) as _mge:
+        if isinstance(_mge, SystemExit): raise
     import argparse
     ap = argparse.ArgumentParser(description='全市场纯脚本预筛器')
     ap.add_argument('--top', type=int, default=TOP_N, help=f'候选数量 (默认{TOP_N})')
