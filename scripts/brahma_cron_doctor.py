@@ -47,22 +47,15 @@ def _push(msg: str):
 # ── 核心 cron 任务监控列表 ─────────────────────────────────
 # 格式: (job_id, name, max_silence_hours, is_critical)
 WATCHED_JOBS = [
-    # [2026-08-06 设计院封印] 全量迁移到019fb612后ID更新
-    ('514867c5-a404-42f6-aeca-c8673504fa34', 'brahma-state-refresh',    2,  True),
-    ('fb10b648-64b8-46ce-8510-3e4ce7dcb528', 'bbw-squeeze-monitor',      2,  False),
-    ('d270cd0f-c86f-4477-84e6-cad0bbb0bbcb', 'rsi-structure-watcher',    2,  True),
-    ('19ab5a6b-4010-494c-9134-83cf07aa9473', 'auto-1hao-trigger',        2,  True),
-    ('65dc29f6-f3fd-4008-ba3e-658854a130dd', 'auto-executor-run',        2,  True),
-    ('2c38088d-55cb-4bd6-92e6-38f9179be0a3', 'brahma-nerve-center',      1,  True),
-    ('33a74c09-da27-49d7-b02d-3c2542478793', 'brahma-auto-heal',         5,  False),
-    ('144035fa-d9fd-4513-a08c-6a21bd4f9fe5', 'signal-settler',           5,  False),
-    ('16cb0990-36dd-4494-9996-78d734011508', 'oi-advanced-scanner',      3,  False),
-    ('b990bad9-fae2-4cce-9d74-9f7fe7b5e3c3', 'pump-outcome-tracker',     5,  False),
-    ('74608be7-363d-48e0-8f44-463862b0a6f7', 'ws-guardian-heartbeat',    1,  True),
-    ('4eb1c2ec-4b22-4166-b4b6-072c77663451', 'brahma-mem-watchdog',      1,  False),
-    ('d55f0823-df41-4dd3-8d87-6cd94b40ade8', 'log-rotation',            12,  False),
+    # [2026-08-11 1号工程修复] 同步当前有效cron ID，清除旧ID防止串行阻塞超时
+    ('6e82b213-083d-4d0e-85b3-9144b4ded13d', 'brahma-state-refresh',    2,  True),
+    ('b9274535-221a-4dbc-b8d5-0b97f1365b38', 'rsi-structure-watcher',    2,  True),
+    ('3a9c9763-bc9e-4eca-9af4-c4369aaea557', 'auto-1hao-trigger',        2,  True),
+    ('7da05c85-e909-4c8b-acf4-7865c0cb52fd', 'auto-executor-run',        2,  True),
+    ('8ca65ac1-36a1-4f57-a7bc-f0bf15202f9e', 'signal-settler',           5,  False),
+    ('7af852f4-90f2-4de1-a0a8-8b444e227e44', 'oi-advanced-scanner',      3,  False),
+    ('0c79a28e-410d-479a-a6ff-dfafb0557f1f', 'log-rotation',            12,  False),
     ('22df48b0-dfdc-4cb1-bb7d-c98be7cabb00', 'core-dump-cleaner',        4,  False),
-    ('fb27e1df-5813-4e85-816b-3611b167c1f3', 'brahma-disk-buffer',      12,  False),
 ]
 
 # ── 已知错误模式 → 自动修复动作 ──────────────────────────
