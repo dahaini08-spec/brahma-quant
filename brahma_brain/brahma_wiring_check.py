@@ -440,12 +440,17 @@ def run_wiring_check() -> dict:
     for mod in modules:
         try:
             content = (_BRAIN_DIR / f'{mod}.py').read_text(errors='ignore')
+            # 1. from brahma_brain.X / from .X / import brahma_brain.X
             for dep_groups in _re.findall(
-                r'from brahma_brain\.(\w+)|from \.(\w+)|import brahma_brain\.(\w+)',
-                content
-            ):
+                    r'from brahma_brain\.(\w+)|from \.(\w+)|import brahma_brain\.(\w+)',
+                    content
+                ):
                 dep = next((g for g in dep_groups if g), None)
                 if dep and dep in modules and dep != mod:
+                    callee_map[dep].add(mod)
+            # 2. 同包直接import（from X import Y，不带brahma_brain.前缀）
+            for dep in _re.findall(r'from (\w+) import ', content):
+                if dep in modules and dep != mod:
                     callee_map[dep].add(mod)
         except Exception:
             pass
@@ -454,8 +459,13 @@ def run_wiring_check() -> dict:
     scripts_callers: set = set()
     for s in _SCRIPTS_DIR.glob('*.py'):
         try:
-            for g in _re.findall(r'from brahma_brain\.(\w+)', s.read_text(errors='ignore')):
+            _sc = s.read_text(errors='ignore')
+            for g in _re.findall(r'from brahma_brain\.(\w+)', _sc):
                 scripts_callers.add(g)
+            # 同包直接import（from X import Y，scripts目录常见写法）
+            for g in _re.findall(r'from (\w+) import ', _sc):
+                if g in modules:
+                    scripts_callers.add(g)
         except Exception:
             pass
 
