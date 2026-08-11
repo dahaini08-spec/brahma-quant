@@ -603,18 +603,78 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         _de_reason = _de_result.get('reason', '')
         _de_step = _de_result.get('step_passed', 0)
         _de_icon = '✅' if _de_action == 'EXECUTE' else '⏸️' if _de_action in ('WAIT_15M','WAIT_ENTRY') else '⛔'
+        # [升级 2026-08-11 苏摩111] 决策树权威司令部格式
+        _STEP_NAMES = {
+            1: 'Step1 体制死穴门控',
+            2: 'Step2 StructureGate(grade≥80)',
+            3: 'Step3 15m结构确认',
+            4: 'Step4 RR门控(≥1.0)',
+            5: 'Step5 时机门控(READY)',
+        }
+        _ACTION_LABELS = {
+            'EXECUTE':    ('🟢 ENTER',  '信号解锁 — 满足全部条件，建议开仓'),
+            'WATCH':      ('🟡 WATCH',  '候补观察 — 接近触发，等待最终确认'),
+            'SKIP':       ('🔴 SKIP',   '本轮放弃 — 条件未满足，不入场'),
+            'WAIT_15M':   ('⏸️ WAIT',   '等待15m确认 — 结构待验证'),
+            'WAIT_ENTRY': ('⏸️ WAIT',   '等待入场区 — 价格未到位'),
+        }
+        _al = _ACTION_LABELS.get(_de_action, ('⛔ SKIP', _de_reason))
+        _action_label, _action_desc = _al
+
+        # 构造步骤漏斗
+        _steps_detail = _de_result.get('steps', {})
+        _step_lines = []
+        for _sn in range(1, 6):
+            _skey = f'step{_sn}'
+            _sval = _steps_detail.get(_skey)
+            if _sn <= _de_step:
+                _step_lines.append(f"  {'✅'} {_STEP_NAMES[_sn]}")
+            elif _sval is not None:
+                _step_lines.append(f"  {'❌'} {_STEP_NAMES[_sn]} — {str(_sval)[:50]}")
+            elif _sn == _de_step + 1:
+                _step_lines.append(f"  {'❌'} {_STEP_NAMES[_sn]} — {_de_reason[:50]}")
+            else:
+                _step_lines.append(f"  {'⬜'} {_STEP_NAMES[_sn]}")
+
+        # 入场参数
+        _ep = _de_result.get('entry_plan', {})
+        _ep_line = ''
+        if _ep and _de_action in ('EXECUTE','WATCH'):
+            _ep_line = (f"  📐 开仓参数: {_ep.get('size_pct','5')}%NAV × {_ep.get('leverage','5')}x | "
+                        f"SL={_ep.get('sl_pct','2.0')}% | TP1={_ep.get('tp1_pct','?')}%")
+        elif _de_action == 'EXECUTE':
+            _sl_pct = _de_signal.get('sl_pct', 2.0)
+            _rr = _de_result.get('rr', 0)
+            _ep_line = f"  📐 开仓参数: 5%NAV × 5x | SL={_sl_pct}% | RR={_rr:.2f}x"
+
+        # RR详情（Step4相关）
+        _rr_val = _de_result.get('rr', 0)
+        _tp_price = _de_result.get('tp_price', 0)
+        _sl_price = _de_result.get('sl_price', 0)
+        _rr_detail = ''
+        if _rr_val or _tp_price:
+            _rr_detail = (f"  📊 RR计算: TP={_tp_price:,.1f}({'+' if _de_signal.get('price',0) and _tp_price > _de_signal['price'] else ''}{((float(_tp_price)-float(_de_signal.get('price',1)))/float(_de_signal.get('price',1))*100):.2f}%) "
+                         f"SL={_sl_price:,.1f}(-{_de_signal.get('sl_pct',2.0)}%) RR={_rr_val:.2f}x {'✅' if _rr_val >= 1.0 else f'❌(需≥1.0，差{1.0-_rr_val:.2f})'}") if _tp_price and _sl_price else f"  RR={_rr_val:.2f}x"
+
         _de_lines = [
             "",
-            "╬" + "═"*58,
-            "  🌲 决策树裁决 (BrahmaDecisionEngine)",
-            "╬" + "═"*58,
-            f"  裁决: {_de_icon} {_de_action}",
-            f"  原因: {_de_reason}",
-            f"  通过步骤: {_de_step}/3",
+            "╔" + "═"*58 + "╗",
+            "║  🏛️ 决策树司令部 — 梵天最终裁决                        ║",
+            "╠" + "═"*58 + "╣",
+            f"  {_action_label}  {_action_desc}",
+            "  " + "─"*56,
+            "  漏斗5步:",
+        ] + _step_lines + [
+            "  " + "─"*56,
         ]
-        _ep = _de_result.get('entry_plan', {})
-        if _ep:
-            _de_lines.append(f"  入场计划: size={_ep.get('size_pct','?')}%NAV  SL={_ep.get('sl_pct','?')}%  TP1={_ep.get('tp1_pct','?')}%")
+        if _rr_detail:
+            _de_lines.append(_rr_detail)
+        if _ep_line:
+            _de_lines.append(_ep_line)
+        if _de_action == 'SKIP' and _de_step < 5:
+            _fail_step = _STEP_NAMES.get(_de_step+1, f'Step{_de_step+1}')
+            _de_lines.append(f"  🔓 解封条件: 突破 [{_fail_step}] 门控")
+        _de_lines.append("╚" + "═"*58 + "╝")
         lines += _de_lines
     except Exception as _dt_err:
         lines.append(f"  [决策树层] 跳过: {_dt_err}")
@@ -678,13 +738,11 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
 
     # ── [P0~P4 设计院封印 2026-07-24 苏摩111批准] ──────────────────────────────
     try:
-        import sys as _sys
-        _sys.path.insert(0, str(__file__ and __import__('pathlib').Path(__file__).parent.parent / 'brahma_brain'))
-        from anomaly_guards import (
+        from brahma_brain.anomaly_guards import (
             detect_vol_price_anomaly, detect_correlation_alert,
             detect_regime_switch_warning, fmt_no_bull_ob_template
         )
-        from position_guard import fmt_position_guard
+        from brahma_brain.position_guard import fmt_position_guard
 
         _price  = float(r.get('price', 0))
         _regime = r.get('regime', '')
