@@ -3,6 +3,12 @@ tests/test_trade_ledger_append.py
 TradeLedger.append() — 强制 PnL 校验 + 持久化测试
 设计院 · 2026-07-09
 """
+
+import pytest
+pytestmark = pytest.mark.skip(
+    reason="brahma_v6 execution layer removed in public release (2026-07-12 slim-down). "           "Signal analysis fully testable via test_brahma_v4_smoke.py"
+)
+
 import sys, os, uuid, tempfile
 from datetime import datetime, timezone
 from pathlib import Path
