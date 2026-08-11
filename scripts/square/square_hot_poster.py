@@ -270,7 +270,7 @@ def build_funding_rate() -> str:
         d = fetch_price(s)
         data[s.replace('USDT', '')] = d
 
-    lines = [f'📊 资金费率速览 | {now_cst()} CST', '']
+    lines = [f'今天看了一下三大主力的资金费率，说说我的判断。', '', f'📊 {now_cst()} CST', '']
     lines.append('当前永续合约资金费率：')
     for sym, d in data.items():
         fr = d['fr']
