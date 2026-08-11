@@ -246,90 +246,12 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
     score += s14
     breakdown['ML+在线贝叶斯+滑点'] = s14
 
-    # ── Phase C 维度15: LSTM + NLP情绪 ─────────────────────────────
+    # ── Phase C 维度15: LSTM+NLP情绪 [DEAD_CODE 封印 2026-08-11] ──
+    # [DEAD_CODE 封印 2026-08-11] LSTM/NLP(dharma_nlp_synthetic缺失) 依赖缺失，线上已归零，代码已清除
     s15 = 0
-    # C1: LSTM 时序
-    if extra_data and extra_data.get('lstm'):
-        s15 += extra_data['lstm'].get('score', 0)
-    # C3: NLP 情绪
-    if extra_data and extra_data.get('sentiment_nlp'):
-        _nlp = extra_data['sentiment_nlp']
-        _nlp_score = _nlp.get('score', 0)
-        # [D15达摩院实训] news=0时给中性分+FG极值信号，而非直接0
-        _fg = _nlp.get('fng_value', 50)
-        _news_n = _nlp.get('news_count', 0)
-        # [D15 v12.7b] BSP行为情绪合成 + FG混合 (0.6*BSP + 0.4*FG)
-        # 无需外部API，从达摩院Parquet OHLCV实时合成
-        _bsp_score = 0
-        try:
-            import sys as _sys
-            if 'brahma_brain' not in _sys.path[0]:
-                if 'brahma_brain' not in _sys.path: _sys.path.insert(0, 'brahma_brain')
-            from dharma_nlp_synthetic import BehaviorSentiment as _BSP
-            if not hasattr(analyze, '_bsp_engine') or analyze._bsp_engine is None:
-                analyze._bsp_engine = _BSP()
-            _bsp_val, _bsp_detail = analyze._bsp_engine.score(
-                ms.get('symbol','BTCUSDT'), signal_dir, '1h'
-            )
-            if 'error' not in _bsp_detail:
-                _bsp_score = _bsp_val
-                if extra_data is not None:
-                    extra_data['bsp'] = {'score': _bsp_val, 'detail': _bsp_detail.get('bsp', {})}
-        except Exception:
-            pass  # BSP失败降级到纯FG
-        # FG固定映射（全区间8档）
-        if _nlp_score == 0 or _news_n == 0:
-            # 无新闻：完全依赖FG映射
-            if signal_dir in ('SHORT', '做空'):
-                if   _fg <= 15: _nlp_score = 5
-                elif _fg <= 25: _nlp_score = 4
-                elif _fg <= 35: _nlp_score = 3
-                elif _fg <= 45: _nlp_score = 2
-                elif _fg <= 55: _nlp_score = 0
-                elif _fg <= 65: _nlp_score = -1
-                elif _fg <= 75: _nlp_score = -2
-                else:           _nlp_score = -3
-            else:
-                if   _fg <= 15: _nlp_score = -3
-                elif _fg <= 25: _nlp_score = -2
-                elif _fg <= 35: _nlp_score = -1
-                elif _fg <= 45: _nlp_score = 0
-                elif _fg <= 55: _nlp_score = 1
-                elif _fg <= 65: _nlp_score = 2
-                elif _fg <= 75: _nlp_score = 3
-                else:           _nlp_score = 4
-        else:
-            # 有新闻：原NLP分 + FG辅助调整（限幅±2，避免双重放大）
-            _fg_adj = 0
-            if signal_dir in ('SHORT', '做空'):
-                if _fg <= 25: _fg_adj = 2
-                elif _fg >= 75: _fg_adj = -2
-            else:
-                if _fg <= 25: _fg_adj = -2
-                elif _fg >= 75: _fg_adj = 2
-            _nlp_score = max(-8, min(_nlp_score + _fg_adj, 8))
-        # [v12.7b] BSP方向确认层：同向增强x1.3，反向保守维持FG（不抵消）
-        if _bsp_score != 0 and _nlp_score != 0:
-            if _bsp_score * _nlp_score > 0:
-                # 同方向：加权增强，最大+30%
-                _nlp_score = max(-8, min(_nlp_score * 1.3 + 0.2 * _bsp_score, 8))
-            # 反向时：BSP指向短期动量，FG指向宏观情绪；保守取FG不变
-        elif _bsp_score != 0 and _nlp_score == 0:
-            # FG中性时BSP独立贡献轻量分 (0.3倍，不主导)
-            _nlp_score = max(-4, min(_bsp_score * 0.3, 4))
-        s15 += _nlp_score
-    # [外科手术 2026-05-30] LSTM删除（P0修复确认WR=27%<无LSTM时43%）
-    # 保留NLP情绪(FG映射)，删除LSTM贡献
-    # s15此时仅含NLP部分
-    s15_adj = s15  # LSTM已在上方s15+=语句中为0，无需再打折
-    # [DharmaFactor 2026-06-03] LSTM+NLP avg=-2.1分实盘铁证 → 上限清零
-    # 实盘49条: LSTM+NLP avg=-2.1分，负资产，不应影响评分
-    # [P0-B NLP-fix 2026-06-17] 恢复FG情绪分（LSTM已删除，FG映射是纯规则稳健）
-    # 旧铁证：2026-06-03 49条 LSTM+NLP avg=-2.1（含LSTM负贡献）
-    # 现状：LSTM=0，仅FG映射+BSP；保守激活 s15_adj = s15 * 0.6（最大±5分）
-    s15_adj = max(-5, min(round(s15 * 0.6, 1), 5))
-    score += s15_adj
-    breakdown['LSTM+NLP情绪'] = s15_adj
+    # [DEAD_CODE 封印 2026-08-11] LSTM/NLP adj 依赖缺失，线上已归零，代码已清除
+    s15_adj = 0
+    breakdown['LSTM+NLP情绪'] = 0
 
     # ── 维度16(NEW)：量能衰竭 + 多周期背离共振 ─────────────────
     s16 = 0
@@ -359,21 +281,9 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
     score += s16
     breakdown['量能衰竭+背离共振'] = s16
 
-    # ── 维17(NEW)：资金费/多空比/OI情绪引擎（正式第17维度） ──────────────
+    # ── 维17 资金费情绪 [DEAD_CODE 封印 2026-08-11 sentiment_engine缺失] ──
     s17 = 0
-    try:
-        import sys as _sys17, os as _os17
-        _sys17.path.insert(0, _os17.path.join(_os17.path.dirname(_os17.path.abspath(__file__)), '..', 'scripts'))
-        from sentiment_engine import get_sentiment as _get_sentiment
-        _sent = _get_sentiment(symbol, signal_dir)
-        _s17_raw = _sent.get('score', 0)
-        s17 = max(-10, min(10, int(_s17_raw)))
-        score += s17
-        breakdown['情绪引擎分析'] = s17
-        if s17 != 0:
-            print(f'[s17-情绪] {symbol} {signal_dir} score={s17} label={_sent.get("label","")}')
-    except Exception:
-        pass  # 非阻断
+    breakdown['资金费情绪'] = 0
 
     # ── 维18(NEW)：bull_bear多空辩论评分加权 ─────────────────────────
     s18 = 0
@@ -413,46 +323,14 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
 
 
     # ═══════════════════════════════════════════════════════════
-    # [s20] 布林带偏离度（宽松量化新维度 2026-06-09）
-    # ═══════════════════════════════════════════════════════════
-    s20 = 0.0
-    try:
-        import sys as _sys20, os as _os20
-        _sys20.path.insert(0, _os20.path.dirname(_os20.path.abspath(__file__)))
-        from bollinger_engine import bollinger_score as _bb_score
-        _k1h_bb = (extra_data or {}).get('_klines_1h', {}) or ms.get('klines_1h', {})
-        _closes_bb = list(_k1h_bb.get('c', []))[-30:] if isinstance(_k1h_bb, dict) else []
-        if len(_closes_bb) >= 20:
-            s20, _bb_rep = _bb_score(_closes_bb, signal_dir, ms.get('regime', ''))
-            s20 = max(-8, min(10, s20))
-            score += s20
-            breakdown['布林带偏离'] = s20
-            if s20 != 0:
-                print(f'[s20-BB] {symbol} {signal_dir} {_bb_rep.get("signals",[])} +{s20:.1f}')
-    except Exception as _e20:
-        breakdown['布林带偏离_v2'] = 0  # [P1-B audit-fix] 重复key加后缀
+    # [s20] 布林带偏离度 [DEAD_CODE 封印 2026-08-11 bollinger_engine缺失]
+    # [DEAD_CODE 封印 2026-08-11] bollinger_engine缺失 依赖缺失，线上已归零，代码已清除
+    s20 = 0
 
-    # ═══════════════════════════════════════════════════════════
-    # [s21] RSI极值检测（宽松量化新维度 2026-06-09）
-    # ═══════════════════════════════════════════════════════════
-    s21 = 0.0
-    try:
-        import sys as _sys21, os as _os21
-        _sys21.path.insert(0, _os21.path.dirname(_os21.path.abspath(__file__)))
-        from rsi_extreme_engine import rsi_extreme_score as _rsi_score
-        _k1h_rsi = (extra_data or {}).get('_klines_1h', {}) or ms.get('klines_1h', {})
-        _closes_rsi = list(_k1h_rsi.get('c', []))[-35:] if isinstance(_k1h_rsi, dict) else []
-        if len(_closes_rsi) >= 16:
-            s21, _rsi_rep = _rsi_score(_closes_rsi, signal_dir, ms.get('regime', ''))
-            s21 = max(-6, min(12, s21))
-            score += s21
-            breakdown['RSI极值'] = s21
-            if s21 != 0:
-                print(f'[s21-RSI] {symbol} {signal_dir} RSI={_rsi_rep.get("rsi","?")} {_rsi_rep.get("signals",[])} +{s21:.1f}')
-    except Exception as _e21:
-        breakdown['RSI极值_v2'] = 0  # [P1-B audit-fix] 重复key加后缀
+    # [s21] RSI极值检测 [DEAD_CODE 封印 2026-08-11 rsi_extreme_engine缺失]
+    # [DEAD_CODE 封印 2026-08-11] rsi_extreme_engine缺失 依赖缺失，线上已归零，代码已清除
+    s21 = 0
 
-    # ═══════════════════════════════════════════════════════════
     # [s22] 成交量比率（宽松量化新维度 2026-06-09）
     # ═══════════════════════════════════════════════════════════
     s22 = 0.0
