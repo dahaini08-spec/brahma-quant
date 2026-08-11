@@ -5509,21 +5509,27 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _sl2_path = _Psl2(__file__).parent.parent / 'data' / 'brahma_structured.jsonl'
         _cf2 = _result.get('confluence', {}) or {}
         _bd2 = _cf2.get('breakdown', {}) or {}
+        _sl2_regime = _result.get('regime', '')
+        _sl2_dir    = _result.get('signal_dir', _result.get('direction', ''))
+        _sl2_score  = float(_result.get('score_final', _result.get('score', 0)) or 0)
         _sl2_entry = {
-            'ts':     _tsl2.time(),
-            'iso':    __import__('datetime').datetime.utcnow().isoformat() + 'Z',
-            'level':  'SIGNAL',
-            'module': 'brahma_core',
-            'event':  'analysis_complete',
-            'symbol': _result.get('symbol', _sym),
-            'score':  float(_result.get('score_final', _result.get('score', 0)) or 0),
+            'ts':        _tsl2.time(),
+            'iso':       __import__('datetime').datetime.utcnow().isoformat() + 'Z',
+            'level':     'SIGNAL',
+            'module':    'brahma_core',
+            'event':     'analysis_complete',
+            'symbol':    _result.get('symbol', _sym),
+            'score':     _sl2_score,
+            # [BUG修复 2026-08-11 设计院] 顶层直接存储regime/direction，不嵌套在metrics里
+            'regime':    _sl2_regime,
+            'direction': _sl2_dir,
             'metrics': {
                 'ob_score':        float(_bd2.get('OB结构', _bd2.get('ob_score', 0)) or 0),
                 'fvg_score':       float(_bd2.get('FVG', _bd2.get('fvg_score', 0)) or 0),
                 'structure_score': float(_bd2.get('SMC结构', _bd2.get('structure_score', 0)) or 0),
-                'score':           float(_result.get('score_final', _result.get('score', 0)) or 0),
-                'regime':          _result.get('regime', ''),
-                'direction':       _result.get('signal_dir', _result.get('direction', '')),
+                'score':           _sl2_score,
+                'regime':          _sl2_regime,
+                'direction':       _sl2_dir,
             }
         }
         with open(_sl2_path, 'a', encoding='utf-8') as _slf2:
