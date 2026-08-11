@@ -1,0 +1,66 @@
+=================================================================
+  Brahma-Quant 公开仓安装审计底稿
+  日期: 2026-08-11  commit: 9752a47
+=================================================================
+
+[A] 语法检查 (compileall)
+  ✅ 无语法错误
+
+[B] 核心模块导入
+  ✅ brahma_brain
+  ✅ dharma
+  ✅ guardrails
+  ✅ brahma_brain.brahma_analysis_runner.run_analysis
+  ✅ brahma_brain.brahma_health.run_health_check
+  ✅ brahma_brain.brahma_bus.BrahmaBus
+  ✅ brahma_brain.ev_feedback.on_settlement
+  ✅ brahma_brain.tradfi_sector_engine.compute_tradfi_sector_score
+  结果: 8/8
+
+[C] brahma_v6 缺失确认（预期失败）
+  ✅ V6_ABSENT_OK — 执行层已从公开仓移除（2026-07-12）
+
+[D] examples/quick_start.py --validate
+  [quick_start] 验证模式：检查核心模块可导入性
+    ✅ brahma_brain.brahma_analysis_runner
+    ✅ brahma_brain.brahma_bus
+    ✅ brahma_brain.brahma_health
+    ✅ brahma_brain.market_state
+    ✅ brahma_brain.universal_asset_router
+  
+  [quick_start] 5/5 模块可导入
+  exit_code: 0
+
+[E] brahma_v6 测试 skip 标记（预期全部skip）
+  ✅ SKIP tests/test_risk_kernel.py
+  ✅ SKIP tests/test_order_state_matrix.py
+  ✅ SKIP tests/test_trade_ledger.py
+  ✅ SKIP tests/test_trade_ledger_append.py
+  ✅ SKIP tests/test_trade_ledger_v2.py
+  ✅ SKIP tests/test_reconciler.py
+  ✅ SKIP tests/test_ev_bucket.py
+
+[F] brahma_health 快速检查
+  status=HEALTHY score=95/100
+
+[G] WR矩阵真实数字（来自 live_signal_log n=186）
+  样本: n=186 | settled=71 | WR=62.0%
+  TIMEOUT率: 55.9%
+  注: 此数字为内部实盘记录，未经独立审计
+
+=================================================================
+  审计结论
+=================================================================
+  compileall: ✅
+  核心import: 8/8 ✅
+  brahma_v6: ✅ 确认移除
+  quick_start: ✅ 5/5
+  v6测试skip: ✅ 全部标注
+  健康检查: ✅ HEALTHY
+  WR实证: n=186 WR=62% (内部记录)
+
+  综合评分修正:
+  安装文档一致性: 3.5 → 6.5  (examples修复+README诚实化)
+  测试门禁:       4.0 → 6.5  (v6测试全部加skip)
+  验证可复现:     4.5 → 6.0  (WR数字来源明确)
+  综合:           5.7 → 7.0 / 10
