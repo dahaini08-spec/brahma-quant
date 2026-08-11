@@ -10,6 +10,12 @@ Order State Machine — 完整状态矩阵测试
   - 终态封口（terminal → any = 非法）
   - 非法跳跃检测
 """
+
+import pytest
+pytestmark = pytest.mark.skip(
+    reason="brahma_v6 execution layer removed in public release (2026-07-12 slim-down). "           "Signal analysis fully testable via test_brahma_v4_smoke.py"
+)
+
 import pytest
 
 import sys, os

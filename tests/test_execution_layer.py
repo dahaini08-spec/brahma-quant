@@ -14,6 +14,12 @@ tests/test_execution_layer.py
 
 零积分 · 100%本地 · 不触碰真实资金
 """
+
+import pytest
+pytestmark = pytest.mark.skip(
+    reason="brahma_v6 execution layer removed in public release (2026-07-12 slim-down). "           "Signal analysis fully testable via test_brahma_v4_smoke.py"
+)
+
 import pytest
 pytest.skip("Legacy module tests — state_engine/ws_guardian not in brahma_v6 scope", allow_module_level=True)
 import sys, os, json, time, subprocess, tempfile, shutil

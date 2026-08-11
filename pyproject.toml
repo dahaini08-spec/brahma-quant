@@ -49,8 +49,7 @@ build-backend = "setuptools.build_meta"
 where = ["."]
 include = [
     "brahma_brain*",
-    "brahma_v6*",
-    "dharma*",
+        "dharma*",
     "dharma_simfactory*",
     "guardrails*",
     "nerve_system*",

@@ -3,6 +3,12 @@ tests/test_reality_models.py
 Reality Models 全覆盖测试
 设计院 · 2026-07-09
 """
+
+import pytest
+pytestmark = pytest.mark.skip(
+    reason="brahma_v6 execution layer removed in public release (2026-07-12 slim-down). "           "Signal analysis fully testable via test_brahma_v4_smoke.py"
+)
+
 from __future__ import annotations
 import math, sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))

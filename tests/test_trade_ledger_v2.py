@@ -13,6 +13,12 @@ TradeLedger 三道校验完整测试 — v2
   - 查询辅助方法
   - summary 正确性
 """
+
+import pytest
+pytestmark = pytest.mark.skip(
+    reason="brahma_v6 execution layer removed in public release (2026-07-12 slim-down). "           "Signal analysis fully testable via test_brahma_v4_smoke.py"
+)
+
 import json
 import sys
 import os

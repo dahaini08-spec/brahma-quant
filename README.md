@@ -19,6 +19,13 @@
 
 ---
 
+> **Scope Note:** Brahma-Quant is a **signal research framework** for crypto perpetual futures.  
+> The `brahma_brain` signal engine is fully open. The execution OMS layer (`brahma_v6`) was  
+> removed from the public release. Live performance figures (WR=62%, n=186) reflect internal  
+> records and are not independently audited. **Do not use for automated live trading without  
+> independent validation.**
+
+
 ## 🎯 What Makes Brahma Different
 
 | Feature | Brahma-Quant | Generic Multi-Agent | Traditional Quant |
@@ -198,10 +205,21 @@ Integrating [NeoQuasar/Kronos-mini](https://huggingface.co/NeoQuasar/Kronos-mini
 ```bash
 git clone https://github.com/dahaini08-spec/brahma-quant.git
 cd brahma-quant
+# 推荐（完整分析栈）
+pip install -e ".[dev,research]"
+
+# 或最小安装
 pip install -r requirements.txt
 
 # Single symbol analysis
-python examples/quick_start.py --symbol BTCUSDT
+# 验证安装（离线，不请求行情）
+python examples/quick_start.py --validate
+
+# 信号分析（需要 .env 配置 API Key）
+BRAHMA_SKIP_COUNCIL=1 python examples/quick_start.py --symbol BTCUSDT
+
+# 完整分析
+python brahma_brain/brahma_analysis_runner.py --symbol BTCUSDT --card
 
 # Batch analysis
 python -c "

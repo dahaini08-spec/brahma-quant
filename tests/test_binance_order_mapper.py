@@ -2,6 +2,12 @@
 tests/test_binance_order_mapper.py — Order mapper param correctness tests
 Phase 5 | 2026-07-09
 """
+
+import pytest
+pytestmark = pytest.mark.skip(
+    reason="brahma_v6 execution layer removed in public release (2026-07-12 slim-down). "           "Signal analysis fully testable via test_brahma_v4_smoke.py"
+)
+
 from __future__ import annotations
 import sys
 from pathlib import Path
