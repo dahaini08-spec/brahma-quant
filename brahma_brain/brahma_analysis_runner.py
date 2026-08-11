@@ -992,6 +992,17 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         pass  # mem_compressor失败不影响主流程
     # ── [P1 END] ─────────────────────────────────────────────────────────────
 
+    # [修复 2026-08-11] 从panorama提取RSI回写到结果字段
+    try:
+        import re as _re_rsi
+        _pano = result.get('_panorama_full', '')
+        _m1 = _re_rsi.search(r'RSI\s+1H=([\d.]+)', _pano or '')
+        if _m1: result['rsi_1h'] = float(_m1.group(1))
+        _m4 = _re_rsi.search(r'4H=([\d.]+)', _pano or '')
+        if _m4: result['rsi_4h'] = float(_m4.group(1))
+    except Exception:
+        pass
+
     return result
 
 
@@ -1223,6 +1234,17 @@ def run_analysis_full(symbol: str, deep: bool = True) -> dict:
 
     except Exception as _fe:
         result['_full_analysis_err'] = str(_fe)
+
+    # [修复 2026-08-11] 从panorama提取RSI回写结果字段
+    try:
+        import re as _re_rsi
+        _pano = result.get('_panorama_full', '')
+        _m1 = _re_rsi.search(r'RSI\s+1H=([\d.]+)', _pano or '')
+        if _m1: result['rsi_1h'] = float(_m1.group(1))
+        _m4 = _re_rsi.search(r'4H=([\d.]+)', _pano or '')
+        if _m4: result['rsi_4h'] = float(_m4.group(1))
+    except Exception:
+        pass
 
     return result
 
