@@ -109,7 +109,7 @@ def check_content(content: str) -> tuple:
     for w in BLOCKED_WORDS:
         if w in content:
             return False, f'包含禁用词: {w}'
-    # 感叹号检查（百强KOL铁律）
+    # 感叹号检查（百强KOL铁律）——内容足够时才检查
     for p in BLOCKED_PUNCTUATION:
         count = content.count(p)
         if count > 0:
@@ -496,32 +496,75 @@ def build_top_losers() -> str:
 
 
 def build_hot_news() -> str:
-    """热门话题 / 新闻追踪"""
-    data = run_pro_cli(['square', 'hot', '--sort', 'HEAT', '--window', '4h', '--limit', '5'])
-    items = (data.get('items') or [])[:3] if data else []
+    """热门话题——基于ticker-rank热度，给出姓赵不宣个人判断"""
+    import requests as _r
 
-    if not items:
+    data = run_pro_cli(['square', 'ticker-rank', '--window', '4h', '--limit', '15'])
+    items = (data.get('items') or data.get('list', []))[:15] if data else []
+
+    # 找互动/提及比最高的热点币（排除稳定币）
+    hot_sym, hot_item = None, None
+    best_ratio = 0
+    for x in items:
+        sym = x.get('ticker', '').upper()
+        if sym in ('USD1', 'WLFI', 'USDT', 'USDC', ''):
+            continue
+        mention = x.get('mentionCount', 0) + 1
+        engage  = x.get('totalEngagement', 0)
+        ratio   = engage / mention
+        if ratio > best_ratio:
+            best_ratio = ratio
+            hot_sym, hot_item = sym, x
+
+    if not hot_sym:
         return ''
 
-    # 取热度最高帖的话题
-    top = items[0]
-    body = top.get('body', '')[:120].strip()
-    tickers = [t.replace('USDT', '') for t in top.get('tickers', [])]
-    hashtags = top.get('hashtagList', [])[:3]
+    # 拉实时数据
+    price_str, chg_str, fr_str, ls_str = '', '', '', ''
+    chg_val, fr_val = 0.0, 0.0
+    try:
+        t  = _r.get('https://fapi.binance.com/fapi/v1/ticker/24hr',
+                    params={'symbol': f'{hot_sym}USDT'}, timeout=4).json()
+        fr = _r.get('https://fapi.binance.com/fapi/v1/premiumIndex',
+                    params={'symbol': f'{hot_sym}USDT'}, timeout=4).json()
+        ls = _r.get('https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
+                    params={'symbol': f'{hot_sym}USDT', 'period': '1h', 'limit': 1}, timeout=4).json()
+        price   = float(t.get('lastPrice', 0))
+        chg_val = float(t.get('priceChangePercent', 0))
+        fr_val  = float(fr.get('lastFundingRate', 0)) * 100
+        ls_v    = float(ls[0]['longShortRatio']) if ls else 1.0
+        price_str = f'{price:,.4f}U' if price < 1 else f'{price:,.2f}U'
+        chg_str   = f'{chg_val:+.1f}%'
+        fr_str    = f'{fr_val:.4f}%'
+        ls_str    = f'{ls_v:.2f}'
+    except Exception:
+        pass
 
-    lines = [f'🌐 广场热门话题 | {now_cst()} CST', '']
-    lines.append('社区当前最热讨论：')
-    lines.append('')
-    if body:
-        lines.append(f'"{body}..."')
-        lines.append('')
-    if tickers:
-        lines.append(f'相关标的: {" ".join("$"+t for t in tickers[:3])}')
-    lines.append('')
-    lines.append('看到热点我的第一反应是看数据，不是冲进去——等价格先反应，再说。')
-    lines.append('')
-    lines.append('#币圈热点 #加密货币 #BTC')
-    return '\n'.join(lines)
+    mention  = hot_item.get('mentionCount', 0)
+    bull_pct = int(hot_item.get('bullishCount', 0) /
+                   max(hot_item.get('bullishCount', 0) + hot_item.get('bearishCount', 0) + 1, 1) * 100)
+
+    # 生成个人观点
+    if chg_val > 20 and fr_val > 0.05:
+        opinion = f'涨了{chg_val:.0f}%，但FR已到{fr_val:.3f}%——这种位置我不会追，等回调再说。'
+    elif chg_val < -20:
+        opinion = f'跌了{abs(chg_val):.0f}%，很多人在讨论要不要抄底。我的判断：先搞清楚跌的原因，再决定要不要动。'
+    elif bull_pct > 75:
+        opinion = f'广场{bull_pct}%的人在看多——情绪偏向一边的时候我反而要小心。'
+    else:
+        opinion = '热度高不等于方向对，看数据再作判断。'
+
+    lines_out = ['广场今天热议的币，我看了一下。', '']
+    lines_out.append(f'📊 {now_cst()} CST')
+    lines_out.append('')
+    lines_out.append(f'${hot_sym} 提及{mention:,}次，看多{bull_pct}%。')
+    if price_str:
+        lines_out.append(f'现价 {price_str} | 24H {chg_str} | FR {fr_str} | 多空比 {ls_str}')
+    lines_out.append('')
+    lines_out.append(opinion)
+    lines_out.append('')
+    lines_out.append(f'#{hot_sym} #广场热点 #加密货币 #行情分析')
+    return '\n'.join(lines_out)
 
 
 def build_smart_money() -> str:
