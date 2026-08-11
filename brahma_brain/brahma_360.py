@@ -50,7 +50,9 @@ def scan_d1_modules() -> list:
         _brain = _root / 'brahma_brain'
         # 主链路内容
         _main_chain = ''
-        for _f in ['brahma_engine.py','brahma_core.py','brahma_analysis_runner.py']:
+        for _f in ['brahma_engine.py','brahma_core.py','brahma_analysis_runner.py',
+                    'brahma_core_block_a.py','brahma_core_block_b.py','brahma_core_block_c.py',
+                    'brahma_core_analyze_steps.py','brahma_core_step4.py']:
             try: _main_chain += (_brain/_f).read_text(errors='ignore')
             except: pass
         # 已知合法孤立模块（有明确用途不需主链路直接引用）
@@ -99,6 +101,9 @@ def scan_d1_modules() -> list:
             'timesfm_bridge',          # 暂加白名单，TimeSFM预测写入research_cache
             'tradfi_watcher',          # 暂加白名单，TradFi宏观数据定时更新
             'liq_ws_daemon',           # 暂加白名单，WebSocket清算流守护进程
+            # ── 今日Block拆分后确认：只被archive引用，加归档白名单 (2026-08-11) ──
+            'external_signal',         # 只在archive/auto_review引用，归档模块 ✅
+            's7_liq_config',           # 只在archive/auto_review引用，归档模块 ✅
             'brahma_order_engine',     # 暂加白名单，统一开单引擎待评估是否替代auto_executor
             'brahma_autonomous_core',  # 待苏摩确认是否替代现有架构
             # ── A类：已有真实调用链，主链路未直接import但生产已接通 — 2026-08-09 设计院深度排查封印 ──
@@ -282,7 +287,13 @@ def scan_d5_params() -> list:
         core_file = _DIR / 'brahma_core.py'
         if not core_file.exists():
             return issues
-        core = core_file.read_text()
+        # 扫描所有拆分後的核心文件（今日Block拆分后内容分布到各block中）
+        _d5_files = ['brahma_core.py','brahma_core_block_a.py','brahma_core_block_b.py',
+                     'brahma_core_block_c.py','brahma_core_analyze_steps.py','brahma_core_step4.py']
+        core = ''
+        for _d5f in _d5_files:
+            _p = _DIR / _d5f
+            if _p.exists(): core += _p.read_text(errors='ignore')
 
         iron_rules = [
             ('BEAR_TREND SHORT乘数1.6x',  r"'BEAR_TREND'.*1\.6",   'ERROR'),
