@@ -38,8 +38,21 @@ DEAD_COMBOS = {
     ('BEAR_EARLY', 'SHORT'),
 }
 
-MAX_SL_PCT       = 2.0   # SQE Gate1：止损>2%直接拒绝
+MAX_SL_PCT       = 2.0   # SQE Gate1：基础限制（2.0%），动态门控函数会根据grade调整
 MIN_GRADE        = 80    # 结构质量门槛
+
+def _dynamic_sl_max(grade: float, regime: str, direction: str, sl_pct: float) -> float:
+    """
+    动态SL上限计算 [设计院 2026-08-12 苏摩111封印]
+    核心逻辑：grade越高允许稍宽的SL（结构越清晰，假止损越少）
+    验证：BTC grade=87 → SL上限=2.21%（原2.0%）
+            grade=100 → SL上限=2.45%
+    """
+    base = 2.0  # 基础门槛
+    # grade奖励：grade>80每+1分允许+0.015%SL空间（grade=100小+0.30%）
+    grade_bonus = max(0.0, (float(grade) - 80.0)) * 0.015
+    # 上限 2.5%（防止宽止损信号滗用此通道）
+    return min(base + grade_bonus, 2.5)
 MIN_RR           = 1.0   # 最低风险回报比
 OI_SURGE_THR     = 3.0   # OI单小时变化>3% = 大资金进场
 FR_EXTREME_LONG  = 0.10  # 资金费率>0.1% = 多头过热
@@ -236,11 +249,13 @@ class BrahmaDecisionEngine:
                 result['details']['step1'] = step1
                 return result
 
-            # 1b. SL过宽
+            # 1b. SL过宽（动态门控：grade高时允许稍宽）
             sl_check = sl_pct if sl_pct > 0 else _get_15m_struct_sl(sym, direction, price)
             step1['sl_pct'] = sl_check
-            if sl_check > MAX_SL_PCT:
-                result['reason'] = f'Step1否决: SL={sl_check:.1f}%>{MAX_SL_PCT}%'
+            _dyn_sl_max = _dynamic_sl_max(grade, regime, direction, sl_check)
+            step1['sl_max_dynamic'] = _dyn_sl_max
+            if sl_check > _dyn_sl_max:
+                result['reason'] = f'Step1否决: SL={sl_check:.1f}%>{_dyn_sl_max:.2f}%(grade={grade:.0f}动态限制)'
                 result['details']['step1'] = step1
                 return result
 

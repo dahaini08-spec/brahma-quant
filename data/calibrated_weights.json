@@ -1,82 +1,32 @@
 {
-  "s1_trend": {
-    "mult": 1.0,
-    "note": "趋势维度",
-    "last_calib": null
-  },
-  "s2_ob": {
-    "mult": 1.0,
-    "note": "OB关键位",
-    "last_calib": null
-  },
-  "s3_momentum": {
-    "mult": 1.0,
-    "note": "动量背离",
-    "last_calib": null
-  },
-  "s4_smc": {
-    "mult": 1.0,
-    "note": "SMC结构",
-    "last_calib": null
-  },
-  "s5_range": {
-    "mult": 1.0,
-    "note": "区间结构",
-    "last_calib": null
-  },
-  "s7_liquidation": {
-    "mult": 1.0,
-    "note": "清算OI",
-    "last_calib": null
-  },
-  "s9_session": {
-    "mult": 1.0,
-    "note": "时段权重",
-    "last_calib": null
-  },
-  "s13_btcd": {
-    "mult": 1.0,
-    "note": "BTC.D",
-    "last_calib": null
-  },
-  "s17_oi": {
-    "mult": 1.0,
-    "note": "OI情绪",
-    "last_calib": null
-  },
-  "s19_macro": {
-    "mult": 1.0,
-    "note": "宏观",
-    "last_calib": null
-  },
-  "s21_rsi_extreme": {
-    "mult": 1.0,
-    "note": "RSI极值",
-    "last_calib": null
-  },
-  "s22_volume": {
-    "mult": 1.0,
-    "note": "量能",
-    "last_calib": null
-  },
-  "s23_kronos": {
-    "mult": 1.0,
-    "note": "Kronos预测",
-    "last_calib": null
-  },
-  "_meta": {
-    "version": "1.0",
-    "created": "2026-07-11",
-    "note": "online_learner_v2 每24H自动校准，偏差>15%时调整mult",
-    "calib_cron": "brahma-online-calibrate every 24h"
-  },
+  "s1_trend": {"mult": 0.90, "note": "趋势维度-CHOP期趋势信号噪音大微降", "last_calib": "2026-08-12"},
+  "s2_ob": {"mult": 1.00, "note": "OB关键位-核心维度保持", "last_calib": "2026-08-12"},
+  "s3_momentum": {"mult": 1.00, "note": "动量背离", "last_calib": "2026-08-12"},
+  "s4_smc": {"mult": 1.00, "note": "SMC结构-梵天最强维度不动", "last_calib": "2026-08-12"},
+  "s5_range": {"mult": 1.00, "note": "区间结构", "last_calib": "2026-08-12"},
+  "s7_liquidation": {"mult": 1.10, "note": "清算OI-清算级联Sharpe=2.7微升", "last_calib": "2026-08-12"},
+  "s9_session": {"mult": 1.00, "note": "时段权重", "last_calib": "2026-08-12"},
+  "s13_btcd": {"mult": 1.00, "note": "BTC.D", "last_calib": "2026-08-12"},
+  "s17_oi": {"mult": 1.10, "note": "OI情绪-领先指标微升", "last_calib": "2026-08-12"},
+  "s19_macro": {"mult": 0.70, "note": "宏观-单一事件不该-12影响全局，降权", "last_calib": "2026-08-12"},
+  "s21_rsi_extreme": {"mult": 1.00, "note": "RSI极值", "last_calib": "2026-08-12"},
+  "s22_volume": {"mult": 1.10, "note": "量能-CVD领先性，量能层整体微升", "last_calib": "2026-08-12"},
+  "s23_kronos": {"mult": 0.00, "note": "Kronos-torch失效归零，HAR-RV已替代", "last_calib": "2026-08-12"},
+  "s_smart_money": {"mult": 1.80, "note": "聪明钱-领先指标信息含量高，大幅上调", "last_calib": "2026-08-12"},
+  "s_cross_fr": {"mult": 1.50, "note": "跨所FR-跨所套利信息含量高，上调", "last_calib": "2026-08-12"},
+  "s_options": {"mult": 1.50, "note": "期权P/C-市场情绪领先2-4H，上调", "last_calib": "2026-08-12"},
+  "s_hcme": {"mult": 1.00, "note": "HCME-方向校验修复后保持", "last_calib": "2026-08-12"},
+  "s_har_rv": {"mult": 1.00, "note": "HAR-RV新引擎-初始1.0，积累数据后调整", "last_calib": "2026-08-12"},
+  "s_hurst": {"mult": 1.00, "note": "Hurst体制验证-初始1.0", "last_calib": "2026-08-12"},
+  "s_volume_profile": {"mult": 1.20, "note": "VolProfile-POC价格磁力区，略微上调", "last_calib": "2026-08-12"},
+  "_meta": {"version": "2.0", "created": "2026-08-12", "note": "Phase3系统化校准-基于全球顶级量化研究信息含量排序: 聪明钱>期权>链上OI>技术结构>宏观事件", "calib_cron": "brahma-online-calibrate every 24h"},
   "N21_fib_macro": 6,
   "N22_vol_exh": 15,
   "s7_ob_heatmap": 8,
-  "s_cross_fr": 3,
+  "s_cross_fr_basis": 5,
   "bull_bonus_cap": 25,
   "mtf_neutral_mult": 0.979,
-  "_calibrated_at": "2026-07-12T08:34:30.183169+00:00",
+  "_calibrated_at": "2026-08-12T08:54:00.000000+00:00",
   "_actual_wr": 0.0,
   "_n_samples": 66
 }
