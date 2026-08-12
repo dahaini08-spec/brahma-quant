@@ -57,7 +57,8 @@
       "id": "GATE_ATR_Q4",
       "status": "live",
       "action": "SCORE_PENALTY",
-      "score": -8
+      "score": -4,
+      "note": "[2026-08-12 P4修复] -8→-4 低ATR=稳定非缺陷"
     },
     {
       "id": "GATE_SESSION_DEAD",

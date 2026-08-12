@@ -609,7 +609,7 @@ def check_f16_dharma_factor_weights() -> dict:
                     {'id': 'VOL_LOW',          'status': 'live', 'score': -5},
                 ],
                 'gates': [
-                    {'id': 'GATE_ATR_Q4',      'status': 'live', 'action': 'SCORE_PENALTY', 'score': -8},
+                    {'id': 'GATE_ATR_Q4',      'status': 'live', 'action': 'SCORE_PENALTY', 'score': -4},  # [2026-08-12 P4修复] -8→-4 低ATR=稳定非缺陷
                     {'id': 'GATE_SESSION_DEAD', 'status': 'live', 'action': 'SCORE_PENALTY', 'score': -6},
                 ],
                 'resonance': [
