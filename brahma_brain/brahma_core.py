@@ -3654,8 +3654,29 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _fc_res = _fc_fn(_sym, current_regime=_fc_regime)
         _result['fangcang'] = _fc_res
         # [HCME接线 2026-08-12 苏摩111] 把 hcme_wr_adj 注入 confluence.breakdown
-        # 根因：hcme_wr_adj 已计算但未进入评分，白白丢弃
-        # 验证：BTC当前情境 hcme_wr_adj=+10，CHOP SHORT hcme_wr_adj=-9，匹配复盘铁证
+        # [方向校验修复 2026-08-12 苏摩111封印] fangcang_engine传给HCME的direction可能是NEUTRAL
+        # 此处用brahma_core已确定的signal_dir重新调用HCME，确保方向一致性
+        _actual_dir = _result.get('signal_dir', '')
+        if _actual_dir in ('LONG', 'SHORT') and isinstance(_fc_res, dict):
+            try:
+                from brahma_brain.hcme_matcher import HCMEMatcher as _HCMEMatcher
+                _hcme_sig = {
+                    'symbol':     _sym,
+                    'regime':     _result.get('regime', ''),
+                    'direction':  _actual_dir,
+                    'signal_dir': _actual_dir,
+                    'score':      float(_result.get('score_final', 80) or 80),
+                    'rsi_4h':     float(_result.get('rsi_4h', 50) or 50),
+                    'sl_pct':     float(_result.get('sl_atr_mult', 2.0) or 2.0),
+                    'price':      float(_result.get('price', 0) or 0),
+                }
+                _hcme_m = _HCMEMatcher()
+                _hcme_r2 = _hcme_m.find_similar(_hcme_sig, top_k=5)
+                _fc_res['hcme_wr_adj'] = _hcme_r2['hcme_score_adj']
+                _fc_res['hcme_context'] = _hcme_r2['context_summary']
+                _result['fangcang'] = _fc_res
+            except Exception as _hcme_e:
+                import logging as _lg2; _lg2.getLogger('brahma').warning(f'[hcme_rerun] {_hcme_e}')
         _hcme_adj = _fc_res.get('hcme_wr_adj', 0) if isinstance(_fc_res, dict) else 0
         _hcme_ctx = _fc_res.get('hcme_context', '') if isinstance(_fc_res, dict) else ''
         if _hcme_adj != 0:
