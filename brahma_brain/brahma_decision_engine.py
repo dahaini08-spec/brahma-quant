@@ -43,16 +43,15 @@ MIN_GRADE        = 80    # 结构质量门槛
 
 def _dynamic_sl_max(grade: float, regime: str, direction: str, sl_pct: float) -> float:
     """
-    动态SL上限计算 [设计院 2026-08-12 苏摩111封印]
-    核心逻辑：grade越高允许稍宽的SL（结构越清晰，假止损越少）
-    验证：BTC grade=87 → SL上限=2.21%（原2.0%）
-            grade=100 → SL上限=2.45%
+    动态SL上限计算 [设计院 2026-08-12 苏摩111修复P1]
+    核心逻辑：grade越高 = 结构越清晰 = SL越可信 = 应该放行不收紧
+    修复前：grade=100时SL上限仅2.3%，反而卡掉高质量信号（逻辑反直觉）
+    修复后：grade>=85 → 上限2.5%（全宪法通行）
+             grade<85  → 上限2.0%（严格门控）
     """
-    base = 2.0  # 基础门槛
-    # grade奖励：grade>80每+1分允许+0.015%SL空间（grade=100小+0.30%）
-    grade_bonus = max(0.0, (float(grade) - 80.0)) * 0.015
-    # 上限 2.5%（防止宽止损信号滗用此通道）
-    return min(base + grade_bonus, 2.5)
+    if float(grade) >= 85.0:
+        return 2.5   # 高质量结构，允许最大宪法止损
+    return 2.0       # 低质量结构，严格限制
 MIN_RR           = 1.0   # 最低风险回报比
 OI_SURGE_THR     = 3.0   # OI单小时变化>3% = 大资金进场
 FR_EXTREME_LONG  = 0.10  # 资金费率>0.1% = 多头过热

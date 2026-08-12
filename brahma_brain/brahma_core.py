@@ -1312,10 +1312,11 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         cf.setdefault('breakdown', {}).setdefault('M07时间效应', _time_tag.strip())
 
     # [M06相关系数惩罚] 双向等概率品种，做空信号无统计优势
+    # [2026-08-12 苏摩111修复P5] -5 → -2，惩罚过重导致有效信号被压制
     _m06_zero_coef = {'ETHUSDT', 'ATOMUSDT'}
     _cur_score = cf.get('total', 0)
     if _sym in _m06_zero_coef and _cur_score > 0:
-        _pen = 5
+        _pen = 2
         cf['total'] = max(0, _cur_score - _pen)
         cf.setdefault('breakdown', {})['M06相关惩罚'] = f'-{_pen}({_sym} coef=0 双向等概率)'
 
@@ -2087,12 +2088,14 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 cf['breakdown']['CHOP危险'] = f'tc同向顺势 tc={_tc_val} WR=30~46% 上限75: {_score_before_cap:.0f}→75'
                 pass  # [静默] f'[P2-CHOP-DANGER] {ms.get("symbol","?")} CHOP×tc同向: {_score_before_cap:.0f}→75'
         else:
-            # tc_neutral(0)：维持原90上限
-            _chop_cap_applied = 90
-            if _score > 90:
-                _score = 90
-                cf['breakdown']['CHOP硬性上限'] = f'P2保护tc_neutral: {_score_before_cap:.0f}→90（CHOP整体EV=-0.11%）'
-                pass  # [静默] f'[P2-CHOP-CAP] {ms.get("symbol","?")} CHOP体制tc_neutral上限: {_score_before_cap:.0
+            # tc_neutral(0)：SHORT方向上限120，LONG方向维持90
+            # [2026-08-12 苏摩111修复P3] CHOP SHORT执行线155，上限90永远不可达，修复为120
+            _chop_dir = str(signal_dir or '').upper()
+            _chop_cap_applied = 120 if _chop_dir == 'SHORT' else 90
+            if _score > _chop_cap_applied:
+                _score = _chop_cap_applied
+                cf['breakdown']['CHOP硬性上限'] = f'P2保护tc_neutral: {_score_before_cap:.0f}→{_chop_cap_applied}（CHOP {"SHORT上限120" if _chop_dir=="SHORT" else "LONG上限90 EV=-0.11%"}）'
+                pass  # [静默]
     # ── 死穴精英解锁通道（苏摩哲学校正 2026-06-30）────────────────────────────
     # 哲学：梵天为交易而生，体制=仓位权重调节器，不是封禁系统
     # 极端结构识别场景（RSI极值+高score+高grade）允许精英解锁
@@ -3882,13 +3885,25 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _ssi_level = _ssi_res.get('level', 'NORMAL')
             _result['ssi'] = _ssi_res
             # 轧空高风险 → 做空降分
+            # [2026-08-12 苏摩111修复P0] 只记录penalty，不在此扣分
+            # 统一在下方"SSI惩罚同步注入"块执行一次，防止双重扣分
             if _ssi_level == 'HIGH':
-                _result['score_final'] = (_result.get('score_final') or 0) - 12
                 _result.setdefault('breakdown_extra', {})['ssi_penalty'] = -12
             elif _ssi_level == 'EXTREME':
-                _result['score_final'] = (_result.get('score_final') or 0) - 20
-                _result.setdefault('breakdown_extra', {})['ssi_penalty'] = -20
-        # SSI惩罚同步注入confluence.breakdown
+                # [P2修复] 若当前价在空OB内（压力位做空），惩罚减半
+                _ssi_in_ob = False
+                try:
+                    _ssi_bear_ob = (_result.get('smc') or {}).get('order_blocks', {}).get('nearest_bear_ob') or {}
+                    _ssi_price   = float(_result.get('price', 0) or 0)
+                    _ssi_ob_low  = float(_ssi_bear_ob.get('low', 0) or 0)
+                    _ssi_ob_high = float(_ssi_bear_ob.get('high', 0) or 0)
+                    if _ssi_ob_low > 0 and _ssi_ob_low <= _ssi_price <= _ssi_ob_high * 1.02:
+                        _ssi_in_ob = True
+                except Exception:
+                    pass
+                _ssi_penalty = -10 if _ssi_in_ob else -20
+                _result.setdefault('breakdown_extra', {})['ssi_penalty'] = _ssi_penalty
+        # SSI惩罚统一注入confluence.breakdown（仅此一处修改score_final）
         _ssi_pen = _result.get('breakdown_extra', {}).get('ssi_penalty', 0)
         if _ssi_pen != 0:
             _cf_ssi = _result.setdefault('confluence', {})
