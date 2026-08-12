@@ -3900,6 +3900,43 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _ssi_e:
         pass  # SSI接入失败不阻断主流程
 
+    # ══ [设计院 2026-08-12 苏摩111封印] cross_asset_gate BTC/ETH相关性门控接线 ══
+    # 根因：cross_asset_gate.py存在但完全未接入，BTC/ETH双开时1.85x风险敞口无法检测
+    # 逻辑：BTC是市场锚；ETH信号时检查BTC联动跌幅是否超过ETH止损
+    try:
+        from brahma_brain.cross_asset_gate import get_gate as _cag_get
+        _cag_dir   = _result.get('signal_dir', 'LONG')
+        _cag_sym   = _sym
+        # 只对ETH/山寨做联动检查（BTC本身是锚）
+        if _cag_sym not in ('BTCUSDT', 'BTCDOMUSDT'):
+            _cag_gate = _cag_get()
+            _cag_sl_pct = float(_result.get('sl_atr_mult', 2.0) or 2.0)
+            _cag_price  = float(_result.get('price', 0) or 0)
+            _cag_entry  = _cag_price  # 当前价格作为入场代理
+            _cag_signal = {
+                'symbol':    _cag_sym,
+                'direction': _cag_dir,
+                'price':     _cag_price,
+                'entry_lo':  _cag_price * (1 - _cag_sl_pct/100),
+                'entry_hi':  _cag_price * (1 + _cag_sl_pct/100),
+                'sl_pct':    _cag_sl_pct,
+                'regime':    _result.get('regime', 'CHOP_MID'),
+                'score':     float(_result.get('score_final', 0) or 0),
+            }
+            _cag_res = _cag_gate.check(_cag_signal)
+            _cag_action = _cag_res.get('action', 'PASS')
+            _result['cross_asset_gate'] = _cag_res
+            if _cag_action in ('WAIT', 'DOWNGRADE'):
+                _cag_adj = -8  # 联动风险惩罚
+                _cf_cag = _result.setdefault('confluence', {})
+                _bd_cag = _cf_cag.setdefault('breakdown', {})
+                _bd_cag['跨资产联动风险'] = _cag_adj
+                _old_s4 = float(_result.get('score_final', 0) or 0)
+                _result['score_final'] = round(_old_s4 + _cag_adj, 1)
+                _result['score']       = _result['score_final']
+    except Exception as _cag_e:
+        import logging as _lg4; _lg4.getLogger('brahma').warning(f'[cross_asset_gate] {_cag_e}')
+
     # B2: brahma_coordinator — 子系统上下文聚合
     try:
         from brahma_brain.brahma_coordinator import get_episodic_context as _coord_ep
