@@ -950,6 +950,46 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         pass
     # ══ [N10-A END] ══════════════════════════════════════════════════════════
 
+    # ══ [设计院 2026-08-12 苏摩111封印] HAR-RV波动率预测接入 ══
+    # 替代失效的Kronos torch依赖，学术界黄金标准，纯numpy/statsmodels
+    try:
+        from har_rv_engine import get_har_rv as _harv_fn
+        _harv = _harv_fn(_sym)
+        breakdown['HAR-RV波动率'] = f"{_harv.get('score_adj', 0):+d} {_harv.get('regime_vol','')} RV={_harv.get('rv_forecast',0):.4f}"
+        _harv_adj = int(_harv.get('score_adj', 0))
+        if _harv_adj != 0:
+            score += _harv_adj
+        # 更新p_up供后续Kronos降级使用
+        _harv_p_up = _harv.get('p_up_proxy', 0.5)
+        ms['_harv_p_up'] = _harv_p_up
+    except Exception as _harv_e:
+        pass
+
+    # ══ [设计院 2026-08-12 苏摩111封印] Hurst指数体制验证接入 ══
+    # 给CHOP_MID识别加数学底座，防止趋势策略在随机游走区间错误触发
+    try:
+        from hurst_engine import get_hurst as _hurst_fn
+        _hurst_regime = ms.get('regime', 'CHOP_MID')
+        _hurst_res = _hurst_fn(_sym, _hurst_regime)
+        _hurst_adj = int(_hurst_res.get('score_adj', 0))
+        breakdown['Hurst体制验证'] = _hurst_res.get('note', '')
+        if _hurst_adj != 0:
+            score += _hurst_adj
+    except Exception as _hurst_e:
+        pass
+
+    # ══ [设计院 2026-08-12 苏摩111封印] Volume Profile成交量分布接入 ══
+    # 根因：volume_profile.py存在但未接入，POC价格磁力区信息缺失
+    try:
+        from volume_profile import get_vp_score as _vp_fn
+        _vp_price = float(ms.get('close', ms.get('price', 0)) or 0)
+        _vp_score, _vp_reason = _vp_fn(_sym, _vp_price, signal_dir)
+        if _vp_score != 0:
+            score += _vp_score
+            breakdown['VolProfile密度'] = f'{_vp_score:+d} {_vp_reason[:40]}'
+    except Exception as _vp_e:
+        pass  # VP接入失败不阻断
+
     # ══ [设计院 2026-06-30 全量接入 N10-B] 实时清算流 因子 ════════════════════
     # 模块: realtime_liq_tracker · 追踪近5分钟三所清算流方向
     # 逻辑：同向清算涌入（如大量多单被爆仓时做空）→ 加分
@@ -3744,6 +3784,48 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception:
         pass
 
+    # ══ [设计院 2026-08-12 苏摩111封印] timing_filter全链接入 ══
+    # 根因：timing_filter模块存在但从未接入主链路，时机判断完全缺失
+    # 接入逻辑：timing badge → 注入breakdown → 影响score_final → 传递给决策树Step5
+    try:
+        from brahma_brain.timing_filter import evaluate_timing as _tf_eval
+        _tf_dir    = _result.get('signal_dir', 'LONG')
+        _tf_regime = _result.get('regime', 'CHOP_MID')
+        _tf_score  = float(_result.get('score_final', 0) or 0)
+        _tf_rsi1h  = float(_result.get('rsi_1h', 50) or 50)
+        _tf_p_up   = float((_result.get('fangcang', {}) or {}).get('long_prob', 0.5) or 0.5)
+        _tf_grade  = float(_result.get('grade', _result.get('structure_grade', 50)) or 50)
+        _tf_price  = float(_result.get('price', 0) or 0)
+        _tf_elo    = float((_result.get('params') or {}).get('entry_lo', _tf_price) or _tf_price)
+        _tf_ehi    = float((_result.get('params') or {}).get('entry_hi', _tf_price) or _tf_price)
+        _tf_res    = _tf_eval(
+            symbol=_sym,
+            signal_dir=_tf_dir,
+            score=_tf_score,
+            grade=_tf_grade,
+            entry_lo=_tf_elo,
+            entry_hi=_tf_ehi,
+            current_price=_tf_price,
+            rsi_1h=_tf_rsi1h,
+            s23_p_up=_tf_p_up,
+            regime=_tf_regime,
+        )
+        _tf_badge  = _tf_res.get('badge', 'MONITOR')
+        _tf_adj    = int(_tf_res.get('score', _tf_res.get('score_adj', 0)) or 0)
+        _result['timing_badge']  = _tf_badge
+        _result['timing_result'] = _tf_res
+        # 注入breakdown和score
+        if _tf_adj != 0:
+            _cf2 = _result.setdefault('confluence', {})
+            _bd2 = _cf2.setdefault('breakdown', {})
+            _bd2['时机门控'] = _tf_adj
+            _old_s2 = float(_result.get('score_final', 0) or 0)
+            _result['score_final'] = round(_old_s2 + _tf_adj, 1)
+            _result['score']       = _result['score_final']
+    except Exception as _tf_e:
+        import logging as _lg3; _lg3.getLogger('brahma').warning(f'[timing_filter] {_tf_e}')
+        _result.setdefault('timing_badge', 'MONITOR')
+
     # [设计院封印 2026-08-10 苏摩111] TradFi专属方仓向量库接入
     # 当分析标的是TradFi代币时，额外查询 fangcang_tradfi_db
     # wr>=0.65 → +6 / wr<=0.40 → -6（略低于BTC方仓±8，TradFi数据年限较短）
@@ -3806,6 +3888,15 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             elif _ssi_level == 'EXTREME':
                 _result['score_final'] = (_result.get('score_final') or 0) - 20
                 _result.setdefault('breakdown_extra', {})['ssi_penalty'] = -20
+        # SSI惩罚同步注入confluence.breakdown
+        _ssi_pen = _result.get('breakdown_extra', {}).get('ssi_penalty', 0)
+        if _ssi_pen != 0:
+            _cf_ssi = _result.setdefault('confluence', {})
+            _bd_ssi = _cf_ssi.setdefault('breakdown', {})
+            _bd_ssi['SSI轧空门控'] = _ssi_pen
+            _old_s3 = float(_result.get('score_final', 0) or 0)
+            _result['score_final'] = round(_old_s3 + _ssi_pen, 1)
+            _result['score']       = _result['score_final']
     except Exception as _ssi_e:
         pass  # SSI接入失败不阻断主流程
 
