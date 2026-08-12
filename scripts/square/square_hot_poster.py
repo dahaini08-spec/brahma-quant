@@ -178,88 +178,145 @@ def get_regime_cn() -> str:
 # ════════════════════════════════════════════════════════════════════
 
 def build_hot_tickers() -> str:
-    """KOL热点即时反应帖 — 找出最有爆点的币，给出反直觉判断"""
+    """KOL热点即时反应帖 — 五层分析引擎，每种市场状态都给出实质判断"""
     import requests as _r
 
-    # 拉取4H热度榜
     data = run_pro_cli(['square', 'ticker-rank', '--window', '4h', '--limit', '15'])
     items = (data.get('items') or data.get('list', []))[:15] if data else []
     if not items:
         return ''
 
-    # 找出互动量最高 且 有合约数据的标的
-    candidates = sorted(items, key=lambda x: x.get('totalEngagement', 0), reverse=True)
-    hot_sym = None
-    hot_data = {}
-    for c in candidates:
-        sym = c.get('ticker', '').upper()
-        if not sym or sym in ('USD1', 'WLFI', 'USDT', 'USDC'):
+    # 找互动/提及比最高的标的
+    hot_sym, hot_item = None, None
+    best_ratio = 0
+    for x in items:
+        sym = x.get('ticker', '').upper()
+        if sym in ('USD1', 'WLFI', 'USDT', 'USDC', ''):
             continue
-        try:
-            t = _r.get('https://fapi.binance.com/fapi/v1/ticker/24hr',
-                       params={'symbol': f'{sym}USDT'}, timeout=4).json()
-            fr_r = _r.get('https://fapi.binance.com/fapi/v1/premiumIndex',
-                          params={'symbol': f'{sym}USDT'}, timeout=4).json()
-            ls_r = _r.get('https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
-                          params={'symbol': f'{sym}USDT', 'period': '1h', 'limit': 1}, timeout=4).json()
-            price = float(t.get('lastPrice', 0))
-            chg = float(t.get('priceChangePercent', 0))
-            if price > 0:
-                hot_sym = sym
-                hot_data = {
-                    'price': price,
-                    'chg': chg,
-                    'fr': float(fr_r.get('lastFundingRate', 0)) * 100,
-                    'ls': float(ls_r[0]['longShortRatio']) if ls_r else 1.0,
-                    'mention': c.get('mentionCount', 0),
-                    'engage': c.get('totalEngagement', 0),
-                    'bull_pct': int(c.get('bullishCount', 0) / max(c.get('bullishCount', 0) + c.get('bearishCount', 0) + 1, 1) * 100),
-                }
-                break
-        except Exception:
-            continue
-
-    if not hot_sym or not hot_data:
+        mention = x.get('mentionCount', 0) + 1
+        engage  = x.get('totalEngagement', 0)
+        if engage / mention > best_ratio:
+            best_ratio = engage / mention
+            hot_sym, hot_item = sym, x
+    if not hot_sym:
         return ''
 
-    price = hot_data['price']
-    chg = hot_data['chg']
-    fr = hot_data['fr']
-    ls = hot_data['ls']
-    mention = hot_data['mention']
-    bull_pct = hot_data['bull_pct']
+    # 拉实时数据
+    price, chg, fr, ls, ls_4h_ago = 0.0, 0.0, 0.0, 1.0, 1.0
+    recent_high, recent_low = 0.0, 0.0
+    vol_ratio = 1.0
+    try:
+        t   = _r.get('https://fapi.binance.com/fapi/v1/ticker/24hr',
+                     params={'symbol': f'{hot_sym}USDT'}, timeout=5).json()
+        frd = _r.get('https://fapi.binance.com/fapi/v1/premiumIndex',
+                     params={'symbol': f'{hot_sym}USDT'}, timeout=5).json()
+        lsd = _r.get('https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
+                     params={'symbol': f'{hot_sym}USDT', 'period': '1h', 'limit': 4}, timeout=5).json()
+        kl  = _r.get('https://fapi.binance.com/fapi/v1/klines',
+                     params={'symbol': f'{hot_sym}USDT', 'interval': '4h', 'limit': 6}, timeout=5).json()
+        price     = float(t.get('lastPrice', 0))
+        chg       = float(t.get('priceChangePercent', 0))
+        fr        = float(frd.get('lastFundingRate', 0)) * 100
+        ls        = float(lsd[0]['longShortRatio']) if lsd else 1.0
+        ls_4h_ago = float(lsd[3]['longShortRatio']) if len(lsd) > 3 else ls
+        if kl:
+            recent_high = max(float(k[2]) for k in kl[-3:])
+            recent_low  = min(float(k[3]) for k in kl[-3:])
+            vols = [float(k[5]) for k in kl]
+            if len(vols) >= 4:
+                avg_vol = sum(vols[:-1]) / len(vols[:-1])
+                vol_ratio = vols[-1] / avg_vol if avg_vol > 0 else 1.0
+    except Exception:
+        pass
 
-    # 价格格式
+    mention  = hot_item.get('mentionCount', 0)
+    bull_pct = int(hot_item.get('bullishCount', 0) /
+                   max(hot_item.get('bullishCount', 0) + hot_item.get('bearishCount', 0) + 1, 1) * 100)
     price_str = f'{price:,.4f}U' if price < 1 else f'{price:,.2f}U'
 
-    # 生成反直觉观点
-    if chg > 30 and fr > 0.05:
-        hook = f'${hot_sym} 今天涨了{chg:.0f}%，我没追。'
-        insight = f'资金费率已达 {fr:.4f}%——追多的成本在快速累积。\n历史规律：FR超过0.05%之后，通常24H内出现回调。'
-        question = '这里你会追吗？'
-    elif chg > 50 and fr < 0:
-        hook = f'${hot_sym} 暴涨{chg:.0f}%，但空头比多头还多。'
-        insight = f'资金费率 {fr:.4f}%（负值），说明这是空头止损触发的轧空行情。\n轧空结束后，没有新买盘接力，通常急跌开始。'
-        question = '你觉得这波涨完了吗？'
-    elif chg > 15:
-        hook = f'${hot_sym} 涨{chg:.0f}%，广场讨论量{mention:,}次，情绪很热。'
-        insight = f'多空比：{ls:.2f}，看多情绪占{bull_pct}%。\n资金费率：{fr:.4f}%。热度高不等于方向对，先看数据再说。'
-        question = '你会在这里追进去吗？'
-    elif chg < -15:
-        hook = f'${hot_sym} 今天跌了{abs(chg):.0f}%，广场上一片恐慌。'
-        insight = f'这种时候最容易做出冲动决定。\n数据：多空比 {ls:.2f}，FR {fr:.4f}%。\n跌幅大不等于可以抄底，方向没变之前我不会动。'
-        question = '你觉得这里是底吗？'
-    else:
-        hook = f'广场热度第一的 ${hot_sym}，这些数据我最关注。'
-        insight = f'提及{mention:,}次，看多{bull_pct}%——情绪偏一边的时候我反而要小心。\nFR {fr:.4f}%，多空比 {ls:.2f}，无极端信号。'
-        question = '你怎么看这个位置？'
+    # ══ 五层分析引擎（优先级从高到低） ══
 
-    lines = [
+    # 层1：暴涨+FR极高 → 追多成本极重，给出风险判断
+    if chg > 20 and fr > 0.05:
+        hook    = f'${hot_sym} 今天涨了{chg:.0f}%，我没追。'
+        insight = (f'FR已到 {fr:.4f}%——做多的人每8小时要付仓位的{fr:.3f}%给空头。\n'
+                   f'多空比 {ls:.2f}，看多{bull_pct}%，多头已经非常拥挤。\n'
+                   f'历史规律：FR超过0.05%之后24H内，回调概率明显高于继续上涨。\n'
+                   f'热度最高的时候，往往不是最好的入场时机。')
+        question = f'FR这么高你还会追{hot_sym}吗？'
+
+    # 层2：上涨+FR负值 → 轧空行情，给出持续性判断
+    elif chg > 15 and fr < -0.005:
+        hook    = f'${hot_sym} 涨了{chg:.0f}%，但资金费率是负的——说说这意味着什么。'
+        insight = (f'FR {fr:.4f}%（负值）+ 价格上涨 = 空头被强制平仓（轧空行情）。\n'
+                   f'逻辑：空头大量建仓 → 价格被推高 → 空头止损爆仓 → 价格继续涨。\n'
+                   f'关键问题：空头清完之后，有没有真实买盘接力？\n'
+                   f'多空比 {ls:.2f}（{"空头仍多" if ls < 1.0 else "多头开始占优"}），轧空可能还没结束——但结束之后要小心。')
+        question = '你觉得这波轧空还能走多远？'
+
+    # 层3：大跌 → 分析砸盘性质，给出抄底建议
+    elif chg < -15:
+        hook    = f'${hot_sym} 今天跌了{abs(chg):.0f}%，广场上很多人在问要不要抄底。'
+        if fr < -0.01:
+            insight = (f'跌了{abs(chg):.0f}%，FR还是负值（{fr:.4f}%）——说明空头主导，多头还在出逃。\n'
+                       f'多空比 {ls:.2f}，{"空头明显更多，抄底胜率低。" if ls < 0.9 else "多空还算均衡，但方向偏空。"}\n'
+                       f'这种情况下我不会急着接，等FR转正、多空比回到1.0以上再说。')
+        else:
+            insight = (f'跌了{abs(chg):.0f}%，但多空比还有 {ls:.2f}——说明还有很多多头没有离场。\n'
+                       f'这种情况往往不是真底，是多头在慢慢被清洗。\n'
+                       f'{"量能放大说明是真实抛盘，不是轻量阴跌。" if vol_ratio > 1.5 else "量能没有放大，也可能只是情绪性砸盘。"}\n'
+                       f'我的处理方式：等价格在某个位置企稳超过2根4H K线，再评估结构入场。')
+        question = f'你认为{hot_sym}现在是底部吗？'
+
+    # 层4：普通上涨 → 挖价格结构给出位置判断
+    elif chg > 5:
+        ls_change = ls - ls_4h_ago
+        if recent_high > 0 and recent_low > 0 and price > 0:
+            rng = recent_high - recent_low
+            pos = (price - recent_low) / rng if rng > 0 else 0.5
+            if pos > 0.8:
+                pos_desc   = f'价格已在近期区间上沿（{recent_low:.4f}–{recent_high:.4f}U），偏高位'
+                action_hint = f'在区间顶部追多我会谨慎，等回踩确认支撑是更稳的入场点。'
+            elif pos < 0.3:
+                pos_desc   = f'价格在近期区间下沿（{recent_low:.4f}–{recent_high:.4f}U），偏低位'
+                action_hint = f'在区间下沿如果量能跟上企稳，可以关注做多机会。'
+            else:
+                pos_desc   = f'价格在区间中部，方向待选择'
+                action_hint = f'中部是最难判断的位置，我的习惯是等到区间边缘再操作。'
+        else:
+            pos_desc   = f'价格 {price_str}，24H {chg:+.1f}%'
+            action_hint = f'FR {fr:.4f}%，在{"警戒区" if fr > 0.01 else "正常范围"}。'
+
+        hook    = f'广场热度第一的 ${hot_sym}，说说我现在的判断。'
+        insight = (f'{pos_desc}。\n'
+                   f'多空比 {ls:.2f}（4H前 {ls_4h_ago:.2f}），{"多头情绪在增强" if ls_change > 0.05 else "多头情绪基本稳定" if abs(ls_change) <= 0.05 else "多头情绪在降温"}。\n'
+                   f'FR {fr:.4f}%，{"持仓成本开始累积，追多要算清楚成本。" if fr > 0.01 else "持仓成本正常。"}\n'
+                   f'{action_hint}')
+        question = f'你现在怎么看{hot_sym}这个位置？'
+
+    # 层5：横盘/小波动 → 从多空比变化读出未来方向
+    else:
+        ls_change = ls - ls_4h_ago
+        hook    = f'广场今天热度最高的 ${hot_sym}，数据告诉我一件事。'
+        if abs(ls_change) > 0.2:
+            direction = f'{"多头快速增加" if ls_change > 0 else "多头在快速撤退"}'
+            implication = (f'多空比从{ls_4h_ago:.2f}变化到{ls:.2f}——{direction}。\n'
+                           f'{"价格还没动但多头在积累，可能是在等突破方向。" if ls_change > 0 and abs(chg) < 3 else "价格平稳但多头在撤，要小心下行风险。" if ls_change < 0 else "资金在流入，关注后续量能。"}')
+        else:
+            implication = (f'多空比 {ls:.2f}，4H内没有明显变化，市场在等消息或等突破。\n'
+                           f'FR {fr:.4f}%，{"偏高，多头付出的成本在累积。" if fr > 0.008 else "正常，没有极端情绪。"}')
+
+        if recent_high > 0 and recent_low > 0:
+            insight = (f'{implication}\n'
+                       f'近期价格区间 {recent_low:.4f}–{recent_high:.4f}U，突破哪边跟哪边。')
+        else:
+            insight = implication
+        question = f'你认为{hot_sym}接下来会选择哪个方向？'
+
+    out = [
         hook, '',
-        '📊 当前数据：',
-        f'  价格: {price_str} | 24H: {chg:+.2f}%',
-        f'  资金费率: {fr:.4f}% | 多空比: {ls:.2f}',
-        f'  广场提及: {mention:,}次 | 看多情绪: {bull_pct}%',
+        f'📊 {now_cst()} CST',
+        f'  {price_str} | 24H: {chg:+.1f}% | FR: {fr:.4f}% | 多空比: {ls:.2f}',
         '',
         insight,
         '',
@@ -267,7 +324,7 @@ def build_hot_tickers() -> str:
         '',
         f'#{hot_sym} #合约交易 #加密货币 #行情分析',
     ]
-    return '\n'.join(lines)
+    return '\n'.join(out)
 
 
 def build_funding_rate() -> str:
