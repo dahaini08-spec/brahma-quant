@@ -474,7 +474,11 @@ def find_executable_signals() -> list[dict]:
                 import json as _wr_j
                 from pathlib import Path as _wr_P
                 _wr_records = [_wr_j.loads(l) for l in _wr_P('data/live_signal_log.jsonl').read_text().strip().split('\n') if l.strip()]
-                _wr_bull = [r for r in _wr_records if r.get('regime')=='BULL_TREND' and r.get('direction')=='LONG' and r.get('outcome') in ('TP1','SL')]
+                # [P0-B 2026-08-11 苏摩111] 排除虚假结算：只统计 valid=True 的真实执行信号
+                # 根因：signal_settler 扫描所有OPEN信号，低分信号也会被结算，污染WR统计
+                _wr_bull = [r for r in _wr_records if r.get('regime')=='BULL_TREND'
+                            and (r.get('direction') or r.get('signal_dir','')) == 'LONG'  # [P0-A] 兼容signal_dir别名
+                            and r.get('outcome') in ('TP1','SL') and r.get('valid') == True]
                 _wr_tp   = sum(1 for r in _wr_bull if r.get('outcome')=='TP1')
                 _wr_n    = len(_wr_bull)
                 _wr_val  = _wr_tp/_wr_n if _wr_n >= 20 else None  # n<20数据不足，不强制拦截
