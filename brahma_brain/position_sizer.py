@@ -232,6 +232,21 @@ def get_position_pct(symbol: str, score: float, direction: str,
         if not _fg_applied:
             level = f'{level}+FG最终封顶'  # 最低0.3%（不归零）
 
+    # ── [P1-A 2026-08-12 苏摩111 复盘铁证] BTC BULL_TREND 做多仓位压缩 ──────────
+    # 铁证：BTC 累积PnL=-12.87%，ETH=+24%，BTC在BULL_TREND体制做多WR=40% EV=-0.40%
+    # 措施：BTCUSDT + BULL_TREND + LONG → ×0.7（减少敞口，限制连败损伤）
+    _btc_bull_regime = str(regime or '').upper()
+    _btc_bull_dir = str(direction or '').upper()
+    if (symbol or '').upper() == 'BTCUSDT' \
+            and 'BULL_TREND' in _btc_bull_regime \
+            and _btc_bull_dir == 'LONG':
+        max_pct = round(max_pct * 0.7, 2)
+        max_pct = max(max_pct, 0.3)
+        level = f'{level}+BTC_BULL_COMPRESS'
+        # 记录压缩原因（便于日志溯源）
+        if hasattr(max_pct, '__class__'):  # always true, suppress linter
+            pass  # 压缩原因: BTC_BULL_TREND LONG WR=40% EV=-0.40%（2026-08-12铁证）
+
     # ── P1-A修复：总仓位风险上限检查（2026-07-24 苏摩确认）────────────────
     # 在输出前查询 wuqu_positions，确认「当前已用风险 + 本次 ≤ 总上限25%NAV」
     # 防止BTC+ETH+其他多仓叠加导致实际风险敞口超限

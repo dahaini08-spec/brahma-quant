@@ -1890,6 +1890,37 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
 
         time.sleep(0.5)  # 限速
 
+    # ── [P1-B 2026-08-12 苏摩111] 体制连续亏损检测 → 强制刷新 ──────────────
+    # 铁证: 08-08 连败8笔全是 BULL_TREND LONG，体制判断滞后是根因
+    # 措施: 当前体制连续3笔SL → 触发 brahma_state_refresh
+    try:
+        _p1b_logs = [json.loads(l) for l in open(LOG_PATH) if l.strip()] if LOG_PATH.exists() else []
+        if _p1b_logs:
+            # 取最近已执行的信号（有 outcome=SL 的记录）
+            _p1b_recent = [l for l in reversed(_p1b_logs)
+                           if l.get('outcome') in ('SL',) and l.get('valid') == True][:10]
+            if len(_p1b_recent) >= 3:
+                _p1b_regime = _p1b_recent[0].get('regime', '')
+                # 检查同一体制连续3笔SL
+                _p1b_streak = 0
+                for _p1b_rec in _p1b_recent:
+                    if _p1b_rec.get('regime') == _p1b_regime and _p1b_rec.get('outcome') == 'SL':
+                        _p1b_streak += 1
+                    else:
+                        break
+                if _p1b_streak >= 3:
+                    print(f'[P1-B体制滞后检测] {_p1b_regime} 连续{_p1b_streak}笔SL → 触发强制体制刷新')
+                    import subprocess as _p1b_sub
+                    _p1b_refresh = Path(__file__).parent / 'brahma_state_refresh.py'
+                    if _p1b_refresh.exists():
+                        _p1b_sub.Popen(
+                            ['python3', str(_p1b_refresh), '--force'],
+                            stdout=_p1b_sub.DEVNULL, stderr=_p1b_sub.DEVNULL
+                        )
+                        print(f'  ✅ brahma_state_refresh --force 已触发')
+    except Exception as _p1b_e:
+        pass  # 体制滞后检测失败不阻断主流程
+
     return results
 
 
