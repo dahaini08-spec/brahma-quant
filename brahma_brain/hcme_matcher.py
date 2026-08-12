@@ -249,13 +249,23 @@ class HCMEMatcher:
         cur_direction = current_signal.get("direction") or current_signal.get("signal_dir") or "LONG"
 
         # score every historical entry
-        scored = []
+        # [设计院修复 2026-08-12 苏摩111封印] 方向一致性校验
+        # 修复前：所有历史案例参与匹配（UP/DOWN混用），SHORT信号可能被UP案例错误加分
+        # 修复后：优先匹配同方向案例；同方向案例不足top_k时，降级为全量匹配
+        scored_same_dir = []
+        scored_all = []
         for entry in self.index:
             sim = _cosine(cur_vec, entry["vec"])
-            scored.append((sim, entry))
+            scored_all.append((sim, entry))
+            if entry["direction"] == cur_direction:
+                scored_same_dir.append((sim, entry))
 
-        scored.sort(key=lambda x: x[0], reverse=True)
-        top = scored[:top_k]
+        scored_all.sort(key=lambda x: x[0], reverse=True)
+        scored_same_dir.sort(key=lambda x: x[0], reverse=True)
+
+        # 同方向案例足够时优先使用，不足时降级全量（记录标志供context_summary说明）
+        _dir_filtered = len(scored_same_dir) >= top_k
+        top = scored_same_dir[:top_k] if _dir_filtered else scored_all[:top_k]
 
         # stats on top-k
         decided = [(s, e) for s, e in top if e["is_win"] or e["is_loss"]]
@@ -303,8 +313,9 @@ class HCMEMatcher:
         top_outcomes = [e["outcome"] for _, e in top]
         win_pct = int(historical_wr * 100)
         adj_word = "raise" if hcme_score_adj > 0 else ("lower" if hcme_score_adj < 0 else "keep")
+        _dir_note = f"dir={cur_direction} filtered" if _dir_filtered else f"fallback all-dir (same-dir cases<{top_k})"
         context_summary = (
-            f"Top-{top_k} similar cases: outcomes={top_outcomes}. "
+            f"Top-{top_k} similar cases [{_dir_note}]: outcomes={top_outcomes}. "
             f"Historical WR={win_pct}% vs regime baseline={int(regime_wr*100)}%. "
             f"Confidence={confidence:.2f}. "
             f"Suggestion: {adj_word} score by {abs(hcme_score_adj)} pts "
