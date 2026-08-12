@@ -149,6 +149,8 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
             for _ak in ('atr_1h', 'atr_4h', 'atr_pct'):
                 if ms.get(_ak) is None and _mom.get(_ak) is not None:
                     ms[_ak] = _mom[_ak]
+    # 维度品质参考表（注释性，不影响逻辑）
+    _quality_map = {
         '量价配合': 'B',      # PF=1.277 CI=[1.25,1.31] ← 最可靠
         'MACD金叉死叉': 'B',  # PF=1.046 CI=[1.02,1.08]
         'EMA趋势顺势': 'C',   # PF=1.121 CI=[1.07,1.18]
