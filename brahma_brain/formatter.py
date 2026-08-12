@@ -892,10 +892,50 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
         if liq_full:
             liq3_lines = ['**B3 · 清算集群地图**']
 
-            # [Bug3/4修复 2026-08-05] 优先级: liq_density三所实单 > tardis历史 > 估算
-            # Bug4修复: 空头爆仓是"价格上涨触发"（不是"下跌"）
+            # [2026-08-12 苏摩封印] 优先级: 三所清算集群 > liq_density > tardis > 估算
+            _3ex = liq_full.get('_three_exchange', {})
             _ld_walls = liq_full.get('_liq_density_walls', {})
-            if _ld_walls and (_ld_walls.get('above_walls') or _ld_walls.get('below_walls')):
+            if _3ex and _3ex.get('price', 0) > 0:
+                # ── 最高优先：三所实时数据（liq_scanner 接入）──────────────
+                _3px = _3ex['price']
+                _bn_oi  = _3ex.get('bn_oi_b', 0)
+                _bb_oi  = _3ex.get('bb_oi_b', 0)
+                _hl_oi  = _3ex.get('hl_oi_b', 0)
+                _tot    = _3ex.get('total_oi_b', 0)
+                _bn_ls  = _3ex.get('bn_long_pct', 0)
+                _bb_ls  = _3ex.get('bb_long_pct', 0)
+                _bn_fr  = _3ex.get('bn_fr', 0)
+                _bb_fr  = _3ex.get('bb_fr', 0)
+                _hl_fr  = _3ex.get('hl_fr', 0)
+                _wl     = _3ex.get('weighted_long', 50)
+                _bias   = _3ex.get('liq_bias', 'NEUTRAL')
+                liq3_lines.append(f'  [数据源: BN+BB+HL 实时 | 三所加权多头={_wl:.1f}% | 清算偏向={_bias}]')
+                liq3_lines.append(f'  BN  OI=${_bn_oi:.2f}B 散户={_bn_ls:.1f}%多 FR={_bn_fr:+.4f}%')
+                if _bb_oi > 0:
+                    liq3_lines.append(f'  BB  OI=${_bb_oi:.2f}B 散户={_bb_ls:.1f}%多 FR={_bb_fr:+.4f}%')
+                if _hl_oi > 0:
+                    liq3_lines.append(f'  HL  OI=${_hl_oi:.3f}B FR={_hl_fr:+.4f}%')
+                liq3_lines.append(f'  三所汇总OI=${_tot:.2f}B')
+                _h50l = _3ex.get('hl_liq_50x_long', 0)
+                _h50s = _3ex.get('hl_liq_50x_short', 0)
+                _h25l = _3ex.get('hl_liq_25x_long', 0)
+                _h25s = _3ex.get('hl_liq_25x_short', 0)
+                if _h50s > 0:
+                    _d50s = (_h50s - _3px) / _3px * 100
+                    _d50l = (_3px - _h50l) / _3px * 100
+                    liq3_lines.append(f'  HL 50x 空头清算: {_fmt_price(_h50s)}(+{_d50s:.2f}%) | 多头清算: {_fmt_price(_h50l)}(-{_d50l:.2f}%)')
+                if _h25s > 0:
+                    _d25s = (_h25s - _3px) / _3px * 100
+                    _d25l = (_3px - _h25l) / _3px * 100
+                    liq3_lines.append(f'  HL 25x 空头清算: {_fmt_price(_h25s)}(+{_d25s:.2f}%) | 多头清算: {_fmt_price(_h25l)}(-{_d25l:.2f}%)')
+                if _3px > 0:
+                    liq3_lines.append(f'  BN/BB 20x 空头清算: {_fmt_price(round(_3px*1.05,2))}(+5%) | 多头清算: {_fmt_price(round(_3px*0.95,2))}(-5%)')
+                _risk = _3ex.get('liq_risk', '')
+                if _risk:
+                    for _rline in _risk.split(' | '):
+                        if _rline.strip() and 'HL 50x' not in _rline:
+                            liq3_lines.append(f'  {_rline}')
+            elif _ld_walls and (_ld_walls.get('above_walls') or _ld_walls.get('below_walls')):
                 # 最高优先级：liq_density三所实时强平数据
                 _liq_bias = _ld_walls.get('liq_bias', 'NEUTRAL')
                 _sources  = _ld_walls.get('sources', '')

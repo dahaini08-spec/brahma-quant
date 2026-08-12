@@ -700,7 +700,67 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         except Exception as _lde:
             pass  # 静默降级，不影响主流程
 
-        # --- 2. 跨所FR套利信号 cross_exchange_fr (0~9分) ---
+        # --- 1c. liq_scanner 三所清算集群注入 [2026-08-12 苏摩封印] ---
+        # 将 Binance+Bybit+Hyperliquid 三所实时数据固化进清算矩阵
+        # 来源: brahma_core_step4 已调 get_liq_snapshot() 并写入 extra['liq_snap']
+        try:
+            _ls = result.get('extra', {}).get('liq_snap', {})
+            if _ls and _ls.get('price', 0) > 0:
+                _ls_px = _ls['price']
+                _lhm_ls = result.get('_liq_heatmap') or {}
+
+                # 三所OI汇总
+                _lhm_ls['_three_exchange'] = {
+                    'price':            _ls_px,
+                    # Binance
+                    'bn_oi_b':          round(_ls.get('oi_b', 0), 2),
+                    'bn_long_pct':      round(_ls.get('long_pct', 50), 1),
+                    'bn_top_long_pct':  round(_ls.get('top_long_pct', 50), 1),
+                    'bn_fr':            _ls.get('fund_rate', 0),
+                    # Bybit
+                    'bb_oi_b':          round(_ls.get('bybit_oi_b', 0), 2),
+                    'bb_long_pct':      _ls.get('bybit_long_pct', 0),
+                    'bb_fr':            _ls.get('bybit_fr', 0),
+                    'bb_price':         _ls.get('bybit_price', 0),
+                    # Hyperliquid
+                    'hl_oi_b':          round(_ls.get('hl_oi_b', 0), 3),
+                    'hl_fr':            _ls.get('hl_fr', 0),
+                    'hl_liq_50x_long':  _ls.get('hl_liq_50x_long', 0),
+                    'hl_liq_50x_short': _ls.get('hl_liq_50x_short', 0),
+                    'hl_liq_25x_long':  _ls.get('hl_liq_25x_long', 0),
+                    'hl_liq_25x_short': _ls.get('hl_liq_25x_short', 0),
+                    # 汇总
+                    'total_oi_b':       round(_ls.get('total_oi_b', 0), 2),
+                    'weighted_long':    _ls.get('weighted_long_pct', 50),
+                    'fr_agreement':     _ls.get('fr_cross_agreement', False),
+                    'liq_bias':         _ls.get('liq_bias', 'NEUTRAL'),
+                    'liq_risk':         _ls.get('liq_risk', ''),
+                }
+                # 同步写入 short_liq_map / long_liq_map 供 formatter 估算层使用
+                _lhm_ls.setdefault('short_liq_map', {})
+                _lhm_ls.setdefault('long_liq_map', {})
+                # HL 50x = 最近清算位（高密度）
+                _hl50s = _ls.get('hl_liq_50x_short', 0)
+                _hl50l = _ls.get('hl_liq_50x_long', 0)
+                _hl25s = _ls.get('hl_liq_25x_short', 0)
+                _hl25l = _ls.get('hl_liq_25x_long', 0)
+                if _hl50s > 0:
+                    _lhm_ls['short_liq_map']['50'] = _hl50s
+                if _hl50l > 0:
+                    _lhm_ls['long_liq_map']['50']  = _hl50l
+                if _hl25s > 0:
+                    _lhm_ls['short_liq_map']['25'] = _hl25s
+                if _hl25l > 0:
+                    _lhm_ls['long_liq_map']['25']  = _hl25l
+                # BN/Bybit 20x 理论清算位
+                _lhm_ls['short_liq_map']['20'] = round(_ls_px * 1.05, 2)
+                _lhm_ls['long_liq_map']['20']  = round(_ls_px * 0.95, 2)
+                _lhm_ls['short_liq_map']['10'] = round(_ls_px * 1.10, 2)
+                _lhm_ls['long_liq_map']['10']  = round(_ls_px * 0.90, 2)
+                _lhm_ls['price'] = _ls_px
+                result['_liq_heatmap'] = _lhm_ls
+        except Exception as _lse:
+            pass  # 静默降级，不影响主流程
         try:
             from cross_exchange_fr import get_cross_fr as _get_fr
             _cfr = _get_fr(sym)
