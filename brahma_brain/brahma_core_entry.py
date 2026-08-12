@@ -427,14 +427,16 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
 
     entry_mid = (entry_lo + entry_hi) / 2
     # ── 最小spread护栏：入场区间宽度不得为0（极端低价品种防护）
-    _min_spread = price * 0.001  # 最小0.1%入场区间
+    # [TIMEOUT-FIX 2026-08-12 苏摩111] 铁证: zone<0.3% WR=44% / zone>0.8% WR=100%
+    # fallback从±0.1% × 扩宽至 ±0.5%，提升触达率＋升高WR
+    _min_spread = price * 0.005  # 最小0.5%入场区间（原0.1%）
     if (entry_hi - entry_lo) < _min_spread:
         if signal_dir == 'SHORT':
-            entry_hi = price * 1.001
-            entry_lo = price * 0.999
+            entry_hi = price * 1.0025
+            entry_lo = price * 0.9975
         else:
-            entry_lo = price * 0.999
-            entry_hi = price * 1.001
+            entry_lo = price * 0.9975
+            entry_hi = price * 1.0025
         entry_mid = price
     risk = abs(stop_loss - entry_mid)
 
