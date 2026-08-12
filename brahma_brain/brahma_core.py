@@ -2974,6 +2974,78 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         'sl_basis':     params.get('sl_basis',   'swing_4h+atr4h×0.3'),
         'sl_atr_mult':  params.get('sl_atr_mult', 0),
         'extra':       extra_data,
+        # [2026-08-12 苏摩111封印 v3] ms完整原始数据注入，全路径修正版，供35维逐项核对
+        'market_state_raw': {
+            # ── 趋势模块 (ms['trend'][tf]) ──
+            'consensus':      ((ms.get('trend') or {}).get('consensus') or {}).get('consensus'),
+            'trend_dir_1h':   ((ms.get('trend') or {}).get('1h') or {}).get('direction'),
+            'trend_dir_4h':   ((ms.get('trend') or {}).get('4h') or {}).get('direction'),
+            'trend_dir_1d':   ((ms.get('trend') or {}).get('1d') or {}).get('direction'),
+            'adx_1h':         ((ms.get('trend') or {}).get('1h') or {}).get('adx'),
+            'adx_4h':         ((ms.get('trend') or {}).get('4h') or {}).get('adx'),
+            'ema20_1h':       ((ms.get('trend') or {}).get('1h') or {}).get('ema20'),
+            'ema50_1h':       ((ms.get('trend') or {}).get('1h') or {}).get('ema50'),
+            'ema200_1h':      ((ms.get('trend') or {}).get('1h') or {}).get('ema200'),
+            'ema20_4h':       ((ms.get('trend') or {}).get('4h') or {}).get('ema20'),
+            'ema50_4h':       ((ms.get('trend') or {}).get('4h') or {}).get('ema50'),
+            'ema200_1d':      ((ms.get('trend') or {}).get('1d') or {}).get('ema200'),
+            # ── 动量模块 (ms['momentum']) ──
+            'rsi_15m':        (ms.get('momentum') or {}).get('rsi_15m'),
+            'rsi_1h':         (ms.get('momentum') or {}).get('rsi_1h'),
+            'rsi_4h':         (ms.get('momentum') or {}).get('rsi_4h'),
+            'rsi_1d':         (ms.get('momentum') or {}).get('rsi_1d'),
+            'atr_1h':         (ms.get('momentum') or {}).get('atr_1h'),
+            'atr_4h':         (ms.get('momentum') or {}).get('atr_4h'),
+            'atr_pct':        (ms.get('momentum') or {}).get('atr_pct'),
+            'bb_width':       ((ms.get('momentum') or {}).get('bb') or {}).get('width'),
+            'bb_pos':         ((ms.get('momentum') or {}).get('bb') or {}).get('pos'),
+            'bb_upper':       ((ms.get('momentum') or {}).get('bb') or {}).get('upper'),
+            'bb_lower':       ((ms.get('momentum') or {}).get('bb') or {}).get('lower'),
+            # ── 情绪模块 (ms['sentiment']) ──
+            'funding_rate':   (ms.get('sentiment') or {}).get('funding_rate'),
+            'long_short_ratio': (ms.get('sentiment') or {}).get('long_short_ratio'),
+            'oi':             (ms.get('sentiment') or {}).get('oi'),
+            'oi_change_pct':  (ms.get('sentiment') or {}).get('oi_change_pct'),
+            'oi_momentum':    (ms.get('sentiment') or {}).get('oi_momentum'),
+            # ── 宏观/DXY (extra_data['macro_v2']) ──
+            'dxy':            ((extra_data or {}).get('macro_v2') or {}).get('dxy', {}).get('price') if isinstance(((extra_data or {}).get('macro_v2') or {}).get('dxy'), dict) else ((extra_data or {}).get('macro_v2') or {}).get('dxy'),
+            'dxy_dir':        ((extra_data or {}).get('macro_v2') or {}).get('dxy', {}).get('direction'),
+            'nasdaq_price':   ((extra_data or {}).get('macro_v2') or {}).get('nasdaq', {}).get('price'),
+            'macro_v2_score': ((extra_data or {}).get('macro_v2') or {}).get('score_addon'),
+            'macro_v2_notes': ((extra_data or {}).get('macro_v2') or {}).get('notes'),
+            # ── CVD (via enhanced_signal_engine结果) ──
+            'cvd_score':      ((extra_data or {}).get('enhanced') or {}).get('breakdown', {}).get('cvd'),
+            'cvd_notes':      (((extra_data or {}).get('enhanced') or {}).get('notes') or [])[:2],
+            'lsr_trend':      ((extra_data or {}).get('enhanced') or {}).get('lsr', {}).get('trend'),
+            'lsr_current':    ((extra_data or {}).get('enhanced') or {}).get('lsr', {}).get('current'),
+            'session_name':   ((extra_data or {}).get('enhanced') or {}).get('session', {}).get('session'),
+            'session_vol_mult': ((extra_data or {}).get('enhanced') or {}).get('session', {}).get('vol_mult'),
+            'liq_bias':       ((extra_data or {}).get('liq_snap') or {}).get('bias'),
+            'liq_long':       ((extra_data or {}).get('coinglass') or {}).get('liquidation', {}).get('long_liq'),
+            'liq_short':      ((extra_data or {}).get('coinglass') or {}).get('liquidation', {}).get('short_liq'),
+            # ── OB/FVG/SMC ──
+            'structure_grade': cf.get('structure_grade'),
+            'effective_grade': cf.get('effective_grade'),
+            'smc_structure':  (smc.get('structure') or {}).get('structure'),
+            'bos_count':      len((smc.get('structure') or {}).get('bos') or []),
+            'choch_count':    len((smc.get('structure') or {}).get('choch') or []),
+            'ob_bull_count':  len((smc.get('order_blocks') or {}).get('bull_obs') or []),
+            'ob_bear_count':  len((smc.get('order_blocks') or {}).get('bear_obs') or []),
+            'fvg_count':      len(smc.get('fvg') or []),
+            # ── 时段（实时计算）──
+            'utc_hour':       __import__('datetime').datetime.utcnow().hour,
+            'weekday':        __import__('datetime').datetime.utcnow().weekday(),
+            'month':          __import__('datetime').datetime.utcnow().month,
+            # ── ML/Kronos ──
+            'kronos_p_up':    (extra_data or {}).get('kronos_p_up'),
+            'xgb_score':      ((extra_data or {}).get('_snap_for_xgb') or {}).get('xgb_score',
+                               (extra_data or {}).get('xgb_score')),
+            # ── 资金费率跨所 ──
+            'cross_fr_avg':   ((extra_data or {}).get('cross_fr_basis') or {}).get('fr_avg'),
+            'cross_basis':    ((extra_data or {}).get('cross_fr_basis') or {}).get('basis_pct'),
+            # ── 期权 ──
+            'pc_ratio':       ((extra_data or {}).get('deribit_pc') or {}).get('pc_oi_ratio'),
+        },
         # [设计院 2026-05-24] 达摩院6节点预测评分
         'dharma_nodes': _dharma_nodes,
         'nodes_pass':   _dharma_nodes.get('nodes_pass', 0),
@@ -3581,6 +3653,22 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _fc_regime = _result.get('regime', '')
         _fc_res = _fc_fn(_sym, current_regime=_fc_regime)
         _result['fangcang'] = _fc_res
+        # [HCME接线 2026-08-12 苏摩111] 把 hcme_wr_adj 注入 confluence.breakdown
+        # 根因：hcme_wr_adj 已计算但未进入评分，白白丢弃
+        # 验证：BTC当前情境 hcme_wr_adj=+10，CHOP SHORT hcme_wr_adj=-9，匹配复盘铁证
+        _hcme_adj = _fc_res.get('hcme_wr_adj', 0) if isinstance(_fc_res, dict) else 0
+        _hcme_ctx = _fc_res.get('hcme_context', '') if isinstance(_fc_res, dict) else ''
+        if _hcme_adj != 0:
+            _cf = _result.setdefault('confluence', {})
+            _bd = _cf.setdefault('breakdown', {})
+            _bd['HCME情境匹配'] = _hcme_adj
+            # 同步更新 score_final
+            _old_score = float(_result.get('score_final', _result.get('score', 0)) or 0)
+            _new_score = round(_old_score + _hcme_adj, 1)
+            _result['score_final'] = _new_score
+            _result['score']       = _new_score
+            _result['hcme_adj']    = _hcme_adj
+            _result['hcme_ctx']    = str(_hcme_ctx)[:120]
     except Exception as _fc_e:
         import logging as _lg; _lg.getLogger('brahma').warning(f'[fangcang] {_fc_e}')
         _result['fangcang'] = {'status': 'unavailable', 'reason': str(_fc_e)[:60]}
