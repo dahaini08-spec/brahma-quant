@@ -214,6 +214,14 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
     if not sym.endswith('USDT'):
         sym = sym + 'USDT'
 
+    # [2026-08-12 苏摹封印] Kronos单币分析自动预热
+    try:
+        from kronos_engine import _load_model as _kw_load, _model_loaded as _kw_ready
+        if not _kw_ready:
+            _kw_load()
+    except Exception:
+        pass
+
     # ── analysis_snapshot: 15分钟内有缓存则复用（减少重复推理）──────
     _cached_dir = None
     if _SNAPSHOT_OK:

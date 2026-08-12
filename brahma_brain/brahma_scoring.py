@@ -139,12 +139,16 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     score = 0
     breakdown = {}
 
-    # [UP-TRAIN10K] T01 Bootstrap置信等级表（达摩院1万次训练验证）
-    # 信号质量排名: 量价配合(B,PF=1.277) > MACD金叉(B) > EMA趋势(C) > MACD零轴(C)
-    # WR主导信号: MACD背离(A,52.8%) | RSI(A,53.3%) | 布林带(A,53.1%)
-    # PF主导信号: 量价配合(B,1.277) — 蒙特卡洛10000次选出的核心信号
-    # 实盘层使用: breakdown中记录Bootstrap置信等级供analyze()参考
-    _boot_grades = {
+    # [2026-08-12 苏摹封印] RSI扁平化修复（同 brahma_core.py）
+    if ms:
+        _mom = ms.get('momentum', {})
+        if _mom:
+            for _rk in ('rsi_15m', 'rsi_1h', 'rsi_4h', 'rsi_1d'):
+                if ms.get(_rk) is None and _mom.get(_rk) is not None:
+                    ms[_rk] = _mom[_rk]
+            for _ak in ('atr_1h', 'atr_4h', 'atr_pct'):
+                if ms.get(_ak) is None and _mom.get(_ak) is not None:
+                    ms[_ak] = _mom[_ak]
         '量价配合': 'B',      # PF=1.277 CI=[1.25,1.31] ← 最可靠
         'MACD金叉死叉': 'B',  # PF=1.046 CI=[1.02,1.08]
         'EMA趋势顺势': 'C',   # PF=1.121 CI=[1.07,1.18]

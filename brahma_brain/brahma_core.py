@@ -147,6 +147,21 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     score = 0
     breakdown = {}
 
+    # [2026-08-12 苏摹封印] RSI扁平化修复
+    # 根因: ms['rsi_1h']存在momentum子字典里，顶层ms.get('rsi_1h')返回None
+    # 导致 or 50 兄底 → 触发50-70区+8误得分（BUG封印）
+    # 修复: 将momentum子字典的RSI写回顶层供所有下游正确读取
+    if ms:
+        _mom = ms.get('momentum', {})
+        if _mom:
+            for _rk in ('rsi_15m', 'rsi_1h', 'rsi_4h', 'rsi_1d'):
+                if ms.get(_rk) is None and _mom.get(_rk) is not None:
+                    ms[_rk] = _mom[_rk]
+            # ATR同步
+            for _ak in ('atr_1h', 'atr_4h', 'atr_pct'):
+                if ms.get(_ak) is None and _mom.get(_ak) is not None:
+                    ms[_ak] = _mom[_ak]
+
     # [UP-TRAIN10K] T01 Bootstrap置信等级表（达摩院1万次训练验证）
     # 信号质量排名: 量价配合(B,PF=1.277) > MACD金叉(B) > EMA趋势(C) > MACD零轴(C)
     # WR主导信号: MACD背离(A,52.8%) | RSI(A,53.3%) | 布林带(A,53.1%)
