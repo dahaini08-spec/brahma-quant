@@ -32,6 +32,56 @@ try:
     from market_state import analyze as ms_analyze
 except ImportError:
     def ms_analyze(s): return {}
+
+# [2026-08-12 苏摩111封印 v3] 标志位从brahma_core同步导入，修复NameError
+try:
+    from enhanced_signal_engine import enhanced_score as _enhanced_score
+    _ENHANCED_OK = True
+except Exception:
+    _ENHANCED_OK = False
+try:
+    from harmonic_engine import harmonic_score as _harmonic_score
+    _HARMONIC_OK = True
+except Exception:
+    _HARMONIC_OK = False
+try:
+    from multitf_engine import multitf_score as _multitf_score
+    _MULTITF_OK = True
+except Exception:
+    _MULTITF_OK = False
+try:
+    from whale_engine import whale_score as _whale_score
+    _WHALE_OK = True
+except Exception:
+    _WHALE_OK = False
+try:
+    from macro_engine import macro_score as _macro_score
+    _MACRO_OK = True
+except Exception:
+    _MACRO_OK = False
+# [修复 2026-08-12 苏摩111] _*_OK 标志位 — Block拆分后step4无法读brahma_core模块级变量
+# 在step4里独立做import检测，与brahma_core.py L79-L111逻辑完全对称
+try:
+    from volume_exhaust_engine import vol_exhaust_score as _vol_exhaust_score
+    _VOL_EXH_OK = True
+except Exception:
+    _VOL_EXH_OK = False
+try:
+    from multitf_div_engine import multitf_div_score as _multitf_div_score
+    _MULTITF_DIV_OK = True
+except Exception:
+    _MULTITF_DIV_OK = False
+try:
+    from cross_asset_engine import cross_asset_score as _cross_score
+    _CROSS_OK = True
+except Exception:
+    _CROSS_OK = False
+try:
+    from microstructure_engine import micro_score as _micro_score
+    _MICRO_OK = True
+except Exception:
+    _MICRO_OK = False
+
 try:
     from binance_fapi import get_klines
 except ImportError:
@@ -464,7 +514,8 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
 
     # B4: 链上大单 WS/REST
     try:
-        from onchain_ws import analyze as _ws_fn
+        # [修复 2026-08-12] onchain_ws → onchain_engine.onchain_score
+        from onchain_engine import onchain_score as _ws_fn
         extra_data['onchain_ws'] = _ws_fn(symbol, signal_dir)
     except Exception as _e:
         extra_data['onchain_ws_err'] = str(_e)[:80]
@@ -506,7 +557,10 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
             _os_sent.path.join(_bd_sent, 'sentiment_engine.py'))
         _sm = _ilu_sent.module_from_spec(_spec)
         _spec.loader.exec_module(_sm)
-        extra_data['sentiment_nlp'] = _sm.analyze(symbol, signal_dir)
+        # [修复 2026-08-12] sentiment_engine.analyze → get_sentiment_score
+        from sentiment_engine import get_sentiment_score as _sent_fn
+        _sent_score, _sent_detail = _sent_fn(ms or {}, signal_dir)
+        extra_data['sentiment_nlp'] = {'score': _sent_score, 'detail': _sent_detail}
     except Exception as _e:
         extra_data['sentiment_nlp_err'] = str(_e)[:80]
 
