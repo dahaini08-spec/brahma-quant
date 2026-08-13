@@ -83,9 +83,13 @@ except Exception:
     _MICRO_OK = False
 
 try:
-    from binance_fapi import get_klines
+    # [总线接入 2026-08-13] 优先走brahma_bus缓存，fallback到binance_fapi
+    from brahma_bus import get_klines
 except ImportError:
-    def get_klines(s, tf, limit=200): return []
+    try:
+        from binance_fapi import get_klines
+    except ImportError:
+        def get_klines(s, tf, limit=200): return []
 try:
     from kline_utils import klines_to_ohlcv
 except ImportError:

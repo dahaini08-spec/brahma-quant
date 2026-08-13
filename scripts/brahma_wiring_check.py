@@ -20,6 +20,7 @@ DATA_DIR = os.path.join(BASE, 'data')
 # 主链路文件
 MAIN_CHAIN = [
     'brahma_brain/brahma_engine.py',
+    'brahma_brain/brahma_core.py',           # [fix 2026-08-13] engine是core的shim，core才是真相
     'brahma_brain/brahma_analysis_runner.py',
     'scripts/brahma_1hao_analysis.py',
     'scripts/auto_executor.py',
