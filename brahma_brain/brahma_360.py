@@ -118,6 +118,10 @@ def scan_d1_modules() -> list:
             'mtf_resonance',           # brahma_decision_engine 多周期共振 ✅
             'kronos_subagent_bridge',  # 归档候选，kronos_engine已覆盖功能，加白名单避免误报 ✅
             'brahma_wiring_check',      # 接线检测器本身，工具脚本不需要接入主链路 ✅
+            'brahma_binance_mcp',      # MCP Server骨架，外部Agent调用，非import链 ✅
+            'chart_renderer',          # push_chart.py动态import，二级链覆盖 ✅
+            'pip_extractor',           # fangcang_engine调用，二级链覆盖 ✅
+            'brahma_ci',               # CI探针独立工具，合理孤立 ✅
         }
         _orphans = []
         for _f in sorted(_brain.glob('*.py')):
