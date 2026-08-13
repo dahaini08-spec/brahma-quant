@@ -942,6 +942,12 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
 
 
     # [P1 signal_log 自动注入 2026-07-24]
+    # [2026-08-12 苏摩111] grade_num写入修复：写入前调用enrich_signal_grade
+    try:
+        from grade_utils import enrich_signal_grade as _enrich_grade
+        _enrich_grade(result)  # 注入grade_num整数字段，覆盖91%缺失问题
+    except Exception:
+        pass
     try:
         import sys as _sys_p1, os as _os_p1  # [设计院 2026-07-27 修复] 避免覆盖全局os变量
         _sys_p1.path.insert(0, _os_p1.path.join(_os_p1.path.dirname(__file__), '..', 'scripts'))
