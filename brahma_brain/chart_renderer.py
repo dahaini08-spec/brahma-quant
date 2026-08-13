@@ -337,6 +337,189 @@ def render_liqmap(symbol: str = 'BTCUSDT') -> Optional[str]:
 
 
 # ════════════════════════════════════════════════════════════════
+# 图二：GEX / IV 散点图（实时，类Kingfisher图二）
+# ════════════════════════════════════════════════════════════════
+
+def render_gex_scatter(currency: str = 'BTC') -> Optional[str]:
+    """
+    渲染 GEX + IV 散点图（类Kingfisher图二）
+    横轴 = IV隐含波动率，纵轴 = 行权价，颜色 = GEX值（正/负）
+    返回: PNG路径，失败返回None
+    """
+    try:
+        import math
+        from brahma_brain.gex_scanner import (
+            get_spot_price, get_book_summary, black_scholes_gamma,
+            scan_gex, GAMMA_FALLBACK_IV
+        )
+        from datetime import datetime, timezone
+
+        currency = currency.upper()
+        spot     = get_spot_price(currency)
+        books    = get_book_summary(currency)
+        if not spot or not books:
+            return None
+
+        # GEX state (用缓存，已有实时数据)
+        gex_state  = scan_gex(currency, force=False)
+        zero_flip  = gex_state.get('zero_flip')
+        max_strike = gex_state.get('max_gex_strike')
+        min_strike = gex_state.get('min_gex_strike')
+        net_at_spot= gex_state.get('net_gex_at_spot', 0)
+        direction  = gex_state.get('gex_direction', '?')
+
+        now_ts = datetime.now(timezone.utc).timestamp()
+        points = []  # (iv, strike, gex, cp)
+
+        for book in books:
+            inst = book.get('instrument_name', '')
+            parts = inst.split('-')
+            if len(parts) < 4:
+                continue
+            try:
+                exp_str = parts[1]
+                strike  = float(parts[2])
+                cp      = parts[3]
+                exp_dt  = datetime.strptime(exp_str + ' 08:00', '%d%b%y %H:%M')
+                exp_dt  = exp_dt.replace(tzinfo=timezone.utc)
+                T = (exp_dt.timestamp() - now_ts) / (365 * 24 * 3600)
+                if T <= 0 or T > 60/365:  # 只看60天内
+                    continue
+
+                sigma = book.get('mid_iv', book.get('mark_iv', 0)) / 100.0
+                if sigma <= 0.01:
+                    sigma = GAMMA_FALLBACK_IV
+
+                oi = book.get('open_interest', 0)
+                if oi < 0.1:
+                    continue
+
+                gamma = black_scholes_gamma(spot, strike, T, 0.05, sigma)
+                gex   = gamma * oi * spot**2 * 0.01
+                if cp == 'P':
+                    gex = -gex
+
+                points.append({
+                    'iv':     round(sigma * 100, 2),
+                    'strike': strike,
+                    'gex':    gex,
+                    'cp':     cp,
+                })
+            except Exception:
+                pass
+
+        if len(points) < 5:
+            return None
+
+        ivs     = [p['iv']     for p in points]
+        strikes = [p['strike'] for p in points]
+        gexs    = [p['gex']    for p in points]
+
+        # 颜色映射：正GEX=绿，负GEX=红，大小∝|GEX|
+        max_abs = max(abs(g) for g in gexs) or 1
+        colors  = [THEME['green'] if g >= 0 else THEME['red'] for g in gexs]
+        sizes   = [max(20, min(300, abs(g) / max_abs * 300)) for g in gexs]
+
+        # 找MAX/MIN点
+        max_idx = gexs.index(max(gexs))
+        min_idx = gexs.index(min(gexs))
+        cur_iv  = sum(ivs) / len(ivs)  # 近似当前IV均值
+
+        # ── 绘图 ──────────────────────────────────────────────
+        fig, ax = plt.subplots(figsize=(11, 9))
+        _apply_dark_theme(fig, [ax])
+
+        dir_emoji = '▲' if direction == 'POSITIVE' else '▼'
+        fig.suptitle(
+            f'{currency}  GEX+ / IV Scatter  |  ${spot:,.0f}  {dir_emoji}{direction}',
+            color=THEME['text'], fontsize=11, fontweight='bold'
+        )
+
+        # 散点
+        sc = ax.scatter(ivs, strikes, c=colors, s=sizes, alpha=0.75, edgecolors='none')
+
+        # 当前价横线
+        ax.axhline(spot, color=THEME['yellow'], linewidth=1.5, linestyle='--',
+                   label=f'Spot ${spot:,.0f}')
+
+        # Zero Flip横线
+        if zero_flip:
+            ax.axhline(zero_flip, color=THEME['orange'], linewidth=1.2, linestyle=':',
+                       label=f'Zero Flip ${zero_flip:,.0f}')
+
+        # MAX GEX标注
+        ax.annotate(
+            f'MAX\n${strikes[max_idx]:,.0f}',
+            xy=(ivs[max_idx], strikes[max_idx]),
+            xytext=(10, 10), textcoords='offset points',
+            color=THEME['teal'], fontsize=8, fontweight='bold',
+            arrowprops=dict(arrowstyle='->', color=THEME['teal'], lw=1.2)
+        )
+
+        # MIN GEX标注
+        ax.annotate(
+            f'MIN\n${strikes[min_idx]:,.0f}',
+            xy=(ivs[min_idx], strikes[min_idx]),
+            xytext=(10, -20), textcoords='offset points',
+            color=THEME['red'], fontsize=8, fontweight='bold',
+            arrowprops=dict(arrowstyle='->', color=THEME['red'], lw=1.2)
+        )
+
+        # 当前IV竖线（近似）
+        ax.axvline(cur_iv, color=THEME['blue'], linewidth=1.0, linestyle='-.',
+                   alpha=0.6, label=f'Avg IV {cur_iv:.1f}%')
+
+        # 轴格式
+        ax.set_xlabel('Implied Volatility (%)', color=THEME['text_dim'], fontsize=9)
+        ax.set_ylabel('Strike Price (USD)',     color=THEME['text_dim'], fontsize=9)
+        ax.yaxis.set_major_formatter(mticker.FormatStrFormatter('$%.0f'))
+        ax.xaxis.set_major_formatter(mticker.FormatStrFormatter('%.1f%%'))
+
+        # 图例
+        legend_items = [
+            mpatches.Patch(color=THEME['green'],  label='Positive GEX (Call)'),
+            mpatches.Patch(color=THEME['red'],    label='Negative GEX (Put)'),
+            mpatches.Patch(color=THEME['yellow'], label=f'Spot ${spot:,.0f}'),
+        ]
+        if zero_flip:
+            legend_items.append(
+                mpatches.Patch(color=THEME['orange'], label=f'Zero Flip ${zero_flip:,.0f}')
+            )
+        ax.legend(handles=legend_items, loc='upper right',
+                  facecolor=THEME['bg_panel'], edgecolor=THEME['grid'],
+                  labelcolor=THEME['text'], fontsize=8)
+
+        # 信息框
+        info = (
+            f'Net GEX @ Spot: ${net_at_spot/1e6:.2f}M\n'
+            f'Direction: {direction}\n'
+            f'Contracts: {len(points)}'
+        )
+        ax.text(0.02, 0.97, info, transform=ax.transAxes,
+                va='top', ha='left', fontsize=8,
+                color=THEME['text'], bbox=dict(
+                    boxstyle='round,pad=0.4', facecolor=THEME['bg_panel'],
+                    edgecolor=THEME['grid'], alpha=0.9
+                ))
+
+        fig.text(0.99, 0.01, 'Brahma Engine', ha='right', va='bottom',
+                 color=THEME['text_dim'], fontsize=7, alpha=0.5)
+
+        plt.tight_layout()
+        out = _out_path(f'gex-scatter-{currency.lower()}')
+        fig.savefig(out, dpi=130, bbox_inches='tight', facecolor=THEME['bg'])
+        plt.close(fig)
+        return out
+
+    except Exception as e:
+        try:
+            plt.close('all')
+        except Exception:
+            pass
+        return None
+
+
+# ════════════════════════════════════════════════════════════════
 # 图三：Historical GEX 时序图
 # ════════════════════════════════════════════════════════════════
 
@@ -491,7 +674,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Brahma Chart Renderer')
     parser.add_argument('--symbol',   default='BTCUSDT')
     parser.add_argument('--currency', default='BTC')
-    parser.add_argument('--type',     choices=['oi_fr', 'liqmap', 'gex_hist', 'dashboard', 'all'],
+    parser.add_argument('--type',     choices=['oi_fr', 'liqmap', 'gex_scatter', 'gex_hist', 'dashboard', 'all'],
                         default='all')
     args = parser.parse_args()
 
@@ -505,6 +688,11 @@ if __name__ == '__main__':
         p = render_liqmap(args.symbol)
         results['liqmap'] = p
         print(f'[LiqMap]  {"OK" if p else "FAIL"}: {p}')
+
+    if args.type in ('gex_scatter', 'all'):
+        p = render_gex_scatter(args.currency)
+        results['gex_scatter'] = p
+        print(f'[GEXScatter] {"OK" if p else "FAIL"}: {p}')
 
     if args.type in ('gex_hist', 'all'):
         p = render_gex_hist(args.currency)
