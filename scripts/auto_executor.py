@@ -438,16 +438,30 @@ def find_executable_signals() -> list[dict]:
         # 在执行前检查条件单矩阵，处理已有计划的追踪止损/条件平仓
         try:
             from brahma_brain.condition_order_matrix import check_triggers as _check_cond
+            # [BUG修复 2026-08-13 苏摩111封印]
+            # 修复前: current_price=float(s.get('price',0) or 0) → 信号无price时传0.0
+            #         导致条件单推送显示"当前价0.0000"，P0生死线误触发
+            # 修复后: 优先用信号price，降级时实时拉ticker，最终fallback才用0
+            _cond_sym   = s.get('symbol', '')
+            _cond_price = float(s.get('price', 0) or 0)
+            if _cond_price <= 0 and _cond_sym:
+                try:
+                    import urllib.request as _ur, json as _json
+                    _ticker_url = f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={_cond_sym}'
+                    with _ur.urlopen(_ticker_url, timeout=4) as _tr:
+                        _cond_price = float(_json.loads(_tr.read())['price'])
+                except Exception:
+                    _cond_price = 0.0  # 实在拿不到才用0
             _cond_result = _check_cond(
-                symbol=s.get('symbol', ''),
-                current_price=float(s.get('price', 0) or 0),
+                symbol=_cond_sym,
+                current_price=_cond_price,
                 short_notional=0.0,
                 long_notional=0.0,
                 short_pnl=0.0,
                 long_pnl=0.0,
             )
             if _cond_result.get('urgent'):
-                print(f"[condition_order] {s.get('symbol')} 紧急条件触发: {_cond_result.get('summary','')[:80]}")
+                print(f"[condition_order] {_cond_sym} 紧急条件触发: {_cond_result.get('summary','')[:80]}")
             for _trig in _cond_result.get('triggered', [])[:2]:
                 print(f"  [condition_order] 触发: {str(_trig)[:100]}")
         except Exception as _cond_e:
