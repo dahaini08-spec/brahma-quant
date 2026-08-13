@@ -703,6 +703,198 @@ def cleanup_old_charts(keep_n: int = 20) -> int:
 
 
 # ════════════════════════════════════════════════════════════════
+# Kingfisher风格三图组合（v2，高清晰度）
+# ════════════════════════════════════════════════════════════════
+
+def render_kingfisher(symbol: str = 'BTCUSDT') -> Optional[str]:
+    """
+    渲染Kingfisher风格三图组合（v2）：
+    图一 OI+FR / 图二 GEX散点 / 图三 LiqMap竖向
+    宽图 22×8英寸，dpi=150，字体大，标注清晰
+    返回: PNG路径，失败返回None
+    """
+    try:
+        import urllib.request as _ur
+        import math as _math
+        from brahma_brain.brahma_bus import BrahmaBus as _BB
+        from brahma_brain.liq_density_engine import get_liq_density as _gld
+        from brahma_brain.liq_scanner import get_liq_snapshot as _gls
+        from brahma_brain.gex_scanner import (scan_gex as _sg, get_book_summary as _gbs,
+            black_scholes_gamma as _bsg, GAMMA_FALLBACK_IV as _GFIV)
+        from datetime import datetime as _dt, timezone as _tz
+
+        coin   = symbol.replace('USDT','')
+        bus    = _BB()
+        price  = bus.price(symbol)
+        gex    = _sg(coin, force=False)
+        liq    = _gld(symbol, price)
+        snap   = _gls(symbol)
+
+        # OI history
+        url = f'https://fapi.binance.com/futures/data/openInterestHist?symbol={symbol}&period=15m&limit=96'
+        with _ur.urlopen(url, timeout=10) as r: oi_raw = __import__('json').loads(r.read())
+        oi_times = [_dt.fromtimestamp(x['timestamp']/1000, tz=_tz.utc) for x in oi_raw]
+        oi_vals  = [float(x['sumOpenInterestValue'])/1e9 for x in oi_raw]
+        oi_chg4h = (oi_vals[-1]-oi_vals[-16])/oi_vals[-16]*100 if len(oi_vals)>=16 else 0
+
+        # FR history
+        url2 = f'https://fapi.binance.com/fapi/v1/fundingRate?symbol={symbol}&limit=12'
+        with _ur.urlopen(url2, timeout=8) as r: fr_raw = __import__('json').loads(r.read())
+        fr_times = [_dt.fromtimestamp(x['fundingTime']/1000, tz=_tz.utc) for x in fr_raw]
+        fr_vals  = [float(x['fundingRate'])*100 for x in fr_raw]
+        fr_cur   = fr_vals[-1] if fr_vals else 0
+
+        # GEX scatter
+        now_ts = _dt.now(_tz.utc).timestamp()
+        books  = _gbs(coin)
+        pts    = []
+        for book in books:
+            inst   = book.get('instrument_name','')
+            parts  = inst.split('-')
+            if len(parts)<4: continue
+            try:
+                strike_s = float(parts[2]); cp = parts[3]
+                exp_dt   = _dt.strptime(parts[1]+' 08:00','%d%b%y %H:%M').replace(tzinfo=_tz.utc)
+                T = (exp_dt.timestamp()-now_ts)/(365*24*3600)
+                if T<=0 or T>60/365: continue
+                sigma = book.get('mid_iv', book.get('mark_iv',0))/100.0
+                if sigma<=0.01: sigma = _GFIV
+                oi_c = book.get('open_interest',0)
+                if oi_c<0.1: continue
+                gamma = _bsg(price, strike_s, T, 0.05, sigma)
+                gex_v = gamma*oi_c*price**2*0.01
+                if cp=='P': gex_v=-gex_v
+                pts.append({'iv':sigma*100,'strike':strike_s,'gex':gex_v})
+            except: pass
+
+        # ── 绘图 ─────────────────────────────────────────────
+        import matplotlib.dates as _mdates
+        import matplotlib.ticker as _mtic
+        import matplotlib.patches as _mpatch
+        from matplotlib.gridspec import GridSpec as _GS
+
+        BG=THEME['bg']; PANEL=THEME['bg_panel']; GRID=THEME['grid']
+        TEXT_C=THEME['text']; DIM=THEME['text_dim']
+        GREEN=THEME['green']; RED=THEME['red']; YEL=THEME['binance']
+        BLUE=THEME['blue']; ORG=THEME['orange']; TEAL=THEME['teal']; PURP=THEME['purple']
+
+        fig = plt.figure(figsize=(22, 8), facecolor=BG)
+        gs  = _GS(1, 3, figure=fig, wspace=0.06,
+                  left=0.03, right=0.97, top=0.93, bottom=0.08)
+
+        def _ax(ax):
+            ax.set_facecolor(PANEL)
+            ax.tick_params(colors=DIM, labelsize=9)
+            for sp in ax.spines.values(): sp.set_color(GRID)
+            ax.grid(True, color=GRID, lw=0.6, alpha=0.8)
+
+        # 图一 OI+FR
+        gs1  = gs[0].subgridspec(2,1,height_ratios=[3,1],hspace=0.04)
+        a1a  = fig.add_subplot(gs1[0]); a1b = fig.add_subplot(gs1[1], sharex=a1a)
+        _ax(a1a); _ax(a1b)
+        oi_color = GREEN if oi_chg4h>=0 else RED
+        a1a.fill_between(oi_times, oi_vals, alpha=0.85, color=oi_color)
+        a1a.plot(oi_times, oi_vals, color=oi_color, lw=1.5)
+        a1a.text(0.02,0.92,f"OI ${oi_vals[-1]:.3f}B",transform=a1a.transAxes,
+                 fontsize=13,fontweight='bold',color=oi_color,va='top')
+        a1a.text(0.98,0.92,f"OI 4H: {oi_chg4h:+.2f}%",transform=a1a.transAxes,
+                 fontsize=11,fontweight='bold',color=GREEN if oi_chg4h>=0 else RED,va='top',ha='right')
+        a1a.set_title(f"{coin}/USDT  OI + Funding Rate  |  Price: ${price:,.1f}",
+                      color=TEXT_C,fontsize=11,fontweight='bold',pad=6)
+        a1a.yaxis.set_major_formatter(_mtic.FuncFormatter(lambda v,_:f'${v:.3f}B'))
+        plt.setp(a1a.get_xticklabels(),visible=False)
+        fc=[GREEN if v>=0 else RED for v in fr_vals]
+        a1b.bar(fr_times,fr_vals,color=fc,alpha=0.9,width=0.06)
+        a1b.axhline(0,color=GRID,lw=0.8)
+        a1b.axhline(0.01,color=ORG,lw=0.7,ls='--',alpha=0.6)
+        a1b.axhline(-0.01,color=ORG,lw=0.7,ls='--',alpha=0.6)
+        a1b.text(0.98,0.85,f"FR: {fr_cur:+.4f}%",transform=a1b.transAxes,
+                 fontsize=10,fontweight='bold',color=YEL,va='top',ha='right')
+        a1b.yaxis.set_major_formatter(_mtic.FuncFormatter(lambda v,_:f'{v:.4f}%'))
+        a1b.xaxis.set_major_formatter(_mdates.DateFormatter('%m/%d %H:%M'))
+        a1b.xaxis.set_major_locator(_mdates.HourLocator(interval=8))
+        plt.setp(a1b.get_xticklabels(),rotation=25,ha='right',fontsize=7,color=DIM)
+
+        # 图二 GEX散点
+        a2 = fig.add_subplot(gs[1]); _ax(a2)
+        if pts:
+            ivs=[p['iv'] for p in pts]; strikes=[p['strike'] for p in pts]; gexs=[p['gex'] for p in pts]
+            mx=max(abs(g) for g in gexs) or 1
+            cols=[GREEN if g>=0 else RED for g in gexs]
+            szs=[max(15,min(350,abs(g)/mx*350)) for g in gexs]
+            a2.scatter(ivs,strikes,c=cols,s=szs,alpha=0.75,edgecolors='none')
+            mi=gexs.index(max(gexs)); ni=gexs.index(min(gexs))
+            a2.annotate(f"MAX\n${strikes[mi]:,.0f}",xy=(ivs[mi],strikes[mi]),
+                        xytext=(8,8),textcoords='offset points',color=TEAL,fontsize=9,fontweight='bold',
+                        arrowprops=dict(arrowstyle='->',color=TEAL,lw=1.4))
+            a2.annotate(f"MIN\n${strikes[ni]:,.0f}",xy=(ivs[ni],strikes[ni]),
+                        xytext=(8,-20),textcoords='offset points',color=RED,fontsize=9,fontweight='bold',
+                        arrowprops=dict(arrowstyle='->',color=RED,lw=1.4))
+            avg_iv=sum(ivs)/len(ivs)
+            a2.axvline(avg_iv,color=BLUE,lw=1.2,ls='-.',alpha=0.7)
+        a2.axhline(price,color=YEL,lw=2.0,ls='--')
+        zf=gex.get('zero_flip')
+        if zf: a2.axhline(zf,color=ORG,lw=1.5,ls=':')
+        dir_s='▲' if gex.get('gex_direction')=='POSITIVE' else '▼'
+        a2.set_title(f"{coin}  GEX+ / IV Scatter  |  ${price:,.1f}  {dir_s}{gex.get('gex_direction','')}",
+                     color=TEXT_C,fontsize=11,fontweight='bold',pad=6)
+        net=gex.get('net_gex_at_spot',0)
+        a2.text(0.02,0.97,f"Net GEX @ Spot: ${net/1e6:.2f}M\nDirection: {gex.get('gex_direction','?')}\nContracts: {gex.get('contracts_processed',0)}",
+                transform=a2.transAxes,va='top',fontsize=9,color=TEXT_C,
+                bbox=dict(boxstyle='round,pad=0.5',fc=PANEL,ec=GRID,alpha=0.95))
+        a2.yaxis.set_major_formatter(_mtic.FuncFormatter(lambda v,_:f'${v:,.0f}'))
+        a2.xaxis.set_major_formatter(_mtic.FuncFormatter(lambda v,_:f'{v:.0f}%'))
+        a2.set_xlabel('Implied Volatility (%)',color=DIM,fontsize=9)
+        leg2=[_mpatch.Patch(color=GREEN,label='Positive GEX (Call)'),
+              _mpatch.Patch(color=RED,label='Negative GEX (Put)'),
+              _mpatch.Patch(color=YEL,label=f'Spot ${price:,.1f}')]
+        if zf: leg2.append(_mpatch.Patch(color=ORG,label=f'Zero Flip ${zf:,.0f}'))
+        a2.legend(handles=leg2,loc='upper right',facecolor=PANEL,edgecolor=GRID,labelcolor=TEXT_C,fontsize=8)
+
+        # 图三 LiqMap
+        a3 = fig.add_subplot(gs[2]); _ax(a3)
+        above=liq.get('above_walls',[]); below=liq.get('below_walls',[])
+        bwalls=[]
+        for p_l,usd in above: bwalls.append({'price':p_l,'usd_m':usd/1e6,'side':'SHORT'})
+        for p_l,usd in below: bwalls.append({'price':p_l,'usd_m':usd/1e6,'side':'LONG'})
+        bwalls.sort(key=lambda x:x['price'])
+        hl_ll=snap.get('hl_liq_50x_long'); hl_ls=snap.get('hl_liq_50x_short')
+        if bwalls:
+            py=[f"${w['price']:,.1f}" for w in bwalls]
+            ux=[w['usd_m'] for w in bwalls]
+            bc=[RED if w['side']=='SHORT' else GREEN for w in bwalls]
+            bars=a3.barh(py,ux,color=bc,alpha=0.88,height=0.55,edgecolor='none')
+            mx_x=max(ux)
+            for bar,val in zip(bars,ux):
+                a3.text(val+mx_x*0.02,bar.get_y()+bar.get_height()/2,
+                        f'${val:.1f}M',va='center',ha='left',color=TEXT_C,fontsize=10,fontweight='bold')
+            near=min(range(len(bwalls)),key=lambda i:abs(bwalls[i]['price']-price))
+            a3.axhline(y=near,color=YEL,lw=2.0,ls='--',alpha=0.9,zorder=5)
+            a3.text(mx_x*0.98,near,f'${price:,.1f}',va='bottom',ha='right',
+                    color=YEL,fontsize=10,fontweight='bold')
+        a3.set_title(f"{coin}/USDT  Liquidation Map  |  ${price:,.1f}",
+                     color=TEXT_C,fontsize=11,fontweight='bold',pad=6)
+        a3.set_xlabel('Liquidation (Million USD)',color=DIM,fontsize=9)
+        leg3=[_mpatch.Patch(color=RED,label='Short Liq (above)'),
+              _mpatch.Patch(color=GREEN,label='Long Liq  (below)'),
+              _mpatch.Patch(color=YEL,label=f'Current ${price:,.1f}')]
+        if hl_ll: leg3.append(_mpatch.Patch(color=BLUE,label=f'HL 50x Long ${hl_ll:,.0f}'))
+        if hl_ls: leg3.append(_mpatch.Patch(color=PURP,label=f'HL 50x Short ${hl_ls:,.0f}'))
+        a3.legend(handles=leg3,loc='lower right',facecolor=PANEL,edgecolor=GRID,labelcolor=TEXT_C,fontsize=8.5)
+        fig.text(0.99,0.01,'Brahma Engine',ha='right',va='bottom',color=DIM,fontsize=7,alpha=0.5)
+
+        out = _out_path(f'kingfisher-{coin.lower()}')
+        fig.savefig(out, dpi=150, bbox_inches='tight', facecolor=BG)
+        plt.close(fig)
+        return out
+
+    except Exception:
+        try: plt.close('all')
+        except: pass
+        return None
+
+
+# ════════════════════════════════════════════════════════════════
 # CLI 入口
 # ════════════════════════════════════════════════════════════════
 
