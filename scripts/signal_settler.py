@@ -187,6 +187,41 @@ def settle_signal(sig: dict, dry_run: bool = False) -> dict | None:
     except Exception:
         pass  # Bandit不可用时静默降级，不影响结算主链路
 
+    # [Ch8轨迹自学习钩子 2026-08-13 苏摩111封印]
+    # 每次结算后写入标准化轨迹记录，驱动经验知识库进化
+    # 参考: ai-agent-book Ch8 gaia-experience/experience_documents.py
+    try:
+        import json as _j_traj
+        from pathlib import Path as _P_traj
+        from datetime import datetime as _dt_traj, timezone as _tz_traj
+        _traj_file = _P_traj(__file__).parent.parent / 'data' / 'trajectories' / 'settled.jsonl'
+        _traj_file.parent.mkdir(parents=True, exist_ok=True)
+        # 三层验证：outcome(PnL) + process(score>=100) + quality(grade)
+        _env_score = 1.0 if new_outcome == 'TP' else (0.5 if new_outcome == 'TIMEOUT' else 0.0)
+        _process_ok = float(sig.get('score') or 0) >= 100  # 达标信号
+        _traj_rec = {
+            'id':               f"{sig.get('symbol','?')}_{sig.get('ts','')}",
+            'task_family':      sig.get('regime', 'UNKNOWN'),
+            'signal_name':      sig.get('signal_name') or sig.get('direction', ''),
+            'symbol':           sig.get('symbol', ''),
+            'matrix_score':     float(sig.get('score') or 0),
+            'regime':           sig.get('regime', ''),
+            'direction':        sig.get('direction', ''),
+            'entry_price':      float(sig.get('entry_price') or sig.get('entry_mid') or 0),
+            'exit_price':       round(exit_price, 6),
+            'pnl_pct':          round(pnl, 4),
+            'environment_score': _env_score,   # Ch8: 必须来自外部验证器（实际PnL）
+            'process_ok':       _process_ok,
+            'outcome':          new_outcome,
+            'applies_when':     [sig.get('regime',''), f"score={int(float(sig.get('score') or 0))}"],
+            'failure_mode':     'SL_HIT' if new_outcome == 'SL' else ('TP_HIT' if new_outcome == 'TP1' else 'TIMEOUT'),
+            'settled_at':       _dt_traj.now(_tz_traj.utc).isoformat(),
+        }
+        with open(_traj_file, 'a') as _tf:
+            _tf.write(_j_traj.dumps(_traj_rec, ensure_ascii=False) + '\n')
+    except Exception as _e_traj:
+        pass  # 轨迹记录失败不影响结算主链路
+
     # [设计院 2026-08-06] 暴涨猎手结果回写 — 建立实盘WR闭环
     try:
         import json as _j_ph, time as _t_ph
