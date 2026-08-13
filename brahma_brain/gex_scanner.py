@@ -333,6 +333,28 @@ def scan_gex(currency: str = 'BTC', force: bool = False) -> dict:
     state[currency] = profile
     _GEX_STATE_FILE.write_text(json.dumps(state, indent=2))
 
+    # ── [设计院 2026-08-13] GEX历史追加写入，供Historical GEX图表使用 ──
+    _GEX_HISTORY_FILE = _DATA / 'gex_history.jsonl'
+    try:
+        hist_record = {
+            'ts': profile['scan_ts'],
+            'dt': profile['scan_datetime'],
+            'currency': currency,
+            'spot': profile['spot'],
+            'max_gex_strike': profile['max_gex_strike'],
+            'min_gex_strike': profile['min_gex_strike'],
+            'zero_flip': profile.get('zero_flip'),
+            'net_gex_at_spot': profile['net_gex_at_spot'],
+            'total_positive_gex': profile['total_positive_gex'],
+            'total_negative_gex': profile['total_negative_gex'],
+            'gex_direction': profile['gex_direction'],
+            'spot_pos_pct': profile['spot_pos_pct'],
+        }
+        with open(_GEX_HISTORY_FILE, 'a') as _hf:
+            _hf.write(json.dumps(hist_record) + '\n')
+    except Exception:
+        pass  # [静默] 历史写入失败不阻断主流程
+
     pass  # [静默]
     print(f'  MAX GEX: ${profile["max_gex_strike"]:,.0f}  '
           f'MIN GEX: ${profile["min_gex_strike"]:,.0f}  '
