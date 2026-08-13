@@ -1,0 +1,75 @@
+========================================
+梵天新闻采集器 Cron 安装说明
+[设计院封印 2026-08-13 苏摩111]
+========================================
+
+功能说明：
+  每30分钟自动运行 news_scraper.py，爬取加密货币新闻
+  输出到 data/news_feed.jsonl，接入35维矩阵第10维（social hype）
+
+----------------------------------------
+方案A：系统 crontab（推荐，直接在 james-bond 上运行）
+----------------------------------------
+
+1. 编辑 crontab：
+   crontab -e
+
+2. 添加以下行（每30分钟运行一次）：
+   */30 * * * * cd /root/.openclaw/workspace/trading-system && /usr/bin/python3 scripts/news_scraper.py >> logs/news_scraper.log 2>&1
+
+3. 确保日志目录存在：
+   mkdir -p /root/.openclaw/workspace/trading-system/logs
+
+----------------------------------------
+方案B：OpenClaw cron（通过 openclaw cron 命令）
+----------------------------------------
+
+openclaw cron add \
+  --name 'brahma-news-scraper' \
+  --every 30m \
+  --message 'Run: cd /root/.openclaw/workspace/trading-system && python3 scripts/news_scraper.py. Report: scraped N/3 sources, wrote to data/news_feed.jsonl' \
+  --channel jarvis \
+  --to <userId>:thread:<threadId> \
+  --announce
+
+注意：OpenClaw cron 方案会消耗 LLM token，推荐用方案A。
+
+----------------------------------------
+验证命令（安装后确认运行正常）
+----------------------------------------
+
+# 查看输出文件
+tail -5 /root/.openclaw/workspace/trading-system/data/news_feed.jsonl | python3 -m json.tool
+
+# 查看日志（方案A）
+tail -20 /root/.openclaw/workspace/trading-system/logs/news_scraper.log
+
+# 手动触发一次完整爬取（非dry-run，需要 chromium）
+cd /root/.openclaw/workspace/trading-system && python3 scripts/news_scraper.py
+
+----------------------------------------
+依赖说明
+----------------------------------------
+
+- crawl4ai: 已安装 (pip install crawl4ai --break-system-packages)
+- chromium: crawl4ai 实际爬取时需要 chromium/playwright
+  安装命令: crawl4ai-setup 或 playwright install chromium
+- Docker: james-bond 环境未检测到 docker，不影响脚本运行
+
+----------------------------------------
+注意事项
+----------------------------------------
+
+1. 首次完整爬取（非dry-run）需要 chromium 可用
+   如果报错，运行: python3 -m crawl4ai.install_driver
+   或: playwright install chromium
+
+2. 输出文件 data/news_feed.jsonl 保留最近500条记录，自动滚动
+
+3. 爬取目标站点可能有反爬机制，脚本已配置：
+   - simulate_user=True（模拟用户行为）
+   - delay_before_return_html=2.0（等待JS渲染）
+
+4. 苏摩111 确认后方可启动 cron 定时任务
+
+========================================
