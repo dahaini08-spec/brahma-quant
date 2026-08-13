@@ -109,18 +109,22 @@ def push_liqmap(symbol: str = 'BTCUSDT', caption: str = '') -> bool:
         return False
 
 
-def push_dashboard(symbol: str = 'BTCUSDT', caption: str = '', score: float = 0) -> bool:
-    """推送信号仪表盘（OI+FR + LiqMap 组合图）"""
+def push_dashboard(symbol: str = 'BTCUSDT', caption: str = '', score: float = 0,
+                   include_gex: bool = True) -> bool:
+    """推送信号仪表盘（OI+FR + GEX散点 + LiqMap 三图组合）"""
     try:
         sys.path.insert(0, str(_ROOT))
-        from brahma_brain.chart_renderer import render_signal_dashboard
+        from brahma_brain.chart_renderer import render_signal_dashboard, cleanup_old_charts
         coin = symbol.replace('USDT', '')
-        path = render_signal_dashboard(symbol)
+        path = render_signal_dashboard(symbol, include_gex=include_gex)
         if not path:
             return False
         score_str = f' score={score:.0f}' if score else ''
         cap = caption or f'📈 {coin}/USDT Signal Dashboard{score_str}'
-        return _push_image(path, cap)
+        ok = _push_image(path, cap)
+        # 推送后清理旧图，保留最新20个
+        cleanup_old_charts(keep_n=20)
+        return ok
     except Exception as e:
         print(f'[push_chart] push_dashboard error: {e}')
         return False

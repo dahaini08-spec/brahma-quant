@@ -632,37 +632,74 @@ def render_gex_hist(currency: str = 'BTC') -> Optional[str]:
 # 组合图：信号卡片（OI+FR + LiqMap 双图拼合）
 # ════════════════════════════════════════════════════════════════
 
-def render_signal_dashboard(symbol: str = 'BTCUSDT') -> Optional[str]:
+def render_signal_dashboard(symbol: str = 'BTCUSDT', include_gex: bool = True) -> Optional[str]:
     """
-    渲染信号仪表盘：左OI+FR，右LiqMap（触发信号时附带）
+    渲染信号仪表盘 v2：图一OI+FR、图二GEX散点、图四LiqMap 三图组合
+    include_gex=True: 包含GEX散点图（默认，1s额外耗时）
+    include_gex=False: 仅OI+FR + LiqMap（快速版，2秒完成）
     """
-    p1 = render_oi_fr(symbol)
-    p2 = render_liqmap(symbol)
-    if not p1 or not p2:
-        return p1 or p2  # 返回可用的那个
+    currency = symbol.replace('USDT', '')
+    p_oifr = render_oi_fr(symbol)
+    p_liq  = render_liqmap(symbol)
+    p_gex  = render_gex_scatter(currency) if include_gex else None
+
+    available = [p for p in [p_oifr, p_gex, p_liq] if p]
+    if not available:
+        return None
+    if len(available) == 1:
+        return available[0]
 
     try:
         from PIL import Image
-        img1 = Image.open(p1)
-        img2 = Image.open(p2)
+        imgs = [Image.open(p) for p in available]
 
         # 统一高度，横向拼接
-        h = max(img1.height, img2.height)
-        w = img1.width + img2.width
+        target_h = max(img.height for img in imgs)
+        resized = []
+        for img in imgs:
+            if img.height != target_h:
+                ratio = target_h / img.height
+                new_w = int(img.width * ratio)
+                img = img.resize((new_w, target_h), Image.LANCZOS)
+            resized.append(img)
 
-        combined = Image.new('RGB', (w, h), (13, 17, 23))
-        combined.paste(img1, (0, 0))
-        combined.paste(img2, (img1.width, 0))
+        total_w = sum(img.width for img in resized)
+        combined = Image.new('RGB', (total_w, target_h), (13, 17, 23))
+        x_offset = 0
+        for img in resized:
+            combined.paste(img, (x_offset, 0))
+            x_offset += img.width
 
-        out = _out_path(f'dashboard-{symbol.replace("USDT","").lower()}')
+        out = _out_path(f'dashboard-{currency.lower()}')
         combined.save(out, 'PNG', dpi=(130, 130))
 
         # 清理临时图
-        os.remove(p1)
-        os.remove(p2)
+        for p in available:
+            try:
+                os.remove(p)
+            except Exception:
+                pass
         return out
     except Exception:
-        return p1  # 拼图失败返回OI图
+        return available[0]  # 拼图失败返回第一张
+
+
+def cleanup_old_charts(keep_n: int = 20) -> int:
+    """
+    清理旧图表文件，保留最新 keep_n 个
+    返回删除的文件数
+    """
+    pngs = sorted(
+        [f for f in _MEDIA_DIR.iterdir() if f.name.startswith('brahma-chart')],
+        key=lambda x: x.stat().st_mtime
+    )
+    to_delete = pngs[:-keep_n] if len(pngs) > keep_n else []
+    for f in to_delete:
+        try:
+            f.unlink()
+        except Exception:
+            pass
+    return len(to_delete)
 
 
 # ════════════════════════════════════════════════════════════════
