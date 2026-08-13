@@ -491,7 +491,19 @@ def find_executable_signals() -> list[dict]:
         except Exception as _hr_e:
             pass  # headroom失败不阻断
         # ══ [END headroom] ══════════════════════════════════════════════════════
-        # ③ RR门槛
+        # ══ [P1 宏观事件仓位乘数 2026-08-13 苏摩111封印] ══
+        # 宏观事件不影响信号评分，只压缩仓位（不则CPI事件日会抹掉SMC+15的信号质量）
+        try:
+            _macro_mult = float(s.get('macro_pos_mult', 1.0) or 1.0)
+            if _macro_mult != 1.0:
+                _pre_pct = s.get('_tier_nav_pct', 0.05)
+                s['_tier_nav_pct'] = round(_pre_pct * _macro_mult, 5)
+                s['_pos_source'] = (s.get('_pos_source', '') + f'+macro×{_macro_mult}').lstrip('+')
+                print(f"[macro_mult] {s.get('symbol')} 宏观事件仓位调整 {_pre_pct*100:.1f}%→{s['_tier_nav_pct']*100:.1f}% ×{_macro_mult}")
+        except Exception:
+            pass
+        # ══ [END macro_pos_mult] ════════════════════════════════════
+        # ⑥ RR门槛
         rr1 = float(s.get('rr1', 0) or 0)
         if rr1 < MIN_RR:
             continue

@@ -1279,12 +1279,31 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         _s19_val, _s19_rep = get_combined_guard_score(_macro_sym, _macro_dir, _macro_reg)
         # 限制第19维度对总分的影响范围 -12 ~ +10
         s19 = max(-12, min(10, round(_s19_val, 1)))
-        score += s19
-        breakdown['宏观+事件'] = s19
+        # [P1 架构升级 2026-08-13 苏摩111封印] 宏观事件从score层提到风险乘数层
+        # 修复前: score += s19（宏观-12直接抵消SMC+15，逻辑混层）
+        # 修复后: s19作为风险标志位，注入position_risk_mult影响仓位而非信号质量
+        #   s19 <= -8: 高风险宏观事件 → 仓位×0.6
+        #   s19 <= -4: 中风险宏观事件 → 仓位×0.8
+        #   s19 > 0:  宏观正面 → 仓位×1.1（小奖励）
+        #   score不再加减，宏观不影响信号评分，只影响执行仓位
+        if s19 <= -8:
+            _macro_pos_mult = 0.60
+        elif s19 <= -4:
+            _macro_pos_mult = 0.80
+        elif s19 > 0:
+            _macro_pos_mult = 1.10
+        else:
+            _macro_pos_mult = 1.00
+        breakdown['宏观+事件'] = f'风险乘数×{_macro_pos_mult}(s19={s19:+.0f},不扣分)'
         if extra_data is not None:
             extra_data['macro_report'] = _s19_rep
+            extra_data['macro_pos_mult'] = _macro_pos_mult
+            # 写入ms供auto_executor读取仓位乘数
+            ms['macro_pos_mult'] = _macro_pos_mult
+        # 同步写入cf让brahma_core能透传给_result
+        cf['macro_pos_mult'] = _macro_pos_mult
     except Exception as _e19:
-        breakdown['宏观+事件_v2'] = 0  # 非阻断  # [P1-B audit-fix] 重复key加后缀
+        breakdown['宏观+事件_v2'] = '风险乘数×1.0(获取失败)'  # [P1-B audit-fix]
 
 
     # ═══════════════════════════════════════════════════════════
