@@ -179,8 +179,42 @@ try:
 except Exception as e:
     results.append(f'执行日志截断失败: {e}')
 
+# ── 6. position_sl_state 僵尸持仓检测 ─────────────────────────────────
+try:
+    sl_file = DATA / 'position_sl_state.json'
+    if sl_file.exists():
+        positions = json.loads(sl_file.read_text())
+        zombie_warns = []
+        cutoff_72h = _now() - timedelta(hours=72)
+        
+        for sym, pos in positions.items():
+            # 检查持仓时长
+            entry_ts_str = pos.get('entry_time') or pos.get('created_at') or pos.get('entry_ts', '')
+            entry_ts = _ts(entry_ts_str)
+            if not entry_ts:
+                continue
+            
+            age_hours = (_now() - entry_ts).total_seconds() / 3600
+            
+            # 超过72H的持仓标记为警告
+            if age_hours > 72:
+                direction = pos.get('direction', '?')
+                entry_price = pos.get('entry_price', pos.get('entry', '?'))
+                sl_price = pos.get('sl_price', pos.get('sl', '?'))
+                zombie_warns.append(
+                    f'{sym} {direction} 持仓{age_hours:.0f}H '
+                    f'入场${entry_price} SL=${sl_price}'
+                )
+        
+        if zombie_warns:
+            results.append(f'⚠️ 僵尸持仓检测: {len(zombie_warns)}个超72H\n    ' + '\n    '.join(zombie_warns))
+            total_cleaned += 0  # 只警告不清理，需要苏摩手动确认
+
+except Exception as e:
+    results.append(f'持仓检测失败: {e}')
+
 # ── 输出 ─────────────────────────────────────────────────────────────────────
-if total_cleaned == 0:
+if total_cleaned == 0 and not any('僵尸持仓' in r for r in results):
     print('HEARTBEAT_OK')
 else:
     ts_str = _now().strftime('%Y-%m-%d %H:%M UTC')
