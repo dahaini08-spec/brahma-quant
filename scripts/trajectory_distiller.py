@@ -47,15 +47,16 @@ def distill(trajectories: list[dict], min_samples: int = 2) -> list[dict]:
     docs = []
     for key, records in groups.items():
         regime, direction = key.split(':', 1)
-        tp_records  = [r for r in records if r.get('outcome') == 'TP1']
-        sl_records  = [r for r in records if r.get('outcome') == 'SL']
-        to_records  = [r for r in records if r.get('outcome') not in ('TP1', 'SL')]
+        tp_records  = [r for r in records if r.get('outcome') in ('TP1','TP','WIN')]
+        sl_records  = [r for r in records if r.get('outcome') in ('SL','LOSS')]
+        to_records  = [r for r in records if r.get('outcome') not in ('TP1','TP','WIN','SL','LOSS')]
         valid_n = len(tp_records) + len(sl_records)
+        total_n = valid_n + len(to_records)
 
-        if valid_n == 0:
+        if total_n == 0:
             continue
 
-        wr = len(tp_records) / valid_n if valid_n > 0 else 0
+        wr = len(tp_records) / valid_n if valid_n > 0 else None
         avg_pnl = sum(r.get('pnl_pct', 0) for r in records) / len(records)
         avg_score = sum(r.get('matrix_score', 0) for r in records) / len(records)
 
@@ -71,20 +72,21 @@ def distill(trajectories: list[dict], min_samples: int = 2) -> list[dict]:
             'n_tp':                 len(tp_records),
             'n_sl':                 len(sl_records),
             'n_timeout':            len(to_records),
-            'win_rate':             round(wr, 3),
+            'win_rate':             round(wr, 3) if wr is not None else None,
             'avg_pnl_pct':          round(avg_pnl, 4),
             'avg_matrix_score':     round(avg_score, 1),
-            'status':               'confirmed' if valid_n >= min_samples else 'draft',
+            'status':               'confirmed' if valid_n >= min_samples else ('pending' if to_records else 'draft'),
             'applies_when':         [f"regime={regime}", f"direction={direction}"],
-            'observed_strategies':  [f"WR={wr:.1%} n={valid_n}"],
+            'observed_strategies':  [f"WR={wr:.1%} n={valid_n}" if wr is not None else f"n={total_n} pending(no settled)"],
             'success_score_range':  [round(min(success_scores),1), round(max(success_scores),1)] if success_scores else [],
             'failure_score_range':  [round(min(fail_scores),1), round(max(fail_scores),1)] if fail_scores else [],
             'exceptions':           ['low_liquidity_hours'] if to_records else [],
             'last_updated':         datetime.now(timezone.utc).isoformat(),
         }
         docs.append(doc)
-        status_tag = '✅确认' if doc['status'] == 'confirmed' else '📝草案'
-        print(f"  {status_tag} {regime}:{direction} WR={wr:.1%} n={valid_n} avgPnL={avg_pnl:.3f}%")
+        status_tag = '✅确认' if doc['status'] == 'confirmed' else ('⏳待结算' if doc['status'] == 'pending' else '📝草案')
+        wr_str = f'{wr:.1%}' if wr is not None else 'pending'
+        print(f"  {status_tag} {regime}:{direction} WR={wr_str} n={valid_n}(+{len(to_records)}expired) avgPnL={avg_pnl:.3f}%")
 
     return docs
 
