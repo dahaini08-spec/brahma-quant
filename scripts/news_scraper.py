@@ -49,67 +49,63 @@ TARGETS = [
 
 
 async def scrape_with_crawl4ai(dry_run: bool = False) -> list[dict]:
-    """使用crawl4ai并发爬取新闻"""
-    try:
-        from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
-    except ImportError:
-        print("[WARN] crawl4ai未安装，跳过爬取")
-        return []
-
-    browser_config = BrowserConfig(
-        browser_type="chromium",
-        headless=True,
-        user_data_dir=str(BASE / '.crawl4ai_profile'),
-        headers={
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-            "Accept-Language": "en-US,en;q=0.9",
-        }
-    )
-
-    run_config = CrawlerRunConfig(
-        cache_mode=CacheMode.ENABLED,
-        word_count_threshold=50,
-        screenshot=False,
-        delay_before_return_html=2.0,
-        simulate_user=True,
-    )
-
+    """
+    使用 httpx+html2text 并发爬取新闻（轻量方案，无需Chromium系统库）
+    crawl4ai Chromium模式在容器环境受限，改用httpx直接抓取
+    """
     if dry_run:
         print(f"[DRY-RUN] 将爬取 {len(TARGETS)} 个URL: {[t['url'] for t in TARGETS]}")
         return [{"ts": int(time.time()), "source": t["name"], "tag": t["tag"],
                  "url": t["url"], "markdown": "[dry-run]", "status": "dry_run"} for t in TARGETS]
 
-    results = []
-    crawler = AsyncWebCrawler(config=browser_config)
-    await crawler.start()
-
     try:
-        tasks = [crawler.arun(url=t["url"], config=run_config) for t in TARGETS]
-        crawl_results = await asyncio.gather(*tasks, return_exceptions=True)
+        import httpx
+        import html2text as _h2t_mod
+    except ImportError:
+        print("[WARN] httpx/html2text未安装: pip install httpx html2text")
+        return []
 
-        for target, result in zip(TARGETS, crawl_results):
-            if isinstance(result, Exception):
-                print(f"[ERROR] {target['name']}: {result}")
+    h2t = _h2t_mod.HTML2Text()
+    h2t.ignore_links = True
+    h2t.ignore_images = True
+    h2t.body_width = 0
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+    }
+
+    results = []
+    async with httpx.AsyncClient(headers=headers, timeout=20, follow_redirects=True) as client:
+        tasks = [client.get(t["url"]) for t in TARGETS]
+        responses = await asyncio.gather(*tasks, return_exceptions=True)
+
+        for target, resp in zip(TARGETS, responses):
+            if isinstance(resp, Exception):
+                print(f"[ERROR] {target['name']}: {resp}")
                 continue
-            if result.success:
+            if resp.status_code == 200:
+                markdown = h2t.handle(resp.text)
+                # BM25风格过滤：只保留有实质内容的行
+                lines = [l for l in markdown.splitlines() if len(l.strip()) > 30]
+                clean_md = "\n".join(lines[:80])
                 entry = {
                     "ts": int(time.time()),
                     "source": target["name"],
                     "tag": target["tag"],
                     "url": target["url"],
-                    "markdown": (result.markdown or "")[:3000],
+                    "markdown": clean_md[:3000],
                     "status": "ok",
                     "scraped_at": datetime.now(timezone.utc).isoformat(),
+                    "http_status": resp.status_code,
                 }
                 results.append(entry)
-                print(f"[OK] {target['name']} ({len(entry['markdown'])} chars)")
+                print(f"[OK] {target['name']} ({len(clean_md)} chars, HTTP {resp.status_code})")
             else:
-                print(f"[WARN] {target['name']} failed: {getattr(result, 'error_message', 'unknown')}")
-    finally:
-        await crawler.close()
+                print(f"[WARN] {target['name']} HTTP {resp.status_code}")
 
     return results
-
 
 def write_output(results: list[dict]):
     """写入JSONL，保留最近MAX_LINES条"""
