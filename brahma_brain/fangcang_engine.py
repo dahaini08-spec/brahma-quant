@@ -727,6 +727,8 @@ def get_fangcang_context(
       'hcme_wr_adj':       int,    # HCME分数调整
       'hcme_context':      str,
       'fangcang_summary':  str,    # 一句话总结（给苏摩看）
+      'pip_shape':         str,    # PIPs几何形态（第9维）
+      'pip_score':         float,  # 形态清晰度 [0,1]
     }
     """
     cache_key = f"{symbol}:{current_regime}"
@@ -814,6 +816,15 @@ def get_fangcang_context(
         }
         hcme_data = _integrate_hcme(current_signal_dict)
 
+        # [2026-08-12 封印] PIPs形态特征提取（第9维接入）
+        pip_feature = {}
+        try:
+            from brahma_brain.pip_extractor import extract_pip_feature as _epf
+            _recent_closes = [float(b['c']) for b in klines_4h[-30:]]  # 取近30根K线
+            pip_feature = _epf(_recent_closes)
+        except Exception:
+            pip_feature = {'pip_shape': 'UNKNOWN', 'shape_score': 0.0}
+
         # [2026-08-09 封印] 向量检索增强层：查询历史最相似TOP20案例
         vector_stats = {}
         try:
@@ -880,6 +891,8 @@ def get_fangcang_context(
             'hcme_context':        hcme_data.get('hcme_context', ''),
             'fangcang_summary':    fangcang_summary,
             'vector_stats':        vector_stats,   # [2026-08-09] 向量检索增强结果
+            'pip_shape':           pip_feature.get('pip_shape', 'UNKNOWN'),   # [2026-08-12] PIPs形态
+            'pip_score':           pip_feature.get('shape_score', 0.0),       # [2026-08-12] 形态清晰度
 
             '_ts': now,
         }

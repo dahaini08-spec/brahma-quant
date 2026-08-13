@@ -1,0 +1,80 @@
+你是Binance AI Pro梵天系统。执行埋伏监听任务。
+
+用exec运行以下Python脚本获取实时价格和结构数据：
+
+```python
+cd /root/.openclaw/workspace/trading-system && python3 -c "
+from brahma_brain.brahma_core import analyze
+import json
+
+btc = analyze('BTCUSDT', 'SHORT')
+eth_s = analyze('ETHUSDT', 'SHORT')
+eth_l = analyze('ETHUSDT', 'LONG')
+
+btc_ms = btc.get('market_state_raw', {})
+eth_ms = eth_s.get('market_state_raw', {})
+smc_e = eth_s.get('smc', {})
+obs_e = smc_e.get('order_blocks', {})
+
+btc_price = float(btc.get('price', 0))
+eth_price = float(eth_s.get('price', 0))
+eth_rsi_1h = float(eth_ms.get('rsi_1h', 50) or 50)
+eth_rsi_15m = float(eth_ms.get('rsi_15m', 50) or 50)
+btc_rsi_1h = float(btc_ms.get('rsi_1h', 50) or 50)
+
+# 埋伏区间定义
+BTC_SHORT_ZONE = (63698, 63846)
+BTC_LONG_ZONE  = (63092, 63284)
+ETH_SHORT_ZONE = (1885, 1892)
+ETH_LONG_ZONE  = (1866, 1872)
+
+triggers = []
+
+# BTC检查
+if BTC_SHORT_ZONE[0] <= btc_price <= BTC_SHORT_ZONE[1]:
+    if 45 <= btc_rsi_1h <= 70:
+        triggers.append(f'🔴BTC空单触发！价格={btc_price} 在空OB区间{BTC_SHORT_ZONE} RSI_1h={btc_rsi_1h:.1f}')
+if BTC_LONG_ZONE[0] <= btc_price <= BTC_LONG_ZONE[1]:
+    if btc_rsi_1h <= 45:
+        triggers.append(f'🟢BTC多单触发！价格={btc_price} 在低多区间{BTC_LONG_ZONE} RSI_1h={btc_rsi_1h:.1f}')
+
+# ETH检查
+if ETH_SHORT_ZONE[0] <= eth_price <= ETH_SHORT_ZONE[1]:
+    if 45 <= eth_rsi_1h <= 70:
+        triggers.append(f'🔴ETH空单触发！价格={eth_price} 在空头埋伏区{ETH_SHORT_ZONE} RSI_1h={eth_rsi_1h:.1f}')
+if ETH_LONG_ZONE[0] <= eth_price <= ETH_LONG_ZONE[1]:
+    if eth_rsi_1h <= 45:
+        triggers.append(f'🟢ETH多单触发！价格={eth_price} 在低多区间{ETH_LONG_ZONE} RSI_1h={eth_rsi_1h:.1f}')
+
+print('BTC=' + str(btc_price) + ' ETH=' + str(eth_price))
+print('BTC_RSI_1h=' + str(round(btc_rsi_1h,1)) + ' ETH_RSI_1h=' + str(round(eth_rsi_1h,1)))
+print('TRIGGERS=' + str(len(triggers)))
+for t in triggers:
+    print(t)
+
+# 距离埋伏区
+btc_dist_s = BTC_SHORT_ZONE[0] - btc_price
+eth_dist_s = ETH_SHORT_ZONE[0] - eth_price
+btc_dist_l = btc_price - BTC_LONG_ZONE[1]
+eth_dist_l = eth_price - ETH_LONG_ZONE[1]
+print(f'BTC距空OB: {btc_dist_s:+.0f} | ETH距高空区: {eth_dist_s:+.0f}')
+print(f'BTC距低多区: {btc_dist_l:+.0f} | ETH距低多区: {eth_dist_l:+.0f}')
+" 2>&1 | grep -v "qdrant\|聊明錢\|s_smart\|s_macro"
+```
+
+规则：
+- TRIGGERS=0 → 回复 HEARTBEAT_OK（完全静默）
+- TRIGGERS>0 → 立即推送完整信号，包含：
+  1. 触发币种+方向
+  2. 当前价格+埋伏区间
+  3. 止损位+TP1+RR
+  4. RSI状态说明
+  5. 操作建议（轻仓埋伏or全仓执行）
+
+止损参考：
+- BTC空单SL=$65,029（2.5%）TP1=$61,856 RR=1.0
+- ETH空单SL=$1,924（2.5%）TP1=$1,840 RR=1.0
+- BTC多单SL=$61,862（2.5%）TP1=$65,034 RR=1.0
+- ETH多单SL=$1,842（2.0%）TP1=$1,917 RR=1.0
+
+无触发=HEARTBEAT_OK，有触发=完整中文推送。

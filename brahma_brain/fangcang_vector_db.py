@@ -11,6 +11,10 @@ fangcang_vector_db.py — 方仓案例向量检索库 v1.0
   [bb_width_norm, squeeze_bars_norm, burst_atr_norm, vol_ratio_norm,
    rsi_norm, direction_code, genuine_code, symbol_code]
 
+9维特征向量（升级后）：
+  [bb_width_norm, squeeze_bars_norm, burst_atr_norm, vol_ratio_norm,
+   rsi_norm, direction_code, genuine_code, symbol_code, pip_shape_code]
+
 铁证：
   bb1.5-2.0% (甜蜜区): WR=59.6%  EV=+2.08%
   bb1.0-1.5% (黄金区): WR=53.5%  EV=+0.55%
@@ -68,7 +72,7 @@ def _clip_norm(val: float, lo: float, hi: float) -> float:
 
 def _to_vector(case: dict) -> List[float]:
     """
-    将单个方仓案例转为 8 维浮点特征向量。
+    将单个方仓案例转为 9 维浮点特征向量。
 
     维度设计：
       0  bb_width_norm      — BBW（黄金区 1-2% 对应 0.5~0.8）
@@ -79,6 +83,7 @@ def _to_vector(case: dict) -> List[float]:
       5  direction_code     — UP=1.0 / DOWN=0.0
       6  genuine_code       — 真突破=1.0 / 假突破=0.0
       7  symbol_code        — BTC=1.0 / ETH=0.67 / SOL=0.33
+      8  pip_shape_code     — PIPs形态编码（V底=0.9 / M顶=0.1 / 上升=0.7 / 下降=0.3）
     """
     b  = _NORM_BOUNDS
     v0 = _clip_norm(case["min_bb_width"],   *b["min_bb_width"])
@@ -90,7 +95,30 @@ def _to_vector(case: dict) -> List[float]:
     v6 = 1.0 if case.get("is_genuine_breakout") else 0.0
     sym_map = {"BTC": 1.0, "ETH": 0.67, "SOL": 0.33}
     v7 = sym_map.get(case["symbol"], 0.5)
-    return [v0, v1, v2, v3, v4, v5, v6, v7]
+
+    # 第9维: PIPs形态相似度（可选，需要价格序列）
+    # 方仓案例目前没有存储价格序列，故暂时用shape_code作为标量特征
+    # shape编码: V_BOTTOM=0.9 / M_TOP=0.1 / ASCENDING=0.7 / DESCENDING=0.3 / FLAT=0.5
+    _shape_map = {
+        'V_BOTTOM': 0.9, 'DOUBLE_BOTTOM': 0.85,
+        'M_TOP': 0.1,    'DOUBLE_TOP': 0.15,
+        'HEAD_SHOULDERS': 0.2,
+        'ASCENDING': 0.7, 'DESCENDING': 0.3,
+        'FLAT': 0.5,      'UNKNOWN': 0.5,
+    }
+    # 从case的direction推断基础形态
+    _dir = case.get('direction', 'UP')
+    _genuine = case.get('is_genuine_breakout', False)
+    if _dir == 'UP' and _genuine:
+        v8 = 0.75   # 向上真突破 → 偏V底形态
+    elif _dir == 'DOWN' and _genuine:
+        v8 = 0.25   # 向下真突破 → 偏M顶形态
+    elif _dir == 'UP':
+        v8 = 0.60   # 向上假突破
+    else:
+        v8 = 0.40   # 向下假突破
+
+    return [v0, v1, v2, v3, v4, v5, v6, v7, v8]
 
 
 def _load_all_cases() -> List[dict]:
@@ -127,7 +155,7 @@ def _build_index():
     client = QdrantClient(":memory:")   # 内存模式，无需外部服务
     client.create_collection(
         collection_name=_collection,
-        vectors_config=VectorParams(size=8, distance=Distance.COSINE),
+        vectors_config=VectorParams(size=9, distance=Distance.COSINE),
         optimizers_config=OptimizersConfigDiff(indexing_threshold=0),  # 立即索引
     )
 
