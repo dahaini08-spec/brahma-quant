@@ -1942,13 +1942,12 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
                 _ch_scripts = _ch_os.path.dirname(_ch_os.path.abspath(__file__))
                 if _ch_scripts not in _ch_sys.path:
                     _ch_sys.path.insert(0, _ch_scripts)
-                from push_chart import push_dashboard as _ch_push
+                from push_chart import push_kingfisher as _ch_push
                 _ch_sym = s.get('symbol', 'BTCUSDT')
                 if not _ch_sym.endswith('USDT'):
                     _ch_sym += 'USDT'
                 _ch_push(_ch_sym,
-                         caption=f'\U0001f4c8 {_ch_sym.replace("USDT","")} 开仓图表 fill=${fill_px:.4f}',
-                         score=s.get('score', 0), include_gex=False)
+                         caption=f'\U0001f4c8 {_ch_sym.replace("USDT","")} \u5f00\u4ed3 fill=${fill_px:.4f}')
             except Exception:
                 pass  # 图表推送失败不影响主执行流
             # ── [END] ────────────────────────────────────────────────────

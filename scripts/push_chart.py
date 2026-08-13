@@ -130,6 +130,24 @@ def push_dashboard(symbol: str = 'BTCUSDT', caption: str = '', score: float = 0,
         return False
 
 
+def push_kingfisher(symbol: str = 'BTCUSDT', caption: str = '') -> bool:
+    """推送 Kingfisher 风格三图组合（OI+FR / GEX散点 / LiqMap）高清晰版"""
+    try:
+        sys.path.insert(0, str(_ROOT))
+        from brahma_brain.chart_renderer import render_kingfisher, cleanup_old_charts
+        coin = symbol.replace('USDT', '')
+        path = render_kingfisher(symbol)
+        if not path:
+            return False
+        cap = caption or f'\U0001f4ca {coin}/USDT Kingfisher | {__import__("datetime").datetime.utcnow().strftime("%H:%M UTC")}'
+        ok = _push_image(path, cap)
+        cleanup_old_charts(keep_n=20)
+        return ok
+    except Exception as e:
+        print(f'[push_chart] push_kingfisher error: {e}')
+        return False
+
+
 def push_gex_hist(currency: str = 'BTC') -> bool:
     """推送Historical GEX图（需要积累足够历史数据）"""
     try:
