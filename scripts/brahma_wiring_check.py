@@ -19,12 +19,26 @@ DATA_DIR = os.path.join(BASE, 'data')
 
 # 主链路文件
 MAIN_CHAIN = [
+    # 主链路
     'brahma_brain/brahma_engine.py',
     'brahma_brain/brahma_core.py',           # [fix 2026-08-13] engine是core的shim，core才是真相
     'brahma_brain/brahma_analysis_runner.py',
     'scripts/brahma_1hao_analysis.py',
     'scripts/auto_executor.py',
     'scripts/signal_settler.py',
+    # 二级链路（core直接调用的子模块）[fix 2026-08-13 低价值孤岛误报修复]
+    'brahma_brain/brahma_core_block_a.py',
+    'brahma_brain/brahma_core_block_b.py',
+    'brahma_brain/brahma_core_block_c.py',
+    'brahma_brain/brahma_core_analyze_steps.py',
+    'brahma_brain/brahma_core_step4.py',
+    'brahma_brain/brahma_scoring.py',
+    'brahma_brain/market_state.py',
+    'brahma_brain/position_sizer.py',
+    'brahma_brain/fangcang_engine.py',
+    'brahma_brain/signal_integrity_gate.py',
+    'brahma_brain/brahma_health.py',
+    'scripts/push_chart.py',
 ]
 
 # 已知高价值模块 → 若孤立则 P1 预警
@@ -53,6 +67,9 @@ SKIP_MODULES = {
     'brahma_optimizer',
     # 专项工具（dharma回测专用，非主链路）
     'vectorbt_simfactory',
+    # 独立诊断工具（合理孤立，无需接主链）[fix 2026-08-13]
+    'brahma_ci',
+    'brahma_wiring_check',
 }
 
 def check():
