@@ -69,6 +69,7 @@ SKIP_MODULES = {
     'vectorbt_simfactory',
     # 独立诊断工具（合理孤立，无需接主链）[fix 2026-08-13]
     'brahma_ci',
+    'brahma_binance_mcp',  # MCP Server骨架，外部Agent调用，非import链
     'brahma_wiring_check',
 }
 
