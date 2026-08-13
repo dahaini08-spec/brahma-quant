@@ -706,6 +706,7 @@ def run_health_check(full: bool = False, timeout: float = 8.0) -> dict:
     report['checks']['dharma_factor_weights']  = _check_dharma_factor_weights()
     report['checks']['wr_gate_integrity']      = _check_wr_gate_integrity()
     report['checks']['tardis_month_freshness'] = _check_tardis_month_freshness()
+    report['checks']['zombie_positions']       = _check_zombie_positions()  # L3异常检浌 2026-08-13
     if full:
         report['checks']['standby_violations'] = _check_standby_violations_health()
     # 重新计算总分
@@ -790,6 +791,45 @@ def _check_wr_gate_integrity() -> dict:
                 'detail': f'WR门控完整 140-154={entry_high["action"]}(死亡区) 120-139={low_action}(铁证NORMAL) ✅'}
     except Exception as e:
         return {'ok': False, 'warn': True, 'detail': str(e)}
+
+
+def _check_zombie_positions() -> dict:
+    """检查是否有超过72H的持仓未处理
+    L3异常检测修复 2026-08-13 设计院封印
+    根因: HYPE/SNDK持仓超时25天才被人工发现
+    """
+    try:
+        from pathlib import Path
+        import json
+        from datetime import datetime, timezone, timedelta
+
+        sl_file = Path(__file__).parent.parent / 'data' / 'position_sl_state.json'
+        if not sl_file.exists():
+            return {'ok': True, 'detail': '无持仓文件', 'warn': False}
+
+        positions = json.loads(sl_file.read_text())
+        if not positions:
+            return {'ok': True, 'detail': '空仓', 'warn': False}
+
+        now = datetime.now(timezone.utc)
+        zombies = []
+        for sym, pos in positions.items():
+            ts_str = pos.get('entry_time') or pos.get('created_at') or pos.get('entry_ts', '')
+            try:
+                ts = datetime.fromisoformat(str(ts_str).replace('Z', '+00:00'))
+                age_h = (now - ts).total_seconds() / 3600
+                if age_h > 72:
+                    zombies.append(f'{sym}({age_h:.0f}H)')
+            except Exception:
+                pass
+
+        if zombies:
+            return {'ok': False, 'warn': True,
+                    'detail': f'超72H僵尸持仓: {zombies} — 需苏摩确认处理'}
+        return {'ok': True, 'warn': False,
+                'detail': f'{len(positions)}个持仓均正常(<72H)'}
+    except Exception as e:
+        return {'ok': False, 'warn': True, 'detail': f'持仓检测异常: {str(e)[:50]}'}
 
 
 def _check_tardis_month_freshness() -> dict:

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-position_sl_monitor.py — 软止损监控器 v2.1（科学化重构）
+position_sl_monitor.py — 软止损监控器 v2.2（分批止盈 + 超时止损）
 设计院 × 量化工程师360 · 2026-06-21
 
 变更：
@@ -8,9 +8,13 @@ position_sl_monitor.py — 软止损监控器 v2.1（科学化重构）
         修复语法错误（SL_CONFIG重复赋值）
         纯脚本静默运行，触发时通过 push_hub._jarvis 推送
         正常无持仓/无触发 → 输出 HEARTBEAT_OK，AI不消耗token
+  v2.2  分批止盈: TP1触达时推送建议平仓50%，标记partial_tp1_closed
+        72H超时止损：持仓超72H推送P3时间止损警报（含当前PnL）
+        [2026-08-13 苏摩111封印]
 """
 import json, urllib.request, hmac, hashlib, time, sys
 from pathlib import Path
+from datetime import datetime, timezone
 
 BASE = Path(__file__).parent.parent
 
@@ -103,6 +107,57 @@ def main():
             tp_hit  = (mark >= tp) if side == 'LONG' else (mark <= tp)
             dist_sl = abs(mark - sl) / mark * 100 if mark else 0
             dist_tp = abs(tp - mark) / mark * 100 if mark else 0
+
+            # ══ [分批止盈 2026-08-13 苏摩111封印] ══
+            # 分批止盈: TP1触达时推送建议平仓50%，标记partial_tp1_closed
+            tp1_price = cfg.get('tp1') or cfg.get('tp1_price')
+            partial_closed = cfg.get('partial_tp1_closed', False)
+
+            if tp1_price and not partial_closed and mark:
+                tp1 = float(tp1_price)
+                tp1_hit = (mark >= tp1) if side == 'LONG' else (mark <= tp1)
+                if tp1_hit:
+                    tp1_msg = (
+                        f'🎯 TP1触达 {sym} {side}\n'
+                        f'入场: ${entry:.4f} → 当前: ${mark:.4f}\n'
+                        f'TP1: ${tp1:.4f} ✅ 建议平仓50%锁定利润\n'
+                        f'剩余50%继续持有，追踪止损跟进\n'
+                        f'PnL: {pnl:+.4f} USDT ({pnl_pct:+.2f}%)'
+                    )
+                    print(f'[TP1_HIT] {tp1_msg}')
+                    _pj(tp1_msg, dedup_key=f'tp1_{sym}', dedup_ttl=86400)
+                    # 标记已触达TP1，写回state文件
+                    try:
+                        cfg_now = load_sl_config()
+                        if sym in cfg_now:
+                            cfg_now[sym]['partial_tp1_closed'] = True
+                            cfg_now[sym]['partial_tp1_ts'] = datetime.now(timezone.utc).isoformat()
+                            SL_STATE_FILE.write_text(json.dumps(cfg_now, indent=2))
+                    except Exception as e:
+                        print(f'⚠️ TP1写回state失败: {e}', file=sys.stderr)
+
+            # ══ [72H超时止损 2026-08-13 苏摩111封印] ══
+            # 持仓超过72H → 推送P3时间止损警报
+            entry_time_raw = cfg.get('entry_time') or cfg.get('created_at') or cfg.get('updated_at')
+            if entry_time_raw:
+                try:
+                    if isinstance(entry_time_raw, (int, float)):
+                        entry_dt = datetime.fromtimestamp(entry_time_raw, tz=timezone.utc)
+                    else:
+                        entry_dt = datetime.fromisoformat(str(entry_time_raw).replace('Z', '+00:00'))
+                    hours_held = (datetime.now(timezone.utc) - entry_dt).total_seconds() / 3600
+                    if hours_held >= 72:
+                        timeout_msg = (
+                            f'⏰ [P3时间止损] {sym} {side} 持仓超72H\n'
+                            f'持仓时长: {hours_held:.1f}H\n'
+                            f'入场: ${entry:.4f} → 当前: ${mark:.4f}\n'
+                            f'PnL: {pnl:+.4f} USDT ({pnl_pct:+.2f}%)\n'
+                            f'建议：评估是否需要时间止损平仓'
+                        )
+                        print(f'[72H_TIMEOUT] {timeout_msg}')
+                        _pj(timeout_msg, dedup_key=f'timeout72h_{sym}', dedup_ttl=21600)
+                except Exception as e:
+                    print(f'⚠️ {sym} 时间止损计算异常: {e}', file=sys.stderr)
 
             if sl_hit:
                 close_side = 'SELL' if side == 'LONG' else 'BUY'
