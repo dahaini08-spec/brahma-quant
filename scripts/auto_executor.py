@@ -81,11 +81,21 @@ AUTO_SCORE_THRESHOLD = 120       # 最低评分 [P0-C 2026-07-11] 130→120，�
 # auto_executor 专责 score≥155 的 ENTER_FULL 信号（最高置信度）
 # score 130~154 的 ENTER_WATCH 信号由 sub_executor 处理
 # 分流好处：彻底消除双执行器重复下单风险
-AUTO_ENTER_FULL_THRESHOLD = 148    # [设计院自主 2026-07-31] 155→148
-# [fix 2026-07-18 苏摩111 | 设计院自主修订 2026-07-31] 三档自主执行阈值
-TIER_1_SCORE  = 155   # ENTER_FULL → 全仓 5%NAV（最高置信度）
-TIER_2_SCORE  = 140   # [铁证封印 2026-08-05 设计院自主] 148→140，与gate MIN_SCORE对齐
-# 历史WR：grade≥极强+score 140-148 WR=58%(n=12) EV=+0.244；覆盖140~154全区间
+AUTO_ENTER_FULL_THRESHOLD = 138    # [2026-08-12 苏摩111 体制分层封印]
+# 执行线体制分层 [2026-08-12 苏摩111]
+# v63铁证: BULL_TREND_LONG WR=95-96%, BEAR_TREND_SHORT WR=69-87%
+# 统一155分在WR=0%死亡区 → 按体制分层取代
+TIER_1_SCORE  = 138   # ENTER_FULL → 全仓 5%NAV
+TIER_2_SCORE  = 110   # [体制分层] BULL_TREND_LONG/BEAR_TREND_SHORT 基础执行线
+# 体制分层执行线（优先匹配，TIER_2为兜底）
+REGIME_EXEC_LINE = {
+    ('BULL_TREND',    'LONG'):  110,   # v63 BTC WR=95.8% ETH WR=96.4%
+    ('BEAR_TREND',    'SHORT'): 110,   # v63 BTC WR=87.0% ETH WR=69.4%
+    ('BEAR_RECOVERY', 'LONG'):  120,   # 回升期做多略谨慎
+    ('BULL_EARLY',    'SHORT'): 130,   # 牛初做空高门槛
+}
+# CHOP体制双向全封（v63 CHOP WR=17-27% 负EV）
+CHOP_DEAD_COMBOS = {('CHOP_MID','LONG'), ('CHOP_MID','SHORT')}
 
 # [P1清算感知动态门槛 2026-08-05 设计院]
 # 当 liq_density 三所WS数据充足(OKX≥100条) 且 清算偏向顺势，TIER_1动态降至150
@@ -133,11 +143,11 @@ APPROVAL_RECORD_PATH = Path(__file__).parent.parent / 'data' / 'approval_pending
 # BTC/ETH 动态仓位配置（梵天自主评判，苏摩授权 2026-07-03）
 # score≥155 → 10% NAV | score 140~154 → 7.5% NAV | score 138~139 → 5% NAV
 BIG_SYMBOLS          = {'BTCUSDT', 'ETHUSDT'}   # 大仓位标的
-BIG_SYM_NAV_HIGH     = 0.10     # score≥155 → 10%
+BIG_SYM_NAV_HIGH     = 0.10     # score≥138 → 10%
 BIG_SYM_NAV_MID      = 0.075    # [IC铁证封印] score 140~154区间已从信号层拦截，此参数保留备用
 BIG_SYM_NAV_BASE     = 0.05     # score 138~139 → 5%（与其他标的一致）
-BIG_SYM_SCORE_HIGH   = 155      # 高档触发分
-BIG_SYM_SCORE_MID    = 155      # [IC铁证 2026-07-23] 与高档对齐，140~154区间封印
+BIG_SYM_SCORE_HIGH   = 138      # [2026-08-12 体制分层] 高档触发分
+BIG_SYM_SCORE_MID    = 120      # 中档: BULL_TREND/BEAR_TREND 标准执行
 
 # 开单模式：market / limit / auto（默认）
 # auto = 有entry区间且区间>0.1%用limit；否则用market
@@ -316,9 +326,24 @@ def find_executable_signals() -> list[dict]:
             pass
         _effective_tier1 = TIER_1_LIQ_ADJUSTED if _liq_bonus >= LIQ_BONUS_THRESHOLD else TIER_1_SCORE
 
-        # TIER_1(≥155/清算顺势≥150): ENTER_FULL → 全仓5%NAV（任意timing均执行）
-        # TIER_2(138-154): ENTER → 标准仓3%NAV（timing=READY/''才执行）
-        # TIER_3(120-137): BTC/ETH限定 → 轻仓1.5%NAV（timing=READY才执行）
+        # ── [2026-08-12 苏摩111] 体制分层门控 ──────────────────────────────
+        # v63铁证: BULL_TREND_LONG WR=95-96%, BEAR_TREND_SHORT WR=69-87%
+        # 统一155分=WR0%死亡区 → 按体制分层取代
+        _regime_key = (str(s.get('regime','')), str(s.get('signal_dir') or s.get('direction','')))
+        _regime_thr = REGIME_EXEC_LINE.get(_regime_key)
+        if _regime_key in CHOP_DEAD_COMBOS:
+            # CHOP双向全封：v63 WR=17-27% 负EV
+            s['_tier'] = 0
+            continue
+        if _regime_thr is not None and score < _regime_thr:
+            # 体制执行线不够 → 不执行
+            s['_tier'] = 0
+            continue
+        # ── 体制分层通过，继续TIER判断 ────────────────────────────────────
+
+        # TIER_1(≥138/清算顺势): ENTER_FULL → 全仓5%NAV（任意timing均执行）
+        # TIER_2(110-137): ENTER → 标准仓3%NAV（BEAR_TREND_SHORT/BULL_TREND_LONG）
+        # TIER_3(120-137): BTC/ETH限定 → 轻仓1.5%NAV（BEAR_RECOVERY_LONG）
         # ENTER_WATCH 仍由 sub_executor 专责
         _sig_action = s.get('action', '')
         _timing_badge = str(s.get('timing_badge', '') or '')
