@@ -294,6 +294,19 @@ class HCMEMatcher:
         hcme_score_adj = int(round(delta * 20.0 * min(confidence, 1.0)))
         hcme_score_adj = max(-20, min(20, hcme_score_adj))
 
+        # [P2 样本衰减系数 2026-08-13 苏摩111封印]
+        # 修复前: 5条样本和200条样本给同等权重（选择偏误）
+        # 修复后: n<20条时按sqrt(n/20)衰减，WR統计意义随样本增加而增强
+        #   5条样本 → 衰减系数=0.50 （据半信）
+        #  10条样本 → 衰减系数=0.71
+        #  20条样本 → 衰减系数=1.00 （全信）
+        #  50条样本 → 衰减系数=1.00 （不超过满分）
+        import math as _math
+        _MIN_RELIABLE = 20
+        _n_same_dir = len([e for e in self.index if e['direction'] == cur_direction])
+        _decay = min(1.0, _math.sqrt(max(_n_same_dir, 1) / _MIN_RELIABLE))
+        hcme_score_adj = int(round(hcme_score_adj * _decay))
+
         # build similar_cases list
         similar_cases = []
         for sim, entry in top:
