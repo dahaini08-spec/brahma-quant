@@ -1936,6 +1936,22 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
                 print(f'  📡 Square发布已触发（后台异步）')
             except Exception:
                 pass  # Square发布失败不影响主执行流
+            # ── [设计院 2026-08-13] 执行成功后附带图表仪表盘 ────────────
+            try:
+                import os as _ch_os, sys as _ch_sys
+                _ch_scripts = _ch_os.path.dirname(_ch_os.path.abspath(__file__))
+                if _ch_scripts not in _ch_sys.path:
+                    _ch_sys.path.insert(0, _ch_scripts)
+                from push_chart import push_dashboard as _ch_push
+                _ch_sym = s.get('symbol', 'BTCUSDT')
+                if not _ch_sym.endswith('USDT'):
+                    _ch_sym += 'USDT'
+                _ch_push(_ch_sym,
+                         caption=f'\U0001f4c8 {_ch_sym.replace("USDT","")} 开仓图表 fill=${fill_px:.4f}',
+                         score=s.get('score', 0), include_gex=False)
+            except Exception:
+                pass  # 图表推送失败不影响主执行流
+            # ── [END] ────────────────────────────────────────────────────
         else:
             print(f'  ❌ 跳过: {exec_result["reason"]}')
 

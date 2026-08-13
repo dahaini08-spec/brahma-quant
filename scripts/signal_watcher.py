@@ -448,6 +448,15 @@ def run():
             try:
                 from push_hub import _jarvis as _pj_sw; _pj_sw(f"🔔 新信号\n{card}", dedup_ttl=86400)
             except Exception: pass
+            # ── [设计院 2026-08-13] 信号触发时附带图表仪表盘 ────────
+            try:
+                import sys as _sc_sys
+                _sc_sys.path.insert(0, str(_SCRIPTS_DIR))
+                from push_chart import push_dashboard as _push_dash
+                _push_dash(sym if sym.endswith('USDT') else sym+'USDT',
+                           caption=f'📊 {sym} 信号图表', include_gex=False)  # 快速版2图
+            except Exception: pass
+            # ── [END] ────────────────────────────────────────────────
             state["notified"][sig_id] = now
             pass  # [静默]
             continue
