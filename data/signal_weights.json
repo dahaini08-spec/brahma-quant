@@ -126,5 +126,19 @@
     "updated": "2026-08-02"
   },
   "_last_clean": "2026-08-08 脏数据清洗：移除99条sl>2.0历史信号",
-  "_p03_seal": "2026-08-08 F15自愈已被P0-3清洁数据覆盖，不得再改回BLOCK"
+  "_p03_seal": "2026-08-08 F15自愈已被P0-3清洁数据覆盖，不得再改回BLOCK",
+  "BEAR_TREND:SHORT:v63_BTC": {
+    "multiplier": 1.0,
+    "wr": 0.87,
+    "n": 46,
+    "source": "v63_6y5_BTC",
+    "note": "达摩院6.5年铁证 BTC WR=87.0%"
+  },
+  "BEAR_TREND:SHORT:v63_ETH": {
+    "multiplier": 1.0,
+    "wr": 0.694,
+    "n": 49,
+    "source": "v63_6y5_ETH",
+    "note": "达摩院6.5年铁证 ETH WR=69.4%"
+  }
 }

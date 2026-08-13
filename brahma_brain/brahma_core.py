@@ -3244,7 +3244,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         if _bb23 not in _sys23.path:
             _sys23.path.insert(0, _bb23)
         from kronos_lite import get_s23_score as _get_s23
-        from recovery_unlocker import check_unlock as _check_unlock
+        try:
+            from recovery_unlocker import check_unlock as _check_unlock
+        except ImportError:
+            def _check_unlock(*a, **kw): return {}  # [2026-08-13 苏摩111] 降级兜底
         # [根本修复 2026-07-12] _sym_t/_dir_t可能因s20 try异常而未定义，这里就地定义
         _sym_t  = _result.get('symbol', symbol)
         _dir_t  = _result.get('signal_dir', signal_dir)
@@ -3395,18 +3398,37 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 lite_score = _kb_lite_score,
                 lite_p_up  = _kb_lite_p_up,
             )
-            # shadow模式：只打印，不修改score
-            _kb_delta = _kb_meta.get('kronos_score', 0) - (_kb_lite_score or 0)
-            if abs(_kb_delta) >= 2:  # 差异≥2分才打印，减少噪音
-                print(f'[KronosBridge·SHADOW] {_sym_t}: '
-                      f'Kronos={_kb_meta["kronos_score"]:+d} '
-                      f'Lite={_kb_lite_score:+d} '
-                      f'Δ={_kb_delta:+d} '
-                      f'p_up={_kb_meta["p_up"]:.3f} '
-                      f'src={_kb_meta["source"]}')
+            # [2026-08-13 苏摩111] SHADOW→ACTIVE: 将Kronos结果写入extra_data和result
+            _kb_p_up   = float(_kb_meta.get('p_up', 0.5) or 0.5)
+            _kb_score  = int(_kb_meta.get('kronos_score', 0) or 0)
+            _kb_delta  = _kb_score - (_kb_lite_score or 0)
+            # 写入extra_data供market_state_raw读取
+            if extra_data is not None:
+                extra_data['kronos_p_up']  = _kb_p_up
+                extra_data['kronos_score'] = _kb_score
+                extra_data['kronos_src']   = _kb_meta.get('source', 'engine')
+            # 写入result顶层
+            _result['kronos_p_up']  = _kb_p_up
+            _result['kronos_score'] = _kb_score
+            # 回填market_state_raw
+            if isinstance(_result.get('market_state_raw'), dict):
+                _result['market_state_raw']['kronos_p_up'] = _kb_p_up
+            # p_up极端时注入score_final调节（保守±5分）
+            _kron_adj = 0
+            if _kb_p_up >= 0.85:   _kron_adj = +5   # 强看多
+            elif _kb_p_up <= 0.20: _kron_adj = -5   # 强看空
+            if _kron_adj != 0:
+                _result['score_final'] = round(float(_result.get('score_final',0) or 0) + _kron_adj, 1)
+                _result.setdefault('confluence',{}).setdefault('breakdown',{})['Kronos_p_up'] = (
+                    f'{_kron_adj:+d}(p_up={_kb_p_up:.2f} {_kb_meta.get("source","?")})'
+                )
+            if abs(_kb_delta) >= 2:
+                print(f'[KronosBridge·ACTIVE] {_sym_t}: '
+                      f'Kronos={_kb_score:+d} Lite={_kb_lite_score:+d} '
+                      f'Δ={_kb_delta:+d} p_up={_kb_p_up:.3f} adj={_kron_adj:+d}')
     except Exception as _e_kb:
-        pass  # KronosBridge shadow不影响主流程
-    # ══ [KronosBridge SHADOW END] ══════════════════════════════════════════════
+        pass  # KronosBridge不影响主流程
+    # ══ [KronosBridge ACTIVE END] ══════════════════════════════════════════════
 
     # ── s24: 已归档 (2026-06-26 设计院封印) ────────────────────────────
     pass  # s24已归档
