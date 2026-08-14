@@ -4144,6 +4144,52 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _tlog.getLogger(__name__).warning(f'TRADFI联动门控异常: {_te}')
     # ══ [TRADFI整体落地 END] ══════════════════════════════════════════════════
 
+    # ══ [设计院封印 2026-08-14 苏摩111] TradFi三类路由器接入 ═════════════════
+    # 验证铁证: A类 WR+9.1pp PNL-3.3%→+12.5% | 铁律1/2/3差异化评分
+    try:
+        if _result.get('asset_type') == 'TRADFI_STOCK':
+            from brahma_brain.tradfi_router import compute_router_delta as _tr_fn
+            from brahma_brain.tradfi_router import get_tradfi_report_header as _tr_hdr_fn
+            # 提取当前分析结果中的技术指标
+            _tr_atr_pct   = float((_result.get('momentum') or {}).get('atr_1h') or 0) / float(_result.get('price', 1) or 1)
+            _tr_spx_chg   = float((_result.get('tradfi_macro') or {}).get('spx_chg_1d', 0) or 0)
+            _tr_btc_chg   = float((_result.get('momentum') or {}).get('btc_chg_4h', 0) or 0)
+            _tr_lsr_long  = float((_result.get('sentiment') or {}).get('lsr_long', 0.5) or 0.5)
+            _tr_fr        = float((_result.get('sentiment') or {}).get('fr', 0) or 0)
+            _tr_score_now = float(_result.get('score_final') or 0)
+            _tr_direction = _result.get('signal_dir') or _result.get('direction', 'LONG')
+            _tr_out = _tr_fn(
+                symbol      = _sym,
+                direction   = _tr_direction,
+                base_score  = _tr_score_now,
+                atr_pct     = _tr_atr_pct,
+                spx_chg_1d  = _tr_spx_chg,
+                btc_chg_4h  = _tr_btc_chg,
+                lsr_long    = _tr_lsr_long,
+                fr          = _tr_fr,
+            )
+            # 注入路由器结果
+            _result['tradfi_router'] = _tr_out
+            _tr_delta = _tr_out.get('delta', 0)
+            if _tr_delta != 0:
+                _result['score_final'] = _tr_score_now + _tr_delta
+                _result['score']       = _result['score_final']
+                _result.setdefault('breakdown_extra', {})['tradfi_router_delta'] = _tr_delta
+            # STANDBY/WATCH 处理
+            if _tr_out.get('standby'):
+                _result['valid'] = False
+                _result.setdefault('breakdown_extra', {})['tradfi_router_standby'] = True
+            if _tr_out.get('watch'):
+                _result.setdefault('breakdown_extra', {})['tradfi_router_watch'] = True
+            # 报告头部标注（供formatter使用）
+            _tr_header = _tr_hdr_fn(_sym)
+            if _tr_header:
+                _result['tradfi_report_header'] = _tr_header
+    except Exception as _tr_e:
+        import logging as _tr_log
+        _tr_log.getLogger(__name__).warning(f'tradfi_router接入异常: {_tr_e}')
+    # ══ [TradFi三类路由器 END] ════════════════════════════════════════════════
+
     # [设计院封印 2026-08-09] 修复F12: analyze()结束时写入structured日志
     # 保证 brahma360 F12检查不再告警「SMC结构过旧」
     try:
