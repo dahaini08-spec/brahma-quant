@@ -354,6 +354,17 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
     执行单币种35维全量分析，返回格式化报告字符串
     compact=True: 压缩输出（节省~35% token），用于cron/auto触发场景
     """
+    # [P0-FIX 2026-08-15 苏摩111] Kronos预加载：cache→full
+    # 标准文档要求: src=kronos_full，不得使用缓存值
+    try:
+        import sys as _ke_sys, os as _ke_os
+        _ke_sys.path.insert(0, _ke_os.path.join(_ke_os.path.dirname(__file__), '..', 'brahma_brain'))
+        import kronos_engine as _ke
+        if not _ke._model_loaded:
+            _ke._load_model()
+    except Exception:
+        pass  # fail-safe: Kronos不可用时降级cache，不阻断主流程
+
     t0 = time.time()
     r = analyze(symbol, signal_dir=direction, deep=True)
     elapsed = round(time.time() - t0, 1)
@@ -434,6 +445,60 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         "▌ 35维评分矩阵",
         fmt_breakdown(bd),
         "",
+    ]
+
+    # ── [结构触碰层渲染 2026-08-15 苏摩111封印] ────────────────────────────────
+    _touch_score_bd  = bd.get('结构触碰事件', 0)
+    _touch_detail_bd = bd.get('结构触碰详情', '')
+    _liq_sweep_bd    = bd.get('清算清扫事件', 0)
+    if _touch_score_bd or _liq_sweep_bd:
+        _touch_parts = []
+        if _touch_score_bd:  _touch_parts.append(f'结构触碰+{_touch_score_bd}')
+        if _liq_sweep_bd:    _touch_parts.append(f'清算清扫+{_liq_sweep_bd}')
+        if _touch_detail_bd: _touch_parts.append(_touch_detail_bd)
+        lines.append(f'▌ 结构触碰事件层 ── {" | ".join(_touch_parts)}')
+        lines.append('')
+    # ── [END 结构触碰层渲染] ──────────────────────────────────────────────────
+
+    # ── [B/C类模块状态输出 2026-08-15 苏摩111封印] ────────────────────────────
+    # 标准输出文档要求: ssi / mode_c / integrity_gate / vol_regime 必须输出
+    _bc_lines = []
+    _ssi_res = r.get('ssi', {})
+    if _ssi_res and isinstance(_ssi_res, dict):
+        _ssi_level = _ssi_res.get('level', 'NORMAL')
+        _ssi_icon  = '❗' if _ssi_level == 'EXTREME' else '⚠️' if _ssi_level == 'HIGH' else '✅'
+        _sr_pct = _ssi_res.get('short_ratio_pct', None)
+        _sr_str = f' ({_sr_pct:.1f}%空头占比)' if isinstance(_sr_pct, (int,float)) else ''
+        _bc_lines.append(f'  ssi={_ssi_level}{_sr_str} {_ssi_icon}')
+    else:
+        _bc_lines.append('  ssi=N/A')
+    _mc_res = r.get('mode_c', {})
+    if _mc_res and isinstance(_mc_res, dict):
+        _mc_flag = 'MODE_C ⚠️' if _mc_res.get('is_mode_c') else 'NORMAL ✅'
+        _mc_score = _mc_res.get('score', 0)
+        _bc_lines.append(f'  mode_c={_mc_flag}  score={_mc_score}')
+    else:
+        _bc_lines.append('  mode_c=N/A')
+    _ig_res = r.get('integrity_gate', {})
+    if _ig_res and isinstance(_ig_res, dict):
+        _ig_icon   = '✅' if _ig_res.get('passed', True) else '❌'
+        _ig_reason = str(_ig_res.get('reason', ''))[:40]
+        _bc_lines.append(f'  integrity_gate={_ig_icon}  {_ig_reason or "pass"}')
+    else:
+        _bc_lines.append('  integrity_gate=N/A')
+    _vc_res = (r.get('extra') or {}).get('vol_context', {})
+    _vr = _vc_res.get('vol_regime', 'NORMAL') if isinstance(_vc_res, dict) else 'N/A'
+    _bc_lines.append(f'  vol_regime={_vr}')
+    _kronos_src  = (r.get('extra') or {}).get('kronos_src', 'cache')
+    _p_up_val    = r.get('s23_p_up', '?')
+    _kronos_icon = '✅' if _kronos_src in ('engine','kronos_full') else '⚠️cache'
+    _bc_lines.append(f'  Kronos src={_kronos_src} {_kronos_icon}  p_up={_p_up_val}')
+    lines.append('▌ B/C类模块状态')
+    lines.extend(_bc_lines)
+    lines.append('')
+    # ── [END B/C类模块状态输出] ─────────────────────────────────────────────
+
+    lines += [
         "▌ SMC结构 · FVG · OB · 流动性",
         fmt_smc(smc, price),
         "",
