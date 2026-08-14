@@ -65,9 +65,9 @@ PRIOR_FROM_SIM = {
     'BULL_TREND:LONG:standard': (15,  46),   # WR=33%
     'BULL_TREND:LONG:iron':     (31,  52),   # WR=60% ← 最优
     'BULL_TREND:LONG:wide':     (2,   20),   # WR=10% 先验防止过度探索—宽止损历史较差
-    'BULL_TREND:LONG:extreme':  (3,   26),   # WR=12%
+    'BULL_TREND:LONG:extreme':  (2,   40),   # WR=5% [封印降权 2026-08-14] 实测WR=7.9% n=38 PRIOR强制降至5%淘汰
     'BEAR_RECOVERY:LONG:iron':  (8,    8),   # WR=100%
-    'CHOP_MID:LONG:extreme':    (1,   10),   # WR=10%
+    'CHOP_MID:LONG:extreme':    (1,   20),   # WR=5% [封印降权 2026-08-14] 实测WR=9.1% n=11 PRIOR降权
 }
 
 

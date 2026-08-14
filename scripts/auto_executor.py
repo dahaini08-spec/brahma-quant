@@ -940,23 +940,33 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     # ── end circuit_breaker ──────────────────────────────────────────────
 
 
-    # ── [A2 相关性双开门控 2026-08-06 设计院自主决策] ──────────────────
-    # BTC/ETH相关性=0.86 → 双开=1.86x BTC风险敞口
-    # 规则: 同方向双开时检查相关性，高相关期总仓≤8%NAV
+    # ── [A2 相关性双开门控 2026-08-14 封印修复] ────────────────────────
+    # 修复根因: brahma_engine.check_correlation_risk不存在→永久静默失败
+    # 现改用: portfolio_optimizer.check_correlation_risk (真实接口)
     try:
-        from brahma_brain.brahma_engine import check_correlation_risk as _check_corr
-        _corr_result = _check_corr(sym, direction, active_positions, nav)
-        if _corr_result and not _corr_result.get('allowed', True):
-            _corr_reason = _corr_result.get('reason', '相关性门控拒绝')
-            print(f"⚠️ [相关性门控] {sym} {direction} 被拒: {_corr_reason}")
+        from brahma_brain.portfolio_optimizer import check_correlation_risk as _po_corr
+        _corr_blocked = False
+        _corr_reason  = ''
+        for _ap_sym, _ap_info in active_positions.items():
+            if _ap_sym == sym: continue
+            _ap_dir = (_ap_info.get('side') or _ap_info.get('direction', '')).upper()
+            if _ap_dir != direction.upper(): continue
+            _corr_r = _po_corr(sym, _ap_sym)
+            if _corr_r.get('high_corr') and _corr_r.get('corr', 0) > 0.75:
+                _corr_blocked = True
+                _corr_reason  = (f"相关性双开拒绝: {sym}+{_ap_sym} "
+                                 f"corr={_corr_r['corr']:.2f} 实际风险={_corr_r['risk_mult']:.2f}x")
+                break
+        if _corr_blocked:
+            print(f"⚠️ [相关性门控→封印修复] {sym} {direction} 拒绝: {_corr_reason}")
             return {
-                'signal_id': signal.get('signal_id',''), 'symbol': sym,
-                'direction': direction, 'score': float(signal.get('score',0)),
+                'signal_id': signal.get('signal_id', ''), 'symbol': sym,
+                'direction': direction, 'score': float(signal.get('score', 0)),
                 'ts': time.time(), 'ts_iso': datetime.now(timezone.utc).isoformat(),
                 'status': 'CORR_BLOCKED', 'reason': _corr_reason,
             }
-    except Exception:
-        pass  # 相关性检查失败时静默降级，不阻断执行
+    except Exception as _corr_e:
+        import logging as _cl; _cl.getLogger('auto_executor').debug(f'[corr_gate] {_corr_e}')
     # ── end 相关性门控 ────────────────────────────────────────────────────
 
     # [修复 2026-07-23] 美股代币(TRADFI_STOCK)走现货，不支持期货执行路径，直接跳过
