@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# 运行方式: PYTHONPATH=venv/lib/python3.11/site-packages python3 brahma_brain/brahma_binance_mcp.py --serve
 """
 brahma_binance_mcp.py — 梵天 Binance MCP Server v1.0
 [设计院封印 2026-08-13 苏摩111]
@@ -32,11 +33,9 @@ BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(BASE / 'brahma_brain'))
 
-# ── MCP Server 定义（需要 mcp 库）────────────────────────────────
+# ── MCP Server 定义（mcp v2 API）────────────────────────────────
 try:
-    from mcp.server import Server
-    from mcp.server.stdio import stdio_server
-    import mcp.types as types
+    from mcp.server import MCPServer
     MCP_AVAILABLE = True
 except ImportError:
     MCP_AVAILABLE = False
@@ -146,52 +145,64 @@ def run_standalone_test():
     print(f"      url: http://localhost:9001/mcp")
 
 
-# ── MCP Server 模式 ───────────────────────────────────────────────
+# ── MCP Server 模式（mcp v2 MCPServer API）────────────────────────────────
 if MCP_AVAILABLE:
-    app = Server("brahma-binance-mcp")
+    app = MCPServer("brahma-binance-mcp", version="1.0.0")
 
-    @app.list_tools()
-    async def list_tools():
-        return [
-            types.Tool(name="get_price",       description="获取实时价格",     inputSchema={"type":"object","properties":{"symbol":{"type":"string"}},"required":["symbol"]}),
-            types.Tool(name="get_klines",       description="获取K线数据",      inputSchema={"type":"object","properties":{"symbol":{"type":"string"},"interval":{"type":"string","default":"1h"},"limit":{"type":"integer","default":100}},"required":["symbol"]}),
-            types.Tool(name="get_funding_rate", description="获取资金费率",     inputSchema={"type":"object","properties":{"symbol":{"type":"string"}},"required":["symbol"]}),
-            types.Tool(name="get_open_interest",description="获取OI",          inputSchema={"type":"object","properties":{"symbol":{"type":"string"}},"required":["symbol"]}),
-            types.Tool(name="get_regime",       description="获取梵天体制状态", inputSchema={"type":"object","properties":{"symbol":{"type":"string"}},"required":["symbol"]}),
-            types.Tool(name="get_signal_pool",  description="获取最新信号池",   inputSchema={"type":"object","properties":{"limit":{"type":"integer","default":10}}}),
-            types.Tool(name="get_positions",    description="获取当前持仓",     inputSchema={"type":"object","properties":{}}),
-        ]
+    @app.tool()
+    def get_price_tool(symbol: str) -> str:
+        """Get real-time price for a symbol (e.g. BTCUSDT)"""
+        result = get_price(symbol)
+        return json.dumps({"symbol": symbol, "price": result}, ensure_ascii=False)
 
-    @app.call_tool()
-    async def call_tool(name: str, arguments: dict):
-        if name == "get_price":
-            result = get_price(arguments["symbol"])
-        elif name == "get_klines":
-            result = get_klines(arguments["symbol"], arguments.get("interval","1h"), arguments.get("limit",100))
-        elif name == "get_funding_rate":
-            result = get_funding(arguments["symbol"])
-        elif name == "get_open_interest":
-            result = get_oi(arguments["symbol"])
-        elif name == "get_regime":
-            result = _get_regime(arguments["symbol"])
-        elif name == "get_signal_pool":
-            result = _get_signal_pool(arguments.get("limit", 10))
-        elif name == "get_positions":
-            result = _get_positions()
-        else:
-            result = {"error": f"未知工具: {name}"}
-        return [types.TextContent(type="text", text=json.dumps(result, ensure_ascii=False))]
+    @app.tool()
+    def get_klines_tool(symbol: str, interval: str = "1h", limit: int = 100) -> str:
+        """Get OHLCV klines data"""
+        result = get_klines(symbol, interval, limit)
+        return json.dumps({"symbol": symbol, "interval": interval, "klines": len(result)}, ensure_ascii=False)
+
+    @app.tool()
+    def get_funding_rate_tool(symbol: str) -> str:
+        """Get funding rate for a perpetual contract"""
+        result = get_funding(symbol)
+        return json.dumps({"symbol": symbol, "funding_rate": result}, ensure_ascii=False)
+
+    @app.tool()
+    def get_open_interest_tool(symbol: str) -> str:
+        """Get open interest for a perpetual contract"""
+        result = get_oi(symbol)
+        return json.dumps({"symbol": symbol, "open_interest": result}, ensure_ascii=False)
+
+    @app.tool()
+    def get_regime_tool(symbol: str) -> str:
+        """Get current Brahma regime (BULL/BEAR/CHOP) for a symbol"""
+        result = _get_regime(symbol)
+        return json.dumps(result, ensure_ascii=False)
+
+    @app.tool()
+    def get_signal_pool_tool(limit: int = 10) -> str:
+        """Get latest signals from Brahma signal pool"""
+        result = _get_signal_pool(limit)
+        return json.dumps(result, ensure_ascii=False)
+
+    @app.tool()
+    def get_positions_tool() -> str:
+        """Get current open positions"""
+        result = _get_positions()
+        return json.dumps(result, ensure_ascii=False)
 
 
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--serve', action='store_true', help='启动MCP Server')
+    parser.add_argument('--serve', action='store_true', help='启动MCP Server HTTP SSE')
     parser.add_argument('--port', type=int, default=9001)
     args = parser.parse_args()
 
     if args.serve and MCP_AVAILABLE:
-        import asyncio
-        asyncio.run(stdio_server(app))
+        import uvicorn
+        starlette_app = app.sse_app()
+        print(f"[MCP] 梵天Binance MCP Server 启动于 http://localhost:{args.port}/sse")
+        uvicorn.run(starlette_app, host="0.0.0.0", port=args.port)
     else:
         run_standalone_test()
