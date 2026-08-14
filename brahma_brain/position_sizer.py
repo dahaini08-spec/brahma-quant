@@ -314,6 +314,42 @@ def get_position_pct(symbol: str, score: float, direction: str,
         pass
     # ── [END P2 宏观门控] ──────────────────────────────────────────────────────────────
 
+    # ── [P2-B signal_weights闭环 2026-08-14 设计院封印] ──────────────────────
+    # 修复根因: signal_weights.json由settler更新但position_sizer从未读取！闭环断裂。
+    # 修复: 根据 regime:direction:score段 读取multiplier，应用到仓位计算
+    _sw_mult = 1.0
+    _sw_note = ''
+    try:
+        import json as _json_sw, os as _os_sw
+        _sw_path = _os_sw.path.join(_os_sw.path.dirname(_os_sw.path.abspath(__file__)),
+                                    '..', 'data', 'signal_weights.json')
+        _sw_data = _json_sw.load(open(_sw_path))
+        _weights = _sw_data.get('weights', {})
+        # 构造查询key: regime:direction:score段
+        _score_bucket = (
+            '155+' if score >= 155 else
+            '140-154' if score >= 140 else
+            '120-139' if score >= 120 else
+            '100-119'
+        )
+        _reg_upper = (regime or '').upper()
+        _dir_upper = (direction or '').upper()
+        _sw_key = f'{_reg_upper}:{_dir_upper}:{_score_bucket}'
+        _sw_key2 = f'{_reg_upper}:{_dir_upper}'  # 不带分段的fallback
+        _sw_entry = _weights.get(_sw_key) or _weights.get(_sw_key2)
+        if _sw_entry:
+            _sw_mult = float(_sw_entry.get('multiplier', 1.0))
+            if _sw_mult != 1.0:
+                _sw_note = f'SW权重乘数={_sw_mult}({_sw_key})'
+        # 应用乘数
+        if _sw_mult <= 0.0:
+            max_pct = 0.0  # DEAD_ZONE 封禁
+        else:
+            max_pct = round(max_pct * _sw_mult, 2)
+        usdt = nav * max_pct / 100 if nav > 0 else 0
+    except Exception:
+        pass
+    # ── end signal_weights闭环 ────────────────────────────────────────────
     allowed = (max_pct > 0)
     usdt = nav * max_pct / 100 if nav > 0 else 0
 
@@ -346,7 +382,8 @@ def get_position_pct(symbol: str, score: float, direction: str,
                            + (f' [{_fg_reason}]' if _fg_applied else '')
                            + (f' [总风险{_current_used_pct:.1f}%/25%NAV]' if _portfolio_capped else '')
                            + (f' [{_macro_note}]' if _macro_note else '')
-                           + (f' [{_var_note}]' if _var_note else ''),
+                           + (f' [{_var_note}]' if _var_note else '')
+                           + (f' [{_sw_note}]' if _sw_note else ''),
         'allowed':         allowed,
         'fg_cap':          _fg_cap,
         'fg_applied':      _fg_applied,
