@@ -317,6 +317,26 @@ def get_position_pct(symbol: str, score: float, direction: str,
     allowed = (max_pct > 0)
     usdt = nav * max_pct / 100 if nav > 0 else 0
 
+    # ── [P1-B var_engine接入 2026-08-14 设计院] VaR动态仓位门控 ─────────────
+    _var_note = ''
+    _var_grade = ''
+    try:
+        from var_engine import single_position_var as _var_fn
+        _nav_est = nav if nav > 0 else 10000
+        _vr = _var_fn(symbol, signal_dir=direction, pos_pct_nav=max_pct/100, nav_usd=_nav_est)
+        _var_grade = _vr.get('risk_grade', '')
+        if _var_grade == 'HIGH':
+            max_pct = round(max_pct * 0.5, 2)
+            usdt = nav * max_pct / 100 if nav > 0 else 0
+            _var_note = f'VaR=HIGH 仓位×0.5→{max_pct}%'
+        elif _var_grade == 'EXTREME':
+            max_pct = round(max_pct * 0.3, 2)
+            usdt = nav * max_pct / 100 if nav > 0 else 0
+            _var_note = f'VaR=EXTREME 仓位×0.3→{max_pct}%'
+    except Exception:
+        pass
+    # ── [END var_engine] ──────────────────────────────────────────────────────
+
     return {
         'pct':             max_pct,
         'usdt':            round(usdt, 2),
@@ -325,7 +345,8 @@ def get_position_pct(symbol: str, score: float, direction: str,
                            + (' [7月上旬减半仓]' if _july_half_active else '')
                            + (f' [{_fg_reason}]' if _fg_applied else '')
                            + (f' [总风险{_current_used_pct:.1f}%/25%NAV]' if _portfolio_capped else '')
-                           + (f' [{_macro_note}]' if _macro_note else ''),
+                           + (f' [{_macro_note}]' if _macro_note else '')
+                           + (f' [{_var_note}]' if _var_note else ''),
         'allowed':         allowed,
         'fg_cap':          _fg_cap,
         'fg_applied':      _fg_applied,
