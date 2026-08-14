@@ -1,0 +1,1 @@
+{"total_lines": 49531, "total_funcs": 913, "total_classes": 21, "avg_complexity": 32.84, "large_modules": ["brahma_360.py(801L)", "brahma_analysis_runner.py(1519L)", "brahma_core.py(4188L)", "brahma_core_entry.py(818L)", "brahma_core_step4.py(576L)"], "module_count": 127}
