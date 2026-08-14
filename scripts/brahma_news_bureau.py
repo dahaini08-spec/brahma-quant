@@ -82,8 +82,8 @@ def gate1_tech(content: str) -> tuple[bool, list]:
     n = len(content)
     if n < 30:
         errors.append(f'字数不足({n}<30)')
-    if n > 500:
-        errors.append(f'字数超限({n}>500)')
+    if n > 2000:
+        errors.append(f'字数超限({n}>2000)')
     for p in BLOCKED_PUNCT:
         if p in content:
             errors.append(f'含全角感叹号（广场违规）')

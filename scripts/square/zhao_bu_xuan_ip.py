@@ -271,10 +271,19 @@ FORMAT_STANDARD = {
     # 免责声明（统一结尾）
     'DISCLAIMER': '⚠️ 仅供参考 模拟复盘',
 
+    # Binance Square API 限制（实测）
+    # 220095错误 = 帖子里的$SYMBOL格式超过允许的币种对数量
+    # 解决方案：用 "ACE" 而不是 "$ACE"，只在第一次提及时加$
+    'BINANCE_API_NOTES': {
+        'max_coin_pairs': '每篇不超过3个$SYMBOL格式引用',
+        'use_plain_name': '多币种帖子用 ACE +109% 而不是 $ACE +109%',
+        'max_chars': 2000,
+    },
+
     # 字数控制
     'CHAR_LIMITS': {
         'min_all':   100,    # 所有帖子最低字数
-        'max_all':   500,    # Square字数限制
+        'max_all':   2000,    # Square字数限制
         'ideal_P1':  (200, 380),
         'ideal_P2':  (250, 450),
         'ideal_P3':  (180, 380),

@@ -109,8 +109,8 @@ def check_content(content: str) -> tuple:
             return False, f'包含全角感叹号({count}个)，广场违规词'
     if n < 30:
         return False, f'字数不足({n}<30)'
-    if n > 500:
-        return False, f'字数超限({n}>500)'
+    if n > 2000:
+        return False, f'字数超限({n}>2000)'
     for w in BLOCKED_WORDS:
         if w in content:
             return False, f'包含禁用词: {w}'
@@ -376,21 +376,17 @@ def build_funding_rate() -> str:
 
 
 def build_top_gainers() -> str:
-    """合约涨幅榜 — 顶级交易员视角：利多分析+追高验证+操作建议"""
+    """涨幅榜 — 姓赵不宣: 每个标的给实质判断，不做无观点列表"""
     import requests as _r, re as _re
 
     data = run_pro_cli(['search', 'price-change', 'um', '--sort', 'TOP_GAINERS', '--limit', '8'])
     items_raw = (data.get('list') or data.get('items', []))[:6] if data else []
-
-    # 过滤乱码symbol（只保留纯 ASCII 字母+数字 symbol）
     items = [x for x in items_raw
-             if _re.match(r'^[A-Z0-9]{2,12}USDT$', x.get('symbol', ''))]
-    items = items[:5]
-
+             if _re.match(r'^[A-Z0-9]{2,12}USDT$', x.get('symbol', ''))][:5]
     if not items:
         return ''
 
-    # 拉主力币BTC背景
+    # BTC背景
     btc_chg = 0.0
     try:
         bt = _r.get('https://fapi.binance.com/fapi/v1/ticker/24hr',
@@ -399,69 +395,84 @@ def build_top_gainers() -> str:
     except Exception:
         pass
 
-    # 对前2名拉FR和OI判断涨幅性质
-    sym_analysis = {}
-    for x in items[:2]:
+    # 对前3名拉完整数据
+    sym_data = {}
+    for x in items[:3]:
         sym_r = x.get('symbol', '')
         try:
             fr_d = _r.get('https://fapi.binance.com/fapi/v1/premiumIndex',
                           params={'symbol': sym_r}, timeout=4).json()
             ls_d = _r.get('https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
-                          params={'symbol': sym_r, 'period': '1h', 'limit': 1}, timeout=4).json()
-            sym_analysis[sym_r] = {
-                'fr': float(fr_d.get('lastFundingRate', 0)) * 100,
-                'ls': float(ls_d[0]['longShortRatio']) if ls_d else 1.0,
-            }
+                          params={'symbol': sym_r, 'period': '1h', 'limit': 2}, timeout=4).json()
+            oi_d = _r.get('https://fapi.binance.com/futures/data/openInterestHist',
+                          params={'symbol': sym_r, 'period': '1h', 'limit': 3}, timeout=4).json()
+            fr = float(fr_d.get('lastFundingRate', 0)) * 100
+            ls = float(ls_d[0]['longShortRatio']) if ls_d else 1.0
+            ls_long = float(ls_d[0]['longAccount']) if ls_d else 0.5
+            # OI趋势
+            oi_trend = '持平'
+            if len(oi_d) >= 2:
+                oi_now = float(oi_d[-1]['sumOpenInterestValue'])
+                oi_pre = float(oi_d[-2]['sumOpenInterestValue'])
+                oi_chg_pct = (oi_now - oi_pre) / max(oi_pre, 1) * 100
+                oi_trend = f'+{oi_chg_pct:.1f}%' if oi_chg_pct > 0.5 else (f'{oi_chg_pct:.1f}%' if oi_chg_pct < -0.5 else '持平')
+            sym_data[sym_r] = {'fr': fr, 'ls': ls, 'ls_long': ls_long, 'oi_trend': oi_trend}
         except Exception:
-            pass
+            sym_data[sym_r] = {'fr': 0, 'ls': 1, 'ls_long': 0.5, 'oi_trend': '未知'}
 
-    lines = ['今日涨幅榜，个人看法。', '']
-    lines.append(f'📊 {now_cst()} CST | BTC {btc_chg:+.1f}%')
-    lines.append('')
-    lines.append('涨幅前5：')
+    # 大盘定性
+    if btc_chg > 1.5:
+        btc_line = f'BTC今日+{btc_chg:.1f}%，大盘偏强，涨幅榜里顺势的多于逆势的。'
+    elif btc_chg > 0:
+        btc_line = f'BTC今日微涨+{btc_chg:.1f}%，大盘中性，涨幅榜里能独立走强的才值得关注。'
+    elif btc_chg > -1:
+        btc_line = f'BTC今日小跌{btc_chg:.1f}%，大盘偏弱，这些逆势上涨的有自己的逻辑，要单独看。'
+    else:
+        btc_line = f'BTC今日跌{btc_chg:.1f}%，大盘弱势，逆势涨的背后要么是轧空，要么有消息驱动，不能盲目跟。'
 
+    lines = [btc_line, '']
+
+    # 逐个标的实质分析
     for i, x in enumerate(items, 1):
-        sym_raw = x.get('symbol', '')
-        sym = sym_raw.replace('USDT', '')
-        chg = float(x.get('change', x.get('priceChangePercent', 0)))
+        sym_r = x.get('symbol', '')
+        sym   = sym_r.replace('USDT', '')
+        chg   = float(x.get('change', x.get('priceChangePercent', 0)))
         price = float(x.get('price', 0))
         p_str = f'{price:,.4f}U' if price < 1 else f'{price:,.2f}U'
-        sym_str = f'${sym}' if i <= 2 else sym
+        d     = sym_data.get(sym_r, {})
+        fr    = d.get('fr', 0)
+        ls_long = d.get('ls_long', 0.5)
+        oi_t  = d.get('oi_trend', '')
 
-        if sym_raw in sym_analysis:
-            a = sym_analysis[sym_raw]
-            fr = a['fr']; ls = a['ls']
-            if fr > 0.05:
-                note = f'  ← FR至{fr:.3f}%，追多成本高'
-            elif ls < 0.8:
-                note = f'  ← 空头被轧，谨慎追高'
-            elif chg > 50 and fr < 0.01:
-                note = f'  ← 涨幅大+FR正常，有真实买盘'
-            else:
-                note = ''
-            lines.append(f'  {i}. {sym_str} {chg:+.1f}% | {p_str}{note}')
+        # 实质判断逻辑
+        if fr > 0.08:
+            verdict = f'FR={fr:.3f}%偏高，多头在付保险费，追高成本累积，不建议现在进。'
+        elif fr < -0.03:
+            verdict = f'FR={fr:.3f}%负值，空头在付费，轧空逻辑存在，但{chg:+.0f}%后追多风险大。'
+        elif ls_long > 0.75 and chg > 20:
+            verdict = f'散户{ls_long*100:.0f}%做多，多头拥挤，这种行情追高往往是接刀。'
+        elif ls_long < 0.35 and chg > 10:
+            verdict = f'空头占{(1-ls_long)*100:.0f}%，还有大量空头没被清算，上方空间可能还有。'
+        elif oi_t.startswith('+') and chg > 15:
+            verdict = f'OI同步增加{oi_t}，是新资金推动的真实行情，不是单纯轧空。'
+        elif chg > 30:
+            verdict = f'涨了{chg:.0f}%但没有明显催化数据，可能是低流动性放大，谨慎。'
         else:
-            lines.append(f'  {i}. {sym_str} {chg:+.1f}% | {p_str}')
+            verdict = f'量能和资金面没有特别信号，跟随大盘情绪居多。'
 
+        lines.append(f'{i}. ${sym}  {chg:+.1f}%  {p_str}')
+        lines.append(f'   {verdict}')
+        lines.append('')
+
+    lines.append('涨幅榜我每次都要先看背后的逻辑，不是列完就完了。')
+    lines.append('哪个有机会，我会单独出一篇分析。')
     lines.append('')
-
-    # 操作建议
-    top_chg = float(items[0].get('change', 0))
-    if btc_chg > 1 and top_chg > 20:
-        advice = '大盘偏强带动小币涨，这种涨幅持续性要观察量能是否跟上。'
-    elif btc_chg < -0.5 and top_chg > 20:
-        advice = '大盘小跌但这些币逆势大涨，独立行情要看自身逻辑，不能盲目跟风。'
-    else:
-        advice = '涨幅榜不是买入信号，我会先弄清楚它涨的逻辑，再决定要不要参与。'
-
-    lines.append(advice)
-    lines.append('')
-    lines.append('#合约交易 #技术分析 #加密货币 #行情分析')
+    lines.append('#合约交易 #加密货币 #量化')
     return '\n'.join(lines)
 
 
 def build_top_losers() -> str:
-    """合约跌幅榜 — 顶级交易员视角：利空分析+结构判断+操作建议"""
+    """跌幅榜 — 姓赵不宣: 判断是抄底机会还是继续踩坑"""
     import requests as _r
 
     data = run_pro_cli(['search', 'price-change', 'um', '--sort', 'TOP_LOSERS', '--limit', '8'])
@@ -469,99 +480,84 @@ def build_top_losers() -> str:
     if not items:
         return ''
 
-    # 拉主力币BTC结构判断跌幅背景
-    btc_chg = 0.0
-    btc_fr = 0.0
-    btc_ls = 1.0
+    # BTC + FR + LSR
+    btc_chg, btc_fr = 0.0, 0.0
     try:
-        bt = _r.get('https://fapi.binance.com/fapi/v1/ticker/24hr',
-                    params={'symbol': 'BTCUSDT'}, timeout=4).json()
+        bt  = _r.get('https://fapi.binance.com/fapi/v1/ticker/24hr',
+                     params={'symbol': 'BTCUSDT'}, timeout=4).json()
         bfr = _r.get('https://fapi.binance.com/fapi/v1/premiumIndex',
                      params={'symbol': 'BTCUSDT'}, timeout=4).json()
-        bls = _r.get('https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
-                     params={'symbol': 'BTCUSDT', 'period': '1h', 'limit': 1}, timeout=4).json()
         btc_chg = float(bt.get('priceChangePercent', 0))
-        btc_fr = float(bfr.get('lastFundingRate', 0)) * 100
-        btc_ls = float(bls[0]['longShortRatio']) if bls else 1.0
+        btc_fr  = float(bfr.get('lastFundingRate', 0)) * 100
     except Exception:
         pass
 
-    # 对跌幅前2名拉OI和FR，判断是砸盘/轧多/恐慌
-    sym_analysis = {}
-    for x in items[:2]:
-        sym = x.get('symbol', '')
+    sym_data = {}
+    for x in items[:3]:
+        sym_r = x.get('symbol', '')
         try:
-            fr_r = _r.get('https://fapi.binance.com/fapi/v1/premiumIndex',
-                          params={'symbol': sym}, timeout=4).json()
-            oi_r = _r.get('https://fapi.binance.com/fapi/v1/openInterest',
-                          params={'symbol': sym}, timeout=4).json()
-            ls_r = _r.get('https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
-                          params={'symbol': sym, 'period': '1h', 'limit': 1}, timeout=4).json()
-            sym_analysis[sym] = {
-                'fr': float(fr_r.get('lastFundingRate', 0)) * 100,
-                'oi': float(oi_r.get('openInterest', 0)) * float(x.get('price', 0)) / 1e6,
-                'ls': float(ls_r[0]['longShortRatio']) if ls_r else 1.0,
-            }
+            fr_d = _r.get('https://fapi.binance.com/fapi/v1/premiumIndex',
+                          params={'symbol': sym_r}, timeout=4).json()
+            ls_d = _r.get('https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
+                          params={'symbol': sym_r, 'period': '1h', 'limit': 2}, timeout=4).json()
+            oi_d = _r.get('https://fapi.binance.com/futures/data/openInterestHist',
+                          params={'symbol': sym_r, 'period': '1h', 'limit': 3}, timeout=4).json()
+            fr = float(fr_d.get('lastFundingRate', 0)) * 100
+            ls_long = float(ls_d[0]['longAccount']) if ls_d else 0.5
+            oi_trend = '持平'
+            if len(oi_d) >= 2:
+                oi_now = float(oi_d[-1]['sumOpenInterestValue'])
+                oi_pre = float(oi_d[-2]['sumOpenInterestValue'])
+                oi_pct = (oi_now - oi_pre) / max(oi_pre, 1) * 100
+                oi_trend = f'+{oi_pct:.1f}%' if oi_pct > 0.5 else (f'{oi_pct:.1f}%' if oi_pct < -0.5 else '持平')
+            sym_data[sym_r] = {'fr': fr, 'ls_long': ls_long, 'oi_trend': oi_trend}
         except Exception:
-            pass
+            sym_data[sym_r] = {'fr': 0, 'ls_long': 0.5, 'oi_trend': '未知'}
 
-    # 判断大背景
-    if btc_chg < -2:
-        background = f'BTC今日跌{abs(btc_chg):.1f}%，整体偏弱，跌幅榜几乎全是被大盘拖下来的。'
-        btc_signal = '主因是大盘系统性下跌，不是个股利空。'
-    elif btc_chg < 0:
-        background = f'BTC今日小跌{abs(btc_chg):.1f}%，大盘承压。跌幅榜里有些是自身利空，要区分清楚。'
-        btc_signal = '注意区分大盘带跌和个币利空。'
+    # 大盘背景定性
+    if btc_chg < -3:
+        bg = f'BTC今日跌{abs(btc_chg):.1f}%，是系统性下跌，跌幅榜里大部分是被大盘拖下来的，不是自身利空。这种时候不要乱抄底，先等BTC稳住。'
+    elif btc_chg < -1:
+        bg = f'BTC今日跌{abs(btc_chg):.1f}%，大盘偏弱，部分标的是跟跌，但也有个币自身问题，要区分。'
+    elif btc_chg > 1:
+        bg = f'BTC今日涨{btc_chg:.1f}%，大盘偏强，但这些币逆势大跌，说明有自身问题，不能用大盘逻辑来解释。'
     else:
-        background = f'BTC今日微涨，但这些币逆势大跌，说明有自身利空，要单独分析。'
-        btc_signal = '大盘偏多但这些币逆势跌，大概率有利空事件或筹码砸盘。'
+        bg = f'BTC今日平淡{btc_chg:+.1f}%，这些标的独立大跌，大概率有利空事件或者筹码在出货。'
 
-    lines = [f'今日跌幅榜，说说我的看法。', '']
-    lines.append(f'📊 {now_cst()} CST | BTC {btc_chg:+.1f}%')
-    lines.append('')
-    lines.append('跌幅前5：')
+    lines = [bg, '']
 
     for i, x in enumerate(items, 1):
-        sym_raw = x.get('symbol', '')
-        sym = sym_raw.replace('USDT', '')
-        chg = float(x.get('change', x.get('priceChangePercent', 0)))
+        sym_r = x.get('symbol', '')
+        sym   = sym_r.replace('USDT', '')
+        chg   = float(x.get('change', x.get('priceChangePercent', 0)))
         price = float(x.get('price', 0))
         p_str = f'{price:,.4f}U' if price < 1 else f'{price:,.2f}U'
-        sym_str = f'${sym}' if i <= 2 else sym
+        d     = sym_data.get(sym_r, {})
+        fr    = d.get('fr', 0)
+        ls_long = d.get('ls_long', 0.5)
+        oi_t  = d.get('oi_trend', '')
 
-        # 对前两名加结构判断
-        if sym_raw in sym_analysis:
-            a = sym_analysis[sym_raw]
-            fr = a['fr']; oi_m = a['oi']; ls = a['ls']
-            if fr < -0.01:
-                note = f'  ← FR负值({fr:.3f}%)，多头被轧'
-            elif oi_m > 50 and chg < -20:
-                note = f'  ← OI大+急跌，可能继续'
-            elif ls > 2.0:
-                note = f'  ← 多空比{ls:.2f}，多头过度，回调合理'
-            elif chg < -40:
-                note = f'  ← 跌幅极端，小心反弹陷阱'
-            else:
-                note = ''
-            lines.append(f'  {i}. {sym_str} {chg:+.1f}% | {p_str}{note}')
+        # 判断是否值得抄底
+        if ls_long > 0.72 and chg < -20:
+            verdict = f'散户{ls_long*100:.0f}%还在做多，还没有真正的恐慌。跌幅大但多头没崩，说明底部还没到。'
+        elif ls_long < 0.35 and chg < -15:
+            verdict = f'空头已经{(1-ls_long)*100:.0f}%，极端恐慌迹象。这种位置要看下方有没有密集止损层，有的话反弹可期。'
+        elif fr < -0.05:
+            verdict = f'FR={fr:.3f}%负值，空头在给多头付费。这种位置继续做空成本高，但做多也要等结构信号。'
+        elif oi_t.startswith('-') and chg < -20:
+            verdict = f'OI缩减{oi_t}，是止损离场导致的跌，不是新空单推动。这类下跌反弹更快，关注企稳信号。'
+        elif abs(chg) > 40:
+            verdict = f'跌了{abs(chg):.0f}%，这幅度大概率有重大利空或者筹码砸盘。先查清楚原因，不要凭感觉抄。'
         else:
-            lines.append(f'  {i}. {sym_str} {chg:+.1f}% | {p_str}')
+            verdict = f'跌幅正常范围内，没有极端信号，观望为主。'
 
-    lines.append('')
-    lines.append(background)
-    lines.append('')
+        lines.append(f'{i}. ${sym}  {chg:+.1f}%  {p_str}')
+        lines.append(f'   {verdict}')
+        lines.append('')
 
-    # 操作建议（基于大盘方向）
-    if btc_chg < -1.5:
-        advice = '我的处理方式：大盘弱势时不抄底，等BTC稳住再看结构入场。'
-    elif any(float(x.get('change', 0)) < -30 for x in items[:2]):
-        advice = '跌超30%的别急着抄，先等量能萎缩、价格稳住，再谈入场。'
-    else:
-        advice = '跌幅榜的标的，先搞清楚是砸盘出货还是恐慌杀跌，逻辑不同，应对方式完全不一样。'
-
-    lines.append(advice)
+    lines.append('跌幅榜里不是每个都值得抄底，分清楚是大盘拖下来的还是自身有问题，这个判断比知道跌了多少更重要。')
     lines.append('')
-    lines.append('#合约交易 #技术分析 #加密货币 #行情分析')
+    lines.append('#合约交易 #加密货币 #量化')
     return '\n'.join(lines)
 
 
