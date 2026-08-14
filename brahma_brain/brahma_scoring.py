@@ -272,6 +272,50 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     score += s2
     breakdown['关键位精确度'] = s2
 
+    # ── [结构触碰事件层 2026-08-15 苏摩111封印] ─────────────────────────────
+    # 设计原则：距离评分（上方）是「静态位置」，触碰事件是「动态信号」
+    # 触碰事件加分独立于维度2，不受维度2上限20分约束
+    # fail-safe: 任何异常静默，不影响主流程
+    try:
+        from brahma_brain.structure_touch_detector import detect_structure_touch
+        _k1h_touch = (extra_data or {}).get('_klines_1h') or ms.get('klines_1h', {})
+        _liq_touch_data = None
+        try:
+            from brahma_brain.liq_density_engine import get_liq_density as _gtd_touch
+            _sym_touch = (extra_data or {}).get('symbol', '') or ms.get('symbol', '')
+            _px_touch = (extra_data or {}).get('price', 0) or price
+            if _sym_touch and _px_touch:
+                _liq_touch_data = _gtd_touch(_sym_touch, _px_touch)
+        except Exception:
+            pass
+        _touch = detect_structure_touch(
+            signal_dir=signal_dir,
+            current_price=price,
+            smc=smc,
+            klines_1h=_k1h_touch,
+            liq_data=_liq_touch_data,
+        )
+        _touch_score = _touch.get('total_score', 0)
+        if _touch_score > 0:
+            score += _touch_score
+            breakdown['结构触碰事件'] = _touch_score
+            breakdown['结构触碰详情'] = ' | '.join(_touch.get('details', []))
+            # 注入entry_pattern供HCME专项查询
+            if extra_data is not None:
+                extra_data['_entry_pattern'] = ''
+                labels = []
+                if _touch.get('fvg_touch'):  labels.append('FVG_BOUNCE')
+                if _touch.get('ob_touch'):   labels.append('OB_TOUCH')
+                if _touch.get('liq_touch'):  labels.append('LIQ_SWEEP')
+                if labels:
+                    extra_data['_entry_pattern'] = '+'.join(labels)
+            # 注入touch结果供decision_engine豁免通道使用
+            if extra_data is not None:
+                extra_data['_structure_touch'] = _touch
+    except Exception:
+        pass  # fail-safe
+    # ── [END 结构触碰事件层] ─────────────────────────────────────────
+
     # ── 维度3：动量背离确认（0~20）─────────────────────────────
     # [达摩院v12.9c] RSI彻底改为状态描述，不参与评分
     # 统计：PF=0.683 p=0.756，RSI单独入场指标无效（517样本验证）
@@ -653,6 +697,24 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     s7 = max(-20, min(20, s7))
     score += s7
     breakdown['清算/OI'] = s7
+
+    # ── [清算清扫完毕独立层 2026-08-15 苏摩111封印] ──────────────────────────
+    # 逻辑：检测「幸存在的清算集群被掉，价格快速反弹」事件
+    # 与维度7的liq_density区分：
+    #   liq_density = 「上下方清算密度有多少」（静态）
+    #   liq_sweep   = 「清算集群就尴尴就被扫了」（动态事件）
+    # fail-safe: 如extra_data已记录触碰事件，直接读取；否则重新计算
+    try:
+        _liq_sweep_score = 0
+        _touch_cached = (extra_data or {}).get('_structure_touch')
+        if _touch_cached and _touch_cached.get('liq_touch'):
+            _liq_sweep_score = _touch_cached.get('liq_touch_score', 0)
+        if _liq_sweep_score > 0:
+            score += _liq_sweep_score
+            breakdown['清算清扫事件'] = _liq_sweep_score
+    except Exception:
+        pass
+    # ── [END 清算清扫完毕独立层] ────────────────────────────────────
 
     # ── s8增强层: Volume Profile 成交密度分析（三院审核修复 2026-07-08）────────────────
     # 职责：识别当前价格区间是高密度支撑区还是低密度空洞
