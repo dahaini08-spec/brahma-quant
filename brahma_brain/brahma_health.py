@@ -176,7 +176,19 @@ def _check_data_files() -> dict:
             missing.append(fname)
         else:
             age = now - os.path.getmtime(fpath)
-            if age > 7200:  # >2H未更新
+            # 同时检查文件内timestamp字段（更精确，防止AI-driven cron不写文件的情况）
+            try:
+                import json as _hj
+                _hd = _hj.loads(open(fpath).read())
+                _ts = _hd.get('timestamp') or _hd.get('updated_at')
+                if _ts:
+                    if isinstance(_ts, str):
+                        import datetime as _hdt
+                        _ts = _hdt.datetime.fromisoformat(_ts.replace('Z','+00:00')).timestamp()
+                    age = min(age, now - float(_ts))
+            except Exception:
+                pass
+            if age > 3600:  # >1H未更新（原2H → 1H，更严格）
                 stale.append(f'{fname}({age/3600:.1f}H)')
     ok = not missing
     return {

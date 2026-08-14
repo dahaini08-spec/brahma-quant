@@ -3894,6 +3894,20 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     try:
         from brahma_brain.ssi_engine import compute_ssi as _ssi_fn
         _ssi_dir = _result.get('signal_dir', 'LONG')
+        # LONG方向：空头极拥挤 → SSI轧空利好（加分，而非惩罚）
+        if _ssi_dir == 'LONG':
+            try:
+                _ssi_sent_l = _result.get('sentiment', {})
+                _ssi_short_r = 100.0 - float(_ssi_sent_l.get('long_short_ratio', 50.0))
+                if _ssi_short_r >= 70.0:
+                    # 极端空头拥挤：轧空潜力，做多正面信号
+                    _ssi_bonus = min(8, round((_ssi_short_r - 70.0) * 0.4, 1))
+                    _result.setdefault('breakdown_extra', {})['ssi_long_squeeze_bonus'] = _ssi_bonus
+                    _result.setdefault('confluence', {}).setdefault('breakdown', {})['SSI轧空潜力'] = _ssi_bonus
+                    _result['score_final'] = round(float(_result.get('score_final', 0) or 0) + _ssi_bonus, 1)
+                    _result['score'] = _result['score_final']
+            except Exception:
+                pass
         if _ssi_dir == 'SHORT':
             _ssi_sent = _result.get('sentiment', {})
             _ssi_res = _ssi_fn(

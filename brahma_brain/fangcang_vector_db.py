@@ -96,27 +96,36 @@ def _to_vector(case: dict) -> List[float]:
     sym_map = {"BTC": 1.0, "ETH": 0.67, "SOL": 0.33}
     v7 = sym_map.get(case["symbol"], 0.5)
 
-    # 第9维: PIPs形态相似度（可选，需要价格序列）
-    # 方仓案例目前没有存储价格序列，故暂时用shape_code作为标量特征
-    # shape编码: V_BOTTOM=0.9 / M_TOP=0.1 / ASCENDING=0.7 / DESCENDING=0.3 / FLAT=0.5
-    _shape_map = {
-        'V_BOTTOM': 0.9, 'DOUBLE_BOTTOM': 0.85,
-        'M_TOP': 0.1,    'DOUBLE_TOP': 0.15,
-        'HEAD_SHOULDERS': 0.2,
-        'ASCENDING': 0.7, 'DESCENDING': 0.3,
-        'FLAT': 0.5,      'UNKNOWN': 0.5,
-    }
-    # 从case的direction推断基础形态
-    _dir = case.get('direction', 'UP')
-    _genuine = case.get('is_genuine_breakout', False)
-    if _dir == 'UP' and _genuine:
-        v8 = 0.75   # 向上真突破 → 偏V底形态
-    elif _dir == 'DOWN' and _genuine:
-        v8 = 0.25   # 向下真突破 → 偏M顶形态
-    elif _dir == 'UP':
-        v8 = 0.60   # 向上假突破
-    else:
-        v8 = 0.40   # 向下假突破
+    # 第9维: PIPs几何形态编码（激活 2026-08-14 苏摩111）
+    # 优先使用案例中存储的价格序列计算真实PIPs
+    # 无价格序列时 fallback 到方向推断（保持向后兼容）
+    _prices_seq = case.get('prices') or case.get('close_prices') or case.get('kline_closes')
+    if _prices_seq and len(_prices_seq) >= 5:
+        try:
+            from brahma_brain.pip_extractor import extract_pip_feature as extract_pip_features
+            _pip_feat = extract_pip_features(_prices_seq)
+            _shape_code_map = {
+                'V_BOTTOM': 0.9, 'DOUBLE_BOTTOM': 0.85,
+                'M_TOP': 0.1,    'DOUBLE_TOP': 0.15,
+                'HEAD_SHOULDERS': 0.2,
+                'ASCENDING': 0.7, 'DESCENDING': 0.3,
+                'FLAT': 0.5,      'UNKNOWN': 0.5,
+            }
+            v8 = _shape_code_map.get(_pip_feat.get('pip_shape', 'UNKNOWN'), 0.5)
+        except Exception:
+            _prices_seq = None  # fallback
+    if not _prices_seq:
+        # fallback：从case字段推断（旧逻辑，兼容无价格序列的历史案例）
+        _dir = case.get('direction', 'UP')
+        _genuine = case.get('is_genuine_breakout', False)
+        if _dir == 'UP' and _genuine:
+            v8 = 0.75
+        elif _dir == 'DOWN' and _genuine:
+            v8 = 0.25
+        elif _dir == 'UP':
+            v8 = 0.60
+        else:
+            v8 = 0.40
 
     return [v0, v1, v2, v3, v4, v5, v6, v7, v8]
 
