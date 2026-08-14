@@ -14,6 +14,7 @@ news_scraper.py — 梵天市场情报采集器 v1.0
 """
 import asyncio
 import json
+import subprocess
 import time
 import sys
 import os
@@ -21,11 +22,19 @@ import argparse
 from pathlib import Path
 from datetime import datetime, timezone
 
+# 自动确保依赖安装（防止容器重启后丢失）
+for _pkg in ['httpx', 'html2text']:
+    try:
+        __import__(_pkg.replace('-','_'))
+    except ImportError:
+        subprocess.run([sys.executable, '-m', 'pip', 'install', _pkg, '-q', '--break-system-packages'], check=False)
+
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(BASE / 'brahma_brain'))
 
-OUTPUT_FILE = BASE / 'data' / 'news_feed.jsonl'
+OUTPUT_FILE   = BASE / 'data' / 'news_feed.jsonl'
+WATERMARK_FILE = BASE / 'data' / 'news_last_pushed.json'  # 去重水位线
 MAX_LINES = 500  # 保留最近500条，防止文件无限增长
 
 # 目标URL（Binance官方API替代网页爬取）
@@ -126,7 +135,11 @@ def write_output(results: list[dict]):
     combined = combined[-MAX_LINES:]
 
     OUTPUT_FILE.write_text('\n'.join(json.dumps(e, ensure_ascii=False) for e in combined) + '\n')
-    print(f"[OK] 写入 {OUTPUT_FILE}，共 {len(combined)} 条（新增 {len(results)} 条）")
+    # 更新水位线：记录本次最新ts，下次只推更新内容
+    new_ts = max((e.get('ts', 0) for e in results), default=0)
+    if new_ts:
+        WATERMARK_FILE.write_text(json.dumps({'last_ts': new_ts, 'last_sources': [e['source'] for e in results]}))
+    print(f"[OK] 写入 {OUTPUT_FILE}，共 {len(combined)} 条（新增 {len(results)} 条，水位线={new_ts})")
 
 
 def main():
