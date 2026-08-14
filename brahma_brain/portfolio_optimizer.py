@@ -52,13 +52,15 @@ CORR_CACHE_TTL   = 3600   # 相关性矩阵缓存1小时
 
 # ── 已知高相关组（兜底规则，无需计算）────────────────────────
 KNOWN_HIGH_CORR_PAIRS = {
-    ('BTCUSDT', 'ETHUSDT'):   0.85,  # 长期高相关
-    ('BTCUSDT', 'BNBUSDT'):   0.80,
-    ('ETHUSDT', 'BNBUSDT'):   0.78,
-    ('SOLUSDT', 'AVAXUSDT'):  0.76,
-    ('SOLUSDT', 'NEARUSDT'):  0.73,
-    ('DOTUSDT', 'ATOMUSDT'):  0.74,
-    ('ADAUSDT', 'DOTUSDT'):   0.72,
+    tuple(sorted(['BTCUSDT', 'ETHUSDT'])): 0.85,  # 长期高相关
+    tuple(sorted(['BTCUSDT', 'BNBUSDT'])): 0.80,
+    tuple(sorted(['BTCUSDT', 'SOLUSDT'])): 0.78,  # [2026-08-14封印]
+    tuple(sorted(['ETHUSDT', 'BNBUSDT'])): 0.78,
+    tuple(sorted(['ETHUSDT', 'SOLUSDT'])): 0.77,  # [2026-08-14封印]
+    tuple(sorted(['SOLUSDT', 'AVAXUSDT'])): 0.76,
+    tuple(sorted(['SOLUSDT', 'NEARUSDT'])): 0.73,
+    tuple(sorted(['DOTUSDT', 'ATOMUSDT'])): 0.74,
+    tuple(sorted(['ADAUSDT', 'DOTUSDT'])): 0.72,
 }
 
 # ── 缓存 ─────────────────────────────────────────────────────
@@ -388,6 +390,16 @@ def check_correlation_risk(sym1: str, sym2: str) -> Dict:
     Returns:
         {'high_corr': bool, 'corr': float, 'risk_mult': float, 'warning': str}
     """
+    # 同标的就是100%相关 — [2026-08-14封印修复] 同标的重复开仓必须拦截
+    if sym1 == sym2:
+        return {
+            'high_corr':  True,
+            'corr':       1.0,
+            'risk_mult':  2.0,
+            'threshold':  CORR_THRESHOLD,
+            'warning':    f'同标的重复开仓: {sym1} corr=1.0 实际风险=2x',
+        }
+
     corr = get_pair_correlation(sym1, sym2)
     high = abs(corr) >= CORR_THRESHOLD
 
