@@ -229,6 +229,11 @@ def log_signal(result: dict) -> bool:
             'gex_min':         (cf.get('breakdown', {}) or {}).get('_gex_min'),
             'trigger_conf':    (result.get('extra', {}) or {}).get('trigger', {}).get('confidence'),
             'consensus':       (result.get('extra', {}) or {}).get('multitf', {}).get('consensus', ''),
+            # [P2-A 结构触碰入场形态标签 2026-08-15 苏摩111封印]
+            # 来源: brahma_scoring.py 内 detect_structure_touch() 写入 extra_data['_entry_pattern']
+            # HCME检索时优先匹配 entry_pattern + regime 专项案例
+            # FVG_BOUNCE / OB_TOUCH / LIQ_SWEEP / TRIPLE_TOUCH 组合
+            'entry_pattern':   result.get('_entry_pattern', '') or (result.get('extra', {}) or {}).get('_entry_pattern', ''),
             'rsi_1h':          (result.get('momentum', {}) or {}).get('rsi_1h'),
             'rsi_4h':          (result.get('momentum', {}) or {}).get('rsi_4h'),
             # [fix 2026-07-18 苏摩111] timing层字段回写：brahma_engine调用log_signal时从 result提取

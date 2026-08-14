@@ -41,6 +41,7 @@ def detect_structure_touch(
     smc: dict,                # 来自 smc_engine 的完整SMC数据
     klines_1h: dict,          # extra_data['_klines_1h'] 或 ms['klines_1h']
     liq_data: Optional[dict] = None,  # liq_density_engine 返回（可选）
+    klines_4h: Optional[dict] = None, # [P2-C 2026-08-15] 4H K线扩展（更高质量触碰）
 ) -> dict:
     """
     检测最近3根1H K线内是否发生了结构触碰事件。
@@ -103,8 +104,30 @@ def detect_structure_touch(
             result['details'].append(f'FVG触碰+{fvg_score}')
             touch_count += 1
 
-        # ── 2. OB触碰检测 ─────────────────────────────────────────────
-        ob_score = _detect_ob_touch(signal_dir, current_price, smc, recent_bars)
+        # ── 2. OB触碰检测（1H + 4H双层）────────────────────────────────
+        ob_score_1h = _detect_ob_touch(signal_dir, current_price, smc, recent_bars, tf='1h')
+        ob_score_4h = 0
+        if klines_4h and len(klines_4h.get('c', [])) >= 4:
+            recent_4h = []
+            highs_4h  = klines_4h.get('h', [])
+            lows_4h   = klines_4h.get('l', [])
+            closes_4h = klines_4h.get('c', [])
+            for ago in range(1, _MAX_LOOKBACK + 1):
+                idx = -(ago + 1)
+                if abs(idx) > len(closes_4h):
+                    break
+                recent_4h.append({
+                    'ago': ago, 'high': highs_4h[idx],
+                    'low': lows_4h[idx], 'close': closes_4h[idx],
+                    'decay': _DECAY.get(ago, 0),
+                })
+            # 4H触碰用 order_blocks_4h（如有）否则用1H OB数据
+            smc_4h = dict(smc)
+            ob4h = smc.get('order_blocks_4h', {})
+            if ob4h:
+                smc_4h['order_blocks'] = ob4h
+            ob_score_4h = _detect_ob_touch(signal_dir, current_price, smc_4h, recent_4h, tf='4h')
+        ob_score = max(ob_score_1h, ob_score_4h)  # 取最高质量
         if ob_score > 0:
             result['ob_touch'] = True
             result['ob_touch_score'] = ob_score
@@ -182,8 +205,10 @@ def _detect_fvg_touch(signal_dir: str, price: float, smc: dict, bars: list) -> i
     return 0
 
 
-def _detect_ob_touch(signal_dir: str, price: float, smc: dict, bars: list) -> int:
-    """检测OB触碰：K线high/low刺入OB区间，收盘未有效破位"""
+def _detect_ob_touch(signal_dir: str, price: float, smc: dict, bars: list, tf: str = '1h') -> int:
+    """检测OB触碰：K线high/low刺入OB区间，收盘未有效破位
+    [P2-B 2026-08-15] 新增OB方向性：区分「从外接近」vs「已穿越走远」
+    """
     obs = smc.get('order_blocks', {})
     if not obs:
         return 0
@@ -202,6 +227,26 @@ def _detect_ob_touch(signal_dir: str, price: float, smc: dict, bars: list) -> in
     if ob_low <= 0 or ob_high <= 0:
         return 0
 
+    # [P2-B] OB方向性判断：区分「从外部接近」vs「已穿越走远」
+    # 三种场景（做多Bull OB为例）:
+    #   A: price < ob_low  → 价格在OB下方，从外部接近（标准）
+    #   B: ob_low <= price <= ob_high → 价格在OB内（精确触碰区）
+    #   C: price > ob_high * 1.015 → 已穿越走远（追高，is_broken应过滤）
+    if signal_dir == 'LONG':
+        if price > ob_high * 1.015:   # 场景C：已穿越，追高风险
+            approach_mult = 0.5
+        elif ob_low <= price <= ob_high:  # 场景B：在OB内，最高质量
+            approach_mult = 1.3
+        else:                             # 场景A：从外接近，标准
+            approach_mult = 1.0
+    else:
+        if price < ob_low * 0.985:    # 场景C：已穿越
+            approach_mult = 0.5
+        elif ob_low <= price <= ob_high:  # 场景B：在OB内
+            approach_mult = 1.3
+        else:                             # 场景A：从外接近
+            approach_mult = 1.0
+
     # 新鲜度乘数（继承原有逻辑）
     age_bars = ob.get('age_bars', 0)
     if age_bars <= 3:
@@ -213,22 +258,21 @@ def _detect_ob_touch(signal_dir: str, price: float, smc: dict, bars: list) -> in
     else:
         age_mult = 0.30
 
+    # 4H触碰基础分更高（周期更大=更可靠）
+    base_raw = 13 if tf == '4h' else 10
+
     for bar in bars:
         decay = bar['decay']
         if signal_dir == 'LONG':
-            # 做多：K线低点刺入Bull OB，收盘在OB中或上方（未收盘破位）
-            wick_in = bar['low'] <= ob_high and bar['low'] >= ob_low * 0.98
+            wick_in   = bar['low'] <= ob_high and bar['low'] >= ob_low * 0.98
             close_held = bar['close'] >= ob_low * 0.995
             if wick_in and close_held:
-                raw = 10
-                return max(1, int(raw * decay * age_mult))
+                return max(1, int(base_raw * decay * age_mult * approach_mult))
         else:
-            # 做空：K线高点刺入Bear OB，收盘在OB中或下方
-            wick_in = bar['high'] >= ob_low and bar['high'] <= ob_high * 1.02
+            wick_in   = bar['high'] >= ob_low and bar['high'] <= ob_high * 1.02
             close_held = bar['close'] <= ob_high * 1.005
             if wick_in and close_held:
-                raw = 10
-                return max(1, int(raw * decay * age_mult))
+                return max(1, int(base_raw * decay * age_mult * approach_mult))
 
     return 0
 

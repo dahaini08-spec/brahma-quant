@@ -279,6 +279,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     try:
         from brahma_brain.structure_touch_detector import detect_structure_touch
         _k1h_touch = (extra_data or {}).get('_klines_1h') or ms.get('klines_1h', {})
+        _k4h_touch = (extra_data or {}).get('_klines_4h') or None  # [P2-C] 4H K线扩展
         _liq_touch_data = None
         try:
             from brahma_brain.liq_density_engine import get_liq_density as _gtd_touch
@@ -294,6 +295,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
             smc=smc,
             klines_1h=_k1h_touch,
             liq_data=_liq_touch_data,
+            klines_4h=_k4h_touch,  # [P2-C] 4H OB触碰支持
         )
         _touch_score = _touch.get('total_score', 0)
         if _touch_score > 0:
