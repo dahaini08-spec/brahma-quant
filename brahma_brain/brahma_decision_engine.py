@@ -244,9 +244,31 @@ class BrahmaDecisionEngine:
             dead = (regime, direction) in DEAD_COMBOS
             step1['dead_combo'] = dead
             if dead:
-                result['reason'] = f'Step1否决: 体制死穴 {regime}×{direction}'
-                result['details']['step1'] = step1
-                return result
+                # ── [结构共振豁免通道 2026-08-15 苏摩111封印] ─────────────────────
+                # 仅豁免 CHOP_MID×LONG 死穴（其他体制死穴不豁免）
+                # 条件：touchQuality≥70 + touches≥2 + base_score≥80
+                _bypass_triggered = False
+                try:
+                    if regime == 'CHOP_MID' and direction == 'LONG':
+                        _touch_data = signal.get('_structure_touch') or {}
+                        _base_score = float(score)
+                        from brahma_brain.structure_touch_detector import check_structure_bypass
+                        _bypass = check_structure_bypass(regime, direction, _touch_data, _base_score)
+                        if _bypass.get('bypass'):
+                            step1['structure_bypass'] = _bypass['reason']
+                            step1['size_mult'] = _bypass['size_mult']
+                            step1['entry_pattern'] = _bypass['entry_pattern']
+                            step1['dead_combo'] = False  # 展示用，已豁免
+                            _bypass_triggered = True
+                            # 注入豁免标记到结果
+                            result['_bypass_info'] = _bypass
+                except Exception:
+                    pass
+                # ── [END 结构共振豁免通道] ──────────────────────────────
+                if not _bypass_triggered:
+                    result['reason'] = f'Step1否决: 体制死穴 {regime}×{direction}'
+                    result['details']['step1'] = step1
+                    return result
 
             # 1b. SL过宽（动态门控：grade高时允许稍宽）
             sl_check = sl_pct if sl_pct > 0 else _get_15m_struct_sl(sym, direction, price)
