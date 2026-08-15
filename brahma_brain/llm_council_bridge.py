@@ -165,13 +165,14 @@ def _check_daily_limit() -> bool:
     return _call_count_today['count'] < DAILY_LIMIT
 
 
-def _call_llm(prompt: str, agent_name: str) -> Optional[Dict]:
+def _call_llm(prompt: str, agent_name: str, model: str | None = None) -> Optional[Dict]:
     """
     实际调用 LLM（通过 OpenClaw reasoning_client）
+    model: 'advanced'(bedrock-claude) | 'standard'(Qwen) | None(默认advanced)
     失败时返回 None（触发降级）
+    [多模型封印 2026-08-15 苏摩111]
     """
     try:
-        # 尝试通过 reasoning_client 调用
         import sys
         sys.path.insert(0, str(BASE / 'brahma_brain'))
         from reasoning_client import call_reasoning
@@ -179,17 +180,16 @@ def _call_llm(prompt: str, agent_name: str) -> Optional[Dict]:
         resp = call_reasoning(
             prompt=prompt,
             max_tokens=200,
-            temperature=0.1,   # 低随机性，确保一致输出
-            timeout=10         # 10秒超时
+            temperature=0.1,
+            timeout=10,
+            model=model,       # 传入模型选择
         )
         if resp and isinstance(resp, str):
-            # 提取JSON
             import re
             m = re.search(r'\{.*\}', resp, re.DOTALL)
             if m:
                 return json.loads(m.group())
     except ImportError:
-        # reasoning_client 不可用，使用直接HTTP
         pass
     except Exception as e:
         logger.debug(f"[{agent_name}] LLM调用失败: {e}")
@@ -276,7 +276,7 @@ def _risk_agent_review(signal: Dict) -> Dict:
         liq_sources=_liq_src_str,
     )
 
-    result = _call_llm(prompt, 'RiskAgent')
+    result = _call_llm(prompt, 'RiskAgent', model='advanced')   # 风控视角 bedrock-claude [多模型 2026-08-15 苏摩111]
     if result:
         result['source'] = 'llm'
         return result
@@ -338,7 +338,7 @@ def _macro_agent_review(signal: Dict, market_ctx: Dict) -> Dict:
         btc_dominance=btc_d, fear_greed=fg, funding_rate=funding, oi_change=oi_change
     )
 
-    result = _call_llm(prompt, 'MacroAgent')
+    result = _call_llm(prompt, 'MacroAgent', model='standard')  # 宏观视角 Qwen [多模型 2026-08-15 苏摩111]
     if result:
         result['source'] = 'llm'
         return result
