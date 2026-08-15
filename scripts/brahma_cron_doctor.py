@@ -16,6 +16,9 @@ brahma_cron_doctor.py — 梵天 Cron 自动诊断与修复
 每4小时由 cron job 触发一次
 """
 
+
+# [P0-2 2026-08-15 苏摩111] brahma-scan-guard存在性检查
+REQUIRED_CRONS = ['rsi-structure-watcher', 'brahma-scan-guard', 'candidates-refresh']
 import sys, os, json, time, subprocess, re
 from pathlib import Path
 from datetime import datetime, timezone, timedelta

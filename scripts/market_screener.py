@@ -62,7 +62,7 @@ os.chdir(str(BASE))
 
 # ── 配置 ──────────────────────────────────────────
 MIN_VOLUME_USD   = 100e6   # 最低成交额门槛 $100M
-TOP_N            = 50      # [全市场 2026-07-03] 苏摩授权：20→50扩大覆盖
+TOP_N            = 100     # [P1-1 2026-08-15 苏摩111] 50→100，覆盖更多妖币扩大覆盖
 SCORE_THRESHOLD  = 30      # [P1-D 2026-07-03] 40→30扩大候选覆盖
 MAX_WORKERS      = 6       # 并发线程数（不超过10避免rate limit）
 FAPI             = 'https://fapi.binance.com'
