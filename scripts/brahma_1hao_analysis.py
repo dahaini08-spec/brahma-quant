@@ -1307,44 +1307,39 @@ def run_dual_analysis(symbols=None, direction='LONG'):
     print(f"  时间: {fmt_beijing()}")
     print("=" * 60)
 
+    # [SIGSEGV修复 2026-08-15 苏摩111] 子进程隔离模式
+    # 根因：多符号顺序执行内存累积超过RLIMIT_AS=1500MB → SIGSEGV(139)
+    # 修复：每个symbol独立subprocess，内存隔离，不跨symbol累积
+    import subprocess as _sp, sys as _sys, os as _os
+    _script = _os.path.abspath(__file__)
+    _base   = _os.path.dirname(_os.path.dirname(_script))
+    # libgomp预加载（lightgbm/Kronos依赖）
+    _gomp = _os.path.join(_base, 'venv/lib/python3.11/site-packages/torch/lib/libgomp.so.1')
+    _env  = dict(_os.environ)
+    if _os.path.exists(_gomp):
+        _env['LD_PRELOAD'] = _gomp
+
     results = {}
     for sym in symbols:
-        print(f"\n[{sym}] 分析中...", flush=True)
+        print(f"\n[{sym}] 分析中（子进程隔离）...", flush=True)
         try:
-            report = run_analysis(sym, direction)
-            results[sym] = report
-            print(report)
-
-            # [全自动闭环 2026-08-05 设计院封印] 分析完成后写入信号池
-            # brahma_1hao_analysis 是事件驱动的高质量信号来源
-            # 写入 live_signal_log.jsonl → auto_executor(每小时:50) 自动捡起执行
-            try:
-                r_raw = analyze(sym, signal_dir=direction, deep=True)
-                _p = r_raw.get('params', {}) or {}
-                for _k in ['entry_lo','entry_hi','sl','tp1','tp2','rr','rr1','sl_pct','stop_loss']:
-                    if not r_raw.get(_k) and _p.get(_k):
-                        r_raw[_k] = _p[_k]
-                score = r_raw.get('score_final', r_raw.get('score', 0))
-                grade = r_raw.get('grade', 0)
-                # 只有 score≥138(TIER3入门) 且 grade≥80(StructureGate) 才写入
-                if float(score or 0) >= 138 and float(grade or 0) >= 80:
-                    from brahma_brain.dharma_data_bridge import log_signal
-                    r_raw['symbol'] = sym
-                    r_raw['direction'] = direction
-                    r_raw['source'] = 'brahma_1hao_auto'
-                    wrote = log_signal(r_raw)
-                    if wrote:
-                        print(f"[1hao→信号池] {sym} score={score:.0f} grade={grade:.0f} 已写入 live_signal_log ✅")
-                    else:
-                        print(f"[1hao→信号池] {sym} score={score:.0f} 写入去重拦截（重复信号）")
-                else:
-                    print(f"[1hao→信号池] {sym} score={score:.0f} grade={grade:.0f} < 阈值(138/80)，不写入")
-            except Exception as _e:
-                print(f"[1hao→信号池] 写入失败（不影响分析）: {_e}")
-
-        except Exception as e:
-            print(f"[{sym}] 分析失败: {e}")
-            import traceback; traceback.print_exc()
+            proc = _sp.run(
+                [_sys.executable, _script,
+                 '--symbols', sym,
+                 '--direction', direction,
+                 '--_single'],
+                capture_output=False,
+                timeout=300,
+                cwd=_base,
+                env=_env,
+            )
+            results[sym] = f'exit={proc.returncode}'
+            if proc.returncode not in (0, None):
+                print(f"[{sym}] 子进程退出码={proc.returncode}")
+        except _sp.TimeoutExpired:
+            print(f"[{sym}] 超时(300s)")
+        except Exception as _e:
+            print(f"[{sym}] 子进程失败: {_e}")
 
     return results
 
@@ -1372,6 +1367,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='梵天1号工程 · 35维全量矩阵分析')
     parser.add_argument('--symbols', nargs='+', default=['BTCUSDT', 'ETHUSDT'])
     parser.add_argument('--direction', default='LONG', choices=['LONG', 'SHORT'])
+    parser.add_argument('--_single', action='store_true', help='单符号直接执行模式（子进程调用，不递归）')
     parser.add_argument('--mode', default='standard', choices=['standard', 'altcoin'],
                         help='altcoin模式: 跳过HCME层，32维分析山寨币')
     args = parser.parse_args()
