@@ -577,6 +577,30 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         lines.insert(-1, f"  LLM: 跡过 ({_lce})")
     # ───────────────────────────────────────────────────
 
+    # ── [方案B 第三视角快速审查 2026-08-15 苏摩111] ────────────────────────
+    # score≥155时，用 standard(Qwen) 做快速独立审查
+    # 答AVOID → 扣10分+写入breakdown；不新建文件、不阻塞主流程
+    if score_final >= 155:
+        try:
+            from brahma_brain.reasoning_client import call_reasoning as _call_r
+            _hcme_wr_v = bd.get('HCME相似案例WR', '') or ''
+            _kron_v    = bd.get('s23_kronos', '') or ''
+            _q = (
+                f"梵天信号审查: {symbol} {direction} score={score_final:.0f} "
+                f"体制={regime} HCME={_hcme_wr_v} Kronos={_kron_v}\n"
+                f"仅用一个英文单词回答: ENTER / WAIT / AVOID"
+            )
+            _third = _call_r(_q, max_tokens=10, timeout=12, model='standard')
+            if _third and 'AVOID' in str(_third).upper():
+                score_final += -10
+                bd['第三视角_否决'] = -10
+                lines.insert(-1, f"  🤖第三视角(Qwen): AVOID 扣分-10")
+            elif _third:
+                lines.insert(-1, f"  🤖第三视角(Qwen): {str(_third).strip().upper()[:8]}")
+        except Exception:
+            pass
+    # ──────────────────────────────────────────────────────────────────────
+
     # ══ [设计院 2026-08-08] 方仓铁证层注入 ══════════════════════════════
     try:
         from brahma_brain.fangcang_engine import get_fangcang_context as _get_fc
