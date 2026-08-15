@@ -403,7 +403,7 @@ if __name__ == '__main__':
     # cron独立运行时的内存门控
     try:
         from brahma_mem_manager import mem_gate as _mg
-        _mg(900)
+        _mg(700)  # [P2修复 2026-08-15] 900MB→700MB，与brahma_1hao一致
     except (ImportError, SystemExit) as _mge:
         if isinstance(_mge, SystemExit): raise
     import argparse
