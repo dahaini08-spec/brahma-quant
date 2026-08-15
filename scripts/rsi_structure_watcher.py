@@ -480,6 +480,24 @@ def _load_pre_filter_symbols() -> list:
         return []
 
 
+
+def check_skip_reset(symbol: str, current_price: float, state: dict) -> bool:
+    """
+    [P1-2 2026-08-15 苏摩111] SKIP状态自动重置机制
+    当一个币分析为SKIP且价格从记录高点回落>30% → 清除SKIP标记，触发重新扫描
+    根因：高位SKIP ≠ 回落底部继续SKIP（ACE教训：$0.37 SKIP后 $0.06再度起爆）
+    """
+    key_high = f'{symbol}_recent_high'
+    key_ts   = f'{symbol}_recent_high_ts'
+    high = float(state.get(key_high, 0))
+    ts   = float(state.get(key_ts, 0))
+    if high > 0 and current_price > 0:
+        drawdown = (high - current_price) / high * 100
+        age_h = (time.time() - ts) / 3600 if ts else 0
+        if drawdown > 30 and age_h > 1:
+            return True  # 触发重置：从高点回落>30%
+    return False
+
 def run():
     now_str = datetime.now(tz=timezone.utc).strftime('%H:%M UTC')
     state = load_state()
@@ -511,6 +529,18 @@ def run():
         # 更新状态（RSI/BB记录）
         state[f'{sym}_rsi'] = data['rsi_1h']
         state[f'{sym}_bb']  = data['bb_width']
+
+        # [P1-2 2026-08-15 苏摩111] 高点记录 + SKIP自动重置
+        cur_price = float(data.get('price', 0) or data.get('close', 0))
+        if cur_price > 0:
+            prev_high = float(state.get(f'{sym}_recent_high', 0))
+            if cur_price > prev_high:
+                state[f'{sym}_recent_high']    = cur_price
+                state[f'{sym}_recent_high_ts'] = time.time()
+            # 从高点回落>30% → 强制触发重新扫描（清除静默封印）
+            if check_skip_reset(sym, cur_price, state) and status.startswith('SILENT'):
+                events = [{'event': 'SKIP_RESET', 'detail': f'回落>{state.get(f"{sym}_recent_high",0):.4f}的30%'}]
+                status = 'SKIP_RESET_TRIGGERED'
 
         if status.startswith('SILENT'):
             silent_syms.append(f"{sym}({status})")
