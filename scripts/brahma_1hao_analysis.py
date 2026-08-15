@@ -784,6 +784,36 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
             else:
                 _sl_warn = ''
             compact_lines.append(f"  入场: {entry_lo}~{entry_hi}  SL:{sl}{' '+_sl_warn if not _sl_ok else ''}  TP1:{tp1}  TP2:{tp2}")
+
+            # ── [P0/P1/P2 VIP策略校验层 2026-08-15 苏摩111封印] ─────────────────
+            # P0: 价格量级验证 | P1: 参数来源=engine | P2: 妖币时效性门控
+            try:
+                from brahma_brain.vip_validator import validate_vip_strategy
+                _chg24 = float(r.get('chg24', r.get('change_24h', 0)) or 0)
+                _oi_cached = float(r.get('oi_change_1h', 0) or 0)
+                _ls_cached = float(r.get('long_ratio', 50) or 50)
+                _vip_check = validate_vip_strategy(
+                    symbol=symbol,
+                    direction=_d,
+                    entry_lo=float(entry_lo),
+                    entry_hi=float(entry_hi or entry_lo),
+                    sl=float(sl or 0),
+                    tp1=float(tp1 or 0),
+                    chg_24h_pct=_chg24,
+                    cached_oi_change=_oi_cached,
+                    cached_long_pct=_ls_cached,
+                    source='engine',  # 参数严格来自engine，非AI推算
+                )
+                compact_lines.append(f"  ─── VIP校验 ───")
+                compact_lines.append(f"  {_vip_check['summary']}")
+                for _vl in _vip_check['vip_header'].split('\n')[1:]:
+                    if _vl.strip():
+                        compact_lines.append(f"  {_vl}")
+                if not _vip_check['valid']:
+                    compact_lines.append(f"  ❌ 策略参数已失效，禁止发帖，需重新分析")
+            except Exception:
+                pass  # fail-safe
+            # ── [END VIP策略校验层] ────────────────────────────────────────────
         # CHoCH状态
         smc_st2 = smc.get('structure', {})
         choch2 = smc_st2.get('choch', [])
