@@ -1,7 +1,7 @@
 {
   "version": "1.0",
-  "generated_at": "2026-07-20T12:59:52Z",
-  "source": "IC追踪器+达摩院统计回归 2026-07-20 + BEAR_TREND:SHORT系列(2026-07-28设计院补充)",
+  "generated_at": "2026-08-15T08:40:20Z",
+  "source": "IC追踪器+达摩院统计回归 2026-07-20 + BEAR_TREND:SHORT系列(2026-07-28设计院补充) | refreshed 2026-08-15",
   "weights": {
     "BULL_TREND:LONG:155+": {
       "multiplier": 1.0,

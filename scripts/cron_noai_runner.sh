@@ -10,6 +10,12 @@
 ulimit -c 0
 export PYTHONFAULTHANDLER=0          # 禁用Python fault handler（防止core dump）
 export PYTHONDONTWRITEBYTECODE=1     # 不写.pyc（减少IO）
+# ── lightgbm/libgomp修复 2026-08-15 苏摩111 ──────────────────
+# 容器环境缺少libgomp.so.1，通过torch内置的预加载解决
+_GOMP_LIB="/root/.openclaw/workspace/trading-system/venv/lib/python3.11/site-packages/torch/lib/libgomp.so.1"
+if [ -f "$_GOMP_LIB" ]; then
+    export LD_PRELOAD="$_GOMP_LIB"
+fi
 
 TASK="$1"
 BASE="/root/.openclaw/workspace/trading-system"
