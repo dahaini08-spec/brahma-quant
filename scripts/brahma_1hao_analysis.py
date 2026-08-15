@@ -1352,8 +1352,20 @@ def run_dual_analysis(symbols=None, direction='LONG'):
 if __name__ == '__main__':
     # cron独立运行时的内存门控
     try:
-        from brahma_mem_manager import mem_gate as _mg
-        _mg(700)
+        from brahma_mem_manager import mem_gate as _mg, get_mem_mode, _available_mb as _avail_mb
+        # [P2修复 2026-08-15 苏摩111] 降级门控：526MB不再被拦戈
+        # full≥650MB / degraded 550~650MB / light 400~550MB / blocked<400MB
+        _avail_now = _avail_mb()
+        _mem_mode  = get_mem_mode(_avail_now)
+        if _mem_mode == 'blocked':
+            print(f'HEARTBEAT_OK — 内存危险({_avail_now:.0f}MB<400MB) [brahma_1hao_analysis跳过]')
+            raise SystemExit(0)
+        # degraded/light模式注入到全局，让run_analysis可读取
+        import builtins as _bi
+        _bi._BRAHMA_MEM_MODE = _mem_mode
+        _bi._BRAHMA_MEM_AVAIL = _avail_now
+        if _mem_mode != 'full':
+            print(f'[内存降级] {_avail_now:.0f}MB → {_mem_mode}模式（跳过{"HCME/方仓" if _mem_mode=="degraded" else "Kronos/HCME/方仓"}）')
     except (ImportError, SystemExit) as _mge:
         if isinstance(_mge, SystemExit): raise
     import argparse
