@@ -37,10 +37,11 @@ DEDUP_FILE = DATA_DIR / 'square_post_dedup.json'
 
 # ── Square API ────────────────────────────────────────────────────
 SQUARE_API = 'https://www.binance.com/bapi/composite/v1/public/pgc/openApi/content/add'
+import os as _os
 SQUARE_KEYS = {
-    'A': 'd9f19e3f6ba3480584db27b09bec0f27',   # 主账户 姓赵不宣
-    'B': 'c43ebad6a8434d1b91a039dbf43fda29',
-    'C': '278f3e81efda4274a1d8e15dbc32ec88',
+    'A': _os.environ.get('SQUARE_KEY_0', ''),   # 主账户 姓赵不宣 — via env SQUARE_KEY_0
+    'B': _os.environ.get('SQUARE_KEY_1', ''),
+    'C': _os.environ.get('SQUARE_KEY_2', ''),
 }
 
 # ── 帖型→账户路由 ─────────────────────────────────────────────────

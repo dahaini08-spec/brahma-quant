@@ -7,6 +7,8 @@
     "tp1": 1847.4,
     "qty": 0.03,
     "updated_at": 1785637427.998272,
-    "active": true
+    "active": false,
+    "closed_at": 1786771760.2894905,
+    "close_reason": "manual_close_苏摩确认"
   }
 }

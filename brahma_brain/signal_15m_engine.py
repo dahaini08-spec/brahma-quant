@@ -339,19 +339,31 @@ def generate_15m_signal(symbol: str, verbose: bool = False) -> dict | None:
         # 多头条件：RSI_15M < 55 + regime不是BEAR_TREND
         # 空头条件：RSI_15M > 45 + regime不是BULL_TREND
         candidates_dir = []
+        # [2026-08-14 高频开单修复 设计院封印]
+        # 修复1: BEAR_TREND体制下做空方向没有被加入candidates_dir！
+        # 原逻辑只加了LONG，BEAR_TREND最需要的SHORT被遗漏
         if regime not in ('BEAR_TREND', 'BEAR_EARLY') and rsi_15m < 58:
             candidates_dir.append('LONG')
         if regime not in ('BULL_TREND', 'BULL_EARLY') and rsi_15m > 42:
             candidates_dir.append('SHORT')
+        # BEAR_TREND体制下强制加入SHORT（主学先前有缺漏）
+        if regime in ('BEAR_TREND', 'BEAR_EARLY') and 'SHORT' not in candidates_dir:
+            candidates_dir.append('SHORT')
+        # BULL_TREND体制下强制加入LONG
+        if regime in ('BULL_TREND', 'BULL_EARLY') and 'LONG' not in candidates_dir:
+            candidates_dir.append('LONG')
 
         if not candidates_dir:
             return None
 
         # ── Step 3: 成交量过滤 ──
         vol_ratio = _vol_ratio(v15m, 20)
-        if vol_ratio < 1.0:  # 成交量低于均量，不产生信号
+        # [2026-08-14 修复2] vol_ratio < 1.0直接拒绝过于严格
+        # 盘整期成交量萌缩是常态，严格要求>1.0导致大量拦截
+        # 修改：降至 0.6 即可，并将vol_ratio影响转为评分项（而非平效拦截）
+        if vol_ratio < 0.6:  # 成交量严重小于均量60%才拒绝
             if verbose:
-                print(f'[15M] {sym} 成交量不足 vol_ratio={vol_ratio:.2f}')
+                print(f'[15M] {sym} 成交量严重不足 vol_ratio={vol_ratio:.2f} < 0.6')
             return None
 
         # ── Step 4: 结构检测 + FVG/OB ──
@@ -368,12 +380,17 @@ def generate_15m_signal(symbol: str, verbose: bool = False) -> dict | None:
 
             # 结构检测
             struct = _detect_choch_bos_15m(bars_15m, direction)
-            if not struct.get('confirmed'):
-                continue
+            # [2026-08-14 高频开单修复] 原struct未确认直接continue，导致大量拦截
+            # 修复: struct未确认时不再居断拦截，但FVG/OB必须存在才能继续
+            struct_confirmed = struct.get('confirmed', False)
 
             # FVG 检测
             fvg = _detect_fvg_15m(bars_15m, direction)
             ob  = _detect_ob_15m(bars_15m, direction)
+
+            # struct未确认且无FVG/OB时才拒绝（三样条件都没有就无依据）
+            if not struct_confirmed and not fvg and not ob:
+                continue
 
             # ── 入场区计算 ──
             atr_15m = _atr(h15m, l15m, c15m, 14)
@@ -416,15 +433,18 @@ def generate_15m_signal(symbol: str, verbose: bool = False) -> dict | None:
             rr1 = abs(tp1 - entry_hi) / max(abs(stop_loss - entry_lo), 1e-9)
             rr1 = round(rr1, 2)
 
-            # RR 门槛：≥ 1.5
-            if rr1 < 1.5:
+            # RR 门槛：≥ 1.0（[2026-08-14 高频开单修复] 原1.5过严格，与主链路 RR=1.0一致）
+            if rr1 < 1.0:
                 continue
 
             # ── 评分（15M专用，0~100）──
             score = 0
-            score += 30  # 结构确认基础分
-            if struct['type'].startswith('CHoCH'):
-                score += 15  # CHoCH > BOS
+            if struct_confirmed:
+                score += 30  # 结构确认基础分
+                if struct['type'].startswith('CHoCH'):
+                    score += 15  # CHoCH > BOS
+            else:
+                score += 10  # 无结构但有FVG/OB，给基础分
             if fvg:
                 score += 20  # FVG优于OB
             elif ob:
@@ -442,6 +462,9 @@ def generate_15m_signal(symbol: str, verbose: bool = False) -> dict | None:
                 score += 10
             elif direction == 'SHORT' and 50 <= rsi_15m <= 65:
                 score += 10
+            # [2026-08-14] BEAR_TREND做空额外加分（体制共识）
+            if regime in ('BEAR_TREND','BEAR_EARLY') and direction == 'SHORT':
+                score += 12
 
             if score > best_score:
                 best_score = score

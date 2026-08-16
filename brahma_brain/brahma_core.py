@@ -2490,17 +2490,25 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             and _sq['grade'] >= 75
             and _score_raw >= 155
         )
-        if _sq['grade'] < 80 and not _bull_grade_exception:
+        # [2026-08-14 高频开单 设计院封印] BEAR_TREND做空特例通道
+        # 依据: BEAR_TREND:SHORT WR=87% 是死稴最高胜率体制，grade75~79可信任
+        _bear_short_exception = (
+            'BEAR_TREND' in _regime_key
+            and signal_dir == 'SHORT'
+            and _sq['grade'] >= 75
+            and _score_raw >= 130  # 低于BULL的155门槛，因BEAR体制本身就是共识
+        )
+        if _sq['grade'] < 80 and not _bull_grade_exception and not _bear_short_exception:
             # grade<80: 包含grade70-79死亡区（WR=47%）全部封堵
             _score_raw = 0
             cf['total'] = 0
             cf['action'] = 'SKIP'
             cf['kelly_mult'] = 0
             cf['structure_reject'] = f'grade={_sq["grade"]}({_sq["label"]}) grade<80 WR=47%死亡区封堵 [v25.4]'
-            pass  # [静默] f'[StructureGate] 🚫 {_sym} {signal_dir}: {_sq["label"]} grade={_sq["grade"]}<80 
-        elif _sq['grade'] < 80 and _bull_grade_exception:
-            # BULL_TREND特例通道：grade75~79允许通过（三重条件保护）
-            pass  # [静默] f'[StructureGate] ⚡ {_sym} LONG: BULL_TREND特例 grade={_sq["grade"]}(≥75) score≥15
+            pass
+        elif _sq['grade'] < 80 and (_bull_grade_exception or _bear_short_exception):
+            # 特例通道：BULL_TREND LONG grade75~79 或 BEAR_TREND SHORT grade75~79
+            pass
         elif _sq['grade'] >= 90:
             _sq_bonus = round((_sq['grade'] - 80) * 0.3, 1)
             _score_raw = round(_score_raw + _sq_bonus, 1)

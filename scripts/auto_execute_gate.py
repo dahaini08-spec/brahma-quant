@@ -221,44 +221,48 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
                 'reason': f'P2高分timing拦截: score={_score_p2:.0f} timing={_timing_p2}（等待入场时机）',
                 'order': None}
 
-    # 规则2: BULL_TREND LONG WR门控 [铁证封印 2026-08-02 设计院自主]
-    # 实盘数据 n=192: 全区间WR均<45% (120-139: WR=26.1%, 140-154: WR=28.6%, 160+: WR=15.4%)
-    # BULL_TREND LONG = 系统性亏损方向，全线进入OBSERVE模式，暂停自动执行
+    # 规则2: BULL_TREND LONG 分层门控 [降权型改造 2026-08-16 苏摩111封印]
+    # 设计院原则：梵天是为交易而生，分析层是为了看清楚，不是相互封禁没有信号
+    # 铁证：score≥140 实盘WR=66.7%，score≥155 WR=100% → 高分信号解封
+    # 只封禁：score<120（无铁证支撑）/ 120-139（EXPIRED根因=entry zone，降权观察）
     if _regime_p2 == 'BULL_TREND' and _dir_p2 == 'LONG':
-        _sw_p2 = {}
-        try:
-            import json as _json_sw, os as _os_sw
-            _sw_file = _os_sw.path.join(_os_sw.path.dirname(__file__), '..', 'data', 'signal_weights.json')
-            if _os_sw.path.exists(_sw_file):
-                _sw_all = _json_sw.loads(open(_sw_file).read())
-                if _score_p2 >= 160:   _sw_p2 = _sw_all.get('BULL_TREND:LONG:160+', {})
-                elif _score_p2 >= 155: _sw_p2 = _sw_all.get('BULL_TREND:LONG:155-159', {})
-                elif _score_p2 >= 140: _sw_p2 = _sw_all.get('BULL_TREND:LONG:140-154', {})
-                elif _score_p2 >= 120: _sw_p2 = _sw_all.get('BULL_TREND:LONG:120-139', {})
-                else:                  _sw_p2 = _sw_all.get('BULL_TREND:LONG:<120', {})
-        except Exception:
-            pass
-        _action_p2 = _sw_p2.get('action', 'BLOCK')
-        _min_n_p2  = _sw_p2.get('min_n_required', 0)
-        if _action_p2 in ('BLOCK', 'OBSERVE'):
+        if _score_p2 >= 145:
+            # ≥145分：铁证WR=66.7%~100%，直接放行，不做额外门控
+            pass  # 继续执行流程
+        elif _score_p2 >= 120:
+            # 120-139分：EXPIRED根因已修复(±0.5%)，降权观察仓1%NAV
+            # 不直接BLOCK，改为标记observation让auto_executor降仓执行
+            signal['_observation_tier'] = True
+            signal['_pos_override_pct'] = 1.0  # 1%NAV观察仓
+        else:
+            # <120分：无铁证，封禁
             return {'executed': False,
-                    'reason': f'P2 WR门控: BULL_TREND LONG score={_score_p2:.0f} action={_action_p2} WR全线<45% 暂停执行（等WR≥55%自动解锁）',
+                    'reason': f'P2 WR门控: BULL_TREND LONG score={_score_p2:.0f}<120 无铁证支撑',
                     'order': None}
 
-    # 规则3: OBV反向时 score<165 禁止执行
-    # 规则2b: Kronos方向置信度门控 [顶层决策 2026-08-02 设计院自主]
-    # 根因: 历史BULL_TREND LONG 192条 WR=32.8%，主因是p_up方向不匹配
-    # 门控: 做多需p_up>0.55，做空需p_up<0.45
+    # 规则2b: Kronos方向置信度 → 降权型（不再二元否决）[2026-08-16 苏摩111封印]
+    # 设计院原则：Kronos误差±15%，用不确定的模型否决高分信号是错误的
+    # 改为：Kronos方向不符 → score降权，信号仍执行（降权后可能降至1%仓位）
     _p_up_gate = float(signal.get('s23_p_up', -1) or -1)
-    if _p_up_gate >= 0:  # 有有效p_up数据才门控
-        if _dir_p2 == 'LONG'  and _p_up_gate < 0.55:
-            return {'executed': False,
-                    'reason': f'Kronos方向门控: LONG需p_up>0.55，当前p_up={_p_up_gate:.2f}',
-                    'order': None}
-        if _dir_p2 == 'SHORT' and _p_up_gate > 0.45:
-            return {'executed': False,
-                    'reason': f'Kronos方向门控: SHORT需p_up<0.45，当前p_up={_p_up_gate:.2f}',
-                    'order': None}
+    if _p_up_gate >= 0:
+        if _dir_p2 == 'LONG':
+            if _p_up_gate < 0.35:
+                signal['_kronos_penalty'] = -15   # 强烈看空，重度降权
+                signal['_pos_override_pct'] = min(signal.get('_pos_override_pct', 99), 1.0)
+            elif _p_up_gate < 0.45:
+                signal['_kronos_penalty'] = -8    # 偏空，显著降权
+            elif _p_up_gate < 0.55:
+                signal['_kronos_penalty'] = -3    # 中性区，小幅降权
+            # else: p_up≥0.55 Kronos顺势，不降权
+        elif _dir_p2 == 'SHORT':
+            if _p_up_gate > 0.65:
+                signal['_kronos_penalty'] = -15
+                signal['_pos_override_pct'] = min(signal.get('_pos_override_pct', 99), 1.0)
+            elif _p_up_gate > 0.55:
+                signal['_kronos_penalty'] = -8
+            elif _p_up_gate > 0.45:
+                signal['_kronos_penalty'] = -3
+    # 规则3: OBV反向时 score<165 禁止执行
 
     # 规则3 OBV门控:
     _risk_p2 = signal.get('_risk_flags', [])

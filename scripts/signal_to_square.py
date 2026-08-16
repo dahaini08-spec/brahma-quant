@@ -30,7 +30,7 @@ SQUARE_LOG = DATA_DIR / 'square_post_log.jsonl'
 
 # ── Square API（来自TOOLS.md）────────────────────────────────────
 SQUARE_API  = 'https://www.binance.com/bapi/composite/v1/public/pgc/openApi/content/add'
-SQUARE_KEY  = 'd9f19e3f6ba3480584db27b09bec0f27'  # SQUARE_KEY_0 主账户
+SQUARE_KEY = __import__('os').environ.get('SQUARE_KEY_0', 'd9f19e3f...')  # via env  # SQUARE_KEY_0 主账户
 SQUARE_HEADERS = {
     'X-Square-OpenAPI-Key': SQUARE_KEY,
     'Content-Type': 'application/json',
