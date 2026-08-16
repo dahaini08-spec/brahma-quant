@@ -1297,6 +1297,17 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     _hv_discount = float(signal.get('_high_vol_discount', 1.0))
     # [fix 2026-07-18 苏摩111] 三档NAV自主决策
     _tier_nav_pct = float(signal.get('_tier_nav_pct', 0))
+    # [降权型改造 2026-08-16 苏摩111] _pos_override_pct: gate层传入的仓位上限
+    # 来源：BULL_TREND 120-139观察仓(1%) / Kronos强烈反向(1%)
+    _pos_override_pct = signal.get('_pos_override_pct')  # None=不覆盖
+    if _pos_override_pct is not None:
+        _pos_override_pct = float(_pos_override_pct) / 100.0  # 转为小数
+        _tier_nav_pct = _pos_override_pct  # 强制覆盖仓位
+        print(f'[降权观察仓] {sym} score={score:.0f} 仓位降权至{_pos_override_pct*100:.1f}%NAV')
+        if signal.get('_observation_tier'):
+            print(f'  → observation_tier: BULL_TREND 120-139，积累IC数据')
+        if signal.get('_kronos_penalty'):
+            print(f'  → kronos_penalty={signal["_kronos_penalty"]}，p_up反向降权')
     # BTC/ETH大仓位动态NAV分档
     if sym in BIG_SYMBOLS:
         if score >= BIG_SYM_SCORE_HIGH:

@@ -5,15 +5,15 @@
     "score_bin": "<120",
     "n": 82,
     "n_win": 26,
-    "n_loss": 17,
-    "n_timeout": 30,
-    "n_open": 9,
-    "settled": 43,
-    "wr": 0.6047,
+    "n_loss": 35,
+    "n_timeout": 21,
+    "n_open": 0,
+    "settled": 61,
+    "wr": 0.4262,
     "avg_pnl_win": 2.0,
     "avg_pnl_loss": -2.0,
-    "ev": 0.4186,
-    "rebuilt_at": "2026-08-11T04:35:35Z",
+    "ev": -0.2951,
+    "rebuilt_at": "2026-08-15T08:40:11Z",
     "source": "live_signal_log_rebuild_20260811"
   },
   "BULL_TREND:LONG:140-154": {
@@ -30,7 +30,7 @@
     "avg_pnl_win": 2.0,
     "avg_pnl_loss": -2.0,
     "ev": 0.6667,
-    "rebuilt_at": "2026-08-11T04:35:35Z",
+    "rebuilt_at": "2026-08-15T08:40:11Z",
     "source": "live_signal_log_rebuild_20260811"
   },
   "BULL_TREND:LONG:120-139": {
@@ -39,15 +39,15 @@
     "score_bin": "120-139",
     "n": 64,
     "n_win": 0,
-    "n_loss": 3,
+    "n_loss": 4,
     "n_timeout": 60,
-    "n_open": 1,
-    "settled": 3,
+    "n_open": 0,
+    "settled": 4,
     "wr": 0.0,
     "avg_pnl_win": 0.0,
     "avg_pnl_loss": -2.0,
     "ev": -2.0,
-    "rebuilt_at": "2026-08-11T04:35:35Z",
+    "rebuilt_at": "2026-08-15T08:40:11Z",
     "source": "live_signal_log_rebuild_20260811"
   },
   "BEAR_RECOVERY:LONG:160+": {
@@ -64,7 +64,7 @@
     "avg_pnl_win": 2.0,
     "avg_pnl_loss": 0.0,
     "ev": 2.0,
-    "rebuilt_at": "2026-08-11T04:35:35Z",
+    "rebuilt_at": "2026-08-15T08:40:11Z",
     "source": "live_signal_log_rebuild_20260811"
   },
   "BULL_TREND:LONG:160+": {
@@ -81,7 +81,7 @@
     "avg_pnl_win": 3.0596,
     "avg_pnl_loss": 0.0,
     "ev": 3.0596,
-    "rebuilt_at": "2026-08-11T04:35:35Z",
+    "rebuilt_at": "2026-08-15T08:40:11Z",
     "source": "live_signal_log_rebuild_20260811"
   },
   "BULL_TREND:LONG:155-159": {
@@ -98,7 +98,7 @@
     "avg_pnl_win": 2.0668,
     "avg_pnl_loss": 0.0,
     "ev": 2.0668,
-    "rebuilt_at": "2026-08-11T04:35:35Z",
+    "rebuilt_at": "2026-08-15T08:40:11Z",
     "source": "live_signal_log_rebuild_20260811"
   },
   "BULL_EARLY:LONG:<120": {
@@ -115,7 +115,7 @@
     "avg_pnl_win": 2.0,
     "avg_pnl_loss": 0.0,
     "ev": 2.0,
-    "rebuilt_at": "2026-08-11T04:35:35Z",
+    "rebuilt_at": "2026-08-15T08:40:11Z",
     "source": "live_signal_log_rebuild_20260811"
   },
   "BEAR_RECOVERY:LONG:<120": {
@@ -132,7 +132,7 @@
     "avg_pnl_win": 2.0,
     "avg_pnl_loss": 0.0,
     "ev": 2.0,
-    "rebuilt_at": "2026-08-11T04:35:35Z",
+    "rebuilt_at": "2026-08-15T08:40:11Z",
     "source": "live_signal_log_rebuild_20260811"
   },
   "BEAR_RECOVERY:LONG:120-139": {
@@ -149,7 +149,7 @@
     "avg_pnl_win": 2.0,
     "avg_pnl_loss": 0.0,
     "ev": 2.0,
-    "rebuilt_at": "2026-08-11T04:35:35Z",
+    "rebuilt_at": "2026-08-15T08:40:11Z",
     "source": "live_signal_log_rebuild_20260811"
   },
   "BEAR_RECOVERY:SHORT:<120": {
@@ -166,7 +166,7 @@
     "avg_pnl_win": 0.0,
     "avg_pnl_loss": -2.0,
     "ev": -2.0,
-    "rebuilt_at": "2026-08-11T04:35:35Z",
+    "rebuilt_at": "2026-08-15T08:40:11Z",
     "source": "live_signal_log_rebuild_20260811"
   },
   "BEAR_TREND:SHORT:<120": {
@@ -183,7 +183,7 @@
     "avg_pnl_win": 0.0,
     "avg_pnl_loss": 0.0,
     "ev": 0.0,
-    "rebuilt_at": "2026-08-11T04:35:35Z",
+    "rebuilt_at": "2026-08-15T08:40:11Z",
     "source": "live_signal_log_rebuild_20260811"
   },
   "BULL_EARLY:SHORT:<120": {
@@ -191,16 +191,16 @@
     "direction": "SHORT",
     "score_bin": "<120",
     "n": 4,
-    "n_win": 0,
+    "n_win": 2,
     "n_loss": 2,
-    "n_timeout": 2,
+    "n_timeout": 0,
     "n_open": 0,
-    "settled": 2,
-    "wr": 0.0,
-    "avg_pnl_win": 0.0,
+    "settled": 4,
+    "wr": 0.5,
+    "avg_pnl_win": 2.0,
     "avg_pnl_loss": -2.0,
-    "ev": -2.0,
-    "rebuilt_at": "2026-08-11T04:35:35Z",
+    "ev": 0.0,
+    "rebuilt_at": "2026-08-15T08:40:11Z",
     "source": "live_signal_log_rebuild_20260811"
   }
 }

@@ -1375,4 +1375,37 @@ if __name__ == '__main__':
     if args.mode == 'altcoin' and args.symbols == ['BTCUSDT', 'ETHUSDT']:
         args.symbols = ['XRPUSDT','DOGEUSDT','ADAUSDT','LINKUSDT',
                         'CHZUSDT','OPUSDT','ARBUSDT','UNIUSDT','ZECUSDT']
-    run_dual_analysis(args.symbols, args.direction)
+    # [SIGSEGV修复 2026-08-15] --_single标志：单符号直接执行，不走子进程路径
+    # 子进程调用时传入此标志，防止无限递归
+    if getattr(args, '_single', False) or len(args.symbols) == 1:
+        # 单符号直接运行（子进程模式或单符号调用）
+        sym = args.symbols[0]
+        print(f'\n[{sym}] 分析中...', flush=True)
+        result = run_analysis(sym, args.direction)
+        print(result)
+        # 写入信号池
+        try:
+            r_raw = analyze(sym, signal_dir=args.direction, deep=True)
+            _p = r_raw.get('params', {}) or {}
+            for _k in ['entry_lo','entry_hi','sl','tp1','tp2','rr','rr1','sl_pct','stop_loss']:
+                if not r_raw.get(_k) and _p.get(_k):
+                    r_raw[_k] = _p[_k]
+            score = r_raw.get('score_final', r_raw.get('score', 0))
+            grade = r_raw.get('grade', 0)
+            if float(score or 0) >= 138 and float(grade or 0) >= 80:
+                from brahma_brain.dharma_data_bridge import log_signal
+                r_raw['symbol'] = sym
+                r_raw['direction'] = args.direction
+                r_raw['source'] = 'brahma_1hao_auto'
+                wrote = log_signal(r_raw)
+                if wrote:
+                    print(f'[1hao→信号池] {sym} score={score:.0f} grade={grade:.0f} 已写入 ✅')
+                else:
+                    print(f'[1hao→信号池] {sym} 去重拦截')
+            else:
+                print(f'[1hao→信号池] {sym} score={score:.0f} grade={grade:.0f} < 阈值，不写入')
+        except Exception as _e:
+            print(f'[1hao→信号池] 写入失败: {_e}')
+    else:
+        # 多符号：走子进程隔离路径
+        run_dual_analysis(args.symbols, args.direction)
