@@ -122,6 +122,9 @@ def scan_d1_modules() -> list:
             'chart_renderer',          # push_chart.py动态import，二级链覆盖 ✅
             'pip_extractor',           # fangcang_engine调用，二级链覆盖 ✅
             'brahma_ci',               # CI探针独立工具，合理孤立 ✅
+            # ── D1修复 2026-08-17 苏摩111：已接入但被360误判为孤儿 ──
+            'structure_touch_detector', # brahma_scoring + brahma_decision_engine 真实调用 ✅
+            'vip_validator',            # brahma_1hao_analysis validate_vip_strategy 真实调用 ✅
         }
         _orphans = []
         for _f in sorted(_brain.glob('*.py')):
