@@ -355,10 +355,12 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
     compact=True: 压缩输出（节省~35% token），用于cron/auto触发场景
     """
     # [P0-FIX 2026-08-15 苏摩111] Kronos预加载：cache→full
-    # 标准文档要求: src=kronos_full，不得使用缓存值
+    # [D6修复 2026-08-17 苏摩111] sys.path.insert移出try块，避免并行race condition
+    import sys as _ke_sys, os as _ke_os
+    _ke_brain_path = _ke_os.path.join(_ke_os.path.dirname(__file__), '..', 'brahma_brain')
+    if _ke_brain_path not in _ke_sys.path:
+        _ke_sys.path.insert(0, _ke_brain_path)
     try:
-        import sys as _ke_sys, os as _ke_os
-        _ke_sys.path.insert(0, _ke_os.path.join(_ke_os.path.dirname(__file__), '..', 'brahma_brain'))
         import kronos_engine as _ke
         if not _ke._model_loaded:
             _ke._load_model()
