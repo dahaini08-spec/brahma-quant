@@ -1385,6 +1385,86 @@ if __name__ == '__main__':
         print(f'\n[{sym}] 分析中...', flush=True)
         result = run_analysis(sym, args.direction)
         print(result)
+
+        # ── P2 三线策略 + P3 连续记忆（2026-08-18 太极封印）──────────────────
+        try:
+            import sys as _sys
+            _bi_dir = str(Path(__file__).parent.parent / 'brahma_brain')
+            if _bi_dir not in _sys.path:
+                _sys.path.insert(0, _bi_dir)
+            from brahma_intel_layer import (
+                identify_pattern, generate_three_line_strategy,
+                record_analysis, summarize_intent
+            )
+            # 获取分析数据
+            _rd = analyze(sym, signal_dir=args.direction, deep=False) or {}
+            _p2 = _rd.get('params', {}) or {}
+            _oi1h     = float(_rd.get('oi_1h', 0) or 0)
+            _oi8h     = float(_rd.get('oi_8h', 0) or 0)
+            _hcme_wr  = float(_rd.get('hcme_wr', 50) or 50)
+            _l2       = float(_rd.get('l2_ratio', 1) or 1)
+            _long_pct = float(_rd.get('long_pct', 50) or 50)
+            _pd_zone  = str(_rd.get('pd_zone', 'NEUTRAL') or 'NEUTRAL')
+            _bos      = str(_rd.get('bos_type', '') or '')
+            _regime   = str(_rd.get('regime', '') or '')
+            _price    = float(_rd.get('price', 0) or 0)
+            _ema_pos  = 'ABOVE' if _rd.get('price_above_ema20_1h') else 'BELOW'
+            _grade    = float(_rd.get('grade_num', 0) or 0)
+            _ob_lo    = float(_rd.get('bull_ob_lo', _p2.get('entry_lo', 0)) or 0)
+            _ob_hi    = float(_rd.get('bull_ob_hi', _p2.get('entry_hi', 0)) or 0)
+            _bOB_lo   = float(_rd.get('bear_ob_lo', 0) or 0)
+            _bOB_hi   = float(_rd.get('bear_ob_hi', 0) or 0)
+            _fvg      = float(_rd.get('fvg_target', 0) or 0)
+            _l100u    = float(_rd.get('liq_100x_short', 0) or 0)
+            _l50u     = float(_rd.get('liq_50x_short', 0) or 0)
+            _l20u     = float(_rd.get('liq_20x_short', 0) or 0)
+            _l100d    = float(_rd.get('liq_100x_long', 0) or 0)
+            _lstop    = float(_rd.get('liq_stop_pool', 0) or 0)
+            _decision = str(_rd.get('action', 'SKIP') or 'SKIP')
+
+            # 获取上次HCME WR用于突变检测
+            _timeline = record_analysis.__module__ and []
+            from brahma_intel_layer import get_today_timeline
+            _prev_timeline = get_today_timeline(sym)
+            _hcme_prev = _prev_timeline[-1]['hcme_wr'] if _prev_timeline else _hcme_wr
+
+            # 情境识别
+            _pattern = identify_pattern(
+                oi_1h=_oi1h, oi_8h=_oi8h,
+                hcme_wr=_hcme_wr, hcme_wr_prev=_hcme_prev,
+                l2_ratio=_l2, long_pct=_long_pct,
+                pd_zone=_pd_zone, bos_type=_bos,
+                regime=_regime, price_vs_ema=_ema_pos,
+            )
+
+            # P3 记录今日轨迹
+            record_analysis(sym, _price, _hcme_wr, _oi1h,
+                            _pattern['pattern'], _decision)
+
+            # 主力意图总结
+            _intent_summary = summarize_intent(sym)
+
+            # P2 三线策略生成
+            if _ob_lo > 0 and _l20u > 0:
+                _three_lines = generate_three_line_strategy(
+                    symbol=sym, direction=args.direction,
+                    price=_price, pattern=_pattern,
+                    bull_ob_lo=_ob_lo, bull_ob_hi=_ob_hi,
+                    bear_ob_lo=_bOB_lo, bear_ob_hi=_bOB_hi,
+                    fvg_target=_fvg, liq_100x_up=_l100u,
+                    liq_50x_up=_l50u, liq_20x_up=_l20u,
+                    liq_100x_dn=_l100d, liq_stop_pool=_lstop,
+                    hcme_wr=_hcme_wr, grade=_grade, regime=_regime,
+                )
+                print(_three_lines)
+
+            # 主力意图追踪输出
+            print(f'\n📡 主力意图追踪: {_intent_summary}')
+
+        except Exception as _p2e:
+            pass  # 智慧层不阻断主流程
+        # ── end P2/P3 ─────────────────────────────────────────────────────────
+
         # 写入信号池
         try:
             r_raw = analyze(sym, signal_dir=args.direction, deep=True)
@@ -1406,6 +1486,45 @@ if __name__ == '__main__':
                     print(f'[1hao→信号池] {sym} 去重拦截')
             else:
                 print(f'[1hao→信号池] {sym} score={score:.0f} grade={grade:.0f} < 阈值，不写入')
+
+            # ── P0 强信号人工入场窗口推送（2026-08-18 太极封印）────────────────
+            # 规则：HCME WR≥80% + grade≥80 + 系统因SL过宽/其他原因无法自动执行
+            # → 立即推送苏摩人工入场窗口通知，不让最佳窗口无声错失
+            try:
+                _hcme_wr   = float(r_raw.get('hcme_wr', 0) or 0)
+                _grade_num = float(r_raw.get('grade_num', grade) or 0)
+                _action    = str(r_raw.get('action', '')).upper()
+                _sl_pct    = float(r_raw.get('sl_pct', 99) or 99)
+                _price     = float(r_raw.get('price', 0) or 0)
+                _entry_lo  = float(r_raw.get('entry_lo', 0) or 0)
+                _entry_hi  = float(r_raw.get('entry_hi', 0) or 0)
+                _tp1       = float(r_raw.get('tp1', 0) or 0)
+                _tp2       = float(r_raw.get('tp2', 0) or 0)
+                _sl_price  = float(r_raw.get('stop_loss', 0) or 0)
+                _regime    = str(r_raw.get('regime', '') or '')
+                # 触发条件：HCME WR≥80% + grade≥80 + ENTER意图 + SL过宽被拦截
+                _is_strong = (_hcme_wr >= 80 and _grade_num >= 80 and _action == 'ENTER')
+                _sl_blocked = (_sl_pct > 5.0)  # SL过宽是主要拦截原因
+                _score_blocked = (float(score or 0) < 138)  # 评分不足
+                if _is_strong and (_sl_blocked or _score_blocked):
+                    from scripts.push_hub import _jarvis
+                    _block_reason = f'SL={_sl_pct:.1f}%过宽' if _sl_blocked else f'score={score:.0f}<138'
+                    _msg = (
+                        f'🎯 **人工入场窗口！** {sym}\n'
+                        f'梵天强信号：HCME WR={_hcme_wr:.0f}% | grade={_grade_num:.0f} | 体制={_regime}\n'
+                        f'系统拦截原因：{_block_reason}，无法自动执行\n'
+                        f'━━━━━━━━━━━━━━━━━━━━\n'
+                        f'当前价：${_price:.2f}\n'
+                        f'入场区：${_entry_lo:.2f}~${_entry_hi:.2f}\n'
+                        f'止损：  ${_sl_price:.2f}（{_sl_pct:.1f}%）\n'
+                        f'TP1：   ${_tp1:.2f} | TP2：${_tp2:.2f}\n'
+                        f'建议苏摩手动评估是否入场'
+                    )
+                    _jarvis(_msg, dedup_key=f'human_window_{sym}_{int(_price)}', dedup_ttl=1800)
+                    print(f'[P0→人工窗口] {sym} 已推送苏摩 HCME={_hcme_wr:.0f}% grade={_grade_num:.0f}')
+            except Exception as _p0e:
+                print(f'[P0→人工窗口] 推送异常: {_p0e}')
+            # ── end P0 ────────────────────────────────────────────────────────
         except Exception as _e:
             print(f'[1hao→信号池] 写入失败: {_e}')
     else:
