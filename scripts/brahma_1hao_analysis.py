@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+# [2026-08-18 苏摩封印] OpenBLAS/OMP线程锁死 — 必须在所有import之前
+import os as _os_blas
+_os_blas.environ.setdefault('OPENBLAS_NUM_THREADS', '1')
+_os_blas.environ.setdefault('OMP_NUM_THREADS',      '1')
+_os_blas.environ.setdefault('MKL_NUM_THREADS',      '1')
+_os_blas.environ.setdefault('NUMEXPR_NUM_THREADS',  '1')
+_os_blas.environ.setdefault('VECLIB_MAXIMUM_THREADS','1')
 """
 梵天1号工程 · 35维全量矩阵分析引擎
 固化版本 2026-07-17 苏摩111封印
@@ -1342,6 +1349,13 @@ def run_dual_analysis(symbols=None, direction='LONG'):
     _env  = dict(_os.environ)
     if _os.path.exists(_gomp):
         _env['LD_PRELOAD'] = _gomp
+    # [2026-08-18 苏摩封印] 限制OpenBLAS/OMP线程数，防止子进程并发时内存叠加OOM
+    # 根因：每个subprocess默认启动N个BLAS线程，多标的并发时内存×N倍叠加崩溃
+    _env['OPENBLAS_NUM_THREADS'] = '1'
+    _env['OMP_NUM_THREADS']      = '1'
+    _env['MKL_NUM_THREADS']      = '1'
+    _env['NUMEXPR_NUM_THREADS']  = '1'
+    _env['VECLIB_MAXIMUM_THREADS'] = '1'
 
     results = {}
     for sym in symbols:
