@@ -125,6 +125,7 @@ def scan_d1_modules() -> list:
             # ── D1修复 2026-08-17 苏摩111：已接入但被360误判为孤儿 ──
             'structure_touch_detector', # brahma_scoring + brahma_decision_engine 真实调用 ✅
             'vip_validator',            # brahma_1hao_analysis validate_vip_strategy 真实调用 ✅
+            'brahma_intel_layer',       # brahma_1hao_analysis P2/P3 智慧层调用（太极封印 2026-08-18）✅
         }
         _orphans = []
         for _f in sorted(_brain.glob('*.py')):

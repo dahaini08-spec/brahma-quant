@@ -1,7 +1,7 @@
 {
   "version": "1.0",
-  "generated_at": "2026-08-15T08:40:20Z",
-  "source": "IC追踪器+达摩院统计回归 2026-07-20 + BEAR_TREND:SHORT系列(2026-07-28设计院补充) | refreshed 2026-08-15",
+  "generated_at": "2026-08-16T07:44:10Z",
+  "source": "IC追踪器+达摩院统计回归 2026-07-20 + BEAR_TREND:SHORT系列(2026-07-28设计院补充) | refreshed 2026-08-15 | settler_cron 2026-08-16 | settler_cron 2026-08-17",
   "weights": {
     "BULL_TREND:LONG:155+": {
       "multiplier": 1.0,
@@ -67,6 +67,46 @@
       "multiplier": 0.0,
       "note": "CHOP_HIGH死穴封禁",
       "ev_basis": -0.11
+    },
+    "BULL_EARLY:SHORT:<120": {
+      "multiplier": 1.0,
+      "ev_basis": 0.0,
+      "wr": 0.5,
+      "settled": 4,
+      "note": "settler更新 WR=50.0% n=4 EV=+0.000",
+      "updated": "2026-08-16"
+    },
+    "BEAR_RECOVERY:SHORT:<120": {
+      "multiplier": 0.1,
+      "ev_basis": -2.0,
+      "wr": 0.0,
+      "settled": 3,
+      "note": "settler更新 WR=0.0% n=3 EV=-2.000",
+      "updated": "2026-08-16"
+    },
+    "BEAR_RECOVERY:LONG:<120": {
+      "multiplier": 1.5,
+      "ev_basis": 2.0,
+      "wr": 1.0,
+      "settled": 4,
+      "note": "settler更新 WR=100.0% n=4 EV=+2.000",
+      "updated": "2026-08-16"
+    },
+    "BULL_TREND:LONG:<120": {
+      "multiplier": 0.7,
+      "ev_basis": -0.1668,
+      "wr": 0.4583,
+      "settled": 48,
+      "note": "settler更新 WR=45.8% n=48 EV=-0.167",
+      "updated": "2026-08-16"
+    },
+    "BULL_EARLY:LONG:<120": {
+      "multiplier": 1.5,
+      "ev_basis": 2.0,
+      "wr": 1.0,
+      "settled": 5,
+      "note": "settler更新 WR=100.0% n=5 EV=+2.000",
+      "updated": "2026-08-16"
     }
   },
   "next_calibration": "24h后由brahma-online-calibrate触发",
@@ -98,7 +138,7 @@
     "note": "6方联合封印 2026-07-24: n<15不升权，n<30谨慎，n≥50完全信任",
     "updated": "2026-07-24"
   },
-  "updated_at": "2026-08-08T08:39:21Z",
+  "updated_at": "2026-08-17T16:47:25.861183+00:00",
   "BULL_TREND:LONG:120-139": {
     "multiplier": 1.0,
     "basis": "脏数据清洗后 simfactory铁证 n=33 WR=51.5% → NORMAL [2026-08-08 P0-3封印 F15已修正不再封禁]",
@@ -140,5 +180,13 @@
     "n": 49,
     "source": "v63_6y5_ETH",
     "note": "达摩院6.5年铁证 ETH WR=69.4%"
+  },
+  "CHoCH:SHORT:<120": {
+    "multiplier": 1.0,
+    "wr": 0.5,
+    "settled": 2,
+    "ev_basis": 0.0,
+    "note": "settler更新 WR=50.0% n=2 EV=+0.000",
+    "updated": "2026-08-17"
   }
 }

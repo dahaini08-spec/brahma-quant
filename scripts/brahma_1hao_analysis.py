@@ -1424,10 +1424,7 @@ if __name__ == '__main__':
 
         # ── P2 三线策略 + P3 连续记忆（2026-08-18 太极封印）──────────────────
         try:
-            import sys as _sys
-            _bi_dir = str(Path(__file__).parent.parent / 'brahma_brain')
-            if _bi_dir not in _sys.path:
-                _sys.path.insert(0, _bi_dir)
+            # brahma_brain已在模块顶部加入sys.path，无需重复insert（P5 race条件修复 2026-08-18）
             from brahma_intel_layer import (
                 identify_pattern, generate_three_line_strategy,
                 record_analysis, summarize_intent
