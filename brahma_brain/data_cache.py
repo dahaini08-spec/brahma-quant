@@ -93,7 +93,7 @@ TTL = {
     '1h':   120,   # 1H蜡烛3600s一根，120s缓存（原900s）⚠️修复
     '4h':   300,   # 4H蜡烛14400s一根，300s缓存（原3600s）⚠️修复
     '1d':   600,   # 日线86400s一根，600s缓存（原7200s）⚠️修复
-    'ticker': 15,  # 实时价格15s（原30s）⚠️修复
+    'ticker': 0,   # [2026-08-18 苏摩封印] 0s=永不缓存磁盘，ticker必须实时拉取
     'fr':   120,   # 资金费率，120s（原300s）
     'oi':   60,    # OI数据60s
     'lsr':  120,   # 多空比120s（原硬编码900s）⚠️修复
@@ -137,8 +137,11 @@ def _cache_set(key: str, data, ttl: int):
     exp = time.time() + ttl
     with _cache_lock:  # [C2-fix] 写入加锁
         _cache[key] = {'data': data, 'exp': exp}
-    # 异步写磁盘（只缓存K线/ticker，不缓存大量原始数据）
+    # 异步写磁盘（只缓存K线，不缓存ticker/price — 2026-08-18封印：价格必须实时）
     try:
+        # [2026-08-18 苏摩封印] ticker/price类型永不写磁盘，防止旧价格被复用
+        if any(k in key for k in ['ticker', 'price', 'lsr', 'fr', 'oi']):
+            return  # 价格类数据只存内存，不落磁盘
         path = _disk_path(key)
         with open(path, 'w') as f:
             json.dump({'data': data, 'exp': exp}, f)
