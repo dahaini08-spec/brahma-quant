@@ -88,32 +88,35 @@ class BrahmaBus:
     # ── 价格 ────────────────────────────────────────────────
 
     def price(self, symbol: str) -> float:
-        """实时最新价（TTL缓存）— Binance主源，418限速时自动切换OKX/Bybit"""
-        def _fetch():
+        """[2026-08-18 苏摩111封印] 实时最新价 — 永不缓存，每次直接拉取币安期货API
+        根因封印：任何缓存都可能导致价格与市场实际偏差数百美元（ETH: $2618→$1984）
+        架构铁律：price()不走缓存，不用磁盘，不用TTL，直接返回fapi实时价格
+        """
+        # 主源：Binance期货实时价格（永不缓存）
+        try:
+            r = _SESS.get(f'{_FAPI}/fapi/v1/ticker/price',
+                          params={'symbol': symbol}, timeout=5)
+            if r.status_code not in (418, 429):
+                p = float(r.json()['price'])
+                if p > 0:
+                    return p
+            raise Exception(f'Binance status={r.status_code}')
+        except Exception as _e1:
+            # 备用源：OKX → Bybit（仅在Binance限速时使用）
+            _base = symbol.replace('USDT', '')
             try:
-                r = _SESS.get(f'{_FAPI}/fapi/v1/ticker/price',
-                              params={'symbol': symbol}, timeout=5)
-                if r.status_code == 418 or r.status_code == 429:
-                    raise Exception(f'Binance {r.status_code}')
-                return float(r.json()['price'])
-            except Exception as _e1:
-                # [2026-07-06] 备用源：OKX → Bybit → 报错
-                _base = symbol.replace('USDT', '')
-                try:
-                    _r2 = _SESS.get(f'https://www.okx.com/api/v5/market/ticker',
-                                    params={'instId': f'{_base}-USDT-SWAP'}, timeout=5)
-                    return float(_r2.json()['data'][0]['last'])
-                except Exception:
-                    pass
-                try:
-                    _r3 = _SESS.get('https://api.bybit.com/v5/market/tickers',
-                                    params={'category': 'linear', 'symbol': symbol}, timeout=5)
-                    return float(_r3.json()['result']['list'][0]['lastPrice'])
-                except Exception:
-                    pass
-                raise _e1  # 全部失败才抛出
-        val = self._get(f'price:{symbol}', _fetch, TTL['price'])
-        return val or 0.0
+                _r2 = _SESS.get(f'https://www.okx.com/api/v5/market/ticker',
+                                params={'instId': f'{_base}-USDT-SWAP'}, timeout=5)
+                return float(_r2.json()['data'][0]['last'])
+            except Exception:
+                pass
+            try:
+                _r3 = _SESS.get('https://api.bybit.com/v5/market/tickers',
+                                params={'category': 'linear', 'symbol': symbol}, timeout=5)
+                return float(_r3.json()['result']['list'][0]['lastPrice'])
+            except Exception:
+                pass
+            raise _e1  # 全部失败才报错，不返回过期价格
 
     def ticker(self, symbol: str) -> dict:
         """24H ticker（10s缓存）"""
