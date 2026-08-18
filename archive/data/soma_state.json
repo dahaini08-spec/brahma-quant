@@ -1,0 +1,608 @@
+{
+  "date": "2026-08-16",
+  "budget": 300000,
+  "used": 855000,
+  "records": [
+    {
+      "ts": 1786912671,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912672,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912672,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912673,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912673,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912674,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912674,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912675,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912675,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912676,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912676,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912677,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912677,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912678,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912678,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912679,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912679,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912680,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912680,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912681,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912682,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912682,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912683,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912683,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912684,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912684,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912685,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912685,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912686,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912686,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912687,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912687,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912688,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912688,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912689,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912689,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912690,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912691,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912691,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912692,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912692,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912693,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912693,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912694,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912694,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912695,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912695,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912696,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912697,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912697,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912698,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912698,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912699,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912699,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912700,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912700,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912701,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912701,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912702,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912702,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912703,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912703,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912704,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912704,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912705,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912705,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912706,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912706,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912707,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912708,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912708,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912709,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912709,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912710,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912710,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912711,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912711,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912712,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912712,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912713,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912727,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912728,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912728,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912729,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912729,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912730,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912730,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912731,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912731,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912731,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912732,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912732,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912733,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912733,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912734,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912734,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912735,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912735,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912736,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786912740,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    }
+  ],
+  "resets": 0
+}

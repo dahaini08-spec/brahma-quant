@@ -53,7 +53,11 @@ def get_mem_mode(avail_mb: float) -> str:
       'degraded' 550~650MB → 跳过HCME/方仓，保留35维主评分
       'light'    400~550MB → 跳过Kronos，保留感知+SMC+清算
       'blocked'  <400MB   → 拒绝运行
+    环境变量 BRAHMA_FORCE_FULL=1 → 强制full模式（苏摩手动全能力分析专用）
     """
+    import os as _os
+    if _os.environ.get('BRAHMA_FORCE_FULL') == '1':
+        return 'full'
     if avail_mb >= MEM_GATE_DEFAULT_MB:   return 'full'
     if avail_mb >= MEM_GATE_DEGRADED_MB:  return 'degraded'
     if avail_mb >= MEM_GATE_LIGHT_MB:     return 'light'
