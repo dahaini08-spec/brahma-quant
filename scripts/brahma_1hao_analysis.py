@@ -1515,6 +1515,12 @@ if __name__ == '__main__':
                 r_raw['symbol'] = sym
                 r_raw['direction'] = args.direction
                 r_raw['source'] = 'brahma_1hao_auto'
+                # [2026-08-18 苏摩封印] 修复valid字段：result['valid']=False但params['valid']=True
+                # 根因：brahma_engine对result和params的valid赋值不一致
+                # 修复：优先使用params.valid（SL/score通过后设为True的权威来源）
+                _p_valid = bool(_p.get('valid') or r_raw.get('valid_signal'))
+                if _p_valid and not r_raw.get('valid'):
+                    r_raw['valid'] = True
                 wrote = log_signal(r_raw)
                 if wrote:
                     print(f'[1hao→信号池] {sym} score={score:.0f} grade={grade:.0f} 已写入 ✅')
