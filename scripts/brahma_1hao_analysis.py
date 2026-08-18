@@ -354,6 +354,28 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
     执行单币种35维全量分析，返回格式化报告字符串
     compact=True: 压缩输出（节省~35% token），用于cron/auto触发场景
     """
+    # [2026-08-18 苏摩封印] 分析开始前强制刷新价格缓存，确保使用币安期货合约实时价格
+    # 根因：brahma_bus TTL=30s导致跨会话价格复用，报告价格与实时价格最多差30s
+    try:
+        import urllib.request as _ur_pf, json as _jj_pf
+        _pt_pf = _jj_pf.loads(_ur_pf.urlopen(
+            f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}',
+            timeout=3).read())
+        _realtime_price = float(_pt_pf['price'])
+        print(f'[分析开始] {symbol} 实时价格: ${_realtime_price:,.2f}')
+        # 刷新brahma_bus价格缓存
+        try:
+            import sys as _sys_pf
+            _bd = str(Path(__file__).parent.parent / 'brahma_brain')
+            if _bd not in _sys_pf.path: _sys_pf.path.insert(0, _bd)
+            from brahma_bus import _BUS as _bus_pf
+            _key_pf = f'price:{symbol}'
+            _bus_pf._mem.pop(_key_pf, None)  # 删除旧缓存
+            _bus_pf._mem[_key_pf] = {'v': _realtime_price, 'exp': __import__('time').time() + 5}
+        except Exception:
+            pass
+    except Exception:
+        pass
     # [P0-FIX 2026-08-15 苏摩111] Kronos预加载：cache→full
     # [D6修复 2026-08-17 苏摩111] sys.path.insert移出try块，避免并行race condition
     import sys as _ke_sys, os as _ke_os
