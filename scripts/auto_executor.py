@@ -969,15 +969,28 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
         import logging as _cl; _cl.getLogger('auto_executor').debug(f'[corr_gate] {_corr_e}')
     # ── end 相关性门控 ────────────────────────────────────────────────────
 
-    # [修复 2026-07-23] 美股代币(TRADFI_STOCK)走现货，不支持期货执行路径，直接跳过
+    # [修复 2026-08-18 苏摩111] TRADIFI_PERPETUAL合约走期货执行路径，不跳过
+    # 根因：SNDK等美股代币在Binance上是contractType=TRADIFI_PERPETUAL，走fapi期货API
+    # 旧逻辑错误地把TRADFI_STOCK全部跳过，导致SNDK等永远无法自动执行
+    # 修复：仅当symbol不在Binance期货市场时才跳过，在期货市场的TRADFI_STOCK正常执行
     try:
         from brahma_brain.universal_asset_router import classify_asset, ASSET_TRADFI_STOCK
         if classify_asset(sym) == ASSET_TRADFI_STOCK:
-            result = {'signal_id': signal.get('signal_id',''), 'symbol': sym,
-                      'direction': direction, 'score': float(signal.get('score',0)),
-                      'ts': time.time(), 'ts_iso': datetime.now(timezone.utc).isoformat(),
-                      'status': 'SKIPPED', 'reason': 'TRADFI_STOCK不支持期货执行路径，跳过'}
-            return result
+            # 检查是否在期货市场（TRADIFI_PERPETUAL可执行）
+            import requests as _req
+            _fapi_ok = False
+            try:
+                _r = _req.get(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}', timeout=3)
+                _fapi_ok = _r.status_code == 200
+            except Exception:
+                pass
+            if not _fapi_ok:
+                result = {'signal_id': signal.get('signal_id',''), 'symbol': sym,
+                          'direction': direction, 'score': float(signal.get('score',0)),
+                          'ts': time.time(), 'ts_iso': datetime.now(timezone.utc).isoformat(),
+                          'status': 'SKIPPED', 'reason': 'TRADFI_STOCK不在期货市场，跳过'}
+                return result
+            # 在期货市场的美股代币（如SNDKUSDT），继续走期货执行路径
     except Exception:
         pass  # 分类失败不阻断执行
 
