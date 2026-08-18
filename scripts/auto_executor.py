@@ -351,6 +351,13 @@ def find_executable_signals() -> list[dict]:
         if _sig_action == 'ENTER_WATCH':
             continue  # ENTER_WATCH由sub_executor处理，auto不执行
 
+        # [2026-08-18 苏摩111封印] 修复：action='ENTER'等同于'ENTER_FULL'
+        # 根因：brahma_engine输出action='ENTER'(113条)，auto_executor只识别'ENTER_FULL'(7条)
+        # 导致所有action='ENTER'信号被静默跳过，SNDK score=153.8也未执行
+        if _sig_action == 'ENTER':
+            _sig_action = 'ENTER_FULL'  # 统一处理
+            s['action'] = 'ENTER_FULL'
+
         if score >= _effective_tier1:
             # TIER_1: 强信号，无论timing均执行（STANDBY时等突破已发生）
             s['_tier'] = 1
