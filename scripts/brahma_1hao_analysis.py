@@ -1432,9 +1432,34 @@ if __name__ == '__main__':
             # 获取分析数据
             _rd = analyze(sym, signal_dir=args.direction, deep=False) or {}
             _p2 = _rd.get('params', {}) or {}
-            _oi1h     = float(_rd.get('oi_1h', 0) or 0)
-            _oi8h     = float(_rd.get('oi_8h', 0) or 0)
-            _hcme_wr  = float(_rd.get('hcme_wr', 50) or 50)
+            # [BUG修复 2026-08-19 设计院封印] OI需从brahma_bus直接获取，analyze()不返回oi_change字段
+            # 根因：全天intraday_memory记录oi_1h=0，pattern永远「方向待定」
+            try:
+                from brahma_bus import bus as _brahma_bus_inst
+                _oi_hist = _brahma_bus_inst.oi_history(sym, period='1h', limit=9) or []
+                if len(_oi_hist) >= 2:
+                    _ov = [float(x.get('sumOpenInterest', 0)) for x in _oi_hist]
+                    _oi1h = (_ov[-1] - _ov[-2]) / _ov[-2] * 100 if _ov[-2] else 0.0
+                    _oi8h = (_ov[-1] - _ov[0])  / _ov[0]  * 100 if _ov[0] else 0.0
+                else:
+                    _oi1h, _oi8h = 0.0, 0.0
+            except Exception:
+                _oi1h = float(_rd.get('oi_change_1h', 0) or 0)
+                _oi8h = float(_rd.get('oi_change_8h', 0) or 0)
+            # [BUG修复 2026-08-19 设计院封印] hcme_wr不在analyze()顶层，在fangcang子dict里
+            # 根因：全天intraday_memory记录hcme_wr=50%（默认值），智慧层pattern永远「方向待定」
+            _fc = _rd.get('fangcang', {}) or {}
+            _hcme_raw = _fc.get('hcme_context', '') or ''
+            _hcme_wr_extracted = 50.0
+            if 'WR=' in _hcme_raw:
+                try:
+                    import re as _re
+                    _m = _re.search(r'WR=(\d+)%', _hcme_raw)
+                    if _m: _hcme_wr_extracted = float(_m.group(1))
+                except: pass
+            # 也尝试从top-level hcme_adj反推（adj>0→WR偏高，adj<0→WR偏低）
+            _hcme_adj_val = float(_rd.get('hcme_adj', 0) or 0)
+            _hcme_wr  = _hcme_wr_extracted  # 修复后使用真实WR而非默认50
             _l2       = float(_rd.get('l2_ratio', 1) or 1)
             _long_pct = float(_rd.get('long_pct', 50) or 50)
             _pd_zone  = str(_rd.get('pd_zone', 'NEUTRAL') or 'NEUTRAL')
