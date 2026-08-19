@@ -529,6 +529,49 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
     lines.append('')
     # ── [END B/C类模块状态输出] ─────────────────────────────────────────────
 
+    # ── [外部智慧层强制输出 2026-08-19 设计院封印] ──────────────────────────────
+    # 不管加不加分，全能力分析必须显示所有外部增强层的运行状态
+    _ext_lines = []
+    # 1. s_macro_v2 — 宏观层 DXY/NQ/BTC.D
+    _mv2 = (r.get('extra') or {}).get('macro_v2') or bd.get('_macro_v2_raw') or {}
+    if not _mv2:
+        # 从extra_data里取（通过r._extra_data路径）
+        _mv2 = {}
+    _mv2_addon = _mv2.get('score_addon', bd.get('_macro_v2_addon', 0)) if isinstance(_mv2, dict) else 0
+    _mv2_notes = _mv2.get('notes', []) if isinstance(_mv2, dict) else []
+    _dxy = _mv2.get('dxy', {}) if isinstance(_mv2, dict) else {}
+    _dxy_str = f'DXY={_dxy.get("price","?"):.2f}({_dxy.get("direction","?")})' if isinstance(_dxy, dict) and _dxy.get('price') else 'DXY=N/A'
+    _nq = _mv2.get('nasdaq', {}) if isinstance(_mv2, dict) else {}
+    _nq_str = f'NQ={_nq.get("price","?"):.0f}({_nq.get("direction","?")})' if isinstance(_nq, dict) and _nq.get('price') else 'NQ=N/A'
+    _mv2_note_str = ' | '.join(_mv2_notes[:2]) if _mv2_notes else ('score_addon=0 宏观中性' if _mv2 else '未运行')
+    _ext_lines.append(f'  s_macro_v2({_mv2_addon:+d}): {_dxy_str} {_nq_str} | {_mv2_note_str}')
+    # 2. s_cross — 跨所FR+Basis
+    _cfb = (r.get('extra') or {}).get('cross_fr_basis') or {}
+    _cfb_adj = bd.get('_cross_fr_basis', '')
+    _cfb_score = _cfb.get('score_adj', 0) if isinstance(_cfb, dict) else 0
+    _cfb_note = _cfb.get('note', '') if isinstance(_cfb, dict) else ''
+    _cfb_fr = _cfb.get('fr_avg', None)
+    _cfb_str = f'FR均值={_cfb_fr:.4f}%' if isinstance(_cfb_fr, float) else ''
+    _ext_lines.append(f'  s_cross({_cfb_score:+d}): {_cfb_str} {_cfb_note[:60] if _cfb_note else "未运行或无数据"}')
+    # 3. CausalVerifier — 体制因果验证
+    _cv = (r.get('extra') or {}).get('causal_verifier') or {}
+    _cv_verdict = _cv.get('verdict', '?') if isinstance(_cv, dict) else '?'
+    _cv_adj2 = _cv.get('score_adj', 0) if isinstance(_cv, dict) else 0
+    _cv_reason = _cv.get('reason', '') if isinstance(_cv, dict) else ''
+    _ext_lines.append(f'  CausalVerifier({_cv_adj2:+d}): verdict={_cv_verdict} {_cv_reason[:50]}')
+    # 4. GEX — 期权Gamma暴露
+    _gex_bd = bd.get('s22_gex', '') or bd.get('GEX', '') or ''
+    _gex_bd2 = ''
+    for _k, _v in bd.items():
+        if 'gex' in str(_k).lower() or 'GEX' in str(_k):
+            _gex_bd2 = f'{_k}={_v}'
+            break
+    _ext_lines.append(f'  GEX(s22): {_gex_bd2 or _gex_bd or "数据存在,当前价区无调整"}')
+    lines.append('▌ 外部智慧层（完整覆盖审计）')
+    lines.extend(_ext_lines)
+    lines.append('')
+    # ── [END 外部智慧层强制输出] ─────────────────────────────────────────────
+
     lines += [
         "▌ SMC结构 · FVG · OB · 流动性",
         fmt_smc(smc, price),
