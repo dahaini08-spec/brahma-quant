@@ -54,7 +54,17 @@ SYMBOLS = [
     # 原有标的保留
     'JTOUSDT', 'BEATUSDT', 'BASUSDT', 'TACUSDT',
     '1000XECUSDT', 'CRCLUSDT', 'AKEUSDT', 'HOMEUSDT', 'ESPORTSUSDT',
-]  # Phase1扩展 2026-07-18 苏摩111：9→50标的（TOP50 OI+成交量）
+    # [P1扩展 2026-08-19 设计院自主] TradFi高流动性补全（≥20M，RSI守望原未覆盖）
+    # Brent原油
+    'BZUSDT',
+    # 超高流动性半导体/科技ETF（1000M+）
+    'SPCXUSDT', 'MUUSDT', 'SNXXUSDT', 'SKHYUSDT', 'DRAMUSDT', 'SOXSUSDT',
+    # 高流动性美股大盘/科技（100M+）
+    'MRVLUSDT',
+    # 中流动性美股/科技（20M+）
+    'GOOGLUSDT', 'AAPLUSDT', 'METAUSDT', 'TQQQUSDT', 'SPYUSDT',
+    'MSFTUSDT', 'PLTRUSDT', 'COINUSDT',
+]  # Phase1扩展 2026-07-18 苏摩111：9→50标的 | Phase2扩展 2026-08-19 设计院：51→67标的（TradFi全覆盖≥20M）
 COOLDOWN_SECONDS = 7200   # 2H冷却
 SILENT_RSI_LOW   = 45.0
 SILENT_RSI_HIGH  = 60.0
