@@ -64,11 +64,18 @@ def _send_alert(fault_id: str, title: str, detail: str, healed: bool):
     except Exception as e:
         # fallback: 直接写告警文件
         alert_f = DATA / 'self_heal_alerts.jsonl'
-        with open(alert_f, 'a') as f:
-            f.write(json.dumps({
-                'ts': int(time.time()), 'fault': fault_id,
-                'title': title, 'healed': healed, 'err': str(e)
-            }, ensure_ascii=False) + '\n')
+        # [D4修复 2026-08-19 苏摩111] 确保所有字段可序列化，防止'?'丢失
+        try:
+            with open(alert_f, 'a') as _af:
+                _af.write(json.dumps({
+                    'ts':     int(time.time()),
+                    'fault':  str(fault_id),
+                    'title':  str(title),
+                    'healed': bool(healed),
+                    'err':    str(e)
+                }, ensure_ascii=False) + '\n')
+        except Exception:
+            pass
 
 def _supervisorctl(cmd: str) -> bool:
     try:

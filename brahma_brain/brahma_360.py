@@ -458,6 +458,26 @@ def scan_d9_signal_pipeline() -> list:
                     'msg': 'RSM状态机无有效体制记录(BTCUSDT)',
                     'auto_fix': False,
                 })
+        # ── [信号速率CRITICAL检查 2026-08-19 苏摩111封印] ────────────────────
+        # 设计院原则：业务健康指标，48H无信号=WARN，>7天=CRITICAL
+        lsl = _DATA / 'live_signal_log.jsonl'
+        if lsl.exists():
+            try:
+                _sigs = [json.loads(l) for l in lsl.read_text().strip().split('\n') if l]
+                _now = time.time()
+                _recent_48h = [s for s in _sigs if _now - float(s.get('ts', 0)) < 48 * 3600]
+                if not _recent_48h and _sigs:
+                    _last_ts = max(float(s.get('ts', 0)) for s in _sigs)
+                    _age_days = (_now - _last_ts) / 86400
+                    _level = 'CRITICAL' if _age_days > 7 else 'WARN'
+                    issues.append({
+                        'dim': 'D9_signal_rate',
+                        'level': _level,
+                        'msg': f'信号断崖: 最近信号={_age_days:.1f}天前，生产链路可能断裂（当前体制CHOP则属正常）',
+                        'auto_fix': False,
+                    })
+            except Exception:
+                pass
     except Exception as e:
         pass  # D9非关键维度，失败不告警
     return issues
