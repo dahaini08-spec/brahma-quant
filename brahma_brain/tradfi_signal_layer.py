@@ -317,6 +317,41 @@ def compute_tradfi_context(symbol: str, direction: str, base_score: float,
                 TRADFI_LOG.write_text('\n'.join(lines[-500:]) + '\n')
         except Exception:
             pass
+
+        # ── [tradfi→1hao全能力闭环 2026-08-19 苏摩111] ────────────────────
+        # Phase A 只记录日志，但高质量信号应触发1hao全能力分析写入live_signal_log
+        # 触发条件：score_delta>=0（非负面信号） + base_score>=95（品种本身分数够）
+        # 避免：每次都触发（太耗资源），只在宏观顺势时触发
+        try:
+            _should_trigger = (
+                result.get('score_delta', 0) >= 0 and  # 宏观顺势或中性
+                base_score >= 95 and                    # 品种基础分够高
+                result.get('market_status') not in ('BEARISH_MACRO', 'RISK_OFF')
+            )
+            if _should_trigger:
+                # 写入 rsi_trigger_event.json → auto-1hao-trigger 下次运行时捡起
+                import time as _t
+                _trigger_f = DATA_DIR / 'rsi_trigger_event.json'
+                _existing = {}
+                try:
+                    if _trigger_f.exists():
+                        _existing = json.loads(_trigger_f.read_text())
+                except Exception:
+                    pass
+                _existing[symbol] = {
+                    'symbol': symbol,
+                    'direction': direction,
+                    'trigger_type': 'tradfi_macro',
+                    'score_delta': result.get('score_delta', 0),
+                    'base_score': base_score,
+                    'ts': _t.time(),
+                    'source': 'tradfi_signal_layer',
+                }
+                _trigger_f.write_text(json.dumps(_existing, ensure_ascii=False, indent=2))
+        except Exception:
+            pass
+        # ──────────────────────────────────────────────────────────────────
+
     except Exception:
         pass
 
