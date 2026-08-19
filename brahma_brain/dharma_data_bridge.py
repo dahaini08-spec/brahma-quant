@@ -58,6 +58,13 @@ def log_signal(result: dict) -> bool:
     返回:
         True = 写入成功,False = 跳过(无效信号或score不足)
     """
+    # [设计院封印 2026-08-19 苏摩111] source=main信号不写入live_signal_log
+    # 根因：source=main = 苏摩手动触发的分析，entry zone是精确OB区间
+    #       分析完成后价格已移动，90条全部EXPIRED_NO_TOUCH（100%浪费分母）
+    # 修复：source=main直接返回False，不进自动执行池
+    if (result.get('source') or '') == 'main':
+        return False  # 手动分析不自动写入，避免expired信号污染WR分母
+
     try:
         cf      = result.get('confluence', {}) or {}
         params  = result.get('params', {}) or {}

@@ -146,6 +146,39 @@ def main():
 
         if _regime_changed and _prev_regime:
             print(f'⚡ 体制切换: {_prev_regime} → {_new_regime} | BTC={btc:.0f} ETH={eth:.2f}')
+
+            # ── [P0修复 2026-08-19 苏摩111] 体制切换主动触发全量扫描 ────────────────
+            # 设计院原则：体制是信号最强的外部驱动，切换时必须立即触发全量扫描
+            # BEAR_RECOVERY / BULL_TREND = 梁天最优献血下戴眼战场，沒有任何理由错过
+            if _new_regime in ('BEAR_RECOVERY', 'BULL_TREND', 'BEAR_EARLY'):
+                try:
+                    import time as _trig_t
+                    _trig_path = BASE / 'data' / 'rsi_trigger_event.json'
+                    _trig = {}
+                    try:
+                        if _trig_path.exists():
+                            _trig = json.loads(_trig_path.read_text())
+                    except Exception:
+                        pass
+                    # 主力标的全量写入触发队列
+                    _MAIN_SYMS = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT']
+                    _trig_count = 0
+                    for _sym in _MAIN_SYMS:
+                        _trig[_sym] = {
+                            'symbol':      _sym,
+                            'direction':   'LONG' if _new_regime in ('BEAR_RECOVERY', 'BULL_TREND') else 'SHORT',
+                            'trigger_type': 'regime_switch',
+                            'from_regime': _prev_regime,
+                            'to_regime':   _new_regime,
+                            'ts':          _trig_t.time(),
+                            'source':      'brahma_state_refresh',
+                        }
+                        _trig_count += 1
+                    _trig_path.write_text(json.dumps(_trig, ensure_ascii=False, indent=2))
+                    print(f'[体制切换触发] 已写入rsi_trigger_event.json {_trig_count}个标的 → auto-1hao-trigger下次运行时全量扫描')
+                except Exception as _te:
+                    print(f'[体制切换触发] 失败不影响主流程: {_te}')
+            # ───────────────────────────────────────────────────────────────
         else:
             print('HEARTBEAT_OK')  # 体制无变化，静默
 
