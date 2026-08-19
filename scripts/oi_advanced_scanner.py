@@ -1057,6 +1057,37 @@ def run():
             print(f"\n📤 推送 {len(push_signals)} 个新信号到苏摩...")
             send_message(msg)
 
+            # ── [OI异常→1hao全能力闭环 2026-08-19 苏摩111] ──────────────
+            # OI异常是「价格将动的前兆信号」，应触发1hao全能力验证
+            # 写入rsi_trigger_event.json → auto-1hao-trigger下次运行时捡起
+            try:
+                import time as _oi_t
+                _trig_path = BASE / 'data' / 'rsi_trigger_event.json'
+                _trig = {}
+                try:
+                    if _trig_path.exists():
+                        _trig = json.loads(_trig_path.read_text())
+                except Exception:
+                    pass
+                for _r in push_signals:
+                    _sym = _r.get('symbol', '')
+                    _dir = 'LONG' if _r.get('direction_bias','').upper() in ('LONG','BULLISH','BUY') else 'SHORT'
+                    if _sym:
+                        _trig[_sym] = {
+                            'symbol':       _sym,
+                            'direction':    _dir,
+                            'trigger_type': 'oi_anomaly',
+                            'oi_score':     float(_r.get('oi_score', _r.get('score', 0))),
+                            'mode':         _r.get('mode', '?'),
+                            'ts':           _oi_t.time(),
+                            'source':       'oi_advanced_scanner',
+                        }
+                _trig_path.write_text(json.dumps(_trig, ensure_ascii=False, indent=2))
+                print(f"[OI→1hao] 已写入rsi_trigger_event.json: {[r.get('symbol') for r in push_signals]}")
+            except Exception as _oe:
+                print(f"[OI→1hao] 写入失败（不影响主流程）: {_oe}")
+            # ─────────────────────────────────────────────────────
+
         # ── 持续有效信号提醒（哈希未变但TTL到期）──────────────
         if persisted_signals:
             try:
