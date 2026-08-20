@@ -60,8 +60,13 @@ def _load_klines_native(symbol: str, tf: str) -> List[dict]:
     path = _DATA_DIR_BACKTEST / f"{symbol}_{tf}.json"
     if not path.exists():
         return []
+    # [FIX 2026-08-20 设计院] 15m文件6.5年全量(231k根/34MB)→OOM
+    # fangcang只需最近N根做微结构分析，tail截断防OOM
+    _TAIL_LIMIT = 2000  # 约20天15m数据，远超BARS_15M_12H=48根需求
     try:
         raw = json.loads(path.read_text())
+        if len(raw) > _TAIL_LIMIT:
+            raw = raw[-_TAIL_LIMIT:]
         bars = []
         for r in raw:
             bars.append({
@@ -73,6 +78,8 @@ def _load_klines_native(symbol: str, tf: str) -> List[dict]:
                 "v":  float(r[5]),
             })
         return bars
+    except MemoryError:
+        return []
     except Exception:
         return []
 
