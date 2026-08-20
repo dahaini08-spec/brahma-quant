@@ -262,31 +262,52 @@ def fmt_entry(r: dict) -> str:
         lines.append(f"  参考TP2: {tp2}U ({tp2_label})")
         del _dir, sl_label, tp1_label, tp2_label
 
-    # [P0升级 2026-08-05 设计院] 清算TP/SL — 优先用三所实时数据，降级klines聚类
+    # [2026-08-21 设计院修正] 清算集群双轨展示
+    # 轨道A: OI杠杆分布大级别清算地图（主展示，有真实交易意义）
+    # 轨道B: 短期强平历史±0.25%（辅助，仅标注双边猎杀状态）
     try:
         import sys as _sys_liq_tp; _sys_liq_tp.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent / 'brahma_brain'))
         from liq_density_engine import get_liq_density as _get_ld_tp
         _sym = r.get('symbol', '')
         _p   = float(r.get('price', 0))
         if _sym and _p > 0:
-            _ld_tp = _get_ld_tp(_sym, _p)
-            _ab_walls = _ld_tp.get('above_walls', [])  # 上方空头清算墙
-            _bl_walls = _ld_tp.get('below_walls', [])  # 下方多头清算墙
-            _ld_src   = _ld_tp.get('sources', '')
-            _ld_bias  = _ld_tp.get('liq_bias', 'NEUTRAL')
+            _ld_tp     = _get_ld_tp(_sym, _p)
+            _oi_levels = _ld_tp.get('oi_liq_levels', [])
+            _top_long  = _ld_tp.get('top_long_liq', {})
+            _ab_walls  = _ld_tp.get('above_walls', [])
+            _bl_walls  = _ld_tp.get('below_walls', [])
+
+            # ── 轨道A: OI大级别清算地图 ──
+            if _oi_levels:
+                lines.append(f"  --- 🗺️ OI清算地图（大级别·有交易意义） ---")
+                lines.append(f"  📉 多头清算墙（价格下跌→多头被清，真实踩踏风险）:")
+                for _lv in sorted(_oi_levels, key=lambda x: x['long_dist_pct'], reverse=True):
+                    _lp = _lv['long_liq_price']; _la = _lv['long_liq_usd']
+                    _ld = _lv['long_dist_pct'];  _lev = _lv['leverage']
+                    _flag = '⚡主力清算层' if _lev == 10 else ('⚠️次级' if _lev == 20 else '')
+                    lines.append(f"    {_lev:>3d}x: ${_lp:>10,.1f} ({_ld:.2f}%)  ${_la/1e6:>6.0f}M  {_flag}")
+                lines.append(f"  📈 空头清算墙（价格上涨→空头被清，轧空动力）:")
+                for _lv in sorted(_oi_levels, key=lambda x: x['short_dist_pct']):
+                    _sp = _lv['short_liq_price']; _sa = _lv['short_liq_usd']
+                    _sd = _lv['short_dist_pct'];  _lev = _lv['leverage']
+                    _flag = '⚡主力清算层' if _lev == 10 else ('⚠️次级' if _lev == 20 else '')
+                    lines.append(f"    {_lev:>3d}x: ${_sp:>10,.1f} (+{_sd:.2f}%)  ${_sa/1e6:>6.0f}M  {_flag}")
+                if _top_long and _top_long.get('long_liq_price'):
+                    _tlp = _top_long['long_liq_price']; _tla = _top_long['long_liq_usd']
+                    _tld = (_tlp - _p) / _p * 100
+                    lines.append(f"  🎯 最大多头清算集群: ${_tlp:,.1f} ({_tld:.2f}%) = ${_tla/1e6:.0f}M ← 做空核心TP参考")
+
+            # ── 轨道B: 近距强平历史（双边猎杀状态标注）──
             if _ab_walls or _bl_walls:
-                lines.append(f"  --- 清算集群地图（三所实时 · {_ld_src} · {_ld_bias}） ---")
-                if _ab_walls:
-                    lines.append("  🔴 上方空头爆仓墙（做多TP目标 / 做空止损警戒）:")
-                    for _wp, _wv in _ab_walls[:3]:
-                        _d = (_wp - _p) / _p * 100
-                        lines.append(f"    💡 {_wp:,.1f} (+{_d:.2f}%, ${_wv/1e6:.0f}M) {'⭐TP首选' if _ab_walls.index((_wp,_wv))==0 else ''}")
-                if _bl_walls:
-                    lines.append("  🟢 下方多头爆仓墙（做空TP目标 / 做多止损警戒）:")
-                    for _wp, _wv in _bl_walls[:3]:
-                        _d = (_p - _wp) / _p * 100
-                        lines.append(f"    🎯 {_wp:,.1f} (-{_d:.2f}%, ${_wv/1e6:.0f}M) {'⭐TP首选' if _bl_walls.index((_wp,_wv))==0 else ''}")
-    except Exception:
+                _d_up = (_ab_walls[0][0] - _p) / _p * 100 if _ab_walls else 99
+                _d_dn = (_p - _bl_walls[0][0]) / _p * 100 if _bl_walls else 99
+                if _d_up < 1.0 and _d_dn < 1.0:
+                    lines.append(f"  ⚡ 双边猎杀状态: 上方+{_d_up:.2f}% / 下方-{_d_dn:.2f}% 均<1% → 主力正在双向扫描，不宜入场")
+                elif _d_up < 1.0:
+                    lines.append(f"  ⚡ 上方止损猎杀: +{_d_up:.2f}%极近，注意被扫")
+                elif _d_dn < 1.0:
+                    lines.append(f"  ⚡ 下方止损猎杀: -{_d_dn:.2f}%极近，注意被砸")
+    except Exception as _liq_err:
         pass
 
     # [P1修复 2026-07-24 klines聚类降级] 清算集群→自动TP/SL优化建议（当三所数据不足时）

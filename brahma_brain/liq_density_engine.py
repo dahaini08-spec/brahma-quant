@@ -227,7 +227,13 @@ def get_liq_density(symbol: str, current_price: float) -> dict:
         _CACHE[cache_key] = {'ts': now, 'data': result}
         return result
 
-    # 2. 按价格区间分桶（±10%，每0.5%一档）
+    # ── [2026-08-21 设计院修正] 双轨清算地图 ──────────────────────────────
+    # 轨道A: 短期强平历史（±10%，每0.5%分桶）→ 识别双边猎杀状态
+    # 轨道B: OI杠杆分布估算（±15%，5x/10x/20x/50x/100x）→ 真正有交易意义的大级别清算墙
+    # 修正前的错误：只展示轨道A的±0.25%极近数据，误导止损/目标设定
+    # 修正后：报告优先展示轨道B大级别清算墙，轨道A仅标注「双边猎杀」状态
+
+    # ── 轨道A：短期强平历史分桶 ──
     bucket_pct = 0.005
     price_range = 0.10
     buckets_above = {}  # 上方清算密度
@@ -241,9 +247,8 @@ def get_liq_density(symbol: str, current_price: float) -> dict:
         if 0 < dist_pct <= price_range:
             bucket = int(dist_pct / bucket_pct)
             side = order.get('side', 'SELL')
-            if side in ('SELL', 'BUY'):  # 都算上方清算压力
+            if side in ('SELL', 'BUY'):
                 buckets_above[bucket] = buckets_above.get(bucket, 0) + usd
-
         elif -price_range <= dist_pct < 0:
             bucket = int(-dist_pct / bucket_pct)
             buckets_below[bucket] = buckets_below.get(bucket, 0) + usd
@@ -264,6 +269,48 @@ def get_liq_density(symbol: str, current_price: float) -> dict:
 
     above_total = sum(buckets_above.values())
     below_total = sum(buckets_below.values())
+
+    # ── 轨道B：OI杠杆分布估算（大级别清算地图）──
+    # 从Binance获取实时OI，按历史杠杆分布推算各档清算价
+    _oi_liq_levels = []
+    try:
+        import urllib.request as _ur, json as _json
+        _oi_resp = _ur.urlopen(
+            f'https://fapi.binance.com/futures/data/openInterestHist'
+            f'?symbol={symbol}&period=1h&limit=1', timeout=5)
+        _oi_data = _json.loads(_oi_resp.read())
+        _oi_val = float(_oi_data[0]['sumOpenInterestValue'])  # USD
+        _lsr_resp = _ur.urlopen(
+            f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio'
+            f'?symbol={symbol}&period=1h&limit=1', timeout=5)
+        _lsr = _json.loads(_lsr_resp.read())[0]
+        _long_pct  = float(_lsr['longAccount'])
+        _short_pct = float(_lsr['shortAccount'])
+        _long_oi   = _oi_val * _long_pct
+        _short_oi  = _oi_val * _short_pct
+        # 杠杆分布（行业经验：5x30% 10x35% 20x20% 50x10% 100x5%）
+        _lev_dist = [(5, 0.30), (10, 0.35), (20, 0.20), (50, 0.10), (100, 0.05)]
+        for _lev, _w in _lev_dist:
+            _liq_long  = round(current_price * (1 - 0.95 / _lev), 1)   # 多头清算线
+            _liq_short = round(current_price * (1 + 0.95 / _lev), 1)   # 空头清算线
+            _amt_long  = round(_long_oi * _w)
+            _amt_short = round(_short_oi * _w)
+            _oi_liq_levels.append({
+                'leverage': _lev, 'weight': _w,
+                'long_liq_price':  _liq_long,
+                'long_liq_usd':    _amt_long,
+                'short_liq_price': _liq_short,
+                'short_liq_usd':   _amt_short,
+                'long_dist_pct':   round((_liq_long - current_price) / current_price * 100, 2),
+                'short_dist_pct':  round((_liq_short - current_price) / current_price * 100, 2),
+            })
+        # 找最大多头清算集群（最有交易意义）
+        _top_long_liq  = max(_oi_liq_levels, key=lambda x: x['long_liq_usd'])
+        _top_short_liq = max(_oi_liq_levels, key=lambda x: x['short_liq_usd'])
+    except Exception:
+        _oi_liq_levels = []
+        _top_long_liq  = {}
+        _top_short_liq = {}
 
     # 4. 偏向判断
     if above_total > below_total * 1.5:
@@ -295,6 +342,7 @@ def get_liq_density(symbol: str, current_price: float) -> dict:
     result = {
         'symbol': symbol,
         'current_price': current_price,
+        # 轨道A: 短期强平历史数据
         'above_walls': above_walls[:3],
         'below_walls': below_walls[:3],
         'nearest_above': above_walls[0][0] if above_walls else 0,
@@ -304,6 +352,10 @@ def get_liq_density(symbol: str, current_price: float) -> dict:
         'liq_bias': liq_bias,
         'score_adj': score_adj,
         'confidence': round(confidence, 2),
+        # 轨道B: OI杠杆分布大级别清算地图（真正有交易意义）
+        'oi_liq_levels':    _oi_liq_levels,   # 各杠杆清算价+规模
+        'top_long_liq':     _top_long_liq,    # 最大多头清算集群
+        'top_short_liq':    _top_short_liq,   # 最大空头清算集群
         'sources': (
             f'binance({len([x for x in bn_orders if x.get("source")=="binance_ws"] or bn_orders)}'
             + ('\u2705ws' if any(x.get('source')=='binance_ws' for x in bn_orders) else '\u26a0\ufe0fproxy') + ') '
