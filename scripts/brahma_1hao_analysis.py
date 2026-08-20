@@ -1588,7 +1588,11 @@ if __name__ == '__main__':
                     r_raw[_k] = _p[_k]
             score = r_raw.get('score_final', r_raw.get('score', 0))
             grade = r_raw.get('grade', 0)
-            if float(score or 0) >= 138 and float(grade or 0) >= 80:
+            # [设计院封印 2026-08-20 苏摩指令] 屏蔻score120~139区间（实测WR=0%，63条信号全部EXPIRED）
+            _regime_raw = r_raw.get('regime', '')
+            if 120 <= float(score or 0) <= 139 and 'BULL_TREND' in str(_regime_raw):
+                print(f'[1hao→信号池] {sym} score={score:.0f} 在120~139毒区间，丢弃(实测WR=0%) ⛔')
+            elif float(score or 0) >= 138 and float(grade or 0) >= 80:
                 from brahma_brain.dharma_data_bridge import log_signal
                 r_raw['symbol'] = sym
                 r_raw['direction'] = args.direction

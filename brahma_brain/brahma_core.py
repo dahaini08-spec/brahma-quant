@@ -2488,7 +2488,13 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             )
             and signal_dir == 'LONG'
             and _sq['grade'] >= 75
-            and _score_raw >= 155
+            and (
+                _score_raw >= 155                        # 标准屠饮
+                or (
+                    'BEAR_RECOVERY' in _regime_key       # [设计院封印 2026-08-20]
+                    and _score_raw >= 100                # BEAR_RECOVERY WR=88%，降低门槛到100
+                )                                        # 根因：实测WR=88% n=8但仅产生8条信号，严重undersampled
+            )
         )
         # [2026-08-14 高频开单 设计院封印] BEAR_TREND做空特例通道
         # 依据: BEAR_TREND:SHORT WR=87% 是死稴最高胜率体制，grade75~79可信任

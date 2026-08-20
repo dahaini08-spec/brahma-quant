@@ -1,9 +1,9 @@
 {
   "GOOGLUSDT": {
-    "last_push_ts": 1787160912.525882,
+    "last_push_ts": 1787222962.4854937,
     "last_score": 92,
-    "last_push_at": "2026-08-19T17:35:12.673559",
-    "push_price": 344.14,
+    "last_push_at": "2026-08-20T10:49:22.774673",
+    "push_price": 344.03,
     "regime": "BEAR_RECOVERY",
     "btc_regime": "BEAR_RECOVERY",
     "eth_regime": "CHOP_MID"
@@ -198,10 +198,10 @@
     "eth_regime": "BULL_TREND"
   },
   "KSTRUSDT": {
-    "last_push_ts": 1787168257.8212624,
-    "last_score": 115,
-    "last_push_at": "2026-08-19T19:37:37.902148",
-    "push_price": 24.23,
+    "last_push_ts": 1787215444.478793,
+    "last_score": 107,
+    "last_push_at": "2026-08-20T08:44:04.580146",
+    "push_price": 24.01,
     "regime": "BEAR_RECOVERY",
     "btc_regime": "BEAR_RECOVERY",
     "eth_regime": "CHOP_MID"
@@ -486,10 +486,10 @@
     "eth_regime": "BULL_TREND"
   },
   "CRWDUSDT": {
-    "last_push_ts": 1787168257.8212624,
-    "last_score": 97,
-    "last_push_at": "2026-08-19T19:37:37.953444",
-    "push_price": 202.31,
+    "last_push_ts": 1787222962.4854937,
+    "last_score": 93,
+    "last_push_at": "2026-08-20T10:49:22.675998",
+    "push_price": 197.21,
     "regime": "BEAR_RECOVERY",
     "btc_regime": "BEAR_RECOVERY",
     "eth_regime": "CHOP_MID"
@@ -630,10 +630,10 @@
     "eth_regime": "BULL_TREND"
   },
   "COPPERUSDT": {
-    "last_push_ts": 1787169024.047214,
-    "last_score": 92,
-    "last_push_at": "2026-08-19T19:50:32.982998",
-    "push_price": 6.603,
+    "last_push_ts": 1787215444.478793,
+    "last_score": 99,
+    "last_push_at": "2026-08-20T08:44:04.629842",
+    "push_price": 6.575,
     "regime": "BEAR_RECOVERY",
     "btc_regime": "BEAR_RECOVERY",
     "eth_regime": "CHOP_MID"
@@ -927,12 +927,12 @@
     "eth_regime": "CHOP_MID"
   },
   "POPMARTUSDT": {
-    "last_push_ts": 1786642344.2456386,
-    "last_score": 100,
-    "last_push_at": "2026-08-13T17:32:40.580615",
-    "push_price": 19.61,
-    "regime": "CHOP_MID",
-    "btc_regime": "CHOP_MID",
+    "last_push_ts": 1787223050.7971096,
+    "last_score": 85,
+    "last_push_at": "2026-08-20T10:51:08.664120",
+    "push_price": 19.07,
+    "regime": "BEAR_RECOVERY",
+    "btc_regime": "BEAR_RECOVERY",
     "eth_regime": "CHOP_MID"
   },
   "VIRTUALUSDT": {
@@ -1170,10 +1170,10 @@
     "eth_regime": "CHOP_MID"
   },
   "METAUSDT": {
-    "last_push_ts": 1787166441.1761081,
-    "last_score": 110,
-    "last_push_at": "2026-08-19T19:07:21.262490",
-    "push_price": 551.36,
+    "last_push_ts": 1787222962.4854937,
+    "last_score": 92,
+    "last_push_at": "2026-08-20T10:49:22.739412",
+    "push_price": 550.61,
     "regime": "BEAR_RECOVERY",
     "btc_regime": "BEAR_RECOVERY",
     "eth_regime": "CHOP_MID"
@@ -1215,12 +1215,12 @@
     "eth_regime": "CHOP_MID"
   },
   "INTWUSDT": {
-    "last_push_ts": 1786620743.9331884,
-    "last_score": 113,
-    "last_push_at": "2026-08-13T11:32:29.637896",
-    "push_price": 24.01,
-    "regime": "CHOP_MID",
-    "btc_regime": "CHOP_MID",
+    "last_push_ts": 1787223050.7971096,
+    "last_score": 85,
+    "last_push_at": "2026-08-20T10:51:06.197814",
+    "push_price": 20.12,
+    "regime": "BEAR_RECOVERY",
+    "btc_regime": "BEAR_RECOVERY",
     "eth_regime": "CHOP_MID"
   },
   "BANDUSDT": {
@@ -1350,10 +1350,10 @@
     "eth_regime": "CHOP_MID"
   },
   "SPYUSDT": {
-    "last_push_ts": 1787168257.8212624,
-    "last_score": 100,
-    "last_push_at": "2026-08-19T19:37:37.920513",
-    "push_price": 770.33,
+    "last_push_ts": 1787215444.478793,
+    "last_score": 101,
+    "last_push_at": "2026-08-20T08:44:04.613288",
+    "push_price": 769.47,
     "regime": "BEAR_RECOVERY",
     "btc_regime": "BEAR_RECOVERY",
     "eth_regime": "CHOP_MID"
@@ -1368,10 +1368,10 @@
     "eth_regime": "CHOP_MID"
   },
   "QQQUSDT": {
-    "last_push_ts": 1787166441.1761081,
-    "last_score": 108,
-    "last_push_at": "2026-08-19T19:07:21.381114",
-    "push_price": 717.41,
+    "last_push_ts": 1787215444.478793,
+    "last_score": 99,
+    "last_push_at": "2026-08-20T08:44:04.646316",
+    "push_price": 717.12,
     "regime": "BEAR_RECOVERY",
     "btc_regime": "BEAR_RECOVERY",
     "eth_regime": "CHOP_MID"
@@ -1413,10 +1413,10 @@
     "eth_regime": "CHOP_MID"
   },
   "AVGOUSDT": {
-    "last_push_ts": 1787168257.8212624,
-    "last_score": 98,
-    "last_push_at": "2026-08-19T19:37:37.936948",
-    "push_price": 364.14,
+    "last_push_ts": 1787212231.6388648,
+    "last_score": 103,
+    "last_push_at": "2026-08-20T07:50:44.414345",
+    "push_price": 368.59,
     "regime": "BEAR_RECOVERY",
     "btc_regime": "BEAR_RECOVERY",
     "eth_regime": "CHOP_MID"
@@ -1440,10 +1440,10 @@
     "eth_regime": "CHOP_MID"
   },
   "ZHONGJIUSDT": {
-    "last_push_ts": 1787039406.4533112,
-    "last_score": 108,
-    "last_push_at": "2026-08-18T07:50:19.337376",
-    "push_price": 156.14,
+    "last_push_ts": 1787222962.4854937,
+    "last_score": 90,
+    "last_push_at": "2026-08-20T10:49:22.810893",
+    "push_price": 139.93,
     "regime": "BEAR_RECOVERY",
     "btc_regime": "BEAR_RECOVERY",
     "eth_regime": "CHOP_MID"
@@ -1503,10 +1503,10 @@
     "eth_regime": "CHOP_MID"
   },
   "NVDAUSDT": {
-    "last_push_ts": 1787190634.6376905,
-    "last_score": 108,
-    "last_push_at": "2026-08-20T01:50:46.954464",
-    "push_price": 219.48,
+    "last_push_ts": 1787212231.6388648,
+    "last_score": 100,
+    "last_push_at": "2026-08-20T07:50:46.722093",
+    "push_price": 219.4,
     "regime": "BEAR_RECOVERY",
     "btc_regime": "BEAR_RECOVERY",
     "eth_regime": "CHOP_MID"
@@ -1530,10 +1530,10 @@
     "eth_regime": "CHOP_MID"
   },
   "LYTEUSDT": {
-    "last_push_ts": 1787190634.6376905,
-    "last_score": 125,
-    "last_push_at": "2026-08-20T01:50:39.653487",
-    "push_price": 25.47,
+    "last_push_ts": 1787212231.6388648,
+    "last_score": 132,
+    "last_push_at": "2026-08-20T07:50:37.439915",
+    "push_price": 25.26,
     "regime": "BEAR_RECOVERY",
     "btc_regime": "BEAR_RECOVERY",
     "eth_regime": "CHOP_MID"
@@ -1602,10 +1602,10 @@
     "eth_regime": "CHOP_MID"
   },
   "UNITREEUSDT": {
-    "last_push_ts": 1787154851.790073,
+    "last_push_ts": 1787216638.6009958,
     "last_score": 95,
-    "last_push_at": "2026-08-19T15:54:11.933198",
-    "push_price": 115.82,
+    "last_push_at": "2026-08-20T09:03:58.939789",
+    "push_price": 97.74,
     "regime": "BEAR_RECOVERY",
     "btc_regime": "BEAR_RECOVERY",
     "eth_regime": "CHOP_MID"
@@ -1638,10 +1638,10 @@
     "eth_regime": "CHOP_MID"
   },
   "RDDTUSDT": {
-    "last_push_ts": 1787190634.6376905,
-    "last_score": 102,
-    "last_push_at": "2026-08-20T01:50:49.371691",
-    "push_price": 153.51,
+    "last_push_ts": 1787212231.6388648,
+    "last_score": 107,
+    "last_push_at": "2026-08-20T07:50:39.761748",
+    "push_price": 152.98,
     "regime": "BEAR_RECOVERY",
     "btc_regime": "BEAR_RECOVERY",
     "eth_regime": "CHOP_MID"
@@ -1692,19 +1692,91 @@
     "eth_regime": "CHOP_MID"
   },
   "LRCXUSDT": {
-    "last_push_ts": 1787169024.047214,
-    "last_score": 92,
-    "last_push_at": "2026-08-19T19:50:38.370920",
-    "push_price": 307.8,
+    "last_push_ts": 1787222962.4854937,
+    "last_score": 93,
+    "last_push_at": "2026-08-20T10:49:22.707364",
+    "push_price": 308.76,
     "regime": "BEAR_RECOVERY",
     "btc_regime": "BEAR_RECOVERY",
     "eth_regime": "CHOP_MID"
   },
   "BOTUSDT": {
-    "last_push_ts": 1787190634.6376905,
-    "last_score": 123,
-    "last_push_at": "2026-08-20T01:50:43.615414",
-    "push_price": 29.11,
+    "last_push_ts": 1787212231.6388648,
+    "last_score": 105,
+    "last_push_at": "2026-08-20T07:50:42.048160",
+    "push_price": 28.49,
+    "regime": "BEAR_RECOVERY",
+    "btc_regime": "BEAR_RECOVERY",
+    "eth_regime": "CHOP_MID"
+  },
+  "CXMTUSDT": {
+    "last_push_ts": 1787215444.478793,
+    "last_score": 102,
+    "last_push_at": "2026-08-20T08:44:04.597062",
+    "push_price": 8.38,
+    "regime": "BEAR_RECOVERY",
+    "btc_regime": "BEAR_RECOVERY",
+    "eth_regime": "CHOP_MID"
+  },
+  "BMTUSDT": {
+    "last_push_ts": 1787216638.6009958,
+    "last_score": 97,
+    "last_push_at": "2026-08-20T09:03:58.805886",
+    "push_price": 0.01604,
+    "regime": "BEAR_RECOVERY",
+    "btc_regime": "BEAR_RECOVERY",
+    "eth_regime": "CHOP_MID"
+  },
+  "DODOXUSDT": {
+    "last_push_ts": 1787216638.6009958,
+    "last_score": 95,
+    "last_push_at": "2026-08-20T09:03:58.872312",
+    "push_price": 0.020003,
+    "regime": "BEAR_RECOVERY",
+    "btc_regime": "BEAR_RECOVERY",
+    "eth_regime": "CHOP_MID"
+  },
+  "BSPUSDT": {
+    "last_push_ts": 1787216638.6009958,
+    "last_score": 95,
+    "last_push_at": "2026-08-20T09:03:58.896006",
+    "push_price": 41.06,
+    "regime": "BEAR_RECOVERY",
+    "btc_regime": "BEAR_RECOVERY",
+    "eth_regime": "CHOP_MID"
+  },
+  "KLACUSDT": {
+    "last_push_ts": 1787216638.6009958,
+    "last_score": 93,
+    "last_push_at": "2026-08-20T09:03:58.974296",
+    "push_price": 189.21,
+    "regime": "BEAR_RECOVERY",
+    "btc_regime": "BEAR_RECOVERY",
+    "eth_regime": "CHOP_MID"
+  },
+  "NATGASUSDT": {
+    "last_push_ts": 1787223050.7971096,
+    "last_score": 93,
+    "last_push_at": "2026-08-20T10:50:56.559093",
+    "push_price": 2.779,
+    "regime": "BEAR_RECOVERY",
+    "btc_regime": "BEAR_RECOVERY",
+    "eth_regime": "CHOP_MID"
+  },
+  "KAVAUSDT": {
+    "last_push_ts": 1787223050.7971096,
+    "last_score": 88,
+    "last_push_at": "2026-08-20T10:51:01.247981",
+    "push_price": 0.04124,
+    "regime": "BEAR_RECOVERY",
+    "btc_regime": "BEAR_RECOVERY",
+    "eth_regime": "CHOP_MID"
+  },
+  "EPICUSDT": {
+    "last_push_ts": 1787223050.7971096,
+    "last_score": 87,
+    "last_push_at": "2026-08-20T10:51:03.840736",
+    "push_price": 0.3393,
     "regime": "BEAR_RECOVERY",
     "btc_regime": "BEAR_RECOVERY",
     "eth_regime": "CHOP_MID"

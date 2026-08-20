@@ -36,7 +36,7 @@ SIGNAL_TTL = {
     "OB_TOUCH":    6,    # OB触及
     "SSI_END":    16,    # 轧空结束
     "MODE_C_LONG": 48,   # 庄家模式顺多
-    "DEFAULT":     8,    # 默认
+    "DEFAULT":    17,    # [设计院封印 2026-08-20] 修复：默认对齐mh_override=17H（之前=8H导致BTC EXPIRED过高）
 }
 
 def _load():
