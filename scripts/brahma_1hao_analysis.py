@@ -738,6 +738,32 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         lines.append(f"  [方仓层] 跳过: {_fc_err}")
     # ══ [END 方仓层] ══════════════════════════════════════════════════
 
+    # ══ [阶段3 2026-08-20] 跨品种宏观相关性层 ═══════════════════════════════
+    try:
+        from brahma_brain.cross_asset_correlator import get_cross_asset_context as _get_cross
+        _cross = _get_cross(symbol=symbol, current_price=float(r.get('price', 0) or 0))
+        if _cross:
+            _vix_r   = _cross.get('vix', {})
+            _rate_r  = _cross.get('rates', {})
+            _dxy3_r  = _cross.get('dxy', {})
+            _btcd_r  = _cross.get('btcd', {})
+            _total_addon = _cross.get('score_addon_total', 0)
+            _cross_lines = [
+                "",
+                "╬" + "═"*58,
+                "  🌐 跨品种宏观层（阶段3 · VIX+利率+DXY+BTC.D）",
+                "╬" + "═"*58,
+                f"  VIX={_vix_r.get('vix_now','N/A')} [{_vix_r.get('vix_regime','N/A')}] {_vix_r.get('vix_trend','')} | 影响:{_vix_r.get('btc_impact','')} | 加成:{_vix_r.get('score_addon',0):+d}",
+                f"  US10Y={_rate_r.get('rate_now','N/A')}% [{_rate_r.get('rate_regime','N/A')}] {_rate_r.get('rate_trend','')} | 加成:{_rate_r.get('score_addon',0):+d}",
+                f"  DXY={_dxy3_r.get('dxy_now','N/A')} [{_dxy3_r.get('dxy_signal','N/A')}] 90日相关:{_dxy3_r.get('corr_90d','N/A')} | 加成:{_dxy3_r.get('score_addon',0):+d}",
+                f"  BTC.D代理[{_btcd_r.get('signal','N/A')}] BTC_90日:{_btcd_r.get('btc_90d_pct','N/A')}%({_btcd_r.get('percentile',0)*100:.0f}%分位) 山寨季:{'✅' if _btcd_r.get('altcoin_season') else '❌'} | 加成:{_btcd_r.get('score_addon',0):+d}",
+                f"  宏观层总加成: {_total_addon:+d}",
+            ]
+            lines += _cross_lines
+    except Exception as _cross_err:
+        lines.append(f"  [跨品种宏观层] 跳过: {_cross_err}")
+    # ══ [END 跨品种宏观层] ══════════════════════════════════════════════
+
 
     # ══ [设计院 2026-08-08] HCME情境匹配层注入 ═══════════════════════════════
     try:
