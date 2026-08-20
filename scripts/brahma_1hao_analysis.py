@@ -1465,6 +1465,19 @@ if __name__ == '__main__':
         result = run_analysis(sym, args.direction)
         print(result)
 
+        # ── MTF全周期FVG/OB地图（2026-08-20 苏摩指令封印）─────────────────────
+        try:
+            from brahma_multiframe import scan as _mtf_scan
+            _mtf = _mtf_scan(sym, direction=args.direction)
+            print(_mtf.get('mtf_summary', ''))
+            # MTF偏向注入到后续分析上下文
+            _mtf_bias = _mtf.get('mtf_bias', 'NEUTRAL')
+            _mtf_adj  = _mtf.get('mtf_score_adj', 0)
+        except Exception as _mtf_e:
+            _mtf_bias, _mtf_adj = 'NEUTRAL', 0
+            print(f'[MTF] 全周期扫描跳过: {_mtf_e}')
+        # ── end MTF ──────────────────────────────────────────────────────────────
+
         # ── P2 三线策略 + P3 连续记忆（2026-08-18 太极封印）──────────────────
         try:
             # brahma_brain已在模块顶部加入sys.path，无需重复insert（P5 race条件修复 2026-08-18）
