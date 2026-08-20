@@ -60,12 +60,15 @@ def _load_klines_native(symbol: str, tf: str) -> List[dict]:
     path = _DATA_DIR_BACKTEST / f"{symbol}_{tf}.json"
     if not path.exists():
         return []
-    # [FIX 2026-08-20 设计院] 15m文件6.5年全量(231k根/34MB)→OOM
-    # fangcang只需最近N根做微结构分析，tail截断防OOM
-    _TAIL_LIMIT = 2000  # 约20天15m数据，远超BARS_15M_12H=48根需求
+    # [FIX 2026-08-20 v2 设计院] 分层截断：15m防OOM，4H/1H/1D保全量
+    # 15m: 2000根(20天)已足够微结构分析(BARS_15M_12H=48根)，防OOM关键
+    # 4H:  不截断(14467根=6.5年, 5.5MB, 方仓相似案例搜索必须全量)
+    # 1H:  不截断(8664根=1年, 3MB, 足够)
+    # 1D:  不截断(2383根=6.5年, 0.4MB)
+    _TAIL_LIMIT = 2000 if "15m" in str(path) else None
     try:
         raw = json.loads(path.read_text())
-        if len(raw) > _TAIL_LIMIT:
+        if _TAIL_LIMIT and len(raw) > _TAIL_LIMIT:
             raw = raw[-_TAIL_LIMIT:]
         bars = []
         for r in raw:
