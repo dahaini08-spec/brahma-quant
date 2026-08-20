@@ -166,6 +166,33 @@ def _check_15m_structure(symbol: str, direction: str) -> tuple[bool, str]:
         return False, f'检查异常:{e}'
 
 
+def _get_atr_1h(symbol: str, n: int = 14) -> float:
+    """
+    获取1H ATR（Average True Range）
+    [设计院封印 2026-08-20 苏摩指令：SL必须≥ATR_1H×1.5，不能低于市场噪音]
+    """
+    try:
+        kl = requests.get(
+            f'{FAPI}/fapi/v1/klines?symbol={symbol}&interval=1h&limit={n+2}',
+            timeout=5
+        ).json()
+        if not isinstance(kl, list) or len(kl) < n:
+            return 0.0
+        highs  = [float(b[2]) for b in kl]
+        lows   = [float(b[3]) for b in kl]
+        closes = [float(b[4]) for b in kl]
+        trs = []
+        for i in range(1, len(closes)):
+            tr = max(highs[i] - lows[i],
+                     abs(highs[i] - closes[i-1]),
+                     abs(lows[i]  - closes[i-1]))
+            trs.append(tr)
+        atr_val = sum(trs[-n:]) / n
+        return round(atr_val / closes[-1] * 100, 4)  # 返回%
+    except Exception:
+        return 0.0
+
+
 def _get_15m_struct_sl(symbol: str, direction: str, current_price: float) -> float:
     """用15m最近3H摆动点计算结构止损%"""
     try:
@@ -272,7 +299,15 @@ class BrahmaDecisionEngine:
 
             # 1b. SL过宽（动态门控：grade高时允许稍宽）
             sl_check = sl_pct if sl_pct > 0 else _get_15m_struct_sl(sym, direction, price)
+            # [设计院封印 2026-08-20 苏摩指令] SL必须≥ATR_1H×1.5，不能低于市场噪音
+            # 根因：sl_pct<1.5%时100%EXPIRED（止损宽度不足一个4H ATR波幅）
+            _atr_1h = _get_atr_1h(sym)
+            _sl_atr_min = round(_atr_1h * 1.5, 2) if _atr_1h > 0 else 1.5
+            _sl_atr_min = max(_sl_atr_min, 1.5)   # 绝对下限1.5%
+            if sl_check < _sl_atr_min:
+                sl_check = _sl_atr_min  # 自动放宽到ATR下限，不拒绝
             step1['sl_pct'] = sl_check
+            step1['sl_atr_min'] = _sl_atr_min
             _dyn_sl_max = _dynamic_sl_max(grade, regime, direction, sl_check)
             step1['sl_max_dynamic'] = _dyn_sl_max
             if sl_check > _dyn_sl_max:

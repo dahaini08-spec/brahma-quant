@@ -229,9 +229,12 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
             age_mult = 0.75  # 次新鲜
         elif age <= 10:
             age_mult = 0.50  # 老化
+        elif age <= 30:
+            age_mult = 0.35  # [设计院封印 2026-08-20] 线性衰减，不崩塔
         else:
-            age_mult = 0.30  # 接近失效
-        return age_mult * test_mult
+            age_mult = 0.30  # 接近失效，但保甃0.3基础结构分不清零
+        # [设计院封印 2026-08-20] 最终乘积下陙0.20，防止grade崩塔到0
+        return max(age_mult * test_mult, 0.20)
 
     ob = smc['order_blocks']
     if signal_dir == 'LONG' and ob.get('nearest_bull_ob'):
