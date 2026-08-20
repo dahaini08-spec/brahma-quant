@@ -1,0 +1,70 @@
+{
+  "generated_at": "2026-08-20T14:27:05.573081",
+  "total_signals": 2177,
+  "sl_pct": 0.02,
+  "tp_pct": 0.02,
+  "timeout_bars": 48,
+  "min_score": 40,
+  "wr_matrix": {
+    "CHOP_MID:SHORT": {
+      "wr": 44.7,
+      "total": 703,
+      "win": 314,
+      "ev_pct": -0.207
+    },
+    "CHOP_MID:LONG": {
+      "wr": 50.4,
+      "total": 702,
+      "win": 354,
+      "ev_pct": 0.02
+    },
+    "BULL_TREND:LONG": {
+      "wr": 46.4,
+      "total": 233,
+      "win": 108,
+      "ev_pct": -0.146
+    },
+    "BEAR_EARLY:LONG": {
+      "wr": 41.4,
+      "total": 203,
+      "win": 84,
+      "ev_pct": -0.345
+    },
+    "BEAR_EARLY:SHORT": {
+      "wr": 46.4,
+      "total": 125,
+      "win": 58,
+      "ev_pct": -0.144
+    },
+    "BEAR_RECOVERY:LONG": {
+      "wr": 47.6,
+      "total": 124,
+      "win": 59,
+      "ev_pct": -0.097
+    },
+    "BEAR_RECOVERY:SHORT": {
+      "wr": 43.2,
+      "total": 44,
+      "win": 19,
+      "ev_pct": -0.273
+    },
+    "BEAR_TREND:SHORT": {
+      "wr": 37.5,
+      "total": 24,
+      "win": 9,
+      "ev_pct": -0.5
+    },
+    "BULL_TREND:SHORT": {
+      "wr": 55.6,
+      "total": 18,
+      "win": 10,
+      "ev_pct": 0.222
+    },
+    "BEAR_TREND:LONG": {
+      "wr": 0.0,
+      "total": 1,
+      "win": 0,
+      "ev_pct": -2.0
+    }
+  }
+}

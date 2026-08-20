@@ -17,8 +17,11 @@ from typing import Optional
 # ── paths ────────────────────────────────────────────────────────────────────
 _DIR = os.path.dirname(os.path.abspath(__file__))
 _DATA = os.path.join(_DIR, "..", "data")
-SIGNAL_LOG_PATH  = os.path.join(_DATA, "live_signal_log.jsonl")
-HCME_INDEX_PATH  = os.path.join(_DATA, "hcme_index.json")
+SIGNAL_LOG_PATH       = os.path.join(_DATA, "live_signal_log.jsonl")
+HCME_INDEX_PATH       = os.path.join(_DATA, "hcme_index.json")
+# Phase1升级：伪信号历史库（2177+条，6.5年历史回测生成）
+HCME_PSEUDO_PATH      = os.path.join(_DATA, "hcme", "hcme_pseudo_signals.jsonl.gz")
+HCME_PSEUDO_INDEX_PATH = os.path.join(_DATA, "hcme", "hcme_pseudo_index.json")
 
 # ── regime encoder ───────────────────────────────────────────────────────────
 REGIME_MAP = {
@@ -99,14 +102,55 @@ class HCMEMatcher:
 
     def _load_signals(self) -> list[dict]:
         signals = []
-        with open(SIGNAL_LOG_PATH) as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    try:
-                        signals.append(json.loads(line))
-                    except json.JSONDecodeError:
-                        pass
+        # 1. 加载实盘信号（live_signal_log.jsonl）
+        if os.path.exists(SIGNAL_LOG_PATH):
+            with open(SIGNAL_LOG_PATH) as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        try:
+                            signals.append(json.loads(line))
+                        except json.JSONDecodeError:
+                            pass
+        # 2. 加载Phase1伪信号历史库（优先级：补充实盘样本不足问题）
+        pseudo_count = 0
+        if os.path.exists(HCME_PSEUDO_PATH):
+            try:
+                import gzip as _gzip
+                with _gzip.open(HCME_PSEUDO_PATH, 'rt', encoding='utf-8') as f:
+                    for line in f:
+                        line = line.strip()
+                        if line:
+                            try:
+                                rec = json.loads(line)
+                                # 转换为hcme_matcher兼容格式
+                                pseudo_sig = {
+                                    "signal_id": f"pseudo_{rec.get('ts',0)}_{rec.get('symbol','')}",
+                                    "ts": rec.get("ts", 0),
+                                    "symbol": rec.get("symbol", "BTCUSDT"),
+                                    "regime": rec.get("regime", "CHOP_MID"),
+                                    "market_regime": rec.get("regime", "CHOP_MID"),
+                                    "direction": rec.get("direction", "LONG"),
+                                    "signal_dir": rec.get("direction", "LONG"),
+                                    "score": rec.get("score", 50),
+                                    "rsi_4h": rec.get("rsi", 50.0),
+                                    "sl_pct": 2.0,
+                                    "price": rec.get("price", 0),
+                                    "generated_price": rec.get("price", 0),
+                                    "outcome": rec.get("outcome", "UNKNOWN"),
+                                    "result": rec.get("outcome", "UNKNOWN"),
+                                    "pnl_pct": rec.get("pnl", 0) * 100,
+                                    "_pseudo": True,
+                                    "_source": rec.get("_source", "pseudo_signal_v1"),
+                                }
+                                signals.append(pseudo_sig)
+                                pseudo_count += 1
+                            except json.JSONDecodeError:
+                                pass
+            except Exception as e:
+                print(f"[HCME] Warning: 加载伪信号失败: {e}")
+        if pseudo_count > 0:
+            print(f"[HCME] Phase1伪信号: +{pseudo_count}条 (总计{len(signals)}条)")
         return signals
 
     def _build_or_load_index(self) -> list[dict]:
