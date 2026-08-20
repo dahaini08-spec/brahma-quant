@@ -968,6 +968,33 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
             import sys as _com_sys
             _com_parent = str(__import__('pathlib').Path(__file__).parent)
             if _com_parent not in _com_sys.path: _com_sys.path.insert(0, _com_parent)
+            # [设计院封印 2026-08-20 苏摩确认] Binance真实持仓校验门控
+            # 根因：score≥120直接写condition_orders → 幽灵持仓 → P0误告警
+            # 修复：只有Binance有真实持仓时才写入condition_orders
+            try:
+                import requests as _req, hmac as _hmac, hashlib as _hlib, time as _time
+                from pathlib import Path as _Path
+                _api_key = open(str(_Path.home()/'.openclaw/workspace/TOOLS.md')).read()
+                import re as _re
+                _ak = _re.search(r'API Key: (\S+)', _api_key)
+                _sk = _re.search(r'Secret: (\S+)', _api_key)
+                if _ak and _sk:
+                    _ts = int(_time.time()*1000)
+                    _p  = f'timestamp={_ts}'
+                    _sig = _hmac.new(_sk.group(1).encode(), _p.encode(), _hlib.sha256).hexdigest()
+                    _pr = _req.get(f'https://fapi.binance.com/fapi/v2/positionRisk?{_p}&signature={_sig}',
+                                   headers={'X-MBX-APIKEY': _ak.group(1)}, timeout=5).json()
+                    _real_amt = next((float(x['positionAmt']) for x in _pr
+                                      if x['symbol'] == symbol and float(x['positionAmt']) != 0), 0.0)
+                    if _real_amt == 0.0:
+                        result['_condition_plan'] = None  # 无真实持仓，不写condition_orders
+                        raise StopIteration  # 跳过写入
+            except StopIteration:
+                pass
+            except Exception:
+                pass  # 网络失败时保守跳过，不产生幽灵记录
+            else:
+                pass  # 有真实持仓才继续往下写
             from condition_order_matrix import create_trade_plan as _create_plan
             _sl  = float(_com_params.get('stop_loss', 0) or 0)
             _tp1 = float(_com_params.get('tp1', 0) or 0)
