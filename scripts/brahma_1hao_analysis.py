@@ -712,6 +712,27 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
                 _fc_lines.append("  Top3历史案例:")
                 for _tl in _top3.strip().split('\n'):
                     _fc_lines.append(f"  {_tl}")
+            # [2026-08-20] 阶段2：展示周月线锚定 + Elliott + VPA
+            _htf = _fc_data.get('htf_anchor', {})
+            _ew  = _fc_data.get('elliott_wave', {})
+            _vpa = _fc_data.get('vpa', {})
+            if _htf and _htf.get('_anchor_summary'):
+                _fc_lines.append(f"  \u3010HTF周月线锚定】{_htf['_anchor_summary']}")
+                w3_pos = _htf.get('weekly_pos', 0.5)
+                w_trend = _htf.get('weekly_trend', 0)
+                m_trend = _htf.get('monthly_trend', 0)
+                htf_conf = _htf.get('htf_confluence', 0.5)
+                _w52h = _htf.get('_w52_high', 0)
+                _w52l = _htf.get('_w52_low', 0)
+                _fc_lines.append(f"  52W区间: ${_w52l:,.0f}~${_w52h:,.0f} | 周线位置:{w3_pos*100:.0f}% | HTF共振:{htf_conf:.2f}")
+            if _ew and _ew.get('wave_type') != 'UNKNOWN':
+                _fc_lines.append(f"  \u3010Elliott波浪】{_ew.get('summary','')}")
+                if _ew.get('fib_levels'):
+                    _fibs = _ew['fib_levels']
+                    _fib_str = '  '.join(f"{k}=${v:,.0f}" for k,v in list(_fibs.items())[:3])
+                    _fc_lines.append(f"    波浪目标位: {_fib_str}")
+            if _vpa and _vpa.get('vpa_signal') and _vpa.get('vpa_signal') != '无信号':
+                _fc_lines.append(f"  \u3010VPA成交量\u3011{_vpa.get('summary','')}")
             lines += _fc_lines
     except Exception as _fc_err:
         lines.append(f"  [方仓层] 跳过: {_fc_err}")

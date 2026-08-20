@@ -835,6 +835,31 @@ def get_fangcang_context(
         except Exception:
             pip_feature = {'pip_shape': 'UNKNOWN', 'shape_score': 0.0}
 
+        # [2026-08-20 封印] 阶段2：周月线锚定 + Elliott Wave + VPA
+        _htf_features = {}
+        _elliott_result = {}
+        _vpa_result = {}
+        try:
+            from brahma_brain.weekly_monthly_anchor import get_anchor as _get_anchor
+            _anchor = _get_anchor(symbol)
+            _htf_features = _anchor.get_features(current_price=current_price)
+        except Exception as _e:
+            _htf_features = {'_anchor_summary': f'HTF锚定不可用: {_e}'}
+        try:
+            from brahma_brain.elliott_wave_pips import ElliottWaveDetector as _EWD
+            _ew_closes = [float(b['c']) for b in klines_4h[-60:]]
+            _ew_highs  = [float(b['h']) for b in klines_4h[-60:]]
+            _ew_lows   = [float(b['l']) for b in klines_4h[-60:]]
+            _ew = _EWD(_ew_closes, _ew_highs, _ew_lows, n_bars=60)
+            _elliott_result = _ew.analyze()
+        except Exception as _e:
+            _elliott_result = {'wave_type': 'UNKNOWN', 'score_addon': 0, 'summary': f'Elliott不可用: {_e}'}
+        try:
+            from brahma_brain.vpa_analyzer import analyze_vpa as _avpa
+            _vpa_result = _avpa(klines_4h, n_bars=20)
+        except Exception as _e:
+            _vpa_result = {'score_addon': 0, 'summary': f'VPA不可用: {_e}'}
+
         # [2026-08-09 封印] 向量检索增强层：查询历史最相似TOP20案例
         vector_stats = {}
         try:
@@ -903,6 +928,10 @@ def get_fangcang_context(
             'vector_stats':        vector_stats,   # [2026-08-09] 向量检索增强结果
             'pip_shape':           pip_feature.get('pip_shape', 'UNKNOWN'),   # [2026-08-12] PIPs形态
             'pip_score':           pip_feature.get('shape_score', 0.0),       # [2026-08-12] 形态清晰度
+            # [2026-08-20] 阶段2新维度
+            'htf_anchor':          _htf_features,                             # 周月线大周期8维
+            'elliott_wave':        _elliott_result,                           # Elliott波浪分析
+            'vpa':                 _vpa_result,                               # VPA成交量行为
 
             '_ts': now,
         }
