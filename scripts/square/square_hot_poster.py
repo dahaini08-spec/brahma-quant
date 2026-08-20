@@ -476,7 +476,7 @@ def build_top_losers() -> str:
     import requests as _r
 
     data = run_pro_cli(['search', 'price-change', 'um', '--sort', 'TOP_LOSERS', '--limit', '8'])
-    items = (data.get('list') or data.get('items', []))[:5] if data else []
+    items = (data.get('list') or data.get('items', []))[:3] if data else []  # ≤3 tickers (Square API coin pair limit)
     if not items:
         return ''
 
