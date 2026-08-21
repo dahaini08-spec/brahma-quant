@@ -1,0 +1,789 @@
+{
+  "btc": {
+    "symbol": "btc",
+    "total_windows": 18,
+    "pass_count": 16,
+    "pass_rate": 0.8889,
+    "mean_oos_wr": 0.7722,
+    "median_oos_wr": 0.7929,
+    "min_oos_wr": 0.5,
+    "max_oos_wr": 1.0,
+    "overall_pass": true,
+    "regime_agg": {
+      "BULL_TREND:LONG": {
+        "wr": 0.7368,
+        "n": 76
+      },
+      "BEAR_TREND:SHORT": {
+        "wr": 0.7714,
+        "n": 70
+      },
+      "BEAR_RECOVERY:LONG": {
+        "wr": 0.8824,
+        "n": 17
+      },
+      "CHOP_MID:SHORT": {
+        "wr": 1.0,
+        "n": 6
+      }
+    },
+    "windows": [
+      {
+        "window": 1,
+        "test_start": "2021-04-29",
+        "test_end": "2021-07-29",
+        "n_trades": 12,
+        "oos_wr": 1.0,
+        "pass": "True",
+        "regime_stats": {
+          "BULL_TREND:LONG": {
+            "wins": 2,
+            "total": 2
+          },
+          "BEAR_TREND:SHORT": {
+            "wins": 8,
+            "total": 8
+          },
+          "BEAR_RECOVERY:LONG": {
+            "wins": 2,
+            "total": 2
+          }
+        },
+        "dominant_regime": "BEAR_TREND:SHORT"
+      },
+      {
+        "window": 3,
+        "test_start": "2021-10-29",
+        "test_end": "2022-01-29",
+        "n_trades": 9,
+        "oos_wr": 0.7778,
+        "pass": "True",
+        "regime_stats": {
+          "BULL_TREND:LONG": {
+            "wins": 6,
+            "total": 7
+          },
+          "BEAR_TREND:SHORT": {
+            "wins": 1,
+            "total": 2
+          }
+        },
+        "dominant_regime": "BULL_TREND:LONG"
+      },
+      {
+        "window": 4,
+        "test_start": "2022-01-29",
+        "test_end": "2022-04-29",
+        "n_trades": 12,
+        "oos_wr": 0.6667,
+        "pass": "True",
+        "regime_stats": {
+          "BEAR_TREND:SHORT": {
+            "wins": 4,
+            "total": 6
+          },
+          "BEAR_RECOVERY:LONG": {
+            "wins": 3,
+            "total": 4
+          },
+          "CHOP_MID:SHORT": {
+            "wins": 1,
+            "total": 1
+          },
+          "BULL_TREND:LONG": {
+            "wins": 0,
+            "total": 1
+          }
+        },
+        "dominant_regime": "BEAR_TREND:SHORT"
+      },
+      {
+        "window": 5,
+        "test_start": "2022-04-29",
+        "test_end": "2022-07-29",
+        "n_trades": 9,
+        "oos_wr": 1.0,
+        "pass": "True",
+        "regime_stats": {
+          "BEAR_TREND:SHORT": {
+            "wins": 7,
+            "total": 7
+          },
+          "BEAR_RECOVERY:LONG": {
+            "wins": 2,
+            "total": 2
+          }
+        },
+        "dominant_regime": "BEAR_TREND:SHORT"
+      },
+      {
+        "window": 6,
+        "test_start": "2022-07-29",
+        "test_end": "2022-10-29",
+        "n_trades": 5,
+        "oos_wr": 0.6,
+        "pass": "True",
+        "regime_stats": {
+          "BEAR_RECOVERY:LONG": {
+            "wins": 1,
+            "total": 2
+          },
+          "BEAR_TREND:SHORT": {
+            "wins": 2,
+            "total": 3
+          }
+        },
+        "dominant_regime": "BEAR_TREND:SHORT"
+      },
+      {
+        "window": 7,
+        "test_start": "2022-10-29",
+        "test_end": "2023-01-29",
+        "n_trades": 13,
+        "oos_wr": 0.6154,
+        "pass": "True",
+        "regime_stats": {
+          "BULL_TREND:LONG": {
+            "wins": 2,
+            "total": 2
+          },
+          "BEAR_TREND:SHORT": {
+            "wins": 4,
+            "total": 9
+          },
+          "BEAR_RECOVERY:LONG": {
+            "wins": 2,
+            "total": 2
+          }
+        },
+        "dominant_regime": "BEAR_TREND:SHORT"
+      },
+      {
+        "window": 9,
+        "test_start": "2023-04-29",
+        "test_end": "2023-07-29",
+        "n_trades": 6,
+        "oos_wr": 0.5,
+        "pass": "False",
+        "regime_stats": {
+          "BULL_TREND:LONG": {
+            "wins": 2,
+            "total": 5
+          },
+          "BEAR_TREND:SHORT": {
+            "wins": 1,
+            "total": 1
+          }
+        },
+        "dominant_regime": "BULL_TREND:LONG"
+      },
+      {
+        "window": 10,
+        "test_start": "2023-07-29",
+        "test_end": "2023-10-29",
+        "n_trades": 6,
+        "oos_wr": 0.8333,
+        "pass": "True",
+        "regime_stats": {
+          "BULL_TREND:LONG": {
+            "wins": 1,
+            "total": 1
+          },
+          "BEAR_EARLY:SHORT": {
+            "wins": 1,
+            "total": 1
+          },
+          "BEAR_TREND:SHORT": {
+            "wins": 3,
+            "total": 4
+          }
+        },
+        "dominant_regime": "BEAR_TREND:SHORT"
+      },
+      {
+        "window": 11,
+        "test_start": "2023-10-29",
+        "test_end": "2024-01-29",
+        "n_trades": 8,
+        "oos_wr": 0.875,
+        "pass": "True",
+        "regime_stats": {
+          "BULL_TREND:LONG": {
+            "wins": 7,
+            "total": 8
+          }
+        },
+        "dominant_regime": "BULL_TREND:LONG"
+      },
+      {
+        "window": 12,
+        "test_start": "2024-01-29",
+        "test_end": "2024-04-29",
+        "n_trades": 10,
+        "oos_wr": 0.9,
+        "pass": "True",
+        "regime_stats": {
+          "CHOP_MID:SHORT": {
+            "wins": 2,
+            "total": 2
+          },
+          "BULL_TREND:LONG": {
+            "wins": 7,
+            "total": 8
+          }
+        },
+        "dominant_regime": "BULL_TREND:LONG"
+      },
+      {
+        "window": 13,
+        "test_start": "2024-04-29",
+        "test_end": "2024-07-29",
+        "n_trades": 10,
+        "oos_wr": 0.5,
+        "pass": "False",
+        "regime_stats": {
+          "BEAR_TREND:SHORT": {
+            "wins": 2,
+            "total": 4
+          },
+          "BULL_TREND:LONG": {
+            "wins": 1,
+            "total": 4
+          },
+          "BEAR_EARLY:SHORT": {
+            "wins": 1,
+            "total": 1
+          },
+          "BEAR_RECOVERY:LONG": {
+            "wins": 1,
+            "total": 1
+          }
+        },
+        "dominant_regime": "BEAR_TREND:SHORT"
+      },
+      {
+        "window": 14,
+        "test_start": "2024-07-29",
+        "test_end": "2024-10-29",
+        "n_trades": 15,
+        "oos_wr": 0.8,
+        "pass": "True",
+        "regime_stats": {
+          "BEAR_TREND:SHORT": {
+            "wins": 6,
+            "total": 6
+          },
+          "BULL_TREND:LONG": {
+            "wins": 6,
+            "total": 9
+          }
+        },
+        "dominant_regime": "BULL_TREND:LONG"
+      },
+      {
+        "window": 15,
+        "test_start": "2024-10-29",
+        "test_end": "2025-01-29",
+        "n_trades": 7,
+        "oos_wr": 0.8571,
+        "pass": "True",
+        "regime_stats": {
+          "BULL_TREND:LONG": {
+            "wins": 6,
+            "total": 7
+          }
+        },
+        "dominant_regime": "BULL_TREND:LONG"
+      },
+      {
+        "window": 17,
+        "test_start": "2025-04-29",
+        "test_end": "2025-07-29",
+        "n_trades": 14,
+        "oos_wr": 0.7857,
+        "pass": "True",
+        "regime_stats": {
+          "BULL_TREND:LONG": {
+            "wins": 10,
+            "total": 13
+          },
+          "CHOP_MID:SHORT": {
+            "wins": 1,
+            "total": 1
+          }
+        },
+        "dominant_regime": "BULL_TREND:LONG"
+      },
+      {
+        "window": 18,
+        "test_start": "2025-07-29",
+        "test_end": "2025-10-29",
+        "n_trades": 7,
+        "oos_wr": 0.7143,
+        "pass": "True",
+        "regime_stats": {
+          "BULL_TREND:LONG": {
+            "wins": 3,
+            "total": 5
+          },
+          "CHOP_MID:SHORT": {
+            "wins": 1,
+            "total": 1
+          },
+          "BEAR_RECOVERY:LONG": {
+            "wins": 1,
+            "total": 1
+          }
+        },
+        "dominant_regime": "BULL_TREND:LONG"
+      },
+      {
+        "window": 19,
+        "test_start": "2025-10-29",
+        "test_end": "2026-01-29",
+        "n_trades": 10,
+        "oos_wr": 1.0,
+        "pass": "True",
+        "regime_stats": {
+          "BEAR_TREND:SHORT": {
+            "wins": 7,
+            "total": 7
+          },
+          "BEAR_RECOVERY:LONG": {
+            "wins": 3,
+            "total": 3
+          }
+        },
+        "dominant_regime": "BEAR_TREND:SHORT"
+      },
+      {
+        "window": 20,
+        "test_start": "2026-01-29",
+        "test_end": "2026-04-29",
+        "n_trades": 8,
+        "oos_wr": 0.875,
+        "pass": "True",
+        "regime_stats": {
+          "BEAR_TREND:SHORT": {
+            "wins": 3,
+            "total": 4
+          },
+          "BULL_TREND:LONG": {
+            "wins": 3,
+            "total": 3
+          },
+          "CHOP_MID:SHORT": {
+            "wins": 1,
+            "total": 1
+          }
+        },
+        "dominant_regime": "BEAR_TREND:SHORT"
+      },
+      {
+        "window": 21,
+        "test_start": "2026-04-29",
+        "test_end": "2026-07-29",
+        "n_trades": 10,
+        "oos_wr": 0.6,
+        "pass": "True",
+        "regime_stats": {
+          "BULL_TREND:LONG": {
+            "wins": 0,
+            "total": 1
+          },
+          "BEAR_TREND:SHORT": {
+            "wins": 6,
+            "total": 9
+          }
+        },
+        "dominant_regime": "BEAR_TREND:SHORT"
+      }
+    ]
+  },
+  "eth": {
+    "symbol": "eth",
+    "total_windows": 17,
+    "pass_count": 17,
+    "pass_rate": 1.0,
+    "mean_oos_wr": 0.803,
+    "median_oos_wr": 0.8333,
+    "min_oos_wr": 0.6,
+    "max_oos_wr": 1.0,
+    "overall_pass": true,
+    "regime_agg": {
+      "BULL_TREND:LONG": {
+        "wr": 0.7887,
+        "n": 71
+      },
+      "BEAR_TREND:SHORT": {
+        "wr": 0.8364,
+        "n": 55
+      },
+      "BEAR_RECOVERY:LONG": {
+        "wr": 0.6667,
+        "n": 12
+      }
+    },
+    "windows": [
+      {
+        "window": 1,
+        "test_start": "2021-05-25",
+        "test_end": "2021-08-25",
+        "n_trades": 8,
+        "oos_wr": 0.875,
+        "pass": "True",
+        "regime_stats": {
+          "BULL_TREND:LONG": {
+            "wins": 2,
+            "total": 2
+          },
+          "BEAR_TREND:SHORT": {
+            "wins": 3,
+            "total": 3
+          },
+          "BEAR_RECOVERY:LONG": {
+            "wins": 2,
+            "total": 3
+          }
+        },
+        "dominant_regime": "BEAR_TREND:SHORT"
+      },
+      {
+        "window": 2,
+        "test_start": "2021-08-25",
+        "test_end": "2021-11-25",
+        "n_trades": 9,
+        "oos_wr": 0.7778,
+        "pass": "True",
+        "regime_stats": {
+          "BULL_TREND:LONG": {
+            "wins": 7,
+            "total": 9
+          }
+        },
+        "dominant_regime": "BULL_TREND:LONG"
+      },
+      {
+        "window": 3,
+        "test_start": "2021-11-25",
+        "test_end": "2022-02-25",
+        "n_trades": 14,
+        "oos_wr": 0.8571,
+        "pass": "True",
+        "regime_stats": {
+          "BULL_TREND:LONG": {
+            "wins": 3,
+            "total": 4
+          },
+          "BEAR_RECOVERY:LONG": {
+            "wins": 1,
+            "total": 2
+          },
+          "BEAR_TREND:SHORT": {
+            "wins": 8,
+            "total": 8
+          }
+        },
+        "dominant_regime": "BEAR_TREND:SHORT"
+      },
+      {
+        "window": 4,
+        "test_start": "2022-02-25",
+        "test_end": "2022-05-25",
+        "n_trades": 8,
+        "oos_wr": 0.875,
+        "pass": "True",
+        "regime_stats": {
+          "BEAR_TREND:SHORT": {
+            "wins": 4,
+            "total": 4
+          },
+          "BEAR_RECOVERY:LONG": {
+            "wins": 2,
+            "total": 2
+          },
+          "BULL_TREND:LONG": {
+            "wins": 1,
+            "total": 2
+          }
+        },
+        "dominant_regime": "BEAR_TREND:SHORT"
+      },
+      {
+        "window": 7,
+        "test_start": "2022-11-25",
+        "test_end": "2023-02-25",
+        "n_trades": 10,
+        "oos_wr": 0.6,
+        "pass": "True",
+        "regime_stats": {
+          "BEAR_TREND:SHORT": {
+            "wins": 3,
+            "total": 6
+          },
+          "BULL_TREND:LONG": {
+            "wins": 3,
+            "total": 4
+          }
+        },
+        "dominant_regime": "BEAR_TREND:SHORT"
+      },
+      {
+        "window": 8,
+        "test_start": "2023-02-25",
+        "test_end": "2023-05-25",
+        "n_trades": 10,
+        "oos_wr": 0.8,
+        "pass": "True",
+        "regime_stats": {
+          "BULL_TREND:LONG": {
+            "wins": 5,
+            "total": 7
+          },
+          "BEAR_EARLY:SHORT": {
+            "wins": 1,
+            "total": 1
+          },
+          "BEAR_TREND:SHORT": {
+            "wins": 2,
+            "total": 2
+          }
+        },
+        "dominant_regime": "BULL_TREND:LONG"
+      },
+      {
+        "window": 9,
+        "test_start": "2023-05-25",
+        "test_end": "2023-08-25",
+        "n_trades": 7,
+        "oos_wr": 0.7143,
+        "pass": "True",
+        "regime_stats": {
+          "CHOP_MID:SHORT": {
+            "wins": 1,
+            "total": 1
+          },
+          "BEAR_TREND:SHORT": {
+            "wins": 2,
+            "total": 2
+          },
+          "BULL_TREND:LONG": {
+            "wins": 2,
+            "total": 3
+          },
+          "BEAR_RECOVERY:LONG": {
+            "wins": 0,
+            "total": 1
+          }
+        },
+        "dominant_regime": "BULL_TREND:LONG"
+      },
+      {
+        "window": 10,
+        "test_start": "2023-08-25",
+        "test_end": "2023-11-25",
+        "n_trades": 8,
+        "oos_wr": 0.875,
+        "pass": "True",
+        "regime_stats": {
+          "BEAR_TREND:SHORT": {
+            "wins": 1,
+            "total": 1
+          },
+          "BEAR_RECOVERY:LONG": {
+            "wins": 0,
+            "total": 1
+          },
+          "BULL_TREND:LONG": {
+            "wins": 6,
+            "total": 6
+          }
+        },
+        "dominant_regime": "BULL_TREND:LONG"
+      },
+      {
+        "window": 11,
+        "test_start": "2023-11-25",
+        "test_end": "2024-02-25",
+        "n_trades": 11,
+        "oos_wr": 0.9091,
+        "pass": "True",
+        "regime_stats": {
+          "BULL_TREND:LONG": {
+            "wins": 9,
+            "total": 10
+          },
+          "BEAR_EARLY:SHORT": {
+            "wins": 1,
+            "total": 1
+          }
+        },
+        "dominant_regime": "BULL_TREND:LONG"
+      },
+      {
+        "window": 12,
+        "test_start": "2024-02-25",
+        "test_end": "2024-05-25",
+        "n_trades": 7,
+        "oos_wr": 0.8571,
+        "pass": "True",
+        "regime_stats": {
+          "BULL_TREND:LONG": {
+            "wins": 5,
+            "total": 6
+          },
+          "BEAR_TREND:SHORT": {
+            "wins": 1,
+            "total": 1
+          }
+        },
+        "dominant_regime": "BULL_TREND:LONG"
+      },
+      {
+        "window": 14,
+        "test_start": "2024-08-25",
+        "test_end": "2024-11-25",
+        "n_trades": 6,
+        "oos_wr": 0.8333,
+        "pass": "True",
+        "regime_stats": {
+          "BEAR_TREND:SHORT": {
+            "wins": 3,
+            "total": 4
+          },
+          "BEAR_RECOVERY:LONG": {
+            "wins": 1,
+            "total": 1
+          },
+          "CHOP_MID:SHORT": {
+            "wins": 1,
+            "total": 1
+          }
+        },
+        "dominant_regime": "BEAR_TREND:SHORT"
+      },
+      {
+        "window": 15,
+        "test_start": "2024-11-25",
+        "test_end": "2025-02-25",
+        "n_trades": 8,
+        "oos_wr": 0.875,
+        "pass": "True",
+        "regime_stats": {
+          "BULL_TREND:LONG": {
+            "wins": 2,
+            "total": 3
+          },
+          "BEAR_TREND:SHORT": {
+            "wins": 5,
+            "total": 5
+          }
+        },
+        "dominant_regime": "BEAR_TREND:SHORT"
+      },
+      {
+        "window": 16,
+        "test_start": "2025-02-25",
+        "test_end": "2025-05-25",
+        "n_trades": 6,
+        "oos_wr": 0.6667,
+        "pass": "True",
+        "regime_stats": {
+          "BEAR_TREND:SHORT": {
+            "wins": 3,
+            "total": 5
+          },
+          "BEAR_RECOVERY:LONG": {
+            "wins": 1,
+            "total": 1
+          }
+        },
+        "dominant_regime": "BEAR_TREND:SHORT"
+      },
+      {
+        "window": 17,
+        "test_start": "2025-05-25",
+        "test_end": "2025-08-25",
+        "n_trades": 6,
+        "oos_wr": 1.0,
+        "pass": "True",
+        "regime_stats": {
+          "BULL_TREND:LONG": {
+            "wins": 5,
+            "total": 5
+          },
+          "BEAR_EARLY:SHORT": {
+            "wins": 1,
+            "total": 1
+          }
+        },
+        "dominant_regime": "BULL_TREND:LONG"
+      },
+      {
+        "window": 18,
+        "test_start": "2025-08-25",
+        "test_end": "2025-11-25",
+        "n_trades": 8,
+        "oos_wr": 0.75,
+        "pass": "True",
+        "regime_stats": {
+          "BULL_TREND:LONG": {
+            "wins": 4,
+            "total": 5
+          },
+          "BEAR_EARLY:SHORT": {
+            "wins": 0,
+            "total": 1
+          },
+          "BEAR_TREND:SHORT": {
+            "wins": 2,
+            "total": 2
+          }
+        },
+        "dominant_regime": "BULL_TREND:LONG"
+      },
+      {
+        "window": 19,
+        "test_start": "2025-11-25",
+        "test_end": "2026-02-25",
+        "n_trades": 8,
+        "oos_wr": 0.75,
+        "pass": "True",
+        "regime_stats": {
+          "BEAR_TREND:SHORT": {
+            "wins": 5,
+            "total": 7
+          },
+          "CHOP_MID:SHORT": {
+            "wins": 1,
+            "total": 1
+          }
+        },
+        "dominant_regime": "BEAR_TREND:SHORT"
+      },
+      {
+        "window": 20,
+        "test_start": "2026-02-25",
+        "test_end": "2026-05-25",
+        "n_trades": 11,
+        "oos_wr": 0.6364,
+        "pass": "True",
+        "regime_stats": {
+          "BEAR_TREND:SHORT": {
+            "wins": 4,
+            "total": 5
+          },
+          "BEAR_RECOVERY:LONG": {
+            "wins": 1,
+            "total": 1
+          },
+          "BULL_TREND:LONG": {
+            "wins": 2,
+            "total": 5
+          }
+        },
+        "dominant_regime": "BEAR_TREND:SHORT"
+      }
+    ]
+  }
+}
