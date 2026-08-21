@@ -40,8 +40,7 @@ SQUARE_API = 'https://www.binance.com/bapi/composite/v1/public/pgc/openApi/conte
 import os as _os
 SQUARE_KEYS = {
     'A': _os.environ.get('SQUARE_KEY_0', ''),   # 主账户 姓赵不宣 — via env SQUARE_KEY_0
-    'B': _os.environ.get('SQUARE_KEY_1', ''),
-    'C': _os.environ.get('SQUARE_KEY_2', ''),
+    # 'B' and 'C' removed — 只保留主账户
 }
 
 # ── 帖型→账户路由 ─────────────────────────────────────────────────
@@ -53,11 +52,11 @@ POST_TYPE_ACCOUNT = {
     'top_gainers':     'A',
     'top_losers':      'A',
     'market_summary':  'A',
-    'funding_rate':    'B',
-    'smart_money':     'B',
+    'funding_rate':    'A',
+    'smart_money':     'A',
     'pump_alert':      'A',
     'hot_news':        'A',
-    'edu':             'C',
+    'edu':             'A',
 }
 
 # ── 三道门审核 ─────────────────────────────────────────────────────
