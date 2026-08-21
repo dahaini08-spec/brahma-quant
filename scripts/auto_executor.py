@@ -1907,6 +1907,51 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
             _save_executed(executed_set)
             continue
 
+
+        # ══════════════════════════════════════════════════════════
+        # [纸面开单模式 2026-08-21 苏摩111封印]
+        # 铁证：PM账户止损坏(-4120)，自动开单风险不可控
+        # 所有信号 → 推送Jarvis → 苏摩「执行」后手动下单
+        # ══════════════════════════════════════════════════════════
+        try:
+            from push_hub import _jarvis as _phj_paper
+            import datetime as _dt_paper
+            _tag_p = sym.replace('USDT', '')
+            _dir_cn_p = '做多' if direct == 'LONG' else '做空'
+            _ts_p = _dt_paper.datetime.now(_dt_paper.timezone(_dt_paper.timedelta(hours=8))).strftime('%m-%d %H:%M')
+            _entry_p = sig.get('entry_lo', sig.get('entry', 0))
+            _sl_p    = sig.get('sl', sig.get('stop_loss', 0))
+            _tp_p    = sig.get('tp1', sig.get('take_profit', 0))
+            _rr_p    = sig.get('rr1', sig.get('rr', 2.0))
+            _sl_pct_p = round(abs(float(_entry_p) - float(_sl_p)) / float(_entry_p) * 100, 2) if _entry_p and _sl_p else 0
+            _paper_msg = (
+                f"📋 **梵天信号 · 纸面开单 · 等待苏摩确认**\n"
+                f"━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"  {_tag_p}/USDT {_dir_cn_p} | score={score:.0f} | {regime}\n"
+                f"  入场: ${float(_entry_p):,.4f}\n"
+                f"  止损: ${float(_sl_p):,.4f}  -{_sl_pct_p}%\n"
+                f"  止盈: ${float(_tp_p):,.4f}  RR={_rr_p}x\n"
+                f"━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"  回复「执行」→ 手动下单\n"
+                f"  {_ts_p} CST"
+            )
+            _phj_paper('73295708:thread:019fd70a-0942-72b1-aeb9-1bd4fc11b30d', _paper_msg)
+        except Exception as _pe:
+            pass
+        # 纸面模式：记录日志但不实际下单
+        _paper_result = {
+            'signal_id': sig_id, 'event': 'PAPER_PENDING',
+            'symbol': sym, 'direction': direct, 'score': score,
+            'ts': __import__('datetime').datetime.utcnow().isoformat() + 'Z',
+            'reason': '纸面开单模式，等待苏摩确认',
+            'result': {'mode': 'paper_pending', 'success': False},
+        }
+        _log(_paper_result)
+        executed_set.add(sig_id)
+        _save_executed(executed_set)
+        results.append(_paper_result)
+        continue
+        # ══════════════════════════════════════════════════════════
         try:
             exec_result = execute_signal(sig, nav, active_pos)
         except Exception as _exec_err:

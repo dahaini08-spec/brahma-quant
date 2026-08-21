@@ -2,5 +2,8 @@
   "enabled_at": "2026-06-07T03:24:20.028197+00:00",
   "reason": "武曲Paper n=121 WR=55.4% >= MIN_N=50 MIN_WR=50%",
   "unlocked_by": "design_institute_2026-06-07",
-  "gate3_limit": 3
+  "gate3_limit": 3,
+  "paper_only_mode": true,
+  "paper_only_since": "2026-08-21",
+  "paper_only_reason": "PM账户止损坏(-4120)，全面切换纸面开单，等苏摩确认后手动下单"
 }
