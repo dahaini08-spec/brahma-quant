@@ -935,6 +935,10 @@ def post_to_square(content: str, dry_run: bool = False) -> bool:
         print(f'[DRY-RUN] 字数:{len(content)} 检查:✅')
         return True
 
+    # [设计院封印 2026-08-21] 先占位再发送，防止API超时后重试导致重复发帖
+    # 根因: 08-18两条完全相同的帖 = mark_posted只在成功后写入，超时重试时指纹还未写入
+    mark_posted(content)  # 先占位
+
     try:
         resp = requests.post(
             SQUARE_API,
@@ -1014,8 +1018,34 @@ def main():
         content = builder()
 
     if not content:
-        print(f'[post] ⚠️  {args.type} 内容为空（数据源无数据），跳过')
-        sys.exit(0)
+        # [设计院封印 2026-08-21 苏摩指令] 主任务无内容时启用备用内容池，不断更
+        try:
+            import json, random, time as _t
+            _pool_path = Path(__file__).parent.parent.parent / 'data/square_backup_pool.json'
+            _pool = json.loads(_pool_path.read_text())
+            _posts = _pool.get('posts', [])
+            # 过滤未发过的，过去24H内未使用的
+            _log = Path(__file__).parent.parent.parent / 'data/square_post_log.jsonl'
+            _sent_ids = set()
+            if _log.exists():
+                _cutoff = _t.time() - 86400 * 3  # 3天内用过的不再用
+                for _l in _log.read_text().splitlines():
+                    try:
+                        _e = json.loads(_l)
+                        if float(_e.get('ts', 0)) > _cutoff:
+                            _sent_ids.add(_e.get('backup_id', ''))
+                    except: pass
+            _available = [p for p in _posts if p['id'] not in _sent_ids]
+            if _available:
+                _chosen = random.choice(_available)
+                content = _chosen['body']
+                print(f'[post] 📚 备用内容池兴布: {_chosen["id"]} ({_chosen["type"]})')
+            else:
+                print(f'[post] ⚠️  {args.type} 内容为空，备用内容池已用尽，跳过')
+                sys.exit(0)
+        except Exception as _be:
+            print(f'[post] ⚠️  {args.type} 内容为空，备用内容池失败: {_be}，跳过')
+            sys.exit(0)
 
     success = post_to_square(content, dry_run=args.dry_run)
     sys.exit(0 if success else 1)

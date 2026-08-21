@@ -1,0 +1,163 @@
+{
+  "btc": {
+    "symbol": "btc",
+    "base_wr": 0.5388,
+    "sample_count": 464,
+    "contributions": {
+      "D6_BBW": {
+        "loo_wr": 0.5121,
+        "delta_wr": 0.0267,
+        "n": 330
+      },
+      "D3_EMA20_pos": {
+        "loo_wr": 0.516,
+        "delta_wr": 0.0228,
+        "n": 374
+      },
+      "D8_price_pos": {
+        "loo_wr": 0.5175,
+        "delta_wr": 0.0213,
+        "n": 400
+      },
+      "D11_momentum_12": {
+        "loo_wr": 0.5272,
+        "delta_wr": 0.0116,
+        "n": 349
+      },
+      "D10_hurst": {
+        "loo_wr": 0.5276,
+        "delta_wr": 0.0112,
+        "n": 254
+      },
+      "D9_vol_ratio": {
+        "loo_wr": 0.5303,
+        "delta_wr": 0.0085,
+        "n": 379
+      },
+      "D1_RSI_4H": {
+        "loo_wr": 0.5316,
+        "delta_wr": 0.0072,
+        "n": 380
+      },
+      "D2_RSI_1H_proxy": {
+        "loo_wr": 0.5388,
+        "delta_wr": 0.0,
+        "n": 464
+      },
+      "D4_EMA50_pos": {
+        "loo_wr": 0.5388,
+        "delta_wr": 0.0,
+        "n": 464
+      },
+      "D7_ATR_pct": {
+        "loo_wr": 0.5388,
+        "delta_wr": 0.0,
+        "n": 464
+      },
+      "D12_vol_recent": {
+        "loo_wr": 0.5388,
+        "delta_wr": 0.0,
+        "n": 464
+      },
+      "D5_EMA_align": {
+        "loo_wr": 0.5432,
+        "delta_wr": -0.0044,
+        "n": 359
+      }
+    },
+    "positive_dims": [
+      "D6_BBW",
+      "D3_EMA20_pos",
+      "D8_price_pos",
+      "D11_momentum_12",
+      "D10_hurst"
+    ],
+    "noise_dims": [
+      "D9_vol_ratio",
+      "D1_RSI_4H",
+      "D5_EMA_align"
+    ],
+    "negative_dims": []
+  },
+  "eth": {
+    "symbol": "eth",
+    "base_wr": 0.5468,
+    "sample_count": 470,
+    "contributions": {
+      "D3_EMA20_pos": {
+        "loo_wr": 0.5293,
+        "delta_wr": 0.0175,
+        "n": 393
+      },
+      "D11_momentum_12": {
+        "loo_wr": 0.5358,
+        "delta_wr": 0.011,
+        "n": 377
+      },
+      "D8_price_pos": {
+        "loo_wr": 0.5381,
+        "delta_wr": 0.0087,
+        "n": 407
+      },
+      "D2_RSI_1H_proxy": {
+        "loo_wr": 0.5468,
+        "delta_wr": 0.0,
+        "n": 470
+      },
+      "D4_EMA50_pos": {
+        "loo_wr": 0.5468,
+        "delta_wr": 0.0,
+        "n": 470
+      },
+      "D7_ATR_pct": {
+        "loo_wr": 0.5468,
+        "delta_wr": 0.0,
+        "n": 470
+      },
+      "D12_vol_recent": {
+        "loo_wr": 0.5468,
+        "delta_wr": 0.0,
+        "n": 470
+      },
+      "D10_hurst": {
+        "loo_wr": 0.5469,
+        "delta_wr": -0.0001,
+        "n": 245
+      },
+      "D1_RSI_4H": {
+        "loo_wr": 0.5481,
+        "delta_wr": -0.0013,
+        "n": 374
+      },
+      "D9_vol_ratio": {
+        "loo_wr": 0.5487,
+        "delta_wr": -0.0019,
+        "n": 421
+      },
+      "D5_EMA_align": {
+        "loo_wr": 0.5515,
+        "delta_wr": -0.0046,
+        "n": 379
+      },
+      "D6_BBW": {
+        "loo_wr": 0.5573,
+        "delta_wr": -0.0105,
+        "n": 375
+      }
+    },
+    "positive_dims": [
+      "D3_EMA20_pos",
+      "D11_momentum_12"
+    ],
+    "noise_dims": [
+      "D8_price_pos",
+      "D10_hurst",
+      "D1_RSI_4H",
+      "D9_vol_ratio",
+      "D5_EMA_align"
+    ],
+    "negative_dims": [
+      "D6_BBW"
+    ]
+  }
+}

@@ -1,0 +1,354 @@
+{
+  "btc": {
+    "no_filter": {
+      "total_trades": 772,
+      "global_wr": 0.5376,
+      "global_ev": -0.0044,
+      "max_drawdown": -61.76,
+      "max_consec_loss": 8,
+      "total_pnl": -3.36,
+      "regime_matrix": {
+        "BEAR_EARLY:SHORT": {
+          "n": 46,
+          "wr": 0.5652,
+          "ev_pct": 0.146,
+          "win": 26,
+          "loss": 19,
+          "timeout": 1
+        },
+        "BEAR_RECOVERY:LONG": {
+          "n": 96,
+          "wr": 0.5521,
+          "ev_pct": 0.048,
+          "win": 53,
+          "loss": 43,
+          "timeout": 0
+        },
+        "BEAR_TREND:SHORT": {
+          "n": 254,
+          "wr": 0.5394,
+          "ev_pct": 0.006,
+          "win": 137,
+          "loss": 116,
+          "timeout": 1
+        },
+        "BULL_TREND:LONG": {
+          "n": 348,
+          "wr": 0.523,
+          "ev_pct": -0.068,
+          "win": 182,
+          "loss": 166,
+          "timeout": 0
+        },
+        "CHOP_MID:SHORT": {
+          "n": 28,
+          "wr": 0.6071,
+          "ev_pct": 0.269,
+          "win": 17,
+          "loss": 11,
+          "timeout": 0
+        }
+      },
+      "year_stats": {
+        "2020": {
+          "n": 108,
+          "wr": 0.5556,
+          "ev_pct": 0.081
+        },
+        "2021": {
+          "n": 135,
+          "wr": 0.4444,
+          "ev_pct": -0.382
+        },
+        "2022": {
+          "n": 134,
+          "wr": 0.5896,
+          "ev_pct": 0.198
+        },
+        "2023": {
+          "n": 92,
+          "wr": 0.587,
+          "ev_pct": 0.188
+        },
+        "2024": {
+          "n": 114,
+          "wr": 0.5614,
+          "ev_pct": 0.086
+        },
+        "2025": {
+          "n": 117,
+          "wr": 0.547,
+          "ev_pct": 0.028
+        },
+        "2026": {
+          "n": 72,
+          "wr": 0.4722,
+          "ev_pct": -0.242
+        }
+      }
+    },
+    "score_gte_30": {
+      "total_trades": 219,
+      "global_wr": 0.5342,
+      "global_ev": -0.0135,
+      "max_drawdown": -23.76,
+      "max_consec_loss": 4,
+      "total_pnl": -2.96,
+      "regime_matrix": {
+        "BEAR_EARLY:SHORT": {
+          "n": 3,
+          "wr": 0.6667,
+          "ev_pct": 0.507,
+          "win": 2,
+          "loss": 1,
+          "timeout": 0
+        },
+        "BEAR_RECOVERY:LONG": {
+          "n": 21,
+          "wr": 0.5714,
+          "ev_pct": 0.126,
+          "win": 12,
+          "loss": 9,
+          "timeout": 0
+        },
+        "BEAR_TREND:SHORT": {
+          "n": 76,
+          "wr": 0.5395,
+          "ev_pct": 0.025,
+          "win": 41,
+          "loss": 34,
+          "timeout": 1
+        },
+        "BULL_TREND:LONG": {
+          "n": 112,
+          "wr": 0.5179,
+          "ev_pct": -0.089,
+          "win": 58,
+          "loss": 54,
+          "timeout": 0
+        },
+        "CHOP_MID:SHORT": {
+          "n": 7,
+          "wr": 0.5714,
+          "ev_pct": 0.126,
+          "win": 4,
+          "loss": 3,
+          "timeout": 0
+        }
+      },
+      "year_stats": {
+        "2020": {
+          "n": 27,
+          "wr": 0.5926,
+          "ev_pct": 0.21
+        },
+        "2021": {
+          "n": 35,
+          "wr": 0.5143,
+          "ev_pct": -0.103
+        },
+        "2022": {
+          "n": 36,
+          "wr": 0.5278,
+          "ev_pct": -0.049
+        },
+        "2023": {
+          "n": 22,
+          "wr": 0.5455,
+          "ev_pct": 0.022
+        },
+        "2024": {
+          "n": 42,
+          "wr": 0.5,
+          "ev_pct": -0.16
+        },
+        "2025": {
+          "n": 36,
+          "wr": 0.5556,
+          "ev_pct": 0.062
+        },
+        "2026": {
+          "n": 21,
+          "wr": 0.5238,
+          "ev_pct": 0.034
+        }
+      }
+    }
+  },
+  "eth": {
+    "no_filter": {
+      "total_trades": 848,
+      "global_wr": 0.513,
+      "global_ev": -0.1456,
+      "max_drawdown": -141.6,
+      "max_consec_loss": 9,
+      "total_pnl": -123.5,
+      "regime_matrix": {
+        "BEAR_EARLY:SHORT": {
+          "n": 53,
+          "wr": 0.566,
+          "ev_pct": 0.104,
+          "win": 30,
+          "loss": 22,
+          "timeout": 1
+        },
+        "BEAR_RECOVERY:LONG": {
+          "n": 103,
+          "wr": 0.6117,
+          "ev_pct": 0.247,
+          "win": 63,
+          "loss": 40,
+          "timeout": 0
+        },
+        "BEAR_TREND:SHORT": {
+          "n": 280,
+          "wr": 0.5,
+          "ev_pct": -0.2,
+          "win": 140,
+          "loss": 140,
+          "timeout": 0
+        },
+        "BULL_TREND:LONG": {
+          "n": 391,
+          "wr": 0.4885,
+          "ev_pct": -0.246,
+          "win": 191,
+          "loss": 200,
+          "timeout": 0
+        },
+        "CHOP_MID:SHORT": {
+          "n": 21,
+          "wr": 0.5238,
+          "ev_pct": -0.105,
+          "win": 11,
+          "loss": 10,
+          "timeout": 0
+        }
+      },
+      "year_stats": {
+        "2020": {
+          "n": 98,
+          "wr": 0.551,
+          "ev_pct": 0.004
+        },
+        "2021": {
+          "n": 180,
+          "wr": 0.45,
+          "ev_pct": -0.4
+        },
+        "2022": {
+          "n": 138,
+          "wr": 0.5,
+          "ev_pct": -0.2
+        },
+        "2023": {
+          "n": 97,
+          "wr": 0.5361,
+          "ev_pct": -0.056
+        },
+        "2024": {
+          "n": 121,
+          "wr": 0.5868,
+          "ev_pct": 0.147
+        },
+        "2025": {
+          "n": 143,
+          "wr": 0.4965,
+          "ev_pct": -0.214
+        },
+        "2026": {
+          "n": 71,
+          "wr": 0.5211,
+          "ev_pct": -0.086
+        }
+      }
+    },
+    "score_gte_30": {
+      "total_trades": 198,
+      "global_wr": 0.5606,
+      "global_ev": 0.053,
+      "max_drawdown": -29.6,
+      "max_consec_loss": 10,
+      "total_pnl": 10.5,
+      "regime_matrix": {
+        "BEAR_EARLY:SHORT": {
+          "n": 7,
+          "wr": 0.5714,
+          "ev_pct": 0.386,
+          "win": 4,
+          "loss": 2,
+          "timeout": 1
+        },
+        "BEAR_RECOVERY:LONG": {
+          "n": 14,
+          "wr": 0.3571,
+          "ev_pct": -0.771,
+          "win": 5,
+          "loss": 9,
+          "timeout": 0
+        },
+        "BEAR_TREND:SHORT": {
+          "n": 69,
+          "wr": 0.6522,
+          "ev_pct": 0.409,
+          "win": 45,
+          "loss": 24,
+          "timeout": 0
+        },
+        "BULL_TREND:LONG": {
+          "n": 105,
+          "wr": 0.5238,
+          "ev_pct": -0.105,
+          "win": 55,
+          "loss": 50,
+          "timeout": 0
+        },
+        "CHOP_MID:SHORT": {
+          "n": 3,
+          "wr": 0.6667,
+          "ev_pct": 0.467,
+          "win": 2,
+          "loss": 1,
+          "timeout": 0
+        }
+      },
+      "year_stats": {
+        "2020": {
+          "n": 25,
+          "wr": 0.56,
+          "ev_pct": 0.04
+        },
+        "2021": {
+          "n": 34,
+          "wr": 0.4412,
+          "ev_pct": -0.435
+        },
+        "2022": {
+          "n": 28,
+          "wr": 0.5357,
+          "ev_pct": -0.057
+        },
+        "2023": {
+          "n": 33,
+          "wr": 0.6364,
+          "ev_pct": 0.345
+        },
+        "2024": {
+          "n": 25,
+          "wr": 0.6,
+          "ev_pct": 0.2
+        },
+        "2025": {
+          "n": 34,
+          "wr": 0.5882,
+          "ev_pct": 0.153
+        },
+        "2026": {
+          "n": 19,
+          "wr": 0.5789,
+          "ev_pct": 0.226
+        }
+      }
+    }
+  }
+}

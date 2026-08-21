@@ -1,0 +1,13 @@
+{
+  "phase": 2,
+  "description": "方仓DTW预测力独立验证（90天隔离过滤）",
+  "sample_count": 1762,
+  "pearson_r": 0.0138,
+  "direction_wr": 0.535,
+  "strong_up_n": 552,
+  "strong_up_wr": 0.536,
+  "strong_down_n": 130,
+  "strong_down_wr": 0.531,
+  "neutral_n": 1080,
+  "pass": false
+}

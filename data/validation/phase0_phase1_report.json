@@ -1,0 +1,234 @@
+{
+  "phase0_btc": {
+    "total_bars": 14856,
+    "reliable_bars": 13776,
+    "reliable_start": "2020-04-29T00:00:00+00:00",
+    "regime_distribution": {
+      "BULL_TREND": 4193,
+      "BEAR_TREND": 4026,
+      "CHOP_MID": 2994,
+      "BEAR_RECOVERY": 1451,
+      "BEAR_EARLY": 1112
+    }
+  },
+  "phase0_eth": {
+    "total_bars": 14699,
+    "reliable_bars": 13619,
+    "reliable_start": "2020-05-25T04:00:00+00:00",
+    "regime_distribution": {
+      "BEAR_TREND": 4112,
+      "BULL_TREND": 3949,
+      "CHOP_MID": 3107,
+      "BEAR_RECOVERY": 1290,
+      "BEAR_EARLY": 1161
+    }
+  },
+  "phase1": {
+    "total_nodes": 20,
+    "correct": 14,
+    "accuracy_pct": 70.0,
+    "avg_delay_bars": 5.14,
+    "details": [
+      {
+        "id": "G1",
+        "date": "2020-03-12",
+        "expected": "BEAR_TREND",
+        "actual_at_t": "BEAR_TREND",
+        "actual_mode_24h": "BEAR_TREND",
+        "match": true,
+        "delay_bars": -6,
+        "desc": "COVID崩盘，单日-50%"
+      },
+      {
+        "id": "G2",
+        "date": "2020-05-01",
+        "expected": "CHOP_MID",
+        "actual_at_t": "BULL_TREND",
+        "actual_mode_24h": "BULL_TREND",
+        "match": false,
+        "delay_bars": null,
+        "desc": "崩后横盘累积"
+      },
+      {
+        "id": "G3",
+        "date": "2020-10-21",
+        "expected": "BULL_TREND",
+        "actual_at_t": "BULL_TREND",
+        "actual_mode_24h": "BULL_TREND",
+        "match": true,
+        "delay_bars": -6,
+        "desc": "牛市启动，突破10K"
+      },
+      {
+        "id": "G4",
+        "date": "2021-01-08",
+        "expected": "BULL_TREND",
+        "actual_at_t": "BULL_TREND",
+        "actual_mode_24h": "BULL_TREND",
+        "match": true,
+        "delay_bars": -6,
+        "desc": "BTC突破40K新高"
+      },
+      {
+        "id": "G5",
+        "date": "2021-04-14",
+        "expected": "BEAR_EARLY",
+        "actual_at_t": "BULL_TREND",
+        "actual_mode_24h": "BULL_TREND",
+        "match": false,
+        "delay_bars": null,
+        "desc": "64K顶部转折开始"
+      },
+      {
+        "id": "G6",
+        "date": "2021-07-20",
+        "expected": "BEAR_RECOVERY",
+        "actual_at_t": "BEAR_TREND",
+        "actual_mode_24h": "BEAR_TREND",
+        "match": false,
+        "delay_bars": null,
+        "desc": "29K反弹启动"
+      },
+      {
+        "id": "G7",
+        "date": "2021-09-07",
+        "expected": "BULL_TREND",
+        "actual_at_t": "BULL_TREND",
+        "actual_mode_24h": "BULL_TREND",
+        "match": true,
+        "delay_bars": -6,
+        "desc": "51K牛市续涨"
+      },
+      {
+        "id": "G8",
+        "date": "2021-11-10",
+        "expected": "BEAR_EARLY",
+        "actual_at_t": "BULL_TREND",
+        "actual_mode_24h": "BULL_TREND",
+        "match": false,
+        "delay_bars": null,
+        "desc": "69K ATH顶部"
+      },
+      {
+        "id": "G9",
+        "date": "2022-01-21",
+        "expected": "BEAR_TREND",
+        "actual_at_t": "BEAR_TREND",
+        "actual_mode_24h": "BEAR_TREND",
+        "match": true,
+        "delay_bars": -6,
+        "desc": "确认熊市转折"
+      },
+      {
+        "id": "G10",
+        "date": "2022-05-09",
+        "expected": "BEAR_TREND",
+        "actual_at_t": "BEAR_TREND",
+        "actual_mode_24h": "BEAR_TREND",
+        "match": true,
+        "delay_bars": -6,
+        "desc": "Luna崩盘加速"
+      },
+      {
+        "id": "G11",
+        "date": "2022-06-18",
+        "expected": "BEAR_TREND",
+        "actual_at_t": "BEAR_TREND",
+        "actual_mode_24h": "BEAR_TREND",
+        "match": true,
+        "delay_bars": -6,
+        "desc": "跌破20K恐慌"
+      },
+      {
+        "id": "G12",
+        "date": "2022-11-09",
+        "expected": "BEAR_TREND",
+        "actual_at_t": "BEAR_TREND",
+        "actual_mode_24h": "BEAR_TREND",
+        "match": true,
+        "delay_bars": 0,
+        "desc": "FTX崩盘"
+      },
+      {
+        "id": "G13",
+        "date": "2023-01-12",
+        "expected": "BEAR_RECOVERY",
+        "actual_at_t": "BEAR_RECOVERY",
+        "actual_mode_24h": "BEAR_RECOVERY",
+        "match": true,
+        "delay_bars": -6,
+        "desc": "反弹启动"
+      },
+      {
+        "id": "G14",
+        "date": "2023-04-14",
+        "expected": "CHOP_MID",
+        "actual_at_t": "BULL_TREND",
+        "actual_mode_24h": "BULL_TREND",
+        "match": false,
+        "delay_bars": null,
+        "desc": "横盘整理"
+      },
+      {
+        "id": "G15",
+        "date": "2023-10-23",
+        "expected": "BULL_TREND",
+        "actual_at_t": "BULL_TREND",
+        "actual_mode_24h": "BULL_TREND",
+        "match": true,
+        "delay_bars": -6,
+        "desc": "牛市确认突破"
+      },
+      {
+        "id": "G16",
+        "date": "2024-01-10",
+        "expected": "BULL_TREND",
+        "actual_at_t": "BULL_TREND",
+        "actual_mode_24h": "BULL_TREND",
+        "match": true,
+        "delay_bars": -6,
+        "desc": "ETF获批前夕"
+      },
+      {
+        "id": "G17",
+        "date": "2024-03-14",
+        "expected": "BULL_TREND",
+        "actual_at_t": "BULL_TREND",
+        "actual_mode_24h": "BULL_TREND",
+        "match": true,
+        "delay_bars": -6,
+        "desc": "BTC突破73K ATH"
+      },
+      {
+        "id": "G18",
+        "date": "2024-05-01",
+        "expected": "BEAR_EARLY",
+        "actual_at_t": "BEAR_TREND",
+        "actual_mode_24h": "BEAR_TREND",
+        "match": false,
+        "delay_bars": null,
+        "desc": "顶部调整开始"
+      },
+      {
+        "id": "G19",
+        "date": "2024-08-05",
+        "expected": "BEAR_TREND",
+        "actual_at_t": "BEAR_TREND",
+        "actual_mode_24h": "BEAR_TREND",
+        "match": true,
+        "delay_bars": 0,
+        "desc": "日元套利崩盘"
+      },
+      {
+        "id": "G20",
+        "date": "2025-01-20",
+        "expected": "BULL_TREND",
+        "actual_at_t": "CHOP_MID",
+        "actual_mode_24h": "BULL_TREND",
+        "match": true,
+        "delay_bars": -6,
+        "desc": "BTC突破100K"
+      }
+    ]
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "15m": {
+    "btc": {
+      "symbol": "btc",
+      "total_trades": 1287,
+      "global_wr": 0.3403,
+      "global_ev": -0.0795,
+      "max_drawdown": -106.9,
+      "max_consec_loss": 10,
+      "total_pnl": -102.34,
+      "regime_matrix": {
+        "BEAR_EARLY:SHORT": {
+          "n": 99,
+          "wr": 0.2626,
+          "ev": -0.158
+        },
+        "BEAR_RECOVERY:LONG": {
+          "n": 80,
+          "wr": 0.325,
+          "ev": -0.059
+        },
+        "BEAR_TREND:SHORT": {
+          "n": 547,
+          "wr": 0.3437,
+          "ev": -0.081
+        },
+        "BULL_TREND:LONG": {
+          "n": 422,
+          "wr": 0.3863,
+          "ev": -0.023
+        },
+        "CHOP_MID:SHORT": {
+          "n": 139,
+          "wr": 0.2518,
+          "ev": -0.201
+        }
+      }
+    },
+    "eth": {
+      "symbol": "eth",
+      "total_trades": 1182,
+      "global_wr": 0.4162,
+      "global_ev": -0.0419,
+      "max_drawdown": -54.76,
+      "max_consec_loss": 7,
+      "total_pnl": -49.48,
+      "regime_matrix": {
+        "BEAR_EARLY:SHORT": {
+          "n": 114,
+          "wr": 0.4211,
+          "ev": 0.024
+        },
+        "BEAR_RECOVERY:LONG": {
+          "n": 64,
+          "wr": 0.5312,
+          "ev": 0.18
+        },
+        "BEAR_TREND:SHORT": {
+          "n": 519,
+          "wr": 0.4258,
+          "ev": -0.027
+        },
+        "BULL_TREND:LONG": {
+          "n": 368,
+          "wr": 0.4076,
+          "ev": -0.093
+        },
+        "CHOP_MID:SHORT": {
+          "n": 117,
+          "wr": 0.3333,
+          "ev": -0.132
+        }
+      }
+    }
+  },
+  "1h": {
+    "btc": {
+      "symbol": "btc",
+      "total": 130,
+      "wr": 0.5231,
+      "ev": 0.2452
+    },
+    "eth": {
+      "symbol": "eth",
+      "total": 138,
+      "wr": 0.529,
+      "ev": 0.0988
+    }
+  }
+}
