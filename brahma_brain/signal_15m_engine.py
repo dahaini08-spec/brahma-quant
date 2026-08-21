@@ -291,6 +291,23 @@ def generate_15m_signal(symbol: str, verbose: bool = False) -> dict | None:
         sym += 'USDT'
 
     try:
+        # ── [验证封印 2026-08-21] 1H触发层前置检查 ──────────────
+        # 铁证：三层架构 BTC WR=62.7% ETH WR=64.7% EV>0.7%/笔
+        # 无1H触发时15m独立触发WR=34%，不发信号
+        try:
+            from brahma_brain.rsi_1h_trigger import detect_1h_trigger as _1h_chk
+            _1h_r = _1h_chk(symbol)
+            if _1h_r is None:
+                return None
+            _forced_dir = _1h_r['direction']
+            _1h_sl = _1h_r['sl_pct']
+            _1h_tp = _1h_r['tp_pct']
+        except ImportError:
+            _forced_dir = None
+            _1h_sl = None
+            _1h_tp = None
+        # ─────────────────────────────────────────────────────────
+
         # ── 获取多周期K线（只拿已关闭K线：limit+1，丢弃最后一根未收盘）──
         def _fetch(interval, limit=100):
             r = requests.get(
