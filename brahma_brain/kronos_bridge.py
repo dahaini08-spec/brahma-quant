@@ -67,6 +67,8 @@ BLEND_WEIGHT  = 0.5      # blend模式下 Kronos 权重
 PRED_LEN      = 12       # 预测未来12根K线
 SAMPLE_COUNT  = 5        # 采样路径数（精度 vs 速度）
 CACHE_TTL     = 14400    # 4H持久缓存（prime-agent思路：网络不稳定时持久状态不丢）
+CACHE_STALE_ZERO_MAX = 1800  # [设计院自主决策 2026-08-21] p_up=0.0 且超过30min → 腐烂零值，强制中性
+CACHE_DECAY_HALF = 7200      # 2小时后p_up向0.5线性衰减，防陈旧数据主导评分
 
 # ── 体制系数（与 kronos_engine.py 完全一致）──────────────────
 REGIME_COEFF = {
@@ -258,7 +260,19 @@ def _run_kronos(
         symbol = str(symbol)
     if symbol in _cache:
         ts, p_up, vol = _cache[symbol]
-        if now - ts < CACHE_TTL:
+        age = now - ts
+        if age < CACHE_TTL:
+            # [设计院自主决策 2026-08-21] Cache腐烂零值根治
+            # p_up=0.0 且超过30min → 腐烂数据，返回中性而非惩罚分
+            if p_up == 0.0 and age > CACHE_STALE_ZERO_MAX:
+                logger.warning(f'[KronosBridge] 腐烂零值 cache {symbol} p_up=0.0 age={age/60:.0f}min → 返回0.5中性')
+                return 0.5, vol, 'stale_zero_neutral'
+            # 超过2H的cache使用衰减因子，防止陈旧数据主导评分
+            if age > CACHE_DECAY_HALF:
+                decay = max(0.5, 1.0 - (age - CACHE_DECAY_HALF) / CACHE_DECAY_HALF)
+                p_up_decayed = 0.5 + (p_up - 0.5) * decay
+                logger.debug(f'[KronosBridge] cache衰减 {symbol} p_up={p_up:.3f}→{p_up_decayed:.3f} age={age/3600:.1f}h')
+                return p_up_decayed, vol, 'cache_decayed'
             return p_up, vol, 'cache'
 
     predictor = _get_predictor()

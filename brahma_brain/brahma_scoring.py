@@ -1867,6 +1867,8 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     # ════════════════════════════════════════════════════════════
     # 修复：灰区置信度（50%~70%）不再静默，轻惩罚/轻奖励
     # 同向任意置信度奖励 | 反向分级惩罚
+    # [Phase2 2026-08-21 苏摩111] 趋势行情Kronos降权
+    # 根因：RSI_4H=98时Kronos系统性看空，不应全权参与评分
     try:
         import json as _j, os as _os, time as _t
         _kf = '/tmp/kronos_signal.json'
@@ -1880,6 +1882,21 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
             _kage_h= (_t.time() - _os.path.getmtime(_kf)) / 3600  # Kronos数据年龄
             # 数据老化折扣（超过2H降低权重）
             _age_factor = 1.0 if _kage_h < 2 else (0.7 if _kage_h < 4 else 0.4)
+            # ── [Phase2] 趋势场景Kronos动态降权 ──────────────────────
+            # 趋势突破行情中Kronos系统性反向，降低其权重避免误判
+            _rsi_4h_now = float(ms.get('rsi_4h', ms.get('rsi_1h', 50)) if ms else 50)
+            if _rsi_4h_now > 90:
+                _trend_weight = 0.15   # 极度超买：Kronos几乎噪音
+            elif _rsi_4h_now > 75:
+                _trend_weight = 0.30   # 趋势突破：降至三成
+            elif _rsi_4h_now > 65:
+                _trend_weight = 0.60   # 轻度趋势：降至六成
+            elif _rsi_4h_now < 25:
+                _trend_weight = 0.30   # 极度超卖做多同理
+            else:
+                _trend_weight = 1.00   # 正常震荡：全权
+            _age_factor = _age_factor * _trend_weight
+            # ─────────────────────────────────────────────────────────
             _up = (signal_dir == 'LONG'  and _kdir == 'UP')
             _dn = (signal_dir == 'SHORT' and _kdir == 'DOWN')
             _conflict = (
@@ -1897,7 +1914,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
                         _s = round(4  * _age_factor)  # 弱同向也给分
                     if _s > 0:
                         score += _s
-                        breakdown['L7_Kronos'] = f'+{_s}(同向{_kconf:.0%} age={_kage_h:.1f}h [{_met}])'
+                        breakdown['L7_Kronos'] = f'+{_s}(同向{_kconf:.0%} age={_kage_h:.1f}h [{_met}] tw={_trend_weight:.2f})'
                 elif _conflict and _kdir != 'NEUTRAL':
                     # 反向：分级惩罚（原>0.70才-10，现在灰区也有惩罚）
                     if _kconf >= 0.70:
@@ -1908,7 +1925,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
                         _pen = round(2  * _age_factor)  # 弱反向 -2（新增）
                     if _pen > 0:
                         score -= _pen
-                        breakdown['L7_Kronos_v2'] = f'-{_pen}(反向{_kconf:.0%} age={_kage_h:.1f}h [{_met}])'  # [P1-B audit-fix] 重复key加后缀
+                        breakdown['L7_Kronos_v2'] = f'-{_pen}(反向{_kconf:.0%} age={_kage_h:.1f}h [{_met}] tw={_trend_weight:.2f})'  # [P1-B audit-fix] 重复key加后缀
     except Exception:
         pass
 

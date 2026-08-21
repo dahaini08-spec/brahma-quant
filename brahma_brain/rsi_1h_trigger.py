@@ -73,7 +73,17 @@ def _fetch_klines(symbol: str, interval: str, limit: int = 100) -> list:
         try:
             raw = _bus.klines(symbol, interval, limit + 1)
             if raw and len(raw) >= 2:
-                return raw[:-1]
+                # 总线可能返回不同格式，统一转换为字典格式
+                normalized = []
+                for bar in raw[:-1]:
+                    if isinstance(bar, dict) and 'c' in bar:
+                        normalized.append(bar)
+                    elif isinstance(bar, (list, tuple)) and len(bar) >= 5:
+                        normalized.append({'ts': int(bar[0]), 'o': float(bar[1]),
+                                           'h': float(bar[2]), 'l': float(bar[3]),
+                                           'c': float(bar[4]), 'v': float(bar[5]) if len(bar)>5 else 0})
+                if normalized:
+                    return normalized
         except Exception:
             pass
     try:
@@ -100,7 +110,11 @@ def _get_regime(symbol: str) -> str:
         if state_file.exists():
             state = json.loads(state_file.read_text())
             sym_key = symbol.upper().replace('USDT', '').lower()
-            regime = state.get(sym_key, {}).get('regime') or state.get('regime', '')
+            # 优先读 btc_regime / eth_regime 字段（brahma_state_refresh写入）
+            direct_key = f'{sym_key}_regime'
+            regime = (state.get(direct_key) or
+                      state.get(sym_key, {}).get('regime') if isinstance(state.get(sym_key), dict) else None or
+                      state.get('regime', ''))
             if regime:
                 return regime
     except Exception:

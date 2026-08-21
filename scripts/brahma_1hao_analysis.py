@@ -1660,7 +1660,24 @@ if __name__ == '__main__':
             _regime_raw = r_raw.get('regime', '')
             if 120 <= float(score or 0) <= 139 and 'BULL_TREND' in str(_regime_raw):
                 print(f'[1hao→信号池] {sym} score={score:.0f} 在120~139毒区间，丢弃(实测WR=0%) ⛔')
-            elif float(score or 0) >= 138 and float(grade or 0) >= 80:
+            # [Phase2 2026-08-21 苏摩111] EV驱动动态阈值计算
+            # 替代静态138门槛，营星赶势行情时自动降低阈值
+            _rsi_4h_ev   = float(r_raw.get('rsi_4h', r_raw.get('rsi_1h', 50)) or 50)
+            _regime_str  = str(_regime_raw)
+            _momentum_ev = r_raw.get('momentum_level', '')
+            # 计算动态阈值
+            _base_thresh = 138  # 默认
+            if _momentum_ev == 'MOMENTUM_STRONG' and _rsi_4h_ev <= 90:
+                _base_thresh = int(_base_thresh * 0.80)   # +20%行情键入降至110
+            elif _momentum_ev == 'MOMENTUM_BULL' and _rsi_4h_ev <= 85:
+                _base_thresh = int(_base_thresh * 0.88)   # +12%降至121
+            elif 'BULL_TREND' in _regime_str and _rsi_4h_ev <= 75:
+                _base_thresh = int(_base_thresh * 0.92)   # 简单BULL_TREND小增强
+            if _rsi_4h_ev > 90:
+                _base_thresh = int(_base_thresh * 1.15)   # 极度追高防护
+            _dyn_label = f'dyn_thresh={_base_thresh}(rsi4h={_rsi_4h_ev:.0f} mom={_momentum_ev})'
+            _score_ok = float(score or 0) >= _base_thresh and float(grade or 0) >= 80
+            if _score_ok:
                 from brahma_brain.dharma_data_bridge import log_signal
                 r_raw['symbol'] = sym
                 r_raw['direction'] = args.direction
@@ -1673,11 +1690,11 @@ if __name__ == '__main__':
                     r_raw['valid'] = True
                 wrote = log_signal(r_raw)
                 if wrote:
-                    print(f'[1hao→信号池] {sym} score={score:.0f} grade={grade:.0f} 已写入 ✅')
+                    print(f'[1hao→信号池] {sym} score={score:.0f} grade={grade:.0f} 已写入 ✅ [{_dyn_label}]')
                 else:
                     print(f'[1hao→信号池] {sym} 去重拦截')
             else:
-                print(f'[1hao→信号池] {sym} score={score:.0f} grade={grade:.0f} < 阈值，不写入')
+                print(f'[1hao→信号池] {sym} score={score:.0f} grade={grade:.0f} < 阈值[{_dyn_label}]，不写入')
 
             # ── P0 强信号人工入场窗口推送（2026-08-18 太极封印）────────────────
             # 规则：HCME WR≥80% + grade≥80 + 系统因SL过宽/其他原因无法自动执行

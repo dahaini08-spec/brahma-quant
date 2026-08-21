@@ -213,12 +213,60 @@ def three_frame_consensus(td_1h: dict, td_4h: dict, td_1d: dict) -> dict:
 # 三、12种市场体制识别
 # ═══════════════════════════════════════════════════════════════
 
+def _momentum_override(closes: list, closes_4h: list, closes_1d: list,
+                       rsi_4h: float, rsi_1d: float) -> str | None:
+    """动量感知层：捕捉趋势突破行情，输出动量等级
+    [设计院自主决策 2026-08-21] 解决BEAR_RECOVERY体制滞后20%暴涨的根因
+
+    触发条件（满足2项→MOMENTUM_BULL，满足3项→MOMENTUM_STRONG）：
+      M1: 4H连续3根收阳 且 每根涨幅>=1.5%
+      M2: RSI_4H > 70
+      M3: 价格突破近30日最高点
+      M4: RSI_1D > 78
+
+    返回: 'MOMENTUM_STRONG' | 'MOMENTUM_BULL' | None
+    """
+    hits = 0
+    price = closes[-1] if closes else 0
+
+    # M1: 4H三连阳（每根>=1.5%）
+    if len(closes_4h) >= 4:
+        last3 = []
+        for i in range(-3, 0):
+            if closes_4h[i-1] > 0:
+                last3.append((closes_4h[i] - closes_4h[i-1]) / closes_4h[i-1] * 100)
+        if len(last3) == 3 and all(c >= 1.5 for c in last3):
+            hits += 1
+
+    # M2: RSI_4H > 70（趋势强势）
+    if rsi_4h > 70:
+        hits += 1
+
+    # M3: 价格创近30日新高
+    if len(closes_1d) >= 30 and price >= max(closes_1d[-30:]):
+        hits += 1
+
+    # M4: 日线RSI强势
+    if rsi_1d > 78:
+        hits += 1
+
+    if hits >= 3:
+        return 'MOMENTUM_STRONG'
+    if hits >= 2:
+        return 'MOMENTUM_BULL'
+    return None
+
+
 def detect_regime(closes: list, highs: list, lows: list,
-                  td_1h: dict, td_4h: dict, td_1d: dict) -> str:
+                  td_1h: dict, td_4h: dict, td_1d: dict,
+                  closes_4h: list | None = None,
+                  closes_1d: list | None = None) -> str:
     """识别12种市场体制
     [P0修复 2026-08-11 苏摩111] 引入4H EMA权重修正
     根因：纯RSI投票导致系统性乐观偏差（BULL高估+94.8%），
           4H EMA是趋势最可靠指标，权重=2票（相当于2个周期的趋势投票）
+    [设计院自主决策 2026-08-21] 注入动量感知层
+    根因：BEAR_RECOVERY体制EMA滞后30天，BTC+20%行情完全静默
     """
     price  = closes[-1]
     rsi_1h = rsi(closes)
@@ -241,6 +289,26 @@ def detect_regime(closes: list, highs: list, lows: list,
         _4h_bear_weight += 1
     # _4h_bear_weight: 0=中性, 1=轻度空头修正, 2=强空头修正
     # ──────────────────────────────────────────────────────────
+
+    # ── [设计院自主决策 2026-08-21] 动量快轨——在所有规则树之前情判 ────────────────────
+    # 核心逻辑：当动量层检测到趋势突破，即使慢轨EMA未切换，也允许体制升级
+    # 防止“BTC +20%而体制永远是BEAR_RECOVERY”的系统性失败
+    _rsi_4h  = td_4h.get('rsi', 50.0)
+    _rsi_1d  = td_1d.get('rsi', 50.0)
+    _c4h     = closes_4h if closes_4h else []
+    _c1d     = closes_1d if closes_1d else []
+    _momentum = _momentum_override(closes, _c4h, _c1d, _rsi_4h, _rsi_1d)
+
+    if _momentum == 'MOMENTUM_STRONG':
+        # 强势动量：不管EMA情况如何，直接升级为BULL_TREND
+        # 限制：RSI_4H>90时拒绝（防追高）
+        if _rsi_4h <= 90:
+            return 'BULL_TREND'
+    elif _momentum == 'MOMENTUM_BULL':
+        # 中等动量：升级为BULL_EARLY，阈值降至100
+        if _rsi_4h <= 85:
+            return 'BULL_EARLY'
+    # ──────────────────────────────────────────────────────────────────────
 
     # 暴跌检测（最近3根K线平均跌幅）
     if len(closes) >= 4:

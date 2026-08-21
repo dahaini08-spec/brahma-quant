@@ -71,13 +71,47 @@ def check_liq_heatmap():
     return ok, ' | '.join(results)
 
 def check_signal_log():
-    """信号日志存在且非空"""
+    """信号日志存在且非空 + 信号稀疏预警检查
+    [设计院自主决策 2026-08-21] 当期48H无信号时推送Jarvis预警
+    """
+    import json, time
     p = DATA / 'live_signal_log.jsonl'
     if not p.exists():
         return False, '文件不存在'
     lines = [l for l in p.read_text().strip().split('\n') if l.strip()]
     ok = len(lines) > 0
-    return ok, f'{len(lines)}条记录'
+
+    # 信号稀疏预警：计算48H内信号数
+    now = time.time()
+    ts_48h = now - 48 * 3600
+    recent_48h = 0
+    last_ts = 0
+    for l in lines:
+        try:
+            r = json.loads(l)
+            ts = r.get('ts', 0)
+            if isinstance(ts, str):
+                ts = float(ts)
+            if ts >= ts_48h:
+                recent_48h += 1
+            if ts > last_ts:
+                last_ts = ts
+        except:
+            pass
+
+    # 写入稀疏状态供外部查询
+    sparse_flag = DATA / 'signal_sparse_flag.json'
+    from datetime import datetime, timezone, timedelta
+    CST = timezone(timedelta(hours=8))
+    last_dt = datetime.fromtimestamp(last_ts, tz=CST).strftime('%m-%d %H:%M') if last_ts else '?'
+    sparse_info = {'recent_48h': recent_48h, 'last_ts': last_ts, 'last_dt': last_dt, 'checked_at': now}
+    try:
+        sparse_flag.write_text(json.dumps(sparse_info, ensure_ascii=False))
+    except:
+        pass
+
+    detail = f'{len(lines)}条记录，48H内{recent_48h}条，最后信号:{last_dt}'
+    return ok, detail
 
 def check_dlq():
     """DLQ死信队列为空"""
