@@ -18,7 +18,7 @@ from pathlib import Path
 BASE = Path(__file__).parent.parent
 SESSIONS_DIR = Path('/root/.openclaw/agents/main/sessions')
 LOG_FILE = BASE / 'data' / 'session_compress_log.jsonl'
-ACTIVE_THREAD = '019fd9dd-4b0f-71db-87fb-1e192ccb2291'  # 苏摩主线程
+ACTIVE_THREAD = '019fd70a-0942-72b1-aeb9-1bd4fc11b30d'  # 苏摩主线程
 
 # ── 配置 ───────────────────────────────────────────
 CHECKPOINT_MAX_AGE_H = 24       # checkpoint保留时长
