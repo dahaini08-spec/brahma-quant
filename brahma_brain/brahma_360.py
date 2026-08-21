@@ -126,6 +126,13 @@ def scan_d1_modules() -> list:
             'structure_touch_detector', # brahma_scoring + brahma_decision_engine 真实调用 ✅
             'vip_validator',            # brahma_1hao_analysis validate_vip_strategy 真实调用 ✅
             'brahma_intel_layer',       # brahma_1hao_analysis P2/P3 智慧层调用（太极封印 2026-08-18）✅
+            # ── D1修复 2026-08-21 苏摩111：动态import + 二级链路被360误判为孤儿 ──
+            'brahma_multiframe',       # brahma_1hao_analysis 动态import，全周期FVG/OB扫描 ✅
+            'cross_asset_correlator',  # brahma_1hao_analysis 动态import，跨资产宏观层(VIX/DXY/BTC.D) ✅
+            'elliott_wave_pips',       # fangcang_engine 动态import，Elliott波浪+PIPs识别 ✅
+            'vpa_analyzer',            # fangcang_engine 动态import，VPA成交量行为分析 ✅
+            'weekly_monthly_anchor',   # fangcang_engine 动态import，周月线HTF锚定 ✅
+            'rsi_1h_trigger',          # signal_15m_engine注入，1H触发层T1~T6（2026-08-21封印）✅
         }
         _orphans = []
         for _f in sorted(_brain.glob('*.py')):
