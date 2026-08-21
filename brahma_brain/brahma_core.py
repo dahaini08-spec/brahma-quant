@@ -1896,7 +1896,31 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         cf['score_gate_min'] = MIN_SCORE_OPEN
 
     # ══════════════════════════════════════════════════════════════
-    # [达摩院v2.0 M11] CI宽度仓位折扣层 — 安全保险丝
+    # [P0-3 设计院封印 2026-08-21 苏摩111] entry_source=? 硬性门控
+    # 铁证：entry_source=? 的83条信号 WR=0.0%（一个月实盘铁证）
+    # 无有效OB/FVG入场结构时，强制score<100，阻止开仓
+    _entry_src_raw = params.get('entry_source', '') or ''
+    if (not _entry_src_raw or _entry_src_raw == '?') and _score_gate_ok:
+        _score_raw = min(_score_raw, 95.0)
+        cf['total'] = _score_raw
+        cf['P0_3_no_entry_struct'] = f'entry_source=?/空，无OB/FVG结构，score压至{_score_raw:.0f}≤95（WR=0%死穴）'
+        _score_gate_ok = float(_score_raw) >= _MIN_SCORE_EFFECTIVE
+    # ══════════════════════════════════════════════════════════════
+
+    # ══════════════════════════════════════════════════════════════
+    # [P1-1 设计院封印 2026-08-21 苏摩111] BULL_TREND:LONG score 120~154 封禁
+    # 铁证：一个月实盘 score120~154 BULL_TREND:LONG n=74 WR=1.3%（78条只有1WIN）
+    # 根因：4H触发BULL_TREND:LONG = 追涨信号，价格已走完2/3，TP空间不足 → TIMEOUT
+    # 解除条件：1H触发层完全生效后（T1/T4触发的BULL_TREND:LONG除外）
+    _is_bull_trend_long = ('BULL_TREND' in str(_regime_str).upper() and signal_dir == 'LONG')
+    _trigger_is_1h = params.get('trigger_type','') in ('T1_RSI_UP','T4_OS_LONG') or \
+                     params.get('source_trigger','') in ('rsi_1h_trigger',)
+    if _is_bull_trend_long and not _trigger_is_1h and 120 <= float(_score_raw) < 155:
+        _score_raw = 95.0  # 强制降至score gate以下
+        cf['total'] = _score_raw
+        cf['P1_1_bull_trend_long_ban'] = f'BULL_TREND:LONG score120~154封禁(WR=1.3%铁证) → score={_score_raw:.0f}'
+        _score_gate_ok = float(_score_raw) >= _MIN_SCORE_EFFECTIVE
+    # ══════════════════════════════════════════════════════════════
     # LINK CI宽5.86→×0.70 | DOGE CI宽5.11→×0.70 | NEAR ×0.55
     # 确保高不确定性品种不会因单笔大仓拖垃最大回撤
     # ══════════════════════════════════════════════════════════════

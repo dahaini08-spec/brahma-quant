@@ -87,6 +87,11 @@ BB_EXPAND_FROM     = 0.80   # E5: 从<0.8%
 BB_EXPAND_TO       = 1.20   # E5: 扩张到>1.2%
 VOL_SURGE_RATIO    = 2.0    # E6: 量比>2x
 OI_CHANGE_PCT      = 3.0    # E7: OI 1H变化>3%
+# [Phase3 2026-08-21 苏摩111] E_TREND_SURGE: 趋势持续暴涨触发事件
+# 解决：暴涨行情中E1~E7无法单独触发做多信号的系统性盲区
+TREND_SURGE_MIN_CHG   = 8.0   # 48H内涨幅超过8%
+TREND_SURGE_MIN_CANDLES = 3   # 最近4H至少N根阳线确认趋势
+TREND_DAY_HIGH_WINDOW = 30    # 日线突破N日新高
 
 
 def _fetch(url, timeout=8):
@@ -137,14 +142,61 @@ def get_market_data(sym):
         # EMA20_1H
         ema20 = sum(closes[-20:]) / 20
 
-        # OI 1H变化
-        oi_data = _fetch(f'{FAPI}/futures/data/openInterestHist?symbol={sym}&period=1h&limit=3')
+        # OI 1H变化（扩展至10根，支持背离检测）
+        oi_data = _fetch(f'{FAPI}/futures/data/openInterestHist?symbol={sym}&period=1h&limit=10')
         oi_chg_1h = 0.0
+        oi_history = []  # [(oi_val, price_approx)] 供背离检测用
         if oi_data and len(oi_data) >= 2:
             v_prev = float(oi_data[-2].get('sumOpenInterestValue', 0))
             v_curr = float(oi_data[-1].get('sumOpenInterestValue', 0))
             if v_prev > 0:
                 oi_chg_1h = (v_curr - v_prev) / v_prev * 100
+            # 构建OI历史序列
+            for h in oi_data:
+                oi_val = float(h.get('sumOpenInterest', 0))
+                oi_history.append(oi_val)
+
+        # [P0-1 2026-08-21 苏摩111] 量能枯竭检测数据
+        # 计算每根1H K线的量比（相对过去20H均量）
+        vol_avg20 = sum(vols[-21:-1]) / 20 if len(vols) >= 21 else sum(vols[:-1]) / max(len(vols)-1, 1)
+        vol_ratios_1h = []
+        for i in range(max(0, len(vols)-8), len(vols)-1):  # 最近7根历史
+            vr = vols[i] / vol_avg20 if vol_avg20 > 0 else 1.0
+            pr = (highs[i] - lows[i]) / closes[i] * 100 if closes[i] > 0 else 0
+            vol_ratios_1h.append({'vol_ratio': round(vr, 3), 'price_range': round(pr, 3)})
+
+        # [P1-1 2026-08-21 苏摩111] 多周期结构背景数据
+        # 日线K线（识别大周期支撑区/高点區）
+        day30_high, day30_low = px, px
+        rsi_4h = 50.0
+        try:
+            kl_1d = _fetch(f'{FAPI}/fapi/v1/klines?symbol={sym}&interval=1d&limit=32')
+            if kl_1d and len(kl_1d) >= 10:
+                h1d = [float(k[2]) for k in kl_1d[-31:-1]]
+                l1d = [float(k[3]) for k in kl_1d[-31:-1]]
+                day30_high = max(h1d) if h1d else px
+                day30_low  = min(l1d) if l1d else px
+        except Exception:
+            pass
+        try:
+            kl_4h = _fetch(f'{FAPI}/fapi/v1/klines?symbol={sym}&interval=4h&limit=20')
+            if kl_4h and len(kl_4h) >= 16:
+                c4h = [float(k[4]) for k in kl_4h]
+                g4 = [max(c4h[i]-c4h[i-1],0) for i in range(1,len(c4h))]
+                l4 = [max(c4h[i-1]-c4h[i],0) for i in range(1,len(c4h))]
+                ag4 = sum(g4[-14:])/14; al4 = sum(l4[-14:])/14
+                rsi_4h = round(100-100/(1+ag4/al4),1) if al4 > 0 else 100.0
+        except Exception:
+            pass
+
+        # [P1-2 2026-08-21 苏摩111] 资金费率历史
+        funding_rates = []
+        try:
+            fr_data = _fetch(f'{FAPI}/fapi/v1/fundingRate?symbol={sym}&limit=8')
+            if fr_data:
+                funding_rates = [float(f['fundingRate'])*100 for f in fr_data]
+        except Exception:
+            pass
 
         return dict(
             sym=sym, px=px,
@@ -153,6 +205,13 @@ def get_market_data(sym):
             vol_ratio=round(vol_ratio, 2),
             r48h=r48h, s48h=s48h, ema20=ema20,
             oi_chg_1h=round(oi_chg_1h, 2),
+            oi_history=oi_history,
+            vol_ratios_1h=vol_ratios_1h,
+            vol_avg20=round(vol_avg20, 2),
+            day30_high=round(day30_high, 2),
+            day30_low=round(day30_low, 2),
+            rsi_4h=round(rsi_4h, 1),
+            funding_rates=funding_rates,
         )
     except Exception as e:
         pass  # [静默]
@@ -279,6 +338,181 @@ def detect_events(data, prev_state, sym):
             'desc': f'OI 1H变化{oi_chg:+.1f}% 资金{direction}，注意方向',
             'priority': 'MEDIUM',
         })
+
+
+    # ── E_TREND_SURGE: 趋势持续暴涨触发（Phase3 2026-08-21 苏摩111）──────────
+    # 解决：趋势行情中E1~E7无法单独触发做多信号的核心盲区
+    # 触发条件（全部满足）：
+    #   TS1: 48H内价格涨幅 >= 8%
+    #   TS2: 最近4H至少连续3根阳线确认趋势
+    #   TS3: RSI_1H > 60（非震荡回弹）
+    # 冷却: 8H内同一标的不重复触发
+    try:
+        import time as _time_ts
+        _48h_chg_ts = (px - s48h) / s48h * 100 if s48h > 0 else 0
+        _ts1 = _48h_chg_ts >= 8.0
+        _k4h_ts = data.get('klines_4h', [])
+        if _k4h_ts and len(_k4h_ts) >= 3:
+            _bull_cnt_ts = sum(1 for k in _k4h_ts[-3:] if float(k[4]) > float(k[1]))
+            _ts2 = (_bull_cnt_ts >= 3)
+        else:
+            _ts2 = True
+        _ts3 = rsi > 60.0
+        _ts_key = f'{sym}_trend_surge_ts'
+        _ts_last = prev_state.get(_ts_key, 0)
+        _ts_ok = (_time_ts.time() - _ts_last) > 28800
+        if _ts1 and _ts2 and _ts3 and _ts_ok:
+            events.append({
+                'event': 'E_TREND_SURGE',
+                'desc': (f'🚀 趋势暴涨触发! 48H涨幅{_48h_chg_ts:.1f}%'
+                         f' 4H阳线确认 RSI={rsi:.1f}'
+                         f' → 动量层匹配，全量扫描做多'),
+                'priority': 'HIGH',
+                'direction': 'LONG',
+                'chg_48h': round(_48h_chg_ts, 2),
+                '_cooldown_key': _ts_key,
+            })
+    except Exception:
+        pass
+
+
+    # ── E_VOL_DRYUP: 成交量枯竭预警（P0-1 2026-08-21 苏摩111）──────────────────
+    # 核心逻辑：卖盘枯竭+价格收敛 = 多头积累完毕，随时爆发
+    # 触发条件（全部满足）：
+    #   V1: 连续5根1H K线量比<0.65（历史20H均量）
+    #   V2: 价格区间收敛：5H内平均每根涨跌幅 < 1.2%
+    #   V3: RSI_1H 在50~80（趋势背景，非超卖反弹）
+    # 冷却: 12H
+    try:
+        _vr_hist = data.get('vol_ratios_1h', [])
+        if len(_vr_hist) >= 5:
+            _v1 = all(v['vol_ratio'] < 0.65 for v in _vr_hist[-5:])
+            _v2 = sum(v['price_range'] for v in _vr_hist[-5:]) / 5 < 1.2
+            _v3 = 50.0 <= rsi <= 80.0
+            _vd_key = f'{sym}_vol_dryup_ts'
+            import time as _tv
+            _vd_ok = (time.time() - prev_state.get(_vd_key, 0)) > 43200
+            if _v1 and _v2 and _v3 and _vd_ok:
+                _avg_vr = sum(v['vol_ratio'] for v in _vr_hist[-5:]) / 5
+                events.append({
+                    'event': 'E_VOL_DRYUP',
+                    'desc': (f'💧 量能枯竭预警! 连续5H均量比={_avg_vr:.2f}x'
+                             f' 价格区间收敛 RSI={rsi:.1f}'
+                             f' → 卖盘枯竭，多头积累完毕，注意方向性爆发'),
+                    'priority': 'HIGH',
+                    'direction': 'WATCH',
+                    'avg_vol_ratio': round(_avg_vr, 3),
+                    '_cooldown_key': _vd_key,
+                })
+    except Exception:
+        pass
+
+    # ── E_OI_DIVERGE: OI+价格背离（P0-2 2026-08-21 苏摩111）──────────────────
+    # 核心逻辑：OI持续增加但价格不创新低 = 空头加仓压不下去 = 轧空即将发生
+    # 触发条件：
+    #   O1: OI最近3H净增加（逐根递增）
+    #   O2: 价格未创新低（当前价 > 48H最低价 × 1.003）
+    #   O3: RSI_1H < 55（价格并未追高，排除顺势加多）
+    # 冷却: 8H
+    try:
+        _oi_hist = data.get('oi_history', [])
+        if len(_oi_hist) >= 4:
+            _o1 = all(_oi_hist[-(i+1)] > _oi_hist[-(i+2)] for i in range(3))
+            _o2 = px > s48h * 1.003
+            _o3 = rsi < 55.0
+            _od_key = f'{sym}_oi_diverge_ts'
+            import time as _to
+            _od_ok = (time.time() - prev_state.get(_od_key, 0)) > 28800
+            if _o1 and _o2 and _o3 and _od_ok:
+                _oi_chg3h = (_oi_hist[-1]-_oi_hist[-4])/_oi_hist[-4]*100 if _oi_hist[-4]>0 else 0
+                events.append({
+                    'event': 'E_OI_DIVERGE',
+                    'desc': (f'🚨 OI+价格背离! OI连续3H增{_oi_chg3h:+.2f}%'
+                             f' 但价格未创新低 RSI={rsi:.1f}'
+                             f' → 空头加仓压不下，轧空风险升高'),
+                    'priority': 'HIGH',
+                    'direction': 'LONG',
+                    'oi_chg_3h': round(_oi_chg3h, 2),
+                    '_cooldown_key': _od_key,
+                })
+    except Exception:
+        pass
+
+
+    # ── E_MTF_SUPPORT: 多周期结构共振做多背景（P1-1 2026-08-21 苏摩111）────────
+    # 核心逻辑：日线大周期支撑 + 4H RSI回调 + 1H结构转换 = 最高置信度预判信号
+    # 触发条件（满足2项及以上）：
+    #   M1: 价格处于30日区间底部20%（日线级别支撑区）
+    #   M2: RSI_4H < 40（4H超卖，多头成本区）
+    #   M3: RSI_1H从<35回升到>40（1H结构转换确认）
+    #   M4: 价格在日线30日低点上方0~5%（贴近大周期支撑）
+    # 冷却: 24H（大周期信号，不频繁触发）
+    try:
+        _d30h = data.get('day30_high', px)
+        _d30l = data.get('day30_low', px)
+        _rsi4h = data.get('rsi_4h', 50.0)
+        _pos30 = (px - _d30l) / (_d30h - _d30l) if _d30h > _d30l else 0.5
+
+        _m1 = _pos30 <= 0.20   # 处于30日底部20%
+        _m2 = _rsi4h < 40.0    # 4H超卖
+        _m3 = prev_rsi < 35.0 and rsi > 40.0  # 1H结构转换
+        _m4 = 0 <= (px - _d30l) / _d30l * 100 <= 5.0  # 贴近30日低点上方5%内
+
+        _mtf_hits = sum([_m1, _m2, _m3, _m4])
+        _mtf_key = f'{sym}_mtf_support_ts'
+        import time as _tm
+        _mtf_ok = (time.time() - prev_state.get(_mtf_key, 0)) > 86400  # 24H冷却
+
+        if _mtf_hits >= 2 and _mtf_ok:
+            _active = [f'M{i+1}' for i,v in enumerate([_m1,_m2,_m3,_m4]) if v]
+            events.append({
+                'event': 'E_MTF_SUPPORT',
+                'desc': (f'🏗️ 多周期结构共振! 触发{_mtf_hits}项({",".join(_active)})'
+                         f' 30日区间位={_pos30:.0%} RSI_4H={_rsi4h:.1f}'
+                         f' → 大周期支撑确认，高置信度做多背景'),
+                'priority': 'HIGH',
+                'direction': 'LONG',
+                'mtf_hits': _mtf_hits,
+                'pos30': round(_pos30, 3),
+                '_cooldown_key': _mtf_key,
+            })
+    except Exception:
+        pass
+
+    # ── E_FUNDING_FLIP: 资金费率翻转监控（P1-2 2026-08-21 苏摩111）────────────
+    # 核心逻辑：资金费率从正值（多头拥挤）趋近0或转负 = 空头开始占优，轧空前兆
+    # 触发条件：
+    #   F1: 最近3期资金费率均值 < 0.005%（接近中性或负值）
+    #   F2: 前3期资金费率均值 > 0.03%（之前是高多拥挤状态）
+    #   F3: 价格未暴跌（未创48H新低，排除恐慌性做空）
+    # 冷却: 16H
+    try:
+        _fr = data.get('funding_rates', [])
+        if len(_fr) >= 6:
+            _fr_recent = _fr[-3:]   # 最近3期
+            _fr_prev   = _fr[-6:-3] # 前3期
+            _f1 = sum(_fr_recent) / 3 < 0.005
+            _f2 = sum(_fr_prev) / 3 > 0.03
+            _f3 = px > s48h * 0.99  # 价格未暴跌
+            _ff_key = f'{sym}_funding_flip_ts'
+            import time as _tf
+            _ff_ok = (time.time() - prev_state.get(_ff_key, 0)) > 57600  # 16H冷却
+            if _f1 and _f2 and _f3 and _ff_ok:
+                _fr_now = sum(_fr_recent) / 3
+                _fr_was = sum(_fr_prev) / 3
+                events.append({
+                    'event': 'E_FUNDING_FLIP',
+                    'desc': (f'💰 资金费率翻转! 前均={_fr_was:.4f}%→近均={_fr_now:.4f}%'
+                             f' 多头拥挤消散 价格={px:,.1f}'
+                             f' → 空头离场+轧空风险升高'),
+                    'priority': 'HIGH',
+                    'direction': 'LONG',
+                    'fr_recent': round(_fr_now, 5),
+                    'fr_prev': round(_fr_was, 5),
+                    '_cooldown_key': _ff_key,
+                })
+    except Exception:
+        pass
 
     # ── E11: 清算墙逼近(<0.5%) — 轧空/踩踏即将触发 [设计院 2026-08-05] ────
     try:
