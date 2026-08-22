@@ -172,11 +172,14 @@ def detect_1h_trigger(symbol: str) -> dict | None:
         event, direction = 'T1_RSI_UP', 'LONG'
 
     # T2: RSI下穿（空头动量启动）
-    elif rsi_prev > 55 and rsi_cur <= 45 and regime in ('BEAR_TREND', 'BEAR_EARLY', 'CHOP_MID'):
+    elif rsi_prev > 55 and rsi_cur <= 45 and regime in ('BEAR_TREND', 'BEAR_EARLY', 'CHOP_MID', 'BULL_EARLY'):
         event, direction = 'T2_RSI_DOWN', 'SHORT'
 
     # T3: RSI超买做空
-    elif rsi_cur > 72 and price < ema20_1h and regime in ('BEAR_TREND', 'BEAR_EARLY', 'CHOP_MID'):
+    # [P2-A 2026-08-22 设计院] 扩展BEAR_RECOVERY到触发体制
+    # 方仓铁证：downtrend+ranging = SHORT的主干道(71条/73)。BEAR_RECOVERY=ranging代理
+    # BEAR_RECOVERY+RSI>72+价格<EMA20_1H = 复苏轧头防，自然做空点
+    elif rsi_cur > 72 and price < ema20_1h and regime in ('BEAR_TREND', 'BEAR_EARLY', 'CHOP_MID', 'BEAR_RECOVERY'):
         event, direction = 'T3_OB_SHORT', 'SHORT'
 
     # T4: RSI超卖做多
@@ -194,6 +197,35 @@ def detect_1h_trigger(symbol: str) -> dict | None:
         l24 = min(lows_1h[-25:-1])
         if price < l24 * 0.997:
             event, direction = 'T6_BREAK_L', 'SHORT'
+
+    # [P2-B 2026-08-22 设计院] T7: 方仓主导做空信号
+    # 铁证(73条SHORT方仓): downtrend+ranging 下 SHORT平均突破-10.4%
+    # 条件: RSI_4H<40（执行背景）+ 方仓SHORT_BIAS（方向强性）+ 价格<EMA20_1H（结构确认）
+    elif not event:
+        try:
+            # RSI_4H读取
+            _bars_4h = _fetch_klines(sym, '4h', 30)
+            if len(_bars_4h) >= 15:
+                _c4h = [b['c'] for b in _bars_4h]
+                _rsi_4h = _rsi(_c4h, 14)
+                # T7条件: RSI_4H<40 + 价格<EMA20_1H
+                if _rsi_4h < 40 and price < ema20_1h:
+                    # 方仓SHORT_BIAS判断：从方仓引擎读取当前偏向
+                    _fc_bias = 'NEUTRAL'
+                    try:
+                        from brahma_brain.fangcang_engine import get_fangcang_context as _fc_fn
+                        _fc_r = _fc_fn(sym)
+                        if _fc_r.get('status') == 'ok':
+                            _fc_bias  = _fc_r.get('signal_hint', 'NEUTRAL')
+                            _fc_short = float(_fc_r.get('short_prob', 0) or 0)
+                            _fc_ev    = float(_fc_r.get('prob_matrix', {}).get('ev', 0) or 0)
+                            # SHORT_BIAS 或 空头概率较高(>0.35) 且EV为正
+                            if _fc_bias in ('SHORT_BIAS',) or (_fc_short > 0.35 and _fc_ev > 0):
+                                event, direction = 'T7_FC_SHORT', 'SHORT'
+                    except Exception:
+                        pass
+        except Exception:
+            pass
 
     if not event or not direction:
         return None
