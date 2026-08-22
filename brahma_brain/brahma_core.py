@@ -3899,6 +3899,61 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass
     # ══ [END P1 方仓RSI分层] ══
 
+    # ══ [P4 三周期RSI共振 2026-08-22 设计院自主] ══════════════════════════════
+    # 顶级交易员标准：1H+4H+1D三周期同向=信号最强，分歧=降权
+    # 规则(铁证来源：方仓535条SHORT/LONG突破规律):
+    #   做多三重超卖(1H<35+4H<45+1D<55) → +15 | 两重(1H<35+4H<45) → +8
+    #   做空三重超买(1H>65+4H>60+1D>60) → +15 | 两重(1H>65+4H>60) → +8
+    #   逆流做多(三重超买) → -5 | 逆流做空(三重超卖) → -5
+    try:
+        _p4_dir   = _result.get('signal_dir', 'LONG')
+        _p4_r1h   = float(_result.get('rsi_1h', 50) or 50)
+        _p4_r4h   = float(_result.get('rsi_4h', 50) or 50)
+        _p4_r1d   = float(_result.get('rsi_1d', 50) or 50)
+        _p4_adj   = 0
+        _p4_note  = ''
+        if _p4_dir == 'LONG':
+            _p4_low1h = _p4_r1h < 35
+            _p4_low4h = _p4_r4h < 45
+            _p4_low1d = _p4_r1d < 55
+            _p4_hi1h  = _p4_r1h > 65
+            _p4_hi4h  = _p4_r4h > 65
+            _p4_hi1d  = _p4_r1d > 65
+            if _p4_low1h and _p4_low4h and _p4_low1d:
+                _p4_adj = +15
+                _p4_note = f'P4三重超卖共振做多(1H={_p4_r1h:.0f}/4H={_p4_r4h:.0f}/1D={_p4_r1d:.0f}) +15'
+            elif _p4_low1h and _p4_low4h:
+                _p4_adj = +8
+                _p4_note = f'P4双重超卖共振做多(1H={_p4_r1h:.0f}/4H={_p4_r4h:.0f}) +8'
+            elif _p4_hi1h and _p4_hi4h and _p4_hi1d:
+                _p4_adj = -5
+                _p4_note = f'P4三重超买逆流做多(1H={_p4_r1h:.0f}/4H={_p4_r4h:.0f}/1D={_p4_r1d:.0f}) -5'
+        elif _p4_dir == 'SHORT':
+            _p4_hi1h = _p4_r1h > 65
+            _p4_hi4h = _p4_r4h > 60
+            _p4_hi1d = _p4_r1d > 60
+            _p4_low1h = _p4_r1h < 35
+            _p4_low4h = _p4_r4h < 40
+            _p4_low1d = _p4_r1d < 45
+            if _p4_hi1h and _p4_hi4h and _p4_hi1d:
+                _p4_adj = +15
+                _p4_note = f'P4三重超买共振做空(1H={_p4_r1h:.0f}/4H={_p4_r4h:.0f}/1D={_p4_r1d:.0f}) +15'
+            elif _p4_hi1h and _p4_hi4h:
+                _p4_adj = +8
+                _p4_note = f'P4双重超买共振做空(1H={_p4_r1h:.0f}/4H={_p4_r4h:.0f}) +8'
+            elif _p4_low1h and _p4_low4h and _p4_low1d:
+                _p4_adj = -5
+                _p4_note = f'P4三重超卖逆流做空(1H={_p4_r1h:.0f}/4H={_p4_r4h:.0f}/1D={_p4_r1d:.0f}) -5'
+        if _p4_adj != 0:
+            _result['score_final'] = round(float(_result.get('score_final', 0) or 0) + _p4_adj, 1)
+            _result['score'] = _result['score_final']
+            _result.setdefault('confluence', {}).setdefault('breakdown', {})                .update({'P4三周期共振': _p4_note})
+            _result['p4_resonance_adj']  = _p4_adj
+            _result['p4_resonance_note'] = _p4_note
+    except Exception:
+        pass
+    # ══ [END P4 三周期RSI共振] ══
+
     # 根因：timing_filter模块存在但从未接入主链路，时机判断完全缺失
     # 接入逻辑：timing badge → 注入breakdown → 影响score_final → 传递给决策树Step5
     try:
