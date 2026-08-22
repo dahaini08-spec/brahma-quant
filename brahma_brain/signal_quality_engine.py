@@ -101,6 +101,15 @@ class SignalQualityEngine:
         # [铁证修正 2026-08-07] 原豁免通道（score≥155+宽止损）验证 WR=0% EV=-5.87% → 取消豁免
         # 数据：豁免的8条 score≥155+sl>2% 全部止损，与原假设相反
         # 结论：sl_pct门控对所有信号一视同仁，无例外
+        # [P0 2026-08-22 苏摩111] BULL_TREND:LONG 死亡区专项封禁
+        # 铁证: simfactory n=14 WR=0% avg_pnl=-4.7% (score≥140且SL≥3%)
+        if (regime == 'BULL_TREND' and direction == 'LONG' and
+                score >= 140 and sl_pct >= 3.0):
+            return GateResult(
+                status='REJECT',
+                gate_name='bull_long_death_zone',
+                reason=f'BULL_TREND:LONG:score={score:.0f}≥140+sl={sl_pct:.1f}%≥3% 死亡区 WR=0% n=14 铁证封禁',
+            )
         if sl_pct > SL_PCT_GATE:
             return GateResult(
                 status='REJECT',

@@ -276,31 +276,29 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
         if not _MACRO_OK: return None
         return _macro_score(symbol, signal_dir, fg_data=_fg_pass)
 
-    with _TPE(max_workers=4) as _ex:
+    # [修复 2026-08-21] 不用 with 语句，避免 shutdown(wait=True) 导致挂起
+    # 根因：with TPE 的 __exit__ 等待所有线程完成，即使 future.result(timeout=N) 超时
+    # 底层线程（_run_macro/_run_orderflow）仍在阻塞中，导致 brahma_analyze 挂起 >30s
+    _ex = _TPE(max_workers=4)
+    try:
         _f_oc  = _ex.submit(_run_onchain)
         _f_pt  = _ex.submit(_run_pattern)
         _f_of  = _ex.submit(_run_orderflow)
         _f_mc  = _ex.submit(_run_macro)
-        try: extra_data['onchain'] = _f_oc.result(timeout=8)
-        except Exception as _e:
-                if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                    pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
+        try: extra_data['onchain'] = _f_oc.result(timeout=5)
+        except Exception: _f_oc.cancel()
         try:
-            _pt = _f_pt.result(timeout=8)
+            _pt = _f_pt.result(timeout=5)
             if _pt: extra_data['pattern'] = _pt
-        except Exception as _e:
-                if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                    pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
+        except Exception: _f_pt.cancel()
         try:
-            _of = _f_of.result(timeout=8)
+            _of = _f_of.result(timeout=5)
             if _of: extra_data['order_flow'] = _of
-        except Exception as _e:
-                if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                    pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
-        try: extra_data['macro'] = _f_mc.result(timeout=8)
-        except Exception as _e:
-                if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                    pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
+        except Exception: _f_of.cancel()
+        try: extra_data['macro'] = _f_mc.result(timeout=5)
+        except Exception: _f_mc.cancel()
+    finally:
+        _ex.shutdown(wait=False)  # 不等待残留线程，立即返回
 
     # P0-NEW: 谐波形态引擎（4H + 日线双重扫描）
     try:
