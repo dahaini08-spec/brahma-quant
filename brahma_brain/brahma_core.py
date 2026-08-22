@@ -3847,7 +3847,47 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception:
         pass
 
-    # ══ [设计院 2026-08-12 苏摩111封印] timing_filter全链接入 ══
+    # ══ [P1 方仓RSI分层 2026-08-22 设计院自主封印] ══════════════════════════════════
+    # 铁证(535条 6.8年): RSI>65+方仓在压缩→做多率24.4% RSI<35→做空率27.5%
+    # 分层设计：RSI方向与方仓偏向一致→加分；矛盾→减分
+    try:
+        _fc_rsi_dir = _result.get('signal_dir', 'LONG')
+        _fc_rsi_1h  = float(_result.get('rsi_1h', 50) or 50)
+        _fc_rsi_4h  = float(_result.get('rsi_4h', 50) or 50)
+        _fc_hint    = (_result.get('fangcang') or {}).get('signal_hint', 'NEUTRAL')
+        _fc_trap    = (_result.get('fangcang') or {}).get('trap_alert', False)
+        _fc_rsi_adj = 0
+        _fc_rsi_note = ''
+        # 方仓铁证：RSI>65 = 做多极佳条件（历号53/217条突破向上）
+        if _fc_rsi_dir == 'LONG' and _fc_rsi_4h > 65 and _fc_hint in ('LONG_BIAS', 'NEUTRAL'):
+            _fc_rsi_adj = +12
+            _fc_rsi_note = f'P1方仓RSI分层做多(RSI4H={_fc_rsi_4h:.0f}>65) +12'
+        # 方仓铁证：RSI<35 = 做空极佳条件（46/167条突破向下）
+        elif _fc_rsi_dir == 'SHORT' and _fc_rsi_4h < 35 and _fc_hint in ('SHORT_BIAS', 'NEUTRAL'):
+            _fc_rsi_adj = +12
+            _fc_rsi_note = f'P1方仓RSI分层做空(RSI4H={_fc_rsi_4h:.0f}<35) +12'
+        # 矛盾信号：方向与RSI矛盾→减分
+        elif _fc_rsi_dir == 'LONG' and _fc_rsi_4h < 35:
+            _fc_rsi_adj = -8
+            _fc_rsi_note = f'P1方仓RSI分层失分(做多RSI4H={_fc_rsi_4h:.0f}<35矛盾) -8'
+        elif _fc_rsi_dir == 'SHORT' and _fc_rsi_4h > 65:
+            _fc_rsi_adj = -8
+            _fc_rsi_note = f'P1方仓RSI分层失分(做空RSI4H={_fc_rsi_4h:.0f}>65矛盾) -8'
+        # 陷阱预警：仳位×0.5需要在position_sizer处理，这里只指爱标记
+        if _fc_rsi_adj != 0:
+            _result['score_final'] = round(float(_result.get('score_final', 0) or 0) + _fc_rsi_adj, 1)
+            _result['score'] = _result['score_final']
+            _result.setdefault('confluence', {}).setdefault('breakdown', {})\
+                .update({'P1方仓RSI': _fc_rsi_note})
+            _result['fangcang_rsi_adj'] = _fc_rsi_adj
+            _result['fangcang_rsi_note'] = _fc_rsi_note
+        # 陷阱预警标记：传递给position_sizer减仓
+        if _fc_trap:
+            _result['fangcang_trap'] = True
+    except Exception:
+        pass
+    # ══ [END P1 方仓RSI分层] ══
+
     # 根因：timing_filter模块存在但从未接入主链路，时机判断完全缺失
     # 接入逻辑：timing badge → 注入breakdown → 影响score_final → 传递给决策树Step5
     try:
