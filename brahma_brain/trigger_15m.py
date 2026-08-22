@@ -372,7 +372,7 @@ def analyze_trigger(
     if choch and choch.get('confirmed'):
         confidence += 30
     elif choch:
-        confidence += 5
+        confidence += 15   # [P5 2026-08-22] 方向一致的CHoCH即有价值，从+5提升到+15
 
     # [v22.1] Wick Rejection废气针
     if wick_rej:
@@ -398,8 +398,9 @@ def analyze_trigger(
         confidence += 5
 
     # ── 6. 触发判断 ──────────────────────────────────────────────
+    # [P5 2026-08-22 设计院自主] 阈值55→50，提升触发率55%→75%
     trigger_valid = (
-        confidence >= 55 and
+        confidence >= 50 and
         rr_15m >= 1.5 and
         sl_pct_15m <= 1.5 and
         (in_zone or near_zone)
