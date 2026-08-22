@@ -120,7 +120,7 @@ def select(short_analysis: dict, long_analysis: dict, regime: dict) -> dict:
         # [P2修复 2026-08-22 苏摩111] BEAR_RECOVERY LONG门槛110→95
         # 铁证：BEAR_RECOVERY LONG WR=72.5% EV=+0.255，但raw_score需要>=116才能过门
         # 缓慢爬升行情中体制不切换到BULL_TREND，低门槛允许更多信号通过
-        _BR_LONG_MIN_RAW = 95  # BEAR_RECOVERY LONG专属原始分门槛
+        _BR_LONG_MIN_RAW = 90  # BEAR_RECOVERY LONG专属原始分门槛（2026-08-22 苏摩111 95→90）
         if long_valid and long_raw >= _BR_LONG_MIN_RAW and not long_ok:
             long_ok = True  # 放开到95门槛
 
