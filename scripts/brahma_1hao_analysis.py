@@ -1676,7 +1676,35 @@ if __name__ == '__main__':
             if _rsi_4h_ev > 90:
                 _base_thresh = int(_base_thresh * 1.15)   # 极度追高防护
             _dyn_label = f'dyn_thresh={_base_thresh}(rsi4h={_rsi_4h_ev:.0f} mom={_momentum_ev})'
-            _score_ok = float(score or 0) >= _base_thresh and float(grade or 0) >= 80
+            # [P0 2026-08-22 苏摩111] BULL_TREND:LONG死亡区封禁
+            # 铁证：n=14 WR=0% avg_pnl=-4.7% —— score≥140且SL≥3%必输
+            _sl_pct_check = 0.0
+            try:
+                _sl_v = float(r_raw.get('sl_pct', 0) or 0)
+                if _sl_v == 0:
+                    _entry_v = float(r_raw.get('entry_hi', r_raw.get('entry', 0)) or 0)
+                    _sl_pr   = float(r_raw.get('stop_loss', 0) or 0)
+                    if _entry_v > 0 and _sl_pr > 0:
+                        _dir_v = r_raw.get('direction', 'LONG')
+                        _sl_pct_check = abs(_entry_v - _sl_pr) / _entry_v * 100
+                    else:
+                        _sl_pct_check = _sl_v
+                else:
+                    _sl_pct_check = _sl_v
+            except Exception:
+                pass
+            _death_zone = (
+                str(_regime_raw) == 'BULL_TREND' and
+                str(r_raw.get('direction','LONG')) == 'LONG' and
+                float(score or 0) >= 140 and
+                _sl_pct_check >= 3.0
+            )
+            if _death_zone:
+                print(f'[P0死亡区封禁] {sym} score={score:.0f} SL={_sl_pct_check:.1f}% '
+                      f'BULL_TREND:LONG:140+:SL≥3% → WR=0%铁证，封禁写入')
+                _score_ok = False
+            else:
+                _score_ok = float(score or 0) >= _base_thresh and float(grade or 0) >= 80
             if _score_ok:
                 from brahma_brain.dharma_data_bridge import log_signal
                 r_raw['symbol'] = sym
