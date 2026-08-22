@@ -56,6 +56,13 @@ TARGETS = [
     },
 ]
 
+# RSS新闻源（CryptoPanic弃用，改用RSS）
+# [2026-08-22 苏摩111] CoinDesk RSS + CoinTelegraph RSS 验证可用
+RSS_URLS = [
+    {"name": "coindesk_rss",      "url": "https://feeds.feedburner.com/CoinDesk",      "tag": "market_news"},
+    {"name": "cointelegraph_rss",  "url": "https://cointelegraph.com/rss",             "tag": "market_news"},
+]
+
 
 async def scrape_with_crawl4ai(dry_run: bool = False) -> list[dict]:
     """
@@ -114,6 +121,43 @@ async def scrape_with_crawl4ai(dry_run: bool = False) -> list[dict]:
             else:
                 print(f"[WARN] {target['name']} HTTP {resp.status_code}")
 
+        # ── RSS新闻源（CoinDesk RSS + CoinTelegraph RSS，补充市场行情新闻）──
+        import xml.etree.ElementTree as _ET
+        rss_tasks = [client.get(r["url"]) for r in RSS_URLS]
+        rss_responses = await asyncio.gather(*rss_tasks, return_exceptions=True)
+        rss_added = 0
+        for rss_cfg, resp in zip(RSS_URLS, rss_responses):
+            if isinstance(resp, Exception):
+                print(f"[WARN] {rss_cfg['name']}: {resp}")
+                continue
+            if resp.status_code == 200:
+                try:
+                    root = _ET.fromstring(resp.text)
+                    items = root.findall('.//item')[:15]
+                    now_ts = int(time.time())
+                    for item in items:
+                        title = (item.findtext('title') or '').strip()
+                        link  = (item.findtext('link')  or '').strip()
+                        desc  = (item.findtext('description') or '').strip()[:300]
+                        if title:
+                            results.append({
+                                "ts":        now_ts,
+                                "source":    rss_cfg["name"],
+                                "tag":       rss_cfg["tag"],
+                                "url":       link,
+                                "markdown":  f"{title}\n{desc}",
+                                "title":     title,
+                                "status":    "ok",
+                                "scraped_at": datetime.now(timezone.utc).isoformat(),
+                            })
+                            rss_added += 1
+                    print(f"[OK] {rss_cfg['name']}: +{len(items)}条")
+                except Exception as e:
+                    print(f"[WARN] {rss_cfg['name']} parse error: {e}")
+            else:
+                print(f"[WARN] {rss_cfg['name']} HTTP {resp.status_code}")
+        if rss_added:
+            print(f"[OK] RSS市场新闻合计: +{rss_added}条")
     return results
 
 def write_output(results: list[dict]):
