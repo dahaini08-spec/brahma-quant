@@ -121,7 +121,8 @@ def get_fg_position_cap(fear_greed_index: float) -> tuple:
 
 def get_position_pct(symbol: str, score: float, direction: str,
                      nav: float = 0.0, fear_greed: float = None,
-                     regime: str = '', transition_hint: str = '') -> dict:
+                     regime: str = '', transition_hint: str = '',
+                     sl_pct: float = None) -> dict:
     """
     返回：{
       'pct': 建议仓位百分比（0~10）,
@@ -353,6 +354,7 @@ def get_position_pct(symbol: str, score: float, direction: str,
     allowed = (max_pct > 0)
     usdt = nav * max_pct / 100 if nav > 0 else 0
 
+
     # ── [P1-B var_engine接入 2026-08-14 设计院] VaR动态仓位门控 ─────────────
     _var_note = ''
     _var_grade = ''
@@ -373,6 +375,31 @@ def get_position_pct(symbol: str, score: float, direction: str,
         pass
     # ── [END var_engine] ──────────────────────────────────────────────────────
 
+    # ── [P0 SL三层分档 2026-08-22 设计院自主] SL铁证仓位分级 ──────────────────
+    # 移至VaR之后执行，作为最终裁决层
+    # 铁证(simfactory 64条): SL<1%→WR=100% / SL1~1.5%→WR=35% / SL1.5~2%→WR=58%
+    _sl_tier_note = ''
+    _sl_pct_raw = float(sl_pct) if sl_pct is not None else 0.0
+    if _sl_pct_raw > 0:
+        if _sl_pct_raw < 1.0:
+            # 档位S：小止损精华信号，WR=100%铁证，强制提升至5%（覆盖VaR压缩）
+            max_pct = 5.0
+            usdt = nav * max_pct / 100 if nav > 0 else 0
+            _sl_tier_note = f'SL档位S({_sl_pct_raw:.2f}%<1%) WR=100%铁证强制5%'
+        elif _sl_pct_raw < 1.5:
+            # 档位B-：WR=35%不稳定，限制最高2%（不覆盖VaR）
+            if max_pct > 2.0:
+                max_pct = 2.0
+                usdt = nav * max_pct / 100 if nav > 0 else 0
+            _sl_tier_note = f'SL档位B-({_sl_pct_raw:.2f}% 1~1.5%) WR=35%限仓2%'
+        else:
+            # 档位B+：SL1.5~2%，WR=58%标准，限制最高3%（不覆盖VaR）
+            if max_pct > 3.0:
+                max_pct = 3.0
+                usdt = nav * max_pct / 100 if nav > 0 else 0
+            _sl_tier_note = f'SL档位B+({_sl_pct_raw:.2f}% 1.5~2%) WR=58%限仓3%'
+    # ── [END SL三层分档] ─────────────────────────────────────────────────────
+
     return {
         'pct':             max_pct,
         'usdt':            round(usdt, 2),
@@ -383,7 +410,8 @@ def get_position_pct(symbol: str, score: float, direction: str,
                            + (f' [总风险{_current_used_pct:.1f}%/25%NAV]' if _portfolio_capped else '')
                            + (f' [{_macro_note}]' if _macro_note else '')
                            + (f' [{_var_note}]' if _var_note else '')
-                           + (f' [{_sw_note}]' if _sw_note else ''),
+                           + (f' [{_sw_note}]' if _sw_note else '')
+                           + (f' [{_sl_tier_note}]' if _sl_tier_note else ''),
         'allowed':         allowed,
         'fg_cap':          _fg_cap,
         'fg_applied':      _fg_applied,
