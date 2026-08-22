@@ -42,7 +42,7 @@ try:
     JARVIS_TARGET = os.environ.get('JARVIS_TARGET', _SSOT_T)
 except Exception:
     JARVIS_TARGET = os.environ.get('JARVIS_TARGET', '73295708:thread:019fd70a-0942-72b1-aeb9-1bd4fc11b30d')
-MIN_WEIGHTED  = 110   # 同 signal_selector 门槛
+MIN_WEIGHTED  = 110   # 同 signal_selector 门槛（BEAR_RECOVERY LONG特例:95）
 
 # 推送去重：同symbol+direction 6H内不重复推送
 # [v25.3-fix] 改为持久化文件，避免进程重启后冷却清零

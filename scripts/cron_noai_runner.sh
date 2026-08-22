@@ -445,7 +445,17 @@ print(r['removed'])
     log "[log-rotation] 完成，清理/截断项目: ${CLEANED}个"
     ;;
 
-  *)
+    scan-fast)
+    # [P0修复 2026-08-22 苏摩111] 快速保底扫描 FAST_SYMBOLS（BTC/ETH等主力）
+    # 每4H运行，纯noai模式，解决缓慢爬升行情中scan_guard扫描断档问题
+    OUT=$(cd "$BASE" && timeout 1800 python3 scripts/brahma_scan_all.py 2>&1 | tail -5)
+    RC=$?
+    if [ $RC -ne 0 ]; then
+        send_alert "⚠️ [scan-fast异常] RC=$RC $(echo "$OUT" | tail -2)"
+    fi
+    ;;
+
+*)
     log "未知任务: $TASK"
     exit 1
     ;;
