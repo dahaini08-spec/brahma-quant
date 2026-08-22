@@ -73,7 +73,7 @@ _push_dedup = _load_dedup()  # 启动时从文件恢复
 
 
 
-def _run_brahma_analyze(symbol: str, direction: str, timeout: int = 30) -> dict:
+def _run_brahma_analyze(symbol: str, direction: str, timeout: int = 65) -> dict:
     """调用brahma_analyze并返回json结果"""
     sym = symbol.upper()
     if not sym.endswith('USDT'):

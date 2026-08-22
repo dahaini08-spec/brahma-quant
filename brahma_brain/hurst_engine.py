@@ -34,10 +34,23 @@ _CACHE_TTL = 600  # 10分钟，Hurst计算稳定，TTL可以长
 
 def _fetch_closes(symbol: str, interval: str = '1h', limit: int = 100) -> List[float]:
     """获取收盘价序列"""
-    import urllib.request
-    url = f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}'
     try:
-        with urllib.request.urlopen(url, timeout=8) as r:
+        import requests as _req
+        r = _req.get(
+            f'https://fapi.binance.com/fapi/v1/klines',
+            params={'symbol': symbol, 'interval': interval, 'limit': limit},
+            timeout=6
+        )
+        return [float(k[4]) for k in r.json()]
+    except Exception:
+        pass
+    try:
+        import urllib.request, ssl
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        url = f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}'
+        with urllib.request.urlopen(url, timeout=6, context=ctx) as r:
             data = json.loads(r.read())
             return [float(k[4]) for k in data]
     except Exception:

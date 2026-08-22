@@ -788,8 +788,8 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
 
     # ══ [设计院 2026-08-08] HCME情境匹配层注入 ═══════════════════════════════
     try:
-        from brahma_brain.hcme_matcher import HCMEMatcher as _HCMEMatcher
-        _hcme = _HCMEMatcher()
+        from hcme_matcher import get_hcme_matcher as _get_hcme
+        _hcme = _get_hcme()
         _hcme_signal = {
             'symbol': symbol,
             'direction': direction,

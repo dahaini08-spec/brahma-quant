@@ -3762,7 +3762,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _actual_dir = _result.get('signal_dir', '')
         if _actual_dir in ('LONG', 'SHORT') and isinstance(_fc_res, dict):
             try:
-                from brahma_brain.hcme_matcher import HCMEMatcher as _HCMEMatcher
+                from hcme_matcher import get_hcme_matcher as _get_hcme
                 _hcme_sig = {
                     'symbol':     _sym,
                     'regime':     _result.get('regime', ''),
@@ -3773,7 +3773,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                     'sl_pct':     float(_result.get('sl_atr_mult', 2.0) or 2.0),
                     'price':      float(_result.get('price', 0) or 0),
                 }
-                _hcme_m = _HCMEMatcher()
+                _hcme_m = _get_hcme()
                 _hcme_r2 = _hcme_m.find_similar(_hcme_sig, top_k=5)
                 _fc_res['hcme_wr_adj'] = _hcme_r2['hcme_score_adj']
                 _fc_res['hcme_context'] = _hcme_r2['context_summary']
