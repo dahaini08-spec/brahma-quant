@@ -3680,11 +3680,22 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         from position_sizer import get_position_pct as _pos_fn
         _ps_score = _result.get('score_final', _result.get('score', 0))
         _ps_dir   = signal_dir or _result.get('signal_dir', 'SHORT')
-        _pos_res  = _pos_fn(_sym, _ps_score, _ps_dir)
+        _ps_sl    = float((_result.get('params') or {}).get('sl_pct',
+                    _result.get('sl_pct', 0)) or 0)
+        # [P3 陷阱预警仓位减半 2026-08-22 苏摩111封印]
+        # 方仓陷阱=True：入场减仓×0.5，等待CHoCH确认后恢复满仓
+        _ps_trap  = bool(_result.get('fangcang_trap', False))
+        _pos_res  = _pos_fn(_sym, _ps_score, _ps_dir,
+                            nav=nav if nav else 0,
+                            sl_pct=_ps_sl if _ps_sl > 0 else None)
         if _pos_res.get('allowed'):
-            _result['pos_pct_sizer']    = _pos_res.get('pct', 0)
+            _pos_pct = _pos_res.get('pct', 0)
+            if _ps_trap and _pos_pct > 0:
+                _pos_pct = round(_pos_pct * 0.5, 2)
+                _result['pos_trap_halved'] = True
+            _result['pos_pct_sizer']    = _pos_pct
             _result['pos_level_sizer']  = _pos_res.get('level', '')
-            _result['pos_reason_sizer'] = _pos_res.get('reason', '')
+            _result['pos_reason_sizer'] = _pos_res.get('reason', '') + (' [陷阱预警×0.5]' if _ps_trap else '')
     except Exception:
         pass
     # ══ [PositionSizer END] ════════════════════════════════════════════════════
