@@ -638,8 +638,8 @@ def _detect_main_force_intent(
 def _integrate_hcme(current_signal_dict: dict) -> dict:
     """集成 HCME Matcher（M2流动性地图），fail-safe"""
     try:
-        from brahma_brain.hcme_matcher import HCMEMatcher  # noqa
-        matcher = HCMEMatcher()
+        from hcme_matcher import get_hcme_matcher as _get_hcme_fc
+        matcher = _get_hcme_fc()
         hcme_result = matcher.find_similar(current_signal_dict, top_k=5)
         return {
             'hcme_wr_adj':   hcme_result.get('hcme_score_adj', 0),

@@ -61,6 +61,17 @@ def _cosine(a: list, b: list) -> float:
 # ── ATH lookup (approximate, from 4H OHLCV tail scan) ────────────────────────
 _ATH_CACHE: dict = {}
 
+# ── 模块级单例缓存（避免同一进程内重复加载2365条数据）────────────────────────
+_HCME_SINGLETON: Optional['HCMEMatcher'] = None
+
+
+def get_hcme_matcher() -> 'HCMEMatcher':
+    """Return a cached HCMEMatcher instance (loads data only once per process)."""
+    global _HCME_SINGLETON
+    if _HCME_SINGLETON is None:
+        _HCME_SINGLETON = HCMEMatcher()
+    return _HCME_SINGLETON
+
 
 def _get_ath(symbol: str) -> float:
     """Return approximate all-time-high from backtest data (up to last bar)."""
