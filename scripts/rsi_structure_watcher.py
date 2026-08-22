@@ -350,7 +350,7 @@ def detect_events(data, prev_state, sym):
     try:
         import time as _time_ts
         _48h_chg_ts = (px - s48h) / s48h * 100 if s48h > 0 else 0
-        _ts1 = _48h_chg_ts >= 8.0
+        _ts1 = _48h_chg_ts >= 5.0  # [P1修复 2026-08-22 苏摩111] 8%→5%，覆盖缓慢爬升盲区
         _k4h_ts = data.get('klines_4h', [])
         if _k4h_ts and len(_k4h_ts) >= 3:
             _bull_cnt_ts = sum(1 for k in _k4h_ts[-3:] if float(k[4]) > float(k[1]))
@@ -622,6 +622,44 @@ def detect_events(data, prev_state, sym):
                     'regime': _cur_regime,
                     'direction': 'SHORT',
                 })
+
+    # ── E_SLOW_CLIMB: 缓慢持续爬升触发（2026-08-22 苏摩111）──────────────────
+    # 核心逻辑：7D涨幅大但每个48H窗口<8%，是E_TREND_SURGE无法捕捉的慢牛盲区
+    # 触发条件（全部满足）：
+    #   SC1: 7D涨幅 >= 12%（累计涨幅明显）
+    #   SC2: RSI_4H > 55（趋势动能，非震荡）
+    #   SC3: 价格在7D高点的90%以上（未回撤，仍在上升通道）
+    #   SC4: 非BEAR_TREND体制（避免熊市反弹误触发）
+    # 冷却: 12H
+    try:
+        import time as _sc_time
+        _kl1d = data.get('klines_1d', [])
+        if _kl1d and len(_kl1d) >= 7:
+            _7d_open = float(_kl1d[-7][1])
+            _7d_high = max(float(k[2]) for k in _kl1d[-7:])
+            _7d_chg = (px - _7d_open) / _7d_open * 100 if _7d_open > 0 else 0
+            _rsi4h_sc = data.get('rsi_4h', 50)
+            _regime_sc = data.get('regime', 'CHOP_MID')
+            _sc1 = _7d_chg >= 12.0
+            _sc2 = _rsi4h_sc > 55.0
+            _sc3 = px >= _7d_high * 0.90
+            _sc4 = 'BEAR_TREND' not in _regime_sc
+            _sc_key = f'{sym}_slow_climb_ts'
+            _sc_ok = (_sc_time.time() - prev_state.get(_sc_key, 0)) > 43200  # 12H冷却
+            if _sc1 and _sc2 and _sc3 and _sc4 and _sc_ok:
+                events.append({
+                    'event': 'E_SLOW_CLIMB',
+                    'desc': (f'🐢 缓慢爬升触发! 7D涨幅{_7d_chg:.1f}%'
+                             f' RSI_4H={_rsi4h_sc:.1f} 价格在7D高点{px/_7d_high:.0%}'
+                             f' 体制={_regime_sc} → 慢牛上涨，触发全量做多扫描'),
+                    'priority': 'HIGH',
+                    'direction': 'LONG',
+                    'chg_7d': round(_7d_chg, 2),
+                    'rsi_4h': round(_rsi4h_sc, 1),
+                    '_cooldown_key': _sc_key,
+                })
+    except Exception:
+        pass
 
     return events, 'ACTIVE' if events else 'NO_EVENT'
 
