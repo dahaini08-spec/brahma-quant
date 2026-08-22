@@ -22,7 +22,7 @@ from typing import Optional
 
 # ── 常量（铁证封印，不得随意修改）────────────────────────────────────────
 SL_PCT_GATE = 2.0          # Gate1铁证: sl>2.0% WR=0% EV=-5.07% (n=15)
-SL_PCT_EXEMPT_SCORE = 155  # 豁免: score≥155+BULL_TREND+LONG小币高波动通道
+# SL_PCT_EXEMPT_SCORE 已废弃：铁证验证score≥155+sl>2% WR=0% EV=-5.87%，豁免无效，永久删除 (2026-08-22)
 
 # 死穴体制方向组合（MEMORY.md宪法）
 DEAD_ZONE_COMBOS = {
