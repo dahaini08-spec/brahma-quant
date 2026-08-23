@@ -3055,6 +3055,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         'sl_basis':     params.get('sl_basis',   'swing_4h+atr4h×0.3'),
         'sl_atr_mult':  params.get('sl_atr_mult', 0),
         'extra':       extra_data,
+        # [修复 2026-08-24] RSI顶层字段，供P1/P4直接读取（原只在market_state_raw里）
+        'rsi_1h':  float((ms.get('momentum') or {}).get('rsi_1h', 50) or 50),
+        'rsi_4h':  float((ms.get('momentum') or {}).get('rsi_4h', 50) or 50),
+        'rsi_1d':  float((ms.get('momentum') or {}).get('rsi_1d', 50) or 50),
         # [2026-08-12 苏摩111封印 v3] ms完整原始数据注入，全路径修正版，供35维逐项核对
         'market_state_raw': {
             # ── 趋势模块 (ms['trend'][tf]) ──
@@ -3864,8 +3868,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # 分层设计：RSI方向与方仓偏向一致→加分；矛盾→减分
     try:
         _fc_rsi_dir = _result.get('signal_dir', 'LONG')
-        _fc_rsi_1h  = float(_result.get('rsi_1h', 50) or 50)
-        _fc_rsi_4h  = float(_result.get('rsi_4h', 50) or 50)
+        # [修复 2026-08-24] rsi_1h/rsi_4h不在_result顶层，从ms['momentum']读取
+        _fc_mom = (_result.get('market_state_raw') or ms).get('momentum', {})
+        _fc_rsi_1h  = float(_result.get('rsi_1h') or _fc_mom.get('rsi_1h', 50) or 50)
+        _fc_rsi_4h  = float(_result.get('rsi_4h') or _fc_mom.get('rsi_4h', 50) or 50)
         _fc_hint    = (_result.get('fangcang') or {}).get('signal_hint', 'NEUTRAL')
         _fc_trap    = (_result.get('fangcang') or {}).get('trap_alert', False)
         _fc_rsi_adj = 0
@@ -3908,9 +3914,11 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     #   逆流做多(三重超买) → -5 | 逆流做空(三重超卖) → -5
     try:
         _p4_dir   = _result.get('signal_dir', 'LONG')
-        _p4_r1h   = float(_result.get('rsi_1h', 50) or 50)
-        _p4_r4h   = float(_result.get('rsi_4h', 50) or 50)
-        _p4_r1d   = float(_result.get('rsi_1d', 50) or 50)
+        # [修复 2026-08-24] rsi从ms['momentum']读取
+        _p4_mom = (_result.get('market_state_raw') or ms).get('momentum', {})
+        _p4_r1h   = float(_result.get('rsi_1h') or _p4_mom.get('rsi_1h', 50) or 50)
+        _p4_r4h   = float(_result.get('rsi_4h') or _p4_mom.get('rsi_4h', 50) or 50)
+        _p4_r1d   = float(_result.get('rsi_1d') or _p4_mom.get('rsi_1d', 50) or 50)
         _p4_adj   = 0
         _p4_note  = ''
         if _p4_dir == 'LONG':

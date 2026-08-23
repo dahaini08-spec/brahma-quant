@@ -121,6 +121,15 @@ def format_full_report(r: dict) -> str:
     lines.append('【技术层】')
     lines.append(_row('HCME方仓匹配', bd.get('HCME情境匹配')))
     lines.append(_row('HCME上下文', str(r.get('hcme_ctx') or fc.get('hcme_context',''))[:45]))
+    lines.append(_row('HCME数据来源', fc.get('hcme_source')))
+    import re as _re
+    _hcme_ctx_str = str(r.get('hcme_ctx') or fc.get('hcme_context',''))
+    _n_m = _re.search(r'n=(\d+)', _hcme_ctx_str)
+    _long_m = _re.search(r'多=(\d+)%', _hcme_ctx_str)
+    _short_m = _re.search(r'空=(\d+)%', _hcme_ctx_str)
+    lines.append(_row('HCME案例数n', _n_m.group(1) if _n_m else 'N/A'))
+    lines.append(_row('HCME多头突破率', _long_m.group(1)+'%' if _long_m else 'N/A'))
+    lines.append(_row('HCME空头突破率', _short_m.group(1)+'%' if _short_m else 'N/A'))
     lines.append(_row('Kronos p_up', r.get('kronos_p_up')))
     lines.append(_row('Kronos score_adj', bd.get('Kronos_p_up') or r.get('kronos_score')))
     lines.append(_row('HAR-RV波动率', bd.get('HAR-RV波动率')))
@@ -135,6 +144,23 @@ def format_full_report(r: dict) -> str:
     lines.append(_row('LSTM+NLP情绪', bd.get('LSTM+NLP情绪'), '模型未激活'))
     lines.append(_row('量能衰竭+背离', bd.get('量能衰竭+背离共振'), '模型未激活'))
     lines.append(_row('研究增强层', bd.get('研究增强层')))
+
+    # ══ 死穴/封禁层（新增）══
+    lines.append('【死穴/封禁状态】')
+    _gb = r.get('globally_blocked') or bd.get('globally_blocked')
+    if _gb is None:
+        _gb = '未触发(False)'
+    lines.append(_row('globally_blocked', _gb))
+    lines.append(_row('死穴封禁原因', bd.get('死穴封禁') or bd.get('体制封禁') or bd.get('_death_zone_reason')))
+    lines.append(_row('RTC实时体制覆盖', bd.get('_rtc_override') or '无（体制正常）'))
+    lines.append(_row('BBW档位(P0)', bd.get('_p0_bbw_tier')))
+    _p1v = r.get('fangcang_rsi_note') or (r.get('confluence') or {}).get('breakdown', {}).get('P1方仓RSI') or bd.get('P1_方仓RSI分层')
+    lines.append(_row('P1_方仓RSI分层', _p1v))
+    _p2v = bd.get('P2_做空激活') or bd.get('p2_short') or r.get('p2_short_active')
+    lines.append(_row('P2_做空激活', _p2v))
+    sqe_data = _run_sqe(r)
+    lines.append(_row('SQE质检结果', sqe_data.get('sqe_result')))
+    lines.append(_row('SQE拒绝原因', sqe_data.get('sqe_reject_reason')))
 
     # ══ 结构层 ══
     lines.append('【结构层】')
@@ -168,7 +194,8 @@ def format_full_report(r: dict) -> str:
     lines.append(_row('GATE_ATR_Q4', bd.get('GATE_ATR_Q4')))
     lines.append(_row('GATE_SESSION_DEAD', bd.get('GATE_SESSION_DEAD')))
     lines.append(_row('dfe综合惩罚', bd.get('dfe_total')))
-    lines.append(_row('P4三周期共振', bd.get('P4_三周期共振')))
+    _p4v = (r.get('confluence') or {}).get('breakdown', {}).get('P4三周期共振') or bd.get('P4_三周期共振') or bd.get('P4三周期共振')
+    lines.append(_row('P4三周期共振', _p4v))
     lines.append(_row('时段权重', bd.get('时段权重')))
 
     # ══ 方仓概率矩阵 ══
@@ -182,6 +209,9 @@ def format_full_report(r: dict) -> str:
     lines.append(_row('陷阱预警', fc.get('trap_alert')))
     lines.append(_row('主力意图', f"{mfi.get('intent','')} conf={mfi.get('confidence','')}"))
     lines.append(_row('方仓摘要', str(fc.get('fangcang_summary',''))[:50]))
+    top3 = fc.get('top3_summary') or ''
+    if top3:
+        lines.append(_row('Top3案例摘要', str(top3)[:55]))
     top1_dt = _bj_ts(top1.get('dt')) if top1.get('dt') else 'N/A'
     lines.append(_row('Top1案例',
         f"{top1_dt} ret={top1.get('future_ret')} max={top1.get('future_max')} min={top1.get('future_min')}"))
@@ -216,6 +246,19 @@ def format_full_report(r: dict) -> str:
     lines.append(W)
     return '\n'.join(lines)
 
+
+def _run_sqe(r: dict) -> dict:
+    """运行SQE质检，返回 {result, reason} 字典"""
+    try:
+        from brahma_brain.signal_quality_engine import SignalQualityEngine
+        sqe = SignalQualityEngine()
+        gate = sqe.evaluate(r)
+        return {
+            'sqe_result': gate.status,
+            'sqe_reject_reason': gate.reason or '无' if gate.rejected else 'PASS',
+        }
+    except Exception as e:
+        return {'sqe_result': f'ERROR:{e}', 'sqe_reject_reason': 'N/A'}
 
 def run_full_analysis(symbol: str):
     """
