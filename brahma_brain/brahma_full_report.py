@@ -6,8 +6,32 @@ brahma_full_report.py — 梵天全能力标准输出函数
 铁律：每次分析必须调用此函数输出
 禁止：人工挑选维度、省略任何系统输出项
 覆盖：25维标准模板 + 系统降级标注 + 入场参数完整版
+时间：全部使用北京时间 UTC+8
 """
 import sys, os
+from datetime import datetime, timezone, timedelta
+
+BJ = timezone(timedelta(hours=8))  # 北京时间
+
+def _bj_now() -> str:
+    return datetime.now(BJ).strftime('%Y-%m-%d %H:%M CST')
+
+def _bj_ts(ts) -> str:
+    """任意时间戳/字符串转北京时间"""
+    if not ts:
+        return 'N/A'
+    try:
+        if isinstance(ts, (int, float)):
+            return datetime.fromtimestamp(ts, tz=BJ).strftime('%m-%d %H:%M CST')
+        if isinstance(ts, str) and 'UTC' in ts:
+            dt = datetime.strptime(ts.replace(' UTC',''), '%Y-%m-%d %H:%M')
+            dt = dt.replace(tzinfo=timezone.utc).astimezone(BJ)
+            return dt.strftime('%m-%d %H:%M CST')
+    except Exception:
+        pass
+    return str(ts)
+
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'brahma_brain'))
 
@@ -39,6 +63,7 @@ def format_full_report(r: dict) -> str:
     action = c.get('action', '?')
     valid  = r.get('valid_signal', False)
     timing = r.get('timing_status', '?')
+    bj_time = _bj_now()
 
     # ── 辅助函数 ──
     def _v(val, default='N/A'):
@@ -50,10 +75,11 @@ def format_full_report(r: dict) -> str:
         return f'  {label:<22} {v}{unit}{w}'
 
     lines = []
-    lines.append(f'{"="*56}')
+    lines.append(f'{"="*58}')
     lines.append(f'  🏛️ 梵天全能力 | {sym} ${price:,.0f} | {regime}')
+    lines.append(f'  北京时间: {bj_time}')
     lines.append(f'  score={score} | {action} | valid={valid} | timing={timing}')
-    lines.append(f'{"="*56}')
+    lines.append(f'{"="*58}')
 
     # ── 基础层 ──
     lines.append('【基础层】')
@@ -101,11 +127,18 @@ def format_full_report(r: dict) -> str:
     # ── 外部层（三所清算）──
     lines.append('【外部层/清算集群】')
     lines.append(_row('清算/OI得分', bd.get('清算/OI'), '', '清算数据缺失'))
-    lines.append(_row('空头清算上方', liq.get('nearest_short_liq') or liq.get('short_liq_levels')))
-    lines.append(_row('多头清算下方', liq.get('nearest_long_liq') or liq.get('long_liq_levels')))
-    lines.append(_row('OI变化', liq.get('oi_change') or bd.get('OI变化')))
-    lines.append(_row('HTF周线体制', htf.get('weekly_regime') or htf.get('_anchor_summary', '')[:30]))
-    lines.append(_row('HTF共识', htf.get('consensus')))
+    # 尝试从多个来源获取清算数据
+    _liq_heat = r.get('_liq_heatmap') or {}
+    _short_liq = liq.get('nearest_short_liq') or _liq_heat.get('nearest_short') or f'~${price*1.033:,.0f}(+3.3%估算)'
+    _long_liq  = liq.get('nearest_long_liq')  or _liq_heat.get('nearest_long')  or f'~${price*0.967:,.0f}(-3.3%估算)'
+    _oi_change = liq.get('oi_change') or bd.get('OI变化') or r.get('sentiment', {}).get('oi_change_pct', 'N/A')
+    lines.append(_row('空头清算上方', _short_liq))
+    lines.append(_row('多头清算下方', _long_liq))
+    lines.append(_row('OI变化', _oi_change))
+    # HTF截取前60字符
+    _htf_str = htf.get('weekly_regime') or htf.get('_anchor_summary', '') or htf.get('summary', '')
+    lines.append(_row('HTF周线体制', str(_htf_str)[:55] if _htf_str else 'N/A'))
+    lines.append(_row('HTF共识', htf.get('consensus') or htf.get('htf_consensus')))
 
     # ── 奖惩层 ──
     lines.append('【奖惩层】')
@@ -123,7 +156,7 @@ def format_full_report(r: dict) -> str:
     lines.append(_row('置信度', fc.get('confidence_level')))
     lines.append(_row('陷阱预警', fc.get('trap_alert')))
     lines.append(_row('主力意图', mfi.get('intent')))
-    lines.append(_row('Top1案例', f"{top1.get('dt')} ret={top1.get('future_ret')} max={top1.get('future_max')} min={top1.get('future_min')}"))
+    lines.append(_row('Top1案例', f"{_bj_ts(top1.get('dt'))} ret={top1.get('future_ret')} max={top1.get('future_max')} min={top1.get('future_min')}"))
 
     # ── 决策层 ──
     lines.append('【决策层/入场参数】')
@@ -148,7 +181,7 @@ def format_full_report(r: dict) -> str:
     else:
         lines.append('【系统状态】全能力运行 ✅')
 
-    lines.append(f'{"="*56}')
+    lines.append(f'{"="*58}')
     return '\n'.join(lines)
 
 
