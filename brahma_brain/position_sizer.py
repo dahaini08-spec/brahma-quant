@@ -382,10 +382,28 @@ def get_position_pct(symbol: str, score: float, direction: str,
     _sl_pct_raw = float(sl_pct) if sl_pct is not None else 0.0
     if _sl_pct_raw > 0:
         if _sl_pct_raw < 1.0:
-            # 档位S：小止损精华信号，WR=100%铁证，强制提升至5%（覆盖VaR压缩）
-            max_pct = 5.0
-            usdt = nav * max_pct / 100 if nav > 0 else 0
-            _sl_tier_note = f'SL档位S({_sl_pct_raw:.2f}%<1%) WR=100%铁证强制5%'
+            # 档位S：小止损精华信号，WR=100%铁证，强制提升至5%
+            # [修复 2026-08-24 C1/C2] 两项守护：
+            # C1: signal_weights.multiplier=0时不覆盖（封禁体制不得强制开仓）
+            # C2: VaR压缩后仓位=0时不覆盖（风险管理不得被SL档位绕过）
+            _sw_banned = (_sw_mult <= 0.0)  # signal_weights封禁
+            _var_banned = (_var_grade == 'EXTREME' and max_pct == 0.0)  # VaR极端封禁
+            if _sw_banned:
+                _sl_tier_note = f'SL档位S被SW封禁覆盖(SW={_sw_mult}) 维持banned状态'
+            elif _var_banned:
+                _sl_tier_note = f'SL档位S被VaR=EXTREME覆盖 维持0%'
+            else:
+                # [H1修复 2026-08-24] BULL_TREND:LONG+SL<1% 铁证矛盾保护
+                # SL<1%信号全部是BULL_TREND:LONG，但该体制LONG WR=40% EV=-0.40%
+                # 保守原则：BULL_TREND:LONG不强制5%，价寻正常逻辑
+                _is_bull_long = (str(regime or '').upper() == 'BULL_TREND' and
+                                 str(direction or '').upper() == 'LONG')
+                if _is_bull_long:
+                    _sl_tier_note = f'SL档位S({_sl_pct_raw:.2f}%<1%) BULL_TREND:LONG铁证矛盾→不强制5%'
+                else:
+                    max_pct = 5.0
+                    usdt = nav * max_pct / 100 if nav > 0 else 0
+                    _sl_tier_note = f'SL档位S({_sl_pct_raw:.2f}%<1%) WR=100%铁证强制5%'
         elif _sl_pct_raw < 1.5:
             # 档位B-：WR=35%不稳定，限制最高2%（不覆盖VaR）
             if max_pct > 2.0:
