@@ -53,6 +53,12 @@ except ImportError:
 try:
     import glob as _glob, os as _os_link
     _gomp_candidates = _glob.glob('/usr/local/lib/python3.11/dist-packages/torch/lib/libgomp.so*')
+    # [2026-08-23 苏摩111] 扩展搜索：venv/torch路径
+    if not _gomp_candidates:
+        _gomp_candidates = _glob.glob('/root/.openclaw/workspace/trading-system/venv/lib/python3.11/site-packages/torch/lib/libgomp.so*')
+    if not _gomp_candidates:
+        import glob as _g2
+        _gomp_candidates = _g2.glob('/root/.openclaw/workspace/trading-system/venv/lib/*/site-packages/torch/lib/libgomp.so*')
     _gomp_target = '/usr/local/lib/libgomp.so.1'
     if _gomp_candidates and not _os_link.path.exists(_gomp_target):
         _os_link.symlink(_gomp_candidates[0], _gomp_target)

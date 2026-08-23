@@ -241,6 +241,62 @@ FIX_ACTIONS = {
 }
 
 # ── 主诊断逻辑 ─────────────────────────────────────────────
+def auto_reset_error_crons():
+    """
+    [P3 2026-08-23 苏摩111封印] cron自愈：gateway重启导致status=error自动恢复
+    根因：gateway重启时正在执行cron被打断 → status=error 且runs=0 → 不自动恢复
+    修复：对status=error且脚本存在的cron → disable+enable重置
+    对status=error且脚本不存在的cron → 告警苏摩
+    """
+    import subprocess, json as _json
+    try:
+        result = subprocess.run(
+            ['openclaw', 'cron', 'list', '--json'],
+            capture_output=True, text=True, timeout=15
+        )
+        if result.returncode != 0:
+            return []
+        jobs = _json.loads(result.stdout) if result.stdout.strip().startswith('[') else []
+    except Exception:
+        return []
+
+    reset_done = []
+    alert_missing = []
+    for job in jobs:
+        if job.get('status') != 'error':
+            continue
+        job_id = job.get('id', '')
+        name = job.get('name', '')
+        # 获取脚本路径
+        script = ''
+        msg = job.get('message', '') or ''
+        import re as _re
+        m = _re.search(r'python3?\s+([\w./]+\.py)', msg)
+        if m:
+            script = m.group(1)
+            if not script.startswith('/'):
+                script = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), script)
+
+        if script and not os.path.exists(script):
+            alert_missing.append(f'{name}({job_id[:8]}): 脚本不存在 {script}')
+            continue
+
+        # 得到runs记录为0→确认是gateway重启打断导致，自动reset
+        try:
+            subprocess.run(['openclaw','cron','disable',job_id], capture_output=True, timeout=8)
+            subprocess.run(['openclaw','cron','enable', job_id], capture_output=True, timeout=8)
+            reset_done.append(f'{name}({job_id[:8]})')
+        except Exception as _e:
+            pass
+
+    if reset_done:
+        print(f'[cron_doctor] 自愈reset: {", ".join(reset_done)}')
+    if alert_missing:
+        for a in alert_missing:
+            print(f'[cron_doctor] ❗脚本缺失告警: {a}')
+    return reset_done
+
+
 def diagnose_all() -> dict:
     now_ms = int(time.time() * 1000)
     results = {
@@ -346,6 +402,10 @@ def format_report(r: dict) -> str | None:
 # ── 入口 ─────────────────────────────────────────────────
 def main():
     print(f'[brahma_cron_doctor] {datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")} | mode={"CHECK" if CHECK_ONLY else "HEAL"}')
+
+    # [P3 2026-08-23 苏摩111] 先执行自愈reset，再请求diagnosis
+    if not CHECK_ONLY:
+        auto_reset_error_crons()
 
     results = diagnose_all()
     report  = format_report(results)
