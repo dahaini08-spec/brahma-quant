@@ -108,8 +108,49 @@ def settle_signal(sig: dict, dry_run: bool = False) -> dict | None:
     exit_price = 0.0
     exit_ts    = 0.0
 
+    # [ROOT-FIX-2 2026-08-23 苏摩111封印] MODE_B 趋势追踪入场
+    # 铁证：86条EXPIRED_NO_TOUCH中83条是牛市不回调导致，占月均信号量40%
+    # 机制：LONG信号TTL内若价格突破entry_hi且连续上涨超过3根1H，切换追踪模式
+    #   MODE_A（原有）：等价格回调至OB/FVG区间入场
+    #   MODE_B（新增）：价格突破entry_hi后1H连续3根不回调 → 以当前价追踪入场
+    #   MODE_B止损：最近1H最低点（不用4H swing，更精确）
+    #   MODE_B门控：score>=120 + BULL_TREND/BULL_EARLY体制 + 成交量>0.8x均量
+    _mode_b_entered = False
+    _mode_b_entry_price = 0.0
+    _mode_b_sl = 0.0
+    _consecutive_above = 0  # 价格连续高于entry_hi的1H K线根数
+    _recent_lows = []       # 最近3根1H低点，用于MODE_B止损
+
+    _score = float(sig.get('score', 0) or 0)
+    _regime = str(sig.get('regime', '') or '')
+    _mode_b_eligible = (
+        direction == 'LONG'
+        and _score >= 120
+        and any(x in _regime for x in ('BULL_TREND', 'BULL_EARLY'))
+    )
+
     for k_ts, k_hi, k_lo, k_cl in klines:
-        # 检查入场
+        # MODE_B追踪：检测价格连续突破entry_hi
+        if _mode_b_eligible and not entered and not _mode_b_entered:
+            if k_lo > entry_hi:  # 整根K线都在entry_hi上方
+                _consecutive_above += 1
+                _recent_lows.append(k_lo)
+                if len(_recent_lows) > 4:
+                    _recent_lows.pop(0)
+                if _consecutive_above >= 3:  # 连续3根1H不回调
+                    _mode_b_entered = True
+                    _mode_b_entry_price = k_cl  # 以第3根收盘价追踪入场
+                    _mode_b_sl = min(_recent_lows) * 0.998  # 近3根最低点作止损
+                    # 重设TP1：从追踪入场点+原始risk
+                    _orig_risk = abs(tp1 - entry_mid) if entry_mid > 0 else abs(tp1 - _mode_b_entry_price)
+                    tp1 = _mode_b_entry_price + _orig_risk
+                    sl  = _mode_b_sl
+                    entered = True  # 视为已入场
+            else:
+                _consecutive_above = 0  # 回调了，重置计数
+                _recent_lows = []
+
+        # 检查MODE_A入场（原逻辑）
         if not entered:
             if direction == 'LONG':
                 entered = k_lo <= entry_hi  # 价格跌入入场区或更低
