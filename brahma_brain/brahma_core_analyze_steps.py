@@ -81,6 +81,33 @@ def _analyze_step1(symbol: str, signal_dir: str) -> dict:
         pass  # [静默] f'[RSM] 状态机异常（不阻断，维持原始体制）: {_rsm_e}'
     # ── [P0-A END] ────────────────────────────────────────────────────────
 
+    # ── [ROOT-FIX-3 2026-08-23 苏摩111封印] 实时体制覆盖门控 ─────────────────
+    # 根因：brahma_state.json刷新有延迟，价格单边大跌时系统仍发BULL_TREND多单
+    # 修复：实时检查过去4H的实际价格跌幅，超阈值强制覆盖体制
+    # fail-safe：异常不阻断，维持当前体制
+    try:
+        _cur_regime = ms.get('regime', '')
+        # 只在多头体制下检查，防止在已经是BEAR体制时重复覆盖
+        if _cur_regime in ('BULL_TREND', 'BULL_EARLY', 'BULL_PEAK', 'BULL_CORRECTION'):
+            import requests as _rtc_req
+            _rtc_url = f'https://api.binance.com/api/v3/klines?symbol={_sym}&interval=4h&limit=3'
+            _rtc_resp = _rtc_req.get(_rtc_url, timeout=3)
+            if _rtc_resp.status_code == 200:
+                _rtc_klines = _rtc_resp.json()
+                if len(_rtc_klines) >= 2:
+                    _rtc_open = float(_rtc_klines[0][1])   # 最早4H K线的开盘价
+                    _rtc_cur  = float(_rtc_klines[-1][4])  # 最新K线的收盘价
+                    _rtc_drop = (_rtc_open - _rtc_cur) / _rtc_open if _rtc_open > 0 else 0
+                    if _rtc_drop > 0.08:  # 4H内跌超8%
+                        ms['regime'] = 'BEAR_TREND'
+                        ms['_rtc_override'] = f'实时覆盖: {_cur_regime}→BEAR_TREND drop={_rtc_drop:.1%}'
+                    elif _rtc_drop > 0.05:  # 4H内跌超5%
+                        ms['regime'] = 'BEAR_EARLY'
+                        ms['_rtc_override'] = f'实时覆盖: {_cur_regime}→BEAR_EARLY drop={_rtc_drop:.1%}'
+    except Exception:
+        pass  # 实时体制覆盖异常，不阻断
+    # ── [ROOT-FIX-3 END] ─────────────────────────────────────────────────
+
     # ── [因果AI P0-A] Causal Regime Verifier ────────────────────
     # 设计院因果增强 v1.0 · 2026-06-18
     # 在 Step 2 方向确认前，验证当前体制的因果结构是否支持入场
