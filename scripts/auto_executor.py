@@ -300,6 +300,16 @@ def find_executable_signals() -> list[dict]:
         # ① 必须 valid=True
         if not s.get('valid'):
             continue
+        # ① SQE信号质量门控 [修复C4 2026-08-24] SQE导入后从未调用，现接入主路径
+        if _SQE_OK and _sqe_evaluate:
+            try:
+                _sqe_gate = _sqe_evaluate(s)
+                if _sqe_gate.rejected:
+                    pass  # [静默] SQE拒绝不推送，记录reason
+                    continue
+            except Exception:
+                pass  # SQE失败不阻断
+
         # ② 评分门槛
         score = float(s.get('score', 0) or 0)
         if score < AUTO_SCORE_THRESHOLD:
@@ -426,6 +436,7 @@ def find_executable_signals() -> list[dict]:
                 direction=s.get('direction') or s.get('signal_dir', ''),
                 fear_greed=_fg_fes,
                 regime=s.get('regime', ''),
+                sl_pct=float(s.get('sl_pct', 0) or 0),  # [修复C3 2026-08-24] SL三层分档需要sl_pct
             )
             if _ps_res_fes.get('allowed'):
                 _kelly_nav = (_ps_res_fes.get('pct', 0) or 0) / 100.0  # % → 小数
@@ -479,11 +490,26 @@ def find_executable_signals() -> list[dict]:
         # 在Kelly仓位确定后，叠加headroom回撤压缩系数
         try:
             from brahma_brain.position_sizer import apply_headroom as _apply_hr
+            import json as _hr_json, os as _hr_os
             _base_pct = s.get('_tier_nav_pct', 0.05)
+            _nav_cur_hr = float(account_info.get('totalMarginBalance', 0) or 0) if 'account_info' in dir() else 0
+            # [修复C5 2026-08-24] 从nav_peak.json读取真实历史最高NAV，而非nav*1.05
+            _nav_peak_hr = _nav_cur_hr * 1.05  # fallback
+            try:
+                _np_path = _hr_os.path.join(_hr_os.path.dirname(_hr_os.path.abspath(__file__)), '..', 'data', 'nav_peak.json')
+                if _hr_os.path.exists(_np_path):
+                    _np_data = _hr_json.load(open(_np_path))
+                    _np_peak = float(_np_data.get('peak', 0) or 0)
+                    # nav_peak.json可能是历史极值(如2029 USDT)，需要合理性检查
+                    # 若peak是当前nav的10倍以上，说明是历史异常数据，用fallback
+                    if _np_peak > 0 and _np_peak <= _nav_cur_hr * 10:
+                        _nav_peak_hr = _np_peak
+            except Exception:
+                pass
             _hr_result = _apply_hr(
                 base_pct=_base_pct,
-                nav_current=float(account_info.get('totalMarginBalance', 0) or 0) if 'account_info' in dir() else 0,
-                nav_peak=float(account_info.get('totalMarginBalance', 0) or 0) * 1.05 if 'account_info' in dir() else 0,
+                nav_current=_nav_cur_hr,
+                nav_peak=_nav_peak_hr,
                 open_positions_pct=sum(float(p.get('notional', 0) or 0) for p in (positions or [])) /
                                    max(float(account_info.get('totalMarginBalance', 1)), 1) if 'account_info' in dir() and 'positions' in dir() else 0.0,
             )
