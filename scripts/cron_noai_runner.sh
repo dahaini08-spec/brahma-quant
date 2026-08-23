@@ -455,6 +455,17 @@ print(r['removed'])
     fi
     ;;
 
+  auto-executor)
+    # [2026-08-23 苏摩自主决策] 纸面开单独立 cron，every 15m
+    # 解耦纸面开单与 rsi_watcher 事件触发的依赖关系
+    # 直接轮询 live_signal_log 里的 ENTER 信号，不管市场是否静默
+    OUT=$(cd "$BASE" && timeout 120 python3 scripts/auto_executor.py 2>&1 | tail -5)
+    RC=$?
+    if [ $RC -ne 0 ]; then
+        send_alert "⚠️ [auto-executor异常] RC=$RC $(echo "$OUT" | tail -2)"
+    fi
+    ;;
+
 *)
     log "未知任务: $TASK"
     exit 1
