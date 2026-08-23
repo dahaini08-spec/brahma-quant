@@ -218,10 +218,26 @@ def format_full_report(r: dict) -> str:
 
 
 def run_full_analysis(symbol: str):
-    """主入口：运行梵天分析并返回全能力报告"""
+    """
+    主入口：运行梵天分析并返回全能力报告
+    铁律：此函数是坐梵天分析的唯一入口，任何分析请求必须过此函数
+    禁止：API手工计算、人工挑选维度、站内近似输出
+    """
     from brahma_brain.brahma_analysis_runner import run_analysis
+    import time
+    ts_start = time.time()
     r = run_analysis(symbol)
-    return format_full_report(r), r
+    elapsed = round(time.time() - ts_start, 1)
+    # 注入数据来源标注（防止人工替代）
+    r['_data_source'] = f'brahma_analysis_runner.run_analysis() 耗时{elapsed}s 来源=梵天系统'
+    report = format_full_report(r)
+    # 在报告头部注入来源标注
+    source_line = f'  数据来源: run_analysis() 老{elapsed}s | 禁止人工替代 ✅'
+    report = report.replace(
+        f'  北京时间:',
+        f'{source_line}\n  北京时间:'
+    )
+    return report, r
 
 
 if __name__ == '__main__':
