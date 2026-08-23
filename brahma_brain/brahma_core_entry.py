@@ -547,6 +547,48 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
     except Exception as _ev4:
         pass  # [静默]
     # ── [END exit_params_v4] ─────────────────────────────────────────────────
+    # ── [P0 2026-08-23 苏摩111封印] BBW分档SL优化 ──────────────────────────
+    # 铁证：BULL_TREND震荡区 SL=swing_4h+atr4h×2.527 平均SL=2.0~2.5% RR<1.0
+    # 修复：按BBW（布林超带宽度）分场景精缩SL，提升RR通过率
+    # 档位S (BBW<1.0%)：SL缩紧至 0.8~1.4% → RR=1.0 可触发
+    # 档位B+ (BBW 1.0~2.0%)：现有逻辑 SL~2.0% → 不变
+    # 档位B- (BBW>2.0%)：标记tier，仓位层限制NAV至2%
+    try:
+        _bbw = 0
+        _bb_ms = ms.get('bb') or ms.get('momentum', {}).get('bb', {})
+        if isinstance(_bb_ms, dict):
+            _bbw = float(_bb_ms.get('width', 0) or 0)
+        _p0_regime = ms.get('regime', '')
+        if 'BULL' in _p0_regime and signal_dir == 'LONG' and _bbw > 0:
+            if _bbw < 0.010:  # BBW<1.0% → 档位S: 用近期1H OB下沿作止损
+                _ob_low = None
+                try:
+                    _bull_obs = (smc or {}).get('order_blocks', {}).get('bull_obs', [])
+                    if _bull_obs:
+                        _near_ob = min(_bull_obs, key=lambda x: x.get('dist_pct', 99))
+                        _ob_low = float(_near_ob.get('low', 0))
+                except Exception:
+                    pass
+                if _ob_low and entry_mid * 0.986 < _ob_low < entry_mid:
+                    _p0_new_risk = entry_mid - _ob_low
+                    _p0_sl_pct_val = _p0_new_risk / entry_mid * 100
+                    if 0.6 <= _p0_sl_pct_val <= 1.4:  # 档位S范围
+                        stop_loss = _ob_low
+                        risk = _p0_new_risk
+                        sl_pct = round(_p0_sl_pct_val, 2)
+                        tp1 = entry_mid + risk * 1.0
+                        tp2 = entry_mid + risk * 2.5
+                        rr1 = round(abs(tp1 - entry_mid) / max(risk, 1e-9), 2)
+                        rr2 = round(abs(tp2 - entry_mid) / max(risk, 1e-9), 2)
+                        sl_atr_mult = round(risk / max(atr_4h, 1e-9), 2)
+                        ms['_p0_bbw_tier'] = 'S'
+            if _bbw >= 0.020:
+                ms['_p0_bbw_tier'] = ms.get('_p0_bbw_tier', 'B-')
+            elif _bbw >= 0.010:
+                ms['_p0_bbw_tier'] = ms.get('_p0_bbw_tier', 'B+')
+    except Exception:
+        pass  # P0 BBW分档异常，不阻断
+    # ── [P0 END] ──────────────────────────────────────────────────────────
 
     # ══ [A: LIQ_MAP TP2 磁吸位优化 2026-07-20 苏摩111批准] ══════════════════
     # 逻辑：用爆仓密集带参与 TP2 确认，提升 TP2 触及率 0%→15%

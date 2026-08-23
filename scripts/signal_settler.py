@@ -59,6 +59,11 @@ def _get_klines_since(sym: str, since_ts: float, limit: int = 500) -> list:
     return [(int(k[0])/1000, float(k[2]), float(k[3]), float(k[4])) for k in data]
 
 
+# [ROOT-FIX-1 2026-08-23 苏摩111封印] 只结算真实执行信号
+# WATCH/SKIP/STANDBY信号不应被结算为SL，这是WR统计失真根因
+EXECUTABLE_ACTIONS = {'ENTER', 'ENTER_FULL', 'ENTER_WATCH'}
+
+
 def settle_signal(sig: dict, dry_run: bool = False) -> dict | None:
     """
     对单条信号进行结算判断。
@@ -73,9 +78,15 @@ def settle_signal(sig: dict, dry_run: bool = False) -> dict | None:
     sig_ts    = float(sig.get('ts') or 0)
     outcome   = sig.get('outcome')
     result    = sig.get('result', '')
+    action    = sig.get('action', '')
 
     if outcome in ('TP1', 'SL', 'TP2'):
         return None  # 已结算
+
+    # ROOT-FIX-1: 只结算 action in EXECUTABLE_ACTIONS 的真实执行信号
+    # WATCH/SKIP/STANDBY信号从未真正入场，不应计入WR统计
+    if action and not any(a in action for a in EXECUTABLE_ACTIONS):
+        return None  # 非执行信号，跳过结算
 
     if not sym or not sl or not tp1 or not sig_ts:
         return None  # 数据不完整
