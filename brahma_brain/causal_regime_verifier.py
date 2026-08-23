@@ -95,6 +95,29 @@ def verify(symbol: str,
                 adj_key = 'dead_zone_border'
                 verdict = 'WARN'
                 reason = f'边界体制豆免: {regime}+{signal_dir} RSI_4H={rsi_4h:.0f}⋈40~50，惩罚减半'
+            elif combo == ('BULL_TREND', 'SHORT') and ms:
+                # [P2 2026-08-23 苏摩111] BULL_TREND+SHORT 超买极端区豁免
+                # 条件：RSI_4H>73 + RSI_1D>72 + PD>82% → 升级为精准做空机会
+                try:
+                    _rsi_4h_p2 = float(ms.get('rsi_4h') or ms.get('RSI_4H') or 0)
+                    _rsi_1d_p2 = float(ms.get('rsi_1d') or ms.get('RSI_1D') or 0)
+                    _pd_pos_p2 = float(ms.get('pd_zone', {}).get('position', 0) if isinstance(ms.get('pd_zone'), dict) else 0)
+                    _p2_ok = (_rsi_4h_p2 > 73 and _rsi_1d_p2 > 72 and _pd_pos_p2 > 0.82)
+                    if _p2_ok:
+                        return {
+                            'verdict':      'WARN',
+                            'score_adj':    +5,
+                            'reason':       f'P2超买激活: BULL_TREND+SHORT RSI_4H={_rsi_4h_p2:.0f}>73 RSI_1D={_rsi_1d_p2:.0f}>72 PD={_pd_pos_p2:.2f}>0.82',
+                            'is_dead_zone': False,
+                            'p2_short':     True,
+                            '_pro_note':    'P2 2026-08-23 苏摩111封印',
+                        }
+                except Exception:
+                    pass
+                # 超买条件不满足 → 维持死穴-25
+                adj_key = 'dead_zone'
+                verdict = 'BLOCKED'
+                reason = f'死穴: {regime}+{signal_dir} 超买条件不满足 RSI_4H={rsi_4h:.0f}'
             else:
                 # RSI_4H<40：真正熊市中段，保持死穴
                 adj_key = 'dead_zone'
@@ -132,6 +155,35 @@ def verify(symbol: str,
                 'is_dead_zone': False,
                 '_pro_note':    'Pro版含statsmodels因果检验(conf>0.32)',
             }
+
+        # [P2 2026-08-23 苏摩111封印] 超买极端区精准做空激活通道
+        # 铁证：BULL_TREND做空 score=54.9 距门槛120差65分
+        # 根因：regime_mult=0.5 + CausalVerifier-12 = 永久关闭
+        # 修复：三重超买条件同时满足时 CausalVerifier从-12升级为+5
+        # 激活条件（全部满足）：
+        #   1. RSI_4H > 73（超买区）
+        #   2. RSI_1D > 72（日线超买）
+        #   3. PD区=PREMIUM>82%（溢价区，机构倒货带）
+        # 设计意图：不开放常规做空，只在超买极端区触发
+        if is_adverse and signal_dir == 'SHORT' and ('BULL' in regime) and ms:
+            try:
+                _rsi_4h  = float(ms.get('rsi_4h') or ms.get('RSI_4H') or 0)
+                _rsi_1d  = float(ms.get('rsi_1d') or ms.get('RSI_1D') or 0)
+                # PD区位置：0~1，>0.82=溢价区
+                _pd_pos = float(ms.get('pd_zone', {}).get('position', 0) if isinstance(ms.get('pd_zone'), dict) else 0)
+                _p2_activated = (_rsi_4h > 73 and _rsi_1d > 72 and _pd_pos > 0.82)
+                if _p2_activated:
+                    return {
+                        'verdict':      'WARN',
+                        'score_adj':    +5,  # 从-12翻转+5，净提升+17分
+                        'reason':       f'P2超买激活: {regime}+SHORT RSI_4H={_rsi_4h:.0f}>73 RSI_1D={_rsi_1d:.0f}>72 PD={_pd_pos:.2f}>0.82',
+                        'is_dead_zone': False,
+                        'p2_short':     True,
+                        '_pro_note':    'P2 2026-08-23 苏摩111封印',
+                    }
+            except Exception:
+                pass  # P2异常不阻断主流程
+        # [P2 END]
 
         # 中性（CHOP等）
         return {
