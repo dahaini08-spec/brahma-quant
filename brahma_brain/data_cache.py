@@ -564,7 +564,7 @@ def get_lsr_okx(symbol: str) -> dict:
     if cached is not None:
         return cached
     try:
-        url = f'{_OKX_BASE}/api/v5/rubik/stat/contracts/long-short-account-ratio?instId={inst_id}&period=1H'
+        url = f'{_OKX_BASE}/api/v5/rubik/stat/contracts/long-short-account-ratio-contract-top-trader?instId={inst_id}&period=5m&limit=1'
         data = _get(url)
         if data and data.get('data'):
             item = data['data'][0]
