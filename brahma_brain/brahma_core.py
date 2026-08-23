@@ -3427,6 +3427,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _kb_lite_score = _s23 if '_s23' in dir() else None
         _kb_lite_p_up  = _p_up_raw if '_p_up_raw' in dir() else None
         _kb_klines     = _kl15m if '_kl15m' in dir() and _kl15m else []
+        # [2026-08-23 苏摩111] 格式转换：market_state传dict格式，kronos_bridge需list格式
+        # dict格式: {'o','h','l','c','v','t'} → list格式: [ts,open,high,low,close,vol]
+        if _kb_klines and isinstance(_kb_klines[0], dict):
+            _kb_klines = [[k.get('t',0),k.get('o',0),k.get('h',0),k.get('l',0),k.get('c',0),k.get('v',0)] for k in _kb_klines]
         if _kb_klines and len(_kb_klines) >= 32:
             _kb_score, _kb_meta = _kb_fn(
                 klines_15m = _kb_klines,
