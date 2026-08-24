@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: macro_ai_bridge 305行，有意为之，重构前先 grep 所有调用方
 """
 macro_ai_bridge.py — AI Pro宏观感知层 → brahma_bus注入
 三方联合落地 矿脉3 | 设计院自主执行 2026-08-07

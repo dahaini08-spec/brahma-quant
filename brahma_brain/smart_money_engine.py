@@ -23,7 +23,6 @@ smart_money_engine.py — 聪明钱流向分析引擎
 # ║ Call Freq : 随brahma_core评分，2分钟缓存
 # ║ Deps      : requests(fapi futures/data)
 # ╚════════════════════════════════════════════════════════════════╝
-import requests
 try:
     from brahma_bus import _SESS as _HTTP  # [HTTP Session共享 2026-08-02 设计院自主]
 except ImportError:

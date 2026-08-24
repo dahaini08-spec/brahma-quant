@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: ai_pro_screener 302行，有意为之，重构前先 grep 所有调用方
 """
 ai_pro_screener.py — AI Pro选币层 → universal_asset_router候选输入
 三方联合落地 矿脉5 | 设计院自主执行 2026-08-07

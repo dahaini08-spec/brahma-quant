@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: brahma_learning_loop 321行，有意为之，重构前先 grep 所有调用方
 """
 brahma_learning_loop.py — 梵天学习闭环引擎 v1.0
 设计院六方联合封印 2026-07-13 · 苏摩111授权

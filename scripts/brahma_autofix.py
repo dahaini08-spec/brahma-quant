@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: brahma_autofix 385行，有意为之，重构前先 grep 所有调用方
 """
 brahma_autofix.py — 梵天自动化自检修复脚本
 [设计院封印 2026-08-14 苏摩111]

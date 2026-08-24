@@ -1,3 +1,4 @@
+# ponytail: formatter 1247行，输出格式化，历史积累，新格式在尾部追加
 """
 brahma_brain/formatter.py — 分析报告格式化模块
 职责：单一。输入analyze()结果dict → 输出人类可读报告字符串

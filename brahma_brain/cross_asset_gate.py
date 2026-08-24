@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: cross_asset_gate 348行，有意为之，重构前先 grep 所有调用方
 """
 cross_asset_gate.py — 梵天跨资产联合推理门控 v1.0
 设计院 · 苏摩111批准 · 2026-07-23

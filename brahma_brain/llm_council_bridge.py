@@ -1,3 +1,4 @@
+# ponytail: llm_council_bridge 706行，有意为之，重构前先 grep 所有调用方
 """
 llm_council_bridge.py — 梵天 LLM 议会二次审查层 v1.0
 ═══════════════════════════════════════════════════════

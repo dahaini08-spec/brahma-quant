@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: circuit_breaker 359行，有意为之，重构前先 grep 所有调用方
 """
 circuit_breaker.py — 梵天全链路熔断器
 设计院封印 2026-07-02 Phase 1

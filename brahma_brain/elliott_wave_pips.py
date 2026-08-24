@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: elliott_wave_pips 463行，有意为之，重构前先 grep 所有调用方
 """
 阶段2-② Elliott Wave PIPs扩展模块
 =====================================

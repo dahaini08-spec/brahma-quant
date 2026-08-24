@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: brahma_ci 484行，有意为之，重构前先 grep 所有调用方
 # STATUS: AUXILIARY — 独立工具模块，不接入主链路 [设计院 2026-07-26]
 """
 brahma_ci.py — 梵天持续集成 · 主动探针系统

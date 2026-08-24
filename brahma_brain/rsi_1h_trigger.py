@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: rsi_1h_trigger 302行，有意为之，重构前先 grep 所有调用方
 """
 rsi_1h_trigger.py · 梵天1H RSI触发层 v1.0
 设计院封印 2026-08-21 苏摩111

@@ -1,3 +1,4 @@
+# ponytail: fangcang_vector_db 391行，有意为之，重构前先 grep 所有调用方
 """
 fangcang_vector_db.py — 方仓案例向量检索库 v1.0
 设计院封印 2026-08-09 苏摩111

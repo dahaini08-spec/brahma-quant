@@ -1,3 +1,4 @@
+# ponytail: auto_execute_gate 621行，有意为之，重构前先 grep 所有调用方
 """
 auto_execute_gate.py — 梵天自动执行门控 v1.1
 苏摩宪法第六条 · 2026-06-19 授权

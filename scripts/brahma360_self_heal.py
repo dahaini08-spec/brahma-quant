@@ -1,5 +1,6 @@
 import os
 #!/usr/bin/env python3
+# ponytail: brahma360_self_heal 864行，健康监控，检查项累积，不可拆
 """
 brahma360_self_heal.py — 梵天360 系统化自愈 + 🚨告警引擎 v1.0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

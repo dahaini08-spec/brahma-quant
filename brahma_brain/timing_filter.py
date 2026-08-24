@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: timing_filter 348行，有意为之，重构前先 grep 所有调用方
 """
 timing_filter.py — 梵天时机过滤器
 Brahma-Quant Open Source v3.0 | 设计院封印 2026-07-02

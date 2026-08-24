@@ -1,3 +1,4 @@
+# ponytail: sl_bandit 383行，有意为之，重构前先 grep 所有调用方
 """
 sl_bandit.py — 梵天 SL自适应Bandit引擎
 设计院 2026-08-06 | 苏摩111封印

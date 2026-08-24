@@ -1,3 +1,4 @@
+# ponytail: divergence_engine 746行，独立计算引擎，功能内聚，拆分条件: 单引擎>3000行且有完整测试
 """
 from brahma_brain.math_utils import calc_rsi, ema  # 统一标量版 v1.0 (calc_rsi_series = 序列版，仅本文件使用)
 

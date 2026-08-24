@@ -1,3 +1,4 @@
+# ponytail: tradfi_router 365行，有意为之，重构前先 grep 所有调用方
 """
 tradfi_router.py — TradFi三类品种路由器
 [设计院封印 2026-08-14 苏摩111]

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: brahma_1hao_analysis 1765行，分析流程，上下文依赖深，拆分条件: 端到端测试覆盖>80%
 # [2026-08-18 苏摩封印] OpenBLAS/OMP线程锁死 — 必须在所有import之前
 import os as _os_blas
 _os_blas.environ.setdefault('OPENBLAS_NUM_THREADS', '1')

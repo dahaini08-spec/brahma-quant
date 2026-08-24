@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: volume_exhaustion_engine 371行，独立计算引擎，功能内聚，拆分条件: 单引擎>3000行且有完整测试
 """
 ╔══════════════════════════════════════════════════════════════════╗
 ║  梵天大脑 · volume_exhaustion_engine.py                          ║

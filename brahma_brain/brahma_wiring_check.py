@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: brahma_wiring_check 517行，有意为之，重构前先 grep 所有调用方
 """
 brahma_wiring_check.py — 梵天接线完整性检测器
 设计院封印 2026-08-09 苏摩111

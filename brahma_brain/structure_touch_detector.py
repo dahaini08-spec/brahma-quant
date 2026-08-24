@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: structure_touch_detector 397行，有意为之，重构前先 grep 所有调用方
 """
 structure_touch_detector.py — 结构触碰事件检测器 v1.0
 设计院封印 2026-08-15 苏摩111

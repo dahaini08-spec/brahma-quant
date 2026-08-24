@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: brahma_full_report 330行，有意为之，重构前先 grep 所有调用方
 """
 brahma_full_report.py — 梵天全能力标准输出函数 v2.0
 设计院 2026-08-23 苏摩111封印（全字段版）

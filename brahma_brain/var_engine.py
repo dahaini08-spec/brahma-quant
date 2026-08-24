@@ -9,7 +9,6 @@ var_engine.py — VaR单仓风险量化引擎
 数据源：历史波动率（基于Binance K线）
 """
 
-import requests
 try:
     from brahma_bus import _SESS as _HTTP  # [HTTP Session共享 2026-08-02 设计院自主]
 except ImportError:

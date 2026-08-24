@@ -1,3 +1,4 @@
+# ponytail: market_state 777行，有意为之，重构前先 grep 所有调用方
 """
 market_state.py · 市场状态引擎
 brahma_brain · Phase 1

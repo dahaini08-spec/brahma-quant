@@ -1,3 +1,4 @@
+# ponytail: tradfi_dump_detector 758行，有意为之，重构前先 grep 所有调用方
 """
 tradfi_dump_detector.py — 美股代币放量下跌识别引擎
 设计院封印 · 2026-07-28 · 苏摩111批准

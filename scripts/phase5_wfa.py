@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: phase5_wfa 318行，有意为之，重构前先 grep 所有调用方
 """
 梵天阶段5：Walk-Forward 体制分层滚动验证
 """

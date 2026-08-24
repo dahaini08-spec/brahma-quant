@@ -1,5 +1,6 @@
 import os
 #!/usr/bin/env python3
+# ponytail: auto_position_manager 439行，有意为之，重构前先 grep 所有调用方
 """
 auto_position_manager.py — 梵天自动仓位管理器
 设计院 · 苏摩111 · 2026-07-01

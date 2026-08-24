@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: oi_advanced_scanner 1148行，有意为之，重构前先 grep 所有调用方
 """
 OI高级扫描器 v3.0 — 设计院全局深度完善
 2026-07-10 苏摩111授权

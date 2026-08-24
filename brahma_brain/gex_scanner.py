@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: gex_scanner 516行，有意为之，重构前先 grep 所有调用方
 """
 brahma_brain/gex_scanner.py — GEX自动计算引擎
 设计院·苏摩111 2026-06-30

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: regime_bus 377行，有意为之，重构前先 grep 所有调用方
 """
 regime_bus.py — 梵天体制总线 v2.0（方案C：双层架构）
 设计院自主升级 | 2026-08-05 苏摩111授权

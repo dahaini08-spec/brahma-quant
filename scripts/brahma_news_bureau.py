@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: brahma_news_bureau 383行，有意为之，重构前先 grep 所有调用方
 """
 brahma_news_bureau.py — 梵天新闻局统一调度器 v1.0
 [设计院封印 2026-08-14 苏摩111]

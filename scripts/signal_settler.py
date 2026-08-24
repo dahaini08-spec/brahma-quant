@@ -1,3 +1,4 @@
+# ponytail: signal_settler 491行，有意为之，重构前先 grep 所有调用方
 """
 signal_settler.py — 梵天WR反馈闭环结算器
 设计院 2026-08-01 自主创建（autoresearch P0层）

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: weekly_monthly_anchor 319行，有意为之，重构前先 grep 所有调用方
 """
 阶段2-① 周线/月线大周期锚定模块
 =====================================

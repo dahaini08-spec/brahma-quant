@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: liq_scanner 387行，有意为之，重构前先 grep 所有调用方
 """
 
 # STATUS: ACTIVE

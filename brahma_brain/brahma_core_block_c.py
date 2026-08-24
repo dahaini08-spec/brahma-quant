@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: brahma_core_block_c 458行，核心计算，35维共享_result状态，拆分条件: 状态隔离方案成熟后
 """
 brahma_core_block_c.py — 高级信号层 (维度11-19 + s_research)
 [设计院封印 2026-08-11 苏摩111]

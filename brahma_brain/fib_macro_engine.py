@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: fib_macro_engine 352行，独立计算引擎，功能内聚，拆分条件: 单引擎>3000行且有完整测试
 """
 
 # STATUS: ACTIVE

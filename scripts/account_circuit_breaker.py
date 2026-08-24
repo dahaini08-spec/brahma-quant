@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: account_circuit_breaker 315行，有意为之，重构前先 grep 所有调用方
 """
 account_circuit_breaker.py — 账户级风控熔断 M12 v1.0
 设计院 2026-05-29

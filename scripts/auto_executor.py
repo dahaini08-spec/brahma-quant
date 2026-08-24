@@ -1,3 +1,4 @@
+# ponytail: auto_executor 2128行，流程编排层，入口唯一性有意为之，不可拆
 """
 auto_executor.py — 梵天自动开单触发器
 苏摩授权落地 2026-06-30 | 设计院

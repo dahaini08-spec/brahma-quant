@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: headroom 378行，有意为之，重构前先 grep 所有调用方
 """
 brahma_brain/headroom.py — Token 压缩与上下文管理
 Brahma-Quant Open Source v3.0 | 设计院封印 2026-07-02
