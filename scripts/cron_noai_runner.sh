@@ -14,8 +14,9 @@ if [ "$FREE_MB" -lt "$MIN_FREE_MB" ]; then
     exit 0
 fi
 
-# 设置ulimit防止单进程OOM
-ulimit -v $((2 * 1024 * 1024))  # 2GB虚拟内存上限
+# 设置ulimit防止单进程OOM（容器内RLIMIT_AS有效）
+ulimit -v $((1536 * 1024))  # 1.5GB虚拟内存上限，防止单进程OOM
+export PYTHONFAULTHANDLER=0  # 禁用core dump节省磁盘
 
 cd "$SCRIPT_DIR"
 exec "$@"
