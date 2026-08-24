@@ -262,24 +262,33 @@ def _run_sqe(r: dict) -> dict:
 
 def run_full_analysis(symbol: str):
     """
-    主入口：运行梵天分析并返回全能力报告
-    铁律：此函数是坐梵天分析的唯一入口，任何分析请求必须过此函数
-    禁止：API手工计算、人工挑选维度、站内近似输出
+    主入口：运行梵天1号工程全能力报告
+    [封印 2026-08-24 苏摩最高封印]
+    全能力 = brahma_1hao_analysis.run_analysis()
+    包含：35维评分 + SMC/FVG/OB + 清算地图 + MTF五周期 + 决策树5步漏斗 + 方仓铁证
+    返回: (report_str, r_dict) — report给人看，r给机器读
     """
-    from brahma_brain.brahma_analysis_runner import run_analysis
-    import time
-    ts_start = time.time()
-    r = run_analysis(symbol)
-    elapsed = round(time.time() - ts_start, 1)
-    # 注入数据来源标注（防止人工替代）
-    r['_data_source'] = f'brahma_analysis_runner.run_analysis() 耗时{elapsed}s 来源=梵天系统'
-    report = format_full_report(r)
-    # 在报告头部注入来源标注
-    source_line = f'  数据来源: run_analysis() 老{elapsed}s | 禁止人工替代 ✅'
-    report = report.replace(
-        f'  北京时间:',
-        f'{source_line}\n  北京时间:'
-    )
+    import sys as _sys_rfа, os as _os_rfа, time as _time_rfа
+    _sd = _os_rfа.path.join(_os_rfа.path.dirname(_os_rfа.path.abspath(__file__)), '..', 'scripts')
+    if _sd not in _sys_rfа.path:
+        _sys_rfа.path.insert(0, _sd)
+    ts0 = _time_rfа.time()
+    # Step1: 调用1号工程完整报告（包含所有层）
+    try:
+        from brahma_1hao_analysis import run_analysis as _1hao_main
+        report = _1hao_main(symbol)
+    except Exception as _e1:
+        report = f"[1号工程调用失败: {_e1}]"
+    # Step2: 同时拿到r对象供机器读取（直接用runner，不重新调用1hao）
+    r = {}
+    try:
+        from brahma_brain.brahma_analysis_runner import run_analysis as _runner
+        r = _runner(symbol)
+        r['_data_source'] = f'1hao+runner 耗时{_time_rfа.time()-ts0:.1f}s'
+    except Exception as _e2:
+        r = {'_error': str(_e2)}
+
+
     return report, r
 
 
