@@ -40,7 +40,7 @@ try:
 except Exception:
     _ENHANCED_OK = False
 try:
-    from harmonic_engine import harmonic_score as _harmonic_score
+    from pattern_engine import pattern_score as _harmonic_score
     _HARMONIC_OK = True
 except Exception:
     _HARMONIC_OK = False
@@ -72,12 +72,12 @@ try:
 except Exception:
     _MULTITF_DIV_OK = False
 try:
-    from cross_asset_engine import cross_asset_score as _cross_score
+    from cross_market_engine import cross_market_score as _cross_score
     _CROSS_OK = True
 except Exception:
     _CROSS_OK = False
 try:
-    from microstructure_engine import micro_score as _micro_score
+    from microstructure_engine import microstructure_score as _micro_score
     _MICRO_OK = True
 except Exception:
     _MICRO_OK = False
@@ -303,6 +303,11 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     # P0-NEW: 谐波形态引擎（4H + 日线双重扫描）
     try:
         if _HARMONIC_OK:
+            h_res = {}  # [修复 2026-08-24] h_res未初始化导致NameError
+            # 先用4H数据扫描
+            k4h = klines_to_ohlcv(get_klines(symbol, '4h', 60))
+            if k4h and len(k4h.get('h',[])) >= 20:
+                h_res = _harmonic_score(k4h['h'], k4h['l'], k4h['c'], signal_dir)
             # 若4H无结果，降级用日线数据扫描
             if not h_res.get('patterns'):
                 _k1d = klines_to_ohlcv(get_klines(symbol, '1d', 60))
@@ -311,6 +316,17 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
                     if h_res_1d.get('score', 0) > 0:
                         h_res_1d['timeframe'] = '1d'
                         h_res = h_res_1d
+            # [修复 2026-08-24 v2] pattern_score的best是字符串，block_b期望dict
+            if h_res and isinstance(h_res, dict):
+                _best_raw = h_res.get('best')
+                _pats = h_res.get('patterns', [])
+                if not isinstance(_best_raw, dict):
+                    _pat_name = _best_raw if isinstance(_best_raw, str) else (_pats[0] if _pats else '')
+                    h_res['best'] = {
+                        'direction': signal_dir,
+                        'in_prz': bool(_pat_name),
+                        'pattern': _pat_name,
+                    } if _pat_name else None
             extra_data['harmonic'] = h_res
             if h_res.get('score', 0) > 0:
                 pass  # [静默] f'[HarmonicEngine] {symbol} {signal_dir}: {h_res.get("patterns",[])} score={h_re
@@ -364,7 +380,7 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     # P2-NEW: 跨市场引擎（BTC-ETH相关/DXY/风险偏好）
     try:
         if _CROSS_OK:
-            cx_res = _cross_market_score(symbol, signal_dir)
+            cx_res = _cross_score(symbol, signal_dir)
             extra_data['cross_market'] = cx_res
     except Exception as _e:
         extra_data['cross_err'] = str(_e)
