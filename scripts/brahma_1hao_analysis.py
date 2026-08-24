@@ -60,6 +60,11 @@ if _BRAHMA_BRAIN_PATH not in sys.path:
     sys.path.insert(0, _BRAHMA_BRAIN_PATH)
 
 from brahma_brain.brahma_engine import analyze
+try:
+    from brahma_brain.brahma_analysis_runner import run_analysis as _runner_run_analysis
+    _RUNNER_OK = True
+except Exception:
+    _RUNNER_OK = False
 from datetime import datetime, timezone
 try:
     from config import fmt_beijing
@@ -404,29 +409,19 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
             pass
     except Exception:
         pass
-    # [P0-FIX 2026-08-15 苏摩111] Kronos预加载：cache→full
-    # [D6修复 2026-08-17 苏摩111] sys.path.insert移出try块，避免并行race condition
-    import sys as _ke_sys, os as _ke_os
-    _ke_brain_path = _ke_os.path.join(_ke_os.path.dirname(__file__), '..', 'brahma_brain')
-    if _ke_brain_path not in _ke_sys.path:
-        _ke_sys.path.insert(0, _ke_brain_path)
-    try:
-        import kronos_engine as _ke
-        if not _ke._model_loaded:
-            _ke._load_model()
-    except Exception:
-        pass  # fail-safe: Kronos不可用时降级cache，不阻断主流程
-
+    # [Ponytail P2 2026-08-24] 改为内部调用 brahma_analysis_runner.run_analysis()
+    # 原因：runner 包含 Kronos预热/缓存复用/体制感知方向预注入/params展平，消除重复逻辑
     t0 = time.time()
-    r = analyze(symbol, signal_dir=direction, deep=True)
+    if _RUNNER_OK:
+        r = _runner_run_analysis(symbol, signal_dir=direction, deep=True)
+    else:
+        # fallback: 降级到直接调用 analyze()
+        r = analyze(symbol, signal_dir=direction, deep=True)
+        _p = r.get('params', {}) or {}
+        for _k in ['entry_lo','entry_hi','sl','tp1','tp2','rr','rr1','sl_pct','stop_loss']:
+            if not r.get(_k) and _p.get(_k):
+                r[_k] = _p[_k]
     elapsed = round(time.time() - t0, 1)
-
-    # [设计院 2026-07-20] params展平修复：entry_lo/entry_hi在r['params']子dict里
-    # brahma_1hao_analysis直接调用analyze()绕过了brahma_analysis_runner的展平逻辑
-    _p = r.get('params', {}) or {}
-    for _k in ['entry_lo','entry_hi','sl','tp1','tp2','rr','rr1','sl_pct','stop_loss']:
-        if not r.get(_k) and _p.get(_k):
-            r[_k] = _p[_k]
 
     cf = r.get('confluence', {})
     bd = cf.get('breakdown', {}) if isinstance(cf, dict) else {}
