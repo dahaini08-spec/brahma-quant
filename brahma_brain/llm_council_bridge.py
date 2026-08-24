@@ -341,6 +341,11 @@ def _macro_agent_review(signal: Dict, market_ctx: Dict) -> Dict:
     result = _call_llm(prompt, 'MacroAgent', model='standard')  # 宏观视角 Qwen [多模型 2026-08-15 苏摩111]
     if result:
         result['source'] = 'llm'
+        # [P1修复 2026-08-24 苏摩111] 字段归一化：LLM可能返回不同字段名
+        if 'macro_bias' not in result:
+            result['macro_bias'] = result.get('macro_trend', result.get('market_bias', 'NEUTRAL'))
+        if 'key_factor' not in result:
+            result['key_factor'] = result.get('key_event', result.get('key_reason', ''))
         return result
 
     return {'score_adj': 0, 'macro_bias': 'NEUTRAL',
@@ -369,7 +374,10 @@ def review(
         dict: 原始signal_result + 新增字段:
               'llm_council': {risk, macro, final_adj, shadow_log}
     """
-    score  = float(signal_result.get('confluence', {}).get('score', 0)
+    # [P0修复 2026-08-24 苏摩111] 根因：confluence.score=原始分(~123)，LLM Council永远不触发
+    # 正确应读 score_final（体制乘数加权后），才与 SCORE_TRIGGER=140 可比
+    score  = float(signal_result.get('score_final', 0)
+                   or signal_result.get('confluence', {}).get('score', 0)
                    or signal_result.get('score', 0))
     symbol = signal_result.get('symbol', 'UNKNOWN')
     regime = signal_result.get('regime', 'UNKNOWN')
