@@ -173,17 +173,20 @@ def write_output(results: list[dict]):
             except Exception:
                 pass
 
-    # 合并+去重（按source+ts截断到小时去重）
-    combined = existing + results
+    # 合并+去重（按URL去重，相同URL不重复写入）
+    existing_urls = {e.get('url','') for e in existing if e.get('url')}
+    new_results = [r for r in results if r.get('url','') not in existing_urls]
+    combined = existing + new_results
     # 保留最近MAX_LINES条
     combined = combined[-MAX_LINES:]
+    new_count = len(new_results)
 
     OUTPUT_FILE.write_text('\n'.join(json.dumps(e, ensure_ascii=False) for e in combined) + '\n')
     # 更新水位线：记录本次最新ts，下次只推更新内容
     new_ts = max((e.get('ts', 0) for e in results), default=0)
     if new_ts:
         WATERMARK_FILE.write_text(json.dumps({'last_ts': new_ts, 'last_sources': [e['source'] for e in results]}))
-    print(f"[OK] 写入 {OUTPUT_FILE}，共 {len(combined)} 条（新增 {len(results)} 条，水位线={new_ts})")
+    print(f"[OK] 写入 {OUTPUT_FILE}，共 {len(combined)} 条（新增 {new_count} 条，水位线={new_ts})")
 
 
 def main():
