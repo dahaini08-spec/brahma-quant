@@ -123,16 +123,8 @@ try:
 except Exception:
     _PORTFOLIO_OK = False
 
-# brahma_health: 健康检查（run_batch完成后触发轻量健康ping）
-try:
-    from brahma_health import _check_and_gc as _health_gc
-    _HEALTH_OK = True
-except Exception:
-    try:
-        from brahma360_guardian import check_v16_v17_modules as _health_v16
-        _HEALTH_OK = True
-    except Exception:
-        _HEALTH_OK = False
+# brahma_health GC: _check_and_gc已移至signal_watcher/brahma360_guardian，此处静默跳过
+_HEALTH_OK = False
 
 # market_structure_scanner: 高分信号补充SMC结构扫描
 try:
