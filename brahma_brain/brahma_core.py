@@ -3741,19 +3741,20 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         import sys as _sys_sp
         if _sp_dir not in _sys_sp.path: _sys_sp.path.insert(0, _sp_dir)
         from s27_gap_bounce_frd import s27_gap_up, s28_bounce_setup, s29_first_red_day
-        _sp_k1h  = _result.get('_klines_1h', [])
-        _sp_k4h  = _result.get('_klines_4h', [])
+        _sp_k1h  = _result.get('_klines_1h') or (extra_data or {}).get('_klines_1h') or []
+        _sp_k4h  = _result.get('_klines_4h') or (extra_data or {}).get('_klines_4h') or []
         _sp_reg  = _result.get('regime', '')
         _sp_sym  = _result.get('symbol', _sym)
         _s27 = s27_gap_up(_sp_sym, _sp_k1h, _sp_reg) if _sp_k1h else 0
         _s28 = s28_bounce_setup(_sp_sym, _sp_k1h, _sp_k4h, _sp_reg) if _sp_k1h else 0
         _s29 = s29_first_red_day(_sp_sym, _sp_k1h, _sp_reg) if _sp_k1h else 0
         _sp_total = _s27 + _s28 + _s29
+        # 始终写入_result供full_report渲染（即使全0）
+        _result['s27_gap_up']       = _s27
+        _result['s28_bounce_setup'] = _s28
+        _result['s29_first_red_day']= _s29
         if _sp_total != 0:
             _result['score_final'] = (_result.get('score_final') or 0) + _sp_total
-            _result['s27_gap_up']       = _s27
-            _result['s28_bounce_setup'] = _s28
-            _result['s29_first_red_day']= _s29
             print(f'[s27-29] {_sp_sym} gap={_s27:+d} bounce={_s28:+d} frd={_s29:+d} total={_sp_total:+d}')
     except Exception as _esp:
         pass  # 统计模式维度不影响主评分

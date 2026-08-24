@@ -197,6 +197,17 @@ def format_full_report(r: dict) -> str:
     _p4v = (r.get('confluence') or {}).get('breakdown', {}).get('P4三周期共振') or bd.get('P4_三周期共振') or bd.get('P4三周期共振')
     lines.append(_row('P4三周期共振', _p4v))
     lines.append(_row('时段权重', bd.get('时段权重')))
+    # s27/s28/s29 统计模式维度
+    _s27v = r.get('s27_gap_up')
+    _s28v = r.get('s28_bounce_setup')
+    _s29v = r.get('s29_first_red_day')
+    _s27d = _s27v if _s27v is not None else 0
+    _s28d = _s28v if _s28v is not None else 0
+    _s29d = _s29v if _s29v is not None else 0
+    lines.append(_row('s27_GapUp', f"{_s27d:+d}"))
+    lines.append(_row('s28_Bounce', f"{_s28d:+d}"))
+    lines.append(_row('s29_FRD', f"{_s29d:+d}"))
+    lines.append(_row('s27~29_合计', f"{_s27d+_s28d+_s29d:+d}"))
 
     # ══ 方仓概率矩阵 ══
     lines.append('【方仓概率矩阵】')
@@ -288,6 +299,18 @@ def run_full_analysis(symbol: str):
     except Exception as _e2:
         r = {'_error': str(_e2)}
 
+    # 将s27~29追加到report末尾（始终显示，0=未触发）
+    try:
+        _s27r = r.get('s27_gap_up', 0) or 0
+        _s28r = r.get('s28_bounce_setup', 0) or 0
+        _s29r = r.get('s29_first_red_day', 0) or 0
+        _stat_line = (
+            f'\n  s27_GapUp={_s27r:+d}  s28_Bounce={_s28r:+d}  '
+            f's29_FRD={_s29r:+d}  统计模式合计={_s27r+_s28r+_s29r:+d}'
+        )
+        report = report + _stat_line
+    except Exception:
+        pass
 
     return report, r
 
