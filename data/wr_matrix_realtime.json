@@ -207,5 +207,19 @@
     "ev": 0.0,
     "rebuilt_at": "2026-08-19T23:02:32Z",
     "source": "live_signal_log_rebuild_20260811"
+  },
+  "paper_realtime:BEAR_EARLY:SHORT": {
+    "wr": 0.8077,
+    "n": 52,
+    "avg_pnl": 2.3151,
+    "source": "wuqu_paper_settled",
+    "updated": "2026-08-24"
+  },
+  "paper_realtime:CHOP_LOW:SHORT": {
+    "wr": 1.0,
+    "n": 6,
+    "avg_pnl": 3.5618,
+    "source": "wuqu_paper_settled",
+    "updated": "2026-08-24"
   }
 }
