@@ -62,12 +62,12 @@ except Exception:
 # [修复 2026-08-12 苏摩111] _*_OK 标志位 — Block拆分后step4无法读brahma_core模块级变量
 # 在step4里独立做import检测，与brahma_core.py L79-L111逻辑完全对称
 try:
-    from volume_exhaust_engine import vol_exhaust_score as _vol_exhaust_score
+    from volume_exhaustion_engine import volume_exhaustion_score as _vol_exhaust_score
     _VOL_EXH_OK = True
 except Exception:
     _VOL_EXH_OK = False
 try:
-    from multitf_div_engine import multitf_div_score as _multitf_div_score
+    from divergence_engine import multitf_divergence_score as _multitf_div_score
     _MULTITF_DIV_OK = True
 except Exception:
     _MULTITF_DIV_OK = False
@@ -422,7 +422,7 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     # VOL-EXH: 量能衰竭引擎（底部识别核心）
     try:
         if _VOL_EXH_OK and k1h and len(k1h.get('c',[])) >= 20:
-            _v_res = _vol_exh_score(
+            _v_res = _vol_exhaust_score(
                 k1h['h'], k1h['l'], k1h.get('o', k1h['c']),
                 k1h['c'], k1h.get('v', []), signal_dir
             )
