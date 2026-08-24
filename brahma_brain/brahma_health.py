@@ -21,7 +21,12 @@ brahma_health.py — 梵天统一健康指标收集层
 # ║ Call Freq : cron每2H，或手动触发
 # ║ Deps      : requests(fapi) + 本地文件
 # ╚════════════════════════════════════════════════════════════════╝
-from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
+try:
+    from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
+except ImportError:
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
 import time
 import traceback
 import importlib
