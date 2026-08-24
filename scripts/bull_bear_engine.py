@@ -32,9 +32,14 @@ def _klines(sym: str, interval: str, limit: int = 50):
     return c, h, l, v
 
 def _rsi(c, n=14):
-
-    # [INT-1] 统一实现已移至 math_utils.rsi，此函数保留兼容
-    # [FIX-RSI-WILDER 2026-06-14] 统一Wilder EMA算法，与market_state.rsi对齐
+    """RSI — 委托math_utils [2026-08-24 设计院精简]"""
+    try:
+        import sys, os
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'brahma_brain'))
+        from math_utils import calc_rsi as _mu
+        return round(_mu(c, n), 1)
+    except Exception:
+        pass
     if len(c) < n + 1: return 50.0
     g = [max(c[i]-c[i-1], 0) for i in range(1, len(c))]
     lo = [max(c[i-1]-c[i], 0) for i in range(1, len(c))]

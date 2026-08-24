@@ -18,6 +18,14 @@ sys.path.insert(0, str(BASE))
 
 
 def _ema(values, n):
+    """EMA scalar — 委托math_utils [2026-08-24 设计院精简]"""
+    try:
+        import sys, os
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'brahma_brain'))
+        from math_utils import ema as _mu
+        return _mu(values, n)
+    except Exception:
+        pass
     if not values: return 0
     e = values[0]; k = 2 / (n + 1)
     for v in values[1:]: e = v * k + e * (1 - k)
