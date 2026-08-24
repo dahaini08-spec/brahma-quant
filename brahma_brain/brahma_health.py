@@ -393,6 +393,20 @@ def run_health_check(
         checks['brahma_bus']      = _check_brahma_bus()
         checks['external_routes'] = _check_external_routes()
         checks['ws_guardian']      = _check_ws_guardian()  # [P1-2 2026-07-23]
+        checks['standby_violations'] = _check_standby_violations_health()  # [合并 2026-08-24]
+
+    # 追加检查（原monkey-patch层，2026-08-24 合并到主函数）
+    checks['log_health']           = _check_log_health()
+    checks['module_contracts']     = _check_module_contracts()
+    checks['panorama_integrity']   = _check_panorama_integrity()
+    checks['learning_loop_import'] = _check_learning_loop_importable()
+    checks['macro_state_freshness']= _check_macro_state_freshness()
+    checks['cron_route_ssot']      = _check_cron_route_ssot()
+    checks['signal_card_import']   = _check_signal_card_importable()
+    checks['dharma_factor_weights']= _check_dharma_factor_weights()
+    checks['wr_gate_integrity']    = _check_wr_gate_integrity()
+    checks['tardis_month_freshness']= _check_tardis_month_freshness()
+    checks['zombie_positions']     = _check_zombie_positions()
 
     # 计算健康分
     critical_keys = ['venv_deps', 'binance_api', 'scoring_engine', 'data_files']
@@ -711,55 +725,6 @@ def _check_signal_card_importable() -> dict:
                 'fix': 'cp scripts/signal_card_formatter.py brahma_brain/'}
 
 
-# 注入到 run_health_check
-_original_run = run_health_check
-
-
-def run_health_check(full: bool = False, timeout: float = 8.0) -> dict:
-    report = _original_run(full=full, timeout=timeout)
-    # 追加三项原有检查
-    report['checks']['log_health']        = _check_log_health()
-    report['checks']['module_contracts']  = _check_module_contracts()
-    # 追加五项固化检查 (2026-07-14)
-    report['checks']['panorama_integrity']     = _check_panorama_integrity()
-    report['checks']['learning_loop_import']   = _check_learning_loop_importable()
-    report['checks']['macro_state_freshness']  = _check_macro_state_freshness()
-    report['checks']['cron_route_ssot']        = _check_cron_route_ssot()
-    report['checks']['signal_card_import']     = _check_signal_card_importable()
-    # [封口自愈对冲 2026-08-02 设计院自主] 新增三项今日封印检查
-    report['checks']['dharma_factor_weights']  = _check_dharma_factor_weights()
-    report['checks']['wr_gate_integrity']      = _check_wr_gate_integrity()
-    report['checks']['tardis_month_freshness'] = _check_tardis_month_freshness()
-    report['checks']['zombie_positions']       = _check_zombie_positions()  # L3异常检浌 2026-08-13
-    if full:
-        report['checks']['standby_violations'] = _check_standby_violations_health()
-    # 重新计算总分
-    warn_count = sum(1 for c in report['checks'].values() if c.get('warn', False))
-    fail_count = sum(1 for c in report['checks'].values() if not c.get('ok', True))
-    if fail_count == 0 and warn_count == 0:
-        report['score'] = 100
-        report['status'] = 'HEALTHY'
-    elif fail_count >= 2:
-        report['status'] = 'CRITICAL'
-        report['score'] = max(0, 40 - fail_count * 10)
-    elif fail_count == 1 or warn_count >= 3:
-        report['status'] = 'DEGRADED'
-        report['score'] = max(55, 85 - warn_count * 5)
-    else:
-        report['score'] = max(80, 100 - warn_count * 5)
-    # 同步更新summary（修复双层结果不一致BUG）
-    _ok_c = sum(1 for c in report['checks'].values() if c.get('ok', False))
-    _fail_n = [k for k, v in report['checks'].items() if not v.get('ok', True)]
-    _warn_n = [k for k, v in report['checks'].items() if v.get('warn', False)]
-    _em = {'HEALTHY': '🟢', 'DEGRADED': '🟡', 'CRITICAL': '🔴'}.get(report['status'], '?')
-    report['summary'] = (
-        f"{_em} {report['status']} score={report['score']}/100 "
-        f"({_ok_c}/{len(report['checks'])}"
-        + (" | fail=" + str(_fail_n) if _fail_n else "")
-        + (" | warn=" + str(_warn_n) if _warn_n else "")
-        + f") {report.get('duration_ms',0)}ms"
-    )
-    return report
 
 
 def _check_ws_guardian() -> dict:
