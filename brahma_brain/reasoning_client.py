@@ -57,16 +57,18 @@ def call_reasoning(prompt: str, max_tokens: int = 200,
             # 解析 {"outputs": [{"text": "..."}]} 结构
             try:
                 data = json.loads(result.stdout)
+                # openclaw infer 返回格式: {ok, outputs: [{text}]} 或 {turns: [...]}
                 outputs = data.get('outputs', data.get('turns', []))
                 if outputs:
-                    text = outputs[-1].get('text', '')
-                    # 去掉 markdown ```json ... ``` 包装
+                    text = outputs[-1].get('text', '') if isinstance(outputs[-1], dict) else str(outputs[-1])
                     text = re.sub(r'```(?:json)?\s*', '', text).strip()
                     text = re.sub(r'```\s*$', '', text).strip()
                     if text:
                         return text
+                # 有些模型直接返回 {text: ...} 不嵌套
+                if 'text' in data:
+                    return data['text'].strip()
             except (json.JSONDecodeError, KeyError):
-                # 非 JSON 输出，直接返回
                 return result.stdout.strip()
     except subprocess.TimeoutExpired:
         pass
