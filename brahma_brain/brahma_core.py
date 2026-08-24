@@ -408,27 +408,27 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         },
     }
 
-    # 选择矩阵（优先标的专属，其次BTC/ETH，最后DEFAULT）
-    if _sym_upper in _REGIME_MULT_ALTCOIN:
-        _mult_table = _REGIME_MULT_ALTCOIN[_sym_upper]
-    elif 'BTC' in _sym_upper:
-        _mult_table = _REGIME_MULT_BTC
-    elif 'ETH' in _sym_upper:
-        _mult_table = _REGIME_MULT_ETH
-    else:
-        _mult_table = _REGIME_MULT_DEFAULT
-
-    # 查找当前体制的mult
-    _matched_regime_key = None
-    for _rk in _mult_table:
-        if _rk in _regime_upper:
-            _matched_regime_key = _rk
-            break
-    if _matched_regime_key:
-        _s_mult, _l_mult = _mult_table[_matched_regime_key]
-        _regime_mult = _l_mult if _is_long_signal else _s_mult
-    else:
-        _regime_mult = 0.85  # 未知体制，保守降权
+    # 选择矩阵 → 委托 regime_config.get_regime_mult() [2026-08-24 设计院提取]
+    # 矩阵数据源: brahma_brain/regime_config.py (SSOT，热更新友好)
+    try:
+        from regime_config import get_regime_mult as _get_rm
+        _regime_mult = _get_rm(_sym_upper, _regime_upper, signal_dir)
+    except Exception:
+        # fallback: 内联矩阵（regime_config.py不可用时保底）
+        if _sym_upper in _REGIME_MULT_ALTCOIN:
+            _mult_table = _REGIME_MULT_ALTCOIN[_sym_upper]
+        elif 'BTC' in _sym_upper:
+            _mult_table = _REGIME_MULT_BTC
+        elif 'ETH' in _sym_upper:
+            _mult_table = _REGIME_MULT_ETH
+        else:
+            _mult_table = _REGIME_MULT_DEFAULT
+        _matched_regime_key = next((_rk for _rk in _mult_table if _rk in _regime_upper), None)
+        if _matched_regime_key:
+            _s_mult, _l_mult = _mult_table[_matched_regime_key]
+            _regime_mult = _l_mult if _is_long_signal else _s_mult
+        else:
+            _regime_mult = 0.85
 
     # ── [P1-B 苏摩111批准 2026-07-11] regime_hmm_v2 概率化乘数接入 ──────────────────
     # 架构: HMM概率分布 → get_weighted_multiplier() → 概率加权乘数
