@@ -3169,7 +3169,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             pass  # [静默] f"[BrahmaBrain] 🔇 CHOP过滤: {_chop_score:.0f}→{_cf['score']:.0f} (grade={_chop_gra
     except Exception as _chop_e:
         try:
-            import sys as _sys; _sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent / 'scripts'))
+            _s3172 = str(__import__('pathlib').Path(__file__).parent.parent / 'scripts')
+            import sys as _sys
+            if _s3172 not in _sys.path: _sys.path.insert(0, _s3172)  # [修复 S1 2026-08-24]
             from error_collector import log_error as _le
             _le('brahma_brain_chop_filter', _chop_e)
         except Exception as _bare_e:  # [R4-fix audit-2026-06-17] 裸except已命名
@@ -3557,7 +3559,8 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
         if _s25_should:
             import sys as _sys25
-            _sys25.path.insert(0, str(Path(__file__).parent))
+            _s25_parent = str(Path(__file__).parent)
+            if _s25_parent not in _sys25.path: _sys25.path.insert(0, _s25_parent)  # [S1修复 2026-08-24]
             from reasoning_client import reasoning_gate as _rg25
             from macro_reasoning_enhancer import enhance_macro_score as _rmac25
             from sl_reasoning_enhancer import enhance_stop_loss as _rsl25

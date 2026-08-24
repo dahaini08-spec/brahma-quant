@@ -166,7 +166,9 @@ except ImportError:
     _TORCH_OK = False  # 静默跳过，Kronos将使用lite_cache fallback
 # ── 系统配置（路由到正确线程）────────────────────────────────
 try:
-    sys.path.insert(0, os.path.join(BASE_DIR, '..', 'scripts'))
+    _syscfg_dir = os.path.join(BASE_DIR, '..', 'scripts')
+    if _syscfg_dir not in sys.path:  # [修复 S1 2026-08-24] 守卫防race condition
+        sys.path.insert(0, _syscfg_dir)
     from system_config import JARVIS_THREAD_ID, JARVIS_USER_ID
     _JARVIS_TARGET = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"
 except Exception:
@@ -950,7 +952,8 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         pass
     try:
         import sys as _sys_p1, os as _os_p1  # [设计院 2026-07-27 修复] 避免覆盖全局os变量
-        _sys_p1.path.insert(0, _os_p1.path.join(_os_p1.path.dirname(__file__), '..', 'scripts'))
+        _p1_scripts = _os_p1.path.join(_os_p1.path.dirname(__file__), '..', 'scripts')
+        if _p1_scripts not in _sys_p1.path: _sys_p1.path.insert(0, _p1_scripts)  # [S1修复 2026-08-24]
         from p1_signal_log import write_signal as _write_signal
         _write_signal(result, symbol=symbol)
     except Exception:

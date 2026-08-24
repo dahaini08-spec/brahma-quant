@@ -42,15 +42,8 @@ WIRING_REGISTRY = [
         'test': lambda: __import__('brahma_brain.ssi_engine', fromlist=['compute_ssi']).compute_ssi(
             symbol='BTCUSDT', short_ratio=35.0, oi=1e6, price=65000.0),
     },
-    {
-        'module': 'brahma_coordinator',
-        'desc': '子系统上下文聚合',
-        'caller': 'brahma_core.py (analyze返回前)',
-        'result_key': 'coordinator',
-        'visible_in': 'result[coordinator][episodic/ic]',
-        'trigger': '每次analyze()调用',
-        'test': lambda: __import__('brahma_brain.brahma_coordinator', fromlist=['get_episodic_context']).get_episodic_context('BTCUSDT', 'BULL_TREND', 'LONG'),
-    },
+    # [归档 2026-08-11] brahma_coordinator 已移至archive，try/except静默失败，不需监控
+
     {
         'module': 'signal_integrity_gate',
         'desc': 'P0~P2信号完整性校验',
@@ -60,18 +53,8 @@ WIRING_REGISTRY = [
         'trigger': '每次analyze()调用',
         'test': lambda: __import__('brahma_brain.signal_integrity_gate', fromlist=['gate_check']).gate_check({}, {}, {}),
     },
-    {
-        'module': 'mode_c_detector',
-        'desc': '庄家行情识别',
-        'caller': 'brahma_core.py (analyze返回前)',
-        'result_key': 'mode_c',
-        'visible_in': 'result[mode_c] → pos_pct_sizer×0.5',
-        'trigger': '每次analyze()调用',
-        'test': lambda: __import__('brahma_brain.mode_c_detector', fromlist=['detect']).detect(
-            symbol='BTCUSDT', price=65000.0, price_low_24h=63000.0,
-            short_ratio=35.0, vol_current=1000.0, vol_avg_20=900.0,
-            candle_high=65500.0, candle_low=64000.0),
-    },
+    # [归档 2026-08-11] mode_c_detector 已移至archive，try/except静默失败，不需监控
+
     {
         'module': 'us_session_gate',
         'desc': '美股时段门控',
@@ -100,16 +83,8 @@ WIRING_REGISTRY = [
         'trigger': 'TradFi标的时有输出',
         'test': lambda: __import__('brahma_brain.tradfi_signal_layer', fromlist=['compute_tradfi_context']).compute_tradfi_context('BTCUSDT','LONG',100.0,'BULL_TREND'),
     },
-    {
-        'module': 'mtf_resonance',
-        'desc': '多周期共振验证',
-        'caller': 'brahma_decision_engine.py',
-        'result_key': None,  # 通过decision_engine间接
-        'visible_in': 'brahma_decision_engine → analyze()[decision]',
-        'trigger': '决策树Step3',
-        'test': lambda: __import__('brahma_brain.mtf_resonance', fromlist=['get_mtf_score']).get_mtf_score('BTCUSDT', 'LONG') if hasattr(
-            __import__('brahma_brain.mtf_resonance', fromlist=['']), 'get_mtf_score') else 'ok_indirect',
-    },
+    # [归档 2026-08-11] mtf_resonance 已移至archive，try/except静默失败，不需监控
+
     {
         'module': 'sl_bandit',
         'desc': 'SL自适应Bandit引擎',
@@ -292,8 +267,11 @@ def _run_static_concurrency_scan() -> tuple:
                                             _call.func.attr == 'insert' and
                                             'path' in _ast.dump(_call.func)):
                                         _ln = _tn.lineno
+                                        _cur  = _flines[_ln-1] if _ln > 0 else ''
                                         _prev = _flines[_ln-2] if _ln > 1 else ''
-                                        if 'if ' not in _prev:  # 无幂等守卫
+                                        # [修复 2026-08-24] 守卫可能在同行(if x not in p: p.insert)
+                                        _has_guard = ('if ' in _prev or 'if ' in _cur)
+                                        if not _has_guard:  # 无幂等守卫
                                             _danger += 1
         except Exception:
             pass
