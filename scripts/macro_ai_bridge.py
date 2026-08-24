@@ -202,10 +202,33 @@ def analyze_macro_state(data: dict) -> dict:
 
 
 def write_to_bus(macro_state: dict):
-    """写入brahma_bus文件（macro_overlay.json）"""
+    """写入brahma_bus文件（macro_overlay.json）+ 双写macro_state.json供brahma_core读取
+    [根治 2026-08-24 苏摩111] 根因：macro_ai_bridge写macro_overlay.json，brahma_core读macro_state.json，文件名不同导致宏观层9天过期
+    """
     MACRO_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(MACRO_FILE, 'w') as f:
         json.dump(macro_state, f, indent=2, ensure_ascii=False)
+    # 双写 macro_state.json（brahma_core/llm_council_bridge读取的路径）
+    try:
+        from pathlib import Path as _P
+        _ms_path = _P(__file__).parent.parent / 'data' / 'macro_state.json'
+        # 格式适配：将macro_overlay字段映射到macro_state格式
+        _ms = {
+            'ts': __import__("time").time(),
+            'epoch': __import__("time").time(),
+            'fear_greed': macro_state.get('fear_greed', macro_state.get('fg', 50)),
+            'fng_score': macro_state.get('fear_greed', macro_state.get('fg', 50)),
+            'btc_dominance': macro_state.get('btc_dominance', macro_state.get('btc_d', 52)),
+            'btc_d_signal': 'HIGH' if float(macro_state.get('btc_dominance', macro_state.get('btc_d', 52)) or 52) > 54 else 'NORMAL',
+            'macro_score': macro_state.get('score', macro_state.get('macro_score', 0)),
+            'macro_bias': macro_state.get('bias', macro_state.get('macro_bias', 'NEUTRAL')),
+            'macro_note': macro_state.get('desc', macro_state.get('macro_note', '')),
+            'dxy': macro_state.get('dxy', 100),
+        }
+        with open(_ms_path, 'w') as _f:
+            __import__('json').dump(_ms, _f, indent=2, ensure_ascii=False)
+    except Exception:
+        pass
 
 
 def read_current_state() -> dict | None:

@@ -375,12 +375,15 @@ def main():
 
         # 重建WR矩阵
         wr_matrix = rebuild_wr_matrix(updated_lines)
-        WR_F.write_text(json.dumps({
+        _wr_data = json.dumps({
             'updated_at': datetime.now(timezone.utc).isoformat(),
             'total_settled': sum(v['total'] for v in wr_matrix.values()),
             'matrix': wr_matrix,
-        }, indent=2, ensure_ascii=False))
-        print(f'[settler] WR矩阵已更新 → {WR_F}')
+        }, indent=2, ensure_ascii=False)
+        WR_F.write_text(_wr_data)
+        # [根治 2026-08-24 苏摩111] 双写wr_matrix.json，消除文件名不匹配（settler写live，core读wr_matrix）
+        (BASE / 'data' / 'wr_matrix.json').write_text(_wr_data)
+        print(f'[settler] WR矩阵已更新 → {WR_F} + wr_matrix.json')
 
         # [协同接入 2026-08-02 设计院自主] ev_feedback 结算闭环
         # 每笔结算后立即更新EV矩阵(regime×direction×score_bin → WR/EV)

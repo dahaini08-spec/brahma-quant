@@ -950,12 +950,57 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         _enrich_grade(result)  # 注入grade_num整数字段，覆盖91%缺失问题
     except Exception:
         pass
+    # [根治 2026-08-24 苏摩111] 信号字段完整性 — 内联写入，消除p1_signal_log外部依赖
+    # 根因：p1_signal_log.py已归档→import静默失败→signal_dir/score_final/timing_badge丢失→TIMEOUT 77%
     try:
-        import sys as _sys_p1, os as _os_p1  # [设计院 2026-07-27 修复] 避免覆盖全局os变量
-        _p1_scripts = _os_p1.path.join(_os_p1.path.dirname(__file__), '..', 'scripts')
-        if _p1_scripts not in _sys_p1.path: _sys_p1.path.insert(0, _p1_scripts)  # [S1修复 2026-08-24]
-        from p1_signal_log import write_signal as _write_signal
-        _write_signal(result, symbol=symbol)
+        import json as _sjson, time as _stime, secrets as _ssec
+        from pathlib import Path as _sPath
+        from datetime import datetime as _sdt, timezone as _stz
+        _sig_log = _sPath(__file__).parent.parent / 'data' / 'live_signal_log.jsonl'
+        _sig_log.parent.mkdir(parents=True, exist_ok=True)
+        _ts_now = _stime.time()
+        _cf = result.get('confluence', {}) or {}
+        _params = result.get('params', {}) or {}
+        _sig_dir = result.get('signal_dir') or result.get('direction', 'UNKNOWN')
+        _sig_record = {
+            'signal_id':    result.get('signal_id', _ssec.token_hex(6)),
+            'ts':           _ts_now,
+            'timestamp':    _ts_now,
+            'ts_iso':       _sdt.fromtimestamp(_ts_now, tz=_stz.utc).isoformat(),
+            'symbol':       symbol or result.get('symbol', 'UNKNOWN'),
+            'signal_dir':   _sig_dir,
+            'direction':    _sig_dir,
+            'regime':       result.get('regime', 'UNKNOWN'),
+            'regime_cn':    result.get('regime_cn', ''),
+            'score':        _cf.get('score') if isinstance(_cf, dict) else None,
+            'score_final':  result.get('score_final'),
+            'grade':        result.get('grade', ''),
+            'grade_num':    result.get('grade_num'),
+            'action':       result.get('action', ''),
+            'valid':        result.get('valid', False),
+            'price':        result.get('price', 0),
+            'entry_lo':     result.get('entry_lo') or _params.get('entry_lo'),
+            'entry_hi':     result.get('entry_hi') or _params.get('entry_hi'),
+            'stop_loss':    result.get('stop_loss') or _params.get('sl'),
+            'tp1':          result.get('tp1') or _params.get('tp1'),
+            'tp2':          result.get('tp2') or _params.get('tp2'),
+            'sl_pct':       result.get('sl_pct') or _params.get('sl_pct'),
+            'rr1':          result.get('rr1') or _params.get('rr1'),
+            'timing_badge': result.get('timing_badge', ''),
+            'timing_status':result.get('timing_status', ''),
+            'timing_score': result.get('timing_score', 0),
+            'status':       'OPEN',
+            'result':       None,
+            'exit_price':   None,
+            'pnl_pct':      None,
+            'settled_at':   None,
+        }
+        # schema校验：缺失关键字段补UNKNOWN而非静默跳过
+        for _req in ('signal_dir', 'score_final', 'regime', 'action'):
+            if _sig_record.get(_req) is None:
+                _sig_record[_req] = 'UNKNOWN'
+        with open(_sig_log, 'a') as _sf:
+            _sf.write(_sjson.dumps(_sig_record, ensure_ascii=False) + '\n')
     except Exception:
         pass
 
