@@ -298,3 +298,9 @@ if __name__ == '__main__':
         report, _ = run_full_analysis(sym)
         print(report)
         print()
+
+# ══ 铁律封印 2026-08-24 苏摩追问 ══
+# run_full_analysis的输出 = 必须原样发送给苏摩
+# 禁止：在输出后人工提炼/摘要/重写
+# 允许：在原始输出末尾追加设计院裁决（不删减原文）
+# 违反 = 等同于人工替代梵天输出
