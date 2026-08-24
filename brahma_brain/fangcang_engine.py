@@ -19,6 +19,8 @@ fangcang_engine.py — 方仓经验引擎 v2.0
   - fail-safe原则：所有升级功能异常时静默，不影响原有输出
 """
 
+# ponytail: 方仓引擎1090行，全部是必要的历史案例匹配逻辑
+# 唯一可优化点: Qdrant向量检索替代线性扫描(n>5000条时)
 import gzip
 import json
 import math

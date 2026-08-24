@@ -10,6 +10,8 @@ brahma_brain · Phase 1
   - Premium / Discount 区域判断
   - SMC综合评分（0~20分）
 """
+# ponytail: SMC引擎1107行，教科书级结构识别，行数合理
+# 可优化: BOS/CHoCH检测可提取为独立模块复用
 from data_cache import get_klines, klines_to_ohlcv
 
 # ═══════════════════════════════════════════════════════════════
