@@ -62,7 +62,7 @@ if str(KRONOS_PATH) not in sys.path and KRONOS_PATH.exists():
     sys.path.insert(0, str(KRONOS_PATH))
 
 # ── 运行模式 ──────────────────────────────────────────────────
-MODE          = os.environ.get('KRONOS_BRIDGE_MODE', 'blend')  # [2026-07-06] shadow→blend: lgbm已恢复
+MODE          = os.environ.get('KRONOS_BRIDGE_MODE', 'lite_only')  # [2026-08-24 设计院封印] 大模型权重不存在→强制lite_only
 BLEND_WEIGHT  = 0.5      # blend模式下 Kronos 权重
 PRED_LEN      = 12       # 预测未来12根K线
 SAMPLE_COUNT  = 5        # 采样路径数（精度 vs 速度）
@@ -446,7 +446,12 @@ def get_s23_kronos(
     }
 
     # ── 模式分支 ─────────────────────────────────────────────
-    if MODE == 'shadow':
+    if MODE == 'lite_only':
+        # [2026-08-24 设计院封印] 大模型权重不存在，直接返回lite分，不调用空壳模型
+        final_score = lite_score if lite_score is not None else 0
+        meta['source'] = 'lite_only'
+
+    elif MODE == 'shadow':
         _shadow_log(symbol, direction, regime, kronos_score, lite_score, meta)
         final_score = lite_score if lite_score is not None else 0
 
