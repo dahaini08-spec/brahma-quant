@@ -1961,7 +1961,8 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
                 f"  回复「执行」→ 手动下单\n"
                 f"  {_ts_p} CST"
             )
-            _phj_paper('73295708:thread:019fd70a-0942-72b1-aeb9-1bd4fc11b30d', _paper_msg)
+            from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
+            _phj_paper(f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}', _paper_msg)
         except Exception as _pe:
             pass
         # 纸面模式：记录日志但不实际下单

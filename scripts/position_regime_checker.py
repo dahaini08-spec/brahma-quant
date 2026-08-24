@@ -29,7 +29,7 @@ try:
     from scripts.system_config import JARVIS_TARGET as _SSOT_T
     PUSH_TARGET  = os.environ.get('JARVIS_TARGET', _SSOT_T)
 except Exception:
-    PUSH_TARGET  = os.environ.get('JARVIS_TARGET', '73295708:thread:019fd70a-0942-72b1-aeb9-1bd4fc11b30d')
+    PUSH_TARGET  = os.environ.get('JARVIS_TARGET', '73295708:thread:01a033af-3697-734a-9f9c-c3e34a00c378')
 PUSH_CHANNEL = 'jarvis'
 
 # ── API配置 ───────────────────────────────────────────────

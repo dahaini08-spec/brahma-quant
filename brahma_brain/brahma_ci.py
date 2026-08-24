@@ -136,7 +136,7 @@ def probe_push_links():
         if parts[1] in ('Name', 'Schedule', 'Next'): continue
         name = parts[1].rstrip('.')
         has_push = 'announce' in line or 'jarvis' in line
-        thread = '019fd70a-0942-72b1-aeb9-1bd4fc11b30d' if '019fd70a-0942-72b1-aeb9-1bd4fc11b30d' in line else ('019fd70a-0942-72b1-aeb9-1bd4fc11b30d' if '019fd70a-0942-72b1-aeb9-1bd4fc11b30d' in line else ('019fd70a-0942-72b1-aeb9-1bd4fc11b30d' if '019fd70a-0942-72b1-aeb9-1bd4fc11b30d' in line else ('019fd70a-0942-72b1-aeb9-1bd4fc11b30d' if '019fd70a-0942-72b1-aeb9-1bd4fc11b30d' in line else 'NONE')))
+        thread = '01a033af-3697-734a-9f9c-c3e34a00c378' if '01a033af-3697-734a-9f9c-c3e34a00c378' in line else ('01a033af-3697-734a-9f9c-c3e34a00c378' if '01a033af-3697-734a-9f9c-c3e34a00c378' in line else ('01a033af-3697-734a-9f9c-c3e34a00c378' if '01a033af-3697-734a-9f9c-c3e34a00c378' in line else ('01a033af-3697-734a-9f9c-c3e34a00c378' if '01a033af-3697-734a-9f9c-c3e34a00c378' in line else 'NONE')))
         found_jobs[name] = {'has_push': has_push, 'thread': thread, 'raw': line}
 
     # 检查必须推送的任务

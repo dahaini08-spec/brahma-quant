@@ -67,7 +67,7 @@ def _jarvis_target() -> str:
         from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
         return f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}'
     except Exception:
-        return '73295708:thread:019fd70a-0942-72b1-aeb9-1bd4fc11b30d'
+        return '73295708:thread:01a033af-3697-734a-9f9c-c3e34a00c378'
 
 
 def push(msg: str):

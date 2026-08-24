@@ -257,10 +257,10 @@ def push_digest():
         user_id = getattr(cfg, 'JARVIS_USER_ID', '73295708')
         thread_id = getattr(cfg, 'JARVIS_THREAD_ID', '')
         # smart_digest是P2内容，路由到主线程(019f5e0f)，不打扰主线程
-        thread_id = getattr(cfg, 'JARVIS_THREAD_ID', '019fd70a-0942-72b1-aeb9-1bd4fc11b30d')
-        to = f'{user_id}:t:{thread_id}' if user_id and thread_id else f'{user_id}:thread:019fd70a-0942-72b1-aeb9-1bd4fc11b30d'
+        thread_id = getattr(cfg, 'JARVIS_THREAD_ID', '01a033af-3697-734a-9f9c-c3e34a00c378')
+        to = f'{user_id}:t:{thread_id}' if user_id and thread_id else f'{user_id}:thread:01a033af-3697-734a-9f9c-c3e34a00c378'
     except Exception:
-        to = '73295708:thread:019fd70a-0942-72b1-aeb9-1bd4fc11b30d'  # [BUG-3 修复] 外层异常时精确地址即SSOT
+        to = '73295708:thread:01a033af-3697-734a-9f9c-c3e34a00c378'  # [BUG-3 修复] 外层异常时精确地址即SSOT
     import subprocess
     result = subprocess.run(
         ['openclaw', 'message', 'send', '--channel', 'jarvis', '-t', to, '--message', digest],
