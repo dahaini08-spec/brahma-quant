@@ -221,5 +221,39 @@
     "avg_pnl": 3.5618,
     "source": "wuqu_paper_settled",
     "updated": "2026-08-24"
+  },
+  "ic_feedback": {
+    "ic": -0.3335,
+    "ic_status": "ok",
+    "n": 63,
+    "overall_wr": 0.8254,
+    "adjustments": {
+      "best_wr_bucket": {
+        "bucket": "<130",
+        "wr": 1.0
+      },
+      "ic_alert": {
+        "ic": -0.3335,
+        "diagnosis": "高分低胜率，评分权重倒置",
+        "action": "建议收紧ENTER_FULL阈值，降低>175分信号的仓位"
+      },
+      "multiplier_BEAR_EARLY:SHORT": {
+        "current": 1.2,
+        "suggested": 1.32,
+        "wr": 0.8077,
+        "n": 52,
+        "avg_pnl": 2.32,
+        "reason": "WR>=80%且avgPnl>=2%，建议提升乘数"
+      },
+      "multiplier_CHOP_LOW:SHORT": {
+        "current": 1.0,
+        "suggested": 1.1,
+        "wr": 1.0,
+        "n": 6,
+        "avg_pnl": 3.56,
+        "reason": "WR>=80%且avgPnl>=2%，建议提升乘数"
+      }
+    },
+    "updated": "2026-08-24 16:35"
   }
 }

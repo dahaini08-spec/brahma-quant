@@ -28,6 +28,21 @@ from pathlib import Path
 
 BASE = Path(__file__).parent.parent
 
+# ── IC反馈回路：自动读取实测WR数据 ─────────────────────────
+# ponytail: IC反馈由ic_feedback_engine.py每周写入，此处自动读取
+def _load_ic_feedback():
+    try:
+        rt = json.loads((BASE/'data'/'wr_matrix_realtime.json').read_text())
+        return rt.get('ic_feedback', {})
+    except Exception:
+        return {}
+
+_IC_FEEDBACK = _load_ic_feedback()
+_IC_VALUE    = _IC_FEEDBACK.get('ic', 0)
+_BEST_BUCKET = _IC_FEEDBACK.get('adjustments', {}).get('best_wr_bucket', {}).get('bucket', '145-160')
+# IC < -0.2 时收紧高分仓位（高分低胜率保护）
+_IC_PENALTY  = _IC_VALUE < -0.2
+
 # ── 置信等级 ─────────────────────────────────────────────
 #  PROVEN    >= 30条真实结算 + WR >= 55%  → 半Kelly，最高10%
 #  VALIDATED >= 10条真实结算 + WR >= 50%  → 标准仓，5%
@@ -418,6 +433,13 @@ def get_position_pct(symbol: str, score: float, direction: str,
                 usdt = nav * max_pct / 100 if nav > 0 else 0
             _sl_tier_note = f'SL档位B+({_sl_pct_raw:.2f}% 1.5~2%) WR=58%限仓3%'
     # ── [END SL三层分档] ─────────────────────────────────────────────────────
+
+    # ── IC反馈修正：高分低胜率时收紧高分段仓位 ────────────────
+    _ic_note = ''
+    if _IC_PENALTY and score > 175 and level not in ('BANNED', 'EXPLORING'):
+        max_pct = round(max_pct * 0.6, 2)
+        usdt = round(max_pct / 100 * nav, 2) if nav else 0
+        _ic_note = f'IC={_IC_VALUE:.3f}高分低胜率警告×0.6'
 
     return {
         'pct':             max_pct,
