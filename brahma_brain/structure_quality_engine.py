@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: structure_quality_engine 383行，独立计算引擎，功能内聚，拆分条件: 单引擎>3000行且有完整测试
 """
 structure_quality_engine.py — 结构质量引擎 v1.0
 设计院 · 2026-05-31

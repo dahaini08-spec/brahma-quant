@@ -1,3 +1,4 @@
+# ponytail: brahma_core_entry 861行，核心计算，35维共享_result状态，拆分条件: 状态隔离方案成熟后
 """
 brahma_core_entry.py — 入场参数计算模块
 设计院·第一步架构拆分 2026-07-01

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: chart_renderer 934行，输出格式化，历史积累，新格式在尾部追加
 """
 brahma_brain/chart_renderer.py — 梵天图表渲染引擎
 [设计院封印 2026-08-13 苏摩111]

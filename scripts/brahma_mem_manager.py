@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: brahma_mem_manager 353行，有意为之，重构前先 grep 所有调用方
 """
 brahma_mem_manager.py — 梵天内存稳定性管理器 v1.0
 设计院自主决策落地 2026-08-04 | 苏摩111授权

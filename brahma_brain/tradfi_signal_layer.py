@@ -1,3 +1,4 @@
+# ponytail: tradfi_signal_layer 359行，有意为之，重构前先 grep 所有调用方
 """
 tradfi_signal_layer.py — 传统金融信号层
 设计院自主决策 · 2026-07-22 | 方案B稳健版

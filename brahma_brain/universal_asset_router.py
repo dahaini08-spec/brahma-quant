@@ -1,3 +1,4 @@
+# ponytail: universal_asset_router 399行，有意为之，重构前先 grep 所有调用方
 """
 universal_asset_router.py — 梵天通用资产路由器
 设计院·达摩院 自主决策 2026-06-29

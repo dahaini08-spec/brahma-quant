@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: market_screener 418行，有意为之，重构前先 grep 所有调用方
 """
 market_screener.py — 全市场纯脚本预筛器 v1.0
 设计院封印 · 2026-06-19

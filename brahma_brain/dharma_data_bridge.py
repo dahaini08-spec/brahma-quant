@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: dharma_data_bridge 404行，有意为之，重构前先 grep 所有调用方
 """
 
 # STATUS: ACTIVE# 达摩院数据桥接,训练辅助

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: position_sizer 642行，有意为之，重构前先 grep 所有调用方
 """
 
 # STATUS: ACTIVE

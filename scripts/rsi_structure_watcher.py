@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: rsi_structure_watcher 966行，cron入口，单文件单职责，不可拆
 """
 rsi_structure_watcher.py — 梵天信号v5.0 · 零成本守望层
 设计院 6方辩论落地 · 2026-07-01 · 苏摩111批准

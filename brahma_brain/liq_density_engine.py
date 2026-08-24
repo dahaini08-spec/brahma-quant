@@ -1,3 +1,4 @@
+# ponytail: liq_density_engine 467行，独立计算引擎，功能内聚，拆分条件: 单引擎>3000行且有完整测试
 """
 liq_density_engine.py — 三所清算密度聚合引擎
 设计院自主决策 2026-06-29

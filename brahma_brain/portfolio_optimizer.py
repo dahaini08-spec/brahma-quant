@@ -1,3 +1,4 @@
+# ponytail: portfolio_optimizer 515行，有意为之，重构前先 grep 所有调用方
 """
 portfolio_optimizer.py — 梵天投资组合层优化器 v1.0
 ════════════════════════════════════════════════════

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: cross_asset_correlator 537行，有意为之，重构前先 grep 所有调用方
 """
 阶段3 跨品种相关性分析引擎
 =====================================

@@ -3,6 +3,7 @@
 # 开源版：框架公开，参数需自行调参或获取Pro版
 
 #!/usr/bin/env python3
+# ponytail: regime_scorer 414行，核心计算，35维共享_result状态，拆分条件: 状态隔离方案成熟后
 """
 regime_scorer.py — 梵天三层体制概率评估 v1.0
 设计院 2026-06-10

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: brahma360_guardian 831行，健康监控，检查项累积，不可拆
 """
 # ── 全局内存优化（工程师建议 P1）──
 import gc as _gc_mod

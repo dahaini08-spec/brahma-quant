@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: brahma_lifecycle 600行，有意为之，重构前先 grep 所有调用方
 """
 brahma_lifecycle.py  — 梵天持仓全生命周期管理器
 [设计院封印 2026-07-17 苏摩111授权]

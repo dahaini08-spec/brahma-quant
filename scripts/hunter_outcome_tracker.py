@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: hunter_outcome_tracker 318行，有意为之，重构前先 grep 所有调用方
 """
 hunter_outcome_tracker.py — 猎手结果追踪器 v1.0
 设计院 · 苏摩111 · 2026-07-17

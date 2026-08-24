@@ -1,5 +1,6 @@
 import os
 #!/usr/bin/env python3
+# ponytail: market_structure_scanner 309行，有意为之，重构前先 grep 所有调用方
 """
 market_structure_scanner.py — 四维市场结构扫描器
 设计院 · 苏摩111 · 2026-07-01

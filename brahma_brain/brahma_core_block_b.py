@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: brahma_core_block_b 343行，核心计算，35维共享_result状态，拆分条件: 状态隔离方案成熟后
 """
 brahma_core_block_b.py — 链上/清算/资金费层 (维度7-10)
 [设计院封印 2026-08-11 苏摩111]

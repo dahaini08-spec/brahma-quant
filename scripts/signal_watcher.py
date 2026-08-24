@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: signal_watcher 557行，cron入口，单文件单职责，不可拆
 """
 # ── 全局内存优化（工程师建议 P1）──
 # [v7.0 path-fix 2026-07-11] sys.path必须在brahma_brain import之前

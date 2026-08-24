@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: vpa_analyzer 382行，分析流程，上下文依赖深，拆分条件: 端到端测试覆盖>80%
 """
 阶段2-③ VPA成交量行为识别模块（Volume Price Analysis）
 =====================================

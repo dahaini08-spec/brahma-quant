@@ -1,3 +1,4 @@
+# ponytail: volatility_context 316行，有意为之，重构前先 grep 所有调用方
 """
 volatility_context.py — HCME M5: 波动率历史分位引擎
 设计院封印 2026-08-08 · 苏摩111批准

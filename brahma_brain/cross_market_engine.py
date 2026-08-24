@@ -1,3 +1,4 @@
+# ponytail: cross_market_engine 535行，独立计算引擎，功能内聚，拆分条件: 单引擎>3000行且有完整测试
 """
 cross_market_engine.py · 跨市场相关性引擎
 brahma_brain · P2

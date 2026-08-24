@@ -1,3 +1,4 @@
+# ponytail: brahma_core 4405行，核心计算，35维共享_result状态，拆分条件: 状态隔离方案成熟后
 """
 brahma_brain.py · 梵天分析大脑主入口  VERSION = v3.0
 brahma_brain · Phase 1 完整整合

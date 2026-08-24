@@ -1,3 +1,4 @@
+# ponytail: brahma_intel_layer 315行，有意为之，重构前先 grep 所有调用方
 """
 brahma_intel_layer.py — 梵天智慧层 v1.0
 设计院太极封印 2026-08-18 苏摩111

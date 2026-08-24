@@ -1,3 +1,4 @@
+# ponytail: brahma_bus 383行，有意为之，重构前先 grep 所有调用方
 """
 brahma_bus.py — 梵天统一数据总线
 设计院·达摩院 深度排查 2026-06-29

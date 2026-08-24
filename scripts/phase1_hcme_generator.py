@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: phase1_hcme_generator 441行，有意为之，重构前先 grep 所有调用方
 """
 梵天认知升级 阶段1 - HCME伪信号生成引擎
 功能：

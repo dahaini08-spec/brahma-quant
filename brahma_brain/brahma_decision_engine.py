@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: brahma_decision_engine 560行，独立计算引擎，功能内聚，拆分条件: 单引擎>3000行且有完整测试
 """
 brahma_decision_engine.py — 梵天决策树 2.0
 设计院封印 2026-08-08 苏摩111自主决策

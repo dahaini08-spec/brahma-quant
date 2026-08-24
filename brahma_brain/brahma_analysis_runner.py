@@ -1,3 +1,4 @@
+# ponytail: brahma_analysis_runner 1595行，流程编排层，入口唯一性有意为之，不可拆
 """
 brahma_analysis_runner.py — 梵天分析唯一入口
 设计院·达摩院 固化封印 2026-06-30

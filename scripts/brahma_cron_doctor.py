@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: brahma_cron_doctor 424行，有意为之，重构前先 grep 所有调用方
 """
 brahma_cron_doctor.py — 梵天 Cron 自动诊断与修复
 设计院落地 2026-08-04 | 苏摩授权

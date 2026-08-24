@@ -1,5 +1,6 @@
 import os
 #!/usr/bin/env python3
+# ponytail: btc_regime_watcher 447行，cron入口，单文件单职责，不可拆
 """
 btc_regime_watcher.py · 梵天P1升级版 · BTC价格关键位穿越监控 v2.0
 [设计院重构 · 2026-06-30 · 苏摩裁决]

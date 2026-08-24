@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: lsr_oi_engine 380行，独立计算引擎，功能内聚，拆分条件: 单引擎>3000行且有完整测试
 """
 lsr_oi_engine.py — 多空比逆向 + OI方向 评分引擎
 设计院 · 2026-06-07

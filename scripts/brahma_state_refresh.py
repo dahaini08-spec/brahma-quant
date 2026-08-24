@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: brahma_state_refresh 311行，有意为之，重构前先 grep 所有调用方
 """brahma_state 价格/时间戳定时刷新 — 纯Python，零AI开销"""
 import json, time, urllib.request, os, sys
 from datetime import datetime, timezone

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: signal_selector 305行，有意为之，重构前先 grep 所有调用方
 """
 signal_selector.py — 梵天方向裁决器 v1.0
 设计院 2026-06-10

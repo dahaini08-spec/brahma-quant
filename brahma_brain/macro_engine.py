@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: macro_engine 418行，独立计算引擎，功能内聚，拆分条件: 单引擎>3000行且有完整测试
 """
 # ╔══ INTERFACE CONTRACT ════════════════════════════════════════════╗
 # 入口: get_macro_score(symbol) -> dict

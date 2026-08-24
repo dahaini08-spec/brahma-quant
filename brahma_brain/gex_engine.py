@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ponytail: gex_engine 352行，独立计算引擎，功能内聚，拆分条件: 单引擎>3000行且有完整测试
 """
 梵天 GEX 引擎 (s22维度)
 Gamma Exposure Sentiment — 基于 Deribit 公开期权数据
