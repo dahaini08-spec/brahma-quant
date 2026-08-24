@@ -62,7 +62,7 @@ if str(KRONOS_PATH) not in sys.path and KRONOS_PATH.exists():
     sys.path.insert(0, str(KRONOS_PATH))
 
 # ── 运行模式 ──────────────────────────────────────────────────
-MODE          = os.environ.get('KRONOS_BRIDGE_MODE', 'lite_only')  # [2026-08-24 设计院封印] 大模型权重不存在→强制lite_only
+MODE          = os.environ.get('KRONOS_BRIDGE_MODE', 'blend')  # [2026-08-24 苏摩111] Kronos-mini权重已下载，恢复blend模式
 BLEND_WEIGHT  = 0.5      # blend模式下 Kronos 权重
 PRED_LEN      = 12       # 预测未来12根K线
 SAMPLE_COUNT  = 5        # 采样路径数（精度 vs 速度）

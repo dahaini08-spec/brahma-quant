@@ -922,7 +922,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
             if _p_valid:
                 _sc = float(result.get('confluence', {}).get('score', 0) or 0)
                 result['action'] = ('ENTER_FULL' if _sc >= 155
-                                    else 'ENTER_WATCH' if _sc >= 120
+                                    else 'ENTER_WATCH' if _sc >= 140  # [2026-08-24 苏摩111] 铁证:140-170 WR=91%，提升阈值
                                     else 'WATCH')
         # direction同步
         if not result.get('direction') and result.get('signal_dir'):
