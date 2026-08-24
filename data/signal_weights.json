@@ -11,7 +11,9 @@
     "BULL_TREND:LONG:140-154": {
       "multiplier": 0.2,
       "note": "WR=50% EV=-0.765 n=8 负EV降权 [settled_at=2026-08-23]",
-      "ev_basis": -0.7646
+      "ev_basis": -0.7646,
+      "action": "BLOCK",
+      "action_reason": "WR=50% EV=-0.765(n=8) 负EV死亡区 [2026-08-24]"
     },
     "BULL_TREND:LONG:120-139": {
       "multiplier": 0.2,
@@ -116,7 +118,9 @@
     "ev_basis": -0.7646,
     "wr": 0.5,
     "n_settled": 8,
-    "last_updated": "2026-08-23T01:49:03.639099+00:00"
+    "last_updated": "2026-08-23T01:49:03.639099+00:00",
+    "action": "BLOCK",
+    "action_reason": "WR=50% EV=-0.765(n=8) 负EV死亡区 [2026-08-24 health-fix补齐]"
   },
   "BEAR_RECOVERY:LONG:165+": {
     "multiplier": 1.0,

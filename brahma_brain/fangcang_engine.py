@@ -133,6 +133,12 @@ def _load_regime_map(symbol: str) -> Dict[int, str]:
 # ══════════════════════════════════════════════════════════════════════════════
 
 def _calc_rsi(prices: List[float], period: int = 14) -> float:
+    """RSI计算 — 委托math_utils统一实现 [2026-08-24 设计院精简]"""
+    try:
+        from math_utils import calc_rsi as _mu_rsi
+        return _mu_rsi(prices, period)
+    except Exception:
+        pass
     if len(prices) < period + 1:
         return 50.0
     gains, losses = [], []

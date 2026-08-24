@@ -61,7 +61,13 @@ def rsi_extreme_score(ms: dict, signal_dir: str = 'SHORT') -> int:
 
 
 def _calc_rsi(closes: list, period: int = 14) -> float:
-    """简单RSI计算（Wilder平滑）"""
+    """RSI计算 — 委托math_utils统一实现 [2026-08-24 设计院精简]"""
+    try:
+        from math_utils import calc_rsi as _mu_rsi
+        return _mu_rsi(closes, period)
+    except Exception:
+        pass
+    # fallback
     if len(closes) < period + 1:
         return 50.0
     arr = [float(c) for c in closes[-(period + 1):]]
@@ -74,5 +80,4 @@ def _calc_rsi(closes: list, period: int = 14) -> float:
     avg_l = sum(losses) / period
     if avg_l == 0:
         return 100.0
-    rs = avg_g / avg_l
-    return 100.0 - (100.0 / (1.0 + rs))
+    return 100.0 - (100.0 / (1.0 + (avg_g / avg_l)))
