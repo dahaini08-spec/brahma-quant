@@ -657,7 +657,12 @@ def _check_macro_state_freshness() -> dict:
     age = _time.time() - p.stat().st_mtime
     try:
         ms = _json.loads(p.read_text())
-        dxy_val = ms.get('dxy', {}).get('value')
+        dxy_raw = ms.get('dxy')
+        # dxy可以是 int/float 直接值，也可以是 {'value': ...} 字典（兼容两种格式）
+        if isinstance(dxy_raw, dict):
+            dxy_val = dxy_raw.get('value')
+        else:
+            dxy_val = dxy_raw  # int/float直接使用
         ok_ = age < 4 * 3600 and dxy_val is not None
         return {
             'ok': ok_,
@@ -742,6 +747,18 @@ def run_health_check(full: bool = False, timeout: float = 8.0) -> dict:
         report['score'] = max(55, 85 - warn_count * 5)
     else:
         report['score'] = max(80, 100 - warn_count * 5)
+    # 同步更新summary（修复双层结果不一致BUG）
+    _ok_c = sum(1 for c in report['checks'].values() if c.get('ok', False))
+    _fail_n = [k for k, v in report['checks'].items() if not v.get('ok', True)]
+    _warn_n = [k for k, v in report['checks'].items() if v.get('warn', False)]
+    _em = {'HEALTHY': '🟢', 'DEGRADED': '🟡', 'CRITICAL': '🔴'}.get(report['status'], '?')
+    report['summary'] = (
+        f"{_em} {report['status']} score={report['score']}/100 "
+        f"({_ok_c}/{len(report['checks'])}"
+        + (" | fail=" + str(_fail_n) if _fail_n else "")
+        + (" | warn=" + str(_warn_n) if _warn_n else "")
+        + f") {report.get('duration_ms',0)}ms"
+    )
     return report
 
 
@@ -799,10 +816,12 @@ def _check_wr_gate_integrity() -> dict:
         if not _o.path.exists(sw):
             return {'ok': True, 'warn': False, 'detail': 'signal_weights.json不存在(忽略)'}
         data = _j.loads(open(sw).read())
+        # signal_weights.json 结构: {weights: {key: entry}, ...}
+        weights = data.get('weights', data)  # 兼容扁平/嵌套两种格式
         # 120-139: 2026-08-08 P0-3封印 WR=51.5%(n=33) → NORMAL合法，BLOCK/OBSERVE/NORMAL均可
-        # 140-154: 铁证WR=28.6% EV=-0.65% → 必须BLOCK
-        entry_low = data.get('BULL_TREND:LONG:120-139', {})
-        entry_high = data.get('BULL_TREND:LONG:140-154', {})
+        # 140-154: 铁证WR=50% EV=-0.765(n=8) 负EV → 必须BLOCK
+        entry_low = weights.get('BULL_TREND:LONG:120-139', {})
+        entry_high = weights.get('BULL_TREND:LONG:140-154', {})
         if entry_high.get('action') not in ('BLOCK', 'OBSERVE'):
             return {'ok': False, 'warn': True, 'detail': 'WR门控缺失: BULL_TREND:LONG:140-154(死亡区未封禁)'}
         low_action = entry_low.get('action', 'UNKNOWN')
