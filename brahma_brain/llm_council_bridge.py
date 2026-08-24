@@ -40,6 +40,10 @@ import os, json, time, hashlib, logging
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional, Tuple
+try:
+    from reasoning_client import call_reasoning as _call_reasoning_global
+except ImportError:
+    _call_reasoning_global = None
 
 logger = logging.getLogger("llm_council_bridge")
 
@@ -357,6 +361,53 @@ def _macro_agent_review(signal: Dict, market_ctx: Dict) -> Dict:
 # 4. 主入口：review()
 # ════════════════════════════════════════════════════════════════
 
+def _quant_agent_review(signal: Dict, similar_signals: Dict) -> Dict:
+    """量化裁判 — Qwen专攻WR矩阵/EV/历史铁证 [多模型 2026-08-24 苏摩111]"""
+    _rule_fallback = {'score_adj': 0, 'quant_bias': 'NEUTRAL',
+                      'wr_verdict': 'UNKNOWN', 'source': 'rule_fallback'}
+    try:
+        symbol  = signal.get('symbol', '?')
+        score   = signal.get('score', 0)
+        regime  = signal.get('regime', '?')
+        sig_dir = signal.get('direction', '?')
+        sl_pct  = signal.get('sl_pct', 2.0)
+        wr      = similar_signals.get('recent_wr', 0) if similar_signals else 0
+        n       = similar_signals.get('n', 0) if similar_signals else 0
+        summary = similar_signals.get('summary', '') if similar_signals else ''
+
+        prompt = f"""你是梵天量化裁判，只看数字，不看故事。
+
+信号: {symbol} {sig_dir} score={score:.0f} regime={regime} sl={sl_pct:.1f}%
+历史同类: {summary if summary else f'WR={wr:.1f}% n={n}'}
+
+评判规则:
+- WR≥62% n≥20 → score_adj=+5 quant_bias=STRONG_CONFIRM
+- WR55-62% n≥10 → score_adj=+2 quant_bias=CONFIRM
+- WR45-55% 或 n<10 → score_adj=0 quant_bias=NEUTRAL
+- WR<45% n≥10 → score_adj=-8 quant_bias=REJECT
+- WR<40% 任意n → score_adj=-15 quant_bias=STRONG_REJECT
+
+返回JSON:
+{{"score_adj": <整数>, "quant_bias": "<状态>", "wr_verdict": "<WR={wr:.1f}% n={n}的一句话>", "source": "llm_quant"}}"""
+
+        _cr = _call_reasoning_global
+        if _cr is None:
+            from reasoning_client import call_reasoning as _cr
+        raw = _cr(prompt, max_tokens=120, model='standard', timeout=10)
+        if raw:
+            # 清洗markdown代码块
+            _clean = re.sub(r'```(?:json)?\s*', '', raw).strip()
+            _clean = re.sub(r'```\s*$', '', _clean).strip()
+            data = json.loads(_clean)
+            adj = int(data.get('score_adj', 0))
+            data['score_adj'] = max(-15, min(5, adj))
+            data['source'] = 'llm_quant'
+            return data
+    except Exception as e:
+        logger.warning(f'[QuantAgent] 降级: {e}')
+    return _rule_fallback
+
+
 def review(
     signal_result: Dict,
     market_ctx: Optional[Dict] = None,
@@ -495,25 +546,35 @@ def review(
     except Exception:
         pass
 
+    # 三专家并行调用 [2026-08-24 多模型架构: 串行→并行，总耗时从30s→10s]
+    import concurrent.futures as _cf
     t0 = time.time()
-    risk_result  = _risk_agent_review(flat_signal)
-    macro_result = _macro_agent_review(flat_signal, ctx)
+    with _cf.ThreadPoolExecutor(max_workers=3) as _pool:
+        _f_risk  = _pool.submit(_risk_agent_review, flat_signal)
+        _f_macro = _pool.submit(_macro_agent_review, flat_signal, ctx)
+        _f_quant = _pool.submit(_quant_agent_review, flat_signal, flat_signal.get('_similar_signals'))
+        risk_result  = _f_risk.result(timeout=18)
+        macro_result = _f_macro.result(timeout=18)
+        quant_result = _f_quant.result(timeout=18)
     elapsed = time.time() - t0
 
     # ── 分数合并 ──────────────────────────────────────────────
     risk_adj  = risk_result.get('score_adj', 0)
     macro_adj = macro_result.get('score_adj', 0)
+    quant_adj = quant_result.get('score_adj', 0)   # 第三专家 [2026-08-24]
     veto      = risk_result.get('veto', False)
 
     if veto:
         final_adj = -30  # 否决性惩罚
     else:
-        final_adj = risk_adj + macro_adj
-        final_adj = max(-20, min(10, final_adj))   # 限幅
+        # 三专家加权: 风控×1.0 + 宏观×0.8 + 量化×0.6（量化权重最低，避免过拟合）
+        final_adj = risk_adj + round(macro_adj * 0.8) + round(quant_adj * 0.6)
+        final_adj = max(-25, min(12, final_adj))   # 略放宽限幅适应三专家
 
     council_output = {
         'risk':       risk_result,
         'macro':      macro_result,
+        'quant':      quant_result,   # 第三专家 [2026-08-24]
         'final_adj':  final_adj,
         'score_before': score,
         'score_after':  score + final_adj if MODE == 'live' else score,
