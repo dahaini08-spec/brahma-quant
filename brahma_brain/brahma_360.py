@@ -857,7 +857,7 @@ if __name__ == '__main__':
             _sp.run(
                 ['openclaw', 'message', 'send',
                  '--channel', 'jarvis',
-                 '--target', os.environ.get('JARVIS_TARGET', '73295708:thread:019fd70a-0942-72b1-aeb9-1bd4fc11b30d'),  # SSOT [2026-07-07]
+                 '--target', os.environ.get('JARVIS_TARGET', '73295708:thread:01a033af-3697-734a-9f9c-c3e34a00c378'),  # SSOT [2026-07-07]
                  '--message', result['report']],
                 capture_output=True, timeout=15
             )

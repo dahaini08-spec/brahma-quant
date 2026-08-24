@@ -41,7 +41,7 @@ try:
     JARVIS_THREAD = os.environ.get('JARVIS_THREAD_ID', _TID)
 except Exception:
     JARVIS_USER   = os.environ.get('JARVIS_USER_ID', '73295708')
-    JARVIS_THREAD = '019fd70a-0942-72b1-aeb9-1bd4fc11b30d'
+    JARVIS_THREAD = '01a033af-3697-734a-9f9c-c3e34a00c378'
 
 def _now_cst() -> str:
     return datetime.now(CST).strftime('%m-%d %H:%M')
