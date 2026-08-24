@@ -135,7 +135,7 @@ except Exception:
 
 # signal_trace: 信号轨迹审计日志（设计院 2026-07-02）──────────────────────
 try:
-    from signal_trace import trace_generated, trace_skipped
+    from brahma_signal import trace_generated, trace_skipped
     _TRACE_OK = True
 except Exception:
     _TRACE_OK = False
@@ -462,7 +462,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         import sys as _sl_sys, os as _sl_os
         _sl_dir = _sl_os.path.dirname(_sl_os.path.abspath(__file__))
         if _sl_dir not in _sl_sys.path: _sl_sys.path.insert(0, _sl_dir)
-        from signal_lifecycle import tick_signal_lifecycle as _tick_lc
+        from brahma_signal import tick_signal_lifecycle as _tick_lc
         _lc_price = float(result.get('price', 0) or 0)
         if _lc_price > 0 and sym:
             _lc_alerts = _tick_lc(sym, _lc_price)

@@ -410,9 +410,19 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
 
     # 选择矩阵 → 委托 regime_config.get_regime_mult() [2026-08-24 设计院提取]
     # 矩阵数据源: brahma_brain/regime_config.py (SSOT，热更新友好)
+    _matched_regime_key = None  # 初始化
     try:
         from regime_config import get_regime_mult as _get_rm
-        _regime_mult = _get_rm(_sym_upper, _regime_upper, signal_dir)
+        _rm_val = _get_rm(_sym_upper, _regime_upper, signal_dir)
+        if _rm_val is not None:
+            _regime_mult = _rm_val
+            # 找到匹配的key用于breakdown记录
+            _matched_regime_key = next(
+                (_rk for _rk in (_REGIME_MULT_BTC if 'BTC' in _sym_upper
+                                 else _REGIME_MULT_ETH if 'ETH' in _sym_upper
+                                 else _REGIME_MULT_DEFAULT)
+                 if _rk in _regime_upper), _regime_upper or 'UNKNOWN'
+            )
     except Exception:
         # fallback: 内联矩阵（regime_config.py不可用时保底）
         if _sym_upper in _REGIME_MULT_ALTCOIN:
@@ -1671,7 +1681,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # I5: 信号队列检查（是否可以进入队列）
     try:
-        from signal_queue import add_signal as _sq_add, get_status as _sq_status
+        from brahma_signal import add_signal as _sq_add, get_queue_status as _sq_status
         _sq_result = _sq_add(
             symbol=_sym,
             signal_dir=signal_dir,
@@ -3277,207 +3287,80 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _e22:
         pass  # GEX不影响主流评分
 
-    # ── s23: Kronos-Lite × 体制解锁器 × CHOP过滤器 ─────────────────────
-    # 设计院 × 达摩院 v9.0-SLIM · 2026-06-17
-    # 三个职责：
-    #   A. 基础预测维度（p_up方向概率 → ±12分）
-    #   B. CHOP期方向冲突惩罚（过滤不确定信号）
-    #   C. CORRECTION/RECOVERY体制解锁（双证据激活最高WR体制）
+    # ── s23: Kronos统一域 v2.0 (brahma_kronos) ────────────────────────
+    # [2026-08-24 设计院顶层重构] 201行三段式→30行统一入口
+    # brahma_kronos自动降级: bridge(BLEND) → engine(PyTorch) → lite(统计) → 0
     try:
         import sys as _sys23, os as _os23
         _bb23 = _os23.path.dirname(_os23.path.abspath(__file__))
-        if _bb23 not in _sys23.path:
-            _sys23.path.insert(0, _bb23)
-        from kronos_lite import get_s23_score as _get_s23
-        try:
-            from recovery_unlocker import check_unlock as _check_unlock
-        except ImportError:
-            def _check_unlock(*a, **kw): return {}  # [2026-08-13 苏摩111] 降级兜底
-        # [根本修复 2026-07-12] _sym_t/_dir_t可能因s20 try异常而未定义，这里就地定义
-        _sym_t  = _result.get('symbol', symbol)
-        _dir_t  = _result.get('signal_dir', signal_dir)
+        if _bb23 not in _sys23.path: _sys23.path.insert(0, _bb23)
+        from brahma_kronos import get_kronos_score as _bk_fn
+        from recovery_unlocker import check_unlock as _check_unlock
+    except ImportError:
+        def _bk_fn(*a, **kw): return {'score': 0, 'p_up': 0.5, 'source': 'import_err'}
+        def _check_unlock(*a, **kw): return {'unlocked': False}
 
+    try:
+        _sym_t = _result.get('symbol', symbol)
+        _dir_t = _result.get('signal_dir', signal_dir)
         _kl15m = ms.get('klines_15m', [])
-        # 如果ms中没有klines_15m，尝试从extra_data或直接获取
-        if not _kl15m and extra_data is not None:
+        if not _kl15m and extra_data:
             _kl15m = extra_data.get('_klines_15m', [])
         if not _kl15m:
             try:
-                _raw15 = get_klines(ms.get('symbol', _sym_t), '15m', 200)
+                _raw15 = get_klines(_sym_t, '15m', 200)
                 _kl15m = [[float(c[1]),float(c[2]),float(c[3]),float(c[4]),float(c[5])] for c in _raw15]
-            except Exception:
-                _kl15m = []
-        # [潜力释放 P1 2026-07-12] klines格式强制转换，避免Kronos klines含NaN报错
-        # 根因: ms.klines_15m是dict格式或字符串数字，Kronos需要float列表
+            except Exception: _kl15m = []
+        # 格式标准化: dict→list
         if _kl15m and isinstance(_kl15m[0], dict):
-            _kl15m = [[float(_k.get('o',0)),float(_k.get('h',0)),
-                       float(_k.get('l',0)),float(_k.get('c',0)),float(_k.get('v',0))]
-                      for _k in _kl15m]
-        elif _kl15m and isinstance(_kl15m[0], (list, tuple)):
-            try:
-                _kl15m = [[float(_v) for _v in _k[:5]] for _k in _kl15m]
-            except Exception:
-                _kl15m = []
+            _kl15m = [[float(_k.get('o',0)),float(_k.get('h',0)),float(_k.get('l',0)),float(_k.get('c',0)),float(_k.get('v',0))] for _k in _kl15m]
+        elif _kl15m and isinstance(_kl15m[0], (list,tuple)):
+            try: _kl15m = [[float(v) for v in k[:5]] for k in _kl15m]
+            except Exception: _kl15m = []
 
         if len(_kl15m) >= 60:
-
-            # ① 计算Kronos-Lite s23基础分 (v2.0: 体制自适应+BTC领先信号)
             _s23_regime = _result.get('regime', '')
-            # v2.0: 获取BTC领先信号修正（仅非BTC标的）
-            _btc_p_up_s23 = None
-            if _sym_t != 'BTCUSDT':
-                try:
-                    from kronos_lite import _compute_p_up as _kl_cpu, _CACHE as _kl_cache
-                    _btc_ck = 'BTCUSDT_15m'
-                    import time as _t23
-                    if _btc_ck in _kl_cache and (_t23.time() - _kl_cache[_btc_ck][0]) < 900:
-                        _btc_p_up_s23 = _kl_cache[_btc_ck][1]
-                    else:
-                        _btc_kl15 = get_klines('BTCUSDT', '15m', 200)
-                        _btc_kl15f = [[float(c[1]),float(c[2]),float(c[3]),float(c[4]),float(c[5])] for c in _btc_kl15]
-                        if len(_btc_kl15f) >= 60:
-                            _btc_p_up_s23, _ = _kl_cpu(_btc_kl15f, regime=_s23_regime, tf_hint='15m')
-                            _kl_cache[_btc_ck] = (_t23.time(), _btc_p_up_s23, 0.0)
-                except Exception:
-                    _btc_p_up_s23 = None
-            _s23, _s23_meta = _get_s23(
-                _sym_t, _dir_t, _kl15m,
-                regime=_s23_regime,
-                tf_hint='15m',
-                btc_p_up=_btc_p_up_s23,
-            )
+            _bk_result  = _bk_fn(_sym_t, _dir_t, _s23_regime, _kl15m)
+            _s23        = int(_bk_result.get('score', 0))
+            _p_up_raw   = float(_bk_result.get('p_up', 0.5))
+            _s23_meta   = _bk_result
 
-            # ② CHOP期方向冲突额外惩罚（突破二）
-            _cur_regime = _result.get('regime', '')
-            if 'CHOP' in _cur_regime and _s23_meta.get('direction_conflict', False):
-                _s23 = min(_s23, -10)  # 方向冲突 = 否决性惩罚
+            # CHOP方向冲突惩罚
+            if 'CHOP' in _s23_regime and _s23_meta.get('direction_conflict', False):
+                _s23 = min(_s23, -10)
 
-            # ③ CORRECTION/RECOVERY体制解锁（突破一）
-            _cur_score23 = _result['confluence']['score']
-            _unlock = _check_unlock(
-                regime=_cur_regime,
-                direction=_dir_t,
-                base_score=_cur_score23,
-                kronos_meta=_s23_meta,
-                symbol=_sym_t,
-            )
-            if _unlock['unlocked']:
+            # CORRECTION/RECOVERY解锁
+            _unlock = _check_unlock(regime=_s23_regime, direction=_dir_t,
+                                    base_score=_result['confluence']['score'],
+                                    kronos_meta=_s23_meta, symbol=_sym_t)
+            if _unlock.get('unlocked'):
                 _s23 = max(_s23, _unlock['s23_bonus'])
-                _s23_meta['unlock_regime'] = _unlock['regime']
-                _s23_meta['unlock_reason'] = _unlock['reason']
 
-            # ④ 注入总分（仅非零才注入，避免污染breakdown）
-            # [P2 设计院 2026-06-21] s23边际贡献为负(-2.9%WR, Gate2未通过) → 降权50%
-            # [Kronos极値封印 2026-07-01] p_up>0.90时 = 反弹窗口打开，不是空单否决
-            # 设计院分析：极値应被解读为「录入数据工程师信息」而非封空单
-            _p_up_raw = _s23_meta.get('p_up', 0.5)
+            # Kronos极値模式（p_up>0.90做空=惩罚减半）
             if _p_up_raw >= 0.90 and _dir_t == 'SHORT':
-                # p_up极高(>0.90) + 做空 = 反弹动能强，价格即将触达OB区
-                # 不封空单，而是转化为「待功反弹到位​再空」模式
-                _s23_extreme_note = f'注意: p_up={_p_up_raw:.2f}极高 = 反弹窗口打开，等OB区再空入'
-                # 惩罚减半: -8分降为-4（保持警示但不过度封空）
-                _s23 = max(_s23, -4)  # 最大惩罚降半
-                print(f'[s23-Kronos极値] {_sym_t} p_up={_p_up_raw:.2f}极高: 惩罚降半至{_s23} | {_s23_extreme_note}')
-            elif _p_up_raw >= 0.90 and _dir_t == 'LONG':
-                # p_up极高 + 做多 = 顺势，保留完整加分
-                pass
+                _s23 = max(_s23, -4)
+                print(f'[s23-Kronos极値] {_sym_t} p_up={_p_up_raw:.2f}: 惩罚降半至{_s23}')
+
+            # 注入评分（50%降权）
             if _s23 != 0:
-                _s23_w = round(_s23 * 0.5)  # 50%降权
-                _result['confluence']['score'] = _cur_score23 + _s23_w
-                _result['confluence']['_s23_kronos'] = _s23_w
+                _s23_w = round(_s23 * 0.5)
+                _result['confluence']['score'] += _s23_w
                 _result['confluence'].setdefault('breakdown', {})['s23_kronos'] = (
-                    f"{_s23_w:+d}(原{_s23:+d}×50%) ({_s23_meta.get('reason','')[:60]})"
+                    f"{_s23_w:+d}(原{_s23:+d}×50%) src={_bk_result.get('source','?')[:20]}"
                 )
-                # [CHOP专项 2026-06-27] 写入 p_up 供 offline_replay 三维分层使用
                 _result['s23_p_up'] = _p_up_raw
-                _unlock_tag = f" 🔓UNLOCK:{_unlock['regime']}" if _unlock.get('unlocked') else ''
-                _extreme_tag = f' 🚨极値模式' if _p_up_raw >= 0.90 else ''
-                print(f'[s23-Kronos] {_sym_t} {_dir_t}: {_s23:+d}'
-                      f' | p_up={_p_up_raw:.2f}'
-                      f' | src={_s23_meta.get("source","?")}{_unlock_tag}{_extreme_tag}')
 
-    except Exception as _e23:
-        pass  # s23任何异常不影响主流程
-
-    # ══ [设计院 2026-06-30 P3] kronos_engine — 完整版时序预测（模型可用时）══
-    # 逻辑：kronos_lite是轻量RSI代理，kronos_engine是真正的4.1M参数模型
-    # 当模型可用时，用完整版覆盖s23分（更高精度）
-    # fail-safe：模型未下载/torch不可用时静默跳过，不影响主流程
-    try:
-        from kronos_engine import get_kronos_score as _ke_fn, _is_available as _ke_ok
-        if _ke_ok():   # 只在模型已加载时运行
-            _ke_score, _ke_reason = _ke_fn(
-                _sym_t,
-                signal_dir or _result.get('signal_dir', 'SHORT'),
-                _kl15m if '_kl15m' in dir() else [],
-                ms.get('regime', '')
-            )
-            if _ke_score != 0:
-                _score_raw = _result.get('score', _result.get('cf', {}).get('total', 0))
-                print(f'[s23-KronosEngine] {_sym_t}: {_ke_score:+d} 完整模型覆盖 | {_ke_reason[:40]}')
-    except Exception:
-        pass
-    # ══ [KronosEngine END] ═════════════════════════════════════════════════════
-
-    # ══ [KronosBridge SHADOW] 设计院 v17 达摩院验证路径 2026-07-01 ══════════
-    # shadow模式：并联记录 Kronos大模型 vs Kronos-Lite 差异
-    # 不修改任何分数；积累n≥100后达摩院M1验证 → blend → live
-    try:
-        import sys as _sys_kb, os as _os_kb
-        _kb_brain = _os_kb.path.dirname(_os_kb.path.abspath(__file__))
-        _kb_root  = _os_kb.path.dirname(_kb_brain)
-        for _kb_p in [_kb_brain, _kb_root, _kb_root + '/external/Kronos']:
-            if _kb_p not in _sys_kb.path:
-                _sys_kb.path.insert(0, _kb_p)
-        from kronos_bridge import get_s23_kronos as _kb_fn
-        # 获取 kronos_lite 的原始分和 p_up（用于对比记录）
-        _kb_lite_score = _s23 if '_s23' in dir() else None
-        _kb_lite_p_up  = _p_up_raw if '_p_up_raw' in dir() else None
-        _kb_klines     = _kl15m if '_kl15m' in dir() and _kl15m else []
-        # [2026-08-23 苏摩111] 格式转换：market_state传dict格式，kronos_bridge需list格式
-        # dict格式: {'o','h','l','c','v','t'} → list格式: [ts,open,high,low,close,vol]
-        if _kb_klines and isinstance(_kb_klines[0], dict):
-            _kb_klines = [[k.get('t',0),k.get('o',0),k.get('h',0),k.get('l',0),k.get('c',0),k.get('v',0)] for k in _kb_klines]
-        if _kb_klines and len(_kb_klines) >= 32:
-            _kb_score, _kb_meta = _kb_fn(
-                klines_15m = _kb_klines,
-                symbol     = _sym_t,
-                direction  = _dir_t if '_dir_t' in dir() else 'LONG',
-                regime     = ms.get('regime', 'UNKNOWN') if 'ms' in dir() else 'UNKNOWN',
-                lite_score = _kb_lite_score,
-                lite_p_up  = _kb_lite_p_up,
-            )
-            # [2026-08-13 苏摩111] SHADOW→ACTIVE: 将Kronos结果写入extra_data和result
-            _kb_p_up   = float(_kb_meta.get('p_up', 0.5) or 0.5)
-            _kb_score  = int(_kb_meta.get('kronos_score', 0) or 0)
-            _kb_delta  = _kb_score - (_kb_lite_score or 0)
-            # 写入extra_data供market_state_raw读取
+            # kronos_p_up写入extra_data和result顶层
             if extra_data is not None:
-                extra_data['kronos_p_up']  = _kb_p_up
-                extra_data['kronos_score'] = _kb_score
-                extra_data['kronos_src']   = _kb_meta.get('source', 'engine')
-            # 写入result顶层
-            _result['kronos_p_up']  = _kb_p_up
-            _result['kronos_score'] = _kb_score
-            # 回填market_state_raw
-            if isinstance(_result.get('market_state_raw'), dict):
-                _result['market_state_raw']['kronos_p_up'] = _kb_p_up
-            # p_up极端时注入score_final调节（保守±5分）
-            _kron_adj = 0
-            if _kb_p_up >= 0.85:   _kron_adj = +5   # 强看多
-            elif _kb_p_up <= 0.20: _kron_adj = -5   # 强看空
-            if _kron_adj != 0:
-                _result['score_final'] = round(float(_result.get('score_final',0) or 0) + _kron_adj, 1)
-                _result.setdefault('confluence',{}).setdefault('breakdown',{})['Kronos_p_up'] = (
-                    f'{_kron_adj:+d}(p_up={_kb_p_up:.2f} {_kb_meta.get("source","?")})'
-                )
-            if abs(_kb_delta) >= 2:
-                print(f'[KronosBridge·ACTIVE] {_sym_t}: '
-                      f'Kronos={_kb_score:+d} Lite={_kb_lite_score:+d} '
-                      f'Δ={_kb_delta:+d} p_up={_kb_p_up:.3f} adj={_kron_adj:+d}')
-    except Exception as _e_kb:
-        pass  # KronosBridge不影响主流程
-    # ══ [KronosBridge ACTIVE END] ══════════════════════════════════════════════
+                extra_data['kronos_p_up']  = _p_up_raw
+                extra_data['kronos_score'] = _s23
+                extra_data['kronos_src']   = _bk_result.get('source', 'brahma_kronos')
+            _result['kronos_p_up']  = _p_up_raw
+            _result['kronos_score'] = _s23
+            print(f'[KronosBridge·ACTIVE] {_sym_t}: Kronos={_s23:+d} p_up={_p_up_raw:.3f} src={_bk_result.get("source","?")}')
+    except Exception:
+        pass  # Kronos不影响主流程
+    # ── [s23 brahma_kronos END] ─────────────────────────────────────────────────
 
     # ── s24: 已归档 (2026-06-26 设计院封印) ────────────────────────────
     pass  # s24已归档
