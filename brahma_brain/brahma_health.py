@@ -716,10 +716,10 @@ def _check_cron_route_ssot() -> dict:
 
 
 def _check_signal_card_importable() -> dict:
-    """signal_card_formatter模块可导入性"""
+    """signal_card_formatter已归档，改检测brahma_signal [2026-08-24 设计院精简]"""
     try:
-        from brahma_brain.signal_card_formatter import format_vip_card  # noqa
-        return {'ok': True, 'detail': 'brahma_brain.signal_card_formatter OK', 'warn': False}
+        from brahma_brain.brahma_signal import evaluate_signal  # noqa
+        return {'ok': True, 'detail': 'brahma_signal OK (signal_card已合并)', 'warn': False}
     except Exception as e:
         return {'ok': False, 'detail': str(e)[:80], 'warn': True,
                 'fix': 'cp scripts/signal_card_formatter.py brahma_brain/'}
