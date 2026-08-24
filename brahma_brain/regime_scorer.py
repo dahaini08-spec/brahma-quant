@@ -56,24 +56,7 @@ def _klines(symbol: str, interval: str, limit: int = 100) -> list:  # [FIX 2026-
                  'c': float(k[4]), 'v': float(k[5])} for k in raw]
 
 
-def _rsi(closes: list, period: int = 14) -> float:
-
-    # [INT-1] 统一实现已移至 math_utils.rsi，此函数保留兼容
-    """Wilder RSI — 与 market_state.rsi 算法对齐（修复根因：旧SMA简化版与Wilder相差最大13点）"""
-    if len(closes) < period + 1:
-        return 50.0
-    gains, losses = [], []
-    for i in range(1, len(closes)):
-        d = closes[i] - closes[i - 1]
-        gains.append(max(d, 0))
-        losses.append(max(-d, 0))
-    # Wilder平滑EMA：前period根初始化均值，然后逐根EMA更新
-    ag = sum(gains[:period]) / period
-    al = sum(losses[:period]) / period
-    for i in range(period, len(gains)):
-        ag = (ag * (period - 1) + gains[i]) / period
-        al = (al * (period - 1) + losses[i]) / period
-    return round(100 - 100 / (1 + ag / max(al, 1e-9)), 2)
+# _rsi 已由 math_utils import（见文件顶部），本地重复定义已删除 [2026-08-24 设计院精简]
 
 
 def _higher_highs(klines: list, n: int = 5) -> bool:
