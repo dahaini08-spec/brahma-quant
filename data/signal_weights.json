@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "generated_at": "2026-08-16T07:44:10Z",
-  "source": "IC追踪器+达摩院统计回归 2026-07-20 + BEAR_TREND:SHORT系列(2026-07-28设计院补充) | refreshed 2026-08-15 | settler_cron 2026-08-16 | settler_cron 2026-08-17",
+  "source": "IC追踪器+达摩院统计回归 2026-07-20 + BEAR_TREND:SHORT系列(2026-07-28设计院补充) | refreshed 2026-08-15 | settler_cron 2026-08-16 | settler_cron 2026-08-17 | settler_cron 2026-08-24",
   "weights": {
     "BULL_TREND:LONG:155+": {
       "multiplier": 1.0,
@@ -14,9 +14,9 @@
       "ev_basis": -0.7646
     },
     "BULL_TREND:LONG:120-139": {
-      "multiplier": 1.0,
-      "note": "脏数据清洗后 WR=51.5% n=33 恢复正常 [P0-3封印]",
-      "ev_basis": 0.03
+      "multiplier": 0.2,
+      "note": "WR=20% EV=-1.362 n=5 [settler_cron 2026-08-24]",
+      "ev_basis": -1.3619
     },
     "BEAR_RECOVERY:LONG:165+": {
       "multiplier": 1.5,
@@ -93,11 +93,11 @@
       "updated": "2026-08-16"
     },
     "BULL_TREND:LONG:<120": {
-      "multiplier": 0.7,
-      "ev_basis": -0.1668,
+      "multiplier": 0.5,
+      "ev_basis": -0.2639,
       "wr": 0.4583,
       "settled": 48,
-      "note": "settler更新 WR=45.8% n=48 EV=-0.167",
+      "note": "WR=44% EV=-0.264 n=62 [settler_cron 2026-08-24]",
       "updated": "2026-08-16"
     },
     "BULL_EARLY:LONG:<120": {
@@ -140,7 +140,7 @@
     "note": "6方联合封印 2026-07-24: n<15不升权，n<30谨慎，n≥50完全信任",
     "updated": "2026-07-24"
   },
-  "updated_at": "2026-08-23T01:49:03.639099+00:00",
+  "updated_at": "2026-08-24T13:51:00+00:00",
   "BULL_TREND:LONG:120-139": {
     "multiplier": 1.0,
     "basis": "脏数据清洗后 simfactory铁证 n=33 WR=51.5% → NORMAL [2026-08-08 P0-3封印 F15已修正不再封禁]",
