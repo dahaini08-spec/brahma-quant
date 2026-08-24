@@ -150,6 +150,47 @@ WIRING_REGISTRY = [
         'test': lambda: __import__('brahma_brain.fangcang_vector_db', fromlist=['search_similar']).search_similar if hasattr(
             __import__('brahma_brain.fangcang_vector_db', fromlist=['']), 'search_similar') else 'ok_import',
     },
+    # ── step4引擎 [修复 2026-08-24 苏摩追问封印] 原来全部缺失，今日7个空转30天根因 ──
+    {
+        'module': 'volume_exhaustion_engine',
+        'desc': '量能衰竭引擎',
+        'caller': 'brahma_brain/brahma_core_step4.py → VOL_EXH_OK',
+        'visible_in': 'extra_data[vol_exhaustion]',
+        'trigger': 'analyze()',
+        'test': lambda: getattr(__import__('volume_exhaustion_engine'), 'volume_exhaustion_score'),
+    },
+    {
+        'module': 'divergence_engine',
+        'desc': '多周期背离引擎',
+        'caller': 'brahma_brain/brahma_core_step4.py → MULTITF_DIV_OK',
+        'visible_in': 'extra_data[multitf_div]',
+        'trigger': 'analyze()',
+        'test': lambda: getattr(__import__('divergence_engine'), 'multitf_divergence_score'),
+    },
+    {
+        'module': 'microstructure_engine',
+        'desc': '微观结构引擎',
+        'caller': 'brahma_brain/brahma_core_step4.py → MICRO_OK',
+        'visible_in': 'extra_data[microstructure]',
+        'trigger': 'analyze()',
+        'test': lambda: getattr(__import__('microstructure_engine'), 'microstructure_score'),
+    },
+    {
+        'module': 'cross_market_engine',
+        'desc': '跨资产引擎',
+        'caller': 'brahma_brain/brahma_core_step4.py → CROSS_OK',
+        'visible_in': 'extra_data[cross_market]',
+        'trigger': 'analyze()',
+        'test': lambda: getattr(__import__('cross_market_engine'), 'cross_market_score'),
+    },
+    {
+        'module': 'pattern_engine',
+        'desc': '谐波形态引擎',
+        'caller': 'brahma_brain/brahma_core_step4.py → HARMONIC_OK',
+        'visible_in': 'extra_data[harmonic]',
+        'trigger': 'analyze()',
+        'test': lambda: getattr(__import__('pattern_engine'), 'pattern_score'),
+    },
 ]
 
 # ══ 高价值孤岛（建好未接通，需苏摩决策）══════════════════════

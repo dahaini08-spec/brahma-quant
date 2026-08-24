@@ -118,6 +118,8 @@ def scan_d1_modules() -> list:
             'mtf_resonance',           # brahma_decision_engine 多周期共振 ✅
             'kronos_subagent_bridge',  # 归档候选，kronos_engine已覆盖功能，加白名单避免误报 ✅
             'brahma_wiring_check',      # 接线检测器本身，工具脚本不需要接入主链路 ✅
+            'brahma_engine_selfcheck',  # 引擎自检工具，工具脚本 ✅
+            'brahma_full_report',       # 分析报告输出函数，通过run_full_analysis接入 ✅
             'brahma_binance_mcp',      # MCP Server骨架，外部Agent调用，非import链 ✅
             'chart_renderer',          # push_chart.py动态import，二级链覆盖 ✅
             'pip_extractor',           # fangcang_engine调用，二级链覆盖 ✅
@@ -178,6 +180,37 @@ def scan_d1_modules() -> list:
 
     except Exception as e:
         issues.append({'dim': 'D1_modules', 'level': 'WARN', 'msg': f'巡检异常: {e}', 'auto_fix': False})
+
+    # ── 门4: step4_engines 直接import验证 [修复 2026-08-24 苏摩追问封印] ──
+    # 根因: step4的9个_OK标志位从未被任何检查工具覆盖 = 今日7个空转30天的根本原因
+    _step4_engines = [
+        ('volume_exhaustion_engine', 'volume_exhaustion_score', '量能衰竭'),
+        ('divergence_engine',        'multitf_divergence_score','多周期背离'),
+        ('microstructure_engine',    'microstructure_score',    '微观结构'),
+        ('cross_market_engine',      'cross_market_score',      '跨资产'),
+        ('pattern_engine',           'pattern_score',           '谐波形态'),
+        ('macro_engine',             'macro_score_v2',          '宏观引擎'),
+        ('order_flow_engine',        'order_flow_score',        '订单流'),
+        ('multitf_engine',           'multitf_score',           '多周期对齐'),
+        ('whale_engine',             'whale_score',             '鲸鱼引擎'),
+    ]
+    _broken_engines = []
+    for _mod, _fn, _name in _step4_engines:
+        try:
+            import importlib as _il
+            _m = _il.import_module(_mod)
+            if not hasattr(_m, _fn):
+                _broken_engines.append(f'{_name}({_mod}.{_fn}缺失)')
+        except ModuleNotFoundError:
+            _broken_engines.append(f'{_name}({_mod}不存在)')
+        except Exception as _e:
+            _broken_engines.append(f'{_name}({_mod}:{str(_e)[:30]})')
+    if _broken_engines:
+        issues.append({
+            'dim': 'D1_step4_engines', 'level': 'CRITICAL',
+            'msg': f'step4引擎import失败 {len(_broken_engines)}个: {_broken_engines}',
+            'auto_fix': False,
+        })
     return issues
 
 
