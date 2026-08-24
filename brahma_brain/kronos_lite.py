@@ -1,3 +1,8 @@
+# ponytail: 三层Kronos架构是有意为之
+# engine=ML模型推理(主) / lite=规则备用(fallback) / bridge=调度层
+# _p_up_to_score在lite和engine重复——n=1函数，可接受的小冗余
+# 合并条件: 当engine稳定运行>30天后，可删除lite层，bridge直接调engine
+
 """
 brahma_brain/kronos_lite.py — Kronos-Lite 统计代理引擎 v2.0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

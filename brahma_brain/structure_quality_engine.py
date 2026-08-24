@@ -301,9 +301,7 @@ if __name__ == '__main__':
         print(f"  {h:02d}:00 → {get_time_weight(h)}x")
 
 
-# ════════════════════════════════════════════════════════
-# TODO-008: ETH 失效OB降级机制 (2026-06-06)
-# ════════════════════════════════════════════════════════
+# OB失效降级机制（apply_ob_decay_penalty）
 
 def apply_ob_decay_penalty(grade: float, symbol: str, ob_data: dict,
                             current_price: float, timeframe: str = '1h') -> tuple:

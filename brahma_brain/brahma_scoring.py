@@ -19,6 +19,8 @@ brahma_brain · Phase 1 完整整合
 _OSS_MODE = True  # Pro版设为False以启用训练权重
 
 
+# ponytail: 2310行评分模块，历史积累，重构风险高
+# 当前策略: 只加不改，新维度在尾部追加
 import os, sys, time
 import copy  # [P1-C audit-fix] deepcopy for cf dict
 import json  # [D1-fix] 提升到顶部
