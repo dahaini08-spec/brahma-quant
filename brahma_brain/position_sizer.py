@@ -479,12 +479,60 @@ def get_position_pct(symbol: str, score: float, direction: str,
         logger.debug(f'quadrant_mult: {_qe}')
     # ── [END 四象限乘数] ─────────────────────────────────
 
+    # ── [C3 反脆弱性保护 2026-08-25] ───────────────────────────────────────
+    _guard_note = ''
+    try:
+        from antifragile_guard import get_size_multiplier as _gsm, check_emotion_extreme as _cee
+        _gsm_info = _gsm()
+        if _gsm_info['blocked']:
+            return {'pct': 0.0, 'usdt': 0.0, 'leverage': 1,
+                    'reason': f'[反脆弱熔断] {_gsm_info["reason"]}'}
+        if _gsm_info['multiplier'] < 1.0:
+            max_pct = round(max_pct * _gsm_info['multiplier'], 2)
+            _guard_note += f'[连亏减半×{_gsm_info["multiplier"]}]'
+        # 极端情绪熔断
+        _emo = _cee(direction or '')
+        if _emo['blocked']:
+            return {'pct': 0.0, 'usdt': 0.0, 'leverage': 1,
+                    'reason': f'[情绪熔断] {_emo["warning"]}'}
+    except Exception as _ge:
+        logger.debug(f'antifragile_guard: {_ge}')
+    # ── [END C3] ────────────────────────────────────────────────────────────
+
     # ── IC反馈修正：高分低胜率时收紧高分段仓位 ────────────────
     _ic_note = ''
     if _IC_PENALTY and score > 175 and level not in ('BANNED', 'EXPLORING'):
         max_pct = round(max_pct * 0.6, 2)
         usdt = round(max_pct / 100 * nav, 2) if nav else 0
         _ic_note = f'IC={_IC_VALUE:.3f}高分低胜率警告×0.6'
+
+    # ── [B3叙事引擎修正 2026-08-25 苏摩111] 叙事FG仓位修正 ──────────────────
+    # FG<20(极恐惧)+做多 → ×1.15 / FG>80(极贪婪)+做空 → ×1.15
+    # FG<20+做空 → ×0.80  / FG>80+做多 → ×0.80
+    _narrative_note = ''
+    try:
+        from narrative_engine import get_narrative_position_mult as _get_narr_mult
+        _fg_for_narr = fear_greed
+        if _fg_for_narr is None:
+            # fallback: macro_state.json
+            import json as _json_narr, os as _os_narr
+            _ms_path = _os_narr.path.join(_os_narr.path.dirname(
+                _os_narr.path.abspath(__file__)), '..', 'data', 'macro_state.json')
+            try:
+                _ms = _json_narr.load(open(_ms_path))
+                _fg_raw = _ms.get('fear_greed', 50)
+                _fg_for_narr = float(_fg_raw['value'] if isinstance(_fg_raw, dict) else _fg_raw)
+            except Exception:
+                _fg_for_narr = 50
+        if _fg_for_narr is not None and max_pct > 0:
+            _narr_mult, _narrative_note = _get_narr_mult(int(_fg_for_narr), direction or '')
+            if _narr_mult != 1.0:
+                max_pct = round(max_pct * _narr_mult, 2)
+                max_pct = max(max_pct, 0.3)  # 不归零
+                usdt = round(max_pct / 100 * nav, 2) if nav else 0
+    except Exception:
+        pass
+    # ── [END B3叙事修正] ─────────────────────────────────────────────────────
 
     return {
         'pct':             max_pct,
@@ -498,7 +546,8 @@ def get_position_pct(symbol: str, score: float, direction: str,
                            + (f' [{_var_note}]' if _var_note else '')
                            + (f' [{_sw_note}]' if _sw_note else '')
                            + (f' [{_sl_tier_note}]' if _sl_tier_note else '')
-                           + (f' [{_quad_note}]' if _quad_note else ''),
+                           + (f' [{_quad_note}]' if _quad_note else '')
+                           + (f' [{_narrative_note}]' if _narrative_note else ''),
         'allowed':         allowed,
         'fg_cap':          _fg_cap,
         'fg_applied':      _fg_applied,

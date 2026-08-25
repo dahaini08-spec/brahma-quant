@@ -4281,6 +4281,31 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception:
         pass
 
+    # ── [梦天大脑 Layer A2+C3 注入 2026-08-25] ──────────────────────────────────
+    # A2: 极端事件库风险注释
+    try:
+        from extreme_event_db import get_extreme_risk_note as _ern
+        _extreme_note = _ern(_sym)
+        if _extreme_note:
+            _result['extreme_risk_note'] = _extreme_note
+            _result.setdefault('confluence', {}).setdefault('breakdown', {})['extreme_event'] = _extreme_note
+    except Exception:
+        pass
+
+    # C3: 反脆弱性黑天鹅检测
+    try:
+        from antifragile_guard import full_guard_check as _fgc
+        _guard = _fgc(_sym, _result.get('signal_dir', signal_dir or ''))
+        _result['antifragile'] = _guard
+        if _guard['warnings']:
+            _result.setdefault('confluence', {}).setdefault('breakdown', {})['antifragile'] = ' | '.join(_guard['warnings'][:2])
+        if _guard['blocked']:
+            _result['decision_action'] = 'BLOCKED_GUARD'
+            _result['decision_reason'] = f'[反脆弱性熔断] {_guard["warnings"][0] if _guard["warnings"] else "保护熔断"}'
+    except Exception:
+        pass
+    # ── [END 梦天大脑注入] ────────────────────────────────────────────────────────────
+
     return _result
 
 def format_report(r: dict) -> str:
