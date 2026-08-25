@@ -254,6 +254,59 @@ def step6_format_output(symbol: str, s1: dict, s2: dict, s3: dict,
     return '\n'.join(l for l in lines if l is not None)
 
 
+# ── 异步议会追加推送 ────────────────────────────────────────────────
+def _async_council_followup(symbol: str, s2: dict, initial_output: str) -> None:
+    """
+    后台线程：等议会跑完，把结论追加推送给苏摩。
+    不阻塞主流程，卡片已先发出。
+    """
+    import threading
+    def _run():
+        try:
+            import time
+            t0 = time.time()
+            s3 = step3_council(s2)
+            elapsed = time.time() - t0
+            if not s3.get('ok'):
+                return
+            adj   = s3.get('final_adj', 0)
+            votes = s3.get('votes', {})
+            raw   = s3.get('raw', {})
+            lc    = raw.get('llm_council', {})
+
+            lines = [
+                f'🧠 **AI议会追加裁决** | {symbol} | 耗时{elapsed:.0f}s',
+                '',
+            ]
+            for agent in ['risk', 'macro', 'quant', 'devil']:
+                a = lc.get(agent, {})
+                if isinstance(a, dict):
+                    adj_a = a.get('score_adj', 0) or 0
+                    src   = a.get('source', '?')
+                    if agent == 'devil':
+                        veto = a.get('veto', False)
+                        lines.append(f'  👿 DevilAgent: veto={veto} src={src}')
+                    else:
+                        icon = '🟢' if adj_a > 0 else ('🔴' if adj_a < 0 else '⚪')
+                        lines.append(f'  {icon} {agent.capitalize()}: adj={adj_a:+d} src={src}')
+
+            lines += ['', f'**议会final_adj: {adj:+d}** | score_after={s2.get("score",0)+adj:.1f}']
+
+            msg = '\n'.join(lines)
+            import subprocess as _sp
+            _sp.Popen([
+                'openclaw', 'infer',
+                '--channel', 'jarvis',
+                '--to', '73295708:thread:01a033af-3697-734a-9f9c-c3e34a00c378',
+                '--message', msg,
+            ], stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
+        except Exception:
+            pass
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+
+
 # ── 主入口 ───────────────────────────────────────────────────────────
 def run_full_pipeline(symbol: str) -> str:
     """
@@ -276,10 +329,9 @@ def run_full_pipeline(symbol: str) -> str:
     if not s2.get('ok'):
         return f'❌ Step2失败（35维评分）: {s2.get("error")}\n分析中止。'
 
-    # Step3（失败可降级，不中止）
-    s3 = step3_council(s2)
-    if not s3.get('ok'):
-        errors.append(f'Step3降级: {s3.get("error")}')
+    # Step3 异步启动（不阻塞，先出卡片，议会完成同步追加）
+    s3 = {'ok': False, 'final_adj': 0, 'error': '议会异步运行中'}
+    _async_council_followup(sym, s2, '')
 
     # Step4（失败可降级）
     s4 = step4_price_zone(sym)
