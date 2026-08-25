@@ -1347,6 +1347,10 @@ def run_analysis_full(symbol: str, deep: bool = True) -> dict:
         # 权重矩阵：提取 top10 贡献维度
         score_items = []
         for k, v in breakdown.items():
+            # 跳过非数字字段（文本注释类，如extreme_event风险描述）
+            if not isinstance(v, (int, float)) and not str(v).lstrip('+-').split('.')[0].isdigit():
+                logger.debug(f'[runner] score_item跳过文本字段 {k}')
+                continue
             sv = str(v)
             try:
                 val = float(sv.split('(')[0].replace('+','').strip())

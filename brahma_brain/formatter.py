@@ -224,9 +224,12 @@ def format_report(r: dict) -> str:
             elif isinstance(v, (int, float)):
                 vi = int(v)
             else:
-                # 从字符串中提取首个数字（含负号），如 "+6 CVD..." → 6，"-9(FR...)" → -9
+                # 仅提取以+/-数字开头的字段，跳过文本注释（如extreme_event风险描述）
                 import re as _re
-                _m = _re.search(r'([+-]?\d+)', str(v))
+                _sv = str(v).strip()
+                if not _sv or (not _sv[0].isdigit() and _sv[0] not in '+-'):
+                    continue  # 文本字段跳过，不展示也不计入分数
+                _m = _re.match(r'([+-]?\d+)', _sv)
                 vi = int(_m.group(1)) if _m else 0
         except (TypeError, ValueError):
             vi = 0
