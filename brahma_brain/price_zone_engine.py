@@ -158,115 +158,151 @@ def _calc_zones_internal(symbol: str) -> dict:
     except Exception:
         f382 = s1; f618 = s1 * 0.99; f786 = s2; f236 = r1 * 0.99
 
-    # ══ P0: 基础高空区 ════════════════════════════════════════
-    hs_sources = []
-    hs_levels  = []
-
-    # R1 Pivot
-    hs_levels.append(r1); hs_sources.append(f'R1={r1:.0f}')
-    # BB4H上轨
-    hs_levels.append(bb4h[0]); hs_sources.append(f'BB4H上轨={bb4h[0]:.0f}')
-    # Fib0.236 (回调后新高压力)
-    if f236 > price * 1.005:
-        hs_levels.append(f236); hs_sources.append(f'Fib0.236={f236:.0f}')
-
-    hs_center = sum(hs_levels) / len(hs_levels)
-    hs_low  = hs_center - atr4h_v * 0.3
-    hs_high = hs_center + atr4h_v * 0.5
-    hs_conf = 1  # P0基础置信度
-
-    # ── P1: 接入清算密度 ──────────────────────────────────────
+    # ══ P1: 先拿清算密集位（最高精度锚点） ══════════════════════
+    liq_above_walls = []   # [(price, usd), ...]
+    liq_below_walls = []
     liq_above_price = None
     liq_below_price = None
+    liq_above_usd   = 0
+    liq_below_usd   = 0
     try:
         from liq_density_engine import get_liq_density
         liq_data = get_liq_density(symbol, price)
         if liq_data:
-            # above_walls: [(price, usd), ...] 按价格升序
             above_walls = liq_data.get('above_walls', [])
             below_walls = liq_data.get('below_walls', [])
-            # 找上方最大清算密集区（按USD量排序）
-            if above_walls:
-                biggest_above = sorted(above_walls, key=lambda x: -x[1])[:2]
-                liq_above_price = biggest_above[0][0]
-                liq_above_usd   = biggest_above[0][1] / 1e6
-                hs_sources.append(f'清算密集={liq_above_price:.0f}(${liq_above_usd:.0f}M)')
-                hs_conf += 1
-                hs_low  = min(hs_low,  liq_above_price * 0.997)
-                hs_high = max(hs_high, liq_above_price + atr4h_v * 0.25)
-            if below_walls:
-                biggest_below = sorted(below_walls, key=lambda x: -x[1])[:2]
-                liq_below_price = biggest_below[0][0]
-                liq_below_usd   = biggest_below[0][1] / 1e6
+            # 上方：最近3个清算墙（价格最近优先），同时记录最大USD
+            near_above = sorted([w for w in above_walls if w[0] > price * 1.002],
+                                key=lambda x: x[0])[:3]
+            liq_above_walls = near_above
+            if near_above:
+                # 优先取USD最大的作为锚点，但不能离价格太远（>3ATR4H）
+                valid = [w for w in near_above if w[0] < price + atr4h_v * 3]
+                if valid:
+                    best = max(valid, key=lambda x: x[1])
+                    liq_above_price = best[0]
+                    liq_above_usd   = best[1] / 1e6
+            # 下方：最近3个清算墙
+            near_below = sorted([w for w in below_walls if w[0] < price * 0.998],
+                                key=lambda x: -x[0])[:3]
+            liq_below_walls = near_below
+            if near_below:
+                valid = [w for w in near_below if w[0] > price - atr4h_v * 3]
+                if valid:
+                    best = max(valid, key=lambda x: x[1])
+                    liq_below_price = best[0]
+                    liq_below_usd   = best[1] / 1e6
     except Exception as e:
         logger.debug(f'liq_density: {e}')
 
-    # ── P1: 接入SMC ───────────────────────────────────────────
+    # ── P1: SMC OB/FVG结构 ───────────────────────────────────
     smc_resistance = None
     smc_support    = None
     try:
         from smc_engine import analyze_smc
-        smc_1h = analyze_smc(symbol, 'SHORT', '1h', 100)
+        smc_1h = analyze_smc(symbol, 'SHORT', '1h', 200)
         obs    = smc_1h.get('order_blocks', {})
         fvgs   = smc_1h.get('fvgs', {})
-
-        # 找上方最近的OB/FVG（空头压力）
-        bear_obs = [ob for ob in obs.get('bearish', [])
-                    if ob.get('high', 0) > price and not ob.get('mitigated', False)]
-        bear_fvgs = [f for f in fvgs.get('bearish', [])
-                     if f.get('high', 0) > price]
+        bear_obs = sorted([ob for ob in obs.get('bearish', [])
+                           if ob.get('high', 0) > price and not ob.get('mitigated', False)],
+                          key=lambda x: x.get('high', 0))
+        bear_fvgs = sorted([f for f in fvgs.get('bearish', [])
+                            if f.get('high', 0) > price],
+                           key=lambda x: x.get('high', 0))
         if bear_obs:
-            smc_resistance = bear_obs[0].get('high', None)
-            if smc_resistance:
-                hs_sources.append(f'SMC空头OB={smc_resistance:.0f}')
-                hs_conf += 1
-                hs_low  = min(hs_low,  smc_resistance * 0.997)
-                hs_high = max(hs_high, smc_resistance + atr4h_v * 0.2)
+            smc_resistance = bear_obs[0].get('high')
         elif bear_fvgs:
-            smc_resistance = bear_fvgs[0].get('high', None)
-            if smc_resistance:
-                hs_sources.append(f'SMC空头FVG={smc_resistance:.0f}')
-                hs_conf += 1
-
-        # 找下方最近的多头OB（支撑）
-        bull_obs = [ob for ob in obs.get('bullish', [])
-                    if ob.get('low', 9e9) < price and not ob.get('mitigated', False)]
+            smc_resistance = bear_fvgs[0].get('high')
+        bull_obs = sorted([ob for ob in obs.get('bullish', [])
+                           if ob.get('low', 9e9) < price and not ob.get('mitigated', False)],
+                          key=lambda x: -x.get('low', 0))
         if bull_obs:
-            smc_support = bull_obs[0].get('low', None)
+            smc_support = bull_obs[0].get('low')
     except Exception as e:
         logger.debug(f'smc_engine: {e}')
 
-    # ══ 低多区 ════════════════════════════════════════════════
+    # ══ 高空区：清算锚点精确定位 ══════════════════════════════
+    hs_sources = []
+    hs_conf    = 1
+
+    if liq_above_price:
+        # 以清算密集位为精确锚点，宽度=相邻清算墙间距 or ATR4H×0.15（取小）
+        wall_prices = [w[0] for w in liq_above_walls if w[0] > price * 1.002]
+        if len(wall_prices) >= 2:
+            # 相邻两墙之间的空区 = 高空区
+            wall_prices_sorted = sorted(wall_prices)[:2]
+            hs_low  = wall_prices_sorted[0] * 0.999
+            hs_high = wall_prices_sorted[1] + atr4h_v * 0.08
+        else:
+            # 单墙：上下各0.5%
+            hs_low  = liq_above_price * 0.994
+            hs_high = liq_above_price + atr4h_v * 0.15
+        hs_sources.append(f'清算${liq_above_usd:.0f}M@{liq_above_price:.0f}')
+        hs_conf += 1
+    else:
+        # 无清算数据，回退到R1/Fib，宽度用ATR4H×0.3（比原来小）
+        hs_center = (r1 + bb4h[0]) / 2
+        hs_low  = hs_center - atr4h_v * 0.15
+        hs_high = hs_center + atr4h_v * 0.15
+        hs_sources.append(f'R1={r1:.0f}')
+
+    # SMC进一步收窄
+    if smc_resistance and hs_low <= smc_resistance <= hs_high * 1.01:
+        hs_high = min(hs_high, smc_resistance + atr4h_v * 0.05)
+        hs_sources.append(f'SMC_OB={smc_resistance:.0f}')
+        hs_conf = min(3, hs_conf + 1)
+    elif smc_resistance and smc_resistance > price * 1.002:
+        # SMC在清算区附近但不重合，取两者中心收窄
+        hs_sources.append(f'SMC={smc_resistance:.0f}')
+
+    # 补充来源标签
+    if f236 > price * 1.002:
+        hs_sources.append(f'Fib236={f236:.0f}')
+    if r1 > price * 1.002 and f'R1={r1:.0f}' not in hs_sources:
+        hs_sources.append(f'R1={r1:.0f}')
+
+    # ══ 低多区：清算锚点精确定位 ══════════════════════════════
     ll_sources = []
-    ll_levels  = []
+    ll_conf    = 1
+    # 默认值，防止未初始化
+    ll_anchor  = f618 if f618 < price * 0.990 else s1
+    ll_low     = ll_anchor - atr4h_v * 0.15
+    ll_high    = ll_anchor + atr4h_v * 0.15
 
-    # S1 Pivot
-    ll_levels.append(s1); ll_sources.append(f'S1={s1:.0f}')
-    # Fib0.618 (黄金回调)
-    if f618 < price * 0.995:
-        ll_levels.append(f618); ll_sources.append(f'Fib0.618={f618:.0f}')
-    # Fib0.382
-    if f382 < price * 0.998:
-        ll_levels.append(f382); ll_sources.append(f'Fib0.382={f382:.0f}')
-
-    ll_center = sum(ll_levels) / len(ll_levels)
-    ll_low    = ll_center - atr4h_v * 0.5
-    ll_high   = ll_center + atr4h_v * 0.3
-    ll_conf   = 1
-
-    # 清算密集（下方）→ 低多区加持
     if liq_below_price:
-        ll_sources.append(f'清算密集={liq_below_price:.0f}(${liq_below_usd:.0f}M)')
-        ll_conf += 1
-        ll_low  = min(ll_low,  liq_below_price * 0.998)
-        ll_high = max(ll_high, liq_below_price + atr4h_v * 0.2)
+        # 过滤：低多区必须在当前价格以下至少 1.0% 才有意义
+        if liq_below_price and liq_below_price < price * 0.990:
+            wall_prices_b = sorted([w[0] for w in liq_below_walls
+                                    if w[0] < price * 0.990], reverse=True)[:2]
+            if len(wall_prices_b) >= 2:
+                ll_low  = wall_prices_b[1] - atr4h_v * 0.05
+                ll_high = wall_prices_b[0] * 1.001
+            else:
+                ll_low  = liq_below_price - atr4h_v * 0.15
+                ll_high = liq_below_price * 1.005
+            ll_sources.append(f'清算${liq_below_usd:.0f}M@{liq_below_price:.0f}')
+            ll_conf += 1
+    else:
+        liq_below_price = None
 
-    # SMC多头OB → 低多区加持
-    if smc_support:
-        ll_sources.append(f'SMC多头OB={smc_support:.0f}')
-        ll_conf += 1
-        ll_low  = min(ll_low,  smc_support * 0.997)
-        ll_high = max(ll_high, smc_support + atr4h_v * 0.15)
+    if not liq_below_price:
+        ll_anchor = f618 if f618 < price * 0.990 else s1
+        ll_low    = ll_anchor - atr4h_v * 0.15
+        ll_high   = ll_anchor + atr4h_v * 0.15
+        ll_sources.append(f'S1={s1:.0f}')
+        if f618 < price * 0.995:
+            ll_sources.append(f'Fib618={f618:.0f}')
+
+    if smc_support and ll_low <= smc_support <= ll_high * 1.01:
+        ll_low = min(ll_low, smc_support * 0.998)
+        ll_sources.append(f'SMC_OB={smc_support:.0f}')
+        ll_conf = min(3, ll_conf + 1)
+
+    # 补充Fib标签
+    if f618 < price * 0.995 and f'Fib618={f618:.0f}' not in ll_sources:
+        ll_sources.append(f'Fib618={f618:.0f}')
+    if s1 < price * 0.998 and f'S1={s1:.0f}' not in ll_sources:
+        ll_sources.append(f'S1={s1:.0f}')
 
     # ══ P2: HCME方仓历史匹配 ══════════════════════════════════
     hcme_note   = ''
