@@ -206,31 +206,37 @@ def get_longmem_regime_factor(regime: str) -> dict:
 def get_extreme_event_warning(symbol: str = 'BTCUSDT') -> dict:
     """
     检测当前市场是否与历史极端事件高度相似。
-    返回 {warning_level, matched_event, similarity, action}
+    返回 {warning_level, matched_event, similarity, action, score_adj}
     """
     warning = {'warning_level': 'NONE', 'matched_event': None,
-               'similarity': 0.0, 'action': 'NORMAL'}
+               'similarity': 0.0, 'action': 'NORMAL', 'score_adj': 0}
     try:
-        from brahma_bus import get_price
         from narrative_engine import get_narrative_score, get_crowd_sentiment
-        ns = get_narrative_score(symbol)
-        cs = get_crowd_sentiment(symbol)
-        fg    = float((ns or {}).get('fg', 50))
-        lsr   = float((cs or {}).get('lsr_pct', 50) or 50)
+        ns  = get_narrative_score(symbol)
+        cs  = get_crowd_sentiment(symbol)
+        fg  = float((ns or {}).get('fg', 50))
+        lsr = float((cs or {}).get('lsr_pct', 50) or 50)
+        fr  = float((cs or {}).get('fr', 0) or 0)
 
-        # 极端贪婪 + 极高LSR = 顶部特征
-        if fg > 85 and lsr > 75:
-            warning['warning_level'] = 'HIGH'
-            warning['matched_event'] = '类2021BTC顶部特征'
-            warning['similarity']    = round((fg - 85) / 15 * 0.5 + (lsr - 75) / 25 * 0.5, 2)
-            warning['action']        = 'REDUCE_LONG_AVOID_NEW'
-
-        # 极端恐慌 = 底部机会
+        # 极端贪婪 + 极高LSR + 极高FR = CRITICAL顶部（类2021BTC顶部）
+        if fg > 85 and lsr > 75 and fr > 0.02:
+            warning.update({'warning_level':'CRITICAL','matched_event':'2021BTC顶部特征',
+                'similarity':round((fg-85)/15*0.4+(lsr-75)/25*0.4+min(fr/0.05,1)*0.2,2),
+                'action':'STOP_LONG_FLIP_SHORT','score_adj':-15})
+        elif fg > 85 and lsr > 75:
+            warning.update({'warning_level':'HIGH','matched_event':'类2021BTC顶部特征',
+                'similarity':round((fg-85)/15*0.5+(lsr-75)/25*0.5,2),
+                'action':'REDUCE_LONG_AVOID_NEW','score_adj':-8})
+        # LSR极度拥挤（类312前兆）
+        elif lsr > 80:
+            warning.update({'warning_level':'HIGH','matched_event':'多头极度拥挤(类312前兆)',
+                'similarity':round((lsr-80)/20,2),
+                'action':'REDUCE_LONG_SIZE','score_adj':-6})
+        # 极端恐慌 = 底部机会（类FTX崩盘后）
         elif fg < 15:
-            warning['warning_level'] = 'OPPORTUNITY'
-            warning['matched_event'] = '类FTX崩盘后底部'
-            warning['similarity']    = round((15 - fg) / 15, 2)
-            warning['action']        = 'WATCH_LONG_REVERSAL'
+            warning.update({'warning_level':'OPPORTUNITY','matched_event':'类FTX崩盘后底部',
+                'similarity':round((15-fg)/15,2),
+                'action':'WATCH_LONG_REVERSAL','score_adj':+5})
     except Exception:
         pass
 
@@ -261,12 +267,16 @@ def get_longmem_score_adj(symbol: str, regime: str, signal_dir: str) -> dict:
 
     # 2. 极端事件预警
     extreme = get_extreme_event_warning(symbol)
-    if extreme['warning_level'] == 'HIGH' and signal_dir == 'LONG':
-        adj  -= 8.0
-        reasons.append(f"极端预警:{extreme['matched_event']}(-8)")
-    elif extreme['warning_level'] == 'OPPORTUNITY' and signal_dir == 'LONG':
-        adj  += 5.0
-        reasons.append(f"底部机会:{extreme['matched_event']}(+5)")
+    # 使用极端事件库的动态score_adj（30个事件都有自己的调整值）
+    _ew_adj = extreme.get('score_adj', 0)
+    if _ew_adj != 0 and extreme['warning_level'] not in ('NONE',):
+        if signal_dir == 'LONG':
+            adj += _ew_adj
+            reasons.append(f"极端事件:{extreme['matched_event']}({_ew_adj:+d})")
+        elif signal_dir == 'SHORT' and _ew_adj < 0:
+            # 极端做空机会（score_adj为负时，做空方向加分）
+            adj -= _ew_adj * 0.5
+            reasons.append(f"极端反转机会:{extreme['matched_event']}({-_ew_adj*0.5:+.0f})")
 
     # 3. 黄金压缩规律迁移（BBW相关）
     try:
@@ -316,3 +326,127 @@ if __name__ == '__main__':
     for e in EXTREME_EVENTS[:5]:
         print(f'  {e["year"]} {e["name"]}: {e.get("crypto_impact","?")} → {e["response"]}')
     print(f'  ...共{len(EXTREME_EVENTS)}个极端事件')
+
+# ════════════════════════════════════════════════════════════════════
+# P2: 极端事件向量库扩充至30个（设计院 2026-08-25 苏摩111）
+# ════════════════════════════════════════════════════════════════════
+EXTREME_EVENTS_EXTENDED = [
+    # 16: 2018 BTC 20K→3K 熊市
+    {'name': '2018 加密熊市',         'year': 2018, 'type': 'CRYPTO_BEAR_MARKET',
+     'features': {'duration_months': 12, 'drawdown_pct': -84, 'retail_exit': True},
+     'crypto_impact': 'BTC 20K→3K -84%', 'response': 'BEAR_REGIME_STRICT',
+     'score_signal': {'BEAR_TREND_SHORT': +8, 'BULL_TREND_LONG': -12}},
+
+    # 17: 2019 BTC 假牛
+    {'name': '2019 BTC假牛反弹',       'year': 2019, 'type': 'BEAR_MARKET_RALLY',
+     'features': {'bear_rally_pct': +350, 'failed_breakout': True, 'volume_weak': True},
+     'crypto_impact': 'BTC 3K→14K→7K 假牛', 'response': 'WATCH_SHORT_REVERSAL',
+     'score_signal': {'CHOP_SHORT': +5, 'BULL_TREND_LONG': -5}},
+
+    # 18: 2020 312 黑色星期四
+    {'name': '2020 312黑色星期四',     'year': 2020, 'type': 'FLASH_CRASH',
+     'features': {'single_day_drop_pct': -40, 'bitmex_downtime': True, 'oi_collapse': True, 'liquidation_cascade': True},
+     'crypto_impact': 'BTC 8K→4K单日-50% 全平台宕机', 'response': 'STOP_ALL_IMMEDIATELY',
+     'score_signal': {'ANY_LONG': -20, 'BEAR_SHORT': +5}},
+
+    # 19: 2021 519 暴跌
+    {'name': '2021 519暴跌',          'year': 2021, 'type': 'REGULATORY_SHOCK',
+     'features': {'china_ban': True, 'single_day_drop_pct': -30, 'hashrate_crash': True},
+     'crypto_impact': 'BTC 58K→30K 中国禁矿', 'response': 'REDUCE_SIZE_HALF',
+     'score_signal': {'BULL_TREND_LONG': -8}},
+
+    # 20: 2021 Evergrande危机
+    {'name': '2021 恒大危机',          'year': 2021, 'type': 'CREDIT_CRISIS',
+     'features': {'china_real_estate': True, 'contagion_risk': True, 'risk_off': True},
+     'crypto_impact': 'BTC -20% 短暂冲击', 'response': 'REDUCE_LONG',
+     'score_signal': {'BULL_TREND_LONG': -4}},
+
+    # 21: 2022 三箭资本崩盘
+    {'name': '2022 3AC崩盘',          'year': 2022, 'type': 'HEDGE_FUND_COLLAPSE',
+     'features': {'leverage_unwind': True, 'forced_liquidation': True, 'contagion_lenders': True},
+     'crypto_impact': 'BTC 30K→20K Celsius/Voyager倒闭', 'response': 'STOP_LONG_EXIT',
+     'score_signal': {'ANY_LONG': -10, 'BEAR_SHORT': +8}},
+
+    # 22: 2023 Binance BUSD清算
+    {'name': '2023 BUSD监管清算',      'year': 2023, 'type': 'STABLECOIN_REGULATION',
+     'features': {'sec_action': True, 'stablecoin_outflow': True},
+     'crypto_impact': 'BNB -15% BUSD退市', 'response': 'AVOID_BNB_LONG',
+     'score_signal': {'BNBUSDT_LONG': -8}},
+
+    # 23: 2023 BTC铭文热潮
+    {'name': '2023 铭文/Ordinals热潮', 'year': 2023, 'type': 'NARRATIVE_CATALYST',
+     'features': {'on_chain_frenzy': True, 'fee_spike': True, 'btc_narrative_shift': True},
+     'crypto_impact': 'BTC链上拥堵 Gas费暴涨 短期+25%', 'response': 'LONG_NARRATIVE_BOOST',
+     'score_signal': {'BULL_TREND_LONG': +5}},
+
+    # 24: 2024 BTC 现货ETF通过前夜假消息
+    {'name': '2024 ETF假消息插针',     'year': 2024, 'type': 'FAKE_NEWS_SPIKE',
+     'features': {'false_report': True, 'instant_reversal': True, 'stop_hunt': True},
+     'crypto_impact': 'BTC +10%→瞬间-8% 止损猎杀', 'response': 'AVOID_FOMO_ENTRY',
+     'score_signal': {'HIGH_VOLATILITY': -5}},
+
+    # 25: 2024 以太坊Dencun升级
+    {'name': '2024 ETH Dencun升级',   'year': 2024, 'type': 'PROTOCOL_UPGRADE',
+     'features': {'l2_fee_crash': True, 'eth_burn_decrease': True},
+     'crypto_impact': 'ETH短期+15% L2Gas降90%', 'response': 'LONG_PROTOCOL_CATALYST',
+     'score_signal': {'ETHUSDT_LONG': +5}},
+
+    # 26: 2025 特朗普战略储备宣布
+    {'name': '2025 美国战略储备宣布', 'year': 2025, 'type': 'SOVEREIGN_ADOPTION',
+     'features': {'government_buy': True, 'policy_shift': True, 'institutional_cascade': True},
+     'crypto_impact': 'BTC +40% 机构跟进', 'response': 'STRONG_LONG_CATALYST',
+     'score_signal': {'BULL_TREND_LONG': +10}},
+
+    # 27: 2025 关税战二轮
+    {'name': '2025 关税战恐慌II',     'year': 2025, 'type': 'MACRO_SHOCK',
+     'features': {'tariff_escalation': True, 'nasdaq_bear': True, 'btc_correlation_spike': True},
+     'crypto_impact': 'BTC -35% 全风险资产同跌', 'response': 'STOP_ALL',
+     'score_signal': {'ANY_LONG': -12, 'BEAR_SHORT': +6}},
+
+    # 28: 2015 以太坊上线
+    {'name': '2015 ETH主网上线',      'year': 2015, 'type': 'PLATFORM_LAUNCH',
+     'features': {'new_l1_launch': True, 'developer_influx': True},
+     'crypto_analog': '新公链上线叙事', 'response': 'LONG_NEW_L1',
+     'score_signal': {'NEW_L1_LONG': +6}},
+
+    # 29: 2016 DAO黑客事件
+    {'name': '2016 DAO黑客',          'year': 2016, 'type': 'PROTOCOL_HACK',
+     'features': {'smart_contract_exploit': True, 'hard_fork': True, 'community_split': True},
+     'crypto_impact': 'ETH -45% 分叉为ETH/ETC', 'response': 'AVOID_HACKED_PROTOCOL',
+     'score_signal': {'HACK_EVENT': -15}},
+
+    # 30: 2019 Libra宣布
+    {'name': '2019 Facebook Libra',   'year': 2019, 'type': 'CORPORATE_CATALYST',
+     'features': {'big_tech_entry': True, 'regulatory_backlash': True},
+     'crypto_impact': 'BTC +20%后监管打压回落', 'response': 'WATCH_REGULATORY_RISK',
+     'score_signal': {'REGULATORY_RISK': -5}},
+]
+
+# 合并到主列表
+EXTREME_EVENTS = EXTREME_EVENTS + EXTREME_EVENTS_EXTENDED
+
+# 极端事件快速检索：按类型索引
+EXTREME_EVENT_INDEX = {}
+for _e in EXTREME_EVENTS:
+    _t = _e['type']
+    EXTREME_EVENT_INDEX.setdefault(_t, []).append(_e)
+
+
+def get_extreme_event_score_signal(event_type: str, trade_signal: str) -> int:
+    """
+    给定事件类型和交易信号，返回分数调整。
+    trade_signal: 如 'BULL_TREND_LONG' / 'BEAR_SHORT' / 'ANY_LONG'
+    """
+    events = EXTREME_EVENT_INDEX.get(event_type, [])
+    total_adj = 0
+    for e in events:
+        signals = e.get('score_signal', {})
+        # 精确匹配
+        if trade_signal in signals:
+            total_adj += signals[trade_signal]
+        # 通配匹配
+        elif 'ANY_LONG' in signals and 'LONG' in trade_signal:
+            total_adj += signals['ANY_LONG']
+        elif 'ANY_SHORT' in signals and 'SHORT' in trade_signal:
+            total_adj += signals.get('ANY_SHORT', 0)
+    return total_adj
