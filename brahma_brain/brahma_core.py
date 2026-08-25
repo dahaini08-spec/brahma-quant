@@ -3046,6 +3046,8 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     _result = {
         'symbol':      symbol,
         'price':       ms['price'],
+        'price_ts':    time.time(),   # [设计院 2026-08-25] 强制写入实时时间戳，防旧数据输出
+        'data_age_sec': 0,             # 刚从API取，age=0
         'signal_dir':  signal_dir,
         'regime':      ms['regime'],
         'regime_cn':   _REGIME_CN.get(ms['regime'], ms['regime']),  # [v25.3] 体制中文
