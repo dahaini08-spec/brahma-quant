@@ -282,6 +282,46 @@ def inject_brahma_context(
             lines.append(f'  ★ 最优周期: {best_tf} WR={best_wr:.0%}')
         lines.append('')
 
+    # 层1b: 蒸馏矩阵 — 全市场同体制同方向WR对比
+    _load_wr_matrix()
+    if _WR_MATRIX_CACHE:
+        sym_key = symbol.replace('USDT', '').upper()
+        mkt_parts = []
+        for tf in ['15m', '1h', '4h']:
+            # 优先查 regime:dir:tf，降级查 ALL:dir:tf
+            k_rgm = f'{regime}:{signal_dir}:{tf}'
+            k_all = f'ALL:{signal_dir}:{tf}'
+            s = (_WR_MATRIX_CACHE.get('by_regime_dir_tf', {}).get(k_rgm)
+                 or _WR_MATRIX_CACHE.get('by_regime_dir_tf', {}).get(k_all))
+            if s and s.get('n', 0) >= 20:
+                mkt_parts.append(f'{tf}:WR={s["wr"]:.0%}(n={s["n"]})')
+        if mkt_parts:
+            lines.append('【全市场同条件WR（蒸馏矩阵）】')
+            lines.append('  ' + '  '.join(mkt_parts))
+            # 当前币在全市场的排名
+            coin_tbl = _WR_MATRIX_CACHE.get('by_coin_dir_tf', {})
+            best_coin_wr = None
+            best_coin_tf = None
+            for tf in ['15m', '1h', '4h']:
+                ck = f'{sym_key}:{signal_dir}:{tf}'
+                cs = coin_tbl.get(ck)
+                if cs and cs.get('n', 0) >= 5:
+                    if best_coin_wr is None or cs['wr'] > best_coin_wr:
+                        best_coin_wr = cs['wr']
+                        best_coin_tf = tf
+            if best_coin_wr is not None:
+                lines.append(f'  {sym_key}单币最优: {best_coin_tf} WR={best_coin_wr:.0%}')
+            # top coins
+            rd_key = f'{regime}:{signal_dir}'
+            top_coins = _WR_MATRIX_CACHE.get('top_coins_by_regime_dir', {}).get(rd_key, [])
+            if not top_coins:
+                top_coins = _WR_MATRIX_CACHE.get('top_coins_by_regime_dir', {}).get(
+                    f'ALL:{signal_dir}', [])
+            if top_coins:
+                tc_str = ' '.join(f'{c["coin"]}:{c["wr"]:.0%}' for c in top_coins[:3])
+                lines.append(f'  ★ 当前体制最优前3: {tc_str}')
+            lines.append('')
+
     # 层3: 相似案例
     if include_cases and total_n > 0:
         lines += ['【最相似历史案例 Top3】']
