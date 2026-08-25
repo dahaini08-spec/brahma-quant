@@ -268,8 +268,22 @@ def main():
 
 main()
 
+# P1-3: 体制陈旧超过60min自动推送P0告警
+try:
+    import time as _stale_t
+    _sf = BASE / 'data' / 'brahma_state.json'
+    if _sf.exists():
+        _age_min = int((_stale_t.time() - _sf.stat().st_mtime) / 60)
+        if _age_min >= 60:
+            _stale_msg = (
+                f'🚨 [P0告警] 梵天体制状态陈旧 {_age_min}min！'
+                f'（超过60min阈値）当前体制可能失效，'
+                f'信号可信度下降。请检查brahma-state-refresh cron是否正常运行。'
+            )
+            print(_stale_msg)
+except Exception:
+    pass
 
-def clean_stale_price_zones():
     """清理过时入场区（距现价>5%或超过6H未更新）"""
     import time as _time
     zones_file = BASE / 'data' / 'price_zones.json'
