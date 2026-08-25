@@ -231,12 +231,15 @@ def step6_format_output(symbol: str, s1: dict, s2: dict, s3: dict,
     ]
 
     if sentiment:
-        fg = sentiment.get('fg_index', 'N/A')
-        lines.append(f'| FG指数 | {fg} |')
+        fg = sentiment.get('fg', sentiment.get('fg_index', 'N/A'))
+        fg_label = sentiment.get('fg_label', '')
+        lines.append(f'| FG指数 | {fg} {fg_label} |')
 
     if crowd:
-        lsr = crowd.get('lsr', 'N/A')
+        lsr = crowd.get('lsr_pct', crowd.get('lsr', 'N/A'))
+        fr  = crowd.get('fr', 'N/A')
         lines.append(f'| LSR多空比 | {lsr} |')
+        lines.append(f'| 资金费率 | {fr} |')
 
     lines += ['', '### 🗺️ 战场预判', zone_str, '']
 

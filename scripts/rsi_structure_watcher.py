@@ -838,6 +838,38 @@ def run():
                      '--channel','jarvis','--message', _zone_msg],
                     stdout=_sp2.DEVNULL, stderr=_sp2.DEVNULL
                 )
+                # [设计院 2026-08-25 苏摩111] P1: price_zone触及→CPU大脑直通
+                # 不再只推消息，直接让CPU决策要不要执行
+                try:
+                    from brahma_cpu import process_event as _cpu_process
+                    _zone_type = _zone_touch.get('zone_type', 'UNKNOWN')  # SHORT_ZONE / LONG_ZONE
+                    _cpu_dir = 'SHORT' if _zone_type == 'SHORT_ZONE' else 'LONG'
+                    import threading as _thr
+                    def _cpu_run():
+                        try:
+                            _cpu_result = _cpu_process(
+                                symbol=sym,
+                                signal_dir=_cpu_dir,
+                                event_type=f'ZONE_TOUCH_{_zone_type}',
+                            )
+                            _dec = _cpu_result.get('decision', 'SKIP')
+                            _sc  = _cpu_result.get('score', 0)
+                            _rsn = _cpu_result.get('reason', '')
+                            if _dec in ('EXECUTE', 'ALERT'):
+                                _icon = '🟢' if _dec == 'EXECUTE' else '🟡'
+                                _notify = (f'{_icon} **CPU大脑裁决** | {sym} 区间触及\n'
+                                           f'方向:{_cpu_dir} score={_sc:.1f} decision={_dec}\n{_rsn}')
+                                _sp2.Popen(
+                                    ['openclaw','infer','--channel','jarvis',
+                                     '--to', JARVIS_TARGET,
+                                     '--message', _notify],
+                                    stdout=_sp2.DEVNULL, stderr=_sp2.DEVNULL
+                                )
+                        except Exception:
+                            pass
+                    _thr.Thread(target=_cpu_run, daemon=True).start()
+                except Exception:
+                    pass  # CPU接入失败不影响主流程
         except Exception:
             pass  # 区间检测不影响主流程
 
