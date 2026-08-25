@@ -3680,18 +3680,25 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _actual_dir = _result.get('signal_dir', '')
         if _actual_dir in ('LONG', 'SHORT') and isinstance(_fc_res, dict):
             try:
-                from fangcang_hcme_bridge import get_fangcang_hcme_score as _fc_hcme
-                _hcme_r2 = _fc_hcme(
+                # [设计院 2026-08-25 苏摩111] 统一方仓查询层：合并系统1(K线)+系统2(案例库)
+                # 替代原来的 hcme_wr_adj=0.5（几乎没用）
+                from brahma_fangcang_unified import unified_fangcang as _uf
+                _uf_result = _uf(
                     symbol=_sym,
                     ms=ms,
                     signal_dir=_actual_dir,
+                    regime=_result.get('regime', 'UNKNOWN'),
                 )
-                _fc_res['hcme_wr_adj'] = _hcme_r2['hcme_score_adj']
-                _fc_res['hcme_context'] = _hcme_r2['context_summary']
-                _fc_res['hcme_source'] = _hcme_r2.get('hcme_source', 'real_fangcang')
+                _fc_res['hcme_wr_adj']    = _uf_result['unified_adj']
+                _fc_res['hcme_context']   = _uf_result['summary']
+                _fc_res['hcme_source']    = 'unified_v1'
+                _fc_res['unified_s1_adj'] = _uf_result['s1_adj']
+                _fc_res['unified_s2_adj'] = _uf_result['s2_adj']
+                _fc_res['unified_s2_wr']  = _uf_result['s2_wr']
+                _fc_res['unified_s2_n']   = _uf_result['s2_n']
                 _result['fangcang'] = _fc_res
             except Exception as _hcme_e:
-                import logging as _lg2; _lg2.getLogger('brahma').warning(f'[hcme_bridge] {_hcme_e}')
+                import logging as _lg2; _lg2.getLogger('brahma').warning(f'[unified_fangcang] {_hcme_e}')
         _hcme_adj = _fc_res.get('hcme_wr_adj', 0) if isinstance(_fc_res, dict) else 0
         _hcme_ctx = _fc_res.get('hcme_context', '') if isinstance(_fc_res, dict) else ''
         if _hcme_adj != 0:
