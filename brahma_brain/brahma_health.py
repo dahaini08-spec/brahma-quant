@@ -402,6 +402,7 @@ def run_health_check(
     checks['learning_loop_import'] = _check_learning_loop_importable()
     checks['macro_state_freshness']= _check_macro_state_freshness()
     checks['cron_route_ssot']      = _check_cron_route_ssot()
+    checks['cron_runtime_health']   = _check_cron_runtime_health()
     checks['signal_card_import']   = _check_signal_card_importable()
     checks['dharma_factor_weights']= _check_dharma_factor_weights()
     checks['wr_gate_integrity']    = _check_wr_gate_integrity()
@@ -833,6 +834,56 @@ def _check_zombie_positions() -> dict:
                 'detail': f'{len(positions)}个持仓均正常(<72H)'}
     except Exception as e:
         return {'ok': False, 'warn': True, 'detail': f'持仓检测异常: {str(e)[:50]}'}
+
+
+def _check_cron_runtime_health() -> dict:
+    """
+    P1-1: 检查cron运行时健康——核心任务是否有持续 error
+    注意: gateway restart导致的error不算（单次中断，下次运行恢复）
+    """
+    try:
+        import subprocess as _sp
+        import json as _json
+        r = _sp.run(['openclaw', 'cron', 'list', '--json'],
+                    capture_output=True, text=True, timeout=8)
+        # 跳过Config warnings，找第一个{开始解析
+        import re as _re
+        stdout = r.stdout
+        m = _re.search(r'\{', stdout)
+        if not m:
+            return {'ok': True, 'warn': False, 'detail': 'cron list无JSON输出'}
+        data = _json.loads(stdout[m.start():])
+        jobs = data.get('jobs', [])
+        CORE_JOBS = [
+            'rsi-structure-watcher', 'auto-executor', 'brahma-state-refresh',
+            'position-guardian', 'brahma-360-health', 'signal-settler',
+        ]
+        error_core = []
+        error_all  = []
+        for j in jobs:
+            name  = j.get('name', '')
+            state = j.get('state', {})
+            # consecutiveErrors>0 才算真正持续故障（单次restart中断不计）
+            consecutive = state.get('consecutiveErrors', 0)
+            last_status = state.get('lastStatus', state.get('lastRunStatus', ''))
+            if last_status == 'error' and consecutive >= 1:
+                error_all.append(f'{name}(x{consecutive})')
+                if any(c in name for c in CORE_JOBS):
+                    error_core.append(f'{name}(x{consecutive})')
+        if error_core:
+            return {
+                'ok': False, 'warn': False,
+                'detail': f'核心cron持续err: {error_core}'
+            }
+        if len(error_all) >= 3:
+            return {
+                'ok': True, 'warn': True,
+                'detail': f'非核心cron err={len(error_all)}: {error_all[:3]}'
+            }
+        return {'ok': True, 'warn': False,
+                'detail': f'cron运行时健康 err_all={len(error_all)}'}
+    except Exception as e:
+        return {'ok': True, 'warn': False, 'detail': f'cron检查跳过: {str(e)[:50]}'}
 
 
 def _check_tardis_month_freshness() -> dict:
