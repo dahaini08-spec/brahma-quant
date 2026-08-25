@@ -126,6 +126,8 @@ def atr(highs: Sequence[float], lows: Sequence[float],
     vals = _atr(highs, lows, closes, period)
     return vals[-1] if vals else 0.0
 
+calc_atr = atr  # 别名，向后兼容
+
 
 # ─────────────────────────────────────────────────────────
 # MACD

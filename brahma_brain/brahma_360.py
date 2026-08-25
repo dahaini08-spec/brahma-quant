@@ -121,6 +121,14 @@ def scan_d1_modules() -> list:
             'brahma_engine_selfcheck',  # 引擎自检工具，工具脚本 ✅
             'brahma_full_report',       # 分析报告输出函数，通过run_full_analysis接入 ✅
             'brahma_binance_mcp',      # MCP Server骨架，外部Agent调用，非import链 ✅
+            # ── 域引擎wrapper层（2026-08-24 设计院顶层重构封印）──
+            'brahma_macro',            # 统一宏观域入口，macro_engine/cross_market_engine wrapper ✅
+            'brahma_onchain',          # 统一链上域入口，onchain_engine/whale_engine wrapper ✅
+            'brahma_position',         # 统一持仓域入口，position_sizer/dynamic_sl wrapper ✅
+            'brahma_council',          # 统一议会域入口，llm_council/reasoning_client wrapper ✅
+            'brahma_screener',         # 统一筛选域入口，market_screener wrapper ✅
+            'brahma_order_engine',     # 统一开单域入口，auto_executor wrapper ✅
+            'kronos_lite',             # brahma_kronos降级后端，由brahma_kronos动态import ✅
             'chart_renderer',          # push_chart.py动态import，二级链覆盖 ✅
             'pip_extractor',           # fangcang_engine调用，二级链覆盖 ✅
             'brahma_ci',               # CI探针独立工具，合理孤立 ✅
