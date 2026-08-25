@@ -142,29 +142,37 @@ def fangcang_context_match(
         if abs(c_rsi - current_rsi) > 18:
             continue
 
-        # 体制相似度（宽松匹配：BULL系列相互匹配，BEAR系列相互匹配）
-        regime_match = False
-        if 'BULL' in current_regime.upper():
-            regime_match = c_regime in ('ranging', 'bull', 'bullish', 'trending', '') or c_regime == ''
-        elif 'BEAR' in current_regime.upper():
-            regime_match = c_regime in ('bear', 'bearish', 'ranging', '')
-        elif 'CHOP' in current_regime.upper():
-            regime_match = c_regime in ('ranging', 'chop', '')
-        else:
-            regime_match = True  # 未知体制不过滤
+        # [设计院 2026-08-25 苏摩111] 体制过滤升级：精确与当前体制匹配
+        # 原来用模糊字符串，现在用梵天标准体制分组
+        _REGIME_GROUP = {
+            'BULL': {'BULL_TREND','BULL_EARLY','BULL_PEAK','BULL_CORRECTION','bull','bullish','trending'},
+            'BEAR': {'BEAR_TREND','BEAR_EARLY','BEAR_CRASH','BEAR_RECOVERY','bear','bearish','downtrend'},
+            'CHOP': {'CHOP_MID','CHOP_HIGH','CHOP_LOW','BREAKOUT','ranging','chop',''},
+        }
+        cur_grp = next((g for g,s in _REGIME_GROUP.items() if current_regime.upper() in {x.upper() for x in s}), 'CHOP')
+        c_grp   = next((g for g,s in _REGIME_GROUP.items() if c_regime in {x.lower() for x in s}), 'CHOP')
 
-        if not regime_match and c_regime != '':
-            # 宽松降级：体制不匹配但BBW+RSI非常相近时仍纳入（权重×0.5）
+        regime_match = (cur_grp == c_grp)
+        if not regime_match:
+            # 体制不匹配：BBW+RSI非常相近时降权计入，否则跳过
             if bbw_ratio < 0.15 and abs(c_rsi - current_rsi) < 8:
                 c['_regime_penalty'] = 0.5
             else:
                 continue
 
+        # [设计院 2026-08-25] 时间衰减权重：近期案例更可信
+        import time as _t
+        _case_ts = c.get('compress_end_ts', 0) or 0
+        if _case_ts > 1e10: _case_ts /= 1000  # ms转s
+        _age_years = (_t.time() - _case_ts) / (365.25 * 86400) if _case_ts > 0 else 3.0
+        _time_weight = 2.0 if _age_years < 1 else (1.0 if _age_years < 2 else 0.5)
+
         # 计算综合相似度分数
         bbw_score = 1.0 - bbw_ratio / 0.35
         rsi_score = 1.0 - abs(c_rsi - current_rsi) / 18
-        sim_score = bbw_score * 0.6 + rsi_score * 0.4
+        sim_score = (bbw_score * 0.6 + rsi_score * 0.4) * _time_weight * c.get('_regime_penalty', 1.0)
         c['_sim_score'] = sim_score
+        c['_time_weight'] = _time_weight
         similar.append(c)
 
     # 按相似度排序，取Top20
@@ -283,4 +291,102 @@ def get_fangcang_hcme_score(
         'confidence': conf,
         'long_pct': long_pct,
         'short_pct': short_pct,
+    }
+
+
+# ════════════════════════════════════════════════════════════════════
+# P1-2: 方仓自学习反馈回路（设计院 2026-08-25 苏摩111）
+# 信号结算后 → 对比方仓预测vs实际 → 更新案例权重
+# ════════════════════════════════════════════════════════════════════
+import json as _json
+import time as _time
+from pathlib import Path as _Path
+
+_WEIGHT_FILE = _Path(__file__).parent.parent / 'data' / 'fangcang_case_weights.json'
+
+
+def _load_weights() -> dict:
+    try:
+        if _WEIGHT_FILE.exists():
+            return _json.loads(_WEIGHT_FILE.read_text())
+    except Exception:
+        pass
+    return {}
+
+
+def _save_weights(w: dict):
+    try:
+        _WEIGHT_FILE.parent.mkdir(exist_ok=True)
+        _WEIGHT_FILE.write_text(_json.dumps(w, ensure_ascii=False))
+    except Exception:
+        pass
+
+
+def feedback_settlement(symbol: str, signal_dir: str, predicted_hint: str,
+                        actual_direction: str, pnl_pct: float) -> dict:
+    """
+    信号结算后调用：对比方仓预测 vs 实际结果，更新案例权重。
+
+    参数：
+      symbol:           交易标的
+      signal_dir:       梵天信号方向（LONG/SHORT）
+      predicted_hint:   方仓预测（LONG_BIAS/SHORT_BIAS/NEUTRAL）
+      actual_direction: 实际市场方向（LONG=盈利/SHORT=亏损结算）
+      pnl_pct:          实际PnL百分比
+
+    逻辑：
+      预测与实际一致 → 相关案例权重 × 1.1（正确案例加权）
+      预测与实际相反 → 相关案例权重 × 0.9（错误案例降权）
+      权重上限2.0，下限0.1（避免极端）
+    """
+    weights = _load_weights()
+    key = f'{symbol}:{signal_dir}'
+
+    predicted_correct = (
+        (predicted_hint == 'LONG_BIAS' and actual_direction == 'LONG' and pnl_pct > 0) or
+        (predicted_hint == 'SHORT_BIAS' and actual_direction == 'SHORT' and pnl_pct > 0)
+    )
+
+    current_weight = weights.get(key, {}).get('weight', 1.0)
+    if predicted_correct:
+        new_weight = min(2.0, current_weight * 1.1)
+        outcome = 'CORRECT'
+    else:
+        new_weight = max(0.1, current_weight * 0.9)
+        outcome = 'WRONG'
+
+    weights[key] = {
+        'weight':    round(new_weight, 4),
+        'outcome':   outcome,
+        'pnl_pct':   pnl_pct,
+        'ts':        _time.time(),
+        'predicted': predicted_hint,
+        'actual':    actual_direction,
+        'count':     weights.get(key, {}).get('count', 0) + 1,
+    }
+    _save_weights(weights)
+
+    return {
+        'ok':         True,
+        'key':        key,
+        'outcome':    outcome,
+        'old_weight': current_weight,
+        'new_weight': new_weight,
+    }
+
+
+def get_feedback_stats() -> dict:
+    """获取方仓自学习统计"""
+    weights = _load_weights()
+    if not weights:
+        return {'total': 0, 'correct': 0, 'wrong': 0, 'wr': 0.0}
+    correct = sum(1 for v in weights.values() if v.get('outcome') == 'CORRECT')
+    wrong   = sum(1 for v in weights.values() if v.get('outcome') == 'WRONG')
+    total   = correct + wrong
+    return {
+        'total':   total,
+        'correct': correct,
+        'wrong':   wrong,
+        'wr':      round(correct / total * 100, 1) if total > 0 else 0.0,
+        'avg_weight': round(sum(v.get('weight',1) for v in weights.values()) / max(len(weights),1), 3),
     }

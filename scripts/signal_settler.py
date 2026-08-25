@@ -435,6 +435,25 @@ def main():
         except Exception as _sw_e:
             print(f'[settler] signal_weight_updater跳过: {_sw_e}')
 
+        # [设计院 2026-08-25 苏摩111] 方仓自学习反馈回路
+        try:
+            import sys as _sys_fc
+            _sys_fc.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent / 'brahma_brain'))
+            from fangcang_hcme_bridge import feedback_settlement as _fc_feedback
+            for _s in settled_new:
+                _fc_sym    = _s.get('symbol', '')
+                _fc_dir    = _s.get('signal_dir', 'LONG')
+                _fc_hint   = _s.get('fangcang_hint', 'NEUTRAL')  # 方仓预测
+                _fc_actual = 'LONG' if _s.get('outcome','') in ('TP1','TP2') else 'SHORT'
+                _fc_pnl    = float(_s.get('pnl_pct', 0) or 0)
+                if _fc_sym:
+                    _fc_result = _fc_feedback(_fc_sym, _fc_dir, _fc_hint, _fc_actual, _fc_pnl)
+                    print(f'[settler] 方仓反馈: {_fc_sym} {_fc_result.get("outcome")} weight={_fc_result.get("new_weight",1.0):.3f}')
+            _fc_stats = __import__('fangcang_hcme_bridge', fromlist=['get_feedback_stats']).get_feedback_stats()
+            print(f'[settler] 方仓历史胜率: {_fc_stats.get("wr",0)}% (n={_fc_stats.get("total",0)})')
+        except Exception as _fc_e:
+            print(f'[settler] 方仓反馈跳过: {_fc_e}')
+
         # 推送简报
         if args.push and settled_new:
             wins  = sum(1 for s in settled_new if s['outcome'] in ('TP1','TP2'))
