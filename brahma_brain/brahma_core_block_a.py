@@ -22,7 +22,8 @@ import math
 
 
 def calc_block_a(ms: dict, smc: dict, signal_dir: str,
-                 extra_data: dict, score: int, breakdown: dict) -> dict:
+                 extra_data: dict, score: int, breakdown: dict,
+                 symbol: str = '') -> dict:
     """
     维度1-6：纯技术分析层
 
@@ -358,6 +359,38 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
     s6 = min(s6, 20)
     score += s6
     breakdown['形态成熟度'] = s6
+
+    # ── Step2: OB/FVG跨周期共振评分（设计院 2026-08-25 苏摔111 Step2封印）────
+    try:
+        from multi_tf_context_builder import _snapshot_one_tf, _calc_resonance
+        s_15m = _snapshot_one_tf(symbol, '15m', signal_dir)
+        s_1h  = _snapshot_one_tf(symbol, '1h',  signal_dir)
+        res   = _calc_resonance({'15m': s_15m, '1h': s_1h,
+                                  '4h': _snapshot_one_tf(symbol, '4h', signal_dir),
+                                  '1d': _snapshot_one_tf(symbol, '1d', signal_dir)},
+                                signal_dir)
+        resonance_score = max(-15, min(20, res['score']))
+        score += resonance_score
+        breakdown['OB_FVG跨周期共振'] = resonance_score
+        breakdown['_resonance_detail'] = ' | '.join(res['details'][:2])
+    except Exception:
+        pass
+
+    # ── Step3: EMA多周期排列分（设计院 2026-08-25 苏摔111 Step3封印）────
+    try:
+        from multi_tf_context_builder import _snapshot_one_tf as _stf
+        tfs_ema = ['15m', '1h', '4h', '1d']
+        snaps = {tf: _stf(symbol, tf, signal_dir) for tf in tfs_ema}
+        is_long = signal_dir in ('LONG', 'UP', 'long')
+        agree = sum(1 for tf in tfs_ema if snaps[tf].get('ema_bull') == is_long)
+        # EMA全局共振分：4TF全同向+10，3同向+5，2同向+0，1同向-5
+        ema_score = {4: 10, 3: 5, 2: 0, 1: -5, 0: -10}.get(agree, 0)
+        score += ema_score
+        ema_desc = ' '.join(f'{tf}:{"↑" if snaps[tf].get("ema_bull") else "↓"}' for tf in tfs_ema)
+        breakdown['EMA多周期共振'] = ema_score
+        breakdown['_ema_align'] = f'{agree}/4TF同向 {ema_desc}'
+    except Exception:
+        pass
 
     return {
         's1': s1, 's2': s2, 's3': s3, 's4': s4,

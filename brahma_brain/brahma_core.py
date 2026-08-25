@@ -189,7 +189,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         from brahma_brain.brahma_core_block_a import calc_block_a as _calc_block_a
     except ImportError:
         from brahma_core_block_a import calc_block_a as _calc_block_a
-    _ba = _calc_block_a(ms, smc, signal_dir, extra_data, score, breakdown)
+    _ba = _calc_block_a(ms, smc, signal_dir, extra_data, score, breakdown, symbol=ms.get('symbol',''))
     s1, s2, s3, s4 = _ba['s1'], _ba['s2'], _ba['s3'], _ba['s4']
     s5, s5b, s6    = _ba['s5'], _ba['s5b'], _ba['s6']
     score          = _ba['score']

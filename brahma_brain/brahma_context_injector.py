@@ -333,6 +333,15 @@ def inject_brahma_context(
     if include_extreme:
         lines += ['【极端事件类比】', get_extreme_analog({**ms, 'symbol': symbol}), '']
 
+    # 层5: 多周期快照（multi_tf_context_builder）
+    try:
+        from multi_tf_context_builder import build_multi_tf_context
+        multi_ctx = build_multi_tf_context(symbol, signal_dir, max_chars=700)
+        lines.append(multi_ctx)
+        lines.append('')
+    except Exception:
+        pass
+
     lines.append('基于以上梵天专有数据（不是通用金融知识）给出你的裁决：')
     lines.append('═══════════════════════════════════════')
 
