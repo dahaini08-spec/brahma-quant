@@ -3716,6 +3716,26 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         import logging as _lg; _lg.getLogger('brahma').warning(f'[fangcang] {_fc_e}')
         _result['fangcang'] = {'status': 'unavailable', 'reason': str(_fc_e)[:60]}
 
+    # [设计院 2026-08-25 苏摩111] 长期记忆注入：跨资产20年知识库
+    try:
+        from brahma_longmem import get_longmem_score_adj as _lm_fn
+        _lm_res = _lm_fn(_sym, _result.get('regime', 'UNKNOWN'),
+                         _result.get('signal_dir', signal_dir or 'LONG'))
+        _lm_adj = float(_lm_res.get('adj', 0) or 0)
+        _result['longmem_adj']  = _lm_adj
+        _result['longmem_ctx']  = _lm_res.get('summary', '')[:120]
+        _result['extreme_warn'] = _lm_res.get('extreme_warning', {}).get('warning_level', 'NONE')
+        if _lm_adj != 0:
+            _cf = _result.setdefault('confluence', {})
+            _bd = _cf.setdefault('breakdown', {})
+            _bd['长期记忆跨资产'] = _lm_adj
+            _old = float(_result.get('score_final', _result.get('score', 0)) or 0)
+            _new = round(_old + _lm_adj, 1)
+            _result['score_final'] = _new
+            _result['score']       = _new
+    except Exception as _lm_e:
+        import logging as _lm_log; _lm_log.getLogger('brahma').debug(f'[longmem] {_lm_e}')
+
     try:
         from brahma_brain.brahma_decision_engine import decide as _dt_decide
         _dt_signal = {

@@ -29,8 +29,36 @@ _FANGCANG_CACHE: list = []
 _CACHE_LOADED = False
 
 
+# 30个新币种列表（今日新建）
+_NEW_30_SYMBOLS = [
+    'xrp','zec','doge','bnb','link','ada','bch','ltc','xlm','xmr',
+    'dash','trx','etc','dot','crv','atom','algo','ont','trb','rune',
+    'vet','egld','comp','snx','theta','iota','kava','neo','sushi','zil',
+]
+
+
+def _normalize_new_case(d: dict, sym: str) -> dict:
+    """
+    把新建的fangcang_cases_xxx.json字段统一化为标准格式
+    字段映射: min_bb_width(百分比)→compress_bbw_min(小数)/rsi_at_burst→rsi_at_end
+    """
+    return {
+        'symbol':             sym.upper() + 'USDT',
+        '_src_sym':           sym.upper(),
+        'compress_bbw_min':   float(d.get('min_bb_width', 0) or 0) / 100,
+        'rsi_at_end':         float(d.get('rsi_at_burst', 50) or 50),
+        'compress_bars':      int(d.get('squeeze_bars', 0) or 0),
+        'breakout_direction': 'LONG' if str(d.get('direction', '')).upper() == 'UP'
+                              else ('SHORT' if str(d.get('direction', '')).upper() == 'DOWN'
+                                    else 'CHOP'),
+        'future_return_24h':  float(d.get('future_return_24h', 0) or 0),
+        'volume_trend':       'expand' if float(d.get('vol_ratio_peak', 1) or 1) > 1.5 else 'flat',
+        'is_genuine_breakout': bool(d.get('is_genuine_breakout', False)),
+    }
+
+
 def _load_fangcang_cases() -> list:
-    """加载方仓真实案例库（BTC+ETH+SOL），全局缓存"""
+    """加载方仓真实案例库（BTC+ETH+SOL+TradFi+30个新币种），全局缓存"""
     global _FANGCANG_CACHE, _CACHE_LOADED
     if _CACHE_LOADED:
         return _FANGCANG_CACHE
@@ -58,27 +86,34 @@ def _load_fangcang_cases() -> list:
             except Exception:
                 pass
 
-    # SOL（字段名略有差异）
+    # SOL
     sol_path = _DATA / 'fangcang_cases_sol.json'
     if sol_path.exists():
         sol_raw = json.loads(sol_path.read_text())
         if isinstance(sol_raw, list):
             for d in sol_raw:
-                # 字段统一化：SOL用min_bb_width/rsi_at_burst/direction
-                normalized = {
-                    'symbol': 'SOLUSDT',
-                    '_src_sym': 'SOL',
-                    'compress_bbw_min': float(d.get('min_bb_width', 0) or 0) / 100,  # SOL是百分比
-                    'rsi_at_end': float(d.get('rsi_at_burst', 50) or 50),
-                    'compress_bars': int(d.get('squeeze_bars', 0) or 0),
-                    'breakout_direction': 'LONG' if str(d.get('direction', '')).upper() == 'UP'
-                                         else ('SHORT' if str(d.get('direction', '')).upper() == 'DOWN'
-                                               else 'CHOP'),
-                    'future_return_24h': float(d.get('future_return_24h', 0) or 0),
-                    'volume_trend': 'expand' if float(d.get('vol_ratio_peak', 1) or 1) > 1.5 else 'flat',
-                    'is_genuine_breakout': bool(d.get('is_genuine_breakout', False)),
-                }
-                cases.append(normalized)
+                cases.append(_normalize_new_case(d, 'sol'))
+
+    # 新墖30个币种（自动扫描 data/fangcang_cases_xxx.json）
+    _new_loaded = 0
+    for sym in _NEW_30_SYMBOLS:
+        fpath = _DATA / f'fangcang_cases_{sym}.json'
+        if not fpath.exists():
+            continue
+        try:
+            raw = json.loads(fpath.read_text())
+            if isinstance(raw, list):
+                for d in raw:
+                    cases.append(_normalize_new_case(d, sym))
+                _new_loaded += len(raw)
+        except Exception:
+            pass
+
+    import logging as _lg
+    _lg.getLogger('brahma.fangcang').info(
+        f'[fangcang_hcme_bridge] 加载完成: 总{len(cases)}条案例 '
+        f'(新墖30币种贡献{_new_loaded}条)'
+    )
 
     _FANGCANG_CACHE = cases
     _CACHE_LOADED = True
