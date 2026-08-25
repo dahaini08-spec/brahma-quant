@@ -671,7 +671,13 @@ def smc_score(structure: dict, obs: dict, fvgs: dict,
 
 def analyze_smc(symbol: str, signal_dir: str = 'LONG',
                 interval: str = '1h', lookback: int = 200) -> dict:
-    """完整SMC分析"""
+    """完整SMC分析
+    [设计院升级 2026-08-25 苏摩111]
+    15m周期自动扩展到500根（覆盖~5天宏观结构），1h保持200根
+    """
+    # 15m周期自动扩展lookback，覆盖更多历史FVG和流动性池
+    if interval == '15m' and lookback < 500:
+        lookback = 500
     raw  = get_klines(symbol, interval, lookback)
     ohlc = klines_to_ohlcv(raw)
 
@@ -1106,3 +1112,81 @@ if __name__ == '__main__':
         for d in sc['details']:
             print(f'  + {d}')
 # P3封印标记 2026-08-04T08:34:06Z
+
+
+# ── 多级别FVG叠加分析 [设计院升级 2026-08-25 苏摩111] ─────────────
+def analyze_smc_multi_tf(symbol: str, signal_dir: str = 'LONG',
+                          base_tf: str = '15m') -> dict:
+    """
+    多级别SMC分析 — 15m精确入场 + 1H宏观结构叠加
+    
+    设计目标：
+      解决「梵天只看近期200根，宏观FVG/EQH看不到」的问题
+      ① base_tf(15m): lookback=500根，近期精确结构
+      ② higher_tf(1H): lookback=200根，宏观FVG权重更大
+    
+    返回额外字段：
+      htf_fvg       : 1H级别FVG（宏观支撑/压力）
+      htf_liquidity : 1H级别流动性池（宏观EQH/EQL）
+      multi_tf_zones: 两级别合并的关键价位列表
+    """
+    # base TF分析
+    base = analyze_smc(symbol, signal_dir, interval=base_tf, lookback=500)
+    price = base.get('price', 0)
+
+    # Higher TF (1H) 分析
+    higher_tf = '1h' if base_tf == '15m' else '4h'
+    try:
+        htf_raw  = get_klines(symbol, higher_tf, 200)
+        htf_ohlc = klines_to_ohlcv(htf_raw)
+        h1h = htf_ohlc['h']
+        l1h = htf_ohlc['l']
+        c1h = htf_ohlc['c']
+        htf_fvg    = find_fvg(h1h, l1h, c1h, lookback=500)
+        htf_liq    = find_liquidity_pools(h1h, l1h, c1h)
+        htf_struct = detect_bos_choch(h1h, l1h, c1h)
+    except Exception as e:
+        htf_fvg  = {'bull_fvg': [], 'bear_fvg': []}
+        htf_liq  = {'equal_highs': [], 'equal_lows': []}
+        htf_struct = {'structure': 'UNKNOWN', 'bos': [], 'choch': []}
+
+    # 合并关键价位（按距当前价由近到远排序）
+    zones = []
+
+    # 15m FVG
+    for fvg_item in base.get('fvg', {}).get('bull_fvg', [])[:3]:
+        zones.append({'level': fvg_item['mid'], 'type': 'BULL_FVG_15m',
+                      'range': (fvg_item['bottom'], fvg_item['top']), 'weight': 1.0})
+    for fvg_item in base.get('fvg', {}).get('bear_fvg', [])[:3]:
+        zones.append({'level': fvg_item['mid'], 'type': 'BEAR_FVG_15m',
+                      'range': (fvg_item['bottom'], fvg_item['top']), 'weight': 1.0})
+
+    # 1H FVG（权重更高）
+    for fvg_item in htf_fvg.get('bull_fvg', [])[:3]:
+        zones.append({'level': fvg_item['mid'], 'type': 'BULL_FVG_1H',
+                      'range': (fvg_item['bottom'], fvg_item['top']), 'weight': 1.5})
+    for fvg_item in htf_fvg.get('bear_fvg', [])[:3]:
+        zones.append({'level': fvg_item['mid'], 'type': 'BEAR_FVG_1H',
+                      'range': (fvg_item['bottom'], fvg_item['top']), 'weight': 1.5})
+
+    # 1H EQH/EQL（宏观流动性猎杀位）
+    for eq in htf_liq.get('equal_highs', [])[:3]:
+        zones.append({'level': eq['level'], 'type': 'EQH_1H', 'weight': 2.0})
+    for eq in htf_liq.get('equal_lows', [])[:3]:
+        zones.append({'level': eq['level'], 'type': 'EQL_1H', 'weight': 2.0})
+
+    # 按距当前价排序
+    if price:
+        zones.sort(key=lambda z: abs(z['level'] - price))
+
+    # 整合结果
+    result = dict(base)
+    result['htf_interval']  = higher_tf
+    result['htf_fvg']       = htf_fvg
+    result['htf_liquidity'] = htf_liq
+    result['htf_structure'] = htf_struct
+    result['multi_tf_zones'] = zones[:12]  # 最近12个关键价位
+    result['base_tf']        = base_tf
+
+    return result
+# [设计院升级 2026-08-25 苏摩111 multi-tf-fvg封印]
