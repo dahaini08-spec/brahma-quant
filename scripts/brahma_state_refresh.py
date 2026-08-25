@@ -284,6 +284,8 @@ try:
 except Exception:
     pass
 
+
+def clean_stale_price_zones():
     """清理过时入场区（距现价>5%或超过6H未更新）"""
     import time as _time
     zones_file = BASE / 'data' / 'price_zones.json'
