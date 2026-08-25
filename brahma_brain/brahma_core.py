@@ -3291,16 +3291,18 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # ── s23: Kronos统一域 v2.0 (brahma_kronos) ────────────────────────
     # [2026-08-24 设计院顶层重构] 201行三段式→30行统一入口
-    # brahma_kronos自动降级: bridge(BLEND) → engine(PyTorch) → lite(统计) → 0
+    # [2026-08-25 fix P2] 直接用kronos_bridge.get_s23_kronos，绕过brahma_kronos降级链传参bug
     try:
         import sys as _sys23, os as _os23
         _bb23 = _os23.path.dirname(_os23.path.abspath(__file__))
         if _bb23 not in _sys23.path: _sys23.path.insert(0, _bb23)
-        from brahma_kronos import get_kronos_score as _bk_fn
+        from kronos_bridge import get_s23_kronos as _bk_fn
+    except ImportError:
+        def _bk_fn(*a, **kw): return (0, {'score': 0, 'p_up': 0.5, 'source': 'import_err'})
+    try:
         from recovery_unlocker import check_unlock as _check_unlock
     except ImportError:
-        def _bk_fn(*a, **kw): return {'score': 0, 'p_up': 0.5, 'source': 'import_err'}
-        def _check_unlock(*a, **kw): return {'unlocked': False}
+        def _check_unlock(*a, **kw): return {'unlocked': False}  # [2026-08-25 fix] recovery_unlocker可选模块，不阻塑Kronos主链路
 
     try:
         _sym_t = _result.get('symbol', symbol)
@@ -3311,7 +3313,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         if not _kl15m:
             try:
                 _raw15 = get_klines(_sym_t, '15m', 200)
-                _kl15m = [[float(c[1]),float(c[2]),float(c[3]),float(c[4]),float(c[5])] for c in _raw15]
+                _kl15m = [[float(c[0]),float(c[1]),float(c[2]),float(c[3]),float(c[4]),float(c[5])] for c in _raw15]  # [2026-08-25 fix] 保留timestamp_ms供_build_ohlcv_df使用
             except Exception: _kl15m = []
         # 格式标准化: dict→list
         if _kl15m and isinstance(_kl15m[0], dict):
@@ -3322,8 +3324,12 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
         if len(_kl15m) >= 60:
             _s23_regime = _result.get('regime', '')
-            _bk_result  = _bk_fn(_sym_t, _dir_t, _s23_regime, _kl15m)
-            _s23        = int(_bk_result.get('score', 0))
+            _bk_result  = _bk_fn(_kl15m, _sym_t, _dir_t, _s23_regime)  # [2026-08-25 fix] get_s23_kronos参数顺序: (klines,symbol,dir,regime)
+            # [2026-08-25 fix] get_s23_kronos返回(score, meta_dict)元组，需要解包
+            if isinstance(_bk_result, tuple) and len(_bk_result) == 2:
+                _s23, _bk_result = int(_bk_result[0]), (_bk_result[1] if isinstance(_bk_result[1], dict) else {})
+            else:
+                _s23 = int(_bk_result.get('score', 0)) if isinstance(_bk_result, dict) else 0
             _p_up_raw   = float(_bk_result.get('p_up', 0.5))
             _s23_meta   = _bk_result
 
@@ -4307,6 +4313,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception:
         pass
     # ── [END 梦天大脑注入] ────────────────────────────────────────────────────────────
+
+    # [2026-08-25 fix P3] direction字段映射 signal_dir → direction，供AI议会/外部调用
+    if _result.get('direction') is None:
+        _result['direction'] = _result.get('signal_dir') or signal_dir or None
 
     return _result
 
