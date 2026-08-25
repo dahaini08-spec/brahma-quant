@@ -434,6 +434,51 @@ def get_position_pct(symbol: str, score: float, direction: str,
             _sl_tier_note = f'SL档位B+({_sl_pct_raw:.2f}% 1.5~2%) WR=58%限仓3%'
     # ── [END SL三层分档] ─────────────────────────────────────────────────────
 
+    # ── [Layer B1 四象限置信度乘数 2026-08-25 谗天大脚111] ──────────
+    # Q1/Q2 散户+大户背离 → 明确信号 ×1.2
+    # Q3/Q4 势头共振 → 顺势保持 ×1.0
+    # NEUTRAL → 不确定 ×0.8
+    _quad_note = ''
+    _quad_mult = 1.0
+    try:
+        from market_quadrant import get_quadrant as _get_q
+        _quad = _get_q(symbol)
+        _qname = _quad.get('quadrant', 'NEUTRAL')
+        _qsig  = _quad.get('signal', 'NEUTRAL')
+        _qdiv  = _quad.get('whale_diverge', False)
+        # 方向是否与信号一致
+        _dir_match = (
+            (_qsig == 'SHORT' and direction and 'SHORT' in direction.upper()) or
+            (_qsig == 'LONG'  and direction and 'LONG'  in direction.upper()) or
+            (_qsig == 'TREND_SHORT' and direction and 'SHORT' in direction.upper()) or
+            (_qsig == 'TREND_LONG'  and direction and 'LONG'  in direction.upper())
+        )
+        _dir_conflict = (
+            (_qsig in ('SHORT','TREND_SHORT') and direction and 'LONG'  in direction.upper()) or
+            (_qsig in ('LONG', 'TREND_LONG')  and direction and 'SHORT' in direction.upper())
+        )
+        if _qname in ('Q1','Q2') and _dir_match:
+            _quad_mult = 1.20
+            _quad_note = f'四象限{_qname}共振(×1.2)'
+        elif _qname in ('Q1','Q2') and _dir_conflict:
+            _quad_mult = 0.60
+            _quad_note = f'四象限{_qname}背驰(×0.6)'
+        elif _qname in ('Q3','Q4') and _dir_match:
+            _quad_mult = 1.00
+            _quad_note = f'四象限{_qname}共振顺势'
+        elif _qname == 'NEUTRAL':
+            _quad_mult = 0.85
+            _quad_note = '四象限中性(×0.85)'
+        if _qdiv and _quad_mult >= 1.0:
+            _quad_mult = min(1.3, _quad_mult + 0.1)
+            _quad_note += '+大户背离加持'
+        if _quad_mult != 1.0:
+            max_pct = round(max_pct * _quad_mult, 2)
+            usdt    = round(max_pct / 100 * nav, 2) if nav else 0
+    except Exception as _qe:
+        logger.debug(f'quadrant_mult: {_qe}')
+    # ── [END 四象限乘数] ─────────────────────────────────
+
     # ── IC反馈修正：高分低胜率时收紧高分段仓位 ────────────────
     _ic_note = ''
     if _IC_PENALTY and score > 175 and level not in ('BANNED', 'EXPLORING'):
@@ -452,7 +497,8 @@ def get_position_pct(symbol: str, score: float, direction: str,
                            + (f' [{_macro_note}]' if _macro_note else '')
                            + (f' [{_var_note}]' if _var_note else '')
                            + (f' [{_sw_note}]' if _sw_note else '')
-                           + (f' [{_sl_tier_note}]' if _sl_tier_note else ''),
+                           + (f' [{_sl_tier_note}]' if _sl_tier_note else '')
+                           + (f' [{_quad_note}]' if _quad_note else ''),
         'allowed':         allowed,
         'fg_cap':          _fg_cap,
         'fg_applied':      _fg_applied,
