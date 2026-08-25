@@ -123,3 +123,103 @@ def _rule_fallback(prompt: str) -> str:
             "key_event": "LLM降级", "market_bias": "中性"
         })
     return json.dumps({"ok": True, "note": "rule_fallback", "score_adj": 0})
+
+
+# ── reasoning_gate：信号门控 + 方仓上下文注射 ──────────────────────────
+def reasoning_gate(result: dict, inject_context: bool = True) -> dict:
+    """
+    AI议会信号门控。
+    接收 brahma_core 分析结果，调用 LLM 给出 PASS/WARN/BLOCK 裁决。
+    inject_context=True 时自动注入方仓历史记忆（梵天思维）。
+
+    返回:
+        verdict: 'PASS' | 'WARN' | 'BLOCK'
+        confidence: 0.0~1.0
+        reason: str
+        elapsed: float (秒)
+    """
+    import time
+    t0 = time.time()
+
+    symbol     = result.get('symbol', '')
+    regime     = result.get('regime', result.get('market_state', 'CHOP_MID'))
+    signal_dir = result.get('signal_dir', result.get('direction', 'LONG'))
+    score      = float(result.get('score_final', result.get('score', 100)))
+
+    # ── 注入梵天方仓记忆 ───────────────────────────────────────────
+    memory_ctx = ''
+    if inject_context and symbol:
+        try:
+            import sys as _sys
+            _parent = str(Path(__file__).parent)
+            if _parent not in _sys.path:
+                _sys.path.insert(0, _parent)
+            from brahma_context_injector import inject_brahma_context
+            bd = result.get('confluence', {}).get('breakdown', {})
+            ms = {
+                'bb_width': bd.get('bb_width', 0.01),
+                'rsi_1h':   bd.get('RSI_1H', 50),
+                'rsi_4h':   bd.get('RSI_4H', 50),
+                'fg':       bd.get('fg', 50),
+            }
+            memory_ctx = inject_brahma_context(
+                symbol, regime, signal_dir, ms,
+                include_cases=False, max_chars=800
+            )
+        except Exception:
+            pass
+
+    # ── 构建LLM提示词 ─────────────────────────────────────────────
+    score_str = f'{score:.0f}'
+    bd_str = ''
+    bd = result.get('confluence', {}).get('breakdown', {})
+    if bd:
+        top_items = sorted(bd.items(), key=lambda x: abs(x[1]) if isinstance(x[1], (int,float)) else 0, reverse=True)[:5]
+        bd_str = ' | '.join(f'{k}={v}' for k,v in top_items if isinstance(v, (int,float)))
+
+    prompt = f"""{memory_ctx}
+
+你是梵天风控专家（RiskAgent）。基于以上专有数据，评估此信号：
+标的={symbol} 体制={regime} 方向={signal_dir} 评分={score_str}
+评分分项（TOP5）: {bd_str}
+
+请直接输出JSON（无其他文字）：
+{{"verdict":"PASS|WARN|BLOCK","confidence":0.0~1.0,"reason":"<20字核心风险>"}}
+
+PASS=正常 WARN=降分8 BLOCK=拒绝执行"""
+
+    # ── 调用LLM ──────────────────────────────────────────────────
+    raw = call_reasoning(prompt, max_tokens=100, timeout=12, model='advanced')
+
+    elapsed = round(time.time() - t0, 2)
+
+    # ── 解析结果 ─────────────────────────────────────────────────
+    verdict = 'PASS'
+    confidence = 0.6
+    reason = '规则降级'
+
+    if raw:
+        try:
+            # 提取JSON片段
+            m = re.search(r'\{[^}]+\}', raw, re.DOTALL)
+            if m:
+                data = json.loads(m.group())
+                verdict    = data.get('verdict', 'PASS').upper()
+                confidence = float(data.get('confidence', 0.6))
+                reason     = str(data.get('reason', ''))[:50]
+                if verdict not in ('PASS', 'WARN', 'BLOCK'):
+                    verdict = 'PASS'
+        except Exception:
+            # 关键词降级
+            raw_l = raw.lower()
+            if 'block' in raw_l:
+                verdict, reason = 'BLOCK', 'LLM关键词:BLOCK'
+            elif 'warn' in raw_l:
+                verdict, reason = 'WARN', 'LLM关键词:WARN'
+
+    return {
+        'verdict':    verdict,
+        'confidence': confidence,
+        'reason':     reason,
+        'elapsed':    elapsed,
+    }
