@@ -159,23 +159,67 @@ CRITICAL_CRONS = [
 
 def check_crons():
     try:
-        r = subprocess.run(['openclaw', 'cron', 'list'],
-                           capture_output=True, text=True, timeout=15)
-        lines = [l for l in r.stdout.split('\n') if l and not l.startswith('ID')]
+        # 直接读本地jobs.json，避免subprocess超时
+        jobs_path = Path.home() / '.openclaw/cron/jobs.json'
+        runs_dir  = Path.home() / '.openclaw/cron/runs'
+        jobs = json.loads(jobs_path.read_text()).get('jobs', []) if jobs_path.exists() else []
 
-        error_crons = [(l.split()[1], l.split()[0][:8]) for l in lines if 'error' in l]
-        running_names = [l.split()[1] for l in lines]
+        error_crons    = []   # 连续err（非 restart打断）
+        restart_errors = []   # restart打断（无需处理）
 
-        for name, cid in error_crons:
-            warn('CRON_ERROR', f'{name}({cid}) status=error（可能被gateway重启打断）', False)
+        for j in jobs:
+            name = j.get('name', '')
+            jid  = j.get('id', '')
+            runs_file = runs_dir / f'{jid}.jsonl'
+            if not runs_file.exists():
+                continue
+            lines = [l for l in runs_file.read_text().strip().split('\n') if l.strip()]
+            consecutive = 0
+            last_was_restart = False
+            for line in reversed(lines):
+                try:
+                    r = json.loads(line)
+                    if r.get('action') != 'finished':
+                        continue
+                    if r.get('status') == 'error':
+                        if 'gateway restart' in r.get('error', ''):
+                            last_was_restart = True
+                            break
+                        consecutive += 1
+                    else:
+                        break
+                except Exception:
+                    continue
+            if last_was_restart and consecutive == 0:
+                restart_errors.append(name)
+            elif consecutive >= 2:   # 连续2次才认定故障
+                error_crons.append((name, jid, consecutive))
 
+        # 自动重启持续故障的核心cron
+        CORE = ['rsi-structure-watcher', 'auto-executor', 'brahma-state-refresh',
+                'position-guardian', 'signal-settler']
+        for name, jid, cnt in error_crons:
+            warn('CRON_ERROR', f'{name} 连续error={cnt}次(非gateway打断)', fixable=True)
+            if not DRY_RUN and any(c in name for c in CORE):
+                try:
+                    subprocess.run(['openclaw', 'cron', 'trigger', jid],
+                                   capture_output=True, timeout=10)
+                    fix(f'cron {name} 已触发重运行')
+                except Exception as e:
+                    warn('CRON_RESTART_FAIL', f'{name} 重启失败: {e}', False)
+
+        if restart_errors:
+            ok(f'cron restart打断(自愈): {restart_errors}')
+
+        # 核心cron存在性检查
+        job_names = {j.get('name','') for j in jobs}
         for core_name in CRITICAL_CRONS:
-            if not any(core_name in n for n in running_names):
+            if not any(core_name in n for n in job_names):
                 crit('CRON_MISSING', f'核心cron {core_name} 不存在！', False)
             else:
                 ok(f'cron {core_name} 存在')
 
-        ok(f'cron总计: {len(lines)}个')
+        ok(f'cron总计: {len(jobs)}个  连续err={len(error_crons)}')
     except Exception as e:
         warn('CRON_CHECK_ERR', f'cron检查失败: {e}', False)
 
