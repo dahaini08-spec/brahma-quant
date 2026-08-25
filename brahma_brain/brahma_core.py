@@ -3683,7 +3683,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 from fangcang_hcme_bridge import get_fangcang_hcme_score as _fc_hcme
                 _hcme_r2 = _fc_hcme(
                     symbol=_sym,
-                    ms=ms if 'ms' in dir() else {},
+                    ms=ms,
                     signal_dir=_actual_dir,
                 )
                 _fc_res['hcme_wr_adj'] = _hcme_r2['hcme_score_adj']
