@@ -408,6 +408,58 @@ def _quant_agent_review(signal: Dict, similar_signals: Dict) -> Dict:
     return _rule_fallback
 
 
+def _devil_agent_review(signal: Dict) -> Dict:
+    """
+    Agent4: 逆向惩魔(Devil's Advocate)
+    专门质疑其他三个Agent的结论，找反例和漏洞
+    防止梯天进入「回音壁」
+    [2026-08-25 谗天大脚111 设计院封印]
+    """
+    _rule_fallback = {'score_adj': 0, 'veto': False, 'summary': 'devil_fallback', 'agent': 'DevilAgent'}
+    try:
+        symbol    = signal.get('symbol', '')
+        direction = signal.get('direction', '')
+        score     = float(signal.get('score', 0))
+        regime    = signal.get('regime', '')
+        breakdown = signal.get('breakdown', {})
+
+        prompt = f"""你是一个专门质疑当前交易信号的AI Agent（Devil's Advocate）。
+你的唯一任务是：找到这个信号的漏洞、弱点和错误。
+不要赞同，专门挖掘否定理由。
+
+当前信号:
+- 品种: {symbol}
+- 方向: {direction}
+- 得分: {score:.1f}
+- 体制: {regime}
+
+请回答以下问题：
+1. 这个信号的最大风险和漏洞是什么？
+2. 哪个情境下这个信号会失败？
+3. 为什么市场现在可能与信号方向相反？
+返回JSON：{{"score_adj": <-15到0的整数>, "veto": <true/false>, "top_flaw": "最大漏洞", "summary": "质疑摘要"}}
+说明: score_adj必须为负数或0（逆向Agent只赋予惩罚，不加分）。
+只有在信号存在严重结构矛盾或逆势时才 veto=true。"""
+
+        result = _call_llm(prompt, 'DevilAgent', model='standard')  # 用标准模型控制成本
+        if not result:
+            return _rule_fallback
+
+        adj = int(result.get('score_adj', 0))
+        adj = max(-15, min(0, adj))  # 逆向Agent只能减分不能加分
+        return {
+            'score_adj':  adj,
+            'veto':       bool(result.get('veto', False)),
+            'veto_reason': result.get('top_flaw', ''),
+            'top_flaw':   result.get('top_flaw', ''),
+            'summary':    result.get('summary', ''),
+            'agent':      'DevilAgent',
+        }
+    except Exception as e:
+        logger.warning(f'[DevilAgent] 降级: {e}')
+        return _rule_fallback
+
+
 def review(
     signal_result: Dict,
     market_ctx: Optional[Dict] = None,
@@ -546,35 +598,43 @@ def review(
     except Exception:
         pass
 
-    # 三专家并行调用 [2026-08-24 多模型架构: 串行→并行，总耗时从30s→10s]
+    # 四专家并行调用 [2026-08-25 +逆向Agent]
     import concurrent.futures as _cf
     t0 = time.time()
-    with _cf.ThreadPoolExecutor(max_workers=3) as _pool:
+    with _cf.ThreadPoolExecutor(max_workers=4) as _pool:
         _f_risk  = _pool.submit(_risk_agent_review, flat_signal)
         _f_macro = _pool.submit(_macro_agent_review, flat_signal, ctx)
         _f_quant = _pool.submit(_quant_agent_review, flat_signal, flat_signal.get('_similar_signals'))
+        _f_devil = _pool.submit(_devil_agent_review, flat_signal)
         risk_result  = _f_risk.result(timeout=18)
         macro_result = _f_macro.result(timeout=18)
         quant_result = _f_quant.result(timeout=18)
+        devil_result = _f_devil.result(timeout=18)
     elapsed = time.time() - t0
 
     # ── 分数合并 ──────────────────────────────────────────────
     risk_adj  = risk_result.get('score_adj', 0)
     macro_adj = macro_result.get('score_adj', 0)
     quant_adj = quant_result.get('score_adj', 0)   # 第三专家 [2026-08-24]
-    veto      = risk_result.get('veto', False)
+    devil_adj = devil_result.get('score_adj', 0)   # 逆向Agent
+    veto_devil = devil_result.get('veto', False)
+    veto      = risk_result.get('veto', False) or devil_result.get('veto', False)
 
     if veto:
         final_adj = -30  # 否决性惩罚
     else:
-        # 三专家加权: 风控×1.0 + 宏观×0.8 + 量化×0.6（量化权重最低，避免过拟合）
-        final_adj = risk_adj + round(macro_adj * 0.8) + round(quant_adj * 0.6)
-        final_adj = max(-25, min(12, final_adj))   # 略放宽限幅适应三专家
+        # 四专家加权: 风控×1.0 + 宏观×0.8 + 量化×0.6 + 逆向×0.7
+        final_adj = (risk_adj
+                     + round(macro_adj  * 0.8)
+                     + round(quant_adj  * 0.6)
+                     + round(devil_adj  * 0.7))
+        final_adj = max(-30, min(12, final_adj))
 
     council_output = {
         'risk':       risk_result,
         'macro':      macro_result,
         'quant':      quant_result,   # 第三专家 [2026-08-24]
+        'devil':      devil_result,   # 逆向Agent [2026-08-25]
         'final_adj':  final_adj,
         'score_before': score,
         'score_after':  score + final_adj if MODE == 'live' else score,
