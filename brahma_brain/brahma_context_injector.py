@@ -58,6 +58,9 @@ BRAHMA_IRON_RULES = {
 _WR_MATRIX_CACHE = {}
 _WR_MATRIX_LOADED = False
 
+# ── 方仓JSON文件缓存（进程级，避免重复IO）───────────────────────
+_FANGCANG_FILE_CACHE: dict = {}
+
 
 def _load_wr_matrix():
     global _WR_MATRIX_CACHE, _WR_MATRIX_LOADED
@@ -73,6 +76,19 @@ def _load_wr_matrix():
 
 
 # ── 层1: 当前标的方仓历史摘要 ────────────────────────────────────
+def _warm_fangcang_cache(symbol: str) -> None:
+    """预热指定标的的所有周期文件到内存缓存"""
+    sym_key = symbol.replace('USDT', '').lower()
+    for tf in ['15m', '1h', '4h', '1d', '1w', '1M']:
+        for fname in [f'fangcang_{sym_key}_{tf}.json', f'fangcang_cases_{sym_key}.json']:
+            fpath = _DATA / fname
+            if fpath.exists() and str(fpath) not in _FANGCANG_FILE_CACHE:
+                try:
+                    _FANGCANG_FILE_CACHE[str(fpath)] = json.loads(fpath.read_text())
+                except Exception:
+                    pass
+
+
 def get_fangcang_summary(symbol: str, regime: str, signal_dir: str) -> dict:
     """
     获取该标的在当前体制+方向下的历史表现摘要。
@@ -80,6 +96,7 @@ def get_fangcang_summary(symbol: str, regime: str, signal_dir: str) -> dict:
     """
     sym_key = symbol.replace('USDT', '').lower()
     summary = {'total_n': 0, 'by_tf': {}, 'best_tf': None, 'best_wr': 0}
+    _warm_fangcang_cache(symbol)  # 预热该标的所有文件
 
     for tf in ['15m', '1h', '4h', '1d', '1w']:
         fpath = _DATA / f'fangcang_{sym_key}_{tf}.json'
@@ -90,7 +107,9 @@ def get_fangcang_summary(symbol: str, regime: str, signal_dir: str) -> dict:
             if not fpath.exists():
                 continue
         try:
-            cases = json.loads(fpath.read_text())
+            if str(fpath) not in _FANGCANG_FILE_CACHE:
+                _FANGCANG_FILE_CACHE[str(fpath)] = json.loads(fpath.read_text())
+            cases = _FANGCANG_FILE_CACHE[str(fpath)]
             if not isinstance(cases, list):
                 continue
 
