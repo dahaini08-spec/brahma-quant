@@ -825,6 +825,22 @@ def run():
                 events = [{'event': 'SKIP_RESET', 'detail': f'回落>{state.get(f"{sym}_recent_high",0):.4f}的30%'}]
                 status = 'SKIP_RESET_TRIGGERED'
 
+        # ── E_ZONE: 战场区间触及检测 (price_zone_engine P3, 2026-08-25) ──
+        try:
+            sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'brahma_brain'))
+            from price_zone_engine import check_zone_touch
+            _zone_touch = check_zone_touch(sym, cur_price)
+            if _zone_touch:
+                _zone_msg = _zone_touch['msg']
+                import subprocess as _sp2
+                _sp2.Popen(
+                    ['openclaw','message','send','--to', JARVIS_TARGET,
+                     '--channel','jarvis','--message', _zone_msg],
+                    stdout=_sp2.DEVNULL, stderr=_sp2.DEVNULL
+                )
+        except Exception:
+            pass  # 区间检测不影响主流程
+
         if status.startswith('SILENT'):
             silent_syms.append(f"{sym}({status})")
             pass  # [静默]
