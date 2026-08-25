@@ -472,14 +472,30 @@ def process_event(symbol: str, signal_dir: str = None,
                   f'议会{support}票支持，等待确认')
         if not dry_run:
             _do_alert(sym, signal_dir, result, council, reason)
+            # A方案：苏摩在线时也同步纸面开单（不等确认）
+            try:
+                from paper_trader import auto_paper_trade
+                auto_paper_trade(sym, signal_dir, score_adj, support, result)
+            except Exception as _pe:
+                _log.warning(f'[CPU·paper] 纸面开单失败: {_pe}')
         _log_decision(sym, signal_dir, 'ALERT', reason, score_adj, layer=3)
         return {'decision': 'ALERT', 'reason': reason, 'layer': 3,
                 'symbol': sym, 'score': score_adj, 'elapsed': time.time() - t0}
 
-    # 苏摩离线 + 全部门控通过 → EXECUTE
-    reason = (f'自主执行: score={score_adj:.1f}≥{SCORE_EXECUTE} '
+    # 苏摩离线 + 全部门控通过 → 纸面+实盘同步EXECUTE
+    reason = (f'自主执行(A方案): score={score_adj:.1f}≥{SCORE_EXECUTE} '
               f'议会{support}票支持 苏摩离线 仓位OK')
-    exec_result = {} if dry_run else _do_execute(sym, signal_dir, result, council)
+    exec_result = {}
+    if not dry_run:
+        # 纸面先开（必完成）
+        try:
+            from paper_trader import auto_paper_trade
+            paper_result = auto_paper_trade(sym, signal_dir, score_adj, support, result)
+            exec_result['paper'] = paper_result
+        except Exception as _pe:
+            exec_result['paper_error'] = str(_pe)
+        # 实盘执行
+        exec_result.update(_do_execute(sym, signal_dir, result, council))
     _log_decision(sym, signal_dir, 'EXECUTE', reason, score_adj, layer=3)
     return {
         'decision':    'EXECUTE',
