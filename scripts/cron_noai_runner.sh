@@ -17,6 +17,8 @@ fi
 # 设置ulimit防止单进程OOM（容器内RLIMIT_AS有效）
 ulimit -v $((1536 * 1024))  # 1.5GB虚拟内存上限，防止单进程OOM
 export PYTHONFAULTHANDLER=0  # 禁用core dump节省磁盘
+# [2026-08-26 fix] lightgbm需要libgomp，用torch自带的进行预加载
+export LD_PRELOAD=/root/.openclaw/workspace/trading-system/venv/lib/python3.11/site-packages/torch/lib/libgomp.so.1:${LD_PRELOAD}
 
 cd "$SCRIPT_DIR"
 exec "$@"
