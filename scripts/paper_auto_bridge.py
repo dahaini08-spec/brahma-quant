@@ -216,9 +216,40 @@ def process_symbol(symbol: str, source: str = 'auto') -> dict:
         result['reason'] = f'dead_hole_short in {regime}'
         return result
 
-    # 纸面门槛
-    if score < PAPER_SCORE_MIN:
-        result['reason'] = f'score={score:.1f} < {PAPER_SCORE_MIN}'
+    # ── [P1/P2 2026-08-26 苏摩111] BBW压缩+RSI极值豁免通道 ──
+    # 计算BBW和RSI用于豁免判断
+    _bbw = 999.0; _rsi_1h = 50.0
+    try:
+        _kl1h = json.loads(urllib.request.urlopen(
+            f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=1h&limit=25',
+            timeout=4).read())
+        _c1h = [float(k[4]) for k in _kl1h]
+        _sma = sum(_c1h[-20:]) / 20
+        _std = (sum((c - _sma)**2 for c in _c1h[-20:]) / 20) ** 0.5
+        _bbw = (4 * _std) / _sma * 100  # BBW%
+        _g = [max(_c1h[i]-_c1h[i-1], 0) for i in range(1, 15)]
+        _l = [max(_c1h[i-1]-_c1h[i], 0) for i in range(1, 15)]
+        _ag = sum(_g)/14; _al = sum(_l)/14
+        _rsi_1h = 100 - 100/(1 + _ag/_al) if _al > 0 else 50.0
+    except Exception:
+        pass
+
+    # P1: BBW<3% + score≥70 → 豁免score门槛，直接走战场预判
+    _p1_exempt = _bbw < 3.0 and score >= 70
+    # P2: RSI极值豁免 → RSI<20(超卖做多) 或 RSI>80(超买做空)
+    _p2_exempt_long  = _rsi_1h < 20 and direction == 'LONG'
+    _p2_exempt_short = _rsi_1h > 80 and direction == 'SHORT'
+    _p2_exempt = _p2_exempt_long or _p2_exempt_short
+
+    if _p1_exempt:
+        _log.info(f'[P1豁免] {symbol} BBW={_bbw:.2f}%<3% score={score:.1f}≥70 → 绕过130门槛')
+        result['bbw'] = round(_bbw, 2); result['rsi_1h'] = round(_rsi_1h, 1)
+    elif _p2_exempt:
+        _log.info(f'[P2豁免] {symbol} RSI={_rsi_1h:.1f} → RSI极值豁免')
+        result['bbw'] = round(_bbw, 2); result['rsi_1h'] = round(_rsi_1h, 1)
+    elif score < PAPER_SCORE_MIN:
+        # 普通门槛（无豁免）
+        result['reason'] = f'score={score:.1f} < {PAPER_SCORE_MIN} bbw={_bbw:.1f}% rsi={_rsi_1h:.1f}'
         return result
 
     # ── Step3: AI议会 ──
@@ -507,7 +538,7 @@ def settle_pending_orders(notify: bool = True) -> list:
 
 def main():
     parser = argparse.ArgumentParser(description='梵天纸面自动开单桥接器')
-    parser.add_argument('--source', choices=['candidates','oi','zone','settle','all'], default='zone')
+    parser.add_argument('--source', choices=['candidates','oi','zone','bbw','settle','all'], default='zone')
     parser.add_argument('--symbols', nargs='*', help='指定标的列表')
     parser.add_argument('--dry-run', action='store_true')
     parser.add_argument('--no-notify', action='store_true')
@@ -525,6 +556,9 @@ def main():
     if args.source in ('zone', 'all'):
         syms = args.symbols or None
         results += run_zone_trigger(syms, notify=notify)
+
+    if args.source in ('bbw', 'all'):
+        results += run_bbw_scan(notify=notify)
 
     if args.source in ('settle', 'all'):
         settle_pending_orders(notify=notify)
@@ -547,3 +581,75 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+# ── P3: BBW扫描器（pump_hunter扩展） ─────────────────────────────────────
+
+def run_bbw_scan(notify: bool = True) -> list:
+    """
+    P3: 扫描signal_push_record里所有BBW<5%的标的 → 纸面开单
+    补充pump_hunter exec_eligible=None的盲区
+    2026-08-26 苏摩111
+    """
+    import urllib.request
+
+    # 读取pump_hunter已知标的
+    push_record = ROOT / 'dharma' / 'pump_hunter' / 'signal_push_record.json'
+    candidates_file = DATA / 'candidates.json'
+
+    symbols = set()
+    if push_record.exists():
+        try:
+            d = json.loads(push_record.read_text())
+            symbols.update(d.keys())
+        except: pass
+    if candidates_file.exists():
+        try:
+            c = json.loads(candidates_file.read_text())
+            syms = c if isinstance(c, list) else c.get('symbols', [])
+            symbols.update(s if isinstance(s,str) else s.get('symbol','') for s in syms)
+        except: pass
+
+    symbols = [s for s in symbols if s and s.endswith('USDT')][:50]
+    _log.info(f'[P3 BBW扫描] {len(symbols)}个标的')
+
+    # 扫描BBW
+    tight_symbols = []
+    for sym in symbols:
+        try:
+            kl = json.loads(urllib.request.urlopen(
+                f'https://fapi.binance.com/fapi/v1/klines?symbol={sym}&interval=1h&limit=22',
+                timeout=3).read())
+            closes = [float(k[4]) for k in kl]
+            sma = sum(closes[-20:])/20
+            std = (sum((c-sma)**2 for c in closes[-20:])/20)**0.5
+            bbw = (4*std)/sma*100
+            if bbw < 5.0:
+                tight_symbols.append((sym, round(bbw,2)))
+        except: pass
+
+    tight_symbols.sort(key=lambda x: x[1])
+    _log.info(f'[P3] BBW<5%: {[s for s,b in tight_symbols[:10]]}')
+
+    results = []
+    for sym, bbw in tight_symbols[:15]:  # 最多处理15个
+        try:
+            r = process_symbol(sym, source='bbw_scan')
+            r['bbw_scan'] = bbw
+            results.append(r)
+            if r['action'] == 'PAPER_OPEN':
+                _log.info(f'  ✅ {sym} BBW={bbw}% → 开单{len(r["orders"])}笔')
+        except Exception as e:
+            _log.error(f'  {sym}: {e}')
+
+    opened = sum(1 for r in results if r['action'] == 'PAPER_OPEN')
+    if notify and opened > 0:
+        lines = []
+        for r in results:
+            if r['action'] != 'PAPER_OPEN': continue
+            for o in r['orders']:
+                emoji = '🟢' if o['side']=='LONG' else '🔴'
+                lines.append(f"{emoji} {o['symbol']}(BBW={r.get('bbw_scan','?')}%) {o['side']} @${o['entry']:,} RR={o['rr']}")
+        _push('⚡ 梵天P3 BBW压缩扫描→纸面开单\n' + '\n'.join(lines))
+
+    return results
