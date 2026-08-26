@@ -670,11 +670,33 @@ def review(
         signal_result['action'] = 'SKIP'
         signal_result['_veto_reason'] = devil_result.get('top_risk','') if veto_devil else risk_result.get('top_risk','')
     else:
-        # 四专家加权: 风控×1.0 + 宏观×0.8 + 量化×0.6 + 逆向×0.7
-        final_adj = (risk_adj
-                     + round(macro_adj  * 0.8)
-                     + round(quant_adj  * 0.6)
-                     + round(devil_adj  * 0.7))
+        # [P3修复 2026-08-26] 体制感知动态权重
+        # BEAR体制: 宏观更重要(大环境决定方向) | BULL: 量化更可靠(WR矩阵铁证) | CHOP: 风控最重要
+        _regime_w = flat_signal.get('regime', '')
+        if 'BEAR' in str(_regime_w):
+            # BEAR体制: RiskAgent降权至×0.7，MacroAgent升权至×1.2
+            _w_risk  = 0.7   # 风控在BEAR里过于保守
+            _w_macro = 1.2   # 宏观方向判断更重要
+            _w_quant = 0.6
+            _w_devil = 0.7
+        elif 'BULL' in str(_regime_w):
+            # BULL体制: QuantAgent升权至×0.9，WR矩阵铁证在BULL里更可靠
+            _w_risk  = 1.0
+            _w_macro = 0.7   # BULL里宏观相对次要
+            _w_quant = 0.9   # WR矩阵在BULL是主要决策依据
+            _w_devil = 0.7
+        else:
+            # CHOP/默认: 风控最重要，逆向思维强化
+            _w_risk  = 1.2   # CHOP里风控最重要
+            _w_macro = 0.8
+            _w_quant = 0.5   # CHOP里WR矩阵不可靠
+            _w_devil = 0.9   # 逆向思维强化，CHOP容易假突破
+        # 四专家体制感知加权
+        final_adj = (risk_adj  * _w_risk
+                     + macro_adj * _w_macro
+                     + quant_adj * _w_quant
+                     + devil_adj * _w_devil)
+        final_adj = round(final_adj)
         final_adj = max(-30, min(12, final_adj))
 
     council_output = {
