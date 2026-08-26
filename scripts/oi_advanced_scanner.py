@@ -1141,6 +1141,12 @@ def run():
         }
         f.write(json.dumps(summary) + '\n')
 
+    # [2026-08-26] 519951657edf4e004fe153f7961f5217
+    try:
+        from scripts.signal_queue_writer import push_signals as _sq_push
+    except ImportError:
+        import sys; sys.path.insert(0, str(BASE)); from scripts.signal_queue_writer import push_signals as _sq_push
+    _sq_push([r['symbol'] for r in push_signals], 'oi_scanner')
     return len(push_signals)
 
 

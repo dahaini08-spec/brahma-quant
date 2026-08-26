@@ -1,85 +1,51 @@
 {
-  "BULL_TREND:LONG:120-129": {
-    "wr": 0.478,
-    "n": 23,
-    "avg_pnl": 0.172
-  },
-  "BULL_TREND:LONG:130-139": {
-    "wr": 0.5,
-    "n": 12,
-    "avg_pnl": 0.223
-  },
-  "BULL_TREND:LONG:110-119": {
-    "wr": 0.667,
-    "n": 6,
-    "avg_pnl": 0.678
-  },
-  "BULL_TREND:LONG:160-169": {
-    "wr": 0.0,
-    "n": 4,
-    "avg_pnl": -3.952
-  },
-  "BULL_TREND:LONG:100-109": {
-    "wr": 1.0,
-    "n": 3,
-    "avg_pnl": 2.132
-  },
-  "BULL_TREND:LONG:140-149": {
-    "wr": 0.0,
-    "n": 3,
-    "avg_pnl": -3.5
-  },
-  "BULL_TREND:LONG:170-179": {
-    "wr": 0.0,
-    "n": 4,
-    "avg_pnl": -6.446
-  },
-  "CHOP_MID:SHORT:v63_BTC": {
-    "wr": 0.194,
-    "n": 36,
-    "avg_pnl": -396.701,
-    "source": "v63_BTC"
-  },
-  "BULL_TREND:LONG:v63_BTC": {
-    "wr": 0.958,
-    "n": 48,
-    "avg_pnl": 673.141,
-    "source": "v63_BTC"
-  },
-  "CHOP_MID:LONG:v63_BTC": {
-    "wr": 0.172,
-    "n": 99,
-    "avg_pnl": -444.624,
-    "source": "v63_BTC"
-  },
-  "BEAR_TREND:SHORT:v63_BTC": {
-    "wr": 0.87,
-    "n": 46,
-    "avg_pnl": 719.244,
-    "source": "v63_BTC"
-  },
-  "CHOP_MID:LONG:v63_ETH": {
-    "wr": 0.146,
-    "n": 96,
-    "avg_pnl": -329.502,
-    "source": "v63_ETH"
-  },
-  "CHOP_MID:SHORT:v63_ETH": {
-    "wr": 0.271,
-    "n": 59,
-    "avg_pnl": -207.706,
-    "source": "v63_ETH"
-  },
-  "BULL_TREND:LONG:v63_ETH": {
-    "wr": 0.964,
-    "n": 55,
-    "avg_pnl": 532.978,
-    "source": "v63_ETH"
-  },
-  "BEAR_TREND:SHORT:v63_ETH": {
-    "wr": 0.694,
-    "n": 49,
-    "avg_pnl": 254.023,
-    "source": "v63_ETH"
+  "updated_at": "2026-08-26T07:37:57.609004+00:00",
+  "total_settled": 182,
+  "matrix": {
+    "BULL_TREND:LONG": {
+      "total": 162,
+      "win": 35,
+      "loss": 42,
+      "expired": 85,
+      "wr": 0.4545,
+      "ev_avg": -0.1391,
+      "avg_score": 36.2
+    },
+    "BEAR_RECOVERY:LONG": {
+      "total": 8,
+      "win": 7,
+      "loss": 0,
+      "expired": 1,
+      "wr": 1.0,
+      "ev_avg": 2.0,
+      "avg_score": 67.1
+    },
+    "BULL_EARLY:LONG": {
+      "total": 5,
+      "win": 5,
+      "loss": 0,
+      "expired": 0,
+      "wr": 1.0,
+      "ev_avg": 2.0,
+      "avg_score": 88.4
+    },
+    "BEAR_RECOVERY:SHORT": {
+      "total": 3,
+      "win": 0,
+      "loss": 3,
+      "expired": 0,
+      "wr": 0.0,
+      "ev_avg": -2.0,
+      "avg_score": 65.9
+    },
+    "BULL_EARLY:SHORT": {
+      "total": 4,
+      "win": 2,
+      "loss": 2,
+      "expired": 0,
+      "wr": 0.5,
+      "ev_avg": 0.0,
+      "avg_score": 66.8
+    }
   }
 }

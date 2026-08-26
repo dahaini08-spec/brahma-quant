@@ -114,6 +114,7 @@ def _score_rsi(rsi_1h: Optional[float], signal_dir: str) -> int:
             if rsi_1h <= 35:  return 28
             if rsi_1h <= 45:  return 20
             if rsi_1h <= 55:  return 12
+            if rsi_1h <= 65:  return 8   # [根治 2026-08-25 苏摩111] BULL_TREND趋势追踪RSI65属正常，不应给0
             return 5
     except Exception:
         return 10
@@ -313,7 +314,17 @@ def evaluate_timing(symbol: str,
                 },
             }
 
-        if total >= ready_t:
+        # [根治 2026-08-25 苏摩111] 高分豁免通道：score≥155 + BULL_TREND + total≥45 → 强制READY
+        # 根因：趋势追踪行情中RSI必然>55，timing评分天花板45，导致高分信号永远MONITOR
+        _bull_high_score_unlock = (
+            score >= 155
+            and regime in ('BULL_TREND', 'BULL_EARLY', 'BEAR_RECOVERY')
+            and signal_dir == 'LONG'
+            and total >= 45
+        )
+        if _bull_high_score_unlock:
+            status = 'READY'
+        elif total >= ready_t:
             status = 'READY'
         elif total >= monitor_t:
             status = 'MONITOR'
