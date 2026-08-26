@@ -327,6 +327,20 @@ def run_full_analysis(symbol: str):
     except Exception as _ez:
         r['_price_zones_error'] = str(_ez)[:80]
 
+    # [自主决策 2026-08-26] narrative_engine 叙事层接通
+    try:
+        from narrative_engine import analyze_narrative
+        _narr = analyze_narrative(symbol, r)
+        if _narr and not _narr.get('error'):
+            _ns = _narr.get('narrative_score', 0)
+            _nb = _narr.get('bias', 'NEUTRAL')
+            _nk = _narr.get('key_narrative', '')
+            _narr_line = f"\n🌊 叙事层: bias={_nb} score={_ns} | {_nk[:60]}"
+            report = report + _narr_line
+            r['_narrative'] = _narr
+    except Exception:
+        pass
+
     return report, r
 
 
