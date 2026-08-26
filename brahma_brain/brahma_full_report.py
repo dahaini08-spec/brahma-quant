@@ -313,6 +313,20 @@ def run_full_analysis(symbol: str):
     except Exception:
         pass
 
+    # [P0接通 2026-08-26 苏摩111] price_zone_engine → full_report 战场预判层
+    try:
+        import sys as _sys_pz, os as _os_pz
+        _pz_path = _os_pz.path.join(_os_pz.path.dirname(_os_pz.path.abspath(__file__)))
+        if _pz_path not in _sys_pz.path: _sys_pz.path.insert(0, _pz_path)
+        from price_zone_engine import calc_zones, format_zone_report
+        _zones = calc_zones(symbol)
+        if _zones and not _zones.get('error'):
+            _zone_report = format_zone_report(_zones, compact=True)
+            report = report + "\n\n" + _zone_report
+            r['_price_zones'] = _zones
+    except Exception as _ez:
+        r['_price_zones_error'] = str(_ez)[:80]
+
     return report, r
 
 
