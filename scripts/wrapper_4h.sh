@@ -23,8 +23,8 @@ bash "$RUNNER" timeout 60 python3 brahma_brain/brahma_360.py 2>&1 | tail -3
 echo "[3/6] liq_heatmap refresh"
 bash "$RUNNER" timeout 60 python3 scripts/liq_heatmap.py --symbols BTCUSDT ETHUSDT SOLUSDT BNBUSDT 2>&1 | tail -3
 
-echo "[4/6] scan-fast"
-bash "$RUNNER" bash scripts/cron_noai_runner.sh scan-fast 2>&1 | tail -3
+echo "[4/6] scan-fast (brahma_scan_all 30主力币)"
+bash "$RUNNER" timeout 120 python3 scripts/brahma_scan_all.py 2>&1 | tail -3
 
 echo "[5/6] macro_ai_bridge"
 bash "$RUNNER" timeout 60 python3 scripts/macro_ai_bridge.py 2>&1 | tail -3
