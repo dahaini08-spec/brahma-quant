@@ -242,6 +242,7 @@ class RegimeStateMachine:
             # 新的候选体制出现，重置计数
             s['candidate'] = raw_regime
             s['confirm_count'] = 1
+            s['candidate_start_ts'] = now  # [P2 2026-08-26] 记录候选开始时间，供延迟量化
         else:
             # 同一候选体制继续积累
             s['confirm_count'] = s.get('confirm_count', 0) + 1
@@ -272,6 +273,21 @@ class RegimeStateMachine:
             s['locked_until'] = now + lock_sec
             # 统计切换
             s['switch_count_24h'] = s.get('switch_count_24h', 0) + 1
+
+            # [P2修复 2026-08-26] 体制切换延迟量化
+            # 延迟 = 从第一根candidate根K线到确认切换的时间
+            _confirm_start = s.get('candidate_start_ts', now)
+            _latency_sec = now - _confirm_start
+            _latency_4h = round(_latency_sec / (4 * 3600), 1)  # 转扦4H K线根数
+            s['last_switch_latency_sec'] = round(_latency_sec)
+            s['last_switch_latency_4h_bars'] = _latency_4h
+            s['last_switch_from'] = old_regime
+            s['last_switch_to'] = raw_regime
+            # 积累历史延迟，为月度复盘提供数据
+            _hist = s.get('switch_latency_history', [])
+            _hist.append({'from': old_regime, 'to': raw_regime,
+                          'latency_4h': _latency_4h, 'ts': now})
+            s['switch_latency_history'] = _hist[-20:]  # 保留最近20条
 
             pass  # [静默]
 
@@ -315,6 +331,11 @@ class RegimeStateMachine:
             'locked_remain_h': round(lock_remain_h, 1),
             'switch_count_24h': s.get('switch_count_24h', 0),
             'stable':          s.get('candidate') is None,
+            # [P2 2026-08-26] 切换延迟量化指标
+            'last_switch_latency_4h': s.get('last_switch_latency_4h_bars'),
+            'last_switch_from':       s.get('last_switch_from'),
+            'last_switch_to':         s.get('last_switch_to'),
+            'switch_latency_history': s.get('switch_latency_history', [])[-5:],
         }
 
 

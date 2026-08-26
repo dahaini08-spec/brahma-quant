@@ -1652,8 +1652,21 @@ if __name__ == '__main__':
                     r_raw[_k] = _p[_k]
             score = r_raw.get('score_final', r_raw.get('score', 0))
             grade = r_raw.get('grade', 0)
-            # [设计院封印 2026-08-20 苏摩指令] 屏蔻score120~139区间（实测WR=0%，63条信号全部EXPIRED）
             _regime_raw = r_raw.get('regime', '')
+
+            # [P2修复 2026-08-26] CHOP_MID信号降级为WATCH
+            # MEMORY.md宪法: CHOP不发策略; score>=110 → WATCH 0.5%NAV
+            if 'CHOP' in str(_regime_raw):
+                _chop_score = float(score or 0)
+                if _chop_score >= 110:
+                    r_raw['_pos_override_pct'] = 0.5
+                    r_raw['_chop_watch'] = True
+                    print(f'[CHOP降级WATCH] {sym} score={_chop_score:.0f} → 0.5%NAV观察仓')
+                else:
+                    print(f'[CHOP丢弃] {sym} score={_chop_score:.0f}<110 CHOP无价值 ⛔')
+                    _score_ok = False
+
+            # [设计院封印 2026-08-20 苏摩指令] 屏蔻score120~139区间（实测WR=0%，63条信号全部EXPIRED）
             if 120 <= float(score or 0) <= 139 and 'BULL_TREND' in str(_regime_raw):
                 print(f'[1hao→信号池] {sym} score={score:.0f} 在120~139毒区间，丢弃(实测WR=0%) ⛔')
             # [Phase2 2026-08-21 苏摩111] EV驱动动态阈值计算
