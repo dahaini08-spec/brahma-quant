@@ -74,6 +74,15 @@ _cache: Dict[str, Tuple[float, Dict]] = {}
 # ════════════════════════════════════════════════════════════════
 
 RISK_AGENT_PROMPT = """你是梵天量化系统的风控议员（Risk Agent）。
+【梵天宪法（必须遵守）】
+- 体制铁律：BEAR_TREND做多WR=45%→封禁；BULL_TREND做空WR=38%→封禁
+- 死穴：BULL_TREND+LONG+score≥140+SL≥3% → 死亡区WR=0%
+- 评分含义：score_final<100=弱信号；100-140=观望；140-160=可入场；>160=强信号
+- 止损宪法：BEAR体制SL=2.0%；CHOP体制SL=2.5%；SL<1%=WR=100%铁证→强制5%NAV
+- 仓位：BTC/ETH动态5-10%NAV；山寨5%NAV；MAX单笔10%NAV
+- 苏摩风格：不抗单，止损即出，系统说了算，数据驱动
+- BEAR_RECOVERY：仅多单，严禁空单
+
 
 当前信号信息：
 - 品种: {symbol}
@@ -107,6 +116,15 @@ RISK_AGENT_PROMPT = """你是梵天量化系统的风控议员（Risk Agent）�
 5. 仅输出JSON，不要其他文字。"""
 
 MACRO_AGENT_PROMPT = """你是梵天量化系统的宏观议员（Macro Agent）。
+【梵天宪法（必须遵守）】
+- 体制铁律：BEAR_TREND做多WR=45%→封禁；BULL_TREND做空WR=38%→封禁
+- 死穴：BULL_TREND+LONG+score≥140+SL≥3% → 死亡区WR=0%
+- 评分含义：score_final<100=弱信号；100-140=观望；140-160=可入场；>160=强信号
+- 止损宪法：BEAR体制SL=2.0%；CHOP体制SL=2.5%；SL<1%=WR=100%铁证→强制5%NAV
+- 仓位：BTC/ETH动态5-10%NAV；山寨5%NAV；MAX单笔10%NAV
+- 苏摩风格：不抗单，止损即出，系统说了算，数据驱动
+- BEAR_RECOVERY：仅多单，严禁空单
+
 
 当前宏观数据：
 - BTC.D: {btc_dominance}%
@@ -387,6 +405,7 @@ def _quant_agent_review(signal: Dict, similar_signals: Dict) -> Dict:
                     'source': 'rule_wr_low'}
 
         prompt = f"""你是梵天量化裁判，只看数字，不看故事。
+【梵天宪法】体制铁律：BEAR多WR=45%封禁；BULL空WR=38%封禁；死穴：BULL+多+score≥140+SL≥3%=WR=0%；score_final<100弱；140-160可入；>160强；不抗单，止损即出。
 
 信号: {symbol} {sig_dir} score={score:.0f} regime={regime} sl={sl_pct:.1f}%
 历史同类: {summary if summary else f'WR={wr:.1f}% n={n}'}
@@ -435,6 +454,7 @@ def _devil_agent_review(signal: Dict) -> Dict:
         breakdown = signal.get('breakdown', {})
 
         prompt = f"""你是一个专门质疑当前交易信号的AI Agent（Devil's Advocate）。
+【梵天宪法】体制铁律：BEAR多WR=45%封禁；BULL空WR=38%封禁；死穴：BULL+多+score≥140+SL≥3%=WR=0%；score_final<100弱；140-160可入；>160强；不抗单，止损即出。
 你的唯一任务是：找到这个信号的漏洞、弱点和错误。
 不要赞同，专门挖掘否定理由。
 
