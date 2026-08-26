@@ -99,7 +99,7 @@ def check_data_freshness():
 CORE_MODULES = [
     ('brahma_bus',           'get_price'),
     ('brahma_engine',        'analyze'),
-    ('brahma_scoring',       'confluence_score'),
+    # ('brahma_scoring',       'confluence_score'),  # [2026-08-26] 已归档，主链路不需要，移出检查列表避免误报CRITICAL
     ('brahma_core',          'analyze'),
     ('position_sizer',       'get_position_pct'),
     ('var_engine',           'single_position_var'),
