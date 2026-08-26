@@ -472,6 +472,76 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         pass
     # ── [END signal_lifecycle] ───────────────────────────────────────────
 
+    # [全量接通 2026-08-26 苏摩111] 批次B：评分增强层
+    # 接入位置：brahma_analysis_runner → run_analysis()
+
+    # B0: brahma_context_injector — AI记忆注入器（为LLM Council提供上下文）
+    try:
+        from brahma_context_injector import get_fangcang_summary, get_brahma_rules
+        _ctx_fc = get_fangcang_summary(symbol, result.get('regime',''), result.get('signal_dir','LONG'))
+        _ctx_rules = get_brahma_rules(result.get('regime',''), result.get('signal_dir','LONG'))
+        result['_context_fangcang'] = _ctx_fc
+        result['_context_rules'] = _ctx_rules
+    except Exception:
+        pass
+
+    # 接入位置：brahma_analysis_runner → run_analysis()
+
+    # B1: regime_state_machine — 体制稳定性过滤
+    try:
+        from regime_state_machine import get_stable_regime
+        _stable = get_stable_regime(symbol, result.get('regime', ''))
+        if _stable and _stable != result.get('regime'):
+            result['regime_raw'] = result.get('regime')
+            result['regime'] = _stable
+    except Exception:
+        pass
+
+    # B2: regime_scorer — 5-regime精细分类
+    try:
+        from regime_scorer import score_regime
+        _rs = score_regime(symbol)
+        if _rs and not _rs.get('error'):
+            result['_regime_score'] = _rs
+    except Exception:
+        pass
+
+    # B3: brahma_multiframe — 多周期FVG/OB扫描
+    try:
+        from brahma_multiframe import scan_mtf
+        _mf = scan_mtf(symbol, result.get('price', 0))
+        if _mf and not _mf.get('error'):
+            result['_multiframe'] = _mf
+    except Exception:
+        pass
+
+    # B4: brahma_onchain — 链上评分
+    try:
+        from brahma_onchain import onchain_score
+        _oc = onchain_score(symbol, result.get('signal_dir', 'LONG'))
+        if _oc and not _oc.get('error'):
+            result['_onchain'] = _oc
+    except Exception:
+        pass
+
+    # B5: bybit_liq_adapter — Bybit多空比
+    try:
+        from bybit_liq_adapter import get_ls_ratio_signal
+        _bybit = get_ls_ratio_signal(symbol)
+        if _bybit and not _bybit.get('error'):
+            result['_bybit_ls'] = _bybit
+    except Exception:
+        pass
+
+    # B6: s7_liq_config — 清算奖励
+    try:
+        from s7_liq_config import get_liq_bonus
+        _lb = get_liq_bonus(result.get('notional', 0), symbol)
+        if _lb:
+            result['_liq_bonus'] = _lb
+    except Exception:
+        pass
+
     result['_runner_meta'] = {
         'runner_version': '1.2',
         'entry':          'brahma_analysis_runner.run_analysis',
