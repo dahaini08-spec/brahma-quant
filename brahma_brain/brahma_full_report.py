@@ -341,6 +341,68 @@ def run_full_analysis(symbol: str):
     except Exception:
         pass
 
+    # [全量接通 2026-08-26 苏摩111] 批次A：分析增强层
+    # 接入位置：brahma_full_report → run_full_analysis()
+
+    # A1: multi_tf_context_builder — 多周期快照
+    try:
+        from multi_tf_context_builder import build_context
+        _mtf = build_context(symbol)
+        if _mtf and not _mtf.get('error'):
+            r['_mtf_context'] = _mtf
+    except Exception:
+        pass
+
+    # A2: failure_pattern_db — 失败模式预警
+    try:
+        from failure_pattern_db import get_current_risk_score
+        _fp = get_current_risk_score(r)
+        if _fp and _fp.get('risk_score', 0) > 0:
+            _fp_line = f"\n⚠️ 失败模式: risk={_fp.get('risk_score')} | {_fp.get('top_pattern','')[:50]}"
+            report = report + _fp_line
+            r['_failure_pattern'] = _fp
+    except Exception:
+        pass
+
+    # A3: causal_regime_verifier — 因果体制验证
+    try:
+        from causal_regime_verifier import verify as causal_verify
+        _cv = causal_verify(symbol, r.get('regime',''), r.get('signal_dir',''))
+        if _cv and not _cv.get('error'):
+            r['_causal_verify'] = _cv
+    except Exception:
+        pass
+
+    # A4: macro_calendar — 宏观日历事件
+    try:
+        from macro_calendar import get_upcoming_events
+        _mc = get_upcoming_events()
+        if _mc:
+            r['_macro_calendar'] = _mc[:3]
+    except Exception:
+        pass
+
+    # A5: brahma_intel_layer — 智能体情报
+    try:
+        from brahma_intel_layer import identify_pattern
+        _il = identify_pattern(symbol, r)
+        if _il and not _il.get('error'):
+            r['_intel'] = _il
+    except Exception:
+        pass
+
+    # A6: tradfi_dump_detector — TradFi抛压检测
+    try:
+        from tradfi_dump_detector import m5_monthly_trend_filter
+        _td = m5_monthly_trend_filter(
+            float(r.get('price_change_30d', 0) or 0),
+            r.get('signal_dir', 'LONG')
+        )
+        if _td and not _td.get('error'):
+            r['_tradfi_dump'] = _td
+    except Exception:
+        pass
+
     return report, r
 
 
