@@ -332,6 +332,31 @@ def _auto_heal_suggestions(report: dict) -> list:
 
 
 # ═══════════════════════════════════════════════════════════════
+# venv依赖检查（P0级 2026-07-26封印，提升为模块级函数 2026-08-26修复）
+# ═══════════════════════════════════════════════════════════════
+
+def _check_venv_deps() -> dict:
+    """检查venv核心依赖是否可用，重启后丢失时触发自愈"""
+    try:
+        import subprocess
+        from pathlib import Path as _Path
+        _venv_py = _Path(_ROOT) / 'venv' / 'bin' / 'python'
+        if not _venv_py.exists():
+            return {'ok': False, 'warn': True, 'msg': 'venv/bin/python不存在'}
+        result = subprocess.run(
+            [str(_venv_py), '-c', 'import requests, numpy, pandas; print("ok")'],
+            capture_output=True, text=True, timeout=5
+        )
+        if result.stdout.strip() == 'ok':
+            return {'ok': True, 'msg': 'venv依赖正常'}
+        else:
+            return {'ok': False, 'warn': True,
+                    'msg': f'venv依赖缺失: {result.stderr[:80]}'}
+    except Exception as e:
+        return {'ok': False, 'warn': True, 'msg': f'venv检查失败: {e}'}
+
+
+# ═══════════════════════════════════════════════════════════════
 # 统一健康检查入口
 # ═══════════════════════════════════════════════════════════════
 
@@ -357,27 +382,6 @@ def run_health_check(
     t_start = time.time()
 
     checks = {}
-
-    # venv依赖检查（P0级 2026-07-26封印）
-    def _check_venv_deps() -> dict:
-        """检查venv核心依赖是否可用，重启后丢失时触发自愈"""
-        try:
-            import subprocess
-            from pathlib import Path as _Path
-            _venv_py = _Path(_ROOT) / 'venv' / 'bin' / 'python'
-            if not _venv_py.exists():
-                return {'ok': False, 'warn': True, 'msg': 'venv/bin/python不存在'}
-            result = subprocess.run(
-                [str(_venv_py), '-c', 'import requests, numpy, pandas; print("ok")'],
-                capture_output=True, text=True, timeout=5
-            )
-            if result.stdout.strip() == 'ok':
-                return {'ok': True, 'msg': 'venv依赖正常'}
-            else:
-                return {'ok': False, 'warn': True,
-                        'msg': f'venv依赖缺失: {result.stderr[:80]}'}
-        except Exception as e:
-            return {'ok': False, 'warn': True, 'msg': f'venv检查失败: {e}'}
 
     # 核心检查（必须）
     checks['venv_deps']       = _check_venv_deps()
@@ -495,29 +499,7 @@ def format_health_report(report: dict, compact: bool = True) -> str:
     return '\n'.join(lines)
 
 
-# ═══════════════════════════════════════════════════════════════
-# CLI 入口
-# ═══════════════════════════════════════════════════════════════
 
-if __name__ == '__main__':
-    import argparse
-    parser = argparse.ArgumentParser(description='梵天健康检查')
-    parser.add_argument('--full', action='store_true', help='完整检查（含外部路由）')
-    parser.add_argument('--compact', action='store_true', default=True)
-    parser.add_argument('--json', action='store_true', help='JSON输出')
-    args = parser.parse_args()
-
-    report = run_health_check(full=args.full)
-
-    if args.json:
-        import json
-        # 移除不可序列化的项
-        safe = {k: v for k, v in report.items() if k != 'timestamp'}
-        print(json.dumps(safe, ensure_ascii=False, indent=2))
-    else:
-        print(report['summary'])
-        print()
-        print(format_health_report(report, compact=args.compact))
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -904,3 +886,28 @@ def _check_tardis_month_freshness() -> dict:
         return {'ok': True, 'warn': False, 'detail': f'tardis {expected} BTC/ETH ✅'}
     except Exception as e:
         return {'ok': True, 'warn': False, 'detail': f'tardis检查跳过: {e}'}
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLI 入口
+# ═══════════════════════════════════════════════════════════════
+
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser(description='梵天健康检查')
+    parser.add_argument('--full', action='store_true', help='完整检查（含外部路由）')
+    parser.add_argument('--compact', action='store_true', default=True)
+    parser.add_argument('--json', action='store_true', help='JSON输出')
+    args = parser.parse_args()
+
+    report = run_health_check(full=args.full)
+
+    if args.json:
+        import json
+        # 移除不可序列化的项
+        safe = {k: v for k, v in report.items() if k != 'timestamp'}
+        print(json.dumps(safe, ensure_ascii=False, indent=2))
+    else:
+        print(report['summary'])
+        print()
+        print(format_health_report(report, compact=args.compact))

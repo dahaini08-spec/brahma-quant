@@ -100,16 +100,16 @@
   {
     "symbol": "IOTA",
     "ts_squeeze_start": "2022-10-05T04:00:00+00:00",
-    "ts_burst": "2022-10-06T20:00:00+00:00",
+    "ts_burst": "2022-10-06T16:00:00+00:00",
     "direction": "DOWN",
     "min_bb_width": 4.01,
-    "squeeze_bars": 10,
-    "burst_atr_mult": 0.37,
-    "vol_ratio_peak": 1.55,
-    "rsi_at_burst": 32.37,
-    "future_return_24h": 0.1115,
+    "squeeze_bars": 9,
+    "burst_atr_mult": 0.1,
+    "vol_ratio_peak": 1.27,
+    "rsi_at_burst": 32.87,
+    "future_return_24h": -1.1503,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -0.1115
+    "pnl_long_24h": 1.1503
   },
   {
     "symbol": "IOTA",
@@ -796,20 +796,6 @@
     "future_return_24h": 1.4523,
     "is_genuine_breakout": false,
     "pnl_long_24h": -1.4523
-  },
-  {
-    "symbol": "IOTA",
-    "ts_squeeze_start": "2024-10-21T20:00:00+00:00",
-    "ts_burst": "2024-10-23T04:00:00+00:00",
-    "direction": "DOWN",
-    "min_bb_width": 5.0867,
-    "squeeze_bars": 8,
-    "burst_atr_mult": 0.65,
-    "vol_ratio_peak": 0.48,
-    "rsi_at_burst": 40.02,
-    "future_return_24h": -2.85,
-    "is_genuine_breakout": false,
-    "pnl_long_24h": 2.85
   },
   {
     "symbol": "IOTA",
