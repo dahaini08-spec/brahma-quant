@@ -1006,6 +1006,16 @@ def run():
     elif not silent_syms:
         pass  # triggered_syms已推送，无需重复
 
+    # [2026-08-26 苏摩111] 写入统一信号队列
+    if triggered_syms:
+        try:
+            import sys as _sys_sq
+            _sys_sq.path.insert(0, str(Path(__file__).parent))
+            from signal_queue_writer import push_signals as _sq_push
+            _sq_push(triggered_syms, 'rsi_watcher')
+        except Exception:
+            pass  # 队列写入失败不影响主流程
+
     if not triggered_syms and not silent_syms:
         print("HEARTBEAT_OK")
 
