@@ -362,6 +362,7 @@ def _macro_agent_review(signal: Dict, market_ctx: Dict) -> Dict:
 # ════════════════════════════════════════════════════════════════
 
 def _quant_agent_review(signal: Dict, similar_signals: Dict) -> Dict:
+    # [自主决策 2026-08-26] similar_wr=0%规则层：历史全亏损直接扣分，不等LLM
     """量化裁判 — Qwen专攻WR矩阵/EV/历史铁证 [多模型 2026-08-24 苏摩111]"""
     _rule_fallback = {'score_adj': 0, 'quant_bias': 'NEUTRAL',
                       'wr_verdict': 'UNKNOWN', 'source': 'rule_fallback'}
@@ -374,6 +375,16 @@ def _quant_agent_review(signal: Dict, similar_signals: Dict) -> Dict:
         wr      = similar_signals.get('recent_wr', 0) if similar_signals else 0
         n       = similar_signals.get('n', 0) if similar_signals else 0
         summary = similar_signals.get('summary', '') if similar_signals else ''
+
+        # [自主决策 2026-08-26] 规则fast-path：WR极低直接扣分，不消耗LLM
+        if n >= 5 and wr == 0.0:
+            return {'score_adj': -15, 'quant_bias': 'STRONG_REJECT',
+                    'wr_verdict': f'WR=0% n={n}，历史全亏损，强烈拒绝',
+                    'source': 'rule_wr_zero'}
+        if n >= 10 and wr < 40.0:
+            return {'score_adj': -8, 'quant_bias': 'REJECT',
+                    'wr_verdict': f'WR={wr:.1f}% n={n}，历史胜率不足，拒绝',
+                    'source': 'rule_wr_low'}
 
         prompt = f"""你是梵天量化裁判，只看数字，不看故事。
 
@@ -622,6 +633,9 @@ def review(
 
     if veto:
         final_adj = -30  # 否决性惩罚
+        # [自主决策 2026-08-26] veto = 硬拦截，直接置action=SKIP，不论score多高
+        signal_result['action'] = 'SKIP'
+        signal_result['_veto_reason'] = devil_result.get('top_risk','') if veto_devil else risk_result.get('top_risk','')
     else:
         # 四专家加权: 风控×1.0 + 宏观×0.8 + 量化×0.6 + 逆向×0.7
         final_adj = (risk_adj
