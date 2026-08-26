@@ -52,7 +52,7 @@ def _get_current_nav() -> float:
         import sys
         sys.path.insert(0, str(BASE / 'brahma_brain'))
         from brahma_bus import bus
-        balance = bus.get_balance()
+        balance = bus.balance()  # [P1修复 2026-08-26] bus.balance()是正确接口
         if balance and balance.get('totalWalletBalance'):
             return float(balance['totalWalletBalance'])
     except Exception:

@@ -1701,6 +1701,12 @@ if __name__ == '__main__':
                 _score_ok = False
             else:
                 _score_ok = float(score or 0) >= _base_thresh and float(grade or 0) >= 80
+            # [P0修复 2026-08-26] 负分信号绝对不允许写入信号池
+            _score_val = float(score or 0)
+            if _score_val <= 0:
+                print(f'[P0负分封禁] {sym} score={_score_val:.1f}≤0，拒绝写入信号池')
+                _score_ok = False
+
             if _score_ok:
                 from brahma_brain.dharma_data_bridge import log_signal
                 r_raw['symbol'] = sym

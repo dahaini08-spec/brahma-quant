@@ -279,6 +279,10 @@ class BrahmaBus:
 # ─────────────────────────────────────────────────────────
 bus = BrahmaBus()
 
+# [P1修复 2026-08-26] get_balance别名，兼容drawdown_tracker等调用方式
+def get_balance() -> dict:
+    """bus.balance()的模块级别名，返回NAV/available/margin/pnl字典"""
+    return bus.balance()
 
 if __name__ == '__main__':
     import json

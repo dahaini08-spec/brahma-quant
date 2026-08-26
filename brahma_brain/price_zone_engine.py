@@ -455,6 +455,19 @@ def _calc_zones_internal(symbol: str) -> dict:
     ll_rr = round((ll_tp - ll_entry_mid) / (ll_entry_mid - ll_sl), 1) if ll_entry_mid != ll_sl else 1.0
 
     # ══ 组装结果 ══════════════════════════════════════════════
+    # [P1修复 2026-08-26] 进场区最小宽度守卫：宽度<0.5%时以ATR4H扩充，防止TIMEOUT率过高
+    _MIN_ZONE_PCT = 0.005  # 最小0.5%
+    _hs_width = (hs_high - hs_low) / hs_low if hs_low > 0 else 0
+    if _hs_width < _MIN_ZONE_PCT and atr4h_v > 0:
+        _expand = (hs_low * _MIN_ZONE_PCT - (hs_high - hs_low)) / 2
+        hs_low  = hs_low  - _expand
+        hs_high = hs_high + _expand
+    _ll_width = (ll_high - ll_low) / ll_low if ll_low > 0 else 0
+    if _ll_width < _MIN_ZONE_PCT and atr4h_v > 0:
+        _expand = (ll_low * _MIN_ZONE_PCT - (ll_high - ll_low)) / 2
+        ll_low  = ll_low  - _expand
+        ll_high = ll_high + _expand
+
     result = {
         'symbol':        symbol,
         'price':         price,
