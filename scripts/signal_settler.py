@@ -507,5 +507,30 @@ def main():
         print(f'[ic_tracker] 跳过: {_ic_e}')
     # ══ [END ic_tracker] ══════════════════════════════════════════════
 
+    # ══ [P2接通 2026-08-26 苏摩111] brahma_experience_distiller 结算后自动触发 ══
+    # 根因：经验蒸馏每次要手动跑，经验文档只有3个，设计院无法自我进化
+    # 修复：每次有新结算信号时自动触发蒸馏，积累经验文档
+    if len(settled_new) > 0:
+        try:
+            import sys as _ed_sys
+            _ed_sys.path.insert(0, str(BASE / 'brahma_brain'))
+            from brahma_experience_distiller import load_all_cases, distill, build_report
+            _cases = load_all_cases()
+            if len(_cases) >= 5:
+                _matrix = distill(_cases)
+                _report = build_report(_matrix)
+                # 写入经验文档
+                import datetime as _dt
+                _ed_dir = BASE / 'data' / 'experience_docs'
+                _ed_dir.mkdir(parents=True, exist_ok=True)
+                _ed_path = _ed_dir / f"experience_{_dt.date.today().isoformat()}.md"
+                _ed_path.write_text(_report, encoding='utf-8')
+                print(f'[experience_distiller] 经验文档已更新: {_ed_path.name} ({len(_cases)}条案例)')
+            else:
+                print(f'[experience_distiller] 案例不足({len(_cases)}<5)，跳过蒸馏')
+        except Exception as _ed_e:
+            print(f'[experience_distiller] 跳过: {_ed_e}')
+    # ══ [END experience_distiller] ════════════════════════════════════
+
 if __name__ == '__main__':
     main()
