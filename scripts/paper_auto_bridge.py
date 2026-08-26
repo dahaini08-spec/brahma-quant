@@ -23,7 +23,6 @@ import sys, os, json, time, argparse, logging
 from pathlib import Path
 from datetime import datetime, timezone
 
-# ── 路径 ────────────────────────────────────────────────────────────────
 ROOT   = Path(__file__).parent.parent
 BRAIN  = ROOT / 'brahma_brain'
 DATA   = ROOT / 'data'
@@ -33,7 +32,6 @@ sys.path.insert(0, str(BRAIN))
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [bridge] %(message)s')
 _log = logging.getLogger(__name__)
 
-# ── 门槛常量 ────────────────────────────────────────────────────────────
 PAPER_SCORE_MIN  = 80       # 纸面开单最低分（实盘=138）
 PAPER_RR_MIN     = 1.5      # 最低RR
 PAPER_NAV        = 100000   # 纸面NAV
@@ -54,7 +52,6 @@ PAPER_ACCOUNT_FILE= DATA / 'paper_account.json'
 PAPER_BRIDGE_LOG  = DATA / 'paper_bridge_log.jsonl'
 PAPER_DEDUP_FILE  = DATA / 'paper_bridge_dedup.json'
 
-# ── 工具函数 ────────────────────────────────────────────────────────────
 
 def _push(msg: str):
     """推送到Jarvis线程"""
@@ -173,7 +170,6 @@ def _open_paper_order(symbol: str, direction: str, entry: float,
     return record
 
 
-# ── 核心流水线 ────────────────────────────────────────────────────────
 
 def process_symbol(symbol: str, source: str = 'auto') -> dict:
     """
@@ -183,7 +179,6 @@ def process_symbol(symbol: str, source: str = 'auto') -> dict:
     import urllib.request
     result = {'symbol': symbol, 'action': 'SKIP', 'reason': '', 'orders': []}
 
-    # ── Step1: 实时价格 ──
     try:
         t = json.loads(urllib.request.urlopen(
             f'https://fapi.binance.com/fapi/v1/ticker/24hr?symbol={symbol}', timeout=5).read())
@@ -192,7 +187,6 @@ def process_symbol(symbol: str, source: str = 'auto') -> dict:
         result['reason'] = f'price_fetch_fail: {e}'
         return result
 
-    # ── Step2: 35维评分 ──
     try:
         import kronos_bridge as kb; kb._cache = {}
         from brahma_core import analyze
@@ -216,7 +210,6 @@ def process_symbol(symbol: str, source: str = 'auto') -> dict:
         result['reason'] = f'dead_hole_short in {regime}'
         return result
 
-    # ── [P1/P2 2026-08-26 苏摩111] BBW压缩+RSI极值豁免通道 ──
     # 计算BBW和RSI用于豁免判断
     _bbw = 999.0; _rsi_1h = 50.0
     try:
@@ -252,7 +245,6 @@ def process_symbol(symbol: str, source: str = 'auto') -> dict:
         result['reason'] = f'score={score:.1f} < {PAPER_SCORE_MIN} bbw={_bbw:.1f}% rsi={_rsi_1h:.1f}'
         return result
 
-    # ── Step3: AI议会 ──
     council_adj = 0
     council_action = 'PASS'
     try:
@@ -269,7 +261,6 @@ def process_symbol(symbol: str, source: str = 'auto') -> dict:
 
     score_adj = score + council_adj
 
-    # ── Step4: 战场预判 ──
     try:
         from price_zone_engine import calc_zones
         z = calc_zones(symbol, force_refresh=True)
@@ -279,7 +270,6 @@ def process_symbol(symbol: str, source: str = 'auto') -> dict:
         result['reason'] = f'zone_fail: {e}'
         return result
 
-    # ── Step5: 选择最优区间开单 ──
     opened = []
 
     # 检查持仓上限
@@ -440,7 +430,6 @@ def run_zone_trigger(symbols: list = None, notify: bool = True) -> list:
     return results
 
 
-# ── 结算追踪 ────────────────────────────────────────────────────────────
 
 def settle_pending_orders(notify: bool = True) -> list:
     """
@@ -534,7 +523,6 @@ def settle_pending_orders(notify: bool = True) -> list:
     return settled
 
 
-# ── 主入口 ────────────────────────────────────────────────────────────
 
 def main():
     parser = argparse.ArgumentParser(description='梵天纸面自动开单桥接器')
@@ -579,11 +567,6 @@ def main():
         f.write(json.dumps(log_entry) + '\n')
 
 
-if __name__ == '__main__':
-    main()
-
-
-# ── P3: BBW扫描器（pump_hunter扩展） ─────────────────────────────────────
 
 def run_bbw_scan(notify: bool = True) -> list:
     """
@@ -653,3 +636,8 @@ def run_bbw_scan(notify: bool = True) -> list:
         _push('⚡ 梵天P3 BBW压缩扫描→纸面开单\n' + '\n'.join(lines))
 
     return results
+
+# \u2500\u2500 \u4e3b\u5165\u53e3 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+if __name__ == '__main__':
+    main()
