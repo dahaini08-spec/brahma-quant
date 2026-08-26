@@ -973,7 +973,18 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
         pass  # drawdown_tracker不可用时静默降级，不阻断执行
     # ── end drawdown_tracker ─────────────────────────────────────────────
 
-    # ── [A1 circuit_breaker 注入 2026-08-06 设计院自主决策] ──────────────
+    # ── [A0b 议会veto检查 2026-08-26 P1修复] ───────────────────────────────
+    # llm_council_bridge在veto时设置signal['action']='SKIP'，auto_executor必须检查
+    if str(signal.get('action', '')).upper() == 'SKIP':
+        _veto_reason = signal.get('_veto_reason', 'llm_council veto')
+        print(f'🚨 [council_veto] {sym} {direction} 被议会veto拦截: {_veto_reason[:60]}')
+        return {
+            'signal_id': signal.get('signal_id',''), 'symbol': sym,
+            'direction': direction, 'score': float(signal.get('score',0)),
+            'ts': time.time(), 'ts_iso': datetime.now(timezone.utc).isoformat(),
+            'status': 'COUNCIL_VETO', 'reason': f'council veto: {_veto_reason}',
+        }
+    # ── end council veto check ──────────────────────────────────────────
     # 层9熔断器: auto_executor — failure_threshold=1, recovery_timeout=600s
     # 极端行情/API连续失败时自动熔断10min，防止连续亏损
     try:
