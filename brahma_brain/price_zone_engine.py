@@ -443,12 +443,16 @@ def _calc_zones_internal(symbol: str) -> dict:
     # 高空区 SL = 区间上沿 + 0.5ATR4H, TP = S1
     hs_sl = hs_high + atr4h_v * 0.5
     hs_tp = s1
-    hs_rr = round((hs_low - hs_tp) / (hs_sl - hs_low), 1) if hs_sl != hs_low else 1.0
+    # [2026-08-26 fix 苏摩111] RR以区间中点为进场基准，原用hs_low导致RR偏低
+    hs_entry_mid = (hs_low + hs_high) / 2
+    hs_rr = round((hs_entry_mid - hs_tp) / (hs_sl - hs_entry_mid), 1) if hs_sl != hs_entry_mid else 1.0
 
     # 低多区 SL = 区间下沿 - 0.5ATR4H, TP = R1
     ll_sl = ll_low - atr4h_v * 0.5
     ll_tp = r1
-    ll_rr = round((ll_tp - ll_high) / (ll_high - ll_sl), 1) if ll_high != ll_sl else 1.0
+    # [2026-08-26 fix 苏摩111] 低多区同理用中点
+    ll_entry_mid = (ll_low + ll_high) / 2
+    ll_rr = round((ll_tp - ll_entry_mid) / (ll_entry_mid - ll_sl), 1) if ll_entry_mid != ll_sl else 1.0
 
     # ══ 组装结果 ══════════════════════════════════════════════
     result = {
