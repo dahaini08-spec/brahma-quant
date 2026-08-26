@@ -60,7 +60,8 @@ LOG_FILE   = LOG_DIR / 'llm_council_shadow_log.jsonl'
 # neutral_fallback adj=0 不影响live注入；inject_coeff=0.5 安全
 MODE         = os.environ.get('LLM_COUNCIL_MODE', 'live')
 INJECT_COEFF = 0.5    # live模式下，LLM建议 × 0.5 注入score
-SCORE_TRIGGER = 140   # 触发阈值
+SCORE_TRIGGER       = 120   # [P2修复 2026-08-26] 140→1200，中等信号也进入议会审查
+SCORE_TRIGGER_FULL  = 140   # 分数≥1400运行全刓4专家；120-139仅运行RiskAgent轻量审查
 CACHE_TTL    = 6 * 3600   # 缓存6小时
 DAILY_LIMIT  = 50         # 每日最大调用次数
 
@@ -629,18 +630,30 @@ def review(
     except Exception:
         pass
 
+    # [P2修复 2026-08-26] 轻量模式: score 120-139 仅运行RiskAgent单专家，节省token成本
+    _is_lite_mode = (score < SCORE_TRIGGER_FULL)
+
     # 四专家并行调用 [2026-08-25 +逆向Agent]
     import concurrent.futures as _cf
     t0 = time.time()
-    with _cf.ThreadPoolExecutor(max_workers=4) as _pool:
-        _f_risk  = _pool.submit(_risk_agent_review, flat_signal)
-        _f_macro = _pool.submit(_macro_agent_review, flat_signal, ctx)
-        _f_quant = _pool.submit(_quant_agent_review, flat_signal, flat_signal.get('_similar_signals'))
-        _f_devil = _pool.submit(_devil_agent_review, flat_signal)
-        risk_result  = _f_risk.result(timeout=18)
-        macro_result = _f_macro.result(timeout=18)
-        quant_result = _f_quant.result(timeout=18)
-        devil_result = _f_devil.result(timeout=18)
+    if _is_lite_mode:
+        # 轻量模式: 仅RiskAgent，节省Macro/Quant/Devil的token消耗
+        with _cf.ThreadPoolExecutor(max_workers=1) as _pool:
+            _f_risk  = _pool.submit(_risk_agent_review, flat_signal)
+            risk_result  = _f_risk.result(timeout=15)
+        macro_result = {'score_adj': 0, 'summary': 'lite_mode_skip', 'agent': 'MacroAgent'}
+        quant_result = {'score_adj': 0, 'summary': 'lite_mode_skip', 'agent': 'QuantAgent'}
+        devil_result = {'score_adj': 0, 'veto': False, 'summary': 'lite_mode_skip', 'agent': 'DevilAgent'}
+    else:
+        with _cf.ThreadPoolExecutor(max_workers=4) as _pool:
+            _f_risk  = _pool.submit(_risk_agent_review, flat_signal)
+            _f_macro = _pool.submit(_macro_agent_review, flat_signal, ctx)
+            _f_quant = _pool.submit(_quant_agent_review, flat_signal, flat_signal.get('_similar_signals'))
+            _f_devil = _pool.submit(_devil_agent_review, flat_signal)
+            risk_result  = _f_risk.result(timeout=18)
+            macro_result = _f_macro.result(timeout=18)
+            quant_result = _f_quant.result(timeout=18)
+            devil_result = _f_devil.result(timeout=18)
     elapsed = time.time() - t0
 
     # ── 分数合并 ──────────────────────────────────────────────
@@ -676,6 +689,7 @@ def review(
         'elapsed_ms': round(elapsed * 1000),
         'ts':         datetime.now(timezone.utc).isoformat(),
         'from_cache': False,
+        'council_mode': 'lite(RiskOnly)' if _is_lite_mode else 'full(4agents)',
     }
 
     # [设计院 2026-08-04] 将注入字段透传回 signal_result

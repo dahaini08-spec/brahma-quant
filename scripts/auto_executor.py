@@ -1279,6 +1279,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
         'score': score, 'ts': time.time(),
         'ts_iso': datetime.now(timezone.utc).isoformat(),
         'status': 'FAILED', 'reason': '',
+        '_exception': '',   # [P1修复 2026-08-26] 记录完整exception堆栈
     }
 
     # ⑤ 持仓数限制
@@ -2007,7 +2008,8 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
                 'signal_id': sig_id, 'symbol': sym, 'direction': direct,
                 'score': score, 'event': 'FAILED',
                 'ts': __import__('datetime').datetime.utcnow().isoformat(),
-                'reason': str(_exec_err),
+                'reason': f'exception: {type(_exec_err).__name__}: {_exec_err}',
+                '_exception': __import__('traceback').format_exc()[-500:],
                 'result': {'error': str(_exec_err)},
             }
         _log(exec_result)

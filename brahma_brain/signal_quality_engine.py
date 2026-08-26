@@ -77,7 +77,7 @@ class SignalQualityEngine:
             self._gate1_sl_pct,
             self._gate2_regime_direction,
             self._gate3_timing_ready_downtrend,  # [封印 2026-08-07] READY×mid陷阱区
-            # self._gate4_rsi4h_low_eff,
+            self._gate4_rsi4h_low_eff,  # [P2 2026-08-26 启用]
         ]:
             result = gate_fn(signal)
             if result.rejected:
@@ -169,10 +169,19 @@ class SignalQualityEngine:
     # ── Gate 4（Step B，待铁证化）────────────────────────────────────────
     def _gate4_rsi4h_low_eff(self, signal: dict) -> GateResult:
         """
-        待铁证化：RSI_4H 60-70 + score<148 → EV=+0.055%（几乎零期望）
-        方仓v8铁证支撑，但需实盘验证score门控精确值
-        启用条件：同Gate3
+        [P2修复 2026-08-26] RSI_4H 60-70区间降仓验证通道
+        逻辑：RSI_4H在60-70"抬头区"，方向不明确，注入0.5%NAV试仓标志
+        不拦截信号，仅降仓让下游执行
         """
+        direction = str(signal.get('direction', '') or signal.get('signal_dir', '') or '')
+        score     = float(signal.get('score', 0) or signal.get('score_final', 0) or 0)
+        rsi_4h    = float(signal.get('rsi_4h', 0) or signal.get('rsi4h', 0) or
+                          signal.get('indicators', {}).get('rsi_4h', 0) or 0)
+
+        if (direction == 'LONG' and 60 <= rsi_4h <= 70 and 0 < score < 148 and rsi_4h > 0):
+            # 不拦截，注入降仓标志：0.5%NAV试仓验证通道
+            signal['_gate4_lite'] = True
+            signal.setdefault('_pos_override_pct', 0.5)
         return GateResult(status='PASS')
 
 
