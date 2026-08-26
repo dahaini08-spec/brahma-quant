@@ -953,6 +953,26 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     sym       = signal['symbol']
     direction = signal.get('direction') or signal.get('signal_dir', 'SHORT')
 
+    # ── [A0 drawdown_tracker 注入 2026-08-26 苏摩111] ────────────────────
+    # Drawdown Protocol: WARN≥5%/HALT≥10%/LOCKOUT≥15% 三档回撤保护
+    try:
+        import sys as _ddt_sys, os as _ddt_os
+        _ddt_sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent / 'brahma_brain'))
+        from drawdown_tracker import check_can_execute as _ddt_check, update_drawdown as _ddt_update
+        _ddt_update(nav)  # 更新NAV快照
+        _ddt_ok, _ddt_reason = _ddt_check(signal)
+        if not _ddt_ok:
+            print(f'🛡️ [drawdown_tracker] 信号被回撤协议拦截: {_ddt_reason}')
+            return {
+                'signal_id': signal.get('signal_id',''), 'symbol': sym,
+                'direction': direction, 'score': float(signal.get('score',0)),
+                'ts': time.time(), 'ts_iso': datetime.now(timezone.utc).isoformat(),
+                'status': 'DD_BLOCKED', 'reason': _ddt_reason,
+            }
+    except Exception as _ddt_e:
+        pass  # drawdown_tracker不可用时静默降级，不阻断执行
+    # ── end drawdown_tracker ─────────────────────────────────────────────
+
     # ── [A1 circuit_breaker 注入 2026-08-06 设计院自主决策] ──────────────
     # 层9熔断器: auto_executor — failure_threshold=1, recovery_timeout=600s
     # 极端行情/API连续失败时自动熔断10min，防止连续亏损
