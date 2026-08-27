@@ -199,7 +199,14 @@ def process_one(symbol: str, source: str = 'queue') -> dict:
     try:
         import kronos_bridge as kb; kb._cache = {}
         from brahma_core import analyze
-        r = analyze(symbol)
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as _ex:
+            _fut = _ex.submit(analyze, symbol)
+            try:
+                r = _fut.result(timeout=45)  # 单标的最多45秒
+            except concurrent.futures.TimeoutError:
+                result['reason'] = 'analyze_timeout_45s'
+                return result
         score     = r.get('score', 0)
         regime    = r.get('regime', '')
         direction = r.get('direction') or r.get('signal_dir') or 'LONG'

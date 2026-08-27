@@ -2010,6 +2010,17 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
         executed_set.add(sig_id)
         _save_executed(executed_set)
         results.append(_paper_result)
+        # [2026-08-27 苏摩111] 纸面实盘跟踪：以纸面数据当作真实实盘记录，积累1个月餰证
+        try:
+            import sys as _ppt_sys
+            _ppt_sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
+            from paper_performance_tracker import record_paper_trade as _rpt
+            # 纸面信号按预期结果模拟：优先看signal里有没有exit结果
+            _paper_outcome = sig.get('exit_outcome') or sig.get('status', 'PENDING')
+            _paper_pnl     = float(sig.get('pnl_pct', 0) or 0)
+            _rpt(sig, {'outcome': _paper_outcome, 'pnl_pct': _paper_pnl})
+        except Exception:
+            pass  # 纸面跟踪失败不影响主流程
         continue
         # ══════════════════════════════════════════════════════════
         try:

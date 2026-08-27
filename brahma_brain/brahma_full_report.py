@@ -327,6 +327,28 @@ def run_full_analysis(symbol: str):
     except Exception as _ez:
         r['_price_zones_error'] = str(_ez)[:80]
 
+    # [经验检索 2026-08-27 苏摩111] brahma_experience_engine → 历史相似案例
+    try:
+        import sys as _sys_exp, os as _os_exp
+        _exp_path = _os_exp.path.join(_os_exp.path.dirname(_os_exp.path.abspath(__file__)))
+        if _exp_path not in _sys_exp.path: _sys_exp.path.insert(0, _exp_path)
+        from brahma_experience_engine import query_similar_experiences
+        _regime_now = r.get('regime', 'UNKNOWN')
+        _rsi_now    = r.get('rsi_4h', r.get('rsi', 50))
+        _bbw_now    = r.get('bb_width', r.get('bbw', 5))
+        _atr_now    = r.get('atr_pct', 2)
+        _ret7_now   = r.get('ret_7d', 0)
+        _exp_result = query_similar_experiences(
+            symbol=symbol, regime=_regime_now,
+            rsi_4h=_rsi_now, bbw=_bbw_now, atr_pct=_atr_now,
+            ret_7d=_ret7_now, top_k=5
+        )
+        if _exp_result and _exp_result.get('n', 0) > 0:
+            report = report + '\n' + _exp_result.get('summary', '')
+            r['_experience'] = _exp_result
+    except Exception as _eexp:
+        r['_experience_error'] = str(_eexp)[:80]
+
     # [自主决策 2026-08-26] narrative_engine 叙事层接通
     try:
         from narrative_engine import analyze_narrative
