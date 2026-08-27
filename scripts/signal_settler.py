@@ -357,6 +357,20 @@ def main():
     lines = [json.loads(l) for l in LOG.read_text().splitlines() if l.strip()]
     settled_new = []
     updated_lines = []
+    expired_count = 0
+
+    # [P1修复 2026-08-26] OPEN信号超期自动expire，实现条件:超过48H转为TIMEOUT
+    _now = time.time()
+    _OPEN_TTL_SEC = 48 * 3600  # 48小时有效期
+    for sig in lines:
+        if sig.get('status') == 'OPEN':
+            _sig_ts = float(sig.get('ts', 0))
+            if _sig_ts > 0 and (_now - _sig_ts) > _OPEN_TTL_SEC:
+                sig['status'] = 'TIMEOUT'
+                sig['settled_at'] = datetime.now(timezone.utc).isoformat()
+                expired_count += 1
+    if expired_count:
+        print(f'[settler] 超期 expire: {expired_count}条OPEN信号 → TIMEOUT')
 
     for sig in lines:
         updated = settle_signal(sig, dry_run=args.dry_run)
@@ -373,6 +387,31 @@ def main():
         # 写回日志
         LOG.write_text('\n'.join(json.dumps(l, ensure_ascii=False) for l in updated_lines) + '\n')
         print(f'[settler] 写回 {len(updated_lines)} 条，新结算 {len(settled_new)} 条')
+
+        # [P1修复 2026-08-26] settler日志注入，供复盘和诊断
+        try:
+            import time as _s_time
+            _s_log_path = BASE / 'data' / 'signal_settler_log.jsonl'
+            _s_log_path.parent.mkdir(parents=True, exist_ok=True)
+            _s_entry = {
+                'ts':         _s_time.time(),
+                'ts_iso':     datetime.now(timezone.utc).isoformat(),
+                'total_lines':  len(updated_lines),
+                'settled_new':  len(settled_new),
+                'wr_matrix_keys': list(wr_matrix.keys()) if 'wr_matrix' in dir() else [],
+                'settled_detail': [{
+                    'symbol':    s.get('symbol'),
+                    'direction': s.get('direction'),
+                    'score':     s.get('score_final') or s.get('score'),
+                    'regime':    s.get('regime'),
+                    'result':    s.get('result'),
+                    'pnl_pct':   s.get('pnl_pct'),
+                } for s in settled_new[:10]],
+            }
+            with open(_s_log_path, 'a', encoding='utf-8') as _slf:
+                _slf.write(json.dumps(_s_entry, ensure_ascii=False) + '\n')
+        except Exception as _sl_e:
+            pass  # 日志失败不影响主流程
 
         # 重建WR矩阵
         wr_matrix = rebuild_wr_matrix(updated_lines)

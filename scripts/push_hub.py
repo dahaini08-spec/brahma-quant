@@ -134,6 +134,81 @@ def push_signal_card(sym, score, grade, direction, entry_lo, entry_hi, sl, tp1,
     return _jarvis(msg, dedup_key=dedup_key, dedup_ttl=14400)
 
 
+def push_signal_card_v3(result: dict) -> bool:
+    """
+    [P2潜能激发 2026-08-26] VIP信号卡片v3.0
+    包含: 基础信号 + 方仓状态 + 战场预判 + AI议会关键意见
+    """
+    sym       = result.get('symbol', '')
+    score     = float(result.get('score_final') or result.get('score') or 0)
+    grade     = result.get('grade', '')
+    direction = result.get('direction') or result.get('signal_dir', '')
+    regime    = result.get('regime', '')
+    timing    = result.get('timing_badge', result.get('timing_status', 'READY'))
+    entry_lo  = float(result.get('entry_lo') or 0)
+    entry_hi  = float(result.get('entry_hi') or 0)
+    sl        = float(result.get('stop_loss') or 0)
+    tp1       = float(result.get('tp1') or 0)
+    tp2       = float(result.get('tp2') or 0)
+    rr        = float(result.get('rr1') or 1.0)
+    price     = float(result.get('price') or 0)
+
+    emoji   = '🟢' if direction == 'LONG' else '🔴'
+    dir_cn  = '做多' if direction == 'LONG' else '做空'
+    tag     = sym.replace('USDT', '')
+    ts      = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%m-%d %H:%M')
+    sl_pct  = round(abs(entry_lo - sl) / entry_lo * 100, 1) if entry_lo > 0 else 0
+    tier    = 'TIER1 🔴' if score >= 155 else ('战場候命 🟠' if score >= 130 else 'WATCH 🟡')
+
+    # ── 方仓块────────────────────────────────────────────
+    fangcang = result.get('_fangcang') or result.get('fangcang_result') or {}
+    fc_line  = ''
+    if isinstance(fangcang, dict) and fangcang.get('confidence'):
+        fc_wr  = fangcang.get('wr', fangcang.get('confidence', 0))
+        fc_n   = fangcang.get('n', '?')
+        fc_bbw = fangcang.get('bbw_min', '?')
+        fc_line = f'  📌 方仓: WR={fc_wr:.0%} n={fc_n} BBW压缩={fc_bbw}\n'
+
+    # ── 战场预判块────────────────────────────────────────
+    pze      = result.get('_price_zones') or result.get('price_zones') or {}
+    pze_line = ''
+    if isinstance(pze, dict):
+        path_prob = pze.get('path_down_prob') or pze.get('path_prob', {}).get('down')
+        hs_lo = pze.get('hs_low') or pze.get('high_air_lo')
+        if path_prob:
+            pze_line = f'  ⛳ 战场: 下行概率={float(path_prob):.0%} 高空区={hs_lo:.2f if isinstance(hs_lo,float) else "?"}\n'
+
+    # ── AI议会块──────────────────────────────────────────
+    council  = result.get('_llm_council') or {}
+    council_line = ''
+    if isinstance(council, dict) and council.get('final_adj') is not None:
+        fadj     = council.get('final_adj', 0)
+        c_risk   = (council.get('risk') or {}).get('summary', '')
+        c_macro  = (council.get('macro') or {}).get('summary', '')
+        c_mode   = council.get('council_mode', '')
+        fadj_str = f'{fadj:+d}' if isinstance(fadj, (int,float)) else str(fadj)
+        council_line  = f'  🤖 议会[{c_mode}] adj={fadj_str}\n'
+        if c_risk:  council_line += f'     Risk: {str(c_risk)[:40]}\n'
+        if c_macro: council_line += f'     Macro: {str(c_macro)[:40]}\n'
+
+    msg = (
+        f'🚨 **梗天信号·{tier}**\n'
+        f'━━━━━━━━━━━━━━━━━━━━━━\n'
+        f'{emoji} **{tag}/USDT {direction}** | score={score:.0f} {grade}\n'
+        f'  体制: {regime} | 时机: {timing} | 当前: ${price:,.2f}\n'
+        f'━━━━━━━━━━━━━━━━━━━━━━\n'
+        f'  入场区: ${entry_lo:,.4f} ~ ${entry_hi:,.4f}\n'
+        f'  止损: ${sl:,.4f} (-{sl_pct}%) | TP1: ${tp1:,.4f} RR={rr}x\n'
+        f'{fc_line}'
+        f'{pze_line}'
+        f'{council_line}'
+        f'━━━━━━━━━━━━━━━━━━━━━━\n'
+        f'  {ts} CST  [梗天全能力 v3.0]'
+    )
+    dedup_key = f'v3_{sym}_{direction}_{int(score)}'
+    return _jarvis(msg, dedup_key=dedup_key, dedup_ttl=7200)
+
+
 def push_skip_card(sym, score, direction, regime, reason_top3, next_condition, price=None):
     """推送SKIP状态通知 — 告诉苏摩为什么不入场+下一个窗口"""
     tag  = sym.replace("USDT", "")
