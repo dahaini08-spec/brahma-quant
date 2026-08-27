@@ -161,22 +161,34 @@ def push_signal_card_v3(result: dict) -> bool:
     tier    = 'TIER1 🔴' if score >= 155 else ('战場候命 🟠' if score >= 130 else 'WATCH 🟡')
 
     # ── 方仓块────────────────────────────────────────────
-    fangcang = result.get('_fangcang') or result.get('fangcang_result') or {}
+    # [P0修复 2026-08-27] 真实字段名: 'fangcang' (来自brahma_core._result['fangcang'])
+    fangcang = result.get('fangcang') or result.get('_fangcang') or result.get('fangcang_result') or {}
     fc_line  = ''
     if isinstance(fangcang, dict) and fangcang.get('confidence'):
-        fc_wr  = fangcang.get('wr', fangcang.get('confidence', 0))
-        fc_n   = fangcang.get('n', '?')
-        fc_bbw = fangcang.get('bbw_min', '?')
-        fc_line = f'  📌 方仓: WR={fc_wr:.0%} n={fc_n} BBW压缩={fc_bbw}\n'
+        top_sim = fangcang.get('top_similar', [])
+        fc_n    = len(top_sim)
+        fc_fret = sum(x.get('future_ret',0) for x in top_sim[:5])/max(len(top_sim[:5]),1) if top_sim else 0
+        fc_wr   = sum(1 for x in top_sim[:10] if x.get('future_ret',0)>0)/max(len(top_sim[:10]),1) if top_sim else 0
+        fc_regime = fangcang.get('current_regime', '')
+        fc_line  = f'  📌 方仓[{fc_regime}]: 相似案例n={fc_n} WR={fc_wr:.0%} avg_ret={fc_fret:+.2f}%\n' if fc_n else ''
 
     # ── 战场预判块────────────────────────────────────────
     pze      = result.get('_price_zones') or result.get('price_zones') or {}
+    # [P0修复 2026-08-27] 字段名: high_short/low_long/scenario_prob
     pze_line = ''
     if isinstance(pze, dict):
-        path_prob = pze.get('path_down_prob') or pze.get('path_prob', {}).get('down')
-        hs_lo = pze.get('hs_low') or pze.get('high_air_lo')
-        if path_prob:
-            pze_line = f'  ⛳ 战场: 下行概率={float(path_prob):.0%} 高空区={hs_lo:.2f if isinstance(hs_lo,float) else "?"}\n'
+        hs    = pze.get('high_short') or {}
+        ll    = pze.get('low_long') or {}
+        probs = pze.get('scenario_prob') or {}
+        down_p = float(probs.get('down_first', 0))
+        up_p   = float(probs.get('up_first', 0))
+        bias   = pze.get('bias', '')
+        if hs.get('low') or ll.get('low'):
+            hs_lo = hs.get('low', 0); hs_hi = hs.get('high', 0); hs_rr = hs.get('rr', '?')
+            ll_lo = ll.get('low', 0); ll_hi = ll.get('high', 0); ll_rr = ll.get('rr', '?')
+            pze_line  = f'  ⛳ 战场[{bias}] 下行={down_p:.0%} 上行={up_p:.0%}\n'
+            if hs_lo: pze_line += f'     做空区: ${hs_lo:,.1f}~${hs_hi:,.1f} RR={hs_rr}\n'
+            if ll_lo: pze_line += f'     做多区: ${ll_lo:,.1f}~${ll_hi:,.1f} RR={ll_rr}\n'
 
     # ── AI议会块──────────────────────────────────────────
     council  = result.get('_llm_council') or {}
