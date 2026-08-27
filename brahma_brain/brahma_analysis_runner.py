@@ -1062,8 +1062,23 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         for _req in ('signal_dir', 'score_final', 'regime', 'action'):
             if _sig_record.get(_req) is None:
                 _sig_record[_req] = 'UNKNOWN'
-        with open(_sig_log, 'a') as _sf:
-            _sf.write(_sjson.dumps(_sig_record, ensure_ascii=False) + '\n')
+
+        # [P0封印 2026-08-26] 统一分数守卫（这是真实写入路径，必须在此拦截）
+        _guard_score  = float(_sig_record.get('score_final') or _sig_record.get('score') or 0)
+        _guard_regime = str(_sig_record.get('regime', ''))
+        _guard_dir    = str(_sig_record.get('direction', '') or _sig_record.get('signal_dir', ''))
+        _guard_skip   = False
+        if _guard_score <= 0:
+            _guard_skip = True  # 负分/零分
+        elif 'CHOP' in _guard_regime and _guard_score < 110:
+            _guard_skip = True  # CHOP<110无价値
+        elif 120 <= _guard_score <= 139 and 'BULL_TREND' in _guard_regime:
+            _guard_skip = True  # BULL_TREND毒区间
+        if _guard_skip:
+            pass  # 不写入，静默丢弃
+        else:
+            with open(_sig_log, 'a') as _sf:
+                _sf.write(_sjson.dumps(_sig_record, ensure_ascii=False) + '\n')
     except Exception:
         pass
 
@@ -1147,6 +1162,11 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                 _lc_adj = float(_lc_council.get('final_adj', _lc_council.get('adj', 0)) or 0)
                 if _lc_adj != 0:
                     result['score_final'] = round(_lc_score + _lc_adj, 2)
+                # [P1修复 2026-08-26] score硬上限守卫：防止多个加分项叠加导致score>200
+                _score_cap = 200.0
+                if float(result.get('score_final', 0) or 0) > _score_cap:
+                    result['score_final'] = _score_cap
+                    result['_score_capped'] = True
                 # 透传 review() 注入的所有上下文字段
                 for _k in ('_llm_council', '_macro_ctx', '_similar_signals', '_compressed'):
                     if _k in _lc_result and _lc_result[_k] is not None:
