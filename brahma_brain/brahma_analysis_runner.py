@@ -1077,8 +1077,20 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         if _guard_skip:
             pass  # 不写入，静默丢弃
         else:
-            with open(_sig_log, 'a') as _sf:
-                _sf.write(_sjson.dumps(_sig_record, ensure_ascii=False) + '\n')
+            # [P1修复 2026-08-27] SQE接入信号生成链路（写入前最后一道质量门控）
+            try:
+                from signal_quality_engine import get_sqe as _get_sqe_runner
+                _sqe_inst = _get_sqe_runner()
+                _sqe_result = _sqe_inst.evaluate(_sig_record)
+                if _sqe_result.status == 'REJECT':
+                    print(f'[SQE拦截] {_sig_record.get("symbol")} 被质量门控拦截: {_sqe_result.reason}')
+                    _guard_skip = True
+            except Exception:
+                pass  # SQE不可用时静默降级
+            # 写入信号池（已通过所有守卫）
+            if not _guard_skip:
+                with open(_sig_log, 'a') as _sf:
+                    _sf.write(_sjson.dumps(_sig_record, ensure_ascii=False) + '\n')
     except Exception:
         pass
 

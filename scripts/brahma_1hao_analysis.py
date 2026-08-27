@@ -1734,6 +1734,21 @@ if __name__ == '__main__':
                 wrote = log_signal(r_raw)
                 if wrote:
                     print(f'[1hao→信号池] {sym} score={score:.0f} grade={grade:.0f} 已写入 ✅ [{_dyn_label}]')
+                    # [P0修复 2026-08-27] 接入VIP卡片v3，score≥1100推送（含方仓+战场+议会）
+                    try:
+                        _push_score = float(score or 0)
+                        if _push_score >= 110:
+                            # 将price_zone和council结果也注入r_raw
+                            try:
+                                from brahma_brain.price_zone_engine import calc_zones as _pze_fn
+                                _pze_result = _pze_fn(sym)
+                                r_raw['price_zones'] = _pze_result
+                            except Exception: pass
+                            from scripts.push_hub import push_signal_card_v3
+                            push_signal_card_v3(r_raw)
+                            print(f'[VIP v3推送] {sym} score={_push_score:.0f} 已推送 💡')
+                    except Exception as _v3e:
+                        print(f'[VIP v3推送失败] {_v3e}')
                 else:
                     print(f'[1hao→信号池] {sym} 去重拦截')
             else:
