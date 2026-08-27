@@ -348,6 +348,57 @@ def check_lightgbm():
 # ════════════════════════════════════════════════════════════
 # CHECK 10: 持仓止损状态
 # ════════════════════════════════════════════════════════════
+def check_session_length():
+    """检测主session消息数，防止对话过长导致OOM重启"""
+    try:
+        import glob, re
+        log_files = sorted(glob.glob('/tmp/openclaw/openclaw-*.log'))[-1:]
+        if not log_files:
+            return
+        log = open(log_files[0]).read()
+        # 找最新的 messages[N] 记录
+        matches = re.findall(r'messages\[(\d+)\]', log)
+        if not matches:
+            return
+        latest = int(matches[-1])
+        if latest >= 500:
+            crit('SESSION_TOO_LONG',
+                 f'主session消息数={latest}条(≥500) → 内存OOM重启风险极高！请立即开新对话',
+                 fixable=False)
+        elif latest >= 350:
+            warn('SESSION_LONG',
+                 f'主session消息数={latest}条(≥350) → 建议开新对话，避免重启',
+                 fixable=False)
+        else:
+            ok(f'session长度正常({latest}条)')
+    except Exception as e:
+        warn('SESSION_CHECK_ERR', str(e))
+
+
+def check_session_length_and_notify():
+    """检测今日重启次数，异常时推送告警"""
+    try:
+        import glob, json as _json
+        from datetime import datetime, timezone
+        log_files = sorted(glob.glob('/tmp/openclaw/openclaw-*.log'))[-1:]
+        if not log_files:
+            return
+        lines = open(log_files[0]).readlines()
+        restarts = [l for l in lines if 'http server listening' in l]
+        count = len(restarts)
+        if count >= 20:
+            crit('RESTART_STORM',
+                 f'今日重启{count}次！根因=主session过长+内存OOM。请立即开新对话',
+                 fixable=False)
+        elif count >= 10:
+            warn('RESTART_HIGH',
+                 f'今日重启{count}次，系统不稳定，建议开新对话')
+        else:
+            ok(f'今日重启{count}次(正常)')
+    except Exception as e:
+        warn('RESTART_CHECK_ERR', str(e))
+
+
 def check_positions():
     try:
         pos = json.load(open(BASE / 'data' / 'position_sl_state.json'))
@@ -387,6 +438,8 @@ def main():
     check_and_fix_mcp()
     check_lightgbm()
     check_positions()
+    check_session_length()
+    check_session_length_and_notify()
 
     # ── 汇总 ──────────────────────────────────────────────
     crits  = [i for i in issues if i[0] == 'CRIT']
