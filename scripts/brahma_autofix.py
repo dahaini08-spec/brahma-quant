@@ -151,7 +151,7 @@ def check_core_dumps():
 # ════════════════════════════════════════════════════════════
 CRITICAL_CRONS = [
     'rsi-structure-watcher',
-    'auto-executor-run',
+    'auto-executor',
     'brahma-state-refresh',
     'position-guardian',
     'signal-settler',
