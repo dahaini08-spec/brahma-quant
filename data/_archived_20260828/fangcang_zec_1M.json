@@ -1,0 +1,1 @@
+[{"symbol": "ZEC", "timeframe": "1M", "ts_squeeze_start": "2025-10-01T00:00:00+00:00", "ts_burst": "2025-10-01T00:00:00+00:00", "direction": "UP", "min_bb_width": 0.0, "squeeze_bars": 1, "rsi_at_burst": 89.03, "vol_ratio_peak": 1.0, "future_return": -24.969, "is_genuine_breakout": true, "atr_at_burst": 43.29956, "trigger": "golden_cross"}]

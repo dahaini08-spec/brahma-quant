@@ -15,6 +15,14 @@ from collections import defaultdict
 
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
+try:
+    from brahma_brain.brahma_bus import get_price as _bus_get_price
+except ImportError:
+    _bus_get_price = None
+try:
+    from brahma_brain.data_cache import get_open_interest as _dc_get_oi
+except ImportError:
+    _dc_get_oi = None
 
 KEY = os.environ.get('BINANCE_API_KEY', 'sDqoRAyeYHHzevKNxSj5JfkWpNUd6v8qPAhVy0Y8wbWGwC48eC7uhFOENAlVqV7b')
 SEC = os.environ.get('BINANCE_SECRET',  'hXQnzQco9SNVgKgF2m3xvBGlJjOHBVtlzqRlxOTkp0kiJAwAOTeUiGLQSAopqIj7')
@@ -23,7 +31,7 @@ HDR = {'X-MBX-APIKEY': KEY}
 
 def get_whale_signal(sym: str = 'BTCUSDT') -> dict:
     """鲸鱼行为综合分析"""
-    px = float(requests.get('https://fapi.binance.com/fapi/v1/ticker/price',
+    px = _bus_get_price(sym) if _bus_get_price else float(requests.get('https://fapi.binance.com/fapi/v1/ticker/price',
                              params={'symbol': sym}, timeout=5).json()['price'])
 
     # 1. 近1000笔聚合成交 → 找大额单笔（>100 BTC or >200 ETH）
@@ -75,11 +83,17 @@ def get_whale_signal(sym: str = 'BTCUSDT') -> dict:
     oi_signal = 'NORMAL'
     oi_1h_chg = 0.0
     try:
-        _oi_r = requests.get('https://fapi.binance.com/fapi/v1/openInterest',
-                              params={'symbol': sym}, timeout=5)
-        if _oi_r.status_code == 200:
-            _oi_data = _oi_r.json()
+        if _dc_get_oi:
+            _oi_data = _dc_get_oi(sym)
             _oi_now = float(_oi_data.get('openInterest', 0))
+            _oi_r = type('R', (), {'status_code': 200})()  # mock for compat
+        else:
+            _oi_r = requests.get('https://fapi.binance.com/fapi/v1/openInterest',
+                                  params={'symbol': sym}, timeout=5)
+        if (_dc_get_oi and _oi_now > 0) or (not _dc_get_oi and _oi_r.status_code == 200):
+            if not _dc_get_oi:
+                _oi_data = _oi_r.json()
+                _oi_now = float(_oi_data.get('openInterest', 0))
             _oi_cache_file = BASE / 'data' / f'oi_prev_{sym}.json'
             if _oi_cache_file.exists():
                 import json as _ojson

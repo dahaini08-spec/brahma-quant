@@ -324,9 +324,13 @@ def run():
         if first_price <= 0:
             return False
         try:
-            cp = float(_req_fuse.get(
-                f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}',
-                timeout=4).json().get('price', 0))
+            try:
+                from brahma_brain.brahma_bus import get_price as _bbus_price
+                cp = _bbus_price(sym)
+            except Exception:
+                cp = float(_req_fuse.get(
+                    f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}',
+                    timeout=4).json().get('price', 0))
         except Exception:
             return False
         drop_pct = (first_price - cp) / first_price * 100

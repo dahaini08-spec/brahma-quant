@@ -23,10 +23,16 @@ v2.0 核心变更（苏摩裁决：只推关键重要信息）：
 import sys, os, json, time, subprocess, requests
 
 BASE_DIR   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BASE_DIR)
 STATE_FILE = os.path.join(BASE_DIR, 'data', 'btc_regime_watcher_state.json')
 CHECKER    = os.path.join(BASE_DIR, 'scripts', 'position_regime_checker.py')
 
 FAPI = 'https://fapi.binance.com'
+
+try:
+    from brahma_brain.data_cache import get_klines as _dc_klines
+except ImportError:
+    _dc_klines = None
 
 try:
     from scripts.system_config import JARVIS_TARGET as _SSOT_TARGET, JARVIS_CHANNEL as _SSOT_CHANNEL
@@ -44,10 +50,13 @@ def get_btc_data():
     """获取BTC现价 + EMA20_4H + 50H高低点"""
     try:
         # 1H K线（取60根，计算50H高低点）
-        r1 = requests.get(f"{FAPI}/fapi/v1/klines",
-                          params={'symbol': 'BTCUSDT', 'interval': '1h', 'limit': 60},
-                          timeout=10)
-        kl_1h = r1.json()
+        if _dc_klines:
+            kl_1h = _dc_klines('BTCUSDT', '1h', 60)
+        else:
+            r1 = requests.get(f"{FAPI}/fapi/v1/klines",
+                              params={'symbol': 'BTCUSDT', 'interval': '1h', 'limit': 60},
+                              timeout=10)
+            kl_1h = r1.json()
         closes_1h = [float(k[4]) for k in kl_1h]
         highs_1h  = [float(k[2]) for k in kl_1h]
         lows_1h   = [float(k[3]) for k in kl_1h]
@@ -57,10 +66,13 @@ def get_btc_data():
         low_50h   = round(min(lows_1h[-50:]), 2)
 
         # 4H K线 → EMA20
-        r2 = requests.get(f"{FAPI}/fapi/v1/klines",
-                          params={'symbol': 'BTCUSDT', 'interval': '4h', 'limit': 30},
-                          timeout=10)
-        closes_4h = [float(k[4]) for k in r2.json()]
+        if _dc_klines:
+            closes_4h = [float(k[4]) for k in _dc_klines('BTCUSDT', '4h', 30)]
+        else:
+            r2 = requests.get(f"{FAPI}/fapi/v1/klines",
+                              params={'symbol': 'BTCUSDT', 'interval': '4h', 'limit': 30},
+                              timeout=10)
+            closes_4h = [float(k[4]) for k in r2.json()]
         k_factor  = 2 / (20 + 1)
         ema20_4h  = closes_4h[0]
         for v in closes_4h[1:]:
@@ -94,15 +106,21 @@ def load_state():
 def get_eth_regime():
     """计算ETH实时体制 (EMA20_4H + RSI_1H)"""
     try:
-        r4 = requests.get(f'{FAPI}/fapi/v1/klines',
-            params={'symbol': 'ETHUSDT', 'interval': '4h', 'limit': 30}, timeout=8)
-        c4 = [float(k[4]) for k in r4.json()]
+        if _dc_klines:
+            c4 = [float(k[4]) for k in _dc_klines('ETHUSDT', '4h', 30)]
+        else:
+            r4 = requests.get(f'{FAPI}/fapi/v1/klines',
+                params={'symbol': 'ETHUSDT', 'interval': '4h', 'limit': 30}, timeout=8)
+            c4 = [float(k[4]) for k in r4.json()]
         k_f = 2 / (20 + 1); ema20 = c4[0]
         for v in c4[1:]: ema20 = v * k_f + ema20 * (1 - k_f)
         price = c4[-1]
-        r1 = requests.get(f'{FAPI}/fapi/v1/klines',
-            params={'symbol': 'ETHUSDT', 'interval': '1h', 'limit': 20}, timeout=8)
-        c1 = [float(k[4]) for k in r1.json()]
+        if _dc_klines:
+            c1 = [float(k[4]) for k in _dc_klines('ETHUSDT', '1h', 20)]
+        else:
+            r1 = requests.get(f'{FAPI}/fapi/v1/klines',
+                params={'symbol': 'ETHUSDT', 'interval': '1h', 'limit': 20}, timeout=8)
+            c1 = [float(k[4]) for k in r1.json()]
         gains  = [max(0, c1[i] - c1[i-1]) for i in range(1, len(c1))]
         losses = [max(0, c1[i-1] - c1[i]) for i in range(1, len(c1))]
         ag = sum(gains[-14:]) / 14; al = sum(losses[-14:]) / 14
@@ -175,9 +193,12 @@ def save_state(state):
             # [防误判封印 2026-08-05] BULL_TREND/BEAR_TREND切换需双重RSI_4H确认
             # 防止1H短暂噪音触发CONFIRMED体制切换
             try:
-                import requests as _rq_rb
-                _kl = _rq_rb.get('https://fapi.binance.com/fapi/v1/klines',
-                                  params={'symbol':'BTCUSDT','interval':'4h','limit':20},timeout=5).json()
+                if _dc_klines:
+                    _kl = _dc_klines('BTCUSDT', '4h', 20)
+                else:
+                    import requests as _rq_rb
+                    _kl = _rq_rb.get('https://fapi.binance.com/fapi/v1/klines',
+                                      params={'symbol':'BTCUSDT','interval':'4h','limit':20},timeout=5).json()
                 _c4h = [float(k[4]) for k in _kl]
                 _d4h = [_c4h[i]-_c4h[i-1] for i in range(1,len(_c4h))]
                 _g=[max(0,x) for x in _d4h]; _l=[max(0,-x) for x in _d4h]
@@ -326,9 +347,12 @@ def main():
     def confirm_cross_bars(above_val, ema_val, bars=CONFIRM_BARS):
         """K线确认：连续N根已收盘1H K线均在EMA同侧"""
         try:
-            import requests as _rq
-            kc = _rq.get('https://fapi.binance.com/fapi/v1/klines',
-                params={'symbol':'BTCUSDT','interval':'1h','limit':bars+2},timeout=5).json()
+            if _dc_klines:
+                kc = _dc_klines('BTCUSDT', '1h', bars+2)
+            else:
+                import requests as _rq
+                kc = _rq.get('https://fapi.binance.com/fapi/v1/klines',
+                    params={'symbol':'BTCUSDT','interval':'1h','limit':bars+2},timeout=5).json()
             closed = [float(c[4]) for c in kc[:-1]][-bars:]
             buf = ema_val * MIN_CROSS_PCT * 0.5
             return all(c > ema_val + buf for c in closed) if above_val else all(c < ema_val - buf for c in closed)
@@ -338,9 +362,12 @@ def main():
     def confirm_bear_4h(ema_val, bars=BEAR_CONFIRM_4H):
         """[防误判升级] BEAR确认需连续N根已收盘4H K线在EMA下方 + RSI_4H<BEAR_RSI4H_MAX"""
         try:
-            import requests as _rq
-            kc = _rq.get('https://fapi.binance.com/fapi/v1/klines',
-                params={'symbol':'BTCUSDT','interval':'4h','limit':bars+5},timeout=5).json()
+            if _dc_klines:
+                kc = _dc_klines('BTCUSDT', '4h', bars+5)
+            else:
+                import requests as _rq
+                kc = _rq.get('https://fapi.binance.com/fapi/v1/klines',
+                    params={'symbol':'BTCUSDT','interval':'4h','limit':bars+5},timeout=5).json()
             closed4h = [float(c[4]) for c in kc[:-1]][-bars:]  # 已收盘的4H
             buf = ema_val * MIN_CROSS_PCT
             bars_ok = all(c < ema_val - buf for c in closed4h)

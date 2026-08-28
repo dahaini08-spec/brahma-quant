@@ -19,6 +19,14 @@ volume_profile.py — 成交量分布密度分析（Volume Profile）
 import requests
 import time
 from typing import Tuple
+try:
+    from brahma_brain.data_cache import get_klines as _dc_get_klines
+except ImportError:
+    _dc_get_klines = None
+try:
+    from brahma_brain.brahma_bus import get_price as _bus_get_price
+except ImportError:
+    _bus_get_price = None
 
 _CACHE: dict = {}
 _CACHE_TTL = 300  # 5分钟，1H K线数据更新慢
@@ -31,6 +39,11 @@ def _fetch_klines(symbol: str, limit: int = 96) -> list:
     if cache_key in _CACHE and now - _CACHE[cache_key]['ts'] < _CACHE_TTL:
         return _CACHE[cache_key]['data']
     try:
+        if _dc_get_klines:
+            data = _dc_get_klines(symbol, '1h', limit)
+            if data:
+                _CACHE[cache_key] = {'ts': now, 'data': data}
+                return data
         url = f'https://fapi.binance.com/fapi/v1/klines'
         r = requests.get(url, params={'symbol': symbol, 'interval': '1h', 'limit': limit}, timeout=8)
         data = r.json()

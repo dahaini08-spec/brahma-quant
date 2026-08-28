@@ -1,0 +1,1 @@
+[{"symbol": "KAVA", "timeframe": "1w", "ts_squeeze_start": "2022-02-07T00:00:00+00:00", "ts_burst": "2022-02-07T00:00:00+00:00", "direction": "DOWN", "min_bb_width": 0.0, "squeeze_bars": 1, "rsi_at_burst": 41.19, "vol_ratio_peak": 1.0, "future_return": -8.8595, "is_genuine_breakout": true, "atr_at_burst": 1.328795, "trigger": "death_cross"}]

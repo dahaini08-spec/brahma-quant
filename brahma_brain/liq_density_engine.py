@@ -381,10 +381,9 @@ def _empty_liq(symbol: str) -> dict:
 
 if __name__ == '__main__':
     import json
+    from brahma_brain.brahma_bus import get_price as _bus_price
     # 测试
-    price = float(requests.get(
-        'https://fapi.binance.com/fapi/v1/ticker/price?symbol=BTCUSDT', timeout=5
-    ).json()['price'])
+    price = _bus_price('BTCUSDT')
     result = get_liq_density('BTCUSDT', price)
     print(json.dumps(result, indent=2, ensure_ascii=False))
 

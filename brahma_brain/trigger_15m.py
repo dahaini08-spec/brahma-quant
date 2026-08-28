@@ -47,6 +47,16 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def _fetch_15m(symbol: str, limit: int = 96) -> list:
+    try:
+        from brahma_brain.data_cache import get_klines as _dc_klines
+        raw = _dc_klines(symbol.upper(), '15m', limit)
+        if raw and isinstance(raw, list):
+            return [{
+                'ts': k[0], 'o': float(k[1]), 'h': float(k[2]),
+                'l': float(k[3]), 'c': float(k[4]), 'v': float(k[5])
+            } for k in raw]
+    except Exception:
+        pass
     url = 'https://fapi.binance.com/fapi/v1/klines'
     try:
         r = requests.get(url, params={

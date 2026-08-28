@@ -7,6 +7,12 @@ brahma_daily_report.py — 梵天日报
 输出：单条日报，推送到Jarvis
 """
 import sys, os, json, subprocess, requests, time
+
+try:
+    from brahma_brain.data_cache import get_klines as _dc_klines, get_ticker as _dc_ticker
+    from brahma_brain.brahma_bus import get_price as _bus_price
+except Exception:
+    _dc_klines = None; _dc_ticker = None; _bus_price = None
 from pathlib import Path
 from datetime import datetime, timezone
 try:

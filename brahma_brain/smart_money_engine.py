@@ -24,9 +24,17 @@ smart_money_engine.py — 聪明钱流向分析引擎
 # ║ Deps      : requests(fapi futures/data)
 # ╚════════════════════════════════════════════════════════════════╝
 try:
-    from brahma_bus import _SESS as _HTTP  # [HTTP Session共享 2026-08-02 设计院自主]
+    from brahma_brain.brahma_bus import _SESS as _HTTP, get_price as _bus_price  # [HTTP Session共享 2026-08-02 设计院自主]
+    from brahma_brain.data_cache import get_long_short_ratio as _dc_lsr
 except ImportError:
-    _HTTP = requests  # fallback
+    try:
+        from brahma_bus import _SESS as _HTTP, get_price as _bus_price
+        from data_cache import get_long_short_ratio as _dc_lsr
+    except ImportError:
+        import requests
+        _HTTP = requests
+        _bus_price = None
+        _dc_lsr = None
 import time
 from typing import Optional
 
