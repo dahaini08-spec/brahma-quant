@@ -583,6 +583,21 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     except Exception as _e:
         extra_data['sentiment_nlp_err'] = str(_e)[:80]
 
+    # ── [防御层 2026-08-28 苏摩111] anti_manipulation_engine ──────────────────
+    # 五模块：Spread+Taker+OI异常+FR窗口+标记价格偏差
+    # 识别插针/诱多/清算猎杀/做市商撤单
+    try:
+        import sys as _sys_am, os as _os_am
+        _bd_am = _os_am.path.dirname(_os_am.path.abspath(__file__))
+        if _bd_am not in _sys_am.path: _sys_am.path.insert(0, _bd_am)
+        from anti_manipulation_engine import get_anti_manip_score as _am_fn
+        _am_result = _am_fn(symbol, signal_dir)
+        extra_data['anti_manip'] = _am_result
+    except Exception as _e_am:
+        extra_data['anti_manip'] = {'risk_score': 0, 'risk_level': 'LOW',
+                                    'score_adj': 0, 'signals': [], 'err': str(_e_am)[:80]}
+    # ────────────────────────────────────────────────────────────────────────────
+
     return {
         'extra_data': extra_data,
         '_bd': locals().get('_bd', {}),
