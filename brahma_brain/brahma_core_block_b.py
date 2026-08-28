@@ -337,6 +337,19 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
     score += s10
     breakdown['多周期对齐'] = s10
 
+    # ── [防御层 2026-08-28 苏摩111] anti_manipulation_engine ──────────────────
+    # 五模块：Spread+Taker+OI异常+FR窗口+标记价格偏差
+    # HIGH_RISK=-15，MEDIUM=-8，信号写入breakdown
+    _am = (extra_data or {}).get('anti_manip', {})
+    _am_adj = int(_am.get('score_adj', 0))
+    if _am_adj != 0:
+        score += _am_adj
+        _am_level = _am.get('risk_level', 'LOW')
+        _am_sigs  = ' | '.join(_am.get('signals', []))[:80]
+        breakdown['操控防御'] = _am_adj
+        breakdown['操控风险'] = f"{_am_level}({_am.get('risk_score',0)}) {_am_sigs}"
+    # ────────────────────────────────────────────────────────────────────────────
+
     return {
         's7': s7, 's8': s8, 's9': s9, 's10': s10,
         'score': score, 'breakdown': breakdown,
