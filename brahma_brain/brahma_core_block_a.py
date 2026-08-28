@@ -63,6 +63,36 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
         elif _is_chop:                  s1 = 4   # [v12.6] 3->4
         else:                           s1 = 0
     if adx_1h > 30: s1 = min(s1 + 3, 20)
+    elif adx_1h < 20:  s1 = max(s1 - 5, 0)  # [P1 2026-08-28] ADX<20=假趋势，扣5分
+
+    # ── [P1 2026-08-28 苏摩111] EMA200方向过滤 ─────────────────────────
+    # 铁证：Layer1 30,408笔回测：价格>EMA200做多、<EMA200做空是机构最常用的大方向过滤
+    # 高盛/JPM技术团队标配指标，高于EMA200=牛市，低于=熊市
+    try:
+        _ema200_1h = ms.get('trend', {}).get('1h', {}).get('ema200', 0)
+        if not _ema200_1h:
+            # 备用：从 indicators 读取
+            _ema200_1h = ms.get('indicators', {}).get('ema200_1h', 0) or \
+                         ms.get('indicators', {}).get('ema200', 0)
+        _price_now = ms.get('price', 0)
+        if _ema200_1h > 0 and _price_now > 0:
+            _above_ema200 = _price_now > _ema200_1h
+            if signal_dir == 'LONG' and _above_ema200:
+                s1 = min(s1 + 4, 20)   # 价格>EMA200做多，妇合大方向+4
+                breakdown['EMA200确认'] = f'+4 (价格{_price_now:.0f}>EMA200={_ema200_1h:.0f}，顺势多)'
+            elif signal_dir == 'LONG' and not _above_ema200:
+                s1 = max(s1 - 6, 0)    # 价格<EMA200做多，逆大势-6
+                breakdown['EMA200逆势'] = f'-6 (价格{_price_now:.0f}<EMA200={_ema200_1h:.0f}，逆势多)'
+            elif signal_dir == 'SHORT' and not _above_ema200:
+                s1 = min(s1 + 4, 20)   # 价格<EMA200做空，妇合大方向+4
+                breakdown['EMA200确认'] = f'+4 (价格{_price_now:.0f}<EMA200={_ema200_1h:.0f}，顺势空)'
+            elif signal_dir == 'SHORT' and _above_ema200:
+                s1 = max(s1 - 6, 0)    # 价格>EMA200做空，逆大势-6
+                breakdown['EMA200逆势'] = f'-6 (价格{_price_now:.0f}>EMA200={_ema200_1h:.0f}，逆势空)'
+    except Exception:
+        pass
+    # ───────────────────────────────────────────────────────────────────────────
+    s1 = min(s1, 20)
     score += s1
     breakdown['趋势一致性'] = s1
 
