@@ -253,7 +253,7 @@ def get_time_weight(utc_hour: int) -> float:
     return 1.0
 
 
-def kelly_position(wr: float, rr: float, nav: float, max_pct: float = 0.10) -> float:
+def _kelly_position_local(wr: float, rr: float, nav: float, max_pct: float = 0.10) -> float:  # [2026-08-28封印] 仅限本文件自测，核心链路用position_sizer.kelly_position
     """
     半Kelly仓位计算
     wr: 胜率(0-1)  rr: 盈亏比  nav: 净值  max_pct: 单笔上限
@@ -292,9 +292,9 @@ if __name__ == '__main__':
 
     # Kelly计算
     print(f"\nKelly仓位示例:")
-    print(f"  BTC WR=92% RR=0.26 NAV=127: ${kelly_position(0.92, 0.26, 127)}")
-    print(f"  LTC WR=50% RR=3.0  NAV=127: ${kelly_position(0.50, 3.0, 127)}")
-    print(f"  DOGE WR=59% RR=2.0 NAV=127: ${kelly_position(0.59, 2.0, 127)}")
+    print(f"  BTC WR=92% RR=0.26 NAV=127: ${_kelly_position_local(0.92, 0.26, 127)}")
+    print(f"  LTC WR=50% RR=3.0  NAV=127: ${_kelly_position_local(0.50, 3.0, 127)}")
+    print(f"  DOGE WR=59% RR=2.0 NAV=127: ${_kelly_position_local(0.59, 2.0, 127)}")
 
     # 时间权重
     print(f"\n时间权重(UTC):")

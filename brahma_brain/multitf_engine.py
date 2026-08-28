@@ -12,36 +12,10 @@ brahma_brain · P0
 """
 
 from brahma_brain.math_utils import _ema as _ema_list, _rsi, calc_rsi, rsi, ema  # 统一数学库
+from math_utils import _ema as calc_ema_series, _rsi as calc_rsi_series, _atr as calc_atr_series, ema, calc_rsi, atr  # [2026-08-28 math_utils SSOT迁移]
 # P1修复(2026-07-12): _ema返回list，此处需scalar版本
-def _ema(series, period):
-    """scalar版EMA，返回最后一个值"""
-    vals = _ema_list(series, period)
-    return float(vals[-1]) if vals else float('nan')
-
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-
-from data_cache import get_klines, klines_to_ohlcv
-
-# [math_utils] _ema 已统一到 brahma_brain.math_utils，此处保留备用
-def _rsi(closes, n=14):
-
-    # [INT-1] 统一实现已移至 math_utils.rsi，此函数保留兼容
-    if len(closes) < n + 1:
-        return 50.0
-    gains, losses = [], []
-    for i in range(1, len(closes)):
-        d = closes[i] - closes[i-1]
-        gains.append(max(d, 0))
-        losses.append(max(-d, 0))
-    ag = sum(gains[:n]) / n
-    al = sum(losses[:n]) / n
-    for i in range(n, len(gains)):
-        ag = (ag * (n-1) + gains[i]) / n
-        al = (al * (n-1) + losses[i]) / n
-    return 100 - 100 / (1 + ag / (al + 1e-9))
-
+# [_ema] 已迁移到math_utils.ema [2026-08-28 SSOT封印]
+# [_rsi] 已迁移到math_utils.calc_rsi [2026-08-28 SSOT封印]
 def _macd_signal(closes):
     if len(closes) < 35:
         return 0

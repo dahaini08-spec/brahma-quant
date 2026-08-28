@@ -28,6 +28,7 @@ signal_15m_engine.py · 梵天 15M 主框架信号生成器
 """
 
 import os, sys, time, math, json
+from math_utils import _ema as calc_ema_series, _rsi as calc_rsi_series, _atr as calc_atr_series, ema, calc_rsi, atr  # [2026-08-28 math_utils SSOT迁移]
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -38,39 +39,9 @@ ROOT_DIR = BASE_DIR.parent
 # 工具函数（无穿越，纯历史K线计算）
 # ══════════════════════════════════════════════════
 
-def _ema(prices: list, n: int) -> float:
-    if len(prices) < n:
-        return prices[-1] if prices else 0
-    k = 2 / (n + 1)
-    e = sum(prices[:n]) / n
-    for p in prices[n:]:
-        e = e * (1 - k) + p * k
-    return e
-
-
-def _rsi(closes: list, n: int = 14) -> float:
-    if len(closes) < n + 1:
-        return 50.0
-    d = [closes[i] - closes[i - 1] for i in range(1, len(closes))]
-    g = [max(0, x) for x in d[-n:]]
-    lo = [max(0, -x) for x in d[-n:]]
-    ag, al = sum(g) / n, sum(lo) / n
-    return round(100 - 100 / (1 + ag / al), 2) if al > 0 else 100.0
-
-
-def _atr(highs: list, lows: list, closes: list, n: int = 14) -> float:
-    trs = []
-    for i in range(1, len(closes)):
-        trs.append(max(
-            highs[i] - lows[i],
-            abs(highs[i] - closes[i - 1]),
-            abs(lows[i] - closes[i - 1])
-        ))
-    if not trs:
-        return closes[-1] * 0.005
-    return sum(trs[-n:]) / min(n, len(trs))
-
-
+# [_ema] 已迁移到math_utils.ema [2026-08-28 SSOT封印]
+# [_rsi] 已迁移到math_utils.calc_rsi [2026-08-28 SSOT封印]
+# [_atr] 已迁移到math_utils.atr [2026-08-28 SSOT封印]
 def _vol_ratio(volumes: list, n: int = 20) -> float:
     """当前成交量 / N期均量"""
     if len(volumes) < n + 1:

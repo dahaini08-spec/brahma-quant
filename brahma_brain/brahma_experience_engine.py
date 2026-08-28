@@ -49,10 +49,9 @@ REGIME_MAP = {
 
 # ── 指标计算 ──────────────────────────────────────────────────────
 
-def calc_rsi(closes, period: int = 14) -> float:
-    """[2026-08-28 精简] 委托math_utils.calc_rsi — SSOT"""
-    from math_utils import calc_rsi as _mu_rsi
-    return _mu_rsi(closes, period)
+# [calc_rsi] 已迁移到math_utils [2026-08-28 SSOT封印]
+# 调用: from math_utils import calc_rsi
+
 def calc_bbw(highs: np.ndarray, lows: np.ndarray,
              closes: np.ndarray, period: int = 20) -> float:
     if len(closes) < period:

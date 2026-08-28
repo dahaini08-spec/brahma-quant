@@ -22,6 +22,11 @@ brahma_analysis_runner.py — 梵天分析唯一入口
 """
 
 import sys
+try:
+    from signal_trace import trace_generated, trace_skipped
+except ImportError:
+    def trace_generated(*a, **kw): pass
+    def trace_skipped(*a, **kw): pass  # fallback
 import os
 
 # ── 安全防护：禁止core dump（设计院封印2026-08-07）──────────────
@@ -139,8 +144,8 @@ try:
     _TRACE_OK = True
 except Exception:
     _TRACE_OK = False
-    def trace_generated(r, **kw): pass
-    def trace_skipped(r): pass
+    # trace_generated → from signal_trace [2026-08-28 SSOT]
+    # trace_skipped → from signal_trace [2026-08-28 SSOT]
 
 # llm_council_bridge: score≥130触发LLM二次审查（shadow模式）
 try:
