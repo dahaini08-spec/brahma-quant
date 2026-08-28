@@ -516,6 +516,42 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
     except Exception:
         pass
 
+    # ══ [v5.1 Alpha#101 K线实体比 2026-08-28 设计院自主封印] ══════════════════
+    # WorldQuant Alpha#101: (close-open)/((high-low)+0.001)
+    # 含义: 实体比高(+1)→大阳线方向明确 / 实体比低(≈0)→十字星信号质量差 / 负→大阴线
+    # 梵天缺口: 十字星时现在不扣分 → 此因子补全信号质量评估
+    try:
+        _c1h = ms.get('close_1h', 0)
+        _o1h = ms.get('open_1h', 0)
+        _h1h = ms.get('high_1h', 0)
+        _l1h = ms.get('low_1h', 0)
+        if _h1h > _l1h and _c1h and _o1h:
+            _body_ratio = (_c1h - _o1h) / ((_h1h - _l1h) + 0.001)
+            # 信号质量加分逻辑
+            if signal_dir == 'LONG':
+                if _body_ratio > 0.6:    # 大阳线，多单方向确认
+                    _a101_score = 6
+                elif _body_ratio < -0.3: # 阴线逆向，低质量
+                    _a101_score = -6
+                elif abs(_body_ratio) < 0.1: # 十字星，不确定
+                    _a101_score = -3
+                else:
+                    _a101_score = 0
+            else:  # SHORT
+                if _body_ratio < -0.6:   # 大阴线，空单方向确认
+                    _a101_score = 6
+                elif _body_ratio > 0.3:  # 阳线逆向，低质量
+                    _a101_score = -6
+                elif abs(_body_ratio) < 0.1: # 十字星
+                    _a101_score = -3
+                else:
+                    _a101_score = 0
+            if _a101_score != 0:
+                score += _a101_score
+                breakdown['Alpha101_实体比'] = f'{_a101_score:+d}(实体比:{_body_ratio:.2f})'
+    except Exception:
+        pass
+
     return {
         's1': s1, 's2': s2, 's3': s3, 's4': s4,
         's5': s5, 's5b': s5b, 's6': s6,

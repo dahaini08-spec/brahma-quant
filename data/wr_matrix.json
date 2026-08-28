@@ -1,32 +1,51 @@
 {
-  "BULL_TREND:LONG": {
-    "wr": 0.4815,
-    "n": 54,
-    "n_win": 26,
-    "ev": -0.1317
-  },
-  "BULL_EARLY:LONG": {
-    "wr": 1.0,
-    "n": 5,
-    "n_win": 5,
-    "ev": 2.0
-  },
-  "BEAR_RECOVERY:LONG": {
-    "wr": 1.0,
-    "n": 5,
-    "n_win": 5,
-    "ev": 2.0
-  },
-  "BULL_EARLY:SHORT": {
-    "wr": 0.5,
-    "n": 4,
-    "n_win": 2,
-    "ev": 0.0
-  },
-  "BEAR_RECOVERY:SHORT": {
-    "wr": 0.0,
-    "n": 3,
-    "n_win": 0,
-    "ev": -2.0
+  "updated_at": "2026-08-28T02:08:29.781728+00:00",
+  "total_settled": 180,
+  "matrix": {
+    "BULL_TREND:LONG": {
+      "total": 160,
+      "win": 33,
+      "loss": 42,
+      "expired": 85,
+      "wr": 0.44,
+      "ev_avg": -0.2658,
+      "avg_score": 35.2
+    },
+    "BEAR_RECOVERY:LONG": {
+      "total": 8,
+      "win": 7,
+      "loss": 0,
+      "expired": 1,
+      "wr": 1.0,
+      "ev_avg": 2.0,
+      "avg_score": 67.1
+    },
+    "BULL_EARLY:LONG": {
+      "total": 5,
+      "win": 5,
+      "loss": 0,
+      "expired": 0,
+      "wr": 1.0,
+      "ev_avg": 2.0,
+      "avg_score": 88.4
+    },
+    "BEAR_RECOVERY:SHORT": {
+      "total": 3,
+      "win": 0,
+      "loss": 3,
+      "expired": 0,
+      "wr": 0.0,
+      "ev_avg": -2.0,
+      "avg_score": 65.9
+    },
+    "BULL_EARLY:SHORT": {
+      "total": 4,
+      "win": 2,
+      "loss": 2,
+      "expired": 0,
+      "wr": 0.5,
+      "ev_avg": 0.0,
+      "avg_score": 66.8
+    }
   }
 }
