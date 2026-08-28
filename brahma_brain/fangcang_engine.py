@@ -134,7 +134,10 @@ def _load_regime_map(symbol: str) -> Dict[int, str]:
 
 def _calc_rsi(prices, period: int = 14) -> float:
     """[2026-08-28 精简] 委托math_utils.calc_rsi — SSOT"""
-    from math_utils import calc_rsi as _mu_rsi
+    try:
+        from brahma_brain.math_utils import calc_rsi as _mu_rsi
+    except ImportError:
+        from math_utils import calc_rsi as _mu_rsi
     return _mu_rsi(prices, period)
 def _calc_bollinger_width(prices: List[float], period: int = 20) -> float:
     """计算布林带宽度百分比（BBW = (upper-lower)/middle * 100）"""
