@@ -142,15 +142,22 @@ def _genuine_breakout_weight(symbol: str, signal_dir: str) -> float:
     """
     try:
         import json
+        # [2026-08-28 梵天设计院封印] 优先读取统一主库
         data_dir = _BASE.parent / 'data'
-        sym_key  = symbol.replace('USDT', '').upper()
-        fname    = f'fangcang_cases_{sym_key.lower()}.json'
-        fpath    = data_dir / fname
-        if not fpath.exists():
-            return 1.0
-        cases = json.loads(fpath.read_text())
-        if isinstance(cases, dict):
-            cases = cases.get('cases', [])
+        merged_path = data_dir / 'fangcang_merged_v2.json'
+        sym_key = symbol.replace('USDT', '').upper()
+        if merged_path.exists():
+            raw = json.loads(merged_path.read_text())
+            all_cases = raw.get('cases', raw) if isinstance(raw, dict) else raw
+            cases = [c for c in all_cases if str(c.get('symbol','')).upper() == sym_key]
+        else:
+            # 备用：分散加载
+            fpath = data_dir / f'fangcang_cases_{sym_key.lower()}.json'
+            if not fpath.exists():
+                return 1.0
+            cases = json.loads(fpath.read_text())
+            if isinstance(cases, dict):
+                cases = cases.get('cases', [])
         n = len(cases)
         if n == 0:
             return 1.0

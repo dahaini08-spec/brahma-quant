@@ -58,63 +58,53 @@ def _normalize_new_case(d: dict, sym: str) -> dict:
 
 
 def _load_fangcang_cases() -> list:
-    """加载方仓真实案例库（BTC+ETH+SOL+TradFi+30个新币种），全局缓存"""
+    """[2026-08-28 梵天设计院封印] 从统一主库加载方仓31廳数据库
+    主库: brahma_brain/data/fangcang_merged_v2.json
+    覆盖旧的分散读取逐一加载逻辑，统一入口
+    """
     global _FANGCANG_CACHE, _CACHE_LOADED
     if _CACHE_LOADED:
         return _FANGCANG_CACHE
 
-    cases = []
-    # BTC
-    btc_path = _DATA / 'fangcang_cases_btc.jsonl'
-    if btc_path.exists():
-        for line in btc_path.read_text().splitlines():
-            try:
-                d = json.loads(line)
-                d['_src_sym'] = 'BTC'
-                cases.append(d)
-            except Exception:
-                pass
-
-    # ETH
-    eth_path = _DATA / 'fangcang_cases_eth.jsonl'
-    if eth_path.exists():
-        for line in eth_path.read_text().splitlines():
-            try:
-                d = json.loads(line)
-                d['_src_sym'] = 'ETH'
-                cases.append(d)
-            except Exception:
-                pass
-
-    # SOL
-    sol_path = _DATA / 'fangcang_cases_sol.json'
-    if sol_path.exists():
-        sol_raw = json.loads(sol_path.read_text())
-        if isinstance(sol_raw, list):
-            for d in sol_raw:
-                cases.append(_normalize_new_case(d, 'sol'))
-
-    # 新墖30个币种（自动扫描 data/fangcang_cases_xxx.json）
-    _new_loaded = 0
-    for sym in _NEW_30_SYMBOLS:
-        fpath = _DATA / f'fangcang_cases_{sym}.json'
-        if not fpath.exists():
-            continue
-        try:
-            raw = json.loads(fpath.read_text())
-            if isinstance(raw, list):
-                for d in raw:
-                    cases.append(_normalize_new_case(d, sym))
-                _new_loaded += len(raw)
-        except Exception:
-            pass
-
     import logging as _lg
-    _lg.getLogger('brahma.fangcang').info(
-        f'[fangcang_hcme_bridge] 加载完成: 总{len(cases)}条案例 '
-        f'(新墖30币种贡献{_new_loaded}条)'
-    )
+    _log = _lg.getLogger('brahma.fangcang')
 
+    cases = []
+
+    # ① 优先加载统一主库（v2.1_deduped，15765条，33个标的）
+    merged_path = _DATA / 'fangcang_merged_v2.json'
+    if merged_path.exists():
+        try:
+            raw = json.loads(merged_path.read_text())
+            raw_cases = raw.get('cases', raw) if isinstance(raw, dict) else raw
+            for d in raw_cases:
+                if not isinstance(d, dict): continue
+                sym = str(d.get('symbol', '')).upper()
+                if not sym: continue
+                c = _normalize_new_case(d, sym.lower())
+                c['_src_sym'] = sym
+                cases.append(c)
+            _log.info(f'[fangcang] 统一主库加载: {len(cases)}条 / '
+                      f'{len(set(c["_src_sym"] for c in cases))}个标的')
+        except Exception as _e:
+            _log.warning(f'[fangcang] 统一主库加载失败: {_e}，回退到分散加载')
+            cases = []
+
+    # ② 备用：若主库不可用，回退到旧分散加载
+    if not cases:
+        _log.warning('[fangcang] 回退到旧分散加载模式')
+        for sym in _NEW_30_SYMBOLS:
+            fpath = _DATA / f'fangcang_cases_{sym}.json'
+            if not fpath.exists(): continue
+            try:
+                raw = json.loads(fpath.read_text())
+                if isinstance(raw, list):
+                    for d in raw:
+                        cases.append(_normalize_new_case(d, sym))
+            except Exception:
+                pass
+
+    _log.info(f'[fangcang_hcme_bridge] 加载完成: 总{len(cases)}条案例')
     _FANGCANG_CACHE = cases
     _CACHE_LOADED = True
     return cases
