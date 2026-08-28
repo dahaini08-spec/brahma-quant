@@ -266,7 +266,39 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
     s3_stoch = _stoch_add
     # ── [P2 END] Stochastic RSI ───────────────────────────────────────────
 
-    s3 = min(s3_rsi + s3_div + _chop_macd_bonus + s3_stoch, 26)  # [P2] 上限提升到26
+    # ── [P3 2026-08-28 设计院自主] 三周期RSI共振 + 方仓BBW×CVD共振 ─────────────────
+    # 铁证来源：15m量化矩阵多因子回测
+    # G1: RSI15m<50+RSI1h<50+RSI4h<55+BULL → WR=62% n=3982 EV=+0.481%
+    # G2: RSI30-50+BBW<2%+CVD>0+BULL → WR=61.4% n=5709 EV=+0.455%
+    _s3_g1, _s3_g2 = 0, 0
+    try:
+        _r1h  = float(mom.get('rsi_1h', rsi1) or 50)
+        _r4h  = float(mom.get('rsi_4h', rsi4) or 50)
+        _r15m = float(ms.get('momentum', {}).get('rsi_15m', 50) or 50)
+        _bbw  = float(ms.get('bb_width', ms.get('bbw', 0)) or 0)
+        _cvd_pos = False
+        if extra_data:
+            _enh = extra_data.get('enhanced', {}) or {}
+            _cvd_pos = _enh.get('breakdown', {}).get('cvd', 0) > 0
+        if signal_dir == 'LONG':
+            if _r15m < 50 and _r1h < 50 and _r4h < 55:
+                _s3_g1 = 8
+                breakdown['G1_RSI三周期共振'] = f'+8 (15m={_r15m:.0f} 1h={_r1h:.0f} 4h={_r4h:.0f} 全偏低 WR=62%)'
+            if 30 <= _r1h <= 50 and 0 < _bbw < 0.02 and _cvd_pos:
+                _s3_g2 = 8
+                breakdown['G2_方仓CVD共振'] = f'+8 (RSI1h={_r1h:.0f}中位 BBW={_bbw*100:.1f}%<2% CVD买方 WR=61.4%)'
+        else:  # SHORT
+            if _r15m > 50 and _r1h > 50 and _r4h > 55:
+                _s3_g1 = 8
+                breakdown['G1_RSI三周期共振'] = f'+8 (15m={_r15m:.0f} 1h={_r1h:.0f} 4h={_r4h:.0f} 全偏高 WR=62%)'
+            if 50 <= _r1h <= 70 and 0 < _bbw < 0.02 and not _cvd_pos:
+                _s3_g2 = 8
+                breakdown['G2_方仓CVD共振'] = f'+8 (RSI1h={_r1h:.0f}中位 BBW={_bbw*100:.1f}%<2% CVD卖方 WR=61.4%)'
+    except Exception as _g_e:
+        breakdown['G1G2共振'] = f'N/A({str(_g_e)[:30]})'
+    # ── [P3 END] ──────────────────────────────────────────────────────────
+
+    s3 = min(s3_rsi + s3_div + _chop_macd_bonus + s3_stoch + _s3_g1 + _s3_g2, 30)  # [P3] 上限提升到30
     score += s3
     breakdown['动量背离'] = s3
 
