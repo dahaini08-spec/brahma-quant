@@ -23,24 +23,12 @@ brahma_brain · Phase 2
 # ═══════════════════════════════════════════════════════════════
 
 def calc_rsi_series(closes: list, n: int = 14) -> list:
-    """返回完整RSI序列"""
-    if len(closes) < n + 1:
-        return [50.0] * len(closes)
-    rsi_vals = [None] * n
-    gains, losses = [], []
-    for i in range(1, len(closes)):
-        d = closes[i] - closes[i-1]
-        gains.append(max(d, 0))
-        losses.append(max(-d, 0))
-    ag = sum(gains[:n]) / n
-    al = sum(losses[:n]) / n
-    rsi_vals.append(100 - 100 / (1 + ag / al) if al else 100.0)
-    for i in range(n, len(gains)):
-        ag = (ag * (n-1) + gains[i]) / n
-        al = (al * (n-1) + losses[i]) / n
-        rsi_vals.append(100 - 100 / (1 + ag / al) if al else 100.0)
-    return rsi_vals
-
+    """[2026-08-28 精简] 委托math_utils.rsi_series — SSOT"""
+    from math_utils import calc_rsi as _mu_rsi
+    import pandas as _pd
+    s = _pd.Series(closes)
+    results = [_mu_rsi(closes[:i+1], n) for i in range(max(n, len(closes)))]
+    return results[-len(closes):]
 def calc_macd_series(closes: list, fast: int = 12, slow: int = 26, signal: int = 9) -> dict:
     """返回完整MACD序列"""
     def ema_s(data, n):

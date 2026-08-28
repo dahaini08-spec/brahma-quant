@@ -10,5 +10,23 @@
     "active": false,
     "closed_at": 1786771760.2894905,
     "close_reason": "manual_close_苏摩确认"
+  },
+  "ETHUSDT_SHORT": {
+    "symbol": "ETHUSDT",
+    "direction": "SHORT",
+    "entry": 2501.11,
+    "sl": 2546.0,
+    "tp1": 2453.0,
+    "tp2": 2407.0,
+    "tp3": 2294.0,
+    "nav_size": "3%",
+    "leverage": "5x",
+    "regime": "CHOP_MID",
+    "wr_basis": "CHOP_MID SHORT WR=88%",
+    "decision": "自主裁决覆盖系统封禁",
+    "ev": "+2.44%",
+    "timestamp": 1787831731,
+    "entry_time": "2026-08-27 11:55:31 UTC",
+    "status": "OPEN"
   }
 }

@@ -132,27 +132,10 @@ def _load_regime_map(symbol: str) -> Dict[int, str]:
 # 基础计算工具
 # ══════════════════════════════════════════════════════════════════════════════
 
-def _calc_rsi(prices: List[float], period: int = 14) -> float:
-    """RSI计算 — 委托math_utils统一实现 [2026-08-24 设计院精简]"""
-    try:
-        from math_utils import calc_rsi as _mu_rsi
-        return _mu_rsi(prices, period)
-    except Exception:
-        pass
-    if len(prices) < period + 1:
-        return 50.0
-    gains, losses = [], []
-    for i in range(1, len(prices)):
-        d = prices[i] - prices[i - 1]
-        gains.append(max(d, 0.0))
-        losses.append(max(-d, 0.0))
-    ag = sum(gains[-period:]) / period
-    al = sum(losses[-period:]) / period
-    if al == 0:
-        return 100.0
-    return 100.0 - 100.0 / (1.0 + ag / al)
-
-
+def _calc_rsi(prices, period: int = 14) -> float:
+    """[2026-08-28 精简] 委托math_utils.calc_rsi — SSOT"""
+    from math_utils import calc_rsi as _mu_rsi
+    return _mu_rsi(prices, period)
 def _calc_bollinger_width(prices: List[float], period: int = 20) -> float:
     """计算布林带宽度百分比（BBW = (upper-lower)/middle * 100）"""
     if len(prices) < period:
