@@ -15,6 +15,15 @@ import json
 import urllib.request
 from typing import Tuple
 from brahma_brain.math_utils import rsi as _mu_rsi, ema as _mu_ema  # INT-1统一实现
+try:
+    from brahma_brain.data_cache import get_klines as _dc_klines, get_ticker as _dc_ticker
+except ImportError:
+    _dc_klines = None
+    _dc_ticker = None
+try:
+    from brahma_brain.brahma_bus import get_price as _bus_get_price
+except ImportError:
+    _bus_get_price = None
 
 def _fetch(url: str) -> dict:
     try:
@@ -23,7 +32,10 @@ def _fetch(url: str) -> dict:
         return {}
 
 def _klines(sym: str, interval: str, limit: int = 50):
-    data = _fetch(f'https://fapi.binance.com/fapi/v1/klines?symbol={sym}&interval={interval}&limit={limit}')
+    if _dc_klines:
+        data = _dc_klines(sym, interval, limit)
+    else:
+        data = _fetch(f'https://fapi.binance.com/fapi/v1/klines?symbol={sym}&interval={interval}&limit={limit}')
     if not isinstance(data, list): return [], [], [], []
     c = [float(k[4]) for k in data]
     h = [float(k[2]) for k in data]
@@ -68,15 +80,22 @@ def debate(symbol: str, price: float = 0) -> dict:
 
     if not price:
         try:
-            t = _fetch(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}')
-            price = float(t.get('price', 0))
+            if _bus_get_price:
+                price = _bus_get_price(sym)
+            else:
+                t = _fetch(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}')
+                price = float(t.get('price', 0))
         except Exception:
             pass
 
     c1, h1, l1, v1 = _klines(sym, '1h', 48)
     c4, h4, l4, v4 = _klines(sym, '4h', 20)
     c1d, _, _, _ = _klines(sym, '1d', 10)
-    pr = _fetch(f'https://fapi.binance.com/fapi/v1/premiumIndex?symbol={sym}')
+    if _dc_ticker:
+        _ticker_data = _dc_ticker(sym)
+        pr = {'markPrice': _ticker_data.get('lastPrice', 0), 'lastFundingRate': 0}
+    else:
+        pr = _fetch(f'https://fapi.binance.com/fapi/v1/premiumIndex?symbol={sym}')
     fr = float(pr.get('lastFundingRate', 0)) * 100
 
     if not c1 or not price:

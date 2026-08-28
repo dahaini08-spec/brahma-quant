@@ -59,6 +59,16 @@ if not _in_test:
 
 import sys, os, json, time, hmac, hashlib, math, requests
 
+# ── data_cache/brahma_bus SSOT (API直连迁移 2026-08-28) ──
+try:
+    sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent))
+    from brahma_brain.data_cache import get_klines as _dc_klines, get_ticker as _dc_ticker
+    from brahma_brain.brahma_bus import get_price as _bus_get_price
+except Exception:
+    _dc_klines = None
+    _dc_ticker = None
+    _bus_get_price = None
+
 # ── 运行时依赖自检 ────────────────────────────────
 try:
     from scripts.ensure_deps import ensure as _ensure_deps
@@ -465,10 +475,13 @@ def find_executable_signals() -> list[dict]:
             _cond_price = float(s.get('price', 0) or 0)
             if _cond_price <= 0 and _cond_sym:
                 try:
-                    import urllib.request as _ur, json as _json
-                    _ticker_url = f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={_cond_sym}'
-                    with _ur.urlopen(_ticker_url, timeout=4) as _tr:
-                        _cond_price = float(_json.loads(_tr.read())['price'])
+                    if _bus_get_price:
+                        _cond_price = _bus_get_price(_cond_sym)
+                    else:
+                        import urllib.request as _ur, json as _json
+                        _ticker_url = f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={_cond_sym}'
+                        with _ur.urlopen(_ticker_url, timeout=4) as _tr:
+                            _cond_price = float(_json.loads(_tr.read())['price'])
                 except Exception:
                     _cond_price = 0.0  # 实在拿不到才用0
             _cond_result = _check_cond(
@@ -613,6 +626,13 @@ def find_executable_signals() -> list[dict]:
                     continue
             except Exception:
                 pass
+        # [2026-08-28 苏摩111修复] TTL兑底：expires_at为None时，信号超过4小时强制过期，防止旧信号堆积推送
+        _sig_ts = s.get('ts', 0) or s.get('timestamp', 0) or 0
+        MAX_SIGNAL_AGE_H = 4  # 信号最大有效期4小时
+        if _sig_ts > 0 and (now_ts - _sig_ts) > MAX_SIGNAL_AGE_H * 3600:
+            _age_h = (now_ts - _sig_ts) / 3600
+            print(f'[TTL过期] {s.get("symbol")} 信号{s.get("signal_id","?")[:12]} 年龄={_age_h:.1f}h>{MAX_SIGNAL_AGE_H}h 跳过')
+            continue
         # ⑨ 已有result的跳过
         if s.get('result') or s.get('settled'):
             continue
@@ -1045,8 +1065,15 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
             import requests as _req
             _fapi_ok = False
             try:
-                _r = _req.get(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}', timeout=3)
-                _fapi_ok = _r.status_code == 200
+                if _bus_get_price:
+                    try:
+                        _test_price = _bus_get_price(sym)
+                        _fapi_ok = _test_price > 0
+                    except Exception:
+                        _fapi_ok = False
+                else:
+                    _r = _req.get(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}', timeout=3)
+                    _fapi_ok = _r.status_code == 200
             except Exception:
                 pass
             if not _fapi_ok:
@@ -1066,7 +1093,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     _dir_upper = str(direction).upper()
     if _dir_upper == 'LONG':
         try:
-            _kl_4h = requests.get(
+            _kl_4h = _dc_klines(sym, '4h', 8) if _dc_klines else requests.get(
                 f'{FAPI_BASE}/fapi/v1/klines?symbol={sym}&interval=4h&limit=8',
                 timeout=4
             ).json()
@@ -1185,7 +1212,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
         try:
             _15m_confirmed = False
             _15m_skip_reason = ''
-            _kl15 = requests.get(
+            _kl15 = _dc_klines(sym, '15m', 8) if _dc_klines else requests.get(
                 f'{FAPI_BASE}/fapi/v1/klines?symbol={sym}&interval=15m&limit=8',
                 timeout=5
             ).json()
@@ -1229,7 +1256,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     #         ATR自适应：max(固定SL, 1.5×ATR_1H/价格)
     #         低波动期: SL紧缩(更多机会) | 高波动期: SL放宽(不被震出)
     try:
-        _kl_1h = requests.get(
+        _kl_1h = _dc_klines(sym, '1h', 16) if _dc_klines else requests.get(
             f'{FAPI_BASE}/fapi/v1/klines?symbol={sym}&interval=1h&limit=16',
             timeout=5
         ).json()
@@ -1240,7 +1267,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
                 _pc = float(_kl_1h[_i-1][4])
                 _trs.append(max(_h-_l, abs(_h-_pc), abs(_l-_pc)))
             _atr_1h = sum(_trs[-14:]) / 14
-            _px_ref = float(requests.get(
+            _px_ref = _bus_get_price(sym) if _bus_get_price else float(requests.get(
                 f'{FAPI_BASE}/fapi/v1/ticker/price?symbol={sym}', timeout=4
             ).json()['price'])
             _atr_sl_pct = round(_atr_1h * 1.5 / _px_ref * 100, 2)
@@ -1256,7 +1283,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     # ── [P1-15m微结构止损 2026-08-08 设计院自主决策] ──────────────────────
     # 用15m最近摆动低点(做多)/高点(做空)替代固定% → 不被正常波动扫出
     try:
-        _kl15_sl = requests.get(
+        _kl15_sl = _dc_klines(sym, '15m', 24) if _dc_klines else requests.get(
             f'{FAPI_BASE}/fapi/v1/klines?symbol={sym}&interval=15m&limit=24',
             timeout=5
         ).json()

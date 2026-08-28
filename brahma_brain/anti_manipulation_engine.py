@@ -23,6 +23,19 @@ _BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _BASE not in sys.path:
     sys.path.insert(0, _BASE)
 
+try:
+    from brahma_brain.data_cache import get_open_interest as _dc_oi, get_ticker as _dc_ticker, get_long_short_ratio as _dc_lsr
+    from brahma_brain.brahma_bus import get_price as _bus_price
+except ImportError:
+    try:
+        from data_cache import get_open_interest as _dc_oi, get_ticker as _dc_ticker, get_long_short_ratio as _dc_lsr
+        from brahma_bus import get_price as _bus_price
+    except ImportError:
+        _dc_oi = None
+        _dc_ticker = None
+        _dc_lsr = None
+        _bus_price = None
+
 # ── 缓存（60s TTL，避免重复拉API）──────────────────────────────
 _CACHE: dict = {}
 _TTL = 60  # 秒

@@ -19,6 +19,13 @@ brahma_brain · P2
 """
 
 import json, urllib.request, time, math
+try:
+    from brahma_brain.data_cache import get_klines as _dc_klines, get_ticker as _dc_ticker
+    from brahma_brain.brahma_bus import get_price as _bus_price
+except ImportError:
+    _dc_klines = None
+    _dc_ticker = None
+    _bus_price = None
 
 FAPI  = 'https://fapi.binance.com'
 CGECKO = 'https://api.coingecko.com/api/v3'
@@ -429,7 +436,7 @@ def get_cross_fr_basis(symbol: str = 'BTCUSDT') -> dict:
     # ── 多所OI聚合（三所公开接口，免费）[2026-07-06 设计院封印] ──
     try:
         import requests as _rq
-        _px_r = _rq.get(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}', timeout=4)
+        _px_r = _bus_price(symbol) if _bus_price else float(_rq.get(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}', timeout=4).json().get('price',0))
         _px = float(_px_r.json()['price'])
         # Binance
         _bn_r = _rq.get(f'https://fapi.binance.com/fapi/v1/openInterest?symbol={symbol}', timeout=4)

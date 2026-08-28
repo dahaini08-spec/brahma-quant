@@ -22,6 +22,14 @@ _os_blas.environ.setdefault('VECLIB_MAXIMUM_THREADS','1')
 import sys as _sys, os as _os
 _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'scripts') if '/scripts/' not in __file__ else _os.path.dirname(_os.path.abspath(__file__)))
 _MEM_OK_FLAG = True
+
+try:
+    from brahma_brain.data_cache import get_klines as _dc_klines, get_ticker as _dc_ticker
+    from brahma_brain.brahma_bus import get_price as _bus_price
+except Exception:
+    _dc_klines = None
+    _dc_ticker = None
+    _bus_price = None
 try:
     from brahma_mem_manager import _available_mb as _avail_mb
     _cur_avail = _avail_mb()
@@ -322,7 +330,7 @@ def fmt_entry(r: dict) -> str:
         _sym = r.get('symbol', '')
         _p   = float(r.get('price', 0))
         if _sym and _p > 0:
-            _r4h = _jx.loads(_ur.urlopen(
+            _r4h = _dc_klines(_sym, '4h', 14) if _dc_klines else _jx.loads(_ur.urlopen(
                 f'https://fapi.binance.com/fapi/v1/klines?symbol={_sym}&interval=4h&limit=14',
                 timeout=5).read())
             _highs = [float(k[2]) for k in _r4h[:-1]]
@@ -392,10 +400,13 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
     # 根因：brahma_bus TTL=30s导致跨会话价格复用，报告价格与实时价格最多差30s
     try:
         import urllib.request as _ur_pf, json as _jj_pf
-        _pt_pf = _jj_pf.loads(_ur_pf.urlopen(
-            f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}',
-            timeout=3).read())
-        _realtime_price = float(_pt_pf['price'])
+        if _bus_price:
+            _realtime_price = _bus_price(symbol)
+        else:
+            _pt_pf = _jj_pf.loads(_ur_pf.urlopen(
+                f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}',
+                timeout=3).read())
+            _realtime_price = float(_pt_pf['price'])
         print(f'[分析开始] {symbol} 实时价格: ${_realtime_price:,.2f}')
         # 刷新brahma_bus价格缓存
         try:
@@ -994,10 +1005,13 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         current_price = float(r.get('mark_price', r.get('price', 0)))
         if current_price <= 0:
             import urllib.request as _ur, json as _jj
-            _pt = _jj.loads(_ur.urlopen(
-                f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}',
-                timeout=5).read())
-            current_price = float(_pt['price'])
+            if _bus_price:
+                current_price = _bus_price(symbol)
+            else:
+                _pt = _jj.loads(_ur.urlopen(
+                    f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}',
+                    timeout=5).read())
+                current_price = float(_pt['price'])
         ob_liq_lines = _build_ob_liquidation_layer(symbol, current_price, engine_result=r)
         full_report = full_report + "\n" + "\n".join(ob_liq_lines)
     except Exception as _e:
@@ -1037,7 +1051,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         # P2: 多币联动预警（1H跌幅估算）
         try:
             import urllib.request as _ur2, json as _jj2
-            _kl1h = _jj2.loads(_ur2.urlopen(
+            _kl1h = _dc_klines(symbol, '1h', 3) if _dc_klines else _jj2.loads(_ur2.urlopen(
                 f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=1h&limit=3',
                 timeout=5).read())
             _1h_chg = (float(_kl1h[-2][4]) - float(_kl1h[-2][1])) / float(_kl1h[-2][1])
@@ -1269,10 +1283,13 @@ def _build_ob_liquidation_layer(symbol: str, price: float, engine_result: dict =
 
     # ── 4. 清算集群估算(基于4H高低点+杠杆分布) ────────────────────────────────
     try:
-        r_4h = urllib.request.urlopen(
-            f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=4h&limit=14',
-            timeout=5)
-        kl4h = _json.loads(r_4h.read())
+        if _dc_klines:
+            kl4h = _dc_klines(symbol, '4h', 14)
+        else:
+            r_4h = urllib.request.urlopen(
+                f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=4h&limit=14',
+                timeout=5)
+            kl4h = _json.loads(r_4h.read())
         highs4h = [float(k[2]) for k in kl4h[:-1]]  # 除当前未完成根
         lows4h  = [float(k[3]) for k in kl4h[:-1]]
         # 识别止损池：重复出现的高点/低点簇(±0.3%)

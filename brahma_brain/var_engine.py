@@ -21,14 +21,27 @@ try:
     from brahma_brain.brahma_bus import bus as _brahma_bus
 except Exception:
     _brahma_bus = None
+try:
+    from brahma_brain.data_cache import get_klines as _dc_get_klines, get_ticker as _dc_get_ticker
+except ImportError:
+    _dc_get_klines = None
+    _dc_get_ticker = None
+try:
+    from brahma_brain.brahma_bus import get_price as _bus_get_price
+except ImportError:
+    _bus_get_price = None
 
 
 def _get_returns(symbol: str, interval: str = '1h', limit: int = 168) -> list:
     """获取近N根K线收益率序列（默认7天小时数据）"""
     try:
-        url = f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}'
-        r = _HTTP.get(url, timeout=6).json()
-        closes = [float(k[4]) for k in r]
+        if _dc_get_klines:
+            raw = _dc_get_klines(symbol, interval, limit)
+            closes = [float(k[4]) for k in raw]
+        else:
+            url = f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}'
+            r = _HTTP.get(url, timeout=6).json()
+            closes = [float(k[4]) for k in r]
         returns = [np.log(closes[i] / closes[i-1]) for i in range(1, len(closes))]
         return returns
     except Exception:
@@ -92,8 +105,11 @@ def single_position_var(
 
     # 方向性调整（空单在上涨时VaR更高）
     try:
-        price_url = f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}'
-        cur_price = float(_HTTP.get(price_url, timeout=4).json().get('price', 0))
+        if _bus_get_price:
+            cur_price = _bus_get_price(symbol)
+        else:
+            price_url = f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}'
+            cur_price = float(_HTTP.get(price_url, timeout=4).json().get('price', 0))
     except Exception:
         cur_price = 0
 

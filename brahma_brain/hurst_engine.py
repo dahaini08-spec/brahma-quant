@@ -33,7 +33,14 @@ _CACHE: dict = {}
 _CACHE_TTL = 600  # 10分钟，Hurst计算稳定，TTL可以长
 
 def _fetch_closes(symbol: str, interval: str = '1h', limit: int = 100) -> List[float]:
-    """获取收盘价序列"""
+    """获取收盘价序列 — data_cache SSOT"""
+    try:
+        from brahma_brain.data_cache import get_klines as _dc_klines
+        raw = _dc_klines(symbol, interval, limit)
+        if raw:
+            return [float(k[4]) for k in raw]
+    except Exception:
+        pass
     try:
         import requests as _req
         r = _req.get(
@@ -42,17 +49,6 @@ def _fetch_closes(symbol: str, interval: str = '1h', limit: int = 100) -> List[f
             timeout=6
         )
         return [float(k[4]) for k in r.json()]
-    except Exception:
-        pass
-    try:
-        import urllib.request, ssl
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-        url = f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}'
-        with urllib.request.urlopen(url, timeout=6, context=ctx) as r:
-            data = json.loads(r.read())
-            return [float(k[4]) for k in data]
     except Exception:
         return []
 
