@@ -73,8 +73,14 @@ def detect_extreme_move(symbol: str) -> dict:
 
     try:
         # 获取1H和4H K线
-        k1h = _fetch(f'https://fapi.binance.com/fapi/v1/klines?symbol={sym}&interval=1h&limit=5')
-        k4h = _fetch(f'https://fapi.binance.com/fapi/v1/klines?symbol={sym}&interval=4h&limit=3')
+        try:
+            from brahma_brain.data_cache import get_klines as _dc
+            k1h = _dc(sym, '1h', 5) or []
+            k4h = _dc(sym, '4h', 3) or []
+            if not k1h or not k4h: raise Exception('empty')
+        except Exception:
+            k1h = _fetch(f'https://fapi.binance.com/fapi/v1/klines?symbol={sym}&interval=1h&limit=5')
+            k4h = _fetch(f'https://fapi.binance.com/fapi/v1/klines?symbol={sym}&interval=4h&limit=3')
 
         if not k1h or not k4h:
             return {'extreme': False}

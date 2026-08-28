@@ -216,8 +216,12 @@ def audit_score_with_realtime(symbol: str, score_breakdown: dict) -> dict:
 
     try:
         # 拉取1H K线
-        url = f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=1h&limit=20'
-        klines = json.loads(urllib.request.urlopen(url, timeout=6).read())
+        try:
+            from brahma_brain.data_cache import get_klines as _dc
+            klines = _dc(symbol, '1h', 20) or []
+        except Exception:
+            url = f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=1h&limit=20'
+            klines = json.loads(urllib.request.urlopen(url, timeout=6).read())
         closes = [float(k[4]) for k in klines]
         volumes = [float(k[5]) for k in klines]
         lows = [float(k[3]) for k in klines]

@@ -33,6 +33,13 @@ from functools import lru_cache
 # ── 工具：拉取K线 ──────────────────────────────────────────────
 def _fetch_klines(symbol: str, interval: str, limit: int = 200) -> list:
     try:
+        from brahma_brain.data_cache import get_klines as _dc
+        raw = _dc(symbol, interval, limit)
+        if raw and isinstance(raw, list) and len(raw) >= 3:
+            return raw
+    except Exception:
+        pass
+    try:
         url = 'https://fapi.binance.com/fapi/v1/klines'
         r = requests.get(url, params={'symbol': symbol, 'interval': interval,
                                        'limit': limit}, timeout=8)

@@ -219,10 +219,11 @@ def evaluate_timing(symbol: str,
                     _ema20 = _cached[1]
                     logger.debug(f'[TimingFilter] EMA20缓存命中 {symbol}={_ema20:.2f} age={((_now-_cached[0])/60):.1f}min')
                 else:
-                    _ema20_kl = requests.get(
-                        f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=1h&limit=21',
-                        timeout=3
-                    ).json()
+                    _ema20_kl = (_dc_klines(symbol, '1h', 21) if _dc_klines else
+                        requests.get(
+                            f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=1h&limit=21',
+                            timeout=3
+                        ).json())
                     if isinstance(_ema20_kl, list) and len(_ema20_kl) >= 5:
                         _closes_ema = [float(k[4]) for k in _ema20_kl]
                         _n = min(20, len(_closes_ema))
