@@ -291,12 +291,13 @@ def run_full_analysis(symbol: str):
         report = _1hao_main(symbol)
     except Exception as _e1:
         report = f"[1号工程调用失败: {_e1}]"
-    # Step2: 同时拿到r对象供机器读取（直接用runner，不重新调用1hao）
+    # Step2: 同时拿到r对象供机器读取（2026-08-28 B2优化: runner复用snap缓存，避免重复分析）
     r = {}
     try:
         from brahma_brain.brahma_analysis_runner import run_analysis as _runner
+        # 快捷路径：先检查snap缓存（如果1hao已写入，这里将在<100ms内返回）
         r = _runner(symbol)
-        r['_data_source'] = f'1hao+runner 耗时{_time_rfа.time()-ts0:.1f}s'
+        r['_data_source'] = f'1hao+runner耗时{_time_rfа.time()-ts0:.1f}s'
     except Exception as _e2:
         r = {'_error': str(_e2)}
 
