@@ -11,7 +11,9 @@
     "rsi_at_burst": 29.19,
     "future_return_24h": -6.5824,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 6.5824
+    "pnl_long_24h": 6.5824,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -25,7 +27,9 @@
     "rsi_at_burst": 55.05,
     "future_return_24h": 10.7005,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 10.7005
+    "pnl_long_24h": 10.7005,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -39,7 +43,9 @@
     "rsi_at_burst": 45.4,
     "future_return_24h": -5.6782,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 5.6782
+    "pnl_long_24h": 5.6782,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -53,7 +59,9 @@
     "rsi_at_burst": 58.7,
     "future_return_24h": -15.2252,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -15.2252
+    "pnl_long_24h": -15.2252,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -67,7 +75,9 @@
     "rsi_at_burst": 27.27,
     "future_return_24h": -0.2679,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 0.2679
+    "pnl_long_24h": 0.2679,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -81,7 +91,9 @@
     "rsi_at_burst": 46.42,
     "future_return_24h": -11.6608,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 11.6608
+    "pnl_long_24h": 11.6608,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -95,7 +107,9 @@
     "rsi_at_burst": 64.77,
     "future_return_24h": 0.5112,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 0.5112
+    "pnl_long_24h": 0.5112,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -109,7 +123,9 @@
     "rsi_at_burst": 58.04,
     "future_return_24h": 3.7539,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 3.7539
+    "pnl_long_24h": 3.7539,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -123,7 +139,9 @@
     "rsi_at_burst": 49.73,
     "future_return_24h": -5.7619,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 5.7619
+    "pnl_long_24h": 5.7619,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -137,7 +155,9 @@
     "rsi_at_burst": 50.45,
     "future_return_24h": 7.2909,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 7.2909
+    "pnl_long_24h": 7.2909,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -151,7 +171,9 @@
     "rsi_at_burst": 48.86,
     "future_return_24h": -0.8296,
     "is_genuine_breakout": true,
-    "pnl_long_24h": -0.8296
+    "pnl_long_24h": -0.8296,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -165,7 +187,9 @@
     "rsi_at_burst": 37.95,
     "future_return_24h": -5.5986,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 5.5986
+    "pnl_long_24h": 5.5986,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -179,7 +203,9 @@
     "rsi_at_burst": 42.05,
     "future_return_24h": 2.3674,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -2.3674
+    "pnl_long_24h": -2.3674,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -193,7 +219,9 @@
     "rsi_at_burst": 32.47,
     "future_return_24h": 3.0899,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 3.0899
+    "pnl_long_24h": 3.0899,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -207,7 +235,9 @@
     "rsi_at_burst": 49.54,
     "future_return_24h": -7.3604,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 7.3604
+    "pnl_long_24h": 7.3604,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -221,7 +251,9 @@
     "rsi_at_burst": 60.19,
     "future_return_24h": -2.5783,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 2.5783
+    "pnl_long_24h": 2.5783,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -235,7 +267,9 @@
     "rsi_at_burst": 36.6,
     "future_return_24h": 1.4866,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -1.4866
+    "pnl_long_24h": -1.4866,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -249,7 +283,9 @@
     "rsi_at_burst": 36.72,
     "future_return_24h": -4.3216,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 4.3216
+    "pnl_long_24h": 4.3216,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -263,7 +299,9 @@
     "rsi_at_burst": 32.33,
     "future_return_24h": -1.3921,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -1.3921
+    "pnl_long_24h": -1.3921,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -277,7 +315,9 @@
     "rsi_at_burst": 56.95,
     "future_return_24h": 1.2658,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 1.2658
+    "pnl_long_24h": 1.2658,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -291,7 +331,9 @@
     "rsi_at_burst": 42.69,
     "future_return_24h": -10.7079,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 10.7079
+    "pnl_long_24h": 10.7079,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -305,7 +347,9 @@
     "rsi_at_burst": 62.55,
     "future_return_24h": 6.1643,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 6.1643
+    "pnl_long_24h": 6.1643,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -319,7 +363,9 @@
     "rsi_at_burst": 63.67,
     "future_return_24h": -0.3139,
     "is_genuine_breakout": true,
-    "pnl_long_24h": -0.3139
+    "pnl_long_24h": -0.3139,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -333,7 +379,9 @@
     "rsi_at_burst": 45.19,
     "future_return_24h": -0.5916,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 0.5916
+    "pnl_long_24h": 0.5916,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -347,7 +395,9 @@
     "rsi_at_burst": 63.59,
     "future_return_24h": 1.0674,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 1.0674
+    "pnl_long_24h": 1.0674,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -361,7 +411,9 @@
     "rsi_at_burst": 55.14,
     "future_return_24h": 1.5884,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 1.5884
+    "pnl_long_24h": 1.5884,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -375,7 +427,9 @@
     "rsi_at_burst": 72.49,
     "future_return_24h": -1.0466,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -1.0466
+    "pnl_long_24h": -1.0466,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -389,7 +443,9 @@
     "rsi_at_burst": 65.4,
     "future_return_24h": -2.1051,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 2.1051
+    "pnl_long_24h": 2.1051,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -403,7 +459,9 @@
     "rsi_at_burst": 63.83,
     "future_return_24h": -0.9966,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -0.9966
+    "pnl_long_24h": -0.9966,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -417,7 +475,9 @@
     "rsi_at_burst": 34.95,
     "future_return_24h": -2.1659,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 2.1659
+    "pnl_long_24h": 2.1659,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -431,7 +491,9 @@
     "rsi_at_burst": 27.94,
     "future_return_24h": 0.6155,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -0.6155
+    "pnl_long_24h": -0.6155,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -445,7 +507,9 @@
     "rsi_at_burst": 40.14,
     "future_return_24h": -2.1132,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 2.1132
+    "pnl_long_24h": 2.1132,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -459,7 +523,9 @@
     "rsi_at_burst": 25.93,
     "future_return_24h": -1.9762,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -1.9762
+    "pnl_long_24h": -1.9762,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -473,7 +539,9 @@
     "rsi_at_burst": 29.08,
     "future_return_24h": 3.1475,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 3.1475
+    "pnl_long_24h": 3.1475,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -487,7 +555,9 @@
     "rsi_at_burst": 63.34,
     "future_return_24h": 1.0063,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -1.0063
+    "pnl_long_24h": -1.0063,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -501,7 +571,9 @@
     "rsi_at_burst": 44.06,
     "future_return_24h": -3.6198,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 3.6198
+    "pnl_long_24h": 3.6198,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -515,7 +587,9 @@
     "rsi_at_burst": 37.48,
     "future_return_24h": -1.5319,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 1.5319
+    "pnl_long_24h": 1.5319,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -529,7 +603,9 @@
     "rsi_at_burst": 62.05,
     "future_return_24h": 4.1976,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 4.1976
+    "pnl_long_24h": 4.1976,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -543,7 +619,9 @@
     "rsi_at_burst": 65.37,
     "future_return_24h": 2.2731,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 2.2731
+    "pnl_long_24h": 2.2731,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -557,7 +635,9 @@
     "rsi_at_burst": 64.43,
     "future_return_24h": 2.0106,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -2.0106
+    "pnl_long_24h": -2.0106,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -571,7 +651,9 @@
     "rsi_at_burst": 37.84,
     "future_return_24h": 6.4228,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 6.4228
+    "pnl_long_24h": 6.4228,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -585,7 +667,9 @@
     "rsi_at_burst": 54.04,
     "future_return_24h": 1.5493,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 1.5493
+    "pnl_long_24h": 1.5493,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -599,7 +683,9 @@
     "rsi_at_burst": 40.09,
     "future_return_24h": 2.8091,
     "is_genuine_breakout": true,
-    "pnl_long_24h": -2.8091
+    "pnl_long_24h": -2.8091,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -613,7 +699,9 @@
     "rsi_at_burst": 40.04,
     "future_return_24h": -18.9506,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 18.9506
+    "pnl_long_24h": 18.9506,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -627,7 +715,9 @@
     "rsi_at_burst": 59.42,
     "future_return_24h": 6.5001,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 6.5001
+    "pnl_long_24h": 6.5001,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -641,7 +731,9 @@
     "rsi_at_burst": 41.78,
     "future_return_24h": -8.0673,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 8.0673
+    "pnl_long_24h": 8.0673,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -655,7 +747,9 @@
     "rsi_at_burst": 34.14,
     "future_return_24h": 1.3436,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 1.3436
+    "pnl_long_24h": 1.3436,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -669,7 +763,9 @@
     "rsi_at_burst": 63.71,
     "future_return_24h": 0.1193,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 0.1193
+    "pnl_long_24h": 0.1193,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -683,7 +779,9 @@
     "rsi_at_burst": 60.76,
     "future_return_24h": -0.4104,
     "is_genuine_breakout": true,
-    "pnl_long_24h": -0.4104
+    "pnl_long_24h": -0.4104,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -697,7 +795,9 @@
     "rsi_at_burst": 37.53,
     "future_return_24h": 4.567,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 4.567
+    "pnl_long_24h": 4.567,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -711,7 +811,9 @@
     "rsi_at_burst": 62.02,
     "future_return_24h": 1.1827,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -1.1827
+    "pnl_long_24h": -1.1827,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -725,7 +827,9 @@
     "rsi_at_burst": 55.95,
     "future_return_24h": 8.7567,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 8.7567
+    "pnl_long_24h": 8.7567,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -739,7 +843,9 @@
     "rsi_at_burst": 57.83,
     "future_return_24h": 1.9268,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 1.9268
+    "pnl_long_24h": 1.9268,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -753,7 +859,9 @@
     "rsi_at_burst": 62.34,
     "future_return_24h": 2.8555,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 2.8555
+    "pnl_long_24h": 2.8555,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -767,7 +875,9 @@
     "rsi_at_burst": 63.52,
     "future_return_24h": -4.0137,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -4.0137
+    "pnl_long_24h": -4.0137,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -781,7 +891,9 @@
     "rsi_at_burst": 41.43,
     "future_return_24h": -1.6857,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 1.6857
+    "pnl_long_24h": 1.6857,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -795,7 +907,9 @@
     "rsi_at_burst": 59.72,
     "future_return_24h": 2.065,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 2.065
+    "pnl_long_24h": 2.065,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -809,7 +923,9 @@
     "rsi_at_burst": 54.29,
     "future_return_24h": 7.4954,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 7.4954
+    "pnl_long_24h": 7.4954,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -823,7 +939,9 @@
     "rsi_at_burst": 39.42,
     "future_return_24h": 0.6384,
     "is_genuine_breakout": true,
-    "pnl_long_24h": -0.6384
+    "pnl_long_24h": -0.6384,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -837,7 +955,9 @@
     "rsi_at_burst": 37.68,
     "future_return_24h": 1.839,
     "is_genuine_breakout": true,
-    "pnl_long_24h": -1.839
+    "pnl_long_24h": -1.839,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -851,7 +971,9 @@
     "rsi_at_burst": 58.77,
     "future_return_24h": -2.5189,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -2.5189
+    "pnl_long_24h": -2.5189,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -865,7 +987,9 @@
     "rsi_at_burst": 58.3,
     "future_return_24h": 9.8178,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 9.8178
+    "pnl_long_24h": 9.8178,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -879,7 +1003,9 @@
     "rsi_at_burst": 55.34,
     "future_return_24h": 2.1058,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 2.1058
+    "pnl_long_24h": 2.1058,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -893,7 +1019,9 @@
     "rsi_at_burst": 41.58,
     "future_return_24h": -0.6305,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 0.6305
+    "pnl_long_24h": 0.6305,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -907,7 +1035,9 @@
     "rsi_at_burst": 40.73,
     "future_return_24h": -3.9639,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 3.9639
+    "pnl_long_24h": 3.9639,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -921,7 +1051,9 @@
     "rsi_at_burst": 60.93,
     "future_return_24h": 2.3836,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 2.3836
+    "pnl_long_24h": 2.3836,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -935,7 +1067,9 @@
     "rsi_at_burst": 38.33,
     "future_return_24h": -4.6756,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 4.6756
+    "pnl_long_24h": 4.6756,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -949,7 +1083,9 @@
     "rsi_at_burst": 62.89,
     "future_return_24h": 3.3715,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -3.3715
+    "pnl_long_24h": -3.3715,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -963,7 +1099,9 @@
     "rsi_at_burst": 62.31,
     "future_return_24h": -2.1635,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 2.1635
+    "pnl_long_24h": 2.1635,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -977,7 +1115,9 @@
     "rsi_at_burst": 43.01,
     "future_return_24h": 3.3166,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -3.3166
+    "pnl_long_24h": -3.3166,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -991,7 +1131,9 @@
     "rsi_at_burst": 46.93,
     "future_return_24h": 6.5927,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -6.5927
+    "pnl_long_24h": -6.5927,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -1005,7 +1147,9 @@
     "rsi_at_burst": 40.22,
     "future_return_24h": -0.7898,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 0.7898
+    "pnl_long_24h": 0.7898,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -1019,7 +1163,9 @@
     "rsi_at_burst": 45.08,
     "future_return_24h": 9.8116,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 9.8116
+    "pnl_long_24h": 9.8116,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -1033,7 +1179,9 @@
     "rsi_at_burst": 50.84,
     "future_return_24h": -0.1203,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 0.1203
+    "pnl_long_24h": 0.1203,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "SUSHI",
@@ -1047,6 +1195,8 @@
     "rsi_at_burst": 69.75,
     "future_return_24h": 8.4877,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 8.4877
+    "pnl_long_24h": 8.4877,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   }
 ]

@@ -11,7 +11,9 @@
     "rsi_at_burst": 36.16,
     "future_return_24h": -3.6981,
     "is_genuine_breakout": true,
-    "pnl_long_24h": -3.6981
+    "pnl_long_24h": -3.6981,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -25,7 +27,9 @@
     "rsi_at_burst": 41.42,
     "future_return_24h": -9.5405,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 9.5405
+    "pnl_long_24h": 9.5405,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -39,7 +43,9 @@
     "rsi_at_burst": 47.47,
     "future_return_24h": -8.2254,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 8.2254
+    "pnl_long_24h": 8.2254,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -53,7 +59,9 @@
     "rsi_at_burst": 36.14,
     "future_return_24h": -1.8068,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -1.8068
+    "pnl_long_24h": -1.8068,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -67,7 +75,9 @@
     "rsi_at_burst": 61.9,
     "future_return_24h": -2.5701,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -2.5701
+    "pnl_long_24h": -2.5701,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -81,7 +91,9 @@
     "rsi_at_burst": 38.37,
     "future_return_24h": -9.3838,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 9.3838
+    "pnl_long_24h": 9.3838,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -95,7 +107,9 @@
     "rsi_at_burst": 47.26,
     "future_return_24h": -3.6427,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 3.6427
+    "pnl_long_24h": 3.6427,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -109,7 +123,9 @@
     "rsi_at_burst": 43.86,
     "future_return_24h": 1.8053,
     "is_genuine_breakout": true,
-    "pnl_long_24h": -1.8053
+    "pnl_long_24h": -1.8053,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -123,7 +139,9 @@
     "rsi_at_burst": 39.3,
     "future_return_24h": -0.1462,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 0.1462
+    "pnl_long_24h": 0.1462,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -137,7 +155,9 @@
     "rsi_at_burst": 22.68,
     "future_return_24h": 0.1156,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 0.1156
+    "pnl_long_24h": 0.1156,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -151,7 +171,9 @@
     "rsi_at_burst": 64.55,
     "future_return_24h": 0.9969,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 0.9969
+    "pnl_long_24h": 0.9969,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -165,7 +187,9 @@
     "rsi_at_burst": 39.83,
     "future_return_24h": -4.1698,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -4.1698
+    "pnl_long_24h": -4.1698,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -179,7 +203,9 @@
     "rsi_at_burst": 36.67,
     "future_return_24h": -0.2631,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 0.2631
+    "pnl_long_24h": 0.2631,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -193,7 +219,9 @@
     "rsi_at_burst": 41.27,
     "future_return_24h": -1.0342,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -1.0342
+    "pnl_long_24h": -1.0342,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -207,7 +235,9 @@
     "rsi_at_burst": 59.39,
     "future_return_24h": 0.985,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 0.985
+    "pnl_long_24h": 0.985,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -221,7 +251,9 @@
     "rsi_at_burst": 30.57,
     "future_return_24h": -0.9427,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 0.9427
+    "pnl_long_24h": 0.9427,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -235,7 +267,9 @@
     "rsi_at_burst": 57.12,
     "future_return_24h": 4.0587,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 4.0587
+    "pnl_long_24h": 4.0587,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -249,7 +283,9 @@
     "rsi_at_burst": 44.32,
     "future_return_24h": -9.0972,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 9.0972
+    "pnl_long_24h": 9.0972,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -263,7 +299,9 @@
     "rsi_at_burst": 36.42,
     "future_return_24h": -3.5495,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 3.5495
+    "pnl_long_24h": 3.5495,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -277,7 +315,9 @@
     "rsi_at_burst": 59.51,
     "future_return_24h": 1.0495,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 1.0495
+    "pnl_long_24h": 1.0495,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -291,7 +331,9 @@
     "rsi_at_burst": 64.5,
     "future_return_24h": 0.9974,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 0.9974
+    "pnl_long_24h": 0.9974,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -305,7 +347,9 @@
     "rsi_at_burst": 45.25,
     "future_return_24h": -7.7164,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 7.7164
+    "pnl_long_24h": 7.7164,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -319,7 +363,9 @@
     "rsi_at_burst": 55.81,
     "future_return_24h": 0.2113,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 0.2113
+    "pnl_long_24h": 0.2113,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -333,7 +379,9 @@
     "rsi_at_burst": 38.51,
     "future_return_24h": 0.0,
     "is_genuine_breakout": true,
-    "pnl_long_24h": -0.0
+    "pnl_long_24h": -0.0,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -347,7 +395,9 @@
     "rsi_at_burst": 35.8,
     "future_return_24h": -6.6064,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 6.6064
+    "pnl_long_24h": 6.6064,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -361,7 +411,9 @@
     "rsi_at_burst": 37.92,
     "future_return_24h": 1.2457,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -1.2457
+    "pnl_long_24h": -1.2457,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -375,7 +427,9 @@
     "rsi_at_burst": 26.44,
     "future_return_24h": 2.1971,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 2.1971
+    "pnl_long_24h": 2.1971,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -389,7 +443,9 @@
     "rsi_at_burst": 26.26,
     "future_return_24h": 0.4828,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -0.4828
+    "pnl_long_24h": -0.4828,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -403,7 +459,9 @@
     "rsi_at_burst": 39.09,
     "future_return_24h": -5.9905,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 5.9905
+    "pnl_long_24h": 5.9905,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -417,7 +475,9 @@
     "rsi_at_burst": 68.47,
     "future_return_24h": -2.6277,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 2.6277
+    "pnl_long_24h": 2.6277,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -431,7 +491,9 @@
     "rsi_at_burst": 48.7,
     "future_return_24h": -3.9024,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 3.9024
+    "pnl_long_24h": 3.9024,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -445,7 +507,9 @@
     "rsi_at_burst": 60.01,
     "future_return_24h": 7.3179,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 7.3179
+    "pnl_long_24h": 7.3179,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -459,7 +523,9 @@
     "rsi_at_burst": 35.4,
     "future_return_24h": -1.3576,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 1.3576
+    "pnl_long_24h": 1.3576,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -473,7 +539,9 @@
     "rsi_at_burst": 43.01,
     "future_return_24h": -7.1477,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 7.1477
+    "pnl_long_24h": 7.1477,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -487,7 +555,9 @@
     "rsi_at_burst": 67.48,
     "future_return_24h": -0.2673,
     "is_genuine_breakout": true,
-    "pnl_long_24h": -0.2673
+    "pnl_long_24h": -0.2673,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -501,7 +571,9 @@
     "rsi_at_burst": 46.17,
     "future_return_24h": 1.0586,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 1.0586
+    "pnl_long_24h": 1.0586,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -515,7 +587,9 @@
     "rsi_at_burst": 73.92,
     "future_return_24h": -1.7838,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -1.7838
+    "pnl_long_24h": -1.7838,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -529,7 +603,9 @@
     "rsi_at_burst": 38.52,
     "future_return_24h": -2.9322,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 2.9322
+    "pnl_long_24h": 2.9322,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -543,7 +619,9 @@
     "rsi_at_burst": 63.34,
     "future_return_24h": 4.6272,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 4.6272
+    "pnl_long_24h": 4.6272,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -557,7 +635,9 @@
     "rsi_at_burst": 43.83,
     "future_return_24h": -0.6899,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -0.6899
+    "pnl_long_24h": -0.6899,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -571,7 +651,9 @@
     "rsi_at_burst": 35.19,
     "future_return_24h": 2.149,
     "is_genuine_breakout": true,
-    "pnl_long_24h": -2.149
+    "pnl_long_24h": -2.149,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -585,7 +667,9 @@
     "rsi_at_burst": 70.17,
     "future_return_24h": 1.6738,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 1.6738
+    "pnl_long_24h": 1.6738,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -599,7 +683,9 @@
     "rsi_at_burst": 59.6,
     "future_return_24h": 6.2208,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 6.2208
+    "pnl_long_24h": 6.2208,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -613,7 +699,9 @@
     "rsi_at_burst": 33.53,
     "future_return_24h": 0.1043,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -0.1043
+    "pnl_long_24h": -0.1043,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -627,7 +715,9 @@
     "rsi_at_burst": 67.74,
     "future_return_24h": -5.3047,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 5.3047
+    "pnl_long_24h": 5.3047,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -641,7 +731,9 @@
     "rsi_at_burst": 47.9,
     "future_return_24h": 0.609,
     "is_genuine_breakout": true,
-    "pnl_long_24h": -0.609
+    "pnl_long_24h": -0.609,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -655,7 +747,9 @@
     "rsi_at_burst": 41.55,
     "future_return_24h": -3.2011,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 3.2011
+    "pnl_long_24h": 3.2011,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -669,7 +763,9 @@
     "rsi_at_burst": 37.08,
     "future_return_24h": -5.8408,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 5.8408
+    "pnl_long_24h": 5.8408,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -683,7 +779,9 @@
     "rsi_at_burst": 57.11,
     "future_return_24h": 5.5293,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 5.5293
+    "pnl_long_24h": 5.5293,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -697,7 +795,9 @@
     "rsi_at_burst": 57.46,
     "future_return_24h": 6.2732,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 6.2732
+    "pnl_long_24h": 6.2732,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -711,7 +811,9 @@
     "rsi_at_burst": 33.8,
     "future_return_24h": -6.6621,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 6.6621
+    "pnl_long_24h": 6.6621,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -725,7 +827,9 @@
     "rsi_at_burst": 39.28,
     "future_return_24h": -2.7126,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 2.7126
+    "pnl_long_24h": 2.7126,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -739,7 +843,9 @@
     "rsi_at_burst": 36.61,
     "future_return_24h": -5.0496,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 5.0496
+    "pnl_long_24h": 5.0496,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -753,7 +859,9 @@
     "rsi_at_burst": 54.06,
     "future_return_24h": 3.5884,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 3.5884
+    "pnl_long_24h": 3.5884,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -767,7 +875,9 @@
     "rsi_at_burst": 60.6,
     "future_return_24h": 0.3876,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 0.3876
+    "pnl_long_24h": 0.3876,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -781,7 +891,9 @@
     "rsi_at_burst": 70.75,
     "future_return_24h": 0.9027,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 0.9027
+    "pnl_long_24h": 0.9027,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -795,7 +907,9 @@
     "rsi_at_burst": 35.51,
     "future_return_24h": 7.7314,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -7.7314
+    "pnl_long_24h": -7.7314,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -809,7 +923,9 @@
     "rsi_at_burst": 39.32,
     "future_return_24h": -9.8876,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 9.8876
+    "pnl_long_24h": 9.8876,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -823,7 +939,9 @@
     "rsi_at_burst": 31.15,
     "future_return_24h": 5.1015,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 5.1015
+    "pnl_long_24h": 5.1015,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -837,7 +955,9 @@
     "rsi_at_burst": 37.72,
     "future_return_24h": -11.3995,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 11.3995
+    "pnl_long_24h": 11.3995,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -851,7 +971,9 @@
     "rsi_at_burst": 31.76,
     "future_return_24h": 7.4489,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 7.4489
+    "pnl_long_24h": 7.4489,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -865,7 +987,9 @@
     "rsi_at_burst": 47.22,
     "future_return_24h": -5.1129,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 5.1129
+    "pnl_long_24h": 5.1129,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -879,7 +1003,9 @@
     "rsi_at_burst": 58.77,
     "future_return_24h": -20.1447,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -20.1447
+    "pnl_long_24h": -20.1447,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -893,7 +1019,9 @@
     "rsi_at_burst": 51.16,
     "future_return_24h": -1.0104,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -1.0104
+    "pnl_long_24h": -1.0104,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -907,7 +1035,9 @@
     "rsi_at_burst": 51.88,
     "future_return_24h": 8.2885,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 8.2885
+    "pnl_long_24h": 8.2885,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -921,7 +1051,9 @@
     "rsi_at_burst": 53.53,
     "future_return_24h": 5.4678,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 5.4678
+    "pnl_long_24h": 5.4678,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -935,7 +1067,9 @@
     "rsi_at_burst": 41.53,
     "future_return_24h": 1.536,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -1.536
+    "pnl_long_24h": -1.536,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -949,7 +1083,9 @@
     "rsi_at_burst": 41.55,
     "future_return_24h": -13.0626,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 13.0626
+    "pnl_long_24h": 13.0626,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -963,7 +1099,9 @@
     "rsi_at_burst": 38.81,
     "future_return_24h": -1.3741,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 1.3741
+    "pnl_long_24h": 1.3741,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -977,7 +1115,9 @@
     "rsi_at_burst": 41.19,
     "future_return_24h": -3.2178,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -3.2178
+    "pnl_long_24h": -3.2178,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -991,7 +1131,9 @@
     "rsi_at_burst": 52.56,
     "future_return_24h": 2.9977,
     "is_genuine_breakout": true,
-    "pnl_long_24h": 2.9977
+    "pnl_long_24h": 2.9977,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -1005,7 +1147,9 @@
     "rsi_at_burst": 38.59,
     "future_return_24h": -2.9726,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 2.9726
+    "pnl_long_24h": 2.9726,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   },
   {
     "symbol": "ZEC",
@@ -1019,6 +1163,8 @@
     "rsi_at_burst": 67.99,
     "future_return_24h": -1.6346,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 1.6346
+    "pnl_long_24h": 1.6346,
+    "_source": "brahma_brain",
+    "_tf": "4h"
   }
 ]
