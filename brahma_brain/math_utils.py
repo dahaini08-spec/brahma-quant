@@ -185,6 +185,50 @@ def round_price(price: float, tick: float = 0.01) -> float:
     return round(round(price / tick) * tick, 10)
 
 
+# ─────────────────────────────────────────────────────────
+# Stochastic RSI
+# ─────────────────────────────────────────────────────────
+
+def stoch_rsi(series: Sequence[float], rsi_period: int = 14,
+              stoch_period: int = 14, smooth_k: int = 3,
+              smooth_d: int = 3) -> tuple[float, float]:
+    """
+    Stochastic RSI (StochRSI)
+    输入：收盘价序列（升序，最新在末尾）
+    输出：(K, D)  均在 0~100 范围
+    原理：对 RSI 序列再做随机振荡（Stochastic），比普通 RSI 更敏感
+    K<20 = 超卖  K>80 = 超买  交叉信号更早出现
+    """
+    rsi_vals = _rsi(series, rsi_period)
+    if len(rsi_vals) < stoch_period:
+        return 50.0, 50.0
+
+    # 计算 Stochastic：在 stoch_period 窗口内对 RSI 做归一化
+    raw_k: list[float] = []
+    for i in range(stoch_period - 1, len(rsi_vals)):
+        window = rsi_vals[i - stoch_period + 1: i + 1]
+        lo, hi = min(window), max(window)
+        if hi - lo < 1e-9:
+            raw_k.append(50.0)
+        else:
+            raw_k.append((rsi_vals[i] - lo) / (hi - lo) * 100)
+
+    if not raw_k:
+        return 50.0, 50.0
+
+    # 平滑 K
+    def _sma(vals: list[float], n: int) -> list[float]:
+        return [sum(vals[i - n + 1: i + 1]) / n
+                for i in range(n - 1, len(vals))]
+
+    k_vals = _sma(raw_k, smooth_k) if smooth_k > 1 else raw_k
+    d_vals = _sma(k_vals, smooth_d) if smooth_d > 1 and len(k_vals) >= smooth_d else k_vals
+
+    k = k_vals[-1] if k_vals else 50.0
+    d = d_vals[-1] if d_vals else 50.0
+    return round(k, 2), round(d, 2)
+
+
 if __name__ == '__main__':
     # 快速自测
     import random
