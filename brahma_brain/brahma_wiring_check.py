@@ -431,6 +431,11 @@ _WHITELIST = frozenset([
     'brahma_wiring_check', 'brahma_health', 'brahma_360',
     'brahma_analysis_runner', 'brahma_core_entry', 'brahma_log',
     'brainlog', '__init__',
+    # 2026-08-28 已归档模块（功能已内化到其他模块）
+    'brahma_gateway',    # 被 openclaw 取代
+    'brahma_kronos',     # 被 kronos_bridge 取代
+    'brahma_readiness',  # 被 brahma_health 取代
+    'safety',            # 功能已内化至 position_sizer/SQE/signal_selector
 ])
 
 # 高价值孤岛（写好但未接入，每个-5健康分）
