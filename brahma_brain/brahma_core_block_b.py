@@ -350,6 +350,40 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
         breakdown['操控风险'] = f"{_am_level}({_am.get('risk_score',0)}) {_am_sigs}"
     # ────────────────────────────────────────────────────────────────────────────
 
+    # ── [维度36 Amihud非流动性因子 2026-08-28 苏摩111] ────────────────────────
+    # 来源: ai_quant_trade × 梵天融合 | 零额外API调用（复用klines_1h）
+    # 逻辑: Amihud = mean(|ret| / volume) 越高 = 流动性越差 = 入场成本越高
+    # 铁证参考: 低流动性环境下滑点+0.3~1%，WR下降约5%
+    _s_amihud = 0
+    try:
+        _kl_am = (extra_data or {}).get('klines_1h', [])
+        if _kl_am and len(_kl_am) >= 15:
+            _closes_am = [float(k[4]) for k in _kl_am[-15:]]
+            _vols_am   = [float(k[5]) for k in _kl_am[-15:]]
+            _rets_am   = [abs(_closes_am[i]/_closes_am[i-1]-1)
+                          for i in range(1, len(_closes_am))]
+            _amihud_vals = [r/v for r, v in zip(_rets_am, _vols_am) if v > 0]
+            if len(_amihud_vals) >= 5:
+                _amihud_now  = _amihud_vals[-1]
+                _amihud_mean = sum(_amihud_vals) / len(_amihud_vals)
+                if _amihud_mean > 0:
+                    _amihud_ratio = _amihud_now / _amihud_mean
+                    if _amihud_ratio > 2.5:       # 流动性极差
+                        _s_amihud = -8
+                        breakdown['Amihud流动性'] = f'-8 (极低流动性 ratio={_amihud_ratio:.1f}x)'
+                    elif _amihud_ratio > 1.5:     # 流动性偏差
+                        _s_amihud = -4
+                        breakdown['Amihud流动性'] = f'-4 (低流动性 ratio={_amihud_ratio:.1f}x)'
+                    elif _amihud_ratio < 0.5:     # 流动性充裕
+                        _s_amihud = +3
+                        breakdown['Amihud流动性'] = f'+3 (高流动性 ratio={_amihud_ratio:.1f}x)'
+                    else:
+                        breakdown['Amihud流动性'] = f'0 (正常 ratio={_amihud_ratio:.1f}x)'
+    except Exception:
+        pass
+    score += _s_amihud
+    # ────────────────────────────────────────────────────────────────────────────
+
     return {
         's7': s7, 's8': s8, 's9': s9, 's10': s10,
         'score': score, 'breakdown': breakdown,
