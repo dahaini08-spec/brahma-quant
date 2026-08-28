@@ -29,6 +29,7 @@ v2.0 改进（六方联合审核落地）：
 
 
 from brahma_brain.math_utils import _ema, _rsi, calc_rsi, rsi, ema  # 统一数学库
+from math_utils import _ema as calc_ema_series, _rsi as calc_rsi_series, _atr as calc_atr_series, ema, calc_rsi, atr  # [2026-08-28 math_utils SSOT迁移]
 
 import sys
 import os
@@ -170,36 +171,8 @@ _CACHE: Dict[str, Tuple[float, float, float]] = {}
 _CACHE_TTL = 900  # 15分钟
 
 
-def _ema(arr: np.ndarray, period: int) -> np.ndarray:
-    out = np.empty_like(arr, dtype=float)
-    out[:] = np.nan
-    k = 2.0 / (period + 1)
-    start = next((i for i, v in enumerate(arr) if not np.isnan(v)), None)
-    if start is None:
-        return out
-    out[start] = arr[start]
-    for i in range(start + 1, len(arr)):
-        out[i] = arr[i] * k + out[i - 1] * (1 - k)
-    return out
-
-
-def _rsi(close: np.ndarray, period: int = 14) -> np.ndarray:
-    delta = np.diff(close, prepend=close[0])
-    gain = np.where(delta > 0, delta, 0.0)
-    loss = np.where(delta < 0, -delta, 0.0)
-    avg_g = np.full_like(close, np.nan)
-    avg_l = np.full_like(close, np.nan)
-    if len(close) < period + 1:
-        return avg_g
-    avg_g[period] = gain[1:period + 1].mean()
-    avg_l[period] = loss[1:period + 1].mean()
-    for i in range(period + 1, len(close)):
-        avg_g[i] = (avg_g[i - 1] * (period - 1) + gain[i]) / period
-        avg_l[i] = (avg_l[i - 1] * (period - 1) + loss[i]) / period
-    rs = np.where(avg_l == 0, 100.0, avg_g / avg_l)
-    return 100 - (100 / (1 + rs))
-
-
+# [_ema] 已迁移到math_utils.ema [2026-08-28 SSOT封印]
+# [_rsi] 已迁移到math_utils.calc_rsi [2026-08-28 SSOT封印]
 def _compute_p_up(
     klines: list,
     regime: str = "",
