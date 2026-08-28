@@ -35,6 +35,18 @@ except ImportError:
     def ms_analyze(s): return {}
 
 # [2026-08-12 苏摩111封印 v3] 标志位从brahma_core同步导入，修复NameError
+# [P4修复 2026-08-28 设计院] divergence_score + volume_score 从未import → NameError被吞 → 长期归零
+try:
+    from divergence_engine import divergence_score
+    from divergence_engine import multitf_divergence_score as _multitf_div_score
+    _DIV_OK = True
+except Exception:
+    _DIV_OK = False
+try:
+    from volume_engine import volume_score
+    _VOL_SCORE_OK = True
+except Exception:
+    _VOL_SCORE_OK = False
 try:
     from enhanced_signal_engine import enhanced_score as _enhanced_score
     _ENHANCED_OK = True
@@ -68,7 +80,6 @@ try:
 except Exception:
     _VOL_EXH_OK = False
 try:
-    from divergence_engine import multitf_divergence_score as _multitf_div_score
     _MULTITF_DIV_OK = True
 except Exception:
     _MULTITF_DIV_OK = False
