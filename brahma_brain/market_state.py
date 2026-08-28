@@ -548,8 +548,9 @@ def analyze(symbol: str) -> dict:
         pass  # 实时拉取失败 → 降级走缓存
 
     # 拉取数据（优先命中上面注入的实时缓存）
+    # [P2修复 2026-08-28] 1H拉400根：EMA200需要200根收敛，200根拉取计算出的EMA200严重失真
     k15  = klines_to_ohlcv(get_klines(symbol, '15m', 200))
-    k1h  = klines_to_ohlcv(get_klines(symbol, '1h',  200))
+    k1h  = klines_to_ohlcv(get_klines(symbol, '1h',  400))  # [P2修复] 200→400根，EMA200收敛修复
     k4h  = klines_to_ohlcv(get_klines(symbol, '4h',  200))
     k1d  = klines_to_ohlcv(get_klines(symbol, '1d',  200))
     ticker = get_ticker(symbol)
@@ -695,8 +696,8 @@ def analyze(symbol: str) -> dict:
         'summary': _build_summary(consensus, regime, wave, rsi_1h, atr_pct),
 
         # [v13.0 OBV修复] OBV计算用原始K线数据
-        'raw_closes':  list(k1h['c'][-20:]),
-        'raw_volumes': list(k1h['v'][-20:]) if k1h.get('v') else [],
+        'raw_closes':  list(k1h['c'][-50:]),   # [P2修复] 20→50根，OBV背离检测需要充足数据
+        'raw_volumes': list(k1h['v'][-50:]) if k1h.get('v') else [],  # [P2修复] 20→50根
 
         # [P0修复 2026-07-12] klines_15m注入 — 供s23 Kronos时序预测使用
         # 根因：brahma_core s23段读取ms.get('klines_15m',[])，market_state之前未写入
