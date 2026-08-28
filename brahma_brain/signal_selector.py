@@ -125,6 +125,41 @@ def select(short_analysis: dict, long_analysis: dict, regime: dict) -> dict:
         if long_valid and long_raw >= _BR_LONG_MIN_RAW and not long_ok:
             long_ok = True  # 放开到95门槛
 
+    # ── [P0 2026-08-28 苏摩111] BEAR_TREND SHORT RSI>52入场门槛 ──────────────────
+    # 铁证：Layer1 30,408笔回测
+    #   RSI55-65: WR=50.2% n=1165  RSI<45: WR=48.1%（最差）
+    #   等RSI反弹到52+再空，避免在超卖底部追空
+    if short_ok and primary_regime in ('BEAR_TREND', 'BEAR_EARLY'):
+        _rsi_1h = (short_analysis.get('indicators', {}) or {}).get('rsi_1h') or \
+                  (short_analysis.get('ms', {}) or {}).get('indicators', {}).get('rsi_1h') or \
+                  short_analysis.get('rsi_1h') or 50
+        try:
+            _rsi_1h = float(_rsi_1h)
+        except Exception:
+            _rsi_1h = 50
+        if _rsi_1h < 52:
+            short_ok = False
+            short_w  = 0.0
+            pass  # [静默：RSI<52，BEAR_TREND SHORT入场条件不满足]
+    # ── [P0 2026-08-28 苏摩111] BBW>5时不发信号 ──────────────────────────────────
+    # 铁证：Layer1 30,408笔回测
+    #   BBW>5: WR=44.3% EV=+0.178%（最差区间，11,480笔噪音）
+    #   BBW>5说明波动已走开，不是好的入场时机
+    _bbw_val = (short_analysis.get('indicators', {}) or {}).get('bbw_1h') or \
+               (long_analysis.get('indicators',  {}) or {}).get('bbw_1h') or \
+               short_analysis.get('bbw') or long_analysis.get('bbw') or 0
+    try:
+        _bbw_val = float(_bbw_val)
+    except Exception:
+        _bbw_val = 0
+    if _bbw_val > 5.0:
+        short_ok = False
+        long_ok  = False
+        short_w  = 0.0
+        long_w   = 0.0
+        pass  # [静默：BBW>5，波动已走开，跳过]
+    # ─────────────────────────────────────────────────────────────────────────────
+
     signals = []
     decision = ''
 
