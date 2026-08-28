@@ -1,0 +1,9 @@
+{
+  "symbol": "OIL_CL",
+  "source": "yfinance:CL=F (WTI\u539f\u6cb9)",
+  "timeframe": "1d",
+  "bars_count": 6530,
+  "date_start": "2000-08-23",
+  "date_end": "2026-08-26",
+  "downloaded_at": "2026-08-27T04:05:31.919631"
+}

@@ -37,13 +37,9 @@ except Exception:
     _brahma_bus = None
 
 def _bus_price(symbol: str) -> float:
-    """统一价格获取：优先走 brahma_bus 缓存，降级走直接HTTP"""
-    if _brahma_bus:
-        return _brahma_bus.price(symbol)
-    import requests
-    r = requests.get(f'https://fapi.binance.com/fapi/v1/ticker/price',
-                     params={'symbol': symbol}, timeout=5)
-    return float(r.json()['price'])
+    """[2026-08-28 精简] 委托brahma_bus.get_price() — SSOT，支持OFFLINE_MODE"""
+    from brahma_bus import get_price as _gp
+    return _gp(symbol)
 
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))

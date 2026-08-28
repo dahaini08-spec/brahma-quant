@@ -49,20 +49,10 @@ REGIME_MAP = {
 
 # ── 指标计算 ──────────────────────────────────────────────────────
 
-def calc_rsi(closes: np.ndarray, period: int = 14) -> float:
-    if len(closes) < period + 1:
-        return 50.0
-    deltas = np.diff(closes[-(period+1):])
-    gains  = np.where(deltas > 0, deltas, 0.0)
-    losses = np.where(deltas < 0, -deltas, 0.0)
-    avg_gain = gains.mean()
-    avg_loss = losses.mean()
-    if avg_loss == 0:
-        return 100.0
-    rs = avg_gain / avg_loss
-    return float(100 - 100 / (1 + rs))
-
-
+def calc_rsi(closes, period: int = 14) -> float:
+    """[2026-08-28 精简] 委托math_utils.calc_rsi — SSOT"""
+    from math_utils import calc_rsi as _mu_rsi
+    return _mu_rsi(closes, period)
 def calc_bbw(highs: np.ndarray, lows: np.ndarray,
              closes: np.ndarray, period: int = 20) -> float:
     if len(closes) < period:

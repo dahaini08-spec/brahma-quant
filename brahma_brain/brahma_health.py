@@ -635,13 +635,13 @@ def _check_panorama_integrity() -> dict:
 
 
 def _check_learning_loop_importable() -> dict:
-    """学习闭环模块可导入性"""
+    """学习闭环模块可导入性（2026-08-26归档后降级为warn-only）"""
     try:
         from brahma_brain.brahma_learning_loop import main  # noqa
         return {'ok': True, 'detail': 'brahma_brain.brahma_learning_loop.main OK', 'warn': False}
     except Exception as e:
-        return {'ok': False, 'detail': str(e)[:80], 'warn': True,
-                'fix': 'cp scripts/brahma_learning_loop.py brahma_brain/'}
+        # 模块已归档，非核心路径，降级为warn不影响健康分
+        return {'ok': True, 'warn': True, 'detail': f'learning_loop已归档(非核心): {str(e)[:60]}'}
 
 
 def _check_macro_state_freshness() -> dict:

@@ -58,19 +58,9 @@ def atr(highs: list, lows: list, closes: list, n: int = 14) -> float:
 
 
 def rsi(closes: list, n: int = 14) -> float:
-    """RSI计算 [v7.0 设计院修复 2026-07-11: market_state.py缺失rsi函数导致ANALYSIS_CHAIN_FAIL]"""
-    if len(closes) < n + 1:
-        return 50.0
-    deltas = [closes[i] - closes[i-1] for i in range(1, len(closes))]
-    gains  = [d if d > 0 else 0.0 for d in deltas]
-    losses = [-d if d < 0 else 0.0 for d in deltas]
-    ag = sum(gains[:n]) / n
-    al = sum(losses[:n]) / n
-    for i in range(n, len(deltas)):
-        ag = (ag * (n - 1) + gains[i]) / n
-        al = (al * (n - 1) + losses[i]) / n
-    return round(100.0 - 100.0 / (1 + ag / al), 2) if al > 0 else 100.0
-
+    """[2026-08-28 精简] 委托math_utils.rsi — SSOT"""
+    from math_utils import calc_rsi as _mu_rsi
+    return _mu_rsi(closes, n)
 def bb(closes: list, n: int = 20) -> dict:
     if len(closes) < n:
         return {'mid': closes[-1], 'upper': closes[-1], 'lower': closes[-1], 'width': 0}
