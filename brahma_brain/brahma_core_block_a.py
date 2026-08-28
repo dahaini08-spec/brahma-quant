@@ -552,6 +552,98 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
     except Exception:
         pass
 
+    # ══ [v5.1 Alpha#012 量价背离 2026-08-28 设计院自主封印] ════════════════════
+    # WorldQuant Alpha#012: sign(delta(volume,1)) * (-delta(close,1))
+    # 量能增 + 价格下跌 → 底部吸笹看多 / 量能增 + 价格上涨 → 追涨风险看空
+    # 梵天缺口: 有OBV无量价背离符号因子，与 FVG形成时量能异常互补
+    try:
+        _vol_1h   = ms.get('volume_1h', 0)
+        _vol_prev = ms.get('volume_1h_prev', ms.get('volume_prev', 0))
+        _c_1h     = ms.get('close_1h', 0)
+        _c_prev   = ms.get('close_prev', ms.get('prev_close', 0))
+        if _vol_1h and _vol_prev and _c_1h and _c_prev:
+            _vol_sign   =  1 if _vol_1h > _vol_prev else (-1 if _vol_1h < _vol_prev else 0)
+            _price_sign = -1 if _c_1h   > _c_prev   else ( 1 if _c_1h   < _c_prev   else 0)
+            _a012_raw   = _vol_sign * _price_sign  # +1=背离利多/利空, -1=顺势追涨风险
+            if signal_dir == 'LONG':
+                if _a012_raw > 0 and _vol_sign > 0:   # 量增价跌=内在多头吸笹
+                    _a012_score = 8
+                    _a012_desc  = '量增价跌(底部吸笹)'
+                elif _a012_raw < 0 and _vol_sign > 0: # 量增价涨=追涨风险
+                    _a012_score = -8
+                    _a012_desc  = '量增价涨(追涨风险)'
+                else:
+                    _a012_score = 0
+                    _a012_desc  = ''
+            else:  # SHORT
+                if _a012_raw < 0 and _vol_sign > 0:   # 量增价涨=布空风险
+                    _a012_score = -8
+                    _a012_desc  = '量增价涨(布空追高风险)'
+                elif _a012_raw > 0 and _vol_sign > 0: # 量增价跌=空头加速
+                    _a012_score = 8
+                    _a012_desc  = '量增价跌(空头加速)'
+                else:
+                    _a012_score = 0
+                    _a012_desc  = ''
+            if _a012_score != 0:
+                score += _a012_score
+                breakdown['Alpha012_量价背离'] = f'{_a012_score:+d}({_a012_desc})'
+    except Exception:
+        pass
+
+    # ══ [v5.1 Alpha#053 K线结构变化率 2026-08-28 设计院自主封印] ══════════════
+    # WorldQuant Alpha#053: -delta(body_ratio*close, 9)
+    # 衡量上下影线比例变9日变化率，CHoCH预警因子
+    # 梵天缺口: SMC用OB/FVG但无K线结构变化量化因子
+    try:
+        _c1h = ms.get('close_1h', 0)
+        _o1h = ms.get('open_1h',  0)
+        _h1h = ms.get('high_1h',  0)
+        _l1h = ms.get('low_1h',   0)
+        # 获取9期历史K线数据
+        _klines_9 = ms.get('klines_1h', [])
+        if _c1h and _h1h > _l1h and len(_klines_9) >= 2:
+            def _body_r(c, o, h, l):
+                rng = (h - l) + 0.001
+                return ((c - l) - (h - c)) / rng  # 上下影线比例
+            _br_now  = _body_r(_c1h, _o1h, _h1h, _l1h) * _c1h
+            # 取领先期（如果没有9bar就取最近一期）
+            _k_prev = _klines_9[-2] if len(_klines_9) >= 2 else _klines_9[-1]
+            _br_prev = _body_r(
+                float(_k_prev.get('close', _c1h)),
+                float(_k_prev.get('open',  _o1h)),
+                float(_k_prev.get('high',  _h1h)),
+                float(_k_prev.get('low',   _l1h))
+            ) * float(_k_prev.get('close', _c1h))
+            _a053_raw = -(_br_now - _br_prev)  # 结构变化率
+            # 归一化: 对应价格0.1%的变化
+            _threshold = _c1h * 0.001
+            if signal_dir == 'LONG':
+                if _a053_raw > _threshold:    # 结构由弱变强，利多
+                    _a053_score = 10
+                    _a053_desc  = f'结构转强({_a053_raw:.1f})'
+                elif _a053_raw < -_threshold: # 结构由强变弱，逆势
+                    _a053_score = -8
+                    _a053_desc  = f'结构转弱({_a053_raw:.1f})'
+                else:
+                    _a053_score = 0
+                    _a053_desc  = ''
+            else:  # SHORT
+                if _a053_raw < -_threshold:   # 结构由强变弱，利空
+                    _a053_score = 10
+                    _a053_desc  = f'结构转弱({_a053_raw:.1f})'
+                elif _a053_raw > _threshold:  # 结构由弱变强，逆势
+                    _a053_score = -8
+                    _a053_desc  = f'结构转强({_a053_raw:.1f})'
+                else:
+                    _a053_score = 0
+                    _a053_desc  = ''
+            if _a053_score != 0:
+                score += _a053_score
+                breakdown['Alpha053_K线结构'] = f'{_a053_score:+d}({_a053_desc})'
+    except Exception:
+        pass
+
     return {
         's1': s1, 's2': s2, 's3': s3, 's4': s4,
         's5': s5, 's5b': s5b, 's6': s6,
