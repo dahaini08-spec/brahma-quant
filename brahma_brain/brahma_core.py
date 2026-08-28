@@ -3829,6 +3829,24 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass
     # ══ [END P1 方仓RSI分层] ══
 
+    # ══ [HTF周月线锚定 score_addon 接入 2026-08-28 苏摩111] ══════════════════
+    # 接入位置: fangcang已将htf_anchor存入返回对象，这里提取其score_addon注入总分
+    # weekly_monthly_anchor铁证: htf_bias=BULLISH → +8 / BEARISH → -8 / NEUTRAL → 0
+    try:
+        _htf_data = (_result.get('fangcang') or {}).get('htf_anchor', {})
+        _htf_addon = int(_htf_data.get('score_addon', 0) or 0)
+        if _htf_addon != 0:
+            _result['score_final'] = round(float(_result.get('score_final', 0) or 0) + _htf_addon, 1)
+            _result['score'] = _result['score_final']
+            _htf_bias = _htf_data.get('htf_bias', 'NEUTRAL')
+            _htf_res  = _htf_data.get('htf_resonance', 0.5)
+            _result.setdefault('confluence', {}).setdefault('breakdown', {})\
+                .update({'HTF周月线锚定': f'{_htf_addon:+d} ({_htf_bias} 共振={_htf_res:.2f})'})
+            _result['htf_score_addon'] = _htf_addon
+    except Exception:
+        pass
+    # ══ [END HTF周月线锚定] ══
+
     # ══ [P4 三周期RSI共振 2026-08-22 设计院自主] ══════════════════════════════
     # 顶级交易员标准：1H+4H+1D三周期同向=信号最强，分歧=降权
     # 规则(铁证来源：方仓535条SHORT/LONG突破规律):
