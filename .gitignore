@@ -56,3 +56,14 @@ env/
 .venv/
 .github/workflows/
 config/omniroute.json
+
+# 大型数据文件（不纳入版本控制 2026-08-28）
+data/backtest/
+data/*.parquet
+data/fangcang_labeled_*.parquet
+dharma/data/*.parquet
+data/qdrant_storage/
+data/brahma_experiences/
+__pycache__/
+scripts/__pycache__/
+brahma_brain/__pycache__/
