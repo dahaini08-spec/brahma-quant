@@ -149,10 +149,14 @@ def _cache_set(key: str, data, ttl: int):
     except Exception:
         pass  # 磁盘写失败不影响内存缓存
 
+# ─── SSL全局单例（2026-08-28 B2优化: 避免每次请求重建SSL context，节省~3.5s/全流程）──
+import ssl as _ssl_mod
+_SSL_CTX = _ssl_mod.create_default_context()  # 进程级单例，只建一次
+
 # ─── HTTP工具 ────────────────────────────────────────────────
 def _get(url: str, timeout=8):
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
+    with urllib.request.urlopen(req, timeout=timeout, context=_SSL_CTX) as r:
         return json.loads(r.read())
 
 def _signed_get(path: str, params: dict = None, timeout=8):
@@ -164,7 +168,7 @@ def _signed_get(path: str, params: dict = None, timeout=8):
         f'{FAPI}{path}?{qs}&signature={sig}',
         headers={'X-MBX-APIKEY': API_KEY}
     )
-    with urllib.request.urlopen(req, timeout=timeout) as r:
+    with urllib.request.urlopen(req, timeout=timeout, context=_SSL_CTX) as r:
         return json.loads(r.read())
 
 # ─── 核心拉取函数 ────────────────────────────────────────────

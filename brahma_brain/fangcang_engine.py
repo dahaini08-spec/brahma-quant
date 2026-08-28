@@ -735,11 +735,16 @@ def get_fangcang_context(
     cache_key = f"{symbol}:{current_regime}"
     now = time.time()
 
-    # 检查缓存
+    # 检查缓存（2026-08-28 B2优化: regime为None时也能命中有效缓存）
     if cache_key in _CACHE:
         cached = _CACHE[cache_key]
         if now - cached.get('_ts', 0) < _CACHE_TTL:
             return cached
+    # fallback: 如果 regime=None未命中，尝试用同 symbol 的任意已缓存结果
+    if current_regime is None:
+        for k, v in _CACHE.items():
+            if k.startswith(f"{symbol}:") and now - v.get('_ts', 0) < _CACHE_TTL:
+                return v  # 命中，直接复用，节省~1.4s
 
     try:
         # 加载数据
