@@ -242,6 +242,11 @@ def _calc_zones_internal(symbol: str) -> dict:
             # 单墙：上下各0.5%
             hs_low  = liq_above_price * 0.994
             hs_high = liq_above_price + atr4h_v * 0.15
+            # [P0-B修复 2026-08-28 苏摩111] 若R1在高空区上方且距离<ATR4H×2，上沿扩展至R1
+            # 根因: R1=$81,195已算对但只贴标签未更新hs_high，导致今日$81,500最高点全程在区间外
+            if r1 > hs_high and r1 < hs_high + atr4h_v * 2.0:
+                hs_high = r1
+                hs_sources.append(f'R1扩展={r1:.0f}')
         hs_sources.append(f'清算${liq_above_usd:.0f}M@{liq_above_price:.0f}')
         hs_conf += 1
     else:
