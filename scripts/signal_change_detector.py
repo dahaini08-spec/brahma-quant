@@ -35,8 +35,8 @@ SYMS = ['BTCUSDT', 'ETHUSDT']
 try:
     from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
 except Exception:
-    JARVIS_USER_ID  = '73295708'
-    JARVIS_THREAD_ID = '01a033af-3697-734a-9f9c-c3e34a00c378'
+    from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID  # [2026-08-28 SSOT迁移]
+    # JARVIS_THREAD_ID → imported above
 
 JARVIS_TARGET = f'{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}'  # [2026-07-19] thread:→t: 修复推送路由
 
