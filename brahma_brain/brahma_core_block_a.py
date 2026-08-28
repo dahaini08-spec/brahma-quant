@@ -245,6 +245,8 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
                 elif _stoch_k > 70:  # 超买区做多，惩罚
                     _stoch_add = -4
                     breakdown['StochRSI'] = f'-4 (K={_stoch_k:.0f}>70 超买区做多)'
+                else:
+                    breakdown['StochRSI'] = f'中性(K={_stoch_k:.0f} D={_stoch_d:.0f})'
             else:  # SHORT
                 if _stoch_k > 80:
                     _stoch_add = 8   # 深度超买K>80，动能顶部
@@ -255,6 +257,8 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
                 elif _stoch_k < 30:  # 超卖区做空，惩罚
                     _stoch_add = -4
                     breakdown['StochRSI'] = f'-4 (K={_stoch_k:.0f}<30 超卖区做空)'
+                else:
+                    breakdown['StochRSI'] = f'中性(K={_stoch_k:.0f} D={_stoch_d:.0f})'
         else:
             breakdown['StochRSI'] = 'N/A(数据不足)'
     except Exception as _stoch_e:
