@@ -282,6 +282,13 @@ def generate_15m_signal(symbol: str, verbose: bool = False) -> dict | None:
 
         # ── 获取多周期K线（只拿已关闭K线：limit+1，丢弃最后一根未收盘）──
         def _fetch(interval, limit=100):
+            try:
+                from brahma_brain.data_cache import get_klines as _dc
+                data = _dc(sym, interval, limit + 1)
+                if data and isinstance(data, list) and len(data) >= 2:
+                    return data[:-1]  # 丢弃最后1根未收盘
+            except Exception:
+                pass
             r = requests.get(
                 'https://fapi.binance.com/fapi/v1/klines',
                 params={'symbol': sym, 'interval': interval, 'limit': limit + 1},

@@ -34,7 +34,14 @@ _CACHE: dict = {}
 _CACHE_TTL = 300  # 5分钟
 
 def _fetch_klines(symbol: str, interval: str = '1h', limit: int = 30) -> list:
-    """拉取K线数据"""
+    """拉取K线数据 — data_cache优先"""
+    try:
+        from brahma_brain.data_cache import get_klines as _dc
+        raw = _dc(symbol, interval, limit)
+        if raw and isinstance(raw, list) and len(raw) >= 3:
+            return raw
+    except Exception:
+        pass
     import urllib.request
     url = f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}'
     try:

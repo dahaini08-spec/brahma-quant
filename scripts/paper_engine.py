@@ -114,9 +114,14 @@ def _get_bbw_rsi(symbol: str) -> tuple:
     """返回 (bbw%, rsi_1h)"""
     import urllib.request
     try:
-        kl = json.loads(urllib.request.urlopen(
-            f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=1h&limit=25',
-            timeout=4).read())
+        try:
+            from brahma_brain.data_cache import get_klines as _dc
+            kl = _dc(symbol, '1h', 25) or []
+            if not kl: raise Exception('empty')
+        except Exception:
+            kl = json.loads(urllib.request.urlopen(
+                f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=1h&limit=25',
+                timeout=4).read())
         closes = [float(k[4]) for k in kl]
         sma = sum(closes[-20:])/20
         std = (sum((c-sma)**2 for c in closes[-20:])/20)**0.5
