@@ -96,6 +96,26 @@ def calc_zones(symbol: str, force_refresh: bool = False) -> dict:
     return result
 
 
+def _get_regime_from_ssot(symbol: str, fallback_fn) -> str:
+    """[SSOT修复 2026-08-28 苏摩111] 优先从regime_state.json读体制，fallback才自算"""
+    import os, json, time
+    try:
+        state_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                  'data', 'regime_state.json')
+        if os.path.exists(state_path):
+            with open(state_path) as f:
+                state = json.load(f)
+            sym_key = symbol.upper()
+            if sym_key in state:
+                entry = state[sym_key]
+                age = time.time() - entry.get('ts', 0)
+                if age < 1800:  # 30分钟内有效
+                    return entry.get('confirmed', entry.get('regime', ''))
+    except Exception:
+        pass
+    return fallback_fn()
+
+
 def _calc_zones_internal(symbol: str) -> dict:
     from data_cache import (get_klines, get_ticker,
                             get_funding_rate, get_long_short_ratio)
@@ -330,10 +350,11 @@ def _calc_zones_internal(symbol: str) -> dict:
         matcher = get_hcme_matcher()
         if matcher:
             # 构造简单查询向量（RSI+FR+体制）
-            regime_str = ms_mod.detect_regime(c4h, h4h, l4h,
+            regime_str = _get_regime_from_ssot(symbol, lambda: ms_mod.detect_regime(
+                c4h, h4h, l4h,
                 ms_mod.trend_direction(c1h, h1h, l1h),
                 ms_mod.trend_direction(c4h, h4h, l4h),
-                ms_mod.trend_direction(c1d, h1d, l1d))
+                ms_mod.trend_direction(c1d, h1d, l1d)))
             query = {
                 'symbol': symbol, 'regime': regime_str,
                 'rsi_1h': rsi1h, 'rsi_4h': rsi4h,
@@ -498,10 +519,11 @@ def _calc_zones_internal(symbol: str) -> dict:
         'bias':          bias,
         'bias_score':    bias_score,
         'bias_reasons':  bias_reasons,
-        'regime':        ms_mod.detect_regime(c4h, h4h, l4h,
+        'regime':        _get_regime_from_ssot(symbol, lambda: ms_mod.detect_regime(
+                            c4h, h4h, l4h,
                             ms_mod.trend_direction(c1h, h1h, l1h),
                             ms_mod.trend_direction(c4h, h4h, l4h),
-                            ms_mod.trend_direction(c1d, h1d, l1d)),
+                            ms_mod.trend_direction(c1d, h1d, l1d))),
         'rsi1h':         rsi1h,
         'rsi4h':         rsi4h,
         'rsi1d':         rsi1d,
