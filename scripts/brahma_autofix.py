@@ -135,7 +135,19 @@ def check_modules():
 # CHECK 3: core dump文件
 # ════════════════════════════════════════════════════════════
 def check_core_dumps():
-    cores = list(BASE.glob('core.*')) + list(BASE.glob('core'))
+    # 扫描根目录 + scripts/ + brahma_brain/ 子目录（2026-08-28 A2修复）
+    cores = (
+        list(BASE.glob('core.*')) +
+        list(BASE.glob('core')) +
+        list((BASE / 'scripts').glob('core.*')) +
+        list((BASE / 'brahma_brain').glob('core.*'))
+    )
+    # 同时检查磁盘使用率
+    import shutil
+    disk = shutil.disk_usage('/')
+    disk_pct = disk.used / disk.total * 100
+    if disk_pct > 80:
+        warn('DISK_USAGE', f'磁盘使用率 {disk_pct:.1f}% > 80%', True)
     if cores:
         warn('CORE_DUMP', f'{len(cores)}个core dump文件 → 磁盘浪费', True)
         if not DRY_RUN:
@@ -143,7 +155,7 @@ def check_core_dumps():
                 c.unlink(missing_ok=True)
             fix(f'清理{len(cores)}个core dump')
     else:
-        ok('core dump: 0个')
+        ok(f'core dump: 0个 | 磁盘 {disk_pct:.1f}%')
 
 
 # ════════════════════════════════════════════════════════════
