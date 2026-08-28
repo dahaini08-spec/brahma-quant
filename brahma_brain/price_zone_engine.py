@@ -147,14 +147,19 @@ def _calc_zones_internal(symbol: str) -> dict:
         r1 = price * 1.02; r2 = price * 1.04
         s1 = price * 0.98; s2 = price * 0.96; pp = price
 
-    hi48 = max(h1h[-48:]) if len(h1h) >= 48 else max(h1h)
-    lo48 = min(l1h[-48:]) if len(l1h) >= 48 else min(l1h)
+    hi48 = max(h1h[-48:]) if len(h1h) >= 1 else price * 1.02
+    lo48 = min(l1h[-48:]) if len(l1h) >= 1 else price * 0.98
     try:
         fib = ms_mod.calc_fib_levels(hi48, lo48)
         f382 = fib.get('0.382', s1)
         f618 = fib.get('0.618', s1 * 0.99)
         f786 = fib.get('0.786', s2)
         f236 = fib.get('0.236', r1 * 0.99)
+        # [2026-08-28 苏摩111修复] FIB异常值过滤：任何FIB必须在当前价格的60%之内，否则回退到默认值
+        if f618 < price * 0.80: f618 = s1 * 0.99
+        if f382 < price * 0.80: f382 = s1
+        if f786 < price * 0.80: f786 = s2
+        if f236 > price * 1.30: f236 = r1 * 0.99
     except Exception:
         f382 = s1; f618 = s1 * 0.99; f786 = s2; f236 = r1 * 0.99
 
@@ -304,6 +309,14 @@ def _calc_zones_internal(symbol: str) -> dict:
     if s1 < price * 0.998 and f'S1={s1:.0f}' not in ll_sources:
         ll_sources.append(f'S1={s1:.0f}')
 
+    # [2026-08-28 苏摩111修复] 低多区最终安全守卫：区间必须在当前价格 70%~99% 之内，否则强制用 S1 重算
+    if ll_low < price * 0.80 or ll_high < price * 0.80:
+        ll_anchor = s1
+        ll_low  = ll_anchor - atr4h_v * 0.15
+        ll_high = ll_anchor + atr4h_v * 0.15
+        ll_sources = [f'S1={s1:.0f}(安全回退)']
+        ll_conf = 1
+
     # ══ P2: HCME方仓历史匹配 ══════════════════════════════════
     hcme_note   = ''
     hcme_bias   = 0
@@ -442,6 +455,9 @@ def _calc_zones_internal(symbol: str) -> dict:
     # ══ 止损/止盈计算 ═════════════════════════════════════════
     # 高空区 SL = 区间上沿 + 0.5ATR4H, TP = S1
     hs_sl = hs_high + atr4h_v * 0.5
+    # [2026-08-28 苏摩111修复] SL合理性校验：SL距离不能超过当前价格的10%
+    if hs_sl > price * 1.10:
+        hs_sl = hs_high * 1.02  # 回退到区间上沿+2%
     hs_tp = s1
     # [2026-08-26 fix 苏摩111] RR以区间中点为进场基准，原用hs_low导致RR偏低
     hs_entry_mid = (hs_low + hs_high) / 2
@@ -449,6 +465,9 @@ def _calc_zones_internal(symbol: str) -> dict:
 
     # 低多区 SL = 区间下沿 - 0.5ATR4H, TP = R1
     ll_sl = ll_low - atr4h_v * 0.5
+    # [2026-08-28 苏摩111修复] SL合理性校验：SL距离不能超过当前价格的10%，否则是异常值，强制用SL_PCT=2%重算
+    if ll_sl < price * 0.90 or ll_sl <= 0:
+        ll_sl = ll_low * (1 - 0.02)  # 回退到区间下沿-2%
     ll_tp = r1
     # [2026-08-26 fix 苏摩111] 低多区同理用中点
     ll_entry_mid = (ll_low + ll_high) / 2
@@ -642,6 +661,9 @@ def run_zone_report(symbols: list = None, push: bool = False):
     """生成并可选推送战场预判报告"""
     if not symbols:
         symbols = ['BTCUSDT', 'ETHUSDT']
+    # [2026-08-28 苏摩111修复] 防止传入字符串被逐字符遍历
+    if isinstance(symbols, str):
+        symbols = [symbols]
 
     reports = []
     for sym in symbols:
