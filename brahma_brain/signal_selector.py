@@ -116,7 +116,23 @@ def select(short_analysis: dict, long_analysis: dict, regime: dict) -> dict:
     if _bear_block:
         long_ok = False
         long_w  = 0.0
-        pass  # [静默]
+        # [2026-08-28 苏摩111 维度剪枝] BEAR_EARLY:LONG 精英解锁通道
+        # 铁证: wr_matrix_v8 6.5年 BEAR_EARLY:LONG
+        #   RSI 40~50: WR=76.8% EV=+1.071 n=56  ← 黄金区
+        #   RSI 50~55: WR=75.0% EV=+1.000 n=76  ← 黄金区
+        # 注意: n唄小（56和76），仅开放0.5%NAV试仓位（不覆盖全封禁）
+        if primary_regime == 'BEAR_EARLY' and long_valid:
+            _rsi_long = (long_analysis.get('indicators', {}) or {}).get('rsi_1h') or \
+                        (long_analysis.get('ms', {}) or {}).get('indicators', {}).get('rsi_1h') or \
+                        long_analysis.get('rsi_1h') or 55
+            try: _rsi_long = float(_rsi_long)
+            except: _rsi_long = 55
+            _grade_long = long_analysis.get('grade', 0) or 0
+            # 三重限制: RSI<55 + grade>=85 + raw_score>=120 → 开放0.5%NAV试仓
+            if _rsi_long <= 55 and _grade_long >= 85 and long_raw >= 120:
+                long_ok = True
+                long_w  = 0.3   # 0.5%NAV试仓位
+                pass  # [静默: BEAR_EARLY精英解锁 RSI<=55 grade>=85]
     elif 'BEAR_RECOVERY' in primary_regime:
         # [P2修复 2026-08-22 苏摩111] BEAR_RECOVERY LONG门槛110→95
         # 铁证：BEAR_RECOVERY LONG WR=72.5% EV=+0.255，但raw_score需要>=116才能过门
@@ -137,10 +153,23 @@ def select(short_analysis: dict, long_analysis: dict, regime: dict) -> dict:
             _rsi_1h = float(_rsi_1h)
         except Exception:
             _rsi_1h = 50
-        if _rsi_1h < 52:
+        # [2026-08-28 苏摩111 维度剪枝封印]
+        # 铁证: wr_matrix_v8 6.5年 BTC BEAR_EARLY:SHORT
+        #   RSI 40~50: WR=23.2% EV=-1.071 n=56  ← 超级死亡区
+        #   RSI 50~55: WR=25.0% EV=-1.000 n=76  ← 死亡区
+        #   RSI 55~60: WR=38.7% EV=-0.453 n=137 ← 负 EV
+        #   RSI 60~70: WR=44.2% EV=-0.231 n=355 ← 德益封禁线
+        #   RSI 70~100:WR=39.8% EV=-0.407 n=236 ← 负 EV
+        # BEAR_TREND:SHORT RSI>60才是正EV：WR=62.8% EV=+0.512 n=613
+        if primary_regime == 'BEAR_EARLY':
+            # BEAR_EARLY做空全负EV，除非RSI>60才允许（BEAR_TREND维持RSI>52門槛）
+            _rsi_threshold_short = 60
+        else:
+            _rsi_threshold_short = 52
+        if _rsi_1h < _rsi_threshold_short:
             short_ok = False
             short_w  = 0.0
-            pass  # [静默：RSI<52，BEAR_TREND SHORT入场条件不满足]
+            pass  # [静默：RSI不足門槛，BEAR SHORT入场条件不满足]
     # ── [P0 2026-08-28 苏摩111] BBW>5时不发信号 ──────────────────────────────────
     # 铁证：Layer1 30,408笔回测
     #   BBW>5: WR=44.3% EV=+0.178%（最差区间，11,480笔噪音）
