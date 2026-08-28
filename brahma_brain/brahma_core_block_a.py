@@ -218,7 +218,51 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
     if 'CHOP' in str(ms.get('regime', '')).upper() and s3_div >= 6:
         _chop_macd_bonus = 4  # CHOP体制背离信号额外+4分
         breakdown['CHOP背离奖励'] = f'+4 (CHOP+背离T04验证PF=1.628)'
-    s3 = min(s3_rsi + s3_div + _chop_macd_bonus, 22)  # [Phase2a] 背离维度上限提升到22
+
+    # ── [P2 2026-08-28 苏摩111] Stochastic RSI 动量确认 ──────────────────
+    # 逻辑：StochRSI比普通RSI更敏感，K<20=深度超卖(做多)，K>80=深度超买(做空)
+    # 交叉信号：K上穿D=做多动能恢复，K下穿D=做空动能启动
+    # 接入位置：维度3动量背离模块，叠加RSI极端加分
+    _stoch_k, _stoch_d = 50.0, 50.0
+    _stoch_add = 0
+    try:
+        _raw_closes_1h = (extra_data.get('_klines_1h', {}) or {}).get('c', []) if extra_data else []
+        if not _raw_closes_1h:
+            _raw_closes_1h = ms.get('raw_closes', [])
+        if _raw_closes_1h and len(_raw_closes_1h) >= 30:
+            try:
+                from brahma_brain.math_utils import stoch_rsi as _stoch_rsi_fn
+            except ImportError:
+                from math_utils import stoch_rsi as _stoch_rsi_fn
+            _stoch_k, _stoch_d = _stoch_rsi_fn(_raw_closes_1h)
+            if signal_dir == 'LONG':
+                if _stoch_k < 20:
+                    _stoch_add = 8   # 深度超卖K<20，动能底部
+                    breakdown['StochRSI'] = f'+8 (K={_stoch_k:.0f}<20 深度超卖)'
+                elif _stoch_k < 30 and _stoch_k > _stoch_d:  # K上穿D，动能恢复
+                    _stoch_add = 5
+                    breakdown['StochRSI'] = f'+5 (K={_stoch_k:.0f}<30 上穿D={_stoch_d:.0f})'
+                elif _stoch_k > 70:  # 超买区做多，惩罚
+                    _stoch_add = -4
+                    breakdown['StochRSI'] = f'-4 (K={_stoch_k:.0f}>70 超买区做多)'
+            else:  # SHORT
+                if _stoch_k > 80:
+                    _stoch_add = 8   # 深度超买K>80，动能顶部
+                    breakdown['StochRSI'] = f'+8 (K={_stoch_k:.0f}>80 深度超买)'
+                elif _stoch_k > 70 and _stoch_k < _stoch_d:  # K下穿D，动能衰竭
+                    _stoch_add = 5
+                    breakdown['StochRSI'] = f'+5 (K={_stoch_k:.0f}>70 下穿D={_stoch_d:.0f})'
+                elif _stoch_k < 30:  # 超卖区做空，惩罚
+                    _stoch_add = -4
+                    breakdown['StochRSI'] = f'-4 (K={_stoch_k:.0f}<30 超卖区做空)'
+        else:
+            breakdown['StochRSI'] = 'N/A(数据不足)'
+    except Exception as _stoch_e:
+        breakdown['StochRSI'] = f'N/A({str(_stoch_e)[:30]})'
+    s3_stoch = _stoch_add
+    # ── [P2 END] Stochastic RSI ───────────────────────────────────────────
+
+    s3 = min(s3_rsi + s3_div + _chop_macd_bonus + s3_stoch, 26)  # [P2] 上限提升到26
     score += s3
     breakdown['动量背离'] = s3
 
@@ -284,6 +328,52 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
             breakdown['OBV方向_v3'] = 'N/A(无原始数据)'  # [P1-B audit-fix] 重复key加后缀
     except Exception as _obv_e:
         breakdown['OBV方向_v4'] = f'N/A({str(_obv_e)[:30]})'  # [P1-B audit-fix] 重复key加后缀
+
+    # ── [P2 2026-08-28 苏摩111] OBV价格背离检测 ────────────────────────────────
+    # 背离定义：价格创新低/新高，但OBV没有同步 = 机构在吸筹/出货
+    # 铁证来源：传统技术分析 OBV底背离 WR=65~70%（John Murphy教科书标准）
+    try:
+        _obv_prices = extra_data.get('_k4h_closes', []) if extra_data else []
+        _obv_vols = extra_data.get('_k4h_volumes', []) if extra_data else []
+        if not _obv_prices:
+            _obv_prices = ms.get('raw_closes', [])
+            _obv_vols = ms.get('raw_volumes', [])
+        if _obv_prices and _obv_vols and len(_obv_prices) >= 20:
+            _n_div = min(30, len(_obv_prices))
+            _pc = list(_obv_prices[-_n_div:])
+            _pv = list(_obv_vols[-_n_div:]) if len(_obv_vols) >= _n_div else list(_obv_vols)
+            # 计算 OBV 序列
+            _obv_seq = [0.0]
+            for _i in range(1, len(_pc)):
+                _vi = _pv[_i] if _i < len(_pv) else 0
+                if _pc[_i] > _pc[_i - 1]:   _obv_seq.append(_obv_seq[-1] + _vi)
+                elif _pc[_i] < _pc[_i - 1]: _obv_seq.append(_obv_seq[-1] - _vi)
+                else:                         _obv_seq.append(_obv_seq[-1])
+            # 对比前半段和后半段的 价格高/低 + OBV高/低
+            _mid = len(_pc) // 2
+            _p_early = _pc[:_mid]
+            _p_late  = _pc[_mid:]
+            _o_early = _obv_seq[:_mid]
+            _o_late  = _obv_seq[_mid:]
+            _p_lo_e, _p_lo_l = min(_p_early), min(_p_late)
+            _p_hi_e, _p_hi_l = max(_p_early), max(_p_late)
+            _o_lo_e, _o_lo_l = min(_o_early), min(_o_late)
+            _o_hi_e, _o_hi_l = max(_o_early), max(_o_late)
+            _obv_div_add = 0
+            if signal_dir == 'LONG':
+                # 底背离：价格新低但OBV没有创新低 = 机构吸筹
+                if _p_lo_l < _p_lo_e * 0.998 and _o_lo_l > _o_lo_e * 0.98:
+                    _obv_div_add = 8
+                    breakdown['OBV底背离'] = f'+8 (价格新低{_p_lo_l:.0f}<{_p_lo_e:.0f}，OBV未创新低→底背离)'
+            else:  # SHORT
+                # 顶背离：价格新高但OBV没有创新高 = 机构出货
+                if _p_hi_l > _p_hi_e * 1.002 and _o_hi_l < _o_hi_e * 1.02:
+                    _obv_div_add = 8
+                    breakdown['OBV顶背离'] = f'+8 (价格新高{_p_hi_l:.0f}>{_p_hi_e:.0f}，OBV未创新高→顶背离)'
+            s5 += _obv_div_add
+    except Exception as _obv_div_e:
+        breakdown['OBV背离'] = f'N/A({str(_obv_div_e)[:30]})'
+    # ── [P2 END] OBV背离 ─────────────────────────────────────────────────────
 
     # Phase 2：量能引擎加分
     # [达摩院V7校准 2026-05-19] whale_signal PF=1.404 全系统最强，异动信号 PF=1.212
