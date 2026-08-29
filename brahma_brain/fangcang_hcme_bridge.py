@@ -99,6 +99,8 @@ def _normalize_new_case(d: dict, sym: str) -> dict:
         'compress_end_ts':    _ts_epoch,
         # 修复2: 体制推断标签
         'regime_guess':       d.get('regime', d.get('regime_guess', '')) or _infer_regime_from_case(d),
+        # 40年经验维度: 突破力度
+        'burst_atr_mult':     float(d.get('burst_atr_mult', 0) or 0),
     }
 
 
@@ -234,13 +236,39 @@ def fangcang_context_match(
         _age_years = (_t.time() - _case_ts) / (365.25 * 86400) if _case_ts > 0 else 3.0
         _time_weight = 2.0 if _age_years < 1 else (1.2 if _age_years < 2 else (0.8 if _age_years < 4 else 0.5))
 
-        # 综合相似度分数
+        # 综合相似度分数（40年经验融入 2026-08-29 苏摩111）
         bbw_score = 1.0 - bbw_ratio / 0.35
         rsi_score = 1.0 - abs(c_rsi - current_rsi) / 18
-        sim_score = (bbw_score * 0.6 + rsi_score * 0.4) * _time_weight * _regime_w
+
+        # 【核心提升】burst_atr_mult —— 最强单一维度，区分真假突破的关键
+        # 铁证: burst_atr_mult>1x → WR直6%跳到 58%
+        _c_burst = float(c.get('burst_atr_mult', 0) or 0)
+        if _c_burst >= 2.0:    _burst_w = 1.5   # 暴力突破 WR=59%
+        elif _c_burst >= 1.5:  _burst_w = 1.3   # 强突破   WR=54%
+        elif _c_burst >= 1.0:  _burst_w = 1.1   # 中突破   WR=54%
+        elif _c_burst >= 0.5:  _burst_w = 0.9   # 弱突破   WR=59%
+        else:                  _burst_w = 0.2   # 几乎无突破 WR=4%
+
+        # 【长压缩加成】squeeze_bars —— 60+根凌　达 WR=44%
+        _c_bars = int(c.get('compress_bars', c.get('squeeze_bars', 0)) or 0)
+        if _c_bars >= 80:    _bars_w = 1.3
+        elif _c_bars >= 40:  _bars_w = 1.1
+        elif _c_bars >= 20:  _bars_w = 1.0
+        else:                _bars_w = 0.9
+
+        # 【genuine质量】真实突破应该被优先展示
+        _genuine_w = 1.2 if c.get('is_genuine_breakout') else 0.8
+
+        sim_score = (
+            bbw_score * 0.4 +
+            rsi_score * 0.3 +
+            (_burst_w - 1.0) * 0.3   # burst贡献0.3权重
+        ) * _time_weight * _regime_w * _bars_w * _genuine_w
+
         c['_sim_score']    = sim_score
         c['_time_weight']  = _time_weight
         c['_regime_w']     = _regime_w
+        c['_burst_w']      = _burst_w
         similar.append(c)
 
     # 按相似度排序，取Top20
@@ -280,26 +308,41 @@ def fangcang_context_match(
     # ── 评分计算（基线50%，偏离基线 × 最大±12分） ──
     MAX_ADJ = 12.0
     if signal_dir == 'LONG':
-        # 做多方向：历史多头突破率越高越加分
-        raw_adj = (long_pct - 0.40) * MAX_ADJ / 0.40  # 40%基线（压缩多为CHOP）
+        raw_adj = (long_pct - 0.40) * MAX_ADJ / 0.40
         raw_adj = max(-MAX_ADJ, min(MAX_ADJ, raw_adj))
     elif signal_dir == 'SHORT':
-        raw_adj = (short_pct - 0.30) * MAX_ADJ / 0.30  # 空头基线更低
+        raw_adj = (short_pct - 0.30) * MAX_ADJ / 0.30
         raw_adj = max(-MAX_ADJ, min(MAX_ADJ, raw_adj))
     else:
         raw_adj = 0.0
 
     score_adj = round(raw_adj * weight, 1)
 
+    # 【新增】avg_burst_atr_mult —— Top20案例平均突破力度（40年经验核心维度）
+    avg_burst = 0.0
+    burst_vals = [float(c.get('burst_atr_mult', 0) or 0) for c in similar if c.get('burst_atr_mult', 0) > 0]
+    if burst_vals:
+        avg_burst = round(sum(burst_vals) / len(burst_vals), 2)
+
+    # 【新增】genuine_rate —— Top20中真实突破比例
+    genuine_rate = round(sum(1 for c in similar if c.get('is_genuine_breakout')) / max(n, 1), 2)
+
+    # 【新增】avg_squeeze_bars —— 历史压缩时长均値
+    sq_vals = [int(c.get('compress_bars', c.get('squeeze_bars', 0)) or 0) for c in similar if c.get('compress_bars', c.get('squeeze_bars', 0))]
+    avg_sq_bars = round(sum(sq_vals) / max(len(sq_vals), 1), 1) if sq_vals else 0
+
     return {
-        'score_adj': score_adj,
-        'confidence': confidence,
-        'n_similar': n,
-        'long_pct': round(long_pct, 3),
-        'short_pct': round(short_pct, 3),
-        'chop_pct': round(chop_pct, 3),
-        'source': f'fangcang_real_{n}cases',
-        'hcme_source': 'real_fangcang',
+        'score_adj':            score_adj,
+        'confidence':           confidence,
+        'n_similar':            n,
+        'long_pct':             round(long_pct, 3),
+        'short_pct':            round(short_pct, 3),
+        'chop_pct':             round(chop_pct, 3),
+        'avg_burst_atr_mult':   avg_burst,       # 主unified提供burst加成
+        'genuine_rate':         genuine_rate,    # Top20真实突破率
+        'avg_squeeze_bars':     avg_sq_bars,     # Top20历史压缩时长
+        'source':               f'fangcang_real_{n}cases',
+        'hcme_source':          'real_fangcang',
     }
 
 

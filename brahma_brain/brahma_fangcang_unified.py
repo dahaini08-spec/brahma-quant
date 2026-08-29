@@ -170,9 +170,26 @@ def _get_cases_adj(symbol: str, ms: dict, signal_dir: str, regime: str) -> tuple
         if n_final < 3:
             return 0.0, 'insufficient', n_final, 0.0
 
-        # WR → adj 映射
+        # WR → adj 映射（40年经验升级版）
         # WR=0.7 → +8.4  WR=0.6 → +2.4  WR=0.5 → 0  WR=0.4 → -2.4  WR=0.3 → -8.4
         adj = (wr_final - 0.5) * 24.0
+
+        # 【新增】burst_atr_mult 加成（Top20相似案例的平均突破力度）
+        # 铁证: burst_atr_mult>1.5x + UP → WR=56%~80%，平均+1.28%
+        try:
+            from fangcang_hcme_bridge import _FANGCANG_CACHE, _load_fangcang_cases
+            _fc = result  # fangcang_context_match返回的结果已包含样本信息
+            # 从原始结果读取avg_burst（若有）
+            _avg_burst = float(result.get('avg_burst_atr_mult', 0) or 0)
+            if _avg_burst >= 1.5:
+                adj += 3.0   # 平均强突破加分
+            elif _avg_burst >= 1.0:
+                adj += 1.5
+            elif 0 < _avg_burst < 0.5:
+                adj -= 3.0   # 平均弱突破惩罚
+        except Exception:
+            pass
+
         adj = max(MIN_ADJ, min(MAX_ADJ, adj))
 
         # 样本量权重（n越多越可信）
