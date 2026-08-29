@@ -3832,14 +3832,17 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # ══ [HTF周月线锚定 score_addon 接入 2026-08-28 苏摩111] ══════════════════
     # 接入位置: fangcang已将htf_anchor存入返回对象，这里提取其score_addon注入总分
     # weekly_monthly_anchor铁证: htf_bias=BULLISH → +8 / BEARISH → -8 / NEUTRAL → 0
+    # [P0修复 2026-08-29 苏摩111] 无论score_addon是否为0，都写入breakdown展示真实共振值
     try:
         _htf_data = (_result.get('fangcang') or {}).get('htf_anchor', {})
         _htf_addon = int(_htf_data.get('score_addon', 0) or 0)
+        _htf_bias = _htf_data.get('htf_bias', 'NEUTRAL')
+        _htf_res  = _htf_data.get('htf_resonance', 0.0)
         if _htf_addon != 0:
             _result['score_final'] = round(float(_result.get('score_final', 0) or 0) + _htf_addon, 1)
             _result['score'] = _result['score_final']
-            _htf_bias = _htf_data.get('htf_bias', 'NEUTRAL')
-            _htf_res  = _htf_data.get('htf_resonance', 0.5)
+        # 始终写入breakdown，让共振值可见
+        if _htf_data:
             _result.setdefault('confluence', {}).setdefault('breakdown', {})\
                 .update({'HTF周月线锚定': f'{_htf_addon:+d} ({_htf_bias} 共振={_htf_res:.2f})'})
             _result['htf_score_addon'] = _htf_addon
@@ -4184,6 +4187,30 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         if _tf_sig and _tf_sig.get('available'):
             _result['tradfi_signal'] = _tf_sig
             # Phase A: 仅标签，不修改score
+    except Exception:
+        pass
+    # C4: tradfi_dump_detector — TradFi/美股代币放量抛售检测
+    # [接入位置 2026-08-29 苏摩111] 建了未接入，今日修复
+    try:
+        from brahma_brain.tradfi_dump_detector import analyze_tradfi_dump as _td_fn, is_tradfi_token as _is_tf
+        if _is_tf(symbol):
+            _kl1h = extra_data.get('klines_1h') or extra_data.get('kl1h', [])
+            _ret30 = float(extra_data.get('ret_30d', 0) or 0)
+            _td = _td_fn(
+                symbol=symbol,
+                klines_1h=_kl1h[-40:] if _kl1h else [],
+                direction=_result.get('signal_dir', 'LONG'),
+                ret_30d=_ret30,
+                price_chg_24h=float(extra_data.get('price_chg_24h', 0) or 0),
+                rsi_1h=float(ms.get('rsi1h', 50) or 50),
+            )
+            if _td and _td.get('score_delta', 0) != 0:
+                _td_delta = int(_td['score_delta'])
+                _result['score_final'] = round(float(_result.get('score_final', 0) or 0) + _td_delta, 1)
+                _result['score'] = _result['score_final']
+                _result.setdefault('breakdown_extra', {})['tradfi_dump'] = _td.get('summary_label', f'TradFiDump {_td_delta:+d}')
+            if _td:
+                _result['_tradfi_dump'] = _td
     except Exception:
         pass
     # ══ [END C类孤岛模块接入] ══════════════════════════════════════════════════
