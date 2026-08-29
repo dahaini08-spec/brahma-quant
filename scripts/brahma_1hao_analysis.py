@@ -488,6 +488,72 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
     if ema20_1h_note:
         lines.append(f"  {ema20_1h_note}")
 
+    # ── [封印补全 2026-08-29 苏摩111] P0B + TimingFilter + BB + valid/timing ──
+    # P0B: 价格 vs EMA200
+    _p0b_price  = float(r.get('price', 0) or 0)
+    _p0b_ema200 = float(bd.get('EMA200', 0) or 0)
+    if _p0b_ema200 == 0:
+        # 从breakdown中找EMA200确认字段
+        _ema200_str = str(bd.get('EMA200确认', '') or '')
+        import re as _re2
+        _em = _re2.search(r'EMA200=([\d.]+)', _ema200_str)
+        if _em:
+            _p0b_ema200 = float(_em.group(1))
+    if _p0b_ema200 > 0:
+        _p0b_gap = round((_p0b_price - _p0b_ema200) / _p0b_ema200 * 100, 2)
+        _p0b_status = '✅ 价格在EMA200上方' if _p0b_price > _p0b_ema200 else '🔴 价格在EMA200下方'
+        lines.append(f"  P0B：{_p0b_status} · 价格${_p0b_price:,.0f} vs EMA200${_p0b_ema200:,.0f}（{_p0b_gap:+.2f}%）")
+    # TimingFilter
+    _tf_status = r.get('timing_status', 'UNKNOWN')
+    _tf_score  = r.get('timing_score', 0)
+    _tf_result = r.get('timing_result', {}) or {}
+    _tf_reason = ''
+    if isinstance(_tf_result, dict):
+        _tf_bd = _tf_result.get('breakdown', {}) or {}
+        _tf_reason = _tf_bd.get('reason', '') or _tf_bd.get('note', '')
+    _tf_icon = '✅' if _tf_status == 'READY' else '⏸️' if _tf_status == 'STANDBY' else '⚫'
+    lines.append(f"  TimingFilter：{_tf_icon} {_tf_status} · {_tf_score}分 · {_tf_reason[:60] if _tf_reason else '评分未达门槛'}")
+    # valid + timing summary
+    _valid = r.get('valid', r.get('valid_signal', False))
+    lines.append(f"  valid={_valid} | timing={_tf_status} | score={r.get('score_final','?')} | grade={r.get('effective_grade','?')}")
+    # BB布林带
+    try:
+        from brahma_brain.brahma_bus import get_klines as _get_kl
+        import numpy as _np
+        _kl = _get_kl(r.get('symbol', 'BTCUSDT'), '1h', limit=25)
+        if _kl and len(_kl) >= 20:
+            _closes = _np.array([float(k[4]) for k in _kl[-20:]])
+            _bb_mid = float(_np.mean(_closes))
+            _bb_std = float(_np.std(_closes))
+            _bb_up  = _bb_mid + 2 * _bb_std
+            _bb_lo  = _bb_mid - 2 * _bb_std
+            _cur_p  = float(r.get('price', 0))
+            _bb_pos = round((_cur_p - _bb_lo) / (_bb_up - _bb_lo) * 100, 1) if (_bb_up - _bb_lo) > 0 else 50
+            _bb_zone = '上轨区' if _bb_pos > 80 else '下轨区' if _bb_pos < 20 else '中轨区'
+            lines.append(f"  BB(1H·20)：pos={_bb_pos}%({_bb_zone}) 上轨=${_bb_up:,.0f} 中轨=${_bb_mid:,.0f} 下轨=${_bb_lo:,.0f}")
+    except Exception:
+        pass
+    # GEX
+    try:
+        from brahma_brain.gex_scanner import get_gex_state as _get_gex
+        _sym_short = r.get('symbol', 'BTCUSDT').replace('USDT','').replace('PERP','')
+        _gex = _get_gex(_sym_short)
+        if _gex and _gex.get('max_gex_strike'):
+            _gex_dir   = _gex.get('gex_direction', 'N/A')
+            _gex_max   = _gex.get('max_gex_strike', 0)
+            _gex_min   = _gex.get('min_gex_strike', 0)
+            _gex_flip  = _gex.get('zero_flip', 0)
+            _gex_spot  = _gex.get('spot', 0)
+            _gex_icon  = '📈 做市商净多（价格被压制）' if _gex_dir == 'POSITIVE' else '📉 做市商净空（波动放大）'
+            _dist_max  = round((_gex_max - _gex_spot) / _gex_spot * 100, 2) if _gex_spot else 0
+            _dist_min  = round((_gex_min - _gex_spot) / _gex_spot * 100, 2) if _gex_spot else 0
+            _dist_flip = round((_gex_flip - _gex_spot) / _gex_spot * 100, 2) if _gex_spot else 0
+            lines.append(f"  GEX：{_gex_icon}")
+            lines.append(f"    MAX_GEX=${_gex_max:,.0f}({_dist_max:+.1f}%) MIN_GEX=${_gex_min:,.0f}({_dist_min:+.1f}%) ZeroFlip=${_gex_flip:,.0f}({_dist_flip:+.1f}%)")
+    except Exception:
+        pass
+    # ── [END 封印补全] ─────────────────────────────────────────────────────────
+
     # [Fix 2026-07-26] BULL_CHOCH + SHORT 矛盾检测
     _choch_list_fx = smc.get('structure', {}).get('choch', [])
     _has_bull_choch = any('BULL' in str(c).upper() for c in _choch_list_fx)
@@ -800,45 +866,6 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         lines.append(f"  [跨品种宏观层] 跳过: {_cross_err}")
     # ══ [END 跨品种宏观层] ══════════════════════════════════════════════
 
-
-    # ══ [设计院 2026-08-08] HCME情境匹配层注入 ═══════════════════════════════
-    try:
-        from hcme_matcher import get_hcme_matcher as _get_hcme
-        _hcme = _get_hcme()
-        _hcme_signal = {
-            'symbol': symbol,
-            'direction': direction,
-            'regime': r.get('regime', ''),
-            'score': float(str(r.get('score_final', 0)).split()[0]) if r.get('score_final') else 0,
-            'rsi_1h': float(str(r.get('rsi_1h', 50)).split()[0]) if r.get('rsi_1h') else 50,
-            'rsi_4h': float(str(r.get('rsi_4h', 50)).split()[0]) if r.get('rsi_4h') else 50,
-            'bbw': float(str(r.get('bbw', 2.0)).split()[0]) if r.get('bbw') else 2.0,
-            'price': float(r.get('price', 0)),
-        }
-        _hcme_result = _hcme.find_similar(_hcme_signal, top_k=5)
-        if _hcme_result and isinstance(_hcme_result, dict):
-            _hwr = _hcme_result.get('historical_wr', 0)
-            _hconf = _hcme_result.get('confidence', 0)
-            _hadj = _hcme_result.get('hcme_score_adj', 0)
-            _hsims = _hcme_result.get('similar_cases', [])
-            _hcme_lines = [
-                "",
-                "╬" + "═"*58,
-                "  🔍 HCME情境匹配 (hcme_matcher · 历史相似信号对标)",
-                "╬" + "═"*58,
-                f"  相似案例数: {len(_hsims)}  历史WR: {_hwr:.1%}  置信度: {_hconf:.2f}",
-                f"  HCME评分调整: {'+' if _hadj>=0 else ''}{_hadj}分",
-            ]
-            for _hs in _hsims[:3]:
-                _outcome = _hs.get('outcome', '?')
-                _pnl = _hs.get('pnl_pct', 0)
-                _sim = _hs.get('similarity', 0)
-                _icon = '✅' if 'TP' in str(_outcome) or 'WIN' in str(_outcome) else '❌' if 'SL' in str(_outcome) or 'LOSS' in str(_outcome) else '⏳'
-                _hcme_lines.append(f"  {_icon} sim={_sim:.3f} outcome={_outcome} pnl={_pnl:+.2f}%")
-            lines += _hcme_lines
-    except Exception as _hcme_err:
-        lines.append(f"  [HCME匹配层] 跳过: {_hcme_err}")
-    # ══ [END HCME层] ══════════════════════════════════════════════════════
 
     # ══ [设计院 2026-08-08] 决策树层注入 ════════════════════════════════
     try:
