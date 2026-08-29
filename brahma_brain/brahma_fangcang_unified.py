@@ -114,8 +114,11 @@ def _get_cases_adj(symbol: str, ms: dict, signal_dir: str, regime: str) -> tuple
             0.01                           # 最终安全値（0.01=1%，普通压缩程度）
         )
         bbw = float(bbw)
-        # bbw单位归一化：如果>1说明是百分比形式转小数
-        if bbw > 1:
+        # [2026-08-29 苏摩111修复] bbw单位归一化
+        # 案例库存储格式是小数（0.005~0.12）
+        # brahma_core 传入格式可能是：0.84（百分比）或 0.0084（小数）
+        # 判断逻辑：>0.1 = 百分比格式，除以100转为小数
+        if bbw > 0.1:
             bbw = bbw / 100
         rsi = float(ms.get('rsi_1h', ms.get('rsi', 50)) or 50)
 

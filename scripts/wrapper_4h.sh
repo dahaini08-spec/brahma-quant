@@ -37,4 +37,7 @@ run_step "5/6 macro_ai_bridge" bash "$RUNNER" timeout 60 python3 scripts/macro_a
 
 run_step "6/6 zone_forecast" bash "$RUNNER" timeout 60 python3 brahma_brain/price_zone_engine.py --symbols BTCUSDT ETHUSDT --push 2>&1 | tail -2
 
+# [2026-08-29 苏摩111] 新增 step7：刷新 fangcang_dharma_realtime（513标的方仓快照）
+run_step "7/7 fangcang_realtime" bash "$RUNNER" timeout 90 python3 scripts/fangcang_realtime_refresh.py 2>&1 | tail -3
+
 echo "[wrapper-4h] 完成 $(date '+%Y-%m-%d %H:%M:%S') | 错误数=$ERRORS"

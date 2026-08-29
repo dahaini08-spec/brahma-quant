@@ -877,10 +877,20 @@ def run():
             silent_syms.append(f"{sym}({status})")
             pass  # [静默]
         elif events:
-            # 有触发事件
-            write_trigger(sym, events, data)
-            state[f'{sym}_last_trigger'] = time.time()
-            triggered_syms.append(sym)
+            # [2026-08-29 苏摩111修复] 信号写入前强制过体制死穴检查（防止 BEAR_RECOVERY 倒空/BULL_TREND 倒多）
+            _sig_regime = data.get('regime', '')
+            _sig_dir = 'SHORT' if any('BEAR' in str(e) or 'OVERBOUGHT' in str(e) or 'BREAK' in str(e) for e in events) else 'LONG'
+            _DEAD_SHORT = {'BEAR_RECOVERY', 'BULL_EARLY'}  # 这两个体制做空 WR=0%
+            _DEAD_LONG  = {'BEAR_TREND'}                   # BEAR_TREND 做多 死穴
+            if _sig_dir == 'SHORT' and _sig_regime in _DEAD_SHORT:
+                pass  # [封禁] {sym} {_sig_regime} SHORT = 死穴，不写入
+            elif _sig_dir == 'LONG' and _sig_regime in _DEAD_LONG:
+                pass  # [封禁] {sym} {_sig_regime} LONG = 死穴，不写入
+            else:
+                # 有触发事件
+                write_trigger(sym, events, data)
+                state[f'{sym}_last_trigger'] = time.time()
+                triggered_syms.append(sym)
             for ev in events:
                 pass  # [静默]
         else:
