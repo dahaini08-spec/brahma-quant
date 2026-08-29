@@ -1,0 +1,356 @@
+{
+  "_meta": {
+    "version": "2.0",
+    "generated": "2026-08-29 06:12 UTC",
+    "source": "fangcang_merged_v2.json 20392条",
+    "description": "40年经验矩阵：体制×方向×周期×RSI×burst力度",
+    "total_entries": 69
+  },
+  "matrix": {
+    "BULL_TREND:LONG:1h": {
+      "wr": 1.0,
+      "ev": 6.253,
+      "n": 37
+    },
+    "BULL_TREND:LONG:4h": {
+      "wr": 1.0,
+      "ev": 7.424,
+      "n": 316
+    },
+    "BULL_TREND:LONG:1d": {
+      "wr": 1.0,
+      "ev": 18.975,
+      "n": 24
+    },
+    "BULL_EARLY:LONG:15m": {
+      "wr": 1.0,
+      "ev": 2.131,
+      "n": 217
+    },
+    "BULL_EARLY:LONG:1h": {
+      "wr": 1.0,
+      "ev": 2.935,
+      "n": 538
+    },
+    "BULL_EARLY:LONG:4h": {
+      "wr": 1.0,
+      "ev": 4.5,
+      "n": 1186
+    },
+    "BULL_EARLY:LONG:1d": {
+      "wr": 1.0,
+      "ev": 9.925,
+      "n": 65
+    },
+    "BEAR_TREND:SHORT:15m": {
+      "wr": 0.0,
+      "ev": -5.055,
+      "n": 9
+    },
+    "BEAR_TREND:SHORT:1h": {
+      "wr": 0.0,
+      "ev": -6.028,
+      "n": 62
+    },
+    "BEAR_TREND:SHORT:4h": {
+      "wr": 0.0,
+      "ev": -6.691,
+      "n": 304
+    },
+    "BEAR_TREND:SHORT:1d": {
+      "wr": 0.0,
+      "ev": -12.65,
+      "n": 14
+    },
+    "BEAR_EARLY:SHORT:15m": {
+      "wr": 0.0,
+      "ev": -2.252,
+      "n": 219
+    },
+    "BEAR_EARLY:SHORT:1h": {
+      "wr": 0.0,
+      "ev": -2.777,
+      "n": 560
+    },
+    "BEAR_EARLY:SHORT:4h": {
+      "wr": 0.0,
+      "ev": -4.18,
+      "n": 1161
+    },
+    "BEAR_EARLY:SHORT:1d": {
+      "wr": 0.0,
+      "ev": -8.363,
+      "n": 73
+    },
+    "CHOP_MID:LONG:15m": {
+      "wr": 0.668,
+      "ev": 0.224,
+      "n": 3554
+    },
+    "CHOP_MID:LONG:1h": {
+      "wr": 0.591,
+      "ev": 0.018,
+      "n": 1527
+    },
+    "CHOP_MID:LONG:4h": {
+      "wr": 0.306,
+      "ev": -1.637,
+      "n": 2420
+    },
+    "CHOP_MID:LONG:1d": {
+      "wr": 0.262,
+      "ev": -2.915,
+      "n": 61
+    },
+    "CHOP_MID:SHORT:15m": {
+      "wr": 0.312,
+      "ev": -0.205,
+      "n": 4039
+    },
+    "CHOP_MID:SHORT:1h": {
+      "wr": 0.447,
+      "ev": 0.091,
+      "n": 1643
+    },
+    "CHOP_MID:SHORT:4h": {
+      "wr": 0.706,
+      "ev": 1.995,
+      "n": 2309
+    },
+    "CHOP_MID:SHORT:1d": {
+      "wr": 0.627,
+      "ev": 3.429,
+      "n": 51
+    },
+    "BULL_TREND:LONG:RSI55_70": {
+      "wr": 1.0,
+      "ev": 7.934,
+      "n": 295
+    },
+    "BULL_TREND:LONG:RSI70_100": {
+      "wr": 1.0,
+      "ev": 8.326,
+      "n": 85
+    },
+    "BULL_EARLY:LONG:RSI0_30": {
+      "wr": 1.0,
+      "ev": 2.69,
+      "n": 23
+    },
+    "BULL_EARLY:LONG:RSI30_45": {
+      "wr": 1.0,
+      "ev": 4.046,
+      "n": 194
+    },
+    "BULL_EARLY:LONG:RSI45_55": {
+      "wr": 1.0,
+      "ev": 4.875,
+      "n": 415
+    },
+    "BULL_EARLY:LONG:RSI55_70": {
+      "wr": 1.0,
+      "ev": 3.667,
+      "n": 1107
+    },
+    "BULL_EARLY:LONG:RSI70_100": {
+      "wr": 1.0,
+      "ev": 4.099,
+      "n": 267
+    },
+    "BEAR_TREND:SHORT:RSI0_30": {
+      "wr": 0.0,
+      "ev": -6.635,
+      "n": 53
+    },
+    "BEAR_TREND:SHORT:RSI30_45": {
+      "wr": 0.0,
+      "ev": -6.782,
+      "n": 336
+    },
+    "BEAR_EARLY:SHORT:RSI0_30": {
+      "wr": 0.0,
+      "ev": -3.505,
+      "n": 215
+    },
+    "BEAR_EARLY:SHORT:RSI30_45": {
+      "wr": 0.0,
+      "ev": -3.525,
+      "n": 1169
+    },
+    "BEAR_EARLY:SHORT:RSI45_55": {
+      "wr": 0.0,
+      "ev": -4.486,
+      "n": 435
+    },
+    "BEAR_EARLY:SHORT:RSI55_70": {
+      "wr": 0.0,
+      "ev": -3.55,
+      "n": 179
+    },
+    "BEAR_EARLY:SHORT:RSI70_100": {
+      "wr": 0.0,
+      "ev": -3.387,
+      "n": 15
+    },
+    "CHOP_MID:LONG:RSI0_30": {
+      "wr": 0.596,
+      "ev": -0.132,
+      "n": 104
+    },
+    "CHOP_MID:LONG:RSI30_45": {
+      "wr": 0.519,
+      "ev": -0.219,
+      "n": 1040
+    },
+    "CHOP_MID:LONG:RSI45_55": {
+      "wr": 0.643,
+      "ev": -0.087,
+      "n": 787
+    },
+    "CHOP_MID:LONG:RSI55_70": {
+      "wr": 0.546,
+      "ev": -0.382,
+      "n": 4868
+    },
+    "CHOP_MID:LONG:RSI70_100": {
+      "wr": 0.349,
+      "ev": -1.498,
+      "n": 763
+    },
+    "CHOP_MID:SHORT:RSI0_30": {
+      "wr": 0.651,
+      "ev": 1.774,
+      "n": 700
+    },
+    "CHOP_MID:SHORT:RSI30_45": {
+      "wr": 0.452,
+      "ev": 0.49,
+      "n": 5352
+    },
+    "CHOP_MID:SHORT:RSI45_55": {
+      "wr": 0.323,
+      "ev": -0.027,
+      "n": 842
+    },
+    "CHOP_MID:SHORT:RSI55_70": {
+      "wr": 0.449,
+      "ev": 0.246,
+      "n": 1039
+    },
+    "CHOP_MID:SHORT:RSI70_100": {
+      "wr": 0.404,
+      "ev": 0.024,
+      "n": 109
+    },
+    "BULL_TREND:LONG:burst0_0.5": {
+      "wr": 1.0,
+      "ev": 9.878,
+      "n": 96
+    },
+    "BULL_TREND:LONG:burst0.5_1.5": {
+      "wr": 1.0,
+      "ev": 6.967,
+      "n": 128
+    },
+    "BULL_TREND:LONG:burst1.5_99": {
+      "wr": 1.0,
+      "ev": 7.744,
+      "n": 156
+    },
+    "BULL_EARLY:LONG:burst0_0.5": {
+      "wr": 1.0,
+      "ev": 3.627,
+      "n": 1132
+    },
+    "BULL_EARLY:LONG:burst0.5_1.5": {
+      "wr": 1.0,
+      "ev": 3.777,
+      "n": 380
+    },
+    "BULL_EARLY:LONG:burst1.5_99": {
+      "wr": 1.0,
+      "ev": 5.025,
+      "n": 494
+    },
+    "BEAR_TREND:SHORT:burst0_0.5": {
+      "wr": 0.0,
+      "ev": -7.043,
+      "n": 114
+    },
+    "BEAR_TREND:SHORT:burst0.5_1.5": {
+      "wr": 0.0,
+      "ev": -6.585,
+      "n": 135
+    },
+    "BEAR_TREND:SHORT:burst1.5_99": {
+      "wr": 0.0,
+      "ev": -6.704,
+      "n": 140
+    },
+    "BEAR_EARLY:SHORT:burst0_0.5": {
+      "wr": 0.0,
+      "ev": -3.457,
+      "n": 1179
+    },
+    "BEAR_EARLY:SHORT:burst0.5_1.5": {
+      "wr": 0.0,
+      "ev": -3.759,
+      "n": 359
+    },
+    "BEAR_EARLY:SHORT:burst1.5_99": {
+      "wr": 0.0,
+      "ev": -4.393,
+      "n": 475
+    },
+    "CHOP_MID:LONG:burst0_0.5": {
+      "wr": 0.613,
+      "ev": 0.002,
+      "n": 5664
+    },
+    "CHOP_MID:LONG:burst0.5_1.5": {
+      "wr": 0.316,
+      "ev": -1.617,
+      "n": 881
+    },
+    "CHOP_MID:LONG:burst1.5_99": {
+      "wr": 0.28,
+      "ev": -1.868,
+      "n": 1017
+    },
+    "CHOP_MID:SHORT:burst0_0.5": {
+      "wr": 0.378,
+      "ev": 0.035,
+      "n": 6291
+    },
+    "CHOP_MID:SHORT:burst0.5_1.5": {
+      "wr": 0.717,
+      "ev": 2.092,
+      "n": 863
+    },
+    "CHOP_MID:SHORT:burst1.5_99": {
+      "wr": 0.747,
+      "ev": 2.337,
+      "n": 888
+    },
+    "ELITE:CHOP_MID:SHORT:RSI<30:burst>1.5": {
+      "wr": 0.796,
+      "ev": 2.679,
+      "n": 329
+    },
+    "ELITE:BULL_TREND:LONG:4h:burst>1.5": {
+      "wr": 1.0,
+      "ev": 7.744,
+      "n": 156
+    },
+    "ELITE:BULL_EARLY:LONG:burst>1.5:genuine": {
+      "wr": 1.0,
+      "ev": 5.153,
+      "n": 467
+    },
+    "ELITE:CHOP_MID:SHORT:burst>1.5:RSI<45": {
+      "wr": 0.755,
+      "ev": 2.353,
+      "n": 842
+    }
+  }
+}
