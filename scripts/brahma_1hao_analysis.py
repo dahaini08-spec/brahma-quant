@@ -740,20 +740,27 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
                 _fc_lines.append("  Top3历史案例:")
                 for _tl in _top3.strip().split('\n'):
                     _fc_lines.append(f"  {_tl}")
-            # [2026-08-20] 阶段2：展示周月线锚定 + Elliott + VPA
+            # [P0修复 2026-08-29 苏摩111] 直接调用get_features()实时计算，不读缓存_anchor_summary
             _htf = _fc_data.get('htf_anchor', {})
+            try:
+                from brahma_brain.weekly_monthly_anchor import get_anchor as _wma_get
+                _cur_price_htf = float(r.get('price', 0) if isinstance(r, dict) else 0)
+                _wma_inst = _wma_get(symbol)
+                _htf = {**_htf, **_wma_inst.get_features(current_price=_cur_price_htf)}
+            except Exception:
+                pass
             _ew  = _fc_data.get('elliott_wave', {})
             _vpa = _fc_data.get('vpa', {})
-            if _htf and _htf.get('_anchor_summary'):
-                _fc_lines.append(f"  \u3010HTF\u5468\u6708\u7ebf\u9501\u5b9a\u3011{_htf['_anchor_summary']}")
-                # [2026-08-28 \u5b57\u6bb5\u540d\u5bf9\u9f50\u4fee\u590d] weekly_monthly_anchor \u5b9e\u9645\u8fd4\u56de\u5b57\u6bb5\u540d
-                _w52h    = _htf.get('52w_high', _htf.get('_w52_high', 0))
-                _w52l    = _htf.get('52w_low',  _htf.get('_w52_low',  0))
-                w3_pos   = _htf.get('weekly_position', _htf.get('weekly_pos', 0.5))
-                htf_conf = _htf.get('htf_resonance', _htf.get('htf_confluence', 0.5))
-                # \u4ec5\u5f53\u5b9e\u9645\u6709\u6570\u636e\u65f6\u624d\u8f93\u51fa\u7b2c\u4e8c\u884c\uff0c\u907f\u514d $0~$0 \u91cd\u590d\u884c
+            if _htf and (_htf.get('htf_bias') or _htf.get('_anchor_summary')):
+                _htf_bias_v = _htf.get('htf_bias', 'NEUTRAL')
+                _htf_res_v  = _htf.get('htf_resonance', 0.0)
+                _htf_add_v  = int(_htf.get('score_addon', 0) or 0)
+                _w52h = _htf.get('52w_high', 0)
+                _w52l = _htf.get('52w_low', 0)
+                w3_pos = _htf.get('weekly_position', 0.5)
+                _fc_lines.append(f"  【HTF周月线锚定】{_htf_add_v:+d} ({_htf_bias_v} 共振={_htf_res_v:.2f})")
                 if _w52h > 0 and _w52l > 0:
-                    _fc_lines.append(f"  52W\u533a\u95f4: ${_w52l:,.0f}~${_w52h:,.0f} | \u5468\u7ebf\u4f4d\u7f6e:{w3_pos*100:.1f}% | HTF\u5171\u632f:{htf_conf:.2f}")
+                    _fc_lines.append(f"  52W区间: ${_w52l:,.0f}~${_w52h:,.0f} | 周线位置:{w3_pos*100:.1f}% | HTF共振:{_htf_res_v:.2f}")
             if _ew and _ew.get('wave_type') != 'UNKNOWN':
                 _fc_lines.append(f"  \u3010Elliott波浪】{_ew.get('summary','')}")
                 if _ew.get('fib_levels'):
