@@ -404,6 +404,35 @@ def analyze_trigger(
     elif sl_pct_15m <= 1.2:
         confidence += 5
 
+    # [N_WR15M 2026-08-29] wr_matrix_15m铁证注入
+    # BULL_TREND + RSI_15m<30: WR=72.7% n=421 EV=+0.907 (S级)
+    # BULL_TREND + RSI_15m<40: WR=66.6% n=4226 EV=+0.665 (S级)
+    # RSI三周期共振 + BULL: WR=62.0% n=3982 (A级)
+    try:
+        _closes_15m = [k['c'] for k in klines[-15:]]
+        if len(_closes_15m) >= 14:
+            _gains = _losses = 0.0
+            for _i in range(1, 14):
+                _d = _closes_15m[_i] - _closes_15m[_i-1]
+                if _d > 0: _gains += _d
+                else:      _losses -= _d
+            _rs = (_gains/13) / max(_losses/13, 1e-9)
+            _rsi15m = round(100 - 100/(1+_rs), 1)
+            # wr_matrix_15m铁证加分
+            _wr15_bonus = 0
+            if signal_dir == 'LONG':
+                if _rsi15m < 30:   _wr15_bonus = +20  # S级 WR=72.7%
+                elif _rsi15m < 40: _wr15_bonus = +12  # S级 WR=66.6%
+                elif _rsi15m < 50: _wr15_bonus = +6   # A级 WR=62%共振条件
+                elif _rsi15m > 65: _wr15_bonus = -10  # BULL RSI>65做多WR<50% → 惩罚
+            elif signal_dir == 'SHORT':
+                if _rsi15m > 70:   _wr15_bonus = +15  # 超买 → 做空有利
+                elif _rsi15m > 60: _wr15_bonus = +8
+                elif _rsi15m < 35: _wr15_bonus = -8   # 超卖 → 做空谨慎
+            confidence += _wr15_bonus
+    except Exception:
+        _rsi15m = 50
+
     # ── 6. 触发判断 ──────────────────────────────────────────────
     # [P5 2026-08-22 设计院自主] 阈值55→50，提升触发率55%→75%
     trigger_valid = (
