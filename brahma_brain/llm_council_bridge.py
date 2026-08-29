@@ -299,6 +299,10 @@ def _risk_agent_review(signal: Dict) -> Dict:
         liq_bias=_liq_bias_str,
         liq_sources=_liq_src_str,
     )
+    # [ReAct R2] 若有R1分歧上下文，追加到prompt让Agent重新审视
+    _react_ctx = signal.get('_react_r1_context', '')
+    if _react_ctx:
+        prompt += f'\n\n[ReAct观察] 本轮R1各专家判断存在分歧，请基于以下信息重新审视并更新你的score_adj：\n{_react_ctx}\n请重新输出修正后的score_adj和top_risk。' 
 
     result = _call_llm(prompt, 'RiskAgent', model='advanced')   # 风控视角 bedrock-claude [多模型 2026-08-15 苏摩111]
     if result:
@@ -451,6 +455,10 @@ def _quant_agent_review(signal: Dict, similar_signals: Dict) -> Dict:
 返回JSON:
 {{"score_adj": <整数>, "quant_bias": "<状态>", "wr_verdict": "<WR={wr:.1f}% n={n}的一句话>", "source": "llm_quant"}}"""
 
+        # [ReAct R2] 若有R1分歧上下文，追加到prompt
+        _react_ctx_q = signal.get('_react_r1_context', '')
+        if _react_ctx_q:
+            prompt += f'\n\n[ReAct观察] R1分歧: {_react_ctx_q}\n请重新输出修正后的score_adj。'
         _cr = _call_reasoning_global
         if _cr is None:
             from reasoning_client import call_reasoning as _cr
@@ -686,6 +694,42 @@ def review(
             devil_result = _f_devil.result(timeout=18)
     elapsed = time.time() - t0
 
+    # ── [ReAct R2 2026-08-29 苏摩111] 迭代议会层 ──────────────────────
+    # AI-Trader建ReAct思想：Thought→Action→Observation迭代推理
+    # 触发条件：Risk和Quant分歧（方向相反），进行R2迭代让专家看到彼此结果后重新审视
+    _risk_adj_r1  = risk_result.get('score_adj', 0)
+    _quant_adj_r1 = quant_result.get('score_adj', 0)
+    _disagreement = (_risk_adj_r1 > 3 and _quant_adj_r1 < -3) or (_risk_adj_r1 < -3 and _quant_adj_r1 > 3)
+    _react_triggered = False
+
+    if not _is_lite_mode and _disagreement:
+        # R2：把R1结果注入各专家的prompt，过一轮Observation再更新判断
+        _react_triggered = True
+        _r1_summary = (
+            f'[R1议会判断] '
+            f'Risk={_risk_adj_r1:+d}({risk_result.get("top_risk","")[:40]}) '
+            f'Macro={macro_result.get("score_adj",0):+d}({macro_result.get("summary","")[:30]}) '
+            f'Quant={_quant_adj_r1:+d}({quant_result.get("summary","")[:30]}) '
+            f'Devil={devil_result.get("score_adj",0):+d}'
+        )
+        _flat_r2 = dict(flat_signal)
+        _flat_r2['_react_r1_context'] = _r1_summary
+        try:
+            with _cf.ThreadPoolExecutor(max_workers=2) as _pool_r2:
+                _fr2_risk  = _pool_r2.submit(_risk_agent_review,  _flat_r2)
+                _fr2_quant = _pool_r2.submit(_quant_agent_review, _flat_r2, flat_signal.get('_similar_signals'))
+                risk_result_r2  = _fr2_risk.result(timeout=15)
+                quant_result_r2 = _fr2_quant.result(timeout=15)
+            # 取R1和R2平均，平滑迭代更新
+            risk_result['score_adj']  = round((_risk_adj_r1  + risk_result_r2.get('score_adj', _risk_adj_r1))  / 2)
+            quant_result['score_adj'] = round((_quant_adj_r1 + quant_result_r2.get('score_adj', _quant_adj_r1)) / 2)
+            risk_result['react_r2']  = risk_result_r2.get('summary', '')[:60]
+            quant_result['react_r2'] = quant_result_r2.get('summary', '')[:60]
+            logger.info(f'[ReAct R2] 分歧解决: Risk {_risk_adj_r1:+d}→{risk_result["score_adj"]:+d} Quant {_quant_adj_r1:+d}→{quant_result["score_adj"]:+d}')
+        except Exception as _r2e:
+            logger.warning(f'[ReAct R2] 失败，保持R1结果: {_r2e}')
+    # ── [ReAct R2 END] ──────────────────────────────────────────────────
+
     # ── 分数合并 ──────────────────────────────────────────────
     risk_adj  = risk_result.get('score_adj', 0)
     macro_adj = macro_result.get('score_adj', 0)
@@ -739,6 +783,7 @@ def review(
         'score_after':  score + final_adj if MODE == 'live' else score,
         'mode':       MODE,
         'elapsed_ms': round(elapsed * 1000),
+        'react_triggered': _react_triggered,  # [ReAct R2] 是否触发迭代辩论
         'ts':         datetime.now(timezone.utc).isoformat(),
         'from_cache': False,
         'council_mode': 'lite(RiskOnly)' if _is_lite_mode else 'full(4agents)',
