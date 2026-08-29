@@ -1306,6 +1306,23 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
     except Exception:
         pass  # market_quadrant失败不影响主流程
 
+    # ── [AI-Trader自动发布 2026-08-29 苏摩111] ──────────────────────
+    # 触发条件: valid=True + rr1≥1.0（赔率足够才发布）
+    if result.get('valid_signal') and float(result.get('rr1', 0) or 0) >= 1.0:
+        try:
+            import sys as _sys, os as _os
+            _scripts_dir = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), 'scripts')
+            if _scripts_dir not in _sys.path:
+                _sys.path.insert(0, _scripts_dir)
+            from ai4trade_publisher import publish_signal as _publish_signal
+            _pub = _publish_signal(result)
+            result['ai4trade'] = _pub
+            if _pub.get('success'):
+                logger.info(f'[AI-Trader] 发布成功: {_pub.get("url","")}')
+        except Exception as _pub_e:
+            result['ai4trade'] = {'success': False, 'reason': str(_pub_e)[:60]}
+    # ── [AI-Trader END] ───────────────────────────────────────────────
+
     return result
 
 
