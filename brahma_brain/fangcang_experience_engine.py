@@ -106,6 +106,26 @@ def get_exp_adj(
     burst_key  = _burst_bucket(burst_mult)
     tf_norm    = timeframe.lower().replace('min', 'm').replace('h', 'h')
 
+    # ── 陷阱拦截（回测铁证 2026-08-29 苏摩111 n=298）──────────────────
+    # BEAR_TREND:SHORT:RSI<45 WR=35% n=298 → 严重陷阱
+    # 原因：BEAR_TREND低RSI=超卖随时反弹，做空在最差位置
+    if regime == 'BEAR_TREND' and signal_dir == 'SHORT' and rsi < 45:
+        return {
+            'adj': -6.0, 'confidence': 'HIGH',
+            'rule_hit': 'TRAP:BEAR_TREND:SHORT:RSI<45',
+            'wr': 0.35, 'ev': -0.3, 'n': 298,
+            'reasoning': 'BEAR_TREND做空+RSI<45=超卖陷阱WR=35%(n=298铁证)，等RSI>50再进入',
+        }
+
+    # BULL_EARLY:LONG:RSI<30 小样本陷阱
+    if regime == 'BULL_EARLY' and signal_dir == 'LONG' and rsi < 30:
+        return {
+            'adj': -4.0, 'confidence': 'LOW',
+            'rule_hit': 'TRAP:BULL_EARLY:LONG:RSI<30',
+            'wr': 0.25, 'ev': -0.2, 'n': 8,
+            'reasoning': 'BULL_EARLY做多RSI<30=假突破风险WR=25%，小样本谨慎',
+        }
+
     # ── 三层查询，优先级：精确 > 周期 > 体制方向 ──────────────────────
     candidate_keys = [
         # 精确：体制+方向+RSI+burst（最高权重）

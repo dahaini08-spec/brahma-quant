@@ -4,7 +4,12 @@
     "generated": "2026-08-29 06:12 UTC",
     "source": "fangcang_merged_v2.json 20392条",
     "description": "40年经验矩阵：体制×方向×周期×RSI×burst力度",
-    "total_entries": 69
+    "total_entries": 69,
+    "backtest_validated": true,
+    "backtest_date": "2026-08-29",
+    "backtest_period": "2022-2026 BTC+ETH 2001笔",
+    "oos_wr": 0.45,
+    "is_oos_delta": 0.03
   },
   "matrix": {
     "BULL_TREND:LONG:1h": {
@@ -125,27 +130,48 @@
     "BULL_TREND:LONG:RSI55_70": {
       "wr": 1.0,
       "ev": 7.934,
-      "n": 295
+      "n": 295,
+      "wr_backtest": 0.47,
+      "n_backtest": 88,
+      "wr_final": 0.682,
+      "backtest_source": "backtest_2022_2026"
     },
     "BULL_TREND:LONG:RSI70_100": {
       "wr": 1.0,
       "ev": 8.326,
-      "n": 85
+      "n": 85,
+      "wr_backtest": 0.45,
+      "n_backtest": 184,
+      "wr_final": 0.67,
+      "backtest_source": "backtest_2022_2026"
     },
     "BULL_EARLY:LONG:RSI0_30": {
       "wr": 1.0,
       "ev": 2.69,
-      "n": 23
+      "n": 23,
+      "wr_backtest": 0.25,
+      "n_backtest": 8,
+      "wr_final": 0.55,
+      "backtest_source": "backtest_2022_2026",
+      "note": "小样本陷阱"
     },
     "BULL_EARLY:LONG:RSI30_45": {
       "wr": 1.0,
       "ev": 4.046,
-      "n": 194
+      "n": 194,
+      "wr_backtest": 0.67,
+      "n_backtest": 15,
+      "wr_final": 0.802,
+      "backtest_source": "backtest_2022_2026"
     },
     "BULL_EARLY:LONG:RSI45_55": {
       "wr": 1.0,
       "ev": 4.875,
-      "n": 415
+      "n": 415,
+      "wr_backtest": 0.55,
+      "n_backtest": 11,
+      "wr_final": 0.73,
+      "backtest_source": "backtest_2022_2026"
     },
     "BULL_EARLY:LONG:RSI55_70": {
       "wr": 1.0,
@@ -155,27 +181,48 @@
     "BULL_EARLY:LONG:RSI70_100": {
       "wr": 1.0,
       "ev": 4.099,
-      "n": 267
+      "n": 267,
+      "wr_backtest": 0.61,
+      "n_backtest": 49,
+      "wr_final": 0.766,
+      "backtest_source": "backtest_2022_2026"
     },
     "BEAR_TREND:SHORT:RSI0_30": {
       "wr": 0.0,
       "ev": -6.635,
-      "n": 53
+      "n": 53,
+      "wr_backtest": 0.45,
+      "n_backtest": 323,
+      "wr_final": 0.27,
+      "backtest_source": "backtest_2022_2026"
     },
     "BEAR_TREND:SHORT:RSI30_45": {
       "wr": 0.0,
       "ev": -6.782,
-      "n": 336
+      "n": 336,
+      "wr_backtest": 0.35,
+      "n_backtest": 298,
+      "wr_final": 0.21,
+      "backtest_source": "backtest_2022_2026",
+      "note": "陷阱！低RSI做空失效"
     },
     "BEAR_EARLY:SHORT:RSI0_30": {
       "wr": 0.0,
       "ev": -3.505,
-      "n": 215
+      "n": 215,
+      "wr_backtest": 0.56,
+      "n_backtest": 63,
+      "wr_final": 0.336,
+      "backtest_source": "backtest_2022_2026"
     },
     "BEAR_EARLY:SHORT:RSI30_45": {
       "wr": 0.0,
       "ev": -3.525,
-      "n": 1169
+      "n": 1169,
+      "wr_backtest": 0.5,
+      "n_backtest": 42,
+      "wr_final": 0.3,
+      "backtest_source": "backtest_2022_2026"
     },
     "BEAR_EARLY:SHORT:RSI45_55": {
       "wr": 0.0,
@@ -185,7 +232,11 @@
     "BEAR_EARLY:SHORT:RSI55_70": {
       "wr": 0.0,
       "ev": -3.55,
-      "n": 179
+      "n": 179,
+      "wr_backtest": 0.5,
+      "n_backtest": 38,
+      "wr_final": 0.3,
+      "backtest_source": "backtest_2022_2026"
     },
     "BEAR_EARLY:SHORT:RSI70_100": {
       "wr": 0.0,
@@ -351,6 +402,186 @@
       "wr": 0.755,
       "ev": 2.353,
       "n": 842
+    },
+    "BEAR_RECOVERY:LONG:RSI30_45": {
+      "wr": 0.83,
+      "wr_final": 0.83,
+      "n": 6,
+      "n_backtest": 6,
+      "ev": 0.0,
+      "backtest_source": "backtest_2022_2026",
+      "note": "小样本"
+    },
+    "BEAR_RECOVERY:LONG:RSI45_55": {
+      "wr": 0.57,
+      "wr_final": 0.57,
+      "n": 35,
+      "n_backtest": 35,
+      "ev": 0.0,
+      "backtest_source": "backtest_2022_2026"
+    },
+    "BEAR_RECOVERY:LONG:RSI55_70": {
+      "wr": 0.6,
+      "wr_final": 0.6,
+      "n": 60,
+      "n_backtest": 60,
+      "ev": 0.0,
+      "backtest_source": "backtest_2022_2026"
+    },
+    "BEAR_TREND:SHORT:RSI45_55": {
+      "wr": 0.48,
+      "wr_final": 0.48,
+      "n": 143,
+      "n_backtest": 143,
+      "ev": 0.0,
+      "backtest_source": "backtest_2022_2026"
+    },
+    "BEAR_TREND:SHORT:RSI55_70": {
+      "wr": 0.49,
+      "wr_final": 0.49,
+      "n": 199,
+      "n_backtest": 199,
+      "ev": 0.0,
+      "backtest_source": "backtest_2022_2026"
+    },
+    "BEAR_TREND:SHORT:RSI70_100": {
+      "wr": 0.48,
+      "wr_final": 0.48,
+      "n": 129,
+      "n_backtest": 129,
+      "ev": 0.0,
+      "backtest_source": "backtest_2022_2026"
+    },
+    "BULL_TREND:LONG:RSI0_30": {
+      "wr": 0.51,
+      "wr_final": 0.51,
+      "n": 47,
+      "n_backtest": 47,
+      "ev": 0.0,
+      "backtest_source": "backtest_2022_2026"
+    },
+    "BULL_TREND:LONG:RSI30_45": {
+      "wr": 0.53,
+      "wr_final": 0.53,
+      "n": 75,
+      "n_backtest": 75,
+      "ev": 0.0,
+      "backtest_source": "backtest_2022_2026"
+    }
+  },
+  "backtest_summary": {
+    "BEAR_EARLY:SHORT:RSI0_30": {
+      "wr": 0.56,
+      "n": 63,
+      "source": "backtest_2022_2026"
+    },
+    "BEAR_EARLY:SHORT:RSI30_45": {
+      "wr": 0.5,
+      "n": 42,
+      "source": "backtest_2022_2026"
+    },
+    "BEAR_EARLY:SHORT:RSI55_70": {
+      "wr": 0.5,
+      "n": 38,
+      "source": "backtest_2022_2026"
+    },
+    "BEAR_RECOVERY:LONG:RSI30_45": {
+      "wr": 0.83,
+      "n": 6,
+      "source": "backtest_2022_2026",
+      "note": "小样本"
+    },
+    "BEAR_RECOVERY:LONG:RSI45_55": {
+      "wr": 0.57,
+      "n": 35,
+      "source": "backtest_2022_2026"
+    },
+    "BEAR_RECOVERY:LONG:RSI55_70": {
+      "wr": 0.6,
+      "n": 60,
+      "source": "backtest_2022_2026"
+    },
+    "BEAR_TREND:SHORT:RSI0_30": {
+      "wr": 0.45,
+      "n": 323,
+      "source": "backtest_2022_2026"
+    },
+    "BEAR_TREND:SHORT:RSI30_45": {
+      "wr": 0.35,
+      "n": 298,
+      "source": "backtest_2022_2026",
+      "note": "陷阱！低RSI做空失效"
+    },
+    "BEAR_TREND:SHORT:RSI45_55": {
+      "wr": 0.48,
+      "n": 143,
+      "source": "backtest_2022_2026"
+    },
+    "BEAR_TREND:SHORT:RSI55_70": {
+      "wr": 0.49,
+      "n": 199,
+      "source": "backtest_2022_2026"
+    },
+    "BEAR_TREND:SHORT:RSI70_100": {
+      "wr": 0.48,
+      "n": 129,
+      "source": "backtest_2022_2026"
+    },
+    "BULL_EARLY:LONG:RSI0_30": {
+      "wr": 0.25,
+      "n": 8,
+      "source": "backtest_2022_2026",
+      "note": "小样本陷阱"
+    },
+    "BULL_EARLY:LONG:RSI30_45": {
+      "wr": 0.67,
+      "n": 15,
+      "source": "backtest_2022_2026"
+    },
+    "BULL_EARLY:LONG:RSI45_55": {
+      "wr": 0.55,
+      "n": 11,
+      "source": "backtest_2022_2026"
+    },
+    "BULL_EARLY:LONG:RSI70_100": {
+      "wr": 0.61,
+      "n": 49,
+      "source": "backtest_2022_2026"
+    },
+    "BULL_TREND:LONG:RSI0_30": {
+      "wr": 0.51,
+      "n": 47,
+      "source": "backtest_2022_2026"
+    },
+    "BULL_TREND:LONG:RSI30_45": {
+      "wr": 0.53,
+      "n": 75,
+      "source": "backtest_2022_2026"
+    },
+    "BULL_TREND:LONG:RSI55_70": {
+      "wr": 0.47,
+      "n": 88,
+      "source": "backtest_2022_2026"
+    },
+    "BULL_TREND:LONG:RSI70_100": {
+      "wr": 0.45,
+      "n": 184,
+      "source": "backtest_2022_2026"
+    },
+    "IS_BASELINE": {
+      "wr": 0.48,
+      "n": 1289,
+      "period": "2022-2024"
+    },
+    "OOS_BASELINE": {
+      "wr": 0.45,
+      "n": 712,
+      "period": "2025-2026"
+    },
+    "STABILITY": {
+      "wr_delta": 0.03,
+      "ev_delta": 0.163,
+      "verdict": "PASS"
     }
   }
 }
