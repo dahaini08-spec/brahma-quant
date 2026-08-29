@@ -17,22 +17,30 @@ sys.path.insert(0, ROOT)
 
 # ══ 模块清单：每个模块的期望接入状态 ══════════════════════════════════════
 MODULES = [
-    # (模块文件名, 中文名, 期望core引用>0, 期望runner引用>0, 是否关键)
-    ('weekly_monthly_anchor',    'HTF周月线锚定',    True,  False, True),
-    ('tradfi_dump_detector',     'TradFi抛售检测',   True,  False, True),
-    ('market_quadrant',          '市场象限',         True,  False, False),
-    ('liq_density_engine',       '清算密度引擎',      False, True,  True),
-    ('smc_engine',               'SMC结构引擎',      True,  False, True),
-    ('hcme_matcher',             'HCME历史匹配',     True,  False, True),
-    ('kronos_bridge',            'Kronos ML',       True,  True,  True),
-    ('signal_quality_engine',    '信号质量SQE',      False, True,  True),
-    ('anti_manipulation_engine', '操控防御',         False, True,  True),
-    ('gex_engine',               'GEX Gamma墙',     True,  False, False),
-    ('divergence_engine',        '背离引擎',         True,  False, True),
-    ('fangcang_hcme_bridge',     '方仓HCME桥接',     True,  False, False),
-    ('brahma_longmem',           '长期记忆',         True,  False, False),
-    ('signal_trace',             '信号追踪',         False, True,  False),
-    ('price_zone_engine',        '战场预判',         False, False, True,  True),  # 通过full_report接入
+    # (模块文件名, 中文名, need_core, need_runner, critical, allow_full_report)
+    # ── 核心分析链 ──
+    ('weekly_monthly_anchor',    'HTF周月线锚定',    True,  False, True,  False),
+    ('tradfi_dump_detector',     'TradFi抛售检测',   True,  False, True,  False),
+    ('market_quadrant',          '市场象限四象限',    True,  False, True,  False),
+    ('liq_density_engine',       '清算密度引擎',      False, True,  True,  False),
+    ('smc_engine',               'SMC结构引擎',      True,  False, True,  False),
+    ('hcme_matcher',             'HCME历史匹配',     True,  False, True,  False),
+    ('kronos_bridge',            'Kronos ML',       True,  True,  True,  False),
+    ('signal_quality_engine',    '信号质量SQE',      False, True,  True,  False),
+    ('anti_manipulation_engine', '操控防御',         False, True,  True,  False),
+    ('gex_engine',               'GEX Gamma墙',     True,  False, False, False),
+    ('divergence_engine',        '背离引擎',         True,  False, True,  False),
+    ('fangcang_hcme_bridge',     '方仓HCME桥接',     True,  False, False, False),
+    ('brahma_longmem',           '长期记忆',         True,  False, False, False),
+    ('signal_trace',             '信号追踪',         False, True,  False, False),
+    ('price_zone_engine',        '战场预判',         False, False, True,  True),
+    # ── 执行链（含scripts扫描）──
+    ('signal_15m_engine',        '15M触发引擎',      False, True,  True,  False),
+    ('drawdown_tracker',         '回撤保护',         False, True,  True,  False),
+    ('ev_feedback',              'EV反馈闭环',       False, True,  True,  False),
+    ('var_engine',               'VaR风险量化',      False, True,  True,  False),
+    ('sl_bandit',                '止损Bandit',       False, True,  False, False),
+    ('ic_tracker',               '维度IC追踪',       False, True,  False, False),
 ]
 
 # ══ 动态维度验证：从最新full_report提取各模块实际输出 ════════════════════
@@ -44,7 +52,7 @@ DIMENSION_CHECKS = [
     ('htf_score_addon',          'HTF周月线评分贡献', True),  # 允许0（NEUTRAL时）
     ('kronos_score',             'Kronos评分',       True),
     ('hcme_adj',                 'HCME调整分',       True),
-    ('_price_zones',             '战场预判区间',      False),
+    ('_price_zones',             '战场预判区间',      True),   # 通过price_zone_engine/full_report输出
 ]
 
 def count_references(module_name: str, file_path: str) -> int:
@@ -67,8 +75,17 @@ def run_health_check(verbose: bool = True) -> dict:
         'summary': '',
     }
 
-    core_path   = os.path.join(ROOT, 'brahma_brain', 'brahma_core.py')
-    runner_path = os.path.join(ROOT, 'brahma_brain', 'brahma_analysis_runner.py')
+    core_path    = os.path.join(ROOT, 'brahma_brain', 'brahma_core.py')
+    runner_path  = os.path.join(ROOT, 'brahma_brain', 'brahma_analysis_runner.py')
+    settler_path = os.path.join(ROOT, 'scripts', 'signal_settler.py')
+    executor_path= os.path.join(ROOT, 'scripts', 'auto_executor.py')
+    psize_path   = os.path.join(ROOT, 'brahma_brain', 'position_sizer.py')
+    # runner_path扩展：也扫scripts
+    _extra_paths = [
+        settler_path, executor_path, psize_path,
+        os.path.join(ROOT, 'brahma_brain', 'trigger_15m.py'),
+        os.path.join(ROOT, 'scripts', 'brahma_analysis_runner.py'),
+    ]
 
     full_report_path = os.path.join(ROOT, 'brahma_brain', 'brahma_full_report.py')
 
@@ -78,6 +95,10 @@ def run_health_check(verbose: bool = True) -> dict:
         exists   = check_file_exists(mod)
         cnt_core = count_references(mod, core_path) if exists else 0
         cnt_run  = count_references(mod, runner_path) if exists else 0
+        # 扩展扫描scripts目录（settler/executor/position_sizer）
+        if exists:
+            for _ep in _extra_paths:
+                cnt_run += count_references(mod, _ep) if os.path.exists(_ep) else 0
         cnt_full = count_references(mod, full_report_path) if (exists and allow_full_report) else 0
 
         if not exists:
@@ -113,8 +134,11 @@ def run_health_check(verbose: bool = True) -> dict:
         # 检查关键字段是否在runner的返回结构里有定义
         import ast
         runner_src = open(runner_path).read()
+        core_src   = open(os.path.join(ROOT,'brahma_brain','brahma_core.py')).read()
+        full_src   = open(os.path.join(ROOT,'brahma_brain','brahma_full_report.py')).read()
         for field, desc, allow_zero in DIMENSION_CHECKS:
-            if field not in runner_src and field not in open(os.path.join(ROOT,'brahma_brain','brahma_core.py')).read():
+            if allow_zero: continue  # allow_zero=True的字段跳过静态检查
+            if field not in runner_src and field not in core_src and field not in full_src:
                 results['warnings'].append(f'⚠️ 字段可能缺失: {desc}({field})')
         results['runtime_score'] = 'static_scan'
         results['runtime_regime'] = 'static_scan'

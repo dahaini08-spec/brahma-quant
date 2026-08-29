@@ -1274,6 +1274,38 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
     except Exception:
         pass
 
+    # ══ [P0接入 2026-08-29 苏摩111] signal_15m_engine — 15M触发信号生成 ══
+    # 接入位置：brahma_analysis_runner.run_analysis() 返回前
+    # 根囤：15M触发层是核心执行路径，但signal_15m_engine.py完全未被调用
+    try:
+        from brahma_brain.signal_15m_engine import generate_15m_signal as _s15_fn
+        _s15 = _s15_fn(sym)
+        if _s15 and isinstance(_s15, dict):
+            result['_signal_15m'] = _s15
+            result['signal_15m_trigger']  = _s15.get('trigger', False)
+            result['signal_15m_grade']    = _s15.get('grade', 0)
+            result['signal_15m_reason']   = _s15.get('reason', '')
+    except Exception:
+        pass  # signal_15m_engine失败不影响主流程
+
+    # ══ [P0接入 2026-08-29 苏摩111] market_quadrant — 四象限市场状态 ══
+    # 接入位置：brahma_analysis_runner.run_analysis() 返回前
+    # 根囤：LSR+FR+OI四象限判断完全未接入
+    try:
+        from brahma_brain.market_quadrant import get_quadrant as _mq_fn
+        _mq = _mq_fn(sym)
+        if _mq and isinstance(_mq, dict):
+            result['_market_quadrant'] = _mq
+            result['market_quadrant']  = _mq.get('quadrant', 'UNKNOWN')
+            result['mq_score_delta']   = int(_mq.get('score_delta', 0) or 0)
+            # 四象限评分贡献: 多头拥挤象限→score-15, 空头拥挤→score+12
+            _mq_delta = int(_mq.get('score_delta', 0) or 0)
+            if _mq_delta != 0:
+                result['score_final'] = round(float(result.get('score_final', 0) or 0) + _mq_delta, 1)
+                result['score'] = result['score_final']
+    except Exception:
+        pass  # market_quadrant失败不影响主流程
+
     return result
 
 
