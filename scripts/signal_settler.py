@@ -240,6 +240,23 @@ def settle_signal(sig: dict, dry_run: bool = False) -> dict | None:
     except Exception:
         pass  # Bandit不可用时静默降级，不影响结算主链路
 
+    # [IC引擎学习钩子 2026-08-29 苏摩111封印]
+    # 一单一单积累经验：每次结算后更新因子IC矩阵
+    # 这是40年老手经验的量化实现——每笔交易后更新哪个因子有效
+    try:
+        from brahma_brain.brahma_ic_engine import update_ic as _ic_update
+        _sig_id  = sig.get('signal_id', sig.get('id', ''))
+        _ret_dir = float(pnl) / 100  # pnl_pct → 小数，方向已按实际调整
+        if _sig_id and abs(_ret_dir) > 0:
+            _ic_update(
+                signal_id  = _sig_id,
+                actual_ret = _ret_dir,
+                regime     = sig.get('regime', 'CHOP_MID'),
+                direction  = sig.get('direction', 'LONG'),
+            )
+    except Exception:
+        pass  # IC引擎不可用时静默降级，不影响结算主链路
+
     # [Ch8轨迹自学习钩子 2026-08-13 苏摩111封印]
     # 每次结算后写入标准化轨迹记录，驱动经验知识库进化
     # 参考: ai-agent-book Ch8 gaia-experience/experience_documents.py
