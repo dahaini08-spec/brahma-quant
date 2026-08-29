@@ -21,8 +21,8 @@ from datetime import datetime, timezone
 logger = logging.getLogger('ai4trade_publisher')
 
 # ── 凭证 ────────────────────────────────────────────────────
-AI4TRADE_TOKEN  = os.environ.get('AI4TRADE_TOKEN', 'RkSIVV9xvC3VN_Hn0jqyNioc8CUqJ9-sqrumH5ZYR1w')
-AI4TRADE_AGENT_ID = int(os.environ.get('AI4TRADE_AGENT_ID', '23903'))
+AI4TRADE_TOKEN  = os.environ.get('AI4TRADE_TOKEN', 'Kt7hRUKwygRXvH7cM1HsLfXPAhN33k7mJ1V1s580lb0')
+AI4TRADE_AGENT_ID = int(os.environ.get('AI4TRADE_AGENT_ID', '23904'))
 BASE_URL        = 'https://ai4trade.ai/api'
 HEADERS         = {'Authorization': f'Bearer {AI4TRADE_TOKEN}', 'Content-Type': 'application/json'}
 
