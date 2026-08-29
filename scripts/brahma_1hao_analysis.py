@@ -866,6 +866,115 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         lines.append(f"  [跨品种宏观层] 跳过: {_cross_err}")
     # ══ [END 跨品种宏观层] ══════════════════════════════════════════════
 
+    # ══ [封印补全 2026-08-29 苏摩111] 11个缺失模块全量注入 ══════════════
+    try:
+        _ext_lines = []
+
+        # 1. Elliott波浪
+        _wave = r.get('wave', {})
+        if _wave and _wave.get('wave') and _wave.get('wave') != 'UNKNOWN':
+            _ext_lines += ["", "╬" + "═"*58, "  🌊 Elliott波浪判断", "╬" + "═"*58,
+                f"  波浪形态: {_wave.get('wave','')}  偏向: {_wave.get('bias','')}  {_wave.get('note','')}"]
+
+        # 2. 矿工卖压
+        _miner = r.get('_miner', {})
+        if _miner and _miner.get('production_cost_est'):
+            _m_cost = _miner.get('production_cost_est', 0)
+            _m_price = _miner.get('price', 0)
+            _m_margin = round((_m_price - _m_cost) / _m_cost * 100, 1) if _m_cost else 0
+            _m_icon = '✅ 极低卖压' if _m_margin > 50 else '⚠️ 中等卖压' if _m_margin > 0 else '🔴 高卖压'
+            _ext_lines += ["", "  ⛏️ 矿工卖压: " + _m_icon +
+                f"  生产成本≈${_m_cost:,.0f}  当前溢价+{_m_margin:.1f}%  难度={_miner.get('difficulty',0):.2e}"]
+
+        # 3. 市场象限
+        _mq = r.get('_market_quadrant', {})
+        if _mq and _mq.get('quadrant'):
+            _ext_lines += ["", f"  📐 市场象限: {_mq.get('quadrant','')} | 散户偏向={_mq.get('retail_bias','')} | 鲸鱼偏向={_mq.get('whale_bias','')} | ⭐{_mq.get('stars',0)}"]
+
+        # 4. 达摩院裁决
+        _dharma = r.get('dharma_nodes', {})
+        if _dharma:
+            _d_pass = _dharma.get('nodes_pass', 0)
+            _d_verdict = _dharma.get('verdict', '')
+            _d_mult = _dharma.get('score_mult', 1.0)
+            _d_detail = _dharma.get('detail', '')
+            _ext_lines += ["", f"  🏯 达摩院裁决: {_d_verdict} ({_d_pass}/6通过) score×{_d_mult}  {_d_detail}"]
+
+        # 5. 反脆弱/黑天鹅
+        _af = r.get('antifragile', {})
+        if _af:
+            _bs = _af.get('blackswan', {})
+            _bs_level = _bs.get('level', 'NORMAL')
+            _bs_icon = '🚨' if _bs_level in ('HIGH','CRITICAL') else '✅'
+            _af_warns = _af.get('warnings', [])
+            _ext_lines += ["", f"  🛡️ 反脆弱门控: 黑天鹅={_bs_icon}{_bs_level}  仓位乘数×{_af.get('size_mult',1.0)}  封禁={_af.get('blocked',False)}"]
+            if _af_warns:
+                _ext_lines.append(f"    预警: {' | '.join(str(w) for w in _af_warns[:3])}")
+
+        # 6. 链上数据
+        _onchain = r.get('_onchain', {})
+        if _onchain and _onchain.get('score') is not None:
+            _oc_score = _onchain.get('score', 0)
+            _oc_max = _onchain.get('max', 30)
+            _oc_bd = _onchain.get('breakdown', {})
+            _ext_lines += ["", f"  ⛓️ 链上数据: 综合评分={_oc_score}/{_oc_max}",
+                f"    OI={_oc_bd.get('oi_score',0)} | 多空={_oc_bd.get('ls_score',0)} | Taker={_oc_bd.get('taker_score',0)} | FR={_oc_bd.get('fund_score',0)}"]
+
+        # 7. FIB关键位
+        _kl = r.get('key_levels', {})
+        _fib = _kl.get('fib', {})
+        if _fib and _fib.get('0.382'):
+            _ext_lines += ["", f"  📏 FIB关键位: 0.236=${_fib.get('0.236',0):,.0f} | 0.382=${_fib.get('0.382',0):,.0f} | 0.5=${_fib.get('0.5',0):,.0f} | 0.618=${_fib.get('0.618',0):,.0f} | 0.786=${_fib.get('0.786',0):,.0f}"]
+
+        # 8. Bybit多空比
+        _bybit = r.get('_bybit_ls', {})
+        if _bybit and _bybit.get('long_pct'):
+            _bl = round(_bybit.get('long_pct', 0.5) * 100, 1)
+            _bs2 = round(_bybit.get('short_pct', 0.5) * 100, 1)
+            _b_icon = '⚠️ 多头拥挤' if _bl > 65 else '⚠️ 空头拥挤' if _bl < 35 else '✅ 均衡'
+            _ext_lines += ["", f"  📊 Bybit多空比: 多={_bl}% 空={_bs2}% {_b_icon} | 清算压力={_bybit.get('liq_pressure','')}"]
+
+        # 9. 美股时段门控
+        _us = r.get('us_session', {})
+        if _us and _us.get('session'):
+            _us_delta = _us.get('delta', {})
+            _us_block = _us_delta.get('block', False)
+            _us_icon = '🔴 封禁' if _us_block else '✅ 允许'
+            _ext_lines += ["", f"  🕐 美股时段: {_us.get('session','')} {_us_icon}  {_us_delta.get('block_reason','') or '无限制'}"]
+
+        # 10. anti_manip操控防御
+        try:
+            from brahma_brain.anti_manipulation_engine import get_anti_manip_score as _chk_manip
+            _manip_r = _chk_manip(r.get('symbol','BTCUSDT'), r.get('signal_dir','LONG'))
+            _anti_risk = _manip_r.get('risk_level', 'LOW')
+            _anti_flags = _manip_r.get('flags', [])
+            _anti_adj = _manip_r.get('score_adj', 0)
+            _ext_lines += ["", f"  🔍 操控防御: risk={_anti_risk} adj={_anti_adj:+.0f}  flags={_anti_flags[:2] if _anti_flags else '无'}"]
+        except Exception:
+            pass
+
+        # 11. 战场预判（price_zone_engine已在full_report追加，这里补标注）
+        _pz = r.get('_price_zones', {})
+        if not _pz:  # 如果runner里有
+            try:
+                from price_zone_engine import calc_zones as _czones
+                _pz = _czones(r.get('symbol','BTCUSDT'))
+            except Exception:
+                pass
+        if _pz and not _pz.get('error'):
+            _hz = _pz.get('high_zone', {})
+            _lz = _pz.get('low_zone', {})
+            if _hz and _lz:
+                _ext_lines += ["", "  🗺️ 战场预判(price_zone_engine):",
+                    f"    🔴 高空区: ${_hz.get('lo',0):,.0f}~${_hz.get('hi',0):,.0f}  SL=${_hz.get('sl',0):,.0f}  RR={_hz.get('rr',0):.1f}",
+                    f"    🟢 低多区: ${_lz.get('lo',0):,.0f}~${_lz.get('hi',0):,.0f}  SL=${_lz.get('sl',0):,.0f}  RR={_lz.get('rr',0):.1f}"]
+
+        if _ext_lines:
+            lines += _ext_lines
+    except Exception as _ext_err:
+        lines.append(f"  [扩展模块] 部分跳过: {_ext_err}")
+    # ══ [END 封印补全] ══════════════════════════════════════════════════
+
 
     # ══ [设计院 2026-08-08] 决策树层注入 ════════════════════════════════
     try:
