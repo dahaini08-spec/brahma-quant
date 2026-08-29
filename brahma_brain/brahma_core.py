@@ -3838,6 +3838,17 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _htf_addon = int(_htf_data.get('score_addon', 0) or 0)
         _htf_bias = _htf_data.get('htf_bias', 'NEUTRAL')
         _htf_res  = _htf_data.get('htf_resonance', 0.0)
+        # [根囤修复 2026-08-29 苏摩111] 若缓存共振值=0，实时调用get_features()补充
+        if _htf_res == 0.0 or not _htf_bias or _htf_bias == 'NEUTRAL':
+            try:
+                from brahma_brain.weekly_monthly_anchor import get_anchor as _wma_fn
+                _wma_inst = _wma_fn(symbol)
+                _wf = _wma_inst.get_features(current_price=float((_result.get('price') or 0)))
+                _htf_res  = _wf.get('htf_resonance', _htf_res)
+                _htf_bias = _wf.get('htf_bias', _htf_bias)
+                _htf_addon = int(_wf.get('score_addon', _htf_addon) or _htf_addon)
+            except Exception:
+                pass
         if _htf_addon != 0:
             _result['score_final'] = round(float(_result.get('score_final', 0) or 0) + _htf_addon, 1)
             _result['score'] = _result['score_final']
