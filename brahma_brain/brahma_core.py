@@ -4226,6 +4226,35 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass
     # ══ [END C类孤岛模块接入] ══════════════════════════════════════════════════
 
+    # C5: market_quadrant — 四象限市场状态评分
+    # [P0接入 2026-08-29 苏摩111] 接入位置: brahma_core block_b C5
+    # 铁证: LSR>65%+大户净空 = 多头拥挤象限Q2 → score-15; LSR<35%+大户净多 = 空头拥挤Q4 → score+12
+    try:
+        from brahma_brain.market_quadrant import get_quadrant as _mq_fn
+        _mq = _mq_fn(symbol)
+        if _mq and isinstance(_mq, dict):
+            _mq_quadrant = _mq.get('quadrant', 'NEUTRAL')
+            _mq_signal   = _mq.get('signal', 'NEUTRAL')
+            _mq_lsr      = float(_mq.get('lsr', 50) or 50)
+            _mq_dir      = _result.get('signal_dir', 'LONG')
+            _mq_delta = 0
+            # 多头拥挤象限(Q1/Q2): LSR>65% → 做多降权-15, 做空加权+12
+            if _mq_quadrant in ('Q1', 'Q2') or _mq_lsr > 65:
+                if _mq_dir == 'LONG':  _mq_delta = -15
+                else:                   _mq_delta = +12
+            # 空头拥挤象限(Q3/Q4): LSR<35% → 做空降权-15, 做多加权+12
+            elif _mq_quadrant in ('Q3', 'Q4') or _mq_lsr < 35:
+                if _mq_dir == 'SHORT': _mq_delta = -15
+                else:                   _mq_delta = +12
+            if _mq_delta != 0:
+                _result['score_final'] = round(float(_result.get('score_final', 0) or 0) + _mq_delta, 1)
+                _result['score'] = _result['score_final']
+                _result.setdefault('breakdown_extra', {})['market_quadrant'] = f'{_mq_delta:+d}({_mq_quadrant} LSR={_mq_lsr:.0f}%)'
+            _result['_market_quadrant'] = _mq
+            _result['market_quadrant_label'] = _mq_quadrant
+    except Exception:
+        pass
+
     # ══ [P0 设计院封印 2026-08-11 苏摩111] TRADFI交易时段门控 ══════════════
     # 美股代币非交易时段(亚洲白天)流动性极低，发信号有执行风险
     # UTC 13:30~20:00 = 北京21:30~04:00 = 美股正常交易时段
