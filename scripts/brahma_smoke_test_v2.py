@@ -28,7 +28,7 @@ LAYERS = [
         "tests": [
             ("market_state.analyze", "import sys; sys.path.insert(0,'brahma_brain'); from market_state import analyze; r=analyze('BTCUSDT'); assert r.get('regime'); print(r['regime'])"),
             ("smc_engine分析",       "import sys; sys.path.insert(0,'brahma_brain'); from smc_engine import analyze_smc; r=analyze_smc('BTCUSDT','1h'); assert isinstance(r,dict); print(f'keys={list(r.keys())[:3]}')"),
-            ("brahma_scoring导入",   "import sys; sys.path.insert(0,'brahma_brain'); import brahma_scoring; fns=[x for x in dir(brahma_scoring) if not x.startswith('_')]; assert len(fns)>5; print(f'{len(fns)}个函数')"),
+            ("brahma_core_block_a导入", "import sys; sys.path.insert(0,'brahma_brain'); from brahma_core_block_a import calc_block_a; print('calc_block_a OK')"),
         ]
     },
     {
