@@ -50,6 +50,15 @@ def format_full_report(r: dict) -> str:
     top1 = (fc.get('top_similar') or [{}])[0]
     liq  = fc.get('liq_map') or {}
     htf  = fc.get('htf_anchor') or {}
+    # [2026-08-29 苏摩111修复] 新字段兼容读取
+    _fc_n   = fc.get('s2_n') or fc.get('similar_cases_count') or fc.get('n_cases') or 0
+    _fc_wr  = fc.get('s2_wr') or fc.get('breakout_wr') or 0
+    _fc_adj = fc.get('unified_adj') or fc.get('score_adj') or 0
+    # anti_manip 从 antifragile 字段读取
+    _anti   = r.get('antifragile') or r.get('anti_manip') or (r.get('extra_data') or {}).get('anti_manip') or {}
+    _anti_risk  = _anti.get('risk_level', 'N/A')
+    _anti_adj   = _anti.get('score_adj', 0)
+    _anti_flags = _anti.get('flags', [])
     ell  = fc.get('elliott_wave') or {}
     vpa  = fc.get('vpa') or {}
     mfi  = fc.get('main_force_intent') or {}
@@ -231,7 +240,8 @@ def format_full_report(r: dict) -> str:
     lines.append(_row('期望值EV', pm.get('ev')))
     lines.append(_row('方仓WR', vs.get('wr')))
     lines.append(_row('方仓EV_directional', vs.get('ev')))
-    lines.append(_row('置信度/案例数', f"{fc.get('confidence_level','?')} n={fc.get('similar_cases_count','?')}"))
+    lines.append(_row('置信度/案例数', f"n={_fc_n} WR={_fc_wr:.0%} adj={_fc_adj:+.0f}"))
+    lines.append(_row('操控防御', f"risk={_anti_risk} adj={_anti_adj:+.0f} flags={_anti_flags[:2] if _anti_flags else []}"))
     lines.append(_row('陷阱预警', fc.get('trap_alert')))
     lines.append(_row('主力意图', f"{mfi.get('intent','')} conf={mfi.get('confidence','')}"))
     lines.append(_row('方仓摘要', str(fc.get('fangcang_summary',''))[:50]))
@@ -303,6 +313,9 @@ def run_full_analysis(symbol: str):
     try:
         from brahma_1hao_analysis import run_analysis as _1hao_main
         report = _1hao_main(symbol)
+        # ── [封印 2026-08-29 苏摩111] 过滤引擎日志行 ──
+        _LOG_PREFIXES = ('[BrahmaBrain]','[s_smart]','[KronosBridge','[oi_scanner]','[RSM]','[TimingFilter]','[unified_fangcang]','[分析开始]')
+        report = '\n'.join(l for l in report.split('\n') if not any(l.strip().startswith(p) for p in _LOG_PREFIXES))
     except Exception as _e1:
         report = f"[1号工程调用失败: {_e1}]"
     # Step2: 同时拿到r对象供机器读取（2026-08-28 B2优化: runner复用snap缓存，避免重复分析）
