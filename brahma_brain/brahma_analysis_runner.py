@@ -289,7 +289,29 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
             pass
     # ────────────────────────────────────────────────────────────────────────
 
+    # [2026-08-28 苏摩111] 接入防御层：调用前注入 anti_manip 数据到 extra_data
+    _anti_manip_data = {}
+    try:
+        from brahma_brain.anti_manipulation_engine import get_anti_manip_score
+        _anti_manip_data = get_anti_manip_score(sym, signal_dir=_forced_dir)
+    except Exception as _e:
+        _anti_manip_data = {'error': str(_e)}
+    # 将 anti_manip 注入到全局 extra_data（brahma_core_block_b 会读取）
+    import brahma_brain.brahma_core as _bc_mod
+    _orig_analyze = _bc_mod.analyze
+    def _patched_analyze(ms_or_sym, *args, **kwargs):
+        if 'extra_data' not in kwargs:
+            kwargs['extra_data'] = {}
+        if kwargs['extra_data'] is None:
+            kwargs['extra_data'] = {}
+        kwargs['extra_data']['anti_manip'] = _anti_manip_data
+        return _orig_analyze(ms_or_sym, *args, **kwargs)
+    _bc_mod.analyze = _patched_analyze
+
     result = _core_analyze(sym, signal_dir=_forced_dir, deep=deep)
+
+    # 恢复原始 analyze
+    _bc_mod.analyze = _orig_analyze
     missing = _validate_result(result)
 
     # ── [P0-B设计院 2026-07-03] BULL_TREND体制感知加分注入 ──────────────────────
