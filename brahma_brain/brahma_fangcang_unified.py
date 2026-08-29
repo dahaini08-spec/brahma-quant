@@ -96,7 +96,11 @@ def _get_engine_adj(symbol: str, regime: str, signal_dir: str) -> tuple:
 def _get_cases_adj(symbol: str, ms: dict, signal_dir: str, regime: str) -> tuple:
     """
     从 fangcang_hcme_bridge 案例库匹配结果，转换为 adj 分数。
-    直接读案例库，不经过 get_fangcang_hcme_score（避免再次封装损耗）。
+    同时查询 L3 TradFi 库（贝叶斯融合），扩充小样本置信度。
+
+    L2加密库: weight=0.7（主信号）
+    L3TradFi: weight=0.3（宏观参照，样本补充）
+
     返回 (adj: float, confidence: str, n: int, wr: float)
     """
     try:
@@ -105,29 +109,69 @@ def _get_cases_adj(symbol: str, ms: dict, signal_dir: str, regime: str) -> tuple
         rsi = float(ms.get('rsi_1h', ms.get('rsi', 50)) or 50)
 
         result = fangcang_context_match(symbol, bbw, rsi, regime, signal_dir)
-        n = result.get('n_similar', 0)
-
-        if n < 3:
-            return 0.0, 'insufficient', n, 0.0
+        n_crypto = result.get('n_similar', 0)
 
         if signal_dir == 'LONG':
-            wr = float(result.get('long_pct', 0.5))
+            wr_crypto = float(result.get('long_pct', 0.5))
         elif signal_dir == 'SHORT':
-            wr = float(result.get('short_pct', 0.5))
+            wr_crypto = float(result.get('short_pct', 0.5))
         else:
-            wr = 0.5
+            wr_crypto = 0.5
+
+        # ── L3 TradFi贝叶斯融合（仅当TradFi代币有映射时启用）────────────────
+        wr_final = wr_crypto
+        n_final  = n_crypto
+        tradfi_note = ''
+        try:
+            from fangcang_tradfi_db import query_tradfi, TOKEN_TO_STOCK
+            if symbol in TOKEN_TO_STOCK:
+                # TradFi方向映射
+                tf_dir = 'UP' if signal_dir == 'LONG' else 'DOWN'
+                squeeze_bars = float(ms.get('squeeze_bars', ms.get('compress_bars', 20)) or 20)
+                burst_atr    = float(ms.get('atr_ratio', ms.get('burst_atr', 1.5)) or 1.5)
+                vol_ratio    = float(ms.get('vol_ratio', 2.0) or 2.0)
+                tf_result = query_tradfi(
+                    token=symbol,
+                    bb_width_raw=bbw * 100 if bbw < 1 else bbw,  # 统一为%单位
+                    squeeze_bars=squeeze_bars,
+                    burst_atr=burst_atr,
+                    vol_ratio=vol_ratio,
+                    rsi=rsi,
+                    direction=tf_dir,
+                    top_k=20,
+                )
+                n_tf = tf_result.get('n', 0)
+                wr_tf = tf_result.get('wr_directional', 0.5)
+                if n_tf >= 3:
+                    # 贝叶斯融合：L2加密0.7 + L3TradFi0.3
+                    if n_crypto >= 3:
+                        wr_final = wr_crypto * 0.7 + wr_tf * 0.3
+                    else:
+                        # 加密样本不足时，TradFi作主要参考
+                        wr_final = wr_crypto * 0.4 + wr_tf * 0.6
+                    n_final  = n_crypto + int(n_tf * 0.3)  # 有效样本折算
+                    tradfi_note = f' L3={wr_tf:.0%}(n={n_tf})'
+                    _log.debug(f'[unified·s2] TradFi融合 {symbol} wr_crypto={wr_crypto:.2f} wr_tf={wr_tf:.2f} → wr_final={wr_final:.2f}')
+        except Exception as tf_err:
+            _log.debug(f'[unified·s2] TradFi跳过: {tf_err}')
+        # ────────────────────────────────────────────────────────────────────
+
+        if n_final < 3:
+            return 0.0, 'insufficient', n_final, 0.0
 
         # WR → adj 映射
         # WR=0.7 → +8.4  WR=0.6 → +2.4  WR=0.5 → 0  WR=0.4 → -2.4  WR=0.3 → -8.4
-        adj = (wr - 0.5) * 24.0
+        adj = (wr_final - 0.5) * 24.0
         adj = max(MIN_ADJ, min(MAX_ADJ, adj))
 
         # 样本量权重（n越多越可信）
-        n_weight = min(1.0, n / 20.0)
+        n_weight = min(1.0, n_final / 20.0)
         adj *= n_weight
 
-        confidence = 'HIGH' if n >= 15 else ('MEDIUM' if n >= 8 else 'LOW')
-        return round(adj, 2), confidence, n, round(wr, 3)
+        confidence = 'HIGH' if n_final >= 15 else ('MEDIUM' if n_final >= 8 else 'LOW')
+        if tradfi_note:
+            confidence += '+TradFi'
+        return round(adj, 2), confidence, n_final, round(wr_final, 3)
 
     except Exception as e:
         _log.debug(f'[unified·s2] {e}')

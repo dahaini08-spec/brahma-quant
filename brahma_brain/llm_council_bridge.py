@@ -357,10 +357,40 @@ def _macro_agent_review(signal: Dict, market_ctx: Dict) -> Dict:
         }
 
     # ── LLM 调用 ───────────────────────────────────────────
+    # [手术2 2026-08-29] TradFi宏观案例注入：让MacroAgent基于40年真实数据推理
+    tradfi_macro_ctx = ''
+    try:
+        from fangcang_tradfi_db import query_tradfi, TOKEN_TO_STOCK
+        if symbol in TOKEN_TO_STOCK:
+            tf_dir = 'UP' if direction in ('LONG', '做多') else 'DOWN'
+            tf_result = query_tradfi(
+                token=symbol,
+                bb_width_raw=1.0,  # 默认值，此处重点是宏观背景
+                squeeze_bars=20, burst_atr=1.5, vol_ratio=2.0,
+                rsi=float(market_ctx.get('rsi_1h', 50)),
+                direction=tf_dir, top_k=5,
+            )
+            if tf_result.get('n', 0) >= 3:
+                top_cases = tf_result.get('cases', [])[:3]
+                case_lines = []
+                for c in top_cases:
+                    stk = c.get('stock', '?')
+                    dt  = c.get('burst_date', '?')
+                    ret = c.get('future_return_24h', 0)
+                    case_lines.append(f'  {stk} {dt}: 方仓突破后24H {ret:+.1f}%')
+                tradfi_macro_ctx = (
+                    f'\n\n【40年TradFi方仓宏观参照（weight=0.3，辅助参考）】\n'
+                    f'相似宏观环境下的传统资产方仓案例 (n={tf_result["n"]} WR={tf_result["wr_directional"]:.0%}):\n'
+                    + '\n'.join(case_lines) +
+                    '\n注意：跨资产参照，驱动机制与加密货币不同，仅作宏观环境定位参考'
+                )
+    except Exception:
+        pass  # TradFi注入失败不影响主流程
+
     prompt = MACRO_AGENT_PROMPT.format(
         symbol=symbol, direction=direction, score=score, regime=regime,
         btc_dominance=btc_d, fear_greed=fg, funding_rate=funding, oi_change=oi_change
-    )
+    ) + tradfi_macro_ctx
 
     result = _call_llm(prompt, 'MacroAgent', model='standard')  # 宏观视角 Qwen [多模型 2026-08-15 苏摩111]
     if result:
