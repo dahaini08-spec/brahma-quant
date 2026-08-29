@@ -124,45 +124,12 @@ class HCMEMatcher:
                             signals.append(json.loads(line))
                         except json.JSONDecodeError:
                             pass
-        # 2. 加载Phase1伪信号历史库（优先级：补充实盘样本不足问题）
-        pseudo_count = 0
-        if os.path.exists(HCME_PSEUDO_PATH):
-            try:
-                import gzip as _gzip
-                with _gzip.open(HCME_PSEUDO_PATH, 'rt', encoding='utf-8') as f:
-                    for line in f:
-                        line = line.strip()
-                        if line:
-                            try:
-                                rec = json.loads(line)
-                                # 转换为hcme_matcher兼容格式
-                                pseudo_sig = {
-                                    "signal_id": f"pseudo_{rec.get('ts',0)}_{rec.get('symbol','')}",
-                                    "ts": rec.get("ts", 0),
-                                    "symbol": rec.get("symbol", "BTCUSDT"),
-                                    "regime": rec.get("regime", "CHOP_MID"),
-                                    "market_regime": rec.get("regime", "CHOP_MID"),
-                                    "direction": rec.get("direction", "LONG"),
-                                    "signal_dir": rec.get("direction", "LONG"),
-                                    "score": rec.get("score", 50),
-                                    "rsi_4h": rec.get("rsi", 50.0),
-                                    "sl_pct": 2.0,
-                                    "price": rec.get("price", 0),
-                                    "generated_price": rec.get("price", 0),
-                                    "outcome": rec.get("outcome", "UNKNOWN"),
-                                    "result": rec.get("outcome", "UNKNOWN"),
-                                    "pnl_pct": rec.get("pnl", 0) * 100,
-                                    "_pseudo": True,
-                                    "_source": rec.get("_source", "pseudo_signal_v1"),
-                                }
-                                signals.append(pseudo_sig)
-                                pseudo_count += 1
-                            except json.JSONDecodeError:
-                                pass
-            except Exception as e:
-                print(f"[HCME] Warning: 加载伪信号失败: {e}")
-        if pseudo_count > 0:
-            print(f"[HCME] Phase1伪信号: +{pseudo_count}条 (总计{len(signals)}条)")
+        # 2. Phase1伪信号历史库——[P0清洗 2026-08-29 苏摩111] 已全部删除
+        # 根据: 2177条全郠score<80，系统门槛=80，这些信号就不应存在。实盘WR=46.6%接近随机噪音
+        # 清洗后: HCME只使用372条真实实盘信号，WR反映真实执行胜率
+        pseudo_count = 0  # 保留变量避免下游引用报错
+        # [P0清洗 2026-08-29 苏摩111] 伪信号加载已禁用，只用真实实盘信号
+        pass  # 伪信号块已清除
         return signals
 
     def _build_or_load_index(self) -> list[dict]:
