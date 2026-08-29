@@ -3809,6 +3809,35 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _lm_e:
         import logging as _lm_log; _lm_log.getLogger('brahma').debug(f'[longmem] {_lm_e}')
 
+    # ══ [N_EXP 2026-08-29 苏摩111] 40年经验引擎注入 ══════════════════════════
+    # 使命：把20392条6.5年K线蒸馏的经验矩阵实时注入评分
+    # 接入：longmem之后，decision_engine之前
+    try:
+        from brahma_brain.fangcang_experience_engine import get_exp_adj as _exp_fn
+        _exp_rsi   = float(ms.get('rsi_1h', ms.get('rsi', 50)) or 50)
+        _exp_burst = float((_result.get('fangcang') or {}).get('avg_burst_atr_mult', 1.0) or 1.0)
+        _exp_tf    = str(ms.get('entry_tf', ms.get('tf', '4h')) or '4h')
+        _exp_res   = _exp_fn(
+            regime     = _result.get('regime', 'CHOP_MID'),
+            signal_dir = _result.get('signal_dir', signal_dir or 'LONG'),
+            timeframe  = _exp_tf,
+            rsi        = _exp_rsi,
+            burst_mult = _exp_burst,
+        )
+        _exp_adj = float(_exp_res.get('adj', 0) or 0)
+        if _exp_adj != 0 and _exp_res.get('n', 0) >= 10:
+            _old_exp = float(_result.get('score_final', _result.get('score', 0)) or 0)
+            _new_exp = round(_old_exp + _exp_adj, 1)
+            _result['score_final'] = _new_exp
+            _result['score']       = _new_exp
+            _result['exp_engine']  = _exp_res
+            _result.setdefault('confluence', {}).setdefault('breakdown', {})['N_EXP40年经验'] = (
+                f'{_exp_adj:+.1f}({_exp_res["rule_hit"]} WR={_exp_res["wr"]:.0%} n={_exp_res["n"]})'
+            )
+    except Exception as _exp_e:
+        import logging as _exp_log; _exp_log.getLogger('brahma').debug(f'[exp_engine] {_exp_e}')
+    # ══ [END N_EXP] ══════════════════════════════════════════════════════════
+
     try:
         from brahma_brain.brahma_decision_engine import decide as _dt_decide
         _dt_signal = {
