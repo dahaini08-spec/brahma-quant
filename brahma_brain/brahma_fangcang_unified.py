@@ -105,7 +105,18 @@ def _get_cases_adj(symbol: str, ms: dict, signal_dir: str, regime: str) -> tuple
     """
     try:
         from fangcang_hcme_bridge import fangcang_context_match
-        bbw = float(ms.get('bb_width', ms.get('bbw', 0)) or 0)
+        # [修复 2026-08-29] bb_width多路备用：主链传入ms里字段名不一致导致bbw=None全部过滤
+        bbw = (
+            ms.get('bb_width') or          # brahma_core传入的小数格式
+            ms.get('bbw') or               # 短字段别名
+            ms.get('bb_pct') or            # 百分比格式
+            (ms.get('bb') or {}).get('width') or  # 嵌套格式
+            0.01                           # 最终安全値（0.01=1%，普通压缩程度）
+        )
+        bbw = float(bbw)
+        # bbw单位归一化：如果>1说明是百分比形式转小数
+        if bbw > 1:
+            bbw = bbw / 100
         rsi = float(ms.get('rsi_1h', ms.get('rsi', 50)) or 50)
 
         result = fangcang_context_match(symbol, bbw, rsi, regime, signal_dir)

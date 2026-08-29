@@ -37,23 +37,68 @@ _NEW_30_SYMBOLS = [
 ]
 
 
+def _infer_regime_from_case(d: dict) -> str:
+    """
+    从方仓案例字段推断regime_guess。
+    案例库不存储体制标签，用future_return+breakout方向+vol简单推断。
+    这不是100%准确的，但比''好得多。
+    """
+    ret   = float(d.get('future_return_24h', d.get('future_return', 0)) or 0)
+    direc = str(d.get('direction', '')).upper()
+    vol   = float(d.get('vol_ratio_peak', 1) or 1)
+    rsi   = float(d.get('rsi_at_burst', 50) or 50)
+
+    # 强势上涨信号 → BULL
+    if direc == 'UP' and ret > 4 and vol > 2.0 and rsi > 55:
+        return 'BULL_TREND'
+    # 强势下跌信号 → BEAR
+    if direc == 'DOWN' and ret < -4 and vol > 2.0 and rsi < 45:
+        return 'BEAR_TREND'
+    # 温和上涨 → BULL_EARLY / BEAR_RECOVERY
+    if direc == 'UP' and ret > 1.5:
+        return 'BULL_EARLY'
+    # 温和下跌 → BEAR_EARLY
+    if direc == 'DOWN' and ret < -1.5:
+        return 'BEAR_EARLY'
+    # 其余归CHOP
+    return 'CHOP_MID'
+
+
 def _normalize_new_case(d: dict, sym: str) -> dict:
     """
-    把新建的fangcang_cases_xxx.json字段统一化为标准格式
+    把新建的fangcang_cases_xxx.json字段统一化为标准格式。
     字段映射: min_bb_width(百分比)→compress_bbw_min(小数)/rsi_at_burst→rsi_at_end
+    修复1: 新增 compress_end_ts 从ts_burst转换 → 修复时间衰减失效
+    修复2: 新增 regime_guess 从future_return+direction推断 → 修复体制过滤失效
     """
+    # ts_burst → epoch，用于时间衰减
+    _ts_epoch = 0.0
+    _ts_raw = d.get('ts_burst', '') or ''
+    if _ts_raw:
+        try:
+            from datetime import datetime
+            _ts_epoch = datetime.fromisoformat(str(_ts_raw)).timestamp()
+        except Exception:
+            pass
+
+    _direction = str(d.get('direction', '')).upper()
+    _ret24h    = float(d.get('future_return_24h', d.get('future_return', 0)) or 0)
+
     return {
-        'symbol':             sym.upper() + 'USDT',
-        '_src_sym':           sym.upper(),
+        'symbol':             sym.upper() + 'USDT' if not sym.upper().endswith('USDT') else sym.upper(),
+        '_src_sym':           sym.upper().replace('USDT', ''),
         'compress_bbw_min':   float(d.get('min_bb_width', 0) or 0) / 100,
         'rsi_at_end':         float(d.get('rsi_at_burst', 50) or 50),
         'compress_bars':      int(d.get('squeeze_bars', 0) or 0),
-        'breakout_direction': 'LONG' if str(d.get('direction', '')).upper() == 'UP'
-                              else ('SHORT' if str(d.get('direction', '')).upper() == 'DOWN'
-                                    else 'CHOP'),
-        'future_return_24h':  float(d.get('future_return_24h', 0) or 0),
+        'breakout_direction': 'LONG'  if _direction == 'UP'   else
+                              ('SHORT' if _direction == 'DOWN' else 'CHOP'),
+        'future_return_24h':  _ret24h,
         'volume_trend':       'expand' if float(d.get('vol_ratio_peak', 1) or 1) > 1.5 else 'flat',
         'is_genuine_breakout': bool(d.get('is_genuine_breakout', False)),
+        # 修复1: 时间戳
+        'compress_end_ts':    _ts_epoch,
+        # 修复2: 体制推断标签
+        'regime_guess':       d.get('regime', d.get('regime_guess', '')) or _infer_regime_from_case(d),
     }
 
 
@@ -167,37 +212,35 @@ def fangcang_context_match(
         if abs(c_rsi - current_rsi) > 18:
             continue
 
-        # [设计院 2026-08-25 苏摩111] 体制过滤升级：精确与当前体制匹配
-        # 原来用模糊字符串，现在用梵天标准体制分组
+        # [修复 2026-08-29] 体制匹配：精确匹配权重1.0，同大组降权0.6，跨组降权0.3但保留
+        # 原逻辑：跨组直接跳过 → 导致20392条案例无体制标签时全部归CHOP，BEAR/BULL体制下近乎无案例可用
         _REGIME_GROUP = {
-            'BULL': {'BULL_TREND','BULL_EARLY','BULL_PEAK','BULL_CORRECTION','bull','bullish','trending'},
-            'BEAR': {'BEAR_TREND','BEAR_EARLY','BEAR_CRASH','BEAR_RECOVERY','bear','bearish','downtrend'},
-            'CHOP': {'CHOP_MID','CHOP_HIGH','CHOP_LOW','BREAKOUT','ranging','chop',''},
+            'BULL': {'BULL_TREND','BULL_EARLY','BULL_PEAK','BULL_CORRECTION','BULL','bull','bullish','trending'},
+            'BEAR': {'BEAR_TREND','BEAR_EARLY','BEAR_CRASH','BEAR_RECOVERY','BEAR','bear','bearish','downtrend'},
+            'CHOP': {'CHOP_MID','CHOP_HIGH','CHOP_LOW','BREAKOUT','CHOP','ranging','chop',''},
         }
         cur_grp = next((g for g,s in _REGIME_GROUP.items() if current_regime.upper() in {x.upper() for x in s}), 'CHOP')
-        c_grp   = next((g for g,s in _REGIME_GROUP.items() if c_regime in {x.lower() for x in s}), 'CHOP')
+        c_grp   = next((g for g,s in _REGIME_GROUP.items() if c_regime.upper() in {x.upper() for x in s}), 'CHOP')
 
-        regime_match = (cur_grp == c_grp)
-        if not regime_match:
-            # 体制不匹配：BBW+RSI非常相近时降权计入，否则跳过
-            if bbw_ratio < 0.15 and abs(c_rsi - current_rsi) < 8:
-                c['_regime_penalty'] = 0.5
-            else:
-                continue
+        if cur_grp == c_grp:
+            _regime_w = 1.0   # 完全匹配
+        else:
+            _regime_w = 0.35  # 跨组降权，但不丢弃（BBW+RSI相似的跨体制案例仍有参考价值）
 
-        # [设计院 2026-08-25] 时间衰减权重：近期案例更可信
+        # [修复] 时间衰减权重：compress_end_ts现已正确填充
         import time as _t
         _case_ts = c.get('compress_end_ts', 0) or 0
         if _case_ts > 1e10: _case_ts /= 1000  # ms转s
         _age_years = (_t.time() - _case_ts) / (365.25 * 86400) if _case_ts > 0 else 3.0
-        _time_weight = 2.0 if _age_years < 1 else (1.0 if _age_years < 2 else 0.5)
+        _time_weight = 2.0 if _age_years < 1 else (1.2 if _age_years < 2 else (0.8 if _age_years < 4 else 0.5))
 
-        # 计算综合相似度分数
+        # 综合相似度分数
         bbw_score = 1.0 - bbw_ratio / 0.35
         rsi_score = 1.0 - abs(c_rsi - current_rsi) / 18
-        sim_score = (bbw_score * 0.6 + rsi_score * 0.4) * _time_weight * c.get('_regime_penalty', 1.0)
-        c['_sim_score'] = sim_score
-        c['_time_weight'] = _time_weight
+        sim_score = (bbw_score * 0.6 + rsi_score * 0.4) * _time_weight * _regime_w
+        c['_sim_score']    = sim_score
+        c['_time_weight']  = _time_weight
+        c['_regime_w']     = _regime_w
         similar.append(c)
 
     # 按相似度排序，取Top20
