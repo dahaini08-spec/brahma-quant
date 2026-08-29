@@ -434,7 +434,7 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
                        ('BEAR_RECOVERY','SHORT'),('BULL_CORRECTION','LONG')}
         if (_rblock, signal_dir) in _dead_zones:
             s_research = 0
-        s_research = max(-8, min(8, s_research))
+        s_research = max(-8, min(8, int(round(s_research))))
         if s_research != 0:
             score += s_research
             breakdown['研究增强层'] = f'{s_research:+d} (timesfm_lite)'
