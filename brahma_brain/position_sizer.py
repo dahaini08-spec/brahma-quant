@@ -391,6 +391,21 @@ def get_position_pct(symbol: str, score: float, direction: str,
         pass
     # ── [END var_engine] ──────────────────────────────────────────────────────
 
+    # ── [sl_bandit 2026-08-29 苏摩111] 动态SL推荐（辅助信息，不强制覆盖宪法SL）──
+    try:
+        from brahma_brain.sl_bandit import recommend_sl_pct as _slb_recommend
+        _slb_rec = _slb_recommend(regime=regime, direction=direction)
+        _slb_pct = float(_slb_rec.get('recommended_sl_pct', 0) or 0)
+        _slb_n   = int(_slb_rec.get('arm_n', 0) or 0)
+        _slb_wr  = float(_slb_rec.get('arm_wr', 0) or 0)
+        if _slb_pct > 0 and _slb_n >= 10:
+            # 仅输出建议字段，实际SL由宪法决定（P0 SL三层分档）
+            # 当Bandit建议与传入sl_pct差距>0.5%时，在note字段警示
+            _slb_note = f'SL_Bandit建议={_slb_pct:.1f}%(WR={_slb_wr:.0%} n={_slb_n})'
+    except Exception:
+        pass
+    # ── [END sl_bandit] ────────────────────────────────────────────────────────
+
     # ── [P0 SL三层分档 2026-08-22 设计院自主] SL铁证仓位分级 ──────────────────
     # 移至VaR之后执行，作为最终裁决层
     # 铁证(simfactory 64条): SL<1%→WR=100% / SL1~1.5%→WR=35% / SL1.5~2%→WR=58%

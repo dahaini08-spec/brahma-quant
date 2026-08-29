@@ -4169,6 +4169,26 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _cag_e:
         import logging as _lg4; _lg4.getLogger('brahma').warning(f'[cross_asset_gate] {_cag_e}')
 
+    # ══ [cross_asset_correlator 2026-08-29 苏摩111] 宏观相关性评分注入 ══
+    # 之前只在 brahma_1hao_analysis.py 展示，brahma_core scoring 完全没用到
+    # VIX/DXY/BTC.D/利率 → score_addon_total → 注入 score_final
+    try:
+        from brahma_brain.cross_asset_correlator import get_cross_asset_context as _get_cross
+        _cross_ctx   = _get_cross(symbol=_sym, current_price=float(_result.get('price', 0) or 0))
+        _cross_addon = int(_cross_ctx.get('score_addon_total', 0) or 0)
+        if _cross_addon != 0:
+            _old_s_cross = float(_result.get('score_final', 0) or 0)
+            _result['score_final'] = round(_old_s_cross + _cross_addon, 1)
+            _result['score']       = _result['score_final']
+            _result['cross_asset_macro'] = _cross_ctx
+            _result.setdefault('confluence', {}).setdefault('breakdown', {})['宏观相关性'] = (
+                f'{_cross_addon:+d}'
+                f'(VIX={_cross_ctx.get("vix",{}).get("vix_now","N/A")}'
+                f' BTC.D={"✅山寨季" if _cross_ctx.get("btcd",{}).get("altcoin_season") else ""})'
+            )
+    except Exception:
+        pass  # 宏观层失败静默降级，不阻断主链
+
     # B2: brahma_coordinator — 子系统上下文聚合
     try:
         from brahma_brain.brahma_coordinator import get_episodic_context as _coord_ep
