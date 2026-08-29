@@ -735,6 +735,71 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         pass
     # [END N_VOL_PCT] ─────────────────────────────────────────────
 
+    # ══ [N_REPLAY 2026-08-29 苏摩111] 40年经验复盘升级——四修正 ══════════════
+    # 铁证: 20392条案例 + 2001笔回测(IS/OOS偏差3%)
+    try:
+        _replay_rsi  = float(ms.get('rsi_1h', ms.get('rsi', 50)) or 50)
+        # vol×burst: 从ms多路读取，兼容不同数据结构
+        _replay_vol  = float(
+            ms.get('vol_ratio') or
+            (ms.get('volume') or {}).get('vol_ratio') or
+            (ms.get('momentum') or {}).get('vol_ratio') or 1.0
+        )
+        _replay_brst = float(
+            ms.get('burst_atr_mult') or
+            (ms.get('momentum') or {}).get('burst_atr_mult') or
+            (_result.get('fangcang') or {}).get('avg_burst_atr_mult') or 0
+        )
+        # compress_bars: 从fangcang结果或ms读取
+        _replay_bars = int(
+            ms.get('compress_bars') or
+            ms.get('fangcang_bars') or
+            (_result.get('fangcang') or {}).get('avg_squeeze_bars') or 0
+        )
+        _replay_dir  = signal_dir or _result.get('signal_dir','LONG') or 'LONG'
+
+        # P0: squeeze_bars_w修正 [15-30根最优,60+降权]
+        # 铁证: 15-30根 avg_burst=1.95x最高 / 60+根=1.76x能量分散
+        if _replay_bars > 0:
+            if 15 <= _replay_bars < 30:
+                score = min(175, int(score) + 2)
+                breakdown['P0_压缩最优窗口'] = f'+2(压缩{_replay_bars}根=15-30根黄金区)'
+            elif _replay_bars >= 60:
+                score = max(0, int(score) - 2)
+                breakdown['P0_长压缩泡压弱'] = f'-2(压缩{_replay_bars}根>=60,能量分散)'
+
+        # P1: vol×burst组合维度 [量能单用无效]
+        # 铁证: vol单用WR差异<1% / vol×ATR>3x才是机构出手信号
+        if _replay_vol > 0 and _replay_brst > 0:
+            _vb_combo = _replay_vol * _replay_brst
+            if _vb_combo >= 3.0 and _replay_brst >= 1.5:
+                score = min(175, int(score) + 4)
+                breakdown['P1_量价齐升'] = f'+4(vol={_replay_vol:.1f}x×burst={_replay_brst:.1f}x={_vb_combo:.1f}≥3.0)'
+            elif _vb_combo >= 1.5 and _replay_brst >= 1.0:
+                score = min(175, int(score) + 2)
+                breakdown['P1_量价有效'] = f'+2(vol×burst={_vb_combo:.1f}≥1.5)'
+
+        # P2: RSI中性区45-55加分 [机构建仓最优区]
+        # 铁证: RSI45-55 做多/做空WR=77-78%(最强) n=1202/1277
+        if 45 <= _replay_rsi < 55 and 'BULL_TREND' not in _regime_upper:
+            score = min(175, int(score) + 4)
+            breakdown['P2_RSI中性机构入场'] = f'+4(RSI={_replay_rsi:.0f}在中性区 WR=77%铁证)'
+
+        # P3: BEAR_TREND SHORT RSI精细管控
+        # 铁证RSI<45: WR=35%(n=298陷阱) / RSI55-70: WR=49%(最佳做空区)
+        if 'BEAR_TREND' in _regime_upper and _replay_dir == 'SHORT':
+            if _replay_rsi < 45:
+                score = max(0, int(score) - 4)
+                breakdown['P3_BEAR_SHORT_RSI陷阱'] = f'-4(BEAR SHORT RSI={_replay_rsi:.0f}<45 WR=35%铁证)'
+            elif 55 <= _replay_rsi < 70:
+                score = min(175, int(score) + 3)
+                breakdown['P3_BEAR_SHORT_RSI最佳'] = f'+3(BEAR SHORT RSI={_replay_rsi:.0f}=55-70最佳做空区)'
+
+    except Exception:
+        pass
+    # ══ [END N_REPLAY] ═══════════════════════════════════════════════════════
+
+
     # FIX-1: 极低波动率假牛市惩罚（精确版v2）
     _atr_pct_val = float(ms.get('atr_pct', ms.get('atr_1h', 15) / max(ms.get('price', 1), 1)) if ms else 0.01)
     # [潜力释放 P1 2026-07-12] 暴涨猎手豆免通道：FR极度负值 + ATR压缩 = 爆发前元，不应惩罚
