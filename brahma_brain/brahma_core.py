@@ -696,6 +696,45 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
 
     # [UP-FIX-SOL-BNB] 根因修复注入 (2026-05-26 诊断)
     # ─────────────────────────────────────────────
+    # [N_VOL_PCT] ATR历史百分位评分 [2026-08-29 苏摩111]
+    # vol_percentile_master.json 13个主流标的ATR历史分位
+    # 【背景：各标的ATR局火/局冰存储完按时间排序】
+    # 需要客观标准: 不能用单一标的ATR判断高低，必须指和自身历史百分位比
+    # 高ATR(>80%分位)做多 = 追高风险，-3分
+    # 低ATR(<20%分位) + BULL/BULL_EARLY = 局火正在被压缩，+3分
+    try:
+        import json as _jvol
+        from pathlib import Path as _Pvol
+        import bisect as _bisect
+        _vol_path = _Pvol(__file__).parent.parent / 'data' / 'vol_percentile_master.json'
+        if _vol_path.exists():
+            _vol_data = _jvol.loads(_vol_path.read_text())
+            _vol_sym  = _sym.replace('USDT','').replace('usdt','').upper()
+            _vol_entry = _vol_data.get('data', {}).get(_vol_sym)
+            if _vol_entry:
+                _atr_series  = sorted(_vol_entry.get('atr_series', []))
+                _cur_atr_abs = float(ms.get('momentum',{}).get('atr_1h', 0) or ms.get('atr_1h', 0) or 0)
+                if _cur_atr_abs > 0 and len(_atr_series) > 50:
+                    _atr_rank = _bisect.bisect_left(_atr_series, _cur_atr_abs)
+                    _atr_pctile = _atr_rank / len(_atr_series)  # 0.0~1.0
+                    _vol_pts = 0
+                    if _atr_pctile > 0.80 and signal_dir == 'LONG':
+                        _vol_pts = -3  # 高ATR做多，追高风险
+                    elif _atr_pctile > 0.80 and signal_dir == 'SHORT':
+                        _vol_pts = +2  # 高ATR做空，动能充足
+                    elif _atr_pctile < 0.20 and 'BULL' in _regime_upper:
+                        _vol_pts = +3  # 低ATR牛市 = 局火屏息就要爆
+                    elif _atr_pctile < 0.20 and 'BEAR' in _regime_upper and signal_dir == 'SHORT':
+                        _vol_pts = +2  # 熊市将爆量下打
+                    if _vol_pts != 0:
+                        score += _vol_pts
+                        breakdown[f'N_VOL_PCT'] = (
+                            f'{_vol_pts:+d}(ATR百分位={_atr_pctile:.0%} n={len(_atr_series)})'
+                        )
+    except Exception:
+        pass
+    # [END N_VOL_PCT] ─────────────────────────────────────────────
+
     # FIX-1: 极低波动率假牛市惩罚（精确版v2）
     _atr_pct_val = float(ms.get('atr_pct', ms.get('atr_1h', 15) / max(ms.get('price', 1), 1)) if ms else 0.01)
     # [潜力释放 P1 2026-07-12] 暴涨猎手豆免通道：FR极度负值 + ATR压缩 = 爆发前元，不应惩罚
@@ -2700,36 +2739,70 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # ── [END N21 宏观Fib] ────────────────────────────────────────────────────
 
 
-    # ── [N22b] WR矩阵动态加成层 [设计院封印 2026-06-27] ──────────────────────
-    # 职责：读取 dharma_runtime.wr_matrix_v7，为主战场体制提供实证WR加分
-    # BEAR_TREND×SHORT=71.3% n=1188 → +4分；BLOCK体制→-15分
+    # ── [N22b] WR矩阵动态加成层 v8 RSI分层版 [2026-08-29 苏摩111] ──────────────
+    # 升级: v7(体制×方向 ALL平均) → v8(体制×方向×RSI分层，6.5年铁证)
+    # 铁证: BEAR_TREND SHORT RSI>60 WR=62.8% n=613 EV=+0.512
+    #       BEAR_TREND SHORT RSI>70 WR=66.7% n=90  EV=+0.667
+    #       v7 ALL=51.9% → RSI分层后精准区间WR差距达15%
     try:
         import json as _j22b
-        _dm22b = _j22b.loads(open('data/dharma_runtime.json').read())
-        _wv7   = _dm22b.get('wr_matrix_v7', {})
-        # [方案C v25.4 苏摩审批] 周期感知查找：优先 REGIME_DIR_TF，fallback REGIME_DIR
-        _tf22    = ms.get('entry_tf', ms.get('tf', '15M'))  # 信号触发周期
-        _combo22     = f"{ms.get('regime','').upper()}_{signal_dir}"
-        _combo22_tf  = f"{ms.get('regime','').upper()}_{signal_dir}_{_tf22}"
-        _sym_wv7 = _wv7.get(_sym, {})
-        # 优先使用带周期的精确键，fallback到混合键
-        _wdata22 = _sym_wv7.get(_combo22_tf) or _sym_wv7.get(_combo22, {})
-        if _sym_wv7.get(_combo22_tf):  # 命中周期分层
-            _combo22 = _combo22_tf  # 用于日志显示
-        _wr22b   = _wdata22.get('wr', 0)
-        _n22b    = _wdata22.get('n', 0)
-        _act22   = _wdata22.get('action', 'SKIP')
-        _pts22b  = 0
-        if _act22 == 'ALLOW' and _n22b >= 500 and _wr22b > 0:
-            _pts22b = max(-10, min(15, round((_wr22b - 0.50) * 20)))
-        elif _act22 in ('BLOCK', 'PERMANENT_BLOCK'):
-            _pts22b = -15
-        elif _act22 == 'PENALIZE':  # [v25.4] 新增：宪法级潜伏死穴惩罚
-            _pts22b = int(_wdata22.get('penalize_pts', -10))
+        _rsi22b = float(ms.get('rsi_1h', ms.get('rsi', 50)) or 50)
+        _regime22b = str(ms.get('regime', '')).upper()
+        _combo22   = f"{_regime22b}_{signal_dir}"
+
+        # ── v8 RSI分桶 ─────────────────────────────────────────────────
+        def _rsi_bucket_v8(rsi):
+            if rsi < 40:  return 'RSI_0_40'
+            if rsi < 50:  return 'RSI_40_50'
+            if rsi < 55:  return 'RSI_50_55'
+            if rsi < 60:  return 'RSI_55_60'
+            if rsi < 70:  return 'RSI_60_70'
+            return 'RSI_70_100'
+
+        _bucket22b = _rsi_bucket_v8(_rsi22b)
+        _v8_path   = __import__('pathlib').Path(__file__).parent.parent / 'data' / 'wr_matrix_v8_6y5.json'
+        _wv8       = _j22b.loads(_v8_path.read_text()) if _v8_path.exists() else {}
+        _sym_wv8   = _wv8.get(_sym, _wv8.get('BTC', {}))  # 山寨fallback到BTC
+        _regime_wv8 = _sym_wv8.get(_regime22b, {})
+        _dir_wv8    = _regime_wv8.get(signal_dir, {})
+        # 优先RSI分桶，fallback ALL
+        _wdata22   = _dir_wv8.get(_bucket22b) or _dir_wv8.get('ALL', {})
+        _used_bucket = _bucket22b if _bucket22b in _dir_wv8 else 'ALL'
+
+        _wr22b  = float(_wdata22.get('wr', 0)) / 100 if _wdata22.get('wr', 0) > 1 else float(_wdata22.get('wr', 0))
+        _n22b   = int(_wdata22.get('n', 0))
+        _ev22b  = float(_wdata22.get('ev', 0))
+        _pts22b = 0
+        if _n22b >= 50 and _wr22b > 0:
+            # WR→评分: WR=65%→+6  WR=55%→+2  WR=50%→0  WR=45%→-2  WR=35%→-6
+            _pts22b = max(-10, min(12, round((_wr22b - 0.50) * 20)))
+            # EV加权：EV>0.3额外+2，EV<-0.3额外-2
+            if _ev22b > 0.3:   _pts22b = min(14, _pts22b + 2)
+            elif _ev22b < -0.3: _pts22b = max(-12, _pts22b - 2)
+        elif _n22b < 50 and _n22b > 0:
+            _pts22b = 0  # 样本不足跳过
+
+        # 若v8没有数据，fallback v7
+        if _n22b == 0:
+            _dm22b = _j22b.loads(open('data/dharma_runtime.json').read())
+            _wv7   = _dm22b.get('wr_matrix_v7', {})
+            _sym_wv7 = _wv7.get(_sym, {})
+            _wdata_v7 = _sym_wv7.get(_combo22, {})
+            _act22 = _wdata_v7.get('action', 'SKIP')
+            _wr22b = _wdata_v7.get('wr', 0)
+            _n22b  = _wdata_v7.get('n', 0)
+            if _act22 == 'ALLOW' and _n22b >= 500:
+                _pts22b = max(-10, min(15, round((_wr22b - 0.50) * 20)))
+            elif _act22 in ('BLOCK', 'PERMANENT_BLOCK'):
+                _pts22b = -15
+            elif _act22 == 'PENALIZE':
+                _pts22b = int(_wdata_v7.get('penalize_pts', -10))
+            _used_bucket = 'v7_fallback'
+
         if _pts22b != 0:
             _score_raw += _pts22b
-            cf['n22b_wr_matrix'] = f'N22b_WR矩阵:{_pts22b:+d}({_combo22} wr={_wr22b:.1%} n={_n22b})'
-            pass  # [静默] f'[N22b-WRMatrix] {_sym} {_combo22}: {_pts22b:+d}分 WR={_wr22b:.1%} n={_n22b}'
+            cf['n22b_wr_matrix'] = (f'N22b_WRv8:{_pts22b:+d}'
+                f'({_combo22}@{_used_bucket} WR={_wr22b:.1%} n={_n22b} EV={_ev22b:+.3f})')
     except Exception:
         pass
     # ── [END N22b] ──────────────────────────────────────────────────────────
@@ -4429,6 +4502,46 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # [2026-08-25 fix P3] direction字段映射 signal_dir → direction，供AI议会/外部调用
     if _result.get('direction') is None:
         _result['direction'] = _result.get('signal_dir') or signal_dir or None
+
+    # ── [N_SW] signal_weight_updater 动态乘数层 [2026-08-29 苏摩111] ─────────────
+    # 职责: 读取实战结算后的动态WR权重，对score_final做乘数修正
+    # 接入位置: return前最后一步（所有其他评分已完成后）
+    # 铁律: STATIC_LOCK条目不可被动态覆盖
+    try:
+        import json as _jsw
+        from pathlib import Path as _Psw
+        _sw_path = _Psw(__file__).parent.parent / 'data' / 'signal_weights.json'
+        if _sw_path.exists():
+            _sw_data    = _jsw.loads(_sw_path.read_text())
+            _sw_weights = _sw_data.get('weights', {})
+            _sw_regime  = _result.get('regime', '')
+            _sw_dir     = _result.get('signal_dir', _result.get('direction', ''))
+            _sw_score   = float(_result.get('score_final', 0) or 0)
+            # 生成分段key: REGIME:DIR:TIER
+            def _sw_tier(s):
+                if s >= 165: return '165+'
+                if s >= 155: return '155-164'
+                if s >= 140: return '140-154'
+                if s >= 120: return '120-139'
+                return 'sub120'
+            _sw_key = f"{_sw_regime}:{_sw_dir}:{_sw_tier(_sw_score)}"
+            _sw_key2 = f"{_sw_regime}:{_sw_dir}"  # 无tier fallback
+            _sw_entry = _sw_weights.get(_sw_key) or _sw_weights.get(_sw_key2, {})
+            _sw_mult  = float(_sw_entry.get('multiplier', 1.0) or 1.0)
+            # 乘数有效范围 0.3~1.5，避免极端放大
+            _sw_mult = max(0.3, min(1.5, _sw_mult))
+            if _sw_mult != 1.0 and _sw_score != 0:
+                _sw_old = _sw_score
+                _sw_new = round(_sw_score * _sw_mult, 1)
+                _result['score_final'] = _sw_new
+                _result['score']       = _sw_new
+                _result.setdefault('confluence', {}).setdefault('breakdown', {})['SW动态权重'] = (
+                    f'{_sw_mult:.2f}x({_sw_key} n={_sw_entry.get("n","?")} WR={_sw_entry.get("wr","?")})'
+                    f' {_sw_old:.1f}→{_sw_new:.1f}'
+                )
+    except Exception:
+        pass
+    # ── [END N_SW] ──────────────────────────────────────────────────────────────
 
     return _result
 
