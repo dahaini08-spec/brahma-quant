@@ -975,6 +975,102 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         lines.append(f"  [扩展模块] 部分跳过: {_ext_err}")
     # ══ [END 封印补全] ══════════════════════════════════════════════════
 
+    # ══ [P0修复 2026-08-29 苏摩111] cross_market/failure_pattern/ev_feedback/longmem ══
+    try:
+        _p0_lines = []
+
+        # P0-1: cross_market_engine 跨市场相关性
+        try:
+            from brahma_brain.cross_market_engine import cross_market_score as _cms
+            _cm = _cms(r.get('symbol','BTCUSDT'), r.get('signal_dir','LONG'))
+            if _cm and isinstance(_cm, dict):
+                _cm_score = _cm.get('score', 0)
+                _cm_bd    = _cm.get('breakdown', {})
+                _corr     = _cm.get('btc_eth_corr', _cm_bd.get('corr', 'N/A'))
+                _dxy      = _cm.get('dxy', _cm_bd.get('dxy', 'N/A'))
+                _risk_reg = _cm.get('risk_regime', _cm_bd.get('risk_regime', 'N/A'))
+                _p0_lines.append(f"  🌐 跨市场相关性: score={_cm_score:+d} | BTC-ETH相关={_corr} | DXY信号={_dxy} | 风险体制={_risk_reg}")
+        except Exception as _e1:
+            pass
+
+        # P0-2: failure_pattern_db 失败模式风险
+        try:
+            from brahma_brain.failure_pattern_db import get_current_risk_score as _fps
+            _fp_signal = {
+                'symbol': r.get('symbol','BTCUSDT'),
+                'signal_dir': r.get('signal_dir','LONG'),
+                'direction': r.get('signal_dir','LONG'),
+                'regime': r.get('regime',''),
+                'rsi_1h': r.get('rsi_1h', 50),
+                'lsr': float(r.get('long_ratio', 53) or 53),
+                'fr': float(r.get('funding_rate', 0) or 0),
+                'score': float(str(r.get('score_final',0)).split()[0] if r.get('score_final') else 0),
+            }
+            _fp = _fps(_fp_signal)
+            if _fp and isinstance(_fp, dict):
+                _fp_risk  = _fp.get('risk_level', 'N/A')
+                _fp_score = _fp.get('score_adj', 0)
+                _fp_dims  = _fp.get('active_dims', [])
+                _fp_icon  = '🔴' if _fp_risk == 'HIGH' else '⚠️' if _fp_risk == 'MEDIUM' else '✅'
+                _p0_lines.append(f"  {_fp_icon} 失败模式风险: risk={_fp_risk} adj={_fp_score:+d} | 活跃維度={_fp_dims[:3] if _fp_dims else '无'}")
+        except Exception as _e2:
+            pass
+
+        # P0-3: ev_feedback EV历史反馈
+        try:
+            from brahma_brain.ev_feedback import _load_matrix as _evlm
+            _ev_raw = _evlm()
+            # matrix可能是 {'matrix':{...}, 'updated_at':float} 或直接字典
+            _ev_matrix = _ev_raw.get('matrix', _ev_raw) if isinstance(_ev_raw, dict) else {}
+            _ev_matrix = {k:v for k,v in _ev_matrix.items() if isinstance(v, dict)}
+            if _ev_matrix:
+                # 找当前体制+方向对应的EV
+                _cur_regime = r.get('regime', 'BULL_TREND')
+                _cur_dir = r.get('signal_dir', 'LONG')
+                _cur_score = float(str(r.get('score_final',100)).split()[0] if r.get('score_final') else 100)
+                # score分档
+                _score_bin = '<120' if _cur_score < 120 else '120-139' if _cur_score < 140 else '140-154' if _cur_score < 155 else '155-159' if _cur_score < 160 else '160+'
+                _lookup_key = f'{_cur_regime}:{_cur_dir}:{_score_bin}'
+                _ev_entry = _ev_matrix.get(_lookup_key, {})
+                _ev_val = _ev_entry.get('ev', None)
+                _ev_wr  = _ev_entry.get('wr', None)
+                _ev_n   = _ev_entry.get('n', 0)
+                if _ev_val is not None:
+                    _ev_icon = '✅' if _ev_val > 0 else '🔴'
+                    _p0_lines.append(f"  {_ev_icon} EV历史反馈: [{_lookup_key}] EV={_ev_val:+.3f}% WR={_ev_wr:.0%} n={_ev_n} | 矩阵共{len(_ev_matrix)}组合")
+                else:
+                    _p0_lines.append(f"  📊 EV历史反馈: 矩阵{len(_ev_matrix)}组合 | 当前体制[{_lookup_key}]暂无历史数据")
+        except Exception as _e3:
+            pass
+
+        # P0-4: brahma_longmem 长期记忆
+        try:
+            _lm_adj = r.get('longmem_adj', None)
+            _lm_ctx = r.get('longmem_ctx', '')
+            if _lm_adj is not None:
+                _lm_icon = '🟢' if float(_lm_adj) > 0 else '🔴' if float(_lm_adj) < 0 else '⚪'
+                _p0_lines.append(f"  {_lm_icon} 长期记忆(longmem): adj={float(_lm_adj):+.1f} | {_lm_ctx[:80]}")
+            else:
+                # 直接调用
+                from brahma_brain.brahma_longmem import get_longmem_score_adj as _lmsa
+                _lm_r = _lmsa(r.get('symbol','BTCUSDT'), r.get('regime',''), r.get('signal_dir','LONG'))
+                _lm_a = _lm_r.get('adj', 0)
+                _lm_s = _lm_r.get('summary', '')
+                _lm_icon = '🟢' if _lm_a > 0 else '🔴' if _lm_a < 0 else '⚪'
+                _p0_lines.append(f"  {_lm_icon} 长期记忆(longmem): adj={_lm_a:+.1f} | {_lm_s[:80]}")
+        except Exception as _e4:
+            pass
+
+        if _p0_lines:
+            lines.append("")
+            lines.append("╬" + "═"*58)
+            lines.append("  🖴 P0深层扩展层（cross_market / failure_pattern / EV反馈 / 长期记忆）")
+            lines.append("╬" + "═"*58)
+            lines += _p0_lines
+    except Exception as _p0_err:
+        pass
+    # ══ [END P0修复] ════════════════════════════════════════════════
+
 
     # ══ [设计院 2026-08-08] 决策树层注入 ════════════════════════════════
     try:
