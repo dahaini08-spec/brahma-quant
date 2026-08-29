@@ -183,8 +183,22 @@ def format_full_report(r: dict) -> str:
     lines.append(_row('空头清算上方', _short_liq))
     lines.append(_row('多头清算下方', _long_liq))
     lines.append(_row('OI变化%', smt.get('oi_change_pct') or liq.get('oi_change')))
-    _htf_str = str(htf.get('_anchor_summary') or htf.get('weekly_regime') or '')
-    lines.append(_row('HTF锚', _htf_str[:55] if _htf_str else 'N/A'))
+    # [P0修复 2026-08-29 苏摩111] 优先读brahma_core注入的实时HTF共振值
+    _htf_bd   = (r.get('confluence') or {}).get('breakdown', {}).get('HTF周月线锚定')
+    _htf_addon = r.get('htf_score_addon', 0)
+    if _htf_bd:
+        _htf_str = f'HTF周月线锚定 {_htf_bd}'
+    else:
+        # fallback: 用get_features()实时算
+        try:
+            from brahma_brain.weekly_monthly_anchor import get_anchor as _wma_fn
+            _wma = _wma_fn(sym)
+            _wf  = _wma.get_features(current_price=float(price or 0))
+            _htf_str = (f'HTF周月线锚定 {_htf_addon:+d} '
+                        f'({_wf.get("htf_bias","?")} 共振={_wf.get("htf_resonance",0):.2f})')
+        except Exception:
+            _htf_str = str(htf.get('_anchor_summary') or htf.get('weekly_regime') or '')
+    lines.append(_row('HTF周月线锚定', _htf_str[:70] if _htf_str else 'N/A'))
     lines.append(_row('L2+贝叶斯+宏观', bd.get('L2+贝叶斯+宏观')))
 
     # ══ 奖惩层 ══
