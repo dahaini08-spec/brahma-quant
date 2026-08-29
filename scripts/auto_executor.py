@@ -633,9 +633,65 @@ def find_executable_signals() -> list[dict]:
             _age_h = (now_ts - _sig_ts) / 3600
             print(f'[TTL过期] {s.get("symbol")} 信号{s.get("signal_id","?")[:12]} 年龄={_age_h:.1f}h>{MAX_SIGNAL_AGE_H}h 跳过')
             continue
+        # [2026-08-29 苏摩111] P2: 单标的同方向连续2次SL → 4h冷却
+        try:
+            _cd_sym = s.get('symbol','')
+            _cd_dir = s.get('signal_dir') or s.get('direction','')
+            _cd_key = f'{_cd_sym}:{_cd_dir}'
+            _cd_logs = [json.loads(l) for l in open(LOG_PATH) if l.strip()] if LOG_PATH.exists() else []
+            _cd_recent = [l for l in reversed(_cd_logs)
+                          if l.get('symbol') == _cd_sym
+                          and l.get('direction','') == _cd_dir
+                          and l.get('outcome') == 'SL'][:3]
+            if len(_cd_recent) >= 2:
+                _cd_last_sl_ts = float(_cd_recent[0].get('ts', 0))
+                _cd_age_h = (now_ts - _cd_last_sl_ts) / 3600
+                if _cd_age_h < 4.0:
+                    continue  # P2冷却: 同标的同方向连续2次SL，4h内不再触发
+        except Exception:
+            pass  # 冷却检查失败时放行
+
+        # [2026-08-29 苏摩111] G3战场位置门控：价格必须在高空区/低多区内才允许入场
+        try:
+            from brahma_brain.price_zone_engine import calc_zones
+            _sym_g3 = s.get('symbol','')
+            _dir_g3 = s.get('signal_dir') or s.get('direction','')
+            _z_g3 = calc_zones(_sym_g3, force_refresh=False)
+            _price_g3 = _z_g3.get('price', 0)
+            _ll_g3 = _z_g3.get('low_long', {})
+            _hs_g3 = _z_g3.get('high_short', {})
+            _in_hs_g3 = _hs_g3.get('low',0)*0.98 <= _price_g3 <= _hs_g3.get('high',0)*1.02
+            _in_ll_g3 = _ll_g3.get('low',0)*0.98 <= _price_g3 <= _ll_g3.get('high',0)*1.02
+            _in_zone_g3 = (_dir_g3 == 'SHORT' and _in_hs_g3) or (_dir_g3 == 'LONG' and _in_ll_g3)
+            if not _in_zone_g3:
+                continue  # G3: 价格偏离区间，不入场
+        except Exception:
+            pass  # G3失败时放行，不阻断信号
+
         # ⑨ 已有result的跳过
         if s.get('result') or s.get('settled'):
             continue
+
+        # [2026-08-29 苏摩111] P4: EV>0门控 — 负EV信号永久封禁
+        # EV = WR × RR - (1-WR) × 1.0
+        try:
+            _ev_rr  = float(s.get('rr1') or s.get('rr') or 0)
+            _ev_wr  = float(s.get('wr') or 0)
+            _ev_regime = (s.get('regime') or '').upper()
+            _ev_dir    = (s.get('signal_dir') or s.get('direction') or '').upper()
+            if _ev_wr == 0:
+                _WR_DEF = {
+                    'CHOP_MID:SHORT':1.0,'CHOP_MID:LONG':0.5,
+                    'BEAR_TREND:SHORT':0.63,'BULL_TREND:LONG':0.455,
+                    'BEAR_RECOVERY:LONG':1.0,'BULL_EARLY:LONG':1.0,
+                }
+                _ev_wr = _WR_DEF.get(f'{_ev_regime}:{_ev_dir}', 0.5)
+            if _ev_rr > 0 and _ev_wr > 0:
+                _ev = _ev_wr * _ev_rr - (1 - _ev_wr) * 1.0
+                if _ev <= 0:
+                    continue  # P4: EV<=0 负期望信号，封禁
+        except Exception:
+            pass  # EV计算失败时放行
 
         # SL验证（动态上限：score≥145高波动信号允许至 MAX_SL_PCT_HIGH_VOL）
         sl_pct = float(s.get('sl_pct', 0) or 0)

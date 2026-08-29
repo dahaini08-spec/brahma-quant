@@ -16,6 +16,15 @@ def push_signal(symbol: str, source: str, meta: dict = None,
                 grade: float = None, sl_pct: float = None,
                 entry_lo: float = None, entry_hi: float = None):
     """写入信号队列（完整字段版）"""
+    # [2026-08-29 苏摩111修复] 最后一道防线：全局体制死穴封禁
+    _DEAD_SHORT = {'BEAR_RECOVERY', 'BULL_EARLY', 'BULL_TREND'}  # BULL_TREND SHORT 实盘WR=0% n=4
+    _DEAD_LONG  = {'BEAR_TREND'}
+    _regime = (regime or '').upper()
+    _dir    = (direction or '').upper()
+    if _dir == 'SHORT' and _regime in _DEAD_SHORT:
+        return  # 封禁：{symbol} {_regime} SHORT 死穴 WR=0%
+    if _dir == 'LONG' and _regime in _DEAD_LONG:
+        return  # 封禁：{symbol} {_regime} LONG 死穴
     SIGNAL_QUEUE.parent.mkdir(exist_ok=True)
     record = {
         'symbol':    symbol,
