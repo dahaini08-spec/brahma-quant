@@ -537,7 +537,7 @@ def review(
 
     Args:
         signal_result: brahma_core/runner 输出的信号字典
-                       需包含: symbol, direction, score, regime, breakdown
+                       需包含: symbol, direction, score, regime, breakdown(RiskAgent用)
         market_ctx:    实时市场上下文（fear_greed, btc_dominance等）
         force:         强制调用，忽略触发阈值（测试用）
 
