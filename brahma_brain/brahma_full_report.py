@@ -677,7 +677,14 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
                 # 尚未触及区间下沿，等待触及
                 _entry_range = f'${_hz_lo:,.0f}~${_hz_hi:,.0f}'
                 _zone_note = '等待触及'
-            _s0s1s2.append(f'  🎯 机会①: 高空区{_entry_range}布空 {_zone_note} | SL=${_hz_sl_adj:,.0f}{_sl_note} RR={_zrr(_hz):.1f} | 仓位: {_pos_str}')
+            # 实时RR重算(基于当前实时价格)
+            _hz_tp  = float(_hz.get('tp1', _hz.get('target',0)) or 0)
+            _hz_entry_price = _price if (_price >= _hz_lo and _hz_hi > 0) else _hz_lo
+            if _hz_tp and _hz_sl_adj and _hz_entry_price:
+                _hz_rr_real = round(abs(_hz_entry_price - _hz_tp) / abs(_hz_entry_price - _hz_sl_adj), 1) if abs(_hz_entry_price - _hz_sl_adj) > 0 else _zrr(_hz)
+            else:
+                _hz_rr_real = _zrr(_hz)
+            _s0s1s2.append(f'  🎯 机会①: 高空区{_entry_range}布空 {_zone_note} | SL=${_hz_sl_adj:,.0f}{_sl_note} RR={_hz_rr_real:.1f} | 仓位: {_pos_str}')
         if _lz and _zlo(_lz) and _zrr(_lz):
             _lz_pos = '2%NAV×5x (轻仓)'
             _lz_lo = float(_zlo(_lz) or 0)
@@ -692,7 +699,15 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
             else:
                 _lz_entry = f'${_lz_lo:,.0f}~${_lz_hi:,.0f}'
                 _lz_note = '价格已在区间上方，低多区失效'
-            _s0s1s2.append(f'  🎯 机会②: 低多区{_lz_entry}轻多 {_lz_note} | SL=${_zsl(_lz):,.0f} RR={_zrr(_lz):.1f} | 仓位: {_lz_pos}')
+            # 实时RR重算
+            _lz_tp = float(_lz.get('tp1', _lz.get('target',0)) or 0)
+            _lz_sl_v = float(_zsl(_lz) or 0)
+            _lz_entry_price = _price if (_lz_lo <= _price <= _lz_hi) else _lz_lo
+            if _lz_tp and _lz_sl_v and _lz_entry_price:
+                _lz_rr_real = round(abs(_lz_tp - _lz_entry_price) / abs(_lz_entry_price - _lz_sl_v), 1) if abs(_lz_entry_price - _lz_sl_v) > 0 else _zrr(_lz)
+            else:
+                _lz_rr_real = _zrr(_lz)
+            _s0s1s2.append(f'  🎯 机会②: 低多区{_lz_entry}轻多 {_lz_note} | SL=${_zsl(_lz):,.0f} RR={_lz_rr_real:.1f} | 仓位: {_lz_pos}')
         if _ev_val is not None and _ev_val < -0.5:
             _s0s1s2.append(f'  ❌ 禁区: 当前追{_dir} EV={_ev_val:+.3f}% 历史亟钱——禁止')
 
