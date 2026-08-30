@@ -643,6 +643,8 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
         elif _dir_opp == 'SHORT':
             _s0s1s2.append(f'  ⚠️ 做空 EV矩阵暂无历史样本({_ev_key_opp})，不开高仳局')
         if _hz and _zlo(_hz) and _zrr(_hz):
+            _hz_lo = float(_zlo(_hz) or 0)
+            _hz_hi = float(_zhi(_hz) or 0)
             _hz_sl = float(_zsl(_hz) or 0)
             _hz_sl_adj = _hz_sl
             if _hz_sl > 0:
@@ -651,10 +653,36 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
                     _atr4h = float(_ms.get('atr_4h', 200) or 200)
                     _hz_sl_adj = round(_hz_sl + _atr4h * 0.3, 0)
             _sl_note = f'(OB上沿+ATR×0.3修正自${_hz_sl:,.0f})' if _hz_sl_adj != _hz_sl else ''
-            _s0s1s2.append(f'  🎯 机会①: 高空区${_zlo(_hz):,.0f}~${_zhi(_hz):,.0f}布空 | SL=${_hz_sl_adj:,.0f}{_sl_note} RR={_zrr(_hz):.1f} | 仓位: {_pos_str}')
+            # ══ 实时价格适配：当前价已进入高空区 ══
+            if _price > _hz_lo and _hz_hi > 0:
+                # 当前价在区间内，入场区调整为当前价~区间上沿
+                _entry_lo_str = f'${_price:,.0f}(当前价)'
+                _entry_range = f'{_entry_lo_str}~${_hz_hi:,.0f}'
+                _zone_note = '⚡已入区，可直接布空'
+            elif _price > _hz_hi:
+                # 价格已稧7区间上方，高空区已失效
+                _entry_range = f'${_hz_lo:,.0f}~${_hz_hi:,.0f}'
+                _zone_note = '⚠️ 价格已穷空区上方，高空区失效'
+            else:
+                # 尚未触及区间下沿，等待触及
+                _entry_range = f'${_hz_lo:,.0f}~${_hz_hi:,.0f}'
+                _zone_note = '等待触及'
+            _s0s1s2.append(f'  🎯 机会①: 高空区{_entry_range}布空 {_zone_note} | SL=${_hz_sl_adj:,.0f}{_sl_note} RR={_zrr(_hz):.1f} | 仓位: {_pos_str}')
         if _lz and _zlo(_lz) and _zrr(_lz):
             _lz_pos = '2%NAV×5x (轻仓)'
-            _s0s1s2.append(f'  🎯 机会②: 低多区${_zlo(_lz):,.0f}~${_zhi(_lz):,.0f}轻多 | SL=${_zsl(_lz):,.0f} RR={_zrr(_lz):.1f} | 仓位: {_lz_pos}')
+            _lz_lo = float(_zlo(_lz) or 0)
+            _lz_hi = float(_zhi(_lz) or 0)
+            # 实时适配：当前价已在低多区内
+            if _lz_lo <= _price <= _lz_hi:
+                _lz_entry = f'${_price:,.0f}(当前价)~${_lz_hi:,.0f}'
+                _lz_note = '⚡已入区，可直接轻多'
+            elif _price < _lz_lo:
+                _lz_entry = f'${_lz_lo:,.0f}~${_lz_hi:,.0f}'
+                _lz_note = '等待触及'
+            else:
+                _lz_entry = f'${_lz_lo:,.0f}~${_lz_hi:,.0f}'
+                _lz_note = '价格已在区间上方，低多区失效'
+            _s0s1s2.append(f'  🎯 机会②: 低多区{_lz_entry}轻多 {_lz_note} | SL=${_zsl(_lz):,.0f} RR={_zrr(_lz):.1f} | 仓位: {_lz_pos}')
         if _ev_val is not None and _ev_val < -0.5:
             _s0s1s2.append(f'  ❌ 禁区: 当前追{_dir} EV={_ev_val:+.3f}% 历史亟钱——禁止')
 
