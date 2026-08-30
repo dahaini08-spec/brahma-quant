@@ -512,7 +512,7 @@ def _devil_agent_review(signal: Dict) -> Dict:
 只有在信号存在严重结构矛盾或逆势时才 veto=true。
 reversal_prob必须给出：这是你判断「信号方向错误」的量化置信度，是议会最核心的反向论证。"""
 
-        result = _call_llm(prompt, 'DevilAgent', model='standard')  # 用标准模型控制成本
+        result = _call_llm(prompt, 'DevilAgent', model='advanced')  # [C 2026-08-30 苏摩111] 质疑者用最强模型，避免3个Qwen回音壁
         if not result:
             return _rule_fallback
 

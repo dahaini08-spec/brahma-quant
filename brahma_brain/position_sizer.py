@@ -178,6 +178,37 @@ def get_position_pct(symbol: str, score: float, direction: str,
             level = f'{level}+BEAR_RECOVERY_6pct'
     # ────────────────────────────────────────────────────────────────────────
 
+    # ── [B 2026-08-30 苏摩111] 小样本保护机制 ─────────────────────────────
+    # 设计院宪法：n<10不算铁证，n<15铁证可疑
+    # BEAR_RECOVERY:LONG WR=100%(n=5-8) / BULL_EARLY:LONG WR=100%(n=5) → 小样本
+    # 保护：n<15时强制降仓至2%NAV，避免用「看起来完美」的小样本做大仓
+    # 等n≥15后系统自动解锁（wr_matrix_realtime.json会自动更新n值）
+    _small_sample_regimes = ('BEAR_RECOVERY', 'BULL_EARLY')
+    if (regime and any(r in str(regime).upper() for r in _small_sample_regimes)
+            and direction == 'LONG'):
+        _wr_key = f'{regime}:LONG'
+        _wr_entry = {}
+        try:
+            import json as _json_ss
+            from pathlib import Path as _Path_ss
+            _wr_path = _Path_ss(__file__).parent.parent / 'data' / 'wr_matrix_realtime.json'
+            if _wr_path.exists():
+                _wr_data = _json_ss.loads(_wr_path.read_text())
+                _matrix = _wr_data.get('matrix', _wr_data) if isinstance(_wr_data, dict) else {}
+                # 聚合该体制所有score_bin的n值
+                _total_n = sum(
+                    v.get('n', 0) for k, v in _matrix.items()
+                    if isinstance(v, dict) and k.startswith(_wr_key)
+                )
+                if 0 < _total_n < 15:
+                    _protected_pct = min(max_pct, 2.0)
+                    if _protected_pct < max_pct:
+                        max_pct = _protected_pct
+                        level = f'{level}+SMALL_SAMPLE_GUARD(n={_total_n}<15→2%NAV)'
+        except Exception:
+            pass  # 保护失败不阻塞主流程
+    # ─────────────────────────────────────────────────────────────────────────
+
     # ── [D: BEAR_RECOVERY_TRANSITION 前瞻仓位 2026-07-20 苏摩111批准] ────────
     # 当体制仍为 BEAR_TREND 但探测到转势信号时，允许做多探索仓（0.8x → 0.35x乘数）
     # 从永久封禁(0%) → 轻探索(0.35x = 0.35%NAV)，代价是轻仓
