@@ -3268,6 +3268,8 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             'ob_bull_count':  len((smc.get('order_blocks') or {}).get('bull_obs') or []),
             'ob_bear_count':  len((smc.get('order_blocks') or {}).get('bear_obs') or []),
             'fvg_count':      len(smc.get('fvg') or []),
+            # ══ [P2封印 2026-08-30 苏摩111] Hurst解析字段 ══
+            'hurst_4h':       (lambda _s: float(__import__('re').search(r'H=([0-9.]+)', _s).group(1)) if __import__('re').search(r'H=([0-9.]+)', str(_s or '')) else None)(cf.get('breakdown', {}).get('Hurst体制验证')),
             # ── 时段（实时计算）──
             'utc_hour':       __import__('datetime').datetime.utcnow().hour,
             'weekday':        __import__('datetime').datetime.utcnow().weekday(),
