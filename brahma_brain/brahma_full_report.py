@@ -506,13 +506,21 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
         _liq = r.get('_liq_heatmap', {}) or {}
         _near_short = _liq.get('nearest_short_liq', 0)  # 空头清算墙(上方)
         _near_long  = _liq.get('nearest_long_liq', 0)   # 多头清算墙(下方)
-        _short_vol  = _liq.get('short_liq_volume', 0) or 0
-        _long_vol   = _liq.get('long_liq_volume', 0) or 0
+        # 从_liq_density_walls取真实主动死亡池体量
+        _walls = _liq.get('_liq_density_walls', {}) or {}
+        _above_walls = _walls.get('above_walls', []) or []
+        _below_walls = _walls.get('below_walls', []) or []
+        _short_vol = round(sum(v for _,v in _above_walls) / 1e6, 1) if _above_walls else 0
+        _long_vol  = round(sum(v for _,v in _below_walls) / 1e6, 1) if _below_walls else 0
 
         # EV矩阵查询
         _sbin = '<120' if _score<120 else '120-139' if _score<140 else '140-154' if _score<155 else '155-159' if _score<160 else '160+'
         _ev_key = f'{_regime}:{_dir}:{_sbin}'
         _ev_val = None; _ev_wr = None; _ev_n = 0
+        # 同时查询反向EV(做空)
+        _dir_opp = 'SHORT' if _dir == 'LONG' else 'LONG'
+        _ev_key_opp = f'{_regime}:{_dir_opp}:{_sbin}'
+        _ev_val_opp = None; _ev_wr_opp = None; _ev_n_opp = 0
         try:
             from brahma_brain.ev_feedback import _load_matrix as _evlm
             _ev_raw = _evlm()
@@ -522,7 +530,16 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
             _ev_val = _ev_entry.get('ev', None)
             _ev_wr  = _ev_entry.get('wr', None)
             _ev_n   = _ev_entry.get('n', 0)
+            # 反向
+            _ev_opp = _ev_mat.get(_ev_key_opp, {})
+            _ev_val_opp = _ev_opp.get('ev', None)
+            _ev_wr_opp  = _ev_opp.get('wr', None)
+            _ev_n_opp   = _ev_opp.get('n', 0)
         except Exception: pass
+
+        # 信号有效期计算(4H)
+        from datetime import datetime, timezone, timedelta
+        _sig_expire = (datetime.now(timezone(timedelta(hours=8))) + timedelta(hours=4)).strftime('%H:%M CST')
 
         # 战场预判区间
         _pz = r.get('_price_zones', {})
@@ -591,6 +608,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
             f'  📋 裁决: {_s0_action}',
             f'  原因: {_s0_reason}',
             f'  下一机会: {_next_str}',
+            f'  ⏰ 信号有效期: 4H（至{_sig_expire}失效）',
             '',
             f'  【S1 主力猎杀地图】',
             f'  📌 GEX区间: {_gex_zone} | 方向: {_gex_dir}',
@@ -614,6 +632,13 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
         _ev_icon = '🔴' if _ev_val is not None and _ev_val < 0 else '✅'
         if _ev_val is not None:
             _s0s1s2.append(f'  {_ev_icon} 当前共[{_ev_key}] EV={_ev_val:+.3f}% WR={_ev_wr:.0%} n={_ev_n}')
+        # 反向EV铁证(做空/做多)
+        if _ev_val_opp is not None:
+            _opp_icon = '✅' if _ev_val_opp > 0 else '🔴'
+            _opp_label = '做空' if _dir_opp == 'SHORT' else '做多'
+            _s0s1s2.append(f'  {_opp_icon} 反向[{_ev_key_opp}] 历史{_opp_label}EV={_ev_val_opp:+.3f}% WR={_ev_wr_opp:.0%} n={_ev_n_opp}')
+        elif _dir_opp == 'SHORT':
+            _s0s1s2.append(f'  ⚠️ 做空 EV矩阵暂无历史样本({_ev_key_opp})，不开高仳局')
         if _hz and _zlo(_hz) and _zrr(_hz):
             _hz_sl = float(_zsl(_hz) or 0)
             _hz_sl_adj = _hz_sl
