@@ -190,3 +190,77 @@ class BrahmaEventBus:
 
 # 全局单例
 bus = BrahmaEventBus()
+
+
+# ── [Fix3 2026-08-30 苏摩111] REGIME_CHANGE 事件 Handler — 清除旧体制的逾期 PENDING 信号 ──────────────────
+# 根因：体制切换后（如 BEAR_TREND → BULL_TREND），队列里旧体制的与新体制方向相反的 PENDING 信号应该失效
+# 40年交易员常识：体制变了，上一个体制的仓位逻辑全作废
+def _handle_regime_change_purge(event: 'Event'):
+    """
+    体制切换时，清除队列中与新体制方向矛盾的 PENDING 信号。
+    规则：
+      - BEAR_* → BULL_* 切换：清除 BEAR/CHOP 体制下的 SHORT PENDING 信号
+      - BULL_* → BEAR_* 切换：清除 BULL/CHOP 体制下的 LONG PENDING 信号
+      - CHOP → 任意：清除旧 CHOP 中矛盾方向信号
+    """
+    import json, time
+    from pathlib import Path
+
+    data = event.data or {}
+    old_regime = str(data.get('old', '')).upper()
+    new_regime = str(data.get('new', '')).upper()
+    symbol     = data.get('symbol', '')  # 可能为空（全市场体制切换）
+
+    if not old_regime or not new_regime:
+        return
+
+    # 确定需要清除的方向
+    purge_direction = None
+    if 'BEAR' in new_regime or 'CRASH' in new_regime:
+        purge_direction = 'LONG'   # 新体制是空头，清除老多单
+    elif 'BULL' in new_regime:
+        purge_direction = 'SHORT'  # 新体制是多头，清除老空单
+    # CHOP → CHOP 不处理，其他切换按上面逻辑
+
+    if not purge_direction:
+        return
+
+    queue_path = Path(__file__).parent.parent / 'data' / 'signal_queue.jsonl'
+    if not queue_path.exists():
+        return
+
+    try:
+        lines = queue_path.read_text().strip().splitlines()
+        kept, purged = [], 0
+        now = time.time()
+        for line in lines:
+            try:
+                sig = json.loads(line)
+                sig_dir    = str(sig.get('direction', '') or '').upper()
+                sig_status = str(sig.get('status', '')).upper()
+                sig_sym    = sig.get('symbol', '')
+                # 只处理 PENDING 信号
+                if sig_status != 'PENDING':
+                    kept.append(line)
+                    continue
+                # 如果指定了 symbol，只清除该 symbol
+                if symbol and sig_sym and sig_sym != symbol:
+                    kept.append(line)
+                    continue
+                # 方向矛盾 → 标记为 REGIME_EXPIRED并丢弃
+                if sig_dir == purge_direction:
+                    purged += 1
+                else:
+                    kept.append(line)
+            except Exception:
+                kept.append(line)  # 解析失败不丢弃
+
+        if purged > 0:
+            queue_path.write_text('\n'.join(kept) + ('\n' if kept else ''))
+            logger.info(f'[REGIME_CHANGE] {old_regime}→{new_regime}: 清除 {purged} 条过期 PENDING {purge_direction} 信号')
+    except Exception as e:
+        logger.warning(f'[REGIME_CHANGE] 清除信号失败: {e}')
+
+
+# 注册 handler 到全局单例
+bus.register(BrahmaEvent.REGIME_CHANGE, _handle_regime_change_purge)

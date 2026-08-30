@@ -27,21 +27,46 @@ def push_signal(symbol: str, source: str, meta: dict = None,
         return  # 封禁：{symbol} {_regime} LONG 死穴
     SIGNAL_QUEUE.parent.mkdir(exist_ok=True)
     record = {
-        'symbol':    symbol,
-        'source':    source,
-        'ts':        time.time(),
-        'ts_iso':    __import__('datetime').datetime.utcnow().isoformat(),
-        'score':     score,
-        'regime':    regime,
-        'direction': direction,
-        'signal_id': signal_id,
-        'grade':     grade,
-        'sl_pct':    sl_pct,
-        'entry_lo':  entry_lo,
-        'entry_hi':  entry_hi,
-        'status':    'PENDING',
-        'meta':      meta or {},
+        'symbol':     symbol,
+        'source':     source,
+        'ts':         time.time(),
+        'ts_iso':     __import__('datetime').datetime.utcnow().isoformat(),
+        'expires_at': __import__('datetime').datetime.utcnow().isoformat(),  # 下方覆盖为+4H
+        'score':      score,
+        'regime':     regime,
+        'direction':  direction,
+        'signal_id':  signal_id,
+        'grade':      grade,
+        'sl_pct':     sl_pct,
+        'entry_lo':   entry_lo,
+        'entry_hi':   entry_hi,
+        'status':     'PENDING',
+        'meta':       meta or {},
     }
+    # [Fix2 2026-08-30 苏摩111] 信号有效期 = 写入时制13_ts + 4H
+    # 根因：信号队列光有 48H fallback，4H以后交易意义大幅降低
+    import datetime as _dt
+    record['expires_at'] = (_dt.datetime.utcnow() + _dt.timedelta(hours=4)).isoformat() + 'Z'
+
+    # [Fix5 2026-08-30 苏摩111] 宏观事件门控
+    # 当天有 CRITICAL/HIGH 事件 → meta 注入 macro_event_today，grade 降权
+    # 40年交易员常识：CPI/FOMC 当天不开新仓，或最多小仓试探
+    try:
+        import sys as _sys_fix5
+        _sys_fix5.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        from macro_calendar import get_upcoming_events as _get_ev
+        _today_events = [e for e in _get_ev(days_ahead=1) if e.get('today') and e.get('impact') in ('CRITICAL', 'HIGH')]
+        if _today_events:
+            _ev_names = [e.get('event','?') for e in _today_events]
+            _meta = record.get('meta') or {}
+            _meta['macro_event_today'] = _ev_names
+            _meta['macro_risk'] = 'HIGH'
+            record['meta'] = _meta
+            # grade 降权：原 grade 减 20（不封禁，只降权，让 SQE 决定）
+            if record.get('grade') is not None:
+                record['grade'] = max(0, float(record['grade']) - 20)
+    except Exception:
+        pass  # 宏观事件门控失败不影响写入
     with open(SIGNAL_QUEUE, 'a') as f:
         f.write(json.dumps(record, ensure_ascii=False) + '\n')
 

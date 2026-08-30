@@ -785,6 +785,7 @@ def run():
     now_str = datetime.now(tz=timezone.utc).strftime('%H:%M UTC')
     state = load_state()
     triggered_syms = []
+    triggered_full_data = []  # [Fix1 2026-08-30 苏摩111] 完整信号数据列表
     silent_syms = []
 
     # [Phase2] 合并 pre_filter 候选标的（动态扩展监控池）
@@ -891,6 +892,27 @@ def run():
                 write_trigger(sym, events, data)
                 state[f'{sym}_last_trigger'] = time.time()
                 triggered_syms.append(sym)
+                # [Fix1 2026-08-30 苏摩111] 收集完整信号数据，修复空壳信号根因
+                # 从 events 提取 direction（以事件内置 direction 优先）
+                _ev_dir = None
+                for _ev in events:
+                    if _ev.get('direction'):
+                        _ev_dir = _ev['direction']
+                        break
+                _final_dir = _ev_dir or _sig_dir
+                triggered_full_data.append({
+                    'symbol':    sym,
+                    'source':    'rsi_watcher',
+                    'direction': _final_dir,
+                    'regime':    _sig_regime or data.get('regime', ''),
+                    'score':     data.get('score', None),      # rsi_watcher 无score，保留None
+                    'grade':     None,
+                    'sl_pct':    None,
+                    'entry_lo':  None,
+                    'entry_hi':  None,
+                    'signal_id': f'rsi_{sym}_{int(time.time())}',
+                    'meta':      {'events': [e.get('event','') for e in events]},
+                })
             for ev in events:
                 pass  # [静默]
         else:
@@ -1016,13 +1038,16 @@ def run():
     elif not silent_syms:
         pass  # triggered_syms已推送，无需重复
 
-    # [2026-08-26 苏摩111] 写入统一信号队列
-    if triggered_syms:
+    # [2026-08-30 苏摩111 Fix1] 写入统一信号队列 — 传完整参数（修复空壳信号根因）
+    # 根因：triggered_syms 是 sym 字符串列表，push_signals() 写入时 score/direction/regime 全为 null
+    # 修复：改为使用 triggered_full_data（在循环内收集完整信号），调用 push_signal_full
+    if triggered_full_data:
         try:
             import sys as _sys_sq
             _sys_sq.path.insert(0, str(Path(__file__).parent))
-            from signal_queue_writer import push_signals as _sq_push
-            _sq_push(triggered_syms, 'rsi_watcher')
+            from signal_queue_writer import push_signal_full as _sq_push_full
+            for _sig_record in triggered_full_data:
+                _sq_push_full(_sig_record)
         except Exception:
             pass  # 队列写入失败不影响主流程
 
