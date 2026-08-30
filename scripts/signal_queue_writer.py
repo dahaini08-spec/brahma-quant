@@ -16,6 +16,18 @@ def push_signal(symbol: str, source: str, meta: dict = None,
                 grade: float = None, sl_pct: float = None,
                 entry_lo: float = None, entry_hi: float = None):
     """写入信号队列（完整字段版）"""
+    # [Boris缺口1 2026-08-30 苏摩111] 写入前验收断言——防止空壳信号进队列
+    # 根因: rsi_watcher等调用push_signals()时不传direction/score，导致空壳信号
+    # 规则: source=brahma/rsi_watcher/structure_trigger 必须有direction
+    #       brahma来源必须有score
+    _source_requires_dir = {'brahma', 'rsi_watcher', 'structure_trigger', 'zone_touch', 'bbw_auto'}
+    if (source or '').lower() in _source_requires_dir:
+        if not direction or direction.upper() not in ('LONG', 'SHORT'):
+            # 静默丢弃空壳信号，不写入队列
+            return
+    if source == 'brahma' and score is None:
+        return  # brahma来源必须有score
+
     # [2026-08-29 苏摩111修复] 最后一道防线：全局体制死穴封禁
     _DEAD_SHORT = {'BEAR_RECOVERY', 'BULL_EARLY', 'BULL_TREND'}  # BULL_TREND SHORT 实盘WR=0% n=4
     _DEAD_LONG  = {'BEAR_TREND'}
