@@ -671,6 +671,23 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
         if _mode in ('spot', 'dual'):
             try:
                 _spot_lines = ['  【S4-SPOT 中长线现货周期层】']
+                # SPOT WR矩阵查询
+                try:
+                    import json as _jspot
+                    with open('data/spot_wr_matrix.json') as _f:
+                        _spot_mat = _jspot.load(_f).get('matrix', {})
+                    _fc_result = r.get('fangcang', {}) or {}
+                    _is_genuine = _fc_result.get('is_genuine_breakout', False)
+                    _spot_label = 'genuine' if _is_genuine else 'all'
+                    _spot_key = f'SPOT:{_dir}:{_spot_label}'
+                    _spot_entry = _spot_mat.get(_spot_key, _spot_mat.get(f'SPOT:{_dir}:all', {}))
+                    if _spot_entry:
+                        _swr = _spot_entry.get('wr', 0)
+                        _sev = _spot_entry.get('ev', 0)
+                        _sn  = _spot_entry.get('n', 0)
+                        _sicon = '✅' if _sev > 0 else '🔴'
+                        _spot_lines.append(f'  {_sicon} SPOT WR矩阵[{_spot_key}]: WR={_swr:.0%} EV={_sev:+.2f}% n={_sn}(来自6.5年方仓历史铁证)')
+                except Exception: pass
                 # 矿工卖压
                 _miner = r.get('_miner', {})
                 if _miner and _miner.get('production_cost_est'):
