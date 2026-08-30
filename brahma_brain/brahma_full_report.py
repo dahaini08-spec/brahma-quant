@@ -621,7 +621,8 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
             else:
                 _ev_short_hint = f'EV预估≈+2.5%' if _ev_val and _ev_val < 0 else 'EV待确认'
                 _next_ops.append(f'①高空区${_hz_lo_n:,.0f}触及→布空({_ev_short_hint})')
-        if _lz and _zlo(_lz):
+        # [2026-08-31 苏摩111] CHOP_MID体制下不输出低多区提示
+        if _lz and _zlo(_lz) and _regime in ('BEAR_RECOVERY', 'BULL_EARLY', 'BULL_TREND'):
             _lz_lo_n = float(_zlo(_lz) or 0)
             _lz_hi_n = float(_zhi(_lz) or 0)
             if _lz_lo_n <= _price <= _lz_hi_n:
@@ -721,29 +722,36 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
             else:
                 _hz_rr_real = _zrr(_hz)
             _s0s1s2.append(f'  🎯 机会①: 高空区{_entry_range}布空 {_zone_note} | SL=${_hz_sl_adj:,.0f}{_sl_note} RR={_hz_rr_real:.1f} | 仓位: {_pos_str}')
+        # [2026-08-31 苏摩111修复] 低多区输出规则：
+        # CHOP_MID体制 = 多头死穴，低多区只显示为观察位，不给可操作信号
+        # 仅在BEAR_RECOVERY / BULL_EARLY / BULL_TREND体制下才显示低多区操作机会
+        _long_eligible_regimes = ('BEAR_RECOVERY', 'BULL_EARLY', 'BULL_TREND')
         if _lz and _zlo(_lz) and _zrr(_lz):
             _lz_pos = '2%NAV×5x (轻仓)'
             _lz_lo = float(_zlo(_lz) or 0)
             _lz_hi = float(_zhi(_lz) or 0)
-            # 实时适配：当前价已在低多区内
-            if _lz_lo <= _price <= _lz_hi:
-                _lz_entry = f'${_price:,.0f}(当前价)~${_lz_hi:,.0f}'
-                _lz_note = '⚡已入区，可直接轻多'
-            elif _price < _lz_lo:
-                _lz_entry = f'${_lz_lo:,.0f}~${_lz_hi:,.0f}'
-                _lz_note = '等待触及'
+            if _regime in _long_eligible_regimes:
+                # 有效体制：正常输出低多区操作信号
+                if _lz_lo <= _price <= _lz_hi:
+                    _lz_entry = f'${_price:,.0f}(当前价)~${_lz_hi:,.0f}'
+                    _lz_note = '⚡已入区，可直接轻多'
+                elif _price < _lz_lo:
+                    _lz_entry = f'${_lz_lo:,.0f}~${_lz_hi:,.0f}'
+                    _lz_note = '等待触及'
+                else:
+                    _lz_entry = f'${_lz_lo:,.0f}~${_lz_hi:,.0f}'
+                    _lz_note = '⚠️失效'
+                _lz_tp = float(_lz.get('tp1', _lz.get('target',0)) or 0)
+                _lz_sl_v = float(_zsl(_lz) or 0)
+                _lz_entry_price = _price if (_lz_lo <= _price <= _lz_hi) else _lz_lo
+                if _lz_tp and _lz_sl_v and _lz_entry_price:
+                    _lz_rr_real = round(abs(_lz_tp - _lz_entry_price) / abs(_lz_entry_price - _lz_sl_v), 1) if abs(_lz_entry_price - _lz_sl_v) > 0 else _zrr(_lz)
+                else:
+                    _lz_rr_real = _zrr(_lz)
+                _s0s1s2.append(f'  🎯 机会②: 低多区{_lz_entry}轻多 {_lz_note} | SL=${_zsl(_lz):,.0f} RR={_lz_rr_real:.1f} | 仓位: {_lz_pos}')
             else:
-                _lz_entry = f'${_lz_lo:,.0f}~${_lz_hi:,.0f}'
-                _lz_note = '价格已在区间上方，低多区失效'
-            # 实时RR重算
-            _lz_tp = float(_lz.get('tp1', _lz.get('target',0)) or 0)
-            _lz_sl_v = float(_zsl(_lz) or 0)
-            _lz_entry_price = _price if (_lz_lo <= _price <= _lz_hi) else _lz_lo
-            if _lz_tp and _lz_sl_v and _lz_entry_price:
-                _lz_rr_real = round(abs(_lz_tp - _lz_entry_price) / abs(_lz_entry_price - _lz_sl_v), 1) if abs(_lz_entry_price - _lz_sl_v) > 0 else _zrr(_lz)
-            else:
-                _lz_rr_real = _zrr(_lz)
-            _s0s1s2.append(f'  🎯 机会②: 低多区{_lz_entry}轻多 {_lz_note} | SL=${_zsl(_lz):,.0f} RR={_lz_rr_real:.1f} | 仓位: {_lz_pos}')
+                # CHOP_MID / BEAR_TREND等体制：多头死穴，仅显示观察位，禁止操作
+                _s0s1s2.append(f'  ⛔ 低多区${_lz_lo:,.0f}~${_lz_hi:,.0f}: 观察支撑位（{_regime}体制多头死穴，不操作）')
         if _ev_val is not None and _ev_val < -0.5:
             _s0s1s2.append(f'  ❌ 禁区: 当前追{_dir} EV={_ev_val:+.3f}% 历史亟钱——禁止')
 
