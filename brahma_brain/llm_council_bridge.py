@@ -490,18 +490,15 @@ def _devil_agent_review(signal: Dict) -> Dict:
         direction = signal.get('direction', '')
         score     = float(signal.get('score', 0))
         regime    = signal.get('regime', '')
-        breakdown = signal.get('breakdown', {})
+        compressed = signal.get('_compressed', '') or f'{symbol} {direction} score={score:.0f} regime={regime}'
 
         prompt = f"""你是一个专门质疑当前交易信号的AI Agent（Devil's Advocate）。
 【梵天宪法】体制铁律：BEAR多WR=45%封禁；BULL空WR=38%封禁；死穴：BULL+多+score≥140+SL≥3%=WR=0%；score_final<100弱；140-160可入；>160强；不抗单，止损即出。
 你的唯一任务是：找到这个信号的漏洞、弱点和错误。
 不要赞同，专门挖掘否定理由。
 
-当前信号:
-- 品种: {symbol}
-- 方向: {direction}
-- 得分: {score:.1f}
-- 体制: {regime}
+当前信号(压缩摘要):
+{compressed}
 
 请回答以下问题：
 1. 这个信号的最大风险和漏洞是什么？
