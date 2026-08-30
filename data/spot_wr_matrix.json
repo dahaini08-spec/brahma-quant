@@ -1,0 +1,55 @@
+{
+  "matrix": {
+    "SPOT:LONG:all": {
+      "wr": 0.6682,
+      "ev": 1.6041,
+      "n": 3592,
+      "source": "fangcang_6.5yr"
+    },
+    "SPOT:LONG:genuine": {
+      "wr": 0.7527,
+      "ev": 2.3204,
+      "n": 2370,
+      "source": "fangcang_6.5yr"
+    },
+    "SPOT:LONG:false": {
+      "wr": 0.5041,
+      "ev": 0.215,
+      "n": 1222,
+      "source": "fangcang_6.5yr"
+    },
+    "SPOT:SHORT:all": {
+      "wr": 0.6565,
+      "ev": 1.3753,
+      "n": 3374,
+      "source": "fangcang_6.5yr"
+    },
+    "SPOT:SHORT:genuine": {
+      "wr": 0.7376,
+      "ev": 2.0929,
+      "n": 2180,
+      "source": "fangcang_6.5yr"
+    },
+    "SPOT:SHORT:false": {
+      "wr": 0.5084,
+      "ev": 0.0652,
+      "n": 1194,
+      "source": "fangcang_6.5yr"
+    },
+    "SPOT:LONG:tight_bb": {
+      "wr": 0.5061,
+      "ev": 0.079,
+      "n": 490,
+      "source": "fangcang_6.5yr"
+    },
+    "SPOT:SHORT:tight_bb": {
+      "wr": 0.4901,
+      "ev": 0.0773,
+      "n": 453,
+      "source": "fangcang_6.5yr"
+    }
+  },
+  "updated_at": "2026-08-30T01:16:35.625335",
+  "source": "fangcang_cases_6yr_21948_bars",
+  "description": "SPOT现货专属WR矩阵，基于方仓6.5年历史24H结算数据"
+}
