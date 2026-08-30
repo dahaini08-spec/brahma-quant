@@ -329,6 +329,28 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
     except Exception as _e2:
         r = {'_error': str(_e2)}
 
+    # [P0-B Fix 2026-08-30 苏摩111] runner失败时 或 asset_type缺失时，补注TradFi字段
+    # 根因: runner走brahma_analysis_runner，TradFi门控在brahma_core末段，runner抛异常时字段丢失
+    if not r.get('asset_type'):
+        try:
+            import sys as _sys_uat; _sys_uat.path.insert(0, _os_rfа.path.join(_os_rfа.path.dirname(_os_rfа.path.abspath(__file__)), '..'))
+            from brahma_brain.universal_asset_router import classify_asset as _cls_a
+            _at = _cls_a(symbol.upper())
+            r['asset_type'] = _at
+            if _at == 'TRADFI_STOCK':
+                import datetime as _dt_uat
+                _utc_now = _dt_uat.datetime.utcnow()
+                _tot_min = _utc_now.hour * 60 + _utc_now.minute
+                _in_sess = (810 <= _tot_min <= 1200)
+                r['tradfi_in_session'] = _in_sess
+                if not _in_sess:
+                    r['tradfi_session_warn'] = (
+                        f'非交易时段(UTC {_utc_now.hour:02d}:{_utc_now.minute:02d})'
+                        f' score-60 valid=False'
+                    )
+        except Exception:
+            pass
+
     # 将s27~29追加到report末尾（始终显示，0=未触发）
     try:
         _s27r = r.get('s27_gap_up', 0) or 0
@@ -569,6 +591,11 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
             _dn_dist   = abs(_price - _near_long)  / _price * 100
             _double_hunt = _up_dist < 1.0 and _dn_dist < 1.0
 
+        # [P0-B 2026-08-30 苏摩111] TradFi非交易时段警示
+        _tradfi_warn = ''
+        if r.get('asset_type') == 'TRADFI_STOCK' and not r.get('tradfi_in_session', True):
+            _tradfi_warn = r.get('tradfi_session_warn', '非交易时段')
+
         # S0: 一句话结论
         if _ev_val is not None and _ev_val < -0.5:
             _s0_action = '等待，不入场'
@@ -611,21 +638,30 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
 
         # 拼装S0~S2头部
         _sep = '━' * 50
-        _s0s1s2 = [
-            '',
-            '╬' + '═'*58,
-            f'  🏛️ 梵天 ADAPTIVE v3.0 · {"HF高频合约" if _mode=="hf" else "SPOT中长线现货" if _mode=="spot" else "DUAL双模并排"} · 3秒决策卡',
-            '╬' + '═'*58,
-            '',
-            f'  【S0 一句话结论】',
-            f'  📋 裁决: {_s0_action}',
-            f'  原因: {_s0_reason}',
-            f'  下一机会: {_next_str}',
-            f'  ⏰ 信号有效期: 4H（至{_sig_expire}失效）',
-            '',
-            f'  【S1 主力猎杀地图】',
-            f'  📌 GEX区间: {_gex_zone} | 方向: {_gex_dir}',
-        ]
+        # [P0-B warn line] TradFi非交易时段警示行（若有则插入S0前）
+        _tradfi_warn_line = (
+            [f'  ⚠️  美股代币警示：{_tradfi_warn}，信号仅供参考，勿下单！', '']
+            if _tradfi_warn else []
+        )
+        _s0s1s2 = (
+            ['',
+             '╬' + '═'*58,
+             f'  🏛️ 梵天 ADAPTIVE v3.0 · {"HF高频合约" if _mode=="hf" else "SPOT中长线现货" if _mode=="spot" else "DUAL双模并排"} · 3秒决策卡',
+             '╬' + '═'*58,
+             '',
+            ]
+            + _tradfi_warn_line
+            + [
+             f'  【S0 一句话结论】',
+             f'  📋 裁决: {_s0_action}',
+             f'  原因: {_s0_reason}',
+             f'  下一机会: {_next_str}',
+             f'  ⏰ 信号有效期: 4H（至{_sig_expire}失效）',
+             '',
+             f'  【S1 主力猎杀地图】',
+             f'  📌 GEX区间: {_gex_zone} | 方向: {_gex_dir}',
+            ]
+        )
         if _gex_max and _gex_min:
             _s0s1s2.append(f'     突破${_gex_max:,.0f}=加速上涨 | 跌破${_gex_min:,.0f}=加速下跌')
         if _near_short and _near_long:
