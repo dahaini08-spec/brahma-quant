@@ -507,9 +507,10 @@ def _devil_agent_review(signal: Dict) -> Dict:
 1. 这个信号的最大风险和漏洞是什么？
 2. 哪个情境下这个信号会失败？
 3. 为什么市场现在可能与信号方向相反？
-返回JSON：{{"score_adj": <-15到0的整数>, "veto": <true/false>, "top_flaw": "最大漏洞", "summary": "质疑摘要"}}
+返回JSON：{{"score_adj": <-15到0的整数>, "veto": <true/false>, "top_flaw": "最大漏洞", "summary": "质疑摘要", "reversal_path": "如果信号错误最可能的反向路径", "reversal_prob": <0-100整数，反向成真的概率>}}
 说明: score_adj必须为负数或0（逆向Agent只赋予惩罚，不加分）。
-只有在信号存在严重结构矛盾或逆势时才 veto=true。"""
+只有在信号存在严重结构矛盾或逆势时才 veto=true。
+reversal_prob必须给出：这是你判断「信号方向错误」的量化置信度，是议会最核心的反向论证。"""
 
         result = _call_llm(prompt, 'DevilAgent', model='standard')  # 用标准模型控制成本
         if not result:
@@ -518,12 +519,14 @@ def _devil_agent_review(signal: Dict) -> Dict:
         adj = int(result.get('score_adj', 0))
         adj = max(-15, min(0, adj))  # 逆向Agent只能减分不能加分
         return {
-            'score_adj':  adj,
-            'veto':       bool(result.get('veto', False)),
-            'veto_reason': result.get('top_flaw', ''),
-            'top_flaw':   result.get('top_flaw', ''),
-            'summary':    result.get('summary', ''),
-            'agent':      'DevilAgent',
+            'score_adj':     adj,
+            'veto':          bool(result.get('veto', False)),
+            'veto_reason':   result.get('top_flaw', ''),
+            'top_flaw':      result.get('top_flaw', ''),
+            'summary':       result.get('summary', ''),
+            'reversal_path': result.get('reversal_path', ''),   # [P0 2026-08-30] 反向路径
+            'reversal_prob': int(result.get('reversal_prob', 0) or 0),  # [P0] 反向概率0-100
+            'agent':         'DevilAgent',
         }
     except Exception as e:
         logger.warning(f'[DevilAgent] 降级: {e}')
@@ -647,6 +650,24 @@ def review(
             }
     except Exception:
         pass
+
+    # [P1 2026-08-30 苏摩111] 实时BTC/ETH价格注入MacroAgent
+    # AI-Trader论文铁证：实时数据 > 快照，让MacroAgent看到当前市场位置
+    try:
+        import sys as _sys_px, os as _os_px
+        _bb_px = _os_px.path.dirname(__file__)
+        if _bb_px not in _sys_px.path: _sys_px.path.insert(0, _bb_px)
+        from brahma_bus import get_price as _get_px
+        _btc_px = _get_px('BTCUSDT')
+        _eth_px = _get_px('ETHUSDT')
+        if _btc_px and _btc_px > 0:
+            ctx['btc_price_realtime'] = round(_btc_px, 1)
+            flat_signal.setdefault('_macro_ctx', {})['btc_price'] = round(_btc_px, 1)
+        if _eth_px and _eth_px > 0:
+            ctx['eth_price_realtime'] = round(_eth_px, 2)
+            flat_signal.setdefault('_macro_ctx', {})['eth_price'] = round(_eth_px, 2)
+    except Exception:
+        pass  # 实时价格注入失败不阻塞主流程
 
     # [设计院 2026-08-04] 注入2: 历史相似信号 — 找最近10条同体制同方向已结算信号
     try:
