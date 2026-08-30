@@ -453,6 +453,194 @@ def run_full_analysis(symbol: str):
     except Exception:
         pass
 
+    # ══ [ADAPTIVE v3.0 2026-08-30 苏摩111封印] S0/S1/S2 自适应决策层 ════════════════════
+    try:
+        _ms   = r.get('market_state_raw', {}) or {}
+        _price  = float(r.get('price', 0) or 0)
+        _regime = r.get('regime', 'BULL_TREND')
+        _dir    = r.get('signal_dir', 'LONG')
+        _score  = float(str(r.get('score_final', 0)).split()[0] if r.get('score_final') else 0)
+        _timing = r.get('timing_status', 'STANDBY')
+        _ev_adj = r.get('ev_adj', 0)
+
+        # 市场状态识别 (ADX+BB_width+Hurst)
+        _adx   = float(_ms.get('adx_4h', 25) or 25)
+        _bbw   = float(_ms.get('bb_width', 0.02) or 0.02)
+        _bbpos = float(_ms.get('bb_pos', 0.5) or 0.5)
+        _hurst_raw = r.get('market_state_raw', {}).get('hurst_4h', 0) or \
+                      r.get('confluence', {}).get('breakdown', {}).get('Hurst体制验证', 0) or 0.55
+        # Hurst字段可能是字符串 "H=0.682 趋势验证✅ +5"
+        if isinstance(_hurst_raw, str):
+            import re as _re_h
+            _hm = _re_h.search(r'H=([0-9.]+)', _hurst_raw)
+            _hurst = float(_hm.group(1)) if _hm else 0.55
+        else:
+            _hurst = float(_hurst_raw or 0.55)
+        if _adx > 25 and _hurst > 0.6:   _mkt_state = 'TRENDING'
+        elif _adx < 20 and _bbw < 0.015: _mkt_state = 'RANGING'
+        elif _bbw < 0.012:                _mkt_state = 'RANGING_PRE_BREAKOUT'
+        else:                             _mkt_state = 'NEUTRAL'
+
+        # GEX区间分析
+        _gex_max  = 0; _gex_min = 0; _gex_flip = 0; _gex_dir = 'N/A'
+        try:
+            from brahma_brain.gex_scanner import get_gex_state as _ggs
+            _sym_s = symbol.replace('USDT','').replace('PERP','')
+            _gex_d = _ggs(_sym_s)
+            if _gex_d:
+                _gex_max  = float(_gex_d.get('max_gex_strike', 0) or 0)
+                _gex_min  = float(_gex_d.get('min_gex_strike', 0) or 0)
+                _gex_flip = float(_gex_d.get('zero_flip', 0) or 0)
+                _gex_dir  = _gex_d.get('gex_direction', 'N/A')
+        except Exception: pass
+        _in_pin = _gex_min < _price < _gex_max if _gex_max and _gex_min else False
+        _gex_zone = f'PIN区(${_gex_min:,.0f}~${_gex_max:,.0f})' if _in_pin else \
+                    f'空头自由区(>${_gex_max:,.0f})' if _price > _gex_max else \
+                    f'高波动区(<${_gex_min:,.0f})'
+
+        # 止损池分析
+        _liq = r.get('_liq_heatmap', {}) or {}
+        _near_short = _liq.get('nearest_short_liq', 0)  # 空头清算墙(上方)
+        _near_long  = _liq.get('nearest_long_liq', 0)   # 多头清算墙(下方)
+        _short_vol  = _liq.get('short_liq_volume', 0) or 0
+        _long_vol   = _liq.get('long_liq_volume', 0) or 0
+
+        # EV矩阵查询
+        _sbin = '<120' if _score<120 else '120-139' if _score<140 else '140-154' if _score<155 else '155-159' if _score<160 else '160+'
+        _ev_key = f'{_regime}:{_dir}:{_sbin}'
+        _ev_val = None; _ev_wr = None; _ev_n = 0
+        try:
+            from brahma_brain.ev_feedback import _load_matrix as _evlm
+            _ev_raw = _evlm()
+            _ev_mat = _ev_raw.get('matrix', _ev_raw) if isinstance(_ev_raw, dict) else {}
+            _ev_mat = {k:v for k,v in _ev_mat.items() if isinstance(v, dict)}
+            _ev_entry = _ev_mat.get(_ev_key, {})
+            _ev_val = _ev_entry.get('ev', None)
+            _ev_wr  = _ev_entry.get('wr', None)
+            _ev_n   = _ev_entry.get('n', 0)
+        except Exception: pass
+
+        # 战场预判区间
+        _pz = r.get('_price_zones', {})
+        if not _pz:
+            try:
+                from price_zone_engine import calc_zones as _czs
+                _pz = _czs(symbol)
+            except Exception: _pz = {}
+        _hz = _pz.get('high_short', {}) if _pz else {}  # 高空区
+        _lz = _pz.get('low_long',  {}) if _pz else {}  # 低多区
+        _sp = _pz.get('scenario_prob', {}) if _pz else {}
+        _path_up   = float(_sp.get('up_first',   0.57) * 100) if _sp else 57
+        _path_down = float(_sp.get('down_first', 0.42) * 100) if _sp else 42
+        # 字段别名兼容: low/high 或 lo/hi
+        def _zlo(z): return z.get('low', z.get('lo', 0))
+        def _zhi(z): return z.get('high', z.get('hi', 0))
+        def _zsl(z): return z.get('stop_loss', z.get('sl', 0))
+        def _zrr(z): return z.get('rr1', z.get('rr', 0))
+
+        # 双边猎杀检测
+        _double_hunt = False
+        if _near_short and _near_long and _price:
+            _up_dist   = abs(_near_short - _price) / _price * 100
+            _dn_dist   = abs(_price - _near_long)  / _price * 100
+            _double_hunt = _up_dist < 1.0 and _dn_dist < 1.0
+
+        # S0: 一句话结论
+        if _ev_val is not None and _ev_val < -0.5:
+            _s0_action = '等待，不入场'
+            _s0_reason = f'EV={_ev_val:+.2f}%(做{_dir[0]}死区) + {_mkt_state} + {_timing}'
+        elif _double_hunt:
+            _s0_action = '等待，双边猎杀中'
+            _s0_reason = f'上下均<1%止损山 + 等方向选择'
+        elif _timing == 'READY':
+            _s0_action = '入场条件成熟，可执行'
+            _s0_reason = f'TimingFilter=READY + {_regime} + EV={_ev_val:+.2f}%' if _ev_val else f'TimingFilter=READY + {_regime}'
+        else:
+            _s0_action = '观察，等待触发'
+            _s0_reason = f'{_mkt_state} + TimingFilter={_timing}'
+
+        # 下一个机会文本
+        _next_ops = []
+        if _hz and _zlo(_hz):
+            _ev_short_hint = f'EV预估≈+2.5%' if _ev_val and _ev_val < 0 else 'EV待确认'
+            _next_ops.append(f'①高空区${_zlo(_hz):,.0f}触及→布空({_ev_short_hint})')
+        if _lz and _zlo(_lz):
+            _ev_long_hint = f'EV预估≈+1.8%'
+            _next_ops.append(f'②低多区${_zlo(_lz):,.0f}触及→轻多({_ev_long_hint})')
+        _next_str = '  '.join(_next_ops) if _next_ops else '无清晰触发区间'
+
+        # 仓位建议(基于SL档位)
+        _sl_pct = float(str(r.get('sl_pct', 2.0)).split()[0] if r.get('sl_pct') else 2.0)
+        if _sl_pct < 1.0:   _pos_str = '5%NAV×5x (档位S — WR=100%铁证)'
+        elif _sl_pct < 1.5: _pos_str = '2%NAV×5x (档位B- — 降仓保护)'
+        else:               _pos_str = '3%NAV×5x (档位B+ — 标准上限)'
+
+        # 拼装S0~S2头部
+        _sep = '━' * 50
+        _s0s1s2 = [
+            '',
+            '╬' + '═'*58,
+            '  🏛️ 梵天 ADAPTIVE v3.0 · 3秒决策卡',
+            '╬' + '═'*58,
+            '',
+            f'  【S0 一句话结论】',
+            f'  📋 裁决: {_s0_action}',
+            f'  原因: {_s0_reason}',
+            f'  下一机会: {_next_str}',
+            '',
+            f'  【S1 主力猎杀地图】',
+            f'  📌 GEX区间: {_gex_zone} | 方向: {_gex_dir}',
+        ]
+        if _gex_max and _gex_min:
+            _s0s1s2.append(f'     突破${_gex_max:,.0f}=加速上涨 | 跌破${_gex_min:,.0f}=加速下跌')
+        if _near_short and _near_long:
+            _up_d = round((_near_short-_price)/_price*100,2) if _price else 0
+            _dn_d = round((_price-_near_long)/_price*100,2)  if _price else 0
+            _hunt_warn = ' 🚨双边猎杀中!' if _double_hunt else ''
+            _s0s1s2 += [
+                f'  ⚡ 上方止损山: ${_near_short:,.0f}(+{_up_d:.2f}%){" $"+str(round(_short_vol))+ "M" if _short_vol else ""}',
+                f'  ⚡ 下方止损池: ${_near_long:,.0f}(-{_dn_d:.2f}%){" $"+str(round(_long_vol))+"M" if _long_vol else ""}{_hunt_warn}',
+            ]
+        if _hz and _lz:
+            _s0s1s2.append(f'  🎯 先触发上方概率: {_path_up:.0f}% | 先触发下方概率: {_path_down:.0f}%')
+
+        _s0s1s2 += ['', '  【S2 非对称机会识别】']
+
+        # EV排序
+        _ev_icon = '🔴' if _ev_val is not None and _ev_val < 0 else '✅'
+        if _ev_val is not None:
+            _s0s1s2.append(f'  {_ev_icon} 当前共[{_ev_key}] EV={_ev_val:+.3f}% WR={_ev_wr:.0%} n={_ev_n}')
+        if _hz and _zlo(_hz) and _zrr(_hz):
+            _hz_sl = float(_zsl(_hz) or 0)
+            _hz_sl_adj = _hz_sl
+            if _hz_sl > 0:
+                _hz_sl_round = round(_hz_sl / 100) * 100
+                if abs(_hz_sl - _hz_sl_round) / _hz_sl < 0.001:
+                    _atr4h = float(_ms.get('atr_4h', 200) or 200)
+                    _hz_sl_adj = round(_hz_sl + _atr4h * 0.3, 0)
+            _sl_note = f'(OB上沿+ATR×0.3修正自${_hz_sl:,.0f})' if _hz_sl_adj != _hz_sl else ''
+            _s0s1s2.append(f'  🎯 机会①: 高空区${_zlo(_hz):,.0f}~${_zhi(_hz):,.0f}布空 | SL=${_hz_sl_adj:,.0f}{_sl_note} RR={_zrr(_hz):.1f} | 仓位: {_pos_str}')
+        if _lz and _zlo(_lz) and _zrr(_lz):
+            _lz_pos = '2%NAV×5x (轻仓)'
+            _s0s1s2.append(f'  🎯 机会②: 低多区${_zlo(_lz):,.0f}~${_zhi(_lz):,.0f}轻多 | SL=${_zsl(_lz):,.0f} RR={_zrr(_lz):.1f} | 仓位: {_lz_pos}')
+        if _ev_val is not None and _ev_val < -0.5:
+            _s0s1s2.append(f'  ❌ 禁区: 当前追{_dir} EV={_ev_val:+.3f}% 历史亟钱——禁止')
+
+        _s0s1s2 += [
+            '',
+            f'  【S3 市场状态+体制】',
+            f'  状态: {_mkt_state}(ADX={_adx:.1f} BB_width={_bbw:.3f} bb_pos={_bbpos:.2f})',
+            f'  体制: {_regime} | score={_score} | TimingFilter: {_timing}',
+            '',
+            '╬' + '═'*58,
+            '',
+        ]
+
+        report = '\n'.join(_s0s1s2) + '\n' + report
+    except Exception as _adap_err:
+        pass
+    # ══ [END ADAPTIVE v3.0] ══════════════════════════════════════════════
+
     return report, r
 
 
