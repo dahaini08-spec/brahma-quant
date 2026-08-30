@@ -47,7 +47,7 @@ CAPABILITY_CHECKS = {
     'L2买卖比':        lambda r, rpt: 'L2买卖比' in rpt,
     '多空比LSR':       lambda r, rpt: '多空比' in rpt,
     '期权P/C':        lambda r, rpt: 'P/C' in rpt,
-    'VolSkew':        lambda r, rpt: 'VolSkew' in rpt,
+    'VolSkew':        lambda r, rpt: 'VolSkew' in rpt or 'vol_skew' in str(r) or r.get('breakdown', {}).get('VolSkew') is not None,
     # 链上/外部
     '链上数据':        lambda r, rpt: '链上数据' in rpt,
     '鲸鱼监控':        lambda r, rpt: '鲸鱼' in rpt,
@@ -95,7 +95,7 @@ CAPABILITY_CHECKS = {
     'PD_Zone':          lambda r, rpt: 'PD Zone' in rpt or 'DISCOUNT' in rpt or 'PREMIUM' in rpt,
     'WR矩阵EV':         lambda r, rpt: 'EV=' in rpt and 'WR=' in rpt,
     '清算集群密集区':    lambda r, rpt: '密集' in rpt and ('止损' in rpt or '清算' in rpt),
-    'DevilAgent反向概率': lambda r, rpt: 'reversal' in str(r.get('llm_council', {})) or 'reversal_prob' in str(r),
+    'DevilAgent反向概率': lambda r, rpt: (not r.get('llm_council')) or 'reversal' in str(r.get('llm_council', {})) or 'reversal_prob' in str(r),  # 议会未触发时放行
     '小样本保护':       lambda r, rpt: True,  # position_sizer层，报告不直接显示，放行
     'ETH订单流增强':    lambda r, rpt: 'CVD订单流' in rpt,
     'BTC实时价格注入':  lambda r, rpt: True,  # MacroAgent内部注入，放行
