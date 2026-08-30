@@ -962,12 +962,30 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
             except Exception:
                 pass
         if _pz and not _pz.get('error'):
-            _hz = _pz.get('high_zone', {})
-            _lz = _pz.get('low_zone', {})
+            _hz = _pz.get('high_short', _pz.get('high_zone', {}))
+            _lz = _pz.get('low_long',  _pz.get('low_zone',  {}))
             if _hz and _lz:
+                _cur_p  = float(r.get('price', 0) or 0)
+                _hz_lo  = float(_hz.get('low',  _hz.get('lo',  0)) or 0)
+                _hz_hi  = float(_hz.get('high', _hz.get('hi',  0)) or 0)
+                _lz_lo  = float(_lz.get('low',  _lz.get('lo',  0)) or 0)
+                _lz_hi  = float(_lz.get('high', _lz.get('hi',  0)) or 0)
+                # 实时价格适配
+                if _cur_p >= _hz_lo and _hz_hi > 0:
+                    _hz_str = f'${_cur_p:,.0f}(当前价)~${_hz_hi:,.0f} ⚡已入区'
+                elif _cur_p > _hz_hi:
+                    _hz_str = f'${_hz_lo:,.0f}~${_hz_hi:,.0f} ⚠️失效'
+                else:
+                    _hz_str = f'${_hz_lo:,.0f}~${_hz_hi:,.0f} 等待'
+                if _lz_lo <= _cur_p <= _lz_hi:
+                    _lz_str = f'${_cur_p:,.0f}(当前价)~${_lz_hi:,.0f} ⚡已入区'
+                elif _cur_p < _lz_lo:
+                    _lz_str = f'${_lz_lo:,.0f}~${_lz_hi:,.0f} 等待'
+                else:
+                    _lz_str = f'${_lz_lo:,.0f}~${_lz_hi:,.0f} ⚠️失效'
                 _ext_lines += ["", "  🗺️ 战场预判(price_zone_engine):",
-                    f"    🔴 高空区: ${_hz.get('lo',0):,.0f}~${_hz.get('hi',0):,.0f}  SL=${_hz.get('sl',0):,.0f}  RR={_hz.get('rr',0):.1f}",
-                    f"    🟢 低多区: ${_lz.get('lo',0):,.0f}~${_lz.get('hi',0):,.0f}  SL=${_lz.get('sl',0):,.0f}  RR={_lz.get('rr',0):.1f}"]
+                    f"    🔴 高空区: {_hz_str}  SL=${_hz.get('stop_loss',_hz.get('sl',0)):,.0f}  RR={_hz.get('rr1',_hz.get('rr',0)):.1f}",
+                    f"    🟢 低多区: {_lz_str}  SL=${_lz.get('stop_loss',_lz.get('sl',0)):,.0f}  RR={_lz.get('rr1',_lz.get('rr',0)):.1f}"]
 
         if _ext_lines:
             lines += _ext_lines

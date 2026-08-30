@@ -586,11 +586,21 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
         # 下一个机会文本
         _next_ops = []
         if _hz and _zlo(_hz):
-            _ev_short_hint = f'EV预估≈+2.5%' if _ev_val and _ev_val < 0 else 'EV待确认'
-            _next_ops.append(f'①高空区${_zlo(_hz):,.0f}触及→布空({_ev_short_hint})')
+            _hz_lo_n = float(_zlo(_hz) or 0)
+            _hz_hi_n = float(_zhi(_hz) or 0)
+            if _price >= _hz_lo_n:
+                _ev_short_hint = f'EV预估≈+2.5%' if _ev_val and _ev_val < 0 else 'EV待确认'
+                _next_ops.append(f'①高空区${_price:,.0f}(已入区)→布空({_ev_short_hint})')
+            else:
+                _ev_short_hint = f'EV预估≈+2.5%' if _ev_val and _ev_val < 0 else 'EV待确认'
+                _next_ops.append(f'①高空区${_hz_lo_n:,.0f}触及→布空({_ev_short_hint})')
         if _lz and _zlo(_lz):
-            _ev_long_hint = f'EV预估≈+1.8%'
-            _next_ops.append(f'②低多区${_zlo(_lz):,.0f}触及→轻多({_ev_long_hint})')
+            _lz_lo_n = float(_zlo(_lz) or 0)
+            _lz_hi_n = float(_zhi(_lz) or 0)
+            if _lz_lo_n <= _price <= _lz_hi_n:
+                _next_ops.append(f'②低多区${_price:,.0f}(已入区)→轻多(EV预估≈+1.8%)')
+            else:
+                _next_ops.append(f'②低多区${_lz_lo_n:,.0f}触及→轻多(EV预估≈+1.8%)')
         _next_str = '  '.join(_next_ops) if _next_ops else '无清晰触发区间'
 
         # 仓位建议(基于SL档位)
