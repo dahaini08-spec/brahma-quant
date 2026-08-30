@@ -234,7 +234,12 @@ def _risk_agent_review(signal: Dict) -> Dict:
     direction = signal.get('direction', 'LONG')
     score     = signal.get('score', 0)
     regime    = signal.get('regime', 'UNKNOWN')
-    breakdown = signal.get('breakdown', {})
+    # [P1重构 2026-08-30] 从_risk_fields读，不再拉整个breakdown dict
+    _rf             = signal.get('_risk_fields', {})
+    _values_list    = _rf.get('values', [])
+    key_level_score = _rf.get('key_level_score', 'N/A')
+    smc_score       = _rf.get('smc_score', 'N/A')
+    kronos_score    = _rf.get('kronos_score', 'N/A')
 
     # ── 规则降级（不消耗token）──────────────────────────────
     # 规则1：BEAR体制做多 → 自动高风险
@@ -248,11 +253,9 @@ def _risk_agent_review(signal: Dict) -> Dict:
         }
 
     # 规则2：单维度贡献超过60%（虚高信号）
-    total_score = sum(v for v in breakdown.values()
-                      if isinstance(v, (int, float)) and v > 0)
+    total_score = sum(v for v in _values_list if v > 0)
     if total_score > 0:
-        max_dim_score = max((v for v in breakdown.values()
-                             if isinstance(v, (int, float)) and v > 0), default=0)
+        max_dim_score = max((v for v in _values_list if v > 0), default=0)
         if max_dim_score / total_score > 0.60:
             return {
                 'score_adj':  -8,
@@ -291,9 +294,9 @@ def _risk_agent_review(signal: Dict) -> Dict:
 
     prompt = RISK_AGENT_PROMPT.format(
         symbol=symbol, direction=direction, score=score, regime=regime,
-        key_level_score=breakdown.get('关键位精确度', 'N/A'),
-        smc_score=breakdown.get('SMC结构', 'N/A'),
-        kronos_score=breakdown.get('Kronos', breakdown.get('s23', 'N/A')),
+        key_level_score=key_level_score,
+        smc_score=smc_score,
+        kronos_score=kronos_score,
         liq_above=_liq_above_str,
         liq_below=_liq_below_str,
         liq_bias=_liq_bias_str,
@@ -604,13 +607,22 @@ def review(
         }, mode='compact')
     except Exception:
         _compressed_ctx = ''
+    # [P1重构 2026-08-30 苏摩111] 预提取RiskAgent专用字段，不传整个breakdown dict
+    # RiskAgent只需要：(1)规则2数值计算用的values列表 (2)3个字段注入prompt
+    # 其他3个Agent（Macro/Quant/Devil）完全不需要breakdown，内存传输减少~73%
+    _risk_fields = {
+        'values': [v for v in _raw_breakdown.values() if isinstance(v, (int, float))],
+        'key_level_score': _raw_breakdown.get('关键位精确度', 'N/A'),
+        'smc_score':       _raw_breakdown.get('SMC结构', 'N/A'),
+        'kronos_score':    _raw_breakdown.get('Kronos', _raw_breakdown.get('s23', 'N/A')),
+    }
     flat_signal = {
-        'symbol':    symbol,
-        'direction': dir_,
-        'score':     score,
-        'regime':    regime,
-        'breakdown': _raw_breakdown,
-        '_compressed': _compressed_ctx,  # headroom压缩版，供Agent prompt使用
+        'symbol':      symbol,
+        'direction':   dir_,
+        'score':       score,
+        'regime':      regime,
+        '_risk_fields': _risk_fields,    # RiskAgent专用，已预提取
+        '_compressed':  _compressed_ctx, # headroom压缩版，供所有Agent prompt使用
     }
     ctx = market_ctx or {}
 
