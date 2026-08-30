@@ -46,6 +46,10 @@ python3 brahma_brain/brahma_smoke_test_v2.py
 # 语法检查
 python3 -c "import ast; ast.parse(open('brahma_brain/brahma_core.py').read()); print('OK')"
 
+# [Boris缺口2 2026-08-30] 先看最近改动，再动手——防止重复修已修过的bug
+git log --oneline -20
+# 关注: commit message里的「接入位置」和「根因」是最有价值的信息
+
 # 架构守门（新增模块时验证接入位置）
 grep -n "你的新模块名" brahma_brain/brahma_full_report.py brahma_brain/brahma_analysis_runner.py
 ```
