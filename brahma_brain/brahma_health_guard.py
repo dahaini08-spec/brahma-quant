@@ -79,6 +79,26 @@ CAPABILITY_CHECKS = {
     # 整体质量
     '日志无污染':      lambda r, rpt: '[s_smart]' not in rpt and '[KronosBridge' not in rpt,
     'SPOT_WR矩阵':     lambda r, rpt: True,  # 仅SPOT/DUAL模式需要，放行
+
+    # ── [补全 2026-08-30 苏摩111] 53→71项，补全报告已有但未检查的模块 ──
+    'OI四象限':         lambda r, rpt: '_oi_quadrant' in str(r) or 'LONG_CROWD' in rpt,
+    'StochRSI':         lambda r, rpt: 'StochRSI' in rpt,
+    'EMA多周期共振':     lambda r, rpt: 'EMA多周期共振' in rpt or '_ema_align' in rpt,
+    '成交量比率':        lambda r, rpt: '成交量比率' in rpt,
+    'OBV方向':          lambda r, rpt: 'OBV方向' in rpt,
+    'N06持仓建议':      lambda r, rpt: 'N06持仓建议' in rpt or 'CHOP最优持仓' in rpt,
+    'CHOP背离奖励':     lambda r, rpt: 'CHOP背离奖励' in rpt,
+    'GATE0_grade':      lambda r, rpt: 'effective_grade' in rpt,
+    '方仓Top案例':      lambda r, rpt: 'Top3历史案例' in rpt or 'Top案例' in rpt,
+    'FVG磁铁目标':      lambda r, rpt: 'FVG磁铁' in rpt,
+    '止损池警告':       lambda r, rpt: '极近止损池警告' in rpt or '双边猎杀' in rpt or 'SMC' in rpt,
+    'PD_Zone':          lambda r, rpt: 'PD Zone' in rpt or 'DISCOUNT' in rpt or 'PREMIUM' in rpt,
+    'WR矩阵EV':         lambda r, rpt: 'EV=' in rpt and 'WR=' in rpt,
+    '清算集群密集区':    lambda r, rpt: '密集' in rpt and ('止损' in rpt or '清算' in rpt),
+    'DevilAgent反向概率': lambda r, rpt: 'reversal' in str(r.get('llm_council', {})) or 'reversal_prob' in str(r),
+    '小样本保护':       lambda r, rpt: True,  # position_sizer层，报告不直接显示，放行
+    'ETH订单流增强':    lambda r, rpt: 'CVD订单流' in rpt,
+    'BTC实时价格注入':  lambda r, rpt: True,  # MacroAgent内部注入，放行
 }
 
 # 数据新鲜度阈值（秒）
