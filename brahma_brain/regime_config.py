@@ -68,6 +68,25 @@ REGIME_MULT_ETH = {
     'CHOP_RANGE_PREMIUM':  (1.10,  0.35),
 }
 
+# ── [2026-08-30 苏摩111] ETH订单流维度权重放大系数 ──────────────────────────
+# 铁证：arXiv ETH订单流论文 — ETH盘口状态依赖性比BTC强，CVD信号更可靠
+# BTC：订单流常见噪声+清算驱动，CVD可靠性偏低 → 乘数1.0（不变）
+# ETH：多种盘口状态下订单流更有结构性 → 乘数1.3（增强30%）
+ORDER_FLOW_MULT = {
+    'BTCUSDT': 1.0,   # BTC: 清算驱动为主，订单流信号噪声大
+    'ETHUSDT': 1.3,   # ETH: 盘口状态依赖更强，订单流更可靠（arXiv铁证）
+    'DEFAULT': 1.0,   # 其他标的默认1.0
+}
+
+def get_order_flow_mult(symbol: str) -> float:
+    """获取标的的订单流维度权重乘数"""
+    sym_upper = str(symbol).upper()
+    if 'ETH' in sym_upper:
+        return ORDER_FLOW_MULT['ETHUSDT']
+    elif 'BTC' in sym_upper:
+        return ORDER_FLOW_MULT['BTCUSDT']
+    return ORDER_FLOW_MULT['DEFAULT']
+
 # ── 山寨币专属矩阵（达摩院离线回放 5标的 2020~2026）──────────────────────────
 REGIME_MULT_ALTCOIN = {
     'SOLUSDT': {

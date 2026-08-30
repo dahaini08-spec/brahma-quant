@@ -1059,6 +1059,14 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         from cvd_engine import cvd_score_for_signal as _cvd_fn
         _cvd_score, _cvd_notes = _cvd_fn(ms.get('symbol', ''), signal_dir)
         if _cvd_score != 0:
+            # [2026-08-30 苏摩111] ETH订单流权重放大：arXiv铁证ETH盘口状态依赖更强
+            try:
+                from brahma_brain.regime_config import get_order_flow_mult as _of_mult
+                _of_factor = _of_mult(ms.get('symbol', ''))
+                if _of_factor != 1.0:
+                    _cvd_score = round(_cvd_score * _of_factor)
+            except Exception:
+                pass
             score += _cvd_score
             breakdown['CVD订单流'] = f'{_cvd_score:+d} ' + ('; '.join(_cvd_notes[:2]) if _cvd_notes else '')
     except Exception:
@@ -4443,6 +4451,52 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _result['market_quadrant_label'] = _mq_quadrant
     except Exception:
         pass
+
+    # ══ [C6 OI四象限联合判断 2026-08-30 苏摩111] ═══════════════════════════
+    # 铁证：BTC/ETH量化文献综述 — OI+价格+费率三维联合判断优于单一OI
+    # 四象限定义（来自量化微观结构文献）：
+    #   Q_LONG_CROWD : 价涨+OI增+费率升 → 多头拥挤，做多扣分
+    #   Q_SHORT_CROWD: 价跌+OI增+费率负 → 空头拥挤，做空扣分
+    #   Q_SHORT_COVER: 价涨+OI降 → 空头回补，燃料有限，做多注意
+    #   Q_LONG_EXIT  : 价跌+OI降 → 多头平仓，做空注意
+    try:
+        _sent_oi  = (_result.get('_market_state') or {})
+        _oi_chg   = float((_result.get('_sentiment') or {}).get('oi_change_pct', 0) or 0)
+        _fr_oi    = float((_result.get('_sentiment') or {}).get('funding_rate', 0) or 0)
+        _px_chg   = float(_result.get('price_change_pct_4h', 0) or 0)
+        _dir_oi   = _result.get('signal_dir', 'LONG')
+        _oi_delta = 0
+        _oi_quad  = 'NEUTRAL'
+
+        if _oi_chg > 2.0 and _px_chg > 1.0 and _fr_oi > 0.005:
+            # Q_LONG_CROWD: 价涨+OI增+费率正 → 多头拥挤
+            _oi_quad = 'LONG_CROWD'
+            if _dir_oi == 'LONG':  _oi_delta = -5   # 追多时扣分
+            else:                   _oi_delta = +3   # 做空时加分（轧多潜力）
+        elif _oi_chg > 2.0 and _px_chg < -1.0 and _fr_oi < -0.002:
+            # Q_SHORT_CROWD: 价跌+OI增+费率负 → 空头拥挤
+            _oi_quad = 'SHORT_CROWD'
+            if _dir_oi == 'SHORT': _oi_delta = -5   # 追空时扣分
+            else:                   _oi_delta = +3   # 做多时加分（轧空潜力）
+        elif _oi_chg < -2.0 and _px_chg > 1.0:
+            # Q_SHORT_COVER: 价涨+OI降 → 空头回补，燃料有限
+            _oi_quad = 'SHORT_COVER'
+            if _dir_oi == 'LONG':  _oi_delta = -2   # 做多时轻微扣分（回补燃料耗尽风险）
+        elif _oi_chg < -2.0 and _px_chg < -1.0:
+            # Q_LONG_EXIT: 价跌+OI降 → 多头平仓
+            _oi_quad = 'LONG_EXIT'
+            if _dir_oi == 'SHORT': _oi_delta = -2   # 做空时轻微扣分（砸盘动力衰减）
+
+        if _oi_delta != 0:
+            _result['score_final'] = round(float(_result.get('score_final', 0) or 0) + _oi_delta, 1)
+            _result['score'] = _result['score_final']
+            _result.setdefault('breakdown_extra', {})['oi_quadrant'] = (
+                f'{_oi_delta:+d}({_oi_quad} OI={_oi_chg:+.1f}% PX={_px_chg:+.1f}% FR={_fr_oi:.4f})'
+            )
+        _result['_oi_quadrant'] = _oi_quad
+    except Exception:
+        pass
+    # ══ [END C6 OI四象限] ═══════════════════════════════════════════════════
 
     # ══ [P0 设计院封印 2026-08-11 苏摩111] TRADFI交易时段门控 ══════════════
     # 美股代币非交易时段(亚洲白天)流动性极低，发信号有执行风险
