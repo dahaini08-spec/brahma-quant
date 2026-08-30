@@ -4146,6 +4146,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _tradfi_tokens = set([
             'XAUUSDT','QQQUSDT','NVDAUSDT','AAPLUSDT','MSFTUSDT','XAGUSDT',
             'SNDKUSDT','MUUSDT','INTCUSDT','GOOGLUSDT','AMDUSDT','CLUSDT',
+            'SPCXUSDT',  # [P0-A 2026-08-30 苏摩111] SPX指数代币，补入方仓TradFi DB
         ])  # TSLAUSDT降为B级暂移出 / MSTRUSDT单独处理
         _mstr_tokens = {'MSTRUSDT'}  # MSTR专属：权重±3（降半）
         if _sym in _tradfi_tokens or _sym in _mstr_tokens:
