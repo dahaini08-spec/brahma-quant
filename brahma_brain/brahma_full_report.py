@@ -732,6 +732,21 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
         pass
     # ══ [END ADAPTIVE v3.0] ══════════════════════════════════════════════
 
+    # ══ [360自愈机制 2026-08-30 苏摩111] 实时健康检测 ═══════════════════════
+    try:
+        from brahma_brain.brahma_health_guard import check_coverage, check_data_freshness, build_health_line
+        _health = check_coverage(r, report, mode=mode)
+        _fresh  = check_data_freshness(r)
+        _hline  = build_health_line(_health, _fresh)
+        report  = report + '\n' + '═'*60 + _hline + '\n'
+        # 如果实健康异常，在报告顶部加红色警告
+        if not _health['healthy']:
+            _warn = f'\n\ud83d\udea8 [梅天360自愈] 覆盖率{_health["rate"]}%<90%，缺失项: {", ".join(_health["missing"][:5])}\n'
+            report = _warn + report
+    except Exception:
+        pass
+    # ══ [END 360自愈] ═════════════════════════════════════════════
+
     return report, r
 
 
