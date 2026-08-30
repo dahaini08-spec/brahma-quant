@@ -473,17 +473,20 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
         _bbpos = float(_ms.get('bb_pos', 0.5) or 0.5)
         _hurst_raw = r.get('market_state_raw', {}).get('hurst_4h', 0) or \
                       r.get('confluence', {}).get('breakdown', {}).get('Hurst体制验证', 0) or 0.55
-        # Hurst字段可能是字符串 "H=0.682 趋势验证✅ +5"
+        # Hurst字段现已是float(封印P2)，兼容旧字符串格式
         if isinstance(_hurst_raw, str):
             import re as _re_h
             _hm = _re_h.search(r'H=([0-9.]+)', _hurst_raw)
             _hurst = float(_hm.group(1)) if _hm else 0.55
         else:
             _hurst = float(_hurst_raw or 0.55)
-        if _adx > 25 and _hurst > 0.6:   _mkt_state = 'TRENDING'
-        elif _adx < 20 and _bbw < 0.015: _mkt_state = 'RANGING'
-        elif _bbw < 0.012:                _mkt_state = 'RANGING_PRE_BREAKOUT'
-        else:                             _mkt_state = 'NEUTRAL'
+        # 市场状态精确判断(三角定位 ADX+Hurst+BB_width)
+        if   _adx > 25 and _hurst > 0.6 and _bbw > 0.015:  _mkt_state = 'TRENDING'
+        elif _adx > 25 and _hurst > 0.6:                    _mkt_state = 'TRENDING_TIGHT'
+        elif _bbw < 0.010:                                   _mkt_state = 'RANGING_PRE_BREAKOUT'
+        elif _adx < 20 and _bbw < 0.015:                    _mkt_state = 'RANGING'
+        elif _adx < 22 and _bbw < 0.018:                    _mkt_state = 'NEUTRAL'
+        else:                                                _mkt_state = 'NEUTRAL'
 
         # GEX区间分析
         _gex_max  = 0; _gex_min = 0; _gex_flip = 0; _gex_dir = 'N/A'
@@ -658,7 +661,8 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
         _s0s1s2 += [
             '',
             f'  【S3 市场状态+体制】',
-            f'  状态: {_mkt_state}(ADX={_adx:.1f} BB_width={_bbw:.3f} bb_pos={_bbpos:.2f})',
+            f'  状态: {_mkt_state}(ADX={_adx:.1f} Hurst={_hurst:.3f} BB_width={_bbw:.4f} bb_pos={_bbpos:.2f})',
+            f'  含义: {"ADX>25+Hurst>0.6 趋势延伸中 动能工具优先" if _mkt_state=="TRENDING" else "ADX>25+Hurst>0.6但BB收窄 趋势+等突破" if _mkt_state=="TRENDING_TIGHT" else "BB极度收窄 突破蜂鸣 GEX决定方向" if _mkt_state=="RANGING_PRE_BREAKOUT" else "ADX低+BB收窄 正常盘整 结构工具优先" if _mkt_state=="RANGING" else "工具均衡使用"}',
             f'  体制: {_regime} | score={_score} | TimingFilter: {_timing}',
             '',
         ]
