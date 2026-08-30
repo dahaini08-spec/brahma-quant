@@ -296,10 +296,11 @@ def _run_sqe(r: dict) -> dict:
     except Exception as e:
         return {'sqe_result': f'ERROR:{e}', 'sqe_reject_reason': 'N/A'}
 
-def run_full_analysis(symbol: str):
+def run_full_analysis(symbol: str, mode: str = 'auto'):
     """
     主入口：运行梵天1号工程全能力报告
-    [封印 2026-08-24 苏摩最高封印]
+    [封印 2026-08-30 苏摩111 ADAPTIVE v3.0]
+    mode: auto(默认) / hf(高频合约) / spot(中长线现货) / dual(双模并排)
     全能力 = brahma_1hao_analysis.run_analysis()
     包含：35维评分 + SMC/FVG/OB + 清算地图 + MTF五周期 + 决策树5步漏斗 + 方仓铁证
     返回: (report_str, r_dict) — report给人看，r给机器读
@@ -463,6 +464,9 @@ def run_full_analysis(symbol: str):
         _timing = r.get('timing_status', 'STANDBY')
         _ev_adj = r.get('ev_adj', 0)
 
+        # ══ mode自动判断 ══
+        _mode = mode if mode in ('hf','spot','dual') else 'hf'
+
         # 市场状态识别 (ADX+BB_width+Hurst)
         _adx   = float(_ms.get('adx_4h', 25) or 25)
         _bbw   = float(_ms.get('bb_width', 0.02) or 0.02)
@@ -580,7 +584,7 @@ def run_full_analysis(symbol: str):
         _s0s1s2 = [
             '',
             '╬' + '═'*58,
-            '  🏛️ 梵天 ADAPTIVE v3.0 · 3秒决策卡',
+            f'  🏛️ 梵天 ADAPTIVE v3.0 · {"HF高频合约" if _mode=="hf" else "SPOT中长线现货" if _mode=="spot" else "DUAL双模并排"} · 3秒决策卡',
             '╬' + '═'*58,
             '',
             f'  【S0 一句话结论】',
@@ -632,6 +636,47 @@ def run_full_analysis(symbol: str):
             f'  状态: {_mkt_state}(ADX={_adx:.1f} BB_width={_bbw:.3f} bb_pos={_bbpos:.2f})',
             f'  体制: {_regime} | score={_score} | TimingFilter: {_timing}',
             '',
+        ]
+
+        # ══ SPOT模式专属周期分析层 ══
+        if _mode in ('spot', 'dual'):
+            try:
+                _spot_lines = ['  【S4-SPOT 中长线现货周期层】']
+                # 矿工卖压
+                _miner = r.get('_miner', {})
+                if _miner and _miner.get('production_cost_est'):
+                    _m_cost = float(_miner.get('production_cost_est', 0) or 0)
+                    _m_margin = round((_price - _m_cost) / _m_cost * 100, 1) if _m_cost else 0
+                    _m_icon = '⛏️ 万工极低卖压——顶部未至' if _m_margin > 100 else '⛏️ 矿工中等卖压' if _m_margin > 30 else '⛏️ 矿工高卖压——注意顶部信号'
+                    _spot_lines.append(f'  {_m_icon} 生产成本≈${_m_cost:,.0f} | 当前溢价+{_m_margin:.0f}%')
+                # HTF周月线
+                _htf_bd = r.get('confluence', {}).get('breakdown', {}).get('HTF周月线锁定', '')
+                if _htf_bd:
+                    _spot_lines.append(f'  📅 HTF周月线: {str(_htf_bd)[:80]}')
+                # Elliott
+                _wave = r.get('wave', {})
+                if _wave and _wave.get('wave'):
+                    _spot_lines.append(f'  🌊 Elliott: {_wave.get("wave","")} {_wave.get("bias","")} —— {_wave.get("note","")[:60]}')
+                # 方仓铁证(现货角度)
+                _fc = r.get('fangcang', {})
+                if _fc and _fc.get('top_similar'):
+                    _fc_up = _fc.get('prob_up', 0.5)
+                    _fc_ev = _fc.get('ev_pct', 0)
+                    _spot_lines.append(f'  📊 方仓铁证: 上涨概率{_fc_up:.0%} EV={_fc_ev:+.2f}%（现货分批建仓参考）')
+                # 跨市场
+                _cm = r.get('_cross_market_result', {})
+                if _cm and _cm.get('score') is not None:
+                    _spot_lines.append(f'  🌐 跨市场: score={_cm.get("score",0):+d} | {_cm.get("summary","")[:60]}')
+                _spot_lines.append('')
+                _s0s1s2 += _spot_lines
+            except Exception:
+                pass
+
+        # ══ DUAL双模并排颜外标注 ══
+        if _mode == 'dual':
+            _s0s1s2.insert(3, '  ⚠️ DUAL双模：上方为HF高频合约视角，S4-SPOT为现货周期视角')
+
+        _s0s1s2 += [
             '╬' + '═'*58,
             '',
         ]
