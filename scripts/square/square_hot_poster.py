@@ -236,7 +236,40 @@ def build_hot_tickers() -> str:
 
     # ══ 五层分析引擎（优先级从高到低） ══
 
-    # 层1：暴涨+FR极高 → 追多成本极重，给出风险判断
+    # 层0：强制覆盖 — 涨幅>20%无论FR，必须给出结构性判断
+    if chg > 20:
+        pullback = (recent_high - price) / recent_high * 100 if recent_high > 0 else 0
+        from_low = (price - recent_low) / recent_low * 100 if recent_low > 0 else 0
+        if fr < -0.05:
+            mechanism = (f'FR {fr:.4f}%（极度负值）= 教科书级轧空。\n'
+                        f'空头建仓 → 价格被推高 → 止损触发 → 继续涨。\n'
+                        f'现在FR仍然极负，轧空可能未结束，但从高点已回落{pullback:.1f}%。')
+        elif fr > 0.05:
+            mechanism = (f'涨了{chg:.0f}%，FR已到{fr:.4f}%，多头在付高额保险费。\n'
+                        f'持仓成本在累积，追高的风险不亚于机会。\n'
+                        f'历史规律：FR超0.05%后24H内，回调概率明显上升。')
+        else:
+            mechanism = (f'从低点{recent_low:.4f}涨到高点{recent_high:.4f}，区间{from_low:.0f}%。\n'
+                        f'FR {fr:.4f}%正常，说明这波不是情绪过热推上去的。\n'
+                        f'多空比{ls:.2f}，{"空头为主，可能还有被动追涨空间。" if ls < 0.9 else "多头已占优，追高胜率下降。"}')
+        stance = f'现价{price_str}，从高点回落{pullback:.1f}%。追高风险大，等回踩{recent_low:.4f}支撑确认再看。'
+        hook = f'${hot_sym} 今天+{chg:.0f}%，说说这背后发生了什么。'
+        question = f'你提前捕捉到{hot_sym}这波行情了吗？'
+        out = [
+            hook, '',
+            f'📊 {now_cst()} CST',
+            f'  {price_str} | 24H: {chg:+.1f}% | 今日高: {recent_high:.4f} | 低: {recent_low:.4f}',
+            '',
+            f'━━━ 发生了什么 ━━━', '',
+            mechanism, '',
+            f'━━━ 我的判断 ━━━', '',
+            stance, '',
+            question, '',
+            f'#{hot_sym} #合约交易 #加密货币',
+        ]
+        return '\n'.join(out)
+
+    # 层1：FR极高 → 追多成本极重
     if chg > 20 and fr > 0.05:
         hook    = f'${hot_sym} 今天涨了{chg:.0f}%，我没追。'
         insight = (f'FR已到 {fr:.4f}%——做多的人每8小时要付仓位的{fr:.3f}%给空头。\n'
@@ -246,7 +279,7 @@ def build_hot_tickers() -> str:
         question = f'FR这么高你还会追{hot_sym}吗？'
 
     # 层2：上涨+FR负值 → 轧空行情，给出持续性判断
-    elif chg > 15 and fr < -0.005:
+    elif chg > 10 and fr < -0.005:
         hook    = f'${hot_sym} 涨了{chg:.0f}%，但资金费率是负的——说说这意味着什么。'
         insight = (f'FR {fr:.4f}%（负值）+ 价格上涨 = 空头被强制平仓（轧空行情）。\n'
                    f'逻辑：空头大量建仓 → 价格被推高 → 空头止损爆仓 → 价格继续涨。\n'
@@ -268,8 +301,15 @@ def build_hot_tickers() -> str:
                        f'我的处理方式：等价格在某个位置企稳超过2根4H K线，再评估结构入场。')
         question = f'你认为{hot_sym}现在是底部吗？'
 
-    # 层4：普通上涨 → 挖价格结构给出位置判断
+    # 层4：上涨 → 挖价格结构+判断位置风险
     elif chg > 5:
+        # 如果涨幅超过20%，先给出追高风险警示
+        if chg > 20:
+            hook = f'${hot_sym} 今天涨了{chg:.0f}%，这个位置我不会追。'
+        elif chg > 10:
+            hook = f'${hot_sym} 今天+{chg:.0f}%，说说我的判断。'
+        else:
+            hook = f'广场热度第一的 ${hot_sym}，说说我现在的判断。'
         ls_change = ls - ls_4h_ago
         if recent_high > 0 and recent_low > 0 and price > 0:
             rng = recent_high - recent_low
@@ -322,7 +362,7 @@ def build_hot_tickers() -> str:
         '',
         question,
         '',
-        f'#{hot_sym} #合约交易 #加密货币 #行情分析',
+        f'#{hot_sym} #合约交易 #加密货币',
     ]
     return '\n'.join(out)
 
