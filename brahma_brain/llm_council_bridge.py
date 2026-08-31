@@ -709,7 +709,10 @@ def review(
         # 轻量模式: 仅RiskAgent，节省Macro/Quant/Devil的token消耗
         with _cf.ThreadPoolExecutor(max_workers=1) as _pool:
             _f_risk  = _pool.submit(_risk_agent_review, flat_signal)
-            risk_result  = _f_risk.result(timeout=15)
+            try: risk_result = _f_risk.result(timeout=15)
+            except (_cf.TimeoutError, Exception) as _e:
+                risk_result = {'score_adj': 0, 'summary': 'timeout_fallback', 'agent': 'RiskAgent'}
+                logger.warning(f'[RiskAgent lite] 超时/异常降级: {_e}')
         macro_result = {'score_adj': 0, 'summary': 'lite_mode_skip', 'agent': 'MacroAgent'}
         quant_result = {'score_adj': 0, 'summary': 'lite_mode_skip', 'agent': 'QuantAgent'}
         devil_result = {'score_adj': 0, 'veto': False, 'summary': 'lite_mode_skip', 'agent': 'DevilAgent'}
@@ -719,10 +722,20 @@ def review(
             _f_macro = _pool.submit(_macro_agent_review, flat_signal, ctx)
             _f_quant = _pool.submit(_quant_agent_review, flat_signal, flat_signal.get('_similar_signals'))
             _f_devil = _pool.submit(_devil_agent_review, flat_signal)
-            risk_result  = _f_risk.result(timeout=18)
-            macro_result = _f_macro.result(timeout=18)
-            quant_result = _f_quant.result(timeout=18)
-            devil_result = _f_devil.result(timeout=18)
+            # [Twilio超时机制 2026-08-31 苏摩111] 为护栏设时间预算，超时用rule_fallback替代
+            # 根因: 某一专家卡住会导致整个议会block，应该降级运行而不是崩溃
+            _risk_fb  = {'score_adj': 0, 'summary': 'timeout_fallback', 'agent': 'RiskAgent'}
+            _macro_fb = {'score_adj': 0, 'summary': 'timeout_fallback', 'agent': 'MacroAgent'}
+            _quant_fb = {'score_adj': 0, 'summary': 'timeout_fallback', 'agent': 'QuantAgent'}
+            _devil_fb = {'score_adj': 0, 'veto': False, 'summary': 'timeout_fallback', 'agent': 'DevilAgent'}
+            try: risk_result  = _f_risk.result(timeout=18)
+            except (_cf.TimeoutError, Exception) as _e: risk_result  = _risk_fb;  logger.warning(f'[RiskAgent] 超时/异常降级: {_e}')
+            try: macro_result = _f_macro.result(timeout=18)
+            except (_cf.TimeoutError, Exception) as _e: macro_result = _macro_fb; logger.warning(f'[MacroAgent] 超时/异常降级: {_e}')
+            try: quant_result = _f_quant.result(timeout=18)
+            except (_cf.TimeoutError, Exception) as _e: quant_result = _quant_fb; logger.warning(f'[QuantAgent] 超时/异常降级: {_e}')
+            try: devil_result = _f_devil.result(timeout=18)
+            except (_cf.TimeoutError, Exception) as _e: devil_result = _devil_fb; logger.warning(f'[DevilAgent] 超时/异常降级: {_e}')
     elapsed = time.time() - t0
 
     # ── [ReAct R2 2026-08-29 苏摩111] 迭代议会层 ──────────────────────
