@@ -334,24 +334,47 @@ def build_hot_tickers() -> str:
                    f'{action_hint}')
         question = f'你现在怎么看{hot_sym}这个位置？'
 
-    # 层5：横盘/小波动 → 从多空比变化读出未来方向
+    # 层5：横盘/小波动 → 多维推理，不套模板
     else:
         ls_change = ls - ls_4h_ago
-        hook    = f'广场今天热度最高的 ${hot_sym}，数据告诉我一件事。'
-        if abs(ls_change) > 0.2:
-            direction = f'{"多头快速增加" if ls_change > 0 else "多头在快速撤退"}'
-            implication = (f'多空比从{ls_4h_ago:.2f}变化到{ls:.2f}——{direction}。\n'
-                           f'{"价格还没动但多头在积累，可能是在等突破方向。" if ls_change > 0 and abs(chg) < 3 else "价格平稳但多头在撤，要小心下行风险。" if ls_change < 0 else "资金在流入，关注后续量能。"}')
-        else:
-            implication = (f'多空比 {ls:.2f}，4H内没有明显变化，市场在等消息或等突破。\n'
-                           f'FR {fr:.4f}%，{"偏高，多头付出的成本在累积。" if fr > 0.008 else "正常，没有极端情绪。"}')
+        oi_change = (oi_now - oi_4h_ago) / oi_4h_ago * 100 if oi_4h_ago > 0 else 0
 
-        if recent_high > 0 and recent_low > 0:
-            insight = (f'{implication}\n'
-                       f'近期价格区间 {recent_low:.4f}–{recent_high:.4f}U，突破哪边跟哪边。')
+        signals = []
+
+        # 多空比变化
+        if ls_change > 0.2:
+            signals.append(f'多空比从{ls_4h_ago:.2f}升到{ls:.2f}，多头在不断建仓。价格还没动，这种情况通常是在蜗牛吸筹。')
+        elif ls_change < -0.2:
+            signals.append(f'多空比从{ls_4h_ago:.2f}降到{ls:.2f}，多头在撤出。价格还没到支撑就开始减仓，要小心下行压力。')
         else:
-            insight = implication
-        question = f'你认为{hot_sym}接下来会选择哪个方向？'
+            signals.append(f'多空比{ls:.2f}，4H内基本稳定，双方都没有明显动作。')
+
+        # OI变化
+        if oi_change > 3:
+            signals.append(f'OI近4H增加{oi_change:.1f}%，新资金在进场，方向选出前会加剧波动。')
+        elif oi_change < -3:
+            signals.append(f'OI近4H下降{abs(oi_change):.1f}%，市场在去杠杆。去完之前方向不明确。')
+
+        # FR信号
+        if fr > 0.015:
+            signals.append(f'FR已到{fr:.4f}%，多头持仓成本在累积，时间越长对多头越不利。')
+        elif fr < -0.01:
+            signals.append(f'FR{fr:.4f}%为负，空头在付费，存在被轧的潜在动力。')
+
+        # 价格在区间内的位置
+        if recent_high > 0 and recent_low > 0:
+            range_pct = (recent_high - recent_low) / recent_low * 100
+            pos_in_range = (price_num - recent_low) / (recent_high - recent_low) * 100 if recent_high != recent_low else 50
+            if pos_in_range > 75:
+                signals.append(f'现价在近期区间顶部{pos_in_range:.0f}%位置（{recent_low:.4f}–{recent_high:.4f}），高位推空比追多更合理。')
+            elif pos_in_range < 25:
+                signals.append(f'现价在近期区间底部{pos_in_range:.0f}%位置，{recent_low:.4f}是关键支撑，守住才有反弹。')
+            else:
+                signals.append(f'现价在区间中部，{recent_low:.4f}支撑，{recent_high:.4f}压力，等一个方向。')
+
+        insight = '\n'.join(signals)
+        hook = f'广场热度第一的 ${hot_sym}，我实际看了数据。'
+        question = f'#{hot_sym} 你现在持仓还是空仓等？'
 
     out = [
         hook, '',
