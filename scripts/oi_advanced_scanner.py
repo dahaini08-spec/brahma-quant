@@ -372,6 +372,7 @@ def score_oi_signal(oi, basis, fr, whale_l, retail_l, direction, klines_1h):
     """
     score = 0
     details = []
+    _score_cap = 100  # [P0] 价格涨幅过大时自动降低评分上限
 
     # ── D1: 多周期OI趋势强度（35分）──────────────────────────
     # 1H趋势
@@ -493,7 +494,78 @@ def score_oi_signal(oi, basis, fr, whale_l, retail_l, direction, klines_1h):
             score += 4
             details.append(f'RSI_1H={rsi_1h:.0f}超买空(+4)')
 
-    return min(100, max(0, score)), details
+    # ── [P0 2026-08-31 苏摩111] 价格效率比惩罚因子 ────────────────────────────
+    # 根因: OI评分奖励《OI已经涨了多少》，不惩罚《价格已经涨太多》导致高分噪声
+    # 40年交易员常识: OI大幅 > 价格小幅 = 埋伏 | OI小幅 < 价格大幅 = 追涨
+    _price_chg_24h = abs(oi.get('price_chg_24h', 0) or 0)
+    _oi_chg_24h = abs(oi.get('chg_24h', 0) or 0)
+
+    # P0a: 绝对价格涨幅惩罚（价格已经太高，无论 OI 多少都不是埋伏）
+    # P0a: 绝对价格涨幅惩罚（价格已经太高，无论 OI 多少都不是埋伏）
+    _score_cap = 100  # 评分上限，价格涨幅越大上限越低
+    if _price_chg_24h > 30:
+        score -= 40
+        _score_cap = 55  # 价格24H>30% → 评分上限锁刖55（C级以下）
+        details.append(f'价格24H+{_price_chg_24h:.0f}%已拉升(-40,cap55)')
+    elif _price_chg_24h > 20:
+        score -= 25
+        _score_cap = 70  # 价格24H>20% → 评分上限锁刖70
+        details.append(f'价格24H+{_price_chg_24h:.0f}%追涨风险(-25,cap70)')
+    elif _price_chg_24h > 15:
+        score -= 15
+        _score_cap = 80
+        details.append(f'价格24H+{_price_chg_24h:.0f}%偏高(-15,cap80)')
+
+    # P0b: 价格效率比（OI涨幅 / 价格涨幅）
+    if _price_chg_24h > 0 and _oi_chg_24h > 0:
+        _efficiency = _oi_chg_24h / max(_price_chg_24h, 1.0)
+        if _efficiency > 10.0 and _price_chg_24h < 5:
+            # OI涨幅远远大于价格且价格未大幅上涨 = 真正埋伏
+            score += 20
+            details.append(f'OI/价格效率={_efficiency:.0f}真正埋伏(+20)')
+        elif _efficiency > 5.0 and _price_chg_24h < 10:
+            score += 10
+            details.append(f'OI/价格效率={_efficiency:.0f}深度埋伏(+10)')
+        elif _efficiency < 0.5:
+            score -= 15
+            details.append(f'OI/价格效率={_efficiency:.1f}追涨(-15)')
+
+    # ── [P1 2026-08-31 苏摩111] OI加速度增强评分 ──────────────────────────
+    # 根因: accel_4h已计算但未用于评分；加速建仓是埋伏的核心特征
+    _accel = oi.get('accel_4h', 0) or 0
+    if _accel > 3.0:
+        score += 12
+        details.append(f'OI加速度={_accel:.1f}强列加速(+12)')
+    elif _accel > 1.5:
+        score += 6
+        details.append(f'OI加速度={_accel:.1f}加速中(+6)')
+    elif _accel < -2.0:
+        # 减速：建仓结束，主力可能在出货
+        score -= 10
+        details.append(f'OI加速度={_accel:.1f}减速出货(-10)')
+
+    # ── [P2 2026-08-31 苏摩111] 体制识别加成 ─────────────────────────────────
+    # 根因: OI信号在不同体制下含义完全不同，当前OI扫描没有体制过滤
+    _regime = oi.get('regime', 'UNKNOWN') or 'UNKNOWN'
+    if direction == 'LONG_BUILD':
+        if 'BEAR_TREND' in _regime:
+            score = int(score * 0.15)  # 逆体制做多 = 极度压制
+            details.append(f'体制{_regime}逆势做多(×0.15)')
+        elif 'BEAR_RECOVERY' in _regime:
+            score = int(score * 1.3)   # 熊市反弹埋伏做多 = 加成
+            details.append(f'体制{_regime}顺势埋伏(×1.3)')
+        elif 'BULL_EARLY' in _regime:
+            score = int(score * 1.2)
+            details.append(f'体制{_regime}早期多头(×1.2)')
+    elif direction == 'SHORT_BUILD':
+        if 'BULL_TREND' in _regime:
+            score = int(score * 0.15)  # 逆体制做空 = 极度压制
+            details.append(f'体制{_regime}逆势做空(×0.15)')
+        elif 'BEAR_TREND' in _regime or 'BEAR_EARLY' in _regime:
+            score = int(score * 1.3)   # 熊市主动做空 = 加成
+            details.append(f'体制{_regime}熊市做空(×1.3)')
+
+    return min(_score_cap, max(0, score)), details
 
 
 def classify_signal(oi, score, direction, basis, fr, whale_l, regime='UNKNOWN'):
@@ -580,16 +652,22 @@ def scan_symbol(sym, ticker_data):
     # 方向矩阵
     direction, dir_bias = calc_oi_direction_matrix(oi_raw['1h'], pct24h)
 
-    # 综合评分
-    score, details = score_oi_signal(oi, basis, fr, whale_l, retail_l, direction, klines_1h)
-
-    # 信号分类
+    # [P2 2026-08-31] 先取体制，注入oi字典，再评分
     regime = 'UNKNOWN'
     try:
         _r = json.loads((BASE/'data/regime_state.json').read_text())
         regime = _r.get(sym, {}).get('confirmed', 'UNKNOWN') if isinstance(_r.get(sym), dict) else 'UNKNOWN'
     except:
         pass
+
+    # [P0+P1+P2] 把price_chg_24h和regime注入oi字典供score_oi_signal使用
+    oi['price_chg_24h'] = pct24h  # 24H价格涨跌幅（价格效率比计算用）
+    oi['regime'] = regime          # 体制信息（P2体制过滤用）
+
+    # 综合评分
+    score, details = score_oi_signal(oi, basis, fr, whale_l, retail_l, direction, klines_1h)
+
+    # 信号分类（regime已在上方获取，复用）
 
     sig_info = classify_signal(oi, score, direction, basis, fr, whale_l, regime)
 
