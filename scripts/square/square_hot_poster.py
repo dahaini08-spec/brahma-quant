@@ -465,9 +465,16 @@ def build_top_gainers() -> str:
         lines.append('')
 
     lines.append('涨幅榜我每次都要先看背后的逻辑，不是列完就完了。')
-    lines.append('哪个有机会，我会单独出一篇分析。')
     lines.append('')
-    lines.append('#合约交易 #加密货币 #量化')
+    # 互动问句：基于大盘方向动态生成
+    if btc_chg > 1:
+        lines.append('今天哪个涨幅榜的标的你在关注？')
+    elif btc_chg < -1:
+        lines.append('大盘跌的时候还能逆势涨的，你会怎么看？')
+    else:
+        lines.append('这里面有你在跟踪的吗？')
+    lines.append('')
+    lines.append('#合约交易 #加密货币')
     return '\n'.join(lines)
 
 
@@ -812,7 +819,15 @@ def build_market_summary() -> str:
     lines.append('')
     lines.append(f'明天开盘我会盯着看：{tomorrow}')
     lines.append('')
-    lines.append('#市场复盘 #BTC #合约交易 #行情分析')
+    # 动态互动问句
+    if btc_chg > 1:
+        lines.append('今天涨了，你加仓了吗？')
+    elif btc_chg < -1:
+        lines.append('这个位置你会拉抢安全带吗？')
+    else:
+        lines.append('震荡行情，你现在是持币等的还是轻仓布局？')
+    lines.append('')
+    lines.append('#市场复盘 #BTC #合约交易')
     return '\n'.join(lines)
 
 
