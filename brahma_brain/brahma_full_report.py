@@ -865,6 +865,44 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
         pass
     # ══ [END 360自愈] ═════════════════════════════════════════════
 
+    # ══ [P0-A/B 2026-08-31 苏摩111] 战场三维接入主链路 ═══════════════════════
+    try:
+        from brahma_brain.position_sizer import calc_war_field_alignment, get_war_field_position
+        from brahma_brain.war_field_report import build_war_report
+
+        _lsr_val   = r.get('lsr_long_pct') or r.get('lsr') or 50.0
+        _oi_chg    = r.get('oi_chg_1h', 0) * 8 if r.get('oi_chg_1h') else 0.0
+        _taker_val = r.get('taker_ratio') or r.get('taker_buy_sell') or 1.0
+        _macd4h    = r.get('macd_4h_hist') or r.get('macd4h_hist') or 0.0
+        _gex_dir   = 'NET_SHORT' if r.get('gex_dir','').upper() in ('NET_SHORT','SHORT') else \
+                     'NET_LONG'  if r.get('gex_dir','').upper() in ('NET_LONG','LONG') else 'NEUTRAL'
+        _direction = r.get('direction','LONG')
+        _regime    = r.get('regime','CHOP_MID')
+        _score     = r.get('score_final', 0)
+        _price     = r.get('price', 0)
+
+        _war = calc_war_field_alignment(
+            _direction, lsr=_lsr_val, oi_chg_8h=_oi_chg,
+            taker_ratio=_taker_val, macd4h_hist=_macd4h, gex_dir=_gex_dir
+        )
+        _wpos = get_war_field_position(_score, _regime, _direction, _war['aligned'], _war['score'])
+
+        r['war_field_aligned']  = _war['aligned']
+        r['war_field_score']    = _war['score']
+        r['war_field_votes']    = f"{_war['votes']}/{_war['total_dims']}"
+        r['war_field_pos_pct']  = _wpos['pct']
+        r['war_field_detail']   = _war['detail']
+
+        _war_line = (
+            f'\n  【战场三维】{_war["votes"]}/{_war["total_dims"]}同向 '
+            f'对齐={_war["aligned"]} 战场仓位={_wpos["pct"]}%NAV\n'
+            f'  {_war["detail"]}\n'
+        )
+        report = _war_line + report
+    except Exception:
+        pass
+    # ══ [END P0-A/B 接入] ════════════════════════════════════════════════════
+
     return report, r
 
 

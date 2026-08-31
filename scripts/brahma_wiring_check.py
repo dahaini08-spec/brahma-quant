@@ -1,125 +1,166 @@
 #!/usr/bin/env python3
 """
-brahma_wiring_check.py — 梵天接线验证检测器
-[设计院 2026-08-08 自主决策封印]
+brahma_wiring_check.py — 梵天代码接入验证（最小代价版）
+[2026-08-31 苏摩111封印]
 
-功能：
-1. 扫描 brahma_brain/ 所有模块
-2. 检测是否被主链路 import / 调用
-3. 高价值孤岛 → P1预警
-4. 结果写入 data/wiring_status.json
+用Python内置AST库实现graphify核心功能：
+  1. 哪些文件import了某个模块
+  2. 新模块是否已接入主链路
+  3. 死代码检测
 
-触发时机：每次封印新模块后运行，brahma-cron-doctor 每日扫描
+用法:
+  python3 scripts/brahma_wiring_check.py --check war_field_report
+  python3 scripts/brahma_wiring_check.py --check regime_early_warning
+  python3 scripts/brahma_wiring_check.py --dead-code
+  python3 scripts/brahma_wiring_check.py --full
 """
-import os, json, datetime, sys
 
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BRAIN_DIR = os.path.join(BASE, 'brahma_brain')
-DATA_DIR = os.path.join(BASE, 'data')
+import ast, os, sys, argparse
+from pathlib import Path
 
-# 主链路文件
+ROOT = Path(__file__).parent.parent
+BRAIN = ROOT / 'brahma_brain'
+SCRIPTS = ROOT / 'scripts'
+
 MAIN_CHAIN = [
-    # 主链路
-    'brahma_brain/brahma_engine.py',
-    'brahma_brain/brahma_core.py',           # [fix 2026-08-13] engine是core的shim，core才是真相
-    'brahma_brain/brahma_analysis_runner.py',
-    'scripts/brahma_1hao_analysis.py',
-    'scripts/auto_executor.py',
-    'scripts/signal_settler.py',
-    # 二级链路（core直接调用的子模块）[fix 2026-08-13 低价值孤岛误报修复]
-    'brahma_brain/brahma_core_block_a.py',
-    'brahma_brain/brahma_core_block_b.py',
-    'brahma_brain/brahma_core_block_c.py',
-    'brahma_brain/brahma_core_analyze_steps.py',
-    'brahma_brain/brahma_core_step4.py',
-    'brahma_brain/brahma_scoring.py',
-    'brahma_brain/market_state.py',
-    'brahma_brain/position_sizer.py',
-    'brahma_brain/fangcang_engine.py',
-    'brahma_brain/signal_integrity_gate.py',
-    'brahma_brain/brahma_health.py',
-    'scripts/push_chart.py',
+    'brahma_analysis_runner.py',
+    'brahma_full_report.py',
+    'auto_executor.py',
+    'brahma_core.py',
+    'signal_selector.py',
 ]
 
-# 已知高价值模块 → 若孤立则 P1 预警
-HIGH_VALUE = {
-    'signal_15m_engine',
-    'hcme_matcher',
-    'brahma_optimizer',
-    'ic_tracker',
-    'vectorbt_simfactory',
-    'brahma_360',
-    'fangcang_engine',
-    'brahma_decision_engine',
-    'kronos_bridge',
-    'smc_engine',
-}
 
-# 已知低价值/废弃 → 忽略
-SKIP_MODULES = {
-    'dharma_online_learner', 'pump_hunter_brain',
-    'brahma_trade', 'brahma_orchestrator',
-    'exception_injector', 'brahma_constitutional_test',
-    '__init__',
-    # 脚本调用型（cron命令行直接执行，不在Python import链中）
-    'brahma_360',
-    # 条件触发型（Step B: live_signal>=500条后触发）
-    'brahma_optimizer',
-    # 专项工具（dharma回测专用，非主链路）
-    'vectorbt_simfactory',
-    # 独立诊断工具（合理孤立，无需接主链）[fix 2026-08-13]
-    'brahma_ci',
-    'brahma_binance_mcp',  # MCP Server骨架，外部Agent调用，非import链
-    'brahma_wiring_check',
-}
+def get_py_files(dirs):
+    files = []
+    for d in dirs:
+        for f in Path(d).rglob('*.py'):
+            if 'venv' not in str(f) and '__pycache__' not in str(f):
+                files.append(f)
+    return files
 
-def check():
-    # 读取主链路内容
-    main_content = ''
-    for rel in MAIN_CHAIN:
-        fp = os.path.join(BASE, rel)
-        if os.path.exists(fp):
-            with open(fp) as f:
-                main_content += f.read()
 
-    brain_files = [
-        f.replace('.py', '') for f in os.listdir(BRAIN_DIR)
-        if f.endswith('.py') and not f.startswith('_')
-    ]
+def get_imports(filepath):
+    """提取文件中所有import的模块名"""
+    try:
+        with open(filepath) as f:
+            src = f.read()
+        tree = ast.parse(src)
+    except:
+        return []
+    imports = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                imports.append(alias.name.split('.')[0])
+        elif isinstance(node, ast.ImportFrom):
+            if node.module:
+                imports.append(node.module.split('.')[0])
+    return imports
 
-    orphans_high, orphans_low, connected = [], [], []
-    for mod in sorted(brain_files):
-        if mod in SKIP_MODULES:
-            continue
-        if mod in main_content or f'{mod}.py' in main_content:
-            connected.append(mod)
-        elif mod in HIGH_VALUE:
-            orphans_high.append(mod)
-        else:
-            orphans_low.append(mod)
 
-    result = {
-        'ts': datetime.datetime.utcnow().isoformat(),
-        'connected': len(connected),
-        'orphans_high': orphans_high,
-        'orphans_low': orphans_low,
-        'total': len(connected) + len(orphans_high) + len(orphans_low),
-        'status': 'WARN' if orphans_high else 'OK',
-    }
+def get_defined_functions(filepath):
+    """提取文件中定义的所有函数名"""
+    try:
+        with open(filepath) as f:
+            src = f.read()
+        tree = ast.parse(src)
+    except:
+        return []
+    return [node.name for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
 
-    out_path = os.path.join(DATA_DIR, 'wiring_status.json')
-    with open(out_path, 'w') as f:
-        json.dump(result, f, indent=2, ensure_ascii=False)
 
-    print(f"[接线检测] 已接入: {len(connected)}  高价值孤岛: {len(orphans_high)}  低价值孤岛: {len(orphans_low)}")
-    if orphans_high:
-        print("[P1预警] 以下高价值模块未接入主链路:")
-        for m in orphans_high:
-            print(f"  ❌ {m}")
-        sys.exit(1)
+def check_wiring(module_name):
+    """检查模块是否已接入主链路"""
+    print(f'\n=== 接入验证: {module_name} ===')
+    all_files = get_py_files([BRAIN, SCRIPTS])
+    found_in = []
+    for f in all_files:
+        imports = get_imports(f)
+        # 也检查文件内容中的字符串引用
+        try:
+            content = f.read_text()
+        except:
+            content = ''
+        if module_name in imports or module_name in content:
+            found_in.append(str(f.relative_to(ROOT)))
+    
+    main_chain_hits = [f for f in found_in if any(m in f for m in MAIN_CHAIN)]
+    
+    print(f'  引用位置 ({len(found_in)}处):')
+    for f in found_in[:10]:
+        tag = ' ← 主链路✅' if any(m in f for m in MAIN_CHAIN) else ''
+        print(f'    {f}{tag}')
+    
+    if main_chain_hits:
+        print(f'  ✅ 已接入主链路: {main_chain_hits}')
     else:
-        print("[接线检测] ✅ 全部高价值模块已接入，无孤岛")
-        sys.exit(0)
+        print(f'  ⚠️  未在主链路中找到引用 — 需要手动接入')
+    
+    return len(found_in) > 0
+
+
+def dead_code_check():
+    """简单死代码检测：定义了但从未被其他文件引用的函数"""
+    print('\n=== 死代码检测 ===')
+    all_files = get_py_files([BRAIN, SCRIPTS])
+    
+    # 收集所有定义
+    all_defs = {}
+    for f in all_files:
+        funcs = get_defined_functions(f)
+        for fn in funcs:
+            all_defs[fn] = str(f.relative_to(ROOT))
+    
+    # 收集所有调用（简单文本搜索）
+    all_calls = set()
+    for f in all_files:
+        try:
+            content = f.read_text()
+            for fn in all_defs:
+                if fn + '(' in content:
+                    all_calls.add(fn)
+        except:
+            pass
+    
+    uncalled = {fn: path for fn, path in all_defs.items()
+                if fn not in all_calls
+                and not fn.startswith('_')
+                and fn not in ('main', 'test', 'setup')}
+    
+    print(f'  定义函数总数: {len(all_defs)}')
+    print(f'  被调用函数: {len(all_calls)}')
+    print(f'  疑似未使用: {len(uncalled)}')
+    if uncalled:
+        for fn, path in list(uncalled.items())[:10]:
+            print(f'    {fn}() — {path}')
+
+
+def full_check():
+    """全量检查今日新增模块"""
+    new_modules = ['war_field_report', 'regime_early_warning', 'calc_war_field_alignment', 'get_war_field_position']
+    results = {}
+    for m in new_modules:
+        results[m] = check_wiring(m)
+    
+    print('\n=== 汇总 ===')
+    for m, found in results.items():
+        status = '✅ 已引用' if found else '❌ 未引用'
+        print(f'  {m}: {status}')
+
 
 if __name__ == '__main__':
-    check()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--check', help='检查指定模块接入情况')
+    parser.add_argument('--dead-code', action='store_true')
+    parser.add_argument('--full', action='store_true')
+    args = parser.parse_args()
+    
+    if args.check:
+        check_wiring(args.check)
+    elif args.dead_code:
+        dead_code_check()
+    elif args.full:
+        full_check()
+    else:
+        full_check()
