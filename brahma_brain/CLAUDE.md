@@ -98,6 +98,40 @@ grep -n "你的新模块名" brahma_brain/brahma_full_report.py brahma_brain/bra
 
 ---
 
+## 🗺️ 诊断路径图谱（Understand-Anything等价，零安装成本）
+
+### 「为什么信号没有推送」
+```
+brahma_core.analyze() → score_final
+  ↓ score_final < threshold？
+    → SQE拦截 → 查 signal_quality_engine.py → 看哪道门控触发
+  ↓ SQE通过但没推送？
+    → 查 data/signal_queue.jsonl → 检查 expires_at 是否过期
+  ↓ 在队列但没触发？
+    → 查 scripts/signal_watcher.py → 检查 direction 字段是否为 LONG/SHORT
+  ↓ direction有但没推出去？
+    → 查 data/signal_push_state.json → 检查 TTL 冷却时间
+```
+
+### 「为什么体制识别错了」
+```
+brahma_core.analyze()
+  ↓ → regime_detector → _matched_regime_key
+  ↓ regime=None/空？ → [Karpathy断言] 自动填UNKNOWN，查日志
+  ↓ 体制切换延迟？ → 查 data/brahma_state.json → last_update字段
+  ↓ 体制乘数不对？ → 只改 brahma_brain/regime_config.py（SSOT）
+```
+
+### 「为什么OI信号评分高但是追涨」
+```
+scripts/oi_advanced_scanner.py → score_oi_signal()
+  ↓ _price_chg_24h > 30%？ → score cap=55（今天已修复）
+  ↓ OI/价格效率比 < 1？ → 追涨惩罚
+  ↓ 体制逆势？ → regime乘数×0.15
+```
+
+---
+
 ## 🔑 关键文件速查
 
 | 文件 | 行数 | 职责 |
