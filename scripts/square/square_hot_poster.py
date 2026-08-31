@@ -424,17 +424,22 @@ def build_funding_rate() -> str:
     max_sym = max(data.items(), key=lambda x: x[1]['fr'])
     top_sym, top_d = max_sym
     top_fr = top_d['fr']
-    if top_fr > 0.01:
-        conclusion = f'{top_sym}资金费率达{top_fr:.4f}%，多头持仓成本在累积，这个位置追多要谨慎。'
-    elif top_fr > 0.007:
-        conclusion = f'{top_sym}资金费率小幅偏高，还在正常范围，但持续上升的话我会开始警惕。'
+    # FR结论：给出具体操作含义，不是描述现象
+    if top_fr > 0.015:
+        conclusion = f'{top_sym} FR已到{top_fr:.4f}%。多头每8小时付{top_fr:.4f}%持仓成本，时间越长越不利。这个位置追多我不做，等FR回落到0.005%以下再说。'
+    elif top_fr > 0.008:
+        conclusion = f'{top_sym} FR {top_fr:.4f}%，多头成本在积累。没到危险线，但如果继续涨到0.015%以上，我会开始考虑轻仓做空。'
+    elif top_fr < -0.01:
+        conclusion = f'{top_sym} FR {top_fr:.4f}%为负，空头在付费给多头。这是做多的隐性优势，但FR负值本身不是做多信号，还要看价格结构。'
     else:
-        conclusion = '三个主力币资金费率均处于正常范围，没有极端信号，当前多空博弈较为均衡。'
+        conclusion = f'三大主力FR均在正常区间，没有极端博弈。当前适合等信号，不适合追趋势。'
 
     lines_out.append('')
     lines_out.append(conclusion)
     lines_out.append('')
-    lines_out.append('#资金费率 #合约 #BTC #行情分析')
+    lines_out.append('你现在重点看哪个方向？')
+    lines_out.append('')
+    lines_out.append('#资金费率 #合约交易 #BTC')
     return '\n'.join(lines_out)
 
 
@@ -627,7 +632,7 @@ def build_top_losers() -> str:
 
     lines.append('跌幅榜里不是每个都值得抄底，分清楚是大盘拖下来的还是自身有问题，这个判断比知道跌了多少更重要。')
     lines.append('')
-    lines.append('#合约交易 #加密货币 #量化')
+    lines.append('#合约交易 #加密货币')
     return '\n'.join(lines)
 
 
@@ -680,26 +685,45 @@ def build_hot_news() -> str:
     bull_pct = int(hot_item.get('bullishCount', 0) /
                    max(hot_item.get('bullishCount', 0) + hot_item.get('bearishCount', 0) + 1, 1) * 100)
 
-    # 生成个人观点
+    # 生成个人观点：40年交易员视角，有立场，有逻辑链
     if chg_val > 20 and fr_val > 0.05:
-        opinion = f'涨了{chg_val:.0f}%，但FR已到{fr_val:.3f}%——这种位置我不会追，等回调再说。'
+        opinion = (f'涨了{chg_val:.0f}%，FR已经到{fr_val:.3f}%。\n'
+                   f'多头每8小时付{fr_val:.3f}%成本——这意味着不涨就是亏。\n'
+                   f'这种位置我不追，等FR回落到正常区间，或者等一次像样的回调确认支撑。')
     elif chg_val < -20:
-        opinion = f'跌了{abs(chg_val):.0f}%，很多人在讨论要不要抄底。我的判断：先搞清楚跌的原因，再决定要不要动。'
+        opinion = (f'跌了{abs(chg_val):.0f}%，广场{100-bull_pct}%的人在看空。\n'
+                   f'但我不急着抄底——底部的特征是恐慌卖出结束，成交量萎缩后止跌，不是跌了多少就值得买。\n'
+                   f'先等结构信号，再谈方向。')
     elif bull_pct > 75:
-        opinion = f'广场{bull_pct}%的人在看多——情绪偏向一边的时候我反而要小心。'
+        opinion = (f'广场{bull_pct}%的人看多${hot_sym}。\n'
+                   f'情绪高度一致的时候我反而要提高警惕——不是说一定会跌，\n'
+                   f'而是大多数人都在同一边的时候，流动性最差，波动最剧烈。\n'
+                   f'FR {fr_str}，多空比{ls_str}，综合来看现在不是加仓的好时机。')
+    elif bull_pct < 30:
+        opinion = (f'广场只有{bull_pct}%的人看多——极度悲观。\n'
+                   f'这不是做多信号，但是可以开始关注。\n'
+                   f'历史规律：情绪极端悲观时，下跌往往最后一跌，但时机判断比方向判断更难。')
+    elif chg_val > 5 and fr_val < -0.005:
+        opinion = (f'价格在涨，但FR是负的{fr_str}——空头在付费给多头。\n'
+                   f'这是典型的轧空结构，不是真实的买需推动。\n'
+                   f'轧空结束后如果没有真实买盘跟上，涨势会快速结束。')
     else:
-        opinion = '热度高不等于方向对，看数据再作判断。'
+        opinion = (f'${hot_sym} 今日{chg_str}，提及{mention:,}次，{bull_pct}%看多。\n'
+                   f'FR {fr_str} 属于正常区间，没有极端信号。\n'
+                   f'热度高是流量，不是方向。我在等一个更清晰的入场逻辑。')
 
-    lines_out = ['广场今天热议的币，我看了一下。', '']
+    lines_out = [f'广场热度最高的 ${hot_sym}，说说我的看法。', '']
     lines_out.append(f'📊 {now_cst()} CST')
     lines_out.append('')
-    lines_out.append(f'${hot_sym} 提及{mention:,}次，看多{bull_pct}%。')
+    lines_out.append(f'${hot_sym}  提及{mention:,}次  看多{bull_pct}%')
     if price_str:
-        lines_out.append(f'现价 {price_str} | 24H {chg_str} | FR {fr_str} | 多空比 {ls_str}')
+        lines_out.append(f'  {price_str} | 24H {chg_str} | FR {fr_str} | 多空比 {ls_str}')
     lines_out.append('')
     lines_out.append(opinion)
     lines_out.append('')
-    lines_out.append(f'#{hot_sym} #广场热点 #加密货币 #行情分析')
+    lines_out.append(f'你怎么看{hot_sym}当前的位置？')
+    lines_out.append('')
+    lines_out.append(f'#{hot_sym} #加密货币 #合约交易')
     return '\n'.join(lines_out)
 
 
@@ -777,34 +801,71 @@ def build_smart_money() -> str:
 def build_pump_alert() -> str:
     """暴涨猎手预警"""
     pump_file = DATA_DIR / 'pump_detected.json'
-    if not pump_file.exists():
-        return ''
+    candidates = []
+    if pump_file.exists():
+        try:
+            pd = json.loads(pump_file.read_text())
+            ts = pd.get('ts', 0)
+            if time.time() - ts <= 7200:  # 2小时内有效
+                candidates = pd.get('candidates', [])[:3]
+        except Exception:
+            pass
 
-    try:
-        pd = json.loads(pump_file.read_text())
-        # 检查时效性（2小时内）
-        ts = pd.get('ts', 0)
-        if time.time() - ts > 7200:
-            return ''  # 数据过期，不发
-        candidates = pd.get('candidates', [])[:3]
-        if not candidates:
+    # 没有预警数据时：实时出主力币盘面简报，不触发备用教育池
+    if not candidates:
+        import requests as _r2
+        try:
+            tickers = _r2.get('https://fapi.binance.com/fapi/v1/ticker/24hr', timeout=8).json()
+            main_syms = ['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT']
+            mini_lines = [f'今日没有发现明显的压缩突破形态。', '',
+                          f'今日主力币表现 | {now_cst()} CST', '']
+            for sym in main_syms:
+                t = next((x for x in tickers if x['symbol']==sym), None)
+                if t:
+                    s = sym.replace('USDT','')
+                    chg = float(t['priceChangePercent'])
+                    p = float(t['lastPrice'])
+                    p_str = f'{p:,.0f}' if p > 100 else f'{p:.4f}'
+                    mini_lines.append(f'  ${s}  {p_str}U  {chg:+.1f}%')
+            mini_lines.extend(['',
+                '市场处于震荡消化阶段，等待方向信号出现。',
+                '波动率收缩通常意味着主力在蒸积能量，等一个方向就会出来。',
+                '',
+                '你现在是空仓等机会还是持仓扭着？',
+                '',
+                '#BTC #合约交易 #加密货币'])
+            return '\n'.join(mini_lines)
+        except Exception:
             return ''
-    except Exception:
-        return ''
 
-    lines = [f'🚨 暴涨预警 | {now_cst()} CST', '']
-    lines.append('注意到这几个币的波动率在收缩，历史上这种形态出现后通常会有方向性突破：')
+    import requests as _r
+    lines = [f'注意到一个形态，{now_cst()} CST', '']
+    lines.append('这几个标的的波动率在快速收缩——布林带宽度降到了历史低位：')
+    lines.append('')
     for c in candidates:
         sym = str(c.get('symbol', '')).replace('USDT', '')
-        score = c.get('score', 0)
         bb_width = c.get('bb_width', 0)
-        lines.append(f'  🎯 ${sym} 评分:{score} | BB压缩:{bb_width:.2f}%')
+        score = c.get('score', 0)
+        # 拉实时价格
+        try:
+            t = _r.get('https://fapi.binance.com/fapi/v1/ticker/24hr',
+                       params={'symbol': f'{sym}USDT'}, timeout=4).json()
+            price = float(t.get('lastPrice', 0))
+            chg = float(t.get('priceChangePercent', 0))
+            p_str = f'{price:,.4f}U' if price < 1 else f'{price:,.2f}U'
+            lines.append(f'  ${sym}  {p_str}  24H:{chg:+.1f}%  BBW:{bb_width:.2f}%')
+        except Exception:
+            lines.append(f'  ${sym}  BBW:{bb_width:.2f}%')
 
     lines.append('')
-    lines.append('压缩形态 = 能量积累，等方向突破再介入。')
-    lines.append('方向出来之前我不会动，等突破确认再说。')
+    lines.append('布林带压缩的含义：价格在一个越来越窄的区间内震荡，多空双方都在等对方先动。')
+    lines.append('历史规律：BBW越低，后续突破的幅度越大。但方向不确定——两边都有可能。')
     lines.append('')
-    lines.append('#行情预警 #突破信号 #加密货币 #技术分析')
+    lines.append('我的操作：现在不进，等突破那根K线收盘确认后跟进，止损放在突破前的区间内。')
+    lines.append('')
+    lines.append('你在盯这类突破形态吗？')
+    lines.append('')
+    lines.append('#突破信号 #合约交易 #加密货币')
     return '\n'.join(lines)
 
 
@@ -856,7 +917,12 @@ def build_market_summary() -> str:
         mood = '两大主力币同步上涨，多头情绪在换手。但FR还尚正常，还没到过热的位置。'
         tomorrow = f'BTC能否稳住并继续上攻，看量能。没量能拉不动。'
     else:
-        mood = f'BTC和ETH分化明显，小币和山寨币各玩各的。整体市场方向未明。'
+        # 分化行情给出具体结构判断，不说废话
+        btc_dir = '偏强' if btc_chg > 0.5 else ('偏弱' if btc_chg < -0.5 else '震荡')
+        eth_dir = '偏强' if eth_chg > 0.5 else ('偏弱' if eth_chg < -0.5 else '震荡')
+        mood = (f'BTC{btc_dir}({btc_chg:+.1f}%)，ETH{eth_dir}({eth_chg:+.1f}%)，两者出现分化。\n'
+                f'ETH/BTC汇率{"在下行，资金在往BTC集中，山寨季还没开始。" if eth_chg < btc_chg else "在上行，资金开始向ETH和山寨扩散，注意轮动机会。"}\n'
+                f'这种分化行情里不要追热点，等其中一个先走出方向再跟。')
         tomorrow = f'BTC站不稳{btc_key_level}，我不会贸然加仓。'
 
     lines = [f'今日收盘，说一下我的判断。', '']
