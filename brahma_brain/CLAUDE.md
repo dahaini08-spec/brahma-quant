@@ -26,6 +26,26 @@ position_sizer.get_position_size()                ← 仓位计算
 
 ---
 
+## ⚡ /review + /build auto 门控
+
+### /review（每次commit前强制执行）
+```bash
+# 1. 冒烟测试全绿
+python3 brahma_brain/brahma_smoke_test_v2.py
+# 2. 新函数是否有单元测试？
+# 3. 新模块是否有接入位置（grep验证）？
+# 4. commit message是否包含「接入位置：XXX」？
+```
+**门控规则：** 以上4项任意一项不满足 → 不允许commit，必须修复后重试。
+
+### /build auto（苏摩批准plan后触发）
+- 苏摩批准计划一次 → 设计院自动执行到全绿
+- 遇到失败或高风险步骤 → 暂停并报告苏摩
+- 每个子任务独立commit，不合并大commit
+- **不需要每步等苏摩确认**，只在失败时打断
+
+---
+
 ## 🚫 架构禁忌（违反即回滚）
 
 1. **禁止在runner外新建裸HTTP分析调用** — 所有分析必须走 `run_full_analysis()`
