@@ -803,3 +803,157 @@ def apply_headroom(base_pct: float, nav_current: float, nav_peak: float,
         'compressed': adjusted < base_pct,
     }
 # ══ [END headroom] ════════════════════════════════════════════════════════════
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# [P0-A 2026-08-31 苏摩111封印] 战场三维对齐函数
+# Score = 仓位计算器，不是信号开关
+# 战场三维（LSR+OI+Taker）决定方向是否有效
+# 只要战场对齐 + 体制支持 → 信号成立，仓位由Score决定
+# ══════════════════════════════════════════════════════════════════════════════
+
+def calc_war_field_alignment(
+    direction: str,
+    lsr: float = None,       # 多头占比%，如72.3
+    oi_chg_8h: float = None, # OI 8H变化%，如-1.31
+    taker_ratio: float = None, # taker买卖比，<1=卖方主导
+    macd4h_hist: float = None, # MACD4H histogram
+    gex_dir: str = None,     # NET_SHORT / NET_LONG / NEUTRAL
+) -> dict:
+    """
+    战场三维对齐检测（P0-A新增）
+    
+    返回：
+      aligned: bool — 战场是否对齐
+      score: int — 战场评分(0~100)
+      votes: int — 同向票数(0~5)
+      detail: str — 说明
+    """
+    dir_upper = str(direction or '').upper()
+    votes = 0
+    total_dims = 0
+    details = []
+
+    # 维度1: LSR多空比（S级，权重30）
+    if lsr is not None:
+        total_dims += 1
+        if dir_upper == 'SHORT' and lsr > 65:
+            votes += 1
+            details.append(f'LSR={lsr:.1f}%多头拥挤→空✅')
+        elif dir_upper == 'LONG' and lsr < 45:
+            votes += 1
+            details.append(f'LSR={lsr:.1f}%空头拥挤→多✅')
+        else:
+            details.append(f'LSR={lsr:.1f}%中性')
+
+    # 维度2: OI变化方向（S级，权重25）
+    if oi_chg_8h is not None:
+        total_dims += 1
+        if dir_upper == 'SHORT' and oi_chg_8h < -0.5:
+            votes += 1
+            details.append(f'OI={oi_chg_8h:+.2f}%多头出逃→空✅')
+        elif dir_upper == 'LONG' and oi_chg_8h > 0.5:
+            votes += 1
+            details.append(f'OI={oi_chg_8h:+.2f}%多头建仓→多✅')
+        else:
+            details.append(f'OI={oi_chg_8h:+.2f}%中性')
+
+    # 维度3: Taker买卖比（S级，权重25）
+    if taker_ratio is not None:
+        total_dims += 1
+        if dir_upper == 'SHORT' and taker_ratio < 0.90:
+            votes += 1
+            details.append(f'Taker={taker_ratio:.3f}卖方主导→空✅')
+        elif dir_upper == 'LONG' and taker_ratio > 1.10:
+            votes += 1
+            details.append(f'Taker={taker_ratio:.3f}买方主导→多✅')
+        else:
+            details.append(f'Taker={taker_ratio:.3f}中性')
+
+    # 维度4: MACD4H（A级，权重15）
+    if macd4h_hist is not None:
+        total_dims += 1
+        if dir_upper == 'SHORT' and macd4h_hist < -5:
+            votes += 1
+            details.append(f'MACD4H={macd4h_hist:.1f}偏空✅')
+        elif dir_upper == 'LONG' and macd4h_hist > 5:
+            votes += 1
+            details.append(f'MACD4H={macd4h_hist:.1f}偏多✅')
+        else:
+            details.append(f'MACD4H={macd4h_hist:.1f}中性')
+
+    # 维度5: GEX方向（S级，权重20）
+    if gex_dir is not None:
+        total_dims += 1
+        if dir_upper == 'SHORT' and gex_dir == 'NET_SHORT':
+            votes += 1
+            details.append('GEX净空→做空顺风✅')
+        elif dir_upper == 'LONG' and gex_dir == 'NET_LONG':
+            votes += 1
+            details.append('GEX净多→做多顺风✅')
+        else:
+            details.append(f'GEX={gex_dir}中性')
+
+    # 对齐判断：有效维度≥2时，≥2/3同向=对齐
+    if total_dims == 0:
+        return {'aligned': False, 'score': 0, 'votes': 0, 'total_dims': 0, 'detail': '无战场数据'}
+
+    align_threshold = max(2, round(total_dims * 0.5))
+    aligned = votes >= align_threshold
+    war_score = int(votes / total_dims * 100)
+
+    return {
+        'aligned': aligned,
+        'score': war_score,
+        'votes': votes,
+        'total_dims': total_dims,
+        'detail': ' | '.join(details),
+        'threshold': align_threshold,
+    }
+
+
+def get_war_field_position(
+    score: float,
+    regime: str,
+    direction: str,
+    war_aligned: bool,
+    war_score: int = 0,
+) -> dict:
+    """
+    P0-A核心：战场对齐时，Score仅决定仓位大小
+    战场未对齐时，不操作（返回0%NAV）
+    
+    Score分档（封印 2026-08-31）：
+      0~79   → 0.5%NAV（最小仓，战场有效但score低）
+      80~119 → 2%NAV
+      120~139→ 3%NAV
+      140~154→ 4%NAV（死亡区检查）
+      155+   → 5%NAV（铁证级）
+    """
+    if not war_aligned:
+        return {'pct': 0, 'reason': '战场三维未对齐，不操作', 'war_blocked': True}
+
+    # 死亡区检查（BULL_TREND:LONG score≥140 + regime）
+    if (str(regime).upper() == 'BULL_TREND'
+            and str(direction).upper() == 'LONG'
+            and score >= 140):
+        return {'pct': 0, 'reason': f'死亡区封禁: BULL_TREND LONG score={score:.0f}≥140', 'war_blocked': True}
+
+    if score >= 155:
+        pct = 5.0
+    elif score >= 140:
+        pct = 4.0
+    elif score >= 120:
+        pct = 3.0
+    elif score >= 80:
+        pct = 2.0
+    else:
+        pct = 0.5
+
+    return {
+        'pct': pct,
+        'reason': f'战场对齐(score={war_score}) Score={score:.0f}→{pct}%NAV',
+        'war_blocked': False,
+        'score_tier': f'{score:.0f}',
+        'war_score': war_score,
+    }
