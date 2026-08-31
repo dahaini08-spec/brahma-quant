@@ -4714,6 +4714,19 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass
     # ── [END N_SW] ──────────────────────────────────────────────────────────────
 
+    # [Karpathy断言层 2026-08-31 苏摩111] 断言优于注释——防止regime=None时静默产生垃圾信号
+    # 根因: regime字段如果为None/空字符串，后续所有体制相关逻辑会静默失效
+    _valid_regimes = {
+        'BULL_TREND', 'BULL_EARLY', 'BULL_CORRECTION',
+        'BEAR_TREND', 'BEAR_EARLY', 'BEAR_RECOVERY',
+        'CHOP_MID', 'CHOP_LOW', 'CHOP_HIGH', 'UNKNOWN'
+    }
+    _final_regime = _result.get('regime', '')
+    if not _final_regime:
+        _result['regime'] = 'UNKNOWN'  # 防止None导致下游错误
+    elif not any(_final_regime.startswith(r) for r in _valid_regimes):
+        _result['_regime_nonstandard'] = True  # 子体制如BEAR_TREND_FRESH，打标记不修改
+
     return _result
 
 def format_report(r: dict) -> str:
