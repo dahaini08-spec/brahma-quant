@@ -1062,8 +1062,9 @@ def main():
     # 在目标时间±15分钟内随机触发，模拟手动发帖行为
     if not args.dry_run and not args.no_delay:
         import random
-        delay = random.uniform(0, 900)  # 0~15分钟随机延迟
-        print(f'[poster] 随机延迟 {delay:.0f}秒 后发布（防限流）')
+        delay = random.uniform(0, 60)  # 最多60秒随机延迟（原900秒太长导致timeout）
+        if delay > 5:
+            print(f'[poster] 随机延迟 {delay:.0f}秒 后发布（防限流）')
         time.sleep(delay)
 
     if args.type == 'edu':
