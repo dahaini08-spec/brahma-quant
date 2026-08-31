@@ -42,7 +42,7 @@ CTX_FILE  = DATA_DIR / 'square_context.json'
 
 # ── Square API ────────────────────────────────────────────────────
 SQUARE_API = 'https://www.binance.com/bapi/composite/v1/public/pgc/openApi/content/add'
-SQUARE_KEY = __import__('os').environ.get('SQUARE_KEY_0', 'd9f19e3f...')  # via env  # SQUARE_KEY_0 姓赵不宣主账户
+SQUARE_KEY = __import__('os').environ.get('SQUARE_KEY_0', 'd9f19e3f6ba3480584db27b09bec0f27')  # via env  # SQUARE_KEY_0 姓赵不宣主账户
 HEADERS = {
     'X-Square-OpenAPI-Key': SQUARE_KEY,
     'Content-Type': 'application/json',
