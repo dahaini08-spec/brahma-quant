@@ -518,12 +518,16 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
     except Exception:
         pass
 
-    # B5: bybit_liq_adapter — Bybit多空比
+    # B5: Bybit多空比 [Fix P2-B 2026-09-01] bybit_liq_adapter已删除→改用data_cache
     try:
-        from bybit_liq_adapter import get_ls_ratio_signal
-        _bybit = get_ls_ratio_signal(symbol)
-        if _bybit and not _bybit.get('error'):
-            result['_bybit_ls'] = _bybit
+        from brahma_brain.data_cache import get_lsr_bybit as _get_bybit_lsr
+        _bybit_raw = _get_bybit_lsr(symbol)
+        if _bybit_raw and _bybit_raw.get('long_ratio'):
+            result['_bybit_ls'] = {
+                'long_ratio': _bybit_raw['long_ratio'],
+                'short_ratio': _bybit_raw['short_ratio'],
+                'source': 'bybit'
+            }
     except Exception:
         pass
 
