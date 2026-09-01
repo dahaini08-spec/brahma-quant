@@ -919,9 +919,16 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
         pass
 
     # [P0接通 2026-08-31 苏摩111] execution_precision → 精度执行层追加
+    # [Fix 2026-09-01] NAV接真实API，不再硬编码1000
     try:
         from brahma_brain.execution_precision import format_precision_block
-        _prec_block = format_precision_block(r, nav=1000.0)
+        try:
+            from brahma_brain.capital_allocator import _get_nav as _real_nav
+            _nav_val = _real_nav()
+            if not _nav_val or _nav_val < 10: _nav_val = 1000.0
+        except Exception:
+            _nav_val = 1000.0
+        _prec_block = format_precision_block(r, nav=_nav_val)
         report = report + _prec_block
     except Exception as _ep_err:
         report = report + f'\n  [精度执行层] 加载失败: {_ep_err}'
