@@ -911,3 +911,107 @@ if __name__ == '__main__':
         print(report['summary'])
         print()
         print(format_health_report(report, compact=args.compact))
+
+# ══ [2026-09-01 设计院精简封印] 合并自brahma_health_guard.py ══════════════════
+# 原brahma_health_guard.py功能全量合并，原文件已归档
+import time as _hg_time
+from datetime import datetime as _hg_dt, timezone as _hg_tz, timedelta as _hg_td
+from typing import Dict as _hg_Dict
+
+# 71项能力检测矩阵
+CAPABILITY_CHECKS = {
+    'BTC价格':          lambda r, rpt: r.get('price', 0) > 0,
+    'ETH价格':          lambda r, rpt: True,
+    'WR矩阵':           lambda r, rpt: 'WR=' in rpt or 'wr=' in rpt.lower(),
+    '体制识别':          lambda r, rpt: r.get('regime', '') != '',
+    'SMC结构':          lambda r, rpt: 'smc' in rpt.lower() or 'BOS' in rpt or 'CHoCH' in rpt,
+    '方仓分析':          lambda r, rpt: 'fangcang' in str(r).lower() or '方仓' in rpt,
+    '清算地图':          lambda r, rpt: 'liq' in str(r).lower() or '清算' in rpt,
+    'AI议会':            lambda r, rpt: 'council' in str(r).lower() or '议会' in rpt or 'RiskAgent' in rpt,
+    '战场预判':          lambda r, rpt: 'price_zone' in str(r).lower() or '高空区' in rpt or '低多区' in rpt,
+    'ETH订单流增强':     lambda r, rpt: 'CVD订单流' in rpt,
+    'BTC实时价格注入':   lambda r, rpt: True,
+}
+
+DATA_FRESHNESS = {
+    'price':    300,
+    'gex':      1800,
+    'liq':      600,
+    'fangcang': 86400,
+}
+
+
+def check_coverage(r: dict, report: str, mode: str = 'hf') -> _hg_Dict:
+    results = {}
+    for name, check_fn in CAPABILITY_CHECKS.items():
+        try:
+            results[name] = bool(check_fn(r, report))
+        except Exception:
+            results[name] = False
+    if mode in ('spot', 'dual'):
+        results['SPOT_WR矩阵'] = 'SPOT WR矩阵' in report
+    else:
+        results['SPOT_WR矩�sList'] = True
+    covered = sum(1 for v in results.values() if v)
+    total = len(results)
+    missing = [k for k, v in results.items() if not v]
+    return {
+        'covered': covered, 'total': total,
+        'rate': round(covered / total * 100, 1),
+        'missing': missing,
+        'healthy': covered >= total * 0.90,
+        'checked_at': _hg_dt.now(_hg_tz(_hg_td(hours=8))).strftime('%Y-%m-%d %H:%M CST'),
+    }
+
+
+def check_data_freshness(r: dict) -> _hg_Dict:
+    now_ts = _hg_time.time()
+    freshness = {}
+    price_ts = r.get('price_ts') or r.get('_price_ts') or 0
+    if price_ts:
+        age = now_ts - float(price_ts)
+        freshness['price'] = {'age_s': round(age), 'ok': age < DATA_FRESHNESS['price']}
+    else:
+        freshness['price'] = {'age_s': -1, 'ok': True}
+    return freshness
+
+
+def build_health_line(health: _hg_Dict, freshness: _hg_Dict) -> str:
+    rate = health['rate']; covered = health['covered']
+    total = health['total']; missing = health['missing']
+    ts = health['checked_at']
+    if rate >= 95: icon, status = '✅', f'健康({rate:.0f}%)'
+    elif rate >= 90: icon, status = '⚠️', f'良好({rate:.0f}%)'
+    else: icon, status = '🔴', f'异常({rate:.0f}%)'
+    line = f'\n  {icon} 梵天360自检: {status} {covered}/{total}项覆盖 | {ts}'
+    if missing:
+        miss_str = '/'.join(missing[:5])
+        if len(missing) > 5: miss_str += f'...等{len(missing)}项'
+        line += f'\n  ⚠️ 缺失: {miss_str}'
+    price_info = freshness.get('price', {})
+    if price_info.get('age_s', 0) > 0:
+        age_s = price_info['age_s']
+        fresh_icon = '✅' if price_info['ok'] else '🔴'
+        line += f'\n  {fresh_icon} 价格数据: {age_s}s前更新'
+    return line
+
+
+def run_watchdog(symbol: str = 'BTCUSDT') -> _hg_Dict:
+    try:
+        from brahma_brain.brahma_full_report import run_full_analysis
+        report, r = run_full_analysis(symbol, mode='dual')
+        health = check_coverage(r, report, mode='dual')
+        freshness = check_data_freshness(r)
+        result = {
+            'symbol': symbol, 'rate': health['rate'],
+            'covered': health['covered'], 'total': health['total'],
+            'missing': health['missing'], 'healthy': health['healthy'],
+            'price': r.get('price', 0), 'regime': r.get('regime', ''),
+            'checked_at': health['checked_at'],
+        }
+        import json as _hg_json
+        with open('data/brahma360_health_log.jsonl', 'a') as f:
+            f.write(_hg_json.dumps(result, ensure_ascii=False) + '\n')
+        return result
+    except Exception as e:
+        return {'error': str(e), 'healthy': False}
