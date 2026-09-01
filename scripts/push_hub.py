@@ -218,6 +218,29 @@ def push_signal_card_v3(result: dict) -> bool:
         f'  {ts} CST  [梗天全能力 v3.0]'
     )
     dedup_key = f'v3_{sym}_{direction}_{int(score)}'
+
+    # [babysitter行动1 2026-08-31 苏摩111] 不可篹改推送日志 —— SHA256指纹
+    # 根因: 信号推送后出了问题难以追源，需要不可篹改的审计轨迹
+    try:
+        import hashlib, time as _t
+        from pathlib import Path as _P
+        _log_path = _P(__file__).parent.parent / 'data' / 'signal_push_log.jsonl'
+        _record = {
+            'ts': _t.time(),
+            'ts_iso': datetime.datetime.utcnow().isoformat() + 'Z',
+            'symbol': sym, 'direction': direction,
+            'score': score, 'grade': str(grade),
+            'regime': regime, 'entry_lo': entry_lo, 'entry_hi': entry_hi,
+            'sl': sl, 'rr': rr, 'dedup_key': dedup_key,
+        }
+        _record['_hash'] = hashlib.sha256(
+            json.dumps(_record, sort_keys=True, default=str).encode()
+        ).hexdigest()
+        with open(_log_path, 'a') as _lf:
+            _lf.write(json.dumps(_record, default=str) + '\n')
+    except Exception:
+        pass  # 日志写入失败不影响主推送
+
     return _jarvis(msg, dedup_key=dedup_key, dedup_ttl=7200)
 
 

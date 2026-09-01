@@ -35,7 +35,7 @@ try:
     _MATH_UTILS_OK = True
 except Exception:
     _MATH_UTILS_OK = False
-from options_engine    import sentiment_score, analyze_funding_trend
+# [2026-09-01 精简封印] options_engine移除：只 import不使用，且无期权交易
 # [CLEANED 2026-06-11] from elliott_engine    import analyze_elliott, format_elliott
 # ══ INT-1: online_learner 校准权重热加载（设计院六方联合 2026-07-11）══
 import json as _json_calib

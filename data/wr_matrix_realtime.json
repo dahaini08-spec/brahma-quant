@@ -1,1 +1,342 @@
-{"matrix": {"BULL_TREND:LONG:<120": {"regime": "BULL_TREND", "direction": "LONG", "score_bin": "<120", "n": 83, "n_win": 27, "n_loss": 35, "n_timeout": 22, "n_open": 0, "settled": 62, "wr": 0.4355, "avg_pnl_win": 1.986374074074074, "avg_pnl_loss": -2.0, "ev": -0.2639, "rebuilt_at": "2026-08-24T13:51:00+00:00", "source": "live_signal_log_rebuild_20260811", "last_settled_at": "2026-08-24T13:51:00+00:00"}, "BULL_TREND:LONG:140-154": {"regime": "BULL_TREND", "direction": "LONG", "score_bin": "140-154", "n": 16, "n_win": 4, "n_loss": 4, "n_timeout": 9, "n_open": 0, "settled": 8, "wr": 0.5, "avg_pnl_win": 2.0, "avg_pnl_loss": -3.5292, "ev": -0.7646, "rebuilt_at": "2026-08-23T01:48:46Z", "source": "live_signal_log_rebuild_20260811", "last_settled_at": "2026-08-23T01:48:46.020122+00:00"}, "BULL_TREND:LONG:120-139": {"regime": "BULL_TREND", "direction": "LONG", "score_bin": "120-139", "n": 65, "n_win": 1, "n_loss": 4, "n_timeout": 61, "n_open": 0, "settled": 5, "wr": 0.2, "avg_pnl_win": 1.1905, "avg_pnl_loss": -2.0, "ev": -1.3619, "rebuilt_at": "2026-08-24T13:51:00+00:00", "source": "live_signal_log_rebuild_20260811", "last_settled_at": "2026-08-24T13:51:00+00:00"}, "BEAR_RECOVERY:LONG:160+": {"regime": "BEAR_RECOVERY", "direction": "LONG", "score_bin": "160+", "n": 3, "n_win": 2, "n_loss": 0, "n_timeout": 1, "n_open": 0, "settled": 2, "wr": 1.0, "avg_pnl_win": 2.0, "avg_pnl_loss": 0.0, "ev": 2.0, "rebuilt_at": "2026-08-19T23:02:32Z", "source": "live_signal_log_rebuild_20260811"}, "BULL_TREND:LONG:160+": {"regime": "BULL_TREND", "direction": "LONG", "score_bin": "160+", "n": 3, "n_win": 1, "n_loss": 0, "n_timeout": 2, "n_open": 0, "settled": 1, "wr": 1.0, "avg_pnl_win": 3.0596, "avg_pnl_loss": 0.0, "ev": 3.0596, "rebuilt_at": "2026-08-19T23:02:32Z", "source": "live_signal_log_rebuild_20260811"}, "BULL_TREND:LONG:155-159": {"regime": "BULL_TREND", "direction": "LONG", "score_bin": "155-159", "n": 1, "n_win": 1, "n_loss": 0, "n_timeout": 0, "n_open": 0, "settled": 1, "wr": 1.0, "avg_pnl_win": 2.0668, "avg_pnl_loss": 0.0, "ev": 2.0668, "rebuilt_at": "2026-08-19T23:02:32Z", "source": "live_signal_log_rebuild_20260811"}, "BULL_EARLY:LONG:<120": {"regime": "BULL_EARLY", "direction": "LONG", "score_bin": "<120", "n": 5, "n_win": 5, "n_loss": 0, "n_timeout": 0, "n_open": 0, "settled": 5, "wr": 1.0, "avg_pnl_win": 2.0, "avg_pnl_loss": 0.0, "ev": 2.0, "rebuilt_at": "2026-08-19T23:02:32Z", "source": "live_signal_log_rebuild_20260811"}, "BEAR_RECOVERY:LONG:<120": {"regime": "BEAR_RECOVERY", "direction": "LONG", "score_bin": "<120", "n": 5, "n_win": 4, "n_loss": 0, "n_timeout": 0, "n_open": 0, "settled": 4, "wr": 1.0, "avg_pnl_win": 2.0, "avg_pnl_loss": 0.0, "ev": 2.0, "rebuilt_at": "2026-08-19T23:02:32Z", "source": "live_signal_log_rebuild_20260811", "last_settled_at": "2026-08-23T01:48:46.020122+00:00"}, "BEAR_RECOVERY:LONG:120-139": {"regime": "BEAR_RECOVERY", "direction": "LONG", "score_bin": "120-139", "n": 1, "n_win": 1, "n_loss": 0, "n_timeout": 0, "n_open": 0, "settled": 1, "wr": 1.0, "avg_pnl_win": 2.0, "avg_pnl_loss": 0.0, "ev": 2.0, "rebuilt_at": "2026-08-19T23:02:32Z", "source": "live_signal_log_rebuild_20260811"}, "BEAR_RECOVERY:SHORT:<120": {"regime": "BEAR_RECOVERY", "direction": "SHORT", "score_bin": "<120", "n": 3, "n_win": 0, "n_loss": 3, "n_timeout": 0, "n_open": 0, "settled": 3, "wr": 0.0, "avg_pnl_win": 0.0, "avg_pnl_loss": -2.0, "ev": -2.0, "rebuilt_at": "2026-08-19T23:02:32Z", "source": "live_signal_log_rebuild_20260811"}, "BEAR_TREND:SHORT:<120": {"regime": "BEAR_TREND", "direction": "SHORT", "score_bin": "<120", "n": 1, "n_win": 0, "n_loss": 0, "n_timeout": 1, "n_open": 0, "settled": 1, "wr": 0.0, "avg_pnl_win": 0.0, "avg_pnl_loss": 0.0, "ev": 0.0, "rebuilt_at": "2026-08-23T01:49:23Z", "source": "live_signal_log_rebuild_20260811", "last_settled_at": "2026-08-23T01:49:23.668390+00:00"}, "BULL_EARLY:SHORT:<120": {"regime": "BULL_EARLY", "direction": "SHORT", "score_bin": "<120", "n": 4, "n_win": 2, "n_loss": 2, "n_timeout": 0, "n_open": 0, "settled": 4, "wr": 0.5, "avg_pnl_win": 2.0, "avg_pnl_loss": -2.0, "ev": 0.0, "rebuilt_at": "2026-08-19T23:02:32Z", "source": "live_signal_log_rebuild_20260811"}, "paper_realtime:BEAR_EARLY:SHORT": {"wr": 0.8077, "n": 52, "avg_pnl": 2.3151, "source": "wuqu_paper_settled", "updated": "2026-08-27"}, "paper_realtime:CHOP_LOW:SHORT": {"wr": 1.0, "n": 6, "avg_pnl": 3.5618, "source": "wuqu_paper_settled", "updated": "2026-08-27"}, "ic_feedback": {"ic": -0.3335, "ic_status": "ok", "n": 63, "overall_wr": 0.8254, "adjustments": {"best_wr_bucket": {"bucket": "<130", "wr": 1.0}, "ic_alert": {"ic": -0.3335, "diagnosis": "高分低胜率，评分权重倒置", "action": "建议收紧ENTER_FULL阈值，降低>175分信号的仓位"}, "multiplier_BEAR_EARLY:SHORT": {"current": 1.2, "suggested": 1.32, "wr": 0.8077, "n": 52, "avg_pnl": 2.32, "reason": "WR>=80%且avgPnl>=2%，建议提升乘数"}, "multiplier_CHOP_LOW:SHORT": {"current": 1.0, "suggested": 1.1, "wr": 1.0, "n": 6, "avg_pnl": 3.56, "reason": "WR>=80%且avgPnl>=2%，建议提升乘数"}}, "updated": "2026-08-27 23:10"}, "ETHUSDT:BULL_EARLY:LONG": {"n": 68, "wr": 52.9}, "ETHUSDT:BEAR_RECOVERY:LONG": {"n": 84, "wr": 44.0}, "ETHUSDT:BULL_TREND:LONG": {"n": 100, "wr": 49.0}, "ETHUSDT:BEAR_TREND:SHORT": {"n": 65, "wr": 63.1}, "BTCUSDT:BEAR_RECOVERY:LONG": {"n": 90, "wr": 47.8}, "BTCUSDT:BEAR_TREND:SHORT": {"n": 62, "wr": 66.1}, "BTCUSDT:BULL_EARLY:LONG": {"n": 100, "wr": 51.0}, "BTCUSDT:BULL_TREND:LONG": {"n": 382, "wr": 52.4}}, "updated_at": 1788002460.793795}
+{
+  "matrix": {
+    "BULL_TREND:LONG:<120": {
+      "regime": "BULL_TREND",
+      "direction": "LONG",
+      "score_bin": "<120",
+      "n": 83,
+      "n_win": 27,
+      "n_loss": 35,
+      "n_timeout": 22,
+      "n_open": 0,
+      "settled": 62,
+      "wr": 0.4355,
+      "avg_pnl_win": 1.986374074074074,
+      "avg_pnl_loss": -2.0,
+      "ev": -0.2639,
+      "rebuilt_at": "2026-08-24T13:51:00+00:00",
+      "source": "live_signal_log_rebuild_20260811",
+      "last_settled_at": "2026-08-24T13:51:00+00:00"
+    },
+    "BULL_TREND:LONG:140-154": {
+      "regime": "BULL_TREND",
+      "direction": "LONG",
+      "score_bin": "140-154",
+      "n": 16,
+      "n_win": 4,
+      "n_loss": 4,
+      "n_timeout": 9,
+      "n_open": 0,
+      "settled": 8,
+      "wr": 0.5,
+      "avg_pnl_win": 2.0,
+      "avg_pnl_loss": -3.5292,
+      "ev": -0.7646,
+      "rebuilt_at": "2026-08-23T01:48:46Z",
+      "source": "live_signal_log_rebuild_20260811",
+      "last_settled_at": "2026-08-23T01:48:46.020122+00:00"
+    },
+    "BULL_TREND:LONG:120-139": {
+      "regime": "BULL_TREND",
+      "direction": "LONG",
+      "score_bin": "120-139",
+      "n": 65,
+      "n_win": 1,
+      "n_loss": 4,
+      "n_timeout": 61,
+      "n_open": 0,
+      "settled": 5,
+      "wr": 0.2,
+      "avg_pnl_win": 1.1905,
+      "avg_pnl_loss": -2.0,
+      "ev": -1.3619,
+      "rebuilt_at": "2026-08-24T13:51:00+00:00",
+      "source": "live_signal_log_rebuild_20260811",
+      "last_settled_at": "2026-08-24T13:51:00+00:00"
+    },
+    "BEAR_RECOVERY:LONG:160+": {
+      "regime": "BEAR_RECOVERY",
+      "direction": "LONG",
+      "score_bin": "160+",
+      "n": 3,
+      "n_win": 2,
+      "n_loss": 0,
+      "n_timeout": 1,
+      "n_open": 0,
+      "settled": 2,
+      "wr": 1.0,
+      "avg_pnl_win": 2.0,
+      "avg_pnl_loss": 0.0,
+      "ev": 2.0,
+      "rebuilt_at": "2026-08-19T23:02:32Z",
+      "source": "live_signal_log_rebuild_20260811"
+    },
+    "BULL_TREND:LONG:160+": {
+      "regime": "BULL_TREND",
+      "direction": "LONG",
+      "score_bin": "160+",
+      "n": 3,
+      "n_win": 1,
+      "n_loss": 0,
+      "n_timeout": 2,
+      "n_open": 0,
+      "settled": 1,
+      "wr": 1.0,
+      "avg_pnl_win": 3.0596,
+      "avg_pnl_loss": 0.0,
+      "ev": 3.0596,
+      "rebuilt_at": "2026-08-19T23:02:32Z",
+      "source": "live_signal_log_rebuild_20260811"
+    },
+    "BULL_TREND:LONG:155-159": {
+      "regime": "BULL_TREND",
+      "direction": "LONG",
+      "score_bin": "155-159",
+      "n": 1,
+      "n_win": 1,
+      "n_loss": 0,
+      "n_timeout": 0,
+      "n_open": 0,
+      "settled": 1,
+      "wr": 1.0,
+      "avg_pnl_win": 2.0668,
+      "avg_pnl_loss": 0.0,
+      "ev": 2.0668,
+      "rebuilt_at": "2026-08-19T23:02:32Z",
+      "source": "live_signal_log_rebuild_20260811"
+    },
+    "BULL_EARLY:LONG:<120": {
+      "regime": "BULL_EARLY",
+      "direction": "LONG",
+      "score_bin": "<120",
+      "n": 5,
+      "n_win": 5,
+      "n_loss": 0,
+      "n_timeout": 0,
+      "n_open": 0,
+      "settled": 5,
+      "wr": 1.0,
+      "avg_pnl_win": 2.0,
+      "avg_pnl_loss": 0.0,
+      "ev": 2.0,
+      "rebuilt_at": "2026-08-19T23:02:32Z",
+      "source": "live_signal_log_rebuild_20260811"
+    },
+    "BEAR_RECOVERY:LONG:<120": {
+      "regime": "BEAR_RECOVERY",
+      "direction": "LONG",
+      "score_bin": "<120",
+      "n": 5,
+      "n_win": 4,
+      "n_loss": 0,
+      "n_timeout": 0,
+      "n_open": 0,
+      "settled": 4,
+      "wr": 1.0,
+      "avg_pnl_win": 2.0,
+      "avg_pnl_loss": 0.0,
+      "ev": 2.0,
+      "rebuilt_at": "2026-08-19T23:02:32Z",
+      "source": "live_signal_log_rebuild_20260811",
+      "last_settled_at": "2026-08-23T01:48:46.020122+00:00"
+    },
+    "BEAR_RECOVERY:LONG:120-139": {
+      "regime": "BEAR_RECOVERY",
+      "direction": "LONG",
+      "score_bin": "120-139",
+      "n": 1,
+      "n_win": 1,
+      "n_loss": 0,
+      "n_timeout": 0,
+      "n_open": 0,
+      "settled": 1,
+      "wr": 1.0,
+      "avg_pnl_win": 2.0,
+      "avg_pnl_loss": 0.0,
+      "ev": 2.0,
+      "rebuilt_at": "2026-08-19T23:02:32Z",
+      "source": "live_signal_log_rebuild_20260811"
+    },
+    "BEAR_RECOVERY:SHORT:<120": {
+      "regime": "BEAR_RECOVERY",
+      "direction": "SHORT",
+      "score_bin": "<120",
+      "n": 3,
+      "n_win": 0,
+      "n_loss": 3,
+      "n_timeout": 0,
+      "n_open": 0,
+      "settled": 3,
+      "wr": 0.0,
+      "avg_pnl_win": 0.0,
+      "avg_pnl_loss": -2.0,
+      "ev": -2.0,
+      "rebuilt_at": "2026-08-19T23:02:32Z",
+      "source": "live_signal_log_rebuild_20260811"
+    },
+    "BEAR_TREND:SHORT:<120": {
+      "regime": "BEAR_TREND",
+      "direction": "SHORT",
+      "score_bin": "<120",
+      "n": 1,
+      "n_win": 0,
+      "n_loss": 0,
+      "n_timeout": 1,
+      "n_open": 0,
+      "settled": 1,
+      "wr": 0.0,
+      "avg_pnl_win": 0.0,
+      "avg_pnl_loss": 0.0,
+      "ev": 0.0,
+      "rebuilt_at": "2026-08-23T01:49:23Z",
+      "source": "live_signal_log_rebuild_20260811",
+      "last_settled_at": "2026-08-23T01:49:23.668390+00:00"
+    },
+    "BULL_EARLY:SHORT:<120": {
+      "regime": "BULL_EARLY",
+      "direction": "SHORT",
+      "score_bin": "<120",
+      "n": 4,
+      "n_win": 2,
+      "n_loss": 2,
+      "n_timeout": 0,
+      "n_open": 0,
+      "settled": 4,
+      "wr": 0.5,
+      "avg_pnl_win": 2.0,
+      "avg_pnl_loss": -2.0,
+      "ev": 0.0,
+      "rebuilt_at": "2026-08-19T23:02:32Z",
+      "source": "live_signal_log_rebuild_20260811"
+    },
+    "paper_realtime:BEAR_EARLY:SHORT": {
+      "wr": 0.8077,
+      "n": 52,
+      "avg_pnl": 2.3151,
+      "source": "wuqu_paper_settled",
+      "updated": "2026-08-27"
+    },
+    "paper_realtime:CHOP_LOW:SHORT": {
+      "wr": 1.0,
+      "n": 6,
+      "avg_pnl": 3.5618,
+      "source": "wuqu_paper_settled",
+      "updated": "2026-08-27"
+    },
+    "ic_feedback": {
+      "ic": -0.3335,
+      "ic_status": "ok",
+      "n": 63,
+      "overall_wr": 0.8254,
+      "adjustments": {
+        "best_wr_bucket": {
+          "bucket": "<130",
+          "wr": 1.0
+        },
+        "ic_alert": {
+          "ic": -0.3335,
+          "diagnosis": "高分低胜率，评分权重倒置",
+          "action": "建议收紧ENTER_FULL阈值，降低>175分信号的仓位"
+        },
+        "multiplier_BEAR_EARLY:SHORT": {
+          "current": 1.2,
+          "suggested": 1.32,
+          "wr": 0.8077,
+          "n": 52,
+          "avg_pnl": 2.32,
+          "reason": "WR>=80%且avgPnl>=2%，建议提升乘数"
+        },
+        "multiplier_CHOP_LOW:SHORT": {
+          "current": 1.0,
+          "suggested": 1.1,
+          "wr": 1.0,
+          "n": 6,
+          "avg_pnl": 3.56,
+          "reason": "WR>=80%且avgPnl>=2%，建议提升乘数"
+        }
+      },
+      "updated": "2026-08-27 23:10"
+    },
+    "ETHUSDT:BULL_EARLY:LONG": {
+      "n": 68,
+      "wr": 52.9
+    },
+    "ETHUSDT:BEAR_RECOVERY:LONG": {
+      "n": 84,
+      "wr": 44.0
+    },
+    "ETHUSDT:BULL_TREND:LONG": {
+      "n": 100,
+      "wr": 49.0
+    },
+    "ETHUSDT:BEAR_TREND:SHORT": {
+      "n": 65,
+      "wr": 63.1
+    },
+    "BTCUSDT:BEAR_RECOVERY:LONG": {
+      "n": 90,
+      "wr": 47.8
+    },
+    "BTCUSDT:BEAR_TREND:SHORT": {
+      "n": 62,
+      "wr": 66.1
+    },
+    "BTCUSDT:BULL_EARLY:LONG": {
+      "n": 100,
+      "wr": 51.0
+    },
+    "BTCUSDT:BULL_TREND:LONG": {
+      "n": 382,
+      "wr": 52.4
+    }
+  },
+  "updated_at": 1788002460.793795,
+  "ic_feedback": {
+    "ic": -0.3335,
+    "ic_status": "ok",
+    "n": 63,
+    "overall_wr": 0.8254,
+    "adjustments": {
+      "best_wr_bucket": {
+        "bucket": "<130",
+        "wr": 1.0
+      },
+      "ic_alert": {
+        "ic": -0.3335,
+        "diagnosis": "高分低胜率，评分权重倒置",
+        "action": "建议收紧ENTER_FULL阈值，降低>175分信号的仓位"
+      },
+      "multiplier_BEAR_EARLY:SHORT": {
+        "current": 1.2,
+        "suggested": 1.32,
+        "wr": 0.8077,
+        "n": 52,
+        "avg_pnl": 2.32,
+        "reason": "WR>=80%且avgPnl>=2%，建议提升乘数"
+      },
+      "multiplier_CHOP_LOW:SHORT": {
+        "current": 1.0,
+        "suggested": 1.1,
+        "wr": 1.0,
+        "n": 6,
+        "avg_pnl": 3.56,
+        "reason": "WR>=80%且avgPnl>=2%，建议提升乘数"
+      }
+    },
+    "updated": "2026-08-31 16:33"
+  },
+  "paper_realtime:BEAR_EARLY:SHORT": {
+    "wr": 0.8077,
+    "n": 52,
+    "avg_pnl": 2.3151,
+    "source": "wuqu_paper_settled",
+    "updated": "2026-08-31"
+  },
+  "paper_realtime:CHOP_LOW:SHORT": {
+    "wr": 1.0,
+    "n": 6,
+    "avg_pnl": 3.5618,
+    "source": "wuqu_paper_settled",
+    "updated": "2026-08-31"
+  }
+}

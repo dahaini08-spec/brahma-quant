@@ -903,6 +903,35 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
         pass
     # ══ [END P0-A/B 接入] ════════════════════════════════════════════════════
 
+    # [Toolaria行动2 2026-08-31 苏摩111] 报告写入文件+摘要注入上下文，防止20K全量OOM
+    try:
+        import os as _os_ta, time as _ts_ta
+        _rpt_dir = _os_ta.path.join(_os_ta.path.dirname(_os_ta.path.abspath(__file__)), '..', 'data', 'reports')
+        _os_ta.makedirs(_rpt_dir, exist_ok=True)
+        _rpt_file = _os_ta.path.join(_rpt_dir, f'{symbol}_{int(_ts_ta.time())}.txt')
+        with open(_rpt_file, 'w', encoding='utf-8') as _rf:
+            _rf.write(report)
+        r['_report_file'] = _rpt_file
+        r['_report_summary'] = report[:600]
+    except Exception:
+        pass
+
+    # [P0接通 2026-08-31 苏摩111] execution_precision → 精度执行层追加
+    try:
+        from brahma_brain.execution_precision import format_precision_block
+        _prec_block = format_precision_block(r, nav=1000.0)
+        report = report + _prec_block
+    except Exception as _ep_err:
+        report = report + f'\n  [精度执行层] 加载失败: {_ep_err}'
+
+    # [P1+P2接通 2026-08-31 苏摩111] smc_resonance → 强制前置链路 + VIP卡片
+    try:
+        from brahma_brain.smc_resonance import format_smc_block
+        _smc_block = format_smc_block(r)
+        report = report + _smc_block
+    except Exception as _smc_err:
+        report = report + f'\n  [强制前置链路] 加载失败: {_smc_err}'
+
     return report, r
 
 

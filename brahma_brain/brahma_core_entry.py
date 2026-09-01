@@ -48,7 +48,7 @@ try:
     _MATH_UTILS_OK = True
 except Exception:
     _MATH_UTILS_OK = False
-from options_engine    import sentiment_score, analyze_funding_trend
+# [2026-09-01 精简封印] options_engine移除：只 import不使用
 # [CLEANED 2026-06-11] from elliott_engine    import analyze_elliott, format_elliott
 try:
     from onchain_engine import onchain_score as _onchain_score
