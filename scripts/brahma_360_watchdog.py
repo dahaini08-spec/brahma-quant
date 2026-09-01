@@ -12,7 +12,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
 
-from brahma_brain.brahma_health_guard import run_watchdog
+from brahma_brain.brahma_health import run_watchdog
 
 
 def main():

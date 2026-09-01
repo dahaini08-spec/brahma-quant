@@ -898,7 +898,14 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
             _d_verdict = _dharma.get('verdict', '')
             _d_mult = _dharma.get('score_mult', 1.0)
             _d_detail = _dharma.get('detail', '')
-            _ext_lines += ["", f"  🏯 达摩院裁决: {_d_verdict} ({_d_pass}/6通过) score×{_d_mult}  {_d_detail}"]
+            # [Fix 2026-09-01] 展示真实执行逻辑: mult=0.0实际是-30分而非归零
+            if _d_mult == 0.0:
+                _d_display = 'FAIL (-30分，不归零)'
+            elif _d_mult != 1.0:
+                _d_display = f'×{_d_mult}'
+            else:
+                _d_display = '×1.0'
+            _ext_lines += ["", f"  🏯 达摩院裁决: {_d_verdict} ({_d_pass}/6通过) score {_d_display}  {_d_detail}"]
 
         # 5. 反脆弱/黑天鹅
         _af = r.get('antifragile', {})
