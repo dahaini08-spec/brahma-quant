@@ -126,6 +126,14 @@ def rewrite_as_trader(draft: str) -> str:
         ]
         rewritten = '\n'.join(lines).strip()
         if rewritten and len(rewritten) > 80:
+            # 自动修剪超出的hashtag（最多保留3个）
+            import re
+            tags = re.findall(r'#\S+', rewritten)
+            if len(tags) > 3:
+                # 只保留前3个，删除多余的
+                for tag in tags[3:]:
+                    rewritten = rewritten.replace('\n' + tag, '').replace(' ' + tag, '')
+                rewritten = rewritten.strip()
             print(f'[rewrite] ✅ 重写完成 {len(draft)}→{len(rewritten)}字')
             return rewritten
         return draft

@@ -43,29 +43,24 @@ try:
 except Exception:
     pass
 
-# [Phase3-1 2026-07-06] 预先加载torch确俛libgomp.so.1可用（lightgbm依赖它）
-# [自愈层 2026-07-24] gateway重启后libgomp软链丢失，自动恢复
-try:
-    import torch as _torch_preload  # noqa: F401
-except ImportError:
-    pass  # 非必需，只是确保 libgomp 加载
-
-# 容器重启后libgomp软链可能丢失，自动修复
-try:
-    import glob as _glob, os as _os_link
-    _gomp_candidates = _glob.glob('/usr/local/lib/python3.11/dist-packages/torch/lib/libgomp.so*')
-    # [2026-08-23 苏摩111] 扩展搜索：venv/torch路径
-    if not _gomp_candidates:
-        _gomp_candidates = _glob.glob('/root/.openclaw/workspace/trading-system/venv/lib/python3.11/site-packages/torch/lib/libgomp.so*')
-    if not _gomp_candidates:
-        import glob as _g2
-        _gomp_candidates = _g2.glob('/root/.openclaw/workspace/trading-system/venv/lib/*/site-packages/torch/lib/libgomp.so*')
-    _gomp_target = '/usr/local/lib/libgomp.so.1'
-    if _gomp_candidates and not _os_link.path.exists(_gomp_target):
-        _os_link.symlink(_gomp_candidates[0], _gomp_target)
-        logger.info('[Kronos] 自愈: libgomp软链已恢复')
-except Exception:
-    pass
+# [2026-09-01 设计院精简封印] 移除模块级torch预加载
+# 原因：import kronos_engine 即触发torch加载(~2-3GB)，导致每个cron任务内存峰值飙升
+# libgomp修复改为懒加载，在_load_model()内部执行
+def _ensure_libgomp():
+    """懒加载时修复libgomp软链（只在真正需要Kronos时调用）"""
+    try:
+        import glob as _glob
+        _gomp_candidates = _glob.glob('/usr/local/lib/python3.11/dist-packages/torch/lib/libgomp.so*')
+        if not _gomp_candidates:
+            _gomp_candidates = _glob.glob('/root/.openclaw/workspace/trading-system/venv/lib/python3.11/site-packages/torch/lib/libgomp.so*')
+        if not _gomp_candidates:
+            _gomp_candidates = _glob.glob('/root/.openclaw/workspace/trading-system/venv/lib/*/site-packages/torch/lib/libgomp.so*')
+        _gomp_target = '/usr/local/lib/libgomp.so.1'
+        if _gomp_candidates and not os.path.exists(_gomp_target):
+            os.symlink(_gomp_candidates[0], _gomp_target)
+            logger.info('[Kronos] 自愈: libgomp软链已恢复')
+    except Exception:
+        pass
 
 # [设计院 2026-07-26 封印] 模型已本地缓存，强制离线模式跳过HF网络检查（解决import 30s阻塞）
 os.environ.setdefault('HF_HUB_OFFLINE', '1')
@@ -119,6 +114,7 @@ _model_load_attempted = False
 def _load_model() -> bool:
     """懒加载模型（首次调用时初始化）
     [v7.0 设计院 2026-07-11 六方评估封印]
+    [2026-09-01 精简封印] libgomp修复移至此处，消除模块级torch预加载
     优先级重排：Kronos-mini（大模型）> WF-LightGBM（fallback）
     根因：external/Kronos已克隆，model包可用，不应再用lgbm覆盖
     """
@@ -126,6 +122,7 @@ def _load_model() -> bool:
     if _model_load_attempted:
         return _model_loaded
     _model_load_attempted = True
+    _ensure_libgomp()  # 仅在真正加载时修复libgomp
 
     # ── P0：优先 Kronos-mini 真正大模型推理 ─────────────────────────────
     # [v7.0] external/Kronos已克隆，model包可用，优先使用
