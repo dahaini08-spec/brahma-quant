@@ -36,7 +36,6 @@ try:
 except Exception:
     _MATH_UTILS_OK = False
 # [2026-09-01 精简封印] options_engine移除：只 import不使用，且无期权交易
-# [CLEANED 2026-06-11] from elliott_engine    import analyze_elliott, format_elliott
 # ══ INT-1: online_learner 校准权重热加载（设计院六方联合 2026-07-11）══
 import json as _json_calib
 _CALIB_WEIGHTS: dict = {}
@@ -73,7 +72,6 @@ try:
     _MACRO_OK = True
 except Exception:
     _MACRO_OK = False
-# [CLEANED 2026-06-11] harmonic_engine removed — permanently disabled
 _HARMONIC_OK = False
 try:
     from volume_exhaustion_engine import volume_exhaustion_score as _vol_exh_score
@@ -485,7 +483,6 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     # 原则：为交易而生，没有方向是永远封禁的
     # 低WR组合改为极端降权0.35×（需score≥400才能通过门控=自然淘汰）
     # 梵天能力提升后，这些方向仍有机会被激活
-    # _HARD_BLOCK_COMBOS 已废除，此处保留注释记录历史
     # 历史被封禁原因：BEAR_TREND_LONG WR=45% / BULL_TREND_SHORT WR=47.7%
     # 改造方向：提升识别能力，而不是永久关闭
 
@@ -1709,7 +1706,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # I4/I7: 漂移检测
     try:
-# [CLEANED 2026-06-11] from drift_detector import detect as _drift_detect
         extra_data['drift'] = _drift
         if _drift['alert'] == 'ALERT':
             pass  # [静默] f'[BrahmaBrain] ⚠️ DRIFT ALERT {_sym}: {_drift["summary"]}'
@@ -1739,7 +1735,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # I3: Kelly仓位分配
     try:
-# [CLEANED 2026-06-11] from kelly_allocator import compute as _kelly_compute
         _bayes_wr = None
         if extra_data.get('online_bayes'):
             _bayes_wr = extra_data['online_bayes'].get('post_wr')
@@ -3019,7 +3014,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # 实证：LAB处于派发阶段→做空+18，吸筹阶段→做多+10
     # 轨道B品种不走主流评分框架加成，而是单独做市商阶段加分
     try:
-# [CLEANED 2026-06-11] from market_maker_engine import market_maker_score as _mm_fn, is_track_b as _is_tb
         if _is_tb(_sym):
             _mm_pts  = _mm_res.get('score', 0)
             if _mm_pts != 0 and _score_raw > 0:
