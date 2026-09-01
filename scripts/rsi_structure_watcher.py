@@ -578,11 +578,9 @@ def detect_events(data, prev_state, sym):
     # ── E11/E12: BEAR_TREND专用做空触发（设计院 2026-08-04 苏摩111执行）──────────
     # 问题：BEAR_TREND体制下，E1/E2/E3触发率极低（RSI很少到70，反弹幅度有限）
     # 解法：增加BEAR_TREND特有的反弹顶部识别模式
-    #
     # E11: BEAR_TREND + RSI_1H从>60回落到<55（反弹失败，做空确认）
     #      意义：BEAR体制里RSI能到60已是强反弹，回落到55说明反弹顶部已确认
     #      历史验证：BEAR体制反弹后RSI回落 WR=68.1%（来自wr_matrix_v7）
-    #
     # E12: BEAR_TREND + 价格反弹至EMA20_1H ±1.5%（新宪法规则：EMA20是做空入场参考位）
     #      意义：梵天新宪法要求"价格<EMA20_1H才允许做空入场"
     #      此事件触发=价格刚触碰EMA20，是最优做空入场时机
@@ -734,7 +732,6 @@ def write_trigger(sym, events, data):
                     _DEDUP_F.write_text(_jj.dumps(_dedup, indent=2))
             except Exception as _pe:
                 pass  # [静默]
-        # ────────────────────────────────────────────────────────────────
         return True
     except Exception as e:
         pass  # [静默]

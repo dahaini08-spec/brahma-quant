@@ -36,7 +36,6 @@ try:
     _resource.setrlimit(_resource.RLIMIT_CORE, (0, 0))
 except Exception:
     pass
-# ─────────────────────────────────────────────────────────────────
 import time
 
 # [P1修复 2026-07-12] 自动载入 .env，确保执行层能读到API密钥
@@ -172,9 +171,7 @@ try:
 except Exception:
     _JARVIS_TARGET = None
 
-# ══════════════════════════════════════════════════════════════
 # 封印：分析质量检查
-# ══════════════════════════════════════════════════════════════
 
 def _validate_result(r: dict) -> list:
     """
@@ -190,9 +187,7 @@ def _validate_result(r: dict) -> list:
     return missing
 
 
-# ══════════════════════════════════════════════════════════════
 # 公开 API（所有调用者使用此接口）
-# ══════════════════════════════════════════════════════════════
 
 def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict:
     """
@@ -261,7 +256,6 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                         return _cached
         except Exception:
             pass
-    # ─────────────────────────────────────────────────────────────────
 
     # ── [设计院 2026-07-03 v5.1] 体制感知方向预注入 ────────────────────────────
     # 根因修复：BULL_TREND下AUTO方向被market_structure误判为SHORT
@@ -287,7 +281,6 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                     pass  # [静默] f'[RegimePreset] {sym} {_sym_regime} → 强制方向={_forced_dir}'
         except Exception:
             pass
-    # ────────────────────────────────────────────────────────────────────────
 
     # [2026-08-28 苏摩111] 接入防御层：调用前注入 anti_manip 数据到 extra_data
     _anti_manip_data = {}
@@ -379,7 +372,6 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                 pass  # [静默] f'[RegimeInject-Valid] {sym} score={_new_score:.1f} 但params.valid=False，RR问题，不解除
     except Exception as _inj_err:
         pass  # 注入失败不阻断主流程
-    # ────────────────────────────────────────────────────────────────────────
 
     # ── [设计院 2026-07-04] P2: switch_count_24h>50 → 体制噪音惩罚 ─────
     # BTC 24H体制翻转>50次 = 行情震荡，即便confirmed=BULL_TREND也降噪
@@ -419,7 +411,6 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
             pass  # [静默] f'[SwitchNoise] {sym} sw={_sw_max}>30 → -{abs(_sw_penalty)}分 ({_sc_sw:.1f}→{_new
     except Exception:
         pass
-    # ────────────────────────────────────────────────────────────────────────
 
     # ── market_structure_scanner: score≥130时补充SMC结构扫描 ──────────
     if _MSS_OK:
@@ -437,7 +428,6 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                     }
         except Exception:
             pass
-    # ─────────────────────────────────────────────────────────────────
 
     # ── llm_council_bridge: score≥130触发LLM二次审查（shadow模式）────
     # 设计院 2026-07-02: 阈值 140→130（覆盖更多高质量信号，约15%触发率）
@@ -451,7 +441,6 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                 result = _llm_review(result)
         except Exception:
             pass
-    # ─────────────────────────────────────────────────────────────────
 
     # ── [设计院 2026-07-26] 逻辑验证器强制门控 ──────────────────────────────
     # 铁律: 每条信号推送前必须通过 validate_signal
@@ -480,7 +469,6 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                     result['_blocked_reason'] = f'逻辑验证失败[{",".join(_err_ids)}]: {result["_logic_errors"][0]}'
     except Exception:
         pass
-    # ── [END 逻辑验证器] ─────────────────────────────────────────────────────
 
     # ── [设计院 2026-07-26] 决策C: signal_lifecycle结算闭环接入 ────────────
     # 职责: 对已存在的OPEN信号做实时TTL/SL/TP检查，填补result=null盲点
@@ -497,7 +485,6 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                 result['_lifecycle_alerts'] = _lc_alerts
     except Exception:
         pass
-    # ── [END signal_lifecycle] ───────────────────────────────────────────
 
     # [全量接通 2026-08-26 苏摩111] 批次B：评分增强层
     # 接入位置：brahma_analysis_runner → run_analysis()
@@ -644,7 +631,6 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                 trace_skipped(result)
         except Exception:
             pass
-    # ─────────────────────────────────────────────────────────────────
 
     # ── analysis_snapshot: 保存结果快照 ──────────────────────────────
     if _SNAPSHOT_OK:
@@ -654,7 +640,6 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
             _snap_save(sym, _dir, result)
         except Exception:
             pass
-    # ─────────────────────────────────────────────────────────────────
 
     # ── [设计院 2026-07-06] P3: timing_filter 注入顶层字段 ──────────────────
     # 根因: evaluate_timing只在format_batch_report调用，brahma_analyze.py拿不到
@@ -680,7 +665,6 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
             pass  # [静默] f'[TimingFilter] {sym} {result["timing_status"]} score={result["timing_score"]}'
         except Exception:
             result['timing_status'] = 'UNKNOWN'
-    # ────────────────────────────────────────────────────────────────────────
 
     # ── nerve_system freshness_checker 数据质量守护（非阻断）────────────
     # [协同接入 2026-08-02 设计院自主] 分析前检查关键数据文件新鲜度
@@ -981,7 +965,6 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
     except Exception as _oi_e:
         pass  # 非阻断
 
-    # ── [END 外部扩展层集成] ──────────────────────────────────────────────────
 
     # ── [设计院 2026-07-12 P0修复] params子字段展平到顶层 ─────────────────────
     # 根因: auto_executor读取顶层entry_lo/stop_loss等字段为None，实际数据在params子dict
@@ -1019,7 +1002,6 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
             result['direction'] = result['signal_dir']
     except Exception:
         pass
-    # ─────────────────────────────────────────────────────────────────────────
 
     # ── [设计院 2026-07-13] 全景矩阵报告自动挂载 ─────────────────────────
     # 每次 run_analysis() 返回时，自动生成 _panorama_card（精简）和 _panorama_full（完整）
@@ -1030,7 +1012,6 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         result['_panorama_full'] = _pano_fn(result, compact=False)
     except Exception as _pano_err:
         result['_panorama_err'] = str(_pano_err)
-    # ─────────────────────────────────────────────────────────────────────────
 
 
     # [P1 signal_log 自动注入 2026-07-24]
@@ -1261,7 +1242,6 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
             result['_mem_ctx'] = _mc_entry
     except Exception:
         pass  # mem_compressor失败不影响主流程
-    # ── [P1 END] ─────────────────────────────────────────────────────────────
 
     # [修复 2026-08-11] 从panorama提取RSI回写到结果字段
     try:
@@ -1321,7 +1301,6 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                 logger.info(f'[AI-Trader] 发布成功: {_pub.get("url","")}')
         except Exception as _pub_e:
             result['ai4trade'] = {'success': False, 'reason': str(_pub_e)[:60]}
-    # ── [AI-Trader END] ───────────────────────────────────────────────
 
     return result
 
@@ -1375,7 +1354,6 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
             _kw_load()   # 主线程预热，ThreadPoolExecutor子线程复用同一单例
     except Exception:
         pass  # Kronos不可用时不阻塞分析
-    # ── [END Kronos预热] ───────────────────────────────────────────────────
 
     raw_results = _batch_analyze_regime(norm_syms)
     ts = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
@@ -1410,7 +1388,6 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
                         results[sym]['_portfolio_filter_reason'] = '相关性>0.75，组合优化过滤'
         except Exception:
             pass
-    # ─────────────────────────────────────────────────────────────────
 
     # ── brainlog: 记录batch分析摘要 ──────────────────────────────────
     if _BRAINLOG_OK:
@@ -1421,7 +1398,6 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
             binfo('runner', f"batch完成: {len(results)}标的 valid={_valid_n} high_score={_high_n} elapsed={round(time.time()-t0,1)}s")
         except Exception:
             pass
-    # ─────────────────────────────────────────────────────────────────
 
     # ── brahma_health: batch结束后轻量GC（清理过期缓存/信号）────────
     if _HEALTH_OK:
@@ -1429,7 +1405,6 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
             _health_gc()
         except Exception:
             pass
-    # ─────────────────────────────────────────────────────────────────
 
     # [P0-8修复 2026-07-16 苏摩111] run_batch最小注入：BEAR_RECOVERY阈值120 + valid_signal同步
     # 完整注入链(timing/ext/panorama)由未来重构到公共函数处理，此处先修复最高优先级
@@ -1497,7 +1472,6 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
             berr('cross_asset_gate', f'门控异常（不影响主流程）: {_cag_err}')
         except Exception:
             pass
-    # ─────────────────────────────────────────────────────────────────────────
 
     return results
 
@@ -1711,9 +1685,7 @@ def check_correlation_risk(results: dict) -> dict:
     }
 
 
-# ══════════════════════════════════════════════════════════════
 # CLI 入口
-# ══════════════════════════════════════════════════════════════
 
 if __name__ == '__main__':
     import argparse
