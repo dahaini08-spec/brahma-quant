@@ -1172,3 +1172,1903 @@ def analyze_smc_multi_tf(symbol: str, signal_dir: str = 'LONG',
 
     return result
 # [设计院升级 2026-08-25 苏摩111 multi-tf-fvg封印]
+
+
+# ══ [2026-09-01 设计院精简封印] 合并自 brahma_brain/smc_resonance.py ══
+"""
+smc_resonance.py — 梵天强制前置链路模块
+2026-08-31 苏摩111封印
+
+职责：
+  P1: FVG磁铁→OB有效性→清算地图→共振点 四步强制链路
+  P2: 姓赵不宣VIP模版自动生成
+
+接入位置：brahma_full_report.run_full_analysis() 精度执行层之后
+"""
+
+from typing import Optional
+
+
+# ─────────────────────────────────────────────
+# P1: 强制前置链路四步分析
+# ─────────────────────────────────────────────
+
+def run_smc_resonance(r: dict) -> dict:
+    """
+    强制走FVG→OB→清算→共振点四步链路
+    返回结构化结果供VIP模版使用
+    """
+    price    = r.get('price', 0)
+    symbol   = r.get('symbol', '')
+    smc      = r.get('smc', {})
+    ob_data  = smc.get('order_blocks', {})
+    fvg_data = smc.get('fvg', {})
+    liq_heat = r.get('_liq_heatmap', {})
+    clusters = liq_heat.get('clusters', []) if isinstance(liq_heat, dict) else []
+    atr1h    = r.get('momentum', {}).get('atr_1h', price * 0.01)
+    min_sl   = atr1h * 1.5
+
+    result = {
+        'price': price,
+        'symbol': symbol,
+        'atr1h': round(atr1h, 2),
+        'min_sl_dist': round(min_sl, 2),
+        # Step1
+        'bull_fvg': [],
+        'bear_fvg': [],
+        'fvg_magnet_dir': None,
+        'fvg_magnet_target': None,
+        # Step2
+        'valid_bear_obs': [],
+        'valid_bull_obs': [],
+        # Step3
+        'liq_up': [],
+        'liq_dn': [],
+        # Step4
+        'resonance_short': None,
+        'resonance_long': None,
+        'verdict': 'WAIT',  # WAIT / SHORT / LONG
+        'verdict_reason': '',
+    }
+
+    # ── Step1: FVG磁铁 ──
+    bull_fvgs = fvg_data.get('bull_fvg', [])
+    bear_fvgs = fvg_data.get('bear_fvg', [])
+
+    for f in bull_fvgs:
+        lo = f.get('bottom', 0); hi = f.get('top', 0); mid = f.get('mid', 0)
+        filled = f.get('filled', False)
+        if not filled and hi > 0:
+            result['bull_fvg'].append({'lo': lo, 'hi': hi, 'mid': mid, 'gap_pct': f.get('gap_pct', 0)})
+
+    for f in bear_fvgs:
+        lo = f.get('bottom', 0); hi = f.get('top', 0); mid = f.get('mid', 0)
+        filled = f.get('filled', False)
+        if not filled and hi > 0:
+            result['bear_fvg'].append({'lo': lo, 'hi': hi, 'mid': mid, 'gap_pct': f.get('gap_pct', 0)})
+
+    # 磁铁方向判断
+    bull_above = [f for f in result['bull_fvg'] if f['lo'] > price]
+    bear_below = [f for f in result['bear_fvg'] if f['hi'] < price]
+    bull_contain = [f for f in result['bull_fvg'] if f['lo'] <= price <= f['hi']]
+
+    if bull_contain:
+        # 价格在Bull FVG内 = 磁铁往上拉至中点
+        nearest = sorted(bull_contain, key=lambda x: abs(x['mid'] - price))[0]
+        result['fvg_magnet_dir'] = 'UP'
+        result['fvg_magnet_target'] = nearest['mid']
+    elif bull_above:
+        nearest = sorted(bull_above, key=lambda x: x['lo'])[0]
+        result['fvg_magnet_dir'] = 'UP'
+        result['fvg_magnet_target'] = nearest['lo']
+    elif bear_below:
+        nearest = sorted(bear_below, key=lambda x: x['hi'], reverse=True)[0]
+        result['fvg_magnet_dir'] = 'DOWN'
+        result['fvg_magnet_target'] = nearest['hi']
+
+    # ── Step2: OB有效性 ──
+    for ob in ob_data.get('bear_obs', []):
+        age = ob.get('age_bars', 999)
+        broken = ob.get('broken', False)
+        if age < 50 and not broken and ob.get('high', 0) > price:
+            result['valid_bear_obs'].append({
+                'lo': round(ob['low'], 2),
+                'hi': round(ob['high'], 2),
+                'age': age,
+                'mid': round((ob['low'] + ob['high']) / 2, 2),
+            })
+
+    for ob in ob_data.get('bull_obs', []):
+        age = ob.get('age_bars', 999)
+        broken = ob.get('broken', False)
+        if age < 50 and not broken and ob.get('low', 0) < price:
+            result['valid_bull_obs'].append({
+                'lo': round(ob['low'], 2),
+                'hi': round(ob['high'], 2),
+                'age': age,
+                'mid': round((ob['low'] + ob['high']) / 2, 2),
+            })
+
+    # ── Step3: 清算地图 ──
+    for c in clusters:
+        if not isinstance(c, dict): continue
+        cp = c.get('price', 0); cnt = c.get('count', 1); sz = c.get('size', 0)
+        if cp > price:
+            result['liq_up'].append({'price': cp, 'count': cnt, 'size': sz})
+        else:
+            result['liq_dn'].append({'price': cp, 'count': cnt, 'size': sz})
+
+    result['liq_up'] = sorted(result['liq_up'], key=lambda x: x['count'], reverse=True)
+    result['liq_dn'] = sorted(result['liq_dn'], key=lambda x: x['count'], reverse=True)
+
+    # ── Step4: 共振点识别 ──
+    # 做空共振：FVG中点（上方）+ 有效Bear OB + 上方清算山
+    short_resonance = _find_short_resonance(
+        price, result['bull_fvg'], result['valid_bear_obs'], result['liq_up'], min_sl
+    )
+    # 做多共振：FVG中点（下方）+ 有效Bull OB + 下方清算池
+    long_resonance = _find_long_resonance(
+        price, result['bear_fvg'], result['valid_bull_obs'], result['liq_dn'], min_sl
+    )
+
+    result['resonance_short'] = short_resonance
+    result['resonance_long']  = long_resonance
+
+    # 裁决
+    if short_resonance and short_resonance.get('score', 0) >= 2:
+        result['verdict'] = 'SHORT'
+        result['verdict_reason'] = short_resonance.get('reason', '')
+    elif long_resonance and long_resonance.get('score', 0) >= 2:
+        result['verdict'] = 'LONG'
+        result['verdict_reason'] = long_resonance.get('reason', '')
+    else:
+        result['verdict'] = 'WAIT'
+        missing = []
+        if not short_resonance: missing.append('做空无共振点')
+        if not long_resonance:  missing.append('做多无共振点')
+        result['verdict_reason'] = '，'.join(missing) or '等待结构确认'
+
+    return result
+
+
+def _find_short_resonance(price, bull_fvgs, valid_bear_obs, liq_up, min_sl):
+    """寻找做空共振点：FVG中点/上沿 + 有效Bear OB + 清算山"""
+    candidates = []
+
+    # FVG提供的做空目标位
+    fvg_targets = []
+    for f in bull_fvgs:
+        if f['mid'] > price:
+            fvg_targets.append(f['mid'])   # FVG中点
+        if f['hi'] > price:
+            fvg_targets.append(f['hi'])    # FVG上沿
+
+    # OB提供的做空目标位
+    ob_targets = [ob['hi'] for ob in valid_bear_obs if ob['hi'] > price]
+
+    # 清算山提供的做空目标位
+    liq_targets = [c['price'] for c in liq_up if c['count'] >= 3]
+
+    if not (fvg_targets or ob_targets):
+        return None
+
+    # 找三者交叉点（在容忍范围内）
+    tol = min_sl * 0.8  # 容忍区间
+    best = None
+    best_score = 0
+
+    all_targets = set()
+    for t in fvg_targets + ob_targets + liq_targets:
+        all_targets.add(round(t, 0))
+
+    for target in sorted(all_targets):
+        if target <= price: continue
+        score = 0
+        reasons = []
+
+        # FVG命中
+        for f in bull_fvgs:
+            if abs(f['mid'] - target) <= tol:
+                score += 1; reasons.append(f"FVG中点${target:,.2f}")
+            if abs(f['hi'] - target) <= tol:
+                score += 1; reasons.append(f"FVG上沿${target:,.2f}")
+
+        # OB命中
+        for ob in valid_bear_obs:
+            if abs(ob['hi'] - target) <= tol or (ob['lo'] <= target <= ob['hi']):
+                score += 1; reasons.append(f"Bear OB(age={ob['age']}bars)")
+
+        # 清算命中
+        for c in liq_up:
+            if abs(c['price'] - target) <= tol:
+                score += 1; reasons.append(f"清算山×{c['count']} ${c['size']/1e6:.0f}M")
+
+        if score > best_score:
+            best_score = score
+            best = {
+                'entry': round(target, 2),
+                'score': score,
+                'reason': ' + '.join(reasons[:3]),
+                'sl': round(target + max(min_sl, tol) + 0.5, 2),
+                'wait_dist': round(target - price, 2),
+            }
+
+    return best if best and best_score >= 2 else None
+
+
+def _find_long_resonance(price, bear_fvgs, valid_bull_obs, liq_dn, min_sl):
+    """寻找做多共振点：Bear FVG中点 + 有效Bull OB + 清算池"""
+    candidates = []
+
+    fvg_targets = []
+    for f in bear_fvgs:
+        if f['mid'] < price:
+            fvg_targets.append(f['mid'])
+        if f['lo'] < price:
+            fvg_targets.append(f['lo'])
+
+    ob_targets = [ob['lo'] for ob in valid_bull_obs if ob['lo'] < price]
+    liq_targets = [c['price'] for c in liq_dn if c['count'] >= 3]
+
+    if not (fvg_targets or ob_targets):
+        return None
+
+    tol = min_sl * 0.8
+    best = None
+    best_score = 0
+
+    all_targets = set()
+    for t in fvg_targets + ob_targets + liq_targets:
+        all_targets.add(round(t, 0))
+
+    for target in sorted(all_targets, reverse=True):
+        if target >= price: continue
+        score = 0
+        reasons = []
+
+        for f in bear_fvgs:
+            if abs(f['mid'] - target) <= tol:
+                score += 1; reasons.append(f"Bear FVG中点${target:,.2f}")
+            if abs(f['lo'] - target) <= tol:
+                score += 1; reasons.append(f"Bear FVG下沿${target:,.2f}")
+
+        for ob in valid_bull_obs:
+            if abs(ob['lo'] - target) <= tol or (ob['lo'] <= target <= ob['hi']):
+                score += 1; reasons.append(f"Bull OB(age={ob['age']}bars)")
+
+        for c in liq_dn:
+            if abs(c['price'] - target) <= tol:
+                score += 1; reasons.append(f"清算池×{c['count']} ${c['size']/1e6:.0f}M")
+
+        if score > best_score:
+            best_score = score
+            best = {
+                'entry': round(target, 2),
+                'score': score,
+                'reason': ' + '.join(reasons[:3]),
+                'sl': round(target - max(min_sl, tol) - 0.5, 2),
+                'wait_dist': round(price - target, 2),
+            }
+
+    return best if best and best_score >= 2 else None
+
+
+# ─────────────────────────────────────────────
+# P2: 姓赵不宣VIP模版自动生成
+# ─────────────────────────────────────────────
+
+def format_vip_card(r: dict, res: dict) -> str:
+    """
+    自动生成姓赵不宣VIP卡片格式
+    严格按照截图模版，不自创格式
+    """
+    import requests as _req
+    from datetime import datetime
+
+    price   = res['price']
+    symbol  = res['symbol']
+    verdict = res['verdict']
+
+    # 24H涨跌幅
+    try:
+        r24 = _req.get('https://fapi.binance.com/fapi/v1/ticker/24hr',
+            params={'symbol': symbol}, timeout=5).json()
+        chg_pct = float(r24['priceChangePercent'])
+        chg_str = f"+{chg_pct:.2f}%" if chg_pct >= 0 else f"{chg_pct:.2f}%"
+    except:
+        chg_str = "N/A"
+
+    # 标的简写
+    sym_short = symbol.replace('USDT', '')
+    ts = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
+
+    lines = []
+    lines.append(f"🌿 **姓赵不宣 丨 {sym_short} ({chg_str})** 今日布局")
+
+    rs  = res.get('resonance_short')
+    rl  = res.get('resonance_long')
+    liq_dn = res.get('liq_dn', [])
+    liq_up = res.get('liq_up', [])
+
+    # ── 空单 ──
+    if rs:
+        entry = rs['entry']
+        sl    = rs['sl']
+        sl_dist = sl - entry
+
+        # TP = 下方清算池
+        tps = sorted([c['price'] for c in liq_dn if c['price'] < entry], reverse=True)
+        tp1 = tps[0] if len(tps) > 0 else round(entry * 0.98, 2)
+        tp2 = tps[1] if len(tps) > 1 else round(entry * 0.97, 2)
+        tp3 = tps[2] if len(tps) > 2 else round(entry * 0.96, 2)
+
+        # 杠杆判断（100X清算位 = entry×1.0095，若SL>清算位 → 降杠杆）
+        liq_100x = round(entry * 1.0095, 2)
+        lev = '20x' if liq_100x < sl else '100x'
+        nav = '2%'
+
+        lines.append(
+            f"🔴 **空单** 等 **${entry:,.2f}** 反弹入场 "
+            f"止损 **${sl:,.2f}** "
+            f"目标 ${tp1:,.2f} / ${tp2:,.2f} / ${tp3:,.2f} "
+            f"杠杆{lev} 仓{nav}"
+        )
+    else:
+        lines.append(f"🔴 **空单** 暂无共振点，等待结构")
+
+    # ── 多单 ──
+    if rl:
+        entry_l = rl['entry']
+        sl_l    = rl['sl']
+
+        tps_up = sorted([c['price'] for c in liq_up if c['price'] > entry_l])
+        tp1_l = tps_up[0] if len(tps_up) > 0 else round(entry_l * 1.02, 2)
+        tp2_l = tps_up[1] if len(tps_up) > 1 else round(entry_l * 1.03, 2)
+
+        # 做多方式：猎杀被扫后接
+        liq_near = sorted([c for c in liq_dn if c['price'] > sl_l and c['price'] < entry_l],
+                          key=lambda x: x['price'])
+        if liq_near:
+            scan_price = liq_near[0]['price']
+            zone_lo = round(scan_price - res['atr1h'] * 0.3, 2)
+            zone_hi = round(scan_price + res['atr1h'] * 0.3, 2)
+            lines.append(
+                f"🟢 **多单** 等 **${scan_price:,.2f}** 猎杀被扫后 "
+                f"${zone_lo:,.2f}~${zone_hi:,.2f} 接 "
+                f"止损 **${sl_l:,.2f}** "
+                f"目标 ${tp1_l:,.2f} / ${tp2_l:,.2f} "
+                f"杠杆20x 仓1%"
+            )
+        else:
+            lines.append(
+                f"🟢 **多单** 等 **${entry_l:,.2f}** 接 "
+                f"止损 **${sl_l:,.2f}** "
+                f"目标 ${tp1_l:,.2f} / ${tp2_l:,.2f} "
+                f"杠杆20x 仓1%"
+            )
+    else:
+        lines.append(f"🟢 **多单** 暂无共振点，等待结构")
+
+    # ── 主方向逻辑 ──
+    if verdict == 'SHORT' and rs:
+        core = f"主方向做空，{rs['reason']}，等触及+15M顶背离再入"
+    elif verdict == 'LONG' and rl:
+        core = f"主方向做多，{rl['reason']}，等猎杀确认+15M企稳再入"
+    else:
+        core = f"等待，无共振点（{res['verdict_reason']}），不操作"
+
+    lines.append(f"⚠️ {core}")
+    lines.append(f"*{ts} | price_ts实时 ${price:,.2f}*")
+
+    return '\n'.join(lines)
+
+
+# ─────────────────────────────────────────────
+# 主入口：输出完整强制链路板块
+# ─────────────────────────────────────────────
+
+def format_smc_block(r: dict) -> str:
+    """完整输出强制前置链路 + VIP卡片"""
+    lines = []
+    lines.append('')
+    lines.append('╬══════════════════════════════════════════════════════════')
+    lines.append('  🏛️ 强制前置链路 FVG→OB→清算→共振')
+    lines.append('╬══════════════════════════════════════════════════════════')
+
+    try:
+        res = run_smc_resonance(r)
+        price = res['price']
+
+        # Step1 FVG
+        lines.append(f"  【Step1 FVG磁铁】")
+        for f in res['bull_fvg'][:2]:
+            lines.append(f"  Bull FVG: ${f['lo']:,.2f}~${f['hi']:,.2f} 中点=${f['mid']:,.2f} gap={f['gap_pct']:.2f}% 磁铁↑")
+        for f in res['bear_fvg'][:2]:
+            lines.append(f"  Bear FVG: ${f['lo']:,.2f}~${f['hi']:,.2f} 中点=${f['mid']:,.2f} gap={f['gap_pct']:.2f}% 磁铁↓")
+        if res['fvg_magnet_dir']:
+            lines.append(f"  磁铁方向: {res['fvg_magnet_dir']} → 目标 ${res['fvg_magnet_target']:,.2f}")
+        else:
+            lines.append(f"  磁铁方向: 无明确FVG")
+
+        # Step2 OB
+        lines.append(f"  【Step2 OB有效性】")
+        if res['valid_bear_obs']:
+            for ob in res['valid_bear_obs'][:2]:
+                lines.append(f"  Bear OB: ${ob['lo']:,.2f}~${ob['hi']:,.2f} age={ob['age']}bars ✅有效")
+        else:
+            lines.append(f"  Bear OB: 无有效（已穿越或age>50）")
+        if res['valid_bull_obs']:
+            for ob in res['valid_bull_obs'][:2]:
+                lines.append(f"  Bull OB: ${ob['lo']:,.2f}~${ob['hi']:,.2f} age={ob['age']}bars ✅有效")
+        else:
+            lines.append(f"  Bull OB: 无有效")
+
+        # Step3 清算
+        lines.append(f"  【Step3 清算地图】")
+        if res['liq_up']:
+            lines.append(f"  上方止损山: " + " | ".join([f"${c['price']:,.2f}×{c['count']} ${c['size']/1e6:.0f}M" for c in res['liq_up'][:3]]))
+        if res['liq_dn']:
+            lines.append(f"  下方止损池: " + " | ".join([f"${c['price']:,.2f}×{c['count']} ${c['size']/1e6:.0f}M" for c in res['liq_dn'][:3]]))
+        lines.append(f"  100X清算: 空头${price*1.0095:,.2f} / 多头${price*0.9905:,.2f}")
+
+        # Step4 共振
+        lines.append(f"  【Step4 共振点识别】")
+        rs = res['resonance_short']
+        rl = res['resonance_long']
+        if rs:
+            lines.append(f"  做空共振: ${rs['entry']:,.2f} score={rs['score']} ({rs['reason']}) 等+${rs['wait_dist']:.2f}")
+        else:
+            lines.append(f"  做空共振: ❌无")
+        if rl:
+            lines.append(f"  做多共振: ${rl['entry']:,.2f} score={rl['score']} ({rl['reason']}) 等-${rl['wait_dist']:.2f}")
+        else:
+            lines.append(f"  做多共振: ❌无")
+
+        # 裁决
+        lines.append(f"  【裁决】{res['verdict']} — {res['verdict_reason']}")
+        lines.append('')
+
+        # VIP卡片
+        lines.append('╬══════════════════════════════════════════════════════════')
+        lines.append('  🌿 VIP策略（姓赵不宣格式）')
+        lines.append('╬══════════════════════════════════════════════════════════')
+        vip = format_vip_card(r, res)
+        lines.append(vip)
+
+    except Exception as e:
+        lines.append(f"  ⚠️ 强制链路异常: {e}")
+
+    lines.append('╬══════════════════════════════════════════════════════════')
+    return '\n'.join(lines)
+
+# ══ [2026-09-01 设计院精简封印] 合并自 brahma_brain/structure_quality_engine.py ══
+#!/usr/bin/env python3
+# ponytail: structure_quality_engine 383行，独立计算引擎，功能内聚，拆分条件: 单引擎>3000行且有完整测试
+"""
+structure_quality_engine.py — 结构质量引擎 v1.0
+设计院 · 2026-05-31
+
+核心哲学（十年交易视角）：
+  好信号不是「评分高」，是「入场区有真实价格结构支撑」
+  无结构入场 = 赌博。有结构入场 = 交易。
+
+五级结构评分：
+  S (90-100): FVG + OB双重确认，结构完美
+  A (70-89):  FVG或强OB，单重确认
+  B (50-69):  摆动高低点或Fib黄金位
+  C (30-49):  弱结构（Fib普通位 / 远期OB）
+  X (0-29):   无结构，入场区≈现价，拒绝
+"""
+
+import math
+from typing import Optional
+
+# ── 结构等级定义 ─────────────────────────────────────────────────────────────
+GRADE_S = 90   # FVG+OB双重
+GRADE_A = 70   # 单重强结构
+GRADE_B = 50   # 弱结构
+GRADE_C = 30   # 极弱
+GRADE_X = 0    # 无结构 → 拒绝
+
+def evaluate_structure_quality(
+    symbol: str,
+    signal_dir: str,         # 'SHORT' or 'LONG'
+    price: float,
+    entry_lo: float,
+    entry_hi: float,
+    smc: dict,               # brahma_brain SMC数据
+    swing_4h: dict,          # 4H摆动结构
+    key_levels: dict,        # Fib/关键位
+    momentum: dict,          # ATR等动量数据
+    **kwargs,                # v24.3: trigger_confidence等扩展参数
+) -> dict:
+    """
+    评估入场区的结构质量。
+    返回: {'grade': int, 'label': str, 'sources': [...], 'reject': bool, 'reason': str}
+    """
+    sources  = []
+    score    = 0
+    entry_mid = (entry_lo + entry_hi) / 2 if entry_lo and entry_hi else price
+
+    # ── 1. 入场区是否有偏离（基础条件）─────────────────────────────────────
+    entry_gap_pct = abs(entry_mid - price) / price * 100 if price > 0 else 0
+
+    # 无结构：入场区≈现价（gap<0.1%，几乎重合才拒绝）[v24.3: 0.2%→0.1%]
+    # 原逻辑0.2%过严：价格在入场区内时gap≈0，正常信号被误杀
+    # 当价格在入场区内(gap<0.2%)且有15M触发时，应继续评分而非直接拒绝
+    _trigger_conf = kwargs.get('trigger_confidence', 0) or 0
+    if entry_gap_pct < 0.1 and _trigger_conf < 40:
+        return {
+            'grade': GRADE_X, 'label': 'X-无结构',
+            'sources': ['入场区≈现价(gap<0.1%)'],
+            'reject': True,
+            'reason': f'入场区距现价仅{entry_gap_pct:.2f}%，无结构锚点，拒绝',
+            'entry_gap_pct': entry_gap_pct,
+        }
+    # 价格在入场区内（gap<0.2%）但有15M触发 → 给予基础分继续评分
+    _in_entry_zone = entry_gap_pct < 0.2
+
+    # ── 动态对齐阈值（按体制/入场区距离自适应）[2026-06-03 根治修复] ─────────
+    # 根因: BEAR_TREND下入场区距现价2-4%是正常的，OB/FVG锚点也在同等距离
+    # 原来固定阈值<1.5%→ob_score=0→grade=19→INVALID（误杀高分信号）
+    # 修复: 以 entry_gap_pct 为基准，对齐阈值 = max(entry_gap_pct × 1.2, 1.5%)
+    _align_tol = max(entry_gap_pct * 1.2, 1.5)   # 动态容忍度
+    _align_tight = max(entry_gap_pct * 0.4, 0.5)  # 精确对齐阈值
+
+    # ── 2. FVG（公平价值缺口）验证 ───────────────────────────────────────────
+    fvg = smc.get('fvg', {}) if smc else {}
+    fvg_key = 'nearest_bear' if signal_dir == 'SHORT' else 'nearest_bull'
+    fvg_zone = fvg.get(fvg_key)
+
+    fvg_score = 0
+    if fvg_zone:
+        fvg_gap = fvg_zone.get('gap_pct', 0) or 0
+        fvg_mid = (fvg_zone.get('bottom', 0) + fvg_zone.get('top', 0)) / 2
+        fvg_dist = abs(fvg_mid - entry_mid) / entry_mid * 100 if entry_mid > 0 else 999
+
+        if fvg_gap >= 0.5 and fvg_dist < _align_tight:
+            fvg_score = 40   # FVG完美对齐
+            sources.append(f'FVG={fvg_gap:.2f}% 完美对齐(tol={_align_tight:.1f}%)')
+        elif fvg_gap >= 0.3 and fvg_dist < _align_tol:
+            fvg_score = 25
+            sources.append(f'FVG={fvg_gap:.2f}% 近似对齐(tol={_align_tol:.1f}%)')
+        elif fvg_gap >= 0.2 and fvg_dist < _align_tol * 1.5:
+            fvg_score = 10
+            sources.append(f'FVG={fvg_gap:.2f}% 弱对齐')
+
+    score += fvg_score
+
+    # ── 3. Order Block 验证 ──────────────────────────────────────────────────
+    obs = smc.get('order_blocks', {}) if smc else {}
+    ob_key = 'nearest_bear_ob' if signal_dir == 'SHORT' else 'nearest_bull_ob'
+    ob = obs.get(ob_key)
+
+    ob_score = 0
+    if ob:
+        ob_lo = float(ob.get('low', 0) or 0)
+        ob_hi = float(ob.get('high', 0) or 0)
+        ob_mid = ob.get('mid') or ((ob_lo + ob_hi) / 2 if ob_lo and ob_hi else 0)
+        # [v24.5-fix] OB距离改用现价(price)为参考基准，而非entry_mid
+        # 根因：入场区中点比现价高0.3-0.5%，导致OB距离被人为放大，卡在70分边界
+        # 修复逻辑：OB是否「贴近当前行情」应以现价为准；入场区是未来预期位置，不是当前锚点
+        _ref_price = price if price > 0 else entry_mid  # 以现价为距离参考
+        ob_dist = abs(ob_mid - _ref_price) / _ref_price * 100 if _ref_price > 0 and ob_mid > 0 else 999
+        ob_dist_entry = abs(ob_mid - entry_mid) / entry_mid * 100 if entry_mid > 0 and ob_mid > 0 else 999
+        # [v24.3-fix] smc_engine的OB无strength字段，用dist_pct判断质量
+        # dist_pct<0.3% = 精确对齐(强) / dist_pct<1.0% = 对齐(中) / 其他 = 弱
+        ob_dist_pct = float(ob.get('dist_pct', ob_dist) or ob_dist)
+        ob_quality = 'strong' if ob_dist_pct < 0.3 else ('medium' if ob_dist_pct < 1.0 else 'weak')
+
+        # [v24.3-fix2] OB与入场区重叠判断：OB区间与entry区间有交集 = 精确对齐
+        ob_overlap = (ob_lo <= entry_hi and ob_hi >= entry_lo) if ob_lo and ob_hi else False
+        # 价格在OB区间内也算精确对齐
+        price_in_ob = (ob_lo <= _ref_price <= ob_hi) if ob_lo and ob_hi else False
+        if ob_overlap or price_in_ob or (ob_dist < _align_tight and ob_quality in ('strong', 'medium')):
+            ob_score = 35
+            sources.append(f'强OB精确对齐(price_dist={ob_dist:.2f}% in_ob={price_in_ob} overlap={ob_overlap})')
+        elif ob_dist < _align_tol:
+            ob_score = 20
+            sources.append(f'OB对齐(price_dist={ob_dist:.1f}%)')
+        elif ob_dist < _align_tol * 1.5:
+            ob_score = 8
+            sources.append(f'弱OB price_dist={ob_dist:.1f}%')
+
+    score += ob_score
+
+    # ── 4. 摆动结构验证（4H高低点）──────────────────────────────────────────
+    swing_score = 0
+    sw_highs = swing_4h.get('highs', []) if swing_4h else []
+    sw_lows  = swing_4h.get('lows', [])  if swing_4h else []
+
+    # Swing对齐阈值同步动态化
+    _swing_tol = max(entry_gap_pct * 1.5, 1.0)  # 动态容忍度 [v24.4: 0.5→1.0% BTC ATR4H≈1-1.5%，0.5%下限会误杀真实供给区]
+    if signal_dir == 'SHORT' and sw_highs:
+        nearby_highs = [h for h in sw_highs if abs(h - entry_mid) / entry_mid < _swing_tol]
+        if nearby_highs:
+            swing_score = 20
+            sources.append(f'4H摆动高点={nearby_highs[0]:.4g} 对齐')
+    elif signal_dir == 'LONG' and sw_lows:
+        nearby_lows = [l for l in sw_lows if abs(l - entry_mid) / entry_mid < _swing_tol]
+        if nearby_lows:
+            swing_score = 20
+            sources.append(f'4H摆动低点={nearby_lows[0]:.4g} 对齐')
+
+    score += swing_score
+
+    # ── 5. Fib关键位验证 ─────────────────────────────────────────────────────
+    fib = key_levels.get('fib', {}) if key_levels else {}
+    fib_score = 0
+
+    # Fib对齐阈值同步动态化
+    _fib_tight = max(entry_gap_pct * 0.3, 0.5)
+    _fib_loose = max(entry_gap_pct * 0.6, 1.0)
+    golden_fibs = [('0.618', 15), ('0.786', 12), ('0.500', 8), ('0.382', 5)]
+    for fib_key, fib_val in golden_fibs:
+        if fib_key in fib:
+            fib_level = float(fib[fib_key])
+            dist = abs(fib_level - entry_mid) / entry_mid * 100 if entry_mid > 0 else 999
+            if dist < _fib_tight:
+                fib_score = max(fib_score, fib_val)
+                sources.append(f'Fib{fib_key}={fib_level:.4g} 对齐')
+                break
+            elif dist < _fib_loose:
+                fib_score = max(fib_score, fib_val // 2)
+
+    score += fib_score
+
+    # ── 6. 入场区宽度质量（避免零宽度入场）──────────────────────────────────
+    zone_width_pct = (entry_hi - entry_lo) / entry_lo * 100 if entry_lo > 0 else 0
+    if zone_width_pct < 0.05:
+        score -= 15   # 入场区太窄，缺乏流动性缓冲
+        sources.append(f'⚠️ 入场区过窄({zone_width_pct:.2f}%)')
+    elif zone_width_pct >= 0.2:
+        score += 5    # 合理宽度加分
+        sources.append(f'入场区合理({zone_width_pct:.2f}%)')
+
+    # ── 7. 15M触发15M触发置信度加分（v24.3新增）──────────────────────────
+    # 15M触发置信度是最强的结构确认信号，应直接贡献gradeuff08此前被忽视）
+    trigger_confidence = kwargs.get('trigger_confidence', 0)
+    if trigger_confidence >= 80:
+        score += 25
+        sources.append(f'15M触发置信={trigger_confidence}满分(+25)')
+    elif trigger_confidence >= 60:
+        score += 15
+        sources.append(f'15M触发置信={trigger_confidence}(+15)')
+    elif trigger_confidence >= 40:
+        score += 8
+        sources.append(f'15M触发置信={trigger_confidence}(+8)')
+
+    # ── 评级 ─────────────────────────────────────────────────────────────────
+    score = max(0, min(100, score))
+
+    if score >= GRADE_S:
+        label = 'S-完美结构'
+    elif score >= GRADE_A:
+        label = 'A-强结构'
+    elif score >= GRADE_B:
+        label = 'B-弱结构'
+    elif score >= GRADE_C:
+        label = 'C-极弱结构'
+    else:
+        label = 'X-无结构'
+
+    # [2026-06-03 动态门槛] reject阈值从GRADE_C(30)降至15
+    # 依据: 武曲Paper 121笔实盘 grade>=25 WR=82.5%
+    #       grade=19的score=174信号（ETH BEAR_TREND(熊市趋势)）是真实高质量信号
+    #       被grade<30误杀，损失大量有效机会
+    # 新规则: grade<15才真正"无结构"，15-29是"极弱结构但有锚点"
+    _reject_threshold = 15
+    reject = (score < _reject_threshold or entry_gap_pct < 0.2)
+    reason = ''
+    if reject:
+        reason = f'结构质量不足(grade={score}<{_reject_threshold})，无有效锚点'
+
+    return {
+        'grade':         score,
+        'label':         label,
+        'sources':       sources,
+        'reject':        reject,
+        'reason':        reason,
+        'entry_gap_pct': round(entry_gap_pct, 2),
+        'fvg_score':     fvg_score,
+        'ob_score':      ob_score,
+        'swing_score':   swing_score,
+        'fib_score':     fib_score,
+    }
+
+
+def get_time_weight(utc_hour: int) -> float:
+    """
+    实证时间权重（UTC小时）
+    实盘数据：08-13 WR=56-100%，14-16 WR=0%
+    """
+    # 高质量窗口
+    if utc_hour in (7, 8, 9, 10, 11, 12, 13):
+        return 1.15   # 欧洲+美国早盘
+    # 低质量窗口（美国午后）
+    if utc_hour in (14, 15, 16):
+        return 0.70   # WR=0%实证，大幅折扣
+    # 亚洲时段（19-22 UTC）
+    if utc_hour in (19, 20, 21, 22):
+        return 1.10
+    # 深夜低流动性
+    if utc_hour in (0, 1, 2, 3, 4, 5):
+        return 0.85
+    return 1.0
+
+
+def _kelly_position_local(wr: float, rr: float, nav: float, max_pct: float = 0.10) -> float:  # [2026-08-28封印] 仅限本文件自测，核心链路用position_sizer.kelly_position
+    """
+    半Kelly仓位计算
+    wr: 胜率(0-1)  rr: 盈亏比  nav: 净值  max_pct: 单笔上限
+    """
+    if rr <= 0 or wr <= 0: return 0
+    kelly = wr - (1 - wr) / rr
+    if kelly <= 0: return 0
+    half_kelly = kelly / 2
+    position = min(half_kelly, max_pct) * nav
+    return round(position, 2)
+
+
+if __name__ == '__main__':
+    # 自测
+    print("=== structure_quality_engine 自测 ===")
+
+    # 模拟BTC场景（有FVG结构）
+    r1 = evaluate_structure_quality(
+        'BTCUSDT', 'SHORT', 73900, 75900, 76300,
+        smc={'fvg': {'nearest_bear': {'bottom': 75950, 'top': 76250, 'gap_pct': 0.4}}, 'order_blocks': {}},
+        swing_4h={'highs': [76100, 76500], 'lows': [73000]},
+        key_levels={'fib': {'0.618': 76000}},
+        momentum={'atr_1h': 185}
+    )
+    print(f"BTC SHORT(FVG结构): grade={r1['grade']} label={r1['label']} sources={r1['sources']}")
+
+    # 模拟LTC场景（无结构）
+    r2 = evaluate_structure_quality(
+        'LTCUSDT', 'SHORT', 50.93, 50.93, 50.93,
+        smc={'fvg': {}, 'order_blocks': {}},
+        swing_4h={'highs': [52.0, 53.5], 'lows': [49.0]},
+        key_levels={'fib': {}},
+        momentum={'atr_1h': 0.19}
+    )
+    print(f"LTC SHORT(无结构): grade={r2['grade']} label={r2['label']} reject={r2['reject']} reason={r2['reason']}")
+
+    # Kelly计算
+    print(f"\nKelly仓位示例:")
+    print(f"  BTC WR=92% RR=0.26 NAV=127: ${_kelly_position_local(0.92, 0.26, 127)}")
+    print(f"  LTC WR=50% RR=3.0  NAV=127: ${_kelly_position_local(0.50, 3.0, 127)}")
+    print(f"  DOGE WR=59% RR=2.0 NAV=127: ${_kelly_position_local(0.59, 2.0, 127)}")
+
+    # 时间权重
+    print(f"\n时间权重(UTC):")
+    for h in [7, 8, 14, 15, 20]:
+        print(f"  {h:02d}:00 → {get_time_weight(h)}x")
+
+
+# OB失效降级机制（apply_ob_decay_penalty）
+
+def apply_ob_decay_penalty(grade: float, symbol: str, ob_data: dict,
+                            current_price: float, timeframe: str = '1h') -> tuple:
+    """
+    失效OB降级惩罚：
+    当OB已被价格穿越（失效），grade -= 30
+    
+    Args:
+        grade: 当前结构评级
+        symbol: 交易对
+        ob_data: OB数据字典 {ob_high, ob_low, ob_ts}
+        current_price: 当前价格
+        timeframe: OB所在时间框架
+    
+    Returns:
+        (adjusted_grade, penalty_reason)
+    """
+    if not ob_data:
+        return grade, "无OB数据"
+    
+    ob_high = ob_data.get('ob_high', 0)
+    ob_low  = ob_data.get('ob_low', 0)
+    direction = ob_data.get('direction', 'SHORT')
+    
+    if not (ob_high and ob_low and current_price):
+        return grade, "数据不完整"
+    
+    penalty = 0
+    reason = ""
+    
+    # 空单OB：价格需在OB上方（OB low > current_price = OB失效）
+    if direction in ('SHORT', '做空'):
+        if current_price < ob_low * 0.995:  # 价格穿越OB下沿 = OB失效
+            penalty = 30
+            reason = f"SHORT OB失效(价格{current_price:.4f}<OB下沿{ob_low:.4f})"
+        elif current_price < ob_high * 0.99:  # 价格深入OB内部
+            penalty = 15
+            reason = f"SHORT OB部分失效(价格在OB内{current_price:.4f})"
+    
+    # 多单OB：价格需在OB下方（OB high < current_price = OB失效）
+    elif direction in ('LONG', '做多'):
+        if current_price > ob_high * 1.005:  # 价格穿越OB上沿 = OB失效
+            penalty = 30
+            reason = f"LONG OB失效(价格{current_price:.4f}>OB上沿{ob_high:.4f})"
+        elif current_price > ob_low * 1.01:
+            penalty = 15
+            reason = f"LONG OB部分失效"
+    
+    # 时间框架衰减：1H OB比4H OB衰减更快
+    tf_penalty = {'1h': 1.0, '4h': 0.7, '1d': 0.5}.get(timeframe, 1.0)
+    penalty = int(penalty * tf_penalty)
+    
+    adjusted = max(0, grade - penalty)
+    return adjusted, reason if penalty > 0 else f"OB有效(penalty=0)"
+
+
+def get_effective_grade(symbol: str, raw_grade: float, signal_data: dict,
+                         current_price: float) -> tuple:
+    """
+    获取有效grade（应用所有衰减后）
+    供brahma_analyze调用的统一入口
+    
+    Returns: (effective_grade, grade_detail)
+    """
+    grade = raw_grade
+    details = []
+    
+    # 应用OB衰减
+    ob_data = signal_data.get('ob_data') or {}
+    if ob_data:
+        grade, ob_reason = apply_ob_decay_penalty(grade, symbol, ob_data, current_price)
+        details.append(f"OB: {ob_reason}")
+    
+    # Bridge-Gate/StructureGate最低门槛（grade<70直接拒绝）[v24.2]
+    if grade < 70:
+        details.append(f"grade={grade:.0f}<70 Bridge-Gate/StructureGate拒绝(TO率=73~100%)")
+    
+    return grade, " | ".join(details) if details else f"grade={grade:.0f}"
+
+# ══ [2026-09-01 设计院精简封印] 合并自 brahma_brain/market_structure_scanner.py ══
+import os
+#!/usr/bin/env python3
+# ponytail: market_structure_scanner 309行，有意为之，重构前先 grep 所有调用方
+"""
+market_structure_scanner.py — 四维市场结构扫描器
+设计院 · 苏摩111 · 2026-07-01
+
+扫描四大结构层：
+  1. OB  (Order Block)    — SMC订单块，最强压力/支撑区
+  2. LIQ (清算群)         — 多空强制平仓密集区
+  3. GEX (期权伽马)       — 做市商对冲压力/磁铁位
+  4. FVG (Fair Value Gap) — 公允价值缺口，回补磁铁
+
+调用：
+  python3 brahma_brain/market_structure_scanner.py
+  python3 brahma_brain/market_structure_scanner.py --symbol ETHUSDT
+  from brahma_brain.market_structure_scanner import scan_structure
+"""
+
+import sys, os, json, time
+from pathlib import Path
+
+_DIR  = Path(__file__).parent
+_ROOT = _DIR.parent
+sys.path.insert(0, str(_ROOT))
+
+from brahma_brain.smc_engine     import analyze_smc
+from brahma_brain.data_cache     import get_klines
+from brahma_brain.brahma_bus     import bus
+from brahma_brain.liq_scanner    import get_liq_snapshot
+
+GEX_STATE_FILE = _ROOT / 'data' / 'gex_state.json'
+
+
+# ════════════════════════════════════════════════════════════════
+# 核心扫描函数
+# ════════════════════════════════════════════════════════════════
+
+def scan_structure(symbol: str = 'BTCUSDT') -> dict:
+    """
+    扫描 OB / LIQ / GEX / FVG 四维结构，返回综合结果字典
+    """
+    coin = symbol.replace('USDT', '').upper()
+    result = {'symbol': symbol, 'coin': coin, 'ts': time.time()}
+
+    # ── 1. 当前价 ─────────────────────────────────────────────
+    try:
+        px = bus.price(symbol)
+    except Exception:
+        import requests
+        px = float(requests.get(
+            f'https://fapi.binance.com/fapi/v1/ticker/price',
+            params={'symbol': symbol}, timeout=5).json()['price'])
+    result['price'] = px
+
+    # ── 2. OB — 订单块 ────────────────────────────────────────
+    ob_data = {'bear_ob': {}, 'bull_ob': {}, 'bear_ob_4h': {}, 'bull_ob_4h': {}}
+    try:
+        k1h = get_klines(symbol, '1h', 200)
+        k4h = get_klines(symbol, '4h', 100)
+        smc_1h = analyze_smc(symbol, k1h)
+        smc_4h = analyze_smc(symbol, k4h)
+
+        ob_1h = smc_1h.get('order_blocks', {})
+        ob_4h = smc_4h.get('order_blocks', {})
+        fvg_1h = smc_1h.get('fvg', {})
+        fvg_4h = smc_4h.get('fvg', {})
+
+        ob_data['bear_ob']    = ob_1h.get('nearest_bear_ob', {})
+        ob_data['bull_ob']    = ob_1h.get('nearest_bull_ob', {})
+        ob_data['bear_ob_4h'] = ob_4h.get('nearest_bear_ob', {})
+        ob_data['bull_ob_4h'] = ob_4h.get('nearest_bull_ob', {})
+        ob_data['bear_obs_all'] = ob_1h.get('bear_obs', [])[:3]
+        ob_data['bull_obs_all'] = ob_1h.get('bull_obs', [])[:3]
+
+        # FVG
+        fvg_data = {
+            'bear_fvg':    fvg_1h.get('nearest_bear', {}),
+            'bull_fvg':    fvg_1h.get('nearest_bull', {}),
+            'bear_fvg_4h': fvg_4h.get('nearest_bear', {}),
+            'bull_fvg_4h': fvg_4h.get('nearest_bull', {}),
+            'bear_fvgs':   fvg_1h.get('bear_gaps', [])[:3],
+            'bull_fvgs':   fvg_1h.get('bull_gaps', [])[:3],
+        }
+        result['fvg'] = fvg_data
+    except Exception as e:
+        ob_data['error'] = str(e)
+        result['fvg'] = {}
+    result['ob'] = ob_data
+
+    # ── 3. LIQ — 清算群 ───────────────────────────────────────
+    liq_data = {}
+    try:
+        snap = get_liq_snapshot(symbol)
+        liq_data = {
+            'long_pct':        snap.get('long_pct', 0),
+            'short_pct':       snap.get('short_pct', 0),
+            'liq_short_5pct':  snap.get('liq_short_5pct', 0),   # 空头+5%清算密集位
+            'liq_short_10pct': snap.get('liq_short_10pct', 0),
+            'liq_long_5pct':   snap.get('liq_long_5pct', 0),    # 多头-5%清算密集位
+            'liq_long_10pct':  snap.get('liq_long_10pct', 0),
+            'fund_rate':       snap.get('fund_rate', 0),
+            'fund_bias':       snap.get('fund_bias', ''),
+            'liq_bias':        snap.get('liq_bias', ''),
+            'liq_risk':        snap.get('liq_risk', ''),
+            'oi_b':            snap.get('oi_b', 0),
+            'oi_chg4h':        snap.get('oi_chg4h', 0),
+        }
+        # Tardis清算墙（最重要的精确数据）
+        tardis = snap.get('tardis_walls', {})
+        if tardis.get('available'):
+            long_walls  = tardis.get('long_walls', [])[:3]
+            short_walls = tardis.get('short_walls', [])[:3]
+            liq_data['tardis_long_walls']  = long_walls
+            liq_data['tardis_short_walls'] = short_walls
+            liq_data['tardis_bias']        = tardis.get('bias', '')
+    except Exception as e:
+        liq_data['error'] = str(e)
+    result['liq'] = liq_data
+
+    # ── 4. GEX — 期权伽马暴露 ────────────────────────────────
+    gex_data = {}
+    try:
+        if GEX_STATE_FILE.exists():
+            gex_state = json.loads(GEX_STATE_FILE.read_text())
+            g = gex_state.get(coin, {})
+            gex_data = {
+                'max_strike':   g.get('max_gex_strike', 0),
+                'min_strike':   g.get('min_gex_strike', 0),
+                'zero_flip':    g.get('zero_flip', 0),
+                'direction':    g.get('gex_direction', ''),
+                'dist_max_pct': g.get('dist_to_max_pct', 0),
+                'dist_min_pct': g.get('dist_to_min_pct', 0),
+                'net_at_spot':  g.get('net_gex_at_spot', 0),
+                'fib_786':      g.get('fib_786', 0),
+                'fib_618':      g.get('fib_618', 0),
+                'fib_500':      g.get('fib_500', 0),
+                'fib_382':      g.get('fib_382', 0),
+            }
+    except Exception as e:
+        gex_data['error'] = str(e)
+    result['gex'] = gex_data
+
+    return result
+
+
+# ════════════════════════════════════════════════════════════════
+# 格式化输出（供AI播报）
+# ════════════════════════════════════════════════════════════════
+
+def format_report(r: dict) -> str:
+    """格式化为标准监控卡片"""
+    sym   = r.get('coin', '?')
+    px    = r.get('price', 0)
+    ob    = r.get('ob', {})
+    liq   = r.get('liq', {})
+    gex   = r.get('gex', {})
+    fvg   = r.get('fvg', {})
+
+    def pf(v, is_usd=True):
+        if not v: return 'N/A'
+        if is_usd:
+            if v > 1000: return f'${v:,.0f}'
+            if v > 1:    return f'${v:,.2f}'
+            return f'${v:.5f}'
+        return str(v)
+
+    lines = [f'【{sym}/USDT · ${px:,.1f}】']
+
+    # OB
+    bear_ob = ob.get('bear_ob', {})
+    bull_ob = ob.get('bull_ob', {})
+    bear_ob_4h = ob.get('bear_ob_4h', {})
+    bull_ob_4h = ob.get('bull_ob_4h', {})
+
+    if bear_ob or bull_ob:
+        lines.append('📦 OB订单块')
+        if bear_ob and bear_ob.get('high'):
+            dist = (bear_ob['high'] - px) / px * 100
+            lines.append(f'  空头OB 1H: {pf(bear_ob.get("low"))}~{pf(bear_ob.get("high"))} ({dist:+.2f}%)')
+        if bull_ob and bull_ob.get('high'):
+            dist = (px - bull_ob['low']) / px * 100
+            lines.append(f'  多头OB 1H: {pf(bull_ob.get("low"))}~{pf(bull_ob.get("high"))} ({dist:+.2f}%)')
+        if bear_ob_4h and bear_ob_4h.get('high') and bear_ob_4h != bear_ob:
+            lines.append(f'  空头OB 4H: {pf(bear_ob_4h.get("low"))}~{pf(bear_ob_4h.get("high"))}')
+        if bull_ob_4h and bull_ob_4h.get('high') and bull_ob_4h != bull_ob:
+            lines.append(f'  多头OB 4H: {pf(bull_ob_4h.get("low"))}~{pf(bull_ob_4h.get("high"))}')
+
+    # 清算
+    if liq and not liq.get('error'):
+        lines.append('💥 清算群')
+        tardis_long  = liq.get('tardis_long_walls',  [])
+        tardis_short = liq.get('tardis_short_walls', [])
+        if tardis_long:
+            top = tardis_long[0]
+            px_w, val = top[0], top[1]
+            lines.append(f'  多头清算墙: ${px_w:,.0f}  (${val/1e6:.1f}M)')
+        elif liq.get('liq_long_5pct'):
+            lines.append(f'  多头清算密集: ${liq["liq_long_5pct"]:,.0f} (~5%下方)')
+        if tardis_short:
+            top = tardis_short[0]
+            px_w, val = top[0], top[1]
+            lines.append(f'  空头清算墙: ${px_w:,.0f}  (${val/1e6:.1f}M)')
+        elif liq.get('liq_short_5pct'):
+            lines.append(f'  空头清算密集: ${liq["liq_short_5pct"]:,.0f} (~5%上方)')
+        bias = liq.get('tardis_bias') or liq.get('liq_bias','')
+        if bias:
+            lines.append(f'  方向偏向: {bias}')
+        long_pct = liq.get('long_pct', 0)
+        if long_pct:
+            lines.append(f'  多空比: 多{long_pct:.0f}% / 空{liq.get("short_pct",0):.0f}%')
+
+    # GEX
+    if gex and not gex.get('error') and gex.get('max_strike'):
+        direction = '🔴负伽马(放大)' if gex.get('direction') == 'NEGATIVE' else '🟢正伽马(压制)'
+        lines.append(f'⚡ GEX伽马  {direction}')
+        lines.append(f'  MAX: ${gex["max_strike"]:,.0f} (+{gex["dist_max_pct"]:.1f}%)')
+        lines.append(f'  ZeroFlip: ${gex["zero_flip"]:,.0f}')
+        lines.append(f'  MIN: ${gex["min_strike"]:,.0f} (-{gex["dist_min_pct"]:.1f}%)')
+
+    # FVG
+    bear_fvg = fvg.get('bear_fvg', {})
+    bull_fvg = fvg.get('bull_fvg', {})
+    if bear_fvg or bull_fvg:
+        lines.append('🕳️  FVG公允缺口')
+        if bear_fvg and bear_fvg.get('top'):
+            gap = bear_fvg.get('gap_pct', 0)
+            dist = (bear_fvg['bottom'] - px) / px * 100
+            lines.append(f'  空头FVG: {pf(bear_fvg.get("bottom"))}~{pf(bear_fvg.get("top"))} ({gap:.2f}%, {dist:+.1f}%)')
+        if bull_fvg and bull_fvg.get('top'):
+            gap = bull_fvg.get('gap_pct', 0)
+            dist = (px - bull_fvg['top']) / px * 100
+            lines.append(f'  多头FVG: {pf(bull_fvg.get("bottom"))}~{pf(bull_fvg.get("top"))} ({gap:.2f}%, {dist:+.1f}%)')
+
+    return '\n'.join(lines)
+
+
+# ════════════════════════════════════════════════════════════════
+# 自推送：直接推送到 Jarvis，绕开AI渲染层
+# ════════════════════════════════════════════════════════════════
+
+import sys as _sys
+_sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
+try:
+    from system_config import JARVIS_TARGET, JARVIS_CHANNEL  # type: ignore
+except Exception:
+    JARVIS_TARGET  = os.environ.get('JARVIS_TARGET', '73295708:thread:01a033af-3697-734a-9f9c-c3e34a00c378')
+    JARVIS_CHANNEL = 'jarvis'
+
+
+def _push(message: str):
+    """openclaw message send 直接推送，保留换行格式"""
+    import subprocess
+    subprocess.run(
+        ['openclaw', 'message', 'send',
+         '--channel', JARVIS_CHANNEL,
+         '--target',  JARVIS_TARGET,
+         '--message', message],
+        capture_output=True, timeout=15
+    )
+
+
+# ════════════════════════════════════════════════════════════════
+# 主入口
+# ════════════════════════════════════════════════════════════════
+
+def main():
+    import argparse
+    from datetime import datetime, timezone
+
+    parser = argparse.ArgumentParser(description='四维市场结构扫描器')
+    parser.add_argument('--symbol',  default='BTCUSDT', help='交易对（默认BTCUSDT）')
+    parser.add_argument('--json',    action='store_true', help='输出原始JSON')
+    parser.add_argument('--both',    action='store_true', help='同时扫描BTC+ETH')
+    parser.add_argument('--push',    action='store_true', help='自推送到Jarvis（绕开AI渲染）')
+    args = parser.parse_args()
+
+    symbols = ['BTCUSDT', 'ETHUSDT'] if args.both else [args.symbol]
+
+    # 扫描所有标的
+    reports = []
+    for sym in symbols:
+        result = scan_structure(sym)
+        if args.json:
+            print(json.dumps(result, indent=2, ensure_ascii=False, default=str))
+        else:
+            reports.append(format_report(result))
+
+    if args.json:
+        return
+
+    # 拼接完整播报内容
+    now_utc = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
+    sep = '━' * 19
+    body = f'\n\n'.join(reports)
+    full_msg = f'📊 市场结构 {now_utc}\n{sep}\n{body}\n{sep}'
+
+    if args.push:
+        # 自推送模式：直接发到Jarvis，保留换行
+        _push(full_msg)
+        print(f'[market-structure] 推送完成 → {JARVIS_TARGET}')
+        print(full_msg)  # 同时输出到log
+    else:
+        # 直接输出（供手动调用）
+        print(full_msg)
+
+
+if __name__ == '__main__':
+    main()
+
+# ══ [2026-09-01 设计院精简封印] 合并自 brahma_brain/divergence_engine.py ══
+# ponytail: divergence_engine 746行，独立计算引擎，功能内聚，拆分条件: 单引擎>3000行且有完整测试
+"""
+from brahma_brain.math_utils import calc_rsi, ema  # 统一标量版 v1.0 (calc_rsi_series = 序列版，仅本文件使用)
+
+# ── STATUS: ACTIVE ──────────────────────────────────────────
+# 背离检测引擎，SMC辅助
+# LAST_REVIEW: 2026-07-01 | 属于辅助计算层，修改前确认调用链
+# ─────────────────────────────────────────────────────────────
+divergence_engine.py · RSI/MACD背离检测引擎
+brahma_brain · Phase 2
+
+功能：
+  - RSI 常规背离（价格/RSI方向相反）
+  - RSI 隐藏背离（趋势延续信号）
+  - RSI 失败摆动（FTS，高胜率反转）
+  - MACD 柱状图背离（常规+隐藏）
+  - MACD 零轴位置判断
+  - 背离综合评分（0~20分）
+"""
+
+# ═══════════════════════════════════════════════════════════════
+# 一、RSI计算工具
+# ═══════════════════════════════════════════════════════════════
+
+def calc_rsi_series(closes: list, n: int = 14) -> list:
+    """[2026-08-28 精简] 委托math_utils.rsi_series — SSOT"""
+    from math_utils import calc_rsi as _mu_rsi
+    import pandas as _pd
+    s = _pd.Series(closes)
+    results = [_mu_rsi(closes[:i+1], n) for i in range(max(n, len(closes)))]
+    return results[-len(closes):]
+def calc_macd_series(closes: list, fast: int = 12, slow: int = 26, signal: int = 9) -> dict:
+    """返回完整MACD序列"""
+    def ema_s(data, n):
+        if len(data) < n:
+            return [data[i] for i in range(len(data))]
+        k = 2 / (n + 1)
+        e = sum(data[:n]) / n
+        result = [None] * (n - 1) + [e]
+        for x in data[n:]:
+            e = x * k + e * (1 - k)
+            result.append(e)
+        return result
+
+    ema_fast = ema_s(closes, fast)
+    ema_slow = ema_s(closes, slow)
+
+    macd_line = []
+    for f, s in zip(ema_fast, ema_slow):
+        if f is None or s is None:
+            macd_line.append(None)
+        else:
+            macd_line.append(f - s)
+
+    valid_macd = [x for x in macd_line if x is not None]
+    if len(valid_macd) < signal:
+        sig_line = [0.0] * len(macd_line)
+    else:
+        sig_raw = ema_s(valid_macd, signal)
+        none_count = macd_line.count(None)
+        sig_line = [None] * none_count + sig_raw
+
+    histogram = []
+    for m, sg in zip(macd_line, sig_line):
+        if m is None or sg is None:
+            histogram.append(None)
+        else:
+            histogram.append(m - sg)
+
+    return {
+        'macd':      macd_line,
+        'signal':    sig_line,
+        'histogram': histogram,
+    }
+
+# ═══════════════════════════════════════════════════════════════
+# 二、摆动点识别（用于背离检测）
+# ═══════════════════════════════════════════════════════════════
+
+def find_pivots(values: list, lookback: int = 3) -> dict:
+    """识别序列中的摆动高低点"""
+    highs, lows = [], []
+    valid = [(i, v) for i, v in enumerate(values) if v is not None]
+    for k in range(lookback, len(valid) - lookback):
+        i, v = valid[k]
+        window_vals = [valid[k-j][1] for j in range(1, lookback+1)] + \
+                      [valid[k+j][1] for j in range(1, lookback+1)]
+        if v >= max(window_vals):
+            highs.append((i, v))
+        if v <= min(window_vals):
+            lows.append((i, v))
+    return {'highs': highs[-6:], 'lows': lows[-6:]}
+
+# ═══════════════════════════════════════════════════════════════
+# 三、RSI背离检测
+# ═══════════════════════════════════════════════════════════════
+
+def detect_rsi_divergence(closes: list, n_rsi: int = 14, lookback: int = 5) -> dict:
+    """
+    检测RSI背离
+    返回：常规看空/看多背离，隐藏背离，FTS
+    """
+    rsi_vals = calc_rsi_series(closes, n_rsi)
+
+    price_pivots = find_pivots(closes,   lookback)
+    rsi_pivots   = find_pivots(rsi_vals, lookback)
+
+    ph = price_pivots['highs']
+    pl = price_pivots['lows']
+    rh = rsi_pivots['highs']
+    rl = rsi_pivots['lows']
+
+    results = {
+        'regular_bearish': False,   # 常规看空（价格HH，RSI LH）→ 顶部反转
+        'regular_bullish': False,   # 常规看多（价格LL，RSI HL）→ 底部反转
+        'hidden_bearish':  False,   # 隐藏看空（价格LH，RSI HH）→ 下跌延续
+        'hidden_bullish':  False,   # 隐藏看多（价格HL，RSI LL）→ 上涨延续
+        'fts_bearish':     False,   # 失败摆动看空
+        'fts_bullish':     False,   # 失败摆动看多
+        'details':         [],
+        'score_long':  0,
+        'score_short': 0,
+    }
+
+    # 常规看空背离：价格HH，RSI LH
+    if len(ph) >= 2 and len(rh) >= 2:
+        p_high1, p_high2 = ph[-2][1], ph[-1][1]
+        r_high1, r_high2 = rh[-2][1], rh[-1][1]
+        if p_high2 > p_high1 and r_high2 < r_high1:
+            results['regular_bearish'] = True
+            results['details'].append(
+                f'常规看空背离: 价格{p_high1:.2f}→{p_high2:.2f}↑  RSI{r_high1:.1f}→{r_high2:.1f}↓'
+            )
+            results['score_short'] += 8
+
+    # 常规看多背离：价格LL，RSI HL
+    if len(pl) >= 2 and len(rl) >= 2:
+        p_low1, p_low2 = pl[-2][1], pl[-1][1]
+        r_low1, r_low2 = rl[-2][1], rl[-1][1]
+        if p_low2 < p_low1 and r_low2 > r_low1:
+            results['regular_bullish'] = True
+            results['details'].append(
+                f'常规看多背离: 价格{p_low1:.2f}→{p_low2:.2f}↓  RSI{r_low1:.1f}→{r_low2:.1f}↑'
+            )
+            results['score_long'] += 8
+
+    # 隐藏看空背离：价格LH，RSI HH（下跌趋势延续）
+    if len(ph) >= 2 and len(rh) >= 2:
+        p_high1, p_high2 = ph[-2][1], ph[-1][1]
+        r_high1, r_high2 = rh[-2][1], rh[-1][1]
+        if p_high2 < p_high1 and r_high2 > r_high1:
+            results['hidden_bearish'] = True
+            results['details'].append(
+                f'隐藏看空背离(趋势延续): 价格↓  RSI↑'
+            )
+            results['score_short'] += 5
+
+    # 隐藏看多背离：价格HL，RSI LL（上涨趋势延续）
+    if len(pl) >= 2 and len(rl) >= 2:
+        p_low1, p_low2 = pl[-2][1], pl[-1][1]
+        r_low1, r_low2 = rl[-2][1], rl[-1][1]
+        if p_low2 > p_low1 and r_low2 < r_low1:
+            results['hidden_bullish'] = True
+            results['details'].append(
+                f'隐藏看多背离(趋势延续): 价格↑  RSI↓'
+            )
+            results['score_long'] += 5
+
+    # RSI失败摆动（FTS）- 看空
+    # RSI>70 → 回落 → 再涨但未超前高 → 跌破前低 = 极强顶部信号
+    if len(rsi_vals) >= 10:
+        rv = [v for v in rsi_vals[-20:] if v is not None]
+        if len(rv) >= 6:
+            # 寻找RSI>70后的FTS
+            for i in range(2, len(rv)-2):
+                if rv[i] > 70 and rv[i+1] < rv[i]:
+                    for j in range(i+2, len(rv)-1):
+                        if rv[j] > rv[i+1] and rv[j] < rv[i]:  # 未超前高
+                            if rv[j+1] < rv[i+1]:               # 跌破前低
+                                results['fts_bearish'] = True
+                                results['details'].append('RSI失败摆动看空(FTS) 极强顶部信号')
+                                results['score_short'] += 6
+                                break
+
+    # RSI失败摆动（FTS）- 看多
+    if len(rsi_vals) >= 10:
+        rv = [v for v in rsi_vals[-20:] if v is not None]
+        if len(rv) >= 6:
+            for i in range(2, len(rv)-2):
+                if rv[i] < 30 and rv[i+1] > rv[i]:
+                    for j in range(i+2, len(rv)-1):
+                        if rv[j] < rv[i+1] and rv[j] > rv[i]:  # 未破前低
+                            if rv[j+1] > rv[i+1]:               # 突破前高
+                                results['fts_bullish'] = True
+                                results['details'].append('RSI失败摆动看多(FTS) 极强底部信号')
+                                results['score_long'] += 6
+                                break
+
+    # 日线级别RSI背离额外加分
+    rsi_now = rsi_vals[-1] if rsi_vals[-1] is not None else 50
+    if results['regular_bearish'] and rsi_now > 65:
+        results['score_short'] += 4
+        results['details'].append('日线级别RSI背离确认 +4')
+    if results['regular_bullish'] and rsi_now < 35:
+        results['score_long'] += 4
+        results['details'].append('日线级别RSI背离确认 +4')
+
+    return results
+
+# ═══════════════════════════════════════════════════════════════
+# 四、MACD背离检测
+# ═══════════════════════════════════════════════════════════════
+
+def detect_macd_divergence(closes: list) -> dict:
+    """检测MACD柱状图背离"""
+    macd_data = calc_macd_series(closes)
+    hist      = macd_data['histogram']
+    macd_line = macd_data['macd']
+    sig_line  = macd_data['signal']
+
+    results = {
+        'regular_bearish': False,
+        'regular_bullish': False,
+        'hidden_bearish':  False,
+        'hidden_bullish':  False,
+        'zero_cross_up':   False,   # MACD金叉在零轴以下（强多信号）
+        'zero_cross_down': False,   # MACD死叉在零轴以上（强空信号）
+        'details':         [],
+        'score_long':  0,
+        'score_short': 0,
+    }
+
+    price_pivots = find_pivots(closes, 3)
+    hist_pivots  = find_pivots(hist,   3)
+
+    ph = price_pivots['highs']
+    pl = price_pivots['lows']
+    hh = hist_pivots['highs']
+    hl = hist_pivots['lows']
+
+    # 常规看空：价格HH，MACD柱LH
+    if len(ph) >= 2 and len(hh) >= 2:
+        if ph[-1][1] > ph[-2][1] and hh[-1][1] < hh[-2][1]:
+            results['regular_bearish'] = True
+            results['score_short'] += 5
+            results['details'].append('MACD柱看空背离 +5')
+
+    # 常规看多：价格LL，MACD柱HL
+    if len(pl) >= 2 and len(hl) >= 2:
+        if pl[-1][1] < pl[-2][1] and hl[-1][1] > hl[-2][1]:
+            results['regular_bullish'] = True
+            results['score_long'] += 5
+            results['details'].append('MACD柱看多背离 +5')
+
+    # 零轴位置金叉/死叉（更强信号）
+    valid_macd = [(i, v) for i, v in enumerate(macd_line) if v is not None]
+    valid_sig  = [(i, v) for i, v in enumerate(sig_line)  if v is not None]
+    if len(valid_macd) >= 2 and len(valid_sig) >= 2:
+        m_prev, m_curr = valid_macd[-2][1], valid_macd[-1][1]
+        s_prev, s_curr = valid_sig[-2][1],  valid_sig[-1][1]
+        # 金叉
+        if m_prev <= s_prev and m_curr > s_curr:
+            if m_curr < 0:
+                results['zero_cross_up'] = True
+                results['score_long'] += 4
+                results['details'].append('MACD金叉(零轴以下) 强多信号 +4')
+            else:
+                results['score_long'] += 2
+                results['details'].append('MACD金叉 +2')
+        # 死叉
+        if m_prev >= s_prev and m_curr < s_curr:
+            if m_curr > 0:
+                results['zero_cross_down'] = True
+                results['score_short'] += 4
+                results['details'].append('MACD死叉(零轴以上) 强空信号 +4')
+            else:
+                results['score_short'] += 2
+                results['details'].append('MACD死叉 +2')
+
+    return results
+
+# ═══════════════════════════════════════════════════════════════
+# 五、K线形态识别
+# ═══════════════════════════════════════════════════════════════
+
+def detect_candlestick_patterns(opens: list, highs: list,
+                                 lows: list, closes: list) -> dict:
+    """识别最近K线形态"""
+    if len(closes) < 3:
+        return {'patterns': [], 'score_long': 0, 'score_short': 0}
+
+    o, h, l, c = opens, highs, lows, closes
+    patterns = []
+    score_long = 0
+    score_short = 0
+
+    # 最近3根K线
+    def body(i):   return abs(c[i] - o[i])
+    def upper(i):  return h[i] - max(c[i], o[i])
+    def lower(i):  return min(c[i], o[i]) - l[i]
+    def is_bull(i): return c[i] > o[i]
+    def is_bear(i): return c[i] < o[i]
+
+    avg_body = sum(body(i) for i in range(-5, 0)) / 5 if len(closes) >= 5 else body(-1)
+
+    i = -1  # 最新K线
+
+    # 锤子线（看多反转）
+    if (lower(i) >= body(i) * 2 and upper(i) < body(i) * 0.3
+            and body(i) > 0 and len(closes) >= 10):
+        trend_check = closes[-1] < closes[-10]   # 在下跌中
+        if trend_check:
+            patterns.append('锤子线(看多反转)')
+            score_long += 4
+
+    # 射击之星（看空反转）
+    if (upper(i) >= body(i) * 2 and lower(i) < body(i) * 0.3
+            and body(i) > 0 and len(closes) >= 10):
+        trend_check = closes[-1] > closes[-10]   # 在上涨中
+        if trend_check:
+            patterns.append('射击之星(看空反转)')
+            score_short += 4
+
+    # 多头吞没
+    if len(closes) >= 2:
+        if (is_bear(-2) and is_bull(-1)
+                and c[-1] > o[-2] and o[-1] < c[-2]
+                and body(-1) > body(-2)):
+            patterns.append('多头吞没')
+            score_long += 5
+
+    # 空头吞没
+    if len(closes) >= 2:
+        if (is_bull(-2) and is_bear(-1)
+                and c[-1] < o[-2] and o[-1] > c[-2]
+                and body(-1) > body(-2)):
+            patterns.append('空头吞没')
+            score_short += 5
+
+    # 晨星（三K看多）
+    if len(closes) >= 3:
+        if (is_bear(-3) and body(-2) < avg_body * 0.4
+                and is_bull(-1) and c[-1] > (o[-3] + c[-3]) / 2):
+            patterns.append('晨星(三K看多反转)')
+            score_long += 6
+
+    # 暮星（三K看空）
+    if len(closes) >= 3:
+        if (is_bull(-3) and body(-2) < avg_body * 0.4
+                and is_bear(-1) and c[-1] < (o[-3] + c[-3]) / 2):
+            patterns.append('暮星(三K看空反转)')
+            score_short += 6
+
+    # 大阳线
+    if body(i) > avg_body * 1.5 and is_bull(i):
+        patterns.append('大阳线(多头强势)')
+        score_long += 3
+
+    # 大阴线
+    if body(i) > avg_body * 1.5 and is_bear(i):
+        patterns.append('大阴线(空头强势)')
+        score_short += 3
+
+    return {
+        'patterns':    patterns,
+        'score_long':  min(score_long, 10),
+        'score_short': min(score_short, 10),
+    }
+
+# ═══════════════════════════════════════════════════════════════
+# 六、综合背离评分（0~20分）
+# ═══════════════════════════════════════════════════════════════
+
+def _calc_volume_contraction(closes: list, volumes: list, lookback: int = 6, vol_mult: float = 0.6) -> dict:
+    """
+    达摩院100轮实训验证：vol_mult=0.6 是量价背离最优参数
+    检测：价格创新高/低时成交量是否萎缩（量价背离核心条件）
+    returns: {'vol_contraction': bool, 'vol_ratio': float, 'rsi_lo': bool, 'rsi_hi': bool}
+    """
+    if not volumes or len(volumes) < lookback + 5:
+        return {'vol_contraction': False, 'vol_ratio': 1.0, 'price_extreme': False}
+    n = len(closes)
+    recent_vol = volumes[-1]
+    # 20日成交量均值
+    vol_ma = sum(volumes[max(0,n-20):n]) / min(20, n)
+    vol_ratio = recent_vol / vol_ma if vol_ma > 0 else 1.0
+    # 成交量萎缩：当前量 < 均量 * vol_mult
+    vol_contraction = vol_ratio < vol_mult
+    # 价格是否在 lookback 内创新高/低
+    recent_h = closes[-1]
+    recent_l = closes[-1]
+    price_hi = recent_h >= max(closes[max(0,n-lookback-1):n-1])
+    price_lo = recent_l <= min(closes[max(0,n-lookback-1):n-1])
+    return {
+        'vol_contraction': vol_contraction,
+        'vol_ratio': round(vol_ratio, 3),
+        'price_extreme_hi': price_hi,
+        'price_extreme_lo': price_lo,
+        'vol_ma': round(vol_ma, 2),
+    }
+
+
+def divergence_score(opens: list, highs: list, lows: list,
+                     closes: list, signal_dir: str,
+                     interval_label: str = '1H',
+                     volumes: list = None,
+                     regime: str = '',
+                     ts_ms: int = 0) -> dict:
+    """
+    综合背离评分 v3 —达摩院100轮实训升级版
+    新增：
+      1. 成交量验证（vol_mult=0.6 铁证参数）
+      2. 时间窗口过滤（周二/12月惩罚）
+      3. 体制自动切换（单边牛市RSI>60三周 → 背离降权）
+    优先级：隐藏背离 >常观背离 > FTS失败摇动
+    signal_dir: 'LONG' or 'SHORT'
+    """
+    rsi_div  = detect_rsi_divergence(closes)
+    macd_div = detect_macd_divergence(closes)
+    candle   = detect_candlestick_patterns(opens, highs, lows, closes)
+
+    # ── 成交量验证（达摩院100轮铁证：vol_mult=0.6）────────────
+    vol_info = _calc_volume_contraction(closes, volumes or [], lookback=6, vol_mult=0.6)
+    # 成交量萎缩时做量价背离加分，成交量放大时降分（假突破/追涨危险）
+    vol_bonus = 0
+    vol_penalty = 0
+    if volumes:
+        if vol_info['vol_contraction']:
+            # 量缩+价格创极值 = 经典量价背离，+3分
+            if (signal_dir == 'LONG' and vol_info['price_extreme_lo']) or \
+               (signal_dir == 'SHORT' and vol_info['price_extreme_hi']):
+                vol_bonus = 3
+        else:
+            # 量放时信号弱，-2分（100轮实训：放量时量价背离失效）
+            vol_penalty = 2
+
+    # ── 时间窗口过滤（达摩院实训铁证）──────────────────────────
+    time_penalty = 0
+    time_note = ''
+    if ts_ms > 0:
+        try:
+            from datetime import datetime, timezone
+            dt = datetime.fromtimestamp(ts_ms / 1000, tz=timezone.utc)
+            weekday = dt.weekday()  # 0=周一, 1=周二
+            month = dt.month
+            # 周二：BTC仅27%胜率，ETH仅40%（100轮实训铁证）
+            if weekday == 1:  # 周二
+                time_penalty += 3
+                time_note = '⚠️周二时间惩罚-3（实训胜率仅27-40%）'
+            # 12月：ETH量价背离24%（100轮实训铁证）
+            if month == 12:
+                time_penalty += 4
+                time_note += ' ⚠️12月季节性惩罚-4（ETH实训仅24%）'
+            # 周末加分：周六ETH80%/BTC68%（100轮实训铁证）
+            if weekday in (5, 6):  # 周六/周日
+                vol_bonus += 2
+                time_note += ' ✅周末加成+2（实训胜率55-80%）'
+        except Exception:
+            pass
+
+    # ── 体制切换检测（单边牛市降权）───────────────────────────
+    regime_penalty = 0
+    regime_note = ''
+    if regime:
+        regime_upper = regime.upper()
+        # 单边BULL_TREND时量价背离做多失效（2021减半：14%）
+        if 'BULL_TREND' in regime_upper and signal_dir == 'LONG':
+            # 在强趋势牛市里，量缩不是衰竭，而是洗盘后继续
+            regime_penalty = 3
+            regime_note = '⚠️单边牛市量价背离做多降权-3（实训14%）'
+        # BEAR_IMPULSE/BEAR_TREND做空时额外奖励（2022Luna：60% PF12.57）
+        elif any(x in regime_upper for x in ['BEAR_IMPULSE', 'BEAR_TREND']) and signal_dir == 'SHORT':
+            vol_bonus += 2
+            regime_note = '✅熊市背离做空加成+2（实训60% PF12.57）'
+
+    # ── 强度分级评分逻辑 ────────────────────────────────
+    # 主要信号和分数：
+    # S级(隐藏背离)    = 12分  延续趋势最可靠
+    # A级(常观背离)    = 10分  趋势反转信号
+    # B级(FTS失败摇动) = 8分   高胜率底部
+    # C级(MACD单策题)    = 5分
+    # D级(K线形态)       = 3分
+
+    grade = 'NONE'
+    grade_score = 0
+    grade_notes = []
+
+    if signal_dir == 'LONG':
+        # S级：隐藏看多背离（价格 HL RSI HH — 下降趋势延续）
+        if rsi_div.get('hidden_bullish'):
+            grade = 'S'; grade_score = 12
+            grade_notes.append('🔵 隐藏看多背离(S级) 趋势延续最可靠 +12')
+        # A级：常观看多背离（价格 LL RSI HL — 反转信号）
+        elif rsi_div.get('regular_bullish'):
+            grade = 'A'; grade_score = 10
+            grade_notes.append('🟢 常观看多背离(A级) 底部反转信号 +10')
+        # B级： RSI FTS
+        elif rsi_div.get('fts_bullish'):
+            grade = 'B'; grade_score = 8
+            grade_notes.append('🟡 RSI失败摇动看多(B级) +8')
+        # C级： MACD单独背离
+        elif macd_div.get('regular_bullish') or macd_div.get('hidden_bullish'):
+            grade = 'C'; grade_score = 5
+            grade_notes.append('🟠 MACD背离(C级) +5')
+
+        # 叠加加分：MACD + RSI 同时共振
+        if grade in ('A','B') and (macd_div.get('regular_bullish') or macd_div.get('zero_cross_up')):
+            grade_score = min(grade_score + 3, 18)
+            grade_notes.append('+MACD共振 +3')
+        # MACD 0轴位置加分
+        macd_zero_bonus = 2 if macd_div.get('zero_cross_up') else 0
+        grade_score = min(grade_score + macd_zero_bonus, 20)
+        if macd_zero_bonus:
+            grade_notes.append('MACD穿越0轴 +2')
+
+        # K线形态加分
+        candle_bonus = min(candle['score_long'], 4)
+        grade_score  = min(grade_score + candle_bonus, 20)
+        if candle_bonus and candle['patterns']:
+            grade_notes.append(f'K线{candle["patterns"][0]} +{candle_bonus}')
+
+        raw = grade_score
+        # 兼容旧字段
+        rsi_dir_s = rsi_div.get('score_long', 0)
+        macd_dir_s= macd_div.get('score_long', 0)
+        details_dir = (
+            [f'[{interval_label}] ' + d for d in rsi_div['details'] if '看多' in d or '多' in d] +
+            [f'[{interval_label}] ' + d for d in macd_div['details'] if '多' in d or '金叉' in d]
+        )
+    else:  # SHORT
+        # S级：隐藏看空背离（价格 HH RSI LH — 上涨趋势延续）
+        if rsi_div.get('hidden_bearish'):
+            grade = 'S'; grade_score = 12
+            grade_notes.append('🔵 隐藏看空背离(S级) 下跌趋势延续 +12')
+        # A级：常观看空背离（价格 HH RSI LH — 顶部反转）
+        elif rsi_div.get('regular_bearish'):
+            grade = 'A'; grade_score = 10
+            grade_notes.append('🟢 常观看空背离(A级) 顶部反转信号 +10')
+        # B级： RSI FTS
+        elif rsi_div.get('fts_bearish'):
+            grade = 'B'; grade_score = 8
+            grade_notes.append('🟡 RSI失败摇动看空(B级) +8')
+        # C级： MACD单独背离
+        elif macd_div.get('regular_bearish') or macd_div.get('hidden_bearish'):
+            grade = 'C'; grade_score = 5
+            grade_notes.append('🟠 MACD背离(C级) +5')
+
+        # 叠加共振
+        if grade in ('A','B') and (macd_div.get('regular_bearish') or macd_div.get('zero_cross_down')):
+            grade_score = min(grade_score + 3, 18)
+            grade_notes.append('+MACD共振 +3')
+        macd_zero_pen = -2 if macd_div.get('zero_cross_up') else 0  # 0轴上方做空 = 降分
+        # (0轴下方做空不调整)
+        grade_score = max(0, grade_score + macd_zero_pen)
+
+        candle_bonus = min(candle['score_short'], 4)
+        grade_score  = min(grade_score + candle_bonus, 20)
+        if candle_bonus and candle['patterns']:
+            grade_notes.append(f'K线{candle["patterns"][0]} +{candle_bonus}')
+
+        raw = grade_score
+        details_dir = (
+            [f'[{interval_label}] ' + d for d in rsi_div['details'] if '看空' in d or '空' in d] +
+            [f'[{interval_label}] ' + d for d in macd_div['details'] if '空' in d or '死叉' in d]
+        )
+
+    # [修复] NONE级别：加入辅助分（MACD趋势方向+对手背离惩罚）
+    if grade == 'NONE':
+        # MACD方向轻微辅助
+        if signal_dir == 'SHORT':
+            if macd_div.get('zero_cross_down'):
+                raw = 4; grade_notes.append('MACD死叉辅助 +4')
+            elif macd_div.get('regular_bearish'):
+                raw = 3; grade_notes.append('MACD弱看空 +3')
+            # 对手强背离惩罚（看多背离出现，做空降分）
+            elif rsi_div.get('regular_bullish') or rsi_div.get('fts_bullish'):
+                raw = 0; grade_notes.append('⚠️ 对手看多背离，做空谨慎')
+            else:
+                raw = 2  # 中性小分
+        else:  # LONG
+            if macd_div.get('zero_cross_up'):
+                raw = 4; grade_notes.append('MACD金叉辅助 +4')
+            elif macd_div.get('regular_bullish'):
+                raw = 3; grade_notes.append('MACD弱看多 +3')
+            elif rsi_div.get('regular_bearish') or rsi_div.get('fts_bearish'):
+                raw = 0; grade_notes.append('⚠️ 对手看空背离，做多谨慎')
+            else:
+                raw = 2
+    score = min(raw, 20)
+    # ── 达摩院实训 v3 修正项应用────────────────────────────────────
+    # 成交量加分/惩分
+    score = max(0, min(score + vol_bonus - vol_penalty, 20))
+    # 时间窗口惩分（周二/-12月）
+    score = max(0, score - time_penalty)
+    # 体制惩分/加分
+    score = max(0, min(score - regime_penalty, 20))
+    # 更新详细信息
+    if vol_bonus > 0 and volumes:
+        grade_notes.append(f'✅量缩验证加分+{vol_bonus}(vol={vol_info["vol_ratio"]:.2f}x均值)')
+    if vol_penalty > 0 and volumes:
+        grade_notes.append(f'⚠️放量空间惩分-{vol_penalty}(量价背离密度降低)')
+    if time_note:
+        grade_notes.append(time_note)
+    if regime_note:
+        grade_notes.append(regime_note)
+
+    grade_label = {'S': '🔵S级(隐藏)', 'A': '🟢A级(常观)', 'B': '🟡B级(FTS)', 'C': '🟠C级(MACD)', 'NONE': '⚪无背离'}.get(grade, grade)
+
+    return {
+        'score':       score,
+        'max':         20,
+        'grade':       grade,
+        'grade_label': grade_label,
+        'grade_notes': grade_notes,
+        'details':     grade_notes + details_dir,
+        'rsi_div':     rsi_div,
+        'macd_div':    macd_div,
+        'candle':      candle,
+        'vol_info':    vol_info if volumes else {},
+        'vol_bonus':   vol_bonus,
+        'vol_penalty': vol_penalty,
+        'time_penalty':time_penalty,
+        'regime_penalty': regime_penalty,
+    }
+
+
+# ═══════════════════════════════════════════════════════════════
+# 多周期背离共振 v4（设计院 2026-06-05）
+# 三级共振：15M + 1H + 4H 同时背离 → 极强底/顶部信号
+# ═══════════════════════════════════════════════════════════════
+
+def multitf_divergence_score(symbol: str, signal_dir: str) -> dict:
+    """
+    多周期背离共振评分（最高20分）
+    同时满足的周期越多，分数越高，底/顶部可靠性越强
+
+    共振等级：
+      三级共振（15M+1H+4H）→ TRIPLE  +20分
+      双级共振（任意两个）  → DOUBLE  +12分
+      单周期              → SINGLE  +6分
+      无背离              → NONE    +0分
+    """
+    try:
+        import sys, os
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from data_cache import get_klines, klines_to_ohlcv
+    except Exception as e:
+        return {'score': 0, 'resonance': 'NONE', 'notes': [f'数据加载失败: {e}']}
+
+    tf_results = {}
+    tf_scores  = {}
+
+    for tf in ['15m', '1h', '4h']:
+        try:
+            k = klines_to_ohlcv(get_klines(symbol, tf, 150))
+            if not k or len(k.get('c', [])) < 30:
+                continue
+            vols = k.get('v', [])
+            res = divergence_score(
+                k['o'], k['h'], k['l'], k['c'],
+                signal_dir, tf.upper(),
+                volumes=vols if vols else None
+            )
+            tf_results[tf] = res
+            tf_scores[tf]  = res['score']
+        except Exception:
+            continue
+
+    if not tf_scores:
+        return {'score': 0, 'resonance': 'NONE', 'notes': ['无法获取数据']}
+
+    # 有效背离：score >= 8 视为该周期有信号
+    active = {tf: s for tf, s in tf_scores.items() if s >= 8}
+    notes  = []
+
+    for tf, s in tf_scores.items():
+        grade = tf_results[tf].get('grade', '?')
+        notes.append(f'{tf.upper()} 背离={grade} score={s}')
+
+    if len(active) >= 3:
+        resonance = 'TRIPLE'
+        base_score = 20
+        notes.insert(0, f'🔥 三级共振！{list(active.keys())} 同步背离 → 极强{"底" if signal_dir=="LONG" else "顶"}部信号')
+    elif len(active) >= 2:
+        resonance = 'DOUBLE'
+        base_score = 12
+        notes.insert(0, f'⚡ 双级共振 {list(active.keys())} → {"底" if signal_dir=="LONG" else "顶"}部确认增强')
+    elif len(active) >= 1:
+        resonance = 'SINGLE'
+        base_score = 6
+        notes.insert(0, f'✅ 单周期背离 {list(active.keys())}')
+    else:
+        resonance = 'NONE'
+        base_score = 0
+        notes.insert(0, '无多周期背离共振')
+
+    # 加分：高grade背离
+    bonus = 0
+    for tf, res in tf_results.items():
+        if res.get('grade') in ('S', 'A') and tf_scores.get(tf, 0) >= 8:
+            bonus += 2
+            notes.append(f'{tf.upper()} {res["grade"]}级背离 +2')
+
+    return {
+        'score':     min(base_score + bonus, 20),
+        'resonance': resonance,
+        'tf_scores': tf_scores,
+        'active_tfs': list(active.keys()),
+        'notes':     notes,
+        'details':   {tf: tf_results[tf].get('grade_label','?') for tf in tf_results},
+    }
+
+
+# ─── 快速测试 ────────────────────────────────────────────────
+if __name__ == '__main__':
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from data_cache import get_klines, klines_to_ohlcv
+
+    sym = sys.argv[1] if len(sys.argv) > 1 else 'ETHUSDT'
+    direction = sys.argv[2] if len(sys.argv) > 2 else 'SHORT'
+
+    k1h = klines_to_ohlcv(get_klines(sym, '1h', 200))
+    k4h = klines_to_ohlcv(get_klines(sym, '4h', 200))
+
+    pass  # [静默]
+
+    for label, k in [('1H', k1h), ('4H', k4h)]:
+        res = divergence_score(k['o'], k['h'], k['l'], k['c'], direction, label)
+        print(f'\n  {label} 背离评分: {res["score"]}/20')
+        for d in res['details']:
+            print(f'    {d}')
+
+    pass  # [静默]
