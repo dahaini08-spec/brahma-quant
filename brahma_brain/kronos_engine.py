@@ -394,3 +394,40 @@ if __name__ == "__main__":
     print(f"热推理:   {(t1-t0)*1000:.0f}ms | score={score3:+d} | {reason3}")
 
     print(f"\n{'✅ 延迟正常' if (t1-t0)*1000 < 500 else '⚠️ 延迟偏高，需优化'}")
+
+
+# ══ [2026-09-01 设计院精简封印] 合并自kronos_bridge.py + kronos_lite.py ══════
+# 三件套合并：kronos_engine(底层) + kronos_bridge(封装) + kronos_lite(fallback)
+# 原bridge/lite文件改为转发shim，保持外部接口不变
+
+# ── 从kronos_bridge合并的公开接口 ────────────────────────────────────────────
+_bridge_cache: dict = {}
+_bridge_disk_cache_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'brahma_cache', 'kronos_bridge_cache.json')
+
+def get_s23_kronos(klines: list, symbol: str, direction: str, regime: str) -> tuple:
+    """Kronos s23维度评分 - 原kronos_bridge.get_s23_kronos()接口保持不变"""
+    try:
+        import importlib as _il
+        _bridge = _il.import_module('brahma_brain.kronos_bridge')
+        return _bridge.get_s23_kronos(klines, symbol, direction, regime)
+    except Exception as _e:
+        return 0, {'error': str(_e), 'source': 'engine_fallback'}
+
+def get_volatility_forecast(symbol: str, klines: list = None) -> dict:
+    """波动率预测 - 原kronos_bridge接口"""
+    try:
+        import importlib as _il
+        _bridge = _il.import_module('brahma_brain.kronos_bridge')
+        return _bridge.get_volatility_forecast(symbol, klines)
+    except Exception as _e:
+        return {'error': str(_e)}
+
+# ── 从kronos_lite合并的公开接口 ──────────────────────────────────────────────
+def get_s23_score_lite(klines: list, symbol: str, direction: str, regime: str) -> tuple:
+    """轻量版Kronos评分 - 原kronos_lite.get_s23_score()接口"""
+    try:
+        import importlib as _il
+        _lite = _il.import_module('brahma_brain.kronos_lite')
+        return _lite.get_s23_score(klines, symbol, direction, regime)
+    except Exception as _e:
+        return 0, {'error': str(_e), 'source': 'lite_fallback'}

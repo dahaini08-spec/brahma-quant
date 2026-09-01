@@ -1,1 +1,0 @@
-[{"symbol": "TRB", "timeframe": "1M", "ts_squeeze_start": "2026-01-01T00:00:00+00:00", "ts_burst": "2026-01-01T00:00:00+00:00", "direction": "DOWN", "min_bb_width": 0.0, "squeeze_bars": 1, "rsi_at_burst": 41.01, "vol_ratio_peak": 1.0, "future_return": 20.1444, "is_genuine_breakout": true, "atr_at_burst": 30.847505, "trigger": "death_cross"}]
