@@ -957,3 +957,1171 @@ def get_war_field_position(
         'score_tier': f'{score:.0f}',
         'war_score': war_score,
     }
+
+
+# ══ [2026-09-01 设计院精简封印] 合并自 brahma_brain/var_engine.py ══
+"""
+var_engine.py — VaR单仓风险量化引擎
+设计院 P3修复 · 2026-07-12
+
+职责：
+  计算单个合约仓位的在险价值（Value at Risk）
+  输出：95%/99% VaR、最大回撤预期、风险评级
+
+数据源：历史波动率（基于Binance K线）
+"""
+
+try:
+    from brahma_bus import _SESS as _HTTP  # [HTTP Session共享 2026-08-02 设计院自主]
+except ImportError:
+    _HTTP = requests  # fallback
+import numpy as np
+from datetime import datetime, timezone
+
+# ── brahma_bus 总线接入 ──
+try:
+    from brahma_brain.brahma_bus import bus as _brahma_bus
+except Exception:
+    _brahma_bus = None
+try:
+    from brahma_brain.data_cache import get_klines as _dc_get_klines, get_ticker as _dc_get_ticker
+except ImportError:
+    _dc_get_klines = None
+    _dc_get_ticker = None
+try:
+    from brahma_brain.brahma_bus import get_price as _bus_get_price
+except ImportError:
+    _bus_get_price = None
+
+
+def _get_returns(symbol: str, interval: str = '1h', limit: int = 168) -> list:
+    """获取近N根K线收益率序列（默认7天小时数据）"""
+    try:
+        if _dc_get_klines:
+            raw = _dc_get_klines(symbol, interval, limit)
+            closes = [float(k[4]) for k in raw]
+        else:
+            url = f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}'
+            r = _HTTP.get(url, timeout=6).json()
+            closes = [float(k[4]) for k in r]
+        returns = [np.log(closes[i] / closes[i-1]) for i in range(1, len(closes))]
+        return returns
+    except Exception:
+        return []
+
+
+def single_position_var(
+    symbol: str,
+    confidence: float = 0.05,   # 5% → 95% VaR
+    signal_dir: str = 'LONG',
+    pos_pct_nav: float = 0.03,   # 默认3%NAV
+    nav_usd: float = 500.0,      # 默认账户NAV
+) -> dict:
+    """
+    计算单仓VaR
+
+    Returns:
+        var_95: 95% VaR（绝对值，USD）
+        var_99: 99% VaR（绝对值，USD）
+        var_pct_95: 95% VaR占仓位百分比
+        daily_vol: 日波动率
+        risk_grade: LOW/MID/HIGH/EXTREME
+        note: 风险说明
+    """
+    returns = _get_returns(symbol, '1h', 168)
+
+    if len(returns) < 30:
+        return {
+            'symbol': symbol,
+            'var_95': None,
+            'var_99': None,
+            'var_pct_95': None,
+            'daily_vol': None,
+            'risk_grade': 'UNKNOWN',
+            'note': '数据不足，无法计算VaR',
+            'available': False,
+        }
+
+    arr = np.array(returns)
+    # 日波动率（1H收益率 × sqrt(24)）
+    daily_vol = float(np.std(arr) * np.sqrt(24))
+    # 历史模拟VaR
+    var_95 = float(np.percentile(arr, confidence * 100))   # 5th percentile
+    var_99 = float(np.percentile(arr, 1.0))                # 1st percentile
+
+    # 仓位名义价值
+    pos_usd = nav_usd * pos_pct_nav
+    var_95_usd = abs(var_95) * pos_usd
+    var_99_usd = abs(var_99) * pos_usd
+    var_pct_95 = abs(var_95) * 100
+
+    # 风险评级
+    if daily_vol > 0.05:
+        risk_grade = 'EXTREME'
+    elif daily_vol > 0.03:
+        risk_grade = 'HIGH'
+    elif daily_vol > 0.015:
+        risk_grade = 'MID'
+    else:
+        risk_grade = 'LOW'
+
+    # 方向性调整（空单在上涨时VaR更高）
+    try:
+        if _bus_get_price:
+            cur_price = _bus_get_price(symbol)
+        else:
+            price_url = f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}'
+            cur_price = float(_HTTP.get(price_url, timeout=4).json().get('price', 0))
+    except Exception:
+        cur_price = 0
+
+    note = (
+        f'日波动率={daily_vol*100:.2f}% | '
+        f'95%VaR={var_pct_95:.2f}%仓位(${var_95_usd:.2f}) | '
+        f'风险={risk_grade}'
+    )
+
+    return {
+        'symbol': symbol,
+        'direction': signal_dir,
+        'var_95_pct': round(var_pct_95, 3),
+        'var_99_pct': round(abs(var_99) * 100, 3),
+        'var_95_usd': round(var_95_usd, 2),
+        'var_99_usd': round(var_99_usd, 2),
+        'daily_vol_pct': round(daily_vol * 100, 3),
+        'risk_grade': risk_grade,
+        'pos_usd': round(pos_usd, 2),
+        'note': note,
+        'available': True,
+        'ts': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC'),
+    }
+
+# ══ [2026-09-01 设计院精简封印] 合并自 brahma_brain/headroom.py ══
+"""
+headroom.py — AI议会 Code-Mode 压缩层
+[封印 2026-08-30 苏摩111]
+
+Uber Code-Mode思想: 模型写摘要→idle→专家读摘要→只回传score_adj+一句话
+把full_report的9000字breakdown压缩成~200 token的精简信号卡
+AI议会token消耗 -70%, 速度 +40%
+
+接入位置: llm_council_bridge.py review() → _compressed_ctx
+"""
+
+from typing import Dict, Any
+
+# 只保留对AI议会有判断价值的维度（去掉N/A和归零字段）
+_HIGH_VALUE_DIMS = {
+    # block_a 关键
+    '趋势一致性', '关键位精确度', '动量背离', 'SMC结构', '量能验证',
+    # P1~P4新增
+    'EMA200确认', 'EMA200逆势', 'StochRSI',
+    'G1_RSI三周期共振', 'G2_方仓CVD共振',
+    'OBV底背离', 'OBV顶背离',
+    # block_b/c 关键
+    '清算/OI', '情绪/费率', '时段权重', '鲸鱼+微观',
+    '量能衰竭+背离共振', '研究增强层',
+    # 方仓
+    '方仓评分', '方仓匹配',
+    # 其他有效信号
+    'CHOP背离奖励',
+}
+
+
+def compress_signal_card(signal: Dict[str, Any], mode: str = 'compact') -> str:
+    """
+    把信号压缩成AI议会可直接读取的~200 token精简卡片
+
+    Args:
+        signal: 包含 symbol/direction/score/regime/breakdown 的字典
+        mode: 'compact'(200 token) | 'ultra'(100 token)
+
+    Returns:
+        格式化的精简文本，供AI议会prompt使用
+    """
+    symbol    = signal.get('symbol', '?')
+    direction = signal.get('direction', signal.get('signal_dir', '?'))
+    score     = float(signal.get('score', 0))
+    regime    = signal.get('regime', '?')
+    bd        = signal.get('breakdown', {}) or {}
+
+    # 只保留有效（非零非N/A）的高价值维度
+    active_dims = []
+    for k in _HIGH_VALUE_DIMS:
+        v = bd.get(k)
+        if v is None:
+            continue
+        sv = str(v).strip()
+        if not sv or sv == '0' or sv.startswith('N/A'):
+            continue
+        # 截断过长的值
+        sv = sv[:40] if len(sv) > 40 else sv
+        active_dims.append(f'{k}={sv}')
+
+    # 额外捕获任何非零整数维度（未在列表里的）
+    extra = []
+    for k, v in bd.items():
+        if k in _HIGH_VALUE_DIMS:
+            continue
+        try:
+            n = int(str(v).strip())
+            if n != 0 and abs(n) >= 3:
+                extra.append(f'{k}={n}')
+        except Exception:
+            pass
+
+    if mode == 'ultra':
+        # 极简模式：只输出核心三行
+        top5 = active_dims[:5]
+        return (
+            f"[{symbol} {direction} {regime} score={score:.0f}] "
+            f"{' | '.join(top5)}"
+        )
+
+    # compact模式：~200 token
+    lines = [
+        f"▸ 信号: {symbol} {direction} | 体制={regime} | score={score:.0f}",
+        f"▸ 有效维度: {' | '.join(active_dims[:12]) if active_dims else '无'}",
+    ]
+    if extra:
+        lines.append(f"▸ 其他加分: {' | '.join(extra[:6])}")
+
+    # 补充关键数值
+    rsi_1h = bd.get('RSI状态描述', '')
+    timing = signal.get('timing_status', signal.get('timing', ''))
+    sl_pct = signal.get('sl_pct', 0)
+    rr     = signal.get('rr1', 0)
+    if rsi_1h:
+        lines.append(f"▸ RSI: {str(rsi_1h)[:30]}")
+    if timing:
+        lines.append(f"▸ timing={timing} SL={sl_pct:.1f}% RR={rr:.2f}")
+
+    return '\n'.join(lines)
+
+
+def token_estimate(text: str) -> int:
+    """粗估token数（英文4字/token，中文1.5字/token）"""
+    zh = sum(1 for c in text if '\u4e00' <= c <= '\u9fff')
+    en = len(text) - zh
+    return int(zh / 1.5 + en / 4)
+
+# ══ [2026-09-01 设计院精简封印] 合并自 brahma_brain/dynamic_sl.py ══
+"""
+
+# STATUS: ACTIVE
+# 动态止损计算，执行辅助
+# LAST_REVIEW: 2026-07-01 | 属于辅助计算层，修改前确认调用链
+# ─────────────────────────────────────────────────────────────
+dynamic_sl.py — I3 ATR自适应止损引擎 (Brahma v12.9)
+═══════════════════════════════════════════════════
+功能:
+  1. 基于ATR动态计算止损位（替代固定百分比）
+  2. 体制漂移时自动扩展SL（避免被轻易扫损）
+  3. 支撑/阻力层精确止损（Key Level吸附）
+  4. 移动止损进度计算（已盈利时建议跟踪）
+  5. 止损建议：Conservative / Standard / Aggressive
+
+SL公式:
+  base_sl  = entry ± ATR(14) × multiplier
+  drift_sl = base_sl × (1 + drift_expansion)
+  key_sl   = snap_to_nearest_key_level(drift_sl, tolerance=0.3%)
+
+体制乘数:
+  BULL_TREND  LONG:  1.5×ATR (趋势宽松)
+  BEAR_IMPULSE SHORT: 1.5×ATR
+  CHOP_MID:          1.0×ATR (震荡紧凑)
+  HIGH_VOL:          2.0×ATR (高波动保护)
+"""
+import json, math
+from pathlib import Path
+from datetime import datetime, timezone
+
+DATA_DIR = Path(__file__).parent.parent / 'data'
+DHARMA   = Path(__file__).parent.parent / 'dharma' / 'data'
+
+# ATR乘数：体制 × 方向
+REGIME_MULT = {
+    'BULL_TREND':    {'LONG': 1.5, 'SHORT': 1.2},
+    'BULL_RECOVERY': {'LONG': 1.4, 'SHORT': 1.3},
+    'BEAR_IMPULSE':  {'LONG': 1.2, 'SHORT': 1.5},
+    'BEAR_RECOVERY': {'LONG': 1.3, 'SHORT': 1.4},
+    'CHOP_MID':      {'LONG': 1.0, 'SHORT': 1.0},
+    'CHOP_HIGH':     {'LONG': 1.8, 'SHORT': 1.8},
+    'CHOP_LOW':      {'LONG': 0.9, 'SHORT': 0.9},
+    'DEFAULT':       {'LONG': 1.2, 'SHORT': 1.2},
+}
+
+# 止损风格
+SL_STYLES = {
+    'conservative': 0.7,   # 更紧（高评分信号，减少亏损）
+    'standard':     1.0,   # 标准
+    'aggressive':   1.4,   # 更宽（高波动，避免扫损）
+}
+
+
+def _atr14_from_parquet(symbol: str, interval: str = '1h') -> float | None:
+    """从达摩院Parquet读取ATR14"""
+    try:
+        sym_lower = symbol.lower().replace('usdt','usdt')
+        fname = DHARMA / f'{sym_lower}_{interval}_2018_2026.parquet'
+        if not fname.exists():
+            fname = DHARMA / f'{symbol.lower()}_{interval}_2018_2026.parquet'
+        if not fname.exists(): return None
+        import pandas as pd
+        df = pd.read_parquet(fname).tail(50)
+        hi, lo, cl = df['high'].values, df['low'].values, df['close'].values
+        trs = [max(hi[i]-lo[i], abs(hi[i]-cl[i-1]), abs(lo[i]-cl[i-1]))
+               for i in range(1,len(cl))]
+        # EMA ATR14
+        atr = trs[0]
+        for tr in trs[1:]:
+            atr = atr * 13/14 + tr * 1/14
+        return atr
+    except: return None
+
+
+def _snap_to_key_level(price: float, key_levels: list, side: str,
+                        tolerance: float = 0.003) -> float:
+    """将止损吸附到最近的关键位（如果在tolerance范围内）"""
+    if not key_levels: return price
+    is_long = side in ('LONG','做多')
+    best = price
+    best_dist = float('inf')
+    for lvl in key_levels:
+        dist = abs(lvl - price) / price
+        if dist <= tolerance:
+            # 多头止损应该在支撑位下方, 空头在阻力位上方
+            if (is_long and lvl < price) or (not is_long and lvl > price):
+                if dist < best_dist:
+                    best_dist = dist
+                    best = lvl * (0.998 if is_long else 1.002)  # 再让一点
+    return best
+
+
+def compute(
+    symbol: str,
+    entry_price: float,
+    signal_dir: str,
+    regime: str = 'CHOP_MID',
+    score: float = 100,
+    drift_alert: str = 'OK',
+    current_price: float = None,
+    key_levels: list = None,
+    style: str = 'standard',
+    interval: str = '1h',
+) -> dict:
+    """
+    计算动态止损位
+
+    Returns:
+        {
+          'sl_price':    推荐止损价
+          'sl_pct':      止损幅度%
+          'atr14':       ATR14绝对值
+          'atr_mult':    使用的ATR乘数
+          'trail_note':  移动止损建议
+          'reasoning':   str
+        }
+    """
+    is_long = signal_dir in ('LONG','做多')
+
+    # ── 获取ATR ────────────────────────────────────────────
+    atr14 = _atr14_from_parquet(symbol, interval)
+    if atr14 is None or atr14 <= 0:
+        # fallback: entry的1.5%估算
+        atr14 = entry_price * 0.015
+        atr_source = 'estimated'
+    else:
+        atr_source = f'parquet_{interval}'
+
+    # ── 体制乘数 ────────────────────────────────────────────
+    reg_key = regime.upper()
+    if reg_key not in REGIME_MULT: reg_key = 'DEFAULT'
+    dir_key = 'LONG' if is_long else 'SHORT'
+    base_mult = REGIME_MULT[reg_key][dir_key]
+
+    # ── 漂移扩展 ────────────────────────────────────────────
+    drift_expansion = 0.0
+    if drift_alert == 'WARN':  drift_expansion = 0.15  # SL扩展15%
+    if drift_alert == 'ALERT': drift_expansion = 0.30  # SL扩展30%
+
+    # ── 评分调整（高分信号可以更紧） ────────────────────────
+    score_adj = 1.0 - max(0, score - 120) * 0.002  # score=150→0.94
+    score_adj = max(0.8, min(1.1, score_adj))
+
+    # ── 风格系数 ────────────────────────────────────────────
+    style_mult = SL_STYLES.get(style, 1.0)
+
+    # ── 最终ATR乘数 ─────────────────────────────────────────
+    final_mult = base_mult * (1 + drift_expansion) * score_adj * style_mult
+    final_mult = max(0.7, min(3.0, final_mult))
+
+    # ── 止损价格 ────────────────────────────────────────────
+    sl_distance = atr14 * final_mult
+    if is_long:
+        sl_price = entry_price - sl_distance
+    else:
+        sl_price = entry_price + sl_distance
+
+    # ── 关键位吸附 ──────────────────────────────────────────
+    sl_price_snapped = _snap_to_key_level(sl_price, key_levels or [], signal_dir)
+    snapped = abs(sl_price_snapped - sl_price) / entry_price > 0.0005
+
+    sl_pct = abs(entry_price - sl_price_snapped) / entry_price
+
+    # ── 移动止损建议 ────────────────────────────────────────
+    trail_note = ''
+    if current_price and entry_price:
+        pnl_pct = (current_price - entry_price) / entry_price
+        if not is_long: pnl_pct = -pnl_pct
+        if pnl_pct >= 0.015:
+            trail_note = f'TRAIL: price moved +{pnl_pct:.1%} → move SL to breakeven'
+        if pnl_pct >= 0.03:
+            trail_note = f'TRAIL: +{pnl_pct:.1%} → move SL to +1.0%'
+        if pnl_pct >= 0.05:
+            trail_note = f'TRAIL: +{pnl_pct:.1%} → move SL to +2.5%'
+
+    reasoning = (
+        f'ATR14={atr14:.4f}({atr_source}) mult={final_mult:.2f} '
+        f'[regime×{base_mult:.1f} drift×{1+drift_expansion:.2f} '
+        f'score×{score_adj:.2f} style×{style_mult:.1f}]'
+        f'{" SNAPPED" if snapped else ""}'
+    )
+
+    # ── Bandit SL软约束注入（设计院2026-08-06封印）──────────────
+    # 原理: sl_bandit推荐值作为软约束，置信度加权混合
+    # 不覆盖v4铁证硬下限，只在高置信度时微调sl_pct
+    bandit_note = ''
+    try:
+        from sl_bandit import recommend_sl_pct as _bandit_rec
+        _br = _bandit_rec(
+            regime=regime or 'BULL_TREND',
+            direction=signal_dir or 'LONG',
+            base_sl_pct=sl_pct * 100,
+            score=float(score or 100),
+        )
+        _rec_pct = _br['recommended_sl_pct'] / 100   # 转回小数
+        _conf    = _br['confidence']
+        # 置信度加权混合：conf<0.3几乎不影响，conf>0.8主导
+        if _conf >= 0.3:
+            _blended = sl_pct * (1 - _conf * 0.4) + _rec_pct * (_conf * 0.4)
+            _blended = max(_blended, sl_pct * 0.85)  # 最多紧缩15%
+            _blended = min(_blended, sl_pct * 1.15)  # 最多放宽15%
+            sl_pct   = round(_blended, 5)
+            # 同步更新sl_price
+            if is_long:
+                sl_price_snapped = entry_price * (1 - sl_pct)
+            else:
+                sl_price_snapped = entry_price * (1 + sl_pct)
+            bandit_note = (f' BANDIT:arm={_br["arm"]}'
+                           f',conf={_conf:.2f},rec={_br["recommended_sl_pct"]:.2f}%')
+    except Exception:
+        pass  # Bandit不可用时静默降级，不影响主链路
+    # ────────────────────────────────────────────────────────
+
+    return {
+        'sl_price':    round(sl_price_snapped, 6),
+        'sl_raw':      round(sl_price, 6),
+        'sl_pct':      round(sl_pct, 5),
+        'sl_distance': round(sl_distance, 6),
+        'atr14':       round(atr14, 6),
+        'atr_mult':    round(final_mult, 3),
+        'atr_source':  atr_source,
+        'snapped_to_key': snapped,
+        'trail_note':  trail_note,
+        'reasoning':   reasoning + bandit_note,
+        'ts': datetime.now(timezone.utc).isoformat(),
+    }
+
+
+if __name__ == '__main__':
+    # ETH空单测试
+    r = compute('ETHUSDT', 2127.65, 'SHORT', 'CHOP_MID', score=154, drift_alert='WARN')
+    print(f"ETH SHORT entry=2127.65:")
+    print(f"  SL={r['sl_price']:.2f}  ({r['sl_pct']:.2%})")
+    print(f"  ATR14={r['atr14']:.4f}  mult={r['atr_mult']:.2f}")
+    print(f"  {r['reasoning']}")
+    if r['trail_note']: print(f"  {r['trail_note']}")
+
+# ══ [2026-09-01 设计院精简封印] 合并自 brahma_brain/capital_allocator.py ══
+"""
+
+# STATUS: ACTIVE
+# 资金分配引擎，多仓位管理
+# LAST_REVIEW: 2026-07-01 | 属于辅助计算层，修改前确认调用链
+# ─────────────────────────────────────────────────────────────
+capital_allocator.py — I5 资金分配规划器 (Brahma v12.9)
+═══════════════════════════════════════════════════════
+功能:
+  1. 全局风险预算管理 (NAV×2% 总风险上限)
+  2. 多仓并发资金分配
+  3. 动态调整：NAV回撤 → 自动缩减预算
+  4. 品种权重：主流币 > 山寨
+  5. 输出: 本次可用资金 + 仓位建议 + 剩余预算
+
+风险预算模型:
+  total_risk_budget  = NAV × RISK_PCT_MAX   (默认2%)
+  used_risk          = sum(active_positions × sl_pct)
+  available_risk     = total_risk_budget - used_risk
+  position_usdt      = available_risk / sl_pct_estimate
+"""
+import json, statistics, time, subprocess
+from pathlib import Path
+from datetime import datetime, timezone
+
+# ─── 文件读取缓存（TTL=10s）避免同一次analyze多次全量读取 ──────────
+_FILE_CACHE: dict = {}
+_FILE_CACHE_TTL = 10  # 秒
+
+def _read_tail(path: Path, n: int = 600) -> list:
+    """只读文件最后n行，避免全量加载大文件（101k行→600行）"""
+    cache_key = f'{path}:tail:{n}'
+    now = time.time()
+    if cache_key in _FILE_CACHE and now - _FILE_CACHE[cache_key]['ts'] < _FILE_CACHE_TTL:
+        return _FILE_CACHE[cache_key]['data']
+    try:
+        r = subprocess.run(['tail', '-n', str(n), str(path)],
+                           capture_output=True, text=True, timeout=3)
+        lines = r.stdout.split('\n') if r.returncode == 0 else []
+    except Exception:
+        # fallback: 全量读（降级）
+        lines = path.read_text(errors='ignore').split('\n')[-n:] if path.exists() else []
+    _FILE_CACHE[cache_key] = {'ts': now, 'data': lines}
+    return lines
+
+DATA_DIR  = Path(__file__).parent.parent / 'data'
+TRADE_F   = DATA_DIR / 'trade_records.jsonl'
+NAV_F     = DATA_DIR / 'nav_history.json'
+ALLOC_LOG = DATA_DIR / 'capital_alloc.jsonl'
+
+# 全局参数
+RISK_PCT_MAX    = 0.02    # 总仓风险上限 NAV×2%
+SINGLE_RISK_MAX = 0.008   # 单仓风险上限 NAV×0.8%
+SL_DEFAULT_PCT  = 0.015   # 默认止损幅度1.5%（估算）
+MAX_CONCURRENT  = 3
+
+# 品种权重
+# [UP-CAPITAL-v2 2026-05-31] 实盘铁证驱动仓位权重
+# BTC SHORT: WR=92% n=23 → 最强Alpha，权重×1.5
+# DOGE:      PF=3.234(M02最高) WR=67%→修复后90%+ → 权重×1.3
+# 其余维持原权重
+TIER_WEIGHTS = {
+    'ALPHA': {'BTCUSDT': 1.5},                                           # WR=92% n=23 铁证
+    'S1':    {'ETHUSDT':0.9,'BNBUSDT':0.8,'SOLUSDT':0.8},
+    'S1+':   {'DOGEUSDT': 1.3},                                          # PF=3.234 M02最高
+    'S2':    {'XRPUSDT':0.7,'ADAUSDT':0.7,'DOTUSDT':0.7,'AVAXUSDT':0.7},
+    'DEFAULT': 0.5,
+}
+
+
+def _get_nav() -> float:
+    # [FIX-C v6.0] 优先读 brahma_state.json 的实时 NAV
+    try:
+        _bs_path = DATA_DIR / 'brahma_state.json'
+        if _bs_path.exists():
+            _bs = json.loads(_bs_path.read_text())
+            _nav = _bs.get('nav') or _bs.get('nav_verified')
+            if _nav and float(_nav) > 50:
+                return float(_nav)
+    except: pass
+    try:
+        if NAV_F.exists():
+            d = json.loads(NAV_F.read_text())
+            if isinstance(d, list) and d: return float(d[-1].get('nav', 127.62))
+            if isinstance(d, dict): return float(d.get('latest_nav', 127.62))
+    except: pass
+    try:
+        lines = list(reversed(_read_tail(TRADE_F, 400)))
+        candidates = []
+        for l in lines[:200]:  # 只看最近200条
+            if not l.strip(): continue
+            r = json.loads(l)
+            nav = r.get('nav_at_open') or r.get('nav_verified')
+            if nav and float(nav) > 50:  # 排除异常小值（>50防止历史早期小值）
+                candidates.append(float(nav))
+        if candidates:
+            return max(candidates)  # 取最大值（最近真实NAV）
+    except: pass
+    return 127.62
+
+
+def _get_active_exposure() -> tuple:
+    """返回 (n_active, total_risk_used)"""
+    trade_f = DATA_DIR / 'trade_records.jsonl'
+    if not trade_f.exists(): return (0, 0.0)
+    active = []
+    for l in reversed(_read_tail(trade_f, 200)):
+        if not l.strip(): continue
+        try:
+            r = json.loads(l)
+            if not r.get('_is_simulation') and r.get('result') in (None,'','OPEN'):
+                active.append(r)
+        except: pass
+    # 估算每个持仓占用的风险
+    total_risk = 0.0
+    for pos in active:
+        nav_open = float(pos.get('nav_at_open') or pos.get('nav_verified') or 127.62)
+        qty = float(pos.get('qty') or 0)
+        entry = float(pos.get('entry_price') or 0)
+        sl    = float(pos.get('stop_loss') or 0)
+        if entry > 0 and sl > 0 and qty > 0:
+            sl_pct = abs(entry - sl) / entry
+            risk_usdt = qty * entry * sl_pct
+            total_risk += risk_usdt
+        else:
+            total_risk += nav_open * SL_DEFAULT_PCT  # 估算
+    return (len(active), total_risk)
+
+
+def _symbol_weight(symbol: str) -> float:
+    for tier, syms in TIER_WEIGHTS.items():
+        if tier == 'DEFAULT': continue
+        if symbol in syms: return syms[symbol]
+    return TIER_WEIGHTS['DEFAULT']
+
+
+def _recent_drawdown() -> float:
+    """最近20笔累计回撤"""
+    if not TRADE_F.exists(): return 0.0
+    pnls = []
+    for l in reversed(_read_tail(TRADE_F, 100)):
+        if not l.strip(): continue
+        try:
+            r = json.loads(l)
+            if not r.get('_is_simulation') and r.get('pnl_pct'):
+                pnls.append(float(r['pnl_pct']))
+        except: pass
+        if len(pnls) >= 20: break
+    if not pnls: return 0.0
+    cum, peak, max_dd = 0, 0, 0
+    for p in reversed(pnls):
+        cum += p
+        if cum > peak: peak = cum
+        dd = peak - cum
+        if dd > max_dd: max_dd = dd
+    return max_dd
+
+
+def compute(
+    symbol: str,
+    sl_pct: float = None,
+    signal_score: float = 100,
+    nav_override: float = None,
+) -> dict:
+    """
+    计算本次可分配资金
+
+    Returns:
+        {
+          'position_usdt':    建议开仓USDT
+          'risk_usdt':        本次风险敞口
+          'budget_remaining': 风险预算剩余
+          'budget_used_pct':  已用预算%
+          'allowed':          bool
+          'reason':           str
+          'adjustments':      dict
+        }
+    """
+    nav = nav_override or _get_nav()
+    n_active, used_risk = _get_active_exposure()
+    drawdown = _recent_drawdown()
+    sl_est = sl_pct or SL_DEFAULT_PCT
+
+    total_budget  = nav * RISK_PCT_MAX
+    avail_budget  = max(0, total_budget - used_risk)
+    single_budget = nav * SINGLE_RISK_MAX
+
+    adjustments = {}
+
+    # ── 并发上限检查 ───────────────────────────────────────
+    if n_active >= MAX_CONCURRENT:
+        return {
+            'position_usdt': 0, 'risk_usdt': 0,
+            'budget_remaining': avail_budget, 'budget_used_pct': used_risk/total_budget,
+            'allowed': False,
+            'reason': f'Max concurrent {MAX_CONCURRENT} reached ({n_active} active)',
+            'adjustments': {}
+        }
+
+    # ── 预算检查 ───────────────────────────────────────────
+    if avail_budget <= 0:
+        return {
+            'position_usdt': 0, 'risk_usdt': 0,
+            'budget_remaining': 0, 'budget_used_pct': 1.0,
+            'allowed': False,
+            'reason': f'Risk budget exhausted ({used_risk:.2f}u/{total_budget:.2f}u)',
+            'adjustments': {}
+        }
+
+    # ── 品种权重调整 ────────────────────────────────────────
+    sym_w = _symbol_weight(symbol)
+    adjustments['symbol_weight'] = sym_w
+
+    # ── 回撤调整 ────────────────────────────────────────────
+    dd_mult = 1.0
+    if drawdown >= 0.08:   dd_mult = 0.6
+    elif drawdown >= 0.05: dd_mult = 0.8
+    adjustments['drawdown_mult'] = dd_mult
+    adjustments['drawdown'] = round(drawdown, 4)
+
+    # ── 信号评分调整 ────────────────────────────────────────
+    score_mult = 0.5 + min(signal_score / 200, 0.5)   # 0.5~1.0
+    adjustments['score_mult'] = round(score_mult, 3)
+
+    # ── 计算本次风险额度 ────────────────────────────────────
+    this_budget = min(avail_budget, single_budget) * sym_w * dd_mult * score_mult
+    this_budget = max(0, this_budget)
+
+    # 从风险额度反算仓位
+    position_usdt = this_budget / max(sl_est, 0.005)
+    position_usdt = max(5.0, min(position_usdt, nav * 0.12))  # 5u~12%NAV
+
+    risk_usdt = position_usdt * sl_est
+    used_after = used_risk + risk_usdt
+    budget_used_pct = used_after / total_budget if total_budget > 0 else 1.0
+
+    reason = (f"NAV={nav:.1f} budget={total_budget:.2f}u "
+              f"avail={avail_budget:.2f}u "
+              f"sym_w={sym_w:.1f} dd_m={dd_mult:.1f} "
+              f"pos={position_usdt:.1f}u risk={risk_usdt:.2f}u")
+
+    result = {
+        'position_usdt': round(position_usdt, 2),
+        'risk_usdt':     round(risk_usdt, 3),
+        'budget_total':  round(total_budget, 3),
+        'budget_used':   round(used_risk, 3),
+        'budget_remaining': round(avail_budget, 3),
+        'budget_used_pct': round(budget_used_pct, 3),
+        'n_active': n_active,
+        'allowed': True,
+        'reason': reason,
+        'adjustments': adjustments,
+        'ts': datetime.now(timezone.utc).isoformat(),
+    }
+
+    try:
+        with open(ALLOC_LOG, 'a') as f:
+            f.write(json.dumps({'symbol': symbol, **result}) + '\n')
+        # 自动截断：超过3000行时保留最新2000行（设计院 2026-06-29 防膜胀）
+        try:
+            lines = ALLOC_LOG.read_text().splitlines()
+            if len(lines) > 3000:
+                ALLOC_LOG.write_text('\n'.join(lines[-2000:]) + '\n')
+        except Exception:
+            pass
+    except: pass
+
+    return result
+
+
+def get_budget_summary() -> dict:
+    """预算概览"""
+    nav = _get_nav()
+    n_active, used_risk = _get_active_exposure()
+    total_budget = nav * RISK_PCT_MAX
+    avail = max(0, total_budget - used_risk)
+    return {
+        'nav': nav,
+        'total_budget_usdt': round(total_budget, 2),
+        'used_risk_usdt':    round(used_risk, 2),
+        'available_usdt':    round(avail, 2),
+        'used_pct':          round(used_risk / total_budget if total_budget > 0 else 0, 3),
+        'n_active':          n_active,
+        'slots_left':        MAX_CONCURRENT - n_active,
+    }
+
+
+if __name__ == '__main__':
+    summary = get_budget_summary()
+    print(f"Budget: {summary['used_risk_usdt']:.2f}/{summary['total_budget_usdt']:.2f}u "
+          f"({summary['used_pct']:.0%}) NAV={summary['nav']:.1f}")
+    print(f"Active: {summary['n_active']}/{MAX_CONCURRENT}")
+    for sym in ['BTCUSDT','ETHUSDT','SOLUSDT']:
+        r = compute(sym, signal_score=120)
+        print(f"  {sym}: pos={r['position_usdt']:.1f}u risk={r['risk_usdt']:.2f}u "
+              f"allowed={r['allowed']}")
+
+# ══ [2026-09-01 设计院精简封印] 合并自 brahma_brain/sl_bandit.py ══
+# ponytail: sl_bandit 383行，有意为之，重构前先 grep 所有调用方
+"""
+sl_bandit.py — 梵天 SL自适应Bandit引擎
+设计院 2026-08-06 | 苏摩111封印
+
+基于历史249条结算信号的模拟验证:
+  当前固定SL: WR=38% avg_pnl=-0.54%/笔
+  Bandit最优: avg_pnl≈+0.63%/笔
+  预期提升:   +1.17%/笔 (217%提升)
+
+核心思路:
+  - 将sl_pct离散化为5个arm: <1.5 / 1.5-2.0 / 2.0-2.5 / 2.5-3.0 / 3.0+
+  - 按 regime × direction × arm 维护 (wins, n) 计数
+  - 使用UCB1算法选择最优arm（兼顾探索+利用）
+  - 每次signal_settler结算后自动更新
+  - 推荐的sl_pct作为dynamic_sl的软约束（不硬覆盖v4铁证门槛）
+
+文件:
+  data/sl_bandit_state.json — 持久化arm计数
+"""
+
+import json
+import math
+import time
+from pathlib import Path
+from typing import Optional
+
+BASE = Path(__file__).parent.parent
+BANDIT_STATE_PATH = BASE / 'data' / 'sl_bandit_state.json'
+SIGNAL_LOG_PATH   = BASE / 'data' / 'live_signal_log.jsonl'
+
+# ── Arm定义 ──────────────────────────────────────────────
+ARMS = [
+    ('tight',    0.5,  1.5),   # arm0: 0.5~1.5%
+    ('standard', 1.5,  2.0),   # arm1: 1.5~2.0%
+    ('iron',     2.0,  2.5),   # arm2: 2.0~2.5% ← v4铁证核心区间
+    ('wide',     2.5,  3.0),   # arm3: 2.5~3.0%
+    ('extreme',  3.0, 15.0),   # arm4: 3.0%+
+]
+ARM_NAMES = [a[0] for a in ARMS]
+ARM_MID   = [(a[1]+a[2])/2 for a in ARMS]  # arm代表值
+
+# ── v4铁证硬下限（不被Bandit覆盖）──────────────────────
+V4_MIN_SL = {
+    'BEAR_TREND':    2.0,
+    'BEAR_EARLY':    2.0,
+    'CHOP_MID':      2.5,
+    'BULL_TREND':    1.5,
+    'BEAR_RECOVERY': 2.0,
+    'BULL_EARLY':    1.5,
+    'DEFAULT':       1.5,
+}
+
+# UCB1 探索常数（越大越探索，越小越利用）
+# 2026-08-07 设计院深度推理封印：iron arm WR=58.5%已验证是最优arm，
+# 降低C值 1.5→0.8加速收敛，减少对extreme(WR=7.9%)的无谓探索
+UCB_C = 0.8
+
+# 最少观测次数才信任该arm（否则视为未知，用先验）
+MIN_OBS = 5
+
+# ── 先验初始化（来自模拟验证结果）────────────────────────
+# 格式: regime:direction:arm_name → (wins, n)
+PRIOR_FROM_SIM = {
+    'BULL_TREND:LONG:tight':    (29,  90),   # WR=32%
+    'BULL_TREND:LONG:standard': (15,  46),   # WR=33%
+    'BULL_TREND:LONG:iron':     (31,  52),   # WR=60% ← 最优
+    'BULL_TREND:LONG:wide':     (2,   20),   # WR=10% 先验防止过度探索—宽止损历史较差
+    'BULL_TREND:LONG:extreme':  (2,   40),   # WR=5% [封印降权 2026-08-14] 实测WR=7.9% n=38 PRIOR强制降至5%淘汰
+    'BEAR_RECOVERY:LONG:iron':  (8,    8),   # WR=100%
+    'CHOP_MID:LONG:extreme':    (1,   20),   # WR=5% [封印降权 2026-08-14] 实测WR=9.1% n=11 PRIOR降权
+}
+
+
+def _load_state() -> dict:
+    """加载Bandit状态"""
+    if BANDIT_STATE_PATH.exists():
+        try:
+            return json.loads(BANDIT_STATE_PATH.read_text())
+        except Exception:
+            pass
+    return {}
+
+
+def _save_state(state: dict) -> None:
+    """持久化Bandit状态"""
+    BANDIT_STATE_PATH.parent.mkdir(exist_ok=True)
+    tmp = BANDIT_STATE_PATH.with_suffix('.tmp')
+    tmp.write_text(json.dumps(state, indent=2, ensure_ascii=False))
+    tmp.replace(BANDIT_STATE_PATH)
+
+
+def _arm_key(regime: str, direction: str, arm_name: str) -> str:
+    return f"{regime}:{direction}:{arm_name}"
+
+
+def _sl_to_arm(sl_pct: float) -> str:
+    """将sl_pct映射到arm名称"""
+    for name, lo, hi in ARMS:
+        if lo <= sl_pct < hi:
+            return name
+    return 'extreme'
+
+
+def _ucb1_score(wins: int, n: int, total_n: int, c: float = UCB_C) -> float:
+    """UCB1评分：期望收益 + 探索奖励"""
+    if n == 0:
+        return float('inf')  # 未探索的arm优先
+    exploitation = wins / n
+    exploration  = c * math.sqrt(math.log(max(total_n, 1)) / n)
+    return exploitation + exploration
+
+
+def recommend_sl_pct(
+    regime: str,
+    direction: str,
+    base_sl_pct: float,
+    score: float = 100.0,
+    verbose: bool = False,
+) -> dict:
+    """
+    推荐最优sl_pct
+
+    Args:
+        regime:      体制标签 (BULL_TREND/BEAR_TREND/...)
+        direction:   方向 (LONG/SHORT)
+        base_sl_pct: dynamic_sl计算出的基础止损%
+        score:       信号评分（高分信号允许更紧的止损）
+        verbose:     是否输出调试信息
+
+    Returns:
+        {
+          'recommended_sl_pct': float,  # Bandit推荐值
+          'arm': str,                   # 选中的arm
+          'confidence': float,          # 置信度 0~1
+          'reasoning': str,
+        }
+    """
+    state = _load_state()
+
+    # 初始化先验（首次运行）
+    for k, (w, n) in PRIOR_FROM_SIM.items():
+        if k not in state:
+            state[k] = {'wins': w, 'n': n}
+
+    # v4铁证硬下限
+    v4_min = V4_MIN_SL.get(regime, V4_MIN_SL['DEFAULT'])
+
+    # 统计该体制+方向的总观测数
+    total_n = sum(
+        state.get(_arm_key(regime, direction, a[0]), {}).get('n', 0)
+        for a in ARMS
+    )
+
+    # UCB1评分各arm
+    arm_scores = {}
+    for arm_name, arm_lo, arm_hi in ARMS:
+        # 跳过低于v4铁证下限的arm
+        if arm_hi <= v4_min:
+            continue
+        key = _arm_key(regime, direction, arm_name)
+        d = state.get(key, {'wins': 0, 'n': 0})
+        arm_scores[arm_name] = _ucb1_score(d['wins'], d['n'], total_n)
+
+    if not arm_scores:
+        # 所有arm被v4铁证过滤 → 返回base_sl
+        return {
+            'recommended_sl_pct': base_sl_pct,
+            'arm': _sl_to_arm(base_sl_pct),
+            'confidence': 0.0,
+            'reasoning': f'v4铁证下限={v4_min}% 覆盖所有arm，使用base_sl={base_sl_pct:.2f}%',
+        }
+
+    # 选UCB1最高的arm
+    best_arm = max(arm_scores, key=arm_scores.__getitem__)
+    best_arm_info = next(a for a in ARMS if a[0] == best_arm)
+    arm_mid = (best_arm_info[1] + best_arm_info[2]) / 2
+
+    # 高分信号允许更紧（最多紧缩15%）
+    score_tight = 1.0 - max(0, score - 130) * 0.003  # score=160→0.91
+    score_tight = max(0.85, min(1.0, score_tight))
+    recommended = arm_mid * score_tight
+
+    # 硬约束: 不低于v4铁证下限, 不超过5%
+    recommended = max(recommended, v4_min)
+    recommended = min(recommended, 5.0)
+    recommended = round(recommended, 2)
+
+    # 置信度: 当前arm观测数/MIN_OBS
+    arm_key = _arm_key(regime, direction, best_arm)
+    arm_n = state.get(arm_key, {}).get('n', 0)
+    confidence = min(1.0, arm_n / MIN_OBS)
+
+    # 若置信度低(<0.5)，与base_sl加权混合
+    if confidence < 0.5:
+        recommended = round(base_sl_pct * (1 - confidence) + recommended * confidence, 2)
+        recommended = max(recommended, v4_min)
+
+    reasoning = (
+        f"UCB1选arm={best_arm}(score={arm_scores[best_arm]:.2f}) "
+        f"arm_mid={arm_mid:.1f}% score_adj={score_tight:.2f} "
+        f"v4_min={v4_min}% confidence={confidence:.2f} "
+        f"→ recommended={recommended:.2f}%"
+    )
+
+    if verbose:
+        print(f"[sl_bandit] {regime}:{direction}")
+        for a, s_score in sorted(arm_scores.items(), key=lambda x: -x[1]):
+            k = _arm_key(regime, direction, a)
+            d = state.get(k, {'wins': 0, 'n': 0})
+            wr = d['wins']/d['n']*100 if d['n'] else 0
+            print(f"  {a:<10} UCB={s_score:.2f} WR={wr:.0f}% n={d['n']}")
+        print(f"  → 推荐: {recommended:.2f}% ({reasoning})")
+
+    return {
+        'recommended_sl_pct': recommended,
+        'arm': best_arm,
+        'confidence': confidence,
+        'reasoning': reasoning,
+    }
+
+
+def update_from_outcome(
+    regime: str,
+    direction: str,
+    sl_pct: float,
+    outcome: str,
+    pnl_pct: float = 0.0,
+) -> None:
+    """
+    根据信号结算结果更新Bandit状态
+
+    Args:
+        regime:    体制
+        direction: 方向
+        sl_pct:    实际使用的sl_pct
+        outcome:   结算结果 (TP1/TP2/SL_HIT/EXPIRED_NO_TOUCH/...)
+        pnl_pct:   实际PnL%
+    """
+    arm_name = _sl_to_arm(sl_pct)
+    key = _arm_key(regime, direction, arm_name)
+
+    state = _load_state()
+    if key not in state:
+        state[key] = {'wins': 0, 'n': 0}
+
+    state[key]['n'] += 1
+
+    # 判断胜负
+    win = (
+        outcome in ('TP1', 'TP2', 'WIN', 'TAKE_PROFIT') or
+        (outcome == 'EXPIRED_NO_TOUCH' and pnl_pct > 0)
+    )
+    if win:
+        state[key]['wins'] += 1
+
+    state[key]['last_updated'] = time.time()
+    _save_state(state)
+
+
+def sync_from_signal_log() -> int:
+    """
+    从live_signal_log.jsonl批量同步结算数据到Bandit状态
+    返回新同步的条数
+    """
+    state = _load_state()
+    last_sync_ts = state.get('_last_sync_ts', 0)
+    new_count = 0
+
+    if not SIGNAL_LOG_PATH.exists():
+        return 0
+
+    lines = SIGNAL_LOG_PATH.read_text().strip().split('\n')
+    for l in lines:
+        try:
+            s = json.loads(l)
+            ts = s.get('ts', 0)
+            if ts <= last_sync_ts:
+                continue
+            outcome = s.get('outcome', '')
+            if not outcome:
+                continue
+            regime    = s.get('regime', 'BULL_TREND')
+            direction = s.get('direction', 'LONG')
+            sl_pct    = float(s.get('sl_pct', 0) or 0)
+            pnl_pct   = float(s.get('pnl_pct') or s.get('pnl', 0) or 0)
+            if sl_pct <= 0:
+                continue
+            update_from_outcome(regime, direction, sl_pct, outcome, pnl_pct)
+            new_count += 1
+        except Exception:
+            pass
+
+    # 更新同步时间戳
+    if new_count > 0:
+        state2 = _load_state()
+        state2['_last_sync_ts'] = time.time()
+        _save_state(state2)
+
+    return new_count
+
+
+def get_stats() -> dict:
+    """返回当前Bandit统计摘要"""
+    state = _load_state()
+    summary = {}
+    for key, v in state.items():
+        if key.startswith('_'):
+            continue
+        n = v.get('n', 0)
+        wins = v.get('wins', 0)
+        wr = wins/n*100 if n > 0 else 0
+        summary[key] = {'n': n, 'wins': wins, 'wr': round(wr, 1)}
+    return summary
+
+
+def sync_from_simfactory() -> int:
+    """
+    从 dharma_simfactory.py 生成的 simfactory_trades.jsonl
+    批量喂给 Bandit，加速WR收敛（设计院 2026-08-07）
+    """
+    sim_path = BASE / 'data' / 'simfactory_trades.jsonl'
+    if not sim_path.exists():
+        return 0
+
+    state = _load_state()
+    seen_ids = set(state.get('_sim_seen_ids', []))
+    new_count = 0
+
+    for line in sim_path.read_text().splitlines():
+        try:
+            t = json.loads(line)
+            sid = t.get('signal_id', '')
+            if sid in seen_ids:
+                continue
+            result = t.get('result', '')
+            if result not in ('TP1', 'SL'):
+                continue
+            outcome = 'WIN' if result == 'TP1' else 'LOSS'
+            sl_pct  = float(t.get('sl_pct', 0) or 0)
+            pnl_pct = float(t.get('pnl_pct', 0) or 0)
+            if sl_pct <= 0:
+                continue
+            update_from_outcome(
+                t.get('regime', 'BULL_TREND'),
+                t.get('direction', 'LONG'),
+                sl_pct, outcome, pnl_pct
+            )
+            seen_ids.add(sid)
+            new_count += 1
+        except Exception:
+            pass
+
+    if new_count > 0:
+        state2 = _load_state()
+        state2['_sim_seen_ids'] = list(seen_ids)
+        _save_state(state2)
+
+    return new_count
+
+
+# ── 独立运行: 打印统计 + 同步 ────────────────────────────
+if __name__ == '__main__':
+    import sys
+
+    if '--sync' in sys.argv:
+        n = sync_from_signal_log()
+        print(f"[sl_bandit] 从信号日志同步: {n}条新记录")
+        n2 = sync_from_simfactory()
+        print(f"[sl_bandit] 从 simfactory同步: {n2}条新记录")
+
+    print("\n[sl_bandit] 当前Bandit状态:")
+    stats = get_stats()
+    if not stats:
+        print("  (空，首次运行将使用先验数据)")
+    else:
+        for k, v in sorted(stats.items(), key=lambda x: -x[1]['n']):
+            print(f"  {k:<40} n={v['n']:3} wins={v['wins']:3} WR={v['wr']:5.1f}%")
+
+    print("\n[sl_bandit] 推荐示例:")
+    for regime, direction in [('BULL_TREND','LONG'),('BEAR_RECOVERY','LONG'),('CHOP_MID','SHORT')]:
+        r = recommend_sl_pct(regime, direction, base_sl_pct=2.0, score=140, verbose=True)
+        print(f"  {regime}:{direction} → {r['recommended_sl_pct']:.2f}% (arm={r['arm']}, conf={r['confidence']:.2f})\n")
