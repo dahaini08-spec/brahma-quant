@@ -41,7 +41,7 @@ from data_cache        import prefetch_symbol, get_klines, klines_to_ohlcv
 from market_state      import analyze   as ms_analyze
 from smc_engine        import analyze_smc
 from brahma_brain.smc_engine import divergence_score
-from volume_engine     import volume_score
+from brahma_brain.volume_unified import volume_score
 from range_engine      import range_score  # [Phase2a] 区间结构引擎
 try:
     from math_utils import ema as _mu_ema, rsi as _mu_rsi, atr as _mu_atr  # [设计院 2026-06-30 全量接入] 统一数学库

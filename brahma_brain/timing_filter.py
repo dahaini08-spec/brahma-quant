@@ -156,7 +156,7 @@ def _score_kronos(p_up: Optional[float], signal_dir: str) -> int:
 def _check_bearish_4h_streak(symbol: str, n: int = 3) -> bool:
     """[P1-5实现 2026-07-16 苏摩111] BTC单边下行豁免通道：检查N根连续4H阴线"""
     try:
-        from brahma_brain.brahma_bus import bus as _bus_tf
+        from brahma_brain.brahma_bus import _price_bus as _bus_tf
         klines = _bus_tf.klines(symbol, '4h', limit=n + 1)
         closes = [float(k[4]) for k in klines]
         return len(closes) >= n + 1 and all(closes[i] < closes[i-1] for i in range(1, len(closes)))
