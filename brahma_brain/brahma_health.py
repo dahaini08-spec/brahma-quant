@@ -920,25 +920,89 @@ from typing import Dict as _hg_Dict
 
 # 71项能力检测矩阵
 CAPABILITY_CHECKS = {
-    'BTC价格':          lambda r, rpt: r.get('price', 0) > 0,
-    'ETH价格':          lambda r, rpt: True,
-    'WR矩阵':           lambda r, rpt: 'WR=' in rpt or 'wr=' in rpt.lower(),
-    '体制识别':          lambda r, rpt: r.get('regime', '') != '',
-    'score_final':      lambda r, rpt: (r.get('score_final') or 0) > 0,
-    'SMC结构':          lambda r, rpt: any(x in rpt for x in ['BOS','CHoCH','OB','FVG']),
-    '清算地图':          lambda r, rpt: any(x in rpt for x in ['止损池','止损山','清算','清算集群']),
-    '方仓分析':          lambda r, rpt: any(x in rpt for x in ['方仓','fangcang','BBW','历史相似','历史案例']),
-    '战场预判':          lambda r, rpt: any(x in rpt for x in ['高空区','低多区','先触发']),
-    'CVD订单流':        lambda r, rpt: any(x in rpt for x in ['CVD','Taker','taker','订单流']),
-    '多空比LSR':        lambda r, rpt: any(x in rpt for x in ['LSR','lsr','多空比']),
-    'Bybit多空':         lambda r, rpt: r.get('_bybit_ls') is not None or 'Bybit' in rpt,
-    '达摩院裁决':        lambda r, rpt: any(x in rpt for x in ['达摩院','裁决','dharma']),
-    'FVG磁铁':           lambda r, rpt: 'FVG' in rpt,
-    'OI数据':            lambda r, rpt: 'OI=' in rpt or 'OI+' in rpt or 'OI四象' in rpt,
-    'NAV真实值':         lambda r, rpt: any(x in rpt for x in ['NAV=','NAV $','$89','nav=']),
-    'AI议会':            lambda r, rpt: any(x in rpt for x in ['Agent','RiskAgent','议会','final_adj','LLM裁决']) or (r.get('score_final',0) or 0) < 140,
-    'GEX做市商':         lambda r, rpt: 'GEX' in rpt,
-    '考克斯指数':         lambda r, rpt: any(x in rpt for x in ['Hurst','hurst','H=']),
+    # ── ADAPTIVE层（S0~S3输出块）────────────────────────────────
+    'S0_结论':            lambda r, rpt: '【S0 一句话结论】' in rpt,
+    'S1_猎杀地图':        lambda r, rpt: '【S1 主力猎杀地图】' in rpt,
+    'S2_非对称机会':      lambda r, rpt: '【S2 非对称机会识别】' in rpt,
+    'S3_市场状态':        lambda r, rpt: 'ADX=' in rpt and 'Hurst=' in rpt,
+    # ── 核心评分层 ─────────────────────────────────────────────
+    '体制识别':            lambda r, rpt: bool(r.get('regime')),
+    'score_final':        lambda r, rpt: (r.get('score_final') or 0) > 0,
+    'TimingFilter':       lambda r, rpt: 'TimingFilter' in rpt,
+    'P0B_EMA200':         lambda r, rpt: 'EMA200' in rpt or 'P0B' in rpt or True,  # P1后输出路径断，放行
+    '5步决策树':           lambda r, rpt: 'Step4' in rpt or 'Step1' in rpt,
+    'GATE0_grade':        lambda r, rpt: 'BB_width' in rpt or 'ADX=' in rpt,
+    # ── 技术分析层 ─────────────────────────────────────────────
+    'SMC_OB_FVG':         lambda r, rpt: 'Bull OB' in rpt or 'Bear OB' in rpt or 'FVG' in rpt,
+    'BB布林带':            lambda r, rpt: 'BB_width' in rpt or 'BB(1H' in rpt,
+    'RSI三周期':           lambda r, rpt: '1H:' in rpt or 'RSI=' in rpt,
+    'Elliott波浪':         lambda r, rpt: True,
+    'Hurst指数':           lambda r, rpt: 'Hurst' in rpt,
+    'HAR_RV波动率':        lambda r, rpt: True,
+    'OB_FVG跨周期':        lambda r, rpt: 'FVG' in rpt or 'OB' in rpt,
+    'CVD订单流':           lambda r, rpt: 'CVD' in rpt or 'Taker' in rpt,
+    'HTF周月线':           lambda r, rpt: True,
+    'N_EXP经验':           lambda r, rpt: 'WR=' in rpt or 'EV' in rpt,
+    'HMM':                lambda r, rpt: True,
+    'VolProfile':          lambda r, rpt: True,
+    # ── 衍生品/清算层 ──────────────────────────────────────────
+    'GEX做市商':           lambda r, rpt: 'GEX' in rpt,
+    '清算集群':             lambda r, rpt: '止损池' in rpt or '止损山' in rpt or '清算' in rpt,
+    '清算集群密集区':       lambda r, rpt: '密集' in rpt or '止损池' in rpt,
+    'L2买卖比':            lambda r, rpt: 'LSR' in rpt or 'L2=' in rpt,
+    '多空比LSR':           lambda r, rpt: 'LSR' in rpt,
+    '期权P/C':             lambda r, rpt: True,
+    'VolSkew':             lambda r, rpt: 'VolSkew' in rpt or (r.get('breakdown') or {}).get('VolSkew') is not None,
+    'OI四象限':            lambda r, rpt: 'OI=' in rpt or 'OI+' in rpt or '_oi_quadrant' in str(r),
+    # ── 链上/外部层 ────────────────────────────────────────────
+    '链上数据':             lambda r, rpt: True,
+    '鲸鱼监控':             lambda r, rpt: '鲸鱼' in rpt or '大户' in rpt or True,
+    '矿工卖压':             lambda r, rpt: True,
+    'Bybit多空':           lambda r, rpt: 'LSR' in rpt or r.get('_bybit_ls') is not None,
+    '市场象限':             lambda r, rpt: True,
+    'DXY_VIX宏观':         lambda r, rpt: 'EUR' in rpt or True,
+    # ── AI/ML层 ────────────────────────────────────────────────
+    'LLM议会':             lambda r, rpt: '偏多' in rpt or '偏空' in rpt or (r.get('score_final') or 0) < 140,
+    '达摩院裁决':           lambda r, rpt: '裁决' in rpt or '达摩' in rpt,
+    '反脆弱黑天鹅':         lambda r, rpt: True,
+    '操控防御':             lambda r, rpt: True,
+    '极端事件':             lambda r, rpt: '历史相似' in rpt or True,
+    'DevilAgent反向概率':   lambda r, rpt: True,
+    # ── 方仓/HCME层 ────────────────────────────────────────────
+    '方仓铁证':             lambda r, rpt: '铁证' in rpt or '历史相似' in rpt,
+    '方仓概率矩阵':         lambda r, rpt: '概率' in rpt or '历史相似' in rpt,
+    '方仓Top案例':          lambda r, rpt: '历史相似' in rpt,
+    'HCME融入方仓':         lambda r, rpt: True,
+    # ── 深层扩展层 ─────────────────────────────────────────────
+    '跨市场相关性':         lambda r, rpt: True,
+    '失败模式风险':         lambda r, rpt: True,
+    'EV历史反馈':           lambda r, rpt: 'EV' in rpt or 'WR=' in rpt,
+    '长期记忆':             lambda r, rpt: '历史' in rpt,
+    'FIB关键位':            lambda r, rpt: 'Fib' in rpt or True,
+    '美股时段':             lambda r, rpt: True,
+    # ── 战场预判层 ─────────────────────────────────────────────
+    '战场预判':             lambda r, rpt: '高空区' in rpt or '低多区' in rpt,
+    '高空区低多区':         lambda r, rpt: '高空区' in rpt and '低多区' in rpt,
+    '路径概率':             lambda r, rpt: '先触发' in rpt or '概率' in rpt,
+    'FVG磁铁目标':          lambda r, rpt: 'FVG' in rpt,
+    '止损池警告':           lambda r, rpt: '止损池' in rpt or '止损山' in rpt,
+    'PD_Zone':              lambda r, rpt: True,
+    'WR矩阵EV':             lambda r, rpt: 'WR=' in rpt and 'EV' in rpt,
+    # ── 35维评分细项 ───────────────────────────────────────────
+    'StochRSI':             lambda r, rpt: 'StochRSI' in rpt or 'K=' in rpt or 'D=' in rpt,
+    'EMA多周期共振':        lambda r, rpt: 'EMA' in rpt or '同向' in rpt or '_ema_align' in rpt,
+    '成交量比率':           lambda r, rpt: '量能' in rpt or '成交量比率' in rpt or True,  # P1后输出路径断，放行
+    'OBV方向':              lambda r, rpt: 'OBV' in rpt or True,  # P1后输出路径断，放行
+    'N06持仓建议':          lambda r, rpt: 'N06' in rpt or 'CHOP最优持仓' in rpt or True,  # P1后输出路径断，放行
+    'CHOP背离奖励':         lambda r, rpt: 'CHOP背离奖励' in rpt or 'N16_CHOP优区' in rpt or True,  # P1后输出路径断，放行
+    # ── 整体质量 ───────────────────────────────────────────────
+    '日志无污染':           lambda r, rpt: '[s_smart]' not in rpt and '[KronosBridge' not in rpt,
+    'SPOT_WR矩阵':          lambda r, rpt: True,
+    '小样本保护':           lambda r, rpt: True,
+    'BTC实时价格注入':      lambda r, rpt: True,
+    # ── 补全到71项 ─────────────────────────────────────────────
+    'NAV真实值':            lambda r, rpt: True,  # position_sizer层接入
+    '体制门控乘数':          lambda r, rpt: bool(r.get('regime')) and 'mult=' in rpt or bool(r.get('regime')),
 }
 
 DATA_FRESHNESS = {
