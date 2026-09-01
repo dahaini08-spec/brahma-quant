@@ -974,7 +974,7 @@ var_engine.py — VaR单仓风险量化引擎
 try:
     from brahma_bus import _SESS as _HTTP  # [HTTP Session共享 2026-08-02 设计院自主]
 except ImportError:
-    _HTTP = requests  # fallback
+    import requests as _requests_mod; _HTTP = _requests_mod  # fallback
 import numpy as np
 from datetime import datetime, timezone
 
