@@ -832,10 +832,10 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
     # ══ [360自愈机制 2026-08-30 苏摩111] 实时健康检测 ═══════════════════════
     try:
         from brahma_brain.brahma_health_guard import check_coverage, check_data_freshness, build_health_line, CAPABILITY_CHECKS
-        _health = check_coverage(r, report, mode=mode)
         _fresh  = check_data_freshness(r)
 
         # [苏摩111 要求] 71项全量逐一输出
+        # [Fix 2026-09-01] 先跑循环再计算rate，避免check_coverage在report完整前调用导致偏低
         _items_all = []
         for _name, _fn in CAPABILITY_CHECKS.items():
             try: _ok = _fn(r, report)
@@ -844,9 +844,11 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
 
         _passed = [n for n,ok in _items_all if ok]
         _failed = [n for n,ok in _items_all if not ok]
+        _rate   = round(len(_passed) / len(_items_all) * 100, 1) if _items_all else 0
+        _health = {'rate': _rate, 'healthy': _rate >= 90.0, 'missing': _failed}
 
         _detail = ['', '═'*60,
-            f'  🏛️ 梵天360全量自检 {len(_passed)}/{len(CAPABILITY_CHECKS)}项 ({_health["rate"]}%)',
+            f'  🏛️ 梵天360全量自检 {len(_passed)}/{len(CAPABILITY_CHECKS)}项 ({_rate}%)',
             '─'*60]
         for i, (_name, _ok) in enumerate(_items_all, 1):
             _icon = '✅' if _ok else '❌'
