@@ -96,7 +96,7 @@ def fmt_breakdown(bd: dict) -> str:
         "量能层": ["量能验证", "量能衰竭+背离共振", "VolProfile", "成交量比率", "形态成熟度"],
         "衍生品层": ["清算/OI", "情绪/费率", "VolSkew", "期权+订单流", "_options_pc", "_options_pc_v56"],
         "外部扩展层": ["鲸鱼+微观", "_smart_money", "_miner_pressure", "_cross_fr_basis", "_causal_regime"],
-        "AI/ML层": ["s23_kronos", "ML+在线贝叶斯+滑点", "LSTM+NLP情绪", "HMM乘数", "研究增强层"],
+        "AI/ML层": ["ML+在线贝叶斯+滑点", "LSTM+NLP情绪", "HMM乘数", "研究增强层"],
         "宏观层": ["L2+贝叶斯+宏观", "宏观+事件"],
         "时段/体制层": ["时段权重", "N03时段奖励", "N08_牛市RSI中性", "N10_全覆盖奖励",
                        "N15_分层仓位", "N16_ATR体制", "_regime", "_regime_mult"],
@@ -617,7 +617,6 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
     _kronos_src  = (r.get('extra') or {}).get('kronos_src', 'cache')
     _p_up_val    = r.get('s23_p_up', '?')
     _kronos_icon = '✅' if _kronos_src in ('engine','kronos_full') else '⚠️cache'
-    _bc_lines.append(f'  Kronos src={_kronos_src} {_kronos_icon}  p_up={_p_up_val}')
     lines.append('▌ B/C类模块状态')
     lines.extend(_bc_lines)
     lines.append('')
@@ -755,7 +754,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
             _kron_v    = bd.get('s23_kronos', '') or ''
             _q = (
                 f"梵天信号审查: {symbol} {direction} score={score_final:.0f} "
-                f"体制={regime} HCME={_hcme_wr_v} Kronos={_kron_v}\n"
+                f"体制={regime} HCME={_hcme_wr_v}\n"
                 f"仅用一个英文单词回答: ENTER / WAIT / AVOID"
             )
             _third = _call_r(_q, max_tokens=10, timeout=12, model='standard')
@@ -1787,7 +1786,7 @@ if __name__ == '__main__':
         _bi._BRAHMA_MEM_MODE = _mem_mode
         _bi._BRAHMA_MEM_AVAIL = _avail_now
         if _mem_mode != 'full':
-            print(f'[内存降级] {_avail_now:.0f}MB → {_mem_mode}模式（跳过{"HCME/方仓" if _mem_mode=="degraded" else "Kronos/HCME/方仓"}）')
+            print(f'[内存降级] {_avail_now:.0f}MB → {_mem_mode}模式（跳过{"HCME/方仓" if _mem_mode=="degraded" else "HCME/方仓"}）')
     except (ImportError, SystemExit) as _mge:
         if isinstance(_mge, SystemExit): raise
     import argparse

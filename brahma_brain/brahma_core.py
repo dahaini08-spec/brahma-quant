@@ -3376,87 +3376,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _e22:
         pass  # GEX不影响主流评分
 
-    # ── s23: Kronos统一域 v2.0 (brahma_kronos) ────────────────────────
-    # [2026-08-24 设计院顶层重构] 201行三段式→30行统一入口
-    # [2026-08-25 fix P2] 直接用kronos_bridge.get_s23_kronos，绕过brahma_kronos降级链传参bug
-    try:
-        import sys as _sys23, os as _os23
-        _bb23 = _os23.path.dirname(_os23.path.abspath(__file__))
-        if _bb23 not in _sys23.path: _sys23.path.insert(0, _bb23)
-        from brahma_brain.kronos_engine import get_s23_kronos as _bk_fn
-    except ImportError:
-        def _bk_fn(*a, **kw): return (0, {'score': 0, 'p_up': 0.5, 'source': 'import_err'})
-    try:
-        from recovery_unlocker import check_unlock as _check_unlock
-    except ImportError:
-        def _check_unlock(*a, **kw): return {'unlocked': False}  # [2026-08-25 fix] recovery_unlocker可选模块，不阻塑Kronos主链路
+    # s23: Kronos已删除 (2026-09-01 苏摩111)
 
-    try:
-        _sym_t = _result.get('symbol', symbol)
-        _dir_t = _result.get('signal_dir', signal_dir)
-        _kl15m = ms.get('klines_15m', [])
-        if not _kl15m and extra_data:
-            _kl15m = extra_data.get('_klines_15m', [])
-        if not _kl15m:
-            try:
-                _raw15 = _lazy("data_cache","get_klines")(_sym_t, '15m', 200)
-                _kl15m = [[float(c[0]),float(c[1]),float(c[2]),float(c[3]),float(c[4]),float(c[5])] for c in _raw15]  # [2026-08-25 fix] 保留timestamp_ms供_build_ohlcv_df使用
-            except Exception: _kl15m = []
-        # 格式标准化: dict→list
-        if _kl15m and isinstance(_kl15m[0], dict):
-            _kl15m = [[float(_k.get('o',0)),float(_k.get('h',0)),float(_k.get('l',0)),float(_k.get('c',0)),float(_k.get('v',0))] for _k in _kl15m]
-        elif _kl15m and isinstance(_kl15m[0], (list,tuple)):
-            try: _kl15m = [[float(v) for v in k[:5]] for k in _kl15m]
-            except Exception: _kl15m = []
-
-        if len(_kl15m) >= 60:
-            _s23_regime = _result.get('regime', '')
-            _bk_result  = _bk_fn(_kl15m, _sym_t, _dir_t, _s23_regime)  # [2026-08-25 fix] get_s23_kronos参数顺序: (klines,symbol,dir,regime)
-            # [2026-08-25 fix] get_s23_kronos返回(score, meta_dict)元组，需要解包
-            if isinstance(_bk_result, tuple) and len(_bk_result) == 2:
-                _s23, _bk_result = int(_bk_result[0]), (_bk_result[1] if isinstance(_bk_result[1], dict) else {})
-            else:
-                _s23 = int(_bk_result.get('score', 0)) if isinstance(_bk_result, dict) else 0
-            _p_up_raw   = float(_bk_result.get('p_up', 0.5))
-            _s23_meta   = _bk_result
-
-            # CHOP方向冲突惩罚
-            if 'CHOP' in _s23_regime and _s23_meta.get('direction_conflict', False):
-                _s23 = min(_s23, -10)
-
-            # CORRECTION/RECOVERY解锁
-            _unlock = _check_unlock(regime=_s23_regime, direction=_dir_t,
-                                    base_score=_result['confluence']['score'],
-                                    kronos_meta=_s23_meta, symbol=_sym_t)
-            if _unlock.get('unlocked'):
-                _s23 = max(_s23, _unlock['s23_bonus'])
-
-            # Kronos极値模式（p_up>0.90做空=惩罚减半）
-            if _p_up_raw >= 0.90 and _dir_t == 'SHORT':
-                _s23 = max(_s23, -4)
-                print(f'[s23-Kronos极値] {_sym_t} p_up={_p_up_raw:.2f}: 惩罚降半至{_s23}')
-
-            # 注入评分（50%降权）
-            if _s23 != 0:
-                _s23_w = round(_s23 * 0.5)
-                _result['confluence']['score'] += _s23_w
-                _result['confluence'].setdefault('breakdown', {})['s23_kronos'] = (
-                    f"{_s23_w:+d}(原{_s23:+d}×50%) src={_bk_result.get('source','?')[:20]}"
-                )
-                _result['s23_p_up'] = _p_up_raw
-
-            # kronos_p_up写入extra_data和result顶层
-            if extra_data is not None:
-                extra_data['kronos_p_up']  = _p_up_raw
-                extra_data['kronos_score'] = _s23
-                extra_data['kronos_src']   = _bk_result.get('source', 'brahma_kronos')
-            _result['kronos_p_up']  = _p_up_raw
-            _result['kronos_score'] = _s23
-            print(f'[KronosBridge·ACTIVE] {_sym_t}: Kronos={_s23:+d} p_up={_p_up_raw:.3f} src={_bk_result.get("source","?")}')
-    except Exception:
-        pass  # Kronos不影响主流程
-
-    # ── s24: 已归档 (2026-06-26 设计院封印) ────────────────────────────
+        # ── s24: 已归档 (2026-06-26 设计院封印) ────────────────────────────
     pass  # s24已归档
 
     # ── s26: OI持仓量驱动拉升猎手（2026-06-30 设计院 × 苏摩授权）──────
