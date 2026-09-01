@@ -55,7 +55,6 @@ if not _in_test:
         _mem_gate(500)
     except (ImportError, SystemExit) as _e:
         if isinstance(_e, SystemExit): raise
-# ──────────────────────────────────────────────────────
 
 import sys, os, json, time, hmac, hashlib, math, requests
 
@@ -277,9 +276,7 @@ def _push(msg: str):
         pass
 
 
-# ════════════════════════════════════════════════════
 # 核心：筛选可执行信号
-# ════════════════════════════════════════════════════
 
 def find_executable_signals() -> list[dict]:
     """从live_signal_log中找出所有满足条件的待执行信号"""
@@ -458,7 +455,6 @@ def find_executable_signals() -> list[dict]:
                     s['_pos_source'] = (s.get('_pos_source', '') + '+kelly_sizer').lstrip('+')
         except Exception:
             pass  # position_sizer失败不阻断
-        # ══ [position_sizer END] ═══════════════════════════════════════════════════════════════
 
 
 
@@ -498,7 +494,6 @@ def find_executable_signals() -> list[dict]:
                 print(f"  [condition_order] 触发: {str(_trig)[:100]}")
         except Exception as _cond_e:
             pass  # 条件单检查失败不阻断
-        # ══ [END condition_order_matrix] ════════════════════════════════════════
         # ══ [P1 headroom仓位压缩 2026-08-08 设计院封印] ════════════════════════
         # 根因修复：08-02 commit宣称headroom接入，实际从未实现
         # 在Kelly仓位确定后，叠加headroom回撤压缩系数
@@ -537,7 +532,6 @@ def find_executable_signals() -> list[dict]:
                 continue  # 跳过此信号
         except Exception as _hr_e:
             pass  # headroom失败不阻断
-        # ══ [END headroom] ══════════════════════════════════════════════════════
         # ══ [P1 宏观事件仓位乘数 2026-08-13 苏摩111封印] ══
         # 宏观事件不影响信号评分，只压缩仓位（不则CPI事件日会抹掉SMC+15的信号质量）
         try:
@@ -549,7 +543,6 @@ def find_executable_signals() -> list[dict]:
                 print(f"[macro_mult] {s.get('symbol')} 宏观事件仓位调整 {_pre_pct*100:.1f}%→{s['_tier_nav_pct']*100:.1f}% ×{_macro_mult}")
         except Exception:
             pass
-        # ══ [END macro_pos_mult] ════════════════════════════════════
         # ⑥ RR门槛
         rr1 = float(s.get('rr1', 0) or 0)
         if rr1 < MIN_RR:
@@ -758,7 +751,6 @@ def find_executable_signals() -> list[dict]:
         if 0.1 <= _ob_dist_exec < 0.5:
             print(f'[P0-A OB_CHASE] {s.get("symbol")} ob_dist={_ob_dist_exec:.2f}%在追单陷阱区(0.1~0.5%)，跳过')
             continue  # 追单陷阱区，拒绝执行
-        # ══ [P0-A END] ═══════════════════════════════════════════════════════════
 
         candidates.append(s)
 
@@ -816,18 +808,13 @@ def find_executable_signals() -> list[dict]:
                 candidates = _approved
         except Exception:
             pass  # portfolio_optimizer不可用时保持原candidates
-    # ══ [P2-B END] ══════════════════════════════════════════════════════
 
     return candidates
 
 
-# ════════════════════════════════════════════════════
 # 执行单笔开单
-# ════════════════════════════════════════════════════
 
-# ════════════════════════════════════════════════════
 # 分批挂单辅助函数
-# ════════════════════════════════════════════════════
 
 def _should_use_limit(entry_lo: float, entry_hi: float, px: float) -> bool:
     """判断是否应该用挂单：入场区间宽度>0.1% 且当前价在区间附近"""
@@ -1532,7 +1519,6 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
             result['_var99_pct_nav']  = round(_var99_pct_nav, 2)
     except Exception as _var_e:
         pass  # VaR计算失败不阻断执行
-    # ── [P1 var_engine END] ───────────────────────────────────────────────────
 
     # ── blacktea审批门（苏摩111 2026-07-10）─────────────────────────────────
     # 单笔>NAV×8% → 推送审批请求 → 30min无回复自动降仓
@@ -1849,9 +1835,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     return result
 
 
-# ════════════════════════════════════════════════════
 # 主入口
-# ════════════════════════════════════════════════════
 
 def run(dry_run: bool = False) -> list[dict]:
     """
@@ -1973,7 +1957,6 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
                 _phj(_watch_msg, dedup_key=f"watch_{_sym}_{_dir}_{int(_s)}", dedup_ttl=7200)
     except Exception as _tier_e:
         import logging as _lg; _lg.getLogger('brahma').warning(f'[tier_push] {_tier_e}')
-    # ── [分级门槛 END] ──────────────────────────────────────────────────────────
 
     executed_set = _load_executed()
     results = []
@@ -1992,7 +1975,6 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
                 pass  # 待执行循环内再決策
     except Exception:
         pass  # capital_allocator失败不阻断执行
-    # ── [P2 END] ─────────────────────────────────────────────────────────────
 
     for sig in candidates:
         sig_id = sig.get('signal_id', '')
@@ -2013,7 +1995,6 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
                     pass  # 不阻断执行，让 execute_signal 自行判断
         except Exception:
             pass  # 失败降级，不阻断执行
-        # ── [P2 END] ───────────────────────────────────────────────────
 
         # ── [P3-B 设计院 2026-07-08] RL A/B仓位分流 ──────────────────
         try:
@@ -2050,11 +2031,9 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
             continue
 
 
-        # ══════════════════════════════════════════════════════════
         # [纸面开单模式 2026-08-21 苏摩111封印]
         # 铁证：PM账户止损坏(-4120)，自动开单风险不可控
         # 所有信号 → 推送Jarvis → 苏摩「执行」后手动下单
-        # ══════════════════════════════════════════════════════════
         try:
             from push_hub import _jarvis as _phj_paper
             import datetime as _dt_paper
@@ -2105,7 +2084,6 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
         except Exception:
             pass  # 纸面跟踪失败不影响主流程
         continue
-        # ══════════════════════════════════════════════════════════
         try:
             exec_result = execute_signal(sig, nav, active_pos)
         except Exception as _exec_err:

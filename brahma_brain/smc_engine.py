@@ -14,9 +14,7 @@ brahma_brain · Phase 1
 # 可优化: BOS/CHoCH检测可提取为独立模块复用
 from data_cache import get_klines, klines_to_ohlcv
 
-# ═══════════════════════════════════════════════════════════════
 # 一、结构分析（BOS / CHoCH）
-# ═══════════════════════════════════════════════════════════════
 
 def find_structure_points(highs: list, lows: list, lookback: int = 5) -> dict:
     """识别摆动高低点序列"""
@@ -122,9 +120,7 @@ def _merge_fvg_list(fvg_list: list, gap_pct_threshold: float = 0.8) -> list:
     return merged
 
 
-# ═══════════════════════════════════════════════════════════════
 # 二、Order Block 识别
-# ═══════════════════════════════════════════════════════════════
 
 def find_order_blocks(opens: list, highs: list, lows: list,
                       closes: list, lookback: int = 200) -> dict:
@@ -201,9 +197,7 @@ def find_order_blocks(opens: list, highs: list, lows: list,
         'nearest_bear_ob': bear_obs[0] if bear_obs else None,
     }
 
-# ═══════════════════════════════════════════════════════════════
 # 三、FVG 公平价值缺口识别
-# ═══════════════════════════════════════════════════════════════
 
 def find_fvg(highs: list, lows: list, closes: list, lookback: int = 500) -> dict:
     """识别FVG（公平价值缺口）
@@ -338,9 +332,7 @@ def find_fvg(highs: list, lows: list, closes: list, lookback: int = 500) -> dict
         'magnet_down':   target_bear[0]['mid'] if target_bear else (nearest_bull['mid'] if nearest_bull and nearest_bull['mid'] < price else None),
     }
 
-# ═══════════════════════════════════════════════════════════════
 # 四、流动性猎杀点识别
-# ═══════════════════════════════════════════════════════════════
 
 def find_liquidity_pools(highs: list, lows: list, closes: list,
                          tolerance: float = 0.003) -> dict:
@@ -396,11 +388,9 @@ def find_liquidity_pools(highs: list, lows: list, closes: list,
     }
 
 
-# ═══════════════════════════════════════════════════════════════
 # 七、清算集群精度升级（P2升级 设计院 2026-08-04 苏摩111批准）
 # 旧法：简单等高/等低点配对（lookback=100，仅两两比较）
 # 新法：多重摆动高/低点聚类 → 密度评分 → 分级猎杀目标
-# ═══════════════════════════════════════════════════════════════
 
 def find_liquidity_clusters(highs: list, lows: list, closes: list,
                              lookback: int = 200,
@@ -553,9 +543,7 @@ def find_liquidity_clusters(highs: list, lows: list, closes: list,
     }
 
 
-# ═══════════════════════════════════════════════════════════════
 # 五、Premium / Discount 区域
-# ═══════════════════════════════════════════════════════════════
 
 def calc_premium_discount(high: float, low: float, price: float) -> dict:
     """计算Premium/Discount区域"""
@@ -587,9 +575,7 @@ def calc_premium_discount(high: float, low: float, price: float) -> dict:
         'note':     note,
     }
 
-# ═══════════════════════════════════════════════════════════════
 # 六、SMC综合评分（0~20分，供共振评分器使用）
-# ═══════════════════════════════════════════════════════════════
 
 def smc_score(structure: dict, obs: dict, fvgs: dict,
               liquidity: dict, pd_zone: dict, signal_dir: str) -> dict:
@@ -665,9 +651,7 @@ def smc_score(structure: dict, obs: dict, fvgs: dict,
         'grade':   '优' if score >= 15 else ('良' if score >= 10 else ('中' if score >= 5 else '差')),
     }
 
-# ═══════════════════════════════════════════════════════════════
 # 七、主入口
-# ═══════════════════════════════════════════════════════════════
 
 def analyze_smc(symbol: str, signal_dir: str = 'LONG',
                 interval: str = '1h', lookback: int = 200) -> dict:
@@ -835,12 +819,10 @@ def find_ob_smc_standard(opens: list, highs: list, lows: list,
     }
 
 
-# ═══════════════════════════════════════════════════════════════
 # 六、多周期共振层（P1升级 设计院 2026-08-04 苏摩111批准）
 # 核心逻辑：同一价格区域在日线/4H/1H同时存在FVG/OB → 权重叠加
 # 日线FVG权重×3，4H权重×2，1H权重×1
 # 三层共振 = 机构核心操作区，信号质量最高
-# ═══════════════════════════════════════════════════════════════
 
 def _zones_overlap(lo1: float, hi1: float, lo2: float, hi2: float) -> bool:
     """判断两个区间是否重叠"""

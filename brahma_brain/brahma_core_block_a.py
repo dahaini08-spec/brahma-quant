@@ -91,7 +91,6 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
                 breakdown['EMA200逆势'] = f'-6 (价格{_price_now:.0f}>EMA200={_ema200_1h:.0f}，逆势空)'
     except Exception:
         pass
-    # ───────────────────────────────────────────────────────────────────────────
     s1 = min(s1, 20)
     score += s1
     breakdown['趋势一致性'] = s1
@@ -296,7 +295,6 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
                 breakdown['G2_方仓CVD共振'] = f'+8 (RSI1h={_r1h:.0f}中位 BBW={_bbw*100:.1f}%<2% CVD卖方 WR=61.4%)'
     except Exception as _g_e:
         breakdown['G1G2共振'] = f'N/A({str(_g_e)[:30]})'
-    # ── [P3 END] ──────────────────────────────────────────────────────────
 
     s3 = min(s3_rsi + s3_div + _chop_macd_bonus + s3_stoch + _s3_g1 + _s3_g2, 30)  # [P3] 上限提升到30
     score += s3
@@ -473,7 +471,6 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
                         breakdown['区间Zone_v2'] = f'{_zone}({_qual}) {_rng_add:+d}'
             except Exception:
                 pass
-            # ── [P1-B END] ────────────────────────────────────────────────────
 
         elif extra_data:  # fallback: 用 bb 计算层已有的 k1h
             pass

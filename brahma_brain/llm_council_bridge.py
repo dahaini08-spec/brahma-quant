@@ -33,7 +33,6 @@ llm_council_bridge.py — 梵天 LLM 议会二次审查层 v1.0
 # ── STATUS: SHADOW ────────────────────────────────────────────
 # 当前运行在shadow模式，记录建议但不修改score
 # LAST_REVIEW: 2026-07-01 | 设计院初次封印
-# ─────────────────────────────────────────────────────────────
 
 from __future__ import annotations
 import os, json, time, hashlib, logging
@@ -70,9 +69,7 @@ _call_count_today = {'date': '', 'count': 0}
 _cache: Dict[str, Tuple[float, Dict]] = {}
 
 
-# ════════════════════════════════════════════════════════════════
 # 1. Agent Prompt 模板
-# ════════════════════════════════════════════════════════════════
 
 RISK_AGENT_PROMPT = """你是梵天量化系统的风控议员（Risk Agent）。
 【梵天宪法（必须遵守）】
@@ -151,9 +148,7 @@ MACRO_AGENT_PROMPT = """你是梵天量化系统的宏观议员（Macro Agent）
 4. 仅输出JSON，不要其他文字。"""
 
 
-# ════════════════════════════════════════════════════════════════
 # 2. LLM 调用层（带降级）
-# ════════════════════════════════════════════════════════════════
 
 def _load_cache() -> Dict:
     """加载磁盘缓存"""
@@ -221,9 +216,7 @@ def _call_llm(prompt: str, agent_name: str, model: str | None = None) -> Optiona
     return None
 
 
-# ════════════════════════════════════════════════════════════════
 # 3. Agent 实现
-# ════════════════════════════════════════════════════════════════
 
 def _risk_agent_review(signal: Dict) -> Dict:
     """
@@ -413,9 +406,7 @@ def _macro_agent_review(signal: Dict, market_ctx: Dict) -> Dict:
             'key_factor': 'LLM不可用，宏观中性', 'confidence': 'LOW', 'source': 'neutral_fallback'}
 
 
-# ════════════════════════════════════════════════════════════════
 # 4. 主入口：review()
-# ════════════════════════════════════════════════════════════════
 
 def _quant_agent_review(signal: Dict, similar_signals: Dict) -> Dict:
     # [自主决策 2026-08-26] similar_wr=0%规则层：历史全亏损直接扣分，不等LLM
@@ -772,7 +763,6 @@ def review(
             logger.info(f'[ReAct R2] 分歧解决: Risk {_risk_adj_r1:+d}→{risk_result["score_adj"]:+d} Quant {_quant_adj_r1:+d}→{quant_result["score_adj"]:+d}')
         except Exception as _r2e:
             logger.warning(f'[ReAct R2] 失败，保持R1结果: {_r2e}')
-    # ── [ReAct R2 END] ──────────────────────────────────────────────────
 
     # ── 分数合并 ──────────────────────────────────────────────
     risk_adj  = risk_result.get('score_adj', 0)
@@ -887,9 +877,7 @@ def review(
     return signal_result
 
 
-# ════════════════════════════════════════════════════════════════
 # 5. Shadow Log（达摩院验证数据）
-# ════════════════════════════════════════════════════════════════
 
 def _shadow_log(signal: Dict, council: Dict):
     """记录shadow模式建议 [升级 2026-08-04: 完整字段+裁决追踪]"""
@@ -971,9 +959,7 @@ def get_shadow_stats() -> Dict:
     }
 
 
-# ════════════════════════════════════════════════════════════════
 # 6. 主入口（测试）
-# ════════════════════════════════════════════════════════════════
 
 if __name__ == '__main__':
     print("🧪 LLM Council Bridge 测试\n")

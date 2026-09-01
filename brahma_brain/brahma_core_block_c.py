@@ -350,7 +350,6 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
         breakdown['宏观+事件_v2'] = 0  # 非阻断  # [P1-B audit-fix] 重复key加后缀
 
 
-    # ═══════════════════════════════════════════════════════════
     # [s20] 布林带偏离度 [DEAD_CODE 封印 2026-08-11 bollinger_engine缺失]
     # [DEAD_CODE 封印 2026-08-11] bollinger_engine缺失 依赖缺失，线上已归零，代码已清除
     s20 = 0
@@ -360,7 +359,6 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
     s21 = 0
 
     # [s22] 成交量比率（宽松量化新维度 2026-06-09）
-    # ═══════════════════════════════════════════════════════════
     s22 = 0.0
     try:
         import sys as _sys22, os as _os22
@@ -448,9 +446,7 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
         extra_data['_rl_kelly_mult'] = extra_data['rl_position'].get('kelly_mult', 1.0)
 
 
-    # ═══════════════════════════════════════════════════════════
     # [UP-SRG v5.0] 体制×方向智能乘数
-    # ═══════════════════════════════════════════════════════════
 
     return {
         's11': s11, 's12': s12, 's13': s13, 's14': s14, 's15': s15, 's15_adj': s15_adj, 's16': s16, 's17': s17, 's18': s18, 's19': s19, 's20': s20, 's21': s21, 's22': s22, 's_research': s_research,

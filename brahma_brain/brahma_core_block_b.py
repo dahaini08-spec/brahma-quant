@@ -257,7 +257,6 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
                 breakdown['VolSkew'] = _vs_pts
     except Exception:
         pass
-    # ──────────────────────────────────────────────────────────────────────
 
     # ── 维度9：时段权重（精细化）─────────────────────────────────
     import datetime
@@ -348,7 +347,6 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
         _am_sigs  = ' | '.join(_am.get('signals', []))[:80]
         breakdown['操控防御'] = _am_adj
         breakdown['操控风险'] = f"{_am_level}({_am.get('risk_score',0)}) {_am_sigs}"
-    # ────────────────────────────────────────────────────────────────────────────
 
     # ── [维度36 Amihud非流动性因子 2026-08-28 苏摩111] ────────────────────────
     # 来源: ai_quant_trade × 梵天融合 | 零额外API调用（复用klines_1h）
@@ -382,7 +380,6 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
     except Exception:
         pass
     score += _s_amihud
-    # ────────────────────────────────────────────────────────────────────────────
 
     return {
         's7': s7, 's8': s8, 's9': s9, 's10': s10,
