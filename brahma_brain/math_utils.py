@@ -244,3 +244,48 @@ if __name__ == '__main__':
     print(f'RSI={r:.1f}  EMA14={e:.2f}  MACD={m:.4f}/{s:.4f}/{h:.4f}')
     print(f'Bollinger: upper={ub:.2f}  mid={mb:.2f}  lower={lb:.2f}')
     print('math_utils 自测通过 ✅')
+
+
+# ══ [2026-09-01 设计院精简封印] 合并自grade_utils.py ══════════════════════════
+# grade_utils功能全量合并，调用方import路径不变（保持grade_utils.py为转发shim）
+
+import re as _re_grade
+
+GRADE_LABEL_MAP = {
+    '神级': 95, '极强': 85, '强+': 78, '强': 72, '中等': 55, '放弃': 0,
+    'S': 95, 'A': 85, 'B': 72, 'C': 55, 'X': 0,
+}
+
+def grade_to_label(grade_num: int) -> str:
+    if grade_num >= 90: return '🔴神级'
+    if grade_num >= 80: return '🟠极强'
+    if grade_num >= 75: return '🟡强+'
+    if grade_num >= 70: return '🟡强'
+    if grade_num >= 50: return '🔵中等'
+    return '⚫放弃'
+
+def parse_grade(grade_val, structure_grade=0, effective_grade=0) -> int:
+    if isinstance(grade_val, (int, float)):
+        n = int(grade_val)
+    elif isinstance(grade_val, str) and grade_val.strip():
+        n = 0
+        for kw in sorted(GRADE_LABEL_MAP.keys(), key=len, reverse=True):
+            if kw in grade_val:
+                n = GRADE_LABEL_MAP[kw]; break
+        if n == 0:
+            m = _re_grade.search(r'(\d+)', grade_val)
+            n = int(m.group(1)) if m else 0
+    else:
+        n = 0
+    if n == 0 and effective_grade: n = int(effective_grade)
+    if n == 0 and structure_grade: n = int(structure_grade)
+    return max(0, min(100, n))
+
+def enrich_signal_grade(signal_dict: dict) -> dict:
+    grade_num = parse_grade(
+        signal_dict.get('grade', 0),
+        structure_grade=int(signal_dict.get('structure_grade', 0) or 0),
+        effective_grade=float(signal_dict.get('effective_grade', 0) or 0),
+    )
+    signal_dict['grade_num'] = grade_num
+    return signal_dict

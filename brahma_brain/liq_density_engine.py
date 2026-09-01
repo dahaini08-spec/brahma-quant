@@ -460,3 +460,82 @@ def get_hyperliquid_oi(symbol_base: str = 'BTC') -> dict:
         }
     except Exception:
         return {}
+
+
+# ══ [2026-09-01 设计院精简封印] 合并自s7_liq_config.py ══════════════════════
+# s7清算配置常量，原s7_liq_config.py已改为转发shim
+LIQ_DENSITY_THRESHOLDS_BY_TIER: dict[int, dict[str, float]] = {
+    1: {  # BTC/ETH 主流
+        "extreme": 80_000_000,   # $80M 机构级别清算瀑布
+        "strong":  30_000_000,   # $30M
+        "medium":  10_000_000,   # $10M
+        "weak":     3_000_000,   # $3M
+    },
+    2: {  # SOL/BNB/XRP等次主流
+        "extreme": 50_000_000,   # $50M
+        "strong":  20_000_000,   # $20M
+        "medium":   5_000_000,   # $5M
+        "weak":     1_000_000,   # $1M
+    },
+    3: {  # DOGE/AVAX/LINK等中等
+        "extreme": 20_000_000,   # $20M
+        "strong":   8_000_000,   # $8M
+        "medium":   2_000_000,   # $2M
+        "weak":       500_000,   # $500K
+    },
+    4: {  # 中小币种
+        "extreme":  5_000_000,   # $5M
+        "strong":   2_000_000,   # $2M
+        "medium":     500_000,   # $500K
+        "weak":       100_000,   # $100K
+    },
+    5: {  # 超小币/姆币
+        "extreme":  1_000_000,   # $1M
+        "strong":     300_000,   # $300K
+        "medium":     100_000,   # $100K
+        "weak":        20_000,   # $20K
+    },
+}
+
+# 向后兼容：原单一阈值表保留（默认L2层级，平衡断表）
+LIQ_DENSITY_THRESHOLDS: dict[str, float] = LIQ_DENSITY_THRESHOLDS_BY_TIER[2]
+
+LIQ_DENSITY_BONUS: dict[str, float] = {
+    "extreme": 4.0,   # 机构级别清算瀑布
+    "strong":  3.0,   # 明显清算墙被扫
+    "medium":  2.0,   # 中等清算事件
+    "weak":    1.0,   # 轻微清算
+}
+
+# 双向极端爆仓惩罚（两侧总量 > 此值时扣分）
+LIQ_CHAOS_THRESHOLD: float = 20_000_000   # $20M
+LIQ_CHAOS_PENALTY:   float = -2.0
+
+# 方向不对称比例门槛（单侧 > 对侧 × 此倍数才算方向确认）
+LIQ_DIRECTION_RATIO: float = 1.5
+
+
+def get_liq_bonus(side_usd: float, symbol: str = '') -> tuple[int, str]:
+    """
+    根据单侧爆仓量和标的流动性层级返回 (加分, 等级名称)
+    [P0-B 苏摩111 2026-07-11] 新增 symbol 参数实现L1~L5差异化
+    side_usd: 方向一致侧的爆仓总量（USD）
+    symbol:   合约名（用于获取流动性层级）
+    """
+    # 获取流动性层级
+    tier = 2  # 默认L2
+    if symbol:
+        try:
+            from brahma_brain.confluence_tf_weights import _get_tier
+            tier = _get_tier(symbol)
+        except Exception:
+            pass
+
+    thresholds = LIQ_DENSITY_THRESHOLDS_BY_TIER.get(
+        tier, LIQ_DENSITY_THRESHOLDS_BY_TIER[3]
+    )
+
+    for level in ("extreme", "strong", "medium", "weak"):
+        if side_usd >= thresholds[level]:
+            return int(LIQ_DENSITY_BONUS[level]), level
+    return 0, "none"
