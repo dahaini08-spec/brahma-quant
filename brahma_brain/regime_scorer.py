@@ -82,7 +82,7 @@ def _score_daily(kd: list) -> dict:
     price  = closes[-1]
 
     # RSI | RSI指标评分
-    rsi_1d = _rsi(closes)
+    rsi_1d = rsi(closes)  # [Fix 2026-09-01] _rsi()返回list，必须用rsi()取标量
     if rsi_1d > 60:
         bull += 25
     elif rsi_1d > 50:
@@ -141,7 +141,7 @@ def _score_4h(k4: list) -> dict:
     closes = [k['c'] for k in k4]
     price  = closes[-1]
 
-    rsi_4h = _rsi(closes)
+    rsi_4h = rsi(closes)  # [Fix 2026-09-01] 取标量
     ema20  = _ema_scalar(closes, 20)  # [P0修复] scalar
     ema9   = _ema_scalar(closes, 9)   # [P0修复] scalar
 
@@ -202,7 +202,7 @@ def _score_1h(k1: list) -> dict:
     closes = [k['c'] for k in k1]
     price  = closes[-1]
 
-    rsi_1h = _rsi(closes)
+    rsi_1h = rsi(closes)  # [Fix 2026-09-01] 取标量
     ema20  = _ema_scalar(closes, 20)  # [P0修复] scalar
 
     # RSI | RSI指标评分
