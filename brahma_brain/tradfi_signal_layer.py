@@ -1054,7 +1054,7 @@ tradfi_dump_detector.py — 美股代币放量下跌识别引擎
   M5: monthly_trend_filter        月线趋势过滤（封禁做多核心）
 
 使用方式：
-  from brahma_brain.tradfi_dump_detector import analyze_tradfi_dump
+  from brahma_brain.tradfi_signal_layer import analyze_tradfi_dump
   result = analyze_tradfi_dump(symbol, klines_1h, direction, ret_30d)
   # result['dump_type'], result['score_delta'], result['breakdown']
 """

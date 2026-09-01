@@ -66,7 +66,7 @@ def push_signal(symbol: str, source: str, meta: dict = None,
     try:
         import sys as _sys_fix5
         _sys_fix5.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
-        from macro_calendar import get_upcoming_events as _get_ev
+        from brahma_brain.narrative_engine import get_upcoming_events as _get_ev
         _today_events = [e for e in _get_ev(days_ahead=1) if e.get('today') and e.get('impact') in ('CRITICAL', 'HIGH')]
         if _today_events:
             _ev_names = [e.get('event','?') for e in _today_events]

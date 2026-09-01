@@ -387,7 +387,7 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
         # ── 首选：timesfm_lite（已修复接口）──────────────────
         import sys as _sys_res, os as _os_res
         _sys_res.path.insert(0, _os_res.path.dirname(_os_res.path.abspath(__file__)))
-        from timesfm_lite import get_timesfm_score as _tfm_score
+        from brahma_brain.kronos_engine import get_timesfm_score as _tfm_score
         _k1h_tfm = (extra_data or {}).get('_klines_1h', {}) or ms.get('klines_1h', {})
         _cov_tfm = {}
         if extra_data:

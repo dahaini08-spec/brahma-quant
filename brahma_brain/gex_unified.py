@@ -14,7 +14,7 @@ s22评分: -10 ~ +8
 
 用法:
   python3 brahma_brain/gex_engine.py
-  from brahma_brain.gex_engine import GEXEngine
+  from brahma_brain.gex_unified import GEXEngine
   result = GEXEngine.score('BTCUSDT', 'SHORT')
 """
 import math
@@ -378,7 +378,7 @@ GEX计算原理：
   python3 gex_scanner.py            # 扫描BTC+ETH
   python3 gex_scanner.py --symbol BTC
   python3 gex_scanner.py --symbol ETH
-  from gex_scanner import get_gex_state, scan_gex
+  from brahma_brain.gex_unified import get_gex_state, scan_gex
 """
 
 import json, time, math, sys, os

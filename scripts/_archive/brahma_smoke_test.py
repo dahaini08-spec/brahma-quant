@@ -151,7 +151,7 @@ except Exception as e:
 print('\n【3】关键数据文件新鲜度')
 now = time.time()
 DATA_CHECKS = [
-    ('data/macro_state.json',       4*3600,  'DXY宏观',   'python3 -c "from brahma_brain.macro_engine import write_macro_state; write_macro_state()"'),
+    ('data/macro_state.json',       4*3600,  'DXY宏观',   'python3 -c "from brahma_brain.narrative_engine import write_macro_state; write_macro_state()"'),
     ('data/live_signal_log.jsonl',  24*3600, '信号日志',   None),
     ('data/wuqu_positions.json',    24*3600, '持仓状态',   None),
     ('data/ic_tracker_state.json',  48*3600, 'IC统计',     'python3 brahma_brain/brahma_learning_loop.py'),
@@ -327,7 +327,7 @@ def test_kronos_cache_functional():
     """Kronos缓存层可用——网络不稳定时持久缓存兜底"""
     import sys as _sys
     _sys.path.insert(0, str(BASE / 'brahma_brain'))
-    from kronos_bridge import _cache, CACHE_TTL
+    from brahma_brain.kronos_engine import _cache, CACHE_TTL
     assert CACHE_TTL >= 900, f'CACHE_TTL={CACHE_TTL}s过短（<15min）'
     # 验证磁盘缓存目录可写
     cache_dir = BASE / 'data' / 'kronos_cache'

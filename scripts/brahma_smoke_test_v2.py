@@ -35,7 +35,7 @@ LAYERS = [
         "name": "L3 执行层",
         "tests": [
             ("position_sizer",       "import sys; sys.path.insert(0,'brahma_brain'); import position_sizer; t=position_sizer.DEFAULT_BY_SCORE; assert len(t)>0; print(f'{len(t)}档')"),
-            ("SignalIntegrityGate",  "import sys; sys.path.insert(0,'brahma_brain'); from signal_integrity_gate import SignalIntegrityGate; g=SignalIntegrityGate(); print('SIGate OK')"),
+            ("SignalIntegrityGate",  "import sys; sys.path.insert(0,'brahma_brain'); from brahma_brain.signal_quality_engine import SignalIntegrityGate; g=SignalIntegrityGate(); print('SIGate OK')"),
             ("fangcang_engine",      "import sys; sys.path.insert(0,'brahma_brain'); from fangcang_engine import format_fangcang_card, get_fangcang_context; print('fangcang OK')"),
             ("auto_executor import", "import sys; sys.path.insert(0,'brahma_brain'); sys.path.insert(0,'scripts'); import auto_executor; print('auto_executor OK')"),
         ]

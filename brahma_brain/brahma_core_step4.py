@@ -37,13 +37,13 @@ except ImportError:
 # [2026-08-12 苏摩111封印 v3] 标志位从brahma_core同步导入，修复NameError
 # [P4修复 2026-08-28 设计院] divergence_score + volume_score 从未import → NameError被吞 → 长期归零
 try:
-    from divergence_engine import divergence_score
-    from divergence_engine import multitf_divergence_score as _multitf_div_score
+    from brahma_brain.smc_engine import divergence_score
+    from brahma_brain.smc_engine import multitf_divergence_score as _multitf_div_score
     _DIV_OK = True
 except Exception:
     _DIV_OK = False
 try:
-    from volume_engine import volume_score
+    from brahma_brain.volume_unified import volume_score
     _VOL_SCORE_OK = True
 except Exception:
     _VOL_SCORE_OK = False
@@ -63,19 +63,19 @@ try:
 except Exception:
     _MULTITF_OK = False
 try:
-    from whale_engine import whale_score as _whale_score
+    from brahma_brain.onchain_engine import whale_score as _whale_score
     _WHALE_OK = True
 except Exception:
     _WHALE_OK = False
 try:
-    from macro_engine import macro_score as _macro_score
+    from brahma_brain.narrative_engine import macro_score as _macro_score
     _MACRO_OK = True
 except Exception:
     _MACRO_OK = False
 # [修复 2026-08-12 苏摩111] _*_OK 标志位 — Block拆分后step4无法读brahma_core模块级变量
 # 在step4里独立做import检测，与brahma_core.py L79-L111逻辑完全对称
 try:
-    from volume_exhaustion_engine import volume_exhaustion_score as _vol_exhaust_score
+    from brahma_brain.volume_unified import volume_exhaustion_score as _vol_exhaust_score
     _VOL_EXH_OK = True
 except Exception:
     _VOL_EXH_OK = False
@@ -172,7 +172,7 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
             pass  # [静默] f'[BrahmaBrain] CoinGlass+降级均失败: {_cg_e}'
     # ── liq_scanner 补充清算数据（Binance公开接口，无需Coinglass Key）────
     try:
-        from liq_scanner import get_liq_snapshot
+        from brahma_brain.liq_density_engine import get_liq_snapshot
         _liq_snap = get_liq_snapshot(_sym)
         if not extra_data.get('coinglass'):
             extra_data['coinglass'] = {}
@@ -424,7 +424,7 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
 
     # [s_macro_v2 2026-07-01] DXY实时+纳指+BTC.D精准加权
     try:
-        from macro_engine import macro_score_v2 as _macro_v2
+        from brahma_brain.narrative_engine import macro_score_v2 as _macro_v2
         _mv2 = _macro_v2(symbol, signal_dir)
         extra_data['macro_v2'] = _mv2
         if _mv2.get('score_addon', 0) != 0:
@@ -490,14 +490,14 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
 
     # A3: VaR 单仓风险
     try:
-        from var_engine import single_position_var as _var_fn
+        from brahma_brain.position_sizer import single_position_var as _var_fn
         extra_data['var'] = _var_fn(symbol, 0.05, signal_dir)
     except Exception as _e:
         extra_data['var_err'] = str(_e)[:80]
 
     # A5: 宏观事件日历
     try:
-        from macro_calendar import get_active_risk as _cal_fn
+        from brahma_brain.narrative_engine import get_active_risk as _cal_fn
         extra_data['macro_calendar'] = _cal_fn()
     except Exception as _e:
         extra_data['macro_calendar_err'] = str(_e)[:80]

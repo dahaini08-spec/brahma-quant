@@ -599,7 +599,7 @@ def analyze(symbol: str) -> dict:
         _regime_from_scorer = _regime_raw  # 降级：scorer 失败时用规则树
     # 经状态机稳定（防止单根K线抖动）
     try:
-        from regime_state_machine import get_stable_regime as _gsm
+        from brahma_brain.regime_scorer import get_stable_regime as _gsm
         regime = _gsm(symbol, _regime_from_scorer)
     except Exception:
         regime = _regime_from_scorer

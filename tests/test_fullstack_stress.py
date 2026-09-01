@@ -228,7 +228,7 @@ class TestRiskInvariants(unittest.TestCase):
     def test_R3_signal_integrity_gate_rejects_missing_fields(self):
         """信号完整性门：缺失必要字段必须被拒绝"""
         try:
-            from signal_integrity_gate import check_signal_integrity
+            from brahma_brain.signal_quality_engine import check_signal_integrity
             bad_signal = {"score": 150}  # 缺少 symbol/direction 等
             result = check_signal_integrity(bad_signal)
             # 应返回 False 或 BLOCK
@@ -256,7 +256,7 @@ class TestRiskInvariants(unittest.TestCase):
     def test_R5_tradfi_gate_blocks_restricted_hours(self):
         """TRADFI时段门控：受限时间窗口必须降分或拒绝"""
         try:
-            from tradfi_macro_gate import TradFiMacroGate
+            from brahma_brain.tradfi_signal_layer import TradFiMacroGate
             gate = TradFiMacroGate()
             # 制造一个FOMC/NFP等高危时段信号
             signal = {"score": 165, "direction": "SHORT", "symbol": "BTCUSDT"}
@@ -852,7 +852,7 @@ class TestEndToEnd(unittest.TestCase):
     def test_END6_signal_queue_push_pop(self):
         """E2E-6：信号队列 push/pop 不丢失"""
         try:
-            from signal_queue import SignalQueue
+            from brahma_brain.signal_quality_engine import SignalQueue
             q = SignalQueue(max_size=10)
             signal = {"symbol": "BTCUSDT", "score": 162, "direction": "SHORT", "ts": time.time()}
             q.push(signal)

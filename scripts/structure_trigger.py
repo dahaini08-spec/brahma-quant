@@ -20,7 +20,7 @@ from datetime import datetime, timezone
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from scripts.signal_queue_writer import push_signal
-from brahma_brain.brahma_fangcang_unified import unified_fangcang
+from brahma_brain.fangcang_engine import unified_fangcang
 
 DATA_DIR = Path(__file__).parent.parent / 'data'
 DEAD_SHORT = {'BEAR_RECOVERY', 'BULL_EARLY', 'BULL_TREND'}

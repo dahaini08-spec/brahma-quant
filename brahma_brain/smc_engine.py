@@ -2043,7 +2043,7 @@ market_structure_scanner.py — 四维市场结构扫描器
 调用：
   python3 brahma_brain/market_structure_scanner.py
   python3 brahma_brain/market_structure_scanner.py --symbol ETHUSDT
-  from brahma_brain.market_structure_scanner import scan_structure
+  from brahma_brain.smc_engine import scan_structure
 """
 
 import sys, os, json, time
@@ -2056,7 +2056,7 @@ sys.path.insert(0, str(_ROOT))
 from brahma_brain.smc_engine     import analyze_smc
 from brahma_brain.data_cache     import get_klines
 from brahma_brain.brahma_bus     import bus
-from brahma_brain.liq_scanner    import get_liq_snapshot
+from brahma_brain.liq_density_engine import get_liq_snapshot
 
 GEX_STATE_FILE = _ROOT / 'data' / 'gex_state.json'
 

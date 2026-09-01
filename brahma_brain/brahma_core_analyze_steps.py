@@ -68,7 +68,7 @@ def _analyze_step1(symbol: str, signal_dir: str) -> dict:
         _rsm_path = _rsm_os.path.dirname(_rsm_os.path.abspath(__file__))
         if _rsm_path not in _rsm_sys.path:
             if _rsm_path not in _rsm_sys.path: _rsm_sys.path.insert(0, _rsm_path)
-        from regime_state_machine import RegimeStateMachine
+        from brahma_brain.regime_scorer import RegimeStateMachine
         _rsm = RegimeStateMachine(_sym)
         _raw_regime = ms.get('regime', 'CHOP_MID')
         _stable_regime = _rsm.update(_raw_regime)

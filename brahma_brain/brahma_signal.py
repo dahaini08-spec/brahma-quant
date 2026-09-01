@@ -65,14 +65,14 @@ def get_enhanced_score(signal: dict) -> float:
 # ─── 3. 信号轨迹审计 ─────────────────────────────────────────────────────────
 def trace_signal(signal: dict) -> None:
     try:
-        from signal_trace import trace_signal as _f
+        from brahma_brain.signal_quality_engine import trace_signal as _f
         _f(signal)
     except Exception:
         pass
 
 def get_signal_history(symbol: str, limit: int = 20) -> list:
     try:
-        from signal_trace import get_signal_history as _f
+        from brahma_brain.signal_quality_engine import get_signal_history as _f
         return _f(symbol, limit)
     except Exception:
         return []
@@ -80,7 +80,7 @@ def get_signal_history(symbol: str, limit: int = 20) -> list:
 def trace_generated(signal: dict, result: dict | None = None) -> None:
     """向后兼容: brahma_analysis_runner直接调用"""
     try:
-        from signal_trace import trace_generated as _f
+        from brahma_brain.signal_quality_engine import trace_generated as _f
         _f(signal, result)
     except Exception:
         pass
@@ -88,7 +88,7 @@ def trace_generated(signal: dict, result: dict | None = None) -> None:
 def trace_skipped(symbol: str, reason: str = '', score: float = 0) -> None:
     """向后兼容: brahma_analysis_runner直接调用"""
     try:
-        from signal_trace import trace_skipped as _f
+        from brahma_brain.signal_quality_engine import trace_skipped as _f
         _f(symbol, reason, score)
     except Exception:
         pass
@@ -113,14 +113,14 @@ def filter_signals(signals: list, regime: str = '', min_score: float = 120) -> l
 # ─── 5. 信号权重更新 ─────────────────────────────────────────────────────────
 def update_signal_weight(key: str, result: str, score: float = 0) -> None:
     try:
-        from signal_weight_updater import update_signal_weight as _f
+        from brahma_brain.signal_quality_engine import update_signal_weight as _f
         _f(key, result, score)
     except Exception:
         pass
 
 def get_weights() -> dict:
     try:
-        from signal_weight_updater import get_weights as _f
+        from brahma_brain.signal_quality_engine import get_weights as _f
         return _f()
     except Exception:
         return {}
@@ -130,7 +130,7 @@ def get_weights() -> dict:
 def tick_signal_lifecycle(signal: dict | None = None) -> dict:
     """向后兼容: brahma_analysis_runner直接调用"""
     try:
-        from signal_lifecycle import tick_signal_lifecycle as _f
+        from brahma_brain.signal_quality_engine import tick_signal_lifecycle as _f
         return _f(signal)
     except Exception:
         return {}
@@ -139,14 +139,14 @@ def tick_signal_lifecycle(signal: dict | None = None) -> dict:
 # ─── 7. 信号队列 ─────────────────────────────────────────────────────────────
 def add_signal(signal: dict) -> bool:
     try:
-        from signal_queue import add_signal as _f
+        from brahma_brain.signal_quality_engine import add_signal as _f
         return _f(signal)
     except Exception:
         return False
 
 def get_queue_status() -> dict:
     try:
-        from signal_queue import get_status as _f
+        from brahma_brain.signal_quality_engine import get_status as _f
         return _f()
     except Exception:
         return {}
@@ -155,7 +155,7 @@ def get_queue_status() -> dict:
 # ─── 8. 完整性门控 ───────────────────────────────────────────────────────────
 def check_integrity(signal: dict) -> dict:
     try:
-        from signal_integrity_gate import check_integrity as _f
+        from brahma_brain.signal_quality_engine import check_integrity as _f
         return _f(signal)
     except Exception:
         return {'ok': True, 'reason': 'gate_unavailable'}

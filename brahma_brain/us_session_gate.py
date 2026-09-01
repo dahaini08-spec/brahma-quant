@@ -98,7 +98,7 @@ def check_macro_event_block() -> Optional[str]:
         str  = 封禁原因
     """
     try:
-        from brahma_brain.macro_calendar import get_upcoming_events
+        from brahma_brain.narrative_engine import get_upcoming_events
         events = get_upcoming_events(hours_ahead=2)
         critical = [e for e in events if e.get('impact') == 'CRITICAL']
         if critical:

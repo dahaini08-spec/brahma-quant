@@ -281,7 +281,7 @@ def get_regime_cached(symbol: str) -> str:
         return cached[0]
     # 缓存过期，重新计算
     try:
-        from brahma_brain.regime_state_machine import RegimeStateMachine
+        from brahma_brain.regime_scorer import RegimeStateMachine
         rsm = RegimeStateMachine(symbol)
         regime = rsm.get_regime()
         _REGIME_CACHE[symbol] = (regime, time.time())

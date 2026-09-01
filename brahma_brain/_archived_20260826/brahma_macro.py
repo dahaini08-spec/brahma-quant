@@ -55,14 +55,14 @@ def get_btc_dominance() -> dict:
 def get_dxy_realtime() -> dict:
     """委托macro_engine原始实现"""
     try:
-        from macro_engine import get_dxy_realtime as _f
+        from brahma_brain.narrative_engine import get_dxy_realtime as _f
         return _f()
     except Exception:
         return {'value': 0, 'source': 'fallback'}
 
 def get_nasdaq_realtime() -> dict:
     try:
-        from macro_engine import get_nasdaq_realtime as _f
+        from brahma_brain.narrative_engine import get_nasdaq_realtime as _f
         return _f()
     except Exception:
         return {'value': 0, 'source': 'fallback'}
@@ -71,7 +71,7 @@ def get_nasdaq_realtime() -> dict:
 def macro_score(symbol: str, signal_dir: str, fg_data: dict | None = None) -> dict:
     """宏观评分 — 委托macro_engine保持完整逻辑 [向后兼容]"""
     try:
-        from macro_engine import macro_score as _f
+        from brahma_brain.narrative_engine import macro_score as _f
         return _f(symbol, signal_dir, fg_data)
     except Exception as e:
         logger.warning(f'macro_score降级: {e}')
@@ -80,7 +80,7 @@ def macro_score(symbol: str, signal_dir: str, fg_data: dict | None = None) -> di
 def macro_score_v2(symbol: str, signal_dir: str) -> dict:
     """宏观评分v2 — 含DXY+NQ实时数据"""
     try:
-        from macro_engine import macro_score_v2 as _f
+        from brahma_brain.narrative_engine import macro_score_v2 as _f
         return _f(symbol, signal_dir)
     except Exception as e:
         logger.warning(f'macro_score_v2降级: {e}')
@@ -89,7 +89,7 @@ def macro_score_v2(symbol: str, signal_dir: str) -> dict:
 def write_macro_state() -> dict:
     """写入宏观状态到data/macro_state.json"""
     try:
-        from macro_engine import write_macro_state as _f
+        from brahma_brain.narrative_engine import write_macro_state as _f
         return _f()
     except Exception as e:
         logger.warning(f'write_macro_state降级: {e}')

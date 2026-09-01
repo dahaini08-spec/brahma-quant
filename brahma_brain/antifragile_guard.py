@@ -192,7 +192,7 @@ def check_emotion_extreme(direction: str = '') -> dict:
     """
     fg = 50.0
     try:
-        from macro_engine import get_fear_greed
+        from brahma_brain.narrative_engine import get_fear_greed
         fg_data = get_fear_greed()
         fg = float(fg_data.get('value', 50)) if isinstance(fg_data, dict) else float(fg_data or 50)
     except Exception as e:
