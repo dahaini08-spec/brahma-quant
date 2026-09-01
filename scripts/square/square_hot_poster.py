@@ -91,6 +91,49 @@ def mark_posted(content: str):
     save_dedup(d)
 
 
+# ── 40年交易员视角重写层 ─────────────────────────────────────────────
+TRADER_SYSTEM_PROMPT = """你是拥有40年合约交易经验的顶级交易分析师姓赵不宣。
+你的发帖铁律：
+1. 每个观点必须有具体数字支撑（价位、百分比、费率）
+2. 操作建议必须给出入场价、止损位——不允许「等确认」「方向未明」等废话
+3. 口吻是有阅历的人在说话，不是AI总结——简洁、直接、有立场
+4. 结尾一个能引发读者回复的问题
+5. 绝对禁止：梵天、体制、量化系统、FVG、Kronos等内部术语
+6. hashtag ≤ 3个，字数200-400字"""
+
+
+def rewrite_as_trader(draft: str) -> str:
+    """用40年交易员视角重写初稿，每次发帖前强制过滤"""
+    if not draft or len(draft) < 50:
+        return draft
+    try:
+        import subprocess
+        prompt = (
+            f'以下是一篇加密货币分析帖初稿，请用40年顶级合约交易员的视角重写，'
+            f'使其更有深度、更有立场、每条操作建议都有具体价位和止损：\n\n'
+            f'---初稿---\n{draft}\n---end---\n\n'
+            f'重写要求：保留所有数据，把模糊建议改成具体条件（FR回落到X%+价格回踩X支撑才入场），'
+            f'让读者看完知道该怎么做。直接输出重写后正文，不要加任何前缀说明。'
+        )
+        result = subprocess.run(
+            ['openclaw', 'infer', 'model', 'run', '--model', 'standard', '--prompt', prompt],
+            capture_output=True, text=True, timeout=45
+        )
+        lines = [
+            l for l in result.stdout.strip().split('\n')
+            if not any(l.startswith(x) for x in
+                       ['model.run', 'provider:', 'model:', 'outputs:', '🦞'])
+        ]
+        rewritten = '\n'.join(lines).strip()
+        if rewritten and len(rewritten) > 80:
+            print(f'[rewrite] ✅ 重写完成 {len(draft)}→{len(rewritten)}字')
+            return rewritten
+        return draft
+    except Exception as e:
+        print(f'[rewrite] ⚠️ 失败({e})，使用原稿')
+        return draft
+
+
 # ── 敏感词预检 ────────────────────────────────────────────────────
 BLOCKED_WORDS = [
     # 死封内部术语
@@ -1111,6 +1154,10 @@ SL%参考：
 def post_to_square(content: str, dry_run: bool = False) -> bool:
     """发布到广场。返回True=成功"""
     import requests
+
+    # ── 40年交易员视角重写层（发帖前必过）──
+    if not dry_run:
+        content = rewrite_as_trader(content)
 
     ok, reason = check_content(content)
     if not ok:
