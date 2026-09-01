@@ -277,7 +277,8 @@ class BrahmaBus:
 # ─────────────────────────────────────────────────────────
 # 全局单例 — 所有模块 import 同一个对象
 # ─────────────────────────────────────────────────────────
-bus = BrahmaBus()
+_price_bus = BrahmaBus()   # 价格/数据总线（BrahmaBus）
+bus = _price_bus           # 向后兼容别名（勿被下方 BrahmaEventBus 覆盖）
 
 # [P1修复 2026-08-26] get_balance别名，兼容drawdown_tracker等调用方式
 def get_balance() -> dict:
@@ -318,13 +319,17 @@ if __name__ == '__main__':
 def get_price(symbol: str) -> float:
     """统一价格查询 — bus缓存优先，fallback裸HTTP，所有模块应迁移到此接口"""
     try:
-        return bus.price(symbol)
+        p = _price_bus.price(symbol)
+        if p and p > 0:
+            return p
     except Exception:
-        import urllib.request, json
-        with urllib.request.urlopen(
-            f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}', timeout=5
-        ) as r:
-            return float(json.loads(r.read()).get('lastPrice', 0))
+        pass
+    import urllib.request, json as _json
+    with urllib.request.urlopen(
+        f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}', timeout=5
+    ) as r:
+        d = _json.loads(r.read())
+        return float(d.get('price', d.get('lastPrice', 0)))
 
 
 def get_klines(symbol: str, interval: str = '1h', limit: int = 100) -> list:
@@ -576,7 +581,7 @@ class BrahmaEventBus:
 
 
 # 全局单例
-bus = BrahmaEventBus()
+event_bus = BrahmaEventBus()
 
 
 # ── [Fix3 2026-08-30 苏摩111] REGIME_CHANGE 事件 Handler — 清除旧体制的逾期 PENDING 信号 ──────────────────
@@ -650,4 +655,4 @@ def _handle_regime_change_purge(event: 'Event'):
 
 
 # 注册 handler 到全局单例
-bus.register(BrahmaEvent.REGIME_CHANGE, _handle_regime_change_purge)
+event_bus.register(BrahmaEvent.REGIME_CHANGE, _handle_regime_change_purge)

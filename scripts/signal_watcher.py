@@ -47,14 +47,18 @@ from datetime import datetime, timezone
 
 # ── brahma_bus 总线接入（设计院 2026-06-29）──
 try:
-    from brahma_brain.brahma_bus import bus as _brahma_bus
+    from brahma_brain.brahma_bus import get_price as _brahma_bus_get_price
 except Exception:
-    _brahma_bus = None
+    _brahma_bus_get_price = None
 
 def _bus_price(symbol: str) -> float:
-    """统一价格获取：优先走 brahma_bus 缓存，降级走直接HTTP"""
-    if _brahma_bus:
-        return _brahma_bus.price(symbol)
+    """统一价格获取：优先走 brahma_bus，降级走直接HTTP"""
+    if _brahma_bus_get_price:
+        try:
+            p = _brahma_bus_get_price(symbol)
+            if p and p > 0: return p
+        except Exception:
+            pass
     import requests
     r = requests.get(f'https://fapi.binance.com/fapi/v1/ticker/price',
                      params={'symbol': symbol}, timeout=5)

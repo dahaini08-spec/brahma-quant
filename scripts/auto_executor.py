@@ -1398,8 +1398,8 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
 
     # 获取当前价
     try:
-        from brahma_brain.brahma_bus import bus
-        px = bus.price(sym)
+        from brahma_brain.brahma_bus import get_price as _bus_get_px
+        px = _bus_get_px(sym)
     except Exception:
         r = requests.get(f'{FAPI_BASE}/fapi/v1/ticker/price',
                          params={'symbol': sym}, timeout=5)
