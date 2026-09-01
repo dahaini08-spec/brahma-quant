@@ -1047,7 +1047,26 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
             'ts': time.time(), 'ts_iso': datetime.now(timezone.utc).isoformat(),
             'status': 'COUNCIL_VETO', 'reason': f'council veto: {_veto_reason}',
         }
-    # ── end council veto check ──────────────────────────────────────────
+    # ── end council veto check ─────────────────────────────────────
+    # ── [P3-B 共振点强制门箛 2026-09-01 苏摩111] ───────────────
+    # 铁律：FVG+OB+清算三因子共振点必须存在，否则拘单等待
+    _triple_l = signal.get('triple_resonance_long', False)
+    _triple_s = signal.get('triple_resonance_short', False)
+    _has_resonance = (_triple_l and direction == 'LONG') or (_triple_s and direction == 'SHORT')
+    # 兼容旧信号：如果smc_resonance_entry有具体入场价，也认为已共振
+    _smc_entry = signal.get('smc_resonance_entry') or signal.get('_smc_entry')
+    if _smc_entry:
+        _has_resonance = True
+    if not _has_resonance:
+        _no_res_reason = f'无共振点(triple_resonance_{direction.lower()}=False且无smc_entry)，等待FVG+OB+清算三因子共振'
+        print(f'🛑 [resonance_gate] {sym} {direction} 被共振门箛拘单: {_no_res_reason}')
+        return {
+            'signal_id': signal.get('signal_id',''), 'symbol': sym,
+            'direction': direction, 'score': float(signal.get('score',0)),
+            'ts': time.time(), 'ts_iso': __import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat(),
+            'status': 'NO_RESONANCE', 'reason': _no_res_reason,
+        }
+    # ── end resonance gate ────────────────────────────────────────
     # 层9熔断器: auto_executor — failure_threshold=1, recovery_timeout=600s
     # 极端行情/API连续失败时自动熔断10min，防止连续亏损
     try:
@@ -1868,8 +1887,7 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
     # [修复 2026-07-13] P0_ExposureCap bug: API失败时acct非dict→nav=0→_max_exposure=0→永远触发
     # 必须验证acct是有效dict且totalMarginBalance有实际值
     if not isinstance(acct, dict) or 'totalMarginBalance' not in acct:
-        pass  # [静默]
-        return  # API失败，本轮跳过，不执行任何开单
+        return []  # [Fix P3-A 2026-09-01] API失败返回[]而非None，避免调用方len()崩溃
     nav       = float(acct.get('totalMarginBalance', 0))
     avail     = float(acct.get('availableBalance', 0))
     # 额外守卫：nav=0说明账户API异常，禁止开单
