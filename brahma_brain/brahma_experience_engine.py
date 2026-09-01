@@ -999,7 +999,11 @@ def match_current_similarity(symbol: str = 'BTCUSDT') -> dict:
                 'top3': [], 'max_similarity': 0.0, 'warning': ''}
 
     # 2. 计算当前状态（从1D K线取最新数据）
-    klines = _load_klines_gz(_HIST_PATH)
+    # [Fix 2026-09-01] 按symbol选择对应klines，避免BTC/ETH都匹配同一事件库
+    _sym_upper = symbol.upper().replace('USDT','') if symbol else 'BTC'
+    _sym_hist = os.path.join(_DATA_DIR, 'historical', f'{_sym_upper}USDT_1d.jsonl.gz')
+    _hist_to_use = _sym_hist if os.path.exists(_sym_hist) else _HIST_PATH
+    klines = _load_klines_gz(_hist_to_use)
     if len(klines) < 17:
         return {'current_rsi': 50.0, 'current_3d_change': 0.0,
                 'top3': [], 'max_similarity': 0.0, 'warning': ''}

@@ -1032,7 +1032,11 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     # 模块: cvd_engine · 订单流核心指标，多周期CVD累积成交量差
     # 达摩院铁证：CVD顺势+15分 / 逆势-10分
     try:
-        from cvd_engine import cvd_score_for_signal as _cvd_fn
+        # [Fix 2026-09-01] cvd_engine在brahma_brain/，修复路径问题
+        try:
+            from brahma_brain.cvd_engine import cvd_score_for_signal as _cvd_fn
+        except ImportError:
+            from cvd_engine import cvd_score_for_signal as _cvd_fn
         _cvd_score, _cvd_notes = _cvd_fn(ms.get('symbol', ''), signal_dir)
         if _cvd_score != 0:
             # [2026-08-30 苏摩111] ETH订单流权重放大：arXiv铁证ETH盘口状态依赖更强
