@@ -24,12 +24,14 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, BASE_DIR)
 sys.path.insert(0, os.path.join(BASE_DIR, '..'))
 
-from data_cache        import prefetch_symbol, get_klines, klines_to_ohlcv
-from market_state      import analyze   as ms_analyze
-from smc_engine        import analyze_smc
-from divergence_engine import divergence_score
-from volume_engine     import volume_score
-from range_engine      import range_score  # [Phase2a] 区间结构引擎
+# [2026-09-01 设计院懒加载封印] 顶部重型import改为按需加载，节省200-400MB内存
+_lazy_cache = {}
+def _lazy(mod, name):
+    key = f'{mod}.{name}'
+    if key not in _lazy_cache:
+        import importlib
+        _lazy_cache[key] = getattr(importlib.import_module(f'brahma_brain.{mod}'), name)
+    return _lazy_cache[key]
 try:
     from math_utils import ema as _mu_ema, rsi as _mu_rsi, atr as _mu_atr  # [设计院 2026-06-30 全量接入] 统一数学库
     _MATH_UTILS_OK = True
@@ -3397,7 +3399,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _kl15m = extra_data.get('_klines_15m', [])
         if not _kl15m:
             try:
-                _raw15 = get_klines(_sym_t, '15m', 200)
+                _raw15 = _lazy("data_cache","get_klines")(_sym_t, '15m', 200)
                 _kl15m = [[float(c[0]),float(c[1]),float(c[2]),float(c[3]),float(c[4]),float(c[5])] for c in _raw15]  # [2026-08-25 fix] 保留timestamp_ms供_build_ohlcv_df使用
             except Exception: _kl15m = []
         # 格式标准化: dict→list
