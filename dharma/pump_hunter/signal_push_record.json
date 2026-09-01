@@ -981,13 +981,13 @@
     "eth_regime": "CHOP_MID"
   },
   "HK0700USDT": {
-    "last_push_ts": 1787558345.3536034,
-    "last_score": 115,
-    "last_push_at": "2026-08-24T07:59:09.436502",
-    "push_price": 441.69,
-    "regime": "BULL_TREND",
-    "btc_regime": "BULL_TREND",
-    "eth_regime": "CHOP_MID"
+    "last_push_ts": 1788235560.6618764,
+    "last_score": 99,
+    "last_push_at": "2026-09-01T04:06:00.847011",
+    "push_price": 443.54,
+    "regime": "CHOP_MID",
+    "btc_regime": "CHOP_MID",
+    "eth_regime": "BULL_EARLY"
   },
   "CTSIUSDT": {
     "last_push_ts": 1786503952.389212,
@@ -1314,13 +1314,13 @@
     "eth_regime": "CHOP_MID"
   },
   "IBMUSDT": {
-    "last_push_ts": 1787653189.9122996,
-    "last_score": 112,
-    "last_push_at": "2026-08-25T10:19:50.064420",
-    "push_price": 231.54,
-    "regime": "BULL_TREND",
-    "btc_regime": "BULL_TREND",
-    "eth_regime": "CHOP_MID"
+    "last_push_ts": 1788235560.6618764,
+    "last_score": 100,
+    "last_push_at": "2026-09-01T04:06:00.828486",
+    "push_price": 233.97,
+    "regime": "CHOP_MID",
+    "btc_regime": "CHOP_MID",
+    "eth_regime": "BULL_EARLY"
   },
   "KAIAUSDT": {
     "last_push_ts": 1786985374.4067364,
@@ -2340,10 +2340,10 @@
     "eth_regime": "BULL_EARLY"
   },
   "PRLUSDT": {
-    "last_push_ts": 1788180364.15527,
-    "last_score": 110,
-    "last_push_at": "2026-08-31T12:46:04.309455",
-    "push_price": 0.1638,
+    "last_push_ts": 1788235560.6618764,
+    "last_score": 108,
+    "last_push_at": "2026-09-01T04:06:00.789728",
+    "push_price": 0.1555,
     "regime": "CHOP_MID",
     "btc_regime": "CHOP_MID",
     "eth_regime": "BULL_EARLY"
@@ -2380,6 +2380,24 @@
     "last_score": 100,
     "last_push_at": "2026-09-01T00:52:52.350486",
     "push_price": 0.00283,
+    "regime": "CHOP_MID",
+    "btc_regime": "CHOP_MID",
+    "eth_regime": "BULL_EARLY"
+  },
+  "MVLLUSDT": {
+    "last_push_ts": 1788235560.6618764,
+    "last_score": 103,
+    "last_push_at": "2026-09-01T04:06:00.806756",
+    "push_price": 23.79,
+    "regime": "CHOP_MID",
+    "btc_regime": "CHOP_MID",
+    "eth_regime": "BULL_EARLY"
+  },
+  "NOKUSDT": {
+    "last_push_ts": 1788235560.6618764,
+    "last_score": 98,
+    "last_push_at": "2026-09-01T04:06:00.862241",
+    "push_price": 10.11,
     "regime": "CHOP_MID",
     "btc_regime": "CHOP_MID",
     "eth_regime": "BULL_EARLY"
