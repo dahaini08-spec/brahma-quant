@@ -923,7 +923,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
     try:
         from brahma_brain.execution_precision import format_precision_block
         try:
-            from brahma_brain.capital_allocator import _get_nav as _real_nav
+            from brahma_brain.position_sizer import _get_nav as _real_nav
             _nav_val = _real_nav()
             if not _nav_val or _nav_val < 10: _nav_val = 1000.0
         except Exception:
