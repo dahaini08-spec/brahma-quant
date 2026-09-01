@@ -454,6 +454,9 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
         from brahma_1hao_analysis import run_analysis as _1hao_main
         report = _1hao_main(symbol)
         # ── [封印 2026-08-29 苏摩111] 过滤引擎日志行 ──
+        _LOG_PREFIXES = ('[分析开始]','[s_smart]','[KronosBridge','[BrahmaBrain]',
+                         '[oi_scanner]','[TimingFilter]','[RSM]','[unified',
+                         '[Dharma]','[volume_unified]','[liq_density]','[brahma_bus]')
         report = '\n'.join(l for l in report.split('\n') if not any(l.strip().startswith(p) for p in _LOG_PREFIXES))
     except Exception as _e1:
         report = f"[1号工程调用失败: {_e1}]"
