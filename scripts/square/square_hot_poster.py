@@ -92,28 +92,48 @@ def mark_posted(content: str):
 
 
 # ── 敏感词预检 ────────────────────────────────────────────────────
-BLOCKED_WORDS = ['BEAR_TREND', 'CHOP_MID', 'BULL_TREND', 'BEAR_EARLY',
-                 'DD1', '仅供内部', '新浪财经']
+BLOCKED_WORDS = [
+    # 死封内部术语
+    'BEAR_TREND', 'CHOP_MID', 'BULL_TREND', 'BEAR_EARLY',
+    'DD1', '仅供内部', '新浪财经',
+    '梵天', '渗天', 'FVG', 'Kronos', '体制识别',
+    'brahma', 'brahma_', '量化系统', '量化引擎',
+    # 永久禁用废话句
+    '市场在等消息或等突破',
+    '热度高不等于方向对',
+    '看数据再作判断',
+    '整体市场方向未明',
+    'BTC和ETH分化明显，小币和山寨币各玩各的',
+    '广场今天热议的币，我看了一下',
+    '跟随大盘情绪居多',
+    '没有不算完就完了',
+]
 
 # 百强KOL铁律：感叹号 = 广场违规词（自检机制）
 BLOCKED_PUNCTUATION = ['\uff01']  # ！全角感叹号
 
 
 def check_content(content: str) -> tuple:
-    """返回 (ok, reason)"""
+    """返回 (ok, reason) — 质检门控"""
+    import re
     n = len(content)
     # 感叹号检查优先（百强KOL铁律）
     for p in BLOCKED_PUNCTUATION:
         count = content.count(p)
         if count > 0:
             return False, f'包含全角感叹号({count}个)，广场违规词'
-    if n < 30:
-        return False, f'字数不足({n}<30)'
+    if n < 80:
+        return False, f'内容太短({n}字<80字)'
     if n > 2000:
         return False, f'字数超限({n}>2000)'
+    # 块词检查
     for w in BLOCKED_WORDS:
         if w in content:
-            return False, f'包含禁用词: {w}'
+            return False, f'包含禁用词: {repr(w)}'
+    # hashtag不超过3个
+    tags = re.findall(r'#\S+', content)
+    if len(tags) > 3:
+        return False, f'hashtag超限({len(tags)}个>3个): {tags}'
     return True, ''
 
 
