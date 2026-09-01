@@ -294,7 +294,7 @@ def enhanced_score(symbol: str, signal_dir: str) -> dict:
     try:
         import os as _os, sys as _sys
         _sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
-        from brahma_brain.cvd_engine import cvd_score_for_signal
+        from brahma_brain.volume_unified import cvd_score_for_signal
         cvd_s, cvd_notes = cvd_score_for_signal(symbol, signal_dir)
         breakdown['cvd'] = cvd_s
         score += cvd_s

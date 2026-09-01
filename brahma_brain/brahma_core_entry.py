@@ -40,7 +40,7 @@ sys.path.insert(0, os.path.join(BASE_DIR, '..'))
 from data_cache        import prefetch_symbol, get_klines, klines_to_ohlcv
 from market_state      import analyze   as ms_analyze
 from smc_engine        import analyze_smc
-from divergence_engine import divergence_score
+from brahma_brain.smc_engine import divergence_score
 from volume_engine     import volume_score
 from range_engine      import range_score  # [Phase2a] 区间结构引擎
 try:
@@ -66,19 +66,19 @@ try:
 except Exception:
     _OF_OK = False
 try:
-    from macro_engine import macro_score as _macro_score
+    from brahma_brain.narrative_engine import macro_score as _macro_score
     _MACRO_OK = True
 except Exception:
     _MACRO_OK = False
 # [CLEANED 2026-06-11] harmonic_engine removed — permanently disabled
 _HARMONIC_OK = False
 try:
-    from volume_exhaustion_engine import volume_exhaustion_score as _vol_exh_score
+    from brahma_brain.volume_unified import volume_exhaustion_score as _vol_exh_score
     _VOL_EXH_OK = True
 except Exception:
     _VOL_EXH_OK = False
 try:
-    from divergence_engine import multitf_divergence_score as _multitf_div_score
+    from brahma_brain.smc_engine import multitf_divergence_score as _multitf_div_score
     _MULTITF_DIV_OK = True
 except Exception:
     _MULTITF_DIV_OK = False
@@ -93,7 +93,7 @@ try:
 except Exception:
     _ENHANCED_OK = False
 try:
-    from whale_engine import whale_score as _whale_score
+    from brahma_brain.onchain_engine import whale_score as _whale_score
     _WHALE_OK = True
 except Exception:
     _WHALE_OK = False
@@ -320,7 +320,7 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
                 _ob_gap_pct = (ob_lo - price) / price * 100
                 # 用smc结构质量预估grade（cf此时未定义，用smc间接判断）
                 try:
-                    from brahma_brain.structure_quality_engine import evaluate as _sqe
+                    from brahma_brain.smc_engine import evaluate as _sqe
                     _sq_pre = _sqe(smc, price, signal_dir)
                     _grade_val = float(_sq_pre.get('grade', 0))
                 except Exception:

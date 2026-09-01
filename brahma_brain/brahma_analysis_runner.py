@@ -23,7 +23,7 @@ brahma_analysis_runner.py — 梵天分析唯一入口
 
 import sys
 try:
-    from signal_trace import trace_generated, trace_skipped
+    from brahma_brain.signal_quality_engine import trace_generated, trace_skipped
 except ImportError:
     def trace_generated(*a, **kw): pass
     def trace_skipped(*a, **kw): pass  # fallback
@@ -52,10 +52,10 @@ sys.path.insert(0, BASE_DIR)
 sys.path.insert(0, os.path.join(BASE_DIR, '..'))
 
 # [2026-07-06] Kronos模块预注入：确保 brahma_core 中的动态 import 拿到正确实例
-# 根因： brahma_core 用 `from kronos_bridge import`（非包式），会创建独立模块实例
+# 根因： brahma_core 用 `from brahma_brain.kronos_engine import`（非包式），会创建独立模块实例
 #         导致 kronos_engine._predictor 无法共享，出现 lgbm_err
 try:
-    import brahma_brain.kronos_bridge as _kb_mod
+    import brahma_brain.kronos_engine as _kb_mod
     sys.modules.setdefault('kronos_bridge', _kb_mod)   # 预注入平名属引用
 except Exception:
     pass
@@ -132,7 +132,7 @@ _HEALTH_OK = False
 
 # market_structure_scanner: 高分信号补充SMC结构扫描
 try:
-    from market_structure_scanner import scan_structure as _mss_scan
+    from brahma_brain.smc_engine import scan_structure as _mss_scan
     _MSS_OK = True
 except Exception:
     _MSS_OK = False
@@ -503,7 +503,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
 
     # B1: regime_state_machine — 体制稳定性过滤
     try:
-        from regime_state_machine import get_stable_regime
+        from brahma_brain.regime_scorer import get_stable_regime
         _stable = get_stable_regime(symbol, result.get('regime', ''))
         if _stable and _stable != result.get('regime'):
             result['regime_raw'] = result.get('regime')
@@ -1272,7 +1272,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
     # 接入位置：brahma_analysis_runner.run_analysis() 返回前
     # 根囤：LSR+FR+OI四象限判断完全未接入
     try:
-        from brahma_brain.market_quadrant import get_quadrant as _mq_fn
+        from brahma_brain.regime_scorer import get_quadrant as _mq_fn
         _mq = _mq_fn(sym)
         if _mq and isinstance(_mq, dict):
             result['_market_quadrant'] = _mq

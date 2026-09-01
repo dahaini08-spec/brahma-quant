@@ -230,7 +230,7 @@ def settle_signal(sig: dict, dry_run: bool = False) -> dict | None:
     # [Bandit SL学习钩子 2026-08-06 设计院封印]
     # 每次结算后自动更新 sl_bandit 状态，驱动在线学习
     try:
-        from sl_bandit import update_from_outcome as _bandit_update
+        from brahma_brain.position_sizer import update_from_outcome as _bandit_update
         _regime    = sig.get('regime', 'BULL_TREND')
         _direction = sig.get('direction', 'LONG')
         _sl_pct    = float(sig.get('sl_pct') or 0)
@@ -481,7 +481,7 @@ def main():
         # 闭环：信号结算 → 滚动WR计算 → 动态更新signal_weights.json
         try:
             sys.path.insert(0, str(BASE / 'brahma_brain'))
-            from signal_weight_updater import update_weights as _sw_update
+            from brahma_brain.signal_quality_engine import update_weights as _sw_update
             _sw_result = _sw_update(dry_run=False)
             _sw_upd = _sw_result.get('updated', 0)
             if _sw_upd > 0:
@@ -495,7 +495,7 @@ def main():
         try:
             import sys as _sys_fc
             _sys_fc.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent / 'brahma_brain'))
-            from fangcang_hcme_bridge import feedback_settlement as _fc_feedback
+            from brahma_brain.fangcang_engine import feedback_settlement as _fc_feedback
             for _s in settled_new:
                 _fc_sym    = _s.get('symbol', '')
                 _fc_dir    = _s.get('signal_dir', 'LONG')
@@ -570,7 +570,7 @@ def main():
         try:
             import sys as _ed_sys
             _ed_sys.path.insert(0, str(BASE / 'brahma_brain'))
-            from brahma_experience_distiller import load_all_cases, distill, build_report
+            from brahma_brain.brahma_experience_engine import load_all_cases, distill, build_report
             _cases = load_all_cases()
             if len(_cases) >= 5:
                 _matrix = distill(_cases)

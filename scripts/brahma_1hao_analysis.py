@@ -535,7 +535,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         pass
     # GEX
     try:
-        from brahma_brain.gex_scanner import get_gex_state as _get_gex
+        from brahma_brain.gex_unified import get_gex_state as _get_gex
         _sym_short = r.get('symbol', 'BTCUSDT').replace('USDT','').replace('PERP','')
         _gex = _get_gex(_sym_short)
         if _gex and _gex.get('max_gex_strike'):
@@ -1020,7 +1020,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
 
         # P0-2: failure_pattern_db 失败模式风险
         try:
-            from brahma_brain.failure_pattern_db import get_current_risk_score as _fps
+            from brahma_brain.brahma_experience_engine import get_current_risk_score as _fps
             _fp_signal = {
                 'symbol': r.get('symbol','BTCUSDT'),
                 'signal_dir': r.get('signal_dir','LONG'),
@@ -1346,7 +1346,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
 
     # ── [P3信号生命周期+P5实时审计 2026-07-26 苏摩授权封印] ──────────
     try:
-        from brahma_brain.signal_lifecycle import tick_signal_lifecycle, audit_score_with_realtime
+        from brahma_brain.signal_quality_engine import tick_signal_lifecycle, audit_score_with_realtime
         # P3: 生命周期检查
         _lc_alerts = tick_signal_lifecycle(symbol, _price)
         if _lc_alerts:

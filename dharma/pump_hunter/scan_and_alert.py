@@ -444,7 +444,7 @@ def scan():
                         try:
                             if rsv5 < 0.15:  # 压缩已到位
                                 import sys as _sys_ph; _sys_ph.path.insert(0, '.')
-                                from brahma_brain.kronos_bridge import get_s23_kronos as _ph_kronos
+                                from brahma_brain.kronos_engine import get_s23_kronos as _ph_kronos
                                 _ph_kl = requests.get(
                                     f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=15m&limit=64',
                                     timeout=3

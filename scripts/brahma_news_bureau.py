@@ -165,7 +165,7 @@ def check_tradfi_timing(symbol: str) -> tuple[bool, str]:
     """
     try:
         sys.path.insert(0, str(BASE_DIR))
-        from brahma_brain.tradfi_router import classify, get_session
+        from brahma_brain.tradfi_signal_layer import classify, get_session
         cls = classify(symbol.upper() if 'USDT' in symbol.upper()
                        else symbol.upper() + 'USDT')
         if cls == 'CRYPTO':

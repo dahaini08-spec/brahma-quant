@@ -336,7 +336,7 @@ def get_position_pct(symbol: str, score: float, direction: str,
         import sys as _sys_ps, os as _os_ps
         _ps_dir = _os_ps.path.dirname(_os_ps.path.abspath(__file__))
         if _ps_dir not in _sys_ps.path: _sys_ps.path.insert(0, _ps_dir)
-        from macro_calendar import get_upcoming_events as _get_macro_ev
+        from brahma_brain.narrative_engine import get_upcoming_events as _get_macro_ev
         _upcoming = _get_macro_ev(days_ahead=7)
         for _ev in _upcoming:
             _days = _ev.get('days_to', 99)
@@ -406,7 +406,7 @@ def get_position_pct(symbol: str, score: float, direction: str,
     _var_note = ''
     _var_grade = ''
     try:
-        from var_engine import single_position_var as _var_fn
+        from brahma_brain.position_sizer import single_position_var as _var_fn
         _nav_est = nav if nav > 0 else 10000
         _vr = _var_fn(symbol, signal_dir=direction, pos_pct_nav=max_pct/100, nav_usd=_nav_est)
         _var_grade = _vr.get('risk_grade', '')
@@ -424,7 +424,7 @@ def get_position_pct(symbol: str, score: float, direction: str,
 
     # ── [sl_bandit 2026-08-29 苏摩111] 动态SL推荐（辅助信息，不强制覆盖宪法SL）──
     try:
-        from brahma_brain.sl_bandit import recommend_sl_pct as _slb_recommend
+        from brahma_brain.position_sizer import recommend_sl_pct as _slb_recommend
         _slb_rec = _slb_recommend(regime=regime, direction=direction)
         _slb_pct = float(_slb_rec.get('recommended_sl_pct', 0) or 0)
         _slb_n   = int(_slb_rec.get('arm_n', 0) or 0)
@@ -487,7 +487,7 @@ def get_position_pct(symbol: str, score: float, direction: str,
     _quad_note = ''
     _quad_mult = 1.0
     try:
-        from market_quadrant import get_quadrant as _get_q
+        from brahma_brain.regime_scorer import get_quadrant as _get_q
         _quad = _get_q(symbol)
         _qname = _quad.get('quadrant', 'NEUTRAL')
         _qsig  = _quad.get('signal', 'NEUTRAL')
@@ -1393,7 +1393,7 @@ def compute(
     # 不覆盖v4铁证硬下限，只在高置信度时微调sl_pct
     bandit_note = ''
     try:
-        from sl_bandit import recommend_sl_pct as _bandit_rec
+        from brahma_brain.position_sizer import recommend_sl_pct as _bandit_rec
         _br = _bandit_rec(
             regime=regime or 'BULL_TREND',
             direction=signal_dir or 'LONG',

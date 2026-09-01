@@ -616,7 +616,7 @@ def _detect_main_force_intent(
 def _integrate_hcme(current_signal_dict: dict) -> dict:
     """集成 HCME Matcher（M2流动性地图），fail-safe"""
     try:
-        from hcme_matcher import get_hcme_matcher as _get_hcme_fc
+        from brahma_brain.fangcang_engine import get_hcme_matcher as _get_hcme_fc
         matcher = _get_hcme_fc()
         hcme_result = matcher.find_similar(current_signal_dict, top_k=5)
         return {
@@ -2585,7 +2585,7 @@ def _get_cases_adj(symbol: str, ms: dict, signal_dir: str, regime: str) -> tuple
     返回 (adj: float, confidence: str, n: int, wr: float)
     """
     try:
-        from fangcang_hcme_bridge import fangcang_context_match
+        from brahma_brain.fangcang_engine import fangcang_context_match
         # [修复 2026-08-29] bb_width多路备用：主链传入ms里字段名不一致导致bbw=None全部过滤
         bbw = (
             ms.get('bb_width') or          # brahma_core传入的小数格式
@@ -2618,7 +2618,7 @@ def _get_cases_adj(symbol: str, ms: dict, signal_dir: str, regime: str) -> tuple
         n_final  = n_crypto
         tradfi_note = ''
         try:
-            from fangcang_tradfi_db import query_tradfi, TOKEN_TO_STOCK
+            from brahma_brain.fangcang_engine import query_tradfi, TOKEN_TO_STOCK
             if symbol in TOKEN_TO_STOCK:
                 # TradFi方向映射
                 tf_dir = 'UP' if signal_dir == 'LONG' else 'DOWN'
@@ -2661,7 +2661,7 @@ def _get_cases_adj(symbol: str, ms: dict, signal_dir: str, regime: str) -> tuple
         # 【新增】burst_atr_mult 加成（Top20相似案例的平均突破力度）
         # 铁证: burst_atr_mult>1.5x + UP → WR=56%~80%，平均+1.28%
         try:
-            from fangcang_hcme_bridge import _FANGCANG_CACHE, _load_fangcang_cases
+            from brahma_brain.fangcang_engine import _FANGCANG_CACHE, _load_fangcang_cases
             _fc = result  # fangcang_context_match返回的结果已包含样本信息
             # 从原始结果读取avg_burst（若有）
             _avg_burst = float(result.get('avg_burst_atr_mult', 0) or 0)

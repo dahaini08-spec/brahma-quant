@@ -174,7 +174,7 @@ def get_brahma_rules(regime: str, signal_dir: str) -> str:
 def get_top3_similar(symbol: str, ms: dict) -> str:
     """从方仓库找最相似的Top3历史案例"""
     try:
-        from fangcang_hcme_bridge import fangcang_context_match
+        from brahma_brain.fangcang_engine import fangcang_context_match
         bbw = float(ms.get('bb_width', ms.get('bbw', 0.01)) or 0.01)
         rsi = float(ms.get('rsi_1h', ms.get('rsi', 50)) or 50)
         regime = ms.get('regime', 'UNKNOWN')

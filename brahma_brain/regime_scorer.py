@@ -437,7 +437,7 @@ regime_state_machine.py — 梵天体制状态机 v1.0
   locked_until  : 体制锁定到某个时间（防止过快切换）
 
 【使用方式】
-  from regime_state_machine import RegimeStateMachine
+  from brahma_brain.regime_scorer import RegimeStateMachine
   rsm = RegimeStateMachine()
   stable_regime = rsm.update('BTCUSDT', raw_regime)
   # 返回经过稳定处理的体制，而非原始单点输出
@@ -873,7 +873,7 @@ def get_quadrant(symbol: str) -> dict:
     whale_notes = []
     big_buy = big_sell = 0.0
     try:
-        from whale_engine import get_whale_activity
+        from brahma_brain.onchain_engine import get_whale_activity
         wa = get_whale_activity(sym)
         whale_net   = wa.get('whale_net', 0.0)    # 正=净买，负=净卖
         whale_diverge = wa.get('diverge', False)
@@ -889,7 +889,7 @@ def get_quadrant(symbol: str) -> dict:
     # 补充: smart_money_engine 大户持仓方向
     smart_bias = 'NEUTRAL'
     try:
-        from smart_money_engine import get_smart_money_signal
+        from brahma_brain.onchain_engine import get_smart_money_signal
         sm = get_smart_money_signal(sym)
         sm_dir = sm.get('direction', 'NEUTRAL')
         if sm_dir in ('LONG', 'SHORT'):

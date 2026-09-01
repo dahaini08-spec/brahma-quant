@@ -428,7 +428,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
 
     # A2: failure_pattern_db — 失败模式预警
     try:
-        from failure_pattern_db import get_current_risk_score
+        from brahma_brain.brahma_experience_engine import get_current_risk_score
         _fp = get_current_risk_score(r)
         if _fp and _fp.get('risk_score', 0) > 0:
             _fp_line = f"\n⚠️ 失败模式: risk={_fp.get('risk_score')} | {_fp.get('top_pattern','')[:50]}"
@@ -448,7 +448,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
 
     # A4: macro_calendar — 宏观日历事件
     try:
-        from macro_calendar import get_upcoming_events
+        from brahma_brain.narrative_engine import get_upcoming_events
         _mc = get_upcoming_events()
         if _mc:
             r['_macro_calendar'] = _mc[:3]
@@ -466,7 +466,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
 
     # A6: tradfi_dump_detector — TradFi抛压检测
     try:
-        from tradfi_dump_detector import m5_monthly_trend_filter
+        from brahma_brain.tradfi_signal_layer import m5_monthly_trend_filter
         _td = m5_monthly_trend_filter(
             float(r.get('price_change_30d', 0) or 0),
             r.get('signal_dir', 'LONG')
@@ -513,7 +513,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
         # GEX区间分析
         _gex_max  = 0; _gex_min = 0; _gex_flip = 0; _gex_dir = 'N/A'
         try:
-            from brahma_brain.gex_scanner import get_gex_state as _ggs
+            from brahma_brain.gex_unified import get_gex_state as _ggs
             _sym_s = symbol.replace('USDT','').replace('PERP','')
             _gex_d = _ggs(_sym_s)
             if _gex_d:
@@ -935,7 +935,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
 
     # [P1+P2接通 2026-08-31 苏摩111] smc_resonance → 强制前置链路 + VIP卡片
     try:
-        from brahma_brain.smc_resonance import format_smc_block
+        from brahma_brain.smc_engine import format_smc_block
         _smc_block = format_smc_block(r)
         report = report + _smc_block
     except Exception as _smc_err:

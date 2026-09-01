@@ -70,18 +70,18 @@ try:
 except Exception:
     _OF_OK = False
 try:
-    from macro_engine import macro_score as _macro_score
+    from brahma_brain.narrative_engine import macro_score as _macro_score
     _MACRO_OK = True
 except Exception:
     _MACRO_OK = False
 _HARMONIC_OK = False
 try:
-    from volume_exhaustion_engine import volume_exhaustion_score as _vol_exh_score
+    from brahma_brain.volume_unified import volume_exhaustion_score as _vol_exh_score
     _VOL_EXH_OK = True
 except Exception:
     _VOL_EXH_OK = False
 try:
-    from divergence_engine import multitf_divergence_score as _multitf_div_score
+    from brahma_brain.smc_engine import multitf_divergence_score as _multitf_div_score
     _MULTITF_DIV_OK = True
 except Exception:
     _MULTITF_DIV_OK = False
@@ -96,7 +96,7 @@ try:
 except Exception:
     _ENHANCED_OK = False
 try:
-    from whale_engine import whale_score as _whale_score
+    from brahma_brain.onchain_engine import whale_score as _whale_score
     _WHALE_OK = True
 except Exception:
     _WHALE_OK = False
@@ -1036,9 +1036,9 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     try:
         # [Fix 2026-09-01] cvd_engine在brahma_brain/，修复路径问题
         try:
-            from brahma_brain.cvd_engine import cvd_score_for_signal as _cvd_fn
+            from brahma_brain.volume_unified import cvd_score_for_signal as _cvd_fn
         except ImportError:
-            from cvd_engine import cvd_score_for_signal as _cvd_fn
+            from brahma_brain.volume_unified import cvd_score_for_signal as _cvd_fn
         _cvd_score, _cvd_notes = _cvd_fn(ms.get('symbol', ''), signal_dir)
         if _cvd_score != 0:
             # [2026-08-30 苏摩111] ETH订单流权重放大：arXiv铁证ETH盘口状态依赖更强
@@ -1085,7 +1085,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     # ══ [设计院 2026-08-12 苏摩111封印] Volume Profile成交量分布接入 ══
     # 根因：volume_profile.py存在但未接入，POC价格磁力区信息缺失
     try:
-        from volume_profile import get_vp_score as _vp_fn
+        from brahma_brain.volume_unified import get_vp_score as _vp_fn
         _vp_price = float(ms.get('close', ms.get('price', 0)) or 0)
         _vp_score, _vp_reason = _vp_fn(_sym, _vp_price, signal_dir)
         if _vp_score != 0:
@@ -1098,7 +1098,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     # 模块: realtime_liq_tracker · 追踪近5分钟三所清算流方向
     # 逻辑：同向清算涌入（如大量多单被爆仓时做空）→ 加分
     try:
-        from realtime_liq_tracker import get_liq_score as _liq_score_fn
+        from brahma_brain.liq_density_engine import get_liq_score as _liq_score_fn
         _liq_adj, _liq_desc = _liq_score_fn(ms.get('symbol', ''), signal_dir)
         if _liq_adj != 0:
             score += _liq_adj
@@ -1355,7 +1355,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # ── [s_smart_money 2026-07-01] 聊明錢流向分析 ───────────────────────
     # Glassnode盲区替代方案：大户持仓比+大户-散户背离 = 巨鲸流向代理指标
     try:
-        from smart_money_engine import get_smart_money_signal as _gsms
+        from brahma_brain.onchain_engine import get_smart_money_signal as _gsms
         _sm = _gsms(_sym)
         extra_data['smart_money'] = _sm
         _sm_adj = _sm.get('score_adj', 0)
@@ -1731,7 +1731,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # 原设计：structure计算在行3101，Queue check在行2662，grade=0导致冷却死循环
     # 修复：提前计算grade，让Queue check读到真实值
     try:
-        from structure_quality_engine import evaluate_structure_quality as _pre_sqe
+        from brahma_brain.smc_engine import evaluate_structure_quality as _pre_sqe
         _tc = params.get('trigger_15m_confidence', 0) or cf.get('trigger_15m_confidence', 0) or 0  # [v24.5-fix] 优先从 params 读取，cf不包含时备用
         _pre_sq_result = _pre_sqe(
             symbol     = _sym,
@@ -1779,7 +1779,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # I5: 资金分配
     try:
-        from capital_allocator import compute as _ca_compute
+        from brahma_brain.position_sizer import compute as _ca_compute
         _ca_result = _ca_compute(
             symbol=_sym,
             signal_score=float(cf.get('total', 100)),
@@ -1795,7 +1795,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # I3: 动态止损
     try:
-        from dynamic_sl import compute as _dsl_compute
+        from brahma_brain.position_sizer import compute as _dsl_compute
         _drift_alert = extra_data.get('drift', {}).get('alert', 'OK')
         _kls = [lvl for lvl in ms.get('key_levels', {}).values()
                 if isinstance(lvl, (int,float)) and lvl > 0] if ms.get('key_levels') else []
@@ -2500,7 +2500,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # 哲学：好信号的本质是「入场区有真实价格结构」，而非「评分高」
     # 无结构入场(grade<30) = 拒绝，无论评分多高
     try:
-        from structure_quality_engine import evaluate_structure_quality, get_time_weight  # [D1-note] 按需import(主SQE)
+        from brahma_brain.smc_engine import evaluate_structure_quality, get_time_weight  # [D1-note] 按需import(主SQE)
         _sq = evaluate_structure_quality(
             symbol     = _sym,
             signal_dir = signal_dir,
@@ -3314,12 +3314,12 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         for _p22 in [_bb_dir, _root_dir]:
             if _p22 not in _sys22.path:
                 _sys22.path.insert(0, _p22)
-        from gex_engine import score_gex as _score_gex22, compute_gex as _compute_gex22
+        from brahma_brain.gex_unified import score_gex as _score_gex22, compute_gex as _compute_gex22
         _currency_g = 'BTC' if 'BTC' in _sym_t.upper() else \
                       'ETH' if 'ETH' in _sym_t.upper() else 'BTC'
         # [设计院 2026-06-30] 优先用 gex_scanner（博尔正项BS公式），fallback到 gex_engine
         try:
-            from gex_scanner import get_gex_state as _gex_state_fn, get_gex_score_for_signal as _gex_sig_fn
+            from brahma_brain.gex_unified import get_gex_state as _gex_state_fn, get_gex_score_for_signal as _gex_sig_fn
             _gex_cached = _gex_state_fn(_currency_g)
             if _gex_cached and _gex_cached.get('max_gex_strike'):
                 _gex_adj, _gex_desc = _gex_sig_fn(_currency_g, _dir_t)
@@ -3383,7 +3383,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         import sys as _sys23, os as _os23
         _bb23 = _os23.path.dirname(_os23.path.abspath(__file__))
         if _bb23 not in _sys23.path: _sys23.path.insert(0, _bb23)
-        from kronos_bridge import get_s23_kronos as _bk_fn
+        from brahma_brain.kronos_engine import get_s23_kronos as _bk_fn
     except ImportError:
         def _bk_fn(*a, **kw): return (0, {'score': 0, 'p_up': 0.5, 'source': 'import_err'})
     try:
@@ -3765,7 +3765,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             try:
                 # [设计院 2026-08-25 苏摩111] 统一方仓查询层：合并系统1(K线)+系统2(案例库)
                 # 替代原来的 hcme_wr_adj=0.5（几乎没用）
-                from brahma_fangcang_unified import unified_fangcang as _uf
+                from brahma_brain.fangcang_engine import unified_fangcang as _uf
                 _uf_result = _uf(
                     symbol=_sym,
                     ms=ms,
@@ -3823,7 +3823,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # 使命：把20392条6.5年K线蒸馏的经验矩阵实时注入评分
     # 接入：longmem之后，decision_engine之前
     try:
-        from brahma_brain.fangcang_experience_engine import get_exp_adj as _exp_fn
+        from brahma_brain.fangcang_engine import get_exp_adj as _exp_fn
         _exp_rsi   = float(ms.get('rsi_1h', ms.get('rsi', 50)) or 50)
         _exp_burst = float((_result.get('fangcang') or {}).get('avg_burst_atr_mult', 1.0) or 1.0)
         _exp_tf    = str(ms.get('entry_tf', ms.get('tf', '4h')) or '4h')
@@ -4081,7 +4081,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         ])  # TSLAUSDT降为B级暂移出 / MSTRUSDT单独处理
         _mstr_tokens = {'MSTRUSDT'}  # MSTR专属：权重±3（降半）
         if _sym in _tradfi_tokens or _sym in _mstr_tokens:
-            from brahma_brain.fangcang_tradfi_db import query_tradfi as _tfi_q
+            from brahma_brain.fangcang_engine import query_tradfi as _tfi_q
             _tfi_bbw  = _result.get('fangcang', {}).get('bbw_4h',
                         _result.get('confluence', {}).get('bbw_4h', 1.5))
             _tfi_rsi  = _result.get('rsi_1h', 55.0)
@@ -4239,7 +4239,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # B3: signal_integrity_gate — P0~P2 信号完整性校验
     try:
-        from brahma_brain.signal_integrity_gate import gate_check as _gate_fn
+        from brahma_brain.signal_quality_engine import gate_check as _gate_fn
         _cf_gate = _result.get('confluence', {})
         _params_gate = _result.get('params', {})
         _ms_gate = _result.get('momentum', {})
@@ -4330,7 +4330,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # C4: tradfi_dump_detector — TradFi/美股代币放量抛售检测
     # [接入位置 2026-08-29 苏摩111] 建了未接入，今日修复
     try:
-        from brahma_brain.tradfi_dump_detector import analyze_tradfi_dump as _td_fn, is_tradfi_token as _is_tf
+        from brahma_brain.tradfi_signal_layer import analyze_tradfi_dump as _td_fn, is_tradfi_token as _is_tf
         if _is_tf(symbol):
             _kl1h = extra_data.get('klines_1h') or extra_data.get('kl1h', [])
             _ret30 = float(extra_data.get('ret_30d', 0) or 0)
@@ -4356,7 +4356,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # [P0接入 2026-08-29 苏摩111] 接入位置: brahma_core block_b C5
     # 铁证: LSR>65%+大户净空 = 多头拥挤象限Q2 → score-15; LSR<35%+大户净多 = 空头拥挤Q4 → score+12
     try:
-        from brahma_brain.market_quadrant import get_quadrant as _mq_fn
+        from brahma_brain.regime_scorer import get_quadrant as _mq_fn
         _mq = _mq_fn(symbol)
         if _mq and isinstance(_mq, dict):
             _mq_quadrant = _mq.get('quadrant', 'NEUTRAL')
@@ -4459,7 +4459,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _direction = _result.get('direction', 'LONG')
 
             # ── sector_corr：板块联动评分 ─────────────────────────────────────
-            from brahma_brain.tradfi_sector_engine import (
+            from brahma_brain.tradfi_signal_layer import (
                 compute_tradfi_sector_score as _sector_fn,
                 get_quick_rsi_1h as _sector_rsi_fn,
             )
@@ -4472,7 +4472,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _result['tradfi_sector'] = _sector_result
 
             # ── macro_link：宏观门控 ───────────────────────────────────────────
-            from brahma_brain.tradfi_macro_gate import compute_tradfi_macro_gate as _macro_fn
+            from brahma_brain.tradfi_signal_layer import compute_tradfi_macro_gate as _macro_fn
             _macro_result = _macro_fn(_sym, _direction, 'TRADFI_STOCK')
             _macro_score  = float(_macro_result.get('score', 0))
             if _macro_score != 0:
@@ -4492,8 +4492,8 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # 验证铁证: A类 WR+9.1pp PNL-3.3%→+12.5% | 铁律1/2/3差异化评分
     try:
         if _result.get('asset_type') == 'TRADFI_STOCK':
-            from brahma_brain.tradfi_router import compute_router_delta as _tr_fn
-            from brahma_brain.tradfi_router import get_tradfi_report_header as _tr_hdr_fn
+            from brahma_brain.tradfi_signal_layer import compute_router_delta as _tr_fn
+            from brahma_brain.tradfi_signal_layer import get_tradfi_report_header as _tr_hdr_fn
             # 提取当前分析结果中的技术指标
             _tr_atr_pct   = float((_result.get('momentum') or {}).get('atr_1h') or 0) / float(_result.get('price', 1) or 1)
             _tr_spx_chg   = float((_result.get('tradfi_macro') or {}).get('spx_chg_1d', 0) or 0)
@@ -4572,7 +4572,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # ── [梦天大脑 Layer A2+C3 注入 2026-08-25] ──────────────────────────────────
     # A2: 极端事件库风险注释
     try:
-        from extreme_event_db import get_extreme_risk_note as _ern
+        from brahma_brain.brahma_experience_engine import get_extreme_risk_note as _ern
         _extreme_note = _ern(_sym)
         if _extreme_note:
             _result['extreme_risk_note'] = _extreme_note

@@ -16,7 +16,7 @@ import pytest
 
 # ══ Test 1: RSM 体制防抖 ══
 def test_rsm_filters_noise():
-    from regime_state_machine import RegimeStateMachine
+    from brahma_brain.regime_scorer import RegimeStateMachine
     rsm = RegimeStateMachine('TEST_SMOKE')
     # 单次切换应被防抖过滤
     rsm.update('CHOP_MID')
@@ -26,7 +26,7 @@ def test_rsm_filters_noise():
     assert result in ('CHOP_MID', 'BEAR_RECOVERY', 'BEAR_TREND', 'BULL_TREND')
 
 def test_rsm_stable_on_repeated():
-    from regime_state_machine import RegimeStateMachine
+    from brahma_brain.regime_scorer import RegimeStateMachine
     rsm = RegimeStateMachine('TEST_STABLE')
     for _ in range(5):
         rsm.update('BEAR_TREND')

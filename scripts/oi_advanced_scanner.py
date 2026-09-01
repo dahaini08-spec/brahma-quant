@@ -749,7 +749,7 @@ def scan_symbol(sym, ticker_data):
                 _oi_brain = _oi_os.path.join(_oi_os.path.dirname(_oi_os.path.dirname(
                     _oi_os.path.abspath(__file__))), 'brahma_brain')
                 if _oi_brain not in _oi_sys.path: _oi_sys.path.insert(0, _oi_brain)
-                from macro_calendar import get_upcoming_events as _oi_ev
+                from brahma_brain.narrative_engine import get_upcoming_events as _oi_ev
                 _macro_factor = 1.0
                 for _ev in _oi_ev(days_ahead=7):
                     _d = _ev.get('days_to', 99)

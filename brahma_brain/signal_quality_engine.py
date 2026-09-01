@@ -1339,7 +1339,7 @@ class SignalIntegrityGate:
 
         # ── P1: SL距离硬封禁 ────────────────────────────────
         # [2026-07-28 设计院封印] RWA/TradFi代币波动更大，放宽至6%
-        from brahma_brain.tradfi_dump_detector import is_tradfi_token as _is_tf
+        from brahma_brain.tradfi_signal_layer import is_tradfi_token as _is_tf
         _sl_cap = 6.0 if _is_tf(symbol) else SL_PCT_HARD_CAP
         if sl_pct > _sl_cap:
             return False, (

@@ -85,7 +85,7 @@ def get_narrative_score(symbol: str) -> dict:
     fg_label = 'Neutral'
     fg_trend = 'FLAT'
     try:
-        from macro_engine import get_fear_greed as _get_fg
+        from brahma_brain.narrative_engine import get_fear_greed as _get_fg
         fg_data = _get_fg()
         fg_val   = int(fg_data.get('value', 50))
         fg_label = fg_data.get('label', 'Neutral')
@@ -935,7 +935,7 @@ def macro_score_v2(symbol: str, signal_dir: str) -> dict:
 def write_macro_state() -> dict:
     """
     写入 macro_state.json 宏观快照
-    调用: python3 -c "from brahma_brain.macro_engine import write_macro_state; write_macro_state()"
+    调用: python3 -c "from brahma_brain.narrative_engine import write_macro_state; write_macro_state()"
     """
     import json, time
     from pathlib import Path

@@ -360,7 +360,7 @@ def _macro_agent_review(signal: Dict, market_ctx: Dict) -> Dict:
     # [手术2 2026-08-29] TradFi宏观案例注入：让MacroAgent基于40年真实数据推理
     tradfi_macro_ctx = ''
     try:
-        from fangcang_tradfi_db import query_tradfi, TOKEN_TO_STOCK
+        from brahma_brain.fangcang_engine import query_tradfi, TOKEN_TO_STOCK
         if symbol in TOKEN_TO_STOCK:
             tf_dir = 'UP' if direction in ('LONG', '做多') else 'DOWN'
             tf_result = query_tradfi(
@@ -595,7 +595,7 @@ def review(
     _raw_breakdown = signal_result.get('confluence', {}).get('breakdown',
                      signal_result.get('breakdown', {}))
     try:
-        from brahma_brain.headroom import compress_signal_card as _compress_card
+        from brahma_brain.position_sizer import compress_signal_card as _compress_card
         _compressed_ctx = _compress_card({
             'symbol': symbol, 'direction': dir_, 'score': score,
             'regime': regime, 'breakdown': _raw_breakdown,

@@ -1488,7 +1488,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     #        var_99 > 20%NAV → 告警但不阻断
     # 接入点：notional最终确定后（MIN_NOTIONAL课保后，blacktea前）
     try:
-        from brahma_brain.var_engine import single_position_var as _var_exe
+        from brahma_brain.position_sizer import single_position_var as _var_exe
         _pos_pct_nav = notional / nav if nav > 0 else 0
         _var_res = _var_exe(
             symbol=sym,
@@ -1965,7 +1965,7 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
     # 预执行所有候选信号的资金分配计算，防止多标的时过度集中
     _alloc_cache = {}  # symbol -> compute()结果
     try:
-        from brahma_brain.capital_allocator import compute as _cap_compute
+        from brahma_brain.position_sizer import compute as _cap_compute
         for _sig_pre in candidates:
             _sym_pre   = _sig_pre.get('symbol', '')
             _score_pre = float(_sig_pre.get('score', 0) or 0)

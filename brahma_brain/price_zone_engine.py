@@ -346,7 +346,7 @@ def _calc_zones_internal(symbol: str) -> dict:
     hcme_note   = ''
     hcme_bias   = 0
     try:
-        from hcme_matcher import get_hcme_matcher
+        from brahma_brain.fangcang_engine import get_hcme_matcher
         matcher = get_hcme_matcher()
         if matcher:
             # 构造简单查询向量（RSI+FR+体制）
@@ -382,7 +382,7 @@ def _calc_zones_internal(symbol: str) -> dict:
     gex_wall_above = None
     gex_wall_below = None
     try:
-        from gex_engine import score_gex, compute_gex
+        from brahma_brain.gex_unified import score_gex, compute_gex
         currency = 'BTC' if 'BTC' in symbol else 'ETH'
         gex_data = compute_gex(currency=currency)
         gex_result = score_gex(symbol, 'SHORT', gex_data)

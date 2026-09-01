@@ -157,7 +157,7 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
     # 职责：识别当前价格区间是高密度支撑区还是低密度空洞
     # 高密度区(>1.5x)→做多+8 / 空洞区(<0.6x)→做多-15（踩踏风险）
     try:
-        from brahma_brain.volume_profile import get_vp_score as _vp_score_fn
+        from brahma_brain.volume_unified import get_vp_score as _vp_score_fn
         _vp_pts, _vp_desc = _vp_score_fn(_sym, float(extra_data.get('price', price) if extra_data else price), signal_dir)
         if _vp_pts != 0:
             s7_vp = max(-15, min(8, _vp_pts))  # 边界保护

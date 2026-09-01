@@ -1710,7 +1710,7 @@ if __name__ == "__main__":
 
     print("── 回测验证（ETH 4H，n=50）──")
     hits_v1 = 0; hits_v2 = 0; total = 0
-    from kronos_lite import _compute_p_up as _cp  # 用自身
+    from brahma_brain.kronos_engine import _compute_p_up as _cp  # 用自身
     eth_4h_full = fetch_klines("ETHUSDT", "4h", 150)
     arr4h = np.array(eth_4h_full, dtype=float)
     c4h = arr4h[:, 3]
