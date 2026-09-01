@@ -272,7 +272,18 @@ def build_hot_tickers() -> str:
             mechanism = (f'从低点{recent_low:.4f}涨到高点{recent_high:.4f}，区间{from_low:.0f}%。\n'
                         f'FR {fr:.4f}%正常，说明这波不是情绪过热推上去的。\n'
                         f'多空比{ls:.2f}，{"空头为主，可能还有被动追涨空间。" if ls < 0.9 else "多头已占优，追高胜率下降。"}')
-        stance = f'现价{price_str}，从高点回落{pullback:.1f}%。追高风险大，等回踩{recent_low:.4f}支撑确认再看。'
+        # 回踩目标：用成交密集区（高低点之间的61.8%）而不是最低点
+        fib618 = recent_low + (recent_high - recent_low) * 0.382  # 38.2%回调位 = 61.8%斐波那契支撑
+        fib500 = recent_low + (recent_high - recent_low) * 0.500  # 50%回调位
+        if pullback > 5:
+            stance = (f'现价{price_str}，已从高点回落{pullback:.1f}%。\n'
+                      f'追高风险大——入场逻辑要等回踩确认，不是等回到低点。\n'
+                      f'合理回踩区间：{fib618:.4f}U（38.2%回调）到{fib500:.4f}U（50%回调）。\n'
+                      f'进场条件：价格进入该区间+1H止跌信号，止损放在{recent_low:.4f}U下方。')
+        else:
+            stance = (f'现价{price_str}，还在高位附近（从高点仅回落{pullback:.1f}%）。\n'
+                      f'等一个像样的回踩：{fib618:.4f}U是第一个观察位。\n'
+                      f'没有回踩就不进，追高是亏钱的主要来源之一。')
         hook = f'${hot_sym} 今天+{chg:.0f}%，说说这背后发生了什么。'
         question = f'你提前捕捉到{hot_sym}这波行情了吗？'
         out = [
@@ -930,20 +941,39 @@ def build_market_summary() -> str:
     btc_ls  = btc.get('ls_ratio', 1.0)
     eth_ls  = eth.get('ls_ratio', 1.0)
 
+    btc_price = btc.get('price', 0)
+    # 计算关键价位（近期支撑/压力）
+    support = recent_low if 'recent_low' in dir() else 0
+    resist  = recent_high if 'recent_high' in dir() else 0
+
     if btc_chg < -1.5 and eth_chg < -1.5:
-        mood = '两大主力币同步下滴，市场其实在用行动回答一个问题：多头到底有多少。'
-        tomorrow = f'BTC {btc_key_level} 是今晚最关键的支撑，守不住的话我会进一步降低多头仓位。'
-    elif btc_chg > 1.5 and eth_chg > 1.5:
-        mood = '两大主力币同步上涨，多头情绪在换手。但FR还尚正常，还没到过热的位置。'
-        tomorrow = f'BTC能否稳住并继续上攻，看量能。没量能拉不动。'
+        mood = (f'BTC{btc_chg:+.1f}% ETH{eth_chg:+.1f}%，两大主力同步下跌。\n'
+                f'这不是分化，是系统性下行。多头今天受伤了，FR{btc_fr:.4f}%说明还没到恐慌抛售的程度。\n'
+                f'短期看：BTC能否守住{btc_key_level}U是关键，跌破这里止损会加速。')
+        tomorrow = (f'我的操作：仓位降到30%以下等BTC企稳。{btc_key_level}U守住+成交量萎缩，'
+                    f'才考虑轻仓试多，止损放在{btc_key_level}U下方1.5%。')
+    elif btc_chg > 1 and eth_chg > 1:
+        # 同向上涨：给出追涨的风险评估和实际操作数字
+        eth_btc_stronger = eth_chg > btc_chg
+        mood = (f'BTC{btc_chg:+.1f}% ETH{eth_chg:+.1f}%，主力同步上涨。\n'
+                f'{"ETH跑赢BTC，资金在向山寨扩散，轮动行情启动信号。" if eth_btc_stronger else "BTC领涨，资金还在集中在主流，山寨跟涨但弹性弱。"}\n'
+                f'FR{btc_fr:.4f}%，多头持仓成本{"在累积，追高要算清楚成本。" if btc_fr > 0.008 else "正常，没有过热。"}')
+        if btc_price > 0:
+            chase_risk_level = (btc_price * 1.005)
+            tomorrow = (f'我的判断：{"现在追多不是最优时机，等回踩" + str(int(btc_price*0.99)) + "U附近确认支撑再进，止损放在" + str(int(btc_price*0.985)) + "U。" if btc_fr > 0.008 else "FR正常，可以轻仓持多，止损放在今日低点" + btc_key_level + "U下方。"}')
+        else:
+            tomorrow = f'关注BTC能否放量站稳，没有量能拉不动。'
     else:
-        # 分化行情给出具体结构判断，不说废话
-        btc_dir = '偏强' if btc_chg > 0.5 else ('偏弱' if btc_chg < -0.5 else '震荡')
-        eth_dir = '偏强' if eth_chg > 0.5 else ('偏弱' if eth_chg < -0.5 else '震荡')
-        mood = (f'BTC{btc_dir}({btc_chg:+.1f}%)，ETH{eth_dir}({eth_chg:+.1f}%)，两者出现分化。\n'
-                f'ETH/BTC汇率{"在下行，资金在往BTC集中，山寨季还没开始。" if eth_chg < btc_chg else "在上行，资金开始向ETH和山寨扩散，注意轮动机会。"}\n'
-                f'这种分化行情里不要追热点，等其中一个先走出方向再跟。')
-        tomorrow = f'BTC站不稳{btc_key_level}，我不会贸然加仓。'
+        # 真正的分化或小幅震荡
+        btc_dir = '微涨' if btc_chg > 0.3 else ('微跌' if btc_chg < -0.3 else '横盘')
+        eth_dir = '微涨' if eth_chg > 0.3 else ('微跌' if eth_chg < -0.3 else '横盘')
+        eth_btc_rel = '跑赢BTC' if eth_chg > btc_chg + 0.5 else ('跑输BTC' if eth_chg < btc_chg - 0.5 else '与BTC同步')
+        mood = (f'BTC{btc_dir}({btc_chg:+.1f}%) ETH{eth_dir}({eth_chg:+.1f}%)，ETH{eth_btc_rel}。\n'
+                f'{"ETH/BTC汇率上行，资金向山寨流动，留意轮动机会。" if eth_chg > btc_chg + 0.5 else "ETH/BTC汇率下行，资金仍在BTC，山寨季还没开始。" if eth_chg < btc_chg - 0.5 else "BTC和ETH同向小幅波动，市场整体在消化。"}\n'
+                f'FR{btc_fr:.4f}%，没有极端信号，当前是等待而非行动的时机。')
+        tomorrow = (f'BTC的{btc_key_level}U支撑和'
+                    f'{int(float(btc_key_level.replace(",",""))*1.02) if btc_key_level else "上方压力位"}U压力是明天的核心观察位。'
+                    f'没有突破前我保持轻仓或空仓。')
 
     lines = [f'今日收盘，说一下我的判断。', '']
     lines.append(f'📊 {now_cst()} CST')
@@ -966,7 +996,7 @@ def build_market_summary() -> str:
     lines.append('')
     lines.append(mood)
     lines.append('')
-    lines.append(f'明天开盘我会盯着看：{tomorrow}')
+    lines.append(tomorrow)
     lines.append('')
     # 动态互动问句
     if btc_chg > 1:
