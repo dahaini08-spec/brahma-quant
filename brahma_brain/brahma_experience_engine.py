@@ -471,3 +471,891 @@ if __name__ == '__main__':
         print(f'✅ {args.symbol} {tf}: {n}条')
     else:
         build_full_experience_db()
+
+
+# ══ [2026-09-01 设计院精简封印] 合并自 brahma_brain/brahma_experience_distiller.py ══
+#!/usr/bin/env python3
+"""
+brahma_experience_distiller.py — 梵天经验蒸馏矩阵
+══════════════════════════════════════════════════
+设计院 2026-08-25 苏摩111 Phase3封印
+
+使命：
+  把15795条原始方仓案例 → 压缩成AI可直接调用的WR索引
+  让AI议会不必读原始数据，直接查矩阵得到"梵天铁证"
+
+索引维度：
+  体制(regime) × 方向(dir) × 周期(tf) × 评分段(score_band)
+
+输出文件：
+  data/brahma_experience_matrix.json  ← 注射器读取入口
+  data/brahma_wr_by_coin.json         ← 单币WR速查表
+  data/brahma_phase3_report.txt       ← 人工可读摘要
+
+核心指标（每个格子）：
+  n         : 历史案例数
+  wr        : 胜率（多=收益>0, 空=收益<0）
+  avg_ret   : 平均收益率%
+  best_coin : 胜率最高的币种
+  worst_coin: 胜率最低的币种
+  top_tf    : 最优周期
+"""
+import sys
+import json
+import glob
+import time
+from pathlib import Path
+from datetime import datetime, timezone
+
+_BASE = Path(__file__).parent
+_DATA = _BASE.parent / 'data'
+
+# ── 体制列表 ──────────────────────────────────────────────────────
+REGIMES = ['BULL_TREND', 'BULL_EARLY', 'BEAR_TREND', 'BEAR_EARLY',
+           'CHOP_MID', 'BEAR_RECOVERY']
+DIRECTIONS = ['LONG', 'SHORT']
+TIMEFRAMES  = ['15m', '1h', '4h', '1d', '1w', '1M']
+
+# ── 方仓案例的方向字段映射 ─────────────────────────────────────────
+def _norm_dir(raw: str) -> str:
+    r = str(raw).upper()
+    if r in ('UP', 'LONG'):    return 'LONG'
+    if r in ('DOWN', 'SHORT'): return 'SHORT'
+    return ''
+
+def _is_win(ret: float, direction: str) -> bool:
+    """多单收益>0为胜；空单收益<0为胜（future_return以多头视角计）"""
+    if direction == 'LONG':
+        return ret > 0
+    else:
+        return ret < 0
+
+
+# ── 加载所有方仓JSON ───────────────────────────────────────────────
+def load_all_cases() -> list:
+    files = glob.glob(str(_DATA / 'fangcang_*_*.json'))
+    files = [f for f in files if 'snapshot' not in f and 'cases_' not in f
+             and 'weights' not in f]
+    all_cases = []
+    for f in files:
+        try:
+            data = json.loads(Path(f).read_text())
+            if isinstance(data, list):
+                all_cases.extend(data)
+        except Exception:
+            pass
+    return all_cases
+
+
+# ── 从案例推断体制（方仓案例无直接体制字段，用规则映射）────────────
+def infer_regime_from_case(case: dict) -> list:
+    """
+    方仓案例不含体制标签，返回所有可能体制（宽泛匹配）。
+    蒸馏时：每条案例贡献到所有体制 × 对应方向的桶。
+    后续AI调用时查特定体制桶。
+    """
+    # 1w/1M案例用EMA叉，代表趋势切换
+    tf = case.get('timeframe', '4h')
+    trigger = case.get('trigger', '')
+    direction = _norm_dir(case.get('direction', ''))
+
+    if tf in ('1w', '1M'):
+        if trigger == 'golden_cross':
+            return ['BULL_TREND', 'BULL_EARLY']
+        elif trigger == 'death_cross':
+            return ['BEAR_TREND', 'BEAR_EARLY']
+        else:
+            return ['BULL_TREND', 'BEAR_TREND']
+
+    # 短周期：BB压缩爆发 → 所有体制都有效（不分体制，只分方向+周期）
+    return ['ALL']
+
+
+# ── 核心蒸馏函数 ──────────────────────────────────────────────────
+def distill(cases: list) -> dict:
+    """
+    返回多层索引：
+    {
+      "by_regime_dir_tf": {
+        "BEAR_TREND:SHORT:4h": {"n":49, "wr":0.61, "avg_ret":-0.8, ...},
+        ...
+      },
+      "by_coin_dir_tf": {
+        "BTC:SHORT:4h": {"n":49, "wr":0.61, ...},
+        ...
+      },
+      "by_dir_tf": {
+        "SHORT:4h": {"n":350, "wr":0.58, ...},
+        ...
+      },
+      "top_coins_by_regime_dir": {
+        "BEAR_TREND:SHORT": [{"coin":"BTC","wr":0.67,"n":134},...],
+        ...
+      },
+      "meta": {...}
+    }
+    """
+    # 按维度聚合桶
+    # key → list of (ret, direction)
+    buckets_rdt  = {}   # regime:dir:tf
+    buckets_cdt  = {}   # coin:dir:tf
+    buckets_dt   = {}   # dir:tf
+    buckets_rd   = {}   # regime:dir (for top_coins)
+    buckets_rd_coin = {}  # regime:dir:coin
+
+    total = 0
+    skipped = 0
+    for c in cases:
+        direction = _norm_dir(c.get('direction', c.get('breakout_direction', '')))
+        if not direction:
+            skipped += 1
+            continue
+
+        ret_raw = c.get('future_return', c.get('future_return_24h', c.get('future_ret', None)))
+        if ret_raw is None:
+            skipped += 1
+            continue
+        ret = float(ret_raw)
+        tf  = str(c.get('timeframe', '4h'))
+        sym = str(c.get('symbol', '')).upper().replace('USDT', '')
+        if not sym:
+            skipped += 1
+            continue
+
+        win = _is_win(ret, direction)
+        total += 1
+
+        # by_dir_tf
+        k_dt = f'{direction}:{tf}'
+        buckets_dt.setdefault(k_dt, []).append((ret, win))
+
+        # by_coin_dir_tf
+        k_cdt = f'{sym}:{direction}:{tf}'
+        buckets_cdt.setdefault(k_cdt, []).append((ret, win))
+
+        # by_regime_dir_tf — 对每个推断体制都写入
+        regimes = infer_regime_from_case(c)
+        for rgm in regimes:
+            k_rdt = f'{rgm}:{direction}:{tf}'
+            buckets_rdt.setdefault(k_rdt, []).append((ret, win))
+
+            k_rd = f'{rgm}:{direction}'
+            buckets_rd.setdefault(k_rd, []).append((ret, win))
+
+            k_rdc = f'{rgm}:{direction}:{sym}'
+            buckets_rd_coin.setdefault(k_rdc, []).append((ret, win))
+
+    def _calc(entries: list) -> dict:
+        if not entries:
+            return {'n': 0, 'wr': 0.0, 'avg_ret': 0.0}
+        rets = [e[0] for e in entries]
+        wins = sum(1 for e in entries if e[1])
+        return {
+            'n':       len(entries),
+            'wr':      round(wins / len(entries), 4),
+            'avg_ret': round(sum(rets) / len(entries), 4),
+        }
+
+    # 计算每个桶的统计
+    by_rdt = {k: _calc(v) for k, v in buckets_rdt.items()}
+    by_cdt = {k: _calc(v) for k, v in buckets_cdt.items()}
+    by_dt  = {k: _calc(v) for k, v in buckets_dt.items()}
+
+    # top_coins_by_regime_dir
+    top_coins = {}
+    for rd_key, rd_entries in buckets_rd.items():
+        # 收集该 regime:dir 下各 coin 的表现
+        regime_dir = rd_key  # e.g. "BEAR_TREND:SHORT"
+        coin_stats = {}
+        for rdc_key, rdc_entries in buckets_rd_coin.items():
+            parts = rdc_key.split(':')
+            if len(parts) == 3:
+                r, d, coin = parts
+                if f'{r}:{d}' == regime_dir:
+                    stats = _calc(rdc_entries)
+                    if stats['n'] >= 3:  # 至少3条才有意义
+                        coin_stats[coin] = stats
+
+        ranked = sorted(coin_stats.items(), key=lambda x: x[1]['wr'], reverse=True)
+        top_coins[regime_dir] = [
+            {'coin': coin, 'wr': s['wr'], 'n': s['n'], 'avg_ret': s['avg_ret']}
+            for coin, s in ranked[:10]
+        ]
+
+    return {
+        'by_regime_dir_tf':      by_rdt,
+        'by_coin_dir_tf':        by_cdt,
+        'by_dir_tf':             by_dt,
+        'top_coins_by_regime_dir': top_coins,
+        'meta': {
+            'total_cases':   total,
+            'skipped':       skipped,
+            'built_at':      datetime.now(timezone.utc).isoformat(),
+            'version':       'phase3-v1.0',
+        }
+    }
+
+
+# ── 单币WR速查表 ──────────────────────────────────────────────────
+def build_coin_wr_table(matrix: dict) -> dict:
+    """
+    格式: {
+      "BTC": {
+        "SHORT": {"4h": {"wr":0.61,"n":49}, "1h": {...}, ...},
+        "LONG":  {...}
+      }, ...
+    }
+    """
+    result = {}
+    for key, stats in matrix['by_coin_dir_tf'].items():
+        parts = key.split(':')
+        if len(parts) != 3:
+            continue
+        coin, direction, tf = parts
+        result.setdefault(coin, {}).setdefault(direction, {})[tf] = {
+            'wr': stats['wr'], 'n': stats['n'], 'avg_ret': stats['avg_ret']
+        }
+    return result
+
+
+# ── 人工可读报告 ──────────────────────────────────────────────────
+def build_report(matrix: dict) -> str:
+    lines = [
+        '═══ 梵天经验蒸馏矩阵 Phase3 报告 ═══',
+        f'生成时间: {matrix["meta"]["built_at"]}',
+        f'总案例: {matrix["meta"]["total_cases"]:,}  跳过: {matrix["meta"]["skipped"]}',
+        '',
+    ]
+
+    # 核心体制×方向×周期汇总
+    lines.append('【核心 WR 矩阵（体制×方向×周期）】')
+    key_combos = [
+        ('BEAR_TREND', 'SHORT'), ('BEAR_TREND', 'LONG'),
+        ('BULL_TREND', 'LONG'),  ('BULL_TREND', 'SHORT'),
+        ('CHOP_MID',  'SHORT'), ('ALL', 'SHORT'), ('ALL', 'LONG'),
+    ]
+    for rgm, dr in key_combos:
+        row_parts = []
+        for tf in ['15m', '1h', '4h', '1d']:
+            k = f'{rgm}:{dr}:{tf}'
+            s = matrix['by_regime_dir_tf'].get(k)
+            if s and s['n'] > 0:
+                row_parts.append(f'{tf}:WR={s["wr"]:.0%}(n={s["n"]})')
+        if row_parts:
+            lines.append(f'  {rgm}×{dr}: ' + '  '.join(row_parts))
+    lines.append('')
+
+    # top coins per regime:dir
+    lines.append('【各体制最优币种 Top5】')
+    for rd_key, coins in matrix['top_coins_by_regime_dir'].items():
+        if not coins:
+            continue
+        top5 = coins[:5]
+        coins_str = '  '.join(f'{c["coin"]}:{c["wr"]:.0%}(n={c["n"]})' for c in top5)
+        lines.append(f'  {rd_key}: {coins_str}')
+    lines.append('')
+
+    # 全局最优周期
+    lines.append('【各周期全局 WR（所有币种合计）】')
+    for tf in TIMEFRAMES:
+        long_k  = f'LONG:{tf}'
+        short_k = f'SHORT:{tf}'
+        ls = matrix['by_dir_tf'].get(long_k,  {})
+        ss = matrix['by_dir_tf'].get(short_k, {})
+        if ls.get('n', 0) > 0 or ss.get('n', 0) > 0:
+            lines.append(
+                f'  {tf}: '
+                f'LONG  WR={ls.get("wr",0):.0%} n={ls.get("n",0)}  '
+                f'SHORT WR={ss.get("wr",0):.0%} n={ss.get("n",0)}'
+            )
+
+    return '\n'.join(lines)
+
+
+# ── CLI 入口 ──────────────────────────────────────────────────────
+if __name__ == '__main__':
+    print('加载方仓案例...')
+    t0 = time.time()
+    cases = load_all_cases()
+    print(f'已加载 {len(cases):,} 条案例  ({time.time()-t0:.1f}s)')
+
+    print('蒸馏中...')
+    t1 = time.time()
+    matrix = distill(cases)
+    print(f'蒸馏完成  ({time.time()-t1:.1f}s)')
+
+    # 写主矩阵
+    out_main = _DATA / 'brahma_experience_matrix.json'
+    out_main.write_text(json.dumps(matrix, ensure_ascii=False))
+    size_kb = out_main.stat().st_size / 1024
+    print(f'✅ 写入 {out_main.name}  ({size_kb:.1f} KB)')
+
+    # 写单币WR速查表
+    coin_table = build_coin_wr_table(matrix)
+    out_coin = _DATA / 'brahma_wr_by_coin.json'
+    out_coin.write_text(json.dumps(coin_table, ensure_ascii=False))
+    print(f'✅ 写入 {out_coin.name}  ({out_coin.stat().st_size/1024:.1f} KB)')
+
+    # 写人工报告
+    report = build_report(matrix)
+    out_report = _DATA / 'brahma_phase3_report.txt'
+    out_report.write_text(report)
+    print(f'✅ 写入 {out_report.name}')
+
+    print()
+    print(report)
+
+# ══ [2026-09-01 设计院精简封印] 合并自 brahma_brain/extreme_event_db.py ══
+"""
+extreme_event_db.py  —  A2 极端事件库
+梵天设计院封印 2026-08-25
+
+功能:
+  build_extreme_events()         — 扫描1D K线，识别单日涨跌幅 >8% 的极端事件
+  match_current_similarity(sym)  — 当前状态与历史极端事件相似度匹配
+  get_extreme_risk_note(sym)     — 供 analyze() 调用的风险注释接口
+"""
+
+import ast
+import gzip
+import json
+import math
+import os
+import sys
+from datetime import datetime, timezone
+
+# ── 路径常量 ──────────────────────────────────────────────────────────────────
+_DATA_DIR        = os.path.join(os.path.dirname(__file__), '..', 'data')
+_HIST_PATH       = os.path.join(_DATA_DIR, 'historical', 'BTCUSDT_1d.jsonl.gz')
+_EVENTS_PATH     = os.path.join(_DATA_DIR, 'extreme_events.jsonl')
+
+# ── 参数 ──────────────────────────────────────────────────────────────────────
+EXTREME_THRESHOLD_PCT = 8.0   # 绝对值 > 8% 为极端事件
+SIMILARITY_WARNING    = 60.0  # 相似度超过此阈值发出警告
+TOP_N                 = 3     # 返回最相似的 top3
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 内部工具
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _rsi_wilder(closes: list, period: int = 14) -> float:
+    """Wilder 平滑 RSI，输入至少 period+1 个收盘价，不足则返回 50.0"""
+    if len(closes) < period + 1:
+        return 50.0
+    deltas = [closes[i] - closes[i - 1] for i in range(1, len(closes))]
+    gains  = [d if d > 0 else 0.0 for d in deltas]
+    losses = [-d if d < 0 else 0.0 for d in deltas]
+    ag = sum(gains[:period]) / period
+    al = sum(losses[:period]) / period
+    for i in range(period, len(deltas)):
+        ag = (ag * (period - 1) + gains[i]) / period
+        al = (al * (period - 1) + losses[i]) / period
+    if al == 0:
+        return 100.0
+    return round(100.0 - 100.0 / (1 + ag / al), 2)
+
+
+def _load_klines_gz(path: str) -> list:
+    """读取 .jsonl.gz 历史K线，返回按 ts 升序的 dict 列表"""
+    rows = []
+    try:
+        with gzip.open(path, 'rt', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    rows.append(json.loads(line))
+        rows.sort(key=lambda x: x['ts'])
+    except Exception as e:
+        print(f"[extreme_event_db] 读取K线失败: {e}", file=sys.stderr)
+    return rows
+
+
+def _ts_to_date(ts_ms: int) -> str:
+    """毫秒时间戳 → YYYY-MM-DD (UTC)"""
+    return datetime.fromtimestamp(ts_ms / 1000, tz=timezone.utc).strftime('%Y-%m-%d')
+
+
+def _euclidean(a1: float, a2: float, b1: float, b2: float) -> float:
+    """两个二维向量的欧式距离"""
+    return math.sqrt((a1 - b1) ** 2 + (a2 - b2) ** 2)
+
+
+def _similarity_score(dist: float, max_dist: float) -> float:
+    """将欧式距离映射到 0-100 相似度分（距离越小相似度越高）"""
+    if max_dist <= 0:
+        return 100.0
+    return round(max(0.0, 100.0 * (1.0 - dist / max_dist)), 1)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 公共 API
+# ══════════════════════════════════════════════════════════════════════════════
+
+def build_extreme_events(symbol: str = 'BTCUSDT') -> list:
+    """
+    扫描1D K线，识别单日涨跌幅绝对值 > 8% 的极端事件。
+
+    每个 event 字段:
+      ts             : K线时间戳 (ms)
+      date           : YYYY-MM-DD
+      symbol         : 交易对
+      change_pct     : 当日涨跌幅 (%)
+      direction      : 'UP' / 'DOWN'
+      pre_3d_rsi     : 事前3天（含当天前一天）的 RSI(14)
+      pre_3d_change  : 事前3天累计涨跌幅 (%)
+
+    结果写入 extreme_events.jsonl，并返回事件列表。
+    """
+    klines = _load_klines_gz(_HIST_PATH)
+    if not klines:
+        print("[extreme_event_db] 无可用K线数据", file=sys.stderr)
+        return []
+
+    closes = [k['c'] for k in klines]
+    events = []
+
+    # 需要至少 14+3 = 17 根前置K线 + 本根
+    for i in range(17, len(klines)):
+        k = klines[i]
+        prev_close = klines[i - 1]['c']
+        if prev_close == 0:
+            continue
+        change_pct = (k['c'] - prev_close) / prev_close * 100.0
+
+        if abs(change_pct) <= EXTREME_THRESHOLD_PCT:
+            continue
+
+        # 事前3天 (i-3 ~ i-1 含) 的收盘价
+        pre_closes = closes[: i]          # 不含当天
+        rsi_window = pre_closes[-(14 + 3):]  # 给 RSI 足够窗口：最近17根
+        pre_3d_rsi = _rsi_wilder(rsi_window[-17:], period=14)
+
+        # 3日累计涨跌：从 klines[i-3] close → klines[i-1] close
+        base_close_3d = klines[i - 3]['c']
+        end_close_3d  = klines[i - 1]['c']
+        pre_3d_change = (end_close_3d - base_close_3d) / base_close_3d * 100.0 if base_close_3d else 0.0
+
+        event = {
+            'ts'           : k['ts'],
+            'date'         : _ts_to_date(k['ts']),
+            'symbol'       : symbol,
+            'change_pct'   : round(change_pct, 2),
+            'direction'    : 'UP' if change_pct > 0 else 'DOWN',
+            'pre_3d_rsi'   : round(pre_3d_rsi, 2),
+            'pre_3d_change': round(pre_3d_change, 2),
+        }
+        events.append(event)
+
+    # 写入 JSONL
+    try:
+        os.makedirs(os.path.dirname(_EVENTS_PATH), exist_ok=True)
+        with open(_EVENTS_PATH, 'w', encoding='utf-8') as f:
+            for ev in events:
+                f.write(json.dumps(ev, ensure_ascii=False) + '\n')
+        print(f"[extreme_event_db] 极端事件库已构建: {len(events)} 条 → {_EVENTS_PATH}")
+    except Exception as e:
+        print(f"[extreme_event_db] 写入事件库失败: {e}", file=sys.stderr)
+
+    return events
+
+
+def _load_events() -> list:
+    """从磁盘加载已构建的极端事件库"""
+    events = []
+    try:
+        with open(_EVENTS_PATH, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    events.append(json.loads(line))
+    except FileNotFoundError:
+        pass
+    except Exception as e:
+        print(f"[extreme_event_db] 加载事件库失败: {e}", file=sys.stderr)
+    return events
+
+
+def match_current_similarity(symbol: str = 'BTCUSDT') -> dict:
+    """
+    计算当前市场状态与历史极端事件的相似度。
+
+    返回:
+      {
+        'current_rsi'     : float,
+        'current_3d_change': float,
+        'top3'            : [{'event': {...}, 'dist': float, 'similarity': float}, ...],
+        'max_similarity'  : float,
+        'warning'         : str  (空字符串或警告文本),
+      }
+    """
+    # 1. 加载事件库（不存在则先构建）
+    events = _load_events()
+    if not events:
+        events = build_extreme_events(symbol)
+
+    if not events:
+        return {'current_rsi': 50.0, 'current_3d_change': 0.0,
+                'top3': [], 'max_similarity': 0.0, 'warning': ''}
+
+    # 2. 计算当前状态（从1D K线取最新数据）
+    klines = _load_klines_gz(_HIST_PATH)
+    if len(klines) < 17:
+        return {'current_rsi': 50.0, 'current_3d_change': 0.0,
+                'top3': [], 'max_similarity': 0.0, 'warning': ''}
+
+    closes = [k['c'] for k in klines]
+    cur_rsi = _rsi_wilder(closes[-17:], period=14)
+
+    base_3d  = klines[-4]['c']
+    end_3d   = klines[-1]['c']
+    cur_3d_change = (end_3d - base_3d) / base_3d * 100.0 if base_3d else 0.0
+
+    # 3. 欧式距离，RSI 归一化到 [0,100]，3d_change 通常在 [-30,30]
+    #    为使两个维度量纲对齐：RSI/100 × 100 = RSI ; 3d_change 保持原值
+    #    计算所有事件的距离
+    scored = []
+    for ev in events:
+        dist = _euclidean(cur_rsi, cur_3d_change,
+                          ev['pre_3d_rsi'], ev['pre_3d_change'])
+        scored.append({'event': ev, 'dist': dist})
+
+    scored.sort(key=lambda x: x['dist'])
+
+    # 用距离最大值做归一化参考（取前100条的最大距离）
+    ref_dists = [s['dist'] for s in scored[:100]]
+    max_dist  = max(ref_dists) if ref_dists else 1.0
+
+    top3 = []
+    for s in scored[:TOP_N]:
+        sim = _similarity_score(s['dist'], max_dist)
+        top3.append({
+            'event'     : s['event'],
+            'dist'      : round(s['dist'], 3),
+            'similarity': sim,
+        })
+
+    max_sim = top3[0]['similarity'] if top3 else 0.0
+
+    # 4. 生成警告
+    warning = ''
+    if max_sim > SIMILARITY_WARNING and top3:
+        best_ev = top3[0]['event']
+        warning = (
+            f"⚠️ 当前市场与 {best_ev['date']} 极端事件 {max_sim}% 相似"
+            f"（{best_ev['direction']}，{best_ev['change_pct']:+.1f}%）"
+        )
+
+    return {
+        'current_rsi'      : round(cur_rsi, 2),
+        'current_3d_change': round(cur_3d_change, 2),
+        'top3'             : top3,
+        'max_similarity'   : max_sim,
+        'warning'          : warning,
+    }
+
+
+def get_extreme_risk_note(symbol: str = 'BTCUSDT') -> str:
+    """
+    供 analyze() 调用的风险注释接口。
+    - 相似度 > 60 → 返回警告字符串
+    - 否则返回空字符串
+    """
+    try:
+        result = match_current_similarity(symbol)
+        return result.get('warning', '')
+    except Exception as e:
+        print(f"[extreme_event_db] get_extreme_risk_note 失败: {e}", file=sys.stderr)
+        return ''
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 冒烟测试
+# ══════════════════════════════════════════════════════════════════════════════
+
+if __name__ == '__main__':
+    # 语法自检
+    with open(__file__, 'r', encoding='utf-8') as _f:
+        ast.parse(_f.read())
+
+    print("=== A2 极端事件库 冒烟测试 ===")
+
+    # Step 1: 构建极端事件库
+    print("\n[1] build_extreme_events(BTCUSDT)")
+    try:
+        evs = build_extreme_events('BTCUSDT')
+        assert len(evs) > 0, "极端事件列表不能为空"
+        print(f"    事件数: {len(evs)}")
+        print(f"    样本: {evs[0]}")
+        print(f"    最近: {evs[-1]}")
+    except Exception as e:
+        print(f"    ❌ 失败: {e}")
+        sys.exit(1)
+
+    # Step 2: 相似度匹配
+    print("\n[2] match_current_similarity(BTCUSDT)")
+    try:
+        res = match_current_similarity('BTCUSDT')
+        print(f"    当前RSI:        {res['current_rsi']}")
+        print(f"    当前3日涨跌:    {res['current_3d_change']:.2f}%")
+        print(f"    最高相似度:     {res['max_similarity']}%")
+        if res['warning']:
+            print(f"    警告: {res['warning']}")
+        else:
+            print("    无极端事件警告")
+        print(f"    Top3:")
+        for t in res['top3']:
+            ev = t['event']
+            print(f"      {ev['date']} {ev['direction']} {ev['change_pct']:+.1f}%  "
+                  f"pre_rsi={ev['pre_3d_rsi']}  pre_3d={ev['pre_3d_change']:+.1f}%  "
+                  f"相似度={t['similarity']}%")
+    except Exception as e:
+        print(f"    ❌ 失败: {e}")
+        sys.exit(1)
+
+    # Step 3: 风险注释
+    print("\n[3] get_extreme_risk_note(BTCUSDT)")
+    try:
+        note = get_extreme_risk_note('BTCUSDT')
+        print(f"    note='{note}'")
+    except Exception as e:
+        print(f"    ❌ 失败: {e}")
+        sys.exit(1)
+
+    print("\nA2完成 ✅")
+
+# ══ [2026-09-01 设计院精简封印] 合并自 brahma_brain/failure_pattern_db.py ══
+#!/usr/bin/env python3
+"""
+failure_pattern_db.py — 梵天大脑 Layer A1: 失败模式数据库
+设计院 2026-08-25 苏摩111立项封印
+
+使命: 每次信号结算后自动分析失败原因
+     积累后自动识别「这种RSI+LSR+体制组合历史上80%亏损」
+     不是WR矩阵，是「失败原因分析库」
+
+数据流:
+  信号发出 → analyze() → 执行 → 结算
+  结算 → record_outcome() → 存入failure_db.jsonl
+  查询 → get_failure_patterns() → 返回当前组合的历史失败率
+
+存储格式 (failure_db.jsonl):
+  {"ts":..,"sym":..,"regime":..,"dir":..,"score":..,"rsi_1h":..,"lsr":..,"fr":..,"outcome":"WIN|LOSS|TIMEOUT","failure_dims":[...]}
+"""
+import os, sys, json, time, logging
+from pathlib import Path
+from typing import Optional
+
+_BB = os.path.dirname(os.path.abspath(__file__))
+_ROOT = os.path.dirname(_BB)
+if _BB not in sys.path: sys.path.insert(0, _BB)
+
+logger = logging.getLogger('failure_pattern_db')
+
+_DB_PATH = Path(_ROOT) / 'data' / 'failure_db.jsonl'
+_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+# 失败维度标签
+FAILURE_DIMS = {
+    'rsi_overbought':   lambda r: r.get('rsi_1h', 50) > 70 and r.get('dir') == 'SHORT',
+    'rsi_oversold':     lambda r: r.get('rsi_1h', 50) < 30 and r.get('dir') == 'LONG',
+    'lsr_crowded_long': lambda r: r.get('lsr', 50) > 65 and r.get('dir') == 'LONG',
+    'lsr_crowded_short':lambda r: r.get('lsr', 50) < 35 and r.get('dir') == 'SHORT',
+    'fr_expensive_long':lambda r: r.get('fr', 0) > 0.01 and r.get('dir') == 'LONG',
+    'bear_trend_long':  lambda r: 'BEAR_TREND' in r.get('regime','') and r.get('dir') == 'LONG',
+    'chop_long':        lambda r: 'CHOP' in r.get('regime','') and r.get('dir') == 'LONG',
+    'bull_trend_short': lambda r: 'BULL_TREND' in r.get('regime','') and r.get('dir') == 'SHORT',
+    'score_below_120':  lambda r: r.get('score', 0) < 120,
+    'high_atr_low_rr':  lambda r: r.get('atr_pct', 0) > 3.0,
+}
+
+
+def record_outcome(
+    symbol: str,
+    direction: str,
+    score: float,
+    regime: str,
+    outcome: str,          # 'WIN' | 'LOSS' | 'TIMEOUT'
+    rsi_1h: float = 50,
+    lsr: float = 50,
+    fr: float = 0.0,
+    atr_pct: float = 2.0,
+    extra: dict = None,
+) -> dict:
+    """记录一笔信号的结算结果并分析失败维度"""
+    record = {
+        'ts':      time.time(),
+        'sym':     symbol.upper(),
+        'dir':     direction.upper(),
+        'score':   score,
+        'regime':  regime,
+        'outcome': outcome.upper(),
+        'rsi_1h':  rsi_1h,
+        'lsr':     lsr,
+        'fr':      fr,
+        'atr_pct': atr_pct,
+    }
+
+    # 分析失败维度
+    failure_dims = []
+    if outcome.upper() == 'LOSS':
+        for dim_name, check_fn in FAILURE_DIMS.items():
+            try:
+                if check_fn(record):
+                    failure_dims.append(dim_name)
+            except Exception:
+                pass
+    record['failure_dims'] = failure_dims
+
+    if extra:
+        record.update({k: v for k, v in extra.items() if k not in record})
+
+    # 追加写入
+    try:
+        with open(_DB_PATH, 'a') as f:
+            f.write(json.dumps(record, ensure_ascii=False) + '\n')
+    except Exception as e:
+        logger.warning(f'write failure_db: {e}')
+
+    return record
+
+
+def get_failure_patterns(
+    symbol: str = '',
+    direction: str = '',
+    regime: str = '',
+    min_n: int = 5,
+) -> dict:
+    """
+    查询当前组合的历史失败模式
+    返回: {
+      'total': int, 'loss_n': int, 'loss_rate': float,
+      'top_dims': [(dim_name, count, rate), ...],
+      'warning': str,   # 如果失败率>60%给出警告
+    }
+    """
+    records = _load_records()
+    # 过滤
+    filtered = records
+    if symbol:
+        filtered = [r for r in filtered if r.get('sym','').upper() == symbol.upper()]
+    if direction:
+        filtered = [r for r in filtered if r.get('dir','').upper() == direction.upper()]
+    if regime:
+        filtered = [r for r in filtered if regime.upper() in r.get('regime','').upper()]
+
+    if len(filtered) < min_n:
+        return {'total': len(filtered), 'loss_n': 0, 'loss_rate': 0.0,
+                'top_dims': [], 'warning': f'样本不足({len(filtered)}<{min_n})'}
+
+    losses    = [r for r in filtered if r.get('outcome') == 'LOSS']
+    loss_n    = len(losses)
+    loss_rate = loss_n / len(filtered)
+
+    # 统计失败维度
+    dim_counts: dict = {}
+    for r in losses:
+        for d in r.get('failure_dims', []):
+            dim_counts[d] = dim_counts.get(d, 0) + 1
+
+    top_dims = sorted(
+        [(d, cnt, cnt / loss_n) for d, cnt in dim_counts.items()],
+        key=lambda x: -x[1]
+    )[:5]
+
+    warning = ''
+    if loss_rate > 0.6 and len(filtered) >= min_n:
+        top_dim_str = top_dims[0][0] if top_dims else '未知'
+        warning = (f'⚠️ {symbol}{direction} 历史失败率={loss_rate:.0%}(n={len(filtered)})，'
+                   f'主因: {top_dim_str}')
+
+    return {
+        'total':     len(filtered),
+        'loss_n':    loss_n,
+        'loss_rate': round(loss_rate, 3),
+        'top_dims':  top_dims,
+        'warning':   warning,
+    }
+
+
+def get_current_risk_score(signal: dict) -> dict:
+    """
+    实时风险评分: 当前信号组合的历史失败率查询
+    供analyze()注入，让梵天在信号发出前知道历史失败率
+    """
+    sym  = signal.get('symbol', '')
+    dir_ = signal.get('signal_dir', signal.get('direction', ''))
+    reg  = signal.get('regime', '')
+    rsi  = signal.get('rsi_1h', 50)
+    lsr_v = signal.get('lsr', 50)
+
+    # 组合查询
+    pattern = get_failure_patterns(symbol=sym, direction=dir_, regime=reg, min_n=3)
+
+    # 失败维度实时匹配
+    active_dims = []
+    record_check = {'dir': dir_.upper(), 'regime': reg, 'rsi_1h': rsi, 'lsr': lsr_v,
+                    'fr': signal.get('fr', 0), 'score': signal.get('score', 0)}
+    for dim_name, check_fn in FAILURE_DIMS.items():
+        try:
+            if check_fn(record_check):
+                active_dims.append(dim_name)
+        except Exception:
+            pass
+
+    risk_note = ''
+    if pattern['warning']:
+        risk_note = pattern['warning']
+    elif active_dims:
+        risk_note = f'失败维度激活: {", ".join(active_dims[:3])}'
+
+    return {
+        'failure_pattern': pattern,
+        'active_dims':     active_dims,
+        'risk_note':       risk_note,
+        'historical_loss_rate': pattern['loss_rate'],
+    }
+
+
+def _load_records() -> list:
+    """加载所有结算记录"""
+    records = []
+    if not _DB_PATH.exists():
+        return records
+    try:
+        with open(_DB_PATH) as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        records.append(json.loads(line))
+                    except Exception:
+                        pass
+    except Exception as e:
+        logger.warning(f'read failure_db: {e}')
+    return records
+
+
+def get_stats() -> dict:
+    """全局统计"""
+    records = _load_records()
+    total  = len(records)
+    wins   = sum(1 for r in records if r.get('outcome') == 'WIN')
+    losses = sum(1 for r in records if r.get('outcome') == 'LOSS')
+    return {
+        'total': total, 'wins': wins, 'losses': losses,
+        'wr': round(wins/total, 3) if total else 0,
+        'db_path': str(_DB_PATH),
+    }
+
+
+if __name__ == '__main__':
+    # 冒烟测试
+    print('=== 失败模式数据库冒烟测试 ===')
+    r = record_outcome('ETHUSDT','SHORT',125,'CHOP_MID','LOSS',rsi_1h=72,lsr=71,fr=0.009)
+    print(f'记录: {r["failure_dims"]}')
+    p = get_failure_patterns('ETHUSDT','SHORT','CHOP')
+    print(f'查询: {p}')
+    s = get_stats()
+    print(f'统计: {s}')
+    print('✅ 冒烟测试通过')
