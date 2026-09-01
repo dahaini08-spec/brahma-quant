@@ -12,7 +12,7 @@ brahma_brain · Phase 1
 """
 # ponytail: SMC引擎1107行，教科书级结构识别，行数合理
 # 可优化: BOS/CHoCH检测可提取为独立模块复用
-from data_cache import get_klines, klines_to_ohlcv
+from brahma_brain.data_cache import get_klines, klines_to_ohlcv
 
 # 一、结构分析（BOS / CHoCH）
 
@@ -2983,7 +2983,7 @@ def multitf_divergence_score(symbol: str, signal_dir: str) -> dict:
     try:
         import sys, os
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-        from data_cache import get_klines, klines_to_ohlcv
+        from brahma_brain.data_cache import get_klines, klines_to_ohlcv
     except Exception as e:
         return {'score': 0, 'resonance': 'NONE', 'notes': [f'数据加载失败: {e}']}
 
@@ -3055,7 +3055,7 @@ def multitf_divergence_score(symbol: str, signal_dir: str) -> dict:
 if __name__ == '__main__':
     import sys, os
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from data_cache import get_klines, klines_to_ohlcv
+    from brahma_brain.data_cache import get_klines, klines_to_ohlcv
 
     sym = sys.argv[1] if len(sys.argv) > 1 else 'ETHUSDT'
     direction = sys.argv[2] if len(sys.argv) > 2 else 'SHORT'
