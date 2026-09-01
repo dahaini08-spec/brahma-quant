@@ -51,22 +51,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, BASE_DIR)
 sys.path.insert(0, os.path.join(BASE_DIR, '..'))
 
-# [2026-07-06] Kronos模块预注入：确保 brahma_core 中的动态 import 拿到正确实例
-# 根因： brahma_core 用 `from brahma_brain.kronos_engine import`（非包式），会创建独立模块实例
-#         导致 kronos_engine._predictor 无法共享，出现 lgbm_err
-try:
-    import brahma_brain.kronos_engine as _kb_mod
-    sys.modules.setdefault('kronos_bridge', _kb_mod)   # 预注入平名属引用
-except Exception:
-    pass
-try:
-    import brahma_brain.kronos_engine as _ke_mod
-    _ke_mod._model_load_attempted = False  # 允许重新加载（libgomp已修复）
-    _ke_mod._model_loaded = False
-    _ke_mod._predictor = None
-    sys.modules.setdefault('kronos_engine', _ke_mod)   # 预注入平名属引用
-except Exception:
-    pass
+# Kronos已删除 (2026-09-01 苏摩111)
+
 
 # ── 唯一数据入口（封印）────────────────────────────────────────
 from brahma_brain.brahma_core import analyze as _core_analyze
@@ -209,13 +195,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
     if not sym.endswith('USDT'):
         sym = sym + 'USDT'
 
-    # [2026-08-12 苏摹封印] Kronos单币分析自动预热
-    try:
-        from kronos_engine import _load_model as _kw_load, _model_loaded as _kw_ready
-        if not _kw_ready:
-            _kw_load()
-    except Exception:
-        pass
+    # Kronos预热已删除 (2026-09-01 苏摩111)
 
     # ── analysis_snapshot: 15分钟内有缓存则复用（减少重复推理）──────
     _cached_dir = None
@@ -1349,9 +1329,6 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
                    _os_kw.path.join(_kw_root,'external','Kronos')]:
             if _p not in _sys_kw.path:
                 _sys_kw.path.insert(0, _p)
-        from kronos_engine import _load_model as _kw_load, _model_loaded as _kw_ready
-        if not _kw_ready:
-            _kw_load()   # 主线程预热，ThreadPoolExecutor子线程复用同一单例
     except Exception:
         pass  # Kronos不可用时不阻塞分析
 

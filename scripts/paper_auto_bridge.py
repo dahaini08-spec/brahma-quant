@@ -188,7 +188,6 @@ def process_symbol(symbol: str, source: str = 'auto') -> dict:
         return result
 
     try:
-        import kronos_bridge as kb; kb._cache = {}
         from brahma_core import analyze
         r = analyze(symbol)
         score   = r.get('score', 0)

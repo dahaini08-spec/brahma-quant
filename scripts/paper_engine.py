@@ -202,7 +202,6 @@ def process_one(symbol: str, source: str = 'queue') -> dict:
 
     # Step3: 35维评分
     try:
-        import kronos_bridge as kb; kb._cache = {}
         from brahma_core import analyze
         import concurrent.futures
         with concurrent.futures.ThreadPoolExecutor(max_workers=1) as _ex:

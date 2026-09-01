@@ -1012,16 +1012,7 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
         f'  RSI  1H={rsi_1h_disp}  4H={rsi_4h_disp}{fr_str}',
     ]
 
-    # Kronos + 矛盾预警
-    kronos_bd = breakdown.get('s23_kronos', '')
-    p_up_val  = float(r.get('s23_p_up', 0.5) or 0.5)
-    if kronos_bd:
-        lines.append(f'  Kronos: {str(kronos_bd)[:60]}')
-    # Kronos与score方向矛盾检测
-    if score >= 155 and direction == 'LONG' and p_up_val < 0.15:
-        lines.append(f'  ⚡ Kronos矛盾: score={score:.0f}看多 但p_up={p_up_val:.2f}极低 → 短期动量背离 建议等CHoCH确认')
-    elif score >= 155 and direction == 'SHORT' and p_up_val > 0.85:
-        lines.append(f'  ⚡ Kronos矛盾: score={score:.0f}看空 但p_up={p_up_val:.2f}极高 → 短期反弹风险 建议等回调确认')
+    # Kronos已删除 (2026-09-01 苏摩111)
 
     # 宏观
     macro_bd = breakdown.get('宏观+事件', '')

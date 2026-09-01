@@ -281,7 +281,6 @@ def format_full_report(r: dict) -> str:
     lines.append(_row('HCME多头突破率', _long_m.group(1)+'%' if _long_m else 'N/A'))
     lines.append(_row('HCME空头突破率', _short_m.group(1)+'%' if _short_m else 'N/A'))
     lines.append(_row('Kronos p_up', r.get('kronos_p_up')))
-    lines.append(_row('Kronos score_adj', bd.get('Kronos_p_up') or r.get('kronos_score')))
     lines.append(_row('HAR-RV波动率', bd.get('HAR-RV波动率')))
     lines.append(_row('Hurst指数', bd.get('Hurst体制验证')))
     lines.append(_row('CVD订单流', bd.get('CVD订单流'), 'CVD数据缺失'))
@@ -455,7 +454,6 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
         from brahma_1hao_analysis import run_analysis as _1hao_main
         report = _1hao_main(symbol)
         # ── [封印 2026-08-29 苏摩111] 过滤引擎日志行 ──
-        _LOG_PREFIXES = ('[BrahmaBrain]','[s_smart]','[KronosBridge','[oi_scanner]','[RSM]','[TimingFilter]','[unified_fangcang]','[分析开始]')
         report = '\n'.join(l for l in report.split('\n') if not any(l.strip().startswith(p) for p in _LOG_PREFIXES))
     except Exception as _e1:
         report = f"[1号工程调用失败: {_e1}]"
