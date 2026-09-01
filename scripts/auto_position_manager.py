@@ -329,6 +329,32 @@ def run():
                     update_sl(sym, new_sl, f'浮盈{pnl_pct:.1f}%→SL收紧至px*1.02 by APM')
                     decision = 'TSL_LOCK'
                     detail   = f'浮盈{pnl_pct:.1f}%≥{PNL_TSL_10}% SL: {cur_sl:.5g}→{new_sl:.5g}'
+            # ── 🔒 [P3-C 浮盈保护 2026-09-01 苏摩111] ATR1H保本移动SL ──────────
+            # 铁律：浮盈≥1.5×ATR1H → SL移至保本，独立于elif链，每次都执行检查
+            try:
+                from brahma_brain.brahma_bus import get_klines as _atr_kl
+                _kl1h = _atr_kl(sym, '1h', 20)
+                if _kl1h and len(_kl1h) >= 14:
+                    _highs = [float(k['h']) for k in _kl1h[-14:]]
+                    _lows  = [float(k['l']) for k in _kl1h[-14:]]
+                    _closes= [float(k['c']) for k in _kl1h[-14:]]
+                    _trs   = [max(h-l, abs(h-c), abs(l-c)) for h,l,c in zip(_highs[1:],_lows[1:],_closes[:-1])]
+                    _atr1h = sum(_trs[-14:]) / 14
+                    _entry_px = float(pos.get('entry_price', pos.get('entryPrice', px)))
+                    _pnl_abs  = abs(px - _entry_px)
+                    if _pnl_abs >= 1.5 * _atr1h and not decision:
+                        _be_buffer = 0.001 * _entry_px
+                        _be_sl = round(_entry_px + _be_buffer if dr == 'SHORT' else _entry_px - _be_buffer, 6)
+                        _sl_state2 = json.loads(SL_PATH.read_text()) if SL_PATH.exists() else {}
+                        _cur_sl2 = _sl_state2.get(sym, {}).get('sl_price', 0)
+                        _better = (_be_sl < _cur_sl2) if dr == 'SHORT' else (_be_sl > _cur_sl2 and _cur_sl2 > 0)
+                        if _better or _cur_sl2 == 0:
+                            update_sl(sym, _be_sl, f'浮盈{_pnl_abs:.2f}≥{1.5*_atr1h:.2f}(1.5×ATR1H)→保本SL{_be_sl:.4g}')
+                            decision = 'ATR_BREAKEVEN'
+                            detail   = f'ATR1H={_atr1h:.2f} 浮盈{_pnl_abs:.2f}≥1.5×ATR 保本SL={_be_sl:.4g}'
+            except Exception:
+                pass  # ATR保本降级静默
+            # ── end ATR保本移动SL ─────────────────────────────────
 
         else:  # LONG（体制允许时才有多单）
             # [v5.6 设计院自主落地 2026-07-13] TP1自动分批出场宪法
