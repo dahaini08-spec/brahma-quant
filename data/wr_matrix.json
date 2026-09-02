@@ -1,15 +1,15 @@
 {
-  "updated_at": "2026-08-31T02:08:32.964112+00:00",
-  "total_settled": 198,
+  "updated_at": "2026-09-01T23:15:48.464018+00:00",
+  "total_settled": 201,
   "matrix": {
     "BULL_TREND:LONG": {
-      "total": 178,
+      "total": 181,
       "win": 33,
-      "loss": 60,
+      "loss": 63,
       "expired": 85,
-      "wr": 0.3548,
-      "ev_avg": -0.5334,
-      "avg_score": 47.1
+      "wr": 0.3438,
+      "ev_avg": -0.5792,
+      "avg_score": 48.6
     },
     "BEAR_RECOVERY:LONG": {
       "total": 8,

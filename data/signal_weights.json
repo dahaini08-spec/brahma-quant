@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "generated_at": "2026-08-16T07:44:10Z",
-  "source": "IC追踪器+达摩院统计回归 2026-07-20 + BEAR_TREND:SHORT系列(2026-07-28设计院补充) | refreshed 2026-08-15 | settler_cron 2026-08-16 | settler_cron 2026-08-17 | settler_cron 2026-08-24",
+  "source": "IC追踪器+达摩院统计回归 2026-07-20 + BEAR_TREND:SHORT系列(2026-07-28设计院补充) | refreshed 2026-08-15 | settler_cron 2026-08-16 | settler_cron 2026-08-17 | settler_cron 2026-08-24 | settler_cron 2026-09-01",
   "weights": {
     "BULL_TREND:LONG:155+": {
       "multiplier": 1.0,
@@ -144,7 +144,7 @@
     "note": "6方联合封印 2026-07-24: n<15不升权，n<30谨慎，n≥50完全信任",
     "updated": "2026-07-24"
   },
-  "updated_at": "2026-08-24T13:51:00+00:00",
+  "updated_at": "2026-09-01T20:17:55.823462+00:00",
   "BULL_TREND:LONG:120-139": {
     "multiplier": 1.0,
     "basis": "脏数据清洗后 simfactory铁证 n=33 WR=51.5% → NORMAL [2026-08-08 P0-3封印 F15已修正不再封禁]",

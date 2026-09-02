@@ -614,7 +614,7 @@ def build_top_gainers() -> str:
         elif chg > 30:
             verdict = f'涨了{chg:.0f}%但没有明显催化数据，可能是低流动性放大，谨慎。'
         else:
-            verdict = f'量能和资金面没有特别信号，跟随大盘情绪居多。'
+            verdict = f'量能平淡，FR{fr:.4f}%正常，没有独立行情信号。等BTC方向明确后再看。'
 
         lines.append(f'{i}. ${sym}  {chg:+.1f}%  {p_str}')
         lines.append(f'   {verdict}')

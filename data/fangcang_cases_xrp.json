@@ -44,16 +44,16 @@
   {
     "symbol": "XRP",
     "ts_squeeze_start": "2022-04-04T04:00:00+00:00",
-    "ts_burst": "2022-04-06T04:00:00+00:00",
-    "direction": "UP",
+    "ts_burst": "2022-04-06T00:00:00+00:00",
+    "direction": "DOWN",
     "min_bb_width": 3.0996,
-    "squeeze_bars": 12,
-    "burst_atr_mult": 0.13,
-    "vol_ratio_peak": 0.66,
-    "rsi_at_burst": 35.99,
-    "future_return_24h": -4.3016,
+    "squeeze_bars": 11,
+    "burst_atr_mult": 0.58,
+    "vol_ratio_peak": 2.38,
+    "rsi_at_burst": 39.86,
+    "future_return_24h": -5.8802,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -4.3016
+    "pnl_long_24h": 5.8802
   },
   {
     "symbol": "XRP",
@@ -744,16 +744,16 @@
   {
     "symbol": "XRP",
     "ts_squeeze_start": "2024-10-06T08:00:00+00:00",
-    "ts_burst": "2024-10-12T20:00:00+00:00",
-    "direction": "UP",
+    "ts_burst": "2024-10-12T16:00:00+00:00",
+    "direction": "DOWN",
     "min_bb_width": 2.3706,
-    "squeeze_bars": 39,
-    "burst_atr_mult": 0.13,
-    "vol_ratio_peak": 0.32,
-    "rsi_at_burst": 52.6,
-    "future_return_24h": -1.1712,
+    "squeeze_bars": 38,
+    "burst_atr_mult": 0.43,
+    "vol_ratio_peak": 0.77,
+    "rsi_at_burst": 56.83,
+    "future_return_24h": -2.6228,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -1.1712
+    "pnl_long_24h": 2.6228
   },
   {
     "symbol": "XRP",
