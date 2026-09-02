@@ -144,6 +144,14 @@ def rewrite_as_trader(draft: str) -> str:
                 sym = m.group(1)
                 return f'${sym}' if sym in MAIN_COINS else sym
             rewritten = re.sub(r'\$([A-Z]{2,10})', clean_coin_ref, rewritten)
+            # 强制清洗Markdown（AI有时仍会输出，后处理兜底）
+            import re
+            rewritten = re.sub(r'\*\*(.+?)\*\*', r'【\1】', rewritten)  # **粗体** → 【粗体】
+            rewritten = re.sub(r'\*(.+?)\*', r'\1', rewritten)            # *斜体* → 斜体
+            rewritten = re.sub(r'^#{1,6}\s+', '', rewritten, flags=re.MULTILINE)  # ##标题 → 无格式
+            rewritten = re.sub(r'`(.+?)`', r'\1', rewritten)               # `代码` → 代码
+            rewritten = re.sub(r'^---+$', '━━━━━━', rewritten, flags=re.MULTILINE)  # --- → ━━━
+            rewritten = rewritten.strip()
             print(f'[rewrite] ✅ 重写完成 {len(draft)}→{len(rewritten)}字')
             return rewritten
         return draft
@@ -1223,9 +1231,21 @@ def post_to_square(content: str, dry_run: bool = False) -> bool:
                     'post_type': 'hot_poster',
                     'post_id': post_id,
                     'chars': len(content),
-                    'preview': content[:60],
+                    'preview': content[:300],
                 }, ensure_ascii=False) + '\n')
             print(f'[post] ✅ 发布成功 id={post_id} chars={len(content)}')
+            # 推送到苏摩主线程
+            try:
+                import subprocess as _sp
+                _task_label = args_type if 'args_type' in dir() else 'Square帖子'
+                _preview = content[:200].replace('"', '\"').replace('\n', ' ')
+                _msg = f'📢 梵天发帖成功\n\n{_preview}...'
+                _sp.run(['openclaw', 'message', 'send',
+                         '--channel', 'jarvis',
+                         '--to', '73295708:thread:01a03e25-a459-733e-a2ba-a56083050f26',
+                         '--message', _msg], timeout=10, capture_output=True)
+            except Exception as _pe:
+                print(f'[post] ⚠️ 推送苏摩失败: {_pe}', file=sys.stderr)
             return True
         else:
             msg = result.get('message', result.get('msg', ''))
