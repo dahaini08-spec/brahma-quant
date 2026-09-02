@@ -8,7 +8,7 @@
     "squeeze_bars": 8,
     "burst_atr_mult": 0.75,
     "vol_ratio_peak": 4.05,
-    "rsi_at_burst": 64.47,
+    "rsi_at_burst": 64.49,
     "future_return_24h": -1.0656,
     "is_genuine_breakout": false,
     "pnl_long_24h": -1.0656

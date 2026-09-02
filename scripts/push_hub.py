@@ -52,12 +52,16 @@ def _jarvis(msg, dedup_key=None, dedup_ttl=3600):
         dedup = {k: v for k, v in dedup.items() if now - v < 86400}
         _save_dedup(dedup)
     try:
+        # [OOM修复 2026-09-01] 限制Node.js子进程内存，防止低内存环境OOM崩溃
+        _env = os.environ.copy()
+        _env['NODE_OPTIONS'] = '--max-old-space-size=512'
         r = subprocess.run(
             ["openclaw", "message", "send",
              "--channel", _CHANNEL,
              "--target",  _TARGET,
              "--message", msg],
-            capture_output=True, text=True, timeout=15
+            capture_output=True, text=True, timeout=15,
+            env=_env
         )
         ok = r.returncode == 0
         if not ok:

@@ -884,16 +884,16 @@
   {
     "symbol": "TRX",
     "ts_squeeze_start": "2026-02-16T12:00:00+00:00",
-    "ts_burst": "2026-02-18T20:00:00+00:00",
-    "direction": "UP",
+    "ts_burst": "2026-02-18T16:00:00+00:00",
+    "direction": "DOWN",
     "min_bb_width": 1.9302,
-    "squeeze_bars": 14,
-    "burst_atr_mult": 0.17,
-    "vol_ratio_peak": 1.47,
-    "rsi_at_burst": 39.46,
-    "future_return_24h": 2.2988,
-    "is_genuine_breakout": false,
-    "pnl_long_24h": 2.2988
+    "squeeze_bars": 13,
+    "burst_atr_mult": 1.24,
+    "vol_ratio_peak": 1.51,
+    "rsi_at_burst": 44.87,
+    "future_return_24h": 1.4145,
+    "is_genuine_breakout": true,
+    "pnl_long_24h": -1.4145
   },
   {
     "symbol": "TRX",
@@ -1080,16 +1080,16 @@
   {
     "symbol": "TRX",
     "ts_squeeze_start": "2026-07-16T04:00:00+00:00",
-    "ts_burst": "2026-07-18T00:00:00+00:00",
+    "ts_burst": "2026-07-17T20:00:00+00:00",
     "direction": "DOWN",
     "min_bb_width": 1.8189,
-    "squeeze_bars": 11,
-    "burst_atr_mult": 0.33,
-    "vol_ratio_peak": 0.28,
-    "rsi_at_burst": 37.49,
-    "future_return_24h": 1.0481,
+    "squeeze_bars": 10,
+    "burst_atr_mult": 0.06,
+    "vol_ratio_peak": 0.4,
+    "rsi_at_burst": 37.93,
+    "future_return_24h": 0.9331,
     "is_genuine_breakout": false,
-    "pnl_long_24h": -1.0481
+    "pnl_long_24h": -0.9331
   },
   {
     "symbol": "TRX",
@@ -1157,8 +1157,22 @@
     "burst_atr_mult": 0.59,
     "vol_ratio_peak": 2.35,
     "rsi_at_burst": 37.73,
-    "future_return_24h": -0.7154,
+    "future_return_24h": -0.7066,
     "is_genuine_breakout": false,
-    "pnl_long_24h": 0.7154
+    "pnl_long_24h": 0.7066
+  },
+  {
+    "symbol": "TRX",
+    "ts_squeeze_start": "2026-08-30T00:00:00+00:00",
+    "ts_burst": "2026-08-31T12:00:00+00:00",
+    "direction": "DOWN",
+    "min_bb_width": 1.4845,
+    "squeeze_bars": 9,
+    "burst_atr_mult": 0.7,
+    "vol_ratio_peak": 1.74,
+    "rsi_at_burst": 34.24,
+    "future_return_24h": -1.7242,
+    "is_genuine_breakout": false,
+    "pnl_long_24h": 1.7242
   }
 ]

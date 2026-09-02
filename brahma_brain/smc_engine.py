@@ -1203,6 +1203,44 @@ def run_smc_resonance(r: dict) -> dict:
     smc      = r.get('smc', {})
     ob_data  = smc.get('order_blocks', {})
     fvg_data = smc.get('fvg', {})
+
+    # [P6-MTF 2026-09-02 苏摩111] 补充15m/30m/日线FVG扫描
+    # 苏摩教训：$76,420 30m FVG昨天一直有，梵天系统没识别 → 错失翻倍多单
+    try:
+        from brahma_brain.data_cache import get_klines, klines_to_ohlcv
+        _mtf_bull = list(fvg_data.get('bull_fvg', []))
+        _mtf_bear = list(fvg_data.get('bear_fvg', []))
+        for _tf, _lb, _tag in [('15m', 100, '15m'), ('30m', 80, '30m'), ('1d', 60, '1D')]:
+            try:
+                _raw = get_klines(symbol, _tf, _lb)
+                if not _raw or len(_raw) < 10:
+                    continue
+                _ohlcv = klines_to_ohlcv(_raw)
+                # klines_to_ohlcv returns {'h':[...], 'l':[...], 'c':[...], ...}
+                _h = _ohlcv['h'] if isinstance(_ohlcv, dict) else [x['h'] for x in _ohlcv]
+                _l = _ohlcv['l'] if isinstance(_ohlcv, dict) else [x['l'] for x in _ohlcv]
+                _c = _ohlcv['c'] if isinstance(_ohlcv, dict) else [x['c'] for x in _ohlcv]
+                _fvgs = find_fvg(_h, _l, _c, lookback=min(len(_h), 200))
+                # 加tf标签，合并进主列表
+                for _f in _fvgs.get('bull_fvg', []):
+                    _f['tf'] = _tag
+                    _f['source'] = _tag
+                    _mtf_bull.append(_f)
+                for _f in _fvgs.get('bear_fvg', []):
+                    _f['tf'] = _tag
+                    _f['source'] = _tag
+                    _mtf_bear.append(_f)
+            except Exception:
+                pass
+        # 合并后替换fvg_data
+        fvg_data = dict(fvg_data)
+        fvg_data['bull_fvg'] = _mtf_bull
+        fvg_data['bear_fvg'] = _mtf_bear
+        fvg_data['_mtf_enabled'] = True
+    except Exception:
+        pass
+    # ── end MTF FVG ──
+
     liq_heat = r.get('_liq_heatmap', {})
     clusters = liq_heat.get('clusters', []) if isinstance(liq_heat, dict) else []
     atr1h    = r.get('momentum', {}).get('atr_1h', price * 0.01)
@@ -1236,16 +1274,21 @@ def run_smc_resonance(r: dict) -> dict:
     bear_fvgs = fvg_data.get('bear_fvg', [])
 
     for f in bull_fvgs:
-        lo = f.get('bottom', 0); hi = f.get('top', 0); mid = f.get('mid', 0)
+        # 兼容 bottom/top（原SMC）和 lo/hi（find_fvg直接输出/MTF补丁）
+        lo = f.get('lo', 0) or f.get('bottom', 0)
+        hi = f.get('hi', 0) or f.get('top', 0)
+        mid = f.get('mid', 0) or ((lo + hi) / 2 if lo and hi else 0)
         filled = f.get('filled', False)
         if not filled and hi > 0:
-            result['bull_fvg'].append({'lo': lo, 'hi': hi, 'mid': mid, 'gap_pct': f.get('gap_pct', 0)})
+            result['bull_fvg'].append({'lo': lo, 'hi': hi, 'mid': mid, 'gap_pct': f.get('gap_pct', 0), 'tf': f.get('tf', '1h')})
 
     for f in bear_fvgs:
-        lo = f.get('bottom', 0); hi = f.get('top', 0); mid = f.get('mid', 0)
+        lo = f.get('lo', 0) or f.get('bottom', 0)
+        hi = f.get('hi', 0) or f.get('top', 0)
+        mid = f.get('mid', 0) or ((lo + hi) / 2 if lo and hi else 0)
         filled = f.get('filled', False)
         if not filled and hi > 0:
-            result['bear_fvg'].append({'lo': lo, 'hi': hi, 'mid': mid, 'gap_pct': f.get('gap_pct', 0)})
+            result['bear_fvg'].append({'lo': lo, 'hi': hi, 'mid': mid, 'gap_pct': f.get('gap_pct', 0), 'tf': f.get('tf', '1h')})
 
     # 磁铁方向判断
     bull_above = [f for f in result['bull_fvg'] if f['lo'] > price]
