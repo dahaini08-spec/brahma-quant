@@ -653,15 +653,39 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
 
         # GEX区间分析
         _gex_max  = 0; _gex_min = 0; _gex_flip = 0; _gex_dir = 'N/A'
+        _gex_total = 0; _gex_bias = 'N/A'; _iv_atm = 0
+        _iv_premium = 0; _kappa = 0; _iv_regime = 'N/A'
         try:
             from brahma_brain.gex_unified import get_gex_state as _ggs
             _sym_s = symbol.replace('USDT','').replace('PERP','')
             _gex_d = _ggs(_sym_s)
             if _gex_d:
-                _gex_max  = float(_gex_d.get('max_gex_strike', 0) or 0)
-                _gex_min  = float(_gex_d.get('min_gex_strike', 0) or 0)
-                _gex_flip = float(_gex_d.get('zero_flip', 0) or 0)
-                _gex_dir  = _gex_d.get('gex_direction', 'N/A')
+                _gex_max   = float(_gex_d.get('max_gex_strike', 0) or 0)
+                _gex_min   = float(_gex_d.get('min_gex_strike', 0) or 0)
+                _gex_flip  = float(_gex_d.get('zero_flip', 0) or 0)
+                _gex_dir   = _gex_d.get('gex_direction', 'N/A')
+        except Exception: pass
+        # 接入新gex_engine + vol_beta_engine产出
+        try:
+            import json as _j
+            from pathlib import Path as _P
+            _gex_profile = _P(__file__).parent.parent / 'data/gex_profile.json'
+            _vb_file     = _P(__file__).parent.parent / 'data/vol_beta_state.json'
+            _sym_s = symbol.replace('USDT','').replace('PERP','')
+            if _gex_profile.exists():
+                _gp = _j.loads(_gex_profile.read_text()).get(_sym_s, {})
+                _gex_total = float(_gp.get('total_gex', 0) or 0)
+                _gex_bias  = _gp.get('dealer_bias', 'N/A')
+                if not _gex_max and _gp.get('max_gex_strike'):
+                    _gex_max = float(_gp['max_gex_strike'])
+                    _gex_min = float(_gp.get('min_gex_strike', 0))
+                    _gex_flip= float(_gp.get('hinge', 0))
+                _iv_atm = float(_gp.get('iv_atm', 0) or 0)
+            if _vb_file.exists():
+                _vb = _j.loads(_vb_file.read_text()).get(_sym_s, {})
+                _iv_premium = float(_vb.get('iv_premium', 0) or 0)
+                _kappa      = float(_vb.get('kappa', 0) or 0)
+                _iv_regime  = _vb.get('iv_regime', 'N/A')
         except Exception: pass
         _in_pin = _gex_min < _price < _gex_max if _gex_max and _gex_min else False
         _gex_zone = f'PIN区(${_gex_min:,.0f}~${_gex_max:,.0f})' if _in_pin else \
@@ -804,6 +828,14 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
              f'  📌 GEX区间: {_gex_zone} | 方向: {_gex_dir}',
             ]
         )
+        # KingFisher维度输出（gex_engine + vol_beta_engine）
+        if _gex_total != 0:
+            _bias_emoji = {'BUY':'📈','SELL':'📉','NEUTRAL':'⚖️'}.get(_gex_bias,'')
+            _s0s1s2.append(f'     GEX={_gex_total/1e6:.2f}M {_bias_emoji}{_gex_bias} | Hinge=${_gex_flip:,.0f}')
+        if _iv_atm > 0:
+            _kappa_note = 'Risk-off恐慌' if _kappa < -0.3 else 'Up-vol轧空' if _kappa > 0.3 else '中性'
+            _s0s1s2.append(f'     IV={_iv_atm:.1f}% 溢价={_iv_premium:+.1f}% | κ={_kappa:.3f}({_kappa_note}) | {_iv_regime}')
+
         if _gex_max and _gex_min:
             _s0s1s2.append(f'     突破${_gex_max:,.0f}=加速上涨 | 跌破${_gex_min:,.0f}=加速下跌')
         if _near_short and _near_long:
