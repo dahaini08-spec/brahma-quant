@@ -3455,6 +3455,54 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _e26:
         pass  # OI数据不影响主流评分
 
+    # ── s23: Vol-Beta / IV溢价维度（2026-09-02 苏摩111封印）────────────────
+    # 数据来源: brahma_brain/vol_beta_engine.py (每4h supercronic刷新)
+    # 逻辑:
+    #   IV溢价>20% + 做空方向 → +3~+5（恐慌期做空有优势）
+    #   IV溢价>20% + 做多方向 → -3（高IV期做多受压）
+    #   κ (kappa, IV/HV比值) > 0.3 → 市场预期大波动 +2
+    #   IV百分位 > 90 → 极端恐慌，做空+3/做多-3
+    #   分数范围: -5 ~ +8
+    try:
+        import os as _os23, sys as _sys23
+        _bb23 = _os23.path.dirname(_os23.path.abspath(__file__))
+        if _bb23 not in _sys23.path: _sys23.path.insert(0, _bb23)
+        from vol_beta_engine import calc_vol_beta as _calc_vb23
+        _vb_currency23 = 'BTC' if 'BTC' in _result.get('symbol', '').upper() else \
+                         'ETH' if 'ETH' in _result.get('symbol', '').upper() else \
+                         'SOL' if 'SOL' in _result.get('symbol', '').upper() else \
+                         'BNB' if 'BNB' in _result.get('symbol', '').upper() else None
+        if _vb_currency23:
+            _vb23 = _calc_vb23(_vb_currency23)
+            _vb_dir23 = _result.get('signal_dir', 'LONG')
+            _iv_prem23 = _vb23.get('iv_premium', 0)   # IV - HV30，%
+            _iv_pct23  = _vb23.get('iv_pct_rank', 50)  # 0~100分位
+            _kappa23   = _vb23.get('kappa', 0)         # IV/HV - 1
+            _s23 = 0
+            # IV溢价方向分
+            if _iv_prem23 > 20:
+                _s23 += 3 if _vb_dir23 == 'SHORT' else -3
+            elif _iv_prem23 > 10:
+                _s23 += 1 if _vb_dir23 == 'SHORT' else -1
+            elif _iv_prem23 < -10:  # IV折价=市场低估波动，做多略有利
+                _s23 += 1 if _vb_dir23 == 'LONG' else -1
+            # IV极端百分位
+            if _iv_pct23 > 90:
+                _s23 += 3 if _vb_dir23 == 'SHORT' else -3
+            # kappa放大期
+            if _kappa23 > 0.3:
+                _s23 = max(-5, min(8, _s23 + 2))
+            _s23 = max(-5, min(8, _s23))
+            if _s23 != 0:
+                _cur23 = float(_result.get('confluence', {}).get('score', 0))
+                _result['confluence']['score'] = _cur23 + _s23
+                _result['confluence'].setdefault('breakdown', {})['s23_vol_beta'] = (
+                    f'{_s23:+d} IV溢价={_iv_prem23:+.1f}% 分位={_iv_pct23:.0f} κ={_kappa23:.3f} [{_vb_currency23}]'
+                )
+                print(f'[s23-VolBeta] {_vb_currency23} {_vb_dir23}: {_s23:+d} | IV溢价={_iv_prem23:+.1f}% 分位={_iv_pct23:.0f} κ={_kappa23:.3f}')
+    except Exception as _e23:
+        pass  # Vol-Beta不影响主流评分
+
     # ── s25: OpenRouter 推理验证门控 v2 (苏摩B档 · 2026-06-26) ────────────
     # 升级内容：score阈值120（原130）+ 四模块并行ThreadPool
     # 触发：score≥120 + valid=True + 非CHOP + Kronos p_up>0.65
