@@ -299,15 +299,15 @@ def lsr_oi_score(symbol: str, signal_dir: str,
         _top_trader_bonus = 0
         _top_note = ''
         try:
-            import subprocess as _sp_tt, json as _json_tt
-            _tt_r = _sp_tt.run(
-                ['binance-cli','futures-usds','top-trader-long-short-ratio-positions',
-                 '--symbol', symbol, '--period','5m','--limit','1'],
-                capture_output=True, text=True, timeout=5
+            import requests as _rq_tt
+            _tt_resp = _rq_tt.get(
+                'https://fapi.binance.com/futures/data/topLongShortPositionRatio',
+                params={'symbol': symbol, 'period': '5m', 'limit': 1},
+                timeout=3
             )
-            _tt_data = _json_tt.loads(_tt_r.stdout)
+            _tt_data = _tt_resp.json() if _tt_resp.status_code == 200 else []
             if _tt_data and isinstance(_tt_data, list) and len(_tt_data) > 0:
-                _top_long = float(_tt_data[0].get('longPosition', 0.5)) * 100
+                _top_long = float(_tt_data[0].get('longAccount', 0.5)) * 100
                 _divergence = _top_long - long_pct  # 大户long% - 散户long%
                 if abs(_divergence) >= 10:
                     if signal_dir == 'SHORT' and _divergence < -10:

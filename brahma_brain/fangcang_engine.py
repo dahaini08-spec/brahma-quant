@@ -33,6 +33,43 @@ from typing import Dict, List, Optional, Tuple
 # ── 路径配置 ─────────────────────────────────────────────────────────────────
 _BASE = Path(__file__).parent.parent
 _DATA_DIR_LEGACY   = _BASE / "data" / "historical"
+
+_BASE_DIR = Path(__file__).parent
+
+# [加速缓存 2026-09-02 苏摩111] 特征向量磁盘缓存，每小时刷新
+import hashlib as _hlib, pickle as _pkl
+_FEAT_CACHE: dict = {}
+
+def _get_feat_cache_key(symbol: str, tf: str) -> str:
+    return f'{symbol}_{tf}'
+
+def _load_feat_cache(symbol: str, tf: str) -> list:
+    key = _get_feat_cache_key(symbol, tf)
+    if key in _FEAT_CACHE:
+        ts, data = _FEAT_CACHE[key]
+        if time.time() - ts < 3600:  # 1小时有效
+            return data
+    cache_file = _BASE_DIR / f'.feat_cache_{symbol}_{tf}.pkl'
+    try:
+        if cache_file.exists() and time.time() - cache_file.stat().st_mtime < 3600:
+            with open(cache_file,'rb') as f:
+                data = _pkl.load(f)
+            _FEAT_CACHE[key] = (time.time(), data)
+            return data
+    except Exception:
+        pass
+    return []
+
+def _save_feat_cache(symbol: str, tf: str, feats: list) -> None:
+    key = _get_feat_cache_key(symbol, tf)
+    _FEAT_CACHE[key] = (time.time(), feats)
+    cache_file = _BASE_DIR / f'.feat_cache_{symbol}_{tf}.pkl'
+    try:
+        with open(cache_file,'wb') as f:
+            _pkl.dump(feats, f)
+    except Exception:
+        pass
+
 _DATA_DIR_BACKTEST = _BASE / "data" / "backtest"
 
 # ── 缓存层（内存级，TTL=60min，15m扫描较慢故延长）─────────────────────────
@@ -42,7 +79,7 @@ _CACHE_TTL = 3600  # 60分钟
 # ── 参数常量 ─────────────────────────────────────────────────────────────────
 WEEK_BARS   = 42    # 1周 = 42根4H K线
 FUTURE_BARS = 42    # 预测未来1周
-SCAN_STEP   = 4     # 每4根滑动一次（减少重叠，提高速度）
+SCAN_STEP = 8     # 每4根滑动一次（减少重叠，提高速度）
 TOP_N       = 20    # 取最相似TOP20
 TP_PCT      = 3.0   # 标准TP%
 SL_PCT      = 2.0   # 标准SL%
@@ -417,6 +454,18 @@ def _scan_history(
         for idx, b in enumerate(klines_15m):
             ts_to_15m_idx[b['ts']] = idx
 
+    # [加速 2026-09-02] 预计算特征缓存：第一次全量计算后写pkl，后续直接加载
+    # 用数据长度+首尾ts哈希作为缓存key
+    import hashlib as _hkey
+    _ts_str = f'{len(klines_4h)}_{klines_4h[0].get("ts",0) if klines_4h else 0}'
+    _sym_key = _hkey.md5(_ts_str.encode()).hexdigest()[:8]
+    _cached_feats = _load_feat_cache(_sym_key, '4h')
+    _feat_map: dict = {}  # start -> feat_hist
+    if _cached_feats and len(_cached_feats) == (total - 100 - WEEK_BARS - FUTURE_BARS) // SCAN_STEP:
+        for _cf in _cached_feats:
+            _feat_map[_cf['start']] = _cf['feat']
+    _new_feats = []  # 新计算的，用于更新缓存
+
     for start in range(100, total - WEEK_BARS - FUTURE_BARS, SCAN_STEP):
         hist_4h_bars = klines_4h[start : start + WEEK_BARS]
         end_ts       = hist_4h_bars[-1]['ts']
@@ -427,7 +476,11 @@ def _scan_history(
             idx_15m = ts_to_15m_idx[end_ts]
             hist_15m_bars = klines_15m[max(0, idx_15m - BARS_15M_12H) : idx_15m]
 
-        feat_hist = _extract_features(hist_4h_bars, hist_15m_bars)
+        if start in _feat_map:
+            feat_hist = _feat_map[start]  # 命中缓存
+        else:
+            feat_hist = _extract_features(hist_4h_bars, hist_15m_bars)
+            _new_feats.append({'start': start, 'feat': feat_hist})
         score     = _similarity_score(feat_cur, feat_hist)
 
         # 未来结果
