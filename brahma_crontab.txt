@@ -17,7 +17,7 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 
 # 梵天系统维护
 */30 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/brahma_state_refresh.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
-# [DISABLED 2026-09-02 market_screener.py缺失] 0 */12 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/market_screener.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+# [DISABLED 2026-09-02 market_screener.py缺失] 0 */12 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_screener.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
 0 */4  * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_360_watchdog.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
 0 3   * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_data_ttl.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
 0 3   * * *  cd /root/.openclaw/workspace/trading-system/brahma_brain && python3 fangcang_builder_30.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
@@ -63,3 +63,13 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 
 # paper-position-update: 纸面持仓更新，每30min
 # [DISABLED 2026-09-02 paper_trader.py缺失] */30 * * * *  cd /root/.openclaw/workspace/trading-system/brahma_brain && python3 paper_trader.py update >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+
+# ===== 第三批迁移（2026-09-02 苏摩111 - 最后2个AI阻塞源）=====
+# structure-trigger: BOS/CHoCH扫描，脚本自带push_hub推送，每30min
+*/30 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/structure_trigger.py >> logs/syscron.log 2>&1
+
+# auto-executor: 纸面执行引擎，脚本自带openclaw message推送，每40min
+*/40 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 55 python3 scripts/auto_executor.py >> logs/syscron.log 2>&1
+
+# market_screener: 候选池刷新（原crontab缺失，补回），每12h
+0 */12 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_screener.py >> logs/syscron.log 2>&1

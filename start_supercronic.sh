@@ -8,9 +8,15 @@ mkdir -p "$(dirname $LOG)"
 
 # ===== 依赖恢复（/usr/local/lib 重启后被清空）=====
 # libgomp: lightgbm 运行时依赖，从 torch 借用
+# 持久化软链接在 workspace 目录（重启后不丢失）
+WORKSPACE_GOMP=/root/.openclaw/workspace/trading-system/libgomp.so.1
 TORCH_GOMP=/root/.openclaw/workspace/trading-system/venv/lib/python3.11/site-packages/torch/lib/libgomp.so.1
-if [ ! -f /usr/local/lib/libgomp.so.1 ] && [ -f "$TORCH_GOMP" ]; then
-    ln -sf "$TORCH_GOMP" /usr/local/lib/libgomp.so.1
+if [ ! -f /usr/local/lib/libgomp.so.1 ]; then
+    if [ -L "$WORKSPACE_GOMP" ]; then
+        cp -P "$WORKSPACE_GOMP" /usr/local/lib/libgomp.so.1 2>/dev/null || ln -sf "$TORCH_GOMP" /usr/local/lib/libgomp.so.1
+    elif [ -f "$TORCH_GOMP" ]; then
+        ln -sf "$TORCH_GOMP" /usr/local/lib/libgomp.so.1
+    fi
     ldconfig 2>/dev/null
     echo "[startup] libgomp.so.1 restored"
 fi
