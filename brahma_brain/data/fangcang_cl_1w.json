@@ -1,1 +1,1 @@
-[{"symbol": "CLUSDT", "timeframe": "1w", "ts_squeeze_start": "2007-02-28 00:00:00-05:00", "ts_burst": "2007-03-30 00:00:00-04:00", "direction": "UP", "min_bb_width": 3.734, "squeeze_bars": 22, "rsi_at_burst": 70.15, "vol_ratio_peak": 2.002, "future_return": -5.6232, "is_genuine_breakout": "True", "atr_at_burst": 1.778, "_source": "data/fangcang_cases_tradfi.json", "pnl_long_24h": 5.6232, "future_return_24h": -5.6232, "burst_atr_mult": 1.778, "stock_ticker": "USO", "tier": "A"}]
+/root/.openclaw/workspace/trading-system/data/fangcang_cl_1w.json

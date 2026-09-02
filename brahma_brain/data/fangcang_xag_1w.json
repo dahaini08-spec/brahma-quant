@@ -1,1 +1,1 @@
-[{"symbol": "XAGUSDT", "timeframe": "1w", "ts_squeeze_start": "2015-09-14 00:00:00-04:00", "ts_burst": "2015-10-07 00:00:00-04:00", "direction": "UP", "min_bb_width": 3.1392, "squeeze_bars": 17, "rsi_at_burst": 67.89, "vol_ratio_peak": 1.169, "future_return": 0.8502, "is_genuine_breakout": "False", "atr_at_burst": 1.629, "_source": "data/fangcang_cases_tradfi.json", "pnl_long_24h": 0.8502, "future_return_24h": 0.8502, "burst_atr_mult": 1.629, "stock_ticker": "SLV", "tier": "S"}]
+/root/.openclaw/workspace/trading-system/data/fangcang_xag_1w.json

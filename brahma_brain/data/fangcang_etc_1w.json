@@ -1,1 +1,1 @@
-[{"symbol": "ETC", "timeframe": "1w", "ts_squeeze_start": "2023-06-02T04:00:00+00:00", "ts_burst": "2023-06-05T12:00:00+00:00", "direction": "DOWN", "min_bb_width": 2.1122, "squeeze_bars": 20, "rsi_at_burst": 44.56, "vol_ratio_peak": 4.15, "future_return": -4.5301, "is_genuine_breakout": true, "atr_at_burst": 0.168751, "_source": "merged", "pnl_long_24h": 4.5301, "future_return_24h": -4.5301, "burst_atr_mult": 4.71}]
+/root/.openclaw/workspace/trading-system/data/fangcang_etc_1w.json

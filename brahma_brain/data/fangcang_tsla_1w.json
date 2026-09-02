@@ -1,1 +1,1 @@
-[{"symbol": "TSLAUSDT", "timeframe": "1w", "ts_squeeze_start": "2024-09-09 00:00:00-04:00", "ts_burst": "2024-09-20 00:00:00-04:00", "direction": "UP", "min_bb_width": 6.7855, "squeeze_bars": 9, "rsi_at_burst": 66.38, "vol_ratio_peak": 1.356, "future_return": 9.3221, "is_genuine_breakout": "False", "atr_at_burst": 2.386, "_source": "data/fangcang_cases_tradfi.json", "pnl_long_24h": 9.3221, "future_return_24h": 9.3221, "burst_atr_mult": 2.386, "stock_ticker": "TSLA", "tier": "A"}]
+/root/.openclaw/workspace/trading-system/data/fangcang_tsla_1w.json
