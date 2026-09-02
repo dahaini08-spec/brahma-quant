@@ -191,16 +191,17 @@ def scan_d1_modules() -> list:
 
     # ── 门4: step4_engines 直接import验证 [修复 2026-08-24 苏摩追问封印] ──
     # 根因: step4的9个_OK标志位从未被任何检查工具覆盖 = 今日7个空转30天的根本原因
+    # [P1架构精简后更新 2026-09-02 苏摩111] 裸模块名→brahma_brain包路径，shim→真实模块
     _step4_engines = [
-        ('volume_exhaustion_engine', 'volume_exhaustion_score', '量能衰竭'),
-        ('divergence_engine',        'multitf_divergence_score','多周期背离'),
-        ('microstructure_engine',    'microstructure_score',    '微观结构'),
-        ('cross_market_engine',      'cross_market_score',      '跨资产'),
-        ('pattern_engine',           'pattern_score',           '谐波形态'),
-        ('macro_engine',             'macro_score_v2',          '宏观引擎'),
-        ('order_flow_engine',        'order_flow_score',        '订单流'),
-        ('multitf_engine',           'multitf_score',           '多周期对齐'),
-        ('whale_engine',             'whale_score',             '鲸鱼引擎'),
+        ('brahma_brain.volume_unified',      'volume_exhaustion_score', '量能衰竭'),
+        ('brahma_brain.signal_quality_engine','evaluate_signal',         '多周期背离/信号质量'),
+        ('brahma_brain.microstructure_engine','microstructure_score',    '微观结构'),
+        ('brahma_brain.cross_market_engine', 'cross_market_score',      '跨资产'),
+        ('brahma_brain.pattern_engine',      'pattern_score',           '谐波形态'),
+        ('brahma_brain.tradfi_signal_layer', 'compute_tradfi_context',  '宏观引擎'),
+        ('brahma_brain.order_flow_engine',   'order_flow_score',        '订单流'),
+        ('brahma_brain.brahma_multiframe',   'scan',                    '多周期对齐'),
+        ('brahma_brain.onchain_engine',      'whale_score',             '鲸鱼/链上'),
     ]
     _broken_engines = []
     for _mod, _fn, _name in _step4_engines:
