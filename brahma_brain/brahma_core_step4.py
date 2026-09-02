@@ -398,75 +398,81 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
                 if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
                     pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
 
-    # P2-NEW: 鲸鱼引擎（链上大单+交易所流向）
-    try:
-        if _WHALE_OK:
-            wh_res = _whale_score(symbol, _dir_for_engines)
-            extra_data['whale'] = wh_res
-    except Exception as _e:
-        extra_data['whale_err'] = str(_e)
+    # [并行化 2026-09-02 苏摩111] P2引擎组并发执行
+    # whale(0.35s) + cross(0.13s) + macro_v2(0.2s) + micro(0.18s) 串行→并发
+    # 理论加速: 0.86s串行 → 0.35s并发（最慢whale决定下限）
+    def _run_whale():
+        if not _WHALE_OK: return None
+        return _whale_score(symbol, _dir_for_engines)
+
+    def _run_cross():
+        if not _CROSS_OK: return None
+        return _cross_score(symbol, _dir_for_engines)
+
+    def _run_cross_fr():
         try:
-            from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'whale','err':str(_e)[:80]})
-        except Exception as _e:
-                if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                    pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
+            from cross_market_engine import get_cross_fr_basis as _cfb_fn
+            return _cfb_fn(symbol)
+        except Exception:
+            return None
 
-    # P2-NEW: 跨市场引擎（BTC-ETH相关/DXY/风险偏好）
-    try:
-        if _CROSS_OK:
-            cx_res = _cross_score(symbol, _dir_for_engines)
-            extra_data['cross_market'] = cx_res
-    except Exception as _e:
-        extra_data['cross_err'] = str(_e)
+    def _run_deribit_pc():
         try:
-            from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'cross','err':str(_e)[:80]})
-        except Exception as _e:
-                if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                    pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
+            from cross_market_engine import get_deribit_pc as _dpc_fn
+            return _dpc_fn(symbol)
+        except Exception:
+            return None
 
-    # [s_cross 2026-07-01] 跨所FR+Basis（设计院三项外部路由落地）
-    try:
-        from cross_market_engine import get_cross_fr_basis as _get_cfb
-        _cfb = _get_cfb(symbol)
-        extra_data['cross_fr_basis'] = _cfb
-        if _cfb.get('score_adj', 0) != 0:
-            pass  # [静默]
-    except Exception:
-        pass
-
-    # [s_options 2026-07-01] Deribit P/C OI
-    try:
-        from cross_market_engine import get_deribit_pc as _get_dpc
-        _dpc = _get_dpc(symbol)
-        extra_data['deribit_pc'] = _dpc
-        if _dpc.get('score_adj', 0) != 0:
-            pass  # [静默]
-    except Exception:
-        pass
-
-    # [s_macro_v2 2026-07-01] DXY实时+纳指+BTC.D精准加权
-    try:
-        from brahma_brain.narrative_engine import macro_score_v2 as _macro_v2
-        _mv2 = _macro_v2(symbol, signal_dir)
-        extra_data['macro_v2'] = _mv2
-        if _mv2.get('score_addon', 0) != 0:
-            for _mn in _mv2.get('notes', []):
-                print(f'[s_macro_v2] {symbol} {signal_dir}: {_mn}')
-    except Exception:
-        pass
-
-    # P2-NEW: 微观结构引擎（大单吸收/耗尽/停顿）
-    try:
-        if _MICRO_OK:
-            ms_res = _micro_score(symbol, _dir_for_engines)
-            extra_data['microstructure'] = ms_res
-    except Exception as _e:
-        extra_data['micro_err'] = str(_e)
+    def _run_macro_v2():
         try:
-            from nerve_system.nerve_emitter import get_nerve as _gn; _gn('brahma').emit('ENGINE_FAIL', {'engine':'micro','err':str(_e)[:80]})
-        except Exception as _e:
-                if not isinstance(_e, (TimeoutError, ModuleNotFoundError, ImportError, AttributeError)):
-                    pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
+            from brahma_brain.narrative_engine import macro_score_v2 as _mv2_fn
+            return _mv2_fn(symbol, signal_dir)
+        except Exception:
+            return None
+
+    def _run_micro():
+        if not _MICRO_OK: return None
+        return _micro_score(symbol, _dir_for_engines)
+
+    _ex2 = _TPE(max_workers=6)
+    try:
+        _f_wh  = _ex2.submit(_run_whale)
+        _f_cx  = _ex2.submit(_run_cross)
+        _f_cfb = _ex2.submit(_run_cross_fr)
+        _f_dpc = _ex2.submit(_run_deribit_pc)
+        _f_mv2 = _ex2.submit(_run_macro_v2)
+        _f_mc2 = _ex2.submit(_run_micro)
+        try:
+            _wh = _f_wh.result(timeout=4)
+            if _wh: extra_data['whale'] = _wh
+        except Exception: _f_wh.cancel()
+        try:
+            _cx = _f_cx.result(timeout=4)
+            if _cx: extra_data['cross_market'] = _cx
+        except Exception: _f_cx.cancel()
+        try:
+            _cfb = _f_cfb.result(timeout=4)
+            if _cfb: extra_data['cross_fr_basis'] = _cfb
+        except Exception: _f_cfb.cancel()
+        try:
+            _dpc = _f_dpc.result(timeout=4)
+            if _dpc: extra_data['deribit_pc'] = _dpc
+        except Exception: _f_dpc.cancel()
+        try:
+            _mv2 = _f_mv2.result(timeout=4)
+            if _mv2:
+                extra_data['macro_v2'] = _mv2
+                if _mv2.get('score_addon', 0) != 0:
+                    for _mn in _mv2.get('notes', []):
+                        print(f'[s_macro_v2] {symbol} {signal_dir}: {_mn}')
+        except Exception: _f_mv2.cancel()
+        try:
+            _mc2 = _f_mc2.result(timeout=4)
+            if _mc2: extra_data['microstructure'] = _mc2
+        except Exception: _f_mc2.cancel()
+    finally:
+        _ex2.shutdown(wait=False)
+
 
     # ─── Phase NEW: 量能衰竭 + 多周期背离共振 ────────────────────────
     # VOL-EXH: 量能衰竭引擎（底部识别核心）
