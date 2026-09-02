@@ -1,1 +1,1 @@
-[{"symbol": "DASH", "timeframe": "1w", "ts_squeeze_start": "2025-03-17T00:00:00+00:00", "ts_burst": "2025-03-18T20:00:00+00:00", "direction": "UP", "min_bb_width": 4.0735, "squeeze_bars": 11, "rsi_at_burst": 54.74, "vol_ratio_peak": 2.1, "future_return": 5.2905, "is_genuine_breakout": true, "atr_at_burst": 0.46847, "_source": "merged", "pnl_long_24h": 5.2905, "future_return_24h": 5.2905, "burst_atr_mult": 2.69}]
+/root/.openclaw/workspace/trading-system/data/fangcang_dash_1w.json

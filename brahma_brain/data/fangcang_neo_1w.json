@@ -1,1 +1,1 @@
-[{"symbol": "NEO", "timeframe": "1w", "ts_squeeze_start": "2026-05-26T04:00:00+00:00", "ts_burst": "2026-05-28T00:00:00+00:00", "direction": "DOWN", "min_bb_width": 2.3661, "squeeze_bars": 11, "rsi_at_burst": 37.6, "vol_ratio_peak": 2.99, "future_return": -1.8888, "is_genuine_breakout": true, "atr_at_burst": 0.057801, "_source": "merged", "pnl_long_24h": 1.8888, "future_return_24h": -1.8888, "burst_atr_mult": 1.81}]
+/root/.openclaw/workspace/trading-system/data/fangcang_neo_1w.json

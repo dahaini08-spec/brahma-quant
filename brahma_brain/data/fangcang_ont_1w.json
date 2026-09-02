@@ -1,1 +1,1 @@
-[{"symbol": "ONT", "timeframe": "1w", "ts_squeeze_start": "2024-01-29T00:00:00+00:00", "ts_burst": "2024-01-31T20:00:00+00:00", "direction": "DOWN", "min_bb_width": 2.4919, "squeeze_bars": 17, "rsi_at_burst": 43.12, "vol_ratio_peak": 3.25, "future_return": -0.9503, "is_genuine_breakout": true, "atr_at_burst": 0.004604, "_source": "merged", "pnl_long_24h": 0.9503, "future_return_24h": -0.9503, "burst_atr_mult": 1.55}]
+/root/.openclaw/workspace/trading-system/data/fangcang_ont_1w.json

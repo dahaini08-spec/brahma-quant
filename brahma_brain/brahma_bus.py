@@ -333,7 +333,12 @@ def get_price(symbol: str) -> float:
 
 
 def get_klines(symbol: str, interval: str = '1h', limit: int = 100) -> list:
-    """统一K线查询 — bus缓存优先"""
+    """统一K线查询 — 优先data_cache（带CJK过滤/大limit复用/缓存），fallback bus"""
+    try:
+        from data_cache import get_klines as _dc_gk
+        return _dc_gk(symbol, interval, limit)
+    except Exception:
+        pass
     try:
         return bus.klines(symbol, interval, limit)
     except Exception:

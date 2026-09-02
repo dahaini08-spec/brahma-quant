@@ -1,1 +1,1 @@
-[{"symbol": "EGLD", "timeframe": "1w", "ts_squeeze_start": "2025-09-20T20:00:00+00:00", "ts_burst": "2025-09-22T00:00:00+00:00", "direction": "DOWN", "min_bb_width": 4.8186, "squeeze_bars": 7, "rsi_at_burst": 53.01, "vol_ratio_peak": 2.88, "future_return": -9.9875, "is_genuine_breakout": true, "atr_at_burst": 0.273067, "_source": "data_dir"}]
+/root/.openclaw/workspace/trading-system/data/fangcang_egld_1w.json

@@ -1,1 +1,1 @@
-[{"symbol": "MSFTUSDT", "timeframe": "1w", "ts_squeeze_start": "2005-04-06 00:00:00-04:00", "ts_burst": "2005-08-04 00:00:00-04:00", "direction": "UP", "min_bb_width": 1.4816, "squeeze_bars": 84, "rsi_at_burst": 65.73, "vol_ratio_peak": 1.383, "future_return": -0.183, "is_genuine_breakout": "False", "atr_at_burst": 2.275, "_source": "data/fangcang_cases_tradfi.json", "pnl_long_24h": 0.183, "future_return_24h": -0.183, "burst_atr_mult": 2.275, "stock_ticker": "MSFT", "tier": "S"}]
+/root/.openclaw/workspace/trading-system/data/fangcang_msft_1w.json
