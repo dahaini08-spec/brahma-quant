@@ -107,15 +107,29 @@ def run():
         else:
             ok_count += 1
 
-    # 决定是否推送
-    if not errors and not warnings:
+    # 磁盘超限强制推送
+    if not errors and not warnings and disk_pct <= 85:
         print('HEARTBEAT_OK')
         return
 
     # 构建看板报告
     lines = ['📊 梵天Cron健康看板 | %s CST' % time.strftime('%m-%d %H:%M', time.localtime())]
+    # 磁盘状态
+    try:
+        import os
+        st = os.statvfs('/root')
+        total = st.f_blocks * st.f_frsize
+        free  = st.f_bavail * st.f_frsize
+        used  = total - free
+        disk_pct = round(used / total * 100, 1)
+        disk_free = round(free / 1024**3, 1)
+        disk_icon = '🔴' if disk_pct > 85 else ('🟡' if disk_pct > 70 else '🟢')
+    except Exception:
+        disk_pct, disk_free, disk_icon = 0, 0, '⚠️'
+
     lines.append('━━━━━━━━━━━━━━━━━━━━')
-    lines.append('✅正常: %d  ⚠️告警: %d  🔴异常: %d' % (ok_count, len(warnings), len(errors)))
+    lines.append('✅正常: %d  ⚠️告警: %d  🔴异常: %d  %s磁盘: %.1f%%(剩%.1fGB)' % (
+        ok_count, len(warnings), len(errors), disk_icon, disk_pct, disk_free))
 
     if errors:
         lines.append('\n🔴 连续ERROR（需关注）:')
