@@ -276,6 +276,7 @@ def build_hot_tickers() -> str:
     price, chg, fr, ls, ls_4h_ago = 0.0, 0.0, 0.0, 1.0, 1.0
     recent_high, recent_low = 0.0, 0.0
     vol_ratio = 1.0
+    oi_now, oi_4h_ago = 0.0, 0.0
     try:
         t   = _r.get('https://fapi.binance.com/fapi/v1/ticker/24hr',
                      params={'symbol': f'{hot_sym}USDT'}, timeout=5).json()
@@ -283,6 +284,8 @@ def build_hot_tickers() -> str:
                      params={'symbol': f'{hot_sym}USDT'}, timeout=5).json()
         lsd = _r.get('https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
                      params={'symbol': f'{hot_sym}USDT', 'period': '1h', 'limit': 4}, timeout=5).json()
+        oid = _r.get('https://fapi.binance.com/futures/data/openInterestHist',
+                     params={'symbol': f'{hot_sym}USDT', 'period': '1h', 'limit': 5}, timeout=5).json()
         kl  = _r.get('https://fapi.binance.com/fapi/v1/klines',
                      params={'symbol': f'{hot_sym}USDT', 'interval': '4h', 'limit': 6}, timeout=5).json()
         price     = float(t.get('lastPrice', 0))
@@ -290,6 +293,9 @@ def build_hot_tickers() -> str:
         fr        = float(frd.get('lastFundingRate', 0)) * 100
         ls        = float(lsd[0]['longShortRatio']) if lsd else 1.0
         ls_4h_ago = float(lsd[3]['longShortRatio']) if len(lsd) > 3 else ls
+        if oid and isinstance(oid, list) and len(oid) > 0:
+            oi_now    = float(oid[-1].get('sumOpenInterestValue', 0))
+            oi_4h_ago = float(oid[0].get('sumOpenInterestValue', 0))
         if kl:
             recent_high = max(float(k[2]) for k in kl[-3:])
             recent_low  = min(float(k[3]) for k in kl[-3:])
@@ -446,7 +452,7 @@ def build_hot_tickers() -> str:
         # 价格在区间内的位置
         if recent_high > 0 and recent_low > 0:
             range_pct = (recent_high - recent_low) / recent_low * 100
-            pos_in_range = (price_num - recent_low) / (recent_high - recent_low) * 100 if recent_high != recent_low else 50
+            pos_in_range = (price - recent_low) / (recent_high - recent_low) * 100 if recent_high != recent_low else 50
             if pos_in_range > 75:
                 signals.append(f'现价在近期区间顶部{pos_in_range:.0f}%位置（{recent_low:.4f}–{recent_high:.4f}），高位推空比追多更合理。')
             elif pos_in_range < 25:
@@ -1252,13 +1258,12 @@ def main():
     args = parser.parse_args()
 
     # ── 升级1：随机延迟（防定时限流）──
-    # 百强KOL铁律：「能手动发别定时，定时基本限流」
-    # 在目标时间±15分钟内随机触发，模拟手动发帖行为
+    # 延迟移到内容生成之后，减少总耗时
     if not args.dry_run and not args.no_delay:
         import random
-        delay = random.uniform(0, 60)  # 最多60秒随机延迟（原900秒太长导致timeout）
+        delay = random.uniform(2, 15)  # 最多15秒（原60秒太长导致cron timeout）
         if delay > 5:
-            print(f'[poster] 随机延迟 {delay:.0f}秒 后发布（防限流）')
+            print(f'[poster] 随机延迟 {delay:.0f}秒')
         time.sleep(delay)
 
     if args.type == 'edu':
