@@ -49,7 +49,7 @@ def _klines(symbol: str, interval: str, limit: int = 100) -> list:  # [FIX 2026-
     # 根因：未收盘K线的收盘价是当前实时价，会导致RSI虚高/虚低
     url = f'{FAPI}/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit+1}'
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    with urllib.request.urlopen(req, timeout=6) as r:
+    with urllib.request.urlopen(req, timeout=6, context=_DC_SSL_CTX) as r:
         raw = json.loads(r.read())
         raw = raw[:-1]  # 去除最后一根未收盘K线，确保无穿越
         return [{'o': float(k[1]), 'h': float(k[2]), 'l': float(k[3]),
@@ -808,6 +808,7 @@ market_quadrant.py — 梵天大脑 Layer B1: 四象限市场状态
 """
 import os, sys, time, logging
 from typing import Optional
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 _BB = os.path.dirname(os.path.abspath(__file__))
 if _BB not in sys.path: sys.path.insert(0, _BB)

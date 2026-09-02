@@ -901,6 +901,7 @@ CVD（Cumulative Volume Delta）= 主动买方成交量 - 主动卖方成交量
 import time
 import json
 import urllib.request
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 FAPI = "https://fapi.binance.com"
 _cache: dict = {}
@@ -912,7 +913,7 @@ def _get(url: str, ttl: int = 30):
         return _cache[url][1]
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req, timeout=8) as r:
+        with urllib.request.urlopen(req, timeout=8, context=_DC_SSL_CTX) as r:
             data = json.loads(r.read())
             _cache[url] = (now, data)
             return data

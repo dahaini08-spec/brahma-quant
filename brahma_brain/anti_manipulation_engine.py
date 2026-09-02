@@ -18,6 +18,7 @@ anti_manipulation_engine.py — 梵天操控防御层
 import time
 import os
 import sys
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 _BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _BASE not in sys.path:
@@ -70,7 +71,7 @@ def _check_spread(symbol: str) -> dict:
     try:
         import urllib.request, json as _json
         url = f'https://fapi.binance.com/fapi/v1/ticker/bookTicker?symbol={symbol}'
-        with urllib.request.urlopen(url, timeout=3) as r:
+        with urllib.request.urlopen(url, timeout=3, context=_DC_SSL_CTX) as r:
             data = _json.loads(r.read())
         bid = float(data.get('bidPrice', 0))
         ask = float(data.get('askPrice', 0))
@@ -131,7 +132,7 @@ def _check_taker(symbol: str) -> dict:
         import urllib.request, json as _json
         url = (f'https://fapi.binance.com/futures/data/takerlongshortRatio'
                f'?symbol={symbol}&period=5m&limit=3')
-        with urllib.request.urlopen(url, timeout=3) as r:
+        with urllib.request.urlopen(url, timeout=3, context=_DC_SSL_CTX) as r:
             data = _json.loads(r.read())
         if not data:
             return _set_cached(key, result)
@@ -263,7 +264,7 @@ def _check_fr_window(symbol: str) -> dict:
     try:
         import urllib.request, json as _json
         url = f'https://fapi.binance.com/fapi/v1/premiumIndex?symbol={symbol}'
-        with urllib.request.urlopen(url, timeout=3) as r:
+        with urllib.request.urlopen(url, timeout=3, context=_DC_SSL_CTX) as r:
             data = _json.loads(r.read())
 
         fr = float(data.get('lastFundingRate', 0))
@@ -315,7 +316,7 @@ def _check_mark_price(symbol: str) -> dict:
     try:
         import urllib.request, json as _json
         url = f'https://fapi.binance.com/fapi/v1/premiumIndex?symbol={symbol}'
-        with urllib.request.urlopen(url, timeout=3) as r:
+        with urllib.request.urlopen(url, timeout=3, context=_DC_SSL_CTX) as r:
             data = _json.loads(r.read())
 
         mark_price = float(data.get('markPrice', 0))

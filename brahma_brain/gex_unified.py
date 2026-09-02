@@ -385,6 +385,7 @@ import json, time, math, sys, os
 import urllib.request
 from pathlib import Path
 from datetime import datetime, timezone
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 # ── 路径 ─────────────────────────────────────────────────────
 _DIR  = Path(__file__).parent
@@ -408,7 +409,7 @@ def _fetch(url: str, timeout: int = 12) -> dict:
     """Deribit公开API请求"""
     req = urllib.request.Request(url, headers={'User-Agent': 'BrahmaGEXScanner/1.0'})
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as r:
+        with urllib.request.urlopen(req, timeout=timeout, context=_DC_SSL_CTX) as r:
             return json.loads(r.read())
     except Exception as e:
         pass  # [静默]

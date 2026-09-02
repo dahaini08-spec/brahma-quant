@@ -28,6 +28,7 @@ coinglass_engine.py — CoinGlass数据引擎 v2.0
 import json, time, os, sys
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor as _TPE, as_completed as _asc
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 # ── brahma_bus 总线接入（设计院 2026-06-29）──
 try:
@@ -80,7 +81,7 @@ def _get(url, timeout=8):
     if 'coinglass.com' in url:
         headers['CG-API-KEY'] = _CG_KEY
     req = urllib.request.Request(url, headers=headers)
-    with urllib.request.urlopen(req, timeout=timeout) as r:
+    with urllib.request.urlopen(req, timeout=timeout, context=_DC_SSL_CTX) as r:
         return json.loads(r.read())
 
 # ── F&G 恐贪指数 ─────────────────────────────────────────────

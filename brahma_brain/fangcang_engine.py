@@ -39,6 +39,7 @@ _BASE_DIR = Path(__file__).parent
 # [加速缓存 2026-09-02 苏摩111] 特征向量磁盘缓存，每小时刷新
 import hashlib as _hlib, pickle as _pkl
 _FEAT_CACHE: dict = {}
+_KLINES_NATIVE_CACHE: dict = {}  # path→(mtime, bars) 进程级klines缓存
 
 def _get_feat_cache_key(symbol: str, tf: str) -> str:
     return f'{symbol}_{tf}'
@@ -104,7 +105,19 @@ def _load_klines_native(symbol: str, tf: str) -> List[dict]:
     # 1D:  不截断(2383根=6.5年, 0.4MB)
     _TAIL_LIMIT = 2000 if "15m" in str(path) else None
     try:
-        raw = json.loads(path.read_text())
+        # [缓存 2026-09-02] 进程级klines缓存，文件未变则复用
+        _cache_key = str(path)
+        _mtime = path.stat().st_mtime if path.exists() else 0
+        if _cache_key in _KLINES_NATIVE_CACHE:
+            _cached_mt, _cached_raw = _KLINES_NATIVE_CACHE[_cache_key]
+            if _cached_mt == _mtime:
+                raw = _cached_raw
+            else:
+                raw = json.loads(path.read_text())
+                _KLINES_NATIVE_CACHE[_cache_key] = (_mtime, raw)
+        else:
+            raw = json.loads(path.read_text())
+            _KLINES_NATIVE_CACHE[_cache_key] = (_mtime, raw)
         if _TAIL_LIMIT and len(raw) > _TAIL_LIMIT:
             raw = raw[-_TAIL_LIMIT:]
         bars = []

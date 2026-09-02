@@ -22,6 +22,7 @@ brahma_brain · P2
 """
 
 import json, urllib.request, time, statistics
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 # ── brahma_bus 总线接入（设计院 2026-06-29）──
 try:
@@ -47,7 +48,7 @@ def _get(url, timeout=8):
         return _CACHE[url]['data']
     try:
         req = urllib.request.Request(url, headers={'User-Agent':'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=timeout) as r:
+        with urllib.request.urlopen(req, timeout=timeout, context=_DC_SSL_CTX) as r:
             d = json.loads(r.read())
             _CACHE[url] = {'data': d, 'ts': t}
             return d

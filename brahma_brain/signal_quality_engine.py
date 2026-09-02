@@ -750,7 +750,7 @@ def audit_score_with_realtime(symbol: str, score_breakdown: dict) -> dict:
             klines = _dc(symbol, '1h', 20) or []
         except Exception:
             url = f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=1h&limit=20'
-            klines = json.loads(urllib.request.urlopen(url, timeout=6).read())
+            klines = json.loads(urllib.request.urlopen(url, timeout=6, context=_DC_SSL_CTX).read())
         closes = [float(k[4]) for k in klines]
         volumes = [float(k[5]) for k in klines]
         lows = [float(k[3]) for k in klines]
@@ -1276,6 +1276,7 @@ P2: 体制动态衰减（从峰值-3%开始）
 import time
 from pathlib import Path
 import json
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 # ── P0: 门控常量 ───────────────────────────────────────
 # consensus包含BEAR且方向LONG → 拒绝

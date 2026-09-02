@@ -23,6 +23,7 @@ import sys, os, json, time, argparse, urllib.request
 from pathlib import Path
 from datetime import datetime, timezone
 from collections import defaultdict
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 BASE       = Path(__file__).parent.parent
 DATA       = BASE / 'data'
@@ -41,7 +42,7 @@ EV_DIR.mkdir(exist_ok=True)
 def fetch_price(symbol: str) -> float | None:
     try:
         url = f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}'
-        r   = urllib.request.urlopen(url, timeout=5)
+        r   = urllib.request.urlopen(url, timeout=5, context=_DC_SSL_CTX)
         return float(json.loads(r.read())['price'])
     except Exception:
         return None

@@ -12,6 +12,7 @@
 ╚══════════════════════════════════════════════════════════════════╝
 """
 import urllib.request, json, time
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 FAPI = "https://fapi.binance.com"
 _cache: dict = {}
@@ -23,7 +24,7 @@ def _get(url: str):
         return _cache[url]['data']
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'brahma/4.0'})
-        with urllib.request.urlopen(req, timeout=5) as r:
+        with urllib.request.urlopen(req, timeout=5, context=_DC_SSL_CTX) as r:
             data = json.loads(r.read())
             _cache[url] = {'ts': now, 'data': data}
             return data

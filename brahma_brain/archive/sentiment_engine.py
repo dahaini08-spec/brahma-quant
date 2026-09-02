@@ -20,6 +20,7 @@ import time
 import urllib.request
 import json
 from typing import Optional
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 _FG_CACHE      = {'value': 50, 'ts': 0}
 _FG_HIST_CACHE = {'history': [], 'ts': 0}
@@ -34,7 +35,7 @@ def _get_fg() -> int:
         return _FG_CACHE['value']
     try:
         url = 'https://api.alternative.me/fng/?limit=1'
-        with urllib.request.urlopen(url, timeout=4) as resp:
+        with urllib.request.urlopen(url, timeout=4, context=_DC_SSL_CTX) as resp:
             data = json.loads(resp.read())
         val = int(data['data'][0]['value'])
         _FG_CACHE = {'value': val, 'ts': now}
@@ -51,7 +52,7 @@ def _get_fg_history(days: int = 7) -> list:
         return _FG_HIST_CACHE['history']
     try:
         url = f'https://api.alternative.me/fng/?limit={days}'
-        with urllib.request.urlopen(url, timeout=5) as resp:
+        with urllib.request.urlopen(url, timeout=5, context=_DC_SSL_CTX) as resp:
             data = json.loads(resp.read())
         hist = [int(d['value']) for d in data.get('data', [])]
         _FG_HIST_CACHE = {'history': hist, 'ts': now}

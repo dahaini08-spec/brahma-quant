@@ -26,6 +26,7 @@ TTL：
 
 import json, time, os
 from pathlib import Path
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 LIVE_PRICE_FILE = Path('/tmp/live_prices.json')
 WS_PRICE_TTL    = 30   # WS价格有效期（秒）
@@ -106,7 +107,7 @@ def bulk_update_from_api(symbols: list):
     import urllib.request
     try:
         url = 'https://fapi.binance.com/fapi/v1/ticker/price'
-        raw = json.loads(urllib.request.urlopen(url, timeout=8).read())
+        raw = json.loads(urllib.request.urlopen(url, timeout=8, context=_DC_SSL_CTX).read())
         price_map = {item['symbol']: float(item['price']) for item in raw}
         for sym in symbols:
             p = price_map.get(sym.upper(), 0)

@@ -339,7 +339,7 @@ def get_klines(symbol: str, interval: str = '1h', limit: int = 100) -> list:
     except Exception:
         import urllib.request, json
         url = f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}'
-        with urllib.request.urlopen(url, timeout=10) as r:
+        with urllib.request.urlopen(url, timeout=10, context=_DC_SSL_CTX) as r:
             return json.loads(r.read())
 
 
@@ -410,6 +410,7 @@ import logging
 from collections import defaultdict
 from typing import Callable, Any
 from pathlib import Path
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 logger = logging.getLogger("BrahmaEventBus")
 

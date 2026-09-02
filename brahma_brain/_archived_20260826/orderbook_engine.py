@@ -16,6 +16,7 @@ Phase A-1: 真实买卖盘挂单厚度分析
   - 评分贡献: 0~15分
 """
 import json, time, urllib.request, os, sys
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 FAPI = 'https://fapi.binance.com'
 _cache = {}
@@ -23,7 +24,7 @@ TTL = 15  # 15秒缓存
 
 def _get(url, timeout=6):
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
+    with urllib.request.urlopen(req, timeout=timeout, context=_DC_SSL_CTX) as r:
         return json.loads(r.read())
 
 def _cached(key, fn):
