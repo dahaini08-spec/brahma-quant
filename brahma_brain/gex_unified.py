@@ -385,7 +385,12 @@ import json, time, math, sys, os
 import urllib.request
 from pathlib import Path
 from datetime import datetime, timezone
-from data_cache import _SSL_CTX as _DC_SSL_CTX
+try:
+    from data_cache import _SSL_CTX as _DC_SSL_CTX
+except ImportError:
+    import sys as _sys_dc, os as _os_dc
+    _sys_dc.path.insert(0, _os_dc.path.dirname(_os_dc.path.abspath(__file__)))
+    from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 # ── 路径 ─────────────────────────────────────────────────────
 _DIR  = Path(__file__).parent

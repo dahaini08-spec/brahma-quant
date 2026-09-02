@@ -39,6 +39,23 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
     # ║ BLOCK-A: 技术分析层 (维度1-5) · 纯技术，无网络依赖      ║
     # ║ 未来提取目标: brahma_brain/confluence/tech_analysis.py  ║
     # ╚══════════════════════════════════════════════════════════╝
+
+    # [修复 2026-09-02 苏摩111] signal_dir统一推断 — CHOP体制下signal_dir='1h'/'4h'
+    # 导致维度2(关键位精确度)/维度4(SMC)/维度6(形态)/EMA/OB_FVG共振全部归零
+    # block_a入口统一推断，治所有依赖signal_dir的维度
+    if signal_dir not in ('LONG', 'SHORT', '做多', '做空', 'UP', 'DOWN', 'long', 'short'):
+        _raw_score = float(ms.get('score', ms.get('total', 0)) or 0)
+        _regime_str_for_dir = str(ms.get('regime', '')).upper()
+        if _raw_score > 5:
+            signal_dir = 'LONG'
+        elif _raw_score < -5:
+            signal_dir = 'SHORT'
+        elif 'BEAR' in _regime_str_for_dir:
+            signal_dir = 'SHORT'
+        else:
+            signal_dir = 'LONG'
+        breakdown['_signal_dir_inferred_block_a'] = signal_dir
+
     # ── 维度1：趋势一致性（0~20）──────────────────────────────
     # [D01达摩院实训] CHOP体制下逆向0分→给中性基础分，避免LONG/SHORT天壤之别
     consensus = ms['trend']['consensus']['consensus']

@@ -27,6 +27,9 @@
     "ev": "+2.44%",
     "timestamp": 1787831731,
     "entry_time": "2026-08-27 11:55:31 UTC",
-    "status": "OPEN"
+    "status": "CLOSED",
+    "active": false,
+    "closed_at": 1788371151.0751522,
+    "close_reason": "auto_reconcile_no_position_on_exchange"
   }
 }

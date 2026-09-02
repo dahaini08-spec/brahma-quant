@@ -78,6 +78,9 @@ def main():
     triggered = []
 
     for sym, cfg in SL_CONFIG.items():
+        # 跳过已关闭/非活跃记录
+        if not cfg.get('active', True) or cfg.get('status') == 'CLOSED' or cfg.get('close_reason'):
+            continue
         # 兼容不同字段名
         side  = cfg.get('side', cfg.get('direction', 'LONG'))
         sl    = float(cfg.get('sl_price', cfg.get('sl', 0)))
