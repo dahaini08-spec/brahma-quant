@@ -14,6 +14,30 @@ STATE_FILE = BASE / 'data' / 'self_healing_state.json'
 CRON_JOBS  = Path('/root/.openclaw/cron/jobs.json')
 CRON_RUNS  = Path('/root/.openclaw/cron/runs')
 
+# supercronic 存活检测（自动拉起）
+SUPERCRONIC_BIN  = str(BASE / 'supercronic')
+SUPERCRONIC_CRON = str(BASE / 'brahma_crontab.txt')
+SUPERCRONIC_LOG  = str(BASE / 'logs' / 'supercronic.log')
+
+def ensure_supercronic():
+    """检测supercronic是否在跑，不在则自动拉起"""
+    import subprocess, os
+    try:
+        r = subprocess.run(['pgrep', '-f', 'supercronic'], capture_output=True, text=True)
+        if r.returncode == 0:
+            return None  # 已在运行
+        # 不在运行，拉起
+        os.makedirs(str(BASE / 'logs'), exist_ok=True)
+        log_fh = open(SUPERCRONIC_LOG, 'a')
+        proc = subprocess.Popen(
+            [SUPERCRONIC_BIN, SUPERCRONIC_CRON],
+            stdout=log_fh, stderr=log_fh,
+            start_new_session=True
+        )
+        return f'supercronic已重启 pid={proc.pid}'
+    except Exception as e:
+        return f'supercronic拉起失败: {e}'
+
 # 关键cron任务监控（超过max_idle_min分钟未运行 → 告警）
 WATCHES = [
     {'name': 'position-guardian',    'max_idle_min': 10},
@@ -43,6 +67,11 @@ def run():
     now   = time.time()
     state = load_state()
     alerts = []
+
+    # 检测并自动拉起supercronic
+    sc_result = ensure_supercronic()
+    if sc_result:
+        alerts.append(sc_result)
 
     try:
         jobs = json.loads(CRON_JOBS.read_text())

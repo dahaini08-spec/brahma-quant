@@ -55,7 +55,7 @@ LAYERS = [
             ("wiring_check孤岛=0",   "import subprocess; r=subprocess.run(['python3','scripts/brahma_wiring_check.py'],capture_output=True,text=True); assert '孤岛: 0' in r.stdout or 'orphans: 0' in r.stdout, r.stdout[-200:]; print('孤岛=0 ✅')"),
             ("内存可用>400MB",       "import subprocess; lines=subprocess.run(['free','-m'],capture_output=True,text=True).stdout.splitlines(); mem=int([l for l in lines if l.startswith('Mem:')][0].split()[6]); assert mem>400,f'{mem}MB不足'; print(f'{mem}MB可用')"),
             ("ws_guardian运行",      "import subprocess; r=subprocess.run(['pgrep','-f','ws_guardian'],capture_output=True); assert r.returncode==0,'ws_guardian未运行'; print('运行中')"),
-            ("cron任务≥30",          "import subprocess; r=subprocess.run(['openclaw','cron','list'],capture_output=True,text=True,timeout=20); n=len([l for l in r.stdout.splitlines() if 'every' in l or 'cron ' in l.lower()]); assert n>=30,f'只有{n}个'; print(f'{n}个任务')"),
+            ("cron任务≥25",          "import subprocess; r=subprocess.run(['openclaw','cron','list'],capture_output=True,text=True,timeout=20); n=len([l for l in r.stdout.splitlines() if 'every' in l or 'cron ' in l.lower()]); assert n>=25,f'只有{n}个'; print(f'{n}个任务')"),
         ]
     },
 ]

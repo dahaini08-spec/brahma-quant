@@ -1,0 +1,39 @@
+# 梵天系统cron - 纯脚本任务（从OpenClaw迁移，减少event loop压力）
+# 2026-09-02 | 日志: /root/.openclaw/workspace/trading-system/logs/syscron.log
+SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
+
+# Square发帖（10个，全天分布）
+0 1  * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type hot_tickers --no-delay >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+0 5  * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type hot_news >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+0 7  * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type top_gainers --no-delay >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+0 9  * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type pump_alert >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+0 11 * * *  cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/square/square_hot_poster.py --type market_summary >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+0 12 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type hot_news --no-delay >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+0 14 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type market_summary --no-delay >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+0 17 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type top_losers --no-delay >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+0 21 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type hot_tickers >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+0 22 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type funding_rate >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+0 */2 * * *  cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/square/square_extreme_alert.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+
+# 梵天系统维护
+*/30 * * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_state_refresh.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+0 */12 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/market_screener.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+0 */4  * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_360_watchdog.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+0 3   * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_data_ttl.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+0 3   * * *  cd /root/.openclaw/workspace/trading-system/brahma_brain && python3 fangcang_builder_30.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+0 4   * * 1  cd /root/.openclaw/workspace/trading-system && python3 scripts/ic_feedback_engine.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+
+# GEX引擎（每15分钟刷新，全币种：BTC/ETH/SOL/BNB/XRP/DOGE）
+*/15 * * * *  cd /root/.openclaw/workspace/trading-system && python3 brahma_brain/gex_engine.py --currency ALL >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+
+# liqmap_collector存活保障（每小时检查，挂了自动拉起）
+0 * * * *  pgrep -f liqmap_collector > /dev/null || (cd /root/.openclaw/workspace/trading-system && nohup python3 brahma_brain/liqmap_collector.py >> logs/liqmap.log 2>&1 &)
+
+# Vol-Beta引擎（每4小时刷新，用Deribit 384天历史，无需积累）
+0 */4 * * *  cd /root/.openclaw/workspace/trading-system && python3 brahma_brain/vol_beta_engine.py --currency ETH >> logs/syscron.log 2>&1
+0 */4 * * *  cd /root/.openclaw/workspace/trading-system && python3 brahma_brain/vol_beta_engine.py --currency BTC >> logs/syscron.log 2>&1
+0 */4 * * *  cd /root/.openclaw/workspace/trading-system && python3 brahma_brain/vol_beta_engine.py --currency SOL >> logs/syscron.log 2>&1
+0 */4 * * *  cd /root/.openclaw/workspace/trading-system && python3 brahma_brain/vol_beta_engine.py --currency BNB >> logs/syscron.log 2>&1
+0 */4 * * *  cd /root/.openclaw/workspace/trading-system && python3 brahma_brain/vol_beta_engine.py --currency XRP >> logs/syscron.log 2>&1
+0 */4 * * *  cd /root/.openclaw/workspace/trading-system && python3 brahma_brain/vol_beta_engine.py --currency XAU >> logs/syscron.log 2>&1
+0 */4 * * *  cd /root/.openclaw/workspace/trading-system && python3 brahma_brain/vol_beta_engine.py --currency XAG >> logs/syscron.log 2>&1

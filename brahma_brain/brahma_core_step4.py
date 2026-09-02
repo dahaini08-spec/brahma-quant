@@ -93,6 +93,11 @@ try:
     _MICRO_OK = True
 except Exception:
     _MICRO_OK = False
+try:
+    from order_flow_engine import order_flow_score as _order_flow_score
+    _OF_OK = True
+except Exception:
+    _OF_OK = False
 
 try:
     # [总线接入 2026-08-13] 优先走brahma_bus缓存，fallback到binance_fapi
@@ -128,6 +133,23 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     _sym = symbol
     extra_data: dict = {}
     _bd = {}; _spec = {}; _sm = {}
+
+    # [修复 2026-09-02] signal_dir推断：CHOP体制下为时间框架标签(如'1h')，引擎需要LONG/SHORT
+    # 推断规则：用ms评分偏向；若无法判断则用LONG（保守，避免错误惩罚）
+    _eff_dir = signal_dir
+    if signal_dir not in ('LONG', 'SHORT', '做多', '做空'):
+        _raw_score = float(ms.get('score', ms.get('total', 0)) or 0)
+        _regime_str = str(ms.get('regime', '')).upper()
+        if _raw_score > 5:
+            _eff_dir = 'LONG'
+        elif _raw_score < -5:
+            _eff_dir = 'SHORT'
+        elif 'BEAR' in _regime_str:
+            _eff_dir = 'SHORT'
+        else:
+            _eff_dir = 'LONG'
+        extra_data['_signal_dir_inferred'] = f'{signal_dir}→{_eff_dir}(score={_raw_score:.0f})'
+    _dir_for_engines = _eff_dir  # 传给鲸鱼/微观/跨市场引擎的有效方向
 
     # Step 4: Phase 2 额外引擎
     k1h = klines_to_ohlcv(get_klines(symbol, '1h', 200))
@@ -282,7 +304,7 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
 
     def _run_orderflow():
         if not _OF_OK: return None
-        return _order_flow_score(symbol, signal_dir)
+        return _order_flow_score(symbol, _dir_for_engines)
 
     def _run_macro():
         if not _MACRO_OK: return None
@@ -379,7 +401,7 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     # P2-NEW: 鲸鱼引擎（链上大单+交易所流向）
     try:
         if _WHALE_OK:
-            wh_res = _whale_score(symbol, signal_dir)
+            wh_res = _whale_score(symbol, _dir_for_engines)
             extra_data['whale'] = wh_res
     except Exception as _e:
         extra_data['whale_err'] = str(_e)
@@ -392,7 +414,7 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     # P2-NEW: 跨市场引擎（BTC-ETH相关/DXY/风险偏好）
     try:
         if _CROSS_OK:
-            cx_res = _cross_score(symbol, signal_dir)
+            cx_res = _cross_score(symbol, _dir_for_engines)
             extra_data['cross_market'] = cx_res
     except Exception as _e:
         extra_data['cross_err'] = str(_e)
@@ -436,7 +458,7 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     # P2-NEW: 微观结构引擎（大单吸收/耗尽/停顿）
     try:
         if _MICRO_OK:
-            ms_res = _micro_score(symbol, signal_dir)
+            ms_res = _micro_score(symbol, _dir_for_engines)
             extra_data['microstructure'] = ms_res
     except Exception as _e:
         extra_data['micro_err'] = str(_e)
