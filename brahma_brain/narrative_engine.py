@@ -672,6 +672,7 @@ def get_active_risk() -> dict:
 ╚══════════════════════════════════════════════════════════════════╝
 """
 import urllib.request, json, time
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 _cache: dict = {}
 _TTL = 300  # 5分钟
@@ -685,7 +686,7 @@ def _get(url: str, headers: dict = None):
         if headers:
             h.update(headers)
         req = urllib.request.Request(url, headers=h)
-        with urllib.request.urlopen(req, timeout=6) as r:
+        with urllib.request.urlopen(req, timeout=6, context=_DC_SSL_CTX) as r:
             data = json.loads(r.read())
             _cache[url] = {'ts': now, 'data': data}
             return data
@@ -826,7 +827,7 @@ def get_dxy_realtime() -> dict:
     url = 'https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?interval=1h&range=2d'
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=8) as r:
+        with urllib.request.urlopen(req, timeout=8, context=_DC_SSL_CTX) as r:
             data = json.loads(r.read())
         closes = data['chart']['result'][0]['indicators']['quote'][0]['close']
         closes = [x for x in closes if x is not None]
@@ -852,7 +853,7 @@ def get_nasdaq_realtime() -> dict:
     url = 'https://query1.finance.yahoo.com/v8/finance/chart/NQ=F?interval=1h&range=2d'
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=8) as r:
+        with urllib.request.urlopen(req, timeout=8, context=_DC_SSL_CTX) as r:
             data = json.loads(r.read())
         closes = data['chart']['result'][0]['indicators']['quote'][0]['close']
         closes = [x for x in closes if x is not None]

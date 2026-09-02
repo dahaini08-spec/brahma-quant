@@ -26,6 +26,7 @@ brahma_360.py — 梵天360全系统健康管理中心
 import os, sys, json, time, re, subprocess
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 # ── 路径 ────────────────────────────────────────────────────────
 _DIR   = Path(__file__).parent
@@ -581,7 +582,7 @@ def fix_init_live_prices(issue: dict) -> bool:
         for sym in ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT']:
             try:
                 url = f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}'
-                with urllib.request.urlopen(url, timeout=5) as r:
+                with urllib.request.urlopen(url, timeout=5, context=_DC_SSL_CTX) as r:
                     data = json.loads(r.read())
                 prices[sym] = {'price': float(data['price']), 'ts': time.time(), 'source': 'brahma_360_fix'}
             except Exception:

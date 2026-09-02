@@ -20,6 +20,7 @@ import time
 import datetime
 import urllib.request
 import json
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 # ── brahma_bus 总线接入（设计院 2026-06-29）──
 try:
@@ -40,7 +41,7 @@ DAPI  = 'https://dapi.binance.com'
 def _get(url: str, timeout: int = 6) -> dict | list | None:
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=timeout) as r:
+        with urllib.request.urlopen(req, timeout=timeout, context=_DC_SSL_CTX) as r:
             return json.loads(r.read())
     except Exception:
         return None

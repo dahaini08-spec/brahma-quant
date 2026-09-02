@@ -27,7 +27,7 @@ def _get(url: str) -> dict | list | None:
         return _cache[url]['data']
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=8) as r:
+        with urllib.request.urlopen(req, timeout=8, context=_DC_SSL_CTX) as r:
             data = json.loads(r.read())
             _cache[url] = {'ts': now, 'data': data}
             return data
@@ -54,7 +54,7 @@ def _cg(path: str, qs: str = ''):
         req = urllib.request.Request(url, headers={
             'CG-API-KEY': CG_KEY, 'User-Agent': 'brahma/4.0'
         })
-        with urllib.request.urlopen(req, timeout=6) as r:
+        with urllib.request.urlopen(req, timeout=6, context=_DC_SSL_CTX) as r:
             d = json.loads(r.read())
             if str(d.get('code','0')) in ('0','200','None'):
                 data = d.get('data', d)
@@ -686,6 +686,7 @@ brahma_brain · P2
 """
 
 import json, urllib.request, time
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 # ── brahma_bus 总线接入（设计院 2026-06-29）──
 try:
@@ -716,7 +717,7 @@ def _get(url: str, timeout: int = 8) -> dict | list | None:
             'User-Agent': 'Mozilla/5.0',
             'Accept': 'application/json',
         })
-        with urllib.request.urlopen(req, timeout=timeout) as r:
+        with urllib.request.urlopen(req, timeout=timeout, context=_DC_SSL_CTX) as r:
             data = json.loads(r.read())
             _CACHE[url] = {'data': data, 'ts': now}
             return data

@@ -579,7 +579,7 @@ def _fetch(url: str, ttl: int = 30) -> dict | list | None:
         return _cache[url][1]
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     try:
-        with urllib.request.urlopen(req, timeout=6) as r:
+        with urllib.request.urlopen(req, timeout=6, context=_DC_SSL_CTX) as r:
             data = json.loads(r.read())
             _cache[url] = (now, data)
             return data
@@ -957,6 +957,7 @@ import time
 import os
 from typing import Optional
 from collections import defaultdict
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 # ws_guardian 清算缓存文件路径
 _LIQ_CACHE_FILE = os.path.join(

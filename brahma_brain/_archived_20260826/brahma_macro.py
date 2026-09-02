@@ -12,6 +12,7 @@ from __future__ import annotations
 import json, time, urllib.request, logging
 from pathlib import Path
 from typing import Optional
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 logger = logging.getLogger('brahma_macro')
 BASE = Path(__file__).parent.parent
@@ -21,7 +22,7 @@ DATA = BASE / 'data'
 def _get(url: str, timeout: int = 8, headers: dict | None = None) -> dict | list | None:
     try:
         req = urllib.request.Request(url, headers=headers or {'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=timeout) as r:
+        with urllib.request.urlopen(req, timeout=timeout, context=_DC_SSL_CTX) as r:
             return json.loads(r.read())
     except Exception:
         return None

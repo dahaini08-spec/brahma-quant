@@ -25,6 +25,7 @@ import time
 import logging
 from pathlib import Path
 from typing import Optional
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ def _fetch_klines(symbol: str, interval: str = '1h', limit: int = 30) -> list:
     import urllib.request
     url = f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}'
     try:
-        with urllib.request.urlopen(url, timeout=8) as r:
+        with urllib.request.urlopen(url, timeout=8, context=_DC_SSL_CTX) as r:
             return json.loads(r.read())
     except Exception:
         return []

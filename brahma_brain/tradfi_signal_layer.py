@@ -64,7 +64,7 @@ def _load_rwa_contracts() -> dict:
             'https://www.binance.com/bapi/defi/v1/public/wallet-direct/buw/wallet/market/token/rwa/stock/detail/list/ai',
             headers={'Accept-Encoding': 'identity', 'User-Agent': 'binance-web3/1.1 (TradFi-Layer)'}
         )
-        with urllib.request.urlopen(req, timeout=6) as r:
+        with urllib.request.urlopen(req, timeout=6, context=_DC_SSL_CTX) as r:
             data = json.loads(r.read())['data']
 
         contracts = {}
@@ -96,7 +96,7 @@ def _fetch_rwa_price(ticker: str) -> Optional[dict]:
             'Accept-Encoding': 'identity',
             'User-Agent': 'binance-web3/1.1 (TradFi-Layer)'
         })
-        with urllib.request.urlopen(req, timeout=5) as r:
+        with urllib.request.urlopen(req, timeout=5, context=_DC_SSL_CTX) as r:
             d = json.loads(r.read())['data']
         return {
             'ticker': ticker,
@@ -115,7 +115,7 @@ def _get_market_status() -> dict:
             'https://www.binance.com/bapi/defi/v1/public/wallet-direct/buw/wallet/market/token/rwa/market/status/ai',
             headers={'Accept-Encoding': 'identity', 'User-Agent': 'binance-web3/1.1 (TradFi-Layer)'}
         )
-        with urllib.request.urlopen(req, timeout=5) as r:
+        with urllib.request.urlopen(req, timeout=5, context=_DC_SSL_CTX) as r:
             d = json.loads(r.read())['data']
         return d
     except Exception:
@@ -1061,6 +1061,7 @@ tradfi_dump_detector.py — 美股代币放量下跌识别引擎
 
 import logging
 from typing import Optional
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 logger = logging.getLogger(__name__)
 

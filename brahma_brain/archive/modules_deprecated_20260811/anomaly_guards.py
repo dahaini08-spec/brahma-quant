@@ -8,6 +8,7 @@ P3: BULL_TREND+BEAR_CHOCH → 体制转换警告
 """
 import urllib.request, json
 from datetime import datetime, timezone
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 
 # ── P2: 联动币对配置 ────────────────────────────────────
@@ -29,7 +30,7 @@ def _fetch_klines(symbol: str, interval: str = '15m', limit: int = 25) -> list:
     url = (f'https://fapi.binance.com/fapi/v1/klines'
            f'?symbol={symbol}&interval={interval}&limit={limit}')
     try:
-        data = json.loads(urllib.request.urlopen(url, timeout=8).read())
+        data = json.loads(urllib.request.urlopen(url, timeout=8, context=_DC_SSL_CTX).read())
         return data
     except Exception:
         return []

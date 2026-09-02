@@ -369,7 +369,7 @@ if __name__ == "__main__":
     # 获取 BTC 15m 历史K线
     print("获取 BTC 15m K线数据...")
     url = "https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=15m&limit=250"
-    raw = json.loads(urllib.request.urlopen(url, timeout=10).read())
+    raw = json.loads(urllib.request.urlopen(url, timeout=10, context=_DC_SSL_CTX).read())
     klines = [[float(c[1]), float(c[2]), float(c[3]), float(c[4]), float(c[5])] for c in raw]
     print(f"K线数量: {len(klines)}")
 
@@ -1678,7 +1678,7 @@ if __name__ == "__main__":
 
     def fetch_klines(symbol, interval, limit=200):
         url = f"https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}"
-        raw = json.loads(urllib.request.urlopen(url, timeout=10).read())
+        raw = json.loads(urllib.request.urlopen(url, timeout=10, context=_DC_SSL_CTX).read())
         return [[float(c[1]), float(c[2]), float(c[3]), float(c[4]), float(c[5])] for c in raw]
 
     print("获取 ETH/BTC K线...")
@@ -1780,6 +1780,7 @@ import logging
 from typing import Tuple, Dict, Any, Optional
 
 import numpy as np
+from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 try:
     from scipy.stats import linregress
