@@ -224,6 +224,28 @@ def post_to_square(content: str, dry_run: bool = False) -> str | None:
         if data.get('success'):
             pid = data['data']['id']
             print(f'[post] ✅ 发布成功 id={pid}')
+            # 写日志
+            try:
+                import time as _t
+                _log = Path(__file__).parent.parent.parent / 'data/square_post_log.jsonl'
+                with open(_log, 'a', encoding='utf-8') as _f:
+                    import json as _j
+                    _f.write(_j.dumps({'ts': _t.time(), 'post_type': 'extreme_alert',
+                                       'post_id': pid, 'chars': len(content),
+                                       'preview': content[:300]}, ensure_ascii=False) + '\n')
+            except Exception as _le:
+                print(f'[post] ⚠️ 写日志失败: {_le}')
+            # 推送苏摩
+            try:
+                import subprocess as _sp
+                _preview = content[:200].replace('"', '\"').replace('\n', ' ')
+                _msg = f'📢 梵天极端行情帖已发Square\n\n{_preview}...'
+                _sp.run(['openclaw', 'message', 'send',
+                         '--channel', 'jarvis',
+                         '--to', '73295708:thread:01a03e25-a459-733e-a2ba-a56083050f26',
+                         '--message', _msg], timeout=10, capture_output=True)
+            except Exception as _pe:
+                print(f'[post] ⚠️ 推送苏摩失败: {_pe}')
             return str(pid)
         else:
             print(f'[post] ❌ {data.get("code")} {data.get("message")}')
