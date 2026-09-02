@@ -17,7 +17,7 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 
 # 梵天系统维护
 */30 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/brahma_state_refresh.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
-0 */12 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/market_screener.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+# [DISABLED 2026-09-02 market_screener.py缺失] 0 */12 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/market_screener.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
 0 */4  * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_360_watchdog.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
 0 3   * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_data_ttl.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
 0 3   * * *  cd /root/.openclaw/workspace/trading-system/brahma_brain && python3 fangcang_builder_30.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
@@ -62,4 +62,4 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 0 */2 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/session_disk_cleanup.py >> logs/syscron.log 2>&1
 
 # paper-position-update: 纸面持仓更新，每30min
-*/30 * * * *  cd /root/.openclaw/workspace/trading-system/brahma_brain && python3 paper_trader.py update >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+# [DISABLED 2026-09-02 paper_trader.py缺失] */30 * * * *  cd /root/.openclaw/workspace/trading-system/brahma_brain && python3 paper_trader.py update >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
