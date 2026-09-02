@@ -1,118 +1,94 @@
 #!/usr/bin/env python3
 """
-self_healing_watchdog.py — 梵天自愈watchdog（amux Self-Healing借鉴）
-设计院自主决策 2026-09-02 苏摩111
+self_healing_watchdog.py — 梵天watchdog（修正版）
+设计院封印 2026-09-02 苏摩111
 
-功能：
-  - 监控关键进程（ws_guardian、scan_fast）
-  - 进程挂掉自动重启，不需要人工干预
-  - 重启超过3次/小时触发告警推送
-  - 本身作为cron每5min运行一次
+修正：梵天全部是cron周期脚本，无常驻进程。
+监控逻辑：检查关键cron任务的最近运行时间，超时则告警。
 """
-import sys, os, subprocess, json, time
+import sys, os, json, time
 from pathlib import Path
 
-BASE = Path(__file__).parent.parent
+BASE       = Path(__file__).parent.parent
 STATE_FILE = BASE / 'data' / 'self_healing_state.json'
+CRON_JOBS  = Path('/root/.openclaw/cron/jobs.json')
+CRON_RUNS  = Path('/root/.openclaw/cron/runs')
 
-sys.path.insert(0, str(BASE / 'scripts'))
-
-# 关键进程配置
-PROCESSES = [
-    {
-        'name': 'ws_guardian',
-        'match': 'scripts/ws_guardian.py',
-        'start_cmd': ['python3', str(BASE / 'scripts' / 'ws_guardian.py')],
-        'start_bg': True,
-        'max_restarts_per_hour': 3,
-    },
-    {
-        'name': 'scan_fast',
-        'match': 'scripts/scan_fast.py',
-        'start_cmd': ['python3', str(BASE / 'scripts' / 'scan_fast.py')],
-        'start_bg': True,
-        'max_restarts_per_hour': 3,
-    },
+# 关键cron任务监控（超过max_idle_min分钟未运行 → 告警）
+WATCHES = [
+    {'name': 'position-guardian',    'max_idle_min': 10},
+    {'name': 'rsi-structure-watcher','max_idle_min': 30},
+    {'name': 'brahma-state-refresh', 'max_idle_min': 130},
 ]
 
 def load_state():
-    try:
-        return json.loads(STATE_FILE.read_text())
-    except Exception:
-        return {}
+    try: return json.loads(STATE_FILE.read_text())
+    except: return {}
 
-def save_state(state):
+def save_state(s):
     STATE_FILE.parent.mkdir(exist_ok=True)
-    STATE_FILE.write_text(json.dumps(state, indent=2))
+    STATE_FILE.write_text(json.dumps(s, indent=2))
 
-def is_running(match):
-    r = subprocess.run(['ps', 'aux'], capture_output=True, text=True)
-    return match in r.stdout
-
-def restart_process(proc):
-    cmd = proc['start_cmd']
-    if proc.get('start_bg'):
-        subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                         start_new_session=True)
-    else:
-        subprocess.run(cmd, timeout=10)
+def get_last_run_ts(jid):
+    f = CRON_RUNS / ('%s.jsonl' % jid)
+    if not f.exists(): return 0
+    for line in reversed(f.read_text().strip().splitlines()):
+        try:
+            d = json.loads(line)
+            if d.get('startedAt'): return d['startedAt'] / 1000
+        except: pass
+    return 0
 
 def run():
+    now   = time.time()
     state = load_state()
-    now = time.time()
     alerts = []
-    healed = []
 
-    for proc in PROCESSES:
-        name = proc['name']
-        ps = state.get(name, {'restarts': [], 'last_alert': 0})
+    try:
+        jobs = json.loads(CRON_JOBS.read_text())
+        lst  = jobs if isinstance(jobs, list) else jobs.get('jobs', [])
+        name_to_id = {j['name']: j['id'] for j in lst}
+    except Exception as e:
+        print('HEARTBEAT_OK')
+        return
 
-        if is_running(proc['match']):
-            # 正常运行，清理1小时前的重启记录
-            ps['restarts'] = [t for t in ps.get('restarts', []) if now - t < 3600]
-            state[name] = ps
-            continue
+    for w in WATCHES:
+        name     = w['name']
+        max_idle = w['max_idle_min'] * 60
+        jid      = name_to_id.get(name)
+        if not jid: continue
 
-        # 进程不在运行
-        restarts_1h = [t for t in ps.get('restarts', []) if now - t < 3600]
+        last_ts  = get_last_run_ts(jid)
+        idle_sec = now - last_ts if last_ts else 99999
+        ps       = state.get(name, {'last_alert': 0})
 
-        if len(restarts_1h) >= proc['max_restarts_per_hour']:
-            # 超过重启上限，告警不再重启
+        if idle_sec > max_idle:
             if now - ps.get('last_alert', 0) > 3600:
-                alerts.append('🔴 %s 1小时内重启%d次，超过上限，需人工介入' % (name, len(restarts_1h)))
+                alerts.append('⚠️ %s 已%dmin未运行（阈值%dmin）' % (
+                    name, int(idle_sec//60), w['max_idle_min']))
                 ps['last_alert'] = now
         else:
-            # 自动重启
-            try:
-                restart_process(proc)
-                restarts_1h.append(now)
-                ps['restarts'] = restarts_1h
-                healed.append('%s（第%d次）' % (name, len(restarts_1h)))
-            except Exception as e:
-                alerts.append('⚠️ %s 重启失败: %s' % (name, str(e)[:60]))
+            ps['last_alert'] = 0
 
         state[name] = ps
 
     save_state(state)
 
-    if not healed and not alerts:
+    if not alerts:
         print('HEARTBEAT_OK')
         return
 
-    lines = ['🔧 梵天自愈watchdog | %s' % time.strftime('%H:%M CST', time.localtime())]
-    if healed:
-        lines.append('✅ 已自愈: ' + ' / '.join(healed))
-    if alerts:
-        lines.append('\n'.join(alerts))
-
-    msg = '\n'.join(lines)
+    msg = '🔧 梵天watchdog | %s\n%s' % (
+        time.strftime('%H:%M CST', time.localtime()),
+        '\n'.join(alerts))
     print(msg)
 
     try:
+        sys.path.insert(0, str(BASE / 'scripts'))
         from push_hub import _jarvis
         _jarvis(msg, dedup_key='self_healing_watchdog', dedup_ttl=1800)
-    except Exception as e:
-        print('[push_hub] %s' % e)
+    except Exception:
+        pass
 
 if __name__ == '__main__':
     run()
