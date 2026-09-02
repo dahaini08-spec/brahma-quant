@@ -886,8 +886,25 @@ def macro_score_v2(symbol: str, signal_dir: str) -> dict:
     score    = 0
     notes    = []
 
-    # ── DXY 实时 ──
-    dxy = get_dxy_realtime()
+    # ── [并行化 2026-09-02 苏摩111] DXY+NQ+BTC.D 并发拉取 ──
+    # 三个独立HTTP请求串行→TPE并发，预期: 0.21s×3 → max(单次)≈0.07s
+    from concurrent.futures import ThreadPoolExecutor as _TPEMV, as_completed as _ACMV
+    _dxy_f = _nq_f = _dom_f = None
+    _ex_mv = _TPEMV(max_workers=3)
+    try:
+        _dxy_f = _ex_mv.submit(get_dxy_realtime)
+        _nq_f  = _ex_mv.submit(get_nasdaq_realtime)
+        _dom_f = _ex_mv.submit(get_btc_dominance) if (not is_btc and is_short) else None
+        dxy = _dxy_f.result(timeout=5) if _dxy_f else {'price': 0, 'direction': '', 'chg_1h_pct': 0}
+        nq  = _nq_f.result(timeout=5)  if _nq_f  else {'price': 0, 'direction': '', 'chg_1h_pct': 0}
+        _dom_result = _dom_f.result(timeout=5) if _dom_f else None
+    except Exception:
+        dxy = getattr(_dxy_f, 'result', lambda t: {'price':0,'direction':'','chg_1h_pct':0})(timeout=0.001) if _dxy_f else {'price': 0, 'direction': '', 'chg_1h_pct': 0}
+        nq  = {'price': 0, 'direction': '', 'chg_1h_pct': 0}
+        _dom_result = None
+    finally:
+        _ex_mv.shutdown(wait=False)
+
     if dxy['price'] > 0:
         if is_short and dxy['direction'] == 'UP':
             pts = 3 if abs(dxy['chg_1h_pct']) >= 0.15 else 2
@@ -899,7 +916,7 @@ def macro_score_v2(symbol: str, signal_dir: str) -> dict:
             score += pts; notes.append(f'DXY={dxy["price"]:.2f}({dxy["chg_1h_pct"]:.2f}%) 美元走弱→加密利好 +{pts}')
 
     # ── 纳指期货 ──
-    nq = get_nasdaq_realtime()
+    nq = nq  # 已并行拉取
     if nq['price'] > 0:
         if is_short and nq['direction'] == 'DOWN':
             score += 2; notes.append(f'NQ={nq["price"]:.0f}({nq["chg_1h_pct"]:.2f}%) 纳指下跌→BTC共振 +2')
@@ -908,10 +925,10 @@ def macro_score_v2(symbol: str, signal_dir: str) -> dict:
         elif not is_short and nq['direction'] == 'UP':
             score += 2; notes.append(f'NQ={nq["price"]:.0f}({nq["chg_1h_pct"]:.2f}%) 纳指上涨→BTC利好 +2')
 
-    # ── BTC.D 精准加权（山寨做空叠加）──
+    # ── BTC.D 精准加权（山寨做空叠加）── [已在并行块里拉取]
     if not is_btc and is_short:
         try:
-            dom_data = get_btc_dominance()
+            dom_data = _dom_result or {}
             btc_d = dom_data.get('btc_dom', 0)
             if btc_d >= 56:
                 score += 4; notes.append(f'BTC.D={btc_d:.1f}% 高位吸血→山寨更弱 +4')
