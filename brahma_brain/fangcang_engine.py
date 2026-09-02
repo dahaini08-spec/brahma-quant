@@ -111,12 +111,28 @@ def _load_klines_native(symbol: str, tf: str) -> List[dict]:
         if _cache_key in _KLINES_NATIVE_CACHE:
             _cached_mt, _cached_raw = _KLINES_NATIVE_CACHE[_cache_key]
             if _cached_mt == _mtime:
-                raw = _cached_raw
+                raw = _cached_raw  # 内存命中
             else:
-                raw = json.loads(path.read_text())
-                _KLINES_NATIVE_CACHE[_cache_key] = (_mtime, raw)
+                raw = None
         else:
-            raw = json.loads(path.read_text())
+            raw = None
+        if raw is None:
+            # 尝试pkl磁盘缓存（跨进程持久）
+            import pickle as _pkl
+            _pkl_path = path.with_suffix('.pkl')
+            try:
+                if _pkl_path.exists() and _pkl_path.stat().st_mtime >= _mtime:
+                    with open(_pkl_path,'rb') as _pf:
+                        raw = _pkl.load(_pf)
+                else:
+                    raise FileNotFoundError
+            except Exception:
+                raw = json.loads(path.read_text())
+                try:  # 写pkl（失败不影响）
+                    with open(_pkl_path,'wb') as _pf:
+                        _pkl.dump(raw, _pf, protocol=4)
+                except Exception:
+                    pass
             _KLINES_NATIVE_CACHE[_cache_key] = (_mtime, raw)
         if _TAIL_LIMIT and len(raw) > _TAIL_LIMIT:
             raw = raw[-_TAIL_LIMIT:]
