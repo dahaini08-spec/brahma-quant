@@ -339,11 +339,19 @@ def calc_oi_changes(oi_data):
 
 def calc_oi_direction_matrix(oi_1h, price_chg_pct):
     """
-    Glassnode核心方法论：OI/价格4象限方向矩阵
-    OI↑ + Price↑ = LONG_BUILD  (多头建仓，做多)
-    OI↑ + Price↓ = SHORT_BUILD (空头建仓，做空)
-    OI↓ + Price↑ = SHORT_COVER (空头平仓/轧空)
-    OI↓ + Price↓ = LONG_UNWIND (多头止损)
+    标准OI/价格四象限方向矩阵（2026-09-02 苏摩111修复封印）
+
+    正确定义（符合市场微观结构标准）：
+      OI↑ + Price↑ = SHORT_BUILD  空头逆势建仓（看多的人已在场，新进的是空头）
+      OI↑ + Price↓ = LONG_BUILD   多头逆势建仓（聪明钱在下跌中接筹）
+      OI↓ + Price↑ = SHORT_COVER  空头认输平仓（被迫回补推价格上涨）
+      OI↓ + Price↓ = LONG_UNWIND  多头割肉离场（趋势延续信号，不要抄底）
+
+    方向偏置（direction_bias）：
+      SHORT_BUILD → 偏空（SHORT）
+      LONG_BUILD  → 偏多（LONG）
+      SHORT_COVER → 偏多（SHORT_COVER推价格，但持续性弱，等OI回升确认）
+      LONG_UNWIND → 偏空（趋势延续）
     """
     if len(oi_1h) < 4: return 'UNKNOWN', 0
     recent_chg = (oi_1h[-1]['oi'] - oi_1h[-3]['oi']) / max(oi_1h[-3]['oi'], 1) * 100
@@ -352,10 +360,11 @@ def calc_oi_direction_matrix(oi_1h, price_chg_pct):
     px_up   = price_chg_pct > 0.5
     px_down = price_chg_pct < -0.5
 
-    if oi_up   and px_up:   return 'LONG_BUILD',  +1
-    if oi_up   and px_down: return 'SHORT_BUILD',  -1
-    if oi_down and px_up:   return 'SHORT_COVER',  +1
-    if oi_down and px_down: return 'LONG_UNWIND',  -1
+    # [BUG FIX 2026-09-02] 原逻辑完全相反，现已修正为市场标准定义
+    if oi_up   and px_up:   return 'SHORT_BUILD',  -1  # 空头逆势建仓 → 偏空
+    if oi_up   and px_down: return 'LONG_BUILD',   +1  # 多头逆势建仓 → 偏多
+    if oi_down and px_up:   return 'SHORT_COVER',  +1  # 空头平仓推涨 → 短期偏多
+    if oi_down and px_down: return 'LONG_UNWIND',  -1  # 多头割肉 → 偏空
     return 'NEUTRAL', 0
 
 
@@ -408,11 +417,13 @@ def score_oi_signal(oi, basis, fr, whale_l, retail_l, direction, klines_1h):
         details.append(f'微加速(+2)')
 
     # ── D2: OI方向共振（25分）────────────────────────────────
+    # [BUG FIX 2026-09-02] 评分权重与修正后的方向定义对齐
+    # SHORT_BUILD（空头逆势建仓）= 最强信号，机构布局；LONG_BUILD（聪明钱接筹）次之
     dir_pts = {
-        'LONG_BUILD':  25,
-        'SHORT_BUILD': 22,
-        'SHORT_COVER': 12,
-        'LONG_UNWIND': 10,
+        'SHORT_BUILD': 25,  # 空头逆势建仓：最强做空信号
+        'LONG_BUILD':  22,  # 多头逆势建仓：强做多信号
+        'SHORT_COVER': 12,  # 空头平仓：短期多但持续性弱
+        'LONG_UNWIND': 10,  # 多头离场：趋势延续辅助信号
         'NEUTRAL':      0,
         'UNKNOWN':      5,
     }.get(direction, 0)
@@ -591,7 +602,8 @@ def classify_signal(oi, score, direction, basis, fr, whale_l, regime='UNKNOWN'):
           score >= THRESHOLD['B']['score_min']):
         mode = 'B'
         params_key = 'B_10X' if abs(oi['chg_24h']) >= 30 else 'B'
-        direction_bias = 'LONG' if direction == 'LONG_BUILD' else 'SHORT'
+        # [BUG FIX 2026-09-02] 方向偏置与修正后的四象限定义对齐
+        direction_bias = 'SHORT' if direction == 'SHORT_BUILD' else 'LONG'
         hold = '3-14天'
         lev  = '5-10x'
 
@@ -600,6 +612,7 @@ def classify_signal(oi, score, direction, basis, fr, whale_l, regime='UNKNOWN'):
           score >= THRESHOLD['C']['score_min']):
         mode = 'C'
         params_key = 'C'
+        # [BUG FIX 2026-09-02] C类方向：LONG_BUILD/SHORT_COVER偏多，SHORT_BUILD/LONG_UNWIND偏空
         direction_bias = 'LONG' if direction in ('LONG_BUILD', 'SHORT_COVER') else 'SHORT'
         hold = '1-24H'
         lev  = '3-5x'
@@ -702,6 +715,14 @@ def scan_symbol(sym, ticker_data):
         'direction': direction,
         'rsi_1h':   round(rsi_1h, 1),
         'regime':   regime,
+
+        # [Bug4 Fix 2026-09-02] 流动性评分透明化：让降级原因可见
+        'liquidity_score': round(min(100, vol_usdt / 1e7), 1),  # 100万U=10分，10亼U=100分
+        'liquidity_note':  (
+            'HIGH'   if vol_usdt >= 5e8 else
+            'MEDIUM' if vol_usdt >= 5e7 else
+            'LOW'    if vol_usdt >= MIN_VOLUME_USD else 'FILTER'
+        ),
 
         # 执行参数
         'mode':     sig_info['mode'] if sig_info else 'WATCH',
@@ -909,17 +930,41 @@ def format_signal_card(sym, r, rank):
     oi_line = (f"OI: 1H {r['chg_1h']:+.1f}% | 4H {r['chg_4h']:+.1f}% | "
                f"24H {r['chg_24h']:+.1f}% | FR {r['fr']:+.5f}%")
 
+    # [Bug2 Fix 2026-09-02] 方向一致性校验
+    signal_type = r.get('direction', 'UNKNOWN')
+    dir_bias    = r.get('direction_bias', '')
+    _dir_ok = (
+        (signal_type == 'SHORT_BUILD' and dir_bias == 'SHORT') or
+        (signal_type == 'LONG_BUILD'  and dir_bias == 'LONG')  or
+        (signal_type == 'SHORT_COVER' and dir_bias == 'LONG')  or
+        (signal_type == 'LONG_UNWIND' and dir_bias == 'SHORT') or
+        signal_type in ('NEUTRAL', 'UNKNOWN')
+    )
+    dir_check = '✅' if _dir_ok else '⚠️方向校验异常'
+
+    # [Bug3 Fix 2026-09-02] SMC结构锚点字段
+    smc_info = r.get('smc_snap', {})
+    fvg_line = ''
+    if smc_info:
+        fvg_line = (f"FVG: {smc_info.get('fvg_type','?')} {smc_info.get('fvg_range','N/A')} "
+                    f"中点={smc_info.get('fvg_mid','?')} | "
+                    f"有效OB: {smc_info.get('ob_range','N/A')} age={smc_info.get('ob_age','?')}bars | "
+                    f"ATR1H={smc_info.get('atr_1h','?')}")
+
     lines = [
-        f"[OI猎手 {mode_icon}{mode_name}类] · {now_str}",
+        f"[OI猎手 {mode_icon}{mode_name}类] · {now_str} {dir_check}",
         f"{'━'*40}",
         f"{mode_icon} #{rank} {sym} · {mode_name}",
-        f"方向: {dir_icon}  |  OI评分: {r['oi_score']:.0f}/100",
-        f"体制: {r.get('regime','?')} | RSI_1H: {r['rsi_1h']:.0f} | 鲸鱼多: {r['whale_l']:.0f}%",
+        f"方向: {dir_icon} [{signal_type}]  |  OI评分: {r['oi_score']:.0f}/100",
+        f"体制: {r.get('regime','?')} | RSI_1H: {r['rsi_1h']:.0f} | 鲸鱼多: {r['whale_l']:.0f}% | 流动性: {r.get('liquidity_note','?')}({r.get('liquidity_score',0):.0f})",
         f"",
         oi_line,
         f"规模: ${r['oi_usd_m']:.1f}M | OI加速: {r['accel_4h']:+.1f}",
         f"",
     ]
+    if fvg_line:
+        lines.insert(-1, f"SMC: {fvg_line}")
+        lines.insert(-1, f"")
 
     if strat:
         lines += [
