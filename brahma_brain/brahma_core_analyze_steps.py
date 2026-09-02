@@ -198,12 +198,28 @@ def _analyze_step3(symbol: str, ms: dict, signal_dir: str, price: float) -> dict
     _mtf_result = None
 
     price = float(ms.get('price', 0))  # [v21.0 fix] MTF路由器需要price变量
-    smc = analyze_smc(symbol, signal_dir, '1h', 200)
+
+    # [修复 2026-09-02 苏摩111] signal_dir推断 — CHOP体制下signal_dir='1h'/'4h'导致SMC评分归零
+    # 与step4同源根因，在step3入口统一处理
+    _smc_dir = signal_dir
+    if signal_dir not in ('LONG', 'SHORT', '做多', '做空'):
+        _raw_score = float(ms.get('score', ms.get('total', 0)) or 0)
+        _regime_str = str(ms.get('regime', '')).upper()
+        if _raw_score > 5:
+            _smc_dir = 'LONG'
+        elif _raw_score < -5:
+            _smc_dir = 'SHORT'
+        elif 'BEAR' in _regime_str:
+            _smc_dir = 'SHORT'
+        else:
+            _smc_dir = 'LONG'
+
+    smc = analyze_smc(symbol, _smc_dir, '1h', 200)
     # [v21.0 自顶向下 2026-06-08] 补充4H SMC分析 + MTF路由器（自顶向下）
     _smc_4h = {}
     _mtf_result = None  # multi_timeframe_router结果
     try:
-        _smc_4h = analyze_smc(symbol, signal_dir, '4h', 60)
+        _smc_4h = analyze_smc(symbol, _smc_dir, '4h', 60)
         # [v21.0] MTF路由：4H战略区优先，1H确认（自顶向下）
         try:
             from brahma_brain.multi_timeframe_router import route_entry_zone as _mtf_route
