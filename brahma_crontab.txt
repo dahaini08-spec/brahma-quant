@@ -16,7 +16,7 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 0 */2 * * *  cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/square/square_extreme_alert.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
 
 # 梵天系统维护
-*/30 * * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_state_refresh.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+*/30 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/brahma_state_refresh.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
 0 */12 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/market_screener.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
 0 */4  * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_360_watchdog.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
 0 3   * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_data_ttl.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
@@ -25,6 +25,13 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 
 # GEX引擎（每15分钟刷新，全币种：BTC/ETH/SOL/BNB/XRP/DOGE）
 */15 * * * *  cd /root/.openclaw/workspace/trading-system && python3 brahma_brain/gex_engine.py --currency ALL >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+
+# ===== 从OpenClaw迁移（2026-09-02 苏摩111封印 - 降低event loop压力）=====
+# position-guardian: 每10分钟检查持仓止损（原5分钟，主因164次重启，迁移后降频）
+*/10 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/position_sl_monitor.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+
+# rsi-structure-watcher: 每15分钟RSI+结构扫描（原OpenClaw cron，56次重启主犯）
+*/15 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/rsi_structure_watcher.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
 
 # liqmap_collector存活保障（每小时检查，挂了自动拉起）
 0 * * * *  pgrep -f liqmap_collector > /dev/null || (cd /root/.openclaw/workspace/trading-system && nohup python3 brahma_brain/liqmap_collector.py >> logs/liqmap.log 2>&1 &)
@@ -37,3 +44,22 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 0 */4 * * *  cd /root/.openclaw/workspace/trading-system && python3 brahma_brain/vol_beta_engine.py --currency XRP >> logs/syscron.log 2>&1
 0 */4 * * *  cd /root/.openclaw/workspace/trading-system && python3 brahma_brain/vol_beta_engine.py --currency XAU >> logs/syscron.log 2>&1
 0 */4 * * *  cd /root/.openclaw/workspace/trading-system && python3 brahma_brain/vol_beta_engine.py --currency XAG >> logs/syscron.log 2>&1
+
+# ===== 第二批迁移（2026-09-02 苏摩111 - 顶层全局决策）=====
+# wrapper-1h: nohup启动，无需AI，每1h
+0 * * * *   nohup bash /root/.openclaw/workspace/trading-system/scripts/wrapper_1h.sh > /tmp/wrapper_1h_$(date +\%H\%M).log 2>&1 &
+
+# wrapper-4h: nohup启动，无需AI，每4h
+0 */4 * * *  nohup bash /root/.openclaw/workspace/trading-system/scripts/wrapper_4h.sh > /tmp/wrapper_4h_$(date +\%H\%M).log 2>&1 &
+
+# log-rotation: 纯日志清理，每6h
+0 */6 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/log_rotation.py >> logs/syscron.log 2>&1
+
+# core-dump-cleaner: 清core文件，每2h（原1h降频）
+0 */2 * * *  python3 -c "import os,glob; [os.remove(f) for f in glob.glob('/tmp/core.*')+glob.glob('/root/core.*') if os.path.exists(f)]" >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+
+# session-disk-cleanup: 磁盘清理，每2h（原1h降频）
+0 */2 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/session_disk_cleanup.py >> logs/syscron.log 2>&1
+
+# paper-position-update: 纸面持仓更新，每30min
+*/30 * * * *  cd /root/.openclaw/workspace/trading-system/brahma_brain && python3 paper_trader.py update >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
