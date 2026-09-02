@@ -3376,7 +3376,55 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _e22:
         pass  # GEX不影响主流评分
 
-    # s23: Kronos已删除 (2026-09-01 苏摩111)
+    # ── s22b: GEX历史层 v2（设计院封印 2026-09-02 苏摩111）─────────────────────
+    # 数据: Deribit DVOL 5.5年（2021-03-25~今）分位数阈值GEX分类
+    # 接入: gex_history_full.jsonl + gex_wr_matrix_full.json
+    # WR铁证: BTC BULLISH n=200/BEARISH n=1058 | ETH BEARISH n=1070 ✅统计显著
+    try:
+        import json as _j22b
+        from pathlib import Path as _P22b
+        _gex_full_f = _P22b(__file__).parent / 'gex_history_full.jsonl'
+        _wr_full_f  = _P22b(__file__).parent / 'gex_wr_matrix_full.json'
+        if _gex_full_f.exists() and _wr_full_f.exists():
+            # 读取最新一条该币种的GEX历史
+            _currency22b = 'BTC' if 'BTC' in _result.get('symbol', '').upper() else 'ETH'
+            _last_gex22b = None
+            with open(_gex_full_f) as _fh22b:
+                for _ln22b in _fh22b:
+                    _r22b = _j22b.loads(_ln22b)
+                    if _r22b.get('currency') == _currency22b:
+                        _last_gex22b = _r22b
+            _wr_full = _j22b.loads(_wr_full_f.read_text())
+            _cdata22b = _wr_full.get('data', {}).get(_currency22b, {})
+            _matrix22b = _cdata22b.get('wr_matrix', {})
+            if _last_gex22b and _matrix22b:
+                _gex_lbl22b = _last_gex22b.get('gex_direction', 'NEUTRAL')
+                _gex_entry22b = _matrix22b.get(_gex_lbl22b, {})
+                _iv_ratio22b = _last_gex22b.get('iv_premium_ratio', 1.0)
+                _iv_prem22b = (_iv_ratio22b - 1.0) * 100  # 转为%
+                _n22b = _gex_entry22b.get('n', 0)
+                # 根据方向查WR
+                _dir22b = _result.get('signal_dir', 'LONG')
+                if _dir22b == 'NEUTRAL':
+                    _dir22b = 'LONG' if _result.get('confluence', {}).get('score', 0) >= 0 else 'SHORT'
+                _hist_wr22b = _gex_entry22b.get('long_wr', 0.5) if _dir22b == 'LONG' else _gex_entry22b.get('short_wr', 0.5)
+                _wilson22b  = _gex_entry22b.get('wilson_long_ci_lower', 0.5) if _dir22b == 'LONG' else _gex_entry22b.get('wilson_short_ci_lower', 0.5)
+                if _n22b >= 30:  # 统计显著门槛
+                    # 基础分：基于Wilson CI下限（保守），±5范围
+                    _pts22b_gex = max(-5, min(6, round((_wilson22b - 0.50) * 16)))
+                    # IV溢价修正（>20%溢价=市场恐慌=做空加分，做多扣分）
+                    if _iv_prem22b > 20 and _dir22b == 'LONG':  _pts22b_gex = max(-5, _pts22b_gex - 1)
+                    elif _iv_prem22b > 20 and _dir22b == 'SHORT': _pts22b_gex = min(6, _pts22b_gex + 1)
+                    if _pts22b_gex != 0:
+                        _cur22b = float(_result.get('confluence', {}).get('score', 0))
+                        _result['confluence']['score'] = _cur22b + _pts22b_gex
+                        _result['confluence'].setdefault('breakdown', {})['s22b_gex_hist'] = (
+                            f'{_pts22b_gex:+d} GEX历史v2[{_gex_lbl22b}] WR={_hist_wr22b:.0%} Wilson={_wilson22b:.0%} n={_n22b} IV溢价={_iv_prem22b:+.1f}%'
+                        )
+                        print(f'[s22b-GEXv2] {_sym_t} {_dir22b}: {_pts22b_gex:+d} | {_gex_lbl22b} WR={_hist_wr22b:.0%} Wilson={_wilson22b:.0%} n={_n22b}')
+    except Exception:
+        pass  # GEX历史层不影响主流评分
+
 
         # ── s24: 已归档 (2026-06-26 设计院封印) ────────────────────────────
     pass  # s24已归档

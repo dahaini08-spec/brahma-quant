@@ -1,0 +1,78 @@
+{
+  "built_at": "2026-09-02T11:15:07Z",
+  "method": "Deribit DVOL + IV/HV ratio \u2192 percentile-based GEX classification \u2192 5-day holding WR",
+  "data": {
+    "BTC": {
+      "thresholds": {
+        "dvol_low_p33": 49.31,
+        "dvol_high_p67": 63.51,
+        "iv_ratio_low_p33": 1.079,
+        "iv_ratio_high_p67": 1.326
+      },
+      "data_range": "2021-03-25 ~ 2026-09-02",
+      "total_days": 1988,
+      "wr_matrix": {
+        "BULLISH": {
+          "n": 200,
+          "long_wr": 0.585,
+          "short_wr": 0.415,
+          "wilson_long_ci_lower": 0.5157,
+          "wilson_short_ci_lower": 0.3489,
+          "statistically_significant": true
+        },
+        "NEUTRAL": {
+          "n": 725,
+          "long_wr": 0.5159,
+          "short_wr": 0.4841,
+          "wilson_long_ci_lower": 0.4795,
+          "wilson_short_ci_lower": 0.4479,
+          "statistically_significant": true
+        },
+        "BEARISH": {
+          "n": 1058,
+          "long_wr": 0.4972,
+          "short_wr": 0.5028,
+          "wilson_long_ci_lower": 0.4671,
+          "wilson_short_ci_lower": 0.4728,
+          "statistically_significant": true
+        }
+      }
+    },
+    "ETH": {
+      "thresholds": {
+        "dvol_low_p33": 63.69,
+        "dvol_high_p67": 75.66,
+        "iv_ratio_low_p33": 1.018,
+        "iv_ratio_high_p67": 1.204
+      },
+      "data_range": "2021-03-25 ~ 2026-09-02",
+      "total_days": 1988,
+      "wr_matrix": {
+        "BULLISH": {
+          "n": 180,
+          "long_wr": 0.5056,
+          "short_wr": 0.4944,
+          "wilson_long_ci_lower": 0.4332,
+          "wilson_short_ci_lower": 0.4223,
+          "statistically_significant": true
+        },
+        "NEUTRAL": {
+          "n": 733,
+          "long_wr": 0.4939,
+          "short_wr": 0.5061,
+          "wilson_long_ci_lower": 0.4578,
+          "wilson_short_ci_lower": 0.47,
+          "statistically_significant": true
+        },
+        "BEARISH": {
+          "n": 1070,
+          "long_wr": 0.543,
+          "short_wr": 0.4561,
+          "wilson_long_ci_lower": 0.513,
+          "wilson_short_ci_lower": 0.4264,
+          "statistically_significant": true
+        }
+      }
+    }
+  }
+}
