@@ -126,14 +126,20 @@ def rewrite_as_trader(draft: str) -> str:
         ]
         rewritten = '\n'.join(lines).strip()
         if rewritten and len(rewritten) > 80:
-            # 自动修剪超出的hashtag（最多保留3个）
             import re
+            # 自动修剪超出的hashtag（最多保留3个）
             tags = re.findall(r'#\S+', rewritten)
             if len(tags) > 3:
-                # 只保留前3个，删除多余的
                 for tag in tags[3:]:
                     rewritten = rewritten.replace('\n' + tag, '').replace(' ' + tag, '')
                 rewritten = rewritten.strip()
+            # 去除正文中多余的$SYMBOL提及（Square限制币对数量）
+            # 保留$BTC $ETH $SOL等主流币，把小币的$前缀去掉
+            MAIN_COINS = {'BTC','ETH','SOL','BNB','XRP','ADA','DOGE','AVAX','DOT','LINK'}
+            def clean_coin_ref(m):
+                sym = m.group(1)
+                return f'${sym}' if sym in MAIN_COINS else sym
+            rewritten = re.sub(r'\$([A-Z]{2,10})', clean_coin_ref, rewritten)
             print(f'[rewrite] ✅ 重写完成 {len(draft)}→{len(rewritten)}字')
             return rewritten
         return draft
@@ -535,7 +541,7 @@ def build_top_gainers() -> str:
     """涨幅榜 — 姓赵不宣: 每个标的给实质判断，不做无观点列表"""
     import requests as _r, re as _re
 
-    data = run_pro_cli(['search', 'price-change', 'um', '--sort', 'TOP_GAINERS', '--limit', '8'])
+    data = run_pro_cli(['search', 'price-change', 'um', '--sort', 'TOP_GAINERS', '--limit', '5'])
     items_raw = (data.get('list') or data.get('items', []))[:6] if data else []
     items = [x for x in items_raw
              if _re.match(r'^[A-Z0-9]{2,12}USDT$', x.get('symbol', ''))][:5]
@@ -914,7 +920,7 @@ def build_pump_alert() -> str:
                     chg = float(t['priceChangePercent'])
                     p = float(t['lastPrice'])
                     p_str = f'{p:,.0f}' if p > 100 else f'{p:.4f}'
-                    mini_lines.append(f'  ${s}  {p_str}U  {chg:+.1f}%')
+                    mini_lines.append(f'  {s}  {p_str}U  {chg:+.1f}%')
             mini_lines.extend(['',
                 '市场处于震荡消化阶段，等待方向信号出现。',
                 '波动率收缩通常意味着主力在蒸积能量，等一个方向就会出来。',

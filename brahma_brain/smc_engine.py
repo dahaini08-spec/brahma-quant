@@ -1204,13 +1204,19 @@ def run_smc_resonance(r: dict) -> dict:
     ob_data  = smc.get('order_blocks', {})
     fvg_data = smc.get('fvg', {})
 
-    # [P6-MTF 2026-09-02 苏摩111] 补充15m/30m/日线FVG扫描
+    # [P6-MTF 2026-09-02 苏摩111] 全周期FVG扫描 15m/30m/1H/4H/1D
     # 苏摩教训：$76,420 30m FVG昨天一直有，梵天系统没识别 → 错失翻倍多单
     try:
         from brahma_brain.data_cache import get_klines, klines_to_ohlcv
-        _mtf_bull = list(fvg_data.get('bull_fvg', []))
-        _mtf_bear = list(fvg_data.get('bear_fvg', []))
-        for _tf, _lb, _tag in [('15m', 100, '15m'), ('30m', 80, '30m'), ('1d', 60, '1D')]:
+        # 原fvg_data来自1h SMC分析，打上1H标签
+        _mtf_bull = []
+        _mtf_bear = []
+        for _f in fvg_data.get('bull_fvg', []):
+            _f = dict(_f); _f.setdefault('tf', '1H'); _mtf_bull.append(_f)
+        for _f in fvg_data.get('bear_fvg', []):
+            _f = dict(_f); _f.setdefault('tf', '1H'); _mtf_bear.append(_f)
+        # 独立扫描其余周期（跳过1h避免重复）
+        for _tf, _lb, _tag in [('15m', 200, '15m'), ('30m', 150, '30m'), ('4h', 150, '4H'), ('1d', 60, '1D')]:
             try:
                 _raw = get_klines(symbol, _tf, _lb)
                 if not _raw or len(_raw) < 10:
