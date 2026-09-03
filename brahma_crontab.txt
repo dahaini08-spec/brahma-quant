@@ -92,3 +92,4 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 # self-healing-watchdog: 系统自愈，脚本自带_jarvis推送，每60min
 # 原OpenClaw任务是最后一个高频exec阻塞源，迁移后OpenClaw无任何exec阻塞
 0 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 55 python3 scripts/self_healing_watchdog.py >> logs/syscron.log 2>&1
+0 */6 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_autocheck.py --push >> logs/syscron.log 2>&1

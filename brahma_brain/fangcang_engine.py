@@ -156,18 +156,36 @@ def _load_klines_native(symbol: str, tf: str) -> List[dict]:
 
 def _load_klines(symbol: str, tf: str) -> List[dict]:
     """从方仓加载K线，优先 data/backtest/ 原生格式，失败返回[]
-    [P1进程级缓存 2026-09-03 苏摩111] TTL=300s，消除重复读文件IO
+    [P1进程级缓存 2026-09-03] TTL=300s
+    [P0 磁盘级缓存 2026-09-03 苏摩111] 跨进程持久化，彻底解决冷启动问题
     """
     import time as _time_k
-    _cache_key = f'{symbol}:{tf}'
+    _cache_key = f'fangcang:{symbol}:{tf}'
     _now_k = _time_k.time()
+
+    # 优先读进程级缓存（同一进程内）
     if _cache_key in _KLINES_CACHE:
         _entry = _KLINES_CACHE[_cache_key]
-        if _now_k - _entry['ts'] < 300:  # 5分钟 TTL
+        if _now_k - _entry['ts'] < 300:
             return _entry['data']
+
+    # 其次读磁盘级缓存（跨进程）
+    try:
+        from disk_cache import disk_get as _dg, disk_set as _ds, TTL_KLINES as _TTL_K
+        _disk_val = _dg(_cache_key, ttl=_TTL_K)
+        if _disk_val is not None:
+            _KLINES_CACHE[_cache_key] = {'data': _disk_val, 'ts': _now_k}
+            return _disk_val
+    except Exception:
+        pass
     bars = _load_klines_native(symbol, tf)
     if bars:
         _KLINES_CACHE[_cache_key] = {'data': bars, 'ts': _now_k}
+        try:
+            from disk_cache import disk_set as _ds, TTL_KLINES as _TTL_K
+            _ds(_cache_key, bars)
+        except Exception:
+            pass
         return bars
     # fallback: 旧路径 jsonl.gz 格式
     path = _DATA_DIR_LEGACY / f"{symbol}_{tf}.jsonl.gz"
@@ -181,6 +199,11 @@ def _load_klines(symbol: str, tf: str) -> List[dict]:
                 if line:
                     bars.append(json.loads(line))
         _KLINES_CACHE[_cache_key] = {'data': bars, 'ts': _now_k}
+        try:
+            from disk_cache import disk_set as _ds, TTL_KLINES as _TTL_K
+            _ds(_cache_key, bars)
+        except Exception:
+            pass
         return bars
     except Exception:
         return []
