@@ -235,8 +235,8 @@
         },
         "ic_alert": {
           "ic": -0.3335,
-          "diagnosis": "高分低胜率，评分权重倒置",
-          "action": "建议收紧ENTER_FULL阈值，降低>175分信号的仓位"
+          "diagnosis": "\u9ad8\u5206\u4f4e\u80dc\u7387\uff0c\u8bc4\u5206\u6743\u91cd\u5012\u7f6e",
+          "action": "\u5efa\u8bae\u6536\u7d27ENTER_FULL\u9608\u503c\uff0c\u964d\u4f4e>175\u5206\u4fe1\u53f7\u7684\u4ed3\u4f4d"
         },
         "multiplier_BEAR_EARLY:SHORT": {
           "current": 1.2,
@@ -244,7 +244,7 @@
           "wr": 0.8077,
           "n": 52,
           "avg_pnl": 2.32,
-          "reason": "WR>=80%且avgPnl>=2%，建议提升乘数"
+          "reason": "WR>=80%\u4e14avgPnl>=2%\uff0c\u5efa\u8bae\u63d0\u5347\u4e58\u6570"
         },
         "multiplier_CHOP_LOW:SHORT": {
           "current": 1.0,
@@ -252,7 +252,7 @@
           "wr": 1.0,
           "n": 6,
           "avg_pnl": 3.56,
-          "reason": "WR>=80%且avgPnl>=2%，建议提升乘数"
+          "reason": "WR>=80%\u4e14avgPnl>=2%\uff0c\u5efa\u8bae\u63d0\u5347\u4e58\u6570"
         }
       },
       "updated": "2026-08-27 23:10"
@@ -303,8 +303,8 @@
       },
       "ic_alert": {
         "ic": -0.3335,
-        "diagnosis": "高分低胜率，评分权重倒置",
-        "action": "建议收紧ENTER_FULL阈值，降低>175分信号的仓位"
+        "diagnosis": "\u9ad8\u5206\u4f4e\u80dc\u7387\uff0c\u8bc4\u5206\u6743\u91cd\u5012\u7f6e",
+        "action": "\u5efa\u8bae\u6536\u7d27ENTER_FULL\u9608\u503c\uff0c\u964d\u4f4e>175\u5206\u4fe1\u53f7\u7684\u4ed3\u4f4d"
       },
       "multiplier_BEAR_EARLY:SHORT": {
         "current": 1.2,
@@ -312,7 +312,7 @@
         "wr": 0.8077,
         "n": 52,
         "avg_pnl": 2.32,
-        "reason": "WR>=80%且avgPnl>=2%，建议提升乘数"
+        "reason": "WR>=80%\u4e14avgPnl>=2%\uff0c\u5efa\u8bae\u63d0\u5347\u4e58\u6570"
       },
       "multiplier_CHOP_LOW:SHORT": {
         "current": 1.0,
@@ -320,7 +320,7 @@
         "wr": 1.0,
         "n": 6,
         "avg_pnl": 3.56,
-        "reason": "WR>=80%且avgPnl>=2%，建议提升乘数"
+        "reason": "WR>=80%\u4e14avgPnl>=2%\uff0c\u5efa\u8bae\u63d0\u5347\u4e58\u6570"
       }
     },
     "updated": "2026-08-31 16:33"
@@ -338,5 +338,6 @@
     "avg_pnl": 3.5618,
     "source": "wuqu_paper_settled",
     "updated": "2026-08-31"
-  }
+  },
+  "_refreshed_at": 1788430076.9977682
 }
