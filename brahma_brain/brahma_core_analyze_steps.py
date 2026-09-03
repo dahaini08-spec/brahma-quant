@@ -215,11 +215,32 @@ def _analyze_step3(symbol: str, ms: dict, signal_dir: str, price: float) -> dict
             _smc_dir = 'LONG'
 
     smc = analyze_smc(symbol, _smc_dir, '1h', 200)
-    # [v21.0 自顶向下 2026-06-08] 补充4H SMC分析 + MTF路由器（自顶向下）
+    # [多周期SMC修复 2026-09-03 苏摩111] 全周期并行计算
+    # 修复前: 只跑1H, age阈值固定→全部过期
+    # 修复后: 1H/4H/15M/1D全周期, timeframe字段注入, age按周期动态
     _smc_4h = {}
+    _smc_15m = {}
+    _smc_1d  = {}
     _mtf_result = None  # multi_timeframe_router结果
     try:
-        _smc_4h = analyze_smc(symbol, _smc_dir, '4h', 60)
+        _smc_4h  = analyze_smc(symbol, _smc_dir, '4h',  100)
+        _smc_15m = analyze_smc(symbol, _smc_dir, '15m', 300)
+        _smc_1d  = analyze_smc(symbol, _smc_dir, '1d',   60)
+        # 为每个周期的OB/FVG注入timeframe字段（供age动态计算使用）
+        for _tf_name, _smc_obj in [('4h',_smc_4h),('15m',_smc_15m),('1d',_smc_1d)]:
+            for _ob in _smc_obj.get('order_blocks',{}).get('bull_obs',[]) + \
+                       _smc_obj.get('order_blocks',{}).get('bear_obs',[]):
+                _ob['timeframe'] = _tf_name
+            for _fvg in _smc_obj.get('fvg',{}).get('bull_fvg_all',[]) + \
+                        _smc_obj.get('fvg',{}).get('bear_fvg_all',[]):
+                _fvg['timeframe'] = _tf_name
+        # 把4H/15M/1D的OB列表挂到smc对象，供block_a多周期读取
+        smc['order_blocks_4h']  = _smc_4h.get('order_blocks', {})
+        smc['order_blocks_15m'] = _smc_15m.get('order_blocks', {})
+        smc['order_blocks_1d']  = _smc_1d.get('order_blocks', {})
+        smc['fvg_4h']  = _smc_4h.get('fvg', {})
+        smc['fvg_15m'] = _smc_15m.get('fvg', {})
+        smc['fvg_1d']  = _smc_1d.get('fvg', {})
         # [v21.0] MTF路由：4H战略区优先，1H确认（自顶向下）
         try:
             from brahma_brain.multi_timeframe_router import route_entry_zone as _mtf_route
