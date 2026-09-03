@@ -339,6 +339,19 @@ def apply_asset_routing(result: dict) -> dict:
     result['score_final_raw']   = score
     result['score_final']       = new_score
 
+    # [P2封印 2026-09-03 苏摩111] commodity_adapter接入
+    # XAU/XAG商品资产：禁用加密专属维度，完整接入商品适配层
+    _commodity_syms = {'XAUUSDT', 'XAGUSDT', 'LAUUSDT', 'ACEUUSDT'}
+    if symbol.upper() in _commodity_syms:
+        try:
+            import sys as _sys_ca, os as _os_ca
+            _bb_ca = _os_ca.path.dirname(_os_ca.path.abspath(__file__))
+            if _bb_ca not in _sys_ca.path: _sys_ca.path.insert(0, _bb_ca)
+            from commodity_adapter import apply_commodity_filter as _ca_filter
+            result = _ca_filter(result)
+        except Exception:
+            pass
+
     return result
 
 
