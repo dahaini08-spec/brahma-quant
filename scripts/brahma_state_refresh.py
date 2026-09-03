@@ -65,12 +65,12 @@ def _save_queue(signals: list):
     SIGNAL_QUEUE_FILE.write_text(json.dumps(signals, ensure_ascii=False, indent=2))
 
 def _is_dead_combo(regime: str, direction: str) -> bool:
-    """体制死穴检查（同 auto_executor 铁律）"""
+    """体制死穴检查（同 auto_executor 铁律）
+    注意：CHOP_MID 不在死穴内，由 chop_breakout_detector 单独判断
+    """
     DEAD = {
-        ('BEAR_TREND', 'LONG'),
-        ('BULL_TREND', 'SHORT'),
-        ('CHOP_MID',   'LONG'),
-        ('CHOP_MID',   'SHORT'),
+        ('BEAR_TREND',   'LONG'),    # 铁律封票1: 熊市做多
+        ('BULL_TREND',   'SHORT'),   # 铁律封票2: 牛市做空
     }
     return (regime, direction) in DEAD
 
@@ -154,6 +154,28 @@ def main():
                     print(f'[state_refresh] {sym} {direction}: 死穴 {regime}×{direction}，跳过')
                     continue
 
+                # CHOP体制：走专属突破检测器
+                if 'CHOP' in regime:
+                    try:
+                        from brahma_brain.chop_breakout_detector import detect_chop_breakout
+                        chop_result = detect_chop_breakout(r, sym + 'USDT')
+                        chop_signal = chop_result.get('signal', 'NONE')
+                        if chop_signal == 'NONE':
+                            print(f'[state_refresh] {sym} {direction}: CHOP条件不足({chop_result["score"]}/7)，跳过')
+                            continue
+                        elif chop_signal == 'WATCH':
+                            print(f'[state_refresh] {sym} {direction}: CHOP_WATCH({chop_result["score"]}/7)，发预警不入场')
+                            continue  # 观察阶段只推送不入场
+                        # READY/EXECUTE：允许以小仓进入队列
+                        print(f'[state_refresh] {sym} {direction}: CHOP_BREAKOUT_{chop_signal}({chop_result["score"]}/7)，解锁小仓')
+                        # 覆盖nav_pct为CHOP限定仓位
+                        _chop_nav_override = chop_result.get('nav_pct', 0.01)
+                    except Exception as ce:
+                        print(f'[state_refresh] {sym} {direction}: chop_breakout_detector失败: {ce}，保持封禁')
+                        continue
+                else:
+                    _chop_nav_override = None
+
                 # 构造 decision_engine 输入
                 signal_in = {
                     'symbol':    sym,
@@ -235,6 +257,9 @@ def main():
                     'source':      'brahma_state_refresh',
                     'created_at':  now_iso,
                     'expires_at':  expires_iso,
+                    # CHOP解锁信号额外字段
+                    'chop_unlock': _chop_nav_override is not None,
+                    'nav_pct_override': _chop_nav_override,  # None=正常仳位, float=CHOP限制仓位
                     # 供 paper_executor / auto_executor 判断用
                     'paper_only':  True,   # 纸面优先，实盘切换时改False
                 }
