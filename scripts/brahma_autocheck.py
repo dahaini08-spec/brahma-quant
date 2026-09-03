@@ -67,7 +67,19 @@ def check_l2_freshness() -> tuple:
         if not f.exists():
             issues.append(f'{fname}不存在')
             continue
-        age_min = (time.time() - f.stat().st_mtime) / 60
+        # gex_state.json特殊处理：读内部updated_at字段
+        if fname == 'gex_state.json':
+            try:
+                import json as _j
+                gex_d = _j.loads(f.read_text())
+                btc_ts = gex_d.get('BTC', {}).get('updated_at', 0)
+                eth_ts = gex_d.get('ETH', {}).get('updated_at', 0)
+                latest_ts = max(btc_ts, eth_ts, 1)
+                age_min = (time.time() - latest_ts) / 60
+            except Exception:
+                age_min = (time.time() - f.stat().st_mtime) / 60
+        else:
+            age_min = (time.time() - f.stat().st_mtime) / 60
         if age_min > limit:
             issues.append(f'{fname}已{age_min:.0f}min未更新(限{limit}min)')
     if not issues:
