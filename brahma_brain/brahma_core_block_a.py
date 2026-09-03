@@ -121,38 +121,45 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
             dist = abs(price - fib[fib_key]) / price
             if dist < 0.005:   s2 += fib_val
             elif dist < 0.015: s2 += max(fib_val - 2, 0)
-    # [OB新鲜度分层 2026-07-01] 四方共识落地：OB age决定权重乘数
-    # 新鲜OB（首次回测）= 满分 / 老化OB = 降权 / 已被破坏 = 0分
-    # 铁证：broken OB得分虚高是score虚高根因之一
-    def _ob_freshness_mult(ob_data: dict) -> float:
-        """根据OB的age（K线数）返回新鲜度乘数 0.0~1.0"""
+    # [多周期OB新鲜度修复 2026-09-03 苏摩111]
+    # 修复前: 硬编码age>10=0.30，导致1H上62bars=62小时的OB被检为严重过期
+    # 修复后: 按周期动态age上限，4H上60bars=10天的OB仍然有效
+    _AGE_LIMITS = {'15m': 96, '1h': 120, '4h': 60, '1d': 30}
+
+    def _ob_freshness_mult(ob_data: dict, tf: str = '1h') -> float:
+        """根据OB的age（K线数）和周期返回新鲜度乘数 0.0~1.0"""
         if not ob_data:
             return 1.0
-        age = ob_data.get('age_bars', 0)  # smc_engine提供的age字段
+        age    = ob_data.get('age_bars', 0)
         broken = ob_data.get('broken', False)
+        # 优先使用OB自带的timeframe字段
+        _tf = ob_data.get('timeframe', tf)
+        _limit = _AGE_LIMITS.get(_tf, 120)
         if broken:
             return 0.0   # 已被破坏 → 0分
-        if age <= 3:
-            return 1.0   # 新鲜OB，首次回测 → 满分
-        elif age <= 6:
-            return 0.75  # 次新鲜
-        elif age <= 10:
-            return 0.50  # 老化
+        if age <= _limit * 0.1:   # 周期10%内 = 最新鲜
+            return 1.0
+        elif age <= _limit * 0.25:
+            return 0.75
+        elif age <= _limit * 0.5:
+            return 0.50
+        elif age <= _limit:       # 周期100%内 = 仍然有效
+            return 0.30
         else:
-            return 0.30  # 接近失效
+            return 0.0            # 超出周期上限 = 真正过期
 
     ob = smc['order_blocks']
     if signal_dir == 'LONG' and ob.get('nearest_bull_ob'):
         d = abs(ob['nearest_bull_ob']['dist_pct'])
-        _raw = 5 if d < 0.5 else (3 if d < 1.5 else (1 if d < 3.0 else 0))  # [P1-A] 3%内也有少量得分
-        _mult = _ob_freshness_mult(ob['nearest_bull_ob'])
+        _raw = 5 if d < 0.5 else (3 if d < 1.5 else (1 if d < 3.0 else 0))
+        _mult = _ob_freshness_mult(ob['nearest_bull_ob'], '1h')
         s2 += int(_raw * _mult)
         if _mult < 1.0:
             breakdown['OB新鲜度_1H_LONG'] = f'age乘数={_mult:.2f} 原始={_raw} 实得={int(_raw*_mult)}'
     if signal_dir == 'SHORT' and ob.get('nearest_bear_ob'):
         d = abs(ob['nearest_bear_ob']['dist_pct'])
         _raw = 5 if d < 0.5 else (3 if d < 1.5 else (1 if d < 3.0 else 0))
-        _mult = _ob_freshness_mult(ob['nearest_bear_ob'])
+        _mult = _ob_freshness_mult(ob['nearest_bear_ob'], '1h')
         s2 += int(_raw * _mult)
         if _mult < 1.0:
             breakdown['OB新鲜度_1H_SHORT'] = f'age乘数={_mult:.2f} 原始={_raw} 实得={int(_raw*_mult)}'
@@ -160,15 +167,43 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
     ob_4h = smc.get('order_blocks_4h', {})
     if signal_dir == 'LONG' and ob_4h.get('nearest_bull_ob'):
         d4 = abs(ob_4h['nearest_bull_ob'].get('dist_pct', 99))
-        _raw4 = 3 if d4 < 1.5 else (1 if d4 < 3.0 else 0)  # 1H+4H OB重叠
-        _mult4 = _ob_freshness_mult(ob_4h['nearest_bull_ob'])
+        _raw4 = 3 if d4 < 1.5 else (1 if d4 < 3.0 else 0)
+        _mult4 = _ob_freshness_mult(ob_4h['nearest_bull_ob'], '4h')
         s2 += int(_raw4 * _mult4)
+        if _mult4 > 0:
+            breakdown['OB新鲜度_4H_LONG'] = f'age乘数={_mult4:.2f} 原始={_raw4} 实得={int(_raw4*_mult4)} [4H]'
     if signal_dir == 'SHORT' and ob_4h.get('nearest_bear_ob'):
         d4 = abs(ob_4h['nearest_bear_ob'].get('dist_pct', 99))
         _raw4 = 3 if d4 < 1.5 else (1 if d4 < 3.0 else 0)
-        _mult4 = _ob_freshness_mult(ob_4h['nearest_bear_ob'])
+        _mult4 = _ob_freshness_mult(ob_4h['nearest_bear_ob'], '4h')
         s2 += int(_raw4 * _mult4)
-    # FVG | 公平价值缺口
+        if _mult4 > 0:
+            breakdown['OB新鲜度_4H_SHORT'] = f'age乘数={_mult4:.2f} 原始={_raw4} 实得={int(_raw4*_mult4)} [4H]'
+
+    # [多周期新增 2026-09-03 苏摩111] 15M入场精度OB + 1D大周期头寸
+    ob_15m = smc.get('order_blocks_15m', {})
+    ob_1d  = smc.get('order_blocks_1d', {})
+    # 15M OB：入场精度层（距离<0.3%才加分，表示当前价格正在OB内部）
+    for _tf15, _ob15_key in [('LONG','nearest_bull_ob'),('SHORT','nearest_bear_ob')]:
+        if signal_dir == _tf15 and ob_15m.get(_ob15_key):
+            d15 = abs(ob_15m[_ob15_key].get('dist_pct', 99))
+            _raw15 = 3 if d15 < 0.3 else (1 if d15 < 0.8 else 0)
+            _mult15 = _ob_freshness_mult(ob_15m[_ob15_key], '15m')
+            _add15 = int(_raw15 * _mult15)
+            if _add15 > 0:
+                s2 += _add15
+                breakdown[f'OB_15M_{_tf15}'] = f'+{_add15} age乘数={_mult15:.2f} dist={d15:.2f}%'
+    # 1D OB：大周期头寸（最高加分，表示机构布局区层）
+    for _tf1d, _ob1d_key in [('LONG','nearest_bull_ob'),('SHORT','nearest_bear_ob')]:
+        if signal_dir == _tf1d and ob_1d.get(_ob1d_key):
+            d1d = abs(ob_1d[_ob1d_key].get('dist_pct', 99))
+            _raw1d = 4 if d1d < 1.0 else (2 if d1d < 3.0 else 0)
+            _mult1d = _ob_freshness_mult(ob_1d[_ob1d_key], '1d')
+            _add1d = int(_raw1d * _mult1d)
+            if _add1d > 0:
+                s2 += _add1d
+                breakdown[f'OB_1D_{_tf1d}'] = f'+{_add1d} age乘数={_mult1d:.2f} dist={d1d:.2f}% [大周期头寸]'
+    # FVG | 公平价值缺口（1H基础 + 4H/15M/1D多周期加成）
     fvg = smc['fvg']
     if signal_dir == 'LONG' and fvg.get('nearest_bull'):
         d = abs(fvg['nearest_bull']['mid'] - price) / price * 100
@@ -176,6 +211,25 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
     if signal_dir == 'SHORT' and fvg.get('nearest_bear'):
         d = abs(fvg['nearest_bear']['mid'] - price) / price * 100
         s2 += 4 if d < 0.5 else (2 if d < 1.5 else 0)
+    # [多周期FVG新增 2026-09-03 苏摩111] 4H/15M/1D FVG加成
+    for _fvg_tf, _fvg_key, _fvg_bull_key, _fvg_bear_key, _max_add in [
+        ('4h',  'fvg_4h',  'nearest_bull', 'nearest_bear', 4),  # 4H FVG最强
+        ('15m', 'fvg_15m', 'nearest_bull', 'nearest_bear', 2),  # 15M精度
+        ('1d',  'fvg_1d',  'nearest_bull', 'nearest_bear', 5),  # 1D最大头寸
+    ]:
+        _fvg_tf_data = smc.get(_fvg_key, {})
+        if signal_dir == 'LONG' and _fvg_tf_data.get(_fvg_bull_key):
+            _fd = abs(_fvg_tf_data[_fvg_bull_key]['mid'] - price) / price * 100
+            _fadd = _max_add if _fd < 0.5 else (int(_max_add*0.5) if _fd < 2.0 else 0)
+            if _fadd:
+                s2 += _fadd
+                breakdown[f'FVG_{_fvg_tf.upper()}_LONG'] = f'+{_fadd} dist={_fd:.2f}% [磁铁{_fvg_tf_data[_fvg_bull_key]["mid"]:.1f}]'
+        if signal_dir == 'SHORT' and _fvg_tf_data.get(_fvg_bear_key):
+            _fd = abs(_fvg_tf_data[_fvg_bear_key]['mid'] - price) / price * 100
+            _fadd = _max_add if _fd < 0.5 else (int(_max_add*0.5) if _fd < 2.0 else 0)
+            if _fadd:
+                s2 += _fadd
+                breakdown[f'FVG_{_fvg_tf.upper()}_SHORT'] = f'+{_fadd} dist={_fd:.2f}% [磁铁{_fvg_tf_data[_fvg_bear_key]["mid"]:.1f}]'
     s2 = min(s2, 20)
     score += s2
     breakdown['关键位精确度'] = s2
