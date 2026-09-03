@@ -83,3 +83,7 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 # auto-1hao-trigger: 1号仓分析，脚本自带push_signal_card_v3推送，每2h
 # 原OpenClaw任务导致03:15重启，迁移后彻底消除exec阻塞
 0 */2 * * *  cd /root/.openclaw/workspace/trading-system && timeout 90 python3 scripts/brahma_1hao_analysis.py >> logs/syscron.log 2>&1
+
+# 纸面系统调度（2026-09-03 苏摩111封印）
+*/40 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/paper_executor.py >> logs/syscron.log 2>&1
+*/10 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/paper_tp_monitor.py >> logs/syscron.log 2>&1
