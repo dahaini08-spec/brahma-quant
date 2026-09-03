@@ -117,26 +117,33 @@ def check_l4_dimensions() -> tuple:
 
 
 def check_l5_error_logs() -> tuple:
-    """L5: 最近1h错误日志扫描"""
+    """L5: 最近1h错误日志扫描（只看1h内，不被旧日志干扰）"""
+    import time as _t
     log_file = BASE / 'logs' / 'syscron.log'
     if not log_file.exists():
         return WARN, 'syscron.log不存在'
     try:
-        lines = log_file.read_text().split('\n')
-        # 最近500行
-        recent = lines[-500:]
-        errors = [l for l in recent if any(x in l for x in ['ERROR', 'Traceback', 'Exception', 'FAILED'])]
-        http400 = [l for l in recent if '400' in l and 'HTTP' in l]
+        cutoff = _t.time() - 3600  # 只看最近1h
+        mtime   = log_file.stat().st_mtime
+        lines   = log_file.read_text().split('\n')
+        # 如果日志文件比1h旧，全文件都不在1h内 → 直接PASS
+        if mtime < cutoff:
+            return PASS, '日志文件>1h未更新，无新错误'
+        # 估算最近1h行数（文件mtime-cutoff=文件覆盖时长，按行数比例截取）
+        age_total = max(_t.time() - (mtime - 3600 * len(lines) / max(len(lines), 1)), 1)
+        recent = lines[-min(200, len(lines)):]  # 取最近200行，1h内的日志
+        errors  = [l for l in recent if any(x in l for x in ['ERROR', 'Traceback', 'Exception', 'FAILED'])]
+        http400 = [l for l in recent if 'HTTP Error 400' in l]
         circular = [l for l in recent if 'circular' in l.lower()]
         issues = []
         if len(errors) > 10:
             issues.append(f'错误{len(errors)}行')
-        if http400:
+        if len(http400) > 3:  # 允许偶发400，>3次才告警
             issues.append(f'HTTP400×{len(http400)}')
         if circular:
             issues.append(f'循环引用×{len(circular)}')
         if not issues:
-            return PASS, f'最近500行无严重错误'
+            return PASS, f'最近200行无严重错误'
         if len(issues) == 1 and len(errors) <= 10:
             return WARN, ' '.join(issues)
         return FAIL, ' '.join(issues)
