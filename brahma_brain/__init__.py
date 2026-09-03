@@ -16,3 +16,24 @@ _ROOT_DIR  = _os.path.dirname(_BRAIN_DIR)
 for _p in [_BRAIN_DIR, _ROOT_DIR]:
     if _p not in _sys.path:
         _sys.path.insert(0, _p)
+
+# [P0-2 2026-09-03 苏摩111] safe_json全局注入 — 防circular reference
+import json as _json
+
+def _safe_default(obj):
+    try:
+        return str(obj)
+    except Exception:
+        return '<unserializable>'
+
+_original_json_dumps = _json.dumps
+
+def _safe_json_dumps(obj, **kwargs):
+    kwargs.setdefault('default', _safe_default)
+    try:
+        return _original_json_dumps(obj, **kwargs)
+    except (ValueError, TypeError):
+        # circular reference fallback: 转string再dump
+        return _original_json_dumps(str(obj), **kwargs)
+
+_json.dumps = _safe_json_dumps

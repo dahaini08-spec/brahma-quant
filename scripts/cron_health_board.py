@@ -128,8 +128,22 @@ def run():
         disk_pct, disk_free, disk_icon = 0, 0, '⚠️'
 
     lines.append('━━━━━━━━━━━━━━━━━━━━')
-    lines.append('✅正常: %d  ⚠️告警: %d  🔴异常: %d  %s磁盘: %.1f%%(剩%.1fGB)' % (
-        ok_count, len(warnings), len(errors), disk_icon, disk_pct, disk_free))
+    # [P0-3内存监控 2026-09-03 苏摩111]
+    try:
+        _mf = open('/proc/meminfo').read()
+        _mem_total = int([l for l in _mf.split('\n') if 'MemTotal' in l][0].split()[1]) // 1024
+        _mem_avail = int([l for l in _mf.split('\n') if 'MemAvailable' in l][0].split()[1]) // 1024
+        _mem_pct   = round((_mem_total - _mem_avail) / _mem_total * 100, 1)
+        _mem_icon  = '🔴' if _mem_avail < 300 else ('🟡' if _mem_avail < 600 else '🟢')
+        _mem_str   = f'{_mem_icon}内存: {_mem_pct}%(可用{_mem_avail}MB)'
+        if _mem_avail < 300:
+            errors.append(f'内存紧急: 可用{_mem_avail}MB<300MB OOM风险🚨')
+        elif _mem_avail < 600:
+            warnings.append(f'内存偏紧: 可用{_mem_avail}MB<600MB')
+    except Exception:
+        _mem_str = '⚠️内存获取失败'
+    lines.append('✅正常: %d  ⚠️告警: %d  🔴异常: %d  %s磁盘: %.1f%%(剩%.1fGB)  %s' % (
+        ok_count, len(warnings), len(errors), disk_icon, disk_pct, disk_free, _mem_str))
 
     if errors:
         lines.append('\n🔴 连续ERROR（需关注）:')

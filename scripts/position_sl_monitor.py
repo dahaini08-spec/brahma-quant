@@ -81,6 +81,12 @@ def main():
         # 跳过已关闭/非活跃记录
         if not cfg.get('active', True) or cfg.get('status') == 'CLOSED' or cfg.get('close_reason'):
             continue
+        # [P0-1修复 2026-09-03 苏摩111] 用cfg里的symbol字段，不用key名
+        # 根因: key可能是'ETHUSDT_SHORT'等复合名，招API会400
+        real_sym = cfg.get('symbol', sym)
+        # 如果real_sym不是标准币对格式（包含多个下划线），跳过
+        if real_sym.count('_') >= 2 or not real_sym.endswith('USDT'):
+            continue
         # 兼容不同字段名
         side  = cfg.get('side', cfg.get('direction', 'LONG'))
         sl    = float(cfg.get('sl_price', cfg.get('sl', 0)))
@@ -92,7 +98,7 @@ def main():
 
         try:
             ts = int(time.time() * 1000)
-            pos_list = _get('/fapi/v2/positionRisk', {'symbol': sym, 'timestamp': ts})
+            pos_list = _get('/fapi/v2/positionRisk', {'symbol': real_sym, 'timestamp': ts})
             time.sleep(0.3)  # 防止请求过密触发418限频
         except Exception as e:
             print(f'⚠️ {sym} API异常: {e}', file=sys.stderr)
