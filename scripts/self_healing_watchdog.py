@@ -39,10 +39,11 @@ def ensure_supercronic():
         return f'supercronic拉起失败: {e}'
 
 # 关键cron任务监控（超过max_idle_min分钟未运行 → 告警）
+# 注意: position-guardian/rsi-structure-watcher 已迁移 supercronic，不再在OpenClaw cron里
+# 2026-09-03 苏摔111封印: 移除已迁离任务的误报
 WATCHES = [
-    {'name': 'position-guardian',    'max_idle_min': 10},
-    {'name': 'rsi-structure-watcher','max_idle_min': 30},
     {'name': 'brahma-state-refresh', 'max_idle_min': 130},
+    {'name': 'oi-alert',             'max_idle_min': 150},
 ]
 
 def load_state():
