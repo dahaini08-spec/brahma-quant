@@ -73,3 +73,5 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 
 # market_screener: 候选池刷新（原crontab缺失，补回），每12h
 0 */12 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_screener.py >> logs/syscron.log 2>&1
+
+0 2 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/wr_feedback_engine.py >> logs/syscron.log 2>&1
