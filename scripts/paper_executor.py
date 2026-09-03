@@ -120,9 +120,13 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
         log(f'SKIP {sym}: 无法获取实时价格')
         return False
 
-    # 仓位大小（CHOP_MID减半）
+    # 仓位大小（CHOP_MID减半，CHOP解锁信号用override）
     nav_pct = PAPER_NAV_PCT
-    if CHOP_HALF_SIZE and 'CHOP' in regime:
+    nav_override = signal.get('nav_pct_override')
+    if nav_override is not None:
+        nav_pct = float(nav_override)
+        log(f'CHOP解锁信号，仓位上限: {nav_pct*100:.1f}%NAV')
+    elif CHOP_HALF_SIZE and 'CHOP' in regime:
         nav_pct = PAPER_NAV_PCT / 2
         log(f'CHOP体制，仓位减半 → {nav_pct*100:.1f}%NAV')
 
