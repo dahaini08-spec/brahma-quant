@@ -213,3 +213,9 @@ if __name__ == "__main__":
         print(f"  宏观addon: {macro.get('score_addon')} | {macro.get('signals')}")
         rules = get_trading_rules(sym, "BULL_TREND")
         print(f"  BULL_TREND规则: {rules}")
+
+
+# [P2封印 2026-09-03 苏摩111] apply_commodity_filter = adapt_score别名
+# 接入位置: brahma_brain/universal_asset_router.py route_and_score()
+apply_commodity_filter = adapt_score
+
