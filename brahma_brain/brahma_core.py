@@ -3288,10 +3288,11 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass  # [静默] f"[BrahmaBrain] ⚠️ score过热惩罚: {_final_score:.0f}→{_result['confluence']['score']
 
     # ── s20: Tardis清算墙维度（星枢引擎 Phase1）────────────
+    # [P0-A修复 2026-09-03] _sym_t/_dir_t移到try块外，防tardis导入失败导致s22 NameError
+    _sym_t = _result.get('symbol', '')
+    _dir_t = _result.get('signal_dir', 'NEUTRAL')
     try:
         from tardis_engine import get_tardis_score
-        _sym_t  = _result.get('symbol', '')
-        _dir_t  = _result.get('signal_dir', 'NEUTRAL')
         _pa_t   = _result.get('params', {})
         _elo    = float(_pa_t.get('entry_lo', 0))
         _ehi    = float(_pa_t.get('entry_hi', _elo * 1.002))
@@ -3317,12 +3318,17 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         from brahma_brain.gex_unified import score_gex as _score_gex22, compute_gex as _compute_gex22
         _currency_g = 'BTC' if 'BTC' in _sym_t.upper() else \
                       'ETH' if 'ETH' in _sym_t.upper() else 'BTC'
+        # [P0-A修复 2026-09-03 苏摩111] NEUTRAL方向时推断为LONG/SHORT，防GEX哑火
+        _dir_t_gex = _dir_t
+        if _dir_t_gex == 'NEUTRAL':
+            _cf_score_now = float(_result.get('confluence', {}).get('score', 0))
+            _dir_t_gex = 'LONG' if _cf_score_now >= 0 else 'SHORT'
         # [设计院 2026-06-30] 优先用 gex_scanner（博尔正项BS公式），fallback到 gex_engine
         try:
             from brahma_brain.gex_unified import get_gex_state as _gex_state_fn, get_gex_score_for_signal as _gex_sig_fn
             _gex_cached = _gex_state_fn(_currency_g)
             if _gex_cached and _gex_cached.get('max_gex_strike'):
-                _gex_adj, _gex_desc = _gex_sig_fn(_currency_g, _dir_t)
+                _gex_adj, _gex_desc = _gex_sig_fn(_currency_g, _dir_t_gex)
                 _s22 = max(-10, min(12, _gex_adj))
                 _gex_data = _gex_cached  # 多字段可用
                 _result['confluence']['_gex_max'] = _gex_cached.get('max_gex_strike')
@@ -3363,7 +3369,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             pass  # gex_scanner不可用，fallback到gex_engine
         _gex_data = _compute_gex22(_currency_g)
         if _gex_data:
-            _s22_res = _score_gex22(_sym_t, _dir_t, _gex_data)
+            _s22_res = _score_gex22(_sym_t, _dir_t_gex, _gex_data)
             _s22 = _s22_res.get('s22', 0)
             _s22 = max(-10, min(8, _s22))
             if _s22 != 0:

@@ -981,6 +981,8 @@ def get_fangcang_context(
             'main_force_intent':   main_force,
             'micro_structure':     micro_structure,
             'similar_cases_count': n_cases,
+            'n_cases':             n_cases,   # [P0-B别名 2026-09-03] runner显示兼容
+            'regime':              current_regime,  # [P0-B别名 2026-09-03] runner显示兼容
             'best_entry_window':   best_entry_window,
             'trap_alert':          trap_alert,
             'confidence_level':    confidence_level,
