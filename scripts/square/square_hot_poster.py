@@ -109,15 +109,9 @@ def rewrite_as_trader(draft: str) -> str:
     try:
         import subprocess
         prompt = (
-            f'以下是一篇加密货币分析帖初稿，请用40年顶级合约交易员的视角重写，'
-            f'使其更有深度、更有立场、每条操作建议都有具体价位和止损：\n\n'
-            f'---初稿---\n{draft}\n---end---\n\n'
-            f'重写要求：\n'
-            f'1. 保留所有数据，把模糊建议改成具体条件（FR回落到X%+价格回踩X支撑才入场）\n'
-            f'2. 每个策略必须有入场价、止损位、目标位的具体数字\n'
-            f'3. 【严禁】任何Markdown格式：**粗体** *斜体* ##标题 `代码` 全部禁止\n'
-            f'4. 需要强调用【关键词】括号，分隔线用 ━━━ 文字 ━━━\n'
-            f'5. 纯文本输出，直接输出正文，不加任何前缀'
+            f'用40年顶级合约交易员视角重写以下加密货币分析帖。'
+            f'保留所有数字，每个策略给出入场价/止损/目标，'
+            f'禁止Markdown格式，禁止AI腔，纯文本输出：\n\n{draft}'
         )
         result = subprocess.run(
             ['openclaw', 'infer', 'model', 'run', '--model', 'standard', '--prompt', prompt],
