@@ -133,7 +133,8 @@ def main():
             print(f'[state_refresh] {sym}: score={score:.1f} regime={regime} grade={grade:.0f}')
 
             # 评分不达纸面门槛，跳过
-            if score < PAPER_SCORE_MIN:
+            # ⚠️ CHOP体制例外：由chop_breakout_detector独立判断，不走score门槛
+            if score < PAPER_SCORE_MIN and 'CHOP' not in regime:
                 print(f'[state_refresh] {sym}: score={score:.1f} < {PAPER_SCORE_MIN}，跳过信号生成')
                 continue
 
