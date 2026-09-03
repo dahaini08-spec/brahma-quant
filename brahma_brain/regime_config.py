@@ -144,16 +144,47 @@ REGIME_MULT_ALTCOIN = {
 _FALLBACK_MULT = 0.85  # 未知体制，保守降权
 
 
+# ── WR反哺Override（P2 2026-09-03 苏摩111）──────────────────────────────────
+# 每日由 scripts/wr_feedback_engine.py 写入 data/regime_mult_override.json
+# 格式: {"BULL_TREND:LONG": 1.15, "BEAR_TREND:SHORT": 1.62, ...}
+# 只覆盖统计显著(n>=30)且偏差>0.1的组合，其余保持手写铁证值
+import json as _json
+from pathlib import Path as _Path
+
+_OVERRIDE_FILE = _Path(__file__).parent.parent / 'data' / 'regime_mult_override.json'
+
+def _load_override() -> dict:
+    try:
+        if _OVERRIDE_FILE.exists():
+            return _json.loads(_OVERRIDE_FILE.read_text())
+    except Exception:
+        pass
+    return {}
+
+
 def get_regime_mult(symbol: str, regime: str, signal_dir: str) -> float:
     """
     统一入口：根据标的、体制、方向返回乘数
-    brahma_core.confluence_score() 调用此函数替代内联矩阵
+    优先级: WR反哺override > 标的专属矩阵 > BTC/ETH矩阵 > DEFAULT
+    brahma_core.confluence_score() 调用此函数
+    [P2封印 2026-09-03 苏摩111] 接入WR反哺override
     """
     sym_upper    = symbol.upper() if symbol else ''
     regime_upper = (regime or '').upper()
     is_long      = (signal_dir == 'LONG')
+    direction    = 'LONG' if is_long else 'SHORT'
 
-    # 选择矩阵（优先标的专属，其次BTC/ETH，最后DEFAULT）
+    # ① 优先查WR反哺override（每日更新，铁证驱动）
+    _override = _load_override()
+    _ov_key = f'{regime_upper}:{direction}'
+    if _ov_key in _override:
+        return float(_override[_ov_key])
+    # 兼容带标的的key: BTCUSDT:BULL_TREND:LONG
+    _ov_sym_key = f'{sym_upper}:{regime_upper}:{direction}'
+    if _ov_sym_key in _override:
+        return float(_override[_ov_sym_key])
+
+    # ② 选择手写铁证矩阵（优先标的专属，其次BTC/ETH，最后DEFAULT）
     if sym_upper in REGIME_MULT_ALTCOIN:
         table = REGIME_MULT_ALTCOIN[sym_upper]
     elif 'BTC' in sym_upper:
