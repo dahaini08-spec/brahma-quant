@@ -32,11 +32,11 @@ FAPI = 'https://fapi.binance.com'
 
 # 死穴组合：体制×方向（不允许执行）
 DEAD_COMBOS = {
-    ('BEAR_TREND', 'LONG'),     # WR=0% n=162 铁律封禁
-    ('BULL_TREND', 'SHORT'),    # 顺势封禁
-    # ('CHOP_MID',  'LONG'),    # 移至chop_breakout_detector精细控制
-    # ('BULL_EARLY','LONG'),    # WR=100% n=5 铁证多头，不封禁
-    ('BEAR_EARLY', 'SHORT'),    # 熊市早期空信号质量低
+    ('BEAR_TREND', 'LONG'),     # ✅铁证 WR=45% n=3322
+    ('BULL_TREND', 'SHORT'),    # ✅铁证 WR=47.7% n=4999
+    # ('BEAR_EARLY','SHORT'),   # ❌移除：实盘WR=80.8% n=52，高WR不该封禁
+    # ('CHOP_MID',  'LONG'),    # ❌移除：由chop_breakout_detector精细控制
+    # ('BULL_EARLY','LONG'),    # ❌移除：WR=100% n=5铁证多头
 }
 
 MAX_SL_PCT       = 2.0   # SQE Gate1：基础限制（2.0%），动态门控函数会根据grade调整
