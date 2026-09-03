@@ -902,6 +902,23 @@ def _calc_oi_strategy(r: dict) -> dict:
         else:
             trigger = f'等OI 1H再降{max(0, 2+chg_1h):.1f}%确认 + 价格不超过 {_fmt_price(entry_hi)}'
 
+    # 距离触发条件量化（Bug3增强）
+    fr     = float(r.get('fr', 0))
+    lsr    = float(r.get('lsr_ratio', r.get('whale_l', 50)) / 100 if r.get('whale_l') else 1.0)
+    dist_parts = []
+    oi_gap = max(0, 2.0 - chg_1h) if direction == 'LONG' else max(0, 2.0 + chg_1h)
+    if oi_gap > 0:
+        dist_parts.append(f'OI还差{oi_gap:.1f}%')
+    else:
+        dist_parts.append('OI✅')
+    if abs(fr) > 0.05:
+        dist_parts.append(f'FR={fr:+.4f}%等回归')
+    else:
+        dist_parts.append(f'FR={fr:+.4f}%✅')
+    if direction == 'LONG' and lsr > 1.5:
+        dist_parts.append(f'LSR={lsr:.2f}多拥挤高风险')
+    distance_str = ' | '.join(dist_parts)
+
     return {
         'entry_lo':  entry_lo, 'entry_hi':  entry_hi,
         'sl_price':  sl_price, 'sl_pct':    round(sl_pct*100, 1),
@@ -909,6 +926,7 @@ def _calc_oi_strategy(r: dict) -> dict:
         'rr':        rr,        'lev':       lev,
         'hold':      hold,      'size_pct':  size_pct,
         'fg_note':   fg_note,   'trigger':   trigger,
+        'distance':  distance_str,
         'expire':    expire_str,
     }
 
@@ -971,6 +989,7 @@ def format_signal_card(sym, r, rank):
             f"{'─'*40}",
             f"⚡ 触发条件",
             f"   {strat['trigger']}",
+            f"📏 距触发: {strat.get('distance','')}",
             f"📍 入场区间: {_fmt_price(strat['entry_lo'])} ~ {_fmt_price(strat['entry_hi'])}",
             f"🛡️ 止损:    {_fmt_price(strat['sl_price'])}  ({strat['sl_pct']:.1f}%)",
             f"🎯 TP1:    {_fmt_price(strat['tp1'])}  (RR={strat['rr']:.1f}x)",
