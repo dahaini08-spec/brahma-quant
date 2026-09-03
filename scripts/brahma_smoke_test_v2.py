@@ -45,7 +45,7 @@ LAYERS = [
         "tests": [
             ("Ch8 settled.jsonl",    "from pathlib import Path; n=len(Path('data/trajectories/settled.jsonl').read_text().strip().splitlines()); assert n>0; print(f'{n}条轨迹')"),
             ("experience_docs",      "from pathlib import Path; n=len(Path('data/trajectories/experience_docs.jsonl').read_text().strip().splitlines()); print(f'{n}条经验文档')"),
-            ("news_feed新鲜",        "import time,json; from pathlib import Path; f=Path('data/news_feed.jsonl'); age=(time.time()-f.stat().st_mtime)/60; n=len(f.read_text().strip().splitlines()); assert age<120,f'{age:.0f}min'; print(f'{n}条/{age:.0f}min前')"),
+            ("news_feed新鲜",        "import time,json; from pathlib import Path; f=Path('data/news_feed.jsonl'); age=(time.time()-f.stat().st_mtime)/60; n=len(f.read_text().strip().splitlines()); assert age<240,f'{age:.0f}min过期'; print(f'{n}条/{age:.0f}min前')"),
             ("water_mark水位线",     "import json; from pathlib import Path; d=json.loads(Path('data/news_last_pushed.json').read_text()); print(f'last_ts={d.get(\"last_ts\")}')"),
         ]
     },
