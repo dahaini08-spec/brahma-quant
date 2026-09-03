@@ -48,6 +48,19 @@ def pearson_corr(x: list, y: list) -> float:
 DERIBIT_COINS = {"BTC", "ETH"}
 
 def calc_vol_beta(currency: str = "ETH") -> dict:
+    # [P0磁盘缓存 2026-09-03 苏摩111] 跨进程持久化，TTL=3600s
+    try:
+        import sys as _s, os as _o
+        _bb = _o.path.dirname(_o.path.abspath(__file__))
+        if _bb not in _s.path: _s.path.insert(0, _bb)
+        from disk_cache import disk_get as _dg, disk_set as _ds, TTL_VOL_BETA as _TTL
+        _key = f'vol_beta:{currency}'
+        _cached = _dg(_key, ttl=_TTL)
+        if _cached is not None:
+            return _cached
+    except Exception:
+        pass
+
     symbol = f"{currency}USDT"
 
     # 1. 历史IV（Deribit有BTC/ETH 384天；其他币种用滚动HV20替代）
@@ -104,7 +117,7 @@ def calc_vol_beta(currency: str = "ETH") -> dict:
     mean30 = sum(ret30) / len(ret30)
     hv30 = math.sqrt(sum((r - mean30)**2 for r in ret30) / len(ret30)) * math.sqrt(252) * 100
 
-    return {
+    _result_vb = {
         "ts":           time.time(),
         "currency":     currency,
         "current_iv":   round(current_iv, 2),
@@ -114,9 +127,16 @@ def calc_vol_beta(currency: str = "ETH") -> dict:
         "kappa":        round(kappa, 4),
         "iv_regime":    iv_regime,
         "hv30":         round(hv30, 2),
-        "iv_premium":   round(current_iv - hv30, 2),  # IV-HV溢价(%)
+        "iv_premium":   round(current_iv - hv30, 2),
         "days_used":    n,
     }
+    # 写入磁盘缓存
+    try:
+        from disk_cache import disk_set as _ds, TTL_VOL_BETA as _TTL
+        _ds(f'vol_beta:{currency}', _result_vb)
+    except Exception:
+        pass
+    return _result_vb
 
 def run(currency: str = "ETH", verbose: bool = False):
     try:
