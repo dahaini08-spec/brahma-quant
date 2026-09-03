@@ -268,6 +268,7 @@ def run(currency: str = "ETH", verbose: bool = False):
         try: existing = json.loads(OUT_FILE.read_text())
         except: pass
     existing[currency] = r
+    existing[currency]['updated_at'] = int(__import__('time').time())
     OUT_FILE.write_text(json.dumps(existing, ensure_ascii=False))
 
     hist = {k: r[k] for k in ("ts","currency","spot","total_gex","total_vex",
