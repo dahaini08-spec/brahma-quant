@@ -131,19 +131,27 @@ def detect_chop_breakout(state: dict, symbol: str = 'BTCUSDT') -> dict:
     except Exception:
         pass
     
-    # fallback：从score反推（score>50时BULL概率已经开始萌芽）
-    score = float(state.get('score_final') or state.get('score') or 0)
-    try:
-        score = float(str(score).split()[0])
-    except Exception:
-        pass
-    if bull_prob == 0 and score >= 60:
-        bull_prob = min(0.25 + (score - 60) / 100, 0.60)  # 粗略估算
-    
+    # fallback：多维指标联合反推BULL趋势萌芽概率
+    # 逻辑：score低但聪明钱+CVD+RSI全部偏多 → 趋势萌芽概率仍可以达标
+    if bull_prob == 0.0:
+        score_f  = float(state.get('score_final') or state.get('score') or 0)
+        try: score_f = float(str(score_f).split()[0])
+        except: pass
+        smart_l  = extra.get('smart_money', {}).get('big_pos_long', 0.5)
+        cvd_v    = enhanced.get('breakdown', {}).get('cvd', 0)
+        mom      = state.get('momentum') or {}
+        rsi_1h   = float(mom.get('rsi_1h', 50) or 50)
+        # 各分项贡献（满分=0.85）
+        p_score  = min(max((score_f - 20) / 80, 0), 0.30)   # score 20→100 映射0→0.30
+        p_smart  = max(smart_l - 0.50, 0) * 1.5              # 大户>50%正贡献
+        p_cvd    = min(max(cvd_v, 0) / 40.0, 0.20)           # CVD正贡献上限0.20
+        p_rsi    = max(rsi_1h - 50, 0) / 200.0               # RSI>50正贡献
+        bull_prob = round(min(p_score + p_smart + p_cvd + p_rsi, 0.85), 3)
+
     if bull_prob >= 0.35:
         met.append(f'C7 BULL概率{bull_prob:.0%}≥35%✅')
     else:
-        failed.append(f'C7 BULL概率{bull_prob:.0%}<35%❌')
+        failed.append(f'C7 BULL概率{bull_prob:.0%}<35%（多维推算={bull_prob:.0%}）❌')
     
     # ── 综合判断 ────────────────────────────────────────────
     n = len(met)
