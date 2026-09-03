@@ -141,15 +141,20 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
         'side':         side,
         'entry_price':  price,
         'sl_price':     round(sl_price, 2),
+        'tp1':          round(tp1_price, 2),   # 统一字段名
         'tp1_price':    round(tp1_price, 2),
+        'tp2':          round(tp2_price, 2),
         'tp2_price':    round(tp2_price, 2),
         'nav_pct':      nav_pct,
         'score':        score,
         'grade':        grade,
         'regime':       regime,
+        'sl_pct':       sl_pct,
         'open_ts':      int(time.time()),
+        'open_at':      __import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat(),
         'partial_tp1':  False,
         'status':       'open',
+        'source':       signal.get('source', 'unknown'),
     }
     positions_data['positions'].append(pos)
     positions_data['stats']['total'] = positions_data['stats'].get('total', 0) + 1
