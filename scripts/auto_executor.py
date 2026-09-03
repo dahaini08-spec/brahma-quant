@@ -181,10 +181,11 @@ WUQU_PATH            = Path(__file__).parent.parent / 'data/wuqu_positions.json'
 EXECUTOR_BLACKLIST = frozenset({'SNDKUSDT'})  # [设计院自主 2026-07-31] TRADFI股票代币永远SKIP，排除污染
 
 # ── 死穴：禁止自动执行的体制×方向组合 ──────────────────
+# 哲学：只保留有n≥100铁证的封禁；其他由brahma_core乘数+score自然淘汰
+# CHOP_MID 已移至 chop_breakout_detector 精细控制（解决64k→81k错过问题）
 DEAD_ZONE = {
-    ('BEAR_TREND',   'LONG'),    # 铁律封禁
-    ('CHOP_MID',     'LONG'),    # 震荡禁多（无铁证）
-    ('BULL_TREND',   'SHORT'),   # 牛市禁空
+    ('BEAR_TREND',   'LONG'),    # ✅铁证 WR=45% n=3322
+    ('BULL_TREND',   'SHORT'),   # ✅铁证 WR=47.7% n=4999
 }
 
 # ── API ───────────────────────────────────────────────
@@ -349,10 +350,8 @@ def find_executable_signals() -> list[dict]:
         # 统一155分=WR0%死亡区 → 按体制分层取代
         _regime_key = (str(s.get('regime','')), str(s.get('signal_dir') or s.get('direction','')))
         _regime_thr = REGIME_EXEC_LINE.get(_regime_key)
-        if _regime_key in CHOP_DEAD_COMBOS:
-            # CHOP双向全封：v63 WR=17-27% 负EV
-            s['_tier'] = 0
-            continue
+        # CHOP体制：不在此层封禁，由chop_breakout_detector专项处理（解决64k→81k错过）
+        # 其他体制：封禁只由brahma_core统一执行，此层只管执行线门槛
         if _regime_thr is not None and score < _regime_thr:
             # 体制执行线不够 → 不执行
             s['_tier'] = 0

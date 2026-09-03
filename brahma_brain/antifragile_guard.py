@@ -200,22 +200,25 @@ def check_emotion_extreme(direction: str = '') -> dict:
 
     blocked = False
     warning = ''
+    size_mult = 1.0
 
     if fg < 10:
+        # 极度恐惧 = 多头横财机会，做空高风险（反弹炸弹）
         if direction and 'SHORT' in direction.upper():
-            blocked = True
-            warning = f'🚨 极度恐惧(FG={fg:.0f}) → 做空方向熔断，市场可能超卖反弹'
+            warning = f'⚠️ 极度恐惧(FG={fg:.0f}) → 做空谨慎(高反弹风险)，减半仓'
+            size_mult = 0.5  # 减半但不封禁
         else:
-            warning = f'⚠️ 极度恐惧(FG={fg:.0f}) → 做多为反向机会，谨慎'
+            warning = f'✅ 极度恐惧(FG={fg:.0f}) → 多头横财(别人恐惧我贪婪)'
 
     elif fg > 90:
+        # 极度贪婪 = 空头横财机会，做多高风险（超买回调）
         if direction and 'LONG' in direction.upper():
-            blocked = True
-            warning = f'🚨 极度贪婪(FG={fg:.0f}) → 做多方向熔断，市场可能超买回调'
+            warning = f'⚠️ 极度贪婪(FG={fg:.0f}) → 做多谨慎(高回调风险)，减半仓'
+            size_mult = 0.5  # 减半但不封禁
         else:
-            warning = f'⚠️ 极度贪婪(FG={fg:.0f}) → 做空为反向机会，谨慎'
+            warning = f'✅ 极度贪婪(FG={fg:.0f}) → 空头横财(别人贪婪我恐惧)'
 
-    return {'blocked': blocked, 'warning': warning, 'fg': fg}
+    return {'blocked': blocked, 'warning': warning, 'fg': fg, 'size_mult': size_mult}
 
 
 # ═══════════════════════════════════════════════════════════════
