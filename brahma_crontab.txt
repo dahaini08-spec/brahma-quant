@@ -78,3 +78,8 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 0 */2 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/oi_watchlist_monitor.py >> logs/syscron.log 2>&1
 
 0 2 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/wr_feedback_engine.py >> logs/syscron.log 2>&1
+
+# ===== 第四批迁移（2026-09-03 苏摩111 - 最后的阻塞源）=====
+# auto-1hao-trigger: 1号仓分析，脚本自带push_signal_card_v3推送，每2h
+# 原OpenClaw任务导致03:15重启，迁移后彻底消除exec阻塞
+0 */2 * * *  cd /root/.openclaw/workspace/trading-system && timeout 90 python3 scripts/brahma_1hao_analysis.py >> logs/syscron.log 2>&1
