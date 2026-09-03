@@ -3461,6 +3461,47 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _e26:
         pass  # OI数据不影响主流评分
 
+    # ── s28: 信号质量门控（2026-09-03 苏摩111 P4封印）──────────────────
+    # 模块: brahma_brain/signal_quality_engine.py 1436行，原来完全孤立
+    # 逻辑: 唛却冷却/主市场相关性/体制奖励 → +0~+5分降噜
+    # PASS=+正奖励 / FAIL=-检欹6分 / WARN=-3分
+    try:
+        import os as _os28, sys as _sys28
+        _bb28 = _os28.path.dirname(_os28.path.abspath(__file__))
+        if _bb28 not in _sys28.path: _sys28.path.insert(0, _bb28)
+        from signal_quality_engine import evaluate_signal as _sqe_eval
+        _sqe_sig = {
+            'symbol':      _result.get('symbol', ''),
+            'signal_dir':  _result.get('signal_dir', 'NEUTRAL'),
+            'score_final': float(_result.get('confluence', {}).get('score', 0)),
+            'grade':       float(_result.get('grade', 0)),
+            'regime':      _result.get('regime', ''),
+            'price':       float(_result.get('price', 0)),
+        }
+        _sqe_result = _sqe_eval(_sqe_sig)
+        _s28 = 0
+        if hasattr(_sqe_result, 'passed'):
+            if _sqe_result.passed:
+                _regime_s28 = _result.get('regime', '')
+                # 体制奖励：铁证体制+方向=額外加分
+                if _regime_s28 in ('BULL_EARLY', 'BEAR_RECOVERY') and _result.get('signal_dir') == 'LONG':
+                    _s28 = 4
+                elif _regime_s28 in ('BEAR_TREND', 'BEAR_EARLY') and _result.get('signal_dir') == 'SHORT':
+                    _s28 = 3
+                else:
+                    _s28 = 1  # 一般通过，小奖励
+            else:
+                _s28 = -6  # 信号质量门控未通过，大力降噜
+        if _s28 != 0:
+            _cur_s28 = float(_result.get('confluence', {}).get('score', 0))
+            _result['confluence']['score'] = _cur_s28 + _s28
+            _result['confluence'].setdefault('breakdown', {})['s28_signal_quality'] = (
+                f'{_s28:+d} [质量门控:{"PASS" if _s28>0 else "FAIL"}]'
+            )
+            print(f'[s28-SQE] {_sqe_sig["symbol"]} {_sqe_sig["signal_dir"]}: {_s28:+d}')
+    except Exception as _e28:
+        pass  # 信号质量不影响主流
+
     # ── s23: Vol-Beta / IV溢价维度（2026-09-02 苏摩111封印）────────────────
     # 数据来源: brahma_brain/vol_beta_engine.py (每4h supercronic刷新)
     # 逻辑:

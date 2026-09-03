@@ -76,6 +76,7 @@ _DATA_DIR_BACKTEST = _BASE / "data" / "backtest"
 # ── 缓存层（内存级，TTL=60min，15m扫描较慢故延长）─────────────────────────
 _CACHE: Dict[str, dict] = {}
 _CACHE_TTL = 3600  # 60分钟
+_KLINES_CACHE: dict = {}  # [P1 2026-09-03] 进程级K线缓存，TTL=300s
 
 # ── 参数常量 ─────────────────────────────────────────────────────────────────
 WEEK_BARS   = 42    # 1周 = 42根4H K线
@@ -154,9 +155,19 @@ def _load_klines_native(symbol: str, tf: str) -> List[dict]:
 
 
 def _load_klines(symbol: str, tf: str) -> List[dict]:
-    """从方仓加载K线，优先 data/backtest/ 原生格式，失败返回[]"""
+    """从方仓加载K线，优先 data/backtest/ 原生格式，失败返回[]
+    [P1进程级缓存 2026-09-03 苏摩111] TTL=300s，消除重复读文件IO
+    """
+    import time as _time_k
+    _cache_key = f'{symbol}:{tf}'
+    _now_k = _time_k.time()
+    if _cache_key in _KLINES_CACHE:
+        _entry = _KLINES_CACHE[_cache_key]
+        if _now_k - _entry['ts'] < 300:  # 5分钟 TTL
+            return _entry['data']
     bars = _load_klines_native(symbol, tf)
     if bars:
+        _KLINES_CACHE[_cache_key] = {'data': bars, 'ts': _now_k}
         return bars
     # fallback: 旧路径 jsonl.gz 格式
     path = _DATA_DIR_LEGACY / f"{symbol}_{tf}.jsonl.gz"
@@ -169,6 +180,7 @@ def _load_klines(symbol: str, tf: str) -> List[dict]:
                 line = line.strip()
                 if line:
                     bars.append(json.loads(line))
+        _KLINES_CACHE[_cache_key] = {'data': bars, 'ts': _now_k}
         return bars
     except Exception:
         return []
