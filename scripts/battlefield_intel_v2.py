@@ -310,8 +310,10 @@ def q3_how_to_enter(state: dict, q1: dict, q2: dict, sym: str) -> dict:
                 pass
 
     # ── ATR计算入场区间 ───────────────────────────────────
+    # ATR用当前标的价格比例计算（ETH/BTC各自独立）
     atr_1h = (state.get('momentum') or {}).get('atr_1h', 0)
-    if not atr_1h:
+    # 验证ATR合理性：ATR应在价格的0.2%~3%之间
+    if not atr_1h or atr_1h > price * 0.03 or atr_1h < price * 0.001:
         atr_1h = price * 0.005  # fallback 0.5%
 
     if bias == 'LONG':
@@ -343,10 +345,22 @@ def q3_how_to_enter(state: dict, q1: dict, q2: dict, sym: str) -> dict:
     var95 = q1['var95']
     var_pass = sl_pct >= var95 * 1.5
 
-    # ── 死穴检查 ─────────────────────────────────────────
-    DEAD = {('BEAR_TREND','LONG'), ('BULL_TREND','SHORT'),
-            ('CHOP_MID','LONG'), ('CHOP_MID','SHORT')}
+    # ── 死穴检查（仅铁证2个，CHOP由detector判断）────────────
+    DEAD = {('BEAR_TREND','LONG'), ('BULL_TREND','SHORT')}
     is_dead = (regime, bias) in DEAD
+    chop_signal = None
+    chop_score = 0
+    chop_nav = 0.0
+    if 'CHOP' in regime:
+        try:
+            import sys as _sys; _sys.path.insert(0, str(BASE / 'brahma_brain')); from brahma_brain.chop_breakout_detector import detect_chop_breakout
+            cbd = detect_chop_breakout(state, sym + 'USDT')
+            chop_signal = cbd.get('signal', 'NONE')
+            chop_score  = cbd.get('score', 0)
+            chop_nav    = cbd.get('nav_pct', 0)
+            is_dead = (chop_signal == 'NONE')
+        except Exception:
+            is_dead = True
 
     # ── 置信度综合 ────────────────────────────────────────
     score = state.get('score_final') or state.get('score') or 0
@@ -356,8 +370,15 @@ def q3_how_to_enter(state: dict, q1: dict, q2: dict, sym: str) -> dict:
         score = 0
 
     if is_dead:
-        execute_verdict = '🚫 死穴封禁，禁止入场'
+        if chop_signal is not None:
+            execute_verdict = f'⛔ CHOP条件不足({chop_score}/7)，等待突破'
+        else:
+            execute_verdict = '🚫 死穴封禁，禁止入场'
         execute_code = 'BLOCKED'
+    elif chop_signal in ('READY', 'EXECUTE') and rr1 >= 1.0:
+        nav_show = chop_nav * 100
+        execute_verdict = f'⚡ CHOP突破{chop_signal}({chop_score}/7) → {nav_show:.0f}%NAV预埋 RR={rr1:.2f}x'
+        execute_code = 'READY'
     elif not in_high_wr_window:
         execute_verdict = '⏳ 等待高胜率时段窗口'
         execute_code = 'WAIT_TIMING'
@@ -392,6 +413,9 @@ def q3_how_to_enter(state: dict, q1: dict, q2: dict, sym: str) -> dict:
         'execute_verdict': execute_verdict,
         'execute_code':    execute_code,
         'is_dead':         is_dead,
+        'chop_signal':     chop_signal,
+        'chop_score':      chop_score,
+        'chop_nav':        chop_nav,
     }
 
 # ═══════════════════════════════════════════════════════════════════
@@ -470,6 +494,13 @@ def build_v2_report(sym: str, q1: dict, q2: dict, q3: dict) -> str:
         '',
     ]
 
+    # CHOP解锁状态显示
+    if q3.get('chop_signal') and q3['chop_signal'] != 'NONE':
+        cs = q3['chop_signal']
+        cn = q3.get('chop_score',0)
+        cv = q3.get('chop_nav',0)*100
+        lines.append(f'  ⚡ CHOP突破解锁: {cs} ({cn}/7条件) → {cv:.0f}%NAV预埋')
+        lines.append('')
     if q3['execute_code'] == 'READY':
         lines += [
             f'  📍 入场区间: ${q3["entry_lo"]:,.1f} ~ ${q3["entry_hi"]:,.1f}',
@@ -513,12 +544,22 @@ def main(symbols=None):
             eth_state_path = BASE / 'data' / 'brahma_state_eth.json'
             if eth_state_path.exists():
                 sym_state = load_json(eth_state_path)
-            # ETH fallback: 用BTC state但更新价格
+            # ETH fallback: 用BTC state但更新价格，清除BTC特有数据
             if not sym_state.get('price') or sym_state.get('price', 0) > 10000:
                 p = live_price('ETHUSDT')
                 if p:
                     sym_state = dict(sym_state)
                     sym_state['price'] = p
+                    # 清除BTC的FVG/OB数据，避免用BTC磁铁计算ETH目标位
+                    bd = sym_state.get('confluence', {}).get('breakdown', {})
+                    if bd:
+                        bd = dict(bd)
+                        for k in list(bd.keys()):
+                            if 'FVG' in str(k) or 'OB' in str(k):
+                                bd[k] = ''
+                        sym_state = dict(sym_state)
+                        sym_state['confluence'] = dict(sym_state.get('confluence', {}))
+                        sym_state['confluence']['breakdown'] = bd
 
         q1 = q1_where_am_i(sym_state, gex_state, vb_state, sym)
         q2 = q2_where_is_target(sym_state, vb_state, oi_wl, sym)
