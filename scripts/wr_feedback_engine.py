@@ -113,6 +113,7 @@ def load_override() -> dict:
 
 def save_override(data: dict):
     data['_updated_at'] = datetime.now(timezone.utc).isoformat()
+    data['_updated_date'] = datetime.now(timezone.utc).strftime('%Y-%m-%d')
     OVERRIDE_FILE.write_text(json.dumps(data, indent=2))
 
 
@@ -181,6 +182,14 @@ def compute_new_override(matrix: dict) -> tuple[dict, list]:
 
 def main():
     log('=== WR矩阵每日反哺启动 ===')
+
+    # 防重复：同一天已运行过则跳过（防止每次手动调用累计漂移）
+    current_override = load_override()
+    today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+    if current_override.get('_updated_date') == today:
+        log(f'今日({today})已运行过，跳过重复执行')
+        print('HEARTBEAT_OK')
+        return
 
     matrix = load_wr_matrix()
     if not matrix:
