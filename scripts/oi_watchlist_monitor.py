@@ -208,6 +208,28 @@ def main():
             lines.append(f"{dir_icon} {symbol} | ${price:.4f} | 触发度{pct:.0f}%")
             lines.append(f"   方向: {entry.get('direction')} | 仓位: {entry.get('size_pct',1.0)}%NAV")
             lines.append(f"   FR={fr:+.4f}% | SL距离≈${sl_dist:.4f}(1.5×ATR1H)")
+            # P1-3: OI得分>80自动触发LLM解读’聊明錢在做什么’ (2026-09-04 苏摩111封印)
+            if pct >= 80:
+                try:
+                    import sys as _sys3
+                    from pathlib import Path as _P3
+                    _sp3 = str(_P3(__file__).parent)
+                    if _sp3 not in _sys3.path:
+                        _sys3.path.insert(0, _sp3)
+                    from free_llm_client import _call_openrouter as _llm_oi
+                    _oi_dir = entry.get('direction', 'LONG')
+                    _regime = entry.get('regime', 'UNKNOWN')
+                    _oi_prom = (
+                        f"{symbol}/USDT ${price:.4f} 体制:{_regime}\n"
+                        f"OI监控触发度{pct:.0f}% FR={fr:+.4f}%\n"
+                        f"信号方向:{_oi_dir} 当前触发所有OI条件\n"
+                        f"用一句话(15字内)分析现在聊明錢的操作意图："
+                    )
+                    _oi_resp = _llm_oi(_oi_prom, max_tokens=35)
+                    if _oi_resp:
+                        lines.append(f"   🤖 LLM: {_oi_resp.strip()[:60]}")
+                except Exception:
+                    pass
             lines.append(f"   ⚠️ 仍需人工确认15M结构(CHoCH/Hammer)")
             lines.append("")
         msg = "\n".join(lines)
