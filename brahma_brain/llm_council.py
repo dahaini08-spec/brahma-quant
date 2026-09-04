@@ -56,16 +56,31 @@ def council_verdict(
             _scripts = str(_Path(__file__).parent.parent / 'scripts')
             if _scripts not in _sys.path:
                 _sys.path.insert(0, _scripts)
-            from free_llm_client import council_llm
+            from free_llm_client import council_three_way, council_llm
             liq_up = liq_data.get('nearest_short', 0) if liq_data else 0
             liq_dn = liq_data.get('nearest_long', 0)  if liq_data else 0
-            _llm_result = council_llm(
-                regime=regime, bias=signal_dir, fvg_dir=fvg_dir,
+            # C: 三方独立投票（置信度更高）
+            _llm_result = council_three_way(
+                sym=sym, price=price, regime=regime, score=score,
+                fvg_dir=fvg_dir, fvg_magnet=breakdown.get('_fvg_magnet', 0),
                 oi_signal=oi_signal, sm_signal=sm_signal,
-                hurst=hurst, kappa=kappa, score=score,
-                entry_lo=entry_lo, entry_hi=entry_hi, price=price,
-                liq_up=liq_up, liq_dn=liq_dn, sym=sym,
+                big_long=breakdown.get('_big_long', 50),
+                hurst=hurst, kappa=kappa,
+                harv=breakdown.get('_harv', 0),
+                entry_lo=entry_lo, entry_hi=entry_hi,
+                liq_up=liq_up, liq_dn=liq_dn,
+                macro_bias=breakdown.get('macro_bias', 'NEUTRAL'),
+                fear_greed=int(breakdown.get('fear_greed', 50)),
             )
+            # fallback到单次LLM
+            if not _llm_result:
+                _llm_result = council_llm(
+                    regime=regime, bias=signal_dir, fvg_dir=fvg_dir,
+                    oi_signal=oi_signal, sm_signal=sm_signal,
+                    hurst=hurst, kappa=kappa, score=score,
+                    entry_lo=entry_lo, entry_hi=entry_hi, price=price,
+                    liq_up=liq_up, liq_dn=liq_dn, sym=sym,
+                )
             if _llm_result and _llm_result.get('action'):
                 _llm_result['council_score'] = 0
                 _llm_result['votes'] = []
