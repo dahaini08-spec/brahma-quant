@@ -953,7 +953,23 @@ def _kline_cvd(symbol: str, interval: str, limit: int) -> list[float]:
 
 
 def _aggTrades_cvd(symbol: str) -> float:
-    """最新500条 aggTrades 微观CVD（绝对量）"""
+    """微观CVD — 优先读WebSocket实时快照，降级到REST aggTrades
+    设计院三方封印 2026-09-04 苏摩111
+    """
+    import json, time
+    from pathlib import Path
+    sym_lower = symbol.lower()
+    snap_path = Path(__file__).parent.parent / 'data' / f'cvd_realtime_{sym_lower}.json'
+    # ① 优先：WebSocket快照（cvd_ws_collector生成，30s更新）
+    if snap_path.exists():
+        try:
+            snap = json.loads(snap_path.read_text())
+            age = time.time() - snap.get('ts', 0)
+            if age < 120:  # 2分钟内的快照视为新鲜
+                return float(snap.get('cvd_5m', snap.get('cvd_1h', 0.0)))
+        except Exception:
+            pass
+    # ② 降级：REST aggTrades（原始逻辑）
     url = f"{FAPI}/fapi/v1/aggTrades?symbol={symbol}&limit=500"
     trades = _get(url, ttl=15)
     if not trades:
@@ -1015,8 +1031,22 @@ def get_multi_tf_cvd(symbol: str) -> dict:
     meso  = _classify(meso_series)
     macro = _classify(macro_series)
 
-    # 微观绝对量（aggTrades）
+    # 微观绝对量（WebSocket快照优先，降级REST）
     spot_cvd = _aggTrades_cvd(sym)
+
+    # 注入WebSocket实时多维CVD（若采集器在运行）
+    _ws_snap = {}
+    try:
+        import json as _json_ws
+        from pathlib import Path as _Pws
+        _ws_path = _Pws(__file__).parent.parent / 'data' / f'cvd_realtime_{sym.lower()}.json'
+        if _ws_path.exists():
+            import time as _time_ws
+            _d = _json_ws.loads(_ws_path.read_text())
+            if _time_ws.time() - _d.get('ts', 0) < 120:
+                _ws_snap = _d
+    except Exception:
+        pass
 
     # 当前价格趋势（1H）
     k1h = _get(f"{FAPI}/fapi/v1/klines?symbol={sym}&interval=1h&limit=6", ttl=60)
@@ -1076,6 +1106,14 @@ def get_multi_tf_cvd(symbol: str) -> dict:
         "divergence": divergence,
         "divergence_type": divergence_type,
         "price_up":   price_up,
+        # WebSocket实时多维CVD（若采集器在运行）
+        "ws_cvd_1m":  _ws_snap.get('cvd_1m'),
+        "ws_cvd_5m":  _ws_snap.get('cvd_5m'),
+        "ws_cvd_1h":  _ws_snap.get('cvd_1h'),
+        "ws_signal":  _ws_snap.get('signal'),   # STRONG_BUY/MILD_BUY/MIXED/MILD_SELL/STRONG_SELL
+        "ws_dir_1m":  _ws_snap.get('dir_1m'),
+        "ws_dir_5m":  _ws_snap.get('dir_5m'),
+        "ws_fresh":   bool(_ws_snap),
         "scores": {
             "LONG":  {"score": long_score,  "notes": long_notes},
             "SHORT": {"score": short_score, "notes": short_notes},

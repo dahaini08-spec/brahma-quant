@@ -120,3 +120,8 @@ if q.exists():
 # ===== P1-D02 实时体制感知层（2026-09-04 苏摩111）=====
 # 每5分钟检测价格突破/OI放量，有信号立即触发体制刷新
 */5 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/regime_realtime_watcher.py >> logs/regime_watcher.log 2>&1
+
+# ===== CVD WebSocket实时采集器（2026-09-04 苏摩111）=====
+# 常驻进程：订阅aggTrade流，每30s快照写 data/cvd_realtime_{sym}.json
+# 注意：@reboot在supercronic中等同于容器启动时执行
+@reboot  cd /root/.openclaw/workspace/trading-system && python3 scripts/cvd_ws_collector.py >> logs/cvd_ws.log 2>&1

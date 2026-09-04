@@ -952,9 +952,32 @@ def main():
     ap.add_argument('--symbols', nargs='+', default=['BTC', 'ETH'])
     args = ap.parse_args()
 
-    for sym in args.symbols:
-        report = run_analysis(sym)
-        print(report)
+    symbols = args.symbols
+
+    if len(symbols) == 1:
+        # 单个标的直接运行
+        print(run_analysis(symbols[0]))
+        return
+
+    # 多标的并行化（60s→30s）——设计院三方封印 2026-09-04 苏摩111
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    import time as _time
+    t0 = _time.time()
+    results = {}
+
+    with ThreadPoolExecutor(max_workers=len(symbols)) as pool:
+        futures = {pool.submit(run_analysis, sym): sym for sym in symbols}
+        for fut in as_completed(futures):
+            sym = futures[fut]
+            try:
+                results[sym] = fut.result()
+            except Exception as e:
+                results[sym] = f'[{sym}] 分析失败: {e}'
+
+    elapsed = _time.time() - t0
+    print(f'\n[并行分析完成] 耗时 {elapsed:.1f}s ({len(symbols)}个标的并行)\n')
+    for sym in symbols:
+        print(results.get(sym, f'[{sym}] 无结果'))
         print()
 
 
