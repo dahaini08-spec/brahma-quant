@@ -218,6 +218,34 @@ def main():
             f"mult: {c['old_mult']:.3f} {arrow} {c['new_mult']:.3f} "
             f"(baseline={c['baseline']:.3f})")
 
+    # P2-1: 权重变化>0.15时 LLM审核，防止异常漂移 (2026-09-04 苏摩111封印)
+    # 接入位置: save_override后，推送前
+    _llm_flags = []
+    _big_changes = [c for c in changes if abs(c['new_mult'] - c['old_mult']) >= 0.15]
+    if _big_changes:
+        try:
+            _llm_review_path = str(BASE / 'scripts')
+            if _llm_review_path not in sys.path:
+                sys.path.insert(0, _llm_review_path)
+            from free_llm_client import _call_openrouter as _llm_wr
+            for _ch in _big_changes[:3]:  # 每次最多审查3个
+                _prompt = (
+                    f"梵天WR自学习审核：{_ch['key']}\n"
+                    f"Wilson_WR={_ch['wilson_wr']:.0%} n={_ch['n']}\n"
+                    f"乘数变化: {_ch['old_mult']:.3f}→{_ch['new_mult']:.3f} "
+                    f"(差{_ch['new_mult']-_ch['old_mult']:+.3f} baseline={_ch['baseline']:.3f})\n"
+                    f"请判断：这个乘数调整合理吗？回答格式: 合理 或 异常，附简短原因(15字内)"
+                )
+                _resp = _llm_wr(_prompt, max_tokens=30)
+                if _resp and '异常' in _resp:
+                    _llm_flags.append(f"{_ch['key']}: LLM告警→{_resp.strip()[:40]}")
+                    log(f'[P2-1] LLM异常告警: {_ch["key"]} {_resp.strip()[:50]}')
+                else:
+                    log(f'[P2-1] LLM审核通过: {_ch["key"]} {(_resp or "").strip()[:30]}')
+        except Exception as _p21_e:
+            log(f'[P2-1] LLM审核跳过: {_p21_e}')
+    # ── end P2-1 ─────────────────────────────────────────────────────
+
     # 推送摘要到Jarvis
     try:
         sys.path.insert(0, str(BASE / 'scripts'))
@@ -227,6 +255,8 @@ def main():
                    '\n'.join(f"  {c['key']}: {c['old_mult']:.2f}→{c['new_mult']:.2f} "
                              f"(WR={c['wilson_wr']:.0%} n={c['n']})"
                              for c in changes[:5]))
+        if _llm_flags:
+            summary += '\n⚠️ LLM异常告警:\n' + '\n'.join(f'  {f}' for f in _llm_flags)
         _pj(summary, level='P2')
     except Exception:
         pass
