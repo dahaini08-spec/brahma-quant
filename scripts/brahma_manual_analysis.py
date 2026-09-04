@@ -95,15 +95,26 @@ def step0_fetch_all(sym: str) -> dict:
     fr_raw = fetch(f'https://fapi.binance.com/fapi/v1/fundingRate?symbol={usdt}&limit=1')
     fr     = float(fr_raw[0].get('fundingRate', 0)) if isinstance(fr_raw, list) and fr_raw else 0
 
-    oi_hist = fetch(f'https://fapi.binance.com/futures/data/openInterestHist?symbol={usdt}&period=15m&limit=6')
-    oi_vals = [float(x.get('sumOpenInterest', 0)) for x in oi_hist] if isinstance(oi_hist, list) else []
-    oi_usd  = [float(x.get('sumOpenInterestValue', 0)) for x in oi_hist] if isinstance(oi_hist, list) else []
+    # OI全周期：15M短期 + 1H中期 + 4H主力
+    oi_hist   = fetch(f'https://fapi.binance.com/futures/data/openInterestHist?symbol={usdt}&period=15m&limit=8')
+    oi_1h     = fetch(f'https://fapi.binance.com/futures/data/openInterestHist?symbol={usdt}&period=1h&limit=8')
+    oi_4h     = fetch(f'https://fapi.binance.com/futures/data/openInterestHist?symbol={usdt}&period=4h&limit=6')
+    oi_vals   = [float(x.get('sumOpenInterest', 0)) for x in oi_hist] if isinstance(oi_hist, list) else []
+    oi_usd    = [float(x.get('sumOpenInterestValue', 0)) for x in oi_hist] if isinstance(oi_hist, list) else []
+    oi_1h_vals= [float(x.get('sumOpenInterest', 0)) for x in oi_1h]  if isinstance(oi_1h, list) else []
+    oi_4h_vals= [float(x.get('sumOpenInterest', 0)) for x in oi_4h]  if isinstance(oi_4h, list) else []
 
-    lsr_raw  = fetch(f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol={usdt}&period=1h&limit=3')
+    # 大户仓位：拉3条历史，计算变化速率
+    lsr_raw  = fetch(f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol={usdt}&period=1h&limit=4')
     lsr_list = [(float(x.get('longAccount', 0)), float(x.get('shortAccount', 0))) for x in lsr_raw] if isinstance(lsr_raw, list) else []
 
-    top_raw  = fetch(f'https://fapi.binance.com/futures/data/topLongShortPositionRatio?symbol={usdt}&period=1h&limit=3')
+    top_raw  = fetch(f'https://fapi.binance.com/futures/data/topLongShortPositionRatio?symbol={usdt}&period=1h&limit=4')
     top_list = [float(x.get('longAccount', 0)) for x in top_raw] if isinstance(top_raw, list) else []
+    # 大户变化速率（最新vs2小时前，正=增仓多，负=减仓多）
+    top_delta = (top_list[0] - top_list[-1]) * 100 if len(top_list) >= 2 else 0.0
+
+    # ATR全周期：1H + 4H + 1D
+    k1d = klines(usdt, '1d', 10)
 
     dep      = fetch(f'https://fapi.binance.com/fapi/v1/depth?symbol={usdt}&limit=5')
     bids_sum = sum(float(x[1]) for x in dep.get('bids', []))
@@ -134,9 +145,10 @@ def step0_fetch_all(sym: str) -> dict:
 
     return {
         'sym': sym, 'usdt': usdt, 'price': price,
-        'k1h': k1h, 'k4h': k4h, 'k15m': k15m,
+        'k1h': k1h, 'k4h': k4h, 'k15m': k15m, 'k1d': k1d,
         'fr': fr, 'oi_vals': oi_vals, 'oi_usd': oi_usd,
-        'lsr_list': lsr_list, 'top_list': top_list,
+        'oi_1h_vals': oi_1h_vals, 'oi_4h_vals': oi_4h_vals,
+        'lsr_list': lsr_list, 'top_list': top_list, 'top_delta': top_delta,
         'bids_sum': bids_sum, 'asks_sum': asks_sum,
         'liq': liq_b, 'bs': bs, 'gex': gex_s.get(sym, {}),
         'vb': vb_s.get(sym, {}), 'mac': mac_s, 'mac_cal': mac_cal,
@@ -484,51 +496,83 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict) -> dict:
 # ══════════════════════════════════════════════════════════
 
 def step5_oi(d: dict) -> dict:
-    oi_vals = d['oi_vals']
-    price   = d['price']
-    k1h     = d['k1h']
+    """全周期OI趋势：15M短期 + 1H中期 + 4H主力 苏摩111封印 2026-09-04"""
+    oi_vals    = d['oi_vals']      # 15M x8
+    oi_1h_vals = d.get('oi_1h_vals', [])  # 1H x8
+    oi_4h_vals = d.get('oi_4h_vals', [])  # 4H x6
+    price      = d['price']
+    k1h        = d['k1h']
+    k4h        = d.get('k4h', [])
 
     if len(oi_vals) < 2:
         return {'signal': 'NO_DATA', 'trend': [], 'conclusion': 'OI数据不足'}
 
-    diffs    = [oi_vals[i] - oi_vals[i-1] for i in range(1, len(oi_vals))]
-    rising   = sum(1 for d in diffs if d > 0)
-    falling  = sum(1 for d in diffs if d < 0)
-    last_chg = oi_vals[-1] - oi_vals[-2] if len(oi_vals) >= 2 else 0
+    def _classify(vals, klines, label):
+        """单周期OI信号分类"""
+        if len(vals) < 2: return 'NO_DATA', 0
+        diffs  = [vals[i]-vals[i-1] for i in range(1,len(vals))]
+        rising = sum(1 for x in diffs if x > 0)
+        falling= sum(1 for x in diffs if x < 0)
+        price_up = (klines[-1][4] > klines[-2][4]) if len(klines) >= 2 else True
+        chg    = vals[-1] - vals[0]
+        if rising >= int(len(diffs)*0.6) and price_up:   return 'LONG_BUILD',  chg
+        if rising >= int(len(diffs)*0.6) and not price_up: return 'SHORT_BUILD', chg
+        if falling>= int(len(diffs)*0.6) and price_up:   return 'SHORT_SQUEEZE',chg
+        if falling>= int(len(diffs)*0.6) and not price_up: return 'LONG_UNWIND', chg
+        return 'MIXED', chg
 
-    # 价格方向
-    if k1h and len(k1h) >= 2:
-        price_up = k1h[-1][4] > k1h[-2][4]  # D3修复: 用收盘价[4]而非低价[3]
-    else:
-        price_up = True
+    sig_15m, chg_15m = _classify(oi_vals,    k1h,  '15M')
+    sig_1h,  chg_1h  = _classify(oi_1h_vals, k1h,  '1H')
+    sig_4h,  chg_4h  = _classify(oi_4h_vals, k4h,  '4H')
 
-    if rising >= 4 and price_up:
-        signal = 'LONG_BUILD'
-        conclusion = f'OI持续增仓+价格上涨 → 新多头入场，主力真实做多'
-    elif rising >= 4 and not price_up:
-        signal = 'SHORT_BUILD'
-        conclusion = f'OI持续增仓+价格下跌 → 新空头入场，主力真实做空'
-    elif falling >= 3 and price_up:
-        signal = 'SHORT_SQUEEZE'
-        conclusion = f'OI减仓+价格上涨 → 轧空行情，持续性存疑'
-    elif falling >= 3 and not price_up:
-        signal = 'LONG_UNWIND'
-        conclusion = f'OI减仓+价格下跌 → 多头平仓，注意回调深度'
+    # 全周期一致性判断（权重：4H=3, 1H=2, 15M=1）
+    WEIGHT = {sig_4h: 3, sig_1h: 2, sig_15m: 1}
+    score = {}
+    for sig, w in [(sig_4h,3),(sig_1h,2),(sig_15m,1)]:
+        score[sig] = score.get(sig,0) + w
+
+    # 主信号：权重最高的
+    main_signal = max(score, key=score.get)
+    total_weight= sum(score.values())
+    main_conf   = score.get(main_signal, 0) / total_weight  # 0~1
+
+    # 结论文字
+    _labels = {
+        'LONG_BUILD':   '全周期增仓+价格上涨 → 主力真实建多',
+        'SHORT_BUILD':  '全周期增仓+价格下跌 → 主力真实建空',
+        'SHORT_SQUEEZE':'OI减仓+价格上涨 → 轧空，持续性存疑',
+        'LONG_UNWIND':  'OI减仓+价格下跌 → 多头平仓',
+        'MIXED':        'OI信号分歧，方向不明',
+        'NO_DATA':      'OI数据不足',
+    }
+
+    if main_conf >= 0.833:  # 6/6权重全票
+        conf_str = '强共识'
+    elif main_conf >= 0.5:  # 多数一致
+        conf_str = '多数一致'
     else:
-        signal = 'MIXED'
-        conclusion = f'OI信号混杂，方向不明，观望'
+        conf_str = '分歧'
+        main_signal = 'MIXED'
+
+    conclusion = (
+        f'{conf_str} | 15M:{sig_15m} 1H:{sig_1h} 4H:{sig_4h} | '
+        f'{_labels.get(main_signal,"?")}'
+    )
 
     total_change = oi_vals[-1] - oi_vals[0] if oi_vals else 0
-    usd_change   = (d['oi_usd'][-1] - d['oi_usd'][0]) if len(d.get('oi_usd', [])) >= 2 else 0
+    usd_change   = (d['oi_usd'][-1] - d['oi_usd'][0]) if len(d.get('oi_usd',[])) >= 2 else 0
 
     return {
-        'signal':       signal,
+        'signal':       main_signal,
+        'signal_15m':   sig_15m,
+        'signal_1h':    sig_1h,
+        'signal_4h':    sig_4h,
+        'conf':         round(main_conf, 2),
         'conclusion':   conclusion,
-        'rising_bars':  rising,
         'total_change': round(total_change, 0),
         'usd_change_m': round(usd_change / 1e6, 1),
         'latest':       round(oi_vals[-1], 0) if oi_vals else 0,
-        'trend':        [round(v, 0) for v in oi_vals],
+        'trend':        [round(v,0) for v in oi_vals],
     }
 
 # ══════════════════════════════════════════════════════════
@@ -543,7 +587,9 @@ def step6_smart_money(d: dict) -> dict:
     retail_latest = lsr_list[-1][0] if lsr_list else 0.5
 
     # 趋势：大户多头是在增加还是减少
-    big_trend = 'INCREASING' if len(top_list) >= 2 and top_list[-1] > top_list[0] else 'STABLE'
+    big_trend = 'INCREASING' if len(top_list) >= 2 and top_list[-1] > top_list[0] else ('DECREASING' if len(top_list) >= 2 and top_list[-1] < top_list[0] else 'STABLE')
+    # 大户变化速率（升级：2H内净变化，正=主力加多，负=主力减多）
+    top_delta = d.get('top_delta', 0.0)  # step0已计算
 
     diverge = abs(big_latest - retail_latest)
 
@@ -574,9 +620,18 @@ def step6_smart_money(d: dict) -> dict:
 # ══════════════════════════════════════════════════════════
 
 def step7_volatility(d: dict) -> dict:
-    bd   = d['bs'].get('confluence', {}).get('breakdown', {})
-    vb   = d['vb']
-    sym  = d['sym']
+    bd    = d['bs'].get('confluence', {}).get('breakdown', {})
+    vb    = d['vb']
+    sym   = d['sym']
+    price = d['price']
+
+    # ATR全周期计算（苏摩111封印 2026-09-04）
+    k1h_l = d.get('k1h', []); k4h_l = d.get('k4h', []); k1d_l = d.get('k1d', [])
+    atr_1h = round(sum(abs(x[1]-x[2]) for x in k1h_l[-8:])/min(8,len(k1h_l)),1) if len(k1h_l)>=2 else price*0.005
+    atr_4h = round(sum(abs(x[1]-x[2]) for x in k4h_l[-7:])/min(7,len(k4h_l)),1) if len(k4h_l)>=2 else 0.0
+    atr_1d = round(sum(abs(x[1]-x[2]) for x in k1d_l[-7:])/min(7,len(k1d_l)),1) if len(k1d_l)>=2 else 0.0
+    # 合约SL参考：取1.5×ATR1H 和 1.0×ATR4H 的较大值
+    atr_sl_ref = max(atr_1h * 1.5, atr_4h * 1.0) if atr_4h else atr_1h * 1.5
 
     hurst_raw = str(bd.get('Hurst体制验证', '') or '')
     harv_raw  = str(bd.get('HAR-RV波动率', '') or '')
@@ -641,6 +696,7 @@ def step7_volatility(d: dict) -> dict:
         'hurst':       hurst_val,
         'hurst_note':  hurst_note,
         'harv':           harv_val,
+        'atr_1h': atr_1h, 'atr_4h': atr_4h, 'atr_1d': atr_1d, 'atr_sl_ref': atr_sl_ref,
         'harv_range_lo':  harv_range_lo,
         'harv_range_hi':  harv_range_hi,
         'harv_range_str': harv_range_str,
@@ -855,13 +911,24 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     atr_1h  = mom.get('atr_1h', 0)
     # ATR合理性验证：应在价格的0.2%~3%之间
     if not atr_1h or atr_1h > price * 0.03 or atr_1h < price * 0.002:
-        # 用实时K线直接计算ATR（近8根1H平均高低波幅）
         k1h_local = d.get('k1h', [])
         if len(k1h_local) >= 3:
             tr_list = [abs(x[1] - x[2]) for x in k1h_local[-8:]]
             atr_1h  = round(sum(tr_list) / len(tr_list), 1)
         if not atr_1h or atr_1h > price * 0.03 or atr_1h < price * 0.002:
-            atr_1h = price * 0.005  # 最后备用: 0.5%价格
+            atr_1h = price * 0.005
+
+    # ATR全周期升级：4H + 1D（SL应参考操作周期ATR）苏摩111封印 2026-09-04
+    k4h_local = d.get('k4h', [])
+    k1d_local = d.get('k1d', [])
+    atr_4h = 0.0
+    atr_1d = 0.0
+    if len(k4h_local) >= 5:
+        atr_4h = round(sum(abs(x[1]-x[2]) for x in k4h_local[-7:])/min(7,len(k4h_local)), 1)
+    if len(k1d_local) >= 5:
+        atr_1d = round(sum(abs(x[1]-x[2]) for x in k1d_local[-7:])/min(7,len(k1d_local)), 1)
+    # 合约参考SL = max(1.5×ATR1H, 1.0×ATR4H)
+    atr_sl_ref = max(atr_1h * 1.5, atr_4h * 1.0) if atr_4h else atr_1h * 1.5
 
     # 方向判断（综合5个信号投票）
     bull_votes = 0
@@ -964,7 +1031,7 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     nav_side  = max(1, base_nav_main // 2)
 
     # SL / TP
-    min_sl = atr_1h * 1.5
+    min_sl = atr_sl_ref if 'atr_sl_ref' in dir() else atr_1h * 1.5  # 全周期ATR参考SL
     if bias == 'LONG':
         sl       = round(entry_lo - max(min_sl, entry_lo * 0.012), 1)
         sl_pct   = round((entry_lo - sl) / entry_lo * 100, 2)
@@ -1219,19 +1286,22 @@ def run_analysis(sym: str) -> str:
 
     lines += [
         f'',
-        f'【Step5 OI趋势】',
-        f'  信号: {oi["signal"]}  {oi["conclusion"]}',
-        f'  15min变化: {" → ".join(str(int(v)) for v in oi["trend"])}',
+        f'【Step5 OI趋势】全周期',
+        f'  15M:{oi.get("signal_15m","?")} | 1H:{oi.get("signal_1h","?")} | 4H:{oi.get("signal_4h","?")}',
+        f'  主信号: {oi["signal"]} (置信{oi.get("conf",0):.0%}) | {oi["conclusion"][:60]}',
+        f'  15min序列: {" → ".join(str(int(v)) for v in oi["trend"])}',
         f'  累计变化: {oi["total_change"]:+,.0f}张  OI价值变化: {oi["usd_change_m"]:+.1f}M',
         f'',
         f'【Step6 聪明钱分歧】',
         f'  {sm["conclusion"]}',
         f'  大户多{sm["big_long"]}% vs 散户多{sm["retail_long"]}%  分歧={sm["diverge"]}%',
+        f'  大户2H变化: {sm.get("top_delta",0.0):+.1f}%pt ({"主力加多↑" if sm.get("top_delta",0)>0.5 else "主力减多↓" if sm.get("top_delta",0)<-0.5 else "平稳"})',
         f'',
-        f'【Step7 波动率三维】',
+        f'【Step7 波动率三维+ATR全周期】',
         f'  {vol["hurst_note"]}',
         f'  {vol["kappa_note"]}',
         f'  HAR-RV={vol["harv"]:.4f}  {vol["harv_range_str"]}  IV分位={vol["iv_rank"]}',
+        f'  ATR1H=${vol.get("atr_1h",0):.0f} ATR4H=${vol.get("atr_4h",0):.0f} ATR1D=${vol.get("atr_1d",0):.0f}  合约SL参考=${vol.get("atr_sl_ref",0):.0f}({vol.get("atr_sl_ref",0)/p*100:.2f}%)',
         f'',
         f'【Step8 宏观压制】',
         f'  {mac["pos_note"]}',
