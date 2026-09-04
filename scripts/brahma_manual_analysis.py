@@ -897,9 +897,27 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     if _entry_lo > 0:
         if _l2_long and _entry_lo >= price:
             _atr_hint = vol.get('atr_1h', price * 0.005) if vol else price * 0.005
+            # 修复：BULL_EARLY+FVG磁铁在上方 → 磁铁是目标，入场在下方支撑
+            # 入场触发价 = 现价下方支撑（清算支撑池 / 1D OB下沿）
+            _support = liq.get('nearest_long', 0)
+            _ob_floor = 0
+            for k,v in ob.items():
+                if 'BULL' in k and v.get('valid'):
+                    try:
+                        import re as _re
+                        _ps = [float(x.replace(',','')) for x in _re.findall(r'\$([\d,]+)', v.get('note',''))]
+                        if len(_ps) >= 1 and _ps[0] < price:
+                            _ob_floor = max(_ob_floor, _ps[0])
+                    except: pass
+            _entry_support = max(_support, _ob_floor) if (_support or _ob_floor) else price * 0.985
+            _entry_hi_s    = round(min(_entry_support * 1.008, price * 0.998), 1)
+            _entry_lo_s    = round(_entry_support * 0.995, 1)
+            _sl_s          = round(_entry_lo_s - _atr_hint * 1.5, 1)
             return _wait_card(
-                f'FVG磁铁${fvg["magnet"]:,.0f}未触及 现价${price:,.0f} 差${price-fvg["magnet"]:,.0f} | 触发价:${fvg["magnet"]*0.998:,.0f}~${fvg["magnet"]*1.002:,.0f}+1H收阳 | 届时SL:${fvg["magnet"]-_atr_hint*1.5:,.0f}',
-                'L3-等待触发'
+                f'BULL_EARLY体制做多，FVG磁铁${fvg["magnet"]:,.0f}是目标不是入场位\n'
+                f'   等回调到下方支撑入场: ${_entry_lo_s:,.0f}~${_entry_hi_s:,.0f}（1D OB/清算支撑）\n'
+                f'   +1H收阳确认 | SL:${_sl_s:,.0f} | 目标:${fvg["magnet"]:,.0f}→${liq.get("nearest_short",0):,.0f}',
+                'L3-等待回调'
             )
         if _l2_short and _entry_hi <= price:
             return _wait_card(
