@@ -93,3 +93,30 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 # 原OpenClaw任务是最后一个高频exec阻塞源，迁移后OpenClaw无任何exec阻塞
 0 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 55 python3 scripts/self_healing_watchdog.py >> logs/syscron.log 2>&1
 0 */6 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_autocheck.py --push >> logs/syscron.log 2>&1
+
+# ===== 2026-09-03 苏摩111封印：高频AI任务迁移到纯脚本（节省540,000t/日）=====
+# regime切换监控：每30min纯脚本检测，有切换才推送（原OpenClaw AI任务删除）
+*/30 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/regime_switch_monitor.py >> logs/syscron.log 2>&1
+
+# cron健康看板：每2h纯脚本输出，仅error时推送（原OpenClaw AI任务删除）
+0 */2 * * *  cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/cron_health_board.py >> logs/syscron.log 2>&1
+
+# ===== 2026-09-04 健康检查修复补丁（苏摩111）=====
+# drawdown_state每日刷新（原8天未更新）
+0 */6 * * *  cd /root/.openclaw/workspace/trading-system && timeout 20 python3 -c "from brahma_brain.drawdown_tracker import DrawdownTracker; DrawdownTracker().refresh()" >> logs/syscron.log 2>&1
+
+# macro_state每4h刷新
+0 */4 * * *  cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/macro_engine_refresh.py >> logs/syscron.log 2>&1
+
+# 信号队列每日清理（防积压）
+0 3 * * *  cd /root/.openclaw/workspace/trading-system && python3 -c "
+from pathlib import Path
+q=Path('data/signal_queue.jsonl')
+if q.exists():
+    lines=[l for l in q.read_text().strip().split('\n') if l.strip()]
+    if len(lines)>500: q.write_text('\n'.join(lines[-500:])+'\n'); print(f'queue清理:{len(lines)}->500')
+" >> logs/syscron.log 2>&1
+
+# ===== P1-D02 实时体制感知层（2026-09-04 苏摩111）=====
+# 每5分钟检测价格突破/OI放量，有信号立即触发体制刷新
+*/5 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/regime_realtime_watcher.py >> logs/regime_watcher.log 2>&1

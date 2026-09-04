@@ -14,7 +14,7 @@
 | s09 | 交易时段权重（亚盘/欧盘/美盘，0~8） |  | block_b | ✅ 活跃 |
 | s10 | 谐波PRZ+多周期对齐（新增，0~10） |  | block_b | ✅ 活跃 |
 | s11 | 鲸鱼地址+跨市场相关+微观结构（0~10） |  | block_c | ✅ 活跃 |
-| s12 | 期权Gamma+CVD订单流+OBI深度（0~10） |  | block_c | ✅ 活跃 |
+| s12 | 期权Gamma+CVD订单流+OBI深度（0~10） |  | block_c | ⚠️ 活跃但CVD为K线量能估算，非WebSocket实时订单流 |
 | s13 | L2订单簿+贝叶斯+宏观日历（Phase A，0~10） |  | block_c | ✅ 活跃 |
 | s14 | XGBoost+在线贝叶斯+滑点+链上WS（Phase B，0~8） |  | block_c | ✅ 活跃 |
 | s15 | LSTM+NLP情绪 [DEAD_CODE 封印2026-08] |  | block_c | ⛔ 已封印 |
@@ -30,13 +30,13 @@
 | s25 | 三周期RSI共振（1H+4H+1D，P4，±8/±15） | ±8/ | brahma_core.py | ✅ 活跃 |
 | s26 | PIPs几何形态（第9维扩展，0~10） |  | brahma_core.py | ✅ 活跃 |
 | s27 | Hurst指数体制验证（H>0.6趋势确认，0~8） |  | brahma_core.py | ✅ 活跃 |
-| s28 | HAR-RV波动率预测（波动率适配，±5） | ±5 | brahma_core.py | ✅ 活跃 |
-| s29 | HCME历史情境匹配（相似情境WR，0~15） |  | brahma_core.py | ✅ 活跃 |
+| s28 | HAR-RV波动率预测（波动率适配，±5） | ±5 | brahma_core.py | ⚠️ 活跃但只输出RV数值，未转换为「未来Xh价格波动区间$X~$X」 |
+| s29 | HCME历史情境匹配（相似情境WR，0~15） |  | brahma_core.py | ⚠️ 活跃但adj=+0.7信号模糊，未输出具体匹配案例时间+幅度 |
 | s30 | 死穴封禁检测（BEAR_TREND_LONG等，强制-999） |  | brahma_core.py | ✅ 活跃 |
 | s31 | 体制乘数矩阵（regime_config权重调节） |  | brahma_core.py | ✅ 活跃 |
 | s32 | SL三档分位（P0 SL宪法，仓位档位S/B-/B+） |  | brahma_core.py | ✅ 活跃 |
 | s33 | timing_filter时机门控（READY/WAIT/STANDBY） |  | brahma_core.py | ✅ 活跃 |
-| s34 | AI议会final_adj注入（llm_council_bridge） |  | brahma_core.py | ✅ 活跃 |
+| s34 | AI议会final_adj注入（llm_council_bridge） |  | brahma_core.py | ⚠️ 活跃但读llm_council缓存，非每次分析实时调用多模型 |
 | s35 | Drawdown Protocol门控（DD≥5%/10%/15%） |  | brahma_core.py | ✅ 活跃 |
 
 ## 架构说明
