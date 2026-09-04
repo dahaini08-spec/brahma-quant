@@ -173,6 +173,39 @@ def detect_chop_breakout(state: dict, symbol: str = 'BTCUSDT') -> dict:
         nav_pct = 0.0
         reason  = f'CHOP突破条件不足({n}/7)，保持封禁'
     
+    # ── P1-1: CHOP突破LLM真假确认 (2026-09-04 苏摩111封印) ────────────────────
+    # 触发条件: score>=6 (READY/EXECUTE) 才调用LLM，控制成本
+    # 接入位置: detect_chop_breakout() 返回前
+    _llm_verdict = ''
+    if n >= 6:
+        try:
+            import sys as _sys2
+            from pathlib import Path as _P2
+            _sp = str(_P2(__file__).parent.parent / 'scripts')
+            if _sp not in _sys2.path:
+                _sys2.path.insert(0, _sp)
+            from free_llm_client import _call_openrouter as _llm_call
+            _price = float(state.get('price') or state.get('last_price') or 0)
+            _regime = state.get('regime', 'CHOP_MID')
+            _score_f = float(state.get('score_final') or state.get('score') or 0)
+            _prompt = (
+                f"{symbol}/USDT 当前${_price:,.0f} 体制:{_regime} 梵天score:{_score_f:.0f}\n"
+                f"CHOP突破评分:{n}/7 满足:{', '.join(met[:3])}\n"
+                f"SMC结构:{smc_score:.0f}/20 CVD:{cvd:.1f}% 大户仓位:{big_pos*100:.0f}%\n"
+                f"问题：这是真突破还是假突破？请直接回答 真突破 或 假突破，附一句理由(15字内)"
+            )
+            _resp = _llm_call(_prompt, max_tokens=30)
+            if _resp:
+                _llm_verdict = _resp.strip()[:60]
+                # 如果LLM认为是假突破，降级到WATCH
+                if '假突破' in _llm_verdict and signal == 'EXECUTE':
+                    signal = 'READY'
+                    nav_pct = 0.01
+                    reason = f'LLM降级:假突破风险 | {reason}'
+        except Exception:
+            pass  # LLM不可用时静默降级，不影响主流程
+    # ── end P1-1 ────────────────────────────────────────────────────────────
+
     return {
         'signal':            signal,
         'score':             n,
@@ -187,6 +220,7 @@ def detect_chop_breakout(state: dict, symbol: str = 'BTCUSDT') -> dict:
         'cvd':               cvd,
         'atr_pct':           atr_pct,
         'hcme_ok':           hcme_ok,
+        'llm_verdict':       _llm_verdict,  # P1-1: LLM真假判断
     }
 
 
@@ -208,6 +242,9 @@ def format_alert(result: dict, symbol: str) -> str:
         for c in result['conditions_failed'][:3]:
             lines.append(f'  {c}')
     
+    if result.get('llm_verdict'):
+        lines.append(f'\n🤖 LLM裁决: {result["llm_verdict"]}')
+
     if signal in ('READY', 'EXECUTE'):
         lines += [
             '',

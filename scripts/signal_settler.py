@@ -510,6 +510,49 @@ def main():
         except Exception as _fc_e:
             print(f'[settler] 方仓反馈跳过: {_fc_e}')
 
+        # P1-2: 结算后LLM复盘 → learning_log.jsonl (2026-09-04 苏摩111封印)
+        # 接入位置: 方仓反馈后，推送简报前
+        try:
+            _ll_path = BASE / 'data' / 'learning_log.jsonl'
+            _ll_path.parent.mkdir(parents=True, exist_ok=True)
+            # 构建结算摘要供 LLM 复盘
+            _wins  = sum(1 for s in settled_new if s.get('outcome') in ('TP1','TP2'))
+            _total = len(settled_new)
+            _wr    = _wins / _total if _total else 0
+            _worst = min(settled_new, key=lambda s: float(s.get('pnl_pct',0) or 0), default={})
+            _best  = max(settled_new, key=lambda s: float(s.get('pnl_pct',0) or 0), default={})
+            _summary_str = (
+                f"本批结算{_total}条信号 WR={_wr:.0%}\n"
+                f"最佳: {_best.get('symbol','')} {_best.get('outcome','')} pnl={_best.get('pnl_pct',0):+.2f}%\n"
+                f"最差: {_worst.get('symbol','')} {_worst.get('outcome','')} pnl={_worst.get('pnl_pct',0):+.2f}%\n"
+                f"体制分布: {', '.join(set(s.get('regime','?') for s in settled_new[:5]))}"
+            )
+            # 调用 free_llm_client 生成复盘一句话
+            from free_llm_client import _call_openrouter as _llm_review
+            _review_prompt = (
+                f"你是梵天量化系统复盘裁判员。\n"
+                f"{_summary_str}\n"
+                f"用一句话(不超过30字)指出本批信号最大教词或需要注意的模式："
+            )
+            _llm_lesson = _llm_review(_review_prompt, max_tokens=50)
+            if _llm_lesson:
+                _ll_entry = {
+                    'ts':       time.time(),
+                    'ts_iso':   datetime.now(timezone.utc).isoformat(),
+                    'source':   'signal_settler',
+                    'wr':       round(_wr, 3),
+                    'n_total':  _total,
+                    'n_wins':   _wins,
+                    'lesson':   _llm_lesson.strip()[:100],
+                    'summary':  _summary_str[:200],
+                }
+                with open(_ll_path, 'a', encoding='utf-8') as _llf:
+                    _llf.write(json.dumps(_ll_entry, ensure_ascii=False) + '\n')
+                print(f'[settler] LLM复盘封印: {_llm_lesson.strip()[:60]}')
+        except Exception as _p12_e:
+            print(f'[settler] P1-2 LLM复盘跳过: {_p12_e}')
+        # ── end P1-2 ─────────────────────────────────────────────────────
+
         # 推送简报
         if args.push and settled_new:
             wins  = sum(1 for s in settled_new if s['outcome'] in ('TP1','TP2'))
