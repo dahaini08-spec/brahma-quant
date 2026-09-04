@@ -1715,6 +1715,8 @@ HCME_INDEX_PATH       = os.path.join(_DATA, "hcme_index.json")
 # Phase1升级：伪信号历史库（2177+条，6.5年历史回测生成）
 HCME_PSEUDO_PATH      = os.path.join(_DATA, "hcme", "hcme_pseudo_signals.jsonl.gz")
 HCME_PSEUDO_INDEX_PATH = os.path.join(_DATA, "hcme", "hcme_pseudo_index.json")
+# [2026-09-04 设计院扩展封印] 日线K线扩展案例库（3890条，BTC/ETH日线历史匹配）
+HCME_EXPANDED_INDEX_PATH = os.path.join(_DATA, "hcme_expanded_index.json")
 
 # ── regime encoder ───────────────────────────────────────────────────────────
 REGIME_MAP = {
@@ -1825,16 +1827,38 @@ class HCMEMatcher:
         return signals
 
     def _build_or_load_index(self) -> list[dict]:
-        """Load pre-built index or rebuild from signals."""
+        """Load pre-built index or rebuild from signals, then append expanded daily cases."""
         if os.path.exists(HCME_INDEX_PATH):
             try:
                 with open(HCME_INDEX_PATH) as f:
                     existing = json.load(f)
                 if len(existing) == len(self.signals):
-                    return existing
+                    # [2026-09-04 设计院扩展封印] 接入位置: 追加扩展日线案例库
+                    return self._append_expanded(existing)
             except Exception:
                 pass
-        return self._build_index()
+        base_index = self._build_index()
+        return self._append_expanded(base_index)
+
+    def _append_expanded(self, base_index: list[dict]) -> list[dict]:
+        """追加hcme_expanded_index.json中的日线扩展案例（如存在）。
+        接入位置: brahma_brain/fangcang_engine.py HCMEMatcher._build_or_load_index
+        """
+        if not os.path.exists(HCME_EXPANDED_INDEX_PATH):
+            return base_index
+        try:
+            with open(HCME_EXPANDED_INDEX_PATH) as f:
+                expanded = json.load(f)
+            # 去重：跳过signal_id已在base_index中的条目
+            existing_ids = {e["signal_id"] for e in base_index}
+            new_entries = [e for e in expanded if e["signal_id"] not in existing_ids]
+            if new_entries:
+                combined = base_index + new_entries
+                print(f"[HCME] 扩展案例库已加载: base={len(base_index)} + expanded={len(new_entries)} = total={len(combined)}")
+                return combined
+        except Exception as ex:
+            print(f"[HCME] 扩展案例库加载失败（忽略）: {ex}")
+        return base_index
 
     def _build_index(self) -> list[dict]:
         """Pre-compute feature vectors for all signals and persist."""
