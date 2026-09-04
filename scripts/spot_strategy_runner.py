@@ -12,9 +12,19 @@ spot_strategy_runner.py — 现货策略专属分析器
   python3 scripts/spot_strategy_runner.py --symbol BTC
   python3 scripts/spot_strategy_runner.py --symbol ETH
 """
-import sys, json, time, argparse, urllib.request
+import sys, json, time, argparse, urllib.request, signal
 from pathlib import Path
 from datetime import datetime, timezone
+
+# 超时守卫：单次分析超25s强制abort（防止阻塞gateway event loop）
+MAX_RUNTIME_S = 25
+
+def _timeout_handler(signum, frame):
+    print(f'[spot] ⚠️ 超时中止: 单次分析超过{MAX_RUNTIME_S}s，强制退出防gateway阻塞', flush=True)
+    sys.exit(1)
+
+signal.signal(signal.SIGALRM, _timeout_handler)
+signal.alarm(MAX_RUNTIME_S)
 
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))

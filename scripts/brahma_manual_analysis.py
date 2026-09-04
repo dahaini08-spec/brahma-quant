@@ -33,9 +33,17 @@ _os_blas.environ.setdefault('OPENBLAS_NUM_THREADS', '1')
 _os_blas.environ.setdefault('OMP_NUM_THREADS', '1')
 _os_blas.environ.setdefault('MKL_NUM_THREADS', '1')
 
-import json, sys, time, urllib.request, argparse
+import json, sys, time, urllib.request, argparse, signal
 from pathlib import Path
 from datetime import datetime, timezone
+
+# 超时守卫：全链路分析超90s强制abort（防止阻塞gateway event loop）
+MAX_RUNTIME_S = 90
+def _timeout_handler(signum, frame):
+    print(f'[brahma] ⚠️ 超时中止: 全链路超过{MAX_RUNTIME_S}s，强制退出防gateway阻塞', flush=True)
+    sys.exit(1)
+signal.signal(signal.SIGALRM, _timeout_handler)
+signal.alarm(MAX_RUNTIME_S)
 
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
