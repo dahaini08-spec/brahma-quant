@@ -197,26 +197,16 @@ def step1_fvg(d: dict) -> dict:
                 fvg_dir  = 'BULL'
                 fvg_desc = f'1H Bull FVG估算 缺口{prev2[1]:.0f}~{last[2]:.0f} 中点{manual_fvg:.0f}'
 
-    return {'dir': fvg_dir, 'magnet': magnet, 'desc': fvg_desc, 'fvg_map': fvg_map}
-
-    # 从K线手动估算当前FVG（最新2根大阳/大阴形成的缺口）
-    manual_fvg = 0
-    if len(k1h) >= 3:
-        last = k1h[-1]; prev = k1h[-2]; prev2 = k1h[-3]
-        # Bull FVG: prev2高点 < last低点（缺口向上）
-        if prev2[1] < last[2]:
-            manual_fvg = round((prev2[1] + last[2]) / 2, 1)
-            if not magnet:
-                magnet = manual_fvg
-                fvg_dir = 'BULL'
-                fvg_desc = f'Bull FVG 1H估算：缺口{prev2[1]:.0f}~{last[2]:.0f} 中点{manual_fvg:.0f}'
-
-    return {
-        'dir': fvg_dir,
-        'magnet': magnet,
-        'desc': fvg_desc,
-        'manual_fvg': manual_fvg,
-    }
+    # D1修复：删除死代码，D2：注入hi/lo供step4边界计算
+    _fvg_hi = 0; _fvg_lo = 0
+    if fvg_map:
+        for tf, fvgs in fvg_map.items():
+            for f in fvgs:
+                if f.get('mid') == magnet:
+                    _fvg_hi = f.get('hi', 0)
+                    _fvg_lo = f.get('lo', 0)
+    return {'dir': fvg_dir, 'magnet': magnet, 'desc': fvg_desc,
+            'hi': _fvg_hi, 'lo': _fvg_lo, 'fvg_map': fvg_map}
 
 # ══════════════════════════════════════════════════════════
 # Step 2: OB有效性
@@ -295,8 +285,11 @@ def step3_liq(d: dict) -> dict:
     # 第二层清算目标（用实时价格×次小百分比）
     sorted_short_pcts = sorted(float(k) for k in short_map.keys()) if short_map else []
     sorted_long_pcts  = sorted(float(k) for k in long_map.keys())  if long_map  else []
-    second_short = round(price * (1 + sorted_short_pcts[1] / 100), 1) if len(sorted_short_pcts) >= 2 else 0
-    second_long  = round(price * (1 - sorted_long_pcts[1]  / 100), 1) if len(sorted_long_pcts)  >= 2 else 0
+    # D10修复: 第二层清算用nearest_short为基准往外推ATR，不用分析时刻price重算
+    _ns = nearest_short if nearest_short else price
+    _nl = nearest_long  if nearest_long  else price
+    second_short = round(_ns * (1 + sorted_short_pcts[1] / 100), 1) if len(sorted_short_pcts) >= 2 else 0
+    second_long  = round(_nl * (1 - sorted_long_pcts[1]  / 100), 1) if len(sorted_long_pcts)  >= 2 else 0
 
     target_pct  = (nearest_short - price) / price * 100 if nearest_short and price else 0
     support_pct = (price - nearest_long)  / price * 100 if nearest_long  and price else 0
@@ -410,7 +403,7 @@ def step5_oi(d: dict) -> dict:
 
     # 价格方向
     if k1h and len(k1h) >= 2:
-        price_up = k1h[-1][3] > k1h[-2][3]
+        price_up = k1h[-1][4] > k1h[-2][4]  # D3修复: 用收盘价[4]而非低价[3]
     else:
         price_up = True
 
@@ -514,9 +507,12 @@ def step7_volatility(d: dict) -> dict:
     harv_range_lo = harv_range_hi = 0
     harv_range_str = ''
     if harv_val > 0 and price_now > 0:
-        # RV 是日化年维，换算回 4H 波动： daily_vol = RV/sqrt(252)日， 4H_vol = daily_vol/sqrt(6)
-        daily_vol = harv_val / (252 ** 0.5)
-        fh_vol    = daily_vol / (6 ** 0.5)
+        # D5修复: RV是已实现波动率(年化)
+        # 日波动率 = RV / sqrt(252)
+        # 4H波动率 = 日波动率 / sqrt(6)  [一天6个4H区间]
+        # 注意RV已经是年化标准差，不需要再开方
+        daily_vol = harv_val / (252 ** 0.5)   # 年化→日化
+        fh_vol    = daily_vol / (6 ** 0.5)    # 日化→4H化
         harv_range_lo = round(price_now * (1 - fh_vol), 1)
         harv_range_hi = round(price_now * (1 + fh_vol), 1)
         harv_range_str = f'未来4H价格区间: ${harv_range_lo:,.0f}~${harv_range_hi:,.0f}'
@@ -740,6 +736,31 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     entry_lo = res['entry_lo']
     entry_hi = res['entry_hi']
 
+    # D7修复: entry=0时强制走等待路径（不应进入SL计算）
+    if entry_lo == 0.0 or entry_hi == 0.0:
+        return (
+            f'──── VIP ────\n'
+            f'🌿 姓赵不宣 | {sym} 今日布局\n'
+            f'⏳ 入场区无效（结构不满足），等待共振\n'
+            f'   当前体制: {reg_now}  方向偏向: {bias}'
+        )
+
+    # D6修复: bias方向必须与入场区方向一致，否则拒绝输出
+    # LONG bias → 需要BULL FVG → 入场区在现价下方 (entry_lo < price)
+    # SHORT bias → 需要BEAR FVG → 入场区在现价上方 (entry_lo > price)
+    _entry_dir_ok = True
+    if bias == 'LONG' and entry_lo > 0 and entry_lo >= price:
+        _entry_dir_ok = False
+    if bias == 'SHORT' and entry_lo > 0 and entry_lo <= price:
+        _entry_dir_ok = False
+    if not _entry_dir_ok:
+        return (
+            f'──── VIP ────\n'
+            f'🌿 姓赵不宣 | {sym} 今日布局\n'
+            f'⚠️ 方向冲突：bias={bias} 但入场区${entry_lo:,.0f}~${entry_hi:,.0f}在错误方向\n'
+            f'   FVG方向={fvg["dir"]} 与投票方向={bias} 矛盾，等待方向收敛'
+        )
+
     # 仓位调整（宏观+风控）
     base_lev_main = 10 if 'TREND' in reg_now else 5
     base_nav_main = 5  if 'TREND' in reg_now else 2
@@ -877,9 +898,10 @@ def run_analysis(sym: str) -> str:
             f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}USDT', timeout=4, context=_ctx
         ).read()).get('price', p))
     except Exception:
-        _live = p
-    _drift_pct  = (_live - p) / p * 100
+        _live = None  # D9修复: 拉价格失败时标记为None，不用p掩盖偏差
     _elapsed    = _t.time() - t_start
+    _drift_pct  = ((_live - p) / p * 100) if _live is not None else 0.0
+    _live       = _live if _live is not None else p   # display用
     _price_warn = ''
     if abs(_drift_pct) >= 1.0:
         _price_warn = f'\n⚠️ 【价格漂移警告】分析基准${p:,.0f} → 当前${_live:,.0f} 偏差{_drift_pct:+.1f}% 入场区已失效，请重跑'
