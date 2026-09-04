@@ -886,6 +886,16 @@ def run_analysis(sym: str) -> str:
             regime=regime_c,
             score=float(d['bs'].get('score_final', d['bs'].get('score', 0))),
             liq_data=liq,
+            # 传入实时信号供LLM真实裁决（设计院三方封印 2026-09-04）
+            fvg_dir=fvg['dir'],
+            oi_signal=oi['signal'],
+            sm_signal=sm['signal'],
+            hurst=vol['hurst'],
+            kappa=vol['kappa'],
+            entry_lo=res['entry_lo'],
+            entry_hi=res['entry_hi'],
+            price=p,
+            sym=sym,
         )
     except Exception as _ce:
         council = {'bias':'N/A','reason':str(_ce)[:40],'action':'WAIT','confidence':'LOW'}
@@ -1037,7 +1047,7 @@ def run_analysis(sym: str) -> str:
     lines += [
         _vip_out,
         f'{"─"*43}',
-        (f'🏛️ AI议会裁决: {council["bias"]} | {council["reason"]} | {council["action"]} | 置信={council["confidence"]}'
+        (f'🏛️ AI议会裁决[{council.get("source","规则")[:2]}]: {council["bias"]} | {council["reason"]} | {council["action"]} | 置信={council["confidence"]}'
          if council.get('bias') not in ('N/A', None, '') else ''),
         f'📊 梵天系统 · 74维全能力 · 10步强制链路 · AI议会实时裁决',
     ]
