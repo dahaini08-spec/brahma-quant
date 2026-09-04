@@ -399,12 +399,11 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict) -> dict:
                 entry_hi = round(price * 0.993, 1)
 
             # 最终校验：BULL入场区必须在现价下方
+            # 若入场区在现价上方 = FVG磁铁未触及 = 还没到入场位 = 等待
             if entry_lo >= price or entry_hi >= price:
-                # BUG修复：入场区跑到现价上方 = 价格已低于支撑区 = 现价就是入场位
-                # 不归零，改用现价±0.3%作为入场区（当前价格即支撑）
-                entry_lo = round(price * 0.997, 1)
-                entry_hi = round(price * 1.000, 1)
-                # 注意：entry_hi=price，下面的门控不会再触发
+                entry_lo = 0.0
+                entry_hi = 0.0
+                resonance = False
     else:
         # BUG-5修复：无共振时不用price*0.997这种无结构入场区，直接标为失效
         entry_lo = 0.0
