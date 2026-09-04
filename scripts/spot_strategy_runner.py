@@ -46,6 +46,12 @@ def calc_vol_profile(klines: list, bins: int = 20) -> dict:
     """
     简易Volume Profile：把价格区间分bins，统计成交量分布
     返回：高密区/低密区/POC（最高成交量价格）
+
+    修复说明（2026-09-04 苏摩111）：
+    - BUG1: low_density用桶的最小值，可能是历史高价区的冷门桶 → 建仓区高于POC → 目标倒置
+      修复：建仓区 = 当前价以下最近的低密支撑（从当前价向下找成交量最低桶）
+    - BUG2: high_density按累积从低到高取，实际取到的是低价区 → tp2 = 低价 < entry
+      修复：高密目标区 = 当前价以上的高阻力区（从当前价向上找成交量最高桶）
     """
     if not klines:
         return {}
@@ -53,6 +59,7 @@ def calc_vol_profile(klines: list, bins: int = 20) -> dict:
     prices  = [float(k[4]) for k in klines]  # close
     volumes = [float(k[5]) for k in klines]   # volume
     lo, hi  = min(prices), max(prices)
+    current = prices[-1]  # 最新收盘价作为当前价参考
     if hi == lo:
         return {}
 
@@ -63,26 +70,32 @@ def calc_vol_profile(klines: list, bins: int = 20) -> dict:
         idx = min(int((p - lo) / step), bins - 1)
         buckets[idx] += v
 
-    total_vol  = sum(buckets)
-    poc_idx    = buckets.index(max(buckets))
-    poc_price  = lo + (poc_idx + 0.5) * step
+    # POC：全局成交量最大桶
+    poc_idx   = buckets.index(max(buckets))
+    poc_price = lo + (poc_idx + 0.5) * step
 
-    # 高密区（成交量前30%的区间）
-    threshold  = total_vol * 0.7
-    cum = 0.0
-    high_density = []
-    for i, v in enumerate(buckets):
-        cum += v
-        if cum >= threshold:
-            high_density.append(lo + (i + 0.5) * step)
+    # 建仓区：当前价以下的低密支撑
+    # 从当前价对应桶向下扫，找成交量最低的桶（筹码空白区=支撑）
+    cur_idx = min(int((current - lo) / step), bins - 1)
+    below_buckets = [(i, buckets[i]) for i in range(cur_idx + 1)]  # 当前价及以下
+    if below_buckets:
+        entry_idx = min(below_buckets, key=lambda x: x[1])[0]
+        low_price = lo + (entry_idx + 0.5) * step
+    else:
+        low_price = lo + 0.5 * step  # fallback
 
-    # 低密区（成交量最低的区间，适合建仓）
-    low_idx   = buckets.index(min(buckets))
-    low_price = lo + (low_idx + 0.5) * step
+    # 目标区：当前价以上的高密阻力（聪明钱会在此减仓）
+    above_buckets = [(i, buckets[i]) for i in range(cur_idx + 1, bins)]
+    if above_buckets:
+        # 取上方成交量最高的3个桶作为目标阻力
+        sorted_above = sorted(above_buckets, key=lambda x: x[1], reverse=True)
+        high_density = sorted([lo + (x[0] + 0.5) * step for x in sorted_above[:3]])
+    else:
+        high_density = [hi * 0.95, hi * 0.97, hi]
 
     return {
         'poc':          round(poc_price, 2),
-        'high_density': [round(p, 2) for p in high_density[-3:]],
+        'high_density': [round(p, 2) for p in high_density],
         'low_density':  round(low_price, 2),
         'range_lo':     round(lo, 2),
         'range_hi':     round(hi, 2),
@@ -119,24 +132,34 @@ def build_spot_recommendation(symbol: str, price: float, regime: str,
     bullish_regimes = ['BULL_EARLY', 'BULL_TREND', 'BEAR_RECOVERY']
     bearish_regimes = ['BEAR_TREND', 'BEAR_EARLY']
 
+    # 安全校验：确保 entry < tp1 < tp2（目标必须高于建仓）
+    # 修复BUG3: 若poc<=ldz（POC低于建仓区），tp1改用上方第一阻力
+    def _safe_tp(entry: float, tp_candidate: float, fallback_pct: float) -> float:
+        """确保目标价高于入场价，否则用fallback"""
+        if tp_candidate > entry * 1.02:  # 至少高于入场2%才算有效目标
+            return tp_candidate
+        return round(entry * (1 + fallback_pct), 2)
+
     if regime in bullish_regimes:
         bias     = 'LONG'
         nav_pct  = 5 if regime == 'BULL_EARLY' else (3 if regime == 'BULL_TREND' else 2)
         entry_lo = round(ldz * 0.99, 2)
         entry_hi = round(ldz * 1.01, 2)
         sl       = round(lo * 0.97, 2)         # 结构失效位（区间低点下3%）
-        tp1      = round(poc, 2)               # POC第一目标
-        tp2      = round(hdz[-1] if hdz else price * 1.08, 2)
+        # tp1: 上方第一阻力（优先用高密区最低价，比POC更直观）
+        tp1_raw  = hdz[0] if hdz else poc
+        tp1      = _safe_tp(entry_hi, tp1_raw, 0.08)
+        tp2      = _safe_tp(tp1, hdz[-1] if hdz else poc, 0.15)
         weeks    = '4~8'
-        logic    = f'{regime}体制+筹码低密区建仓，目标POC阻力'
+        logic    = f'{regime}体制+筹码低密区建仓，目标上方高密阻力'
     elif regime in bearish_regimes:
         bias     = 'WATCH'
         nav_pct  = 0
         entry_lo = round(lo * 0.95, 2)
         entry_hi = round(lo * 0.97, 2)
         sl       = round(lo * 0.93, 2)
-        tp1      = round(poc, 2)
-        tp2      = round(hi * 0.9, 2)
+        tp1      = round(lo * 1.08, 2)  # 空仓观望，目标仅供参考
+        tp2      = round(poc, 2)
         weeks    = '待体制切换'
         logic    = f'{regime}体制，空仓等待，关注{entry_lo:.0f}~{entry_hi:.0f}超跌区'
     else:  # CHOP_MID
@@ -145,8 +168,9 @@ def build_spot_recommendation(symbol: str, price: float, regime: str,
         entry_lo = round(ldz * 0.98, 2)
         entry_hi = round(ldz * 1.00, 2)
         sl       = round(lo * 0.96, 2)
-        tp1      = round(poc, 2)
-        tp2      = round(hi * 0.95, 2)
+        tp1_raw  = hdz[0] if hdz else poc
+        tp1      = _safe_tp(entry_hi, tp1_raw, 0.06)
+        tp2      = _safe_tp(tp1, hdz[-1] if hdz else hi * 0.95, 0.10)
         weeks    = '2~4'
         logic    = 'CHOP体制，轻仓试探，等突破方向确认'
 
