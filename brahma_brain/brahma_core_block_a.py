@@ -744,6 +744,93 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
     except Exception:
         pass
 
+    # ══════════════════════════════════════════════════════════════════
+    # 【设计院封印 2026-09-04 苏摩111】
+    # 多周期 FVG / OB 完整地图写入 breakdown
+    # 修复根因：梵天只存评分贡献，不存结构证据 → 无法动态感知
+    # 修复后：brahma_state.confluence.breakdown 包含完整价位数据
+    # ══════════════════════════════════════════════════════════════════
+    try:
+        price_now = ms.get('price', 0)
+
+        # ── FVG 地图（全周期）──────────────────────────────────────────
+        fvg_map = {}
+        _fvg_tf_keys = [
+            ('1h',  'fvg',     'nearest_bull', 'nearest_bear'),
+            ('4h',  'fvg_4h',  'nearest_bull', 'nearest_bear'),
+            ('15m', 'fvg_15m', 'nearest_bull', 'nearest_bear'),
+            ('1d',  'fvg_1d',  'nearest_bull', 'nearest_bear'),
+        ]
+        for _tf, _smc_key, _bull_key, _bear_key in _fvg_tf_keys:
+            _fvg_data = smc.get(_smc_key, {})
+            _tf_fvgs = []
+            for _dir, _k in [('BULL', _bull_key), ('BEAR', _bear_key)]:
+                _f = _fvg_data.get(_k)
+                if not _f:
+                    continue
+                _lo  = _f.get('bottom', _f.get('lo', 0))
+                _hi  = _f.get('top',    _f.get('hi', 0))
+                _mid = _f.get('mid', round((_lo + _hi) / 2, 1) if _lo and _hi else 0)
+                if not (_lo and _hi):
+                    continue
+                _dist = (_mid - price_now) / price_now * 100 if price_now else 0
+                _tf_fvgs.append({
+                    'type': _dir,
+                    'lo':   round(_lo, 1),
+                    'hi':   round(_hi, 1),
+                    'mid':  round(_mid, 1),
+                    'dist_pct': round(_dist, 2),
+                    'filled': _f.get('filled', False),
+                    'magnet': '向上' if _dir == 'BULL' else '向下',
+                })
+            if _tf_fvgs:
+                fvg_map[_tf] = _tf_fvgs
+        if fvg_map:
+            breakdown['_fvg_map'] = fvg_map
+
+        # ── OB 地图（全周期）──────────────────────────────────────────
+        ob_map = {}
+        _ob_tf_keys = [
+            ('1h',  'order_blocks'),
+            ('4h',  'order_blocks_4h'),
+            ('15m', 'order_blocks_15m'),
+            ('1d',  'order_blocks_1d'),
+        ]
+        for _tf, _smc_key in _ob_tf_keys:
+            _ob_data = smc.get(_smc_key, {})
+            _tf_obs = []
+            for _dir, _ob_key in [('BULL', 'nearest_bull_ob'), ('BEAR', 'nearest_bear_ob')]:
+                _ob = _ob_data.get(_ob_key)
+                if not _ob:
+                    continue
+                _age = _ob.get('age_bars', 0)
+                _broken = _ob.get('broken', False)
+                # age有效性判断（复用_AGE_LIMITS逻辑）
+                _lim = {'15m': 96, '1h': 120, '4h': 60, '1d': 30}.get(_tf, 120)
+                _valid = (not _broken) and (_age < _lim)
+                _ob_lo = _ob.get('low',  _ob.get('ob_low',  0))
+                _ob_hi = _ob.get('high', _ob.get('ob_high', 0))
+                if not (_ob_lo and _ob_hi):
+                    continue
+                _dist = _ob.get('dist_pct', 0)
+                _tf_obs.append({
+                    'type':    _dir,
+                    'lo':      round(_ob_lo, 1),
+                    'hi':      round(_ob_hi, 1),
+                    'age':     _age,
+                    'valid':   _valid,
+                    'broken':  _broken,
+                    'dist_pct': round(_dist, 2),
+                    'note':    'NEW' if _age < _lim * 0.1 else ('FRESH' if _age < _lim * 0.5 else ('AGING' if _age < _lim else 'EXPIRED')),
+                })
+            if _tf_obs:
+                ob_map[_tf] = _tf_obs
+        if ob_map:
+            breakdown['_ob_map'] = ob_map
+
+    except Exception:
+        pass  # 不影响主链路评分
+
     return {
         's1': s1, 's2': s2, 's3': s3, 's4': s4,
         's5': s5, 's5b': s5b, 's6': s6,

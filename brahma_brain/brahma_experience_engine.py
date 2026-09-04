@@ -876,9 +876,135 @@ def _ts_to_date(ts_ms: int) -> str:
     return datetime.fromtimestamp(ts_ms / 1000, tz=timezone.utc).strftime('%Y-%m-%d')
 
 
-def _euclidean(a1: float, a2: float, b1: float, b2: float) -> float:
-    """两个二维向量的欧式距离"""
-    return math.sqrt((a1 - b1) ** 2 + (a2 - b2) ** 2)
+def _euclidean_nd(vec_a: list, vec_b: list) -> float:
+    """N维向量欧式距离（第一个为2维兼容旧代码）"""
+    return math.sqrt(sum((a - b) ** 2 for a, b in zip(vec_a, vec_b)))
+
+
+def _build_current_vec(klines: list, symbol: str = 'BTCUSDT') -> dict:
+    """
+    构建12维当前市场状态向量。
+    封印: 2026-09-04 苏摩111
+    返回字典包含: rsi_4h, change_3d, bbw, hurst_approx,
+               oi_chg_3d, fr_mean, atr_rank, regime_code,
+               macro_days, vol_rank, score_rank, stoch_rsi
+    """
+    import urllib.request
+    closes = [k['c'] for k in klines]
+    highs  = [k['h'] for k in klines]
+    lows   = [k['l'] for k in klines]
+
+    # 基础维度（已有）
+    rsi_4h    = _rsi_wilder(closes[-17:], 14)
+    base_3d   = klines[-4]['c'] if len(klines) >= 4 else klines[0]['c']
+    change_3d = (closes[-1] - base_3d) / base_3d * 100 if base_3d else 0
+
+    # BBW布林带宽度（应用于测量市场压缩）
+    _n = min(20, len(closes))
+    _avg = sum(closes[-_n:]) / _n
+    _std = (sum((c - _avg)**2 for c in closes[-_n:]) / _n) ** 0.5
+    bbw = round((_std / _avg * 100) if _avg else 5.0, 2)
+
+    # Hurst近伧4(简化R/S，计算成本低)
+    _rs_closes = closes[-30:]
+    hurst_approx = 0.5
+    try:
+        _mean   = sum(_rs_closes) / len(_rs_closes)
+        _dev    = [c - _mean for c in _rs_closes]
+        _cumdev = [sum(_dev[:i+1]) for i in range(len(_dev))]
+        _R      = max(_cumdev) - min(_cumdev)
+        _S      = (_std if _std > 0 else 1)
+        _rs     = _R / _S
+        hurst_approx = round(math.log(_rs) / math.log(len(_rs_closes)) if _rs > 0 else 0.5, 3)
+    except Exception:
+        pass
+
+    # ATR百分位排名(0~1)
+    _atr_list = [highs[i] - lows[i] for i in range(max(0, len(highs)-20), len(highs))]
+    _atr_now  = _atr_list[-1] if _atr_list else 0
+    atr_rank  = round(sum(1 for a in _atr_list if a < _atr_now) / max(len(_atr_list), 1), 2)
+
+    # OI变化率 - 从实时API拉取
+    oi_chg_3d = 0.0
+    try:
+        _usdt = symbol if symbol.endswith('USDT') else symbol + 'USDT'
+        _oi_hist = json.loads(urllib.request.urlopen(
+            f'https://fapi.binance.com/futures/data/openInterestHist?symbol={_usdt}&period=1d&limit=4',
+            timeout=5).read())
+        if isinstance(_oi_hist, list) and len(_oi_hist) >= 2:
+            _oi_now  = float(_oi_hist[-1].get('sumOpenInterest', 0))
+            _oi_prev = float(_oi_hist[-4].get('sumOpenInterest', _oi_now))
+            oi_chg_3d = round((_oi_now - _oi_prev) / _oi_prev * 100, 2) if _oi_prev else 0
+    except Exception:
+        pass
+
+    # FR平均资金费率
+    fr_mean = 0.0
+    try:
+        _usdt = symbol if symbol.endswith('USDT') else symbol + 'USDT'
+        _fr_hist = json.loads(urllib.request.urlopen(
+            f'https://fapi.binance.com/fapi/v1/fundingRate?symbol={_usdt}&limit=3',
+            timeout=5).read())
+        if isinstance(_fr_hist, list):
+            _frs = [float(x.get('fundingRate', 0)) * 100 for x in _fr_hist]
+            fr_mean = round(sum(_frs) / len(_frs), 4) if _frs else 0
+    except Exception:
+        pass
+
+    # 体制编码 - 从 brahma_state 读取
+    regime_code = 5  # 默认 CHOP_MID
+    score_rank  = 0.5
+    try:
+        _bs_path = Path(_DATA_DIR) / 'brahma_state.json'
+        if _bs_path.exists():
+            _bs = json.loads(_bs_path.read_text())
+            regime_code = REGIME_MAP.get(_bs.get('regime', 'CHOP_MID'), 5)
+            _score = float(_bs.get('score_final', _bs.get('score', 50)))
+            score_rank = round(min(1.0, _score / 200), 2)
+    except Exception:
+        pass
+
+    # 宏观事件距离 - 从 macro_cal_cache 读取
+    macro_days = 30  # 默认无事件
+    try:
+        _mac_path = Path(_DATA_DIR) / 'macro_cal_cache.json'
+        if _mac_path.exists():
+            _mac = json.loads(_mac_path.read_text())
+            _events = _mac.get('events', [])
+            if _events:
+                _now_ts = time.time()
+                _dists  = [abs(e.get('ts', _now_ts + 9999) - _now_ts) / 86400
+                           for e in _events if isinstance(e, dict)]
+                macro_days = round(min(_dists), 1) if _dists else 30
+    except Exception:
+        pass
+
+    # StochRSI近伧4
+    stoch_rsi = 50.0
+    try:
+        _rsi_vals = [_rsi_wilder(closes[max(0,i-17):i+1], 14)
+                     for i in range(max(0, len(closes)-14), len(closes))]
+        if len(_rsi_vals) >= 2:
+            _lo = min(_rsi_vals); _hi = max(_rsi_vals)
+            stoch_rsi = round((_rsi_vals[-1] - _lo) / (_hi - _lo) * 100
+                              if _hi > _lo else 50.0, 1)
+    except Exception:
+        pass
+
+    return {
+        'rsi_4h':      round(rsi_4h, 2),
+        'change_3d':   round(change_3d, 2),
+        'bbw':         bbw,
+        'hurst':       hurst_approx,
+        'oi_chg_3d':   oi_chg_3d,
+        'fr_mean':     fr_mean,
+        'atr_rank':    atr_rank,
+        'regime_code': regime_code,
+        'macro_days':  round(min(macro_days, 30), 1),
+        'vol_rank':    atr_rank,   # 暂用ATR_rank代替
+        'score_rank':  score_rank,
+        'stoch_rsi':   stoch_rsi,
+    }
 
 
 def _similarity_score(dist: float, max_dist: float) -> float:
@@ -891,6 +1017,32 @@ def _similarity_score(dist: float, max_dist: float) -> float:
 # ══════════════════════════════════════════════════════════════════════════════
 # 公共 API
 # ══════════════════════════════════════════════════════════════════════════════
+
+def _calc_bbw(closes: list, i: int, n: int = 20) -> float:
+    """BBW布林带宽度（古价计算）"""
+    try:
+        window = closes[max(0, i-n):i]
+        if len(window) < 5:
+            return 5.0
+        avg = sum(window) / len(window)
+        std = (sum((c - avg)**2 for c in window) / len(window)) ** 0.5
+        return round(std / avg * 100, 2) if avg else 5.0
+    except Exception:
+        return 5.0
+
+
+def _calc_atr_rank(klines: list, i: int, n: int = 20) -> float:
+    """ATR百分位排名（当前ATR在过去 N格中的相对位置）"""
+    try:
+        atrs = [klines[j]['h'] - klines[j]['l']
+                for j in range(max(0, i-n), i)]
+        if not atrs:
+            return 0.5
+        cur_atr = klines[i]['h'] - klines[i]['l']
+        return round(sum(1 for a in atrs if a < cur_atr) / len(atrs), 2)
+    except Exception:
+        return 0.5
+
 
 def build_extreme_events(symbol: str = 'BTCUSDT') -> list:
     """
@@ -942,8 +1094,18 @@ def build_extreme_events(symbol: str = 'BTCUSDT') -> list:
             'symbol'       : symbol,
             'change_pct'   : round(change_pct, 2),
             'direction'    : 'UP' if change_pct > 0 else 'DOWN',
+            # 基础维度（2维）
             'pre_3d_rsi'   : round(pre_3d_rsi, 2),
             'pre_3d_change': round(pre_3d_change, 2),
+            # 扩展维度（10维）—— HCME v2.0 2026-09-04 苏摩111
+            'bbw'          : _calc_bbw(closes, i),
+            'atr_rank'     : _calc_atr_rank(klines, i),
+            'regime_code'  : 5,  # 历史事件无体制标签，默认CHOP
+            'oi_chg_3d'    : 0.0,  # 历史OI数据不可用，占位
+            'fr_mean'      : 0.0,  # 历史FR数据不可用，占位
+            'macro_days'   : 30.0, # 历史宏观日历不可用，占位
+            'stoch_rsi'    : 50.0, # 历史StochRSI暂不计算，占位
+            'score_rank'   : 0.5,  # 历史评分不可用，占位
         }
         events.append(event)
 
@@ -978,84 +1140,135 @@ def _load_events() -> list:
 
 def match_current_similarity(symbol: str = 'BTCUSDT') -> dict:
     """
-    计算当前市场状态与历史极端事件的相似度。
+    HCME v2.0: 12维市场状态匹配，诚实标注置信度。
+    2026-09-04 苏摩111封印
 
     返回:
-      {
-        'current_rsi'     : float,
-        'current_3d_change': float,
-        'top3'            : [{'event': {...}, 'dist': float, 'similarity': float}, ...],
-        'max_similarity'  : float,
-        'warning'         : str  (空字符串或警告文本),
-      }
+      current_vec    : 当前12维状态
+      top3           : 最相似的 TOP3 历史事件
+      max_similarity : 0~100
+      n_events       : 案例库大小（用于置信度评估）
+      confidence     : 极低/低/中/高（基于 n 和维度）
+      warning        : 预警文本
+      note           : 评估说明（n值和维度说明）
     """
-    # 1. 加载事件库（不存在则先构建）
     events = _load_events()
     if not events:
         events = build_extreme_events(symbol)
-
     if not events:
-        return {'current_rsi': 50.0, 'current_3d_change': 0.0,
-                'top3': [], 'max_similarity': 0.0, 'warning': ''}
+        return {'top3': [], 'max_similarity': 0.0, 'confidence': '数据不足',
+                'n_events': 0, 'warning': '', 'note': '案例库为空'}
 
-    # 2. 计算当前状态（从1D K线取最新数据）
-    # [Fix 2026-09-01] 按symbol选择对应klines，避免BTC/ETH都匹配同一事件库
-    _sym_upper = symbol.upper().replace('USDT','') if symbol else 'BTC'
-    _sym_hist = os.path.join(_DATA_DIR, 'historical', f'{_sym_upper}USDT_1d.jsonl.gz')
+    # 获取当前 K 线
+    _sym_upper  = symbol.upper().replace('USDT', '') if symbol else 'BTC'
+    _sym_hist   = os.path.join(_DATA_DIR, 'historical', f'{_sym_upper}USDT_1d.jsonl.gz')
     _hist_to_use = _sym_hist if os.path.exists(_sym_hist) else _HIST_PATH
     klines = _load_klines_gz(_hist_to_use)
     if len(klines) < 17:
-        return {'current_rsi': 50.0, 'current_3d_change': 0.0,
-                'top3': [], 'max_similarity': 0.0, 'warning': ''}
+        return {'top3': [], 'max_similarity': 0.0, 'confidence': '数据不足',
+                'n_events': 0, 'warning': '', 'note': '历史K线不足'}
 
-    closes = [k['c'] for k in klines]
-    cur_rsi = _rsi_wilder(closes[-17:], period=14)
+    # 构建当前12维向量
+    cur = _build_current_vec(klines, symbol)
 
-    base_3d  = klines[-4]['c']
-    end_3d   = klines[-1]['c']
-    cur_3d_change = (end_3d - base_3d) / base_3d * 100.0 if base_3d else 0.0
+    # 途径不匹配时用旧版写字段兼容
+    def _ev_vec(ev: dict) -> list:
+        return [
+            ev.get('pre_3d_rsi',   50.0),
+            ev.get('pre_3d_change', 0.0),
+            ev.get('bbw',           5.0),
+            ev.get('hurst',         0.5) * 100,  # 缩放到同一量级
+            ev.get('oi_chg_3d',     0.0),
+            ev.get('fr_mean',       0.0) * 1000,  # 缩放
+            ev.get('atr_rank',      0.5) * 100,
+            ev.get('regime_code',   5)   * 10,    # 缩放
+            ev.get('macro_days',   30.0),
+            ev.get('vol_rank',      0.5) * 100,
+            ev.get('score_rank',    0.5) * 100,
+            ev.get('stoch_rsi',    50.0),
+        ]
 
-    # 3. 欧式距离，RSI 归一化到 [0,100]，3d_change 通常在 [-30,30]
-    #    为使两个维度量纲对齐：RSI/100 × 100 = RSI ; 3d_change 保持原值
-    #    计算所有事件的距离
+    def _cur_vec() -> list:
+        return [
+            cur['rsi_4h'],
+            cur['change_3d'],
+            cur['bbw'],
+            cur['hurst'] * 100,
+            cur['oi_chg_3d'],
+            cur['fr_mean'] * 1000,
+            cur['atr_rank'] * 100,
+            cur['regime_code'] * 10,
+            cur['macro_days'],
+            cur['vol_rank'] * 100,
+            cur['score_rank'] * 100,
+            cur['stoch_rsi'],
+        ]
+
+    cv = _cur_vec()
+
     scored = []
     for ev in events:
-        dist = _euclidean(cur_rsi, cur_3d_change,
-                          ev['pre_3d_rsi'], ev['pre_3d_change'])
+        ev_v = _ev_vec(ev)
+        dist = _euclidean_nd(cv, ev_v)
         scored.append({'event': ev, 'dist': dist})
 
     scored.sort(key=lambda x: x['dist'])
 
-    # 用距离最大值做归一化参考（取前100条的最大距离）
-    ref_dists = [s['dist'] for s in scored[:100]]
+    ref_dists = [s['dist'] for s in scored[:max(len(scored), 1)]]
     max_dist  = max(ref_dists) if ref_dists else 1.0
 
+    top_n = min(TOP_N, len(scored))
     top3 = []
-    for s in scored[:TOP_N]:
+    for s in scored[:top_n]:
         sim = _similarity_score(s['dist'], max_dist)
+        ev  = s['event']
         top3.append({
-            'event'     : s['event'],
-            'dist'      : round(s['dist'], 3),
+            'event':      ev,
+            'dist':       round(s['dist'], 3),
             'similarity': sim,
+            'dims_used':  12,
         })
 
-    max_sim = top3[0]['similarity'] if top3 else 0.0
+    n_events   = len(events)
+    max_sim    = top3[0]['similarity'] if top3 else 0.0
 
-    # 4. 生成警告
+    # 置信度评估（维度 × n值双重评估）
+    if n_events >= 200:
+        conf = '中'     # n趋数充分
+    elif n_events >= 50:
+        conf = '低'
+    elif n_events >= 10:
+        conf = '极低'
+    else:
+        conf = '极低'
+
+    note = (
+        f'12维匹配 | n={n_events}条案例 | '
+        f'置信度「{conf}」 | '
+        f'RSI={cur["rsi_4h"]:.1f} 3d={cur["change_3d"]:+.1f}% '
+        f'Hurst={cur["hurst"]:.3f} BBW={cur["bbw"]:.1f}% '
+        f'OI变化={cur["oi_chg_3d"]:+.1f}%'
+    )
+
     warning = ''
     if max_sim > SIMILARITY_WARNING and top3:
         best_ev = top3[0]['event']
         warning = (
-            f"⚠️ 当前市场与 {best_ev['date']} 极端事件 {max_sim}% 相似"
-            f"（{best_ev['direction']}，{best_ev['change_pct']:+.1f}%）"
+            f"⚠️ HCME v2.0: 与{best_ev['date']}相似度{max_sim}%（{best_ev['direction']},{best_ev['change_pct']:+.1f}%）"
+            f" | 12维 n={n_events} 置信{conf}"
         )
 
     return {
-        'current_rsi'      : round(cur_rsi, 2),
-        'current_3d_change': round(cur_3d_change, 2),
-        'top3'             : top3,
-        'max_similarity'   : max_sim,
-        'warning'          : warning,
+        'current_vec':    cur,
+        'top3':           top3,
+        'max_similarity': max_sim,
+        'n_events':       n_events,
+        'confidence':     conf,
+        'warning':        warning,
+        'note':           note,
+        # 居安兼容旧字段
+        'current_rsi':       cur['rsi_4h'],
+        'current_3d_change': cur['change_3d'],
     }
 
 

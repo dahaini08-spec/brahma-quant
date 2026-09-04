@@ -277,6 +277,16 @@ def main():
         # 保存第一个标的的完整state（兼容原有读者）
         first_state = all_states.get('BTCUSDT') or (list(all_states.values())[0] if all_states else {})
         STATE_FILE.write_text(json.dumps(first_state, ensure_ascii=False))
+
+        # 封印 2026-09-04 苏摩111：每个标的独立保存 brahma_state_<sym>.json
+        # 修复根因：ETH分析读到BTC的_ob_map/_fvg_map（数据污染）
+        for _sym, _state in all_states.items():
+            _sym_lower = _sym.replace('USDT', '').lower()
+            _sym_file  = STATE_FILE.parent / f'brahma_state_{_sym_lower}.json'
+            _state_copy = dict(_state)
+            _state_copy['_sym_key'] = _sym
+            _sym_file.write_text(json.dumps(_state_copy, ensure_ascii=False))
+        print(f'[state_refresh] 已写入独立state: {list(all_states.keys())}')
     except Exception as e:
         print(f'[state_refresh] ⚠️  brahma_state.json写入失败: {e}')
 

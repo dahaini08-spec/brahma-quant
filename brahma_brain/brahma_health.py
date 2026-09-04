@@ -132,7 +132,7 @@ def _check_signal_queue() -> dict:
         count = len(lines)
         return {
             'ok': True, 'detail': f'队列积压={count}条',
-            'count': count, 'warn': count > 50
+            'count': count, 'warn': count > 1000
         }
     except Exception as e:
         return {'ok': False, 'detail': f'队列读取异常: {str(e)[:50]}',

@@ -422,6 +422,89 @@ def q3_how_to_enter(state: dict, q1: dict, q2: dict, sym: str) -> dict:
 # 报告组装
 # ═══════════════════════════════════════════════════════════════════
 
+# ═══════════════════════════════════════════════════════════════════
+# VIP策略卡片（姓赵不宣格式——MEMORY.md封印模版）
+# ═══════════════════════════════════════════════════════════════════
+
+def _build_vip_card(sym: str, price: float, q1: dict, q2: dict, q3: dict) -> str:
+    """
+    姓赵不宣VIP策略卡片——仅在READY且非死穴时输出
+    格式来自 MEMORY.md封印模版（苏摩111 2026-08-31）——不允许自创格式
+    """
+    if q3['execute_code'] not in ('READY',) or q3.get('is_dead'):
+        return ''
+
+    bias     = q2['bias']          # 'LONG' / 'SHORT' / 'NEUTRAL'
+    regime   = q1['regime']
+    entry_lo = q3['entry_lo']
+    entry_hi = q3['entry_hi']
+    sl       = q3['sl_price']
+    tp1      = q3['tp1']
+    tp2      = q3['tp2']
+    rr       = q3['rr1']
+    fvg_m    = q3.get('fvg_magnet', 0)
+
+    # 根据体制和方向设定杆杆和仓位
+    if 'BEAR' in regime:
+        lev_main, nav_main = 10, 3     # 空单主力
+        lev_side, nav_side = 5,  1     # 多单剪仓
+    elif 'BULL' in regime:
+        lev_main, nav_main = 10, 5     # 多单主力
+        lev_side, nav_side = 5,  2     # 空单剪仓
+    else:  # CHOP
+        lev_main, nav_main = 5,  2     # CHOP低杆轻仓
+        lev_side, nav_side = 3,  1
+
+    # 计算TP3（空单TP3 = TP2 再延伸一个ATR）
+    atr = q3.get('atr_1h', price * 0.005)
+    if bias == 'SHORT' or ('BEAR' in regime and bias != 'LONG'):
+        tp3 = round(tp2 - atr, 1) if tp2 > 0 else 0
+        # 实际卡片方向：空为主
+        short_entry = f'${entry_lo:,.1f} ~ ${entry_hi:,.1f}'
+        short_sl    = f'${sl:,.1f}'
+        short_tps   = f'${tp1:,.1f} / ${tp2:,.1f}'
+        if tp3 > 0:
+            short_tps += f' / ${tp3:,.1f}'
+        # 备用多单（等猜杀后接）
+        hunt_price  = round(entry_lo - atr, 1)
+        long_zone   = f'${hunt_price:,.1f}~${entry_lo:,.1f}'
+        long_sl     = f'${round(hunt_price - atr * 1.5, 1):,.1f}'
+        long_tp     = f'${entry_lo:,.1f} / ${tp1:,.1f}'
+
+        card_lines = [
+            f'\u2500\u2500\u2500 VIP \u2500\u2500\u2500',
+            f'🌿 姓赵不宣 | {sym}({q2["bias_text"][:4]}) 今日布局',
+            f'🔴 空单 等 {short_entry} 反弹入场  止损 {short_sl}  目标 {short_tps}  杆杆{lev_main}x  仓{nav_main}%',
+            f'🟢 多单(轻)  等猜杀后 {long_zone} 接  止损 {long_sl}  目标 {long_tp}  杆杆{lev_side}x  仓{nav_side}%',
+            f'⚠️ 主方向做空{"  FVG磁铁: $" + str(int(fvg_m)) if fvg_m else ""}  体制: {regime}  RR={rr:.1f}x',
+        ]
+    elif bias == 'LONG' or 'BULL' in regime:
+        tp3 = round(tp2 + atr, 1)
+        long_entry = f'${entry_lo:,.1f} ~ ${entry_hi:,.1f}'
+        long_sl    = f'${sl:,.1f}'
+        long_tps   = f'${tp1:,.1f} / ${tp2:,.1f}'
+        # 备用空单（猜高后沿滑）
+        short_zone  = f'${entry_hi:,.1f}~${round(entry_hi + atr, 1):,.1f}'
+        short_sl2   = f'${round(entry_hi + atr * 1.5, 1):,.1f}'
+        short_tp2   = f'${entry_lo:,.1f} / ${sl:,.1f}'
+
+        card_lines = [
+            f'\u2500\u2500\u2500 VIP \u2500\u2500\u2500',
+            f'🌿 姓赵不宣 | {sym}({q2["bias_text"][:4]}) 今日布局',
+            f'🟢 多单 等 {long_entry} 接笹  止损 {long_sl}  目标 {long_tps}  杆杆{lev_main}x  仓{nav_main}%',
+            f'🔴 空单(轻)  等 {short_zone} 反弹入场  止损 {short_sl2}  目标 {short_tp2}  杆杆{lev_side}x  仓{nav_side}%',
+            f'⚠️ 主方向做多{"  FVG磁铁: $" + str(int(fvg_m)) if fvg_m else ""}  体制: {regime}  RR={rr:.1f}x',
+        ]
+    else:  # NEUTRAL / CHOP无信号
+        card_lines = [
+            f'\u2500\u2500\u2500 VIP \u2500\u2500\u2500',
+            f'🌿 姓赵不宣 | {sym} 今日布局',
+            f'⏳ 体制{regime}无清晰方向——等待结构运行，暂覆',
+        ]
+
+    return '\n'.join(card_lines)
+
+
 def build_v2_report(sym: str, q1: dict, q2: dict, q3: dict) -> str:
     now   = datetime.now(timezone.utc).strftime('%m/%d %H:%M UTC')
     price = q1['price']
@@ -525,6 +608,12 @@ def build_v2_report(sym: str, q1: dict, q2: dict, q3: dict) -> str:
     lines.append(f'  🔒 VaR95={q3["var95"]:.2f}%  SL{"✅达标" if q3["var_pass"] else "⚠️偏窄"}')
     lines.append('')
     lines.append(f'📡 梵天量化 · 74维分析 · 数据驱动 · 非投资建议')
+
+    # ── VIP策略卡片（姓赵不宣格式，仅READY时输出）───────────
+    vip = _build_vip_card(sym, price, q1, q2, q3)
+    if vip:
+        lines.append('')
+        lines.append(vip)
 
     return '\n'.join(lines)
 

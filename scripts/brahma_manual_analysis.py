@@ -1,0 +1,962 @@
+#!/usr/bin/env python3
+"""
+brahma_manual_analysis.py — 梵天手动全链路分析入口
+设计院封印 2026-09-03 苏摩111
+
+定位：
+  苏摩说「梵天分析」→ 调用此脚本
+  一次输出：10步完整链路 + 74维判断 + VIP策略卡片
+  不需要追问，不需要「这是全能力吗」
+
+10步强制链路（MEMORY.md封印）：
+  Step 0  实时数据并行拉取
+  Step 1  FVG磁铁（Bull/Bear方向）
+  Step 2  OB有效性（age<50bars且未穿越）
+  Step 3  清算地图（止损山/止损池）
+  Step 4  共振点（FVG+OB+清算三交叉）
+  Step 5  OI趋势（15min连续，LONG_BUILD/SHORT_BUILD）
+  Step 6  聪明钱分歧（大户vs散户）
+  Step 7  Hurst+HAR-RV+VolBeta（波动率三维）
+  Step 8  宏观压制（NFP/CPI日历）
+  Step 9  风控门控（熔断/回撤/反脆弱）
+  Step 10 输出VIP卡片（姓赵不宣格式）
+
+接入位置：
+  - python3 scripts/brahma_manual_analysis.py --symbols BTC ETH
+  - morning-battlefield / afternoon-battlefield cron message
+  - AI手动分析触发
+
+2026-09-03 苏摩111封印
+"""
+import os as _os_blas
+_os_blas.environ.setdefault('OPENBLAS_NUM_THREADS', '1')
+_os_blas.environ.setdefault('OMP_NUM_THREADS', '1')
+_os_blas.environ.setdefault('MKL_NUM_THREADS', '1')
+
+import json, sys, time, urllib.request, argparse
+from pathlib import Path
+from datetime import datetime, timezone
+
+BASE = Path(__file__).parent.parent
+sys.path.insert(0, str(BASE))
+sys.path.insert(0, str(BASE / 'brahma_brain'))
+
+DATA = BASE / 'data'
+
+# ══════════════════════════════════════════════════════════
+# 工具函数
+# ══════════════════════════════════════════════════════════
+
+def fetch(url, timeout=7):
+    try:
+        return json.loads(urllib.request.urlopen(url, timeout=timeout).read())
+    except Exception:
+        return {}
+
+def klines(sym, interval, limit):
+    try:
+        url = (f'https://fapi.binance.com/fapi/v1/klines'
+               f'?symbol={sym}&interval={interval}&limit={limit}')
+        d = json.loads(urllib.request.urlopen(url, timeout=8).read())
+        return [(float(x[1]), float(x[2]), float(x[3]), float(x[4]), float(x[5])) for x in d]
+    except Exception:
+        return []
+
+def load_json(path):
+    try:
+        p = Path(path)
+        if p.exists():
+            return json.loads(p.read_text())
+    except Exception:
+        pass
+    return {}
+
+# ══════════════════════════════════════════════════════════
+# Step 0: 并行拉取实时数据
+# ══════════════════════════════════════════════════════════
+
+def step0_fetch_all(sym: str) -> dict:
+    """并行拉取所有实时数据"""
+    usdt = sym + 'USDT'
+
+    price = float(fetch(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={usdt}').get('price', 0))
+    k1h   = klines(usdt, '1h', 8)
+    k4h   = klines(usdt, '4h', 6)
+    k15m  = klines(usdt, '15m', 8)
+
+    fr_raw = fetch(f'https://fapi.binance.com/fapi/v1/fundingRate?symbol={usdt}&limit=1')
+    fr     = float(fr_raw[0].get('fundingRate', 0)) if isinstance(fr_raw, list) and fr_raw else 0
+
+    oi_hist = fetch(f'https://fapi.binance.com/futures/data/openInterestHist?symbol={usdt}&period=15m&limit=6')
+    oi_vals = [float(x.get('sumOpenInterest', 0)) for x in oi_hist] if isinstance(oi_hist, list) else []
+    oi_usd  = [float(x.get('sumOpenInterestValue', 0)) for x in oi_hist] if isinstance(oi_hist, list) else []
+
+    lsr_raw  = fetch(f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol={usdt}&period=1h&limit=3')
+    lsr_list = [(float(x.get('longAccount', 0)), float(x.get('shortAccount', 0))) for x in lsr_raw] if isinstance(lsr_raw, list) else []
+
+    top_raw  = fetch(f'https://fapi.binance.com/futures/data/topLongShortPositionRatio?symbol={usdt}&period=1h&limit=3')
+    top_list = [float(x.get('longAccount', 0)) for x in top_raw] if isinstance(top_raw, list) else []
+
+    dep      = fetch(f'https://fapi.binance.com/fapi/v1/depth?symbol={usdt}&limit=5')
+    bids_sum = sum(float(x[1]) for x in dep.get('bids', []))
+    asks_sum = sum(float(x[1]) for x in dep.get('asks', []))
+
+    liq_b    = load_json(DATA / f'liq_heatmap_{usdt}.json')
+    # 优先读取标的专属state文件（修复ETH OB/FVG数据污染）
+    # brahma_state_refresh.py 已封印为每个标的写入独立文件
+    _sym_lower    = sym.lower()  # btc / eth
+    _sym_state    = DATA / f'brahma_state_{_sym_lower}.json'
+    _fallback     = DATA / 'brahma_state.json'
+    _candidate    = load_json(_sym_state) if _sym_state.exists() else {}
+    # 验证价格范围（防止读到错误的state文件）
+    _expected_lo  = 1000 if sym == 'ETH' else 10000
+    _expected_hi  = 20000 if sym == 'ETH' else 200000
+    if _candidate and _expected_lo < _candidate.get('price', 0) < _expected_hi:
+        bs = _candidate
+    else:
+        bs = load_json(_fallback)
+    gex_s    = load_json(DATA / 'gex_state.json')
+    vb_s     = load_json(DATA / 'vol_beta_state.json')
+    mac_s    = load_json(DATA / 'macro_state.json')
+    mac_cal  = load_json(DATA / 'macro_cal_cache.json')
+    cb       = load_json(DATA / 'circuit_breaker.json')
+    dd       = load_json(DATA / 'drawdown_state.json')
+    af       = load_json(DATA / 'antifragile_state.json')
+    regime_s = load_json(DATA / 'regime_state.json')
+
+    return {
+        'sym': sym, 'usdt': usdt, 'price': price,
+        'k1h': k1h, 'k4h': k4h, 'k15m': k15m,
+        'fr': fr, 'oi_vals': oi_vals, 'oi_usd': oi_usd,
+        'lsr_list': lsr_list, 'top_list': top_list,
+        'bids_sum': bids_sum, 'asks_sum': asks_sum,
+        'liq': liq_b, 'bs': bs, 'gex': gex_s.get(sym, {}),
+        'vb': vb_s.get(sym, {}), 'mac': mac_s, 'mac_cal': mac_cal,
+        'cb': cb, 'dd': dd, 'af': af, 'regime_s': regime_s,
+    }
+
+# ══════════════════════════════════════════════════════════
+# Step 1: FVG磁铁
+# ══════════════════════════════════════════════════════════
+
+def step1_fvg(d: dict) -> dict:
+    bd    = d['bs'].get('confluence', {}).get('breakdown', {})
+    price = d['price']
+    k1h   = d['k1h']
+    sym   = d['sym']
+
+    # ── 优先读取 brahma_state 里的 _fvg_map（由 block_a 实时计算）────────
+    fvg_map = bd.get('_fvg_map', {})
+    magnet = 0
+    fvg_dir = 'NONE'
+    fvg_desc = '无有效FVG数据'
+    price_lo = price * 0.70
+    price_hi = price * 1.30
+
+    if fvg_map:
+        # 优先选择最近的未填满FVG
+        all_fvgs = []
+        for tf, fvgs in fvg_map.items():
+            for f in fvgs:
+                if not f.get('filled') and price_lo <= f['mid'] <= price_hi:
+                    all_fvgs.append((abs(f['mid'] - price), tf, f))
+        all_fvgs.sort(key=lambda x: x[0])
+        if all_fvgs:
+            _, best_tf, best_f = all_fvgs[0]
+            magnet   = best_f['mid']
+            fvg_dir  = best_f['type']
+            fvg_desc = (f'{best_tf.upper()} {best_f["type"]} FVG '
+                       f'${best_f["lo"]:,.0f}~${best_f["hi"]:,.0f} '
+                       f'中点${best_f["mid"]:,.0f}({best_f["dist_pct"]:+.1f}%) '
+                       f'磁铁{best_f["magnet"]}')
+    else:
+        # 没有 _fvg_map（旧版state）→ 回走breakdown旧逻辑
+        for label, txt in [
+            ('4H_LONG',  str(bd.get('FVG_4H_LONG',  '') or '')),
+            ('15M_LONG', str(bd.get('FVG_15M_LONG', '') or '')),
+            ('4H_SHORT', str(bd.get('FVG_4H_SHORT', '') or '')),
+        ]:
+            if '磁铁' in txt:
+                try:
+                    mag = float(txt.split('磁铁')[1].split(']')[0].strip())
+                    if price_lo <= mag <= price_hi:
+                        magnet   = mag
+                        fvg_dir  = 'BULL' if 'LONG' in label else 'BEAR'
+                        fvg_desc = txt[:100]
+                        break
+                except Exception:
+                    pass
+
+    # 如果state层无数据，临时K线估算
+    if not magnet and len(k1h) >= 3:
+        last = k1h[-1]; prev2 = k1h[-3]
+        if prev2[1] < last[2]:  # Bull FVG
+            manual_fvg = round((prev2[1] + last[2]) / 2, 1)
+            if price_lo <= manual_fvg <= price_hi:
+                magnet   = manual_fvg
+                fvg_dir  = 'BULL'
+                fvg_desc = f'1H Bull FVG估算 缺口{prev2[1]:.0f}~{last[2]:.0f} 中点{manual_fvg:.0f}'
+
+    return {'dir': fvg_dir, 'magnet': magnet, 'desc': fvg_desc, 'fvg_map': fvg_map}
+
+    # 从K线手动估算当前FVG（最新2根大阳/大阴形成的缺口）
+    manual_fvg = 0
+    if len(k1h) >= 3:
+        last = k1h[-1]; prev = k1h[-2]; prev2 = k1h[-3]
+        # Bull FVG: prev2高点 < last低点（缺口向上）
+        if prev2[1] < last[2]:
+            manual_fvg = round((prev2[1] + last[2]) / 2, 1)
+            if not magnet:
+                magnet = manual_fvg
+                fvg_dir = 'BULL'
+                fvg_desc = f'Bull FVG 1H估算：缺口{prev2[1]:.0f}~{last[2]:.0f} 中点{manual_fvg:.0f}'
+
+    return {
+        'dir': fvg_dir,
+        'magnet': magnet,
+        'desc': fvg_desc,
+        'manual_fvg': manual_fvg,
+    }
+
+# ══════════════════════════════════════════════════════════
+# Step 2: OB有效性
+# ══════════════════════════════════════════════════════════
+
+def step2_ob(d: dict) -> dict:
+    bd = d['bs'].get('confluence', {}).get('breakdown', {})
+
+    # ── 优先读取 _ob_map（由 block_a 实时计算）──────────────────────
+    ob_map = bd.get('_ob_map', {})
+    results = {}
+
+    if ob_map:
+        for tf, obs in ob_map.items():
+            for ob in obs:
+                key  = f'OB_{tf.upper()}_{ob["type"]}'
+                note_tag = ob['note']  # NEW/FRESH/AGING/EXPIRED
+                valid    = ob['valid']
+                icon = {'NEW': '✅最新鲜', 'FRESH': '✅新鲜有效',
+                        'AGING': '⚠️老化中', 'EXPIRED': '❌已过期'}.get(note_tag, '⚠️')
+                results[key] = {
+                    'valid': valid,
+                    'note':  (f'{icon} age={ob["age"]}bars '
+                              f'${ob["lo"]:,.0f}~${ob["hi"]:,.0f} '
+                              f'dist={ob["dist_pct"]:+.2f}%')
+                }
+    else:
+        # 备用：读取旧版breakdown字段
+        for key in ['OB新鲜度_1H_LONG', 'OB新鲜度_4H_LONG', 'OB_1D_LONG',
+                    'OB新鲜度_1H_SHORT', 'OB新鲜度_4H_SHORT']:
+            val = str(bd.get(key, '') or '')
+            if not val:
+                continue
+            valid = True
+            note  = val[:100]
+            if 'age乘数=0.30' in val:
+                valid = False
+                note  = f'❌已老化(age≥5bars) → 作废  {val[:60]}'
+            elif 'age乘数=0.50' in val:
+                note  = f'⚠️ 中等有效(age40-50)  {val[:60]}'
+            elif 'age乘数=1.0' in val or 'age乘数=0.8' in val:
+                note  = f'✅ 新鲜有效  {val[:60]}'
+            results[key] = {'valid': valid, 'note': note}
+
+    return results
+
+# ══════════════════════════════════════════════════════════
+# Step 3: 清算地图
+# ══════════════════════════════════════════════════════════
+
+def step3_liq(d: dict) -> dict:
+    liq   = d['liq']
+    price = d['price']
+
+    short_map = liq.get('short_liq_map', {})
+    long_map  = liq.get('long_liq_map', {})
+
+    # ── 优先使用文件直接计算好的nearest字段 ──────────────────────────
+    # liq_heatmap_BTCUSDT.json 中 short_liq_map 的 key=百分比, value=该百分比对应的清算价
+    # 但key与value顺序是倒置的（key小对应更远的价），直接用 nearest_short_liq 字段最准确
+    nearest_short = liq.get('nearest_short_liq', 0)
+    nearest_long  = liq.get('nearest_long_liq',  0)
+    dist_short    = liq.get('dist_to_short_liq', 0)   # % distance
+    dist_long     = liq.get('dist_to_long_liq',  0)
+
+    # 若文件没有 nearest 字段（旧格式），用实时价格×最小百分比反算
+    if not nearest_short and short_map:
+        min_pct = min(float(k) for k in short_map.keys())
+        nearest_short = round(price * (1 + min_pct / 100), 1)
+        dist_short    = min_pct
+    if not nearest_long and long_map:
+        min_pct = min(float(k) for k in long_map.keys())
+        nearest_long  = round(price * (1 - min_pct / 100), 1)
+        dist_long     = min_pct
+
+    # 第二层清算目标（用实时价格×次小百分比）
+    sorted_short_pcts = sorted(float(k) for k in short_map.keys()) if short_map else []
+    sorted_long_pcts  = sorted(float(k) for k in long_map.keys())  if long_map  else []
+    second_short = round(price * (1 + sorted_short_pcts[1] / 100), 1) if len(sorted_short_pcts) >= 2 else 0
+    second_long  = round(price * (1 - sorted_long_pcts[1]  / 100), 1) if len(sorted_long_pcts)  >= 2 else 0
+
+    target_pct  = (nearest_short - price) / price * 100 if nearest_short and price else 0
+    support_pct = (price - nearest_long)  / price * 100 if nearest_long  and price else 0
+
+    return {
+        'nearest_short':      nearest_short,
+        'nearest_short_pct':  dist_short,
+        'second_short':       second_short,
+        'nearest_long':       nearest_long,
+        'nearest_long_pct':   dist_long,
+        'second_long':        second_long,
+        'target_pct':         round(target_pct, 2),
+        'support_pct':        round(support_pct, 2),
+        'short_map':          short_map,
+        'long_map':           long_map,
+    }
+
+# ══════════════════════════════════════════════════════════
+# Step 4: 共振点
+# ══════════════════════════════════════════════════════════
+
+def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict) -> dict:
+    price = d['price']
+
+    fvg_mid     = fvg['magnet']
+    fvg_dir     = fvg['dir']
+    valid_obs   = [k for k, v in ob.items() if v.get('valid', False)]
+    nearest_liq = liq['nearest_short'] if fvg_dir in ('BULL', 'NONE') else liq['nearest_long']
+
+    # 共振条件：FVG有效 + 有fresh OB + 清算目标明确
+    has_fvg    = fvg_mid > 0 and fvg_dir != 'NONE'
+    has_ob     = len(valid_obs) > 0
+    has_liq    = nearest_liq > 0
+
+    score      = sum([has_fvg, has_ob, has_liq])
+    resonance  = score >= 2  # 至少2/3条件
+
+    if resonance and has_fvg:
+        entry_lo = round(min(fvg_mid * 0.998, price * 0.997), 1)
+        entry_hi = round(fvg_mid * 1.002, 1)
+    else:
+        entry_lo = round(price * 0.997, 1)
+        entry_hi = round(price * 1.000, 1)
+
+    missing = []
+    if not has_fvg:  missing.append('FVG无效')
+    if not has_ob:   missing.append('无新鲜OB')
+    if not has_liq:  missing.append('清算数据缺失')
+
+    return {
+        'resonance':   resonance,
+        'score':       score,
+        'has_fvg':     has_fvg,
+        'has_ob':      has_ob,
+        'has_liq':     has_liq,
+        'entry_lo':    entry_lo,
+        'entry_hi':    entry_hi,
+        'missing':     missing,
+    }
+
+# ══════════════════════════════════════════════════════════
+# Step 5: OI趋势
+# ══════════════════════════════════════════════════════════
+
+def step5_oi(d: dict) -> dict:
+    oi_vals = d['oi_vals']
+    price   = d['price']
+    k1h     = d['k1h']
+
+    if len(oi_vals) < 2:
+        return {'signal': 'NO_DATA', 'trend': [], 'conclusion': 'OI数据不足'}
+
+    diffs    = [oi_vals[i] - oi_vals[i-1] for i in range(1, len(oi_vals))]
+    rising   = sum(1 for d in diffs if d > 0)
+    falling  = sum(1 for d in diffs if d < 0)
+    last_chg = oi_vals[-1] - oi_vals[-2] if len(oi_vals) >= 2 else 0
+
+    # 价格方向
+    if k1h and len(k1h) >= 2:
+        price_up = k1h[-1][3] > k1h[-2][3]
+    else:
+        price_up = True
+
+    if rising >= 4 and price_up:
+        signal = 'LONG_BUILD'
+        conclusion = f'OI持续增仓+价格上涨 → 新多头入场，主力真实做多'
+    elif rising >= 4 and not price_up:
+        signal = 'SHORT_BUILD'
+        conclusion = f'OI持续增仓+价格下跌 → 新空头入场，主力真实做空'
+    elif falling >= 3 and price_up:
+        signal = 'SHORT_SQUEEZE'
+        conclusion = f'OI减仓+价格上涨 → 轧空行情，持续性存疑'
+    elif falling >= 3 and not price_up:
+        signal = 'LONG_UNWIND'
+        conclusion = f'OI减仓+价格下跌 → 多头平仓，注意回调深度'
+    else:
+        signal = 'MIXED'
+        conclusion = f'OI信号混杂，方向不明，观望'
+
+    total_change = oi_vals[-1] - oi_vals[0] if oi_vals else 0
+    usd_change   = (d['oi_usd'][-1] - d['oi_usd'][0]) if len(d.get('oi_usd', [])) >= 2 else 0
+
+    return {
+        'signal':       signal,
+        'conclusion':   conclusion,
+        'rising_bars':  rising,
+        'total_change': round(total_change, 0),
+        'usd_change_m': round(usd_change / 1e6, 1),
+        'latest':       round(oi_vals[-1], 0) if oi_vals else 0,
+        'trend':        [round(v, 0) for v in oi_vals],
+    }
+
+# ══════════════════════════════════════════════════════════
+# Step 6: 聪明钱分歧
+# ══════════════════════════════════════════════════════════
+
+def step6_smart_money(d: dict) -> dict:
+    top_list = d['top_list']   # 大户多头占比列表
+    lsr_list = d['lsr_list']   # 散户 (long%, short%)
+
+    big_latest    = top_list[-1] if top_list else 0.5
+    retail_latest = lsr_list[-1][0] if lsr_list else 0.5
+
+    # 趋势：大户多头是在增加还是减少
+    big_trend = 'INCREASING' if len(top_list) >= 2 and top_list[-1] > top_list[0] else 'STABLE'
+
+    diverge = abs(big_latest - retail_latest)
+
+    if big_latest > 0.60 and retail_latest < 0.52:
+        signal      = 'STRONG_BULL'
+        conclusion  = f'大户{big_latest*100:.0f}%多 vs 散户{retail_latest*100:.0f}%多 → 极端分歧，主力在买，散户在空，强烈看多'
+    elif big_latest > 0.55:
+        signal      = 'MILD_BULL'
+        conclusion  = f'大户{big_latest*100:.0f}%多，方向偏多'
+    elif big_latest < 0.45:
+        signal      = 'BEAR'
+        conclusion  = f'大户{big_latest*100:.0f}%多（空头主导），偏空'
+    else:
+        signal      = 'NEUTRAL'
+        conclusion  = f'大户多空均衡，方向不明'
+
+    return {
+        'signal':      signal,
+        'conclusion':  conclusion,
+        'big_long':    round(big_latest * 100, 1),
+        'retail_long': round(retail_latest * 100, 1),
+        'diverge':     round(diverge * 100, 1),
+        'big_trend':   big_trend,
+    }
+
+# ══════════════════════════════════════════════════════════
+# Step 7: Hurst + HAR-RV + VolBeta
+# ══════════════════════════════════════════════════════════
+
+def step7_volatility(d: dict) -> dict:
+    bd   = d['bs'].get('confluence', {}).get('breakdown', {})
+    vb   = d['vb']
+    sym  = d['sym']
+
+    hurst_raw = str(bd.get('Hurst体制验证', '') or '')
+    harv_raw  = str(bd.get('HAR-RV波动率', '') or '')
+
+    hurst_val = 0.5
+    try:
+        if 'H=' in hurst_raw:
+            hurst_val = float(hurst_raw.split('H=')[1].split()[0])
+    except Exception:
+        pass
+
+    harv_val = 0.0
+    try:
+        if 'RV=' in harv_raw:
+            harv_val = float(harv_raw.split('RV=')[1].split()[0])
+    except Exception:
+        pass
+
+    # HAR-RV 转换为具体价格波动区间
+    # RV = 已实现波动率（对数收益标准差）
+    # 预测未来 4H 价格区间：当前价格 ± RV * 价格 * sqrt(4) 年化因子追倒
+    price_now = d.get('price', 0)
+    harv_range_lo = harv_range_hi = 0
+    harv_range_str = ''
+    if harv_val > 0 and price_now > 0:
+        # RV 是日化年维，换算回 4H 波动： daily_vol = RV/sqrt(252)日， 4H_vol = daily_vol/sqrt(6)
+        daily_vol = harv_val / (252 ** 0.5)
+        fh_vol    = daily_vol / (6 ** 0.5)
+        harv_range_lo = round(price_now * (1 - fh_vol), 1)
+        harv_range_hi = round(price_now * (1 + fh_vol), 1)
+        harv_range_str = f'未来4H价格区间: ${harv_range_lo:,.0f}~${harv_range_hi:,.0f}'
+
+    kappa    = vb.get('kappa', 0)
+    beta_p   = vb.get('beta_plus', 0)
+    beta_m   = vb.get('beta_minus', 0)
+    iv_rank  = vb.get('iv_pct_rank', 50)
+    iv_pct   = vb.get('iv_pct', 0)
+    premium  = vb.get('iv_premium_pct', 0)
+
+    # Hurst解读
+    if hurst_val >= 0.65:
+        hurst_note = f'H={hurst_val:.3f} 🔥强趋势持续性，当前方向会继续'
+    elif hurst_val >= 0.55:
+        hurst_note = f'H={hurst_val:.3f} ⚠️趋势性隐现，体制切换前兆'
+    elif hurst_val <= 0.40:
+        hurst_note = f'H={hurst_val:.3f} 均值回归强，震荡不适合趋势追踪'
+    else:
+        hurst_note = f'H={hurst_val:.3f} 随机游走，方向不确定'
+
+    # kappa解读
+    if kappa < -0.05:
+        kappa_note = f'κ={kappa:.3f} 🟢Call需求强(期权市场偏多，大资金买上涨保险)'
+    elif kappa > 0.05:
+        kappa_note = f'κ={kappa:.3f} 🔴Put需求强(期权市场偏空或对冲)'
+    else:
+        kappa_note = f'κ={kappa:.3f} 期权市场中性'
+
+    return {
+        'hurst':       hurst_val,
+        'hurst_note':  hurst_note,
+        'harv':           harv_val,
+        'harv_range_lo':  harv_range_lo,
+        'harv_range_hi':  harv_range_hi,
+        'harv_range_str': harv_range_str,
+        'kappa':       kappa,
+        'kappa_note':  kappa_note,
+        'beta_p':      beta_p,
+        'beta_m':      beta_m,
+        'iv_rank':     iv_rank,
+        'trend_signal': 'TRENDING' if hurst_val >= 0.55 else 'RANGING',
+    }
+
+# ══════════════════════════════════════════════════════════
+# Step 8: 宏观压制
+# ══════════════════════════════════════════════════════════
+
+def step8_macro(d: dict) -> dict:
+    mac     = d['mac']
+    mac_cal = d['mac_cal']
+
+    fear_greed = mac.get('fear_greed', 50)
+    macro_bias = mac.get('macro_bias', 'NEUTRAL')
+    macro_note = mac.get('macro_note', '')
+
+    # 宏观日历事件
+    events = []
+    if isinstance(mac_cal, dict):
+        for k, v in mac_cal.items():
+            if isinstance(v, list):
+                events.extend(v[:2])
+            elif isinstance(v, str):
+                events.append(v[:50])
+    elif isinstance(mac_cal, list):
+        events = [str(e)[:50] for e in mac_cal[:3]]
+
+    # NFP/CPI/FOMC检测
+    high_impact = [e for e in events if any(x in str(e).upper() for x in ['NFP', 'CPI', 'FOMC', 'PCE', '非农'])]
+    has_event   = len(high_impact) > 0
+
+    if has_event:
+        pos_note = f'⚠️ 重大宏观事件迫近({", ".join(high_impact[:2])}) → 持仓减半，SL加宽50%'
+    else:
+        pos_note = '✅ 近期无重大宏观事件，正常仓位'
+
+    return {
+        'fear_greed':  fear_greed,
+        'macro_bias':  macro_bias,
+        'macro_note':  macro_note[:60],
+        'events':      events[:3],
+        'high_impact': high_impact,
+        'has_event':   has_event,
+        'pos_note':    pos_note,
+    }
+
+# ══════════════════════════════════════════════════════════
+# Step 9: 风控门控
+# ══════════════════════════════════════════════════════════
+
+def step9_risk(d: dict) -> dict:
+    cb  = d['cb']
+    dd  = d['dd']
+    af  = d['af']
+
+    l1 = cb.get('l1', False)
+    l2 = cb.get('l2', False)
+    l3 = cb.get('l3', False)
+    circuit_ok = not (l1 or l2 or l3)
+
+    dd_pct    = dd.get('drawdown_pct', 0)
+    dd_status = dd.get('status', 'NORMAL')
+    dd_ok     = dd_status == 'NORMAL'
+
+    consec_loss = af.get('consecutive_losses', 0)
+    af_ok       = consec_loss < 3
+
+    all_green = circuit_ok and dd_ok and af_ok
+
+    blocks = []
+    if not circuit_ok:
+        level = 'L3' if l3 else ('L2' if l2 else 'L1')
+        blocks.append(f'熔断器{level}触发 → 禁止入场')
+    if not dd_ok:
+        blocks.append(f'回撤{dd_pct:.1f}% status={dd_status} → 降仓50%')
+    if not af_ok:
+        blocks.append(f'连亏{consec_loss}笔 → 冷却期，降仓50%')
+
+    nav_mult = 1.0
+    if not dd_ok and dd_pct >= 5:
+        nav_mult = 0.5
+    if not dd_ok and dd_pct >= 10:
+        nav_mult = 0.25
+    if not af_ok:
+        nav_mult = min(nav_mult, 0.5)
+
+    return {
+        'all_green':  all_green,
+        'circuit_ok': circuit_ok,
+        'dd_ok':      dd_ok,
+        'af_ok':      af_ok,
+        'dd_pct':     dd_pct,
+        'consec':     consec_loss,
+        'blocks':     blocks,
+        'nav_mult':   nav_mult,
+    }
+
+# ══════════════════════════════════════════════════════════
+# Step 10: VIP卡片（姓赵不宣格式）
+# ══════════════════════════════════════════════════════════
+
+def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
+    bs      = d['bs']
+    mom     = bs.get('momentum', {})
+    bd      = bs.get('confluence', {}).get('breakdown', {})
+    regime  = bs.get('regime', 'CHOP_MID')
+    regime_s= d['regime_s']
+    reg_now = regime_s.get(sym + 'USDT', {}).get('confirmed', regime)
+
+    atr_1h  = mom.get('atr_1h', 0)
+    # ATR合理性验证：应在价格的0.2%~3%之间
+    if not atr_1h or atr_1h > price * 0.03 or atr_1h < price * 0.002:
+        # 用实时K线直接计算ATR（近8根1H平均高低波幅）
+        k1h_local = d.get('k1h', [])
+        if len(k1h_local) >= 3:
+            tr_list = [abs(x[1] - x[2]) for x in k1h_local[-8:]]
+            atr_1h  = round(sum(tr_list) / len(tr_list), 1)
+        if not atr_1h or atr_1h > price * 0.03 or atr_1h < price * 0.002:
+            atr_1h = price * 0.005  # 最后备用: 0.5%价格
+
+    # 方向判断（综合5个信号投票）
+    bull_votes = 0
+    bear_votes = 0
+
+    if oi['signal'] in ('LONG_BUILD',):    bull_votes += 2
+    if oi['signal'] in ('SHORT_BUILD',):   bear_votes += 2
+    if oi['signal'] in ('SHORT_SQUEEZE',): bull_votes += 1
+
+    if sm['signal'] in ('STRONG_BULL', 'MILD_BULL'): bull_votes += 2
+    if sm['signal'] == 'BEAR':                        bear_votes += 2
+
+    if fvg['dir'] == 'BULL': bull_votes += 1
+    if fvg['dir'] == 'BEAR': bear_votes += 1
+
+    if vol['kappa'] < -0.05: bull_votes += 1
+    if vol['kappa'] > 0.05:  bear_votes += 1
+
+    if 'BULL' in reg_now: bull_votes += 2
+    if 'BEAR' in reg_now: bear_votes += 2
+
+    bias = 'LONG' if bull_votes > bear_votes else ('SHORT' if bear_votes > bull_votes else 'NEUTRAL')
+
+    # ══ 死穴门控（MEMORY.md封印铁律）══
+    # BULL_TREND:LONG score≥140+SL≥3% → WR=0% 永久封禁
+    # BEAR_RECOVERY:SHORT → WR=0% 严禁
+    # BEAR_TREND:LONG → WR=45% 封禁
+    _is_dead = False
+    _dead_reason = ''
+    _score_now = float(bs.get('score_final', bs.get('score', 0)))
+    if 'BULL_TREND' in reg_now and bias == 'LONG' and _score_now >= 140:
+        _sl_est = abs(res['entry_lo'] - (res['entry_lo'] * 0.97)) / res['entry_lo'] * 100
+        if _sl_est >= 3.0:
+            _is_dead = True
+            _dead_reason = f'死穴: BULL_TREND:LONG score={_score_now:.0f}≥140 + SL≥3% → WR=0% 永久封禁'
+    if 'BEAR_RECOVERY' in reg_now and bias == 'SHORT':
+        _is_dead = True
+        _dead_reason = 'BEAR_RECOVERY:SHORT → WR=0% 严禁'
+    if 'BEAR_TREND' in reg_now and bias == 'LONG':
+        _is_dead = True
+        _dead_reason = f'BEAR_TREND:LONG → WR=45% EV=-2.0 封禁（精英解锁: score≥155+grade≥90+RSI<20）'
+
+    if _is_dead:
+        return (
+            f'──── VIP ────\n'
+            f'🌿 姓赵不宣 | {sym} 今日布局\n'
+            f'🚫 禁止入场 — {_dead_reason}\n'
+            f'   当前体制: {reg_now}  方向: {bias}  score: {_score_now:.0f}'
+        )
+
+    # 无共振点 → 等待
+    if not res['resonance']:
+        missing_str = ' / '.join(res['missing']) if res['missing'] else '方向不明'
+        return (
+            f'──── VIP ────\n'
+            f'🌿 姓赵不宣 | {sym} 今日布局\n'
+            f'⏳ 当前无精确共振点 — 等待结构\n'
+            f'   缺失条件：{missing_str}\n'
+            f'   有效信号满足后自动更新'
+        )
+
+    entry_lo = res['entry_lo']
+    entry_hi = res['entry_hi']
+
+    # 仓位调整（宏观+风控）
+    base_lev_main = 10 if 'TREND' in reg_now else 5
+    base_nav_main = 5  if 'TREND' in reg_now else 2
+    if mac['has_event']:
+        base_nav_main = max(1, base_nav_main // 2)
+        base_lev_main = max(3, base_lev_main - 3)
+    base_nav_main = round(base_nav_main * risk['nav_mult'])
+    base_nav_main = max(1, base_nav_main)
+
+    lev_side  = max(3, base_lev_main - 5)
+    nav_side  = max(1, base_nav_main // 2)
+
+    # SL / TP
+    min_sl = atr_1h * 1.5
+    if bias == 'LONG':
+        sl       = round(entry_lo - max(min_sl, entry_lo * 0.012), 1)
+        sl_pct   = round((entry_lo - sl) / entry_lo * 100, 2)
+        tp1      = round(liq['nearest_short'] if liq['nearest_short'] > price else price + atr_1h * 2.5, 1)
+        tp2      = round(liq['second_short']  if liq.get('second_short', 0) > tp1 else tp1 + atr_1h * 2, 1)
+        tp3      = round(tp2 + atr_1h * 2, 1)
+        rr       = round((tp1 - entry_lo) / (entry_lo - sl), 2) if entry_lo > sl else 0
+
+        main_line = f'🟢 多单｜挂单区 ${entry_lo:,.1f}~${entry_hi:,.1f}'
+        main_params = f'止损 ${sl:,.1f}｜目标 ${tp1:,.0f}→${tp2:,.0f}→${tp3:,.0f}'
+
+        hunt_price = round(entry_lo - atr_1h * 1.2, 1)
+        side_zone  = f'${hunt_price:,.1f}~${entry_lo:,.1f}'
+        side_sl    = round(hunt_price - atr_1h * 1.5, 1)
+        side_tp    = f'${entry_lo:,.0f}→${tp1:,.0f}'
+        side_line  = f'🔴 空单（轻）｜等 {side_zone} 反弹入场'
+        side_params= f'止损 ${side_sl:,.1f}｜目标 {side_tp}'
+        main_dir   = '主方向做多'
+
+    else:  # SHORT or NEUTRAL default to SHORT when BEAR regime
+        sl       = round(entry_hi + max(min_sl, entry_hi * 0.012), 1)
+        sl_pct   = round((sl - entry_hi) / entry_hi * 100, 2)
+        tp1      = round(liq['nearest_long'] if liq['nearest_long'] < price else price - atr_1h * 2.5, 1)
+        tp2      = round(liq['second_long']  if liq.get('second_long', 0) > 0 and liq['second_long'] < tp1 else tp1 - atr_1h * 2, 1)
+        tp3      = round(tp2 - atr_1h * 2, 1)
+        rr       = round((entry_hi - tp1) / (sl - entry_hi), 2) if sl > entry_hi else 0
+
+        main_line   = f'🔴 空单｜挂单区 ${entry_lo:,.1f}~${entry_hi:,.1f}'
+        main_params = f'止损 ${sl:,.1f}｜目标 ${tp1:,.0f}→${tp2:,.0f}→${tp3:,.0f}'
+
+        hunt_price  = round(entry_hi + atr_1h * 1.2, 1)
+        side_zone   = f'${entry_hi:,.1f}~${hunt_price:,.1f}'
+        side_sl     = round(hunt_price + atr_1h * 1.5, 1)
+        side_tp     = f'${entry_hi:,.0f}→${tp1:,.0f}'
+        side_line   = f'🟢 多单（轻）｜等猎杀后 {side_zone} 接'
+        side_params = f'止损 ${side_sl:,.1f}｜目标 {side_tp}'
+        main_dir    = '主方向做空'
+
+    # 风控提示
+    risk_note = ''
+    if mac['has_event']:
+        risk_note = f'\n⚠️ 宏观事件({", ".join(mac["high_impact"][:1])})→仓位已压缩'
+    if risk['blocks']:
+        risk_note += f'\n🚨 风控: {risk["blocks"][0]}'
+
+    # SL验证
+    sl_ok = abs(entry_lo - sl) >= min_sl if bias == 'LONG' else abs(sl - entry_hi) >= min_sl
+    sl_tag = '✅' if sl_ok else '⚠️偏窄'
+
+    lines = [
+        f'──── VIP ────',
+        f'🌿 姓赵不宣 | {sym}({reg_now}) 今日布局',
+        f'',
+        f'{main_line}',
+        f'{main_params}',
+        f'杠杆 {base_lev_main}x｜仓位 {base_nav_main}%  RR={rr}x  SL={sl_pct:.2f}% {sl_tag}',
+        f'',
+        f'{side_line}',
+        f'{side_params}',
+        f'杠杆 {lev_side}x｜仓位 {nav_side}%',
+        f'',
+        f'⚠️ {main_dir}  ATR1H=${atr_1h:.0f}',
+        f'🚫 破${sl:,.0f} 策略作废',
+    ]
+    if risk_note:
+        lines.append(risk_note)
+
+    return '\n'.join(lines)
+
+# ══════════════════════════════════════════════════════════
+# 主报告组装
+# ══════════════════════════════════════════════════════════
+
+def run_analysis(sym: str) -> str:
+    ts  = datetime.now(timezone.utc).strftime('%m/%d %H:%M UTC')
+    print(f'[{sym}] Step 0: 拉取实时数据...', flush=True)
+    d   = step0_fetch_all(sym)
+    p   = d['price']
+
+    print(f'[{sym}] Step 1~4: FVG/OB/清算/共振...', flush=True)
+    fvg = step1_fvg(d)
+    ob  = step2_ob(d)
+    liq = step3_liq(d)
+    res = step4_resonance(d, fvg, ob, liq)
+
+    print(f'[{sym}] Step 5~9: OI/聪明钱/波动率/宏观/风控...', flush=True)
+    oi  = step5_oi(d)
+    sm  = step6_smart_money(d)
+    vol = step7_volatility(d)
+    mac = step8_macro(d)
+    risk= step9_risk(d)
+
+    # AI议会实时裁决（纯规则引擎，零延迟零成本）
+    council = {}
+    try:
+        import sys as _sys2
+        _sys2.path.insert(0, str(BASE / 'brahma_brain'))
+        from llm_council import council_verdict
+        bd_c     = d['bs'].get('confluence', {}).get('breakdown', {})
+        regime_c = d['regime_s'].get(sym+'USDT',{}).get('confirmed', d['bs'].get('regime','CHOP_MID'))
+        bias_dir_c = 'LONG' if (oi['signal'] in ('LONG_BUILD','SHORT_SQUEEZE') and sm['big_long'] > 52) else 'SHORT'
+        council = council_verdict(
+            breakdown=bd_c, signal_dir=bias_dir_c,
+            regime=regime_c,
+            score=float(d['bs'].get('score_final', d['bs'].get('score', 0))),
+            liq_data=liq,
+        )
+    except Exception as _ce:
+        council = {'bias':'N/A','reason':str(_ce)[:40],'action':'WAIT','confidence':'LOW'}
+
+    print(f'[{sym}] Step 10: 生成VIP卡片...', flush=True)
+
+    bd      = d['bs'].get('confluence', {}).get('breakdown', {})
+    regime  = d['bs'].get('regime', 'UNKNOWN')
+    score   = d['bs'].get('score_final', d['bs'].get('score', 0))
+    grade   = d['bs'].get('grade', 0)
+    hurst_s = str(bd.get('Hurst体制验证', '') or '')
+    hcme_s  = str(d['bs'].get('hcme_ctx', '') or '')
+    fc_raw  = d['bs'].get('fangcang', {})
+    fc_case = ''
+    if isinstance(fc_raw, dict):
+        top = fc_raw.get('top_similar', [])
+        if top:
+            t = top[0]
+            fc_case = f'{t.get("dt","?")} 相似度{t.get("score",0):.3f} 未来收益{t.get("future_ret",0):+.2f}%'
+
+    k4h    = d['k4h']
+    k4h_last = k4h[-1] if k4h else None
+    k4h_prev_vols = [x[4] for x in k4h[:-1]] if k4h else []
+    avg_v4h = sum(k4h_prev_vols) / len(k4h_prev_vols) if k4h_prev_vols else 0
+    k4h_vol_mult = round(k4h_last[4] / avg_v4h, 1) if avg_v4h and k4h_last else 1.0
+
+    k1h    = d['k1h']
+    vol_avg1h = sum(x[4] for x in k1h[:-2]) / max(len(k1h)-2, 1) if len(k1h) > 2 else 0
+    vol_last1h= k1h[-1][4] if k1h else 0
+    k1h_mult  = round(vol_last1h / vol_avg1h, 1) if vol_avg1h else 1.0
+
+    vip = step10_vip(sym, p, d, fvg, ob, liq, res, oi, sm, vol, mac, risk)
+
+    lines = [
+        f'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        f'🏛️ 梵天74维全能力分析 | {sym}/USDT ${p:,.1f} | {ts}',
+        f'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        f'',
+        f'【体制】{regime}  score={score:.0f}  grade={grade}',
+        f'',
+        f'【Step1 FVG磁铁】',
+        f'  方向: {fvg["dir"]}  磁铁位: ${fvg["magnet"]:,.1f}' if fvg['magnet'] else '  无有效FVG',
+        f'  {fvg["desc"][:80]}',
+        f'',
+        f'【Step2 OB有效性】',
+    ]
+    if ob:
+        for k, v in ob.items():
+            lines.append(f'  {k}: {v["note"][:80]}')
+    else:
+        lines.append('  无OB数据')
+
+    lines += [
+        f'',
+        f'【Step3 清算地图】',
+        f'  🎯上方空头止损墙: ${liq["nearest_short"]:,.0f} (+{liq["nearest_short_pct"]:.1f}%，目标+{liq["target_pct"]:.1f}%)'
+        + (f'  → 第二层: ${liq["second_short"]:,.0f}' if liq.get('second_short') else ''),
+        f'  🛡️下方多头支撑池: ${liq["nearest_long"]:,.0f} (-{liq["support_pct"]:.1f}%)',
+        f'',
+        f'【Step4 共振点】',
+        f'  共振得分: {res["score"]}/3  {"✅有效共振，可布局" if res["resonance"] else "❌共振不足，等待"}',
+        f'  入场区间: ${res["entry_lo"]:,.1f} ~ ${res["entry_hi"]:,.1f}',
+    ]
+    if res['missing']:
+        lines.append(f'  缺失: {" / ".join(res["missing"])}')
+
+    lines += [
+        f'',
+        f'【Step5 OI趋势】',
+        f'  信号: {oi["signal"]}  {oi["conclusion"]}',
+        f'  15min变化: {" → ".join(str(int(v)) for v in oi["trend"])}',
+        f'  累计变化: {oi["total_change"]:+,.0f}张  OI价值变化: {oi["usd_change_m"]:+.1f}M',
+        f'',
+        f'【Step6 聪明钱分歧】',
+        f'  {sm["conclusion"]}',
+        f'  大户多{sm["big_long"]}% vs 散户多{sm["retail_long"]}%  分歧={sm["diverge"]}%',
+        f'',
+        f'【Step7 波动率三维】',
+        f'  {vol["hurst_note"]}',
+        f'  {vol["kappa_note"]}',
+        f'  HAR-RV={vol["harv"]:.4f}  {vol["harv_range_str"]}  IV分位={vol["iv_rank"]}',
+        f'',
+        f'【Step8 宏观压制】',
+        f'  {mac["pos_note"]}',
+        f'  恐贪={mac["fear_greed"]}  宏观偏向={mac["macro_bias"]}',
+    ]
+    if mac['high_impact']:
+        lines.append(f'  ⚠️重大事件: {" / ".join(mac["high_impact"][:2])}')
+
+    lines += [
+        f'',
+        f'【Step9 风控门控】',
+        f'  熔断器: {"✅绿灯" if risk["circuit_ok"] else "🔴触发"}  '
+        f'回撤: {risk["dd_pct"]:.1f}% {"✅正常" if risk["dd_ok"] else "⚠️"}  '
+        f'连亏: {risk["consec"]}笔 {"✅" if risk["af_ok"] else "⚠️冷却"}',
+        f'  仓位系数: x{risk["nav_mult"]}',
+    ]
+    if risk['blocks']:
+        for b in risk['blocks']:
+            lines.append(f'  🚨{b}')
+
+    lines += [
+        f'',
+        f'【关键附加维度】',
+        f'  4H量能倍数: {k4h_vol_mult}x（均量倍数，>2=放量突破）',
+        f'  1H量能倍数: {k1h_mult}x',
+        f'  Hurst: {hurst_s[:60]}',
+        f'  HCME: {hcme_s[:60]}',
+        f'  方仓最相似案例: {fc_case or "无数据"}',
+        f'',
+        f'{"─"*43}',
+        vip,
+        f'{"─"*43}',
+        (f'🏛️ AI议会裁决: {council["bias"]} | {council["reason"]} | {council["action"]} | 置信={council["confidence"]}'
+         if council.get('bias') not in ('N/A', None, '') else ''),
+        f'📊 梵天系统 · 74维全能力 · 10步强制链路 · AI议会实时裁决',
+    ]
+
+    return '\n'.join(lines)
+
+
+def main():
+    ap = argparse.ArgumentParser(description='梵天手动全链路分析')
+    ap.add_argument('--symbols', nargs='+', default=['BTC', 'ETH'])
+    args = ap.parse_args()
+
+    for sym in args.symbols:
+        report = run_analysis(sym)
+        print(report)
+        print()
+
+
+if __name__ == '__main__':
+    main()
