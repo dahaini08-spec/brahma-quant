@@ -1123,7 +1123,7 @@ def run_analysis(sym: str) -> str:
 
     # BUG-4修复：AI议会=WAIT时，VIP禁止输出具体入场价
     _council_action = council.get('action', 'WAIT')
-    _vip_blocked    = _council_action == 'WAIT' and council.get('confidence', 'LOW') in ('HIGH', 'MED')
+    _vip_blocked    = _council_action == 'WAIT'  # 修复: WAIT无论置信度全封锁，不给伪入场机会
     if _vip_blocked:
         _vip_out = (
             f'──── VIP ────\n'
