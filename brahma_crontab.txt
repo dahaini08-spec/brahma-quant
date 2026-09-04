@@ -125,3 +125,7 @@ if q.exists():
 # 常驻进程：订阅aggTrade流，每30s快照写 data/cvd_realtime_{sym}.json
 # 注意：@reboot在supercronic中等同于容器启动时执行
 @reboot  cd /root/.openclaw/workspace/trading-system && python3 scripts/cvd_ws_collector.py >> logs/cvd_ws.log 2>&1
+
+# ===== E: 每日复盘LLM总结（2026-09-04 苏摩111）=====
+# UTC16:00 = 北京00:00，日终复盘写入memory
+0 16 * * *  cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/daily_review_llm.py >> logs/daily_review.log 2>&1

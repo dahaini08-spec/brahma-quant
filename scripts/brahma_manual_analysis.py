@@ -1091,7 +1091,8 @@ def run_analysis(sym: str) -> str:
     lines += [
         _vip_out,
         f'{"─"*43}',
-        (f'🏛️ AI议会裁决[{council.get("source","规则")[:2]}]: {council["bias"]} | {council["reason"]} | {council["action"]} | 置信={council["confidence"]}'
+        (f'🏛️ AI议会裁决[{council.get("source","规则")[:2]}]: {council["bias"]} | {council["action"]} | 置信={council["confidence"]}'
+         + (f'\n   票: ' + ' / '.join(f'{r}={v}' for r,v in council.get('votes',{}).items()) if council.get('votes') else f' | {council.get("reason","")}')
          if council.get('bias') not in ('N/A', None, '') else ''),
         f'📊 梵天系统 · 74维全能力 · 10步强制链路 · AI议会实时裁决',
     ]

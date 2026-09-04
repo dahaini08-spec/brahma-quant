@@ -233,3 +233,111 @@ def signal_conflict_resolve(
         pass
     # fallback: 直接返回原始文本首句
     return raw.split('\n')[0].strip()[:50]
+
+
+def council_three_way(
+    sym: str, price: float, regime: str, score: float,
+    fvg_dir: str, fvg_magnet: float,
+    oi_signal: str, sm_signal: str, big_long: float,
+    hurst: float, kappa: float, harv: float,
+    entry_lo: float, entry_hi: float,
+    liq_up: float, liq_dn: float,
+    macro_bias: str, fear_greed: int,
+) -> dict:
+    """
+    C: AI议会三方独立LLM投票
+    宏观裁判 / 结构裁判 / 量化裁判 各自独立调用
+    投票结果 → 综合置信度 HIGH/MED/LOW
+    """
+    import concurrent.futures as _cf
+
+    base = f"{sym}/USDT ${price:,.0f} {regime}体制(score={score:.0f})"
+
+    prompts = {
+        '宏观': (
+            f"{base}\n"
+            f"宏观信号: 恐贪={fear_greed} 宏观偏向={macro_bias} FVG磁铁={fvg_dir}(${fvg_magnet:,.0f})\n"
+            f"作为宏观裁判，仅从体制+宏观角度裁决，必须用中文。\n"
+            f"JSON: {{\"vote\":\"做多或做空或中性\",\"reason\":\"10字内\",\"conf\":\"HIGH或MED或LOW\"}}"
+        ),
+        '结构': (
+            f"{base}\n"
+            f"结构信号: OI={oi_signal} 大户多{big_long:.0f}% FVG={fvg_dir} 上方清算=${liq_up:,.0f} 下方=${liq_dn:,.0f}\n"
+            f"入场区: ${entry_lo:,.0f}~${entry_hi:,.0f}({'上方' if entry_lo > price else '下方'})\n"
+            f"作为SMC结构裁判，仅从入场区+清算+OI角度裁决，必须用中文。\n"
+            f"JSON: {{\"vote\":\"做多或做空或中性\",\"reason\":\"10字内\",\"conf\":\"HIGH或MED或LOW\"}}"
+        ),
+        '量化': (
+            f"{base}\n"
+            f"量化信号: Hurst={hurst:.3f} kappa={kappa:.3f} HAR-RV={harv:.4f} 聪明钱={sm_signal}\n"
+            f"作为量化裁判，仅从Hurst趋势+期权偏向+波动率角度裁决，必须用中文。\n"
+            f"JSON: {{\"vote\":\"做多或做空或中性\",\"reason\":\"10字内\",\"conf\":\"HIGH或MED或LOW\"}}"
+        ),
+    }
+
+    results = {}
+    def _call(role, prompt):
+        raw = chat(prompt, max_tokens=60, timeout=15)
+        if not raw:
+            return role, {}
+        try:
+            import json as _j
+            s = raw.find('{'); e = raw.rfind('}') + 1
+            if s >= 0 and e > s:
+                d = _j.loads(raw[s:e])
+                if 'vote' in d:
+                    return role, d
+        except Exception:
+            pass
+        return role, {}
+
+    # 三方并行调用
+    with _cf.ThreadPoolExecutor(max_workers=3) as pool:
+        futures = {pool.submit(_call, role, prompt): role for role, prompt in prompts.items()}
+        for fut in _cf.as_completed(futures, timeout=20):
+            try:
+                role, d = fut.result()
+                if d:
+                    results[role] = d
+            except Exception:
+                pass
+
+    if not results:
+        return {}
+
+    # 投票统计
+    votes = [d.get('vote', '中性') for d in results.values()]
+    long_v  = sum(1 for v in votes if '多' in v)
+    short_v = sum(1 for v in votes if '空' in v)
+    total   = len(votes)
+
+    if long_v > short_v:
+        final_bias = '偏多'
+        final_action = 'ENTER' if long_v == total else 'WAIT'
+    elif short_v > long_v:
+        final_bias = '偏空'
+        final_action = 'ENTER' if short_v == total else 'WAIT'
+    else:
+        final_bias = '中性'
+        final_action = 'WAIT'
+
+    # 置信度：全票=HIGH，2:1=MED，全中性=LOW
+    if long_v == total or short_v == total:
+        conf = 'HIGH'
+    elif long_v > 0 or short_v > 0:
+        conf = 'MED'
+    else:
+        conf = 'LOW'
+
+    # 汇总理由
+    reasons = [f"{role}:{d.get('reason','')}" for role, d in results.items() if d.get('reason')]
+    reason_str = ' | '.join(reasons[:3])
+
+    return {
+        'bias':       final_bias,
+        'reason':     reason_str[:60],
+        'action':     final_action,
+        'confidence': conf,
+        'votes':      {role: d.get('vote', '?') for role, d in results.items()},
+        'source':     'LLM3',
+    }
