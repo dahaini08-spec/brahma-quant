@@ -354,9 +354,43 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict) -> dict:
                 resonance = False
         else:  # BULL
             # 多单：入场区在现价下方（等回调到FVG/OB支撑）
-            entry_lo = round(min(fvg_mid * 0.998, price * 0.993), 1)
-            entry_hi = round(fvg_mid * 1.002, 1)
-            # 如果入场区不在现价下方，无效
+            # 情形A：FVG中点在现价下方 → 用FVG中点作锚
+            # 情形B：FVG中点在现价上方（价格已在FVG内）→ 用有效OB下沿作锚
+            ob_map = fvg.get('fvg_map', {})
+            # 找现价下方最近的有效BULL OB
+            best_ob_lo = 0.0
+            best_ob_hi = 0.0
+            for k, v in ob.items():
+                if not v.get('valid', False): continue
+                if 'BULL' not in k: continue
+                # 从note里提取价格范围
+                try:
+                    note = v.get('note', '')
+                    import re
+                    prices_in_note = re.findall(r'\\$([\d,]+)', note)
+                    if len(prices_in_note) >= 2:
+                        lo_v = float(prices_in_note[0].replace(',',''))
+                        hi_v = float(prices_in_note[1].replace(',',''))
+                        if hi_v < price and lo_v > best_ob_lo:
+                            best_ob_lo = lo_v
+                            best_ob_hi = hi_v
+                except Exception:
+                    pass
+
+            if fvg_mid < price:
+                # 情形A：FVG中点在现价下方，用FVG中点
+                entry_lo = round(min(fvg_mid * 0.998, price * 0.993), 1)
+                entry_hi = round(fvg_mid * 1.002, 1)
+            elif best_ob_lo > 0:
+                # 情形B：价格已在FVG内，用最近有效BULL OB下沿
+                entry_lo = round(best_ob_lo * 0.998, 1)
+                entry_hi = round(best_ob_hi * 1.002, 1)
+            else:
+                # 无锚点：用现价-1%~-2%的支撑区
+                entry_lo = round(price * 0.988, 1)
+                entry_hi = round(price * 0.993, 1)
+
+            # 最终校验：入场区必须在现价下方
             if entry_lo >= price or entry_hi >= price:
                 entry_lo = 0.0
                 entry_hi = 0.0
@@ -1092,7 +1126,7 @@ def run_analysis(sym: str) -> str:
         _vip_out,
         f'{"─"*43}',
         (f'🏛️ AI议会裁决[{council.get("source","规则")[:2]}]: {council["bias"]} | {council["action"]} | 置信={council["confidence"]}'
-         + (f'\n   票: ' + ' / '.join(f'{r}={v}' for r,v in council.get('votes',{}).items()) if council.get('votes') else f' | {council.get("reason","")}')
+         + (f'\n   票: ' + ' / '.join(f'{r}={v}' for r,v in council.get('votes',{}).items()) if isinstance(council.get('votes'), dict) else f' | {council.get("reason","")}')
          if council.get('bias') not in ('N/A', None, '') else ''),
         f'📊 梵天系统 · 74维全能力 · 10步强制链路 · AI议会实时裁决',
     ]
