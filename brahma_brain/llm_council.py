@@ -54,8 +54,10 @@ def council_verdict(
             import sys as _sys
             from pathlib import Path as _Path
             _scripts = str(_Path(__file__).parent.parent / 'scripts')
-            if _scripts not in _sys.path:
-                _sys.path.insert(0, _scripts)
+            _brain = str(_Path(__file__).parent)
+            for _p in [_scripts, _brain]:
+                if _p not in _sys.path:
+                    _sys.path.insert(0, _p)
             from free_llm_client import council_three_way, council_llm
             liq_up = liq_data.get('nearest_short', 0) if liq_data else 0
             liq_dn = liq_data.get('nearest_long', 0)  if liq_data else 0
