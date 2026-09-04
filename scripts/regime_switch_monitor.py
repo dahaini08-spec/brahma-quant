@@ -10,7 +10,8 @@ regime_switch_monitor.py · 梵天体制切换监控 v3
   3. 推送方式：openclaw message send --channel jarvis（直接CLI）
 
 执行路径：crond → 本脚本 → [有切换] → openclaw message send
-NO_AI_AGENT，NO_HEARTBEAT_OK，NO_LLM_CALL
+NO_AI_AGENT，NO_HEARTBEAT_OK
+# P2-2: LLM审核层已接入 (2026-09-04 苏摩111封印)
 
 【苏摩裁决 2026-06-18】
 - WATCH_SYMS 锁定为无黑名单品种（v9系统黑名单：XRPUSDT/SOLUSDT/ADAUSDT排除）
@@ -204,6 +205,47 @@ f"""🔄 梵天体制升级
     # 有预警才推送
     if alerts:
         full_msg = '\n\n─────────────────────\n\n'.join(alerts)
+
+        # P2-2: 体制切换LLM审核层 (2026-09-04 苏摩111封印)
+        # 逐个体制切换，LLM确认"宏观叙事是否支持"，不支持则加折扣系数
+        _llm_regime_notes = []
+        try:
+            import sys as _sys4
+            from pathlib import Path as _P4
+            _sp4 = str(_P4(__file__).parent)
+            if _sp4 not in _sys4.path:
+                _sys4.path.insert(0, _sp4)
+            from free_llm_client import _call_openrouter as _llm_regime
+            from regime_bus import get as _rb_get  # type: ignore
+        except Exception:
+            _llm_regime = None
+            _rb_get = None
+
+        if _llm_regime:
+            for sym in WATCH_SYMS:
+                if sym not in prev or prev[sym].get('regime') == prev[sym].get('prev'):
+                    continue
+                _new_r = prev[sym].get('regime', '')
+                _old_r = prev[sym].get('prev', '')
+                if not _new_r or not _old_r or _new_r == _old_r:
+                    continue
+                try:
+                    _p22_prompt = (
+                        f"{sym}/USDT 体制切换: {_old_r} → {_new_r}\n"
+                        f"问：当前宏观环境(市场情绪/DXY/流动性)是否支持这个体制切换？\n"
+                        f"必须回答: 支持 或 质疑，附一句原因(15字内)"
+                    )
+                    _r22 = _llm_regime(_p22_prompt, max_tokens=35)
+                    if _r22:
+                        _note = f"🤖 LLM审核: {_r22.strip()[:60]}"
+                        _llm_regime_notes.append(_note)
+                except Exception:
+                    pass
+
+        if _llm_regime_notes:
+            full_msg += '\n\n' + '\n'.join(_llm_regime_notes)
+        # ── end P2-2 ──────────────────────────────────────────────────
+
         push(full_msg)
         pass  # [静默]
     else:

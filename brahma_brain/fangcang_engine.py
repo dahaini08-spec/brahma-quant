@@ -988,6 +988,37 @@ def get_fangcang_context(
             )
         top3_summary = '\n'.join(top3_lines)
 
+        # P2-3: HCME top-3匹配后LLM历史镜像摘要 (2026-09-04 苏摩111封印)
+        # 接入位置: top3_summary生成后，fangcang_summary生成前
+        _llm_mirror = ''
+        if top_similar:
+            try:
+                import sys as _sys5
+                from pathlib import Path as _P5
+                _sp5 = str(_P5(__file__).parent.parent / 'scripts')
+                _sp5b = str(_P5(__file__).parent)
+                for _p5 in [_sp5, _sp5b]:
+                    if _p5 not in _sys5.path:
+                        _sys5.path.insert(0, _p5)
+                from free_llm_client import _call_openrouter as _llm_hcme
+                _case_lines = []
+                for _s in top_similar[:3]:
+                    _arrow = '上涨' if _s['future_ret'] > 0 else '下跌'
+                    _case_lines.append(
+                        f"{_s['dt']} {_s['regime'][:9]} {_arrow}{abs(_s['future_ret']):.1f}%"
+                    )
+                _mirror_prompt = (
+                    f"{symbol}/USDT 当前${current_price:,.0f} {current_regime}\n"
+                    f"HCME历史镜像Top3：\n" + '\n'.join(_case_lines) + "\n"
+                    f"用一句话(20字内)总结历史案例对当前布局的启示："
+                )
+                _llm_mirror = _llm_hcme(_mirror_prompt, max_tokens=45)
+                if _llm_mirror:
+                    _llm_mirror = _llm_mirror.strip()[:80]
+            except Exception:
+                pass
+        # ── end P2-3 ─────────────────────────────────────────────────────
+
         # 陷阱预警（综合）
         trap_alert = main_force.get('trap_warning', False)
 
@@ -1011,6 +1042,7 @@ def get_fangcang_context(
             'short_prob':       prob['p_down'],
             'chop_prob':        prob['p_flat'],
             'top3_summary':     top3_summary,
+            'llm_mirror':       _llm_mirror,   # P2-3: LLM历史镜像摘要
 
             # 新增字段
             'main_force_intent':   main_force,
@@ -1136,6 +1168,9 @@ def format_fangcang_card(fc: dict) -> str:
         fc.get('top3_summary', '  (无数据)'),
         f"  📝 {fc.get('fangcang_summary', '')}",
     ]
+    # P2-3: 如有LLM历史镜像摘要，追加展示
+    if fc.get('llm_mirror'):
+        lines.append(f"  🤖 {fc['llm_mirror']}")
     return '\n'.join(lines)
 
 
