@@ -338,8 +338,9 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict) -> dict:
         entry_lo = round(min(fvg_mid * 0.998, price * 0.997), 1)
         entry_hi = round(fvg_mid * 1.002, 1)
     else:
-        entry_lo = round(price * 0.997, 1)
-        entry_hi = round(price * 1.000, 1)
+        # BUG-5修复：无共振时不用price*0.997这种无结构入场区，直接标为失效
+        entry_lo = 0.0
+        entry_hi = 0.0
 
     missing = []
     if not has_fvg:  missing.append('FVG无效')
@@ -796,8 +797,9 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
 def run_analysis(sym: str) -> str:
     ts  = datetime.now(timezone.utc).strftime('%m/%d %H:%M UTC')
     print(f'[{sym}] Step 0: 拉取实时数据...', flush=True)
+    t_start = __import__('time').time()
     d   = step0_fetch_all(sym)
-    p   = d['price']
+    p   = d['price']  # 分析基准价（拉取时刻）
 
     print(f'[{sym}] Step 1~4: FVG/OB/清算/共振...', flush=True)
     fvg = step1_fvg(d)
@@ -830,6 +832,23 @@ def run_analysis(sym: str) -> str:
     except Exception as _ce:
         council = {'bias':'N/A','reason':str(_ce)[:40],'action':'WAIT','confidence':'LOW'}
 
+    # BUG-1修复：分析完成后拉一次实时价，检测漂移
+    import time as _t, urllib.request as _ur, ssl as _ssl, json as _js
+    try:
+        _ctx = _ssl.create_default_context(); _ctx.check_hostname=False; _ctx.verify_mode=_ssl.CERT_NONE
+        _live = float(_js.loads(_ur.urlopen(
+            f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}USDT', timeout=4, context=_ctx
+        ).read()).get('price', p))
+    except Exception:
+        _live = p
+    _drift_pct  = (_live - p) / p * 100
+    _elapsed    = _t.time() - t_start
+    _price_warn = ''
+    if abs(_drift_pct) >= 1.0:
+        _price_warn = f'\n⚠️ 【价格漂移警告】分析基准${p:,.0f} → 当前${_live:,.0f} 偏差{_drift_pct:+.1f}% 入场区已失效，请重跑'
+    elif abs(_drift_pct) >= 0.5:
+        _price_warn = f'\n⚠️ 价格微偏：分析${p:,.0f}→当前${_live:,.0f}({_drift_pct:+.1f}%)，入场区仅供参考'
+
     print(f'[{sym}] Step 10: 生成VIP卡片...', flush=True)
 
     bd      = d['bs'].get('confluence', {}).get('breakdown', {})
@@ -861,7 +880,7 @@ def run_analysis(sym: str) -> str:
 
     lines = [
         f'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-        f'🏛️ 梵天74维全能力分析 | {sym}/USDT ${p:,.1f} | {ts}',
+        f'🏛️ 梵天74维全能力分析 | {sym}/USDT 基准${p:,.0f}→实时${_live:,.0f} | {ts} (耗时{_elapsed:.0f}s)',
         f'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
         f'',
         f'【体制】{regime}  score={score:.0f}  grade={grade}',
@@ -937,12 +956,34 @@ def run_analysis(sym: str) -> str:
         f'  方仓最相似案例: {fc_case or "无数据"}',
         f'',
         f'{"─"*43}',
-        vip,
+    ]
+
+    # BUG-4修复：AI议会=WAIT时，VIP禁止输出具体入场价
+    _council_action = council.get('action', 'WAIT')
+    _vip_blocked    = _council_action == 'WAIT' and council.get('confidence', 'LOW') in ('HIGH', 'MED')
+    if _vip_blocked:
+        _vip_out = (
+            f'──── VIP ────\n'
+            f'🌿 姓赵不宣 | {sym} 今日布局\n'
+            f'⏳ AI议会裁决 WAIT — {council.get("reason","")[:50]}\n'
+            f'   等待结构确认，暂不入场（此时入场胜率不趣）'
+        )
+    else:
+        _vip_out = vip
+
+    # BUG-1：如果入场区已失效，在VIP之前追加警告
+    if _price_warn and abs(_drift_pct) >= 1.0:
+        _vip_out = f'☠️ 「入场区已失效」基准${p:,.0f} → 当前${_live:,.0f}({_drift_pct:+.1f}%)，请重新跑分析\n' + _vip_out
+
+    lines += [
+        _vip_out,
         f'{"─"*43}',
         (f'🏛️ AI议会裁决: {council["bias"]} | {council["reason"]} | {council["action"]} | 置信={council["confidence"]}'
          if council.get('bias') not in ('N/A', None, '') else ''),
         f'📊 梵天系统 · 74维全能力 · 10步强制链路 · AI议会实时裁决',
     ]
+    if _price_warn:
+        lines.append(_price_warn)
 
     return '\n'.join(lines)
 
