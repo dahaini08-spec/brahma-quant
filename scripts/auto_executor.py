@@ -1035,16 +1035,29 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
         pass  # drawdown_tracker不可用时静默降级，不阻断执行
     # ── end drawdown_tracker ─────────────────────────────────────────────
 
-    # ── [A0b 议会veto检查 2026-08-26 P1修复] ───────────────────────────────
+    # ── [A0b 议会veto检查 2026-08-26 P1修复 | P0-1增强 2026-09-04 苏摩111] ────────
     # llm_council_bridge在veto时设置signal['action']='SKIP'，auto_executor必须检查
-    if str(signal.get('action', '')).upper() == 'SKIP':
-        _veto_reason = signal.get('_veto_reason', 'llm_council veto')
-        print(f'🚨 [council_veto] {sym} {direction} 被议会veto拦截: {_veto_reason[:60]}')
+    # P0-1修复：同时检查 AVOID（free_llm_client council_three_way返回格式）
+    _action_upper = str(signal.get('action', '')).upper()
+    if _action_upper in ('SKIP', 'AVOID'):
+        _veto_reason = signal.get('_veto_reason', signal.get('_council_reason', 'llm_council veto/avoid'))
+        print(f'🚨 [council_veto] {sym} {direction} 被议会{_action_upper}拦截: {_veto_reason[:80]}')
         return {
             'signal_id': signal.get('signal_id',''), 'symbol': sym,
             'direction': direction, 'score': float(signal.get('score',0)),
             'ts': time.time(), 'ts_iso': datetime.now(timezone.utc).isoformat(),
-            'status': 'COUNCIL_VETO', 'reason': f'council veto: {_veto_reason}',
+            'status': 'COUNCIL_VETO', 'reason': f'council {_action_upper}: {_veto_reason}',
+        }
+    # P0-1增强：读取 _council 字段的 action=AVOID（council_three_way写入路径）
+    _direct_council = signal.get('_council') or {}
+    if isinstance(_direct_council, dict) and str(_direct_council.get('action','')).upper() == 'AVOID':
+        _c_reason = _direct_council.get('reason', _direct_council.get('bias', 'LLM三方AVOID'))
+        print(f'🚨 [llm_council_avoid] {sym} {direction} LLM三方裁决AVOID: {str(_c_reason)[:80]}')
+        return {
+            'signal_id': signal.get('signal_id',''), 'symbol': sym,
+            'direction': direction, 'score': float(signal.get('score',0)),
+            'ts': time.time(), 'ts_iso': datetime.now(timezone.utc).isoformat(),
+            'status': 'LLM_AVOID', 'reason': f'llm三方AVOID: {str(_c_reason)[:80]}',
         }
     # ── end council veto check ─────────────────────────────────────
     # ── [P3-B 共振点强制门箛 2026-09-01 苏摩111] ───────────────
