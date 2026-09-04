@@ -705,6 +705,71 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     regime_s= d['regime_s']
     reg_now = regime_s.get(sym + 'USDT', {}).get('confirmed', regime)
 
+    # ══════════════════════════════════════════════════════
+    # L1【一票否决层】三方战略架构 2026-09-04 苏摩111封印
+    # 任何一项触发 → 禁止入场，直接返回等待卡片
+    # ══════════════════════════════════════════════════════
+    def _wait_card(reason: str, layer: str) -> str:
+        return (
+            f'──── VIP ────\n'
+            f'🌿 姓赵不宣 | {sym} 今日布局\n'
+            f'⏳ [{layer}] 禁止入场\n'
+            f'   原因: {reason}\n'
+            f'   当前体制: {reg_now}  FVG方向: {fvg["dir"]}  AI议会: (见下)'
+        )
+
+    score_val = float(bs.get('score_final', bs.get('score', 0)))
+
+    # L1-①: 死穴门控
+    _DEAD = [
+        ('BEAR_TREND', 'LONG'),
+        ('BEAR_RECOVERY', 'SHORT'),
+    ]
+    _bias_hint = 'LONG' if (fvg['dir'] == 'BULL' or bs.get('bias') == 'LONG') else 'SHORT'
+    for dead_regime, dead_dir in _DEAD:
+        if dead_regime in reg_now and _bias_hint == dead_dir:
+            return _wait_card(f'死穴封禁 {dead_regime}:{dead_dir}', 'L1-死穴')
+
+    # L1-②: CHOP_MID低分禁止（score<80且体制CHOP）
+    if 'CHOP' in reg_now and score_val < 80:
+        return _wait_card(f'CHOP_MID体制score={score_val:.0f}<80，震荡无方向禁止入场', 'L1-CHOP')
+
+    # L1-③: 宏观红色日历
+    if mac.get('red_flag'):
+        return _wait_card(f'宏观红色事件: {mac.get("event","?")}', 'L1-宏观')
+
+    # L1-④: 风控熔断
+    if risk.get('circuit_break'):
+        return _wait_card(f'风控熔断触发: {risk.get("reason","?")}', 'L1-风控')
+
+    # L2【方向决策层】FVG × 体制 × LiqMap三者一致性检查
+    liq_bias = liq.get('liq_bias', 'NEUTRAL')  # UP/DOWN/NEUTRAL
+    _regime_bull = any(x in reg_now for x in ('BULL', 'BEAR_RECOVERY'))
+    _regime_bear = any(x in reg_now for x in ('BEAR', 'BEAR_EARLY'))
+
+    _fvg_bull = fvg['dir'] == 'BULL'
+    _fvg_bear = fvg['dir'] == 'BEAR'
+    _liq_bull = liq_bias in ('UP', 'NEUTRAL')
+    _liq_bear = liq_bias in ('DOWN', 'NEUTRAL')
+
+    # 三者方向一致才给方向，否则WAIT
+    _l2_long  = _fvg_bull and _regime_bull and _liq_bull
+    _l2_short = _fvg_bear and _regime_bear and _liq_bear
+    _l2_conflict = not _l2_long and not _l2_short
+
+    # L3【入场方向校验】提前检查（防止后面的入场区计算绕过）
+    _entry_lo = res.get('entry_lo', 0)
+    _entry_hi = res.get('entry_hi', 0)
+    if _entry_lo > 0:
+        if _l2_long and _entry_lo >= price:
+            return _wait_card(f'L3: 做多入场区${_entry_lo:,.0f}>现价${price:,.0f}，FVG未触及，等待', 'L3-方向')
+        if _l2_short and _entry_hi <= price:
+            return _wait_card(f'L3: 做空入场区${_entry_hi:,.0f}<现价${price:,.0f}，FVG未触及，等待', 'L3-方向')
+
+    # ══════════════════════════════════════════════════════
+    # L1~L3通过，进入后续VIP生成
+    # ══════════════════════════════════════════════════════
+
     atr_1h  = mom.get('atr_1h', 0)
     # ATR合理性验证：应在价格的0.2%~3%之间
     if not atr_1h or atr_1h > price * 0.03 or atr_1h < price * 0.002:
