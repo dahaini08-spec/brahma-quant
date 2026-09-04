@@ -181,8 +181,11 @@ def step1_fvg(d: dict) -> dict:
         # 每个周期的FVG分组
         tf_fvg_map = {}  # {tf: [fvg,...]}
         for tf, fvgs in fvg_map.items():
+            # 过滤：距离现价>8%的FVG是历史遗留，不参与近期决策
             valid = [f for f in fvgs
-                     if not f.get('filled') and price_lo <= f['mid'] <= price_hi]
+                     if not f.get('filled')
+                     and price_lo <= f['mid'] <= price_hi
+                     and abs(f.get('mid', price) - price) / price <= 0.08]
             if valid:
                 # 每个周期取距离现价最近的一个
                 valid.sort(key=lambda x: abs(x['mid'] - price))
