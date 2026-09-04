@@ -181,6 +181,43 @@ Hurst:{hurst:.2f} κ:{kappa:.3f} HAR-RV:{harv:.4f}
     }
 
 
+def vip_entry_reason(sym: str, direction: str, regime: str, score: float,
+                     fvg_dir: str = 'NONE', fvg_magnet: float = 0,
+                     oi_signal: str = 'MIXED', sm_signal: str = 'NEUTRAL',
+                     hurst: float = 0.5, kappa: float = 0.0,
+                     entry_lo: float = 0, entry_hi: float = 0,
+                     price: float = 0, liq_up: float = 0, liq_dn: float = 0) -> str:
+    """
+    P0-2: 生成VIP卡片“一句话核心逻辑”（20字内）
+    接入位置：brahma_manual_analysis.py Step10 VIP卡片生成
+    """
+    prompt = f"""{sym}/USDT {direction} | 体制:{regime} score:{score:.0f}
+FVG:{fvg_dir}(磁铁${fvg_magnet:,.0f}) OI:{oi_signal} 聊明錢:{sm_signal}
+Hurst:{hurst:.2f} κ:{kappa:.3f}
+入场区:${entry_lo:,.0f}~${entry_hi:,.0f} 上方清算:${liq_up:,.0f} 下方清算:${liq_dn:,.0f}
+当前价:${price:,.0f}
+
+用一句话(不超过20字)总结最核心的做{direction}逻辑，直接输出值不要加前缀:"""
+    text = _call_openrouter(prompt, max_tokens=40)
+    return text.strip() if text else ''
+
+
+def signal_conflict_resolve(sym: str, direction: str, regime: str,
+                            fvg_dir: str, oi_signal: str, sm_signal: str,
+                            conflict_desc: str = '') -> str:
+    """
+    P0-2: 当信号有矛盾时，LLM裁决“相信哪个维度”
+    接入位置：brahma_manual_analysis.py Step10 冲突检测后
+    """
+    prompt = f"""{sym}/USDT {direction} | 体制:{regime}
+FVG:{fvg_dir} OI:{oi_signal} 聊明錢:{sm_signal}
+矛盾描述: {conflict_desc if conflict_desc else 'FVG方向与OI信号不一致'}
+
+用一句话裁决应相信哪个维度(不超过20字)，直接输出:"""
+    text = _call_openrouter(prompt, max_tokens=40)
+    return text.strip() if text else ''
+
+
 if __name__ == '__main__':
     # 冒烟测试
     print('=== free_llm_client 冒烟测试 ===')
