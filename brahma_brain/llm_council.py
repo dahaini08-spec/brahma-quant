@@ -28,6 +28,16 @@ def council_verdict(
     regime: str,            # 'BULL_TREND' / 'BEAR_TREND' / 'CHOP_MID' etc.
     score: float,
     liq_data: Optional[dict] = None,   # liq_heatmap dict
+    # 扩展字段（供LLM模式使用）
+    fvg_dir: str = 'NONE',
+    oi_signal: str = 'MIXED',
+    sm_signal: str = 'NEUTRAL',
+    hurst: float = 0.5,
+    kappa: float = 0.0,
+    entry_lo: float = 0.0,
+    entry_hi: float = 0.0,
+    price: float = 0.0,
+    sym: str = 'BTC',
 ) -> dict:
     """
     返回:
@@ -37,6 +47,34 @@ def council_verdict(
         confidence: 'HIGH' | 'MED' | 'LOW'
         council_score: int  (三专家综合分, -3~+3)
     """
+    # ── 优先：真实LLM裁决（OpenRouter免费模型）────────────────────────────
+    # 设计院三方封印 2026-09-04 苏摩111
+    if price > 0 and entry_lo > 0:
+        try:
+            import sys as _sys
+            from pathlib import Path as _Path
+            _scripts = str(_Path(__file__).parent.parent / 'scripts')
+            if _scripts not in _sys.path:
+                _sys.path.insert(0, _scripts)
+            from free_llm_client import council_llm
+            liq_up = liq_data.get('nearest_short', 0) if liq_data else 0
+            liq_dn = liq_data.get('nearest_long', 0)  if liq_data else 0
+            _llm_result = council_llm(
+                regime=regime, bias=signal_dir, fvg_dir=fvg_dir,
+                oi_signal=oi_signal, sm_signal=sm_signal,
+                hurst=hurst, kappa=kappa, score=score,
+                entry_lo=entry_lo, entry_hi=entry_hi, price=price,
+                liq_up=liq_up, liq_dn=liq_dn, sym=sym,
+            )
+            if _llm_result and _llm_result.get('action'):
+                _llm_result['council_score'] = 0
+                _llm_result['votes'] = []
+                _llm_result['source'] = 'LLM'
+                return _llm_result
+        except Exception:
+            pass  # 降级到规则引擎
+
+    # ── Fallback：规则引擎 ─────────────────────────────────────────────────
     votes = []   # 每项 +1/-1/0
 
     # ── 宏观裁判 ────────────────────────────────────────────────────────────
