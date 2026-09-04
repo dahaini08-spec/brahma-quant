@@ -162,21 +162,56 @@ def step1_fvg(d: dict) -> dict:
     price_hi = price * 1.30
 
     if fvg_map:
-        # 优先选择最近的未填满FVG
+        # 全周期FVG地图：每个周期保留最近有效FVG，按权重综合方向
+        # 苏摩111封印 2026-09-04：禁止只看单一FVG
+        TF_WEIGHT = {'1d': 4, '4h': 3, '1h': 2, '15m': 1}
         all_fvgs = []
+        # 每个周期的FVG分组
+        tf_fvg_map = {}  # {tf: [fvg,...]}
         for tf, fvgs in fvg_map.items():
-            for f in fvgs:
-                if not f.get('filled') and price_lo <= f['mid'] <= price_hi:
-                    all_fvgs.append((abs(f['mid'] - price), tf, f))
-        all_fvgs.sort(key=lambda x: x[0])
-        if all_fvgs:
-            _, best_tf, best_f = all_fvgs[0]
-            magnet   = best_f['mid']
-            fvg_dir  = best_f['type']
-            fvg_desc = (f'{best_tf.upper()} {best_f["type"]} FVG '
-                       f'${best_f["lo"]:,.0f}~${best_f["hi"]:,.0f} '
-                       f'中点${best_f["mid"]:,.0f}({best_f["dist_pct"]:+.1f}%) '
-                       f'磁铁{best_f["magnet"]}')
+            valid = [f for f in fvgs
+                     if not f.get('filled') and price_lo <= f['mid'] <= price_hi]
+            if valid:
+                # 每个周期取距离现价最近的一个
+                valid.sort(key=lambda x: abs(x['mid'] - price))
+                tf_fvg_map[tf] = valid[0]
+                w = TF_WEIGHT.get(tf, 1)
+                all_fvgs.append((abs(valid[0]['mid'] - price), w, tf, valid[0]))
+
+        # 全周期综合方向投票（权重加权）
+        bull_score = 0; bear_score = 0
+        for _, w, tf, f in all_fvgs:
+            if f['type'] == 'BULL': bull_score += w
+            else: bear_score += w
+
+        # 主导方向：权重票数多的方向
+        fvg_consensus = 'BULL' if bull_score > bear_score else ('BEAR' if bear_score > bull_score else 'NONE')
+
+        # 主磁铁：选最高权重周期里方向与共识一致的最近FVG
+        all_fvgs.sort(key=lambda x: (-x[1], x[0]))  # 先按权重降序，再按距离升序
+        best = None
+        for _, w, tf, f in all_fvgs:
+            if f['type'] == fvg_consensus or fvg_consensus == 'NONE':
+                best = (tf, f); break
+        if best is None and all_fvgs:
+            best = (all_fvgs[0][2], all_fvgs[0][3])
+
+        if best:
+            best_tf, best_f = best
+            magnet  = best_f['mid']
+            fvg_dir = fvg_consensus if fvg_consensus != 'NONE' else best_f['type']
+
+            # 全周期描述
+            tf_parts = []
+            for _, w, tf, f in sorted(all_fvgs, key=lambda x: -x[1]):
+                tf_parts.append(f'{tf.upper()}:{f["type"]}@${f["mid"]:,.0f}')
+            fvg_desc = (
+                f'全周期FVG共识: {fvg_consensus} '
+                f'(多{bull_score}分 空{bear_score}分) '
+                f'主磁铁:{best_tf.upper()} ${best_f["lo"]:,.0f}~${best_f["hi"]:,.0f} '
+                f'中点${best_f["mid"]:,.0f}({best_f.get("dist_pct",0):+.1f}%)\n'
+                f'  各周期: {" | ".join(tf_parts)}'
+            )
     else:
         # 没有 _fvg_map（旧版state）→ 回走breakdown旧逻辑
         for label, txt in [
@@ -214,7 +249,11 @@ def step1_fvg(d: dict) -> dict:
                     _fvg_hi = f.get('hi', 0)
                     _fvg_lo = f.get('lo', 0)
     return {'dir': fvg_dir, 'magnet': magnet, 'desc': fvg_desc,
-            'hi': _fvg_hi, 'lo': _fvg_lo, 'fvg_map': fvg_map}
+            'hi': _fvg_hi, 'lo': _fvg_lo, 'fvg_map': fvg_map,
+            'tf_fvg_map': tf_fvg_map if 'tf_fvg_map' in dir() else {},
+            'bull_score': bull_score if 'bull_score' in dir() else 0,
+            'bear_score': bear_score if 'bear_score' in dir() else 0,
+            'consensus': fvg_consensus if 'fvg_consensus' in dir() else fvg_dir}
 
 # ══════════════════════════════════════════════════════════
 # Step 2: OB有效性
@@ -1152,9 +1191,9 @@ def run_analysis(sym: str) -> str:
         f'',
         f'【体制】{regime}  score={score:.0f}  grade={grade}',
         f'',
-        f'【Step1 FVG磁铁】',
-        f'  方向: {fvg["dir"]}  磁铁位: ${fvg["magnet"]:,.1f}' if fvg['magnet'] else '  无有效FVG',
-        f'  {fvg["desc"][:80]}',
+        f'【Step1 FVG磁铁】全周期',
+        (f'  共识方向: {fvg.get("consensus",fvg["dir"])}  多{fvg.get("bull_score",0)}分 vs 空{fvg.get("bear_score",0)}分  主磁铁: {fvg["dir"]}@${fvg["magnet"]:,.0f}') if fvg['magnet'] else '  无有效FVG',
+        f'  {fvg["desc"][:120]}',
         f'',
         f'【Step2 OB有效性】',
     ]
