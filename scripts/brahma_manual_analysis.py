@@ -901,6 +901,21 @@ def run_analysis(sym: str) -> str:
     d   = step0_fetch_all(sym)
     p   = d['price']  # 分析基准价（拉取时刻）
 
+    # ── CHOP盲区旁路检测（不影响主链路）──────────────────────
+    try:
+        from breakout_watch import run_breakout_watch
+        bw = run_breakout_watch([sym + 'USDT'])
+        bw_alerts = bw.get('alerts', [])
+        if bw_alerts:
+            a = bw_alerts[0]
+            print(f'[{sym}] 🚨 BREAKOUT_WATCH触发! score={a["score"]}/3 level={a["level"]}', flush=True)
+        else:
+            bw_score = bw['results'].get(sym+'USDT', {}).get('score', 0)
+            print(f'[{sym}] CHOP旁路: score={bw_score}/3 无触发', flush=True)
+    except Exception as _bw_e:
+        print(f'[{sym}] CHOP旁路检测跳过: {_bw_e}', flush=True)
+    # ─────────────────────────────────────────────────────────
+
     print(f'[{sym}] Step 1~4: FVG/OB/清算/共振...', flush=True)
     fvg = step1_fvg(d)
     ob  = step2_ob(d)
