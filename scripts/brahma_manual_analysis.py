@@ -335,8 +335,39 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict) -> dict:
     resonance  = score >= 2  # 至少2/3条件
 
     if resonance and has_fvg:
-        entry_lo = round(min(fvg_mid * 0.998, price * 0.997), 1)
-        entry_hi = round(fvg_mid * 1.002, 1)
+        # BUG-6修复：入场区必须在现价的正确一侧
+        # BEAR：做空应等反弹到现价上方阻力位，入场区必须 > price
+        # BULL：做多应等回调到现价下方支撑位，入场区必须 < price
+        if fvg_dir == 'BEAR':
+            # 空单：入场区在现价上方（等反弹到FVG上沿/OB阻力）
+            # 取有效OB中最近的上方阻力，没有就用吸力目标上方ATR
+            bear_obs = [k for k in valid_obs if 'BEAR' in k]
+            bull_obs = [k for k in valid_obs if 'BULL' in k]
+            # 首选：现价上方最近的BEAR_OB（真实阻力）
+            # 次选：清算目标上方（nearest_short）
+            resistance = liq.get('nearest_short', 0)
+            if resistance and resistance > price:
+                # 反弹入场区：现价到resistance之间的顶部
+                entry_hi = round(min(resistance, price * 1.015), 1)  # 最多反弹1.5%
+                entry_lo = round(price * 1.003, 1)                   # 入场区少于0.3%距离
+            else:
+                # 无上方清算目标，用fvg范围上沿+ATR作阻力
+                entry_hi = round(fvg['hi'] * 1.001 if fvg.get('hi', 0) > price else price * 1.008, 1)
+                entry_lo = round(price * 1.003, 1)
+            # 如果入场区不在现价上方，无效
+            if entry_lo <= price or entry_hi <= price:
+                entry_lo = 0.0
+                entry_hi = 0.0
+                resonance = False
+        else:  # BULL
+            # 多单：入场区在现价下方（等回调到FVG/OB支撑）
+            entry_lo = round(min(fvg_mid * 0.998, price * 0.993), 1)
+            entry_hi = round(fvg_mid * 1.002, 1)
+            # 如果入场区不在现价下方，无效
+            if entry_lo >= price or entry_hi >= price:
+                entry_lo = 0.0
+                entry_hi = 0.0
+                resonance = False
     else:
         # BUG-5修复：无共振时不用price*0.997这种无结构入场区，直接标为失效
         entry_lo = 0.0
@@ -346,6 +377,8 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict) -> dict:
     if not has_fvg:  missing.append('FVG无效')
     if not has_ob:   missing.append('无新鲜OB')
     if not has_liq:  missing.append('清算数据缺失')
+    if entry_lo == 0.0 and resonance:
+        missing.append('入场区方向错误（商品价格不在入场区正确一侧）')
 
     return {
         'resonance':   resonance,
@@ -729,18 +762,20 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
         tp3      = round(tp2 + atr_1h * 2, 1)
         rr       = round((tp1 - entry_lo) / (entry_lo - sl), 2) if entry_lo > sl else 0
 
-        main_line = f'🟢 多单｜挂单区 ${entry_lo:,.1f}~${entry_hi:,.1f}'
+        # BUG-6修复：多单入场区在现价下方（等回调），描述明确
+        main_line   = f'🟢 多单｜回调入场区 ${entry_lo:,.1f}~${entry_hi:,.1f}（价格跌到此区挂单）'
         main_params = f'止损 ${sl:,.1f}｜目标 ${tp1:,.0f}→${tp2:,.0f}→${tp3:,.0f}'
 
-        hunt_price = round(entry_lo - atr_1h * 1.2, 1)
-        side_zone  = f'${hunt_price:,.1f}~${entry_lo:,.1f}'
-        side_sl    = round(hunt_price - atr_1h * 1.5, 1)
+        # 副方向：反弹到上方阻力再做轻空
+        side_hi    = round(entry_lo + atr_1h * 2.0, 1)
+        side_lo    = round(entry_lo + atr_1h * 1.2, 1)
+        side_sl    = round(side_hi + atr_1h * 1.5, 1)
         side_tp    = f'${entry_lo:,.0f}→${tp1:,.0f}'
-        side_line  = f'🔴 空单（轻）｜等 {side_zone} 反弹入场'
+        side_line  = f'🔴 空单（轻）｜若反弹到 ${side_lo:,.1f}~${side_hi:,.1f} 再空'
         side_params= f'止损 ${side_sl:,.1f}｜目标 {side_tp}'
         main_dir   = '主方向做多'
 
-    else:  # SHORT or NEUTRAL default to SHORT when BEAR regime
+    else:  # SHORT
         sl       = round(entry_hi + max(min_sl, entry_hi * 0.012), 1)
         sl_pct   = round((sl - entry_hi) / entry_hi * 100, 2)
         tp1      = round(liq['nearest_long'] if liq['nearest_long'] < price else price - atr_1h * 2.5, 1)
@@ -748,16 +783,18 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
         tp3      = round(tp2 - atr_1h * 2, 1)
         rr       = round((entry_hi - tp1) / (sl - entry_hi), 2) if sl > entry_hi else 0
 
-        main_line   = f'🔴 空单｜挂单区 ${entry_lo:,.1f}~${entry_hi:,.1f}'
+        # BUG-6修复：空单入场区在现价上方（等反弹），描述明确
+        main_line   = f'🔴 空单｜反弹入场区 ${entry_lo:,.1f}~${entry_hi:,.1f}（价格反弹到此区挂单）'
         main_params = f'止损 ${sl:,.1f}｜目标 ${tp1:,.0f}→${tp2:,.0f}→${tp3:,.0f}'
 
-        hunt_price  = round(entry_hi + atr_1h * 1.2, 1)
-        side_zone   = f'${entry_hi:,.1f}~${hunt_price:,.1f}'
-        side_sl     = round(hunt_price + atr_1h * 1.5, 1)
-        side_tp     = f'${entry_hi:,.0f}→${tp1:,.0f}'
-        side_line   = f'🟢 多单（轻）｜等猎杀后 {side_zone} 接'
-        side_params = f'止损 ${side_sl:,.1f}｜目标 {side_tp}'
-        main_dir    = '主方向做空'
+        # 副方向：下探被扫后接轻多
+        hunt_lo    = round(entry_lo - atr_1h * 1.5, 1)
+        hunt_hi    = round(entry_lo - atr_1h * 0.5, 1)
+        side_sl    = round(hunt_lo - atr_1h * 1.5, 1)
+        side_tp    = f'${entry_lo:,.0f}→${tp1:,.0f}'
+        side_line  = f'🟢 多单（轻）｜若下探 ${hunt_lo:,.1f}~${hunt_hi:,.1f} 被扫后接'
+        side_params= f'止损 ${side_sl:,.1f}｜目标 {side_tp}'
+        main_dir   = '主方向做空'
 
     # 风控提示
     risk_note = ''
