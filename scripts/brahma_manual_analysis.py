@@ -947,6 +947,38 @@ def run_analysis(sym: str) -> str:
 
     vip = step10_vip(sym, p, d, fvg, ob, liq, res, oi, sm, vol, mac, risk)
 
+    # A: VIP入场理由LLM生成
+    # B: 信号矛盾自动LLM裁决
+    _llm_entry_reason = ''
+    _llm_conflict     = ''
+    try:
+        from scripts.free_llm_client import vip_entry_reason, signal_conflict_resolve
+        # A: 入场理由（仅有有效共振点时生成）
+        if res['resonance'] and res['entry_lo'] > 0:
+            _bias_a = 'LONG' if fvg['dir'] == 'BULL' else 'SHORT'
+            _llm_entry_reason = vip_entry_reason(
+                sym=sym, price=p, regime=regime,
+                fvg_dir=fvg['dir'], fvg_magnet=fvg['magnet'],
+                oi_signal=oi['signal'], sm_signal=sm['signal'],
+                hurst=vol['hurst'], kappa=vol['kappa'],
+                entry_lo=res['entry_lo'], entry_hi=res['entry_hi'],
+                bias=_bias_a,
+                liq_up=liq['nearest_short'], liq_dn=liq['nearest_long'],
+            )
+        # B: 矛盾裁决（OI与大户方向不一致时触发）
+        _oi_bull = oi['signal'] in ('LONG_BUILD', 'SHORT_SQUEEZE')
+        _sm_bull = sm['signal'] in ('STRONG_BULL', 'MILD_BULL')
+        if _oi_bull != _sm_bull:  # 信号矛盾
+            _llm_conflict = signal_conflict_resolve(
+                sym=sym, price=p, regime=regime,
+                oi_signal=oi['signal'], oi_desc=oi['conclusion'],
+                sm_signal=sm['signal'],
+                big_long=sm['big_long'], retail_long=sm['retail_long'],
+                fvg_dir=fvg['dir'],
+            )
+    except Exception:
+        pass
+
     lines = [
         f'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
         f'🏛️ 梵天74维全能力分析 | {sym}/USDT 基准${p:,.0f}→实时${_live:,.0f} | {ts} (耗时{_elapsed:.0f}s)',
@@ -1023,6 +1055,11 @@ def run_analysis(sym: str) -> str:
         f'  Hurst: {hurst_s[:60]}',
         f'  HCME: {hcme_s[:60]}',
         f'  方仓最相似案例: {fc_case or "无数据"}',
+    ]
+    # B: 信号矛盾裁决（有就显示）
+    if _llm_conflict:
+        lines.append(f'  🤖 LLM矛盾裁决: {_llm_conflict}')
+    lines += [
         f'',
         f'{"─"*43}',
     ]
@@ -1039,6 +1076,13 @@ def run_analysis(sym: str) -> str:
         )
     else:
         _vip_out = vip
+        # A: 将LLM入场理由插入VIP卡片的⚠️那行
+        if _llm_entry_reason and '⚠️' in _vip_out:
+            _vip_out = _vip_out.replace(
+                next((l for l in _vip_out.split('\n') if '⚠️' in l), ''),
+                next((l for l in _vip_out.split('\n') if '⚠️' in l), '') + f'  |入场逻辑: {_llm_entry_reason}',
+                1
+            )
 
     # BUG-1：如果入场区已失效，在VIP之前追加警告
     if _price_warn and abs(_drift_pct) >= 1.0:

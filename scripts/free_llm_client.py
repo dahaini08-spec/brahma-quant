@@ -167,3 +167,69 @@ if __name__ == '__main__':
             liq_up=82825, liq_dn=79577, sym='BTC',
         )
         print(f'AI议会: {json.dumps(result, ensure_ascii=False)}')
+
+
+def vip_entry_reason(
+    sym: str, price: float, regime: str,
+    fvg_dir: str, fvg_magnet: float,
+    oi_signal: str, sm_signal: str,
+    hurst: float, kappa: float,
+    entry_lo: float, entry_hi: float,
+    bias: str, liq_up: float, liq_dn: float,
+) -> str:
+    """
+    A: VIP入场理由一句话（LLM生成）
+    返回: 20字内的精准入场逻辑句，失败返回空字符串
+    """
+    direction = '做多' if bias == 'LONG' else '做空'
+    entry_side = '下方回调' if entry_lo < price else '上方反弹'
+    prompt = (
+        f"梵天系统 {sym}/USDT ${price:,.0f} {regime}体制\n"
+        f"方向:{direction} 入场区:${entry_lo:,.0f}~${entry_hi:,.0f}({entry_side})\n"
+        f"FVG:{fvg_dir}方向 磁铁${fvg_magnet:,.0f} OI:{oi_signal} 聪明钱:{sm_signal}\n"
+        f"Hurst:{hurst:.2f} kappa:{kappa:.3f} 上方清算:${liq_up:,.0f} 下方清算:${liq_dn:,.0f}\n"
+        f"必须用中文回答。输出一句话入场逻辑（15字内，直接说结构原因，禁止用英文）："
+    )
+    result = chat(prompt, max_tokens=40, timeout=12)
+    if not result:
+        return ''
+    # 取第一句，截断
+    first = result.split('\n')[0].strip().rstrip('。').strip()
+    return first[:25]
+
+
+def signal_conflict_resolve(
+    sym: str, price: float, regime: str,
+    oi_signal: str, oi_desc: str,
+    sm_signal: str, big_long: float, retail_long: float,
+    fvg_dir: str,
+) -> str:
+    """
+    B: 信号矛盾自动LLM裁决
+    当OI与大户方向矛盾时，LLM分析哪方更可信
+    返回: 一句话裁决，失败返回空字符串
+    """
+    prompt = (
+        f"{sym} ${price:,.0f} {regime}体制 信号矛盾分析：\n"
+        f"OI信号:{oi_signal}（{oi_desc[:30]}）\n"
+        f"大户多仓:{big_long:.0f}% 散户多仓:{retail_long:.0f}% 分歧:{abs(big_long-retail_long):.0f}%\n"
+        f"FVG方向:{fvg_dir}\n"
+        f"OI和大户方向矛盾，请裁决：哪方信号更可信，倾向做多还是做空？\n"
+        f"输出格式（JSON）: {{\"winner\":\"OI或大户\",\"bias\":\"做多或做空\",\"reason\":\"原因一句话15字内\"}}"
+    )
+    raw = chat(prompt, max_tokens=80, timeout=12)
+    if not raw:
+        return ''
+    try:
+        import json as _j
+        start = raw.find('{'); end = raw.rfind('}') + 1
+        if start >= 0 and end > start:
+            d = _j.loads(raw[start:end])
+            winner = d.get('winner', '?')
+            bias   = d.get('bias', '?')
+            reason = d.get('reason', '')
+            return f"{winner}信号更可信 → {bias}（{reason}）"
+    except Exception:
+        pass
+    # fallback: 直接返回原始文本首句
+    return raw.split('\n')[0].strip()[:50]
