@@ -2048,42 +2048,55 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
             continue
 
 
-        # [纸面开单模式 2026-08-21 苏摩111封印]
-        # 铁证：PM账户止损坏(-4120)，自动开单风险不可控
-        # 所有信号 → 推送Jarvis → 苏摩「执行」后手动下单
+        # [2026-09-04 苏摩111 解封纸面自动执行]
+        # 根因：2026-08-21封印导致8天0执行，paper_executor收不到任何信号
+        # 修复：直接写入auto_signal_queue.json，paper_executor每40min消费
         try:
-            from push_hub import _jarvis as _phj_paper
-            import datetime as _dt_paper
-            _tag_p = sym.replace('USDT', '')
-            _dir_cn_p = '做多' if direct == 'LONG' else '做空'
-            _ts_p = _dt_paper.datetime.now(_dt_paper.timezone(_dt_paper.timedelta(hours=8))).strftime('%m-%d %H:%M')
-            _entry_p = sig.get('entry_lo', sig.get('entry', 0))
-            _sl_p    = sig.get('sl', sig.get('stop_loss', 0))
-            _tp_p    = sig.get('tp1', sig.get('take_profit', 0))
-            _rr_p    = sig.get('rr1', sig.get('rr', 2.0))
-            _sl_pct_p = round(abs(float(_entry_p) - float(_sl_p)) / float(_entry_p) * 100, 2) if _entry_p and _sl_p else 0
-            _paper_msg = (
-                f"📋 **梵天信号 · 纸面开单 · 等待苏摩确认**\n"
-                f"━━━━━━━━━━━━━━━━━━━━━━\n"
-                f"  {_tag_p}/USDT {_dir_cn_p} | score={score:.0f} | {regime}\n"
-                f"  入场: ${float(_entry_p):,.4f}\n"
-                f"  止损: ${float(_sl_p):,.4f}  -{_sl_pct_p}%\n"
-                f"  止盈: ${float(_tp_p):,.4f}  RR={_rr_p}x\n"
-                f"━━━━━━━━━━━━━━━━━━━━━━\n"
-                f"  回复「执行」→ 手动下单\n"
-                f"  {_ts_p} CST"
-            )
-            from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
-            _phj_paper(f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}', _paper_msg)
-        except Exception as _pe:
-            pass
-        # 纸面模式：记录日志但不实际下单
+            _sq_path = BASE / 'data' / 'auto_signal_queue.json'
+            _sq_existing = []
+            if _sq_path.exists():
+                try: _sq_existing = json.loads(_sq_path.read_text())
+                except: _sq_existing = []
+            if not isinstance(_sq_existing, list): _sq_existing = []
+            # 防重复：同signal_id不入队
+            _sq_ids = {s.get('signal_id','') for s in _sq_existing}
+            if sig_id not in _sq_ids:
+                _sq_entry = {**sig, 'signal_id': sig_id, 'queued_at': __import__('datetime').datetime.utcnow().isoformat()+'Z'}
+                _sq_existing.append(_sq_entry)
+                _sq_path.write_text(json.dumps(_sq_existing, indent=2, ensure_ascii=False))
+                print(f'  [paper_queue] {sym} {direct} score={score:.0f} → 写入auto_signal_queue')
+            # 同时推送Jarvis通知（不阻塞执行）
+            try:
+                from push_hub import _jarvis as _phj_paper
+                import datetime as _dt_paper
+                _tag_p = sym.replace('USDT', '')
+                _dir_cn_p = '做多' if direct == 'LONG' else '做空'
+                _ts_p = _dt_paper.datetime.now(_dt_paper.timezone(_dt_paper.timedelta(hours=8))).strftime('%m-%d %H:%M')
+                _entry_p = sig.get('entry_lo', sig.get('entry', 0))
+                _sl_p    = sig.get('sl', sig.get('stop_loss', 0))
+                _tp_p    = sig.get('tp1', sig.get('take_profit', 0))
+                _rr_p    = sig.get('rr1', sig.get('rr', 2.0))
+                _sl_pct_p = round(abs(float(_entry_p)-float(_sl_p))/float(_entry_p)*100, 2) if _entry_p and _sl_p else 0
+                _paper_msg = (
+                    f"📋 **梵天纸面信号 · 已自动入队**\n"
+                    f"━━━━━━━━━━━━━━━━━━━━━━\n"
+                    f"  {_tag_p}/USDT {_dir_cn_p} | score={score:.0f} | {regime}\n"
+                    f"  入场: ${float(_entry_p):,.2f}  止损: ${float(_sl_p):,.2f} (-{_sl_pct_p}%)\n"
+                    f"  止盈: ${float(_tp_p):,.2f}  RR={_rr_p}x\n"
+                    f"  → paper_executor 40min内自动执行\n"
+                    f"  {_ts_p} CST"
+                )
+                from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
+                _phj_paper(f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}', _paper_msg)
+            except Exception: pass
+        except Exception as _sq_e:
+            print(f'  [paper_queue] 写入失败: {_sq_e}')
         _paper_result = {
-            'signal_id': sig_id, 'event': 'PAPER_PENDING',
+            'signal_id': sig_id, 'event': 'PAPER_QUEUED',
             'symbol': sym, 'direction': direct, 'score': score,
             'ts': __import__('datetime').datetime.utcnow().isoformat() + 'Z',
-            'reason': '纸面开单模式，等待苏摩确认',
-            'result': {'mode': 'paper_pending', 'success': False},
+            'reason': '纸面信号已写入auto_signal_queue，paper_executor将自动执行',
+            'result': {'mode': 'paper_queued', 'success': True},
         }
         _log(_paper_result)
         executed_set.add(sig_id)
