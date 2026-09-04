@@ -28,10 +28,9 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 
 # ===== 从OpenClaw迁移（2026-09-02 苏摩111封印 - 降低event loop压力）=====
 # position-guardian: 每10分钟检查持仓止损（原5分钟，主因164次重启，迁移后降频）
-*/10 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/position_sl_monitor.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+*/10 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 55 bash scripts/guardian_wrapper.sh >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
 
 # rsi-structure-watcher: 每15分钟RSI+结构扫描（原OpenClaw cron，56次重启主犯）
-*/15 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/rsi_structure_watcher.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
 
 # liqmap_collector存活保障（每小时检查，挂了自动拉起）
 0 * * * *  pgrep -f liqmap_collector > /dev/null || (cd /root/.openclaw/workspace/trading-system && nohup python3 brahma_brain/liqmap_collector.py >> logs/liqmap.log 2>&1 &)
@@ -132,3 +131,6 @@ if q.exists():
 
 # signal-producer: runner直接生产BTC/ETH信号，每1h
 30 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 55 venv/bin/python3 brahma_brain/brahma_analysis_runner.py BTCUSDT ETHUSDT >> logs/syscron.log 2>&1
+
+# paper-engine: 纯脚本，5min执行，从OpenClaw迁移到supercronic
+*/5 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 55 bash scripts/run_paper_engine.sh >> logs/syscron.log 2>&1
