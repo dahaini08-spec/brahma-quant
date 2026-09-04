@@ -1,1 +1,77 @@
-{}
+{
+  "KSTRUSDT": {
+    "score": 129,
+    "price": 23.05,
+    "entry_lo": 22.9578,
+    "entry_hi": 23.1422,
+    "sl_price": 22.47375,
+    "tp1_price": 23.914375,
+    "expire_ts": 1788527535.1768107,
+    "pushed_ts": 1788525738.92299,
+    "auto_executed": false,
+    "reminded": false,
+    "squeeze_catalyst": true,
+    "funding": -0.1587,
+    "short_pct": 50.0
+  },
+  "BMTUSDT": {
+    "score": 117,
+    "price": 0.01761,
+    "entry_lo": 0.01754,
+    "entry_hi": 0.01768,
+    "sl_price": 0.01717,
+    "tp1_price": 0.01827,
+    "expire_ts": 1788527505.4718869,
+    "pushed_ts": 1788525738.92299,
+    "auto_executed": false,
+    "reminded": false,
+    "squeeze_catalyst": true,
+    "funding": -0.2672,
+    "short_pct": 50.0
+  },
+  "MARAUSDT": {
+    "score": 113,
+    "price": 11.33,
+    "entry_lo": 11.28468,
+    "entry_hi": 11.37532,
+    "sl_price": 11.04675,
+    "tp1_price": 11.754875,
+    "expire_ts": 1788527538.579914,
+    "pushed_ts": 1788525738.92299,
+    "auto_executed": false,
+    "reminded": false,
+    "squeeze_catalyst": true,
+    "funding": 0.1042,
+    "short_pct": 50.0
+  },
+  "ZSUSDT": {
+    "score": 112,
+    "price": 169.67,
+    "entry_lo": 168.99132,
+    "entry_hi": 170.34868,
+    "sl_price": 165.42825,
+    "tp1_price": 176.032625,
+    "expire_ts": 1788527538.8102148,
+    "pushed_ts": 1788525738.92299,
+    "auto_executed": false,
+    "reminded": false,
+    "squeeze_catalyst": true,
+    "funding": 0.0996,
+    "short_pct": 50.0
+  },
+  "JASMYUSDT": {
+    "score": 110,
+    "price": 0.004352,
+    "entry_lo": 0.004335,
+    "entry_hi": 0.004369,
+    "sl_price": 0.004243,
+    "tp1_price": 0.004515,
+    "expire_ts": 1788527486.286666,
+    "pushed_ts": 1788525738.92299,
+    "auto_executed": false,
+    "reminded": false,
+    "squeeze_catalyst": true,
+    "funding": -0.0724,
+    "short_pct": 50.0
+  }
+}

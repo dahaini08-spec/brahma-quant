@@ -302,6 +302,18 @@ def step3_liq(d: dict) -> dict:
     target_pct  = (nearest_short - price) / price * 100 if nearest_short and price else 0
     support_pct = (price - nearest_long)  / price * 100 if nearest_long  and price else 0
 
+    # CRITICAL-1修复: 真实计算liq_bias，L2门控依赖此字段
+    # 下方多头清算 > 上方空头清算*1.3 → 主力优先往下打（DOWN）
+    # 上方空头清算 > 下方多头清算*1.3 → 主力优先往上打（UP）
+    _sl = dist_short if dist_short else 999
+    _ll = dist_long  if dist_long  else 999
+    if _ll < _sl * 0.77:        # 下方清算更近（距离更小=量更集中）
+        _liq_bias = 'DOWN'
+    elif _sl < _ll * 0.77:      # 上方清算更近
+        _liq_bias = 'UP'
+    else:
+        _liq_bias = 'NEUTRAL'
+
     return {
         'nearest_short':      nearest_short,
         'nearest_short_pct':  dist_short,
@@ -311,6 +323,7 @@ def step3_liq(d: dict) -> dict:
         'second_long':        second_long,
         'target_pct':         round(target_pct, 2),
         'support_pct':        round(support_pct, 2),
+        'liq_bias':           _liq_bias,   # L2方向门控字段
         'short_map':          short_map,
         'long_map':           long_map,
     }
@@ -742,29 +755,59 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     if risk.get('circuit_break'):
         return _wait_card(f'风控熔断触发: {risk.get("reason","?")}', 'L1-风控')
 
-    # L2【方向决策层】FVG × 体制 × LiqMap三者一致性检查
-    liq_bias = liq.get('liq_bias', 'NEUTRAL')  # UP/DOWN/NEUTRAL
-    _regime_bull = any(x in reg_now for x in ('BULL', 'BEAR_RECOVERY'))
-    _regime_bear = any(x in reg_now for x in ('BEAR', 'BEAR_EARLY'))
+    # L2【方向决策层】FVG × 体制 × LiqMap × 大户仓位
+    # HIGH-3修复: 大户仓位纳入L2否决票
+    liq_bias     = liq.get('liq_bias', 'NEUTRAL')
+    _big_long    = sm.get('big_long', 50) if sm else 50
+    _regime_bull = any(x in reg_now for x in ('BULL', 'BULL_EARLY', 'BEAR_RECOVERY'))
+    _regime_bear = any(x in reg_now for x in ('BEAR_TREND', 'BEAR_EARLY'))
+    _fvg_bull    = fvg['dir'] == 'BULL'
+    _fvg_bear    = fvg['dir'] == 'BEAR'
+    _liq_bull    = liq_bias in ('UP', 'NEUTRAL')
+    _liq_bear    = liq_bias in ('DOWN', 'NEUTRAL')
+    _sm_bull     = _big_long >= 58   # 大户明显偏多
+    _sm_bear     = _big_long <= 42   # 大户明显偏空
 
-    _fvg_bull = fvg['dir'] == 'BULL'
-    _fvg_bear = fvg['dir'] == 'BEAR'
-    _liq_bull = liq_bias in ('UP', 'NEUTRAL')
-    _liq_bear = liq_bias in ('DOWN', 'NEUTRAL')
+    # HIGH-1修复: BULL_EARLY+FVG=BEAR → 等待FVG触及后做多（特殊处理）
+    # 不是方向矛盾，是触发器等待
+    _bull_early_wait = ('BULL' in reg_now) and _fvg_bear
+    if _bull_early_wait:
+        _trigger_price = fvg['magnet']
+        _wait_detail = (
+            f'BULL_EARLY体制强势，等FVG磁铁${_trigger_price:,.0f}被触及后做多\n'
+            f'   触发条件: 价格跌到${_trigger_price:,.0f} + 1H收阳确认\n'
+            f'   届时入场区: ${_trigger_price*0.998:,.0f}~${_trigger_price*1.005:,.0f}\n'
+            f'   止损: ${_trigger_price - vol.get("atr_1h", price*0.005)*1.5:,.0f}'
+        )
+        # 注意：这里不return，继续让AI议会裁决
+        # 若AI议会=ENTER（FVG已触及），才输出入场
 
-    # 三者方向一致才给方向，否则WAIT
-    _l2_long  = _fvg_bull and _regime_bull and _liq_bull
-    _l2_short = _fvg_bear and _regime_bear and _liq_bear
-    _l2_conflict = not _l2_long and not _l2_short
+    # 三者一致性（排除BULL_EARLY特殊情形）
+    _l2_long  = (_fvg_bull or _bull_early_wait) and _regime_bull and _liq_bull
+    _l2_short = _fvg_bear and _regime_bear and _liq_bear and not _bull_early_wait
 
-    # L3【入场方向校验】提前检查（防止后面的入场区计算绕过）
+    # 大户否决：大户方向与L2结论相反时降级为WAIT
+    if _l2_long and _sm_bear:
+        return _wait_card(f'L2: 大户{_big_long:.0f}%偏空与做多方向矛盾，主力资金方向优先', 'L2-大户')
+    if _l2_short and _sm_bull:
+        return _wait_card(f'L2: 大户{_big_long:.0f}%偏多与做空方向矛盾，主力资金方向优先', 'L2-大户')
+
+    # L3【入场方向校验】
+    # HIGH-2修复: 等待时输出具体监控触发价
     _entry_lo = res.get('entry_lo', 0)
     _entry_hi = res.get('entry_hi', 0)
     if _entry_lo > 0:
         if _l2_long and _entry_lo >= price:
-            return _wait_card(f'L3: 做多入场区${_entry_lo:,.0f}>现价${price:,.0f}，FVG未触及，等待', 'L3-方向')
+            _atr_hint = vol.get('atr_1h', price * 0.005) if vol else price * 0.005
+            return _wait_card(
+                f'FVG磁铁${fvg["magnet"]:,.0f}未触及 现价${price:,.0f} 差${price-fvg["magnet"]:,.0f} | 触发价:${fvg["magnet"]*0.998:,.0f}~${fvg["magnet"]*1.002:,.0f}+1H收阳 | 届时SL:${fvg["magnet"]-_atr_hint*1.5:,.0f}',
+                'L3-等待触发'
+            )
         if _l2_short and _entry_hi <= price:
-            return _wait_card(f'L3: 做空入场区${_entry_hi:,.0f}<现价${price:,.0f}，FVG未触及，等待', 'L3-方向')
+            return _wait_card(
+                f'FVG阻力${fvg["magnet"]:,.0f}未触及 现价${price:,.0f} 差${fvg["magnet"]-price:,.0f} | 触发价:${fvg["magnet"]*0.998:,.0f}~${fvg["magnet"]*1.002:,.0f}+1H收阴',
+                'L3-等待触发'
+            )
 
     # ══════════════════════════════════════════════════════
     # L1~L3通过，进入后续VIP生成
