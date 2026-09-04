@@ -198,13 +198,13 @@
     "eth_regime": "BULL_TREND"
   },
   "KSTRUSDT": {
-    "last_push_ts": 1787838413.5595827,
-    "last_score": 98,
-    "last_push_at": "2026-08-27T13:46:53.705891",
-    "push_price": 24.48,
-    "regime": "BULL_TREND",
-    "btc_regime": "BULL_TREND",
-    "eth_regime": "CHOP_MID"
+    "last_push_ts": 1788525738.92299,
+    "last_score": 129,
+    "last_push_at": "2026-09-04T12:42:19.090905",
+    "push_price": 23.05,
+    "regime": "CHOP_MID",
+    "btc_regime": "CHOP_MID",
+    "eth_regime": "BULL_EARLY"
   },
   "ARBUSDT": {
     "last_push_ts": 1786243934.0276396,
@@ -1719,13 +1719,13 @@
     "eth_regime": "BULL_EARLY"
   },
   "BMTUSDT": {
-    "last_push_ts": 1787237601.505517,
-    "last_score": 92,
-    "last_push_at": "2026-08-20T14:53:21.622832",
-    "push_price": 0.01628,
-    "regime": "BEAR_RECOVERY",
-    "btc_regime": "BEAR_RECOVERY",
-    "eth_regime": "CHOP_MID"
+    "last_push_ts": 1788525738.92299,
+    "last_score": 117,
+    "last_push_at": "2026-09-04T12:42:19.110344",
+    "push_price": 0.01761,
+    "regime": "CHOP_MID",
+    "btc_regime": "CHOP_MID",
+    "eth_regime": "BULL_EARLY"
   },
   "DODOXUSDT": {
     "last_push_ts": 1787244627.8393466,
@@ -2398,6 +2398,33 @@
     "last_score": 98,
     "last_push_at": "2026-09-01T04:06:00.862241",
     "push_price": 10.11,
+    "regime": "CHOP_MID",
+    "btc_regime": "CHOP_MID",
+    "eth_regime": "BULL_EARLY"
+  },
+  "MARAUSDT": {
+    "last_push_ts": 1788525738.92299,
+    "last_score": 113,
+    "last_push_at": "2026-09-04T12:42:19.126298",
+    "push_price": 11.33,
+    "regime": "CHOP_MID",
+    "btc_regime": "CHOP_MID",
+    "eth_regime": "BULL_EARLY"
+  },
+  "ZSUSDT": {
+    "last_push_ts": 1788525738.92299,
+    "last_score": 112,
+    "last_push_at": "2026-09-04T12:42:19.141777",
+    "push_price": 169.67,
+    "regime": "CHOP_MID",
+    "btc_regime": "CHOP_MID",
+    "eth_regime": "BULL_EARLY"
+  },
+  "JASMYUSDT": {
+    "last_push_ts": 1788525738.92299,
+    "last_score": 110,
+    "last_push_at": "2026-09-04T12:42:19.156070",
+    "push_price": 0.004352,
     "regime": "CHOP_MID",
     "btc_regime": "CHOP_MID",
     "eth_regime": "BULL_EARLY"
