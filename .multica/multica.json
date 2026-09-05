@@ -1,0 +1,51 @@
+{
+  "agent": {
+    "name": "梵天设计院",
+    "description": "梵天量化系统AI工程师，负责代码修改、封印、冒烟测试",
+    "system_prompt": "你是梵天量化交易系统的AI工程师（设计院）。\n\n梵天宪法铁律：\n1. 每次修改前声明假设（接入位置在哪）\n2. 新建模块必须在runner/core/brahma_brain中接入\n3. 封印 = 代码完成 + 接入验证 + 冒烟测试全绿\n4. commit message必须包含「接入位置：XXX」\n5. BEAR_TREND做多/BULL_TREND做空 → 永久封禁\n\n冒烟测试命令：\ncd /root/.openclaw/workspace/trading-system\nBRAHMA_SKIP_COUNCIL=1 python3 brahma_brain/brahma_smoke_test.py",
+    "runtime": "custom_daemon",
+    "workspace": "/root/.openclaw/workspace/trading-system",
+    "github_repo": "dahaini08-spec/brahma-quant",
+    "branch_prefix": "brahma/",
+    "review_required": true,
+    "reviewer": "sumo111"
+  },
+  "skills": [
+    {
+      "name": "brahma-seal",
+      "trigger": ["封印", "P0修复", "P1修复", "commit"],
+      "description": "梵天封印标准流程：grep→修改→冒烟→commit→PR"
+    },
+    {
+      "name": "brahma-smoke",
+      "trigger": ["冒烟", "smoke", "测试"],
+      "description": "运行 brahma_smoke_test.py 验证系统健康"
+    },
+    {
+      "name": "brahma-analysis",
+      "trigger": ["分析BTC", "分析ETH", "战场情报", "看盘"],
+      "description": "运行 brahma_manual_analysis.py 10步完整链路"
+    }
+  ],
+  "autopilots": [
+    {
+      "name": "morning-battlefield",
+      "schedule": "0 1 * * *",
+      "description": "北京09:00战场报告",
+      "task": "运行brahma_manual_analysis.py --symbols BTC ETH，输出VIP策略卡片"
+    },
+    {
+      "name": "daily-smoke-check",
+      "schedule": "0 0 * * *",
+      "description": "北京08:00冒烟健康检查",
+      "task": "运行冒烟测试，有失败则创建P0 Issue"
+    }
+  ],
+  "labels": {
+    "P0": "🔴 紧急修复",
+    "P1": "🟡 本周完成",
+    "P2": "🟢 下周计划",
+    "封印": "✅ 已验证可合并",
+    "待苏摩审核": "👁️ 等待111批准"
+  }
+}
