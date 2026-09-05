@@ -110,3 +110,19 @@ Task: 运行冒烟测试，有失败则创建P0 Issue
 - P0修复：苏摩必须review diff后发111 approve
 - P1/P2：设计院自测全绿后可直接merge
 - 宪法级改动（FREE_MODELS/体制铁律）：苏摩111封印
+
+---
+
+## Squad: 梵天作战室 (2026-09-05 苏摩111封印)
+
+Squad ID: 0d4d1fcd-214c-458a-8872-c6c042c2ee96
+
+成员分工:
+| Agent | ID | 职责 | Autopilot |
+|-------|-----|------|-----------|
+| 梵天设计院(Leader) | 753009c6 | 架构决策/封印/复杂任务 | morning/afternoon-battlefield |
+| OI巡检Agent | 8bbb2e5b | oi_watchlist_monitor | 每2小时 |
+| 结算Agent | 9f2a309f | signal_settler + learning_log | 每3小时 |
+| 发帖Agent | 57caa4f0 | 姓赵不宣Square发帖 | 按需触发 |
+
+并行效果: 串行60s → 并行15s
