@@ -63,7 +63,7 @@ def _generate_post(sym: str, state: dict, vip_text: str) -> str:
             f"5. 禁止：首先/其次/值得注意/综上所述/作为一个XX\n"
             f"6. 风格：直接、简洁、像真人发的朋友圈\n"
         )
-        content = chat(prompt, max_tokens=300, timeout=20)
+        content = chat(prompt, max_tokens=300, timeout=20, task="vip")
         return content.strip() if content else ''
     except Exception:
         return ''

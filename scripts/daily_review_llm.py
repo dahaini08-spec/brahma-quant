@@ -94,7 +94,7 @@ def _generate_review(data: dict) -> str:
             f"3. 明日需要关注的关键位\n"
             f"风格：直接简洁，像写日记，不要废话开场"
         )
-        return chat(prompt, max_tokens=200, timeout=20)
+        return chat(prompt, max_tokens=200, timeout=20, task="review")
     except Exception as e:
         return f"LLM复盘生成失败: {e}"
 

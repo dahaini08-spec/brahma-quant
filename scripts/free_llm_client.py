@@ -1,30 +1,44 @@
 #!/usr/bin/env python3
 """
 free_llm_client.py — OpenRouter免费LLM客户端
-设计院三方封印 2026-09-04 苏摩111
+设计院深度思考封印 2026-09-05 苏摩111
 
-模型优先级（全免费，无额度限制）：
-  1. minimax/minimax-m3:free        — 1M ctx，中文强，主力
-  2. nvidia/nemotron-3-ultra-550b-a55b:free — 1M ctx，推理强，备用
-  3. thinkingmachines/inkling:free  — 1M ctx，思维链，备用
+▌ 梵天思维全局注入版
+  - 每个模型调用自动携带梵天宪法 System Prompt
+  - 任务路由表：不同任务使用最适合的专项模型
+  - 冷却管理：防429，自动轮换
+
+▌ 任务路由表（TASK_MODEL_MAP）：
+  council      → minimax-m3        中文AI议会主裁决
+  regime       → nemotron-super    宏观体制推理
+  wr_audit     → ling-fin          金融WR审核
+  hcme         → inkling           思维链历史镜像
+  chop         → nemotron-light    快速CHOP突破验证
+  safety       → nemotron-safety   AVOID安全门控
+  vip          → minimax-m3        VIP一句话摘要
+  review       → ling-fin          结算复盘lesson
+  oi           → minimax-m3        OI聪明钱解读
+  default      → minimax-m3        通用兜底
 
 接入位置：
   brahma_brain/llm_council.py   (AI议会真实LLM裁决)
   scripts/regime_switch_monitor.py
   scripts/oi_watchlist_monitor.py
+  scripts/wr_feedback_engine.py
+  scripts/signal_settler.py
+  brahma_brain/fangcang_engine.py
+  brahma_brain/chop_breakout_detector.py
 """
 import json, os, ssl, time, urllib.request
 from pathlib import Path
 
-# Key优先级：.env > 环境变量 > TOOLS.md缓存
+# ── Key加载 ──────────────────────────────────────────────────────────────
 def _load_key() -> str:
-    # 1. .env文件
     env_path = Path(__file__).parent.parent / '.env'
     if env_path.exists():
         for line in env_path.read_text().splitlines():
             if line.startswith('OPENROUTER_API_KEY='):
                 return line.split('=', 1)[1].strip()
-    # 2. 环境变量
     k = os.environ.get('OPENROUTER_API_KEY', '')
     if k:
         return k
@@ -32,54 +46,111 @@ def _load_key() -> str:
 
 API_KEY  = _load_key()
 BASE_URL = 'https://openrouter.ai/api/v1/chat/completions'
-MODELS   = [
+
+# ── 任务路由表：task → 专项模型 (2026-09-05 苏摩111封印) ─────────────────
+TASK_MODEL_MAP = {
+    'council':  'minimax/minimax-m3:free',                      # AI议会三方裁决
+    'vip':      'minimax/minimax-m3:free',                      # VIP一句话逻辑
+    'oi':       'minimax/minimax-m3:free',                      # OI聪明钱解读
+    'regime':   'nvidia/nemotron-3-super-120b-a12b:free',       # 体制切换宏观确认
+    'wr_audit': 'inclusionai/ling-3.0-flash-fin:free',          # WR异常审核
+    'review':   'inclusionai/ling-3.0-flash-fin:free',          # 结算复盘lesson
+    'hcme':     'thinkingmachines/inkling:free',                # HCME历史镜像摘要
+    'chop':     'nvidia/nemotron-3.5-lightning:free',           # CHOP突破快速验证
+    'safety':   'nvidia/nemotron-3.5-content-safety:free',      # AVOID安全门控
+    'default':  'minimax/minimax-m3:free',                      # 通用兜底
+}
+
+# fallback链：主模型失败时的备选顺序
+FALLBACK_MODELS = [
     'minimax/minimax-m3:free',
-    'nvidia/nemotron-3-ultra-253b-v1:free',
     'nvidia/nemotron-3-ultra-550b-a55b:free',
     'thinkingmachines/inkling:free',
+    'google/gemma-4-31b-it:free',
 ]
+
+# ── 梵天宪法 System Prompt（所有LLM调用自动注入）────────────────────────
+BRAHMA_CONSTITUTION = """你是梵天量化系统的专项AI分析员。
+梵天宪法铁律（绝对不可违反）：
+1. BEAR_TREND体制做多WR=45% → 必须输出AVOID，不论score多高
+2. BULL_TREND体制做空WR=38% → 必须输出AVOID，不论score多高
+3. SL距离必须≥1.5×ATR1H → 不满足则输出WAIT
+4. 无FVG+OB+清算三因子共振 → 输出WAIT，不给具体入场价
+5. 回答必须简洁精准，不超过规定字数，禁止废话和重复
+你的任何判断都不得违反以上铁律。"""
+
+# ── 冷却管理：防429，同一模型3秒内不重复调用 ─────────────────────────
+_model_last_called: dict = {}   # {model_id: last_call_timestamp}
+_COOLDOWN_S = 3                  # 同一模型最小间隔秒数
+
+def _pick_model(preferred: str) -> str:
+    """选择可用模型：优先用preferred，冷却中则轮换fallback"""
+    now = time.time()
+    candidates = [preferred] + [m for m in FALLBACK_MODELS if m != preferred]
+    for m in candidates:
+        if now - _model_last_called.get(m, 0) >= _COOLDOWN_S:
+            _model_last_called[m] = now
+            return m
+    # 全部冷却中：强行用preferred（等待最短）
+    _model_last_called[preferred] = now
+    return preferred
 
 _ctx = ssl.create_default_context()
 _ctx.check_hostname = False
 _ctx.verify_mode = ssl.CERT_NONE
 
 
-def chat(prompt: str, system: str = '', max_tokens: int = 200, timeout: int = 20) -> str:
+def chat(prompt: str, system: str = '', max_tokens: int = 200,
+         timeout: int = 20, task: str = 'default') -> str:
     """
-    调用OpenRouter免费模型，自动轮换备用。
+    调用OpenRouter免费模型，自动路由到最适合的专项模型。
+    task: 任务类型 (council/vip/oi/regime/wr_audit/review/hcme/chop/safety/default)
+    system: 额外system内容（深度封印版梵天宪法已自动注入）
     返回模型回复文本，失败时返回空字符串。
     """
     if not API_KEY:
         return ''
 
-    messages = []
-    if system:
-        messages.append({'role': 'system', 'content': system})
-    messages.append({'role': 'user', 'content': prompt})
+    preferred = TASK_MODEL_MAP.get(task, TASK_MODEL_MAP['default'])
+    model = _pick_model(preferred)
 
-    for model in MODELS:
+    # 梵天宪法全局注入：合并外部system + 梵天宪法
+    merged_system = BRAHMA_CONSTITUTION
+    if system:
+        merged_system = BRAHMA_CONSTITUTION + '\n\n' + system
+
+    messages = [
+        {'role': 'system', 'content': merged_system},
+        {'role': 'user',   'content': prompt},
+    ]
+
+    # 尝试preferred，失败则轮换fallback
+    tried = [model]
+    for attempt_model in ([model] + [m for m in FALLBACK_MODELS if m not in tried]):
         try:
             payload = json.dumps({
-                'model':      model,
-                'messages':   messages,
-                'max_tokens': max_tokens,
-                'temperature': 0.3,
+                'model':       attempt_model,
+                'messages':    messages,
+                'max_tokens':  max_tokens,
+                'temperature': 0.2,
             }).encode()
             req = urllib.request.Request(
                 BASE_URL, data=payload,
                 headers={
-                    'Authorization':  f'Bearer {API_KEY}',
-                    'Content-Type':   'application/json',
-                    'HTTP-Referer':   'https://brahma-quant.ai',
-                    'X-Title':        'BrahmaQuantAI',
+                    'Authorization': f'Bearer {API_KEY}',
+                    'Content-Type':  'application/json',
+                    'HTTP-Referer':  'https://brahma-quant.ai',
+                    'X-Title':       'BrahmaQuantAI',
                 },
             )
             resp = json.loads(urllib.request.urlopen(req, timeout=timeout, context=_ctx).read())
             content = resp['choices'][0]['message']['content'].strip()
             if content:
+                _model_last_called[attempt_model] = time.time()
                 return content
-        except Exception as e:
-            continue  # 轮换下一个模型
+        except Exception:
+            _model_last_called[attempt_model] = time.time()  # 冷却记录
+            continue
 
     return ''
 
@@ -125,7 +196,7 @@ Hurst: {hurst:.3f}（>0.65=趋势，<0.45=均值回归）
 请输出严格JSON格式（不要markdown代码块，直接输出JSON）：
 {{"bias":"偏多或偏空或中性","reason":"核心逻辑一句话（20字内）","action":"ENTER或WAIT或AVOID","confidence":"HIGH或MED或LOW"}}"""
 
-    raw = chat(prompt, max_tokens=120, timeout=15)
+    raw = chat(prompt, max_tokens=120, timeout=15, task='council')
     if not raw:
         return {}
 
@@ -190,7 +261,7 @@ def vip_entry_reason(
         f"Hurst:{hurst:.2f} kappa:{kappa:.3f} 上方清算:${liq_up:,.0f} 下方清算:${liq_dn:,.0f}\n"
         f"必须用中文回答。输出一句话入场逻辑（15字内，直接说结构原因，禁止用英文）："
     )
-    result = chat(prompt, max_tokens=40, timeout=12)
+    result = chat(prompt, max_tokens=40, timeout=12, task='vip')
     if not result:
         return ''
     # 取第一句，截断
@@ -217,7 +288,7 @@ def signal_conflict_resolve(
         f"OI和大户方向矛盾，请裁决：哪方信号更可信，倾向做多还是做空？\n"
         f"输出格式（JSON）: {{\"winner\":\"OI或大户\",\"bias\":\"做多或做空\",\"reason\":\"原因一句话15字内\"}}"
     )
-    raw = chat(prompt, max_tokens=80, timeout=12)
+    raw = chat(prompt, max_tokens=80, timeout=12, task='council')
     if not raw:
         return ''
     try:
@@ -276,10 +347,12 @@ def council_three_way(
     }
 
     results = {}
+    # 三方各用专项模型：宏观用regime，结构用council，量化用council
+    _role_tasks = {'宏观': 'regime', '结构': 'council', '量化': 'council'}
     def _call(role, prompt):
-        raw = chat(prompt, max_tokens=60, timeout=15)
+        raw = chat(prompt, max_tokens=60, timeout=15, task=_role_tasks.get(role, 'council'))
         if not raw:
-            return role, {}
+            return role, {}  
         try:
             import json as _j
             s = raw.find('{'); e = raw.rfind('}') + 1
