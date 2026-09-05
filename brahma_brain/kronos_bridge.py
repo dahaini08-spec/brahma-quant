@@ -16,3 +16,8 @@ from brahma_brain.har_rv_engine import get_har_rv  # noqa: F401
 def get_vol_prediction(symbol: str, interval: str = '1h') -> dict:
     """兼容原 kronos_engine.get_vol_prediction() 接口"""
     return get_har_rv(symbol)
+
+
+def get_s23_kronos(klines: list, symbol: str, direction: str = '', regime: str = '') -> tuple:
+    """兼容stub — 原kronos_engine.get_s23_kronos()已废弃，返回中性得分"""
+    return (0.0, {'source': 'stub', 'reason': 'kronos_engine deprecated, HAR-RV active'})
