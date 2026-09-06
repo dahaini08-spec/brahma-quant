@@ -1,9 +1,20 @@
 name: brahma-os
 on:
   push:
-    paths: ["brahma_os/**", "tests/test_brahma_os.py", "tests/test_brahma_os_sim.py", "tests/test_replay.py"]
+    paths:
+      - "brahma_os/**"
+      - "tests/test_brahma_os.py"
+      - "tests/test_brahma_os_sim.py"
+      - "tests/test_replay.py"
+      - "tests/test_snapshot.py"
+      - "scripts/paper_engine.py"
   pull_request:
-    paths: ["brahma_os/**", "tests/test_brahma_os.py", "tests/test_brahma_os_sim.py", "tests/test_replay.py"]
+    paths:
+      - "brahma_os/**"
+      - "tests/test_brahma_os.py"
+      - "tests/test_brahma_os_sim.py"
+      - "tests/test_replay.py"
+      - "tests/test_snapshot.py"
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -13,4 +24,4 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install pytest
-      - run: pytest tests/test_brahma_os.py tests/test_brahma_os_sim.py tests/test_replay.py -q
+      - run: pytest tests/test_brahma_os.py tests/test_brahma_os_sim.py tests/test_replay.py tests/test_snapshot.py -q
