@@ -4,12 +4,14 @@ on:
     paths:
       - "brahma_os/**"
       - "tests/test_brahma_os.py"
+      - "tests/test_brahma_os_sim.py"
       - "scripts/paper_engine.py"
+      - "scripts/brahma_os_validate.py"
   pull_request:
     paths:
       - "brahma_os/**"
       - "tests/test_brahma_os.py"
-      - "scripts/paper_engine.py"
+      - "tests/test_brahma_os_sim.py"
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -19,4 +21,4 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install pytest
-      - run: pytest tests/test_brahma_os.py -q
+      - run: pytest tests/test_brahma_os.py tests/test_brahma_os_sim.py -q
