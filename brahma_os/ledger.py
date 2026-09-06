@@ -1,13 +1,13 @@
-"""Account ledger. Marks-to-market, compounding NAV, drawdown, Sharpe on daily equity."""
+"""Account ledger. Marks-to-market, drawdown, Sharpe on daily equity."""
 
 from __future__ import annotations
 
 import math
-from collections import defaultdict
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 
 from brahma_os.config import Settings
-from brahma_os.contracts import Fill, Position, Side
+from brahma_os.contracts import Fill, Position
 from brahma_os.costs import CostModel
 
 
@@ -46,8 +46,8 @@ class EquityLedger:
     equity_curve: list[tuple[float, float]] = field(default_factory=list)
 
     def __post_init__(self) -> None:
-        self.cash = self.settings.start_nav
-        self.peak = self.settings.start_nav
+        self.cash = float(self.settings.start_nav)
+        self.peak = float(self.settings.start_nav)
 
     def nav(self) -> float:
         upnl = 0.0
@@ -64,13 +64,13 @@ class EquityLedger:
         self.equity_curve.append((ts, value))
         if value > self.peak:
             self.peak = value
-        dd = (self.peak - value) / self.peak if self.peak else 0.0
-        if dd > self.max_dd:
-            self.max_dd = dd
+        if self.peak > 0:
+            dd = (self.peak - value) / self.peak
+            if dd > self.max_dd:
+                self.max_dd = dd
         return value
 
     def apply_entry(self, fill: Fill, stop: float, target: float) -> Position:
-        notional = fill.qty * fill.price
         self.cash -= fill.fee + fill.slippage
         pos = Position(
             position_id=fill.fill_id,
@@ -86,6 +86,7 @@ class EquityLedger:
         )
         self.positions[pos.position_id] = pos
         self.marks[fill.symbol] = fill.price
+        self.mark(fill.ts, {fill.symbol: fill.price})
         return pos
 
     def apply_exit(self, pos_id: str, fill: Fill, hours_held: float, outcome: str) -> Position:
@@ -93,10 +94,9 @@ class EquityLedger:
         funding = self.cost.funding(pos.qty * pos.avg_entry, hours_held)
         fees = pos.fees_paid + fill.fee + fill.slippage
         pnl = self.cost.signed_pnl(pos.side, pos.qty, pos.avg_entry, fill.price, fees, funding)
-        self.cash += pos.qty * pos.avg_entry + pnl + fees  # restore margin-equivalent + net
-        # cash model: start with NAV as cash; entry only deducted fees; exit adds signed pnl
-        # Correct the restore: entry did not lock notional (paper NAV model).
-        self.cash -= pos.qty * pos.avg_entry
+        self.cash += pnl + pos.fees_paid
+        # entry already deducted open fees from cash; add net pnl (which already subtracted all fees)
+        # so restore the open-fee deduction that is inside pnl.
         pos.qty = 0.0
         pos.fees_paid = fees
         pos.funding_paid = funding
@@ -115,8 +115,6 @@ class EquityLedger:
         decided = wins + losses
         wr = wins / decided if decided else 0.0
         ev = sum(p.realized for p in closed) / len(closed) if closed else 0.0
-        sharpe = self._sharpe()
-        days = len(self._daily())
         return LedgerSnapshot(
             nav=self.nav(),
             peak=self.peak,
@@ -127,14 +125,29 @@ class EquityLedger:
             timeouts=timeouts,
             wr=wr,
             ev_usd=ev,
-            sharpe=sharpe,
-            days=days,
+            sharpe=self._sharpe(),
+            days=len(self._daily()),
         )
+
+    def promotion_ready(self) -> tuple[bool, list[str]]:
+        snap = self.snapshot()
+        fails: list[str] = []
+        if snap.n_closed < self.settings.promote_min_n:
+            fails.append(f"n={snap.n_closed}<{self.settings.promote_min_n}")
+        if snap.wr < self.settings.promote_min_wr:
+            fails.append(f"wr={snap.wr:.2%}<{self.settings.promote_min_wr:.0%}")
+        if snap.max_drawdown > self.settings.promote_max_dd:
+            fails.append(f"dd={snap.max_drawdown:.2%}>{self.settings.promote_max_dd:.0%}")
+        if snap.days < self.settings.promote_min_days:
+            fails.append(f"days={snap.days}<{self.settings.promote_min_days}")
+        if snap.ev_usd <= 0:
+            fails.append(f"ev={snap.ev_usd:.4f}<=0")
+        return (not fails), fails
 
     def _daily(self) -> list[DailyPoint]:
         by_day: dict[str, float] = {}
         for ts, nav in self.equity_curve:
-            day = __import__("datetime").datetime.utcfromtimestamp(ts).strftime("%Y-%m-%d")
+            day = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%d")
             by_day[day] = nav
         points: list[DailyPoint] = []
         prev = self.settings.start_nav
