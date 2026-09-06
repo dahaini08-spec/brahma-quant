@@ -2,8 +2,7 @@
 """
 paper_engine.py — paper funnel on Brahma OS v7 gates.
 
-analyze() -> analyze_to_signal -> evaluate_gates -> one-sided paper order.
-Legacy dual-side / 100x path is removed on this branch.
+analyze() -> snapshot -> evaluate_gates -> one-sided paper order.
 """
 
 from __future__ import annotations
@@ -23,6 +22,7 @@ sys.path.insert(0, str(BRAIN))
 
 from brahma_os.config import load_settings
 from brahma_os.paper_bridge import decide_from_analyze
+from brahma_os.snapshot import append_snapshot, signal_record
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [engine] %(message)s")
 _log = logging.getLogger(__name__)
@@ -185,6 +185,38 @@ def _run_analyze(symbol: str) -> dict:
         return fut.result(timeout=45)
 
 
+def _snapshot_decision(symbol: str, source: str, raw: dict, decision) -> None:
+    try:
+        if decision.signal is not None:
+            append_snapshot(
+                SETTINGS,
+                signal_record(
+                    decision.signal,
+                    gate=decision.code,
+                    allow=decision.allow,
+                    source=source,
+                    reason=decision.reason,
+                ),
+            )
+        else:
+            append_snapshot(
+                SETTINGS,
+                {
+                    "ts": time.time(),
+                    "symbol": symbol,
+                    "gate": decision.code,
+                    "allow": False,
+                    "reason": decision.reason,
+                    "source": source,
+                    "score": raw.get("score"),
+                    "regime": raw.get("regime"),
+                    "direction": raw.get("direction") or raw.get("signal_dir"),
+                },
+            )
+    except Exception as exc:
+        _log.warning("snapshot_fail %s: %s", symbol, exc)
+
+
 def process_one(symbol: str, source: str = "queue") -> dict:
     result = {"symbol": symbol, "action": "SKIP", "reason": "", "source": source, "orders": [], "os": "v7"}
     nav = _get_nav()
@@ -224,6 +256,7 @@ def process_one(symbol: str, source: str = "queue") -> dict:
         now_ts=time.time(),
         symbol=symbol,
     )
+    _snapshot_decision(symbol, source, raw, decision)
     if not decision.allow or decision.signal is None:
         result["reason"] = f"{decision.code}:{decision.reason}"
         return result
