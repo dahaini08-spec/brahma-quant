@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
 """
-P1b: 鲸鱼大额转账监控 — whale_monitor.py
-设计院 v5.6 | 2026-07-13
-
-策略：
-  - Binance 大额成交记录（aggTrades筛选）→ 识别鲸鱼行为
-  - 异常OI单笔突变 → 大户建仓/清仓信号
-  - 大户多空比突变检测
-输出: 鲸鱼行为标签 + 梵天评分贡献
+P1b: whale_monitor.py
+Binance aggTrades / top trader ratio / OI proxy.
+Keys: environment only. No defaults.
 """
 import sys, os, requests, json, time, hmac, hashlib
 from pathlib import Path
@@ -24,31 +19,30 @@ try:
 except ImportError:
     _dc_get_oi = None
 
-KEY = os.environ.get('BINANCE_API_KEY', 'sDqoRAyeYHHzevKNxSj5JfkWpNUd6v8qPAhVy0Y8wbWGwC48eC7uhFOENAlVqV7b')
-SEC = os.environ.get('BINANCE_SECRET',  'hXQnzQco9SNVgKgF2m3xvBGlJjOHBVtlzqRlxOTkp0kiJAwAOTeUiGLQSAopqIj7')
+KEY = os.environ.get('BINANCE_API_KEY', '')
+SEC = os.environ.get('BINANCE_SECRET', '')
 HDR = {'X-MBX-APIKEY': KEY}
 
 
 def get_whale_signal(sym: str = 'BTCUSDT') -> dict:
-    """鲸鱼行为综合分析"""
-    px = _bus_get_price(sym) if _bus_get_price else float(requests.get('https://fapi.binance.com/fapi/v1/ticker/price',
-                             params={'symbol': sym}, timeout=5).json()['price'])
+    px = _bus_get_price(sym) if _bus_get_price else float(requests.get(
+        'https://fapi.binance.com/fapi/v1/ticker/price',
+        params={'symbol': sym}, timeout=5).json()['price'])
 
-    # 1. 近1000笔聚合成交 → 找大额单笔（>100 BTC or >200 ETH）
     trades = requests.get('https://fapi.binance.com/fapi/v1/aggTrades',
                           params={'symbol': sym, 'limit': 500}, timeout=8).json()
 
-    threshold_usd = 3_000_000  # 300万U以上视为鲸鱼
+    threshold_usd = 3_000_000
     whale_buys = whale_sells = 0.0
     whale_events = []
 
     if isinstance(trades, list):
         for t in trades:
-            qty   = float(t['q'])
+            qty = float(t['q'])
             price = float(t['p'])
-            usd   = qty * price
+            usd = qty * price
             if usd >= threshold_usd:
-                side = 'SELL' if t['m'] else 'BUY'  # m=True表示maker卖出
+                side = 'SELL' if t['m'] else 'BUY'
                 if side == 'BUY':
                     whale_buys += usd
                 else:
@@ -59,9 +53,8 @@ def get_whale_signal(sym: str = 'BTCUSDT') -> dict:
                 })
 
     whale_net = whale_buys - whale_sells
-    whale_dir = '🐋买入' if whale_net > 0 else ('🐋卖出' if whale_net < 0 else '中性')
+    whale_dir = 'BUY' if whale_net > 0 else ('SELL' if whale_net < 0 else 'FLAT')
 
-    # 2. 大户多空比趋势（最近3期对比）
     ls_whale = requests.get(
         'https://fapi.binance.com/futures/data/topLongShortPositionRatio',
         params={'symbol': sym, 'period': '1h', 'limit': 4}, timeout=8
@@ -73,88 +66,84 @@ def get_whale_signal(sym: str = 'BTCUSDT') -> dict:
         ratios = [float(x['longShortRatio']) for x in ls_whale[-3:]]
         whale_ls_latest = ratios[-1]
         if ratios[-1] > ratios[-3] * 1.05:
-            whale_ls_trend = 'LONG_BUILDING↗'   # 大户在加多
+            whale_ls_trend = 'LONG_BUILDING'
         elif ratios[-1] < ratios[-3] * 0.95:
-            whale_ls_trend = 'SHORT_BUILDING↘'  # 大户在加空
+            whale_ls_trend = 'SHORT_BUILDING'
         else:
-            whale_ls_trend = 'STABLE→'
+            whale_ls_trend = 'STABLE'
 
-    # 3. OI实时变化（设计院 2026-07-13 修复：openInterestHist被403屏蔽，改用公开端点）
     oi_signal = 'NORMAL'
     oi_1h_chg = 0.0
     try:
         if _dc_get_oi:
             _oi_data = _dc_get_oi(sym)
             _oi_now = float(_oi_data.get('openInterest', 0))
-            _oi_r = type('R', (), {'status_code': 200})()  # mock for compat
         else:
             _oi_r = requests.get('https://fapi.binance.com/fapi/v1/openInterest',
                                   params={'symbol': sym}, timeout=5)
-        if (_dc_get_oi and _oi_now > 0) or (not _dc_get_oi and _oi_r.status_code == 200):
-            if not _dc_get_oi:
-                _oi_data = _oi_r.json()
-                _oi_now = float(_oi_data.get('openInterest', 0))
-            _oi_cache_file = BASE / 'data' / f'oi_prev_{sym}.json'
-            if _oi_cache_file.exists():
-                import json as _ojson
-                _oi_prev_data = _ojson.loads(_oi_cache_file.read_text())
-                _oi_prev = _oi_prev_data.get('oi', _oi_now)
-                if _oi_prev > 0:
-                    oi_1h_chg = round((_oi_now - _oi_prev) / _oi_prev * 100, 3)
-            import json as _ojson2
-            _oi_cache_file.write_text(_ojson2.dumps({'oi': _oi_now, 'ts': time.time()}))
-            if oi_1h_chg > 2.0:      oi_signal = '🔥大幅建仓(+{:.2f}%)'.format(oi_1h_chg)
-            elif oi_1h_chg > 1.0:   oi_signal = '📈温和建仓(+{:.2f}%)'.format(oi_1h_chg)
-            elif oi_1h_chg < -2.0:  oi_signal = '🔻大幅清仓({:.2f}%)'.format(oi_1h_chg)
-            elif oi_1h_chg < -1.0:  oi_signal = '📉温和清仓({:.2f}%)'.format(oi_1h_chg)
+            _oi_data = _oi_r.json() if _oi_r.status_code == 200 else {}
+            _oi_now = float(_oi_data.get('openInterest', 0))
+        _oi_cache_file = BASE / 'data' / f'oi_prev_{sym}.json'
+        if _oi_cache_file.exists() and _oi_now > 0:
+            _oi_prev = json.loads(_oi_cache_file.read_text()).get('oi', _oi_now)
+            if _oi_prev > 0:
+                oi_1h_chg = round((_oi_now - _oi_prev) / _oi_prev * 100, 3)
+        if _oi_now > 0:
+            _oi_cache_file.parent.mkdir(parents=True, exist_ok=True)
+            _oi_cache_file.write_text(json.dumps({'oi': _oi_now, 'ts': time.time()}))
+            if oi_1h_chg > 2.0:
+                oi_signal = 'OI_UP_STRONG'
+            elif oi_1h_chg > 1.0:
+                oi_signal = 'OI_UP'
+            elif oi_1h_chg < -2.0:
+                oi_signal = 'OI_DOWN_STRONG'
+            elif oi_1h_chg < -1.0:
+                oi_signal = 'OI_DOWN'
     except Exception:
         pass
 
-    # 4. 梵天评分贡献
     whale_score = 0
-    if whale_net > 5_000_000:  whale_score += 10  # 鲸鱼净买入>500万U
-    elif whale_net > 0:        whale_score += 5
-    if whale_ls_trend == 'LONG_BUILDING↗':  whale_score += 8
-    if 'LONG_BUILDING↗' in oi_signal:       whale_score += 6
-    if whale_net < -5_000_000: whale_score -= 10  # 鲸鱼净卖出扣分
-    if whale_ls_trend == 'SHORT_BUILDING↘': whale_score -= 6
+    if whale_net > 5_000_000:
+        whale_score += 10
+    elif whale_net > 0:
+        whale_score += 5
+    if whale_ls_trend == 'LONG_BUILDING':
+        whale_score += 8
+    if whale_net < -5_000_000:
+        whale_score -= 10
+    if whale_ls_trend == 'SHORT_BUILDING':
+        whale_score -= 6
 
     result = {
-        'symbol'          : sym,
-        'price'           : px,
-        'whale_buys_usd'  : round(whale_buys, 0),
-        'whale_sells_usd' : round(whale_sells, 0),
-        'whale_net_usd'   : round(whale_net, 0),
-        'whale_direction' : whale_dir,
+        'symbol': sym,
+        'price': px,
+        'whale_buys_usd': round(whale_buys, 0),
+        'whale_sells_usd': round(whale_sells, 0),
+        'whale_net_usd': round(whale_net, 0),
+        'whale_direction': whale_dir,
         'whale_event_count': len(whale_events),
-        'whale_ls_ratio'  : round(whale_ls_latest, 3),
-        'whale_ls_trend'  : whale_ls_trend,
-        'oi_1h_chg'       : oi_1h_chg,
-        'oi_signal'       : oi_signal,
-        'whale_score'     : whale_score,
-        'ts'              : time.time(),
+        'whale_ls_ratio': round(whale_ls_latest, 3),
+        'whale_ls_trend': whale_ls_trend,
+        'oi_1h_chg': oi_1h_chg,
+        'oi_signal': oi_signal,
+        'whale_score': whale_score,
+        'ts': time.time(),
     }
-
     cache = BASE / 'data' / f'whale_{sym}.json'
+    cache.parent.mkdir(parents=True, exist_ok=True)
     cache.write_text(json.dumps(result, indent=2))
     return result
 
 
 def format_report(r: dict) -> str:
-    lines = [
-        f'🐋 鲸鱼监控 — {r["symbol"]} ${r["price"]:,.2f}',
-        f'  近期大额成交({r["whale_event_count"]}笔≥$3M):',
-        f'    净买入: ${r["whale_net_usd"]:+,.0f}  方向: {r["whale_direction"]}',
-        f'  大户多空比: {r["whale_ls_ratio"]}  趋势: {r["whale_ls_trend"]}',
-        f'  OI 1H变化: {r["oi_1h_chg"]:+.3f}%  {r["oi_signal"]}',
-        f'  梵天评分贡献: {r["whale_score"]:+d}',
-    ]
-    return '\n'.join(lines)
+    return (
+        f"whale {r['symbol']} px={r['price']} net={r['whale_net_usd']} "
+        f"dir={r['whale_direction']} ls={r['whale_ls_trend']} "
+        f"oi={r['oi_signal']} score={r['whale_score']}"
+    )
 
 
 if __name__ == '__main__':
     syms = sys.argv[1:] if len(sys.argv) > 1 else ['BTCUSDT', 'ETHUSDT']
     for sym in syms:
-        r = get_whale_signal(sym)
-        print(format_report(r))
-        print()
+        print(format_report(get_whale_signal(sym)))
