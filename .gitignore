@@ -1,10 +1,53 @@
 # Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
-# 私有设计文档
+# Virtualenv
+venv/
+.venv/
+env/
+
+# Secrets
+.env
+.secrets
+*.key
+
+# Logs / cores
+*.log
+logs/
+core
+core.*
+
+# Data / caches (do not commit)
+data/*.jsonl
+data/*.json
+data/*.parquet
+data/brahma_cache/
+data/research_cache/
+data/tardis/
+data/backups/
+data/backtest/
+data/qdrant_storage/
+data/brahma_experiences/
+data/.*.lock
+dharma/cache/
+dharma/pump_hunter/*.db
+dharma/data/*.parquet
+*.tar.gz
+
+# Local backups
+*.bak
+*.bak_*
+*.bak.*
+
+# Private design dumps
 *.pdf
 DESIGN_INSTITUTE*.json
 FANTAN_BLUEPRINT*.json
@@ -12,58 +55,4 @@ SYSTEM_MANIFEST.json
 system_constants.json
 system_params*.json
 auto_mode.flag
-prototype_subscriber.html
-
-# 备份文件（改用git管理版本）
-*.bak
-*.bak_*
-*.bak.*
-
-# 数据文件（不纳入版本控制）
-data/*.jsonl
-data/*.json
-dharma/cache/
-dharma/pump_hunter/*.db
-data/brahma_cache/
-data/research_cache/
-data/tardis/
-data/backups/
-data/.*.lock
-*.tar.gz
-gen_long_map.py
-gen_precision_map.py
-
-# 日志
-*.log
-logs/
-
-# 环境
-.env
-*.key
-core.*
-core
-
-# 根目录遗留文件（已归入子目录）
-/dharma_data_bridge.py
-/tz_utils.py
-/ws_guardian.py
--e 
-# Python虚拟环境
-venv/
-.venv/
-env/
-.secrets
-.venv/
-.github/workflows/
 config/omniroute.json
-
-# 大型数据文件（不纳入版本控制 2026-08-28）
-data/backtest/
-data/*.parquet
-data/fangcang_labeled_*.parquet
-dharma/data/*.parquet
-data/qdrant_storage/
-data/brahma_experiences/
-__pycache__/
-scripts/__pycache__/
-brahma_brain/__pycache__/
