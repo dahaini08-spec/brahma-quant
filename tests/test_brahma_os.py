@@ -1,8 +1,10 @@
+from brahma_os.adapter import AdapterError, analyze_to_signal
 from brahma_os.config import Settings
 from brahma_os.contracts import Fill, Signal
 from brahma_os.costs import CostModel
 from brahma_os.gates import evaluate_gates
 from brahma_os.ledger import EquityLedger
+from brahma_os.paper_bridge import decide_from_analyze
 from brahma_os.settlement import SettlementEngine, SettlementRule
 
 
@@ -95,6 +97,89 @@ def test_ledger_costs_reduce_nav():
         slippage=0.3,
     )
     pos = led.apply_exit(entry.fill_id, exit_, hours_held=8.0, outcome="WIN")
-    assert pos.realized < 6.0  # 6 gross minus fees/slip/funding
+    assert pos.realized < 6.0
     assert led.snapshot().wins == 1
     assert led.nav() < 10_006.0
+
+
+def test_adapter_reads_aliases_and_nested_params():
+    raw = {
+        "symbol": "ETHUSDT",
+        "signal_dir": "BUY",
+        "score_final": 151,
+        "grade": "橙色极强",
+        "regime": "BULL_EARLY",
+        "params": {"entry_lo": 2400, "entry_hi": 2410, "stop_loss": 2350, "tp1": 2500},
+        "ts": 1_700.0,
+    }
+    sig = analyze_to_signal(raw, ttl_hours=24)
+    assert sig.side == "LONG"
+    assert sig.grade == 80.0
+    assert sig.stop == 2350
+    assert sig.target == 2500
+    assert sig.entry_lo == 2400
+
+
+def test_adapter_refuses_price_only():
+    raw = {"symbol": "BTCUSDT", "direction": "LONG", "score": 160, "price": 100, "grade_num": 90}
+    try:
+        analyze_to_signal(raw)
+    except AdapterError as exc:
+        assert exc.code == "ENTRY"
+    else:
+        raise AssertionError("expected AdapterError")
+
+
+def test_paper_bridge_blocks_100x_style_and_opens_one_side():
+    raw = {
+        "symbol": "BTCUSDT",
+        "direction": "LONG",
+        "score": 150,
+        "grade_num": 85,
+        "regime": "BULL_EARLY",
+        "entry_lo": 100,
+        "entry_hi": 101,
+        "stop": 97,
+        "tp1": 106,
+        "ts": 1_000,
+    }
+    settings = Settings(start_nav=10_000, max_leverage=5, max_symbol_weight=0.12)
+    d = decide_from_analyze(
+        raw,
+        settings,
+        nav=10_000,
+        open_positions=0,
+        symbol_exposure=0.0,
+        gross_exposure=0.0,
+        now_ts=1_000,
+    )
+    assert d.allow is True
+    assert d.signal is not None and d.signal.side == "LONG"
+    assert d.leverage <= 5
+    assert d.margin == 1_200.0
+    assert d.notional == 6_000.0
+
+
+def test_paper_bridge_dead_hole():
+    raw = {
+        "symbol": "BTCUSDT",
+        "direction": "LONG",
+        "score": 160,
+        "grade_num": 90,
+        "regime": "BEAR_TREND",
+        "entry_lo": 100,
+        "entry_hi": 101,
+        "stop": 97,
+        "tp1": 106,
+        "ts": 1_000,
+    }
+    d = decide_from_analyze(
+        raw,
+        Settings(),
+        nav=10_000,
+        open_positions=0,
+        symbol_exposure=0.0,
+        gross_exposure=0.0,
+        now_ts=1_000,
+    )
+    assert d.allow is False and d.code == "DEAD_HOLE"

@@ -1,9 +1,15 @@
 name: brahma-os
 on:
   push:
-    paths: ["brahma_os/**", "tests/test_brahma_os.py"]
+    paths:
+      - "brahma_os/**"
+      - "tests/test_brahma_os.py"
+      - "scripts/paper_engine.py"
   pull_request:
-    paths: ["brahma_os/**", "tests/test_brahma_os.py"]
+    paths:
+      - "brahma_os/**"
+      - "tests/test_brahma_os.py"
+      - "scripts/paper_engine.py"
 jobs:
   test:
     runs-on: ubuntu-latest
