@@ -13,7 +13,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).parent.parent
 WATCHLIST_FILE = BASE_DIR / "data" / "oi_watchlist.json"
 JARVIS_USER_ID = "73295708"
-JARVIS_THREAD_ID = "01a03e25-a459-733e-a2ba-a56083050f26"
+JARVIS_THREAD_ID = "01a07970-f8ce-706b-8bea-3c94dd055443"
 FAPI = "https://fapi.binance.com"
 
 def get_ticker(symbol):
@@ -53,14 +53,13 @@ def check_atr(symbol):
     return sum(trs) / len(trs)
 
 def push_jarvis(msg: str):
-    """通过openclaw推送到jarvis"""
-    import subprocess
-    subprocess.run([
-        "openclaw", "message", "send",
-        "--channel", "jarvis",
-        "--to", f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}",
-        "--message", msg
-    ], capture_output=True, timeout=15)
+    """通过push_hub直接HTTP推送，不依赖openclaw CLI（2026-09-06 超时根因修复）"""
+    try:
+        from push_hub import push_jarvis as _push
+        _push(msg)
+    except Exception as e:
+        import sys
+        print(f"[push_jarvis] 推送失败: {e}", file=sys.stderr)
 
 def evaluate_trigger(symbol, entry, ticker, fr, lsr, oi_chg, atr):
     """

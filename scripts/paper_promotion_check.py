@@ -145,7 +145,7 @@ def push_to_jarvis(msg: str):
         import subprocess
         result = subprocess.run(
             ['openclaw', 'message', 'send',
-             '--to', '73295708:thread:01a03e25-a459-733e-a2ba-a56083050f26',
+             '--to', '73295708:thread:01a07970-f8ce-706b-8bea-3c94dd055443',
              '--channel', 'jarvis',
              '--message', msg],
             capture_output=True, text=True, timeout=15

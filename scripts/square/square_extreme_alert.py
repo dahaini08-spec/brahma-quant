@@ -242,7 +242,7 @@ def post_to_square(content: str, dry_run: bool = False) -> str | None:
                 _msg = f'📢 梵天极端行情帖已发Square\n\n{_preview}...'
                 _sp.run(['openclaw', 'message', 'send',
                          '--channel', 'jarvis',
-                         '--to', '73295708:thread:01a03e25-a459-733e-a2ba-a56083050f26',
+                         '--to', '73295708:thread:01a07970-f8ce-706b-8bea-3c94dd055443',
                          '--message', _msg], timeout=10, capture_output=True)
             except Exception as _pe:
                 print(f'[post] ⚠️ 推送苏摩失败: {_pe}')

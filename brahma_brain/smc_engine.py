@@ -2322,7 +2322,7 @@ _sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
 try:
     from system_config import JARVIS_TARGET, JARVIS_CHANNEL  # type: ignore
 except Exception:
-    JARVIS_TARGET  = os.environ.get('JARVIS_TARGET', '73295708:thread:01a033af-3697-734a-9f9c-c3e34a00c378')
+    JARVIS_TARGET  = os.environ.get('JARVIS_TARGET', '73295708:thread:01a07970-f8ce-706b-8bea-3c94dd055443')
     JARVIS_CHANNEL = 'jarvis'
 
 
