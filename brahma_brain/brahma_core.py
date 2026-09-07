@@ -1199,6 +1199,18 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _lpf_e:
         pass  # [静默] f'[PriceFix] 价格刷新异常（不阻断）: {_lpf_e}'
 
+    # ══ [矛盾1-A预热 2026-09-07 苏摩111] BrahmaBus启动预热 ══════════════════════
+    # 根因: step4串行调get_klines×9次 + step1 API调用 = 6s主要瓶颈
+    # 方案: 在Step1之前并发预拉所有数据写入data_cache，后续调用直接命中缓存
+    # 效果: 实际分析时缓存命中，串行6s → 并发内已就绪的数据 ~1s
+    try:
+        from data_cache import prefetch_symbol as _pf
+        # 同步预热（阻塞到完成，确保后续所有步骤缓存命中）
+        # prefetch_symbol内部已用ThreadPoolExecutor并发拉取，总耗时~1-1.5s
+        _pf(_sym)
+    except Exception:
+        pass  # 预热失败不影响主流程，自动降级到串行拉取
+
     # ╔══════════════════════════════════════════════════════════════════╗
     # ║ Step1-3: 市场分析/方向/SMC                                        ║
     # ║ [封印 2026-08-11] → brahma_core_analyze_steps.py                  ║
