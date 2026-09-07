@@ -40,6 +40,17 @@ def evaluate_gates(
         return GateDecision(False, "RR_LOW", f"rr {signal.rr:.2f} < {settings.min_rr}")
     if signal.rr > settings.max_rr:
         return GateDecision(False, "RR_HIGH", f"rr {signal.rr:.2f} > {settings.max_rr}")
+    # [2026-09-07 三方评估封印] score死亡区间拦截
+    # 130-145段WR=17.9%（全场最低，28笔实测）——评分神庙在CHOP/BEAR下反向选单的具体表现
+    # CHOP体制下更严格，其他体制追加拦截下限提高到145
+    _dead_zone_lo, _dead_zone_hi = settings.score_dead_zone_lo, settings.score_dead_zone_hi
+    if _dead_zone_lo < signal.score < _dead_zone_hi:
+        _chop = signal.regime in ("CHOP_MID", "CHOP_HIGH", "CHOP_LOW")
+        _bear = "BEAR" in signal.regime
+        if _chop or _bear:
+            return GateDecision(False, "DEAD_ZONE",
+                f"score {signal.score:.1f} in dead zone [{_dead_zone_lo},{_dead_zone_hi}) "
+                f"regime={signal.regime} WR=17.9%")
     if signal.side == "LONG" and signal.regime in settings.dead_long_regimes:
         return GateDecision(False, "DEAD_HOLE", f"{signal.regime} x LONG")
     if signal.side == "SHORT" and signal.regime in settings.dead_short_regimes:
