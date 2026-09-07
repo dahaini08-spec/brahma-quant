@@ -48,25 +48,31 @@ API_KEY  = _load_key()
 BASE_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
 # ── 任务路由表：task → 专项模型 (2026-09-05 苏摩111封印) ─────────────────
+# [2026-09-07 苏摩111] 免费模型全量测试结论：
+# 18个免费模型中今天仅 minimax-m3 可用（其余14个429超限，2个403禁止）
+# 超限原因：free-models-per-day全账户共享，UTC 00:00每日重置
+# 策略：全部任务统一走minimax-m3（唯一稳定可用模型）
+# 各专项任务在额度恢复后仍可通过FALLBACK_MODELS轮换
 TASK_MODEL_MAP = {
-    'council':  'minimax/minimax-m3:free',                      # AI议会三方裁决
-    'vip':      'minimax/minimax-m3:free',                      # VIP一句话逻辑
-    'oi':       'minimax/minimax-m3:free',                      # OI聪明钱解读
-    'regime':   'nvidia/nemotron-3-super-120b-a12b:free',       # 体制切换宏观确认
-    'wr_audit': 'inclusionai/ling-3.0-flash-fin:free',          # WR异常审核
-    'review':   'inclusionai/ling-3.0-flash-fin:free',          # 结算复盘lesson
-    'hcme':     'minimax/minimax-m3:free',                      # HCME历史镜像摘要（inkling系列均403，改用minimax兜底）
-    'chop':     'nvidia/nemotron-3.5-lightning:free',           # CHOP突破快速验证
-    'safety':   'nvidia/nemotron-3.5-content-safety:free',      # AVOID安全门控
-    'default':  'minimax/minimax-m3:free',                      # 通用兜底
+    'council':  'minimax/minimax-m3:free',   # AI议会三方裁决
+    'vip':      'minimax/minimax-m3:free',   # VIP一句话逻辑
+    'oi':       'minimax/minimax-m3:free',   # OI聪明钱解读
+    'regime':   'minimax/minimax-m3:free',   # 体制宏观确认（nemotron今日429）
+    'wr_audit': 'minimax/minimax-m3:free',   # WR审核（ling今日429）
+    'review':   'minimax/minimax-m3:free',   # 结算复盘
+    'hcme':     'minimax/minimax-m3:free',   # 历史镜像（inkling永久403）
+    'chop':     'minimax/minimax-m3:free',   # CHOP验证（nemotron今日429）
+    'safety':   'minimax/minimax-m3:free',   # 安全门控（nemotron今日429）
+    'default':  'minimax/minimax-m3:free',   # 通用兜底
 }
 
 # fallback链：主模型失败时的备选顺序
+# fallback链（2026-09-07全量测试：今日仅minimax-m3可用，其余UTC 00:00重置后轮用）
 FALLBACK_MODELS = [
     'minimax/minimax-m3:free',
     'nvidia/nemotron-3-ultra-550b-a55b:free',
     'google/gemma-4-31b-it:free',
-    'google/gemma-4-31b-it:free',
+    'nvidia/nemotron-3-super-120b-a12b:free',
 ]
 
 # ── 梵天宪法 System Prompt（所有LLM调用自动注入）────────────────────────
