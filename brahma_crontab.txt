@@ -14,7 +14,7 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 30 * * * *   cd /root/.openclaw/workspace/trading-system && timeout 55 venv/bin/python3 brahma_brain/brahma_analysis_runner.py BTCUSDT ETHUSDT >> logs/syscron.log 2>&1
 0  * * * *   cd /root/.openclaw/workspace/trading-system && timeout 90 python3 scripts/brahma_1hao_analysis.py >> logs/syscron.log 2>&1
 */30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/structure_trigger.py >> logs/syscron.log 2>&1
-*/30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/brahma_state_refresh.py >> logs/syscron.log 2>&1
+*/30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 55 python3 scripts/brahma_state_refresh.py >> logs/syscron.log 2>&1
 */5  * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/regime_realtime_watcher.py >> logs/regime_watcher.log 2>&1
 0 */4 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_360_watchdog.py >> logs/syscron.log 2>&1
 0 */4 * * *  cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/macro_engine_refresh.py >> logs/syscron.log 2>&1

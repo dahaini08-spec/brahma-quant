@@ -82,6 +82,38 @@ def is_duplicate(content: str) -> bool:
     return False
 
 
+def is_symbol_duplicate(symbol: str) -> bool:
+    """标的名称级去重：同一标的24H内只发一次（防COLLECT重复问题）"""
+    key = f'sym:{symbol.upper()}'
+    d = load_dedup()
+    now_ts = time.time()
+    d = {k: v for k, v in d.items() if now_ts - v < 86400}
+    return key in d
+
+
+def mark_symbol_posted(symbol: str):
+    """标记标的已发帖"""
+    key = f'sym:{symbol.upper()}'
+    d = load_dedup()
+    now_ts = time.time()
+    d = {k: v for k, v in d.items() if now_ts - v < 86400}
+    d[key] = now_ts
+    save_dedup(d)
+
+
+def get_btc_regime() -> str:
+    """读取当前BTC体制"""
+    try:
+        regime_file = DATA_DIR / 'regime_state.json'
+        if regime_file.exists():
+            rs = json.loads(regime_file.read_text())
+            btc = rs.get('BTCUSDT', {})
+            return btc.get('confirmed', 'UNKNOWN')
+    except Exception:
+        pass
+    return 'UNKNOWN'
+
+
 def mark_posted(content: str):
     h = hashlib.md5(content.encode()).hexdigest()[:12]
     d = load_dedup()
@@ -547,10 +579,27 @@ def build_top_gainers() -> str:
     """涨幅榜 — 姓赵不宣: 每个标的给实质判断，不做无观点列表"""
     import requests as _r, re as _re
 
+    # [2026-09-07] 体制门控 + 标的去重
+    regime = get_btc_regime()
+    chop_mode = regime in ('CHOP_MID', 'CHOP_HIGH')
+
     data = run_pro_cli(['search', 'price-change', 'um', '--sort', 'TOP_GAINERS', '--limit', '5'])
     items_raw = (data.get('list') or data.get('items', []))[:6] if data else []
-    items = [x for x in items_raw
-             if _re.match(r'^[A-Z0-9]{2,12}USDT$', x.get('symbol', ''))][:5]
+    items_raw = [x for x in items_raw if _re.match(r'^[A-Z0-9]{2,12}USDT$', x.get('symbol', ''))]
+
+    filtered = []
+    for x in items_raw:
+        sym_r = x.get('symbol', '')
+        chg = abs(float(x.get('change', x.get('priceChangePercent', 0))))
+        is_major = sym_r in ('BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'XRPUSDT')
+        if is_symbol_duplicate(sym_r):
+            continue
+        if chop_mode and not is_major and chg < 30:
+            continue
+        filtered.append(x)
+        if len(filtered) >= 5:
+            break
+    items = filtered
     if not items:
         return ''
 
@@ -631,6 +680,7 @@ def build_top_gainers() -> str:
         lines.append(f'{i}. ${sym}  {chg:+.1f}%  {p_str}')
         lines.append(f'   {verdict}')
         lines.append('')
+        mark_symbol_posted(sym_r)  # [2026-09-07] 标的24H去重
 
     lines.append('涨幅榜我每次都要先看背后的逻辑，不是列完就完了。')
     lines.append('')
@@ -650,10 +700,37 @@ def build_top_losers() -> str:
     """跌幅榜 — 姓赵不宣: 判断是抄底机会还是继续踩坑"""
     import requests as _r
 
+    # [2026-09-07 三方评估封印] 体制门控：CHOP_MID下山寨暴跌阈值提高到50%
+    regime = get_btc_regime()
+    chop_mode = regime in ('CHOP_MID', 'CHOP_HIGH')
+
     data = run_pro_cli(['search', 'price-change', 'um', '--sort', 'TOP_LOSERS', '--limit', '8'])
     items = (data.get('list') or data.get('items', []))[:3] if data else []  # ≤3 tickers (Square API coin pair limit)
     if not items:
         return ''
+
+    # [2026-09-07] 标的级去重 + CHOP体制阈值过滤
+    filtered_items = []
+    for x in items:
+        sym_r = x.get('symbol', '')
+        sym = sym_r.replace('USDT', '')
+        chg = abs(float(x.get('change', x.get('priceChangePercent', 0))))
+        # 标的24H内已发过，跳过
+        if is_symbol_duplicate(sym_r):
+            print(f'[losers] ⚠️ {sym} 24H内已发过，跳过', file=__import__('sys').stderr)
+            continue
+        # CHOP体制下非主力币跌幅需>50%才值得发
+        is_major = sym_r in ('BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'XRPUSDT')
+        if chop_mode and not is_major and chg < 50:
+            print(f'[losers] ⚠️ CHOP_MID体制下{sym}跌幅{chg:.0f}%<50%，信号噪音，跳过', file=__import__('sys').stderr)
+            continue
+        filtered_items.append(x)
+
+    if not filtered_items:
+        print(f'[losers] ⚠️ 所有标的被去重/阈值过滤，返回空', file=__import__('sys').stderr)
+        return ''
+
+    items = filtered_items[:3]
 
     # BTC + FR + LSR
     btc_chg, btc_fr = 0.0, 0.0
@@ -726,9 +803,23 @@ def build_top_losers() -> str:
         else:
             verdict = f'跌幅正常范围内，没有极端信号，观望为主。'
 
+        # [2026-09-07] 强制加入具体价位和操作思路
+        if price > 0:
+            support_price = price * 0.95
+            resist_price = price * 1.08
+            p_support = f'{support_price:,.4f}' if price < 1 else f'{support_price:,.2f}'
+            p_resist = f'{resist_price:,.4f}' if price < 1 else f'{resist_price:,.2f}'
+            action_line = f'   我的操作：等到{p_support}下方量能萍缩+水平展开再看。弹上到{p_resist}附近再考虑区间内做空。'
+        else:
+            action_line = ''
+
         lines.append(f'{i}. ${sym}  {chg:+.1f}%  {p_str}')
         lines.append(f'   {verdict}')
+        if action_line:
+            lines.append(action_line)
         lines.append('')
+        # [2026-09-07] 标记该标的24H去重
+        mark_symbol_posted(sym_r)
 
     lines.append('跌幅榜里不是每个都值得抄底，分清楚是大盘拖下来的还是自身有问题，这个判断比知道跌了多少更重要。')
     lines.append('')
