@@ -51,8 +51,8 @@ RR_MIN         = 1.5         # 最低RR
 # 仓位规则
 SIZE_MAJOR = 0.05   # BTC/ETH
 SIZE_ALT   = 0.03   # 其他
-LEV_MAJOR  = 100
-LEV_ALT    = 20
+LEV_MAJOR  = 5   # [2026-09-07 设计院全局接管] 100x→5x，Grok P0停血要求
+LEV_ALT    = 5   # [2026-09-07] 20x→5x
 MAJOR_SYMS = {'BTCUSDT', 'ETHUSDT'}
 
 # 死穴

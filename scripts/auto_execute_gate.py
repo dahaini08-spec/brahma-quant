@@ -32,7 +32,7 @@ TRADFI_HARD_BLOCK = {
 # [铁证封印 2026-08-06 设计院自主] rr1过高封禁
 # 实证：score 120-140 + rr1>1.5 → EV=-1.0（全亏），TP太远无法触达
 MAX_RR1_AUTO       = 1.8  # rr1>1.8 且 score<155 → 拒绝执行（神级除外）
-MAX_OPEN_POSITIONS = 999  # 设计院2026-06-23授权：不限制开仓数量
+MAX_OPEN_POSITIONS = 3  # [2026-09-07 设计院全局接管] 999→3，Grok P0停血要求
 MAX_POS_PCT_NAV    = 0.10  # 单笔最大10% NAV（保留风控）
 
 IRON_DIRECTIONS = {

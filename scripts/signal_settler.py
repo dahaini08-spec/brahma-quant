@@ -124,11 +124,10 @@ def settle_signal(sig: dict, dry_run: bool = False) -> dict | None:
 
     _score = float(sig.get('score', 0) or 0)
     _regime = str(sig.get('regime', '') or '')
-    _mode_b_eligible = (
-        direction == 'LONG'
-        and _score >= 120
-        and any(x in _regime for x in ('BULL_TREND', 'BULL_EARLY'))
-    )
+    # [2026-09-07 设计院全局接管] MODE_B永久关闭
+    # 根因：MODE_B用已走完的3根阳线改写入场价，结算成绩不是原信号成绩
+    # Grok判断：结算器改写历史 → WR虚高 → 停血第一刀
+    _mode_b_eligible = False  # 永远False，MODE_B不再触发
 
     for k_ts, k_hi, k_lo, k_cl in klines:
         # MODE_B追踪：检测价格连续突破entry_hi
