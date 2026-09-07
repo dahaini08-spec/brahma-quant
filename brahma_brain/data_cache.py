@@ -339,23 +339,61 @@ def get_all_active_symbols() -> list:
         pass  # [静默]
         return []
 
+def _prefetch_gex(currency: str) -> dict:
+    """[矛盾1-B 2026-09-07 苏摩111] GEX预热 — 触发gex_unified缓存写入（TTL 30min）"""
+    try:
+        import sys as _s, os as _o
+        _base = _o.path.dirname(_o.path.dirname(_o.path.abspath(__file__)))
+        for _p in [_base, _o.path.join(_base, 'brahma_brain')]:
+            if _p not in _s.path: _s.path.insert(0, _p)
+        from brahma_brain.gex_unified import get_gex_state
+        return get_gex_state(currency) or {}
+    except Exception:
+        return {}
+
+
+def _prefetch_hcme(symbol: str) -> dict:
+    """[矛盾1-B 2026-09-07 苏摩111] HCME预热 — 触发fangcang扩展库加载（内存常驻后0.88s→0.01s）"""
+    try:
+        import sys as _s, os as _o
+        _base = _o.path.dirname(_o.path.dirname(_o.path.abspath(__file__)))
+        for _p in [_base, _o.path.join(_base, 'brahma_brain')]:
+            if _p not in _s.path: _s.path.insert(0, _p)
+        from brahma_brain.fangcang_engine import get_fangcang_context
+        return get_fangcang_context(symbol, {}) or {}
+    except Exception:
+        return {}
+
+
 def prefetch_symbol(symbol: str) -> dict:
-    """并发预拉取单币所有数据"""
+    """并发预拉取单币所有数据（含GEX+HCME预热）
+    [矛盾1-B 2026-09-07] 在原有klines/ticker/oi/lsr基础上并行加入GEX+HCME
+    GEX: Deribit/Binance期权API ~2s → 结果写入gex_cache.json(TTL 30min)
+    HCME: 4564条扩展库加载 ~0.88s → 内存常驻后后续调用0.01s
+    效果: 原串行6s → 并发 max(prefetch~1.5s, GEX~2s) = ~2s，节省4s
+    """
     result = {}
+    # 推断currency（GEX用currency，不用symbol）
+    currency = 'BTC' if 'BTC' in symbol.upper() else \
+               'ETH' if 'ETH' in symbol.upper() else \
+               'SOL' if 'SOL' in symbol.upper() else 'BTC'
+
     intervals = ['15m', '1h', '4h', '1d']
-    with ThreadPoolExecutor(max_workers=6) as ex:
+    with ThreadPoolExecutor(max_workers=10) as ex:  # 从6增到10，支持更多并发
         futs = {ex.submit(get_klines, symbol, iv, 200): iv for iv in intervals}
         futs[ex.submit(get_ticker, symbol)] = 'ticker'
         futs[ex.submit(get_funding_rate, symbol)] = 'fr'
         futs[ex.submit(get_open_interest, symbol)] = 'oi'
         futs[ex.submit(get_long_short_ratio, symbol)] = 'lsr'
+        # [矛盾1-B新增] GEX + HCME并行预热
+        futs[ex.submit(_prefetch_gex, currency)] = 'gex'
+        futs[ex.submit(_prefetch_hcme, symbol)] = 'hcme'
         for f in as_completed(futs):
             key = futs[f]
             try:
                 result[key] = f.result()
-            except Exception as e:
+            except Exception:
                 result[key] = None
-                pass  # [静默]
     return result
 
 def clear_expired():
