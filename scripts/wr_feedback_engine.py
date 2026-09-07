@@ -128,13 +128,20 @@ def compute_new_override(matrix: dict) -> tuple[dict, list]:
 
     for key, entry in matrix.items():
         # 只处理 regime:direction:score_bin 格式（不处理symbol格式）
+        # [P0修复 2026-09-07 苏摩111] 跳过paper_realtime:X:Y格式（3段但含paper_realtime前缀）
+        # 根因：paper_realtime:BEAR_EARLY:SHORT被误解析为regime=paper_realtime，n_win缺失→WR=0%
         parts = key.split(':')
-        if len(parts) != 3 or 'USDT' in key:
+        if len(parts) != 3 or 'USDT' in key or key.startswith('paper_realtime'):
             continue
 
         regime, direction, score_bin = parts
         n       = int(entry.get('n', 0))
-        n_win   = int(entry.get('n_win', 0))
+        # [P0修复] 优先用entry['wr']*n计算n_win，防止paper_realtime格式无n_win字段导致WR=0%
+        _wr_direct = entry.get('wr')
+        if _wr_direct is not None and entry.get('n_win') is None:
+            n_win = round(float(_wr_direct) * n)
+        else:
+            n_win = int(entry.get('n_win', 0))
         settled = int(entry.get('settled', n))  # settled优先，否则用n
 
         # 样本门槛
