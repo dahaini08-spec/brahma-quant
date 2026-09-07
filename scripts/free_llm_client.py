@@ -48,22 +48,21 @@ API_KEY  = _load_key()
 BASE_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
 # ── 任务路由表：task → 专项模型 (2026-09-05 苏摩111封印) ─────────────────
-# [2026-09-07 苏摩111] 免费模型全量测试结论：
-# 18个免费模型中今天仅 minimax-m3 可用（其余14个429超限，2个403禁止）
-# 超限原因：free-models-per-day全账户共享，UTC 00:00每日重置
-# 策略：全部任务统一走minimax-m3（唯一稳定可用模型）
-# 各专项任务在额度恢复后仍可通过FALLBACK_MODELS轮换
+# [2026-09-07 三方深度评估 苏摩111] 18个免费模型全量分析 + 最优任务分配
+# 永久不可用: inkling系列(403) / minimax-m2.7(None解析失败)
+# 今日429超限(UTC 00:00重置): 除minimax-m3外全部超限
+# 最优分配（重置后生效）：按模型特长分配梵天任务
 TASK_MODEL_MAP = {
-    'council':  'minimax/minimax-m3:free',   # AI议会三方裁决
-    'vip':      'minimax/minimax-m3:free',   # VIP一句话逻辑
-    'oi':       'minimax/minimax-m3:free',   # OI聪明钱解读
-    'regime':   'minimax/minimax-m3:free',   # 体制宏观确认（nemotron今日429）
-    'wr_audit': 'minimax/minimax-m3:free',   # WR审核（ling今日429）
-    'review':   'minimax/minimax-m3:free',   # 结算复盘
-    'hcme':     'minimax/minimax-m3:free',   # 历史镜像（inkling永久403）
-    'chop':     'minimax/minimax-m3:free',   # CHOP验证（nemotron今日429）
-    'safety':   'minimax/minimax-m3:free',   # 安全门控（nemotron今日429）
-    'default':  'minimax/minimax-m3:free',   # 通用兜底
+    'council':  'minimax/minimax-m3:free',                   # 中文最佳★★★★★ 议会主裁决
+    'vip':      'minimax/minimax-m3:free',                   # 中文最佳 VIP摘要
+    'oi':       'minimax/minimax-m3:free',                   # 中文最佳 OI解读
+    'regime':   'nvidia/nemotron-3-ultra-550b-a55b:free',    # 550B深度推理★★★★☆ 宏观体制
+    'wr_audit': 'inclusionai/ling-3.0-flash-fin:free',       # 金融专项★★★★☆ WR审核
+    'review':   'inclusionai/ling-3.0-flash-fin:free',       # 金融专项 复盘lesson
+    'hcme':     'nvidia/nemotron-3-ultra-550b-a55b:free',    # 550B长上下文 历史镜像
+    'chop':     'nvidia/nemotron-3.5-lightning:free',        # 极速ctx=1M★★★☆☆ CHOP验证
+    'safety':   'nvidia/nemotron-3.5-content-safety:free',   # 专用安全分类器 门控
+    'default':  'minimax/minimax-m3:free',                   # 永久兜底
 }
 
 # fallback链：主模型失败时的备选顺序
