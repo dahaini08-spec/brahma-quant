@@ -31,15 +31,23 @@ def ensure_supercronic():
         r = subprocess.run(['pgrep', '-f', 'supercronic'], capture_output=True, text=True)
         if r.returncode == 0:
             return None  # 已在运行
-        # 不在运行，拉起
-        os.makedirs(str(BASE / 'logs'), exist_ok=True)
+        # 不在运行，通过start_supercronic.sh拉起（含libgomp.so.1恢复等初始化步骤）
+        start_sh = str(BASE / 'start_supercronic.sh')
         log_fh = open(SUPERCRONIC_LOG, 'a')
         proc = subprocess.Popen(
-            [SUPERCRONIC_BIN, SUPERCRONIC_CRON],
+            ['bash', start_sh],
             stdout=log_fh, stderr=log_fh,
             start_new_session=True
         )
-        return f'supercronic已重启 pid={proc.pid}'
+        try:
+            proc.wait(timeout=15)
+        except subprocess.TimeoutExpired:
+            pass
+        r2 = subprocess.run(['pgrep', 'supercronic'], capture_output=True)
+        if r2.returncode == 0:
+            pid = r2.stdout.strip().decode()
+            return f'supercronic已重启（via start_supercronic.sh）pid={pid}'
+        return 'supercronic启动失败，请手动检查'
     except Exception as e:
         return f'supercronic拉起失败: {e}'
 
