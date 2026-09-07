@@ -61,8 +61,15 @@ def evaluate_gates(
         return GateDecision(False, "GEOMETRY", "SHORT requires target < entry < stop")
     if open_positions >= settings.max_open_positions:
         return GateDecision(False, "POS_LIMIT", "max open positions")
-    if symbol_exposure >= settings.max_symbol_weight:
-        return GateDecision(False, "SYMBOL_CAP", "symbol weight cap")
+    # [2026-09-07] 高质量体制×方向 允许更高仓位上限
+    _hq_regime = "BEAR_EARLY"
+    _hq_dir    = "SHORT"
+    _max_w = (settings.high_quality_max_weight
+              if (signal.regime == _hq_regime and signal.side == _hq_dir)
+              else settings.max_symbol_weight)
+    if symbol_exposure >= _max_w:
+        return GateDecision(False, "SYMBOL_CAP",
+            f"symbol weight {symbol_exposure:.1%} >= {_max_w:.1%}")
     if gross_exposure >= settings.max_gross_exposure:
         return GateDecision(False, "GROSS_CAP", "gross exposure cap")
     return GateDecision(True, "PASS", "ok")
