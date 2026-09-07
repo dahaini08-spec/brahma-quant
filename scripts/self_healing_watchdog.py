@@ -19,6 +19,11 @@ SUPERCRONIC_BIN  = str(BASE / 'supercronic')
 SUPERCRONIC_CRON = str(BASE / 'brahma_crontab.txt')
 SUPERCRONIC_LOG  = str(BASE / 'logs' / 'supercronic.log')
 
+# CVD采集器 存活检测（自动拉起）
+CVD_SCRIPT  = str(BASE / 'scripts' / 'cvd_ws_collector.py')
+CVD_LOG     = str(BASE / 'logs' / 'cvd_collector.log')
+CVD_MAX_AGE = 300  # CVD数据超过300s视为采集器失效
+
 def ensure_supercronic():
     """检测supercronic是否在跑，不在则自动拉起"""
     import subprocess, os
@@ -37,6 +42,55 @@ def ensure_supercronic():
         return f'supercronic已重启 pid={proc.pid}'
     except Exception as e:
         return f'supercronic拉起失败: {e}'
+
+
+def ensure_cvd_collector():
+    """[P0修复 2026-09-07 苏摩111] CVD采集器存活检测+自动拉起
+    双重检测：进程存活 AND 数据新鲜度（age<300s）
+    根因：进程可能假活（僵尸/hang），仅检测进程不够
+    """
+    import subprocess, json as _json, time as _time, os
+    now = _time.time()
+
+    # 1. 检查数据新鲜度（比进程检测更可靠）
+    data_stale = False
+    for sym in ['btcusdt', 'ethusdt']:
+        p = BASE / 'data' / f'cvd_realtime_{sym}.json'
+        try:
+            d = _json.loads(p.read_text())
+            age = now - d.get('ts', 0)
+            if age > CVD_MAX_AGE:
+                data_stale = True
+                break
+        except Exception:
+            data_stale = True
+            break
+
+    if not data_stale:
+        return None  # 数据新鲜，无需操作
+
+    # 2. 数据过期 → 检查进程并重启
+    r = subprocess.run(['pgrep', '-f', 'cvd_ws_collector'], capture_output=True)
+    if r.returncode == 0:
+        # 进程存在但数据过期 → 假活，kill后重启
+        subprocess.run(['pkill', '-f', 'cvd_ws_collector'], capture_output=True)
+        _time.sleep(1)
+
+    try:
+        os.makedirs(str(BASE / 'logs'), exist_ok=True)
+        log_fh = open(CVD_LOG, 'a')
+        env = os.environ.copy()
+        env['PYTHONPATH'] = str(BASE)
+        proc = subprocess.Popen(
+            ['python3', CVD_SCRIPT],
+            stdout=log_fh, stderr=log_fh,
+            start_new_session=True,
+            env=env,
+            cwd=str(BASE)
+        )
+        return f'CVD采集器已重启 pid={proc.pid}（数据过期超{CVD_MAX_AGE}s）'
+    except Exception as e:
+        return f'CVD采集器拉起失败: {e}'
 
 # 关键cron任务监控（超过max_idle_min分钟未运行 → 告警）
 # 注意: position-guardian/rsi-structure-watcher 已迁移 supercronic，不再在OpenClaw cron里
@@ -73,6 +127,11 @@ def run():
     sc_result = ensure_supercronic()
     if sc_result:
         alerts.append(sc_result)
+
+    # [P0修复 2026-09-07 苏摩111] 检测并自动拉起CVD采集器
+    cvd_result = ensure_cvd_collector()
+    if cvd_result:
+        alerts.append(cvd_result)
 
     try:
         jobs = json.loads(CRON_JOBS.read_text())
