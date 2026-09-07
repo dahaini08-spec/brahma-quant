@@ -208,7 +208,20 @@ def main():
                      if int(v.get('settled', v.get('n', 0))) >= MIN_N}
     log(f'WR矩阵总条目: {len(matrix)} | 统计显著(n>={MIN_N}): {len(valid_entries)}')
 
-    new_override, changes = compute_new_override(matrix)
+    try:
+        new_override, changes = compute_new_override(matrix)
+    except Exception as _e_wr:
+        # [矛盾2修复 2026-09-07 苏摩111] 核心计算失败不再静默
+        import logging as _lg_wr
+        _lg_wr.getLogger('wr_feedback').error(f'compute_new_override失败: {_e_wr}')
+        try:
+            import sys as _s; _s.path.insert(0, str(BASE))
+            from scripts.brahma_alert import alert_error
+            alert_error('wr_feedback', f'WR权重更新失败', _e_wr)
+        except Exception:
+            pass
+        print(f'ERROR: {_e_wr}')
+        return
 
     if not changes:
         log('无需更新（所有组合偏差在噪声区间内）')
