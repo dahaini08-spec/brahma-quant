@@ -20,6 +20,10 @@ class Settings:
     min_grade: float = 80.0
     min_rr: float = 1.5
     max_rr: float = 2.5
+    # [2026-09-07 三方评估封印] score死亡区间
+    # 130-145小段WR=17.9%，在CHOP/BEAR体制下擦益拦截
+    score_dead_zone_lo: float = 130.0
+    score_dead_zone_hi: float = 145.0
     taker_fee_bps: float = 4.0
     maker_fee_bps: float = 2.0
     slippage_bps: float = 3.0
