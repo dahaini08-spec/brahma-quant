@@ -2078,6 +2078,15 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
                 _sq_existing.append(_sq_entry)
                 _sq_path.write_text(json.dumps(_sq_existing, indent=2, ensure_ascii=False))
                 print(f'  [paper_queue] {sym} {direct} score={score:.0f} → 写入auto_signal_queue')
+                # [2026-09-07 苏摩111 三方合并] 同时写入 signal_queue.jsonl 供 paper_engine.py 消费
+                try:
+                    _sq2_path = BASE / 'data' / 'signal_queue.jsonl'
+                    _sq2_entry = {**_sq_entry, 'ts': __import__('time').time(), 'source': 'auto_executor'}
+                    with open(_sq2_path, 'a') as _sq2_f:
+                        _sq2_f.write(__import__('json').dumps(_sq2_entry) + '\n')
+                    print(f'  [paper_queue] {sym} 同步写入signal_queue.jsonl')
+                except Exception as _sq2_e:
+                    print(f'  [paper_queue] signal_queue.jsonl写入失败: {_sq2_e}')
             # 同时推送Jarvis通知（不阻塞执行）
             try:
                 from push_hub import _jarvis as _phj_paper

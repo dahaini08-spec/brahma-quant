@@ -4,15 +4,13 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 
 # Square发帖（10个，全天分布）
 0 1  * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type hot_tickers --no-delay >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
-0 5  * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type hot_news >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+# [2026-09-07 精简] 05时 hot_news 已删除
 0 7  * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type top_gainers --no-delay >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
 0 9  * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type pump_alert >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
 0 11 * * *  cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/square/square_hot_poster.py --type market_summary >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
-0 12 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type hot_news --no-delay >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
-0 14 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type market_summary --no-delay >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+# [2026-09-07 精简] 12时 hot_news / 14时 market_summary 已删除
 0 17 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type top_losers --no-delay >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
-0 21 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type hot_tickers >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
-0 22 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type funding_rate >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+# [2026-09-07 精简] 21时 hot_tickers / 22时 funding_rate 已删除
 0 */2 * * *  cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/square/square_extreme_alert.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
 
 # 梵天系统维护
@@ -84,7 +82,8 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 0 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 90 python3 scripts/brahma_1hao_analysis.py >> logs/syscron.log 2>&1
 
 # 纸面系统调度（2026-09-03 苏摩111封印）
-*/40 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/paper_executor.py >> logs/syscron.log 2>&1
+# [DISABLED 2026-09-07 苏摩111 三方合并] paper_executor.py 已废弃，统一由 paper_engine.py(每5min) 处理
+# */40 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/paper_executor.py >> logs/syscron.log 2>&1
 */10 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/paper_tp_monitor.py >> logs/syscron.log 2>&1
 
 # ===== 第五批迁移（2026-09-03 苏摩111 - OpenClaw最后一个exec阻塞源）=====
@@ -95,26 +94,20 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 
 # ===== 2026-09-03 苏摩111封印：高频AI任务迁移到纯脚本（节省540,000t/日）=====
 # regime切换监控：每30min纯脚本检测，有切换才推送（原OpenClaw AI任务删除）
-*/30 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/regime_switch_monitor.py >> logs/syscron.log 2>&1
+# [2026-09-07 三方评估精简] regime_switch_monitor 已删除，功能被 regime_realtime_watcher(*/5min) 覆盖
 
 # cron健康看板：每2h纯脚本输出，仅error时推送（原OpenClaw AI任务删除）
 0 */2 * * *  cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/cron_health_board.py >> logs/syscron.log 2>&1
 
 # ===== 2026-09-04 健康检查修复补丁（苏摩111）=====
 # drawdown_state每日刷新（原8天未更新）
-0 */6 * * *  cd /root/.openclaw/workspace/trading-system && timeout 20 python3 -c "from brahma_brain.drawdown_tracker import DrawdownTracker; DrawdownTracker().refresh()" >> logs/syscron.log 2>&1
+0 */6 * * *  cd /root/.openclaw/workspace/trading-system && timeout 20 python3 -c "from brahma_brain.drawdown_tracker import update_drawdown, get_status_report; update_drawdown(); print(get_status_report())" >> logs/syscron.log 2>&1
 
 # macro_state每4h刷新
 0 */4 * * *  cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/macro_engine_refresh.py >> logs/syscron.log 2>&1
 
 # 信号队列每日清理（防积压）
-0 3 * * *  cd /root/.openclaw/workspace/trading-system && python3 -c "
-from pathlib import Path
-q=Path('data/signal_queue.jsonl')
-if q.exists():
-    lines=[l for l in q.read_text().strip().split('\n') if l.strip()]
-    if len(lines)>500: q.write_text('\n'.join(lines[-500:])+'\n'); print(f'queue清理:{len(lines)}->500')
-" >> logs/syscron.log 2>&1
+0 3 * * *  cd /root/.openclaw/workspace/trading-system && python3 -c "from pathlib import Path; q=Path('data/signal_queue.jsonl'); lines=[l for l in q.read_text().strip().split('\n') if l.strip()] if q.exists() else []; q.write_text('\n'.join(lines[-500:])+'\n') if len(lines)>500 else None; print(f'queue清理:{len(lines)}->500') if len(lines)>500 else None" >> logs/syscron.log 2>&1
 
 # ===== P1-D02 实时体制感知层（2026-09-04 苏摩111）=====
 # 每5分钟检测价格突破/OI放量，有信号立即触发体制刷新
@@ -122,8 +115,8 @@ if q.exists():
 
 # ===== CVD WebSocket实时采集器（2026-09-04 苏摩111）=====
 # 常驻进程：订阅aggTrade流，每30s快照写 data/cvd_realtime_{sym}.json
-# 注意：@reboot在supercronic中等同于容器启动时执行
-@reboot  cd /root/.openclaw/workspace/trading-system && python3 scripts/cvd_ws_collector.py >> logs/cvd_ws.log 2>&1
+# 注意：@reboot supercronic不支持，改为每小时检查并保持存活
+@hourly  pgrep -f cvd_ws_collector > /dev/null || (cd /root/.openclaw/workspace/trading-system && nohup python3 scripts/cvd_ws_collector.py >> logs/cvd_ws.log 2>&1 &)
 
 # ===== E: 每日复盘LLM总结（2026-09-04 苏摩111）=====
 # UTC16:00 = 北京00:00，日终复盘写入memory
