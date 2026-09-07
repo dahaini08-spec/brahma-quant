@@ -63,6 +63,10 @@ def build_3d_matrix(min_n: int = 3) -> dict:
         else:
             cells[key]['loss'] += 1
         cells[key]['pnls'].append(pnl_pct)
+                # 标记数据来源时间（检测历史污染）
+                source = d.get('_data_quality', '')
+                if source:
+                    cells[key].setdefault('sources', set()).add(source)
 
     matrix = {}
     for key, v in cells.items():
@@ -86,6 +90,13 @@ def print_matrix(matrix: dict):
     if not matrix:
         print("  （无足够样本的矩阵单元格，需要更多数据）")
         return
+
+    # 数据质量警告：历史污染检测
+    polluted = {k for k,v in all_data.items() if 'bridge-v1' in v.get('sources',set())}
+    if polluted:
+        print(f"  ⚠️  含bridge-v1数据（paper_orders桥接）的单元格: {len(polluted)}个")
+        print(f"     这些WR包含门控上线前的历史单，可能虚高")
+        print()
 
     rows = sorted(matrix.items(), key=lambda x: x[1]['ev'], reverse=True)
     total = len(rows)

@@ -15,6 +15,10 @@ class Settings:
     max_leverage: float = 5.0
     max_gross_exposure: float = 1.5
     max_symbol_weight: float = 0.12
+    # [2026-09-07 三方评估封印] 高质量体制×方向 专属仓位上限
+    # BEAR_EARLY:SHORT WR=89.3%(n=28) — 当前最高质量组合
+    high_quality_regime_dir: dict = None  # 当设置None时用默认
+    high_quality_max_weight: float = 0.08  # 8%NAV 上限
     max_open_positions: int = 3
     min_score: float = 140.0
     min_grade: float = 80.0
