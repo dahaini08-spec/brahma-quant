@@ -30,7 +30,9 @@ SQUARE_KEY = os.environ.get('SQUARE_KEY_0', '')
 API_URL = 'https://www.binance.com/bapi/composite/v1/public/pgc/openApi/content/add'
 FAPI = 'https://fapi.binance.com/fapi/v1'
 COOLDOWN_FILE = Path('/root/.openclaw/workspace/trading-system/data/extreme_alert_cooldown.json')
-COOLDOWN_HOURS = 6
+COOLDOWN_HOURS = 24  # [2026-09-07 三方评估] 6h→24h，防同标的同天重复
+# 与 hot_poster 共享 symbol dedup（联动去重）
+SHARED_DEDUP_FILE = Path('/root/.openclaw/workspace/trading-system/data/square_post_dedup.json')
 
 # ── 冷却管理 ────────────────────────────────────────────
 def load_cooldown() -> dict:
@@ -46,15 +48,41 @@ def save_cooldown(cd: dict):
     COOLDOWN_FILE.write_text(json.dumps(cd, ensure_ascii=False, indent=2))
 
 def is_cool(sym: str, cd: dict) -> bool:
+    # [2026-09-07] 同时检查自身cooldown和共享 dedup（防与hot_poster重叠）
     ts = cd.get(sym, 0)
-    return time.time() - ts > COOLDOWN_HOURS * 3600
+    if time.time() - ts <= COOLDOWN_HOURS * 3600:
+        return False
+    # 检查共享 dedup：hot_poster已发过就跳过
+    try:
+        if SHARED_DEDUP_FILE.exists():
+            shared = json.loads(SHARED_DEDUP_FILE.read_text())
+            key = f'sym:{sym.upper()}'
+            now_ts = time.time()
+            shared = {k: v for k, v in shared.items() if now_ts - v < 86400}
+            if key in shared:
+                return False
+    except Exception:
+        pass
+    return True
 
 def mark_sent(sym: str, cd: dict):
     cd[sym] = time.time()
 
 # ── 数据获取 ─────────────────────────────────────────────
 def get_extremes():
-    """获取涨幅>50% 或 跌幅>30% 的标的"""
+    """获取涨幅>50% 或 跌幅>30%（CHOP体制下>45%）的标的"""
+    # [2026-09-07] 读取体制，CHOP下提高跌幅阈值
+    regime = 'UNKNOWN'
+    try:
+        rs_file = Path('/root/.openclaw/workspace/trading-system/data/regime_state.json')
+        if rs_file.exists():
+            rs = json.loads(rs_file.read_text())
+            regime = rs.get('BTCUSDT', {}).get('confirmed', 'UNKNOWN')
+    except Exception:
+        pass
+    chop_mode = regime in ('CHOP_MID', 'CHOP_HIGH')
+    dump_threshold = 45 if chop_mode else 30  # CHOP体制下阈值提高
+
     data = requests.get(f'{FAPI}/ticker/24hr', timeout=10).json()
     extremes = []
     for d in data:
@@ -66,7 +94,9 @@ def get_extremes():
         price = float(d.get('lastPrice', 0))
         high = float(d.get('highPrice', 0))
         low = float(d.get('lowPrice', 0))
-        if abs(chg) < 30 and chg < 50:
+        if chg >= 0 and chg < 50:
+            continue
+        if chg < 0 and abs(chg) < dump_threshold:
             continue
         if vol < 500_000:  # 过滤低流动性垃圾币（<50万U）
             continue
@@ -133,7 +163,7 @@ def build_pump_post(d: dict) -> str:
         question = f'${sym} 你怎么看这波行情的持续性？'
 
     ls_pct = ls * 100
-    content = f"""${sym} 今日+{chg:.0f}%，说说这背后发生了什么。
+    content = f"""${sym} 单日+{chg:.0f}%，我来拆解这波行情的逻辑。
 
 📊 {now_str} CST
   现价: ${price:.4f} | 今日高点: ${high:.4f} | 低点: ${low:.4f}
@@ -176,7 +206,7 @@ def build_dump_post(d: dict) -> str:
         mechanism = f'从高点{high:.4f}砸到{low:.4f}，跌幅{abs(chg):.0f}%。\n成交额{vol/1e6:.0f}万U，出现恐慌性抛售。'
         question = f'${sym} 你认为底部在哪里？'
 
-    content = f"""${sym} 今日{chg:.0f}%，发生了什么？
+    content = f"""${sym} 单日{chg:.0f}%，我来拆解这波跌幅。
 
 📊 {now_str} CST
   现价: ${price:.4f} | 今日高点: ${high:.4f} | 低点: ${low:.4f}
