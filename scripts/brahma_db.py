@@ -16,7 +16,7 @@ from contextlib import contextmanager
 from typing import Optional
 
 BASE = Path(__file__).parent.parent
-DB_PATH = BASE / 'data' / 'brahma_signals.db'
+DB_PATH = Path('/root/.openclaw/workspace/trading-system/data/brahma_signals.db')
 
 
 @contextmanager
