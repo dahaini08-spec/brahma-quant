@@ -55,7 +55,7 @@ TASK_MODEL_MAP = {
     'regime':   'nvidia/nemotron-3-super-120b-a12b:free',       # 体制切换宏观确认
     'wr_audit': 'inclusionai/ling-3.0-flash-fin:free',          # WR异常审核
     'review':   'inclusionai/ling-3.0-flash-fin:free',          # 结算复盘lesson
-    'hcme':     'thinkingmachines/inkling:free',                # HCME历史镜像摘要
+    'hcme':     'minimax/minimax-m3:free',                      # HCME历史镜像摘要（inkling系列均403，改用minimax兜底）
     'chop':     'nvidia/nemotron-3.5-lightning:free',           # CHOP突破快速验证
     'safety':   'nvidia/nemotron-3.5-content-safety:free',      # AVOID安全门控
     'default':  'minimax/minimax-m3:free',                      # 通用兜底
@@ -65,7 +65,7 @@ TASK_MODEL_MAP = {
 FALLBACK_MODELS = [
     'minimax/minimax-m3:free',
     'nvidia/nemotron-3-ultra-550b-a55b:free',
-    'thinkingmachines/inkling:free',
+    'google/gemma-4-31b-it:free',
     'google/gemma-4-31b-it:free',
 ]
 
