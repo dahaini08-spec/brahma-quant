@@ -109,6 +109,24 @@
       "settled": 5,
       "note": "settler更新 WR=100.0% n=5 EV=+2.000",
       "updated": "2026-08-16"
+    },
+    "BEAR_EARLY:SHORT:160-175": {
+      "multiplier": 0.7,
+      "wr": 0.375,
+      "n": 8,
+      "note": "过热区间，评分虚高，待n>=20确认"
+    },
+    "BEAR_EARLY:SHORT:>=175": {
+      "multiplier": 0.5,
+      "wr": 0.368,
+      "n": 38,
+      "note": "铁证过热，WR=36.8% n=38，永久降权"
+    },
+    "BEAR_EARLY:SHORT:145-160": {
+      "multiplier": 1.4,
+      "wr": 0.893,
+      "n": 28,
+      "note": "黄金段铁证 WR=89.3% n=28 Wilson_lower=76%"
     }
   },
   "next_calibration": "24h后由brahma-online-calibrate触发",
@@ -144,7 +162,7 @@
     "note": "6方联合封印 2026-07-24: n<15不升权，n<30谨慎，n≥50完全信任",
     "updated": "2026-07-24"
   },
-  "updated_at": "2026-09-01T20:17:55.823462+00:00",
+  "updated_at": "2026-09-07T12:42:20+00:00",
   "BULL_TREND:LONG:120-139": {
     "multiplier": 1.0,
     "basis": "脏数据清洗后 simfactory铁证 n=33 WR=51.5% → NORMAL [2026-08-08 P0-3封印 F15已修正不再封禁]",
