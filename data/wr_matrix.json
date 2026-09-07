@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-09-02T20:16:39.756596+00:00",
-  "total_settled": 115,
+  "updated_at": "2026-09-05T17:39:29.866338+00:00",
+  "total_settled": 124,
   "matrix": {
     "BULL_TREND|LONG": {
       "win": 33,
@@ -20,7 +20,7 @@
       "win": 5,
       "loss": 0,
       "total": 5,
-      "expired": 33,
+      "expired": 42,
       "wr": 1.0
     },
     "BEAR_RECOVERY|SHORT": {
