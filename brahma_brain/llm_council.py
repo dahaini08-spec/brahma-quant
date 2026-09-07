@@ -49,7 +49,10 @@ def council_verdict(
     """
     # ── 优先：真实LLM裁决（OpenRouter免费模型）────────────────────────────
     # 设计院三方封印 2026-09-04 苏摩111
-    if price > 0 and entry_lo > 0:
+    # [P0修复 2026-09-07 苏摩111] score<145不调用LLM — 节省免费额度
+    # 理由: score<145信号会被gates.py拦截，LLM调用纯属浪费
+    # 145-160黄金段WR=89.3%，正是需要LLM精确裁决的区间
+    if price > 0 and entry_lo > 0 and score >= 145:
         try:
             import sys as _sys
             from pathlib import Path as _Path
