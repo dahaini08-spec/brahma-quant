@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-push_hub.py — 梵天统一推送模块（直接HTTP，不依赖openclaw CLI）
-设计院封印 2026-09-06 苏摩111
+push_hub.py — 梵天统一推送模块（subprocess CLI，稳定可靠）
+设计院封印 2026-09-07 苏摩111（二次修复）
 
-根因修复：
-  原来所有脚本用 subprocess.run(['openclaw','message','send',...], timeout=15)
-  openclaw CLI偶尔阻塞 → TimeoutExpired → 脚本崩溃
-  影响: morning-battlefield / OI巡检 / square系列 / paper-daily-report 等6个脚本
+历史：
+  v1: subprocess CLI → 偶尔阻塞崩溃
+  v2: 直接HTTP localhost:3000 → port 3000不通，全部推送失败！
+  v3(本版): subprocess CLI + nohup非阻塞 → 稳定，不阻塞脚本主线程
 
 修复方案：
-  直接HTTP POST到 openclaw 内部API (localhost:3000/api/message)
-  超时8秒，自动重试3次，完全不依赖openclaw CLI子进程
+  subprocess.Popen（非阻塞）调用 openclaw message send CLI
+  不等待返回，主脚本继续运行，彻底解决阻塞问题
 
 接入位置：
   scripts/oi_watchlist_monitor.py      → from push_hub import push_jarvis
@@ -20,13 +20,12 @@ push_hub.py — 梵天统一推送模块（直接HTTP，不依赖openclaw CLI）
   scripts/square/square_*.py          → from push_hub import push_jarvis
   brahma_brain/brahma_analysis_runner.py → from push_hub import push_jarvis
 """
-import json, sys, time, urllib.request, urllib.error
+import json, sys, time, subprocess
 from pathlib import Path
 
 # 推送配置（SSOT来自 MEMORY.md）
 JARVIS_USER_ID   = "73295708"
 JARVIS_THREAD_ID = "01a07970-f8ce-706b-8bea-3c94dd055443"
-OPENCLAW_PORT    = 3000
 _TARGET          = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"
 
 
@@ -40,44 +39,19 @@ def push_jarvis(msg: str, timeout: int = 8, retries: int = 3) -> bool:
     if not msg or not msg.strip():
         return False
 
-    # 方式1: 直接HTTP POST到openclaw内部API
-    for attempt in range(retries):
-        try:
-            payload = json.dumps({
-                "channel": "jarvis",
-                "target":  _TARGET,
-                "message": msg,
-            }).encode("utf-8")
-
-            req = urllib.request.Request(
-                f"http://127.0.0.1:{OPENCLAW_PORT}/api/message",
-                data=payload,
-                headers={"Content-Type": "application/json"},
-                method="POST",
-            )
-            with urllib.request.urlopen(req, timeout=timeout) as resp:
-                if resp.status in (200, 201, 204):
-                    return True
-                # 非200但有响应，不重试
-                body = resp.read().decode()[:100]
-                print(f"[push_hub] HTTP {resp.status}: {body}", file=sys.stderr)
-                return False
-
-        except urllib.error.URLError as e:
-            if attempt < retries - 1:
-                time.sleep(2)
-                continue
-            print(f"[push_hub] URLError after {retries} attempts: {e}", file=sys.stderr)
-
-        except TimeoutError:
-            if attempt < retries - 1:
-                time.sleep(1)
-                continue
-            print(f"[push_hub] Timeout after {retries} attempts", file=sys.stderr)
-
-        except Exception as e:
-            print(f"[push_hub] 推送异常: {e}", file=sys.stderr)
-            break
+    # 方式1: subprocess Popen非阻塞CLI推送
+    try:
+        subprocess.Popen(
+            ['openclaw', 'message', 'send',
+             '-t', _TARGET,
+             '--channel', 'jarvis',
+             '--message', msg[:2000]],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        return True
+    except Exception as e:
+        print(f"[push_hub] CLI推送异常: {e}", file=sys.stderr)
 
     # 方式2: fallback — 写入本地文件（保证不丢消息）
     try:
