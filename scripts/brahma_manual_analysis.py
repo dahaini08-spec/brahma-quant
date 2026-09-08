@@ -1452,9 +1452,28 @@ def main():
 
     elapsed = _time.time() - t0
     print(f'\n[并行分析完成] 耗时 {elapsed:.1f}s ({len(symbols)}个标的并行)\n')
+
+    # 汇总输出 + 推送到Jarvis（2026-09-08 苏摩111封印）
+    full_output = []
     for sym in symbols:
-        print(results.get(sym, f'[{sym}] 无结果'))
+        r = results.get(sym, f'[{sym}] 无结果')
+        print(r)
         print()
+        full_output.append(r)
+
+    # 推送到Jarvis新线程
+    try:
+        import sys as _sys
+        _sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
+        from push_hub import push_jarvis as _push_j
+        combined = '\n\n'.join(full_output)
+        # 截断防超长
+        if len(combined) > 3000:
+            combined = combined[:3000] + '\n...[截断]'
+        _push_j(f'🏟️ 梵天战场情报 | {__import__("datetime").datetime.utcnow().strftime("%m-%d %H:%M")} UTC\n\n{combined}')
+        print('[推送] 战场情报已推送到Jarvis')
+    except Exception as _pe:
+        print(f'[推送失败] {_pe}')
 
 
 if __name__ == '__main__':
