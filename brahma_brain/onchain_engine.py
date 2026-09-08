@@ -205,9 +205,9 @@ def get_funding_trend(symbol: str) -> dict:
     if not data:
         return {'funding_now': 0.0, 'funding_trend': 'NEUTRAL', 'funding_signal': '-'}
 
-    fr = float(data.get('lastFundingRate', 0))
+    fr = float(data.get('lastFundingRate', 0)) * 100  # 转换为百分比单位(%)
 
-    if fr > 0.0008:
+    if fr > 0.08:  # 0.08% = 原0.0008（已×100）
         trend = 'BULL_HEAT'
         signal = '多头过热，注意回调风险'
     elif fr > 0.0003:

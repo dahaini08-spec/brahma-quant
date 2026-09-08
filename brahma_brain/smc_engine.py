@@ -219,7 +219,7 @@ def find_fvg(highs: list, lows: list, closes: list, lookback: int = 500) -> dict
         if k1_high < k3_low:
             gap_size = k3_low - k1_high
             gap_pct  = gap_size / k1_high * 100
-            if gap_pct > 0.3:   # [设计院 2026-05-30] 0.1→0.3% 过滤micro-FVG噪音
+            if gap_pct > 0.15:   # [设计院 2026-09-08 苏摩111] 0.3→0.15% 覆盖小币种/低波动FVG
                 # [A1修复] filled=价格已完全穿越FVG（不是「在FVG内」）
                 # 现价在FVG内 = actively approaching，不算filled
                 filled = (price > k3_low)  # 牛市FVG: 价格已涨过FVG顶部 → filled
@@ -238,7 +238,7 @@ def find_fvg(highs: list, lows: list, closes: list, lookback: int = 500) -> dict
         if k1_low > k3_high:
             gap_size = k1_low - k3_high
             gap_pct  = gap_size / k3_high * 100
-            if gap_pct > 0.3:   # [设计院 2026-05-30] 0.1→0.3% 过滤micro-FVG噪音
+            if gap_pct > 0.15:   # [设计院 2026-09-08 苏摩111] 0.3→0.15% 覆盖小币种/低波动FVG
                 # [A1修复] 熊市FVG: 价格已跌穿FVG底部 → filled
                 filled = (price < k3_high)  # 价格已跌穿熊市FVG底部 → filled
                 bear_fvg.append({
@@ -263,6 +263,8 @@ def find_fvg(highs: list, lows: list, closes: list, lookback: int = 500) -> dict
             f['fill_target'] = f['bottom']  # 填充目标 = FVG底部
 
     # 只保留未填补的FVG
+    bull_fvg_raw_count = len(bull_fvg)  # [设计院 2026-09-08] 透明化：过滤前原始数量
+    bear_fvg_raw_count = len(bear_fvg)
     bull_fvg = [f for f in bull_fvg if not f['filled']]
     bear_fvg = [f for f in bear_fvg if not f['filled']]
 
@@ -328,6 +330,8 @@ def find_fvg(highs: list, lows: list, closes: list, lookback: int = 500) -> dict
         'target_bull':   target_bull[:2],   # 上方目标FVG（做多TP参考）
         'nearest_bull':  nearest_bull,
         'nearest_bear':  nearest_bear,
+        'raw_bull_count': bull_fvg_raw_count,  # [设计院 2026-09-08] 原始FVG总数，透明化调试
+        'raw_bear_count': bear_fvg_raw_count,  # 不滤波=有FVG但被过滤掉了
         'magnet_up':     target_bull[0]['mid'] if target_bull else (nearest_bear['mid'] if nearest_bear and nearest_bear['mid'] > price else None),
         'magnet_down':   target_bear[0]['mid'] if target_bear else (nearest_bull['mid'] if nearest_bull and nearest_bull['mid'] < price else None),
     }
