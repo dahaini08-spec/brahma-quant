@@ -172,7 +172,7 @@ class BrahmaBus:
         def _fetch():
             r = _SESS.get(f'{_FAPI}/fapi/v1/premiumIndex',
                           params={'symbol': symbol}, timeout=5)
-            return float(r.json().get('lastFundingRate', 0))
+            return float(r.json().get('lastFundingRate', 0)) * 100  # 转换为百分比(%)
         val = self._get(f'funding:{symbol}', _fetch, TTL['funding'])
         return val or 0.0
 

@@ -579,13 +579,14 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
         extra_data['onchain_ws_err'] = str(_e)[:80]
 
     # 传递给 xgboost（需要完整 snap）
+    # [设计院 2026-09-08 苏摩111] 修复循环引用bug：不传extra_data自身，只传必要字段
     extra_data['_snap_for_xgb'] = {
         'confluence': extra_data.get('confluence_preview', {}),
         'direction': signal_dir,
         'regime': ms.get('regime', ''),
         'params': {'rr1': 2.0},
-        'extra': extra_data,
         'market_state': ms,
+        # 注意：移除 extra=extra_data 循环引用，避免无限递归+内存泄漏
     }
 
     # ─── Phase C: LSTM + RL + NLP | 阶段C：LSTM + 强化学习 + 自然语言处理 ──────────────────────────────────

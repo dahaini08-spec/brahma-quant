@@ -75,6 +75,52 @@ KNOWN_STANDALONE = {
     'war_field_engine',     # 被core调用
     'experience_engine',    # 被core调用
     'brahma_experience_engine', # 同上
+    'brahma_health',            # brahma_360_watchdog调用，健康监控871行
+    'orderbook_engine',         # brahma_core_step4 extra盘口数据，2026-09-08恢复
+    # 2026-09-07 三方联合深度排查封印 苏摩111
+    # 分类一：转发shim（wiring_check误判）
+    'brahma_fangcang_unified',  # shim→fangcang_engine
+    'divergence_engine',        # shim→smc_engine
+    'fangcang_hcme_bridge',     # shim→fangcang_engine
+    'grade_utils',              # shim→math_utils
+    'hcme_matcher',             # shim→fangcang_engine
+    'headroom',                 # shim→position_sizer
+    'signal_integrity_gate',    # shim→signal_quality_engine
+    'signal_weight_updater',    # shim→signal_quality_engine
+    'sl_bandit',                # shim→position_sizer
+    'smart_money_engine',       # shim→onchain_engine
+    'tradfi_macro_gate',        # shim→tradfi_signal_layer
+    'volume_exhaustion_engine', # shim→volume_unified
+    'kronos_bridge',            # Kronos兼容桥接层
+    # 分类二：工具/执行层（被scripts间接调用）
+    'brahma_context_injector',  # brahma_analysis_runner待激活
+    'brahma_cpu',               # rsi_structure_watcher/wrapper_1h调用
+    'brahma_engine',            # brahma360_guardian/signal_settler热加载
+    'brahma_multiframe',        # brahma_1hao_analysis调用
+    'brahma_onchain',           # brahma_analysis_runner链上评分层
+    'brahma_parallel_engine',   # analysis_runner/portfolio_optimizer
+    'brainlog',                 # brahma_analysis_runner统一日志
+    'chop_breakout_detector',   # auto_executor CHOP突破检测
+    'circuit_breaker',          # brahma360_guardian熔断器
+    'condition_order_matrix',   # auto_executor条件单矩阵
+    'drawdown_tracker',         # auto_executor回撤保护
+    'fangcang_builder_30',      # 方仓数据库重建工具
+    'fangcang_vector_db',       # 向量统计接口兼容层
+    'free_llm_client',          # square_auto_post OpenRouter客户端
+    'ic_tracker',               # signal_settler IC滚动追踪
+    'liqmap_collector',         # 清算热力图采集器
+    'llm_council',              # AI议会LLM裁决层
+    'llm_council_bridge',       # brahma360_guardian shadow log
+    'online_learner_v2',        # signal_settler在线学习
+    'portfolio_optimizer',      # brahma360_guardian相关性计算
+    'signal_15m_engine',        # auto_executor 15m信号引擎
+    'signal_selector',          # trade_gateway方向裁决
+    # 分类三：core_*五刀（已建待接入brahma_core.py）
+    'core_scorer',   # 第一刀：confluence_score独立适配层
+    'core_data',     # 第二刀：Step1-3数据接口适配层
+    'core_extra',    # 第三刀：Step4 extra_data适配层
+    'core_factors',  # 第四刀：Step5-6因子层适配
+    'core_output',   # 第五刀：输出格式化适配层
 }
 
 

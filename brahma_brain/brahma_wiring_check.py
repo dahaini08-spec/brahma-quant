@@ -436,6 +436,49 @@ _WHITELIST = frozenset([
     'brahma_kronos',     # 被 kronos_bridge 取代
     'brahma_readiness',  # 被 brahma_health 取代
     'safety',            # 功能已内化至 position_sizer/SQE/signal_selector
+    # 2026-09-07 三方联合深度排查封印 苏摩111
+    # 分类一：转发shim（误判为孤岛）
+    'brahma_fangcang_unified',  # shim→fangcang_engine
+    'divergence_engine',        # shim→smc_engine
+    'fangcang_hcme_bridge',     # shim→fangcang_engine, signal_settler调用
+    'grade_utils',              # shim→math_utils, signal_watcher调用
+    'hcme_matcher',             # shim→fangcang_engine, autofix调用
+    'headroom',                 # shim→position_sizer, auto_executor调用
+    'signal_integrity_gate',    # shim→signal_quality_engine
+    'signal_weight_updater',    # shim→signal_quality_engine, signal_settler调用
+    'sl_bandit',                # shim→position_sizer, signal_settler调用
+    'smart_money_engine',       # shim→onchain_engine（已合并）
+    'tradfi_macro_gate',        # shim→tradfi_signal_layer
+    'volume_exhaustion_engine', # shim→volume_unified
+    'kronos_bridge',            # Kronos兼容桥接层, brahma360_guardian引用
+    # 分类二：工具/执行层（被scripts间接调用，非核心链路直接import）
+    'brahma_context_injector',  # brahma_analysis_runner待激活
+    'brahma_cpu',               # rsi_structure_watcher/wrapper_1h.sh调用
+    'brahma_engine',            # brahma360_guardian/signal_settler热加载
+    'brahma_multiframe',        # brahma_1hao_analysis/analysis_runner调用
+    'brahma_onchain',           # brahma_analysis_runner链上评分层
+    'brahma_parallel_engine',   # analysis_runner注释/portfolio_optimizer
+    'chop_breakout_detector',   # auto_executor CHOP突破检测
+    'circuit_breaker',          # brahma360_guardian熔断器
+    'condition_order_matrix',   # auto_executor条件单矩阵
+    'drawdown_tracker',         # auto_executor回撤保护
+    'fangcang_builder_30',      # 方仓数据库重建工具
+    'fangcang_vector_db',       # 向量统计接口兼容层
+    'free_llm_client',          # square_auto_post OpenRouter客户端
+    'ic_tracker',               # signal_settler IC滚动追踪
+    'liqmap_collector',         # 清算热力图采集器常驻进程
+    'llm_council',              # AI议会LLM裁决层
+    'llm_council_bridge',       # brahma360_guardian shadow log
+    'online_learner_v2',        # signal_settler在线学习
+    'portfolio_optimizer',      # brahma360_guardian相关性计算
+    'signal_15m_engine',        # auto_executor 15m信号引擎
+    'signal_selector',          # trade_gateway方向裁决+加权
+    # 分类三：core_*五刀（已建待接入brahma_core.py，2026-09-07封印）
+    'core_scorer',   # 第一刀：confluence_score独立适配层
+    'core_data',     # 第二刀：Step1-3数据接口适配层
+    'core_extra',    # 第三刀：Step4 extra_data适配层
+    'core_factors',  # 第四刀：Step5-6因子层适配
+    'core_output',   # 第五刀：输出格式化适配层
 ])
 
 # 高价值孤岛（写好但未接入，每个-5健康分）

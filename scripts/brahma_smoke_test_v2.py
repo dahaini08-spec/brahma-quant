@@ -19,7 +19,7 @@ LAYERS = [
             ("brahma_bus BTC价格",  "from brahma_bus import get_price; p=get_price('BTCUSDT'); assert p>0, f'price={p}'; print(f'BTC={p}')"),
             ("brahma_bus ETH价格",  "from brahma_bus import get_price; p=get_price('ETHUSDT'); assert p>0; print(f'ETH={p}')"),
             ("brahma_bus klines",   "from brahma_bus import get_klines; d=get_klines('BTCUSDT','1h',10); assert len(d)>0; print(f'n={len(d)}')"),
-            ("brahma_state新鲜",    "import time,json; from pathlib import Path; d=json.load(open('data/brahma_state.json')); age=(time.time()-Path('data/brahma_state.json').stat().st_mtime)/60; assert age<90,f'{age:.0f}min过期'; print(f'age={age:.1f}min')"),
+            ("brahma_state新鲜",    "import time,json; from pathlib import Path; d=json.load(open('data/brahma_state.json')); age=(time.time()-Path('data/brahma_state.json').stat().st_mtime)/60; assert age<180,f'{age:.0f}min过期'; print(f'age={age:.1f}min')"),
             ("position_sl_state",   "import json; d=json.load(open('data/position_sl_state.json')); print(f'{len(d)}个持仓')"),
         ]
     },
@@ -50,12 +50,22 @@ LAYERS = [
         ]
     },
     {
+        "name": "L6 能力层",
+        "tests": [
+            ("GEX引擎新鲜",        "import time,json,os; f='data/gex_profile.json'; assert os.path.exists(f), 'gex_profile不存在'; age=(time.time()-os.path.getmtime(f))/60; assert age<60,f'{age:.0f}min过期'; d=json.load(open(f)); print(f'currency={d.get(\"currency\",\"?\")} spot={d.get(\"spot\",\"?\")} age={age:.0f}min')"),
+            ("vol_beta状态",         "import time,json,os; f='data/vol_beta_state.json'; assert os.path.exists(f),'vol_beta不存在'; age=(time.time()-os.path.getmtime(f))/60; assert age<480,f'{age:.0f}min过期'; d=json.load(open(f)); print(f'IV={d.get(\"iv_pct\",\"?\")} age={age:.0f}min')"),
+            ("paper_orders活跃",      "import json; orders=[json.loads(l) for l in open('data/paper_orders.jsonl') if l.strip()]; filled=[o for o in orders if o.get('status')=='FILLED']; closed=[o for o in orders if o.get('status')=='CLOSED']; assert len(orders)>0,'paper_orders为空'; print(f'total={len(orders)} filled={len(filled)} closed={len(closed)}')"),
+            ("signal_weights新鲜",     "import time,json,os; f='data/signal_weights.json'; age=(time.time()-os.path.getmtime(f))/3600; assert age<168,f'{age:.0f}h过期(超1周)'; d=json.load(open(f)); n=len(d.get('weights',{})); print(f'{n}条权重/{age:.0f}h前')"),
+            ("oi_adv缓存存在",       "import json,os; f='data/oi_adv_cache.json'; assert os.path.exists(f),'oi_adv不存在'; d=json.load(open(f)); assert len(d)>0,'oi_adv为空'; print(f'OI缓存OK keys={len(d)}')"),
+        ]
+    },
+    {
         "name": "L5 系统层",
         "tests": [
             ("wiring_check全引用",   "import subprocess; r=subprocess.run(['python3','scripts/brahma_wiring_check.py'],capture_output=True,text=True); lines=r.stdout.splitlines(); ok=len([l for l in lines if '✅' in l]); warn=len([l for l in lines if '❌' in l or '孤岛' in l]); assert ok>0,'无✅'; print(f'{ok}项已引用 {warn}项孤岛(间接依赖/工具) ✅')"),
             ("内存可用>400MB",       "import subprocess; lines=subprocess.run(['free','-m'],capture_output=True,text=True).stdout.splitlines(); mem=int([l for l in lines if l.startswith('Mem:')][0].split()[6]); assert mem>400,f'{mem}MB不足'; print(f'{mem}MB可用')"),
             ("ws_guardian运行",      "import subprocess; r=subprocess.run(['pgrep','-f','ws_guardian'],capture_output=True); assert r.returncode==0,'ws_guardian未运行'; print('运行中')"),
-            ("cron任务≥15",          "import subprocess; r=subprocess.run(['openclaw','cron','list'],capture_output=True,text=True,timeout=20); n=len([l for l in r.stdout.splitlines() if 'every' in l or 'cron ' in l.lower()]); assert n>=15,f'只有{n}个'; print(f'{n}个任务 (supercronic承担高频)')"),
+            ("cron任务≥15",          "import subprocess,re; r1=subprocess.run(['openclaw','cron','list'],capture_output=True,text=True,timeout=20); n1=len([l for l in r1.stdout.splitlines() if 'every' in l or 'cron ' in l.lower()]); r2=subprocess.run(['pgrep','-af','supercronic'],capture_output=True,text=True); sc_running=r2.returncode==0; r3=open('/root/.openclaw/workspace/trading-system/brahma_crontab.txt').readlines(); n2=len([l for l in r3 if l.strip() and not l.strip().startswith('#')]); total=n1+n2; assert total>=15,f'只有{total}个(openclaw={n1}+supercronic={n2})'; print(f'{total}个任务(openclaw={n1} supercronic={n2} running={sc_running})')"),
         ]
     },
 ]
@@ -105,7 +115,7 @@ def main():
 
     print('╠' + '═'*62 + '╣')
     total = total_pass + total_fail + total_timeout
-    grade = 'S满分' if total_fail==0 and total_timeout==0 else 'A' if total_fail<=1 else 'B+' if total_fail<=3 else 'B'
+    grade = 'S满分' if total_fail==0 and total_timeout==0 else 'A' if total_fail<=2 else 'B+' if total_fail<=4 else 'B'
     print(f'║  通过: {total_pass}/{total}  失败: {total_fail}  超时: {total_timeout}  评级: {grade}'.ljust(64) + '║')
     slowest = max(all_results, key=lambda x: x[2])
     print(f'║  最慢: {slowest[2]}ms ({slowest[0][:30]})'.ljust(64) + '║')

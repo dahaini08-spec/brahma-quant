@@ -267,9 +267,8 @@ def _check_fr_window(symbol: str) -> dict:
         with urllib.request.urlopen(url, timeout=3, context=_DC_SSL_CTX) as r:
             data = _json.loads(r.read())
 
-        fr = float(data.get('lastFundingRate', 0))
+        fr = float(data.get('lastFundingRate', 0)) * 100  # 转换为百分比(%)
         next_funding_ts = int(data.get('nextFundingTime', 0)) / 1000
-        now = time.time()
         minutes_to_funding = (next_funding_ts - now) / 60
 
         risk = 0

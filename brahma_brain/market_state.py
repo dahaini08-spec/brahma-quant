@@ -539,7 +539,7 @@ def analyze(symbol: str) -> dict:
             if 'ticker' in _rt:
                 _cache_set(_cache_key(symbol, 'ticker'), _rt['ticker'], 15)
             if 'fr' in _rt and isinstance(_rt['fr'], list) and _rt['fr']:
-                _fr_val = float(_rt['fr'][0].get('fundingRate', 0))
+                _fr_val = float(_rt['fr'][0].get('fundingRate', 0)) * 100  # 转换为百分比(%)
                 _cache_set(_cache_key(symbol, 'fr'), _fr_val, 30)
             if 'lsr' in _rt and isinstance(_rt['lsr'], list) and _rt['lsr']:
                 _ls_val = float(_rt['lsr'][0].get('longAccount', 0.5)) * 100
