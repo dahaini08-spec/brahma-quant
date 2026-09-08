@@ -71,3 +71,10 @@ brahma_brain/__pycache__/
 
 # Vol-Beta运行时缓存（2026-09-07）
 data/cache/*.pkl
+
+# 运行时数据文件（不入库）
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/cache/*.pkl
+venv/
