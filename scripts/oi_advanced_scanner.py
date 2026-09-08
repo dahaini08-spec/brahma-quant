@@ -1283,12 +1283,27 @@ def run():
         }
         f.write(json.dumps(summary) + '\n')
 
-    # [2026-08-26] 519951657edf4e004fe153f7961f5217
+    # [P0修复 2026-09-08 苏摩111] oi_scanner写入契约修复
+    # 根因：旧接口push_signals()只传symbol，score/regime/direction全null→空壳信号
+    # 修复：改用push_signal_full()逐条写入完整字段
     try:
-        from scripts.signal_queue_writer import push_signals as _sq_push
+        from scripts.signal_queue_writer import push_signal_full as _sq_push_full
     except ImportError:
-        import sys; sys.path.insert(0, str(BASE)); from scripts.signal_queue_writer import push_signals as _sq_push
-    _sq_push([r['symbol'] for r in push_signals], 'oi_scanner')
+        import sys; sys.path.insert(0, str(BASE)); from scripts.signal_queue_writer import push_signal_full as _sq_push_full
+    for _r in push_signals:
+        _sq_push_full({
+            'symbol':    _r['symbol'],
+            'source':    'oi_scanner',
+            'score':     float(_r.get('oi_score') or 0),
+            'regime':    _r.get('regime', ''),
+            'direction': _r.get('direction_bias', ''),
+            'grade':     float(_r.get('grade_num') or _r.get('grade') or 0),
+            'sl_pct':    _r.get('sl_pct'),
+            'entry_lo':  _r.get('entry_lo'),
+            'entry_hi':  _r.get('entry_hi'),
+            'signal_id': _r.get('signal_id', ''),
+            'meta':      {'oi_mode': _r.get('mode',''), 'liquidity': _r.get('liquidity_score',0)},
+        })
     return len(push_signals)
 
 
