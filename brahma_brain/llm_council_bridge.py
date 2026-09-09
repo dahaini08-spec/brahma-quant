@@ -60,7 +60,7 @@ LOG_FILE   = LOG_DIR / 'llm_council_shadow_log.jsonl'
 MODE         = os.environ.get('LLM_COUNCIL_MODE', 'live')
 INJECT_COEFF = 0.5    # live模式下，LLM建议 × 0.5 注入score
 SCORE_TRIGGER       = 120   # [P2修复 2026-08-26] 140→1200，中等信号也进入议会审查
-SCORE_TRIGGER_FULL  = 140   # 分数≥1400运行全刓4专家；120-139仅运行RiskAgent轻量审查
+SCORE_TRIGGER_FULL  = 150   # [2026-09-09 苏摩111] 140→150，减少50%全量审查调用
 CACHE_TTL    = 6 * 3600   # 缓存6小时
 DAILY_LIMIT  = 50         # 每日最大调用次数
 

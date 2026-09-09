@@ -50,8 +50,8 @@ BASE_URL = 'https://openrouter.ai/api/v1/chat/completions'
 # ── 任务路由表：task → 专项模型 (2026-09-05 苏摩111封印) ─────────────────
 TASK_MODEL_MAP = {
     'council':  'minimax/minimax-m3:free',                      # AI议会三方裁决
-    'vip':      'minimax/minimax-m3:free',                      # VIP一句话逻辑
-    'oi':       'minimax/minimax-m3:free',                      # OI聪明钱解读
+    'vip':      'inclusionai/ling-3.0-flash-fin:free',          # VIP一句话逻辑 [2026-09-09 重分配]
+    'oi':       'nvidia/nemotron-3.5-lightning:free',           # OI聪明钱解读 [2026-09-09 重分配]
     'regime':   'nvidia/nemotron-3-super-120b-a12b:free',       # 体制切换宏观确认
     'wr_audit': 'inclusionai/ling-3.0-flash-fin:free',          # WR异常审核
     'review':   'inclusionai/ling-3.0-flash-fin:free',          # 结算复盘lesson
