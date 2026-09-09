@@ -331,6 +331,51 @@ def extract_standard_fields(r: dict) -> dict:
 SEP = '─' * 48
 
 
+def _build_action_guide(r: dict, f: dict) -> list:
+    """操作指令层 — 根据信号状态输出当前该怎么做（2026-09-09 苏摩111封印修复）"""
+    lines = []
+    direction = f.get('direction', '')
+    valid = f.get('valid', False)
+    score = f.get('score', 0) or 0
+    regime = f.get('regime', '')
+    entry_lo = f.get('entry_lo')
+    entry_hi = f.get('entry_hi')
+    sl = f.get('sl')
+    tp1 = f.get('tp1')
+    tp2 = f.get('tp2')
+    sym = (f.get('symbol', '') or '?').replace('USDT', '')
+
+    if not direction or direction == 'NEUTRAL':
+        lines.append('  ⏸ 无方向 — 等体制确认')
+        return lines
+
+    dir_cn = '做空' if direction == 'SHORT' else '做多'
+    dir_icon = '🔴' if direction == 'SHORT' else '🟢'
+
+    if not valid:
+        lines.append(f'  ⏳ 等15M CHoCH确认后入场{dir_cn}')
+        if entry_lo and entry_hi:
+            lines.append(f'     入场区 ${entry_lo:,.2f} ~ ${entry_hi:,.2f}')
+    else:
+        lines.append(f'  {dir_icon} 可入场{dir_cn}')
+        if entry_lo and entry_hi:
+            lines.append(f'     入场区 ${entry_lo:,.2f} ~ ${entry_hi:,.2f}')
+        if sl:
+            lines.append(f'     止损 ${sl:,.2f}')
+        if tp1:
+            tp2_str = f' → ${tp2:,.2f}' if tp2 else ''
+            lines.append(f'     目标 ${tp1:,.2f}{tp2_str}')
+
+    if score and score >= 160:
+        lines.append(f'  🚨 高分信号 score={score}')
+    elif score and score >= 140:
+        lines.append(f'  ✅ 达标 score={score}')
+    else:
+        lines.append(f'  ⚠️ 观望 score={score} < 140')
+
+    return lines
+
+
 def format_standard_card(r: dict, ts: str = None) -> str:
     """
     固化版标准信号卡 — 统一推送格式

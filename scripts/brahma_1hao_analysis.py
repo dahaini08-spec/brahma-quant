@@ -33,10 +33,10 @@ except Exception:
 try:
     from brahma_mem_manager import _available_mb as _avail_mb
     _cur_avail = _avail_mb()
-    if _cur_avail < 400:
+    if _cur_avail < 300:
         _MEM_OK_FLAG = False
         import logging as _mg_log
-        _mg_log.getLogger('brahma_1hao_analysis').warning(f'[brahma_1hao_analysis] 内存危险{_cur_avail:.0f}MB<400MB，降级运行')
+        _mg_log.getLogger('brahma_1hao_analysis').warning(f'[brahma_1hao_analysis] 内存危险{_cur_avail:.0f}MB<300MB，降级运行')
 except ImportError:
     pass
 # ── 进程内存上限硬封（设计院P3 2026-08-05）──────────────
