@@ -148,6 +148,13 @@ def compute_new_override(matrix: dict) -> tuple[dict, list]:
         if settled < MIN_N:
             continue
 
+        # [2026-09-09 苏摩111] 噪音信号过滤（悬案3修复）
+        # 根因：CHOP_MID:LONG 27条来自paper bridge的grade=0信号，WR=92.6%是噪音
+        # gates层已封禁(mult=0)，wr_feedback不应被这些噪音影响
+        _NOISE_REGIMES = {('CHOP_MID', 'LONG')}  # 已封禁的体制×方向不参与WR反哺
+        if (regime, direction) in _NOISE_REGIMES:
+            continue
+
         # 计算Wilson保守WR
         wilson_wr = wilson_ci_lower(n_win, settled)
 
