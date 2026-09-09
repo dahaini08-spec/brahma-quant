@@ -38,7 +38,11 @@ PAPER_NAV        = 100000   # 纸面NAV
 PAPER_SIZE_BTC   = 0.05     # BTC/ETH仓位比
 PAPER_SIZE_ALT   = 0.03     # 山寨仓位比
 PAPER_LEV_MAJOR  = 100      # BTC/ETH杠杆
+PAPER_NOTIONAL_MAJOR = 500000  # 2026-09-09 苏摩111修复：统一notional，不再随机
+PAPER_NOTIONAL_BT    = 418272  # 中期BTC notional
+PAPER_NOTIONAL_SMALL = 50000   # 小单notional
 PAPER_LEV_ALT    = 20       # 山寨杠杆
+SETTINGS_SL_PCT  = 2.0      # 2026-09-09 苏摩111修复：低价币SL百分比
 MAX_OPEN_POS     = 10       # 最多同时持仓数
 DEDUP_WINDOW_S   = 3600 * 4 # 同标的4H内不重复开单
 
@@ -119,13 +123,34 @@ def _open_paper_order(symbol: str, direction: str, entry: float,
                       source: str, score: float = 0, regime: str = '') -> dict:
     """核心：写入纸面挂单"""
     nav = _get_paper_nav()
+    # 2026-09-09 苏摩111修复：统一notional逻辑
     is_major = symbol in ('BTCUSDT', 'ETHUSDT')
     size_pct = PAPER_SIZE_BTC if is_major else PAPER_SIZE_ALT
     lev = PAPER_LEV_MAJOR if is_major else PAPER_LEV_ALT
 
-    notional = nav * size_pct * lev
+    # 统一notional：major=$500K, alt=nav*size*lev
+    if is_major:
+        notional = PAPER_NOTIONAL_MAJOR
+    else:
+        notional = nav * size_pct * lev
     margin   = nav * size_pct
     qty_raw  = notional / entry
+
+    # 2026-09-09 苏摩111修复：低价币精度截断导致SL=TP
+    # 价格<$1保留6位小数，>=$1保留2位
+    _price_prec = 6 if entry < 1.0 else 2
+    entry = round(entry, _price_prec)
+    sl = round(sl, _price_prec)
+    tp = round(tp, _price_prec)
+    # 如果SL==TP（仍然截断），用百分比强制分开
+    if abs(sl - tp) < 1e-9:
+        if direction == 'LONG':
+            sl = round(entry * (1 - SETTINGS_SL_PCT / 100), _price_prec)
+            tp = round(entry * (1 + rr * SETTINGS_SL_PCT / 100), _price_prec)
+        else:
+            sl = round(entry * (1 + SETTINGS_SL_PCT / 100), _price_prec)
+            tp = round(entry * (1 - rr * SETTINGS_SL_PCT / 100), _price_prec)
+        _log.warning(f'[精度修复] {symbol} SL/TP截断→强制分开: entry={entry} sl={sl} tp={tp}')
 
     # 精度
     prec = {'BTCUSDT':3,'ETHUSDT':2,'BNBUSDT':2}.get(symbol, 1)
@@ -495,13 +520,20 @@ def settle_pending_orders(notify: bool = True) -> list:
                         pnl = (close_price - fill) / fill * o['notional']
                     else:
                         pnl = (fill - close_price) / fill * o['notional']
+                    # 2026-09-09 苏摩111修复：close_reason标记修复
+                    if hit_tp:
+                        _reason = 'TP'
+                    elif hit_sl:
+                        _reason = 'SL_LOSS' if pnl < 0 else 'SL_PROFIT'  # 区分止损亏损vs止损盈利
+                    else:
+                        _reason = 'TIMEOUT'
                     o['status']      = 'CLOSED'
                     o['close_price'] = close_price
                     o['close_at']    = ts
                     o['pnl']         = round(pnl, 2)
-                    o['close_reason']= 'TP' if hit_tp else 'SL'
+                    o['close_reason']= _reason
                     settled.append(o)
-                    _log.info(f'[CLOSED] {o["symbol"]} {o["side"]} PnL=${pnl:.2f} ({o["close_reason"]})')
+                    _log.info(f'[CLOSED] {o["symbol"]} {o["side"]} PnL=${pnl:.2f} ({_reason})')
             except:
                 pass
 
@@ -592,7 +624,10 @@ def run_bbw_scan(notify: bool = True) -> list:
             symbols.update(s if isinstance(s,str) else s.get('symbol','') for s in syms)
         except: pass
 
-    symbols = [s for s in symbols if s and s.endswith('USDT')][:50]
+    symbols = [s for s in symbols if s and s.endswith('USDT')]
+    # 2026-09-09 苏摩111修复：过滤稳定币
+    STABLECOIN_BLACKLIST = {'USDCUSDT', 'USDTUSDT', 'DAIUSDT', 'BUSDUSDT', 'TUSDUSDT', 'FDUSDUSDT'}
+    symbols = [s for s in symbols if s not in STABLECOIN_BLACKLIST][:50]
     _log.info(f'[P3 BBW扫描] {len(symbols)}个标的')
 
     # 扫描BBW
