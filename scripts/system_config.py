@@ -27,7 +27,7 @@ TESTNET   = os.environ.get('BINANCE_TESTNET', 'false').lower() == 'true'
 
 # ── Jarvis 推送路由（SSOT）────────────────────────────────────────
 JARVIS_USER_ID   = os.environ.get('JARVIS_USER_ID',   '73295708')
-JARVIS_THREAD_ID = os.environ.get('JARVIS_THREAD_ID', '01a07970-f8ce-706b-8bea-3c94dd055443')  # 2026-09-07 苏摩111迁移新主线程（三方联合）
+JARVIS_THREAD_ID = os.environ.get('JARVIS_THREAD_ID', '01a07628-0405-7e85-a34b-e68cd029dfc6')  # 2026-09-07 苏摩111迁移新主线程（三方联合）
 
 # ── 兼容旧代码（别名）────────────────────────────────────────────
 JARVIS_TARGET  = f"{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}"

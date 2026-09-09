@@ -3,12 +3,12 @@
 SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 
 # ── Square发帖 ───────────────────────────────────────────────────────────
-0 1  * * *   cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type hot_tickers --no-delay >> logs/syscron.log 2>&1
-0 7  * * *   cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type top_gainers --no-delay >> logs/syscron.log 2>&1
-0 9  * * *   cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type pump_alert >> logs/syscron.log 2>&1
-0 11 * * *   cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/square/square_hot_poster.py --type market_summary >> logs/syscron.log 2>&1
-0 9  * * *   cd /root/.openclaw/workspace/trading-system && python3 scripts/square/square_hot_poster.py --type top_losers --no-delay >> logs/syscron.log 2>&1
-0 */2 * * *  cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/square/square_extreme_alert.py >> logs/syscron.log 2>&1
+0 1  * * *   cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type hot_tickers --no-delay >> logs/syscron.log 2>&1
+0 7  * * *   cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type top_gainers --no-delay >> logs/syscron.log 2>&1
+0 9  * * *   cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type pump_alert >> logs/syscron.log 2>&1
+0 11 * * *   cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type market_summary >> logs/syscron.log 2>&1
+0 9  * * *   cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type top_losers --no-delay >> logs/syscron.log 2>&1
+0 */2 * * *  cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square/square_extreme_alert.py >> logs/syscron.log 2>&1
 
 # ── 梵天分析引擎 ─────────────────────────────────────────────────────────
 30 * * * *   cd /root/.openclaw/workspace/trading-system && timeout 55 venv/bin/python3 brahma_brain/brahma_analysis_runner.py BTCUSDT ETHUSDT >> logs/syscron.log 2>&1

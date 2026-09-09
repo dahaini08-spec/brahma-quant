@@ -25,7 +25,7 @@ from pathlib import Path
 
 # 推送配置（SSOT来自 MEMORY.md）
 JARVIS_USER_ID   = "73295708"
-JARVIS_THREAD_ID = "01a07970-f8ce-706b-8bea-3c94dd055443"
+JARVIS_THREAD_ID = "01a07628-0405-7e85-a34b-e68cd029dfc6"
 _TARGET          = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"
 
 
@@ -68,6 +68,9 @@ def push_jarvis(msg: str, timeout: int = 8, retries: int = 3) -> bool:
 
     return False
 
+
+# [2026-09-09 苏摩111] _jarvis别名 — 大量旧脚本import _jarvis，与push_jarvis等价
+_jarvis = push_jarvis
 
 def push_jarvis_silent(msg: str) -> bool:
     """不打印错误日志的静默版本，用于高频调用场景"""
