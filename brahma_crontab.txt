@@ -60,3 +60,6 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 0 12 * * *   cd /root/.openclaw/workspace/trading-system && timeout 55 python3 scripts/brahma_screener.py >> logs/syscron.log 2>&1
 0 */4 * * *  cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/news_scraper.py >> logs/syscron.log 2>&1
 0 16 * * *   cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/daily_review_llm.py >> logs/daily_review.log 2>&1
+
+# supercronic存活检测（纯脚本，每10min）
+*/10 * * * *  bash /root/.openclaw/workspace/trading-system/scripts/supercronic_watchdog.sh >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
