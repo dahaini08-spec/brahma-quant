@@ -1,6 +1,6 @@
 # brahma_brain/CLAUDE.md — 模块级工程规范
 <!-- Boris五步闭环 · 2026-08-30 设计院自主封印 -->
-<!-- 新人/新会话进入此模块，先读这个文件，再动代码 -->
+<!-- 2026-09-09 苏摩111: 从AGENTS.md下沉coding工作流+三件套到此文件 -->
 
 ---
 
@@ -15,7 +15,7 @@ brahma_1hao_analysis.run_analysis()               ← 全量报告生成
   ↓
 brahma_analysis_runner.run_analysis()             ← r对象（机器读取）
   ↓
-brahma_core.analyze()                             ← 4353行，35维评分核心
+brahma_core.analyze()                             ← 4733行，35维评分核心
   ↓
 block_a(维度1-6) + block_b(维度7-10) + block_c(维度11-35)
   ↓
@@ -23,6 +23,96 @@ signal_quality_engine.evaluate()                  ← SQE 4道门控
   ↓
 position_sizer.get_position_size()                ← 仓位计算
 ```
+
+---
+
+## 🛠️ Coding Tasks（gstack 工作流集成）
+
+当设计院 spawn coding subagent 处理以下任务时，使用对应指令：
+
+| 任务类型 | 指令 | 说明 |
+|---------|------|------|
+| 代码审查 | 「Load gstack. Run /review」 | 找生产级 bug，不是风格问题 |
+| 安全审计 | 「Load gstack. Run /cso」 | OWASP + STRIDE 安全扫描 |
+| QA测试 | 「Load gstack. Run /qa https://...」 | 真实浏览器端到端测试 |
+| 功能规划 | 「Load gstack. Run /autoplan, implement, then /ship」 | 完整功能交付链路 |
+| 架构评审 | 「Load gstack. Run /office-hours then /autoplan. Save the plan, don't implement.」 | 只出方案不动代码 |
+
+**梵天专属补充：**
+- 所有 coding subagent 完成后必须跑冒烟测试（brahma_smoke_test_v2.py）
+- 重大改动需苏摩111批准后 git commit 封印
+- 设计院不安装 gstack 到 ~/.claude/skills/（Security Guard 限制），改为 AGENTS.md 集成模式
+
+---
+
+## 🔧 设计院三件套工作流（2026-09-01 苏摩111封印）
+
+### 1️⃣ 长任务 → planning-with-files（强制）
+
+**触发条件：** 任何预计超过5步或可能被中断的coding任务。
+
+```
+任务开始时：
+  创建 .plan/brahma-YYYYMMDD-<任务名>.md
+  写入：目标 / 步骤清单 / 当前进度
+
+每步完成后：
+  更新 .plan/ 文件状态（pending→done）
+
+被中断恢复时：
+  读取 .plan/ 文件，从上次断点继续
+  不重新汇报已完成的步骤
+```
+
+**文件格式：**
+```markdown
+# 任务：<名称>
+## 目标
+<一句话>
+## 步骤
+- [x] P0-1: xxx（已完成）
+- [x] P0-2: xxx（已完成）
+- [ ] P1-1: xxx（进行中）
+- [ ] P2: xxx（待做）
+## 接入位置
+<修改了哪些文件>
+## 冒烟测试
+<测试命令和结果>
+```
+
+### 2️⃣ 封印前 → superpowers /autoplan（强制）
+
+**触发条件：** 任何新功能/修复提交git之前。
+
+```
+梵天封印流水线（强制顺序）：
+  Step1: 声明假设（执行前显式写出）
+  Step2: Load superpowers. Run /autoplan
+  Step3: implement（最小代价原则）
+  Step4: 冒烟测试全绿
+  Step5: git commit --no-verify（含接入位置）
+  Step6: 更新 .plan/ 状态为完成
+```
+
+**⚠️ 没有/autoplan = 没有封印资格。**
+
+### 3️⃣ 发帖前 → avoid-ai-writing（强制）
+
+**触发条件：** 姓赵不宣发任何Binance Square帖子之前。
+
+```
+发帖流水线：
+  Step1: 生成帖子内容
+  Step2: Load avoid-ai-writing，过滤AI腔
+  Step3: 检查：无「首先」「其次」「值得注意的是」「不得不说」等机器腔
+  Step4: 发布到Square
+```
+
+**检查清单（每次必过）：**
+- [ ] 无过度解释性开场白
+- [ ] 无「作为一个XX」句式
+- [ ] 无「综上所述」总结
+- [ ] 数据和结论直接说，不铺垫
 
 ---
 
@@ -66,9 +156,8 @@ python3 brahma_brain/brahma_smoke_test_v2.py
 # 语法检查
 python3 -c "import ast; ast.parse(open('brahma_brain/brahma_core.py').read()); print('OK')"
 
-# [Boris缺口2 2026-08-30] 先看最近改动，再动手——防止重复修已修过的bug
+# 先看最近改动，再动手——防止重复修已修过的bug
 git log --oneline -20
-# 关注: commit message里的「接入位置」和「根因」是最有价值的信息
 
 # 架构守门（新增模块时验证接入位置）
 grep -n "你的新模块名" brahma_brain/brahma_full_report.py brahma_brain/brahma_analysis_runner.py
@@ -84,8 +173,7 @@ grep -n "你的新模块名" brahma_brain/brahma_full_report.py brahma_brain/bra
 | 数学函数(RSI/EMA/ATR) | `math_utils.py` | ✅ |
 | 信号队列写入 | `scripts/signal_queue_writer.py` | ✅ |
 | 推送路由 | `scripts/system_config.py` | ✅ |
-| 铁证WR规则 | `../../LESSONS.md` | 只增不减 |
-| 试探性参数 | `../../PLAYBOOK.md` | 可回滚 |
+| 铁证WR规则 | `MEMORY.md` | 只增不减 |
 
 ---
 
@@ -98,7 +186,7 @@ grep -n "你的新模块名" brahma_brain/brahma_full_report.py brahma_brain/bra
 
 ---
 
-## 🗺️ 诊断路径图谱（Understand-Anything等价，零安装成本）
+## 🗺️ 诊断路径图谱
 
 ### 「为什么信号没有推送」
 ```
@@ -117,7 +205,7 @@ brahma_core.analyze() → score_final
 ```
 brahma_core.analyze()
   ↓ → regime_detector → _matched_regime_key
-  ↓ regime=None/空？ → [Karpathy断言] 自动填UNKNOWN，查日志
+  ↓ regime=None/空？ → 自动填UNKNOWN，查日志
   ↓ 体制切换延迟？ → 查 data/brahma_state.json → last_update字段
   ↓ 体制乘数不对？ → 只改 brahma_brain/regime_config.py（SSOT）
 ```
@@ -136,7 +224,7 @@ scripts/oi_advanced_scanner.py → score_oi_signal()
 
 | 文件 | 行数 | 职责 |
 |------|------|------|
-| `brahma_core.py` | 4353 | 35维评分引擎，唯一入口 |
+| `brahma_core.py` | 4733 | 35维评分引擎，唯一入口 |
 | `brahma_full_report.py` | ~800 | 对外报告，ADAPTIVE v3.0 |
 | `regime_config.py` | ~100 | 体制乘数SSOT |
 | `signal_quality_engine.py` | ~200 | 4道门控 |
