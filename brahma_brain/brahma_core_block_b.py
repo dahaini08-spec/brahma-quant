@@ -130,8 +130,8 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
     # 封印：s7全局上限=20（设计上限10→适度放开20，但禁止三层叠加超额）
     #       下限=-20（已有，保留否决权机制）
     s7 = max(-20, min(20, s7))
-    score += s7
-    breakdown['清算/OI'] = s7
+    # [达摩院v6.0 2026-09-09 苏摩111] s7 清算/OI IC=-0.0131 → 降为信息层
+    breakdown['清算/OI'] = s7  # 信息层展示，不计分
 
     # ── s7增强层③: bybit_liq_adapter L/S拥挤度补充（2026-08-09 设计院接入）──
     # 独立于liq_density_engine，提供L/S拥挤度方向性信号
@@ -148,7 +148,8 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
         elif signal_dir == 'LONG' and _bla_pressure == 'LONG_CROWDED':
             _bla_delta = -3  # 多头过拥挤 → 逆势做多 -3
         if _bla_delta != 0:
-            score += _bla_delta
+            # [达摩院v6.0] L/S拥挤度 IC=-0.0131 → 信息层
+            breakdown['L/S拥挤度_info'] = _bla_delta
             breakdown['L/S拥挤度'] = _bla_delta
     except Exception:
         pass
@@ -161,7 +162,8 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
         _vp_pts, _vp_desc = _vp_score_fn(_sym, float(extra_data.get('price', price) if extra_data else price), signal_dir)
         if _vp_pts != 0:
             s7_vp = max(-15, min(8, _vp_pts))  # 边界保护
-            score += s7_vp
+            # [达摩院v6.0] VolProfile IC=-0.0131 → 信息层
+            breakdown['VolProfile_info'] = s7_vp
             breakdown['VolProfile'] = s7_vp
     except Exception:
         pass
@@ -226,8 +228,8 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
             elif _basis_pct < -0.01: basis_bonus = 1
             elif _basis_pct > 0.04:  basis_bonus = -1  # 已溢价，多头不利
     s8 = min(s8_base + onchain_bonus + basis_bonus + _oc_bonus, 20)  # [UP-017] +CoinGlass链上
-    score += s8
-    breakdown['情绪/费率'] = s8
+    # [达摩院v6.0 2026-09-09 苏摩111] s8 情绪/费率 IC=-0.0131 → 降为信息层
+    breakdown['情绪/费率'] = s8  # 信息层展示，不计分
 
     # ── s8b: VolSkew 成交量方向偿度（三院审核修复 2026-07-08）────────────────
     # 回测鐵证：vskew≥0.52时 ETH底部信号 WR=85.7% EV=+1.43%（最佳阈値）
@@ -253,7 +255,8 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
             else:
                 _vs_pts = 0
             if _vs_pts != 0:
-                score += _vs_pts
+                # [达摩院v6.0] VolSkew IC=-0.0131 → 信息层
+                breakdown['VolSkew_info'] = _vs_pts
                 breakdown['VolSkew'] = _vs_pts
     except Exception:
         pass
@@ -342,7 +345,8 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
     _am = (extra_data or {}).get('anti_manip', {})
     _am_adj = int(_am.get('score_adj', 0))
     if _am_adj != 0:
-        score += _am_adj
+        # [达摩院v6.0] 操控防御 IC=-0.0131 → 信息层
+        breakdown['操控防御_info'] = _am_adj
         _am_level = _am.get('risk_level', 'LOW')
         _am_sigs  = ' | '.join(_am.get('signals', []))[:80]
         breakdown['操控防御'] = _am_adj
@@ -379,7 +383,8 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
                         breakdown['Amihud流动性'] = f'0 (正常 ratio={_amihud_ratio:.1f}x)'
     except Exception:
         pass
-    score += _s_amihud
+    # [达摩院v6.0] Amihud流动性 IC=-0.0131 → 信息层
+    breakdown['Amihud流动性_info'] = _s_amihud
 
     return {
         's7': s7, 's8': s8, 's9': s9, 's10': s10,

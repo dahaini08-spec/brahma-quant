@@ -231,8 +231,8 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
                 s2 += _fadd
                 breakdown[f'FVG_{_fvg_tf.upper()}_SHORT'] = f'+{_fadd} dist={_fd:.2f}% [磁铁{_fvg_tf_data[_fvg_bear_key]["mid"]:.1f}]'
     s2 = min(s2, 20)
-    score += s2
-    breakdown['关键位精确度'] = s2
+    # [达摩院v6.0 2026-09-09 苏摩111] s2 OB+FVG IC=-0.0043 → 降为信息层，不参与评分
+    breakdown['关键位精确度'] = s2  # 信息层展示，不计分
 
     # ── 维度3：动量背离确认（0~20）─────────────────────────────
     # [达摩院v12.9c] RSI彻底改为状态描述，不参与评分
@@ -501,8 +501,8 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
 
     # 应用QEW乘数（体制质量权重，T02训练结论）
     s5 = min(int(s5 * _qew_mult), 20)
-    score += s5
-    breakdown['量能验证'] = s5
+    # [达摩院v6.0 2026-09-09 苏摩111] s5 量能确认 IC=-0.0064 → 降为信息层
+    breakdown['量能验证'] = s5  # 信息层展示，不计分
 
     # ── [Phase2a] 维度5b：区间结构（0~15）────────────────────────────────
     # 数据铁证：区间高位做空 WR=71.6%, n=183K, 6年稳定
@@ -647,7 +647,8 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
                 else:
                     _a101_score = 0
             if _a101_score != 0:
-                score += _a101_score
+                # [达摩院v6.0] Alpha101 IC=-0.0064 → 降为信息层
+                breakdown['Alpha101_实体比_info'] = _a101_score
                 breakdown['Alpha101_实体比'] = f'{_a101_score:+d}(实体比:{_body_ratio:.2f})'
     except Exception:
         pass
@@ -686,7 +687,8 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
                     _a012_score = 0
                     _a012_desc  = ''
             if _a012_score != 0:
-                score += _a012_score
+                # [达摩院v6.0] Alpha012 IC=-0.0064 → 降为信息层
+                breakdown['Alpha012_量价背离_info'] = _a012_score
                 breakdown['Alpha012_量价背离'] = f'{_a012_score:+d}({_a012_desc})'
     except Exception:
         pass
@@ -739,7 +741,8 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
                     _a053_score = 0
                     _a053_desc  = ''
             if _a053_score != 0:
-                score += _a053_score
+                # [达摩院v6.0] Alpha053 IC=-0.0064 → 降为信息层
+                breakdown['Alpha053_K线结构_info'] = _a053_score
                 breakdown['Alpha053_K线结构'] = f'{_a053_score:+d}({_a053_desc})'
     except Exception:
         pass

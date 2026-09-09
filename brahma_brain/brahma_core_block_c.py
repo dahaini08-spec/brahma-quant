@@ -62,8 +62,8 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
         s11 += min(extra_data['microstructure'].get('score', 0), 10)
     # [外科手术 2026-05-30] 数据质量未验证，上限20→5，低权重探索
     s11 = min(s11, 5)
-    score += s11
-    breakdown['鲸鱼+微观'] = s11
+    # [达摩院v6.0 2026-09-09 苏摩111] s11 鲸鱼+微观 IC=-0.0131 → 降为信息层
+    breakdown['鲸鱼+微观'] = s11  # 信息层展示，不计分
 
     # ── 维度12(NEW)：期权 + 订单流CVD + OBI深度 ─────────────────
     # [D12校准 2026-05-19] 达摩院实测 7/11品种负贡献 → 降权噪音源
@@ -93,8 +93,8 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
     if extra_data and extra_data.get('onchain_ws'):
         s12 += min(abs(extra_data['onchain_ws'].get('direction_score', 0)), 3)
     s12 = min(s12, 10)  # [外科手术] 上限15→10（删期权后重校）
-    score += s12
-    breakdown['期权+订单流'] = s12
+    # [达摩院v6.0 2026-09-09 苏摩111] s12 期权+订单流 IC=-0.0131 → 降为信息层
+    breakdown['期权+订单流'] = s12  # 信息层展示，不计分
 
     # ── Phase A 维度13: L2订单簿 + 贝叶斯 + 宏观日历 ─────────────────
     # [D13校准 2026-05-19] 贝叶斯冷启动期保护 + OB score上限收紧
@@ -291,8 +291,8 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
         elif _md_res == 'SINGLE':
             s16 += min(_md_score, 5)
     s16 = min(s16, 15)
-    score += s16
-    breakdown['量能衰竭+背离共振'] = s16
+    # [达摩院v6.0 2026-09-09 苏摩111] s16 量能衰竭 IC=-0.0064 → 降为信息层
+    breakdown['量能衰竭+背离共振'] = s16  # 信息层展示，不计分
 
     # ── 维17：资金费率+多空比情绪评分 ────────────────────────────────
     s17 = 0
@@ -302,8 +302,8 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
         from sentiment_engine import get_sentiment_score as _get_sent
         _s17_val, _s17_det = _get_sent(ms, signal_dir)
         s17 = max(-8, min(8, _s17_val))
-        score += s17
-        breakdown['资金费情绪'] = s17
+        # [达摩院v6.0 2026-09-09 苏摩111] s17 资金费情绪 IC=-0.0131 → 降为信息层
+        breakdown['资金费情绪'] = s17  # 信息层展示，不计分
     except Exception:
         pass
 
@@ -371,8 +371,8 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
             _v_vr = list(_k1h_vr.get('v', []))[-25:]
             s22, _vr_rep = _vr_score(_c_vr, _o_vr, _v_vr, signal_dir, ms.get('regime', ''))
             s22 = max(-5, min(8, s22))
-            score += s22
-            breakdown['成交量比率'] = s22
+            # [达摩院v6.0 2026-09-09 苏摩111] s22 成交量比率 IC=-0.0064 → 降为信息层
+            breakdown['成交量比率'] = s22  # 信息层展示，不计分
             if s22 != 0:
                 print(f'[s22-VR] {symbol} {signal_dir} VR={_vr_rep.get("volume_ratio","?")}x {_vr_rep.get("signals",[])} +{s22:.1f}')
     except Exception as _e22:
@@ -433,7 +433,8 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
             s_research = 0
         s_research = max(-8, min(8, int(round(s_research))))
         if s_research != 0:
-            score += s_research
+            # [达摩院v6.0] 研究增强层 IC未验证 → 降为信息层
+            breakdown['研究增强层_info'] = s_research
             breakdown['研究增强层'] = f'{s_research:+d} (timesfm_lite)'
         else:
             breakdown['研究增强层'] = '0 (timesfm_no_signal)'

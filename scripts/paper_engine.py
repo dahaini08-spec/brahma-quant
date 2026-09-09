@@ -38,7 +38,7 @@ ENGINE_LOG = DATA / "paper_engine_log.jsonl"
 DEDUP_FILE = DATA / "paper_engine_dedup.json"
 
 QUEUE_TTL_S = 3600 * 2
-DEDUP_TTL_S = 3600 * 4
+DEDUP_TTL_S = 300  # 2026-09-09 苏摩111修复：4h→5min，防止同价位重复开单
 SETTINGS = load_settings(ROOT)
 
 # [2026-09-07 达摩院封印] 单一账本 + bar回放结算层
@@ -89,13 +89,15 @@ def _load_dedup() -> dict:
     return {}
 
 
-def _is_dedup(symbol: str, side: str) -> bool:
-    return (time.time() - _load_dedup().get(f"{symbol}:{side}", 0)) < DEDUP_TTL_S
+def _is_dedup(symbol: str, side: str, entry: float = 0) -> bool:
+    key = f"{symbol}:{side}:{round(entry, 4)}" if entry else f"{symbol}:{side}"
+    return (time.time() - _load_dedup().get(key, 0)) < DEDUP_TTL_S
 
 
-def _mark_dedup(symbol: str, side: str) -> None:
+def _mark_dedup(symbol: str, side: str, entry: float = 0) -> None:
     d = _load_dedup()
-    d[f"{symbol}:{side}"] = time.time()
+    key = f"{symbol}:{side}:{round(entry, 4)}" if entry else f"{symbol}:{side}"
+    d[key] = time.time()
     DEDUP_FILE.write_text(json.dumps(d))
 
 
@@ -281,8 +283,8 @@ def process_one(symbol: str, source: str = "queue") -> dict:
         return result
 
     sig = decision.signal
-    if _is_dedup(sig.symbol, sig.side):
-        result["reason"] = f"DEDUP:{sig.symbol}:{sig.side}"
+    if _is_dedup(sig.symbol, sig.side, sig.entry_mid):
+        result["reason"] = f"DEDUP:{sig.symbol}:{sig.side}:{sig.entry_mid}"
         return result
 
     rec = {
@@ -316,7 +318,7 @@ def process_one(symbol: str, source: str = "queue") -> dict:
     PAPER_ORDERS.parent.mkdir(parents=True, exist_ok=True)
     with open(PAPER_ORDERS, "a") as fh:
         fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
-    _mark_dedup(sig.symbol, sig.side)
+    _mark_dedup(sig.symbol, sig.side, sig.entry_mid)
     result["action"] = "PAPER_OPEN"
     result["orders"] = [rec]
     _log.info(
