@@ -492,6 +492,7 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict) -> dict:
         'entry_lo':    entry_lo,
         'entry_hi':    entry_hi,
         'missing':     missing,
+        'liq_nearest_long': liq.get('nearest_long', 0),  # [P1修复] 传递支撑池给step10
     }
 
 # ══════════════════════════════════════════════════════════
@@ -565,6 +566,37 @@ def step5_oi(d: dict) -> dict:
     total_change = oi_vals[-1] - oi_vals[0] if oi_vals else 0
     usd_change   = (d['oi_usd'][-1] - d['oi_usd'][0]) if len(d.get('oi_usd',[])) >= 2 else 0
 
+    # [P0修复 2026-09-10] CVD交叉验证
+    cvd_data = {}
+    cvd_note = ''
+    try:
+        import json as _json
+        _sym_lower = d.get('sym','').lower() + 'usdt'
+        _cvd_path = Path(__file__).parent.parent / 'data' / f'cvd_realtime_{_sym_lower}.json'
+        if _cvd_path.exists():
+            cvd_data = _json.loads(_cvd_path.read_text())
+            cvd_1h = cvd_data.get('cvd_1h', 0)
+            cvd_4h = cvd_data.get('cvd_4h', 0)
+            buy_vol = cvd_data.get('buy_vol_1h', 0)
+            sell_vol = cvd_data.get('sell_vol_1h', 0)
+            if cvd_1h > 0:
+                cvd_note = f'CVD 1H=+{cvd_1h:.0f}（买方主导）'
+            elif cvd_1h < 0:
+                cvd_note = f'CVD 1H={cvd_1h:.0f}（卖方主导）'
+            else:
+                cvd_note = 'CVD 1H=0（中性）'
+            # OI+CVD交叉验证
+            if main_signal == 'LONG_BUILD' and cvd_1h < 0:
+                cvd_note += ' ⚠️OI多但CVD空=矛盾'
+            elif main_signal == 'SHORT_BUILD' and cvd_1h > 0:
+                cvd_note += ' ⚠️OI空但CVD多=矛盾'
+            elif main_signal == 'LONG_BUILD' and cvd_1h > 0:
+                cvd_note += ' ✅OI+CVD同向做多'
+            elif main_signal == 'SHORT_BUILD' and cvd_1h < 0:
+                cvd_note += ' ✅OI+CVD同向做空'
+    except Exception:
+        pass
+
     return {
         'signal':       main_signal,
         'signal_15m':   sig_15m,
@@ -576,6 +608,8 @@ def step5_oi(d: dict) -> dict:
         'usd_change_m': round(usd_change / 1e6, 1),
         'latest':       round(oi_vals[-1], 0) if oi_vals else 0,
         'trend':        [round(v,0) for v in oi_vals],
+        'cvd_1h':       cvd_data.get('cvd_1h', 0),
+        'cvd_note':     cvd_note,
     }
 
 # ══════════════════════════════════════════════════════════
@@ -677,6 +711,50 @@ def step7_volatility(d: dict) -> dict:
     iv_pct   = vb.get('iv_pct', 0)
     premium  = vb.get('iv_premium_pct', 0)
 
+    # [P0修复 2026-09-10] GEX加入Step 7（波动率四维）
+    gex_note = ''
+    gex_bias = 'NEUTRAL'
+    try:
+        import json as _json
+        _gex_path = Path(__file__).parent.parent / 'data' / 'gex_state.json'
+        if _gex_path.exists():
+            _gex_all = _json.loads(_gex_path.read_text())
+            _gex_sym = d.get('sym','')
+            _gex = _gex_all.get(_gex_sym, _gex_all.get(_gex_sym.upper(), {}))
+            if not _gex and 'BTC' in _gex_sym:
+                _gex = _gex_all.get('BTC', {})
+            if not _gex and 'ETH' in _gex_sym:
+                _gex = _gex_all.get('ETH', {})
+            if _gex:
+                gex_total = _gex.get('gex_total', 0) or _gex.get('total_gex', 0)
+                gex_bias_val = _gex.get('gex_bias', '') or _gex.get('bias', '')
+                min_gex_strike = _gex.get('min_gex_strike', 0)
+                if gex_total > 0:
+                    gex_bias = 'POSITIVE'
+                    gex_note = f'GEX=+{gex_total/1e6:.2f}M 正gamma→价格被钉住(低波动)'
+                elif gex_total < 0:
+                    gex_bias = 'NEGATIVE'
+                    gex_note = f'GEX={gex_total/1e6:.2f}M 负gamma→波动率引爆点'
+                else:
+                    gex_note = 'GEX≈0 中性'
+                if min_gex_strike > 0:
+                    gex_dist = abs(price - min_gex_strike) / price * 100 if price else 0
+                    gex_note += f' MIN_GEX=${min_gex_strike:,.0f}({gex_dist:.1f}%)'
+    except Exception:
+        pass
+
+    # [P1修复 2026-09-10] FR展示
+    fr_note = ''
+    try:
+        fr_val = d.get('fr', 0)
+        if fr_val:
+            if abs(fr_val) > 0.001:
+                fr_note = f'FR={fr_val*100:.4f}% ⚠️极端值=反转前兆'
+            else:
+                fr_note = f'FR={fr_val*100:.4f}% 正常'
+    except Exception:
+        pass
+
     # Hurst解读
     if hurst_val >= 0.65:
         hurst_note = f'H={hurst_val:.3f} 🔥强趋势持续性，当前方向会继续'
@@ -709,6 +787,9 @@ def step7_volatility(d: dict) -> dict:
         'beta_m':      beta_m,
         'iv_rank':     iv_rank,
         'trend_signal': 'TRENDING' if hurst_val >= 0.55 else 'RANGING',
+        'gex_note':    gex_note,
+        'gex_bias':    gex_bias,
+        'fr_note':     fr_note,
     }
 
 # ══════════════════════════════════════════════════════════
@@ -793,6 +874,24 @@ def step9_risk(d: dict) -> dict:
     if not af_ok:
         nav_mult = min(nav_mult, 0.5)
 
+    # [P1修复 2026-09-10] 失效期检测器接入Step 9
+    regime_state = 'GREEN'
+    regime_note = ''
+    try:
+        import json as _json
+        _rd_path = Path(__file__).parent.parent / 'data' / 'dharma_regime_detector_result.json'
+        if _rd_path.exists():
+            _rd = _json.loads(_rd_path.read_text())
+            regime_state = _rd.get('current_state', 'GREEN')
+            if regime_state == 'RED':
+                regime_note = '失效期RED → 仓位减半+杠杆减半'
+                nav_mult = min(nav_mult, 0.5)
+            elif regime_state == 'YELLOW':
+                regime_note = '警戒期YELLOW → 仓位×0.75'
+                nav_mult = min(nav_mult, 0.75)
+    except Exception:
+        pass
+
     return {
         'all_green':  all_green,
         'circuit_ok': circuit_ok,
@@ -802,6 +901,8 @@ def step9_risk(d: dict) -> dict:
         'consec':     consec_loss,
         'blocks':     blocks,
         'nav_mult':   nav_mult,
+        'regime_state': regime_state,
+        'regime_note':  regime_note,
     }
 
 # ══════════════════════════════════════════════════════════
@@ -1026,6 +1127,16 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     entry_lo = res['entry_lo']
     entry_hi = res['entry_hi']
 
+    # [P1修复 2026-09-10] 入场区 = max(共振下沿, 支撑池)
+    _liq_support = res.get('liq_nearest_long', 0) or liq.get('nearest_long', 0)
+    if _liq_support > 0 and bias == 'LONG' and entry_lo < _liq_support:
+        # 入场区在支撑池下方 → 上移到支撑池上方
+        _shift = _liq_support - entry_lo
+        entry_lo = round(_liq_support, 1)
+        entry_hi = round(entry_hi + _shift, 1)
+        if entry_hi <= entry_lo:
+            entry_hi = round(entry_lo * 1.005, 1)  # 入场区至少0.5%宽
+
     # D7修复: entry=0时强制走等待路径（不应进入SL计算）
     if entry_lo == 0.0 or entry_hi == 0.0:
         return (
@@ -1067,8 +1178,10 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
             _regime_state = _rd_data.get('current_state', 'GREEN')
             if _regime_state == 'RED':
                 base_nav_main = max(1, base_nav_main // 2)
+                base_lev_main = max(3, base_lev_main // 2)  # [P1修复] 失效期RED杠杆也减半
             elif _regime_state == 'YELLOW':
                 base_nav_main = max(1, round(base_nav_main * 0.75))
+                base_lev_main = max(3, round(base_lev_main * 0.75))  # [P1修复] YELLOW杠杆×0.75
     except Exception:
         pass
     base_nav_main = max(1, base_nav_main)
@@ -1094,19 +1207,21 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
         main_line   = f'🟢 多单｜回调入场区 ${entry_lo:,.1f}~${entry_hi:,.1f}（价格跌到此区挂单）'
         main_params = f'止损 ${sl:,.1f}｜目标 ${tp1:,.0f}→${tp2:,.0f}→${tp3:,.0f}'
 
-        # 副方向：反弹到上方阻力再做轻空
-        side_hi    = round(entry_lo + atr_1h * 2.0, 1)
-        side_lo    = round(entry_lo + atr_1h * 1.2, 1)
-        # [P1修复] 副方向SL也用铁律：BULL做空2.5%
-        side_sl_pct = 0.025 if 'BULL' in str(reg_now) else 0.02
-        side_min_sl = max(side_hi * side_sl_pct, atr_4h * 1.5) if atr_4h else side_hi * side_sl_pct
-        side_sl    = round(side_hi + side_min_sl, 1)
-        # [P3修复] 空单TP必须向下（低于入场价）
-        side_tp1   = round(entry_lo - atr_1h * 1.5, 1)  # 向下
-        side_tp2   = round(side_tp1 - atr_1h * 1.5, 1)  # 继续向下
-        side_tp    = f'${side_tp1:,.0f}→${side_tp2:,.0f}'
-        side_line  = f'🔴 空单（轻）｜若反弹到 ${side_lo:,.1f}~${side_hi:,.1f} 再空'
-        side_params= f'止损 ${side_sl:,.1f}｜目标 {side_tp}'
+        # [P1修复 2026-09-10] BULL_TREND → 只出多单，不出空单
+        if 'BULL' in str(reg_now) or 'BEAR_RECOVERY' in str(reg_now):
+            side_line  = '🔴 暂无空单｜等待结构'
+            side_params = 'BULL体制不做空'
+        else:
+            side_hi    = round(entry_lo + atr_1h * 2.0, 1)
+            side_lo    = round(entry_lo + atr_1h * 1.2, 1)
+            side_sl_pct = 0.025 if 'BULL' in str(reg_now) else 0.02
+            side_min_sl = max(side_hi * side_sl_pct, atr_4h * 1.5) if atr_4h else side_hi * side_sl_pct
+            side_sl    = round(side_hi + side_min_sl, 1)
+            side_tp1   = round(entry_lo - atr_1h * 1.5, 1)
+            side_tp2   = round(side_tp1 - atr_1h * 1.5, 1)
+            side_tp    = f'${side_tp1:,.0f}→${side_tp2:,.0f}'
+            side_line  = f'🔴 空单（轻）｜若反弹到 ${side_lo:,.1f}~${side_hi:,.1f} 再空'
+            side_params= f'止损 ${side_sl:,.1f}｜目标 {side_tp}'
         main_dir   = '主方向做多'
 
     else:  # SHORT
@@ -1123,18 +1238,20 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
         main_line   = f'🔴 空单｜反弹入场区 ${entry_lo:,.1f}~${entry_hi:,.1f}（价格反弹到此区挂单）'
         main_params = f'止损 ${sl:,.1f}｜目标 ${tp1:,.0f}→${tp2:,.0f}→${tp3:,.0f}'
 
-        # 副方向：下探被扫后接轻多
-        hunt_lo    = round(entry_lo - atr_1h * 1.5, 1)
-        hunt_hi    = round(entry_lo - atr_1h * 0.5, 1)
-        # [P1修复] 副方向SL也用铁律：做多2.0%
-        side_min_sl = max(hunt_lo * 0.02, atr_4h * 1.5) if atr_4h else hunt_lo * 0.02
-        side_sl    = round(hunt_lo - side_min_sl, 1)
-        # [P3修复] 多单TP必须向上（高于入场价）
-        side_tp1   = round(entry_lo + atr_1h * 1.5, 1)  # 向上
-        side_tp2   = round(side_tp1 + atr_1h * 1.5, 1)  # 继续向上
-        side_tp    = f'${side_tp1:,.0f}→${side_tp2:,.0f}'
-        side_line  = f'🟢 多单（轻）｜若下探 ${hunt_lo:,.1f}~${hunt_hi:,.1f} 被扫后接'
-        side_params= f'止损 ${side_sl:,.1f}｜目标 {side_tp}'
+        # [P1修复 2026-09-10] BEAR_TREND → 只出空单，不出多单
+        if 'BEAR' in str(reg_now):
+            side_line  = '🟢 暂无多单｜等待结构'
+            side_params = 'BEAR体制不做多'
+        else:
+            hunt_lo    = round(entry_lo - atr_1h * 1.5, 1)
+            hunt_hi    = round(entry_lo - atr_1h * 0.5, 1)
+            side_min_sl = max(hunt_lo * 0.02, atr_4h * 1.5) if atr_4h else hunt_lo * 0.02
+            side_sl    = round(hunt_lo - side_min_sl, 1)
+            side_tp1   = round(entry_lo + atr_1h * 1.5, 1)
+            side_tp2   = round(side_tp1 + atr_1h * 1.5, 1)
+            side_tp    = f'${side_tp1:,.0f}→${side_tp2:,.0f}'
+            side_line  = f'🟢 多单（轻）｜若下探 ${hunt_lo:,.1f}~${hunt_hi:,.1f} 被扫后接'
+            side_params= f'止损 ${side_sl:,.1f}｜目标 {side_tp}'
         main_dir   = '主方向做空'
 
     # 风控提示
@@ -1360,16 +1477,19 @@ def run_analysis(sym: str) -> str:
         f'  主信号: {oi["signal"]} (置信{oi.get("conf",0):.0%}) | {oi["conclusion"][:60]}',
         f'  15min序列: {" → ".join(str(int(v)) for v in oi["trend"])}',
         f'  累计变化: {oi["total_change"]:+,.0f}张  OI价值变化: {oi["usd_change_m"]:+.1f}M',
+        f'  {oi.get("cvd_note","")}',  # [P0] CVD展示
         f'',
         f'【Step6 聪明钱分歧】',
         f'  {sm["conclusion"]}',
         f'  大户多{sm["big_long"]}% vs 散户多{sm["retail_long"]}%  分歧={sm["diverge"]}%',
         f'  大户2H变化: {sm.get("top_delta",0.0):+.1f}%pt ({"主力加多↑" if sm.get("top_delta",0)>0.5 else "主力减多↓" if sm.get("top_delta",0)<-0.5 else "平稳"})',
         f'',
-        f'【Step7 波动率三维+ATR全周期】',
+        f'【Step7 波动率四维+ATR全周期】',  # [P0] 升级为四维
         f'  {vol["hurst_note"]}',
         f'  {vol["kappa_note"]}',
-        f'  HAR-RV={vol["harv"]:.4f}  {vol["harv_range_str"]}  IV分位={vol["iv_rank"]}',
+        f'  {vol.get("gex_note","")}',  # [P0] GEX展示
+        f'  {vol.get("fr_note","")}',   # [P1] FR展示
+        f'  β⁺={vol.get("beta_p",0):.3f} β⁻={vol.get("beta_m",0):.3f}  IV分位={vol["iv_rank"]}',  # [P2] β展示
         f'  ATR1H=${vol.get("atr_1h",0):.0f} ATR4H=${vol.get("atr_4h",0):.0f} ATR1D=${vol.get("atr_1d",0):.0f}  合约SL参考=${vol.get("atr_sl_ref",0):.0f}({vol.get("atr_sl_ref",0)/p*100:.2f}%)',
         f'',
         f'【Step8 宏观压制】',
@@ -1385,6 +1505,7 @@ def run_analysis(sym: str) -> str:
         f'  熔断器: {"✅绿灯" if risk["circuit_ok"] else "🔴触发"}  '
         f'回撤: {risk["dd_pct"]:.1f}% {"✅正常" if risk["dd_ok"] else "⚠️"}  '
         f'连亏: {risk["consec"]}笔 {"✅" if risk["af_ok"] else "⚠️冷却"}',
+        f'  失效期: {risk.get("regime_state","GREEN")} {risk.get("regime_note","")}',  # [P1] 失效期展示
         f'  仓位系数: x{risk["nav_mult"]}',
     ]
     if risk['blocks']:
