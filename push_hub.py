@@ -1,90 +1,47 @@
+#!/usr/bin/env python3
 """
-push_hub.py — 梵天全系统统一推送出口
-设计院 根因修复 2026-07-08
+push_hub.py — 根目录兼容包装（2026-09-10 苏摩111 P1修复）
 
-所有脚本统一调用此模块推送到 Jarvis，不再依赖外部进程
+所有实际实现已统一到 scripts/push_hub.py
+此文件仅作为兼容入口，重导出新版函数，
+让旧脚本 `from push_hub import _jarvis` 继续正常工作。
+
+接入位置：
+  所有 `from push_hub import ...` 的旧脚本（20+个）
+  新脚本应直接用 `from scripts.push_hub import ...`
+
+设计院封印 2026-09-10
 """
-import subprocess, json, time, os, datetime
+import sys
+import importlib
 from pathlib import Path
 
-# SSOT 路由
-try:
-    import sys
-    sys.path.insert(0, str(Path(__file__).parent / 'scripts'))
-    from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID, JARVIS_CHANNEL
-    _TARGET  = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"
-    _CHANNEL = JARVIS_CHANNEL
-except Exception:
-    _TARGET  = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"  # 2026-07-25 统一从system_config读取，SSOT
-    _CHANNEL = "jarvis"
+# 将scripts/加入path，用importlib导入真正的push_hub（避免同名冲突）
+_scripts_dir = str(Path(__file__).parent / "scripts")
+sys.path.insert(0, _scripts_dir)
 
-_DEDUP_FILE = Path(__file__).parent / "data" / "push_dedup.json"
+# 用importlib按文件路径导入，避免与当前模块同名冲突
+import importlib.util
+_spec = importlib.util.spec_from_file_location("scripts_push_hub", Path(_scripts_dir) / "push_hub.py")
+_mod = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_mod)
 
-def _load_dedup():
-    try:
-        return json.loads(_DEDUP_FILE.read_text())
-    except Exception:
-        return {}
+# 重导出所有公共函数
+push_jarvis = _mod.push_jarvis
+push_jarvis_silent = _mod.push_jarvis_silent
+push_signal_card_v3 = _mod.push_signal_card_v3
+_jarvis = _mod._jarvis
+JARVIS_USER_ID = _mod.JARVIS_USER_ID
+JARVIS_THREAD_ID = _mod.JARVIS_THREAD_ID
+_TARGET = _mod._TARGET
 
-def _save_dedup(d):
-    try:
-        _DEDUP_FILE.parent.mkdir(exist_ok=True)
-        _DEDUP_FILE.write_text(json.dumps(d))
-    except Exception:
-        pass
-
-def _jarvis(msg, dedup_key=None, dedup_ttl=3600):
-    """推送消息到 Jarvis 当前线程"""
-    if not msg or not msg.strip():
-        return False
-    if dedup_key:
-        dedup = _load_dedup()
-        now = time.time()
-        last = dedup.get(dedup_key, 0)
-        if now - last < dedup_ttl:
-            print(f"[push_hub] 去重跳过: {dedup_key} (剩余{(dedup_ttl-(now-last))/60:.0f}min)")
-            return False
-        dedup[dedup_key] = now
-        dedup = {k: v for k, v in dedup.items() if now - v < 86400}
-        _save_dedup(dedup)
-    try:
-        r = subprocess.run(
-            ["openclaw", "message", "send",
-             "--channel", _CHANNEL,
-             "--target",  _TARGET,
-             "--message", msg],
-            capture_output=True, text=True, timeout=15
-        )
-        ok = r.returncode == 0
-        if not ok:
-            print(f"[push_hub] 推送失败 rc={r.returncode}: {r.stderr[:100]}")
-        return ok
-    except Exception as e:
-        print(f"[push_hub] 推送异常: {e}")
-        return False
-
-def push_signal_card(sym, score, grade, direction, entry_lo, entry_hi, sl, tp1, timing="READY", tp2=0, rr=1.0):
-    """推送梵天VIP信号卡片（事件驱动，score≥155立即推送）"""
-    emoji   = "🟢" if direction == "LONG" else "🔴"
-    tier    = "TIER1 🔴" if score >= 155 else "TIER2 🟠"
-    tag     = sym.replace("USDT", "")
-    ts      = datetime.datetime.utcnow().strftime('%m-%d %H:%M')
-    sl_pct  = round(abs(sl - entry_hi) / entry_hi * 100, 1) if entry_hi else 2.0
-    # [设计院 2026-08-01] SHORT: SL在entry_hi上方，sl_pct为正；LONG: SL在entry_lo下方
-    sl_dir_label = f"+{sl_pct}%" if direction == 'SHORT' else f"-{sl_pct}%"
-    tp2_line = f"  TP2:    ${tp2:,.2f}\n" if tp2 else ""
-    msg = (
-        f"🚨 **梵天信号 · {tier}**\n"
-        f"━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"{emoji} **{tag}/USDT {direction}** | score={score:.0f} {grade}\n"
-        f"  体制:   BULL_TREND | 时机: {timing}\n"
-        f"  入场:   ${entry_lo:,.2f} ~ ${entry_hi:,.2f}\n"
-        f"  止损:   ${sl:,.2f}  ({sl_dir_label})\n"
-        f"  TP1:    ${tp1:,.2f}  RR={rr}x\n"
-        f"{tp2_line}"
-        f"  仓位:   5% NAV  LEV=5x\n"
-        f"━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"  {ts} UTC  [事件驱动]"
-    )
-    dedup_key = f"signal_{sym}_{direction}_{int(entry_lo)}_{int(score)}"
-    return _jarvis(msg, dedup_key=dedup_key, dedup_ttl=14400)
+def push_signal_card(sym, score, grade, direction, entry_lo, entry_hi, sl,
+                     tp1, timing="READY", tp2=0, rr=1.0):
+    """旧版兼容 — 构造r_raw调用新版push_signal_card_v3"""
+    r_raw = {
+        'symbol': sym, 'score_final': score, 'grade': grade,
+        'direction': direction, 'entry_lo': entry_lo, 'entry_hi': entry_hi,
+        'stop_loss': sl, 'tp1': tp1, 'tp2': tp2, 'rr': rr,
+        'regime': '', 'price': entry_hi,
+    }
+    return push_signal_card_v3(r_raw)
