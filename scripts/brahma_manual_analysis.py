@@ -1058,15 +1058,32 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
         base_nav_main = max(1, base_nav_main // 2)
         base_lev_main = max(3, base_lev_main - 3)
     base_nav_main = round(base_nav_main * risk['nav_mult'])
+    # [P4修复 2026-09-10] 失效期检测器：RED→仓位减半，YELLOW→仓位×0.75
+    try:
+        from pathlib import Path as _P
+        _rd = _P(__file__).parent.parent / 'data' / 'dharma_regime_detector_result.json'
+        if _rd.exists():
+            _rd_data = json.loads(_rd.read_text())
+            _regime_state = _rd_data.get('current_state', 'GREEN')
+            if _regime_state == 'RED':
+                base_nav_main = max(1, base_nav_main // 2)
+            elif _regime_state == 'YELLOW':
+                base_nav_main = max(1, round(base_nav_main * 0.75))
+    except Exception:
+        pass
     base_nav_main = max(1, base_nav_main)
 
     lev_side  = max(3, base_lev_main - 5)
     nav_side  = max(1, base_nav_main // 2)
 
     # SL / TP
-    min_sl = atr_sl_ref if 'atr_sl_ref' in dir() else atr_1h * 1.5  # 全周期ATR参考SL
+    # [P1修复 2026-09-10 苏摩111] SL铁律：max(SL_PCT, 1.5×ATR4H)
+    # SL_PCT: 做多2.0% / BULL做空2.5% / BEAR做空2.0%
+    # ATR铁律: SL距离 >= 1.5×ATR4H（不是ATR1H！）
     if bias == 'LONG':
-        sl       = round(entry_lo - max(min_sl, entry_lo * 0.012), 1)
+        sl_pct_required = 0.02  # 做多2.0%
+        min_sl = max(entry_lo * sl_pct_required, atr_4h * 1.5) if atr_4h else entry_lo * sl_pct_required
+        sl       = round(entry_lo - min_sl, 1)
         sl_pct   = round((entry_lo - sl) / entry_lo * 100, 2)
         tp1      = round(liq['nearest_short'] if liq['nearest_short'] > price else price + atr_1h * 2.5, 1)
         tp2      = round(liq['second_short']  if liq.get('second_short', 0) > tp1 else tp1 + atr_1h * 2, 1)
@@ -1080,14 +1097,22 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
         # 副方向：反弹到上方阻力再做轻空
         side_hi    = round(entry_lo + atr_1h * 2.0, 1)
         side_lo    = round(entry_lo + atr_1h * 1.2, 1)
-        side_sl    = round(side_hi + atr_1h * 1.5, 1)
-        side_tp    = f'${entry_lo:,.0f}→${tp1:,.0f}'
+        # [P1修复] 副方向SL也用铁律：BULL做空2.5%
+        side_sl_pct = 0.025 if 'BULL' in str(reg_now) else 0.02
+        side_min_sl = max(side_hi * side_sl_pct, atr_4h * 1.5) if atr_4h else side_hi * side_sl_pct
+        side_sl    = round(side_hi + side_min_sl, 1)
+        # [P3修复] 空单TP必须向下（低于入场价）
+        side_tp1   = round(entry_lo - atr_1h * 1.5, 1)  # 向下
+        side_tp2   = round(side_tp1 - atr_1h * 1.5, 1)  # 继续向下
+        side_tp    = f'${side_tp1:,.0f}→${side_tp2:,.0f}'
         side_line  = f'🔴 空单（轻）｜若反弹到 ${side_lo:,.1f}~${side_hi:,.1f} 再空'
         side_params= f'止损 ${side_sl:,.1f}｜目标 {side_tp}'
         main_dir   = '主方向做多'
 
     else:  # SHORT
-        sl       = round(entry_hi + max(min_sl, entry_hi * 0.012), 1)
+        sl_pct_required = 0.025 if 'BULL' in str(reg_now) else 0.02  # BULL做空2.5%/BEAR做空2.0%
+        min_sl = max(entry_hi * sl_pct_required, atr_4h * 1.5) if atr_4h else entry_hi * sl_pct_required
+        sl       = round(entry_hi + min_sl, 1)
         sl_pct   = round((sl - entry_hi) / entry_hi * 100, 2)
         tp1      = round(liq['nearest_long'] if liq['nearest_long'] < price else price - atr_1h * 2.5, 1)
         tp2      = round(liq['second_long']  if liq.get('second_long', 0) > 0 and liq['second_long'] < tp1 else tp1 - atr_1h * 2, 1)
@@ -1101,8 +1126,13 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
         # 副方向：下探被扫后接轻多
         hunt_lo    = round(entry_lo - atr_1h * 1.5, 1)
         hunt_hi    = round(entry_lo - atr_1h * 0.5, 1)
-        side_sl    = round(hunt_lo - atr_1h * 1.5, 1)
-        side_tp    = f'${entry_lo:,.0f}→${tp1:,.0f}'
+        # [P1修复] 副方向SL也用铁律：做多2.0%
+        side_min_sl = max(hunt_lo * 0.02, atr_4h * 1.5) if atr_4h else hunt_lo * 0.02
+        side_sl    = round(hunt_lo - side_min_sl, 1)
+        # [P3修复] 多单TP必须向上（高于入场价）
+        side_tp1   = round(entry_lo + atr_1h * 1.5, 1)  # 向上
+        side_tp2   = round(side_tp1 + atr_1h * 1.5, 1)  # 继续向上
+        side_tp    = f'${side_tp1:,.0f}→${side_tp2:,.0f}'
         side_line  = f'🟢 多单（轻）｜若下探 ${hunt_lo:,.1f}~${hunt_hi:,.1f} 被扫后接'
         side_params= f'止损 ${side_sl:,.1f}｜目标 {side_tp}'
         main_dir   = '主方向做空'
@@ -1114,8 +1144,10 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     if risk['blocks']:
         risk_note += f'\n🚨 风控: {risk["blocks"][0]}'
 
-    # SL验证
-    sl_ok = abs(entry_lo - sl) >= min_sl if bias == 'LONG' else abs(sl - entry_hi) >= min_sl
+    # SL验证 [P2修复 2026-09-10] 用ATR4H铁律验证
+    sl_distance = abs(entry_lo - sl) if bias == 'LONG' else abs(sl - entry_hi)
+    atr4h_threshold = atr_4h * 1.5 if atr_4h else atr_1h * 1.5
+    sl_ok = sl_distance >= atr4h_threshold
     sl_tag = '✅' if sl_ok else '⚠️偏窄'
 
     lines = [
@@ -1130,7 +1162,7 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
         f'{side_params}',
         f'杠杆 {lev_side}x｜仓位 {nav_side}%',
         f'',
-        f'⚠️ {main_dir}  ATR1H=${atr_1h:.0f}',
+        f'⚠️ {main_dir}  ATR1H=${atr_1h:.0f} ATR4H=${atr_4h:.0f}',
         f'🚫 破${sl:,.0f} 策略作废',
     ]
     if risk_note:
