@@ -1244,11 +1244,15 @@ def run_analysis(sym: str) -> str:
     k4h_prev_vols = [x[4] for x in k4h[:-1]] if k4h else []
     avg_v4h = sum(k4h_prev_vols) / len(k4h_prev_vols) if k4h_prev_vols else 0
     k4h_vol_mult = round(k4h_last[4] / avg_v4h, 1) if avg_v4h and k4h_last else 1.0
+    # [P2修复 2026-09-10] 量能倍数最小值0.1x，避免round后显示0.0x
+    k4h_vol_mult = max(0.1, k4h_vol_mult)
 
     k1h    = d['k1h']
     vol_avg1h = sum(x[4] for x in k1h[:-2]) / max(len(k1h)-2, 1) if len(k1h) > 2 else 0
     vol_last1h= k1h[-1][4] if k1h else 0
     k1h_mult  = round(vol_last1h / vol_avg1h, 1) if vol_avg1h else 1.0
+    # [P2修复 2026-09-10] 量能倍数最小值0.1x，避免round后显示0.0x
+    k1h_mult  = max(0.1, k1h_mult)
 
     vip = step10_vip(sym, p, d, fvg, ob, liq, res, oi, sm, vol, mac, risk)
 
