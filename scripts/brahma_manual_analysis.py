@@ -1449,39 +1449,51 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
     else:
         parts[-1] += f'κ={kappa:.3f}中性。'
 
-    # 4. 剧本推演 + 概率估算（40年交易员不只说破了到哪，还说概率多大）
+    # 4. 多剧本推演 + 概率 + 时间预期（P1+P3：40年交易员给多剧本+时间维度）
     _up_pct = ((liq_short - price) / price * 100) if liq_short > price else 0
     _dn_pct = ((price - liq_long) / price * 100) if liq_long > 0 and liq_long < price else 0
-    # 概率估算基于：Hurst趋势强度 + 体制方向 + 距离
     _trend_strength = 'high' if hurst >= 0.6 else 'medium' if hurst >= 0.55 else 'low'
+
+    # 时间预期：Hurst从当前到突破0.60需要多少根4H K线
+    _bars_to_trend = 0
+    if hurst < 0.60:
+        _hurst_gap = 0.60 - hurst
+        # 基于经验：Hurst每4H K线大约移动0.01-0.03（保守取0.015）
+        _bars_to_trend = max(2, int(_hurst_gap / 0.015))
+    _time_str = f'约{_bars_to_trend}根4H K线（{_bars_to_trend*4}h）' if _bars_to_trend > 0 else '已在趋势区'
+
+    # 剧本概率
+    if _trend_strength == 'high' and _up_pct < 3:
+        _up_prob = 65
+    elif _trend_strength == 'medium' and _up_pct < 3:
+        _up_prob = 45
+    elif _trend_strength == 'high' and _up_pct < 5:
+        _up_prob = 50
+    else:
+        _up_prob = 30
+    if _trend_strength == 'low' and _dn_pct < 2:
+        _dn_prob = 55
+    elif _trend_strength == 'medium' and _dn_pct < 2:
+        _dn_prob = 40
+    elif _trend_strength == 'low' and _dn_pct < 4:
+        _dn_prob = 45
+    else:
+        _dn_prob = 25
+    _chop_prob = max(15, 100 - (_up_prob if liq_short > price else 0) - (_dn_prob if liq_long > 0 and liq_long < price else 0))
+
+    # 多剧本格式
     _scenarios = []
+    # 剧本A：逼空
     if liq_short > price:
-        # 逼空概率：趋势强+距离近=高概率，趋势弱+距离远=低概率
-        if _trend_strength == 'high' and _up_pct < 3:
-            _up_prob = 65
-        elif _trend_strength == 'medium' and _up_pct < 3:
-            _up_prob = 45
-        elif _trend_strength == 'high' and _up_pct < 5:
-            _up_prob = 50
-        else:
-            _up_prob = 30
         _up_tgt = f'${liq_2nd_short:,.0f}' if liq_2nd_short > liq_short else f'${liq_short:,.0f}'
-        _scenarios.append(f'上方${liq_short:,.0f}(+{_up_pct:.1f}%)空头止损墙，{_up_prob}%概率逼空到{_up_tgt}，{max(_up_prob-30,15)}%概率假突破回落')
+        _scenarios.append(f'剧本A({_up_prob}%): 破${liq_short:,.0f}止损墙→逼空到{_up_tgt}，{max(_up_prob-30,15)}%概率假突破回落')
+    # 剧本B：猎杀
     if liq_long > 0 and liq_long < price:
-        if _trend_strength == 'low' and _dn_pct < 2:
-            _dn_prob = 55
-        elif _trend_strength == 'medium' and _dn_pct < 2:
-            _dn_prob = 40
-        elif _trend_strength == 'low' and _dn_pct < 4:
-            _dn_prob = 45
-        else:
-            _dn_prob = 25
         _dn_tgt = f'${liq_2nd_long:,.0f}' if liq_2nd_long > 0 and liq_2nd_long < liq_long else f'${liq_long:,.0f}'
-        _scenarios.append(f'下方${liq_long:,.0f}(-{_dn_pct:.1f}%)支撑池，{_dn_prob}%概率猎杀到{_dn_tgt}，{max(100-_dn_prob-15,20)}%概率支撑有效反弹')
-    # CHOP横盘概率
-    if regime == 'CHOP_MID' and _trend_strength != 'high':
-        _chop_prob = max(20, 100 - (_up_prob if liq_short > price else 0) - (_dn_prob if liq_long < price else 0))
-        _scenarios.append(f'{_chop_prob}%概率继续横盘不交易')
+        _scenarios.append(f'剧本B({_dn_prob}%): 破${liq_long:,.0f}支撑池→猎杀到{_dn_tgt}，{max(100-_dn_prob-15,20)}%概率支撑有效')
+    # 剧本C：横盘
+    if _chop_prob >= 15:
+        _scenarios.append(f'剧本C({_chop_prob}%): 继续横盘，Hurst趋势确认需{_time_str}')
     if _scenarios:
         parts.append('。'.join(_scenarios) + '。')
 
@@ -1500,25 +1512,37 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
     if _levels:
         parts.append('关键价位：' + ' / '.join(_levels) + '。')
 
-    # 6. 交易员结论 + 动态触发器（40年交易员给如果...就...的条件）
+    # 6. 交易员结论 + 动态触发器 + 时间预期（P1：加时间维度）
     _atr_1_5 = atr_1h * 1.5 if atr_1h else 0
+    # HCME最相似案例时间预期
+    _hcme_case = ''
+    try:
+        fc_raw = bs.get('fangcang', {})
+        if isinstance(fc_raw, dict):
+            top = fc_raw.get('top_similar', [])
+            if top:
+                t = top[0]
+                _hcme_case = f'{t.get("dt","?")}相似{t.get("score",0):.2f}未来{t.get("future_ret",0):+.1f}%'
+    except Exception:
+        pass
+
     if direction != 'NONE' and entry_lo > 0:
         if missing:
             _miss_short = '、'.join(missing[:3])
             parts.append(f'方向{direction}，入场区${entry_lo:,.1f}~${entry_hi:,.1f}已给，但{_miss_short}。')
-            # 浮盈保护提醒（08-31教训）
             if _atr_1_5 > 0:
                 parts.append(f'浮盈>${_atr_1_5:,.0f}(1.5×ATR1H)→移动SL保本。')
-            # 动态触发器
             _triggers = []
             if regime_state == 'RED':
-                _triggers.append(f'失效期RED→仓位减半，等score过120={100-score:.0f}分')
+                _triggers.append(f'失效期RED→仓位减半，等score过120={120-score:.0f}分（按当前速率约{_bars_to_trend}根4H）')
             if rr > 0 and rr < 2.0:
                 _triggers.append(f'RR={rr:.1f}不够，等止损墙${liq_short:,.0f}拉远或入场区上移')
             if 'OI' in ' '.join(missing):
-                _triggers.append(f'如果OI从{oi_signal}翻转为LONG_BUILD → 资金流确认，这单可以进')
+                _triggers.append(f'如果OI从{oi_signal}翻转为LONG_BUILD → 资金流确认，这单可以进（通常1-2根4H K线内确认）')
             if 'score' in ' '.join(missing):
                 _triggers.append(f'如果score从{score:.0f}涨过{120 if regime_state == "RED" else 110} → 体制确认，可以进')
+            if _hcme_case:
+                _triggers.append(f'HCME最相似{_hcme_case}→历史参考时间线')
             if _triggers:
                 parts.append('触发器：' + ' / '.join(_triggers) + '。')
         else:
@@ -1529,23 +1553,27 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
         parts.append(f'方向{direction}但OI矛盾导致入场区失效。')
         _triggers = []
         if liq_long > 0 and liq_long < price and direction == 'LONG':
-            _triggers.append(f'如果OI从{oi_signal}翻转为LONG_BUILD → 在${liq_long:,.0f}~${price:,.0f}区间接')
+            _triggers.append(f'如果OI从{oi_signal}翻转为LONG_BUILD → 在${liq_long:,.0f}~${price:,.0f}区间接（通常1-2根4H K线内确认）')
         elif liq_short > price and direction == 'SHORT':
             _triggers.append(f'如果OI确认做空 → 在${liq_short:,.0f}附近空')
         if regime_state == 'RED':
             _triggers.append(f'失效期RED→即使条件确认也只轻仓2%+杠杆5x')
+        if _hcme_case:
+            _triggers.append(f'HCME参考：{_hcme_case}')
         if _triggers:
             parts.append('触发器：' + ' / '.join(_triggers) + '。')
     elif direction == 'NONE':
         _triggers = []
         if hurst >= 0.55:
-            _triggers.append(f'如果Hurst突破0.60+score站上110 → 体制从{regime}切换趋势，${price*0.985:,.0f}附近多单可以试')
+            _triggers.append(f'如果Hurst突破0.60+score站上110 → 体制从{regime}切换趋势，${price*0.985:,.0f}附近多单可以试（预计{_time_str}）')
         else:
-            _triggers.append(f'等Hurst突破0.55+score站上110 → ${price*0.985:,.0f}附近多单可以试')
+            _triggers.append(f'等Hurst突破0.55+score站上110 → ${price*0.985:,.0f}附近多单可以试（预计{_time_str}）')
         if liq_long > 0 and liq_long < price:
             _triggers.append(f'如果价格先跌到${liq_long:,.0f}支撑池+1H收阳 → 可轻仓试探')
         if liq_short > price:
             _triggers.append(f'如果价格先涨到${liq_short:,.0f}止损墙+1H收阴 → 可轻仓试空')
+        if _hcme_case:
+            _triggers.append(f'HCME参考：{_hcme_case}')
         parts.append(f'体制{regime}无方向，不强行做。' + '触发器：' + ' / '.join(_triggers) + '。')
 
     return ' '.join(parts)
