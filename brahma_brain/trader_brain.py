@@ -53,6 +53,12 @@ def decide(
     """
 
     # ── Layer 1: 大环境层 ──────────────────────────────────────
+    # P0-1: 体制强度验证 — score<60的TREND=弱趋势，标注但不立即降级
+    _weak_trend = ('TREND' in regime or 'EARLY' in regime) and score < 60
+    _weak_label = ''
+    if _weak_trend:
+        _weak_label = f'弱趋势(score={score:.0f}<60，可能假突破)'
+
     direction = 'LONG' if 'BULL' in regime or 'RECOVERY' in regime else 'SHORT' if 'BEAR' in regime else 'NONE'
     if regime == 'CHOP_MID':
         direction = 'NONE'
@@ -63,6 +69,9 @@ def decide(
     if regime == 'CHOP_MID' and score < 110:
         permission = False
     if regime_state == 'RED' and score < 120:
+        permission = False
+    # P0-1: 弱趋势+失效期RED → 进一步收紧许可
+    if _weak_trend and regime_state == 'RED':
         permission = False
 
     # 杠杆基数
@@ -202,16 +211,52 @@ def decide(
         elif confidence == 'MED':
             confidence = 'LOW'
 
+    # ── P0-2: 体制自我怀疑 ──────────────────────────────────
+    # 当OI/κ/Hurst三选二与体制矛盾 → 体制降级为CHOP
+    _regime_downgraded = False
+    _downgrade_reason = ''
+    if direction != 'NONE':
+        _contra = 0
+        _contra_list = []
+        # OI与体制方向矛盾
+        _oi_dir = 'LONG' if oi_bull else 'SHORT' if oi_signal in ('SHORT_BUILD','LONG_UNWIND') else 'NONE'
+        if _oi_dir != 'NONE' and _oi_dir != direction:
+            _contra += 1
+            _contra_list.append(f'OI={_oi_dir}')
+        # κ与体制方向矛盾
+        _kappa_dir = 'LONG' if kappa < -0.05 else 'SHORT' if kappa > 0.05 else 'NONE'
+        if _kappa_dir != 'NONE' and _kappa_dir != direction:
+            _contra += 1
+            _contra_list.append(f'κ={_kappa_dir}')
+        # Hurst与体制矛盾（TREND体制但Hurst<0.5=随机游走=体制不成立）
+        if 'TREND' in regime and hurst < 0.5:
+            _contra += 1
+            _contra_list.append(f'Hurst={hurst:.3f}<0.5')
+        # 三选二 → 降级
+        if _contra >= 2:
+            _regime_downgraded = True
+            _downgrade_reason = f'体制{regime}自我怀疑：{" ".join(_contra_list)}与体制{direction}矛盾→降级CHOP'
+
+    if _regime_downgraded:
+        # 降级后按CHOP处理
+        direction = 'NONE'
+        permission = False
+
+
     # ── Layer 6: 交易员大脑（决策层）──────────────────────────
 
     # 检查所有许可条件
     missing = []
     
     if not permission:
-        if regime == 'CHOP_MID' and score < 110:
+        if _regime_downgraded:
+            missing.append(f'体制降级CHOP（{_downgrade_reason[:40]}）')
+        elif regime == 'CHOP_MID' and score < 110:
             missing.append(f'CHOP体制score={score:.0f}<110')
         elif regime_state == 'RED' and score < 120:
             missing.append(f'失效期RED score={score:.0f}<120')
+        elif _weak_trend:
+            missing.append(f'弱趋势{_weak_label}')
         else:
             missing.append('环境许可未通过')
 

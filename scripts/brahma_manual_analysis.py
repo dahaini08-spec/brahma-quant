@@ -1453,6 +1453,15 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
     _up_pct = ((liq_short - price) / price * 100) if liq_short > price else 0
     _dn_pct = ((price - liq_long) / price * 100) if liq_long > 0 and liq_long < price else 0
     _trend_strength = 'high' if hurst >= 0.6 else 'medium' if hurst >= 0.55 else 'low'
+    # P1-1: OI权重 — OI全线UNWIND→逼空×0.7，猎杀×1.3
+    _oi_up_adj = 1.0
+    _oi_dn_adj = 1.0
+    if 'UNWIND' in oi_signal:
+        _oi_up_adj = 0.7
+        _oi_dn_adj = 1.3
+    elif oi_signal == 'SHORT_BUILD':
+        _oi_up_adj = 0.8
+        _oi_dn_adj = 1.2
 
     # 时间预期：Hurst从当前到突破0.60需要多少根4H K线
     _bars_to_trend = 0
@@ -1471,6 +1480,7 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
         _up_prob = 50
     else:
         _up_prob = 30
+    _up_prob = round(_up_prob * _oi_up_adj)  # P1-1: OI权重调整
     if _trend_strength == 'low' and _dn_pct < 2:
         _dn_prob = 55
     elif _trend_strength == 'medium' and _dn_pct < 2:
@@ -1479,6 +1489,7 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
         _dn_prob = 45
     else:
         _dn_prob = 25
+    _dn_prob = round(_dn_prob * _oi_dn_adj)  # P1-1: OI权重调整
     _chop_prob = max(15, 100 - (_up_prob if liq_short > price else 0) - (_dn_prob if liq_long > 0 and liq_long < price else 0))
 
     # 多剧本格式
@@ -1564,22 +1575,36 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
             parts.append('触发器：' + ' / '.join(_triggers) + '。')
     elif direction == 'NONE':
         _triggers = []
-        if hurst >= 0.55:
-            _triggers.append(f'如果Hurst突破0.60+score站上110 → 体制从{regime}切换趋势，${price*0.985:,.0f}附近多单可以试（预计{_time_str}）')
+        # P1-2: 检查当前值是否已满足
+        if hurst >= 0.60:
+            _triggers.append(f'Hurst={hurst:.3f}已>0.60趋势区✅，等score站上110={110-score:.0f}分 → ${price*0.985:,.0f}附近多单可以试')
+        elif hurst >= 0.55:
+            _triggers.append(f'如果Hurst突破0.60（当前{hurst:.3f}差{0.60-hurst:.3f}）+score站上110 → ${price*0.985:,.0f}附近多单可以试（预计{_time_str}）')
         else:
-            _triggers.append(f'等Hurst突破0.55+score站上110 → ${price*0.985:,.0f}附近多单可以试（预计{_time_str}）')
+            _triggers.append(f'等Hurst突破0.55（当前{hurst:.3f}）+score站上110 → ${price*0.985:,.0f}附近多单可以试（预计{_time_str}）')
         if liq_long > 0 and liq_long < price:
             _triggers.append(f'如果价格先跌到${liq_long:,.0f}支撑池+1H收阳 → 可轻仓试探')
         if liq_short > price:
             _triggers.append(f'如果价格先涨到${liq_short:,.0f}止损墙+1H收阴 → 可轻仓试空')
         if _hcme_case:
-            _triggers.append(f'HCME参考：{_hcme_case}')
+            # P2-2: HCME相似度分级
+            _hcme_score = 0
+            try:
+                fc_raw = bs.get('fangcang', {})
+                if isinstance(fc_raw, dict):
+                    top = fc_raw.get('top_similar', [])
+                    if top:
+                        _hcme_score = top[0].get('score', 0)
+            except Exception:
+                pass
+            _hcme_conf = '低置信度仅供参考' if _hcme_score < 0.3 else '中等置信度'
+            _triggers.append(f'HCME参考：{_hcme_case}（{_hcme_conf}）')
         parts.append(f'体制{regime}无方向，不强行做。' + '触发器：' + ' / '.join(_triggers) + '。')
 
     return ' '.join(parts)
 
 
-def run_analysis(sym: str) -> str:
+def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     ts  = datetime.now(timezone.utc).strftime('%m/%d %H:%M UTC')
     print(f'[{sym}] Step 0: 拉取实时数据...', flush=True)
     t_start = __import__('time').time()
@@ -1967,19 +1992,21 @@ def main():
         print()
         full_output.append(r)
 
-    # 推送到Jarvis新线程
-    try:
-        import sys as _sys
-        _sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
-        from push_hub import push_jarvis as _push_j
-        combined = '\n\n'.join(full_output)
-        # 截断防超长
-        if len(combined) > 3000:
-            combined = combined[:3000] + '\n...[截断]'
-        _push_j(f'🏟️ 梵天战场情报 | {__import__("datetime").datetime.utcnow().strftime("%m-%d %H:%M")} UTC\n\n{combined}')
-        print('[推送] 战场情报已推送到Jarvis')
-    except Exception as _pe:
-        print(f'[推送失败] {_pe}')
+    # 推送到Jarvis新线程（可通过参数禁止——square_auto_post调用时push_jarvis=False避免重复推送）
+    push_jarvis = True  # main()默认推送
+    if push_jarvis:
+        try:
+            import sys as _sys
+            _sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
+            from push_hub import push_jarvis as _push_j
+            combined = '\n\n'.join(full_output)
+            # 截断防超长
+            if len(combined) > 3000:
+                combined = combined[:3000] + '\n...[截断]'
+            _push_j(f'🏟️ 梵天战场情报 | {__import__("datetime").datetime.utcnow().strftime("%m-%d %H:%M")} UTC\n\n{combined}')
+            print('[推送] 战场情报已推送到Jarvis')
+        except Exception as _pe:
+            print(f'[推送失败] {_pe}')
 
 
 if __name__ == '__main__':
