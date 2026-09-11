@@ -60,14 +60,35 @@ def decide(
         _weak_label = f'弱趋势(score={score:.0f}<60，可能假突破)'
 
     direction = 'LONG' if 'BULL' in regime or 'RECOVERY' in regime else 'SHORT' if 'BEAR' in regime else 'NONE'
+    # P1-2: CHOP区间交易模式 — CHOP不是"不交易"是"高抛低吸"
+    _chop_range = False
+    _chop_dir = 'NONE'
     if regime == 'CHOP_MID':
-        direction = 'NONE'
+        # CHOP区间：用清算地图决定高抛低吸方向
+        _liq_short = liq.get('nearest_short', 0)
+        _liq_long = liq.get('nearest_long', 0)
+        if _liq_short > 0 and _liq_long > 0 and price > 0:
+            _range_mid = (_liq_short + _liq_long) / 2
+            if price < _range_mid:
+                _chop_dir = 'LONG'   # 价格在区间下半=做多（低吸）
+                _chop_range = True
+            elif price > _range_mid:
+                _chop_dir = 'SHORT'  # 价格在区间上半=做空（高抛）
+                _chop_range = True
+        # CHOP区间仍需score>=60才给方向（太低=无结构）
+        if _chop_range and score >= 60:
+            direction = _chop_dir
+        else:
+            direction = 'NONE'
 
     # 交易许可
     regime_state = risk.get('regime_state', 'GREEN')
     permission = True
     if regime == 'CHOP_MID' and score < 110:
         permission = False
+    # P1-2: CHOP区间模式 — score>=60+有区间方向=WATCH级别许可
+    if regime == 'CHOP_MID' and _chop_range and score >= 60:
+        permission = True  # CHOP区间交易许可（WATCH级别）
     if regime_state == 'RED' and score < 120:
         permission = False
     # P0-1: 弱趋势+失效期RED → 进一步收紧许可
