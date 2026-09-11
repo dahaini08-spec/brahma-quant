@@ -5,7 +5,7 @@ brahma_manual_analysis.py — 梵天手动全链路分析入口
 
 定位：
   苏摩说「梵天分析」→ 调用此脚本
-  一次输出：10步完整链路 + 74维判断 + VIP策略卡片
+  一次输出：10步完整链路 + 80维判断 + VIP策略卡片
   不需要追问，不需要「这是全能力吗」
 
 10步强制链路（MEMORY.md封印）：
@@ -1485,7 +1485,7 @@ def run_analysis(sym: str) -> str:
 
     lines = [
         f'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-        f'🏛️ 梵天74维全能力分析 | {sym}/USDT 基准${p:,.0f}→实时${_live:,.0f} | {ts} (耗时{_elapsed:.0f}s)',
+        f'🏛️ 梵天80维全能力分析 | {sym}/USDT 基准${p:,.0f}→实时${_live:,.0f} | {ts} (耗时{_elapsed:.0f}s)',
         f'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
         f'',
         f'【体制】{regime}  score={score:.0f}  grade={grade}',
@@ -1574,7 +1574,7 @@ def run_analysis(sym: str) -> str:
     ]
     # B: 信号矛盾裁决（有就显示）
     if _llm_conflict:
-        lines.append(f'  🤖 LLM矛盾裁决: {_llm_conflict}')
+        lines.append(f'  ⚙️ 规则矛盾裁决: {_llm_conflict}')
     lines += [
         f'',
         f'{"─"*43}',
@@ -1610,7 +1610,7 @@ def run_analysis(sym: str) -> str:
         (f'🏛️ AI议会裁决[{council.get("source","规则")[:2]}]: {council["bias"]} | {council["action"]} | 置信={council["confidence"]}'
          + (f'\n   票: ' + ' / '.join(f'{r}={v}' for r,v in council.get('votes',{}).items()) if isinstance(council.get('votes'), dict) else f' | {council.get("reason","")}')
          if council.get('bias') not in ('N/A', None, '') else ''),
-        f'📊 梵天系统 · 74维全能力 · 10步强制链路 · AI议会实时裁决',
+        f'📊 梵天系统 · 80维全能力 · 10步强制链路 · AI议会规则裁决',
     ]
     if _price_warn:
         lines.append(_price_warn)
