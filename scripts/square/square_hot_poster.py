@@ -139,24 +139,23 @@ def rewrite_as_trader(draft: str) -> str:
     if not draft or len(draft) < 50:
         return draft
     try:
-        import subprocess
+        sys.path.insert(0, str(Path(__file__).parent.parent))
+        from free_llm_client import chat as llm_chat
         prompt = (
             f'用40年顶级合约交易员视角重写以下加密货币分析帖。'
             f'保留所有数字，每个策略给出入场价/止损/目标，'
             f'禁止Markdown格式，禁止AI腔，纯文本输出：\n\n{draft}'
         )
-        result = subprocess.run(
-            ['openclaw', 'infer', 'model', 'run', '--model', 'standard', '--prompt', prompt],
-            capture_output=True, text=True, timeout=45
-        )
-        lines = [
-            l for l in result.stdout.strip().split('\n')
-            if not any(l.startswith(x) for x in
-                       ['model.run', 'provider:', 'model:', 'outputs:', '🦞'])
-        ]
-        rewritten = '\n'.join(lines).strip()
+        rewritten = llm_chat(prompt, max_tokens=500)
+        if not rewritten or len(rewritten) < 80:
+            return draft
+        rewritten = rewritten.strip()
         if rewritten and len(rewritten) > 80:
             import re
+            # 清除内部术语泄漏（LLM可能输出BEAR_TREND等）
+            for w in BLOCKED_WORDS:
+                if w in rewritten:
+                    rewritten = rewritten.replace(w, '')
             # 自动修剪超出的hashtag（最多保留3个）
             tags = re.findall(r'#\S+', rewritten)
             if len(tags) > 3:
@@ -1327,7 +1326,7 @@ def post_to_square(content: str, dry_run: bool = False) -> bool:
                 _msg = f'📢 梵天发帖成功\n\n{_preview}...'
                 _sp.run(['openclaw', 'message', 'send',
                          '--channel', 'jarvis',
-                         '--to', '73295708:thread:01a07970-f8ce-706b-8bea-3c94dd055443',
+                         '--to', '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6',
                          '--message', _msg], timeout=10, capture_output=True)
             except Exception as _pe:
                 print(f'[post] ⚠️ 推送苏摩失败: {_pe}', file=sys.stderr)

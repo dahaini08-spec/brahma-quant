@@ -98,7 +98,7 @@ def run(syms: list, dry_run: bool = False) -> None:
     for sym in syms:
         print(f"[{sym}] 生成分析报告...", flush=True)
         try:
-            report = run_analysis(sym)
+            report = run_analysis(sym, push_jarvis=False)  # 不推Jarvis，只发Square（battlefield cron已推Jarvis）
         except Exception as e:
             print(f"[{sym}] 分析失败: {e}")
             continue

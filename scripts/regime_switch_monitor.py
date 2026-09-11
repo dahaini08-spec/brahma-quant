@@ -30,7 +30,7 @@ try:
     from scripts.system_config import JARVIS_TARGET as _SSOT_T
     PUSH_TARGET = os.environ.get('JARVIS_TARGET', _SSOT_T)
 except Exception:
-    PUSH_TARGET = os.environ.get('JARVIS_TARGET', '73295708:thread:01a07970-f8ce-706b-8bea-3c94dd055443')
+    PUSH_TARGET = os.environ.get('JARVIS_TARGET', '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6')
 PUSH_CHANNEL = 'jarvis'
 
 # ── 监控标的 ──────────────────────────────────────────────

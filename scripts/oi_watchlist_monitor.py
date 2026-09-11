@@ -13,8 +13,9 @@ from pathlib import Path
 BASE_DIR = Path(__file__).parent.parent
 WATCHLIST_FILE = BASE_DIR / "data" / "oi_watchlist.json"
 JARVIS_USER_ID = "73295708"
-JARVIS_THREAD_ID = "01a07970-f8ce-706b-8bea-3c94dd055443"
+JARVIS_THREAD_ID = "01a07628-0405-7e85-a34b-e68cd029dfc6"
 FAPI = "https://fapi.binance.com"
+DEDUP_FILE = BASE_DIR / "data" / "oi_watchlist_dedup.json"
 
 def get_ticker(symbol):
     r = requests.get(f"{FAPI}/fapi/v1/ticker/24hr", params={"symbol": symbol}, timeout=8)
@@ -53,7 +54,24 @@ def check_atr(symbol):
     return sum(trs) / len(trs)
 
 def push_jarvis(msg: str):
-    """通过push_hub直接HTTP推送，不依赖openclaw CLI（2026-09-06 超时根因修复）"""
+    """通过push_hub直接HTTP推送，24h去重防止刷屏"""
+    # 24h去重：相同内容24h内只推一次
+    try:
+        import hashlib as _hl
+        dedup_key = _hl.md5(msg[:100].encode()).hexdigest()[:16]
+        if DEDUP_FILE.exists():
+            dedup = json.loads(DEDUP_FILE.read_text())
+        else:
+            dedup = {}
+        now = time.time()
+        dedup = {k: v for k, v in dedup.items() if now - v < 86400}
+        if dedup_key in dedup:
+            print("[push_jarvis] 24h内已推送过，跳过")
+            return
+        dedup[dedup_key] = now
+        DEDUP_FILE.write_text(json.dumps(dedup, ensure_ascii=False, indent=2))
+    except Exception:
+        pass
     try:
         from push_hub import push_jarvis as _push
         _push(msg)
@@ -232,6 +250,8 @@ def main():
             lines.append(f"   ⚠️ 仍需人工确认15M结构(CHoCH/Hammer)")
             lines.append("")
         msg = "\n".join(lines)
+        # 24h去重：同一组标的24h内只推一次（避免每2h刷屏）
+        import hashlib as _hl
         push_jarvis(msg)
         print(msg)
     else:

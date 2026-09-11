@@ -1,5 +1,6 @@
 # 梵天系统cron | 2026-09-07 苏摩111深度清理封印
 # 日志: logs/syscron.log
+PYTHONDONTWRITEBYTECODE=1
 SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 
 # ── Square发帖 ───────────────────────────────────────────────────────────
@@ -63,3 +64,14 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 
 # supercronic存活检测（纯脚本，每10min）
 */10 * * * *  bash /root/.openclaw/workspace/trading-system/scripts/supercronic_watchdog.sh >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+
+# ── 拳头一：VIP策略自动发Square（battlefield后30min）──────────────
+30 1  * * *   cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_auto_post.py --sym BTC ETH 2>&1 >> logs/syscron.log
+30 9  * * *   cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_auto_post.py --sym BTC ETH 2>&1 >> logs/syscron.log
+
+# ── 拳头二：现货策略自动发Square（每天UTC03:00 北京11:00）─────────
+0 3  * * *   cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/spot_strategy_square.py --symbols BTC ETH 2>&1 >> logs/syscron.log
+
+# ── 拳头三：信号源恢复（OI scanner + RSI watcher接入cron）─────────
+0 */2 * * *  cd /root/.openclaw/workspace/trading-system && timeout 55 python3 scripts/oi_advanced_scanner.py >> logs/syscron.log 2>&1
+0 * * * *    cd /root/.openclaw/workspace/trading-system && timeout 55 python3 scripts/rsi_structure_watcher.py >> logs/syscron.log 2>&1

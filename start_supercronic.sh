@@ -39,3 +39,4 @@ fi
 nohup "$SCRON" "$CRONTAB" >> "$LOG" 2>&1 &
 echo $! > "$PIDFILE"
 echo "supercronic started pid=$(cat $PIDFILE)"
+export PYTHONDONTWRITEBYTECODE=1

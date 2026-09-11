@@ -1,0 +1,2792 @@
+{
+  "btc": {
+    "metadata": {
+      "symbol": "BTCUSDT",
+      "bin_size": 500.0,
+      "total_swings": 3971,
+      "updated": "2026-08-08T03:37:59Z"
+    },
+    "resistance_zones": [
+      {
+        "price_lo": 5000.0,
+        "price_hi": 5500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 6000.0,
+        "price_hi": 6500.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 6500.0,
+        "price_hi": 7000.0,
+        "density": 15,
+        "key_level": false
+      },
+      {
+        "price_lo": 7000.0,
+        "price_hi": 7500.0,
+        "density": 17,
+        "key_level": false
+      },
+      {
+        "price_lo": 7500.0,
+        "price_hi": 8000.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 8000.0,
+        "price_hi": 8500.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 8500.0,
+        "price_hi": 9000.0,
+        "density": 21,
+        "key_level": false
+      },
+      {
+        "price_lo": 9000.0,
+        "price_hi": 9500.0,
+        "density": 56,
+        "key_level": false
+      },
+      {
+        "price_lo": 9500.0,
+        "price_hi": 10000.0,
+        "density": 41,
+        "key_level": false
+      },
+      {
+        "price_lo": 10000.0,
+        "price_hi": 10500.0,
+        "density": 18,
+        "key_level": true
+      },
+      {
+        "price_lo": 10500.0,
+        "price_hi": 11000.0,
+        "density": 19,
+        "key_level": false
+      },
+      {
+        "price_lo": 11000.0,
+        "price_hi": 11500.0,
+        "density": 19,
+        "key_level": false
+      },
+      {
+        "price_lo": 11500.0,
+        "price_hi": 12000.0,
+        "density": 25,
+        "key_level": false
+      },
+      {
+        "price_lo": 12000.0,
+        "price_hi": 12500.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 12500.0,
+        "price_hi": 13000.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 13000.0,
+        "price_hi": 13500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 13500.0,
+        "price_hi": 14000.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 14000.0,
+        "price_hi": 14500.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 15000.0,
+        "price_hi": 15500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 15500.0,
+        "price_hi": 16000.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 16000.0,
+        "price_hi": 16500.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 16500.0,
+        "price_hi": 17000.0,
+        "density": 40,
+        "key_level": false
+      },
+      {
+        "price_lo": 17000.0,
+        "price_hi": 17500.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 17500.0,
+        "price_hi": 18000.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 18000.0,
+        "price_hi": 18500.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 18500.0,
+        "price_hi": 19000.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 19000.0,
+        "price_hi": 19500.0,
+        "density": 36,
+        "key_level": false
+      },
+      {
+        "price_lo": 19500.0,
+        "price_hi": 20000.0,
+        "density": 17,
+        "key_level": false
+      },
+      {
+        "price_lo": 20000.0,
+        "price_hi": 20500.0,
+        "density": 20,
+        "key_level": true
+      },
+      {
+        "price_lo": 20500.0,
+        "price_hi": 21000.0,
+        "density": 19,
+        "key_level": false
+      },
+      {
+        "price_lo": 21000.0,
+        "price_hi": 21500.0,
+        "density": 18,
+        "key_level": false
+      },
+      {
+        "price_lo": 21500.0,
+        "price_hi": 22000.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 22000.0,
+        "price_hi": 22500.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 22500.0,
+        "price_hi": 23000.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 23000.0,
+        "price_hi": 23500.0,
+        "density": 24,
+        "key_level": false
+      },
+      {
+        "price_lo": 23500.0,
+        "price_hi": 24000.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 24000.0,
+        "price_hi": 24500.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 24500.0,
+        "price_hi": 25000.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 25500.0,
+        "price_hi": 26000.0,
+        "density": 19,
+        "key_level": false
+      },
+      {
+        "price_lo": 26000.0,
+        "price_hi": 26500.0,
+        "density": 20,
+        "key_level": false
+      },
+      {
+        "price_lo": 26500.0,
+        "price_hi": 27000.0,
+        "density": 27,
+        "key_level": false
+      },
+      {
+        "price_lo": 27000.0,
+        "price_hi": 27500.0,
+        "density": 24,
+        "key_level": false
+      },
+      {
+        "price_lo": 27500.0,
+        "price_hi": 28000.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 28000.0,
+        "price_hi": 28500.0,
+        "density": 23,
+        "key_level": false
+      },
+      {
+        "price_lo": 28500.0,
+        "price_hi": 29000.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 29000.0,
+        "price_hi": 29500.0,
+        "density": 33,
+        "key_level": false
+      },
+      {
+        "price_lo": 29500.0,
+        "price_hi": 30000.0,
+        "density": 22,
+        "key_level": false
+      },
+      {
+        "price_lo": 30000.0,
+        "price_hi": 30500.0,
+        "density": 31,
+        "key_level": true
+      },
+      {
+        "price_lo": 30500.0,
+        "price_hi": 31000.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 31000.0,
+        "price_hi": 31500.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 31500.0,
+        "price_hi": 32000.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 32000.0,
+        "price_hi": 32500.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 32500.0,
+        "price_hi": 33000.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 33000.0,
+        "price_hi": 33500.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 33500.0,
+        "price_hi": 34000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 34000.0,
+        "price_hi": 34500.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 34500.0,
+        "price_hi": 35000.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 35000.0,
+        "price_hi": 35500.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 35500.0,
+        "price_hi": 36000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 36000.0,
+        "price_hi": 36500.0,
+        "density": 15,
+        "key_level": false
+      },
+      {
+        "price_lo": 36500.0,
+        "price_hi": 37000.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 37000.0,
+        "price_hi": 37500.0,
+        "density": 16,
+        "key_level": false
+      },
+      {
+        "price_lo": 37500.0,
+        "price_hi": 38000.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 38000.0,
+        "price_hi": 38500.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 38500.0,
+        "price_hi": 39000.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 39000.0,
+        "price_hi": 39500.0,
+        "density": 16,
+        "key_level": false
+      },
+      {
+        "price_lo": 39500.0,
+        "price_hi": 40000.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 40000.0,
+        "price_hi": 40500.0,
+        "density": 13,
+        "key_level": true
+      },
+      {
+        "price_lo": 40500.0,
+        "price_hi": 41000.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 41000.0,
+        "price_hi": 41500.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 41500.0,
+        "price_hi": 42000.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 42000.0,
+        "price_hi": 42500.0,
+        "density": 17,
+        "key_level": false
+      },
+      {
+        "price_lo": 42500.0,
+        "price_hi": 43000.0,
+        "density": 15,
+        "key_level": false
+      },
+      {
+        "price_lo": 43000.0,
+        "price_hi": 43500.0,
+        "density": 23,
+        "key_level": false
+      },
+      {
+        "price_lo": 43500.0,
+        "price_hi": 44000.0,
+        "density": 18,
+        "key_level": false
+      },
+      {
+        "price_lo": 44000.0,
+        "price_hi": 44500.0,
+        "density": 17,
+        "key_level": false
+      },
+      {
+        "price_lo": 44500.0,
+        "price_hi": 45000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 45000.0,
+        "price_hi": 45500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 45500.0,
+        "price_hi": 46000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 46000.0,
+        "price_hi": 46500.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 46500.0,
+        "price_hi": 47000.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 47000.0,
+        "price_hi": 47500.0,
+        "density": 15,
+        "key_level": false
+      },
+      {
+        "price_lo": 47500.0,
+        "price_hi": 48000.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 48000.0,
+        "price_hi": 48500.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 48500.0,
+        "price_hi": 49000.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 49000.0,
+        "price_hi": 49500.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 49500.0,
+        "price_hi": 50000.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 50000.0,
+        "price_hi": 50500.0,
+        "density": 6,
+        "key_level": true
+      },
+      {
+        "price_lo": 50500.0,
+        "price_hi": 51000.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 51000.0,
+        "price_hi": 51500.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 51500.0,
+        "price_hi": 52000.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 52000.0,
+        "price_hi": 52500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 52500.0,
+        "price_hi": 53000.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 53500.0,
+        "price_hi": 54000.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 54000.0,
+        "price_hi": 54500.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 54500.0,
+        "price_hi": 55000.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 55000.0,
+        "price_hi": 55500.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 55500.0,
+        "price_hi": 56000.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 56000.0,
+        "price_hi": 56500.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 56500.0,
+        "price_hi": 57000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 57000.0,
+        "price_hi": 57500.0,
+        "density": 18,
+        "key_level": false
+      },
+      {
+        "price_lo": 57500.0,
+        "price_hi": 58000.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 58000.0,
+        "price_hi": 58500.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 58500.0,
+        "price_hi": 59000.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 59000.0,
+        "price_hi": 59500.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 59500.0,
+        "price_hi": 60000.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 60000.0,
+        "price_hi": 60500.0,
+        "density": 10,
+        "key_level": true
+      },
+      {
+        "price_lo": 60500.0,
+        "price_hi": 61000.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 61000.0,
+        "price_hi": 61500.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 61500.0,
+        "price_hi": 62000.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 62000.0,
+        "price_hi": 62500.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 62500.0,
+        "price_hi": 63000.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 63000.0,
+        "price_hi": 63500.0,
+        "density": 20,
+        "key_level": false
+      },
+      {
+        "price_lo": 63500.0,
+        "price_hi": 64000.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 64000.0,
+        "price_hi": 64500.0,
+        "density": 22,
+        "key_level": false
+      },
+      {
+        "price_lo": 64500.0,
+        "price_hi": 65000.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 65000.0,
+        "price_hi": 65500.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 65500.0,
+        "price_hi": 66000.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 66000.0,
+        "price_hi": 66500.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 66500.0,
+        "price_hi": 67000.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 67000.0,
+        "price_hi": 67500.0,
+        "density": 21,
+        "key_level": false
+      },
+      {
+        "price_lo": 67500.0,
+        "price_hi": 68000.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 68000.0,
+        "price_hi": 68500.0,
+        "density": 16,
+        "key_level": false
+      },
+      {
+        "price_lo": 68500.0,
+        "price_hi": 69000.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 69000.0,
+        "price_hi": 69500.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 69500.0,
+        "price_hi": 70000.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 70000.0,
+        "price_hi": 70500.0,
+        "density": 11,
+        "key_level": true
+      },
+      {
+        "price_lo": 70500.0,
+        "price_hi": 71000.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 71000.0,
+        "price_hi": 71500.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 71500.0,
+        "price_hi": 72000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 72000.0,
+        "price_hi": 72500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 72500.0,
+        "price_hi": 73000.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 73000.0,
+        "price_hi": 73500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 73500.0,
+        "price_hi": 74000.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 74000.0,
+        "price_hi": 74500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 74500.0,
+        "price_hi": 75000.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 75000.0,
+        "price_hi": 75500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 75500.0,
+        "price_hi": 76000.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 76000.0,
+        "price_hi": 76500.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 76500.0,
+        "price_hi": 77000.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 77000.0,
+        "price_hi": 77500.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 77500.0,
+        "price_hi": 78000.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 78000.0,
+        "price_hi": 78500.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 78500.0,
+        "price_hi": 79000.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 79000.0,
+        "price_hi": 79500.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 79500.0,
+        "price_hi": 80000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 80000.0,
+        "price_hi": 80500.0,
+        "density": 3,
+        "key_level": true
+      },
+      {
+        "price_lo": 80500.0,
+        "price_hi": 81000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 81000.0,
+        "price_hi": 81500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 81500.0,
+        "price_hi": 82000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 82000.0,
+        "price_hi": 82500.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 82500.0,
+        "price_hi": 83000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 83000.0,
+        "price_hi": 83500.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 83500.0,
+        "price_hi": 84000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 84000.0,
+        "price_hi": 84500.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 84500.0,
+        "price_hi": 85000.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 85000.0,
+        "price_hi": 85500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 85500.0,
+        "price_hi": 86000.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 86000.0,
+        "price_hi": 86500.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 86500.0,
+        "price_hi": 87000.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 87000.0,
+        "price_hi": 87500.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 87500.0,
+        "price_hi": 88000.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 88000.0,
+        "price_hi": 88500.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 88500.0,
+        "price_hi": 89000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 89000.0,
+        "price_hi": 89500.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 89500.0,
+        "price_hi": 90000.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 90000.0,
+        "price_hi": 90500.0,
+        "density": 5,
+        "key_level": true
+      },
+      {
+        "price_lo": 90500.0,
+        "price_hi": 91000.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 91000.0,
+        "price_hi": 91500.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 91500.0,
+        "price_hi": 92000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 92000.0,
+        "price_hi": 92500.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 92500.0,
+        "price_hi": 93000.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 93000.0,
+        "price_hi": 93500.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 93500.0,
+        "price_hi": 94000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 94000.0,
+        "price_hi": 94500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 94500.0,
+        "price_hi": 95000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 95000.0,
+        "price_hi": 95500.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 95500.0,
+        "price_hi": 96000.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 96000.0,
+        "price_hi": 96500.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 96500.0,
+        "price_hi": 97000.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 97000.0,
+        "price_hi": 97500.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 97500.0,
+        "price_hi": 98000.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 98000.0,
+        "price_hi": 98500.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 98500.0,
+        "price_hi": 99000.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 99000.0,
+        "price_hi": 99500.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 99500.0,
+        "price_hi": 100000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 100500.0,
+        "price_hi": 101000.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 101000.0,
+        "price_hi": 101500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 101500.0,
+        "price_hi": 102000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 102000.0,
+        "price_hi": 102500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 102500.0,
+        "price_hi": 103000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 103000.0,
+        "price_hi": 103500.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 103500.0,
+        "price_hi": 104000.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 104000.0,
+        "price_hi": 104500.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 104500.0,
+        "price_hi": 105000.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 105000.0,
+        "price_hi": 105500.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 105500.0,
+        "price_hi": 106000.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 106000.0,
+        "price_hi": 106500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 106500.0,
+        "price_hi": 107000.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 107000.0,
+        "price_hi": 107500.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 107500.0,
+        "price_hi": 108000.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 108000.0,
+        "price_hi": 108500.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 108500.0,
+        "price_hi": 109000.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 109000.0,
+        "price_hi": 109500.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 109500.0,
+        "price_hi": 110000.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 110000.0,
+        "price_hi": 110500.0,
+        "density": 7,
+        "key_level": true
+      },
+      {
+        "price_lo": 110500.0,
+        "price_hi": 111000.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 111000.0,
+        "price_hi": 111500.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 111500.0,
+        "price_hi": 112000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 112000.0,
+        "price_hi": 112500.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 112500.0,
+        "price_hi": 113000.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 113000.0,
+        "price_hi": 113500.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 113500.0,
+        "price_hi": 114000.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 114000.0,
+        "price_hi": 114500.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 114500.0,
+        "price_hi": 115000.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 115000.0,
+        "price_hi": 115500.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 115500.0,
+        "price_hi": 116000.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 116000.0,
+        "price_hi": 116500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 116500.0,
+        "price_hi": 117000.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 117000.0,
+        "price_hi": 117500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 117500.0,
+        "price_hi": 118000.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 118000.0,
+        "price_hi": 118500.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 118500.0,
+        "price_hi": 119000.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 119000.0,
+        "price_hi": 119500.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 120000.0,
+        "price_hi": 120500.0,
+        "density": 1,
+        "key_level": true
+      },
+      {
+        "price_lo": 120500.0,
+        "price_hi": 121000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 121000.0,
+        "price_hi": 121500.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 121500.0,
+        "price_hi": 122000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 122000.0,
+        "price_hi": 122500.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 122500.0,
+        "price_hi": 123000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 123000.0,
+        "price_hi": 123500.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 124500.0,
+        "price_hi": 125000.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 125000.0,
+        "price_hi": 125500.0,
+        "density": 1,
+        "key_level": false
+      }
+    ],
+    "support_zones": [
+      {
+        "price_lo": 4500.0,
+        "price_hi": 5000.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 5000.0,
+        "price_hi": 5500.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 5500.0,
+        "price_hi": 6000.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 6000.0,
+        "price_hi": 6500.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 6500.0,
+        "price_hi": 7000.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 7000.0,
+        "price_hi": 7500.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 7500.0,
+        "price_hi": 8000.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 8000.0,
+        "price_hi": 8500.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 8500.0,
+        "price_hi": 9000.0,
+        "density": 24,
+        "key_level": false
+      },
+      {
+        "price_lo": 9000.0,
+        "price_hi": 9500.0,
+        "density": 59,
+        "key_level": false
+      },
+      {
+        "price_lo": 9500.0,
+        "price_hi": 10000.0,
+        "density": 26,
+        "key_level": false
+      },
+      {
+        "price_lo": 10000.0,
+        "price_hi": 10500.0,
+        "density": 14,
+        "key_level": true
+      },
+      {
+        "price_lo": 10500.0,
+        "price_hi": 11000.0,
+        "density": 19,
+        "key_level": false
+      },
+      {
+        "price_lo": 11000.0,
+        "price_hi": 11500.0,
+        "density": 23,
+        "key_level": false
+      },
+      {
+        "price_lo": 11500.0,
+        "price_hi": 12000.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 12500.0,
+        "price_hi": 13000.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 13000.0,
+        "price_hi": 13500.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 13500.0,
+        "price_hi": 14000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 14500.0,
+        "price_hi": 15000.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 15000.0,
+        "price_hi": 15500.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 15500.0,
+        "price_hi": 16000.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 16000.0,
+        "price_hi": 16500.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 16500.0,
+        "price_hi": 17000.0,
+        "density": 36,
+        "key_level": false
+      },
+      {
+        "price_lo": 17000.0,
+        "price_hi": 17500.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 17500.0,
+        "price_hi": 18000.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 18000.0,
+        "price_hi": 18500.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 18500.0,
+        "price_hi": 19000.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 19000.0,
+        "price_hi": 19500.0,
+        "density": 35,
+        "key_level": false
+      },
+      {
+        "price_lo": 19500.0,
+        "price_hi": 20000.0,
+        "density": 17,
+        "key_level": false
+      },
+      {
+        "price_lo": 20000.0,
+        "price_hi": 20500.0,
+        "density": 14,
+        "key_level": true
+      },
+      {
+        "price_lo": 20500.0,
+        "price_hi": 21000.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 21000.0,
+        "price_hi": 21500.0,
+        "density": 15,
+        "key_level": false
+      },
+      {
+        "price_lo": 21500.0,
+        "price_hi": 22000.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 22000.0,
+        "price_hi": 22500.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 22500.0,
+        "price_hi": 23000.0,
+        "density": 23,
+        "key_level": false
+      },
+      {
+        "price_lo": 23000.0,
+        "price_hi": 23500.0,
+        "density": 20,
+        "key_level": false
+      },
+      {
+        "price_lo": 23500.0,
+        "price_hi": 24000.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 24000.0,
+        "price_hi": 24500.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 24500.0,
+        "price_hi": 25000.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 25000.0,
+        "price_hi": 25500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 25500.0,
+        "price_hi": 26000.0,
+        "density": 20,
+        "key_level": false
+      },
+      {
+        "price_lo": 26000.0,
+        "price_hi": 26500.0,
+        "density": 21,
+        "key_level": false
+      },
+      {
+        "price_lo": 26500.0,
+        "price_hi": 27000.0,
+        "density": 26,
+        "key_level": false
+      },
+      {
+        "price_lo": 27000.0,
+        "price_hi": 27500.0,
+        "density": 24,
+        "key_level": false
+      },
+      {
+        "price_lo": 27500.0,
+        "price_hi": 28000.0,
+        "density": 21,
+        "key_level": false
+      },
+      {
+        "price_lo": 28000.0,
+        "price_hi": 28500.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 28500.0,
+        "price_hi": 29000.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 29000.0,
+        "price_hi": 29500.0,
+        "density": 33,
+        "key_level": false
+      },
+      {
+        "price_lo": 29500.0,
+        "price_hi": 30000.0,
+        "density": 15,
+        "key_level": false
+      },
+      {
+        "price_lo": 30000.0,
+        "price_hi": 30500.0,
+        "density": 28,
+        "key_level": true
+      },
+      {
+        "price_lo": 30500.0,
+        "price_hi": 31000.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 31000.0,
+        "price_hi": 31500.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 31500.0,
+        "price_hi": 32000.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 32000.0,
+        "price_hi": 32500.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 32500.0,
+        "price_hi": 33000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 33000.0,
+        "price_hi": 33500.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 33500.0,
+        "price_hi": 34000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 34000.0,
+        "price_hi": 34500.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 34500.0,
+        "price_hi": 35000.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 35000.0,
+        "price_hi": 35500.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 35500.0,
+        "price_hi": 36000.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 36000.0,
+        "price_hi": 36500.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 36500.0,
+        "price_hi": 37000.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 37000.0,
+        "price_hi": 37500.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 37500.0,
+        "price_hi": 38000.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 38000.0,
+        "price_hi": 38500.0,
+        "density": 17,
+        "key_level": false
+      },
+      {
+        "price_lo": 38500.0,
+        "price_hi": 39000.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 39000.0,
+        "price_hi": 39500.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 39500.0,
+        "price_hi": 40000.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 40000.0,
+        "price_hi": 40500.0,
+        "density": 10,
+        "key_level": true
+      },
+      {
+        "price_lo": 40500.0,
+        "price_hi": 41000.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 41000.0,
+        "price_hi": 41500.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 41500.0,
+        "price_hi": 42000.0,
+        "density": 16,
+        "key_level": false
+      },
+      {
+        "price_lo": 42000.0,
+        "price_hi": 42500.0,
+        "density": 18,
+        "key_level": false
+      },
+      {
+        "price_lo": 42500.0,
+        "price_hi": 43000.0,
+        "density": 16,
+        "key_level": false
+      },
+      {
+        "price_lo": 43000.0,
+        "price_hi": 43500.0,
+        "density": 18,
+        "key_level": false
+      },
+      {
+        "price_lo": 43500.0,
+        "price_hi": 44000.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 44000.0,
+        "price_hi": 44500.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 44500.0,
+        "price_hi": 45000.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 45000.0,
+        "price_hi": 45500.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 45500.0,
+        "price_hi": 46000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 46000.0,
+        "price_hi": 46500.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 46500.0,
+        "price_hi": 47000.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 47000.0,
+        "price_hi": 47500.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 47500.0,
+        "price_hi": 48000.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 48000.0,
+        "price_hi": 48500.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 48500.0,
+        "price_hi": 49000.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 49000.0,
+        "price_hi": 49500.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 49500.0,
+        "price_hi": 50000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 50000.0,
+        "price_hi": 50500.0,
+        "density": 5,
+        "key_level": true
+      },
+      {
+        "price_lo": 50500.0,
+        "price_hi": 51000.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 51000.0,
+        "price_hi": 51500.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 51500.0,
+        "price_hi": 52000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 52000.0,
+        "price_hi": 52500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 52500.0,
+        "price_hi": 53000.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 53000.0,
+        "price_hi": 53500.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 53500.0,
+        "price_hi": 54000.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 54000.0,
+        "price_hi": 54500.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 54500.0,
+        "price_hi": 55000.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 55000.0,
+        "price_hi": 55500.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 55500.0,
+        "price_hi": 56000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 56000.0,
+        "price_hi": 56500.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 56500.0,
+        "price_hi": 57000.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 57000.0,
+        "price_hi": 57500.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 57500.0,
+        "price_hi": 58000.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 58000.0,
+        "price_hi": 58500.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 58500.0,
+        "price_hi": 59000.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 59000.0,
+        "price_hi": 59500.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 59500.0,
+        "price_hi": 60000.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 60000.0,
+        "price_hi": 60500.0,
+        "density": 14,
+        "key_level": true
+      },
+      {
+        "price_lo": 60500.0,
+        "price_hi": 61000.0,
+        "density": 18,
+        "key_level": false
+      },
+      {
+        "price_lo": 61000.0,
+        "price_hi": 61500.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 61500.0,
+        "price_hi": 62000.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 62000.0,
+        "price_hi": 62500.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 62500.0,
+        "price_hi": 63000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 63000.0,
+        "price_hi": 63500.0,
+        "density": 17,
+        "key_level": false
+      },
+      {
+        "price_lo": 63500.0,
+        "price_hi": 64000.0,
+        "density": 18,
+        "key_level": false
+      },
+      {
+        "price_lo": 64000.0,
+        "price_hi": 64500.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 64500.0,
+        "price_hi": 65000.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 65000.0,
+        "price_hi": 65500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 65500.0,
+        "price_hi": 66000.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 66000.0,
+        "price_hi": 66500.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 66500.0,
+        "price_hi": 67000.0,
+        "density": 15,
+        "key_level": false
+      },
+      {
+        "price_lo": 67000.0,
+        "price_hi": 67500.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 67500.0,
+        "price_hi": 68000.0,
+        "density": 16,
+        "key_level": false
+      },
+      {
+        "price_lo": 68000.0,
+        "price_hi": 68500.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 68500.0,
+        "price_hi": 69000.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 69000.0,
+        "price_hi": 69500.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 69500.0,
+        "price_hi": 70000.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 70000.0,
+        "price_hi": 70500.0,
+        "density": 4,
+        "key_level": true
+      },
+      {
+        "price_lo": 70500.0,
+        "price_hi": 71000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 71000.0,
+        "price_hi": 71500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 71500.0,
+        "price_hi": 72000.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 72000.0,
+        "price_hi": 72500.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 72500.0,
+        "price_hi": 73000.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 73500.0,
+        "price_hi": 74000.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 74500.0,
+        "price_hi": 75000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 75000.0,
+        "price_hi": 75500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 75500.0,
+        "price_hi": 76000.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 76000.0,
+        "price_hi": 76500.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 76500.0,
+        "price_hi": 77000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 77000.0,
+        "price_hi": 77500.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 77500.0,
+        "price_hi": 78000.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 78000.0,
+        "price_hi": 78500.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 78500.0,
+        "price_hi": 79000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 79000.0,
+        "price_hi": 79500.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 79500.0,
+        "price_hi": 80000.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 80000.0,
+        "price_hi": 80500.0,
+        "density": 3,
+        "key_level": true
+      },
+      {
+        "price_lo": 80500.0,
+        "price_hi": 81000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 81000.0,
+        "price_hi": 81500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 81500.0,
+        "price_hi": 82000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 82000.0,
+        "price_hi": 82500.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 82500.0,
+        "price_hi": 83000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 83000.0,
+        "price_hi": 83500.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 83500.0,
+        "price_hi": 84000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 84000.0,
+        "price_hi": 84500.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 84500.0,
+        "price_hi": 85000.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 85000.0,
+        "price_hi": 85500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 85500.0,
+        "price_hi": 86000.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 86000.0,
+        "price_hi": 86500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 86500.0,
+        "price_hi": 87000.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 87000.0,
+        "price_hi": 87500.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 87500.0,
+        "price_hi": 88000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 88000.0,
+        "price_hi": 88500.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 88500.0,
+        "price_hi": 89000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 89000.0,
+        "price_hi": 89500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 89500.0,
+        "price_hi": 90000.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 90000.0,
+        "price_hi": 90500.0,
+        "density": 8,
+        "key_level": true
+      },
+      {
+        "price_lo": 90500.0,
+        "price_hi": 91000.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 91000.0,
+        "price_hi": 91500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 91500.0,
+        "price_hi": 92000.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 92000.0,
+        "price_hi": 92500.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 92500.0,
+        "price_hi": 93000.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 93000.0,
+        "price_hi": 93500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 93500.0,
+        "price_hi": 94000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 94000.0,
+        "price_hi": 94500.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 94500.0,
+        "price_hi": 95000.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 95000.0,
+        "price_hi": 95500.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 95500.0,
+        "price_hi": 96000.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 96000.0,
+        "price_hi": 96500.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 96500.0,
+        "price_hi": 97000.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 97000.0,
+        "price_hi": 97500.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 97500.0,
+        "price_hi": 98000.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 98000.0,
+        "price_hi": 98500.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 98500.0,
+        "price_hi": 99000.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 99000.0,
+        "price_hi": 99500.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 99500.0,
+        "price_hi": 100000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 100500.0,
+        "price_hi": 101000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 101000.0,
+        "price_hi": 101500.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 101500.0,
+        "price_hi": 102000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 102000.0,
+        "price_hi": 102500.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 102500.0,
+        "price_hi": 103000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 103000.0,
+        "price_hi": 103500.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 103500.0,
+        "price_hi": 104000.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 104000.0,
+        "price_hi": 104500.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 104500.0,
+        "price_hi": 105000.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 105000.0,
+        "price_hi": 105500.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 105500.0,
+        "price_hi": 106000.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 106000.0,
+        "price_hi": 106500.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 106500.0,
+        "price_hi": 107000.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 107000.0,
+        "price_hi": 107500.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 107500.0,
+        "price_hi": 108000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 108000.0,
+        "price_hi": 108500.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 108500.0,
+        "price_hi": 109000.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 109000.0,
+        "price_hi": 109500.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 109500.0,
+        "price_hi": 110000.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 110000.0,
+        "price_hi": 110500.0,
+        "density": 2,
+        "key_level": true
+      },
+      {
+        "price_lo": 110500.0,
+        "price_hi": 111000.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 111000.0,
+        "price_hi": 111500.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 111500.0,
+        "price_hi": 112000.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 112000.0,
+        "price_hi": 112500.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 112500.0,
+        "price_hi": 113000.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 113000.0,
+        "price_hi": 113500.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 113500.0,
+        "price_hi": 114000.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 114000.0,
+        "price_hi": 114500.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 114500.0,
+        "price_hi": 115000.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 115000.0,
+        "price_hi": 115500.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 115500.0,
+        "price_hi": 116000.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 116000.0,
+        "price_hi": 116500.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 116500.0,
+        "price_hi": 117000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 117000.0,
+        "price_hi": 117500.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 117500.0,
+        "price_hi": 118000.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 118000.0,
+        "price_hi": 118500.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 118500.0,
+        "price_hi": 119000.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 119000.0,
+        "price_hi": 119500.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 119500.0,
+        "price_hi": 120000.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 120000.0,
+        "price_hi": 120500.0,
+        "density": 1,
+        "key_level": true
+      },
+      {
+        "price_lo": 120500.0,
+        "price_hi": 121000.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 121500.0,
+        "price_hi": 122000.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 122500.0,
+        "price_hi": 123000.0,
+        "density": 1,
+        "key_level": false
+      }
+    ]
+  }
+}

@@ -93,7 +93,7 @@ try:
     JARVIS_TARGET = f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}'
 except Exception:
     FAPI_BASE     = 'https://fapi.binance.com'
-    JARVIS_TARGET = '73295708:thread:01a07970-f8ce-706b-8bea-3c94dd055443'
+    JARVIS_TARGET = '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6'
     JARVIS_CHANNEL = 'jarvis'
     API_KEY = API_SECRET = ''
 
@@ -145,7 +145,17 @@ OI_EXEC_PARAMS = {
 }
 
 # ── 黑名单（稳定性差/无OI历史）──────────────────────────────
-BLACKLIST = set()
+BLACKLIST = {
+    # [修复 2026-09-11] 美股token流动性低、滑点大，排除
+    'NVDAUSDT', 'PLTRUSDT', 'HOODUSDT', 'MRVLUSDT', 'AVGOUSDT',
+    'SMCIUSDT', 'MSTRUSDT', 'COINUSDT', 'AMDUSDT', 'METAUSDT',
+    'AAPLUSDT', 'TSLAUSDT', 'GOOGLUSDT', 'MSFTUSDT', 'AMZNUSDT',
+    'FLNCUSDT', 'AAOIUSDT', 'CRWVUSDT', 'RKLBUSDT', 'IRENUSDT',
+    'SOUNUSDT', 'BIOUSDT', 'NEIOUSDT', 'CLEUSDT', 'WEEDUSDT',
+    'MTCLUSDT', 'GIGAUSDT', 'UNITREEUSDT', 'POPUSDT', 'KODEXUSDT',
+    'SAMSUNGUSDT', 'NAVERUSDT', 'HANMIUSDT', 'BYDUSDT',
+    'POPMARTUSDT', 'SONYUSDT', 'HK0992USDT', 'HK0700USDT',
+}
 
 # ── 强制主力币入池 ────────────────────────────────────────────
 FORCE_INCLUDE = {'BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'XRPUSDT'}
@@ -174,6 +184,26 @@ def _fetch(url, timeout=6, retries=2):
 
 
 def send_message(msg):
+    # [修复 2026-09-11] 24h去重：相同内容24h内只推一次
+    try:
+        import hashlib as _hl, time as _tm, json as _js
+        from pathlib import Path as _P
+        _dedup_file = _P(__file__).parent.parent / 'data' / 'oi_scanner_dedup.json'
+        _dedup_key = _hl.md5(msg[:150].encode()).hexdigest()[:16]
+        _now = _tm.time()
+        try:
+            _dedup = _js.loads(_dedup_file.read_text()) if _dedup_file.exists() else {}
+        except:
+            _dedup = {}
+        # 清理超过24h的记录
+        _dedup = {k: v for k, v in _dedup.items() if _now - v < 86400}
+        if _dedup_key in _dedup:
+            print(f'  [去重] 24h内已推送过，跳过')
+            return
+        _dedup[_dedup_key] = _now
+        _dedup_file.write_text(_js.dumps(_dedup, ensure_ascii=False, indent=2))
+    except Exception:
+        pass
     try:
         import subprocess
         subprocess.Popen(
@@ -672,6 +702,16 @@ def scan_symbol(sym, ticker_data):
         regime = _r.get(sym, {}).get('confirmed', 'UNKNOWN') if isinstance(_r.get(sym), dict) else 'UNKNOWN'
     except:
         pass
+    # [修复 2026-09-11] 山寨币没有独立体制 → 用BTC体制作为大盘折扣系数
+    if regime == 'UNKNOWN':
+        try:
+            _r = json.loads((BASE/'data/regime_state.json').read_text())
+            btc_regime = _r.get('BTCUSDT', {}).get('confirmed', 'UNKNOWN') if isinstance(_r.get('BTCUSDT'), dict) else 'UNKNOWN'
+            if btc_regime != 'UNKNOWN':
+                regime = btc_regime
+                details_extra = f'体制={regime}(BTC代理)'
+        except:
+            pass
 
     # [P0+P1+P2] 把price_chg_24h和regime注入oi字典供score_oi_signal使用
     oi['price_chg_24h'] = pct24h  # 24H价格涨跌幅（价格效率比计算用）
@@ -1111,7 +1151,7 @@ def run():
     # ── Step6: 判断是否推送苏摩 ─────────────────────────────
     action_signals = [r for r in valid
                       if r['action'] in ('buy_full', 'buy_light') and
-                      r['oi_score'] >= 40]
+                      r['oi_score'] >= 60]  # [修复 2026-09-11] 阈值40→60减少低质量推送
 
     # [设计院封印 2026-07-16 苏摩111] 状态哈希去重，替代纯时间窗口cooldown
     # 哈希 = OI变化率5%桶 + direction + mode + regime大类
@@ -1134,7 +1174,7 @@ def run():
 
     # [设计院封印 2026-08-02] TTL大幅缩短：A类48H→12H，B类24H→6H，防止信号被去重死锁
     # 原设计哲学：哈希不变=信号未变=不重推；修复后：持续有效的信号每12H提醒一次
-    SAME_HASH_TTL_OI = {'A': 3600*12, 'B': 3600*6, 'C': 3600*2}  # [修复] 同哈希冷却期大幅缩短
+    SAME_HASH_TTL_OI = {'A': 3600*24, 'B': 3600*12, 'C': 3600*6}  # [修复 2026-09-11] TTL延长防止刷屏
     push_signals = []
     persisted_signals = []  # 哈希未变但TTL到期的「持续有效」信号
 
@@ -1293,7 +1333,7 @@ def run():
     for _r in push_signals:
         _sq_push_full({
             'symbol':    _r['symbol'],
-            'source':    'oi_scanner',
+            'source':    'oi_advanced_scanner',  # [修复 2026-09-11] 统一source名称
             'score':     float(_r.get('oi_score') or 0),
             'regime':    _r.get('regime', ''),
             'direction': _r.get('direction_bias', ''),

@@ -3329,7 +3329,11 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 _sys22.path.insert(0, _p22)
         from brahma_brain.gex_unified import score_gex as _score_gex22, compute_gex as _compute_gex22
         _currency_g = 'BTC' if 'BTC' in _sym_t.upper() else \
-                      'ETH' if 'ETH' in _sym_t.upper() else 'BTC'
+                      'ETH' if 'ETH' in _sym_t.upper() else None
+        # 修复 2026-09-10：山寨币没有GEX数据 → 跳过s22（不回退BTC）
+        # 原bug：山寨币默认用BTC的GEX → $82,000污染山寨币分析
+        if _currency_g is None:
+            raise StopIteration  # 山寨币跳过GEX评分
         # [P0-A修复 2026-09-03 苏摩111] NEUTRAL方向时推断为LONG/SHORT，防GEX哑火
         _dir_t_gex = _dir_t
         if _dir_t_gex == 'NEUTRAL':

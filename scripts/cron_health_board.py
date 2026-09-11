@@ -166,12 +166,16 @@ def run():
     msg = '\n'.join(lines)
     print(msg)
 
-    # 推送
-    try:
-        from push_hub import _jarvis
-        _jarvis(msg, dedup_key='cron_health_board', dedup_ttl=3600)
-    except Exception as e:
-        print('[push_hub] %s' % e)
+    # 推送（仅当有异常时才推，正常情况静默）
+    has_issues = bool(errors or warnings)
+    if has_issues:
+        try:
+            from push_hub import _jarvis
+            _jarvis(msg, dedup_key='cron_health_board', dedup_ttl=3600)
+        except Exception as e:
+            print('[push_hub] %s' % e)
+    else:
+        print('[cron_health] ✅ 全部正常，静默不推')
 
 if __name__ == '__main__':
     run()
