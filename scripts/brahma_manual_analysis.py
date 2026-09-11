@@ -1992,21 +1992,9 @@ def main():
         print()
         full_output.append(r)
 
-    # 推送到Jarvis新线程（可通过参数禁止——square_auto_post调用时push_jarvis=False避免重复推送）
-    push_jarvis = True  # main()默认推送
-    if push_jarvis:
-        try:
-            import sys as _sys
-            _sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
-            from push_hub import push_jarvis as _push_j
-            combined = '\n\n'.join(full_output)
-            # 截断防超长
-            if len(combined) > 3000:
-                combined = combined[:3000] + '\n...[截断]'
-            _push_j(f'🏟️ 梵天战场情报 | {__import__("datetime").datetime.utcnow().strftime("%m-%d %H:%M")} UTC\n\n{combined}')
-            print('[推送] 战场情报已推送到Jarvis')
-        except Exception as _pe:
-            print(f'[推送失败] {_pe}')
+    # 战场情报推送已移除 — battlefield cron通过AI agent推送，脚本不再直接推Jarvis
+    # 避免square_auto_post等调用方通过.pyc缓存意外触发推送
+    pass
 
 
 if __name__ == '__main__':

@@ -162,11 +162,33 @@ def decide(
     bb_w = vol.get('bb_width', 0)
     iv_rank = vol.get('iv_rank', 50)
 
+    # P0-3: κ价格确认 — κ<0+价格在跌=偏空(保护性买Call)，κ<0+价格在涨=偏多
+    # 价格趋势判断：用price vs fvg磁铁位置推断
+    _kappa_price_dir = 'NONE'
+    _price_trend = 'FLAT'
+    _fvg_magnet = fvg.get('magnet', 0)
+    if _fvg_magnet > 0:
+        if price > _fvg_magnet * 1.002:  # 价格在磁铁上方0.2%以上=短期上涨
+            _price_trend = 'UP'
+        elif price < _fvg_magnet * 0.998:  # 价格在磁铁下方0.2%以上=短期下跌
+            _price_trend = 'DOWN'
+
     vol_direction = 'NONE'
     if kappa < -0.05 and gex_bias != 'POSITIVE':
-        vol_direction = 'LONG'
+        # κ<0 = Call强，但需要价格确认
+        if _price_trend == 'UP':
+            vol_direction = 'LONG'   # Call强+价格涨=真看多
+        elif _price_trend == 'DOWN':
+            vol_direction = 'SHORT'  # Call强+价格跌=保护性买Call=偏空
+        else:
+            vol_direction = 'LONG'  # 价格横盘时默认κ方向
     elif kappa > 0.05 and gex_bias != 'NEGATIVE':
-        vol_direction = 'SHORT'
+        if _price_trend == 'DOWN':
+            vol_direction = 'SHORT'  # Put强+价格跌=真看空
+        elif _price_trend == 'UP':
+            vol_direction = 'LONG'   # Put强+价格涨=保护性买Put=偏多
+        else:
+            vol_direction = 'SHORT'  # 价格横盘时默认κ方向
 
     # SL铁律验证
     sl_distance = abs(entry_lo - sl) if direction == 'LONG' else abs(sl - entry_hi) if direction == 'SHORT' else 0
@@ -245,6 +267,27 @@ def decide(
 
     # ── Layer 6: 交易员大脑（决策层）──────────────────────────
 
+    # P0-1: 加载生产IC验证数据
+    _ic_stats = {}
+    try:
+        import json as _json_ic, pathlib as _plib_ic
+        _ic_path = _plib_ic.Path(__file__).parent.parent / 'data' / 'brahma_ic_stats.json'
+        if _ic_path.exists():
+            _ic_stats = _json_ic.loads(_ic_path.read_text())
+    except Exception:
+        pass
+    _ic_ev = None
+    _ic_wr = None
+    _ic_bucket = f'{regime}:{direction}'
+    if _ic_stats and _ic_bucket in _ic_stats.get('ic_by_regime', {}):
+        _ev_buckets = _ic_stats.get('ev_by_bucket', {})
+        # 找对应score区间
+        _score_key = f'{_ic_bucket}:<120' if score < 120 else f'{_ic_bucket}:120-139' if score < 140 else f'{_ic_bucket}:140-154' if score < 155 else f'{_ic_bucket}:165+'
+        _bucket_data = _ev_buckets.get(_score_key, {})
+        if _bucket_data:
+            _ic_wr = _bucket_data.get('wr')
+            _ic_ev = _bucket_data.get('ev')
+
     # 检查所有许可条件
     missing = []
     
@@ -290,8 +333,25 @@ def decide(
     if direction == 'SHORT' and oi_signal in ('LONG_BUILD',):
         missing.append(f'做空但OI={oi_signal}')
 
+    # P0-1: IC验证标注 — score<120的BULL_TREND:LONG EV为负
+    if _ic_ev is not None and _ic_ev < 0 and direction != 'NONE':
+        missing.append(f'IC验证:score<{120 if score<120 else 140}区间EV={_ic_ev:+.2f}%历史亏损')
+
+    # P0-2: ENTER分档 — 6/6=ENTER / 4-5/6=WATCH / <4=WAIT
+    _total_checks = 6  # 体制+交叉验证+入场区+SL+RR+OI
+    _passed = _total_checks - len(missing)
+    if direction == 'NONE':
+        _passed = 0
+    # WATCH条件：4-5/6通过且方向明确
+    _watch_eligible = _passed >= 4 and direction != 'NONE'
+
     # 最终决策
-    action = 'ENTER' if len(missing) == 0 and direction != 'NONE' else 'WAIT'
+    if len(missing) == 0 and direction != 'NONE':
+        action = 'ENTER'
+    elif _watch_eligible:
+        action = 'WATCH'  # P0-2: 新增WATCH档位
+    else:
+        action = 'WAIT'
 
     # 仓位计算
     if action == 'ENTER':
@@ -309,6 +369,21 @@ def decide(
         leverage = lev_base
 
         # 失效期再降
+        if regime_state == 'RED':
+            position_pct = max(1, position_pct // 2)
+            leverage = max(3, leverage // 2)
+    elif action == 'WATCH':
+        # P0-2: WATCH轻仓 = ENTER仓位×0.4
+        if score >= 120 and score < 140:
+            score_mult = 1.0 + (score - 120) / 100.0
+        elif score >= 110:
+            score_mult = 0.9
+        else:
+            score_mult = 0.8
+        nav_mult = risk.get('nav_mult', 1.0)
+        base_pos = 5.0
+        position_pct = max(1, round(base_pos * confidence_mult * nav_mult * score_mult * 0.4))
+        leverage = max(3, lev_base // 2)  # WATCH杠杆减半
         if regime_state == 'RED':
             position_pct = max(1, position_pct // 2)
             leverage = max(3, leverage // 2)
@@ -330,6 +405,9 @@ def decide(
         reason_parts.append(f'交叉验证{consistent_count}/4')
         reason_parts.append(f'置信{confidence}')
         reason = ' + '.join(reason_parts)
+    elif action == 'WATCH':
+        _pass_str = f'{_passed}/6条件通过'
+        reason = f'WATCH({_pass_str}) — ' + ' / '.join(missing[:3]) if missing else f'WATCH({_pass_str})'
     else:
         reason = f'WAIT — ' + ' / '.join(missing[:3]) if missing else 'WAIT'
 
