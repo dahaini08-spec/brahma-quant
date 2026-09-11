@@ -135,7 +135,11 @@ TRADER_SYSTEM_PROMPT = """你是拥有40年合约交易经验的顶级交易分�
 
 
 def rewrite_as_trader(draft: str) -> str:
-    """用40年交易员视角重写初稿，每次发帖前强制过滤"""
+    """用40年交易员视角重写初稿，每次发帖前强制过滤
+    [2026-09-11 苏摩111] LLM重写已废弃，直接返回原稿
+    模板引擎square_template.py已保证品牌统一，不需要LLM重写"""
+    return draft
+    # ── 以下LLM重写已废弃 ──
     if not draft or len(draft) < 50:
         return draft
     try:

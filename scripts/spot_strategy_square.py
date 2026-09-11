@@ -45,7 +45,10 @@ def run_spot(symbol: str) -> dict:
 
 
 def rewrite_for_square(draft: str) -> str:
-    """直接调OpenRouter，不注入梵天宪法"""
+    """直接调OpenRouter，不注入梵天宪法
+    [2026-09-11 苏摩111] LLM重写已废弃，直接返回原稿"""
+    return draft
+    # ── 以下LLM重写已废弃 ──
     if not OPENROUTER_KEY:
         return draft
     try:

@@ -1619,9 +1619,11 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
 
 
 def run_analysis(sym: str, push_jarvis: bool = True) -> str:
+    import sys as _sys_mod
+    _sys_mod.dont_write_bytecode = True  # P2修复 2026-09-11 苏摩111：根治pyc缓存
     ts  = datetime.now(timezone.utc).strftime('%m/%d %H:%M UTC')
     print(f'[{sym}] Step 0: 拉取实时数据...', flush=True)
-    t_start = __import__('time').time()
+    t_start = __import__('time').time()  # P1修复：移到step0之前，含数据拉取耗时
     d   = step0_fetch_all(sym)
     p   = d['price']  # 分析基准价（拉取时刻）
 
@@ -1899,8 +1901,8 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     if _llm_conflict:
         lines.append(f'  ⚙️ 规则矛盾裁决: {_llm_conflict}')
 
-    # AI议会辩论已移除（2026-09-11 苏摩111）— trader_brain 6层确定性决策替代
-    # if _debate_block: lines += [f'', _debate_block]
+    # AI议会辩论过程可视化（2026-09-11 苏摩111封印 — Minara Step1）
+    if _debate_block: lines += [f'', _debate_block]
 
     # ── 交易员叙事（已移至trader_brain.format_narrative）──
     try:
