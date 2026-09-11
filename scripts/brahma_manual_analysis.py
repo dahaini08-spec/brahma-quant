@@ -503,19 +503,21 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict, oi: dict = None, vo
     resonance = score >= 3
 
     # [P2-5修复 2026-09-11] 交叉验证层：Step1-4结构层 vs Step5-9市场层
+    # [D1修复 2026-09-11] 用共识方向(fvg_consensus)而非主磁铁方向(fvg_dir)
+    _fvg_consensus = fvg.get('consensus', fvg_dir)  # 共识方向优先
     cross_check = {'consistent': True, 'conflicts': []}
-    if oi and fvg_dir != 'NONE':
-        _struct_bull = fvg_dir == 'BULL'
+    if oi and _fvg_consensus != 'NONE':
+        _struct_bull = _fvg_consensus == 'BULL'
         _oi_bull = oi['signal'] in ('LONG_BUILD', 'SHORT_SQUEEZE')
         if _struct_bull != _oi_bull:
             cross_check['consistent'] = False
-            cross_check['conflicts'].append(f'FVG={fvg_dir} vs OI={oi["signal"]}')
-    if vol and fvg_dir != 'NONE':
+            cross_check['conflicts'].append(f'FVG={_fvg_consensus} vs OI={oi["signal"]}')
+    if vol and _fvg_consensus != 'NONE':
         _kappa_bull = vol.get('kappa', 0) < -0.05
-        _struct_bull = fvg_dir == 'BULL'
+        _struct_bull = _fvg_consensus == 'BULL'
         if _struct_bull != _kappa_bull and abs(vol.get('kappa', 0)) > 0.03:
             cross_check['consistent'] = False
-            cross_check['conflicts'].append(f'FVG={fvg_dir} vs κ={vol.get("kappa",0):.3f}')
+            cross_check['conflicts'].append(f'FVG={_fvg_consensus} vs κ={vol.get("kappa",0):.3f}')
     # Hurst交叉验证：共振但Hurst<0.5 = 信号可信度存疑
     if vol and vol.get('hurst', 0.5) < 0.5 and resonance:
         cross_check['conflicts'].append(f'共振但Hurst={vol["hurst"]:.3f}<0.5=随机游走')
@@ -1510,7 +1512,7 @@ def run_analysis(sym: str) -> str:
         f'  🛡️下方多头支撑池: ${liq["nearest_long"]:,.0f} (-{liq["support_pct"]:.1f}%)',
         f'',
         f'【Step4 共振点】5维（FVG+OB+清算+OI+GEX）',
-        f'  共振得分: {res["score"]}/5  {"✅有效共振，可布局" if res["resonance"] else "❌共振不足，等待"}',
+        f'  共振得分: {res["score"]}/5  {"✅有效共振，可布局" if res["resonance"] and res["entry_lo"] > 0 else ("⚠️共振但方向矛盾，不出入场区" if res["resonance"] and res["entry_lo"] == 0 else "❌共振不足，等待")}',
         f'  FVG={res["has_fvg"]} OB={res["has_ob"]} 清算={res["has_liq"]} OI={res.get("has_oi",False)} GEX={res.get("has_gex",False)}',
         f'  入场区间: ${res["entry_lo"]:,.1f} ~ ${res["entry_hi"]:,.1f}',
     ]
