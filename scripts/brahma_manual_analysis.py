@@ -1857,14 +1857,14 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     if _llm_conflict:
         lines.append(f'  ⚙️ 规则矛盾裁决: {_llm_conflict}')
 
-    # ── 交易员叙事（40年顶级合约交易员视角）──
-    _narrative = _trader_narrative(sym, p, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, tb_result)
+    # ── 交易员叙事（已移至trader_brain.format_narrative）──
+    try:
+        from brahma_brain.trader_brain import format_narrative as _fmt_narr
+        _narrative = _fmt_narr(tb_result, sym+'USDT', p, regime_c, fvg, oi, sm, vol, risk, res)
+    except Exception:
+        _narrative = ''
     if _narrative:
-        lines += [
-            f'',
-            f'── 交易员视角 ──',
-            _narrative,
-        ]
+        lines += [f'', f'── 交易员视角 ──', _narrative]
 
     lines += [
         f'',
@@ -1873,27 +1873,18 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
 
     # ── trader_brain裁决替代AI议会（2026-09-11 苏摩111封印）──
     _tb_action = tb_result.get('action', 'WAIT')
-    _vip_blocked = _tb_action == 'WAIT'
-    if _vip_blocked:
-        # WAIT也输出观点卡片，不是空白
-        try:
-            _vip_out = '──── 观点 ────\n' + tb_format(
-                tb_result, sym+'USDT', p, _regime_c
-            )
-        except Exception:
-            _vip_out = (
-                f'──── 观点 ────\n'
-                f'🌿 姓赵不宣 | {sym} 今日观点\n'
-                f'⏳ {tb_result.get("reason", "等待")[:60]}'
-            )
-    else:
-        _vip_out = '──── VIP ────\n' + vip
-        if _llm_entry_reason and '⚠️' in _vip_out:
-            _vip_out = _vip_out.replace(
-                next((l for l in _vip_out.split('\n') if '⚠️' in l), ''),
-                next((l for l in _vip_out.split('\n') if '⚠️' in l), '') + f'  |入场逻辑: {_llm_entry_reason}',
-                1
-            )
+    # 统一输出：ENTER=VIP / WATCH=轻仓VIP / WAIT=观点
+    try:
+        _section = 'VIP' if _tb_action == 'ENTER' else 'VIP' if _tb_action == 'WATCH' else '观点'
+        _vip_out = f'──── {_section} ────\n' + tb_format(
+            tb_result, sym+'USDT', p, _regime_c
+        )
+    except Exception:
+        _vip_out = (
+            f'──── 观点 ────\n'
+            f'🌿 姓赵不宣 | {sym} 今日观点\n'
+            f'⏳ {tb_result.get("reason", "等待")[:60]}'
+        )
 
     # BUG-1：如果入场区已失效，在VIP之前追加警告
     if _price_warn and abs(_drift_pct) >= 1.0:
