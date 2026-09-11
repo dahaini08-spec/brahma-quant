@@ -22,6 +22,7 @@ trader_brain.py — 交易员大脑 v2.0
 import math
 import json
 import pathlib
+import time as _time_mod
 from typing import Dict, Any, List, Tuple
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -43,6 +44,149 @@ def _load_ic_stats() -> dict:
     return _IC_STATS
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Layer 0: 市场感知层 — 宏观日历+价格路径+跨标的关联+动态决策框架
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# --- 宏观日历感知 ---
+_MACRO_EVENTS = {
+    # 日期: {event, time_utc, impact}
+    '2026-09-11': {'event': 'CPI', 'time_utc': '12:30', 'impact': 'high'},
+    '2026-09-18': {'event': 'FOMC', 'time_utc': '18:00', 'impact': 'high'},
+    '2026-10-02': {'event': 'NFP', 'time_utc': '12:30', 'impact': 'high'},
+    '2026-10-10': {'event': 'CPI', 'time_utc': '12:30', 'impact': 'high'},
+    '2026-10-13': {'event': 'FOMC', 'time_utc': '18:00', 'impact': 'high'},
+    '2026-11-06': {'event': 'NFP', 'time_utc': '12:30', 'impact': 'high'},
+    '2026-11-13': {'event': 'CPI', 'time_utc': '12:30', 'impact': 'high'},
+}
+
+def _check_macro_calendar() -> Dict:
+    """检查今天是否有宏观事件，返回事件上下文"""
+    from datetime import datetime, timezone
+    _now = datetime.now(timezone.utc)
+    _today = _now.strftime('%Y-%m-%d')
+    _now_min = _now.hour * 60 + _now.minute
+    _evt = _MACRO_EVENTS.get(_today, None)
+    if not _evt:
+        return {'has_event': False, 'event': None, 'phase': 'normal', 'hours_to_event': None}
+    _evt_h, _evt_m = map(int, _evt['time_utc'].split(':'))
+    _evt_min = _evt_h * 60 + _evt_m
+    _diff_min = _evt_min - _now_min
+    if _diff_min > 0:
+        return {'has_event': True, 'event': _evt['event'], 'phase': 'pre_event',
+                'hours_to_event': round(_diff_min / 60, 1), 'impact': _evt['impact']}
+    elif _diff_min > -120:
+        return {'has_event': True, 'event': _evt['event'], 'phase': 'post_event',
+                'hours_to_event': round(_diff_min / 60, 1), 'impact': _evt['impact']}
+    else:
+        return {'has_event': True, 'event': _evt['event'], 'phase': 'normal',
+                'hours_to_event': None, 'impact': _evt['impact']}
+
+# --- 价格路径追踪 ---
+_PRICE_PATHS = {}  # symbol -> [(timestamp, price), ...]
+
+def _track_price(symbol: str, price: float, max_points: int = 36):
+    """记录价格路径，每5分钟一个点，最多3小时"""
+    _now = _time_mod.time()
+    if symbol not in _PRICE_PATHS:
+        _PRICE_PATHS[symbol] = []
+    _path = _PRICE_PATHS[symbol]
+    # 避免重复点（5分钟内同一价格）
+    if _path and _now - _path[-1][0] < 60:
+        return
+    _path.append((_now, price))
+    if len(_path) > max_points:
+        _path.pop(0)
+
+def _analyze_price_path(symbol: str) -> Dict:
+    """分析价格路径：趋势/失败/重试"""
+    _path = _PRICE_PATHS.get(symbol, [])
+    if len(_path) < 3:
+        return {'path_available': False, 'trend': 'unknown', 'pattern': 'insufficient_data'}
+    _prices = [p[1] for p in _path]
+    _start, _end = _prices[0], _prices[-1]
+    _change_pct = (_end - _start) / _start * 100
+    # 趋势
+    if _change_pct > 0.5:
+        _trend = 'UP'
+    elif _change_pct < -0.5:
+        _trend = 'DOWN'
+    else:
+        _trend = 'FLAT'
+    # 检测冲高回落（逼空失败）
+    _max_price = max(_prices)
+    _min_price = min(_prices)
+    _max_idx = _prices.index(_max_price)
+    _min_idx = _prices.index(_min_price)
+    _pattern = 'normal'
+    if _trend == 'DOWN' and _max_idx < len(_prices) // 2 and _max_price > _start * 1.003:
+        _pattern = 'failed_breakout'  # 先冲高后回落=逼空失败
+    elif _trend == 'UP' and _min_idx < len(_prices) // 2 and _min_price < _start * 0.997:
+        _pattern = 'failed_breakdown'  # 先下跌后反弹=猎杀失败
+    elif _trend == 'UP' and _max_idx == len(_prices) - 1:
+        _pattern = 'momentum_up'  # 持续上涨
+    elif _trend == 'DOWN' and _min_idx == len(_prices) - 1:
+        _pattern = 'momentum_down'  # 持续下跌
+    return {
+        'path_available': True, 'trend': _trend, 'pattern': _pattern,
+        'change_pct': round(_change_pct, 2),
+        'start_price': _start, 'end_price': _end,
+        'max_price': _max_price, 'min_price': _min_price,
+    }
+
+# --- 跨标的关联 ---
+def _cross_asset_analysis(btc_data: Dict, eth_data: Dict) -> Dict:
+    """BTC+ETH同时放量/逼近止损墙=市场级信号"""
+    _signals = []
+    # 同时放量
+    _btc_vol = btc_data.get('vol_4h', 1.0)
+    _eth_vol = eth_data.get('vol_4h', 1.0)
+    if _btc_vol > 2.0 and _eth_vol > 2.0:
+        _signals.append(f'同时放量: BTC={_btc_vol}x ETH={_eth_vol}x=市场级别信号')
+    # 同时逼近止损墙
+    _btc_to_wall = btc_data.get('dist_to_wall', 999)
+    _eth_to_wall = eth_data.get('dist_to_wall', 999)
+    if _btc_to_wall < 2.0 and _eth_to_wall < 2.0:
+        _signals.append(f'同时逼近止损墙: BTC {_btc_to_wall:.1f}% ETH {_eth_to_wall:.1f}%=可能同步逼空')
+    # 方向同步
+    _btc_oi = btc_data.get('oi_signal', '')
+    _eth_oi = eth_data.get('oi_signal', '')
+    if _btc_oi == _eth_oi and _btc_oi in ('SHORT_SQUEEZE', 'LONG_BUILD', 'SHORT_BUILD', 'LONG_UNWIND'):
+        _signals.append(f'OI同步: 两个标的都={_btc_oi}')
+    # HCME不同步
+    _btc_hcme = btc_data.get('hcme_dir', 0)
+    _eth_hcme = eth_data.get('hcme_dir', 0)
+    if _btc_hcme * _eth_hcme < 0:
+        _signals.append(f'HCME不同步: BTC={_btc_hcme:+.1f}% ETH={_eth_hcme:+.1f}%=市场分化')
+    return {
+        'has_cross_signal': len(_signals) > 0,
+        'signals': _signals,
+        'sync_count': len(_signals),
+    }
+
+# --- 动态决策框架 ---
+def _dynamic_framework(macro_ctx: Dict, path_ctx: Dict, cross_ctx: Dict) -> Dict:
+    """根据宏观事件/价格路径/跨标的信号调整决策规则"""
+    _rules = {'pre_event_caution': False, 'post_event_volatility': False,
+              'failed_breakout_detected': False, 'market_level_signal': False,
+              'position_mult': 1.0, 'leverage_mult': 1.0}
+    # 宏观事件前2小时=减仓观望
+    if macro_ctx.get('phase') == 'pre_event' and macro_ctx.get('hours_to_event', 99) <= 2:
+        _rules['pre_event_caution'] = True
+        _rules['position_mult'] *= 0.5
+        _rules['leverage_mult'] *= 0.5
+    # 宏观事件后2小时=波动放大，等K线收完
+    if macro_ctx.get('phase') == 'post_event':
+        _rules['post_event_volatility'] = True
+        _rules['leverage_mult'] *= 0.7
+    # 逼空失败检测=降低逼空概率
+    if path_ctx.get('pattern') == 'failed_breakout':
+        _rules['failed_breakout_detected'] = True
+    # 市场级信号=提高确信度
+    if cross_ctx.get('has_cross_signal') and cross_ctx.get('sync_count', 0) >= 2:
+        _rules['market_level_signal'] = True
+    return _rules
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # 6层决策引擎
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -55,8 +199,18 @@ def decide(
     res: Dict, symbol: str = '',
 ) -> Dict[str, Any]:
     """
-    6层确定性决策 + 12项能力统一输出
+    6层确定性决策 + 12项能力统一输出 + Layer 0市场感知
     """
+    # ════════════════════════════════════════════════════════════
+    # Layer 0: 市场感知层 — 宏观日历+价格路径+跨标的+动态框架
+    # ════════════════════════════════════════════════════════════
+    _macro_ctx = _check_macro_calendar()
+    _track_price(symbol, price)
+    _path_ctx = _analyze_price_path(symbol)
+    # 跨标的关联需要外部传入（brahma_manual_analysis跑完两个标的后注入）
+    _cross_ctx = {'has_cross_signal': False, 'signals': [], 'sync_count': 0}
+    _dyn_rules = _dynamic_framework(_macro_ctx, _path_ctx, _cross_ctx)
+
     # ════════════════════════════════════════════════════════════
     # Layer 1: 大环境层 — 体制+强度+自我怀疑+CHOP区间
     # ════════════════════════════════════════════════════════════
@@ -281,8 +435,9 @@ def decide(
         _nav = risk.get('nav_mult', 1.0)
         _base = 5.0
         _mult = 1.0 if action == 'ENTER' else 0.4  # WATCH轻仓×0.4
-        position_pct = max(1, round(_base * _conf_mult * _nav * _sm * _mult))
+        position_pct = max(1, round(_base * _conf_mult * _nav * _sm * _mult * _dyn_rules['position_mult']))
         leverage = lev_base if action == 'ENTER' else max(3, lev_base // 2)
+        leverage = max(3, int(leverage * _dyn_rules['leverage_mult']))
         if regime_state == 'RED':
             position_pct = max(1, position_pct // 2)
             leverage = max(3, leverage // 2)
@@ -321,6 +476,8 @@ def decide(
         'triggers': triggers, 'scenarios': scenarios,
         'ic_ev': _ic_ev, 'ic_wr': _ic_wr,
         'score': score, 'regime': regime,
+        'macro_ctx': _macro_ctx, 'path_ctx': _path_ctx,
+        'dyn_rules': _dyn_rules,
     }
 
 
@@ -478,8 +635,25 @@ def format_narrative(result: Dict, symbol: str, price: float, regime: str, fvg: 
     score = result.get('score', 0)
 
     parts = []
-    # 1. 市场现状
-    parts.append(f'{symbol.replace("USDT","")}在${price:,.0f}，{regime} score={score:.0f}，FVG{fvg.get("consensus","NONE")}共识，OI={oi_signal}。')
+    # Layer 0上下文注入
+    _macro = result.get('macro_ctx', {})
+    _path = result.get('path_ctx', {})
+    _dyn = result.get('dyn_rules', {})
+
+    # 1. 市场现状（+宏观事件+价格路径）
+    _intro = f'{symbol.replace("USDT","")}在${price:,.0f}，{regime} score={score:.0f}，FVG{fvg.get("consensus","NONE")}共识，OI={oi_signal}。'
+    if _macro.get('has_event'):
+        _evt = _macro['event']
+        _phase = _macro['phase']
+        if _phase == 'pre_event':
+            _intro += f' ⚠️今日{_evt}（距公布{_macro.get("hours_to_event",0)}h）=催化剂前夜，数据前不重仓。'
+        elif _phase == 'post_event':
+            _intro += f' {_evt}已公布（{_macro.get("hours_to_event",0)}h前），等1分钟K线收完再动。'
+    if _path.get('path_available') and _path.get('pattern') != 'normal':
+        _pat_map = {'failed_breakout': '先冲高后回落=逼空失败', 'failed_breakdown': '先下跌后反弹=猎杀失败',
+                    'momentum_up': '持续上涨=动量向上', 'momentum_down': '持续下跌=动量向下'}
+        _intro += f' 价格路径：{_pat_map.get(_path["pattern"], _path["pattern"])}（{_path["change_pct"]:+.1f}%）。'
+    parts.append(_intro)
 
     # 2. 主力意图+推断
     if big_long >= 60 and 'UNWIND' in oi_signal:
@@ -514,9 +688,17 @@ def format_narrative(result: Dict, symbol: str, price: float, regime: str, fvg: 
     if fvg.get('magnet', 0) > 0: _lv.append(f'FVG磁铁${fvg["magnet"]:,.1f}')
     if _lv: parts.append('关键价位：' + ' / '.join(_lv) + '。')
 
-    # 6. 结论+触发器
+    # 6. 结论+触发器（+动态规则提醒）
     if triggers:
         parts.append('触发器：' + ' / '.join(triggers) + '。')
+    if _dyn.get('pre_event_caution'):
+        parts.append('⚠️ 动态框架：宏观事件前2h，仓位×0.5+杠杆×0.5。')
+    if _dyn.get('post_event_volatility'):
+        parts.append('⚠️ 动态框架：宏观事件后，波动放大，等K线收完。')
+    if _dyn.get('failed_breakout_detected'):
+        parts.append('⚠️ 价格路径检测到逼空失败，逼空概率降低。')
+    if _dyn.get('market_level_signal'):
+        parts.append('⚠️ 市场级信号：BTC+ETH同步，确信度提升。')
 
     return ' '.join(parts)
 
