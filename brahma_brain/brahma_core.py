@@ -4730,9 +4730,44 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     elif not any(_final_regime.startswith(r) for r in _valid_regimes):
         _result['_regime_nonstandard'] = True  # 子体制如BEAR_TREND_FRESH，打标记不修改
 
-    return _result
+    # ── [Trader Brain 2026-09-11 苏摩111] 交易员大脑接入 ───────────────
+    # 职责: 6层确定性决策，注入分析结果末尾（不修改score，只注入决策）
+    # 接入位置: return前最后一步（SW权重+断言后）
+    try:
+        from brahma_brain.trader_brain import decide as _tb_decide
+        _tb_r = _tb_decide(
+            regime=_result.get('regime', 'CHOP_MID'),
+            score=float(_result.get('score_final', _result.get('score', 0)) or 0),
+            grade=float(_result.get('grade', 0) or 0),
+            macro={'high_impact': bool(_result.get('confluence', {}).get('breakdown', {}).get('宏观压制'))},
+            risk={'regime_state': _result.get('regime_state', 'GREEN'), 'nav_mult': 1.0},
+            hurst=float(_result.get('confluence', {}).get('breakdown', {}).get('Hurst', 0.5) or 0.5),
+            fvg=_result.get('fvg', {}),
+            ob=_result.get('ob', {}),
+            liq=_result.get('liq', {}),
+            atr_1h=float(_result.get('atr_1h', 0) or 0),
+            atr_4h=float(_result.get('atr_4h', 0) or 0),
+            price=float(_result.get('price', 0) or 0),
+            oi=_result.get('oi', {}),
+            sm=_result.get('sm', {}),
+            vol=_result.get('vol', {}),
+            res=_result.get('resonance', {}),
+            symbol=_result.get('symbol', ''),
+        )
+        _result['trader_brain'] = {
+            'action': _tb_r.get('action'),
+            'direction': _tb_r.get('direction'),
+            'entry_lo': _tb_r.get('entry_lo'),
+            'entry_hi': _tb_r.get('entry_hi'),
+            'sl': _tb_r.get('sl'),
+            'rr': _tb_r.get('rr'),
+            'confidence': _tb_r.get('confidence'),
+            'missing': _tb_r.get('missing', []),
+        }
+    except Exception:
+        pass  # trader_brain失败不阻断分析
 
-def format_report(r: dict) -> str:
+    return _result
     """[shim] 已迁移到 brahma_brain/formatter.py · v25.0"""
     from brahma_brain.formatter import format_report as _fmt
     return _fmt(r)
