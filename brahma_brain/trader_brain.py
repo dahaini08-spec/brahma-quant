@@ -357,23 +357,69 @@ def decide(
 
 
 def format_vip_card(result: Dict, symbol: str, price: float, regime: str) -> str:
-    """格式化VIP卡片输出（姓赵不宣格式）"""
-    if result['action'] != 'ENTER':
-        return f'⏳ {result["reason"]}'
-
-    d = result['direction']
-    emoji = '🟢' if d == 'LONG' else '🔴'
+    """格式化VIP卡片输出（姓赵不宣格式）
+    ENTER → 完整VIP卡片
+    WAIT  → 观点卡片（有方向+入场区+缺失条件，不是空白）
+    """
     sym = symbol.replace('USDT', '')
-    entry_lo = result['entry_lo']
-    entry_hi = result['entry_hi']
-    sl = result['sl']
-    tp1 = result['tp1']
-    tp2 = result['tp2']
-    tp3 = result['tp3']
+    d = result['direction']
+    emoji = '🟢' if d == 'LONG' else '🔴' if d == 'SHORT' else '⚪'
+    entry_lo = result.get('entry_lo', 0)
+    entry_hi = result.get('entry_hi', 0)
+    sl = result.get('sl', 0)
+    tp1 = result.get('tp1', 0)
+    tp2 = result.get('tp2', 0)
+    tp3 = result.get('tp3', 0)
+    rr = result.get('rr', 0)
+    sl_pct = result.get('sl_pct', 0)
+    missing = result.get('missing', [])
+    cross = result.get('consistent_count', 0)
+    layer_dirs = result.get('cross_check', {}).get('layer_directions', {})
+
+    if result['action'] != 'ENTER':
+        # ── WAIT观点卡片：有方向就给入场区，没方向就给监测位 ──
+        lines = [f'🌿 姓赵不宣 | {sym} 今日观点', '']
+
+        if d != 'NONE' and entry_lo > 0 and entry_hi > 0:
+            # 有方向+有入场区 → 给具体点位，标注条件未满
+            lines.append(
+                f'{emoji} {"多单" if d == "LONG" else "空单"}｜'
+                f'{"回调" if d == "LONG" else "反弹"}入场区 ${entry_lo:,.1f}~${entry_hi:,.1f}'
+            )
+            if sl > 0:
+                lines.append(f'止损 ${sl:,.1f}｜目标 ${tp1:,.0f}→${tp2:,.0f}→${tp3:,.0f}')
+                lines.append(f'RR={rr:.1f}x  SL={sl_pct:.1f}%')
+            lines.append(f'交叉验证 {cross}/4  ' + ' '.join(f'{k}={v}' for k,v in layer_dirs.items()))
+            lines.append('')
+            # 列出缺失条件
+            if missing:
+                lines.append(f'⏳ 待确认：{" / ".join(missing)}')
+            lines.append(f'⚠️ 方向{d}，条件未满，等确认后入场')
+        elif d != 'NONE':
+            # 有方向但入场区=0 → 给监测位
+            lines.append(f'{emoji} 偏{d}｜监测位 ${price:,.1f}')
+            lines.append(f'交叉验证 {cross}/4  ' + ' '.join(f'{k}={v}' for k,v in layer_dirs.items()))
+            lines.append('')
+            if missing:
+                lines.append(f'⏳ 待确认：{" / ".join(missing)}')
+            lines.append(f'⚠️ 方向{d}但无共振入场区，等结构形成')
+        else:
+            # 无方向 → 给区间监测
+            lines.append(f'⚪ 无方向｜现价 ${price:,.1f}')
+            lines.append(f'交叉验证 {cross}/4  ' + ' '.join(f'{k}={v}' for k,v in layer_dirs.items()))
+            lines.append('')
+            if missing:
+                lines.append(f'⏳ {" / ".join(missing)}')
+            lines.append('⚠️ 体制无方向，等趋势确认')
+
+        if result.get('conflict_resolution'):
+            lines.append(f'⚙️ {result["conflict_resolution"]}')
+        lines.append('📊 梵天系统｜数据驱动｜不是建议')
+        return '\n'.join(lines)
+
+    # ── ENTER: 完整VIP卡片 ──
     lev = result['leverage']
     pos = result['position_pct']
-    rr = result['rr']
-    sl_pct = result['sl_pct']
 
     card = (
         f'🌿 姓赵不宣 | {sym} 今日布局\n'
