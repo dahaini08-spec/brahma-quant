@@ -1643,32 +1643,9 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     res = step4_resonance(d, fvg, ob, liq, oi=oi, vol=vol)
 
     # AI议会实时裁决（纯规则引擎，零延迟零成本）
-    council = {}
-    try:
-        import sys as _sys2
-        _sys2.path.insert(0, str(BASE / 'brahma_brain'))
-        from llm_council import council_verdict
-        bd_c     = d['bs'].get('confluence', {}).get('breakdown', {})
-        regime_c = d['regime_s'].get(sym+'USDT',{}).get('confirmed', d['bs'].get('regime','CHOP_MID'))
-        bias_dir_c = 'LONG' if (oi['signal'] in ('LONG_BUILD','SHORT_SQUEEZE') and sm['big_long'] > 52) else 'SHORT'
-        council = council_verdict(
-            breakdown=bd_c, signal_dir=bias_dir_c,
-            regime=regime_c,
-            score=float(d['bs'].get('score_final', d['bs'].get('score', 0))),
-            liq_data=liq,
-            # 传入实时信号供LLM真实裁决（设计院三方封印 2026-09-04）
-            fvg_dir=fvg['dir'],
-            oi_signal=oi['signal'],
-            sm_signal=sm['signal'],
-            hurst=vol['hurst'],
-            kappa=vol['kappa'],
-            entry_lo=res['entry_lo'],
-            entry_hi=res['entry_hi'],
-            price=p,
-            sym=sym,
-        )
-    except Exception as _ce:
-        council = {'bias':'N/A','reason':str(_ce)[:40],'action':'WAIT','confidence':'LOW'}
+    # ── P2-2: council_verdict移除（2026-09-11 苏摩111）──
+    # 旧AI议会已由trader_brain 6层确定性决策替代
+    council = {'bias':'N/A','reason':'council已废弃','action':'WAIT','confidence':'LOW','source':'废弃'}
 
     # ── trader_brain 6层确定性决策引擎（2026-09-11 苏摩111封印）──
     tb_result = {}
