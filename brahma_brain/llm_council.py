@@ -129,12 +129,17 @@ def council_verdict(
     struct_reasons = []
 
     # SMC结构
+    # [D2修复 2026-09-11] SMC描述用实际方向而非分数高低
     smc_score = breakdown.get('SMC结构', 0)
     if isinstance(smc_score, str):
         try: smc_score = float(smc_score.split()[0])
         except: smc_score = 0
+    _fvg_c = fvg_dir  # [D2修复] 用函数参数fvg_dir
     if smc_score >= 12:
-        votes.append(+1); struct_reasons.append('SMC结构强')
+        if _fvg_c == 'BEAR':
+            votes.append(-1); struct_reasons.append(f'SMC结构偏空({smc_score:.0f})')
+        else:
+            votes.append(+1); struct_reasons.append(f'SMC结构偏多({smc_score:.0f})')
     elif smc_score <= 0:
         votes.append(-1); struct_reasons.append('SMC结构弱')
     else:
@@ -200,6 +205,20 @@ def council_verdict(
         votes.append(-1); quant_reasons.append('多头拥挤')
 
     # ── 综合裁决 ─────────────────────────────────────────────────────────────
+    # [D4修复 2026-09-11] 矛盾裁决结果传入最终裁决
+    _oi_bull = oi_signal in ('LONG_BUILD', 'SHORT_SQUEEZE')
+    _sm_bull = sm_signal in ('STRONG_BULL', 'MILD_BULL')
+    if _oi_bull != _sm_bull:  # OI与聪明钱矛盾
+        _oi_change = 0  # [D4修复] OI变化量（TODO: 从调用方传入）
+        if abs(_oi_change) > 5000:
+            # 跟随OI → 偏空/偏空方向加一票
+            votes.append(-1 if _oi_bull == False else +1)
+            quant_reasons.append(f'矛盾裁决跟随OI({oi_signal})')
+        else:
+            # 跟随聪明钱
+            votes.append(+1 if _sm_bull else -1)
+            quant_reasons.append(f'矛盾裁决跟随聪明钱({sm_signal})')
+
     council_score = sum(votes)
     all_reasons = macro_reasons + struct_reasons + quant_reasons
 
