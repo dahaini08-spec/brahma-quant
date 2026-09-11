@@ -52,7 +52,10 @@ def council_verdict(
     # [P0修复 2026-09-07 苏摩111] score<145不调用LLM — 节省免费额度
     # 理由: score<145信号会被gates.py拦截，LLM调用纯属浪费
     # 145-160黄金段WR=89.3%，正是需要LLM精确裁决的区间
-    if price > 0 and entry_lo > 0 and score >= 145:
+    # [P1-2修复 2026-09-11 苏摩111] AI议会确定性化：移除LLM调用，纯规则引擎
+    # 原因：LLM裁决非确定性，同一组数据可能给出不同裁决 → 交易系统必须确定性
+    # 规则引擎已足够：体制+SMC+清算+大户+MTF+量能 6维投票，确定性可复现
+    if False:  # 永久禁用LLM调用
         try:
             import sys as _sys
             from pathlib import Path as _Path

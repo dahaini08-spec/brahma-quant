@@ -386,7 +386,14 @@ def step3_liq(d: dict) -> dict:
 # Step 4: 共振点
 # ══════════════════════════════════════════════════════════
 
-def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict) -> dict:
+def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict, oi: dict = None, vol: dict = None) -> dict:
+    """[P2-4修复 2026-09-11] 共振升级5维：FVG+OB+清算+OI+GEX
+    FVG+OB同源（价格结构）→ 1.5个独立信号
+    OI独立（量价关系）→ 1个独立信号
+    GEX独立（期权市场）→ 1个独立信号
+    清算半独立（持仓数据）→ 0.5个独立信号
+    总计4个独立信号，远大于原3/3的1.5个独立信号
+    """
     price = d['price']
 
     fvg_mid     = fvg['magnet']
@@ -483,16 +490,49 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict) -> dict:
     if entry_lo == 0.0 and resonance:
         missing.append('入场区方向错误（商品价格不在入场区正确一侧）')
 
+    # [P2-4修复 2026-09-11] OI/GEX作为独立共振维度
+    has_oi = False
+    has_gex = False
+    if oi and oi.get('signal','') not in ('NO_DATA','MIXED'):
+        has_oi = True
+        score += 1
+    if vol and vol.get('gex_note',''):
+        has_gex = True
+        score += 1
+    # 共振标准升级：≥3/5 = 有效共振（原2/3）
+    resonance = score >= 3
+
+    # [P2-5修复 2026-09-11] 交叉验证层：Step1-4结构层 vs Step5-9市场层
+    cross_check = {'consistent': True, 'conflicts': []}
+    if oi and fvg_dir != 'NONE':
+        _struct_bull = fvg_dir == 'BULL'
+        _oi_bull = oi['signal'] in ('LONG_BUILD', 'SHORT_SQUEEZE')
+        if _struct_bull != _oi_bull:
+            cross_check['consistent'] = False
+            cross_check['conflicts'].append(f'FVG={fvg_dir} vs OI={oi["signal"]}')
+    if vol and fvg_dir != 'NONE':
+        _kappa_bull = vol.get('kappa', 0) < -0.05
+        _struct_bull = fvg_dir == 'BULL'
+        if _struct_bull != _kappa_bull and abs(vol.get('kappa', 0)) > 0.03:
+            cross_check['consistent'] = False
+            cross_check['conflicts'].append(f'FVG={fvg_dir} vs κ={vol.get("kappa",0):.3f}')
+    # Hurst交叉验证：共振但Hurst<0.5 = 信号可信度存疑
+    if vol and vol.get('hurst', 0.5) < 0.5 and resonance:
+        cross_check['conflicts'].append(f'共振但Hurst={vol["hurst"]:.3f}<0.5=随机游走')
+
     return {
         'resonance':   resonance,
         'score':       score,
         'has_fvg':     has_fvg,
         'has_ob':      has_ob,
         'has_liq':     has_liq,
+        'has_oi':      has_oi,
+        'has_gex':     has_gex,
         'entry_lo':    entry_lo,
         'entry_hi':    entry_hi,
         'missing':     missing,
-        'liq_nearest_long': liq.get('nearest_long', 0),  # [P1修复] 传递支撑池给step10
+        'liq_nearest_long': liq.get('nearest_long', 0),
+        'cross_check': cross_check,
     }
 
 # ══════════════════════════════════════════════════════════
@@ -1186,6 +1226,15 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
         pass
     base_nav_main = max(1, base_nav_main)
 
+    # [P1-3修复 2026-09-11] 仓位=f(score)线性映射
+    # score=110 → 仓位×1.0（基线）
+    # score=130 → 仓位×1.3
+    # score=150 → 仓位×1.5（上限）
+    _score = float(bs.get('score_final', bs.get('score', 0)))
+    if _score >= 110:
+        _score_mult = min(1.5, 1.0 + (_score - 110) / 100.0)  # 110→1.0, 160→1.5
+        base_nav_main = max(1, round(base_nav_main * _score_mult))
+
     lev_side  = max(3, base_lev_main - 5)
     nav_side  = max(1, base_nav_main // 2)
 
@@ -1313,11 +1362,10 @@ def run_analysis(sym: str) -> str:
         print(f'[{sym}] CHOP旁路检测跳过: {_bw_e}', flush=True)
     # ─────────────────────────────────────────────────────────
 
-    print(f'[{sym}] Step 1~4: FVG/OB/清算/共振...', flush=True)
+    print(f'[{sym}] Step 1~3: FVG/OB/清算...', flush=True)
     fvg = step1_fvg(d)
     ob  = step2_ob(d)
     liq = step3_liq(d)
-    res = step4_resonance(d, fvg, ob, liq)
 
     print(f'[{sym}] Step 5~9: OI/聪明钱/波动率/宏观/风控...', flush=True)
     oi  = step5_oi(d)
@@ -1325,6 +1373,10 @@ def run_analysis(sym: str) -> str:
     vol = step7_volatility(d)
     mac = step8_macro(d)
     risk= step9_risk(d)
+
+    # [P2-4修复] Step 4共振升级5维：需要oi+vol
+    print(f'[{sym}] Step 4: 共振点（5维：FVG+OB+清算+OI+GEX）...', flush=True)
+    res = step4_resonance(d, fvg, ob, liq, oi=oi, vol=vol)
 
     # AI议会实时裁决（纯规则引擎，零延迟零成本）
     council = {}
@@ -1407,32 +1459,26 @@ def run_analysis(sym: str) -> str:
 
     # A: VIP入场理由LLM生成
     # B: 信号矛盾自动LLM裁决
+    # [P1-2修复 2026-09-11] AI议会确定性化：移除LLM裁决，用规则替代
     _llm_entry_reason = ''
     _llm_conflict     = ''
     try:
-        from scripts.free_llm_client import vip_entry_reason, signal_conflict_resolve
-        # A: 入场理由（仅有有效共振点时生成）
+        # A: 入场理由 → 用规则生成（替代LLM）
         if res['resonance'] and res['entry_lo'] > 0:
             _bias_a = 'LONG' if fvg['dir'] == 'BULL' else 'SHORT'
-            _llm_entry_reason = vip_entry_reason(
-                sym=sym, price=p, regime=regime,
-                fvg_dir=fvg['dir'], fvg_magnet=fvg['magnet'],
-                oi_signal=oi['signal'], sm_signal=sm['signal'],
-                hurst=vol['hurst'], kappa=vol['kappa'],
-                entry_lo=res['entry_lo'], entry_hi=res['entry_hi'],
-                bias=_bias_a,
-                liq_up=liq['nearest_short'], liq_dn=liq['nearest_long'],
+            _llm_entry_reason = (
+                f'{regime}体制顺势{_bias_a}+'
+                f'{fvg["dir"]}FVG磁铁+'
+                f'OI={oi["signal"]}+'
+                f'清算墙${liq["nearest_short"]:,.0f}磁吸'
             )
-        # B: 矛盾裁决（OI与大户方向不一致时触发）
+        # B: 矛盾裁决 → 用规则判断（替代LLM）
         _oi_bull = oi['signal'] in ('LONG_BUILD', 'SHORT_SQUEEZE')
         _sm_bull = sm['signal'] in ('STRONG_BULL', 'MILD_BULL')
-        if _oi_bull != _sm_bull:  # 信号矛盾
-            _llm_conflict = signal_conflict_resolve(
-                sym=sym, price=p, regime=regime,
-                oi_signal=oi['signal'], oi_desc=oi['conclusion'],
-                sm_signal=sm['signal'],
-                big_long=sm['big_long'], retail_long=sm['retail_long'],
-                fvg_dir=fvg['dir'],
+        if _oi_bull != _sm_bull:
+            _llm_conflict = (
+                f'OI={oi["signal"]} vs 聪明钱={sm["signal"]}矛盾 → '
+                f'{"跟随OI" if abs(oi.get("total_change",0))>5000 else "跟随聪明钱"}'
             )
     except Exception:
         pass
@@ -1463,8 +1509,9 @@ def run_analysis(sym: str) -> str:
         + (f'  → 第二层: ${liq["second_short"]:,.0f}' if liq.get('second_short') else ''),
         f'  🛡️下方多头支撑池: ${liq["nearest_long"]:,.0f} (-{liq["support_pct"]:.1f}%)',
         f'',
-        f'【Step4 共振点】',
-        f'  共振得分: {res["score"]}/3  {"✅有效共振，可布局" if res["resonance"] else "❌共振不足，等待"}',
+        f'【Step4 共振点】5维（FVG+OB+清算+OI+GEX）',
+        f'  共振得分: {res["score"]}/5  {"✅有效共振，可布局" if res["resonance"] else "❌共振不足，等待"}',
+        f'  FVG={res["has_fvg"]} OB={res["has_ob"]} 清算={res["has_liq"]} OI={res.get("has_oi",False)} GEX={res.get("has_gex",False)}',
         f'  入场区间: ${res["entry_lo"]:,.1f} ~ ${res["entry_hi"]:,.1f}',
     ]
     if res['missing']:
@@ -1496,6 +1543,10 @@ def run_analysis(sym: str) -> str:
         f'  {mac["pos_note"]}',
         f'  恐贪={mac["fear_greed"]}  宏观偏向={mac["macro_bias"]}',
     ]
+    if res.get('cross_check',{}).get('conflicts'):
+        lines.append(f'  ⚠️ 交叉验证矛盾: {" / ".join(res["cross_check"]["conflicts"])}')
+    elif res.get('cross_check',{}).get('consistent'):
+        lines.append(f'  ✅ 交叉验证一致：结构层与市场层方向一致')
     if mac['high_impact']:
         lines.append(f'  ⚠️重大事件: {" / ".join(mac["high_impact"][:2])}')
 
