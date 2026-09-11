@@ -1759,33 +1759,8 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
 
     vip = step10_vip(sym, p, d, fvg, ob, liq, res, oi, sm, vol, mac, risk)
 
-    # 🤖 AI议会辩论过程可视化（2026-09-11 苏摩111）
+    # AI议会辩论已移除（2026-09-11 苏摩111）— trader_brain 6层确定性决策替代，debate代码不执行省2s
     _debate_block = ''
-    try:
-        import sys as _sys
-        _sys.path.insert(0, str(Path(__file__).parent))
-        from bull_bear_engine import debate as _debate_fn
-        _deb = _debate_fn(sym, p)
-        _bull_args = _deb.get('bull_args', [])
-        _bear_args = _deb.get('bear_args', [])
-        _bull_score = _deb.get('bull_score', 0)
-        _bear_score = _deb.get('bear_score', 0)
-        _verdict = _deb.get('bias_label', '')
-        _conviction = _deb.get('conviction', 0)
-        _deb_lines = ['【AI议会辩论】']
-        if _bull_args:
-            _deb_lines.append(f'  🐂 多头论据 (得分{_bull_score:.0f}):')
-            for _a in _bull_args[:5]:
-                _deb_lines.append(f'    • {_a}')
-        if _bear_args:
-            _deb_lines.append(f'  🐻 空头论据 (得分{_bear_score:.0f}):')
-            for _a in _bear_args[:5]:
-                _deb_lines.append(f'    • {_a}')
-        if _verdict:
-            _deb_lines.append(f'  ⚖️ 裁决: {_verdict} (置信差={_conviction:+.1f})')
-        _debate_block = '\n'.join(_deb_lines)
-    except Exception:
-        pass
 
     # A: VIP入场理由LLM生成
     # B: 信号矛盾自动LLM裁决
