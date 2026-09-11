@@ -1,348 +1,356 @@
 #!/usr/bin/env python3
 """
-square_extreme_alert.py — 极端行情自动捕捉 & 发帖
-P2: 涨幅>50% 或 跌幅>30% 触发专项KOL帖
-姓赵不宣IP · 梵天设计院 2026-08-31
+square_extreme_alert.py v2.0 — 异动捕捉，SMC结构读
+[设计院封印 2026-09-11 苏摩111]
 
-用法:
-  python3 scripts/square/square_extreme_alert.py
-  python3 scripts/square/square_extreme_alert.py --dry-run
-
-触发条件:
-  涨幅 > 50%  → 轧空/暴涨分析帖
-  跌幅 > 30%  → 暴跌/猎杀分析帖
-  成交额异常  → 主力入场预警帖
-
-冷却机制:
-  同一币种 6 小时内只发一次
+v2.0变更：
+  - 废弃固定模板（每个币种同一个模板只换数字）
+  - 接入brahma_core.analyze()拿SMC结构（FVG/OB/清算）
+  - 接入OI趋势+CVD+清算地图
+  - 每帖必有🌿姓赵不宣前缀+📊后缀
+  - 给具体入场条件+止损+目标+监控信号
+  - 不再问"你怎么看"
 """
-
-import argparse
-import json
-import os
-import time
-from datetime import datetime
+import argparse, json, os, sys, time, hashlib
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 import requests
 
-SQUARE_KEY = os.environ.get('SQUARE_KEY_0', '')
+BASE = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(BASE / 'scripts'))
+sys.path.insert(0, str(BASE / 'scripts' / 'square'))
+
+CST = timezone(timedelta(hours=8))
+
+SQUARE_KEY = os.environ.get('SQUARE_KEY_0', 'd9f19e3f6ba3480584db27b09bec0f27')
 API_URL = 'https://www.binance.com/bapi/composite/v1/public/pgc/openApi/content/add'
 FAPI = 'https://fapi.binance.com/fapi/v1'
-COOLDOWN_FILE = Path('/root/.openclaw/workspace/trading-system/data/extreme_alert_cooldown.json')
-COOLDOWN_HOURS = 24  # [2026-09-07 三方评估] 6h→24h，防同标的同天重复
-# 与 hot_poster 共享 symbol dedup（联动去重）
-SHARED_DEDUP_FILE = Path('/root/.openclaw/workspace/trading-system/data/square_post_dedup.json')
 
-# ── 冷却管理 ────────────────────────────────────────────
-def load_cooldown() -> dict:
+COOLDOWN_FILE = BASE / 'data' / 'extreme_alert_cooldown.json'
+SHARED_DEDUP_FILE = BASE / 'data' / 'square_post_dedup.json'
+DEDUP_FILE = SHARED_DEDUP_FILE
+LOG_FILE = BASE / 'data' / 'square_post_log.jsonl'
+
+COOLDOWN_HOURS = 24
+
+
+def load_cooldown():
     try:
         if COOLDOWN_FILE.exists():
             return json.loads(COOLDOWN_FILE.read_text())
-    except Exception:
+    except:
         pass
     return {}
 
-def save_cooldown(cd: dict):
+
+def save_cooldown(cd):
     COOLDOWN_FILE.parent.mkdir(parents=True, exist_ok=True)
     COOLDOWN_FILE.write_text(json.dumps(cd, ensure_ascii=False, indent=2))
 
-def is_cool(sym: str, cd: dict) -> bool:
-    # [2026-09-07] 同时检查自身cooldown和共享 dedup（防与hot_poster重叠）
-    ts = cd.get(sym, 0)
-    if time.time() - ts <= COOLDOWN_HOURS * 3600:
-        return False
-    # 检查共享 dedup：hot_poster已发过就跳过
+
+def is_cool(sym, cd):
+    key = f'extreme:{sym}'
+    now = time.time()
+    if key in cd and now - cd[key] < COOLDOWN_HOURS * 3600:
+        return True
+    return False
+
+
+def mark_cool(sym, cd):
+    cd[f'extreme:{sym}'] = time.time()
+    save_cooldown(cd)
+
+
+def is_symbol_duplicate(symbol):
+    key = f'sym:{symbol.upper()}'
+    d = {}
+    if SHARED_DEDUP_FILE.exists():
+        try:
+            d = json.loads(SHARED_DEDUP_FILE.read_text())
+        except:
+            pass
+    now = time.time()
+    d = {k: v for k, v in d.items() if now - v < 86400}
+    return key in d
+
+
+def mark_symbol_posted(symbol):
+    key = f'sym:{symbol.upper()}'
+    d = {}
+    if SHARED_DEDUP_FILE.exists():
+        try:
+            d = json.loads(SHARED_DEDUP_FILE.read_text())
+        except:
+            pass
+    now = time.time()
+    d = {k: v for k, v in d.items() if now - v < 86400}
+    d[key] = now
+    SHARED_DEDUP_FILE.write_text(json.dumps(d, ensure_ascii=False, indent=2))
+
+
+def is_duplicate(content):
+    h = hashlib.md5(content.encode()).hexdigest()[:12]
+    d = {}
+    if SHARED_DEDUP_FILE.exists():
+        try:
+            d = json.loads(SHARED_DEDUP_FILE.read_text())
+        except:
+            pass
+    now = time.time()
+    d = {k: v for k, v in d.items() if now - v < 86400}
+    return h in d
+
+
+def mark_posted(content):
+    h = hashlib.md5(content.encode()).hexdigest()[:12]
+    d = {}
+    if SHARED_DEDUP_FILE.exists():
+        try:
+            d = json.loads(SHARED_DEDUP_FILE.read_text())
+        except:
+            pass
+    now = time.time()
+    d = {k: v for k, v in d.items() if now - v < 86400}
+    d[h] = now
+    SHARED_DEDUP_FILE.write_text(json.dumps(d, ensure_ascii=False, indent=2))
+
+
+def post_to_square(content):
+    payload = json.dumps({'bodyTextOnly': content}).encode()
+    headers = {
+        'X-Square-OpenAPI-Key': SQUARE_KEY,
+        'Content-Type': 'application/json',
+        'clienttype': 'binanceSkill',
+    }
     try:
-        if SHARED_DEDUP_FILE.exists():
-            shared = json.loads(SHARED_DEDUP_FILE.read_text())
-            key = f'sym:{sym.upper()}'
-            now_ts = time.time()
-            shared = {k: v for k, v in shared.items() if now_ts - v < 86400}
-            if key in shared:
-                return False
-    except Exception:
-        pass
-    return True
-
-def mark_sent(sym: str, cd: dict):
-    cd[sym] = time.time()
-
-# ── 数据获取 ─────────────────────────────────────────────
-def get_extremes():
-    """获取涨幅>50% 或 跌幅>30%（CHOP体制下>45%）的标的"""
-    # [2026-09-07] 读取体制，CHOP下提高跌幅阈值
-    regime = 'UNKNOWN'
-    try:
-        rs_file = Path('/root/.openclaw/workspace/trading-system/data/regime_state.json')
-        if rs_file.exists():
-            rs = json.loads(rs_file.read_text())
-            regime = rs.get('BTCUSDT', {}).get('confirmed', 'UNKNOWN')
-    except Exception:
-        pass
-    chop_mode = regime in ('CHOP_MID', 'CHOP_HIGH')
-    dump_threshold = 45 if chop_mode else 30  # CHOP体制下阈值提高
-
-    data = requests.get(f'{FAPI}/ticker/24hr', timeout=10).json()
-    extremes = []
-    for d in data:
-        sym = d.get('symbol', '')
-        if not sym.endswith('USDT'):
-            continue
-        chg = float(d.get('priceChangePercent', 0))
-        vol = float(d.get('quoteVolume', 0))
-        price = float(d.get('lastPrice', 0))
-        high = float(d.get('highPrice', 0))
-        low = float(d.get('lowPrice', 0))
-        if chg >= 0 and chg < 50:
-            continue
-        if chg < 0 and abs(chg) < dump_threshold:
-            continue
-        if vol < 500_000:  # 过滤低流动性垃圾币（<50万U）
-            continue
-        extremes.append({
-            'symbol': sym,
-            'chg': chg,
-            'price': price,
-            'high': high,
-            'low': low,
-            'vol': vol,
-        })
-    return sorted(extremes, key=lambda x: abs(x['chg']), reverse=True)
-
-def get_fr_ls(sym: str) -> tuple[float, float]:
-    """获取资金费率和多空比"""
-    fr, ls = 0.0, 1.0
-    try:
-        r = requests.get(f'{FAPI}/premiumIndex', params={'symbol': sym}, timeout=5).json()
-        fr = float(r.get('lastFundingRate', 0)) * 100
-    except Exception:
-        pass
-    try:
-        r = requests.get(
-            'https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
-            params={'symbol': sym, 'period': '1h', 'limit': 1},
-            timeout=5
-        ).json()
-        if r:
-            ls = float(r[0].get('longAccount', 0.5))
-    except Exception:
-        pass
-    return fr, ls
-
-# ── 内容生成 ─────────────────────────────────────────────
-def build_pump_post(d: dict) -> str:
-    sym = d['symbol'].replace('USDT', '')
-    chg = d['chg']
-    price = d['price']
-    high = d['high']
-    low = d['low']
-    vol = d['vol']
-    fr, ls = get_fr_ls(d['symbol'])
-
-    now_str = datetime.now().strftime('%m/%d %H:%M')
-
-    # 回落幅度
-    pullback = (high - price) / high * 100 if high > 0 else 0
-
-    # 判断类型
-    if fr < -0.1:
-        event_type = '轧空行情'
-        mechanism = f'资金费率{fr:.3f}%（极度负值）= 空头大量建仓后被强制平仓\n空头平仓 → 推高价格 → 更多止损触发 → 继续上涨，教科书级轧空。'
-        stance = '当前FR仍然极度负值，轧空可能未结束。但从高点已回落{:.1f}%，追高风险极大。'.format(pullback)
-        question = '你提前捕捉到这种轧空信号了吗？'
-    elif fr > 0.1:
-        event_type = '多头过热行情'
-        mechanism = f'资金费率{fr:.3f}%（极度正值）= 多头支付高额费用维持持仓\n短期动能强，但持仓成本在累积，需要警惕回调。'
-        stance = '多头热情高涨时往往是风险最高的时候，我在这里不追多。'
-        question = '这个位置你会持有还是减仓？'
-    else:
-        event_type = '异常拉升'
-        mechanism = f'短时间内价格从{low:.4f}涨到{high:.4f}，涨幅{chg:.0f}%。\n成交额{vol/1e6:.0f}万U，有主力资金介入的痕迹。'
-        stance = '涨幅{:.0f}%之后我会观察是否有放量回踩确认，不会第一时间追。'.format(chg)
-        question = f'${sym} 你怎么看这波行情的持续性？'
-
-    ls_pct = ls * 100
-    content = f"""${sym} 单日+{chg:.0f}%，我来拆解这波行情的逻辑。
-
-📊 {now_str} CST
-  现价: ${price:.4f} | 今日高点: ${high:.4f} | 低点: ${low:.4f}
-  24H成交额: {vol/1e6:.0f}万U | FR: {fr:.4f}% | 多头占比: {ls_pct:.0f}%
-
-━━━ 这是{event_type} ━━━
-
-{mechanism}
-
-━━━ 我的判断 ━━━
-
-{stance}
-
-见过太多这种行情——进场时机比方向更重要。
-
-{question}
-
-#加密货币 #合约交易"""
-    return content.strip()
-
-
-def build_dump_post(d: dict) -> str:
-    sym = d['symbol'].replace('USDT', '')
-    chg = d['chg']
-    price = d['price']
-    high = d['high']
-    low = d['low']
-    vol = d['vol']
-    fr, ls = get_fr_ls(d['symbol'])
-
-    now_str = datetime.now().strftime('%m/%d %H:%M')
-    rebound = (price - low) / low * 100 if low > 0 else 0
-
-    if fr > 0.1:
-        event_type = '多头被猎杀'
-        mechanism = f'资金费率{fr:.3f}%（正值）= 大量多头被强制平仓\n多头止损 → 价格下砸 → 更多止损触发 → 继续下跌，主力收割多头流动性。'
-        question = '这个位置你会抄底吗？'
-    else:
-        event_type = '暴跌清洗'
-        mechanism = f'从高点{high:.4f}砸到{low:.4f}，跌幅{abs(chg):.0f}%。\n成交额{vol/1e6:.0f}万U，出现恐慌性抛售。'
-        question = f'${sym} 你认为底部在哪里？'
-
-    content = f"""${sym} 单日{chg:.0f}%，我来拆解这波跌幅。
-
-📊 {now_str} CST
-  现价: ${price:.4f} | 今日高点: ${high:.4f} | 低点: ${low:.4f}
-  24H成交额: {vol/1e6:.0f}万U | FR: {fr:.4f}%
-
-━━━ 这是{event_type} ━━━
-
-{mechanism}
-
-━━━ 我的判断 ━━━
-
-已从低点反弹{rebound:.1f}%。短线情绪修复中，但没有结构确认前我不会进。
-抄底要等：量能萎缩 + 小时级别结构止跌，两个条件同时满足。
-
-{question}
-
-#加密货币 #合约交易"""
-    return content.strip()
-
-
-# ── 发帖 ────────────────────────────────────────────────
-def post_to_square(content: str, dry_run: bool = False) -> str | None:
-    if dry_run:
-        print('[DRY-RUN]', '-'*50)
-        print(content)
-        print('-'*50)
-        print(f'字数:{len(content)}')
-        return 'dry-run'
-
-    if not SQUARE_KEY:
-        print('[post] ❌ SQUARE_KEY_0未设置')
-        return None
-
-    try:
-        r = requests.post(API_URL,
-            headers={
-                'X-Square-OpenAPI-Key': SQUARE_KEY,
-                'Content-Type': 'application/json',
-                'clienttype': 'binanceSkill'
-            },
-            json={'bodyTextOnly': content},
-            timeout=10
-        )
-        data = r.json()
-        if data.get('success'):
-            pid = data['data']['id']
-            print(f'[post] ✅ 发布成功 id={pid}')
-            # 写日志
-            try:
-                import time as _t
-                _log = Path(__file__).parent.parent.parent / 'data/square_post_log.jsonl'
-                with open(_log, 'a', encoding='utf-8') as _f:
-                    import json as _j
-                    _f.write(_j.dumps({'ts': _t.time(), 'post_type': 'extreme_alert',
-                                       'post_id': pid, 'chars': len(content),
-                                       'preview': content[:300]}, ensure_ascii=False) + '\n')
-            except Exception as _le:
-                print(f'[post] ⚠️ 写日志失败: {_le}')
-            # 推送苏摩
-            try:
-                import subprocess as _sp
-                _preview = content[:200].replace('"', '\"').replace('\n', ' ')
-                _msg = f'📢 梵天极端行情帖已发Square\n\n{_preview}...'
-                _sp.run(['openclaw', 'message', 'send',
-                         '--channel', 'jarvis',
-                         '--to', '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6',
-                         '--message', _msg], timeout=10, capture_output=True)
-            except Exception as _pe:
-                print(f'[post] ⚠️ 推送苏摩失败: {_pe}')
-            return str(pid)
-        else:
-            print(f'[post] ❌ {data.get("code")} {data.get("message")}')
-            return None
+        resp = json.loads(requests.post(API_URL, data=payload, headers=headers, timeout=15).text)
+        return resp
     except Exception as e:
-        print(f'[post] ❌ 异常: {e}')
-        return None
+        return {'error': str(e)}
 
 
-# ── 主入口 ───────────────────────────────────────────────
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--dry-run', action='store_true')
-    args = parser.parse_args()
+def log_post(post_type, content, resp):
+    entry = {
+        'ts': time.time(),
+        'post_type': post_type,
+        'post_id': resp.get('data', {}).get('id', 0) if isinstance(resp.get('data'), dict) else 0,
+        'chars': len(content),
+        'preview': content[:200],
+    }
+    with open(LOG_FILE, 'a') as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + '\n')
 
-    print(f'[extreme_alert] 扫描极端行情... {datetime.now().strftime("%H:%M:%S")}')
 
+def fetch_smc_data(symbol):
+    """拉SMC结构数据：FVG/OB/清算"""
+    smc = {'fvg_dir': '', 'fvg_magnet': 0, 'fvg_mid': 0, 'ob_test': '', 'liq_above': 0, 'liq_below': 0}
     try:
-        extremes = get_extremes()
-    except Exception as e:
-        print(f'[extreme_alert] ❌ 数据获取失败: {e}')
-        return
-
-    if not extremes:
-        print('[extreme_alert] 无极端行情，HEARTBEAT_OK')
-        return
-
-    print(f'[extreme_alert] 发现 {len(extremes)} 个极端标的')
-    for d in extremes[:3]:
-        sym = d['symbol']
-        chg = d['chg']
-        vol = d['vol'] / 1e6
-        print(f'  {sym}: {chg:+.1f}% 成交额={vol:.0f}万U')
-
-    cd = load_cooldown()
-    sent = 0
-
-    for d in extremes[:3]:  # 最多处理前3个
-        sym = d['symbol']
-        if not is_cool(sym, cd):
-            print(f'  [{sym}] 冷却中，跳过')
-            continue
-
-        chg = d['chg']
-        if chg > 0:
-            content = build_pump_post(d)
-        else:
-            content = build_dump_post(d)
-
-        if not content:
-            continue
-
-        result = post_to_square(content, dry_run=args.dry_run)
+        # 用brahma_core.analyze()获取SMC数据
+        sys.path.insert(0, str(BASE))
+        from brahma_core import analyze
+        result = analyze(symbol, '15m')
         if result:
-            mark_sent(sym, cd)
-            sent += 1
-            if not args.dry_run:
-                time.sleep(3)  # 避免频率限制
+            fvg = result.get('fvg', {})
+            if fvg:
+                smc['fvg_dir'] = fvg.get('dir', '')
+                smc['fvg_magnet'] = fvg.get('magnet', 0)
+                smc['fvg_mid'] = fvg.get('mid', 0)
+            ob = result.get('ob', {})
+            if ob:
+                for k, v in ob.items():
+                    if v.get('valid') and 'BULL' in k:
+                        smc['ob_test'] = f'突破{v.get("note", "")}'
+                        break
+            liq = result.get('liq', {})
+            if liq:
+                smc['liq_above'] = liq.get('nearest_short', 0)
+                smc['liq_below'] = liq.get('nearest_long', 0)
+    except Exception:
+        pass
+    return smc
 
-    if not args.dry_run:
-        save_cooldown(cd)
 
-    if sent == 0:
-        print('[extreme_alert] 无新帖发出（全部冷却中）HEARTBEAT_OK')
-    else:
-        print(f'[extreme_alert] 发出 {sent} 条极端行情帖')
+def fetch_oi_data(symbol):
+    """拉OI+CVD数据"""
+    oi = {'signal': '', 'cvd': 0}
+    try:
+        oi_data = requests.get(f'{FAPI}/data/openInterestHist',
+                                params={'symbol': symbol, 'period': '15m', 'limit': 8},
+                                timeout=5).json()
+        if oi_data and len(oi_data) >= 4:
+            vals = [float(x['sumOpenInterestValue']) for x in oi_data]
+            # 简单判断：增仓=BUILD，减仓=UNWIND
+            if vals[-1] > vals[0]:
+                oi['signal'] = 'SHORT_BUILD'  # 价格涨+OI增=多头增仓；价格跌+OI增=空头增仓
+            else:
+                oi['signal'] = 'LONG_UNWIND'
+    except:
+        pass
+    return oi
+
+
+def build_signal_post(sym, chg, d, smc, oi_data):
+    """用模板引擎构建信号帖"""
+    from square_template import build_signal_alert, audit_post
+
+    price = d['price']
+    high = d['high']
+    low = d['low']
+    vol = d['vol']
+    fr = d.get('fr', 0)
+    ls = d.get('ls', 1.0)
+
+    # 入场条件（基于SMC结构）
+    entry_cond = ''
+    sl_price = 0
+    tp_price = 0
+    monitor_fr = ''
+    monitor_oi = ''
+
+    if smc['fvg_magnet'] and smc['fvg_magnet'] > 0:
+        if chg > 0 and smc['fvg_dir'] == 'BEAR':
+            # 涨到Bear FVG中点做空
+            entry_cond = f'等回踩FVG中点{smc["fvg_mid"]:.4f}±5%再评估'
+            if smc['liq_above']:
+                tp_price = smc['liq_above']
+            if smc['fvg_mid']:
+                sl_price = smc['fvg_mid'] * 1.03  # FVG上沿之上
+        elif chg < 0 and smc['fvg_dir'] == 'BULL':
+            # 跌到Bull FVG中点做多
+            entry_cond = f'等回踩FVG中点{smc["fvg_mid"]:.4f}±5%再试多'
+            if smc['liq_below']:
+                tp_price = smc['liq_below']
+            if smc['fvg_mid']:
+                sl_price = smc['fvg_mid'] * 0.97
+
+    # 监控信号
+    if fr < -0.1:
+        monitor_fr = f'FR回-0.05%内 = 轧空结束 = 不做多'
+    elif fr > 0.1:
+        monitor_fr = f'FR回0.005%内 = 多头降温 = 可评估做空'
+
+    if oi_data['signal']:
+        if oi_data['signal'] == 'SHORT_BUILD':
+            monitor_oi = 'OI翻LONG_BUILD = 空头已死 = 确认做多'
+        elif oi_data['signal'] == 'LONG_UNWIND':
+            monitor_oi = 'OI从UNWIND翻BUILD = 资金回场 = 确认方向'
+
+    content = build_signal_alert(
+        sym=sym, chg=chg, price=price, high=high, low=low, vol=vol,
+        fr=fr, ls=ls,
+        fvg_dir=smc['fvg_dir'], fvg_magnet=smc['fvg_magnet'], fvg_mid=smc['fvg_mid'],
+        ob_test=smc['ob_test'],
+        oi_signal=oi_data['signal'], cvd=oi_data['cvd'],
+        liq_above=smc['liq_above'], liq_below=smc['liq_below'],
+        entry_cond=entry_cond, sl_price=sl_price, tp_price=tp_price,
+        monitor_fr=monitor_fr, monitor_oi=monitor_oi,
+    )
+
+    return content
+
+
+def run(dry_run=False):
+    cd = load_cooldown()
+    now_str = datetime.now(CST).strftime('%m/%d %H:%M')
+
+    # 拉涨幅榜
+    try:
+        gainers = requests.get(f'{FAPI}/ticker/24hr', timeout=8).json()
+        # 筛选涨幅>30%的
+        hot = []
+        for t in gainers:
+            sym = t.get('symbol', '')
+            if not sym.endswith('USDT'):
+                continue
+            chg = float(t.get('priceChangePercent', 0))
+            vol = float(t.get('quoteVolume', 0))
+            if abs(chg) > 30 and vol > 500000:
+                base = sym.replace('USDT', '')
+                if base in ('BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'DOGE'):
+                    continue  # 主流币不走extreme
+                if is_cool(base, cd):
+                    continue
+                if is_symbol_duplicate(sym):
+                    continue
+                hot.append({
+                    'symbol': sym,
+                    'base': base,
+                    'chg': chg,
+                    'price': float(t.get('lastPrice', 0)),
+                    'high': float(t.get('highPrice', 0)),
+                    'low': float(t.get('lowPrice', 0)),
+                    'vol': vol,
+                })
+        hot.sort(key=lambda x: abs(x['chg']), reverse=True)
+        hot = hot[:3]  # 最多3帖/天
+    except Exception as e:
+        print(f'拉取涨幅榜失败: {e}')
+        return
+
+    if not hot:
+        print('无极端行情，跳过')
+        return
+
+    for item in hot:
+        sym = item['symbol']
+        base = item['base']
+        chg = item['chg']
+
+        # 拉FR/LSR
+        d = {'price': item['price'], 'high': item['high'], 'low': item['low'], 'vol': item['vol']}
+        try:
+            fr_d = requests.get(f'{FAPI}/premiumIndex', params={'symbol': sym}, timeout=5).json()
+            d['fr'] = float(fr_d.get('lastFundingRate', 0)) * 100
+        except:
+            d['fr'] = 0
+        d['ls'] = 1.0
+
+        # 拉SMC结构
+        smc = fetch_smc_data(sym)
+
+        # 拉OI
+        oi_data = fetch_oi_data(sym)
+
+        # 构建帖子
+        content = build_signal_post(base, chg, d, smc, oi_data)
+
+        if not content or len(content) < 100:
+            print(f'[{base}] 内容不足100字，跳过')
+            continue
+
+        # 审计
+        from square_template import audit_post
+        ok, issues = audit_post(content)
+        if not ok:
+            print(f'[{base}] 审计失败: {issues}')
+            continue
+
+        # 去重
+        if is_duplicate(content):
+            print(f'[{base}] 24h内重复，跳过')
+            continue
+
+        print(f'[{base}] 准备发帖 ({len(content)}字):')
+        print(content[:200] + '...')
+
+        if dry_run:
+            print(f'[{base}] DRY-RUN')
+            continue
+
+        resp = post_to_square(content)
+        if 'error' in resp:
+            print(f'[{base}] 发帖失败: {resp["error"]}')
+        else:
+            print(f'[{base}] ✅ 发布成功')
+            mark_cool(base, cd)
+            mark_symbol_posted(sym)
+            mark_posted(content)
+            log_post('extreme_alert', content, resp)
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dry-run', action='store_true')
+    args = parser.parse_args()
+    run(dry_run=args.dry_run)

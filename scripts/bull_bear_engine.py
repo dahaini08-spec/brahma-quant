@@ -67,7 +67,7 @@ def _bb(c, n=20):
 
 def _macd(c):
     if len(c) < 26: return 0, 0
-    return _ema(c, 12) - _ema(c, 26), _ema(c, 9)
+    return _mu_ema(c, 12) - _mu_ema(c, 26), _mu_ema(c, 9)
 
 def debate(symbol: str, price: float = 0) -> dict:
     """
