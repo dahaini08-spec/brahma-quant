@@ -541,9 +541,9 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict, oi: dict = None, vo
         if _struct_bull != _kappa_bull and abs(vol.get('kappa', 0)) > 0.03:
             cross_check['consistent'] = False
             cross_check['conflicts'].append(f'FVG={_fvg_consensus} vs κ={vol.get("kappa",0):.3f}')
-    # Hurst交叉验证：共振但Hurst<0.5 = 信号可信度存疑
-    if vol and vol.get('hurst', 0.5) < 0.5 and resonance:
-        cross_check['conflicts'].append(f'共振但Hurst={vol["hurst"]:.3f}<0.5=随机游走')
+    # Hurst交叉验证：共振但Hurst<0.55 = 信号可信度存疑（2026-09-11 苏摩111）
+    if vol and vol.get('hurst', 0.5) < 0.55 and resonance:
+        cross_check['conflicts'].append(f'共振但Hurst={vol["hurst"]:.3f}<0.55=随机游走')
 
     return {
         'resonance':   resonance,
@@ -893,6 +893,8 @@ def step8_macro(d: dict) -> dict:
                 high_impact.append(f'{_evt_name}({_hours:.1f}h后)')
             elif _phase == 'post_event':
                 high_impact.append(f'{_evt_name}(已公布{-_hours:.1f}h)')
+            elif _phase == 'normal':
+                high_impact.append(f'{_evt_name}(今日)')
     except Exception:
         pass
     has_event = len(high_impact) > 0
@@ -1904,8 +1906,8 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     if _llm_conflict:
         lines.append(f'  ⚙️ 规则矛盾裁决: {_llm_conflict}')
 
-    # AI议会辩论过程可视化（2026-09-11 苏摩111封印 — Minara Step1）
-    if _debate_block: lines += [f'', _debate_block]
+    # AI议会辩论已移除（2026-09-11 苏摩111）— trader_brain 6层确定性决策替代
+    # if _debate_block: lines += [f'', _debate_block]
 
     # ── 交易员叙事（已移至trader_brain.format_narrative）──
     try:
