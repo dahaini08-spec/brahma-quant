@@ -874,9 +874,23 @@ def step8_macro(d: dict) -> dict:
     elif isinstance(mac_cal, list):
         events = [str(e)[:50] for e in mac_cal[:3]]
 
-    # NFP/CPI/FOMC检测
+    # NFP/CPI/FOMC检测（旧数据源）
     high_impact = [e for e in events if any(x in str(e).upper() for x in ['NFP', 'CPI', 'FOMC', 'PCE', '非农'])]
-    has_event   = len(high_impact) > 0
+    # Bug2修复：同时检查Layer 0宏观日历
+    try:
+        from brahma_brain.trader_brain import _check_macro_calendar
+        _layer0_macro = _check_macro_calendar()
+        if _layer0_macro.get('has_event'):
+            _evt_name = _layer0_macro['event']
+            _phase = _layer0_macro['phase']
+            _hours = _layer0_macro.get('hours_to_event', 0)
+            if _phase == 'pre_event':
+                high_impact.append(f'{_evt_name}({_hours:.1f}h后)')
+            elif _phase == 'post_event':
+                high_impact.append(f'{_evt_name}(已公布{-_hours:.1f}h)')
+    except Exception:
+        pass
+    has_event = len(high_impact) > 0
 
     if has_event:
         pos_note = f'⚠️ 重大宏观事件迫近({", ".join(high_impact[:2])}) → 持仓减半，SL加宽50%'
@@ -1623,7 +1637,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
             bw_score = bw['results'].get(sym+'USDT', {}).get('score', 0)
             print(f'[{sym}] CHOP旁路: score={bw_score}/3 无触发', flush=True)
     except Exception as _bw_e:
-        print(f'[{sym}] CHOP旁路检测跳过: {_bw_e}', flush=True)
+        pass  # CHOP旁路检测在并行环境不支持signal模块，静默跳过
     # ─────────────────────────────────────────────────────────
 
     print(f'[{sym}] Step 1~3: FVG/OB/清算...', flush=True)
@@ -1737,6 +1751,34 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     k1h_mult  = max(0.1, k1h_mult)
 
     vip = step10_vip(sym, p, d, fvg, ob, liq, res, oi, sm, vol, mac, risk)
+
+    # 🤖 AI议会辩论过程可视化（2026-09-11 苏摩111）
+    _debate_block = ''
+    try:
+        import sys as _sys
+        _sys.path.insert(0, str(Path(__file__).parent))
+        from bull_bear_engine import debate as _debate_fn
+        _deb = _debate_fn(sym, p)
+        _bull_args = _deb.get('bull_args', [])
+        _bear_args = _deb.get('bear_args', [])
+        _bull_score = _deb.get('bull_score', 0)
+        _bear_score = _deb.get('bear_score', 0)
+        _verdict = _deb.get('bias_label', '')
+        _conviction = _deb.get('conviction', 0)
+        _deb_lines = ['【AI议会辩论】']
+        if _bull_args:
+            _deb_lines.append(f'  🐂 多头论据 (得分{_bull_score:.0f}):')
+            for _a in _bull_args[:5]:
+                _deb_lines.append(f'    • {_a}')
+        if _bear_args:
+            _deb_lines.append(f'  🐻 空头论据 (得分{_bear_score:.0f}):')
+            for _a in _bear_args[:5]:
+                _deb_lines.append(f'    • {_a}')
+        if _verdict:
+            _deb_lines.append(f'  ⚖️ 裁决: {_verdict} (置信差={_conviction:+.1f})')
+        _debate_block = '\n'.join(_deb_lines)
+    except Exception:
+        pass
 
     # A: VIP入场理由LLM生成
     # B: 信号矛盾自动LLM裁决
@@ -1856,6 +1898,9 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     # B: 信号矛盾裁决（有就显示）
     if _llm_conflict:
         lines.append(f'  ⚙️ 规则矛盾裁决: {_llm_conflict}')
+
+    # AI议会辩论已移除（2026-09-11 苏摩111）— trader_brain 6层确定性决策替代
+    # if _debate_block: lines += [f'', _debate_block]
 
     # ── 交易员叙事（已移至trader_brain.format_narrative）──
     try:

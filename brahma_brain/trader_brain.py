@@ -290,7 +290,17 @@ def decide(
         _min_sl = max(entry_lo * _sl_pct_req, atr_4h * 1.5) if atr_4h else entry_lo * _sl_pct_req
         sl = round(entry_lo - _min_sl, 1) if entry_lo > 0 else 0
         sl_pct = round((entry_lo - sl) / entry_lo * 100, 2) if entry_lo > 0 and sl > 0 else 0
-        tp1 = liq.get('nearest_short', 0) if liq.get('nearest_short', 0) > price else round(price + atr_1h * 2.5, 1)
+        # Bug3修复：做多TP取价格上方的止损墙，入场区在止损墙上方=取第二层
+        _ns = liq.get('nearest_short', 0)
+        _ns2 = liq.get('second_short', 0)
+        if _ns > entry_hi:
+            tp1 = _ns
+        elif _ns2 > entry_hi:
+            tp1 = _ns2  # 第一层在入场区下方=已被突破
+        elif _ns > price:
+            tp1 = _ns
+        else:
+            tp1 = round(price + atr_1h * 2.5, 1)  # 无止损墙在上方=用ATR
         tp2 = round(tp1 + atr_1h * 2, 1) if tp1 > 0 else 0
         tp3 = round(tp2 + atr_1h * 1.5, 1) if tp2 > 0 else 0
     elif direction == 'SHORT':
@@ -298,7 +308,15 @@ def decide(
         _min_sl = max(entry_hi * _sl_pct_req, atr_4h * 1.5) if atr_4h else entry_hi * _sl_pct_req
         sl = round(entry_hi + _min_sl, 1) if entry_hi > 0 else 0
         sl_pct = round((sl - entry_hi) / entry_hi * 100, 2) if entry_hi > 0 and sl > 0 else 0
-        tp1 = liq.get('nearest_long', 0) if liq.get('nearest_long', 0) > 0 and liq.get('nearest_long', 0) < price else round(price - atr_1h * 2.5, 1)
+        # Bug3修复：做空TP取价格下方的支撑池，支撑池在上方=已被突破=取第二层
+        _nl = liq.get('nearest_long', 0)
+        _nl2 = liq.get('second_long', 0)
+        if 0 < _nl < price:
+            tp1 = _nl
+        elif 0 < _nl2 < price:
+            tp1 = _nl2
+        else:
+            tp1 = round(price - atr_1h * 2.5, 1)
         tp2 = round(tp1 - atr_1h * 2, 1) if tp1 > 0 else 0
         tp3 = round(tp2 - atr_1h * 1.5, 1) if tp2 > 0 else 0
     else:
@@ -534,9 +552,14 @@ def _build_scenarios(hurst, liq, price, oi_signal, direction) -> list:
     _time = f'约{_bars}根4H({_bars*4}h)' if _bars > 0 else '已在趋势区'
 
     _sc = []
-    if _ls > price:
+    # Bug4修复：止损墙在±0.5%内=正在被测试，仍输出剧本A
+    _ls_near = _ls > 0 and abs(_ls - price) / price * 100 <= 0.5
+    if _ls > price or _ls_near:
         _ut = f'${_ls2:,.0f}' if _ls2 > _ls else f'${_ls:,.0f}'
-        _sc.append(f'剧本A({_up}%): 破${_ls:,.0f}止损墙→逼空到{_ut}，{max(_up-30,15)}%假突破回落')
+        if _ls_near:
+            _sc.append(f'剧本A({_up}%): 止损墙${_ls:,.0f}正在被测试→破则逼空到{_ut}，{max(_up-30,15)}%假突破回落')
+        else:
+            _sc.append(f'剧本A({_up}%): 破${_ls:,.0f}止损墙→逼空到{_ut}，{max(_up-30,15)}%假突破回落')
     if _ll > 0 and _ll < price:
         _dt = f'${_ll2:,.0f}' if _ll2 > 0 and _ll2 < _ll else f'${_ll:,.0f}'
         _sc.append(f'剧本B({_dn}%): 破${_ll:,.0f}支撑池→猎杀到{_dt}，{max(100-_dn-15,20)}%支撑有效')
