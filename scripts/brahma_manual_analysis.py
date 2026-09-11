@@ -1402,21 +1402,35 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
     else:
         parts.append(f'{sym}在${price:,.0f}，体制{regime} score={score:.0f}。')
 
-    # 2. 主力意图
+    # 2. 主力意图 + 推断（40年交易员不只是描述，要推断主力在等什么）
     _intent = ''
+    _trigger = ''  # 推断触发条件
     if big_long >= 60 and 'UNWIND' in oi_signal:
         _intent = f'大户{big_long:.0f}%多但OI全线撤退=大户在等不是在加'
+        # 推断：大户在等什么？
+        if hurst >= 0.55:
+            _trigger = f'大户在等Hurst突破0.60确认趋势，一旦确认OI会从UNWIND转BUILD'
+        else:
+            _trigger = f'大户在等价格回到支撑${liq_long:,.0f}附近才加仓，当前${price:,.0f}不够便宜'
     elif big_long >= 60 and oi_signal in ('LONG_BUILD', 'SHORT_SQUEEZE'):
         _intent = f'大户{big_long:.0f}%多+OI={oi_signal}=主力在加多'
+        _trigger = f'主力已在加多，等价格突破${liq_short:,.0f}止损墙=逼空启动'
     elif big_long <= 45 and 'BUILD' in oi_signal and 'SHORT' in oi_signal:
         _intent = f'大户{big_long:.0f}%偏空+OI={oi_signal}=主力在加空'
+        _trigger = f'主力已在加空，等价格跌破${liq_long:,.0f}支撑池=猎杀启动'
     elif big_long >= 55 and oi_signal == 'SHORT_BUILD':
         _intent = f'大户{big_long:.0f}%多但OI={oi_signal}=有人在高位挂空单对冲'
+        _trigger = f'空头在建仓但大户没走，等OI从SHORT_BUILD翻转为LONG_BUILD=空头被扫=做多信号确认'
     elif 'UNWIND' in oi_signal:
         _intent = f'OI={oi_signal}=资金在减仓离场，不是加仓'
+        _trigger = f'等OI减仓结束出现LONG_BUILD或SHORT_BUILD=新方向确认'
     else:
         _intent = f'大户{big_long:.0f}%多 vs 散户{retail_long:.0f}%多，OI={oi_signal}'
-    parts.append(_intent + '。')
+        if big_long > retail_long:
+            _trigger = f'大户比散户看多=聪明钱偏多，等价格到支撑${liq_long:,.0f}附近大户可能加仓'
+        else:
+            _trigger = f'散户比大户看多=反向信号偏空，散户越多主力越可能猎杀'
+    parts.append(_intent + '。' + (_trigger + '。' if _trigger else ''))
 
     # 3. 趋势状态
     if hurst >= 0.6:
@@ -1435,18 +1449,39 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
     else:
         parts[-1] += f'κ={kappa:.3f}中性。'
 
-    # 4. 剧本推演
+    # 4. 剧本推演 + 概率估算（40年交易员不只说破了到哪，还说概率多大）
+    _up_pct = ((liq_short - price) / price * 100) if liq_short > price else 0
+    _dn_pct = ((price - liq_long) / price * 100) if liq_long > 0 and liq_long < price else 0
+    # 概率估算基于：Hurst趋势强度 + 体制方向 + 距离
+    _trend_strength = 'high' if hurst >= 0.6 else 'medium' if hurst >= 0.55 else 'low'
     _scenarios = []
     if liq_short > price:
-        _up_pct = (liq_short - price) / price * 100
-        _scenarios.append(f'上方${liq_short:,.0f}(+{_up_pct:.1f}%)空头止损墙最密集，破了就是逼空')
-        if liq_2nd_short > liq_short:
-            _scenarios.append(f'到${liq_2nd_short:,.0f}')
+        # 逼空概率：趋势强+距离近=高概率，趋势弱+距离远=低概率
+        if _trend_strength == 'high' and _up_pct < 3:
+            _up_prob = 65
+        elif _trend_strength == 'medium' and _up_pct < 3:
+            _up_prob = 45
+        elif _trend_strength == 'high' and _up_pct < 5:
+            _up_prob = 50
+        else:
+            _up_prob = 30
+        _up_tgt = f'${liq_2nd_short:,.0f}' if liq_2nd_short > liq_short else f'${liq_short:,.0f}'
+        _scenarios.append(f'上方${liq_short:,.0f}(+{_up_pct:.1f}%)空头止损墙，{_up_prob}%概率逼空到{_up_tgt}，{max(_up_prob-30,15)}%概率假突破回落')
     if liq_long > 0 and liq_long < price:
-        _dn_pct = (price - liq_long) / price * 100
-        _scenarios.append(f'下方${liq_long:,.0f}(-{_dn_pct:.1f}%)支撑池，破了就是猎杀')
-        if liq_2nd_long > 0 and liq_2nd_long < liq_long:
-            _scenarios.append(f'到${liq_2nd_long:,.0f}')
+        if _trend_strength == 'low' and _dn_pct < 2:
+            _dn_prob = 55
+        elif _trend_strength == 'medium' and _dn_pct < 2:
+            _dn_prob = 40
+        elif _trend_strength == 'low' and _dn_pct < 4:
+            _dn_prob = 45
+        else:
+            _dn_prob = 25
+        _dn_tgt = f'${liq_2nd_long:,.0f}' if liq_2nd_long > 0 and liq_2nd_long < liq_long else f'${liq_long:,.0f}'
+        _scenarios.append(f'下方${liq_long:,.0f}(-{_dn_pct:.1f}%)支撑池，{_dn_prob}%概率猎杀到{_dn_tgt}，{max(100-_dn_prob-15,20)}%概率支撑有效反弹')
+    # CHOP横盘概率
+    if regime == 'CHOP_MID' and _trend_strength != 'high':
+        _chop_prob = max(20, 100 - (_up_prob if liq_short > price else 0) - (_dn_prob if liq_long < price else 0))
+        _scenarios.append(f'{_chop_prob}%概率继续横盘不交易')
     if _scenarios:
         parts.append('。'.join(_scenarios) + '。')
 
@@ -1465,30 +1500,53 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
     if _levels:
         parts.append('关键价位：' + ' / '.join(_levels) + '。')
 
-    # 6. 交易员结论
+    # 6. 交易员结论 + 动态触发器（40年交易员给如果...就...的条件）
+    _atr_1_5 = atr_1h * 1.5 if atr_1h else 0
     if direction != 'NONE' and entry_lo > 0:
         if missing:
             _miss_short = '、'.join(missing[:3])
             parts.append(f'方向{direction}，入场区${entry_lo:,.1f}~${entry_hi:,.1f}已给，但{_miss_short}。')
+            # 浮盈保护提醒（08-31教训）
+            if _atr_1_5 > 0:
+                parts.append(f'浮盈>${_atr_1_5:,.0f}(1.5×ATR1H)→移动SL保本。')
+            # 动态触发器
+            _triggers = []
             if regime_state == 'RED':
-                parts.append(f'失效期RED→仓位强制减半，只能轻仓试探。')
+                _triggers.append(f'失效期RED→仓位减半，等score过120={100-score:.0f}分')
             if rr > 0 and rr < 2.0:
-                parts.append(f'RR={rr:.1f}不够，等止损墙拉远或入场区上移。')
+                _triggers.append(f'RR={rr:.1f}不够，等止损墙${liq_short:,.0f}拉远或入场区上移')
             if 'OI' in ' '.join(missing):
-                parts.append(f'OI跟方向反=资金流不确认，等OI翻转再进。')
-            parts.append(f'如果条件确认（OI翻转+score过{120 if regime_state == "RED" else 110}），这单可以进。')
+                _triggers.append(f'如果OI从{oi_signal}翻转为LONG_BUILD → 资金流确认，这单可以进')
+            if 'score' in ' '.join(missing):
+                _triggers.append(f'如果score从{score:.0f}涨过{120 if regime_state == "RED" else 110} → 体制确认，可以进')
+            if _triggers:
+                parts.append('触发器：' + ' / '.join(_triggers) + '。')
         else:
             parts.append(f'条件全满，{direction}入场区${entry_lo:,.1f}~${entry_hi:,.1f}可以进。')
+            if _atr_1_5 > 0:
+                parts.append(f'浮盈>${_atr_1_5:,.0f}→移动SL保本。')
     elif direction != 'NONE' and entry_lo == 0:
         parts.append(f'方向{direction}但OI矛盾导致入场区失效。')
+        _triggers = []
         if liq_long > 0 and liq_long < price and direction == 'LONG':
-            parts.append(f'下方支撑${liq_long:,.0f}是潜在接位点，等OI从{oi_signal}翻转为LONG_BUILD，在${liq_long:,.0f}~${price:,.0f}区间接。')
+            _triggers.append(f'如果OI从{oi_signal}翻转为LONG_BUILD → 在${liq_long:,.0f}~${price:,.0f}区间接')
         elif liq_short > price and direction == 'SHORT':
-            parts.append(f'上方阻力${liq_short:,.0f}是潜在空点，等OI确认后在此区域空。')
+            _triggers.append(f'如果OI确认做空 → 在${liq_short:,.0f}附近空')
         if regime_state == 'RED':
-            parts.append(f'失效期RED→即使条件确认也只轻仓。')
+            _triggers.append(f'失效期RED→即使条件确认也只轻仓2%+杠杆5x')
+        if _triggers:
+            parts.append('触发器：' + ' / '.join(_triggers) + '。')
     elif direction == 'NONE':
-        parts.append(f'体制{regime}无方向，不强行做。等Hurst确认+score站上110，${price*0.985:,.0f}附近多单可以试。')
+        _triggers = []
+        if hurst >= 0.55:
+            _triggers.append(f'如果Hurst突破0.60+score站上110 → 体制从{regime}切换趋势，${price*0.985:,.0f}附近多单可以试')
+        else:
+            _triggers.append(f'等Hurst突破0.55+score站上110 → ${price*0.985:,.0f}附近多单可以试')
+        if liq_long > 0 and liq_long < price:
+            _triggers.append(f'如果价格先跌到${liq_long:,.0f}支撑池+1H收阳 → 可轻仓试探')
+        if liq_short > price:
+            _triggers.append(f'如果价格先涨到${liq_short:,.0f}止损墙+1H收阴 → 可轻仓试空')
+        parts.append(f'体制{regime}无方向，不强行做。' + '触发器：' + ' / '.join(_triggers) + '。')
 
     return ' '.join(parts)
 
