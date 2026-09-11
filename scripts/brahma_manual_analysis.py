@@ -1359,6 +1359,140 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
 # 主报告组装
 # ══════════════════════════════════════════════════════════
 
+def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, tb_result) -> str:
+    """40年顶级合约交易员视角：用94维数据串成市场故事，不是列条件"""
+    bs = d.get('bs', {})
+    regime = bs.get('regime', 'CHOP_MID')
+    score = float(bs.get('score_final', bs.get('score', 0)))
+    hurst = vol.get('hurst', 0.5)
+    kappa = vol.get('kappa', 0)
+    big_long = sm.get('big_long', 50)
+    retail_long = sm.get('retail_long', 50)
+    oi_signal = oi.get('signal', 'NO_DATA')
+    cvd_1h = oi.get('cvd_1h', 0)
+    fvg_dir = fvg.get('dir', 'NONE')
+    fvg_consensus = fvg.get('consensus', fvg_dir)
+    fvg_mid = fvg.get('magnet', 0)
+    liq_short = liq.get('nearest_short', 0)
+    liq_long = liq.get('nearest_long', 0)
+    liq_2nd_short = liq.get('second_short', 0)
+    liq_2nd_long = liq.get('second_long', 0)
+    atr_1h = vol.get('atr_1h', 0)
+    atr_4h = vol.get('atr_4h', 0)
+    regime_state = risk.get('regime_state', 'GREEN')
+    direction = tb_result.get('direction', 'NONE')
+    entry_lo = tb_result.get('entry_lo', 0) or res.get('entry_lo', 0)
+    entry_hi = tb_result.get('entry_hi', 0) or res.get('entry_hi', 0)
+    sl = tb_result.get('sl', 0)
+    rr = tb_result.get('rr', 0)
+    missing = tb_result.get('missing', [])
+    cross = tb_result.get('consistent_count', 0)
+    k4h_mult = d.get('_k4h_mult', 1.0)
+    k1h_mult = d.get('_k1h_mult', 1.0)
+
+    parts = []
+
+    # 1. 市场现状一句话
+    if regime == 'CHOP_MID' and score < 110:
+        parts.append(f'{sym}在${price:,.0f}横盘，CHOP体制score={score:.0f}，大户{big_long:.0f}%多但OI={oi_signal}。')
+    elif 'BULL' in regime:
+        parts.append(f'{sym}在${price:,.0f}，{regime} score={score:.0f}，FVG{fvg_consensus}共识，OI={oi_signal}。')
+    elif 'BEAR' in regime:
+        parts.append(f'{sym}在${price:,.0f}，{regime} score={score:.0f}，FVG{fvg_consensus}共识，OI={oi_signal}。')
+    else:
+        parts.append(f'{sym}在${price:,.0f}，体制{regime} score={score:.0f}。')
+
+    # 2. 主力意图
+    _intent = ''
+    if big_long >= 60 and 'UNWIND' in oi_signal:
+        _intent = f'大户{big_long:.0f}%多但OI全线撤退=大户在等不是在加'
+    elif big_long >= 60 and oi_signal in ('LONG_BUILD', 'SHORT_SQUEEZE'):
+        _intent = f'大户{big_long:.0f}%多+OI={oi_signal}=主力在加多'
+    elif big_long <= 45 and 'BUILD' in oi_signal and 'SHORT' in oi_signal:
+        _intent = f'大户{big_long:.0f}%偏空+OI={oi_signal}=主力在加空'
+    elif big_long >= 55 and oi_signal == 'SHORT_BUILD':
+        _intent = f'大户{big_long:.0f}%多但OI={oi_signal}=有人在高位挂空单对冲'
+    elif 'UNWIND' in oi_signal:
+        _intent = f'OI={oi_signal}=资金在减仓离场，不是加仓'
+    else:
+        _intent = f'大户{big_long:.0f}%多 vs 散户{retail_long:.0f}%多，OI={oi_signal}'
+    parts.append(_intent + '。')
+
+    # 3. 趋势状态
+    if hurst >= 0.6:
+        parts.append(f'Hurst={hurst:.3f}趋势要来但还没到，')
+    elif hurst >= 0.55:
+        parts.append(f'Hurst={hurst:.3f}趋势性隐现，')
+    elif hurst >= 0.5:
+        parts.append(f'Hurst={hurst:.3f}随机游走，')
+    else:
+        parts.append(f'Hurst={hurst:.3f}均值回归，')
+
+    if kappa < -0.1:
+        parts[-1] += f'κ={kappa:.3f}Call强(大资金买上涨保险)。'
+    elif kappa > 0.1:
+        parts[-1] += f'κ={kappa:.3f}Put强(大资金买下跌保险)。'
+    else:
+        parts[-1] += f'κ={kappa:.3f}中性。'
+
+    # 4. 剧本推演
+    _scenarios = []
+    if liq_short > price:
+        _up_pct = (liq_short - price) / price * 100
+        _scenarios.append(f'上方${liq_short:,.0f}(+{_up_pct:.1f}%)空头止损墙最密集，破了就是逼空')
+        if liq_2nd_short > liq_short:
+            _scenarios.append(f'到${liq_2nd_short:,.0f}')
+    if liq_long > 0 and liq_long < price:
+        _dn_pct = (price - liq_long) / price * 100
+        _scenarios.append(f'下方${liq_long:,.0f}(-{_dn_pct:.1f}%)支撑池，破了就是猎杀')
+        if liq_2nd_long > 0 and liq_2nd_long < liq_long:
+            _scenarios.append(f'到${liq_2nd_long:,.0f}')
+    if _scenarios:
+        parts.append('。'.join(_scenarios) + '。')
+
+    # 5. 关键价位汇总
+    _levels = []
+    if entry_lo > 0 and entry_hi > 0 and direction != 'NONE':
+        _levels.append(f'入场区${entry_lo:,.1f}~${entry_hi:,.1f}')
+    if sl > 0:
+        _levels.append(f'SL=${sl:,.1f}')
+    if liq_short > price:
+        _levels.append(f'上方目标${liq_short:,.0f}')
+    if liq_long > 0 and liq_long < price:
+        _levels.append(f'下方支撑${liq_long:,.0f}')
+    if fvg_mid > 0:
+        _levels.append(f'FVG磁铁${fvg_mid:,.1f}')
+    if _levels:
+        parts.append('关键价位：' + ' / '.join(_levels) + '。')
+
+    # 6. 交易员结论
+    if direction != 'NONE' and entry_lo > 0:
+        if missing:
+            _miss_short = '、'.join(missing[:3])
+            parts.append(f'方向{direction}，入场区${entry_lo:,.1f}~${entry_hi:,.1f}已给，但{_miss_short}。')
+            if regime_state == 'RED':
+                parts.append(f'失效期RED→仓位强制减半，只能轻仓试探。')
+            if rr > 0 and rr < 2.0:
+                parts.append(f'RR={rr:.1f}不够，等止损墙拉远或入场区上移。')
+            if 'OI' in ' '.join(missing):
+                parts.append(f'OI跟方向反=资金流不确认，等OI翻转再进。')
+            parts.append(f'如果条件确认（OI翻转+score过{120 if regime_state == "RED" else 110}），这单可以进。')
+        else:
+            parts.append(f'条件全满，{direction}入场区${entry_lo:,.1f}~${entry_hi:,.1f}可以进。')
+    elif direction != 'NONE' and entry_lo == 0:
+        parts.append(f'方向{direction}但OI矛盾导致入场区失效。')
+        if liq_long > 0 and liq_long < price and direction == 'LONG':
+            parts.append(f'下方支撑${liq_long:,.0f}是潜在接位点，等OI从{oi_signal}翻转为LONG_BUILD，在${liq_long:,.0f}~${price:,.0f}区间接。')
+        elif liq_short > price and direction == 'SHORT':
+            parts.append(f'上方阻力${liq_short:,.0f}是潜在空点，等OI确认后在此区域空。')
+        if regime_state == 'RED':
+            parts.append(f'失效期RED→即使条件确认也只轻仓。')
+    elif direction == 'NONE':
+        parts.append(f'体制{regime}无方向，不强行做。等Hurst确认+score站上110，${price*0.985:,.0f}附近多单可以试。')
+
+    return ' '.join(parts)
+
+
 def run_analysis(sym: str) -> str:
     ts  = datetime.now(timezone.utc).strftime('%m/%d %H:%M UTC')
     print(f'[{sym}] Step 0: 拉取实时数据...', flush=True)
@@ -1634,6 +1768,16 @@ def run_analysis(sym: str) -> str:
     # B: 信号矛盾裁决（有就显示）
     if _llm_conflict:
         lines.append(f'  ⚙️ 规则矛盾裁决: {_llm_conflict}')
+
+    # ── 交易员叙事（40年顶级合约交易员视角）──
+    _narrative = _trader_narrative(sym, p, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, tb_result)
+    if _narrative:
+        lines += [
+            f'',
+            f'── 交易员视角 ──',
+            _narrative,
+        ]
+
     lines += [
         f'',
         f'{"─"*43}',
