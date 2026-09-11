@@ -153,8 +153,9 @@ def main():
     )
     print(msg)
 
-    # 推送到Jarvis（非dry_run时）
-    if not dry_run and result["removed_mb"] > 10:
+    # 推送到Jarvis（仅当清理>500MB或有错误时才推）
+    should_push = (not dry_run and (result["removed_mb"] > 500 or result["errors"] > 0))
+    if should_push:
         try:
             sys.path.insert(0, str(pathlib.Path(__file__).parent))
             from push_hub import _jarvis

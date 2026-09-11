@@ -1,0 +1,4077 @@
+{
+  "__init__": {
+    "lines": 36,
+    "imports": [
+      {
+        "from": "brahma_engine",
+        "symbols": [
+          "analyze\n    from brahma_brain"
+        ]
+      },
+      {
+        "from": "brahma_trade",
+        "symbols": [
+          "calc_trade_params\nexcept Exception"
+        ]
+      },
+      {
+        "from": "brahma_core",
+        "symbols": [
+          "analyze",
+          "confluence_score",
+          "calc_trade_params\n\nfrom brahma_brain"
+        ]
+      },
+      {
+        "from": "formatter",
+        "symbols": [
+          "format_report as format_report_v2\n\n__all__"
+        ]
+      },
+      {
+        "from": "brahma_brain",
+        "symbols": [
+          "analyze"
+        ]
+      }
+    ],
+    "exports": [],
+    "consumed_by": [
+      "brahma_event_bus",
+      "regime_state_machine",
+      "circuit_breaker",
+      "brahma_health",
+      "brahma_bus",
+      "cross_asset_gate",
+      "kronos_engine",
+      "brainlog",
+      "vectorbt_simfactory",
+      "offline_adapters"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "auto_review": {
+    "lines": 396,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone",
+          "timedelta\nfrom collections import defaultdict\n\nBASE"
+        ]
+      },
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\n\ndef check_orphan_modules"
+        ]
+      },
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\n\n    brain"
+        ]
+      }
+    ],
+    "exports": [
+      "load_real_trades",
+      "generate_review",
+      "run_batch_review",
+      "compute_stats",
+      "review_single",
+      "check_orphan_modules",
+      "check_standby_violations"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "realtime_fetch",
+      "brahma_health",
+      "brahma_orchestrator",
+      "signal_selector",
+      "tardis_liq_layer",
+      "brahma_360",
+      "offline_adapters"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "brahma_360": {
+    "lines": 656,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone"
+        ]
+      },
+      {
+        "from": "auto_review",
+        "symbols": [
+          "check_orphan_modules\n        orphans"
+        ]
+      },
+      {
+        "from": "hunter_outcome_tracker",
+        "symbols": [
+          "calc_oi_win_rate\n        data"
+        ]
+      }
+    ],
+    "exports": [
+      "scan_d1_modules",
+      "scan_d2_data",
+      "_has_open_positions",
+      "scan_d3_processes",
+      "scan_d4_interfaces",
+      "scan_d5_params",
+      "scan_d6_silent_failures",
+      "scan_d7_crons",
+      "scan_d8_backups",
+      "scan_d9_signal_pipeline",
+      "run_full_scan",
+      "fix_init_live_prices",
+      "fix_reset_signal_queue",
+      "fix_restart_ws_guardian",
+      "auto_fix_issues"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "brahma_analysis_runner": {
+    "lines": 1088,
+    "imports": [
+      {
+        "from": "brahma_analysis_runner",
+        "symbols": [
+          "run_analysis",
+          "run_batch\n  result"
+        ]
+      },
+      {
+        "from": "dotenv",
+        "symbols": [
+          "load_dotenv as _ldenv\n    _env_path"
+        ]
+      },
+      {
+        "from": "datetime",
+        "symbols": [
+          "datetime",
+          "timezone\n\nBASE_DIR"
+        ]
+      },
+      {
+        "from": "brahma_core",
+        "symbols": [
+          "analyze as _core_analyze\nfrom brahma_brain"
+        ]
+      },
+      {
+        "from": "timing_filter",
+        "symbols": [
+          "evaluate_timing",
+          "format_timing_badge\n    _TIMING_OK"
+        ]
+      },
+      {
+        "from": "timing_filter",
+        "symbols": [
+          "evaluate_timing",
+          "format_timing_badge\n        _TIMING_OK"
+        ]
+      },
+      {
+        "from": "brainlog",
+        "symbols": [
+          "get_logger as _get_logger",
+          "binfo",
+          "bwarn",
+          "berror\n    _brain_logger"
+        ]
+      },
+      {
+        "from": "portfolio_optimizer",
+        "symbols": [
+          "filter_signals as _po_filter\n    _PORTFOLIO_OK"
+        ]
+      },
+      {
+        "from": "brahma_health",
+        "symbols": [
+          "_check_and_gc as _health_gc\n    _HEALTH_OK"
+        ]
+      },
+      {
+        "from": "brahma360_guardian",
+        "symbols": [
+          "check_v16_v17_modules as _health_v16\n        _HEALTH_OK"
+        ]
+      }
+    ],
+    "exports": [
+      "_validate_result",
+      "run_analysis",
+      "run_batch",
+      "run_analysis_full",
+      "format_batch_report",
+      "check_correlation_risk"
+    ],
+    "consumed_by": [
+      "brahma_mem_compressor",
+      "module_registry",
+      "brahma_orchestrator",
+      "formatter",
+      "cross_asset_gate",
+      "dharma_data_bridge",
+      "brahma_engine",
+      "llm_council_bridge",
+      "brahma_constitutional_test",
+      "signal_card_formatter"
+    ],
+    "is_entry": true,
+    "is_skill": false
+  },
+  "brahma_bus": {
+    "lines": 380,
+    "imports": [
+      {
+        "from": "brahma_bus",
+        "symbols": [
+          "bus\n  bus"
+        ]
+      },
+      {
+        "from": "__future__",
+        "symbols": [
+          "annotations\nimport time\nimport requests\nimport hmac\nimport hashlib\nimport os\nimport threading\nfrom typing import Optional"
+        ]
+      },
+      {
+        "from": "brahma_bus",
+        "symbols": [
+          "bus"
+        ]
+      }
+    ],
+    "exports": [
+      "get_price",
+      "get_klines",
+      "get_funding",
+      "get_oi",
+      "mark_migrated",
+      "migration_status",
+      "flush_stale"
+    ],
+    "consumed_by": [
+      "var_engine",
+      "trigger_15m",
+      "data_cache",
+      "fib_macro_engine",
+      "module_registry",
+      "realtime_fetch",
+      "memory_watchdog",
+      "circuit_breaker",
+      "brahma_health",
+      "timing_filter"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "brahma_constitutional_test": {
+    "lines": 145,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\n\nBASE"
+        ]
+      }
+    ],
+    "exports": [
+      "check"
+    ],
+    "consumed_by": [
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "brahma_coordinator": {
+    "lines": 234,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom typing import Optional\n\nBASE"
+        ]
+      },
+      {
+        "from": "dataepisodic_memory_manager",
+        "symbols": [
+          "get_context_for_analysis\n        ctx"
+        ]
+      }
+    ],
+    "exports": [
+      "_load_json",
+      "get_pump_context",
+      "get_oi_context",
+      "get_episodic_context",
+      "get_ic_context",
+      "get_macro_context",
+      "build_coord_context",
+      "format_coord_summary"
+    ],
+    "consumed_by": [
+      "brahma_engine",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "brahma_core": {
+    "lines": 5180,
+    "imports": [
+      {
+        "from": "datetime",
+        "symbols": [
+          "datetime",
+          "timezone",
+          "timedelta"
+        ]
+      },
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path"
+        ]
+      },
+      {
+        "from": "data_cache",
+        "symbols": [
+          "prefetch_symbol",
+          "get_klines",
+          "klines_to_ohlcv\nfrom market_state      import analyze   as ms_analyze\nfrom smc_engine        import analyze_smc\nfrom divergence_engine import divergence_score\nfrom volume_engine     import volume_score\nfrom range_engine      import range_score"
+        ]
+      },
+      {
+        "from": "math_utils",
+        "symbols": [
+          "ema as _mu_ema",
+          "rsi as _mu_rsi",
+          "atr as _mu_atr"
+        ]
+      },
+      {
+        "from": "options_engine",
+        "symbols": [
+          "sentiment_score",
+          "analyze_funding_trend"
+        ]
+      },
+      {
+        "from": "elliott_engine",
+        "symbols": [
+          "analyze_elliott",
+          "format_elliott"
+        ]
+      },
+      {
+        "from": "onchain_engine",
+        "symbols": [
+          "onchain_score as _onchain_score\n    _ONCHAIN_OK"
+        ]
+      },
+      {
+        "from": "pattern_engine",
+        "symbols": [
+          "pattern_score as _pattern_score\n    _PATTERN_OK"
+        ]
+      },
+      {
+        "from": "order_flow_engine",
+        "symbols": [
+          "order_flow_score as _order_flow_score\n    _OF_OK"
+        ]
+      },
+      {
+        "from": "macro_engine",
+        "symbols": [
+          "macro_score as _macro_score\n    _MACRO_OK"
+        ]
+      }
+    ],
+    "exports": [
+      "_apply_calib",
+      "confluence_score",
+      "_nearest_swing_above",
+      "_nearest_swing_below",
+      "calc_trade_params",
+      "rebase_params",
+      "analyze",
+      "format_report"
+    ],
+    "consumed_by": [
+      "position_sizer",
+      "brahma_core_entry",
+      "brahma_mem_compressor",
+      "regime_state_machine",
+      "module_registry",
+      "external_signal",
+      "regime_hmm_v2",
+      "brahma_analysis_runner",
+      "recovery_unlocker",
+      "market_state"
+    ],
+    "is_entry": true,
+    "is_skill": false
+  },
+  "brahma_core_entry": {
+    "lines": 817,
+    "imports": [
+      {
+        "from": "brahma_core_entry",
+        "symbols": [
+          "* 保持向后兼容"
+        ]
+      },
+      {
+        "from": "datetime",
+        "symbols": [
+          "datetime",
+          "timezone",
+          "timedelta"
+        ]
+      },
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path"
+        ]
+      },
+      {
+        "from": "data_cache",
+        "symbols": [
+          "prefetch_symbol",
+          "get_klines",
+          "klines_to_ohlcv\nfrom market_state      import analyze   as ms_analyze\nfrom smc_engine        import analyze_smc\nfrom divergence_engine import divergence_score\nfrom volume_engine     import volume_score\nfrom range_engine      import range_score"
+        ]
+      },
+      {
+        "from": "math_utils",
+        "symbols": [
+          "ema as _mu_ema",
+          "rsi as _mu_rsi",
+          "atr as _mu_atr"
+        ]
+      },
+      {
+        "from": "options_engine",
+        "symbols": [
+          "sentiment_score",
+          "analyze_funding_trend"
+        ]
+      },
+      {
+        "from": "elliott_engine",
+        "symbols": [
+          "analyze_elliott",
+          "format_elliott\ntry"
+        ]
+      },
+      {
+        "from": "onchain_engine",
+        "symbols": [
+          "onchain_score as _onchain_score\n    _ONCHAIN_OK"
+        ]
+      },
+      {
+        "from": "pattern_engine",
+        "symbols": [
+          "pattern_score as _pattern_score\n    _PATTERN_OK"
+        ]
+      },
+      {
+        "from": "order_flow_engine",
+        "symbols": [
+          "order_flow_score as _order_flow_score\n    _OF_OK"
+        ]
+      }
+    ],
+    "exports": [
+      "_nearest_swing_above",
+      "_nearest_swing_below",
+      "calc_trade_params",
+      "rebase_params"
+    ],
+    "consumed_by": [
+      "brahma_core",
+      "brahma_engine",
+      "brahma_scoring",
+      "brahma_trade"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "brahma_engine": {
+    "lines": 3642,
+    "imports": [
+      {
+        "from": "datetime",
+        "symbols": [
+          "datetime",
+          "timezone",
+          "timedelta"
+        ]
+      },
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path"
+        ]
+      },
+      {
+        "from": "data_cache",
+        "symbols": [
+          "prefetch_symbol",
+          "get_klines",
+          "klines_to_ohlcv\nfrom market_state      import analyze   as ms_analyze\nfrom smc_engine        import analyze_smc\nfrom divergence_engine import divergence_score\nfrom volume_engine     import volume_score\nfrom range_engine      import range_score"
+        ]
+      },
+      {
+        "from": "math_utils",
+        "symbols": [
+          "ema as _mu_ema",
+          "rsi as _mu_rsi",
+          "atr as _mu_atr"
+        ]
+      },
+      {
+        "from": "options_engine",
+        "symbols": [
+          "sentiment_score",
+          "analyze_funding_trend"
+        ]
+      },
+      {
+        "from": "elliott_engine",
+        "symbols": [
+          "analyze_elliott",
+          "format_elliott"
+        ]
+      },
+      {
+        "from": "onchain_engine",
+        "symbols": [
+          "onchain_score as _onchain_score\n    _ONCHAIN_OK"
+        ]
+      },
+      {
+        "from": "pattern_engine",
+        "symbols": [
+          "pattern_score as _pattern_score\n    _PATTERN_OK"
+        ]
+      },
+      {
+        "from": "order_flow_engine",
+        "symbols": [
+          "order_flow_score as _order_flow_score\n    _OF_OK"
+        ]
+      },
+      {
+        "from": "macro_engine",
+        "symbols": [
+          "macro_score as _macro_score\n    _MACRO_OK"
+        ]
+      }
+    ],
+    "exports": [
+      "_nearest_swing_above",
+      "_nearest_swing_below",
+      "calc_trade_params",
+      "rebase_params",
+      "analyze",
+      "format_report"
+    ],
+    "consumed_by": [
+      "mode_c_detector",
+      "grade_utils",
+      "dharma_data_bridge",
+      "tradfi_signal_layer",
+      "macro_engine",
+      "__init__",
+      "brahma_coordinator",
+      "auto_review"
+    ],
+    "is_entry": true,
+    "is_skill": true
+  },
+  "brahma_event_bus": {
+    "lines": 193,
+    "imports": [
+      {
+        "from": "collections",
+        "symbols": [
+          "defaultdict\nfrom typing import Callable",
+          "Any\nfrom pathlib import Path\n\nlogger"
+        ]
+      }
+    ],
+    "exports": [],
+    "consumed_by": [
+      "module_registry",
+      "brahma_core",
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "brahma_health": {
+    "lines": 682,
+    "imports": [
+      {
+        "from": "typing",
+        "symbols": [
+          "Optional"
+        ]
+      },
+      {
+        "from": "brahma_bus",
+        "symbols": [
+          "BrahmaBus\n        bus"
+        ]
+      },
+      {
+        "from": "brahma_core",
+        "symbols": [
+          "confluence_score",
+          "calc_trade_params\n        latency_ms"
+        ]
+      },
+      {
+        "from": "brahma_bus",
+        "symbols": [
+          "BrahmaBus"
+        ]
+      },
+      {
+        "from": "brainlog",
+        "symbols": [
+          "get_stats\n        stats"
+        ]
+      },
+      {
+        "from": "formatter",
+        "symbols": [
+          "brahma_panorama_report\n        import inspect\n        src"
+        ]
+      },
+      {
+        "from": "brahma_learning_loop",
+        "symbols": [
+          "main"
+        ]
+      },
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path as _Path\n    p"
+        ]
+      },
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path as _Path\n    SSOT"
+        ]
+      },
+      {
+        "from": "signal_card_formatter",
+        "symbols": [
+          "format_vip_card"
+        ]
+      }
+    ],
+    "exports": [
+      "_check_binance_api",
+      "_check_brahma_bus",
+      "_check_scoring_engine",
+      "_check_signal_queue",
+      "_check_live_signals",
+      "_check_data_files",
+      "_check_process_memory",
+      "_check_external_routes",
+      "_auto_heal_suggestions",
+      "run_health_check",
+      "format_health_report",
+      "_check_log_health",
+      "_check_module_contracts",
+      "_check_standby_violations_health",
+      "_check_panorama_integrity"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "brahma_analysis_runner",
+      "brainlog",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "brahma_learning_loop": {
+    "lines": 321,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone\nfrom collections import defaultdict\n\nBASE"
+        ]
+      }
+    ],
+    "exports": [
+      "fetch_price",
+      "load_jsonl",
+      "now_utc",
+      "run_calibration_stats",
+      "run_auto_learner",
+      "run_live_performance",
+      "main"
+    ],
+    "consumed_by": [
+      "brahma_health",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "brahma_logger": {
+    "lines": 125,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone"
+        ]
+      },
+      {
+        "from": "brahma_logger",
+        "symbols": [
+          "log",
+          "LEVEL_SIGNAL\n        log"
+        ]
+      }
+    ],
+    "exports": [
+      "log",
+      "log_signal",
+      "log_exec",
+      "log_regime"
+    ],
+    "consumed_by": [
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "brahma_mem_compressor": {
+    "lines": 390,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone\nfrom collections import defaultdict\n\nBASE"
+        ]
+      },
+      {
+        "from": "collections",
+        "symbols": [
+          "Counter\n            regimes"
+        ]
+      }
+    ],
+    "exports": [
+      "compress_signal_context",
+      "_extract_recent_signals",
+      "_extract_regime_summary",
+      "_extract_oi_summary",
+      "_extract_position_summary",
+      "get_global_context_snapshot",
+      "_get_market_state_summary",
+      "_get_active_positions_summary",
+      "_get_recent_executions",
+      "auto_distill_to_memory",
+      "main"
+    ],
+    "consumed_by": [
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "brahma_orchestrator": {
+    "lines": 65,
+    "imports": [
+      {
+        "from": "brahma_core",
+        "symbols": [
+          "analyze as _core_analyze",
+          "format_report\n\ndef analyze"
+        ]
+      },
+      {
+        "from": "signal_selector",
+        "symbols": [
+          "select as _sel",
+          "format_signal_card as _fmt_card\n        from regime_scorer import score as _regime_score\n        _long_res"
+        ]
+      }
+    ],
+    "exports": [
+      "analyze",
+      "analyze_with_selector"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "__init__",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "brahma_parallel_engine": {
+    "lines": 252,
+    "imports": [
+      {
+        "from": "concurrentfutures",
+        "symbols": [
+          "ThreadPoolExecutor",
+          "as_completed",
+          "TimeoutError\nfrom typing import Callable",
+          "Optional"
+        ]
+      },
+      {
+        "from": "brahma_core",
+        "symbols": [
+          "analyze\n    results"
+        ]
+      },
+      {
+        "from": "dharmapump_hunterphase3_scanner",
+        "symbols": [
+          "score_symbol"
+        ]
+      },
+      {
+        "from": "dharmapump_hunterscan_and_alert",
+        "symbols": [
+          "score_single\n        return score_single"
+        ]
+      },
+      {
+        "from": "dharmapump_hunterphase3_scanner",
+        "symbols": [
+          "scan_single\n        return scan_single"
+        ]
+      },
+      {
+        "from": "universal_asset_router",
+        "symbols": [
+          "apply_asset_routing"
+        ]
+      },
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path as _Path\n    from brahma_brain"
+        ]
+      }
+    ],
+    "exports": [
+      "batch_analyze",
+      "batch_analyze_ranked",
+      "pump_hunter_parallel_scan",
+      "_safe_score_symbol",
+      "market_wide_scan",
+      "batch_analyze_with_regime"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "portfolio_optimizer",
+      "brahma_analysis_runner",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "brahma_scoring": {
+    "lines": 2160,
+    "imports": [
+      {
+        "from": "datetime",
+        "symbols": [
+          "datetime",
+          "timezone",
+          "timedelta"
+        ]
+      },
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path"
+        ]
+      },
+      {
+        "from": "data_cache",
+        "symbols": [
+          "prefetch_symbol",
+          "get_klines",
+          "klines_to_ohlcv\nfrom market_state      import analyze   as ms_analyze\nfrom smc_engine        import analyze_smc\nfrom divergence_engine import divergence_score\nfrom volume_engine     import volume_score\nfrom range_engine      import range_score"
+        ]
+      },
+      {
+        "from": "math_utils",
+        "symbols": [
+          "ema as _mu_ema",
+          "rsi as _mu_rsi",
+          "atr as _mu_atr"
+        ]
+      },
+      {
+        "from": "options_engine",
+        "symbols": [
+          "sentiment_score",
+          "analyze_funding_trend"
+        ]
+      },
+      {
+        "from": "elliott_engine",
+        "symbols": [
+          "analyze_elliott",
+          "format_elliott"
+        ]
+      },
+      {
+        "from": "onchain_engine",
+        "symbols": [
+          "onchain_score as _onchain_score\n    _ONCHAIN_OK"
+        ]
+      },
+      {
+        "from": "pattern_engine",
+        "symbols": [
+          "pattern_score as _pattern_score\n    _PATTERN_OK"
+        ]
+      },
+      {
+        "from": "order_flow_engine",
+        "symbols": [
+          "order_flow_score as _order_flow_score\n    _OF_OK"
+        ]
+      },
+      {
+        "from": "macro_engine",
+        "symbols": [
+          "macro_score as _macro_score\n    _MACRO_OK"
+        ]
+      }
+    ],
+    "exports": [
+      "_apply_calib",
+      "confluence_score"
+    ],
+    "consumed_by": [
+      "grade_utils",
+      "brahma_engine",
+      "brahma_constitutional_test",
+      "online_learner_v2",
+      "__init__",
+      "auto_review"
+    ],
+    "is_entry": true,
+    "is_skill": false
+  },
+  "brahma_trade": {
+    "lines": 50,
+    "imports": [],
+    "exports": [
+      "_nearest_swing_above",
+      "_nearest_swing_below",
+      "calc_trade_params",
+      "rebase_params"
+    ],
+    "consumed_by": [
+      "__init__",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "brainlog": {
+    "lines": 195,
+    "imports": [
+      {
+        "from": "brainlog",
+        "symbols": [
+          "get_logger"
+        ]
+      },
+      {
+        "from": "typing",
+        "symbols": [
+          "Optional"
+        ]
+      }
+    ],
+    "exports": [
+      "set_level",
+      "set_module_filter",
+      "_should_log",
+      "_format",
+      "get_logger",
+      "binfo",
+      "bwarn",
+      "berror",
+      "_patched_emit",
+      "get_stats",
+      "reset_stats"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "brahma_analysis_runner",
+      "brahma_health",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "bull_regime_injector": {
+    "lines": 151,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\n\nBASE"
+        ]
+      }
+    ],
+    "exports": [
+      "get_regime_context_bonus",
+      "get_event_timing_bonus"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "brahma_analysis_runner",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "capital_allocator": {
+    "lines": 297,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone"
+        ]
+      }
+    ],
+    "exports": [
+      "_read_tail",
+      "_get_nav",
+      "_get_active_exposure",
+      "_symbol_weight",
+      "_recent_drawdown",
+      "compute",
+      "get_budget_summary"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "portfolio_optimizer",
+      "brahma_core",
+      "brahma_engine",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "causal_regime_verifier": {
+    "lines": 132,
+    "imports": [
+      {
+        "from": "typing",
+        "symbols": [
+          "Optional",
+          "Dict",
+          "Any\n\nlogger"
+        ]
+      }
+    ],
+    "exports": [
+      "verify"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "brahma_core",
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "circuit_breaker": {
+    "lines": 359,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom typing import Any",
+          "Callable",
+          "Optional\nfrom dataclasses import dataclass",
+          "field\nfrom enum import Enum\n\nlogger"
+        ]
+      }
+    ],
+    "exports": [
+      "circuit_protected"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "coinglass_engine": {
+    "lines": 325,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom concurrent"
+        ]
+      },
+      {
+        "from": "brahma_bus",
+        "symbols": [
+          "bus as _brahma_bus\nexcept Exception"
+        ]
+      },
+      {
+        "from": "onchain_engine",
+        "symbols": [
+          "CG_KEY as _CG_KEY\nexcept Exception"
+        ]
+      },
+      {
+        "from": "onchain_engine",
+        "symbols": [
+          "get_oi_change as _goi\n            oi_data"
+        ]
+      },
+      {
+        "from": "liq_scanner",
+        "symbols": [
+          "get_liq_snapshot\n        snap"
+        ]
+      }
+    ],
+    "exports": [
+      "_bus_price",
+      "_cached",
+      "_get",
+      "get_fear_greed",
+      "get_oi_momentum",
+      "get_funding",
+      "get_ls_ratio",
+      "get_liquidation",
+      "get_onchain_score",
+      "get_full_snapshot"
+    ],
+    "consumed_by": [
+      "brahma_core",
+      "brahma_bus",
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "condition_order_matrix": {
+    "lines": 208,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone",
+          "timedelta\nfrom typing import Optional\n\n_STATE_PATH"
+        ]
+      }
+    ],
+    "exports": [
+      "_load",
+      "_save",
+      "create_trade_plan",
+      "check_triggers",
+      "format_plan_card"
+    ],
+    "consumed_by": [
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "confluence_by_tf": {
+    "lines": 198,
+    "imports": [
+      {
+        "from": "__future__",
+        "symbols": [
+          "annotations\nimport sys\nfrom pathlib import Path\n\n_root"
+        ]
+      },
+      {
+        "from": "confluence_tf_weights",
+        "symbols": [
+          "get_tf_weights",
+          "_get_tier"
+        ]
+      }
+    ],
+    "exports": [
+      "get_tf_consensus",
+      "apply_tf_confluence"
+    ],
+    "consumed_by": [
+      "brahma_core",
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "confluence_tf_weights": {
+    "lines": 160,
+    "imports": [
+      {
+        "from": "confluence_tf_weights",
+        "symbols": [
+          "get_tf_weights",
+          "TF_WEIGHT_REGISTRY\n  weights"
+        ]
+      },
+      {
+        "from": "__future__",
+        "symbols": [
+          "annotations"
+        ]
+      }
+    ],
+    "exports": [
+      "_get_tier",
+      "get_tf_weights",
+      "get_score_multiplier"
+    ],
+    "consumed_by": [
+      "s7_liq_config",
+      "brahma_core",
+      "brahma_engine",
+      "confluence_by_tf"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "cross_asset_gate": {
+    "lines": 303,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom typing import Optional\n\nBASE"
+        ]
+      }
+    ],
+    "exports": [
+      "_pub",
+      "_get_price",
+      "_calc_beta",
+      "get_gate",
+      "apply_cross_asset_gate"
+    ],
+    "consumed_by": [
+      "brahma_analysis_runner"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "cross_market_engine": {
+    "lines": 535,
+    "imports": [],
+    "exports": [
+      "_get",
+      "_get_closes",
+      "_pearson",
+      "_pct_returns",
+      "get_btc_eth_corr",
+      "get_dxy_proxy",
+      "get_risk_regime",
+      "cross_market_score",
+      "get_cross_fr_basis",
+      "get_deribit_pc"
+    ],
+    "consumed_by": [
+      "brahma_core_entry",
+      "module_registry",
+      "brahma_health",
+      "brahma_core",
+      "brahma_engine",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "cvd_engine": {
+    "lines": 251,
+    "imports": [],
+    "exports": [
+      "_get",
+      "_taker_cvd",
+      "_kline_cvd",
+      "_aggTrades_cvd",
+      "_classify",
+      "get_multi_tf_cvd",
+      "cvd_score_for_signal"
+    ],
+    "consumed_by": [
+      "brahma_core",
+      "brahma_scoring",
+      "enhanced_signal_engine"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "data_cache": {
+    "lines": 615,
+    "imports": [
+      {
+        "from": "concurrentfutures",
+        "symbols": [
+          "ThreadPoolExecutor",
+          "as_completed"
+        ]
+      }
+    ],
+    "exports": [
+      "enable_offline_network_block",
+      "_load_keys",
+      "_cache_key",
+      "_disk_path",
+      "_cache_get",
+      "_cache_set",
+      "_get",
+      "_signed_get",
+      "_is_spot_symbol",
+      "get_klines",
+      "get_ticker",
+      "get_funding_rate",
+      "get_open_interest",
+      "get_long_short_ratio",
+      "get_all_active_symbols"
+    ],
+    "consumed_by": [
+      "multitf_engine",
+      "brahma_core_entry",
+      "divergence_engine",
+      "fib_macro_engine",
+      "module_registry",
+      "market_state",
+      "lsr_oi_engine",
+      "brahma_parallel_engine",
+      "brahma_core",
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "dharma_data_bridge": {
+    "lines": 369,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone\nfrom typing import Optional\n\nBASE"
+        ]
+      },
+      {
+        "from": "signal_bus",
+        "symbols": [
+          "write as _bus_write\n                _bus_write"
+        ]
+      }
+    ],
+    "exports": [
+      "_make_signal_id",
+      "log_signal",
+      "get_stats",
+      "get_threshold"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "brahma_core",
+      "brahma_engine",
+      "signal_card_formatter"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "dharma_nodes": {
+    "lines": 168,
+    "imports": [],
+    "exports": [
+      "evaluate_nodes"
+    ],
+    "consumed_by": [
+      "brahma_core",
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "divergence_engine": {
+    "lines": 746,
+    "imports": [
+      {
+        "from": "math_utils",
+        "symbols": [
+          "calc_rsi",
+          "ema"
+        ]
+      },
+      {
+        "from": "datetime",
+        "symbols": [
+          "datetime",
+          "timezone\n            dt"
+        ]
+      },
+      {
+        "from": "data_cache",
+        "symbols": [
+          "get_klines",
+          "klines_to_ohlcv\n    except Exception as e"
+        ]
+      },
+      {
+        "from": "data_cache",
+        "symbols": [
+          "get_klines",
+          "klines_to_ohlcv\n\n    sym"
+        ]
+      }
+    ],
+    "exports": [
+      "calc_rsi_series",
+      "calc_macd_series",
+      "find_pivots",
+      "detect_rsi_divergence",
+      "detect_macd_divergence",
+      "detect_candlestick_patterns",
+      "_calc_volume_contraction",
+      "divergence_score",
+      "multitf_divergence_score"
+    ],
+    "consumed_by": [
+      "brahma_core_entry",
+      "module_registry",
+      "brahma_core",
+      "brahma_engine",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "dynamic_sl": {
+    "lines": 206,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone\n\nDATA_DIR"
+        ]
+      }
+    ],
+    "exports": [
+      "_atr14_from_parquet",
+      "_snap_to_key_level",
+      "compute"
+    ],
+    "consumed_by": [
+      "kronos_bridge",
+      "module_registry",
+      "brahma_core",
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "enhanced_signal_engine": {
+    "lines": 381,
+    "imports": [
+      {
+        "from": "brahma_bus",
+        "symbols": [
+          "bus as _brahma_bus\nexcept Exception"
+        ]
+      },
+      {
+        "from": "cvd_engine",
+        "symbols": [
+          "cvd_score_for_signal\n        cvd_s",
+          "cvd_notes"
+        ]
+      }
+    ],
+    "exports": [
+      "_bus_price",
+      "_get",
+      "get_cvd",
+      "get_liquidation_levels",
+      "get_lsr_trend",
+      "get_session_weight",
+      "enhanced_score"
+    ],
+    "consumed_by": [
+      "brahma_core_entry",
+      "brahma_core",
+      "cvd_engine",
+      "brahma_engine",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "ev_feedback": {
+    "lines": 232,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone\n\nBASE"
+        ]
+      },
+      {
+        "from": "dharma_online_learner",
+        "symbols": [
+          "run_online_learning as _dl_run\n            _dl_run"
+        ]
+      },
+      {
+        "from": "position_sizer",
+        "symbols": [
+          "sync_confidence_table_from_wr as _sync_ct\n            _sync_ct"
+        ]
+      }
+    ],
+    "exports": [
+      "update_ev",
+      "_score_bin",
+      "_load_matrix",
+      "_save_matrix",
+      "_trigger_param_nudge",
+      "_generate_nudge",
+      "on_settlement",
+      "get_ev_summary"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "brahma_learning_loop",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "exception_injector": {
+    "lines": 353,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom dataclasses import dataclass",
+          "field\nfrom typing import List",
+          "Dict",
+          "Tuple\n\nBASE"
+        ]
+      },
+      {
+        "from": "scriptssignal_router",
+        "symbols": [
+          "push_critical_alert\n        push_critical_alert"
+        ]
+      }
+    ],
+    "exports": [
+      "classify_function",
+      "scan_file",
+      "scan_layer",
+      "generate_report",
+      "generate_patch_template"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "external_signal": {
+    "lines": 214,
+    "imports": [
+      {
+        "from": "external_signal",
+        "symbols": [
+          "get as _ext_get\n  extra_data"
+        ]
+      },
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom typing import Optional",
+          "Dict",
+          "Any"
+        ]
+      }
+    ],
+    "exports": [
+      "get",
+      "write",
+      "clear",
+      "status",
+      "_load",
+      "_aggregate"
+    ],
+    "consumed_by": [
+      "brahma_core",
+      "brahma_scoring",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "fib_macro_engine": {
+    "lines": 352,
+    "imports": [
+      {
+        "from": "math_utils",
+        "symbols": [
+          "_ema",
+          "_rsi",
+          "calc_rsi",
+          "rsi",
+          "ema"
+        ]
+      },
+      {
+        "from": "brahma_bus",
+        "symbols": [
+          "bus as _brahma_bus\nexcept Exception"
+        ]
+      },
+      {
+        "from": "data_cache",
+        "symbols": [
+          "get_klines\n        k1d"
+        ]
+      },
+      {
+        "from": "data_cache",
+        "symbols": [
+          "get_klines as _get_kl_fib\n            _k1h_fib"
+        ]
+      }
+    ],
+    "exports": [
+      "_bus_price",
+      "_rsi14",
+      "_compute_fib_levels",
+      "_get_macro_data",
+      "fib_macro_score"
+    ],
+    "consumed_by": [
+      "brahma_core",
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "formatter": {
+    "lines": 858,
+    "imports": [
+      {
+        "from": "typing",
+        "symbols": [
+          "Any\n\n\ndef _fmt_price"
+        ]
+      },
+      {
+        "from": "datetime",
+        "symbols": [
+          "datetime as _dt",
+          "timezone as _tz\n\n\ndef build_output_tag"
+        ]
+      },
+      {
+        "from": "formatter",
+        "symbols": [
+          "brahma_panorama_report"
+        ]
+      },
+      {
+        "from": "datetime",
+        "symbols": [
+          "datetime",
+          "timezone\n\n    if r"
+        ]
+      }
+    ],
+    "exports": [
+      "_fmt_price",
+      "format_report",
+      "extract_standard_fields",
+      "format_standard_card",
+      "build_output_tag",
+      "tag_is_valid_signal",
+      "tag_parse",
+      "brahma_panorama_report"
+    ],
+    "consumed_by": [
+      "brahma_analysis_runner",
+      "brahma_health",
+      "brahma_core",
+      "brahma_engine",
+      "signal_card_formatter",
+      "__init__",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "gex_engine": {
+    "lines": 352,
+    "imports": [
+      {
+        "from": "gex_engine",
+        "symbols": [
+          "GEXEngine\n  result"
+        ]
+      },
+      {
+        "from": "datetime",
+        "symbols": [
+          "datetime",
+          "timezone\nfrom pathlib import Path\nfrom typing import Optional",
+          "Dict\n\nROOT"
+        ]
+      }
+    ],
+    "exports": [
+      "bs_gamma",
+      "_deribit_get",
+      "_parse_instrument",
+      "compute_gex",
+      "score_gex",
+      "main"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "brahma_core",
+      "brahma_engine",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "gex_scanner": {
+    "lines": 494,
+    "imports": [
+      {
+        "from": "gex_scanner",
+        "symbols": [
+          "get_gex_state",
+          "scan_gex"
+        ]
+      },
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone"
+        ]
+      }
+    ],
+    "exports": [
+      "_fetch",
+      "get_spot_price",
+      "get_option_instruments",
+      "get_book_summary",
+      "get_ticker_greeks",
+      "black_scholes_gamma",
+      "compute_gex_profile",
+      "scan_gex",
+      "scan_all",
+      "get_gex_state",
+      "get_gex_score_for_signal",
+      "format_gex_report"
+    ],
+    "consumed_by": [
+      "brahma_core",
+      "brahma_engine",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "grade_utils": {
+    "lines": 105,
+    "imports": [],
+    "exports": [
+      "grade_to_label",
+      "parse_grade",
+      "enrich_signal_grade"
+    ],
+    "consumed_by": [
+      "dharma_data_bridge"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "headroom": {
+    "lines": 378,
+    "imports": [
+      {
+        "from": "headroom",
+        "symbols": [
+          "compress_ms",
+          "compress_signal_card",
+          "TokenBudget\n\n    compressed"
+        ]
+      },
+      {
+        "from": "typing",
+        "symbols": [
+          "Any",
+          "Dict",
+          "List",
+          "Optional",
+          "Union\n\nlogger"
+        ]
+      }
+    ],
+    "exports": [
+      "compress_ms",
+      "_compress_value",
+      "_fmt",
+      "compress_signal_card",
+      "trim_agent_history",
+      "estimate_tokens"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "ic_tracker": {
+    "lines": 221,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom collections import defaultdict\n\nBASE"
+        ]
+      },
+      {
+        "from": "scipystats",
+        "symbols": [
+          "spearmanr\n    try"
+        ]
+      }
+    ],
+    "exports": [
+      "load_signal_data",
+      "calc_ic",
+      "compute_all_ic",
+      "save_ic_state",
+      "load_ic_state",
+      "get_dim_weight_adjust",
+      "report"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "brahma_learning_loop",
+      "brahma_coordinator",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "kronos_bridge": {
+    "lines": 617,
+    "imports": [
+      {
+        "from": "__future__",
+        "symbols": [
+          "annotations\nimport os",
+          "sys",
+          "time",
+          "json",
+          "logging\n\nSTATUS"
+        ]
+      },
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone",
+          "timedelta\nfrom typing import Optional",
+          "Tuple",
+          "Dict\n\nlogger"
+        ]
+      },
+      {
+        "from": "modelkronos",
+        "symbols": [
+          "Kronos",
+          "KronosPredictor",
+          "KronosTokenizer\n        from safetensors"
+        ]
+      },
+      {
+        "from": "huggingface_hub",
+        "symbols": [
+          "hf_hub_download as _dl\n\n        _cache_dir"
+        ]
+      }
+    ],
+    "exports": [
+      "_get_predictor",
+      "_build_ohlcv_df",
+      "_run_kronos",
+      "get_s23_kronos",
+      "_shadow_log",
+      "get_shadow_stats",
+      "get_volatility_forecast",
+      "generate_synthetic_klines"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "brahma_analysis_runner",
+      "brahma_core",
+      "brahma_engine",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "kronos_engine": {
+    "lines": 368,
+    "imports": [
+      {
+        "from": "typing",
+        "symbols": [
+          "Tuple",
+          "Dict",
+          "Optional\n\nlogger"
+        ]
+      },
+      {
+        "from": "model",
+        "symbols": [
+          "Kronos",
+          "KronosPredictor",
+          "KronosTokenizer"
+        ]
+      },
+      {
+        "from": "model",
+        "symbols": [
+          "Kronos",
+          "KronosPredictor",
+          "KronosTokenizer\n        from safetensors"
+        ]
+      },
+      {
+        "from": "huggingface_hub",
+        "symbols": [
+          "hf_hub_download as _hf_dl\n        _cache"
+        ]
+      },
+      {
+        "from": "datetime",
+        "symbols": [
+          "datetime",
+          "timedelta"
+        ]
+      }
+    ],
+    "exports": [
+      "_is_available",
+      "_load_model",
+      "_run_inference",
+      "_p_up_to_score",
+      "get_kronos_score"
+    ],
+    "consumed_by": [
+      "kronos_bridge",
+      "data_cache",
+      "module_registry",
+      "brahma_analysis_runner",
+      "kronos_lite",
+      "recovery_unlocker",
+      "brahma_core",
+      "brahma_engine",
+      "kronos_inference_v7_patch"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "kronos_inference_v7_patch": {
+    "lines": 118,
+    "imports": [
+      {
+        "from": "datetime",
+        "symbols": [
+          "datetime",
+          "timedelta\n    from scipy import stats as sp_stats"
+        ]
+      }
+    ],
+    "exports": [
+      "_run_inference_v7"
+    ],
+    "consumed_by": [
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "kronos_lite": {
+    "lines": 622,
+    "imports": [
+      {
+        "from": "math_utils",
+        "symbols": [
+          "_ema",
+          "_rsi",
+          "calc_rsi",
+          "rsi",
+          "ema"
+        ]
+      },
+      {
+        "from": "typing",
+        "symbols": [
+          "Tuple",
+          "Dict",
+          "Any",
+          "Optional\n\nimport numpy as np\n\nlogger"
+        ]
+      },
+      {
+        "from": "kronos_engine",
+        "symbols": [
+          "_load_model as _ke_load",
+          "_predictor as _ke_pred",
+          "_model_loaded as _ke_ok\n        if not _ke_ok"
+        ]
+      },
+      {
+        "from": "kronos_engine",
+        "symbols": [
+          "get_kronos_score as _full_score",
+          "_is_available as _kronos_ok\n        if _kronos_ok"
+        ]
+      },
+      {
+        "from": "kronos_lite",
+        "symbols": [
+          "_compute_p_up as _cp"
+        ]
+      }
+    ],
+    "exports": [
+      "_ema",
+      "_rsi",
+      "_compute_p_up",
+      "_p_up_to_score",
+      "get_s23_score"
+    ],
+    "consumed_by": [
+      "kronos_bridge",
+      "recovery_unlocker",
+      "brahma_core",
+      "brahma_engine",
+      "timesfm_lite"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "liq_density_engine": {
+    "lines": 272,
+    "imports": [
+      {
+        "from": "typing",
+        "symbols": [
+          "Optional"
+        ]
+      },
+      {
+        "from": "brahma_bus",
+        "symbols": [
+          "bus as _brahma_bus\nexcept Exception"
+        ]
+      }
+    ],
+    "exports": [
+      "_bus_price",
+      "_get_binance_force_orders",
+      "_get_bybit_liquidations",
+      "_get_okx_liquidations",
+      "get_liq_density",
+      "_empty_liq"
+    ],
+    "consumed_by": [
+      "brahma_core_entry",
+      "brahma_core",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "liq_scanner": {
+    "lines": 270,
+    "imports": [
+      {
+        "from": "datetime",
+        "symbols": [
+          "datetime",
+          "timezone",
+          "timedelta\n\nFAPI"
+        ]
+      },
+      {
+        "from": "tardis_liq_layer",
+        "symbols": [
+          "get_tardis_liq_walls\n        tdw"
+        ]
+      },
+      {
+        "from": "ws_guardian",
+        "symbols": [
+          "get_liq_stats\n        live_liq"
+        ]
+      },
+      {
+        "from": "tardis_liq_layer",
+        "symbols": [
+          "format_liq_walls\n            lines"
+        ]
+      }
+    ],
+    "exports": [
+      "_fetch",
+      "get_liq_snapshot",
+      "format_report",
+      "scan_majors"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "s7_liq_config",
+      "brahma_core",
+      "brahma_engine",
+      "coinglass_engine",
+      "tardis_liq_layer",
+      "market_structure_scanner"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "live_price_feed": {
+    "lines": 127,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\n\nLIVE_PRICE_FILE"
+        ]
+      }
+    ],
+    "exports": [
+      "update_price",
+      "get_live_price",
+      "get_best_price",
+      "bulk_update_from_api"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "market_state",
+      "brahma_core",
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "llm_council_bridge": {
+    "lines": 537,
+    "imports": [
+      {
+        "from": "__future__",
+        "symbols": [
+          "annotations\nimport os",
+          "json",
+          "time",
+          "hashlib",
+          "logging\nfrom pathlib import Path\nfrom datetime import datetime"
+        ]
+      },
+      {
+        "from": "reasoning_client",
+        "symbols": [
+          "call_reasoning\n\n        resp"
+        ]
+      }
+    ],
+    "exports": [
+      "_load_cache",
+      "_save_cache",
+      "_cache_key",
+      "_check_daily_limit",
+      "_call_llm",
+      "_risk_agent_review",
+      "_macro_agent_review",
+      "review",
+      "_shadow_log",
+      "get_shadow_stats"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "brahma_analysis_runner",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "lsr_oi_engine": {
+    "lines": 360,
+    "imports": [
+      {
+        "from": "data_cache",
+        "symbols": [
+          "get_long_short_ratio\n                long_pct"
+        ]
+      },
+      {
+        "from": "data_cache",
+        "symbols": [
+          "get_open_interest\n                oi_data"
+        ]
+      },
+      {
+        "from": "data_cache",
+        "symbols": [
+          "get_klines\n                k4h"
+        ]
+      }
+    ],
+    "exports": [
+      "lsr_score",
+      "oi_direction_score",
+      "lsr_oi_score"
+    ],
+    "consumed_by": [
+      "brahma_core",
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "macro_calendar": {
+    "lines": 197,
+    "imports": [
+      {
+        "from": "datetime",
+        "symbols": [
+          "datetime",
+          "timezone",
+          "timedelta\nfrom pathlib import Path\n\nCACHE_FILE"
+        ]
+      }
+    ],
+    "exports": [
+      "_load_cache",
+      "_save_cache",
+      "_get_fng",
+      "_get_btc_dominance",
+      "get_upcoming_events",
+      "get_active_risk"
+    ],
+    "consumed_by": [
+      "us_session_gate",
+      "brahma_core",
+      "brahma_engine",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "macro_engine": {
+    "lines": 370,
+    "imports": [
+      {
+        "from": "macro_engine",
+        "symbols": [
+          "write_macro_state"
+        ]
+      },
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\n    from datetime import datetime",
+          "timezone\n\n    BASE_DIR"
+        ]
+      }
+    ],
+    "exports": [
+      "_get",
+      "get_fear_greed",
+      "get_btc_dominance",
+      "macro_score",
+      "get_dxy_realtime",
+      "get_nasdaq_realtime",
+      "macro_score_v2",
+      "write_macro_state"
+    ],
+    "consumed_by": [
+      "brahma_core_entry",
+      "fib_macro_engine",
+      "module_registry",
+      "brahma_health",
+      "brahma_core",
+      "brahma_engine",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "macro_stub": {
+    "lines": 57,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\n\n_CACHE_FILE"
+        ]
+      }
+    ],
+    "exports": [
+      "get_fear_greed"
+    ],
+    "consumed_by": [
+      "brahma_core",
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "market_state": {
+    "lines": 676,
+    "imports": [
+      {
+        "from": "data_cache",
+        "symbols": [
+          "get_klines",
+          "get_ticker",
+          "get_funding_rate"
+        ]
+      },
+      {
+        "from": "realtime_fetch",
+        "symbols": [
+          "fetch_realtime as _rt_fetch\n        _rt"
+        ]
+      },
+      {
+        "from": "data_cache",
+        "symbols": [
+          "_cache_set",
+          "_cache_key\n            for _iv in"
+        ]
+      },
+      {
+        "from": "live_price_feed",
+        "symbols": [
+          "get_best_price as _gprice\n        price",
+          "_price_src"
+        ]
+      },
+      {
+        "from": "regime_scorer",
+        "symbols": [
+          "score as _rs_fn\n        _rs_result"
+        ]
+      },
+      {
+        "from": "regime_state_machine",
+        "symbols": [
+          "get_stable_regime as _gsm\n        regime"
+        ]
+      }
+    ],
+    "exports": [
+      "ema",
+      "ema_series",
+      "atr",
+      "rsi",
+      "bb",
+      "adx",
+      "trend_direction",
+      "three_frame_consensus",
+      "detect_regime",
+      "calc_fib_levels",
+      "calc_pivot_points",
+      "find_swing_highs_lows",
+      "find_key_levels",
+      "detect_wave_position",
+      "analyze"
+    ],
+    "consumed_by": [
+      "brahma_core_entry",
+      "brahma_mem_compressor",
+      "regime_state_machine",
+      "module_registry",
+      "brahma_analysis_runner",
+      "lsr_oi_engine",
+      "brahma_orchestrator",
+      "brahma_core",
+      "regime_scorer",
+      "signal_selector"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "market_structure_scanner": {
+    "lines": 309,
+    "imports": [
+      {
+        "from": "market_structure_scanner",
+        "symbols": [
+          "scan_structure"
+        ]
+      },
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\n\n_DIR"
+        ]
+      },
+      {
+        "from": "smc_engine",
+        "symbols": [
+          "analyze_smc\nfrom brahma_brain"
+        ]
+      },
+      {
+        "from": "brahma_bus",
+        "symbols": [
+          "bus\nfrom brahma_brain"
+        ]
+      },
+      {
+        "from": "system_config",
+        "symbols": [
+          "JARVIS_TARGET",
+          "JARVIS_CHANNEL"
+        ]
+      },
+      {
+        "from": "datetime",
+        "symbols": [
+          "datetime",
+          "timezone\n\n    parser"
+        ]
+      }
+    ],
+    "exports": [
+      "scan_structure",
+      "format_report",
+      "_push",
+      "main"
+    ],
+    "consumed_by": [
+      "brahma_analysis_runner",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "math_utils": {
+    "lines": 201,
+    "imports": [
+      {
+        "from": "math_utils",
+        "symbols": [
+          "_ema",
+          "_rsi\n  改一处"
+        ]
+      },
+      {
+        "from": "__future__",
+        "symbols": [
+          "annotations\nimport math\nfrom typing import Sequence",
+          "Optional"
+        ]
+      }
+    ],
+    "exports": [
+      "_ema",
+      "ema",
+      "_rsi",
+      "rsi",
+      "calc_rsi",
+      "_atr",
+      "atr",
+      "macd",
+      "bollinger",
+      "pct_change",
+      "round_price"
+    ],
+    "consumed_by": [
+      "multitf_engine",
+      "brahma_core_entry",
+      "divergence_engine",
+      "fib_macro_engine",
+      "module_registry",
+      "kronos_lite",
+      "market_state",
+      "brahma_core",
+      "regime_scorer",
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "memory_watchdog": {
+    "lines": 168,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\n\nBASE"
+        ]
+      },
+      {
+        "from": "brahma_bus",
+        "symbols": [
+          "BrahmaBus\n        bus"
+        ]
+      }
+    ],
+    "exports": [
+      "get_memory_mb",
+      "get_system_memory_pct",
+      "flush_brahma_bus_cache",
+      "check_and_handle",
+      "start_daemon"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "microstructure_engine": {
+    "lines": 332,
+    "imports": [
+      {
+        "from": "brahma_bus",
+        "symbols": [
+          "bus as _brahma_bus\nexcept Exception"
+        ]
+      }
+    ],
+    "exports": [
+      "_bus_price",
+      "_get",
+      "detect_absorption",
+      "detect_order_flow_imbalance",
+      "detect_price_stall",
+      "microstructure_score"
+    ],
+    "consumed_by": [
+      "brahma_core_entry",
+      "brahma_core",
+      "brahma_engine",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "mode_c_detector": {
+    "lines": 353,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone"
+        ]
+      }
+    ],
+    "exports": [
+      "_load_state",
+      "_save_state",
+      "detect",
+      "hedge_health",
+      "ev_filter",
+      "quick_mode_check"
+    ],
+    "consumed_by": [
+      "brahma_engine",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "module_registry": {
+    "lines": 143,
+    "imports": [],
+    "exports": [
+      "check_core_modules",
+      "get_module_status",
+      "_setup_path"
+    ],
+    "consumed_by": [
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "multi_timeframe_router": {
+    "lines": 235,
+    "imports": [
+      {
+        "from": "structure_quality_engine",
+        "symbols": [
+          "evaluate_structure_quality\n        _sq"
+        ]
+      }
+    ],
+    "exports": [
+      "route_entry_zone",
+      "_extract_zone"
+    ],
+    "consumed_by": [
+      "brahma_core",
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "multitf_engine": {
+    "lines": 275,
+    "imports": [
+      {
+        "from": "math_utils",
+        "symbols": [
+          "_ema as _ema_list",
+          "_rsi",
+          "calc_rsi",
+          "rsi",
+          "ema"
+        ]
+      },
+      {
+        "from": "data_cache",
+        "symbols": [
+          "get_klines",
+          "klines_to_ohlcv"
+        ]
+      }
+    ],
+    "exports": [
+      "_ema",
+      "_rsi",
+      "_macd_signal",
+      "_trend_dir",
+      "analyze_multitf",
+      "multitf_score"
+    ],
+    "consumed_by": [
+      "brahma_core_entry",
+      "module_registry",
+      "brahma_core",
+      "brahma_engine",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "offline_adapters": {
+    "lines": 564,
+    "imports": [
+      {
+        "from": "offline_adapters",
+        "symbols": [
+          "OfflineAdapterBundle\n  bundle"
+        ]
+      },
+      {
+        "from": "math_utils",
+        "symbols": [
+          "_ema",
+          "_rsi",
+          "calc_rsi",
+          "rsi",
+          "ema"
+        ]
+      },
+      {
+        "from": "typing",
+        "symbols": [
+          "Optional",
+          "Dict",
+          "Any"
+        ]
+      },
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\n        import pandas as pd\n        base"
+        ]
+      },
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\n    data_dir"
+        ]
+      }
+    ],
+    "exports": [
+      "_zscore",
+      "_ema",
+      "_rsi",
+      "_atr"
+    ],
+    "consumed_by": [
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "onchain_engine": {
+    "lines": 469,
+    "imports": [
+      {
+        "from": "config",
+        "symbols": [
+          "coinglass_key as _cg_fn\n    CG_KEY"
+        ]
+      },
+      {
+        "from": "concurrentfutures",
+        "symbols": [
+          "ThreadPoolExecutor\n    with ThreadPoolExecutor"
+        ]
+      }
+    ],
+    "exports": [
+      "_get",
+      "_cg",
+      "get_oi_change",
+      "get_long_short",
+      "get_taker_ratio",
+      "get_funding_trend",
+      "get_liquidation_data",
+      "get_oi_exchange_info",
+      "onchain_score"
+    ],
+    "consumed_by": [
+      "brahma_core_entry",
+      "module_registry",
+      "brahma_core",
+      "brahma_bus",
+      "brahma_engine",
+      "coinglass_engine",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "online_bayes": {
+    "lines": 156,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom collections import defaultdict\n\nBASE_DIR"
+        ]
+      }
+    ],
+    "exports": [
+      "_load_experience_pool",
+      "score",
+      "get_regime_prior_wr"
+    ],
+    "consumed_by": [
+      "brahma_core",
+      "brahma_engine",
+      "brahma_constitutional_test",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "online_learner_v2": {
+    "lines": 240,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom collections import defaultdict\n\nBASE"
+        ]
+      }
+    ],
+    "exports": [
+      "load_weights",
+      "save_weights",
+      "load_performance",
+      "compute_dimension_bias",
+      "calibrate_weights",
+      "write_calib_log",
+      "run"
+    ],
+    "consumed_by": [
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "options_engine": {
+    "lines": 323,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path"
+        ]
+      },
+      {
+        "from": "config",
+        "symbols": [
+          "coinglass_key as _cg_fn\n    CG_KEY"
+        ]
+      }
+    ],
+    "exports": [
+      "get_fear_greed",
+      "get_deribit_pcr",
+      "_pcr_signal",
+      "analyze_funding_trend",
+      "get_max_pain",
+      "sentiment_score"
+    ],
+    "consumed_by": [
+      "brahma_core_entry",
+      "module_registry",
+      "onchain_engine",
+      "brahma_core",
+      "brahma_engine",
+      "offline_adapters",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "order_flow_engine": {
+    "lines": 173,
+    "imports": [],
+    "exports": [
+      "_get",
+      "get_order_book_imbalance",
+      "get_recent_trades_flow",
+      "order_flow_score"
+    ],
+    "consumed_by": [
+      "brahma_core_entry",
+      "module_registry",
+      "brahma_core",
+      "brahma_engine",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "orderbook_engine": {
+    "lines": 141,
+    "imports": [],
+    "exports": [
+      "_get",
+      "_cached",
+      "get_depth",
+      "analyze_orderbook"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "brahma_core",
+      "brahma_engine",
+      "offline_adapters"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "orderbook_heatmap": {
+    "lines": 202,
+    "imports": [
+      {
+        "from": "typing",
+        "symbols": [
+          "Optional\n\n_CACHE"
+        ]
+      }
+    ],
+    "exports": [
+      "get_orderbook_heatmap",
+      "_empty_result",
+      "get_ob_score"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "brahma_core",
+      "orderbook_engine",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "pattern_engine": {
+    "lines": 221,
+    "imports": [
+      {
+        "from": "typing",
+        "symbols": [
+          "Optional"
+        ]
+      }
+    ],
+    "exports": [
+      "detect_flag_wedge",
+      "detect_double_pattern",
+      "detect_head_shoulders",
+      "pattern_score"
+    ],
+    "consumed_by": [
+      "brahma_core_entry",
+      "brahma_core",
+      "brahma_engine",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "portfolio_optimizer": {
+    "lines": 503,
+    "imports": [
+      {
+        "from": "__future__",
+        "symbols": [
+          "annotations\nimport json",
+          "time",
+          "logging\nimport numpy as np\nimport pandas as pd\nfrom pathlib import Path\nfrom datetime import datetime",
+          "timezone\nfrom typing import Dict",
+          "List"
+        ]
+      }
+    ],
+    "exports": [
+      "_load_returns",
+      "get_pair_correlation",
+      "build_corr_matrix",
+      "_calc_ev",
+      "select_optimal_portfolio",
+      "_calc_portfolio_risk_mult",
+      "_calc_diversity",
+      "filter_signals",
+      "check_correlation_risk",
+      "portfolio_summary"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "brahma_analysis_runner",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "position_sizer": {
+    "lines": 350,
+    "imports": [
+      {
+        "from": "__future__",
+        "symbols": [
+          "annotations\nimport json",
+          "os",
+          "time\nfrom pathlib import Path\n\nBASE"
+        ]
+      }
+    ],
+    "exports": [
+      "_score_range",
+      "get_fg_position_cap",
+      "get_position_pct",
+      "kelly_position",
+      "sync_confidence_table_from_wr"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "circuit_breaker",
+      "ev_feedback",
+      "brahma_core",
+      "brahma_engine",
+      "brahma_constitutional_test",
+      "brahma_360",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "range_engine": {
+    "lines": 288,
+    "imports": [],
+    "exports": [
+      "detect_range_structure",
+      "_no_range",
+      "detect_fakeout",
+      "calc_mean_deviation",
+      "range_score"
+    ],
+    "consumed_by": [
+      "brahma_core_entry",
+      "brahma_core",
+      "ic_tracker",
+      "brahma_engine",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "realtime_fetch": {
+    "lines": 129,
+    "imports": [
+      {
+        "from": "realtime_fetch",
+        "symbols": [
+          "fetch_realtime\n    data"
+        ]
+      },
+      {
+        "from": "concurrentfutures",
+        "symbols": [
+          "ThreadPoolExecutor",
+          "as_completed\n\nFAPI"
+        ]
+      }
+    ],
+    "exports": [
+      "_get",
+      "fetch_realtime",
+      "fetch_realtime_multi"
+    ],
+    "consumed_by": [
+      "data_cache",
+      "module_registry",
+      "market_state",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "realtime_liq_tracker": {
+    "lines": 211,
+    "imports": [
+      {
+        "from": "typing",
+        "symbols": [
+          "Optional\nfrom collections import defaultdict"
+        ]
+      }
+    ],
+    "exports": [
+      "get_recent_liq",
+      "_read_from_ws_guardian_state",
+      "_empty_liq_result",
+      "get_liq_score"
+    ],
+    "consumed_by": [
+      "brahma_core",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "recovery_unlocker": {
+    "lines": 132,
+    "imports": [
+      {
+        "from": "__future__",
+        "symbols": [
+          "annotations\nimport os\nimport sys\nimport time\nfrom typing import Optional"
+        ]
+      }
+    ],
+    "exports": [
+      "check_unlock"
+    ],
+    "consumed_by": [
+      "brahma_core",
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "regime_hmm_v2": {
+    "lines": 248,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone\n\nDATA_DIR"
+        ]
+      },
+      {
+        "from": "hmmlearn",
+        "symbols": [
+          "hmm\n        model"
+        ]
+      },
+      {
+        "from": "scriptsauto_executor",
+        "symbols": [
+          "_signed\n            klines_4h"
+        ]
+      }
+    ],
+    "exports": [
+      "_extract_features",
+      "fit_hmm",
+      "predict_regime_proba",
+      "_rule_fallback",
+      "get_weighted_multiplier"
+    ],
+    "consumed_by": [
+      "regime_state_machine",
+      "brahma_core",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "regime_scorer": {
+    "lines": 411,
+    "imports": [
+      {
+        "from": "math_utils",
+        "symbols": [
+          "_ema",
+          "_rsi",
+          "calc_rsi",
+          "rsi",
+          "ema"
+        ]
+      },
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\n\nFAPI"
+        ]
+      }
+    ],
+    "exports": [
+      "_ema_scalar",
+      "_klines",
+      "_rsi",
+      "_higher_highs",
+      "_lower_lows",
+      "_score_daily",
+      "_score_4h",
+      "_score_1h",
+      "score",
+      "format_regime"
+    ],
+    "consumed_by": [
+      "market_state",
+      "brahma_orchestrator",
+      "brahma_core",
+      "signal_selector",
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "regime_state_machine": {
+    "lines": 362,
+    "imports": [
+      {
+        "from": "regime_state_machine",
+        "symbols": [
+          "RegimeStateMachine\n  rsm"
+        ]
+      },
+      {
+        "from": "typing",
+        "symbols": [
+          "Optional\n\nBASE"
+        ]
+      },
+      {
+        "from": "regime_hmm_v2",
+        "symbols": [
+          "predict_regime_proba\n                _hmm"
+        ]
+      }
+    ],
+    "exports": [
+      "get_stable_regime",
+      "get_regime_status"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "market_state",
+      "brahma_core",
+      "brahma_engine",
+      "brahma_360",
+      "universal_asset_router"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "rl_position_ab": {
+    "lines": 207,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone\n\nDATA_DIR"
+        ]
+      }
+    ],
+    "exports": [
+      "_load_state",
+      "_save_state",
+      "get_rl_suggestion",
+      "decide_position_size",
+      "evaluate_ab_performance"
+    ],
+    "consumed_by": [
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "s7_liq_config": {
+    "lines": 106,
+    "imports": [
+      {
+        "from": "confluence_tf_weights",
+        "symbols": [
+          "_get_tier\n            tier"
+        ]
+      }
+    ],
+    "exports": [
+      "get_liq_bonus"
+    ],
+    "consumed_by": [
+      "brahma_core",
+      "brahma_scoring",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "safety": {
+    "lines": 185,
+    "imports": [
+      {
+        "from": "safety",
+        "symbols": [
+          "require_live_trading",
+          "safety_config\n    require_live_trading"
+        ]
+      },
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\n\n_BASE"
+        ]
+      }
+    ],
+    "exports": [
+      "_load_safety_config",
+      "safety_config",
+      "reset_cache",
+      "is_live_trading_enabled",
+      "is_paper_only",
+      "require_live_trading",
+      "require_api_keys",
+      "get_max_nav_pct",
+      "get_min_score",
+      "safety_report"
+    ],
+    "consumed_by": [
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "sentiment_engine": {
+    "lines": 12,
+    "imports": [],
+    "exports": [],
+    "consumed_by": [
+      "brahma_core",
+      "brahma_engine",
+      "offline_adapters",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "signal_card_formatter": {
+    "lines": 216,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone\n\n_DIR"
+        ]
+      },
+      {
+        "from": "brahma_analysis_runner",
+        "symbols": [
+          "run_analysis_full as _raf_pano\n        _sym"
+        ]
+      }
+    ],
+    "exports": [
+      "parse_grade",
+      "load_valid_signals",
+      "format_vip_card",
+      "run"
+    ],
+    "consumed_by": [
+      "brahma_health",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "signal_expiry_tracker": {
+    "lines": 172,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone",
+          "timedelta\nfrom typing import Optional\n\n_STATE_PATH"
+        ]
+      }
+    ],
+    "exports": [
+      "_load",
+      "_save",
+      "register",
+      "check_expiry",
+      "check_all",
+      "get_hold_hours"
+    ],
+    "consumed_by": [
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "signal_queue": {
+    "lines": 322,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone",
+          "timedelta\nfrom collections import defaultdict\n\nDATA_DIR"
+        ]
+      }
+    ],
+    "exports": [
+      "_load_state",
+      "_save_state",
+      "_get_cooldown_min",
+      "_is_in_cooldown",
+      "_corr_group",
+      "_regime_bonus",
+      "_session_bonus",
+      "_load_recent_wr",
+      "add_signal",
+      "get_next",
+      "get_status"
+    ],
+    "consumed_by": [
+      "circuit_breaker",
+      "brahma_health",
+      "brahma_core",
+      "brahma_engine",
+      "brahma_360"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "signal_selector": {
+    "lines": 301,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\n\n_DIR"
+        ]
+      },
+      {
+        "from": "datetime",
+        "symbols": [
+          "datetime",
+          "timezone",
+          "timedelta\n        now_dt"
+        ]
+      },
+      {
+        "from": "market_state",
+        "symbols": [
+          "analyze as _ms_a\n    sym"
+        ]
+      }
+    ],
+    "exports": [
+      "select",
+      "_build_signal",
+      "_regime_summary",
+      "format_signal_card"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "brahma_analysis_runner",
+      "brahma_orchestrator"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "signal_trace": {
+    "lines": 194,
+    "imports": [
+      {
+        "from": "datetime",
+        "symbols": [
+          "datetime",
+          "timezone\nfrom typing import Optional\n\n_TRACE_LOG"
+        ]
+      }
+    ],
+    "exports": [
+      "_sha8",
+      "_parse_tag",
+      "log_signal_trace",
+      "get_trace_history",
+      "format_audit_report",
+      "trace_generated",
+      "trace_skipped",
+      "trace_executed",
+      "trace_closed"
+    ],
+    "consumed_by": [
+      "brahma_analysis_runner",
+      "dharma_data_bridge",
+      "brahma_engine",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "smart_money_engine": {
+    "lines": 179,
+    "imports": [
+      {
+        "from": "typing",
+        "symbols": [
+          "Optional\n\n_CACHE"
+        ]
+      }
+    ],
+    "exports": [
+      "_get",
+      "get_smart_money_signal"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "brahma_health",
+      "brahma_core",
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "smc_engine": {
+    "lines": 496,
+    "imports": [
+      {
+        "from": "data_cache",
+        "symbols": [
+          "get_klines",
+          "klines_to_ohlcv"
+        ]
+      }
+    ],
+    "exports": [
+      "find_structure_points",
+      "detect_bos_choch",
+      "find_order_blocks",
+      "find_fvg",
+      "find_liquidity_pools",
+      "calc_premium_discount",
+      "smc_score",
+      "analyze_smc"
+    ],
+    "consumed_by": [
+      "brahma_core_entry",
+      "structure_quality_engine",
+      "module_registry",
+      "brahma_core",
+      "brahma_engine",
+      "brahma_scoring",
+      "market_structure_scanner"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "squeeze_lifecycle": {
+    "lines": 130,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone\n\n_STATE_PATH"
+        ]
+      }
+    ],
+    "exports": [
+      "_load",
+      "_save",
+      "update"
+    ],
+    "consumed_by": [
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "ssi_engine": {
+    "lines": 225,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone\nfrom typing import Optional\n\n_STATE_PATH"
+        ]
+      }
+    ],
+    "exports": [
+      "get_ssi_level",
+      "_load_state",
+      "_save_state",
+      "compute_ssi",
+      "_detect_phase",
+      "is_squeeze_over"
+    ],
+    "consumed_by": [
+      "brahma_engine",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "structure_quality_engine": {
+    "lines": 385,
+    "imports": [
+      {
+        "from": "typing",
+        "symbols": [
+          "Optional"
+        ]
+      }
+    ],
+    "exports": [
+      "evaluate_structure_quality",
+      "get_time_weight",
+      "kelly_position",
+      "apply_ob_decay_penalty",
+      "get_effective_grade"
+    ],
+    "consumed_by": [
+      "brahma_core_entry",
+      "multi_timeframe_router",
+      "brahma_core",
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "tardis_liq_layer": {
+    "lines": 278,
+    "imports": [
+      {
+        "from": "collections",
+        "symbols": [
+          "defaultdict\nfrom datetime import datetime",
+          "timezone",
+          "timedelta\nfrom pathlib import Path\n\ntry"
+        ]
+      }
+    ],
+    "exports": [
+      "_bucket_size",
+      "_get_free_date",
+      "_cache_path",
+      "_download_csv",
+      "_parse_csv",
+      "get_tardis_liq_walls",
+      "format_liq_walls"
+    ],
+    "consumed_by": [
+      "liq_scanner",
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "timesfm_lite": {
+    "lines": 436,
+    "imports": [
+      {
+        "from": "math_utils",
+        "symbols": [
+          "_ema",
+          "_rsi",
+          "calc_rsi",
+          "rsi",
+          "ema"
+        ]
+      },
+      {
+        "from": "typing",
+        "symbols": [
+          "Tuple",
+          "Dict",
+          "Any",
+          "Optional\n\nimport numpy as np\n\ntry"
+        ]
+      },
+      {
+        "from": "scipystats",
+        "symbols": [
+          "linregress\n    _SCIPY_OK"
+        ]
+      }
+    ],
+    "exports": [
+      "_ema",
+      "_holt_forecast",
+      "_theta_quantile",
+      "_multiscale_features",
+      "_covariate_adjustment",
+      "_direction_probability",
+      "get_timesfm_score"
+    ],
+    "consumed_by": [
+      "brahma_core",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "timing_filter": {
+    "lines": 246,
+    "imports": [
+      {
+        "from": "typing",
+        "symbols": [
+          "Optional",
+          "Dict",
+          "Any\n\nlogger"
+        ]
+      },
+      {
+        "from": "brahma_bus",
+        "symbols": [
+          "bus as _bus_tf\n        klines"
+        ]
+      }
+    ],
+    "exports": [
+      "_score_price_position",
+      "_score_rsi",
+      "_score_kronos",
+      "_check_bearish_4h_streak",
+      "evaluate_timing",
+      "format_timing_badge"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "brahma_analysis_runner",
+      "circuit_breaker",
+      "brahma_health",
+      "brahma_engine",
+      "brahma_constitutional_test",
+      "auto_review",
+      "bull_regime_injector"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "tradfi_signal_layer": {
+    "lines": 324,
+    "imports": [
+      {
+        "from": "datetime",
+        "symbols": [
+          "datetime",
+          "timezone\nfrom pathlib import Path\nfrom typing import Optional\n\nlogger"
+        ]
+      }
+    ],
+    "exports": [
+      "_load_rwa_contracts",
+      "_fetch_rwa_price",
+      "_get_market_status",
+      "_is_us_open_window",
+      "_is_us_close_window",
+      "compute_tradfi_context"
+    ],
+    "consumed_by": [
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "trigger_15m": {
+    "lines": 463,
+    "imports": [
+      {
+        "from": "datetime",
+        "symbols": [
+          "datetime",
+          "timezone"
+        ]
+      },
+      {
+        "from": "brahma_bus",
+        "symbols": [
+          "bus as _brahma_bus\nexcept Exception"
+        ]
+      }
+    ],
+    "exports": [
+      "_bus_price",
+      "_fetch_15m",
+      "_find_15m_ob",
+      "_find_wick_rejection",
+      "_find_15m_bos",
+      "_find_15m_choch",
+      "analyze_trigger"
+    ],
+    "consumed_by": [
+      "brahma_core_entry",
+      "brahma_core",
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "universal_asset_router": {
+    "lines": 399,
+    "imports": [
+      {
+        "from": "typing",
+        "symbols": [
+          "Optional"
+        ]
+      },
+      {
+        "from": "regime_state_machine",
+        "symbols": [
+          "RegimeStateMachine\n        rsm"
+        ]
+      }
+    ],
+    "exports": [
+      "classify_asset",
+      "get_asset_weight_mult",
+      "get_asset_profile",
+      "get_regime_cached",
+      "invalidate_regime_cache",
+      "get_all_cached_regimes",
+      "apply_asset_routing",
+      "pump_to_brahma_score"
+    ],
+    "consumed_by": [
+      "module_registry",
+      "brahma_parallel_engine",
+      "brahma_core",
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "us_session_gate": {
+    "lines": 161,
+    "imports": [
+      {
+        "from": "datetime",
+        "symbols": [
+          "datetime",
+          "timezone\nfrom typing import Optional\nimport logging\n\nlogger"
+        ]
+      },
+      {
+        "from": "macro_calendar",
+        "symbols": [
+          "get_upcoming_events\n        events"
+        ]
+      }
+    ],
+    "exports": [
+      "get_us_session",
+      "check_macro_event_block",
+      "get_session_regime_delta"
+    ],
+    "consumed_by": [
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "var_engine": {
+    "lines": 117,
+    "imports": [
+      {
+        "from": "datetime",
+        "symbols": [
+          "datetime",
+          "timezone"
+        ]
+      },
+      {
+        "from": "brahma_bus",
+        "symbols": [
+          "bus as _brahma_bus\nexcept Exception"
+        ]
+      }
+    ],
+    "exports": [
+      "_get_returns",
+      "single_position_var"
+    ],
+    "consumed_by": [
+      "brahma_core",
+      "brahma_engine"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "vectorbt_simfactory": {
+    "lines": 524,
+    "imports": [
+      {
+        "from": "pathlib",
+        "symbols": [
+          "Path\nfrom datetime import datetime",
+          "timezone\nfrom typing import List",
+          "Dict",
+          "Optional",
+          "Tuple"
+        ]
+      }
+    ],
+    "exports": [
+      "load_signals",
+      "_klines_cache_path",
+      "fetch_klines",
+      "run_vbt_sim",
+      "run_sim",
+      "_default_sl_pct",
+      "_default_nav_pct",
+      "main"
+    ],
+    "consumed_by": [
+      "auto_review"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "volume_engine": {
+    "lines": 301,
+    "imports": [
+      {
+        "from": "data_cache",
+        "symbols": [
+          "get_klines",
+          "klines_to_ohlcv\n\n    sym"
+        ]
+      }
+    ],
+    "exports": [
+      "calc_obv",
+      "detect_obv_divergence",
+      "analyze_volume",
+      "calc_vwap",
+      "calc_volume_profile",
+      "volume_score"
+    ],
+    "consumed_by": [
+      "brahma_core_entry",
+      "brahma_core",
+      "brahma_engine",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "volume_exhaustion_engine": {
+    "lines": 371,
+    "imports": [
+      {
+        "from": "typing",
+        "symbols": [
+          "Optional"
+        ]
+      }
+    ],
+    "exports": [
+      "detect_volume_exhaustion",
+      "detect_pin_bar",
+      "detect_volume_price_divergence",
+      "detect_volume_decay",
+      "volume_exhaustion_score"
+    ],
+    "consumed_by": [
+      "brahma_core_entry",
+      "module_registry",
+      "brahma_core",
+      "brahma_engine",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "volume_profile": {
+    "lines": 185,
+    "imports": [
+      {
+        "from": "typing",
+        "symbols": [
+          "Tuple\n\n_CACHE"
+        ]
+      }
+    ],
+    "exports": [
+      "_fetch_klines",
+      "get_volume_profile",
+      "get_vp_score",
+      "_empty"
+    ],
+    "consumed_by": [
+      "brahma_core",
+      "brahma_scoring",
+      "volume_engine"
+    ],
+    "is_entry": false,
+    "is_skill": false
+  },
+  "volume_ratio_engine": {
+    "lines": 129,
+    "imports": [
+      {
+        "from": "__future__",
+        "symbols": [
+          "annotations\nfrom typing import Tuple",
+          "List\n\n\ndef volume_ratio_score"
+        ]
+      }
+    ],
+    "exports": [
+      "volume_ratio_score"
+    ],
+    "consumed_by": [
+      "brahma_core",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  },
+  "whale_engine": {
+    "lines": 450,
+    "imports": [
+      {
+        "from": "brahma_bus",
+        "symbols": [
+          "bus as _brahma_bus\nexcept Exception"
+        ]
+      }
+    ],
+    "exports": [
+      "_bus_price",
+      "_get",
+      "get_exchange_flow",
+      "_fallback_exchange_flow",
+      "get_whale_activity",
+      "whale_score",
+      "get_derivatives_smart_money",
+      "whale_score"
+    ],
+    "consumed_by": [
+      "brahma_core_entry",
+      "module_registry",
+      "brahma_core",
+      "brahma_engine",
+      "offline_adapters",
+      "brahma_scoring"
+    ],
+    "is_entry": false,
+    "is_skill": true
+  }
+}

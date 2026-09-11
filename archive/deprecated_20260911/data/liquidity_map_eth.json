@@ -1,0 +1,4838 @@
+{
+  "eth": {
+    "metadata": {
+      "symbol": "ETHUSDT",
+      "bin_size": 10.0,
+      "total_swings": 3932,
+      "updated": "2026-08-08T03:38:00Z"
+    },
+    "resistance_zones": [
+      {
+        "price_lo": 110.0,
+        "price_hi": 120.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 120.0,
+        "price_hi": 130.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 130.0,
+        "price_hi": 140.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 140.0,
+        "price_hi": 150.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 150.0,
+        "price_hi": 160.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 160.0,
+        "price_hi": 170.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 170.0,
+        "price_hi": 180.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 180.0,
+        "price_hi": 190.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 190.0,
+        "price_hi": 200.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 200.0,
+        "price_hi": 210.0,
+        "density": 11,
+        "key_level": true
+      },
+      {
+        "price_lo": 210.0,
+        "price_hi": 220.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 220.0,
+        "price_hi": 230.0,
+        "density": 15,
+        "key_level": false
+      },
+      {
+        "price_lo": 230.0,
+        "price_hi": 240.0,
+        "density": 24,
+        "key_level": false
+      },
+      {
+        "price_lo": 240.0,
+        "price_hi": 250.0,
+        "density": 19,
+        "key_level": false
+      },
+      {
+        "price_lo": 250.0,
+        "price_hi": 260.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 260.0,
+        "price_hi": 270.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 270.0,
+        "price_hi": 280.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 280.0,
+        "price_hi": 290.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 300.0,
+        "price_hi": 310.0,
+        "density": 1,
+        "key_level": true
+      },
+      {
+        "price_lo": 310.0,
+        "price_hi": 320.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 320.0,
+        "price_hi": 330.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 330.0,
+        "price_hi": 340.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 340.0,
+        "price_hi": 350.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 350.0,
+        "price_hi": 360.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 360.0,
+        "price_hi": 370.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 370.0,
+        "price_hi": 380.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 380.0,
+        "price_hi": 390.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 390.0,
+        "price_hi": 400.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 400.0,
+        "price_hi": 410.0,
+        "density": 8,
+        "key_level": true
+      },
+      {
+        "price_lo": 410.0,
+        "price_hi": 420.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 420.0,
+        "price_hi": 430.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 430.0,
+        "price_hi": 440.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 440.0,
+        "price_hi": 450.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 450.0,
+        "price_hi": 460.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 460.0,
+        "price_hi": 470.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 470.0,
+        "price_hi": 480.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 500.0,
+        "price_hi": 510.0,
+        "density": 1,
+        "key_level": true
+      },
+      {
+        "price_lo": 510.0,
+        "price_hi": 520.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 530.0,
+        "price_hi": 540.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 550.0,
+        "price_hi": 560.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 570.0,
+        "price_hi": 580.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 580.0,
+        "price_hi": 590.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 590.0,
+        "price_hi": 600.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 600.0,
+        "price_hi": 610.0,
+        "density": 3,
+        "key_level": true
+      },
+      {
+        "price_lo": 610.0,
+        "price_hi": 620.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 620.0,
+        "price_hi": 630.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 630.0,
+        "price_hi": 640.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 640.0,
+        "price_hi": 650.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 650.0,
+        "price_hi": 660.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 720.0,
+        "price_hi": 730.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 730.0,
+        "price_hi": 740.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 740.0,
+        "price_hi": 750.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 750.0,
+        "price_hi": 760.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 780.0,
+        "price_hi": 790.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 990.0,
+        "price_hi": 1000.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1000.0,
+        "price_hi": 1010.0,
+        "density": 1,
+        "key_level": true
+      },
+      {
+        "price_lo": 1040.0,
+        "price_hi": 1050.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1050.0,
+        "price_hi": 1060.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 1060.0,
+        "price_hi": 1070.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1070.0,
+        "price_hi": 1080.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1110.0,
+        "price_hi": 1120.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1120.0,
+        "price_hi": 1130.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1130.0,
+        "price_hi": 1140.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1140.0,
+        "price_hi": 1150.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1150.0,
+        "price_hi": 1160.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1160.0,
+        "price_hi": 1170.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1170.0,
+        "price_hi": 1180.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1180.0,
+        "price_hi": 1190.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 1190.0,
+        "price_hi": 1200.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 1200.0,
+        "price_hi": 1210.0,
+        "density": 8,
+        "key_level": true
+      },
+      {
+        "price_lo": 1210.0,
+        "price_hi": 1220.0,
+        "density": 21,
+        "key_level": false
+      },
+      {
+        "price_lo": 1220.0,
+        "price_hi": 1230.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 1230.0,
+        "price_hi": 1240.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 1240.0,
+        "price_hi": 1250.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1250.0,
+        "price_hi": 1260.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 1260.0,
+        "price_hi": 1270.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 1270.0,
+        "price_hi": 1280.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 1280.0,
+        "price_hi": 1290.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 1290.0,
+        "price_hi": 1300.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 1300.0,
+        "price_hi": 1310.0,
+        "density": 5,
+        "key_level": true
+      },
+      {
+        "price_lo": 1310.0,
+        "price_hi": 1320.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 1320.0,
+        "price_hi": 1330.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 1330.0,
+        "price_hi": 1340.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 1340.0,
+        "price_hi": 1350.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1350.0,
+        "price_hi": 1360.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1360.0,
+        "price_hi": 1370.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1370.0,
+        "price_hi": 1380.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 1380.0,
+        "price_hi": 1390.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1390.0,
+        "price_hi": 1400.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1400.0,
+        "price_hi": 1410.0,
+        "density": 1,
+        "key_level": true
+      },
+      {
+        "price_lo": 1410.0,
+        "price_hi": 1420.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1430.0,
+        "price_hi": 1440.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1440.0,
+        "price_hi": 1450.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1450.0,
+        "price_hi": 1460.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1460.0,
+        "price_hi": 1470.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1470.0,
+        "price_hi": 1480.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1480.0,
+        "price_hi": 1490.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1490.0,
+        "price_hi": 1500.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 1500.0,
+        "price_hi": 1510.0,
+        "density": 1,
+        "key_level": true
+      },
+      {
+        "price_lo": 1510.0,
+        "price_hi": 1520.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1520.0,
+        "price_hi": 1530.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1530.0,
+        "price_hi": 1540.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 1540.0,
+        "price_hi": 1550.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 1550.0,
+        "price_hi": 1560.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 1560.0,
+        "price_hi": 1570.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 1570.0,
+        "price_hi": 1580.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 1580.0,
+        "price_hi": 1590.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 1590.0,
+        "price_hi": 1600.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 1600.0,
+        "price_hi": 1610.0,
+        "density": 9,
+        "key_level": true
+      },
+      {
+        "price_lo": 1610.0,
+        "price_hi": 1620.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 1620.0,
+        "price_hi": 1630.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 1630.0,
+        "price_hi": 1640.0,
+        "density": 19,
+        "key_level": false
+      },
+      {
+        "price_lo": 1640.0,
+        "price_hi": 1650.0,
+        "density": 21,
+        "key_level": false
+      },
+      {
+        "price_lo": 1650.0,
+        "price_hi": 1660.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 1660.0,
+        "price_hi": 1670.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 1670.0,
+        "price_hi": 1680.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 1680.0,
+        "price_hi": 1690.0,
+        "density": 15,
+        "key_level": false
+      },
+      {
+        "price_lo": 1690.0,
+        "price_hi": 1700.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 1700.0,
+        "price_hi": 1710.0,
+        "density": 5,
+        "key_level": true
+      },
+      {
+        "price_lo": 1710.0,
+        "price_hi": 1720.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 1720.0,
+        "price_hi": 1730.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 1730.0,
+        "price_hi": 1740.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 1740.0,
+        "price_hi": 1750.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 1750.0,
+        "price_hi": 1760.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 1760.0,
+        "price_hi": 1770.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 1770.0,
+        "price_hi": 1780.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 1780.0,
+        "price_hi": 1790.0,
+        "density": 15,
+        "key_level": false
+      },
+      {
+        "price_lo": 1790.0,
+        "price_hi": 1800.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 1800.0,
+        "price_hi": 1810.0,
+        "density": 15,
+        "key_level": true
+      },
+      {
+        "price_lo": 1810.0,
+        "price_hi": 1820.0,
+        "density": 15,
+        "key_level": false
+      },
+      {
+        "price_lo": 1820.0,
+        "price_hi": 1830.0,
+        "density": 17,
+        "key_level": false
+      },
+      {
+        "price_lo": 1830.0,
+        "price_hi": 1840.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 1840.0,
+        "price_hi": 1850.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 1850.0,
+        "price_hi": 1860.0,
+        "density": 20,
+        "key_level": false
+      },
+      {
+        "price_lo": 1860.0,
+        "price_hi": 1870.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 1870.0,
+        "price_hi": 1880.0,
+        "density": 16,
+        "key_level": false
+      },
+      {
+        "price_lo": 1880.0,
+        "price_hi": 1890.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 1890.0,
+        "price_hi": 1900.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 1900.0,
+        "price_hi": 1910.0,
+        "density": 13,
+        "key_level": true
+      },
+      {
+        "price_lo": 1910.0,
+        "price_hi": 1920.0,
+        "density": 15,
+        "key_level": false
+      },
+      {
+        "price_lo": 1920.0,
+        "price_hi": 1930.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 1930.0,
+        "price_hi": 1940.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 1940.0,
+        "price_hi": 1950.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 1950.0,
+        "price_hi": 1960.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 1960.0,
+        "price_hi": 1970.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 1970.0,
+        "price_hi": 1980.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 1980.0,
+        "price_hi": 1990.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 1990.0,
+        "price_hi": 2000.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2000.0,
+        "price_hi": 2010.0,
+        "density": 5,
+        "key_level": true
+      },
+      {
+        "price_lo": 2010.0,
+        "price_hi": 2020.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2020.0,
+        "price_hi": 2030.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2030.0,
+        "price_hi": 2040.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 2040.0,
+        "price_hi": 2050.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 2050.0,
+        "price_hi": 2060.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 2060.0,
+        "price_hi": 2070.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 2070.0,
+        "price_hi": 2080.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 2080.0,
+        "price_hi": 2090.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2090.0,
+        "price_hi": 2100.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 2100.0,
+        "price_hi": 2110.0,
+        "density": 7,
+        "key_level": true
+      },
+      {
+        "price_lo": 2110.0,
+        "price_hi": 2120.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 2120.0,
+        "price_hi": 2130.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2130.0,
+        "price_hi": 2140.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 2140.0,
+        "price_hi": 2150.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 2150.0,
+        "price_hi": 2160.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2160.0,
+        "price_hi": 2170.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2170.0,
+        "price_hi": 2180.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2180.0,
+        "price_hi": 2190.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2190.0,
+        "price_hi": 2200.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2200.0,
+        "price_hi": 2210.0,
+        "density": 1,
+        "key_level": true
+      },
+      {
+        "price_lo": 2210.0,
+        "price_hi": 2220.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2220.0,
+        "price_hi": 2230.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2230.0,
+        "price_hi": 2240.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 2240.0,
+        "price_hi": 2250.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2250.0,
+        "price_hi": 2260.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 2260.0,
+        "price_hi": 2270.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2270.0,
+        "price_hi": 2280.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2280.0,
+        "price_hi": 2290.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 2290.0,
+        "price_hi": 2300.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 2300.0,
+        "price_hi": 2310.0,
+        "density": 8,
+        "key_level": true
+      },
+      {
+        "price_lo": 2310.0,
+        "price_hi": 2320.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 2320.0,
+        "price_hi": 2330.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 2330.0,
+        "price_hi": 2340.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2340.0,
+        "price_hi": 2350.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2350.0,
+        "price_hi": 2360.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 2360.0,
+        "price_hi": 2370.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 2370.0,
+        "price_hi": 2380.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 2380.0,
+        "price_hi": 2390.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2390.0,
+        "price_hi": 2400.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2400.0,
+        "price_hi": 2410.0,
+        "density": 2,
+        "key_level": true
+      },
+      {
+        "price_lo": 2410.0,
+        "price_hi": 2420.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2420.0,
+        "price_hi": 2430.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2430.0,
+        "price_hi": 2440.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2440.0,
+        "price_hi": 2450.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 2450.0,
+        "price_hi": 2460.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2460.0,
+        "price_hi": 2470.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2470.0,
+        "price_hi": 2480.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2480.0,
+        "price_hi": 2490.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2490.0,
+        "price_hi": 2500.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 2500.0,
+        "price_hi": 2510.0,
+        "density": 7,
+        "key_level": true
+      },
+      {
+        "price_lo": 2510.0,
+        "price_hi": 2520.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2520.0,
+        "price_hi": 2530.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 2530.0,
+        "price_hi": 2540.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 2540.0,
+        "price_hi": 2550.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2550.0,
+        "price_hi": 2560.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2560.0,
+        "price_hi": 2570.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2570.0,
+        "price_hi": 2580.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 2580.0,
+        "price_hi": 2590.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2590.0,
+        "price_hi": 2600.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2600.0,
+        "price_hi": 2610.0,
+        "density": 7,
+        "key_level": true
+      },
+      {
+        "price_lo": 2610.0,
+        "price_hi": 2620.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2620.0,
+        "price_hi": 2630.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 2630.0,
+        "price_hi": 2640.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2640.0,
+        "price_hi": 2650.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 2650.0,
+        "price_hi": 2660.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2660.0,
+        "price_hi": 2670.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2670.0,
+        "price_hi": 2680.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 2680.0,
+        "price_hi": 2690.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2690.0,
+        "price_hi": 2700.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2700.0,
+        "price_hi": 2710.0,
+        "density": 1,
+        "key_level": true
+      },
+      {
+        "price_lo": 2710.0,
+        "price_hi": 2720.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 2720.0,
+        "price_hi": 2730.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2730.0,
+        "price_hi": 2740.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2740.0,
+        "price_hi": 2750.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2750.0,
+        "price_hi": 2760.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2760.0,
+        "price_hi": 2770.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2770.0,
+        "price_hi": 2780.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2780.0,
+        "price_hi": 2790.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2790.0,
+        "price_hi": 2800.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2800.0,
+        "price_hi": 2810.0,
+        "density": 7,
+        "key_level": true
+      },
+      {
+        "price_lo": 2810.0,
+        "price_hi": 2820.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 2820.0,
+        "price_hi": 2830.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2830.0,
+        "price_hi": 2840.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 2840.0,
+        "price_hi": 2850.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 2850.0,
+        "price_hi": 2860.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2860.0,
+        "price_hi": 2870.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 2870.0,
+        "price_hi": 2880.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 2880.0,
+        "price_hi": 2890.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 2890.0,
+        "price_hi": 2900.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 2900.0,
+        "price_hi": 2910.0,
+        "density": 3,
+        "key_level": true
+      },
+      {
+        "price_lo": 2910.0,
+        "price_hi": 2920.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2920.0,
+        "price_hi": 2930.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 2930.0,
+        "price_hi": 2940.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2940.0,
+        "price_hi": 2950.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 2950.0,
+        "price_hi": 2960.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 2960.0,
+        "price_hi": 2970.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 2970.0,
+        "price_hi": 2980.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2980.0,
+        "price_hi": 2990.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2990.0,
+        "price_hi": 3000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 3000.0,
+        "price_hi": 3010.0,
+        "density": 2,
+        "key_level": true
+      },
+      {
+        "price_lo": 3010.0,
+        "price_hi": 3020.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 3020.0,
+        "price_hi": 3030.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 3030.0,
+        "price_hi": 3040.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 3040.0,
+        "price_hi": 3050.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3050.0,
+        "price_hi": 3060.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 3060.0,
+        "price_hi": 3070.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3070.0,
+        "price_hi": 3080.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3080.0,
+        "price_hi": 3090.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3090.0,
+        "price_hi": 3100.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3100.0,
+        "price_hi": 3110.0,
+        "density": 7,
+        "key_level": true
+      },
+      {
+        "price_lo": 3110.0,
+        "price_hi": 3120.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 3120.0,
+        "price_hi": 3130.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 3130.0,
+        "price_hi": 3140.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 3140.0,
+        "price_hi": 3150.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 3150.0,
+        "price_hi": 3160.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 3160.0,
+        "price_hi": 3170.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 3170.0,
+        "price_hi": 3180.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3180.0,
+        "price_hi": 3190.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3190.0,
+        "price_hi": 3200.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3200.0,
+        "price_hi": 3210.0,
+        "density": 8,
+        "key_level": true
+      },
+      {
+        "price_lo": 3210.0,
+        "price_hi": 3220.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 3220.0,
+        "price_hi": 3230.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 3230.0,
+        "price_hi": 3240.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3240.0,
+        "price_hi": 3250.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 3250.0,
+        "price_hi": 3260.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3260.0,
+        "price_hi": 3270.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3270.0,
+        "price_hi": 3280.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3280.0,
+        "price_hi": 3290.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3290.0,
+        "price_hi": 3300.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3300.0,
+        "price_hi": 3310.0,
+        "density": 5,
+        "key_level": true
+      },
+      {
+        "price_lo": 3310.0,
+        "price_hi": 3320.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 3320.0,
+        "price_hi": 3330.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 3330.0,
+        "price_hi": 3340.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 3340.0,
+        "price_hi": 3350.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 3350.0,
+        "price_hi": 3360.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3360.0,
+        "price_hi": 3370.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3370.0,
+        "price_hi": 3380.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3380.0,
+        "price_hi": 3390.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 3390.0,
+        "price_hi": 3400.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 3400.0,
+        "price_hi": 3410.0,
+        "density": 4,
+        "key_level": true
+      },
+      {
+        "price_lo": 3410.0,
+        "price_hi": 3420.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 3420.0,
+        "price_hi": 3430.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3430.0,
+        "price_hi": 3440.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3440.0,
+        "price_hi": 3450.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 3450.0,
+        "price_hi": 3460.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 3460.0,
+        "price_hi": 3470.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 3470.0,
+        "price_hi": 3480.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 3480.0,
+        "price_hi": 3490.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3490.0,
+        "price_hi": 3500.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3500.0,
+        "price_hi": 3510.0,
+        "density": 3,
+        "key_level": true
+      },
+      {
+        "price_lo": 3510.0,
+        "price_hi": 3520.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 3520.0,
+        "price_hi": 3530.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 3530.0,
+        "price_hi": 3540.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 3540.0,
+        "price_hi": 3550.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3550.0,
+        "price_hi": 3560.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3560.0,
+        "price_hi": 3570.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3570.0,
+        "price_hi": 3580.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 3580.0,
+        "price_hi": 3590.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3590.0,
+        "price_hi": 3600.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 3600.0,
+        "price_hi": 3610.0,
+        "density": 4,
+        "key_level": true
+      },
+      {
+        "price_lo": 3610.0,
+        "price_hi": 3620.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 3620.0,
+        "price_hi": 3630.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3630.0,
+        "price_hi": 3640.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3640.0,
+        "price_hi": 3650.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3650.0,
+        "price_hi": 3660.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 3680.0,
+        "price_hi": 3690.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3690.0,
+        "price_hi": 3700.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3700.0,
+        "price_hi": 3710.0,
+        "density": 5,
+        "key_level": true
+      },
+      {
+        "price_lo": 3710.0,
+        "price_hi": 3720.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3720.0,
+        "price_hi": 3730.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3730.0,
+        "price_hi": 3740.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3740.0,
+        "price_hi": 3750.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 3750.0,
+        "price_hi": 3760.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 3760.0,
+        "price_hi": 3770.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3770.0,
+        "price_hi": 3780.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 3780.0,
+        "price_hi": 3790.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3790.0,
+        "price_hi": 3800.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3800.0,
+        "price_hi": 3810.0,
+        "density": 5,
+        "key_level": true
+      },
+      {
+        "price_lo": 3810.0,
+        "price_hi": 3820.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3820.0,
+        "price_hi": 3830.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3830.0,
+        "price_hi": 3840.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 3840.0,
+        "price_hi": 3850.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3850.0,
+        "price_hi": 3860.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3860.0,
+        "price_hi": 3870.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3870.0,
+        "price_hi": 3880.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3880.0,
+        "price_hi": 3890.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3890.0,
+        "price_hi": 3900.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3900.0,
+        "price_hi": 3910.0,
+        "density": 6,
+        "key_level": true
+      },
+      {
+        "price_lo": 3910.0,
+        "price_hi": 3920.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 3920.0,
+        "price_hi": 3930.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3930.0,
+        "price_hi": 3940.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3940.0,
+        "price_hi": 3950.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 3950.0,
+        "price_hi": 3960.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3960.0,
+        "price_hi": 3970.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 3970.0,
+        "price_hi": 3980.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3980.0,
+        "price_hi": 3990.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 3990.0,
+        "price_hi": 4000.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 4000.0,
+        "price_hi": 4010.0,
+        "density": 2,
+        "key_level": true
+      },
+      {
+        "price_lo": 4010.0,
+        "price_hi": 4020.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4020.0,
+        "price_hi": 4030.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4030.0,
+        "price_hi": 4040.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4040.0,
+        "price_hi": 4050.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4050.0,
+        "price_hi": 4060.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 4060.0,
+        "price_hi": 4070.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4070.0,
+        "price_hi": 4080.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 4080.0,
+        "price_hi": 4090.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4090.0,
+        "price_hi": 4100.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 4100.0,
+        "price_hi": 4110.0,
+        "density": 2,
+        "key_level": true
+      },
+      {
+        "price_lo": 4110.0,
+        "price_hi": 4120.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4120.0,
+        "price_hi": 4130.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4130.0,
+        "price_hi": 4140.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 4140.0,
+        "price_hi": 4150.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4160.0,
+        "price_hi": 4170.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4180.0,
+        "price_hi": 4190.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4190.0,
+        "price_hi": 4200.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 4200.0,
+        "price_hi": 4210.0,
+        "density": 1,
+        "key_level": true
+      },
+      {
+        "price_lo": 4210.0,
+        "price_hi": 4220.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4220.0,
+        "price_hi": 4230.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4230.0,
+        "price_hi": 4240.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4240.0,
+        "price_hi": 4250.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4250.0,
+        "price_hi": 4260.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4270.0,
+        "price_hi": 4280.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4280.0,
+        "price_hi": 4290.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 4300.0,
+        "price_hi": 4310.0,
+        "density": 3,
+        "key_level": true
+      },
+      {
+        "price_lo": 4310.0,
+        "price_hi": 4320.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4330.0,
+        "price_hi": 4340.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4340.0,
+        "price_hi": 4350.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 4350.0,
+        "price_hi": 4360.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4360.0,
+        "price_hi": 4370.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4370.0,
+        "price_hi": 4380.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4380.0,
+        "price_hi": 4390.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4390.0,
+        "price_hi": 4400.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4400.0,
+        "price_hi": 4410.0,
+        "density": 4,
+        "key_level": true
+      },
+      {
+        "price_lo": 4410.0,
+        "price_hi": 4420.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4420.0,
+        "price_hi": 4430.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4460.0,
+        "price_hi": 4470.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4470.0,
+        "price_hi": 4480.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 4480.0,
+        "price_hi": 4490.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4490.0,
+        "price_hi": 4500.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4510.0,
+        "price_hi": 4520.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 4520.0,
+        "price_hi": 4530.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4530.0,
+        "price_hi": 4540.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4540.0,
+        "price_hi": 4550.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 4580.0,
+        "price_hi": 4590.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4590.0,
+        "price_hi": 4600.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 4610.0,
+        "price_hi": 4620.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4620.0,
+        "price_hi": 4630.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4630.0,
+        "price_hi": 4640.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4640.0,
+        "price_hi": 4650.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4650.0,
+        "price_hi": 4660.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4660.0,
+        "price_hi": 4670.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4680.0,
+        "price_hi": 4690.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4740.0,
+        "price_hi": 4750.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4750.0,
+        "price_hi": 4760.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4760.0,
+        "price_hi": 4770.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4770.0,
+        "price_hi": 4780.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4780.0,
+        "price_hi": 4790.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4810.0,
+        "price_hi": 4820.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4830.0,
+        "price_hi": 4840.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4850.0,
+        "price_hi": 4860.0,
+        "density": 1,
+        "key_level": false
+      }
+    ],
+    "support_zones": [
+      {
+        "price_lo": 100.0,
+        "price_hi": 110.0,
+        "density": 1,
+        "key_level": true
+      },
+      {
+        "price_lo": 110.0,
+        "price_hi": 120.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 120.0,
+        "price_hi": 130.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 130.0,
+        "price_hi": 140.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 140.0,
+        "price_hi": 150.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 150.0,
+        "price_hi": 160.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 160.0,
+        "price_hi": 170.0,
+        "density": 15,
+        "key_level": false
+      },
+      {
+        "price_lo": 170.0,
+        "price_hi": 180.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 180.0,
+        "price_hi": 190.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 190.0,
+        "price_hi": 200.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 200.0,
+        "price_hi": 210.0,
+        "density": 11,
+        "key_level": true
+      },
+      {
+        "price_lo": 210.0,
+        "price_hi": 220.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 220.0,
+        "price_hi": 230.0,
+        "density": 23,
+        "key_level": false
+      },
+      {
+        "price_lo": 230.0,
+        "price_hi": 240.0,
+        "density": 22,
+        "key_level": false
+      },
+      {
+        "price_lo": 240.0,
+        "price_hi": 250.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 250.0,
+        "price_hi": 260.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 260.0,
+        "price_hi": 270.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 270.0,
+        "price_hi": 280.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 280.0,
+        "price_hi": 290.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 310.0,
+        "price_hi": 320.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 320.0,
+        "price_hi": 330.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 330.0,
+        "price_hi": 340.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 340.0,
+        "price_hi": 350.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 350.0,
+        "price_hi": 360.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 360.0,
+        "price_hi": 370.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 370.0,
+        "price_hi": 380.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 380.0,
+        "price_hi": 390.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 390.0,
+        "price_hi": 400.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 400.0,
+        "price_hi": 410.0,
+        "density": 6,
+        "key_level": true
+      },
+      {
+        "price_lo": 410.0,
+        "price_hi": 420.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 420.0,
+        "price_hi": 430.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 430.0,
+        "price_hi": 440.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 440.0,
+        "price_hi": 450.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 450.0,
+        "price_hi": 460.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 470.0,
+        "price_hi": 480.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 500.0,
+        "price_hi": 510.0,
+        "density": 1,
+        "key_level": true
+      },
+      {
+        "price_lo": 510.0,
+        "price_hi": 520.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 520.0,
+        "price_hi": 530.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 540.0,
+        "price_hi": 550.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 550.0,
+        "price_hi": 560.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 560.0,
+        "price_hi": 570.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 570.0,
+        "price_hi": 580.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 580.0,
+        "price_hi": 590.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 590.0,
+        "price_hi": 600.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 600.0,
+        "price_hi": 610.0,
+        "density": 3,
+        "key_level": true
+      },
+      {
+        "price_lo": 610.0,
+        "price_hi": 620.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 620.0,
+        "price_hi": 630.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 630.0,
+        "price_hi": 640.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 650.0,
+        "price_hi": 660.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 710.0,
+        "price_hi": 720.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 720.0,
+        "price_hi": 730.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 730.0,
+        "price_hi": 740.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 740.0,
+        "price_hi": 750.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 970.0,
+        "price_hi": 980.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 980.0,
+        "price_hi": 990.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1000.0,
+        "price_hi": 1010.0,
+        "density": 1,
+        "key_level": true
+      },
+      {
+        "price_lo": 1030.0,
+        "price_hi": 1040.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1040.0,
+        "price_hi": 1050.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 1050.0,
+        "price_hi": 1060.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 1070.0,
+        "price_hi": 1080.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1080.0,
+        "price_hi": 1090.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 1090.0,
+        "price_hi": 1100.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1100.0,
+        "price_hi": 1110.0,
+        "density": 2,
+        "key_level": true
+      },
+      {
+        "price_lo": 1110.0,
+        "price_hi": 1120.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1120.0,
+        "price_hi": 1130.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1130.0,
+        "price_hi": 1140.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1150.0,
+        "price_hi": 1160.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1160.0,
+        "price_hi": 1170.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 1170.0,
+        "price_hi": 1180.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 1180.0,
+        "price_hi": 1190.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 1190.0,
+        "price_hi": 1200.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 1200.0,
+        "price_hi": 1210.0,
+        "density": 7,
+        "key_level": true
+      },
+      {
+        "price_lo": 1210.0,
+        "price_hi": 1220.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 1220.0,
+        "price_hi": 1230.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 1230.0,
+        "price_hi": 1240.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 1240.0,
+        "price_hi": 1250.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 1250.0,
+        "price_hi": 1260.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 1260.0,
+        "price_hi": 1270.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 1270.0,
+        "price_hi": 1280.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 1280.0,
+        "price_hi": 1290.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 1290.0,
+        "price_hi": 1300.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 1300.0,
+        "price_hi": 1310.0,
+        "density": 2,
+        "key_level": true
+      },
+      {
+        "price_lo": 1310.0,
+        "price_hi": 1320.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 1320.0,
+        "price_hi": 1330.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 1330.0,
+        "price_hi": 1340.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1340.0,
+        "price_hi": 1350.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1350.0,
+        "price_hi": 1360.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1360.0,
+        "price_hi": 1370.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1380.0,
+        "price_hi": 1390.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1410.0,
+        "price_hi": 1420.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1420.0,
+        "price_hi": 1430.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 1430.0,
+        "price_hi": 1440.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1440.0,
+        "price_hi": 1450.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1450.0,
+        "price_hi": 1460.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 1470.0,
+        "price_hi": 1480.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 1480.0,
+        "price_hi": 1490.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 1490.0,
+        "price_hi": 1500.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 1500.0,
+        "price_hi": 1510.0,
+        "density": 1,
+        "key_level": true
+      },
+      {
+        "price_lo": 1510.0,
+        "price_hi": 1520.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 1520.0,
+        "price_hi": 1530.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 1530.0,
+        "price_hi": 1540.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 1540.0,
+        "price_hi": 1550.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 1550.0,
+        "price_hi": 1560.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 1560.0,
+        "price_hi": 1570.0,
+        "density": 20,
+        "key_level": false
+      },
+      {
+        "price_lo": 1570.0,
+        "price_hi": 1580.0,
+        "density": 14,
+        "key_level": false
+      },
+      {
+        "price_lo": 1580.0,
+        "price_hi": 1590.0,
+        "density": 19,
+        "key_level": false
+      },
+      {
+        "price_lo": 1590.0,
+        "price_hi": 1600.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 1600.0,
+        "price_hi": 1610.0,
+        "density": 3,
+        "key_level": true
+      },
+      {
+        "price_lo": 1610.0,
+        "price_hi": 1620.0,
+        "density": 18,
+        "key_level": false
+      },
+      {
+        "price_lo": 1620.0,
+        "price_hi": 1630.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 1630.0,
+        "price_hi": 1640.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 1640.0,
+        "price_hi": 1650.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 1650.0,
+        "price_hi": 1660.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 1660.0,
+        "price_hi": 1670.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 1670.0,
+        "price_hi": 1680.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 1680.0,
+        "price_hi": 1690.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 1690.0,
+        "price_hi": 1700.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 1700.0,
+        "price_hi": 1710.0,
+        "density": 6,
+        "key_level": true
+      },
+      {
+        "price_lo": 1710.0,
+        "price_hi": 1720.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 1720.0,
+        "price_hi": 1730.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 1730.0,
+        "price_hi": 1740.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 1740.0,
+        "price_hi": 1750.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 1750.0,
+        "price_hi": 1760.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 1760.0,
+        "price_hi": 1770.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 1770.0,
+        "price_hi": 1780.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 1780.0,
+        "price_hi": 1790.0,
+        "density": 17,
+        "key_level": false
+      },
+      {
+        "price_lo": 1790.0,
+        "price_hi": 1800.0,
+        "density": 19,
+        "key_level": false
+      },
+      {
+        "price_lo": 1800.0,
+        "price_hi": 1810.0,
+        "density": 10,
+        "key_level": true
+      },
+      {
+        "price_lo": 1810.0,
+        "price_hi": 1820.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 1820.0,
+        "price_hi": 1830.0,
+        "density": 13,
+        "key_level": false
+      },
+      {
+        "price_lo": 1830.0,
+        "price_hi": 1840.0,
+        "density": 15,
+        "key_level": false
+      },
+      {
+        "price_lo": 1840.0,
+        "price_hi": 1850.0,
+        "density": 16,
+        "key_level": false
+      },
+      {
+        "price_lo": 1850.0,
+        "price_hi": 1860.0,
+        "density": 17,
+        "key_level": false
+      },
+      {
+        "price_lo": 1860.0,
+        "price_hi": 1870.0,
+        "density": 19,
+        "key_level": false
+      },
+      {
+        "price_lo": 1870.0,
+        "price_hi": 1880.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 1880.0,
+        "price_hi": 1890.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 1890.0,
+        "price_hi": 1900.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 1900.0,
+        "price_hi": 1910.0,
+        "density": 3,
+        "key_level": true
+      },
+      {
+        "price_lo": 1910.0,
+        "price_hi": 1920.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 1920.0,
+        "price_hi": 1930.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 1930.0,
+        "price_hi": 1940.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 1940.0,
+        "price_hi": 1950.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 1950.0,
+        "price_hi": 1960.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 1960.0,
+        "price_hi": 1970.0,
+        "density": 12,
+        "key_level": false
+      },
+      {
+        "price_lo": 1970.0,
+        "price_hi": 1980.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 1980.0,
+        "price_hi": 1990.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 1990.0,
+        "price_hi": 2000.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2000.0,
+        "price_hi": 2010.0,
+        "density": 2,
+        "key_level": true
+      },
+      {
+        "price_lo": 2010.0,
+        "price_hi": 2020.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 2020.0,
+        "price_hi": 2030.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 2030.0,
+        "price_hi": 2040.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2040.0,
+        "price_hi": 2050.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 2050.0,
+        "price_hi": 2060.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 2060.0,
+        "price_hi": 2070.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 2070.0,
+        "price_hi": 2080.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 2080.0,
+        "price_hi": 2090.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2090.0,
+        "price_hi": 2100.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2100.0,
+        "price_hi": 2110.0,
+        "density": 5,
+        "key_level": true
+      },
+      {
+        "price_lo": 2110.0,
+        "price_hi": 2120.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2120.0,
+        "price_hi": 2130.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 2130.0,
+        "price_hi": 2140.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2140.0,
+        "price_hi": 2150.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2150.0,
+        "price_hi": 2160.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 2160.0,
+        "price_hi": 2170.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2170.0,
+        "price_hi": 2180.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 2180.0,
+        "price_hi": 2190.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 2190.0,
+        "price_hi": 2200.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2200.0,
+        "price_hi": 2210.0,
+        "density": 4,
+        "key_level": true
+      },
+      {
+        "price_lo": 2210.0,
+        "price_hi": 2220.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2220.0,
+        "price_hi": 2230.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 2230.0,
+        "price_hi": 2240.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 2240.0,
+        "price_hi": 2250.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2250.0,
+        "price_hi": 2260.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2260.0,
+        "price_hi": 2270.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2270.0,
+        "price_hi": 2280.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 2280.0,
+        "price_hi": 2290.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2290.0,
+        "price_hi": 2300.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 2300.0,
+        "price_hi": 2310.0,
+        "density": 7,
+        "key_level": true
+      },
+      {
+        "price_lo": 2310.0,
+        "price_hi": 2320.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 2320.0,
+        "price_hi": 2330.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 2330.0,
+        "price_hi": 2340.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 2340.0,
+        "price_hi": 2350.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2350.0,
+        "price_hi": 2360.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2360.0,
+        "price_hi": 2370.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 2370.0,
+        "price_hi": 2380.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2380.0,
+        "price_hi": 2390.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2390.0,
+        "price_hi": 2400.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2400.0,
+        "price_hi": 2410.0,
+        "density": 4,
+        "key_level": true
+      },
+      {
+        "price_lo": 2410.0,
+        "price_hi": 2420.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 2420.0,
+        "price_hi": 2430.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2430.0,
+        "price_hi": 2440.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2440.0,
+        "price_hi": 2450.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2450.0,
+        "price_hi": 2460.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 2460.0,
+        "price_hi": 2470.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2470.0,
+        "price_hi": 2480.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 2480.0,
+        "price_hi": 2490.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 2490.0,
+        "price_hi": 2500.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2500.0,
+        "price_hi": 2510.0,
+        "density": 11,
+        "key_level": true
+      },
+      {
+        "price_lo": 2510.0,
+        "price_hi": 2520.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 2520.0,
+        "price_hi": 2530.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2530.0,
+        "price_hi": 2540.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2540.0,
+        "price_hi": 2550.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2550.0,
+        "price_hi": 2560.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2560.0,
+        "price_hi": 2570.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2570.0,
+        "price_hi": 2580.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2580.0,
+        "price_hi": 2590.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2590.0,
+        "price_hi": 2600.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 2600.0,
+        "price_hi": 2610.0,
+        "density": 9,
+        "key_level": true
+      },
+      {
+        "price_lo": 2610.0,
+        "price_hi": 2620.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2620.0,
+        "price_hi": 2630.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 2630.0,
+        "price_hi": 2640.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 2640.0,
+        "price_hi": 2650.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2650.0,
+        "price_hi": 2660.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2660.0,
+        "price_hi": 2670.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 2670.0,
+        "price_hi": 2680.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2680.0,
+        "price_hi": 2690.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2700.0,
+        "price_hi": 2710.0,
+        "density": 2,
+        "key_level": true
+      },
+      {
+        "price_lo": 2710.0,
+        "price_hi": 2720.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 2720.0,
+        "price_hi": 2730.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2730.0,
+        "price_hi": 2740.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 2740.0,
+        "price_hi": 2750.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2750.0,
+        "price_hi": 2760.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 2760.0,
+        "price_hi": 2770.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2770.0,
+        "price_hi": 2780.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2780.0,
+        "price_hi": 2790.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 2790.0,
+        "price_hi": 2800.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 2800.0,
+        "price_hi": 2810.0,
+        "density": 3,
+        "key_level": true
+      },
+      {
+        "price_lo": 2810.0,
+        "price_hi": 2820.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2820.0,
+        "price_hi": 2830.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2830.0,
+        "price_hi": 2840.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 2840.0,
+        "price_hi": 2850.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2850.0,
+        "price_hi": 2860.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 2860.0,
+        "price_hi": 2870.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 2870.0,
+        "price_hi": 2880.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 2880.0,
+        "price_hi": 2890.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2890.0,
+        "price_hi": 2900.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 2900.0,
+        "price_hi": 2910.0,
+        "density": 7,
+        "key_level": true
+      },
+      {
+        "price_lo": 2910.0,
+        "price_hi": 2920.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 2920.0,
+        "price_hi": 2930.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 2930.0,
+        "price_hi": 2940.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 2940.0,
+        "price_hi": 2950.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2950.0,
+        "price_hi": 2960.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 2970.0,
+        "price_hi": 2980.0,
+        "density": 11,
+        "key_level": false
+      },
+      {
+        "price_lo": 2980.0,
+        "price_hi": 2990.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 2990.0,
+        "price_hi": 3000.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3000.0,
+        "price_hi": 3010.0,
+        "density": 7,
+        "key_level": true
+      },
+      {
+        "price_lo": 3010.0,
+        "price_hi": 3020.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 3020.0,
+        "price_hi": 3030.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3030.0,
+        "price_hi": 3040.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 3040.0,
+        "price_hi": 3050.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3050.0,
+        "price_hi": 3060.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 3060.0,
+        "price_hi": 3070.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 3070.0,
+        "price_hi": 3080.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 3080.0,
+        "price_hi": 3090.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 3090.0,
+        "price_hi": 3100.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 3100.0,
+        "price_hi": 3110.0,
+        "density": 3,
+        "key_level": true
+      },
+      {
+        "price_lo": 3110.0,
+        "price_hi": 3120.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 3120.0,
+        "price_hi": 3130.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 3130.0,
+        "price_hi": 3140.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 3140.0,
+        "price_hi": 3150.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3150.0,
+        "price_hi": 3160.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 3160.0,
+        "price_hi": 3170.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3170.0,
+        "price_hi": 3180.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3180.0,
+        "price_hi": 3190.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 3190.0,
+        "price_hi": 3200.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3200.0,
+        "price_hi": 3210.0,
+        "density": 6,
+        "key_level": true
+      },
+      {
+        "price_lo": 3210.0,
+        "price_hi": 3220.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3220.0,
+        "price_hi": 3230.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3230.0,
+        "price_hi": 3240.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3240.0,
+        "price_hi": 3250.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3250.0,
+        "price_hi": 3260.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3260.0,
+        "price_hi": 3270.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3270.0,
+        "price_hi": 3280.0,
+        "density": 7,
+        "key_level": false
+      },
+      {
+        "price_lo": 3280.0,
+        "price_hi": 3290.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3290.0,
+        "price_hi": 3300.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3300.0,
+        "price_hi": 3310.0,
+        "density": 1,
+        "key_level": true
+      },
+      {
+        "price_lo": 3310.0,
+        "price_hi": 3320.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 3320.0,
+        "price_hi": 3330.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 3330.0,
+        "price_hi": 3340.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 3340.0,
+        "price_hi": 3350.0,
+        "density": 9,
+        "key_level": false
+      },
+      {
+        "price_lo": 3350.0,
+        "price_hi": 3360.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3360.0,
+        "price_hi": 3370.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 3370.0,
+        "price_hi": 3380.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3380.0,
+        "price_hi": 3390.0,
+        "density": 8,
+        "key_level": false
+      },
+      {
+        "price_lo": 3390.0,
+        "price_hi": 3400.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 3400.0,
+        "price_hi": 3410.0,
+        "density": 8,
+        "key_level": true
+      },
+      {
+        "price_lo": 3410.0,
+        "price_hi": 3420.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 3420.0,
+        "price_hi": 3430.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 3430.0,
+        "price_hi": 3440.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3440.0,
+        "price_hi": 3450.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 3450.0,
+        "price_hi": 3460.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3460.0,
+        "price_hi": 3470.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 3470.0,
+        "price_hi": 3480.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3480.0,
+        "price_hi": 3490.0,
+        "density": 10,
+        "key_level": false
+      },
+      {
+        "price_lo": 3490.0,
+        "price_hi": 3500.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3500.0,
+        "price_hi": 3510.0,
+        "density": 2,
+        "key_level": true
+      },
+      {
+        "price_lo": 3510.0,
+        "price_hi": 3520.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3520.0,
+        "price_hi": 3530.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 3530.0,
+        "price_hi": 3540.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3540.0,
+        "price_hi": 3550.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3550.0,
+        "price_hi": 3560.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3560.0,
+        "price_hi": 3570.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3570.0,
+        "price_hi": 3580.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3580.0,
+        "price_hi": 3590.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3590.0,
+        "price_hi": 3600.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3600.0,
+        "price_hi": 3610.0,
+        "density": 2,
+        "key_level": true
+      },
+      {
+        "price_lo": 3610.0,
+        "price_hi": 3620.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 3620.0,
+        "price_hi": 3630.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3640.0,
+        "price_hi": 3650.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3650.0,
+        "price_hi": 3660.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 3660.0,
+        "price_hi": 3670.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3670.0,
+        "price_hi": 3680.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3680.0,
+        "price_hi": 3690.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3690.0,
+        "price_hi": 3700.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3700.0,
+        "price_hi": 3710.0,
+        "density": 2,
+        "key_level": true
+      },
+      {
+        "price_lo": 3710.0,
+        "price_hi": 3720.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3730.0,
+        "price_hi": 3740.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 3740.0,
+        "price_hi": 3750.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 3750.0,
+        "price_hi": 3760.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3760.0,
+        "price_hi": 3770.0,
+        "density": 6,
+        "key_level": false
+      },
+      {
+        "price_lo": 3770.0,
+        "price_hi": 3780.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3780.0,
+        "price_hi": 3790.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 3790.0,
+        "price_hi": 3800.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3800.0,
+        "price_hi": 3810.0,
+        "density": 3,
+        "key_level": true
+      },
+      {
+        "price_lo": 3810.0,
+        "price_hi": 3820.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3820.0,
+        "price_hi": 3830.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3830.0,
+        "price_hi": 3840.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3840.0,
+        "price_hi": 3850.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3850.0,
+        "price_hi": 3860.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3860.0,
+        "price_hi": 3870.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3870.0,
+        "price_hi": 3880.0,
+        "density": 5,
+        "key_level": false
+      },
+      {
+        "price_lo": 3880.0,
+        "price_hi": 3890.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3890.0,
+        "price_hi": 3900.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3900.0,
+        "price_hi": 3910.0,
+        "density": 1,
+        "key_level": true
+      },
+      {
+        "price_lo": 3910.0,
+        "price_hi": 3920.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3920.0,
+        "price_hi": 3930.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3930.0,
+        "price_hi": 3940.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3940.0,
+        "price_hi": 3950.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3950.0,
+        "price_hi": 3960.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3960.0,
+        "price_hi": 3970.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 3970.0,
+        "price_hi": 3980.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 3980.0,
+        "price_hi": 3990.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 3990.0,
+        "price_hi": 4000.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 4000.0,
+        "price_hi": 4010.0,
+        "density": 3,
+        "key_level": true
+      },
+      {
+        "price_lo": 4010.0,
+        "price_hi": 4020.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4020.0,
+        "price_hi": 4030.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4030.0,
+        "price_hi": 4040.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4040.0,
+        "price_hi": 4050.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 4050.0,
+        "price_hi": 4060.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4060.0,
+        "price_hi": 4070.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4070.0,
+        "price_hi": 4080.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4080.0,
+        "price_hi": 4090.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4090.0,
+        "price_hi": 4100.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4100.0,
+        "price_hi": 4110.0,
+        "density": 1,
+        "key_level": true
+      },
+      {
+        "price_lo": 4110.0,
+        "price_hi": 4120.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4120.0,
+        "price_hi": 4130.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4130.0,
+        "price_hi": 4140.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 4150.0,
+        "price_hi": 4160.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4160.0,
+        "price_hi": 4170.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4170.0,
+        "price_hi": 4180.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4180.0,
+        "price_hi": 4190.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4190.0,
+        "price_hi": 4200.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4210.0,
+        "price_hi": 4220.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4220.0,
+        "price_hi": 4230.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4250.0,
+        "price_hi": 4260.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 4270.0,
+        "price_hi": 4280.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 4280.0,
+        "price_hi": 4290.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4290.0,
+        "price_hi": 4300.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 4300.0,
+        "price_hi": 4310.0,
+        "density": 3,
+        "key_level": true
+      },
+      {
+        "price_lo": 4310.0,
+        "price_hi": 4320.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4320.0,
+        "price_hi": 4330.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 4330.0,
+        "price_hi": 4340.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4350.0,
+        "price_hi": 4360.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4360.0,
+        "price_hi": 4370.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4370.0,
+        "price_hi": 4380.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4380.0,
+        "price_hi": 4390.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4390.0,
+        "price_hi": 4400.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4400.0,
+        "price_hi": 4410.0,
+        "density": 2,
+        "key_level": true
+      },
+      {
+        "price_lo": 4410.0,
+        "price_hi": 4420.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4430.0,
+        "price_hi": 4440.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 4450.0,
+        "price_hi": 4460.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4460.0,
+        "price_hi": 4470.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 4470.0,
+        "price_hi": 4480.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4490.0,
+        "price_hi": 4500.0,
+        "density": 4,
+        "key_level": false
+      },
+      {
+        "price_lo": 4510.0,
+        "price_hi": 4520.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4530.0,
+        "price_hi": 4540.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4540.0,
+        "price_hi": 4550.0,
+        "density": 3,
+        "key_level": false
+      },
+      {
+        "price_lo": 4580.0,
+        "price_hi": 4590.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4600.0,
+        "price_hi": 4610.0,
+        "density": 1,
+        "key_level": true
+      },
+      {
+        "price_lo": 4610.0,
+        "price_hi": 4620.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4630.0,
+        "price_hi": 4640.0,
+        "density": 2,
+        "key_level": false
+      },
+      {
+        "price_lo": 4650.0,
+        "price_hi": 4660.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4710.0,
+        "price_hi": 4720.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4740.0,
+        "price_hi": 4750.0,
+        "density": 1,
+        "key_level": false
+      },
+      {
+        "price_lo": 4760.0,
+        "price_hi": 4770.0,
+        "density": 1,
+        "key_level": false
+      }
+    ]
+  }
+}

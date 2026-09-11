@@ -223,7 +223,7 @@ def _notify_warn(state: dict):
         import subprocess
         msg = f'⚠️ 梵天Drawdown WARN\n回撤{state["drawdown_pct"]}%≥5%\n降仓50%，暂停新信号3天\n峰值NAV=${state["peak_nav"]:.2f}'
         subprocess.Popen(['openclaw', 'message', '--channel', 'jarvis', '--to',
-                         '73295708:thread:01a07970-f8ce-706b-8bea-3c94dd055443',
+                         '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6',
                          '--message', msg], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception:
         pass
@@ -233,7 +233,7 @@ def _notify_halt(state: dict):
         import subprocess
         msg = f'🛑 梵天Drawdown HALT\n回撤{state["drawdown_pct"]}%≥10%\n暂停所有自动执行\n需苏摩111重启\n峰值NAV=${state["peak_nav"]:.2f}'
         subprocess.Popen(['openclaw', 'message', '--channel', 'jarvis', '--to',
-                         '73295708:thread:01a07970-f8ce-706b-8bea-3c94dd055443',
+                         '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6',
                          '--message', msg], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception:
         pass
@@ -243,7 +243,7 @@ def _notify_lockout(state: dict):
         import subprocess
         msg = f'🚨 梵天Drawdown LOCKOUT\n回撤{state["drawdown_pct"]}%≥15%\n系统级锁定\n需苏摩111全面复盘后重启\n峰值NAV=${state["peak_nav"]:.2f}'
         subprocess.Popen(['openclaw', 'message', '--channel', 'jarvis', '--to',
-                         '73295708:thread:01a07970-f8ce-706b-8bea-3c94dd055443',
+                         '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6',
                          '--message', msg], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception:
         pass

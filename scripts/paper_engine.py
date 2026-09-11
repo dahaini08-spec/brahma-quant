@@ -69,7 +69,7 @@ def _push(msg: str) -> None:
                 "--channel",
                 "jarvis",
                 "--to",
-                "73295708:thread:01a07970-f8ce-706b-8bea-3c94dd055443",
+                "73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6",
                 "--message",
                 msg,
             ],

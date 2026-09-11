@@ -63,7 +63,7 @@ SOMA_ONLINE_MIN   = 30      # 苏摩30分钟内有消息=在线
 _WATCH_FILE     = _DATA / 'cpu_watch_list.json'
 _CPU_LOG        = _DATA / 'brahma_cpu_log.jsonl'
 _JARVIS_USER    = '73295708'
-_JARVIS_THREAD  = '01a07970-f8ce-706b-8bea-3c94dd055443'
+_JARVIS_THREAD  = '01a07628-0405-7e85-a34b-e68cd029dfc6'
 
 # ══════════════════════════════════════════════════════════════════════
 # Layer0: 快速否决（0 tokens，纯规则）
