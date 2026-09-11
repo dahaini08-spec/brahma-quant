@@ -1451,8 +1451,13 @@ def run_analysis(sym: str) -> str:
         )
     except Exception as _tbe:
         tb_result = {'action':'WAIT','reason':f'trader_brain异常: {str(_tbe)[:60]}','missing':['trader_brain异常']}
+        try:
+            from brahma_brain.trader_brain import format_vip_card as tb_format
+        except Exception:
+            tb_format = None
 
     # trader_brain替代AI议会作为最终裁决
+    _regime_c = regime_c if 'regime_c' in dir() else d['bs'].get('regime', 'CHOP_MID')
     final_action = tb_result.get('action', 'WAIT')
     final_direction = tb_result.get('direction', 'NONE')
     final_reason = tb_result.get('reason', council.get('reason', ''))
@@ -1638,17 +1643,19 @@ def run_analysis(sym: str) -> str:
     _tb_action = tb_result.get('action', 'WAIT')
     _vip_blocked = _tb_action == 'WAIT'
     if _vip_blocked:
-        _tb_reason = tb_result.get('reason', '等待结构确认')[:60]
-        _tb_missing = tb_result.get('missing', [])
-        _missing_str = ' '.join(f'[{m}]' for m in _tb_missing) if _tb_missing else ''
-        _vip_out = (
-            f'──── VIP ────\n'
-            f'🌿 姓赵不宣 | {sym} 今日布局\n'
-            f'⏳ 交易员大脑 WAIT — {_tb_reason}\n'
-            f'   {_missing_str}' if _missing_str else f'   等待结构确认，暂不入场'
-        )
+        # WAIT也输出观点卡片，不是空白
+        try:
+            _vip_out = '──── 观点 ────\n' + tb_format(
+                tb_result, sym+'USDT', p, _regime_c
+            )
+        except Exception:
+            _vip_out = (
+                f'──── 观点 ────\n'
+                f'🌿 姓赵不宣 | {sym} 今日观点\n'
+                f'⏳ {tb_result.get("reason", "等待")[:60]}'
+            )
     else:
-        _vip_out = vip
+        _vip_out = '──── VIP ────\n' + vip
         if _llm_entry_reason and '⚠️' in _vip_out:
             _vip_out = _vip_out.replace(
                 next((l for l in _vip_out.split('\n') if '⚠️' in l), ''),
