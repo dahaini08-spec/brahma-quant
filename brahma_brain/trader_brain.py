@@ -233,6 +233,7 @@ def decide(
 
     # 体制自我怀疑（OI/κ/Hurst三选二矛盾→降级CHOP）
     _downgraded = False
+    _force_short = False  # 修复2：7维度做空时强制SHORT
     if direction != 'NONE':
         _contra = 0
         _contra_list = []
@@ -242,11 +243,20 @@ def decide(
         _kappa_dir = 'LONG' if vol.get('kappa', 0) < -0.05 else 'SHORT' if vol.get('kappa', 0) > 0.05 else 'NONE'
         if _kappa_dir != 'NONE' and _kappa_dir != direction:
             _contra += 1; _contra_list.append(f'κ={_kappa_dir}')
-        if 'TREND' in regime and hurst < 0.5:
-            _contra += 1; _contra_list.append(f'Hurst={hurst:.3f}<0.5')
+        if 'TREND' in regime and hurst < 0.55:
+            _contra += 1; _contra_list.append(f'Hurst={hurst:.3f}<0.55趋势未确认')
         if _contra >= 2:
             _downgraded = True
             direction = 'NONE'
+        # 修复2：FVG全线BEAR + OI做空 + CVD做空 三选二 → 强制SHORT（不管体制）
+        _fvg_bear = fvg.get('consensus', fvg.get('dir', 'NONE')) == 'BEAR'
+        _oi_short = _oi_dir == 'SHORT'
+        _cvd_short = oi.get('cvd_1h', 0) < 0
+        _short_votes = sum([_fvg_bear, _oi_short, _cvd_short])
+        if direction == 'LONG' and _short_votes >= 2:
+            _force_short = True
+            direction = 'SHORT'
+            _downgraded = False  # 不降级，直接翻转方向
 
     # 交易许可
     permission = True
@@ -615,7 +625,9 @@ def _format_vip_watch(r, sym, d, emoji):
 
 def _format_opinion_wait(r, sym, d, emoji, price):
     lines = [f'🌿 姓赵不宣 | {sym} 今日观点', '']
-    if d != 'NONE' and r['entry_lo'] > 0 and r['entry_hi'] > 0:
+    # 修复3：负RR<1.0不展示入场区，只给监测位
+    _show_entry = r['entry_lo'] > 0 and r['entry_hi'] > 0 and r.get('rr', 0) >= 1.0
+    if d != 'NONE' and _show_entry:
         lines.append(f'{emoji} {"多单" if d == "LONG" else "空单"}｜{"回调" if d == "LONG" else "反弹"}入场区 ${r["entry_lo"]:,.1f}~${r["entry_hi"]:,.1f}')
         if r['sl'] > 0:
             lines.append(f'止损 ${r["sl"]:,.1f}｜目标 ${r["tp1"]:,.0f}→${r["tp2"]:,.0f}→${r["tp3"]:,.0f}')
@@ -625,11 +637,14 @@ def _format_opinion_wait(r, sym, d, emoji, price):
         if r['missing']: lines.append(f'⏳ 待确认：{" / ".join(r["missing"])}')
         lines.append(f'⚠️ 方向{d}，条件未满，等确认后入场')
     elif d != 'NONE':
+        # 负RR或无入场区 → 只给监测位
         lines.append(f'{emoji} 偏{d}｜监测位 ${price:,.1f}')
+        if r.get('rr', 0) > 0 and r.get('rr', 0) < 1.0:
+            lines.append(f'RR={r["rr"]:.1f}x<1.0 不给入场区，等RR改善')
         lines.append(f'交叉验证 {r["consistent_count"]}/4  ' + ' '.join(f'{k}={v}' for k,v in r['cross_check']['layer_directions'].items()))
         lines.append('')
         if r['missing']: lines.append(f'⏳ 待确认：{" / ".join(r["missing"])}')
-        lines.append(f'⚠️ 方向{d}但无共振入场区，等结构形成')
+        lines.append(f'⚠️ 方向{d}但条件不足，等结构确认')
     else:
         lines.append(f'⚪ 无方向｜现价 ${price:,.1f}')
         lines.append(f'交叉验证 {r["consistent_count"]}/4  ' + ' '.join(f'{k}={v}' for k,v in r['cross_check']['layer_directions'].items()))
