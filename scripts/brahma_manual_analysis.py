@@ -123,17 +123,35 @@ def step0_fetch_all(sym: str) -> dict:
     liq_b    = load_json(DATA / f'liq_heatmap_{usdt}.json')
     # 优先读取标的专属state文件（修复ETH OB/FVG数据污染）
     # brahma_state_refresh.py 已封印为每个标的写入独立文件
-    _sym_lower    = sym.lower()  # btc / eth
+    _sym_lower    = sym.lower()  # btc / eth / near / zec ...
     _sym_state    = DATA / f'brahma_state_{_sym_lower}.json'
     _fallback     = DATA / 'brahma_state.json'
     _candidate    = load_json(_sym_state) if _sym_state.exists() else {}
     # 验证价格范围（防止读到错误的state文件）
-    _expected_lo  = 1000 if sym == 'ETH' else 10000
-    _expected_hi  = 20000 if sym == 'ETH' else 200000
-    if _candidate and _expected_lo < _candidate.get('price', 0) < _expected_hi:
-        bs = _candidate
+    # 修复 2026-09-10：山寨币没有state文件时，实时调用brahma_core.analyze()
+    if _candidate and _candidate.get('price', 0) > 0:
+        # state文件存在且有price字段 → 验证价格是否匹配标的
+        _state_price = _candidate.get('price', 0)
+        _actual_price = price  # 使用Step0拉取的实际价格
+        # 价格偏差<5%才可信（防止BTC数据污染NEAR分析）
+        if _actual_price > 0 and abs(_state_price - _actual_price) / _actual_price < 0.05:
+            bs = _candidate
+        else:
+            # 价格不匹配 → 实时调用brahma_core
+            try:
+                sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+                from brahma_core import analyze as _analyze
+                bs = _analyze(f'{sym}USDT')
+            except Exception as _e:
+                bs = load_json(_fallback)
     else:
-        bs = load_json(_fallback)
+        # state文件不存在 → 实时调用brahma_core
+        try:
+            sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+            from brahma_core import analyze as _analyze
+            bs = _analyze(f'{sym}USDT')
+        except Exception as _e:
+            bs = load_json(_fallback)
     gex_s    = load_json(DATA / 'gex_state.json')
     vb_s     = load_json(DATA / 'vol_beta_state.json')
     mac_s    = load_json(DATA / 'macro_state.json')
@@ -763,10 +781,9 @@ def step7_volatility(d: dict) -> dict:
             _gex_all = _json.loads(_gex_path.read_text())
             _gex_sym = d.get('sym','')
             _gex = _gex_all.get(_gex_sym, _gex_all.get(_gex_sym.upper(), {}))
-            if not _gex and 'BTC' in _gex_sym:
-                _gex = _gex_all.get('BTC', {})
-            if not _gex and 'ETH' in _gex_sym:
-                _gex = _gex_all.get('ETH', {})
+            # 修复 2026-09-10：山寨币不在gex_state中，直接用空数据（不回退BTC）
+            # 原bug：山寨币没有GEX数据时回退到BTC的GEX → $80,000污染山寨币分析
+            # 现在：山寨币无GEX数据 = GEX NEUTRAL（不显示BTC的strike价格）
             if _gex:
                 gex_total = _gex.get('gex_total', 0) or _gex.get('total_gex', 0)
                 gex_bias_val = _gex.get('gex_bias', '') or _gex.get('bias', '')
@@ -1408,6 +1425,41 @@ def run_analysis(sym: str) -> str:
     except Exception as _ce:
         council = {'bias':'N/A','reason':str(_ce)[:40],'action':'WAIT','confidence':'LOW'}
 
+    # ── trader_brain 6层确定性决策引擎（2026-09-11 苏摩111封印）──
+    tb_result = {}
+    try:
+        from brahma_brain.trader_brain import decide as tb_decide, format_vip_card as tb_format
+        regime_c = d['regime_s'].get(sym+'USDT',{}).get('confirmed', d['bs'].get('regime','CHOP_MID'))
+        tb_result = tb_decide(
+            regime=regime_c,
+            score=float(d['bs'].get('score_final', d['bs'].get('score', 0))),
+            grade=float(d['bs'].get('grade', 0)),
+            macro=mac,
+            risk=risk,
+            hurst=vol.get('hurst', 0.5),
+            fvg=fvg,
+            ob=ob,
+            liq=liq,
+            atr_1h=vol.get('atr_1h', 0),
+            atr_4h=vol.get('atr_4h', 0),
+            price=p,
+            oi=oi,
+            sm=sm,
+            vol=vol,
+            res=res,
+            symbol=sym+'USDT',
+        )
+    except Exception as _tbe:
+        tb_result = {'action':'WAIT','reason':f'trader_brain异常: {str(_tbe)[:60]}','missing':['trader_brain异常']}
+
+    # trader_brain替代AI议会作为最终裁决
+    final_action = tb_result.get('action', 'WAIT')
+    final_direction = tb_result.get('direction', 'NONE')
+    final_reason = tb_result.get('reason', council.get('reason', ''))
+    final_missing = tb_result.get('missing', [])
+    final_confidence = tb_result.get('confidence', council.get('confidence', 'LOW'))
+    final_consistent = tb_result.get('consistent_count', 0)
+
     # BUG-1修复：分析完成后拉一次实时价，检测漂移
     import time as _t, urllib.request as _ur, ssl as _ssl, json as _js
     try:
@@ -1582,19 +1634,21 @@ def run_analysis(sym: str) -> str:
         f'{"─"*43}',
     ]
 
-    # BUG-4修复：AI议会=WAIT时，VIP禁止输出具体入场价
-    _council_action = council.get('action', 'WAIT')
-    _vip_blocked    = _council_action == 'WAIT'  # 修复: WAIT无论置信度全封锁，不给伪入场机会
+    # ── trader_brain裁决替代AI议会（2026-09-11 苏摩111封印）──
+    _tb_action = tb_result.get('action', 'WAIT')
+    _vip_blocked = _tb_action == 'WAIT'
     if _vip_blocked:
+        _tb_reason = tb_result.get('reason', '等待结构确认')[:60]
+        _tb_missing = tb_result.get('missing', [])
+        _missing_str = ' '.join(f'[{m}]' for m in _tb_missing) if _tb_missing else ''
         _vip_out = (
             f'──── VIP ────\n'
             f'🌿 姓赵不宣 | {sym} 今日布局\n'
-            f'⏳ AI议会裁决 WAIT — {council.get("reason","")[:50]}\n'
-            f'   等待结构确认，暂不入场（此时入场胜率不趣）'
+            f'⏳ 交易员大脑 WAIT — {_tb_reason}\n'
+            f'   {_missing_str}' if _missing_str else f'   等待结构确认，暂不入场'
         )
     else:
         _vip_out = vip
-        # A: 将LLM入场理由插入VIP卡片的⚠️那行
         if _llm_entry_reason and '⚠️' in _vip_out:
             _vip_out = _vip_out.replace(
                 next((l for l in _vip_out.split('\n') if '⚠️' in l), ''),
@@ -1606,13 +1660,18 @@ def run_analysis(sym: str) -> str:
     if _price_warn and abs(_drift_pct) >= 1.0:
         _vip_out = f'☠️ 「入场区已失效」基准${p:,.0f} → 当前${_live:,.0f}({_drift_pct:+.1f}%)，请重新跑分析\n' + _vip_out
 
+    _tb_bias = tb_result.get('direction', 'NONE')
+    _tb_conf = tb_result.get('confidence', 'LOW')
+    _tb_cross = tb_result.get('consistent_count', 0)
+    _tb_layers = tb_result.get('cross_check', {}).get('layer_directions', {})
+    _tb_layer_str = ' '.join(f'{k}={v}' for k,v in _tb_layers.items()) if _tb_layers else ''
     lines += [
         _vip_out,
         f'{"─"*43}',
-        (f'🏛️ AI议会裁决[{council.get("source","规则")[:2]}]: {council["bias"]} | {council["action"]} | 置信={council["confidence"]}'
-         + (f'\n   票: ' + ' / '.join(f'{r}={v}' for r,v in council.get('votes',{}).items()) if isinstance(council.get('votes'), dict) else f' | {council.get("reason","")}')
-         if council.get('bias') not in ('N/A', None, '') else ''),
-        f'📊 梵天系统 · 80维全能力 · 10步强制链路 · AI议会规则裁决',
+        (f'🧠 交易员大脑: {_tb_action} | 方向={_tb_bias} | 置信={_tb_conf} | 交叉验证={_tb_cross}/4'
+         + (f'\n   {_tb_layer_str}' if _tb_layer_str else '')
+         + (f'\n   缺: {" ".join(tb_result.get("missing",[]))}' if tb_result.get('missing') else '')),
+        f'📊 梵天系统 · 80维 · 6层确定性决策 · 交易员大脑',
     ]
     if _price_warn:
         lines.append(_price_warn)
