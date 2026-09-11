@@ -75,3 +75,4 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 # ── 拳头三：信号源恢复（OI scanner + RSI watcher接入cron）─────────
 0 */2 * * *  cd /root/.openclaw/workspace/trading-system && timeout 55 python3 scripts/oi_advanced_scanner.py >> logs/syscron.log 2>&1
 0 * * * *    cd /root/.openclaw/workspace/trading-system && timeout 55 python3 scripts/rsi_structure_watcher.py >> logs/syscron.log 2>&1
+0 3 * * 0 cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_wiring_check.py >> logs/wiring_check.log 2>&1
