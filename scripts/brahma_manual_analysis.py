@@ -3,6 +3,10 @@
 brahma_manual_analysis.py — 梵天手动全链路分析入口
 设计院封印 2026-09-03 苏摩111
 
+P2修复 2026-09-11 苏摩111：pyc根治
+sys.dont_write_bytecode必须在模块顶部设置，
+在函数内部设置无效（import时已生成pyc）
+
 定位：
   苏摩说「梵天分析」→ 调用此脚本
   一次输出：10步完整链路 + 80维判断 + VIP策略卡片
@@ -34,6 +38,7 @@ _os_blas.environ.setdefault('OMP_NUM_THREADS', '1')
 _os_blas.environ.setdefault('MKL_NUM_THREADS', '1')
 
 import json, sys, time, urllib.request, argparse, signal
+sys.dont_write_bytecode = True  # P2修复 2026-09-11 苏摩111：根治pyc缓存（必须在import后立即设置）
 from pathlib import Path
 from datetime import datetime, timezone
 
@@ -1619,8 +1624,6 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
 
 
 def run_analysis(sym: str, push_jarvis: bool = True) -> str:
-    import sys as _sys_mod
-    _sys_mod.dont_write_bytecode = True  # P2修复 2026-09-11 苏摩111：根治pyc缓存
     ts  = datetime.now(timezone.utc).strftime('%m/%d %H:%M UTC')
     print(f'[{sym}] Step 0: 拉取实时数据...', flush=True)
     t_start = __import__('time').time()  # P1修复：移到step0之前，含数据拉取耗时
