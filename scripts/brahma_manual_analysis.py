@@ -513,15 +513,29 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict, oi: dict = None, vo
     if entry_lo == 0.0 and resonance:
         missing.append('入场区方向错误（商品价格不在入场区正确一侧）')
 
-    # [P2-4修复 2026-09-11] OI/GEX作为独立共振维度
+    # [2026-09-12 苏摩111] OI/GEX共振维度增加方向一致性校验
+    # OI方向与FVG一致才+1分，不一致+0分（避免多空混合信号虚高共振得分）
     has_oi = False
     has_gex = False
+    _fvg_consensus = fvg.get('consensus', fvg_dir)  # 共识方向优先
+    _fvg_bull = _fvg_consensus == 'BULL'
+    _fvg_bear = _fvg_consensus == 'BEAR'
     if oi and oi.get('signal','') not in ('NO_DATA','MIXED'):
-        has_oi = True
-        score += 1
+        _oi_bull = oi['signal'] in ('LONG_BUILD', 'SHORT_SQUEEZE')
+        _oi_bear = oi['signal'] in ('SHORT_BUILD', 'LONG_UNWIND')
+        # OI方向与FVG一致才加分
+        if (_fvg_bull and _oi_bull) or (_fvg_bear and _oi_bear):
+            has_oi = True
+            score += 1
+        # OI方向与FVG不一致=不加分但不扣分（信号矛盾已在cross_check记录）
     if vol and vol.get('gex_note',''):
-        has_gex = True
-        score += 1
+        # GEX方向与FVG一致才加分
+        _gex_bull = 'POSITIVE' in vol.get('gex_bias','').upper() or vol.get('kappa', 0) < -0.05
+        _gex_bear = 'NEGATIVE' in vol.get('gex_bias','').upper() or vol.get('kappa', 0) > 0.05
+        if (_fvg_bull and _gex_bull) or (_fvg_bear and _gex_bear):
+            has_gex = True
+            score += 1
+        # GEX中性=不加分
     # 共振标准升级：≥3/5 = 有效共振（原2/3）
     resonance = score >= 3
 
@@ -1886,7 +1900,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         f'  4H量能倍数: {k4h_vol_mult}x（均量倍数，>2=放量突破）',
         f'  1H量能倍数: {k1h_mult}x',
         f'  Hurst: {hurst_s[:60]}',
-        f'  HCME: {hcme_s[:60]}',
+        f'  HCME: {hcme_s[:80] if hcme_s else "无数据"}',
         f'  方仓最相似案例: {fc_case or "无数据"}',
     ]
     # B: 信号矛盾裁决（有就显示）

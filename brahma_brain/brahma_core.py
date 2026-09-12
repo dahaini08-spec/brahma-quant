@@ -3850,7 +3850,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _result['score_final'] = _new_score
             _result['score']       = _new_score
             _result['hcme_adj']    = _hcme_adj
-            _result['hcme_ctx']    = str(_hcme_ctx)[:120]
+            _result['hcme_ctx']    = str(_hcme_ctx)[:200]  # [2026-09-12] 120→200 避免截断
     except Exception as _fc_e:
         import logging as _lg; _lg.getLogger('brahma').warning(f'[fangcang] {_fc_e}')
         _result['fangcang'] = {'status': 'unavailable', 'reason': str(_fc_e)[:60]}
