@@ -95,12 +95,39 @@ def _get_fr(symbol: str) -> float:
 
 
 def _get_liq_distances(symbol: str, price: float) -> dict:
-    """计算100x/50x清算位距现价%"""
+    """读取真实清算地图数据（P2修复 2026-09-12 苏摩111）"""
+    import json as _json
+    from pathlib import Path as _Path
+    try:
+        _liq_path = _Path(__file__).parent.parent / 'data' / f'liq_heatmap_{symbol}.json'
+        if _liq_path.exists():
+            _liq = _json.loads(_liq_path.read_text())
+            ns = _liq.get('nearest_short_liq', 0)
+            nl = _liq.get('nearest_long_liq', 0)
+            dist_s = _liq.get('dist_to_short_liq', 0)
+            dist_l = _liq.get('dist_to_long_liq', 0)
+            # 第二层
+            short_map = _liq.get('short_liq_map', {})
+            long_map = _liq.get('long_liq_map', {})
+            sorted_s = sorted(float(k) for k in short_map.keys()) if short_map else []
+            sorted_l = sorted(float(k) for k in long_map.keys()) if long_map else []
+            second_s_pct = sorted_s[1] if len(sorted_s) >= 2 else (dist_s * 2 if dist_s else 2.0)
+            second_l_pct = sorted_l[1] if len(sorted_l) >= 2 else (dist_l * 2 if dist_l else 2.0)
+            return {
+                'up_100x': dist_s if dist_s > 0 else 2.0,   # 真实止损墙距离%
+                'dn_100x': dist_l if dist_l > 0 else 2.0,   # 真实支撑池距离%
+                'up_50x':  second_s_pct,                      # 第二层止损墙
+                'dn_50x':  second_l_pct,                      # 第二层支撑池
+                'nearest_short': ns,                          # 真实止损墙价格
+                'nearest_long':  nl,                          # 真实支撑池价格
+            }
+    except Exception:
+        pass
+    # 回退：用合理默认值而非硬编码0.95%
     return {
-        'up_100x': (price * 1.0095 - price) / price * 100,
-        'dn_100x': (price - price * 0.9905) / price * 100,
-        'up_50x':  (price * 1.019  - price) / price * 100,
-        'dn_50x':  (price - price * 0.981)  / price * 100,
+        'up_100x': 2.0, 'dn_100x': 2.0,
+        'up_50x':  4.0, 'dn_50x':  4.0,
+        'nearest_short': price * 1.02, 'nearest_long': price * 0.98,
     }
 
 
@@ -348,10 +375,11 @@ class BrahmaDecisionEngine:
 
             liq = _get_liq_distances(sym, price)
             step2['liq'] = liq
+            # P2修复: 用真实清算距离判断催化剂（原硬编码0.95%=永远不触发）
             if direction == 'LONG' and liq['up_100x'] <= LIQ_NEAR_PCT:
-                catalysts.append(f'100x空头清算位仅+{liq["up_100x"]:.1f}%')
+                catalysts.append(f'空头止损墙仅+{liq["up_100x"]:.1f}%→逼空目标近')
             if direction == 'SHORT' and liq['dn_100x'] <= LIQ_NEAR_PCT:
-                catalysts.append(f'100x多头清算位仅-{liq["dn_100x"]:.1f}%')
+                catalysts.append(f'多头支撑池仅-{liq["dn_100x"]:.1f}%→猎杀目标近')
 
             step2['catalysts'] = catalysts
             if not catalysts:
@@ -408,12 +436,12 @@ class BrahmaDecisionEngine:
             step4 = {}
 
             sl_final = sl_check
-            # TP = 方向对应的近端清算位
+            # TP = 方向对应的真实清算位（P2修复 2026-09-12 苏摩111）
             if direction == 'LONG':
-                tp_price = price * (1 + liq['up_100x'] / 100)
+                tp_price = liq.get('nearest_short', price * 1.02)  # 止损墙=逼空目标
                 sl_price = price * (1 - sl_final / 100)
             else:
-                tp_price = price * (1 - liq['dn_100x'] / 100)
+                tp_price = liq.get('nearest_long', price * 0.98)   # 支撑池=猎杀目标
                 sl_price = price * (1 + sl_final / 100)
 
             reward = abs(tp_price - price)
@@ -454,7 +482,7 @@ class BrahmaDecisionEngine:
                 'sl_price': round(sl_price, 4),
                 'tp1_price': round(tp_price, 4),
                 'tp2_price': round(price * (1 + liq['up_50x'] / 100) if direction == 'LONG'
-                                   else price * (1 - liq['dn_50x'] / 100), 4),
+                                   else price * (1 - liq['dn_50x'] / 100), 4),  # P2修复: 用真实第二层清算位
                 'sl_pct': sl_final,
                 'rr': rr,
                 'catalysts': catalysts,
