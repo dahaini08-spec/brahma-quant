@@ -915,7 +915,7 @@ def build_hot_news() -> str:
     lines_out.append('')
     lines_out.append(opinion)
     lines_out.append('')
-    lines_out.append(f'你怎么看{hot_sym}当前的位置？')
+    # [已废弃] 假互动删除
     lines_out.append('')
     lines_out.append(f'#{hot_sym} #加密货币 #合约交易')
     return '\n'.join(lines_out)
