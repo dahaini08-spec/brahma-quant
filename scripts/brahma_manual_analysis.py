@@ -1030,10 +1030,18 @@ def step8_macro(d: dict) -> dict:
 # ══════════════════════════════════════════════════════════
 
 def step9_risk(d: dict) -> dict:
+    """Step9风控门控 — P0整合: risk_engine统一6层gate (2026-09-12)
+    原: 分散调用cb/dd/af三个独立检查
+    新: risk_engine.check()统一6层gate + 保留原有失效期检测
+    """
     cb  = d['cb']
     dd  = d['dd']
     af  = d['af']
+    sym = d.get('sym', 'BTC')
+    usdt = d.get('usdt', f'{sym}USDT')
+    price = d.get('price', 0)
 
+    # ── 1. 保留原有逻辑（向后兼容）──────────────────────────
     l1 = cb.get('l1', False)
     l2 = cb.get('l2', False)
     l3 = cb.get('l3', False)
@@ -1046,17 +1054,50 @@ def step9_risk(d: dict) -> dict:
     consec_loss = af.get('consecutive_losses', 0)
     af_ok       = consec_loss < 3
 
-    all_green = circuit_ok and dd_ok and af_ok
+    # ── 2. P0新增: risk_engine统一6层gate ──────────────────
+    # 构造signal供risk_engine.check()使用
+    _signal = {
+        'symbol': usdt,
+        'direction': d.get('_signal_dir', 'SHORT'),
+        'price': price,
+        'position_pct': 5,  # 默认5%NAV，后续由trader_brain调整
+        'leverage': 10,
+        'sl': price * 1.02 if d.get('_signal_dir', 'SHORT') == 'SHORT' else price * 0.98,
+    }
+    risk_engine_result = None
+    try:
+        import sys as _re_sys
+        _re_sys.path.insert(0, str(Path(__file__).parent.parent))
+        _re_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        from brahma_brain.risk_engine import check as _re_check
+        risk_engine_result = _re_check(_signal)
+    except Exception as _re_e:
+        risk_engine_result = {'approved': True, 'modified': _signal, 'reasons': [],
+                              'kill_switch': False, 'warnings': [f'risk_engine error: {str(_re_e)[:60]}']}
+
+    # ── 3. 合并结果: risk_engine + 原有逻辑 ─────────────────
+    re_approved = risk_engine_result.get('approved', True)
+    re_reasons = risk_engine_result.get('reasons', [])
+    re_warnings = risk_engine_result.get('warnings', [])
+    re_kill = risk_engine_result.get('kill_switch', False)
+
+    all_green = circuit_ok and dd_ok and af_ok and re_approved and not re_kill
 
     blocks = []
     if not circuit_ok:
-        level = 'L3' if l3 else ('L2' if l2 else 'L1')
+        level = 'L1' if l1 else ('L2' if l2 else 'L3')
         blocks.append(f'熔断器{level}触发 → 禁止入场')
     if not dd_ok:
         blocks.append(f'回撤{dd_pct:.1f}% status={dd_status} → 降仓50%')
     if not af_ok:
         blocks.append(f'连亏{consec_loss}笔 → 冷却期，降仓50%')
+    # P0新增: risk_engine blocks
+    for r in re_reasons:
+        blocks.append(f'风控gate: {r}')
+    if re_kill:
+        blocks.append('⚠️ Kill switch触发 → 全平')
 
+    # nav_mult计算
     nav_mult = 1.0
     if not dd_ok and dd_pct >= 5:
         nav_mult = 0.5
@@ -1064,6 +1105,15 @@ def step9_risk(d: dict) -> dict:
         nav_mult = 0.25
     if not af_ok:
         nav_mult = min(nav_mult, 0.5)
+
+    # P0新增: risk_engine仓位调整（相关性×0.7等）
+    re_modified = risk_engine_result.get('modified', _signal)
+    re_adjustments = re_modified.get('risk_adjustments', [])
+    if re_adjustments:
+        # 如果risk_engine做了仓位调整，取最低乘数
+        for adj in re_adjustments:
+            if '×0.7' in adj:
+                nav_mult = min(nav_mult, 0.7)
 
     # [P1修复 2026-09-10] 失效期检测器接入Step 9
     regime_state = 'GREEN'
@@ -1094,6 +1144,14 @@ def step9_risk(d: dict) -> dict:
         'nav_mult':   nav_mult,
         'regime_state': regime_state,
         'regime_note':  regime_note,
+        # P0新增: risk_engine统一gate结果
+        'risk_engine': {
+            'approved': re_approved,
+            'kill_switch': re_kill,
+            'reasons': re_reasons,
+            'warnings': re_warnings,
+            'adjustments': re_adjustments,
+        },
     }
 
 # ══════════════════════════════════════════════════════════
@@ -1942,8 +2000,15 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         f'【Step2 OB有效性】',
     ]
     if ob:
-        for k, v in ob.items():
-            lines.append(f'  {k}: {v["note"][:80]}')
+        _valid_obs = {k: v for k, v in ob.items() if v.get('valid', False)}
+        _invalid_obs = [k for k, v in ob.items() if not v.get('valid', False)]
+        if _valid_obs:
+            for k, v in _valid_obs.items():
+                lines.append(f'  {k}: {v["note"][:80]}')
+        else:
+            lines.append('  ⚠️ 无有效OB（全部已穿越/过期）')
+        if _invalid_obs:
+            lines.append(f'  ❌已失效: {", ".join(_invalid_obs)}（不参与共振/决策）')
     else:
         lines.append('  无OB数据')
 
