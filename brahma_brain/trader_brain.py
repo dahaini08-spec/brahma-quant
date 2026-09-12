@@ -646,6 +646,24 @@ def decide(
     # 剧本推演
     scenarios = _build_scenarios(hurst, liq, price, oi_signal, direction)
 
+    # ── 独立风控检查 [2026-09-12 苏摩111] ──────────────────
+    _risk_result = {'approved': True, 'reasons': [], 'warnings': []}
+    try:
+        from brahma_brain.risk_engine import check as _risk_check
+        _risk_signal = {
+            'symbol': symbol, 'direction': direction, 'action': action,
+            'position_pct': position_pct, 'leverage': leverage,
+            'price': price, 'sl': sl, 'entry_lo': entry_lo, 'entry_hi': entry_hi,
+        }
+        _risk_result = _risk_check(_risk_signal)
+        if not _risk_result['approved']:
+            action = 'SKIP'
+            reason = '风控否决: ' + ' / '.join(_risk_result['reasons'][:2])
+        elif _risk_result['modified'].get('position_pct', 0) != position_pct:
+            position_pct = _risk_result['modified']['position_pct']
+    except Exception:
+        pass  # 风控引擎不可用时不阻塞交易
+
     return {
         'action': action, 'direction': direction,
         'entry_lo': entry_lo, 'entry_hi': entry_hi, 'sl': sl,
@@ -663,6 +681,7 @@ def decide(
         'resonance_override': _resonance_override,
         'liq_wall_short': _liq_wall_short,
         'event_driven': _event_driven,
+        'risk_check': _risk_result,
     }
 
 
