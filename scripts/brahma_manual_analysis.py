@@ -862,11 +862,36 @@ def step6_smart_money(d: dict) -> dict:
         'diverge':     round(diverge * 100, 1),
         'big_trend':   big_trend,
         'top_delta':   round(top_delta, 3),   # P0修复: 保留3位小数不归零
+        # P5新增: 微结构+反操纵
+        'microstructure': _get_microstructure(d),
+        'anti_manipulation': _get_anti_manipulation(d),
     }
 
 # ══════════════════════════════════════════════════════════
 # Step 7: Hurst + HAR-RV + VolBeta
 # ══════════════════════════════════════════════════════════
+
+def _get_microstructure(d: dict) -> dict:
+    """P5整合: 微结构alpha — 2026-09-12"""
+    try:
+        import sys as _ms_sys
+        _ms_sys.path.insert(0, str(Path(__file__).parent.parent))
+        _ms_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        from brahma_brain.microstructure_engine import get_microstructure_signal
+        return get_microstructure_signal(d.get('sym', 'BTC'))
+    except Exception:
+        return {'available': False, 'note': 'microstructure N/A'}
+
+def _get_anti_manipulation(d: dict) -> dict:
+    """P5整合: 反操纵检测 — 2026-09-12"""
+    try:
+        import sys as _am_sys
+        _am_sys.path.insert(0, str(Path(__file__).parent.parent))
+        _am_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        from brahma_brain.anti_manipulation_engine import detect_manipulation
+        return detect_manipulation(d.get('sym', 'BTC'))
+    except Exception:
+        return {'available': False, 'note': 'anti_manipulation N/A'}
 
 def step7_volatility(d: dict) -> dict:
     bd    = d['bs'].get('confluence', {}).get('breakdown', {})
@@ -1191,11 +1216,56 @@ def step8_macro(d: dict) -> dict:
         'has_event':    has_event,
         'days_to_fomc': days_to_fomc,
         'pos_note':     pos_note,
+        # P4新增: 跨市场alpha + 美盘时段
+        'cross_market': _get_cross_market_for_step8(),
+        'us_session':   _get_us_session_for_step8(),
     }
 
 # ══════════════════════════════════════════════════════════
 # Step 9: 风控门控
 # ══════════════════════════════════════════════════════════
+
+def _get_cross_market_for_step8() -> dict:
+    """P4整合: 跨市场alpha状态 — 2026-09-12"""
+    try:
+        import sys as _cm_sys
+        _cm_sys.path.insert(0, str(Path(__file__).parent.parent))
+        _cm_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        from brahma_brain.cross_market_alpha import get_cross_market_alpha
+        cma = get_cross_market_alpha()
+        return {
+            'alpha': cma['cross_market_alpha'],
+            'direction': cma['direction'],
+            'crypto_fr': cma['crypto_fr_avg'],
+            'tradfi_fr': cma['tradfi_fr_avg'],
+            'divergence': cma['fr_divergence'],
+            'extremes': cma['extreme_count'],
+            'detail': cma['detail'],
+        }
+    except Exception:
+        return {'alpha': 0, 'direction': 'NEUTRAL', 'detail': 'N/A'}
+
+def _get_us_session_for_step8() -> dict:
+    """P4整合: 美盘时段门控 — 2026-09-12"""
+    try:
+        import sys as _us_sys
+        _us_sys.path.insert(0, str(Path(__file__).parent.parent))
+        _us_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        from brahma_brain.us_session_gate import get_session_info
+        return get_session_info()
+    except Exception:
+        # Fallback: 基于UTC时间简单判断
+        import time as _t
+        _h = _t.gmtime().tm_hour
+        if 14 <= _h < 21:
+            session = 'REGULAR'
+        elif 9 <= _h < 14:
+            session = 'PREMARKET'
+        elif 21 <= _h or _h < 1:
+            session = 'AFTER_HOURS'
+        else:
+            session = 'OVERNIGHT'
+        return {'session': session, 'delta': 0, 'note': f'{session} (fallback)'}
 
 def step9_risk(d: dict) -> dict:
     """Step9风控门控 — P0整合: risk_engine统一6层gate (2026-09-12)
@@ -1282,6 +1352,22 @@ def step9_risk(d: dict) -> dict:
         for adj in re_adjustments:
             if '×0.7' in adj:
                 nav_mult = min(nav_mult, 0.7)
+    
+    # P7新增: portfolio_optimizer多标的仓位优化
+    _portfolio = {'active_positions': [], 'correlation_risk': None}
+    try:
+        import sys as _po_sys
+        _po_sys.path.insert(0, str(Path(__file__).parent.parent))
+        _po_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        from brahma_brain.portfolio_optimizer import check_correlation_risk, portfolio_summary
+        # 检查BTC+ETH相关性（如果当前标的和另一标的同时持仓）
+        _other = 'ETHUSDT' if 'BTC' in usdt else 'BTCUSDT'
+        _portfolio['correlation_risk'] = check_correlation_risk(usdt, _other)
+        if _portfolio['correlation_risk'].get('high_corr'):
+            nav_mult = min(nav_mult, 1.0 / _portfolio['correlation_risk'].get('risk_mult', 1.0))
+            blocks.append(f"组合风险: {_portfolio['correlation_risk'].get('warning','')}")
+    except Exception:
+        pass
 
     # [P1修复 2026-09-10] 失效期检测器接入Step 9
     regime_state = 'GREEN'
@@ -1320,6 +1406,8 @@ def step9_risk(d: dict) -> dict:
             'warnings': re_warnings,
             'adjustments': re_adjustments,
         },
+        # P7新增: portfolio_optimizer
+        'portfolio': _portfolio,
     }
 
 # ══════════════════════════════════════════════════════════
@@ -2260,6 +2348,9 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         f'  利率预期: {mac.get("rate_action","?")} ({mac.get("rate_prob",0):.0f}%)  {mac.get("rate_note","")}',
         f'  恐贪={mac["fear_greed"]}  偏向={mac["macro_bias"]}  FOMC还剩{mac.get("days_to_fomc",0)}天',
         f'  数据源: {mac.get("data_source","?")} @ {mac.get("data_time","?")}',  # P2: 标注数据源和时间
+        # P4新增: 跨市场+美盘时段
+        f'  跨市场: alpha={mac.get("cross_market",{}).get("alpha",0):+.4f} {mac.get("cross_market",{}).get("direction","N/A")} crypto_fr={mac.get("cross_market",{}).get("crypto_fr",0):.5f}% tradfi_fr={mac.get("cross_market",{}).get("tradfi_fr",0):.5f}%',
+        f'  美盘时段: {mac.get("us_session",{}).get("session","N/A")} delta={mac.get("us_session",{}).get("delta",0)} {mac.get("us_session",{}).get("note","")}',
     ]
     if res.get('cross_check',{}).get('conflicts'):
         lines.append(f'  ⚠️ 交叉验证矛盾: {" / ".join(res["cross_check"]["conflicts"])}')
@@ -2345,6 +2436,33 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     ]
     if _price_warn:
         lines.append(_price_warn)
+
+    # P6新增: ensemble+council对比展示
+    try:
+        import sys as _ens_sys
+        _ens_sys.path.insert(0, str(Path(__file__).parent.parent))
+        _ens_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        from brahma_brain.ensemble_engine import get_ensemble_score
+        from brahma_brain.ai_council_bridge import get_council_verdict
+        _ens_dir = 'SHORT' if 'BEAR' in str(regime_c) or 'CHOP' in str(regime_c) else 'LONG'
+        _mock_for_ens = {'regime': str(regime_c), 'score': d.get('score_raw',0) or 0, 'price': p,
+                         'rsi_4h': d.get('bs',{}).get('momentum',{}).get('rsi_4h',50),
+                         'rsi_1h': d.get('bs',{}).get('momentum',{}).get('rsi_1h',50),
+                         'confluence': d.get('bs',{}).get('confluence',{}),
+                         'extra': {'hurst': vol.get('hurst',0.5), 'kappa': vol.get('kappa',0)}}
+        _ens = get_ensemble_score(sym+'USDT', _ens_dir, _mock_for_ens)
+        _council = get_council_verdict(sym+'USDT', _ens_dir, _mock_for_ens, _ens)
+        lines += [
+            f'',
+            f'── P3/P4对比 ──',
+            f'  原始score: {d.get("score_raw",0) or 0}',
+            f'  Ensemble: score={_ens.get("ensemble_score",0)} signal={_ens.get("ensemble_signal",0)} n_dims={_ens.get("n_dims",0)}',
+            f'  AI Council: {_council.get("council_bias","?")}/{_council.get("council_action","?")}/{_council.get("council_confidence","?")} score={_council.get("council_score",0)}',
+            f'  Bayes: adj={_council.get("bayes_adjustment",0):+.2f} detail={_council.get("bayes_detail","?")[:50]}',
+            f'  Combined: {_council.get("combined_score",0)} = ensemble({_ens.get("ensemble_score",0)}) + bayes({_council.get("bayes_adjustment",0):+.2f})',
+        ]
+    except Exception:
+        pass
 
     return '\n'.join(lines)
 
