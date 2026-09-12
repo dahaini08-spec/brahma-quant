@@ -48,6 +48,15 @@ def rewrite_for_square(draft: str) -> str:
     """直接调OpenRouter，不注入梵天宪法
     [2026-09-11 苏摩111] LLM重写已废弃，直接返回原稿"""
     return draft
+
+    # ── 品牌包装（2026-09-12 苏摩111封印）──
+    BRAND_PREFIX = '🌿 姓赵不宣'
+    BRAND_SUFFIX = '📊 梵天系统 | 80维数据驱动 | 不是建议'
+    if BRAND_PREFIX not in draft:
+        draft = f'{BRAND_PREFIX}\n\n{draft}'
+    if '梵天系统' not in draft:
+        draft = f'{draft}\n\n{BRAND_SUFFIX}'
+    return draft
     # ── 以下LLM重写已废弃 ──
     if not OPENROUTER_KEY:
         return draft

@@ -467,7 +467,7 @@ def build_hot_tickers() -> str:
                    f'多空比 {ls:.2f}（4H前 {ls_4h_ago:.2f}），{"多头情绪在增强" if ls_change > 0.05 else "多头情绪基本稳定" if abs(ls_change) <= 0.05 else "多头情绪在降温"}。\n'
                    f'FR {fr:.4f}%，{"持仓成本开始累积，追多要算清楚成本。" if fr > 0.01 else "持仓成本正常。"}\n'
                    f'{action_hint}')
-        question = f'你现在怎么看{hot_sym}这个位置？'
+        # [已废弃] 假互动已删除
 
     # 层5：横盘/小波动 → 多维推理，不套模板
     else:
@@ -509,7 +509,7 @@ def build_hot_tickers() -> str:
 
         insight = '\n'.join(signals)
         hook = f'广场热度第一的 ${hot_sym}，我实际看了数据。'
-        question = f'#{hot_sym} 你现在持仓还是空仓等？'
+        # [已废弃] 假互动已删除
 
     out = [
         hook, '',
@@ -572,7 +572,7 @@ def build_funding_rate() -> str:
     lines_out.append('')
     lines_out.append(conclusion)
     lines_out.append('')
-    lines_out.append('你现在重点看哪个方向？')
+    # [已废弃] 假互动已删除
     lines_out.append('')
     lines_out.append('#资金费率 #合约交易 #BTC')
     return '\n'.join(lines_out)
@@ -1275,9 +1275,16 @@ def post_to_square(content: str, dry_run: bool = False) -> bool:
     """发布到广场。返回True=成功"""
     import requests
 
-    # ── 40年交易员视角重写层（发帖前必过）──
-    if not dry_run:
-        content = rewrite_as_trader(content)
+    # ── 品牌包装（2026-09-12 苏摩111封印）──
+    BRAND_PREFIX = '🌿 姓赵不宣'
+    BRAND_SUFFIX = '📊 梵天系统 | 80维数据驱动 | 不是建议'
+    if BRAND_PREFIX not in content:
+        content = f'{BRAND_PREFIX}\n\n{content}'
+    if '梵天系统' not in content:
+        content = f'{content}\n\n{BRAND_SUFFIX}'
+
+    # ── LLM重写已废弃（2026-09-11）──
+    # content = rewrite_as_trader(content)  # 已废弃
 
     ok, reason = check_content(content)
     if not ok:
