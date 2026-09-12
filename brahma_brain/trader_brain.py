@@ -390,6 +390,34 @@ def decide(
         if entry_hi <= entry_lo:
             entry_hi = round(entry_lo * 1.005, 1)
 
+    # P1修复 2026-09-12 苏摩111：止损墙做空入场区=止损墙附近，不是共振区间
+    # 止损墙在上方 → 做空入场区应该在止损墙附近（上方等反弹）
+    _liq_wall_price = liq.get('nearest_short', 0)
+    if direction == 'SHORT' and _liq_wall_price > price and _liq_wall_price > 0:
+        _wall_dist = (_liq_wall_price - price) / price
+        if 0.005 < _wall_dist < 0.08:  # 止损墙在上方0.5%~8%
+            # 入场区=止损墙下方0.3%~止损墙价位
+            entry_hi = round(_liq_wall_price, 1)
+            entry_lo = round(_liq_wall_price * 0.997, 1)  # 止损墙下方0.3%
+            if entry_lo > price:  # 入场区仍在现价上方=等反弹做空
+                _entry_valid = True
+            else:
+                # 止损墙太近，入场区在现价下方=用共振区
+                _entry_valid = False
+        else:
+            _entry_valid = False
+    else:
+        _entry_valid = False
+    # 如果止损墙入场区无效，用共振区
+    if direction == 'SHORT' and not _entry_valid and entry_lo > 0 and entry_hi > 0:
+        if entry_hi > price:  # 共振区在现价上方=可以
+            pass
+        elif entry_lo > 0 and entry_hi > 0:
+            # 共振区在现价下方=追空，不合适
+            # 入场区上移到现价上方
+            entry_lo = round(price * 1.005, 1)  # 现价上方0.5%
+            entry_hi = round(price * 1.02, 1)   # 现价上方2%
+
     # SL = max(SL_PCT铁律, 1.5×ATR4H)
     if direction == 'LONG':
         _sl_pct_req = 0.02
