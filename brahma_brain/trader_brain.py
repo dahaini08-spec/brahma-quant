@@ -240,6 +240,38 @@ def decide(
     # 方向判定
     direction = 'LONG' if 'BULL' in regime or 'RECOVERY' in regime else 'SHORT' if 'BEAR' in regime else 'NONE'
 
+    # ════════════════════════════════════════════════════════════
+    # P1改革：价格突破事件驱动体制（2026-09-12 苏摩111封印）
+    # 价格突破关键位=实时体制切换，不等Hurst追赶
+    # ════════════════════════════════════════════════════════════
+    _score_mult = 1.0  # P0仓位系数默认值（提前定义供P1使用）
+    _price_breakout = False
+    _pb_direction = ''
+    # 破支撑池= Bear事件
+    _ll = liq.get('nearest_long', 0)
+    _ns = liq.get('nearest_short', 0)
+    if _ll > 0 and price < _ll * 0.998:  # 破支撑池0.2%
+        _price_breakout = True
+        _pb_direction = 'SHORT'
+    # 破止损墙= Bull事件
+    if _ns > 0 and price > _ns * 1.002:  # 破止损墙0.2%
+        _price_breakout = True
+        _pb_direction = 'LONG'
+    # FVG中点突破=方向确认
+    _fvg_mid = fvg.get('consensus_mid', 0)
+    if _fvg_mid > 0:
+        if fvg.get('consensus', '') == 'BULL' and price > _fvg_mid and price < _fvg_mid * 1.01:
+            _price_breakout = True
+            _pb_direction = 'LONG'
+        elif fvg.get('consensus', '') == 'BEAR' and price < _fvg_mid and price > _fvg_mid * 0.99:
+            _price_breakout = True
+            _pb_direction = 'SHORT'
+    # 价格突破覆盖direction
+    if _price_breakout and _pb_direction:
+        direction = _pb_direction
+        permission = True
+        _score_mult = max(_score_mult, 0.5)  # 突破=至少50%仓位
+
     # CHOP区间交易模式
     _chop_range = False
     if regime == 'CHOP_MID':
@@ -280,17 +312,24 @@ def decide(
             direction = 'SHORT'
             _downgraded = False  # 不降级，直接翻转方向
 
-    # 交易许可
+    # 交易许可 — P0改革 2026-09-12 苏摩111封印
+    # score从"一票否决"改为"仓位系数"，不再因score低而禁止交易
     permission = True
+    # _score_mult 已在P1代码段提前定义
     if regime == 'CHOP_MID' and not (_chop_range and score >= 60):
         if score < 110:
-            permission = False
+            _score_mult = min(_score_mult, 0.5)  # CHOP低分=减仓但不禁止
     if regime_state == 'RED' and score < 120:
-        permission = False
+        _score_mult = min(_score_mult, 0.5)  # RED低分=减仓但不禁止
     if _weak_trend and regime_state == 'RED':
-        permission = False
+        _score_mult = min(_score_mult, 0.3)  # 弱趋势+RED=极低仓
     if _downgraded:
-        permission = False
+        _score_mult = min(_score_mult, 0.5)  # 降级CHOP=减仓但不禁止
+    # score区间仓位系数
+    if score < 60:
+        _score_mult = min(_score_mult, 0.3)
+    elif score < 120:
+        _score_mult = min(_score_mult, 0.5)
 
     # ════════════════════════════════════════════════════════════
     # 改进1：共振覆盖score（2026-09-12 苏摩111封印）
@@ -479,13 +518,12 @@ def decide(
                 elif _score_range == '140+' and score >= 140:
                     _ic_ev = _data.get('ev'); _ic_wr = _data.get('wr')
 
-    # 条件检查
+    # 条件检查 — P0改革：score不再作为否决条件
     missing = []
     if not permission:
         if _downgraded: missing.append(f'体制降级CHOP（三选二矛盾）')
-        elif regime == 'CHOP_MID' and score < 110: missing.append(f'CHOP体制score={score:.0f}<110')
-        elif regime_state == 'RED' and score < 120: missing.append(f'失效期RED score={score:.0f}<120')
-        elif _weak_trend: missing.append(f'弱趋势score={score:.0f}<60')
+        elif regime == 'CHOP_MID' and score < 110: missing.append(f'CHOP体制score={score:.0f}<110（减仓{_score_mult:.1f}x）')
+        elif _weak_trend: missing.append(f'弱趋势score={score:.0f}<60（减仓{_score_mult:.1f}x）')
         else: missing.append('环境许可未通过')
     if direction == 'NONE': missing.append(f'体制{regime}无方向')
     if consistent_count < 2 and direction != 'NONE': missing.append(f'交叉验证仅{consistent_count}/4')
@@ -499,9 +537,9 @@ def decide(
     # OI矛盾
     if direction == 'LONG' and oi_signal == 'SHORT_BUILD': missing.append(f'做多但OI={oi_signal}')
     if direction == 'SHORT' and oi_signal == 'LONG_BUILD': missing.append(f'做空但OI={oi_signal}')
-    # IC验证标注
+    # IC验证标注（改为信息而非否决）
     if _ic_ev is not None and _ic_ev < 0 and direction != 'NONE':
-        missing.append(f'IC验证:score<120区间EV={_ic_ev:+.2f}%历史亏损')
+        missing.append(f'IC历史EV={_ic_ev:+.2f}%（减仓参考）')
 
     # ENTER/WATCH/WAIT分档
     # 改进4：WAIT改为条件入场（2026-09-12 苏摩111封印）
@@ -520,11 +558,13 @@ def decide(
     else:
         action = 'WAIT'
 
-    # 仓位计算
+    # 仓位计算 — P0改革：score从否决改为系数
     if action in ('ENTER', 'WATCH'):
         if 120 <= score < 140: _sm = 1.0 + (score - 120) / 100.0
         elif score >= 110: _sm = 0.9
         else: _sm = 0.8
+        # P0改革：用_score_mult替代score否决
+        _sm = min(_sm, _score_mult)
         # 改进1：共振覆盖时score<120=仓位×0.5（不是否决）
         if _resonance_override and score < 120:
             _sm = min(_sm, 0.5)  # 共振覆盖但score低=减仓

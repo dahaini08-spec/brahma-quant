@@ -1620,6 +1620,18 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
                 pass
             _hcme_conf = '低置信度仅供参考' if _hcme_score < 0.3 else '中等置信度'
             _triggers.append(f'HCME参考：{_hcme_case}（{_hcme_conf}）')
+        # P2改革：标的专属90天信号匹配（2026-09-12 苏摩111封印）
+        try:
+            from scripts.recent_signal_match import match as _rs_match
+            _rs = _rs_match(symbol=sym, regime=regime, direction=direction,
+                           oi_signal=oi_signal, liq_dist_pct=abs((liq_short-price)/price) if liq_short > 0 else 0,
+                           sm_divergence=abs(sm_divergence), min_similarity=0.4, max_results=5)
+            if _rs.get('matched'):
+                _triggers.append(f'近90天{_rs["matched_count"]}条相似(WR={_rs["wr"]}% PnL={_rs["avg_pnl"]:+.2f}%)')
+            elif _rs.get('total_signals', 0) > 0:
+                _triggers.append(f'近90天{_rs["total_signals"]}条信号无高相似匹配(最高{_rs.get("best_similarity",0):.2f})')
+        except Exception:
+            pass
         parts.append(f'体制{regime}无方向，不强行做。' + '触发器：' + ' / '.join(_triggers) + '。')
 
     return ' '.join(parts)
