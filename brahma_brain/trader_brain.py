@@ -217,6 +217,26 @@ def decide(
     regime_state = risk.get('regime_state', 'GREEN')
     _weak_trend = ('TREND' in regime or 'EARLY' in regime) and score < 60
 
+    # ════════════════════════════════════════════════════════════
+    # 改进2+5：事件驱动+体制实时感知（2026-09-12 苏摩111封印）
+    # CPI/NFP/FOMC后第一根1H收阳+OI翻转=方向确认
+    # 事件后1H收阳=临时体制BULL_EXPLOSION
+    # 事件后1H收阴=临时体制BEAR_EXPLOSION
+    # ════════════════════════════════════════════════════════════
+    _event_driven = False
+    _event_type = _macro_ctx.get('event_today', '')
+    if _event_type and _path_ctx.get('recent_candle', ''):
+        _recent = _path_ctx['recent_candle']  # 'GREEN' or 'RED'
+        _oi_flip = oi.get('signal', '') in ('SHORT_SQUEEZE', 'LONG_BUILD') if _recent == 'GREEN' else oi.get('signal', '') in ('LONG_UNWIND', 'SHORT_BUILD')
+        if _oi_flip:
+            _event_driven = True
+            if _recent == 'GREEN':
+                direction = 'LONG'
+                permission = True
+            elif _recent == 'RED':
+                direction = 'SHORT'
+                permission = True
+
     # 方向判定
     direction = 'LONG' if 'BULL' in regime or 'RECOVERY' in regime else 'SHORT' if 'BEAR' in regime else 'NONE'
 
@@ -247,7 +267,9 @@ def decide(
             _contra += 1; _contra_list.append(f'Hurst={hurst:.3f}<0.55趋势未确认')
         if _contra >= 2:
             _downgraded = True
-            direction = 'NONE'
+            # 改进4修复：降级CHOP时保留原方向，不清空
+            # direction = 'NONE'  ← 旧代码清空方向=所有覆盖跳过
+            # 保留原方向，让共振覆盖/止损墙做空有机会触发
         # 修复2：FVG全线BEAR + OI做空 + CVD做空 三选二 → 强制SHORT（不管体制）
         _fvg_bear = fvg.get('consensus', fvg.get('dir', 'NONE')) == 'BEAR'
         _oi_short = _oi_dir == 'SHORT'
@@ -269,6 +291,41 @@ def decide(
         permission = False
     if _downgraded:
         permission = False
+
+    # ════════════════════════════════════════════════════════════
+    # 改进1：共振覆盖score（2026-09-12 苏摩111封印）
+    # 共振≥4/5 + OI方向一致 + 大户一致 → 不等score过120
+    # score从"一票否决"降为"仓位调整系数"
+    # ════════════════════════════════════════════════════════════
+    _resonance_override = False
+    _res_score = res.get('resonance_score', 0)
+    _oi_dir_raw = oi.get('signal', 'NO_DATA')
+    _oi_long = _oi_dir_raw in ('LONG_BUILD', 'SHORT_SQUEEZE')
+    _oi_short = _oi_dir_raw in ('SHORT_BUILD', 'LONG_UNWIND')
+    _sm_long = sm.get('big_long', 50) > sm.get('retail_long', 50)
+    _sm_short = not _sm_long and sm.get('big_long', 50) < sm.get('retail_long', 50) - 3
+    if _res_score >= 4 and direction != 'NONE':
+        _dir_match_oi = (direction == 'LONG' and _oi_long) or (direction == 'SHORT' and _oi_short)
+        _dir_match_sm = (direction == 'LONG' and _sm_long) or (direction == 'SHORT' and _sm_short)
+        if _dir_match_oi and _dir_match_sm:
+            _resonance_override = True
+            permission = True  # 共振+OI+大户三方一致=覆盖score门槛
+        elif _dir_score >= 4 and _dir_match_oi:
+            # 共振+OI一致但大户不一致=减仓覆盖
+            _resonance_override = True
+            permission = True
+
+    # 改进3：止损墙做空逻辑（2026-09-12 苏摩111封印）
+    # 清算地图止损墙在上方=反弹到止损墙做空
+    _liq_wall_short = False
+    _ns = liq.get('nearest_short', 0)
+    if _ns > price and _ns > 0:
+        _liq_dist_pct = (_ns - price) / price
+        if 0.005 < _liq_dist_pct < 0.08:  # 止损墙在上方0.5%~8%
+            _liq_wall_short = True
+            if direction == 'NONE':
+                direction = 'SHORT'  # 止损墙在上方=给做空方向
+                permission = True
 
     # 杠杆基数
     lev_base = 10
@@ -447,11 +504,19 @@ def decide(
         missing.append(f'IC验证:score<120区间EV={_ic_ev:+.2f}%历史亏损')
 
     # ENTER/WATCH/WAIT分档
+    # 改进4：WAIT改为条件入场（2026-09-12 苏摩111封印）
+    # 不再输出纯WAIT，改为"方向X，条件Y未满足，挂单区Z"
     _passed = 6 - len(missing) if direction != 'NONE' else 0
     if len(missing) == 0 and direction != 'NONE':
         action = 'ENTER'
     elif _passed >= 4 and direction != 'NONE':
         action = 'WATCH'
+    elif _resonance_override and direction != 'NONE':
+        action = 'WATCH'  # 共振覆盖=给WATCH不是WAIT
+    elif _liq_wall_short and direction == 'SHORT':
+        action = 'WATCH'  # 止损墙做空=给WATCH
+    elif _event_driven and direction != 'NONE':
+        action = 'WATCH'  # 事件驱动=给WATCH
     else:
         action = 'WAIT'
 
@@ -460,6 +525,9 @@ def decide(
         if 120 <= score < 140: _sm = 1.0 + (score - 120) / 100.0
         elif score >= 110: _sm = 0.9
         else: _sm = 0.8
+        # 改进1：共振覆盖时score<120=仓位×0.5（不是否决）
+        if _resonance_override and score < 120:
+            _sm = min(_sm, 0.5)  # 共振覆盖但score低=减仓
         _nav = risk.get('nav_mult', 1.0)
         _base = 5.0
         _mult = 1.0 if action == 'ENTER' else 0.4  # WATCH轻仓×0.4
@@ -469,6 +537,9 @@ def decide(
         if regime_state == 'RED':
             position_pct = max(1, position_pct // 2)
             leverage = max(3, leverage // 2)
+        # 改进3：止损墙做空=标准仓位
+        if _liq_wall_short and action == 'WATCH':
+            position_pct = max(1, round(position_pct * 0.8))  # 止损墙做空=80%仓位
     else:
         position_pct = 0; leverage = 0
 
@@ -476,9 +547,17 @@ def decide(
     if action == 'ENTER':
         reason = f'{regime}体制顺势{direction} + FVG{fvg_consensus} + OI={oi_signal} + 交叉验证{consistent_count}/4 + 置信{confidence}'
     elif action == 'WATCH':
-        reason = f'WATCH({_passed}/6通过) — ' + ' / '.join(missing[:3])
+        _extra = ''
+        if _resonance_override: _extra = f' | 共振覆盖({_res_score}/5+OI+大户一致)'
+        if _liq_wall_short: _extra += f' | 止损墙做空@${_ns:,.0f}'
+        if _event_driven: _extra += f' | 事件驱动({_event_type})'
+        reason = f'WATCH({_passed}/6通过){_extra} — ' + ' / '.join(missing[:3])
     else:
-        reason = f'WAIT — ' + ' / '.join(missing[:3]) if missing else 'WAIT'
+        # 改进4：WAIT也给出挂单区和条件
+        if direction != 'NONE' and entry_lo > 0:
+            reason = f'WAIT方向{direction} | 入场区${entry_lo:,.1f}~${entry_hi:,.1f} | ' + ' / '.join(missing[:3])
+        else:
+            reason = f'WAIT — ' + ' / '.join(missing[:3]) if missing else 'WAIT'
 
     # 矛盾裁决
     conflict_res = ''
@@ -506,6 +585,9 @@ def decide(
         'score': score, 'regime': regime,
         'macro_ctx': _macro_ctx, 'path_ctx': _path_ctx,
         'dyn_rules': _dyn_rules,
+        'resonance_override': _resonance_override,
+        'liq_wall_short': _liq_wall_short,
+        'event_driven': _event_driven,
     }
 
 
