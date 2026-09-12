@@ -135,10 +135,11 @@ print('\n── Phase 3: Ensemble Engine 12维精简 ──')
 try:
     from brahma_brain.ensemble_engine import get_ensemble_score, IC_WEIGHTS, REGIME_MAP, REGIME_DIRECTION_WEIGHTS
     
-    # P3.1: 12维IC权重
-    test('P3.1 IC_WEIGHTS 12维', len(IC_WEIGHTS) == 12, f'({len(IC_WEIGHTS)}维)')
+    # P3.1: 13维IC权重（Phase 5新增cross_market）
+    test('P3.1 IC_WEIGHTS 13维', len(IC_WEIGHTS) == 13, f'({len(IC_WEIGHTS)}维)')
     expected_dims = {'rsi_4h', 'change_3d', 'bbw', 'hurst', 'oi_chg_3d', 'fr_mean',
-                     'atr_rank', 'regime_code', 'macro_days', 'vol_rank', 'score_rank', 'stoch_rsi'}
+                     'atr_rank', 'regime_code', 'macro_days', 'vol_rank', 'score_rank', 'stoch_rsi',
+                     'cross_market'}
     test('P3.1b 12维名称正确', set(IC_WEIGHTS.keys()) == expected_dims)
     
     # P3.2: 体制编码映射
@@ -168,7 +169,7 @@ try:
          f'(score={ens["ensemble_score"]})')
     test('P3.6b ensemble_signal范围', -1 <= ens['ensemble_signal'] <= 1,
          f'(signal={ens["ensemble_signal"]})')
-    test('P3.6c ic_weighted 12维', len(ens['ic_weighted']) == 12,
+    test('P3.6c ic_weighted 13维', len(ens['ic_weighted']) == 13,
          f'({len(ens["ic_weighted"])}维)')
     test('P3.6d true_alpha top-3', len(ens['true_alpha']) == 3,
          f'({ens["true_alpha"]})')
