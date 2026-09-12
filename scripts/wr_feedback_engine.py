@@ -194,6 +194,97 @@ def compute_new_override(matrix: dict) -> tuple[dict, list]:
     return new_override, changes
 
 
+def compute_alpha_attribution():
+    """
+    [2026-09-12 苏摩111] Alpha归因分析
+    读取feature_log + wuqu_paper_settled，计算每个alpha组的IC和贡献
+    """
+    import json as _json, statistics as _stat
+    from pathlib import Path as _P
+    BASE = _P(__file__).parent.parent
+    
+    # 读取feature_log
+    flog_path = BASE / 'data' / 'feature_log.jsonl'
+    if not flog_path.exists():
+        return {}
+    
+    flog = []
+    for line in flog_path.read_text().splitlines():
+        if line.strip():
+            try: flog.append(_json.loads(line))
+            except: pass
+    
+    # 读取已结算交易
+    settled_path = BASE / 'data' / 'wuqu_paper_settled.jsonl'
+    if not settled_path.exists():
+        return {}
+    
+    settled = []
+    for line in settled_path.read_text().splitlines():
+        if line.strip():
+            try: settled.append(_json.loads(line))
+            except: pass
+    
+    if len(settled) < 5:
+        return {}
+    
+    # 按symbol+时间近似匹配feature_log和settled
+    # 计算每个alpha组的IC（point-biserial correlation）
+    groups = ['G1_structure', 'G2_momentum', 'G3_capital_flow', 'G4_volatility', 'G5_macro']
+    result = {}
+    
+    for g in groups:
+        # 收集该组的(signal, outcome)对
+        pairs = []
+        for s in settled:
+            sym = s.get('symbol', '')
+            outcome_raw = s.get('outcome', '')
+            if outcome_raw in ('TP1', 'TP2'):
+                outcome = 1
+            elif outcome_raw == 'SL':
+                outcome = 0
+            else:
+                continue
+            
+            # 找最近的feature_log记录（按symbol匹配）
+            best_match = None
+            best_ts_diff = float('inf')
+            for f in flog:
+                if f.get('symbol', '').upper() == sym.upper():
+                    # feature_log ts vs settled ts
+                    diff = abs(f.get('ts', 0) - s.get('settle_ts', s.get('ts', 0)))
+                    if diff < best_ts_diff:
+                        best_ts_diff = diff
+                        best_match = f
+            
+            if best_match and best_ts_diff < 86400:  # 24h内匹配
+                contribs = best_match.get('alpha_contribs', {})
+                signal_val = contribs.get(g, 0)
+                if isinstance(signal_val, (int, float)):
+                    pairs.append((signal_val, outcome))
+        
+        if len(pairs) >= 3:
+            signals = [p[0] for p in pairs]
+            outcomes = [p[1] for p in pairs]
+            mean_s = sum(signals) / len(signals)
+            mean_o = sum(outcomes) / len(outcomes)
+            cov = sum((signals[i]-mean_s)*(outcomes[i]-mean_o) for i in range(len(pairs))) / len(pairs)
+            std_s = _stat.stdev(signals) if len(signals) > 1 else 0
+            std_o = _stat.stdev(outcomes) if len(outcomes) > 1 else 0
+            ic = cov / (std_s * std_o) if std_s * std_o > 0 else 0
+            
+            result[g] = {
+                'ic': round(ic, 4),
+                'n': len(pairs),
+                'contrib': round(sum(signals) / len(signals), 4),
+                'wr': round(mean_o, 4),
+            }
+        else:
+            result[g] = {'ic': 0, 'n': len(pairs), 'contrib': 0, 'wr': 0}
+    
+    return result
+
+
 def main():
     log('=== WR矩阵每日反哺启动 ===')
 
@@ -272,6 +363,21 @@ def main():
         except Exception as _p21_e:
             log(f'[P2-1] LLM审核跳过: {_p21_e}')
     # ── end P2-1 ─────────────────────────────────────────────────────
+
+    # ── Alpha归因分析 [2026-09-12 苏摩111] ──────────────────
+    try:
+        _attr = compute_alpha_attribution()
+        if _attr:
+            summary += f'\n📊 Alpha归因:\n' + '\n'.join(
+                f'  {g}: contrib={v["contrib"]:.3f} ic={v["ic"]:.4f} n={v["n"]}'
+                for g, v in _attr.items() if v['n'] >= 3)
+            # 保存归因结果
+            _attr_path = BASE / 'data' / 'alpha_attribution.json'
+            _attr_path.write_text(json.dumps(_attr, ensure_ascii=False, indent=2, default=str))
+            log(f'Alpha归因已保存: {len(_attr)}组')
+    except Exception as _ae:
+        log(f'Alpha归因跳过: {_ae}')
+    # ── end Alpha归因 ────────────────────────────────────────
 
     # 推送摘要到Jarvis
     try:

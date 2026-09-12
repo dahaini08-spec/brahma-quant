@@ -1828,17 +1828,22 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _dsle:
         pass
 
-    # I7: 实时归因（轻量，从attribution.json读缓存而非重算）
+    # I7: 实时归因（从feature_store读alpha_contribs） [2026-09-12 苏摩111]
     try:
-        _attr_f = __import__('pathlib').Path('data/attribution.json')
-        if _attr_f.exists():
-            _attr = __import__('json').loads(_attr_f.read_text())
-            extra_data['attribution'] = {
-                'top_misleaders': _attr.get('top_misleaders', [])[:3],
-                'ts': _attr.get('ts', ''),
-            }
+        from brahma_brain.feature_store import get_features, log_features
+        _fs = get_features(symbol, force_refresh=False)
+        _fs_alpha = _fs.get('alpha_contribs', {})
+        _fs_groups = _fs.get('groups', {})
+        extra_data['attribution'] = {
+            'alpha_contribs': _fs_alpha,
+            'groups': _fs_groups,
+            'feature_source': _fs.get('_source', 'unknown'),
+            'n_features': _fs.get('n_features', 0),
+        }
+        # 记录到feature_log供attribution_engine使用
+        log_features(symbol, _fs)
     except Exception as _ate:
-        pass
+        extra_data['attribution'] = {'error': str(_ate)[:100]}
 
     # [设计院终极版 v2.0] 六层防线集成入口
     _globally_blocked = False  # [设计院修复 2026-06-26] 默认值防止try异常时UnboundLocalError
