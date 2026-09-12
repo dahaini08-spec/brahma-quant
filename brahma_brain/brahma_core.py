@@ -287,11 +287,11 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     # 通用矩阵（默认，适用非BTC/ETH标的）
     _REGIME_MULT_DEFAULT = {
         # 体制            SHORT   LONG
-        'BEAR_TREND':    (1.50,  0.35),   # [v25.6 为交易而生 2026-06-18] SHORT S+级WR=71.8% n=2413 | LONG极端降权0.35×(WR=45% n=3322，需score≥400，自然淘汰，梵天能力提升后开放)
-        'BEAR_EARLY':    (1.15,  0.35),   # [v25.5 2026-06-18] SHORT强Alpha WR=66.5% | LONG降权0.35x(WR=50.4% n=5396 avg=-0.110 非死穴，降权非封禁)
-        'BEAR_RECOVERY': (0.35,  1.20),   # [v25.6 设计院 2026-06-18] LONG=反直觉alpha WR=72.5% | SHORT极端降权0.35×（WR=47.9% n=603，为交易而生，非封禁）
-        'BULL_TREND':    (0.50,  1.10),   # [v25.1 2026-06-13] LONG=正alpha(n=3046 WR=70.3% avgPnL=+0.242) SHORT=死穴(n=4999 WR=47.7% avgPnL=-0.229)
-        'BULL_EARLY':    (0.35,  1.20),   # [v25.5 2026-06-18] LONG=S级alpha(WR=64.4% n=5396 +0.093%) | SHORT降权0.35x(WR=51.9% n=5396 avg=-0.137% 非死穴，降权非封禁)
+        'BEAR_TREND':    (1.50,  0.50),   # [2026-09-12 苏摩111] 0.35→0.50 解除极端降权 | SHORT S+级WR=71.8% | LONG逆势降权非封禁
+        'BEAR_EARLY':    (1.15,  0.50),   # [2026-09-12 苏摩111] 0.35→0.50 | SHORT强Alpha WR=66.5% | LONG降权非封禁
+        'BEAR_RECOVERY': (0.50,  1.20),   # [2026-09-12 苏摩111] 0.35→0.50 | LONG=反直觉alpha WR=72.5% | SHORT降权非封禁
+        'BULL_TREND':    (0.50,  1.10),   # [v25.1] LONG=正alpha WR=70.3% | SHORT逆势降权非封禁
+        'BULL_EARLY':    (0.50,  1.20),   # [2026-09-12 苏摩111] 0.35→0.50 | LONG=S级alpha WR=64.4% | SHORT降权非封禁
         'BULL_CORRECTION':(1.10, 0.65),   # 牛回调: SHORT强，LONG样本不足
         'BULL_PEAK':     (1.00,  0.75),   # 牛顶:   SHORT尚可
         'BULL_BREAK':    (1.00,  0.75),   # 牛突破: 参考BULL_TREND
@@ -303,15 +303,15 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         # [设计院 2026-06-30 P2-D] RANGE_LOCK区间状态独立乘数通道（苏摩111审批）
         # 达摩院验证：DISCOUNT債 WR=70.0% | PREMIUM空 WR=61.3%
         'CHOP_RANGE_DISCOUNT': (0.50,  1.20),  # 区间底部做多解锁: LONG=1.20x(达摩院验证WR=70.0% n=120)
-        'CHOP_RANGE_PREMIUM':  (1.10,  0.35),  # 区间顶部做空解锁: SHORT=1.10x(达摩院验证WR=61.3% n=163)
+        'CHOP_RANGE_PREMIUM':  (1.10,  0.50),  # [2026-09-12 苏摩111] 0.35→0.50 区间顶部做空: SHORT=1.10x
     }
     _REGIME_MULT_BTC = {
         # 体制            SHORT   LONG    # Calmar(S) / Calmar(L)
-        'BEAR_TREND':    (1.60,  0.35),   # [v25.6 为交易而生] BTC SHORT WR=72% S+级 | LONG极端降权0.35×(非封禁，梵天识别能力问题，非方向永错)
-        'BEAR_EARLY':    (1.20,  0.35),   # [v25.5 2026-06-18] BTC SHORT WR=68% S级 | LONG降权0.35x(WR=50.4% avg=-0.110 非死穴)
-        'BEAR_RECOVERY': (0.35,  1.25),   # [v25.6] BTC LONG WR=77.6% | SHORT极端降权0.35×
-        'BULL_TREND':    (0.50,  1.20),   # [v25.1 2026-06-13] LONG=S级alpha(n=1614 WR=70.5% avgPnL=+0.170) SHORT=死穴(n=2579 WR=48.2% avgPnL=-0.186)
-        'BULL_EARLY':    (0.35,  1.20),   # [v25.5 2026-06-18] BTC BULL_EARLY LONG=S级alpha(WR=64.6% n=2737 +0.093%) | SHORT降权0.35x(WR=51.7% n=3398 非死穴)
+        'BEAR_TREND':    (1.60,  0.50),   # [2026-09-12 苏摩111] 0.35→0.50 | BTC SHORT WR=72% S+级 | LONG降权非封禁
+        'BEAR_EARLY':    (1.20,  0.50),   # [2026-09-12 苏摩111] 0.35→0.50 | BTC SHORT WR=68% S级 | LONG降权非封禁
+        'BEAR_RECOVERY': (0.50,  1.25),   # [2026-09-12 苏摩111] 0.35→0.50 | BTC LONG WR=77.6% | SHORT降权非封禁
+        'BULL_TREND':    (0.50,  1.20),   # [v25.1] LONG=S级alpha WR=70.5% | SHORT降权非封禁
+        'BULL_EARLY':    (0.50,  1.20),   # [2026-09-12 苏摩111] 0.35→0.50 | BTC LONG WR=64.6% S级 | SHORT降权非封禁
         'BULL_CORRECTION':(1.20, 0.60),   # S=14.6 WR=97% / L=不激活
         'BULL_PEAK':     (1.05,  0.70),   # 参考BULL_TREND/BULL_CORRECTION
         'BULL_BREAK':    (1.08,  0.65),
@@ -321,17 +321,17 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         'CHOP_MID':      (0.88,  0.50),   # [v25.4] BTC CHOP_MID SHORT解锁0.88x
         'CHOP_LOW':      (0.88,  0.50),   # [v25.4] BTC CHOP_LOW SHORT解锁0.88x
         'CHOP_RANGE_DISCOUNT': (0.50,  1.20),  # [设计院 P2-D] BTC区间底部做多: LONG=1.20x
-        'CHOP_RANGE_PREMIUM':  (1.10,  0.35),  # [设计院 P2-D] BTC区间顶部做空: SHORT=1.10x
+        'CHOP_RANGE_PREMIUM':  (1.10,  0.50),  # [2026-09-12 苏摩111] 0.35→0.50 BTC区间顶部做空: SHORT=1.10x
     }
 
     # ETH专属矩阵（达摩院v4.0铁证）
     _REGIME_MULT_ETH = {
         # 体制            SHORT   LONG    # Calmar(S) / Calmar(L)
-        'BEAR_TREND':    (1.60,  0.35),   # [v25.6 为交易而生] ETH SHORT WR=74% S+级 | LONG极端降权0.35×
-        'BEAR_EARLY':    (1.20,  0.35),   # [v25.5 2026-06-18] ETH SHORT WR=70% S级 | LONG降权0.35x(非死穴，WR=50.4% avg=-0.110)
-        'BEAR_RECOVERY': (0.35,  1.15),   # [v25.6] ETH LONG WR=67.1% | SHORT极端降权0.35×
-        'BULL_TREND':    (0.50,  1.30),   # [v25.1 2026-06-13] LONG=最强alpha(n=1432 WR=70.0% avgPnL=+0.324) SHORT=死穴(n=2420 WR=47.1% avgPnL=-0.274)
-        'BULL_EARLY':    (0.35,  1.10),   # [v25.5 2026-06-18] ETH BULL_EARLY LONG=S级alpha(WR=64.2% n=2659) | SHORT降权0.35x(WR=52.2% n=3457 非死穴)
+        'BEAR_TREND':    (1.60,  0.50),   # [2026-09-12 苏摩111] 0.35→0.50 | ETH SHORT WR=74% S+级 | LONG降权非封禁
+        'BEAR_EARLY':    (1.20,  0.50),   # [2026-09-12 苏摩111] 0.35→0.50 | ETH SHORT WR=70% S级 | LONG降权非封禁
+        'BEAR_RECOVERY': (0.50,  1.15),   # [2026-09-12 苏摩111] 0.35→0.50 | ETH LONG WR=67.1% | SHORT降权非封禁
+        'BULL_TREND':    (0.50,  1.30),   # [v25.1] LONG=最强alpha WR=70.0% | SHORT降权非封禁
+        'BULL_EARLY':    (0.50,  1.10),   # [2026-09-12 苏摩111] 0.35→0.50 | ETH LONG WR=64.2% S级 | SHORT降权非封禁
         'BULL_CORRECTION':(1.02, 0.60),   # S=1.5 / L=不激活(n/yr=6.3)
         'BULL_PEAK':     (1.05,  0.70),
         'BULL_BREAK':    (1.10,  0.75),
@@ -341,7 +341,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         'CHOP_MID':      (0.88,  0.50),   # [v25.4] ETH CHOP_MID SHORT解锁0.88x
         'CHOP_LOW':      (0.88,  0.50),   # [v25.4] ETH CHOP_LOW SHORT解锁0.88x
         'CHOP_RANGE_DISCOUNT': (0.50,  1.20),  # [设计院 P2-D] ETH区间底部做多: LONG=1.20x
-        'CHOP_RANGE_PREMIUM':  (1.10,  0.35),  # [设计院 P2-D] ETH区间顶部做空: SHORT=1.10x
+        'CHOP_RANGE_PREMIUM':  (1.10,  0.50),  # [2026-09-12 苏摩111] 0.35→0.50 ETH区间顶部做空: SHORT=1.10x
     }
 
     # ── [P1-哲学修复 设计院 2026-06-24] 中小币专属乘数矩阵 ──────────────────
@@ -354,51 +354,51 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         'SOLUSDT': {
             # 铁证WR / BTC+ETH参考 → 比例乘数（范围0.25~1.2）
             'BEAR_TREND':     (0.75, 0.28),  # SHORT n=28 WR=53.6%  | LONG n=20 WR=20.0%
-            'BEAR_EARLY':     (0.58, 0.35),  # SHORT n=412 WR=38.3% | LONG 降权对齐DEFAULT
+            'BEAR_EARLY':     (0.58, 0.50),  # SHORT n=412 WR=38.3% | LONG 降权对齐DEFAULT
             'BULL_EARLY':     (0.35, 0.56),  # LONG n=411 WR=35.8%  | SHORT 降权
             'BULL_TREND':     (0.35, 0.28),  # LONG n=20 WR=20.0% → 极端降权
             'BEAR_RECOVERY':  (0.35, 0.80),  # 无足够样本，保守
-            'BULL_CORRECTION':(0.60, 0.35),
+            'BULL_CORRECTION':(0.60, 0.50),
             'CHOP':           (0.50, 0.50), 'CHOP_HIGH': (0.50,0.50),
             'CHOP_MID':       (0.50, 0.50), 'CHOP_LOW':  (0.55,0.55),
         },
         'NEARUSDT': {
-            'BEAR_TREND':     (0.70, 0.35),  # SHORT n=10 WR=50.0%  | LONG 无样本
-            'BEAR_EARLY':     (0.57, 0.35),  # SHORT n=435 WR=38.2% | LONG 降权
+            'BEAR_TREND':     (0.70, 0.50),  # SHORT n=10 WR=50.0%  | LONG 无样本
+            'BEAR_EARLY':     (0.57, 0.50),  # SHORT n=435 WR=38.2% | LONG 降权
             'BULL_EARLY':     (0.35, 0.58),  # LONG n=413 WR=37.5%  | SHORT 降权
             'BULL_TREND':     (0.35, 0.81),  # LONG n=14 WR=57.1%（n偏少，保守）
             'BEAR_RECOVERY':  (0.35, 0.80),
-            'BULL_CORRECTION':(0.60, 0.35),
+            'BULL_CORRECTION':(0.60, 0.50),
             'CHOP':           (0.50, 0.50), 'CHOP_HIGH': (0.50,0.50),
             'CHOP_MID':       (0.50, 0.50), 'CHOP_LOW':  (0.55,0.55),
         },
         'MANAUSDT': {
-            'BEAR_TREND':     (0.35, 0.35),  # SHORT n=12 WR=25.0% → 极端降权
-            'BEAR_EARLY':     (0.59, 0.35),  # SHORT n=422 WR=39.1%
+            'BEAR_TREND':     (0.35, 0.50),  # SHORT n=12 WR=25.0% → 极端降权
+            'BEAR_EARLY':     (0.59, 0.50),  # SHORT n=422 WR=39.1%
             'BULL_EARLY':     (0.35, 0.51),  # LONG n=342 WR=33.0%
             'BULL_TREND':     (0.35, 0.55),  # LONG n=13 WR=38.5%（n偏少）
             'BEAR_RECOVERY':  (0.35, 0.70),
-            'BULL_CORRECTION':(0.50, 0.35),
+            'BULL_CORRECTION':(0.50, 0.50),
             'CHOP':           (0.50, 0.50), 'CHOP_HIGH': (0.50,0.50),
             'CHOP_MID':       (0.50, 0.50), 'CHOP_LOW':  (0.55,0.55),
         },
         'AXSUSDT': {
-            'BEAR_TREND':     (0.46, 0.35),  # SHORT n=15 WR=33.3%
-            'BEAR_EARLY':     (0.55, 0.35),  # SHORT n=438 WR=36.5%
+            'BEAR_TREND':     (0.46, 0.50),  # SHORT n=15 WR=33.3%
+            'BEAR_EARLY':     (0.55, 0.50),  # SHORT n=438 WR=36.5%
             'BULL_EARLY':     (0.35, 0.50),  # LONG n=363 WR=32.5%
             'BULL_TREND':     (0.35, 0.50),  # 无足够样本
             'BEAR_RECOVERY':  (0.35, 0.70),
-            'BULL_CORRECTION':(0.50, 0.35),
+            'BULL_CORRECTION':(0.50, 0.50),
             'CHOP':           (0.50, 0.50), 'CHOP_HIGH': (0.50,0.50),
             'CHOP_MID':       (0.50, 0.50), 'CHOP_LOW':  (0.55,0.55),
         },
         'GALAUSDT': {
-            'BEAR_TREND':     (0.70, 0.35),  # SHORT n=18 WR=50.0%
-            'BEAR_EARLY':     (0.57, 0.35),  # SHORT n=418 WR=38.0%
+            'BEAR_TREND':     (0.70, 0.50),  # SHORT n=18 WR=50.0%
+            'BEAR_EARLY':     (0.57, 0.50),  # SHORT n=418 WR=38.0%
             'BULL_EARLY':     (0.35, 0.51),  # LONG n=280 WR=32.9%
             'BULL_TREND':     (0.35, 0.50),
             'BEAR_RECOVERY':  (0.35, 0.70),
-            'BULL_CORRECTION':(0.55, 0.35),
+            'BULL_CORRECTION':(0.55, 0.50),
             'CHOP':           (0.50, 0.50), 'CHOP_HIGH': (0.50,0.50),
             'CHOP_MID':       (0.50, 0.50), 'CHOP_LOW':  (0.55,0.55),
         },
@@ -1864,16 +1864,16 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         cf['v2_pos_pct']   = _v2_result.get('pos_pct', 0)
         cf['v2_breakdown'] = _v2_result.get('breakdown_ext', {})
 
-        _globally_blocked = not _v2_result.get('allowed', True)
-        if _globally_blocked:
-            # v2 硬封锁 → 评分归零0，不退出，让analyze()完整构建返回结构
-            _block_reason = _v2_result.get('block_reason', 'v2封锁')
-            pass  # [静默] f'[BrahmaBrain-v2] 🛡️ 封锁 {_sym} {signal_dir}: {_block_reason[:60]}'
-            cf['total']         = 0
-            cf['score_final']   = 0
-            cf['action']        = 'SKIP'
-            cf['kelly_mult']    = 0
-            cf['v2_blocked']    = True
+        _globally_blocked = False  # [2026-09-12 苏摩111] V2不再硬封锁，改为降权
+        _v2_allowed = _v2_result.get('allowed', True)
+        if not _v2_allowed:
+            # v2 降权 → 评分减半，不归零，不封锁
+            _block_reason = _v2_result.get('block_reason', 'v2降权')
+            _v2_final_score = _v2_result.get('final_score', cf.get('total', 0))
+            cf['total']         = int(_v2_final_score * 0.5)  # 降权50%而非归零
+            cf['score_final']   = cf['total']
+            cf['kelly_mult']    = 0.5  # 降权而非归零
+            cf['v2_penalized']  = True
             cf['v2_block_reason'] = _block_reason
         else:
             # v2 通过 → 更新评分和仓位
@@ -1909,11 +1909,11 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     MIN_SCORE_S3   = 100   # S3门槛：观察记录，不开仓
     _score_raw = cf.get('total', 0)
 
-    # 防止后续 StructureGate/DharmaFactor/N20/N21 等重新写入 cf['total'] 覆盖清零
+    # [2026-09-12 苏摩111] _globally_blocked永远为False，此块逻辑不再执行
+    # 保留以防外部代码引用，但score不会被清零
     if _globally_blocked:
-        _score_raw = 0
-        cf['total'] = 0  # [S4-fix audit-2026-06-17] 再次确保cf同步
-        _score_gate_ok = False  # [S4-fix] 封锁时门控标志同步清零，防止后续门控误判
+        _score_raw = cf.get('total', 0)  # 不清零
+        _score_gate_ok = True  # 不封锁
 
     # ── [P2-C] N19 BTC传导系数 ─────────────────────────────────────────────
     # 低传导标的(<40%) 在BTC强势突破(1H涨幅>1.5%)时 score×0.90
@@ -1993,15 +1993,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         cf['score_gate_reject'] = True
         cf['score_gate_min'] = MIN_SCORE_OPEN
 
-    # [P0-3 设计院封印 2026-08-21 苏摩111] entry_source=? 硬性门控
-    # 铁证：entry_source=? 的83条信号 WR=0.0%（一个月实盘铁证）
-    # 无有效OB/FVG入场结构时，强制score<100，阻止开仓
+    # [2026-09-12 苏摩111] entry_source=? 不再压score，改为降仓信息
     _entry_src_raw = params.get('entry_source', '') or ''
-    if (not _entry_src_raw or _entry_src_raw == '?') and _score_gate_ok:
-        _score_raw = min(_score_raw, 95.0)
-        cf['total'] = _score_raw
-        cf['P0_3_no_entry_struct'] = f'entry_source=?/空，无OB/FVG结构，score压至{_score_raw:.0f}≤95（WR=0%死穴）'
-        _score_gate_ok = float(_score_raw) >= _MIN_SCORE_EFFECTIVE
+    if (not _entry_src_raw or _entry_src_raw == '?'):
+        cf['P0_3_no_entry_struct'] = f'entry_source=?/空，无OB/FVG结构 → 仓位×0.5（非封禁）'
 
     # [P1-1 设计院封印 2026-08-21 苏摩111] BULL_TREND:LONG score 120~154 封禁
     # 铁证：一个月实盘 score120~154 BULL_TREND:LONG n=74 WR=1.3%（78条只有1WIN）
@@ -2222,28 +2217,12 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     _dz_grade   = float(cf.get('effective_grade', cf.get('structure_grade', cf.get('grade', 0))) or 0)
     _dz_rsi1h   = float(ms.get('rsi_1h', ms.get('rsi', 50)) or 50)
 
+    # [2026-09-12 苏摩111] 所有死穴封禁移除 → 改为降仓信息，不再设_valid=False
     if 'BEAR_TREND' in _regime_str and _dir_check == 'LONG':
-        # 精英解锁：score≥155 AND grade≥90 AND RSI_1H<20（极度超卖底部反弹）
-        _bt_elite = (_dz_score >= 155 and _dz_grade >= 90 and _dz_rsi1h < 20)
-        if _bt_elite:
-            print(f'[死穴-精英解锁] {_sym} BEAR_TREND_LONG: score={_dz_score:.0f}≥155 grade={_dz_grade}≥90 RSI={_dz_rsi1h:.0f}<20 → 0.5%NAV观察仓')
-            cf['breakdown']['死穴精英解锁'] = f'BEAR_TREND_LONG RSI={_dz_rsi1h:.0f}<20底部反弹 score={_dz_score:.0f}≥155 grade={_dz_grade}≥90 → 0.5%NAV'
-        else:
-            _valid = False
-            _score_gate_ok = False  # [P0-1修复 2026-07-16 苏摩111] 死穴封禁同步置零，防L3742覆盖
-            cf['breakdown']['死穴封禁'] = f'BEAR_TREND_LONG WR=45%(铁证n=3322) 未达精英解锁[score≥155+grade≥90+RSI<20] score={_dz_score:.0f} RSI={_dz_rsi1h:.0f}'
-            print(f'[死穴-封锁] {_sym} BEAR_TREND_LONG: score={_dz_score:.0f} grade={_dz_grade} RSI={_dz_rsi1h:.0f}')
+        # 逆势降仓：BEAR_TREND做多=逆势，降仓不封禁
+        cf['breakdown']['逆势降仓'] = f'BEAR_TREND_LONG 逆势降仓（非封禁）score={_dz_score:.0f} RSI={_dz_rsi1h:.0f} → 仓位×0.3'
     elif 'BULL_TREND' in _regime_str and _dir_check == 'SHORT':
-        # 精英解锁：score≥155 AND grade≥90 AND RSI_1H>75（高RSI顶部结构做空）
-        _bu_elite = (_dz_score >= 155 and _dz_grade >= 90 and _dz_rsi1h > 75)
-        if _bu_elite:
-            print(f'[死穴-精英解锁] {_sym} BULL_TREND_SHORT: score={_dz_score:.0f}≥155 grade={_dz_grade}≥90 RSI={_dz_rsi1h:.0f}>75 → 0.5%NAV观察仓')
-            cf['breakdown']['死穴精英解锁'] = f'BULL_TREND_SHORT RSI={_dz_rsi1h:.0f}>75顶部结构做空 score={_dz_score:.0f}≥155 grade={_dz_grade}≥90 → 0.5%NAV'
-        else:
-            _valid = False
-            _score_gate_ok = False  # [P0-1修复 2026-07-16 苏摩111] 死穴封禁同步置零，防L3742覆盖
-            cf['breakdown']['死穴封禁'] = f'BULL_TREND_SHORT WR=47.7%(铁证n=4999) 未达精英解锁[score≥155+grade≥90+RSI>75] score={_dz_score:.0f} RSI={_dz_rsi1h:.0f}'
-            print(f'[死穴-封锁] {_sym} BULL_TREND_SHORT: score={_dz_score:.0f} grade={_dz_grade} RSI={_dz_rsi1h:.0f}')
+        cf['breakdown']['逆势降仓'] = f'BULL_TREND_SHORT 逆势降仓（非封禁）score={_dz_score:.0f} RSI={_dz_rsi1h:.0f} → 仓位×0.3'
     elif 'BEAR_RECOVERY' in _regime_str and _dir_check == 'SHORT':
         # [v25.4死穴修复 2026-06-27] BEAR_RECOVERY_SHORT WR=46.6%/46.0% 升级为物理封锁
         # 达摩院铁证 n=233(BTC)/238(ETH) avg_pnl=-0.183/-0.305
@@ -2253,16 +2232,12 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _br_pup   = cf.get('s23_p_up', 1.0)
         # [v25.4b防封闭修复] 例外条件放宽：145→140, 90→85, 0.2→0.25
         # 理由：n=233次铁证，非宪法级死穴，不应过严封闭
-        if not (_br_score >= 140 and _br_grade >= 85 and _br_pup < 0.25):
-            _valid = False
-            _score_gate_ok = False  # [P0-1修复 2026-07-16 苏摩111] 死穴封禁同步置零，防L3742覆盖
-            cf['breakdown']['死穴封禁'] = (
-                f'BEAR_RECOVERY_SHORT WR=46% 物理封锁[v25.4b] '
-                f'score={_br_score:.0f} grade={_br_grade} p_up={_br_pup:.2f}'
-            )
-            print(f'[死穴-BEAR_RECOVERY_SHORT] {_sym} 封锁: score={_br_score:.0f} grade={_br_grade} p_up={_br_pup:.2f}')
-        else:
-            print(f'[死穴-BEAR_RECOVERY_SHORT] {_sym} 精英解锁: score={_br_score:.0f}>=140 grade={_br_grade}>=85 p_up={_br_pup:.2f}<0.25')
+        # [2026-09-12 苏摩111] BEAR_RECOVERY_SHORT降仓不封禁
+        cf['breakdown']['逆势降仓'] = (
+            f'BEAR_RECOVERY_SHORT 逆势降仓（非封禁）'
+            f'score={_br_score:.0f} grade={_br_grade} p_up={_br_pup:.2f} → 仓位×0.3'
+        )
+        # 不再设_valid=False
 
     # ── [P0-B 设计院 2026-06-21] BULL_TREND宏观核验门 ────────────────────────────
     # 问题：实盘回溯 BULL_TREND_LONG MAE=10.7%，小市技术反弹被误识别为 BULL_TREND
@@ -2304,7 +2279,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _p0b_e:
         pass
 
-    _valid = cf['kelly_mult'] > 0 and params['valid'] and _score_gate_ok
+    _valid = cf['kelly_mult'] > 0 and params['valid']  # [2026-09-12 苏摩111] 移除_score_gate_ok依赖，score门槛不否决
     # [P2-B] N14体制边界追踪 — 记录当前体制稳定度（供brahma_core判断早鸟加成）
     _regime_now = str(ms.get('regime','') or '')
     try:
