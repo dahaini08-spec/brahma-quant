@@ -469,7 +469,7 @@ def decide(
     # SL铁律验证
     _sl_dist = abs(entry_lo - sl) if direction == 'LONG' else abs(sl - entry_hi) if direction == 'SHORT' else 0
     _atr4h_thresh = atr_4h * 1.5 if atr_4h else 0
-    sl_valid = (_sl_dist >= _atr4h_thresh and sl_pct >= _sl_pct_req * 100 - 0.01) if _sl_dist > 0 else False
+    sl_valid = (_sl_dist >= _atr4h_thresh - 0.01 and sl_pct >= _sl_pct_req * 100 - 0.01) if _sl_dist > 0 else False  # [2026-09-12] 容差0.01防边界
 
     # ════════════════════════════════════════════════════════════
     # Layer 3: 资金流层 — OI+CVD+聪明钱
@@ -556,7 +556,14 @@ def decide(
     if direction == 'NONE': missing.append(f'体制{regime}无方向')
     if consistent_count < 2 and direction != 'NONE': missing.append(f'交叉验证仅{consistent_count}/4')
     if (entry_lo == 0 or entry_hi == 0) and direction != 'NONE': missing.append('入场区=0（方向矛盾）')
-    if sl > 0 and not sl_valid: missing.append(f'SL不通过ATR4H铁律(SL={sl_pct:.2f}%, 需≥{_sl_pct_req*100:.1f}%)')
+    if sl > 0 and not sl_valid:
+        # [2026-09-12 苏摩111] SL拆分两个条件明确哪个不通过
+        _sl_dist = abs(entry_lo - sl) if direction == 'LONG' else abs(sl - entry_hi) if direction == 'SHORT' else 0
+        _atr4h_thresh = atr_4h * 1.5 if atr_4h else 0
+        if _sl_dist <= _atr4h_thresh:
+            missing.append(f'SL距离${_sl_dist:.0f}<1.5×ATR4H(${_atr4h_thresh:.0f})')
+        if sl_pct < _sl_pct_req * 100 - 0.01:
+            missing.append(f'SL={sl_pct:.2f}%<铁律{_sl_pct_req*100:.1f}%')
     if 0 < rr < 2.0: missing.append(f'RR={rr:.1f}<2.0')
     if rr == 0 and direction != 'NONE': missing.append('RR无法计算')
     # [2026-09-12 苏摩111] 死穴门控移除：所有封禁都是错误的
