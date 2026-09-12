@@ -986,11 +986,73 @@ def step7_volatility(d: dict) -> dict:
         'gex_bias':    gex_bias,
         'gex_expired': gex_expired,   # P0修复: 过期标记
         'fr_note':     fr_note,
+        # P2新增: ic_tracker实时归因
+        'ic_attribution': _get_ic_attribution(d),
     }
 
 # ══════════════════════════════════════════════════════════
 # Step 8: 宏观压制
 # ══════════════════════════════════════════════════════════
+
+def _get_ic_attribution(d: dict) -> dict:
+    """P2整合: 从ic_tracker获取实时IC归因 — 2026-09-12"""
+    try:
+        import sys as _ic_sys
+        _ic_sys.path.insert(0, str(Path(__file__).parent.parent))
+        _ic_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        from brahma_brain.ic_tracker import load_ic_state, compute_all_ic
+
+        # 优先读缓存state
+        state = load_ic_state()
+        if not state or not state.get('ic_by_regime'):
+            # 没有缓存 → 实时计算
+            ic = compute_all_ic()
+        else:
+            ic = state.get('ic_by_regime', {})
+
+        if not ic:
+            return {'available': False, 'reason': 'no IC data', 'top_dims': []}
+
+        # 按当前体制提取IC
+        regime = d.get('bs', {}).get('regime', '') or d.get('regime', '')
+        # 尝试匹配 regime:direction
+        signal_dir = d.get('_signal_dir', '')
+        key = f'{regime}:{signal_dir}' if signal_dir else ''
+
+        # 优先取 regime:direction 精确匹配，否则取 ALL
+        matched = ic.get(key, {}) or ic.get(regime, {}) or ic.get('ALL', {})
+
+        if not matched:
+            return {'available': False, 'reason': f'no IC for {key}', 'top_dims': []}
+
+        n = matched.get('_total_n', 0)
+        total_ic = matched.get('_total_score_ic', None)
+
+        # 提取top-3有效维度
+        dim_ics = {k: v for k, v in matched.items()
+                   if not k.startswith('_') and isinstance(v, (int, float))}
+        sorted_dims = sorted(dim_ics.items(), key=lambda x: -abs(x[1]))
+        top3 = []
+        for dim, ic_val in sorted_dims[:3]:
+            if abs(ic_val) > 0.05:
+                flag = '🔥有效' if abs(ic_val) > 0.15 else '⚠️弱'
+                direction = '正向' if ic_val > 0 else '反向'
+                top3.append({
+                    'dim': dim,
+                    'ic': round(ic_val, 4),
+                    'direction': direction,
+                    'flag': flag,
+                })
+
+        return {
+            'available': True,
+            'regime_key': key or regime or 'ALL',
+            'n': n,
+            'total_ic': round(total_ic, 4) if isinstance(total_ic, (int, float)) else None,
+            'top_dims': top3,
+        }
+    except Exception as e:
+        return {'available': False, 'reason': str(e)[:80], 'top_dims': []}
 
 def step8_macro(d: dict) -> dict:
     """[P2修复 2026-09-12 苏摩111] Step8接入真实CPI/PPI/利率数据，删除AI主观叙事"""
@@ -2152,7 +2214,17 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         f'  β⁺={vol.get("beta_p",0):.3f} β⁻={vol.get("beta_m",0):.3f}  IV分位={vol["iv_rank"]}',  # [P2] β展示
         f'  ATR1H=${vol.get("atr_1h",0):.0f} ATR4H=${vol.get("atr_4h",0):.0f} ATR1D=${vol.get("atr_1d",0):.0f}  合约SL参考=${vol.get("atr_sl_ref",0):.0f}({vol.get("atr_sl_ref",0)/p*100:.2f}%)',
         f'  RSI全周期: 15M={d.get("bs",{}).get("momentum",{}).get("rsi_15m",0):.1f} / 1H={d.get("bs",{}).get("momentum",{}).get("rsi_1h",0):.1f} / 4H={d.get("bs",{}).get("momentum",{}).get("rsi_4h",0):.1f} / 1D={d.get("bs",{}).get("momentum",{}).get("rsi_1d",0):.1f}',  # P1修复: RSI全周期展示
-        f'',
+    ]
+    # P2: IC归因展示
+    _ic = vol.get("ic_attribution", {})
+    if _ic and _ic.get("available"):
+        lines.append(f'  IC归因: {_ic.get("regime_key","?")} n={_ic.get("n",0)} 总IC={_ic.get("total_ic","N/A")}')
+        for t in _ic.get("top_dims", []):
+            lines.append(f'    {t["dim"]}: IC={t["ic"]:+.4f} {t["direction"]} {t["flag"]}')
+    elif _ic:
+        lines.append(f'  IC归因: {_ic.get("reason","N/A")}')
+    lines += [
+        f"",
         f'【Step8 宏观】',  # P2修复: 真实CPI/PPI/利率数据
         f'  {mac["pos_note"]}',
         f'  CPI Core YoY={mac.get("cpi_yoy",0):.2f}%  PPI YoY={mac.get("ppi_yoy",0):.2f}%  Fed Rate={mac.get("fed_rate",0):.2f}%',
