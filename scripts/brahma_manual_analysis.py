@@ -890,14 +890,57 @@ def step7_volatility(d: dict) -> dict:
 # ══════════════════════════════════════════════════════════
 
 def step8_macro(d: dict) -> dict:
-    mac     = d['mac']
-    mac_cal = d['mac_cal']
+    """[P2修复 2026-09-12 苏摩111] Step8接入真实CPI/PPI/利率数据，删除AI主观叙事"""
+    mac     = d.get('mac', {})
+    mac_cal = d.get('mac_cal', {})
 
     fear_greed = mac.get('fear_greed', 50)
-    macro_bias = mac.get('macro_bias', 'NEUTRAL')
-    macro_note = mac.get('macro_note', '')
-
-    # 宏观日历事件
+    
+    # [P2修复] 读取真实宏观数据
+    macro_real = {}
+    try:
+        from pathlib import Path as _P
+        _mr_path = _P(__file__).parent.parent / 'data' / 'macro_real.json'
+        if _mr_path.exists():
+            import json as _json
+            macro_real = _json.loads(_mr_path.read_text())
+    except Exception:
+        pass
+    
+    # 检查宏观数据新鲜度
+    mr_fresh = False
+    mr_age_hours = 999
+    if macro_real.get('data_time'):
+        try:
+            from datetime import datetime, timezone
+            _mr_dt = datetime.strptime(macro_real['data_time'], '%Y-%m-%d %H:%M UTC').replace(tzinfo=timezone.utc)
+            mr_age_hours = (datetime.now(timezone.utc) - _mr_dt).total_seconds() / 3600
+            mr_fresh = mr_age_hours < 24  # 24小时内算新鲜
+        except Exception:
+            pass
+    
+    # 如果数据过期，自动刷新
+    if not mr_fresh:
+        try:
+            import sys as _sys
+            _sys.path.insert(0, str(Path(__file__).parent))
+            from macro_real_fetcher import update_macro_real
+            macro_real = update_macro_real()
+            mr_fresh = True
+        except Exception:
+            pass
+    
+    # 从真实数据提取利率预期
+    rate_exp = macro_real.get('rate_expectation', {})
+    macro_bias = rate_exp.get('bias', 'NEUTRAL')  # HAWKISH/NEUTRAL/DOVISH
+    rate_action = rate_exp.get('action', 'HOLD')   # HIKE/HOLD/CUT_25/CUT_50
+    rate_prob = rate_exp.get('probability', 0)
+    rate_note = rate_exp.get('note', '')
+    cpi_yoy = macro_real.get('cpi_yoy', 0)
+    ppi_yoy = macro_real.get('ppi_yoy', 0)
+    fed_rate = macro_real.get('fed_rate', 0)
+    
+    # 宏观日历事件（保留原有逻辑）
     events = []
     if isinstance(mac_cal, dict):
         for k, v in mac_cal.items():
@@ -908,9 +951,7 @@ def step8_macro(d: dict) -> dict:
     elif isinstance(mac_cal, list):
         events = [str(e)[:50] for e in mac_cal[:3]]
 
-    # NFP/CPI/FOMC检测（旧数据源）
     high_impact = [e for e in events if any(x in str(e).upper() for x in ['NFP', 'CPI', 'FOMC', 'PCE', '非农'])]
-    # Bug2修复：同时检查Layer 0宏观日历
     try:
         from brahma_brain.trader_brain import _check_macro_calendar
         _layer0_macro = _check_macro_calendar()
@@ -927,20 +968,44 @@ def step8_macro(d: dict) -> dict:
     except Exception:
         pass
     has_event = len(high_impact) > 0
-
+    
+    # FOMC距离
+    fomc_info = macro_real.get('macro_calendar', {})
+    days_to_fomc = fomc_info.get('days_to_fomc', 0)
+    
+    # 仓位提示（基于真实利率预期）
     if has_event:
-        pos_note = f'⚠️ 重大宏观事件迫近({", ".join(high_impact[:2])}) → 持仓减半，SL加宽50%'
+        pos_note = f'⚠️ 重大宏观事件({", ".join(high_impact[:2])}) → 持仓减半，SL加宽50%'
+    elif days_to_fomc <= 2:
+        pos_note = f'⚠️ FOMC前{days_to_fomc}天 → 不开新仓，等FOMC后确认方向'
+    elif days_to_fomc <= 5:
+        pos_note = f'⚠️ FOMC前{days_to_fomc}天 → 轻仓1%NAV，{rate_note}'
+    elif macro_bias == 'HAWKISH':
+        pos_note = f'🔴 {rate_note} → 做多谨慎，做空有宏观支撑'
+    elif macro_bias == 'DOVISH':
+        pos_note = f'🟢 {rate_note} → 做多有宏观支撑，做空谨慎'
     else:
-        pos_note = '✅ 近期无重大宏观事件，正常仓位'
+        pos_note = f'⚪ {rate_note} → 正常仓位'
 
     return {
-        'fear_greed':  fear_greed,
-        'macro_bias':  macro_bias,
-        'macro_note':  macro_note[:60],
-        'events':      events[:3],
-        'high_impact': high_impact,
-        'has_event':   has_event,
-        'pos_note':    pos_note,
+        'fear_greed':   fear_greed,
+        'macro_bias':   macro_bias,       # HAWKISH/NEUTRAL/DOVISH (基于真实CPI/PPI)
+        'rate_action':  rate_action,       # HIKE/HOLD/CUT_25/CUT_50
+        'rate_prob':    rate_prob,          # 概率%
+        'cpi_yoy':      cpi_yoy,            # Core CPI同比%
+        'ppi_yoy':      ppi_yoy,            # PPI同比%
+        'fed_rate':     fed_rate,           # 当前联邦基金利率%
+        'rate_note':    rate_note,          # 人类可读预期描述
+        'data_source':  macro_real.get('data_source', 'BLS API + 推算模型'),
+        'data_time':    macro_real.get('data_time', ''),
+        'data_fresh':   mr_fresh,           # 数据是否新鲜
+        'data_age_h':   round(mr_age_hours, 1),
+        'macro_note':   rate_note[:60],
+        'events':       events[:3],
+        'high_impact':  high_impact,
+        'has_event':    has_event,
+        'days_to_fomc': days_to_fomc,
+        'pos_note':     pos_note,
     }
 
 # ══════════════════════════════════════════════════════════
@@ -1901,11 +1966,14 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         f'  {vol.get("fr_note","")}',   # [P1] FR展示
         f'  β⁺={vol.get("beta_p",0):.3f} β⁻={vol.get("beta_m",0):.3f}  IV分位={vol["iv_rank"]}',  # [P2] β展示
         f'  ATR1H=${vol.get("atr_1h",0):.0f} ATR4H=${vol.get("atr_4h",0):.0f} ATR1D=${vol.get("atr_1d",0):.0f}  合约SL参考=${vol.get("atr_sl_ref",0):.0f}({vol.get("atr_sl_ref",0)/p*100:.2f}%)',
-        f'  RSI全周期: 15M={bs.get("momentum",{}).get("rsi_15m",0):.1f} / 1H={bs.get("momentum",{}).get("rsi_1h",0):.1f} / 4H={bs.get("momentum",{}).get("rsi_4h",0):.1f} / 1D={bs.get("momentum",{}).get("rsi_1d",0):.1f}',  # P1修复: RSI全周期展示
+        f'  RSI全周期: 15M={d.get("bs",{}).get("momentum",{}).get("rsi_15m",0):.1f} / 1H={d.get("bs",{}).get("momentum",{}).get("rsi_1h",0):.1f} / 4H={d.get("bs",{}).get("momentum",{}).get("rsi_4h",0):.1f} / 1D={d.get("bs",{}).get("momentum",{}).get("rsi_1d",0):.1f}',  # P1修复: RSI全周期展示
         f'',
-        f'【Step8 宏观压制】',
+        f'【Step8 宏观】',  # P2修复: 真实CPI/PPI/利率数据
         f'  {mac["pos_note"]}',
-        f'  恐贪={mac["fear_greed"]}  宏观偏向={mac["macro_bias"]}',
+        f'  CPI Core YoY={mac.get("cpi_yoy",0):.2f}%  PPI YoY={mac.get("ppi_yoy",0):.2f}%  Fed Rate={mac.get("fed_rate",0):.2f}%',
+        f'  利率预期: {mac.get("rate_action","?")} ({mac.get("rate_prob",0):.0f}%)  {mac.get("rate_note","")}',
+        f'  恐贪={mac["fear_greed"]}  偏向={mac["macro_bias"]}  FOMC还剩{mac.get("days_to_fomc",0)}天',
+        f'  数据源: {mac.get("data_source","?")} @ {mac.get("data_time","?")}',  # P2: 标注数据源和时间
     ]
     if res.get('cross_check',{}).get('conflicts'):
         lines.append(f'  ⚠️ 交叉验证矛盾: {" / ".join(res["cross_check"]["conflicts"])}')

@@ -34,12 +34,11 @@ BRAND_SUFFIX = '📊 梵天系统 | 80维数据驱动 | 不是建议'
 
 def build_battlefield_report(sym, analysis_data):
     """
-    旗舰帖：战场报告，80维全输出
-    analysis_data: brahma_manual_analysis.run_analysis()返回的解析数据
+    旗舰帖：战场报告，观点先行+数据支撑
+    核心改变：不罗列数据，先给判断，再用数据解释为什么
     """
     date_str = datetime.now(CST).strftime('%m/%d')
 
-    # 从analysis_data提取各维度数据
     regime = analysis_data.get('regime', 'CHOP_MID')
     score = analysis_data.get('score', 0)
     fvg_dir = analysis_data.get('fvg_dir', 'NEUTRAL')
@@ -68,58 +67,140 @@ def build_battlefield_report(sym, analysis_data):
     bias = analysis_data.get('bias', 'NONE')
     vip_status = analysis_data.get('vip_status', 'WAIT')
 
-    # 体制翻译（人话，不露代码）
     regime_cn = _translate_regime(regime)
 
-    # FVG磁铁描述
-    fvg_desc = _fvg_description(fvg_dir, fvg_magnet, price)
+    # ── 核心观点生成（观点先行）──
+    view_point = _generate_viewpoint(
+        sym, regime, score, fvg_dir, fvg_magnet, price,
+        liq_wall, liq_pool, oi_signal, cvd_1h,
+        big_long, retail_long, hurst, kappa, bias, vip_status
+    )
 
-    # OI翻译
-    oi_desc = _oi_description(oi_signal)
+    # ── 操作建议（可执行）──
+    action_line = _generate_action(
+        fvg_dir, fvg_magnet, price, liq_wall, liq_pool,
+        oi_signal, entry_lo, entry_hi, sl, tp1, bias, vip_status
+    )
 
-    # 聪明钱描述
-    sm_desc = _smart_money_description(big_long, retail_long)
+    # ── 矛盾/风险点 ──
+    contradiction = _generate_contradiction(
+        fvg_dir, oi_signal, big_long, retail_long, hurst, kappa
+    )
 
-    # kappa描述
-    kappa_desc = _kappa_description(kappa)
-
-    # 失效期描述
+    # 失效期
     failure_desc = ''
     if failure_state == 'RED':
         failure_desc = '\n⚠️ 失效期RED → 仓位减半'
     elif failure_state == 'YELLOW':
         failure_desc = '\n⚠️ 失效期YELLOW → 仓位×0.75'
 
-    # 触发条件
-    trigger_desc = _build_trigger(bias, entry_lo, entry_hi, sl, tp1, tp2, vip_status)
-
     lines = [
         f'{BRAND_PREFIX} | 早间战场报告 {date_str}',
         f'',
-        f'━━━ 体制 ━━━',
-        f'{sym}: {regime_cn} score={score:.0f}',
+        f'{view_point}',
         f'',
-        f'━━━ FVG磁铁 ━━━',
-        f'{sym}: {fvg_desc}',
+        f'━━━ 结构锚点 ━━━',
+        f'FVG磁铁: {fvg_dir}@${fvg_magnet:,.0f}（{_fvg_direction(fvg_dir, fvg_magnet, price)}）',
+        f'清算: 上方止损墙${liq_wall:,.0f}({liq_wall_pct:+.1f}%) / 下方支撑池${liq_pool:,.0f}({liq_pool_pct:+.1f}%)',
+        f'OI: {_oi_description(oi_signal)} | CVD {cvd_1h:+.0f}',
         f'',
-        f'━━━ 清算地图 ━━━',
-        f'{sym}: 上方止损墙${liq_wall:,.0f}({liq_wall_pct:+.1f}%) / 下方支撑池${liq_pool:,.0f}({liq_pool_pct:+.1f}%)',
+        f'━━━ 操作建议 ━━━',
+        f'{action_line}',
         f'',
-        f'━━━ 今日触发条件 ━━━',
-        f'{trigger_desc}',
-        f'',
-        f'━━━ OI/聪明钱 ━━━',
-        f'{sym}: {oi_desc} | CVD {cvd_1h:+.0f} | {sm_desc}',
-        f'',
-        f'━━━ 波动率/期权 ━━━',
-        f'Hurst={hurst:.2f} {_hurst_desc(hurst)} | κ={kappa:.3f} {kappa_desc} | FR={fr:.4f}%',
+    ]
+    if contradiction:
+        lines.append(f'━━━ 风险提示 ━━━')
+        lines.append(contradiction)
+        lines.append(f'')
+    lines.extend([
+        f'体制: {regime_cn} score={score:.0f} | Hurst={hurst:.2f} | κ={kappa:.3f} | FR={fr:.4f}%',
         f'ATR 1H=${atr_1h:,.0f} 4H=${atr_4h:,.0f}',
         f'{failure_desc}',
         f'',
         f'{BRAND_SUFFIX}',
         f'#{sym} #合约交易',
-    ]
+    ])
     return '\n'.join(lines)
+
+
+def _generate_viewpoint(sym, regime, score, fvg_dir, fvg_magnet, price,
+                       liq_wall, liq_pool, oi_signal, cvd_1h,
+                       big_long, retail_long, hurst, kappa, bias, vip_status):
+    """生成核心观点：方向+理由，一句话说清"""
+    # 基于FVG+OI+CVD+清算的综合判断
+    if fvg_dir == 'BULL' and fvg_magnet > price:
+        # FVG磁铁在上方→价格大概率被拉上去
+        if oi_signal == 'SHORT_BUILD':
+            return f'{sym}在${price:,.0f}，FVG磁铁拉向${fvg_magnet:,.0f}（+{(fvg_magnet-price)/price*100:.1f}%），上方空头在增仓。磁铁+空头增仓=大概率先反弹扫空头，到${fvg_magnet:,.0f}附近再回落。'
+        elif oi_signal == 'LONG_UNWIND':
+            return f'{sym}在${price:,.0f}，FVG磁铁拉向${fvg_magnet:,.0f}但多头在撤资。反弹概率有但没接力盘，到${fvg_magnet:,.0f}大概率是假突破。'
+        else:
+            return f'{sym}在${price:,.0f}，FVG磁铁拉向${fvg_magnet:,.0f}（+{(fvg_magnet-price)/price*100:.1f}%）。等价格到磁铁位再看结构确认方向。'
+    elif fvg_dir == 'BEAR' and fvg_magnet < price:
+        if oi_signal == 'SHORT_BUILD':
+            return f'{sym}在${price:,.0f}，Bear FVG磁铁在${fvg_magnet:,.0f}（-{(price-fvg_magnet)/price*100:.1f}%），空头持续增仓+CVD卖方主导。磁铁向下+空头加码=下跌动能未结束，先看到支撑池${liq_pool:,.0f}。'
+        else:
+            return f'{sym}在${price:,.0f}，Bear FVG磁铁在${fvg_magnet:,.0f}。价格被往下拉，但如果到支撑池${liq_pool:,.0f}企稳+1H收阳，可能是个诱空后的反弹。'
+    elif fvg_dir == 'BULL' and abs(fvg_magnet - price) / price < 0.005:
+        return f'{sym}在${price:,.0f}，Bull FVG磁铁已在当前价。磁铁效应已到位，接下来看是突破向上还是回落。上方止损墙${liq_wall:,.0f}是第一目标。'
+    elif fvg_dir == 'BEAR' and abs(fvg_magnet - price) / price < 0.005:
+        return f'{sym}在${price:,.0f}，Bear FVG磁铁已到位。价格在磁铁位=方向选择点。破支撑池${liq_pool:,.0f}看空，反弹上止损墙${liq_wall:,.0f}看多。'
+    else:
+        # 无明确方向
+        if score < 60:
+            return f'{sym}在${price:,.0f}，震荡中段score={score:.0f}，FVG无明确方向。这种位置我不做，等结构走出来再说。'
+        return f'{sym}在${price:,.0f}，FVG方向不明确，等价格到止损墙${liq_wall:,.0f}或支撑池${liq_pool:,.0f}附近再判断。'
+
+
+def _generate_action(fvg_dir, fvg_magnet, price, liq_wall, liq_pool,
+                     oi_signal, entry_lo, entry_hi, sl, tp1, bias, vip_status):
+    """生成可操作的建议"""
+    if vip_status == 'ENTER' and entry_lo > 0:
+        if bias == 'SHORT':
+            return f'反弹到${entry_lo:,.0f}-${entry_hi:,.0f}+1H收阴 → 做空 | 止损${sl:,.0f} | 目标${tp1:,.0f}'
+        elif bias == 'LONG':
+            return f'回调到${entry_lo:,.0f}-${entry_hi:,.0f}+1H收阳 → 做多 | 止损${sl:,.0f} | 目标${tp1:,.0f}'
+    # WAIT状态也要给具体监控条件
+    if fvg_dir == 'BULL' and fvg_magnet > price:
+        return f'不做空。等价格反弹到${fvg_magnet:,.0f}附近+1H收阴再评估做空。如果直接突破止损墙${liq_wall:,.0f}，追多也不追，等回踩确认。'
+    elif fvg_dir == 'BEAR' and fvg_magnet < price:
+        return f'不做多。等价格到支撑池${liq_pool:,.0f}+1H收阳再评估试多。如果直接破支撑池，不抄底，等清算结束后看结构。'
+    elif fvg_dir == 'BULL' and abs(fvg_magnet - price) / max(price,1) < 0.005:
+        return f'等方向选择。破止损墙${liq_wall:,.0f}+放量=追多确认；破支撑池${liq_pool:,.0f}+放量=追空确认。横盘就不动。'
+    elif fvg_dir == 'BEAR' and abs(fvg_magnet - price) / max(price,1) < 0.005:
+        return f'等方向选择。反弹到止损墙${liq_wall:,.0f}+1H收阴=可空；跌破支撑池${liq_pool:,.0f}+放量=可追空。'
+    else:
+        return f'等价格到止损墙${liq_wall:,.0f}或支撑池${liq_pool:,.0f}附近再判断。中间位置不动。'
+
+
+def _generate_contradiction(fvg_dir, oi_signal, big_long, retail_long, hurst, kappa):
+    """生成矛盾/风险提示"""
+    contradictions = []
+    if fvg_dir == 'BULL' and oi_signal in ('SHORT_BUILD', 'LONG_UNWIND'):
+        contradictions.append(f'FVG看多但OI={oi_signal}，磁铁向上但资金在做空/撤资')
+    if fvg_dir == 'BEAR' and big_long > 58:
+        contradictions.append(f'FVG看空但大户{big_long:.0f}%偏多，主力可能知道什么')
+    if hurst < 0.45:
+        contradictions.append(f'Hurst={hurst:.2f}<0.5随机游走，趋势信号不可靠')
+    if kappa < -0.1 and fvg_dir == 'BEAR':
+        contradictions.append(f'κ={kappa:.3f}期权Call强但FVG看空，期权市场在押多')
+    if kappa > 0.1 and fvg_dir == 'BULL':
+        contradictions.append(f'κ={kappa:.3f}期权Put强但FVG看多，期权市场在防跌')
+    if not contradictions:
+        return ''
+    return '\n'.join(contradictions)
+
+
+def _fvg_direction(fvg_dir, fvg_magnet, price):
+    """FVG磁铁方向简述"""
+    if not fvg_magnet or not fvg_dir or fvg_dir == 'NEUTRAL':
+        return '无方向'
+    pct = (fvg_magnet - price) / price * 100 if price > 0 else 0
+    if pct > 0.5:
+        return f'拉上方{pct:+.1f}%'
+    elif pct < -0.5:
+        return f'拉下方{pct:+.1f}%'
+    return '已在当前价'
 
 
 # ═══════════════════════════════════════════════════════════════

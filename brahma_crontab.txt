@@ -19,6 +19,7 @@ SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
 */5  * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/regime_realtime_watcher.py >> logs/regime_watcher.log 2>&1
 0 */4 * * *  cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_360_watchdog.py >> logs/syscron.log 2>&1
 0 */4 * * *  cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/macro_engine_refresh.py >> logs/syscron.log 2>&1
+*/6 * * * *  cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/macro_real_fetcher.py >> logs/syscron.log 2>&1
 
 # ── GEX / Vol-Beta / CVD / Liqmap ───────────────────────────────────────
 */15 * * * * cd /root/.openclaw/workspace/trading-system && python3 brahma_brain/gex_engine.py --currency ALL >> logs/syscron.log 2>&1
