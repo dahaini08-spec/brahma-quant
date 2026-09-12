@@ -1845,6 +1845,14 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _ate:
         extra_data['attribution'] = {'error': str(_ate)[:100]}
 
+    # I8: 12维精简Ensemble分数（达摩院验证 IC=+0.0150）[2026-09-12 苏摩111]
+    try:
+        from brahma_brain.ensemble_engine import get_ensemble_score
+        _ens = get_ensemble_score(symbol, params.get('signal_dir', ''), r if 'r' in dir() else {'regime': params.get('regime',''), 'score': cf.get('total',0), 'extra': extra_data, 'rsi_4h': ms.get('rsi_4h',0), 'rsi_1h': ms.get('rsi_1h',0), 'price': ms.get('price',0), 'confluence': cf})
+        extra_data['ensemble'] = _ens
+    except Exception as _ense:
+        extra_data['ensemble'] = {'error': str(_ense)[:100]}
+
     # [设计院终极版 v2.0] 六层防线集成入口
     _globally_blocked = False  # [设计院修复 2026-06-26] 默认值防止try异常时UnboundLocalError
     # regime_gate → asset_universe → regime_weights → adaptive_threshold → MTF → Kelly | 体制门控 → 资产池 → 体制权重 → 自适应阈值 → 多时框 → Kelly
