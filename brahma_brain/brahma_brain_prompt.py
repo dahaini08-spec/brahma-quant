@@ -401,6 +401,20 @@ def build_brahma_brain_prompt(d: dict, fvg: dict, ob: dict, liq: dict, res: dict
     bayes_detail = council.get('bayes_detail', '?') if council else '?'
     combined = council.get('combined_score', 0) if council else 0
 
+    # P8新增: 补充字段
+    entry_lo = res.get('entry_lo', 0) if res else 0
+    entry_hi = res.get('entry_hi', 0) if res else 0
+    oi_15m = oi.get('tf_15m', 'N/A') if oi else 'N/A'
+    oi_1h = oi.get('tf_1h', 'N/A') if oi else 'N/A'
+    oi_4h = oi.get('tf_4h', 'N/A') if oi else 'N/A'
+    rate_action = mac.get('rate_action', 'N/A') if mac else 'N/A'
+    ic_attr = vol.get('ic_attribution', {}) if vol else {}
+    ic_str = 'N/A'
+    if ic_attr and ic_attr.get('available'):
+        ic_top = ic_attr.get('top_dims', [])
+        if ic_top:
+            ic_str = ', '.join([f"{t['dim']}({t['ic']:+.3f})" for t in ic_top[:3]])
+
     prompt = f"""## 市场快照 {sym} ${price:,.0f}
 
 - regime: {d.get('regime', 'N/A')}  score: {d.get('score', 0)}  grade: {d.get('grade', '?')}
@@ -412,11 +426,13 @@ def build_brahma_brain_prompt(d: dict, fvg: dict, ob: dict, liq: dict, res: dict
 - 清算: 上方止损墙${liq_short:,.0f}({liq_short_pct:+.1f}%) 下方支撑池${liq_long:,.0f}(-{liq_long_pct:.1f}%)
 - 7维共振: {res_score}/7 {res_str}
   FVG={res.get('has_fvg', False) if res else False} OB={res.get('has_ob', False) if res else False} 清算={res.get('has_liq', False) if res else False} OI={res.get('has_oi', False) if res else False} GEX={res.get('has_gex', False) if res else False} 方仓={res.get('has_fc', False) if res else False} 跨市场={res.get('has_cma', False) if res else False}
-- OI: {oi_signal}  CVD1H: {cvd_1h}
+  入场区间: ${entry_lo:,.1f}~${entry_hi:,.1f}  # P8新增
+- OI: {oi_signal}  CVD1H: {cvd_1h}  15M:{oi_15m} 1H:{oi_1h} 4H:{oi_4h}  # P8新增多TF
 - 聪明钱: 大户{big_long}%多 vs 散户{retail_long}%多 分歧{diverge}%  大户2H变化{top_delta:+.3f}%pt
-- Hurst={hurst} κ={kappa} ATR1H=${atr_1h} ATR4H=${atr_4h} 合约SL参考=${atr_sl}({atr_sl/price*100:.2f}% if price else 0)
+- Hurst={hurst} κ={kappa} ATR1H=${atr_1h} ATR4H=${atr_4h} 合约SL参考=${atr_sl}({atr_sl/price*100:.2f}%)
 - {'GEX过期不参与' if gex_expired else gex_note}  {fr_note}
-- FOMC还剩{fomc_days}天 失效期{regime_state} 仓位系数x{nav_mult}
+  IC归因: {ic_str}  # P8新增
+- FOMC还剩{fomc_days}天 失效期{regime_state} 仓位系数x{nav_mult}  利率预期: {rate_action}  # P8新增
 - 跨市场: alpha={cm.get('alpha', 0):+.4f} {cm.get('direction', 'N/A')}  美盘: {us_ses.get('session', 'N/A')}
 - Ensemble: score={ens_score} signal={ens_signal} 13维
 - Council: {council_bias}/{council_action}  Bayes: adj={bayes_adj:+.2f} {bayes_detail[:40]}  Combined: {combined}"""
