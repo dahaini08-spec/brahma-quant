@@ -116,7 +116,7 @@ def step0_fetch_all(sym: str) -> dict:
     top_raw  = fetch(f'https://fapi.binance.com/futures/data/topLongShortPositionRatio?symbol={usdt}&period=1h&limit=4')
     top_list = [float(x.get('longAccount', 0)) for x in top_raw] if isinstance(top_raw, list) else []
     # 大户变化速率（最新vs2小时前，正=增仓多，负=减仓多）
-    top_delta = (top_list[0] - top_list[-1]) * 100 if len(top_list) >= 2 else 0.0
+    top_delta = (top_list[-1] - top_list[0]) * 100 if len(top_list) >= 2 else 0.0  # P0修复: 最新-最早=净变化方向正确
 
     # ATR全周期：1H + 4H + 1D
     k1d = klines(usdt, '1d', 10)
@@ -528,15 +528,20 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict, oi: dict = None, vo
             has_oi = True
             score += 1
         # OI方向与FVG不一致=不加分但不扣分（信号矛盾已在cross_check记录）
-    if vol and vol.get('gex_note',''):
-        # GEX方向与FVG一致才加分
+    if vol and vol.get('gex_note','') and not vol.get('gex_expired', False):
+        # GEX方向与FVG一致才加分（P0修复: 过期GEX不参与共振）
         _gex_bull = 'POSITIVE' in vol.get('gex_bias','').upper() or vol.get('kappa', 0) < -0.05
         _gex_bear = 'NEGATIVE' in vol.get('gex_bias','').upper() or vol.get('kappa', 0) > 0.05
         if (_fvg_bull and _gex_bull) or (_fvg_bear and _gex_bear):
             has_gex = True
             score += 1
         # GEX中性=不加分
+    elif vol and vol.get('gex_expired', False):
+        # P0修复: GEX过期→缺失但不报错，共振标准降为≥3/4（不含GEX）
+        pass
     # 共振标准升级：≥3/5 = 有效共振（原2/3）
+    # P0修复: GEX过期时标准降为≥3/4（总维度-1）
+    _max_score = 5 if not (vol and vol.get('gex_expired', False)) else 4
     resonance = score >= 3
 
     # [P2-5修复 2026-09-11] 交叉验证层：Step1-4结构层 vs Step5-9市场层
@@ -683,10 +688,14 @@ def step5_oi(d: dict) -> dict:
         'signal_4h':    sig_4h,
         'conf':         round(main_conf, 2),
         'conclusion':   conclusion,
-        'total_change': round(total_change, 0),
-        'usd_change_m': round(usd_change / 1e6, 1),
+        'total_change': round(oi_vals[-1] - oi_vals[0], 0) if oi_vals else 0,           # P0修复: 15M变化用15M数据
+        'total_change_1h': round(oi_1h_vals[-1] - oi_1h_vals[0], 0) if len(oi_1h_vals)>=2 else 0,  # P0修复: 1H变化用1H数据
+        'total_change_4h': round(oi_4h_vals[-1] - oi_4h_vals[0], 0) if len(oi_4h_vals)>=2 else 0,  # P0修复: 4H变化用4H数据
+        'usd_change_m': round((d['oi_usd'][-1] - d['oi_usd'][0]) / 1e6, 1) if len(d.get('oi_usd',[])) >= 2 else 0,
         'latest':       round(oi_vals[-1], 0) if oi_vals else 0,
         'trend':        [round(v,0) for v in oi_vals],
+        'trend_1h':     [round(v,0) for v in oi_1h_vals] if oi_1h_vals else [],
+        'trend_4h':     [round(v,0) for v in oi_4h_vals] if oi_4h_vals else [],
         'cvd_1h':       cvd_data.get('cvd_1h', 0),
         'cvd_note':     cvd_note,
     }
@@ -729,6 +738,7 @@ def step6_smart_money(d: dict) -> dict:
         'retail_long': round(retail_latest * 100, 1),
         'diverge':     round(diverge * 100, 1),
         'big_trend':   big_trend,
+        'top_delta':   round(top_delta, 3),   # P0修复: 保留3位小数不归零
     }
 
 # ══════════════════════════════════════════════════════════
@@ -790,34 +800,38 @@ def step7_volatility(d: dict) -> dict:
     iv_pct   = vb.get('iv_pct', 0)
     premium  = vb.get('iv_premium_pct', 0)
 
-    # [P0修复 2026-09-10] GEX加入Step 7（波动率四维）
+    # [P0修复 2026-09-12] GEX数据新鲜度检测 + 过期不参与共振
     gex_note = ''
     gex_bias = 'NEUTRAL'
+    gex_expired = False
     try:
-        import json as _json
+        import json as _json, time as _time
         _gex_path = Path(__file__).parent.parent / 'data' / 'gex_state.json'
         if _gex_path.exists():
             _gex_all = _json.loads(_gex_path.read_text())
             _gex_sym = d.get('sym','')
             _gex = _gex_all.get(_gex_sym, _gex_all.get(_gex_sym.upper(), {}))
-            # 修复 2026-09-10：山寨币不在gex_state中，直接用空数据（不回退BTC）
-            # 原bug：山寨币没有GEX数据时回退到BTC的GEX → $80,000污染山寨币分析
-            # 现在：山寨币无GEX数据 = GEX NEUTRAL（不显示BTC的strike价格）
             if _gex:
-                gex_total = _gex.get('gex_total', 0) or _gex.get('total_gex', 0)
-                gex_bias_val = _gex.get('gex_bias', '') or _gex.get('bias', '')
-                min_gex_strike = _gex.get('min_gex_strike', 0)
-                if gex_total > 0:
-                    gex_bias = 'POSITIVE'
-                    gex_note = f'GEX=+{gex_total/1e6:.2f}M 正gamma→价格被钉住(低波动)'
-                elif gex_total < 0:
-                    gex_bias = 'NEGATIVE'
-                    gex_note = f'GEX={gex_total/1e6:.2f}M 负gamma→波动率引爆点'
+                _gex_scan_ts = _gex.get('scan_ts', 0) or _gex.get('ts', 0)
+                _gex_age_hours = (_time.time() - _gex_scan_ts) / 3600 if _gex_scan_ts else 999
+                if _gex_age_hours > 48:  # 超过48小时=过期
+                    gex_expired = True
+                    gex_note = f'GEX数据已过期{_gex_age_hours:.0f}h（{_gex.get("scan_datetime","?")}），不参与共振'
                 else:
-                    gex_note = 'GEX≈0 中性'
-                if min_gex_strike > 0:
-                    gex_dist = abs(price - min_gex_strike) / price * 100 if price else 0
-                    gex_note += f' MIN_GEX=${min_gex_strike:,.0f}({gex_dist:.1f}%)'
+                    gex_total = _gex.get('gex_total', 0) or _gex.get('total_gex', 0) or _gex.get('net_gex_at_spot', 0)
+                    gex_bias_val = _gex.get('gex_bias', '') or _gex.get('gex_direction', '')
+                    min_gex_strike = _gex.get('min_gex_strike', 0)
+                    if gex_total > 0:
+                        gex_bias = 'POSITIVE'
+                        gex_note = f'GEX=+{gex_total/1e6:.2f}M 正gamma→价格被钉住(低波动)'
+                    elif gex_total < 0:
+                        gex_bias = 'NEGATIVE'
+                        gex_note = f'GEX={gex_total/1e6:.2f}M 负gamma→波动率引爆点'
+                    else:
+                        gex_note = 'GEX≈0 中性'
+                    if min_gex_strike > 0:
+                        gex_dist = abs(price - min_gex_strike) / price * 100 if price else 0
+                        gex_note += f' MIN_GEX=${min_gex_strike:,.0f}({gex_dist:.1f}%)'
     except Exception:
         pass
 
@@ -867,6 +881,7 @@ def step7_volatility(d: dict) -> dict:
         'trend_signal': 'TRENDING' if hurst_val >= 0.55 else 'RANGING',
         'gex_note':    gex_note,
         'gex_bias':    gex_bias,
+        'gex_expired': gex_expired,   # P0修复: 过期标记
         'fr_note':     fr_note,
     }
 
@@ -1428,20 +1443,31 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
     parts = []
 
     # 1. 市场现状一句话
+    _momentum = bs.get('momentum', {})
+    _rsi_4h = _momentum.get('rsi_4h', 50)
+    _rsi_note = ''
+    if _rsi_4h < 30:
+        _rsi_note = f' RSI4H={_rsi_4h:.1f}🔴超卖'
+    elif _rsi_4h > 70:
+        _rsi_note = f' RSI4H={_rsi_4h:.1f}🔴超买'
     if regime == 'CHOP_MID' and score < 110:
-        parts.append(f'{sym}在${price:,.0f}横盘，CHOP体制score={score:.0f}，大户{big_long:.0f}%多但OI={oi_signal}。')
+        parts.append(f'{sym}在${price:,.0f}横盘，CHOP体制score={score:.0f}，大户{big_long:.0f}%多但OI={oi_signal}。{_rsi_note}'.strip())
     elif 'BULL' in regime:
-        parts.append(f'{sym}在${price:,.0f}，{regime} score={score:.0f}，FVG{fvg_consensus}共识，OI={oi_signal}。')
+        parts.append(f'{sym}在${price:,.0f}，{regime} score={score:.0f}，FVG{fvg_consensus}共识，OI={oi_signal}。{_rsi_note}'.strip())
     elif 'BEAR' in regime:
-        parts.append(f'{sym}在${price:,.0f}，{regime} score={score:.0f}，FVG{fvg_consensus}共识，OI={oi_signal}。')
+        parts.append(f'{sym}在${price:,.0f}，{regime} score={score:.0f}，FVG{fvg_consensus}共识，OI={oi_signal}。{_rsi_note}'.strip())
     else:
-        parts.append(f'{sym}在${price:,.0f}，体制{regime} score={score:.0f}。')
+        parts.append(f'{sym}在${price:,.0f}，体制{regime} score={score:.0f}。{_rsi_note}'.strip())
 
     # 2. 主力意图 + 推断（40年交易员不只是描述，要推断主力在等什么）
     _intent = ''
     _trigger = ''  # 推断触发条件
+    # P0修复: OI变化用各周期独立数据
+    _oi_chg_15m = oi.get('total_change', 0)
+    _oi_chg_1h = oi.get('total_change_1h', 0)
+    _oi_chg_4h = oi.get('total_change_4h', 0)
     if big_long >= 60 and 'UNWIND' in oi_signal:
-        _intent = f'大户{big_long:.0f}%多但OI全线撤退=大户在等不是在加'
+        _intent = f'大户{big_long:.0f}%多但OI全线撤退(15M:{_oi_chg_15m:+.0f}/1H:{_oi_chg_1h:+.0f}/4H:{_oi_chg_4h:+.0f})=大户在等不是在加'
         # 推断：大户在等什么？
         if hurst >= 0.55:
             _trigger = f'大户在等Hurst突破0.60确认趋势，一旦确认OI会从UNWIND转BUILD'
@@ -1483,6 +1509,12 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
         parts[-1] += f'κ={kappa:.3f}Put强(大资金买下跌保险)。'
     else:
         parts[-1] += f'κ={kappa:.3f}中性。'
+
+    # P0修复: GEX数据展示真实值+过期标记
+    if vol.get('gex_expired', False):
+        parts.append(f'⚠️ GEX数据已过期，不参与共振计算。')
+    elif vol.get('gex_note', ''):
+        parts.append(vol['gex_note'] + '。')
 
     # 4. 多剧本推演 + 概率 + 时间预期（P1+P3：40年交易员给多剧本+时间维度）
     _up_pct = ((liq_short - price) / price * 100) if liq_short > price else 0
@@ -1860,15 +1892,16 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         f'【Step6 聪明钱分歧】',
         f'  {sm["conclusion"]}',
         f'  大户多{sm["big_long"]}% vs 散户多{sm["retail_long"]}%  分歧={sm["diverge"]}%',
-        f'  大户2H变化: {sm.get("top_delta",0.0):+.1f}%pt ({"主力加多↑" if sm.get("top_delta",0)>0.5 else "主力减多↓" if sm.get("top_delta",0)<-0.5 else "平稳"})',
+        f'  大户2H变化: {sm.get("top_delta",0.0):+.3f}%pt',  # P0修复: 3位小数不归零
         f'',
         f'【Step7 波动率四维+ATR全周期】',  # [P0] 升级为四维
         f'  {vol["hurst_note"]}',
         f'  {vol["kappa_note"]}',
-        f'  {vol.get("gex_note","")}',  # [P0] GEX展示
+        f'  {vol.get("gex_note","") if not vol.get("gex_expired",False) else "⚠️ GEX数据已过期，不参与共振计算"} ',  # P0修复: GEX过期标记
         f'  {vol.get("fr_note","")}',   # [P1] FR展示
         f'  β⁺={vol.get("beta_p",0):.3f} β⁻={vol.get("beta_m",0):.3f}  IV分位={vol["iv_rank"]}',  # [P2] β展示
         f'  ATR1H=${vol.get("atr_1h",0):.0f} ATR4H=${vol.get("atr_4h",0):.0f} ATR1D=${vol.get("atr_1d",0):.0f}  合约SL参考=${vol.get("atr_sl_ref",0):.0f}({vol.get("atr_sl_ref",0)/p*100:.2f}%)',
+        f'  RSI全周期: 15M={bs.get("momentum",{}).get("rsi_15m",0):.1f} / 1H={bs.get("momentum",{}).get("rsi_1h",0):.1f} / 4H={bs.get("momentum",{}).get("rsi_4h",0):.1f} / 1D={bs.get("momentum",{}).get("rsi_1d",0):.1f}',  # P1修复: RSI全周期展示
         f'',
         f'【Step8 宏观压制】',
         f'  {mac["pos_note"]}',
