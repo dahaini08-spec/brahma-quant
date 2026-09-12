@@ -512,13 +512,11 @@ def step3_liq(d: dict) -> dict:
 # Step 4: 共振点
 # ══════════════════════════════════════════════════════════
 
-def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict, oi: dict = None, vol: dict = None) -> dict:
-    """[P2-4修复 2026-09-11] 共振升级5维：FVG+OB+清算+OI+GEX
-    FVG+OB同源（价格结构）→ 1.5个独立信号
-    OI独立（量价关系）→ 1个独立信号
-    GEX独立（期权市场）→ 1个独立信号
-    清算半独立（持仓数据）→ 0.5个独立信号
-    总计4个独立信号，远大于原3/3的1.5个独立信号
+def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict, oi: dict = None, vol: dict = None, fc: dict = None, cma: dict = None) -> dict:
+    """[P3升级 2026-09-12] 共振升级7维：FVG+OB+清算+OI+GEX+方仓+跨市场
+    原P2-4修复: 5维(FVG+OB+清算+OI+GEX)
+    P3新增: +方仓历史匹配(HCME) +跨市场alpha(134标的FR) = 7维
+    共振标准: ≥4/7 = 有效共振
     """
     price = d['price']
 
@@ -642,10 +640,29 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict, oi: dict = None, vo
     elif vol and vol.get('gex_expired', False):
         # P0修复: GEX过期→缺失但不报错，共振标准降为≥3/4（不含GEX）
         pass
-    # 共振标准升级：≥3/5 = 有效共振（原2/3）
-    # P0修复: GEX过期时标准降为≥3/4（总维度-1）
-    _max_score = 5 if not (vol and vol.get('gex_expired', False)) else 4
-    resonance = score >= 3
+    # [P3新增] 方仓历史匹配维度
+    has_fc = False
+    if fc and fc.get('top5'):
+        _fc_dir = fc.get('direction', 'NEUTRAL')
+        # 方仓方向与FVG一致才加分
+        if (_fvg_bull and _fc_dir == 'LONG') or (_fvg_bear and _fc_dir == 'SHORT'):
+            has_fc = True
+            score += 1
+    
+    # [P3新增] 跨市场alpha维度
+    has_cma = False
+    if cma and cma.get('cross_market_alpha', 0) != 0:
+        _cma_alpha = cma['cross_market_alpha']
+        _cma_risk_on = cma.get('direction', '') == 'RISK_ON'
+        _cma_risk_off = cma.get('direction', '') == 'RISK_OFF'
+        # RISK_ON与做多一致 / RISK_OFF与做空一致
+        if (_fvg_bull and _cma_risk_on) or (_fvg_bear and _cma_risk_off):
+            has_cma = True
+            score += 1
+    
+    # 共振标准: ≥4/7 = 有效共振 (P3升级)
+    _max_score = 7 if not (vol and vol.get('gex_expired', False)) else 6
+    resonance = score >= 4
 
     # [P2-5修复 2026-09-11] 交叉验证层：Step1-4结构层 vs Step5-9市场层
     # [D1修复 2026-09-11] 用共识方向(fvg_consensus)而非主磁铁方向(fvg_dir)
@@ -675,6 +692,9 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict, oi: dict = None, vo
         'has_liq':     has_liq,
         'has_oi':      has_oi,
         'has_gex':     has_gex,
+        'has_fc':      has_fc,       # P3: 方仓维度
+        'has_cma':     has_cma,      # P3: 跨市场维度
+        'n_dims':      7,            # P3: 7维共振
         'entry_lo':    entry_lo,
         'entry_hi':    entry_hi,
         'missing':     missing,
@@ -2006,9 +2026,18 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     mac = step8_macro(d)
     risk= step9_risk(d)
 
-    # [P2-4修复] Step 4共振升级5维：需要oi+vol
-    print(f'[{sym}] Step 4: 共振点（5维：FVG+OB+清算+OI+GEX）...', flush=True)
-    res = step4_resonance(d, fvg, ob, liq, oi=oi, vol=vol)
+    # [P3升级] Step 4共振升级7维：需要oi+vol+fc+cma
+    print(f'[{sym}] Step 4: 共振点（7维：FVG+OB+清算+OI+GEX+方仓+跨市场）...', flush=True)
+    _cma = None
+    try:
+        import sys as _cma_sys
+        _cma_sys.path.insert(0, str(Path(__file__).parent.parent))
+        _cma_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        from brahma_brain.cross_market_alpha import get_cross_market_alpha
+        _cma = get_cross_market_alpha()
+    except Exception:
+        pass
+    res = step4_resonance(d, fvg, ob, liq, oi=oi, vol=vol, fc=fc, cma=_cma)
 
     # AI议会实时裁决（纯规则引擎，零延迟零成本）
     # ── P2-2: council_verdict移除（2026-09-11 苏摩111）──
@@ -2184,9 +2213,9 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         + (f'  → 第二层: ${liq["second_short"]:,.0f}' if liq.get('second_short') else ''),
         f'  🛡️下方多头支撑池: ${liq["nearest_long"]:,.0f} (-{liq["support_pct"]:.1f}%)',
         f'',
-        f'【Step4 共振点】5维（FVG+OB+清算+OI+GEX）',
-        f'  共振得分: {res["score"]}/5  {"✅有效共振，可布局" if res["resonance"] and res["entry_lo"] > 0 else ("⚠️共振但方向矛盾，不出入场区" if res["resonance"] and res["entry_lo"] == 0 else "❌共振不足，等待")}',
-        f'  FVG={res["has_fvg"]} OB={res["has_ob"]} 清算={res["has_liq"]} OI={res.get("has_oi",False)} GEX={res.get("has_gex",False)}',
+        f'【Step4 共振点】7维（FVG+OB+清算+OI+GEX+方仓+跨市场）',
+        f'  共振得分: {res["score"]}/7  {"✅有效共振，可布局" if res["resonance"] and res["entry_lo"] > 0 else ("⚠️共振但方向矛盾，不出入场区" if res["resonance"] and res["entry_lo"] == 0 else "❌共振不足，等待")}',
+        f'  FVG={res["has_fvg"]} OB={res["has_ob"]} 清算={res["has_liq"]} OI={res.get("has_oi",False)} GEX={res.get("has_gex",False)} 方仓={res.get("has_fc",False)} 跨市场={res.get("has_cma",False)}',
         f'  入场区间: ${res["entry_lo"]:,.1f} ~ ${res["entry_hi"]:,.1f}',
     ]
     if res['missing']:
