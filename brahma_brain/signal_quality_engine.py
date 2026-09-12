@@ -24,7 +24,7 @@ from typing import Optional
 SL_PCT_GATE = 2.0          # Gate1铁证: sl>2.0% WR=0% EV=-5.07% (n=15)
 # SL_PCT_EXEMPT_SCORE 已废弃：铁证验证score≥155+sl>2% WR=0% EV=-5.87%，豁免无效，永久删除 (2026-08-22)
 
-# 死穴体制方向组合（MEMORY.md宪法）
+# 死穴体制方向组合（2026-09-12 苏摩111：从REJECT改为降权，不再封禁）
 DEAD_ZONE_COMBOS = {
     ('BULL_TREND', 'SHORT'),
     ('BEAR_TREND', 'LONG'),
@@ -71,8 +71,10 @@ class SignalQualityEngine:
     def evaluate(self, signal: dict) -> GateResult:
         """
         依次过所有 Gate，第一个 REJECT 立即返回。
-        通过所有 Gate 返回 PASS。
+        Gate2返回降权而非REJECT（2026-09-12 苏摩111：所有封禁都是错误的）
+        通过所有 Gate 返回 PASS（可能携带score_penalty）。
         """
+        _total_penalty = 1.0
         for gate_fn in [
             self._gate1_sl_pct,
             self._gate2_regime_direction,
@@ -82,6 +84,13 @@ class SignalQualityEngine:
             result = gate_fn(signal)
             if result.rejected:
                 return result
+            if result.score_penalty > 0:
+                _total_penalty *= result.score_penalty
+        # 如果有降权，注入到signal
+        if _total_penalty < 1.0:
+            signal['_sqe_penalty'] = _total_penalty
+            return GateResult(status='PASS', gate_name='penalty_applied',
+                             reason=f'score×{_total_penalty:.2f}', score_penalty=_total_penalty)
         return GateResult(status='PASS')
 
     # ── Gate 1: sl_pct 硬门控 ────────────────────────────────────────────
@@ -118,12 +127,12 @@ class SignalQualityEngine:
             )
         return GateResult(status='PASS')
 
-    # ── Gate 2: 体制方向死穴 ─────────────────────────────────────────────
+    # ── Gate 2: 体制方向死穴 → 降权（2026-09-12 苏摩111：所有封禁都是错误的）───────
     def _gate2_regime_direction(self, signal: dict) -> GateResult:
         """
-        体制宪法死穴：
-          BULL_TREND做空: EV=-0.266% (方仓v8 n=3655)
-          BEAR_TREND做多: EV<0 (体制宪法，BEAR_TREND_LONG WR=45%)
+        [2026-09-12 苏摩111] 从REJECT改为降权
+        体制死穴不再封禁，改为score_penalty降权
+        让trader_brain的共振覆盖逻辑有机会激活
         """
         regime = str(signal.get('regime', '') or '')
         direction = str(signal.get('direction', '') or signal.get('signal_dir', '') or '')
@@ -133,10 +142,12 @@ class SignalQualityEngine:
 
         combo = (regime, direction)
         if combo in DEAD_ZONE_COMBOS:
+            # 降权而非拒绝：让共振覆盖有机会触发
             return GateResult(
-                status='REJECT',
-                gate_name='regime_direction_gate',
-                reason=f'{regime}+{direction} 体制死穴 EV<0',
+                status='PASS',
+                gate_name='regime_direction_penalty',
+                reason=f'{regime}+{direction} 体制逆势降权（非封禁）',
+                score_penalty=0.5,  # score×0.5，但不拒绝
             )
         return GateResult(status='PASS')
 

@@ -323,7 +323,7 @@ def score(symbol: str, force: bool = False, vol_ratio: float = None) -> dict:
         if direction == 'LONG':  # 做多乘数
             # 铁证：熊市做多是宪法级死穴（225K+样本验证）
             # BEAR_EARLY_LONG WR=49.9% avgPnL=-0.139 / BEAR_TREND_LONG WR=45.6% avgPnL=-0.218
-            if bear_prob >= 0.55: return 0.0    # 熊市初期/趋势→做多硬封禁，乘数归零
+            if bear_prob >= 0.55: return 0.15   # [2026-09-12 苏摩111] 硬封禁→极端降权0.15（不归零，score≥280可过）
             if bull_prob >= 0.50: return 1.5    # 牛市趋势（BULL_TREND）→强顺势，满仓加速
             if bull_prob >= 0.40: return 1.2    # 牛市偏强→较强顺势
             if bull_prob >= 0.33: return 1.0    # 弱牛市→中性顺势

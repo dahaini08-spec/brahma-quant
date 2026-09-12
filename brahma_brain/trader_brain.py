@@ -224,18 +224,19 @@ def decide(
     # 事件后1H收阴=临时体制BEAR_EXPLOSION
     # ════════════════════════════════════════════════════════════
     _event_driven = False
-    _event_type = _macro_ctx.get('event_today', '')
-    if _event_type and _path_ctx.get('recent_candle', ''):
-        _recent = _path_ctx['recent_candle']  # 'GREEN' or 'RED'
-        _oi_flip = oi.get('signal', '') in ('SHORT_SQUEEZE', 'LONG_BUILD') if _recent == 'GREEN' else oi.get('signal', '') in ('LONG_UNWIND', 'SHORT_BUILD')
-        if _oi_flip:
+    _event_type = _macro_ctx.get('event', '')
+    if _event_type and _macro_ctx.get('phase') == 'post_event':
+        # 事件后判断方向：用OI信号翻转作为方向确认
+        _oi_flip_long = oi.get('signal', '') in ('SHORT_SQUEEZE', 'LONG_BUILD')
+        _oi_flip_short = oi.get('signal', '') in ('LONG_UNWIND', 'SHORT_BUILD')
+        if _oi_flip_long:
             _event_driven = True
-            if _recent == 'GREEN':
-                direction = 'LONG'
-                permission = True
-            elif _recent == 'RED':
-                direction = 'SHORT'
-                permission = True
+            direction = 'LONG'
+            permission = True
+        elif _oi_flip_short:
+            _event_driven = True
+            direction = 'SHORT'
+            permission = True
 
     # 方向判定
     direction = 'LONG' if 'BULL' in regime or 'RECOVERY' in regime else 'SHORT' if 'BEAR' in regime else 'NONE'
@@ -349,7 +350,7 @@ def decide(
         if _dir_match_oi and _dir_match_sm:
             _resonance_override = True
             permission = True  # 共振+OI+大户三方一致=覆盖score门槛
-        elif _dir_score >= 4 and _dir_match_oi:
+        elif _res_score >= 4 and _dir_match_oi:
             # 共振+OI一致但大户不一致=减仓覆盖
             _resonance_override = True
             permission = True
@@ -546,12 +547,11 @@ def decide(
                 elif _score_range == '140+' and score >= 140:
                     _ic_ev = _data.get('ev'); _ic_wr = _data.get('wr')
 
-    # 条件检查 — P0改革：score不再作为否决条件
+    # 条件检查 — P0改革：score不再作为否决条件，也不再作为missing项
+    # [2026-09-12 苏摩111] 所有门槛移除，score只调仓不否决不missing
     missing = []
     if not permission:
         if _downgraded: missing.append(f'体制降级CHOP（三选二矛盾）')
-        elif regime == 'CHOP_MID' and score < 110: missing.append(f'CHOP体制score={score:.0f}<110（减仓{_score_mult:.1f}x）')
-        elif _weak_trend: missing.append(f'弱趋势score={score:.0f}<60（减仓{_score_mult:.1f}x）')
         else: missing.append('环境许可未通过')
     if direction == 'NONE': missing.append(f'体制{regime}无方向')
     if consistent_count < 2 and direction != 'NONE': missing.append(f'交叉验证仅{consistent_count}/4')
@@ -559,9 +559,9 @@ def decide(
     if sl > 0 and not sl_valid: missing.append(f'SL不通过ATR4H铁律(SL={sl_pct:.2f}%, 需≥{_sl_pct_req*100:.1f}%)')
     if 0 < rr < 2.0: missing.append(f'RR={rr:.1f}<2.0')
     if rr == 0 and direction != 'NONE': missing.append('RR无法计算')
-    # 死穴门控
-    _dead_zone = 'BULL' in regime and direction == 'LONG' and score >= 140
-    if _dead_zone: missing.append(f'死穴:BULL:LONG:score≥140→WR=0%~30%')
+    # [2026-09-12 苏摩111] 死穴门控移除：所有封禁都是错误的
+    # BULL:LONG:score≥140不再标记为死穴，改为降仓信息
+    _dead_zone = False  # 永久关闭死穴门控
     # OI矛盾
     if direction == 'LONG' and oi_signal == 'SHORT_BUILD': missing.append(f'做多但OI={oi_signal}')
     if direction == 'SHORT' and oi_signal == 'LONG_BUILD': missing.append(f'做空但OI={oi_signal}')
@@ -814,8 +814,8 @@ def format_narrative(result: Dict, symbol: str, price: float, regime: str, fvg: 
     big_long = sm.get('big_long', 50)
     retail_long = sm.get('retail_long', 50)
     oi_signal = oi.get('signal', 'NO_DATA')
-    liq_short = liq.get('nearest_short', 0) if 'liq' in dir() else res.get('liq_nearest_short', 0)
-    liq_long = res.get('liq_nearest_long', 0) or (liq.get('nearest_long', 0) if 'liq' in dir() else 0)
+    liq_short = res.get('liq_nearest_short', 0) or result.get('liq_nearest_short', 0)
+    liq_long = res.get('liq_nearest_long', 0) or result.get('liq_nearest_long', 0)
     scenarios = result.get('scenarios', [])
     triggers = result.get('triggers', [])
     missing = result.get('missing', [])
