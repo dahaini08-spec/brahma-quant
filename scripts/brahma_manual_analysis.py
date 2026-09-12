@@ -293,6 +293,92 @@ def step1_fvg(d: dict) -> dict:
             'bear_score': bear_score if 'bear_score' in dir() else 0,
             'consensus': fvg_consensus if 'fvg_consensus' in dir() else fvg_dir}
 
+def step1b_fangcang_hcme(d: dict, fvg: dict) -> dict:
+    """Step1b: 方仓历史匹配（HCME 4565案例） — P1整合 2026-09-12
+    从brahma_state.fangcang提取Top5相似情境 + hcme_wr_adj + hcme_context
+    输出供Step4共振和Step10交易员视角使用
+    """
+    bs = d.get('bs', {})
+    fc = bs.get('fangcang', {}) if isinstance(bs, dict) else {}
+    price = d.get('price', 0)
+
+    if not fc or not isinstance(fc, dict):
+        return {'top5': [], 'wr_adj': 0, 'context': '方仓无数据',
+                'signal_hint': '', 'regime': '', 'n_cases': 0}
+
+    top_similar = fc.get('top_similar', [])[:5]
+    wr_adj = fc.get('hcme_wr_adj', 0)
+    context = fc.get('hcme_context', '')
+    signal_hint = fc.get('signal_hint', '')
+    fc_regime = fc.get('current_regime', '') or fc.get('regime', '')
+    n_cases = fc.get('similar_cases_count', 0) or fc.get('n_cases', 0)
+    long_prob = fc.get('long_prob', 0)
+    short_prob = fc.get('short_prob', 0)
+    chop_prob = fc.get('chop_prob', 0)
+    trap_alert = fc.get('trap_alert', '')
+    confidence = fc.get('confidence_level', '')
+    bias = fc.get('market_bias', '')
+
+    # 格式化Top5
+    top5_fmt = []
+    for i, t in enumerate(top_similar):
+        dt = t.get('dt', '?')
+        score = t.get('score', 0)
+        future_ret = t.get('future_ret', 0)
+        future_max = t.get('future_max', 0)
+        future_min = t.get('future_min', 0)
+        regime = t.get('regime', '?')
+        top5_fmt.append({
+            'rank': i + 1,
+            'date': dt,
+            'similarity': round(score, 3),
+            'future_ret': future_ret,
+            'future_max': future_max,
+            'future_min': future_min,
+            'regime': regime,
+        })
+
+    # 方仓概率矩阵
+    prob_matrix = {
+        'long': round(long_prob * 100, 1) if isinstance(long_prob, (int, float)) else 0,
+        'short': round(short_prob * 100, 1) if isinstance(short_prob, (int, float)) else 0,
+        'chop': round(chop_prob * 100, 1) if isinstance(chop_prob, (int, float)) else 0,
+    }
+
+    # 信号方向
+    fc_direction = 'NEUTRAL'
+    if signal_hint:
+        if 'LONG' in signal_hint.upper():
+            fc_direction = 'LONG'
+        elif 'SHORT' in signal_hint.upper():
+            fc_direction = 'SHORT'
+
+    # 描述
+    desc_parts = []
+    if top5_fmt:
+        t1 = top5_fmt[0]
+        desc_parts.append(f"Top1: {t1['date']} 相似{t1['similarity']:.3f} 未来{t1['future_ret']:+.1f}%")
+    if context:
+        desc_parts.append(context)
+    if trap_alert:
+        desc_parts.append(f'⚠️{trap_alert}')
+    desc = ' | '.join(desc_parts) if desc_parts else '方仓无信号'
+
+    return {
+        'top5': top5_fmt,
+        'wr_adj': wr_adj,
+        'context': context,
+        'signal_hint': signal_hint,
+        'direction': fc_direction,
+        'regime': fc_regime,
+        'n_cases': n_cases,
+        'prob_matrix': prob_matrix,
+        'trap_alert': trap_alert,
+        'confidence': confidence,
+        'bias': bias,
+        'desc': desc,
+    }
+
 # ══════════════════════════════════════════════════════════
 # Step 2: OB有效性
 # ══════════════════════════════════════════════════════════
@@ -1847,6 +1933,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
 
     print(f'[{sym}] Step 1~3: FVG/OB/清算...', flush=True)
     fvg = step1_fvg(d)
+    fc  = step1b_fangcang_hcme(d, fvg)  # P1: 方仓历史匹配
     ob  = step2_ob(d)
     liq = step3_liq(d)
 
@@ -1996,6 +2083,22 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         f'【Step1 FVG磁铁】全周期',
         (f'  共识方向: {fvg.get("consensus",fvg["dir"])}  多{fvg.get("bull_score",0)}分 vs 空{fvg.get("bear_score",0)}分  主磁铁: {fvg["dir"]}@${fvg["magnet"]:,.0f}') if fvg['magnet'] else '  无有效FVG',
         f'  {fvg["desc"][:120]}',
+        f'',
+        f'【Step1b 方仓历史匹配】HCME {fc.get("n_cases",0)}案例库',
+        f'  {fc.get("desc","方仓无数据")}',
+        ]
+    # P1: 方仓Top5详情
+    _top5 = fc.get('top5', [])
+    if _top5:
+        _pm = fc.get('prob_matrix', {})
+        lines.append(f'  概率矩阵: 多{_pm.get("long",0):.0f}% / 空{_pm.get("short",0):.0f}% / 横盘{_pm.get("chop",0):.0f}%')
+        for t in _top5[:3]:
+            lines.append(f'  #{t["rank"]} {t["date"]} 相似{t["similarity"]:.3f} 未来{t["future_ret"]:+.1f}% (max:{t["future_max"]:+.1f}% min:{t["future_min"]:+.1f}%) [{t["regime"]}]')
+    if fc.get('trap_alert'):
+        lines.append(f'  ⚠️ {fc["trap_alert"]}')
+    if fc.get('signal_hint'):
+        lines.append(f'  方仓信号: {fc["signal_hint"]}')
+    lines += [
         f'',
         f'【Step2 OB有效性】',
     ]
