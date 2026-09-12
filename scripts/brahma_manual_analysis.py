@@ -299,6 +299,7 @@ def step1_fvg(d: dict) -> dict:
 
 def step2_ob(d: dict) -> dict:
     bd = d['bs'].get('confluence', {}).get('breakdown', {})
+    price = d.get('price', 0)  # P1修复: 用实时价格计算距现价
 
     # ── 优先读取 _ob_map（由 block_a 实时计算）──────────────────────
     ob_map = bd.get('_ob_map', {})
@@ -312,11 +313,27 @@ def step2_ob(d: dict) -> dict:
                 valid    = ob['valid']
                 icon = {'NEW': '✅最新鲜', 'FRESH': '✅新鲜有效',
                         'AGING': '⚠️老化中', 'EXPIRED': '❌已过期'}.get(note_tag, '⚠️')
+                lo  = ob.get('lo', 0)
+                hi  = ob.get('hi', 0)
+                age = ob.get('age', 0)
+                # P1修复: 用实时价格重新计算距现价
+                dist_pct = ((hi + lo) / 2 - price) / price * 100 if price and lo else 0
+                # P1修复: BEAR OB在现价下方=已被穿越=失效; BULL OB在现价上方=已被穿越=失效
+                if ob['type'] == 'BEAR' and hi < price:
+                    valid = False
+                    icon = '❌已穿越'
+                if ob['type'] == 'BULL' and lo > price:
+                    valid = False
+                    icon = '❌已穿越'
                 results[key] = {
                     'valid': valid,
-                    'note':  (f'{icon} age={ob["age"]}bars '
-                              f'${ob["lo"]:,.0f}~${ob["hi"]:,.0f} '
-                              f'dist={ob["dist_pct"]:+.2f}%')
+                    'lo': lo,        # P1修复: 返回结构化价格
+                    'hi': hi,        # P1修复: 返回结构化价格
+                    'age': age,      # P1修复: 返回结构化age
+                    'dist_pct': round(dist_pct, 2),  # P1修复: 实时距现价%
+                    'note':  (f'{icon} age={age}bars '
+                              f'${lo:,.1f}~${hi:,.1f} '
+                              f'dist={dist_pct:+.2f}%')
                 }
     else:
         # 备用：读取旧版breakdown字段
