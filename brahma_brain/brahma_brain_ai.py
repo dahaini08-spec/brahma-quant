@@ -51,22 +51,26 @@ def brahma_brain_decide(d: dict, fvg: dict, ob: dict, liq: dict, res: dict,
     t0 = time.time()
     
     # Step 1: 构建prompt
-    prompt = build_brahma_brain_prompt(d, fvg, ob, liq, res, oi, sm, vol, mac, risk, fc, ens, council)
+    user_prompt = build_brahma_brain_prompt(d, fvg, ob, liq, res, oi, sm, vol, mac, risk, fc, ens, council)
     
-    # Step 2: 构建messages — free_llm_client.chat()只支持prompt+system，
-    # 所以把few-shot案例嵌入system prompt，实际数据作为prompt
+    # Step 2: 构建system prompt（40年交易员人格 + few-shot摘要）
     system_content = TRADER_SYSTEM_PROMPT
     
     # 在system prompt末尾追加3个few-shot案例摘要
     few_shot_text = '\n\n## 参考案例（3个经典场景）\n\n'
     cases = [
         ('CHOP_MID低分+OI撤退+Hurst随机', '等待', 'CHOP低分+OI撤退+Hurst随机+FOMC前=等待', '等待：Hurst突破0.55+OI转BUILD+score过110'),
-        ('BEAR_TREND高分+OI全线SHORT_BUILD+大户偏空', '做空ENTER', 'BEAR趋势+OI确认+大户偏空=顺势做空', '反弹入场空单，止损$止损墙上方，仓位3%'),
+        ('BEAR_TREND高分+OI全线SHORT_BUILD+大户偏空', '做空ENTER', 'BEAR趋势+OI确认+大户偏空=顺势做空', '反弹入场空单，止损设在止损墙上方1.5×ATR1H处，仓位3%'),
         ('BULL_TREND低分+FVG无共识+方仓陷阱', 'WATCH', 'BULL但score低+方仓陷阱+OI撤退=WATCH', '等待：OI翻转+FVG共识+失效期解除'),
+        # P9补充: 复杂场景
+        ('体制矛盾:FVG=BULL但OI=SHORT_BUILD', 'WATCH', '结构偏多但资金在撤=信号矛盾，不赌方向', '等待：OI和FVG方向一致再入场'),
+        ('止损墙被测试但未突破+OI无确认', 'WATCH', '可能假突破，无OI确认不追', '等待：止损墙突破+OI翻转确认方向'),
     ]
     for i, (scenario, action, logic, advice) in enumerate(cases):
         few_shot_text += f'{i+1}. [{action}] {scenario}\n   逻辑: {logic}\n   建议: {advice}\n\n'
     system_content += few_shot_text
+    
+    # 实际数据作为user prompt（已在Step 1构建）
     
     # 实际数据作为user prompt
     user_prompt = build_brahma_brain_prompt(d, fvg, ob, liq, res, oi, sm, vol, mac, risk, fc, ens, council)
@@ -94,6 +98,24 @@ def brahma_brain_decide(d: dict, fvg: dict, ob: dict, liq: dict, res: dict,
     
     # Step 5: 安全约束层
     validated = _validate_output(parsed, risk, ens, vol)
+    
+    # Fix E: 日志记录
+    try:
+        import json as _json
+        log_path = BASE / 'data' / 'brahma_brain_log.jsonl'
+        log_entry = {
+            'timestamp': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+            'symbol': d.get('sym', '?'),
+            'model': model_used,
+            'latency_ms': latency_ms,
+            'core_logic': validated.get('core_logic', ''),
+            'void_condition': validated.get('void_condition', ''),
+            'warnings': validated.get('warnings', []),
+        }
+        with open(log_path, 'a') as _lf:
+            _lf.write(_json.dumps(log_entry, ensure_ascii=False) + '\n')
+    except Exception:
+        pass
     
     return {
         'core_logic': validated.get('core_logic', ''),
@@ -165,7 +187,26 @@ def _call_llm(system: str, prompt: str) -> tuple:
             
             content = result.get('choices', [{}])[0].get('message', {}).get('content', '')
             if content:
-                return content, model
+                # Fix E: 检查输出是否包含格式化标记
+                if '梵天大脑' in content or '核心逻辑' in content or '姓赵不宣' in content:
+                    return content, model
+                else:
+                    # 格式不对，降低温度重试1次
+                    payload2 = json.dumps({
+                        'model': model,
+                        'messages': [
+                            {'role': 'system', 'content': system},
+                            {'role': 'user', 'content': prompt + '\n\n请严格按照输出格式输出，包含"🧠 梵天大脑决策"和"核心逻辑："标记。'},
+                        ],
+                        'temperature': 0.1,
+                        'max_tokens': 2000,
+                    }).encode('utf-8')
+                    req2 = urllib.request.Request(url, data=payload2, headers=headers, method='POST')
+                    with urllib.request.urlopen(req2, timeout=90, context=ctx) as resp2:
+                        result2 = json.loads(resp2.read().decode('utf-8'))
+                    content2 = result2.get('choices', [{}])[0].get('message', {}).get('content', '')
+                    if content2:
+                        return content2, model
         except Exception as e:
             last_error = str(e)[:100]
             continue
@@ -215,29 +256,64 @@ def _parse_output(raw: str) -> dict:
 
 
 def _validate_output(parsed: dict, risk: dict, ens: dict, vol: dict) -> dict:
-    """安全约束层：AI输出必须通过硬约束"""
+    """安全约束层 v1.1：AI输出必须通过5项硬约束 — Fix B 2026-09-12"""
     warnings = []
     
-    # 如果没有风控数据，跳过验证
     if not risk or not ens or not vol:
         return {**parsed, 'warnings': warnings}
     
-    # 记录约束违规但不过度修改AI输出
-    # （AI已在system prompt中被告知约束，这里只做记录）
-    
     ens_signal = ens.get('ensemble_signal', 0) if ens else 0
     regime_state = risk.get('regime_state', 'GREEN') if risk else 'GREEN'
+    nav_mult = risk.get('nav_mult', 1.0) if risk else 1.0
+    atr_1h = vol.get('atr_1h', 0) if vol else 0
     
     vip_text = parsed.get('vip_card', '')
     
-    # 检查1: 失效期RED但AI建议ENTER
-    if regime_state == 'RED' and 'ENTER' in vip_text.upper():
-        # AI应该在system prompt约束下已经降级，如果没有则标记
-        if '轻仓' not in vip_text and '1%' not in vip_text:
-            warnings.append('失效期RED但AI未降仓')
+    # 硬约束1: 失效期RED只能WATCH
+    if regime_state == 'RED' and ('🔴' in vip_text or '🟢' in vip_text) and '⏳' not in vip_text:
+        if '轻仓' not in vip_text and '1%' not in vip_text and '0.5%' not in vip_text:
+            warnings.append('⚠️ 失效期RED但AI未降仓，请人工确认')
     
-    # 检查2: ensemble偏空但AI建议做多
+    # 硬约束2: ensemble方向冲突
     if ens_signal < -0.3 and '多单' in vip_text and '暂无' not in vip_text.split('多单')[0][-10:]:
-        warnings.append('ensemble偏空但AI建议做多，请人工复核')
+        warnings.append('⚠️ ensemble偏空但AI建议做多，请人工复核')
+    if ens_signal > 0.3 and '空单' in vip_text and '暂无' not in vip_text.split('空单')[0][-10:]:
+        warnings.append('⚠️ ensemble偏多但AI建议做空，请人工复核')
+    
+    # 硬约束3: SL距离≥1.5×ATR1H（从VIP文本中提取SL价格）
+    import re as _re
+    sl_matches = _re.findall(r'止损\s*\$([\d,]+\.?\d*)', vip_text)
+    entry_matches = _re.findall(r'入场区?\s*\$([\d,]+\.?\d*)', vip_text)
+    if sl_matches and entry_matches and atr_1h > 0:
+        try:
+            sl_price = float(sl_matches[0].replace(',', ''))
+            entry_price = float(entry_matches[0].replace(',', ''))
+            sl_distance = abs(entry_price - sl_price)
+            min_sl = 1.5 * atr_1h
+            if sl_distance < min_sl:
+                warnings.append(f'⚠️ SL距离${sl_distance:.0f}<1.5×ATR1H=${min_sl:.0f}，止损太近')
+        except (ValueError, IndexError):
+            pass
+    
+    # 硬约束4: 仓位≤5%NAV（失效期RED≤2.5%）
+    pos_matches = _re.findall(r'仓位\s*(\d+(?:\.\d+)?)%', vip_text)
+    if pos_matches:
+        try:
+            pos_pct = float(pos_matches[0])
+            max_pos = 5.0 * nav_mult
+            if pos_pct > max_pos:
+                warnings.append(f'⚠️ 仓位{pos_pct}%>上限{max_pos:.1f}%（风控系数x{nav_mult}）')
+        except (ValueError, IndexError):
+            pass
+    
+    # 硬约束5: 杠杆≤20x
+    lev_matches = _re.findall(r'杠杆\s*(\d+)x', vip_text)
+    if lev_matches:
+        try:
+            lev = int(lev_matches[0])
+            if lev > 20:
+                warnings.append(f'⚠️ 杠杆{lev}x>20x上限')
+        except (ValueError, IndexError):
+            pass
     
     return {**parsed, 'warnings': warnings}

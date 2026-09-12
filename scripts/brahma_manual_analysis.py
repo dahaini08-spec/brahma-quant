@@ -2464,6 +2464,37 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     except Exception:
         pass
 
+    # Fix D: 梵天大脑AI决策接入Step10
+    try:
+        import sys as _bb_sys
+        _bb_sys.path.insert(0, str(Path(__file__).parent.parent))
+        _bb_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        from brahma_brain.brahma_brain_ai import brahma_brain_decide
+        
+        _bb_result = brahma_brain_decide(
+            d, fvg, ob, liq, res, oi, sm, vol, mac, risk_result, fc, _ens, _council
+        )
+        lines += [
+            f'',
+            f'─── 🧠 梵天大脑 AI决策 ───',
+            f'  模型: {_bb_result["model"]}  耗时: {_bb_result["latency_ms"]}ms',
+        ]
+        if _bb_result['success']:
+            lines.append(f'')
+            lines.append(_bb_result['raw_output'])
+            if _bb_result.get('warnings'):
+                for w in _bb_result['warnings']:
+                    lines.append(f'  {w}')
+        else:
+            lines.append(f'  ⚠️ 梵天大脑降级: {_bb_result["error"][:80]}')
+            lines.append(f'  (规则版VIP仍可用)')
+    except Exception as _bb_e:
+        lines += [
+            f'',
+            f'─── 🧠 梵天大脑 AI决策 ───',
+            f'  ⚠️ 未启用: {str(_bb_e)[:60]}',
+        ]
+
     return '\n'.join(lines)
 
 
