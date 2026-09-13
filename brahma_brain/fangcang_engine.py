@@ -926,12 +926,6 @@ def get_fangcang_context(
 
         # [2026-08-12 封印] PIPs形态特征提取（第9维接入）
         pip_feature = {}
-        try:
-            from brahma_brain.pip_extractor import extract_pip_feature as _epf
-            _recent_closes = [float(b['c']) for b in klines_4h[-30:]]  # 取近30根K线
-            pip_feature = _epf(_recent_closes)
-        except Exception:
-            pip_feature = {'pip_shape': 'UNKNOWN', 'shape_score': 0.0}
 
         # [2026-08-20 封印] 阶段2：周月线锚定 + Elliott Wave + VPA
         _htf_features = {}
@@ -943,19 +937,7 @@ def get_fangcang_context(
             _htf_features = _anchor.get_features(current_price=current_price)
         except Exception as _e:
             _htf_features = {'_anchor_summary': f'HTF锚定不可用: {_e}'}
-        try:
-            from brahma_brain.elliott_wave_pips import ElliottWaveDetector as _EWD
-            _ew_closes = [float(b['c']) for b in klines_4h[-60:]]
-            _ew_highs  = [float(b['h']) for b in klines_4h[-60:]]
-            _ew_lows   = [float(b['l']) for b in klines_4h[-60:]]
-            _ew = _EWD(_ew_closes, _ew_highs, _ew_lows, n_bars=60)
-            _elliott_result = _ew.analyze()
-        except Exception as _e:
             _elliott_result = {'wave_type': 'UNKNOWN', 'score_addon': 0, 'summary': f'Elliott不可用: {_e}'}
-        try:
-            from brahma_brain.vpa_analyzer import analyze_vpa as _avpa
-            _vpa_result = _avpa(klines_4h, n_bars=20)
-        except Exception as _e:
             _vpa_result = {'score_addon': 0, 'summary': f'VPA不可用: {_e}'}
 
         # [2026-08-09 封印] 向量检索增强层：查询历史最相似TOP20案例
@@ -1878,9 +1860,20 @@ class HCMEMatcher:
     def _append_expanded(self, base_index: list[dict]) -> list[dict]:
         """追加hcme_expanded_index.json中的日线扩展案例（如存在）。
         接入位置: brahma_brain/fangcang_engine.py HCMEMatcher._build_or_load_index
+        [2026-09-12 苏摩111] 内存门控：可用RAM<2GB时跳过扩展案例库
         """
         if not os.path.exists(HCME_EXPANDED_INDEX_PATH):
             return base_index
+        # 内存门控：可用内存<2GB时跳过3890条扩展案例（节省~800MB）
+        try:
+            import os as _os_mem
+            _mem_avail = int(_os_mem.popen('cat /proc/meminfo | grep MemAvailable | awk \'{print $2}\'').read().strip() or '0')
+            _mem_avail_mb = _mem_avail // 1024
+            if _mem_avail_mb < 2048:
+                print(f"[HCME] 内存不足({_mem_avail_mb}MB<2048MB)，跳过扩展案例库(3890条，省~800MB)")
+                return base_index
+        except Exception:
+            pass
         try:
             with open(HCME_EXPANDED_INDEX_PATH) as f:
                 expanded = json.load(f)

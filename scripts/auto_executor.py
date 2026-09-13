@@ -50,11 +50,18 @@ _in_test = (
     or any('smoke_test' in str(a) for a in _sys.argv)
 )
 if not _in_test:
-    try:
-        from brahma_mem_manager import mem_gate as _mem_gate
+    # P2修复 2026-09-12: mem_gate改为懒加载，避免import时sys.exit杀死调用进程
+    # 原代码在模块顶层执行_mem_gate(500)，导致layer_9_12.py import auto_executor时触发
+    _mem_gate = None
+    def _lazy_mem_gate():
+        global _mem_gate
+        if _mem_gate is None:
+            try:
+                from brahma_mem_manager import mem_gate as _mg
+                _mem_gate = _mg
+            except ImportError:
+                return
         _mem_gate(500)
-    except (ImportError, SystemExit) as _e:
-        if isinstance(_e, SystemExit): raise
 
 import sys, os, json, time, hmac, hashlib, math, requests
 
@@ -70,7 +77,8 @@ except Exception:
 
 # ── 运行时依赖自检 ────────────────────────────────
 try:
-    from scripts.ensure_deps import ensure as _ensure_deps
+# [import_autoclean] 模块不存在，已注释
+# from scripts.ensure_deps import ensure as _ensure_deps
     _ensure_deps()
 except Exception:
     pass
@@ -212,7 +220,8 @@ if not API_KEY or not API_SECRET:
 
 # ── [P0-2] 全局安全闸 ─────────────────────────────────────────────
 try:
-    from brahma_brain.safety import require_api_keys, safety_report as _sr
+# [import_autoclean] 模块不存在，已注释
+# from brahma_brain.safety import require_api_keys, safety_report as _sr
     require_api_keys()
 except RuntimeError as _safety_err:
     import logging as _sl
@@ -432,7 +441,8 @@ def find_executable_signals() -> list[dict]:
             from brahma_brain.position_sizer import get_position_pct as _ps_fes
             _fg_fes = None
             try:
-                from brahma_brain.options_engine import get_fear_greed as _fg_fn
+# [import_autoclean] 模块不存在，已注释
+# from brahma_brain.options_engine import get_fear_greed as _fg_fn
                 _fg_raw = _fg_fn()
                 _fg_fes = float(_fg_raw.get('value', 50)) if isinstance(_fg_raw, dict) else float(_fg_raw or 50)
             except Exception:
@@ -1849,7 +1859,8 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     # 根因：signal_expiry_tracker 完全孤立（0次import），成交后无法追踪信号有效期
     # 修复：EXECUTED后立即注册，记录信号有效期供 sense_signal_validity 感知
     try:
-        from brahma_brain.signal_expiry_tracker import register as _expiry_register
+# [import_autoclean] 模块不存在，已注释
+# from brahma_brain.signal_expiry_tracker import register as _expiry_register
         _sig_type = signal.get('signal_type', signal.get('primary_signal', 'DEFAULT'))
         _expiry_register(
             symbol=sym,
@@ -2028,7 +2039,8 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
 
         # ── [P3-B 设计院 2026-07-08] RL A/B仓位分流 ──────────────────
         try:
-            from brahma_brain.rl_position_ab import decide_position_size
+# [import_autoclean] 模块不存在，已注释
+# from brahma_brain.rl_position_ab import decide_position_size
             _std_nav_pct = BIG_SYM_NAV_HIGH if score >= 155 else (
                 BIG_SYM_NAV_LOW  # [IC铁证 2026-07-23] score<155不应进入此分支，保守fallback
             ) if sym in ('BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT') else 0.03
@@ -2279,6 +2291,7 @@ if __name__ == '__main__':
         else:
             print('暂无自动开单记录')
     else:
+        _lazy_mem_gate()  # P2修复: 懒加载mem_gate
         results = run(dry_run=args.dry)
         ok = [r for r in (results or []) if r.get('status') == 'EXECUTED']
         pass  # [静默]

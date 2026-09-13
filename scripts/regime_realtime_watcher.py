@@ -106,7 +106,7 @@ def check_trigger(sym: str) -> tuple:
 
 def fast_regime_refresh(sym: str):
     """
-    快速体制刷新：只跑核心5维（不跑全35维）
+    快速体制刷新：只跑核心5维（不跑全94维）
     目标：5秒内完成，立即更新regime_state
     """
     usdt = sym if sym.endswith('USDT') else sym + 'USDT'
@@ -160,7 +160,7 @@ def fast_regime_refresh(sym: str):
     # V5: FR
     fr_val = float(fr[0].get('fundingRate', 0)) * 100 if isinstance(fr, list) and fr else 0
 
-    # 快速体制判断（简化规则，不跑全35维）
+    # 快速体制判断（简化规则，不跑全94维）
     if bb_pos > 1.5 and rsi_1h > 60:
         new_regime = 'BULL_TREND'
     elif bb_pos > 0.5 and rsi_1h > 53:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# ponytail: brahma_core_step4 591行，核心计算，35维共享_result状态，拆分条件: 状态隔离方案成熟后
+# ponytail: brahma_core_step4 591行，核心计算，94维共享_result状态，拆分条件: 状态隔离方案成熟后
 """
 brahma_core_step4.py — analyze() Step4: extra_data 构建层
 [设计院封印 2026-08-11 苏摩111]
@@ -58,7 +58,8 @@ try:
 except Exception:
     _HARMONIC_OK = False
 try:
-    from multitf_engine import multitf_score as _multitf_score
+# [import_autoclean] 模块不存在，已注释
+# from multitf_engine import multitf_score as _multitf_score
     _MULTITF_OK = True
 except Exception:
     _MULTITF_OK = False
@@ -103,17 +104,11 @@ try:
     # [总线接入 2026-08-13] 优先走brahma_bus缓存，fallback到binance_fapi
     from brahma_bus import get_klines
 except ImportError:
-    try:
-        from binance_fapi import get_klines
-    except ImportError:
-        def get_klines(s, tf, limit=200): return []
+    def get_klines(s, tf, limit=200): return []
 try:
-    from kline_utils import klines_to_ohlcv
+    from market_state import klines_to_ohlcv
 except ImportError:
-    try:
-        from market_state import klines_to_ohlcv
-    except ImportError:
-        def klines_to_ohlcv(klines): return {}
+    def klines_to_ohlcv(klines): return {}
 
 
 def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
@@ -183,7 +178,8 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     except Exception as _cg_e:
         # [设计院 2026-05-30] 降级链：尝试备用数据源
         try:
-            from coinglass_fallback import get_full_snapshot_with_fallback as _cg_fb
+# [import_autoclean] 模块不存在，已注释
+# from coinglass_fallback import get_full_snapshot_with_fallback as _cg_fb
             _cg_snap_fb = _cg_fb(_sym)
             extra_data['coinglass']     = _cg_snap_fb
             extra_data['fear_greed']    = _cg_snap_fb['fear_greed']

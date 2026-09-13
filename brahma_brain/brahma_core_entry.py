@@ -1,4 +1,4 @@
-# ponytail: brahma_core_entry 861行，核心计算，35维共享_result状态，拆分条件: 状态隔离方案成熟后
+# ponytail: brahma_core_entry 861行，核心计算，94维共享_result状态，拆分条件: 状态隔离方案成熟后
 """
 brahma_core_entry.py — 入场参数计算模块
 设计院·第一步架构拆分 2026-07-01
@@ -82,10 +82,6 @@ try:
     _MULTITF_DIV_OK = True
 except Exception:
     _MULTITF_DIV_OK = False
-try:
-    from multitf_engine import multitf_score as _multitf_score
-    _MULTITF_OK = True
-except Exception:
     _MULTITF_OK = False
 try:
     from enhanced_signal_engine import enhanced_score as _enhanced_score

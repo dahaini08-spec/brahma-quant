@@ -63,10 +63,10 @@ def build_3d_matrix(min_n: int = 3) -> dict:
         else:
             cells[key]['loss'] += 1
         cells[key]['pnls'].append(pnl_pct)
-                # 标记数据来源时间（检测历史污染）
-                source = d.get('_data_quality', '')
-                if source:
-                    cells[key].setdefault('sources', set()).add(source)
+        # 标记数据来源时间（检测历史污染）
+        source = d.get('_data_quality', '')
+        if source:
+            cells[key].setdefault('sources', set()).add(source)
 
     matrix = {}
     for key, v in cells.items():

@@ -16,7 +16,7 @@ brahma_brain_ai.py — 梵天大脑 AI决策层主入口
   scripts/free_llm_client.py (OpenRouter API)
   brahma_brain/risk_engine.py (安全约束)
 """
-import json, os, ssl, time, urllib.request
+import json, os, ssl, time, urllib.request, re
 from pathlib import Path
 
 BASE = Path(__file__).parent.parent
@@ -38,6 +38,7 @@ def brahma_brain_decide(d: dict, fvg: dict, ob: dict, liq: dict, res: dict,
     返回:
       {
         'core_logic': str,      # 一句话核心逻辑
+        'reverse_arg': str,     # 一句话反向论证
         'risks': list[str],     # 风险点
         'void_condition': str,  # 作废条件
         'vip_card': str,        # VIP策略卡片
@@ -46,9 +47,15 @@ def brahma_brain_decide(d: dict, fvg: dict, ob: dict, liq: dict, res: dict,
         'latency_ms': int,      # 调用耗时
         'success': bool,        # 是否成功
         'error': str,           # 错误信息（如果失败）
+        'warnings': list[str],  # 安全约束警告
       }
     """
     t0 = time.time()
+    
+    # P0修复: 确保d顶层有regime/score/grade（如果caller未设置，从d['bs']提取）
+    bs = d.get('bs', {}) if isinstance(d.get('bs'), dict) else {}
+    if 'regime' not in d and 'regime' in bs:
+        d = {**d, 'regime': bs.get('regime', 'N/A'), 'score': bs.get('score_final', bs.get('score', 0)), 'grade': bs.get('grade', '?')}
     
     # Step 1: 构建prompt
     user_prompt = build_brahma_brain_prompt(d, fvg, ob, liq, res, oi, sm, vol, mac, risk, fc, ens, council)
@@ -56,31 +63,27 @@ def brahma_brain_decide(d: dict, fvg: dict, ob: dict, liq: dict, res: dict,
     # Step 2: 构建system prompt（40年交易员人格 + few-shot摘要）
     system_content = TRADER_SYSTEM_PROMPT
     
-    # 在system prompt末尾追加3个few-shot案例摘要
-    few_shot_text = '\n\n## 参考案例（3个经典场景）\n\n'
+    # 在system prompt末尾追加5个few-shot案例摘要
+    few_shot_text = '\n\n## 参考案例（5个经典场景）\n\n'
     cases = [
-        ('CHOP_MID低分+OI撤退+Hurst随机', '等待', 'CHOP低分+OI撤退+Hurst随机+FOMC前=等待', '等待：Hurst突破0.55+OI转BUILD+score过110'),
-        ('BEAR_TREND高分+OI全线SHORT_BUILD+大户偏空', '做空ENTER', 'BEAR趋势+OI确认+大户偏空=顺势做空', '反弹入场空单，止损设在止损墙上方1.5×ATR1H处，仓位3%'),
-        ('BULL_TREND低分+FVG无共识+方仓陷阱', 'WATCH', 'BULL但score低+方仓陷阱+OI撤退=WATCH', '等待：OI翻转+FVG共识+失效期解除'),
+        ('CHOP_MID低分+OI撤退+Hurst随机', '等待', 'CHOP低分+OI撤退+Hurst随机+FOMC前=等待', 'FVG偏多但OI撤退+Hurst随机=不追多', '等待：Hurst突破0.55+OI转BUILD+score过110'),
+        ('BEAR_TREND高分+OI全线SHORT_BUILD+大户偏空', '做空ENTER', 'BEAR趋势+OI确认+大户偏空=顺势做空', '止损墙上方有逼空风险但OI全线做空确认=不大逆势做多', '反弹入场空单，止损设在止损墙上方1.5×ATR1H处，仓位3%'),
+        ('BULL_TREND低分+FVG无共识+方仓陷阱', 'WATCH', 'BULL但score低+方仓陷阱+OI撤退=WATCH', '结构偏多但资金撤退+散户拥挤=不追多也不做空', '等待：OI翻转+FVG共识+失效期解除'),
         # P9补充: 复杂场景
-        ('体制矛盾:FVG=BULL但OI=SHORT_BUILD', 'WATCH', '结构偏多但资金在撤=信号矛盾，不赌方向', '等待：OI和FVG方向一致再入场'),
-        ('止损墙被测试但未突破+OI无确认', 'WATCH', '可能假突破，无OI确认不追', '等待：止损墙突破+OI翻转确认方向'),
+        ('体制矛盾:FVG=BULL但OI=SHORT_BUILD', 'WATCH', '结构偏多但资金在撤=信号矛盾，不赌方向', 'FVG做多信号强但OI全线撤退=结构资金背离，两边都不赌', '等待：OI和FVG方向一致再入场'),
+        ('止损墙被测试但未突破+OI无确认', 'WATCH', '可能假突破，无OI确认不追', '止损墙近但OI无BUILD确认=可能是诱多/诱空，不追', '等待：止损墙突破+OI翻转确认方向'),
     ]
-    for i, (scenario, action, logic, advice) in enumerate(cases):
-        few_shot_text += f'{i+1}. [{action}] {scenario}\n   逻辑: {logic}\n   建议: {advice}\n\n'
+    for i, (scenario, action, logic, reverse, advice) in enumerate(cases):
+        few_shot_text += f'{i+1}. [{action}] {scenario}\n   逻辑: {logic}\n   反向: {reverse}\n   建议: {advice}\n\n'
     system_content += few_shot_text
     
-    # 实际数据作为user prompt（已在Step 1构建）
-    
-    # 实际数据作为user prompt
-    user_prompt = build_brahma_brain_prompt(d, fvg, ob, liq, res, oi, sm, vol, mac, risk, fc, ens, council)
-    
-    # Step 3: 调用LLM
+    # Step 3: 调用LLM（P2修复: 全局超时120s + fallback）
     try:
-        raw_output, model_used = _call_llm(system_content, user_prompt)
+        raw_output, model_used = _call_llm(system_content, user_prompt, total_timeout=120)
     except Exception as e:
         return {
             'core_logic': f'梵天大脑降级: {str(e)[:60]}',
+            'reverse_arg': '',
             'risks': [],
             'void_condition': '',
             'vip_card': '',
@@ -89,6 +92,7 @@ def brahma_brain_decide(d: dict, fvg: dict, ob: dict, liq: dict, res: dict,
             'latency_ms': int((time.time() - t0) * 1000),
             'success': False,
             'error': str(e)[:200],
+            'warnings': [],
         }
     
     latency_ms = int((time.time() - t0) * 1000)
@@ -109,8 +113,10 @@ def brahma_brain_decide(d: dict, fvg: dict, ob: dict, liq: dict, res: dict,
             'model': model_used,
             'latency_ms': latency_ms,
             'core_logic': validated.get('core_logic', ''),
+            'reverse_arg': validated.get('reverse_arg', ''),
             'void_condition': validated.get('void_condition', ''),
             'warnings': validated.get('warnings', []),
+            'raw_output_preview': raw_output[:200],
         }
         with open(log_path, 'a') as _lf:
             _lf.write(_json.dumps(log_entry, ensure_ascii=False) + '\n')
@@ -119,6 +125,7 @@ def brahma_brain_decide(d: dict, fvg: dict, ob: dict, liq: dict, res: dict,
     
     return {
         'core_logic': validated.get('core_logic', ''),
+        'reverse_arg': validated.get('reverse_arg', ''),
         'risks': validated.get('risks', []),
         'void_condition': validated.get('void_condition', ''),
         'vip_card': validated.get('vip_card', raw_output),
@@ -131,10 +138,10 @@ def brahma_brain_decide(d: dict, fvg: dict, ob: dict, liq: dict, res: dict,
     }
 
 
-def _call_llm(system: str, prompt: str) -> tuple:
-    """直接调用OpenRouter API（绕过free_llm_client的BRAHMA_CONSTITUTION注入）"""
-    import json, ssl, urllib.request, os
-    
+def _call_llm(system: str, prompt: str, total_timeout: int = 120) -> tuple:
+    """直接调用OpenRouter API（绕过free_llm_client的BRAHMA_CONSTITUTION注入）
+    P2修复: 全局超时控制，超时直接raise让上层fallback到规则版VIP
+    """
     # 加载API key
     env_path = BASE / '.env'
     api_key = ''
@@ -158,8 +165,6 @@ def _call_llm(system: str, prompt: str) -> tuple:
     
     url = 'https://openrouter.ai/api/v1/chat/completions'
     ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
     
     headers = {
         'Authorization': f'Bearer {api_key}',
@@ -169,7 +174,13 @@ def _call_llm(system: str, prompt: str) -> tuple:
     }
     
     last_error = ''
+    _global_t0 = time.time()
     for model in models:
+        _elapsed = time.time() - _global_t0
+        if _elapsed >= total_timeout:
+            raise RuntimeError(f'Global timeout {total_timeout}s exceeded ({_elapsed:.0f}s elapsed)')
+        _remaining = total_timeout - _elapsed
+        _model_timeout = min(90, int(_remaining) + 5)
         try:
             payload = json.dumps({
                 'model': model,
@@ -178,20 +189,22 @@ def _call_llm(system: str, prompt: str) -> tuple:
                     {'role': 'user', 'content': prompt},
                 ],
                 'temperature': 0.3,
-                'max_tokens': 2000,
+                'max_tokens': 3000,
             }).encode('utf-8')
             
             req = urllib.request.Request(url, data=payload, headers=headers, method='POST')
-            with urllib.request.urlopen(req, timeout=90, context=ctx) as resp:
+            with urllib.request.urlopen(req, timeout=_model_timeout, context=ctx) as resp:
                 result = json.loads(resp.read().decode('utf-8'))
             
             content = result.get('choices', [{}])[0].get('message', {}).get('content', '')
             if content:
-                # Fix E: 检查输出是否包含格式化标记
-                if '梵天大脑' in content or '核心逻辑' in content or '姓赵不宣' in content:
+                # Fix E: 检查输出是否包含格式化标记 + 排除模板占位符
+                has_format = '梵天大脑' in content or '核心逻辑' in content or '姓赵不宣' in content
+                has_placeholder = '[一句话' in content or '[X]' in content or '[SYMBOL]' in content
+                if has_format and not has_placeholder:
                     return content, model
                 else:
-                    # 格式不对，降低温度重试1次
+                    # 格式不对或含占位符，降低温度重试1次
                     payload2 = json.dumps({
                         'model': model,
                         'messages': [
@@ -199,14 +212,16 @@ def _call_llm(system: str, prompt: str) -> tuple:
                             {'role': 'user', 'content': prompt + '\n\n请严格按照输出格式输出，包含"🧠 梵天大脑决策"和"核心逻辑："标记。'},
                         ],
                         'temperature': 0.1,
-                        'max_tokens': 2000,
+                        'max_tokens': 3000,
                     }).encode('utf-8')
                     req2 = urllib.request.Request(url, data=payload2, headers=headers, method='POST')
-                    with urllib.request.urlopen(req2, timeout=90, context=ctx) as resp2:
+                    with urllib.request.urlopen(req2, timeout=_model_timeout, context=ctx) as resp2:
                         result2 = json.loads(resp2.read().decode('utf-8'))
                     content2 = result2.get('choices', [{}])[0].get('message', {}).get('content', '')
-                    if content2:
-                        return content2, model
+                    if content2 and ('梵天大脑' in content2 or '核心逻辑' in content2 or '姓赵不宣' in content2):
+                        # 排除模板占位符
+                        if '[一句话' not in content2 and '[X]' not in content2 and '[SYMBOL]' not in content2:
+                            return content2, model
         except Exception as e:
             last_error = str(e)[:100]
             continue
@@ -215,10 +230,20 @@ def _call_llm(system: str, prompt: str) -> tuple:
 
 
 def _parse_output(raw: str) -> dict:
-    """解析LLM输出为结构化dict"""
+    """解析LLM输出为结构化dict
+    P2修复: 从最后一个🧠标记开始解析，跳过模型推理前言
+    """
     lines = raw.strip().split('\n')
     
+    # 找最后一个🧠标记，跳过推理前言
+    start_idx = 0
+    for i, line in enumerate(lines):
+        if '🧠' in line:
+            start_idx = i
+    lines = lines[start_idx:]
+    
     core_logic = ''
+    reverse_arg = ''
     risks = []
     void_condition = ''
     vip_card_lines = []
@@ -231,6 +256,10 @@ def _parse_output(raw: str) -> dict:
             core_logic = stripped.replace('核心逻辑：', '').strip()
             in_risks = False
             in_vip = False
+        elif stripped.startswith('反向论证：'):
+            reverse_arg = stripped.replace('反向论证：', '').strip()
+            in_risks = False
+            in_vip = False
         elif stripped.startswith('风险点：'):
             in_risks = True
             in_vip = False
@@ -238,7 +267,7 @@ def _parse_output(raw: str) -> dict:
             void_condition = stripped.replace('作废条件：', '').strip()
             in_risks = False
             in_vip = False
-        elif stripped.startswith('🌿') or stripped.startswith('──') and 'VIP' in stripped:
+        elif stripped.startswith('🌿'):
             in_vip = True
             in_risks = False
             vip_card_lines.append(line)
@@ -249,6 +278,7 @@ def _parse_output(raw: str) -> dict:
     
     return {
         'core_logic': core_logic,
+        'reverse_arg': reverse_arg,
         'risks': risks,
         'void_condition': void_condition,
         'vip_card': '\n'.join(vip_card_lines) if vip_card_lines else raw,
@@ -281,9 +311,8 @@ def _validate_output(parsed: dict, risk: dict, ens: dict, vol: dict) -> dict:
         warnings.append('⚠️ ensemble偏多但AI建议做空，请人工复核')
     
     # 硬约束3: SL距离≥1.5×ATR1H（从VIP文本中提取SL价格）
-    import re as _re
-    sl_matches = _re.findall(r'止损\s*\$([\d,]+\.?\d*)', vip_text)
-    entry_matches = _re.findall(r'入场区?\s*\$([\d,]+\.?\d*)', vip_text)
+    sl_matches = re.findall(r'止损\s*\$([\d,]+\.?\d*)', vip_text)
+    entry_matches = re.findall(r'(?:入场区?|挂单区)\s*\$([\d,]+\.?\d*)', vip_text)
     if sl_matches and entry_matches and atr_1h > 0:
         try:
             sl_price = float(sl_matches[0].replace(',', ''))
@@ -296,7 +325,7 @@ def _validate_output(parsed: dict, risk: dict, ens: dict, vol: dict) -> dict:
             pass
     
     # 硬约束4: 仓位≤5%NAV（失效期RED≤2.5%）
-    pos_matches = _re.findall(r'仓位\s*(\d+(?:\.\d+)?)%', vip_text)
+    pos_matches = re.findall(r'仓位\s*(\d+(?:\.\d+)?)%', vip_text)
     if pos_matches:
         try:
             pos_pct = float(pos_matches[0])
@@ -307,7 +336,7 @@ def _validate_output(parsed: dict, risk: dict, ens: dict, vol: dict) -> dict:
             pass
     
     # 硬约束5: 杠杆≤20x
-    lev_matches = _re.findall(r'杠杆\s*(\d+)x', vip_text)
+    lev_matches = re.findall(r'杠杆\s*(\d+)x', vip_text)
     if lev_matches:
         try:
             lev = int(lev_matches[0])

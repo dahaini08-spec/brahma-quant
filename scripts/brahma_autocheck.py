@@ -93,7 +93,8 @@ def check_l3_performance() -> tuple:
     """L3: 性能基准检查（目标<5s）"""
     try:
         t0 = time.time()
-        from brahma_brain import brahma_core
+# [import_autoclean] 模块不存在，已注释
+# from brahma_brain import brahma_core
         r = brahma_core.analyze('BTCUSDT', signal_dir='LONG')
         elapsed = time.time() - t0
         score = r.get('score_final', 0)
@@ -110,7 +111,8 @@ def check_l3_performance() -> tuple:
 def check_l4_dimensions() -> tuple:
     """L4: 有效评分维度覆盖率（目标>=45/53）"""
     try:
-        from brahma_brain import brahma_core
+# [import_autoclean] 模块不存在，已注释
+# from brahma_brain import brahma_core
         r = brahma_core.analyze('BTCUSDT', signal_dir='LONG')
         bd = r.get('confluence', {}).get('breakdown', {})
         nonzero = [k for k, v in bd.items() if v != 0 and not k.startswith('_')]

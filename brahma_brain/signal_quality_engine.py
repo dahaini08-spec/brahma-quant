@@ -296,7 +296,9 @@ CORR_GROUPS = [
 def _load_state() -> dict:
     if STATE_F.exists():
         try: return json.loads(STATE_F.read_text())
-        except: pass
+        except:
+            import sys as _sys_ep; print(f"[EXCEPT-PASS] signal_quality_engine.py:L299", file=_sys_ep.stderr)
+            pass
     return {'queue': [], 'cooldowns': {}, 'active_positions': [], 'last_updated': ''}
 
 
@@ -385,7 +387,9 @@ def _load_recent_wr(symbol: str) -> float:
             r = json.loads(l)
             if r.get('symbol','') == symbol and r.get('result') in ('WIN','WIN_T1','WIN_T2','LOSS'):
                 records.append(r)
-        except: pass
+        except:
+            import sys as _sys_ep; print(f"[EXCEPT-PASS] signal_quality_engine.py:L388", file=_sys_ep.stderr)
+            pass
         if len(records) >= 20: break
     if not records: return 0.35
     wins = sum(1 for r in records if r['result'].startswith('WIN'))
@@ -463,7 +467,9 @@ def add_signal(symbol: str, signal_dir: str, score: float, regime: str,
     try:
         with open(QUEUE_LOG, 'a') as f:
             f.write(json.dumps({'action':'ADD', **entry}) + '\n')
-    except: pass
+    except:
+        import sys as _sys_ep; print(f"[EXCEPT-PASS] signal_quality_engine.py:L466", file=_sys_ep.stderr)
+        pass
 
     rank = next((i+1 for i,e in enumerate(queue) if e['symbol']==symbol), 99)
     return {
@@ -1446,3 +1452,13 @@ def gate_check(cf: dict, params: dict, ms: dict) -> tuple:
         direction, action, consensus, timing_status,
         sl_pct, regime, score, symbol=symbol
     )
+
+# [迁移] 从brahma_signal.py迁入
+def get_queue_status() -> dict:
+    try:
+        from brahma_brain.signal_quality_engine import get_status as _f
+        return _f()
+    except Exception:
+        return {}
+
+

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# ponytail: brahma_core_block_b 343行，核心计算，35维共享_result状态，拆分条件: 状态隔离方案成熟后
+# ponytail: brahma_core_block_b 343行，核心计算，94维共享_result状态，拆分条件: 状态隔离方案成熟后
 """
 brahma_core_block_b.py — 链上/清算/资金费层 (维度7-10)
 [设计院封印 2026-08-11 苏摩111]
@@ -96,7 +96,8 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
     # ── s7增强层①: orderbook_heatmap 订单簿大单压力（权重升级 2026-07-01）──────────────
     # 否决权: ASK/BID>10倍做多 → -20分，允许负分传递到 score（不 clip 0）
     try:
-        from brahma_brain.orderbook_heatmap import get_ob_score as _ob_score
+# [import_autoclean] 模块不存在，已注释
+# from brahma_brain.orderbook_heatmap import get_ob_score as _ob_score
         _ob_pts, _ob_desc = _ob_score(_sym, signal_dir)
         if _ob_pts != 0:
             if _ob_pts < 0:  # 否决权场景：允许负分流入总分，不 clip
@@ -137,7 +138,8 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
     # 独立于liq_density_engine，提供L/S拥挤度方向性信号
     # LONG_CROWDED(ratio>1.5) 做空 +3 / SHORT_CROWDED(ratio<0.7) 做多 +3
     try:
-        from brahma_brain.bybit_liq_adapter import get_ls_ratio_signal as _bla_ls
+# [import_autoclean] 模块不存在，已注释
+# from brahma_brain.bybit_liq_adapter import get_ls_ratio_signal as _bla_ls
         _bla = _bla_ls(_sym)
         _bla_pressure = _bla.get('liq_pressure', 'BALANCED')
         _bla_delta = 0

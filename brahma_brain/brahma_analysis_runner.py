@@ -125,7 +125,7 @@ except Exception:
 
 # signal_trace: 信号轨迹审计日志（设计院 2026-07-02）──────────────────────
 try:
-    from brahma_signal import trace_generated, trace_skipped
+    from signal_quality_engine import trace_generated, trace_skipped
     _TRACE_OK = True
 except Exception:
     _TRACE_OK = False
@@ -220,6 +220,11 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                         except Exception:
                             pass
                         _cached['_from_cache'] = True
+                        # [Fix 2026-09-12] 快照格式={symbol,direction,ts,dt,result:{...}}
+                        # runner返回时必须展开result字段到顶层，否则下游读不到score_final/regime等
+                        if 'result' in _cached and isinstance(_cached['result'], dict):
+                            _inner = _cached.pop('result')
+                            _cached.update(_inner)
                         # [设计院 2026-08-09] 缓存命中时补充decision+fangcang（今日修复）
                         if 'decision' not in _cached or 'fangcang' not in _cached:
                             try:
@@ -291,67 +296,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
     # 解决根因：brahma_core原始分对体制无感知，BULL_TREND多单天然偏低≈79分
     # 改造：外层注入 regime_context_bonus（EMA结构+RSI+动能），最高+35分
     # + [P0-C] rsi_trigger_event 2H有效窗口事件加分，最高+40分
-    try:
-        from brahma_brain.bull_regime_injector import (
-            get_regime_context_bonus, get_event_timing_bonus
-        )
-        _rf = result
-        _reg = str(_rf.get('regime', _rf.get('market_state', {}).get('regime', '')) or '')
-        _dir = str(_rf.get('signal_dir', _rf.get('direction', '')) or '')
-        _cur_score = float(
-            _rf.get('score_final',
-            _rf.get('total',
-            _rf.get('score', 0))) or 0
-        )  # [FIX 2026-07-06] 优先取score_final，兼容brahma_core返回结构
-
-        # P0-B: BULL体制顺势加分（仅LONG方向）
-        _total_bonus = 0
-        if 'BULL' in _reg and _dir in ('LONG', 'AUTO', ''):
-            _rb = get_regime_context_bonus(sym, _reg)
-            if _rb['bonus'] > 0:
-                _total_bonus += _rb['bonus']
-                _rf['_regime_context_bonus'] = _rb
-                pass  # [静默] f'[BullBonus] {sym} +{_rb["bonus"]}分 | {_rb["reasons"]}'
-
-        # P0-C: rsi_trigger_event 事件窗口加分（所有方向）
-        _eb = get_event_timing_bonus(sym)
-        if _eb['active'] and _eb['bonus'] > 0:
-            _total_bonus += _eb['bonus']
-            _rf['_event_timing_bonus'] = _eb
-            pass  # [静默] f'[EventBonus] {sym} +{_eb["bonus"]}分 | {_eb["events"]}'
-
-        # ── 同步写入所有评分字段（覆盖 extract_standard_fields 所有读取路径）──
-        if _total_bonus > 0:
-            _new_score = _cur_score + _total_bonus
-            _rf['total']       = _new_score  # brahma_core返回路径
-            _rf['score']       = _new_score  # 通用路径
-            _rf['score_final'] = _new_score  # extract_standard_fields 首选字段
-            # confluence 字典同步（signal_selector / LLM council 读取路径）
-            if isinstance(_rf.get('confluence'), dict):
-                _rf['confluence']['score']    = _new_score
-                _rf['confluence']['total']    = _new_score
-                _rf['confluence']['grade_num']= int(_new_score)
-            pass  # [静默] f'[RegimeInject] {sym} {_cur_score:.1f}+{_total_bonus}→{_new_score:.1f} (regime=
-            # [FIX 2026-07-06] 注入后validation重算:
-            # P0B封锁只是设 valid_signal=False，但params['valid']=True+score达门 就应该是valid
-            _params_valid = bool((_rf.get('params') or {}).get('valid', False))
-            _kelly_ok = float((_rf.get('confluence') or {}).get('kelly_mult', 1) or 1) > 0
-            # P0B封锁在brahma_core里设置val=False，但它不存入标记字段
-            # 只要 params.valid=True + kelly>0 + 新score>=155 就是有效信号
-            # [达摩院修正 2026-07-16 苏摩111] BEAR_RECOVERY体制阈值降至120（IC=0.76背书）
-            _inj_regime = (
-                str((_rf.get('params') or {}).get('regime', '') or '')
-                or str(_rf.get('regime', '') or '')
-            )  # [P0-4修复 2026-07-16] 双路径: params.regime OR 顶层regime
-            _MIN_VALID = 120 if 'BEAR_RECOVERY' in _inj_regime.upper() else 155
-            if _params_valid and _kelly_ok and _new_score >= _MIN_VALID:
-                _rf['valid_signal'] = True
-                pass  # [静默] f'[RegimeInject-Valid] {sym} score={_new_score:.1f}>={_MIN_VALID} params.valid=T
-            elif _new_score >= _MIN_VALID:
-                # score达问但params.valid=False，说明RR问题
-                pass  # [静默] f'[RegimeInject-Valid] {sym} score={_new_score:.1f} 但params.valid=False，RR问题，不解除
-    except Exception as _inj_err:
-        pass  # 注入失败不阻断主流程
+    # [DEAD CODE REMOVED 2026-09-13] bull_regime_injector模块不存在，try-except块已失效
 
     # ── [设计院 2026-07-04] P2: switch_count_24h>50 → 体制噪音惩罚 ─────
     # BTC 24H体制翻转>50次 = 行情震荡，即便confirmed=BULL_TREND也降噪
@@ -457,7 +402,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         import sys as _sl_sys, os as _sl_os
         _sl_dir = _sl_os.path.dirname(_sl_os.path.abspath(__file__))
         if _sl_dir not in _sl_sys.path: _sl_sys.path.insert(0, _sl_dir)
-        from brahma_signal import tick_signal_lifecycle as _tick_lc
+        from signal_quality_engine import tick_signal_lifecycle as _tick_lc
         _lc_price = float(result.get('price', 0) or 0)
         if _lc_price > 0 and sym:
             _lc_alerts = _tick_lc(sym, _lc_price)
@@ -511,7 +456,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
 
     # B4: brahma_onchain — 链上评分
     try:
-        from brahma_onchain import onchain_score
+        from onchain_engine import onchain_score
         _oc = onchain_score(symbol, result.get('signal_dir', 'LONG'))
         if _oc and not _oc.get('error'):
             result['_onchain'] = _oc
@@ -653,19 +598,6 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
     # ── nerve_system freshness_checker 数据质量守护（非阻断）────────────
     # [协同接入 2026-08-02 设计院自主] 分析前检查关键数据文件新鲜度
     _freshness_warnings = []
-    try:
-        import sys as _nv_sys, os as _nv_os
-        _nv_root = _nv_os.path.join(_nv_os.path.dirname(__file__), '..', 'nerve_system')
-        if _nv_root not in _nv_sys.path:
-            if _nv_root not in _nv_sys.path: _nv_sys.path.insert(0, _nv_root)
-        from freshness_checker import run as _fc_run
-        _fc_alerts = _fc_run()
-        _freshness_warnings = [
-            f"{a['check']}: {a['issue']}"
-            for a in _fc_alerts if a.get('level') in ('ERROR', 'WARN')
-        ][:3]
-    except Exception:
-        pass
 
     # ── [设计院 2026-07-13 P0修复] 外部扩展层评分集成 ─────────────────────────
     # 根因：liq_heatmap/cross_exchange_fr/whale_monitor/options_pc_ratio/miner_pressure
@@ -1203,28 +1135,6 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
     # ── [P1 第五轮 2026-08-02] brahma_mem_compressor 接入 ────────────────────
     # score>=120 时压缩信号上下文写入 data/signal_context_memory.jsonl
     # 为后续LLM调用提供压缩上下文，避免重传完整result
-    try:
-        _final_score = float(result.get('score_final', result.get('score', 0)) or 0)
-        if _final_score >= 120:
-            from brahma_brain.brahma_mem_compressor import compress_signal_context
-            _sym_mc = result.get('symbol', sym)
-            _ctx = compress_signal_context(_sym_mc)
-            # 写入 data/signal_context_memory.jsonl
-            import json as _mcjson
-            from pathlib import Path as _mcPath
-            _mc_path = _mcPath(__file__).parent.parent / 'data' / 'signal_context_memory.jsonl'
-            _mc_path.parent.mkdir(exist_ok=True)
-            _mc_entry = {
-                'symbol':     _sym_mc,
-                'score':      _final_score,
-                'ts':         __import__('datetime').datetime.utcnow().isoformat(),
-                'ctx_budget': _ctx.get('context_budget', 0),
-                'signals_n':  len(_ctx.get('recent_signals', [])),
-            }
-            with open(_mc_path, 'a', encoding='utf-8') as _mcf:
-                _mcf.write(_mcjson.dumps(_mc_entry, ensure_ascii=False) + '\n')
-            result['_mem_ctx'] = _mc_entry
-    except Exception:
         pass  # mem_compressor失败不影响主流程
 
     # [修复 2026-08-11] 从panorama提取RSI回写到结果字段
@@ -1448,10 +1358,6 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
             elif _sym in _cag_map:
                 _cag_map[_sym]['cross_asset_check'] = _cag_item.get('cross_asset_check', 'OK')
     except Exception as _cag_err:
-        try:
-            from brahma_brain.brahma_log import berr
-            berr('cross_asset_gate', f'门控异常（不影响主流程）: {_cag_err}')
-        except Exception:
             pass
 
     return results

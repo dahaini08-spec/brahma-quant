@@ -70,9 +70,10 @@ TRADER_SYSTEM_PROMPT = """你是一个拥有40年顶级合约交易经验的老�
 基于以上数据，给出你的判断。你必须：
 
 1. **核心逻辑**（一句话）：为什么这个方向？把所有数据综合成一句话
-2. **风险点**：什么情况会亏？不要回避风险，列出2-3个关键风险
-3. **作废条件**：什么情况策略失效？给出明确价格/条件
-4. **VIP策略卡片**：按照标准格式输出
+2. **反向论证**（一句话）：为什么不做另一个方向？如果做多，为什么不做空？如果做空，为什么不做多？如果等待，为什么现在不能入场？
+3. **风险点**：什么情况会亏？不要回避风险，列出2-3个关键风险
+4. **作废条件**：什么情况策略失效？给出明确价格/条件
+5. **VIP策略卡片**：按照标准格式输出
 
 ## 输出格式（必须严格遵守）
 
@@ -80,6 +81,7 @@ TRADER_SYSTEM_PROMPT = """你是一个拥有40年顶级合约交易经验的老�
 🧠 梵天大脑决策
 
 核心逻辑：[一句话，为什么这个方向，≤30字]
+反向论证：[一句话，为什么不做另一个方向，≤20字]
 
 风险点：
 1. [风险1]
@@ -105,6 +107,7 @@ TRADER_SYSTEM_PROMPT = """你是一个拥有40年顶级合约交易经验的老�
 🧠 梵天大脑决策
 
 核心逻辑：[一句话，为什么等待，≤30字]
+反向论证：[一句话，为什么现在不能入场，≤20字]
 
 风险点：
 1. [风险1]
@@ -128,6 +131,8 @@ TRADER_SYSTEM_PROMPT = """你是一个拥有40年顶级合约交易经验的老�
 
 # ══════════════════════════════════════════════════════════
 # Layer C: Few-Shot Examples（10个经典案例）
+# NOTE: unused — 实际few-shot通过ai.py中5个摘要嵌入system prompt
+# 保留作为结构化案例库参考
 # ══════════════════════════════════════════════════════════
 
 FEW_SHOT_EXAMPLES = [
@@ -336,9 +341,17 @@ FEW_SHOT_EXAMPLES = [
 def build_brahma_brain_prompt(d: dict, fvg: dict, ob: dict, liq: dict, res: dict,
                                oi: dict, sm: dict, vol: dict, mac: dict, risk: dict,
                                fc: dict, ens: dict, council: dict) -> str:
-    """把10步数据结构化为LLM可读的prompt"""
+    """把10步数据结构化为LLM可读的prompt
+    P0修复 2026-09-12: regime/score/grade从d['bs']读取，不是d顶层
+    """
     sym = d.get('sym', 'BTC')
     price = d.get('price', 0)
+    
+    # P0修复: regime/score/grade优先从d顶层读（caller可能已同步reg_now），再从d['bs']读
+    bs = d.get('bs', {}) if isinstance(d.get('bs'), dict) else {}
+    regime = d.get('regime') or bs.get('regime', 'N/A')
+    score = d.get('score') if d.get('score') is not None else bs.get('score_final', bs.get('score', 0))
+    grade = d.get('grade') if d.get('grade') is not None else bs.get('grade', '?')
 
     # 方仓Top5
     fc_top = fc.get('top5', []) if fc else []
@@ -417,7 +430,7 @@ def build_brahma_brain_prompt(d: dict, fvg: dict, ob: dict, liq: dict, res: dict
 
     prompt = f"""## 市场快照 {sym} ${price:,.0f}
 
-- regime: {d.get('regime', 'N/A')}  score: {d.get('score', 0)}  grade: {d.get('grade', '?')}
+- regime: {regime}  score: {score}  grade: {grade}
 - FVG共识: {fvg.get('consensus', 'N/A')}  主磁铁: {fvg.get('dir', 'N/A')}@${fvg.get('magnet', 0):,.0f}
 - 方仓Top1: {fc_str.split(chr(10))[1] if len(fc_str.split(chr(10))) > 1 else '无数据'}
   概率矩阵: {pm_str}  陷阱: {fc.get('trap_alert', 'N/A') if fc else 'N/A'}
@@ -436,5 +449,10 @@ def build_brahma_brain_prompt(d: dict, fvg: dict, ob: dict, liq: dict, res: dict
 - 跨市场: alpha={cm.get('alpha', 0):+.4f} {cm.get('direction', 'N/A')}  美盘: {us_ses.get('session', 'N/A')}
 - Ensemble: score={ens_score} signal={ens_signal} 13维
 - Council: {council_bias}/{council_action}  Bayes: adj={bayes_adj:+.2f} {bayes_detail[:40]}  Combined: {combined}"""
+
+    # 接入brahma_context_injector
+    ctx = d.get('brahma_context', '')
+    if ctx:
+        prompt = ctx + '\n\n' + prompt
 
     return prompt

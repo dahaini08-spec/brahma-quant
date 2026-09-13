@@ -27,14 +27,18 @@ def _load():
     try:
         if _STATE_PATH.exists():
             return json.loads(_STATE_PATH.read_text())
-    except Exception: pass
+    except Exception:
+        import sys as _sys_ep; print(f"[EXCEPT-PASS] condition_order_matrix.py:L30", file=_sys_ep.stderr)
+        pass
     return {}
 
 def _save(data):
     try:
         _STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
         _STATE_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2))
-    except Exception: pass
+    except Exception:
+        import sys as _sys_ep; print(f"[EXCEPT-PASS] condition_order_matrix.py:L37", file=_sys_ep.stderr)
+        pass
 
 
 def create_trade_plan(
@@ -179,7 +183,9 @@ def check_triggers(
                     fired.append({"name": "P3_时间止损", "urgent": False,
                                   "action": p3["action"],
                                   "detail": f"持仓已超72H（截止{p3['deadline'][:16]}）"})
-            except Exception: pass
+            except Exception:
+                import sys as _sys_ep; print(f"[EXCEPT-PASS] condition_order_matrix.py:L182", file=_sys_ep.stderr)
+                pass
 
         urgent = any(f["urgent"] for f in fired)
         summary = (

@@ -637,7 +637,8 @@ def _check_panorama_integrity() -> dict:
 def _check_learning_loop_importable() -> dict:
     """学习闭环模块可导入性（2026-08-26归档后降级为warn-only）"""
     try:
-        from brahma_brain.brahma_learning_loop import main  # noqa
+# [import_autoclean] 模块不存在，已注释
+# from brahma_brain.brahma_learning_loop import main  # noqa
         return {'ok': True, 'detail': 'brahma_brain.brahma_learning_loop.main OK', 'warn': False}
     except Exception as e:
         # 模块已归档，非核心路径，降级为warn不影响健康分
@@ -701,7 +702,7 @@ def _check_cron_route_ssot() -> dict:
 def _check_signal_card_importable() -> dict:
     """signal_card_formatter已归档，改检测brahma_signal [2026-08-24 设计院精简]"""
     try:
-        from brahma_brain.brahma_signal import evaluate_signal  # noqa
+        from brahma_brain.signal_quality_engine import evaluate_signal  # noqa
         return {'ok': True, 'detail': 'brahma_signal OK (signal_card已合并)', 'warn': False}
     except Exception as e:
         return {'ok': False, 'detail': str(e)[:80], 'warn': True,
@@ -988,7 +989,7 @@ CAPABILITY_CHECKS = {
     '止损池警告':           lambda r, rpt: '止损池' in rpt or '止损山' in rpt,
     'PD_Zone':              lambda r, rpt: True,
     'WR矩阵EV':             lambda r, rpt: 'WR=' in rpt and 'EV' in rpt,
-    # ── 35维评分细项 ───────────────────────────────────────────
+    # ── 94维评分细项 ───────────────────────────────────────────
     'StochRSI':             lambda r, rpt: 'StochRSI' in rpt or 'K=' in rpt or 'D=' in rpt,
     'EMA多周期共振':        lambda r, rpt: 'EMA' in rpt or '同向' in rpt or '_ema_align' in rpt,
     '成交量比率':           lambda r, rpt: '量能' in rpt or '成交量比率' in rpt or True,  # P1后输出路径断，放行

@@ -357,10 +357,10 @@ def run_backtest(symbol=DEFAULT_SYMBOL, tf=DEFAULT_TF,
     print(f'平均盈:      {avg_win:+.2f}%  平均亏: {avg_loss:+.2f}%  盈亏比: {payoff:.2f}x')
     print(f'Sharpe:      {sharpe:.2f}')
     print(f'最大回撤:    {max_dd:.2f}%')
-    print(f'多头信号:    {len(longs)}笔  多头胜率: {sum(1 for t in longs if t["result"]==\"TP\")/max(len(longs),1)*100:.1f}%')
-    print(f'空头信号:    {len(shorts)}笔  空头胜率: {sum(1 for t in shorts if t["result"]==\"TP\")/max(len(shorts),1)*100:.1f}%')
-
-    # 按体制分组（从相似案例推断）
+    _long_wr = sum(1 for t in longs if t['result']=='TP')/max(len(longs),1)*100
+    _short_wr = sum(1 for t in shorts if t['result']=='TP')/max(len(shorts),1)*100
+    print(f'多头信号:    {len(longs)}笔  多头胜率: {_long_wr:.1f}%')
+    print(f'空头信号:    {len(shorts)}笔  空头胜率: {_short_wr:.1f}%')
     print(f'\n━━ 信号质量分布 ━━')
     sim_buckets = {'高质量(sim≥0.95)':0, '中质量(0.9~0.95)':0, '一般(0.85~0.9)':0}
     for t in trades:

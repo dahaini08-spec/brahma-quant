@@ -1523,13 +1523,17 @@ def _get_nav() -> float:
             _nav = _bs.get('nav') or _bs.get('nav_verified')
             if _nav and float(_nav) > 50:
                 return float(_nav)
-    except: pass
+    except:
+        import sys as _sys_ep; print(f"[EXCEPT-PASS] position_sizer.py:L1526", file=_sys_ep.stderr)
+        pass
     try:
         if NAV_F.exists():
             d = json.loads(NAV_F.read_text())
             if isinstance(d, list) and d: return float(d[-1].get('nav', 127.62))
             if isinstance(d, dict): return float(d.get('latest_nav', 127.62))
-    except: pass
+    except:
+        import sys as _sys_ep; print(f"[EXCEPT-PASS] position_sizer.py:L1532", file=_sys_ep.stderr)
+        pass
     try:
         lines = list(reversed(_read_tail(TRADE_F, 400)))
         candidates = []
@@ -1541,7 +1545,9 @@ def _get_nav() -> float:
                 candidates.append(float(nav))
         if candidates:
             return max(candidates)  # 取最大值（最近真实NAV）
-    except: pass
+    except:
+        import sys as _sys_ep; print(f"[EXCEPT-PASS] position_sizer.py:L1544", file=_sys_ep.stderr)
+        pass
     return 127.62
 
 
@@ -1556,7 +1562,9 @@ def _get_active_exposure() -> tuple:
             r = json.loads(l)
             if not r.get('_is_simulation') and r.get('result') in (None,'','OPEN'):
                 active.append(r)
-        except: pass
+        except:
+            import sys as _sys_ep; print(f"[EXCEPT-PASS] position_sizer.py:L1559", file=_sys_ep.stderr)
+            pass
     # 估算每个持仓占用的风险
     total_risk = 0.0
     for pos in active:
@@ -1590,7 +1598,9 @@ def _recent_drawdown() -> float:
             r = json.loads(l)
             if not r.get('_is_simulation') and r.get('pnl_pct'):
                 pnls.append(float(r['pnl_pct']))
-        except: pass
+        except:
+            import sys as _sys_ep; print(f"[EXCEPT-PASS] position_sizer.py:L1593", file=_sys_ep.stderr)
+            pass
         if len(pnls) >= 20: break
     if not pnls: return 0.0
     cum, peak, max_dd = 0, 0, 0
@@ -1709,7 +1719,9 @@ def compute(
                 ALLOC_LOG.write_text('\n'.join(lines[-2000:]) + '\n')
         except Exception:
             pass
-    except: pass
+    except:
+        import sys as _sys_ep; print(f"[EXCEPT-PASS] position_sizer.py:L1712", file=_sys_ep.stderr)
+        pass
 
     return result
 

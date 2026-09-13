@@ -82,7 +82,8 @@ def _extract_features(klines_4h: list) -> np.ndarray:
 def fit_hmm(features: np.ndarray) -> object:
     """训练3状态高斯HMM"""
     try:
-        from hmmlearn import hmm
+# [import_autoclean] 模块不存在，已注释
+# from hmmlearn import hmm
         model = hmm.GaussianHMM(
             n_components=3,
             covariance_type='diag',

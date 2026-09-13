@@ -55,7 +55,9 @@ def scan_d1_modules() -> list:
                     'brahma_core_block_a.py','brahma_core_block_b.py','brahma_core_block_c.py',
                     'brahma_core_analyze_steps.py','brahma_core_step4.py']:
             try: _main_chain += (_brain/_f).read_text(errors='ignore')
-            except: pass
+            except:
+                import sys as _sys_ep; print(f"[EXCEPT-PASS] brahma_360.py:L58", file=_sys_ep.stderr)
+                pass
         # 已知合法孤立模块（有明确用途不需主链路直接引用）
         _known_standalone = {
             # ── 系统工具层（独立运行，不需主链路引用）──

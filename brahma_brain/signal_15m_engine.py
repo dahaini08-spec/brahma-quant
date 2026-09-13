@@ -267,7 +267,8 @@ def generate_15m_signal(symbol: str, verbose: bool = False) -> dict | None:
         # 铁证：三层架构 BTC WR=62.7% ETH WR=64.7% EV>0.7%/笔
         # 无1H触发时15m独立触发WR=34%，不发信号
         try:
-            from brahma_brain.rsi_1h_trigger import detect_1h_trigger as _1h_chk
+# [import_autoclean] 模块不存在，已注释
+# from brahma_brain.rsi_1h_trigger import detect_1h_trigger as _1h_chk
             _1h_r = _1h_chk(symbol)
             if _1h_r is None:
                 return None
@@ -631,7 +632,8 @@ def scan_and_push(dry_run: bool = False) -> list[dict]:
             # 触发 dharma_data_bridge 标准化入库
             try:
                 sys.path.insert(0, str(ROOT_DIR))
-                from brahma_brain.dharma_data_bridge import log_signal
+# [import_autoclean] 模块不存在，已注释
+# from brahma_brain.dharma_data_bridge import log_signal
                 log_signal(sig)
             except Exception as e:
                 pass  # bridge失败不阻断
