@@ -93,12 +93,33 @@ def detect_chop_breakout(state: dict, symbol: str = 'BTCUSDT') -> dict:
         failed.append(f'C3 聪明钱多{big_pos:.0%}<62%❌')
     
     # ── C4: CVD ≥ 6（持续买方压力）────────────────────────────
-    enhanced = extra.get('enhanced', {})
-    cvd = enhanced.get('breakdown', {}).get('cvd', 0)
+    # [修复 2026-09-13 苏摩111] 优先读cvd_realtime采集器快照（数据源真实）
+    # 旧逻辑: 读 enhanced.breakdown.cvd → 但enhanced在state中为空 → 永远=0
+    # 新逻辑: 优先读 cvd_realtime_*.json（采集器10s刷新）→ fallback enhanced → fallback 0
+    sym_lower = symbol.lower()
+    cvd = 0
+    cvd_path = BASE / 'data' / f'cvd_realtime_{sym_lower}.json'
+    if cvd_path.exists():
+        try:
+            _cvd_data = json.loads(cvd_path.read_text())
+            # cvd_1h 是累积买卖量差，范围通常 0~100+
+            _cvd_raw = _cvd_data.get('cvd_1h', 0)
+            _cvd_signal = _cvd_data.get('signal', '')
+            # 映射: cvd_1h >= 6 或 signal=STRONG_BUY/BUY_DOMINANT → 买压确认
+            if _cvd_raw >= 6:
+                cvd = _cvd_raw
+            elif 'BUY' in _cvd_signal and _cvd_raw > 0:
+                cvd = max(_cvd_raw, 6)  # BUY signal + 正CVD = 买压确认
+        except Exception:
+            pass
+    # fallback: enhanced.breakdown.cvd
+    if cvd == 0:
+        enhanced = extra.get('enhanced', {})
+        cvd = enhanced.get('breakdown', {}).get('cvd', 0)
     if cvd >= 6:
-        met.append(f'C4 CVD买压+{cvd}≥6✅')
+        met.append(f'C4 CVD买压+{cvd:.1f}≥6✅')
     else:
-        failed.append(f'C4 CVD买压{cvd}<6❌')
+        failed.append(f'C4 CVD买压{cvd:.1f}<6❌')
     
     # ── C5: ATR分位 ≤ 20th（压缩期）───────────────────────────
     atr_p = extra.get('atr_percentile', {})
@@ -128,9 +149,7 @@ def detect_chop_breakout(state: dict, symbol: str = 'BTCUSDT') -> dict:
         if hmm_cache.exists():
             hc = json.loads(hmm_cache.read_text())
             bull_prob = hc.get('BTCUSDT', {}).get('BULL_TREND', 0) or hc.get('bull_prob', 0)
-    except Exception:
-        pass
-    
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # fallback：多维指标联合反推BULL趋势萌芽概率
     # 逻辑：score低但聪明钱+CVD+RSI全部偏多 → 趋势萌芽概率仍可以达标
     if bull_prob == 0.0:
@@ -140,7 +159,7 @@ def detect_chop_breakout(state: dict, symbol: str = 'BTCUSDT') -> dict:
             import sys as _sys_ep; print(f"[EXCEPT-PASS] chop_breakout_detector.py:L139", file=_sys_ep.stderr)
             pass
         smart_l  = extra.get('smart_money', {}).get('big_pos_long', 0.5)
-        cvd_v    = enhanced.get('breakdown', {}).get('cvd', 0)
+        cvd_v    = cvd  # [修复] 复用C4已读的CVD值，不再重复读enhanced
         mom      = state.get('momentum') or {}
         rsi_1h   = float(mom.get('rsi_1h', 50) or 50)
         # 各分项贡献（满分=0.85）
