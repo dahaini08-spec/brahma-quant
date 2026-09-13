@@ -2276,7 +2276,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     # BUG-1修复：分析完成后拉一次实时价，检测漂移
     import time as _t, urllib.request as _ur, ssl as _ssl, json as _js
     try:
-        _ctx = _ssl.create_default_context(); _ctx.check_hostname=False; _ctx.verify_mode=_ssl.CERT_NONE
+        _ctx = _ssl.create_default_context(); _ctx.check_hostname=True; _ctx.verify_mode=_ssl.CERT_REQUIRED
         _live = float(_js.loads(_ur.urlopen(
             f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}USDT', timeout=4, context=_ctx
         ).read()).get('price', p))

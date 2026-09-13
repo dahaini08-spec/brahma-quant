@@ -56,8 +56,8 @@ BRAHMA_SYSTEM = """你是梵天量化系统的信号裁决专家（Teacher模型
 ACTION:XXX  CONF:HIGH|MED|LOW  REASON:一句话核心逻辑"""
 
 _ctx = ssl.create_default_context()
-_ctx.check_hostname = False
-_ctx.verify_mode = ssl.CERT_NONE
+_ctx.check_hostname = True
+_ctx.verify_mode = ssl.CERT_REQUIRED
 
 def generate_chain(instruction: str, input_text: str, output: str) -> str:
     """调用Teacher模型生成推理链"""

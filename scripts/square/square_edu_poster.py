@@ -24,8 +24,8 @@ DEDUP_FILE = BASE / 'data' / 'square_post_dedup.json'
 LOG_FILE = BASE / 'data' / 'square_post_log.jsonl'
 STATE_FILE = BASE / 'data' / 'square_edu_state.json'
 _ctx = ssl.create_default_context()
-_ctx.check_hostname = False
-_ctx.verify_mode = ssl.CERT_NONE
+_ctx.check_hostname = True
+_ctx.verify_mode = ssl.CERT_REQUIRED
 
 
 def load_state():

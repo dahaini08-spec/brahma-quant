@@ -96,8 +96,8 @@ def _pick_model(preferred: str) -> str:
     return preferred
 
 _ctx = ssl.create_default_context()
-_ctx.check_hostname = False
-_ctx.verify_mode = ssl.CERT_NONE
+_ctx.check_hostname = True
+_ctx.verify_mode = ssl.CERT_REQUIRED
 
 
 def chat(prompt: str, system: str = '', max_tokens: int = 200,

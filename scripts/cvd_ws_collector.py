@@ -29,8 +29,8 @@ FAPI           = 'https://fapi.binance.com'
 
 _running = True
 _ctx = ssl.create_default_context()
-_ctx.check_hostname = False
-_ctx.verify_mode = ssl.CERT_NONE
+_ctx.check_hostname = True
+_ctx.verify_mode = ssl.CERT_REQUIRED
 
 # 每个symbol的状态
 _state: dict = {

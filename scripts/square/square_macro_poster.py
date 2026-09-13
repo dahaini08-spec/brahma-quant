@@ -21,8 +21,8 @@ API_URL = 'https://www.binance.com/bapi/composite/v1/public/pgc/openApi/content/
 DEDUP_FILE = BASE / 'data' / 'square_post_dedup.json'
 LOG_FILE = BASE / 'data' / 'square_post_log.jsonl'
 _ctx = ssl.create_default_context()
-_ctx.check_hostname = False
-_ctx.verify_mode = ssl.CERT_NONE
+_ctx.check_hostname = True
+_ctx.verify_mode = ssl.CERT_REQUIRED
 
 # 宏观事件日历（手动维护，也可从web_fetch获取）
 MACRO_EVENTS = {
