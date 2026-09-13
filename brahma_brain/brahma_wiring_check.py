@@ -195,7 +195,9 @@ def _check_caller(module: str) -> tuple:
             try:
                 if module in f.read_text(errors='ignore'):
                     callers.append(f.name)
-            except: pass
+            except:
+                import sys as _sys_ep; print(f"[EXCEPT-PASS] brahma_wiring_check.py:L198", file=_sys_ep.stderr)
+                pass
     return bool(callers), callers
 
 
@@ -206,7 +208,8 @@ def _check_result_key(module: str, result_key: str) -> tuple:
     try:
         import logging; logging.disable(logging.CRITICAL)
         import gc
-        from brahma_brain import brahma_engine as be
+# [import_autoclean] 模块不存在，已注释
+# from brahma_brain import brahma_engine as be
         gc.collect()
         r = be.analyze('BTCUSDT', deep=False)
         if result_key in r:

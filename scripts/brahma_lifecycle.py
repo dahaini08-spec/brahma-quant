@@ -376,7 +376,8 @@ def auto_open(signal: dict) -> dict:
 
     # 同步推送公域跟单卡片 [2026-07-17 苏摩111授权]
     try:
-        from copy_signal_pusher import push_copy_signal
+# [import_autoclean] 模块不存在，已注释
+# from copy_signal_pusher import push_copy_signal
         push_copy_signal(record)
     except Exception as _ce:
         print(f'[lifecycle] copy pusher warn: {_ce}')
@@ -434,7 +435,8 @@ def monitor_and_execute():
             actions.append(f'SL {sym} {pnl_pct:+.1f}%')
             # 公域平仓提醒
             try:
-                from copy_signal_pusher import push_copy_close
+# [import_autoclean] 模块不存在，已注释
+# from copy_signal_pusher import push_copy_close
                 push_copy_close(rec, 'SL', cp, pnl_pct)
             except Exception: pass
 
@@ -454,7 +456,8 @@ def monitor_and_execute():
             actions.append(f'TP2 {sym} {pnl_pct:+.1f}%')
             # 公域平仓提醒
             try:
-                from copy_signal_pusher import push_copy_close
+# [import_autoclean] 模块不存在，已注释
+# from copy_signal_pusher import push_copy_close
                 push_copy_close(rec, 'TP2', cp, pnl_pct)
             except Exception: pass
 
@@ -500,7 +503,8 @@ def monitor_and_execute():
             actions.append(f'TP1 {sym} {pnl_pct:+.1f}%')
             # 公域平仓提醒
             try:
-                from copy_signal_pusher import push_copy_close
+# [import_autoclean] 模块不存在，已注释
+# from copy_signal_pusher import push_copy_close
                 push_copy_close(rec, 'TP1', cp, pnl_pct)
             except Exception: pass
 

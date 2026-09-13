@@ -4,7 +4,7 @@ ensemble_engine.py - 梵天12维精简集成引擎
 
 职责:
   1. 从94维中提取达摩院验证的12维true alpha
-  2. 按IC加权组合 → 输出ensemble_score替代35维累加score
+  2. 按IC加权组合 → 输出ensemble_score替代94维累加score
   3. 与现有brahma_core score并行运行(不替换,对比验证)
 
 达摩院铁证:

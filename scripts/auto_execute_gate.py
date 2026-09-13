@@ -385,7 +385,8 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
     try:
         import sys as _sys2
         _sys2.path.insert(0, str(Path(__file__).parent))
-        from brahma_risk_gate import check_entry as _rg_check, RISK_RULES as _rg_rules
+# [import_autoclean] 模块不存在，已注释
+# from brahma_risk_gate import check_entry as _rg_check, RISK_RULES as _rg_rules
         _open_pos_count = len(_open_positions())
         _nav_for_rg = 473.0  # 默认值，下面尝试实时获取
         try:

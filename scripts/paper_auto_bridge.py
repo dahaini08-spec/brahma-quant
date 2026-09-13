@@ -110,7 +110,8 @@ def _count_open_positions() -> int:
 
 def _get_paper_nav() -> float:
     try:
-        from paper_trader import get_paper_nav
+# [import_autoclean] 模块不存在，已注释
+# from paper_trader import get_paper_nav
         return get_paper_nav()
     except:
         if PAPER_ACCOUNT_FILE.exists():
@@ -199,7 +200,7 @@ def _open_paper_order(symbol: str, direction: str, entry: float,
 def process_symbol(symbol: str, source: str = 'auto') -> dict:
     """
     单标的全流水线：
-    Step1 实时数据 → Step2 35维评分 → Step3 AI议会 → Step4 战场预判 → Step5 纸面开单
+    Step1 实时数据 → Step2 94维评分 → Step3 AI议会 → Step4 战场预判 → Step5 纸面开单
     """
     import urllib.request
     result = {'symbol': symbol, 'action': 'SKIP', 'reason': '', 'orders': []}

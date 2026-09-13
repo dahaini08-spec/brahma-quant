@@ -3,7 +3,7 @@
 # 开源版：框架公开，参数需自行调参或获取Pro版
 
 #!/usr/bin/env python3
-# ponytail: regime_scorer 414行，核心计算，35维共享_result状态，拆分条件: 状态隔离方案成熟后
+# ponytail: regime_scorer 414行，核心计算，94维共享_result状态，拆分条件: 状态隔离方案成熟后
 """
 regime_scorer.py — 梵天三层体制概率评估 v1.0
 设计院 2026-06-10
@@ -559,23 +559,41 @@ class RegimeStateMachine:
         }
 
     def _save_state(self):
-        """持久化状态（始终同步confirmed_cn，防止历史遗留字段错位）"""
+        """持久化状态（始终同步confirmed_cn，防止历史遗留字段错位）
+        [9.13修复] except pass → 告警+自愈尝试
+        接入位置: brahma_brain/regime_scorer.py L561
+        """
         try:
-            # [BUG-1 fix 2026-07-08] 每次保存前强制同步confirmed_cn
             self._state['confirmed_cn'] = REGIME_CN.get(
                 self._state.get('confirmed', ''), self._state.get('confirmed', '')
             )
             existing = {}
             if STATE_FILE.exists():
-                existing = json.loads(STATE_FILE.read_text())
+                try:
+                    existing = json.loads(STATE_FILE.read_text())
+                except json.JSONDecodeError:
+                    # 文件损坏 → 从内存重建而不是静默失败
+                    import sys; print(f'[regime_scorer] ⚠️ STATE_FILE损坏，从内存重建', file=sys.stderr)
+                    existing = {}
             existing[self.symbol] = self._state
             tmp = str(STATE_FILE) + '.tmp'
             with open(tmp, 'w') as f:
                 json.dump(existing, f, ensure_ascii=False, indent=2)
             import os
             os.replace(tmp, str(STATE_FILE))
-        except Exception:
-            pass
+        except Exception as e:
+            import sys, time
+            _msg = f'[regime_scorer] ❌ _save_state失败: {e} | symbol={getattr(self,"symbol","?")} | ts={time.time():.0f}'
+            print(_msg, file=sys.stderr)
+            # 写入nerve_alerts供看门狗捕获
+            try:
+                from pathlib import Path as _P
+                _alert_path = _P(__file__).parent.parent / 'data' / 'nerve_alerts.jsonl'
+                with open(_alert_path, 'a') as _af:
+                    _af.write(json.dumps({'type': 'regime_save_failed', 'msg': str(e),
+                        'symbol': getattr(self, 'symbol', '?'), 'ts': time.time()}) + '\n')
+            except Exception:
+                pass  # 告警也失败了，至少stderr有记录
 
     def update(self, raw_regime: str, symbol: str = None, klines_4h: list = None) -> str:
         """

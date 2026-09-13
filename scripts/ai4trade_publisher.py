@@ -95,7 +95,7 @@ def publish_signal(result: dict) -> dict:
         f"止损: ${sl_price:,.2f} (SL={sl_pct:.1f}%)\n"
         f"止盈: ${tp_price:,.2f} (RR={rr:.2f})\n"
         f"─────────────────\n"
-        f"梵天35维量化矩阵 | WR矩阵铁证驱动\n"
+        f"梵天94维量化矩阵 | WR矩阵铁证驱动\n"
         f"price_ts: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}"
     )
 

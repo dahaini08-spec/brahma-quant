@@ -8,11 +8,11 @@ _os_blas.environ.setdefault('MKL_NUM_THREADS',      '1')
 _os_blas.environ.setdefault('NUMEXPR_NUM_THREADS',  '1')
 _os_blas.environ.setdefault('VECLIB_MAXIMUM_THREADS','1')
 """
-梵天1号工程 · 35维全量矩阵分析引擎
+梵天1号工程 · 94维全量矩阵分析引擎
 固化版本 2026-07-17 苏摩111封印
 
 架构：
-  - 统一调用 brahma_engine.analyze() → 35维矩阵
+  - 统一调用 brahma_engine.analyze() → 94维矩阵
   - 删除V3.0简化版（curl+人工计算路径）
   - 支持双币（BTC+ETH）并行分析
   - 输出格式：专业合约衍生品深度分析报告
@@ -81,11 +81,11 @@ except ImportError:
     def fmt_beijing(): import datetime as _d; return _d.datetime.now(_d.timezone(_d.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M")+" CST"
 
 # ============================================================
-# 35维矩阵格式化输出
+# 94维矩阵格式化输出
 # ============================================================
 
 def fmt_breakdown(bd: dict) -> str:
-    """格式化35维矩阵breakdown，按维度分层展示"""
+    """格式化94维矩阵breakdown，按维度分层展示"""
     if not bd:
         return "  (无breakdown数据)"
 
@@ -408,7 +408,7 @@ def fmt_entry(r: dict) -> str:
 
 def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) -> str:
     """
-    执行单币种35维全量分析，返回格式化报告字符串
+    执行单币种94维全量分析，返回格式化报告字符串
     compact=True: 压缩输出（节省~35% token），用于cron/auto触发场景
     """
     # [2026-08-18 苏摩封印] 分析开始前强制刷新价格缓存，确保使用币安期货合约实时价格
@@ -489,7 +489,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
     lines = [
         "",
         sep,
-        f"  🏛️ 梵天1号工程 · 35维全量矩阵分析",
+        f"  🏛️ 梵天1号工程 · 94维全量矩阵分析",
         f"  {symbol}  {price}U  {now_str}",
         f"  分析耗时: {elapsed}s",
         sep,
@@ -582,7 +582,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
 
     lines += [
         "",
-        "▌ 35维评分矩阵",
+        "▌ 94维评分矩阵",
         fmt_breakdown(bd),
         "",
     ]
@@ -855,28 +855,6 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
     # ══ [END 方仓层] ══════════════════════════════════════════════════
 
     # ══ [阶段3 2026-08-20] 跨品种宏观相关性层 ═══════════════════════════════
-    try:
-        from brahma_brain.cross_asset_correlator import get_cross_asset_context as _get_cross
-        _cross = _get_cross(symbol=symbol, current_price=float(r.get('price', 0) or 0))
-        if _cross:
-            _vix_r   = _cross.get('vix', {})
-            _rate_r  = _cross.get('rates', {})
-            _dxy3_r  = _cross.get('dxy', {})
-            _btcd_r  = _cross.get('btcd', {})
-            _total_addon = _cross.get('score_addon_total', 0)
-            _cross_lines = [
-                "",
-                "╬" + "═"*58,
-                "  🌐 跨品种宏观层（阶段3 · VIX+利率+DXY+BTC.D）",
-                "╬" + "═"*58,
-                f"  VIX={_vix_r.get('vix_now','N/A')} [{_vix_r.get('vix_regime','N/A')}] {_vix_r.get('vix_trend','')} | 影响:{_vix_r.get('btc_impact','')} | 加成:{_vix_r.get('score_addon',0):+d}",
-                f"  US10Y={_rate_r.get('rate_now','N/A')}% [{_rate_r.get('rate_regime','N/A')}] {_rate_r.get('rate_trend','')} | 加成:{_rate_r.get('score_addon',0):+d}",
-                f"  DXY={_dxy3_r.get('dxy_now','N/A')} [{_dxy3_r.get('dxy_signal','N/A')}] 90日相关:{_dxy3_r.get('corr_90d','N/A')} | 加成:{_dxy3_r.get('score_addon',0):+d}",
-                f"  BTC.D代理[{_btcd_r.get('signal','N/A')}] BTC_90日:{_btcd_r.get('btc_90d_pct','N/A')}%({_btcd_r.get('percentile',0)*100:.0f}%分位) 山寨季:{'✅' if _btcd_r.get('altcoin_season') else '❌'} | 加成:{_btcd_r.get('score_addon',0):+d}",
-                f"  宏观层总加成: {_total_addon:+d}",
-            ]
-            lines += _cross_lines
-    except Exception as _cross_err:
         lines.append(f"  [跨品种宏观层] 跳过: {_cross_err}")
     # ══ [END 跨品种宏观层] ══════════════════════════════════════════════
 
@@ -1083,21 +1061,6 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
             pass
 
         # P0-4: brahma_longmem 长期记忆
-        try:
-            _lm_adj = r.get('longmem_adj', None)
-            _lm_ctx = r.get('longmem_ctx', '')
-            if _lm_adj is not None:
-                _lm_icon = '🟢' if float(_lm_adj) > 0 else '🔴' if float(_lm_adj) < 0 else '⚪'
-                _p0_lines.append(f"  {_lm_icon} 长期记忆(longmem): adj={float(_lm_adj):+.1f} | {_lm_ctx[:80]}")
-            else:
-                # 直接调用
-                from brahma_brain.brahma_longmem import get_longmem_score_adj as _lmsa
-                _lm_r = _lmsa(r.get('symbol','BTCUSDT'), r.get('regime',''), r.get('signal_dir','LONG'))
-                _lm_a = _lm_r.get('adj', 0)
-                _lm_s = _lm_r.get('summary', '')
-                _lm_icon = '🟢' if _lm_a > 0 else '🔴' if _lm_a < 0 else '⚪'
-                _p0_lines.append(f"  {_lm_icon} 长期记忆(longmem): adj={_lm_a:+.1f} | {_lm_s[:80]}")
-        except Exception as _e4:
             pass
 
         if _p0_lines:
@@ -1239,32 +1202,6 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
 
             # ── [P0/P1/P2 VIP策略校验层 2026-08-15 苏摩111封印] ─────────────────
             # P0: 价格量级验证 | P1: 参数来源=engine | P2: 妖币时效性门控
-            try:
-                from brahma_brain.vip_validator import validate_vip_strategy
-                _chg24 = float(r.get('chg24', r.get('change_24h', 0)) or 0)
-                _oi_cached = float(r.get('oi_change_1h', 0) or 0)
-                _ls_cached = float(r.get('long_ratio', 50) or 50)
-                _vip_check = validate_vip_strategy(
-                    symbol=symbol,
-                    direction=_d,
-                    entry_lo=float(entry_lo),
-                    entry_hi=float(entry_hi or entry_lo),
-                    sl=float(sl or 0),
-                    tp1=float(tp1 or 0),
-                    chg_24h_pct=_chg24,
-                    cached_oi_change=_oi_cached,
-                    cached_long_pct=_ls_cached,
-                    source='engine',  # 参数严格来自engine，非AI推算
-                )
-                compact_lines.append(f"  ─── VIP校验 ───")
-                compact_lines.append(f"  {_vip_check['summary']}")
-                for _vl in _vip_check['vip_header'].split('\n')[1:]:
-                    if _vl.strip():
-                        compact_lines.append(f"  {_vl}")
-                if not _vip_check['valid']:
-                    compact_lines.append(f"  ❌ 策略参数已失效，禁止发帖，需重新分析")
-            except Exception:
-                pass  # fail-safe
             # ── [END VIP策略校验层] ────────────────────────────────────────────
         # CHoCH状态
         smc_st2 = smc.get('structure', {})
@@ -1297,64 +1234,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
         full_report = full_report + f"\n  [OB清算层] 跳过: {_e}"
 
     # ── [P0~P4 设计院封印 2026-07-24 苏摩111批准] ──────────────────────────────
-    try:
-        from brahma_brain.anomaly_guards import (
-            detect_vol_price_anomaly, detect_correlation_alert,
-            detect_regime_switch_warning, fmt_no_bull_ob_template
-        )
-        from brahma_brain.position_guard import fmt_position_guard
-
-        _price  = float(r.get('price', 0))
-        _regime = r.get('regime', '')
-        _smc    = r.get('smc', {})
-        _bull_obs = _smc.get('order_blocks', {}).get('bull_obs', [])
-        _bear_obs = _smc.get('order_blocks', {}).get('bear_obs', [])
-        _choch_list = _smc.get('structure', {}).get('choch', [])
-        _choch_dir  = _choch_list[0] if _choch_list else ''
-        _eg3 = _re.findall(r'\d+\.?\d*', str(r.get('effective_grade', 0) or 0))
-        _grade  = float(_eg3[0]) if _eg3 else 0.0
-        _eg4 = _re.findall(r'\d+\.?\d*', str(r.get('score_final', 0) or 0))
-        _score  = float(_eg4[0]) if _eg4 else 0.0
-
-        # P0: 持仓风控
-        _pos_guard = fmt_position_guard(symbol, _price, _regime)
-        if _pos_guard:
-            full_report = full_report + "\n" + _pos_guard
-
-        # P1: 量价异常检测
-        _vol_anom = detect_vol_price_anomaly(symbol)
-        if _vol_anom.get('anomaly'):
-            full_report = full_report + (
-                f"\n\n▌ P1 · 量价异常预警\n  {_vol_anom['message']}")
-
-        # P2: 多币联动预警（1H跌幅估算）
-        try:
-            import urllib.request as _ur2, json as _jj2
-            _kl1h = _dc_klines(symbol, '1h', 3) if _dc_klines else _jj2.loads(_ur2.urlopen(
-                f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=1h&limit=3',
-                timeout=5).read())
-            _1h_chg = (float(_kl1h[-2][4]) - float(_kl1h[-2][1])) / float(_kl1h[-2][1])
-        except Exception:
-            _1h_chg = 0.0
-        _corr = detect_correlation_alert(symbol, _1h_chg)
-        if _corr.get('alert'):
-            full_report = full_report + (
-                f"\n\n▌ P2 · 联动预警\n  {_corr['message']}")
-
-        # P3: 框架切换机制
-        _sw = detect_regime_switch_warning(_regime, str(_choch_dir), _grade, _score)
-        if _sw.get('warning'):
-            full_report = full_report + (
-                f"\n\n▌ P3 · 框架切换\n  {_sw['message']}")
-
-        # P4: Bull OB=0 模板重写（替换进场区外推建议）
-        if len(_bull_obs) == 0 and _price > 0:
-            # 从已有MIX层提取止损池信息（简化：直接给Bear OB）
-            _liq_pools = {}
-            _p4_note = fmt_no_bull_ob_template(symbol, _price, _bear_obs, _liq_pools)
-            full_report = full_report + f"\n\n▌ P4 · 结构真空区提示\n  {_p4_note}"
-
-    except Exception as _pg_e:
+    # [DEAD CODE REMOVED 2026-09-13] anomaly_guards/position_guard模块不存在，try-except块已失效
         pass  # P0~P4异常不阻断主输出
     # ── [P0~P4 END] ────────────────────────────────────────────────────────
 
@@ -1631,7 +1511,7 @@ def _build_ob_liquidation_layer(symbol: str, price: float, engine_result: dict =
 
 
 def _build_tradfi_supplement(symbol: str, r: dict) -> list:
-    """美股代币专属补充维度层（梵天35维之后注入，苏摩111封印）"""
+    """美股代币专属补充维度层（梵天94维之后注入，苏摩111封印）"""
     import urllib.request, json as _json
     lines = []
     fund = _get_rwa_fundamentals(symbol)
@@ -1732,12 +1612,12 @@ def _build_tradfi_supplement(symbol: str, r: dict) -> list:
 # ============================================================
 
 def run_dual_analysis(symbols=None, direction='LONG'):
-    """运行双币35维全量分析，输出完整报告"""
+    """运行双币94维全量分析，输出完整报告"""
     if symbols is None:
         symbols = ['BTCUSDT', 'ETHUSDT']
 
     print("=" * 60)
-    print("  🏛️ 梵天设计院 · 双币35维全量矩阵分析启动")
+    print("  🏛️ 梵天设计院 · 双币94维全量矩阵分析启动")
     print(f"  时间: {fmt_beijing()}")
     print("=" * 60)
 
@@ -1805,7 +1685,7 @@ if __name__ == '__main__':
     except (ImportError, SystemExit) as _mge:
         if isinstance(_mge, SystemExit): raise
     import argparse
-    parser = argparse.ArgumentParser(description='梵天1号工程 · 35维全量矩阵分析')
+    parser = argparse.ArgumentParser(description='梵天1号工程 · 94维全量矩阵分析')
     parser.add_argument('--symbols', nargs='+', default=['BTCUSDT', 'ETHUSDT'])
     parser.add_argument('--direction', default='LONG', choices=['LONG', 'SHORT'])
     parser.add_argument('--_single', action='store_true', help='单符号直接执行模式（子进程调用，不递归）')
@@ -2017,7 +1897,7 @@ if __name__ == '__main__':
                 _score_ok = False
 
             if _score_ok:
-                from brahma_brain.dharma_data_bridge import log_signal
+# from brahma_brain.dharma_data_bridge import log_signal
                 r_raw['symbol'] = sym
                 r_raw['direction'] = args.direction
                 r_raw['source'] = 'brahma_1hao_auto'

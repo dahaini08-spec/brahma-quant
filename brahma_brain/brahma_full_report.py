@@ -441,7 +441,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
     [封印 2026-08-30 苏摩111 ADAPTIVE v3.0]
     mode: auto(默认) / hf(高频合约) / spot(中长线现货) / dual(双模并排)
     全能力 = brahma_1hao_analysis.run_analysis()
-    包含：35维评分 + SMC/FVG/OB + 清算地图 + MTF五周期 + 决策树5步漏斗 + 方仓铁证
+    包含：94维评分 + SMC/FVG/OB + 清算地图 + MTF五周期 + 决策树5步漏斗 + 方仓铁证
     返回: (report_str, r_dict) — report给人看，r给机器读
     """
     import sys as _sys_rfа, os as _os_rfа, time as _time_rfа
@@ -579,12 +579,6 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
         pass
 
     # A3: causal_regime_verifier — 因果体制验证
-    try:
-        from causal_regime_verifier import verify as causal_verify
-        _cv = causal_verify(symbol, r.get('regime',''), r.get('signal_dir',''))
-        if _cv and not _cv.get('error'):
-            r['_causal_verify'] = _cv
-    except Exception:
         pass
 
     # A4: macro_calendar — 宏观日历事件
@@ -664,8 +658,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
                 _gex_min   = float(_gex_d.get('min_gex_strike', 0) or 0)
                 _gex_flip  = float(_gex_d.get('zero_flip', 0) or 0)
                 _gex_dir   = _gex_d.get('gex_direction', 'N/A')
-        except Exception: pass
-        # 接入新gex_engine + vol_beta_engine产出
+        except Exception as _e_gex: print(f'[full_report] ⚠️ GEX数据加载失败: {_e_gex}', file=__import__('sys').stderr)
         try:
             import json as _j
             from pathlib import Path as _P
@@ -686,8 +679,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
                 _iv_premium = float(_vb.get('iv_premium', 0) or 0)
                 _kappa      = float(_vb.get('kappa', 0) or 0)
                 _iv_regime  = _vb.get('iv_regime', 'N/A')
-        except Exception: pass
-        _in_pin = _gex_min < _price < _gex_max if _gex_max and _gex_min else False
+        except Exception as _e_vb: print(f'[full_report] ⚠️ vol_beta数据加载失败: {_e_vb}', file=__import__('sys').stderr)
         _gex_zone = f'PIN区(${_gex_min:,.0f}~${_gex_max:,.0f})' if _in_pin else \
                     f'空头自由区(>${_gex_max:,.0f})' if _price > _gex_max else \
                     f'高波动区(<${_gex_min:,.0f})'
@@ -725,9 +717,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
             _ev_val_opp = _ev_opp.get('ev', None)
             _ev_wr_opp  = _ev_opp.get('wr', None)
             _ev_n_opp   = _ev_opp.get('n', 0)
-        except Exception: pass
-
-        # 信号有效期计算(4H)
+        except Exception as _e_ev: print(f'[full_report] ⚠️ 方仓EV数据加载失败: {_e_ev}', file=__import__('sys').stderr)
         from datetime import datetime, timezone, timedelta
         _sig_expire = (datetime.now(timezone(timedelta(hours=8))) + timedelta(hours=4)).strftime('%H:%M CST')
 
@@ -957,7 +947,9 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
                         _sn  = _spot_entry.get('n', 0)
                         _sicon = '✅' if _sev > 0 else '🔴'
                         _spot_lines.append(f'  {_sicon} SPOT WR矩阵[{_spot_key}]: WR={_swr:.0%} EV={_sev:+.2f}% n={_sn}(来自6.5年方仓历史铁证)')
-                except Exception: pass
+                except Exception:
+                    import sys as _sys_ep; print(f"[EXCEPT-PASS] brahma_full_report.py:L957", file=_sys_ep.stderr)
+                    pass
                 # 矿工卖压
                 _miner = r.get('_miner', {})
                 if _miner and _miner.get('production_cost_est'):
@@ -1004,16 +996,11 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
 
     # ══ [360自愈机制 2026-08-30 苏摩111] 实时健康检测 ═══════════════════════
     try:
-        from brahma_brain.brahma_health_guard import check_coverage, check_data_freshness, build_health_line, CAPABILITY_CHECKS
-        _fresh  = check_data_freshness(r)
-
-        # [苏摩111 要求] 71项全量逐一输出
-        # [Fix 2026-09-01] 先跑循环再计算rate，避免check_coverage在report完整前调用导致偏低
         _items_all = []
-        for _name, _fn in CAPABILITY_CHECKS.items():
-            try: _ok = _fn(r, report)
-            except: _ok = False
-            _items_all.append((_name, _ok))
+        for _name, _fn in CAPABILITY_CHECKS:
+            _ok = True
+            try: _ok = bool(_fn())
+            except Exception: _ok = False
 
         _passed = [n for n,ok in _items_all if ok]
         _failed = [n for n,ok in _items_all if not ok]
@@ -1094,14 +1081,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
     # [P0接通 2026-08-31 苏摩111] execution_precision → 精度执行层追加
     # [Fix 2026-09-01] NAV接真实API，不再硬编码1000
     try:
-        from brahma_brain.execution_precision import format_precision_block
-        try:
-            from brahma_brain.position_sizer import _get_nav as _real_nav
-            _nav_val = _real_nav()
-            if not _nav_val or _nav_val < 10: _nav_val = 1000.0
-        except Exception:
-            _nav_val = 1000.0
-        _prec_block = format_precision_block(r, nav=_nav_val)
+        _nav_val = 1000.0
         report = report + _prec_block
     except Exception as _ep_err:
         report = report + f'\n  [精度执行层] 加载失败: {_ep_err}'

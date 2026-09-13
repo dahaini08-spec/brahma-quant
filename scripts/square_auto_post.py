@@ -7,7 +7,7 @@ v2.0变更：
   - 废弃LLM重写（free_llm_client 45秒超时+风格漂移）
   - 改用square_template.py纯模板引擎（0秒+0漂移）
   - 旗舰帖接入brahma_manual_analysis 80维输出
-  - 所有帖必须有🌿姓赵不宣前缀+📊梵天系统后缀
+  - IP放在后缀，顶端不出现姓赵不宣
 
 接入位置：
   - cron: supercronic brahma_crontab.txt

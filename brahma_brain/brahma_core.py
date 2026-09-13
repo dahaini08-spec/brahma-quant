@@ -1,4 +1,4 @@
-# ponytail: brahma_core 4405行，核心计算，35维共享_result状态，拆分条件: 状态隔离方案成熟后
+# ponytail: brahma_core 4405行，核心计算，94维共享_result状态，拆分条件: 状态隔离方案成熟后
 """
 brahma_brain.py · 梵天分析大脑主入口  VERSION = v3.0
 brahma_brain · Phase 1 完整整合
@@ -85,10 +85,6 @@ try:
     _MULTITF_DIV_OK = True
 except Exception:
     _MULTITF_DIV_OK = False
-try:
-    from multitf_engine import multitf_score as _multitf_score
-    _MULTITF_OK = True
-except Exception:
     _MULTITF_OK = False
 try:
     from enhanced_signal_engine import enhanced_score as _enhanced_score
@@ -233,6 +229,59 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     s_research = _bc['s_research']
     score     = _bc['score']
     breakdown = _bc['breakdown']
+
+    # ╔══════════════════════════════════════════════════════════╗
+    # ║ [果蝇Phase 1] DAG稀疏激活后处理                           ║
+    # ║ Block A/B/C计算完所有维度后，用scoring_config做过滤：     ║
+    # ║   sleep维度归零 / active维度按权重加权 / 重新计算总分     ║
+    # ║ 接入位置：Block C之后、regime_mult之前                    ║
+    # ╚══════════════════════════════════════════════════════════╝
+    _regime_str_pre = str(ms.get('regime', '')).upper()
+    try:
+        from brahma_brain.dag_executor import apply_sparse_activation as _dag_apply
+        _dag_dim_scores = {
+            's1': s1, 's2': s2, 's3': s3, 's4': s4,
+            's5': s5, 's5b': s5b, 's6': s6,
+            's7': s7, 's8': s8, 's9': s9, 's10': s10,
+            's11': s11, 's12': s12, 's13': s13, 's14': s14,
+            's15': s15, 's16': s16, 's17': s17, 's18': s18,
+            's19': s19, 's20': s20, 's21': s21, 's22': s22,
+        }
+        _dag_result = _dag_apply(_dag_dim_scores, _regime_str_pre, signal_dir, raw_score=score)
+        if _dag_result['applied']:
+            # 更新维度分数（sleep维度的分数归零）
+            s1  = _dag_result['dims']['s1']
+            s2  = _dag_result['dims']['s2']
+            s3  = _dag_result['dims']['s3']
+            s4  = _dag_result['dims']['s4']
+            s5  = _dag_result['dims']['s5']
+            s5b = _dag_result['dims']['s5b']
+            s6  = _dag_result['dims']['s6']
+            s7  = _dag_result['dims']['s7']
+            s8  = _dag_result['dims']['s8']
+            s9  = _dag_result['dims']['s9']
+            s10 = _dag_result['dims']['s10']
+            s11 = _dag_result['dims']['s11']
+            s12 = _dag_result['dims']['s12']
+            s13 = _dag_result['dims']['s13']
+            s14 = _dag_result['dims']['s14']
+            s15 = _dag_result['dims']['s15']
+            s16 = _dag_result['dims']['s16']
+            s17 = _dag_result['dims']['s17']
+            s18 = _dag_result['dims']['s18']
+            s19 = _dag_result['dims']['s19']
+            s20 = _dag_result['dims']['s20']
+            s21 = _dag_result['dims']['s21']
+            s22 = _dag_result['dims']['s22']
+            # 用DAG加权总分替换原始总分
+            _raw_before = score
+            score = _dag_result['score']
+            breakdown['_dag_applied'] = f'DAG稀疏激活: raw={_raw_before}→{score} active={len(_dag_result["active_dims"])} sleep={len(_dag_result["sleep_dims"])} pos_mult={_dag_result["position_mult"]:.2f}'
+            # 传递position_mult给下游
+            if extra_data is not None and isinstance(extra_data, dict):
+                extra_data['dag_position_mult'] = _dag_result['position_mult']
+    except Exception as _dag_err:
+        breakdown['_dag_error'] = f'DAG执行失败(降级原逻辑): {_dag_err}'
 
     # [WFV-v5.0 2026-05-28] 达摩院真实梵天体制驱动训练
     # 用 brahma_brain.market_state.detect_regime() 真实体制标注
@@ -1124,6 +1173,23 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     else:
         grade = '⚫放弃';   kelly_mult = 0.0;  action = 'SKIP'
 
+    # [果蝇Phase 0] 维度级trace写入 — 每个维度的最终分数和状态
+    try:
+        from brahma_brain.dim_trace_writer import trace_dim as _trace
+        _sym_for_trace = (ms.get('symbol') or '').upper()
+        _regime_for_trace = str(ms.get('regime', '')).upper()
+        for _dn, _ds in [('s1', s1), ('s2', s2), ('s3', s3), ('s4', s4),
+                        ('s5', s5), ('s5b', s5b), ('s6', s6),
+                        ('s7', s7), ('s8', s8), ('s9', s9), ('s10', s10),
+                        ('s11', s11), ('s12', s12), ('s13', s13), ('s14', s14),
+                        ('s15', s15), ('s16', s16), ('s17', s17), ('s18', s18),
+                        ('s19', s19), ('s20', s20), ('s21', s21), ('s22', s22)]:
+            _status = 'sleep' if _ds == 0 else 'ok'
+            _trace(_dn, {'symbol': _sym_for_trace, 'regime': _regime_for_trace, 'dir': signal_dir},
+                   {'score': _ds}, _status, 0)
+    except Exception:
+        pass  # trace不能影响主流程
+
     return {
         'total':      score,
         'score':      score,    # [P1修复 2026-07-12] 补充score别名 — analyze()/run_analysis读.get('score')，原只有'total'导致永远None
@@ -1297,25 +1363,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # 对 score ≥ 100 的信号执行维度因果归因，识别相关性掃车维度
     # fail-safe: 异常不阻断主流程
-    try:
-        import sys as _cfc_sys, os as _cfc_os
-        _cfc_root = _cfc_os.path.dirname(_cfc_os.path.abspath(__file__))
-        if _cfc_root not in _cfc_sys.path:
-            if _cfc_root not in _cfc_sys.path: _cfc_sys.path.insert(0, _cfc_root)
-        from counterfactual_score_check import check as _cfc_check
-        _cf_score = float(cf.get('score', 0) or 0)
-        if _cf_score >= 100:
-            _cfc_result = _cfc_check(cf, signal_dir, ms.get('regime', ''), timeout_ms=80)
-            _cfc_adj = _cfc_result.get('score_adj', 0)
-            _cfc_verdict = _cfc_result.get('verdict', 'NEUTRAL')
-            if _cfc_adj != 0:
-                cf['score'] = _cf_score + _cfc_adj
-                cf.setdefault('breakdown', {})['_counterfactual'] = (
-                    f'{_cfc_adj:+d}(因果归因:{_cfc_verdict} '
-                    f'因果维度{_cfc_result.get("causal_ratio",0):.0%})'
-                )
-            extra_data['counterfactual'] = _cfc_result
-    except Exception as _cfc_e:
         pass  # [静默] f'[CounterfactualCheck] ⚠ 异常（不阻断）: {_cfc_e}'
 
     # ── Causal Verifier 评分叠加 ─────────────────────────────
@@ -1380,7 +1427,8 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 f'{_sm_adj:+d}(大户持仓={_sm.get("big_pos_long",0.5):.0%} '
                 f'背离={_sm.get("whale_retail_gap",0):+.3f})'
             )
-            print(f'[s_smart] {_sym} 聊明錢: {_sm_pre:.0f}→{cf["score"]:.0f} ({_sm_adj:+d}) | {_sm.get("note","")[:60]}')
+            # 抑制print避免刷屏 — 信息已在breakdown中
+            # print(f'[s_smart] {_sym} 聊明錢: {_sm_pre:.0f}→{cf["score"]:.0f} ({_sm_adj:+d}) | {_sm.get("note","")[:60]}')
     except Exception:
         pass
     params = calc_trade_params(ms, smc, signal_dir, mtf_result=_mtf_result)
@@ -1699,24 +1747,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass
 
     # I2: 冲突解析
-    try:
-        from conflict_resolver import resolve as _cr_resolve
-        _bd = cf.get('breakdown', {})
-        _conflict = _cr_resolve(_bd, signal_dir, cf.get('total', 0))
-        extra_data['conflict'] = _conflict
-        if _conflict['verdict'] == 'REJECT':
-            pass  # [静默] f'[BrahmaBrain] 🚫 CONFLICT REJECT {_sym}: {_conflict["conflict_summary"]}'
-            cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
-            cf['kelly_mult'] = 0.0
-            cf['conflict_reject'] = True
-        elif _conflict['verdict'] == 'DOWNWEIGHT':
-            cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
-            cf['kelly_mult'] = round(cf.get('kelly_mult', 1.0) * _conflict['confidence_adj'], 3)
-            cf['conflict_adj'] = _conflict['confidence_adj']
-        elif _conflict['verdict'] == 'APPROVE' and _conflict['confidence_adj'] > 1.0:
-            cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
-            cf['kelly_mult'] = round(min(cf.get('kelly_mult', 1.0) * _conflict['confidence_adj'], 2.0), 3)
-    except Exception as _ce:
         pass
 
     # I3: Kelly仓位分配
@@ -1770,7 +1800,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # I5: 信号队列检查（是否可以进入队列）
     try:
-        from brahma_signal import add_signal as _sq_add, get_queue_status as _sq_status
+        from signal_quality_engine import add_signal as _sq_add, get_queue_status as _sq_status
         _sq_result = _sq_add(
             symbol=_sym,
             signal_dir=signal_dir,
@@ -1853,6 +1883,15 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _ense:
         extra_data['ensemble'] = {'error': str(_ense)[:100]}
 
+    # I9: AI议会+在线学习集成 [2026-09-12 苏摩111]
+    try:
+        from brahma_brain.ai_council_bridge import get_council_verdict
+        _ens_data = extra_data.get('ensemble', {})
+        _council = get_council_verdict(symbol, params.get('signal_dir', ''), {'regime': params.get('regime',''), 'score': cf.get('total',0), 'extra': extra_data, 'rsi_4h': ms.get('rsi_4h',0), 'rsi_1h': ms.get('rsi_1h',0), 'price': ms.get('price',0), 'confluence': cf}, _ens_data)
+        extra_data['ai_council'] = _council
+    except Exception as _ace:
+        extra_data['ai_council'] = {'error': str(_ace)[:100]}
+
     # [设计院终极版 v2.0] 六层防线集成入口
     _globally_blocked = False  # [设计院修复 2026-06-26] 默认值防止try异常时UnboundLocalError
     # regime_gate → asset_universe → regime_weights → adaptive_threshold → MTF → Kelly | 体制门控 → 资产池 → 体制权重 → 自适应阈值 → 多时框 → Kelly
@@ -1860,7 +1899,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         import sys as _v2_sys, os as _v2_os
         _v2_base = _v2_os.path.dirname(_v2_os.path.dirname(_v2_os.path.abspath(__file__)))
         if _v2_base not in _v2_sys.path: _v2_sys.path.insert(0, _v2_base)
-        from upgrade_v2.v2_integrator import v2_enhance_signal as _v2_enhance
+# from upgrade_v2.v2_integrator import v2_enhance_signal as _v2_enhance
         _v2_result = _v2_enhance(
             symbol    = _sym,
             direction = signal_dir,
@@ -2090,10 +2129,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     try:
         from brahma_brain.dharma_nodes import evaluate_nodes as _eval_nodes
         _fg = 50
-        try:
-            from brahma_brain.macro_stub import get_fear_greed as _fg_fn
-            _fg = _fg_fn() or 50
-        except Exception: pass
         _dharma_nodes = _eval_nodes(ms, signal_dir, fg=_fg)
         # 节点乘数调整score
         _node_mult = _dharma_nodes['score_mult']
@@ -2267,11 +2302,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         if 'BULL_TREND' in _p0b_regime and not _is_bear_recovery and signal_dir == 'LONG' and _p0b_price > 0:
             # 尝试拉取 EMA200日线（式 fib_macro结果已有）
             _p0b_ema200 = 0.0
-            try:
-                from fib_macro_engine import fib_macro_score as _p0b_fib
-                _p0b_res = _p0b_fib(symbol=_sym, price=_p0b_price, signal_dir='LONG')
-                _p0b_ema200 = float(_p0b_res.get('ema200', 0) or 0)
-            except: pass
             if _p0b_ema200 > 0 and _p0b_price < _p0b_ema200:
                 # [设计院 2026-07-06] P0B灰度通道: EMA200下方9%内+score>=170允许开单
                 _p0b_ratio = _p0b_price / _p0b_ema200
@@ -2367,7 +2397,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['total'] = _score_raw
             cf.setdefault('breakdown', {})['p3_trend_early'] = (
                 f'TREND_early({_regime_now} age≈{_bars_est}根) +{_early_bonus}分 WR=62.6%(v3.0)')
-    except Exception: pass
+    except Exception:
+        import sys as _sys_ep; print(f"[EXCEPT-PASS] brahma_core.py:L2456", file=_sys_ep.stderr)
+        pass
 
     # ── [B2 v2 2026-05-31 设计院重写] 结构甜点区奖励 ────────────────────────────
     # 实证铁律（376条live信号）：
@@ -2468,8 +2500,12 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 else:
                     cf['gap_gate'] = f'gap={_gap_check:.2f}%<0.5% 贴近 通过'
                     pass  # [静默] f'[GapGate] ✅ {_sym}: gap={_gap_check:.2f}% 贴近'
-        except Exception: pass
-    except Exception: pass
+        except Exception:
+            import sys as _sys_ep; print(f"[EXCEPT-PASS] brahma_core.py:L2557", file=_sys_ep.stderr)
+            pass
+    except Exception:
+        import sys as _sys_ep; print(f"[EXCEPT-PASS] brahma_core.py:L2558", file=_sys_ep.stderr)
+        pass
     # ── [END B2 v3] | B2 v3 段结束 ──────────────────────────────────────────────────────────
 
     # ── [设计院 2026-05-31] 可交易性辅助（结构门已是主力）──────────────────
@@ -2746,20 +2782,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # ── [设计院 2026-06-07] N21 宏观Fib+EMA200+周线RSI（六方辩论落地）────────
     # 实证：ETH低于EMA200(-14.8%)→做多-10，周线RSI=50(非底部)→做多-8
-    try:
-        from fib_macro_engine import fib_macro_score as _fib_macro_fn
-        _fib_res  = _fib_macro_fn(
-            symbol    = _sym,
-            price     = float(ms.get('price', 0)),
-            signal_dir= signal_dir,
-        )
-        _fib_pts = _fib_res.get('score', 0)
-        if _fib_pts != 0 and _score_raw > 0:
-            _score_raw = round(_score_raw + _fib_pts, 1)
-            cf['total'] = _score_raw
-            cf['n21_fib_macro'] = f"regime={_fib_res.get('regime_tag','')} ema200=${_fib_res.get('ema200',0):,.0f} wRSI={_fib_res.get('weekly_rsi',0):.0f} {_fib_pts:+d}pts"
-            pass  # [静默] f'[N21-FibMacro] {_sym} {signal_dir}: {_fib_pts:+d}分 → {_score_raw:.0f} | {_fib_
-    except Exception as _fib_e:
         pass
 
 
@@ -2918,7 +2940,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                         cf.setdefault('breakdown', {})['p1_btc_lead'] = (
                             f'BTC_SL领先{_bh:.1f}H {_p1v}分 WR=21.8%')
                         pass  # [静默] f'[P1-BTCLead] ☠️ ETH BTC_SL {_bh:.1f}H前: {_p1v}分 score→{_score_raw:.0f}'
-    except Exception: pass
+    except Exception:
+        import sys as _sys_ep; print(f"[EXCEPT-PASS] brahma_core.py:L3008", file=_sys_ep.stderr)
+        pass
 
     # [P2 苏摩111 2026-06-28] 季节性月份过滤
     # 铁证：BTC 6.6年月份WR（Fisher p=0.001，OOS稳定<2%）
@@ -3157,7 +3181,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         'rsi_1h':  float((ms.get('momentum') or {}).get('rsi_1h', 50) or 50),
         'rsi_4h':  float((ms.get('momentum') or {}).get('rsi_4h', 50) or 50),
         'rsi_1d':  float((ms.get('momentum') or {}).get('rsi_1d', 50) or 50),
-        # [2026-08-12 苏摩111封印 v3] ms完整原始数据注入，全路径修正版，供35维逐项核对
+        # [2026-08-12 苏摩111封印 v3] ms完整原始数据注入，全路径修正版，供94维逐项核对
         'market_state_raw': {
             # ── 趋势模块 (ms['trend'][tf]) ──
             'consensus':      ((ms.get('trend') or {}).get('consensus') or {}).get('consensus'),
@@ -3291,21 +3315,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # [P0-A修复 2026-09-03] _sym_t/_dir_t移到try块外，防tardis导入失败导致s22 NameError
     _sym_t = _result.get('symbol', '')
     _dir_t = _result.get('signal_dir', 'NEUTRAL')
-    try:
-        from tardis_engine import get_tardis_score
-        _pa_t   = _result.get('params', {})
-        _elo    = float(_pa_t.get('entry_lo', 0))
-        _ehi    = float(_pa_t.get('entry_hi', _elo * 1.002))
-        if _dir_t in ('SHORT', 'LONG') and _elo > 0:
-            _s20, _s20_detail = get_tardis_score(_sym_t, _dir_t, _elo, _ehi)
-            if _s20 != 0:
-                _cur_score = float(_result.get('confluence', {}).get('score', 0))
-                _result['confluence']['score'] = _cur_score + _s20
-                _result['confluence']['_s20_tardis'] = _s20
-                _result['confluence'].setdefault('breakdown', {})['s20_tardis'] = f'{_s20:+.0f} {_s20_detail}'
-                print(f'[s20-Tardis] {_sym_t} {_dir_t}: {_s20:+.0f} | {_s20_detail}')
-    except Exception as _e20:
-        pass  # Tardis数据不影响主流评分
 
     # ── s22: GEX Gamma Exposure Sentiment（Deribit期权数据）────
     try:
@@ -3442,28 +3451,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # ── s26: OI持仓量驱动拉升猎手（2026-06-30 设计院 × 苏摩授权）──────
     # 五层过滤：OI结构+大户方向+资金费率+技术+体制
     # 区分空头建仓 vs 聪明钱潜伏，BEAR_TREND下最多+5分
-    try:
-        import os as _os26, sys as _sys26
-        _bb26 = _os26.path.dirname(_os26.path.abspath(__file__))
-        _root26 = _os26.path.dirname(_bb26)
-        for _p26 in [_bb26, _root26]:
-            if _p26 not in _sys26.path:
-                _sys26.path.insert(0, _p26)
-        from oi_surge_scanner import get_oi_bonus as _get_oi_bonus
-        _oi_sym = _result.get('symbol', '')
-        _oi_dir = _result.get('signal_dir', 'NEUTRAL')
-        if _oi_sym and _oi_dir in ('LONG', 'SHORT'):
-            _oi_bonus, _oi_detail = _get_oi_bonus(_oi_sym)
-            # 只对LONG方向有效（OI猎手识别的是做多蓄能）
-            if _oi_dir == 'LONG' and _oi_bonus > 0:
-                _cur_s26 = float(_result.get('confluence', {}).get('score', 0))
-                _result['confluence']['score'] = _cur_s26 + _oi_bonus
-                _result['confluence']['_s26_oi'] = _oi_bonus
-                _result['confluence'].setdefault('breakdown', {})['s26_oi'] = \
-                    f'{_oi_bonus:+d} {_oi_detail}'
-                print(f'[s26-OI] {_oi_sym} LONG: {_oi_bonus:+d} | {_oi_detail}')
-    except Exception as _e26:
-        pass  # OI数据不影响主流评分
 
     # ── s28: 信号质量门控（2026-09-03 苏摩111 P4封印）──────────────────
     # 模块: brahma_brain/signal_quality_engine.py 1436行，原来完全孤立
@@ -3609,9 +3596,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _s25_parent = str(Path(__file__).parent)
             if _s25_parent not in _sys25.path: _sys25.path.insert(0, _s25_parent)  # [S1修复 2026-08-24]
             from reasoning_client import reasoning_gate as _rg25
-            from macro_reasoning_enhancer import enhance_macro_score as _rmac25
-            from sl_reasoning_enhancer import enhance_stop_loss as _rsl25
-            from trigger_reasoning_enhancer import enhance_trigger_timing as _rtrig25
+# from macro_reasoning_enhancer import enhance_macro_score as _rmac25
+# from sl_reasoning_enhancer import enhance_stop_loss as _rsl25
+# from trigger_reasoning_enhancer import enhance_trigger_timing as _rtrig25
 
             _s25_entry_lo = _s25_params.get('entry_lo', 0)
             _s25_entry_hi = _s25_params.get('entry_hi', 0)
@@ -3723,12 +3710,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # ══ [设计院 2026-06-30 P3] coingecko_client — 注入Token分类字段 ══════════
     # 模块: coingecko_client · 市值排名+类别，增强资产路由准确性
-    try:
-        from coingecko_client import classify_token as _cg_classify
-        _cg_token_class = _cg_classify(_sym)
-        if _cg_token_class:
-            _result['token_class'] = _cg_token_class   # BLUECHIP / ALTCOIN / MEME / DEFI
-    except Exception:
         pass
 
     # ══ [设计院 2026-06-30 全量接入] PositionSizer ════════════════════════════
@@ -3758,18 +3739,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # ══ [设计院 2026-06-30 全量接入] BrahmaEventBus 信号事件发布 ══════════════
     # 模块: brahma_event_bus · 信号发出时publish，解耦跨模块通信
-    try:
-        from brahma_event_bus import BrahmaEventBus as _BEB
-        _eb       = _BEB()
-        _sig_act  = _result.get('action', 'SKIP')
-        _sig_scr  = _result.get('score_final', _result.get('score', 0))
-        if _sig_act in ('ENTER', 'ENTER_FULL') and _sig_scr >= 120:
-            _eb.emit_regime_change(
-                _sym,
-                ms.get('regime', ''),
-                ms.get('regime', '')
-            ) if hasattr(_eb, 'emit_regime_change') else None
-    except Exception:
         pass
 
     # ══ [P2-6 设计院审判2026-06-30: 暴涨猎手不注入brahma_core] ══════════════
@@ -3779,35 +3748,15 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # ══ [END] ══════════════════════════════════════════════════════════════════
 
     # ── [s27/s28/s29 2026-07-03] 统计模式维度：Gap Up / Bounce / First Red Day ──
-    try:
-        import os as _os_sp
-        _sp_dir = _os_sp.path.dirname(_os_sp.path.abspath(__file__))
-        import sys as _sys_sp
-        if _sp_dir not in _sys_sp.path: _sys_sp.path.insert(0, _sp_dir)
-        from s27_gap_bounce_frd import s27_gap_up, s28_bounce_setup, s29_first_red_day
-        _sp_k1h  = _result.get('_klines_1h') or (extra_data or {}).get('_klines_1h') or []
-        _sp_k4h  = _result.get('_klines_4h') or (extra_data or {}).get('_klines_4h') or []
-        _sp_reg  = _result.get('regime', '')
-        _sp_sym  = _result.get('symbol', _sym)
-        _s27 = s27_gap_up(_sp_sym, _sp_k1h, _sp_reg) if _sp_k1h else 0
-        _s28 = s28_bounce_setup(_sp_sym, _sp_k1h, _sp_k4h, _sp_reg) if _sp_k1h else 0
-        _s29 = s29_first_red_day(_sp_sym, _sp_k1h, _sp_reg) if _sp_k1h else 0
-        _sp_total = _s27 + _s28 + _s29
-        # 始终写入_result供full_report渲染（即使全0）
-        _result['s27_gap_up']       = _s27
-        _result['s28_bounce_setup'] = _s28
-        _result['s29_first_red_day']= _s29
-        if _sp_total != 0:
-            _result['score_final'] = (_result.get('score_final') or 0) + _sp_total
-            print(f'[s27-29] {_sp_sym} gap={_s27:+d} bounce={_s28:+d} frd={_s29:+d} total={_sp_total:+d}')
-    except Exception as _esp:
         pass  # 统计模式维度不影响主评分
 
     # ══ [可观测-v2] ══
     try:
         _s=_result.get('score_final',_result.get('score',0))
         pass  # [静默] f'[SIGNAL-SUMMARY] {_sym} {signal_dir} score={_s:.0f} action={_result.get("actio
-    except Exception: pass
+    except Exception:
+        import sys as _sys_ep; print(f"[EXCEPT-PASS] brahma_core.py:L3905", file=_sys_ep.stderr)
+        pass
 
     # ══ [设计院 2026-08-09 苏摩111封印] 方仓向量WR → score_final 架构接线 ══
     # 铁证：Qdrant 3071案例 黄金区(bb1.5-2%+RSI60-75) WR=70.8% EV=+3.41%
@@ -3869,23 +3818,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _result['fangcang'] = {'status': 'unavailable', 'reason': str(_fc_e)[:60]}
 
     # [设计院 2026-08-25 苏摩111] 长期记忆注入：跨资产20年知识库
-    try:
-        from brahma_longmem import get_longmem_score_adj as _lm_fn
-        _lm_res = _lm_fn(_sym, _result.get('regime', 'UNKNOWN'),
-                         _result.get('signal_dir', signal_dir or 'LONG'))
-        _lm_adj = float(_lm_res.get('adj', 0) or 0)
-        _result['longmem_adj']  = _lm_adj
-        _result['longmem_ctx']  = _lm_res.get('summary', '')[:120]
-        _result['extreme_warn'] = _lm_res.get('extreme_warning', {}).get('warning_level', 'NONE')
-        if _lm_adj != 0:
-            _cf = _result.setdefault('confluence', {})
-            _bd = _cf.setdefault('breakdown', {})
-            _bd['长期记忆跨资产'] = _lm_adj
-            _old = float(_result.get('score_final', _result.get('score', 0)) or 0)
-            _new = round(_old + _lm_adj, 1)
-            _result['score_final'] = _new
-            _result['score']       = _new
-    except Exception as _lm_e:
         import logging as _lm_log; _lm_log.getLogger('brahma').debug(f'[longmem] {_lm_e}')
 
     # ══ [N_EXP 2026-08-29 苏摩111] 40年经验引擎注入 ══════════════════════════
@@ -4276,34 +4208,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # ══ [cross_asset_correlator 2026-08-29 苏摩111] 宏观相关性评分注入 ══
     # 之前只在 brahma_1hao_analysis.py 展示，brahma_core scoring 完全没用到
     # VIX/DXY/BTC.D/利率 → score_addon_total → 注入 score_final
-    try:
-        from brahma_brain.cross_asset_correlator import get_cross_asset_context as _get_cross
-        _cross_ctx   = _get_cross(symbol=_sym, current_price=float(_result.get('price', 0) or 0))
-        _cross_addon = int(_cross_ctx.get('score_addon_total', 0) or 0)
-        if _cross_addon != 0:
-            _old_s_cross = float(_result.get('score_final', 0) or 0)
-            _result['score_final'] = round(_old_s_cross + _cross_addon, 1)
-            _result['score']       = _result['score_final']
-            _result['cross_asset_macro'] = _cross_ctx
-            _result.setdefault('confluence', {}).setdefault('breakdown', {})['宏观相关性'] = (
-                f'{_cross_addon:+d}'
-                f'(VIX={_cross_ctx.get("vix",{}).get("vix_now","N/A")}'
-                f' BTC.D={"✅山寨季" if _cross_ctx.get("btcd",{}).get("altcoin_season") else ""})'
-            )
-    except Exception:
         pass  # 宏观层失败静默降级，不阻断主链
 
     # B2: brahma_coordinator — 子系统上下文聚合
-    try:
-        from brahma_brain.brahma_coordinator import get_episodic_context as _coord_ep
-        from brahma_brain.brahma_coordinator import get_ic_context as _coord_ic
-        _regime_c = _result.get('regime', 'UNKNOWN')
-        _dir_c = _result.get('signal_dir', 'LONG')
-        _score_c = float(_result.get('score_final') or 0)
-        _ep_ctx = _coord_ep(symbol, _regime_c, _dir_c)
-        _ic_ctx = _coord_ic(_regime_c, _dir_c, _score_c)
-        _result['coordinator'] = {'episodic': _ep_ctx, 'ic': _ic_ctx}
-    except Exception:
         pass  # coordinator失败不阻断
 
     # B3: signal_integrity_gate — P0~P2 信号完整性校验
@@ -4322,32 +4229,6 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass  # gate失败不阻断
 
     # B4: mode_c_detector — 庄家行情识别，高波动假信号过滤
-    try:
-        from brahma_brain.mode_c_detector import detect as _mode_c_fn
-        _mc_sent = _result.get('sentiment', {})
-        _mc_mom = _result.get('momentum', {})
-        _mc_kl_raw = (_result.get('extra') or {}).get('_k1h_raw') or []
-        _mc_highs = [float(k[2]) for k in _mc_kl_raw[-20:]] if _mc_kl_raw and isinstance(_mc_kl_raw[0],(list,tuple)) else []
-        _mc_lows  = [float(k[3]) for k in _mc_kl_raw[-20:]] if _mc_kl_raw and isinstance(_mc_kl_raw[0],(list,tuple)) else []
-        _mc_vols  = [float(k[5]) for k in _mc_kl_raw[-20:]] if _mc_kl_raw and isinstance(_mc_kl_raw[0],(list,tuple)) else []
-        _mc_price = float(_result.get('price', 0) or 0)
-        _mc_res = _mode_c_fn(
-            symbol=symbol,
-            price=_mc_price,
-            price_low_24h=min(_mc_lows) if _mc_lows else _mc_price * 0.98,
-            short_ratio=100.0 - float(_mc_sent.get('long_short_ratio', 50.0)),
-            vol_current=_mc_vols[-1] if _mc_vols else 0,
-            vol_avg_20=sum(_mc_vols)/len(_mc_vols) if _mc_vols else 1,
-            candle_high=max(_mc_highs) if _mc_highs else _mc_price * 1.01,
-            candle_low=min(_mc_lows) if _mc_lows else _mc_price * 0.99,
-            fr_rate=float(_mc_sent.get('funding_rate', 0) or 0),
-        )
-        _result['mode_c'] = _mc_res
-        if _mc_res and _mc_res.get('is_mode_c'):
-            # 庄家行情 → 仓位系数×0.5（写入pos_pct_sizer，不改score）
-            _result['pos_pct_sizer'] = (_result.get('pos_pct_sizer') or 0.5) * 0.5
-            _result.setdefault('breakdown_extra', {})['mode_c_halved'] = True
-    except Exception:
         pass  # mode_c失败不阻断
 
 

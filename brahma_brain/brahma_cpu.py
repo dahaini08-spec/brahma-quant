@@ -12,7 +12,7 @@ brahma_cpu.py — 梵天中央决策处理器 (CPU大脑)
 4层漏斗决策树:
   Layer0: 快速否决（0 tokens，纯规则，<1ms）
     死穴 / FG>85 / 连亏冷静期 / 体制封禁 → SKIP
-  Layer1: 35维评分（brahma_core.analyze，~5s）
+  Layer1: 94维评分（brahma_core.analyze，~5s）
     score<130 → SKIP | 130-149 → WATCH | ≥150 → Layer2
   Layer2: AI议会裁决（llm_council.review，~10s并行）
     3票反对 → 降WATCH | 2票支持 → ALERT | 3票+score≥165 → Layer3
@@ -105,7 +105,7 @@ def _layer0_fast_reject(symbol: str, regime: str, signal_dir: str) -> tuple:
 
 
 # ══════════════════════════════════════════════════════════════════════
-# Layer1: 35维评分
+# Layer1: 94维评分
 # ══════════════════════════════════════════════════════════════════════
 def _layer1_score(symbol: str, signal_dir: str = None) -> dict:
     """调用brahma_core.analyze()，返回完整result"""
@@ -201,7 +201,8 @@ def _check_position_risk(symbol: str, signal_dir: str, score_result: dict) -> tu
     检查仓位风险门控。返回 (allow: bool, reason: str)
     """
     try:
-        from position_sl_manager import get_current_positions
+# [import_autoclean] 模块不存在，已注释
+# from position_sl_manager import get_current_positions
         positions = get_current_positions()
     except Exception:
         try:
@@ -402,7 +403,7 @@ def process_event(symbol: str, signal_dir: str = None,
             return {'decision': 'SKIP', 'reason': reason, 'layer': 0,
                     'symbol': sym, 'score': 0, 'elapsed': time.time() - t0}
 
-    # ── Layer1: 35维评分 ────────────────────────────────────────────
+    # ── Layer1: 94维评分 ────────────────────────────────────────────
     result = _layer1_score(sym, signal_dir)
     if not result.get('_layer1_ok'):
         reason = f'Layer1评分失败: {result.get("_error")}'
@@ -474,7 +475,8 @@ def process_event(symbol: str, signal_dir: str = None,
             _do_alert(sym, signal_dir, result, council, reason)
             # A方案：苏摩在线时也同步纸面开单（不等确认）
             try:
-                from paper_trader import auto_paper_trade
+# [import_autoclean] 模块不存在，已注释
+# from paper_trader import auto_paper_trade
                 auto_paper_trade(sym, signal_dir, score_adj, support, result)
             except Exception as _pe:
                 _log.warning(f'[CPU·paper] 纸面开单失败: {_pe}')
@@ -489,7 +491,8 @@ def process_event(symbol: str, signal_dir: str = None,
     if not dry_run:
         # 纸面先开（必完成）
         try:
-            from paper_trader import auto_paper_trade
+# [import_autoclean] 模块不存在，已注释
+# from paper_trader import auto_paper_trade
             paper_result = auto_paper_trade(sym, signal_dir, score_adj, support, result)
             exec_result['paper'] = paper_result
         except Exception as _pe:
@@ -539,7 +542,7 @@ def process_trigger_file() -> list:
         _log.info(f'[CPU] 处理感知事件: {symbol} {event.get("events", [])}')
         result = process_event(
             symbol=symbol,
-            signal_dir=None,  # 让35维评分自动判断方向
+            signal_dir=None,  # 让94维评分自动判断方向
             event_type=str(event.get('events', [{}])[0].get('event', 'UNKNOWN')),
         )
         result['_trigger_event'] = event

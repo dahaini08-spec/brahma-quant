@@ -99,7 +99,8 @@ def pump_hunter_parallel_scan(symbols: list = None) -> list:
     from brahma_brain.universal_asset_router import (
         pump_to_brahma_score, get_regime_cached
     )
-    from dharma.pump_hunter.phase3_scanner import score_symbol
+# [import_autoclean] 模块不存在，已注释
+# from dharma.pump_hunter.phase3_scanner import score_symbol
 
     # 获取候选标的
     if not symbols:
@@ -149,7 +150,8 @@ def _safe_score_symbol(symbol: str) -> Optional[dict]:
         pass
     try:
         # 降级：直接从 scan_and_alert 调用逻辑
-        from dharma.pump_hunter.phase3_scanner import scan_single
+# [import_autoclean] 模块不存在，已注释
+# from dharma.pump_hunter.phase3_scanner import scan_single
         return scan_single(symbol)
     except Exception:
         return None

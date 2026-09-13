@@ -132,7 +132,8 @@ def apply_causal_factors(
         return CausalFactorResult(skipped=True)
 
     try:
-        from counterfactual_score_check import check as _cfc_check
+# [import_autoclean] 模块不存在，已注释
+# from counterfactual_score_check import check as _cfc_check
         result_raw = _cfc_check(cf_dict, signal_dir, regime, timeout_ms=timeout_ms)
         adj   = result_raw.get('score_adj', 0)
         vrdt  = result_raw.get('verdict', 'NEUTRAL')

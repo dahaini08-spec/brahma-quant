@@ -194,7 +194,7 @@ BLOCKED_WORDS = [
     # 死封内部术语
     'BEAR_TREND', 'CHOP_MID', 'BULL_TREND', 'BEAR_EARLY',
     'DD1', '仅供内部', '新浪财经',
-    '梵天', '渗天', 'FVG', 'Kronos', '体制识别',
+    '梵天系统', '梵天设计院', '梵天', '80维数据驱动', '渗天', 'FVG', 'Kronos', '体制识别',
     'brahma', 'brahma_', '量化系统', '量化引擎',
     # 永久禁用废话句
     '市场在等消息或等突破',
@@ -389,7 +389,7 @@ def build_hot_tickers() -> str:
                       f'等一个像样的回踩：{fib618:.4f}U是第一个观察位。\n'
                       f'没有回踩就不进，追高是亏钱的主要来源之一。')
         hook = f'${hot_sym} 今天+{chg:.0f}%，说说这背后发生了什么。'
-        question = f'你提前捕捉到{hot_sym}这波行情了吗？'
+        # [已废弃] 假互动已删除
         out = [
             hook, '',
             f'📊 {now_cst()} CST',
@@ -434,7 +434,7 @@ def build_hot_tickers() -> str:
                        f'这种情况往往不是真底，是多头在慢慢被清洗。\n'
                        f'{"量能放大说明是真实抛盘，不是轻量阴跌。" if vol_ratio > 1.5 else "量能没有放大，也可能只是情绪性砸盘。"}\n'
                        f'我的处理方式：等价格在某个位置企稳超过2根4H K线，再评估结构入场。')
-        question = f'你认为{hot_sym}现在是底部吗？'
+        # [已废弃] 假互动已删除
 
     # 层4：上涨 → 挖价格结构+判断位置风险
     elif chg > 5:
@@ -1276,11 +1276,10 @@ def post_to_square(content: str, dry_run: bool = False) -> bool:
     import requests
 
     # ── 品牌包装（2026-09-12 苏摩111封印）──
-    BRAND_PREFIX = '🌿 姓赵不宣'
-    BRAND_SUFFIX = '📊 梵天系统 | 80维数据驱动 | 不是建议'
-    if BRAND_PREFIX not in content:
-        content = f'{BRAND_PREFIX}\n\n{content}'
-    if '梵天系统' not in content:
+    BRAND_PREFIX = ''
+    BRAND_SUFFIX = '🌿 姓赵不宣 | 不是建议'
+    # 顶端不加前缀，IP放在后缀
+    if '姓赵不宣' not in content:
         content = f'{content}\n\n{BRAND_SUFFIX}'
 
     # ── LLM重写已废弃（2026-09-11）──

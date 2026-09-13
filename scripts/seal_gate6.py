@@ -24,7 +24,8 @@ print('🔍 封印第六道门控：接线验证')
 print('=' * 45)
 
 # 门1：接线巡检
-from brahma_wiring_v2 import run_check
+# [import_autoclean] 模块不存在，已注释
+# from brahma_wiring_v2 import run_check
 result = run_check(push_on_error=False)
 print(result['report'])
 

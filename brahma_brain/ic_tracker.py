@@ -129,7 +129,9 @@ def compute_all_ic() -> dict:
                     score_val = float(str(val).split('(')[0].strip().replace('+',''))
                     dim_data[dim_key]['scores'].append(score_val)
                     dim_data[dim_key]['labels'].append(label)
-                except: pass
+                except:
+                    import sys as _sys_ep; print(f"[EXCEPT-PASS] ic_tracker.py:L132", file=_sys_ep.stderr)
+                    pass
         # 总分IC
         total_scores = [r['score'] for r in recs]
         total_labels = [r['label'] for r in recs]

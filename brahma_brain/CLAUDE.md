@@ -15,7 +15,7 @@ brahma_1hao_analysis.run_analysis()               ← 全量报告生成
   ↓
 brahma_analysis_runner.run_analysis()             ← r对象（机器读取）
   ↓
-brahma_core.analyze()                             ← 4733行，35维评分核心
+brahma_core.analyze()                             ← 4733行，94维分析生成体系核心（42核心评分维度）
   ↓
 block_a(维度1-6) + block_b(维度7-10) + block_c(维度11-35)
   ↓
@@ -224,7 +224,7 @@ scripts/oi_advanced_scanner.py → score_oi_signal()
 
 | 文件 | 行数 | 职责 |
 |------|------|------|
-| `brahma_core.py` | 4733 | 35维评分引擎，唯一入口 |
+| `brahma_core.py` | 4733 | 94维分析生成体系核心（42核心评分维度），唯一入口 |
 | `brahma_full_report.py` | ~800 | 对外报告，ADAPTIVE v3.0 |
 | `regime_config.py` | ~100 | 体制乘数SSOT |
 | `signal_quality_engine.py` | ~200 | 4道门控 |

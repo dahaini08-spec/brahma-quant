@@ -34,24 +34,24 @@ COLD_DIR    = Path('/tmp/brahma-cold')
 # 新逻辑：分三档降级，不是一刀切跳过
 #   <400MB CRITICAL → 强制跳过（OOM风险）
 #   400~550MB → 跳过Kronos，保留感知层+SMC+清算
-#   550~650MB → 跳过HCME方仓层，保留35维主评分
+#   550~650MB → 跳过HCME方仓层，保留94维主评分
 #   ≥650MB    → 全能力运行（原700MB门槛降至650MB）
 MEM_GATE_DEFAULT_MB  = 650   # [P2修复] 650MB → 全能力（原700MB太保守）
-MEM_GATE_CRITICAL_MB = 400   # 低于此值强制跳过（不管阈值设置）
+MEM_GATE_CRITICAL_MB = 300   # 低于此值强制跳过（OOM风险）
 MEM_GATE_DEGRADED_MB = 550   # [P2修复] 550~650MB → 降级运行（跳过HCME/Kronos）
-MEM_GATE_LIGHT_MB    = 400   # [P2修复] 400~550MB → 轻量运行（感知层+SMC）
+MEM_GATE_LIGHT_MB    = 350   # [P2修复] 350~550MB → 轻量运行（感知层+SMC）
 
 # ──────────────────────────────────────────────────────────
 KLINES_TTL_SEC       = 7200  # klines缓存有效期 2小时
 WATCHDOG_WARN_MB     = 800   # watchdog预警线
-WATCHDOG_CRIT_MB     = 500   # watchdog危险线
+WATCHDOG_CRIT_MB     = 350   # watchdog危险线
 
 # [P2修复 2026-08-15 苏摩111] 内存门控层级（内存 → 运行模式）
 def get_mem_mode(avail_mb: float) -> str:
     """
     根据可用内存返回运行模式：
-      'full'     ≥650MB → 35维全能力
-      'degraded' 550~650MB → 跳过HCME/方仓，保留35维主评分
+      'full'     ≥650MB → 94维全能力
+      'degraded' 550~650MB → 跳过HCME/方仓，保留94维主评分
       'light'    400~550MB → 跳过Kronos，保留感知+SMC+清算
       'blocked'  <400MB   → 拒绝运行
     环境变量 BRAHMA_FORCE_FULL=1 → 强制full模式（苏摩手动全能力分析专用）

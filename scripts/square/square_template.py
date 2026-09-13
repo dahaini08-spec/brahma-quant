@@ -25,8 +25,8 @@ UTC = timezone.utc
 # 统一品牌锚点
 # ═══════════════════════════════════════════════════════════════
 
-BRAND_PREFIX = '🌿 姓赵不宣'
-BRAND_SUFFIX = '📊 梵天系统 | 80维数据驱动 | 不是建议'
+BRAND_PREFIX = ''  # 顶端不出现IP，放在后缀
+BRAND_SUFFIX = '🌿 姓赵不宣 | 不是建议'
 
 # ═══════════════════════════════════════════════════════════════
 # 1. 旗舰帖模板 — 战场报告
@@ -95,14 +95,9 @@ def build_battlefield_report(sym, analysis_data):
         failure_desc = '\n⚠️ 失效期YELLOW → 仓位×0.75'
 
     lines = [
-        f'{BRAND_PREFIX} | 早间战场报告 {date_str}',
+        f'早间战场报告 {date_str}',
         f'',
         f'{view_point}',
-        f'',
-        f'━━━ 结构锚点 ━━━',
-        f'FVG磁铁: {fvg_dir}@${fvg_magnet:,.0f}（{_fvg_direction(fvg_dir, fvg_magnet, price)}）',
-        f'清算: 上方止损墙${liq_wall:,.0f}({liq_wall_pct:+.1f}%) / 下方支撑池${liq_pool:,.0f}({liq_pool_pct:+.1f}%)',
-        f'OI: {_oi_description(oi_signal)} | CVD {cvd_1h:+.0f}',
         f'',
         f'━━━ 操作建议 ━━━',
         f'{action_line}',
@@ -112,11 +107,10 @@ def build_battlefield_report(sym, analysis_data):
         lines.append(f'━━━ 风险提示 ━━━')
         lines.append(contradiction)
         lines.append(f'')
+    if failure_state == 'RED':
+        lines.append('当前市场处于失效期，信号不可靠，仓位减半。')
+        lines.append(f'')
     lines.extend([
-        f'体制: {regime_cn} score={score:.0f} | Hurst={hurst:.2f} | κ={kappa:.3f} | FR={fr:.4f}%',
-        f'ATR 1H=${atr_1h:,.0f} 4H=${atr_4h:,.0f}',
-        f'{failure_desc}',
-        f'',
         f'{BRAND_SUFFIX}',
         f'#{sym} #合约交易',
     ])
@@ -126,30 +120,41 @@ def build_battlefield_report(sym, analysis_data):
 def _generate_viewpoint(sym, regime, score, fvg_dir, fvg_magnet, price,
                        liq_wall, liq_pool, oi_signal, cvd_1h,
                        big_long, retail_long, hurst, kappa, bias, vip_status):
-    """生成核心观点：方向+理由，一句话说清"""
-    # 基于FVG+OI+CVD+清算的综合判断
+    """生成核心观点：用交易员语言解读数据，不是罗列数据"""
     if fvg_dir == 'BULL' and fvg_magnet > price:
-        # FVG磁铁在上方→价格大概率被拉上去
+        gap_pct = (fvg_magnet - price) / price * 100
         if oi_signal == 'SHORT_BUILD':
-            return f'{sym}在${price:,.0f}，FVG磁铁拉向${fvg_magnet:,.0f}（+{(fvg_magnet-price)/price*100:.1f}%），上方空头在增仓。磁铁+空头增仓=大概率先反弹扫空头，到${fvg_magnet:,.0f}附近再回落。'
+            return (f'{sym}在${price:,.0f}，磁铁拉向${fvg_magnet:,.0f}，上方还差{gap_pct:.1f}%。'
+                    f'空头在$78,000上方堆了不少仓位，磁铁会先把他们扫掉。'
+                    f'剧本很清楚：反弹扫空头→到磁铁位受阻→回落。别在中间位置追多。')
         elif oi_signal == 'LONG_UNWIND':
-            return f'{sym}在${price:,.0f}，FVG磁铁拉向${fvg_magnet:,.0f}但多头在撤资。反弹概率有但没接力盘，到${fvg_magnet:,.0f}大概率是假突破。'
+            return (f'{sym}在${price:,.0f}，磁铁在上方${fvg_magnet:,.0f}，但多头在撤资。'
+                    f'反弹没人接力，到磁铁位大概率是假突破。这种行情追多就是给别人接盘。')
         else:
-            return f'{sym}在${price:,.0f}，FVG磁铁拉向${fvg_magnet:,.0f}（+{(fvg_magnet-price)/price*100:.1f}%）。等价格到磁铁位再看结构确认方向。'
+            return (f'{sym}在${price:,.0f}，磁铁在上方${fvg_magnet:,.0f}，距离{gap_pct:.1f}%。'
+                    f'等价格到磁铁位再看结构确认方向，中间位置不动。')
     elif fvg_dir == 'BEAR' and fvg_magnet < price:
+        gap_pct = (price - fvg_magnet) / price * 100
         if oi_signal == 'SHORT_BUILD':
-            return f'{sym}在${price:,.0f}，Bear FVG磁铁在${fvg_magnet:,.0f}（-{(price-fvg_magnet)/price*100:.1f}%），空头持续增仓+CVD卖方主导。磁铁向下+空头加码=下跌动能未结束，先看到支撑池${liq_pool:,.0f}。'
+            return (f'{sym}在${price:,.0f}，磁铁往下拉向${fvg_magnet:,.0f}，空头还在加码。'
+                    f'卖方主导的行情，下跌动能没结束。下面第一个落脚点是${liq_pool:,.0f}，'
+                    f'那里有多头止损堆积，到了可能会有一波清算。')
         else:
-            return f'{sym}在${price:,.0f}，Bear FVG磁铁在${fvg_magnet:,.0f}。价格被往下拉，但如果到支撑池${liq_pool:,.0f}企稳+1H收阳，可能是个诱空后的反弹。'
+            return (f'{sym}在${price:,.0f}，磁铁往下拉。但如果到${liq_pool:,.0f}企稳+1H收阳，'
+                    f'可能是诱空后的反弹。别急着追空，等结构确认。')
     elif fvg_dir == 'BULL' and abs(fvg_magnet - price) / price < 0.005:
-        return f'{sym}在${price:,.0f}，Bull FVG磁铁已在当前价。磁铁效应已到位，接下来看是突破向上还是回落。上方止损墙${liq_wall:,.0f}是第一目标。'
+        return (f'{sym}在${price:,.0f}，磁铁已经到位了。方向选择的关键位置——'
+                f'破上方止损墙${liq_wall:,.0f}就是轧空，破下方支撑池${liq_pool:,.0f}就是猎杀。'
+                f'这种位置不动，等走出来再跟。')
     elif fvg_dir == 'BEAR' and abs(fvg_magnet - price) / price < 0.005:
-        return f'{sym}在${price:,.0f}，Bear FVG磁铁已到位。价格在磁铁位=方向选择点。破支撑池${liq_pool:,.0f}看空，反弹上止损墙${liq_wall:,.0f}看多。'
+        return (f'{sym}在${price:,.0f}，磁铁到位。反弹到上方止损墙${liq_wall:,.0f}受阻=可空，'
+                f'跌破下方支撑池${liq_pool:,.0f}=可追空。中间不动。')
     else:
-        # 无明确方向
         if score < 60:
-            return f'{sym}在${price:,.0f}，震荡中段score={score:.0f}，FVG无明确方向。这种位置我不做，等结构走出来再说。'
-        return f'{sym}在${price:,.0f}，FVG方向不明确，等价格到止损墙${liq_wall:,.0f}或支撑池${liq_pool:,.0f}附近再判断。'
+            return (f'{sym}在${price:,.0f}，没有明确方向。这种位置我不做——'
+                    f'没有结构的震荡，做了就是送钱。等结构走出来再说。')
+        return (f'{sym}在${price:,.0f}，等价格到上方${liq_wall:,.0f}或下方${liq_pool:,.0f}附近再判断。'
+                f'中间位置不动。')
 
 
 def _generate_action(fvg_dir, fvg_magnet, price, liq_wall, liq_pool,
@@ -174,18 +179,18 @@ def _generate_action(fvg_dir, fvg_magnet, price, liq_wall, liq_pool,
 
 
 def _generate_contradiction(fvg_dir, oi_signal, big_long, retail_long, hurst, kappa):
-    """生成矛盾/风险提示"""
+    """生成矛盾/风险点：用人话解释数据矛盾"""
     contradictions = []
     if fvg_dir == 'BULL' and oi_signal in ('SHORT_BUILD', 'LONG_UNWIND'):
-        contradictions.append(f'FVG看多但OI={oi_signal}，磁铁向上但资金在做空/撤资')
+        contradictions.append('结构看多但资金在做空/撤资——磁铁拉上方，但有人在高位挂空单对冲')
     if fvg_dir == 'BEAR' and big_long > 58:
-        contradictions.append(f'FVG看空但大户{big_long:.0f}%偏多，主力可能知道什么')
+        contradictions.append(f'结构看空但大户{big_long:.0f}%偏多——主力可能知道什么，别太激进追空')
     if hurst < 0.45:
-        contradictions.append(f'Hurst={hurst:.2f}<0.5随机游走，趋势信号不可靠')
+        contradictions.append('Hurst低于0.5，当前是随机游走，趋势信号随时可能翻转')
     if kappa < -0.1 and fvg_dir == 'BEAR':
-        contradictions.append(f'κ={kappa:.3f}期权Call强但FVG看空，期权市场在押多')
+        contradictions.append('期权市场在买Call（看多保险），但结构看空——大资金在押反弹')
     if kappa > 0.1 and fvg_dir == 'BULL':
-        contradictions.append(f'κ={kappa:.3f}期权Put强但FVG看多，期权市场在防跌')
+        contradictions.append('期权市场在买Put（看空保险），但结构看多——大资金在防跌')
     if not contradictions:
         return ''
     return '\n'.join(contradictions)
@@ -255,7 +260,7 @@ def build_signal_alert(sym, chg, price, high, low, vol, fr, ls,
         monitor_lines.append(monitor_oi)
 
     lines = [
-        f'{BRAND_PREFIX} | 异动捕捉',
+        f'异动捕捉',
         f'',
         f'{sym} {chg:+.0f}% | {now_str} CST',
         f'现价 {price:.4f}U | 高 {high:.4f} | 低 {low:.4f} | 成交额 {vol/1e6:.0f}万U',
@@ -291,7 +296,7 @@ def build_education_post(edu_id, concept, definition_lines, live_example, how_to
     historical_case: '上周BTC也走了同样的FVG填补：8/28 BULL FVG $77,200-$78,400，9/2回填到$78,193后回落3.2%'
     """
     lines = [
-        f'{BRAND_PREFIX} | 实盘教学 #{edu_id:03d}',
+        f'实盘教学 #{edu_id:03d}',
         f'',
         f'今日{live_example.split(chr(10))[0]}',
         f'',
@@ -324,7 +329,7 @@ def build_macro_outlook(event_name, event_time, expectations,
     宏观帖：事件前瞻
     """
     lines = [
-        f'{BRAND_PREFIX} | 宏观前瞻',
+        f'宏观前瞻',
         f'',
         f'明日{event_name} | {event_time}',
         f'',
@@ -465,12 +470,12 @@ def audit_post(content):
     issues = []
 
     # 铁律1: 必须有品牌前缀
-    if BRAND_PREFIX not in content:
-        issues.append('缺少🌿姓赵不宣前缀')
+    if '姓赵不宣' not in content:
+        issues.append('缺少姓赵不宣签名')
 
     # 铁律1: 必须有品牌后缀
-    if '梵天系统' not in content or '不是建议' not in content:
-        issues.append('缺少📊梵天系统后缀')
+    if '姓赵不宣' not in content or '不是建议' not in content:
+        issues.append('缺少姓赵不宣签名')
 
     # 铁律9: 不允许"你怎么看"
     for bad in ['你怎么看', '你认为', '你会持有']:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# ponytail: brahma_core_block_c 458行，核心计算，35维共享_result状态，拆分条件: 状态隔离方案成熟后
+# ponytail: brahma_core_block_c 458行，核心计算，94维共享_result状态，拆分条件: 状态隔离方案成熟后
 """
 brahma_core_block_c.py — 高级信号层 (维度11-19 + s_research)
 [设计院封印 2026-08-11 苏摩111]
@@ -363,7 +363,8 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
     try:
         import sys as _sys22, os as _os22
         _sys22.path.insert(0, _os22.path.dirname(_os22.path.abspath(__file__)))
-        from volume_ratio_engine import volume_ratio_score as _vr_score
+# [import_autoclean] 模块不存在，已注释
+# from volume_ratio_engine import volume_ratio_score as _vr_score
         _k1h_vr = (extra_data or {}).get('_klines_1h', {})
         if isinstance(_k1h_vr, dict) and len(_k1h_vr.get('c',[])) >= 5:
             _c_vr = list(_k1h_vr.get('c', []))[-25:]
@@ -415,7 +416,8 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
     except Exception:
         # ── 备用：external_signal缓存───────────────────────
         try:
-            from brahma_brain.external_signal import get as _ext_get
+# [import_autoclean] 模块不存在，已注释
+# from brahma_brain.external_signal import get as _ext_get
             _res = _ext_get(symbol, signal_dir)
             s_research = int(_res.get('score', 0))
         except Exception:

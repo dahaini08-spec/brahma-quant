@@ -21,11 +21,11 @@ brahma_engine.py — [设计院封印 2026-08-09 苏摩111]
 from brahma_brain.brahma_core import (
     analyze,
     calc_trade_params,
-    format_report,
     rebase_params,
     _nearest_swing_above,
     _nearest_swing_below,
 )
+from brahma_brain.formatter import format_report
 
 # brahma_engine 独有函数：_calc_mtf_alignment → 已合并进 brahma_core
 # 如果有脚本直接调用此函数，从 brahma_core 提供

@@ -10,7 +10,7 @@ dharma_training_engine.py — 达摩院全能力实训引擎
 
 架构：
   Layer1  数据层      历史K线 parquet → 统一标准化
-  Layer2  特征层      35维指标快照（无前视）
+  Layer2  特征层      94维指标快照（无前视）
   Layer3  信号层      15m/1h双周期信号生成
   Layer4  验证层      Walk-Forward分层回测
   Layer5  矩阵层      WR矩阵自动重建（n≥20铁证）

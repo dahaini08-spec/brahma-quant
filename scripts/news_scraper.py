@@ -6,7 +6,7 @@ news_scraper.py — 梵天市场情报采集器 v1.0
 功能：
   - 并发爬取 CoinDesk / CoinGecko / Binance公告
   - 输出 brahma_bus 兼容 JSONL
-  - 每30min由cron调度，接入35维矩阵第10维（social hype）
+  - 每30min由cron调度，接入94维矩阵第10维（social hype）
 
 用法：
   python3 scripts/news_scraper.py

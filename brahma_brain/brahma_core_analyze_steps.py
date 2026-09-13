@@ -118,7 +118,8 @@ def _analyze_step1(symbol: str, signal_dir: str) -> dict:
         _cv_root = _cv_os.path.dirname(_cv_os.path.abspath(__file__))
         if _cv_root not in _cv_sys.path:
             if _cv_root not in _cv_sys.path: _cv_sys.path.insert(0, _cv_root)
-        from causal_regime_verifier import verify as _cv_verify
+# [import_autoclean] 模块不存在，已注释
+# from causal_regime_verifier import verify as _cv_verify
         _cv_regime = ms.get('regime', '?')
         _cv_dir = signal_dir or ms.get('signal_bias', 'SHORT')
         _causal_v_result = _cv_verify(_sym, _cv_regime, _cv_dir, ms, timeout_ms=150)
@@ -243,7 +244,8 @@ def _analyze_step3(symbol: str, ms: dict, signal_dir: str, price: float) -> dict
         smc['fvg_1d']  = _smc_1d.get('fvg', {})
         # [v21.0] MTF路由：4H战略区优先，1H确认（自顶向下）
         try:
-            from brahma_brain.multi_timeframe_router import route_entry_zone as _mtf_route
+# [import_autoclean] 模块不存在，已注释
+# from brahma_brain.multi_timeframe_router import route_entry_zone as _mtf_route
             _mtf_result = _mtf_route(symbol, signal_dir, price, smc, _smc_4h)
             _tf_used = _mtf_result.get('timeframe', '1H')
             _tf_warn = _mtf_result.get('warning', '')

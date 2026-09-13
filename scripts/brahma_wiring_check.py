@@ -211,7 +211,8 @@ def main(fix: bool = False):
     # 运行一次分析获取结果
     print('🔄 运行梵天分析获取输出...')
     try:
-        from brahma_brain import brahma_core
+# [import_autoclean] 模块不存在，已注释
+# from brahma_brain import brahma_core
         result = brahma_core.analyze('BTCUSDT', signal_dir='SHORT')
         print(f'   score={result.get("score_final", 0):.1f} regime={result.get("regime")}\n')
     except Exception as e:

@@ -932,10 +932,10 @@ def run():
         # [v5.6 设计院自主落地 2026-07-13] 触发链末尾追加 signal_dashboard 事件驱动推送
         # 原理：E1-E9事件触发时，扫描完成后立即检查仪表盘（T1-T4条件），无变化静默
         # 效果：signal_dashboard 从30min定时 → 事件驱动（活跃市场8-12次/天，非活跃趋近0）
-        # [P2-C 设计院封印 2026-07-23 苏摩111] 层全1事件驱动接35维矩阵
+        # [P2-C 设计院封印 2026-07-23 苏摩111] 层全1事件驱动接94维矩阵
         # 根因: 事件触发后当前只走轻量路径(market_screener+brahma_scan_all)
         # 修复: 探测到 E1/E2/E3/E4 时附加触发 brahma_1hao_analysis BTC ETH
-        # 效果: 价格穿越/RSI穿越事件发生时即制35维分析，而非等待30min定时轮询
+        # 效果: 价格穿越/RSI穿越事件发生时即制94维分析，而非等待30min定时轮询
         _35dim_trigger_events = {'E1_RSI_CROSS_UP', 'E2_RSI_OVERBOUGHT_FALL',
                                   'E3_PRICE_BREAKOUT_HIGH', 'E4_PRICE_BREAKDOWN_LOW',
                                   'E10_RSI_BOUNCE'}
@@ -953,7 +953,7 @@ def run():
             f'python3 scripts/brahma_scan_all.py --candidates && '
             f'python3 scripts/auto_executor.py 2>&1 | tail -5'
         )
-        # E1/E2/E3/E4/E10 触发时附加 brahma_1hao_analysis 35维分析
+        # E1/E2/E3/E4/E10 触发时附加 brahma_1hao_analysis 94维分析
         # [P1-B修复 2026-07-24 苏摩确认] 根据触发事件类型决定分析方向
         # E2(RSI超买回落)/E4(跌破48H低) → SHORT方向
         # E1(RSI上穿)/E3(突破48H高)/E10(RSI反弹确认) → LONG方向

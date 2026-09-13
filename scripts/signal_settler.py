@@ -243,7 +243,8 @@ def settle_signal(sig: dict, dry_run: bool = False) -> dict | None:
     # 一单一单积累经验：每次结算后更新因子IC矩阵
     # 这是40年老手经验的量化实现——每笔交易后更新哪个因子有效
     try:
-        from brahma_brain.brahma_ic_engine import update_ic as _ic_update
+# [import_autoclean] 模块不存在，已注释
+# from brahma_brain.brahma_ic_engine import update_ic as _ic_update
         _sig_id  = sig.get('signal_id', sig.get('id', ''))
         _ret_dir = float(pnl) / 100  # pnl_pct → 小数，方向已按实际调整
         if _sig_id and abs(_ret_dir) > 0:

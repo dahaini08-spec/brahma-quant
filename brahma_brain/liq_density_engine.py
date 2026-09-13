@@ -683,22 +683,6 @@ def get_liq_snapshot(symbol: str) -> dict:
     result["liq_long_10pct"]  = round(price * 0.90, 1)   # 多头10x清算位
 
     # ── 8. Tardis 真实清算墙（星枢引擎 Layer 0）───────────────
-    try:
-        import sys, os
-        sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-        from brahma_brain.tardis_liq_layer import get_tardis_liq_walls
-        tdw = get_tardis_liq_walls(sym)
-        result["tardis_walls"] = tdw
-        result["cg_available"] = tdw.get("available", False)
-        if tdw.get("available"):
-            # 用 Tardis 真实主导清算位替换估算值
-            ld = tdw.get("long_dominant_price",  0)
-            sd = tdw.get("short_dominant_price", 0)
-            if ld > 0: result["liq_long_5pct"]  = ld
-            if sd > 0: result["liq_short_5pct"] = sd
-    except Exception:
-        result["tardis_walls"] = {"available": False}
-        result["cg_available"] = False
 
     # ── 8b. Coinglass 字段兼容（Key 已失效，保留字段）───────
     result.setdefault("cg_long_liq_m",  None)
@@ -888,10 +872,6 @@ def format_report(snap: dict) -> str:
     # Tardis 真实清算墙（星枢引擎）
     tdw = snap.get("tardis_walls", {})
     if tdw.get("available"):
-        try:
-            from brahma_brain.tardis_liq_layer import format_liq_walls
-            lines.append(format_liq_walls(tdw, snap["symbol"]))
-        except Exception:
             lines.append(f"  📡 Tardis真实数据已接入（{tdw.get('date','')}）")
     else:
         lines.append(f"  ⚠️ Tardis数据不可用，清算位为估算值")

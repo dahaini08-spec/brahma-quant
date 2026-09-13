@@ -583,7 +583,9 @@ def review(
                         'macro_note':  str(_mc.get('macro_note',''))[:80],
                         'dxy':         _mc.get('dxy',{}).get('value',100) if isinstance(_mc.get('dxy'),dict) else _mc.get('dxy',100),
                     }
-            except Exception: pass
+            except Exception:
+                import sys as _sys_ep; print(f"[EXCEPT-PASS] llm_council_bridge.py:L586", file=_sys_ep.stderr)
+                pass
             signal_result['_llm_council'] = cached_result
             return signal_result
 

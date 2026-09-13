@@ -266,7 +266,9 @@ def run(currency: str = "ETH", verbose: bool = False):
     existing = {}
     if OUT_FILE.exists():
         try: existing = json.loads(OUT_FILE.read_text())
-        except: pass
+        except:
+            import sys as _sys_ep; print(f"[EXCEPT-PASS] gex_engine.py:L269", file=_sys_ep.stderr)
+            pass
     existing[currency] = r
     existing[currency]['updated_at'] = int(__import__('time').time())
     OUT_FILE.write_text(json.dumps(existing, ensure_ascii=False))

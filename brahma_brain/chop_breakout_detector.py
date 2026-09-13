@@ -136,7 +136,9 @@ def detect_chop_breakout(state: dict, symbol: str = 'BTCUSDT') -> dict:
     if bull_prob == 0.0:
         score_f  = float(state.get('score_final') or state.get('score') or 0)
         try: score_f = float(str(score_f).split()[0])
-        except: pass
+        except:
+            import sys as _sys_ep; print(f"[EXCEPT-PASS] chop_breakout_detector.py:L139", file=_sys_ep.stderr)
+            pass
         smart_l  = extra.get('smart_money', {}).get('big_pos_long', 0.5)
         cvd_v    = enhanced.get('breakdown', {}).get('cvd', 0)
         mom      = state.get('momentum') or {}

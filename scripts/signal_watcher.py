@@ -411,7 +411,8 @@ def run():
         # 根因：SNDK连续多单信号轰炸，用户误判为新机会，实为加仓陷阱
         _sig_dir_p2 = str(s.get('direction', '')).upper()
         try:
-            from brahma_brain import wuqu_position_tracker as _wpt_p2
+# [import_autoclean] 模块不存在，已注释
+# from brahma_brain import wuqu_position_tracker as _wpt_p2
             _active_p2 = _wpt_p2.get_positions()
             _same_dir_p2 = [p for p in _active_p2
                             if p.get('symbol') == sym and

@@ -528,7 +528,8 @@ def analyze(symbol: str) -> dict:
         import sys as _sys_rt, os as _os_rt
         _rt_dir = _os_rt.path.dirname(_os_rt.path.abspath(__file__))
         if _rt_dir not in _sys_rt.path: _sys_rt.path.insert(0, _rt_dir)
-        from realtime_fetch import fetch_realtime as _rt_fetch
+# [import_autoclean] 模块不存在，已注释
+# from realtime_fetch import fetch_realtime as _rt_fetch
         _rt = _rt_fetch(symbol)
         if not _rt.get('_errors') or len(_rt['_errors']) < 3:
             # 注入实时数据到缓存层（强制覆盖，TTL=30s仅作短暂防重复）

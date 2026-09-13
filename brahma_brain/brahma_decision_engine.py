@@ -133,14 +133,7 @@ def _get_liq_distances(symbol: str, price: float) -> dict:
 
 def _get_mtf_alignment(symbol: str, direction: str) -> int:
     """返回与方向一致的周期数(0-4)"""
-    try:
-        from brahma_brain.mtf_resonance import MTFResonance
-        res = MTFResonance().check(symbol, direction, _get_current_price(symbol))
-        alignment = res.get('tf_alignment', {})
-        count = sum(1 for v in alignment.values() if v == direction)
-        return count
-    except Exception:
-        return 0
+    return 0
 
 
 def _get_fangcang_ev(symbol: str) -> float:
@@ -303,22 +296,6 @@ class BrahmaDecisionEngine:
                 # 仅豁免 CHOP_MID×LONG 死穴（其他体制死穴不豁免）
                 # 条件：touchQuality≥70 + touches≥2 + base_score≥80
                 _bypass_triggered = False
-                try:
-                    if regime == 'CHOP_MID' and direction == 'LONG':
-                        _touch_data = signal.get('_structure_touch') or {}
-                        _base_score = float(score)
-                        from brahma_brain.structure_touch_detector import check_structure_bypass
-                        _bypass = check_structure_bypass(regime, direction, _touch_data, _base_score)
-                        if _bypass.get('bypass'):
-                            step1['structure_bypass'] = _bypass['reason']
-                            step1['size_mult'] = _bypass['size_mult']
-                            step1['entry_pattern'] = _bypass['entry_pattern']
-                            step1['dead_combo'] = False  # 展示用，已豁免
-                            _bypass_triggered = True
-                            # 注入豁免标记到结果
-                            result['_bypass_info'] = _bypass
-                except Exception:
-                    pass
                 # ── [END 结构共振豁免通道] ──────────────────────────────
                 if not _bypass_triggered:
                     result['reason'] = f'Step1否决: 体制死穴 {regime}×{direction}'
