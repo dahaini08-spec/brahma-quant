@@ -27,6 +27,7 @@ brahma_brain · Phase 1 完整整合
   3. confluence_score → 150分共振评分
   4. 输出精确交易参数 + 钉钉1格式文本
 """
+import sys
 import os, sys, time
 import copy  # [P1-C audit-fix] deepcopy for cf dict
 import json  # [D1-fix] 提升到顶部
@@ -43,6 +44,7 @@ from smc_engine        import analyze_smc
 from brahma_brain.smc_engine import divergence_score
 from brahma_brain.volume_unified import volume_score
 from range_engine      import range_score  # [Phase2a] 区间结构引擎
+import sys
 try:
     from math_utils import ema as _mu_ema, rsi as _mu_rsi, atr as _mu_atr  # [设计院 2026-06-30 全量接入] 统一数学库
     _MATH_UTILS_OK = True
@@ -564,8 +566,7 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
                     if _bull_obs:
                         _near_ob = min(_bull_obs, key=lambda x: x.get('dist_pct', 99))
                         _ob_low = float(_near_ob.get('low', 0))
-                except Exception:
-                    pass
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
                 if _ob_low and entry_mid * 0.986 < _ob_low < entry_mid:
                     _p0_new_risk = entry_mid - _ob_low
                     _p0_sl_pct_val = _p0_new_risk / entry_mid * 100

@@ -256,18 +256,15 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
             extra_data['divergence']['score'] = min(best_s + _dual_div_bonus, 18)
             extra_data['divergence']['score_long'] = min(extra_data['divergence'].get('score_long',0) + _dual_div_bonus, 18) if signal_dir=='LONG' else extra_data['divergence'].get('score_long',0)
             extra_data['divergence']['score_short'] = min(extra_data['divergence'].get('score_short',0) + _dual_div_bonus, 18) if signal_dir=='SHORT' else extra_data['divergence'].get('score_short',0)
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=_s4_sys.stderr)
     try:
         vol_res = volume_score(k1h['h'],k1h['l'],k1h['c'],k1h['v'], signal_dir)
         extra_data['volume'] = {'score': vol_res['score'], 'details': vol_res['details']}
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=_s4_sys.stderr)
     try:
         # [Phase2a] 区间结构引擎数据注入
         extra_data['_klines_1h'] = k1h
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=_s4_sys.stderr)
     try:
         # Phase 3: Elliott波浪引擎（已禁用 2026-06-11，模块已清除）
         # analyze_elliott已从 elliott_engine 移除，此处跳过
@@ -275,14 +272,14 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     except Exception as _ew_err:
         pass  # 已禁用，无需记录错误
     try:
-        sent = sentiment_score(
+        from sentiment_engine import get_sentiment_score as _sent_fn
+        sent = _sent_fn(
             symbol, signal_dir,
             ms['sentiment']['funding_rate'],
             ms['sentiment']['long_short_ratio']
         )
         extra_data['sentiment'] = sent
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=_s4_sys.stderr)
     # P1b/P2c/P2d: 链上+订单流+宏观 并发执行（原串行3×~1s → 并发后只需最慢1个）
     from concurrent.futures import ThreadPoolExecutor as _TPE
     _fg_pass = extra_data.get('fear_greed')
