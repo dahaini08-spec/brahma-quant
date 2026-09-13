@@ -383,6 +383,22 @@ def decide(
     entry_hi = res.get('entry_hi', 0)
     liq_support = res.get('liq_nearest_long', 0) or liq.get('nearest_long', 0)
 
+    # [BUG修复 2026-09-13 苏摩111] 共振入场区=0时（FVG=NONE），用支撑池+ATR重算
+    if direction == 'LONG' and entry_lo <= 0 and liq_support > 0:
+        entry_lo = round(liq_support * 0.998, 1)
+        entry_hi = round(min(liq_support * 1.005, price), 1)
+    elif direction == 'LONG' and entry_lo <= 0:
+        entry_lo = round(price * 0.988, 1)
+        entry_hi = round(price * 0.993, 1)
+    if direction == 'SHORT' and entry_lo <= 0:
+        _liq_wall = liq.get('nearest_short', 0)
+        if _liq_wall > price:
+            entry_lo = round(_liq_wall * 0.997, 1)
+            entry_hi = round(_liq_wall, 1)
+        else:
+            entry_lo = round(price * 1.005, 1)
+            entry_hi = round(price * 1.015, 1)
+
     # 做多入场区=共振区，但如果低于支撑池则上移
     if direction == 'LONG' and liq_support > 0 and entry_lo > 0 and entry_lo < liq_support:
         _shift = liq_support - entry_lo
