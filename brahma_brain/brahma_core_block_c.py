@@ -22,6 +22,7 @@ s_research: 研究增强层 [timesfm_lite缺失→归零]
 输入: ms, smc, signal_dir, extra_data, score, breakdown
 输出: dict {维度分数..., score, breakdown}
 """
+import sys
 import math
 import datetime
 
@@ -139,124 +140,8 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
     breakdown['L2+贝叶斯+宏观'] = s13
 
     # ── Phase B 维度14: XGBoost + 在线贝叶斯 + 滑点 + 链上WS ──────────
+    # [P2 归零 2026-09-13] XGBoost+Bayes+滑点 归零，跳过计算省CPU
     s14 = 0
-    # B1: XGBoost P(WIN) 评分（主流币保护：训练集主要为小币种时不惩罚主流币）
-    if extra_data and extra_data.get('xgboost'):
-        xgb_score = extra_data['xgboost'].get('score', 0)
-        xgb_conf  = extra_data['xgboost'].get('confidence', 'LOW')
-        # 主流币保护：MED/LOW置信时负分截断为0
-        _major_coins = {'BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT','XRPUSDT','ADAUSDT'}
-        _sym = (ms.get('symbol') or '').upper()
-        if xgb_score < 0 and xgb_conf in ('MED','LOW') and _sym in _major_coins:
-            xgb_score = 0
-        # [D14达摩院实训] HIGH置信但强负时衰减惩罚（样本仍主要来自达摩院模拟）
-        # 真实实盘累积到50条后自动解除限制
-        # [D14 v12.6] HIGH置信惩罚衰减：<50实盘截断-2，50-200实盘截断-4
-        if xgb_score < -2 and xgb_conf == 'HIGH':
-            from pathlib import Path as _Path
-            import json as _json
-            try:
-                _real_n = sum(1 for _l in _Path('data/trade_records.jsonl').read_text().split('\n')
-                              if _l.strip() and not _json.loads(_l).get('_is_simulation', False))
-            except Exception:
-                _real_n = 0
-            if _real_n < 50:
-                xgb_score = max(xgb_score, -2)
-            elif _real_n < 200:
-                xgb_score = max(xgb_score, -4)
-        s14 += xgb_score
-    # B1b: [v12.7a] 达摩院实盘代理激活器 (dharma_real_proxy)
-    # 当 real_n<50 时用达摩院邻居WR做先验，替代 Bayes HIGH冻结问题
-    try:
-        import json as _pjson
-        from pathlib import Path as _PP
-        _proxy_f = _PP('data/real_proxy_buckets.json')
-        if _proxy_f.exists():
-            if not hasattr(analyze, '_proxy_cache') or analyze._proxy_cache is None:
-                analyze._proxy_cache = _pjson.loads(_proxy_f.read_text())
-            _pcache = analyze._proxy_cache
-            _sym_p  = (ms.get('symbol') or '').upper()
-            _dir_p  = 'S' if signal_dir in ('SHORT','做空') else 'L'
-            # 优先取信号层传入的score；次选xgboost的score_norm；最后fallback为100（S1基准）
-            _score_p = 0
-            if extra_data and extra_data.get('xgboost'):
-                _xn = extra_data['xgboost'].get('score_norm', 0)
-                _score_p = int(_xn * 150) if _xn else 0
-            if _score_p == 0:
-                _score_p = 100  # 默认S1
-            def _tier(sc):
-                if sc>=135: return 'S3'
-                if sc>=120: return 'S2'
-                if sc>=100: return 'S1'
-                return 'S0'
-            # score此时还未出来，用当前已累积的中间分估算tier（或默认S1）
-            # 大多数触发信号都是S1+，S1作为保守默认
-            _tier_p = _tier(_score_p) if _score_p >= 80 else 'S1'
-            _reg_p  = 'BULL' if 'BULL' in str(ms.get('regime','')).upper() else ('BEAR' if 'BEAR' in str(ms.get('regime','')).upper() else 'CHOP')
-            from datetime import datetime as _dt, timezone as _tz
-            _h = _dt.now(_tz.utc).hour
-            _sess_p = 'ASIA' if _h < 8 else ('EU' if _h < 16 else 'US')
-            # 4级模糊查找
-            _pb = None
-            for _k in [
-                f"{_sym_p}:{_reg_p}:{_dir_p}:{_tier_p}:{_sess_p}",
-                f"{_sym_p}:{_reg_p}:{_dir_p}:{_tier_p}:US",
-                f"BTCUSDT:{_reg_p}:{_dir_p}:{_tier_p}:{_sess_p}",
-                f"ETHUSDT:{_reg_p}:{_dir_p}:{_tier_p}:{_sess_p}",
-            ]:
-                if _k in _pcache:
-                    _pb = _pcache[_k]; break
-            if _pb and isinstance(_pb, dict):
-                _pwr    = _pb.get('current_wr', 0.35)
-                _real_n = _pb.get('real_n', 0)
-                _pn     = _pb.get('proxy_n', 0)
-                _trust  = 2.0 if _real_n >= 5 else (1.5 if _real_n >= 1 else 1.0)
-                # [v12.7a] pn>=100时先验可信，无需real_n；pn<50不信任
-                if _pn >= 100:
-                    if _pwr >= 0.42:    # 高于基准(0.35)+安全边际
-                        s14 += int(2 * _trust)
-                    elif _pwr <= 0.28:  # 明显低胜率
-                        s14 -= 2
-                elif _pn >= 50:
-                    if _pwr >= 0.45:
-                        s14 += 1
-                    elif _pwr <= 0.25:
-                        s14 -= 1
-                # 详细注入到extra供外部查看
-                if extra_data is not None:
-                    extra_data['proxy_bucket'] = {'key':_k,'wr':_pwr,'real_n':_real_n,'proxy_n':_pn}
-    except Exception:
-        pass  # proxy激活失败不影响主评分
-    # B2: 在线贝叶斯多维后验 [P0-B upgrade 2026-06-17]
-    # 设计院封印 2026-06-26: exp_n=0时降权至50%（无实训样本先验不可信）
-    try:
-        from online_bayes import score as _ob_score
-        regime_label = str(ms.get('regime', '') or '')  # [P0-5修复 2026-07-16 苏摩111] regime_label未定义修复
-        _ob_adj, _ob_detail = _ob_score(_sym, regime_label, signal_dir, score)
-        _ob_n = _ob_detail.get('exp_n', 0)
-        # 样本分级降权：n=0降50%，n<30降30%，n>=30全量
-        if _ob_n == 0:
-            _ob_adj = _ob_adj * 0.5
-        elif _ob_n < 30:
-            _ob_adj = _ob_adj * 0.7
-        s14 += _ob_adj
-        if extra_data is not None:
-            extra_data['online_bayes'] = _ob_detail
-        if abs(_ob_adj) >= 1.0:
-            breakdown[f'OnlineBayes({_ob_detail["confidence"]})'] = f'{_ob_adj:+.1f}(prior={_ob_detail["prior_wr"]}%→post={_ob_detail["post_wr"]}%,n={_ob_n})'
-    except Exception as _ob_e:
-        pass  # online_bayes失败不影响主评分
-    # B2备用：extra_data里已有则迟高优先级读取
-    if extra_data and extra_data.get('online_bayes') and not any('OnlineBayes' in k for k in breakdown):
-        s14 += extra_data['online_bayes'].get('score_adj', 0)
-    # B3: 滑点惩罚
-    if extra_data and extra_data.get('slippage'):
-        s14 += extra_data['slippage'].get('score_adj', 0)
-    # B4: 链上大单 WS 方向分
-    if extra_data and extra_data.get('onchain_ws'):
-        s14 += min(extra_data['onchain_ws'].get('direction_score', 0), 8)
-    s14 = max(-15, min(s14, 20))
-    score += s14
     breakdown['ML+在线贝叶斯+滑点'] = s14
 
     # ── Phase C 维度15: LSTM+NLP情绪 [DEAD_CODE 封印 2026-08-11] ──
@@ -295,59 +180,19 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
     breakdown['量能衰竭+背离共振'] = s16  # 信息层展示，不计分
 
     # ── 维17：资金费率+多空比情绪评分 ────────────────────────────────
+    # [P2 归零 2026-09-13] sentiment_engine 归零，跳过计算省CPU
     s17 = 0
-    try:
-        import sys as _sys17, os as _os17
-        _sys17.path.insert(0, _os17.path.dirname(_os17.path.abspath(__file__)))
-        from sentiment_engine import get_sentiment_score as _get_sent
-        _s17_val, _s17_det = _get_sent(ms, signal_dir)
-        s17 = max(-8, min(8, _s17_val))
-        # [达摩院v6.0 2026-09-09 苏摩111] s17 资金费情绪 IC=-0.0131 → 降为信息层
-        breakdown['资金费情绪'] = s17  # 信息层展示，不计分
-    except Exception:
-        pass
+    breakdown['资金费情绪'] = s17
 
     # ── 维18(NEW)：bull_bear多空辩论评分加权 ─────────────────────────
+    # [P2 归零 2026-09-13] bull_bear校准 归零，跳过计算省CPU
     s18 = 0
-    try:
-        import sys as _sys18, os as _os18
-        _sys18.path.insert(0, _os18.path.join(_os18.path.dirname(_os18.path.abspath(__file__)), '..', 'scripts'))
-        from calibration_engine import full_calibration_pipeline as _fcp
-        _cal_score, _cal_rep, _bb = _fcp(symbol, signal_dir, score, regime=ms['regime'])
-        # s18 = 校准后分差（限制-8~+8，非阻断）
-        s18 = max(-8, min(8, round(_cal_score - score, 1)))
-        score = _cal_score  # 直接更新score（包含校准调整）
-        breakdown['bull_bear校准'] = s18
-        if s18 != 0:
-            print(f'[s18-校准] {symbol} {signal_dir} 调整{s18:+.1f}分 conviction={_cal_rep.get("conviction",0):.1f}')
-    except Exception:
-        pass  # 非阻断
+    breakdown['bull_bear校准'] = s18
 
     # ── 维19(NEW)：室内情绪 + 宏观因子(第17+18维度合并注入) ───────────
+    # [P2 归零 2026-09-13] 室内情绪+宏观因子 归零，跳过计算省CPU
     s19 = 0
-    try:
-        import sys as _sys19, os as _os19
-        _sys19.path.insert(0, _os19.path.dirname(_os19.path.abspath(__file__)))
-        from news_event_guard import get_combined_guard_score
-        _macro_dir  = extra_data.get('direction', '') if extra_data else ''
-        _macro_dir  = _macro_dir or ('SHORT' if ms.get('signal_dir','SHORT')=='SHORT' else 'LONG')
-        _macro_reg  = ms.get('regime', '')
-        _macro_sym  = ms.get('symbol', 'BTC')
-        _s19_cache_key = f's19_{_macro_sym}_{_macro_dir}_{_macro_reg}'
-        _s19_cached = _bc_get(_s19_cache_key)
-        if _s19_cached is not None:
-            _s19_val, _s19_rep = _s19_cached
-        else:
-            _s19_val, _s19_rep = get_combined_guard_score(_macro_sym, _macro_dir, _macro_reg)
-            _bc_set(_s19_cache_key, (_s19_val, _s19_rep), ttl=300.0)  # 5min TTL
-        # 限制第19维度对总分的影响范围 -12 ~ +10
-        s19 = max(-12, min(10, round(_s19_val, 1)))
-        score += s19
-        breakdown['宏观+事件'] = s19
-        if extra_data is not None:
-            extra_data['macro_report'] = _s19_rep
-    except Exception as _e19:
-        breakdown['宏观+事件_v2'] = 0  # 非阻断  # [P1-B audit-fix] 重复key加后缀
+    breakdown['宏观+事件'] = s19
 
 
     # [s20] 布林带偏离度 [DEAD_CODE 封印 2026-08-11 bollinger_engine缺失]
@@ -381,67 +226,9 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
 
 
     # ── [s_research] 研究增强层注入（STAR.md L0：上限8分，TTL=30min，失败归零）
-    # 来源优先级：timesfm_lite（当前首选）→ external_signal（备用）
-    # 设计原则：<5ms，任何异常归零，不阻塞主评分
+    # [P2 归零 2026-09-13] TimesFM研究增强层 归零，跳过计算省CPU
     s_research = 0
-    try:
-        # ── 首选：timesfm_lite（已修复接口）──────────────────
-        import sys as _sys_res, os as _os_res
-        _sys_res.path.insert(0, _os_res.path.dirname(_os_res.path.abspath(__file__)))
-        _k1h_tfm = (extra_data or {}).get('_klines_1h', {}) or ms.get('klines_1h', {})
-        _cov_tfm = {}
-        if extra_data:
-            _cov_tfm = {
-                'funding_rate': extra_data.get('funding_rate', 0),
-                'oi_change':    extra_data.get('oi_change_pct', 0),
-                'rsi_1h':       extra_data.get('rsi_1h', 50),
-            }
-        if isinstance(_k1h_tfm, dict) and len(_k1h_tfm.get('c', [])) >= 30:
-            _kl1h_list = [{'o':o,'h':h,'l':l,'c':c,'v':v}
-                for o,h,l,c,v in zip(
-                    _k1h_tfm.get('o',[]), _k1h_tfm.get('h',[]),
-                    _k1h_tfm.get('l',[]), _k1h_tfm.get('c',[]),
-                    _k1h_tfm.get('v',[]))]
-            s_research, _tfm_rep = _tfm_score(
-                symbol, signal_dir, _kl1h_list[-60:],
-                ms.get('regime',''), covariates=_cov_tfm)
-            # P1b: timesfm score<1.5时也保留（降低阈值从2.0至1.5）—设计院 2026-06-27
-            if _tfm_rep.get('error'):
-                raise ValueError(_tfm_rep['error'])
-            # 增强：记录timesfm全量元数据供分析
-            if extra_data is not None:
-                extra_data['timesfm_meta'] = _tfm_rep
-        else:
-            raise ValueError('klines不足')
-    except Exception:
-        # ── 备用：external_signal缓存───────────────────────
-        try:
-# [import_autoclean] 模块不存在，已注释
-# from brahma_brain.external_signal import get as _ext_get
-            _res = _ext_get(symbol, signal_dir)
-            s_research = int(_res.get('score', 0))
-        except Exception:
-            s_research = 0
-
-    try:
-        # CHOP 体制：研究信号强制归零（STAR.md L2）
-        if 'CHOP' in str(ms.get('regime', '')).upper():
-            s_research = 0
-        # 死穴方向：研究信号强制归零（STAR.md L1）
-        _rblock = str(ms.get('regime', '')).upper()
-        _dead_zones = {('BEAR_TREND','LONG'),('BULL_TREND','SHORT'),
-                       ('BEAR_RECOVERY','SHORT'),('BULL_CORRECTION','LONG')}
-        if (_rblock, signal_dir) in _dead_zones:
-            s_research = 0
-        s_research = max(-8, min(8, int(round(s_research))))
-        if s_research != 0:
-            # [达摩院v6.0] 研究增强层 IC未验证 → 降为信息层
-            breakdown['研究增强层_info'] = s_research
-            breakdown['研究增强层'] = f'{s_research:+d} (timesfm_lite)'
-        else:
-            breakdown['研究增强层'] = '0 (timesfm_no_signal)'
-    except Exception as _e_res:
-        breakdown['研究增强层'] = f'0 (exception:{str(_e_res)[:40]})'
+    breakdown['研究增强层'] = '0 (P2归零)'
 
     # RL 仓位乘数注入 extra（供 analyze() 汇总层使用）
     if extra_data and extra_data.get('rl_position'):

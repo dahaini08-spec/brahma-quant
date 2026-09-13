@@ -19,6 +19,7 @@ brahma_core_block_b.py — 链上/清算/资金费层 (维度7-10)
 输入: ms, smc, signal_dir, extra_data, score, breakdown
 输出: dict {s7, s8, s9, s10, score, breakdown}
 """
+import sys
 import math
 import datetime
 
@@ -104,9 +105,7 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
                 s7 = max(-20, s7 + _ob_pts)  # 下限-20
             else:
                 s7 = min(15, s7 + _ob_pts)   # 上限保持15
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── s7增强层②: liq_density_engine 三所清算密度（方向性加权 2026-07-01）──────────────────
     # liq_density 评分基准视角: +分 = 顺势做空 / -分 = 逆势做空
     # SHORT: 直接使用 / LONG: 反转（逆势做多 = 不利）
@@ -122,9 +121,7 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
                 pass  # _ld_adj不变：正分=上方清算墙支撑多头，负分=下方清算墙压制多头
             if _ld_adj != 0 and _ld.get('confidence', 0) >= 0.3:
                 s7 = max(0, min(15, s7 + _ld_adj))
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── P0-A 全局上限封印（设计院六方联合 2026-07-11）────────────────
     # 问题：s7基础(max15)+增强层①(max15)+增强层②(max15)=理论最高45分
     #       清算层权重严重失控，导致高清算密集区评分虚高
@@ -153,9 +150,7 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
             # [达摩院v6.0] L/S拥挤度 IC=-0.0131 → 信息层
             breakdown['L/S拥挤度_info'] = _bla_delta
             breakdown['L/S拥挤度'] = _bla_delta
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── s8增强层: Volume Profile 成交密度分析（三院审核修复 2026-07-08）────────────────
     # 职责：识别当前价格区间是高密度支撑区还是低密度空洞
     # 高密度区(>1.5x)→做多+8 / 空洞区(<0.6x)→做多-15（踩踏风险）
@@ -167,8 +162,7 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
             # [达摩院v6.0] VolProfile IC=-0.0131 → 信息层
             breakdown['VolProfile_info'] = s7_vp
             breakdown['VolProfile'] = s7_vp
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # [UP-017] CoinGlass 链上评分接入
     if extra_data and extra_data.get('coinglass') and extra_data['coinglass'].get('available'):
         _cg_d = extra_data['coinglass']
@@ -260,9 +254,7 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
                 # [达摩院v6.0] VolSkew IC=-0.0131 → 信息层
                 breakdown['VolSkew_info'] = _vs_pts
                 breakdown['VolSkew'] = _vs_pts
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── 维度9：时段权重（精细化）─────────────────────────────────
     import datetime
     hour = datetime.datetime.utcnow().hour
@@ -383,8 +375,7 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
                         breakdown['Amihud流动性'] = f'+3 (高流动性 ratio={_amihud_ratio:.1f}x)'
                     else:
                         breakdown['Amihud流动性'] = f'0 (正常 ratio={_amihud_ratio:.1f}x)'
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # [达摩院v6.0] Amihud流动性 IC=-0.0131 → 信息层
     breakdown['Amihud流动性_info'] = _s_amihud
 
