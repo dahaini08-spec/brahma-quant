@@ -705,7 +705,7 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict, oi: dict = None, vo
         _oi_bull = oi['signal'] in ('LONG_BUILD', 'SHORT_SQUEEZE')
         if _struct_bull != _oi_bull:
             cross_check['consistent'] = False
-            cross_check['conflicts'].append(f'FVG={_fvg_consensus} vs OI={oi["signal"]}')
+            cross_check['conflicts'].append(f'FVG={_fvg_consensus} vs OI={oi.get("signal","?")}')
     if vol and _fvg_consensus != 'NONE':
         _kappa_bull = vol.get('kappa', 0) < -0.05
         _struct_bull = _fvg_consensus == 'BULL'
@@ -1525,7 +1525,7 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
             f'🌿 姓赵不宣 | {sym} 今日布局\n'
             f'⏳ [{layer}] 禁止入场\n'
             f'   原因: {reason}\n'
-            f'   当前体制: {reg_now}  FVG方向: {fvg["dir"]}  AI议会: (见下)'
+            f'   当前体制: {reg_now}  FVG方向: {fvg.get("dir","?")}  AI议会: (见下)'
         )
 
     score_val = float(bs.get('score_final', bs.get('score', 0)))
@@ -1623,16 +1623,16 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
         else:
             # 等价格回调到支撑区
             return _wait_card(
-                f'BULL_EARLY做多 FVG磁铁${fvg["magnet"]:,.0f}是目标 | '
+                f'BULL_EARLY做多 FVG磁铁${fvg.get("magnet",0):,.0f}是目标 | '
                 f'等回调至: ${_elo_s:,.0f}~${_ehi_s:,.0f} +1H收阳 | '
-                f'SL:${_sl_s:,.0f} | T1:${fvg["magnet"]:,.0f} T2:${liq.get("nearest_short",0):,.0f}',
+                f'SL:${_sl_s:,.0f} | T1:${fvg.get("magnet",0):,.0f} T2:${liq.get("nearest_short",0):,.0f}',
                 'L3-等待回调'
             )
 
     elif _l2_short and _entry_lo > 0 and _entry_hi <= price:
         return _wait_card(
-            f'FVG阻力${fvg["magnet"]:,.0f}未触及 现价${price:,.0f} 差${fvg["magnet"]-price:,.0f} | '
-            f'触发价:${fvg["magnet"]*0.998:,.0f}~${fvg["magnet"]*1.002:,.0f}+1H收阴',
+            f'FVG阻力${fvg.get("magnet",0):,.0f}未触及 现价${price:,.0f} 差${fvg.get("magnet",0)-price:,.0f} | '
+            f'触发价:${fvg.get("magnet",0)*0.998:,.0f}~${fvg.get("magnet",0)*1.002:,.0f}+1H收阴',
             'L3-等待触发'
         )
 
@@ -1757,7 +1757,7 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
             f'──── VIP ────\n'
             f'🌿 姓赵不宣 | {sym} 今日布局\n'
             f'⚠️ 方向冲突：bias={bias} 但入场区${entry_lo:,.0f}~${entry_hi:,.0f}在错误方向\n'
-            f'   FVG方向={fvg["dir"]} 与投票方向={bias} 矛盾，等待方向收敛'
+            f'   FVG方向={fvg.get("dir","?")} 与投票方向={bias} 矛盾，等待方向收敛'
         )
 
     # 仓位调整（宏观+风控）
@@ -1864,9 +1864,9 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     # 风控提示
     risk_note = ''
     if mac['has_event']:
-        risk_note = f'\n⚠️ 宏观事件({", ".join(mac["high_impact"][:1])})→仓位已压缩'
+        risk_note = f'\n⚠️ 宏观事件({", ".join(mac.get("high_impact",[])[:1])})→仓位已压缩'
     if risk['blocks']:
-        risk_note += f'\n🚨 风控: {risk["blocks"][0]}'
+        risk_note += f'\n🚨 风控: {risk.get("blocks",[])[0]}'
 
     # SL验证 [P2修复 2026-09-10] 用ATR4H铁律验证
     sl_distance = abs(entry_lo - sl) if bias == 'LONG' else abs(sl - entry_hi)
@@ -2338,16 +2338,16 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
             _bias_a = 'LONG' if fvg['dir'] == 'BULL' else 'SHORT'
             _llm_entry_reason = (
                 f'{regime}体制顺势{_bias_a}+'
-                f'{fvg["dir"]}FVG磁铁+'
-                f'OI={oi["signal"]}+'
-                f'清算墙${liq["nearest_short"]:,.0f}磁吸'
+                f'{fvg.get("dir","?")}FVG磁铁+'
+                f'OI={oi.get("signal","?")}+'
+                f'清算墙${liq.get("nearest_short",0):,.0f}磁吸'
             )
         # B: 矛盾裁决 → 用规则判断（替代LLM）
         _oi_bull = oi['signal'] in ('LONG_BUILD', 'SHORT_SQUEEZE')
         _sm_bull = sm['signal'] in ('STRONG_BULL', 'MILD_BULL')
         if _oi_bull != _sm_bull:
             _llm_conflict = (
-                f'OI={oi["signal"]} vs 聪明钱={sm["signal"]}矛盾 → '
+                f'OI={oi.get("signal","?")} vs 聪明钱={sm.get("signal","?")}矛盾 → '
                 f'{"跟随OI" if abs(oi.get("total_change",0))>5000 else "跟随聪明钱"}'
             )
     except Exception:
@@ -2361,8 +2361,8 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         f'【体制】{regime}  score={score:.0f}  grade={grade}',
         f'',
         f'【Step1 FVG磁铁】全周期',
-        (f'  共识方向: {fvg.get("consensus",fvg["dir"])}  多{fvg.get("bull_score",0)}分 vs 空{fvg.get("bear_score",0)}分  主磁铁: {fvg["dir"]}@${fvg["magnet"]:,.0f}') if fvg['magnet'] else '  无有效FVG',
-        f'  {fvg["desc"][:120]}',
+        (f'  共识方向: {fvg.get("consensus",fvg.get("dir","?"))}  多{fvg.get("bull_score",0)}分 vs 空{fvg.get("bear_score",0)}分  主磁铁: {fvg.get("dir","?")}@${fvg.get("magnet",0):,.0f}') if fvg['magnet'] else '  无有效FVG',
+        f'  {fvg.get("desc","")[:120]}',
         f'',
         f'【Step1b 方仓历史匹配】HCME {fc.get("n_cases",0)}案例库',
         f'  {fc.get("desc","方仓无数据")}',
@@ -2375,9 +2375,9 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         for t in _top5[:3]:
             lines.append(f'  #{t["rank"]} {t["date"]} 相似{t["similarity"]:.3f} 未来{t["future_ret"]:+.1f}% (max:{t["future_max"]:+.1f}% min:{t["future_min"]:+.1f}%) [{t["regime"]}]')
     if fc.get('trap_alert'):
-        lines.append(f'  ⚠️ {fc["trap_alert"]}')
+        lines.append(f'  ⚠️ {fc.get("trap_alert","")}')
     if fc.get('signal_hint'):
-        lines.append(f'  方仓信号: {fc["signal_hint"]}')
+        lines.append(f'  方仓信号: {fc.get("signal_hint","")}')
     lines += [
         f'',
         f'【Step2 OB有效性】',
@@ -2398,30 +2398,30 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     lines += [
         f'',
         f'【Step3 清算地图】',
-        f'  🎯上方空头止损墙: ${liq["nearest_short"]:,.0f} (+{liq["nearest_short_pct"]:.1f}%，目标+{liq["target_pct"]:.1f}%)'
+        f'  🎯上方空头止损墙: ${liq.get("nearest_short",0):,.0f} (+{liq.get("nearest_short_pct",0):.1f}%，目标+{liq.get("target_pct",0):.1f}%)'
         + (f'  → 第二层: ${liq["second_short"]:,.0f}' if liq.get('second_short') else ''),
-        f'  🛡️下方多头支撑池: ${liq["nearest_long"]:,.0f} (-{liq["support_pct"]:.1f}%)',
+        f'  🛡️下方多头支撑池: ${liq.get("nearest_long",0):,.0f} (-{liq.get("support_pct",0):.1f}%)',
         f'',
         f'【Step4 共振点】7维（FVG+OB+清算+OI+GEX+方仓+跨市场）',
-        f'  共振得分: {res["score"]}/7  {"✅有效共振，可布局" if res["resonance"] and res["entry_lo"] > 0 else ("⚠️共振但方向矛盾，不出入场区" if res["resonance"] and res["entry_lo"] == 0 else "❌共振不足，等待")}',
+        f'  共振得分: {res.get("score",0)}/7  {"✅有效共振，可布局" if res.get("resonance",False) and res.get("entry_lo",0) > 0 else ("⚠️共振但方向矛盾，不出入场区" if res.get("resonance",False) and res.get("entry_lo",0) == 0 else "❌共振不足，等待")}',
         f'  FVG={res["has_fvg"]} OB={res["has_ob"]} 清算={res["has_liq"]} OI={res.get("has_oi",False)} GEX={res.get("has_gex",False)} 方仓={res.get("has_fc",False)} 跨市场={res.get("has_cma",False)}',
-        f'  入场区间: ${res["entry_lo"]:,.1f} ~ ${res["entry_hi"]:,.1f}',
+        f'  入场区间: ${res.get("entry_lo",0):,.1f} ~ ${res.get("entry_hi",0):,.1f}',
     ]
     if res['missing']:
-        lines.append(f'  缺失: {" / ".join(res["missing"])}')
+        lines.append(f'  缺失: {" / ".join(res.get("missing",[]))}')
 
     lines += [
         f'',
         f'【Step5 OI趋势】全周期',
         f'  15M:{oi.get("signal_15m","?")} | 1H:{oi.get("signal_1h","?")} | 4H:{oi.get("signal_4h","?")}',
-        f'  主信号: {oi["signal"]} (置信{oi.get("conf",0):.0%}) | {oi["conclusion"][:60]}',
-        f'  15min序列: {" → ".join(str(int(v)) for v in oi["trend"])}',
-        f'  累计变化: {oi["total_change"]:+,.0f}张  OI价值变化: {oi["usd_change_m"]:+.1f}M',
+        f'  主信号: {oi.get("signal","?")} (置信{oi.get("conf",0):.0%}) | {oi.get("conclusion","")[:60]}',
+        f'  15min序列: {" → ".join(str(int(v)) for v in oi.get("trend",[]))}',
+        f'  累计变化: {oi.get("total_change",0):+,.0f}张  OI价值变化: {oi.get("usd_change_m",0):+.1f}M',
         f'  {oi.get("cvd_note","")}',  # [P0] CVD展示
         f'',
         f'【Step6 聪明钱分歧】',
-        f'  {sm["conclusion"]}',
-        f'  大户多{sm["big_long"]}% vs 散户多{sm["retail_long"]}%  分歧={sm["diverge"]}%',
+        f'  {sm.get("conclusion","")}',
+        f'  大户多{sm.get("big_long",0)}% vs 散户多{sm.get("retail_long",0)}%  分歧={sm.get("diverge",0)}%',
         f'  大户2H变化: {sm.get("top_delta",0.0):+.3f}%pt',  # P0修复: 3位小数不归零
         f'',
         f'【Step7 波动率四维+ATR全周期】',  # [P0] 升级为四维
@@ -2429,8 +2429,8 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         f'  {vol["kappa_note"]}',
         f'  {vol.get("gex_note","") if not vol.get("gex_expired",False) else "⚠️ GEX数据已过期，不参与共振计算"} ',  # P0修复: GEX过期标记
         f'  {vol.get("fr_note","")}',   # [P1] FR展示
-        f'  β⁺={vol.get("beta_p",0):.3f} β⁻={vol.get("beta_m",0):.3f}  IV分位={vol["iv_rank"]}',  # [P2] β展示
-        f'  ATR1H=${vol.get("atr_1h",0):.0f} ATR4H=${vol.get("atr_4h",0):.0f} ATR1D=${vol.get("atr_1d",0):.0f}  合约SL参考=${vol.get("atr_sl_ref",0):.0f}({vol.get("atr_sl_ref",0)/p*100:.2f}%)',
+        f'  β⁺={vol.get("beta_p",0):.3f} β⁻={vol.get("beta_m",0):.3f}  IV分位={vol.get("iv_rank",0)}',  # [P2] β展示
+        f'  ATR1H=${vol.get("atr_1h",0):.0f} ATR4H=${vol.get("atr_4h",0):.0f} ATR1D=${vol.get("atr_1d",0):.0f}  合约SL参考=${vol.get("atr_sl_ref",0):.0f}({vol.get("atr_sl_ref",0)/p*100:.2f}%)' if p > 0 else f'  ATR1H=${vol.get("atr_1h",0):.0f} ATR4H=${vol.get("atr_4h",0):.0f} ATR1D=${vol.get("atr_1d",0):.0f}',
         f'  RSI全周期: 15M={d.get("bs",{}).get("momentum",{}).get("rsi_15m",0):.1f} / 1H={d.get("bs",{}).get("momentum",{}).get("rsi_1h",0):.1f} / 4H={d.get("bs",{}).get("momentum",{}).get("rsi_4h",0):.1f} / 1D={d.get("bs",{}).get("momentum",{}).get("rsi_1d",0):.1f}',  # P1修复: RSI全周期展示
     ]
     # P2: IC归因展示
@@ -2458,7 +2458,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     elif res.get('cross_check',{}).get('consistent'):
         lines.append(f'  ✅ 交叉验证一致：结构层与市场层方向一致')
     if mac['high_impact']:
-        lines.append(f'  ⚠️重大事件: {" / ".join(mac["high_impact"][:2])}')
+        lines.append(f'  ⚠️重大事件: {" / ".join(mac.get("high_impact",[])[:2])}')
 
     lines += [
         f'',
