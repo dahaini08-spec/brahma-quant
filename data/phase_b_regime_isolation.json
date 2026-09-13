@@ -1,0 +1,211 @@
+{
+  "overlap": {
+    "mi_regime_direction": 0.0239,
+    "nmi_regime_direction": 0.066,
+    "mi_regime_outcome": 0.0341,
+    "nmi_regime_outcome": 0.0919,
+    "mi_direction_outcome": 0.001,
+    "nmi_direction_outcome": 0.0057,
+    "conditional_mi_regime_given_direction": 0.0334,
+    "interpretation": {
+      "regime_direction_overlap": "低重叠→独立信号",
+      "regime_predictive_power": "有预测力",
+      "conditional_value": "体制有增量信息"
+    }
+  },
+  "multiplier_effect": {
+    "full_sample": {
+      "weighted_ev": -0.0471,
+      "equal_ev": -0.0378,
+      "difference": -0.0092,
+      "multiplier_better": false
+    },
+    "oos_split": {
+      "train_n": 301,
+      "test_n": 301,
+      "test_weighted_ev": -0.0226,
+      "test_equal_ev": -0.0189,
+      "test_difference": -0.0038,
+      "multiplier_better_oos": false
+    },
+    "group_details": [
+      {
+        "regime": "BULL_TREND",
+        "direction": "LONG",
+        "n": 471,
+        "avg_pnl": -0.0905,
+        "multiplier": 1.2,
+        "weighted_contribution": -0.1086,
+        "equal_contribution": -0.0905
+      },
+      {
+        "regime": "BEAR_RECOVERY",
+        "direction": "LONG",
+        "n": 3,
+        "avg_pnl": 6.6099,
+        "multiplier": 1.15,
+        "weighted_contribution": 7.6014,
+        "equal_contribution": 6.6099
+      },
+      {
+        "regime": "BULL_TREND",
+        "direction": "SHORT",
+        "n": 4,
+        "avg_pnl": 0.0,
+        "multiplier": 0.5,
+        "weighted_contribution": 0.0,
+        "equal_contribution": 0.0
+      },
+      {
+        "regime": "BULL_EARLY",
+        "direction": "SHORT",
+        "n": 11,
+        "avg_pnl": 0.0,
+        "multiplier": 0.35,
+        "weighted_contribution": 0.0,
+        "equal_contribution": 0.0
+      },
+      {
+        "regime": "BULL_EARLY",
+        "direction": "LONG",
+        "n": 113,
+        "avg_pnl": 0.0,
+        "multiplier": 1.2,
+        "weighted_contribution": 0.0,
+        "equal_contribution": 0.0
+      }
+    ]
+  },
+  "backtest": {
+    "backtest_results": {
+      "BTC": {
+        "BULL_TREND|LONG": {
+          "wr": 56.7,
+          "ev": 0.266,
+          "n": 3655,
+          "is_positive_ev": true
+        },
+        "BULL_TREND|SHORT": {
+          "wr": 43.3,
+          "ev": -0.266,
+          "n": 3655,
+          "is_positive_ev": false
+        },
+        "BEAR_TREND|LONG": {
+          "wr": 48.0,
+          "ev": -0.078,
+          "n": 5713,
+          "is_positive_ev": false
+        },
+        "BEAR_TREND|SHORT": {
+          "wr": 51.9,
+          "ev": 0.077,
+          "n": 5713,
+          "is_positive_ev": true
+        },
+        "CHOP_MID|LONG": {
+          "wr": 49.8,
+          "ev": -0.009,
+          "n": 3142,
+          "is_positive_ev": false
+        },
+        "CHOP_MID|SHORT": {
+          "wr": 50.2,
+          "ev": 0.009,
+          "n": 3142,
+          "is_positive_ev": true
+        },
+        "BEAR_RECOVERY|LONG": {
+          "wr": 53.2,
+          "ev": 0.128,
+          "n": 1297,
+          "is_positive_ev": true
+        },
+        "BEAR_RECOVERY|SHORT": {
+          "wr": 46.8,
+          "ev": -0.128,
+          "n": 1297,
+          "is_positive_ev": false
+        },
+        "BEAR_EARLY|LONG": {
+          "wr": 61.1,
+          "ev": 0.444,
+          "n": 864,
+          "is_positive_ev": true
+        },
+        "BEAR_EARLY|SHORT": {
+          "wr": 38.9,
+          "ev": -0.444,
+          "n": 864,
+          "is_positive_ev": false
+        }
+      },
+      "ETH": {
+        "BULL_TREND|LONG": {
+          "wr": 55.2,
+          "ev": 0.209,
+          "n": 3572,
+          "is_positive_ev": true
+        },
+        "BULL_TREND|SHORT": {
+          "wr": 44.8,
+          "ev": -0.209,
+          "n": 3572,
+          "is_positive_ev": false
+        },
+        "BEAR_TREND|LONG": {
+          "wr": 48.6,
+          "ev": -0.054,
+          "n": 5542,
+          "is_positive_ev": false
+        },
+        "BEAR_TREND|SHORT": {
+          "wr": 51.4,
+          "ev": 0.054,
+          "n": 5542,
+          "is_positive_ev": true
+        },
+        "CHOP_MID|LONG": {
+          "wr": 50.3,
+          "ev": 0.01,
+          "n": 3327,
+          "is_positive_ev": true
+        },
+        "CHOP_MID|SHORT": {
+          "wr": 49.7,
+          "ev": -0.01,
+          "n": 3327,
+          "is_positive_ev": false
+        },
+        "BEAR_RECOVERY|LONG": {
+          "wr": 53.3,
+          "ev": 0.13,
+          "n": 1138,
+          "is_positive_ev": true
+        },
+        "BEAR_RECOVERY|SHORT": {
+          "wr": 46.7,
+          "ev": -0.13,
+          "n": 1138,
+          "is_positive_ev": false
+        },
+        "BEAR_EARLY|LONG": {
+          "wr": 62.7,
+          "ev": 0.509,
+          "n": 936,
+          "is_positive_ev": true
+        },
+        "BEAR_EARLY|SHORT": {
+          "wr": 37.3,
+          "ev": -0.509,
+          "n": 936,
+          "is_positive_ev": false
+        }
+      }
+    },
+    "multiplier_amplified_correct": 6,
+    "multiplier_amplified_wrong": 2,
+    "accuracy": 0.75
+  },
+  "n_signals": 602
+}
