@@ -26,8 +26,8 @@ import urllib as _urllib_mod
 import urllib.request as _urllib_request
 
 _GLOBAL_SSL_CTX = _ssl_mod.create_default_context()
-_GLOBAL_SSL_CTX.check_hostname = False
-_GLOBAL_SSL_CTX.verify_mode    = _ssl_mod.CERT_NONE
+_GLOBAL_SSL_CTX.check_hostname = True
+_GLOBAL_SSL_CTX.verify_mode    = _ssl_mod.CERT_REQUIRED
 
 # 全局覆盖 urllib.request.urlopen，自动注入context
 _orig_urlopen = _urllib_request.urlopen

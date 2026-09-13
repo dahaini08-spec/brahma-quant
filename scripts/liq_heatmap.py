@@ -23,8 +23,10 @@ from collections import defaultdict
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
 
-KEY = os.environ.get('BINANCE_API_KEY', 'sDqoRAyeYHHzevKNxSj5JfkWpNUd6v8qPAhVy0Y8wbWGwC48eC7uhFOENAlVqV7b')
-SEC = os.environ.get('BINANCE_SECRET',  'hXQnzQco9SNVgKgF2m3xvBGlJjOHBVtlzqRlxOTkp0kiJAwAOTeUiGLQSAopqIj7')
+KEY = os.environ.get('BINANCE_API_KEY', '')
+SEC = os.environ.get('BINANCE_SECRET', '')
+if not KEY or not SEC:
+    import warnings; warnings.warn('BINANCE_API_KEY/BINANCE_SECRET not set — authed endpoints unavailable')
 HDR = {'X-MBX-APIKEY': KEY}
 
 
