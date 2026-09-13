@@ -33,3 +33,6 @@ data/qdrant_storage/
 
 # 旧虚拟环境配置
 config/omniroute.json
+
+# 敏感配置（GitHub Push Protection）
+.env
