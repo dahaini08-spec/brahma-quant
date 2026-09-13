@@ -146,23 +146,29 @@ def step0_fetch_all(sym: str) -> dict:
     _sym_state    = DATA / f'brahma_state_{_sym_lower}.json'
     _fallback     = DATA / 'brahma_state.json'
     _candidate    = load_json(_sym_state) if _sym_state.exists() else {}
-    # 验证价格范围（防止读到错误的state文件）
-    # 修复 2026-09-10：山寨币没有state文件时，实时调用brahma_core.analyze()
-    if _candidate and _candidate.get('price', 0) > 0:
-        # state文件存在且有price字段 → 验证价格是否匹配标的
-        _state_price = _candidate.get('price', 0)
-        _actual_price = price  # 使用Step0拉取的实际价格
-        # 价格偏差<5%才可信（防止BTC数据污染NEAR分析）
-        if _actual_price > 0 and abs(_state_price - _actual_price) / _actual_price < 0.05:
-            bs = _candidate
-        else:
-            # 价格不匹配 → 实时调用brahma_core
-            try:
-                sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
-                from brahma_core import analyze as _analyze
-                bs = _analyze(f'{sym}USDT')
-            except Exception as _e:
-                bs = load_json(_fallback)
+    # ── [果蝇架构修复 2026-09-13 苏摩111] 缓存过期检测 + 自动刷新 ──
+    # 根因：brahma_state_*.json 由 brahma_state_refresh.py cron写入，但cron可能停摆
+    # 修复：检测文件mtime > 4h 或价格偏差 > 0.5% 时，自动调用 brahma_core.analyze() 重算
+    import os as _os_fs, time as _time_fs
+    _state_mtime = _os_fs.path.getmtime(_sym_state) if _sym_state.exists() else 0
+    _state_age_s = _time_fs.time() - _state_mtime
+    _state_stale = _state_age_s > 14400  # 4h = 14400s
+    _candidate  = load_json(_sym_state) if _sym_state.exists() else {}
+    _state_price = _candidate.get('price', 0) if _candidate else 0
+    _price_dev  = abs(_state_price - price) / price if price > 0 and _state_price > 0 else 1.0
+    _price_ok   = _price_dev < 0.005  # 0.5%偏差内
+    
+    if _candidate and _state_price > 0 and _price_ok and not _state_stale:
+        # 缓存新鲜且价格匹配 → 直接使用
+        bs = _candidate
+    elif _candidate and _state_price > 0 and (_price_dev >= 0.005 or _state_stale):
+        # 缓存过期或价格偏差过大 → 实时重算
+        try:
+            sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+            from brahma_core import analyze as _analyze
+            bs = _analyze(f'{sym}USDT')
+        except Exception as _e:
+            bs = _candidate  # 重算失败→退回缓存（过期总比没有好）
     else:
         # state文件不存在 → 实时调用brahma_core
         try:
@@ -2599,116 +2605,104 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     except Exception:
         pass
 
-    # ── 阶段1: brahma_cpu 4层漏斗决策（非阻塞） ──
+    # ════════════════════════════════════════════════════════════════
+    # [果蝇架构修复 2026-09-13 苏摩111] 并行AI层：brahma_cpu + LLM议会 + enhanced_signal
+    # 原串行: cpu(30s) + 议会(60s) + enhanced(30s) = 120s串行等待 → SIGALRM 180s杀
+    # 新并行: 三线程同时启动 + 统一等15s = 总15s
+    # ════════════════════════════════════════════════════════════════
     _cpu_result = None
-    try:
-        import sys as _cpu_sys
-        _cpu_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
-        from brahma_brain.brahma_cpu import process_event as _cpu_process
-        _cpu_dir = 'SHORT' if 'BEAR' in str(regime_c) or 'CHOP' in str(regime_c) else 'LONG'
-        _cpu_box = {}
-        def _cpu_run():
-            try:
-                _cpu_box['result'] = _cpu_process(sym+'USDT', signal_dir=_cpu_dir, event_type='MANUAL_ANALYSIS', dry_run=True)
-            except Exception as e:
-                _cpu_box['error'] = str(e)[:200]
-        import threading as _cpu_thread
-        _cpu_t = _cpu_thread.Thread(target=_cpu_run, daemon=True)
-        _cpu_t.start()
-        _cpu_t.join(timeout=30)
-        if _cpu_t.is_alive():
-            lines += [f'', f'─── 🧠 brahma_cpu 4层漏斗 ───', f'  ⏳ 超时(30s)']
-        elif 'error' in _cpu_box:
-            lines += [f'', f'─── 🧠 brahma_cpu 4层漏斗 ───', f'  ⚠️ {str(_cpu_box["error"])[:60]}']
-        elif 'result' in _cpu_box:
-            _cpu_result = _cpu_box['result']
-            _cpu_layer = _cpu_result.get('layer', '?')
-            _cpu_decision = _cpu_result.get('decision', '?')
-            _cpu_reason = _cpu_result.get('reason', '')[:60]
-            lines += [
-                f'',
-                f'─── 🧠 brahma_cpu 4层漏斗 ───',
-                f'  L{_cpu_layer}: {_cpu_decision} | {_cpu_reason}',
-            ]
-        _step_gc()
-    except Exception as _cpu_e:
-        lines += [f'', f'─── 🧠 brahma_cpu ───', f'  ⚠️ 未启用: {str(_cpu_e)[:60]}']
-    
-    # ── 阶段1: llm_council_bridge 3专家议会（非阻塞） ──
     _council_bridge_result = None
-    try:
-        from brahma_brain.llm_council_bridge import review as _council_review
-        _council_input = {
-            'symbol': sym+'USDT', 'direction': _cpu_dir if _cpu_result else 'LONG',
-            'score': d.get('score', 0) or d.get('bs', {}).get('score_final', 0),
-            'score_final': d.get('bs', {}).get('score_final', 0),
-            'regime': str(regime_c),
-            'breakdown': d.get('bs', {}).get('confluence', {}).get('breakdown', {}),
-        }
-        # 非阻塞：线程执行，最多等60秒
-        _cb_box = {}
-        def _cb_run():
-            try:
-                _cb_box['result'] = _council_review(_council_input, force=True)
-            except Exception as e:
-                _cb_box['error'] = str(e)[:200]
-        import threading as _cb_thread
-        _cb_t = _cb_thread.Thread(target=_cb_run, daemon=True)
-        _cb_t.start()
-        _cb_t.join(timeout=60)
-        if _cb_t.is_alive():
-            lines += [f'', f'─── 🏛️ LLM议会 ───', f'  ⏳ 议会响应超时(60s)']
-        elif 'error' in _cb_box:
-            lines += [f'', f'─── 🏛️ LLM议会 ───', f'  ⚠️ 降级: {_cb_box["error"][:60]}']
-        elif 'result' in _cb_box:
-            _council_bridge_result = _cb_box['result']
-            _llm_council = _council_bridge_result.get('llm_council', {})
-            _support = _council_bridge_result.get('final_adj', 0)
-            _risk_agent = _llm_council.get('risk', {}).get('verdict', '?') if isinstance(_llm_council.get('risk'), dict) else '?'
-            _macro_agent = _llm_council.get('macro', {}).get('verdict', '?') if isinstance(_llm_council.get('macro'), dict) else '?'
-            _quant_agent = _llm_council.get('quant', {}).get('verdict', '?') if isinstance(_llm_council.get('quant'), dict) else '?'
-            _devil_veto = _llm_council.get('devil', {}).get('veto', False) if isinstance(_llm_council.get('devil'), dict) else False
-            lines += [
-                f'',
-                f'─── 🏛️ LLM议会 ───',
-                f'  风控: {_risk_agent} | 宏观: {_macro_agent} | 量化: {_quant_agent} | 魔鬼: {"否决" if _devil_veto else "通过"}',
-                f'  最终调整: {_support:+.1f}',
-            ]
-        else:
-            lines += [f'', f'─── 🏛️ LLM议会 ───', f'  ⚠️ 未知状态']
-        _step_gc()
-    except Exception as _cb_e:
-        lines += [f'', f'─── 🏛️ LLM议会 ───', f'  ⚠️ 未启用: {str(_cb_e)[:60]}']
-    
-    # ── 阶段3: enhanced_signal_engine（非阻塞） ──
     _enhanced_result = None
-    try:
-        from brahma_brain.enhanced_signal_engine import enhanced_score as _enh_score
-        _enh_dir = 'SHORT' if 'BEAR' in str(regime_c) or 'CHOP' in str(regime_c) else 'LONG'
-        _enh_box = {}
-        def _enh_run():
-            try:
-                _enh_box['result'] = _enh_score(sym+'USDT', _enh_dir)
-            except Exception as e:
-                _enh_box['error'] = str(e)[:200]
-        import threading as _enh_thread
-        _enh_t = _enh_thread.Thread(target=_enh_run, daemon=True)
-        _enh_t.start()
-        _enh_t.join(timeout=30)
-        if _enh_t.is_alive():
-            lines += [f'', f'─── 📡 增强信号 ───', f'  ⏳ 超时(30s)']
-        elif 'error' in _enh_box:
-            lines += [f'', f'─── 📡 增强信号 ───', f'  ⚠️ 降级: {_enh_box["error"][:60]}']
-        elif 'result' in _enh_box:
-            _enhanced_result = _enh_box['result']
-            _enh_score_val = _enhanced_result.get('score', 0)
-            _enh_notes = _enhanced_result.get('notes', [])
-            lines += [f'', f'─── 📡 增强信号 ───', f'  增强score: {_enh_score_val}/25']
-            for _n in _enh_notes[:3]:
-                lines.append(f'  {_n}')
-        _step_gc()
-    except Exception as _enh_e:
-        lines += [f'', f'─── 📡 增强信号 ───', f'  ⚠️ 未启用: {str(_enh_e)[:60]}']
+    _cpu_dir = 'SHORT' if 'BEAR' in str(regime_c) or 'CHOP' in str(regime_c) else 'LONG'
+
+    import threading as _ai_thread
+    _ai_boxes = {'cpu': {}, 'council': {}, 'enhanced': {}}
+
+    def _ai_cpu_run():
+        try:
+            from brahma_brain.brahma_cpu import process_event as _cpu_process
+            _ai_boxes['cpu']['result'] = _cpu_process(sym+'USDT', signal_dir=_cpu_dir, event_type='MANUAL_ANALYSIS', dry_run=True)
+        except Exception as e:
+            _ai_boxes['cpu']['error'] = str(e)[:200]
+
+    def _ai_council_run():
+        try:
+            from brahma_brain.llm_council_bridge import review as _council_review
+            _council_input = {
+                'symbol': sym+'USDT', 'direction': _cpu_dir,
+                'score': d.get('score', 0) or d.get('bs', {}).get('score_final', 0),
+                'score_final': d.get('bs', {}).get('score_final', 0),
+                'regime': str(regime_c),
+                'breakdown': d.get('bs', {}).get('confluence', {}).get('breakdown', {}),
+            }
+            _ai_boxes['council']['result'] = _council_review(_council_input, force=True)
+        except Exception as e:
+            _ai_boxes['council']['error'] = str(e)[:200]
+
+    def _ai_enhanced_run():
+        try:
+            from brahma_brain.enhanced_signal_engine import enhanced_score as _enh_score
+            _ai_boxes['enhanced']['result'] = _enh_score(sym+'USDT', _cpu_dir)
+        except Exception as e:
+            _ai_boxes['enhanced']['error'] = str(e)[:200]
+
+    _ai_threads = []
+    for _ai_target in [_ai_cpu_run, _ai_council_run, _ai_enhanced_run]:
+        _t = _ai_thread.Thread(target=_ai_target, daemon=True)
+        _t.start()
+        _ai_threads.append(_t)
+
+    # 统一等待15秒（三线程并行）
+    for _t in _ai_threads:
+        _t.join(timeout=15)
+
+    # 收集 brahma_cpu 结果
+    _cpu_box = _ai_boxes['cpu']
+    if 'error' in _cpu_box:
+        lines += [f'', f'─── 🧠 brahma_cpu 4层漏斗 ───', f'  ⚠️ {str(_cpu_box["error"])[:60]}']
+    elif 'result' in _cpu_box:
+        _cpu_result = _cpu_box['result']
+        _cpu_layer = _cpu_result.get('layer', '?')
+        _cpu_decision = _cpu_result.get('decision', '?')
+        _cpu_reason = _cpu_result.get('reason', '')[:60]
+        lines += [f'', f'─── 🧠 brahma_cpu 4层漏斗 ───', f'  L{_cpu_layer}: {_cpu_decision} | {_cpu_reason}']
+    else:
+        lines += [f'', f'─── 🧠 brahma_cpu 4层漏斗 ───', f'  ⏳ 超时(15s)']
+
+    # 收集 LLM议会 结果
+    _cb_box = _ai_boxes['council']
+    if 'error' in _cb_box:
+        lines += [f'', f'─── 🏛️ LLM议会 ───', f'  ⚠️ 降级: {_cb_box["error"][:60]}']
+    elif 'result' in _cb_box:
+        _council_bridge_result = _cb_box['result']
+        _llm_council = _council_bridge_result.get('llm_council', {})
+        _support = _council_bridge_result.get('final_adj', 0)
+        _risk_agent = _llm_council.get('risk', {}).get('verdict', '?') if isinstance(_llm_council.get('risk'), dict) else '?'
+        _macro_agent = _llm_council.get('macro', {}).get('verdict', '?') if isinstance(_llm_council.get('macro'), dict) else '?'
+        _quant_agent = _llm_council.get('quant', {}).get('verdict', '?') if isinstance(_llm_council.get('quant'), dict) else '?'
+        _devil_veto = _llm_council.get('devil', {}).get('veto', False) if isinstance(_llm_council.get('devil'), dict) else False
+        lines += [
+            f'', f'─── 🏛️ LLM议会 ───',
+            f'  风控: {_risk_agent} | 宏观: {_macro_agent} | 量化: {_quant_agent} | 魔鬼: {"否决" if _devil_veto else "通过"}',
+            f'  最终调整: {_support:+.1f}',
+        ]
+    else:
+        lines += [f'', f'─── 🏛️ LLM议会 ───', f'  ⏳ 议会响应超时(15s)']
+
+    # 收集 enhanced_signal 结果
+    _enh_box = _ai_boxes['enhanced']
+    if 'error' in _enh_box:
+        lines += [f'', f'─── 📡 增强信号 ───', f'  ⚠️ 降级: {_enh_box["error"][:60]}']
+    elif 'result' in _enh_box:
+        _enhanced_result = _enh_box['result']
+        _enh_score_val = _enhanced_result.get('score', 0)
+        _enh_notes = _enhanced_result.get('notes', [])
+        lines += [f'', f'─── 📡 增强信号 ───', f'  增强score: {_enh_score_val}/25']
+        for _n in _enh_notes[:3]:
+            lines.append(f'  {_n}')
+    else:
+        lines += [f'', f'─── 📡 增强信号 ───', f'  ⏳ 超时(15s)']
+    _step_gc()
     
     # ── 阶段3: signal_selector 信号筛选 ──
     _sel_result = None
@@ -2786,11 +2780,11 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         
         _bb_t = _bb_thread.Thread(target=_bb_run, daemon=True)
         _bb_t.start()
-        _bb_t.join(timeout=90)
+        _bb_t.join(timeout=15)
         
         if _bb_t.is_alive():
             # 线程仍在运行=超时
-            lines += [f'', f'─── 🧠 梵天大脑 AI决策 ───', f'  ⏳ AI响应超时(90s)，规则版VIP仍可用']
+            lines += [f'', f'─── 🧠 梵天大脑 AI决策 ───', f'  ⏳ AI响应超时(15s)，规则版VIP仍可用']
         elif 'error' in _bb_box:
             lines += [f'', f'─── 🧠 梵天大脑 AI决策 ───', f'  ⚠️ 降级: {_bb_box["error"][:80]}', f'  (规则版VIP仍可用)']
         elif 'result' in _bb_box:
