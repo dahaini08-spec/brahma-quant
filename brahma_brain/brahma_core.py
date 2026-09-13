@@ -516,10 +516,16 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     except Exception:
         pass  # HMM不可用时静默降级，完全不影响主流程
 
-    score = int(score * _regime_mult)
+    # [Phase C 2026-09-13 苏摩111 顶层全局修复] 体制乘数不再乘score
+    # 根因: 体制检测用价格EMA趋势 → 方向信号也用价格结构 → 乘score=双重计算
+    # Phase B铁证: OOS拆分中加权EV比等权EV更差 → 体制乘数无效
+    # 修复: regime_mult只传递给position_sizer作为仓位上限，不乘score
+    # 保留breakdown记录供下游position_sizer读取
     breakdown['_regime_mult'] = _regime_mult
     breakdown['_regime_v4_key'] = _matched_regime_key or 'UNKNOWN'
     breakdown['_regime'] = _regime_str
+    # 传递仓位乘数给position_sizer（不乘score）
+    breakdown['_regime_position_cap'] = _regime_mult  # position_sizer读此字段控制仓位
 
     # ── [v25.4 设计院封印] 硬封禁门控 — mult=0.00 后强制 score=0 ──────────
     # 防止：乘数为0但其他维度加分（s_research / T04奖励等）绕过封禁
@@ -1859,21 +1865,26 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass
 
     # I7: 实时归因（从feature_store读alpha_contribs） [2026-09-12 苏摩111]
-    try:
-        from brahma_brain.feature_store import get_features, log_features
-        _fs = get_features(symbol, force_refresh=False)
-        _fs_alpha = _fs.get('alpha_contribs', {})
-        _fs_groups = _fs.get('groups', {})
-        extra_data['attribution'] = {
-            'alpha_contribs': _fs_alpha,
-            'groups': _fs_groups,
-            'feature_source': _fs.get('_source', 'unknown'),
-            'n_features': _fs.get('n_features', 0),
-        }
-        # 记录到feature_log供attribution_engine使用
-        log_features(symbol, _fs)
-    except Exception as _ate:
-        extra_data['attribution'] = {'error': str(_ate)[:100]}
+    # [果蝇架构修复 2026-09-13 苏摩111] 防无限递归：
+    # feature_store._compute_fresh() 会调 analyze(deep=True) → 回到这里 → get_features() → 死循环
+    # 用环境变量标记跳过，让_compute_fresh内部调analyze时不触发get_features
+    import os as _os_feat
+    if not _os_feat.environ.get('_BRAHMA_FEATURE_COMPUTING'):
+        try:
+            from brahma_brain.feature_store import get_features, log_features
+            _fs = get_features(symbol, force_refresh=False)
+            _fs_alpha = _fs.get('alpha_contribs', {})
+            _fs_groups = _fs.get('groups', {})
+            extra_data['attribution'] = {
+                'alpha_contribs': _fs_alpha,
+                'groups': _fs_groups,
+                'feature_source': _fs.get('_source', 'unknown'),
+                'n_features': _fs.get('n_features', 0),
+            }
+            # 记录到feature_log供attribution_engine使用
+            log_features(symbol, _fs)
+        except Exception as _ate:
+            extra_data['attribution'] = {'error': str(_ate)[:100]}
 
     # I8: 12维精简Ensemble分数（达摩院验证 IC=+0.0150）[2026-09-12 苏摩111]
     try:

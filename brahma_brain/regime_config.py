@@ -1,8 +1,9 @@
 """
-regime_config.py — 梵天体制×方向乘数矩阵 SSOT
+regime_config.py — 梵天体制×方向仓位上限矩阵 SSOT
 设计院 2026-08-24 从brahma_core.py提取封印
+[Phase C 2026-09-13] 乘数定位变更: 不再乘score → 只作为仓位上限
 
-职责: 集中管理所有体制乘数配置，brahma_core.py通过 get_regime_mult() 调用
+职责: 集中管理所有体制仓位上限配置，brahma_core.py通过 get_regime_mult() 调用
 好处: 更新乘数不需要改动核心评分逻辑，热更新友好
 
 调用方式:
