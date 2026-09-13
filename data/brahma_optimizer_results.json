@@ -1,0 +1,122 @@
+{
+  "timestamp": "2026-08-07T11:58:36.092474",
+  "analyzer": "BrahmaOptimizer v1.0",
+  "authorized_by": "苏摩111 2026-08-07",
+  "summary": {
+    "baseline_wr": 37.7,
+    "baseline_ev": -0.873,
+    "baseline_n": 61,
+    "root_cause": [
+      "timing=READY在BULL_TREND下行时误判（07-22集中止损 WR=10%）",
+      "sl_pct过大(avg 3.26%)=wide_sl死亡区，READY期avg_sl=3.26% vs empty期1.39%",
+      "score逆序=高分追高确认，非真alpha，score140+ WR=0%"
+    ]
+  },
+  "optimal_params": {
+    "A_ultra_tight": {
+      "description": "sl_pct<=1.0% 极紧信号（暴涨猎手TIGHT条件）",
+      "wr": 100.0,
+      "ev": 1.61,
+      "n": 8,
+      "objective": 4.5546
+    },
+    "B_optimal_objective": {
+      "description": "sl_pct<=1.8% 最优目标函数",
+      "wr": 52.3,
+      "ev": 0.56,
+      "n": 44,
+      "objective": 1.9427
+    },
+    "C_early_market": {
+      "description": "timing=empty+sl<=1.5% 早期市场特征",
+      "wr": 83.3,
+      "ev": 1.598,
+      "n": 12,
+      "objective": 3.2184
+    }
+  },
+  "seal_recommendations": {
+    "priority": "P0",
+    "changes": [
+      {
+        "change": "新增 SL_PCT_GATE = 2.0%（硬门控）",
+        "file": "brahma_engine.py",
+        "rationale": "sl>2.0%信号 WR=47.9%→无alpha；sl<=2.0% WR=50.0% EV=+0.497%",
+        "impact": "过滤17条wide_sl死亡信号，WR从37.7%→50.0%"
+      },
+      {
+        "change": "timing=READY在BULL_TREND下行时降权(-15分)",
+        "file": "brahma_engine.py / timing_filter.py",
+        "rationale": "READY+BULL_TREND+4H连续阴线=误判场景，WR=10.7%",
+        "impact": "防止07-22类下行市场误判"
+      },
+      {
+        "change": "score_gate维持138（不提高）",
+        "file": "N/A",
+        "rationale": "score逆序问题来自sl_pct，不是score本身；低score+紧sl=真alpha",
+        "impact": "维持足够信号量"
+      }
+    ],
+    "awaiting_approval": true,
+    "approval_required": "苏摩111"
+  },
+  "fanqang_crossvalidation": {
+    "BTC_BULL_LONG_RSI50_55": {
+      "wr": 61.8,
+      "ev": 0.473,
+      "n": 710
+    },
+    "ETH_BULL_LONG_RSI50_55": {
+      "wr": 59.2,
+      "ev": 0.369,
+      "n": 699
+    },
+    "alignment": "sl<=1.0%信号通常出现在RSI低位紧压缩，与方仓铁证RSI50-55最优区间完全吻合"
+  },
+  "score_band_analysis": {
+    "100-109": {
+      "wr": 100.0,
+      "n": 3,
+      "avg_pnl": 2.132
+    },
+    "110-119": {
+      "wr": 42.9,
+      "n": 7,
+      "avg_pnl": 0.581
+    },
+    "120-129": {
+      "wr": 45.8,
+      "n": 24,
+      "avg_pnl": 0.164
+    },
+    "130-139": {
+      "wr": 50.0,
+      "n": 12,
+      "avg_pnl": 0.223
+    },
+    "140+": {
+      "wr": 0.0,
+      "n": 11,
+      "avg_pnl": -5.0,
+      "label": "死亡区"
+    }
+  },
+  "timing_analysis": {
+    "empty_sl_tight": {
+      "wr": 83.3,
+      "n": 12,
+      "ev": 1.598,
+      "label": "最优"
+    },
+    "ready_sl_all": {
+      "wr": 10.7,
+      "n": 28,
+      "label": "误判区"
+    },
+    "standby_sl_tight": {
+      "wr": 60.0,
+      "n": 5,
+      "ev": 0.686
+    }
+  }
+}

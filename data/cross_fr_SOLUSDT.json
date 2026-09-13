@@ -1,0 +1,15 @@
+{
+  "symbol": "SOLUSDT",
+  "frs": {
+    "binance": 0.004126,
+    "bybit": -0.003358,
+    "okx": -0.0048446558037000004
+  },
+  "spread": 0.00897,
+  "max_ex": "binance",
+  "min_ex": "okx",
+  "arb_signal": "WATCH_SPREAD(0.0090%)",
+  "arb_score": 5,
+  "bull_fr_bonus": 0,
+  "ts": 1788379326.0132763
+}

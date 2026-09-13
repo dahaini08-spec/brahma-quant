@@ -1,0 +1,14 @@
+{
+  "symbol": "AMDUSDT",
+  "frs": {
+    "binance": 0.017143000000000002,
+    "okx": 0.00530572349628
+  },
+  "spread": 0.01184,
+  "max_ex": "binance",
+  "min_ex": "okx",
+  "arb_signal": "LONG_OKX_SHORT_BINANCE",
+  "arb_score": 10,
+  "bull_fr_bonus": 0,
+  "ts": 1787175857.0410192
+}

@@ -1,0 +1,68 @@
+{
+  "date": "2026-08-10",
+  "budget": 300000,
+  "used": 30000,
+  "records": [
+    {
+      "ts": 1786338771,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786338798,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786338820,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786338836,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786338858,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786338892,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786338942,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786339003,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786339045,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    },
+    {
+      "ts": 1786339078,
+      "task": "trade_gateway",
+      "tokens": 3000,
+      "priority": 0
+    }
+  ],
+  "resets": 0
+}

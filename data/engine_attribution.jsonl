@@ -1,0 +1,6 @@
+{"ts": 1782148066.8931515, "date": "2026-06-22", "symbol": "MANAUSDT", "direction": "SHORT", "regime": "BEAR_TREND", "total_score": 158.8, "outcome": "SL", "won": false, "engines": {}}
+{"ts": 1782198488.4269364, "date": "2026-06-23", "symbol": "ETHUSDT", "direction": "LONG", "regime": "BEAR_RECOVERY", "total_score": 111.5, "outcome": "SL", "won": false, "engines": {}}
+{"ts": 1782377144.404761, "date": "2026-06-25", "symbol": "ETHUSDT", "direction": "SHORT", "regime": "BEAR_TREND", "total_score": 171.0, "outcome": "TP2", "won": true, "engines": {}}
+{"ts": 1782463551.338357, "date": "2026-06-26", "symbol": "SKHYNIXUSDT", "direction": "SHORT", "regime": "BEAR_RECOVERY", "total_score": 92.0, "outcome": "SL", "won": false, "engines": {}}
+{"ts": 1782549943.0567226, "date": "2026-06-27", "symbol": "WLDUSDT", "direction": "LONG", "regime": "BEAR_TREND", "total_score": 66.5, "outcome": "SL", "won": false, "engines": {}}
+{"ts": 1782600343.421632, "date": "2026-06-27", "symbol": "ETHUSDT", "direction": "LONG", "regime": "BEAR_RECOVERY", "total_score": 88.2, "outcome": "SL", "won": false, "engines": {}}

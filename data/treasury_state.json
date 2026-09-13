@@ -1,0 +1,36 @@
+{
+  "version": "1.0",
+  "created_at": "2026-06-07T03:24:20.029234+00:00",
+  "nav": 132.61480894,
+  "available": 132.61480894,
+  "positions": [],
+  "audit_log": [
+    {
+      "time": "2026-06-07T03:24:20.029242+00:00",
+      "action": "INIT_SYNC",
+      "symbol": "DOGEUSDT",
+      "direction": "SHORT",
+      "notional": 26.99,
+      "position_id": "live_doge_001",
+      "note": "从Binance API同步，已验证持仓存在"
+    },
+    {
+      "time": "2026-06-08T00:03:39.577420+00:00",
+      "action": "CLOSED",
+      "position_id": "live_doge_001",
+      "reason": "MANUAL_CLOSE_20260608",
+      "exit_price": 0.08614,
+      "pnl_pct": 0.0042
+    },
+    {
+      "time": "2026-06-08T00:28:24.326549+00:00",
+      "action": "SYNC_EMPTY",
+      "note": "用户确认空仓：ETH多单+DOGE空单全部止盈出局 NAV=132.61480894 BTC=63403",
+      "btc_price": 63402.7
+    }
+  ],
+  "last_updated": "2026-06-08T00:28:24.326535+00:00",
+  "open_slots": 10,
+  "max_slots": 10,
+  "gate3_limit": 3
+}

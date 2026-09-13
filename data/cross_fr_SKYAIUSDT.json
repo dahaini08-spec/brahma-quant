@@ -1,0 +1,13 @@
+{
+  "symbol": "SKYAIUSDT",
+  "frs": {
+    "binance": 0.032102
+  },
+  "spread": 0.0,
+  "max_ex": "binance",
+  "min_ex": "binance",
+  "arb_signal": "NONE",
+  "arb_score": 0,
+  "bull_fr_bonus": 0,
+  "ts": 1786129711.9016874
+}

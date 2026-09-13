@@ -1,0 +1,28 @@
+{
+  "n_total": 37,
+  "n_tp": 0,
+  "n_sl": 1,
+  "n_timeout": 25,
+  "open": {},
+  "win_rate": 0.0,
+  "wins": 0,
+  "losses": 1,
+  "grade_breakdown": {
+    "0": {
+      "wins": 0,
+      "losses": 1,
+      "timeout": 25,
+      "wr": 0.0
+    }
+  },
+  "avg_pnl_pct": 0,
+  "total_trades": 37,
+  "version": "v21.2",
+  "note": "Rebuilt from live_signal_log 2026-06-19 15:34 UTC",
+  "source": "live_signal_log_rebuild",
+  "rebuild_at": "2026-06-19T15:34:27.643046",
+  "reset_at": "2026-06-09T02:50:50.409254+00:00",
+  "data_warning": "n=1 < 30，苏摩宪法：无效样本，仅供观察，不得作为铁证",
+  "_abolished": "2026-07-17T10:17:29Z",
+  "_abolished_note": "纸面信号体系取消，open持仓已清零归档"
+}

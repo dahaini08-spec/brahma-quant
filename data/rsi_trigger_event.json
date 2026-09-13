@@ -1,0 +1,2233 @@
+{
+  "ETHUSDT": {
+    "ts": 1789263602.03102,
+    "ts_iso": "2026-09-13T01:40:02.031023+00:00",
+    "symbol": "ETHUSDT",
+    "px": 2524.27,
+    "rsi_1h": 37.9,
+    "bb_width": 0.57,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.570%极度压缩(历史最低区间) RSI=37.9 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "SOLUSDT": {
+    "ts": 1789263602.4985948,
+    "ts_iso": "2026-09-13T01:40:02.498597+00:00",
+    "symbol": "SOLUSDT",
+    "px": 102.07,
+    "rsi_1h": 49.7,
+    "bb_width": 0.515,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.515%极度压缩(历史最低区间) RSI=49.7 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "BTCUSDT": {
+    "ts": 1789263601.5576015,
+    "ts_iso": "2026-09-13T01:40:01.557604+00:00",
+    "symbol": "BTCUSDT",
+    "px": 77252.5,
+    "rsi_1h": 45.0,
+    "bb_width": 0.227,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.227%极度压缩(历史最低区间) RSI=45.0 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "BNBUSDT": {
+    "ts": 1789263602.91861,
+    "ts_iso": "2026-09-13T01:40:02.918613+00:00",
+    "symbol": "BNBUSDT",
+    "px": 729.91,
+    "rsi_1h": 26.1,
+    "bb_width": 1.125,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=1.125%极度压缩(历史最低区间) RSI=26.1 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "XRPUSDT": {
+    "ts": 1789263603.3774502,
+    "ts_iso": "2026-09-13T01:40:03.377453+00:00",
+    "symbol": "XRPUSDT",
+    "px": 1.365,
+    "rsi_1h": 37.6,
+    "bb_width": 0.504,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.504%极度压缩(历史最低区间) RSI=37.6 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "ADAUSDT": {
+    "ts": 1789263603.7036386,
+    "ts_iso": "2026-09-13T01:40:03.703641+00:00",
+    "symbol": "ADAUSDT",
+    "px": 0.2074,
+    "rsi_1h": 33.3,
+    "bb_width": 0.697,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.697%极度压缩(历史最低区间) RSI=33.3 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "LTCUSDT": {
+    "ts": 1789263604.3689482,
+    "ts_iso": "2026-09-13T01:40:04.368950+00:00",
+    "symbol": "LTCUSDT",
+    "px": 53.86,
+    "rsi_1h": 44.7,
+    "bb_width": 0.739,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.739%极度压缩(历史最低区间) RSI=44.7 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "TAOUSDT": {
+    "ts": 1789263605.052292,
+    "ts_iso": "2026-09-13T01:40:05.052294+00:00",
+    "symbol": "TAOUSDT",
+    "px": 233.06,
+    "rsi_1h": 30.7,
+    "bb_width": 1.333,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=1.333%极度压缩(历史最低区间) RSI=30.7 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "AAVEUSDT": {
+    "ts": 1789263606.3482912,
+    "ts_iso": "2026-09-13T01:40:06.348293+00:00",
+    "symbol": "AAVEUSDT",
+    "px": 126.24,
+    "rsi_1h": 38.9,
+    "bb_width": 0.87,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.870%极度压缩(历史最低区间) RSI=38.9 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "WLDUSDT": {
+    "ts": 1789263606.5715237,
+    "ts_iso": "2026-09-13T01:40:06.571526+00:00",
+    "symbol": "WLDUSDT",
+    "px": 0.3978,
+    "rsi_1h": 39.2,
+    "bb_width": 1.327,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=1.327%极度压缩(历史最低区间) RSI=39.2 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "PENGUUSDT": {
+    "ts": 1789263606.797301,
+    "ts_iso": "2026-09-13T01:40:06.797304+00:00",
+    "symbol": "PENGUUSDT",
+    "px": 0.0073,
+    "rsi_1h": 38.1,
+    "bb_width": 1.254,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=1.254%极度压缩(历史最低区间) RSI=38.1 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "SYNUSDT": {
+    "ts": 1789263607.4609296,
+    "ts_iso": "2026-09-13T01:40:07.460932+00:00",
+    "symbol": "SYNUSDT",
+    "px": 0.0807,
+    "rsi_1h": 28.3,
+    "bb_width": 2.306,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=2.306%极度压缩(历史最低区间) RSI=28.3 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "NVDAUSDT": {
+    "ts": 1789263607.9107165,
+    "ts_iso": "2026-09-13T01:40:07.910721+00:00",
+    "symbol": "NVDAUSDT",
+    "px": 218.15,
+    "rsi_1h": 21.8,
+    "bb_width": 0.435,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.435%极度压缩(历史最低区间) RSI=21.8 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": false
+      }
+    ],
+    "high_priority": true
+  },
+  "TSLAUSDT": {
+    "ts": 1789263608.1340313,
+    "ts_iso": "2026-09-13T01:40:08.134033+00:00",
+    "symbol": "TSLAUSDT",
+    "px": 368.09,
+    "rsi_1h": 65.9,
+    "bb_width": 0.654,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.654%极度压缩(历史最低区间) RSI=65.9 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": false
+      }
+    ],
+    "high_priority": true
+  },
+  "XAUUSDT": {
+    "ts": 1789263609.0181212,
+    "ts_iso": "2026-09-13T01:40:09.018123+00:00",
+    "symbol": "XAUUSDT",
+    "px": 4357.2,
+    "rsi_1h": 56.2,
+    "bb_width": 0.036,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.036%极度压缩(历史最低区间) RSI=56.2 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "QQQUSDT": {
+    "ts": 1789263609.464798,
+    "ts_iso": "2026-09-13T01:40:09.464800+00:00",
+    "symbol": "QQQUSDT",
+    "px": 714.4,
+    "rsi_1h": 29.8,
+    "bb_width": 0.173,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.173%极度压缩(历史最低区间) RSI=29.8 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "CLUSDT": {
+    "ts": 1789263610.4483376,
+    "ts_iso": "2026-09-13T01:40:10.448341+00:00",
+    "symbol": "CLUSDT",
+    "px": 95.81,
+    "rsi_1h": 50.6,
+    "bb_width": 0.467,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.467%极度压缩(历史最低区间) RSI=50.6 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "1000XECUSDT": {
+    "ts": 1789038612.5945995,
+    "ts_iso": "2026-09-10T11:10:12.594601+00:00",
+    "symbol": "1000XECUSDT",
+    "px": 0.007273,
+    "rsi_1h": 55.1,
+    "bb_width": 3.519,
+    "events": [
+      {
+        "event": "E7_OI_SURGE",
+        "desc": "OI 1H变化-4.2% 资金减仓，注意方向",
+        "priority": "MEDIUM"
+      }
+    ],
+    "high_priority": false
+  },
+  "CRCLUSDT": {
+    "ts": 1789095013.450801,
+    "ts_iso": "2026-09-11T02:50:13.450803+00:00",
+    "symbol": "CRCLUSDT",
+    "px": 89.83,
+    "rsi_1h": 49.5,
+    "bb_width": 2.202,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=2.202%极度压缩(历史最低区间) RSI=49.5 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": false
+      }
+    ],
+    "high_priority": true
+  },
+  "AMDUSDT": {
+    "ts": 1789263608.5805614,
+    "ts_iso": "2026-09-13T01:40:08.580563+00:00",
+    "symbol": "AMDUSDT",
+    "px": 515.39,
+    "rsi_1h": 25.7,
+    "bb_width": 0.392,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.392%极度压缩(历史最低区间) RSI=25.7 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "ENAUSDT": {
+    "ts": 1789263605.8784788,
+    "ts_iso": "2026-09-13T01:40:05.878481+00:00",
+    "symbol": "ENAUSDT",
+    "px": 0.14117,
+    "rsi_1h": 48.8,
+    "bb_width": 0.93,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.930%极度压缩(历史最低区间) RSI=48.8 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "1000PEPEUSDT": {
+    "ts": 1789263607.011347,
+    "ts_iso": "2026-09-13T01:40:07.011349+00:00",
+    "symbol": "1000PEPEUSDT",
+    "px": 0.0034374,
+    "rsi_1h": 73.9,
+    "bb_width": 1.504,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=1.504%极度压缩(历史最低区间) RSI=73.9 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "TACUSDT": {
+    "ts": 1788749413.6712532,
+    "ts_iso": "2026-09-07T02:50:13.671256+00:00",
+    "symbol": "TACUSDT",
+    "px": 0.002665,
+    "rsi_1h": 77.9,
+    "bb_width": 7.076,
+    "events": [
+      {
+        "event": "E6_VOLUME_SURGE",
+        "desc": "1H量比6.9x 异常放量，结构可能变化",
+        "priority": "MEDIUM"
+      },
+      {
+        "event": "E7_OI_SURGE",
+        "desc": "OI 1H变化+19.1% 资金增仓，注意方向",
+        "priority": "MEDIUM"
+      },
+      {
+        "event": "E_TREND_SURGE",
+        "desc": "🚀 趋势暴涨触发! 48H涨幅13.6% 4H阳线确认 RSI=77.9 → 动量层匹配，全量扫描做多",
+        "priority": "HIGH",
+        "direction": "LONG",
+        "chg_48h": 13.6,
+        "_cooldown_key": "TACUSDT_trend_surge_ts"
+      }
+    ],
+    "high_priority": true
+  },
+  "SKHYNIXUSDT": {
+    "ts": 1789263612.6306372,
+    "ts_iso": "2026-09-13T01:40:12.630639+00:00",
+    "symbol": "SKHYNIXUSDT",
+    "px": 1340.61,
+    "rsi_1h": 22.2,
+    "bb_width": 1.876,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=1.876%极度压缩(历史最低区间) RSI=22.2 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "TRUMPUSDT": {
+    "ts": 1789263607.2371845,
+    "ts_iso": "2026-09-13T01:40:07.237186+00:00",
+    "symbol": "TRUMPUSDT",
+    "px": 1.984,
+    "rsi_1h": 31.0,
+    "bb_width": 0.912,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.912%极度压缩(历史最低区间) RSI=31.0 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "INTCUSDT": {
+    "ts": 1789263608.8039086,
+    "ts_iso": "2026-09-13T01:40:08.803910+00:00",
+    "symbol": "INTCUSDT",
+    "px": 101.81,
+    "rsi_1h": 15.0,
+    "bb_width": 1.055,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=1.055%极度压缩(历史最低区间) RSI=15.0 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "AVAXUSDT": {
+    "ts": 1789263603.9237416,
+    "ts_iso": "2026-09-13T01:40:03.923744+00:00",
+    "symbol": "AVAXUSDT",
+    "px": 7.384,
+    "rsi_1h": 33.9,
+    "bb_width": 0.76,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.760%极度压缩(历史最低区间) RSI=33.9 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "LINKUSDT": {
+    "ts": 1789263604.1539958,
+    "ts_iso": "2026-09-13T01:40:04.153998+00:00",
+    "symbol": "LINKUSDT",
+    "px": 11.504,
+    "rsi_1h": 38.5,
+    "bb_width": 0.534,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.534%极度压缩(历史最低区间) RSI=38.5 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "BCHUSDT": {
+    "ts": 1789263604.601323,
+    "ts_iso": "2026-09-13T01:40:04.601325+00:00",
+    "symbol": "BCHUSDT",
+    "px": 226.32,
+    "rsi_1h": 19.4,
+    "bb_width": 2.163,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=2.163%极度压缩(历史最低区间) RSI=19.4 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "NEARUSDT": {
+    "ts": 1789263604.8327005,
+    "ts_iso": "2026-09-13T01:40:04.832702+00:00",
+    "symbol": "NEARUSDT",
+    "px": 2.371,
+    "rsi_1h": 51.3,
+    "bb_width": 1.475,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=1.475%极度压缩(历史最低区间) RSI=51.3 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "HYPEUSDT": {
+    "ts": 1789263605.2745795,
+    "ts_iso": "2026-09-13T01:40:05.274581+00:00",
+    "symbol": "HYPEUSDT",
+    "px": 79.401,
+    "rsi_1h": 33.9,
+    "bb_width": 1.186,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=1.186%极度压缩(历史最低区间) RSI=33.9 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "MSTRUSDT": {
+    "ts": 1789263608.3554928,
+    "ts_iso": "2026-09-13T01:40:08.355494+00:00",
+    "symbol": "MSTRUSDT",
+    "px": 130.29,
+    "rsi_1h": 19.5,
+    "bb_width": 0.803,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.803%极度压缩(历史最低区间) RSI=19.5 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "ZECUSDT": {
+    "ts": 1789263609.905672,
+    "ts_iso": "2026-09-13T01:40:09.905674+00:00",
+    "symbol": "ZECUSDT",
+    "px": 1131.25,
+    "rsi_1h": 35.6,
+    "bb_width": 2.297,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=2.297%极度压缩(历史最低区间) RSI=35.6 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "KORUUSDT": {
+    "ts": 1789263614.854791,
+    "ts_iso": "2026-09-13T01:40:14.854794+00:00",
+    "symbol": "KORUUSDT",
+    "px": 23.07,
+    "rsi_1h": 28.1,
+    "bb_width": 0.916,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.916%极度压缩(历史最低区间) RSI=28.1 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "XAGUSDT": {
+    "ts": 1789263609.2474327,
+    "ts_iso": "2026-09-13T01:40:09.247434+00:00",
+    "symbol": "XAGUSDT",
+    "px": 64.6,
+    "rsi_1h": 57.1,
+    "bb_width": 0.152,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.152%极度压缩(历史最低区间) RSI=57.1 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "JTOUSDT": {
+    "ts": 1789095012.190276,
+    "ts_iso": "2026-09-11T02:50:12.190278+00:00",
+    "symbol": "JTOUSDT",
+    "px": 0.4109,
+    "rsi_1h": 60.2,
+    "bb_width": 2.175,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=2.175%极度压缩(历史最低区间) RSI=60.2 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "LABUSDT": {
+    "ts": 1789263610.1527696,
+    "ts_iso": "2026-09-13T01:40:10.152771+00:00",
+    "symbol": "LABUSDT",
+    "px": 0.06812,
+    "rsi_1h": 35.4,
+    "bb_width": 10.128,
+    "events": [
+      {
+        "event": "E10_RSI_BOUNCE_CONFIRM",
+        "desc": "RSI_1H 27.8→35.4 超卖回弹确认（从<30回升>35），多头入场+6%WR提升",
+        "priority": "HIGH"
+      }
+    ],
+    "high_priority": true
+  },
+  "SUIUSDT": {
+    "ts": 1789263605.5050874,
+    "ts_iso": "2026-09-13T01:40:05.505089+00:00",
+    "symbol": "SUIUSDT",
+    "px": 0.7284,
+    "rsi_1h": 49.8,
+    "bb_width": 0.723,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.723%极度压缩(历史最低区间) RSI=49.8 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "BASUSDT": {
+    "ts": 1789095012.7114441,
+    "ts_iso": "2026-09-11T02:50:12.711446+00:00",
+    "symbol": "BASUSDT",
+    "px": 0.024981,
+    "rsi_1h": 49.4,
+    "bb_width": 1.202,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=1.202%极度压缩(历史最低区间) RSI=49.4 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "SNDKUSDT": {
+    "ts": 1789263607.6876833,
+    "ts_iso": "2026-09-13T01:40:07.687685+00:00",
+    "symbol": "SNDKUSDT",
+    "px": 1628.9,
+    "rsi_1h": 40.3,
+    "bb_width": 0.372,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.372%极度压缩(历史最低区间) RSI=40.3 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "SOXLUSDT": {
+    "ts": 1789263609.6884146,
+    "ts_iso": "2026-09-13T01:40:09.688416+00:00",
+    "symbol": "SOXLUSDT",
+    "px": 121.64,
+    "rsi_1h": 40.4,
+    "bb_width": 0.904,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.904%极度压缩(历史最低区间) RSI=40.4 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "NBISUSDT": {
+    "ts": 1789263611.7516828,
+    "ts_iso": "2026-09-13T01:40:11.751686+00:00",
+    "symbol": "NBISUSDT",
+    "px": 222.43,
+    "rsi_1h": 29.9,
+    "bb_width": 0.843,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.843%极度压缩(历史最低区间) RSI=29.9 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "HOMEUSDT": {
+    "ts": 1789095013.9150903,
+    "ts_iso": "2026-09-11T02:50:13.915093+00:00",
+    "symbol": "HOMEUSDT",
+    "px": 0.005389,
+    "rsi_1h": 46.2,
+    "bb_width": 0.876,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.876%极度压缩(历史最低区间) RSI=46.2 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "BEATUSDT": {
+    "ts": 1789095012.4608262,
+    "ts_iso": "2026-09-11T02:50:12.460829+00:00",
+    "symbol": "BEATUSDT",
+    "px": 0.0747,
+    "rsi_1h": 33.7,
+    "bb_width": 8.531,
+    "events": [
+      {
+        "event": "E_OI_DIVERGE",
+        "desc": "🚨 OI+价格背离! OI连续3H增+4.15% 但价格未创新低 RSI=33.7 → 空头加仓压不下，轧空风险升高",
+        "priority": "HIGH",
+        "direction": "LONG",
+        "oi_chg_3h": 4.15,
+        "_cooldown_key": "BEATUSDT_oi_diverge_ts"
+      },
+      {
+        "event": "E_MTF_SUPPORT",
+        "desc": "🏗️ 多周期结构共振! 触发2项(M1,M2) 30日区间位=-0% RSI_4H=8.0 → 大周期支撑确认，高置信度做多背景",
+        "priority": "HIGH",
+        "direction": "LONG",
+        "mtf_hits": 2,
+        "pos30": -0.004,
+        "_cooldown_key": "BEATUSDT_mtf_support_ts"
+      }
+    ],
+    "high_priority": true
+  },
+  "BZUSDT": {
+    "ts": 1789038613.7757351,
+    "ts_iso": "2026-09-10T11:10:13.775737+00:00",
+    "symbol": "BZUSDT",
+    "px": 100.28,
+    "rsi_1h": 51.3,
+    "bb_width": 1.083,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=1.083%极度压缩(历史最低区间) RSI=51.3 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": false
+      }
+    ],
+    "high_priority": true
+  },
+  "SPCXUSDT": {
+    "ts": 1789095014.626285,
+    "ts_iso": "2026-09-11T02:50:14.626287+00:00",
+    "symbol": "SPCXUSDT",
+    "px": 148.36,
+    "rsi_1h": 57.9,
+    "bb_width": 2.606,
+    "events": [
+      {
+        "event": "E5_BB_EXPANSION",
+        "desc": "BB宽度 0.56%→2.61% 压缩释放，方向即将选择",
+        "priority": "MEDIUM"
+      },
+      {
+        "event": "E_VOL_DRYUP",
+        "desc": "💧 量能枯竭预警! 连续5H均量比=0.07x 价格区间收敛 RSI=57.9 → 卖盘枯竭，多头积累完毕，注意方向性爆发",
+        "priority": "HIGH",
+        "direction": "WATCH",
+        "avg_vol_ratio": 0.071,
+        "_cooldown_key": "SPCXUSDT_vol_dryup_ts"
+      }
+    ],
+    "high_priority": true
+  },
+  "MUUSDT": {
+    "ts": 1789038614.2300348,
+    "ts_iso": "2026-09-10T11:10:14.230036+00:00",
+    "symbol": "MUUSDT",
+    "px": 1010.77,
+    "rsi_1h": 30.0,
+    "bb_width": 0.922,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.922%极度压缩(历史最低区间) RSI=30.0 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "SNXXUSDT": {
+    "ts": 1789038614.4528644,
+    "ts_iso": "2026-09-10T11:10:14.452867+00:00",
+    "symbol": "SNXXUSDT",
+    "px": 17.35,
+    "rsi_1h": 34.5,
+    "bb_width": 2.052,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=2.052%极度压缩(历史最低区间) RSI=34.5 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": false
+      }
+    ],
+    "high_priority": true
+  },
+  "SKHYUSDT": {
+    "ts": 1789095015.8447666,
+    "ts_iso": "2026-09-11T02:50:15.844770+00:00",
+    "symbol": "SKHYUSDT",
+    "px": 186.78,
+    "rsi_1h": 44.0,
+    "bb_width": 2.364,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=2.364%极度压缩(历史最低区间) RSI=44.0 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "DRAMUSDT": {
+    "ts": 1789038614.9164543,
+    "ts_iso": "2026-09-10T11:10:14.916456+00:00",
+    "symbol": "DRAMUSDT",
+    "px": 60.55,
+    "rsi_1h": 35.3,
+    "bb_width": 1.167,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=1.167%极度压缩(历史最低区间) RSI=35.3 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": false
+      }
+    ],
+    "high_priority": true
+  },
+  "SOXSUSDT": {
+    "ts": 1789095017.0462196,
+    "ts_iso": "2026-09-11T02:50:17.046222+00:00",
+    "symbol": "SOXSUSDT",
+    "px": 47.37,
+    "rsi_1h": 53.2,
+    "bb_width": 4.928,
+    "events": [
+      {
+        "event": "E2_RSI_OVERBOUGHT_PULLBACK",
+        "desc": "RSI_1H 76.5→53.2 超买回落破65.0，做空确认",
+        "priority": "HIGH"
+      }
+    ],
+    "high_priority": true
+  },
+  "MRVLUSDT": {
+    "ts": 1789095017.7093794,
+    "ts_iso": "2026-09-11T02:50:17.709382+00:00",
+    "symbol": "MRVLUSDT",
+    "px": 225.9,
+    "rsi_1h": 50.9,
+    "bb_width": 2.431,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=2.431%极度压缩(历史最低区间) RSI=50.9 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": false
+      }
+    ],
+    "high_priority": true
+  },
+  "GOOGLUSDT": {
+    "ts": 1789095018.9797354,
+    "ts_iso": "2026-09-11T02:50:18.979738+00:00",
+    "symbol": "GOOGLUSDT",
+    "px": 332.14,
+    "rsi_1h": 69.1,
+    "bb_width": 0.723,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.723%极度压缩(历史最低区间) RSI=69.1 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": false
+      }
+    ],
+    "high_priority": true
+  },
+  "AAPLUSDT": {
+    "ts": 1789038615.8254259,
+    "ts_iso": "2026-09-10T11:10:15.825428+00:00",
+    "symbol": "AAPLUSDT",
+    "px": 319.07,
+    "rsi_1h": 64.2,
+    "bb_width": 0.977,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.977%极度压缩(历史最低区间) RSI=64.2 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": false
+      }
+    ],
+    "high_priority": true
+  },
+  "METAUSDT": {
+    "ts": 1789038616.0658402,
+    "ts_iso": "2026-09-10T11:10:16.065842+00:00",
+    "symbol": "METAUSDT",
+    "px": 663.28,
+    "rsi_1h": 79.6,
+    "bb_width": 1.443,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=1.443%极度压缩(历史最低区间) RSI=79.6 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": false
+      }
+    ],
+    "high_priority": true
+  },
+  "TQQQUSDT": {
+    "ts": 1789038616.3072414,
+    "ts_iso": "2026-09-10T11:10:16.307244+00:00",
+    "symbol": "TQQQUSDT",
+    "px": 70.77,
+    "rsi_1h": 33.6,
+    "bb_width": 0.685,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.685%极度压缩(历史最低区间) RSI=33.6 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": false
+      }
+    ],
+    "high_priority": true
+  },
+  "SPYUSDT": {
+    "ts": 1789038616.5891395,
+    "ts_iso": "2026-09-10T11:10:16.589142+00:00",
+    "symbol": "SPYUSDT",
+    "px": 763.29,
+    "rsi_1h": 51.8,
+    "bb_width": 0.16,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.160%极度压缩(历史最低区间) RSI=51.8 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": false
+      }
+    ],
+    "high_priority": true
+  },
+  "MSFTUSDT": {
+    "ts": 1789038617.0949285,
+    "ts_iso": "2026-09-10T11:10:17.094931+00:00",
+    "symbol": "MSFTUSDT",
+    "px": 492.11,
+    "rsi_1h": 46.0,
+    "bb_width": 0.182,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.182%极度压缩(历史最低区间) RSI=46.0 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "PLTRUSDT": {
+    "ts": 1789038617.641828,
+    "ts_iso": "2026-09-10T11:10:17.641832+00:00",
+    "symbol": "PLTRUSDT",
+    "px": 168.82,
+    "rsi_1h": 29.1,
+    "bb_width": 0.657,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.657%极度压缩(历史最低区间) RSI=29.1 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": false
+      }
+    ],
+    "high_priority": true
+  },
+  "COINUSDT": {
+    "ts": 1789038618.2813373,
+    "ts_iso": "2026-09-10T11:10:18.281340+00:00",
+    "symbol": "COINUSDT",
+    "px": 173.28,
+    "rsi_1h": 31.3,
+    "bb_width": 1.295,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=1.295%极度压缩(历史最低区间) RSI=31.3 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": false
+      }
+    ],
+    "high_priority": true
+  },
+  "SAMSUNGUSDT": {
+    "ts": 1789263613.9343233,
+    "ts_iso": "2026-09-13T01:40:13.934326+00:00",
+    "symbol": "SAMSUNGUSDT",
+    "px": 193.08,
+    "rsi_1h": 17.0,
+    "bb_width": 1.597,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=1.597%极度压缩(历史最低区间) RSI=17.0 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": false
+      }
+    ],
+    "high_priority": true
+  },
+  "EWYUSDT": {
+    "ts": 1789263616.3542018,
+    "ts_iso": "2026-09-13T01:40:16.354206+00:00",
+    "symbol": "EWYUSDT",
+    "px": 188.66,
+    "rsi_1h": 28.7,
+    "bb_width": 0.343,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=0.343%极度压缩(历史最低区间) RSI=28.7 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "PUMPUSDT": {
+    "ts": 1789263618.4268565,
+    "ts_iso": "2026-09-13T01:40:18.426859+00:00",
+    "symbol": "PUMPUSDT",
+    "px": 0.003826,
+    "rsi_1h": 74.2,
+    "bb_width": 6.892,
+    "events": [
+      {
+        "event": "E_TREND_SURGE",
+        "desc": "🚀 趋势暴涨触发! 48H涨幅9.2% 4H阳线确认 RSI=74.2 → 动量层匹配，全量扫描做多",
+        "priority": "HIGH",
+        "direction": "LONG",
+        "chg_48h": 9.16,
+        "_cooldown_key": "PUMPUSDT_trend_surge_ts"
+      }
+    ],
+    "high_priority": true
+  },
+  "AKEUSDT": {
+    "ts": 1788749415.040694,
+    "ts_iso": "2026-09-07T02:50:15.040697+00:00",
+    "symbol": "AKEUSDT",
+    "px": 0.014466,
+    "rsi_1h": 61.0,
+    "bb_width": 4.658,
+    "events": [
+      {
+        "event": "E7_OI_SURGE",
+        "desc": "OI 1H变化+3.8% 资金增仓，注意方向",
+        "priority": "MEDIUM"
+      },
+      {
+        "event": "E_TREND_SURGE",
+        "desc": "🚀 趋势暴涨触发! 48H涨幅10.8% 4H阳线确认 RSI=61.0 → 动量层匹配，全量扫描做多",
+        "priority": "HIGH",
+        "direction": "LONG",
+        "chg_48h": 10.84,
+        "_cooldown_key": "AKEUSDT_trend_surge_ts"
+      }
+    ],
+    "high_priority": true
+  },
+  "BANKUSDT": {
+    "ts": 1789263611.1748862,
+    "ts_iso": "2026-09-13T01:40:11.174889+00:00",
+    "symbol": "BANKUSDT",
+    "px": 0.02752,
+    "rsi_1h": 20.1,
+    "bb_width": 2.316,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=2.316%极度压缩(历史最低区间) RSI=20.1 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "TUSDT": {
+    "symbol": "TUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 91.0,
+    "mode": "A",
+    "ts": 1788424917.8605952,
+    "source": "oi_advanced_scanner"
+  },
+  "USUSDT": {
+    "ts": 1789263610.7400694,
+    "ts_iso": "2026-09-13T01:40:10.740073+00:00",
+    "symbol": "USUSDT",
+    "px": 0.015492,
+    "rsi_1h": 34.6,
+    "bb_width": 2.327,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=2.327%极度压缩(历史最低区间) RSI=34.6 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "ESPORTSUSDT": {
+    "ts": 1789095014.1607428,
+    "ts_iso": "2026-09-11T02:50:14.160745+00:00",
+    "symbol": "ESPORTSUSDT",
+    "px": 0.01058,
+    "rsi_1h": 15.8,
+    "bb_width": 5.228,
+    "events": [
+      {
+        "event": "E_MTF_SUPPORT",
+        "desc": "🏗️ 多周期结构共振! 触发2项(M1,M2) 30日区间位=6% RSI_4H=3.4 → 大周期支撑确认，高置信度做多背景",
+        "priority": "HIGH",
+        "direction": "LONG",
+        "mtf_hits": 2,
+        "pos30": 0.058,
+        "_cooldown_key": "ESPORTSUSDT_mtf_support_ts"
+      }
+    ],
+    "high_priority": true
+  },
+  "TRIAUSDT": {
+    "symbol": "TRIAUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 100.0,
+    "mode": "A",
+    "ts": 1788634844.7772152,
+    "source": "oi_advanced_scanner"
+  },
+  "COHRUSDT": {
+    "symbol": "COHRUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 94.3435,
+    "mode": "A",
+    "ts": 1787233369.2619164,
+    "source": "oi_advanced_scanner"
+  },
+  "ZHIPUUSDT": {
+    "symbol": "ZHIPUUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 100.0,
+    "mode": "B",
+    "ts": 1788417712.3632903,
+    "source": "oi_advanced_scanner"
+  },
+  "AVGOUSDT": {
+    "symbol": "AVGOUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 100.0,
+    "mode": "A",
+    "ts": 1788439318.993548,
+    "source": "oi_advanced_scanner"
+  },
+  "INJUSDT": {
+    "symbol": "INJUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 78.348,
+    "mode": "B",
+    "ts": 1787233369.2619236,
+    "source": "oi_advanced_scanner"
+  },
+  "TIAUSDT": {
+    "symbol": "TIAUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 76.896,
+    "mode": "B",
+    "ts": 1787233369.2619252,
+    "source": "oi_advanced_scanner"
+  },
+  "ONGUSDT": {
+    "symbol": "ONGUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 82.74000000000001,
+    "mode": "B",
+    "ts": 1788403321.5656073,
+    "source": "oi_advanced_scanner"
+  },
+  "EIGENUSDT": {
+    "symbol": "EIGENUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 81.322,
+    "mode": "B",
+    "ts": 1787503882.7677639,
+    "source": "oi_advanced_scanner"
+  },
+  "POLUSDT": {
+    "symbol": "POLUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 81.30199999999999,
+    "mode": "B",
+    "ts": 1788271746.0189798,
+    "source": "oi_advanced_scanner"
+  },
+  "HBARUSDT": {
+    "symbol": "HBARUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 64.05199999999999,
+    "mode": "B",
+    "ts": 1787503882.7677705,
+    "source": "oi_advanced_scanner"
+  },
+  "SPKUSDT": {
+    "symbol": "SPKUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 72.0,
+    "mode": "B",
+    "ts": 1787576870.7956436,
+    "source": "oi_advanced_scanner"
+  },
+  "GRASSUSDT": {
+    "symbol": "GRASSUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 76.46549999999999,
+    "mode": "A",
+    "ts": 1787605030.8417213,
+    "source": "oi_advanced_scanner"
+  },
+  "ACEUSDT": {
+    "symbol": "ACEUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 84.728,
+    "mode": "B",
+    "ts": 1788439318.993554,
+    "source": "oi_advanced_scanner"
+  },
+  "UAIUSDT": {
+    "symbol": "UAIUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 50.0,
+    "mode": "B",
+    "ts": 1788185143.0470343,
+    "source": "oi_advanced_scanner"
+  },
+  "MORPHOUSDT": {
+    "symbol": "MORPHOUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 75.87,
+    "mode": "B",
+    "ts": 1787562392.6518977,
+    "source": "oi_advanced_scanner"
+  },
+  "ZAMAUSDT": {
+    "symbol": "ZAMAUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 70.506,
+    "mode": "B",
+    "ts": 1787605030.8417249,
+    "source": "oi_advanced_scanner"
+  },
+  "CYSUSDT": {
+    "symbol": "CYSUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 60.173,
+    "mode": "A",
+    "ts": 1788670846.2248755,
+    "source": "oi_advanced_scanner"
+  },
+  "FARTCOINUSDT": {
+    "symbol": "FARTCOINUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 54.75,
+    "mode": "B",
+    "ts": 1788395958.5791104,
+    "source": "oi_advanced_scanner"
+  },
+  "BMNRUSDT": {
+    "symbol": "BMNRUSDT",
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 106.5,
+    "ts": 1788368462.8406188,
+    "source": "tradfi_signal_layer"
+  },
+  "SUPERUSDT": {
+    "symbol": "SUPERUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 75.07,
+    "mode": "B",
+    "ts": 1787590481.2517018,
+    "source": "oi_advanced_scanner"
+  },
+  "STORJUSDT": {
+    "symbol": "STORJUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 84.0,
+    "mode": "B",
+    "ts": 1787619429.7945113,
+    "source": "oi_advanced_scanner"
+  },
+  "VELVETUSDT": {
+    "symbol": "VELVETUSDT",
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 102.3,
+    "ts": 1787851999.4746795,
+    "source": "tradfi_signal_layer"
+  },
+  "REUSDT": {
+    "symbol": "REUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 72.50999999999999,
+    "mode": "B",
+    "ts": 1787648235.5114048,
+    "source": "oi_advanced_scanner"
+  },
+  "STXUSDT": {
+    "symbol": "STXUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 76.67,
+    "mode": "B",
+    "ts": 1787716916.8076859,
+    "source": "oi_advanced_scanner"
+  },
+  "PROMUSDT": {
+    "symbol": "PROMUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 82.7495,
+    "mode": "B",
+    "ts": 1788095070.2410603,
+    "source": "oi_advanced_scanner"
+  },
+  "VIRTUALUSDT": {
+    "symbol": "VIRTUALUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 66.598,
+    "mode": "B",
+    "ts": 1787848390.2468193,
+    "source": "oi_advanced_scanner"
+  },
+  "AAOIUSDT": {
+    "symbol": "AAOIUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 73.064,
+    "mode": "B",
+    "ts": 1788355142.0328934,
+    "source": "oi_advanced_scanner"
+  },
+  "SANDUSDT": {
+    "symbol": "SANDUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 76.834,
+    "mode": "B",
+    "ts": 1787644625.3310077,
+    "source": "oi_advanced_scanner"
+  },
+  "AEROUSDT": {
+    "symbol": "AEROUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 59.854,
+    "mode": "B",
+    "ts": 1787680776.2566874,
+    "source": "oi_advanced_scanner"
+  },
+  "UNITREEUSDT": {
+    "symbol": "UNITREEUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 61.044,
+    "mode": "B",
+    "ts": 1787695198.8515728,
+    "source": "oi_advanced_scanner"
+  },
+  "龙虾USDT": {
+    "symbol": "龙虾USDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 72.7975,
+    "mode": "B",
+    "ts": 1788033668.658302,
+    "source": "oi_advanced_scanner"
+  },
+  "STARUSDT": {
+    "symbol": "STARUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 73.81,
+    "mode": "B",
+    "ts": 1787705980.6335866,
+    "source": "oi_advanced_scanner"
+  },
+  "BRUSDT": {
+    "symbol": "BRUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 66.752,
+    "mode": "B",
+    "ts": 1787716916.8077002,
+    "source": "oi_advanced_scanner"
+  },
+  "BMTUSDT": {
+    "symbol": "BMTUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 76.23400000000001,
+    "mode": "B",
+    "ts": 1787895602.3784702,
+    "source": "oi_advanced_scanner"
+  },
+  "BABAUSDT": {
+    "symbol": "BABAUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 71.038,
+    "mode": "B",
+    "ts": 1787716916.8076982,
+    "source": "oi_advanced_scanner"
+  },
+  "ZROUSDT": {
+    "symbol": "ZROUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 56.498000000000005,
+    "mode": "B",
+    "ts": 1787735014.5101447,
+    "source": "oi_advanced_scanner"
+  },
+  "MUUUSDT": {
+    "symbol": "MUUUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 73.372,
+    "mode": "B",
+    "ts": 1788264498.210069,
+    "source": "oi_advanced_scanner"
+  },
+  "PORTALUSDT": {
+    "symbol": "PORTALUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 69.624,
+    "mode": "B",
+    "ts": 1787724198.1033878,
+    "source": "oi_advanced_scanner"
+  },
+  "HOODUSDT": {
+    "symbol": "HOODUSDT",
+    "direction": "LONG",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 95.1,
+    "ts": 1788746476.2632828,
+    "source": "tradfi_signal_layer"
+  },
+  "USDCUSDT": {
+    "symbol": "USDCUSDT",
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 100.7,
+    "ts": 1788275931.346935,
+    "source": "tradfi_signal_layer"
+  },
+  "RKLBUSDT": {
+    "symbol": "RKLBUSDT",
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 172.0,
+    "ts": 1787741446.7557707,
+    "source": "tradfi_signal_layer"
+  },
+  "UVXYUSDT": {
+    "symbol": "UVXYUSDT",
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 116.0,
+    "ts": 1787741264.4297345,
+    "source": "tradfi_signal_layer"
+  },
+  "BBXUSDT": {
+    "symbol": "BBXUSDT",
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 137.0,
+    "ts": 1787741356.0678816,
+    "source": "tradfi_signal_layer"
+  },
+  "CRWDUSDT": {
+    "symbol": "CRWDUSDT",
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 115.0,
+    "ts": 1787741632.978864,
+    "source": "tradfi_signal_layer"
+  },
+  "GENIUSUSDT": {
+    "symbol": "GENIUSUSDT",
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 177.0,
+    "ts": 1787741651.4344022,
+    "source": "tradfi_signal_layer"
+  },
+  "BEUSDT": {
+    "symbol": "BEUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 77.826,
+    "mode": "B",
+    "ts": 1788307945.2095394,
+    "source": "oi_advanced_scanner"
+  },
+  "ONTUSDT": {
+    "symbol": "ONTUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 100.0,
+    "mode": "A",
+    "ts": 1787790624.9465237,
+    "source": "oi_advanced_scanner"
+  },
+  "DASHUSDT": {
+    "symbol": "DASHUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 90.29650000000001,
+    "mode": "A",
+    "ts": 1789031293.8240976,
+    "source": "oi_advanced_scanner"
+  },
+  "WIFUSDT": {
+    "symbol": "WIFUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 56.022,
+    "mode": "B",
+    "ts": 1787787033.146817,
+    "source": "oi_advanced_scanner"
+  },
+  "MAGMAUSDT": {
+    "symbol": "MAGMAUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 73.561,
+    "mode": "B",
+    "ts": 1788307945.209544,
+    "source": "oi_advanced_scanner"
+  },
+  "SPXUSDT": {
+    "symbol": "SPXUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 63.698,
+    "mode": "B",
+    "ts": 1787863203.3170319,
+    "source": "oi_advanced_scanner"
+  },
+  "BICOUSDT": {
+    "symbol": "BICOUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 72.0,
+    "mode": "B",
+    "ts": 1787866808.1681714,
+    "source": "oi_advanced_scanner"
+  },
+  "ARIAUSDT": {
+    "symbol": "ARIAUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 86.188,
+    "mode": "B",
+    "ts": 1787797827.2458053,
+    "source": "oi_advanced_scanner"
+  },
+  "BTRUSDT": {
+    "symbol": "BTRUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 55.0,
+    "mode": "A",
+    "ts": 1788348473.2983909,
+    "source": "oi_advanced_scanner"
+  },
+  "MOVRUSDT": {
+    "symbol": "MOVRUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 93.0,
+    "mode": "A",
+    "ts": 1787949612.993856,
+    "source": "oi_advanced_scanner"
+  },
+  "VETUSDT": {
+    "symbol": "VETUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 77.05799999999999,
+    "mode": "B",
+    "ts": 1787884805.9444501,
+    "source": "oi_advanced_scanner"
+  },
+  "TUTUSDT": {
+    "symbol": "TUTUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 53.0775,
+    "mode": "A",
+    "ts": 1788634844.777219,
+    "source": "oi_advanced_scanner"
+  },
+  "GPSUSDT": {
+    "symbol": "GPSUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 67.182,
+    "mode": "B",
+    "ts": 1787838586.8919713,
+    "source": "oi_advanced_scanner"
+  },
+  "BEAMXUSDT": {
+    "symbol": "BEAMXUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 67.92,
+    "mode": "B",
+    "ts": 1787892825.6392357,
+    "source": "oi_advanced_scanner"
+  },
+  "PYTHUSDT": {
+    "symbol": "PYTHUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 60.068,
+    "mode": "B",
+    "ts": 1787881217.559772,
+    "source": "oi_advanced_scanner"
+  },
+  "RIVERUSDT": {
+    "symbol": "RIVERUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 61.125,
+    "mode": "A",
+    "ts": 1788192348.3171966,
+    "source": "oi_advanced_scanner"
+  },
+  "CBRSUSDT": {
+    "symbol": "CBRSUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 80.26599999999999,
+    "mode": "B",
+    "ts": 1789036102.491777,
+    "source": "oi_advanced_scanner"
+  },
+  "AMZNUSDT": {
+    "symbol": "AMZNUSDT",
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 125.6,
+    "ts": 1788321718.7225025,
+    "source": "tradfi_signal_layer"
+  },
+  "LIGHTUSDT": {
+    "symbol": "LIGHTUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 72.45400000000001,
+    "mode": "B",
+    "ts": 1787967608.956962,
+    "source": "oi_advanced_scanner"
+  },
+  "DEXEUSDT": {
+    "symbol": "DEXEUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 68.586,
+    "mode": "B",
+    "ts": 1787996404.7007241,
+    "source": "oi_advanced_scanner"
+  },
+  "我踏马来了USDT": {
+    "symbol": "我踏马来了USDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 66.67,
+    "mode": "B",
+    "ts": 1787982003.7428546,
+    "source": "oi_advanced_scanner"
+  },
+  "4USDT": {
+    "symbol": "4USDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 80.955,
+    "mode": "A",
+    "ts": 1788120273.3552608,
+    "source": "oi_advanced_scanner"
+  },
+  "CLOUSDT": {
+    "symbol": "CLOUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 65.99799999999999,
+    "mode": "B",
+    "ts": 1788048125.3995893,
+    "source": "oi_advanced_scanner"
+  },
+  "ROBOUSDT": {
+    "symbol": "ROBOUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 60.812,
+    "mode": "B",
+    "ts": 1788007202.650122,
+    "source": "oi_advanced_scanner"
+  },
+  "NILUSDT": {
+    "symbol": "NILUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 93.8775,
+    "mode": "B",
+    "ts": 1788050422.7439055,
+    "source": "oi_advanced_scanner"
+  },
+  "COTIUSDT": {
+    "symbol": "COTIUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 56.206,
+    "mode": "B",
+    "ts": 1788097372.9084725,
+    "source": "oi_advanced_scanner"
+  },
+  "ZKPUSDT": {
+    "symbol": "ZKPUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 83.214,
+    "mode": "B",
+    "ts": 1788091469.0624948,
+    "source": "oi_advanced_scanner"
+  },
+  "GIGGLEUSDT": {
+    "symbol": "GIGGLEUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 67.49,
+    "mode": "B",
+    "ts": 1788084273.8609407,
+    "source": "oi_advanced_scanner"
+  },
+  "OUSDT": {
+    "symbol": "OUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 94.0,
+    "mode": "B",
+    "ts": 1788098669.6693373,
+    "source": "oi_advanced_scanner"
+  },
+  "SKRUSDT": {
+    "symbol": "SKRUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 100.0,
+    "mode": "A",
+    "ts": 1788634844.7772117,
+    "source": "oi_advanced_scanner"
+  },
+  "ZENUSDT": {
+    "symbol": "ZENUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 72.537,
+    "mode": "A",
+    "ts": 1789031293.8241081,
+    "source": "oi_advanced_scanner"
+  },
+  "CAKEUSDT": {
+    "symbol": "CAKEUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 71.012,
+    "mode": "B",
+    "ts": 1788163503.0429575,
+    "source": "oi_advanced_scanner"
+  },
+  "ZORAUSDT": {
+    "symbol": "ZORAUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 77.0,
+    "mode": "A",
+    "ts": 1788235468.9233093,
+    "source": "oi_advanced_scanner"
+  },
+  "ZKUSDT": {
+    "symbol": "ZKUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 69.3175,
+    "mode": "A",
+    "ts": 1788235933.9336243,
+    "source": "oi_advanced_scanner"
+  },
+  "ZKCUSDT": {
+    "symbol": "ZKCUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 76.0,
+    "mode": "A",
+    "ts": 1788206773.3373075,
+    "source": "oi_advanced_scanner"
+  },
+  "UNIUSDT": {
+    "symbol": "UNIUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 72.938,
+    "mode": "B",
+    "ts": 1788188748.3604832,
+    "source": "oi_advanced_scanner"
+  },
+  "MVLLUSDT": {
+    "symbol": "MVLLUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 82.4,
+    "mode": "A",
+    "ts": 1788439318.9935555,
+    "source": "oi_advanced_scanner"
+  },
+  "TRUTHUSDT": {
+    "symbol": "TRUTHUSDT",
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 117.8,
+    "ts": 1788205043.8633764,
+    "source": "tradfi_signal_layer"
+  },
+  "IWMUSDT": {
+    "symbol": "IWMUSDT",
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 199.5,
+    "ts": 1788205052.6668289,
+    "source": "tradfi_signal_layer"
+  },
+  "XMRUSDT": {
+    "symbol": "XMRUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 44.724000000000004,
+    "mode": "B",
+    "ts": 1788205398.4184113,
+    "source": "oi_advanced_scanner"
+  },
+  "OPUSDT": {
+    "symbol": "OPUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 60.569500000000005,
+    "mode": "A",
+    "ts": 1788293487.6448815,
+    "source": "oi_advanced_scanner"
+  },
+  "GRAMUSDT": {
+    "symbol": "GRAMUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 80.616,
+    "mode": "B",
+    "ts": 1788264498.210062,
+    "source": "oi_advanced_scanner"
+  },
+  "ARBUSDT": {
+    "symbol": "ARBUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 68.91,
+    "mode": "A",
+    "ts": 1788351545.8353617,
+    "source": "oi_advanced_scanner"
+  },
+  "APTUSDT": {
+    "symbol": "APTUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 71.45,
+    "mode": "B",
+    "ts": 1788227126.8889222,
+    "source": "oi_advanced_scanner"
+  },
+  "ARMUSDT": {
+    "symbol": "ARMUSDT",
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 110.5,
+    "ts": 1788356552.3424864,
+    "source": "tradfi_signal_layer"
+  },
+  "PAXGUSDT": {
+    "symbol": "PAXGUSDT",
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 193.2,
+    "ts": 1788245430.9446642,
+    "source": "tradfi_signal_layer"
+  },
+  "0GUSDT": {
+    "symbol": "0GUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 70.0,
+    "mode": "A",
+    "ts": 1788293487.644877,
+    "source": "oi_advanced_scanner"
+  },
+  "TWTUSDT": {
+    "symbol": "TWTUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 64.38,
+    "mode": "B",
+    "ts": 1788278955.6760578,
+    "source": "oi_advanced_scanner"
+  },
+  "WLFIUSDT": {
+    "symbol": "WLFIUSDT",
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 102.5,
+    "ts": 1788276000.0970712,
+    "source": "tradfi_signal_layer"
+  },
+  "USELESSUSDT": {
+    "symbol": "USELESSUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 67.0,
+    "mode": "B",
+    "ts": 1788322743.0891688,
+    "source": "oi_advanced_scanner"
+  },
+  "FILUSDT": {
+    "symbol": "FILUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 60.56999999999999,
+    "mode": "B",
+    "ts": 1788341131.5158486,
+    "source": "oi_advanced_scanner"
+  },
+  "DELLUSDT": {
+    "symbol": "DELLUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 88.6075,
+    "mode": "B",
+    "ts": 1788351545.835312,
+    "source": "oi_advanced_scanner"
+  },
+  "TENCENTUSDT": {
+    "symbol": "TENCENTUSDT",
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 107.5,
+    "ts": 1788321724.5874262,
+    "source": "tradfi_signal_layer"
+  },
+  "POPMARTUSDT": {
+    "symbol": "POPMARTUSDT",
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 122.5,
+    "ts": 1788321730.638783,
+    "source": "tradfi_signal_layer"
+  },
+  "HUSDT": {
+    "symbol": "HUSDT",
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 152.4,
+    "ts": 1788321741.701695,
+    "source": "tradfi_signal_layer"
+  },
+  "XAUTUSDT": {
+    "symbol": "XAUTUSDT",
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 104.5,
+    "ts": 1788321752.8523576,
+    "source": "tradfi_signal_layer"
+  },
+  "ARUSDT": {
+    "symbol": "ARUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 74.104,
+    "mode": "B",
+    "ts": 1788329943.6445825,
+    "source": "oi_advanced_scanner"
+  },
+  "KAITOUSDT": {
+    "symbol": "KAITOUSDT",
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 115.5,
+    "ts": 1788356559.3473547,
+    "source": "tradfi_signal_layer"
+  },
+  "牛来USDT": {
+    "symbol": "牛来USDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 50.634,
+    "mode": "A",
+    "ts": 1788746446.2749965,
+    "source": "oi_advanced_scanner"
+  },
+  "AXTIUSDT": {
+    "symbol": "AXTIUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 73.508,
+    "mode": "B",
+    "ts": 1788368452.0733306,
+    "source": "oi_advanced_scanner"
+  },
+  "CRDOUSDT": {
+    "symbol": "CRDOUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 94.82,
+    "mode": "A",
+    "ts": 1788439318.993553,
+    "source": "oi_advanced_scanner"
+  },
+  "EGLDUSDT": {
+    "symbol": "EGLDUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 68.72,
+    "mode": "A",
+    "ts": 1788439318.9935565,
+    "source": "oi_advanced_scanner"
+  },
+  "LAUSDT": {
+    "symbol": "LAUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 96.1275,
+    "mode": "A",
+    "ts": 1788439318.993551,
+    "source": "oi_advanced_scanner"
+  },
+  "FLOCKUSDT": {
+    "symbol": "FLOCKUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 94.0,
+    "mode": "A",
+    "ts": 1788634844.7772167,
+    "source": "oi_advanced_scanner"
+  },
+  "SUSHIUSDT": {
+    "symbol": "SUSHIUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 57.0,
+    "mode": "A",
+    "ts": 1788746446.2749941,
+    "source": "oi_advanced_scanner"
+  },
+  "BULLAUSDT": {
+    "symbol": "BULLAUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 78.656,
+    "mode": "B",
+    "ts": 1788746446.274989,
+    "source": "oi_advanced_scanner"
+  },
+  "JUPUSDT": {
+    "symbol": "JUPUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 64.35249999999999,
+    "mode": "A",
+    "ts": 1788746446.2749913,
+    "source": "oi_advanced_scanner"
+  },
+  "COLLECTUSDT": {
+    "symbol": "COLLECTUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 49.83250000000001,
+    "mode": "B",
+    "ts": 1788746446.2749977,
+    "source": "oi_advanced_scanner"
+  },
+  "BNCUSDT": {
+    "symbol": "BNCUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 89.28,
+    "mode": "A",
+    "ts": 1789031293.8241012,
+    "source": "oi_advanced_scanner"
+  },
+  "RAYSOLUSDT": {
+    "symbol": "RAYSOLUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 69.7375,
+    "mode": "A",
+    "ts": 1789031293.8241098,
+    "source": "oi_advanced_scanner"
+  },
+  "IOSTUSDT": {
+    "symbol": "IOSTUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 79.0,
+    "mode": "A",
+    "ts": 1789036102.4917805,
+    "source": "oi_advanced_scanner"
+  }
+}

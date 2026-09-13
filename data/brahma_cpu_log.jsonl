@@ -1,0 +1,820 @@
+{"ts": 1787681519.482509, "ts_iso": "2026-08-25T18:11:59.482511+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787681543.9083915, "ts_iso": "2026-08-25T18:12:23.908393+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 17.8, "layer": 0}
+{"ts": 1787681556.4849029, "ts_iso": "2026-08-25T18:12:36.484904+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=105.3<130门槛", "score": 105.3, "layer": 1}
+{"ts": 1787681565.7269728, "ts_iso": "2026-08-25T18:12:45.726975+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 23.7, "layer": 0}
+{"ts": 1787681572.639081, "ts_iso": "2026-08-25T18:12:52.639083+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787681588.6709025, "ts_iso": "2026-08-25T18:13:08.670904+00:00", "symbol": "NVDAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787681598.4406366, "ts_iso": "2026-08-25T18:13:18.440638+00:00", "symbol": "QQQUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -17.2, "layer": 0}
+{"ts": 1787681608.0365446, "ts_iso": "2026-08-25T18:13:28.036546+00:00", "symbol": "CLUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787681618.082965, "ts_iso": "2026-08-25T18:13:38.082968+00:00", "symbol": "CRCLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 7.0, "layer": 0}
+{"ts": 1787681638.3435776, "ts_iso": "2026-08-25T18:13:58.343580+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 15.8, "layer": 0}
+{"ts": 1787685341.156061, "ts_iso": "2026-08-25T19:15:41.156063+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787685353.0783496, "ts_iso": "2026-08-25T19:15:53.078352+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 17.3, "layer": 0}
+{"ts": 1787685363.4298341, "ts_iso": "2026-08-25T19:16:03.429836+00:00", "symbol": "TAOUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787685372.7813377, "ts_iso": "2026-08-25T19:16:12.781339+00:00", "symbol": "PENGUUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787685398.7734025, "ts_iso": "2026-08-25T19:16:38.773404+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787685408.8329003, "ts_iso": "2026-08-25T19:16:48.832902+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 17.3, "layer": 0}
+{"ts": 1787685416.1290476, "ts_iso": "2026-08-25T19:16:56.129049+00:00", "symbol": "TAOUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787685424.0693798, "ts_iso": "2026-08-25T19:17:04.069382+00:00", "symbol": "PENGUUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787685432.7051036, "ts_iso": "2026-08-25T19:17:12.705105+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-2.4<130门槛", "score": -2.4000000000000004, "layer": 1}
+{"ts": 1787685443.1522355, "ts_iso": "2026-08-25T19:17:23.152237+00:00", "symbol": "XAUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787685450.9233322, "ts_iso": "2026-08-25T19:17:30.923334+00:00", "symbol": "AMDUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 23.1, "layer": 0}
+{"ts": 1787685458.4951303, "ts_iso": "2026-08-25T19:17:38.495132+00:00", "symbol": "KORUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787685469.8247685, "ts_iso": "2026-08-25T19:17:49.824770+00:00", "symbol": "JTOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 69.0, "layer": 0}
+{"ts": 1787685493.0541034, "ts_iso": "2026-08-25T19:18:13.054106+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 17.3, "layer": 0}
+{"ts": 1787685500.93686, "ts_iso": "2026-08-25T19:18:20.936862+00:00", "symbol": "TAOUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787685509.5189898, "ts_iso": "2026-08-25T19:18:29.518992+00:00", "symbol": "PENGUUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787685517.1263266, "ts_iso": "2026-08-25T19:18:37.126329+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=4.0<130门槛", "score": 4.0, "layer": 1}
+{"ts": 1787685525.572829, "ts_iso": "2026-08-25T19:18:45.572831+00:00", "symbol": "XAUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787685532.9110055, "ts_iso": "2026-08-25T19:18:52.911007+00:00", "symbol": "AMDUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 23.1, "layer": 0}
+{"ts": 1787685539.9566152, "ts_iso": "2026-08-25T19:18:59.956616+00:00", "symbol": "KORUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787685547.2651339, "ts_iso": "2026-08-25T19:19:07.265135+00:00", "symbol": "JTOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 69.0, "layer": 0}
+{"ts": 1787685555.414769, "ts_iso": "2026-08-25T19:19:15.414770+00:00", "symbol": "LABUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787685566.9013824, "ts_iso": "2026-08-25T19:19:26.901384+00:00", "symbol": "SUIUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787685586.807651, "ts_iso": "2026-08-25T19:19:46.807653+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 17.3, "layer": 0}
+{"ts": 1787685594.8951035, "ts_iso": "2026-08-25T19:19:54.895106+00:00", "symbol": "TAOUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787685603.2066388, "ts_iso": "2026-08-25T19:20:03.206642+00:00", "symbol": "PENGUUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787685611.516871, "ts_iso": "2026-08-25T19:20:11.516879+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=6.1<130门槛", "score": 6.100000000000001, "layer": 1}
+{"ts": 1787685620.1837726, "ts_iso": "2026-08-25T19:20:20.183775+00:00", "symbol": "XAUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787685627.6511984, "ts_iso": "2026-08-25T19:20:27.651201+00:00", "symbol": "AMDUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 23.1, "layer": 0}
+{"ts": 1787685635.0029414, "ts_iso": "2026-08-25T19:20:35.002943+00:00", "symbol": "KORUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787685642.030939, "ts_iso": "2026-08-25T19:20:42.030941+00:00", "symbol": "JTOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 73.0, "layer": 0}
+{"ts": 1787685649.251657, "ts_iso": "2026-08-25T19:20:49.251659+00:00", "symbol": "LABUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787685656.267575, "ts_iso": "2026-08-25T19:20:56.267577+00:00", "symbol": "SUIUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787685663.9917235, "ts_iso": "2026-08-25T19:21:03.991726+00:00", "symbol": "BASUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 37.0, "layer": 0}
+{"ts": 1787685676.6584384, "ts_iso": "2026-08-25T19:21:16.658440+00:00", "symbol": "NBISUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787685686.8384464, "ts_iso": "2026-08-25T19:21:26.838448+00:00", "symbol": "SKHYUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -17.8, "layer": 0}
+{"ts": 1787685712.705825, "ts_iso": "2026-08-25T19:21:52.705827+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 17.3, "layer": 0}
+{"ts": 1787685720.4324, "ts_iso": "2026-08-25T19:22:00.432403+00:00", "symbol": "TAOUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787685728.3061228, "ts_iso": "2026-08-25T19:22:08.306125+00:00", "symbol": "PENGUUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 43.2, "layer": 0}
+{"ts": 1787685736.1355193, "ts_iso": "2026-08-25T19:22:16.135521+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-3.1<130门槛", "score": -3.0999999999999996, "layer": 1}
+{"ts": 1787685745.3270001, "ts_iso": "2026-08-25T19:22:25.327002+00:00", "symbol": "XAUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787685753.7558842, "ts_iso": "2026-08-25T19:22:33.755886+00:00", "symbol": "AMDUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 23.1, "layer": 0}
+{"ts": 1787685760.942143, "ts_iso": "2026-08-25T19:22:40.942145+00:00", "symbol": "KORUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787685768.956586, "ts_iso": "2026-08-25T19:22:48.956588+00:00", "symbol": "JTOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 67.0, "layer": 0}
+{"ts": 1787685776.2953055, "ts_iso": "2026-08-25T19:22:56.295308+00:00", "symbol": "LABUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787685783.5885043, "ts_iso": "2026-08-25T19:23:03.588507+00:00", "symbol": "SUIUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787685790.7371047, "ts_iso": "2026-08-25T19:23:10.737107+00:00", "symbol": "BASUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 30.0, "layer": 0}
+{"ts": 1787685798.4686127, "ts_iso": "2026-08-25T19:23:18.468614+00:00", "symbol": "NBISUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787685806.0055869, "ts_iso": "2026-08-25T19:23:26.005589+00:00", "symbol": "SKHYUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -18.7, "layer": 0}
+{"ts": 1787685818.3501556, "ts_iso": "2026-08-25T19:23:38.350157+00:00", "symbol": "GOOGLUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787688699.0256786, "ts_iso": "2026-08-25T20:11:39.025680+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 24.7, "layer": 0}
+{"ts": 1787688711.725941, "ts_iso": "2026-08-25T20:11:51.725942+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=75.6<130门槛", "score": 75.6, "layer": 1}
+{"ts": 1787688721.9634454, "ts_iso": "2026-08-25T20:12:01.963447+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 34.5, "layer": 0}
+{"ts": 1787688729.2882466, "ts_iso": "2026-08-25T20:12:09.288248+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787688740.9700277, "ts_iso": "2026-08-25T20:12:20.970029+00:00", "symbol": "SYNUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787688765.4737005, "ts_iso": "2026-08-25T20:12:45.473703+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 23.3, "layer": 0}
+{"ts": 1787688777.3687496, "ts_iso": "2026-08-25T20:12:57.368752+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=75.6<130门槛", "score": 75.6, "layer": 1}
+{"ts": 1787688787.994624, "ts_iso": "2026-08-25T20:13:07.994626+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 35.4, "layer": 0}
+{"ts": 1787688795.590256, "ts_iso": "2026-08-25T20:13:15.590258+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787688802.8885283, "ts_iso": "2026-08-25T20:13:22.888530+00:00", "symbol": "SYNUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787688810.7920852, "ts_iso": "2026-08-25T20:13:30.792088+00:00", "symbol": "NVDAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -108.8, "layer": 0}
+{"ts": 1787688817.2888923, "ts_iso": "2026-08-25T20:13:37.288894+00:00", "symbol": "QQQUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -23.0, "layer": 0}
+{"ts": 1787688824.109149, "ts_iso": "2026-08-25T20:13:44.109152+00:00", "symbol": "CRCLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787688835.3558867, "ts_iso": "2026-08-25T20:13:55.355888+00:00", "symbol": "SKHYNIXUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-73.0<130门槛", "score": -73.0, "layer": 1}
+{"ts": 1787688858.124558, "ts_iso": "2026-08-25T20:14:18.124560+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 26.1, "layer": 0}
+{"ts": 1787688869.1682096, "ts_iso": "2026-08-25T20:14:29.168212+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=75.6<130门槛", "score": 75.6, "layer": 1}
+{"ts": 1787688877.3416207, "ts_iso": "2026-08-25T20:14:37.341622+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 34.5, "layer": 0}
+{"ts": 1787688883.367396, "ts_iso": "2026-08-25T20:14:43.367398+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787688889.6855798, "ts_iso": "2026-08-25T20:14:49.685581+00:00", "symbol": "SYNUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787688897.1596792, "ts_iso": "2026-08-25T20:14:57.159681+00:00", "symbol": "NVDAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -108.8, "layer": 0}
+{"ts": 1787688903.8203738, "ts_iso": "2026-08-25T20:15:03.820376+00:00", "symbol": "QQQUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -20.0, "layer": 0}
+{"ts": 1787688909.8392358, "ts_iso": "2026-08-25T20:15:09.839238+00:00", "symbol": "CRCLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787688916.2156608, "ts_iso": "2026-08-25T20:15:16.215663+00:00", "symbol": "SKHYNIXUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-71.0<130门槛", "score": -71.0, "layer": 1}
+{"ts": 1787688926.1632366, "ts_iso": "2026-08-25T20:15:26.163238+00:00", "symbol": "TRUMPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787688935.098619, "ts_iso": "2026-08-25T20:15:35.098620+00:00", "symbol": "INTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-99.0<130门槛", "score": -99.0, "layer": 1}
+{"ts": 1787688943.4531662, "ts_iso": "2026-08-25T20:15:43.453168+00:00", "symbol": "AVAXUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787692259.1902974, "ts_iso": "2026-08-25T21:10:59.190299+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 84.9, "layer": 0}
+{"ts": 1787692266.6493392, "ts_iso": "2026-08-25T21:11:06.649341+00:00", "symbol": "TAOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787692274.7865276, "ts_iso": "2026-08-25T21:11:14.786529+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787692280.7376544, "ts_iso": "2026-08-25T21:11:20.737657+00:00", "symbol": "PENGUUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787692287.2966158, "ts_iso": "2026-08-25T21:11:27.296618+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-48.6<130门槛", "score": -48.6, "layer": 1}
+{"ts": 1787692294.3436937, "ts_iso": "2026-08-25T21:11:34.343696+00:00", "symbol": "XAUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-99.0<130门槛", "score": -99.0, "layer": 1}
+{"ts": 1787692300.6495318, "ts_iso": "2026-08-25T21:11:40.649533+00:00", "symbol": "QQQUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -21.0, "layer": 0}
+{"ts": 1787695874.491343, "ts_iso": "2026-08-25T22:11:14.491346+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 16.5, "layer": 0}
+{"ts": 1787695894.675834, "ts_iso": "2026-08-25T22:11:34.675835+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=69.0<130门槛", "score": 69.0, "layer": 1}
+{"ts": 1787695934.2958918, "ts_iso": "2026-08-25T22:12:14.295893+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 15.1, "layer": 0}
+{"ts": 1787695951.2373977, "ts_iso": "2026-08-25T22:12:31.237400+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=69.0<130门槛", "score": 69.0, "layer": 1}
+{"ts": 1787695963.8570104, "ts_iso": "2026-08-25T22:12:43.857012+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 25.5, "layer": 0}
+{"ts": 1787695981.1209207, "ts_iso": "2026-08-25T22:13:01.120923+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 15.7, "layer": 0}
+{"ts": 1787695992.6808867, "ts_iso": "2026-08-25T22:13:12.680888+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=69.0<130门槛", "score": 69.0, "layer": 1}
+{"ts": 1787696002.7245033, "ts_iso": "2026-08-25T22:13:22.724505+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 27.3, "layer": 0}
+{"ts": 1787696012.2502196, "ts_iso": "2026-08-25T22:13:32.250222+00:00", "symbol": "XRPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "score=20.1<130门槛", "score": 20.1, "layer": 1}
+{"ts": 1787696023.2529774, "ts_iso": "2026-08-25T22:13:43.252980+00:00", "symbol": "AAVEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787696030.6129441, "ts_iso": "2026-08-25T22:13:50.612946+00:00", "symbol": "SYNUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787696040.0911777, "ts_iso": "2026-08-25T22:14:00.091180+00:00", "symbol": "NVDAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -106.8, "layer": 0}
+{"ts": 1787696048.7033772, "ts_iso": "2026-08-25T22:14:08.703381+00:00", "symbol": "QQQUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -19.0, "layer": 0}
+{"ts": 1787696057.1926527, "ts_iso": "2026-08-25T22:14:17.192655+00:00", "symbol": "CRCLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787696074.6291757, "ts_iso": "2026-08-25T22:14:34.629178+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 17.8, "layer": 0}
+{"ts": 1787696086.4015315, "ts_iso": "2026-08-25T22:14:46.401533+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=69.0<130门槛", "score": 69.0, "layer": 1}
+{"ts": 1787696095.0350142, "ts_iso": "2026-08-25T22:14:55.035016+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 29.1, "layer": 0}
+{"ts": 1787696103.7635555, "ts_iso": "2026-08-25T22:15:03.763557+00:00", "symbol": "XRPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "score=20.1<130门槛", "score": 20.1, "layer": 1}
+{"ts": 1787696110.0675333, "ts_iso": "2026-08-25T22:15:10.067535+00:00", "symbol": "AAVEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787696116.4714, "ts_iso": "2026-08-25T22:15:16.471401+00:00", "symbol": "SYNUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787696124.254027, "ts_iso": "2026-08-25T22:15:24.254028+00:00", "symbol": "NVDAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -106.8, "layer": 0}
+{"ts": 1787696130.5637305, "ts_iso": "2026-08-25T22:15:30.563733+00:00", "symbol": "QQQUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -15.0, "layer": 0}
+{"ts": 1787696136.7053435, "ts_iso": "2026-08-25T22:15:36.705345+00:00", "symbol": "CRCLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787696143.52113, "ts_iso": "2026-08-25T22:15:43.521132+00:00", "symbol": "SKHYNIXUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-74.0<130门槛", "score": -74.0, "layer": 1}
+{"ts": 1787696151.0689828, "ts_iso": "2026-08-25T22:15:51.068984+00:00", "symbol": "INTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-94.0<130门槛", "score": -94.0, "layer": 1}
+{"ts": 1787696158.8334925, "ts_iso": "2026-08-25T22:15:58.833494+00:00", "symbol": "AVAXUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787696169.9697332, "ts_iso": "2026-08-25T22:16:09.969734+00:00", "symbol": "LINKUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=13.2<130门槛", "score": 13.2, "layer": 1}
+{"ts": 1787696178.2545793, "ts_iso": "2026-08-25T22:16:18.254581+00:00", "symbol": "HYPEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787699474.029986, "ts_iso": "2026-08-25T23:11:14.029987+00:00", "symbol": "TAOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787699492.4427962, "ts_iso": "2026-08-25T23:11:32.442798+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-38.6<130门槛", "score": -38.6, "layer": 1}
+{"ts": 1787699531.7646914, "ts_iso": "2026-08-25T23:12:11.764694+00:00", "symbol": "TAOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787699541.8504496, "ts_iso": "2026-08-25T23:12:21.850451+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-42.6<130门槛", "score": -42.6, "layer": 1}
+{"ts": 1787699565.0195174, "ts_iso": "2026-08-25T23:12:45.019521+00:00", "symbol": "TAOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787699576.2300243, "ts_iso": "2026-08-25T23:12:56.230026+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-46.6<130门槛", "score": -46.6, "layer": 1}
+{"ts": 1787699589.7104578, "ts_iso": "2026-08-25T23:13:09.710460+00:00", "symbol": "XAUUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": -34.0, "layer": 0}
+{"ts": 1787699600.5672455, "ts_iso": "2026-08-25T23:13:20.567248+00:00", "symbol": "QQQUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -18.0, "layer": 0}
+{"ts": 1787699617.3437731, "ts_iso": "2026-08-25T23:13:37.343776+00:00", "symbol": "AMDUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -101.7, "layer": 0}
+{"ts": 1787699629.9638112, "ts_iso": "2026-08-25T23:13:49.963813+00:00", "symbol": "TACUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787703066.6052325, "ts_iso": "2026-08-26T00:11:06.605235+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 12.5, "layer": 0}
+{"ts": 1787703080.4708009, "ts_iso": "2026-08-26T00:11:20.470802+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=91.6<130门槛", "score": 91.6, "layer": 1}
+{"ts": 1787703092.002836, "ts_iso": "2026-08-26T00:11:32.002838+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 26.4, "layer": 0}
+{"ts": 1787703100.9060998, "ts_iso": "2026-08-26T00:11:40.906102+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787703129.6181474, "ts_iso": "2026-08-26T00:12:09.618149+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 15.8, "layer": 0}
+{"ts": 1787703140.2632608, "ts_iso": "2026-08-26T00:12:20.263263+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=87.9<130门槛", "score": 87.9, "layer": 1}
+{"ts": 1787703149.0471802, "ts_iso": "2026-08-26T00:12:29.047182+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 23.7, "layer": 0}
+{"ts": 1787703155.440495, "ts_iso": "2026-08-26T00:12:35.440497+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787703165.395166, "ts_iso": "2026-08-26T00:12:45.395167+00:00", "symbol": "PENGUUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787703182.3610444, "ts_iso": "2026-08-26T00:13:02.361048+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 12.5, "layer": 0}
+{"ts": 1787703193.5846467, "ts_iso": "2026-08-26T00:13:13.584649+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=83.2<130门槛", "score": 83.2, "layer": 1}
+{"ts": 1787703202.7750757, "ts_iso": "2026-08-26T00:13:22.775077+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 23.7, "layer": 0}
+{"ts": 1787703209.3834214, "ts_iso": "2026-08-26T00:13:29.383423+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787703216.2512968, "ts_iso": "2026-08-26T00:13:36.251299+00:00", "symbol": "PENGUUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787703225.9766653, "ts_iso": "2026-08-26T00:13:45.976667+00:00", "symbol": "SYNUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787703234.3427474, "ts_iso": "2026-08-26T00:13:54.342749+00:00", "symbol": "NVDAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -100.8, "layer": 0}
+{"ts": 1787703241.6695192, "ts_iso": "2026-08-26T00:14:01.669521+00:00", "symbol": "QQQUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -101.2, "layer": 0}
+{"ts": 1787703249.2459443, "ts_iso": "2026-08-26T00:14:09.245946+00:00", "symbol": "CRCLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787703258.054774, "ts_iso": "2026-08-26T00:14:18.054776+00:00", "symbol": "SKHYNIXUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-71.8<130门槛", "score": -71.8, "layer": 1}
+{"ts": 1787703265.2942333, "ts_iso": "2026-08-26T00:14:25.294235+00:00", "symbol": "TRUMPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787703272.4313638, "ts_iso": "2026-08-26T00:14:32.431365+00:00", "symbol": "INTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-85.0<130门槛", "score": -85.0, "layer": 1}
+{"ts": 1787703278.8682523, "ts_iso": "2026-08-26T00:14:38.868255+00:00", "symbol": "AVAXUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787703286.575647, "ts_iso": "2026-08-26T00:14:46.575648+00:00", "symbol": "LINKUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=40.9<130门槛", "score": 40.9, "layer": 1}
+{"ts": 1787703310.4078052, "ts_iso": "2026-08-26T00:15:10.407807+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 11.1, "layer": 0}
+{"ts": 1787703321.020184, "ts_iso": "2026-08-26T00:15:21.020186+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=87.9<130门槛", "score": 87.9, "layer": 1}
+{"ts": 1787703330.1570642, "ts_iso": "2026-08-26T00:15:30.157066+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 39.9, "layer": 0}
+{"ts": 1787703337.301322, "ts_iso": "2026-08-26T00:15:37.301323+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787703343.4393792, "ts_iso": "2026-08-26T00:15:43.439381+00:00", "symbol": "PENGUUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787703349.662806, "ts_iso": "2026-08-26T00:15:49.662807+00:00", "symbol": "SYNUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787703357.079196, "ts_iso": "2026-08-26T00:15:57.079198+00:00", "symbol": "NVDAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -100.8, "layer": 0}
+{"ts": 1787703363.3869092, "ts_iso": "2026-08-26T00:16:03.386912+00:00", "symbol": "QQQUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -107.2, "layer": 0}
+{"ts": 1787703369.4308503, "ts_iso": "2026-08-26T00:16:09.430852+00:00", "symbol": "CRCLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787703375.6593745, "ts_iso": "2026-08-26T00:16:15.659376+00:00", "symbol": "SKHYNIXUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-61.0<130门槛", "score": -61.0, "layer": 1}
+{"ts": 1787703385.03657, "ts_iso": "2026-08-26T00:16:25.036571+00:00", "symbol": "TRUMPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787703393.413215, "ts_iso": "2026-08-26T00:16:33.413217+00:00", "symbol": "INTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-75.0<130门槛", "score": -75.0, "layer": 1}
+{"ts": 1787703401.072372, "ts_iso": "2026-08-26T00:16:41.072374+00:00", "symbol": "AVAXUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787703409.4213493, "ts_iso": "2026-08-26T00:16:49.421351+00:00", "symbol": "LINKUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=29.2<130门槛", "score": 29.2, "layer": 1}
+{"ts": 1787703417.9828732, "ts_iso": "2026-08-26T00:16:57.982875+00:00", "symbol": "BCHUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787703435.0613766, "ts_iso": "2026-08-26T00:17:15.061379+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 15.8, "layer": 0}
+{"ts": 1787703446.6080132, "ts_iso": "2026-08-26T00:17:26.608014+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=83.2<130门槛", "score": 83.2, "layer": 1}
+{"ts": 1787703455.5202143, "ts_iso": "2026-08-26T00:17:35.520216+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 30.0, "layer": 0}
+{"ts": 1787703462.0017407, "ts_iso": "2026-08-26T00:17:42.001743+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787703468.5317893, "ts_iso": "2026-08-26T00:17:48.531791+00:00", "symbol": "PENGUUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787703474.9875445, "ts_iso": "2026-08-26T00:17:54.987546+00:00", "symbol": "SYNUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787703483.458873, "ts_iso": "2026-08-26T00:18:03.458875+00:00", "symbol": "NVDAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -97.8, "layer": 0}
+{"ts": 1787703490.821468, "ts_iso": "2026-08-26T00:18:10.821471+00:00", "symbol": "QQQUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -107.2, "layer": 0}
+{"ts": 1787703497.3934357, "ts_iso": "2026-08-26T00:18:17.393437+00:00", "symbol": "CRCLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787703503.7283983, "ts_iso": "2026-08-26T00:18:23.728400+00:00", "symbol": "SKHYNIXUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-64.0<130门槛", "score": -64.0, "layer": 1}
+{"ts": 1787703510.0593793, "ts_iso": "2026-08-26T00:18:30.059381+00:00", "symbol": "TRUMPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787703516.3614664, "ts_iso": "2026-08-26T00:18:36.361469+00:00", "symbol": "INTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-83.0<130门槛", "score": -83.0, "layer": 1}
+{"ts": 1787703522.5235453, "ts_iso": "2026-08-26T00:18:42.523547+00:00", "symbol": "AVAXUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787703529.8402112, "ts_iso": "2026-08-26T00:18:49.840212+00:00", "symbol": "LINKUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=24.7<130门槛", "score": 24.7, "layer": 1}
+{"ts": 1787703536.1276774, "ts_iso": "2026-08-26T00:18:56.127679+00:00", "symbol": "BCHUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787703543.0819912, "ts_iso": "2026-08-26T00:19:03.081993+00:00", "symbol": "HYPEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787703565.1053772, "ts_iso": "2026-08-26T00:19:25.105379+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 13.1, "layer": 0}
+{"ts": 1787703576.6221879, "ts_iso": "2026-08-26T00:19:36.622189+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=94.3<130门槛", "score": 94.3, "layer": 1}
+{"ts": 1787703585.0756698, "ts_iso": "2026-08-26T00:19:45.075671+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 23.7, "layer": 0}
+{"ts": 1787703591.2442226, "ts_iso": "2026-08-26T00:19:51.244224+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787703597.5203445, "ts_iso": "2026-08-26T00:19:57.520346+00:00", "symbol": "PENGUUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787703604.078323, "ts_iso": "2026-08-26T00:20:04.078325+00:00", "symbol": "SYNUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787703611.479165, "ts_iso": "2026-08-26T00:20:11.479167+00:00", "symbol": "NVDAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -100.8, "layer": 0}
+{"ts": 1787703617.9665785, "ts_iso": "2026-08-26T00:20:17.966581+00:00", "symbol": "QQQUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -107.2, "layer": 0}
+{"ts": 1787703624.335493, "ts_iso": "2026-08-26T00:20:24.335495+00:00", "symbol": "CRCLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787703631.4184635, "ts_iso": "2026-08-26T00:20:31.418464+00:00", "symbol": "SKHYNIXUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-64.0<130门槛", "score": -64.0, "layer": 1}
+{"ts": 1787703638.2867653, "ts_iso": "2026-08-26T00:20:38.286767+00:00", "symbol": "TRUMPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787703646.1569312, "ts_iso": "2026-08-26T00:20:46.156932+00:00", "symbol": "INTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-81.0<130门槛", "score": -81.0, "layer": 1}
+{"ts": 1787703653.3760383, "ts_iso": "2026-08-26T00:20:53.376040+00:00", "symbol": "AVAXUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787703661.0054274, "ts_iso": "2026-08-26T00:21:01.005428+00:00", "symbol": "LINKUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=28.3<130门槛", "score": 28.3, "layer": 1}
+{"ts": 1787703667.3280625, "ts_iso": "2026-08-26T00:21:07.328064+00:00", "symbol": "BCHUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787703673.4881623, "ts_iso": "2026-08-26T00:21:13.488164+00:00", "symbol": "HYPEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787703717.6771796, "ts_iso": "2026-08-26T00:21:57.677181+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 21.2, "layer": 0}
+{"ts": 1787703729.3778932, "ts_iso": "2026-08-26T00:22:09.377894+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=86.8<130门槛", "score": 86.8, "layer": 1}
+{"ts": 1787703738.4904068, "ts_iso": "2026-08-26T00:22:18.490409+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 28.2, "layer": 0}
+{"ts": 1787703744.9131193, "ts_iso": "2026-08-26T00:22:24.913120+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787703752.139522, "ts_iso": "2026-08-26T00:22:32.139524+00:00", "symbol": "PENGUUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787703758.3802664, "ts_iso": "2026-08-26T00:22:38.380268+00:00", "symbol": "SYNUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787703765.7057972, "ts_iso": "2026-08-26T00:22:45.705799+00:00", "symbol": "NVDAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -100.8, "layer": 0}
+{"ts": 1787703772.0736299, "ts_iso": "2026-08-26T00:22:52.073632+00:00", "symbol": "QQQUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -101.2, "layer": 0}
+{"ts": 1787703778.3062024, "ts_iso": "2026-08-26T00:22:58.306204+00:00", "symbol": "CRCLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787703784.7466943, "ts_iso": "2026-08-26T00:23:04.746696+00:00", "symbol": "SKHYNIXUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-64.0<130门槛", "score": -64.0, "layer": 1}
+{"ts": 1787703790.9183147, "ts_iso": "2026-08-26T00:23:10.918316+00:00", "symbol": "TRUMPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787703797.476106, "ts_iso": "2026-08-26T00:23:17.476107+00:00", "symbol": "INTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-86.0<130门槛", "score": -86.0, "layer": 1}
+{"ts": 1787703804.5485008, "ts_iso": "2026-08-26T00:23:24.548502+00:00", "symbol": "AVAXUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787703813.283206, "ts_iso": "2026-08-26T00:23:33.283207+00:00", "symbol": "LINKUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=25.6<130门槛", "score": 25.6, "layer": 1}
+{"ts": 1787703822.3954303, "ts_iso": "2026-08-26T00:23:42.395432+00:00", "symbol": "BCHUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787703829.2335382, "ts_iso": "2026-08-26T00:23:49.233540+00:00", "symbol": "HYPEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787703840.1958132, "ts_iso": "2026-08-26T00:24:00.195815+00:00", "symbol": "KORUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-112.0<130门槛", "score": -112.0, "layer": 1}
+{"ts": 1787703848.9235373, "ts_iso": "2026-08-26T00:24:08.923538+00:00", "symbol": "XAGUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-96.1<130门槛", "score": -96.1, "layer": 1}
+{"ts": 1787703856.900429, "ts_iso": "2026-08-26T00:24:16.900431+00:00", "symbol": "SOXLUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-115.8<130门槛", "score": -115.8, "layer": 1}
+{"ts": 1787703865.241386, "ts_iso": "2026-08-26T00:24:25.241388+00:00", "symbol": "HOMEUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787703874.3183355, "ts_iso": "2026-08-26T00:24:34.318337+00:00", "symbol": "MUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-43.5<130门槛", "score": -43.5, "layer": 1}
+{"ts": 1787703884.204495, "ts_iso": "2026-08-26T00:24:44.204496+00:00", "symbol": "DRAMUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-56.1<130门槛", "score": -56.1, "layer": 1}
+{"ts": 1787706681.3382156, "ts_iso": "2026-08-26T01:11:21.338217+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787706692.117706, "ts_iso": "2026-08-26T01:11:32.117719+00:00", "symbol": "AAVEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787706700.4802523, "ts_iso": "2026-08-26T01:11:40.480254+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-43.8<130门槛", "score": -43.8, "layer": 1}
+{"ts": 1787706709.5968442, "ts_iso": "2026-08-26T01:11:49.596846+00:00", "symbol": "XAUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-89.8<130门槛", "score": -89.8, "layer": 1}
+{"ts": 1787706717.4313455, "ts_iso": "2026-08-26T01:11:57.431347+00:00", "symbol": "AMDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-54.1<130门槛", "score": -54.099999999999994, "layer": 1}
+{"ts": 1787706740.1899736, "ts_iso": "2026-08-26T01:12:20.189976+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787706746.8653536, "ts_iso": "2026-08-26T01:12:26.865355+00:00", "symbol": "AAVEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787706753.944185, "ts_iso": "2026-08-26T01:12:33.944188+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-49.0<130门槛", "score": -49.0, "layer": 1}
+{"ts": 1787706762.432587, "ts_iso": "2026-08-26T01:12:42.432588+00:00", "symbol": "XAUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-83.5<130门槛", "score": -83.5, "layer": 1}
+{"ts": 1787706770.4970555, "ts_iso": "2026-08-26T01:12:50.497058+00:00", "symbol": "AMDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-50.9<130门槛", "score": -50.900000000000006, "layer": 1}
+{"ts": 1787706787.588785, "ts_iso": "2026-08-26T01:13:07.588788+00:00", "symbol": "ENAUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787706798.5133874, "ts_iso": "2026-08-26T01:13:18.513390+00:00", "symbol": "TACUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787706809.0724428, "ts_iso": "2026-08-26T01:13:29.072446+00:00", "symbol": "TRUMPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787706820.1722968, "ts_iso": "2026-08-26T01:13:40.172299+00:00", "symbol": "AVAXUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787706837.8068492, "ts_iso": "2026-08-26T01:13:57.806853+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787706848.828068, "ts_iso": "2026-08-26T01:14:08.828070+00:00", "symbol": "AAVEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787706859.0604076, "ts_iso": "2026-08-26T01:14:19.060409+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-47.6<130门槛", "score": -47.6, "layer": 1}
+{"ts": 1787706873.4229283, "ts_iso": "2026-08-26T01:14:33.422930+00:00", "symbol": "XAUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-91.6<130门槛", "score": -91.6, "layer": 1}
+{"ts": 1787706885.2104278, "ts_iso": "2026-08-26T01:14:45.210430+00:00", "symbol": "AMDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-56.9<130门槛", "score": -56.9, "layer": 1}
+{"ts": 1787706901.1077383, "ts_iso": "2026-08-26T01:15:01.107741+00:00", "symbol": "ENAUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787713887.013015, "ts_iso": "2026-08-26T03:11:27.013017+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787713906.10094, "ts_iso": "2026-08-26T03:11:46.100943+00:00", "symbol": "AAVEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787713918.9927936, "ts_iso": "2026-08-26T03:11:58.992795+00:00", "symbol": "PENGUUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787713955.94831, "ts_iso": "2026-08-26T03:12:35.948313+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787713966.2045968, "ts_iso": "2026-08-26T03:12:46.204600+00:00", "symbol": "AAVEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787713977.1685266, "ts_iso": "2026-08-26T03:12:57.168529+00:00", "symbol": "PENGUUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787717484.8253934, "ts_iso": "2026-08-26T04:11:24.825396+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 22.9, "layer": 0}
+{"ts": 1787717509.1747904, "ts_iso": "2026-08-26T04:11:49.174794+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 13.0, "layer": 0}
+{"ts": 1787717546.5294425, "ts_iso": "2026-08-26T04:12:26.529444+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 23.7, "layer": 0}
+{"ts": 1787717557.869424, "ts_iso": "2026-08-26T04:12:37.869426+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 15.3, "layer": 0}
+{"ts": 1787717569.451279, "ts_iso": "2026-08-26T04:12:49.451281+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=78.9<130门槛", "score": 78.9, "layer": 1}
+{"ts": 1787717582.9875884, "ts_iso": "2026-08-26T04:13:02.987590+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 32.7, "layer": 0}
+{"ts": 1787717601.1496506, "ts_iso": "2026-08-26T04:13:21.149652+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 24.4, "layer": 0}
+{"ts": 1787717609.991345, "ts_iso": "2026-08-26T04:13:29.991347+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 16.1, "layer": 0}
+{"ts": 1787717621.005738, "ts_iso": "2026-08-26T04:13:41.005740+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=78.9<130门槛", "score": 78.9, "layer": 1}
+{"ts": 1787717629.08491, "ts_iso": "2026-08-26T04:13:49.084912+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 31.8, "layer": 0}
+{"ts": 1787717642.1278675, "ts_iso": "2026-08-26T04:14:02.127869+00:00", "symbol": "XRPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "score=25.8<130门槛", "score": 25.8, "layer": 1}
+{"ts": 1787717650.6967633, "ts_iso": "2026-08-26T04:14:10.696765+00:00", "symbol": "TAOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787717660.5375204, "ts_iso": "2026-08-26T04:14:20.537522+00:00", "symbol": "SYNUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787717669.6738791, "ts_iso": "2026-08-26T04:14:29.673881+00:00", "symbol": "NVDAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -97.8, "layer": 0}
+{"ts": 1787721083.6318817, "ts_iso": "2026-08-26T05:11:23.631883+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787721093.9505515, "ts_iso": "2026-08-26T05:11:33.950553+00:00", "symbol": "AAVEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787721104.279826, "ts_iso": "2026-08-26T05:11:44.279827+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-55.7<130门槛", "score": -55.7, "layer": 1}
+{"ts": 1787721115.9118178, "ts_iso": "2026-08-26T05:11:55.911819+00:00", "symbol": "XAUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-86.4<130门槛", "score": -86.4, "layer": 1}
+{"ts": 1787721125.3790483, "ts_iso": "2026-08-26T05:12:05.379050+00:00", "symbol": "AMDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-64.0<130门槛", "score": -64.0, "layer": 1}
+{"ts": 1787721142.436585, "ts_iso": "2026-08-26T05:12:22.436587+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787721149.286895, "ts_iso": "2026-08-26T05:12:29.286897+00:00", "symbol": "AAVEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787721156.8223727, "ts_iso": "2026-08-26T05:12:36.822373+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-54.7<130门槛", "score": -54.7, "layer": 1}
+{"ts": 1787721166.965214, "ts_iso": "2026-08-26T05:12:46.965215+00:00", "symbol": "XAUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-83.2<130门槛", "score": -83.2, "layer": 1}
+{"ts": 1787721174.9239678, "ts_iso": "2026-08-26T05:12:54.923969+00:00", "symbol": "AMDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-65.0<130门槛", "score": -65.0, "layer": 1}
+{"ts": 1787721187.7806308, "ts_iso": "2026-08-26T05:13:07.780633+00:00", "symbol": "ENAUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 31.6, "layer": 0}
+{"ts": 1787721199.2951844, "ts_iso": "2026-08-26T05:13:19.295186+00:00", "symbol": "TACUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787721211.637753, "ts_iso": "2026-08-26T05:13:31.637755+00:00", "symbol": "INTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-95.0<130门槛", "score": -95.0, "layer": 1}
+{"ts": 1787721221.5484138, "ts_iso": "2026-08-26T05:13:41.548415+00:00", "symbol": "KORUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-117.0<130门槛", "score": -117.0, "layer": 1}
+{"ts": 1787721278.8334925, "ts_iso": "2026-08-26T05:14:38.833497+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787721288.513274, "ts_iso": "2026-08-26T05:14:48.513275+00:00", "symbol": "AAVEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787721297.7952461, "ts_iso": "2026-08-26T05:14:57.795248+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-55.7<130门槛", "score": -55.7, "layer": 1}
+{"ts": 1787721310.4536605, "ts_iso": "2026-08-26T05:15:10.453662+00:00", "symbol": "XAUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-81.1<130门槛", "score": -81.1, "layer": 1}
+{"ts": 1787721323.6108086, "ts_iso": "2026-08-26T05:15:23.610810+00:00", "symbol": "AMDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-72.8<130门槛", "score": -72.8, "layer": 1}
+{"ts": 1787721334.4126384, "ts_iso": "2026-08-26T05:15:34.412641+00:00", "symbol": "ENAUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787721344.2236066, "ts_iso": "2026-08-26T05:15:44.223608+00:00", "symbol": "TACUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787721354.5961015, "ts_iso": "2026-08-26T05:15:54.596103+00:00", "symbol": "INTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-95.0<130门槛", "score": -95.0, "layer": 1}
+{"ts": 1787721363.7791831, "ts_iso": "2026-08-26T05:16:03.779185+00:00", "symbol": "KORUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-117.0<130门槛", "score": -117.0, "layer": 1}
+{"ts": 1787724680.092434, "ts_iso": "2026-08-26T06:11:20.092436+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 18.9, "layer": 0}
+{"ts": 1787724694.986568, "ts_iso": "2026-08-26T06:11:34.986570+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 16.1, "layer": 0}
+{"ts": 1787724710.402702, "ts_iso": "2026-08-26T06:11:50.402703+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=78.9<130门槛", "score": 78.9, "layer": 1}
+{"ts": 1787728279.209731, "ts_iso": "2026-08-26T07:11:19.209733+00:00", "symbol": "AAVEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787728288.432362, "ts_iso": "2026-08-26T07:11:28.432363+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-36.8<130门槛", "score": -36.8, "layer": 1}
+{"ts": 1787728298.0705929, "ts_iso": "2026-08-26T07:11:38.070594+00:00", "symbol": "XAUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-81.0<130门槛", "score": -81.0, "layer": 1}
+{"ts": 1787728306.0295966, "ts_iso": "2026-08-26T07:11:46.029598+00:00", "symbol": "1000XECUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787728314.4720125, "ts_iso": "2026-08-26T07:11:54.472014+00:00", "symbol": "AMDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-58.8<130门槛", "score": -58.8, "layer": 1}
+{"ts": 1787728322.5174456, "ts_iso": "2026-08-26T07:12:02.517448+00:00", "symbol": "TACUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787728339.7592824, "ts_iso": "2026-08-26T07:12:19.759286+00:00", "symbol": "AAVEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787728346.474016, "ts_iso": "2026-08-26T07:12:26.474018+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-40.0<130门槛", "score": -40.0, "layer": 1}
+{"ts": 1787728353.97242, "ts_iso": "2026-08-26T07:12:33.972422+00:00", "symbol": "XAUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-87.0<130门槛", "score": -87.0, "layer": 1}
+{"ts": 1787728361.1274722, "ts_iso": "2026-08-26T07:12:41.127475+00:00", "symbol": "1000XECUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787728367.8406308, "ts_iso": "2026-08-26T07:12:47.840633+00:00", "symbol": "AMDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-53.8<130门槛", "score": -53.8, "layer": 1}
+{"ts": 1787728373.938781, "ts_iso": "2026-08-26T07:12:53.938783+00:00", "symbol": "TACUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787728383.9992523, "ts_iso": "2026-08-26T07:13:03.999255+00:00", "symbol": "INTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-84.0<130门槛", "score": -84.0, "layer": 1}
+{"ts": 1787728392.1601274, "ts_iso": "2026-08-26T07:13:12.160130+00:00", "symbol": "KORUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-102.0<130门槛", "score": -102.0, "layer": 1}
+{"ts": 1787728400.2985694, "ts_iso": "2026-08-26T07:13:20.298572+00:00", "symbol": "JTOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 112.0, "layer": 0}
+{"ts": 1787728408.235432, "ts_iso": "2026-08-26T07:13:28.235435+00:00", "symbol": "SNDKUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 BULL_TREND×SHORT", "score": -15.0, "layer": 0}
+{"ts": 1787728416.2030542, "ts_iso": "2026-08-26T07:13:36.203056+00:00", "symbol": "NBISUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787728434.327515, "ts_iso": "2026-08-26T07:13:54.327517+00:00", "symbol": "AAVEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787728441.4938664, "ts_iso": "2026-08-26T07:14:01.493868+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-35.8<130门槛", "score": -35.8, "layer": 1}
+{"ts": 1787728452.646637, "ts_iso": "2026-08-26T07:14:12.646638+00:00", "symbol": "XAUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-83.0<130门槛", "score": -83.0, "layer": 1}
+{"ts": 1787728458.91857, "ts_iso": "2026-08-26T07:14:18.918572+00:00", "symbol": "1000XECUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787728465.2621398, "ts_iso": "2026-08-26T07:14:25.262141+00:00", "symbol": "AMDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-57.8<130门槛", "score": -57.8, "layer": 1}
+{"ts": 1787728471.4852207, "ts_iso": "2026-08-26T07:14:31.485222+00:00", "symbol": "TACUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787728477.722403, "ts_iso": "2026-08-26T07:14:37.722405+00:00", "symbol": "INTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-76.0<130门槛", "score": -76.0, "layer": 1}
+{"ts": 1787728483.9968653, "ts_iso": "2026-08-26T07:14:43.996867+00:00", "symbol": "KORUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-94.0<130门槛", "score": -94.0, "layer": 1}
+{"ts": 1787728490.1812396, "ts_iso": "2026-08-26T07:14:50.181242+00:00", "symbol": "JTOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 114.0, "layer": 0}
+{"ts": 1787728496.2652376, "ts_iso": "2026-08-26T07:14:56.265239+00:00", "symbol": "SNDKUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 BULL_TREND×SHORT", "score": -17.0, "layer": 0}
+{"ts": 1787728503.0978467, "ts_iso": "2026-08-26T07:15:03.097848+00:00", "symbol": "NBISUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787728512.6131182, "ts_iso": "2026-08-26T07:15:12.613120+00:00", "symbol": "BZUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -30.0, "layer": 0}
+{"ts": 1787728520.8354852, "ts_iso": "2026-08-26T07:15:20.835487+00:00", "symbol": "SPCXUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": -30.0, "layer": 0}
+{"ts": 1787728529.462307, "ts_iso": "2026-08-26T07:15:29.462309+00:00", "symbol": "SOXSUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-72.8<130门槛", "score": -72.8, "layer": 1}
+{"ts": 1787728538.0252776, "ts_iso": "2026-08-26T07:15:38.025279+00:00", "symbol": "GOOGLUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-86.0<130门槛", "score": -86.0, "layer": 1}
+{"ts": 1787728545.96195, "ts_iso": "2026-08-26T07:15:45.961951+00:00", "symbol": "AAPLUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-47.0<130门槛", "score": -47.0, "layer": 1}
+{"ts": 1787728554.2447538, "ts_iso": "2026-08-26T07:15:54.244755+00:00", "symbol": "METAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-50.0<130门槛", "score": -50.0, "layer": 1}
+{"ts": 1787728563.1036682, "ts_iso": "2026-08-26T07:16:03.103670+00:00", "symbol": "SPYUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-66.0<130门槛", "score": -66.0, "layer": 1}
+{"ts": 1787728571.380449, "ts_iso": "2026-08-26T07:16:11.380451+00:00", "symbol": "MSFTUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": -51.7, "layer": 0}
+{"ts": 1787728579.684832, "ts_iso": "2026-08-26T07:16:19.684833+00:00", "symbol": "SAMSUNGUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-22.8<130门槛", "score": -22.799999999999997, "layer": 1}
+{"ts": 1787728588.0100367, "ts_iso": "2026-08-26T07:16:28.010038+00:00", "symbol": "BANKUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787731879.5707922, "ts_iso": "2026-08-26T08:11:19.570794+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 40.9, "layer": 0}
+{"ts": 1787731893.534582, "ts_iso": "2026-08-26T08:11:33.534584+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 43.4, "layer": 0}
+{"ts": 1787731906.2782545, "ts_iso": "2026-08-26T08:11:46.278256+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=78.9<130门槛", "score": 78.9, "layer": 1}
+{"ts": 1787731916.8878675, "ts_iso": "2026-08-26T08:11:56.887869+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 39.9, "layer": 0}
+{"ts": 1787731944.0887892, "ts_iso": "2026-08-26T08:12:24.088791+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 41.7, "layer": 0}
+{"ts": 1787731952.5362706, "ts_iso": "2026-08-26T08:12:32.536272+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 42.7, "layer": 0}
+{"ts": 1787731978.4379754, "ts_iso": "2026-08-26T08:12:58.437977+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 40.9, "layer": 0}
+{"ts": 1787731987.4257264, "ts_iso": "2026-08-26T08:13:07.425728+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 43.4, "layer": 0}
+{"ts": 1787731998.3811877, "ts_iso": "2026-08-26T08:13:18.381189+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=78.9<130门槛", "score": 78.9, "layer": 1}
+{"ts": 1787732006.5193362, "ts_iso": "2026-08-26T08:13:26.519338+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 38.1, "layer": 0}
+{"ts": 1787732016.4887457, "ts_iso": "2026-08-26T08:13:36.488747+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 13.3, "layer": 0}
+{"ts": 1787732026.399448, "ts_iso": "2026-08-26T08:13:46.399450+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 98.0, "layer": 0}
+{"ts": 1787732034.1778543, "ts_iso": "2026-08-26T08:13:54.177856+00:00", "symbol": "TAOUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787732042.1184113, "ts_iso": "2026-08-26T08:14:02.118413+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787732050.0183048, "ts_iso": "2026-08-26T08:14:10.018306+00:00", "symbol": "SYNUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787732059.1951478, "ts_iso": "2026-08-26T08:14:19.195150+00:00", "symbol": "NVDAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 53.0, "layer": 0}
+{"ts": 1787732068.161229, "ts_iso": "2026-08-26T08:14:28.161230+00:00", "symbol": "QQQUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -107.2, "layer": 0}
+{"ts": 1787732077.2327619, "ts_iso": "2026-08-26T08:14:37.232763+00:00", "symbol": "CLUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -22.700000000000003, "layer": 0}
+{"ts": 1787732084.9980447, "ts_iso": "2026-08-26T08:14:44.998051+00:00", "symbol": "CRCLUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787732107.0781188, "ts_iso": "2026-08-26T08:15:07.078120+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 40.9, "layer": 0}
+{"ts": 1787732115.3144143, "ts_iso": "2026-08-26T08:15:15.314416+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 42.7, "layer": 0}
+{"ts": 1787732126.1423156, "ts_iso": "2026-08-26T08:15:26.142317+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=78.9<130门槛", "score": 78.9, "layer": 1}
+{"ts": 1787732135.1055675, "ts_iso": "2026-08-26T08:15:35.105569+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 38.1, "layer": 0}
+{"ts": 1787732145.1138046, "ts_iso": "2026-08-26T08:15:45.113807+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 13.6, "layer": 0}
+{"ts": 1787732152.3300304, "ts_iso": "2026-08-26T08:15:52.330032+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787732159.0057826, "ts_iso": "2026-08-26T08:15:59.005784+00:00", "symbol": "TAOUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787732165.4316971, "ts_iso": "2026-08-26T08:16:05.431699+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787732171.6667886, "ts_iso": "2026-08-26T08:16:11.666790+00:00", "symbol": "SYNUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787732179.3078218, "ts_iso": "2026-08-26T08:16:19.307823+00:00", "symbol": "NVDAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -103.8, "layer": 0}
+{"ts": 1787732185.7505713, "ts_iso": "2026-08-26T08:16:25.750573+00:00", "symbol": "QQQUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -107.2, "layer": 0}
+{"ts": 1787732192.214323, "ts_iso": "2026-08-26T08:16:32.214324+00:00", "symbol": "CLUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -26.900000000000006, "layer": 0}
+{"ts": 1787732198.610194, "ts_iso": "2026-08-26T08:16:38.610195+00:00", "symbol": "CRCLUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787732208.0374374, "ts_iso": "2026-08-26T08:16:48.037439+00:00", "symbol": "ENAUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787735504.4397004, "ts_iso": "2026-08-26T09:11:44.439701+00:00", "symbol": "XRPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "score=6.8<130门槛", "score": 6.8, "layer": 1}
+{"ts": 1787735515.69941, "ts_iso": "2026-08-26T09:11:55.699412+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787735527.5354843, "ts_iso": "2026-08-26T09:12:07.535486+00:00", "symbol": "AAVEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787735537.8097835, "ts_iso": "2026-08-26T09:12:17.809785+00:00", "symbol": "NVDAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 53.0, "layer": 0}
+{"ts": 1787735561.986747, "ts_iso": "2026-08-26T09:12:41.986748+00:00", "symbol": "XRPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "score=25.8<130门槛", "score": 25.8, "layer": 1}
+{"ts": 1787735570.6489515, "ts_iso": "2026-08-26T09:12:50.648954+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787735596.9439473, "ts_iso": "2026-08-26T09:13:16.943949+00:00", "symbol": "XRPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "score=25.8<130门槛", "score": 25.8, "layer": 1}
+{"ts": 1787735606.7328894, "ts_iso": "2026-08-26T09:13:26.732891+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787735615.372318, "ts_iso": "2026-08-26T09:13:35.372319+00:00", "symbol": "AAVEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787735624.8955193, "ts_iso": "2026-08-26T09:13:44.895520+00:00", "symbol": "NVDAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -103.8, "layer": 0}
+{"ts": 1787735638.082728, "ts_iso": "2026-08-26T09:13:58.082729+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-35.6<130门槛", "score": -35.6, "layer": 1}
+{"ts": 1787735648.5261474, "ts_iso": "2026-08-26T09:14:08.526149+00:00", "symbol": "XAUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-88.0<130门槛", "score": -88.0, "layer": 1}
+{"ts": 1787735658.957569, "ts_iso": "2026-08-26T09:14:18.957571+00:00", "symbol": "CLUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -20.299999999999997, "layer": 0}
+{"ts": 1787735669.3306568, "ts_iso": "2026-08-26T09:14:29.330659+00:00", "symbol": "1000XECUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787739095.058333, "ts_iso": "2026-08-26T10:11:35.058336+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 30.5, "layer": 0}
+{"ts": 1787739110.6759481, "ts_iso": "2026-08-26T10:11:50.675950+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 35.1, "layer": 0}
+{"ts": 1787739126.399782, "ts_iso": "2026-08-26T10:12:06.399784+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=82.8<130门槛", "score": 82.8, "layer": 1}
+{"ts": 1787739138.5966737, "ts_iso": "2026-08-26T10:12:18.596676+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 28.2, "layer": 0}
+{"ts": 1787739160.7240276, "ts_iso": "2026-08-26T10:12:40.724030+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 32.1, "layer": 0}
+{"ts": 1787739170.5531392, "ts_iso": "2026-08-26T10:12:50.553142+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 34.4, "layer": 0}
+{"ts": 1787739194.202369, "ts_iso": "2026-08-26T10:13:14.202371+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 32.9, "layer": 0}
+{"ts": 1787739204.2671785, "ts_iso": "2026-08-26T10:13:24.267180+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 32.8, "layer": 0}
+{"ts": 1787739216.6877644, "ts_iso": "2026-08-26T10:13:36.687766+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=92.6<130门槛", "score": 92.6, "layer": 1}
+{"ts": 1787739226.7833421, "ts_iso": "2026-08-26T10:13:46.783344+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 28.2, "layer": 0}
+{"ts": 1787739241.3511147, "ts_iso": "2026-08-26T10:14:01.351122+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 106.1, "layer": 0}
+{"ts": 1787739251.257283, "ts_iso": "2026-08-26T10:14:11.257285+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787739259.1624951, "ts_iso": "2026-08-26T10:14:19.162497+00:00", "symbol": "TAOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787739267.7230415, "ts_iso": "2026-08-26T10:14:27.723043+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787739290.5366657, "ts_iso": "2026-08-26T10:14:50.536667+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 26.5, "layer": 0}
+{"ts": 1787739298.727379, "ts_iso": "2026-08-26T10:14:58.727381+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 38.1, "layer": 0}
+{"ts": 1787739310.5333235, "ts_iso": "2026-08-26T10:15:10.533325+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=73.9<130门槛", "score": 73.9, "layer": 1}
+{"ts": 1787739318.9067707, "ts_iso": "2026-08-26T10:15:18.906772+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 28.2, "layer": 0}
+{"ts": 1787739327.5593793, "ts_iso": "2026-08-26T10:15:27.559382+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 99.8, "layer": 0}
+{"ts": 1787739333.7323563, "ts_iso": "2026-08-26T10:15:33.732358+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787739339.8524172, "ts_iso": "2026-08-26T10:15:39.852420+00:00", "symbol": "TAOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787739346.4506075, "ts_iso": "2026-08-26T10:15:46.450609+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787739356.617957, "ts_iso": "2026-08-26T10:15:56.617959+00:00", "symbol": "PENGUUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787739365.9591916, "ts_iso": "2026-08-26T10:16:05.959193+00:00", "symbol": "SYNUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787739395.8091228, "ts_iso": "2026-08-26T10:16:35.809124+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 28.1, "layer": 0}
+{"ts": 1787739404.360926, "ts_iso": "2026-08-26T10:16:44.360927+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 36.6, "layer": 0}
+{"ts": 1787739415.0582683, "ts_iso": "2026-08-26T10:16:55.058270+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=73.9<130门槛", "score": 73.9, "layer": 1}
+{"ts": 1787739423.4052236, "ts_iso": "2026-08-26T10:17:03.405225+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 29.1, "layer": 0}
+{"ts": 1787739431.6507328, "ts_iso": "2026-08-26T10:17:11.650734+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 99.8, "layer": 0}
+{"ts": 1787739438.2385426, "ts_iso": "2026-08-26T10:17:18.238544+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787739444.4981074, "ts_iso": "2026-08-26T10:17:24.498109+00:00", "symbol": "TAOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787739451.2562878, "ts_iso": "2026-08-26T10:17:31.256289+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787739457.825418, "ts_iso": "2026-08-26T10:17:37.825420+00:00", "symbol": "PENGUUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787739465.3783028, "ts_iso": "2026-08-26T10:17:45.378304+00:00", "symbol": "SYNUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787739476.7528446, "ts_iso": "2026-08-26T10:17:56.752846+00:00", "symbol": "NVDAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 60.0, "layer": 0}
+{"ts": 1787739484.8985643, "ts_iso": "2026-08-26T10:18:04.898566+00:00", "symbol": "QQQUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-40.0<130门槛", "score": -40.0, "layer": 1}
+{"ts": 1787739492.7602913, "ts_iso": "2026-08-26T10:18:12.760293+00:00", "symbol": "CLUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -36.400000000000006, "layer": 0}
+{"ts": 1787739500.6245496, "ts_iso": "2026-08-26T10:18:20.624551+00:00", "symbol": "CRCLUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787742703.9556665, "ts_iso": "2026-08-26T11:11:43.955668+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=75.6<130门槛", "score": 75.6, "layer": 1}
+{"ts": 1787742718.7833104, "ts_iso": "2026-08-26T11:11:58.783313+00:00", "symbol": "XRPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "score=23.0<130门槛", "score": 23.0, "layer": 1}
+{"ts": 1787746295.5268643, "ts_iso": "2026-08-26T12:11:35.526867+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 35.3, "layer": 0}
+{"ts": 1787746309.2753813, "ts_iso": "2026-08-26T12:11:49.275384+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 40.8, "layer": 0}
+{"ts": 1787746317.841316, "ts_iso": "2026-08-26T12:11:57.841318+00:00", "symbol": "LTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787746325.8278055, "ts_iso": "2026-08-26T12:12:05.827807+00:00", "symbol": "SYNUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787746335.0472243, "ts_iso": "2026-08-26T12:12:15.047227+00:00", "symbol": "NVDAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -106.8, "layer": 0}
+{"ts": 1787746358.2407362, "ts_iso": "2026-08-26T12:12:38.240739+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 36.1, "layer": 0}
+{"ts": 1787746366.5500612, "ts_iso": "2026-08-26T12:12:46.550063+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 41.7, "layer": 0}
+{"ts": 1787746372.6671963, "ts_iso": "2026-08-26T12:12:52.667198+00:00", "symbol": "LTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787746392.9157212, "ts_iso": "2026-08-26T12:13:12.915723+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 35.3, "layer": 0}
+{"ts": 1787746401.935958, "ts_iso": "2026-08-26T12:13:21.935961+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 45.3, "layer": 0}
+{"ts": 1787746408.2337768, "ts_iso": "2026-08-26T12:13:28.233779+00:00", "symbol": "LTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787746414.591051, "ts_iso": "2026-08-26T12:13:34.591052+00:00", "symbol": "SYNUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787746425.0946162, "ts_iso": "2026-08-26T12:13:45.094619+00:00", "symbol": "NVDAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -106.8, "layer": 0}
+{"ts": 1787746443.09947, "ts_iso": "2026-08-26T12:14:03.099472+00:00", "symbol": "QQQUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-48.0<130门槛", "score": -48.0, "layer": 1}
+{"ts": 1787746452.443023, "ts_iso": "2026-08-26T12:14:12.443024+00:00", "symbol": "INTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-73.5<130门槛", "score": -73.5, "layer": 1}
+{"ts": 1787746462.9963014, "ts_iso": "2026-08-26T12:14:22.996304+00:00", "symbol": "AVAXUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787750874.5499916, "ts_iso": "2026-08-26T13:27:54.549994+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787750884.6080782, "ts_iso": "2026-08-26T13:28:04.608081+00:00", "symbol": "AAVEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787754136.8444088, "ts_iso": "2026-08-26T14:22:16.844411+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 13.7, "layer": 0}
+{"ts": 1787754153.1867714, "ts_iso": "2026-08-26T14:22:33.186774+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 29.1, "layer": 0}
+{"ts": 1787757728.8463387, "ts_iso": "2026-08-26T15:22:08.846342+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 21.8, "layer": 0}
+{"ts": 1787761345.1395571, "ts_iso": "2026-08-26T16:22:25.139560+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 8.1, "layer": 0}
+{"ts": 1787761361.1226943, "ts_iso": "2026-08-26T16:22:41.122697+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 6.2, "layer": 0}
+{"ts": 1787765128.7300997, "ts_iso": "2026-08-26T17:25:28.730102+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 27.8, "layer": 0}
+{"ts": 1787765142.8502088, "ts_iso": "2026-08-26T17:25:42.850210+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=81.9<130门槛", "score": 81.9, "layer": 1}
+{"ts": 1787768760.4656851, "ts_iso": "2026-08-26T18:26:00.465687+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 10.5, "layer": 0}
+{"ts": 1787772348.9215462, "ts_iso": "2026-08-26T19:25:48.921548+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 27.3, "layer": 0}
+{"ts": 1787772366.7452095, "ts_iso": "2026-08-26T19:26:06.745210+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=85.7<130门槛", "score": 85.7, "layer": 1}
+{"ts": 1787775953.1319854, "ts_iso": "2026-08-26T20:25:53.131988+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 29.6, "layer": 0}
+{"ts": 1787775966.6373954, "ts_iso": "2026-08-26T20:26:06.637397+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 22.0, "layer": 0}
+{"ts": 1787779759.768338, "ts_iso": "2026-08-26T21:29:19.768339+00:00", "symbol": "XRPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "score=-7.7<130门槛", "score": -7.7, "layer": 1}
+{"ts": 1787779768.6838996, "ts_iso": "2026-08-26T21:29:28.683901+00:00", "symbol": "NVDAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -109.8, "layer": 0}
+{"ts": 1787779776.7202344, "ts_iso": "2026-08-26T21:29:36.720236+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-45.9<130门槛", "score": -45.9, "layer": 1}
+{"ts": 1787783384.586701, "ts_iso": "2026-08-26T22:29:44.586702+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 55.3, "layer": 0}
+{"ts": 1787783395.4934006, "ts_iso": "2026-08-26T22:29:55.493403+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 20.4, "layer": 0}
+{"ts": 1787787081.25977, "ts_iso": "2026-08-26T23:31:21.259771+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 27.7, "layer": 0}
+{"ts": 1787787215.2249274, "ts_iso": "2026-08-26T23:33:35.224930+00:00", "symbol": "XRPUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 BEAR_TREND×LONG", "score": -1.4, "layer": 0}
+{"ts": 1787787228.8026874, "ts_iso": "2026-08-26T23:33:48.802689+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-51.6<130门槛", "score": -51.6, "layer": 1}
+{"ts": 1787790666.8748467, "ts_iso": "2026-08-27T00:31:06.874849+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 32.0, "layer": 0}
+{"ts": 1787790680.3778553, "ts_iso": "2026-08-27T00:31:20.377857+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 16.6, "layer": 0}
+{"ts": 1787797866.6187491, "ts_iso": "2026-08-27T02:31:06.618751+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 55.3, "layer": 0}
+{"ts": 1787797879.0245023, "ts_iso": "2026-08-27T02:31:19.024504+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 19.6, "layer": 0}
+{"ts": 1787801471.4429448, "ts_iso": "2026-08-27T03:31:11.442946+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 52.3, "layer": 0}
+{"ts": 1787805071.5094337, "ts_iso": "2026-08-27T04:31:11.509435+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 20.8, "layer": 0}
+{"ts": 1787805084.6534228, "ts_iso": "2026-08-27T04:31:24.653426+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 16.6, "layer": 0}
+{"ts": 1787812284.5292783, "ts_iso": "2026-08-27T06:31:24.529280+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 21.4, "layer": 0}
+{"ts": 1787815890.181364, "ts_iso": "2026-08-27T07:31:30.181366+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 78.9, "layer": 0}
+{"ts": 1787815907.4215043, "ts_iso": "2026-08-27T07:31:47.421505+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=117.6<130门槛", "score": 117.6, "layer": 1}
+{"ts": 1787823100.783259, "ts_iso": "2026-08-27T09:31:40.783261+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 36.1, "layer": 0}
+{"ts": 1787826683.9575555, "ts_iso": "2026-08-27T10:31:23.957558+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 55.3, "layer": 0}
+{"ts": 1787826698.4210124, "ts_iso": "2026-08-27T10:31:38.421014+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 31.2, "layer": 0}
+{"ts": 1787830291.5903075, "ts_iso": "2026-08-27T11:31:31.590311+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 50.5, "layer": 0}
+{"ts": 1787833896.2089558, "ts_iso": "2026-08-27T12:31:36.208959+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 25.5, "layer": 0}
+{"ts": 1787833914.816532, "ts_iso": "2026-08-27T12:31:54.816534+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=70.6<130门槛", "score": 70.6, "layer": 1}
+{"ts": 1787837596.7718174, "ts_iso": "2026-08-27T13:33:16.771819+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 46.9, "layer": 0}
+{"ts": 1787841184.312705, "ts_iso": "2026-08-27T14:33:04.312717+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 12.5, "layer": 0}
+{"ts": 1787841196.6539974, "ts_iso": "2026-08-27T14:33:16.653999+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 34.5, "layer": 0}
+{"ts": 1787841205.6382735, "ts_iso": "2026-08-27T14:33:25.638276+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 3.7, "layer": 0}
+{"ts": 1787844837.5751407, "ts_iso": "2026-08-27T15:33:57.575143+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 17.2, "layer": 0}
+{"ts": 1787844850.2645757, "ts_iso": "2026-08-27T15:34:10.264577+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=112.5<130门槛", "score": 112.5, "layer": 1}
+{"ts": 1787848426.9453015, "ts_iso": "2026-08-27T16:33:46.945304+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 33.7, "layer": 0}
+{"ts": 1787848438.8200045, "ts_iso": "2026-08-27T16:33:58.820006+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=117.5<130门槛", "score": 117.5, "layer": 1}
+{"ts": 1787848448.3606849, "ts_iso": "2026-08-27T16:34:08.360688+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 43.3, "layer": 0}
+{"ts": 1787852023.1966763, "ts_iso": "2026-08-27T17:33:43.196678+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 12.7, "layer": 0}
+{"ts": 1787852036.219834, "ts_iso": "2026-08-27T17:33:56.219836+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=112.0<130门槛", "score": 112.0, "layer": 1}
+{"ts": 1787856018.045185, "ts_iso": "2026-08-27T18:40:18.045187+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 21.0, "layer": 0}
+{"ts": 1787856034.7104585, "ts_iso": "2026-08-27T18:40:34.710460+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=104.4<130门槛", "score": 104.4, "layer": 1}
+{"ts": 1787859645.530652, "ts_iso": "2026-08-27T19:40:45.530654+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 30.7, "layer": 0}
+{"ts": 1787859659.641362, "ts_iso": "2026-08-27T19:40:59.641363+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=112.1<130门槛", "score": 112.1, "layer": 1}
+{"ts": 1787863241.5823991, "ts_iso": "2026-08-27T20:40:41.582401+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=93.4<130门槛", "score": 93.4, "layer": 1}
+{"ts": 1787863250.8649912, "ts_iso": "2026-08-27T20:40:50.864994+00:00", "symbol": "LTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787863259.194227, "ts_iso": "2026-08-27T20:40:59.194229+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787866849.263618, "ts_iso": "2026-08-27T21:40:49.263620+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 26.5, "layer": 0}
+{"ts": 1787866861.874214, "ts_iso": "2026-08-27T21:41:01.874216+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 41.5, "layer": 0}
+{"ts": 1787870474.2712858, "ts_iso": "2026-08-27T22:41:14.271287+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "WATCH", "reason": "score=132.9进入WATCH区(130-150)", "score": 132.9, "layer": 1}
+{"ts": 1787874041.1227822, "ts_iso": "2026-08-27T23:40:41.122784+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 20.9, "layer": 0}
+{"ts": 1787874057.628194, "ts_iso": "2026-08-27T23:40:57.628197+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 33.4, "layer": 0}
+{"ts": 1787877650.583812, "ts_iso": "2026-08-28T00:40:50.583814+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=45.2<130门槛", "score": 45.2, "layer": 1}
+{"ts": 1787877659.241018, "ts_iso": "2026-08-28T00:40:59.241019+00:00", "symbol": "TAOUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787877667.7922862, "ts_iso": "2026-08-28T00:41:07.792288+00:00", "symbol": "PENGUUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787881261.8326278, "ts_iso": "2026-08-28T01:41:01.832629+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 29.8, "layer": 0}
+{"ts": 1787881276.1735342, "ts_iso": "2026-08-28T01:41:16.173535+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=94.8<130门槛", "score": 94.8, "layer": 1}
+{"ts": 1787884844.1799521, "ts_iso": "2026-08-28T02:40:44.179954+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 40.2, "layer": 0}
+{"ts": 1787884857.6368098, "ts_iso": "2026-08-28T02:40:57.636811+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=83.6<130门槛", "score": 83.6, "layer": 1}
+{"ts": 1787892056.5854316, "ts_iso": "2026-08-28T04:40:56.585435+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 42.9, "layer": 0}
+{"ts": 1787892072.1125703, "ts_iso": "2026-08-28T04:41:12.112572+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=126.4<130门槛", "score": 126.4, "layer": 1}
+{"ts": 1787895641.7946353, "ts_iso": "2026-08-28T05:40:41.794637+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 24.1, "layer": 0}
+{"ts": 1787895652.8157809, "ts_iso": "2026-08-28T05:40:52.815782+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=105.5<130门槛", "score": 105.5, "layer": 1}
+{"ts": 1787895663.000723, "ts_iso": "2026-08-28T05:41:03.000725+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=88.6<130门槛", "score": 88.6, "layer": 1}
+{"ts": 1787899236.6280031, "ts_iso": "2026-08-28T06:40:36.628005+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=107.7<130门槛", "score": 107.7, "layer": 1}
+{"ts": 1787899246.5601714, "ts_iso": "2026-08-28T06:40:46.560173+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787899255.81811, "ts_iso": "2026-08-28T06:40:55.818111+00:00", "symbol": "ADAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=44.0<130门槛", "score": 44.0, "layer": 1}
+{"ts": 1787902829.1992798, "ts_iso": "2026-08-28T07:40:29.199282+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 31.3, "layer": 0}
+{"ts": 1787902841.454904, "ts_iso": "2026-08-28T07:40:41.454906+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 58.2, "layer": 0}
+{"ts": 1787906474.7015853, "ts_iso": "2026-08-28T08:41:14.701587+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=87.4<130门槛", "score": 87.4, "layer": 1}
+{"ts": 1787906489.5589936, "ts_iso": "2026-08-28T08:41:29.558995+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787910056.6897736, "ts_iso": "2026-08-28T09:40:56.689776+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 32.1, "layer": 0}
+{"ts": 1787910069.0123253, "ts_iso": "2026-08-28T09:41:09.012328+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 54.6, "layer": 0}
+{"ts": 1787917227.2116358, "ts_iso": "2026-08-28T11:40:27.211637+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 63.1, "layer": 0}
+{"ts": 1787917235.2723336, "ts_iso": "2026-08-28T11:40:35.272336+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 90.3, "layer": 0}
+{"ts": 1787920850.0377436, "ts_iso": "2026-08-28T12:40:50.037745+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=65.4<130门槛", "score": 65.4, "layer": 1}
+{"ts": 1787920859.6305923, "ts_iso": "2026-08-28T12:40:59.630593+00:00", "symbol": "AAVEUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787924428.7191708, "ts_iso": "2026-08-28T13:40:28.719172+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 59.1, "layer": 0}
+{"ts": 1787924440.5309582, "ts_iso": "2026-08-28T13:40:40.530959+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787924449.3905342, "ts_iso": "2026-08-28T13:40:49.390536+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787928052.7422311, "ts_iso": "2026-08-28T14:40:52.742233+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787928064.7698689, "ts_iso": "2026-08-28T14:41:04.769887+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=72.8<130门槛", "score": 72.8, "layer": 1}
+{"ts": 1787928071.9044874, "ts_iso": "2026-08-28T14:41:11.904489+00:00", "symbol": "AAVEUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787928079.0036182, "ts_iso": "2026-08-28T14:41:19.003621+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787931644.5524795, "ts_iso": "2026-08-28T15:40:44.552482+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 39.1, "layer": 0}
+{"ts": 1787931656.3572996, "ts_iso": "2026-08-28T15:40:56.357301+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=85.0<130门槛", "score": 85.0, "layer": 1}
+{"ts": 1787931663.7376711, "ts_iso": "2026-08-28T15:41:03.737673+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787935270.7661312, "ts_iso": "2026-08-28T16:41:10.766133+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787938852.7911413, "ts_iso": "2026-08-28T17:40:52.791143+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 10.1, "layer": 0}
+{"ts": 1787938861.9997447, "ts_iso": "2026-08-28T17:41:01.999747+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787938870.7501934, "ts_iso": "2026-08-28T17:41:10.750195+00:00", "symbol": "XRPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1787946032.4546711, "ts_iso": "2026-08-28T19:40:32.454673+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=107.4<130门槛", "score": 107.4, "layer": 1}
+{"ts": 1787946042.8495078, "ts_iso": "2026-08-28T19:40:42.849509+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787949649.1296706, "ts_iso": "2026-08-28T20:40:49.129672+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787949662.0858858, "ts_iso": "2026-08-28T20:41:02.085887+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=127.5<130门槛", "score": 127.5, "layer": 1}
+{"ts": 1787949670.2189856, "ts_iso": "2026-08-28T20:41:10.218987+00:00", "symbol": "NVDAUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": -40.8, "layer": 0}
+{"ts": 1787949676.8137689, "ts_iso": "2026-08-28T20:41:16.813770+00:00", "symbol": "TACUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787953245.3146656, "ts_iso": "2026-08-28T21:40:45.314666+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 28.3, "layer": 0}
+{"ts": 1787953256.3803718, "ts_iso": "2026-08-28T21:40:56.380372+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=90.1<130门槛", "score": 90.1, "layer": 1}
+{"ts": 1787953263.0770094, "ts_iso": "2026-08-28T21:41:03.077010+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 0.0, "layer": 0}
+{"ts": 1787960436.9471092, "ts_iso": "2026-08-28T23:40:36.947110+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787960448.713968, "ts_iso": "2026-08-28T23:40:48.713969+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=73.4<130门槛", "score": 73.4, "layer": 1}
+{"ts": 1787960456.5806713, "ts_iso": "2026-08-28T23:40:56.580672+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 83.6, "layer": 0}
+{"ts": 1787967647.2600117, "ts_iso": "2026-08-29T01:40:47.260014+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 0.0, "layer": 0}
+{"ts": 1787967667.5121448, "ts_iso": "2026-08-29T01:41:07.512146+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=88.1<130门槛", "score": 88.1, "layer": 1}
+{"ts": 1787974833.398719, "ts_iso": "2026-08-29T03:40:33.398721+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 56.4, "layer": 0}
+{"ts": 1787974845.1859548, "ts_iso": "2026-08-29T03:40:45.185956+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=85.2<130门槛", "score": 85.2, "layer": 1}
+{"ts": 1787974851.3419569, "ts_iso": "2026-08-29T03:40:51.341958+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=93.4<130门槛", "score": 93.4, "layer": 1}
+{"ts": 1787978443.7398615, "ts_iso": "2026-08-29T04:40:43.739863+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=92.4<130门槛", "score": 92.4, "layer": 1}
+{"ts": 1787978451.3670418, "ts_iso": "2026-08-29T04:40:51.367043+00:00", "symbol": "XRPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "score=21.0<130门槛", "score": 21.0, "layer": 1}
+{"ts": 1787978458.1555471, "ts_iso": "2026-08-29T04:40:58.155548+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=58.6<130门槛", "score": 58.6, "layer": 1}
+{"ts": 1787978465.9098938, "ts_iso": "2026-08-29T04:41:05.909894+00:00", "symbol": "QQQUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-97.0<130门槛", "score": -97.0, "layer": 1}
+{"ts": 1787982022.5289924, "ts_iso": "2026-08-29T05:40:22.528994+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 52.6, "layer": 0}
+{"ts": 1787982045.916762, "ts_iso": "2026-08-29T05:40:45.916764+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=116.4<130门槛", "score": 116.4, "layer": 1}
+{"ts": 1787985617.111286, "ts_iso": "2026-08-29T06:40:17.111290+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 8.5, "layer": 0}
+{"ts": 1787985629.1429636, "ts_iso": "2026-08-29T06:40:29.142964+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=108.2<130门槛", "score": 108.2, "layer": 1}
+{"ts": 1787985639.7437608, "ts_iso": "2026-08-29T06:40:39.743762+00:00", "symbol": "PENGUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=41.0<130门槛", "score": 41.0, "layer": 1}
+{"ts": 1787989237.1935103, "ts_iso": "2026-08-29T07:40:37.193511+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 46.8, "layer": 0}
+{"ts": 1787992847.513058, "ts_iso": "2026-08-29T08:40:47.513059+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 25.4, "layer": 0}
+{"ts": 1787996441.5802884, "ts_iso": "2026-08-29T09:40:41.580290+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 48.0, "layer": 0}
+{"ts": 1788000046.9379628, "ts_iso": "2026-08-29T10:40:46.937964+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 11.2, "layer": 0}
+{"ts": 1788000057.9508882, "ts_iso": "2026-08-29T10:40:57.950889+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=111.0<130门槛", "score": 111.0, "layer": 1}
+{"ts": 1788003639.653594, "ts_iso": "2026-08-29T11:40:39.653596+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 32.3, "layer": 0}
+{"ts": 1788007248.71229, "ts_iso": "2026-08-29T12:40:48.712291+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 10.5, "layer": 0}
+{"ts": 1788010824.1432073, "ts_iso": "2026-08-29T13:40:24.143208+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 17.3, "layer": 0}
+{"ts": 1788010832.4476008, "ts_iso": "2026-08-29T13:40:32.447602+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=90.1<130门槛", "score": 90.1, "layer": 1}
+{"ts": 1788010839.5734372, "ts_iso": "2026-08-29T13:40:39.573438+00:00", "symbol": "XRPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "score=1.0<130门槛", "score": 1.0, "layer": 1}
+{"ts": 1788010846.8282259, "ts_iso": "2026-08-29T13:40:46.828226+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 95.0, "layer": 0}
+{"ts": 1788014447.5181973, "ts_iso": "2026-08-29T14:40:47.518199+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": -11.9, "layer": 0}
+{"ts": 1788018041.2017386, "ts_iso": "2026-08-29T15:40:41.201739+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 9.3, "layer": 0}
+{"ts": 1788018064.2899203, "ts_iso": "2026-08-29T15:41:04.289921+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=92.2<130门槛", "score": 92.2, "layer": 1}
+{"ts": 1788021647.9094784, "ts_iso": "2026-08-29T16:40:47.909480+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": -27.6, "layer": 0}
+{"ts": 1788025246.6603856, "ts_iso": "2026-08-29T17:40:46.660387+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 38.0, "layer": 0}
+{"ts": 1788028849.0035422, "ts_iso": "2026-08-29T18:40:49.003543+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": -8.0, "layer": 0}
+{"ts": 1788036068.8406932, "ts_iso": "2026-08-29T20:41:08.840694+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=117.2<130门槛", "score": 117.2, "layer": 1}
+{"ts": 1788036079.50263, "ts_iso": "2026-08-29T20:41:19.502631+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 106.0, "layer": 0}
+{"ts": 1788039657.4372725, "ts_iso": "2026-08-29T21:40:57.437274+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": -10.0, "layer": 0}
+{"ts": 1788043250.5926704, "ts_iso": "2026-08-29T22:40:50.592671+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 57.2, "layer": 0}
+{"ts": 1788043276.356879, "ts_iso": "2026-08-29T22:41:16.356880+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=88.0<130门槛", "score": 88.0, "layer": 1}
+{"ts": 1788046862.741421, "ts_iso": "2026-08-29T23:41:02.741423+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": -14.8, "layer": 0}
+{"ts": 1788046871.2527573, "ts_iso": "2026-08-29T23:41:11.252759+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=79.6<130门槛", "score": 79.6, "layer": 1}
+{"ts": 1788046879.7338283, "ts_iso": "2026-08-29T23:41:19.733829+00:00", "symbol": "XRPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "score=23.9<130门槛", "score": 23.9, "layer": 1}
+{"ts": 1788050459.545445, "ts_iso": "2026-08-30T00:40:59.545446+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 48.5, "layer": 0}
+{"ts": 1788050482.4743028, "ts_iso": "2026-08-30T00:41:22.474303+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=64.5<130门槛", "score": 64.5, "layer": 1}
+{"ts": 1788057805.2916532, "ts_iso": "2026-08-30T02:43:25.291654+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 45.3, "layer": 0}
+{"ts": 1788057828.6355326, "ts_iso": "2026-08-30T02:43:48.635534+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=60.8<130门槛", "score": 60.8, "layer": 1}
+{"ts": 1788061424.4166977, "ts_iso": "2026-08-30T03:43:44.416699+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 16.8, "layer": 0}
+{"ts": 1788061433.418314, "ts_iso": "2026-08-30T03:43:53.418315+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=74.5<130门槛", "score": 74.5, "layer": 1}
+{"ts": 1788065009.6284373, "ts_iso": "2026-08-30T04:43:29.628439+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 39.3, "layer": 0}
+{"ts": 1788068598.7600176, "ts_iso": "2026-08-30T05:43:18.760019+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 17.4, "layer": 0}
+{"ts": 1788068607.9618325, "ts_iso": "2026-08-30T05:43:27.961834+00:00", "symbol": "TAOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -2.0, "layer": 0}
+{"ts": 1788072210.5589397, "ts_iso": "2026-08-30T06:43:30.558941+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 42.7, "layer": 0}
+{"ts": 1788075817.264097, "ts_iso": "2026-08-30T07:43:37.264099+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 43.7, "layer": 0}
+{"ts": 1788079409.2034252, "ts_iso": "2026-08-30T08:43:29.203427+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 47.2, "layer": 0}
+{"ts": 1788079417.2237446, "ts_iso": "2026-08-30T08:43:37.223746+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": -10.8, "layer": 0}
+{"ts": 1788079423.987155, "ts_iso": "2026-08-30T08:43:43.987157+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=69.1<130门槛", "score": 69.1, "layer": 1}
+{"ts": 1788079430.8507369, "ts_iso": "2026-08-30T08:43:50.850739+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 49.1, "layer": 0}
+{"ts": 1788083017.6060627, "ts_iso": "2026-08-30T09:43:37.606064+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": -4.8, "layer": 0}
+{"ts": 1788093809.5222456, "ts_iso": "2026-08-30T12:43:29.522247+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 17.5, "layer": 0}
+{"ts": 1788093818.5386145, "ts_iso": "2026-08-30T12:43:38.538615+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=73.4<130门槛", "score": 73.4, "layer": 1}
+{"ts": 1788093828.5691576, "ts_iso": "2026-08-30T12:43:48.569159+00:00", "symbol": "PENGUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=62.0<130门槛", "score": 62.0, "layer": 1}
+{"ts": 1788104589.533688, "ts_iso": "2026-08-30T15:43:09.533690+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 62.2, "layer": 0}
+{"ts": 1788104603.4153252, "ts_iso": "2026-08-30T15:43:23.415327+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 22.1, "layer": 0}
+{"ts": 1788108216.9983761, "ts_iso": "2026-08-30T16:43:36.998378+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 4.5, "layer": 0}
+{"ts": 1788108227.4996037, "ts_iso": "2026-08-30T16:43:47.499605+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 22.1, "layer": 0}
+{"ts": 1788111808.78437, "ts_iso": "2026-08-30T17:43:28.784371+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 15.0, "layer": 0}
+{"ts": 1788119004.9609888, "ts_iso": "2026-08-30T19:43:24.960990+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 39.9, "layer": 0}
+{"ts": 1788126189.218944, "ts_iso": "2026-08-30T21:43:09.218945+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 28.1, "layer": 0}
+{"ts": 1788126202.5345876, "ts_iso": "2026-08-30T21:43:22.534589+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 30.5, "layer": 0}
+{"ts": 1788126213.1097527, "ts_iso": "2026-08-30T21:43:33.109754+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 82.8, "layer": 0}
+{"ts": 1788140601.204695, "ts_iso": "2026-08-31T01:43:21.204696+00:00", "symbol": "BTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=46.4<130门槛", "score": 46.4, "layer": 1}
+{"ts": 1788147819.037427, "ts_iso": "2026-08-31T03:43:39.037428+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 38.7, "layer": 0}
+{"ts": 1788147825.9717703, "ts_iso": "2026-08-31T03:43:45.971771+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=4.8<130门槛", "score": 4.8, "layer": 1}
+{"ts": 1788147833.5608652, "ts_iso": "2026-08-31T03:43:53.560866+00:00", "symbol": "QQQUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-50.0<130门槛", "score": -50.0, "layer": 1}
+{"ts": 1788147840.6048043, "ts_iso": "2026-08-31T03:44:00.604806+00:00", "symbol": "JTOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 87.1, "layer": 0}
+{"ts": 1788151419.7451696, "ts_iso": "2026-08-31T04:43:39.745171+00:00", "symbol": "BTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=56.0<130门槛", "score": 56.0, "layer": 1}
+{"ts": 1788151428.3848798, "ts_iso": "2026-08-31T04:43:48.384881+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 41.5, "layer": 0}
+{"ts": 1788151435.4432006, "ts_iso": "2026-08-31T04:43:55.443202+00:00", "symbol": "SYNUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 78.8, "layer": 0}
+{"ts": 1788158629.624219, "ts_iso": "2026-08-31T06:43:49.624220+00:00", "symbol": "BTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=34.8<130门槛", "score": 34.8, "layer": 1}
+{"ts": 1788158640.5418992, "ts_iso": "2026-08-31T06:44:00.541910+00:00", "symbol": "BNBUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": -23.5, "layer": 0}
+{"ts": 1788169435.0889072, "ts_iso": "2026-08-31T09:43:55.088908+00:00", "symbol": "PENGUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=64.0<130门槛", "score": 64.0, "layer": 1}
+{"ts": 1788169443.904894, "ts_iso": "2026-08-31T09:44:03.904895+00:00", "symbol": "QQQUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-54.0<130门槛", "score": -54.0, "layer": 1}
+{"ts": 1788169451.7612698, "ts_iso": "2026-08-31T09:44:11.761272+00:00", "symbol": "1000XECUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=50.2<130门槛", "score": 50.2, "layer": 1}
+{"ts": 1788173018.7696092, "ts_iso": "2026-08-31T10:43:38.769610+00:00", "symbol": "ETHUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=13.0<130门槛", "score": 13.0, "layer": 1}
+{"ts": 1788173032.1775162, "ts_iso": "2026-08-31T10:43:52.177518+00:00", "symbol": "TAOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 8.0, "layer": 0}
+{"ts": 1788180255.0166335, "ts_iso": "2026-08-31T12:44:15.016636+00:00", "symbol": "ETHUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=9.0<130门槛", "score": 9.0, "layer": 1}
+{"ts": 1788194633.2237942, "ts_iso": "2026-08-31T16:43:53.223796+00:00", "symbol": "ETHUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=11.0<130门槛", "score": 11.0, "layer": 1}
+{"ts": 1788194642.1250877, "ts_iso": "2026-08-31T16:44:02.125089+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 14.5, "layer": 0}
+{"ts": 1788194649.6848562, "ts_iso": "2026-08-31T16:44:09.684858+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 105.2, "layer": 0}
+{"ts": 1788198210.389613, "ts_iso": "2026-08-31T17:43:30.389616+00:00", "symbol": "BTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=20.0<130门槛", "score": 20.0, "layer": 1}
+{"ts": 1788198222.147463, "ts_iso": "2026-08-31T17:43:42.147465+00:00", "symbol": "BNBUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=44.6<130门槛", "score": 44.6, "layer": 1}
+{"ts": 1788198231.3386934, "ts_iso": "2026-08-31T17:43:51.338694+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=51.4<130门槛", "score": 51.4, "layer": 1}
+{"ts": 1788201833.0122259, "ts_iso": "2026-08-31T18:43:53.012227+00:00", "symbol": "ETHUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=14.0<130门槛", "score": 14.0, "layer": 1}
+{"ts": 1788201844.1872003, "ts_iso": "2026-08-31T18:44:04.187202+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 25.7, "layer": 0}
+{"ts": 1788201852.9789393, "ts_iso": "2026-08-31T18:44:12.978941+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 3.7, "layer": 0}
+{"ts": 1788205439.9789915, "ts_iso": "2026-08-31T19:43:59.978992+00:00", "symbol": "BTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=30.4<130门槛", "score": 30.4, "layer": 1}
+{"ts": 1788205451.5552223, "ts_iso": "2026-08-31T19:44:11.555223+00:00", "symbol": "BNBUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=52.7<130门槛", "score": 52.7, "layer": 1}
+{"ts": 1788212616.1003757, "ts_iso": "2026-08-31T21:43:36.100377+00:00", "symbol": "BTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=38.0<130门槛", "score": 38.0, "layer": 1}
+{"ts": 1788212623.668128, "ts_iso": "2026-08-31T21:43:43.668129+00:00", "symbol": "BNBUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=59.7<130门槛", "score": 59.7, "layer": 1}
+{"ts": 1788212633.332663, "ts_iso": "2026-08-31T21:43:53.332664+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=67.4<130门槛", "score": 67.4, "layer": 1}
+{"ts": 1788212640.430755, "ts_iso": "2026-08-31T21:44:00.430756+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -1.8, "layer": 0}
+{"ts": 1788216216.8665853, "ts_iso": "2026-08-31T22:43:36.866587+00:00", "symbol": "ETHUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=25.0<130门槛", "score": 25.0, "layer": 1}
+{"ts": 1788216227.7366157, "ts_iso": "2026-08-31T22:43:47.736617+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 20.4, "layer": 0}
+{"ts": 1788216236.5492644, "ts_iso": "2026-08-31T22:43:56.549266+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 8.8, "layer": 0}
+{"ts": 1788219845.1351097, "ts_iso": "2026-08-31T23:44:05.135110+00:00", "symbol": "BTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=34.8<130门槛", "score": 34.8, "layer": 1}
+{"ts": 1788219854.7496536, "ts_iso": "2026-08-31T23:44:14.749655+00:00", "symbol": "BNBUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=54.5<130门槛", "score": 54.5, "layer": 1}
+{"ts": 1788219862.6739151, "ts_iso": "2026-08-31T23:44:22.673916+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=55.2<130门槛", "score": 55.2, "layer": 1}
+{"ts": 1788223440.3504894, "ts_iso": "2026-09-01T00:44:00.350490+00:00", "symbol": "ETHUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=20.0<130门槛", "score": 20.0, "layer": 1}
+{"ts": 1788223450.4089377, "ts_iso": "2026-09-01T00:44:10.408939+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": -23.1, "layer": 0}
+{"ts": 1788223458.3302882, "ts_iso": "2026-09-01T00:44:18.330289+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 5.7, "layer": 0}
+{"ts": 1788227168.1978476, "ts_iso": "2026-09-01T01:46:08.197848+00:00", "symbol": "BTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=17.2<130门槛", "score": 17.2, "layer": 1}
+{"ts": 1788227176.7962408, "ts_iso": "2026-09-01T01:46:16.796242+00:00", "symbol": "BNBUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=41.7<130门槛", "score": 41.7, "layer": 1}
+{"ts": 1788227183.7456577, "ts_iso": "2026-09-01T01:46:23.745658+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=46.2<130门槛", "score": 46.2, "layer": 1}
+{"ts": 1788235513.6539235, "ts_iso": "2026-09-01T04:05:13.653925+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=43.9<130门槛", "score": 43.9, "layer": 1}
+{"ts": 1788235529.6798337, "ts_iso": "2026-09-01T04:05:29.679835+00:00", "symbol": "ADAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=19.9<130门槛", "score": 19.9, "layer": 1}
+{"ts": 1788242729.0713978, "ts_iso": "2026-09-01T06:05:29.071401+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=46.4<130门槛", "score": 46.4, "layer": 1}
+{"ts": 1788242736.1852305, "ts_iso": "2026-09-01T06:05:36.185231+00:00", "symbol": "ADAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=21.3<130门槛", "score": 21.3, "layer": 1}
+{"ts": 1788242743.3313465, "ts_iso": "2026-09-01T06:05:43.331347+00:00", "symbol": "TAOUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1788242754.1451468, "ts_iso": "2026-09-01T06:05:54.145148+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=30.9<130门槛", "score": 30.9, "layer": 1}
+{"ts": 1788246507.6306865, "ts_iso": "2026-09-01T07:08:27.630687+00:00", "symbol": "ETHUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=18.0<130门槛", "score": 18.0, "layer": 1}
+{"ts": 1788246521.7431884, "ts_iso": "2026-09-01T07:08:41.743190+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": -21.4, "layer": 0}
+{"ts": 1788250104.2485533, "ts_iso": "2026-09-01T08:08:24.248554+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=57.9<130门槛", "score": 57.9, "layer": 1}
+{"ts": 1788250112.0929198, "ts_iso": "2026-09-01T08:08:32.092921+00:00", "symbol": "ADAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=41.1<130门槛", "score": 41.1, "layer": 1}
+{"ts": 1788250120.464847, "ts_iso": "2026-09-01T08:08:40.464849+00:00", "symbol": "TAOUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=28.0<130门槛", "score": 28.0, "layer": 1}
+{"ts": 1788257268.101794, "ts_iso": "2026-09-01T10:07:48.101796+00:00", "symbol": "BTCUSDT", "signal_dir": "AUTO", "decision": "SKIP", "reason": "Layer1评分失败: brahma_core_entry not available", "score": 0, "layer": 1}
+{"ts": 1788257273.103648, "ts_iso": "2026-09-01T10:07:53.103650+00:00", "symbol": "BNBUSDT", "signal_dir": "AUTO", "decision": "SKIP", "reason": "Layer1评分失败: brahma_core_entry not available", "score": 0, "layer": 1}
+{"ts": 1788257277.5004823, "ts_iso": "2026-09-01T10:07:57.500484+00:00", "symbol": "XRPUSDT", "signal_dir": "AUTO", "decision": "SKIP", "reason": "Layer1评分失败: brahma_core_entry not available", "score": 0, "layer": 1}
+{"ts": 1788257281.696721, "ts_iso": "2026-09-01T10:08:01.696724+00:00", "symbol": "ADAUSDT", "signal_dir": "AUTO", "decision": "SKIP", "reason": "Layer1评分失败: brahma_core_entry not available", "score": 0, "layer": 1}
+{"ts": 1788257286.3411512, "ts_iso": "2026-09-01T10:08:06.341153+00:00", "symbol": "TAOUSDT", "signal_dir": "AUTO", "decision": "SKIP", "reason": "Layer1评分失败: brahma_core_entry not available", "score": 0, "layer": 1}
+{"ts": 1788257290.5620425, "ts_iso": "2026-09-01T10:08:10.562045+00:00", "symbol": "WLDUSDT", "signal_dir": "AUTO", "decision": "SKIP", "reason": "Layer1评分失败: brahma_core_entry not available", "score": 0, "layer": 1}
+{"ts": 1788257294.784782, "ts_iso": "2026-09-01T10:08:14.784783+00:00", "symbol": "SYNUSDT", "signal_dir": "AUTO", "decision": "SKIP", "reason": "Layer1评分失败: brahma_core_entry not available", "score": 0, "layer": 1}
+{"ts": 1788257299.0183609, "ts_iso": "2026-09-01T10:08:19.018363+00:00", "symbol": "QQQUSDT", "signal_dir": "AUTO", "decision": "SKIP", "reason": "Layer1评分失败: brahma_core_entry not available", "score": 0, "layer": 1}
+{"ts": 1788264534.9085996, "ts_iso": "2026-09-01T12:08:54.908600+00:00", "symbol": "BTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=54.8<130门槛", "score": 54.8, "layer": 1}
+{"ts": 1788264541.2881892, "ts_iso": "2026-09-01T12:09:01.288190+00:00", "symbol": "BNBUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=52.5<130门槛", "score": 52.5, "layer": 1}
+{"ts": 1788264546.9258993, "ts_iso": "2026-09-01T12:09:06.925900+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=64.2<130门槛", "score": 64.2, "layer": 1}
+{"ts": 1788264554.4129143, "ts_iso": "2026-09-01T12:09:14.412916+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -9.4, "layer": 0}
+{"ts": 1788268174.0455375, "ts_iso": "2026-09-01T13:09:34.045539+00:00", "symbol": "ETHUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=20.0<130门槛", "score": 20.0, "layer": 1}
+{"ts": 1788268179.0833797, "ts_iso": "2026-09-01T13:09:39.083381+00:00", "symbol": "SOLUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=47.1<130门槛", "score": 47.1, "layer": 1}
+{"ts": 1788268185.5168602, "ts_iso": "2026-09-01T13:09:45.516862+00:00", "symbol": "LTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=41.8<130门槛", "score": 41.8, "layer": 1}
+{"ts": 1788268193.762938, "ts_iso": "2026-09-01T13:09:53.762940+00:00", "symbol": "AAVEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 19.7, "layer": 0}
+{"ts": 1788268200.5118062, "ts_iso": "2026-09-01T13:10:00.511808+00:00", "symbol": "PENGUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=56.3<130门槛", "score": 56.3, "layer": 1}
+{"ts": 1788271777.6793468, "ts_iso": "2026-09-01T14:09:37.679349+00:00", "symbol": "BTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=22.4<130门槛", "score": 22.4, "layer": 1}
+{"ts": 1788271784.6805158, "ts_iso": "2026-09-01T14:09:44.680518+00:00", "symbol": "BNBUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=27.3<130门槛", "score": 27.3, "layer": 1}
+{"ts": 1788271792.9813814, "ts_iso": "2026-09-01T14:09:52.981382+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=38.1<130门槛", "score": 38.1, "layer": 1}
+{"ts": 1788271802.8166566, "ts_iso": "2026-09-01T14:10:02.816658+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -0.6, "layer": 0}
+{"ts": 1788278989.6957703, "ts_iso": "2026-09-01T16:09:49.695772+00:00", "symbol": "BTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=19.2<130门槛", "score": 19.2, "layer": 1}
+{"ts": 1788278996.3046682, "ts_iso": "2026-09-01T16:09:56.304669+00:00", "symbol": "BNBUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=23.7<130门槛", "score": 23.7, "layer": 1}
+{"ts": 1788279001.6000204, "ts_iso": "2026-09-01T16:10:01.600022+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=24.6<130门槛", "score": 24.6, "layer": 1}
+{"ts": 1788279006.9729252, "ts_iso": "2026-09-01T16:10:06.972927+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -1.6, "layer": 0}
+{"ts": 1788279012.6862807, "ts_iso": "2026-09-01T16:10:12.686283+00:00", "symbol": "TAOUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=29.8<130门槛", "score": 29.8, "layer": 1}
+{"ts": 1788279018.6875422, "ts_iso": "2026-09-01T16:10:18.687544+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=19.0<130门槛", "score": 19.0, "layer": 1}
+{"ts": 1788282694.8746567, "ts_iso": "2026-09-01T17:11:34.874658+00:00", "symbol": "ETHUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=9.0<130门槛", "score": 9.0, "layer": 1}
+{"ts": 1788282700.8049734, "ts_iso": "2026-09-01T17:11:40.804975+00:00", "symbol": "SOLUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=38.1<130门槛", "score": 38.1, "layer": 1}
+{"ts": 1788282706.8244247, "ts_iso": "2026-09-01T17:11:46.824426+00:00", "symbol": "LTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 10.6, "layer": 0}
+{"ts": 1788282712.689511, "ts_iso": "2026-09-01T17:11:52.689512+00:00", "symbol": "AAVEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 4.0, "layer": 0}
+{"ts": 1788282718.4253645, "ts_iso": "2026-09-01T17:11:58.425365+00:00", "symbol": "PENGUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=31.0<130门槛", "score": 31.0, "layer": 1}
+{"ts": 1788286307.659909, "ts_iso": "2026-09-01T18:11:47.659911+00:00", "symbol": "BTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=19.6<130门槛", "score": 19.6, "layer": 1}
+{"ts": 1788286313.760954, "ts_iso": "2026-09-01T18:11:53.760955+00:00", "symbol": "BNBUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=26.4<130门槛", "score": 26.4, "layer": 1}
+{"ts": 1788286318.9826655, "ts_iso": "2026-09-01T18:11:58.982667+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=45.3<130门槛", "score": 45.3, "layer": 1}
+{"ts": 1788286324.3416047, "ts_iso": "2026-09-01T18:12:04.341607+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -7.0, "layer": 0}
+{"ts": 1788286330.397014, "ts_iso": "2026-09-01T18:12:10.397016+00:00", "symbol": "TAOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 68.9, "layer": 0}
+{"ts": 1788286336.3404987, "ts_iso": "2026-09-01T18:12:16.340500+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=1.0<130门槛", "score": 1.0, "layer": 1}
+{"ts": 1788289919.882777, "ts_iso": "2026-09-01T19:11:59.882779+00:00", "symbol": "ETHUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=20.0<130门槛", "score": 20.0, "layer": 1}
+{"ts": 1788289925.7508104, "ts_iso": "2026-09-01T19:12:05.750812+00:00", "symbol": "SOLUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=48.9<130门槛", "score": 48.9, "layer": 1}
+{"ts": 1788289931.156986, "ts_iso": "2026-09-01T19:12:11.156988+00:00", "symbol": "LTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=39.9<130门槛", "score": 39.9, "layer": 1}
+{"ts": 1788289936.4341965, "ts_iso": "2026-09-01T19:12:16.434198+00:00", "symbol": "AAVEUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1788289942.1972883, "ts_iso": "2026-09-01T19:12:22.197289+00:00", "symbol": "PENGUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=42.0<130门槛", "score": 42.0, "layer": 1}
+{"ts": 1788289947.514501, "ts_iso": "2026-09-01T19:12:27.514502+00:00", "symbol": "NVDAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=81.1<130门槛", "score": 81.1, "layer": 1}
+{"ts": 1788293524.971628, "ts_iso": "2026-09-01T20:12:04.971630+00:00", "symbol": "BTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=30.8<130门槛", "score": 30.8, "layer": 1}
+{"ts": 1788293531.9973865, "ts_iso": "2026-09-01T20:12:11.997388+00:00", "symbol": "BNBUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=80.4<130门槛", "score": 80.4, "layer": 1}
+{"ts": 1788293537.2229757, "ts_iso": "2026-09-01T20:12:17.222977+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=65.9<130门槛", "score": 65.9, "layer": 1}
+{"ts": 1788293542.3771384, "ts_iso": "2026-09-01T20:12:22.377140+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=2.7<130门槛", "score": 2.7, "layer": 1}
+{"ts": 1788293547.6295493, "ts_iso": "2026-09-01T20:12:27.629551+00:00", "symbol": "SYNUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 77.0, "layer": 0}
+{"ts": 1788297114.2077346, "ts_iso": "2026-09-01T21:11:54.207736+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -7.0, "layer": 0}
+{"ts": 1788297120.5368407, "ts_iso": "2026-09-01T21:12:00.536842+00:00", "symbol": "QQQUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 48.8, "layer": 0}
+{"ts": 1788297126.222948, "ts_iso": "2026-09-01T21:12:06.222950+00:00", "symbol": "1000XECUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 99.0, "layer": 0}
+{"ts": 1788297135.0199962, "ts_iso": "2026-09-01T21:12:15.019997+00:00", "symbol": "1000PEPEUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=41.0<130门槛", "score": 41.0, "layer": 1}
+{"ts": 1788297140.8105204, "ts_iso": "2026-09-01T21:12:20.810522+00:00", "symbol": "JTOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 81.4, "layer": 0}
+{"ts": 1788300703.6337454, "ts_iso": "2026-09-01T22:11:43.633748+00:00", "symbol": "ETHUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=33.0<130门槛", "score": 33.0, "layer": 1}
+{"ts": 1788300712.4856524, "ts_iso": "2026-09-01T22:11:52.485654+00:00", "symbol": "BTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=38.0<130门槛", "score": 38.0, "layer": 1}
+{"ts": 1788300718.8851676, "ts_iso": "2026-09-01T22:11:58.885169+00:00", "symbol": "BNBUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=74.1<130门槛", "score": 74.1, "layer": 1}
+{"ts": 1788300725.1803026, "ts_iso": "2026-09-01T22:12:05.180304+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=79.0<130门槛", "score": 79.0, "layer": 1}
+{"ts": 1788304362.1144063, "ts_iso": "2026-09-01T23:12:42.114408+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -7.0, "layer": 0}
+{"ts": 1788304367.673803, "ts_iso": "2026-09-01T23:12:47.673804+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-13.3<130门槛", "score": -13.299999999999997, "layer": 1}
+{"ts": 1788304373.918307, "ts_iso": "2026-09-01T23:12:53.918309+00:00", "symbol": "QQQUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -99.2, "layer": 0}
+{"ts": 1788304379.473334, "ts_iso": "2026-09-01T23:12:59.473336+00:00", "symbol": "1000XECUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 88.4, "layer": 0}
+{"ts": 1788304385.0718994, "ts_iso": "2026-09-01T23:13:05.071901+00:00", "symbol": "1000PEPEUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=33.0<130门槛", "score": 33.0, "layer": 1}
+{"ts": 1788304390.684307, "ts_iso": "2026-09-01T23:13:10.684309+00:00", "symbol": "TACUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -20.5, "layer": 0}
+{"ts": 1788307981.963833, "ts_iso": "2026-09-02T00:13:01.963834+00:00", "symbol": "ETHUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=25.0<130门槛", "score": 25.0, "layer": 1}
+{"ts": 1788307989.712296, "ts_iso": "2026-09-02T00:13:09.712296+00:00", "symbol": "BTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=31.0<130门槛", "score": 31.0, "layer": 1}
+{"ts": 1788307994.8970804, "ts_iso": "2026-09-02T00:13:14.897081+00:00", "symbol": "BNBUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=66.9<130门槛", "score": 66.9, "layer": 1}
+{"ts": 1788308000.1711056, "ts_iso": "2026-09-02T00:13:20.171106+00:00", "symbol": "LTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=49.4<130门槛", "score": 49.4, "layer": 1}
+{"ts": 1788308005.6531677, "ts_iso": "2026-09-02T00:13:25.653168+00:00", "symbol": "AAVEUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1788344883.7791595, "ts_iso": "2026-09-02T10:28:03.779162+00:00", "symbol": "ETHUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=44.0<130门槛", "score": 44.0, "layer": 1}
+{"ts": 1788344897.5648353, "ts_iso": "2026-09-02T10:28:17.564837+00:00", "symbol": "BTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=49.2<130门槛", "score": 49.2, "layer": 1}
+{"ts": 1788344904.3494742, "ts_iso": "2026-09-02T10:28:24.349476+00:00", "symbol": "BNBUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=66.8<130门槛", "score": 66.8, "layer": 1}
+{"ts": 1788344910.0403912, "ts_iso": "2026-09-02T10:28:30.040393+00:00", "symbol": "LTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=77.9<130门槛", "score": 77.9, "layer": 1}
+{"ts": 1788348498.8782415, "ts_iso": "2026-09-02T11:28:18.878243+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 36.9, "layer": 0}
+{"ts": 1788348504.9547725, "ts_iso": "2026-09-02T11:28:24.954774+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=88.5<130门槛", "score": 88.5, "layer": 1}
+{"ts": 1788348511.549971, "ts_iso": "2026-09-02T11:28:31.549973+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 101.6, "layer": 0}
+{"ts": 1788348522.2235658, "ts_iso": "2026-09-02T11:28:42.223568+00:00", "symbol": "TAOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 92.8, "layer": 0}
+{"ts": 1788355712.083569, "ts_iso": "2026-09-02T13:28:32.083570+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 44.9, "layer": 0}
+{"ts": 1788355713.9811687, "ts_iso": "2026-09-02T13:28:33.981169+00:00", "symbol": "BNBUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=84.0<130门槛", "score": 84.0, "layer": 1}
+{"ts": 1788355716.856728, "ts_iso": "2026-09-02T13:28:36.856730+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=93.0<130门槛", "score": 93.0, "layer": 1}
+{"ts": 1788355719.8907537, "ts_iso": "2026-09-02T13:28:39.890756+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 73.5, "layer": 0}
+{"ts": 1788355722.7684345, "ts_iso": "2026-09-02T13:28:42.768435+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=58.2<130门槛", "score": 58.2, "layer": 1}
+{"ts": 1788355725.3441334, "ts_iso": "2026-09-02T13:28:45.344135+00:00", "symbol": "SYNUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 95.0, "layer": 0}
+{"ts": 1788355727.8188663, "ts_iso": "2026-09-02T13:28:47.818868+00:00", "symbol": "QQQUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 43.6, "layer": 0}
+{"ts": 1788355730.061876, "ts_iso": "2026-09-02T13:28:50.061878+00:00", "symbol": "1000PEPEUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 147.4, "layer": 0}
+{"ts": 1788355732.094614, "ts_iso": "2026-09-02T13:28:52.094615+00:00", "symbol": "SKHYNIXUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-29.0<130门槛", "score": -29.0, "layer": 1}
+{"ts": 1788355734.1078434, "ts_iso": "2026-09-02T13:28:54.107845+00:00", "symbol": "LINKUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1788355736.1825364, "ts_iso": "2026-09-02T13:28:56.182537+00:00", "symbol": "NEARUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1788355738.2595072, "ts_iso": "2026-09-02T13:28:58.259508+00:00", "symbol": "KORUUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -105.9, "layer": 0}
+{"ts": 1788355740.476784, "ts_iso": "2026-09-02T13:29:00.476785+00:00", "symbol": "JTOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 147.4, "layer": 0}
+{"ts": 1788355742.7222872, "ts_iso": "2026-09-02T13:29:02.722288+00:00", "symbol": "SOXLUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -86.5, "layer": 0}
+{"ts": 1788355744.8866494, "ts_iso": "2026-09-02T13:29:04.886650+00:00", "symbol": "SAMSUNGUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-7.0<130门槛", "score": -7.0, "layer": 1}
+{"ts": 1788355747.1863685, "ts_iso": "2026-09-02T13:29:07.186370+00:00", "symbol": "PUMPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=70.8<130门槛", "score": 70.8, "layer": 1}
+{"ts": 1788361260.3140738, "ts_iso": "2026-09-02T15:01:00.314075+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=49.4<130门槛", "score": 49.4, "layer": 1}
+{"ts": 1788361265.868841, "ts_iso": "2026-09-02T15:01:05.868844+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 8.3, "layer": 0}
+{"ts": 1788361271.5560048, "ts_iso": "2026-09-02T15:01:11.556006+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": -12.8, "layer": 0}
+{"ts": 1788361273.5576277, "ts_iso": "2026-09-02T15:01:13.557629+00:00", "symbol": "BNBUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=57.0<130门槛", "score": 57.0, "layer": 1}
+{"ts": 1788361275.7398174, "ts_iso": "2026-09-02T15:01:15.739818+00:00", "symbol": "XRPUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=69.6<130门槛", "score": 69.6, "layer": 1}
+{"ts": 1788361277.8479054, "ts_iso": "2026-09-02T15:01:17.847906+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 73.5, "layer": 0}
+{"ts": 1788361279.9839547, "ts_iso": "2026-09-02T15:01:19.983956+00:00", "symbol": "LTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=36.2<130门槛", "score": 36.2, "layer": 1}
+{"ts": 1788361282.0632236, "ts_iso": "2026-09-02T15:01:22.063225+00:00", "symbol": "TAOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 53.9, "layer": 0}
+{"ts": 1788361284.0274885, "ts_iso": "2026-09-02T15:01:24.027490+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=46.8<130门槛", "score": 46.8, "layer": 1}
+{"ts": 1788361286.1398995, "ts_iso": "2026-09-02T15:01:26.139901+00:00", "symbol": "PENGUUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 83.8, "layer": 0}
+{"ts": 1788361288.258329, "ts_iso": "2026-09-02T15:01:28.258330+00:00", "symbol": "SYNUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 95.0, "layer": 0}
+{"ts": 1788361290.349606, "ts_iso": "2026-09-02T15:01:30.349607+00:00", "symbol": "NVDAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=54.0<130门槛", "score": 54.0, "layer": 1}
+{"ts": 1788361292.491886, "ts_iso": "2026-09-02T15:01:32.491887+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=32.2<130门槛", "score": 32.2, "layer": 1}
+{"ts": 1788368478.6771991, "ts_iso": "2026-09-02T17:01:18.677199+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=34.4<130门槛", "score": 34.4, "layer": 1}
+{"ts": 1788368480.7385519, "ts_iso": "2026-09-02T17:01:20.738553+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 32.5, "layer": 0}
+{"ts": 1788368486.459097, "ts_iso": "2026-09-02T17:01:26.459098+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": -12.8, "layer": 0}
+{"ts": 1788368488.48653, "ts_iso": "2026-09-02T17:01:28.486531+00:00", "symbol": "BNBUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=66.9<130门槛", "score": 66.9, "layer": 1}
+{"ts": 1788368493.7078536, "ts_iso": "2026-09-02T17:01:33.707855+00:00", "symbol": "XRPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 99.9, "layer": 0}
+{"ts": 1788368496.0843031, "ts_iso": "2026-09-02T17:01:36.084305+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -15.8, "layer": 0}
+{"ts": 1788368498.0801504, "ts_iso": "2026-09-02T17:01:38.080152+00:00", "symbol": "LTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=78.0<130门槛", "score": 78.0, "layer": 1}
+{"ts": 1788368500.1624153, "ts_iso": "2026-09-02T17:01:40.162417+00:00", "symbol": "TAOUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 79.3, "layer": 0}
+{"ts": 1788368502.1070938, "ts_iso": "2026-09-02T17:01:42.107095+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=31.6<130门槛", "score": 31.6, "layer": 1}
+{"ts": 1788368504.2176125, "ts_iso": "2026-09-02T17:01:44.217613+00:00", "symbol": "PENGUUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 92.0, "layer": 0}
+{"ts": 1788368506.6146405, "ts_iso": "2026-09-02T17:01:46.614642+00:00", "symbol": "SYNUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 70.0, "layer": 0}
+{"ts": 1788368509.533626, "ts_iso": "2026-09-02T17:01:49.533628+00:00", "symbol": "NVDAUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 89.1, "layer": 0}
+{"ts": 1788379275.5860195, "ts_iso": "2026-09-02T20:01:15.586021+00:00", "symbol": "ETHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "score=30.2<130门槛", "score": 30.2, "layer": 1}
+{"ts": 1788379281.9171758, "ts_iso": "2026-09-02T20:01:21.917178+00:00", "symbol": "SOLUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 44.2, "layer": 0}
+{"ts": 1788379290.7829826, "ts_iso": "2026-09-02T20:01:30.782984+00:00", "symbol": "BTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": -12.8, "layer": 0}
+{"ts": 1788379293.870794, "ts_iso": "2026-09-02T20:01:33.870795+00:00", "symbol": "BNBUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=73.2<130门槛", "score": 73.2, "layer": 1}
+{"ts": 1788379296.9511726, "ts_iso": "2026-09-02T20:01:36.951174+00:00", "symbol": "XRPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 20.1, "layer": 0}
+{"ts": 1788379299.574841, "ts_iso": "2026-09-02T20:01:39.574842+00:00", "symbol": "ADAUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -9.4, "layer": 0}
+{"ts": 1788379301.8219955, "ts_iso": "2026-09-02T20:01:41.821997+00:00", "symbol": "LTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=96.9<130门槛", "score": 96.9, "layer": 1}
+{"ts": 1788390050.9172177, "ts_iso": "2026-09-02T23:00:50.917218+00:00", "symbol": "NVDAUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": -41.900000000000006, "layer": 0}
+{"ts": 1788390053.2136452, "ts_iso": "2026-09-02T23:00:53.213646+00:00", "symbol": "ZECUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=111.7<130门槛", "score": 111.7, "layer": 1}
+{"ts": 1788390055.0775425, "ts_iso": "2026-09-02T23:00:55.077543+00:00", "symbol": "HOMEUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=34.0<130门槛", "score": 34.0, "layer": 1}
+{"ts": 1788390057.079662, "ts_iso": "2026-09-02T23:00:57.079663+00:00", "symbol": "BEATUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=72.2<130门槛", "score": 72.2, "layer": 1}
+{"ts": 1788390059.1012902, "ts_iso": "2026-09-02T23:00:59.101291+00:00", "symbol": "PUMPUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 76.1, "layer": 0}
+{"ts": 1788390061.1314654, "ts_iso": "2026-09-02T23:01:01.131466+00:00", "symbol": "USUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1788649262.2553165, "ts_iso": "2026-09-05T23:01:02.255318+00:00", "symbol": "ADAUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 54.1, "layer": 0}
+{"ts": 1788649264.6948135, "ts_iso": "2026-09-05T23:01:04.694815+00:00", "symbol": "LTCUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 36.2, "layer": 0}
+{"ts": 1788649268.050752, "ts_iso": "2026-09-05T23:01:08.050754+00:00", "symbol": "AAVEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 51.8, "layer": 0}
+{"ts": 1788649270.7560968, "ts_iso": "2026-09-05T23:01:10.756098+00:00", "symbol": "WLDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=0.0<130门槛", "score": 0.0, "layer": 1}
+{"ts": 1788649273.4122956, "ts_iso": "2026-09-05T23:01:13.412297+00:00", "symbol": "PENGUUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=88.0<130门槛", "score": 88.0, "layer": 1}
+{"ts": 1788649276.0294073, "ts_iso": "2026-09-05T23:01:16.029408+00:00", "symbol": "SYNUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=82.0<130门槛", "score": 82.0, "layer": 1}
+{"ts": 1788649278.836604, "ts_iso": "2026-09-05T23:01:18.836606+00:00", "symbol": "NVDAUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": -13.099999999999994, "layer": 0}
+{"ts": 1788649280.9767582, "ts_iso": "2026-09-05T23:01:20.976760+00:00", "symbol": "TSLAUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=12.0<130门槛", "score": 12.0, "layer": 1}
+{"ts": 1788649283.0082169, "ts_iso": "2026-09-05T23:01:23.008217+00:00", "symbol": "AMDUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-26.0<130门槛", "score": -26.0, "layer": 1}
+{"ts": 1788649285.1311862, "ts_iso": "2026-09-05T23:01:25.131187+00:00", "symbol": "ENAUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 49.3, "layer": 0}
+{"ts": 1788649287.1700704, "ts_iso": "2026-09-05T23:01:27.170072+00:00", "symbol": "1000PEPEUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 66.1, "layer": 0}
+{"ts": 1788649289.062785, "ts_iso": "2026-09-05T23:01:29.062787+00:00", "symbol": "INTCUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=-18.0<130门槛", "score": -18.0, "layer": 1}
+{"ts": 1788649291.224464, "ts_iso": "2026-09-05T23:01:31.224465+00:00", "symbol": "AVAXUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=85.0<130门槛", "score": 85.0, "layer": 1}
+{"ts": 1788746476.3224468, "ts_iso": "2026-09-07T02:01:16.322449+00:00", "symbol": "HOODUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 35.099999999999994, "layer": 0}
+{"ts": 1788746478.1274135, "ts_iso": "2026-09-07T02:01:18.127415+00:00", "symbol": "DASHUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 23.2, "layer": 0}
+{"ts": 1788746478.153336, "ts_iso": "2026-09-07T02:01:18.153338+00:00", "symbol": "牛来USDT", "signal_dir": "AUTO", "decision": "SKIP", "reason": "Layer1评分失败: 'ms'", "score": 0, "layer": 1}
+{"ts": 1788746479.9492311, "ts_iso": "2026-09-07T02:01:19.949232+00:00", "symbol": "SUSHIUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 28.7, "layer": 0}
+{"ts": 1788746482.6593103, "ts_iso": "2026-09-07T02:01:22.659312+00:00", "symbol": "BULLAUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 43.0, "layer": 0}
+{"ts": 1788746485.708462, "ts_iso": "2026-09-07T02:01:25.708465+00:00", "symbol": "JUPUSDT", "signal_dir": "LONG", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×LONG", "score": 53.9, "layer": 0}
+{"ts": 1788746487.9048672, "ts_iso": "2026-09-07T02:01:27.904868+00:00", "symbol": "COLLECTUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=31.0<130门槛", "score": 31.0, "layer": 1}
+{"ts": 1789038082.7771065, "ts_iso": "2026-09-10T11:01:22.777108+00:00", "symbol": "ETHUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=38.1<130门槛", "score": 38.1, "layer": 1}
+{"ts": 1789038086.1118963, "ts_iso": "2026-09-10T11:01:26.111898+00:00", "symbol": "SOLUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=55.2<130门槛", "score": 55.2, "layer": 1}
+{"ts": 1789092077.874899, "ts_iso": "2026-09-11T02:01:17.874900+00:00", "symbol": "ETHUSDT", "signal_dir": "NEUTRAL", "decision": "SKIP", "reason": "score=14.8<130门槛", "score": 14.8, "layer": 1}
+{"ts": 1789288533.4333453, "ts_iso": "2026-09-13T08:35:33.433346+00:00", "symbol": "BTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "Layer1评分失败: expected an indented block after 'try' statement on line 111 (brahma_core_step4.py, line 114)", "score": 0, "layer": 1}
+{"ts": 1789289032.8664522, "ts_iso": "2026-09-13T08:43:52.866453+00:00", "symbol": "BTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "Layer1评分失败: expected an indented block after 'try' statement on line 111 (brahma_core_step4.py, line 114)", "score": 0, "layer": 1}
+{"ts": 1789294872.5758812, "ts_iso": "2026-09-13T10:21:12.575882+00:00", "symbol": "ETHUSDTUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "Layer1评分失败: 'ms'", "score": 0, "layer": 1}

@@ -1,0 +1,38 @@
+{
+  "ts": 1782985282.7870462,
+  "score": 76,
+  "status": "DEGRADED",
+  "errors": [
+    {
+      "msg": "torch未安装，Kronos无法运行",
+      "dim": "P10"
+    }
+  ],
+  "warnings": [
+    {
+      "msg": "live_signal_log为空，近期无有效信号",
+      "dim": "P1"
+    },
+    {
+      "msg": "持仓文件 3.0h 未更新（持仓可能变化）",
+      "dim": "P4"
+    },
+    {
+      "msg": "实时价格 过期 2.6h (限0.5h)",
+      "dim": "P6"
+    },
+    {
+      "msg": "持仓记录 过期 3.0h (限2h)",
+      "dim": "P6"
+    },
+    {
+      "msg": "HF依赖缺失: No module named 'huggingface_hub'",
+      "dim": "P10"
+    },
+    {
+      "msg": "LLM API Key检查失败: No module named 'dotenv'",
+      "dim": "P10"
+    }
+  ],
+  "summary": "76/100 DEGRADED E=1 W=6"
+}

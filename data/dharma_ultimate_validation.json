@@ -1,0 +1,60 @@
+{
+  "ts": "2026-09-08T08:50:16.484326Z",
+  "verdict": "CONDITIONAL",
+  "p0_pass": 2,
+  "results": {
+    "V03": {
+      "passed": true,
+      "wr": 55.2
+    },
+    "V04": {
+      "passed": false,
+      "monotonic": false
+    },
+    "V07": {
+      "passed": true,
+      "wr": 55.2,
+      "be_wr": 45.2,
+      "safety": 10.0
+    },
+    "V12": {
+      "passed": true,
+      "stability": 0.778,
+      "avg_wr": 54.1
+    },
+    "V10": {
+      "passed": false,
+      "passed_count": 0,
+      "details": {
+        "SOL": {
+          "n": 0,
+          "wr": 0
+        },
+        "BNB": {
+          "n": 0,
+          "wr": 0
+        },
+        "ADA": {
+          "n": 0,
+          "wr": 0
+        },
+        "XRP": {
+          "n": 0,
+          "wr": 0
+        },
+        "DOGE": {
+          "n": 0,
+          "wr": 0
+        }
+      }
+    }
+  },
+  "config": {
+    "cost": 0.0008,
+    "slippage": 0.0005,
+    "rr": 1.5,
+    "v03_fix": "regime用前一根4H + entry用下一根开盘价",
+    "v04_fix": "115~130区间共振≥2额外+10分",
+    "v07_fix": "0.08%成本硬扣 + 5bp滑点"
+  }
+}

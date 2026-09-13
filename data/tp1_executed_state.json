@@ -1,0 +1,17 @@
+{
+  "USUSDT": {
+    "tp1_done": true,
+    "ts": 1783936865.0266838,
+    "fill": 0.0
+  },
+  "BILLUSDT": {
+    "tp1_done": true,
+    "ts": 1783957833.9959826,
+    "fill": 0.0
+  },
+  "BANKUSDT": {
+    "tp1_done": true,
+    "ts": 1784279491.3356268,
+    "fill": 0.0
+  }
+}

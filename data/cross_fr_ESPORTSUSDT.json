@@ -1,0 +1,14 @@
+{
+  "symbol": "ESPORTSUSDT",
+  "frs": {
+    "binance": 0.054526,
+    "bybit": 0.011298
+  },
+  "spread": 0.04323,
+  "max_ex": "binance",
+  "min_ex": "bybit",
+  "arb_signal": "LONG_BYBIT_SHORT_BINANCE",
+  "arb_score": 10,
+  "bull_fr_bonus": 0,
+  "ts": 1787175753.798291
+}

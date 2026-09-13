@@ -1,0 +1,138 @@
+{
+  "ts": "2026-06-08T00:01:16.134701+00:00",
+  "ts_bj": "2026-06-08 08:01",
+  "sample_n": 25,
+  "win_n": 18,
+  "loss_n": 7,
+  "wr": 72.0,
+  "significant_features": {
+    "gap_pct": {
+      "win_mean": 2.4413,
+      "loss_mean": 0.5986,
+      "p_value": 0.0002,
+      "significant": true,
+      "win_n": 18,
+      "loss_n": 7
+    },
+    "structure_grade": {
+      "win_mean": 70.6111,
+      "loss_mean": 21.6667,
+      "p_value": 0.0005,
+      "significant": true,
+      "win_n": 18,
+      "loss_n": 6
+    },
+    "sl_pct": {
+      "win_mean": 2.0377,
+      "loss_mean": 0.8699,
+      "p_value": 0.011,
+      "significant": true,
+      "win_n": 18,
+      "loss_n": 7
+    }
+  },
+  "all_features": {
+    "gap_pct": {
+      "win_mean": 2.4413,
+      "loss_mean": 0.5986,
+      "p_value": 0.0002,
+      "significant": true,
+      "win_n": 18,
+      "loss_n": 7
+    },
+    "lsr_long": {
+      "win_mean": 0,
+      "loss_mean": 0,
+      "p_value": 1.0,
+      "significant": false,
+      "note": "样本不足(WIN=0,LOSS=0<5)"
+    },
+    "oi_chg": {
+      "win_mean": 0,
+      "loss_mean": 0,
+      "p_value": 1.0,
+      "significant": false,
+      "note": "样本不足(WIN=0,LOSS=0<5)"
+    },
+    "rsi_4h": {
+      "win_mean": 37.6506,
+      "loss_mean": 35.1557,
+      "p_value": 0.364,
+      "significant": false,
+      "win_n": 18,
+      "loss_n": 7
+    },
+    "rsi_1h": {
+      "win_mean": 45.6439,
+      "loss_mean": 39.4971,
+      "p_value": 0.1022,
+      "significant": false,
+      "win_n": 18,
+      "loss_n": 7
+    },
+    "atr_pct": {
+      "win_mean": 357.1795,
+      "loss_mean": 350.9727,
+      "p_value": 0.9277,
+      "significant": false,
+      "win_n": 18,
+      "loss_n": 7
+    },
+    "score": {
+      "win_mean": 155.65,
+      "loss_mean": 165.7,
+      "p_value": 0.1303,
+      "significant": false,
+      "win_n": 18,
+      "loss_n": 7
+    },
+    "structure_grade": {
+      "win_mean": 70.6111,
+      "loss_mean": 21.6667,
+      "p_value": 0.0005,
+      "significant": true,
+      "win_n": 18,
+      "loss_n": 6
+    },
+    "sl_pct": {
+      "win_mean": 2.0377,
+      "loss_mean": 0.8699,
+      "p_value": 0.011,
+      "significant": true,
+      "win_n": 18,
+      "loss_n": 7
+    },
+    "rr1": {
+      "win_mean": 1.5383,
+      "loss_mean": 2.5029,
+      "p_value": 0.1022,
+      "significant": false,
+      "win_n": 18,
+      "loss_n": 7
+    }
+  },
+  "suggestions": [
+    {
+      "feature": "gap_pct",
+      "action": "NO_FACTOR",
+      "note": "未找到匹配因子 (keywords=['gap', 'GAP', 'ENTRY_GAP'])",
+      "win_mean": 2.4413,
+      "loss_mean": 0.5986
+    },
+    {
+      "feature": "structure_grade",
+      "action": "NO_FACTOR",
+      "note": "未找到匹配因子 (keywords=['structure', 'STRUCT', 'grade'])",
+      "win_mean": 70.6111,
+      "loss_mean": 21.6667
+    },
+    {
+      "feature": "sl_pct",
+      "action": "NO_FACTOR",
+      "note": "未找到匹配因子 (keywords=['sl_pct', 'SL_PCT', 'stop_loss'])",
+      "win_mean": 2.0377,
+      "loss_mean": 0.8699
+    }
+  ],
+  "auto_deploy": false
+}

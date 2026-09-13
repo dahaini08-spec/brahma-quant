@@ -1,0 +1,62 @@
+[
+  {
+    "id": "M1",
+    "ok": true,
+    "executed": true,
+    "reason": "OK"
+  },
+  {
+    "id": "M2",
+    "ok": true,
+    "executed": false,
+    "reason": "score=150.0 < 155"
+  },
+  {
+    "id": "M3",
+    "ok": true,
+    "executed": false,
+    "reason": "valid=False，信号未通过DharmaBridge质量门控（score=170）"
+  },
+  {
+    "id": "M4",
+    "ok": false,
+    "executed": true,
+    "reason": "OK"
+  },
+  {
+    "id": "M4b",
+    "ok": true,
+    "executed": false,
+    "reason": "去重门控(文件): test_dup_fixed_id 已在auto_executed_signals中"
+  },
+  {
+    "id": "H1",
+    "ok": true,
+    "executed": false,
+    "reason": "HARD_BLOCK: BEAR_TREND_LONG 宪法级死穴"
+  },
+  {
+    "id": "H2",
+    "ok": true,
+    "executed": false,
+    "reason": "HARD_BLOCK: BULL_TREND_SHORT 宪法级死穴"
+  },
+  {
+    "id": "N1",
+    "ok": true,
+    "executed": true,
+    "reason": "OK"
+  },
+  {
+    "id": "N2",
+    "ok": true,
+    "executed": true,
+    "reason": "OK"
+  },
+  {
+    "id": "N3",
+    "ok": true,
+    "executed": false,
+    "reason": "P2高分timing拦截: score=165 timing=WAIT（等待入场时机）"
+  }
+]

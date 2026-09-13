@@ -1,0 +1,184 @@
+{
+  "generated_at": "2026-07-10T14:29:01.475502+00:00",
+  "symbols": {
+    "BTCUSDT": {
+      "symbol": "BTCUSDT",
+      "generated_at": "2026-07-10T14:29:01.476142+00:00",
+      "context_budget": 200,
+      "recent_signals": [
+        {
+          "ts": 1783676186.4727197,
+          "dir": "LONG",
+          "score": 118.8,
+          "valid": false,
+          "regime": "BULL_TREND",
+          "rr1": 1.96,
+          "action": "WATCH",
+          "age_h": 4.9
+        },
+        {
+          "ts": 1783649245.7077773,
+          "dir": "LONG",
+          "score": 122.0,
+          "valid": false,
+          "regime": "BULL_TREND",
+          "rr1": 1.96,
+          "action": "WATCH",
+          "age_h": 12.4
+        },
+        {
+          "ts": 1783645591.2398255,
+          "dir": "LONG",
+          "score": 103.0,
+          "valid": false,
+          "regime": "BULL_TREND",
+          "rr1": 1.96,
+          "action": "WATCH",
+          "age_h": 13.4
+        }
+      ],
+      "regime_summary": {
+        "confirmed": "BULL_TREND",
+        "switch_count": 0,
+        "confirmed_at": 1783281039.0905998,
+        "age_h": 114.6
+      },
+      "oi_summary": {
+        "score": 54.24,
+        "mode": "WATCH",
+        "chg_24h": -0.22,
+        "chg_7d": -6.35,
+        "whale_l": 56.9,
+        "fr": 0.007133,
+        "action": "watchlist",
+        "direction": ""
+      },
+      "position_summary": {
+        "has_position": false
+      },
+      "estimated_tokens": 218,
+      "compression_ratio": 224.0
+    },
+    "ETHUSDT": {
+      "symbol": "ETHUSDT",
+      "generated_at": "2026-07-10T14:29:01.477353+00:00",
+      "context_budget": 200,
+      "recent_signals": [
+        {
+          "ts": 1783656755.5927818,
+          "dir": "LONG",
+          "score": 103.0,
+          "valid": false,
+          "regime": "BULL_TREND",
+          "rr1": 1.8,
+          "action": "WATCH",
+          "age_h": 10.3
+        },
+        {
+          "ts": 1783569354.1176038,
+          "dir": "LONG",
+          "score": 165.0,
+          "valid": false,
+          "regime": "BEAR_RECOVERY",
+          "rr1": 1.0,
+          "action": "SKIP",
+          "age_h": 34.6
+        },
+        {
+          "ts": 1783551223.1769662,
+          "dir": "LONG",
+          "score": 165.0,
+          "valid": false,
+          "regime": "BEAR_RECOVERY",
+          "rr1": 1.0,
+          "action": "SKIP",
+          "age_h": 39.6
+        }
+      ],
+      "regime_summary": {
+        "confirmed": "BULL_TREND",
+        "switch_count": 4,
+        "confirmed_at": 1783652533.3167403,
+        "age_h": 11.4
+      },
+      "oi_summary": {
+        "score": 56,
+        "mode": "WATCH",
+        "chg_24h": 0.89,
+        "chg_7d": -4.65,
+        "whale_l": 62.1,
+        "fr": 0.004747,
+        "action": "watchlist",
+        "direction": ""
+      },
+      "position_summary": {
+        "has_position": false
+      },
+      "estimated_tokens": 217,
+      "compression_ratio": 224.8
+    },
+    "SLXUSDT": {
+      "symbol": "SLXUSDT",
+      "generated_at": "2026-07-10T14:29:01.478814+00:00",
+      "context_budget": 200,
+      "recent_signals": [
+        {
+          "ts": 1783116131.655138,
+          "dir": "LONG",
+          "score": 112.4,
+          "valid": false,
+          "regime": "BULL_TREND",
+          "rr1": 1.0,
+          "action": "ENTER",
+          "age_h": 160.4
+        }
+      ],
+      "regime_summary": {
+        "confirmed": "BULL_TREND",
+        "switch_count": 0,
+        "confirmed_at": 1782748581.4588935,
+        "age_h": 262.5
+      },
+      "oi_summary": {
+        "score": 88.486,
+        "mode": "A",
+        "chg_24h": 14.31,
+        "chg_7d": 77.12,
+        "whale_l": 58.5,
+        "fr": -0.037033,
+        "action": "buy_full",
+        "direction": "LONG"
+      },
+      "position_summary": {
+        "has_position": true,
+        "direction": "LONG",
+        "entry_price": 0.18225,
+        "sl_price": 0.177694,
+        "tp_price": 0.186806,
+        "opened_iso": "2026-07-10T13:57:39.550343+00:00"
+      },
+      "estimated_tokens": 180,
+      "compression_ratio": 271.6
+    }
+  },
+  "market_state": {
+    "BTC_regime": "BULL_TREND",
+    "ETH_regime": "BULL_TREND",
+    "timestamp": "14:29 UTC"
+  },
+  "active_positions": [
+    {
+      "symbol": "SLXUSDT",
+      "dir": "LONG",
+      "entry": 0.18225,
+      "sl": 0.177694
+    }
+  ],
+  "recent_executions": [],
+  "_meta": {
+    "raw_bytes": 195584,
+    "compressed_bytes": 2945,
+    "compression_pct": 98.5,
+    "tokens_saved": 48159
+  }
+}

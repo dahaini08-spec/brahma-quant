@@ -1,0 +1,15 @@
+{
+  "ts": "2026-08-31T00:59:50.283134",
+  "connected": 128,
+  "orphans_high": [],
+  "orphans_low": [
+    "brahma_cpu",
+    "brahma_experience_engine",
+    "brahma_full_report",
+    "brahma_health_guard",
+    "brahma_pipeline",
+    "kronos_lite"
+  ],
+  "total": 134,
+  "status": "OK"
+}

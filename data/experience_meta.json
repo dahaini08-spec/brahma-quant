@@ -1,0 +1,31 @@
+{
+  "total": 212727,
+  "built_at": "2026-08-27T05:38:18Z",
+  "vector_dim": 16,
+  "by_regime": {
+    "BEAR_TREND": 53214,
+    "BULL_TREND": 49404,
+    "BEAR_RECOVERY": 37494,
+    "CHOP_MID": 36815,
+    "BULL_EARLY": 35800
+  },
+  "by_symbol": {
+    "BTC": 7119,
+    "ETH": 7042,
+    "BCH": 7023,
+    "XRP": 6971,
+    "LTC": 6963,
+    "TRX": 6945,
+    "ETC": 6942,
+    "LINK": 6939,
+    "XLM": 6930,
+    "ADA": 6899
+  },
+  "by_tf": {
+    "1h": 88717,
+    "4h": 88316,
+    "1d": 35694
+  },
+  "wr_long_avg": 0.458,
+  "wr_short_avg": 0.46
+}

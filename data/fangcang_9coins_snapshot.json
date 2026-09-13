@@ -1,0 +1,203 @@
+{
+  "ts": 1786181233.5090442,
+  "results": [
+    {
+      "sym": "XRPUSDT",
+      "regime": "CHOP_MID",
+      "status": "ok",
+      "p_up": 0.25,
+      "p_down": 0.55,
+      "ev": -2.324,
+      "n": 20,
+      "hint": "SHORT_BIAS",
+      "intent": {
+        "intent": "NEUTRAL",
+        "confidence": 0.5,
+        "evidence": [
+          "方向分散：↑20% ↓50%",
+          "⚠ 15m微结构极度压缩(BBW=0.14%)=假突破高风险",
+          "近12H有放量K线（成交量>均量×2）",
+          "近12H CHoCH=20次，结构频繁转变中"
+        ],
+        "trap_warning": true,
+        "trap_reason": "15m BBW=0.14%极度压缩，假突破风险高"
+      }
+    },
+    {
+      "sym": "DOGEUSDT",
+      "regime": "BULL_TREND",
+      "status": "ok",
+      "p_up": 0.05,
+      "p_down": 0.35,
+      "ev": -1.575,
+      "n": 20,
+      "hint": "NEUTRAL",
+      "intent": {
+        "intent": "NEUTRAL",
+        "confidence": 0.3,
+        "evidence": [
+          "方向分散：↑5% ↓30%",
+          "⚠ 15m微结构极度压缩(BBW=0.28%)=假突破高风险",
+          "近12H有放量K线（成交量>均量×2）",
+          "近12H CHoCH=16次，结构频繁转变中"
+        ],
+        "trap_warning": true,
+        "trap_reason": "15m BBW=0.28%极度压缩，假突破风险高"
+      }
+    },
+    {
+      "sym": "ADAUSDT",
+      "regime": "BULL_TREND",
+      "status": "ok",
+      "p_up": 0.3,
+      "p_down": 0.55,
+      "ev": -2.396,
+      "n": 20,
+      "hint": "SHORT_BIAS",
+      "intent": {
+        "intent": "NEUTRAL",
+        "confidence": 0.45,
+        "evidence": [
+          "方向分散：↑25% ↓45%",
+          "⚠ 15m微结构极度压缩(BBW=0.64%)=假突破高风险",
+          "近12H有放量K线（成交量>均量×2）",
+          "近12H CHoCH=16次，结构频繁转变中"
+        ],
+        "trap_warning": true,
+        "trap_reason": "15m BBW=0.64%极度压缩，假突破风险高"
+      }
+    },
+    {
+      "sym": "LINKUSDT",
+      "regime": "BULL_TREND",
+      "status": "ok",
+      "p_up": 0.4,
+      "p_down": 0.5,
+      "ev": 0.847,
+      "n": 20,
+      "hint": "NEUTRAL",
+      "intent": {
+        "intent": "NEUTRAL",
+        "confidence": 0.4,
+        "evidence": [
+          "方向分散：↑40% ↓30%",
+          "⚠ 15m微结构极度压缩(BBW=0.21%)=假突破高风险",
+          "近12H有放量K线（成交量>均量×2）",
+          "近12H CHoCH=19次，结构频繁转变中"
+        ],
+        "trap_warning": true,
+        "trap_reason": "15m BBW=0.21%极度压缩，假突破风险高"
+      }
+    },
+    {
+      "sym": "CHZUSDT",
+      "regime": "BULL_TREND",
+      "status": "ok",
+      "p_up": 0.2,
+      "p_down": 0.6,
+      "ev": -8.598,
+      "n": 20,
+      "hint": "SHORT_BIAS",
+      "intent": {
+        "intent": "MARKDOWN",
+        "confidence": 0.55,
+        "evidence": [
+          "近20个相似案例中55%出现强跌幅(<-8%)",
+          "⚠ 15m微结构极度压缩(BBW=0.91%)=假突破高风险",
+          "近12H有放量K线（成交量>均量×2）",
+          "近12H CHoCH=17次，结构频繁转变中"
+        ],
+        "trap_warning": true,
+        "trap_reason": "15m BBW=0.91%极度压缩，假突破风险高"
+      }
+    },
+    {
+      "sym": "OPUSDT",
+      "regime": "CHOP_MID",
+      "status": "ok",
+      "p_up": 0.6,
+      "p_down": 0.35,
+      "ev": 4.35,
+      "n": 20,
+      "hint": "LONG_BIAS",
+      "intent": {
+        "intent": "ACCUMULATE",
+        "confidence": 0.6,
+        "evidence": [
+          "近20个相似案例中60%为多头爆发(>3%)",
+          "⚠ 15m微结构极度压缩(BBW=0.68%)=假突破高风险",
+          "近12H有放量K线（成交量>均量×2）",
+          "近12H CHoCH=13次，结构频繁转变中"
+        ],
+        "trap_warning": true,
+        "trap_reason": "15m BBW=0.68%极度压缩，假突破风险高"
+      }
+    },
+    {
+      "sym": "ARBUSDT",
+      "regime": "CHOP_MID",
+      "status": "ok",
+      "p_up": 0.35,
+      "p_down": 0.5,
+      "ev": -1.412,
+      "n": 20,
+      "hint": "SHORT_BIAS",
+      "intent": {
+        "intent": "NEUTRAL",
+        "confidence": 0.5,
+        "evidence": [
+          "方向分散：↑35% ↓50%",
+          "⚠ 15m微结构极度压缩(BBW=0.27%)=假突破高风险",
+          "近12H有放量K线（成交量>均量×2）",
+          "近12H CHoCH=20次，结构频繁转变中"
+        ],
+        "trap_warning": true,
+        "trap_reason": "15m BBW=0.27%极度压缩，假突破风险高"
+      }
+    },
+    {
+      "sym": "UNIUSDT",
+      "regime": "CHOP_MID",
+      "status": "ok",
+      "p_up": 0.5,
+      "p_down": 0.4,
+      "ev": -0.616,
+      "n": 20,
+      "hint": "WAIT",
+      "intent": {
+        "intent": "NEUTRAL",
+        "confidence": 0.5,
+        "evidence": [
+          "方向分散：↑50% ↓35%",
+          "⚠ 15m微结构极度压缩(BBW=0.64%)=假突破高风险",
+          "近12H有放量K线（成交量>均量×2）",
+          "近12H CHoCH=14次，结构频繁转变中"
+        ],
+        "trap_warning": true,
+        "trap_reason": "15m BBW=0.64%极度压缩，假突破风险高"
+      }
+    },
+    {
+      "sym": "ZECUSDT",
+      "regime": "CHOP_MID",
+      "status": "ok",
+      "p_up": 0.25,
+      "p_down": 0.55,
+      "ev": -1.041,
+      "n": 20,
+      "hint": "SHORT_BIAS",
+      "intent": {
+        "intent": "NEUTRAL",
+        "confidence": 0.5,
+        "evidence": [
+          "方向分散：↑25% ↓50%",
+          "⚠ 15m微结构极度压缩(BBW=0.54%)=假突破高风险",
+          "近12H有放量K线（成交量>均量×2）",
+          "近12H CHoCH=20次，结构频繁转变中"
+        ],
+        "trap_warning": true,
+        "trap_reason": "15m BBW=0.54%极度压缩，假突破风险高"
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "currency": "ETH",
+  "total_call_oi": 1147727.0,
+  "total_put_oi": 623586.0,
+  "pc_oi_ratio": 0.543,
+  "pc_vol_ratio": 0.556,
+  "interpretation_oi": "\ud83d\udfe2\u504f\u591a(0.5~0.8\uff0cCall\u9700\u6c42\u65fa\u76db)",
+  "interpretation_vol": "\ud83d\udfe2\u504f\u591a(0.5~0.8\uff0cCall\u9700\u6c42\u65fa\u76db)",
+  "near_expiry_ratios": {
+    "13SEP26": 1.461,
+    "14SEP26": 1.113,
+    "15SEP26": 1.399
+  },
+  "near_expiry_pc": 1.461,
+  "pc_score": 8,
+  "ts": 1789260845.7860982
+}

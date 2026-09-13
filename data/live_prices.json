@@ -1,0 +1,22 @@
+{
+  "BTCUSDT": {
+    "price": 79132.8,
+    "ts": 1788825156.8175929,
+    "source": "brahma_360_fix"
+  },
+  "ETHUSDT": {
+    "price": 2491.29,
+    "ts": 1788825156.8328695,
+    "source": "brahma_360_fix"
+  },
+  "BNBUSDT": {
+    "price": 741.0,
+    "ts": 1788825156.8699193,
+    "source": "brahma_360_fix"
+  },
+  "SOLUSDT": {
+    "price": 103.9,
+    "ts": 1788825156.8857923,
+    "source": "brahma_360_fix"
+  }
+}

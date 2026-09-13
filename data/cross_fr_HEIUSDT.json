@@ -1,0 +1,14 @@
+{
+  "symbol": "HEIUSDT",
+  "frs": {
+    "binance": -0.005762,
+    "bybit": 0.005
+  },
+  "spread": 0.01076,
+  "max_ex": "bybit",
+  "min_ex": "binance",
+  "arb_signal": "LONG_BINANCE_SHORT_BYBIT",
+  "arb_score": 10,
+  "bull_fr_bonus": 4,
+  "ts": 1786129063.0205443
+}

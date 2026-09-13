@@ -1,0 +1,372 @@
+{
+  "ts": "2026-09-04T11:43:20Z",
+  "params": {
+    "ATR_SL_MULT": 1.5,
+    "ATR_TP_MULT": 2.0,
+    "MAX_HOLD": 48,
+    "COST": 0.0008,
+    "MIN_NET_EV": 0.0008,
+    "TRAIN_M": 24,
+    "TEST_M": 6,
+    "STEP_M": 3
+  },
+  "validated": [],
+  "all_results": {
+    "BTCUSDT_15m": {
+      "RSI_oversold": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.001277,
+        "ev_std": 0.00063,
+        "ev_min": -0.002634,
+        "ev_max": -7.4e-05,
+        "stability": 0.0,
+        "validated": false
+      },
+      "RSI_overbought": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.001292,
+        "ev_std": 0.00073,
+        "ev_min": -0.002583,
+        "ev_max": -0.000219,
+        "stability": 0.0,
+        "validated": false
+      },
+      "FullBull_golden": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 1,
+        "ev_mean": -0.000548,
+        "ev_std": 0.000593,
+        "ev_min": -0.001287,
+        "ev_max": 0.000849,
+        "stability": 0.056,
+        "validated": false
+      },
+      "FullBear_death": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.000414,
+        "ev_std": 0.000408,
+        "ev_min": -0.001164,
+        "ev_max": 0.000365,
+        "stability": 0.0,
+        "validated": false
+      },
+      "FullBull_BBsqueeze": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.000901,
+        "ev_std": 0.000135,
+        "ev_min": -0.001184,
+        "ev_max": -0.000654,
+        "stability": 0.0,
+        "validated": false
+      },
+      "FullBear_BBsqueeze": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.000789,
+        "ev_std": 0.000223,
+        "ev_min": -0.00133,
+        "ev_max": -0.000475,
+        "stability": 0.0,
+        "validated": false
+      },
+      "VolSpike_bull": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.001038,
+        "ev_std": 0.000245,
+        "ev_min": -0.001516,
+        "ev_max": -0.000613,
+        "stability": 0.0,
+        "validated": false
+      },
+      "VolSpike_bear": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.00099,
+        "ev_std": 0.000302,
+        "ev_min": -0.001686,
+        "ev_max": -0.000462,
+        "stability": 0.0,
+        "validated": false
+      },
+      "RSI_extreme_os_bear": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.001728,
+        "ev_std": 0.000943,
+        "ev_min": -0.00352,
+        "ev_max": 5e-06,
+        "stability": 0.0,
+        "validated": false
+      },
+      "FullBear_VolBear": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.000883,
+        "ev_std": 0.000346,
+        "ev_min": -0.001589,
+        "ev_max": -0.000256,
+        "stability": 0.0,
+        "validated": false
+      },
+      "BB_expansion_bull": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 1,
+        "ev_mean": -0.000449,
+        "ev_std": 0.000477,
+        "ev_min": -0.001253,
+        "ev_max": 0.000826,
+        "stability": 0.056,
+        "validated": false
+      },
+      "BB_expansion_bear": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.000915,
+        "ev_std": 0.000427,
+        "ev_min": -0.001828,
+        "ev_max": 3.1e-05,
+        "stability": 0.0,
+        "validated": false
+      },
+      "Consec4bear_reversal": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.001033,
+        "ev_std": 0.000312,
+        "ev_min": -0.0017,
+        "ev_max": -0.000544,
+        "stability": 0.0,
+        "validated": false
+      },
+      "Consec4bull_reversal": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.000989,
+        "ev_std": 0.000324,
+        "ev_min": -0.001521,
+        "ev_max": -0.000373,
+        "stability": 0.0,
+        "validated": false
+      },
+      "LowPos_RSI": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.000884,
+        "ev_std": 0.000222,
+        "ev_min": -0.001192,
+        "ev_max": -0.000393,
+        "stability": 0.0,
+        "validated": false
+      },
+      "HighPos_RSI": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.00089,
+        "ev_std": 0.000382,
+        "ev_min": -0.001641,
+        "ev_max": -0.00034,
+        "stability": 0.0,
+        "validated": false
+      }
+    },
+    "ETHUSDT_15m": {
+      "RSI_oversold": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.001623,
+        "ev_std": 0.000764,
+        "ev_min": -0.003183,
+        "ev_max": -0.000187,
+        "stability": 0.0,
+        "validated": false
+      },
+      "RSI_overbought": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.001292,
+        "ev_std": 0.000516,
+        "ev_min": -0.002303,
+        "ev_max": -0.000484,
+        "stability": 0.0,
+        "validated": false
+      },
+      "FullBull_golden": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.000867,
+        "ev_std": 0.000779,
+        "ev_min": -0.002839,
+        "ev_max": 0.000304,
+        "stability": 0.0,
+        "validated": false
+      },
+      "FullBear_death": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.001288,
+        "ev_std": 0.000877,
+        "ev_min": -0.003354,
+        "ev_max": -8.5e-05,
+        "stability": 0.0,
+        "validated": false
+      },
+      "FullBull_BBsqueeze": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.000679,
+        "ev_std": 0.000165,
+        "ev_min": -0.001006,
+        "ev_max": -0.000344,
+        "stability": 0.0,
+        "validated": false
+      },
+      "FullBear_BBsqueeze": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.000512,
+        "ev_std": 0.00042,
+        "ev_min": -0.001434,
+        "ev_max": 0.00032,
+        "stability": 0.0,
+        "validated": false
+      },
+      "VolSpike_bull": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.000648,
+        "ev_std": 0.000384,
+        "ev_min": -0.001555,
+        "ev_max": 4.7e-05,
+        "stability": 0.0,
+        "validated": false
+      },
+      "VolSpike_bear": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.000768,
+        "ev_std": 0.000335,
+        "ev_min": -0.001388,
+        "ev_max": -0.000291,
+        "stability": 0.0,
+        "validated": false
+      },
+      "RSI_extreme_os_bear": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.002468,
+        "ev_std": 0.001885,
+        "ev_min": -0.006904,
+        "ev_max": 0.000653,
+        "stability": 0.0,
+        "validated": false
+      },
+      "FullBear_VolBear": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.000855,
+        "ev_std": 0.000466,
+        "ev_min": -0.001935,
+        "ev_max": -5.8e-05,
+        "stability": 0.0,
+        "validated": false
+      },
+      "BB_expansion_bull": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 1,
+        "ev_mean": -0.000512,
+        "ev_std": 0.000741,
+        "ev_min": -0.002116,
+        "ev_max": 0.001042,
+        "stability": 0.056,
+        "validated": false
+      },
+      "BB_expansion_bear": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.000937,
+        "ev_std": 0.000343,
+        "ev_min": -0.001608,
+        "ev_max": -0.00029,
+        "stability": 0.0,
+        "validated": false
+      },
+      "Consec4bear_reversal": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.001274,
+        "ev_std": 0.000361,
+        "ev_min": -0.001995,
+        "ev_max": -0.000745,
+        "stability": 0.0,
+        "validated": false
+      },
+      "Consec4bull_reversal": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.000948,
+        "ev_std": 0.00036,
+        "ev_min": -0.001623,
+        "ev_max": -0.000106,
+        "stability": 0.0,
+        "validated": false
+      },
+      "LowPos_RSI": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.00114,
+        "ev_std": 0.000329,
+        "ev_min": -0.001641,
+        "ev_max": -0.000514,
+        "stability": 0.0,
+        "validated": false
+      },
+      "HighPos_RSI": {
+        "total_folds": 18,
+        "valid_folds": 18,
+        "positive_folds": 0,
+        "ev_mean": -0.001082,
+        "ev_std": 0.000344,
+        "ev_min": -0.001684,
+        "ev_max": -0.000429,
+        "stability": 0.0,
+        "validated": false
+      }
+    }
+  }
+}

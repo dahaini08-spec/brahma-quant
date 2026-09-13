@@ -1,0 +1,1 @@
+{"symbol": "BTCUSDT", "ts": 1789263614.160934, "updated": "2026-09-13T01:40:14.163531+00:00", "source": "rest_hf", "poll_interval": 10, "n_trades": 6955, "window_sec": 3600, "cvd_1h": 73.506, "buy_vol_1h": 606.53, "sell_vol_1h": 533.024, "dir_1h": "BUY_DOMINANT", "cvd_5m": 0.399, "dir_5m": "NEUTRAL", "cvd_1m": 26.51, "dir_1m": "BUY_DOMINANT", "signal": "STRONG_BUY"}

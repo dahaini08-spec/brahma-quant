@@ -1,0 +1,15 @@
+{
+  "symbol": "ONDOUSDT",
+  "price": 0.3705,
+  "whale_buys_usd": 0.0,
+  "whale_sells_usd": 0.0,
+  "whale_net_usd": 0.0,
+  "whale_direction": "\u4e2d\u6027",
+  "whale_event_count": 0,
+  "whale_ls_ratio": 2.379,
+  "whale_ls_trend": "LONG_BUILDING\u2197",
+  "oi_1h_chg": -0.001,
+  "oi_signal": "NORMAL",
+  "whale_score": 8,
+  "ts": 1787398855.4016573
+}

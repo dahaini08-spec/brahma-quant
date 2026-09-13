@@ -1,0 +1,19 @@
+{"symbol": "BTCUSDT", "rate": 98.6, "covered": 70, "total": 71, "missing": ["DevilAgent反向概率"], "healthy": true, "price": 78000.5, "regime": "CHOP_MID", "checked_at": "2026-08-30 18:13 CST"}
+{"symbol": "BTCUSDT", "rate": 100.0, "covered": 71, "total": 71, "missing": [], "healthy": true, "price": 78825.7, "regime": "CHOP_MID", "checked_at": "2026-08-30 22:13 CST"}
+{"symbol": "BTCUSDT", "rate": 100.0, "covered": 71, "total": 71, "missing": [], "healthy": true, "price": 78786.5, "regime": "CHOP_MID", "checked_at": "2026-08-31 02:13 CST"}
+{"symbol": "BTCUSDT", "rate": 95.8, "covered": 68, "total": 71, "missing": ["体制识别", "score_final", "OI四象限"], "healthy": true, "price": 0, "regime": "", "checked_at": "2026-08-31 10:13 CST"}
+{"symbol": "BTCUSDT", "rate": 95.8, "covered": 68, "total": 71, "missing": ["体制识别", "score_final", "OI四象限"], "healthy": true, "price": 0, "regime": "", "checked_at": "2026-08-31 14:13 CST"}
+{"symbol": "BTCUSDT", "rate": 95.8, "covered": 68, "total": 71, "missing": ["体制识别", "score_final", "OI四象限"], "healthy": true, "price": 0, "regime": "", "checked_at": "2026-08-31 18:14 CST"}
+{"symbol": "BTCUSDT", "rate": 95.8, "covered": 68, "total": 71, "missing": ["体制识别", "score_final", "OI四象限"], "healthy": true, "price": 0, "regime": "", "checked_at": "2026-08-31 22:14 CST"}
+{"symbol": "BTCUSDT", "rate": 95.8, "covered": 68, "total": 71, "missing": ["体制识别", "score_final", "OI四象限"], "healthy": true, "price": 0, "regime": "", "checked_at": "2026-09-01 02:14 CST"}
+{"symbol": "BTCUSDT", "rate": 95.8, "covered": 68, "total": 71, "missing": ["体制识别", "score_final", "OI四象限"], "healthy": true, "price": 0, "regime": "", "checked_at": "2026-09-01 10:16 CST"}
+{"symbol": "BTCUSDT", "rate": 100.0, "covered": 12, "total": 12, "missing": [], "healthy": true, "price": 78900.0, "regime": "CHOP_MID", "checked_at": "2026-09-01 14:16 CST"}
+{"symbol": "BTCUSDT", "rate": 58.3, "covered": 7, "total": 12, "missing": ["BTC价格", "体制识别", "SMC结构", "AI议会", "ETH订单流增强"], "healthy": false, "price": 0, "regime": "", "checked_at": "2026-09-01 18:16 CST"}
+{"symbol": "BTCUSDT", "rate": 98.6, "covered": 70, "total": 71, "missing": ["VolSkew"], "healthy": true, "price": 77099.9, "regime": "CHOP_MID", "checked_at": "2026-09-02 02:16 CST"}
+{"symbol": "BTCUSDT", "rate": 100.0, "covered": 71, "total": 71, "missing": [], "healthy": true, "price": 77194.3, "regime": "CHOP_MID", "checked_at": "2026-09-02 06:17 CST"}
+{"symbol": "BTCUSDT", "rate": 98.6, "covered": 70, "total": 71, "missing": ["VolSkew"], "healthy": true, "price": 77157.6, "regime": "CHOP_MID", "checked_at": "2026-09-02 10:17 CST"}
+{"symbol": "BTCUSDT", "rate": 98.6, "covered": 70, "total": 71, "missing": ["方仓Top案例"], "healthy": true, "price": 77281.0, "regime": "CHOP_MID", "checked_at": "2026-09-03 04:01 CST"}
+{"symbol": "BTCUSDT", "rate": 100.0, "covered": 71, "total": 71, "missing": [], "healthy": true, "price": 79901.6, "regime": "CHOP_MID", "checked_at": "2026-09-07 09:57 CST"}
+{"symbol": "BTCUSDT", "rate": 88.7, "covered": 63, "total": 71, "missing": ["体制识别", "score_final", "RSI三周期", "清算集群密集区", "VolSkew", "方仓Top案例", "止损池警告", "体制门控乘数"], "healthy": false, "price": 0, "regime": "", "checked_at": "2026-09-13 08:22 CST"}
+{"symbol": "BTCUSDT", "rate": 98.6, "covered": 70, "total": 71, "missing": ["score_final"], "healthy": true, "price": 77227.6, "regime": "CHOP_MID", "checked_at": "2026-09-13 08:25 CST"}
+{"symbol": "BTCUSDT", "rate": 91.5, "covered": 65, "total": 71, "missing": ["S0_结论", "S1_猎杀地图", "S2_非对称机会", "S3_市场状态", "GATE0_grade", "SPOT_WR矩阵"], "healthy": true, "price": 77299.5, "regime": "CHOP_MID", "checked_at": "2026-09-13 09:25 CST"}

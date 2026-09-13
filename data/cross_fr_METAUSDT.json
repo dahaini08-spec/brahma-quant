@@ -1,0 +1,15 @@
+{
+  "symbol": "METAUSDT",
+  "frs": {
+    "binance": 0.005147,
+    "bybit": 0.023661,
+    "okx": 0.0
+  },
+  "spread": 0.02366,
+  "max_ex": "bybit",
+  "min_ex": "okx",
+  "arb_signal": "LONG_OKX_SHORT_BYBIT",
+  "arb_score": 10,
+  "bull_fr_bonus": 0,
+  "ts": 1787175915.2161024
+}

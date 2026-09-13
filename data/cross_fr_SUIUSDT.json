@@ -1,0 +1,15 @@
+{
+  "symbol": "SUIUSDT",
+  "frs": {
+    "binance": 0.01,
+    "bybit": 0.01,
+    "okx": 0.01
+  },
+  "spread": 0.0,
+  "max_ex": "binance",
+  "min_ex": "binance",
+  "arb_signal": "NONE",
+  "arb_score": 0,
+  "bull_fr_bonus": 0,
+  "ts": 1787567214.925132
+}

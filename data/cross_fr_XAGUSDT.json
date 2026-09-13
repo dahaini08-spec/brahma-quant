@@ -1,0 +1,15 @@
+{
+  "symbol": "XAGUSDT",
+  "frs": {
+    "binance": 0.012476,
+    "bybit": 0.0061519999999999995,
+    "okx": 0.04217478045582
+  },
+  "spread": 0.03602,
+  "max_ex": "okx",
+  "min_ex": "bybit",
+  "arb_signal": "LONG_BYBIT_SHORT_OKX",
+  "arb_score": 10,
+  "bull_fr_bonus": 0,
+  "ts": 1788345654.5805516
+}

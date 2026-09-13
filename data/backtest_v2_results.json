@@ -1,0 +1,696 @@
+{
+  "ts": "2026-09-08T07:23:28.347650Z",
+  "config": {
+    "symbols": [
+      "BTC",
+      "ETH"
+    ],
+    "tfs": [
+      "15m",
+      "1h",
+      "4h"
+    ],
+    "start": "2022-01-01"
+  },
+  "summary": {
+    "total_signals": 64822,
+    "global_ic": 0.0101,
+    "global_wr": 52.6
+  },
+  "global_wr_matrix": {
+    "BEAR_TREND:SHORT:0-100": {
+      "n": 20340,
+      "wr": 52.0,
+      "wilson_low": 51.3,
+      "avg_pnl": 0.125,
+      "ev": 0.005,
+      "total_pnl": 2547.85
+    },
+    "BEAR_TREND:SHORT:100-115": {
+      "n": 17188,
+      "wr": 52.7,
+      "wilson_low": 52.0,
+      "avg_pnl": 0.156,
+      "ev": 0.009,
+      "total_pnl": 2688.85
+    },
+    "BULL_TREND:LONG:0-100": {
+      "n": 8557,
+      "wr": 55.3,
+      "wilson_low": 54.3,
+      "avg_pnl": 0.244,
+      "ev": 0.026,
+      "total_pnl": 2088.55
+    },
+    "BULL_TREND:LONG:100-115": {
+      "n": 7025,
+      "wr": 55.8,
+      "wilson_low": 54.6,
+      "avg_pnl": 0.292,
+      "ev": 0.034,
+      "total_pnl": 2054.47
+    },
+    "BEAR_TREND:SHORT:115-130": {
+      "n": 4341,
+      "wr": 51.9,
+      "wilson_low": 50.4,
+      "avg_pnl": 0.137,
+      "ev": 0.005,
+      "total_pnl": 594.47
+    },
+    "BEAR_RECOVERY:LONG:0-100": {
+      "n": 2357,
+      "wr": 45.2,
+      "wilson_low": 43.2,
+      "avg_pnl": -0.344,
+      "ev": -0.344,
+      "total_pnl": -810.44
+    },
+    "BULL_TREND:LONG:115-130": {
+      "n": 1801,
+      "wr": 53.9,
+      "wilson_low": 51.6,
+      "avg_pnl": 0.226,
+      "ev": 0.018,
+      "total_pnl": 407.49
+    },
+    "BEAR_RECOVERY:LONG:100-115": {
+      "n": 1128,
+      "wr": 42.5,
+      "wilson_low": 39.6,
+      "avg_pnl": -0.37,
+      "ev": -0.37,
+      "total_pnl": -417.81
+    },
+    "BEAR_EARLY:LONG:0-100": {
+      "n": 660,
+      "wr": 63.8,
+      "wilson_low": 60.1,
+      "avg_pnl": 0.664,
+      "ev": 0.183,
+      "total_pnl": 437.92
+    },
+    "BEAR_EARLY:SHORT:0-100": {
+      "n": 531,
+      "wr": 31.3,
+      "wilson_low": 27.5,
+      "avg_pnl": -0.765,
+      "ev": -0.765,
+      "total_pnl": -406.47
+    },
+    "BEAR_EARLY:LONG:100-115": {
+      "n": 310,
+      "wr": 57.4,
+      "wilson_low": 51.9,
+      "avg_pnl": 0.573,
+      "ev": 0.085,
+      "total_pnl": 177.57
+    },
+    "BULL_TREND:LONG:130-145": {
+      "n": 276,
+      "wr": 54.0,
+      "wilson_low": 48.1,
+      "avg_pnl": 0.242,
+      "ev": 0.019,
+      "total_pnl": 66.8
+    },
+    "BEAR_EARLY:SHORT:100-115": {
+      "n": 252,
+      "wr": 33.3,
+      "wilson_low": 27.8,
+      "avg_pnl": -0.732,
+      "ev": -0.732,
+      "total_pnl": -184.56
+    },
+    "BEAR_RECOVERY:LONG:115-130": {
+      "n": 56,
+      "wr": 35.7,
+      "wilson_low": 24.5,
+      "avg_pnl": -0.832,
+      "ev": -0.832,
+      "total_pnl": -46.61
+    }
+  },
+  "by_tf": {
+    "BTC/15m": {
+      "n": 26996,
+      "wr": 52.5,
+      "avg_pnl": 0.117,
+      "ic": 0.0105,
+      "wr_matrix": {
+        "BEAR_TREND:SHORT:0-100": {
+          "n": 8448,
+          "wr": 52.0,
+          "wilson_low": 50.9,
+          "avg_pnl": 0.103,
+          "ev": 0.004,
+          "total_pnl": 872.9
+        },
+        "BEAR_TREND:SHORT:100-115": {
+          "n": 6145,
+          "wr": 52.4,
+          "wilson_low": 51.2,
+          "avg_pnl": 0.125,
+          "ev": 0.006,
+          "total_pnl": 767.47
+        },
+        "BULL_TREND:LONG:0-100": {
+          "n": 4011,
+          "wr": 56.0,
+          "wilson_low": 54.4,
+          "avg_pnl": 0.248,
+          "ev": 0.03,
+          "total_pnl": 993.37
+        },
+        "BULL_TREND:LONG:100-115": {
+          "n": 2852,
+          "wr": 56.2,
+          "wilson_low": 54.3,
+          "avg_pnl": 0.242,
+          "ev": 0.03,
+          "total_pnl": 690.6
+        },
+        "BEAR_TREND:SHORT:115-130": {
+          "n": 1852,
+          "wr": 51.5,
+          "wilson_low": 49.2,
+          "avg_pnl": 0.115,
+          "ev": 0.003,
+          "total_pnl": 212.9
+        },
+        "BEAR_RECOVERY:LONG:0-100": {
+          "n": 1256,
+          "wr": 45.3,
+          "wilson_low": 42.6,
+          "avg_pnl": -0.315,
+          "ev": -0.315,
+          "total_pnl": -396.21
+        },
+        "BULL_TREND:LONG:115-130": {
+          "n": 856,
+          "wr": 55.3,
+          "wilson_low": 51.9,
+          "avg_pnl": 0.29,
+          "ev": 0.03,
+          "total_pnl": 248.31
+        },
+        "BEAR_RECOVERY:LONG:100-115": {
+          "n": 555,
+          "wr": 40.0,
+          "wilson_low": 36.0,
+          "avg_pnl": -0.424,
+          "ev": -0.424,
+          "total_pnl": -235.17
+        },
+        "BEAR_EARLY:LONG:0-100": {
+          "n": 345,
+          "wr": 62.9,
+          "wilson_low": 57.7,
+          "avg_pnl": 0.591,
+          "ev": 0.152,
+          "total_pnl": 203.84
+        },
+        "BEAR_EARLY:SHORT:0-100": {
+          "n": 257,
+          "wr": 30.4,
+          "wilson_low": 25.1,
+          "avg_pnl": -0.707,
+          "ev": -0.707,
+          "total_pnl": -181.67
+        },
+        "BULL_TREND:LONG:130-145": {
+          "n": 152,
+          "wr": 52.0,
+          "wilson_low": 44.1,
+          "avg_pnl": 0.196,
+          "ev": 0.008,
+          "total_pnl": 29.86
+        },
+        "BEAR_EARLY:SHORT:100-115": {
+          "n": 119,
+          "wr": 31.9,
+          "wilson_low": 24.2,
+          "avg_pnl": -0.715,
+          "ev": -0.715,
+          "total_pnl": -85.06
+        },
+        "BEAR_EARLY:LONG:100-115": {
+          "n": 118,
+          "wr": 52.5,
+          "wilson_low": 43.6,
+          "avg_pnl": 0.456,
+          "ev": 0.023,
+          "total_pnl": 53.76
+        },
+        "BEAR_RECOVERY:LONG:115-130": {
+          "n": 30,
+          "wr": 36.7,
+          "wilson_low": 21.9,
+          "avg_pnl": -0.815,
+          "ev": -0.815,
+          "total_pnl": -24.46
+        }
+      }
+    },
+    "BTC/1h": {
+      "n": 4964,
+      "wr": 52.8,
+      "avg_pnl": 0.178,
+      "ic": -0.0159,
+      "wr_matrix": {
+        "BEAR_TREND:SHORT:100-115": {
+          "n": 1558,
+          "wr": 53.5,
+          "wilson_low": 51.0,
+          "avg_pnl": 0.212,
+          "ev": 0.015,
+          "total_pnl": 330.46
+        },
+        "BEAR_TREND:SHORT:0-100": {
+          "n": 1270,
+          "wr": 51.6,
+          "wilson_low": 48.8,
+          "avg_pnl": 0.148,
+          "ev": 0.005,
+          "total_pnl": 187.56
+        },
+        "BULL_TREND:LONG:100-115": {
+          "n": 747,
+          "wr": 55.6,
+          "wilson_low": 52.0,
+          "avg_pnl": 0.315,
+          "ev": 0.035,
+          "total_pnl": 235.66
+        },
+        "BULL_TREND:LONG:0-100": {
+          "n": 631,
+          "wr": 56.4,
+          "wilson_low": 52.5,
+          "avg_pnl": 0.283,
+          "ev": 0.036,
+          "total_pnl": 178.59
+        },
+        "BEAR_TREND:SHORT:115-130": {
+          "n": 332,
+          "wr": 50.6,
+          "wilson_low": 45.2,
+          "avg_pnl": 0.093,
+          "ev": 0.001,
+          "total_pnl": 30.75
+        },
+        "BULL_TREND:LONG:115-130": {
+          "n": 161,
+          "wr": 47.2,
+          "wilson_low": 39.6,
+          "avg_pnl": 0.031,
+          "ev": -0.002,
+          "total_pnl": 5.05
+        },
+        "BEAR_RECOVERY:LONG:100-115": {
+          "n": 133,
+          "wr": 41.4,
+          "wilson_low": 33.3,
+          "avg_pnl": -0.363,
+          "ev": -0.363,
+          "total_pnl": -48.25
+        },
+        "BEAR_RECOVERY:LONG:0-100": {
+          "n": 80,
+          "wr": 45.0,
+          "wilson_low": 34.6,
+          "avg_pnl": -0.467,
+          "ev": -0.467,
+          "total_pnl": -37.39
+        },
+        "BEAR_EARLY:LONG:100-115": {
+          "n": 20,
+          "wr": 65.0,
+          "wilson_low": 43.3,
+          "avg_pnl": 0.474,
+          "ev": 0.142,
+          "total_pnl": 9.48
+        },
+        "BULL_TREND:LONG:130-145": {
+          "n": 13,
+          "wr": 38.5,
+          "wilson_low": 17.7,
+          "avg_pnl": 0.071,
+          "ev": -0.016,
+          "total_pnl": 0.92
+        },
+        "BEAR_EARLY:SHORT:100-115": {
+          "n": 11,
+          "wr": 18.2,
+          "wilson_low": 5.1,
+          "avg_pnl": -1.287,
+          "ev": -1.287,
+          "total_pnl": -14.16
+        },
+        "BEAR_EARLY:SHORT:0-100": {
+          "n": 4,
+          "wr": 50.0,
+          "wilson_low": 0,
+          "avg_pnl": -0.275,
+          "ev": -0.275,
+          "total_pnl": -1.1
+        },
+        "BEAR_RECOVERY:LONG:115-130": {
+          "n": 4,
+          "wr": 100.0,
+          "wilson_low": 0,
+          "avg_pnl": 1.278,
+          "ev": 1.278,
+          "total_pnl": 5.11
+        }
+      }
+    },
+    "BTC/4h": {
+      "n": 1149,
+      "wr": 51.5,
+      "avg_pnl": 0.091,
+      "ic": -0.0217,
+      "wr_matrix": {
+        "BEAR_TREND:SHORT:100-115": {
+          "n": 684,
+          "wr": 52.6,
+          "wilson_low": 48.9,
+          "avg_pnl": 0.128,
+          "ev": 0.007,
+          "total_pnl": 87.27
+        },
+        "BULL_TREND:LONG:100-115": {
+          "n": 322,
+          "wr": 50.9,
+          "wilson_low": 45.5,
+          "avg_pnl": 0.064,
+          "ev": 0.001,
+          "total_pnl": 20.68
+        },
+        "BEAR_TREND:SHORT:115-130": {
+          "n": 90,
+          "wr": 50.0,
+          "wilson_low": 39.9,
+          "avg_pnl": 0.002,
+          "ev": 0.0,
+          "total_pnl": 0.2
+        },
+        "BULL_TREND:LONG:115-130": {
+          "n": 44,
+          "wr": 45.5,
+          "wilson_low": 31.7,
+          "avg_pnl": 0.022,
+          "ev": -0.002,
+          "total_pnl": 0.98
+        },
+        "BEAR_RECOVERY:LONG:100-115": {
+          "n": 9,
+          "wr": 33.3,
+          "wilson_low": 12.1,
+          "avg_pnl": -0.539,
+          "ev": -0.539,
+          "total_pnl": -4.85
+        }
+      }
+    },
+    "ETH/15m": {
+      "n": 25891,
+      "wr": 52.6,
+      "avg_pnl": 0.147,
+      "ic": 0.0135,
+      "wr_matrix": {
+        "BEAR_TREND:SHORT:0-100": {
+          "n": 9253,
+          "wr": 52.1,
+          "wilson_low": 51.1,
+          "avg_pnl": 0.14,
+          "ev": 0.006,
+          "total_pnl": 1291.08
+        },
+        "BEAR_TREND:SHORT:100-115": {
+          "n": 6416,
+          "wr": 52.8,
+          "wilson_low": 51.6,
+          "avg_pnl": 0.148,
+          "ev": 0.008,
+          "total_pnl": 948.85
+        },
+        "BULL_TREND:LONG:0-100": {
+          "n": 3380,
+          "wr": 54.9,
+          "wilson_low": 53.2,
+          "avg_pnl": 0.261,
+          "ev": 0.026,
+          "total_pnl": 882.77
+        },
+        "BULL_TREND:LONG:100-115": {
+          "n": 2250,
+          "wr": 55.5,
+          "wilson_low": 53.5,
+          "avg_pnl": 0.319,
+          "ev": 0.035,
+          "total_pnl": 717.9
+        },
+        "BEAR_TREND:SHORT:115-130": {
+          "n": 1699,
+          "wr": 52.6,
+          "wilson_low": 50.2,
+          "avg_pnl": 0.175,
+          "ev": 0.009,
+          "total_pnl": 297.01
+        },
+        "BEAR_RECOVERY:LONG:0-100": {
+          "n": 959,
+          "wr": 45.0,
+          "wilson_low": 41.9,
+          "avg_pnl": -0.389,
+          "ev": -0.389,
+          "total_pnl": -372.76
+        },
+        "BULL_TREND:LONG:115-130": {
+          "n": 612,
+          "wr": 54.7,
+          "wilson_low": 50.8,
+          "avg_pnl": 0.202,
+          "ev": 0.019,
+          "total_pnl": 123.85
+        },
+        "BEAR_RECOVERY:LONG:100-115": {
+          "n": 352,
+          "wr": 47.2,
+          "wilson_low": 42.0,
+          "avg_pnl": -0.346,
+          "ev": -0.346,
+          "total_pnl": -121.79
+        },
+        "BEAR_EARLY:LONG:0-100": {
+          "n": 315,
+          "wr": 64.8,
+          "wilson_low": 59.3,
+          "avg_pnl": 0.743,
+          "ev": 0.219,
+          "total_pnl": 234.08
+        },
+        "BEAR_EARLY:SHORT:0-100": {
+          "n": 269,
+          "wr": 32.0,
+          "wilson_low": 26.7,
+          "avg_pnl": -0.824,
+          "ev": -0.824,
+          "total_pnl": -221.71
+        },
+        "BEAR_EARLY:LONG:100-115": {
+          "n": 153,
+          "wr": 57.5,
+          "wilson_low": 49.6,
+          "avg_pnl": 0.643,
+          "ev": 0.097,
+          "total_pnl": 98.39
+        },
+        "BEAR_EARLY:SHORT:100-115": {
+          "n": 114,
+          "wr": 37.7,
+          "wilson_low": 29.4,
+          "avg_pnl": -0.625,
+          "ev": -0.625,
+          "total_pnl": -71.3
+        },
+        "BULL_TREND:LONG:130-145": {
+          "n": 101,
+          "wr": 58.4,
+          "wilson_low": 48.7,
+          "avg_pnl": 0.279,
+          "ev": 0.047,
+          "total_pnl": 28.21
+        },
+        "BEAR_RECOVERY:LONG:115-130": {
+          "n": 18,
+          "wr": 27.8,
+          "wilson_low": 12.5,
+          "avg_pnl": -1.006,
+          "ev": -1.006,
+          "total_pnl": -18.1
+        }
+      }
+    },
+    "ETH/1h": {
+      "n": 4699,
+      "wr": 52.5,
+      "avg_pnl": 0.198,
+      "ic": 0.0197,
+      "wr_matrix": {
+        "BEAR_TREND:SHORT:100-115": {
+          "n": 1662,
+          "wr": 52.4,
+          "wilson_low": 50.0,
+          "avg_pnl": 0.208,
+          "ev": 0.01,
+          "total_pnl": 344.96
+        },
+        "BEAR_TREND:SHORT:0-100": {
+          "n": 1369,
+          "wr": 51.9,
+          "wilson_low": 49.2,
+          "avg_pnl": 0.143,
+          "ev": 0.005,
+          "total_pnl": 196.31
+        },
+        "BULL_TREND:LONG:100-115": {
+          "n": 586,
+          "wr": 57.3,
+          "wilson_low": 53.3,
+          "avg_pnl": 0.503,
+          "ev": 0.074,
+          "total_pnl": 294.71
+        },
+        "BULL_TREND:LONG:0-100": {
+          "n": 535,
+          "wr": 51.6,
+          "wilson_low": 47.4,
+          "avg_pnl": 0.063,
+          "ev": 0.002,
+          "total_pnl": 33.82
+        },
+        "BEAR_TREND:SHORT:115-130": {
+          "n": 281,
+          "wr": 52.3,
+          "wilson_low": 46.5,
+          "avg_pnl": 0.204,
+          "ev": 0.009,
+          "total_pnl": 57.38
+        },
+        "BULL_TREND:LONG:115-130": {
+          "n": 92,
+          "wr": 54.3,
+          "wilson_low": 44.2,
+          "avg_pnl": 0.301,
+          "ev": 0.026,
+          "total_pnl": 27.67
+        },
+        "BEAR_RECOVERY:LONG:100-115": {
+          "n": 70,
+          "wr": 37.1,
+          "wilson_low": 26.8,
+          "avg_pnl": -0.278,
+          "ev": -0.278,
+          "total_pnl": -19.46
+        },
+        "BEAR_RECOVERY:LONG:0-100": {
+          "n": 62,
+          "wr": 46.8,
+          "wilson_low": 34.9,
+          "avg_pnl": -0.066,
+          "ev": -0.066,
+          "total_pnl": -4.08
+        },
+        "BEAR_EARLY:LONG:100-115": {
+          "n": 19,
+          "wr": 78.9,
+          "wilson_low": 56.7,
+          "avg_pnl": 0.839,
+          "ev": 0.486,
+          "total_pnl": 15.94
+        },
+        "BULL_TREND:LONG:130-145": {
+          "n": 10,
+          "wr": 60.0,
+          "wilson_low": 31.3,
+          "avg_pnl": 0.781,
+          "ev": 0.156,
+          "total_pnl": 7.81
+        },
+        "BEAR_EARLY:SHORT:100-115": {
+          "n": 8,
+          "wr": 12.5,
+          "wilson_low": 2.2,
+          "avg_pnl": -1.757,
+          "ev": -1.757,
+          "total_pnl": -14.05
+        },
+        "BEAR_RECOVERY:LONG:115-130": {
+          "n": 4,
+          "wr": 0.0,
+          "wilson_low": 0,
+          "avg_pnl": -2.29,
+          "ev": -2.29,
+          "total_pnl": -9.16
+        },
+        "BEAR_EARLY:SHORT:0-100": {
+          "n": 1,
+          "wr": 0.0,
+          "wilson_low": 0,
+          "avg_pnl": -2.0,
+          "ev": -2.0,
+          "total_pnl": -2.0
+        }
+      }
+    },
+    "ETH/4h": {
+      "n": 1123,
+      "wr": 54.6,
+      "avg_pnl": 0.28,
+      "ic": -0.0025,
+      "wr_matrix": {
+        "BEAR_TREND:SHORT:100-115": {
+          "n": 723,
+          "wr": 54.2,
+          "wilson_low": 50.6,
+          "avg_pnl": 0.29,
+          "ev": 0.024,
+          "total_pnl": 209.82
+        },
+        "BULL_TREND:LONG:100-115": {
+          "n": 268,
+          "wr": 56.3,
+          "wilson_low": 50.4,
+          "avg_pnl": 0.354,
+          "ev": 0.045,
+          "total_pnl": 94.91
+        },
+        "BEAR_TREND:SHORT:115-130": {
+          "n": 87,
+          "wr": 52.9,
+          "wilson_low": 42.5,
+          "avg_pnl": -0.043,
+          "ev": -0.043,
+          "total_pnl": -3.78
+        },
+        "BULL_TREND:LONG:115-130": {
+          "n": 36,
+          "wr": 47.2,
+          "wilson_low": 32.0,
+          "avg_pnl": 0.045,
+          "ev": -0.003,
+          "total_pnl": 1.63
+        },
+        "BEAR_RECOVERY:LONG:100-115": {
+          "n": 9,
+          "wr": 77.8,
+          "wilson_low": 45.3,
+          "avg_pnl": 1.3,
+          "ev": 0.722,
+          "total_pnl": 11.7
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,174 @@
+{
+  "timestamp": "2026-07-08T09:55:58.747688+00:00",
+  "status": "OK",
+  "n_records": 63,
+  "elapsed_seconds": 2.14,
+  "granger": {
+    "n_samples": 63,
+    "results": {
+      "score": {
+        "min_p_value": 0.5867,
+        "best_lag": 1,
+        "significant": false,
+        "causal_strength": 0
+      },
+      "structure_grade": {
+        "error": "The x values include a column with constant values and so th"
+      },
+      "rr1": {
+        "error": "The x values include a column with constant values and so th"
+      }
+    },
+    "significant_dims": []
+  },
+  "lingam": {
+    "n_samples": 63,
+    "results": {
+      "score": {
+        "spearman_rho": -0.34,
+        "p_spearman": 0.0065,
+        "pointbiserial_r": -0.339,
+        "non_gaussian": false,
+        "causal_strength": 0.337,
+        "direction": "negative"
+      },
+      "structure_grade": {
+        "spearman_rho": 0.697,
+        "p_spearman": 0.0,
+        "pointbiserial_r": 0.852,
+        "non_gaussian": true,
+        "causal_strength": 0.905,
+        "direction": "positive"
+      },
+      "rr1": {
+        "spearman_rho": NaN,
+        "p_spearman": NaN,
+        "pointbiserial_r": NaN,
+        "non_gaussian": false,
+        "causal_strength": NaN,
+        "direction": "negative"
+      },
+      "gap_pct": {
+        "spearman_rho": 0.058,
+        "p_spearman": 0.6493,
+        "pointbiserial_r": 0.058,
+        "non_gaussian": true,
+        "causal_strength": 0.027,
+        "direction": "positive"
+      },
+      "regime_bear": {
+        "spearman_rho": -0.03,
+        "p_spearman": 0.8181,
+        "pointbiserial_r": -0.03,
+        "non_gaussian": true,
+        "causal_strength": 0.007,
+        "direction": "negative"
+      },
+      "regime_chop": {
+        "spearman_rho": 0.03,
+        "p_spearman": 0.8181,
+        "pointbiserial_r": 0.03,
+        "non_gaussian": true,
+        "causal_strength": 0.007,
+        "direction": "positive"
+      },
+      "dir_short": {
+        "spearman_rho": NaN,
+        "p_spearman": NaN,
+        "pointbiserial_r": NaN,
+        "non_gaussian": false,
+        "causal_strength": NaN,
+        "direction": "negative"
+      },
+      "score_causal_pct": {
+        "spearman_rho": NaN,
+        "p_spearman": NaN,
+        "pointbiserial_r": NaN,
+        "non_gaussian": false,
+        "causal_strength": NaN,
+        "direction": "negative"
+      }
+    },
+    "ranking": [
+      [
+        "structure_grade",
+        0.905
+      ],
+      [
+        "score",
+        0.337
+      ],
+      [
+        "rr1",
+        NaN
+      ],
+      [
+        "gap_pct",
+        0.027
+      ],
+      [
+        "regime_bear",
+        0.007
+      ],
+      [
+        "regime_chop",
+        0.007
+      ],
+      [
+        "dir_short",
+        NaN
+      ],
+      [
+        "score_causal_pct",
+        NaN
+      ]
+    ],
+    "top_causal_dims": [
+      "structure_grade",
+      "score",
+      "rr1"
+    ]
+  },
+  "pc_conditional": {
+    "regime_analysis": {
+      "BEAR_EARLY": {
+        "n": 52,
+        "tp_rate": 0.808,
+        "score_effect": -0.373,
+        "grade_effect": NaN,
+        "p_score": 0.0065,
+        "p_grade": NaN,
+        "score_causal": true,
+        "grade_causal": false
+      }
+    },
+    "drift_warnings": []
+  },
+  "conclusions": [
+    {
+      "type": "GRANGER_NULL",
+      "level": "REFERENCE",
+      "finding": "无维度通过 Granger 显著性检验（p<0.05）",
+      "action": "评分系统目前主要捕捉相关性，因果机制需进一步建立"
+    },
+    {
+      "type": "LINGAM_RANKING",
+      "level": "REFERENCE",
+      "finding": "因果强度排名 Top3: ['structure_grade', 'score', 'rr1']",
+      "action": "建议将 top 维度在 brahma_core 中标记为 CAUSAL 等级"
+    },
+    {
+      "type": "REGIME_STABLE",
+      "level": "OK",
+      "finding": "本次运行未检测到体制漂移（与上次报告相比TP率稳定）",
+      "action": "无需调整"
+    },
+    {
+      "type": "DATA_WARNING",
+      "level": "WARNING",
+      "finding": "n=63 < 100，本报告为参考级，不可作核心参数调整依据",
+      "action": "继续积累信号，n≥100后升级为铁证级报告"
+    }
+  ],
+  "data_quality": "REFERENCE"
+}

@@ -1,0 +1,24 @@
+{
+  "ts": "2026-06-09T16:36:20.898795+00:00",
+  "n_settled": 63,
+  "n_timeout": 58,
+  "wr": 0.8254,
+  "sr_raw": 24.9218,
+  "skewness": -1.1568,
+  "kurtosis": 3.0922,
+  "n_trials": 12,
+  "dsr": {
+    "observed_sr": 24.9218,
+    "deflated_sr": 1.0,
+    "p_value": 0.0,
+    "p_value_pct": "0.000%",
+    "n_trials": 12,
+    "n_obs": 63,
+    "z_score": 9.0365,
+    "sr_bench_adj": 3.3079,
+    "confidence": "极高置信 (99%+)",
+    "significance": "★★★★★",
+    "action": "✅ 允许进入影子验证",
+    "interpretation": "通过多重测试校正，策略有真实技能"
+  }
+}

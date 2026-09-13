@@ -1,0 +1,15 @@
+{
+  "symbol": "NIGHTUSDT",
+  "price": 0.01894,
+  "whale_buys_usd": 0.0,
+  "whale_sells_usd": 0.0,
+  "whale_net_usd": 0.0,
+  "whale_direction": "\u4e2d\u6027",
+  "whale_event_count": 0,
+  "whale_ls_ratio": 2.902,
+  "whale_ls_trend": "STABLE\u2192",
+  "oi_1h_chg": -0.03,
+  "oi_signal": "NORMAL",
+  "whale_score": 0,
+  "ts": 1787175810.0350654
+}

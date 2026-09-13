@@ -1,0 +1,23 @@
+{
+  "ts": "2026-07-08T14:48:03.286110+00:00",
+  "total_keys": 5,
+  "evaluated": 2,
+  "recommendations": [
+    {
+      "type": "WIDEN_SL",
+      "key": "BULL_TREND:LONG:140-159",
+      "action": "建议 BULL_TREND×LONG SL宽度 +0.3%（超时率=100%）",
+      "reason": "TIMEOUT率=100%>50%，SL可能过紧，信号方向正确但被提前止损",
+      "priority": "MEDIUM"
+    },
+    {
+      "type": "WIDEN_SL",
+      "key": "BULL_TREND:LONG:<120",
+      "action": "建议 BULL_TREND×LONG SL宽度 +0.3%（超时率=100%）",
+      "reason": "TIMEOUT率=100%>50%，SL可能过紧，信号方向正确但被提前止损",
+      "priority": "MEDIUM"
+    }
+  ],
+  "alerts": [],
+  "summary": "2条建议 / 0条警报"
+}

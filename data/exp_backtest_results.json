@@ -1,0 +1,97 @@
+{
+  "_meta": {
+    "generated": "2026-08-29 06:25 UTC",
+    "oos_start": 2024
+  },
+  "by_symbol": {
+    "BTCUSDT": {
+      "with_exp": {
+        "label": "BTCUSDT+经验矩阵",
+        "n": 295,
+        "wr": 0.488,
+        "ev": 0.445,
+        "total_pnl": 131.25,
+        "sharpe": 2.56,
+        "maxdd": 18.95
+      },
+      "bare": {
+        "label": "BTCUSDT基础体制",
+        "n": 387,
+        "wr": 0.468,
+        "ev": 0.33,
+        "total_pnl": 127.65,
+        "sharpe": 1.94,
+        "maxdd": 27.65
+      },
+      "elapsed": 2.1
+    },
+    "ETHUSDT": {
+      "with_exp": {
+        "label": "ETHUSDT+经验矩阵",
+        "n": 482,
+        "wr": 0.473,
+        "ev": 0.355,
+        "total_pnl": 171.15,
+        "sharpe": 2.05,
+        "maxdd": 26.3
+      },
+      "bare": {
+        "label": "ETHUSDT基础体制",
+        "n": 617,
+        "wr": 0.464,
+        "ev": 0.299,
+        "total_pnl": 184.4,
+        "sharpe": 1.76,
+        "maxdd": 22.35
+      },
+      "elapsed": 2.0
+    }
+  },
+  "regime_dir_matrix": {
+    "BEAR_TREND:SHORT": {
+      "label": "BEAR_TREND:SHORT",
+      "n": 963,
+      "wr": 0.441,
+      "ev": 0.157,
+      "total_pnl": 150.85,
+      "sharpe": 1.0,
+      "maxdd": 43.95
+    },
+    "BEAR_RECOVERY:LONG": {
+      "label": "BEAR_RECOVERY:LONG",
+      "n": 154,
+      "wr": 0.545,
+      "ev": 0.677,
+      "total_pnl": 104.3,
+      "sharpe": 4.3,
+      "maxdd": 9.6
+    },
+    "BULL_EARLY:LONG": {
+      "label": "BULL_EARLY:LONG",
+      "n": 108,
+      "wr": 0.509,
+      "ev": 0.633,
+      "total_pnl": 68.35,
+      "sharpe": 3.2,
+      "maxdd": 16.7
+    },
+    "BULL_TREND:LONG": {
+      "label": "BULL_TREND:LONG",
+      "n": 401,
+      "wr": 0.464,
+      "ev": 0.349,
+      "total_pnl": 139.95,
+      "sharpe": 1.78,
+      "maxdd": 23.95
+    },
+    "BEAR_EARLY:SHORT": {
+      "label": "BEAR_EARLY:SHORT",
+      "n": 142,
+      "wr": 0.528,
+      "ev": 0.591,
+      "total_pnl": 83.9,
+      "sharpe": 3.74,
+      "maxdd": 12.8
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "symbol": "ZBTUSDT",
+  "frs": {
+    "binance": -0.022254,
+    "bybit": -0.052822,
+    "okx": 0.005
+  },
+  "spread": 0.05782,
+  "max_ex": "okx",
+  "min_ex": "bybit",
+  "arb_signal": "LONG_BYBIT_SHORT_OKX",
+  "arb_score": 10,
+  "bull_fr_bonus": 4,
+  "ts": 1786129125.5993257
+}

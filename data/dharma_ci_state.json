@@ -1,0 +1,495 @@
+{
+  "runs": 34,
+  "last_run": "2026-06-12T12:50:44.394382+00:00",
+  "last_status": "partial",
+  "total_experiments": 132,
+  "improvements": [
+    {
+      "type": "weight_increase",
+      "dim": "D11",
+      "param": "whale_max_score",
+      "old": 30,
+      "new": 38,
+      "confidence": "HIGH",
+      "reason": "v7回测 BTC PF=2.20 ETH PF=2.15 avg=1.92"
+    },
+    {
+      "type": "engine_status",
+      "dim": "D03",
+      "verdict": "IMPROVED",
+      "sensitivity_pct": 100.0
+    },
+    {
+      "type": "weight_increase",
+      "dim": "D11",
+      "param": "whale_max_score",
+      "old": 30,
+      "new": 38,
+      "confidence": "HIGH",
+      "reason": "v7回测 BTC PF=2.20 ETH PF=2.15 avg=1.92"
+    },
+    {
+      "type": "engine_status",
+      "dim": "D03",
+      "verdict": "IMPROVED",
+      "sensitivity_pct": 100.0
+    },
+    {
+      "type": "ml_status",
+      "module": "lstm",
+      "temp": "HOT",
+      "buffer": 159,
+      "verdict": "ACTIVE"
+    },
+    {
+      "type": "weight_increase",
+      "dim": "D11",
+      "param": "whale_max_score",
+      "old": 30,
+      "new": 38,
+      "confidence": "HIGH",
+      "reason": "v7回测 BTC PF=2.20 ETH PF=2.15 avg=1.92"
+    },
+    {
+      "type": "engine_status",
+      "dim": "D03",
+      "verdict": "IMPROVED",
+      "sensitivity_pct": 100.0
+    },
+    {
+      "type": "ml_status",
+      "module": "lstm",
+      "temp": "HOT",
+      "buffer": 159,
+      "verdict": "ACTIVE"
+    },
+    {
+      "type": "weight_increase",
+      "dim": "D11",
+      "param": "whale_max_score",
+      "old": 30,
+      "new": 38,
+      "confidence": "HIGH",
+      "reason": "v7回测 BTC PF=2.20 ETH PF=2.15 avg=1.92"
+    },
+    {
+      "type": "engine_status",
+      "dim": "D03",
+      "verdict": "IMPROVED",
+      "sensitivity_pct": 75.0
+    },
+    {
+      "type": "ml_status",
+      "module": "lstm",
+      "temp": "HOT",
+      "buffer": 159,
+      "verdict": "ACTIVE"
+    },
+    {
+      "type": "weight_increase",
+      "dim": "D11",
+      "param": "whale_max_score",
+      "old": 30,
+      "new": 38,
+      "confidence": "HIGH",
+      "reason": "v7回测 BTC PF=2.20 ETH PF=2.15 avg=1.92"
+    },
+    {
+      "type": "engine_status",
+      "dim": "D03",
+      "verdict": "IMPROVED",
+      "sensitivity_pct": 100.0
+    },
+    {
+      "type": "ml_status",
+      "module": "lstm",
+      "temp": "HOT",
+      "buffer": 159,
+      "verdict": "ACTIVE"
+    },
+    {
+      "type": "weight_increase",
+      "dim": "D11",
+      "param": "whale_max_score",
+      "old": 30,
+      "new": 38,
+      "confidence": "HIGH",
+      "reason": "v7回测 BTC PF=2.20 ETH PF=2.15 avg=1.92"
+    },
+    {
+      "type": "engine_status",
+      "dim": "D03",
+      "verdict": "NEEDS_WORK",
+      "sensitivity_pct": 25.0
+    },
+    {
+      "type": "ml_status",
+      "module": "lstm",
+      "temp": "HOT",
+      "buffer": 159,
+      "verdict": "ACTIVE"
+    },
+    {
+      "type": "weight_increase",
+      "dim": "D11",
+      "param": "whale_max_score",
+      "old": 30,
+      "new": 38,
+      "confidence": "HIGH",
+      "reason": "v7回测 BTC PF=2.20 ETH PF=2.15 avg=1.92"
+    },
+    {
+      "type": "engine_status",
+      "dim": "D03",
+      "verdict": "IMPROVED",
+      "sensitivity_pct": 100.0
+    },
+    {
+      "type": "ml_status",
+      "module": "lstm",
+      "temp": "HOT",
+      "buffer": 159,
+      "verdict": "ACTIVE"
+    },
+    {
+      "type": "weight_increase",
+      "dim": "D11",
+      "param": "whale_max_score",
+      "old": 30,
+      "new": 38,
+      "confidence": "HIGH",
+      "reason": "v7回测 BTC PF=2.20 ETH PF=2.15 avg=1.92"
+    },
+    {
+      "type": "engine_status",
+      "dim": "D03",
+      "verdict": "IMPROVED",
+      "sensitivity_pct": 75.0
+    },
+    {
+      "type": "ml_status",
+      "module": "lstm",
+      "temp": "HOT",
+      "buffer": 159,
+      "verdict": "ACTIVE"
+    },
+    {
+      "type": "weight_increase",
+      "dim": "D11",
+      "param": "whale_max_score",
+      "old": 30,
+      "new": 38,
+      "confidence": "HIGH",
+      "reason": "v7回测 BTC PF=2.20 ETH PF=2.15 avg=1.92"
+    },
+    {
+      "type": "engine_status",
+      "dim": "D03",
+      "verdict": "IMPROVED",
+      "sensitivity_pct": 100.0
+    },
+    {
+      "type": "ml_status",
+      "module": "lstm",
+      "temp": "HOT",
+      "buffer": 159,
+      "verdict": "ACTIVE"
+    },
+    {
+      "type": "weight_increase",
+      "dim": "D11",
+      "param": "whale_max_score",
+      "old": 30,
+      "new": 38,
+      "confidence": "HIGH",
+      "reason": "v7回测 BTC PF=2.20 ETH PF=2.15 avg=1.92"
+    },
+    {
+      "type": "engine_status",
+      "dim": "D03",
+      "verdict": "IMPROVED",
+      "sensitivity_pct": 100.0
+    },
+    {
+      "type": "ml_status",
+      "module": "lstm",
+      "temp": "HOT",
+      "buffer": 159,
+      "verdict": "ACTIVE"
+    },
+    {
+      "type": "weight_increase",
+      "dim": "D11",
+      "param": "whale_max_score",
+      "old": 30,
+      "new": 38,
+      "confidence": "HIGH",
+      "reason": "v7回测 BTC PF=2.20 ETH PF=2.15 avg=1.92"
+    },
+    {
+      "type": "engine_status",
+      "dim": "D03",
+      "verdict": "IMPROVED",
+      "sensitivity_pct": 100.0
+    },
+    {
+      "type": "ml_status",
+      "module": "lstm",
+      "temp": "HOT",
+      "buffer": 159,
+      "verdict": "ACTIVE"
+    },
+    {
+      "type": "weight_increase",
+      "dim": "D11",
+      "param": "whale_max_score",
+      "old": 30,
+      "new": 38,
+      "confidence": "HIGH",
+      "reason": "v7回测 BTC PF=2.20 ETH PF=2.15 avg=1.92"
+    },
+    {
+      "type": "engine_status",
+      "dim": "D03",
+      "verdict": "IMPROVED",
+      "sensitivity_pct": 75.0
+    },
+    {
+      "type": "ml_status",
+      "module": "lstm",
+      "temp": "HOT",
+      "buffer": 159,
+      "verdict": "ACTIVE"
+    },
+    {
+      "type": "weight_increase",
+      "dim": "D11",
+      "param": "whale_max_score",
+      "old": 30,
+      "new": 38,
+      "confidence": "HIGH",
+      "reason": "v7回测 BTC PF=2.20 ETH PF=2.15 avg=1.92"
+    },
+    {
+      "type": "engine_status",
+      "dim": "D03",
+      "verdict": "IMPROVED",
+      "sensitivity_pct": 100.0
+    },
+    {
+      "type": "ml_status",
+      "module": "lstm",
+      "temp": "HOT",
+      "buffer": 159,
+      "verdict": "ACTIVE"
+    },
+    {
+      "type": "weight_increase",
+      "dim": "D11",
+      "param": "whale_max_score",
+      "old": 30,
+      "new": 38,
+      "confidence": "HIGH",
+      "reason": "v7回测 BTC PF=2.20 ETH PF=2.15 avg=1.92"
+    },
+    {
+      "type": "engine_status",
+      "dim": "D03",
+      "verdict": "IMPROVED",
+      "sensitivity_pct": 100.0
+    },
+    {
+      "type": "ml_status",
+      "module": "lstm",
+      "temp": "HOT",
+      "buffer": 159,
+      "verdict": "ACTIVE"
+    },
+    {
+      "type": "weight_increase",
+      "dim": "D11",
+      "param": "whale_max_score",
+      "old": 30,
+      "new": 38,
+      "confidence": "HIGH",
+      "reason": "v7回测 BTC PF=2.20 ETH PF=2.15 avg=1.92"
+    },
+    {
+      "type": "engine_status",
+      "dim": "D03",
+      "verdict": "IMPROVED",
+      "sensitivity_pct": 100.0
+    },
+    {
+      "type": "ml_status",
+      "module": "lstm",
+      "temp": "HOT",
+      "buffer": 159,
+      "verdict": "ACTIVE"
+    }
+  ],
+  "history": [
+    {
+      "ts": "2026-06-12T12:50:44.394382+00:00",
+      "completed": 3,
+      "failed": 1,
+      "improvements": 2,
+      "elapsed_s": 0.2,
+      "trade_n": 0
+    },
+    {
+      "ts": "2026-06-08T04:40:11.446391+00:00",
+      "completed": 4,
+      "failed": 0,
+      "improvements": 3,
+      "elapsed_s": 0.5,
+      "trade_n": 0
+    },
+    {
+      "ts": "2026-06-07T04:40:21.115356+00:00",
+      "completed": 4,
+      "failed": 0,
+      "improvements": 3,
+      "elapsed_s": 0.5,
+      "trade_n": 0
+    },
+    {
+      "ts": "2026-06-06T04:40:38.871251+00:00",
+      "completed": 4,
+      "failed": 0,
+      "improvements": 3,
+      "elapsed_s": 0.5,
+      "trade_n": 0
+    },
+    {
+      "ts": "2026-06-05T04:40:18.715413+00:00",
+      "completed": 4,
+      "failed": 0,
+      "improvements": 3,
+      "elapsed_s": 0.5,
+      "trade_n": 0
+    },
+    {
+      "ts": "2026-06-04T08:20:12.657103+00:00",
+      "completed": 4,
+      "failed": 0,
+      "improvements": 3,
+      "elapsed_s": 0.6,
+      "trade_n": 0
+    },
+    {
+      "ts": "2026-06-02T15:59:34.292553+00:00",
+      "completed": 4,
+      "failed": 0,
+      "improvements": 3,
+      "elapsed_s": 0.5,
+      "trade_n": 0
+    },
+    {
+      "ts": "2026-06-01T04:40:13.733815+00:00",
+      "completed": 4,
+      "failed": 0,
+      "improvements": 3,
+      "elapsed_s": 0.5,
+      "trade_n": 0
+    },
+    {
+      "ts": "2026-05-31T04:40:11.547702+00:00",
+      "completed": 4,
+      "failed": 0,
+      "improvements": 3,
+      "elapsed_s": 1.0,
+      "trade_n": 101229
+    },
+    {
+      "ts": "2026-05-30T14:00:20.482761+00:00",
+      "completed": 4,
+      "failed": 0,
+      "improvements": 3,
+      "elapsed_s": 0.9,
+      "trade_n": 101229
+    },
+    {
+      "ts": "2026-05-30T04:40:11.441120+00:00",
+      "completed": 4,
+      "failed": 0,
+      "improvements": 3,
+      "elapsed_s": 0.9,
+      "trade_n": 101229
+    },
+    {
+      "ts": "2026-05-29T04:40:13.714642+00:00",
+      "completed": 4,
+      "failed": 0,
+      "improvements": 3,
+      "elapsed_s": 0.7,
+      "trade_n": 101229
+    },
+    {
+      "ts": "2026-05-27T23:51:43.611703+00:00",
+      "completed": 4,
+      "failed": 0,
+      "improvements": 3,
+      "elapsed_s": 0.8,
+      "trade_n": 101229
+    },
+    {
+      "ts": "2026-05-27T04:40:14.714054+00:00",
+      "completed": 4,
+      "failed": 0,
+      "improvements": 3,
+      "elapsed_s": 1.5,
+      "trade_n": 101229
+    },
+    {
+      "ts": "2026-05-26T09:36:29.670594+00:00",
+      "completed": 4,
+      "failed": 0,
+      "improvements": 3,
+      "elapsed_s": 0.9,
+      "trade_n": 101229
+    },
+    {
+      "ts": "2026-05-26T09:31:16.749618+00:00",
+      "completed": 3,
+      "failed": 1,
+      "improvements": 2,
+      "elapsed_s": 0.7,
+      "trade_n": 101229
+    },
+    {
+      "ts": "2026-05-24T04:00:50.728840+00:00",
+      "completed": 4,
+      "failed": 0,
+      "improvements": 3,
+      "elapsed_s": 1.0,
+      "trade_n": 101229
+    },
+    {
+      "ts": "2026-05-23T09:44:15.442300+00:00",
+      "completed": 4,
+      "failed": 0,
+      "improvements": 3,
+      "elapsed_s": 1.0,
+      "trade_n": 101229
+    },
+    {
+      "ts": "2026-05-23T07:37:43.712999+00:00",
+      "completed": 4,
+      "failed": 0,
+      "improvements": 3,
+      "elapsed_s": 1.5,
+      "trade_n": 101229
+    },
+    {
+      "ts": "2026-05-23T07:35:46.438986+00:00",
+      "completed": 4,
+      "failed": 0,
+      "improvements": 3,
+      "elapsed_s": 1.1,
+      "trade_n": 101229
+    }
+  ],
+  "next_queue_n": 4,
+  "p0_content_logic": "FAIL"
+}

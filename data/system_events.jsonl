@@ -1,0 +1,1 @@
+{"ts": "2026-07-02T15:25:24.037576+00:00", "type": "RESTART_ANALYSIS", "today_count": 10, "avg_interval_min": 72, "max_gap_min": 148, "dense_period": "06:11~06:58 (3次/47min)", "dense_cause": "平台容器资源限制(推测) 或 苏摩密集操作触发", "ws_guardian_avg_recovery_min": 7.5, "ws_guardian_max_recovery_min": 24, "fix_applied": "keepalive 15min→5min", "fix_effect": "最大恢复延迟从24min→<10min"}

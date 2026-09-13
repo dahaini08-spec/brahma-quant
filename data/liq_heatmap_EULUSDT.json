@@ -1,0 +1,47 @@
+{
+  "symbol": "EULUSDT",
+  "price": 1.7983,
+  "short_liq_map": {
+    "2": 2.7,
+    "3": 2.4,
+    "5": 2.2,
+    "10": 2.0,
+    "20": 1.9,
+    "50": 1.8
+  },
+  "long_liq_map": {
+    "2": 0.9,
+    "3": 1.2,
+    "5": 1.4,
+    "10": 1.6,
+    "20": 1.7,
+    "50": 1.8
+  },
+  "nearest_short_liq": 2.4,
+  "nearest_long_liq": 1.2,
+  "dist_to_short_liq": 33.46,
+  "dist_to_long_liq": 33.27,
+  "top_ask_clusters": [
+    [
+      1.8,
+      45780.0
+    ],
+    [
+      1.8,
+      31162.0
+    ]
+  ],
+  "top_bid_clusters": [
+    [
+      1.8,
+      30320.0
+    ],
+    [
+      1.8,
+      6574.0
+    ]
+  ],
+  "liq_bull_score": 1,
+  "liq_bear_score": 0,
+  "ts": 1785022817.681704
+}

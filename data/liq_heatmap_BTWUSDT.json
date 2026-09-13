@@ -1,0 +1,47 @@
+{
+  "symbol": "BTWUSDT",
+  "price": 0.3888,
+  "short_liq_map": {
+    "2": 0.6,
+    "3": 0.5,
+    "5": 0.5,
+    "10": 0.4,
+    "20": 0.4,
+    "50": 0.4
+  },
+  "long_liq_map": {
+    "2": 0.2,
+    "3": 0.3,
+    "5": 0.3,
+    "10": 0.3,
+    "20": 0.4,
+    "50": 0.4
+  },
+  "nearest_short_liq": 0.4,
+  "nearest_long_liq": 0.4,
+  "dist_to_short_liq": 2.88,
+  "dist_to_long_liq": -2.88,
+  "top_ask_clusters": [
+    [
+      0.4,
+      11334.0
+    ],
+    [
+      0.4,
+      3936.0
+    ]
+  ],
+  "top_bid_clusters": [
+    [
+      0.4,
+      15470.0
+    ],
+    [
+      0.4,
+      3476.0
+    ]
+  ],
+  "liq_bull_score": 5,
+  "liq_bear_score": 8,
+  "ts": 1787174185.6745667
+}

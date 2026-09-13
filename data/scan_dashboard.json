@@ -1,0 +1,231 @@
+{
+  "generated_at": "2026-06-16 01:07 UTC",
+  "symbols": {
+    "BTCUSDT": {
+      "price": 66295.99,
+      "chg_pct": 1.341,
+      "high_24h": 67292.15,
+      "low_24h": 65358.0,
+      "vol_usdt_m": 1185.76,
+      "regime": "BEAR_REC",
+      "rsi": 66.1,
+      "ema21": 65132.118,
+      "ema55": 64593.2686,
+      "ema200": 69552.6468,
+      "atr": 689.1,
+      "bb_pos": 79.2,
+      "bb_upper": 67237.1685,
+      "bb_lower": 62706.9545,
+      "vol_ratio": 0.18,
+      "pct_ema55": 2.64,
+      "pct_ema200": -4.68
+    },
+    "ETHUSDT": {
+      "price": 1792.65,
+      "chg_pct": 4.512,
+      "high_24h": 1849.54,
+      "low_24h": 1709.66,
+      "vol_usdt_m": 818.16,
+      "regime": "BEAR_REC",
+      "rsi": 70.7,
+      "ema21": 1728.313,
+      "ema55": 1713.7074,
+      "ema200": 1890.2802,
+      "atr": 30.0914,
+      "bb_pos": 84.8,
+      "bb_upper": 1827.0682,
+      "bb_lower": 1600.0928,
+      "vol_ratio": 0.17,
+      "pct_ema55": 4.61,
+      "pct_ema200": -5.16
+    },
+    "BNBUSDT": {
+      "price": 616.9,
+      "chg_pct": 0.464,
+      "high_24h": 632.9,
+      "low_24h": 612.66,
+      "vol_usdt_m": 105.43,
+      "regime": "BEAR_REC",
+      "rsi": 57.6,
+      "ema21": 612.7737,
+      "ema55": 609.784,
+      "ema200": 629.8772,
+      "atr": 6.8571,
+      "bb_pos": 66.9,
+      "bb_upper": 626.2446,
+      "bb_lower": 597.9834,
+      "vol_ratio": 0.2,
+      "pct_ema55": 1.17,
+      "pct_ema200": -2.06
+    },
+    "SOLUSDT": {
+      "price": 74.21,
+      "chg_pct": 4.757,
+      "high_24h": 76.09,
+      "low_24h": 70.7,
+      "vol_usdt_m": 217.63,
+      "regime": "BEAR_REC",
+      "rsi": 75.6,
+      "ema21": 70.5918,
+      "ema55": 69.2125,
+      "ema200": 76.5435,
+      "atr": 1.4314,
+      "bb_pos": 87.3,
+      "bb_upper": 75.6353,
+      "bb_lower": 64.3797,
+      "vol_ratio": 0.18,
+      "pct_ema55": 7.22,
+      "pct_ema200": -3.05
+    },
+    "DOGEUSDT": {
+      "price": 0.08791,
+      "chg_pct": -0.779,
+      "high_24h": 0.0909,
+      "low_24h": 0.0877,
+      "vol_usdt_m": 79.16,
+      "regime": "BEAR_REC",
+      "rsi": 51.4,
+      "ema21": 0.0879,
+      "ema55": 0.0876,
+      "ema200": 0.0948,
+      "atr": 0.0013,
+      "bb_pos": 50.1,
+      "bb_upper": 0.0903,
+      "bb_lower": 0.0855,
+      "vol_ratio": 0.15,
+      "pct_ema55": 0.3,
+      "pct_ema200": -7.22
+    },
+    "AVAXUSDT": {
+      "price": 6.866,
+      "chg_pct": 2.127,
+      "high_24h": 7.079,
+      "low_24h": 6.7,
+      "vol_usdt_m": 19.16,
+      "regime": "BEAR_REC",
+      "rsi": 56.4,
+      "ema21": 6.7538,
+      "ema55": 6.8671,
+      "ema200": 7.986,
+      "atr": 0.1348,
+      "bb_pos": 75.2,
+      "bb_upper": 7.0028,
+      "bb_lower": 6.4518,
+      "vol_ratio": 0.2,
+      "pct_ema55": -0.02,
+      "pct_ema200": -14.02
+    },
+    "NEARUSDT": {
+      "price": 2.423,
+      "chg_pct": 8.606,
+      "high_24h": 2.545,
+      "low_24h": 2.225,
+      "vol_usdt_m": 87.07,
+      "regime": "BULL_TREND",
+      "rsi": 73.7,
+      "ema21": 2.2572,
+      "ema55": 2.1876,
+      "ema200": 2.1027,
+      "atr": 0.0823,
+      "bb_pos": 81.8,
+      "bb_upper": 2.5449,
+      "bb_lower": 1.8763,
+      "vol_ratio": 0.18,
+      "pct_ema55": 10.76,
+      "pct_ema200": 15.23
+    },
+    "LTCUSDT": {
+      "price": 45.78,
+      "chg_pct": 1.418,
+      "high_24h": 46.29,
+      "low_24h": 44.77,
+      "vol_usdt_m": 19.97,
+      "regime": "BEAR_REC",
+      "rsi": 72.5,
+      "ema21": 44.6834,
+      "ema55": 44.3643,
+      "ema200": 48.6,
+      "atr": 0.6429,
+      "bb_pos": 82.7,
+      "bb_upper": 46.4119,
+      "bb_lower": 42.7561,
+      "vol_ratio": 0.14,
+      "pct_ema55": 3.19,
+      "pct_ema200": -5.8
+    }
+  },
+  "derivatives": {
+    "BTCUSDT": {
+      "funding_rate": -0.000428,
+      "lsr": 1.3635,
+      "open_interest": 103244.28
+    },
+    "ETHUSDT": {
+      "funding_rate": 0.002969,
+      "lsr": 1.5694,
+      "open_interest": 2327764.67
+    }
+  },
+  "system": {
+    "regime": "CHOP_MID",
+    "bull_prob": 0.0,
+    "bear_prob": 0.0,
+    "chop_prob": 0.0,
+    "nav": 132.59,
+    "health": "GREEN",
+    "scan_count": 295,
+    "last_scan": "2026-06-16T00:54",
+    "cb_active": false,
+    "cb_reason": "",
+    "ws_pid": "?",
+    "ws_status": "?",
+    "ws_ping": "?",
+    "prev_regime": "CHOP_MID",
+    "regime_changed": false,
+    "regime_change_str": ""
+  },
+  "paper": {
+    "wins": 51,
+    "losses": 11,
+    "n_total": 66,
+    "wr_pct": 82.3,
+    "avg_pnl": 2.3266,
+    "n_timeout": 15
+  },
+  "meta": {
+    "duration_s": 0.97,
+    "symbol_count": 8,
+    "regime_dist": {
+      "BEAR_REC": 7,
+      "BULL_TREND": 1
+    },
+    "top_rsi": [
+      [
+        "SOLUSDT",
+        75.6
+      ],
+      [
+        "NEARUSDT",
+        73.7
+      ],
+      [
+        "LTCUSDT",
+        72.5
+      ]
+    ],
+    "top_mover": [
+      [
+        "NEARUSDT",
+        8.606
+      ],
+      [
+        "SOLUSDT",
+        4.757
+      ],
+      [
+        "ETHUSDT",
+        4.512
+      ]
+    ]
+  }
+}

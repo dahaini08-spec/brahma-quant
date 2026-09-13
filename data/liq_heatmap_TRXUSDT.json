@@ -1,0 +1,47 @@
+{
+  "symbol": "TRXUSDT",
+  "price": 0.32712,
+  "short_liq_map": {
+    "2": 0.5,
+    "3": 0.4,
+    "5": 0.4,
+    "10": 0.4,
+    "20": 0.3,
+    "50": 0.3
+  },
+  "long_liq_map": {
+    "2": 0.2,
+    "3": 0.2,
+    "5": 0.3,
+    "10": 0.3,
+    "20": 0.3,
+    "50": 0.3
+  },
+  "nearest_short_liq": 0.4,
+  "nearest_long_liq": 0.2,
+  "dist_to_short_liq": 22.28,
+  "dist_to_long_liq": 38.86,
+  "top_ask_clusters": [
+    [
+      0.3,
+      647621.0
+    ],
+    [
+      0.3,
+      132593.0
+    ]
+  ],
+  "top_bid_clusters": [
+    [
+      0.3,
+      620516.0
+    ],
+    [
+      0.3,
+      112879.0
+    ]
+  ],
+  "liq_bull_score": 0,
+  "liq_bear_score": 2,
+  "ts": 1785882096.9709902
+}

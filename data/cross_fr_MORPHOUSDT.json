@@ -1,0 +1,15 @@
+{
+  "symbol": "MORPHOUSDT",
+  "frs": {
+    "binance": -0.001253,
+    "bybit": 0.000692,
+    "okx": -0.011792329767
+  },
+  "spread": 0.01248,
+  "max_ex": "bybit",
+  "min_ex": "okx",
+  "arb_signal": "LONG_OKX_SHORT_BYBIT",
+  "arb_score": 10,
+  "bull_fr_bonus": 0,
+  "ts": 1786130576.3452652
+}

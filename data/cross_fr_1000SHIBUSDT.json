@@ -1,0 +1,13 @@
+{
+  "symbol": "1000SHIBUSDT",
+  "frs": {
+    "binance": -0.012523999999999999
+  },
+  "spread": 0.0,
+  "max_ex": "binance",
+  "min_ex": "binance",
+  "arb_signal": "NONE",
+  "arb_score": 0,
+  "bull_fr_bonus": 8,
+  "ts": 1786130286.0781367
+}

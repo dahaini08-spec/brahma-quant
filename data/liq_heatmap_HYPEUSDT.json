@@ -1,0 +1,39 @@
+{
+  "symbol": "HYPEUSDT",
+  "price": 78.787,
+  "short_liq_map": {
+    "2": 118.2,
+    "3": 105.0,
+    "5": 94.5,
+    "10": 86.7,
+    "20": 82.7,
+    "50": 80.4
+  },
+  "long_liq_map": {
+    "2": 39.4,
+    "3": 52.5,
+    "5": 63.0,
+    "10": 70.9,
+    "20": 74.8,
+    "50": 77.2
+  },
+  "nearest_short_liq": 80.4,
+  "nearest_long_liq": 77.2,
+  "dist_to_short_liq": 2.05,
+  "dist_to_long_liq": 2.01,
+  "top_ask_clusters": [
+    [
+      78.8,
+      330865.0
+    ]
+  ],
+  "top_bid_clusters": [
+    [
+      78.8,
+      459684.0
+    ]
+  ],
+  "liq_bull_score": 6,
+  "liq_bear_score": 5,
+  "ts": 1787567173.028134
+}

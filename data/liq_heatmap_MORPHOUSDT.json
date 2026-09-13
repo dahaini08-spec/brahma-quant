@@ -1,0 +1,47 @@
+{
+  "symbol": "MORPHOUSDT",
+  "price": 1.8524,
+  "short_liq_map": {
+    "2": 2.8,
+    "3": 2.5,
+    "5": 2.2,
+    "10": 2.0,
+    "20": 1.9,
+    "50": 1.9
+  },
+  "long_liq_map": {
+    "2": 0.9,
+    "3": 1.2,
+    "5": 1.5,
+    "10": 1.7,
+    "20": 1.8,
+    "50": 1.8
+  },
+  "nearest_short_liq": 1.9,
+  "nearest_long_liq": 1.8,
+  "dist_to_short_liq": 2.57,
+  "dist_to_long_liq": 2.83,
+  "top_ask_clusters": [
+    [
+      1.9,
+      31189.0
+    ],
+    [
+      1.9,
+      15559.0
+    ]
+  ],
+  "top_bid_clusters": [
+    [
+      1.8,
+      38463.0
+    ],
+    [
+      1.9,
+      13370.0
+    ]
+  ],
+  "liq_bull_score": 5,
+  "liq_bear_score": 6,
+  "ts": 1786130575.1842954
+}

@@ -1,0 +1,39 @@
+{
+  "ts": 1780200428,
+  "at": "2026-05-31 12:07 CST",
+  "total_settled": 83,
+  "combos": {
+    "DOGEUSDT_160+": {
+      "tp": 10,
+      "sl": 7,
+      "wr": 0.588
+    },
+    "BTCUSDT_140~159": {
+      "tp": 23,
+      "sl": 2,
+      "wr": 0.92
+    },
+    "SOLUSDT_120~139": {
+      "tp": 4,
+      "sl": 1,
+      "wr": 0.8
+    },
+    "LTCUSDT_160+": {
+      "tp": 0,
+      "sl": 13,
+      "wr": 0.0
+    },
+    "SOLUSDT_160+": {
+      "tp": 0,
+      "sl": 9,
+      "wr": 0.0
+    },
+    "ETHUSDT_160+": {
+      "tp": 0,
+      "sl": 6,
+      "wr": 0.0
+    }
+  },
+  "retirement_candidates": [],
+  "updates": []
+}

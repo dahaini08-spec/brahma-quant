@@ -1,0 +1,15 @@
+{
+  "symbol": "HBARUSDT",
+  "frs": {
+    "binance": -0.001484,
+    "bybit": -0.012287,
+    "okx": -0.01051334409637
+  },
+  "spread": 0.0108,
+  "max_ex": "binance",
+  "min_ex": "bybit",
+  "arb_signal": "LONG_BYBIT_SHORT_BINANCE",
+  "arb_score": 10,
+  "bull_fr_bonus": 8,
+  "ts": 1786130120.9641545
+}

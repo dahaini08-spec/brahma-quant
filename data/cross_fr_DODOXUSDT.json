@@ -1,0 +1,13 @@
+{
+  "symbol": "DODOXUSDT",
+  "frs": {
+    "binance": -0.041898
+  },
+  "spread": 0.0,
+  "max_ex": "binance",
+  "min_ex": "binance",
+  "arb_signal": "NONE",
+  "arb_score": 0,
+  "bull_fr_bonus": 8,
+  "ts": 1786130373.1377008
+}

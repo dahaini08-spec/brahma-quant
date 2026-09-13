@@ -1,0 +1,30 @@
+[
+  {
+    "name": "divergence_sensitivity",
+    "desc": "D03背离引擎持续验证",
+    "priority": 1,
+    "trigger": "auto",
+    "ts": "2026-06-12T12:50:44.581976+00:00"
+  },
+  {
+    "name": "lstm_warmup_training",
+    "desc": "LSTM升温状态监控",
+    "priority": 2,
+    "trigger": "auto",
+    "ts": "2026-06-12T12:50:44.581983+00:00"
+  },
+  {
+    "name": "whale_signal_weight",
+    "desc": "鲸鱼权重v7基线验证",
+    "priority": 5,
+    "trigger": "auto",
+    "ts": "2026-06-12T12:50:44.581987+00:00"
+  },
+  {
+    "name": "smc_threshold_scan",
+    "desc": "SMC阈值基线验证",
+    "priority": 6,
+    "trigger": "auto",
+    "ts": "2026-06-12T12:50:44.581989+00:00"
+  }
+]

@@ -1,0 +1,61 @@
+{
+  "ts": "2026-06-14T02:26:37.790982+00:00",
+  "ok": true,
+  "pass": 7,
+  "warn": 0,
+  "fail": 0,
+  "total": 7,
+  "summary": "✅7 ⚠️0 ❌0 / 7项",
+  "alerts": [],
+  "results": [
+    {
+      "name": "brahma_state",
+      "level": "CRITICAL",
+      "ok": true,
+      "msg": "OK 1.8min",
+      "healed": null
+    },
+    {
+      "name": "signal_queue",
+      "level": "WARN",
+      "ok": true,
+      "msg": "OK 0.0min",
+      "healed": null
+    },
+    {
+      "name": "soma_state",
+      "level": "WARN",
+      "ok": true,
+      "msg": "OK 133.3min",
+      "healed": null
+    },
+    {
+      "name": "binance_fapi",
+      "level": "CRITICAL",
+      "ok": true,
+      "msg": "OK 57ms",
+      "healed": null
+    },
+    {
+      "name": "soma_quota",
+      "level": "WARN",
+      "ok": true,
+      "msg": "OK 48%",
+      "healed": null
+    },
+    {
+      "name": "signal_count",
+      "level": "WARN",
+      "ok": true,
+      "msg": "OK 最近信号 2.2h前",
+      "healed": null
+    },
+    {
+      "name": "regime_valid",
+      "level": "ERROR",
+      "ok": true,
+      "msg": "OK regime=BULL_TREND bear=32% BTC=$64,542",
+      "healed": null
+    }
+  ]
+}

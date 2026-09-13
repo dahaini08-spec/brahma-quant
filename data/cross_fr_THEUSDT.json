@@ -1,0 +1,14 @@
+{
+  "symbol": "THEUSDT",
+  "frs": {
+    "binance": -0.072199,
+    "bybit": 0.005
+  },
+  "spread": 0.0772,
+  "max_ex": "bybit",
+  "min_ex": "binance",
+  "arb_signal": "LONG_BINANCE_SHORT_BYBIT",
+  "arb_score": 10,
+  "bull_fr_bonus": 4,
+  "ts": 1784030688.048518
+}

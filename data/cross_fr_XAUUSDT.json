@@ -1,0 +1,15 @@
+{
+  "symbol": "XAUUSDT",
+  "frs": {
+    "binance": 0.012773999999999999,
+    "bybit": 0.005098,
+    "okx": 0.0264985572767
+  },
+  "spread": 0.0214,
+  "max_ex": "okx",
+  "min_ex": "bybit",
+  "arb_signal": "LONG_BYBIT_SHORT_OKX",
+  "arb_score": 10,
+  "bull_fr_bonus": 0,
+  "ts": 1788345617.3698368
+}

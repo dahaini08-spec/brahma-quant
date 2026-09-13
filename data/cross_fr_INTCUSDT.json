@@ -1,0 +1,15 @@
+{
+  "symbol": "INTCUSDT",
+  "frs": {
+    "binance": 0.014506,
+    "bybit": 0.005335,
+    "okx": 0.0020382177753400003
+  },
+  "spread": 0.01247,
+  "max_ex": "binance",
+  "min_ex": "okx",
+  "arb_signal": "LONG_OKX_SHORT_BINANCE",
+  "arb_score": 10,
+  "bull_fr_bonus": 0,
+  "ts": 1787174351.0610306
+}

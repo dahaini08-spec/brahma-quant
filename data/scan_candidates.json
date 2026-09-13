@@ -1,0 +1,96 @@
+{
+  "ts": 1789041619.0264025,
+  "iso": "2026-09-10T12:00:19.026405+00:00",
+  "source": "brahma_screener_rule",
+  "count": 8,
+  "candidates": [
+    {
+      "symbol": "SPCXUSDT",
+      "score": 61.0,
+      "price": 147.29,
+      "pct24h": -3.226,
+      "rsi": 47.5,
+      "fr": 0.0,
+      "vol24h": 1526056521,
+      "reason": "RSI=47空头区 | 24H下跌",
+      "screener": "rule"
+    },
+    {
+      "symbol": "LINKUSDT",
+      "score": 58.6,
+      "price": 11.814,
+      "pct24h": -2.444,
+      "rsi": 41.3,
+      "fr": 0.0011,
+      "vol24h": 174300585,
+      "reason": "RSI=41空头区 | 24H下跌",
+      "screener": "rule"
+    },
+    {
+      "symbol": "BTRUSDT",
+      "score": 45.7,
+      "price": 0.05284,
+      "pct24h": -0.956,
+      "rsi": 46.9,
+      "fr": -0.0141,
+      "vol24h": 79226415,
+      "reason": "RSI=47空头区 | FR=-0.014%空头付息",
+      "screener": "rule"
+    },
+    {
+      "symbol": "VVVUSDT",
+      "score": 44.2,
+      "price": 23.931,
+      "pct24h": -11.209,
+      "rsi": 43.2,
+      "fr": 0.005,
+      "vol24h": 299041355,
+      "reason": "RSI=43空头区 | 24H下跌",
+      "screener": "rule"
+    },
+    {
+      "symbol": "USELESSUSDT",
+      "score": 44.1,
+      "price": 0.25346,
+      "pct24h": -18.212,
+      "rsi": 45.0,
+      "fr": 0.005,
+      "vol24h": 279542782,
+      "reason": "RSI=45空头区 | 24H下跌",
+      "screener": "rule"
+    },
+    {
+      "symbol": "1000PEPEUSDT",
+      "score": 43.9,
+      "price": 0.003413,
+      "pct24h": -8.137,
+      "rsi": 23.7,
+      "fr": -0.0214,
+      "vol24h": 236047755,
+      "reason": "24H下跌 | FR=-0.021%空头付息",
+      "screener": "rule"
+    },
+    {
+      "symbol": "牛来USDT",
+      "score": 43.9,
+      "price": 0.07628,
+      "pct24h": -36.38,
+      "rsi": 50.0,
+      "fr": 0.015,
+      "vol24h": 239432357,
+      "reason": "RSI=50空头区 | 24H下跌",
+      "screener": "rule"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "score": 43.1,
+      "price": 77820.1,
+      "pct24h": -1.881,
+      "rsi": 33.4,
+      "fr": 0.0081,
+      "vol24h": 11237269741,
+      "reason": "24H下跌",
+      "screener": "rule"
+    }
+  ]
+}

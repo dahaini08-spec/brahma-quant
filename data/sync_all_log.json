@@ -1,0 +1,145 @@
+[
+  {
+    "ts": "2026-06-04T09:00:48.479406+00:00",
+    "version": "v16.0",
+    "changes": 11,
+    "errors": 0,
+    "params": {
+      "s1_min": 140,
+      "s2_min": 120,
+      "broadcast_min": 145,
+      "fallback": 140,
+      "bridge_gate_min_grade": 50
+    }
+  },
+  {
+    "ts": "2026-06-05T04:40:18.709741+00:00",
+    "version": "v16.0",
+    "changes": 11,
+    "errors": 0,
+    "params": {
+      "s1_min": 140,
+      "s2_min": 120,
+      "broadcast_min": 145,
+      "fallback": 140,
+      "bridge_gate_min_grade": 50
+    }
+  },
+  {
+    "ts": "2026-06-05T13:45:42.803874+00:00",
+    "version": "v16.0",
+    "changes": 11,
+    "errors": 0,
+    "params": {
+      "s1_min": 140,
+      "s2_min": 120,
+      "broadcast_min": 145,
+      "fallback": 140,
+      "bridge_gate_min_grade": 50
+    }
+  },
+  {
+    "ts": "2026-06-06T02:05:34.294964+00:00",
+    "version": "v16.0",
+    "changes": 11,
+    "errors": 0,
+    "params": {
+      "s1_min": 140,
+      "s2_min": 120,
+      "broadcast_min": 145,
+      "fallback": 140,
+      "bridge_gate_min_grade": 50
+    }
+  },
+  {
+    "ts": "2026-06-06T04:40:38.865144+00:00",
+    "version": "v16.0",
+    "changes": 11,
+    "errors": 0,
+    "params": {
+      "s1_min": 140,
+      "s2_min": 120,
+      "broadcast_min": 145,
+      "fallback": 140,
+      "bridge_gate_min_grade": 50
+    }
+  },
+  {
+    "ts": "2026-06-07T04:40:21.109400+00:00",
+    "version": "v16.0",
+    "changes": 10,
+    "errors": 0,
+    "params": {
+      "s1_min": 140,
+      "s2_min": 120,
+      "broadcast_min": 145,
+      "fallback": 140,
+      "bridge_gate_min_grade": 50
+    }
+  },
+  {
+    "ts": "2026-06-07T14:38:15.368885+00:00",
+    "version": "v16.0",
+    "changes": 10,
+    "errors": 0,
+    "params": {
+      "s1_min": 140,
+      "s2_min": 120,
+      "broadcast_min": 145,
+      "fallback": 140,
+      "bridge_gate_min_grade": 50
+    }
+  },
+  {
+    "ts": "2026-06-08T00:03:30.396456+00:00",
+    "version": "v16.0",
+    "changes": 10,
+    "errors": 0,
+    "params": {
+      "s1_min": 140,
+      "s2_min": 120,
+      "broadcast_min": 145,
+      "fallback": 140,
+      "bridge_gate_min_grade": 50
+    }
+  },
+  {
+    "ts": "2026-06-08T04:40:11.440086+00:00",
+    "version": "v17.0",
+    "changes": 10,
+    "errors": 0,
+    "params": {
+      "s1_min": 140,
+      "s2_min": 120,
+      "broadcast_min": 145,
+      "fallback": 140,
+      "bridge_gate_min_grade": 50
+    }
+  },
+  {
+    "ts": "2026-06-09T02:55:32.926171+00:00",
+    "version": "v17.0",
+    "changes": 10,
+    "errors": 0,
+    "params": {
+      "s1_min": 140,
+      "s2_min": 120,
+      "broadcast_min": 145,
+      "fallback": 140,
+      "bridge_gate_min_grade": 50
+    }
+  },
+  {
+    "ts": "2026-06-09T04:03:34.978454+00:00",
+    "version": "v17.0",
+    "changes": 10,
+    "errors": 0,
+    "params": {
+      "s1_min": 140,
+      "s2_min": 120,
+      "broadcast_min": 145,
+      "fallback": 140,
+      "bridge_gate_min_grade": 50
+    }
+  }
+]

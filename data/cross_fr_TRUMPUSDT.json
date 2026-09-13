@@ -1,0 +1,15 @@
+{
+  "symbol": "TRUMPUSDT",
+  "frs": {
+    "binance": -0.010178000000000001,
+    "bybit": -0.028579,
+    "okx": -0.01293055602278
+  },
+  "spread": 0.0184,
+  "max_ex": "binance",
+  "min_ex": "bybit",
+  "arb_signal": "LONG_BYBIT_SHORT_BINANCE",
+  "arb_score": 10,
+  "bull_fr_bonus": 8,
+  "ts": 1787567341.1818922
+}

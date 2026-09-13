@@ -1,0 +1,30 @@
+{
+  "BTCUSDT": {
+    "score": 210,
+    "grade": 100,
+    "regime": "BULL_TREND",
+    "decision": "SKIP",
+    "ts": 1787558700
+  },
+  "ETHUSDT": {
+    "score": 28,
+    "grade": 100,
+    "regime": "CHOP_MID",
+    "decision": "SKIP",
+    "ts": 1787558700
+  },
+  "SOLUSDT": {
+    "score": 16,
+    "grade": 100,
+    "regime": "CHOP_MID",
+    "decision": "SKIP",
+    "ts": 1787558700
+  },
+  "BNBUSDT": {
+    "score": 46,
+    "grade": 100,
+    "regime": "CHOP_MID",
+    "decision": "SKIP",
+    "ts": 1787558700
+  }
+}

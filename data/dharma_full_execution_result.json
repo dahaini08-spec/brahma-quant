@@ -1,0 +1,160 @@
+{
+  "ts": "2026-09-09T00:01:40.978001Z",
+  "p0_fix_d": {
+    "passed": false,
+    "n": 63958,
+    "wr": 49.7,
+    "ic": -0.0027,
+    "pnl_gross": 0.061,
+    "pnl_net": -0.069,
+    "sharpe": -1.4,
+    "max_dd": 1225790.0,
+    "total_pnl": -1155170.0,
+    "be_wr": 48.4,
+    "folds": [
+      {
+        "fold": 1,
+        "n": 6892,
+        "wr": 49.3,
+        "ev_net": -0.047
+      },
+      {
+        "fold": 2,
+        "n": 6893,
+        "wr": 49.8,
+        "ev_net": -0.038
+      },
+      {
+        "fold": 3,
+        "n": 6893,
+        "wr": 49.2,
+        "ev_net": -0.116
+      },
+      {
+        "fold": 4,
+        "n": 6892,
+        "wr": 50.6,
+        "ev_net": -0.094
+      },
+      {
+        "fold": 5,
+        "n": 6892,
+        "wr": 50.1,
+        "ev_net": -0.075
+      },
+      {
+        "fold": 6,
+        "n": 6892,
+        "wr": 47.9,
+        "ev_net": -0.12
+      },
+      {
+        "fold": 7,
+        "n": 6893,
+        "wr": 48.6,
+        "ev_net": -0.073
+      },
+      {
+        "fold": 8,
+        "n": 6893,
+        "wr": 49.7,
+        "ev_net": -0.016
+      },
+      {
+        "fold": 9,
+        "n": 6892,
+        "wr": 48.7,
+        "ev_net": -0.063
+      }
+    ],
+    "cross": {
+      "SOL": {
+        "n": 0,
+        "wr": 0,
+        "ev_net": 0
+      },
+      "BNB": {
+        "n": 0,
+        "wr": 0,
+        "ev_net": 0
+      },
+      "ADA": {
+        "n": 0,
+        "wr": 0,
+        "ev_net": 0
+      },
+      "XRP": {
+        "n": 0,
+        "wr": 0,
+        "ev_net": 0
+      },
+      "DOGE": {
+        "n": 0,
+        "wr": 0,
+        "ev_net": 0
+      }
+    }
+  },
+  "p1_validations": {
+    "V13": {
+      "passed": true,
+      "fill_rate": 87.9
+    },
+    "V14": {
+      "passed": true,
+      "bounce_rate": 95.4
+    },
+    "V15": {
+      "passed": true,
+      "hit_rate": 62.1
+    },
+    "V16": {
+      "passed": false,
+      "wr_low": 51.3,
+      "wr_high": 51.0,
+      "wr_mid": 49.6
+    },
+    "V17": {
+      "passed": false,
+      "wr_squeeze": 50.2,
+      "wr_normal": 48.8,
+      "wr_wide": 47.5
+    },
+    "V18": {
+      "passed": false,
+      "wr_high_vol": 49.0,
+      "wr_low_vol": 49.9
+    },
+    "V19": {
+      "passed": true
+    },
+    "V_blind": {
+      "fangtian_ic": -0.0027,
+      "blind_ics": {
+        "regime_direction": 0.0146,
+        "resonance": 0.0024,
+        "fvg_match": -0.003,
+        "ob_valid": -0.0056,
+        "liq_density": -0.0131,
+        "rsi_extreme": 0.0143,
+        "bb_squeeze": 0.0137,
+        "vol_surge": -0.0064
+      },
+      "blind_best": 0.0146,
+      "fangtian_wins": false
+    },
+    "V23": {
+      "status": "not_running"
+    },
+    "V24": {
+      "btc": true,
+      "eth": true
+    },
+    "V25": {
+      "status": "integrated"
+    }
+  },
+  "pass_count": 4,
+  "total_count": 11,
+  "verdict": "FAIL"
+}

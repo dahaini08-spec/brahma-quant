@@ -1,0 +1,1304 @@
+[
+  {
+    "ts": 1782992777,
+    "sym": "BNBUSDT",
+    "from": "BULL_EARLY",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1782996362,
+    "sym": "DOGEUSDT",
+    "from": "BULL_EARLY",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783007162,
+    "sym": "DOGEUSDT",
+    "from": "BULL_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783008963,
+    "sym": "NEARUSDT",
+    "from": "BULL_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783010761,
+    "sym": "BNBUSDT",
+    "from": "BULL_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783010761,
+    "sym": "DOGEUSDT",
+    "from": "BULL_EARLY",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783014361,
+    "sym": "NEARUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783022087,
+    "sym": "BTCUSDT",
+    "from": "BULL_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783025680,
+    "sym": "BTCUSDT",
+    "from": "BULL_EARLY",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783025680,
+    "sym": "BNBUSDT",
+    "from": "CHOP_MID",
+    "to": "BEAR_RECOVERY",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783025680,
+    "sym": "DOGEUSDT",
+    "from": "CHOP_MID",
+    "to": "BEAR_RECOVERY",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783025680,
+    "sym": "NEARUSDT",
+    "from": "BULL_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783029285,
+    "sym": "BTCUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783034683,
+    "sym": "BNBUSDT",
+    "from": "BEAR_RECOVERY",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783036486,
+    "sym": "DOGEUSDT",
+    "from": "BEAR_RECOVERY",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783036486,
+    "sym": "NEARUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_EARLY",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783040090,
+    "sym": "BTCUSDT",
+    "from": "BULL_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783040103,
+    "sym": "DOGEUSDT",
+    "from": "CHOP_MID",
+    "to": "BEAR_RECOVERY",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783040103,
+    "sym": "NEARUSDT",
+    "from": "BULL_EARLY",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783043718,
+    "sym": "BTCUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783043718,
+    "sym": "DOGEUSDT",
+    "from": "BEAR_RECOVERY",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783043718,
+    "sym": "NEARUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783047450,
+    "sym": "BNBUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_EARLY",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783052850,
+    "sym": "BNBUSDT",
+    "from": "BULL_EARLY",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783052862,
+    "sym": "BTCUSDT",
+    "from": "BULL_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783052862,
+    "sym": "DOGEUSDT",
+    "from": "BULL_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783060299,
+    "sym": "BTCUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783060299,
+    "sym": "BNBUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783060299,
+    "sym": "DOGEUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783067509,
+    "sym": "BNBUSDT",
+    "from": "BULL_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783067509,
+    "sym": "DOGEUSDT",
+    "from": "BULL_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783071109,
+    "sym": "BTCUSDT",
+    "from": "BULL_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783074714,
+    "sym": "DOGEUSDT",
+    "from": "BULL_EARLY",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783076510,
+    "sym": "BTCUSDT",
+    "from": "BULL_EARLY",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783076510,
+    "sym": "BNBUSDT",
+    "from": "BULL_EARLY",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783096745,
+    "sym": "BNBUSDT",
+    "from": "BULL_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783105774,
+    "sym": "BNBUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783125820,
+    "sym": "DOGEUSDT",
+    "from": "BULL_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783129422,
+    "sym": "DOGEUSDT",
+    "from": "CHOP_MID",
+    "to": "BEAR_RECOVERY",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783136794,
+    "sym": "DOGEUSDT",
+    "from": "BEAR_RECOVERY",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783140391,
+    "sym": "DOGEUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783147592,
+    "sym": "BNBUSDT",
+    "from": "BULL_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783151191,
+    "sym": "BNBUSDT",
+    "from": "BULL_EARLY",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783151191,
+    "sym": "DOGEUSDT",
+    "from": "BULL_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783152993,
+    "sym": "NEARUSDT",
+    "from": "BULL_TREND",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783153005,
+    "sym": "DOGEUSDT",
+    "from": "CHOP_MID",
+    "to": "BEAR_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783159464,
+    "sym": "BNBUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783159484,
+    "sym": "BTCUSDT",
+    "from": "BULL_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783166650,
+    "sym": "BTCUSDT",
+    "from": "BULL_EARLY",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783177305,
+    "sym": "DOGEUSDT",
+    "from": "BEAR_TREND",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783184769,
+    "sym": "NEARUSDT",
+    "from": "BEAR_TREND",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783213570,
+    "sym": "BTCUSDT",
+    "from": "BULL_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783213570,
+    "sym": "DOGEUSDT",
+    "from": "BULL_TREND",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783217169,
+    "sym": "ETHUSDT",
+    "from": "BULL_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783217169,
+    "sym": "BNBUSDT",
+    "from": "BULL_TREND",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783220774,
+    "sym": "NEARUSDT",
+    "from": "BULL_TREND",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783227782,
+    "sym": "BTCUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_EARLY",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783227782,
+    "sym": "ETHUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783234872,
+    "sym": "BNBUSDT",
+    "from": "BEAR_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783242466,
+    "sym": "BTCUSDT",
+    "from": "BULL_EARLY",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783242466,
+    "sym": "BNBUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783260288,
+    "sym": "DOGEUSDT",
+    "from": "BEAR_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783260288,
+    "sym": "NEARUSDT",
+    "from": "BEAR_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783267576,
+    "sym": "DOGEUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783274753,
+    "sym": "BTCUSDT",
+    "from": "BULL_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783274753,
+    "sym": "DOGEUSDT",
+    "from": "BULL_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783278362,
+    "sym": "NEARUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783281966,
+    "sym": "BTCUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783299952,
+    "sym": "DOGEUSDT",
+    "from": "BULL_EARLY",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783314379,
+    "sym": "BNBUSDT",
+    "from": "BULL_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783317972,
+    "sym": "DOGEUSDT",
+    "from": "CHOP_MID",
+    "to": "BEAR_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783336294,
+    "sym": "ETHUSDT",
+    "from": "BULL_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783336294,
+    "sym": "BNBUSDT",
+    "from": "CHOP_MID",
+    "to": "BEAR_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783343379,
+    "sym": "NEARUSDT",
+    "from": "BULL_TREND",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783350579,
+    "sym": "NEARUSDT",
+    "from": "BEAR_TREND",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783354212,
+    "sym": "ETHUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783361381,
+    "sym": "BNBUSDT",
+    "from": "BEAR_TREND",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783379379,
+    "sym": "DOGEUSDT",
+    "from": "BEAR_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783393779,
+    "sym": "DOGEUSDT",
+    "from": "CHOP_MID",
+    "to": "BEAR_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783397379,
+    "sym": "ETHUSDT",
+    "from": "BULL_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783397379,
+    "sym": "BNBUSDT",
+    "from": "BULL_TREND",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783498363,
+    "sym": "ETHUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783500177,
+    "sym": "NEARUSDT",
+    "from": "BULL_TREND",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783514586,
+    "sym": "ETHUSDT",
+    "from": "BULL_TREND",
+    "to": "BEAR_RECOVERY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783576658,
+    "sym": "NEARUSDT",
+    "from": "BEAR_TREND",
+    "to": "BEAR_RECOVERY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783578461,
+    "sym": "BNBUSDT",
+    "from": "BEAR_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783580261,
+    "sym": "ETHUSDT",
+    "from": "BEAR_RECOVERY",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783580261,
+    "sym": "DOGEUSDT",
+    "from": "BEAR_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783587733,
+    "sym": "NEARUSDT",
+    "from": "BEAR_RECOVERY",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783589538,
+    "sym": "BNBUSDT",
+    "from": "BULL_EARLY",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783589538,
+    "sym": "DOGEUSDT",
+    "from": "CHOP_MID",
+    "to": "BEAR_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783600328,
+    "sym": "ETHUSDT",
+    "from": "BULL_TREND",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783625529,
+    "sym": "DOGEUSDT",
+    "from": "BEAR_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783630928,
+    "sym": "ETHUSDT",
+    "from": "BEAR_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783639938,
+    "sym": "DOGEUSDT",
+    "from": "CHOP_MID",
+    "to": "BEAR_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783648932,
+    "sym": "NEARUSDT",
+    "from": "BEAR_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783650738,
+    "sym": "BNBUSDT",
+    "from": "BEAR_TREND",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783652532,
+    "sym": "ETHUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783654328,
+    "sym": "DOGEUSDT",
+    "from": "BEAR_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783661527,
+    "sym": "DOGEUSDT",
+    "from": "BULL_EARLY",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783681330,
+    "sym": "DOGEUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_EARLY",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783681330,
+    "sym": "NEARUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_EARLY",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783690329,
+    "sym": "DOGEUSDT",
+    "from": "BULL_EARLY",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783690329,
+    "sym": "NEARUSDT",
+    "from": "BULL_EARLY",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783738926,
+    "sym": "BNBUSDT",
+    "from": "BULL_TREND",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783740726,
+    "sym": "NEARUSDT",
+    "from": "BEAR_TREND",
+    "to": "CHOP_HIGH",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783744470,
+    "sym": "DOGEUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_EARLY",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783747926,
+    "sym": "NEARUSDT",
+    "from": "CHOP_HIGH",
+    "to": "BEAR_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783751527,
+    "sym": "BNBUSDT",
+    "from": "BEAR_TREND",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783756950,
+    "sym": "DOGEUSDT",
+    "from": "BULL_EARLY",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783783950,
+    "sym": "ETHUSDT",
+    "from": "BULL_TREND",
+    "to": "BEAR_RECOVERY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783783950,
+    "sym": "BNBUSDT",
+    "from": "BULL_TREND",
+    "to": "CHOP_LOW",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783783950,
+    "sym": "DOGEUSDT",
+    "from": "CHOP_MID",
+    "to": "BEAR_RECOVERY",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783783950,
+    "sym": "NEARUSDT",
+    "from": "BEAR_TREND",
+    "to": "CHOP_HIGH",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1783825326,
+    "sym": "BNBUSDT",
+    "from": "CHOP_LOW",
+    "to": "BEAR_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783825326,
+    "sym": "NEARUSDT",
+    "from": "CHOP_HIGH",
+    "to": "BEAR_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1783828926,
+    "sym": "ETHUSDT",
+    "from": "BEAR_RECOVERY",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1783828926,
+    "sym": "DOGEUSDT",
+    "from": "BEAR_RECOVERY",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784137048,
+    "sym": "NEARUSDT",
+    "from": "BEAR_TREND",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784144248,
+    "sym": "BNBUSDT",
+    "from": "BEAR_TREND",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784169503,
+    "sym": "BNBUSDT",
+    "from": "BULL_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784176791,
+    "sym": "BNBUSDT",
+    "from": "BULL_EARLY",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784195051,
+    "sym": "BNBUSDT",
+    "from": "BULL_TREND",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784195051,
+    "sym": "NEARUSDT",
+    "from": "BULL_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784205872,
+    "sym": "NEARUSDT",
+    "from": "BULL_EARLY",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784207671,
+    "sym": "BNBUSDT",
+    "from": "BEAR_TREND",
+    "to": "BEAR_RECOVERY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784227484,
+    "sym": "BNBUSDT",
+    "from": "BEAR_RECOVERY",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784232884,
+    "sym": "NEARUSDT",
+    "from": "BULL_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784249084,
+    "sym": "NEARUSDT",
+    "from": "BULL_EARLY",
+    "to": "BEAR_RECOVERY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784263496,
+    "sym": "NEARUSDT",
+    "from": "BEAR_RECOVERY",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784272507,
+    "sym": "NEARUSDT",
+    "from": "BULL_TREND",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784346611,
+    "sym": "DOGEUSDT",
+    "from": "BEAR_TREND",
+    "to": "BEAR_RECOVERY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784359261,
+    "sym": "DOGEUSDT",
+    "from": "BEAR_RECOVERY",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784381209,
+    "sym": "BNBUSDT",
+    "from": "BEAR_TREND",
+    "to": "BEAR_RECOVERY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784390210,
+    "sym": "ETHUSDT",
+    "from": "BULL_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784404616,
+    "sym": "ETHUSDT",
+    "from": "BULL_EARLY",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784440856,
+    "sym": "BNBUSDT",
+    "from": "BEAR_RECOVERY",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784830825,
+    "sym": "BTCUSDT",
+    "from": "BULL_TREND",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784836225,
+    "sym": "ETHUSDT",
+    "from": "BULL_TREND",
+    "to": "BEAR_RECOVERY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784859625,
+    "sym": "NEARUSDT",
+    "from": "BEAR_TREND",
+    "to": "CHOP_HIGH",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1784883029,
+    "sym": "BNBUSDT",
+    "from": "BEAR_TREND",
+    "to": "BEAR_RECOVERY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784892025,
+    "sym": "NEARUSDT",
+    "from": "CHOP_HIGH",
+    "to": "BEAR_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1784897426,
+    "sym": "BNBUSDT",
+    "from": "BEAR_RECOVERY",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1784919025,
+    "sym": "ETHUSDT",
+    "from": "BEAR_RECOVERY",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1784969609,
+    "sym": "ETHUSDT",
+    "from": "CHOP_MID",
+    "to": "BEAR_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1785002011,
+    "sym": "DOGEUSDT",
+    "from": "BEAR_TREND",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1785009211,
+    "sym": "BNBUSDT",
+    "from": "BEAR_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1785023612,
+    "sym": "BNBUSDT",
+    "from": "BULL_EARLY",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1785030815,
+    "sym": "DOGEUSDT",
+    "from": "BULL_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1785048812,
+    "sym": "DOGEUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1785052412,
+    "sym": "BNBUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1785120823,
+    "sym": "BNBUSDT",
+    "from": "BULL_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1785131622,
+    "sym": "BNBUSDT",
+    "from": "BULL_EARLY",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1785131622,
+    "sym": "NEARUSDT",
+    "from": "BEAR_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1785149622,
+    "sym": "NEARUSDT",
+    "from": "BULL_EARLY",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1785171222,
+    "sym": "DOGEUSDT",
+    "from": "BULL_TREND",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1785171222,
+    "sym": "NEARUSDT",
+    "from": "CHOP_MID",
+    "to": "BEAR_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1785196423,
+    "sym": "BNBUSDT",
+    "from": "BULL_TREND",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1785257622,
+    "sym": "BNBUSDT",
+    "from": "BEAR_TREND",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1785257622,
+    "sym": "DOGEUSDT",
+    "from": "BEAR_TREND",
+    "to": "BEAR_RECOVERY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1785272024,
+    "sym": "DOGEUSDT",
+    "from": "BEAR_RECOVERY",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1785304423,
+    "sym": "BNBUSDT",
+    "from": "BULL_TREND",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1785322423,
+    "sym": "BNBUSDT",
+    "from": "BEAR_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1785336824,
+    "sym": "BNBUSDT",
+    "from": "CHOP_MID",
+    "to": "BEAR_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1785376426,
+    "sym": "BNBUSDT",
+    "from": "BEAR_TREND",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1785437626,
+    "sym": "NEARUSDT",
+    "from": "BEAR_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1785441227,
+    "sym": "DOGEUSDT",
+    "from": "BEAR_TREND",
+    "to": "BULL_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1785466431,
+    "sym": "DOGEUSDT",
+    "from": "BULL_TREND",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1785473625,
+    "sym": "NEARUSDT",
+    "from": "CHOP_MID",
+    "to": "BEAR_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1785524026,
+    "sym": "NEARUSDT",
+    "from": "BEAR_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1785538425,
+    "sym": "NEARUSDT",
+    "from": "BULL_EARLY",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1785549226,
+    "sym": "DOGEUSDT",
+    "from": "BEAR_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1785556425,
+    "sym": "NEARUSDT",
+    "from": "BEAR_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1785574427,
+    "sym": "DOGEUSDT",
+    "from": "CHOP_MID",
+    "to": "BEAR_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1785581626,
+    "sym": "NEARUSDT",
+    "from": "CHOP_MID",
+    "to": "BEAR_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1785588825,
+    "sym": "BNBUSDT",
+    "from": "BULL_TREND",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1785596026,
+    "sym": "NEARUSDT",
+    "from": "BEAR_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1785610567,
+    "sym": "NEARUSDT",
+    "from": "BULL_EARLY",
+    "to": "BEAR_TREND",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1785632168,
+    "sym": "NEARUSDT",
+    "from": "BEAR_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1788444785,
+    "sym": "BTCUSDT",
+    "from": "BEAR_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1788444785,
+    "sym": "ETHUSDT",
+    "from": "BEAR_TREND",
+    "to": "BULL_EARLY",
+    "type": "SHIFT"
+  },
+  {
+    "ts": 1788444785,
+    "sym": "BNBUSDT",
+    "from": "BEAR_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1788444785,
+    "sym": "DOGEUSDT",
+    "from": "BEAR_TREND",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1788444785,
+    "sym": "NEARUSDT",
+    "from": "BULL_EARLY",
+    "to": "CHOP_MID",
+    "type": "DOWNGRADE"
+  },
+  {
+    "ts": 1788478195,
+    "sym": "BNBUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  },
+  {
+    "ts": 1788478195,
+    "sym": "NEARUSDT",
+    "from": "CHOP_MID",
+    "to": "BULL_TREND",
+    "type": "UPGRADE"
+  }
+]

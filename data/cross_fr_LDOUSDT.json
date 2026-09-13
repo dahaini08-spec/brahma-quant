@@ -1,0 +1,15 @@
+{
+  "symbol": "LDOUSDT",
+  "frs": {
+    "binance": 0.007719,
+    "bybit": -0.004098,
+    "okx": 0.01
+  },
+  "spread": 0.0141,
+  "max_ex": "okx",
+  "min_ex": "bybit",
+  "arb_signal": "LONG_BYBIT_SHORT_OKX",
+  "arb_score": 10,
+  "bull_fr_bonus": 0,
+  "ts": 1786130163.6983328
+}

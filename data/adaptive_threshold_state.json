@@ -1,0 +1,11 @@
+{
+  "status": "ACTIVE",
+  "color": "\ud83d\udfe2",
+  "threshold": 138,
+  "pos_factor": 0.95,
+  "oos_pf": 3.0,
+  "n_signals": 68,
+  "last_update": "2026-06-12",
+  "note": "[v24.2-fix] \u5e72\u51c068\u6761\u91cd\u6821: WR=77.3%(\u542bTO)/100%(\u6392\u9664TO) A\u7ea7WR=92% PF_conservative=3.0 | \u95e8\u69db148\u2192138",
+  "last_update_ts": 1781265842.3020558
+}

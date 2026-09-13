@@ -1,0 +1,15 @@
+{
+  "symbol": "AAOIUSDT",
+  "frs": {
+    "binance": 0.026763,
+    "bybit": 0.026187,
+    "okx": 0.033718082525159995
+  },
+  "spread": 0.00753,
+  "max_ex": "okx",
+  "min_ex": "bybit",
+  "arb_signal": "WATCH_SPREAD(0.0075%)",
+  "arb_score": 5,
+  "bull_fr_bonus": 0,
+  "ts": 1787174634.7282252
+}

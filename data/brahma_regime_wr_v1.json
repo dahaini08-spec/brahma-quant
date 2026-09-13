@@ -1,0 +1,23 @@
+{
+  "matrix": {
+    "ALL:LONG": {
+      "wr": 0.5433,
+      "n": 300,
+      "avg_pnl": 0.161,
+      "avg_win": 1.869,
+      "avg_loss": -1.871,
+      "iron_proof": true
+    },
+    "BULL_TREND:LONG": {
+      "wr": 0.5433,
+      "n": 300,
+      "avg_pnl": 0.161,
+      "avg_win": 1.869,
+      "avg_loss": -1.871,
+      "iron_proof": true
+    }
+  },
+  "total": 300,
+  "method": "梵天体制识别(market_state)+方向映射，历史K线OFFLINE注入",
+  "generated": "2026-08-27T16:10:57.587243+00:00"
+}

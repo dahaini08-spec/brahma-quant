@@ -1,0 +1,15 @@
+{
+  "symbol": "SANDUSDT",
+  "frs": {
+    "binance": -0.002302,
+    "bybit": -0.021726,
+    "okx": -0.013810267560010001
+  },
+  "spread": 0.01942,
+  "max_ex": "binance",
+  "min_ex": "bybit",
+  "arb_signal": "LONG_BYBIT_SHORT_BINANCE",
+  "arb_score": 10,
+  "bull_fr_bonus": 8,
+  "ts": 1784200014.2872267
+}

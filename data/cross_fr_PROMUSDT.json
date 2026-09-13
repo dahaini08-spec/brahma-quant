@@ -1,0 +1,13 @@
+{
+  "symbol": "PROMUSDT",
+  "frs": {
+    "binance": -0.233453
+  },
+  "spread": 0.0,
+  "max_ex": "binance",
+  "min_ex": "binance",
+  "arb_signal": "NONE",
+  "arb_score": 0,
+  "bull_fr_bonus": 8,
+  "ts": 1787175458.2258925
+}

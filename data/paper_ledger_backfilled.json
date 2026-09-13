@@ -1,0 +1,14 @@
+{
+  "backfill_ts": 1788781795.4982595,
+  "n_trades": 180,
+  "nav": 12005.486791924885,
+  "peak": 12017.24202678058,
+  "wr": 0.5389,
+  "wins": 97,
+  "losses": 83,
+  "timeouts": 0,
+  "max_drawdown": 0.007025,
+  "sharpe": null,
+  "ev_usd": 11.1416,
+  "days": 13
+}

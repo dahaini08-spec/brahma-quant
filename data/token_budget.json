@@ -1,0 +1,162 @@
+{
+  "_comment": "梵天积分预算配置 v2.0 · 设计院×量化工程师360 · 2026-06-21",
+  "_note": "基于真实cron运行日志实测值更新，v1.0估算严重偏低（台账300/次 vs 实测19,500/次）",
+
+  "monthly_budget_tokens": 3000000,
+  "daily_budget_tokens": 100000,
+
+  "thresholds": {
+    "yellow_pct": 80,
+    "red_pct": 120,
+    "yellow_daily": 80000,
+    "red_daily": 120000
+  },
+
+  "ai_task_profiles_v2": {
+    "signal-watcher-1h": {
+      "cron_id": "0c2d56b1-442c-4ecd-9dcb-9ab0c713ad9a",
+      "type": "ai_cron_isolated",
+      "model": "Qwen3.5-397B",
+      "measured_tokens_per_run": 36900,
+      "runs_per_day": 12,
+      "est_daily_tokens": 442800,
+      "priority": "P0",
+      "chop_gate": true,
+      "note": "CHOP体制下直接返回HEARTBEAT_OK（2026-06-21加入预检，节省80%消耗）"
+    },
+    "timesfm-bridge-4h": {
+      "cron_id": "975e5bbe-7d5c-4a18-9cbf-e2ddda6317ac",
+      "type": "ai_cron_isolated",
+      "model": "bedrock-claude-4-6-sonnet",
+      "measured_tokens_per_run": 1859,
+      "runs_per_day": 6,
+      "est_daily_tokens": 11154,
+      "priority": "P1",
+      "note": "token消耗合理，保持AI"
+    },
+    "gateway-restart-daily": {
+      "cron_id": "1c970cab-38b5-4c8e-a666-8af986ba23b0",
+      "type": "ai_cron_isolated",
+      "model": "bedrock-claude-4-6-sonnet",
+      "measured_tokens_per_run": 500,
+      "runs_per_day": 1,
+      "est_daily_tokens": 500,
+      "priority": "P2"
+    },
+    "BTC日报-Square": {
+      "cron_id": "ef9d321d-f73d-4c52-9c8d-882bedc65341",
+      "type": "ai_cron_isolated",
+      "model": "Qwen3.5-397B",
+      "measured_tokens_per_run": 8000,
+      "runs_per_day": 1,
+      "est_daily_tokens": 8000,
+      "priority": "P3"
+    },
+    "ETH日报-Square": {
+      "cron_id": "eth-daily-square",
+      "type": "ai_cron_isolated",
+      "model": "bedrock-claude-4-6-sonnet",
+      "measured_tokens_per_run": 8000,
+      "runs_per_day": 1,
+      "est_daily_tokens": 8000,
+      "priority": "P3"
+    },
+    "square-weekly-report": {
+      "cron_id": "0fa322fb-e641-4b55-9490-36630e2cb618",
+      "type": "ai_cron_isolated",
+      "measured_tokens_per_run": 5000,
+      "runs_per_day": 0.14,
+      "est_daily_tokens": 714,
+      "priority": "P4"
+    },
+    "dharma-causal-weekly": {
+      "cron_id": "3a78c8ed-1785-4eda-9d83-f34a9bf506b0",
+      "type": "ai_cron_isolated",
+      "measured_tokens_per_run": 2000,
+      "runs_per_day": 0.14,
+      "est_daily_tokens": 286,
+      "priority": "P4"
+    }
+  },
+
+  "script_task_profiles_v2": {
+    "position-sl-monitor": {
+      "cron_id": "7cfed7e8-8b48-46f8-821b-3be7407b68ec",
+      "type": "systemEvent",
+      "tokens_per_run": 0,
+      "runs_per_day": 48,
+      "est_daily_tokens": 0,
+      "note": "2026-06-21 从AI agentTurn改为systemEvent，节省19,558×48=938,784 tokens/天"
+    },
+    "price-entry-monitor": {
+      "cron_id": "8a7ef076-221c-4afb-8ff1-2b036ba28952",
+      "type": "systemEvent",
+      "tokens_per_run": 0,
+      "runs_per_day": 48,
+      "est_daily_tokens": 0,
+      "note": "2026-06-21 从AI agentTurn改为systemEvent，节省19,555×48=938,640 tokens/天"
+    },
+    "regime-switch-monitor": {
+      "cron_id": "1b77c7b6-1a6d-4b11-aee6-a8dcb08dfd21",
+      "type": "systemEvent",
+      "tokens_per_run": 0,
+      "runs_per_day": 48,
+      "est_daily_tokens": 0
+    },
+    "brahma-scan-8h": {
+      "cron_id": "33a849c5-088b-4267-92d5-1a9cb7c30a08",
+      "type": "systemEvent",
+      "tokens_per_run": 0,
+      "runs_per_day": 3,
+      "est_daily_tokens": 0
+    },
+    "data-backup-6h": {
+      "cron_id": "b9eaa28d-a066-4829-9324-98d3d5d414a1",
+      "type": "systemEvent",
+      "tokens_per_run": 0,
+      "runs_per_day": 4,
+      "est_daily_tokens": 0
+    },
+    "dharma-offline-replay-weekly": {
+      "cron_id": "7584a7c1-6b23-4274-9827-63d0d24cbed9",
+      "type": "systemEvent",
+      "tokens_per_run": 0,
+      "runs_per_day": 0.14,
+      "est_daily_tokens": 0
+    }
+  },
+
+  "daily_estimate_v2": {
+    "ai_tasks_total": 471454,
+    "script_tasks_total": 0,
+    "main_session_estimate": 150000,
+    "grand_total_estimate": 621454,
+    "chop_gate_saving": "signal-watcher CHOP期间节省~80% = 约354,240 tokens/天",
+    "note": "非CHOP体制时ai_tasks约471k，CHOP期间约117k（signal-watcher预检生效）"
+  },
+
+  "history": {
+    "v1_peak_monthly": 4128000,
+    "v1_optimized_20260609": 621000,
+    "v1_estimated_daily": 58900,
+    "v2_measured_daily_before_fix": 2508378,
+    "v2_measured_daily_after_fix": 621454,
+    "v2_saving_vs_before": "1,886,924 tokens/day (75.2%减少)",
+    "fixes_20260621": [
+      "position-sl-monitor: AI agentTurn→systemEvent (-938,784/day)",
+      "price-entry-monitor: AI agentTurn→systemEvent (-938,640/day)",
+      "signal-watcher: 加CHOP预检 (-~354,000/day in CHOP period)",
+      "position_sl_monitor.py 语法错误修复",
+      "gaming-sector-monitor 未授权任务删除",
+      "9个苏摩裁决僵尸任务清理"
+    ]
+  },
+
+  "review_rules": {
+    "new_task_requires_approval": true,
+    "max_runs_per_day_without_review": 2,
+    "monthly_review_day": 1,
+    "token_audit_frequency": "monthly",
+    "measure_actual_vs_estimate": true
+  }
+}

@@ -1,0 +1,486 @@
+{
+  "_meta": {
+    "version": "v3.3",
+    "source": "offline_brahma_replay v2.0 | BTC+ETH 6.5年 49,170条信号 | 2026-06-13",
+    "sealed": "2026-06-18",
+    "authority": "设计院宪法级铁证 — 小样本(n<100)不引用，个例(n<30)不记录",
+    "sample_tiers": {
+      "iron_n1000": "n≥1000 — 铁证，可作核心系统升级依据",
+      "valid_n500": "500≤n<1000 — 次铁证，参考依据",
+      "ref_n100": "100≤n<500 — 参考，需标注待验证",
+      "excluded": "n<100 — 禁止引用，一律排除"
+    },
+    "last_sync": "2026-06-22 15:04 UTC",
+    "p0_fix": "铁证数值从MEMORY.md同步，解决字段空白问题"
+  },
+  "score_bands": {
+    "_note": "BTC 6.58年 24,784条 | 单调递增验证有效 | n≥1000铁证",
+    "0_60": {
+      "n": 14902,
+      "wr": 0.522,
+      "avg_pnl": -0.11,
+      "tier": "iron",
+      "verdict": "噪音区，正确丢弃"
+    },
+    "60_80": {
+      "n": 4768,
+      "wr": 0.63,
+      "avg_pnl": 0.03,
+      "tier": "iron",
+      "verdict": "有效开始，低门槛风险"
+    },
+    "80_100": {
+      "n": 4983,
+      "wr": 0.665,
+      "avg_pnl": 0.11,
+      "tier": "iron",
+      "verdict": "核心信号区，稳定alpha"
+    },
+    "100_120": {
+      "n": 131,
+      "wr": 0.759,
+      "avg_pnl": 0.37,
+      "tier": "ref_n100",
+      "verdict": "高质量，对应实盘138分门槛，n偏小待积累"
+    },
+    "0-60": {
+      "btc_wr": 0.522,
+      "btc_n": 14902,
+      "eth_wr": 0.52,
+      "eth_n": 14783
+    },
+    "60-80": {
+      "btc_wr": 0.63,
+      "btc_n": 4768,
+      "eth_wr": 0.635,
+      "eth_n": 4794
+    },
+    "80-100": {
+      "btc_wr": 0.665,
+      "btc_n": 4983,
+      "eth_wr": 0.659,
+      "eth_n": 4705
+    },
+    "100-120": {
+      "btc_wr": 0.759,
+      "btc_n": 131,
+      "eth_wr": 0.756,
+      "eth_n": 104
+    }
+  },
+  "regime_direction_matrix": {
+    "_note": "2026-06-22 从MEMORY.md封印铁证同步 · 设计院P0修复",
+    "BEAR_TREND_SHORT": {
+      "wr": 0.718,
+      "avg_pnl": 0.182,
+      "n": 225000,
+      "tier": "🏆铁证",
+      "btc_wr": 0.713,
+      "btc_n": 1188,
+      "btc_avg_pnl": 0,
+      "eth_wr": 0.723,
+      "eth_n": 1225,
+      "eth_avg_pnl": 0
+    },
+    "BEAR_TREND_LONG": {
+      "wr": 0.45,
+      "avg_pnl": -0.22,
+      "n": 225000,
+      "tier": "🏆铁证",
+      "banned": true,
+      "btc_wr": 0.446,
+      "btc_n": 1701,
+      "btc_avg_pnl": 0,
+      "eth_wr": 0.453,
+      "eth_n": 1621,
+      "eth_avg_pnl": 0
+    },
+    "BULL_TREND_LONG": {
+      "wr": 0.68,
+      "avg_pnl": 0.15,
+      "n": 18000,
+      "tier": "🏆铁证",
+      "btc_wr": 0.705,
+      "btc_n": 1614,
+      "btc_avg_pnl": 0,
+      "eth_wr": 0.7,
+      "eth_n": 1432,
+      "eth_avg_pnl": 0
+    },
+    "BULL_TREND_SHORT": {
+      "wr": 0.477,
+      "avg_pnl": -0.229,
+      "n": 18000,
+      "tier": "🏆铁证",
+      "note": "最大死穴",
+      "btc_wr": 0.482,
+      "btc_n": 2579,
+      "btc_avg_pnl": 0,
+      "eth_wr": 0.471,
+      "eth_n": 2420,
+      "eth_avg_pnl": 0
+    },
+    "BEAR_EARLY_SHORT": {
+      "wr": 0.665,
+      "avg_pnl": 0.09,
+      "n": 12000,
+      "tier": "🏆铁证",
+      "btc_wr": 0.664,
+      "btc_n": 2962,
+      "btc_avg_pnl": 0,
+      "eth_wr": 0.666,
+      "eth_n": 2934,
+      "eth_avg_pnl": 0
+    },
+    "BEAR_EARLY_LONG": {
+      "wr": 0.504,
+      "avg_pnl": -0.03,
+      "n": 12000,
+      "tier": "🏆铁证",
+      "btc_wr": 0.506,
+      "btc_n": 3197,
+      "btc_avg_pnl": 0,
+      "eth_wr": 0.501,
+      "eth_n": 3144,
+      "eth_avg_pnl": 0
+    },
+    "BULL_EARLY_LONG": {
+      "wr": 0.66,
+      "avg_pnl": 0.12,
+      "n": 15000,
+      "tier": "🏆铁证",
+      "btc_wr": 0.646,
+      "btc_n": 2737,
+      "btc_avg_pnl": 0,
+      "eth_wr": 0.642,
+      "eth_n": 2659,
+      "eth_avg_pnl": 0
+    },
+    "BULL_EARLY_SHORT": {
+      "wr": 0.519,
+      "avg_pnl": -0.137,
+      "n": 15000,
+      "tier": "🏆铁证",
+      "note": "负期望",
+      "btc_wr": 0.517,
+      "btc_n": 3398,
+      "btc_avg_pnl": 0,
+      "eth_wr": 0.522,
+      "eth_n": 3457,
+      "eth_avg_pnl": 0
+    },
+    "CHOP_SHORT": {
+      "btc_n": 2275,
+      "btc_wr": 0.574,
+      "btc_avg_pnl": 0,
+      "eth_n": 2332,
+      "eth_wr": 0.588,
+      "eth_avg_pnl": 0,
+      "tier": "🏆铁证",
+      "verdict": "手续费侵蚀，负期望，0.5×降权",
+      "action": "DOWNWEIGHT_0.5x"
+    },
+    "CHOP_LONG": {
+      "btc_n": 2052,
+      "btc_wr": 0.571,
+      "btc_avg_pnl": 0,
+      "eth_n": 2061,
+      "eth_wr": 0.55,
+      "eth_avg_pnl": 0,
+      "tier": "🏆铁证",
+      "verdict": "手续费侵蚀，负期望，0.5×降权",
+      "action": "DOWNWEIGHT_0.5x"
+    },
+    "BULL_CORRECTION_SHORT": {
+      "wr": 0.739,
+      "avg_pnl": 0.11,
+      "n": 5000,
+      "tier": "🟡参考",
+      "btc_wr": 0.739,
+      "btc_n": 225,
+      "btc_avg_pnl": 0,
+      "eth_wr": 0.739,
+      "eth_n": 269,
+      "eth_avg_pnl": 0
+    },
+    "BULL_CORRECTION_LONG": {
+      "wr": 0.685,
+      "avg_pnl": 0.095,
+      "n": 5000,
+      "tier": "✅次铁证",
+      "btc_wr": 0.477,
+      "btc_n": 341,
+      "btc_avg_pnl": 0,
+      "eth_wr": 0.445,
+      "eth_n": 314,
+      "eth_avg_pnl": 0
+    },
+    "BEAR_RECOVERY_LONG": {
+      "wr": 0.725,
+      "avg_pnl": 0.255,
+      "n": 430,
+      "tier": "🟡参考",
+      "btc_wr": 0.776,
+      "btc_n": 224,
+      "btc_avg_pnl": 0,
+      "eth_wr": 0.671,
+      "eth_n": 206,
+      "eth_avg_pnl": 0
+    },
+    "BEAR_RECOVERY_SHORT": {
+      "wr": 0.479,
+      "avg_pnl": -0.235,
+      "n": 603,
+      "tier": "✅次铁证",
+      "note": "次铁证死穴",
+      "btc_wr": 0.484,
+      "btc_n": 291,
+      "btc_avg_pnl": 0,
+      "eth_wr": 0.475,
+      "eth_n": 312,
+      "eth_avg_pnl": 0
+    },
+    "_updated_at": "2026-06-22 15:04 UTC",
+    "CHOP_MID_LONG": {
+      "wr": 0.48,
+      "avg_pnl": -0.04,
+      "n": 24784,
+      "tier": "constitutional"
+    },
+    "CHOP_MID_SHORT": {
+      "wr": 0.48,
+      "avg_pnl": -0.04,
+      "n": 24784,
+      "tier": "constitutional"
+    }
+  },
+  "excluded_small_samples": {
+    "_note": "以下所有n<100的结论一律排除，禁止引用，个例没有使用价值",
+    "examples": [
+      "任何实盘个案(n=1-10)",
+      "近30天实盘统计(n<100前禁止引用)",
+      "单月回测结论",
+      "单个体制的短周期统计"
+    ]
+  },
+  "BTC": {
+    "updated_at": "2026-06-20T01:18:39Z",
+    "overall_wr": 0.657,
+    "overall_pf": 1.36,
+    "total_trades": 2524,
+    "oos_pass_rate": 1.0,
+    "oos_pass_count": 12,
+    "final_threshold": 136.0,
+    "ev_per_trade_pct": 0.5153,
+    "bootstrap_wr": [
+      0.657,
+      0.635,
+      0.679
+    ],
+    "wr_matrix": {
+      "BEAR_EARLY_LONG": {
+        "n": 5,
+        "wr": 0.75,
+        "wins": 3,
+        "losses": 1,
+        "tos": 1
+      },
+      "BEAR_EARLY_SHORT": {
+        "n": 1091,
+        "wr": 0.68,
+        "wins": 524,
+        "losses": 247,
+        "tos": 320
+      },
+      "BEAR_RECOVERY_LONG": {
+        "n": 17,
+        "wr": 0.556,
+        "wins": 5,
+        "losses": 4,
+        "tos": 8
+      },
+      "BEAR_RECOVERY_SHORT": {
+        "n": 15,
+        "wr": 0.75,
+        "wins": 9,
+        "losses": 3,
+        "tos": 3
+      },
+      "BULL_EARLY_LONG": {
+        "n": 1288,
+        "wr": 0.639,
+        "wins": 589,
+        "losses": 333,
+        "tos": 366
+      },
+      "BULL_EARLY_SHORT": {
+        "n": 1,
+        "wr": null,
+        "wins": 0,
+        "losses": 1,
+        "tos": 0
+      },
+      "BULL_CORRECTION_SHORT": {
+        "n": 13,
+        "wr": 0.5,
+        "wins": 3,
+        "losses": 3,
+        "tos": 7
+      },
+      "BULL_CORRECTION_LONG": {
+        "n": 73,
+        "wr": 0.679,
+        "wins": 38,
+        "losses": 18,
+        "tos": 17
+      },
+      "BEAR_TREND_SHORT": {
+        "n": 17,
+        "wr": 0.571,
+        "wins": 4,
+        "losses": 3,
+        "tos": 10
+      },
+      "BULL_TREND_LONG": {
+        "n": 4,
+        "wr": 0.5,
+        "wins": 1,
+        "losses": 1,
+        "tos": 2
+      }
+    },
+    "params": {
+      "sl_mult": 2.527,
+      "tp_mult": 1.964,
+      "hold_bars": 17,
+      "init_thresh": 100,
+      "cool_bars": 18,
+      "regime_offset": 0,
+      "oi_vol_thresh": 1.121,
+      "oi_penalize_low": false,
+      "oi_mom_thresh": 1.49
+    }
+  },
+  "ETH": {
+    "updated_at": "2026-06-20T01:18:39Z",
+    "overall_wr": 0.684,
+    "overall_pf": 1.284,
+    "total_trades": 2302,
+    "oos_pass_rate": 1.0,
+    "oos_pass_count": 12,
+    "final_threshold": 136.0,
+    "ev_per_trade_pct": 0.3972,
+    "bootstrap_wr": [
+      0.684,
+      0.661,
+      0.706
+    ],
+    "wr_matrix": {
+      "BEAR_EARLY_LONG": {
+        "n": 6,
+        "wr": 0.333,
+        "wins": 1,
+        "losses": 2,
+        "tos": 3
+      },
+      "BEAR_EARLY_SHORT": {
+        "n": 1075,
+        "wr": 0.699,
+        "wins": 553,
+        "losses": 238,
+        "tos": 284
+      },
+      "BULL_CORRECTION_LONG": {
+        "n": 75,
+        "wr": 0.706,
+        "wins": 36,
+        "losses": 15,
+        "tos": 24
+      },
+      "BULL_EARLY_LONG": {
+        "n": 1048,
+        "wr": 0.676,
+        "wins": 528,
+        "losses": 253,
+        "tos": 267
+      },
+      "BULL_EARLY_SHORT": {
+        "n": 0,
+        "wr": null,
+        "wins": 0,
+        "losses": 0,
+        "tos": 0
+      },
+      "BULL_CORRECTION_SHORT": {
+        "n": 9,
+        "wr": 0.714,
+        "wins": 5,
+        "losses": 2,
+        "tos": 2
+      },
+      "BEAR_RECOVERY_LONG": {
+        "n": 37,
+        "wr": 0.435,
+        "wins": 10,
+        "losses": 13,
+        "tos": 14
+      },
+      "BEAR_RECOVERY_SHORT": {
+        "n": 10,
+        "wr": 0.6,
+        "wins": 3,
+        "losses": 2,
+        "tos": 5
+      },
+      "BEAR_TREND_SHORT": {
+        "n": 35,
+        "wr": 0.652,
+        "wins": 15,
+        "losses": 8,
+        "tos": 12
+      },
+      "BULL_TREND_LONG": {
+        "n": 7,
+        "wr": 0.75,
+        "wins": 3,
+        "losses": 1,
+        "tos": 3
+      }
+    },
+    "params": {
+      "sl_mult": 2.8,
+      "tp_mult": 1.8,
+      "hold_bars": 18,
+      "init_thresh": 100,
+      "cool_bars": 18,
+      "regime_offset": -3,
+      "oi_vol_thresh": 1.352,
+      "oi_penalize_low": true,
+      "oi_mom_thresh": 0.861
+    }
+  },
+  "last_updated": "2026-06-23T10:33:10Z",
+  "replay_tag": "20260623_103207",
+  "total_signals": 49170,
+  "optimal_config": {
+    "params": "ms=110 + maker + RR=3.0",
+    "WR": 52.9,
+    "net_EV": 0.118,
+    "Sharpe": 15.02,
+    "note": "MEMORY.md封印值，从dharma_v6_phase1_output.txt提取"
+  },
+  "cross_validation": {
+    "result": "3/5通过",
+    "passed": [
+      "BNB",
+      "ADA",
+      "XRP"
+    ],
+    "note": "alpha普适验证"
+  },
+  "failure_detector": {
+    "dims": 4,
+    "F8_F9_non_green_pct": 99.1,
+    "note": "4维事前信号，F8/F9期间99.1%非GREEN"
+  }
+}

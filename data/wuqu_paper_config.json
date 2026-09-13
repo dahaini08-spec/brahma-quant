@@ -1,0 +1,16 @@
+{
+  "score_lo": 130,
+  "target_n": 200,
+  "mode": "live",
+  "nav": 1000.0,
+  "note": "武曲Paper v2.3: grade_lo=70(B/C级封禁), score_lo=130, 动态TTL(settler读system_config)",
+  "hold_hours": 24,
+  "regime_blacklist": [
+    "BEAR_RECOVERY"
+  ],
+  "max_open": 5,
+  "hours": 4,
+  "_upgrade_note": "2026-06-07 设计院提速: score_lo 140→130, max_open 1→5",
+  "grade_lo": 70,
+  "_upgrade_note_v242": "2026-06-12 v24.2: grade_lo 50→70, 铁证B级TO率=73%"
+}

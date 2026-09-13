@@ -1,0 +1,84 @@
+{
+  "SOXLUSDT": {
+    "added_at": "2026-09-02T13:05:00Z",
+    "signal_type": "SHORT_BUILD",
+    "reason": "A94 | OI4h+65.7% 多空比87% | 机构逆势建空",
+    "direction": "SHORT",
+    "trigger_conditions": {
+      "price": "跌破近期1H低点",
+      "oi": "OI维持高位(4h变化>+30%)",
+      "fr": "FR>0（多方仍付费）",
+      "structure": "15M Bear CHoCH确认"
+    },
+    "sl_rule": "最近swing high + 1.5×ATR1H",
+    "size_pct": 1.0,
+    "status": "WATCHING",
+    "last_check": "2026-09-11 02:00 UTC",
+    "triggered": false,
+    "last_fr": 0.0,
+    "last_price": 114.81,
+    "last_trigger_pct": 33.3
+  },
+  "XAUUSDT": {
+    "added_at": "2026-09-02T13:05:00Z",
+    "signal_type": "LONG_BUILD",
+    "reason": "A86 | OI4h+70.7%价格跌 | 机构低位逆势建多",
+    "direction": "LONG",
+    "trigger_conditions": {
+      "price": "价格下探洗盘后企稳",
+      "oi": "OI增速放缓（机构建仓完毕）",
+      "fr": "FR转正或回归中性",
+      "structure": "15M Bull CHoCH确认"
+    },
+    "sl_rule": "洗盘低点之下 + 1.5×ATR1H",
+    "size_pct": 1.0,
+    "status": "WATCHING",
+    "last_check": "2026-09-11 02:00 UTC",
+    "triggered": false,
+    "last_fr": 0.008803,
+    "last_price": 4334.7,
+    "last_trigger_pct": 100.0
+  },
+  "LAUSDT": {
+    "added_at": "2026-09-03T02:41:00Z",
+    "signal_type": "SHORT_BUILD",
+    "reason": "A100满分 | FR=-0.9453%(94倍异常) | LSR=1.65多头极度拥挤 | 空头挤压候选",
+    "direction": "LONG",
+    "trigger_conditions": {
+      "price": "价格形成回调支撑",
+      "fr": "FR回归>-0.1%（空头回补压力释放）",
+      "lsr": "LSR<1.3（多头拥挤缓解）",
+      "structure": "15M Bull CHoCH确认"
+    },
+    "sl_rule": "上次低点之下 + 1.5×ATR1H",
+    "size_pct": 1.0,
+    "status": "WATCHING",
+    "extreme_fr_note": "FR=-0.9453%极端负值=反向多头信号，等FR回归才是入场点",
+    "last_check": "2026-09-11 02:00 UTC",
+    "triggered": false,
+    "last_fr": -0.13627,
+    "last_price": 0.06152,
+    "last_trigger_pct": 75.0
+  },
+  "ACEUSDT": {
+    "added_at": "2026-09-03T02:41:00Z",
+    "signal_type": "LONG_BUILD",
+    "reason": "B81 | FR=-0.5589%(55倍异常) | 价格-10.2%后OI微涨 | 空头挤压反弹炸弹",
+    "direction": "LONG",
+    "trigger_conditions": {
+      "price": "价格止跌，出现反转K线",
+      "fr": "FR回升>-0.2%",
+      "structure": "15M Bull CHoCH或Hammer确认",
+      "volume": "成交量收缩后放量"
+    },
+    "sl_rule": "今日低点之下 + 1.5×ATR1H",
+    "size_pct": 0.5,
+    "status": "WATCHING",
+    "extreme_fr_note": "FR=-0.5589%=反弹炸弹，空头回补会快速推价格上涨",
+    "last_check": "2026-09-11 02:00 UTC",
+    "triggered": false,
+    "last_fr": -0.040472,
+    "last_price": 0.15627,
+    "last_trigger_pct": 100.0
+  }
+}

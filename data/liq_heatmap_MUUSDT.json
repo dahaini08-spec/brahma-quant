@@ -1,0 +1,39 @@
+{
+  "symbol": "MUUSDT",
+  "price": 936.22,
+  "short_liq_map": {
+    "2": 1404.3,
+    "3": 1248.3,
+    "5": 1123.5,
+    "10": 1029.8,
+    "20": 983.0,
+    "50": 954.9
+  },
+  "long_liq_map": {
+    "2": 468.1,
+    "3": 624.1,
+    "5": 749.0,
+    "10": 842.6,
+    "20": 889.4,
+    "50": 917.5
+  },
+  "nearest_short_liq": 954.9,
+  "nearest_long_liq": 917.5,
+  "dist_to_short_liq": 2.0,
+  "dist_to_long_liq": 2.0,
+  "top_ask_clusters": [
+    [
+      936.2,
+      476096.0
+    ]
+  ],
+  "top_bid_clusters": [
+    [
+      936.2,
+      389567.0
+    ]
+  ],
+  "liq_bull_score": 5,
+  "liq_bear_score": 5,
+  "ts": 1788076538.0083008
+}
