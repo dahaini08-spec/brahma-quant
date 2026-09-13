@@ -1,0 +1,122 @@
+{
+  "generated_at": "2026-06-07T04:45:04.057115+00:00",
+  "total_settled": 30,
+  "regime_dir_stats": {
+    "BEAR_EARLY+SHORT": {
+      "win": 14,
+      "total": 20,
+      "wr": 0.7
+    },
+    "CHOP_LOW+SHORT": {
+      "win": 6,
+      "total": 6,
+      "wr": 1.0
+    },
+    "BEAR_RECOVERY+SHORT": {
+      "win": 3,
+      "total": 3,
+      "wr": 1.0
+    },
+    "CHOP_HIGH+SHORT": {
+      "win": 0,
+      "total": 1,
+      "wr": 0.0
+    }
+  },
+  "hour_band_stats": {
+    "00": {
+      "win": 3,
+      "total": 3,
+      "wr": 1.0
+    },
+    "04": {
+      "win": 1,
+      "total": 1,
+      "wr": 1.0
+    },
+    "08": {
+      "win": 5,
+      "total": 6,
+      "wr": 0.833
+    },
+    "12": {
+      "win": 2,
+      "total": 3,
+      "wr": 0.667
+    },
+    "16": {
+      "win": 9,
+      "total": 10,
+      "wr": 0.9
+    },
+    "20": {
+      "win": 3,
+      "total": 7,
+      "wr": 0.429
+    }
+  },
+  "score_band_stats": {
+    "S2": {
+      "win": 8,
+      "total": 8,
+      "wr": 1.0,
+      "avg_pnl": 3.437
+    },
+    "S1": {
+      "win": 15,
+      "total": 22,
+      "wr": 0.682,
+      "avg_pnl": 2.017
+    }
+  },
+  "symbol_stats": {
+    "DOGE": {
+      "win": 6,
+      "total": 7,
+      "wr": 0.857
+    },
+    "BTC": {
+      "win": 8,
+      "total": 11,
+      "wr": 0.727
+    },
+    "SOL": {
+      "win": 4,
+      "total": 7,
+      "wr": 0.571
+    },
+    "LINK": {
+      "win": 1,
+      "total": 1,
+      "wr": 1.0
+    },
+    "ADA": {
+      "win": 1,
+      "total": 1,
+      "wr": 1.0
+    },
+    "BNB": {
+      "win": 3,
+      "total": 3,
+      "wr": 1.0
+    }
+  },
+  "rr_stats": {},
+  "insights": [
+    "CHOP_LOW体制做空历史胜率100%（6次验证），为系统强优势区间",
+    "北京时间 08:00-12:00 历史胜率83%（6次），优势时段",
+    "北京时间 16:00-20:00 历史胜率90%（10次），优势时段",
+    "DOGE历史高胜率86%（7次），系统对该标的预测能力强"
+  ],
+  "warnings": [
+    "北京时间 20:00-00:00 历史胜率仅43%（7次），此时段信号需降权"
+  ],
+  "best_setup": {
+    "key": "CHOP_LOW+SHORT",
+    "wr": 1.0,
+    "total": 6
+  },
+  "weak_hour_bands": [
+    "20"
+  ]
+}

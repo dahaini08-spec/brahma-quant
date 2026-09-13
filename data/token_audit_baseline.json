@@ -1,0 +1,44 @@
+[
+  {
+    "date": "2026-06-09",
+    "ai_jobs": 3,
+    "sys_jobs": 32,
+    "monthly_tokens": 621429
+  },
+  {
+    "date": "2026-06-09",
+    "ai_jobs": 4,
+    "sys_jobs": 32,
+    "monthly_tokens": 634286
+  },
+  {
+    "date": "2026-06-09",
+    "ai_jobs": 3,
+    "sys_jobs": 33,
+    "monthly_tokens": 621429
+  },
+  {
+    "date": "2026-06-09",
+    "ai_jobs": 2,
+    "sys_jobs": 34,
+    "monthly_tokens": 141429
+  },
+  {
+    "date": "2026-06-09",
+    "ai_jobs": 2,
+    "sys_jobs": 34,
+    "monthly_tokens": 141429
+  },
+  {
+    "date": "2026-06-09",
+    "ai_jobs": 2,
+    "sys_jobs": 34,
+    "monthly_tokens": 141429
+  },
+  {
+    "date": "2026-06-09",
+    "ai_jobs": 3,
+    "sys_jobs": 34,
+    "monthly_tokens": 26061429
+  }
+]

@@ -1,0 +1,166 @@
+{"signal_id": "85e74337fc36", "symbol": "ETHUSDT", "score": 86.8, "regime": "BULL_TREND", "direction": "LONG", "n21": 17.36, "n22": 13.02, "s7": 4.34, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "6e0a783dea28", "symbol": "ETHUSDT", "score": 95.4, "regime": "BULL_TREND", "direction": "LONG", "n21": 19.080000000000002, "n22": 14.31, "s7": 4.7700000000000005, "result": "WIN", "pnl": 0.138}
+{"signal_id": "c7fae337ab1d", "symbol": "BIRBUSDT", "score": 67.2, "regime": "CHOP_MID", "direction": "LONG", "n21": 13.440000000000001, "n22": 10.08, "s7": 3.3600000000000003, "result": "WIN", "pnl": 5.957}
+{"signal_id": "7eb0f9597f09", "symbol": "BEATUSDT", "score": 132.8, "regime": "BULL_TREND", "direction": "LONG", "n21": 26.560000000000002, "n22": 19.92, "s7": 6.640000000000001, "result": "LOSS", "pnl": -2.049}
+{"signal_id": "80d21ee419cb", "symbol": "SYNUSDT", "score": 158.4, "regime": "BULL_TREND", "direction": "LONG", "n21": 31.680000000000003, "n22": 23.76, "s7": 7.920000000000001, "result": "LOSS", "pnl": -0.091}
+{"signal_id": "e71cac725bd3", "symbol": "SLXUSDT", "score": 112.4, "regime": "BULL_TREND", "direction": "LONG", "n21": 22.480000000000004, "n22": 16.86, "s7": 5.620000000000001, "result": "LOSS", "pnl": -4.034}
+{"signal_id": "c31d43321737", "symbol": "JTOUSDT", "score": 144.8, "regime": "BULL_TREND", "direction": "LONG", "n21": 28.960000000000004, "n22": 21.720000000000002, "s7": 7.240000000000001, "result": "WIN", "pnl": 0.204}
+{"signal_id": "3f7bcb1c50e3", "symbol": "ETHUSDT", "score": 143.2, "regime": "BULL_TREND", "direction": "LONG", "n21": 28.64, "n22": 21.479999999999997, "s7": 7.16, "result": "LOSS", "pnl": -0.39}
+{"signal_id": "527eb1da2101", "symbol": "BTCUSDT", "score": 100.3, "regime": "BULL_TREND", "direction": "LONG", "n21": 20.060000000000002, "n22": 15.044999999999998, "s7": 5.015000000000001, "result": "LOSS", "pnl": -0.107}
+{"signal_id": "866c5da50f9f", "symbol": "ETHUSDT", "score": 131.4, "regime": "BULL_TREND", "direction": "LONG", "n21": 26.28, "n22": 19.71, "s7": 6.57, "result": "WIN", "pnl": 0.094}
+{"signal_id": "bc4f95c338be", "symbol": "BTCUSDT", "score": 76.0, "regime": "BULL_TREND", "direction": "LONG", "n21": 15.200000000000001, "n22": 11.4, "s7": 3.8000000000000003, "result": "WIN", "pnl": 0.01}
+{"signal_id": "5c6194d941c7", "symbol": "BTCUSDT", "score": 82.8, "regime": "BULL_TREND", "direction": "LONG", "n21": 16.56, "n22": 12.42, "s7": 4.14, "result": "WIN", "pnl": 0.103}
+{"signal_id": "611104c25561", "symbol": "ETHUSDT", "score": 144.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 28.82, "n22": 21.615, "s7": 7.205, "result": "LOSS", "pnl": -0.41}
+{"signal_id": "4fc4dfc68b5e", "symbol": "ETHUSDT", "score": 137.9, "regime": "BULL_TREND", "direction": "LONG", "n21": 27.580000000000002, "n22": 20.685, "s7": 6.8950000000000005, "result": "LOSS", "pnl": -0.678}
+{"signal_id": "f372fc30c380", "symbol": "BTCUSDT", "score": 80.6, "regime": "BULL_TREND", "direction": "LONG", "n21": 16.12, "n22": 12.089999999999998, "s7": 4.03, "result": "LOSS", "pnl": -0.065}
+{"signal_id": "c163dc28859f", "symbol": "BTCUSDT", "score": 93.2, "regime": "BULL_TREND", "direction": "LONG", "n21": 18.64, "n22": 13.98, "s7": 4.66, "result": "LOSS", "pnl": -1.843}
+{"signal_id": "aa3127087077", "symbol": "BTCUSDT", "score": 85.0, "regime": "BULL_TREND", "direction": "LONG", "n21": 17.0, "n22": 12.75, "s7": 4.25, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "c5e6dec7e6ad", "symbol": "ETHUSDT", "score": 118.2, "regime": "BULL_TREND", "direction": "LONG", "n21": 23.64, "n22": 17.73, "s7": 5.91, "result": "WIN", "pnl": 0.045}
+{"signal_id": "bb2583eb2204", "symbol": "BTCUSDT", "score": 112.4, "regime": "BULL_TREND", "direction": "LONG", "n21": 22.480000000000004, "n22": 16.86, "s7": 5.620000000000001, "result": "LOSS", "pnl": -0.027}
+{"signal_id": "1b44f88c1e90", "symbol": "BTCUSDT", "score": 88.9, "regime": "BULL_TREND", "direction": "LONG", "n21": 17.78, "n22": 13.335, "s7": 4.445, "result": "WIN", "pnl": 0.318}
+{"signal_id": "e1833519c7bd", "symbol": "BTCUSDT", "score": 96.0, "regime": "BULL_TREND", "direction": "LONG", "n21": 19.200000000000003, "n22": 14.399999999999999, "s7": 4.800000000000001, "result": "WIN", "pnl": 0.107}
+{"signal_id": "8e429911977b", "symbol": "BTCUSDT", "score": 87.0, "regime": "BULL_TREND", "direction": "LONG", "n21": 17.400000000000002, "n22": 13.049999999999999, "s7": 4.3500000000000005, "result": "WIN", "pnl": 0.164}
+{"signal_id": "c1138e15534b", "symbol": "BTCUSDT", "score": 98.5, "regime": "BULL_TREND", "direction": "LONG", "n21": 19.700000000000003, "n22": 14.774999999999999, "s7": 4.925000000000001, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "3e653a3debab", "symbol": "BTCUSDT", "score": 93.3, "regime": "BULL_TREND", "direction": "LONG", "n21": 18.66, "n22": 13.995, "s7": 4.665, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "4c9da76b30bb", "symbol": "BTCUSDT", "score": 84.8, "regime": "BULL_TREND", "direction": "LONG", "n21": 16.96, "n22": 12.719999999999999, "s7": 4.24, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "e255a9e43b5a", "symbol": "ETHUSDT", "score": 93.6, "regime": "BULL_TREND", "direction": "LONG", "n21": 18.72, "n22": 14.04, "s7": 4.68, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "1f11c76cca21", "symbol": "ETHUSDT", "score": 136.3, "regime": "BULL_TREND", "direction": "LONG", "n21": 27.260000000000005, "n22": 20.445, "s7": 6.815000000000001, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "9a86e18f29e6", "symbol": "ETHUSDT", "score": 142.9, "regime": "BULL_TREND", "direction": "LONG", "n21": 28.580000000000002, "n22": 21.435, "s7": 7.1450000000000005, "result": "LOSS", "pnl": -1.741}
+{"signal_id": "9ae342528541", "symbol": "ETHUSDT", "score": 142.9, "regime": "BULL_TREND", "direction": "LONG", "n21": 28.580000000000002, "n22": 21.435, "s7": 7.1450000000000005, "result": "LOSS", "pnl": -1.135}
+{"signal_id": "9c4c032c5ec9", "symbol": "BTCUSDT", "score": 99.2, "regime": "BULL_TREND", "direction": "LONG", "n21": 19.840000000000003, "n22": 14.879999999999999, "s7": 4.960000000000001, "result": "LOSS", "pnl": -1.563}
+{"signal_id": "caa0278456e1", "symbol": "BTCUSDT", "score": 107.3, "regime": "BULL_TREND", "direction": "LONG", "n21": 21.46, "n22": 16.095, "s7": 5.365, "result": "LOSS", "pnl": -0.075}
+{"signal_id": "0fdd99fe0c5c", "symbol": "BTCUSDT", "score": 103.3, "regime": "BULL_TREND", "direction": "LONG", "n21": 20.66, "n22": 15.495, "s7": 5.165, "result": "LOSS", "pnl": -0.208}
+{"signal_id": "f1060b5678c7", "symbol": "ETHUSDT", "score": 144.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 28.82, "n22": 21.615, "s7": 7.205, "result": "LOSS", "pnl": -0.337}
+{"signal_id": "61a4dcee8391", "symbol": "BASUSDT", "score": 119.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 23.82, "n22": 17.865, "s7": 5.955, "result": "LOSS", "pnl": -2.813}
+{"signal_id": "b09d09b0933d", "symbol": "ETHUSDT", "score": 144.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 28.82, "n22": 21.615, "s7": 7.205, "result": "WIN", "pnl": 0.012}
+{"signal_id": "865058b9027a", "symbol": "BTCUSDT", "score": 95.5, "regime": "BULL_TREND", "direction": "LONG", "n21": 19.1, "n22": 14.325, "s7": 4.775, "result": "WIN", "pnl": 0.296}
+{"signal_id": "6a99d45b4282", "symbol": "BTCUSDT", "score": 91.5, "regime": "BULL_TREND", "direction": "LONG", "n21": 18.3, "n22": 13.725, "s7": 4.575, "result": "LOSS", "pnl": -0.383}
+{"signal_id": "c30e36ea06b2", "symbol": "ETHUSDT", "score": 165.0, "regime": "BEAR_RECOVERY", "direction": "LONG", "n21": 33.0, "n22": 24.75, "s7": 8.25, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "8fbbe0831bc9", "symbol": "BTCUSDT", "score": 107.8, "regime": "BULL_TREND", "direction": "LONG", "n21": 21.560000000000002, "n22": 16.169999999999998, "s7": 5.390000000000001, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "f120834e1fda", "symbol": "JTOUSDT", "score": 154.0, "regime": "BULL_TREND", "direction": "LONG", "n21": 30.8, "n22": 23.099999999999998, "s7": 7.7, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "d221f145ff2e", "symbol": "BEATUSDT", "score": 141.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 28.22, "n22": 21.165, "s7": 7.055, "result": "LOSS", "pnl": -0.687}
+{"signal_id": "b3303cf5945b", "symbol": "SYNUSDT", "score": 146.0, "regime": "BULL_TREND", "direction": "LONG", "n21": 29.200000000000003, "n22": 21.9, "s7": 7.300000000000001, "result": "LOSS", "pnl": -4.242}
+{"signal_id": "50beb607d5e3", "symbol": "BASUSDT", "score": 162.4, "regime": "BULL_TREND", "direction": "LONG", "n21": 32.480000000000004, "n22": 24.36, "s7": 8.120000000000001, "result": "LOSS", "pnl": -0.35}
+{"signal_id": "36358c1befc5", "symbol": "GWEIUSDT", "score": 107.8, "regime": "BULL_TREND", "direction": "LONG", "n21": 21.560000000000002, "n22": 16.169999999999998, "s7": 5.390000000000001, "result": "LOSS", "pnl": -3.802}
+{"signal_id": "68bb56654412", "symbol": "ETHUSDT", "score": 165.0, "regime": "BEAR_RECOVERY", "direction": "LONG", "n21": 33.0, "n22": 24.75, "s7": 8.25, "result": "WIN", "pnl": 0.35}
+{"signal_id": "e88bb12a4f04", "symbol": "ETHUSDT", "score": 165.0, "regime": "BEAR_RECOVERY", "direction": "LONG", "n21": 33.0, "n22": 24.75, "s7": 8.25, "result": "WIN", "pnl": 0.486}
+{"signal_id": "a75d8993938c", "symbol": "BTCUSDT", "score": 103.0, "regime": "BULL_TREND", "direction": "LONG", "n21": 20.6, "n22": 15.45, "s7": 5.15, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "ebed55da6004", "symbol": "BTCUSDT", "score": 95.8, "regime": "BULL_TREND", "direction": "LONG", "n21": 19.16, "n22": 14.37, "s7": 4.79, "result": "LOSS", "pnl": -0.321}
+{"signal_id": "ab32cdbccee7", "symbol": "BTCUSDT", "score": 89.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 17.82, "n22": 13.364999999999998, "s7": 4.455, "result": "WIN", "pnl": 0.141}
+{"signal_id": "9399a43b767d", "symbol": "BTCUSDT", "score": 76.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 15.219999999999999, "n22": 11.415, "s7": 3.8049999999999997, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "75470f5a2155", "symbol": "BTCUSDT", "score": 91.0, "regime": "BULL_TREND", "direction": "LONG", "n21": 18.2, "n22": 13.65, "s7": 4.55, "result": "WIN", "pnl": 0.123}
+{"signal_id": "e1cbbe3ffa1d", "symbol": "BTCUSDT", "score": 97.0, "regime": "BULL_TREND", "direction": "LONG", "n21": 19.400000000000002, "n22": 14.549999999999999, "s7": 4.8500000000000005, "result": "WIN", "pnl": 0.204}
+{"signal_id": "6828197a2d38", "symbol": "BTCUSDT", "score": 103.0, "regime": "BULL_TREND", "direction": "LONG", "n21": 20.6, "n22": 15.45, "s7": 5.15, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "0a8952cc6c39", "symbol": "BTCUSDT", "score": 122.0, "regime": "BULL_TREND", "direction": "LONG", "n21": 24.400000000000002, "n22": 18.3, "s7": 6.1000000000000005, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "7829a0dd019b", "symbol": "ETHUSDT", "score": 103.0, "regime": "BULL_TREND", "direction": "LONG", "n21": 20.6, "n22": 15.45, "s7": 5.15, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "11c13581eb3d", "symbol": "BTCUSDT", "score": 118.8, "regime": "BULL_TREND", "direction": "LONG", "n21": 23.76, "n22": 17.82, "s7": 5.94, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "352e5b574ff9", "symbol": "BTCUSDT", "score": 131.3, "regime": "BULL_TREND", "direction": "LONG", "n21": 26.260000000000005, "n22": 19.695, "s7": 6.565000000000001, "result": "LOSS", "pnl": -0.204}
+{"signal_id": "0e37166112e7", "symbol": "BTCUSDT", "score": 136.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 27.22, "n22": 20.415, "s7": 6.805, "result": "LOSS", "pnl": -0.1}
+{"signal_id": "14d03eef499a", "symbol": "BTCUSDT", "score": 134.3, "regime": "BULL_TREND", "direction": "LONG", "n21": 26.860000000000003, "n22": 20.145, "s7": 6.715000000000001, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "9f4aa2d452d3", "symbol": "ETHUSDT", "score": 143.0, "regime": "BULL_TREND", "direction": "LONG", "n21": 28.6, "n22": 21.45, "s7": 7.15, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "976675117102", "symbol": "BTCUSDT", "score": 134.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 26.82, "n22": 20.115, "s7": 6.705, "result": "WIN", "pnl": 0.125}
+{"signal_id": "c6b51f3ad586", "symbol": "BTCUSDT", "score": 133.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 26.62, "n22": 19.965, "s7": 6.655, "result": "WIN", "pnl": 0.216}
+{"signal_id": "40ba6a8c9244", "symbol": "BTCUSDT", "score": 133.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 26.62, "n22": 19.965, "s7": 6.655, "result": "WIN", "pnl": 0.188}
+{"signal_id": "c40f71f3a114", "symbol": "BTCUSDT", "score": 134.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 26.82, "n22": 20.115, "s7": 6.705, "result": "WIN", "pnl": 0.234}
+{"signal_id": "390d42e90d73", "symbol": "BTCUSDT", "score": 133.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 26.62, "n22": 19.965, "s7": 6.655, "result": "WIN", "pnl": 0.238}
+{"signal_id": "1f2a2b38e727", "symbol": "BTCUSDT", "score": 96.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 19.22, "n22": 14.415, "s7": 4.805, "result": "LOSS", "pnl": -0.473}
+{"signal_id": "f7c60850b3d5", "symbol": "BTCUSDT", "score": 112.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 22.42, "n22": 16.814999999999998, "s7": 5.605, "result": "WIN", "pnl": 0.154}
+{"signal_id": "f7c60850b3d5", "symbol": "BTCUSDT", "score": 112.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 22.42, "n22": 16.814999999999998, "s7": 5.605, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "50e01ca66dcd", "symbol": "BTCUSDT", "score": 110.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 22.02, "n22": 16.514999999999997, "s7": 5.505, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "50e01ca66dcd", "symbol": "BTCUSDT", "score": 110.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 22.02, "n22": 16.514999999999997, "s7": 5.505, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "584d1d30f018", "symbol": "BTCUSDT", "score": 130.0, "regime": "BULL_TREND", "direction": "LONG", "n21": 26.0, "n22": 19.5, "s7": 6.5, "result": "LOSS", "pnl": -0.044}
+{"signal_id": "584d1d30f018", "symbol": "BTCUSDT", "score": 130.0, "regime": "BULL_TREND", "direction": "LONG", "n21": 26.0, "n22": 19.5, "s7": 6.5, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "066d89267de0", "symbol": "BTCUSDT", "score": 130.0, "regime": "BULL_TREND", "direction": "LONG", "n21": 26.0, "n22": 19.5, "s7": 6.5, "result": "WIN", "pnl": 0.06}
+{"signal_id": "066d89267de0", "symbol": "BTCUSDT", "score": 130.0, "regime": "BULL_TREND", "direction": "LONG", "n21": 26.0, "n22": 19.5, "s7": 6.5, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "f47ec490b948", "symbol": "BTCUSDT", "score": 113.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 22.62, "n22": 16.965, "s7": 5.655, "result": "WIN", "pnl": 0.147}
+{"signal_id": "f47ec490b948", "symbol": "BTCUSDT", "score": 113.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 22.62, "n22": 16.965, "s7": 5.655, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "996478f57bac", "symbol": "BTCUSDT", "score": 124.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 24.82, "n22": 18.615, "s7": 6.205, "result": "WIN", "pnl": 0.096}
+{"signal_id": "996478f57bac", "symbol": "BTCUSDT", "score": 124.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 24.82, "n22": 18.615, "s7": 6.205, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "584a6efb2075", "symbol": "BTCUSDT", "score": 115.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 23.02, "n22": 17.264999999999997, "s7": 5.755, "result": "WIN", "pnl": 0.02}
+{"signal_id": "584a6efb2075", "symbol": "BTCUSDT", "score": 115.1, "regime": "BULL_TREND", "direction": "LONG", "n21": 23.02, "n22": 17.264999999999997, "s7": 5.755, "result": "BREAKEVEN", "pnl": 0.0}
+{"signal_id": "170c2cfe1578", "symbol": "ETHUSDT", "score": 143.0, "regime": "BULL_TREND", "direction": "LONG", "n21": 28.6, "n22": 21.45, "s7": 7.15, "result": "WIN", "pnl": 0.271}
+{"ts": 1783016470.970977, "symbol": "ETHUSDT", "regime": "BULL_TREND", "score": 86.8, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 83, "source": "retroactive_fill"}
+{"ts": 1783052985.1565416, "symbol": "ETHUSDT", "regime": "BULL_TREND", "score": 95.4, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.138, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783053007.8469002, "symbol": "HYPEUSDT", "regime": "BULL_TREND", "score": 146.6, "direction": "LONG", "outcome": "PRICE_EXPIRED", "pnl_pct": null, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783079121.902467, "symbol": "BIRBUSDT", "regime": "CHOP_MID", "score": 67.2, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 5.957, "grade": 88, "source": "retroactive_fill"}
+{"ts": 1783087901.8891797, "symbol": "BEATUSDT", "regime": "BULL_TREND", "score": 132.8, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -2.049, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783088746.185763, "symbol": "SYNUSDT", "regime": "BULL_TREND", "score": 158.4, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -0.091, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783116131.655138, "symbol": "SLXUSDT", "regime": "BULL_TREND", "score": 112.4, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -4.034, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783116131.837785, "symbol": "JTOUSDT", "regime": "BULL_TREND", "score": 144.8, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.204, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783250013.3486366, "symbol": "ETHUSDT", "regime": "BULL_TREND", "score": 143.2, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -0.39, "grade": 80, "source": "retroactive_fill"}
+{"ts": 1783250013.3486443, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 100.3, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -0.107, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783298138.4262202, "symbol": "ETHUSDT", "regime": "BULL_TREND", "score": 131.4, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.094, "grade": 100, "source": "retroactive_fill"}
+{"ts": 1783298165.171901, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 76.0, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.01, "grade": 100, "source": "retroactive_fill"}
+{"ts": 1783300895.286512, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 82.8, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.103, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783307887.4638398, "symbol": "ETHUSDT", "regime": "BULL_TREND", "score": 144.1, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -0.41, "grade": 100, "source": "retroactive_fill"}
+{"ts": 1783314780.614909, "symbol": "ETHUSDT", "regime": "BULL_TREND", "score": 137.9, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -0.678, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783324323.5800421, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 80.6, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -0.065, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783328303.243106, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 93.2, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -1.843, "grade": 80, "source": "retroactive_fill"}
+{"ts": 1783352966.2478886, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 85.0, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 80, "source": "retroactive_fill"}
+{"ts": 1783353883.5736437, "symbol": "ETHUSDT", "regime": "BULL_TREND", "score": 118.2, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.045, "grade": 80, "source": "retroactive_fill"}
+{"ts": 1783380136.6080403, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 112.4, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -0.027, "grade": 100, "source": "retroactive_fill"}
+{"ts": 1783394647.7244015, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 88.9, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.318, "grade": 100, "source": "retroactive_fill"}
+{"ts": 1783400930.6274564, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 96.0, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.107, "grade": 100, "source": "retroactive_fill"}
+{"ts": 1783408161.237955, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 87.0, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.164, "grade": 100, "source": "retroactive_fill"}
+{"ts": 1783415368.4201531, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 98.5, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 100, "source": "retroactive_fill"}
+{"ts": 1783425574.4328365, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 93.3, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783438319.1012948, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 84.8, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783438327.887551, "symbol": "ETHUSDT", "regime": "BULL_TREND", "score": 93.6, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783458245.3270373, "symbol": "ETHUSDT", "regime": "BULL_TREND", "score": 136.3, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783462157.9745197, "symbol": "ETHUSDT", "regime": "BULL_TREND", "score": 145.1, "direction": "LONG", "outcome": "SL_BREACHED", "pnl_pct": null, "grade": 100, "source": "retroactive_fill"}
+{"ts": 1783486887.2705352, "symbol": "ETHUSDT", "regime": "BULL_TREND", "score": 142.9, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -1.741, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783486918.7860541, "symbol": "ETHUSDT", "regime": "BULL_TREND", "score": 142.9, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -1.135, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783497615.0223596, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 99.2, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -1.563, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783499130.0615463, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 107.3, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -0.075, "grade": 90, "source": "retroactive_fill"}
+{"ts": 1783500305.6550083, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 103.3, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -0.208, "grade": 80, "source": "retroactive_fill"}
+{"ts": 1783501296.2385201, "symbol": "ETHUSDT", "regime": "BULL_TREND", "score": 144.1, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -0.337, "grade": 87, "source": "retroactive_fill"}
+{"ts": 1783504695.7476072, "symbol": "BASUSDT", "regime": "BULL_TREND", "score": 119.1, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -2.813, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783505831.349994, "symbol": "ETHUSDT", "regime": "BULL_TREND", "score": 144.1, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.012, "grade": 87, "source": "retroactive_fill"}
+{"ts": 1783506228.3292308, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 95.5, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.296, "grade": 90, "source": "retroactive_fill"}
+{"ts": 1783514858.7912366, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 91.5, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -0.383, "grade": 80, "source": "retroactive_fill"}
+{"ts": 1783523334.414826, "symbol": "ETHUSDT", "regime": "BEAR_RECOVERY", "score": 165.0, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 42, "source": "retroactive_fill"}
+{"ts": 1783543713.7792172, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 107.8, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 89, "source": "retroactive_fill"}
+{"ts": 1783547884.871128, "symbol": "JTOUSDT", "regime": "BULL_TREND", "score": 154.0, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 100, "source": "retroactive_fill"}
+{"ts": 1783547885.1805115, "symbol": "BEATUSDT", "regime": "BULL_TREND", "score": 141.1, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -0.687, "grade": 97, "source": "retroactive_fill"}
+{"ts": 1783547978.424571, "symbol": "SYNUSDT", "regime": "BULL_TREND", "score": 146.0, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -4.242, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783549648.4341667, "symbol": "BASUSDT", "regime": "BULL_TREND", "score": 162.4, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -0.35, "grade": 75, "source": "retroactive_fill"}
+{"ts": 1783550026.386633, "symbol": "GWEIUSDT", "regime": "BULL_TREND", "score": 107.8, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -3.802, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783551223.1769662, "symbol": "ETHUSDT", "regime": "BEAR_RECOVERY", "score": 165.0, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.35, "grade": 70, "source": "retroactive_fill"}
+{"ts": 1783569354.1176038, "symbol": "ETHUSDT", "regime": "BEAR_RECOVERY", "score": 165.0, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.486, "grade": 57, "source": "retroactive_fill"}
+{"ts": 1783587887.5088286, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 103.0, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 80, "source": "retroactive_fill"}
+{"ts": 1783589782.9601207, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 95.8, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -0.321, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783609875.674504, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 89.1, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.141, "grade": 87, "source": "retroactive_fill"}
+{"ts": 1783618590.2864044, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 76.1, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 87, "source": "retroactive_fill"}
+{"ts": 1783640191.7886012, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 91.0, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.123, "grade": 80, "source": "retroactive_fill"}
+{"ts": 1783643804.318013, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 97.0, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.204, "grade": 80, "source": "retroactive_fill"}
+{"ts": 1783645591.2398255, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 103.0, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 80, "source": "retroactive_fill"}
+{"ts": 1783649245.7077773, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 122.0, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 100, "source": "retroactive_fill"}
+{"ts": 1783656755.5927818, "symbol": "ETHUSDT", "regime": "BULL_TREND", "score": 103.0, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 90, "source": "retroactive_fill"}
+{"ts": 1783676186.4727197, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 118.8, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 85, "source": "retroactive_fill"}
+{"ts": 1783708578.9018722, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 131.3, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -0.204, "grade": 82, "source": "retroactive_fill"}
+{"ts": 1783712179.099739, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 136.1, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -0.1, "grade": 87, "source": "retroactive_fill"}
+{"ts": 1783717580.9966846, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 134.3, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 82, "source": "retroactive_fill"}
+{"ts": 1783737081.6299813, "symbol": "ETHUSDT", "regime": "BULL_TREND", "score": 143.0, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 80, "source": "retroactive_fill"}
+{"ts": 1783739181.369438, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 134.1, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.125, "grade": 87, "source": "retroactive_fill"}
+{"ts": 1783746378.5860984, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 133.1, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.216, "grade": 87, "source": "retroactive_fill"}
+{"ts": 1783748179.1944509, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 133.1, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.188, "grade": 87, "source": "retroactive_fill"}
+{"ts": 1783749979.2109678, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 134.1, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.234, "grade": 87, "source": "retroactive_fill"}
+{"ts": 1783757181.9797168, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 133.1, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.238, "grade": 87, "source": "retroactive_fill"}
+{"ts": 1783779669.722901, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 96.1, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -0.473, "grade": 87, "source": "retroactive_fill"}
+{"ts": 1783787783.1066313, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 112.1, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.154, "grade": 87, "source": "retroactive_fill"}
+{"ts": 1783787783.11041, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 112.1, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 0, "source": "retroactive_fill"}
+{"ts": 1783791384.3059425, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 110.1, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 87, "source": "retroactive_fill"}
+{"ts": 1783791384.3089466, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 110.1, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 0, "source": "retroactive_fill"}
+{"ts": 1783815045.971865, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 130.0, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -0.044, "grade": 80, "source": "retroactive_fill"}
+{"ts": 1783815045.974828, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 130.0, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 0, "source": "retroactive_fill"}
+{"ts": 1783816588.6712654, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 130.0, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.06, "grade": 80, "source": "retroactive_fill"}
+{"ts": 1783816588.6739953, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 130.0, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 0, "source": "retroactive_fill"}
+{"ts": 1783820126.9751718, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 113.1, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.147, "grade": 87, "source": "retroactive_fill"}
+{"ts": 1783820126.979529, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 113.1, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 0, "source": "retroactive_fill"}
+{"ts": 1783823887.195466, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 124.1, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.096, "grade": 87, "source": "retroactive_fill"}
+{"ts": 1783823887.1998491, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 124.1, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 0, "source": "retroactive_fill"}
+{"ts": 1783827378.2984338, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 115.1, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.02, "grade": 87, "source": "retroactive_fill"}
+{"ts": 1783827378.300738, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 115.1, "direction": "LONG", "outcome": "EXPIRED", "pnl_pct": 0.0, "grade": 0, "source": "retroactive_fill"}
+{"ts": 1783833913.7172203, "symbol": "ETHUSDT", "regime": "BULL_TREND", "score": 143.0, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.271, "grade": 100, "source": "retroactive_fill"}
+{"ts": 1783841788.8555598, "symbol": "BTCUSDT", "regime": "BULL_TREND", "score": 129.1, "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": -0.029, "grade": 87, "source": "retroactive_fill"}
+{"symbol": "ETHUSDT", "direction": "LONG", "entry_price": 1954.0, "exit_price": 0.0, "pnl_pct": -100.0, "result": "LOSS", "close_reason": "RSI1H=79.4≥72.0 + 突破EMA4H → 超买逃顶", "signal_id": "", "score": 0, "regime": "", "ts": 1785134604.138447}

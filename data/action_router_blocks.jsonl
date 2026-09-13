@@ -1,0 +1,11 @@
+{"ts": "2026-05-28 13:03 BJ", "action": "post_square", "guard": "DD1SignatureGuard", "reason": "内容含钉钉1专属签名「根据新浪财经公开数据」，禁止走广场路径。请使用 route(\"send_dd1\", ...) 走钉钉确认门。", "preview": "根据新浪财经公开数据 ETH/USDT\n【ETH】箜 ▼\n  入场区: $2034"}
+{"ts": "2026-05-28 13:03 BJ", "action": "run_analysis", "guard": "BrahmaRequiredGuard", "reason": "分析操作必须指定 symbol", "preview": ""}
+{"ts": "2026-05-28 13:07 BJ", "action": "post_square", "guard": "DD1SignatureGuard", "reason": "内容含钉钉1专属签名「根据新浪财经公开数据」，禁止走广场路径。请使用 route(\"send_dd1\", ...) 走钉钉确认门。", "preview": "根据新浪财经公开数据 ETH/USDT\n【ETH】箜 ▼"}
+{"ts": "2026-05-28 13:07 BJ", "action": "run_analysis", "guard": "BrahmaRequiredGuard", "reason": "分析操作必须指定 symbol", "preview": ""}
+{"ts": "2026-06-04 15:39 BJ", "action": "post_square", "guard": "DD1SignatureGuard", "reason": "内容含钉钉1专属签名「根据新浪财经公开数据」，禁止走广场路径。请使用 route(\"send_dd1\", ...) 走钉钉确认门。", "preview": "根据新浪财经公开数据 ETH/USDT\n【ETH】箜 ▼\n  入场区: $2034"}
+{"ts": "2026-06-04 15:39 BJ", "action": "run_analysis", "guard": "BrahmaRequiredGuard", "reason": "分析操作必须指定 symbol", "preview": ""}
+{"ts": "2026-06-04 15:45 BJ", "action": "post_square", "guard": "DD1SignatureGuard", "reason": "内容含钉钉1专属签名「根据新浪财经公开数据」，禁止走广场路径。请使用 route(\"send_dd1\", ...) 走钉钉确认门。", "preview": "根据新浪财经公开数据 ETH/USDT\n【ETH】箜 ▼\n  入场区: $2034"}
+{"ts": "2026-06-04 15:45 BJ", "action": "run_analysis", "guard": "BrahmaRequiredGuard", "reason": "分析操作必须指定 symbol", "preview": ""}
+{"ts": "2026-06-04 15:47 BJ", "action": "post_square", "guard": "DD1SignatureGuard", "reason": "内容含钉钉1专属签名「根据新浪财经公开数据」，禁止走广场路径。请使用 route(\"send_dd1\", ...) 走钉钉确认门。", "preview": "根据新浪财经公开数据 ETH/USDT\n【ETH】箜 ▼\n  入场区: $2034"}
+{"ts": "2026-06-04 15:47 BJ", "action": "run_analysis", "guard": "BrahmaRequiredGuard", "reason": "分析操作必须指定 symbol", "preview": ""}
+{"ts": "2026-06-11 09:31 BJ", "action": "send_dd1", "guard": "DD1FormatGuard", "reason": "DD1格式不合格: ❌ DD1守护官：格式不合格，拦截推送\n\n  [1] 第1行必须是「根据新浪财经公开数据 SYMBOL/USDT」\n  [2] 第2行必须是「【SYMBOL】哆 ▲」或「【SYMBOL】箜 ▼」，禁止其他汉字\n  [3] 必须包含「保  护: $xxx (x.xx%)」— '保'后两空格'护'，含止损%\n  [4] 目标一必须包含 R:R=x.xx\n  [5] 目标二必须包含「", "preview": "【梵天BTC信号 · 做空】\n品种: BTC/USDT 永续\n方向: ▼ SHORT\n现价: $62,171.50\n入场区: $62,233.67 ~ $62,"}

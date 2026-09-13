@@ -1,0 +1,29 @@
+{
+  "ts": "2026-09-09T07:18:16.218472Z",
+  "results": {
+    "ms100_natural": {
+      "label": "ms=100 natural RR=2.0",
+      "n": 26894,
+      "wr": 49.6,
+      "ic": 0.0326,
+      "pnl_net": 0.025,
+      "sharpe": 10.23,
+      "max_dd": 26350.0,
+      "wf_stab": 0.0,
+      "wf_pass": 0,
+      "wf_fail": 5
+    },
+    "ms100_trailing": {
+      "label": "ms=100 trailing RR=2.0",
+      "n": 26894,
+      "wr": 55.1,
+      "ic": 0.04,
+      "pnl_net": -0.118,
+      "sharpe": 14.94,
+      "max_dd": 20420.0,
+      "wf_stab": 0.778,
+      "wf_pass": 7,
+      "wf_fail": 0
+    }
+  }
+}

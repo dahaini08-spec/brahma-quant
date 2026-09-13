@@ -1,0 +1,1 @@
+{"ts": 1783845270.1835256, "iso": "2026-07-12T08:34:30.183527+00:00", "n_samples": 66, "actual_wr": 0.0, "predicted_wr": 0.468, "deviation": 0.468, "delta": {"N21_fib_macro": 0, "N22_vol_exh": 0, "s7_ob_heatmap": 0, "s_cross_fr": 0, "bull_bonus_cap": 0, "mtf_neutral_mult": -0.001}, "forced": true}

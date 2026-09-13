@@ -1,0 +1,32 @@
+{
+  "BTCUSDT": {
+    "regime": "CHOP_MID",
+    "phase": "?",
+    "ts": 1788742800,
+    "prev": "CHOP_MID"
+  },
+  "ETHUSDT": {
+    "regime": "BULL_EARLY",
+    "phase": "?",
+    "ts": 1788742800,
+    "prev": "BULL_EARLY"
+  },
+  "BNBUSDT": {
+    "regime": "BULL_TREND",
+    "phase": "?",
+    "ts": 1788742800,
+    "prev": "BULL_TREND"
+  },
+  "NEARUSDT": {
+    "regime": "BULL_TREND",
+    "phase": "?",
+    "ts": 1788742800,
+    "prev": "BULL_TREND"
+  },
+  "DOGEUSDT": {
+    "regime": "CHOP_MID",
+    "phase": "?",
+    "ts": 1788742800,
+    "prev": "CHOP_MID"
+  }
+}

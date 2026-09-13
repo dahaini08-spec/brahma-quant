@@ -1,0 +1,151 @@
+{"ts": 1782781927.1822577, "symbol": "BTCUSDT", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 1.23, "score": 142}
+{"ts": 1782782133.4175143, "symbol": "BTCUSDT", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.8, "score": 138}
+{"ts": 1782782723.1017418, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1782783620.9367037, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1782917418.2135186, "symbol": "HYPEUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1782987526.3869991, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1782987667.9528618, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1782987766.8555617, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1782988187.6549895, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1782988295.4081826, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1782988431.184109, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1782988511.6064172, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1782992493.8342965, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1783054088.6042073, "symbol": "ETHUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783082919.6685243, "symbol": "BIRBUSDT", "regime": "CHOP_MID", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783090168.644317, "symbol": "BEATUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783090168.7275698, "symbol": "SYNUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783118967.585407, "symbol": "SLXUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783118967.674509, "symbol": "JTOUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783256044.7468057, "symbol": "ETHUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783256044.80887, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783306439.0709934, "symbol": "ETHUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783306439.1278794, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783313637.3991756, "symbol": "ETHUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783320846.0914426, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783320846.153713, "symbol": "ETHUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783328038.228357, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783342544.2617753, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783356945.2513583, "symbol": "ETHUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783385744.5903418, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783400145.2171888, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783407344.2873616, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783414589.3702223, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783500090.39168, "symbol": "ETHUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783500090.4496098, "symbol": "ETHUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783500090.490931, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783500090.5355422, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783507282.996393, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783507283.0563886, "symbol": "ETHUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783507283.1016676, "symbol": "BASUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783514478.625244, "symbol": "ETHUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783514478.693627, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783522083.363128, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783526325.8196118, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1783550703.5421948, "symbol": "BEATUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783550703.6449075, "symbol": "SYNUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783550703.6865864, "symbol": "BASUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783556135.274377, "symbol": "GWEIUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783563130.0945275, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1783563399.1320784, "symbol": "ETHUSDT", "regime": "BEAR_RECOVERY", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783567170.585831, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1783567387.0812297, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1783567471.2052414, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1783567535.404282, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1783567612.960684, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1783567807.8474455, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1783567873.5976012, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1783568354.5117166, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1783568883.5076296, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1783570610.414901, "symbol": "ETHUSDT", "regime": "BEAR_RECOVERY", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783572221.921194, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1783583064.9364564, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1783583170.8634949, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1783583341.3468106, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1783583411.5553493, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1783584934.1943593, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1783585006.4847496, "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0.0}
+{"ts": 1783591450.6641989, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783613050.9491706, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783643650.5355287, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783645448.5589712, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783710274.3274133, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783713847.6451514, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783740847.7332644, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783748047.7604053, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783749867.1201966, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783757099.5517805, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1783766067.6188135, "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "TIMEOUT", "pnl_pct": 0.0, "score": 0.0}
+{"ts": 1784074929.5858252, "ts_str": "2026-07-15 00:22 UTC", "symbol": "BTCUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "WIN", "pnl_pct": 1.5, "score": 162}
+{"ts": 1784074945.601296, "ts_str": "2026-07-15 00:22 UTC", "symbol": "ETHUSDT", "regime": "BULL_TREND", "direction": "LONG", "outcome": "WIN", "pnl_pct": 2.1, "score": 157}
+{"ts": 1785988026.3980274, "ts_str": "2026-08-06 03:47 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1785988054.6892135, "ts_str": "2026-08-06 03:47 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1785988123.9629917, "ts_str": "2026-08-06 03:48 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1785988147.1483195, "ts_str": "2026-08-06 03:49 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1785988171.093501, "ts_str": "2026-08-06 03:49 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1785988359.3264444, "ts_str": "2026-08-06 03:52 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1785988407.5376616, "ts_str": "2026-08-06 03:53 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1785989777.9659104, "ts_str": "2026-08-06 04:16 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1785990034.5711055, "ts_str": "2026-08-06 04:20 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1785994111.7102232, "ts_str": "2026-08-06 05:28 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1785995771.934831, "ts_str": "2026-08-06 05:56 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786061293.5405278, "ts_str": "2026-08-07 00:08 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786061449.4595015, "ts_str": "2026-08-07 00:10 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786061786.2906356, "ts_str": "2026-08-07 00:16 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786062017.9954562, "ts_str": "2026-08-07 00:20 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786062803.1595979, "ts_str": "2026-08-07 00:33 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786062835.9353716, "ts_str": "2026-08-07 00:33 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786062971.6676078, "ts_str": "2026-08-07 00:36 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786064068.3176732, "ts_str": "2026-08-07 00:54 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786064342.5735126, "ts_str": "2026-08-07 00:59 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786065417.5592873, "ts_str": "2026-08-07 01:16 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786066581.8369465, "ts_str": "2026-08-07 01:36 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786067003.9804244, "ts_str": "2026-08-07 01:43 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786067701.054589, "ts_str": "2026-08-07 01:55 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786067833.5450382, "ts_str": "2026-08-07 01:57 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786068801.1748438, "ts_str": "2026-08-07 02:13 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786069107.62724, "ts_str": "2026-08-07 02:18 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786069616.6730695, "ts_str": "2026-08-07 02:26 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786079035.9172134, "ts_str": "2026-08-07 05:03 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786079071.0652065, "ts_str": "2026-08-07 05:04 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786082812.1786253, "ts_str": "2026-08-07 06:06 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786084293.053824, "ts_str": "2026-08-07 06:31 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786423933.3547287, "ts_str": "2026-08-11 04:52 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786433217.0054014, "ts_str": "2026-08-11 07:26 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786438189.277217, "ts_str": "2026-08-11 08:49 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786439537.384177, "ts_str": "2026-08-11 09:12 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786439884.443801, "ts_str": "2026-08-11 09:18 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786446325.0771344, "ts_str": "2026-08-11 11:05 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786446476.846137, "ts_str": "2026-08-11 11:07 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786446835.369334, "ts_str": "2026-08-11 11:13 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786446955.8104653, "ts_str": "2026-08-11 11:15 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786447404.1373115, "ts_str": "2026-08-11 11:23 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786494720.8336303, "ts_str": "2026-08-12 00:32 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786503010.2732382, "ts_str": "2026-08-12 02:50 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1786503226.050334, "ts_str": "2026-08-12 02:53 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787591094.2768598, "ts_str": "2026-08-24 17:04 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787591261.7791061, "ts_str": "2026-08-24 17:07 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787893797.0321608, "ts_str": "2026-08-28 05:09 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787894536.6633167, "ts_str": "2026-08-28 05:22 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787894798.7268384, "ts_str": "2026-08-28 05:26 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787905437.7966552, "ts_str": "2026-08-28 08:23 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787905671.526425, "ts_str": "2026-08-28 08:27 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787912894.6844747, "ts_str": "2026-08-28 10:28 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787913264.1816976, "ts_str": "2026-08-28 10:34 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787914977.4312377, "ts_str": "2026-08-28 11:02 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787915457.8846214, "ts_str": "2026-08-28 11:10 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787916383.3419118, "ts_str": "2026-08-28 11:26 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787916875.484458, "ts_str": "2026-08-28 11:34 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787917129.415273, "ts_str": "2026-08-28 11:38 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787918039.5819786, "ts_str": "2026-08-28 11:53 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787918327.1594443, "ts_str": "2026-08-28 11:58 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787918485.527039, "ts_str": "2026-08-28 12:01 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787919263.3992794, "ts_str": "2026-08-28 12:14 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787919821.013052, "ts_str": "2026-08-28 12:23 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787920864.3476946, "ts_str": "2026-08-28 12:41 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787921011.48101, "ts_str": "2026-08-28 12:43 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787921900.5434446, "ts_str": "2026-08-28 12:58 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787923123.3079517, "ts_str": "2026-08-28 13:18 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787923433.8877857, "ts_str": "2026-08-28 13:23 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787923896.7278388, "ts_str": "2026-08-28 13:31 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1787924301.1163774, "ts_str": "2026-08-28 13:38 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}

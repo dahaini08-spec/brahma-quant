@@ -1,0 +1,1 @@
+{"pred_id": "2ba45669", "pred_type": "TARGET", "symbol": "BTC", "target_price": 65000, "direction": "UP", "timeframe_h": 72, "basis": "BTC当前63K，预测72H内测试65K", "source": "测试", "created_at": "2026-06-11T11:21:56.216219", "deadline": "2026-06-14T11:21:56.216237", "status": "PENDING", "actual_price": null, "accuracy_pct": null, "settled_at": null}

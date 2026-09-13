@@ -1,0 +1,28 @@
+{
+  "data_source": "BLS API + 推算模型",
+  "data_time": "2026-09-13 01:36 UTC",
+  "cpi_core": {
+    "error": "no data"
+  },
+  "cpi_all": {
+    "error": "no data"
+  },
+  "ppi_final": {
+    "error": "no data"
+  },
+  "cpi_yoy": 0.0,
+  "ppi_yoy": 0.0,
+  "fed_rate": 5.25,
+  "rate_expectation": {
+    "bias": "DOVISH",
+    "action": "CUT_50",
+    "probability": 70,
+    "note": "通胀达标(CPI=0.0%/PPI=0.0%)→降息50bp概率70%",
+    "inflation_pressure": 0.0
+  },
+  "macro_calendar": {
+    "next_fomc": "2026-09-17",
+    "days_to_fomc": 3
+  },
+  "fear_greed": 74
+}

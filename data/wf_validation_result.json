@@ -1,0 +1,63 @@
+{
+  "n_windows": 3,
+  "n_test_trades": 60,
+  "overall_wr": 0.6833,
+  "overall_ev": 0.8209,
+  "overall_sr": 7.4791,
+  "consistency_score": 0.9764,
+  "overfitting_ratio": 0.9268,
+  "avg_is_wr": 0.6333,
+  "z_score": 2.8402,
+  "is_significant": true,
+  "window_results": [
+    {
+      "window": 1,
+      "train_n": 140,
+      "test_n": 20,
+      "train_start": 0,
+      "train_end": 139,
+      "test_start": 140,
+      "test_end": 159,
+      "is_wr": 0.6357,
+      "is_ev": 0.81,
+      "is_sr": 5.9377,
+      "oos_wr": 0.65,
+      "oos_ev": 1.1219,
+      "oos_sr": 9.3816,
+      "oos_degradation": -0.0143
+    },
+    {
+      "window": 2,
+      "train_n": 140,
+      "test_n": 20,
+      "train_start": 20,
+      "train_end": 159,
+      "test_start": 160,
+      "test_end": 179,
+      "is_wr": 0.6214,
+      "is_ev": 0.6742,
+      "is_sr": 5.4736,
+      "oos_wr": 0.7,
+      "oos_ev": 0.599,
+      "oos_sr": 6.0756,
+      "oos_degradation": -0.0786
+    },
+    {
+      "window": 3,
+      "train_n": 140,
+      "test_n": 20,
+      "train_start": 40,
+      "train_end": 179,
+      "test_start": 180,
+      "test_end": 199,
+      "is_wr": 0.6429,
+      "is_ev": 0.7721,
+      "is_sr": 6.3426,
+      "oos_wr": 0.7,
+      "oos_ev": 0.7419,
+      "oos_sr": 6.9051,
+      "oos_degradation": -0.0571
+    }
+  ],
+  "generated_at": "2026-07-03T02:33:30.148634+00:00"
+}

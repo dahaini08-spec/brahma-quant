@@ -1,0 +1,639 @@
+{
+  "generated": "2026-07-22T02:13:22.038171+00:00",
+  "total": 48,
+  "candidates": [
+    {
+      "symbol": "SKHYUSDT",
+      "price": 172.38,
+      "rsi_1h": 80.1,
+      "bb_width": 12.2388,
+      "vol_ratio": 0.12,
+      "fr": -0.03796,
+      "vol_24h_m": 880.2,
+      "triggered": [
+        "D1_overbought(rsi=80.1)",
+        "D6_fr_low(-0.0380%)"
+      ],
+      "score": 2
+    },
+    {
+      "symbol": "DEXEUSDT",
+      "price": 5.31,
+      "rsi_1h": 23.0,
+      "bb_width": 273.1168,
+      "vol_ratio": 0.28,
+      "fr": -1.49487,
+      "vol_24h_m": 670.2,
+      "triggered": [
+        "D1_oversold(rsi=23.0)",
+        "D6_fr_low(-1.4949%)"
+      ],
+      "score": 2
+    },
+    {
+      "symbol": "ERAUSDT",
+      "price": 0.08649,
+      "rsi_1h": 11.3,
+      "bb_width": 19.6522,
+      "vol_ratio": 0.1,
+      "fr": -0.33103,
+      "vol_24h_m": 494.9,
+      "triggered": [
+        "D1_oversold(rsi=11.3)",
+        "D6_fr_low(-0.3310%)"
+      ],
+      "score": 2
+    },
+    {
+      "symbol": "LAUSDT",
+      "price": 0.05346,
+      "rsi_1h": 17.7,
+      "bb_width": 12.0855,
+      "vol_ratio": 0.17,
+      "fr": -0.61558,
+      "vol_24h_m": 124.5,
+      "triggered": [
+        "D1_oversold(rsi=17.7)",
+        "D6_fr_low(-0.6156%)"
+      ],
+      "score": 2
+    },
+    {
+      "symbol": "PROMUSDT",
+      "price": 1.448,
+      "rsi_1h": 22.1,
+      "bb_width": 24.0573,
+      "vol_ratio": 0.14,
+      "fr": -0.01065,
+      "vol_24h_m": 38.8,
+      "triggered": [
+        "D1_oversold(rsi=22.1)",
+        "D4_break_low48h(cur=1.448 l48=1.451)"
+      ],
+      "score": 2
+    },
+    {
+      "symbol": "REUSDT",
+      "price": 0.4214,
+      "rsi_1h": 90.1,
+      "bb_width": 17.2868,
+      "vol_ratio": 0.72,
+      "fr": -0.04009,
+      "vol_24h_m": 29.9,
+      "triggered": [
+        "D1_overbought(rsi=90.1)",
+        "D6_fr_low(-0.0401%)"
+      ],
+      "score": 2
+    },
+    {
+      "symbol": "MIRAUSDT",
+      "price": 0.04784,
+      "rsi_1h": 79.7,
+      "bb_width": 21.1039,
+      "vol_ratio": 1.15,
+      "fr": -1.28813,
+      "vol_24h_m": 18.3,
+      "triggered": [
+        "D1_overbought(rsi=79.7)",
+        "D6_fr_low(-1.2881%)"
+      ],
+      "score": 2
+    },
+    {
+      "symbol": "MINIMAXUSDT",
+      "price": 26.29,
+      "rsi_1h": 35.5,
+      "bb_width": 10.896,
+      "vol_ratio": 1.51,
+      "fr": 0.07536,
+      "vol_24h_m": 8.6,
+      "triggered": [
+        "D3_oi_proxy(pchg=1.28% vr=1.5x)",
+        "D6_fr_high(0.0754%)"
+      ],
+      "score": 2
+    },
+    {
+      "symbol": "TUSDT",
+      "price": 0.00362,
+      "rsi_1h": 19.1,
+      "bb_width": 3.0059,
+      "vol_ratio": 0.32,
+      "fr": -0.11276,
+      "vol_24h_m": 5.7,
+      "triggered": [
+        "D1_oversold(rsi=19.1)",
+        "D6_fr_low(-0.1128%)"
+      ],
+      "score": 2
+    },
+    {
+      "symbol": "SKHYNIXUSDT",
+      "price": 1340.62,
+      "rsi_1h": 80.6,
+      "bb_width": 9.6235,
+      "vol_ratio": 0.27,
+      "fr": 0.0,
+      "vol_24h_m": 1527.2,
+      "triggered": [
+        "D1_overbought(rsi=80.6)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "XAUUSDT",
+      "price": 4125.26,
+      "rsi_1h": 85.9,
+      "bb_width": 1.7753,
+      "vol_ratio": 0.22,
+      "fr": 0.0,
+      "vol_24h_m": 1317.6,
+      "triggered": [
+        "D1_overbought(rsi=85.9)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "HYPEUSDT",
+      "price": 60.815,
+      "rsi_1h": 25.1,
+      "bb_width": 6.538,
+      "vol_ratio": 0.13,
+      "fr": -0.0087,
+      "vol_24h_m": 428.7,
+      "triggered": [
+        "D1_oversold(rsi=25.1)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "BZUSDT",
+      "price": 89.45,
+      "rsi_1h": 73.3,
+      "bb_width": 3.3076,
+      "vol_ratio": 0.18,
+      "fr": 0.0,
+      "vol_24h_m": 266.5,
+      "triggered": [
+        "D1_overbought(rsi=73.3)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "ZHIPUUSDT",
+      "price": 147.29,
+      "rsi_1h": 45.3,
+      "bb_width": 11.1415,
+      "vol_ratio": 0.58,
+      "fr": 0.21345,
+      "vol_24h_m": 165.3,
+      "triggered": [
+        "D6_fr_high(0.2135%)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "ESPORTSUSDT",
+      "price": 0.02985,
+      "rsi_1h": 70.2,
+      "bb_width": 40.8405,
+      "vol_ratio": 0.09,
+      "fr": 0.05471,
+      "vol_24h_m": 154.5,
+      "triggered": [
+        "D6_fr_high(0.0547%)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "SAMSUNGUSDT",
+      "price": 185.74,
+      "rsi_1h": 74.5,
+      "bb_width": 6.7454,
+      "vol_ratio": 0.35,
+      "fr": 0.01809,
+      "vol_24h_m": 91.9,
+      "triggered": [
+        "D1_overbought(rsi=74.5)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "NIGHTUSDT",
+      "price": 0.0232,
+      "rsi_1h": 72.4,
+      "bb_width": 35.019,
+      "vol_ratio": 0.5,
+      "fr": 0.005,
+      "vol_24h_m": 61.9,
+      "triggered": [
+        "D1_overbought(rsi=72.4)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "AMDUSDT",
+      "price": 542.57,
+      "rsi_1h": 86.8,
+      "bb_width": 6.812,
+      "vol_ratio": 0.09,
+      "fr": -0.02078,
+      "vol_24h_m": 37.6,
+      "triggered": [
+        "D1_overbought(rsi=86.8)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "METAUSDT",
+      "price": 642.37,
+      "rsi_1h": 13.5,
+      "bb_width": 1.9157,
+      "vol_ratio": 0.02,
+      "fr": 0.0,
+      "vol_24h_m": 31.6,
+      "triggered": [
+        "D1_oversold(rsi=13.5)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "TREEUSDT",
+      "price": 0.03754,
+      "rsi_1h": 45.5,
+      "bb_width": 4.6338,
+      "vol_ratio": 0.15,
+      "fr": -0.40361,
+      "vol_24h_m": 29.7,
+      "triggered": [
+        "D6_fr_low(-0.4036%)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "XAUTUSDT",
+      "price": 4112.42,
+      "rsi_1h": 82.6,
+      "bb_width": 1.6499,
+      "vol_ratio": 0.24,
+      "fr": 0.00447,
+      "vol_24h_m": 29.3,
+      "triggered": [
+        "D1_overbought(rsi=82.6)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "HBARUSDT",
+      "price": 0.07002,
+      "rsi_1h": 72.0,
+      "bb_width": 4.7986,
+      "vol_ratio": 0.17,
+      "fr": -0.00444,
+      "vol_24h_m": 28.9,
+      "triggered": [
+        "D1_overbought(rsi=72.0)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "TLMUSDT",
+      "price": 0.001669,
+      "rsi_1h": 54.0,
+      "bb_width": 17.3649,
+      "vol_ratio": 0.1,
+      "fr": -0.04753,
+      "vol_24h_m": 28.0,
+      "triggered": [
+        "D6_fr_low(-0.0475%)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "LDOUSDT",
+      "price": 0.3878,
+      "rsi_1h": 16.9,
+      "bb_width": 5.7437,
+      "vol_ratio": 0.13,
+      "fr": -0.00108,
+      "vol_24h_m": 27.6,
+      "triggered": [
+        "D1_oversold(rsi=16.9)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "RKLBUSDT",
+      "price": 73.24,
+      "rsi_1h": 75.9,
+      "bb_width": 14.7872,
+      "vol_ratio": 0.12,
+      "fr": 0.0,
+      "vol_24h_m": 27.2,
+      "triggered": [
+        "D1_overbought(rsi=75.9)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "ORCLUSDT",
+      "price": 128.4,
+      "rsi_1h": 81.0,
+      "bb_width": 6.7002,
+      "vol_ratio": 0.08,
+      "fr": 0.0,
+      "vol_24h_m": 17.8,
+      "triggered": [
+        "D1_overbought(rsi=81.0)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "WDCUSDT",
+      "price": 554.02,
+      "rsi_1h": 77.6,
+      "bb_width": 11.4572,
+      "vol_ratio": 0.19,
+      "fr": 0.0,
+      "vol_24h_m": 17.2,
+      "triggered": [
+        "D1_overbought(rsi=77.6)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "HOODUSDT",
+      "price": 106.86,
+      "rsi_1h": 76.9,
+      "bb_width": 8.7077,
+      "vol_ratio": 0.05,
+      "fr": 0.0,
+      "vol_24h_m": 15.8,
+      "triggered": [
+        "D1_overbought(rsi=76.9)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "1000SHIBUSDT",
+      "price": 0.004265,
+      "rsi_1h": 43.4,
+      "bb_width": 0.704,
+      "vol_ratio": 0.1,
+      "fr": 0.00352,
+      "vol_24h_m": 15.6,
+      "triggered": [
+        "D2_bb_squeeze(bw=0.704%)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "SLXUSDT",
+      "price": 0.11018,
+      "rsi_1h": 72.4,
+      "bb_width": 6.996,
+      "vol_ratio": 0.39,
+      "fr": 0.005,
+      "vol_24h_m": 14.9,
+      "triggered": [
+        "D1_overbought(rsi=72.4)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "VANRYUSDT",
+      "price": 0.004605,
+      "rsi_1h": 35.0,
+      "bb_width": 6.1705,
+      "vol_ratio": 0.19,
+      "fr": -0.34988,
+      "vol_24h_m": 14.7,
+      "triggered": [
+        "D6_fr_low(-0.3499%)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "SMCIUSDT",
+      "price": 30.07,
+      "rsi_1h": 88.7,
+      "bb_width": 38.3459,
+      "vol_ratio": 0.39,
+      "fr": 0.0,
+      "vol_24h_m": 14.0,
+      "triggered": [
+        "D1_overbought(rsi=88.7)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "DODOXUSDT",
+      "price": 0.016334,
+      "rsi_1h": 54.7,
+      "bb_width": 5.7489,
+      "vol_ratio": 0.14,
+      "fr": -0.82495,
+      "vol_24h_m": 14.0,
+      "triggered": [
+        "D6_fr_low(-0.8249%)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "AVAAIUSDT",
+      "price": 0.010305,
+      "rsi_1h": 86.9,
+      "bb_width": 31.5309,
+      "vol_ratio": 1.24,
+      "fr": 0.02693,
+      "vol_24h_m": 12.7,
+      "triggered": [
+        "D1_overbought(rsi=86.9)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "BULLAUSDT",
+      "price": 0.011724,
+      "rsi_1h": 49.1,
+      "bb_width": 12.6944,
+      "vol_ratio": 0.08,
+      "fr": 0.12119,
+      "vol_24h_m": 12.6,
+      "triggered": [
+        "D6_fr_high(0.1212%)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "DELLUSDT",
+      "price": 422.97,
+      "rsi_1h": 81.4,
+      "bb_width": 13.3026,
+      "vol_ratio": 0.05,
+      "fr": 0.0,
+      "vol_24h_m": 11.3,
+      "triggered": [
+        "D1_overbought(rsi=81.4)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "AERGOUSDT",
+      "price": 0.02228,
+      "rsi_1h": 50.2,
+      "bb_width": 9.3695,
+      "vol_ratio": 0.08,
+      "fr": 0.12391,
+      "vol_24h_m": 10.6,
+      "triggered": [
+        "D6_fr_high(0.1239%)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "RENDERUSDT",
+      "price": 1.523,
+      "rsi_1h": 16.7,
+      "bb_width": 2.5943,
+      "vol_ratio": 0.28,
+      "fr": -0.00741,
+      "vol_24h_m": 9.5,
+      "triggered": [
+        "D1_oversold(rsi=16.7)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "BILLUSDT",
+      "price": 0.02568,
+      "rsi_1h": 77.8,
+      "bb_width": 10.8096,
+      "vol_ratio": 0.18,
+      "fr": -0.00631,
+      "vol_24h_m": 9.1,
+      "triggered": [
+        "D1_overbought(rsi=77.8)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "PLTRUSDT",
+      "price": 132.13,
+      "rsi_1h": 27.1,
+      "bb_width": 2.5201,
+      "vol_ratio": 0.08,
+      "fr": 0.0,
+      "vol_24h_m": 8.7,
+      "triggered": [
+        "D1_oversold(rsi=27.1)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "AMZNUSDT",
+      "price": 246.84,
+      "rsi_1h": 21.1,
+      "bb_width": 2.1741,
+      "vol_ratio": 0.05,
+      "fr": 0.0,
+      "vol_24h_m": 7.4,
+      "triggered": [
+        "D1_oversold(rsi=21.1)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "MORPHOUSDT",
+      "price": 2.0517,
+      "rsi_1h": 76.4,
+      "bb_width": 4.8438,
+      "vol_ratio": 0.07,
+      "fr": -0.00834,
+      "vol_24h_m": 6.8,
+      "triggered": [
+        "D1_overbought(rsi=76.4)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "XANUSDT",
+      "price": 0.010807,
+      "rsi_1h": 24.5,
+      "bb_width": 15.7241,
+      "vol_ratio": 0.2,
+      "fr": 0.005,
+      "vol_24h_m": 6.8,
+      "triggered": [
+        "D1_oversold(rsi=24.5)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "SXTUSDT",
+      "price": 0.006973,
+      "rsi_1h": 39.7,
+      "bb_width": 5.484,
+      "vol_ratio": 0.12,
+      "fr": -0.03581,
+      "vol_24h_m": 6.0,
+      "triggered": [
+        "D6_fr_low(-0.0358%)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "AXTIUSDT",
+      "price": 57.21,
+      "rsi_1h": 81.6,
+      "bb_width": 17.0857,
+      "vol_ratio": 0.07,
+      "fr": 0.0,
+      "vol_24h_m": 6.0,
+      "triggered": [
+        "D1_overbought(rsi=81.6)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "1000LUNCUSDT",
+      "price": 0.05771,
+      "rsi_1h": 20.8,
+      "bb_width": 2.8202,
+      "vol_ratio": 0.11,
+      "fr": 0.00545,
+      "vol_24h_m": 5.8,
+      "triggered": [
+        "D1_oversold(rsi=20.8)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "FWDIUSDT",
+      "price": 4.516,
+      "rsi_1h": 55.8,
+      "bb_width": 23.077,
+      "vol_ratio": 0.02,
+      "fr": 0.51382,
+      "vol_24h_m": 5.8,
+      "triggered": [
+        "D6_fr_high(0.5138%)"
+      ],
+      "score": 1
+    },
+    {
+      "symbol": "OPENAIUSDT",
+      "price": 1159.0,
+      "rsi_1h": 84.1,
+      "bb_width": 7.0752,
+      "vol_ratio": 0.34,
+      "fr": 0.005,
+      "vol_24h_m": 5.3,
+      "triggered": [
+        "D1_overbought(rsi=84.1)"
+      ],
+      "score": 1
+    }
+  ]
+}

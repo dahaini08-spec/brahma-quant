@@ -1,0 +1,586 @@
+{
+  "version": "3.1",
+  "last_updated": "2026-06-27 14:30 UTC",
+  "last_updated_by": "苏摩审计 · 111授权 · 2026-06-27 P2+P3落地",
+  "approve_code": "111",
+  "note": "所有AI任务必须在此台账ACTIVE状态才可存在。新增任务需苏摩审批(口令111)后方可创建cron。",
+  "summary": {
+    "total_cron": 18,
+    "ai_cron_active": 14,
+    "script_cron_active": 4,
+    "daily_ai_tokens_est": 176624,
+    "square_tasks": 7,
+    "square_tokens_per_day": 15000
+  },
+  "tasks": [
+    {
+      "id": "position-sl-monitor",
+      "name": "position-sl-monitor",
+      "cron_id": "7cfed7e8-8b48-46f8-821b-3be7407b68ec",
+      "type": "script_cron",
+      "priority": 0,
+      "freq": "every 30m",
+      "est_tokens": 0,
+      "est_daily": 0,
+      "purpose": "软止损监控：每30min运行python脚本检查SL，触发时脚本内调用push_hub推送告警",
+      "target": "main/systemEvent",
+      "status": "ACTIVE_SCRIPT",
+      "approved_at": "2026-06-18",
+      "amended_at": "2026-06-21",
+      "amendment_note": "AI agentTurn→systemEvent，节省938,784 tokens/天。push_hub内部推送Jarvis，无需AI层"
+    },
+    {
+      "id": "price-entry-monitor",
+      "name": "price-entry-monitor",
+      "cron_id": "8a7ef076-221c-4afb-8ff1-2b036ba28952",
+      "type": "script_cron",
+      "priority": 0,
+      "freq": "every 30m",
+      "est_tokens": 0,
+      "est_daily": 0,
+      "purpose": "价格入场区监控+自动开单：纯脚本运行price_entry_monitor.py，触发时脚本内推送",
+      "target": "main/systemEvent",
+      "status": "ACTIVE_SCRIPT",
+      "approved_at": "2026-06-18",
+      "amended_at": "2026-06-21",
+      "amendment_note": "AI agentTurn→systemEvent，节省938,640 tokens/天。push_hub内部推送Jarvis，无需AI层"
+    },
+    {
+      "id": "signal-watcher-1h",
+      "name": "signal-watcher-1h",
+      "cron_id": "0c2d56b1-442c-4ecd-9dcb-9ab0c713ad9a",
+      "type": "ai_cron",
+      "priority": 0,
+      "freq": "every 2h",
+      "freq_note": "⚠️ 台账原记录1h，实际cron为2h，以实际cron为准，台账已修正",
+      "est_tokens": 800,
+      "est_daily": 9600,
+      "purpose": "信号卡格式化推送，复杂条件判断，脚本无法替代",
+      "target": "isolated+announce",
+      "model": "litellm/Qwen3.5-397B-A17B-SGLang",
+      "status": "ACTIVE",
+      "approved_at": "2026-06-18",
+      "approved_by": "苏摩立法·保留",
+      "amended_at": "2026-06-21",
+      "amendment_note": "频率修正: 台账1h → cron实际2h，以cron为准"
+    },
+    {
+      "id": "timesfm-bridge-4h",
+      "name": "timesfm-bridge-4h",
+      "cron_id": "975e5bbe-7d5c-4a18-9cbf-e2ddda6317ac",
+      "type": "ai_cron",
+      "priority": 1,
+      "freq": "every 4h",
+      "est_tokens": 500,
+      "est_daily": 3000,
+      "purpose": "TimesFM-Lite时序预测 → research_cache写入，为brahma_core s_research层提供分位数特征",
+      "target": "isolated+announce",
+      "status": "ACTIVE",
+      "approved_at": "2026-06-21",
+      "approved_by": "111确认"
+    },
+    {
+      "id": "gateway-restart-daily",
+      "name": "gateway-restart-daily",
+      "cron_id": "1c970cab-38b5-4c8e-a666-8af986ba23b0",
+      "type": "ai_cron",
+      "priority": 3,
+      "freq": "cron 0 5 * * *",
+      "est_tokens": 500,
+      "est_daily": 500,
+      "purpose": "每日5UTC检查持仓后重启gateway，含Python判断逻辑",
+      "target": "isolated+announce",
+      "status": "ACTIVE",
+      "approved_at": "2026-06-18",
+      "approved_by": "苏摩立法·保留"
+    },
+    {
+      "id": "btc-square",
+      "name": "📊BTC日报-Square",
+      "cron_id": "ef9d321d-f73d-4c52-9c8d-882bedc65341",
+      "type": "ai_cron",
+      "priority": 4,
+      "freq": "cron 30 9 * * *",
+      "est_tokens": 1000,
+      "est_daily": 1000,
+      "purpose": "AI生成BTC日报并发布Binance Square，内容生成无法脚本化",
+      "target": "isolated+announce",
+      "model": "litellm/Qwen3.5-397B-A17B-SGLang",
+      "status": "ACTIVE",
+      "approved_at": "2026-06-18",
+      "approved_by": "苏摩立法·保留"
+    },
+    {
+      "id": "sq-weekly",
+      "name": "square-weekly-report",
+      "cron_id": "0fa322fb-e641-4b55-9490-36630e2cb618",
+      "type": "ai_cron",
+      "priority": 4,
+      "freq": "cron 0 8 * * 1",
+      "est_tokens": 2000,
+      "est_daily": 286,
+      "purpose": "每周广场综合报告，低频可接受",
+      "target": "isolated+announce",
+      "status": "ACTIVE",
+      "approved_at": "2026-06-18",
+      "approved_by": "苏摩立法·保留"
+    },
+    {
+      "id": "dharma-causal-weekly",
+      "name": "dharma-causal-discovery-weekly",
+      "cron_id": "3a78c8ed-1785-4eda-9d83-f34a9bf506b0",
+      "type": "ai_cron",
+      "priority": 4,
+      "freq": "every 7d",
+      "est_tokens": 2000,
+      "est_daily": 286,
+      "purpose": "每周运行因果发现pipeline，分析信号因果关系，低频可接受",
+      "target": "isolated+announce",
+      "status": "ACTIVE",
+      "approved_at": "2026-06-18",
+      "approved_by": "设计院审计补录"
+    },
+    {
+      "id": "tunnel-health-check",
+      "name": "tunnel-health-check",
+      "cron_id": "a30fe475-9f94-4c74-b316-1e2f96299358",
+      "type": "ai_cron",
+      "priority": 5,
+      "freq": "every 5m",
+      "est_tokens": 200,
+      "est_daily": 1152,
+      "purpose": "检查cloudflared隧道存活，挂掉时重启并推送新URL到Jarvis。临时方案，有推送价值",
+      "target": "isolated+announce",
+      "status": "ACTIVE",
+      "approved_at": "2026-06-22",
+      "approved_by": "苏摩审计 111",
+      "note": "静默模式，无推送。临时方案，固定URL落地后删除",
+      "amended_at": "2026-06-22 12:32 UTC",
+      "amendment_note": "重建：监控cf1+cf2双隧道，任一挂掉重启+推送代理URL"
+    },
+    {
+      "id": "proxy-keepalive",
+      "name": "proxy-keepalive",
+      "cron_id": "7a460933-1a66-49e6-beb0-a6506972b494",
+      "type": "ai_cron",
+      "priority": 5,
+      "freq": "every 1m",
+      "est_tokens": 100,
+      "est_daily": 144000,
+      "purpose": "保活ws-proxy.py（Origin改写代理），容器SIGTERM限制导致必须用agentTurn启动",
+      "target": "isolated+announce",
+      "status": "ACTIVE",
+      "approved_at": "2026-06-22",
+      "approved_by": "苏摩 重新审批",
+      "note": "静默模式，无推送。临时方案，固定URL落地后删除",
+      "amended_at": "2026-06-22 12:32 UTC"
+    },
+    {
+      "id": "live-signal-settle-2h",
+      "name": "live-signal-settle-2h",
+      "cron_id": "19e6ff79-06b4-4a61-9ddb-0ed9f0042311",
+      "type": "ai_cron",
+      "freq": "every 2h",
+      "est_tokens": 150,
+      "est_daily": 1800,
+      "purpose": "live_signal_settler.py 每2小时结算信号，修复B类TIMEOUT(33%)根因",
+      "target": "isolated+silent",
+      "status": "ACTIVE",
+      "approved_at": "2026-06-22",
+      "approved_by": "苏摩P1紧急修复 111",
+      "note": "苏摩宪法合规：P1紧急修复，settler断档导致33%信号未结算"
+    },
+    {
+      "id": "eth-daily-square-v2",
+      "name": "📊ETH日报-Square",
+      "cron_id": "c088b8e8-3f1b-4f3d-bffd-c72670119dd5",
+      "type": "ai_cron",
+      "priority": 2,
+      "freq": "cron 0 10 * * *",
+      "est_tokens": 2500,
+      "est_daily": 2500,
+      "purpose": "ETH日报KOL口吻，姓赵不宣主账户发布",
+      "target": "isolated/jarvis",
+      "status": "ACTIVE",
+      "approved_at": "2026-06-24",
+      "amendment_note": "切回SQUARE_KEY_2主账户"
+    },
+    {
+      "id": "btc-daily-square-v2",
+      "name": "📊BTC日报-Square",
+      "cron_id": "5feb7ec2-e964-4116-ae1e-e7b0eb6e2361",
+      "type": "ai_cron",
+      "priority": 2,
+      "freq": "cron 30 9 * * *",
+      "est_tokens": 3500,
+      "est_daily": 3500,
+      "purpose": "BTC日报KOL口吻升级版，含梵天分析",
+      "target": "isolated/jarvis",
+      "status": "ACTIVE",
+      "approved_at": "2026-06-24"
+    },
+    {
+      "id": "hotcoin-square",
+      "name": "🔥涨幅榜帖-Square",
+      "cron_id": "2155623a-51a0-4175-90f1-5b76c4b44d3c",
+      "type": "ai_cron",
+      "priority": 3,
+      "freq": "cron 15 7 * * *",
+      "est_tokens": 2000,
+      "est_daily": 2000,
+      "purpose": "今日涨幅榜TOP5+梵天体制评级",
+      "target": "isolated/jarvis",
+      "status": "ACTIVE",
+      "approved_at": "2026-06-24"
+    },
+    {
+      "id": "hottoken-analysis",
+      "name": "🏆热度币分析-Square",
+      "cron_id": "d1509aef-098d-4ff2-9191-c00f706f7411",
+      "type": "ai_cron",
+      "priority": 3,
+      "freq": "cron 15 13 * * *",
+      "est_tokens": 2000,
+      "est_daily": 2000,
+      "purpose": "下午热度山寨币分析，有判断不盲推",
+      "target": "isolated/jarvis",
+      "status": "ACTIVE",
+      "approved_at": "2026-06-24"
+    },
+    {
+      "id": "evening-deep-square",
+      "name": "🌿晚盘深度帖-Square",
+      "cron_id": "21ca0fc2-e30c-4567-8059-062d385fe9be",
+      "type": "ai_cron",
+      "priority": 2,
+      "freq": "cron 15 20 * * *",
+      "est_tokens": 5000,
+      "est_daily": 5000,
+      "purpose": "晚盘复盘+明日布局KOL长文+VIP策略格式",
+      "target": "isolated/jarvis",
+      "status": "ACTIVE",
+      "approved_at": "2026-06-24"
+    },
+    {
+      "id": "noon-flash-square",
+      "name": "⚡午盘快讯-Square",
+      "cron_id": "627a01f4-f4be-4c0e-a533-e78078e349dc",
+      "type": "script_cron",
+      "priority": 4,
+      "freq": "cron 15 12 * * *",
+      "est_tokens": 0,
+      "est_daily": 0,
+      "purpose": "纯脚本午盘快讯，价格+FR+LSR模板",
+      "target": "isolated/jarvis",
+      "status": "ACTIVE_SCRIPT",
+      "approved_at": "2026-06-24"
+    },
+    {
+      "id": "evening-hook-square",
+      "name": "💬互动钩子帖-Square",
+      "cron_id": "6b294766-0651-4893-a57a-af32cb70ef22",
+      "type": "script_cron",
+      "priority": 4,
+      "freq": "cron 15 21 * * *",
+      "est_tokens": 0,
+      "est_daily": 0,
+      "purpose": "纯脚本随机互动问题，提升互动率",
+      "target": "isolated/jarvis",
+      "status": "ACTIVE_SCRIPT",
+      "approved_at": "2026-06-24"
+    }
+  ],
+  "script_tasks": [
+    {
+      "id": "regime-switch-monitor",
+      "name": "regime-switch-monitor",
+      "cron_id": "1b77c7b6-1a6d-4b11-aee6-a8dcb08dfd21",
+      "type": "script_cron",
+      "freq": "every 30m",
+      "purpose": "扫描8个标的体制变化，CHOP↔高价值体制切换告警，main+silent无AI调用",
+      "target": "main/silent",
+      "status": "ACTIVE_SCRIPT",
+      "note": "纯脚本，不产生AI token消耗，保留"
+    },
+    {
+      "id": "brahma-scan-8h",
+      "name": "brahma-scan-8h",
+      "cron_id": "33a849c5-088b-4267-92d5-1a9cb7c30a08",
+      "type": "script_cron",
+      "freq": "every 8h",
+      "purpose": "定期全标的梵天扫描，写入brahma_state，main+silent无AI调用",
+      "target": "main/silent",
+      "status": "ACTIVE_SCRIPT",
+      "note": "纯脚本，不产生AI token消耗，保留"
+    },
+    {
+      "id": "data-backup-6h",
+      "name": "data-backup-6h",
+      "cron_id": "b9eaa28d-a066-4829-9324-98d3d5d414a1",
+      "type": "script_cron",
+      "freq": "every 6h",
+      "purpose": "数据备份，main+silent无AI调用",
+      "target": "main/silent",
+      "status": "ACTIVE_SCRIPT",
+      "note": "纯脚本，不产生AI token消耗，保留"
+    },
+    {
+      "id": "dharma-offline-replay-weekly",
+      "name": "dharma-offline-replay-weekly",
+      "cron_id": "7584a7c1-6b23-4274-9827-63d0d24cbed9",
+      "type": "script_cron",
+      "freq": "cron 0 1 * * 0",
+      "purpose": "每周日离线全量回放，验证系统稳定性，main+silent无AI调用",
+      "target": "main/silent",
+      "status": "ACTIVE_SCRIPT",
+      "note": "纯脚本，不产生AI token消耗，保留"
+    }
+  ],
+  "auto_execute_authorized": {
+    "authorized": true,
+    "authorized_at": "2026-06-19T01:29Z",
+    "authorized_by": "苏摩111",
+    "conditions": {
+      "min_score": 138,
+      "iron_evidence_directions": [
+        "BEAR_TREND_SHORT",
+        "BEAR_EARLY_SHORT",
+        "BULL_TREND_LONG",
+        "BULL_EARLY_LONG"
+      ],
+      "hard_block_directions": [
+        "BEAR_TREND_LONG",
+        "BULL_TREND_SHORT",
+        "BEAR_RECOVERY_SHORT"
+      ],
+      "max_pos_pct_nav": 0.2,
+      "max_open_positions": 3,
+      "breaker_must_inactive": true,
+      "entry_must_in_zone": true
+    },
+    "hard_limits": [
+      "score < 138 禁止",
+      "死穴方向禁止",
+      "持仓≥3笔禁止新增",
+      "熔断激活时禁止",
+      "同标的同时LONG+SHORT禁止"
+    ],
+    "amended_at": "2026-06-19T02:18Z",
+    "amendment_note": "苏摩111修订: 单笔仓位 5%→20% NAV"
+  },
+  "deleted_this_session": {
+    "deleted_at": "2026-06-21 11:45 UTC",
+    "deleted_by": "设计院×量化工程师360°联合审计 · 111授权",
+    "items": [
+      {
+        "name": "gaming-sector-monitor",
+        "id": "fadc2702-e595-4e7f-87fa-106836993588",
+        "reason": "未经苏摩授权，来源不明"
+      },
+      {
+        "name": "brahma-state-refresh-30m",
+        "id": "b9d5d301-3def-479c-8cba-2662cdc4d1db",
+        "reason": "苏摩2026-06-18裁决:改脚本，僵尸cron"
+      },
+      {
+        "name": "brahma-experience-review",
+        "id": "12a96f27-25eb-484c-8bb7-0ddaa312c982",
+        "reason": "苏摩2026-06-18裁决:改脚本，僵尸cron"
+      },
+      {
+        "name": "live-signal-settle-2h",
+        "id": "c7102e5f-b8eb-4a36-99d9-1f5a673b05b9",
+        "reason": "苏摩2026-06-18裁决:改脚本，僵尸cron"
+      },
+      {
+        "name": "brahma-daily-dashboard",
+        "id": "ae5adcc8-d99e-4d0c-ac77-0e1828bb69ce",
+        "reason": "苏摩2026-06-18裁决:改脚本，僵尸cron"
+      },
+      {
+        "name": "brahma-self-audit-daily",
+        "id": "c408f820-561b-40d2-9516-d964403eb369",
+        "reason": "苏摩2026-06-18裁决:改systemEvent，僵尸cron"
+      },
+      {
+        "name": "brahma360-cleaner-daily",
+        "id": "64817ccd-cc2d-4bc3-a9de-aebfc93af2fa",
+        "reason": "苏摩2026-06-18裁决:改systemEvent，僵尸cron"
+      },
+      {
+        "name": "dharma-training-daily",
+        "id": "580c440c-ba0d-4726-b077-6c5968cee236",
+        "reason": "苏摩2026-06-18裁决:改脚本，僵尸cron"
+      },
+      {
+        "name": "auto-learner-daily",
+        "id": "bd34c22f-aa42-45df-8926-01bdcb2544af",
+        "reason": "苏摩2026-06-18裁决:改脚本，僵尸cron"
+      },
+      {
+        "name": "data-refresh-daily",
+        "id": "7d3750de-5612-42e7-a5a2-cfd378d08fa9",
+        "reason": "苏摩2026-06-18裁决:改脚本，僵尸cron"
+      },
+      {
+        "name": "proxy-keepalive",
+        "id": "174cf861-a2e8-4b4e-805c-0573e24ea7d3",
+        "reason": "苏摩2026-06-22裁决: 纯脚本可替代，every 1m agentTurn token消耗过高，已删除",
+        "deleted_at": "2026-06-22 11:53 UTC"
+      }
+    ]
+  },
+  "approved_changes": [
+    {
+      "id": "2026-06-27-001",
+      "date": "2026-06-27 14:23 UTC",
+      "approver": "苏摩(111)",
+      "type": "config_change",
+      "requires_ai_cron": false,
+      "title": "N22b BULL_EARLY_SHORT / BEAR_EARLY_LONG PENALIZE-10",
+      "detail": "宪法级死穴(n=5526/5070)新增惩罚，每年减少~800条负EV信号",
+      "file": "dharma_runtime.json → wr_matrix_v7",
+      "effect_wr": "+0.3pp",
+      "status": "ACTIVE",
+      "verification": "offline_replay v25.4 WR 66.5%→67.2% +0.7pp ✅"
+    },
+    {
+      "id": "2026-06-27-002",
+      "date": "2026-06-27 14:23 UTC",
+      "approver": "苏摩(111)",
+      "type": "code_change",
+      "requires_ai_cron": false,
+      "title": "EarlyTrendGate：EARLY体制逆势额外-8分",
+      "detail": "EARLY逆势体制叠加N22b-10+EarlyTrendGate-8=总计-18分，RSI极值豁免",
+      "file": "brahma_core.py → EarlyTrendGate v25.4",
+      "effect_wr": "+0.2pp",
+      "status": "ACTIVE",
+      "verification": "语法OK，实盘生效 ✅"
+    },
+    {
+      "id": "2026-06-27-003",
+      "date": "2026-06-27 14:23 UTC",
+      "approver": "苏摩(111)",
+      "type": "config_change",
+      "requires_ai_cron": false,
+      "title": "N22b 15M/1H 周期分层权重（方案C）",
+      "detail": "BEAR_TREND_SHORT_15M +4分(WR=72.3%) / _1H +2分(WR=65.1%，降权2pp)",
+      "file": "dharma_runtime.json → wr_matrix_v7（6条新键）",
+      "effect_wr": "+0.5~1pp(15M信号)",
+      "status": "ACTIVE",
+      "verification": "brahma_core N22b周期感知查找已生效 ✅"
+    },
+    {
+      "id": "2026-06-27-004",
+      "date": "2026-06-27 14:23 UTC",
+      "approver": "苏摩(111)",
+      "type": "code_change",
+      "requires_ai_cron": false,
+      "title": "StructureGate 门槛 70→80",
+      "detail": "grade70-79 WR=47%死亡区封堵，铁证死穴100%来自grade<70",
+      "file": "brahma_core.py + offline_brahma_replay.py",
+      "effect_wr": "+0.7pp",
+      "status": "ACTIVE",
+      "verification": "v25.4重跑验证 passed -233条，WR+0.7pp ✅"
+    },
+    {
+      "id": "2026-06-27-005",
+      "date": "2026-06-27 14:23 UTC",
+      "approver": "苏摩(111)",
+      "type": "code_change",
+      "requires_ai_cron": false,
+      "title": "BEAR_RECOVERY_SHORT 升级物理封锁",
+      "detail": "WR=46.6% → valid=False，例外：score≥140+grade≥85+p_up<0.25",
+      "file": "brahma_core.py",
+      "effect_wr": "+0.2pp",
+      "status": "ACTIVE",
+      "verification": "实跑确认封锁逻辑正常 ✅"
+    },
+    {
+      "id": "2026-06-27-006",
+      "date": "2026-06-27 14:23 UTC",
+      "approver": "苏摩(111)",
+      "type": "config_change",
+      "requires_ai_cron": false,
+      "title": "CHOP体制 tc感知四分路由解锁",
+      "detail": "tc_strong反向→无上限WR=70~78% / tc_lean→上限105 / tc_neutral→90 / tc同向→75",
+      "file": "brahma_core.py P2-CHOP + dharma_runtime.json(8条CHOP_TC_STRONG/LEAN)",
+      "effect_wr": "+334条/年新执行机会",
+      "status": "ACTIVE",
+      "verification": "达摩院CHOP专项重跑：ETH tc_strong WR=78.5% n=102 ✅"
+    },
+    {
+      "id": "2026-06-27-007",
+      "date": "2026-06-27 14:23 UTC",
+      "approver": "苏摩(111)",
+      "type": "code_change",
+      "requires_ai_cron": false,
+      "title": "effective_grade 体制感知修正（v25.4c）",
+      "detail": "BEAR_TREND逆势×0.72 / EARLY逆势×0.82 / CHOP×0.88，16个体制×方向系数",
+      "file": "brahma_core.py(_REGIME_GRADE_MULT) + offline_brahma_replay.py(_PROXY_GRADE_MULT)",
+      "effect_wr": "grade70-80死亡区→0，实盘防护层",
+      "status": "ACTIVE",
+      "verification": "grade70-80: 683条→0条 ✅ 降权生效"
+    },
+    {
+      "id": "2026-06-27-008",
+      "date": "2026-06-27 14:23 UTC",
+      "approver": "苏摩(111)",
+      "type": "config_change",
+      "requires_ai_cron": false,
+      "title": "champion_params hold_max mh 16→12",
+      "detail": "达摩院P1敏感性测试：m15=12 BEAR_TREND_SHORT WR=73.4%(+1.6pp BTC+ETH双验证)",
+      "file": "dharma_runtime.json → champion_params",
+      "effect_wr": "+1.6pp(BEAR_TREND_SHORT)",
+      "status": "ACTIVE",
+      "verification": "BTC n=1263 WR=73.6% / ETH n=1311 WR=73.3% ✅"
+    }
+  ],
+  "_meta": {
+    "updated": "2026-06-27 14:23 UTC",
+    "total": 8,
+    "note": "P2苏摩审批111落地 2026-06-27，补录今日全部已落地配置变更"
+  },
+  "config_changes": [
+    {
+      "id": "p2-early-trend-gate",
+      "type": "config_change",
+      "file": "brahma_brain/brahma_core.py",
+      "change": "BULL_EARLY_SHORT PENALIZE-10 / BEAR_EARLY_LONG PENALIZE-10 / EarlyTrendGate逆势-8分",
+      "purpose": "N22b EARLY逆势降权 WR=66.5%→67.2% passed=8481(-233条低质量)",
+      "approved_at": "2026-06-27 14:30 UTC",
+      "approved_by": "苏摩111 2026-06-27",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "p2-n22b-15m-1h-split",
+      "type": "config_change",
+      "file": "brahma_brain/brahma_core.py + data/dharma_runtime.json",
+      "change": "N22b周期分层: BEAR_TREND_SHORT_15M+4分/_1H+2分 / BEAR_EARLY_SHORT_15M+3分/_1H+2分",
+      "purpose": "信号触发周期明确区分，1H降权2pp",
+      "approved_at": "2026-06-27 14:30 UTC",
+      "approved_by": "苏摩111 2026-06-27",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "p2-hold-max-m15-12",
+      "type": "config_change",
+      "file": "data/dharma_runtime.json (champion_params)",
+      "change": "m15 hold_max: 16→12 (BTC+ETH双标的验证 WR+1.6pp)",
+      "purpose": "BEAR_TREND_SHORT 15M持仓窗口优化，均WR=73.4%（次铁证n=1263/1247）",
+      "approved_at": "2026-06-27 14:30 UTC",
+      "approved_by": "苏摩111 2026-06-27",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "p3-bars-in-regime",
+      "type": "config_change",
+      "file": "dharma/offline_brahma_replay.py",
+      "change": "[P3] get_context()新增bars_in_regime计算 + records写入ctx.bars_in_regime（修复永远=0的bug）",
+      "purpose": "EARLY体制持续时间×WR分析基础数据修复，支持by_regime_age报告生成",
+      "approved_at": "2026-06-27 14:30 UTC",
+      "approved_by": "苏摩111 2026-06-27",
+      "status": "ACTIVE"
+    }
+  ]
+}

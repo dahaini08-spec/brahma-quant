@@ -1,0 +1,298 @@
+{
+  "generated_at": "2026-07-23T08:07:47.342814+00:00",
+  "summary": {
+    "total_signals": 300,
+    "executed": 0,
+    "skipped": 0,
+    "failed": 18,
+    "not_executed": 282,
+    "win": 0,
+    "loss": 0,
+    "win_rate_pct": 0,
+    "total_pnl": 0.0,
+    "exec_rate_pct": 0.0
+  },
+  "grade_stats": {
+    "grade_90plus": {
+      "count": 4,
+      "executed": 0,
+      "win": 0,
+      "loss": 0,
+      "win_rate": 0,
+      "total_pnl": 0,
+      "exec_rate": 0.0
+    },
+    "grade_85_89": {
+      "count": 11,
+      "executed": 0,
+      "win": 0,
+      "loss": 0,
+      "win_rate": 0,
+      "total_pnl": 0,
+      "exec_rate": 0.0
+    },
+    "grade_80_84": {
+      "count": 0
+    },
+    "grade_75_79": {
+      "count": 4,
+      "executed": 0,
+      "win": 0,
+      "loss": 0,
+      "win_rate": 0,
+      "total_pnl": 0,
+      "exec_rate": 0.0
+    },
+    "grade_below75": {
+      "count": 281,
+      "executed": 0,
+      "win": 0,
+      "loss": 0,
+      "win_rate": 0,
+      "total_pnl": 0,
+      "exec_rate": 0.0
+    }
+  },
+  "recent_signals": [
+    {
+      "symbol": "SNDKUSDT",
+      "direction": "LONG",
+      "regime": "BULL_TREND",
+      "score": 179.4,
+      "grade": 95.0,
+      "bucket": "grade_90plus",
+      "valid": true,
+      "exec_status": "FAILED",
+      "pnl": 0.0,
+      "ts": 1784784797.7135596
+    },
+    {
+      "symbol": "SNDKUSDT",
+      "direction": "LONG",
+      "regime": "BULL_TREND",
+      "score": 179.4,
+      "grade": 95.0,
+      "bucket": "grade_90plus",
+      "valid": true,
+      "exec_status": "FAILED",
+      "pnl": 0.0,
+      "ts": 1784784797.709296
+    },
+    {
+      "symbol": "BTCUSDT",
+      "direction": "LONG",
+      "regime": "BULL_TREND",
+      "score": 131.8,
+      "grade": 72.0,
+      "bucket": "grade_below75",
+      "valid": true,
+      "exec_status": "NOT_EXECUTED",
+      "pnl": 0.0,
+      "ts": 1784783336.0513055
+    },
+    {
+      "symbol": "BTCUSDT",
+      "direction": "LONG",
+      "regime": "BULL_TREND",
+      "score": 131.8,
+      "grade": 72.0,
+      "bucket": "grade_below75",
+      "valid": true,
+      "exec_status": "NOT_EXECUTED",
+      "pnl": 0.0,
+      "ts": 1784783336.047013
+    },
+    {
+      "symbol": "ETHUSDT",
+      "direction": "LONG",
+      "regime": "BULL_TREND",
+      "score": 121.1,
+      "grade": 85.0,
+      "bucket": "grade_85_89",
+      "valid": true,
+      "exec_status": "NOT_EXECUTED",
+      "pnl": 0.0,
+      "ts": 1784774619.601494
+    },
+    {
+      "symbol": "ETHUSDT",
+      "direction": "LONG",
+      "regime": "BULL_TREND",
+      "score": 121.1,
+      "grade": 85.0,
+      "bucket": "grade_85_89",
+      "valid": true,
+      "exec_status": "NOT_EXECUTED",
+      "pnl": 0.0,
+      "ts": 1784774619.5976574
+    },
+    {
+      "symbol": "SNDKUSDT",
+      "direction": "LONG",
+      "regime": "BULL_TREND",
+      "score": 175.3,
+      "grade": 95.0,
+      "bucket": "grade_90plus",
+      "valid": true,
+      "exec_status": "PENDING",
+      "pnl": 0.0,
+      "ts": 1784773197.1062613
+    },
+    {
+      "symbol": "SNDKUSDT",
+      "direction": "LONG",
+      "regime": "BULL_TREND",
+      "score": 175.3,
+      "grade": 95.0,
+      "bucket": "grade_90plus",
+      "valid": true,
+      "exec_status": "PENDING",
+      "pnl": 0.0,
+      "ts": 1784773197.1005008
+    },
+    {
+      "symbol": "BTCUSDT",
+      "direction": "LONG",
+      "regime": "BULL_TREND",
+      "score": 112.0,
+      "grade": 55.0,
+      "bucket": "grade_below75",
+      "valid": true,
+      "exec_status": "NOT_EXECUTED",
+      "pnl": 0.0,
+      "ts": 1784766340.9512987
+    },
+    {
+      "symbol": "BTCUSDT",
+      "direction": "LONG",
+      "regime": "BULL_TREND",
+      "score": 112.0,
+      "grade": 55.0,
+      "bucket": "grade_below75",
+      "valid": true,
+      "exec_status": "NOT_EXECUTED",
+      "pnl": 0.0,
+      "ts": 1784766340.9466825
+    },
+    {
+      "symbol": "ETHUSDT",
+      "direction": "LONG",
+      "regime": "BULL_TREND",
+      "score": 116.9,
+      "grade": 85.0,
+      "bucket": "grade_85_89",
+      "valid": true,
+      "exec_status": "NOT_EXECUTED",
+      "pnl": 0.0,
+      "ts": 1784762751.8637476
+    },
+    {
+      "symbol": "ETHUSDT",
+      "direction": "LONG",
+      "regime": "BULL_TREND",
+      "score": 116.9,
+      "grade": 85.0,
+      "bucket": "grade_85_89",
+      "valid": true,
+      "exec_status": "NOT_EXECUTED",
+      "pnl": 0.0,
+      "ts": 1784762751.8593495
+    },
+    {
+      "symbol": "ETHUSDT",
+      "direction": "LONG",
+      "regime": "BULL_TREND",
+      "score": 130.0,
+      "grade": 78.0,
+      "bucket": "grade_75_79",
+      "valid": true,
+      "exec_status": "NOT_EXECUTED",
+      "pnl": 0.0,
+      "ts": 1784757350.6132379
+    },
+    {
+      "symbol": "ETHUSDT",
+      "direction": "LONG",
+      "regime": "BULL_TREND",
+      "score": 130.0,
+      "grade": 78.0,
+      "bucket": "grade_75_79",
+      "valid": true,
+      "exec_status": "NOT_EXECUTED",
+      "pnl": 0.0,
+      "ts": 1784757350.6081455
+    },
+    {
+      "symbol": "BTCUSDT",
+      "direction": "LONG",
+      "regime": "BULL_TREND",
+      "score": 140.1,
+      "grade": 78.0,
+      "bucket": "grade_75_79",
+      "valid": true,
+      "exec_status": "NOT_EXECUTED",
+      "pnl": 0.0,
+      "ts": 1784751941.7339256
+    },
+    {
+      "symbol": "BTCUSDT",
+      "direction": "LONG",
+      "regime": "BULL_TREND",
+      "score": 140.1,
+      "grade": 78.0,
+      "bucket": "grade_75_79",
+      "valid": true,
+      "exec_status": "NOT_EXECUTED",
+      "pnl": 0.0,
+      "ts": 1784751941.7296422
+    },
+    {
+      "symbol": "ETHUSDT",
+      "direction": "LONG",
+      "regime": "BULL_TREND",
+      "score": 124.9,
+      "grade": 85.0,
+      "bucket": "grade_85_89",
+      "valid": true,
+      "exec_status": "NOT_EXECUTED",
+      "pnl": 0.0,
+      "ts": 1784750150.312981
+    },
+    {
+      "symbol": "ETHUSDT",
+      "direction": "LONG",
+      "regime": "BULL_TREND",
+      "score": 124.9,
+      "grade": 85.0,
+      "bucket": "grade_85_89",
+      "valid": true,
+      "exec_status": "NOT_EXECUTED",
+      "pnl": 0.0,
+      "ts": 1784750150.3081434
+    },
+    {
+      "symbol": "ETHUSDT",
+      "direction": "LONG",
+      "regime": "BULL_TREND",
+      "score": 125.0,
+      "grade": 85.0,
+      "bucket": "grade_85_89",
+      "valid": true,
+      "exec_status": "NOT_EXECUTED",
+      "pnl": 0.0,
+      "ts": 1784737551.166452
+    },
+    {
+      "symbol": "ETHUSDT",
+      "direction": "LONG",
+      "regime": "BULL_TREND",
+      "score": 125.0,
+      "grade": 85.0,
+      "bucket": "grade_85_89",
+      "valid": true,
+      "exec_status": "NOT_EXECUTED",
+      "pnl": 0.0,
+      "ts": 1784737551.158044
+    }
+  ]
+}

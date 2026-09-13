@@ -1,0 +1,14 @@
+{
+  "symbol": "PUMPUSDT",
+  "frs": {
+    "binance": 0.000558,
+    "okx": -0.0008720575286699999
+  },
+  "spread": 0.00143,
+  "max_ex": "binance",
+  "min_ex": "okx",
+  "arb_signal": "NONE",
+  "arb_score": 0,
+  "bull_fr_bonus": 0,
+  "ts": 1787174998.4494805
+}

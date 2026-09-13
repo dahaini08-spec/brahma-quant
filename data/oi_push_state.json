@@ -1,0 +1,1675 @@
+{
+  "AAPLUSDT": {
+    "hash": "09ee9e35",
+    "ts": 1786650428.284744,
+    "direction": "LONG",
+    "score": 80.962,
+    "mode": "B"
+  },
+  "AKEUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1785757250.70537,
+    "direction": "LONG",
+    "score": 72.11,
+    "mode": "B"
+  },
+  "LABUSDT": {
+    "hash": "81047746",
+    "ts": 1787019963.016045,
+    "direction": "LONG",
+    "score": 70.3825,
+    "mode": "A"
+  },
+  "BANKUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1786355226.681175,
+    "direction": "LONG",
+    "score": 66.542,
+    "mode": "B"
+  },
+  "USUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 63.802,
+    "mode": "B"
+  },
+  "ONDOUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1787503853.830946,
+    "direction": "LONG",
+    "score": 62.95,
+    "mode": "B"
+  },
+  "XAUUSDT": {
+    "hash": "ec53d2b9",
+    "ts": 1788367108.305509,
+    "direction": "LONG",
+    "score": 84.675,
+    "mode": "A"
+  },
+  "TSMUSDT": {
+    "hash": "06d92c52",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 51.26,
+    "mode": "A"
+  },
+  "KORUUSDT": {
+    "hash": "09ee9e35",
+    "ts": 1787716872.55088,
+    "direction": "LONG",
+    "score": 92.324,
+    "mode": "B"
+  },
+  "0GUSDT": {
+    "hash": "3ddb0339",
+    "ts": 1788293445.313949,
+    "direction": "LONG",
+    "score": 70,
+    "mode": "A"
+  },
+  "ORCLUSDT": {
+    "hash": "60145eb8",
+    "ts": 1785860586.444735,
+    "direction": "LONG",
+    "score": 82,
+    "mode": "B"
+  },
+  "METAUSDT": {
+    "hash": "81047746",
+    "ts": 1786614427.292476,
+    "direction": "LONG",
+    "score": 89.97749999999999,
+    "mode": "A"
+  },
+  "RAVEUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 79.084,
+    "mode": "B"
+  },
+  "IBMUSDT": {
+    "hash": "16b72c03",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 100,
+    "mode": "B"
+  },
+  "NATGASUSDT": {
+    "hash": "16b72c03",
+    "ts": 1786434426.62055,
+    "direction": "LONG",
+    "score": 73.59,
+    "mode": "B"
+  },
+  "PUMPUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 70.164,
+    "mode": "B"
+  },
+  "EVAAUSDT": {
+    "hash": "16b72c03",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 63.352000000000004,
+    "mode": "B"
+  },
+  "BSBUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 56.578,
+    "mode": "B"
+  },
+  "SOXLUSDT": {
+    "hash": "81047746",
+    "ts": 1788424876.228577,
+    "direction": "LONG",
+    "score": 78.3825,
+    "mode": "A"
+  },
+  "QQQUSDT": {
+    "hash": "81047746",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 76.47999999999999,
+    "mode": "A"
+  },
+  "RKLBUSDT": {
+    "hash": "3ddb0339",
+    "ts": 1786456028.017756,
+    "direction": "LONG",
+    "score": 90.80250000000001,
+    "mode": "A"
+  },
+  "ESPORTSUSDT": {
+    "hash": "81047746",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 89.42099999999999,
+    "mode": "A"
+  },
+  "1000XECUSDT": {
+    "hash": "7e612a3b",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 91,
+    "mode": "B"
+  },
+  "CLUSDT": {
+    "hash": "b294ffd8",
+    "ts": 1788322705.964169,
+    "direction": "LONG",
+    "score": 90.5425,
+    "mode": "B"
+  },
+  "SNDKUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788351505.664631,
+    "direction": "LONG",
+    "score": 96.098,
+    "mode": "B"
+  },
+  "SNXXUSDT": {
+    "hash": "09ee9e35",
+    "ts": 1787772261.525178,
+    "direction": "LONG",
+    "score": 70.326,
+    "mode": "B"
+  },
+  "LDOUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 58.116,
+    "mode": "B"
+  },
+  "NBISUSDT": {
+    "hash": "316db992",
+    "ts": 1786700826.781565,
+    "direction": "LONG",
+    "score": 70,
+    "mode": "B"
+  },
+  "SAMSUNGUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788217533.98807,
+    "direction": "LONG",
+    "score": 63.222,
+    "mode": "B"
+  },
+  "SKHYUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788039595.89741,
+    "direction": "LONG",
+    "score": 50.903999999999996,
+    "mode": "B"
+  },
+  "SYNUSDT": {
+    "hash": "09ee9e35",
+    "ts": 1786189619.314165,
+    "direction": "LONG",
+    "score": 63.446,
+    "mode": "B"
+  },
+  "LITUSDT": {
+    "hash": "16b72c03",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 65.576,
+    "mode": "B"
+  },
+  "EWYUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788219758.581191,
+    "direction": "LONG",
+    "score": 61.99000000000001,
+    "mode": "B"
+  },
+  "TRADOORUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 71.628,
+    "mode": "B"
+  },
+  "BZUSDT": {
+    "hash": "09ee9e35",
+    "ts": 1788337105.224508,
+    "direction": "LONG",
+    "score": 74.794,
+    "mode": "B"
+  },
+  "AVAAIUSDT": {
+    "hash": "3d81354a",
+    "ts": 1786672027.731455,
+    "direction": "LONG",
+    "score": 84.5,
+    "mode": "B"
+  },
+  "HOMEUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1786492027.604142,
+    "direction": "LONG",
+    "score": 61.972,
+    "mode": "B"
+  },
+  "XMRUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788205357.534821,
+    "direction": "LONG",
+    "score": 44.724000000000004,
+    "mode": "B"
+  },
+  "SPCXUSDT": {
+    "hash": "81047746",
+    "ts": 1788634806.484763,
+    "direction": "LONG",
+    "score": 50,
+    "mode": "A"
+  },
+  "TRUMPUSDT": {
+    "hash": "3ddb0339",
+    "ts": 1788035995.936024,
+    "direction": "LONG",
+    "score": 73.4645,
+    "mode": "A"
+  },
+  "ALLOUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 49.632,
+    "mode": "B"
+  },
+  "BUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 55.230000000000004,
+    "mode": "B"
+  },
+  "LTCUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 65.634,
+    "mode": "B"
+  },
+  "BILLUSDT": {
+    "hash": "e5dee6f0",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 87.6125,
+    "mode": "A"
+  },
+  "ETHFIUSDT": {
+    "hash": "09ee9e35",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 61.454,
+    "mode": "B"
+  },
+  "REUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1787648190.487664,
+    "direction": "LONG",
+    "score": 72.50999999999999,
+    "mode": "B"
+  },
+  "TLMUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 79.28,
+    "mode": "B"
+  },
+  "1000BONKUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1786204022.861796,
+    "direction": "LONG",
+    "score": 55.82,
+    "mode": "B"
+  },
+  "BABAUSDT": {
+    "hash": "16b72c03",
+    "ts": 1787716872.55088,
+    "direction": "LONG",
+    "score": 71.038,
+    "mode": "B"
+  },
+  "ZEREBROUSDT": {
+    "hash": "dce1b213",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 67.66,
+    "mode": "B"
+  },
+  "ACEUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788439275.6684,
+    "direction": "LONG",
+    "score": 84.728,
+    "mode": "B"
+  },
+  "PROMUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788095046.932271,
+    "direction": "LONG",
+    "score": 82.7495,
+    "mode": "B"
+  },
+  "FILUSDT": {
+    "hash": "b294ffd8",
+    "ts": 1788341082.250765,
+    "direction": "LONG",
+    "score": 60.56999999999999,
+    "mode": "B"
+  },
+  "HEMIUSDT": {
+    "hash": "81047746",
+    "ts": 1787019963.016045,
+    "direction": "LONG",
+    "score": 82,
+    "mode": "A"
+  },
+  "HANAUSDT": {
+    "hash": "81047746",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 67.656,
+    "mode": "A"
+  },
+  "ZAMAUSDT": {
+    "hash": "09ee9e35",
+    "ts": 1787604993.230039,
+    "direction": "LONG",
+    "score": 70.506,
+    "mode": "B"
+  },
+  "ERAUSDT": {
+    "hash": "81047746",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 97.89,
+    "mode": "A"
+  },
+  "LITEUSDT": {
+    "hash": "c0bb3f9c",
+    "ts": 1786664826.663331,
+    "direction": "LONG",
+    "score": 60.685,
+    "mode": "A"
+  },
+  "ONUSDT": {
+    "hash": "16b72c03",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 97.25,
+    "mode": "B"
+  },
+  "GOOGLUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1789031248.826976,
+    "direction": "LONG",
+    "score": 61.054,
+    "mode": "B"
+  },
+  "MUUSDT": {
+    "hash": "ebca1f5b",
+    "ts": 1787953168.777853,
+    "direction": "LONG",
+    "score": 70,
+    "mode": "B"
+  },
+  "XAGUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1785954192.768909,
+    "direction": "LONG",
+    "score": 51.216,
+    "mode": "B"
+  },
+  "CBRSUSDT": {
+    "hash": "16b72c03",
+    "ts": 1789036057.951688,
+    "direction": "LONG",
+    "score": 80.26599999999999,
+    "mode": "B"
+  },
+  "ZHIPUUSDT": {
+    "hash": "09ee9e35",
+    "ts": 1788417672.854025,
+    "direction": "LONG",
+    "score": 100,
+    "mode": "B"
+  },
+  "DRAMUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1786211222.090179,
+    "direction": "LONG",
+    "score": 64.172,
+    "mode": "B"
+  },
+  "GRAMUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788264450.785008,
+    "direction": "LONG",
+    "score": 80.616,
+    "mode": "B"
+  },
+  "EPICUSDT": {
+    "hash": "60145eb8",
+    "ts": 1786158225.88117,
+    "direction": "LONG",
+    "score": 70.624,
+    "mode": "B"
+  },
+  "COINUSDT": {
+    "hash": "81047746",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 82.1005,
+    "mode": "A"
+  },
+  "CRCLUSDT": {
+    "hash": "16b72c03",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 68.23400000000001,
+    "mode": "B"
+  },
+  "DEXEUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1787996368.541083,
+    "direction": "LONG",
+    "score": 68.586,
+    "mode": "B"
+  },
+  "SKHYNIXUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788035995.936024,
+    "direction": "LONG",
+    "score": 71.542,
+    "mode": "B"
+  },
+  "RIFUSDT": {
+    "hash": "09ee9e35",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 90.326,
+    "mode": "B"
+  },
+  "LAUSDT": {
+    "hash": "f5d342e1",
+    "ts": 1788439275.6684,
+    "direction": "LONG",
+    "score": 96.1275,
+    "mode": "A"
+  },
+  "TSLAUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1787920768.215151,
+    "direction": "LONG",
+    "score": 65.73,
+    "mode": "B"
+  },
+  "INTCUSDT": {
+    "hash": "81047746",
+    "ts": 1787562359.406249,
+    "direction": "LONG",
+    "score": 65.4175,
+    "mode": "A"
+  },
+  "IDOLUSDT": {
+    "hash": "ebca1f5b",
+    "ts": 1785637592.700184,
+    "direction": "LONG",
+    "score": 77,
+    "mode": "B"
+  },
+  "B2USDT": {
+    "hash": "f6b13f42",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 57.301500000000004,
+    "mode": "B"
+  },
+  "GWEIUSDT": {
+    "hash": "b294ffd8",
+    "ts": 1786398426.573926,
+    "direction": "LONG",
+    "score": 85.422,
+    "mode": "B"
+  },
+  "TQQQUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1787677128.588052,
+    "direction": "LONG",
+    "score": 69.126,
+    "mode": "B"
+  },
+  "VELVETUSDT": {
+    "hash": "81047746",
+    "ts": 1788017973.823854,
+    "direction": "LONG",
+    "score": 70.57,
+    "mode": "A"
+  },
+  "AVAXUSDT": {
+    "hash": "09ee9e35",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 74.992,
+    "mode": "B"
+  },
+  "KAITOUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 68.098,
+    "mode": "B"
+  },
+  "EULUSDT": {
+    "hash": "16b72c03",
+    "ts": 1785800451.63484,
+    "direction": "LONG",
+    "score": 67.826,
+    "mode": "B"
+  },
+  "1000SHIBUSDT": {
+    "hash": "b294ffd8",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 72.01599999999999,
+    "mode": "B"
+  },
+  "QUSDT": {
+    "hash": "60145eb8",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 67.854,
+    "mode": "B"
+  },
+  "1000PEPEUSDT": {
+    "hash": "69229b72",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 74.148,
+    "mode": "B"
+  },
+  "ESPUSDT": {
+    "hash": "60145eb8",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 99.03399999999999,
+    "mode": "B"
+  },
+  "XAUTUSDT": {
+    "hash": "81047746",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 64.25,
+    "mode": "A"
+  },
+  "UBUSDT": {
+    "hash": "8fe2d83f",
+    "ts": 1785987143.298403,
+    "direction": "LONG",
+    "score": 79,
+    "mode": "B"
+  },
+  "BOMEUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1786391227.420832,
+    "direction": "LONG",
+    "score": 63.018,
+    "mode": "B"
+  },
+  "VVVUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1789031248.826976,
+    "direction": "LONG",
+    "score": 98.437,
+    "mode": "B"
+  },
+  "ORDIUSDT": {
+    "hash": "16b72c03",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 70.70400000000001,
+    "mode": "B"
+  },
+  "DIAUSDT": {
+    "hash": "dce1b213",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 97,
+    "mode": "B"
+  },
+  "PEOPLEUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1786340826.598532,
+    "direction": "LONG",
+    "score": 59.926,
+    "mode": "B"
+  },
+  "COTIUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788097348.940933,
+    "direction": "LONG",
+    "score": 56.206,
+    "mode": "B"
+  },
+  "SOXSUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788026390.554473,
+    "direction": "LONG",
+    "score": 46.84,
+    "mode": "B"
+  },
+  "NVDAUSDT": {
+    "hash": "06d92c52",
+    "ts": 1788264450.785008,
+    "direction": "LONG",
+    "score": 76.2415,
+    "mode": "A"
+  },
+  "ZILUSDT": {
+    "hash": "01774b48",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 86,
+    "mode": "A"
+  },
+  "BEATUSDT": {
+    "hash": "81047746",
+    "ts": 1787867350.227282,
+    "direction": "LONG",
+    "score": 66.45,
+    "mode": "A"
+  },
+  "MUUUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788264450.785008,
+    "direction": "LONG",
+    "score": 73.372,
+    "mode": "B"
+  },
+  "SOONUSDT": {
+    "hash": "81047746",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 75.47749999999999,
+    "mode": "A"
+  },
+  "UAIUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788750007.130594,
+    "direction": "LONG",
+    "score": 48.778,
+    "mode": "B"
+  },
+  "GLWUSDT": {
+    "hash": "16b72c03",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 83.01599999999999,
+    "mode": "B"
+  },
+  "CAPUSDT": {
+    "hash": "09ee9e35",
+    "ts": 1786715227.344644,
+    "direction": "LONG",
+    "score": 79.34,
+    "mode": "B"
+  },
+  "KOMAUSDT": {
+    "hash": "06d92c52",
+    "ts": 1785968587.37499,
+    "direction": "LONG",
+    "score": 61.807500000000005,
+    "mode": "A"
+  },
+  "ROBOUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788007167.731663,
+    "direction": "LONG",
+    "score": 60.812,
+    "mode": "B"
+  },
+  "MMTUSDT": {
+    "hash": "81047746",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 67.4065,
+    "mode": "A"
+  },
+  "GIGGLEUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788084251.105887,
+    "direction": "LONG",
+    "score": 67.49,
+    "mode": "B"
+  },
+  "CFXUSDT": {
+    "hash": "81047746",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 93.03999999999999,
+    "mode": "A"
+  },
+  "1000RATSUSDT": {
+    "hash": "09ee9e35",
+    "ts": 1785590788.650047,
+    "direction": "LONG",
+    "score": 79.11500000000001,
+    "mode": "B"
+  },
+  "AMZNUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1787935170.354003,
+    "direction": "LONG",
+    "score": 55.712,
+    "mode": "B"
+  },
+  "BLESSUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1786196821.773906,
+    "direction": "LONG",
+    "score": 66.574,
+    "mode": "B"
+  },
+  "BICOUSDT": {
+    "hash": "16b72c03",
+    "ts": 1787866765.051698,
+    "direction": "LONG",
+    "score": 72,
+    "mode": "B"
+  },
+  "BEUSDT": {
+    "hash": "16b72c03",
+    "ts": 1788333505.387686,
+    "direction": "LONG",
+    "score": 72.486,
+    "mode": "B"
+  },
+  "VICUSDT": {
+    "hash": "ab49b904",
+    "ts": 1785807650.722939,
+    "direction": "LONG",
+    "score": 100,
+    "mode": "B"
+  },
+  "PIPPINUSDT": {
+    "hash": "dce1b213",
+    "ts": 1785822059.037796,
+    "direction": "LONG",
+    "score": 72.06,
+    "mode": "B"
+  },
+  "SKYAIUSDT": {
+    "hash": "16b72c03",
+    "ts": 1786247222.553897,
+    "direction": "LONG",
+    "score": 63.788,
+    "mode": "B"
+  },
+  "AXTIUSDT": {
+    "hash": "60145eb8",
+    "ts": 1788368401.328492,
+    "direction": "LONG",
+    "score": 73.508,
+    "mode": "B"
+  },
+  "PLTRUSDT": {
+    "hash": "09ee9e35",
+    "ts": 1789031248.826976,
+    "direction": "LONG",
+    "score": 74.258,
+    "mode": "B"
+  },
+  "MRVLUSDT": {
+    "hash": "81047746",
+    "ts": 1788351505.664631,
+    "direction": "LONG",
+    "score": 71.16,
+    "mode": "A"
+  },
+  "MSFTUSDT": {
+    "hash": "09ee9e35",
+    "ts": 1787992767.699723,
+    "direction": "LONG",
+    "score": 58.698,
+    "mode": "B"
+  },
+  "CYSUSDT": {
+    "hash": "81047746",
+    "ts": 1788670805.903259,
+    "direction": "LONG",
+    "score": 60.173,
+    "mode": "A"
+  },
+  "HEIUSDT": {
+    "hash": "16b72c03",
+    "ts": 1786168123.965796,
+    "direction": "LONG",
+    "score": 79.706,
+    "mode": "B"
+  },
+  "AMDUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1787658988.514417,
+    "direction": "LONG",
+    "score": 73.898,
+    "mode": "B"
+  },
+  "AAOIUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788355105.509804,
+    "direction": "LONG",
+    "score": 73.064,
+    "mode": "B"
+  },
+  "BTWUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1785946986.778595,
+    "direction": "LONG",
+    "score": 69.297,
+    "mode": "B"
+  },
+  "HFTUSDT": {
+    "hash": "b294ffd8",
+    "ts": 1786088619.794093,
+    "direction": "LONG",
+    "score": 87,
+    "mode": "B"
+  },
+  "GRVTUSDT": {
+    "hash": "16b72c03",
+    "ts": 1786650428.284744,
+    "direction": "LONG",
+    "score": 72.8685,
+    "mode": "B"
+  },
+  "ARMUSDT": {
+    "hash": "81047746",
+    "ts": 1788307902.570746,
+    "direction": "LONG",
+    "score": 76.2375,
+    "mode": "A"
+  },
+  "DELLUSDT": {
+    "hash": "cda775d6",
+    "ts": 1788351505.664631,
+    "direction": "LONG",
+    "score": 88.6075,
+    "mode": "B"
+  },
+  "ZBTUSDT": {
+    "hash": "60145eb8",
+    "ts": 1786001569.212052,
+    "direction": "LONG",
+    "score": 63.046,
+    "mode": "B"
+  },
+  "RIVERUSDT": {
+    "hash": "e5dee6f0",
+    "ts": 1788192311.329535,
+    "direction": "LONG",
+    "score": 61.125,
+    "mode": "A"
+  },
+  "TAKEUSDT": {
+    "hash": "7e612a3b",
+    "ts": 1786095819.631896,
+    "direction": "LONG",
+    "score": 79.22800000000001,
+    "mode": "B"
+  },
+  "WDCUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1786700826.781565,
+    "direction": "LONG",
+    "score": 74.28999999999999,
+    "mode": "B"
+  },
+  "MINIMAXUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1786412826.471544,
+    "direction": "LONG",
+    "score": 83.96000000000001,
+    "mode": "B"
+  },
+  "COPPERUSDT": {
+    "hash": "e5dee6f0",
+    "ts": 1786117428.569298,
+    "direction": "LONG",
+    "score": 76.218,
+    "mode": "A"
+  },
+  "TUTUSDT": {
+    "hash": "81047746",
+    "ts": 1788634806.484763,
+    "direction": "LONG",
+    "score": 53.0775,
+    "mode": "A"
+  },
+  "KGENUSDT": {
+    "hash": "7e612a3b",
+    "ts": 1786158225.88117,
+    "direction": "LONG",
+    "score": 82,
+    "mode": "B"
+  },
+  "SLXUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1786211222.090179,
+    "direction": "LONG",
+    "score": 60.784,
+    "mode": "B"
+  },
+  "TSTUSDT": {
+    "hash": "75322418",
+    "ts": 1786398426.573926,
+    "direction": "LONG",
+    "score": 67.4075,
+    "mode": "A"
+  },
+  "BLUAIUSDT": {
+    "hash": "06d92c52",
+    "ts": 1786621626.796134,
+    "direction": "LONG",
+    "score": 75.9225,
+    "mode": "A"
+  },
+  "MUBARAKUSDT": {
+    "hash": "ec53d2b9",
+    "ts": 1786420026.952355,
+    "direction": "LONG",
+    "score": 81.36449999999999,
+    "mode": "A"
+  },
+  "XANUSDT": {
+    "hash": "7e612a3b",
+    "ts": 1786326426.254295,
+    "direction": "LONG",
+    "score": 88.46000000000001,
+    "mode": "B"
+  },
+  "BANANAS31USDT": {
+    "hash": "f6b13f42",
+    "ts": 1786363207.004197,
+    "direction": "LONG",
+    "score": 58.236,
+    "mode": "B"
+  },
+  "BMTUSDT": {
+    "hash": "ebca1f5b",
+    "ts": 1787895563.757773,
+    "direction": "LONG",
+    "score": 76.23400000000001,
+    "mode": "B"
+  },
+  "龙虾USDT": {
+    "hash": "f6b13f42",
+    "ts": 1788033644.52016,
+    "direction": "LONG",
+    "score": 72.7975,
+    "mode": "B"
+  },
+  "GUAUSDT": {
+    "hash": "81047746",
+    "ts": 1786542426.833921,
+    "direction": "LONG",
+    "score": 81.4315,
+    "mode": "A"
+  },
+  "COHRUSDT": {
+    "hash": "7bec3432",
+    "ts": 1787233321.126162,
+    "direction": "LONG",
+    "score": 94.3435,
+    "mode": "A"
+  },
+  "HOLOUSDT": {
+    "hash": "7bec3432",
+    "ts": 1786556827.057362,
+    "direction": "LONG",
+    "score": 80.51,
+    "mode": "A"
+  },
+  "CRWVUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1786628826.623587,
+    "direction": "LONG",
+    "score": 77.51,
+    "mode": "B"
+  },
+  "LINKUSDT": {
+    "hash": "09ee9e35",
+    "ts": 1786549626.86191,
+    "direction": "LONG",
+    "score": 76.614,
+    "mode": "B"
+  },
+  "MSTRUSDT": {
+    "hash": "b294ffd8",
+    "ts": 1789031248.826976,
+    "direction": "LONG",
+    "score": 58.07599999999999,
+    "mode": "B"
+  },
+  "BRUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1787738559.593889,
+    "direction": "LONG",
+    "score": 55.212,
+    "mode": "B"
+  },
+  "VIRTUALUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1787848346.396774,
+    "direction": "LONG",
+    "score": 66.598,
+    "mode": "B"
+  },
+  "ONEUSDT": {
+    "hash": "81047746",
+    "ts": 1786614427.292476,
+    "direction": "LONG",
+    "score": 76.1,
+    "mode": "A"
+  },
+  "APRUSDT": {
+    "hash": "81047746",
+    "ts": 1787019963.016045,
+    "direction": "LONG",
+    "score": 70.2595,
+    "mode": "A"
+  },
+  "IRENUSDT": {
+    "hash": "81047746",
+    "ts": 1786686427.065803,
+    "direction": "LONG",
+    "score": 87.12,
+    "mode": "A"
+  },
+  "EDENUSDT": {
+    "hash": "c65e33ad",
+    "ts": 1786693627.265779,
+    "direction": "LONG",
+    "score": 77.75,
+    "mode": "A"
+  },
+  "AMATUSDT": {
+    "hash": "b69bfca5",
+    "ts": 1786715227.344644,
+    "direction": "LONG",
+    "score": 100,
+    "mode": "A"
+  },
+  "CHIPUSDT": {
+    "hash": "dce1b213",
+    "ts": 1786887663.279887,
+    "direction": "LONG",
+    "score": 64.25999999999999,
+    "mode": "B"
+  },
+  "ANTHROPICUSDT": {
+    "hash": "e5dee6f0",
+    "ts": 1786887663.279887,
+    "direction": "LONG",
+    "score": 63,
+    "mode": "A"
+  },
+  "PORTALUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1787724159.032164,
+    "direction": "LONG",
+    "score": 69.624,
+    "mode": "B"
+  },
+  "PRLUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1786941666.507167,
+    "direction": "LONG",
+    "score": 53.118,
+    "mode": "B"
+  },
+  "AIOUSDT": {
+    "hash": "ebca1f5b",
+    "ts": 1786974069.693859,
+    "direction": "LONG",
+    "score": 60.184,
+    "mode": "B"
+  },
+  "GPSUSDT": {
+    "hash": "60145eb8",
+    "ts": 1787838550.166215,
+    "direction": "LONG",
+    "score": 67.182,
+    "mode": "B"
+  },
+  "STARUSDT": {
+    "hash": "60145eb8",
+    "ts": 1787705940.796392,
+    "direction": "LONG",
+    "score": 73.81,
+    "mode": "B"
+  },
+  "TRIAUSDT": {
+    "hash": "3ddb0339",
+    "ts": 1788678006.631986,
+    "direction": "LONG",
+    "score": 62.316,
+    "mode": "A"
+  },
+  "AVGOUSDT": {
+    "hash": "7bec3432",
+    "ts": 1788439275.6684,
+    "direction": "LONG",
+    "score": 100,
+    "mode": "A"
+  },
+  "INJUSDT": {
+    "hash": "16b72c03",
+    "ts": 1787233321.126162,
+    "direction": "LONG",
+    "score": 78.348,
+    "mode": "B"
+  },
+  "TIAUSDT": {
+    "hash": "16b72c03",
+    "ts": 1787233321.126162,
+    "direction": "LONG",
+    "score": 76.896,
+    "mode": "B"
+  },
+  "HYPEUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788046796.19772,
+    "direction": "LONG",
+    "score": 62.54,
+    "mode": "B"
+  },
+  "ONGUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788424876.228577,
+    "direction": "LONG",
+    "score": 67.25,
+    "mode": "B"
+  },
+  "EIGENUSDT": {
+    "hash": "09ee9e35",
+    "ts": 1787503853.830946,
+    "direction": "LONG",
+    "score": 81.322,
+    "mode": "B"
+  },
+  "POLUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788271706.432557,
+    "direction": "LONG",
+    "score": 81.30199999999999,
+    "mode": "B"
+  },
+  "HBARUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1787503853.830946,
+    "direction": "LONG",
+    "score": 64.05199999999999,
+    "mode": "B"
+  },
+  "SPKUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1787576828.59881,
+    "direction": "LONG",
+    "score": 72,
+    "mode": "B"
+  },
+  "GRASSUSDT": {
+    "hash": "3ddb0339",
+    "ts": 1787604993.230039,
+    "direction": "LONG",
+    "score": 76.46549999999999,
+    "mode": "A"
+  },
+  "AAVEUSDT": {
+    "hash": "60145eb8",
+    "ts": 1787535001.280541,
+    "direction": "LONG",
+    "score": 67.53999999999999,
+    "mode": "B"
+  },
+  "PENGUUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1787580427.764785,
+    "direction": "LONG",
+    "score": 62.628,
+    "mode": "B"
+  },
+  "MORPHOUSDT": {
+    "hash": "60145eb8",
+    "ts": 1787562359.406249,
+    "direction": "LONG",
+    "score": 75.87,
+    "mode": "B"
+  },
+  "FARTCOINUSDT": {
+    "hash": "09ee9e35",
+    "ts": 1788395921.833333,
+    "direction": "LONG",
+    "score": 54.75,
+    "mode": "B"
+  },
+  "BMNRUSDT": {
+    "hash": "81047746",
+    "ts": 1788379202.514127,
+    "direction": "LONG",
+    "score": 78.64750000000001,
+    "mode": "A"
+  },
+  "SUPERUSDT": {
+    "hash": "41410240",
+    "ts": 1787590442.022097,
+    "direction": "LONG",
+    "score": 75.07,
+    "mode": "B"
+  },
+  "STORJUSDT": {
+    "hash": "cda775d6",
+    "ts": 1787619392.651014,
+    "direction": "LONG",
+    "score": 84,
+    "mode": "B"
+  },
+  "STXUSDT": {
+    "hash": "60145eb8",
+    "ts": 1787716872.55088,
+    "direction": "LONG",
+    "score": 76.67,
+    "mode": "B"
+  },
+  "TACUSDT": {
+    "hash": "3ddb0339",
+    "ts": 1788007167.731663,
+    "direction": "LONG",
+    "score": 79.444,
+    "mode": "A"
+  },
+  "JTOUSDT": {
+    "hash": "60145eb8",
+    "ts": 1787637384.547296,
+    "direction": "LONG",
+    "score": 74.618,
+    "mode": "B"
+  },
+  "SANDUSDT": {
+    "hash": "60145eb8",
+    "ts": 1787644585.471226,
+    "direction": "LONG",
+    "score": 76.834,
+    "mode": "B"
+  },
+  "AEROUSDT": {
+    "hash": "16b72c03",
+    "ts": 1787680730.633176,
+    "direction": "LONG",
+    "score": 59.854,
+    "mode": "B"
+  },
+  "UNITREEUSDT": {
+    "hash": "ebca1f5b",
+    "ts": 1787695142.039274,
+    "direction": "LONG",
+    "score": 61.044,
+    "mode": "B"
+  },
+  "ZROUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1787734961.545301,
+    "direction": "LONG",
+    "score": 56.498000000000005,
+    "mode": "B"
+  },
+  "HOODUSDT": {
+    "hash": "81047746",
+    "ts": 1788746408.675871,
+    "direction": "LONG",
+    "score": 54.0375,
+    "mode": "A"
+  },
+  "ONTUSDT": {
+    "hash": "f5d342e1",
+    "ts": 1787790587.14391,
+    "direction": "LONG",
+    "score": 100,
+    "mode": "A"
+  },
+  "DASHUSDT": {
+    "hash": "81047746",
+    "ts": 1789031248.826976,
+    "direction": "LONG",
+    "score": 90.29650000000001,
+    "mode": "A"
+  },
+  "WIFUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1787786979.810253,
+    "direction": "LONG",
+    "score": 56.022,
+    "mode": "B"
+  },
+  "MAGMAUSDT": {
+    "hash": "60145eb8",
+    "ts": 1788307902.570746,
+    "direction": "LONG",
+    "score": 73.561,
+    "mode": "B"
+  },
+  "SPXUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1787863164.424135,
+    "direction": "LONG",
+    "score": 63.698,
+    "mode": "B"
+  },
+  "ARIAUSDT": {
+    "hash": "b294ffd8",
+    "ts": 1787797787.928276,
+    "direction": "LONG",
+    "score": 86.188,
+    "mode": "B"
+  },
+  "BTRUSDT": {
+    "hash": "16b72c03",
+    "ts": 1788642007.450628,
+    "direction": "LONG",
+    "score": 100,
+    "mode": "B"
+  },
+  "MOVRUSDT": {
+    "hash": "ec53d2b9",
+    "ts": 1787949568.881889,
+    "direction": "LONG",
+    "score": 93,
+    "mode": "A"
+  },
+  "VETUSDT": {
+    "hash": "60145eb8",
+    "ts": 1787884764.742359,
+    "direction": "LONG",
+    "score": 77.05799999999999,
+    "mode": "B"
+  },
+  "BEAMXUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1787892786.249285,
+    "direction": "LONG",
+    "score": 67.92,
+    "mode": "B"
+  },
+  "PYTHUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1787881169.222437,
+    "direction": "LONG",
+    "score": 60.068,
+    "mode": "B"
+  },
+  "SOLUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1787909969.196835,
+    "direction": "LONG",
+    "score": 53.976,
+    "mode": "B"
+  },
+  "LIGHTUSDT": {
+    "hash": "09ee9e35",
+    "ts": 1787967568.873763,
+    "direction": "LONG",
+    "score": 72.45400000000001,
+    "mode": "B"
+  },
+  "我踏马来了USDT": {
+    "hash": "f6b13f42",
+    "ts": 1788040896.155514,
+    "direction": "LONG",
+    "score": 72.67,
+    "mode": "B"
+  },
+  "4USDT": {
+    "hash": "ec53d2b9",
+    "ts": 1788120247.635793,
+    "direction": "LONG",
+    "score": 80.955,
+    "mode": "A"
+  },
+  "CLOUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788084251.105887,
+    "direction": "LONG",
+    "score": 61.018,
+    "mode": "B"
+  },
+  "NILUSDT": {
+    "hash": "dce1b213",
+    "ts": 1788050396.65987,
+    "direction": "LONG",
+    "score": 93.8775,
+    "mode": "B"
+  },
+  "XRPUSDT": {
+    "hash": "02190467",
+    "ts": 1788028776.732749,
+    "direction": "LONG",
+    "score": 61.472,
+    "mode": "B"
+  },
+  "ZECUSDT": {
+    "hash": "09ee9e35",
+    "ts": 1788105851.582593,
+    "direction": "LONG",
+    "score": 70.848,
+    "mode": "B"
+  },
+  "ZKPUSDT": {
+    "hash": "dce1b213",
+    "ts": 1788091446.422663,
+    "direction": "LONG",
+    "score": 83.214,
+    "mode": "B"
+  },
+  "OUSDT": {
+    "hash": "16b72c03",
+    "ts": 1788098646.532454,
+    "direction": "LONG",
+    "score": 94,
+    "mode": "B"
+  },
+  "SKRUSDT": {
+    "hash": "81047746",
+    "ts": 1788660010.096653,
+    "direction": "LONG",
+    "score": 69.8775,
+    "mode": "A"
+  },
+  "ZENUSDT": {
+    "hash": "3ddb0339",
+    "ts": 1789031248.826976,
+    "direction": "LONG",
+    "score": 72.537,
+    "mode": "A"
+  },
+  "CAKEUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788163470.338284,
+    "direction": "LONG",
+    "score": 71.012,
+    "mode": "B"
+  },
+  "ZORAUSDT": {
+    "hash": "ec53d2b9",
+    "ts": 1788235425.59541,
+    "direction": "LONG",
+    "score": 77,
+    "mode": "A"
+  },
+  "ZKUSDT": {
+    "hash": "81047746",
+    "ts": 1788235900.352695,
+    "direction": "LONG",
+    "score": 69.3175,
+    "mode": "A"
+  },
+  "ZKCUSDT": {
+    "hash": "3ddb0339",
+    "ts": 1788206730.570561,
+    "direction": "LONG",
+    "score": 76,
+    "mode": "A"
+  },
+  "UNIUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788188712.212588,
+    "direction": "LONG",
+    "score": 72.938,
+    "mode": "B"
+  },
+  "MVLLUSDT": {
+    "hash": "81047746",
+    "ts": 1788439275.6684,
+    "direction": "LONG",
+    "score": 82.4,
+    "mode": "A"
+  },
+  "OPUSDT": {
+    "hash": "06d92c52",
+    "ts": 1788293445.313949,
+    "direction": "LONG",
+    "score": 60.569500000000005,
+    "mode": "A"
+  },
+  "ARBUSDT": {
+    "hash": "e5dee6f0",
+    "ts": 1788642007.450628,
+    "direction": "LONG",
+    "score": 60.1575,
+    "mode": "A"
+  },
+  "APTUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788227087.012225,
+    "direction": "LONG",
+    "score": 71.45,
+    "mode": "B"
+  },
+  "TWTUSDT": {
+    "hash": "7e612a3b",
+    "ts": 1788278913.746512,
+    "direction": "LONG",
+    "score": 64.38,
+    "mode": "B"
+  },
+  "USELESSUSDT": {
+    "hash": "f6b13f42",
+    "ts": 1788322705.964169,
+    "direction": "LONG",
+    "score": 67.0,
+    "mode": "B"
+  },
+  "ARUSDT": {
+    "hash": "09ee9e35",
+    "ts": 1788329905.795685,
+    "direction": "LONG",
+    "score": 74.104,
+    "mode": "B"
+  },
+  "牛来USDT": {
+    "hash": "e5dee6f0",
+    "ts": 1788746408.675871,
+    "direction": "LONG",
+    "score": 50.634,
+    "mode": "A"
+  },
+  "CRDOUSDT": {
+    "hash": "81047746",
+    "ts": 1788439275.6684,
+    "direction": "LONG",
+    "score": 94.82,
+    "mode": "A"
+  },
+  "EGLDUSDT": {
+    "hash": "bb9b5c35",
+    "ts": 1788439275.6684,
+    "direction": "LONG",
+    "score": 68.72,
+    "mode": "A"
+  },
+  "TUSDT": {
+    "hash": "ec53d2b9",
+    "ts": 1788424876.228577,
+    "direction": "LONG",
+    "score": 91,
+    "mode": "A"
+  },
+  "FLOCKUSDT": {
+    "hash": "81047746",
+    "ts": 1788642007.450628,
+    "direction": "LONG",
+    "score": 89.8,
+    "mode": "A"
+  },
+  "SUSHIUSDT": {
+    "hash": "81047746",
+    "ts": 1788746408.675871,
+    "direction": "LONG",
+    "score": 57,
+    "mode": "A"
+  },
+  "BULLAUSDT": {
+    "hash": "16b72c03",
+    "ts": 1788746408.675871,
+    "direction": "LONG",
+    "score": 78.656,
+    "mode": "B"
+  },
+  "JUPUSDT": {
+    "hash": "7bec3432",
+    "ts": 1788746408.675871,
+    "direction": "LONG",
+    "score": 64.35249999999999,
+    "mode": "A"
+  },
+  "COLLECTUSDT": {
+    "hash": "dce1b213",
+    "ts": 1788746408.675871,
+    "direction": "LONG",
+    "score": 49.83250000000001,
+    "mode": "B"
+  },
+  "BNCUSDT": {
+    "hash": "81047746",
+    "ts": 1789031248.826976,
+    "direction": "LONG",
+    "score": 89.28,
+    "mode": "A"
+  },
+  "RAYSOLUSDT": {
+    "hash": "81047746",
+    "ts": 1789031248.826976,
+    "direction": "LONG",
+    "score": 69.7375,
+    "mode": "A"
+  },
+  "IOSTUSDT": {
+    "hash": "13426d0e",
+    "ts": 1789036057.951688,
+    "direction": "LONG",
+    "score": 79,
+    "mode": "A"
+  }
+}

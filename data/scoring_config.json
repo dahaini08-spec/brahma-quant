@@ -1,0 +1,394 @@
+{
+  "_meta": {
+    "description": "梵天94维分析生成体系 — 稀疏激活配置（果蝇架构Phase 0）",
+    "created": "2026-09-13",
+    "sealed_by": "苏摩111",
+    "source": "wr_matrix_v8_6y5.json 47K条回测 + sim_sparse_loo.py LOO验证",
+    "principle": "按体制选择性激活维度，不激活的维度不计算不评分（果蝇稀疏激活）"
+  },
+  "CHOP_MID": {
+    "_note": "CHOP_MID: 所有方向EV≈0，轻仓/禁。s1/s2/s7/s10是噪声",
+    "LONG": {
+      "active_dims": [
+        "s3",
+        "s5b",
+        "s8",
+        "s20",
+        "s22",
+        "s28"
+      ],
+      "sleep_dims": [
+        "s1",
+        "s2",
+        "s7",
+        "s10",
+        "s27"
+      ],
+      "weights": {
+        "s3": 1.5,
+        "s5b": 1.2,
+        "s8": 1.0,
+        "s20": 0.88,
+        "s22": 1.0,
+        "s28": 1.0
+      },
+      "position_mult": 0.5,
+      "wr_evidence": "BTC WR=49.8% EV=-0.009 | ETH WR=50.3% EV=+0.010",
+      "verdict": "轻仓2%NAV，timing=STANDBY",
+      "weight": 1.0
+    },
+    "SHORT": {
+      "active_dims": [
+        "s3",
+        "s5b",
+        "s8",
+        "s20",
+        "s22",
+        "s28"
+      ],
+      "sleep_dims": [
+        "s1",
+        "s2",
+        "s7",
+        "s10",
+        "s27"
+      ],
+      "weights": {
+        "s3": 1.5,
+        "s5b": 1.2,
+        "s8": 1.0,
+        "s20": 1.0,
+        "s22": 1.0,
+        "s28": 1.0
+      },
+      "position_mult": 0.88,
+      "wr_evidence": "BTC WR=50.2% EV=+0.009 | ETH WR=49.7% EV=-0.010",
+      "verdict": "轻仓2%NAV，timing=STANDBY",
+      "weight": 1.0
+    }
+  },
+  "BEAR_TREND": {
+    "_note": "BEAR_TREND: 做空S+级alpha，做多逆势封禁",
+    "LONG": {
+      "active_dims": [
+        "s3",
+        "s5b",
+        "s8",
+        "s22"
+      ],
+      "sleep_dims": [
+        "s1",
+        "s2",
+        "s5",
+        "s6",
+        "s7",
+        "s10",
+        "s14",
+        "s20",
+        "s26",
+        "s27"
+      ],
+      "weights": {
+        "s3": 1.0,
+        "s5b": 1.0,
+        "s8": 1.0,
+        "s22": 1.0
+      },
+      "position_mult": 0.5,
+      "wr_evidence": "BTC WR=48.0% EV=-0.078 | ETH WR=48.6% EV=-0.054",
+      "verdict": "BEAR_TREND_LONG永久封禁（WR<50% EV<0）",
+      "weight": 1.0
+    },
+    "SHORT": {
+      "active_dims": [
+        "s2",
+        "s4",
+        "s5",
+        "s6",
+        "s20",
+        "s22",
+        "s26",
+        "s28"
+      ],
+      "sleep_dims": [
+        "s1",
+        "s27"
+      ],
+      "weights": {
+        "s2": 1.3,
+        "s4": 1.5,
+        "s5": 1.0,
+        "s6": 1.0,
+        "s20": 1.2,
+        "s22": 1.0,
+        "s26": 1.0,
+        "s28": 1.0
+      },
+      "position_mult": 1.6,
+      "wr_evidence": "BTC WR=51.9% EV=+0.077 | ETH WR=51.4% EV=+0.054",
+      "verdict": "S+级alpha，全维度激活",
+      "weight": 1.0
+    }
+  },
+  "BEAR_EARLY": {
+    "_note": "BEAR_EARLY: 做多意外alpha(WR=61%)，做空反着做",
+    "LONG": {
+      "active_dims": [
+        "s1",
+        "s3",
+        "s4",
+        "s5",
+        "s6",
+        "s8",
+        "s14",
+        "s22",
+        "s28"
+      ],
+      "sleep_dims": [
+        "s2",
+        "s7",
+        "s20",
+        "s27"
+      ],
+      "weights": {
+        "s1": 1.0,
+        "s3": 1.0,
+        "s4": 1.0,
+        "s5": 1.0,
+        "s6": 1.0,
+        "s8": 1.0,
+        "s14": 1.0,
+        "s22": 1.0,
+        "s28": 1.0
+      },
+      "position_mult": 0.5,
+      "wr_evidence": "BTC WR=61.1% EV=+0.444 | ETH WR=62.7% EV=+0.509",
+      "verdict": "意外alpha！做多WR=61%，但样本小(n=864)",
+      "weight": 1.0
+    },
+    "SHORT": {
+      "active_dims": [
+        "s2",
+        "s4",
+        "s6",
+        "s20",
+        "s22",
+        "s28"
+      ],
+      "sleep_dims": [
+        "s1",
+        "s5",
+        "s7",
+        "s10",
+        "s14",
+        "s26",
+        "s27"
+      ],
+      "weights": {
+        "s2": 1.2,
+        "s4": 1.0,
+        "s6": 1.0,
+        "s20": 1.0,
+        "s22": 1.0,
+        "s28": 1.0
+      },
+      "position_mult": 1.2,
+      "wr_evidence": "BTC WR=38.9% EV=-0.444 | ETH WR=37.3% EV=-0.509",
+      "verdict": "做空WR<40%，逆着做=做多",
+      "weight": 1.0
+    }
+  },
+  "BULL_TREND": {
+    "_note": "BULL_TREND: 做多主方向，做空逆势",
+    "LONG": {
+      "active_dims": [
+        "s1",
+        "s2",
+        "s4",
+        "s5",
+        "s6",
+        "s7",
+        "s14",
+        "s22",
+        "s26",
+        "s28"
+      ],
+      "sleep_dims": [
+        "s20",
+        "s27"
+      ],
+      "weights": {
+        "s1": 1.0,
+        "s2": 1.0,
+        "s4": 1.0,
+        "s5": 1.0,
+        "s6": 1.0,
+        "s7": 1.0,
+        "s14": 1.0,
+        "s22": 1.0,
+        "s26": 1.0,
+        "s28": 1.0
+      },
+      "position_mult": 1.3,
+      "wr_evidence": "BTC WR=56.7% EV=+0.266 n=3655 | ETH WR=55.2% EV=+0.209 n=3572",
+      "verdict": "主方向，全维度激活（清算墙做空信号休眠）",
+      "weight": 1.0
+    },
+    "SHORT": {
+      "active_dims": [
+        "s3",
+        "s4",
+        "s8",
+        "s20",
+        "s22",
+        "s28"
+      ],
+      "sleep_dims": [
+        "s1",
+        "s2",
+        "s5",
+        "s6",
+        "s7",
+        "s10",
+        "s14",
+        "s26",
+        "s27"
+      ],
+      "weights": {
+        "s3": 1.0,
+        "s4": 1.0,
+        "s8": 1.0,
+        "s20": 1.0,
+        "s22": 1.0,
+        "s28": 1.0
+      },
+      "position_mult": 0.5,
+      "wr_evidence": "BTC WR=43.3% EV=-0.266 | ETH WR=44.8% EV=-0.209",
+      "verdict": "做空逆势，轻仓0.5x",
+      "weight": 1.0
+    }
+  },
+  "BEAR_RECOVERY": {
+    "_note": "BEAR_RECOVERY: 仅做多，做空永久封禁",
+    "LONG": {
+      "active_dims": [
+        "s1",
+        "s3",
+        "s4",
+        "s5",
+        "s6",
+        "s7",
+        "s8",
+        "s14",
+        "s22",
+        "s26",
+        "s28"
+      ],
+      "sleep_dims": [
+        "s2",
+        "s20",
+        "s27"
+      ],
+      "weights": {
+        "s1": 1.0,
+        "s3": 1.0,
+        "s4": 1.0,
+        "s5": 1.0,
+        "s6": 1.0,
+        "s7": 1.0,
+        "s8": 1.0,
+        "s14": 1.0,
+        "s22": 1.0,
+        "s26": 1.0,
+        "s28": 1.0
+      },
+      "position_mult": 1.25,
+      "wr_evidence": "BTC WR=53.2% EV=+0.128 n=1297 | ETH WR=53.3% EV=+0.130 n=1138",
+      "verdict": "仅做多，全维度激活",
+      "weight": 1.0
+    },
+    "SHORT": {
+      "active_dims": [],
+      "sleep_dims": [
+        "all"
+      ],
+      "weights": {},
+      "position_mult": 0.0,
+      "wr_evidence": "BTC WR=46.8% EV=-0.128 | ETH WR=46.7% EV=-0.130",
+      "verdict": "BEAR_RECOVERY:SHORT永久封禁",
+      "weight": 1.0
+    }
+  },
+  "BULL_EARLY": {
+    "_note": "BULL_EARLY: 做多alpha，做空逆势",
+    "LONG": {
+      "active_dims": [
+        "s1",
+        "s3",
+        "s4",
+        "s5",
+        "s6",
+        "s7",
+        "s8",
+        "s14",
+        "s22",
+        "s26",
+        "s28"
+      ],
+      "sleep_dims": [
+        "s20",
+        "s27"
+      ],
+      "weights": {
+        "s1": 1.0,
+        "s3": 1.0,
+        "s4": 1.0,
+        "s5": 1.0,
+        "s6": 1.0,
+        "s7": 1.0,
+        "s8": 1.0,
+        "s14": 1.0,
+        "s22": 1.0,
+        "s26": 1.0,
+        "s28": 1.0
+      },
+      "position_mult": 1.15,
+      "wr_evidence": "回测n=0无数据，按BULL_TREND:LONG类推",
+      "verdict": "做多偏多，清算墙做空信号休眠",
+      "weight": 1.0
+    },
+    "SHORT": {
+      "active_dims": [
+        "s3",
+        "s4",
+        "s8",
+        "s20",
+        "s22",
+        "s28"
+      ],
+      "sleep_dims": [
+        "s1",
+        "s2",
+        "s5",
+        "s6",
+        "s7",
+        "s10",
+        "s14",
+        "s26",
+        "s27"
+      ],
+      "weights": {
+        "s3": 1.0,
+        "s4": 1.0,
+        "s8": 1.0,
+        "s20": 1.0,
+        "s22": 1.0,
+        "s28": 1.0
+      },
+      "position_mult": 0.5,
+      "wr_evidence": "回测n=0无数据，按BULL_TREND:SHORT类推",
+      "verdict": "做空逆势，轻仓0.5x",
+      "weight": 1.0
+    }
+  }
+}

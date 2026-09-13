@@ -1,0 +1,620 @@
+{
+  "c9f098ddf121": {
+    "ts": 1786088770.7534487,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "risk_level": "MEDIUM",
+        "top_risk": "LLM降级:规则模式",
+        "liq_insight": "清算数据已注入但推理降级",
+        "veto": false,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": -3,
+        "macro_bias": "NEUTRAL",
+        "key_factor": "BTC.D=56.65%偏高，ETH相对弱势",
+        "confidence": "MEDIUM",
+        "source": "rule_fallback"
+      },
+      "final_adj": -3,
+      "score_before": 140.9,
+      "score_after": 137.9,
+      "mode": "live",
+      "elapsed_ms": 33,
+      "ts": "2026-08-07T07:46:10.862438+00:00",
+      "from_cache": false,
+      "injected_adj": -2
+    }
+  },
+  "353ae6a9348a": {
+    "ts": 1787531595.36283,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "risk_level": "MEDIUM",
+        "top_risk": "LLM降级:规则模式",
+        "liq_insight": "清算数据已注入但推理降级",
+        "veto": false,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": 0,
+        "macro_trend": "NEUTRAL",
+        "key_event": "LLM降级",
+        "market_bias": "中性",
+        "source": "llm"
+      },
+      "final_adj": 0,
+      "score_before": 150.1,
+      "score_after": 150.1,
+      "mode": "live",
+      "elapsed_ms": 1683,
+      "ts": "2026-08-24T00:33:17.049361+00:00",
+      "from_cache": false,
+      "injected_adj": 0
+    }
+  },
+  "08317395bf14": {
+    "ts": 1788033338.6465974,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "risk_level": "MEDIUM",
+        "top_risk": "LLM降级:规则模式",
+        "liq_insight": "清算数据已注入但推理降级",
+        "veto": false,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": 0,
+        "macro_trend": "NEUTRAL",
+        "key_event": "LLM降级",
+        "market_bias": "中性",
+        "source": "llm",
+        "macro_bias": "NEUTRAL",
+        "key_factor": "LLM降级"
+      },
+      "quant": {
+        "score_adj": -15,
+        "quant_bias": "STRONG_REJECT",
+        "wr_verdict": "WR=0% n=10，历史全亏损，强烈拒绝",
+        "source": "rule_wr_zero"
+      },
+      "devil": {
+        "score_adj": 0,
+        "veto": false,
+        "veto_reason": "",
+        "top_flaw": "",
+        "summary": "",
+        "agent": "DevilAgent"
+      },
+      "final_adj": -14,
+      "score_before": 141.5,
+      "score_after": 127.5,
+      "mode": "live",
+      "elapsed_ms": 2099,
+      "react_triggered": false,
+      "ts": "2026-08-29T19:55:40.753906+00:00",
+      "from_cache": false,
+      "council_mode": "full(4agents)",
+      "injected_adj": -7
+    }
+  },
+  "afa50afa5535": {
+    "ts": 1786701094.317826,
+    "result": {
+      "risk": {
+        "score_adj": -12,
+        "risk_level": "HIGH",
+        "top_risk": "BEAR体制做多，WR=45%，违反体制铁律",
+        "veto": false,
+        "source": "rule_fallback"
+      },
+      "macro": {
+        "score_adj": -4,
+        "macro_bias": "BEARISH",
+        "key_factor": "体制确认为BEAR_TREND，恐慌贪婪指数29处于恐惧区间但尚未达到极度恐慌反转阈值，多头信号与宏观趋势方向相悖",
+        "confidence": "MEDIUM",
+        "source": "llm"
+      },
+      "final_adj": -16,
+      "score_before": 173.0,
+      "score_after": 157.0,
+      "mode": "live",
+      "elapsed_ms": 13055,
+      "ts": "2026-08-14T09:51:47.377002+00:00",
+      "from_cache": false,
+      "injected_adj": -8
+    }
+  },
+  "398c5071aa0f": {
+    "ts": 1787820589.0715504,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "risk_level": "MEDIUM",
+        "top_risk": "LLM降级:规则模式",
+        "liq_insight": "清算数据已注入但推理降级",
+        "veto": false,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": 0,
+        "macro_trend": "NEUTRAL",
+        "key_event": "LLM降级",
+        "market_bias": "中性",
+        "source": "llm",
+        "macro_bias": "NEUTRAL",
+        "key_factor": "LLM降级"
+      },
+      "quant": {
+        "score_adj": -15,
+        "quant_bias": "STRONG_REJECT",
+        "wr_verdict": "WR=0% n=10，历史全亏损，强烈拒绝",
+        "source": "rule_wr_zero"
+      },
+      "devil": {
+        "score_adj": 0,
+        "veto": false,
+        "veto_reason": "",
+        "top_flaw": "",
+        "summary": "",
+        "agent": "DevilAgent"
+      },
+      "final_adj": -14,
+      "score_before": 215.3,
+      "score_after": 201.3,
+      "mode": "live",
+      "elapsed_ms": 2464,
+      "ts": "2026-08-27T08:49:51.542585+00:00",
+      "from_cache": false,
+      "council_mode": "full(4agents)",
+      "injected_adj": -7
+    }
+  },
+  "8e3c147da5ed": {
+    "ts": 1787568770.6530685,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "risk_level": "MEDIUM",
+        "top_risk": "LLM降级:规则模式",
+        "liq_insight": "清算数据已注入但推理降级",
+        "veto": false,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": 0,
+        "macro_trend": "NEUTRAL",
+        "key_event": "LLM降级",
+        "market_bias": "中性",
+        "source": "llm"
+      },
+      "final_adj": 0,
+      "score_before": 226.3,
+      "score_after": 226.3,
+      "mode": "live",
+      "elapsed_ms": 5732,
+      "ts": "2026-08-24T10:52:56.400175+00:00",
+      "from_cache": false,
+      "injected_adj": 0
+    }
+  },
+  "6b79fdf3d2ce": {
+    "ts": 1787571339.4349275,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "risk_level": "MEDIUM",
+        "top_risk": "清算集群数据完全缺失，无法评估多头踩踏或轧空动能，方向优势无清算结构支撑",
+        "liq_insight": "三所清算数据均为N/A，清算墙分布未知，无法判断上方轧空潜力或下方踩踏压力，需谨慎对待入场时机",
+        "veto": false,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": 0,
+        "macro_trend": "NEUTRAL",
+        "key_event": "LLM降级",
+        "market_bias": "中性",
+        "source": "llm"
+      },
+      "final_adj": 0,
+      "score_before": 160.0,
+      "score_after": 160.0,
+      "mode": "live",
+      "elapsed_ms": 45419,
+      "ts": "2026-08-24T11:36:24.896064+00:00",
+      "from_cache": false,
+      "injected_adj": 0
+    }
+  },
+  "2e72c6eb2932": {
+    "ts": 1788024344.5622041,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "risk_level": "MEDIUM",
+        "top_risk": "LLM降级:规则模式",
+        "liq_insight": "清算数据已注入但推理降级",
+        "veto": false,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": 0,
+        "macro_trend": "NEUTRAL",
+        "key_event": "LLM降级",
+        "market_bias": "中性",
+        "source": "llm",
+        "macro_bias": "NEUTRAL",
+        "key_factor": "LLM降级"
+      },
+      "quant": {
+        "score_adj": -15,
+        "quant_bias": "STRONG_REJECT",
+        "wr_verdict": "WR=0% n=10，历史全亏损，强烈拒绝",
+        "source": "rule_wr_zero"
+      },
+      "devil": {
+        "score_adj": 0,
+        "veto": false,
+        "veto_reason": "",
+        "top_flaw": "",
+        "summary": "",
+        "agent": "DevilAgent"
+      },
+      "final_adj": -14,
+      "score_before": 204.2,
+      "score_after": 190.2,
+      "mode": "live",
+      "elapsed_ms": 1806,
+      "react_triggered": false,
+      "ts": "2026-08-29T17:25:46.375804+00:00",
+      "from_cache": false,
+      "council_mode": "full(4agents)",
+      "injected_adj": -7
+    }
+  },
+  "1a7546d0198e": {
+    "ts": 1788024338.0644517,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "risk_level": "MEDIUM",
+        "top_risk": "LLM降级:规则模式",
+        "liq_insight": "清算数据已注入但推理降级",
+        "veto": false,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": 0,
+        "macro_trend": "NEUTRAL",
+        "key_event": "LLM降级",
+        "market_bias": "中性",
+        "source": "llm",
+        "macro_bias": "NEUTRAL",
+        "key_factor": "LLM降级"
+      },
+      "quant": {
+        "score_adj": -15,
+        "quant_bias": "STRONG_REJECT",
+        "wr_verdict": "WR=0% n=10，历史全亏损，强烈拒绝",
+        "source": "rule_wr_zero"
+      },
+      "devil": {
+        "score_adj": 0,
+        "veto": false,
+        "veto_reason": "",
+        "top_flaw": "",
+        "summary": "",
+        "agent": "DevilAgent"
+      },
+      "final_adj": -14,
+      "score_before": 182.2,
+      "score_after": 168.2,
+      "mode": "live",
+      "elapsed_ms": 2478,
+      "react_triggered": false,
+      "ts": "2026-08-29T17:25:40.550435+00:00",
+      "from_cache": false,
+      "council_mode": "full(4agents)",
+      "injected_adj": -7
+    }
+  },
+  "e4b4d9dee328": {
+    "ts": 1787574333.4132779,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "risk_level": "MEDIUM",
+        "top_risk": "LLM降级:规则模式",
+        "liq_insight": "清算数据已注入但推理降级",
+        "veto": false,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": 0,
+        "macro_trend": "NEUTRAL",
+        "key_event": "LLM降级",
+        "market_bias": "中性",
+        "source": "llm",
+        "macro_bias": "NEUTRAL",
+        "key_factor": "LLM降级"
+      },
+      "final_adj": 0,
+      "score_before": 197.5,
+      "score_after": 197.5,
+      "mode": "live",
+      "elapsed_ms": 2050,
+      "ts": "2026-08-24T12:25:35.468969+00:00",
+      "from_cache": false,
+      "injected_adj": 0
+    }
+  },
+  "73c557fa2388": {
+    "ts": 1787575866.6103654,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "risk_level": "MEDIUM",
+        "top_risk": "LLM降级:规则模式",
+        "liq_insight": "清算数据已注入但推理降级",
+        "veto": false,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": 0,
+        "macro_trend": "NEUTRAL",
+        "key_event": "LLM降级",
+        "market_bias": "中性",
+        "source": "llm",
+        "macro_bias": "NEUTRAL",
+        "key_factor": "LLM降级"
+      },
+      "final_adj": 0,
+      "score_before": 172.2,
+      "score_after": 172.2,
+      "mode": "live",
+      "elapsed_ms": 1799,
+      "ts": "2026-08-24T12:51:08.414379+00:00",
+      "from_cache": false,
+      "injected_adj": 0
+    }
+  },
+  "988a69178499": {
+    "ts": 1787890090.3537345,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "risk_level": "MEDIUM",
+        "top_risk": "LLM降级:规则模式",
+        "liq_insight": "清算数据已注入但推理降级",
+        "veto": false,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "MacroAgent"
+      },
+      "quant": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "QuantAgent"
+      },
+      "devil": {
+        "score_adj": 0,
+        "veto": false,
+        "summary": "lite_mode_skip",
+        "agent": "DevilAgent"
+      },
+      "final_adj": 0,
+      "score_before": 130.8,
+      "score_after": 130.8,
+      "mode": "live",
+      "elapsed_ms": 2513,
+      "ts": "2026-08-28T04:08:12.878496+00:00",
+      "from_cache": false,
+      "council_mode": "lite(RiskOnly)",
+      "injected_adj": 0
+    }
+  },
+  "a5ad1379a208": {
+    "ts": 1788355635.926668,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "risk_level": "MEDIUM",
+        "top_risk": "LLM降级:规则模式",
+        "liq_insight": "清算数据已注入但推理降级",
+        "veto": false,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": 0,
+        "macro_trend": "NEUTRAL",
+        "key_event": "LLM降级",
+        "market_bias": "中性",
+        "source": "llm",
+        "macro_bias": "NEUTRAL",
+        "key_factor": "LLM降级"
+      },
+      "quant": {
+        "score_adj": 0,
+        "quant_bias": "NEUTRAL",
+        "wr_verdict": "UNKNOWN",
+        "source": "rule_fallback"
+      },
+      "devil": {
+        "score_adj": 0,
+        "veto": false,
+        "veto_reason": "",
+        "top_flaw": "",
+        "summary": "",
+        "reversal_path": "",
+        "reversal_prob": 0,
+        "agent": "DevilAgent"
+      },
+      "final_adj": 0,
+      "score_before": 158.8,
+      "score_after": 158.8,
+      "mode": "live",
+      "elapsed_ms": 2559,
+      "react_triggered": false,
+      "ts": "2026-09-02T13:27:18.508826+00:00",
+      "from_cache": false,
+      "council_mode": "full(4agents)",
+      "injected_adj": 0
+    }
+  },
+  "bf4c58b12dfb": {
+    "ts": 1789280396.788969,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "summary": "timeout_fallback",
+        "agent": "RiskAgent"
+      },
+      "macro": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "MacroAgent"
+      },
+      "quant": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "QuantAgent"
+      },
+      "devil": {
+        "score_adj": 0,
+        "veto": false,
+        "summary": "lite_mode_skip",
+        "agent": "DevilAgent"
+      },
+      "final_adj": 0,
+      "score_before": 27.8,
+      "score_after": 27.8,
+      "mode": "live",
+      "elapsed_ms": 22522,
+      "react_triggered": false,
+      "ts": "2026-09-13T06:20:19.384364+00:00",
+      "from_cache": false,
+      "council_mode": "lite(RiskOnly)",
+      "injected_adj": 0
+    }
+  },
+  "3587497213d8": {
+    "ts": 1789281470.0606904,
+    "result": {
+      "risk": {
+        "score_adj": -5,
+        "risk_level": "HIGH",
+        "top_risk": "评分仅7.2/150（换算约7.2分），远低于弱信号门槛100分，信号强度极度不足，无任何入场依据",
+        "liq_insight": "清算数据全部N/A，无法评估清算墙支撑或踩踏风险，信息盲区下风险溢价上升",
+        "veto": true,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "MacroAgent"
+      },
+      "quant": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "QuantAgent"
+      },
+      "devil": {
+        "score_adj": 0,
+        "veto": false,
+        "summary": "lite_mode_skip",
+        "agent": "DevilAgent"
+      },
+      "final_adj": -30,
+      "score_before": 7.2,
+      "score_after": -22.8,
+      "mode": "live",
+      "elapsed_ms": 14343,
+      "react_triggered": false,
+      "ts": "2026-09-13T06:38:04.480885+00:00",
+      "from_cache": false,
+      "council_mode": "lite(RiskOnly)"
+    }
+  },
+  "ce2c52d3b7b9": {
+    "ts": 1789288533.4978447,
+    "result": {
+      "risk": {
+        "score_adj": -5,
+        "risk_level": "HIGH",
+        "top_risk": "评分仅7.2/150（远低于弱信号阈值100），信号极度羸弱，CHOP_MID体制下做空缺乏方向性支撑，入场无统计优势。",
+        "liq_insight": "清算数据全部缺失（N/A），无法评估砸盘动能或轧空风险，清算视角完全失明，不具备入场条件。",
+        "veto": true,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "MacroAgent"
+      },
+      "quant": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "QuantAgent"
+      },
+      "devil": {
+        "score_adj": 0,
+        "veto": false,
+        "summary": "lite_mode_skip",
+        "agent": "DevilAgent"
+      },
+      "final_adj": -30,
+      "score_before": 7.2,
+      "score_after": -22.8,
+      "mode": "live",
+      "elapsed_ms": 12696,
+      "react_triggered": false,
+      "ts": "2026-09-13T08:35:46.216729+00:00",
+      "from_cache": false,
+      "council_mode": "lite(RiskOnly)"
+    }
+  },
+  "4cb61a97db34": {
+    "ts": 1789294872.618923,
+    "result": {
+      "risk": {
+        "score_adj": -10,
+        "risk_level": "HIGH",
+        "top_risk": "信号评分极低（7.2/150），远低于弱信号门槛100分，CHOP_MID体制方向不明，做空缺乏系统性支撑，属于无效信号。",
+        "liq_insight": "清算集群数据全部缺失（N/A），无法评估砸盘动能或轧空风险，信息盲区下不具备入场依据。",
+        "veto": true,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "MacroAgent"
+      },
+      "quant": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "QuantAgent"
+      },
+      "devil": {
+        "score_adj": 0,
+        "veto": false,
+        "summary": "lite_mode_skip",
+        "agent": "DevilAgent"
+      },
+      "final_adj": -30,
+      "score_before": 7.2,
+      "score_after": -22.8,
+      "mode": "live",
+      "elapsed_ms": 13605,
+      "react_triggered": false,
+      "ts": "2026-09-13T10:21:26.247481+00:00",
+      "from_cache": false,
+      "council_mode": "lite(RiskOnly)"
+    }
+  }
+}

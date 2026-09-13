@@ -1,0 +1,145 @@
+{
+  "SOLUSDT": {
+    "n_bars_1h": 50209,
+    "period": "2020-10-01 ~ 2026-06-24",
+    "n_trades": 871,
+    "wr_matrix": {
+      "BEAR_TREND_SHORT": {
+        "n": 28,
+        "wr": 53.6,
+        "avg_pnl": 1.5961,
+        "total_pnl": 44.69
+      },
+      "BEAR_EARLY_SHORT": {
+        "n": 412,
+        "wr": 38.3,
+        "avg_pnl": -0.0566,
+        "total_pnl": -23.34
+      },
+      "BULL_EARLY_LONG": {
+        "n": 411,
+        "wr": 35.8,
+        "avg_pnl": 0.3151,
+        "total_pnl": 129.52
+      },
+      "BULL_TREND_LONG": {
+        "n": 20,
+        "wr": 20.0,
+        "avg_pnl": -1.2268,
+        "total_pnl": -24.54
+      }
+    }
+  },
+  "NEARUSDT": {
+    "n_bars_1h": 49865,
+    "period": "2020-10-15 ~ 2026-06-24",
+    "n_trades": 872,
+    "wr_matrix": {
+      "BULL_TREND_LONG": {
+        "n": 14,
+        "wr": 57.1,
+        "avg_pnl": 3.9799,
+        "total_pnl": 55.72
+      },
+      "BEAR_TREND_SHORT": {
+        "n": 10,
+        "wr": 50.0,
+        "avg_pnl": 0.4993,
+        "total_pnl": 4.99
+      },
+      "BEAR_EARLY_SHORT": {
+        "n": 435,
+        "wr": 38.2,
+        "avg_pnl": 0.0549,
+        "total_pnl": 23.89
+      },
+      "BULL_EARLY_LONG": {
+        "n": 413,
+        "wr": 37.5,
+        "avg_pnl": 0.3417,
+        "total_pnl": 141.12
+      }
+    }
+  },
+  "MANAUSDT": {
+    "n_bars_1h": 46242,
+    "period": "2021-03-15 ~ 2026-06-24",
+    "n_trades": 789,
+    "wr_matrix": {
+      "BEAR_EARLY_SHORT": {
+        "n": 422,
+        "wr": 39.1,
+        "avg_pnl": 0.2368,
+        "total_pnl": 99.94
+      },
+      "BULL_TREND_LONG": {
+        "n": 13,
+        "wr": 38.5,
+        "avg_pnl": -0.7024,
+        "total_pnl": -9.13
+      },
+      "BULL_EARLY_LONG": {
+        "n": 342,
+        "wr": 33.0,
+        "avg_pnl": -0.2001,
+        "total_pnl": -68.43
+      },
+      "BEAR_TREND_SHORT": {
+        "n": 12,
+        "wr": 25.0,
+        "avg_pnl": -1.1659,
+        "total_pnl": -13.99
+      }
+    }
+  },
+  "AXSUSDT": {
+    "n_bars_1h": 49002,
+    "period": "2020-11-20 ~ 2026-06-24",
+    "n_trades": 823,
+    "wr_matrix": {
+      "BEAR_EARLY_SHORT": {
+        "n": 438,
+        "wr": 36.5,
+        "avg_pnl": 0.0727,
+        "total_pnl": 31.86
+      },
+      "BEAR_TREND_SHORT": {
+        "n": 15,
+        "wr": 33.3,
+        "avg_pnl": -0.3963,
+        "total_pnl": -5.94
+      },
+      "BULL_EARLY_LONG": {
+        "n": 363,
+        "wr": 32.5,
+        "avg_pnl": -0.2006,
+        "total_pnl": -72.81
+      }
+    }
+  },
+  "GALAUSDT": {
+    "n_bars_1h": 41758,
+    "period": "2021-09-18 ~ 2026-06-24",
+    "n_trades": 719,
+    "wr_matrix": {
+      "BEAR_TREND_SHORT": {
+        "n": 18,
+        "wr": 50.0,
+        "avg_pnl": 1.8171,
+        "total_pnl": 32.71
+      },
+      "BEAR_EARLY_SHORT": {
+        "n": 418,
+        "wr": 38.0,
+        "avg_pnl": -0.0848,
+        "total_pnl": -35.45
+      },
+      "BULL_EARLY_LONG": {
+        "n": 280,
+        "wr": 32.9,
+        "avg_pnl": 0.04,
+        "total_pnl": 11.19
+      }
+    }
+  }
+}

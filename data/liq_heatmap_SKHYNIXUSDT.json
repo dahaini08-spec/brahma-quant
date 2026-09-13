@@ -1,0 +1,39 @@
+{
+  "symbol": "SKHYNIXUSDT",
+  "price": 1153.62,
+  "short_liq_map": {
+    "2": 1730.4,
+    "3": 1538.2,
+    "5": 1384.3,
+    "10": 1269.0,
+    "20": 1211.3,
+    "50": 1176.7
+  },
+  "long_liq_map": {
+    "2": 576.8,
+    "3": 769.1,
+    "5": 922.9,
+    "10": 1038.3,
+    "20": 1095.9,
+    "50": 1130.5
+  },
+  "nearest_short_liq": 1176.7,
+  "nearest_long_liq": 1130.5,
+  "dist_to_short_liq": 2.0,
+  "dist_to_long_liq": 2.0,
+  "top_ask_clusters": [
+    [
+      1153.6,
+      373861.0
+    ]
+  ],
+  "top_bid_clusters": [
+    [
+      1153.6,
+      336439.0
+    ]
+  ],
+  "liq_bull_score": 5,
+  "liq_bear_score": 5,
+  "ts": 1787174512.6648629
+}

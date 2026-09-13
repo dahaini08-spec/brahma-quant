@@ -1,0 +1,1 @@
+{"ETHUSDT:SHORT": {"weight": 1.1, "outcome": "CORRECT", "pnl_pct": 2.5, "ts": 1787652719.629837, "predicted": "SHORT_BIAS", "actual": "SHORT", "count": 1}, "BTCUSDT:LONG": {"weight": 0.1216, "outcome": "WRONG", "pnl_pct": 0.1131, "ts": 1788142112.9680607, "predicted": "NEUTRAL", "actual": "SHORT", "count": 20}}

@@ -1,0 +1,105 @@
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1710.0, "sl": 1779.0, "tp1": 1602.0, "qty": 0.019, "notional": 32.49, "ts": "2026-06-19T15:05:21.766849+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1710.0, "sl": 1779.0, "tp1": 1602.0, "qty": 0.019, "notional": 32.49, "ts": "2026-06-19T15:05:58.126047+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1710.0, "sl": 1779.0, "tp1": 1602.0, "qty": 0.011, "notional": 18.81, "ts": "2026-06-19T15:06:53.967996+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1710.0, "sl": 1779.0, "tp1": 1602.0, "qty": 0.045, "notional": 76.95, "ts": "2026-06-19T15:07:05.447293+00:00"}
+{"type": "paper_open", "symbol": "BTCUSDT", "direction": "SHORT", "entry": 62963.0, "sl": 64200.0, "tp1": 60000.0, "qty": 0.001, "notional": 62.963, "ts": "2026-06-19T15:07:05.604168+00:00"}
+{"type": "paper_open", "symbol": "BNBUSDT", "direction": "SHORT", "entry": 605.0, "sl": 640.0, "tp1": 570.0, "qty": 0.12, "notional": 72.6, "ts": "2026-06-19T15:07:05.684842+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1710.0, "sl": 1779.0, "tp1": 1602.0, "qty": 0.045, "notional": 76.95, "ts": "2026-06-19T15:25:31.482124+00:00"}
+{"type": "paper_open", "symbol": "BTCUSDT", "direction": "SHORT", "entry": 62500.0, "sl": 64500.0, "tp1": 58000.0, "qty": 0.001, "notional": 62.5, "ts": "2026-06-19T15:25:31.559130+00:00"}
+{"type": "paper_open", "symbol": "BNBUSDT", "direction": "SHORT", "entry": 605.0, "sl": 640.0, "tp1": 560.0, "qty": 0.12, "notional": 72.6, "ts": "2026-06-19T15:25:31.628482+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1710.0, "sl": 1779.0, "tp1": 1602.0, "qty": 0.045, "notional": 76.95, "ts": "2026-06-19T15:31:51.188448+00:00"}
+{"type": "paper_open", "symbol": "BTCUSDT", "direction": "SHORT", "entry": 62500.0, "sl": 64500.0, "tp1": 58000.0, "qty": 0.001, "notional": 62.5, "ts": "2026-06-19T15:31:51.291802+00:00"}
+{"type": "paper_open", "symbol": "BNBUSDT", "direction": "SHORT", "entry": 605.0, "sl": 640.0, "tp1": 560.0, "qty": 0.12, "notional": 72.6, "ts": "2026-06-19T15:31:51.408239+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1710.0, "sl": 1779.0, "tp1": 1602.0, "qty": 0.045, "notional": 76.95, "ts": "2026-06-19T15:32:34.826062+00:00"}
+{"type": "paper_open", "symbol": "BTCUSDT", "direction": "SHORT", "entry": 62500.0, "sl": 64500.0, "tp1": 58000.0, "qty": 0.001, "notional": 62.5, "ts": "2026-06-19T15:32:34.904838+00:00"}
+{"type": "paper_open", "symbol": "BNBUSDT", "direction": "SHORT", "entry": 605.0, "sl": 640.0, "tp1": 560.0, "qty": 0.12, "notional": 72.6, "ts": "2026-06-19T15:32:34.965048+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-1111,\"msg\":\"Precision is over the maximum defined for this asset.\"}", "symbol": "ETHUSDT", "ts": "2026-06-19T15:34:50.695298+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1710.0, "sl": 1779.0, "tp1": 1602.0, "qty": 0.045, "notional": 76.95, "ts": "2026-06-19T15:46:06.447757+00:00"}
+{"type": "paper_open", "symbol": "BTCUSDT", "direction": "SHORT", "entry": 62500.0, "sl": 64500.0, "tp1": 58000.0, "qty": 0.001, "notional": 62.5, "ts": "2026-06-19T15:46:06.506082+00:00"}
+{"type": "paper_open", "symbol": "BNBUSDT", "direction": "SHORT", "entry": 605.0, "sl": 640.0, "tp1": 560.0, "qty": 0.12, "notional": 72.6, "ts": "2026-06-19T15:46:06.565140+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1710.0, "sl": 1779.0, "tp1": 1602.0, "qty": 0.045, "notional": 76.95, "ts": "2026-06-19T15:49:36.370528+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1710.0, "sl": 1779.0, "tp1": 1602.0, "qty": 0.045, "notional": 76.95, "ts": "2026-06-19T15:52:12.202551+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1710.0, "sl": 1779.0, "tp1": 1602.0, "qty": 0.045, "notional": 76.95, "ts": "2026-06-19T15:52:34.888940+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1710.0, "sl": 1779.0, "tp1": 1602.0, "qty": 0.046, "notional": 78.66, "ts": "2026-06-19T16:50:48.960310+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1730.0, "sl": 1779.0, "tp1": 1678.0, "qty": 0.039, "notional": 67.47, "ts": "2026-06-20T10:25:24.991748+00:00"}
+{"type": "paper_open", "symbol": "SLXUSDT", "direction": "LONG", "entry": 0.189, "sl": 0.172, "tp1": 0.22, "qty": 239.0, "notional": 45.171, "ts": "2026-06-20T10:25:24.994724+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1730.0, "sl": 1779.0, "tp1": 1678.0, "qty": 0.039, "notional": 67.47, "ts": "2026-06-20T10:26:02.347063+00:00"}
+{"type": "paper_open", "symbol": "BTCUSDT", "direction": "SHORT", "entry": 63805.5, "sl": 64300.0, "tp1": 62900.0, "qty": 0.004, "notional": 255.222, "ts": "2026-06-20T10:26:02.348056+00:00"}
+{"type": "paper_open", "symbol": "SLXUSDT", "direction": "LONG", "entry": 0.189, "sl": 0.172, "tp1": 0.22, "qty": 239.0, "notional": 45.171, "ts": "2026-06-20T10:26:02.348838+00:00"}
+{"type": "paper_open", "symbol": "BTWUSDT", "direction": "SHORT", "entry": 0.134, "sl": 0.155, "tp1": 0.1, "qty": 505.0, "notional": 67.67, "ts": "2026-06-20T10:26:02.349554+00:00"}
+{"type": "paper_open", "symbol": "BICOUSDT", "direction": "LONG", "entry": 0.036000000000000004, "sl": 0.03, "tp1": 0.045, "qty": 1255.0, "notional": 45.18, "ts": "2026-06-20T10:26:02.350595+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1730.0, "sl": 1779.0, "tp1": 1678.0, "qty": 0.039, "notional": 67.47, "ts": "2026-06-20T10:30:27.145979+00:00"}
+{"type": "paper_open", "symbol": "BTCUSDT", "direction": "SHORT", "entry": 63805.5, "sl": 64300.0, "tp1": 62900.0, "qty": 0.004, "notional": 255.222, "ts": "2026-06-20T10:30:27.146970+00:00"}
+{"type": "paper_open", "symbol": "SLXUSDT", "direction": "LONG", "entry": 0.189, "sl": 0.172, "tp1": 0.22, "qty": 239.0, "notional": 45.171, "ts": "2026-06-20T10:30:27.147741+00:00"}
+{"type": "paper_open", "symbol": "BTWUSDT", "direction": "SHORT", "entry": 0.134, "sl": 0.155, "tp1": 0.1, "qty": 505.0, "notional": 67.67, "ts": "2026-06-20T10:30:27.148492+00:00"}
+{"type": "paper_open", "symbol": "BICOUSDT", "direction": "LONG", "entry": 0.036000000000000004, "sl": 0.03, "tp1": 0.045, "qty": 1255.0, "notional": 45.18, "ts": "2026-06-20T10:30:27.149514+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1730.0, "sl": 1779.0, "tp1": 1678.0, "qty": 0.039, "notional": 67.47, "ts": "2026-06-20T10:34:54.925147+00:00"}
+{"type": "paper_open", "symbol": "BTWUSDT", "direction": "SHORT", "entry": 0.134, "sl": 0.155, "tp1": 0.1, "qty": 505.0, "notional": 67.67, "ts": "2026-06-20T10:34:54.926096+00:00"}
+{"type": "live_open", "symbol": "BTWUSDT", "direction": "SHORT", "entry": 0.134, "sl": 0.155, "tp1": 0.1, "qty": 505.0, "order_ids": {"entry": 448731366}, "ts": "2026-06-20T10:44:10.688882+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1730.0, "sl": 1779.0, "tp1": 1678.0, "qty": 0.039, "notional": 67.47, "ts": "2026-06-20T13:59:08.087304+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-1111,\"msg\":\"Precision is over the maximum defined for this asset.\"}", "symbol": "AVAXUSDT", "ts": "2026-06-20T14:45:49.747932+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-4014,\"msg\":\"Price not increased by tick size.\"}", "symbol": "SUIUSDT", "ts": "2026-06-21T14:27:33.172755+00:00"}
+{"type": "live_open", "symbol": "PIXELUSDT", "direction": "SHORT", "entry": 0.005467, "sl": 0.005651, "tp1": 0.005099, "qty": 12399.0, "order_ids": {"entry": 3385460979}, "ts": "2026-06-21T15:26:48.935119+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-4014,\"msg\":\"Price not increased by tick size.\"}", "symbol": "SUIUSDT", "ts": "2026-06-21T15:56:55.210309+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-4014,\"msg\":\"Price not increased by tick size.\"}", "symbol": "SUIUSDT", "ts": "2026-06-21T16:57:11.479341+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-4014,\"msg\":\"Price not increased by tick size.\"}", "symbol": "ADAUSDT", "ts": "2026-06-21T18:27:15.286295+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-4014,\"msg\":\"Price not increased by tick size.\"}", "symbol": "SUIUSDT", "ts": "2026-06-21T18:57:00.471953+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-1111,\"msg\":\"Precision is over the maximum defined for this asset.\"}", "symbol": "ETHUSDT", "ts": "2026-06-21T22:26:54.118180+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-4014,\"msg\":\"Price not increased by tick size.\"}", "symbol": "BICOUSDT", "ts": "2026-06-21T22:26:54.266412+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-4014,\"msg\":\"Price not increased by tick size.\"}", "symbol": "GALAUSDT", "ts": "2026-06-22T00:58:33.073368+00:00"}
+{"type": "live_open", "symbol": "PIXELUSDT", "direction": "SHORT", "entry": 0.005364, "sl": 0.005651, "tp1": 0.0047899, "qty": 12637.0, "order_ids": {"entry": 3386220061}, "ts": "2026-06-22T00:58:33.268770+00:00"}
+{"type": "live_open", "symbol": "PIXELUSDT", "direction": "SHORT", "entry": 0.005467, "sl": 0.005651, "tp1": 0.005099, "qty": 12399.0, "order_ids": {"entry": 3386269678}, "ts": "2026-06-22T01:31:30.147353+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-4014,\"msg\":\"Price not increased by tick size.\"}", "symbol": "ADAUSDT", "ts": "2026-06-22T01:58:44.488136+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-4014,\"msg\":\"Price not increased by tick size.\"}", "symbol": "BICOUSDT", "ts": "2026-06-22T02:59:23.583152+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1710.0, "sl": 1779.0, "tp1": 1602.0, "qty": 0.158, "notional": 270.18, "ts": "2026-06-22T03:10:46.335111+00:00"}
+{"type": "paper_open", "symbol": "BTCUSDT", "direction": "SHORT", "entry": 62500.0, "sl": 64500.0, "tp1": 58000.0, "qty": 0.004, "notional": 250.0, "ts": "2026-06-22T03:10:46.336846+00:00"}
+{"type": "paper_open", "symbol": "BNBUSDT", "direction": "SHORT", "entry": 605.0, "sl": 640.0, "tp1": 560.0, "qty": 0.44, "notional": 266.2, "ts": "2026-06-22T03:10:46.439381+00:00"}
+{"type": "live_open", "symbol": "BTCUSDT", "direction": "LONG", "entry": 64000.0, "sl": 61500.0, "tp1": 66000.0, "qty": 0.002, "order_ids": {"entry": 1049609731329}, "ts": "2026-06-23T03:27:35.236640+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-4014,\"msg\":\"Price not increased by tick size.\"}", "symbol": "AXSUSDT", "ts": "2026-06-23T06:04:16.366285+00:00"}
+{"type": "live_open", "symbol": "BTWUSDT", "direction": "LONG", "entry": 0.08665, "sl": 0.069674, "tp1": 0.107021, "qty": 788.0, "order_ids": {"entry": 645892144}, "ts": "2026-06-23T06:36:56.289789+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-4014,\"msg\":\"Price not increased by tick size.\"}", "symbol": "AXSUSDT", "ts": "2026-06-23T08:37:01.276545+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-4014,\"msg\":\"Price not increased by tick size.\"}", "symbol": "AXSUSDT", "ts": "2026-06-23T09:36:15.577393+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-4014,\"msg\":\"Price not increased by tick size.\"}", "symbol": "AXSUSDT", "ts": "2026-06-23T10:08:49.768359+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-1111,\"msg\":\"Precision is over the maximum defined for this asset.\"}", "symbol": "SANDUSDT", "ts": "2026-06-23T10:08:49.973536+00:00"}
+{"type": "live_open", "symbol": "BZUSDT", "direction": "SHORT", "entry": 77.67, "sl": 81.9467, "tp1": 69.1165, "qty": 0.87, "order_ids": {"entry": 1045694240}, "ts": "2026-06-23T10:37:29.061023+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-1111,\"msg\":\"Precision is over the maximum defined for this asset.\"}", "symbol": "MANAUSDT", "ts": "2026-06-23T10:37:29.451682+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-4014,\"msg\":\"Price not increased by tick size.\"}", "symbol": "SUIUSDT", "ts": "2026-06-23T11:14:55.113343+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-4014,\"msg\":\"Price not increased by tick size.\"}", "symbol": "AXSUSDT", "ts": "2026-06-23T12:40:46.932325+00:00"}
+{"type": "order_fail", "step": "entry", "error": "{\"code\":-4014,\"msg\":\"Price not increased by tick size.\"}", "symbol": "AXSUSDT", "ts": "2026-06-23T13:39:21.352653+00:00"}
+{"type": "live_open", "symbol": "SOLUSDT", "direction": "SHORT", "entry": 69.57, "sl": 71.13, "tp1": 65.71, "qty": 0.98, "order_ids": {"entry": 222386927549}, "ts": "2026-06-23T14:10:25.834785+00:00"}
+{"type": "live_open", "symbol": "SUIUSDT", "direction": "SHORT", "entry": 0.7049, "sl": 0.7288, "tp1": 0.6454, "qty": 96.9, "order_ids": {"entry": 39750433424}, "ts": "2026-06-23T15:39:27.563515+00:00"}
+{"type": "live_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1676.2, "sl": 1700.33, "tp1": 1632.79, "qty": 0.371, "order_ids": {"entry": 8389766216087004043}, "ts": "2026-06-24T08:58:19.132941+00:00"}
+{"type": "live_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1672.95, "sl": 1696.27, "tp1": 1630.99, "qty": 0.384, "order_ids": {"entry": 8389766216097174020}, "ts": "2026-06-24T09:16:32.276359+00:00"}
+{"type": "live_open", "symbol": "ZECUSDT", "direction": "SHORT", "entry": 414.38, "sl": 419.51, "tp1": 404.74, "qty": 0.164, "order_ids": {"entry": 802592531738}, "ts": "2026-06-24T23:13:31.796296+00:00"}
+{"type": "live_open", "symbol": "ADAUSDT", "direction": "SHORT", "entry": 0.151, "sl": 0.1559, "tp1": 0.1389, "qty": 452.0, "order_ids": {"entry": 65926470740}, "ts": "2026-06-25T05:18:51.494011+00:00"}
+{"type": "live_open", "symbol": "BNBUSDT", "direction": "SHORT", "entry": 570.6, "sl": 581.02, "tp1": 544.57, "qty": 0.11, "order_ids": {"entry": 91950318673}, "ts": "2026-06-25T05:18:51.948441+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1669.0, "sl": 1720.0, "tp1": 1570.0, "qty": 0.081, "notional": 135.189, "ts": "2026-06-28T09:00:22.039899+00:00"}
+{"type": "paper_open", "symbol": "BTCUSDT", "direction": "SHORT", "entry": 59950.0, "sl": 61400.0, "tp1": 58600.0, "qty": 0.001, "notional": 59.95, "ts": "2026-06-28T14:17:28.668311+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1760.0, "sl": 1795.2, "tp1": 1724.8, "qty": 0.01, "notional": 17.6, "ts": "2026-07-05T11:14:09.237459+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1710.0, "sl": 1779.0, "tp1": 1602.0, "qty": 0.066, "notional": 112.86, "ts": "2026-07-05T11:14:09.401556+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "SHORT", "entry": 1710.0, "sl": 1779.0, "tp1": 1602.0, "qty": 0.015, "notional": 25.65, "ts": "2026-07-05T11:14:31.840850+00:00"}
+{"type": "paper_open", "symbol": "XRPUSDT", "direction": "LONG", "entry": 2.11, "sl": 2.05, "tp1": 2.18, "qty": 24.4, "notional": 51.484, "ts": "2026-07-05T11:38:00.192387+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "LONG", "entry": 1760.0, "sl": 1724.8, "tp1": 1795.2, "qty": 0.022, "notional": 7.72, "ts": "2026-07-05T11:43:45.065427+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "LONG", "entry": 1830.0, "sl": 1798.0, "tp1": 1875.0, "qty": 0.012, "notional": 21.96, "ts": "2026-07-18T04:50:39.345358+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "LONG", "entry": 1830.0, "sl": 1798.0, "tp1": 1875.0, "qty": 0.012, "notional": 21.96, "ts": "2026-07-18T04:51:29.373731+00:00"}
+{"type": "paper_open", "symbol": "BTCUSDT", "direction": "LONG", "entry": 63500.0, "sl": 61600.0, "tp1": 65400.0, "qty": 0.001, "notional": 63.5, "ts": "2026-07-18T04:51:29.787120+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "LONG", "entry": 1830.0, "sl": 1798.0, "tp1": 1875.0, "qty": 0.012, "notional": 21.96, "ts": "2026-07-18T05:11:50.489785+00:00"}
+{"type": "paper_open", "symbol": "SOLUSDT", "direction": "LONG", "entry": 150.0, "sl": 144.8, "tp1": 158.0, "qty": 0.15, "notional": 22.5, "ts": "2026-07-18T05:11:50.783778+00:00"}
+{"type": "paper_open", "symbol": "SOLUSDT", "direction": "LONG", "entry": 150.0, "sl": 144.8, "tp1": 158.0, "qty": 0.15, "notional": 22.5, "ts": "2026-07-18T05:11:51.036784+00:00"}
+{"type": "paper_open", "symbol": "BTCUSDT", "direction": "LONG", "entry": 63500.0, "sl": 61740.0, "tp1": 65600.0, "qty": 0.001, "notional": 63.5, "ts": "2026-07-18T05:11:51.287989+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "LONG", "entry": 1835.0, "sl": 1792.0, "tp1": 1878.0, "qty": 0.012, "notional": 22.02, "ts": "2026-07-18T05:12:35.416004+00:00"}
+{"type": "live_open", "symbol": "HYPEUSDT", "direction": "LONG", "entry": 59.074, "sl": 58.007, "tp1": 68.265, "qty": 0.75, "order_ids": {"entry": 11022526595}, "ts": "2026-07-18T09:58:58.647981+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "LONG", "entry": 1920.0, "sl": 1872.0, "tp1": 1968.0, "qty": 0.023, "notional": 44.16, "ts": "2026-07-22T14:48:16.342132+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "LONG", "entry": 1920.0, "sl": 1872.0, "tp1": 1968.0, "qty": 0.023, "notional": 44.16, "ts": "2026-07-22T14:50:11.248834+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "LONG", "entry": 1920.0, "sl": 1872.0, "tp1": 1968.0, "qty": 0.023, "notional": 44.16, "ts": "2026-07-22T15:01:41.827741+00:00"}
+{"type": "paper_open", "symbol": "BTCUSDT", "direction": "LONG", "entry": 65350.0, "sl": 64110.0, "tp1": 67100.0, "qty": 0.001, "notional": 65.35, "ts": "2026-07-22T15:02:51.406700+00:00"}
+{"type": "paper_open", "symbol": "HYPEUSDT", "direction": "LONG", "entry": 33.75, "sl": 32.83, "tp1": 34.68, "qty": 1.33, "notional": 44.8875, "ts": "2026-07-22T15:02:52.124692+00:00"}
+{"type": "paper_open", "symbol": "SOLUSDT", "direction": "LONG", "entry": 171.0, "sl": 166.6, "tp1": 175.4, "qty": 0.26, "notional": 44.46, "ts": "2026-07-22T15:02:52.824939+00:00"}
+{"type": "paper_open", "symbol": "ETHUSDT", "direction": "LONG", "entry": 1920.0, "sl": 1872.0, "tp1": 1968.0, "qty": 0.023, "notional": 44.16, "ts": "2026-07-22T23:49:09.137546+00:00"}
+{"type": "paper_open", "symbol": "BTCUSDT", "direction": "LONG", "entry": 65350.0, "sl": 64110.0, "tp1": 67100.0, "qty": 0.001, "notional": 65.35, "ts": "2026-07-22T23:49:09.786792+00:00"}
+{"type": "paper_open", "symbol": "HYPEUSDT", "direction": "LONG", "entry": 33.75, "sl": 32.83, "tp1": 34.68, "qty": 1.33, "notional": 44.8875, "ts": "2026-07-22T23:49:10.444550+00:00"}
+{"type": "paper_open", "symbol": "SOLUSDT", "direction": "LONG", "entry": 171.0, "sl": 166.6, "tp1": 175.4, "qty": 0.26, "notional": 44.46, "ts": "2026-07-22T23:49:11.059013+00:00"}
+{"type": "live_open", "symbol": "SNDKUSDT", "direction": "LONG", "entry": 1597.46, "sl": 1489.05, "tp1": 1868.26, "qty": 0.02, "order_ids": {"entry": 2653929190}, "ts": "2026-07-23T03:07:44.843287+00:00"}
+{"type": "paper_open", "symbol": "BTCUSDT", "direction": "SHORT", "entry": 65000.0, "sl": 66625.0, "tp1": 63050.0, "qty": 0.001, "notional": 65.0, "ts": "2026-08-11T03:41:41.253290+00:00"}
+{"type": "paper_open", "symbol": "BTCUSDT", "direction": "SHORT", "entry": 65000.0, "sl": 66625.0, "tp1": 63050.0, "qty": 0.001, "notional": 65.0, "ts": "2026-08-11T03:41:50.850417+00:00"}
+{"type": "paper_open", "symbol": "BTCUSDT", "direction": "SHORT", "entry": 65000.0, "sl": 66625.0, "tp1": 63050.0, "qty": 0.001, "notional": 65.0, "ts": "2026-08-11T03:41:59.278640+00:00"}

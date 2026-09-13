@@ -1,0 +1,39 @@
+{
+  "symbol": "BNBUSDT",
+  "price": 757.07,
+  "short_liq_map": {
+    "2": 1135.6,
+    "3": 1009.4,
+    "5": 908.5,
+    "10": 832.8,
+    "20": 794.9,
+    "50": 772.2
+  },
+  "long_liq_map": {
+    "2": 378.5,
+    "3": 504.7,
+    "5": 605.7,
+    "10": 681.4,
+    "20": 719.2,
+    "50": 741.9
+  },
+  "nearest_short_liq": 772.2,
+  "nearest_long_liq": 741.9,
+  "dist_to_short_liq": 2.0,
+  "dist_to_long_liq": 2.0,
+  "top_ask_clusters": [
+    [
+      757.1,
+      964528.0
+    ]
+  ],
+  "top_bid_clusters": [
+    [
+      757.1,
+      653289.0
+    ]
+  ],
+  "liq_bull_score": 5,
+  "liq_bear_score": 5,
+  "ts": 1788681649.8931403
+}

@@ -1,0 +1,25 @@
+{
+  "state": "RISK_OFF",
+  "score": -50,
+  "bull_weight_mult": 0.7,
+  "long_gate_bonus": -15,
+  "bear_weight_mult": 1.5,
+  "desc": "宏观偏空，谨慎做多，BEAR体制加权",
+  "signals": [
+    "BTC跌破EMA50_4H ⚠️",
+    "RSI_4H=33.4 极度超卖 ⚠️",
+    "BTC资金费率=0.0038%",
+    "OI变化=-1.0%"
+  ],
+  "raw": {
+    "btc_price": 77332.0,
+    "btc_ema50_4h": 78203.0,
+    "btc_above_ema50": false,
+    "btc_rsi_4h": 33.4,
+    "btc_funding_rate": 0.003819,
+    "eth_funding_rate": 0.005184,
+    "btc_oi_change_24h_pct": -0.98
+  },
+  "ts": 1788379344.7234156,
+  "updated_at": "2026-09-02 20:02 UTC"
+}

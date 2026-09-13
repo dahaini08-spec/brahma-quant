@@ -1,0 +1,14 @@
+{
+  "symbol": "ACEUSDT",
+  "frs": {
+    "binance": -0.654626,
+    "bybit": -0.6702910000000001
+  },
+  "spread": 0.01567,
+  "max_ex": "binance",
+  "min_ex": "bybit",
+  "arb_signal": "LONG_BYBIT_SHORT_BINANCE",
+  "arb_score": 10,
+  "bull_fr_bonus": 8,
+  "ts": 1787485103.700517
+}

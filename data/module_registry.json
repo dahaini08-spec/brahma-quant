@@ -1,0 +1,644 @@
+{
+  "_meta": {
+    "description": "梵天模块注册表 — 启动时检查，孤儿模块告警",
+    "created": "2026-09-13",
+    "sealed_by": "苏摩111"
+  },
+  "critical_modules": {
+    "brahma_core": {
+      "file": "brahma_brain/brahma_core.py",
+      "imported_by": [
+        "brahma_core_entry",
+        "brahma_engine",
+        "brahma_analysis_runner"
+      ],
+      "inputs": [
+        "kline_data",
+        "oi_data",
+        "gex_cache",
+        "cvd_data",
+        "regime_state"
+      ],
+      "outputs": [
+        "confluence_score",
+        "confluence_breakdown",
+        "regime",
+        "signal_dir",
+        "price",
+        "decision",
+        "entry_params"
+      ],
+      "deps": [
+        "brahma_brain/smc_engine.py",
+        "brahma_brain/fangcang_engine.py",
+        "brahma_brain/gex_engine.py",
+        "brahma_brain/position_sizer.py",
+        "brahma_brain/signal_quality_engine.py"
+      ],
+      "invocation": "model-invoked"
+    },
+    "brahma_core_entry": {
+      "file": "brahma_brain/brahma_core_entry.py",
+      "imported_by": [
+        "brahma_1hao_analysis"
+      ],
+      "invocation": "model-invoked",
+      "inputs": [
+        "market_state",
+        "smc_result",
+        "signal_dir",
+        "mtf_result"
+      ],
+      "outputs": [
+        "entry_params",
+        "sl_price",
+        "tp_targets",
+        "leverage",
+        "position_pct"
+      ],
+      "deps": [
+        "brahma_brain/brahma_core.py"
+      ]
+    },
+    "brahma_analysis_runner": {
+      "file": "brahma_brain/brahma_analysis_runner.py",
+      "imported_by": [
+        "brahma_full_report"
+      ],
+      "invocation": "model-invoked",
+      "inputs": [
+        "symbol",
+        "deep",
+        "signal_dir"
+      ],
+      "outputs": [
+        "analysis_result",
+        "batch_report",
+        "correlation_risk"
+      ],
+      "deps": [
+        "brahma_brain/brahma_core.py",
+        "brahma_brain/formatter.py"
+      ]
+    },
+    "brahma_full_report": {
+      "file": "brahma_brain/brahma_full_report.py",
+      "imported_by": [
+        "brahma_manual_analysis"
+      ],
+      "invocation": "model-invoked",
+      "inputs": [
+        "symbol",
+        "mode"
+      ],
+      "outputs": [
+        "full_report_str",
+        "analysis_dict",
+        "war_report"
+      ],
+      "deps": [
+        "brahma_brain/brahma_analysis_runner.py",
+        "scripts/brahma_1hao_analysis.py"
+      ]
+    },
+    "brahma_1hao_analysis": {
+      "file": "scripts/brahma_1hao_analysis.py",
+      "imported_by": [
+        "brahma_full_report"
+      ],
+      "invocation": "user-invoked",
+      "inputs": [
+        "symbol",
+        "direction",
+        "compact"
+      ],
+      "outputs": [
+        "formatted_report",
+        "dual_analysis",
+        "tradfi_supplement"
+      ],
+      "deps": [
+        "brahma_brain/brahma_core_entry.py",
+        "brahma_brain/formatter.py"
+      ]
+    },
+    "regime_scorer": {
+      "file": "brahma_brain/regime_scorer.py",
+      "imported_by": [
+        "regime_realtime_watcher"
+      ],
+      "inputs": [
+        "kline_data",
+        "adx",
+        "hurst",
+        "bb_width"
+      ],
+      "outputs": [
+        "regime",
+        "regime_confidence",
+        "regime_mult"
+      ],
+      "deps": [
+        "data/regime_state.json"
+      ],
+      "invocation": "model-invoked"
+    },
+    "fangcang_engine": {
+      "file": "brahma_brain/fangcang_engine.py",
+      "imported_by": [
+        "brahma_core"
+      ],
+      "inputs": [
+        "signal_features",
+        "regime",
+        "direction"
+      ],
+      "outputs": [
+        "fangcang_score",
+        "fangcang_detail",
+        "hcme_match"
+      ],
+      "deps": [
+        "data/fangcang_cases_btc.json",
+        "data/fangcang_cases_eth.json"
+      ],
+      "invocation": "model-invoked"
+    },
+    "position_sizer": {
+      "file": "brahma_brain/position_sizer.py",
+      "imported_by": [
+        "brahma_core",
+        "auto_executor"
+      ],
+      "inputs": [
+        "score",
+        "regime",
+        "sl_pct",
+        "nav"
+      ],
+      "outputs": [
+        "position_size",
+        "leverage",
+        "position_pct_nav"
+      ],
+      "deps": [
+        "data/signal_weights.json"
+      ],
+      "invocation": "user-invoked"
+    },
+    "smc_engine": {
+      "file": "brahma_brain/smc_engine.py",
+      "imported_by": [
+        "brahma_core"
+      ],
+      "inputs": [
+        "kline_1h",
+        "kline_4h",
+        "kline_15m"
+      ],
+      "outputs": [
+        "smc_score",
+        "bos",
+        "choch",
+        "ob_list",
+        "fvg_list",
+        "key_levels"
+      ],
+      "deps": [],
+      "invocation": "model-invoked"
+    },
+    "formatter": {
+      "file": "brahma_brain/formatter.py",
+      "imported_by": [
+        "brahma_engine",
+        "brahma_core"
+      ],
+      "invocation": "model-invoked",
+      "inputs": [
+        "analysis_result"
+      ],
+      "outputs": [
+        "formatted_report",
+        "standard_card",
+        "panorama_report",
+        "output_tag"
+      ],
+      "deps": []
+    },
+    "signal_quality_engine": {
+      "file": "brahma_brain/signal_quality_engine.py",
+      "imported_by": [
+        "brahma_core"
+      ],
+      "inputs": [
+        "confluence_breakdown",
+        "regime",
+        "direction"
+      ],
+      "outputs": [
+        "sqe_score",
+        "sqe_verdict",
+        "sqe_gate"
+      ],
+      "deps": [],
+      "invocation": "model-invoked"
+    },
+    "ic_tracker": {
+      "file": "brahma_brain/ic_tracker.py",
+      "imported_by": [
+        "signal_settler"
+      ],
+      "inputs": [
+        "signal_outcomes",
+        "regime",
+        "direction"
+      ],
+      "outputs": [
+        "ic_per_dim",
+        "ic_overall",
+        "weight_adjustments"
+      ],
+      "deps": [
+        "data/ic_tracker_state.json"
+      ],
+      "invocation": "model-invoked"
+    }
+  },
+  "enhancement_modules": {
+    "narrative_engine": {
+      "file": "brahma_brain/narrative_engine.py",
+      "imported_by": [
+        "brahma_full_report"
+      ],
+      "optional": true,
+      "invocation": "model-invoked",
+      "inputs": [
+        "symbol"
+      ],
+      "outputs": [
+        "narrative_score",
+        "crowd_sentiment",
+        "narrative_report",
+        "active_risk",
+        "upcoming_events"
+      ],
+      "deps": [
+        "data/macro_state.json"
+      ]
+    },
+    "price_zone_engine": {
+      "file": "brahma_brain/price_zone_engine.py",
+      "imported_by": [
+        "brahma_full_report"
+      ],
+      "optional": true,
+      "invocation": "model-invoked",
+      "inputs": [
+        "symbol",
+        "force_refresh"
+      ],
+      "outputs": [
+        "price_zones",
+        "zone_touch_alert",
+        "zone_report"
+      ],
+      "deps": [
+        "data/price_zones.json"
+      ]
+    },
+    "brahma_experience_engine": {
+      "file": "brahma_brain/brahma_experience_engine.py",
+      "imported_by": [
+        "brahma_full_report"
+      ],
+      "optional": true,
+      "invocation": "model-invoked",
+      "inputs": [
+        "symbol",
+        "timeframe",
+        "direction"
+      ],
+      "outputs": [
+        "experience_vector",
+        "similar_experiences",
+        "win_rate",
+        "regime_label"
+      ],
+      "deps": [
+        "data/fangcang_cases_btc.json",
+        "data/fangcang_cases_eth.json"
+      ]
+    },
+    "gex_engine": {
+      "file": "brahma_brain/gex_engine.py",
+      "imported_by": [
+        "brahma_core"
+      ],
+      "optional": true,
+      "inputs": [
+        "symbol",
+        "price"
+      ],
+      "outputs": [
+        "gex_score",
+        "gex_direction",
+        "zero_flip",
+        "max_gex",
+        "min_gex"
+      ],
+      "deps": [
+        "data/gex_cache.json"
+      ],
+      "invocation": "model-invoked"
+    },
+    "vol_beta_engine": {
+      "file": "brahma_brain/vol_beta_engine.py",
+      "imported_by": [
+        "brahma_core"
+      ],
+      "optional": true,
+      "inputs": [
+        "symbol",
+        "price"
+      ],
+      "outputs": [
+        "har_rv",
+        "vol_beta",
+        "iv_premium"
+      ],
+      "deps": [
+        "data/har_rv_cache.json"
+      ],
+      "invocation": "model-invoked"
+    },
+    "liq_density_engine": {
+      "file": "brahma_brain/liq_density_engine.py",
+      "imported_by": [
+        "brahma_core"
+      ],
+      "optional": true,
+      "inputs": [
+        "symbol",
+        "price"
+      ],
+      "outputs": [
+        "liq_pools",
+        "liq_direction",
+        "liq_score"
+      ],
+      "deps": [
+        "data/liq_heatmap_BTCUSDT.json",
+        "data/liq_heatmap_ETHUSDT.json"
+      ],
+      "invocation": "model-invoked"
+    },
+    "liq_heatmap": {
+      "file": "scripts/liq_heatmap.py",
+      "imported_by": [
+        "brahma_core"
+      ],
+      "optional": true,
+      "invocation": "model-invoked",
+      "inputs": [
+        "orderbook_depth",
+        "recent_liquidations"
+      ],
+      "outputs": [
+        "liq_heatmap_data",
+        "liq_zones",
+        "liq_score_contribution"
+      ],
+      "deps": []
+    },
+    "online_bayes": {
+      "file": "brahma_brain/online_bayes.py",
+      "imported_by": [
+        "brahma_core"
+      ],
+      "optional": true,
+      "invocation": "model-invoked",
+      "inputs": [
+        "score_raw",
+        "regime",
+        "direction",
+        "live_signal_log"
+      ],
+      "outputs": [
+        "bayes_adj_score",
+        "bayes_detail",
+        "posterior_wr"
+      ],
+      "deps": []
+    },
+    "online_learner_v2": {
+      "file": "brahma_brain/online_learner_v2.py",
+      "imported_by": [
+        "wr_feedback_engine"
+      ],
+      "optional": true,
+      "invocation": "model-invoked",
+      "inputs": [
+        "performance_records",
+        "current_weights"
+      ],
+      "outputs": [
+        "calibrated_weights",
+        "dimension_bias",
+        "calib_log"
+      ],
+      "deps": []
+    },
+    "range_engine": {
+      "file": "brahma_brain/range_engine.py",
+      "imported_by": [
+        "brahma_core_entry"
+      ],
+      "optional": true,
+      "invocation": "model-invoked",
+      "inputs": [
+        "highs",
+        "lows",
+        "closes"
+      ],
+      "outputs": [
+        "range_score",
+        "range_structure",
+        "fakeout_detection",
+        "mean_deviation"
+      ],
+      "deps": []
+    },
+    "pattern_engine": {
+      "file": "brahma_brain/pattern_engine.py",
+      "imported_by": [
+        "brahma_core_entry"
+      ],
+      "optional": true,
+      "invocation": "model-invoked",
+      "inputs": [
+        "highs",
+        "lows",
+        "closes"
+      ],
+      "outputs": [
+        "pattern_score",
+        "flag_wedge",
+        "double_pattern",
+        "head_shoulders"
+      ],
+      "deps": []
+    },
+    "trigger_15m": {
+      "file": "brahma_brain/trigger_15m.py",
+      "imported_by": [
+        "brahma_core_entry"
+      ],
+      "optional": true,
+      "invocation": "model-invoked",
+      "inputs": [
+        "symbol",
+        "kline_15m",
+        "direction"
+      ],
+      "outputs": [
+        "trigger_signal",
+        "ob_15m",
+        "wick_rejection",
+        "bos_15m",
+        "choch_15m"
+      ],
+      "deps": []
+    },
+    "enhanced_signal_engine": {
+      "file": "brahma_brain/enhanced_signal_engine.py",
+      "imported_by": [
+        "brahma_core_entry"
+      ],
+      "optional": true,
+      "invocation": "model-invoked",
+      "inputs": [
+        "symbol",
+        "signal_dir"
+      ],
+      "outputs": [
+        "enhanced_score",
+        "cvd_data",
+        "liq_levels",
+        "lsr_trend",
+        "session_weight"
+      ],
+      "deps": [
+        "data/cvd_realtime_btcusdt.json",
+        "data/cvd_realtime_ethusdt.json"
+      ]
+    },
+    "llm_council": {
+      "file": "brahma_brain/llm_council.py",
+      "imported_by": [
+        "brahma_core"
+      ],
+      "optional": true,
+      "invocation": "model-invoked",
+      "inputs": [
+        "analysis_result",
+        "signal_dir"
+      ],
+      "outputs": [
+        "council_verdict",
+        "verdict_line"
+      ],
+      "deps": [
+        "brahma_brain/reasoning_client.py"
+      ]
+    },
+    "reasoning_client": {
+      "file": "brahma_brain/reasoning_client.py",
+      "imported_by": [
+        "llm_council_bridge"
+      ],
+      "optional": true,
+      "invocation": "model-invoked",
+      "inputs": [
+        "prompt",
+        "max_tokens"
+      ],
+      "outputs": [
+        "reasoning_result",
+        "gate_decision"
+      ],
+      "deps": []
+    }
+  },
+  "known_orphans": {
+    "causal_regime_verifier": {
+      "status": "REMOVED",
+      "imported_by": "brahma_full_report.py",
+      "fallback": "skip",
+      "note": "import引用已清除，模块文件不存在，不再影响运行",
+      "invocation": "model-invoked"
+    },
+    "brahma_intel_layer": {
+      "status": "ALIVE",
+      "imported_by": "brahma_full_report.py",
+      "fallback": "skip",
+      "invocation": "model-invoked",
+      "note": "文件存在(315行)，之前注册表路径检查误报"
+    },
+    "brahma_cpu": {
+      "status": "STALE",
+      "imported_by": "position_sizer.py",
+      "fallback": "skip",
+      "invocation": "model-invoked",
+      "note": "文件存在(597行)但已不在活跃调用链中"
+    },
+    "pre_trade_engine": {
+      "status": "REMOVED",
+      "imported_by": "brahma_core",
+      "fallback": "skip",
+      "invocation": "model-invoked",
+      "note": "import引用已清除，模块文件不存在，不再影响运行"
+    },
+    "ElliottWaveDetector": {
+      "status": "REMOVED",
+      "imported_by": "brahma_core",
+      "fallback": "skip",
+      "invocation": "model-invoked",
+      "note": "import引用已清除，模块文件不存在，不再影响运行"
+    },
+    "MTFResonance": {
+      "status": "REMOVED",
+      "imported_by": "brahma_core",
+      "fallback": "skip",
+      "invocation": "model-invoked",
+      "note": "import引用已清除，模块文件不存在，不再影响运行"
+    },
+    "brahma_context_injector": {
+      "status": "ALIVE",
+      "imported_by": "brahma_analysis_runner",
+      "fallback": "skip",
+      "invocation": "model-invoked",
+      "note": "文件存在(365行)，之前注册表路径检查误报"
+    },
+    "signal_expiry_tracker": {
+      "status": "REMOVED",
+      "imported_by": "brahma_core",
+      "fallback": "skip",
+      "invocation": "model-invoked",
+      "note": "import引用已清除，模块文件不存在，不再影响运行"
+    },
+    "position_guard": {
+      "status": "REMOVED",
+      "imported_by": "brahma_core",
+      "fallback": "skip",
+      "invocation": "model-invoked",
+      "note": "import引用已清除，模块文件不存在，不再影响运行"
+    },
+    "structure_touch_detector": {
+      "status": "REMOVED",
+      "imported_by": "brahma_core",
+      "fallback": "skip",
+      "invocation": "model-invoked",
+      "note": "import引用已清除，模块文件不存在，不再影响运行"
+    }
+  }
+}

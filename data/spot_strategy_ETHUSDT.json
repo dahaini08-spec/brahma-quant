@@ -1,0 +1,18 @@
+{
+  "symbol": "ETHUSDT",
+  "price": 2466.06,
+  "regime": "BULL_TREND",
+  "bias": "LONG",
+  "entry_lo": 1997.56,
+  "entry_hi": 2037.92,
+  "sl": 1519.96,
+  "tp1": 2492.24,
+  "tp2": 2866.08,
+  "nav_pct": 3,
+  "weeks": "4~8",
+  "logic": "BULL_TREND\u4f53\u5236+\u7b79\u7801\u4f4e\u5bc6\u533a\u5efa\u4ed3\uff0c\u76ee\u6807\u4e0a\u65b9\u9ad8\u5bc6\u963b\u529b",
+  "rsi_1d": 60.99,
+  "poc": 1875.39,
+  "ts": "2026-09-10 10:26 UTC",
+  "card": "\ud83c\udf3f \u59d3\u8d75\u4e0d\u5ba3 | ETH \u73b0\u8d27\u4e2d\u7ebf\u5e03\u5c40\n\n\ud83d\udfe2 \u5efa\u4ed3\u533a\u95f4\uff5c$1,997.56~$2,037.92\n\ud83c\udfaf \u76ee\u6807\u533a\uff5c$2,492.24\u2192$2,866.08\n\ud83d\udeab \u6b62\u635f\u533a\uff5c$1,519.96\uff08\u7ed3\u6784\u5931\u6548\u4f4d\uff09\n\u23f0 \u9884\u671f\u5468\u671f\uff5c4~8\u5468\n\u4ed3\u4f4d\uff5c3%NAV\uff08\u65e0\u6760\u6746\uff09\n\n\u26a0\ufe0f BULL_TREND\u4f53\u5236+\u7b79\u7801\u4f4e\u5bc6\u533a\u5efa\u4ed3\uff0c\u76ee\u6807\u4e0a\u65b9\u9ad8\u5bc6\u963b\u529b\n\ud83d\udcca \u4f53\u5236:BULL_TREND RSI1D:61 POC:$1,875.39\n\n\ud83d\udcca \u68b5\u5929\u7cfb\u7edf\uff5c\u6570\u636e\u9a71\u52a8\uff5c\u4e0d\u662f\u5efa\u8bae"
+}

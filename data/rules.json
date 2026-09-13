@@ -1,0 +1,83 @@
+{
+  "version": "1.0",
+  "updated_at": "2026-05-11T22:13:52Z",
+  "rules": [
+    {
+      "id": "fr_short_block",
+      "name": "资金费率负值禁止做空",
+      "type": "block",
+      "direction": "SHORT",
+      "condition": "funding_rate < threshold",
+      "threshold": -0.002,
+      "confidence": 0.85,
+      "source": "manual",
+      "created": "2026-05-11",
+      "note": "FR<-0.2%时多头已付高额资金费，空头资金成本极高，逆势做空胜率极低。教训：2026-05-11复盘发现FR<-0.2%时空单胜率<35%。",
+      "win_rate_before": null,
+      "win_rate_after": null,
+      "trigger_count": 1
+    },
+    {
+      "id": "vol_ratio_short_require",
+      "name": "做空要求量比<0.5x（量能萎缩）",
+      "type": "require",
+      "direction": "SHORT",
+      "condition": "vol_ratio < threshold",
+      "threshold": 0.5,
+      "confidence": 0.78,
+      "source": "manual",
+      "created": "2026-05-11",
+      "note": "量比>0.5时表示市场仍有买入力量，做空风险高。量能萎缩才是真正的反转迹象。",
+      "win_rate_before": null,
+      "win_rate_after": null,
+      "trigger_count": 0
+    },
+    {
+      "id": "gainers_list_long_bias",
+      "name": "涨幅榜+高量比信号优先做多",
+      "type": "redirect",
+      "direction": "SHORT",
+      "condition": "signal_type == gainers_list AND funding_rate < -0.001 AND vol_ratio > 1.5",
+      "threshold": null,
+      "redirect_to": "LONG",
+      "confidence": 0.72,
+      "source": "manual",
+      "created": "2026-05-11",
+      "note": "涨幅榜信号中，FR小负值+高量比往往是多头动能延续，而非见顶。强制转为LONG方向候选。",
+      "win_rate_before": null,
+      "win_rate_after": null,
+      "trigger_count": 1
+    },
+    {
+      "id": "rsi_1d_80_half_position",
+      "name": "日线RSI>80时做空仓位强制减半",
+      "type": "position_limit",
+      "direction": "SHORT",
+      "condition": "rsi_1d > threshold",
+      "threshold": 80,
+      "position_multiplier": 0.5,
+      "confidence": 0.75,
+      "source": "manual",
+      "created": "2026-05-11",
+      "note": "日线超买时强势上涨可持续，做空止损被打概率高。仓位减半控制单次最大亏损。",
+      "win_rate_before": null,
+      "win_rate_after": null,
+      "trigger_count": 1
+    },
+    {
+      "id": "tf_align_min2_require",
+      "name": "时间框架对齐<2时禁止发信号",
+      "type": "block",
+      "direction": "BOTH",
+      "condition": "tf_aligned < threshold",
+      "threshold": 2,
+      "confidence": 0.8,
+      "source": "manual",
+      "created": "2026-05-11",
+      "note": "多时间框架未对齐时信号质量差，噪声大。至少2个时间框架共振才发信号。",
+      "win_rate_before": null,
+      "win_rate_after": null,
+      "trigger_count": 0
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "currency": "BTC",
+  "total_call_oi": 265353.0,
+  "total_put_oi": 147667.5,
+  "pc_oi_ratio": 0.556,
+  "pc_vol_ratio": 0.629,
+  "interpretation_oi": "\ud83d\udfe2\u504f\u591a(0.5~0.8\uff0cCall\u9700\u6c42\u65fa\u76db)",
+  "interpretation_vol": "\ud83d\udfe2\u504f\u591a(0.5~0.8\uff0cCall\u9700\u6c42\u65fa\u76db)",
+  "near_expiry_ratios": {
+    "14SEP26": 1.569,
+    "15SEP26": 1.128,
+    "16SEP26": 0.74
+  },
+  "near_expiry_pc": 1.569,
+  "pc_score": 8,
+  "ts": 1789290800.7795053
+}

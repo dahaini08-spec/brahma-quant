@@ -1,0 +1,45 @@
+{"ts": 1785888920.1436036, "iso": "2026-08-05T00:15:20Z", "sym": "ETHUSDT", "confidence": "CONFIRMED", "from": "BEAR_TREND", "to": "CHOP_MID", "source": "brahma_engine", "score": 50, "notes": "实时计算 RSI4H=49.1 EMA20=1867.8"}
+{"ts": 1785888920.1439898, "iso": "2026-08-05T00:15:20Z", "sym": "BTCUSDT", "confidence": "CONFIRMED", "from": "BEAR_TREND", "to": "BULL_TREND", "source": "btc_regime_watcher", "score": 95, "notes": "实时计算 RSI4H=55.7"}
+{"ts": 1785890435.4518576, "iso": "2026-08-05T00:40:35Z", "sym": "ETHUSDT", "confidence": "CONFIRMED", "from": "CHOP_MID", "to": "BULL_TREND", "source": "brahma_engine", "score": 110.2, "notes": ""}
+{"ts": 1785891727.846084, "iso": "2026-08-05T01:02:07Z", "sym": "BTCUSDT", "confidence": "CONFIRMED", "from": "BULL_TREND", "to": "BEAR_TREND", "source": "btc_regime_watcher", "score": 0.0, "notes": ""}
+{"ts": 1785891727.8463533, "iso": "2026-08-05T01:02:07Z", "sym": "ETHUSDT", "confidence": "CONFIRMED", "from": "BULL_TREND", "to": "BEAR_TREND", "source": "btc_regime_watcher", "score": 0.0, "notes": ""}
+{"ts": 1785893774.9643824, "iso": "2026-08-05T01:36:14Z", "sym": "BTCUSDT", "confidence": "CONFIRMED", "from": "BEAR_TREND", "to": "BULL_TREND", "source": "brahma_engine", "score": 88, "notes": "RSI4H=57.5 EMA20/50_4H上方 01:35修正"}
+{"ts": 1785893774.9660203, "iso": "2026-08-05T01:36:14Z", "sym": "ETHUSDT", "confidence": "CONFIRMED", "from": "BEAR_TREND", "to": "BEAR_RECOVERY", "source": "brahma_engine", "score": 72, "notes": "RSI4H=49.5 EMA20_4H上方 连续4根4H确认 01:35修正"}
+{"ts": 1785894025.5141208, "iso": "2026-08-05T01:40:25Z", "sym": "BTCUSDT", "confidence": "CONFIRMED", "from": "BULL_TREND", "to": "BEAR_TREND", "source": "brahma_engine", "score": 31.799999999999997, "notes": ""}
+{"ts": 1785894040.9359171, "iso": "2026-08-05T01:40:40Z", "sym": "ETHUSDT", "confidence": "CONFIRMED", "from": "BEAR_RECOVERY", "to": "BEAR_TREND", "source": "brahma_engine", "score": 21.5, "notes": ""}
+{"ts": 1785895369.5559535, "iso": "2026-08-05T02:02:49Z", "sym": "BTCUSDT", "confidence": "CONFIRMED", "from": "BEAR_TREND", "to": "BULL_TREND", "source": "brahma_engine", "score": 88, "notes": "RSI4H=60.0 EMA20/50/200_4H全部上方 02:01"}
+{"ts": 1785895369.5563495, "iso": "2026-08-05T02:02:49Z", "sym": "ETHUSDT", "confidence": "CONFIRMED", "from": "BEAR_TREND", "to": "BEAR_RECOVERY", "source": "brahma_engine", "score": 70, "notes": "RSI4H=51.8 EMA20_4H上方 EMA50_4H下方 02:01"}
+{"ts": 1785908109.909427, "iso": "2026-08-05T05:35:09Z", "sym": "ETHUSDT", "confidence": "CONFIRMED", "from": "BEAR_RECOVERY", "to": "BULL_EARLY", "source": "brahma_engine", "score": 82.8, "notes": ""}
+{"ts": 1785919239.9371514, "iso": "2026-08-05T08:40:39Z", "sym": "ETHUSDT", "confidence": "CONFIRMED", "from": "BULL_EARLY", "to": "BULL_TREND", "source": "brahma_engine", "score": 104.3, "notes": ""}
+{"ts": 1785919252.314203, "iso": "2026-08-05T08:40:52Z", "sym": "1000PEPEUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 77.2, "notes": ""}
+{"ts": 1785919263.722671, "iso": "2026-08-05T08:41:03Z", "sym": "BZUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 90.0, "notes": ""}
+{"ts": 1785919273.5290282, "iso": "2026-08-05T08:41:13Z", "sym": "CLUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 89.0, "notes": ""}
+{"ts": 1785930062.5466142, "iso": "2026-08-05T11:41:02Z", "sym": "DRAMUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 47.2, "notes": ""}
+{"ts": 1785930075.366464, "iso": "2026-08-05T11:41:15Z", "sym": "SAMSUNGUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 52.2, "notes": ""}
+{"ts": 1785944457.0300548, "iso": "2026-08-05T15:40:57Z", "sym": "SNXXUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 29.0, "notes": ""}
+{"ts": 1785944471.5185227, "iso": "2026-08-05T15:41:11Z", "sym": "SPCXUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 23.2, "notes": ""}
+{"ts": 1785958860.5929163, "iso": "2026-08-05T19:41:00Z", "sym": "SOXLUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 36.2, "notes": ""}
+{"ts": 1785958876.1348968, "iso": "2026-08-05T19:41:16Z", "sym": "HOMEUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 60.2, "notes": ""}
+{"ts": 1785987329.9966323, "iso": "2026-08-06T03:35:29Z", "sym": "MUUUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 61.0, "notes": ""}
+{"ts": 1785987347.3385684, "iso": "2026-08-06T03:35:47Z", "sym": "MUUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 77.0, "notes": ""}
+{"ts": 1786001778.1858127, "iso": "2026-08-06T07:36:18Z", "sym": "EWYUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 83.4, "notes": ""}
+{"ts": 1786062759.7678838, "iso": "2026-08-07T00:32:39Z", "sym": "BTCUSDT", "confidence": "CONFIRMED", "from": "", "to": "BULL_TREND", "source": "brahma_engine", "score": 109.5, "notes": ""}
+{"ts": 1786062814.3514097, "iso": "2026-08-07T00:33:34Z", "sym": "ETHUSDT", "confidence": "CONFIRMED", "from": "", "to": "BULL_TREND", "source": "brahma_engine", "score": 107.0, "notes": ""}
+{"ts": 1786063405.1888466, "iso": "2026-08-07T00:43:25Z", "sym": "SPCXUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 47.2, "notes": ""}
+{"ts": 1786063425.4091432, "iso": "2026-08-07T00:43:45Z", "sym": "EWYUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 41.2, "notes": ""}
+{"ts": 1786063445.0207946, "iso": "2026-08-07T00:44:05Z", "sym": "MUUUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 62.0, "notes": ""}
+{"ts": 1786070640.1267943, "iso": "2026-08-07T02:44:00Z", "sym": "HOMEUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 51.0, "notes": ""}
+{"ts": 1786070870.0864074, "iso": "2026-08-07T02:47:50Z", "sym": "SOXLUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 41.2, "notes": ""}
+{"ts": 1786074431.1785095, "iso": "2026-08-07T03:47:11Z", "sym": "SOXSUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 5.199999999999999, "notes": ""}
+{"ts": 1786074561.4826488, "iso": "2026-08-07T03:49:21Z", "sym": "XRPUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 69.0, "notes": ""}
+{"ts": 1786074577.9849434, "iso": "2026-08-07T03:49:37Z", "sym": "SKHYUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 76.2, "notes": ""}
+{"ts": 1786074593.8907814, "iso": "2026-08-07T03:49:53Z", "sym": "HYPEUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 77.2, "notes": ""}
+{"ts": 1786088817.441561, "iso": "2026-08-07T07:46:57Z", "sym": "ZBTUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 61.5, "notes": ""}
+{"ts": 1786106858.4837391, "iso": "2026-08-07T12:47:38Z", "sym": "CYSUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 60.2, "notes": ""}
+{"ts": 1786117780.0448737, "iso": "2026-08-07T15:49:40Z", "sym": "HEIUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 79.8, "notes": ""}
+{"ts": 1786117804.0189326, "iso": "2026-08-07T15:50:04Z", "sym": "MUUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 2.1999999999999993, "notes": ""}
+{"ts": 1786201558.3036816, "iso": "2026-08-08T15:05:58Z", "sym": "OPUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 50.0, "notes": ""}
+{"ts": 1786208470.9129548, "iso": "2026-08-08T17:01:10Z", "sym": "AAOIUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 45.2, "notes": ""}
+{"ts": 1786208507.5294933, "iso": "2026-08-08T17:01:47Z", "sym": "SNXXUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 21.8, "notes": ""}
+{"ts": 1786254237.8438413, "iso": "2026-08-09T05:43:57Z", "sym": "TUTUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 42.0, "notes": ""}
+{"ts": 1786271031.0991201, "iso": "2026-08-09T10:23:51Z", "sym": "SOLUSDT", "confidence": "CONFIRMED", "from": "", "to": "CHOP_MID", "source": "brahma_engine", "score": 67.0, "notes": ""}

@@ -1,0 +1,418 @@
+{
+  "ts": "2026-09-09T01:15:06.524887Z",
+  "configs": {
+    "slim_be_rr15": {
+      "n": 47845,
+      "wr": 32.9,
+      "ic": 0.0102,
+      "pnl_gross": 0.04,
+      "pnl_net": -0.09,
+      "sharpe": -11.2,
+      "max_dd": 7366175.0,
+      "total_pnl": -7366175.0,
+      "be_wr": 42.6,
+      "folds": [
+        {
+          "fold": 1,
+          "n": 5156,
+          "wr": 35.3,
+          "ev_net": -0.06
+        },
+        {
+          "fold": 2,
+          "n": 5156,
+          "wr": 35.4,
+          "ev_net": -0.054
+        },
+        {
+          "fold": 3,
+          "n": 5156,
+          "wr": 31.4,
+          "ev_net": -0.112
+        },
+        {
+          "fold": 4,
+          "n": 5156,
+          "wr": 28.8,
+          "ev_net": -0.195
+        },
+        {
+          "fold": 5,
+          "n": 5156,
+          "wr": 32.0,
+          "ev_net": -0.113
+        },
+        {
+          "fold": 6,
+          "n": 5155,
+          "wr": 33.6,
+          "ev_net": -0.081
+        },
+        {
+          "fold": 7,
+          "n": 5155,
+          "wr": 33.3,
+          "ev_net": -0.102
+        },
+        {
+          "fold": 8,
+          "n": 5156,
+          "wr": 33.2,
+          "ev_net": -0.039
+        },
+        {
+          "fold": 9,
+          "n": 5156,
+          "wr": 33.0,
+          "ev_net": -0.049
+        }
+      ],
+      "cross": {
+        "SOL": {
+          "n": 0,
+          "wr": 0,
+          "ev_net": 0
+        },
+        "BNB": {
+          "n": 0,
+          "wr": 0,
+          "ev_net": 0
+        },
+        "ADA": {
+          "n": 0,
+          "wr": 0,
+          "ev_net": 0
+        },
+        "XRP": {
+          "n": 0,
+          "wr": 0,
+          "ev_net": 0
+        },
+        "DOGE": {
+          "n": 0,
+          "wr": 0,
+          "ev_net": 0
+        }
+      },
+      "exit_mode": "be",
+      "rr": 1.5,
+      "pass_cross": 0,
+      "wf_stability": 0.0,
+      "wf_pass": 0,
+      "wf_fail": 9
+    },
+    "slim_natural_rr15": {
+      "n": 47845,
+      "wr": 49.8,
+      "ic": 0.015,
+      "pnl_gross": 0.104,
+      "pnl_net": -0.026,
+      "sharpe": 3.9,
+      "max_dd": 78060.0,
+      "total_pnl": 2730075.0,
+      "be_wr": 42.6,
+      "folds": [
+        {
+          "fold": 1,
+          "n": 5156,
+          "wr": 48.8,
+          "ev_net": 0.004
+        },
+        {
+          "fold": 2,
+          "n": 5156,
+          "wr": 48.7,
+          "ev_net": 0.016
+        },
+        {
+          "fold": 3,
+          "n": 5156,
+          "wr": 49.2,
+          "ev_net": -0.032
+        },
+        {
+          "fold": 4,
+          "n": 5156,
+          "wr": 50.8,
+          "ev_net": -0.116
+        },
+        {
+          "fold": 5,
+          "n": 5156,
+          "wr": 51.6,
+          "ev_net": -0.055
+        },
+        {
+          "fold": 6,
+          "n": 5155,
+          "wr": 49.0,
+          "ev_net": -0.037
+        },
+        {
+          "fold": 7,
+          "n": 5155,
+          "wr": 47.7,
+          "ev_net": -0.051
+        },
+        {
+          "fold": 8,
+          "n": 5156,
+          "wr": 48.6,
+          "ev_net": 0.041
+        },
+        {
+          "fold": 9,
+          "n": 5156,
+          "wr": 48.9,
+          "ev_net": 0.023
+        }
+      ],
+      "cross": {
+        "SOL": {
+          "n": 0,
+          "wr": 0,
+          "ev_net": 0
+        },
+        "BNB": {
+          "n": 0,
+          "wr": 0,
+          "ev_net": 0
+        },
+        "ADA": {
+          "n": 0,
+          "wr": 0,
+          "ev_net": 0
+        },
+        "XRP": {
+          "n": 0,
+          "wr": 0,
+          "ev_net": 0
+        },
+        "DOGE": {
+          "n": 0,
+          "wr": 0,
+          "ev_net": 0
+        }
+      },
+      "exit_mode": "natural",
+      "rr": 1.5,
+      "pass_cross": 0,
+      "wf_stability": 0.0,
+      "wf_pass": 0,
+      "wf_fail": 7
+    },
+    "slim_natural_rr12": {
+      "n": 47845,
+      "wr": 50.9,
+      "ic": 0.0121,
+      "pnl_gross": 0.101,
+      "pnl_net": -0.029,
+      "sharpe": -0.42,
+      "max_dd": 388050.0,
+      "total_pnl": -259525.0,
+      "be_wr": 48.4,
+      "folds": [
+        {
+          "fold": 1,
+          "n": 5156,
+          "wr": 50.3,
+          "ev_net": 0.005
+        },
+        {
+          "fold": 2,
+          "n": 5156,
+          "wr": 50.9,
+          "ev_net": 0.016
+        },
+        {
+          "fold": 3,
+          "n": 5156,
+          "wr": 51.2,
+          "ev_net": -0.011
+        },
+        {
+          "fold": 4,
+          "n": 5156,
+          "wr": 51.4,
+          "ev_net": -0.096
+        },
+        {
+          "fold": 5,
+          "n": 5156,
+          "wr": 51.9,
+          "ev_net": -0.065
+        },
+        {
+          "fold": 6,
+          "n": 5155,
+          "wr": 49.7,
+          "ev_net": -0.062
+        },
+        {
+          "fold": 7,
+          "n": 5155,
+          "wr": 49.1,
+          "ev_net": -0.062
+        },
+        {
+          "fold": 8,
+          "n": 5156,
+          "wr": 50.2,
+          "ev_net": 0.023
+        },
+        {
+          "fold": 9,
+          "n": 5156,
+          "wr": 50.3,
+          "ev_net": 0.011
+        }
+      ],
+      "cross": {
+        "SOL": {
+          "n": 0,
+          "wr": 0,
+          "ev_net": 0
+        },
+        "BNB": {
+          "n": 0,
+          "wr": 0,
+          "ev_net": 0
+        },
+        "ADA": {
+          "n": 0,
+          "wr": 0,
+          "ev_net": 0
+        },
+        "XRP": {
+          "n": 0,
+          "wr": 0,
+          "ev_net": 0
+        },
+        "DOGE": {
+          "n": 0,
+          "wr": 0,
+          "ev_net": 0
+        }
+      },
+      "exit_mode": "natural",
+      "rr": 1.2,
+      "pass_cross": 0,
+      "wf_stability": 0.0,
+      "wf_pass": 0,
+      "wf_fail": 2
+    },
+    "slim_be_rr12": {
+      "n": 47845,
+      "wr": 34.7,
+      "ic": 0.0066,
+      "pnl_gross": 0.041,
+      "pnl_net": -0.089,
+      "sharpe": -14.91,
+      "max_dd": 8748225.0,
+      "total_pnl": -8748225.0,
+      "be_wr": 48.4,
+      "folds": [
+        {
+          "fold": 1,
+          "n": 5156,
+          "wr": 37.6,
+          "ev_net": -0.057
+        },
+        {
+          "fold": 2,
+          "n": 5156,
+          "wr": 38.7,
+          "ev_net": -0.059
+        },
+        {
+          "fold": 3,
+          "n": 5156,
+          "wr": 34.4,
+          "ev_net": -0.101
+        },
+        {
+          "fold": 4,
+          "n": 5156,
+          "wr": 30.0,
+          "ev_net": -0.173
+        },
+        {
+          "fold": 5,
+          "n": 5156,
+          "wr": 33.0,
+          "ev_net": -0.114
+        },
+        {
+          "fold": 6,
+          "n": 5155,
+          "wr": 35.2,
+          "ev_net": -0.097
+        },
+        {
+          "fold": 7,
+          "n": 5155,
+          "wr": 35.8,
+          "ev_net": -0.108
+        },
+        {
+          "fold": 8,
+          "n": 5156,
+          "wr": 36.3,
+          "ev_net": -0.04
+        },
+        {
+          "fold": 9,
+          "n": 5156,
+          "wr": 35.6,
+          "ev_net": -0.051
+        }
+      ],
+      "cross": {
+        "SOL": {
+          "n": 0,
+          "wr": 0,
+          "ev_net": 0
+        },
+        "BNB": {
+          "n": 0,
+          "wr": 0,
+          "ev_net": 0
+        },
+        "ADA": {
+          "n": 0,
+          "wr": 0,
+          "ev_net": 0
+        },
+        "XRP": {
+          "n": 0,
+          "wr": 0,
+          "ev_net": 0
+        },
+        "DOGE": {
+          "n": 0,
+          "wr": 0,
+          "ev_net": 0
+        }
+      },
+      "exit_mode": "be",
+      "rr": 1.2,
+      "pass_cross": 0,
+      "wf_stability": 0.0,
+      "wf_pass": 0,
+      "wf_fail": 9
+    }
+  },
+  "baseline": {
+    "original_be_rr15": {
+      "wr": 55.2,
+      "ic": 0.0197,
+      "pnl_net": -0.137
+    },
+    "original_natural_rr12": {
+      "wr": 49.7,
+      "ic": -0.0027,
+      "pnl_net": -0.069
+    }
+  },
+  "scorer": "v5_slim: 4维 (regime_direction + rsi_extreme + bb_squeeze + resonance)"
+}

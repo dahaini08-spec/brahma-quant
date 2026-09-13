@@ -1,0 +1,25 @@
+{
+  "ts": "2026-06-09T16:27:30.940498+00:00",
+  "results": [
+    {
+      "label": "武曲Paper",
+      "n_paths": 15,
+      "oos_wr": 0.8267,
+      "oos_wr_std": 0.1318,
+      "oos_pf": 219.499,
+      "dsr": 22.642,
+      "overfit_rate": 0.333,
+      "healthy": false
+    },
+    {
+      "label": "达摩院OOS",
+      "n_paths": 28,
+      "oos_wr": 0.3242,
+      "oos_wr_std": 0.0177,
+      "oos_pf": 0.97,
+      "dsr": -0.111,
+      "overfit_rate": 0.0,
+      "healthy": "False"
+    }
+  ]
+}

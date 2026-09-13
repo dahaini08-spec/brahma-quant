@@ -1,0 +1,14 @@
+{
+  "symbol": "AIGENSYNUSDT",
+  "frs": {
+    "binance": -0.014528,
+    "bybit": 0.005
+  },
+  "spread": 0.01953,
+  "max_ex": "bybit",
+  "min_ex": "binance",
+  "arb_signal": "LONG_BINANCE_SHORT_BYBIT",
+  "arb_score": 10,
+  "bull_fr_bonus": 4,
+  "ts": 1784227865.157331
+}

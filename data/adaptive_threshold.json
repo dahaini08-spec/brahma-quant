@@ -1,0 +1,16 @@
+{
+  "threshold": 138,
+  "observe_threshold": 138,
+  "base_threshold": 155,
+  "regime": "CHOP_MID",
+  "reasons": [
+    "体制CHOP_MID调整+10→165",
+    "分布校准: p75=134 p90=144 → 阈值校准至138"
+  ],
+  "total_adj": 10,
+  "confidence": 1.0,
+  "sample_7d": 143,
+  "sample_30d": 236,
+  "ts": 1784472374.6511822,
+  "updated_at": "2026-07-19T14:46:14.651189+00:00"
+}

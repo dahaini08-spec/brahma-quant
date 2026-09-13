@@ -1,0 +1,47 @@
+{
+  "last_n": 231,
+  "last_run": "2026-09-03T10:47:17.891042+00:00",
+  "runs": 46,
+  "last_grade_dist": {
+    "X": {
+      "n": 6,
+      "wins": 2,
+      "losses": 0,
+      "wr": 100.0
+    },
+    "S": {
+      "n": 4,
+      "wins": 0,
+      "losses": 2,
+      "wr": 0.0
+    },
+    "A": {
+      "n": 26,
+      "wins": 3,
+      "losses": 7,
+      "wr": 30.0
+    },
+    "B": {
+      "n": 39,
+      "wins": 8,
+      "losses": 5,
+      "wr": 61.5
+    },
+    "C": {
+      "n": 156,
+      "wins": 19,
+      "losses": 15,
+      "wr": 55.9
+    }
+  },
+  "last_thr_suggestion": {
+    "action": "lower",
+    "current_thr": 138,
+    "new_thr": 120,
+    "reasoning": "WR统计驱动：S=0.0% A=30.0%"
+  },
+  "ic_by_regime": {
+    "BULL_TREND:LONG": 0.1652,
+    "BEAR_RECOVERY:LONG": 0.7619
+  }
+}

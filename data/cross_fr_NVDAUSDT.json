@@ -1,0 +1,15 @@
+{
+  "symbol": "NVDAUSDT",
+  "frs": {
+    "binance": 0.006986999999999999,
+    "bybit": 0.0,
+    "okx": 0.0
+  },
+  "spread": 0.00699,
+  "max_ex": "binance",
+  "min_ex": "bybit",
+  "arb_signal": "WATCH_SPREAD(0.0070%)",
+  "arb_score": 5,
+  "bull_fr_bonus": 0,
+  "ts": 1787567597.693657
+}

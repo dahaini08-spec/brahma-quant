@@ -1,0 +1,116 @@
+{
+  "BTCUSDT": {
+    "direction": "NEUTRAL",
+    "confidence": 0.5,
+    "up_score": 3,
+    "dn_score": 4,
+    "up_prob": 0.429,
+    "rsi": 45.6,
+    "pred_close_4h": 62503.3686,
+    "pred_close_24h": 60399.9389,
+    "current_price": 63312.38,
+    "details": [
+      "价格<EMA200",
+      "量缩下跌(衰竭)"
+    ],
+    "method": "statistical_v1"
+  },
+  "ETHUSDT": {
+    "direction": "NEUTRAL",
+    "confidence": 0.5,
+    "up_score": 3,
+    "dn_score": 4,
+    "up_prob": 0.429,
+    "rsi": 52.6,
+    "pred_close_4h": 1652.9086,
+    "pred_close_24h": 1562.8929,
+    "current_price": 1687.53,
+    "details": [
+      "价格<EMA200",
+      "量缩下跌(衰竭)"
+    ],
+    "method": "statistical_v1"
+  },
+  "SOLUSDT": {
+    "direction": "NEUTRAL",
+    "confidence": 0.5,
+    "up_score": 3,
+    "dn_score": 4,
+    "up_prob": 0.429,
+    "rsi": 52.0,
+    "pred_close_4h": 65.6771,
+    "pred_close_24h": 61.8737,
+    "current_price": 67.14,
+    "details": [
+      "价格<EMA200",
+      "量缩下跌(衰竭)"
+    ],
+    "method": "statistical_v1"
+  },
+  "BNBUSDT": {
+    "direction": "NEUTRAL",
+    "confidence": 0.5,
+    "up_score": 3,
+    "dn_score": 4,
+    "up_prob": 0.429,
+    "rsi": 48.5,
+    "pred_close_4h": 594.3943,
+    "pred_close_24h": 571.8374,
+    "current_price": 603.07,
+    "details": [
+      "价格<EMA200",
+      "量缩下跌(衰竭)"
+    ],
+    "method": "statistical_v1"
+  },
+  "LTCUSDT": {
+    "direction": "NEUTRAL",
+    "confidence": 0.5,
+    "up_score": 3,
+    "dn_score": 4,
+    "up_prob": 0.429,
+    "rsi": 47.7,
+    "pred_close_4h": 42.1229,
+    "pred_close_24h": 40.1283,
+    "current_price": 42.89,
+    "details": [
+      "价格<EMA200",
+      "量缩下跌(衰竭)"
+    ],
+    "method": "statistical_v1"
+  },
+  "ZKCUSDT": {
+    "direction": "DOWN",
+    "confidence": 0.6,
+    "up_score": 4,
+    "dn_score": 6,
+    "up_prob": 0.4,
+    "rsi": 30.6,
+    "pred_close_4h": 0.0475,
+    "pred_close_24h": 0.0442,
+    "current_price": 0.0487,
+    "details": [
+      "价格<EMA200",
+      "RSI=31偏弱",
+      "量缩下跌(衰竭)",
+      "BB下轨(19%)"
+    ],
+    "method": "statistical_v1"
+  },
+  "LINKUSDT": {
+    "direction": "NEUTRAL",
+    "confidence": 0.5,
+    "up_score": 3,
+    "dn_score": 4,
+    "up_prob": 0.429,
+    "rsi": 49.4,
+    "pred_close_4h": 7.8216,
+    "pred_close_24h": 7.3915,
+    "current_price": 7.987,
+    "details": [
+      "价格<EMA200",
+      "量缩下跌(衰竭)"
+    ],
+    "method": "statistical_v1"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-07-31T14:48:32.311162+00:00",
+  "lookback_days": 30,
+  "total_signals": 273,
+  "wr_analysis": {
+    "BULL_TREND_LONG": {
+      "n": 264,
+      "actual_wr": 0.08,
+      "theoretical": 0.68,
+      "deviation": -0.6,
+      "deviation_pct": 88.3,
+      "status": "CRITICAL",
+      "avg_score": 129.5
+    },
+    "BEAR_RECOVERY_LONG": {
+      "n": 7,
+      "actual_wr": 0.0,
+      "theoretical": 0.725,
+      "deviation": -0.725,
+      "deviation_pct": 100.0,
+      "status": "CRITICAL",
+      "avg_score": 134.7
+    }
+  },
+  "adjustments": [
+    {
+      "key": "BULL_TREND_LONG",
+      "old": 145,
+      "new": 150,
+      "direction": "↑提高",
+      "reason": "实际WR=8.0% vs 理论=68.0% 偏差=88%"
+    },
+    {
+      "key": "BEAR_RECOVERY_LONG",
+      "old": 145,
+      "new": 150,
+      "direction": "↑提高",
+      "reason": "实际WR=0.0% vs 理论=72.5% 偏差=100%"
+    }
+  ],
+  "meta_diagnosis": {
+    "total_signals": 273,
+    "valid_rate": 0.421,
+    "issues": [
+      "⚠️ BULL_TREND LONG近期质量率: 8% (n=264) < 55%基准"
+    ],
+    "suggestions": [
+      "BULL_TREND LONG信号可能受市场结构转变影响，考虑提高RSI_1H过滤阈值"
+    ],
+    "health_score": 80
+  }
+}

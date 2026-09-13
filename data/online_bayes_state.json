@@ -1,0 +1,42 @@
+{
+  "BEAR_TREND_SHORT": {
+    "total": 52,
+    "wins": 6
+  },
+  "BEAR_RECOVERY_LONG": {
+    "total": 36,
+    "wins": 6
+  },
+  "BEAR_EARLY_SHORT": {
+    "total": 2,
+    "wins": 1
+  },
+  "BULL_CORRECTION_SHORT": {
+    "total": 16,
+    "wins": 14
+  },
+  "CHOP_MID_SHORT": {
+    "total": 2,
+    "wins": 0
+  },
+  "BEAR_RECOVERY_SHORT": {
+    "total": 1,
+    "wins": 0
+  },
+  "BULL_TREND_LONG": {
+    "total": 1,
+    "wins": 0
+  },
+  "BEAR_TREND_LONG": {
+    "total": 1,
+    "wins": 0
+  },
+  "CHOP_MID_LONG": {
+    "total": 2,
+    "wins": 1
+  },
+  "BULL_EARLY_LONG": {
+    "total": 1,
+    "wins": 0
+  }
+}

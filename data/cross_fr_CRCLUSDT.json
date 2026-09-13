@@ -1,0 +1,15 @@
+{
+  "symbol": "CRCLUSDT",
+  "frs": {
+    "binance": 0.005804,
+    "bybit": 0.066887,
+    "okx": 0.01830470998693
+  },
+  "spread": 0.06108,
+  "max_ex": "bybit",
+  "min_ex": "binance",
+  "arb_signal": "LONG_BINANCE_SHORT_BYBIT",
+  "arb_score": 10,
+  "bull_fr_bonus": 0,
+  "ts": 1787481243.9905689
+}

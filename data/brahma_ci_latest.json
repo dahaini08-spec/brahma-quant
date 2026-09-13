@@ -1,0 +1,90 @@
+{
+  "ts": 1783551812.1756248,
+  "score": 100,
+  "status": "HEALTHY",
+  "issues": [],
+  "warnings": [],
+  "infos": [
+    {
+      "msg": "signal_trace OK: 377条记录，0.1h前更新",
+      "dim": "P1_signal"
+    },
+    {
+      "msg": "live_signal_log OK: 66640B 0.2h前",
+      "dim": "P1_signal"
+    },
+    {
+      "msg": "auto_executor jsonl 0.5h前 (有执行记录)",
+      "dim": "P1_exec"
+    },
+    {
+      "msg": "pump-hunter 推送 OK → 019f181f",
+      "dim": "P2_push"
+    },
+    {
+      "msg": "oi-surge-scanner 推送 OK → 019f181f",
+      "dim": "P2_push"
+    },
+    {
+      "msg": "brahma-360-daily 推送 OK → 019f181f",
+      "dim": "P2_push"
+    },
+    {
+      "msg": "signal_trace 接入 OK",
+      "dim": "P3_code"
+    },
+    {
+      "msg": "timing_filter 接入 OK",
+      "dim": "P3_code"
+    },
+    {
+      "msg": "llm_council_bridge 接入 OK",
+      "dim": "P3_code"
+    },
+    {
+      "msg": "analysis_snapshot 接入 OK",
+      "dim": "P3_code"
+    },
+    {
+      "msg": "kronos_engine 接入 OK",
+      "dim": "P3_code"
+    },
+    {
+      "msg": "brahma_core.py 无占位符 OK",
+      "dim": "P3_code"
+    },
+    {
+      "msg": "持仓记录: 0 个活跃仓位",
+      "dim": "P4_asset"
+    },
+    {
+      "msg": "ws_guardian OK: active watching=0 (45min前)",
+      "dim": "P4_asset"
+    },
+    {
+      "msg": "auto_executor非持久进程（cron触发模式）",
+      "dim": "P5_exec"
+    },
+    {
+      "msg": "signal_queue.jsonl 为空（正常，无待执行信号）",
+      "dim": "P5_exec"
+    },
+    {
+      "msg": "实时价格(日报更新) 鲜度OK (6.34h)",
+      "dim": "P6_freshness"
+    },
+    {
+      "msg": "信号日志 鲜度OK (0.16h)",
+      "dim": "P6_freshness"
+    },
+    {
+      "msg": "持仓记录 鲜度OK (9.31h)",
+      "dim": "P6_freshness"
+    },
+    {
+      "msg": "系统状态 鲜度OK (3.23h)",
+      "dim": "P6_freshness"
+    }
+  ],
+  "report": "🔬 梵天CI探针报告 | 07-08 23:03 UTC\n总分: 100/100 [HEALTHY] | ❌0 ⚠️0 ℹ️20\n\n✅ 全部探针通过，系统无盲区"
+}

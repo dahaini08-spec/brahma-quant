@@ -1,0 +1,73 @@
+{
+  "regime_streaks": {
+    "CHOP_LOW+SHORT": {
+      "LINKUSDT": 0,
+      "ADAUSDT": 0,
+      "ETHUSDT": 0
+    },
+    "BEAR_EARLY+SHORT": {
+      "BTCUSDT": 0,
+      "SOLUSDT": 0,
+      "DOGEUSDT": 0,
+      "BNBUSDT": 0,
+      "LINKUSDT": 0,
+      "TRUMPUSDT": 0,
+      "GALAUSDT": 0,
+      "AXSUSDT": 0,
+      "WLDUSDT": 0
+    },
+    "BEAR_RECOVERY+SHORT": {
+      "BNBUSDT": 0,
+      "ETHUSDT": 0
+    },
+    "CHOP_HIGH+SHORT": {
+      "BTCUSDT": 1
+    },
+    "BEAR_TREND+SHORT": {
+      "ETHUSDT": 0,
+      "BTCUSDT": 0,
+      "LTCUSDT": 0,
+      "ADAUSDT": 0,
+      "SOLUSDT": 0,
+      "DOGEUSDT": 0,
+      "1000PEPEUSDT": 0,
+      "AVAXUSDT": 0,
+      "MANAUSDT": 0,
+      "CLUSDT": 0,
+      "BZUSDT": 0,
+      "SANDUSDT": 0,
+      "ZECUSDT": 0,
+      "BNBUSDT": 0,
+      "XAUUSDT": 0,
+      "PAXGUSDT": 0
+    },
+    "BEAR_RECOVERY+LONG": {
+      "TRUMPUSDT": 0,
+      "BTCUSDT": 0,
+      "ETHUSDT": 1,
+      "1000PEPEUSDT": 0,
+      "AXSUSDT": 0,
+      "SKHYNIXUSDT": 0,
+      "DOGEUSDT": 0,
+      "TNSRUSDT": 0,
+      "MRVLUSDT": 0,
+      "BTWUSDT": 0,
+      "HMSTRUSDT": 0
+    },
+    "CHOP_MID+SHORT": {
+      "BTCUSDT": 0,
+      "BTWUSDT": 0
+    },
+    "BULL_CORRECTION+SHORT": {
+      "NEARUSDT": 0
+    }
+  },
+  "sym_penalty": {
+    "SOLUSDT": {},
+    "DOGEUSDT": {}
+  },
+  "regime_pause": {
+    "BEAR_EARLY+SHORT": 1780339595.5158334
+  },
+  "last_updated": "2026-06-25T08:45:44.739457+00:00"
+}

@@ -1,0 +1,76 @@
+{
+  "ts": 1789291124.6323848,
+  "results": {
+    "BTCUSDT": {
+      "symbol": "BTCUSDT",
+      "level": "NORMAL",
+      "score": 1,
+      "triggered": false,
+      "c1_volume": {
+        "ok": false,
+        "vol_ratio": 4.15,
+        "cur_vol": 6182.0,
+        "avg_vol": 1490.0,
+        "breakout": false,
+        "cur_price": 76767.8,
+        "prev_high": 77291.2,
+        "reason": "量能4.1x 未突破 cur=76768 prev_high=77291",
+        "entry_ref": 76383.96,
+        "sl_ref": 75859.76
+      },
+      "c2_lsr": {
+        "ok": false,
+        "retail_short": 37.8,
+        "smart_long": 69.0,
+        "short_building": false,
+        "reason": "散户空头37.8%(阈值>45.0%) 大户多头69.0%(阈值>58.0%) 空头平稳"
+      },
+      "c3_spring": {
+        "ok": true,
+        "range_pct": 0.62,
+        "range_hi": 77477.4,
+        "range_lo": 77003.4,
+        "oi_chg_pct": 0.553,
+        "oi_stable": true,
+        "is_chop": true,
+        "reason": "4H区间0.62%(阈值<1.5%) 横盘✅ OI+0.55% 稳定✅"
+      }
+    },
+    "ETHUSDT": {
+      "symbol": "ETHUSDT",
+      "level": "NORMAL",
+      "score": 0,
+      "triggered": false,
+      "c1_volume": {
+        "ok": false,
+        "vol_ratio": 4.99,
+        "cur_vol": 231626.0,
+        "avg_vol": 46386.0,
+        "breakout": false,
+        "cur_price": 2493.25,
+        "prev_high": 2523.28,
+        "reason": "量能5.0x 未突破 cur=2493 prev_high=2523",
+        "entry_ref": 2480.78,
+        "sl_ref": 2459.14
+      },
+      "c2_lsr": {
+        "ok": false,
+        "retail_short": 25.8,
+        "smart_long": 55.9,
+        "short_building": false,
+        "reason": "散户空头25.8%(阈值>45.0%) 大户多头55.9%(阈值>58.0%) 空头平稳"
+      },
+      "c3_spring": {
+        "ok": false,
+        "range_pct": 1.5,
+        "range_hi": 2546.11,
+        "range_lo": 2508.38,
+        "oi_chg_pct": -0.057,
+        "oi_stable": true,
+        "is_chop": false,
+        "reason": "4H区间1.50%(阈值<1.5%) 非横盘❌ OI-0.06% 稳定✅"
+      }
+    }
+  },
+  "alerts": []
+}

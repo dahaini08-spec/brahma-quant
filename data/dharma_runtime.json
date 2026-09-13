@@ -1,0 +1,474 @@
+{
+  "exit_params_v4": {
+    "BEAR": {
+      "sl_pct": 2.0,
+      "rr": 1.0,
+      "ev_pct_per_trade": 0.578,
+      "source": "达摩院回测铁证 苏摩批准 2026-06-28",
+      "note": "BEAR/BEAR_EARLY/BEAR_RECOVERY/未知 均走此参数"
+    },
+    "CHOP": {
+      "sl_pct": 2.5,
+      "rr": 1.0,
+      "ev_pct_per_trade": 0.811,
+      "source": "达摩院回测铁证 苏摩批准 2026-06-28",
+      "note": "CHOP_MID走此参数"
+    },
+    "BULL": {
+      "sl_pct": 2.0,
+      "rr": 1.0,
+      "ev_pct_per_trade": 0.4,
+      "source": "达摩院回测铁证 苏摩批准 2026-06-28",
+      "note": "BULL_TREND/BULL_EARLY走此参数"
+    }
+  },
+  "vip_rules": {
+    "min_sl_pct": 2.0,
+    "max_leverage_formula": "0.2% NAV / (position_pct * sl_pct)",
+    "default_position_btc": 0.05,
+    "default_position_eth": 0.03,
+    "sl_buffer_atr1h_mult": 0.5,
+    "note": "止损=入场中值×sl_pct，杠杆反算不超过3x"
+  },
+  "regime_sl_map": {
+    "BEAR_TREND": {
+      "sl_pct": 2.0,
+      "short_mult": 1.6,
+      "long_mult": 0.1
+    },
+    "BEAR_EARLY": {
+      "sl_pct": 2.0,
+      "short_mult": 1.2,
+      "long_mult": 0.35
+    },
+    "CHOP_MID": {
+      "sl_pct": 2.5,
+      "short_mult": 0.88,
+      "long_mult": 0.5
+    },
+    "BULL_TREND": {
+      "sl_pct": 2.0,
+      "short_mult": 0.15,
+      "long_mult": 1.6
+    },
+    "BEAR_RECOVERY": {
+      "sl_pct": 2.0,
+      "short_mult": 0.3,
+      "long_mult": 1.2
+    }
+  },
+  "updated_at": "2026-08-02T04:12:00Z",
+  "version": "v4.2",
+  "sealed_by": "设计院自主 苏摩授权 2026-08-02",
+  "_meta": {
+    "version": "1.0",
+    "created": "2026-08-02T08:33:34Z",
+    "updated": "2026-08-02 08:33 UTC"
+  },
+  "sym_params": {
+    "BTCUSDT": {
+      "thr": 120,
+      "sl_pct": 0.02,
+      "rr1": 1.5,
+      "pos_cap": 0.1,
+      "regime_overrides": {
+        "BEAR_TREND_SHORT": {
+          "sl_pct": 0.02,
+          "rr1": 1.5,
+          "pos_pct": 0.05
+        }
+      },
+      "asset_class": "BTC",
+      "updated_at": "2026-08-02T08:33:34Z",
+      "source": "设计院自主初始化 2026-08-02"
+    },
+    "ETHUSDT": {
+      "thr": 120,
+      "sl_pct": 0.025,
+      "rr1": 1.5,
+      "pos_cap": 0.1,
+      "regime_overrides": {
+        "BEAR_TREND_SHORT": {
+          "sl_pct": 0.025,
+          "rr1": 1.5,
+          "pos_pct": 0.05
+        }
+      },
+      "asset_class": "ETH",
+      "updated_at": "2026-08-02T08:33:34Z",
+      "source": "设计院自主初始化 2026-08-02"
+    }
+  },
+  "wr_matrix_v7": {
+    "CHOP_MID": {
+      "SHORT": {
+        "ALL": {
+          "wr": 42.86,
+          "n": 56,
+          "ev": 0.1033,
+          "rr": 2.11,
+          "source": "dharma_v9_15m1h"
+        }
+      },
+      "LONG": {
+        "ALL": {
+          "wr": 42.11,
+          "n": 38,
+          "ev": 0.0373,
+          "rr": 1.61,
+          "source": "dharma_v9_15m1h"
+        }
+      }
+    },
+    "BULL_EARLY": {
+      "SHORT": {
+        "ALL": {
+          "wr": 37.5,
+          "n": 88,
+          "ev": 0.0514,
+          "rr": 2.16,
+          "source": "dharma_v9_15m1h"
+        }
+      },
+      "LONG": {
+        "ALL": {
+          "wr": 31.0,
+          "n": 100,
+          "ev": -0.0348,
+          "rr": 1.84,
+          "source": "dharma_v9_15m1h"
+        }
+      }
+    },
+    "BEAR_RECOVERY": {
+      "LONG": {
+        "ALL": {
+          "wr": 37.21,
+          "n": 43,
+          "ev": 0.0313,
+          "rr": 2.0,
+          "source": "dharma_v9_15m1h"
+        }
+      },
+      "SHORT": {
+        "ALL": {
+          "wr": 32.35,
+          "n": 34,
+          "ev": -0.0405,
+          "rr": 1.71,
+          "source": "dharma_v9_15m1h"
+        }
+      }
+    },
+    "BULL_TREND": {
+      "LONG": {
+        "ALL": {
+          "wr": 31.580000000000002,
+          "n": 19,
+          "ev": 0.0017,
+          "rr": 2.18,
+          "source": "dharma_v9_15m1h"
+        }
+      },
+      "SHORT": {
+        "ALL": {
+          "wr": 16.669999999999998,
+          "n": 12,
+          "ev": -0.2518,
+          "rr": 1.24,
+          "source": "dharma_v9_15m1h"
+        }
+      }
+    },
+    "BEAR_TREND": {
+      "SHORT": {
+        "ALL": {
+          "wr": 20.0,
+          "n": 5,
+          "ev": -0.1436,
+          "rr": 2.1,
+          "source": "dharma_v9_15m1h"
+        }
+      }
+    }
+  },
+  "wr_matrix_v9_dharma": {
+    "ALL": {
+      "CHOP_MID": {
+        "SHORT": {
+          "wr": 0.4286,
+          "n": 56,
+          "ev": 0.1033,
+          "avg_win": 0.653,
+          "avg_loss": -0.309,
+          "rr": 2.11,
+          "avg_pnl": 0.1033,
+          "iron_proof": true
+        },
+        "LONG": {
+          "wr": 0.4211,
+          "n": 38,
+          "ev": 0.0373,
+          "avg_win": 0.601,
+          "avg_loss": -0.372,
+          "rr": 1.61,
+          "avg_pnl": 0.0373,
+          "iron_proof": true
+        }
+      },
+      "BULL_EARLY": {
+        "SHORT": {
+          "wr": 0.375,
+          "n": 88,
+          "ev": 0.0514,
+          "avg_win": 0.601,
+          "avg_loss": -0.278,
+          "rr": 2.16,
+          "avg_pnl": 0.0514,
+          "iron_proof": true
+        },
+        "LONG": {
+          "wr": 0.31,
+          "n": 100,
+          "ev": -0.0348,
+          "avg_win": 0.539,
+          "avg_loss": -0.292,
+          "rr": 1.84,
+          "avg_pnl": -0.0348,
+          "iron_proof": true
+        }
+      },
+      "BEAR_RECOVERY": {
+        "LONG": {
+          "wr": 0.3721,
+          "n": 43,
+          "ev": 0.0313,
+          "avg_win": 0.541,
+          "avg_loss": -0.271,
+          "rr": 2.0,
+          "avg_pnl": 0.0313,
+          "iron_proof": true
+        },
+        "SHORT": {
+          "wr": 0.3235,
+          "n": 34,
+          "ev": -0.0405,
+          "avg_win": 0.554,
+          "avg_loss": -0.325,
+          "rr": 1.71,
+          "avg_pnl": -0.0405,
+          "iron_proof": true
+        }
+      },
+      "BULL_TREND": {
+        "LONG": {
+          "wr": 0.3158,
+          "n": 19,
+          "ev": 0.0017,
+          "avg_win": 0.818,
+          "avg_loss": -0.375,
+          "rr": 2.18,
+          "avg_pnl": 0.0017,
+          "iron_proof": false
+        },
+        "SHORT": {
+          "wr": 0.1667,
+          "n": 12,
+          "ev": -0.2518,
+          "avg_win": 0.498,
+          "avg_loss": -0.402,
+          "rr": 1.24,
+          "avg_pnl": -0.2518,
+          "iron_proof": false
+        }
+      },
+      "BEAR_TREND": {
+        "SHORT": {
+          "wr": 0.2,
+          "n": 5,
+          "ev": -0.1436,
+          "avg_win": 0.797,
+          "avg_loss": -0.379,
+          "rr": 2.1,
+          "avg_pnl": -0.1436,
+          "iron_proof": false
+        }
+      }
+    },
+    "BTC": {
+      "CHOP_MID": {
+        "SHORT": {
+          "wr": 0.3448,
+          "n": 29,
+          "ev": 0.0061,
+          "avg_win": 0.552,
+          "avg_loss": -0.281,
+          "rr": 1.96,
+          "avg_pnl": 0.0061,
+          "iron_proof": true
+        },
+        "LONG": {
+          "wr": 0.4615,
+          "n": 13,
+          "ev": 0.0363,
+          "avg_win": 0.506,
+          "avg_loss": -0.366,
+          "rr": 1.38,
+          "avg_pnl": 0.0363,
+          "iron_proof": false
+        }
+      },
+      "BULL_EARLY": {
+        "SHORT": {
+          "wr": 0.4146,
+          "n": 41,
+          "ev": 0.0762,
+          "avg_win": 0.509,
+          "avg_loss": -0.23,
+          "rr": 2.21,
+          "avg_pnl": 0.0762,
+          "iron_proof": true
+        },
+        "LONG": {
+          "wr": 0.3148,
+          "n": 54,
+          "ev": -0.0156,
+          "avg_win": 0.525,
+          "avg_loss": -0.264,
+          "rr": 1.99,
+          "avg_pnl": -0.0156,
+          "iron_proof": true
+        }
+      },
+      "BEAR_RECOVERY": {
+        "LONG": {
+          "wr": 0.4,
+          "n": 25,
+          "ev": 0.0199,
+          "avg_win": 0.467,
+          "avg_loss": -0.278,
+          "rr": 1.68,
+          "avg_pnl": 0.0199,
+          "iron_proof": true
+        },
+        "SHORT": {
+          "wr": 0.4667,
+          "n": 15,
+          "ev": 0.0556,
+          "avg_win": 0.467,
+          "avg_loss": -0.304,
+          "rr": 1.53,
+          "avg_pnl": 0.0556,
+          "iron_proof": false
+        }
+      },
+      "BULL_TREND": {
+        "LONG": {
+          "wr": 0.0,
+          "n": 6,
+          "ev": -0.292,
+          "avg_win": 0,
+          "avg_loss": -0.292,
+          "rr": 0.0,
+          "avg_pnl": -0.292,
+          "iron_proof": false
+        }
+      },
+      "BEAR_TREND": {}
+    },
+    "ETH": {
+      "BEAR_RECOVERY": {
+        "LONG": {
+          "wr": 0.3333,
+          "n": 18,
+          "ev": 0.0472,
+          "avg_win": 0.664,
+          "avg_loss": -0.261,
+          "rr": 2.54,
+          "avg_pnl": 0.0472,
+          "iron_proof": false
+        },
+        "SHORT": {
+          "wr": 0.2105,
+          "n": 19,
+          "ev": -0.1164,
+          "avg_win": 0.706,
+          "avg_loss": -0.336,
+          "rr": 2.1,
+          "avg_pnl": -0.1164,
+          "iron_proof": false
+        }
+      },
+      "BULL_EARLY": {
+        "LONG": {
+          "wr": 0.3043,
+          "n": 46,
+          "ev": -0.0573,
+          "avg_win": 0.555,
+          "avg_loss": -0.325,
+          "rr": 1.71,
+          "avg_pnl": -0.0573,
+          "iron_proof": true
+        },
+        "SHORT": {
+          "wr": 0.3404,
+          "n": 47,
+          "ev": 0.0297,
+          "avg_win": 0.699,
+          "avg_loss": -0.315,
+          "rr": 2.21,
+          "avg_pnl": 0.0297,
+          "iron_proof": true
+        }
+      },
+      "BULL_TREND": {
+        "SHORT": {
+          "wr": 0.2,
+          "n": 10,
+          "ev": -0.2262,
+          "avg_win": 0.498,
+          "avg_loss": -0.407,
+          "rr": 1.22,
+          "avg_pnl": -0.2262,
+          "iron_proof": false
+        },
+        "LONG": {
+          "wr": 0.4615,
+          "n": 13,
+          "ev": 0.1372,
+          "avg_win": 0.818,
+          "avg_loss": -0.446,
+          "rr": 1.83,
+          "avg_pnl": 0.1372,
+          "iron_proof": false
+        }
+      },
+      "CHOP_MID": {
+        "SHORT": {
+          "wr": 0.5185,
+          "n": 27,
+          "ev": 0.2078,
+          "avg_win": 0.726,
+          "avg_loss": -0.35,
+          "rr": 2.07,
+          "avg_pnl": 0.2078,
+          "iron_proof": true
+        },
+        "LONG": {
+          "wr": 0.4,
+          "n": 25,
+          "ev": 0.0379,
+          "avg_win": 0.658,
+          "avg_loss": -0.375,
+          "rr": 1.75,
+          "avg_pnl": 0.0379,
+          "iron_proof": true
+        }
+      },
+      "BEAR_TREND": {}
+    }
+  },
+  "dharma_v9_updated": "2026-08-27",
+  "dharma_v9_n_trades": 3996,
+  "dharma_v9_symbols": 27
+}

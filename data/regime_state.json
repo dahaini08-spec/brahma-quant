@@ -1,0 +1,26 @@
+{
+  "BTCUSDT": {
+    "confirmed": "CHOP_MID",
+    "candidate": null,
+    "confirm_count": 0,
+    "locked_until": 0,
+    "confirmed_at": 0,
+    "switch_count_24h": 0,
+    "last_raw": "CHOP_MID",
+    "last_update_ts": 1789295009.7384844,
+    "confirmed_cn": "弱震荡"
+  },
+  "ETHUSDT": {
+    "confirmed": "CHOP_MID",
+    "candidate": null,
+    "confirm_count": 0,
+    "locked_until": 0,
+    "confirmed_at": 0,
+    "switch_count_24h": 0,
+    "last_raw": "CHOP_MID",
+    "last_update_ts": 1789295009.717044,
+    "last_sw_reset": 1789294661.523743,
+    "candidate_start_ts": 1789294661.523743,
+    "confirmed_cn": "弱震荡"
+  }
+}

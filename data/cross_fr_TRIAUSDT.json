@@ -1,0 +1,15 @@
+{
+  "symbol": "TRIAUSDT",
+  "frs": {
+    "binance": -0.10355900000000001,
+    "bybit": 0.004462000000000001,
+    "okx": -0.06160017925401
+  },
+  "spread": 0.10802,
+  "max_ex": "bybit",
+  "min_ex": "binance",
+  "arb_signal": "LONG_BINANCE_SHORT_BYBIT",
+  "arb_score": 10,
+  "bull_fr_bonus": 4,
+  "ts": 1787174676.9494402
+}

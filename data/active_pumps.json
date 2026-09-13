@@ -1,0 +1,322 @@
+{
+  "EULUSDT": {
+    "push_ts": 1786231804.4367661,
+    "push_price": 1.1982,
+    "push_score": 87,
+    "cur_price": 1.1472,
+    "since_push_pct": -4.26,
+    "chg_24h": -6.59,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "DOTUSDT": {
+    "push_ts": 1786231804.4367661,
+    "push_price": 0.814,
+    "push_score": 81,
+    "cur_price": 0.8119,
+    "since_push_pct": -0.26,
+    "chg_24h": -0.96,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "UVXYUSDT": {
+    "push_ts": 1786217390.1432498,
+    "push_price": 21.82,
+    "push_score": 92,
+    "cur_price": 21.97,
+    "since_push_pct": 0.69,
+    "chg_24h": 0.46,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "ARBUSDT": {
+    "push_ts": 1786243934.0276396,
+    "push_price": 0.07807,
+    "push_score": 101,
+    "cur_price": 0.07806,
+    "since_push_pct": -0.01,
+    "chg_24h": -1.0,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "BANKUSDT": {
+    "push_ts": 1786239004.7116547,
+    "push_price": 0.04021,
+    "push_score": 84,
+    "cur_price": 0.03999,
+    "since_push_pct": -0.55,
+    "chg_24h": -0.65,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "EIGENUSDT": {
+    "push_ts": 1786239004.7116547,
+    "push_price": 0.1757,
+    "push_score": 81,
+    "cur_price": 0.1742,
+    "since_push_pct": -0.85,
+    "chg_24h": -1.25,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "STRCUSDT": {
+    "push_ts": 1786203068.0547462,
+    "push_price": 95.1,
+    "push_score": 72,
+    "cur_price": 95.09,
+    "since_push_pct": -0.01,
+    "chg_24h": 0.03,
+    "updated_ts": 1786245018.3062205,
+    "status": "WAITING"
+  },
+  "MOVEUSDT": {
+    "push_ts": 1786217390.1432498,
+    "push_price": 0.007239,
+    "push_score": 92,
+    "cur_price": 0.007108,
+    "since_push_pct": -1.81,
+    "chg_24h": 1.17,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "SPKUSDT": {
+    "push_ts": 1786224582.9507792,
+    "push_price": 0.01466,
+    "push_score": 90,
+    "cur_price": 0.01475,
+    "since_push_pct": 0.61,
+    "chg_24h": -0.61,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "MIRAUSDT": {
+    "push_ts": 1786224582.9507792,
+    "push_price": 0.04247,
+    "push_score": 78,
+    "cur_price": 0.04182,
+    "since_push_pct": -1.53,
+    "chg_24h": -0.5,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "POWRUSDT": {
+    "push_ts": 1786202988.2631862,
+    "push_price": 0.03844,
+    "push_score": 78,
+    "cur_price": 0.03868,
+    "since_push_pct": 0.62,
+    "chg_24h": 2.3,
+    "updated_ts": 1786245018.3062205,
+    "status": "WAITING"
+  },
+  "JSTUSDT": {
+    "push_ts": 1786231804.4367661,
+    "push_price": 0.09985,
+    "push_score": 112,
+    "cur_price": 0.10293,
+    "since_push_pct": 3.08,
+    "chg_24h": -1.36,
+    "updated_ts": 1786252220.4219565,
+    "status": "MOVING"
+  },
+  "USDCUSDT": {
+    "push_ts": 1786243934.0276396,
+    "push_price": 1.000164,
+    "push_score": 99,
+    "cur_price": 1.000165,
+    "since_push_pct": 0.0,
+    "chg_24h": 0.01,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "RIFUSDT": {
+    "push_ts": 1786236589.4855187,
+    "push_price": 0.06765,
+    "push_score": 102,
+    "cur_price": 0.0675,
+    "since_push_pct": -0.22,
+    "chg_24h": -1.08,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "EGLDUSDT": {
+    "push_ts": 1786203068.0547462,
+    "push_price": 2.688,
+    "push_score": 90,
+    "cur_price": 2.702,
+    "since_push_pct": 0.52,
+    "chg_24h": 1.16,
+    "updated_ts": 1786245018.3062205,
+    "status": "WAITING"
+  },
+  "SOXSUSDT": {
+    "push_ts": 1786217390.1432498,
+    "push_price": 40.89,
+    "push_score": 97,
+    "cur_price": 41.15,
+    "since_push_pct": 0.64,
+    "chg_24h": -2.74,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "SKYUSDT": {
+    "push_ts": 1786239004.7116547,
+    "push_price": 0.05388,
+    "push_score": 95,
+    "cur_price": 0.054,
+    "since_push_pct": 0.22,
+    "chg_24h": -0.44,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "AAPLUSDT": {
+    "push_ts": 1786203068.0547462,
+    "push_price": 312.26,
+    "push_score": 78,
+    "cur_price": 313.12,
+    "since_push_pct": 0.28,
+    "chg_24h": -0.08,
+    "updated_ts": 1786245018.3062205,
+    "status": "WAITING"
+  },
+  "DELLUSDT": {
+    "push_ts": 1786203068.0547462,
+    "push_price": 452.62,
+    "push_score": 73,
+    "cur_price": 452.38,
+    "since_push_pct": -0.05,
+    "chg_24h": -0.12,
+    "updated_ts": 1786245018.3062205,
+    "status": "WAITING"
+  },
+  "SQQQUSDT": {
+    "push_ts": 1786231804.4367661,
+    "push_price": 37.34,
+    "push_score": 84,
+    "cur_price": 37.34,
+    "since_push_pct": 0.0,
+    "chg_24h": -0.88,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "COPPERUSDT": {
+    "push_ts": 1786210183.4855728,
+    "push_price": 6.63,
+    "push_score": 79,
+    "cur_price": 6.635,
+    "since_push_pct": 0.08,
+    "chg_24h": -0.01,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "VVVUSDT": {
+    "push_ts": 1786243934.0276396,
+    "push_price": 11.11,
+    "push_score": 104,
+    "cur_price": 11.158,
+    "since_push_pct": 0.43,
+    "chg_24h": -1.48,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "COTIUSDT": {
+    "push_ts": 1786239004.7116547,
+    "push_price": 0.012145,
+    "push_score": 102,
+    "cur_price": 0.012134,
+    "since_push_pct": -0.09,
+    "chg_24h": -2.78,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "ADAUSDT": {
+    "push_ts": 1786224582.9507792,
+    "push_price": 0.2,
+    "push_score": 88,
+    "cur_price": 0.1978,
+    "since_push_pct": -1.1,
+    "chg_24h": -1.3,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "RENDERUSDT": {
+    "push_ts": 1786231804.4367661,
+    "push_price": 1.32,
+    "push_score": 82,
+    "cur_price": 1.329,
+    "since_push_pct": 0.68,
+    "chg_24h": 0.68,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "ZILUSDT": {
+    "push_ts": 1786236589.4855187,
+    "push_price": 0.002415,
+    "push_score": 92,
+    "cur_price": 0.002421,
+    "since_push_pct": 0.25,
+    "chg_24h": 0.33,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "ALGOUSDT": {
+    "push_ts": 1786236589.4855187,
+    "push_price": 0.08699,
+    "push_score": 81,
+    "cur_price": 0.08671,
+    "since_push_pct": -0.32,
+    "chg_24h": -0.86,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "ESPUSDT": {
+    "push_ts": 1786236589.4855187,
+    "push_price": 0.0636,
+    "push_score": 80,
+    "cur_price": 0.06444,
+    "since_push_pct": 1.32,
+    "chg_24h": -1.5,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "BASEDUSDT": {
+    "push_ts": 1786236589.4855187,
+    "push_price": 0.07725,
+    "push_score": 80,
+    "cur_price": 0.07574,
+    "since_push_pct": -1.95,
+    "chg_24h": -2.83,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "ENAUSDT": {
+    "push_ts": 1786239004.7116547,
+    "push_price": 0.08976,
+    "push_score": 81,
+    "cur_price": 0.08892,
+    "since_push_pct": -0.94,
+    "chg_24h": -2.47,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "RUNEUSDT": {
+    "push_ts": 1786243934.0276396,
+    "push_price": 0.4321,
+    "push_score": 101,
+    "cur_price": 0.4318,
+    "since_push_pct": -0.07,
+    "chg_24h": -3.83,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  },
+  "BTCDOMUSDT": {
+    "push_ts": 1786243934.0276396,
+    "push_price": 5507.5,
+    "push_score": 98,
+    "cur_price": 5502.0,
+    "since_push_pct": -0.1,
+    "chg_24h": -0.76,
+    "updated_ts": 1786252220.4219565,
+    "status": "WAITING"
+  }
+}

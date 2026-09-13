@@ -1,0 +1,15 @@
+{
+  "symbol": "SNDKUSDT",
+  "direction": "LONG",
+  "entry_price": 1597.46,
+  "sl_price": 1489.05,
+  "tp1_price": 1868.26,
+  "qty": 0.02,
+  "leverage": 5,
+  "notional": 31.9492,
+  "order_ids": {
+    "entry": 2653929190
+  },
+  "opened_at": "2026-07-23T03:07:44.842856+00:00",
+  "status": "OPEN"
+}

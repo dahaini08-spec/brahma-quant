@@ -1,0 +1,73 @@
+{
+  "updated_at": "2026-07-15T07:40:34.113920+00:00",
+  "ic_by_regime": {
+    "BULL_TREND:LONG": 0.1295,
+    "BEAR_RECOVERY:LONG": 0.7619
+  },
+  "ev_by_bucket": {
+    "BULL_TREND:LONG:<120": {
+      "n": 144,
+      "win": 14,
+      "loss": 13,
+      "be": 117,
+      "wr": 0.5185,
+      "ev": -0.3744
+    },
+    "CHOP_MID:LONG:<120": {
+      "n": 3,
+      "win": 1,
+      "loss": 0,
+      "be": 2,
+      "wr": 1.0,
+      "ev": 5.957
+    },
+    "BULL_TREND:LONG:120-139": {
+      "n": 39,
+      "win": 8,
+      "loss": 5,
+      "be": 26,
+      "wr": 0.6154,
+      "ev": -0.0943
+    },
+    "BULL_TREND:LONG:155-164": {
+      "n": 4,
+      "win": 0,
+      "loss": 2,
+      "be": 2,
+      "wr": 0.0,
+      "ev": -0.2205
+    },
+    "BULL_TREND:LONG:140-154": {
+      "n": 26,
+      "win": 3,
+      "loss": 7,
+      "be": 16,
+      "wr": 0.3,
+      "ev": -0.6504
+    },
+    "BEAR_RECOVERY:LONG:165+": {
+      "n": 6,
+      "win": 2,
+      "loss": 0,
+      "be": 4,
+      "wr": 1.0,
+      "ev": 0.2787
+    },
+    "BEAR_TREND:LONG:<120": {
+      "n": 1,
+      "win": 0,
+      "loss": 0,
+      "be": 1,
+      "wr": null,
+      "ev": -2.5
+    },
+    "BEAR_RECOVERY:LONG:<120": {
+      "n": 2,
+      "win": 0,
+      "loss": 0,
+      "be": 2,
+      "wr": null,
+      "ev": 0.418
+    }
+  }
+}

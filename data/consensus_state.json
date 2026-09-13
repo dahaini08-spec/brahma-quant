@@ -1,0 +1,42 @@
+{
+  "consensus_direction": "LONG",
+  "confidence": 0.57,
+  "score_short": 3,
+  "score_long": 4,
+  "conflicts": [
+    "OI信号LONG vs 体制SHORT",
+    "暴涨猎手触发(3个) vs 体制BEAR做空"
+  ],
+  "signals": {
+    "regime": {
+      "source": "regime",
+      "symbol": "BTCUSDT",
+      "direction": "SHORT",
+      "regime": "BEAR_TREND",
+      "weight": 3
+    },
+    "main_signal": {
+      "source": "main_signal",
+      "symbol": "BTCUSDT",
+      "direction": "LONG",
+      "score": 158.0,
+      "regime": "BULL_TREND",
+      "ts": "2026-08-02T03:43:05.824667+00:00"
+    },
+    "oi_advanced": {
+      "source": "oi_advanced",
+      "symbol": "BANKUSDT",
+      "direction": "LONG",
+      "score": 85.914,
+      "watch_only": false,
+      "ts": "2026-08-02T21:38:19.217769+00:00"
+    },
+    "pump_hunter": {
+      "source": "pump_hunter",
+      "direction": "LONG",
+      "alerts": 3,
+      "ts": "2026-07-20T11:10:48.509927"
+    }
+  },
+  "generated_at": "2026-08-02T23:24:19.825656+00:00"
+}

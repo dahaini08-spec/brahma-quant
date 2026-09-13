@@ -1,0 +1,20 @@
+{
+  "last_ema20_4h": 65438.1,
+  "last_high50h": 66711.0,
+  "last_low50h": 64636.0,
+  "btc_rsi_last": 26.8,
+  "btc_price_last": 64895.4,
+  "price_above_ema20_4h": false,
+  "price_above_high50h": false,
+  "price_above_low50h": true,
+  "updated_at": 1784854073.5073566,
+  "updated_by": "P0A_emergency_fix",
+  "last_heartbeat_ts": 1784855334,
+  "eth_regime": "BEAR_TREND",
+  "eth_regime_updated_at": 1784855334.904982,
+  "_prev_regime_for_history": "BEAR_TREND",
+  "regime": "CHOP_MID",
+  "price_above_ema50_4h": false,
+  "last_update_ts": 1788341979.030894,
+  "regime_sync_src": "regime_state_ssot"
+}

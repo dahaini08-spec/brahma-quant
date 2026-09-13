@@ -1,0 +1,15 @@
+{
+  "symbol": "SOXLUSDT",
+  "frs": {
+    "binance": 0.021007,
+    "bybit": 0.040057999999999996,
+    "okx": 0.00966114250405
+  },
+  "spread": 0.0304,
+  "max_ex": "bybit",
+  "min_ex": "okx",
+  "arb_signal": "LONG_OKX_SHORT_BYBIT",
+  "arb_score": 10,
+  "bull_fr_bonus": 0,
+  "ts": 1787481157.4802687
+}

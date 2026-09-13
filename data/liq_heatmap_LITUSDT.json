@@ -1,0 +1,47 @@
+{
+  "symbol": "LITUSDT",
+  "price": 3.0818,
+  "short_liq_map": {
+    "2": 4.6,
+    "3": 4.1,
+    "5": 3.7,
+    "10": 3.4,
+    "20": 3.2,
+    "50": 3.1
+  },
+  "long_liq_map": {
+    "2": 1.5,
+    "3": 2.1,
+    "5": 2.5,
+    "10": 2.8,
+    "20": 2.9,
+    "50": 3.0
+  },
+  "nearest_short_liq": 3.1,
+  "nearest_long_liq": 3.0,
+  "dist_to_short_liq": 0.59,
+  "dist_to_long_liq": 2.65,
+  "top_ask_clusters": [
+    [
+      3.1,
+      26677.0
+    ],
+    [
+      3.1,
+      16904.0
+    ]
+  ],
+  "top_bid_clusters": [
+    [
+      3.1,
+      38572.0
+    ],
+    [
+      3.1,
+      8424.0
+    ]
+  ],
+  "liq_bull_score": 8,
+  "liq_bear_score": 7,
+  "ts": 1787456534.4140093
+}

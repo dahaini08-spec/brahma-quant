@@ -1,0 +1,26 @@
+{
+  "ts": "2026-06-14T05:04:15.627780",
+  "mark_price": 1677.68,
+  "limit_order": {
+    "id": "8389766207479897419",
+    "status": "UNKNOWN",
+    "execQty": 0.0,
+    "avgPrice": 0.0
+  },
+  "sl_algo": {
+    "id": "3000001844879827",
+    "status": "NEW",
+    "triggerPrice": 1648.0
+  },
+  "position": {
+    "amt": 0.0,
+    "unrealizedPnl": 0.0
+  },
+  "plan": {
+    "entry": 1667.0,
+    "sl": 1648.0,
+    "tp1": 1700.0,
+    "tp2": 1720.0,
+    "qty": 0.14
+  }
+}

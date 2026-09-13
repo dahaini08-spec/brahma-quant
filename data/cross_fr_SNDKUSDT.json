@@ -1,0 +1,15 @@
+{
+  "symbol": "SNDKUSDT",
+  "frs": {
+    "binance": 0.0,
+    "bybit": 0.022113,
+    "okx": 0.01184778976681
+  },
+  "spread": 0.02211,
+  "max_ex": "bybit",
+  "min_ex": "binance",
+  "arb_signal": "LONG_BINANCE_SHORT_BYBIT",
+  "arb_score": 10,
+  "bull_fr_bonus": 0,
+  "ts": 1788076465.2858353
+}

@@ -1,0 +1,37 @@
+{
+  "BULL_CORRECTION_SHORT": {
+    "severity": "🆘 封禁建议",
+    "n": 28,
+    "ts": "2026-06-24 13:39 UTC"
+  },
+  "NEARUSDT__BULL_CORRECTION_SHORT": {
+    "severity": "🆘 封禁建议",
+    "n": 28,
+    "ts": "2026-06-24 13:39 UTC"
+  },
+  "BEAR_EARLY_SHORT": {
+    "severity": "⚠️ 警告",
+    "n": 13,
+    "ts": "2026-06-24 13:39 UTC"
+  },
+  "BTCUSDT__BEAR_RECOVERY_LONG": {
+    "severity": "⚠️ 警告",
+    "n": 13,
+    "ts": "2026-06-24 13:39 UTC"
+  },
+  "ETHUSDT__BEAR_RECOVERY_LONG": {
+    "severity": "⚠️ 警告",
+    "n": 16,
+    "ts": "2026-06-24 13:39 UTC"
+  },
+  "ETHUSDT__BEAR_TREND_SHORT": {
+    "severity": "⚠️ 警告",
+    "n": 10,
+    "ts": "2026-06-24 13:39 UTC"
+  },
+  "MANAUSDT__BEAR_TREND_SHORT": {
+    "severity": "⚠️ 警告",
+    "n": 26,
+    "ts": "2026-06-24 13:39 UTC"
+  }
+}

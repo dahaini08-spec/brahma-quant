@@ -1,0 +1,15 @@
+{
+  "daily_trades": 0,
+  "daily_loss_pct": 0.0,
+  "consec_losses": 0,
+  "paused_until": 0,
+  "circuit_breaker": false,
+  "last_reset_day": "",
+  "recent_entries": {
+    "SOLUSDT": 1783250114.5385537,
+    "ETHUSDT": 1783250071.5241992,
+    "BNBUSDT": 1783250114.538806,
+    "XRPUSDT": 1783251479.9190874
+  },
+  "daily_date": "2026-07-08"
+}

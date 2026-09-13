@@ -1,0 +1,127 @@
+{
+  "ts": "2026-06-24T03:49:37.988643+00:00",
+  "n_settled": 252,
+  "n_new": 0,
+  "grade_dist": {
+    "X": {
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0
+    },
+    "C": {
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "wr": 0
+    },
+    "B": {
+      "n": 15,
+      "wins": 2,
+      "losses": 11,
+      "wr": 15.4
+    },
+    "A": {
+      "n": 70,
+      "wins": 7,
+      "losses": 22,
+      "wr": 24.1
+    },
+    "S": {
+      "n": 167,
+      "wins": 16,
+      "losses": 60,
+      "wr": 21.1
+    }
+  },
+  "optimal_score": {
+    "best_range": [
+      90,
+      100
+    ],
+    "best_wr": 50.0,
+    "score_stats": {
+      "140": {
+        "n": 30,
+        "wins": 1,
+        "losses": 7
+      },
+      "160": {
+        "n": 34,
+        "wins": 5,
+        "losses": 17
+      },
+      "150": {
+        "n": 48,
+        "wins": 2,
+        "losses": 15
+      },
+      "170": {
+        "n": 30,
+        "wins": 2,
+        "losses": 11
+      },
+      "100": {
+        "n": 12,
+        "wins": 1,
+        "losses": 7
+      },
+      "120": {
+        "n": 20,
+        "wins": 3,
+        "losses": 10
+      },
+      "130": {
+        "n": 24,
+        "wins": 3,
+        "losses": 3
+      },
+      "180": {
+        "n": 13,
+        "wins": 2,
+        "losses": 7
+      },
+      "200": {
+        "n": 2,
+        "wins": 0,
+        "losses": 0
+      },
+      "190": {
+        "n": 10,
+        "wins": 0,
+        "losses": 0
+      },
+      "90": {
+        "n": 8,
+        "wins": 3,
+        "losses": 3
+      },
+      "990": {
+        "n": 6,
+        "wins": 1,
+        "losses": 3
+      },
+      "80": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1
+      },
+      "110": {
+        "n": 13,
+        "wins": 1,
+        "losses": 9
+      }
+    }
+  },
+  "regime_alerts": [
+    "✅ 体制BEAR_EARLY WR=100% (3条) 表现优异",
+    "✅ 体制BEAR_RECOVERY WR=92% (13条) 表现优异"
+  ],
+  "threshold_suggestion": {
+    "action": "no_change",
+    "current_thr": 138,
+    "new_thr": 138,
+    "recent_wr": 81.8,
+    "recent_n": 11
+  }
+}

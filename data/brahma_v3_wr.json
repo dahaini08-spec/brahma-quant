@@ -1,0 +1,111 @@
+{
+  "matrix": {
+    "ALL:LONG": {
+      "wr": 0.4828,
+      "n": 524,
+      "avg_pnl": -0.093,
+      "avg_win": 2.247,
+      "avg_loss": -2.277,
+      "iron_proof": true
+    },
+    "BEAR_RECOVERY:LONG": {
+      "wr": 0.4598,
+      "n": 174,
+      "avg_pnl": -0.387,
+      "avg_win": 2.005,
+      "avg_loss": -2.423,
+      "iron_proof": true
+    },
+    "SQE:BEAR_RECOVERY:LONG": {
+      "wr": 0.4651,
+      "n": 129,
+      "avg_pnl": -0.227,
+      "avg_win": 1.831,
+      "avg_loss": -2.018,
+      "iron_proof": true
+    },
+    "ALL:SHORT": {
+      "wr": 0.3543,
+      "n": 127,
+      "avg_pnl": 0.065,
+      "avg_win": 2.043,
+      "avg_loss": -3.54,
+      "iron_proof": true
+    },
+    "BEAR_TREND:SHORT": {
+      "wr": 0.3543,
+      "n": 127,
+      "avg_pnl": 0.065,
+      "avg_win": 2.043,
+      "avg_loss": -3.54,
+      "iron_proof": true
+    },
+    "FCG:BEAR_RECOVERY:LONG": {
+      "wr": 0.5179,
+      "n": 56,
+      "avg_pnl": -0.137,
+      "avg_win": 1.191,
+      "avg_loss": -1.563,
+      "iron_proof": true
+    },
+    "BULL_EARLY:LONG": {
+      "wr": 0.5179,
+      "n": 168,
+      "avg_pnl": 0.094,
+      "avg_win": 2.17,
+      "avg_loss": -2.136,
+      "iron_proof": true
+    },
+    "FCG:BULL_EARLY:LONG": {
+      "wr": 0.5493,
+      "n": 71,
+      "avg_pnl": -0.004,
+      "avg_win": 1.575,
+      "avg_loss": -1.928,
+      "iron_proof": true
+    },
+    "BULL_TREND:LONG": {
+      "wr": 0.4725,
+      "n": 182,
+      "avg_pnl": 0.016,
+      "avg_win": 2.55,
+      "avg_loss": -2.253,
+      "iron_proof": true
+    },
+    "SQE:BULL_TREND:LONG": {
+      "wr": 0.4722,
+      "n": 36,
+      "avg_pnl": -0.03,
+      "avg_win": 1.719,
+      "avg_loss": -1.595,
+      "iron_proof": true
+    },
+    "FCG:BULL_TREND:LONG": {
+      "wr": 0.4848,
+      "n": 33,
+      "avg_pnl": -0.007,
+      "avg_win": 1.427,
+      "avg_loss": -1.356,
+      "iron_proof": true
+    },
+    "SQE:BEAR_TREND:SHORT": {
+      "wr": 0.5294,
+      "n": 17,
+      "avg_pnl": -0.62,
+      "avg_win": 1.533,
+      "avg_loss": -2.533,
+      "iron_proof": false
+    },
+    "FCG:BEAR_TREND:SHORT": {
+      "wr": 0.5,
+      "n": 18,
+      "avg_pnl": -0.56,
+      "avg_win": 1.412,
+      "avg_loss": -2.533,
+      "iron_proof": false
+    }
+  },
+  "total": 651,
+  "method": "4H EMA体制+1H RSI/BBW，无实时API，历史K线纯本地",
+  "generated": "2026-08-27T16:15:04.004335+00:00"
+}

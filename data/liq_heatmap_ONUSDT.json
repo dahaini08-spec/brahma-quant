@@ -1,0 +1,47 @@
+{
+  "symbol": "ONUSDT",
+  "price": 0.32275,
+  "short_liq_map": {
+    "2": 0.5,
+    "3": 0.4,
+    "5": 0.4,
+    "10": 0.4,
+    "20": 0.3,
+    "50": 0.3
+  },
+  "long_liq_map": {
+    "2": 0.2,
+    "3": 0.2,
+    "5": 0.3,
+    "10": 0.3,
+    "20": 0.3,
+    "50": 0.3
+  },
+  "nearest_short_liq": 0.3,
+  "nearest_long_liq": 0.3,
+  "dist_to_short_liq": -7.05,
+  "dist_to_long_liq": 7.05,
+  "top_ask_clusters": [
+    [
+      0.3,
+      7835.0
+    ],
+    [
+      0.3,
+      1111.0
+    ]
+  ],
+  "top_bid_clusters": [
+    [
+      0.3,
+      9156.0
+    ],
+    [
+      0.3,
+      6023.0
+    ]
+  ],
+  "liq_bull_score": 8,
+  "liq_bear_score": 3,
+  "ts": 1786129607.3551278
+}

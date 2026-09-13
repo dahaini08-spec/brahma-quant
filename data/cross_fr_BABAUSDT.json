@@ -1,0 +1,14 @@
+{
+  "symbol": "BABAUSDT",
+  "frs": {
+    "binance": 0.0,
+    "bybit": 0.009708999999999999
+  },
+  "spread": 0.00971,
+  "max_ex": "bybit",
+  "min_ex": "binance",
+  "arb_signal": "WATCH_SPREAD(0.0097%)",
+  "arb_score": 5,
+  "bull_fr_bonus": 0,
+  "ts": 1784513436.9641697
+}

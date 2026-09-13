@@ -1,0 +1,17 @@
+{
+  "phase": "phase0",
+  "anchored_at": "2026-06-08T12:07:42.078443+00:00",
+  "commit": "f992bd4a feat: 清算数据模块 — 嵌入信号仪表盘",
+  "brahma_brain_version": "v21.1",
+  "ssot_version": "v17.0",
+  "cron_count": 33,
+  "wuqu_paper_reset": true,
+  "wuqu_paper_legacy_archived": 121,
+  "signal_queue_reset": true,
+  "brahma_state_ts_fields": 2,
+  "radon_mi": 0.0,
+  "radon_cc_confluence": 541,
+  "principle": "稳定第一，验证第二，重构第三",
+  "next_milestone": "武曲Paper 50条（干净数据）",
+  "freeze_rule": "本锚点后禁止修改评分参数，只允许SSOT数据参数调整"
+}

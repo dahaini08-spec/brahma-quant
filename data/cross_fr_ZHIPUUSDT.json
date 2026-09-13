@@ -1,0 +1,15 @@
+{
+  "symbol": "ZHIPUUSDT",
+  "frs": {
+    "binance": 0.053807,
+    "bybit": 0.103115,
+    "okx": 0.0505821316602
+  },
+  "spread": 0.05253,
+  "max_ex": "bybit",
+  "min_ex": "okx",
+  "arb_signal": "LONG_OKX_SHORT_BYBIT",
+  "arb_score": 10,
+  "bull_fr_bonus": 0,
+  "ts": 1787175701.7614706
+}

@@ -1,0 +1,14 @@
+{
+  "symbol": "REDUSDT",
+  "frs": {
+    "binance": -0.279302,
+    "bybit": -0.736691
+  },
+  "spread": 0.45739,
+  "max_ex": "binance",
+  "min_ex": "bybit",
+  "arb_signal": "LONG_BYBIT_SHORT_BINANCE",
+  "arb_score": 10,
+  "bull_fr_bonus": 8,
+  "ts": 1787087078.3937576
+}

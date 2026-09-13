@@ -1,0 +1,15 @@
+{
+  "symbol": "WLDUSDT",
+  "frs": {
+    "binance": 0.000809,
+    "bybit": -0.0024360000000000002,
+    "okx": 0.01
+  },
+  "spread": 0.01244,
+  "max_ex": "okx",
+  "min_ex": "bybit",
+  "arb_signal": "LONG_BYBIT_SHORT_OKX",
+  "arb_score": 10,
+  "bull_fr_bonus": 0,
+  "ts": 1787567431.7370772
+}

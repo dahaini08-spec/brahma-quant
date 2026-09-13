@@ -1,0 +1,41 @@
+{
+  "ts": "2026-09-09T12:54:34.825809Z",
+  "results": {
+    "rr20": {
+      "label": "ms=110 maker RR=2.0",
+      "n": 3755,
+      "wr": 52.9,
+      "ic": -0.0002,
+      "pnl_net": 0.099,
+      "sharpe": 9.95,
+      "max_dd": 7585.0,
+      "wf_stab": 0.556,
+      "wf_pass": 5,
+      "hard_pass": 3
+    },
+    "rr25": {
+      "label": "ms=110 maker RR=2.5",
+      "n": 3755,
+      "wr": 52.7,
+      "ic": -0.0,
+      "pnl_net": 0.113,
+      "sharpe": 12.82,
+      "max_dd": 7490.0,
+      "wf_stab": 0.556,
+      "wf_pass": 5,
+      "hard_pass": 3
+    },
+    "rr30": {
+      "label": "ms=110 maker RR=3.0",
+      "n": 3755,
+      "wr": 52.7,
+      "ic": -0.001,
+      "pnl_net": 0.118,
+      "sharpe": 15.02,
+      "max_dd": 7490.0,
+      "wf_stab": 0.556,
+      "wf_pass": 5,
+      "hard_pass": 3
+    }
+  }
+}

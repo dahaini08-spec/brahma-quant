@@ -1,0 +1,302 @@
+{"ts": 1782781258.2245877, "datetime": "2026-06-30 01:00 UTC", "health_score": 80, "total_issues": 2, "level_counts": {"ERROR": 2}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1782781281.808445, "datetime": "2026-06-30 01:01 UTC", "health_score": 75, "total_issues": 1, "level_counts": {"CRITICAL": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782781998.353231, "datetime": "2026-06-30 01:13 UTC", "health_score": 94, "total_issues": 2, "level_counts": {"WARN": 2}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1782782126.408941, "datetime": "2026-06-30 01:15 UTC", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1782783145.5180762, "datetime": "2026-06-30 01:32 UTC", "health_score": 69, "total_issues": 3, "level_counts": {"CRITICAL": 1, "WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782784948.5788538, "datetime": "2026-06-30 02:02 UTC", "health_score": 63, "total_issues": 5, "level_counts": {"CRITICAL": 1, "WARN": 4}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782786778.8234158, "datetime": "2026-06-30 02:32 UTC", "health_score": 63, "total_issues": 5, "level_counts": {"CRITICAL": 1, "WARN": 4}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782786913.5264313, "datetime": "2026-06-30 02:35 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1782786928.406135, "datetime": "2026-06-30 02:35 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1782788582.7115548, "datetime": "2026-06-30 03:03 UTC", "health_score": 75, "total_issues": 1, "level_counts": {"CRITICAL": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782790400.9997072, "datetime": "2026-06-30 03:33 UTC", "health_score": 65, "total_issues": 2, "level_counts": {"ERROR": 1, "CRITICAL": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782792211.8338346, "datetime": "2026-06-30 04:03 UTC", "health_score": 65, "total_issues": 2, "level_counts": {"ERROR": 1, "CRITICAL": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782794011.312079, "datetime": "2026-06-30 04:33 UTC", "health_score": 65, "total_issues": 2, "level_counts": {"ERROR": 1, "CRITICAL": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782795817.8618658, "datetime": "2026-06-30 05:03 UTC", "health_score": 65, "total_issues": 2, "level_counts": {"CRITICAL": 1, "ERROR": 1}, "fixes_applied": 2, "fixes_verified": 2}
+{"ts": 1782796466.6336324, "datetime": "2026-06-30 05:14 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1782797618.4239728, "datetime": "2026-06-30 05:33 UTC", "health_score": 75, "total_issues": 1, "level_counts": {"CRITICAL": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782797845.5939033, "datetime": "2026-06-30 05:37 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1782798832.5376117, "datetime": "2026-06-30 05:53 UTC", "health_score": 50, "total_issues": 2, "level_counts": {"CRITICAL": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782798856.034407, "datetime": "2026-06-30 05:54 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1782799421.6072545, "datetime": "2026-06-30 06:03 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1782801245.4039016, "datetime": "2026-06-30 06:34 UTC", "health_score": 75, "total_issues": 1, "level_counts": {"CRITICAL": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782803075.6110837, "datetime": "2026-06-30 07:04 UTC", "health_score": 75, "total_issues": 1, "level_counts": {"CRITICAL": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782804874.0204365, "datetime": "2026-06-30 07:34 UTC", "health_score": 65, "total_issues": 2, "level_counts": {"ERROR": 1, "CRITICAL": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782805171.2933133, "datetime": "2026-06-30 07:39 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1782806699.865345, "datetime": "2026-06-30 08:04 UTC", "health_score": 50, "total_issues": 2, "level_counts": {"CRITICAL": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782811538.4285858, "datetime": "2026-06-30 09:25 UTC", "health_score": 65, "total_issues": 2, "level_counts": {"CRITICAL": 1, "ERROR": 1}, "fixes_applied": 2, "fixes_verified": 2}
+{"ts": 1782813359.793245, "datetime": "2026-06-30 09:55 UTC", "health_score": 75, "total_issues": 1, "level_counts": {"CRITICAL": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782814847.5617962, "datetime": "2026-06-30 10:20 UTC", "health_score": 75, "total_issues": 1, "level_counts": {"CRITICAL": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782818307.7485995, "datetime": "2026-06-30 11:18 UTC", "health_score": 65, "total_issues": 2, "level_counts": {"ERROR": 1, "CRITICAL": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782821028.6290722, "datetime": "2026-06-30 12:03 UTC", "health_score": 65, "total_issues": 2, "level_counts": {"ERROR": 1, "CRITICAL": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782823002.971718, "datetime": "2026-06-30 12:36 UTC", "health_score": 15, "total_issues": 4, "level_counts": {"ERROR": 1, "CRITICAL": 3}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782823927.9285786, "datetime": "2026-06-30 12:52 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1782826070.4663117, "datetime": "2026-06-30 13:27 UTC", "health_score": 65, "total_issues": 2, "level_counts": {"CRITICAL": 1, "ERROR": 1}, "fixes_applied": 2, "fixes_verified": 2}
+{"ts": 1782827868.0475566, "datetime": "2026-06-30 13:57 UTC", "health_score": 75, "total_issues": 1, "level_counts": {"CRITICAL": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782867734.7766285, "datetime": "2026-07-01 01:02 UTC", "health_score": 55, "total_issues": 3, "level_counts": {"ERROR": 2, "CRITICAL": 1}, "fixes_applied": 2, "fixes_verified": 2}
+{"ts": 1782871321.7624, "datetime": "2026-07-01 02:02 UTC", "health_score": 75, "total_issues": 1, "level_counts": {"CRITICAL": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1782966823.174997, "datetime": "2026-07-02 04:33 UTC", "health_score": 55, "total_issues": 3, "level_counts": {"ERROR": 2, "CRITICAL": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1782966847.2148938, "datetime": "2026-07-02 04:34 UTC", "health_score": 55, "total_issues": 3, "level_counts": {"ERROR": 2, "CRITICAL": 1}, "fixes_applied": 2, "fixes_verified": 2}
+{"ts": 1784021672.253867, "datetime": "2026-07-14 09:34 UTC", "health_score": 0, "total_issues": 6, "level_counts": {"ERROR": 2, "CRITICAL": 4}, "fixes_applied": 3, "fixes_verified": 2}
+{"ts": 1784021711.2268674, "datetime": "2026-07-14 09:35 UTC", "health_score": 84, "total_issues": 3, "level_counts": {"ERROR": 1, "WARN": 2}, "fixes_applied": 1, "fixes_verified": 0}
+{"ts": 1784021755.7819872, "datetime": "2026-07-14 09:35 UTC", "health_score": 94, "total_issues": 2, "level_counts": {"WARN": 2}, "fixes_applied": 1, "fixes_verified": 0}
+{"ts": 1784168023.76112, "datetime": "2026-07-16 02:13 UTC", "health_score": 81, "total_issues": 4, "level_counts": {"ERROR": 1, "WARN": 3}, "fixes_applied": 2, "fixes_verified": 1}
+{"ts": 1784168040.311831, "datetime": "2026-07-16 02:14 UTC", "health_score": 84, "total_issues": 3, "level_counts": {"ERROR": 1, "WARN": 2}, "fixes_applied": 1, "fixes_verified": 0}
+{"ts": 1784168433.8129542, "datetime": "2026-07-16 02:20 UTC", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1784168809.206743, "datetime": "2026-07-16 02:26 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1784171028.2993371, "datetime": "2026-07-16 03:03 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1784190276.7641377, "datetime": "2026-07-16 08:24 UTC", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1784190338.8765726, "datetime": "2026-07-16 08:25 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1784199878.4705384, "datetime": "2026-07-16 11:04 UTC", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1784260621.6988685, "datetime": "2026-07-17 03:57 UTC", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1784285489.0815675, "datetime": "2026-07-17 10:51 UTC", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1784554432.871244, "datetime": "2026-07-20 13:33 UTC", "health_score": 78, "total_issues": 5, "level_counts": {"ERROR": 1, "WARN": 4}, "fixes_applied": 3, "fixes_verified": 2}
+{"ts": 1784554533.4913502, "datetime": "2026-07-20 13:35 UTC", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"score": 97, "status": "HEALTHY", "issues": 1, "critical": 0, "error": 0, "warn": 1, "ts": "2026-07-20T13:36:08Z", "fixes": ["ws_guardian_restart", "live_prices_init", "signal_queue_reset", "orphan_whitelist_updated"]}
+{"ts": 1784594450.8911064, "datetime": "2026-07-21 00:40 UTC", "health_score": 94, "total_issues": 2, "level_counts": {"WARN": 2}, "fixes_applied": 2, "fixes_verified": 1}
+{"ts": 1784683665.8402293, "datetime": "2026-07-22 01:27 UTC", "health_score": 94, "total_issues": 2, "level_counts": {"WARN": 2}, "fixes_applied": 2, "fixes_verified": 1}
+{"ts": 1784685164.8477244, "datetime": "2026-07-22 01:52 UTC", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 0}
+{"ts": 1784685294.3804436, "datetime": "2026-07-22 01:54 UTC", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 0}
+{"ts": 1784685334.13499, "datetime": "2026-07-22 01:55 UTC", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 0}
+{"ts": 1784801919.0038514, "datetime": "2026-07-23 10:18 UTC", "health_score": 81, "total_issues": 4, "level_counts": {"ERROR": 1, "WARN": 3}, "fixes_applied": 3, "fixes_verified": 2}
+{"ts": 1784814652.71709, "datetime": "2026-07-23 13:50 UTC", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 0}
+{"ts": 1784880504.8227394, "datetime": "2026-07-24 08:08 UTC", "health_score": 84, "total_issues": 3, "level_counts": {"ERROR": 1, "WARN": 2}, "fixes_applied": 2, "fixes_verified": 1}
+{"ts": 1784880971.9417262, "datetime": "2026-07-24 08:16 UTC", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 0}
+{"ts": 1784881394.4114182, "datetime": "2026-07-24 08:23 UTC", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 0}
+{"ts": 1784881680.6626377, "datetime": "2026-07-24 08:28 UTC", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 0}
+{"ts": 1784971959.6624496, "datetime": "2026-07-25 09:32 UTC", "health_score": 84, "total_issues": 3, "level_counts": {"ERROR": 1, "WARN": 2}, "fixes_applied": 2, "fixes_verified": 1}
+{"ts": 1784973182.270653, "datetime": "2026-07-25 09:53 UTC", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1785060495.5595024, "datetime": "2026-07-26 10:08 UTC", "health_score": 84, "total_issues": 3, "level_counts": {"ERROR": 1, "WARN": 2}, "fixes_applied": 2, "fixes_verified": 2}
+{"ts": 1785060511.8197596, "datetime": "2026-07-26 10:08 UTC", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1785062711.1573658, "datetime": "2026-07-26 10:45 UTC", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1785135839.1691535, "datetime": "2026-07-27 07:03 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1785137387.8869572, "datetime": "2026-07-27 07:29 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1785152566.7177403, "datetime": "2026-07-27 11:42 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1785200904.4792287, "datetime": "2026-07-28 01:08 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1785242657.1911516, "datetime": "2026-07-28 12:44 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1785280744.5222197, "datetime": "2026-07-28 23:19 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1785285544.962669, "datetime": "2026-07-29 00:39 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1785376943.4548957, "datetime": "2026-07-30 02:02 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1785640046.4032204, "datetime": "2026-08-02 03:07 UTC", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1785836669.5236354, "score": 0, "note": "doctor_reset", "source": "brahma_cron_doctor"}
+{"ts": 1785889200.4126647, "datetime": "2026-08-05 00:20 UTC", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1785891444.365768, "datetime": "2026-08-05 00:57 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1785893875.052164, "datetime": "2026-08-05 01:37 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1785987991.6028798, "datetime": "2026-08-06 03:46 UTC", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1785987998.2943254, "datetime": "2026-08-06 03:46 UTC", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1785988417.399117, "datetime": "2026-08-06 03:53 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1785989674.5351253, "datetime": "2026-08-06 04:14 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1785989786.9467337, "datetime": "2026-08-06 04:16 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1785990042.3215299, "datetime": "2026-08-06 04:20 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1785995764.758007, "datetime": "2026-08-06 05:56 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786061221.5323732, "datetime": "2026-08-07 00:07 UTC", "health_score": 91, "total_issues": 3, "level_counts": {"WARN": 3}, "fixes_applied": 2, "fixes_verified": 2}
+{"ts": 1786061624.0192666, "datetime": "2026-08-07 00:13 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786062802.7171378, "datetime": "2026-08-07 00:33 UTC", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786062835.5679295, "datetime": "2026-08-07 00:33 UTC", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786062869.4535878, "datetime": "2026-08-07 00:34 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786062979.7314813, "datetime": "2026-08-07 00:36 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786064341.8424256, "datetime": "2026-08-07 00:59 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786064819.9024186, "datetime": "2026-08-07 01:06 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786065417.0467865, "datetime": "2026-08-07 01:16 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786066581.4847496, "datetime": "2026-08-07 01:36 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786067011.7015488, "datetime": "2026-08-07 01:43 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786067700.3804271, "datetime": "2026-08-07 01:55 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786067833.3168836, "datetime": "2026-08-07 01:57 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786068800.5867443, "datetime": "2026-08-07 02:13 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786069107.2993464, "datetime": "2026-08-07 02:18 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786069616.4085493, "datetime": "2026-08-07 02:26 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786079035.4405055, "datetime": "2026-08-07 05:03 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786079078.0783534, "datetime": "2026-08-07 05:04 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786084292.1490824, "datetime": "2026-08-07 06:31 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786245755.8593645, "datetime": "2026-08-09 03:22 UTC", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1786245925.177557, "datetime": "2026-08-09 03:25 UTC", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786246257.0667405, "datetime": "2026-08-09 03:30 UTC", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786246267.3951964, "datetime": "2026-08-09 03:31 UTC", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786246341.2287273, "datetime": "2026-08-09 03:32 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786246648.0702467, "datetime": "2026-08-09 03:37 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786246931.7483644, "datetime": "2026-08-09 03:42 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786247212.269861, "datetime": "2026-08-09 03:46 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786247704.0823853, "datetime": "2026-08-09 03:55 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786248955.330451, "datetime": "2026-08-09 04:15 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786253346.2590497, "datetime": "2026-08-09 05:29 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786315354.2593389, "datetime": "2026-08-09 22:42 UTC", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1786315369.3706973, "datetime": "2026-08-09 22:42 UTC", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786315378.3866198, "datetime": "2026-08-09 22:42 UTC", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786315386.3865323, "datetime": "2026-08-09 22:43 UTC", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786315434.6039166, "datetime": "2026-08-09 22:43 UTC", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786315598.5866075, "datetime": "2026-08-09 22:46 UTC", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786317259.9245942, "datetime": "2026-08-09 23:14 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786317709.9223204, "datetime": "2026-08-09 23:21 UTC", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786317737.9882133, "datetime": "2026-08-09 23:22 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786318522.348611, "datetime": "2026-08-09 23:35 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786318605.4819517, "datetime": "2026-08-09 23:36 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786318648.937334, "datetime": "2026-08-09 23:37 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786332074.935011, "datetime": "2026-08-10 03:21 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786352771.7501686, "datetime": "2026-08-10 09:06 UTC", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1786352787.5094292, "datetime": "2026-08-10 09:06 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786352795.3471465, "datetime": "2026-08-10 09:06 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786353191.7712505, "datetime": "2026-08-10 09:13 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786354312.5016198, "datetime": "2026-08-10 09:31 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786354440.3932872, "datetime": "2026-08-10 09:34 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786355007.9758809, "datetime": "2026-08-10 09:43 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786355180.9764147, "datetime": "2026-08-10 09:46 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786356064.7622457, "datetime": "2026-08-10 10:01 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786356081.9497037, "datetime": "2026-08-10 10:01 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786356295.65308, "datetime": "2026-08-10 10:04 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786356365.2396746, "datetime": "2026-08-10 10:06 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786372919.2504487, "datetime": "2026-08-10 14:41 UTC", "health_score": 94, "total_issues": 2, "level_counts": {"WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1786406241.35484, "datetime": "2026-08-10 23:57 UTC", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1786407772.7364593, "datetime": "2026-08-11 00:22 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786408076.0315995, "datetime": "2026-08-11 00:27 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786408412.0297527, "datetime": "2026-08-11 00:33 UTC", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786410457.4465191, "datetime": "2026-08-11 09:07 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786412048.830065, "datetime": "2026-08-11 09:34 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786415801.0985487, "datetime": "2026-08-11 10:36 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786419171.4269328, "datetime": "2026-08-11 11:32 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1786421765.2536762, "datetime": "2026-08-11 12:16 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786423868.3073041, "datetime": "2026-08-11 12:51 CST", "health_score": 94, "total_issues": 2, "level_counts": {"WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1786447252.0603461, "datetime": "2026-08-11 19:20 CST", "health_score": 71, "total_issues": 5, "level_counts": {"ERROR": 2, "WARN": 3}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1786447589.2771938, "datetime": "2026-08-11 19:26 CST", "health_score": 77, "total_issues": 3, "level_counts": {"ERROR": 2, "WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786447597.0988786, "datetime": "2026-08-11 19:26 CST", "health_score": 77, "total_issues": 3, "level_counts": {"ERROR": 2, "WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786447714.9854984, "datetime": "2026-08-11 19:28 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786455307.8746104, "datetime": "2026-08-11 21:35 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786495149.571425, "datetime": "2026-08-12 08:39 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1786495211.7573802, "datetime": "2026-08-12 08:40 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786495221.7702954, "datetime": "2026-08-12 08:40 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786503027.465218, "datetime": "2026-08-12 10:50 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786624393.3484373, "datetime": "2026-08-13 20:33 CST", "health_score": 81, "total_issues": 4, "level_counts": {"ERROR": 1, "WARN": 3}, "fixes_applied": 2, "fixes_verified": 2}
+{"ts": 1786624816.4983435, "datetime": "2026-08-13 20:40 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786624838.9718032, "datetime": "2026-08-13 20:40 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786624878.3219824, "datetime": "2026-08-13 20:41 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786665618.5714307, "datetime": "2026-08-14 08:00 CST", "health_score": 94, "total_issues": 2, "level_counts": {"WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1786668409.1882286, "datetime": "2026-08-14 08:46 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786712939.7635274, "datetime": "2026-08-14 21:08 CST", "health_score": 94, "total_issues": 2, "level_counts": {"WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1786772995.319676, "datetime": "2026-08-15 13:49 CST", "health_score": 84, "total_issues": 3, "level_counts": {"ERROR": 1, "WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1786877141.013412, "datetime": "2026-08-16 18:45 CST", "health_score": 81, "total_issues": 4, "level_counts": {"ERROR": 1, "WARN": 3}, "fixes_applied": 2, "fixes_verified": 2}
+{"ts": 1786920445.779931, "datetime": "2026-08-17 06:47 CST", "health_score": 84, "total_issues": 3, "level_counts": {"ERROR": 1, "WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1786937562.9648216, "datetime": "2026-08-17 11:32 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1786945042.1837635, "datetime": "2026-08-17 13:37 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786949267.0974748, "datetime": "2026-08-17 14:47 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1786963676.260519, "datetime": "2026-08-17 18:47 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1786978085.3201666, "datetime": "2026-08-17 22:48 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787006877.2045453, "datetime": "2026-08-18 06:47 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787021273.313767, "datetime": "2026-08-18 10:47 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787050079.7105608, "datetime": "2026-08-18 18:47 CST", "health_score": 75, "total_issues": 6, "level_counts": {"ERROR": 1, "WARN": 5}, "fixes_applied": 2, "fixes_verified": 2}
+{"ts": 1787059187.242645, "datetime": "2026-08-18 21:19 CST", "health_score": 81, "total_issues": 4, "level_counts": {"ERROR": 1, "WARN": 3}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787059638.9504473, "datetime": "2026-08-18 21:27 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787059667.7293053, "datetime": "2026-08-18 21:27 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787059683.5204134, "datetime": "2026-08-18 21:28 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787064486.1351204, "datetime": "2026-08-18 22:48 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787093273.2524216, "datetime": "2026-08-19 06:47 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787107679.9314551, "datetime": "2026-08-19 10:47 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787122075.1165643, "datetime": "2026-08-19 14:47 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787136478.5552583, "datetime": "2026-08-19 18:47 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787165280.3813488, "datetime": "2026-08-20 02:48 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787179676.8884661, "datetime": "2026-08-20 06:47 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787183986.5348265, "datetime": "2026-08-20 07:59 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787194078.0586221, "datetime": "2026-08-20 10:47 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787222889.9890327, "datetime": "2026-08-20 18:48 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787266089.7125826, "datetime": "2026-08-21 06:48 CST", "health_score": 84, "total_issues": 3, "level_counts": {"ERROR": 1, "WARN": 2}, "fixes_applied": 2, "fixes_verified": 2}
+{"ts": 1787290340.90515, "datetime": "2026-08-21 13:32 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787290353.0012326, "datetime": "2026-08-21 13:32 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787292457.8579016, "datetime": "2026-08-21 14:07 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787292473.6590466, "datetime": "2026-08-21 14:07 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787292644.6131265, "datetime": "2026-08-21 14:10 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787294892.173388, "datetime": "2026-08-21 14:48 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787310901.1705832, "datetime": "2026-08-21 19:15 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787323693.594879, "datetime": "2026-08-21 22:48 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787352496.8938546, "datetime": "2026-08-22 06:48 CST", "health_score": 94, "total_issues": 2, "level_counts": {"WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787395716.4895701, "datetime": "2026-08-22 18:48 CST", "health_score": 94, "total_issues": 2, "level_counts": {"WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787438968.25437, "datetime": "2026-08-23 06:49 CST", "health_score": 91, "total_issues": 3, "level_counts": {"WARN": 3}, "fixes_applied": 2, "fixes_verified": 2}
+{"ts": 1787453367.1829233, "datetime": "2026-08-23 10:49 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787472420.7434552, "datetime": "2026-08-23 16:07 CST", "health_score": 94, "total_issues": 2, "level_counts": {"WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787482177.7704217, "datetime": "2026-08-23 18:49 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787496572.3327742, "datetime": "2026-08-23 22:49 CST", "health_score": 84, "total_issues": 3, "level_counts": {"ERROR": 1, "WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787510976.4920495, "datetime": "2026-08-24 02:49 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787527333.4267023, "datetime": "2026-08-24 07:22 CST", "health_score": 84, "total_issues": 3, "level_counts": {"ERROR": 1, "WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787532870.593399, "datetime": "2026-08-24 08:54 CST", "health_score": 84, "total_issues": 3, "level_counts": {"ERROR": 1, "WARN": 2}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787533648.3917773, "datetime": "2026-08-24 09:07 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787533669.8338861, "datetime": "2026-08-24 09:07 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787533999.1978073, "datetime": "2026-08-24 09:13 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787534285.6171167, "datetime": "2026-08-24 09:18 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787534725.1932387, "datetime": "2026-08-24 09:25 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787539908.3275008, "datetime": "2026-08-24 10:51 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787554337.4655132, "datetime": "2026-08-24 14:52 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787568700.4447672, "datetime": "2026-08-24 18:51 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787569527.8141708, "datetime": "2026-08-24 19:05 CST", "health_score": 97, "total_issues": 1, "level_counts": {"WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787583116.5556443, "datetime": "2026-08-24 22:51 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787613592.9781182, "datetime": "2026-08-25 07:19 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787616096.2606819, "datetime": "2026-08-25 08:01 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787616107.1025455, "datetime": "2026-08-25 08:01 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787616136.1201754, "datetime": "2026-08-25 08:02 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787616155.6691375, "datetime": "2026-08-25 08:02 CST", "health_score": 100, "total_issues": 0, "level_counts": {}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787640700.0945446, "datetime": "2026-08-25 14:51 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787649343.217463, "datetime": "2026-08-25 17:15 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787649527.2816956, "datetime": "2026-08-25 17:18 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787649580.0118544, "datetime": "2026-08-25 17:19 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787649673.2526252, "datetime": "2026-08-25 17:21 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787655104.228703, "datetime": "2026-08-25 18:51 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787702398.9011898, "datetime": "2026-08-26 07:59 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787704268.3731143, "datetime": "2026-08-26 08:31 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787706886.047151, "datetime": "2026-08-26 09:14 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787706955.4470801, "datetime": "2026-08-26 09:15 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787709861.3983486, "datetime": "2026-08-26 10:04 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787748310.5438507, "datetime": "2026-08-26 20:45 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787748719.2926745, "datetime": "2026-08-26 20:51 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787748736.40139, "datetime": "2026-08-26 20:52 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787753025.6770844, "datetime": "2026-08-26 22:03 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787764843.9324436, "datetime": "2026-08-27 01:20 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787764988.5956304, "datetime": "2026-08-27 01:23 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787779317.2658417, "datetime": "2026-08-27 05:21 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787779446.211521, "datetime": "2026-08-27 05:24 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787793891.8947337, "datetime": "2026-08-27 09:24 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787794030.6134324, "datetime": "2026-08-27 09:27 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787808288.0306778, "datetime": "2026-08-27 13:24 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787822690.010267, "datetime": "2026-08-27 17:24 CST", "health_score": 84, "total_issues": 3, "level_counts": {"ERROR": 1, "WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787837093.820915, "datetime": "2026-08-27 21:24 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787837235.929343, "datetime": "2026-08-27 21:27 CST", "health_score": 84, "total_issues": 3, "level_counts": {"ERROR": 1, "WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787851489.067342, "datetime": "2026-08-28 01:24 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787865887.279672, "datetime": "2026-08-28 05:24 CST", "health_score": 84, "total_issues": 3, "level_counts": {"ERROR": 1, "WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787877068.0330536, "datetime": "2026-08-28 08:31 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787880287.0232244, "datetime": "2026-08-28 09:24 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787890772.538819, "datetime": "2026-08-28 12:19 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787894689.3787692, "datetime": "2026-08-28 13:24 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787909086.739226, "datetime": "2026-08-28 17:24 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787923486.3950028, "datetime": "2026-08-28 21:24 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787923884.733565, "datetime": "2026-08-28 21:31 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787937887.8199034, "datetime": "2026-08-29 01:24 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787952284.9228334, "datetime": "2026-08-29 05:24 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787966686.2638254, "datetime": "2026-08-29 09:24 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1787981085.5137181, "datetime": "2026-08-29 13:24 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1787995485.6038625, "datetime": "2026-08-29 17:24 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1788009885.8344731, "datetime": "2026-08-29 21:24 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1788024285.953113, "datetime": "2026-08-30 01:24 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1788038684.9440823, "datetime": "2026-08-30 05:24 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1788053085.7083147, "datetime": "2026-08-30 09:24 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1788081885.6315768, "datetime": "2026-08-30 17:24 CST", "health_score": 84, "total_issues": 3, "level_counts": {"ERROR": 1, "WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1788096286.8308656, "datetime": "2026-08-30 21:24 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1788110685.1914322, "datetime": "2026-08-31 01:24 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1788125085.9360626, "datetime": "2026-08-31 05:24 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1788139485.721881, "datetime": "2026-08-31 09:24 CST", "health_score": 84, "total_issues": 3, "level_counts": {"ERROR": 1, "WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1788153885.4298866, "datetime": "2026-08-31 13:24 CST", "health_score": 90, "total_issues": 1, "level_counts": {"ERROR": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1788168285.769349, "datetime": "2026-08-31 17:24 CST", "health_score": 84, "total_issues": 3, "level_counts": {"ERROR": 1, "WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1788182686.8331587, "datetime": "2026-08-31 21:24 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1788197086.8308969, "datetime": "2026-09-01 01:24 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1788211486.7667599, "datetime": "2026-09-01 05:24 CST", "health_score": 87, "total_issues": 2, "level_counts": {"ERROR": 1, "WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1788225887.0714755, "datetime": "2026-09-01 09:24 CST", "health_score": 84, "total_issues": 3, "level_counts": {"ERROR": 1, "WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1788240297.1544755, "datetime": "2026-09-01 13:24 CST", "health_score": 65, "total_issues": 2, "level_counts": {"ERROR": 1, "CRITICAL": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1788254695.9858212, "datetime": "2026-09-01 17:24 CST", "health_score": 49, "total_issues": 5, "level_counts": {"ERROR": 2, "CRITICAL": 1, "WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1788269105.0465841, "datetime": "2026-09-01 21:25 CST", "health_score": 49, "total_issues": 5, "level_counts": {"ERROR": 2, "CRITICAL": 1, "WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1788283503.758197, "datetime": "2026-09-02 01:25 CST", "health_score": 49, "total_issues": 5, "level_counts": {"ERROR": 2, "CRITICAL": 1, "WARN": 2}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1788297904.1028109, "datetime": "2026-09-02 05:25 CST", "health_score": 46, "total_issues": 6, "level_counts": {"ERROR": 2, "CRITICAL": 1, "WARN": 3}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1788309865.0050454, "datetime": "2026-09-02 08:44 CST", "health_score": 49, "total_issues": 5, "level_counts": {"ERROR": 2, "CRITICAL": 1, "WARN": 2}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1788310428.0420597, "datetime": "2026-09-02 08:53 CST", "health_score": 49, "total_issues": 5, "level_counts": {"ERROR": 2, "CRITICAL": 1, "WARN": 2}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1788310600.6838589, "datetime": "2026-09-02 08:56 CST", "health_score": 55, "total_issues": 3, "level_counts": {"ERROR": 2, "CRITICAL": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1788310736.0527718, "datetime": "2026-09-02 08:58 CST", "health_score": 80, "total_issues": 2, "level_counts": {"ERROR": 2}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1788326703.7948394, "datetime": "2026-09-02 13:25 CST", "health_score": 80, "total_issues": 2, "level_counts": {"ERROR": 2}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1788341149.1739128, "datetime": "2026-09-02 17:25 CST", "health_score": 74, "total_issues": 4, "level_counts": {"ERROR": 2, "WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1788355549.45305, "datetime": "2026-09-02 21:25 CST", "health_score": 77, "total_issues": 3, "level_counts": {"ERROR": 2, "WARN": 1}, "fixes_applied": 0, "fixes_verified": 0}
+{"ts": 1788379202.990638, "datetime": "2026-09-03 04:00 CST", "health_score": 71, "total_issues": 5, "level_counts": {"ERROR": 2, "WARN": 3}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1788405697.7355773, "datetime": "2026-09-03 11:21 CST", "health_score": 74, "total_issues": 4, "level_counts": {"ERROR": 2, "WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1788479765.434664, "datetime": "2026-09-04 07:56 CST", "health_score": 71, "total_issues": 5, "level_counts": {"ERROR": 2, "WARN": 3}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1788681618.25666, "datetime": "2026-09-06 16:00 CST", "health_score": 74, "total_issues": 4, "level_counts": {"ERROR": 2, "WARN": 2}, "fixes_applied": 1, "fixes_verified": 1}
+{"ts": 1788825151.7575538, "datetime": "2026-09-08 07:52 CST", "health_score": 71, "total_issues": 5, "level_counts": {"ERROR": 2, "WARN": 3}, "fixes_applied": 1, "fixes_verified": 1}

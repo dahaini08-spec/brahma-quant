@@ -1,0 +1,15 @@
+{
+  "symbol": "MRVLUSDT",
+  "frs": {
+    "binance": 0.0,
+    "bybit": 0.0,
+    "okx": 0.0
+  },
+  "spread": 0.0,
+  "max_ex": "binance",
+  "min_ex": "binance",
+  "arb_signal": "NONE",
+  "arb_score": 0,
+  "bull_fr_bonus": 0,
+  "ts": 1787175119.3334553
+}

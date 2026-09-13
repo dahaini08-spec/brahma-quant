@@ -1,0 +1,18 @@
+{"ts": "2026-06-11T10:47:44.360851+00:00", "alerts": ["🔧 自愈成功 [ws_guardian_state]: data/ws_guardian_state.json 11分未更新（上限5min） → OK BTC=62934 ETH=1657.38 ts=2026-06-11T10:47:44.502160+00:00", "🔧 自愈成功 [ws_guardian_proc]: 进程不存在: ws_guardian.py → ws_guardian 重启成功", "🔴 ERROR [watchdog_proc]: 进程不存在: watchdog_guardian", "🟡 WARN [soma_quota]: 配额预警: 129,000/150,000 (86%)"], "summary": "✅4 ⚠️2 ❌4 / 10项"}
+{"ts": "2026-06-11T10:48:26.417163+00:00", "alerts": ["🟡 WARN [soma_quota]: 配额预警: 129,000/150,000 (86%)"], "summary": "✅7 ⚠️2 ❌1 / 10项"}
+{"ts": "2026-06-11T10:58:14.361236+00:00", "alerts": ["🟡 WARN [soma_quota]: 配额预警: 129,000/150,000 (86%)"], "summary": "✅7 ⚠️2 ❌1 / 10项"}
+{"ts": "2026-06-11T11:08:17.113705+00:00", "alerts": ["🔧 自愈成功 [ws_guardian_proc]: 进程不存在: ws_guardian.py → ws_guardian 重启成功", "🔴 ERROR [watchdog_proc]: 进程不存在: watchdog_guardian", "🟡 WARN [soma_quota]: 配额预警: 129,000/150,000 (86%)"], "summary": "✅5 ⚠️2 ❌3 / 10项"}
+{"ts": "2026-06-11T11:18:13.906928+00:00", "alerts": ["🔴 ERROR [watchdog_proc]: 进程不存在: watchdog_guardian", "🟡 WARN [soma_quota]: 配额预警: 129,000/150,000 (86%)"], "summary": "✅6 ⚠️2 ❌2 / 10项"}
+{"ts": "2026-06-11T11:28:14.223973+00:00", "alerts": ["🔴 ERROR [watchdog_proc]: 进程不存在: watchdog_guardian", "🟡 WARN [soma_quota]: 配额预警: 129,000/150,000 (86%)"], "summary": "✅6 ⚠️2 ❌2 / 10项"}
+{"ts": "2026-06-11T11:38:14.389044+00:00", "alerts": ["🔴 ERROR [watchdog_proc]: 进程不存在: watchdog_guardian", "🟡 WARN [soma_quota]: 配额预警: 129,000/150,000 (86%)"], "summary": "✅6 ⚠️2 ❌2 / 10项"}
+{"ts": "2026-06-11T11:48:14.055953+00:00", "alerts": ["🔴 ERROR [watchdog_proc]: 进程不存在: watchdog_guardian", "🟡 WARN [soma_quota]: 配额预警: 129,000/150,000 (86%)"], "summary": "✅6 ⚠️2 ❌2 / 10项"}
+{"ts": "2026-06-11T11:58:15.595724+00:00", "alerts": ["🔴 ERROR [watchdog_proc]: 进程不存在: watchdog_guardian", "🟡 WARN [soma_quota]: 配额预警: 129,000/150,000 (86%)"], "summary": "✅6 ⚠️2 ❌2 / 10项"}
+{"ts": "2026-06-11T12:08:18.051127+00:00", "alerts": ["🔧 自愈成功 [ws_guardian_proc]: 进程不存在: ws_guardian.py → ws_guardian 重启成功", "🔴 ERROR [watchdog_proc]: 进程不存在: watchdog_guardian", "🟡 WARN [soma_quota]: 配额预警: 129,000/150,000 (86%)"], "summary": "✅5 ⚠️2 ❌3 / 10项"}
+{"ts": "2026-06-11T12:18:14.947063+00:00", "alerts": ["🔴 ERROR [watchdog_proc]: 进程不存在: watchdog_guardian", "🟡 WARN [soma_quota]: 配额预警: 129,000/150,000 (86%)"], "summary": "✅6 ⚠️2 ❌2 / 10项"}
+{"ts": "2026-06-11T12:28:13.617662+00:00", "alerts": ["🔴 ERROR [watchdog_proc]: 进程不存在: watchdog_guardian", "🟡 WARN [soma_quota]: 配额预警: 129,000/150,000 (86%)"], "summary": "✅5 ⚠️2 ❌3 / 10项"}
+{"ts": "2026-06-11T12:38:14.203031+00:00", "alerts": ["🔴 ERROR [watchdog_proc]: 进程不存在: watchdog_guardian", "🟡 WARN [soma_quota]: 配额预警: 129,000/150,000 (86%)"], "summary": "✅5 ⚠️2 ❌3 / 10项"}
+{"ts": "2026-06-11T12:48:14.364146+00:00", "alerts": ["🔴 ERROR [watchdog_proc]: 进程不存在: watchdog_guardian", "🟡 WARN [soma_quota]: 配额预警: 129,000/150,000 (86%)"], "summary": "✅5 ⚠️2 ❌3 / 10项"}
+{"ts": "2026-06-11T13:08:18.120938+00:00", "alerts": ["🔧 自愈成功 [ws_guardian_proc]: 进程不存在: ws_guardian.py → ws_guardian 重启成功"], "summary": "✅7 ⚠️1 ❌1 / 9项"}
+{"ts": "2026-06-11T14:08:17.543116+00:00", "alerts": ["🔧 自愈成功 [ws_guardian_proc]: 进程不存在: ws_guardian.py → ws_guardian 重启成功"], "summary": "✅6 ⚠️1 ❌2 / 9项"}
+{"ts": "2026-06-11T15:08:18.709115+00:00", "alerts": ["🔧 自愈成功 [ws_guardian_proc]: 进程不存在: ws_guardian.py → ws_guardian 重启成功"], "summary": "✅6 ⚠️1 ❌2 / 9项"}
+{"ts": "2026-06-13T03:41:25.236643+00:00", "alerts": ["🔧 自愈成功 [brahma_state]: data/brahma_state.json 10分未更新（上限8min） → OK BTC=63450 ETH=1663.58 ts=2026-06-13T03:41:25.381000+00:00"], "summary": "✅6 ⚠️0 ❌1 / 7项"}

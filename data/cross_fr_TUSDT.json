@@ -1,0 +1,14 @@
+{
+  "symbol": "TUSDT",
+  "frs": {
+    "binance": 0.005,
+    "bybit": -0.040681
+  },
+  "spread": 0.04568,
+  "max_ex": "binance",
+  "min_ex": "bybit",
+  "arb_signal": "LONG_BYBIT_SHORT_BINANCE",
+  "arb_score": 10,
+  "bull_fr_bonus": 0,
+  "ts": 1787175654.1167274
+}

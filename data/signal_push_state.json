@@ -1,0 +1,22 @@
+{
+  "BTCUSDT": {
+    "hash": "5896024e",
+    "score": 166.3,
+    "action": "ENTER_FULL",
+    "regime": "BULL_TREND",
+    "direction": "LONG",
+    "ts": 1784275114.5835645,
+    "push_count": 1,
+    "last_change": "首次信号"
+  },
+  "ETHUSDT": {
+    "hash": "dbdc7c10",
+    "score": 163.9,
+    "action": "ENTER_FULL",
+    "regime": "BULL_TREND",
+    "direction": "LONG",
+    "ts": 1784275114.5835645,
+    "push_count": 1,
+    "last_change": "首次信号"
+  }
+}

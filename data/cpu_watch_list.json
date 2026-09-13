@@ -1,0 +1,11 @@
+{
+  "BTCUSDT": {
+    "symbol": "BTCUSDT",
+    "signal_dir": "LONG",
+    "score": 132.9,
+    "regime": "BULL_TREND",
+    "ts": 1787870474.2705307,
+    "ts_iso": "2026-08-27T22:41:14.270533+00:00",
+    "expires_at": 1787884874.2705534
+  }
+}

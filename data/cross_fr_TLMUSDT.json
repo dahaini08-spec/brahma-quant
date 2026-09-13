@@ -1,0 +1,14 @@
+{
+  "symbol": "TLMUSDT",
+  "frs": {
+    "binance": -0.0017850000000000001,
+    "bybit": 0.01
+  },
+  "spread": 0.01179,
+  "max_ex": "bybit",
+  "min_ex": "binance",
+  "arb_signal": "LONG_BINANCE_SHORT_BYBIT",
+  "arb_score": 10,
+  "bull_fr_bonus": 0,
+  "ts": 1786130151.4574275
+}
