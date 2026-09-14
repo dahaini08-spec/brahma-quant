@@ -11,6 +11,7 @@ regime_realtime_watcher.py — 实时体制感知层
 """
 import json, math, time, urllib.request, subprocess
 from pathlib import Path
+import sys
 
 BASE = Path(__file__).parent.parent
 DATA = BASE / 'data'
@@ -46,10 +47,7 @@ def log(msg):
     try:
         with open(LOG, 'a') as f:
             f.write(line + '\n')
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def check_trigger(sym: str) -> tuple:
     """
     检测是否需要触发快速体制刷新。
@@ -219,6 +217,11 @@ def main():
             log(f'  {sym}: 静默 ({reason})')
 
     if not triggered:
+        # [修复 2026-09-14] 静默时也touch regime_state防止watchdog误报过期
+        import os, time
+        _state_path = DATA / 'regime_state.json'
+        if _state_path.exists():
+            os.utime(_state_path, (time.time(), time.time()))
         print('HEARTBEAT_OK')
 
 
