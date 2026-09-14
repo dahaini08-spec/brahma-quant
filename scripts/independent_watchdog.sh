@@ -56,7 +56,7 @@ while true; do
 
   # 5. 模块注册表检查（每10min一次）
   MIN=$(date -u '+%M')
-  if [ "$((MIN % 10))" -eq "0" ]; then
+  if [ "$((10#$MIN % 10))" -eq "0" ]; then
     MOD_RESULT=$(python3 scripts/module_check.py 2>&1)
     echo "$MOD_RESULT" | grep -q "缺失" && ALERT="${ALERT}${MOD_RESULT}\n"
   fi
@@ -70,7 +70,7 @@ while true; do
   else
     # 静默，每10min打一次心跳
     MIN=$(date -u '+%M')
-    if [ "$((MIN % 10))" -eq "0" ]; then
+    if [ "$((10#$MIN % 10))" -eq "0" ]; then
       echo "$TS ✅ all alive (sp=$SP_PID cvd=$CVD_PID liq=$LIQ_PID)" >> logs/watchdog.log
     fi
   fi
