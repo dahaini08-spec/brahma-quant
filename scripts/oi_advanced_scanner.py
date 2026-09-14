@@ -202,8 +202,7 @@ def send_message(msg):
             return
         _dedup[_dedup_key] = _now
         _dedup_file.write_text(_js.dumps(_dedup, ensure_ascii=False, indent=2))
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     try:
         import subprocess
         subprocess.Popen(
@@ -220,8 +219,7 @@ def load_cache():
     if OI_CACHE_PATH.exists():
         try:
             return json.loads(OI_CACHE_PATH.read_text())
-        except:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
 
@@ -245,9 +243,7 @@ def get_oi_multi_period(sym):
         _d_now = _fetch(f'{FAPI_BASE}/fapi/v1/openInterest?symbol={sym}')
         if isinstance(_d_now, dict) and _d_now.get('openInterest'):
             _oi_now_cache['oi'] = float(_d_now['openInterest'])
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     for period, limit in [('1h', 25), ('4h', 30), ('1d', 35)]:
         d = _fetch(f'{FAPI_BASE}/futures/data/openInterestHist'
                    f'?symbol={sym}&period={period}&limit={limit}')
@@ -297,8 +293,7 @@ def get_ls_ratio(sym):
         try:
             ls = float(d2[-1].get('longShortRatio', 1.0))
             retail_l = round(ls/(1+ls)*100, 1)
-        except:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return round(whale_l, 1), round(retail_l, 1)
 
 
@@ -700,8 +695,7 @@ def scan_symbol(sym, ticker_data):
     try:
         _r = json.loads((BASE/'data/regime_state.json').read_text())
         regime = _r.get(sym, {}).get('confirmed', 'UNKNOWN') if isinstance(_r.get(sym), dict) else 'UNKNOWN'
-    except:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # [修复 2026-09-11] 山寨币没有独立体制 → 用BTC体制作为大盘折扣系数
     if regime == 'UNKNOWN':
         try:
@@ -710,9 +704,7 @@ def scan_symbol(sym, ticker_data):
             if btc_regime != 'UNKNOWN':
                 regime = btc_regime
                 details_extra = f'体制={regime}(BTC代理)'
-        except:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # [P0+P1+P2] 把price_chg_24h和regime注入oi字典供score_oi_signal使用
     oi['price_chg_24h'] = pct24h  # 24H价格涨跌幅（价格效率比计算用）
     oi['regime'] = regime          # 体制信息（P2体制过滤用）
@@ -822,8 +814,7 @@ def scan_symbol(sym, ticker_data):
                     result['size_pct'] = round(result['size_pct'] * _macro_factor, 2)
                     result['_macro_factor'] = _macro_factor
                     result['_macro_note']   = f'FOMC降权×{_macro_factor}'
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # ── [END Fix-2] ──────────────────────────────────────────────────────────
 
         # [P1修复 2026-07-13 设计院] action字段双向化（sub_executor读取）
@@ -1148,6 +1139,41 @@ def run():
     OI_CANDIDATES_PATH.write_text(json.dumps(oi_output, ensure_ascii=False, indent=2))
     print(f"\n✅ oi_candidates.json 已更新 ({len(candidates_dict)}个候选)")
 
+    # ── Step5b: 自动将高分新标的写入oi_watchlist ──────────────
+    # [修复 2026-09-14 苏摩111] scanner→watchlist管线断裂修复
+    # 根因: scanner发现新标的不写入watchlist → monitor只看4个老标的
+    # 修复: A/B类(action=buy_full/buy_light) + score≥60 → 自动加入watchlist
+    _watchlist_path = BASE / 'data' / 'oi_watchlist.json'
+    try:
+        _wl = json.loads(_watchlist_path.read_text()) if _watchlist_path.exists() else {}
+        _added = 0
+        for _r in valid:
+            if _r['action'] in ('buy_full', 'buy_light') and _r.get('oi_score', 0) >= 60:
+                _sym = _r['symbol']
+                if _sym not in _wl or _wl[_sym].get('status') != 'WATCHING':
+                    _wl[_sym] = {
+                        'status': 'WATCHING',
+                        'direction': _r.get('direction_bias', 'LONG'),
+                        'size_pct': 1.0 if _r.get('mode') == 'B' else 0.5,
+                        'trigger_conditions': {'fr': True, 'price': True, 'oi': True},
+                        'added': now.strftime('%Y-%m-%d'),
+                        'source': 'oi_advanced_scanner_auto',
+                        'oi_score': _r.get('oi_score', 0),
+                        'mode': _r.get('mode', ''),
+                    }
+                    _added += 1
+        # 限制watchlist最多20个标的，淘汰最久未触发的
+        _watching = {k:v for k,v in _wl.items() if v.get('status') == 'WATCHING'}
+        if len(_watching) > 20:
+            _sorted = sorted(_watching.items(), key=lambda x: x[1].get('oi_score', 0))
+            for _sym, _ in _sorted[:len(_watching)-20]:
+                _wl[_sym]['status'] = 'RETIRED'
+        _watchlist_path.write_text(json.dumps(_wl, indent=2, ensure_ascii=False))
+        if _added:
+            print(f"✅ oi_watchlist.json 已更新 (+{_added}个新标的)")
+    except Exception as _e:
+        print(f'[WARN] watchlist auto-update failed: {_e}', file=sys.stderr)
+
     # ── Step6: 判断是否推送苏摩 ─────────────────────────────
     action_signals = [r for r in valid
                       if r['action'] in ('buy_full', 'buy_light') and
@@ -1250,8 +1276,7 @@ def run():
                 try:
                     if _trig_path.exists():
                         _trig = json.loads(_trig_path.read_text())
-                except Exception:
-                    pass
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
                 for _r in push_signals:
                     _sym = _r.get('symbol', '')
                     _dir = 'LONG' if _r.get('direction_bias','').upper() in ('LONG','BULLISH','BUY') else 'SHORT'
@@ -1303,8 +1328,7 @@ def run():
                     import sys as _sys3; _sys3.path.insert(0, str(BASE / 'brahma_brain'))
                     from grade_utils import parse_grade as _pg3
                     log['grade_num'] = _pg3(log.get('grade', 0), int(log.get('structure_grade', 0) or 0))
-                except Exception:
-                    pass
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
                 f.write(json.dumps(log, ensure_ascii=False) + '\n')
 
         print(f"✅ 推送完成")
