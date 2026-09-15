@@ -3342,3 +3342,7 @@
 {"ts": "2026-09-15T01:59:08Z", "ts_ms": 1789437548581, "module": "brahma", "event": "ENGINE_FAIL", "level": "INFO", "msg": "", "data": {"engine": "multitf", "err": "name '_multitf_score' is not defined"}, "pid": 2416503}
 {"ts": "2026-09-15T02:32:38Z", "ts_ms": 1789439558602, "module": "brahma", "event": "ENGINE_FAIL", "level": "INFO", "msg": "", "data": {"engine": "multitf", "err": "name '_multitf_score' is not defined"}, "pid": 2424267}
 {"ts": "2026-09-15T02:36:49Z", "ts_ms": 1789439809526, "module": "brahma", "event": "ENGINE_FAIL", "level": "INFO", "msg": "", "data": {"engine": "multitf", "err": "name '_multitf_score' is not defined"}, "pid": 2425329}
+{"ts": "2026-09-15T03:24:47Z", "ts_ms": 1789442687948, "module": "brahma", "event": "ENGINE_FAIL", "level": "INFO", "msg": "", "data": {"engine": "multitf", "err": "name '_multitf_score' is not defined"}, "pid": 2436540}
+{"ts": "2026-09-15T03:24:47Z", "ts_ms": 1789442687990, "module": "brahma", "event": "ENGINE_FAIL", "level": "INFO", "msg": "", "data": {"engine": "multitf", "err": "name '_multitf_score' is not defined"}, "pid": 2436540}
+{"ts": "2026-09-15T03:24:48Z", "ts_ms": 1789442688155, "module": "brahma", "event": "ENGINE_FAIL", "level": "INFO", "msg": "", "data": {"engine": "multitf", "err": "name '_multitf_score' is not defined"}, "pid": 2436540}
+{"ts": "2026-09-15T04:07:10Z", "ts_ms": 1789445230686, "module": "brahma", "event": "ENGINE_FAIL", "level": "INFO", "msg": "", "data": {"engine": "multitf", "err": "name '_multitf_score' is not defined"}, "pid": 2446436}

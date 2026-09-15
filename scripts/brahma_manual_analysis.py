@@ -801,15 +801,57 @@ def step4b_pattern(d: dict) -> dict:
 # ══════════════════════════════════════════════════════════
 
 def step5_oi(d: dict) -> dict:
-    """全周期OI趋势：15M短期 + 1H中期 + 4H主力 苏摩111封印 2026-09-04"""
+    """全周期OI趋势：15M短期 + 1H中期 + 4H主力 苏摩111封印 2026-09-04
+    [9.15苏摩111 P0修复] 优先读oi_candidates.json（scanner预计算），API为fallback"""
     oi_vals    = d['oi_vals']      # 15M x8
     oi_1h_vals = d.get('oi_1h_vals', [])  # 1H x8
     oi_4h_vals = d.get('oi_4h_vals', [])  # 4H x6
     price      = d['price']
     k1h        = d['k1h']
     k4h        = d.get('k4h', [])
+    sym        = d.get('sym', '')
 
+    # [P0修复] API拉不到OI时，从oi_candidates.json读取scanner预计算结果
     if len(oi_vals) < 2:
+        try:
+            import json as _json_oi
+            _oc_path = Path(__file__).parent.parent / 'data' / 'oi_candidates.json'
+            if _oc_path.exists():
+                _oc = _json_oi.loads(_oc_path.read_text())
+                _cands = _oc.get('candidates', {})
+                _sym_usdt = sym + 'USDT' if sym else ''
+                if _sym_usdt in _cands:
+                    _sc = _cands[_sym_usdt]
+                    _oi_score = _sc.get('oi_score', 0)
+                    _details = _sc.get('score_details', [])
+                    # 从score_details提取方向信号
+                    _scanner_signal = 'MIXED'
+                    for _det in _details:
+                        if 'LONG_BUILD' in _det: _scanner_signal = 'LONG_BUILD'
+                        elif 'SHORT_BUILD' in _det: _scanner_signal = 'SHORT_BUILD'
+                        elif 'SHORT_COVER' in _det or 'SHORT_COV' in _det: _scanner_signal = 'SHORT_SQUEEZE'
+                        elif 'LONG_UNWIND' in _det: _scanner_signal = 'LONG_UNWIND'
+                    _scanner_chg = _sc.get('pct24h', 0)
+                    _conclusion = f'来自OI Scanner(oi_score={_oi_score:.0f}) | {" ".join(_details[:3])}'
+                    return {
+                        'signal':       _scanner_signal,
+                        'signal_15m':   _scanner_signal,
+                        'signal_1h':    _scanner_signal,
+                        'signal_4h':    _scanner_signal,
+                        'conf':         0.67,
+                        'conclusion':   f'多数一致 | 15M:{_scanner_signal} 1H:{_scanner_signal} 4H:NO_DATA(来自scanner) | {_conclusion}',
+                        'total_change': 0,
+                        'total_change_1h': 0,
+                        'total_change_4h': 0,
+                        'usd_change_m': 0,
+                        'latest':       0,
+                        'trend':        [],
+                        'trend_1h':     [],
+                        'trend_4h':     [],
+                        'cvd_1h':       0,
+                        'cvd_note':     'OI来自scanner(API无数据)',
+                    }
+        except Exception as _e: print(f'[WARN] step5_oi scanner fallback: {_e}', file=sys.stderr)
         return {'signal': 'NO_DATA', 'trend': [], 'conclusion': 'OI数据不足'}
 
     def _classify(vals, klines, label):
@@ -1048,7 +1090,9 @@ def step7_volatility(d: dict) -> dict:
     hurst_val = 0.5
     try:
         if 'H=' in hurst_raw:
-            hurst_val = float(hurst_raw.split('H=')[1].split()[0])
+            _hv = float(hurst_raw.split('H=')[1].split()[0])
+            # [P3修复] 夹紧到合理范围(0.1~0.9)，防止异常值如H=+125126
+            hurst_val = max(0.1, min(0.9, _hv))
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     harv_val = 0.0
     try:

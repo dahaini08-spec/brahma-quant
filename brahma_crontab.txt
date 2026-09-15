@@ -127,7 +127,8 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 0 3 * * 0 cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_wiring_check.py >> logs/wiring_check.log 2>&1
 
 # GEX刷新 — 每4小时, 用gex_unified.scan_gex写gex_state.json
-0 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 -c "from brahma_brain.gex_unified import scan_gex; scan_gex('BTC',force=True); scan_gex('ETH',force=True)" >> logs/gex_cron.log 2>&1
+# [9.15苏摩111 P1修复] 扩展到tier1标的
+0 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 -c "from brahma_brain.gex_unified import scan_gex; [scan_gex(s,force=True) for s in ['BTC','ETH','HYPE','XAU','CL','SKHY','SPCX','NVDA','MSTR','SOXL']]" >> logs/gex_cron.log 2>&1
 # vol_beta刷新 — 每4小时
 0 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 -c "from brahma_brain.vol_beta_engine import run; run('BTC'); run('ETH')" >> logs/vol_beta_cron.log 2>&1
 

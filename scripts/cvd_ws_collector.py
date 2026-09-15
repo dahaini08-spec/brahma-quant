@@ -24,11 +24,12 @@ DATA.mkdir(exist_ok=True)
 
 SYMBOLS        = [
     # [9.15苏摩111 P1优化] 从39标的缩减到2主力+2次主流
-    # volume_unified只消费BTC/ETH的CVD，其他37个山寨白采集
+    # [9.15苏摩111 P2修复] 扩展到tier1高信心标的（HYPE/XAU/CL/SKHY交叉验证≥3/4）
     'BTCUSDT', 'ETHUSDT',
-    # 保留2个次主流作为OI watchlist候选参考
     'SOLUSDT', 'XRPUSDT',
-]  # 39→4标的，省35×10s/次 CPU+API配额
+    # Tier1高信心标的
+    'HYPEUSDT', 'XAUUSDT', 'CLUSDT', 'SKHYUSDT',
+]  # 4→8标的，覆盖tier1交叉验证≥3/4的高信心标的
 POLL_INTERVAL  = 300   # 秒（5分钟，分析系统不需要更高频率）
 WINDOW_SECONDS = 3600  # 保留1H
 SNAPSHOT_EVERY = 1     # 每次轮询后写快照

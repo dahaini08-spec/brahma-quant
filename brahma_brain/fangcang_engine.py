@@ -1231,6 +1231,27 @@ _NEW_30_SYMBOLS = [
     'vet','egld','comp','snx','theta','iota','kava','neo','sushi','zil',
 ]
 
+# [9.15苏摩111 P1修复] 动态Tier1标的列表，与battlefield_candidates对齐
+# 优先使用battlefield_candidates.json的tier1_strong，fallback到_NEW_30_SYMBOLS
+def _get_tier1_symbols():
+    """从battlefield_candidates.json读取当前tier1标的列表"""
+    try:
+        import json as _json_t1, os as _os_t1
+        _bc_path = _os_t1.path.join(_os_t1.path.dirname(_os_t1.path.dirname(_os_t1.path.abspath(__file__))), 'data', 'battlefield_candidates.json')
+        if _os_t1.path.exists(_bc_path):
+            _bc = _json_t1.loads(open(_bc_path).read())
+            _tier1 = _bc.get('tier1_strong', [])
+            _syms = []
+            for c in _tier1:
+                _s = c.get('symbol', '').replace('USDT', '').lower()
+                if _s and _s not in _syms:
+                    _syms.append(_s)
+            if _syms:
+                return _syms
+    except Exception:
+        pass
+    return _NEW_30_SYMBOLS
+
 
 def _infer_regime_from_case(d: dict) -> str:
     """
@@ -1333,7 +1354,7 @@ def _load_fangcang_cases() -> list:
     # ② 备用：若主库不可用，回退到旧分散加载
     if not cases:
         _log.warning('[fangcang] 回退到旧分散加载模式')
-        for sym in _NEW_30_SYMBOLS:
+        for sym in _get_tier1_symbols():
             fpath = _DATA / f'fangcang_cases_{sym}.json'
             if not fpath.exists(): continue
             try:
