@@ -1,6 +1,6 @@
 {
-  "data_source": "BLS API + 推算模型",
-  "data_time": "2026-09-15 01:06 UTC",
+  "data_source": "BLS API + 苏摩配置(macro_config.json)",
+  "data_time": "2026-09-15 06:48 UTC",
   "cpi_core": {
     "value": 338.041,
     "period": "M08",
@@ -23,11 +23,12 @@
   "ppi_yoy": -0.43,
   "fed_rate": 5.25,
   "rate_expectation": {
-    "bias": "DOVISH",
-    "action": "CUT_25",
-    "probability": 60,
-    "note": "通胀回落(CPI=2.5%/PPI=-0.4%)→降息25bp概率60%",
-    "inflation_pressure": 2.32
+    "bias": "HAWKISH",
+    "action": "HIKE",
+    "probability": 65,
+    "note": "FOMC前鹰派基调，加息预期升温",
+    "inflation_pressure": 2.32,
+    "reasoning": "CPI虽回落至2.45%但核心通胀仍高于2%目标，就业市场紧俏，美联储前瞻指引偏鹰，市场定价加息预期"
   },
   "macro_calendar": {
     "next_fomc": "2026-09-17",

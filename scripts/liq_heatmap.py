@@ -193,19 +193,7 @@ def format_report(r: dict) -> str:
 
 
 if __name__ == '__main__':
-    syms = sys.argv[1:] if len(sys.argv) > 1 else [
-        # 主力+热门 (原19个)
-        'BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'XRPUSDT', 'BNBUSDT',
-        'DOGEUSDT', 'HYPEUSDT', 'XAUUSDT', 'XAGUSDT', 'ZECUSDT',
-        'FILUSDT', 'SOXLUSDT', 'SNDKUSDT', 'LINKUSDT', 'AVAXUSDT',
-        'TRUMPUSDT', 'SUIUSDT', '1000PEPEUSDT', 'NEARUSDT', 'LSKUSDT',
-        # 新增主流10个 (2026-09-14 苏摩111)
-        'UNIUSDT', 'ADAUSDT', 'ENAUSDT', 'WLDUSDT', 'ARBUSDT',
-        'LTCUSDT', 'AAVEUSDT', 'BCHUSDT', 'INJUSDT', 'DOTUSDT',
-        # 新增美股10个 (2026-09-14 苏摩111)
-        'SKHYNIXUSDT', 'CLUSDT', 'MUUSDT', 'SKHYUSDT', 'SPCXUSDT',
-        'CRCLUSDT', 'QQQUSDT', 'SOXSUSDT', 'NVDAUSDT', 'MSTRUSDT',
-    ]  # 2026-09-14 苏摩111 扩展20→40标的
+    syms = sys.argv[1:] if len(sys.argv) > 1 else ['BTCUSDT', 'ETHUSDT']  # 2026-09-15 苏摩111 缩减到核心2标的
     for sym in syms:
         r = get_liq_heatmap(sym)
         print(format_report(r))

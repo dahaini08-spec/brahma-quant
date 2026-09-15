@@ -1,0 +1,17 @@
+{
+  "_comment": "梵天宏观预期配置文件 — 苏摩手动维护，优先级高于推算模型",
+  "_updated": "2026-09-15 06:47 UTC",
+  "_updated_by": "苏摩111",
+  "fed_rate": 5.25,
+  "rate_expectation": {
+    "bias": "HAWKISH",
+    "action": "HIKE",
+    "probability": 65,
+    "note": "FOMC前鹰派基调，加息预期升温",
+    "inflation_pressure": 2.32,
+    "reasoning": "CPI虽回落至2.45%但核心通胀仍高于2%目标，就业市场紧俏，美联储前瞻指引偏鹰，市场定价加息预期"
+  },
+  "next_fomc": "2026-09-17",
+  "fomc_stance": "HAWKISH",
+  "fomc_note": "FOMC前夜，子弹上膛不扣扳机"
+}

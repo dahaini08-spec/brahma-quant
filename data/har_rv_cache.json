@@ -1,19 +1,19 @@
 {
   "BTCUSDT": {
-    "ts": 1789437550.9441829,
+    "ts": 1789451041.7155395,
     "data": {
-      "rv_1d": 0.01596,
-      "rv_5d": 0.02148,
+      "rv_1d": 0.01509,
+      "rv_5d": 0.02262,
       "rv_22d": 0.02,
-      "rv_forecast": 0.01881,
-      "rv_percentile": 80,
+      "rv_forecast": 0.0189,
+      "rv_percentile": 100,
       "regime_vol": "MEDIUM",
       "score_adj": 0,
       "p_up_proxy": 0.45
     }
   },
   "ETHUSDT": {
-    "ts": 1789451021.5343788,
+    "ts": 1789451065.0630443,
     "data": {
       "rv_1d": 0.02247,
       "rv_5d": 0.0322,
@@ -52,16 +52,16 @@
     }
   },
   "XRPUSDT": {
-    "ts": 1789261221.6067486,
+    "ts": 1789453484.8712118,
     "data": {
-      "rv_1d": 0.00867,
-      "rv_5d": 0.04452,
+      "rv_1d": 0.0429,
+      "rv_5d": 0.06337,
       "rv_22d": 0.02,
-      "rv_forecast": 0.02432,
-      "rv_percentile": 100,
-      "regime_vol": "MEDIUM",
-      "score_adj": 0,
-      "p_up_proxy": 0.45
+      "rv_forecast": 0.04289,
+      "rv_percentile": 50,
+      "regime_vol": "EXTREME",
+      "score_adj": -5,
+      "p_up_proxy": 0.55
     }
   },
   "DOGEUSDT": {
@@ -598,13 +598,13 @@
     }
   },
   "SKHYNIXUSDT": {
-    "ts": 1788355731.7372031,
+    "ts": 1789453484.948065,
     "data": {
-      "rv_1d": 0.02639,
-      "rv_5d": 0.03618,
+      "rv_1d": 0.02611,
+      "rv_5d": 0.02979,
       "rv_22d": 0.02,
-      "rv_forecast": 0.0276,
-      "rv_percentile": 60,
+      "rv_forecast": 0.02527,
+      "rv_percentile": 50,
       "regime_vol": "HIGH",
       "score_adj": -3,
       "p_up_proxy": 0.55
@@ -676,13 +676,13 @@
     }
   },
   "SKHYUSDT": {
-    "ts": 1789445409.2548702,
+    "ts": 1789451474.4461586,
     "data": {
-      "rv_1d": 0.02043,
-      "rv_5d": 0.02775,
+      "rv_1d": 0.02175,
+      "rv_5d": 0.02762,
       "rv_22d": 0.02,
-      "rv_forecast": 0.02256,
-      "rv_percentile": 70,
+      "rv_forecast": 0.02298,
+      "rv_percentile": 60,
       "regime_vol": "MEDIUM",
       "score_adj": 0,
       "p_up_proxy": 0.5

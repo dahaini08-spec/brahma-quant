@@ -118,9 +118,22 @@ def _calc_rate_expectation(cpi_yoy: float, ppi_yoy: float, current_rate: float) 
         'inflation_pressure': round(inflation_pressure, 2),
     }
 
+def _load_macro_config() -> dict:
+    """[9.15苏摩111] 读取苏摩手动维护的宏观配置，优先级高于推算模型"""
+    config_path = DATA_DIR / 'macro_config.json'
+    if config_path.exists():
+        try:
+            return json.loads(config_path.read_text())
+        except Exception as _e: print(f'[WARN] macro_config.json parse error: {_e}', file=sys.stderr)
+    return {}
+
 def fetch_macro_real() -> dict:
-    """采集真实宏观数据"""
+    """采集真实宏观数据
+    [9.15苏摩111] 优先读macro_config.json（苏摩手动维护），推算模型降级为fallback"""
     now = datetime.now(timezone.utc)
+    
+    # 0. 读取苏摩手动配置（优先级最高）
+    mc = _load_macro_config()
     
     # 1. 获取CPI数据
     cpi_core = _fetch_bls(BLS_SERIES['cpi_core'])
@@ -131,24 +144,33 @@ def fetch_macro_real() -> dict:
     cpi_yoy = _calc_yoy(BLS_SERIES['cpi_core'], 13)
     ppi_yoy = _calc_yoy(BLS_SERIES['ppi_final'], 13)
     
-    # 3. 推算利率预期
-    rate_expectation = _calc_rate_expectation(cpi_yoy, ppi_yoy, CURRENT_FED_RATE)
+    # 3. 利率预期：优先用macro_config.json，fallback到推算模型
+    if mc.get('rate_expectation'):
+        rate_expectation = mc['rate_expectation']
+        data_source = 'BLS API + 苏摩配置(macro_config.json)'
+    else:
+        rate_expectation = _calc_rate_expectation(cpi_yoy, ppi_yoy, CURRENT_FED_RATE)
+        data_source = 'BLS API + 推算模型(fallback)'
     
-    # 4. 宏观日历（下一次重要事件）
+    # 4. Fed Rate：优先用config
+    fed_rate = mc.get('fed_rate', CURRENT_FED_RATE)
+    
+    # 5. 宏观日历
+    next_fomc = mc.get('next_fomc', NEXT_FOMC_DATE)
     macro_calendar = {
-        'next_fomc': NEXT_FOMC_DATE,
-        'days_to_fomc': (_parse_date(NEXT_FOMC_DATE) - now).days if _parse_date(NEXT_FOMC_DATE) else 0,
+        'next_fomc': next_fomc,
+        'days_to_fomc': (_parse_date(next_fomc) - now).days if _parse_date(next_fomc) else 0,
     }
     
     return {
-        'data_source': 'BLS API + 推算模型',
+        'data_source': data_source,
         'data_time': now.strftime('%Y-%m-%d %H:%M UTC'),
         'cpi_core': cpi_core,
         'cpi_all': cpi_all,
         'ppi_final': ppi_final,
         'cpi_yoy': cpi_yoy,
         'ppi_yoy': ppi_yoy,
-        'fed_rate': CURRENT_FED_RATE,
+        'fed_rate': fed_rate,
         'rate_expectation': rate_expectation,
         'macro_calendar': macro_calendar,
         'fear_greed': None,  # 从现有macro_state.json读取

@@ -52,8 +52,8 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 03 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 -c "from brahma_brain.drawdown_tracker import update_drawdown; update_drawdown(); import json,time; d=json.load(open('data/circuit_breaker.json')); d['ts']=time.time(); json.dump(d,open('data/circuit_breaker.json','w'))" >> logs/syscron.log 2>&1
 # CVD存活检查 — :06
 06 * * * * cd /root/.openclaw/workspace/trading-system && pgrep -f cvd_ws_collector >/dev/null || setsid python3 scripts/cvd_ws_collector.py >> logs/cvd_ws.log 2>&1
-# liqmap存活检查 — :09
-09 * * * * cd /root/.openclaw/workspace/trading-system && pgrep -f liqmap_collector >/dev/null || setsid python3 brahma_brain/liqmap_collector.py >> logs/liqmap.log 2>&1
+# liqmap OKX REST轮询 — :09每2h（替代常驻WS）
+09 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/liq_okx_fetcher.py >> logs/liqmap.log 2>&1
 
 # ============================================================
 # Layer 4: 每2小时任务 (错峰)

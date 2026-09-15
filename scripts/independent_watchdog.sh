@@ -1,4 +1,4 @@
-#!/bin/bin/env bash
+#!/bin/bash
 # independent_watchdog.sh — 独立看门狗 v2 [2026-09-14 苏摩111]
 # 修复刷屏：告警去重 + 状态文件 + 恢复通知
 # 运行方式：nohup bash scripts/independent_watchdog.sh >> logs/watchdog.log 2>&1 &
