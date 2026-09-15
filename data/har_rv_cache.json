@@ -351,13 +351,13 @@
     }
   },
   "HYPEUSDT": {
-    "ts": 1788028433.6605155,
+    "ts": 1789445368.2851613,
     "data": {
-      "rv_1d": 0.02612,
-      "rv_5d": 0.05848,
+      "rv_1d": 0.02505,
+      "rv_5d": 0.04723,
       "rv_22d": 0.02,
-      "rv_forecast": 0.03531,
-      "rv_percentile": 100,
+      "rv_forecast": 0.031,
+      "rv_percentile": 90,
       "regime_vol": "HIGH",
       "score_adj": -3,
       "p_up_proxy": 0.55
@@ -676,16 +676,16 @@
     }
   },
   "SKHYUSDT": {
-    "ts": 1788043227.303144,
+    "ts": 1789445409.2548702,
     "data": {
-      "rv_1d": 0.00951,
-      "rv_5d": 0.02498,
+      "rv_1d": 0.02043,
+      "rv_5d": 0.02775,
       "rv_22d": 0.02,
-      "rv_forecast": 0.01777,
-      "rv_percentile": 100,
+      "rv_forecast": 0.02256,
+      "rv_percentile": 70,
       "regime_vol": "MEDIUM",
       "score_adj": 0,
-      "p_up_proxy": 0.45
+      "p_up_proxy": 0.5
     }
   },
   "MUUUSDT": {
@@ -702,16 +702,16 @@
     }
   },
   "SPCXUSDT": {
-    "ts": 1788356505.2474117,
+    "ts": 1789445393.7471645,
     "data": {
-      "rv_1d": 0.02015,
-      "rv_5d": 0.03589,
+      "rv_1d": 0.02671,
+      "rv_5d": 0.03089,
       "rv_22d": 0.02,
-      "rv_forecast": 0.02531,
-      "rv_percentile": 100,
+      "rv_forecast": 0.02586,
+      "rv_percentile": 50,
       "regime_vol": "HIGH",
       "score_adj": -3,
-      "p_up_proxy": 0.5
+      "p_up_proxy": 0.55
     }
   },
   "DRAMUSDT": {

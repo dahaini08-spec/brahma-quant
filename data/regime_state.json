@@ -33,9 +33,10 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789394422.6243038,
+    "last_update_ts": 1789445389.4429524,
     "confirmed_cn": "弱震荡",
-    "last_sw_reset": 1789394407.815515
+    "last_sw_reset": 1789394407.815515,
+    "candidate_start_ts": 1789445389.4407701
   },
   "MSTRUSDT": {
     "confirmed": "CHOP_MID",
@@ -58,7 +59,7 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789394408.1201015,
+    "last_update_ts": 1789445364.4678385,
     "confirmed_cn": "弱震荡"
   },
   "SKHYNIXUSDT": {
@@ -80,8 +81,10 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789394407.9435961,
-    "confirmed_cn": "弱震荡"
+    "last_update_ts": 1789445403.6730533,
+    "confirmed_cn": "弱震荡",
+    "last_sw_reset": 1789445403.6709185,
+    "candidate_start_ts": 1789445403.6709185
   },
   "NVDAUSDT": {
     "confirmed": "CHOP_MID",
