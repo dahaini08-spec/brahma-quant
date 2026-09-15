@@ -1,15 +1,15 @@
 {
   "ETHUSDT": {
-    "ts": 1789452720.7381825,
-    "ts_iso": "2026-09-15T06:12:00.738184+00:00",
+    "ts": 1789459920.7678778,
+    "ts_iso": "2026-09-15T08:12:00.767881+00:00",
     "symbol": "ETHUSDT",
-    "px": 2495.16,
-    "rsi_1h": 37.2,
-    "bb_width": 1.643,
+    "px": 2464.28,
+    "rsi_1h": 25.6,
+    "bb_width": 2.065,
     "events": [
       {
         "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=1.643%极度压缩(历史最低区间) RSI=37.2 弹簧即将释放",
+        "desc": "BBW=2.065%极度压缩(历史最低区间) RSI=25.6 弹簧即将释放",
         "priority": "HIGH",
         "bbw_shrinking": false
       }
@@ -17,16 +17,16 @@
     "high_priority": true
   },
   "SOLUSDT": {
-    "ts": 1789452720.9788728,
-    "ts_iso": "2026-09-15T06:12:00.978876+00:00",
+    "ts": 1789459921.002021,
+    "ts_iso": "2026-09-15T08:12:01.002023+00:00",
     "symbol": "SOLUSDT",
-    "px": 101.28,
-    "rsi_1h": 36.8,
-    "bb_width": 1.703,
+    "px": 100.1,
+    "rsi_1h": 15.4,
+    "bb_width": 2.076,
     "events": [
       {
         "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=1.703%极度压缩(历史最低区间) RSI=36.8 弹簧即将释放",
+        "desc": "BBW=2.076%极度压缩(历史最低区间) RSI=15.4 弹簧即将释放",
         "priority": "HIGH",
         "bbw_shrinking": false
       }
@@ -34,16 +34,16 @@
     "high_priority": true
   },
   "BTCUSDT": {
-    "ts": 1789452720.5046887,
-    "ts_iso": "2026-09-15T06:12:00.504691+00:00",
+    "ts": 1789459920.531229,
+    "ts_iso": "2026-09-15T08:12:00.531230+00:00",
     "symbol": "BTCUSDT",
-    "px": 77551.5,
-    "rsi_1h": 25.8,
-    "bb_width": 1.425,
+    "px": 76707.1,
+    "rsi_1h": 5.9,
+    "bb_width": 1.836,
     "events": [
       {
         "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=1.425%极度压缩(历史最低区间) RSI=25.8 弹簧即将释放",
+        "desc": "BBW=1.836%极度压缩(历史最低区间) RSI=5.9 弹簧即将释放",
         "priority": "HIGH",
         "bbw_shrinking": false
       }
@@ -51,16 +51,16 @@
     "high_priority": true
   },
   "BNBUSDT": {
-    "ts": 1789452721.2060838,
-    "ts_iso": "2026-09-15T06:12:01.206086+00:00",
+    "ts": 1789459921.253066,
+    "ts_iso": "2026-09-15T08:12:01.253068+00:00",
     "symbol": "BNBUSDT",
-    "px": 722.25,
-    "rsi_1h": 41.7,
-    "bb_width": 0.67,
+    "px": 715.39,
+    "rsi_1h": 22.4,
+    "bb_width": 0.95,
     "events": [
       {
         "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=0.670%极度压缩(历史最低区间) RSI=41.7 弹簧即将释放",
+        "desc": "BBW=0.950%极度压缩(历史最低区间) RSI=22.4 弹簧即将释放",
         "priority": "HIGH",
         "bbw_shrinking": true
       }
@@ -104,16 +104,16 @@
     "high_priority": true
   },
   "LTCUSDT": {
-    "ts": 1789452722.3891015,
-    "ts_iso": "2026-09-15T06:12:02.389104+00:00",
+    "ts": 1789459922.436179,
+    "ts_iso": "2026-09-15T08:12:02.436181+00:00",
     "symbol": "LTCUSDT",
-    "px": 52.82,
-    "rsi_1h": 23.5,
-    "bb_width": 1.94,
+    "px": 52.49,
+    "rsi_1h": 19.9,
+    "bb_width": 2.183,
     "events": [
       {
         "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=1.940%极度压缩(历史最低区间) RSI=23.5 弹簧即将释放",
+        "desc": "BBW=2.183%极度压缩(历史最低区间) RSI=19.9 弹簧即将释放",
         "priority": "HIGH",
         "bbw_shrinking": true
       }
@@ -121,16 +121,16 @@
     "high_priority": true
   },
   "TAOUSDT": {
-    "ts": 1789452723.0994391,
-    "ts_iso": "2026-09-15T06:12:03.099442+00:00",
+    "ts": 1789456323.559087,
+    "ts_iso": "2026-09-15T07:12:03.559089+00:00",
     "symbol": "TAOUSDT",
-    "px": 232.17,
-    "rsi_1h": 42.3,
-    "bb_width": 1.824,
+    "px": 229.97,
+    "rsi_1h": 32.4,
+    "bb_width": 2.038,
     "events": [
       {
         "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=1.824%极度压缩(历史最低区间) RSI=42.3 弹簧即将释放",
+        "desc": "BBW=2.038%极度压缩(历史最低区间) RSI=32.4 弹簧即将释放",
         "priority": "HIGH",
         "bbw_shrinking": true
       }
@@ -138,16 +138,16 @@
     "high_priority": true
   },
   "AAVEUSDT": {
-    "ts": 1789395132.7339456,
-    "ts_iso": "2026-09-14T14:12:12.733949+00:00",
+    "ts": 1789459924.6444335,
+    "ts_iso": "2026-09-15T08:12:04.644436+00:00",
     "symbol": "AAVEUSDT",
-    "px": 126.36,
-    "rsi_1h": 60.7,
-    "bb_width": 1.176,
+    "px": 126.17,
+    "rsi_1h": 32.6,
+    "bb_width": 2.464,
     "events": [
       {
         "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=1.176%极度压缩(历史最低区间) RSI=60.7 弹簧即将释放",
+        "desc": "BBW=2.464%极度压缩(历史最低区间) RSI=32.6 弹簧即将释放",
         "priority": "HIGH",
         "bbw_shrinking": true
       }
@@ -172,16 +172,16 @@
     "high_priority": true
   },
   "PENGUUSDT": {
-    "ts": 1789452725.0277278,
-    "ts_iso": "2026-09-15T06:12:05.027732+00:00",
+    "ts": 1789459926.149945,
+    "ts_iso": "2026-09-15T08:12:06.149948+00:00",
     "symbol": "PENGUUSDT",
-    "px": 0.007055,
-    "rsi_1h": 38.9,
-    "bb_width": 1.783,
+    "px": 0.006937,
+    "rsi_1h": 18.1,
+    "bb_width": 2.421,
     "events": [
       {
         "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=1.783%极度压缩(历史最低区间) RSI=38.9 弹簧即将释放",
+        "desc": "BBW=2.421%极度压缩(历史最低区间) RSI=18.1 弹簧即将释放",
         "priority": "HIGH",
         "bbw_shrinking": true
       }
@@ -189,41 +189,41 @@
     "high_priority": true
   },
   "SYNUSDT": {
-    "ts": 1789452726.988076,
-    "ts_iso": "2026-09-15T06:12:06.988080+00:00",
+    "ts": 1789459928.0755649,
+    "ts_iso": "2026-09-15T08:12:08.075568+00:00",
     "symbol": "SYNUSDT",
-    "px": 0.08,
-    "rsi_1h": 50.8,
-    "bb_width": 6.792,
+    "px": 0.0797,
+    "rsi_1h": 48.8,
+    "bb_width": 6.562,
     "events": [
       {
         "event": "E_MTF_SUPPORT",
-        "desc": "🏗️ 多周期结构共振! 触发3项(M1,M3,M4) 30日区间位=0% RSI_4H=47.4 → 大周期支撑确认，高置信度做多背景",
+        "desc": "🏗️ 多周期结构共振! 触发2项(M1,M3) 30日区间位=-1% RSI_4H=50.4 → 大周期支撑确认，高置信度做多背景",
         "priority": "HIGH",
         "direction": "LONG",
-        "mtf_hits": 3,
-        "pos30": 0.0,
+        "mtf_hits": 2,
+        "pos30": -0.008,
         "_cooldown_key": "SYNUSDT_mtf_support_ts"
       },
       {
         "event": "E10_RSI_BOUNCE_CONFIRM",
-        "desc": "RSI_1H 20.6→50.8 超卖回弹确认（从<30回升>35），多头入场+6%WR提升",
+        "desc": "RSI_1H 20.6→48.8 超卖回弹确认（从<30回升>35），多头入场+6%WR提升",
         "priority": "HIGH"
       }
     ],
     "high_priority": true
   },
   "NVDAUSDT": {
-    "ts": 1789452729.1023407,
-    "ts_iso": "2026-09-15T06:12:09.102344+00:00",
+    "ts": 1789459929.4720385,
+    "ts_iso": "2026-09-15T08:12:09.472041+00:00",
     "symbol": "NVDAUSDT",
-    "px": 212.52,
-    "rsi_1h": 51.9,
-    "bb_width": 0.582,
+    "px": 211.4,
+    "rsi_1h": 38.4,
+    "bb_width": 0.584,
     "events": [
       {
         "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=0.582%极度压缩(历史最低区间) RSI=51.9 弹簧即将释放",
+        "desc": "BBW=0.584%极度压缩(历史最低区间) RSI=38.4 弹簧即将释放",
         "priority": "HIGH",
         "bbw_shrinking": false
       }
@@ -231,16 +231,16 @@
     "high_priority": true
   },
   "TSLAUSDT": {
-    "ts": 1789452730.1670794,
-    "ts_iso": "2026-09-15T06:12:10.167083+00:00",
+    "ts": 1789459929.7373877,
+    "ts_iso": "2026-09-15T08:12:09.737389+00:00",
     "symbol": "TSLAUSDT",
-    "px": 359.33,
-    "rsi_1h": 17.4,
-    "bb_width": 0.713,
+    "px": 357.22,
+    "rsi_1h": 16.4,
+    "bb_width": 0.855,
     "events": [
       {
         "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=0.713%极度压缩(历史最低区间) RSI=17.4 弹簧即将释放",
+        "desc": "BBW=0.855%极度压缩(历史最低区间) RSI=16.4 弹簧即将释放",
         "priority": "HIGH",
         "bbw_shrinking": false
       }
@@ -249,24 +249,24 @@
   },
   "XAUUSDT": {
     "symbol": "XAUUSDT",
-    "direction": "LONG",
-    "trigger_type": "oi_anomaly",
-    "oi_score": 87.206,
-    "mode": "B",
-    "ts": 1789432235.0010083,
-    "source": "oi_advanced_scanner"
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 102.0,
+    "ts": 1789464280.66882,
+    "source": "tradfi_signal_layer"
   },
   "QQQUSDT": {
-    "ts": 1789340412.8832583,
-    "ts_iso": "2026-09-13T23:00:12.883260+00:00",
+    "ts": 1789459931.1240456,
+    "ts_iso": "2026-09-15T08:12:11.124047+00:00",
     "symbol": "QQQUSDT",
-    "px": 708.56,
-    "rsi_1h": 44.9,
-    "bb_width": 0.431,
+    "px": 705.24,
+    "rsi_1h": 17.9,
+    "bb_width": 0.597,
     "events": [
       {
         "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=0.431%极度压缩(历史最低区间) RSI=44.9 弹簧即将释放",
+        "desc": "BBW=0.597%极度压缩(历史最低区间) RSI=17.9 弹簧即将释放",
         "priority": "HIGH",
         "bbw_shrinking": false
       }
@@ -278,8 +278,8 @@
     "direction": "LONG",
     "trigger_type": "tradfi_macro",
     "score_delta": 0,
-    "base_score": 191.0,
-    "ts": 1789431323.9673398,
+    "base_score": 95.6,
+    "ts": 1789464280.5074868,
     "source": "tradfi_signal_layer"
   },
   "1000XECUSDT": {
@@ -316,16 +316,16 @@
     "high_priority": true
   },
   "AMDUSDT": {
-    "ts": 1789392612.1902738,
-    "ts_iso": "2026-09-14T13:30:12.190276+00:00",
+    "ts": 1789459930.192619,
+    "ts_iso": "2026-09-15T08:12:10.192621+00:00",
     "symbol": "AMDUSDT",
-    "px": 488.22,
-    "rsi_1h": 31.2,
-    "bb_width": 2.413,
+    "px": 489.87,
+    "rsi_1h": 27.3,
+    "bb_width": 1.294,
     "events": [
       {
         "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=2.413%极度压缩(历史最低区间) RSI=31.2 弹簧即将释放",
+        "desc": "BBW=1.294%极度压缩(历史最低区间) RSI=27.3 弹簧即将释放",
         "priority": "HIGH",
         "bbw_shrinking": false
       }
@@ -398,13 +398,21 @@
     "high_priority": true
   },
   "SKHYNIXUSDT": {
+    "ts": 1789459935.3932812,
+    "ts_iso": "2026-09-15T08:12:15.393284+00:00",
     "symbol": "SKHYNIXUSDT",
-    "direction": "SHORT",
-    "trigger_type": "tradfi_macro",
-    "score_delta": 0,
-    "base_score": 109.9,
-    "ts": 1789390828.7074704,
-    "source": "tradfi_signal_layer"
+    "px": 1242.36,
+    "rsi_1h": 40.0,
+    "bb_width": 1.503,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=1.503%极度压缩(历史最低区间) RSI=40.0 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
   },
   "TRUMPUSDT": {
     "ts": 1789394414.9417577,
@@ -426,16 +434,16 @@
     "high_priority": true
   },
   "INTCUSDT": {
-    "ts": 1789394419.5628378,
-    "ts_iso": "2026-09-14T14:00:19.562841+00:00",
+    "ts": 1789459930.4226403,
+    "ts_iso": "2026-09-15T08:12:10.422642+00:00",
     "symbol": "INTCUSDT",
-    "px": 96.53,
-    "rsi_1h": 25.4,
-    "bb_width": 2.318,
+    "px": 96.77,
+    "rsi_1h": 30.0,
+    "bb_width": 1.255,
     "events": [
       {
         "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=2.318%极度压缩(历史最低区间) RSI=25.4 弹簧即将释放",
+        "desc": "BBW=1.255%极度压缩(历史最低区间) RSI=30.0 弹簧即将释放",
         "priority": "HIGH",
         "bbw_shrinking": false
       }
@@ -443,33 +451,33 @@
     "high_priority": true
   },
   "AVAXUSDT": {
-    "ts": 1789452721.9242177,
-    "ts_iso": "2026-09-15T06:12:01.924221+00:00",
+    "ts": 1789459921.970658,
+    "ts_iso": "2026-09-15T08:12:01.970660+00:00",
     "symbol": "AVAXUSDT",
-    "px": 7.512,
-    "rsi_1h": 46.4,
-    "bb_width": 1.92,
+    "px": 7.444,
+    "rsi_1h": 33.3,
+    "bb_width": 1.973,
     "events": [
       {
         "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=1.920%极度压缩(历史最低区间) RSI=46.4 弹簧即将释放",
+        "desc": "BBW=1.973%极度压缩(历史最低区间) RSI=33.3 弹簧即将释放",
         "priority": "HIGH",
-        "bbw_shrinking": true
+        "bbw_shrinking": false
       }
     ],
     "high_priority": true
   },
   "LINKUSDT": {
-    "ts": 1789452722.1586325,
-    "ts_iso": "2026-09-15T06:12:02.158635+00:00",
+    "ts": 1789459922.1982908,
+    "ts_iso": "2026-09-15T08:12:02.198293+00:00",
     "symbol": "LINKUSDT",
-    "px": 11.468,
-    "rsi_1h": 47.7,
-    "bb_width": 2.123,
+    "px": 11.316,
+    "rsi_1h": 23.2,
+    "bb_width": 2.213,
     "events": [
       {
         "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=2.123%极度压缩(历史最低区间) RSI=47.7 弹簧即将释放",
+        "desc": "BBW=2.213%极度压缩(历史最低区间) RSI=23.2 弹簧即将释放",
         "priority": "HIGH",
         "bbw_shrinking": false
       }
@@ -477,16 +485,16 @@
     "high_priority": true
   },
   "BCHUSDT": {
-    "ts": 1789452722.623999,
-    "ts_iso": "2026-09-15T06:12:02.624002+00:00",
+    "ts": 1789459922.6635385,
+    "ts_iso": "2026-09-15T08:12:02.663541+00:00",
     "symbol": "BCHUSDT",
-    "px": 222.58,
-    "rsi_1h": 39.7,
-    "bb_width": 1.712,
+    "px": 220.04,
+    "rsi_1h": 23.8,
+    "bb_width": 1.96,
     "events": [
       {
         "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=1.712%极度压缩(历史最低区间) RSI=39.7 弹簧即将释放",
+        "desc": "BBW=1.960%极度压缩(历史最低区间) RSI=23.8 弹簧即将释放",
         "priority": "HIGH",
         "bbw_shrinking": true
       }
@@ -513,16 +521,16 @@
     "high_priority": true
   },
   "HYPEUSDT": {
-    "ts": 1789452723.451887,
-    "ts_iso": "2026-09-15T06:12:03.451889+00:00",
+    "ts": 1789459923.5632417,
+    "ts_iso": "2026-09-15T08:12:03.563243+00:00",
     "symbol": "HYPEUSDT",
-    "px": 79.824,
-    "rsi_1h": 43.3,
-    "bb_width": 1.641,
+    "px": 78.526,
+    "rsi_1h": 17.6,
+    "bb_width": 2.146,
     "events": [
       {
         "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=1.641%极度压缩(历史最低区间) RSI=43.3 弹簧即将释放",
+        "desc": "BBW=2.146%极度压缩(历史最低区间) RSI=17.6 弹簧即将释放",
         "priority": "HIGH",
         "bbw_shrinking": true
       }
@@ -573,16 +581,16 @@
     "source": "oi_advanced_scanner"
   },
   "XAGUSDT": {
-    "ts": 1789340412.6654649,
-    "ts_iso": "2026-09-13T23:00:12.665467+00:00",
+    "ts": 1789459930.8819616,
+    "ts_iso": "2026-09-15T08:12:10.881963+00:00",
     "symbol": "XAGUSDT",
-    "px": 64.14,
-    "rsi_1h": 31.3,
-    "bb_width": 0.365,
+    "px": 62.71,
+    "rsi_1h": 29.1,
+    "bb_width": 0.921,
     "events": [
       {
         "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=0.365%极度压缩(历史最低区间) RSI=31.3 弹簧即将释放",
+        "desc": "BBW=0.921%极度压缩(历史最低区间) RSI=29.1 弹簧即将释放",
         "priority": "HIGH",
         "bbw_shrinking": true
       }
@@ -607,34 +615,40 @@
     "high_priority": true
   },
   "LABUSDT": {
-    "ts": 1789339814.064556,
-    "ts_iso": "2026-09-13T22:50:14.064559+00:00",
+    "ts": 1789459931.8918278,
+    "ts_iso": "2026-09-15T08:12:11.891829+00:00",
     "symbol": "LABUSDT",
-    "px": 0.05889,
-    "rsi_1h": 31.2,
-    "bb_width": 6.944,
+    "px": 0.04962,
+    "rsi_1h": 33.0,
+    "bb_width": 5.238,
     "events": [
       {
-        "event": "E6_VOLUME_SURGE",
-        "desc": "1H量比2.5x 异常放量，结构可能变化",
-        "priority": "MEDIUM"
+        "event": "E_MTF_SUPPORT",
+        "desc": "🏗️ 多周期结构共振! 触发2项(M1,M2) 30日区间位=19% RSI_4H=26.9 → 大周期支撑确认，高置信度做多背景",
+        "priority": "HIGH",
+        "direction": "LONG",
+        "mtf_hits": 2,
+        "pos30": 0.192,
+        "_cooldown_key": "LABUSDT_mtf_support_ts"
       }
     ],
-    "high_priority": false
+    "high_priority": true
   },
   "SUIUSDT": {
-    "ts": 1789432926.186605,
-    "ts_iso": "2026-09-15T00:42:06.186607+00:00",
+    "ts": 1789459923.7954044,
+    "ts_iso": "2026-09-15T08:12:03.795406+00:00",
     "symbol": "SUIUSDT",
-    "px": 0.72,
-    "rsi_1h": 47.4,
-    "bb_width": 1.956,
+    "px": 0.7028,
+    "rsi_1h": 14.2,
+    "bb_width": 3.133,
     "events": [
       {
-        "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=1.956%极度压缩(历史最低区间) RSI=47.4 弹簧即将释放",
+        "event": "E_OI_DIVERGE",
+        "desc": "🚨 OI+价格背离! OI连续3H增+1.39% 但价格未创新低 RSI=14.2 → 空头加仓压不下，轧空风险升高",
         "priority": "HIGH",
-        "bbw_shrinking": true
+        "direction": "LONG",
+        "oi_chg_3h": 1.39,
+        "_cooldown_key": "SUIUSDT_oi_diverge_ts"
       }
     ],
     "high_priority": true
@@ -657,16 +671,16 @@
     "high_priority": true
   },
   "SNDKUSDT": {
-    "ts": 1789452728.0273862,
-    "ts_iso": "2026-09-15T06:12:08.027390+00:00",
+    "ts": 1789459928.9130185,
+    "ts_iso": "2026-09-15T08:12:08.913020+00:00",
     "symbol": "SNDKUSDT",
-    "px": 1558.55,
-    "rsi_1h": 51.3,
-    "bb_width": 1.757,
+    "px": 1553.32,
+    "rsi_1h": 42.2,
+    "bb_width": 1.485,
     "events": [
       {
         "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=1.757%极度压缩(历史最低区间) RSI=51.3 弹簧即将释放",
+        "desc": "BBW=1.485%极度压缩(历史最低区间) RSI=42.2 弹簧即将释放",
         "priority": "HIGH",
         "bbw_shrinking": false
       }
@@ -674,30 +688,35 @@
     "high_priority": true
   },
   "SOXLUSDT": {
+    "ts": 1789459931.3803613,
+    "ts_iso": "2026-09-15T08:12:11.380363+00:00",
     "symbol": "SOXLUSDT",
-    "direction": "LONG",
-    "trigger_type": "oi_anomaly",
-    "oi_score": 66.0,
-    "mode": "B",
-    "ts": 1789432235.0010126,
-    "source": "oi_advanced_scanner"
-  },
-  "NBISUSDT": {
-    "ts": 1789340414.5422277,
-    "ts_iso": "2026-09-13T23:00:14.542230+00:00",
-    "symbol": "NBISUSDT",
-    "px": 214.63,
-    "rsi_1h": 47.9,
-    "bb_width": 2.586,
+    "px": 100.41,
+    "rsi_1h": 27.9,
+    "bb_width": 2.348,
     "events": [
       {
-        "event": "E_MTF_SUPPORT",
-        "desc": "🏗️ 多周期结构共振! 触发2项(M2,M3) 30日区间位=23% RSI_4H=20.2 → 大周期支撑确认，高置信度做多背景",
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=2.348%极度压缩(历史最低区间) RSI=27.9 弹簧即将释放",
         "priority": "HIGH",
-        "direction": "LONG",
-        "mtf_hits": 2,
-        "pos30": 0.232,
-        "_cooldown_key": "NBISUSDT_mtf_support_ts"
+        "bbw_shrinking": false
+      }
+    ],
+    "high_priority": true
+  },
+  "NBISUSDT": {
+    "ts": 1789459934.4788983,
+    "ts_iso": "2026-09-15T08:12:14.478901+00:00",
+    "symbol": "NBISUSDT",
+    "px": 210.11,
+    "rsi_1h": 32.5,
+    "bb_width": 1.639,
+    "events": [
+      {
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=1.639%极度压缩(历史最低区间) RSI=32.5 弹簧即将释放",
+        "priority": "HIGH",
+        "bbw_shrinking": true
       }
     ],
     "high_priority": true
@@ -1018,18 +1037,18 @@
     "high_priority": true
   },
   "SAMSUNGUSDT": {
-    "ts": 1789340415.199666,
-    "ts_iso": "2026-09-13T23:00:15.199669+00:00",
+    "ts": 1789459936.5717068,
+    "ts_iso": "2026-09-15T08:12:16.571711+00:00",
     "symbol": "SAMSUNGUSDT",
-    "px": 190.35,
-    "rsi_1h": 52.2,
-    "bb_width": 0.774,
+    "px": 182.06,
+    "rsi_1h": 49.0,
+    "bb_width": 2.061,
     "events": [
       {
         "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=0.774%极度压缩(历史最低区间) RSI=52.2 弹簧即将释放",
+        "desc": "BBW=2.061%极度压缩(历史最低区间) RSI=49.0 弹簧即将释放",
         "priority": "HIGH",
-        "bbw_shrinking": true
+        "bbw_shrinking": false
       }
     ],
     "high_priority": true

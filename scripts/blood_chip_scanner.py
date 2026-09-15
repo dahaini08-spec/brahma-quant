@@ -46,21 +46,23 @@ def fetch_binance_klines(symbol: str, interval: str = '1d', limit: int = 365) ->
         return []
 
 def fetch_crypto_fear_greed() -> dict:
-    """从Alternative.me获取Crypto恐慌贪婪指数"""
-    url = "https://api.alternative.me/fng/?limit=1"
+    """从Alternative.me获取Crypto恐慌贪婪指数 — v2增加历史数据"""
+    url = "https://api.alternative.me/fng/?limit=7"  # 取7天历史
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         with urllib.request.urlopen(req, timeout=10) as resp:
             data = json.loads(resp.read())
             v = data['data'][0]
+            history = data['data'][1:]
             return {
                 'value': int(v['value']),
                 'classification': v['value_classification'],
-                'timestamp': v['timestamp']
+                'timestamp': v['timestamp'],
+                'history': [{'value': int(d['value']), 'classification': d['value_classification']} for d in history]
             }
     except Exception as e:
         print(f"[blood_chip] Fear&Greed API error: {e}", file=sys.stderr)
-        return {'value': -1, 'classification': 'UNKNOWN', 'error': str(e)}
+        return {'value': -1, 'classification': 'UNKNOWN', 'history': [], 'error': str(e)}
 
 def fetch_yahoo_stock(symbol: str) -> dict:
     """从Yahoo Finance获取美股数据"""
@@ -95,31 +97,37 @@ def fetch_yahoo_stock(symbol: str) -> dict:
 # ── 核心逻辑 ────────────────────────────────────────────────
 
 def analyze_crypto_asset(symbol: str) -> dict:
-    """分析单个Crypto资产"""
-    klines = fetch_binance_klines(symbol, '1d', 365)
+    """分析单个Crypto资产 — v2增加2年最大回撤"""
+    klines = fetch_binance_klines(symbol, '1d', 730)  # 2年
     if not klines or not isinstance(klines, list) or len(klines) < 30:
         return {'symbol': symbol, 'error': 'insufficient data'}
     
     closes = [float(k[4]) for k in klines]
     current = closes[-1]
-    high_1y = max(closes)
+    high_1y = max(closes[-365:]) if len(closes) >= 365 else max(closes)
+    high_2y = max(closes)
     avg_200d = sum(closes[-200:]) / len(closes[-200:]) if len(closes) >= 200 else sum(closes) / len(closes)
+    low_2y = min(closes[-730:]) if len(closes) >= 730 else min(closes)
     discount_pct = ((current - high_1y) / high_1y * 100)
     vs_200d_pct = ((current - avg_200d) / avg_200d * 100)
+    max_drawdown_2y = ((low_2y - high_2y) / high_2y * 100)  # 2年最大回撤
     
     return {
         'symbol': symbol,
         'current': current,
         'high_1y': high_1y,
+        'high_2y': high_2y,
+        'low_2y': low_2y,
         'avg_200d': avg_200d,
         'discount_pct': round(discount_pct, 2),
         'vs_200d_pct': round(vs_200d_pct, 2),
+        'max_drawdown_2y': round(max_drawdown_2y, 2),
         'source': 'binance',
         'data_points': len(closes)
     }
 
 def check_triggers(asset: dict, fear_greed: dict, rules: dict) -> dict:
-    """检查触发条件"""
+    """检查触发条件 — v2增加先行指标"""
     triggers = []
     
     if 'discount_pct' in asset:
@@ -135,6 +143,22 @@ def check_triggers(asset: dict, fear_greed: dict, rules: dict) -> dict:
         triggers.append(f"恐慌指数{fg_value} ≤ {rules['fear_greed_extreme']}(Extreme Fear)")
     elif fg_value > 0 and fg_value <= rules.get('fear_greed_fear', 45):
         triggers.append(f"恐慌指数{fg_value} ≤ {rules['fear_greed_fear']}(Fear)")
+    
+    # v2先行指标：折价百分位（当前折价 vs 2年最大回撤）
+    if 'discount_pct' in asset and 'max_drawdown_2y' in asset:
+        max_dd = asset['max_drawdown_2y']
+        if max_dd < 0:
+            percentile = asset['discount_pct'] / max_dd * 100  # 0=高点, 100=最低点
+            asset['drawdown_percentile'] = round(percentile, 1)
+            if percentile > 80:
+                triggers.append(f"回撤百分位{percentile:.0f}% > 80%（接近2年最低）")
+    
+    # v2先行指标：恐慌持续时间
+    fg_history = fear_greed.get('history', [])
+    if fg_history:
+        consecutive_fear = sum(1 for d in fg_history if d.get('value', 100) <= 25)
+        if consecutive_fear >= 3:
+            triggers.append(f"恐慌持续{consecutive_fear}天（连续Extreme Fear）")
     
     return {
         'triggered': len(triggers) > 0,

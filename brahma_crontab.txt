@@ -58,6 +58,9 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # ============================================================
 # Layer 4: 每2小时任务 (错峰)
 # ============================================================
+# W5 paper live scan — :17每2h（错峰）
+17 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 brahma_brain/brahma_w5_paper_live.py >> logs/w5_paper.log 2>&1
+
 # OI watchlist — :00 偶数小时
 00 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/oi_watchlist_monitor.py >> logs/oi_watchlist.log 2>&1
 # battlefield auto analysis — :15 偶数小时
@@ -125,6 +128,8 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 0 4 * * 1 cd /root/.openclaw/workspace/trading-system && python3 scripts/ic_feedback_engine.py >> logs/syscron.log 2>&1
 # wiring check — 03:00 Sunday
 0 3 * * 0 cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_wiring_check.py >> logs/wiring_check.log 2>&1
+# DAG weight calibrator — 03:30 Sunday (蘑菇体机制)
+30 3 * * 0 cd /root/.openclaw/workspace/trading-system && python3 brahma_brain/dag_weight_calibrator.py >> logs/dag_calibrator.log 2>&1
 
 # GEX刷新 — 每4小时, 用gex_unified.scan_gex写gex_state.json
 # [9.15苏摩111 P1修复] 扩展到tier1标的

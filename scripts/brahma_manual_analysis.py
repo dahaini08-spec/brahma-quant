@@ -2300,9 +2300,9 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
 
     # ── trader_brain 6层确定性决策引擎（2026-09-11 苏摩111封印）──
     tb_result = {}
+    regime_c = d['regime_s'].get(sym+'USDT',{}).get('confirmed', d['bs'].get('regime','CHOP_MID'))  # [9.15修复] 提到try外面
     try:
         from brahma_brain.trader_brain import decide as tb_decide, format_vip_card as tb_format
-        regime_c = d['regime_s'].get(sym+'USDT',{}).get('confirmed', d['bs'].get('regime','CHOP_MID'))
         tb_result = tb_decide(
             regime=regime_c,
             score=float(d['bs'].get('score_final', d['bs'].get('score', 0))),

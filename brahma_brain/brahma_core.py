@@ -4584,6 +4584,24 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception:
         pass  # trader_brain失败不阻断分析
 
+    # [2026-09-15 苏摩111] 神经总线感知 — 分析完成时emit
+    try:
+        from brahma_brain.nerve_bus_writer import emit_analysis_done
+        _score_val = _result.get('confluence_score', _result.get('score', 0))
+        _regime = _result.get('regime', ms.get('regime', 'UNKNOWN'))
+        _signal = _result.get('signal', 'WATCH')
+        _symbol = _result.get('symbol', ms.get('symbol', 'UNKNOWN'))
+        _direction = signal_dir
+        _ev = _result.get('ev', 0)
+        _breakdown = _result.get('breakdown', {})
+        _active = [k for k, v in _breakdown.items() if isinstance(v, (int, float)) and v != 0]
+        _sleep = [k for k, v in _breakdown.items() if k not in _active]
+        emit_analysis_done(_symbol, float(_score_val or 0), _regime, _direction,
+                          len(_breakdown), _active[:10], _sleep[:10],
+                          float(_ev or 0), _signal)
+    except Exception:
+        pass  # nerve_bus不能影响主流程
+
     return _result
     """[shim] 已迁移到 brahma_brain/formatter.py · v25.0"""
     from brahma_brain.formatter import format_report as _fmt

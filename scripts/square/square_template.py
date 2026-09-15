@@ -120,13 +120,12 @@ def build_battlefield_report(sym, analysis_data):
         f'',
         f'{view_point}',
         f'',
-        f'━━━ 操作建议 ━━━',
+        f'操作建议：',
         f'{action_line}',
         f'',
     ]
     if contradiction:
-        lines.append(f'━━━ 风险提示 ━━━')
-        lines.append(contradiction)
+        lines.append(f'风险提示：{contradiction}')
         lines.append(f'')
     if failure_state == 'RED':
         lines.append('当前市场处于失效期，信号不可靠，仓位减半。')
@@ -392,22 +391,21 @@ def build_macro_outlook(event_name, event_time, expectations,
         f'',
         f'明日{event_name} | {event_time}',
         f'',
-        f'━━━ 预期 ━━━',
+        f'市场预期：',
     ]
     for e in expectations:
         lines.append(e)
     lines.append(f'')
-    lines.append(f'━━━ 两种剧本 ━━━')
+    lines.append(f'两种剧本：')
     lines.append(f'Hot（偏热）：{hot_script}')
     lines.append(f'Cool（偏冷）：{cool_script}')
     lines.append(f'')
-    lines.append(f'━━━ 梵天读数 ━━━')
+    lines.append(f'梵天读数：')
     lines.append(f'BTC体制{_translate_regime(btc_regime)} score={btc_score} → 宏观决定方向')
     lines.append(f'ETH Hurst={eth_hurst:.2f} → 波动率即将放大')
     lines.append(f'OI={oi_trend} → 资金在撤资=事件前避险')
     lines.append(f'')
-    lines.append(f'━━━ 操作建议 ━━━')
-    lines.append(action_advice)
+    lines.append(f'操作建议：{action_advice}')
     lines.append(f'')
     lines.append(f'{BRAND_SUFFIX}')
     lines.append(f'{hashtag} #BTC')
@@ -441,16 +439,16 @@ def build_deep_analysis(sym, price, surface_text, event1_data, event2_data, even
         f'',
         f'先看表面：{surface_text}',
         f'',
-        f'━━━ 第一件事 ━━━',
+        f'第一件事：',
         event1_data,
         f'',
-        f'━━━ 第二件事 ━━━',
+        f'第二件事：',
         event2_data,
         f'',
-        f'━━━ 第三件事 ━━━',
+        f'第三件事：',
         event3_data,
         f'',
-        f'━━━ 操作策略 ━━━',
+        f'操作策略：',
         f'情景A：{scenario_a}',
         f'情景B：{scenario_b}',
         f'',

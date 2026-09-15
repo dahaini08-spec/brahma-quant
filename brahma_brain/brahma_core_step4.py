@@ -60,7 +60,7 @@ except Exception:
 try:
 # 模块不存在，已注释
 # from multitf_engine import multitf_score as _multitf_score
-    _MULTITF_OK = True
+    _MULTITF_OK = False  # 2026-09-15 苏摩111: 模块不存在，标记False避免NameError
 except Exception:
     _MULTITF_OK = False
 try:

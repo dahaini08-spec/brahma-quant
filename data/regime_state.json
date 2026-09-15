@@ -7,10 +7,10 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789451036.5581522,
+    "last_update_ts": 1789459273.6691563,
     "confirmed_cn": "弱震荡",
     "last_sw_reset": 1789430688.4933927,
-    "candidate_start_ts": 1789450912.1967332
+    "candidate_start_ts": 1789456486.9249094
   },
   "ETHUSDT": {
     "confirmed": "CHOP_MID",
@@ -20,9 +20,9 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789451062.9432092,
+    "last_update_ts": 1789462849.2427087,
     "last_sw_reset": 1789384690.213516,
-    "candidate_start_ts": 1789450047.614491,
+    "candidate_start_ts": 1789462849.2397008,
     "confirmed_cn": "弱震荡"
   },
   "SPCXUSDT": {
@@ -53,14 +53,16 @@
   },
   "HYPEUSDT": {
     "confirmed": "CHOP_MID",
-    "candidate": null,
-    "confirm_count": 0,
+    "candidate": "BULL_CORRECTION",
+    "confirm_count": 1,
     "locked_until": 0,
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789445364.4678385,
-    "confirmed_cn": "弱震荡"
+    "last_update_ts": 1789464272.90821,
+    "confirmed_cn": "弱震荡",
+    "last_sw_reset": 1789464272.90821,
+    "candidate_start_ts": 1789464272.90821
   },
   "SKHYNIXUSDT": {
     "confirmed": "CHOP_MID",
@@ -96,8 +98,10 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789394408.068993,
-    "confirmed_cn": "弱震荡"
+    "last_update_ts": 1789464273.3060324,
+    "confirmed_cn": "弱震荡",
+    "last_sw_reset": 1789464273.3026052,
+    "candidate_start_ts": 1789464273.3026052
   },
   "SOXLUSDT": {
     "confirmed": "CHOP_MID",
@@ -107,10 +111,10 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789442685.795799,
+    "last_update_ts": 1789464273.0745778,
     "confirmed_cn": "弱震荡",
     "last_sw_reset": 1789442685.742777,
-    "candidate_start_ts": 1789442685.742777
+    "candidate_start_ts": 1789464273.0319984
   },
   "XAUUSDT": {
     "confirmed": "CHOP_MID",
@@ -120,10 +124,10 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789442685.9325857,
+    "last_update_ts": 1789464272.926356,
     "confirmed_cn": "弱震荡",
     "last_sw_reset": 1789442685.9248538,
-    "candidate_start_ts": 1789442685.9248538
+    "candidate_start_ts": 1789464272.9146633
   },
   "XRPUSDT": {
     "confirmed": "CHOP_MID",
@@ -146,7 +150,9 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789431303.0527942,
-    "confirmed_cn": "弱震荡"
+    "last_update_ts": 1789464273.238866,
+    "confirmed_cn": "弱震荡",
+    "last_sw_reset": 1789464273.2344875,
+    "candidate_start_ts": 1789464273.2344875
   }
 }
