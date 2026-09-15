@@ -2,9 +2,9 @@
   "_meta": {
     "description": "梵天模块注册表 v3 - 2026-09-15重建",
     "created": "2026-09-13",
-    "rebuilt": "2026-09-15T02:02:00Z",
+    "rebuilt": "2026-09-15T09:57:00Z",
     "sealed_by": "苏摩111",
-    "total_modules": 56
+    "total_modules": 60
   },
   "critical_modules": {
     "brahma_1hao_analysis": {
@@ -498,6 +498,53 @@
       ],
       "import_count": 4,
       "status": "active"
+    },
+    "cvd_engine": {
+      "file": "brahma_brain/cvd_engine.py",
+      "imported_by": [
+        "brahma_core",
+        "volume_unified",
+        "__init__"
+      ],
+      "import_count": 3,
+      "status": "shim",
+      "note": "9.1合并到volume_unified.py, 此为接口shim"
+    },
+    "market_quadrant": {
+      "file": "brahma_brain/market_quadrant.py",
+      "imported_by": [
+        "brahma_core",
+        "regime_scorer",
+        "brahma_analysis_runner",
+        "__init__"
+      ],
+      "import_count": 4,
+      "status": "shim",
+      "note": "9.1合并到regime_scorer.py, 此为接口shim"
+    },
+    "macro_calendar": {
+      "file": "brahma_brain/macro_calendar.py",
+      "imported_by": [
+        "brahma_core_step4",
+        "brahma_full_report",
+        "trader_brain",
+        "narrative_engine",
+        "__init__"
+      ],
+      "import_count": 5,
+      "status": "shim",
+      "note": "9.1合并到narrative_engine.py, 此为接口shim"
+    },
+    "capital_allocator": {
+      "file": "brahma_brain/capital_allocator.py",
+      "imported_by": [
+        "position_sizer",
+        "portfolio_optimizer",
+        "__init__"
+      ],
+      "import_count": 3,
+      "status": "shim",
+      "note": "9.1合并到position_sizer.py, 此为接口shim"
     }
   }
 }

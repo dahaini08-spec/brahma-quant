@@ -22,14 +22,19 @@ CAND_PATH = BASE / 'data' / 'battlefield_candidates.json'
 OUT_PATH = BASE / 'data' / 'auto_analysis_latest.json'
 
 def get_candidate_symbols(tier: str = 'tier1_strong', max_symbols: int = 10) -> list:
-    """从候选池获取标的列表"""
+    """从候选池获取标的列表
+    [9.15苏摩111] BTC+ETH永远在首位，Tier1填充剩余位"""
     if not CAND_PATH.exists():
         print(f'❌ 候选池文件不存在: {CAND_PATH}', file=sys.stderr)
-        return []
+        return ['BTC', 'ETH']  # fallback: 至少跑主力
     d = json.loads(CAND_PATH.read_text())
     tier_list = d.get(tier, [])
-    symbols = [c['symbol'].replace('USDT', '') for c in tier_list[:max_symbols]]
-    return symbols
+    tier1_syms = [c['symbol'].replace('USDT', '') for c in tier_list]
+    # BTC+ETH永远在首位
+    core = ['BTC', 'ETH']
+    # Tier1填充剩余位（去重）
+    remaining = [s for s in tier1_syms if s not in core][:max_symbols - len(core)]
+    return core + remaining
 
 def run_analysis(symbols: list) -> dict:
     """调用brahma_manual_analysis分析候选池"""

@@ -66,8 +66,9 @@ def emit_analysis_done(symbol: str, score: float, regime: str, direction: str,
     )
 
 def emit_signal(symbol: str, direction: str, entry: float, sl: float,
-                tp: float, score: float, regime: str, source: str = 'brahma'):
-    """信号产生事件"""
+                tp: float, score: float, regime: str, source: str = 'brahma',
+                entry_lo: float = None, entry_hi: float = None, signal_id: str = None):
+    """信号产生事件 + 预测记录"""
     emit(
         event_type='SIGNAL',
         module=source,
@@ -84,6 +85,22 @@ def emit_signal(symbol: str, direction: str, entry: float, sl: float,
             'regime': regime,
         }
     )
+    # Phase 2C: 记录预测，供4h后验证 prediction error
+    try:
+        from brahma_brain.prediction_recorder import record_prediction
+        record_prediction(
+            signal_id=signal_id or f'{symbol}_{int(time.time())}',
+            symbol=symbol,
+            direction=direction,
+            entry_lo=entry_lo or entry,
+            entry_hi=entry_hi or entry,
+            score=score,
+            regime=regime,
+            tp1=tp,
+            stop_loss=sl,
+        )
+    except Exception as e:
+        import sys; print(f'[nerve_bus] prediction记录失败: {e}', file=sys.stderr)
 
 def emit_alert(module: str, msg: str, urgency: str = 'P2', data: dict = None):
     """系统告警"""

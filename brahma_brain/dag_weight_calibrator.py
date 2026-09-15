@@ -119,7 +119,7 @@ def compute_dim_wr_by_regime(signals, evidence):
     return regime_dir_wr, dim_wr
 
 
-def calibrate_weights(config, regime_dir_wr, dim_wr):
+def calibrate_weights(config, regime_dir_wr, dim_wr, prediction_acc=None):
     """
     校准scoring_config的weights
     规则：
@@ -127,6 +127,10 @@ def calibrate_weights(config, regime_dir_wr, dim_wr):
     - 体制×方向总WR<45% → 所有active_dims weight×0.5（修剪）
     - 体制×方向总WR 45-60% → 不变
     - 如果有维度级WR数据，按维度单独校准
+    
+    Phase 2C: prediction_acc作为辅助验证
+    - 如果prediction_acc存在且<45%，即使WR>60%也不强化（可能是有假止损垫高WR）
+    - 如果prediction_acc>60%，即使WR<45%也不修剪（可能是假止损拉低WR）
     """
     changes = []
     calibrated = json.loads(json.dumps(config))  # 深拷贝
@@ -146,6 +150,13 @@ def calibrate_weights(config, regime_dir_wr, dim_wr):
             total_wr = regime_dir_wr.get(key, {}).get('wr', 0.5)  # 默认中性
             total_n = regime_dir_wr.get(key, {}).get('n', 0)
 
+            # Phase 2C: prediction accuracy作为辅助验证
+            pred_acc = None
+            if prediction_acc and regime in prediction_acc.get('by_regime', {}):
+                pred_data = prediction_acc['by_regime'][regime]
+                if pred_data.get('total', 0) >= 10:  # 至少10条才采信
+                    pred_acc = pred_data['correct'] / pred_data['total']
+
             # 维度级WR（如果有）
             dim_data = dim_wr.get(key, {})
 
@@ -163,11 +174,23 @@ def calibrate_weights(config, regime_dir_wr, dim_wr):
 
                 # 校准逻辑
                 if dim_wr_val >= STRONG_WR:
-                    new_w = min(old_w * BOOST_FACTOR, MAX_WEIGHT)
-                    action = 'BOOST'
+                    # Phase 2C: 如果prediction_acc<45%,不强化(可能假止损垫高WR)
+                    if pred_acc is not None and pred_acc < 0.45:
+                        new_w = old_w
+                        action = 'KEEP_PRED_OVERRIDE'
+                        source += f' pred_acc={pred_acc:.1%}<45%'
+                    else:
+                        new_w = min(old_w * BOOST_FACTOR, MAX_WEIGHT)
+                        action = 'BOOST'
                 elif dim_wr_val <= WEAK_WR:
-                    new_w = max(old_w * PRUNE_FACTOR, MIN_WEIGHT)
-                    action = 'PRUNE'
+                    # Phase 2C: 如果prediction_acc>60%,不修剪(可能假止损拉低WR)
+                    if pred_acc is not None and pred_acc > 0.60:
+                        new_w = old_w
+                        action = 'KEEP_PRED_OVERRIDE'
+                        source += f' pred_acc={pred_acc:.1%}>60%'
+                    else:
+                        new_w = max(old_w * PRUNE_FACTOR, MIN_WEIGHT)
+                        action = 'PRUNE'
                 else:
                     new_w = old_w
                     action = 'KEEP'
@@ -209,12 +232,26 @@ def main():
         if dims:
             print(f"    {reg}:{direction}: {len(dims)}个维度有实盘数据")
 
-    # 3. 校准
-    print("\n[3] 校准权重...")
+    # 3. 加载预测准确率（Phase 2C）
+    print("\n[3] 加载预测准确率...")
+    prediction_acc = None
+    try:
+        from brahma_brain.prediction_verifier import get_prediction_accuracy
+        prediction_acc = get_prediction_accuracy()
+        print(f"  预测准确率: {prediction_acc['accuracy']:.1%} ({prediction_acc['correct']}/{prediction_acc['total']})")
+        for regime, s in prediction_acc.get('by_regime', {}).items():
+            if s['total'] >= 10:
+                r_acc = s['correct'] / s['total'] * 100
+                print(f"    {regime}: {r_acc:.1f}% ({s['correct']}/{s['total']})")
+    except Exception as e:
+        print(f"  预测准确率加载失败(降级WR校准): {e}")
+
+    # 4. 校准
+    print("\n[4] 校准权重...")
     with open(CONFIG_FILE) as f:
         config = json.load(f)
 
-    calibrated, changes = calibrate_weights(config, regime_dir_wr, dim_wr)
+    calibrated, changes = calibrate_weights(config, regime_dir_wr, dim_wr, prediction_acc)
 
     if not changes:
         print("  无变化（所有权重在合理范围内）")
@@ -223,7 +260,7 @@ def main():
         for c in changes:
             print(f"    {c['regime']}:{c['direction']} {c['dim']}: {c['old_weight']:.2f}→{c['new_weight']:.2f} ({c['action']}, WR={c['wr']:.1%}, {c['source']})")
 
-    # 4. 备份+保存
+    # 5. 备份+保存
     BACKUP_DIR.mkdir(exist_ok=True)
     ts = time.strftime('%Y%m%d_%H%M%S')
     backup = BACKUP_DIR / f"scoring_config_{ts}.json"
@@ -239,7 +276,7 @@ def main():
     prune_count = sum(1 for c in changes if c['action'] == 'PRUNE')
     keep_count = sum(1 for c in changes if c['action'] == 'KEEP')
 
-    print(f"\n[5] 校准总结:")
+    print(f"\n[6] 校准总结:")
     print(f"  强化(BOOST): {boost_count}项")
     print(f"  修剪(PRUNE): {prune_count}项")
     print(f"  保持(KEEP): {keep_count}项")

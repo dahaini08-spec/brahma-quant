@@ -22,12 +22,46 @@ dag_executor.py — 轻量DAG执行器
   - config热更新（mtime检测，无需重启）
   - 未在config中声明的维度保持原样（不丢信息）
 """
-import json
+import json, sys
 from pathlib import Path
 
 CONFIG_FILE = Path(__file__).parent.parent / 'data' / 'scoring_config.json'
 _config_cache = None
 _config_mtime = 0.0
+
+# ── Phase 2A: 波动率Context Gain（区间化注意力） ──────────────
+# 果蝇蘑菇体区间化处理：不同波动率下用不同维度权重
+# 数据铁证：高波动WR=61.2% vs 低波动WR=41.7% (差19.5%)
+# 高波动 → 结构维度(s1/s2/s4)×1.5, 动量维度(s5/s6/s5b)×0.7
+# 低波动 → 动量维度(s5/s6/s5b)×1.5, 结构维度(s1/s2/s4)×0.7
+_STRUCTURE_DIMS = {'s1', 's2', 's4'}
+_MOMENTUM_DIMS = {'s5', 's6', 's5b'}
+_VOL_BOOST = 1.5
+_VOL_SUPPRESS = 0.7
+
+# 缓存HAR-RV结果（避免每次DAG都调API）
+_vol_cache = {'symbol': None, 'regime': None, 'ts': 0}
+_VOL_CACHE_TTL = 300  # 5分钟
+
+def _get_vol_regime(symbol: str = 'BTC') -> str:
+    """获取HAR-RV波动率体制，带缓存"""
+    import time
+    now = time.time()
+    if (_vol_cache['symbol'] == symbol and
+        _vol_cache['regime'] is not None and
+        now - _vol_cache['ts'] < _VOL_CACHE_TTL):
+        return _vol_cache['regime']
+    try:
+        from brahma_brain.har_rv_engine import get_har_rv
+        rv = get_har_rv(symbol)
+        regime = rv.get('regime_vol', 'MEDIUM')
+        _vol_cache['symbol'] = symbol
+        _vol_cache['regime'] = regime
+        _vol_cache['ts'] = now
+        return regime
+    except Exception as e:
+        print(f'[dag_executor] HAR-RV读取失败,默认MEDIUM: {e}', file=sys.stderr)
+        return 'MEDIUM'
 
 # ── 配置加载（带mtime热更新） ──────────────────────────────────
 
@@ -78,14 +112,15 @@ _ALL_DIMS = [f's{i}' for i in range(1, 23)] + ['s5b']
 _ALL_DIMS = sorted(set(_ALL_DIMS))
 
 def apply_sparse_activation(dim_scores: dict, regime: str, direction: str,
-                            raw_score: int = 0) -> dict:
-    """对s1-s22做稀疏激活过滤
+                            raw_score: int = 0, symbol: str = 'BTC') -> dict:
+    """对s1-s22做稀疏激活过滤 + 波动率Context Gain
 
     Args:
         dim_scores: {'s1': 5, 's2': 13, 's3': 20, ...} 各维度原始分数
         regime: 当前体制
         direction: 信号方向 LONG/SHORT
         raw_score: Block A/B/C累加的原始总分（用于对比）
+        symbol: 交易对符号（用于HAR-RV波动率查询）
 
     Returns:
         {
@@ -97,6 +132,8 @@ def apply_sparse_activation(dim_scores: dict, regime: str, direction: str,
             'position_mult': float,
             'weights': dict,
             'applied': bool,                # 是否实际执行了过滤
+            'vol_context': str,             # 波动率体制 LOW/MEDIUM/HIGH/EXTREME
+            'vol_applied': bool,            # 是否应用了波动率gain
         }
     """
     cfg = get_sparse_config(regime, direction)
@@ -113,6 +150,9 @@ def apply_sparse_activation(dim_scores: dict, regime: str, direction: str,
             'active_dims': [], 'sleep_dims': [],
             'position_mult': 1.0, 'weights': {},
             'applied': False,
+            'vol_context': _get_vol_regime(symbol),
+            'vol_applied': False,
+            'vol_gain_log': '',
         }
 
     # 处理 'all' 关键字 = 全部休眠
@@ -138,6 +178,37 @@ def apply_sparse_activation(dim_scores: dict, regime: str, direction: str,
             new_dims[dim] = raw
             new_score += raw
 
+    # ══ Phase 2A: 波动率Context Gain（区间化注意力） ══
+    # 果蝇蘑菇体区间化处理：不同波动率下用不同维度权重
+    vol_regime = _get_vol_regime(symbol)
+    vol_applied = False
+    vol_gain_log = ''
+
+    if vol_regime in ('HIGH', 'EXTREME'):
+        # 高波动 → 结构维度boost, 动量维度suppress
+        for d in _STRUCTURE_DIMS:
+            if d in new_dims and new_dims[d] != 0:  # 只调整非sleep维度
+                new_dims[d] = round(new_dims[d] * _VOL_BOOST, 2)
+        for d in _MOMENTUM_DIMS:
+            if d in new_dims and new_dims[d] != 0:
+                new_dims[d] = round(new_dims[d] * _VOL_SUPPRESS, 2)
+        vol_applied = True
+        vol_gain_log = f'HIGH_VOL:结构×{_VOL_BOOST}动量×{_VOL_SUPPRESS}'
+    elif vol_regime == 'LOW':
+        # 低波动 → 动量维度boost, 结构维度suppress
+        for d in _MOMENTUM_DIMS:
+            if d in new_dims and new_dims[d] != 0:
+                new_dims[d] = round(new_dims[d] * _VOL_BOOST, 2)
+        for d in _STRUCTURE_DIMS:
+            if d in new_dims and new_dims[d] != 0:
+                new_dims[d] = round(new_dims[d] * _VOL_SUPPRESS, 2)
+        vol_applied = True
+        vol_gain_log = f'LOW_VOL:动量×{_VOL_BOOST}结构×{_VOL_SUPPRESS}'
+
+    # 重新计算总分（波动率gain后）
+    if vol_applied:
+        new_score = sum(v for v in new_dims.values())
+
     return {
         'dims': new_dims,
         'score': int(round(new_score)),
@@ -147,6 +218,9 @@ def apply_sparse_activation(dim_scores: dict, regime: str, direction: str,
         'position_mult': cfg['position_mult'],
         'weights': weights,
         'applied': True,
+        'vol_context': vol_regime,
+        'vol_applied': vol_applied,
+        'vol_gain_log': vol_gain_log,
     }
 
 # ── 诊断接口 ──────────────────────────────────────────────────

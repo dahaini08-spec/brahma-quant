@@ -247,7 +247,8 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
             's15': s15, 's16': s16, 's17': s17, 's18': s18,
             's19': s19, 's20': s20, 's21': s21, 's22': s22,
         }
-        _dag_result = _dag_apply(_dag_dim_scores, _regime_str_pre, signal_dir, raw_score=score)
+        _dag_sym = (ms.get('symbol') or 'BTCUSDT').replace('USDT','').replace('usdt','').upper()
+        _dag_result = _dag_apply(_dag_dim_scores, _regime_str_pre, signal_dir, raw_score=score, symbol=_dag_sym)
         if _dag_result['applied']:
             # 更新维度分数（sleep维度的分数归零）
             s1  = _dag_result['dims']['s1']
@@ -277,6 +278,8 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
             _raw_before = score
             score = _dag_result['score']
             breakdown['_dag_applied'] = f'DAG稀疏激活: raw={_raw_before}→{score} active={len(_dag_result["active_dims"])} sleep={len(_dag_result["sleep_dims"])} pos_mult={_dag_result["position_mult"]:.2f}'
+            if _dag_result.get('vol_applied'):
+                breakdown['_dag_vol_gain'] = f'波动率ContextGain: {_dag_result.get("vol_context","?")} {_dag_result.get("vol_gain_log","")} raw={_raw_before}→{score}'
             # 传递position_mult给下游
             if extra_data is not None and isinstance(extra_data, dict):
                 extra_data['dag_position_mult'] = _dag_result['position_mult']

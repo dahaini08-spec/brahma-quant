@@ -143,3 +143,4 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 0 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/paper_executor.py >> logs/paper_executor.log 2>&1
 # signal-settler — 每6h纯脚本,WR反馈闭环结算 [9.15苏摩111 从OpenClaw cron移入supercronic]
 0 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/signal_settler.py --push >> logs/settler.log 2>&1
+*/30 * * * * cd /root/.openclaw/workspace/trading-system && /usr/bin/python3 -c "from brahma_brain.prediction_verifier import verify_predictions; s=verify_predictions(4.0); print(f'prediction_verify: {s}')" >> logs/prediction_verify.log 2>&1

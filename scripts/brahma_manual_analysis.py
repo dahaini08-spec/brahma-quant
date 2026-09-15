@@ -2849,7 +2849,22 @@ def main():
 
     # 战场情报推送已移除 — battlefield cron通过AI agent推送，脚本不再直接推Jarvis
     # 避免square_auto_post等调用方通过.pyc缓存意外触发推送
-    pass
+    
+    # [9.15苏摩111 Step2] 写入auto_analysis_latest.json — 统一出口
+    try:
+        from pathlib import Path as _P
+        import json as _json, time as _time
+        _summary = {
+            'timestamp': _time.strftime('%Y-%m-%d %H:%M:%S UTC', _time.gmtime()),
+            'symbols': symbols,
+            'elapsed_s': round(elapsed, 1),
+            'output': '\n'.join(full_output),
+        }
+        _out_path = _P(__file__).parent.parent / 'data' / 'auto_analysis_latest.json'
+        _out_path.write_text(_json.dumps(_summary, ensure_ascii=False))
+        print(f'[auto_analysis_latest] 已写入 {_out_path.name} ({len(symbols)}标的)', file=sys.stderr)
+    except Exception as _e:
+        print(f'[WARN] auto_analysis_latest写入失败: {_e}', file=sys.stderr)
 
 
 if __name__ == '__main__':

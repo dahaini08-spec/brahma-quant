@@ -630,6 +630,33 @@ def decide(
         # 改进3：止损墙做空=标准仓位
         if _liq_wall_short and action == 'WATCH':
             position_pct = max(1, round(position_pct * 0.8))  # 止损墙做空=80%仓位
+
+        # ══ Phase 2B: 多巴胺三通道 — 新奇检测（方向依赖） ══
+        # 果蝇新奇检测是"警惕"不是"逃跑"
+        # 方仓相似度低 + 高score = 大机会 → 加仓×1.3
+        # 方仓相似度低 + 低score = 大风险 → 减仓×0.5
+        try:
+            _fc = res.get('fangcang', {}) if isinstance(res, dict) else {}
+            _fc_similar = _fc.get('top_similar', [])
+            if _fc_similar and len(_fc_similar) > 0:
+                _top_sim_score = float(_fc_similar[0].get('score', 1.0) if isinstance(_fc_similar[0], dict) else 1.0)
+                _novelty = 1.0 - _top_sim_score  # 相似度越低=新奇越高
+                if _novelty > 0.7:  # 非常新奇(相似度<0.3)
+                    if score >= 120:
+                        # 新奇+高分 = 大机会 → 加仓
+                        position_pct = max(1, round(position_pct * 1.3))
+                        _novelty_log = f'新奇+高分=大机会,加仓×1.3 (相似度={_top_sim_score:.2f})'
+                    else:
+                        # 新奇+低分 = 大风险 → 减仓
+                        position_pct = max(1, round(position_pct * 0.5))
+                        _novelty_log = f'新奇+低分=大风险,减仓×0.5 (相似度={_top_sim_score:.2f})'
+                else:
+                    _novelty_log = ''
+            else:
+                _novelty_log = ''
+        except Exception as _ne:
+            _novelty_log = ''
+            import sys; print(f'[novelty_gate] {_ne}', file=sys.stderr)
     else:
         position_pct = 0; leverage = 0
 
