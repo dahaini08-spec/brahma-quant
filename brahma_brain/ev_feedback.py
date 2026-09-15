@@ -155,7 +155,7 @@ def _trigger_param_nudge(matrix_key: str, m: dict):
         try:
             import sys as _dl_sys
             _dl_sys.path.insert(0, str(BASE / 'brahma_brain'))
-# [import_autoclean] 模块不存在，已注释
+# 模块不存在，已注释
 # from dharma_online_learner import run_online_learning as _dl_run
             _dl_run()
         except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)

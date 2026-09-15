@@ -76,7 +76,7 @@ except Exception:
     _bus_get_price = None
 
 # ── 运行时依赖自检 ────────────────────────────────
-# [import_autoclean] _ensure_deps() 已移除，不需要运行时依赖检查
+# _ensure_deps() 已移除，不需要运行时依赖检查
 from pathlib import Path
 from datetime import datetime, timezone
 try:
@@ -211,7 +211,7 @@ if not API_KEY or not API_SECRET:
                     API_SECRET = _v
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 # ── [P0-2] 全局安全闸 ─────────────────────────────────────────────
-# [import_autoclean] brahma_brain.safety 不存在，require_api_keys/safety_report 已移除
+# brahma_brain.safety 不存在，require_api_keys/safety_report 已移除
 # _signed() 调用时会因空 KEY 失败，起到安全作用
 
 if not API_KEY or not API_SECRET:

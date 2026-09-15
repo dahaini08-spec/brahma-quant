@@ -118,7 +118,7 @@ def _analyze_step1(symbol: str, signal_dir: str) -> dict:
         _cv_root = _cv_os.path.dirname(_cv_os.path.abspath(__file__))
         if _cv_root not in _cv_sys.path:
             if _cv_root not in _cv_sys.path: _cv_sys.path.insert(0, _cv_root)
-# [import_autoclean] 模块不存在，已注释
+# 模块不存在，已注释
 # from causal_regime_verifier import verify as _cv_verify
         _cv_regime = ms.get('regime', '?')
         _cv_dir = signal_dir or ms.get('signal_bias', 'SHORT')

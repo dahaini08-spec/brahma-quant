@@ -384,7 +384,7 @@ def build_hot_tickers() -> str:
                       f'等一个像样的回踩：{fib618:.4f}U是第一个观察位。\n'
                       f'没有回踩就不进，追高是亏钱的主要来源之一。')
         hook = f'${hot_sym} 今天+{chg:.0f}%，说说这背后发生了什么。'
-        # [已废弃] 假互动已删除
+        question = f'+{chg:.0f}%的{hot_sym}，你会追吗？'
         out = [
             hook, '',
             f'📊 {now_cst()} CST',
@@ -429,7 +429,7 @@ def build_hot_tickers() -> str:
                        f'这种情况往往不是真底，是多头在慢慢被清洗。\n'
                        f'{"量能放大说明是真实抛盘，不是轻量阴跌。" if vol_ratio > 1.5 else "量能没有放大，也可能只是情绪性砸盘。"}\n'
                        f'我的处理方式：等价格在某个位置企稳超过2根4H K线，再评估结构入场。')
-        # [已废弃] 假互动已删除
+        question = f'跌了{abs(chg):.0f}%你会去接{hot_sym}吗？'
 
     # 层4：上涨 → 挖价格结构+判断位置风险
     elif chg > 5:
@@ -462,7 +462,7 @@ def build_hot_tickers() -> str:
                    f'多空比 {ls:.2f}（4H前 {ls_4h_ago:.2f}），{"多头情绪在增强" if ls_change > 0.05 else "多头情绪基本稳定" if abs(ls_change) <= 0.05 else "多头情绪在降温"}。\n'
                    f'FR {fr:.4f}%，{"持仓成本开始累积，追多要算清楚成本。" if fr > 0.01 else "持仓成本正常。"}\n'
                    f'{action_hint}')
-        # [已废弃] 假互动已删除
+        question = f'{hot_sym}现在+{chg:.0f}%，你怎么看？'
 
     # 层5：横盘/小波动 → 多维推理，不套模板
     else:
@@ -504,7 +504,7 @@ def build_hot_tickers() -> str:
 
         insight = '\n'.join(signals)
         hook = f'广场热度第一的 ${hot_sym}，我实际看了数据。'
-        # [已废弃] 假互动已删除
+        question = f'{hot_sym}这个位置你怎么看？'
 
     out = [
         hook, '',

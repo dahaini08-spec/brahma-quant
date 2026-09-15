@@ -208,7 +208,7 @@ def _check_result_key(module: str, result_key: str) -> tuple:
     try:
         import logging; logging.disable(logging.CRITICAL)
         import gc
-# [import_autoclean] 模块不存在，已注释
+# 模块不存在，已注释
 # from brahma_brain import brahma_engine as be
         gc.collect()
         r = be.analyze('BTCUSDT', deep=False)

@@ -13,12 +13,12 @@
     "sl_rule": "最近swing high + 1.5×ATR1H",
     "size_pct": 1.0,
     "status": "WATCHING",
-    "last_check": "2026-09-14 14:00 UTC",
+    "last_check": "2026-09-15 05:41 UTC",
     "triggered": false,
-    "last_fr": 0.050575,
-    "last_price": 102.57,
-    "last_trigger_pct": 100.0,
-    "last_smc": "SHOOTING_STAR"
+    "last_fr": 0.030404,
+    "last_price": 101.63,
+    "last_trigger_pct": 50.0,
+    "last_smc": "NONE"
   },
   "XAUUSDT": {
     "added_at": "2026-09-02T13:05:00Z",
@@ -34,10 +34,10 @@
     "sl_rule": "洗盘低点之下 + 1.5×ATR1H",
     "size_pct": 1.0,
     "status": "WATCHING",
-    "last_check": "2026-09-14 14:00 UTC",
+    "last_check": "2026-09-15 05:41 UTC",
     "triggered": false,
-    "last_fr": 0.016148,
-    "last_price": 4278.23,
+    "last_fr": 0.008258,
+    "last_price": 4300.63,
     "last_trigger_pct": 75.0,
     "last_smc": "NONE"
   },
@@ -56,10 +56,10 @@
     "size_pct": 1.0,
     "status": "WATCHING",
     "extreme_fr_note": "FR=-0.9453%极端负值=反向多头信号，等FR回归才是入场点",
-    "last_check": "2026-09-14 14:00 UTC",
+    "last_check": "2026-09-15 05:41 UTC",
     "triggered": false,
-    "last_fr": -0.420763,
-    "last_price": 0.07165,
+    "last_fr": -0.120863,
+    "last_price": 0.06696,
     "last_trigger_pct": 40.0,
     "last_smc": "NONE"
   },
@@ -78,10 +78,10 @@
     "size_pct": 0.5,
     "status": "WATCHING",
     "extreme_fr_note": "FR=-0.5589%=反弹炸弹，空头回补会快速推价格上涨",
-    "last_check": "2026-09-14 14:00 UTC",
+    "last_check": "2026-09-15 05:41 UTC",
     "triggered": false,
-    "last_fr": -0.064419,
-    "last_price": 0.14966,
+    "last_fr": -0.023677,
+    "last_price": 0.14999,
     "last_trigger_pct": 75.0,
     "last_smc": "NONE"
   },
@@ -98,9 +98,9 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 100,
     "mode": "A",
-    "last_check": "2026-09-14 04:16 UTC",
-    "last_fr": -0.241766,
-    "last_price": 0.0007501,
+    "last_check": "2026-09-15 05:41 UTC",
+    "last_fr": -0.162871,
+    "last_price": 0.0007202,
     "last_trigger_pct": 50.0,
     "last_smc": "NONE"
   },
@@ -117,11 +117,11 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 76.37,
     "mode": "B",
-    "last_check": "2026-09-14 04:16 UTC",
+    "last_check": "2026-09-15 05:41 UTC",
     "last_fr": 0.005,
-    "last_price": 0.6522,
-    "last_trigger_pct": 100.0,
-    "last_smc": "HAMMER"
+    "last_price": 0.6143,
+    "last_trigger_pct": 75.0,
+    "last_smc": "NONE"
   },
   "MTLUSDT": {
     "status": "WATCHING",
@@ -136,9 +136,9 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 71,
     "mode": "A",
-    "last_check": "2026-09-14 04:16 UTC",
-    "last_fr": -0.263465,
-    "last_price": 0.3677,
+    "last_check": "2026-09-15 05:41 UTC",
+    "last_fr": -0.104468,
+    "last_price": 0.2989,
     "last_trigger_pct": 25.0,
     "last_smc": "NONE"
   },
@@ -154,7 +154,12 @@
     "added": "2026-09-15",
     "source": "oi_advanced_scanner_auto",
     "oi_score": 91.67750000000001,
-    "mode": "A"
+    "mode": "A",
+    "last_check": "2026-09-15 05:41 UTC",
+    "last_fr": 0.03224,
+    "last_price": 19.32,
+    "last_trigger_pct": 75.0,
+    "last_smc": "NONE"
   },
   "ORCLUSDT": {
     "status": "WATCHING",
@@ -168,7 +173,12 @@
     "added": "2026-09-15",
     "source": "oi_advanced_scanner_auto",
     "oi_score": 68,
-    "mode": "A"
+    "mode": "A",
+    "last_check": "2026-09-15 05:41 UTC",
+    "last_fr": 0.0,
+    "last_price": 144.26,
+    "last_trigger_pct": 50.0,
+    "last_smc": "NONE"
   },
   "CBRSUSDT": {
     "status": "WATCHING",
@@ -182,7 +192,12 @@
     "added": "2026-09-15",
     "source": "oi_advanced_scanner_auto",
     "oi_score": 64.8725,
-    "mode": "A"
+    "mode": "A",
+    "last_check": "2026-09-15 05:41 UTC",
+    "last_fr": 0.044817,
+    "last_price": 181.21,
+    "last_trigger_pct": 75.0,
+    "last_smc": "NONE"
   },
   "ZHIPUUSDT": {
     "status": "WATCHING",
@@ -196,7 +211,12 @@
     "added": "2026-09-15",
     "source": "oi_advanced_scanner_auto",
     "oi_score": 64.346,
-    "mode": "A"
+    "mode": "A",
+    "last_check": "2026-09-15 05:41 UTC",
+    "last_fr": 0.098087,
+    "last_price": 86.02,
+    "last_trigger_pct": 75.0,
+    "last_smc": "NONE"
   },
   "EWYUSDT": {
     "status": "WATCHING",
@@ -210,6 +230,11 @@
     "added": "2026-09-15",
     "source": "oi_advanced_scanner_auto",
     "oi_score": 60.007999999999996,
-    "mode": "B"
+    "mode": "B",
+    "last_check": "2026-09-15 05:41 UTC",
+    "last_fr": 0.097031,
+    "last_price": 178.71,
+    "last_trigger_pct": 75.0,
+    "last_smc": "NONE"
   }
 }

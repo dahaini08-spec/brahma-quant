@@ -1,0 +1,69 @@
+{
+  "timestamp": "2026-09-15T05:39:31.451828+00:00",
+  "fear_greed": {
+    "value": 69,
+    "classification": "Greed",
+    "timestamp": "1789430400"
+  },
+  "crypto": [
+    {
+      "symbol": "BTCUSDT",
+      "current": 77397.11,
+      "high_1y": 124658.54,
+      "avg_200d": 70282.03909999998,
+      "discount_pct": -37.91,
+      "vs_200d_pct": 10.12,
+      "source": "binance",
+      "data_points": 365,
+      "name": "Bitcoin",
+      "notes": "加密之王"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "current": 2486.9,
+      "high_1y": 4684.01,
+      "avg_200d": 2064.0274499999987,
+      "discount_pct": -46.91,
+      "vs_200d_pct": 20.49,
+      "source": "binance",
+      "data_points": 365,
+      "name": "Ethereum",
+      "notes": "智能合约平台"
+    }
+  ],
+  "stocks": [
+    {
+      "symbol": "AAPL",
+      "current": 333.0799865722656,
+      "high_1y": 340.0799865722656,
+      "avg_200d": 285.2391493225098,
+      "discount_pct": -2.0583392955740805,
+      "vs_200d_pct": 16.7721848012048,
+      "source": "yahoo",
+      "name": "Apple Inc.",
+      "notes": "请在Yahoo Finance或其他数据源填写"
+    }
+  ],
+  "triggers": {
+    "BTCUSDT": {
+      "triggered": true,
+      "triggers": [
+        "折价-37.9% ≤ -20%阈值"
+      ],
+      "needs_deep_research": false
+    },
+    "ETHUSDT": {
+      "triggered": true,
+      "triggers": [
+        "折价-46.9% ≤ -20%阈值"
+      ],
+      "needs_deep_research": false
+    },
+    "AAPL": {
+      "triggered": false,
+      "triggers": [],
+      "needs_deep_research": false
+    }
+  },
+  "report": "🩸 带血筹码扫描 | 09-15 13:39 北京时间\n\n市场情绪: 🟢 Crypto恐慌指数 = 69 (Greed)\n\n━━━ Crypto 观察池 ━━━\n  🩸 BTCUSDT: $77,397.11\n     1y高=$124,658.54 折价=-37.9% | 200d均=$70,282.04 vs200d=+10.1%\n  🩸 ETHUSDT: $2,486.90\n     1y高=$4,684.01 折价=-46.9% | 200d均=$2,064.03 vs200d=+20.5%\n\n━━━ 美股观察池 ━━━\n  🟢 AAPL: $333.08\n     1y高=$340.08 折价=-2.1% | 200d均=$285.24 vs200d=+16.8%\n\n━━━ ⚠️ 触发关注 ━━━\n  🔔 BTCUSDT: 折价-37.9% ≤ -20%阈值\n  🔔 ETHUSDT: 折价-46.9% ≤ -20%阈值\n\n📊 梵天带血筹码监控器 | 不是建议"
+}

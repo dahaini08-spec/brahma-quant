@@ -196,7 +196,7 @@ def _check_position_risk(symbol: str, signal_dir: str, score_result: dict) -> tu
     检查仓位风险门控。返回 (allow: bool, reason: str)
     """
     try:
-# [import_autoclean] 模块不存在，已注释
+# 模块不存在，已注释
 # from position_sl_manager import get_current_positions
         positions = get_current_positions()
     except Exception:
@@ -462,7 +462,7 @@ def process_event(symbol: str, signal_dir: str = None,
             _do_alert(sym, signal_dir, result, council, reason)
             # A方案：苏摩在线时也同步纸面开单（不等确认）
             try:
-# [import_autoclean] 模块不存在，已注释
+# 模块不存在，已注释
 # from paper_trader import auto_paper_trade
                 auto_paper_trade(sym, signal_dir, score_adj, support, result)
             except Exception as _pe:
@@ -478,7 +478,7 @@ def process_event(symbol: str, signal_dir: str = None,
     if not dry_run:
         # 纸面先开（必完成）
         try:
-# [import_autoclean] 模块不存在，已注释
+# 模块不存在，已注释
 # from paper_trader import auto_paper_trade
             paper_result = auto_paper_trade(sym, signal_dir, score_adj, support, result)
             exec_result['paper'] = paper_result

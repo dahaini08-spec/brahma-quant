@@ -115,7 +115,7 @@ def calc_vol_profile(klines: list, bins: int = 20) -> dict:
 def get_regime_1d(symbol: str) -> dict:
     """用brahma_core跑1D体制判断"""
     try:
-# [import_autoclean] 模块不存在，已注释
+# 模块不存在，已注释
 # from brahma_brain import brahma_core
         result = brahma_core.analyze(symbol, signal_dir='LONG')
         return {

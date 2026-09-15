@@ -205,7 +205,7 @@ def calc_block_c(ms: dict, smc: dict, signal_dir: str,
     try:
         import sys as _sys22, os as _os22
         _sys22.path.insert(0, _os22.path.dirname(_os22.path.abspath(__file__)))
-# [import_autoclean] 模块不存在，已注释
+# 模块不存在，已注释
 # from volume_ratio_engine import volume_ratio_score as _vr_score
         _k1h_vr = (extra_data or {}).get('_klines_1h', {})
         if isinstance(_k1h_vr, dict) and len(_k1h_vr.get('c',[])) >= 5:

@@ -389,7 +389,7 @@ def check_v16_v17_modules() -> dict:
     # realistic_cost_model
     try:
         sys.path.insert(0, str(BASE / 'dharma'))
-# [import_autoclean] 模块不存在，已注释
+# 模块不存在，已注释
 # from realistic_cost_model import CostModel
         m = CostModel()
         cost = m.total_cost(2000, 30, 'SHORT', 'BEAR_TREND', 16)

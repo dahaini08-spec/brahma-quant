@@ -13,12 +13,12 @@
     }
   },
   "ETHUSDT": {
-    "ts": 1789445233.1764114,
+    "ts": 1789451021.5343788,
     "data": {
-      "rv_1d": 0.0223,
-      "rv_5d": 0.03208,
+      "rv_1d": 0.02247,
+      "rv_5d": 0.0322,
       "rv_22d": 0.02,
-      "rv_forecast": 0.02473,
+      "rv_forecast": 0.02483,
       "rv_percentile": 70,
       "regime_vol": "MEDIUM",
       "score_adj": 0,

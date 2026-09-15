@@ -97,8 +97,7 @@ def push_liqmap(symbol: str = 'BTCUSDT', caption: str = '') -> bool:
     """推送清算热力图"""
     try:
         sys.path.insert(0, str(_ROOT))
-# [import_autoclean] 模块不存在，已注释
-# from brahma_brain.chart_renderer import render_liqmap
+        from brahma_brain.chart_renderer import render_liqmap
         coin = symbol.replace('USDT', '')
         path = render_liqmap(symbol)
         if not path:
@@ -115,8 +114,7 @@ def push_dashboard(symbol: str = 'BTCUSDT', caption: str = '', score: float = 0,
     """推送信号仪表盘（OI+FR + GEX散点 + LiqMap 三图组合）"""
     try:
         sys.path.insert(0, str(_ROOT))
-# [import_autoclean] 模块不存在，已注释
-# from brahma_brain.chart_renderer import render_signal_dashboard, cleanup_old_charts
+        from brahma_brain.chart_renderer import render_signal_dashboard, cleanup_old_charts
         coin = symbol.replace('USDT', '')
         path = render_signal_dashboard(symbol, include_gex=include_gex)
         if not path:
@@ -136,8 +134,7 @@ def push_kingfisher(symbol: str = 'BTCUSDT', caption: str = '') -> bool:
     """推送 Kingfisher 风格三图组合（OI+FR / GEX散点 / LiqMap）高清晰版"""
     try:
         sys.path.insert(0, str(_ROOT))
-# [import_autoclean] 模块不存在，已注释
-# from brahma_brain.chart_renderer import render_kingfisher, cleanup_old_charts
+        from brahma_brain.chart_renderer import render_kingfisher, cleanup_old_charts
         coin = symbol.replace('USDT', '')
         path = render_kingfisher(symbol)
         if not path:
@@ -155,8 +152,7 @@ def push_gex_hist(currency: str = 'BTC') -> bool:
     """推送Historical GEX图（需要积累足够历史数据）"""
     try:
         sys.path.insert(0, str(_ROOT))
-# [import_autoclean] 模块不存在，已注释
-# from brahma_brain.chart_renderer import render_gex_hist
+        from brahma_brain.chart_renderer import render_gex_hist
         path = render_gex_hist(currency)
         if not path:
             print(f'[push_chart] GEX历史数据不足，跳过')

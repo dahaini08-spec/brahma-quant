@@ -1,0 +1,36 @@
+{
+  "_meta": {
+    "created": "2026-09-15",
+    "author": "苏摩111",
+    "description": "带血筹码观察池 — 苏摩一直在建仓买入的资产",
+    "update_rule": "手动维护，添加/删除资产后自动生效"
+  },
+  "crypto": [
+    {
+      "symbol": "BTCUSDT",
+      "name": "Bitcoin",
+      "binance_symbol": "BTCUSDT",
+      "notes": "加密之王"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "name": "Ethereum",
+      "binance_symbol": "ETHUSDT",
+      "notes": "智能合约平台"
+    }
+  ],
+  "us_stocks": [
+    {
+      "symbol": "AAPL",
+      "name": "Apple Inc.",
+      "notes": "请在Yahoo Finance或其他数据源填写"
+    }
+  ],
+  "trigger_rules": {
+    "discount_threshold": -20,
+    "vs_200d_threshold": -5,
+    "fear_greed_extreme": 25,
+    "fear_greed_fear": 45,
+    "description": "折扣≤-20% 或 vs200d≤-5% → 进入观察; 恐慌指数≤25 → 触发深度研究"
+  }
+}

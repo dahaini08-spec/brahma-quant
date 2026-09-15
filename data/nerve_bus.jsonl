@@ -3349,3 +3349,8 @@
 {"ts": "2026-09-15T04:09:26Z", "ts_ms": 1789445366709, "module": "brahma", "event": "ENGINE_FAIL", "level": "INFO", "msg": "", "data": {"engine": "multitf", "err": "name '_multitf_score' is not defined"}, "pid": 2447307}
 {"ts": "2026-09-15T04:09:51Z", "ts_ms": 1789445391981, "module": "brahma", "event": "ENGINE_FAIL", "level": "INFO", "msg": "", "data": {"engine": "multitf", "err": "name '_multitf_score' is not defined"}, "pid": 2447437}
 {"ts": "2026-09-15T04:10:07Z", "ts_ms": 1789445407584, "module": "brahma", "event": "ENGINE_FAIL", "level": "INFO", "msg": "", "data": {"engine": "multitf", "err": "name '_multitf_score' is not defined"}, "pid": 2447600}
+{"ts": "2026-09-15T04:11:26Z", "ts_ms": 1789445486673, "module": "brahma", "event": "ENGINE_FAIL", "level": "INFO", "msg": "", "data": {"engine": "multitf", "err": "name '_multitf_score' is not defined"}, "pid": 2448003}
+{"ts": "2026-09-15T05:27:30Z", "ts_ms": 1789450050719, "module": "brahma", "event": "ENGINE_FAIL", "level": "INFO", "msg": "", "data": {"engine": "multitf", "err": "name '_multitf_score' is not defined"}, "pid": 2465293}
+{"ts": "2026-09-15T05:38:03Z", "ts_ms": 1789450683549, "module": "brahma", "event": "ENGINE_FAIL", "level": "INFO", "msg": "", "data": {"engine": "multitf", "err": "name '_multitf_score' is not defined"}, "pid": 2467778}
+{"ts": "2026-09-15T05:41:56Z", "ts_ms": 1789450916292, "module": "brahma", "event": "ENGINE_FAIL", "level": "INFO", "msg": "", "data": {"engine": "multitf", "err": "name '_multitf_score' is not defined"}, "pid": 2469154}
+{"ts": "2026-09-15T05:43:39Z", "ts_ms": 1789451019776, "module": "brahma", "event": "ENGINE_FAIL", "level": "INFO", "msg": "", "data": {"engine": "multitf", "err": "name '_multitf_score' is not defined"}, "pid": 2469710}

@@ -125,7 +125,7 @@ def run(symbol: str, force_regime: bool = False, zone: dict = None) -> dict:
     try:
         import sys as _sys
         _sys.path.insert(0, str(_DIR / 'scripts'))
-# [import_autoclean] 模块不存在，已注释
+# 模块不存在，已注释
 # from soma_manager import record_usage as _soma_rec
         _soma_rec('trade_gateway', tokens=3000, priority=0)
     except Exception as _e_ignored:

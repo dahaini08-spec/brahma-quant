@@ -58,7 +58,7 @@ try:
 except Exception:
     _HARMONIC_OK = False
 try:
-# [import_autoclean] 模块不存在，已注释
+# 模块不存在，已注释
 # from multitf_engine import multitf_score as _multitf_score
     _MULTITF_OK = True
 except Exception:
@@ -178,7 +178,7 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     except Exception as _cg_e:
         # [设计院 2026-05-30] 降级链：尝试备用数据源
         try:
-# [import_autoclean] 模块不存在，已注释
+# 模块不存在，已注释
 # from coinglass_fallback import get_full_snapshot_with_fallback as _cg_fb
             _cg_snap_fb = _cg_fb(_sym)
             extra_data['coinglass']     = _cg_snap_fb

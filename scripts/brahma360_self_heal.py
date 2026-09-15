@@ -700,7 +700,7 @@ def check_f14_tardis_freshness() -> dict:
     try:
         import sys as _sys
         _sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
-# [import_autoclean] 模块不存在，已注释
+# 模块不存在，已注释
 # from tardis_liq_layer import _get_free_date, CACHE_DIR, get_tardis_liq_walls
         year, month, day = _get_free_date()
         expected_date = f'{year}{month}01'

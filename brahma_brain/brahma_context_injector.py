@@ -201,7 +201,7 @@ def get_top3_similar(symbol: str, ms: dict) -> str:
 def get_extreme_analog(ms: dict) -> str:
     """把当前市场特征与历史极端事件对比"""
     try:
-# [import_autoclean] 模块不存在，已注释
+# 模块不存在，已注释
 # from brahma_longmem import get_extreme_event_warning, EXTREME_EVENTS
         symbol = ms.get('symbol', 'BTCUSDT')
         ew     = get_extreme_event_warning(symbol)
