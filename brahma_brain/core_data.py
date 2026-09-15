@@ -9,10 +9,8 @@ core_data.py — Step1-3 市场数据接口适配层（第二刀）
 3. 捕获数据获取异常，返回 MarketSnapshot(ok=False) 而非崩溃
 4. 外部（paper_engine/auto_executor）通过这层获取市场数据，不直接调用step函数
 """
-from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
 
 
 @dataclass

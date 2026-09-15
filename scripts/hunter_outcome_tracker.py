@@ -35,8 +35,7 @@ def _creds():
         for line in env.read_text().splitlines():
             if line.startswith('BINANCE_API_KEY='): k = line.split('=',1)[1].strip()
             if line.startswith('BINANCE_SECRET='):   s = line.split('=',1)[1].strip()
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if not k:
         k = os.environ.get('BINANCE_API_KEY','')
         s = os.environ.get('BINANCE_SECRET','')
@@ -103,8 +102,7 @@ def load_outcome_log():
                 sid = r.get('signal_id','') or r.get('order_id','')
                 if sid:
                     done[str(sid)] = r
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return done
 
 def append_outcome(record: dict):
@@ -124,9 +122,7 @@ def run():
             r = json.loads(line)
             if r.get('status') == 'FILLED':
                 records.append(r)
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if not records:
         print('HEARTBEAT_OK')
         return
@@ -253,9 +249,7 @@ def calc_oi_win_rate():
             r = json.loads(line)
             sid = r.get('signal_id','') or r.get('order_id','')
             seen[str(sid)] = r
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     records = list(seen.values())
     closed = [r for r in records if r.get('outcome') in ('WIN','LOSS')]
     holding = [r for r in records if r.get('outcome') == 'HOLDING']

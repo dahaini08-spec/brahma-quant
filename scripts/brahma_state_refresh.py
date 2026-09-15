@@ -56,8 +56,7 @@ def _load_queue() -> list:
         try:
             d = json.loads(SIGNAL_QUEUE_FILE.read_text())
             return d if isinstance(d, list) else d.get('signals', [])
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return []
 
 def _save_queue(signals: list):
@@ -97,9 +96,7 @@ def main():
     try:
         from brahma_bus import BrahmaEventBus
         BrahmaEventBus()
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     try:
         from brahma_core import analyze
     except Exception as e:

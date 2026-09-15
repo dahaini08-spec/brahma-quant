@@ -74,9 +74,7 @@ def append_log(entry):
         log.append(entry)
         with open(LOG_FILE, 'w') as f:
             json.dump(log[-500:], f, indent=2, ensure_ascii=False)
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def get_regime(sym: str):
     # [regime_bus 2026-08-05] 统一体制总线优先
     try:
@@ -86,8 +84,7 @@ def get_regime(sym: str):
         _rb_r_m = _rb_get_m('BTCUSDT', layer='SIGNAL')
         if _rb_r_m and _rb_r_m != 'UNKNOWN':
             return _rb_r_m
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     """获取标的当前体制和阶段（纯本地计算）"""
     try:
         from market_state import analyze as ms
@@ -239,9 +236,7 @@ f"""🔄 梵天体制升级
                     if _r22:
                         _note = f"🤖 LLM审核: {_r22.strip()[:60]}"
                         _llm_regime_notes.append(_note)
-                except Exception:
-                    pass
-
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         if _llm_regime_notes:
             full_msg += '\n\n' + '\n'.join(_llm_regime_notes)
         # ── end P2-2 ──────────────────────────────────────────────────

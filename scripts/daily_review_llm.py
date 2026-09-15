@@ -35,9 +35,7 @@ def _load_today_signals() -> dict:
                     'regime': d.get('regime', '?'),
                     'score':  d.get('score', 0),
                 }
-            except Exception:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 今日capital_alloc记录
     cap_path = DATA / 'capital_alloc.jsonl'
     today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
@@ -49,10 +47,8 @@ def _load_today_signals() -> dict:
                     d = json.loads(line)
                     if today in d.get('ts', '') or today in str(d.get('time', '')):
                         today_trades.append(d)
-                except Exception:
-                    pass
-        except Exception:
-            pass
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     out['today_trades'] = today_trades[:10]
 
     # CVD实时信号
@@ -62,9 +58,7 @@ def _load_today_signals() -> dict:
             try:
                 d = json.loads(p.read_text())
                 out[f'cvd_{sym[:3].upper()}'] = d.get('signal', '?')
-            except Exception:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return out
 
 

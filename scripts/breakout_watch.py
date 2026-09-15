@@ -166,7 +166,9 @@ def check_spring_coil(symbol: str) -> dict:
 def run_breakout_watch(symbols: list = None) -> dict:
     """主入口：对多个标的执行三条件检测"""
     if symbols is None:
-        symbols = ['BTCUSDT', 'ETHUSDT']
+        # 2026-09-14 苏摩111 扩展2→67标的（与rsi_structure_watcher一致）
+        from scripts.rsi_structure_watcher import SYMBOLS as _RSI_SYMS
+        symbols = _RSI_SYMS
 
     results = {}
     alerts  = []
@@ -241,12 +243,16 @@ def format_alert_card(alert: dict) -> str:
 def main():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--symbols', nargs='+', default=['BTCUSDT', 'ETHUSDT'])
+    parser.add_argument('--symbols', nargs='+', default=None)
     parser.add_argument('--quiet', action='store_true')
     args = parser.parse_args()
 
-    print(f'[bw] CHOP盲区探测 {" ".join(args.symbols)} @ {datetime.now(timezone.utc).strftime("%H:%M UTC")}')
-    result = run_breakout_watch(args.symbols)
+    _syms = args.symbols or run_breakout_watch.__defaults__[0] if run_breakout_watch.__defaults__ else None
+    if _syms is None:
+        from scripts.rsi_structure_watcher import SYMBOLS as _RSI_SYMS
+        _syms = _RSI_SYMS
+    print(f'[bw] CHOP盲区探测 {len(_syms)}标的 @ {datetime.now(timezone.utc).strftime("%H:%M UTC")}')
+    result = run_breakout_watch(_syms)
 
     # 写缓存
     cache = BASE / 'data' / 'breakout_watch_latest.json'

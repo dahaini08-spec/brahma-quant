@@ -504,15 +504,12 @@
     }
   },
   "3587497213d8": {
-    "ts": 1789281470.0606904,
+    "ts": 1789305000.921393,
     "result": {
       "risk": {
-        "score_adj": -5,
-        "risk_level": "HIGH",
-        "top_risk": "评分仅7.2/150（换算约7.2分），远低于弱信号门槛100分，信号强度极度不足，无任何入场依据",
-        "liq_insight": "清算数据全部N/A，无法评估清算墙支撑或踩踏风险，信息盲区下风险溢价上升",
-        "veto": true,
-        "source": "llm"
+        "score_adj": 0,
+        "summary": "timeout_fallback",
+        "agent": "RiskAgent"
       },
       "macro": {
         "score_adj": 0,
@@ -530,15 +527,16 @@
         "summary": "lite_mode_skip",
         "agent": "DevilAgent"
       },
-      "final_adj": -30,
+      "final_adj": 0,
       "score_before": 7.2,
-      "score_after": -22.8,
+      "score_after": 7.2,
       "mode": "live",
-      "elapsed_ms": 14343,
+      "elapsed_ms": 17496,
       "react_triggered": false,
-      "ts": "2026-09-13T06:38:04.480885+00:00",
+      "ts": "2026-09-13T13:10:18.453033+00:00",
       "from_cache": false,
-      "council_mode": "lite(RiskOnly)"
+      "council_mode": "lite(RiskOnly)",
+      "injected_adj": 0
     }
   },
   "ce2c52d3b7b9": {
@@ -615,6 +613,152 @@
       "ts": "2026-09-13T10:21:26.247481+00:00",
       "from_cache": false,
       "council_mode": "lite(RiskOnly)"
+    }
+  },
+  "535ca71b5563": {
+    "ts": 1789302609.0970404,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "summary": "timeout_fallback",
+        "agent": "RiskAgent"
+      },
+      "macro": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "MacroAgent"
+      },
+      "quant": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "QuantAgent"
+      },
+      "devil": {
+        "score_adj": 0,
+        "veto": false,
+        "summary": "lite_mode_skip",
+        "agent": "DevilAgent"
+      },
+      "final_adj": 0,
+      "score_before": 27.8,
+      "score_after": 27.8,
+      "mode": "live",
+      "elapsed_ms": 16702,
+      "react_triggered": false,
+      "ts": "2026-09-13T12:30:25.878304+00:00",
+      "from_cache": false,
+      "council_mode": "lite(RiskOnly)",
+      "injected_adj": 0
+    }
+  },
+  "73574f4b7d84": {
+    "ts": 1789306072.7437327,
+    "result": {
+      "risk": {
+        "score_adj": -5,
+        "risk_level": "HIGH",
+        "top_risk": "评分27.8/150极度弱信号（远低于100弱信号门槛），CHOP_MID体制噪音主导，方向性判断可靠性接近随机",
+        "liq_insight": "清算数据全部N/A，无法评估任何清算驱动力，SHORT方向缺乏多头踩踏动能支撑，入场依据严重不足",
+        "veto": true,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "MacroAgent"
+      },
+      "quant": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "QuantAgent"
+      },
+      "devil": {
+        "score_adj": 0,
+        "veto": false,
+        "summary": "lite_mode_skip",
+        "agent": "DevilAgent"
+      },
+      "final_adj": -30,
+      "score_before": 27.8,
+      "score_after": -2.1999999999999993,
+      "mode": "live",
+      "elapsed_ms": 13585,
+      "react_triggered": false,
+      "ts": "2026-09-13T13:28:06.514106+00:00",
+      "from_cache": false,
+      "council_mode": "lite(RiskOnly)"
+    }
+  },
+  "1ffaf898842a": {
+    "ts": 1789307479.9851203,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "summary": "timeout_fallback",
+        "agent": "RiskAgent"
+      },
+      "macro": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "MacroAgent"
+      },
+      "quant": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "QuantAgent"
+      },
+      "devil": {
+        "score_adj": 0,
+        "veto": false,
+        "summary": "lite_mode_skip",
+        "agent": "DevilAgent"
+      },
+      "final_adj": 0,
+      "score_before": 34.3,
+      "score_after": 34.3,
+      "mode": "live",
+      "elapsed_ms": 15128,
+      "react_triggered": false,
+      "ts": "2026-09-13T13:51:35.143214+00:00",
+      "from_cache": false,
+      "council_mode": "lite(RiskOnly)",
+      "injected_adj": 0
+    }
+  },
+  "b228f77974b8": {
+    "ts": 1789307659.8363957,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "summary": "timeout_fallback",
+        "agent": "RiskAgent"
+      },
+      "macro": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "MacroAgent"
+      },
+      "quant": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "QuantAgent"
+      },
+      "devil": {
+        "score_adj": 0,
+        "veto": false,
+        "summary": "lite_mode_skip",
+        "agent": "DevilAgent"
+      },
+      "final_adj": 0,
+      "score_before": 45.5,
+      "score_after": 45.5,
+      "mode": "live",
+      "elapsed_ms": 15237,
+      "react_triggered": false,
+      "ts": "2026-09-13T13:54:35.247261+00:00",
+      "from_cache": false,
+      "council_mode": "lite(RiskOnly)",
+      "injected_adj": 0
     }
   }
 }

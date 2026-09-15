@@ -12,10 +12,9 @@ antifragile_guard.py — 梵天大脑 Layer C3: 反脆弱性系统
   3. 极端情绪熔断  — FG<10或>90 → 暂停新开仓或限制方向
   4. 交易所异常    — 溢价/折价>2% → 立即推送预警
 """
-from __future__ import annotations
 import os, sys, json, time, logging
 from pathlib import Path
-from typing import Optional
+import sys
 
 _BB = os.path.dirname(os.path.abspath(__file__))
 _ROOT = os.path.dirname(_BB)
@@ -35,8 +34,7 @@ def _load_state() -> dict:
     try:
         if _STATE_PATH.exists():
             return json.loads(_STATE_PATH.read_text())
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {
         'consecutive_losses': 0,
         'last_loss_ts': 0,
@@ -70,7 +68,6 @@ def check_blackswan() -> dict:
     """
     try:
         from data_cache import get_klines
-        from math_utils import calc_rsi
 
         kl1h = get_klines('BTCUSDT', '1h', 48)
         c1h = [float(k[4]) for k in kl1h]

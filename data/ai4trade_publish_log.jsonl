@@ -58,3 +58,4 @@
 {"signal_key": "ETHUSDT_LONG_2026090523", "signal_id": 3355031, "symbol": "ETHUSDT", "ts": "2026-09-05T23:01:13.082900+00:00"}
 {"signal_key": "ETHUSDT_LONG_2026090603", "signal_id": 3355361, "symbol": "ETHUSDT", "ts": "2026-09-06T03:45:25.342657+00:00"}
 {"signal_key": "BTCUSDT_LONG_2026091309", "signal_id": 3881628, "symbol": "BTCUSDT", "ts": "2026-09-13T09:13:22.737537+00:00"}
+{"signal_key": "BTCUSDT_LONG_2026091501", "signal_id": 4120515, "symbol": "BTCUSDT", "ts": "2026-09-15T01:16:50.663242+00:00"}

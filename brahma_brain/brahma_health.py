@@ -193,8 +193,7 @@ def _check_data_files() -> dict:
                         import datetime as _hdt
                         _ts = _hdt.datetime.fromisoformat(_ts.replace('Z','+00:00')).timestamp()
                     age = min(age, now - float(_ts))
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             if age > 3600:  # >1H未更新（原2H → 1H，更严格）
                 stale.append(f'{fname}({age/3600:.1f}H)')
     ok = not missing
@@ -576,9 +575,7 @@ def _check_standby_violations_health() -> dict:
                     src = f.read(500)  # 只读头部
                 if 'STATUS: STANDBY' in src or 'STATUS: AUXILIARY' in src:
                     flagged.add(fname[:-3])
-            except Exception:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         violations = []
         skip = flagged | {'__init__', 'auto_review', 'brahma_health'}
         for fname in os.listdir(brain):
@@ -595,9 +592,7 @@ def _check_standby_violations_health() -> dict:
                         for n in names + [mod.split('.')[-1]]:
                             if n in flagged and fname[:-3] not in flagged:
                                 violations.append(f'{fname[:-3]}→{n}')
-            except Exception:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # 架构债务：warn-only，不阻断HEALTHY（重构成本高）
         return {
             'ok': len(violations) < 200,   # 允许存量违规，>200才算失败
@@ -637,8 +632,7 @@ def _check_panorama_integrity() -> dict:
 def _check_learning_loop_importable() -> dict:
     """学习闭环模块可导入性（2026-08-26归档后降级为warn-only）"""
     try:
-# [import_autoclean] 模块不存在，已注释
-# from brahma_brain.brahma_learning_loop import main  # noqa
+        from brahma_brain.brahma_learning_loop import main
         return {'ok': True, 'detail': 'brahma_brain.brahma_learning_loop.main OK', 'warn': False}
     except Exception as e:
         # 模块已归档，非核心路径，降级为warn不影响健康分
@@ -807,9 +801,7 @@ def _check_zombie_positions() -> dict:
                 age_h = (now - ts).total_seconds() / 3600
                 if age_h > 72:
                     zombies.append(f'{sym}({age_h:.0f}H)')
-            except Exception:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         if zombies:
             return {'ok': False, 'warn': True,
                     'detail': f'超72H僵尸持仓: {zombies} — 需苏摩确认处理'}

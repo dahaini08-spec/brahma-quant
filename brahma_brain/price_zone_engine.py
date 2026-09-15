@@ -17,9 +17,9 @@ price_zone_engine.py — 梵天战场预判层 v1.0
   P1: liq_density_engine + smc_engine
   P2: hcme_matcher + gex_engine
 """
-from __future__ import annotations
 import os, sys, time, json, logging
 from typing import Optional
+import sys
 
 _BB = os.path.dirname(os.path.abspath(__file__))
 _ROOT = os.path.dirname(_BB)
@@ -111,8 +111,7 @@ def _get_regime_from_ssot(symbol: str, fallback_fn) -> str:
                 age = time.time() - entry.get('ts', 0)
                 if age < 1800:  # 30分钟内有效
                     return entry.get('confirmed', entry.get('regime', ''))
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return fallback_fn()
 
 
@@ -441,9 +440,7 @@ def _calc_zones_internal(symbol: str) -> dict:
         elif mc4h[2] > 0:
             bias_score += 1
             bias_reasons.append(f'MACD4H hist={mc4h[2]:.1f}转正→偏多')
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # HCME方向
     if hcme_bias < 0:
         bias_score -= 1

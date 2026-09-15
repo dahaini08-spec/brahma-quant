@@ -25,6 +25,7 @@ import logging
 from pathlib import Path
 from typing import List, Optional
 import json
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +40,7 @@ def _fetch_closes(symbol: str, interval: str = '1h', limit: int = 100) -> List[f
         raw = _dc_klines(symbol, interval, limit)
         if raw:
             return [float(k[4]) for k in raw]
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     try:
         import requests as _req
         r = _req.get(

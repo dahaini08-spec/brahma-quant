@@ -22,7 +22,6 @@ position_sizer.py — 梵天仓位定量器 v1.0
   SOL 160+分:    WR=0%  n=9  → BANNED
   ETH 160+分:    WR=0%  n=6  → BANNED
 """
-from __future__ import annotations
 import json, os, time
 from pathlib import Path
 
@@ -358,8 +357,7 @@ def get_position_pct(symbol: str, score: float, direction: str,
         if _macro_factor < 1.0:
             max_pct = round(max_pct * _macro_factor, 2)
             level = f'{level}+MACRO_GATE'
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── [END P2 宏观门控] ──────────────────────────────────────────────────────────────
 
     # ── [P2-B signal_weights闭环 2026-08-14 设计院封印] ──────────────────────
@@ -395,8 +393,7 @@ def get_position_pct(symbol: str, score: float, direction: str,
         else:
             max_pct = round(max_pct * _sw_mult, 2)
         usdt = nav * max_pct / 100 if nav > 0 else 0
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── end signal_weights闭环 ────────────────────────────────────────────
     allowed = (max_pct > 0)
     usdt = nav * max_pct / 100 if nav > 0 else 0
@@ -418,8 +415,7 @@ def get_position_pct(symbol: str, score: float, direction: str,
             max_pct = round(max_pct * 0.3, 2)
             usdt = nav * max_pct / 100 if nav > 0 else 0
             _var_note = f'VaR=EXTREME 仓位×0.3→{max_pct}%'
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── [END var_engine] ──────────────────────────────────────────────────────
 
     # ── [sl_bandit 2026-08-29 苏摩111] 动态SL推荐（辅助信息，不强制覆盖宪法SL）──
@@ -433,8 +429,7 @@ def get_position_pct(symbol: str, score: float, direction: str,
             # 仅输出建议字段，实际SL由宪法决定（P0 SL三层分档）
             # 当Bandit建议与传入sl_pct差距>0.5%时，在note字段警示
             _slb_note = f'SL_Bandit建议={_slb_pct:.1f}%(WR={_slb_wr:.0%} n={_slb_n})'
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── [END sl_bandit] ────────────────────────────────────────────────────────
 
     # ── [P0 SL三层分档 2026-08-22 设计院自主] SL铁证仓位分级 ──────────────────
@@ -576,8 +571,7 @@ def get_position_pct(symbol: str, score: float, direction: str,
                 max_pct = round(max_pct * _narr_mult, 2)
                 max_pct = max(max_pct, 0.3)  # 不归零
                 usdt = round(max_pct / 100 * nav, 2) if nav else 0
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── [END B3叙事修正] ─────────────────────────────────────────────────────
 
     return {
@@ -1167,9 +1161,7 @@ def compress_signal_card(signal: Dict[str, Any], mode: str = 'compact') -> str:
             n = int(str(v).strip())
             if n != 0 and abs(n) >= 3:
                 extra.append(f'{k}={n}')
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if mode == 'ultra':
         # 极简模式：只输出核心三行
         top5 = active_dims[:5]
@@ -1717,8 +1709,7 @@ def compute(
             lines = ALLOC_LOG.read_text().splitlines()
             if len(lines) > 3000:
                 ALLOC_LOG.write_text('\n'.join(lines[-2000:]) + '\n')
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     except:
         import sys as _sys_ep; print(f"[EXCEPT-PASS] position_sizer.py:L1712", file=_sys_ep.stderr)
         pass
@@ -1779,7 +1770,6 @@ import json
 import math
 import time
 from pathlib import Path
-from typing import Optional
 
 BASE = Path(__file__).parent.parent
 BANDIT_STATE_PATH = BASE / 'data' / 'sl_bandit_state.json'
@@ -1833,8 +1823,7 @@ def _load_state() -> dict:
     if BANDIT_STATE_PATH.exists():
         try:
             return json.loads(BANDIT_STATE_PATH.read_text())
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
 
@@ -2044,9 +2033,7 @@ def sync_from_signal_log() -> int:
                 continue
             update_from_outcome(regime, direction, sl_pct, outcome, pnl_pct)
             new_count += 1
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 更新同步时间戳
     if new_count > 0:
         state2 = _load_state()
@@ -2104,9 +2091,7 @@ def sync_from_simfactory() -> int:
             )
             seen_ids.add(sid)
             new_count += 1
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if new_count > 0:
         state2 = _load_state()
         state2['_sim_seen_ids'] = list(seen_ids)

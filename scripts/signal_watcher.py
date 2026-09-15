@@ -57,8 +57,7 @@ def _bus_price(symbol: str) -> float:
         try:
             p = _brahma_bus_get_price(symbol)
             if p and p > 0: return p
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     import requests
     r = requests.get(f'https://fapi.binance.com/fapi/v1/ticker/price',
                      params={'symbol': symbol}, timeout=5)
@@ -428,8 +427,7 @@ def run():
                             f"新信号 score={s.get('score','?')} — 请评估是否加仓，系统不自动执行",
                             dedup_ttl=3600
                         )
-                    except Exception:
-                        pass
+                    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
                     state.setdefault('notified', {})[_hold_key_p2] = now
                 continue  # 已持仓信号不进入正常推送流
         except Exception:
@@ -457,7 +455,7 @@ def run():
             # [IC铁证 2026-07-23] TIER1通道已删除，此处只剩TIER2（score≥155）信号
             try:
                 from push_hub import _jarvis as _pj_sw; _pj_sw(f"🔔 新信号\n{card}", dedup_ttl=86400)
-            except Exception: pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             # ── [设计院 2026-08-13] 信号触发时附带图表仪表盘 ────────
             try:
                 import sys as _sc_sys
@@ -465,7 +463,7 @@ def run():
                 from push_chart import push_kingfisher as _push_kf
                 _push_kf(sym if sym.endswith('USDT') else sym+'USDT',
                          caption=f'\U0001f4ca {sym} 信号图表')
-            except Exception: pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             # ── [END] ────────────────────────────────────────────────
             state["notified"][sig_id] = now
             pass  # [静默]
@@ -521,18 +519,17 @@ def run():
                             'event': 'ERROR', 'symbol': s.get('symbol'), 'reason': f'signal_watcher异常: {_ex}',
                             'traceback': _err_detail
                         }, ensure_ascii=False) + '\n')
-                except Exception: pass
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             try:
                 from push_hub import _jarvis as _pj; _pj(_push_msg, dedup_ttl=14400)  # 4H去重
-            except Exception: pass
-            pass  # [静默]
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 
         # gap < 0.1%（极度贴近）
         elif 0 <= gap_pct < 0.1 and warn_key_01 not in state["warned"]:
             card = _format_signal_card(s, price, gap_pct)
             try:
                 from push_hub import _jarvis as _pj_sw; _pj_sw(f"⚡ 价格极度贴近入场区！\n{card}", dedup_ttl=3600)
-            except Exception: pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             state["warned"][warn_key_01] = now
             pass  # [静默]
 
@@ -541,7 +538,7 @@ def run():
             card = _format_signal_card(s, price, gap_pct)
             try:
                 from push_hub import _jarvis as _pj_sw; _pj_sw(f"📡 信号即将触发\n{card}", dedup_ttl=3600)
-            except Exception: pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             state["warned"][warn_key_05] = now
             pass  # [静默]
 

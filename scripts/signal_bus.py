@@ -35,8 +35,7 @@ def _lock():
 
 def _unlock():
     try: LOCK_FILE.unlink()
-    except: pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def write(signal: dict) -> bool:
     """
     写入一条信号到总线
@@ -112,8 +111,7 @@ def write(signal: dict) -> bool:
                     int(_live_entry.get('structure_grade', 0) or 0),
                     float(_live_entry.get('effective_grade', 0) or 0),
                 )
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             # sha8 去重 key: symbol+direction+score整数+1H时间窗口
             import hashlib as _hs, time as _tt
             _dedup_base = f"{signal.get('symbol','')}_{signal.get('direction','')}_{int(signal.get('score',0))}_{int(_tt.time()//3600)}"
@@ -128,7 +126,7 @@ def write(signal: dict) -> bool:
                         _d = __import__('json').loads(_line)
                         if _d.get('ts',0) > _cutoff:
                             _existing_shas.add(_d.get('sha8',''))
-                except: pass
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             # [FIX-ROOT 2026-07-23 苏摩111] 去重升级: 用 signal_id 代替 sha8
             # 根因: sha8=symbol+direction+score+1H窗口，与 dharma_data_bridge 的 entry_lo去重
             # 互不认识对方写的记录 → 同一信号在 live_signal_log 出现两次（105个重复）
@@ -143,7 +141,7 @@ def write(signal: dict) -> bool:
                         _dsid = _d.get('signal_id', '')
                         if _dsid:
                             _existing_sids.add(_dsid)
-                except: pass
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             if _this_sid and _this_sid in _existing_sids:
                 pass  # signal_id 已存在，跳过写入（去重命中）
             else:
@@ -184,8 +182,7 @@ def read_pending(max_age_h=12, min_score=100) -> list:
             try:
                 exp_ts = datetime.fromisoformat(exp.replace('Z','+00:00')).timestamp()
                 if now > exp_ts: continue
-            except: pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # 年龄检查
         if now - s.get('ts', 0) > max_age_h * 3600: continue
 
@@ -240,7 +237,7 @@ def validate():
     sources = set()
     for l in lines:
         try: sources.add(json.loads(l).get('source',''))
-        except: pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     print(f'✅ signal_bus: {len(lines)}条 / {len(sources)}个source({sources}) / 错误{errors}个')
     return errors == 0
 

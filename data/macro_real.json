@@ -1,28 +1,37 @@
 {
   "data_source": "BLS API + 推算模型",
-  "data_time": "2026-09-13 01:36 UTC",
+  "data_time": "2026-09-15 01:06 UTC",
   "cpi_core": {
-    "error": "no data"
+    "value": 338.041,
+    "period": "M08",
+    "period_name": "August",
+    "year": "2026"
   },
   "cpi_all": {
-    "error": "no data"
+    "value": 334.98,
+    "period": "M08",
+    "period_name": "August",
+    "year": "2026"
   },
   "ppi_final": {
-    "error": "no data"
+    "value": 282.986,
+    "period": "M08",
+    "period_name": "August",
+    "year": "2026"
   },
-  "cpi_yoy": 0.0,
-  "ppi_yoy": 0.0,
+  "cpi_yoy": 2.45,
+  "ppi_yoy": -0.43,
   "fed_rate": 5.25,
   "rate_expectation": {
     "bias": "DOVISH",
-    "action": "CUT_50",
-    "probability": 70,
-    "note": "通胀达标(CPI=0.0%/PPI=0.0%)→降息50bp概率70%",
-    "inflation_pressure": 0.0
+    "action": "CUT_25",
+    "probability": 60,
+    "note": "通胀回落(CPI=2.5%/PPI=-0.4%)→降息25bp概率60%",
+    "inflation_pressure": 2.32
   },
   "macro_calendar": {
     "next_fomc": "2026-09-17",
-    "days_to_fomc": 3
+    "days_to_fomc": 1
   },
-  "fear_greed": 74
+  "fear_greed": 61
 }

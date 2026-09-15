@@ -261,8 +261,7 @@ def history(symbol: str = 'BTCUSDT',
             e = json.loads(line)
             if e.get('sym') == symbol and e.get('confidence') == confidence:
                 events.append(e)
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return events[-limit:]
 
 
@@ -285,10 +284,7 @@ def sync_from_ssot():
             eth_ts   = eth_data.get('CONFIRMED_ts', 0)
             if time.time() - eth_ts > TTL_SECONDS:
                 update('ETHUSDT', eth_r, 'CONFIRMED', 'btc_regime_watcher')
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 # ─────────────────────────────────────────────────────────────
 # 公开接口：get_full / status_report
 # ─────────────────────────────────────────────────────────────

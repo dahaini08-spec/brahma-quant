@@ -410,9 +410,7 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         try:
             sample = json.loads(sys.argv[1])
-        except:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     versions = build_kol_post(sample, n_versions=3)
     print(f"=== KOL 帖子预览（{len(versions)}个版本）===\n")
     for i, v in enumerate(versions, 1):

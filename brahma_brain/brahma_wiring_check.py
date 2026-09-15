@@ -277,8 +277,7 @@ def _run_static_concurrency_scan() -> tuple:
                                         _has_guard = ('if ' in _prev or 'if ' in _cur)
                                         if not _has_guard:  # 无幂等守卫
                                             _danger += 1
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         if _danger > 0:
             print(f'  ❌ S1 {_rel}: {_danger}处并行函数内无守卫sys.path.insert — race condition!')
             fail_c += 1
@@ -523,9 +522,7 @@ def run_wiring_check() -> dict:
             for dep in _re.findall(r'from (\w+) import ', content):
                 if dep in modules and dep != mod:
                     callee_map[dep].add(mod)
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # scripts也算调用者
     scripts_callers: set = set()
     for s in _SCRIPTS_DIR.glob('*.py'):
@@ -537,9 +534,7 @@ def run_wiring_check() -> dict:
             for g in _re.findall(r'from (\w+) import ', _sc):
                 if g in modules:
                     scripts_callers.add(g)
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     critical, watch, ok_list = [], [], []
     for mod in sorted(modules):
         if mod in _WHITELIST:

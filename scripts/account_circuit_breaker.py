@@ -46,7 +46,7 @@ def _load_cb() -> dict:
     try:
         if CB_FILE.exists():
             return json.loads(CB_FILE.read_text())
-    except: pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {'l1': None, 'l2': None, 'l3': False, 'nav_peak': 0}
 
 
@@ -60,7 +60,7 @@ def _load_signals() -> list:
         with open(LOG_PATH) as f:
             for l in f:
                 try: logs.append(json.loads(l.strip()))
-                except: pass
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return logs
 
 
@@ -76,9 +76,7 @@ def _notify(msg: str):
         sys.path.insert(0, str(BASE / 'scripts'))
         from push_hub import _jarvis
         _jarvis(f'🚨 [熔断器] {msg}')
-    except: pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 # ─── 检查是否需要触发熔断 ─────────────────────────────────────────
 
 def check_and_update() -> dict:
@@ -90,7 +88,7 @@ def check_and_update() -> dict:
         if _silenced:
             return {'l1': False, 'l2': False, 'l3': False, 'blocked': False,
                     'reason': f'人工覆盖: {_reason}', 'overridden': True}
-    except Exception: pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ────────────────────────────────────────────────────────
     cb  = _load_cb()
     now = time.time()
@@ -213,7 +211,7 @@ def reset_l1():
         import sys as _s; _s.path.insert(0, str(Path(__file__).parent))
         from command_register import set_override, DOMAIN_CIRCUIT_BREAKER
         set_override(DOMAIN_CIRCUIT_BREAKER, '人工解除L1', hours=2.0)
-    except Exception: pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     print("✅ L1熔断已解除（指令总线覆盖2H）")
 
 
@@ -225,7 +223,7 @@ def reset_l2():
         import sys as _s; _s.path.insert(0, str(Path(__file__).parent))
         from command_register import set_override, DOMAIN_CIRCUIT_BREAKER
         set_override(DOMAIN_CIRCUIT_BREAKER, '人工解除L2', hours=2.0)
-    except Exception: pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     print("✅ L2熔断已解除（指令总线覆盖2H）")
 
 

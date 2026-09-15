@@ -11,6 +11,7 @@ brahma_alert.py - 梵天关键路径异常告警
 """
 import logging, time, os, sys
 from pathlib import Path
+import sys
 
 BASE = Path(__file__).parent.parent
 LOG  = BASE / 'logs' / 'brahma_alert.log'
@@ -32,8 +33,7 @@ def alert_error(module: str, context: str, exc: Exception = None, push: bool = T
         os.makedirs(str(LOG.parent), exist_ok=True)
         with open(str(LOG), 'a') as f:
             f.write(time.strftime('%Y-%m-%dT%H:%M:%S') + ' ERROR ' + msg + '\n')
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if not push:
         return
     dedup_key = module + ':' + context[:30]
@@ -47,10 +47,7 @@ def alert_error(module: str, context: str, exc: Exception = None, push: bool = T
         exc_str = (type(exc).__name__ + ': ' + str(exc)[:80]) if exc else ''
         push_msg = 'ALERT ' + module + '\n' + context + '\n' + exc_str
         _jarvis(push_msg, dedup_key=dedup_key, dedup_ttl=3600)
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def alert_warning(module: str, context: str, push: bool = False):
     """可选功能失败 → logging.warning（默认不推送）"""
     msg = '[' + module + '] WARN ' + context
@@ -58,5 +55,4 @@ def alert_warning(module: str, context: str, push: bool = False):
     try:
         with open(str(LOG), 'a') as f:
             f.write(time.strftime('%Y-%m-%dT%H:%M:%S') + ' WARN  ' + msg + '\n')
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)

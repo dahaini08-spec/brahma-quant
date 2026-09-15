@@ -52,8 +52,7 @@ def _load_cache() -> dict:
             c = json.loads(CACHE_FILE.read_text())
             if time.time() - c.get('ts', 0) < CACHE_TTL:
                 return c
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
 
@@ -62,10 +61,7 @@ def _save_cache(data: dict):
         CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
         data['ts'] = time.time()
         CACHE_FILE.write_text(json.dumps(data, ensure_ascii=False))
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def get_fg_index() -> tuple[int, str]:
     """返回 (fg_value:0-100, fg_label)"""
     cache = _load_cache()

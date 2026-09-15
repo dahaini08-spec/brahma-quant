@@ -98,7 +98,7 @@ def get_ensemble_score(symbol: str, direction: str, brahma_result: dict = None) 
       }
     """
     # 获取13维特征（12维原始 + 1维跨市场alpha）
-    vec = _extract_12vec_from_result(symbol, brahma_result)
+    vec = _extract_12vec_from_result(symbol, brahma_result, direction)
     
     if not vec:
         return {
@@ -162,7 +162,7 @@ def get_ensemble_score(symbol: str, direction: str, brahma_result: dict = None) 
     }
 
 
-def _extract_12vec_from_result(symbol: str, brahma_result: dict = None) -> dict:
+def _extract_12vec_from_result(symbol: str, brahma_result: dict = None, direction: str = 'SHORT') -> dict:
     """从brahma_core.analyze()结果中提取12维特征"""
     if not brahma_result:
         return {}
@@ -230,9 +230,7 @@ def _extract_12vec_from_result(symbol: str, brahma_result: dict = None) -> dict:
     try:
         from brahma_brain.cross_market_alpha import get_cross_market_signal_for_ensemble
         cross_market_val = get_cross_market_signal_for_ensemble(symbol, direction)
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {
         'rsi_4h':      round(rsi_4h, 2),
         'change_3d':   round(change_3d, 2),

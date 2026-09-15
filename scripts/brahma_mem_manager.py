@@ -22,6 +22,7 @@ brahma_mem_manager.py — 梵天内存稳定性管理器 v1.0
 import os, sys, time, json, pickle, gzip, resource
 from pathlib import Path
 from datetime import datetime, timezone
+import sys
 
 BASE        = Path(__file__).parent.parent
 DATA        = BASE / 'data'
@@ -71,8 +72,7 @@ def _available_mb() -> float:
             for line in f:
                 if line.startswith('MemAvailable:'):
                     return int(line.split()[1]) / 1024
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return 9999.0
 
 # ── P0: 内存门控 ──────────────────────────────────────────
@@ -169,12 +169,9 @@ class KlinesSharedCache:
                 try:
                     with open(cache, 'wb') as f:
                         pickle.dump(data, f, protocol=5)
-                except Exception:
-                    pass
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
                 return data
-            except Exception:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         return None
 
     @classmethod
@@ -216,9 +213,7 @@ class MemWatchdog:
             sys.path.insert(0, str(BASE / 'scripts'))
             from push_hub import _jarvis
             _jarvis(msg)
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     @classmethod
     def _load_state(cls) -> dict:
         try:
@@ -230,9 +225,7 @@ class MemWatchdog:
     def _save_state(cls, state: dict):
         try:
             cls.STATE_FILE.write_text(json.dumps(state))
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     @classmethod
     def check(cls) -> str:
         """

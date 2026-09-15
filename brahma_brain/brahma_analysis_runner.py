@@ -34,8 +34,7 @@ import os
 try:
     import resource as _resource
     _resource.setrlimit(_resource.RLIMIT_CORE, (0, 0))
-except Exception:
-    pass
+except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 import time
 
 # [P1修复 2026-07-12] 自动载入 .env，确保执行层能读到API密钥
@@ -43,8 +42,7 @@ try:
     from dotenv import load_dotenv as _ldenv
     _env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
     _ldenv(_env_path, override=False)
-except Exception:
-    pass
+except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 from datetime import datetime, timezone
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -217,8 +215,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                             if (_rc in _bull_regimes and _d == 'SHORT') or \
                                (_rc in _bear_regimes and _d == 'LONG'):
                                 continue  # 体制方向矛盾，不复用缓存
-                        except Exception:
-                            pass
+                        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
                         _cached['_from_cache'] = True
                         # [Fix 2026-09-12] 快照格式={symbol,direction,ts,dt,result:{...}}
                         # runner返回时必须展开result字段到顶层，否则下游读不到score_final/regime等
@@ -239,9 +236,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                             except Exception:
                                 pass  # 补充失败不阻断缓存返回
                         return _cached
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── [设计院 2026-07-03 v5.1] 体制感知方向预注入 ────────────────────────────
     # 根因修复：BULL_TREND下AUTO方向被market_structure误判为SHORT
     # → StructureGate以BULL×SHORT封杀(grade<80) → bull_bonus条件不满足(dir!=LONG)
@@ -264,9 +259,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                     _forced_dir = 'SHORT'  # 顺势：空头体制强制SHORT
                 if _forced_dir:
                     pass  # [静默] f'[RegimePreset] {sym} {_sym_regime} → 强制方向={_forced_dir}'
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # [2026-08-28 苏摩111] 接入防御层：调用前注入 anti_manip 数据到 extra_data
     _anti_manip_data = {}
     try:
@@ -334,9 +327,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                 result['confluence']['total'] = _new_sw
             result['_switch_noise_penalty'] = {'btc_sw': _btc_sw, 'sym_sw': _sym_sw, 'penalty': _sw_penalty}
             pass  # [静默] f'[SwitchNoise] {sym} sw={_sw_max}>30 → -{abs(_sw_penalty)}分 ({_sc_sw:.1f}→{_new
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── market_structure_scanner: score≥130时补充SMC结构扫描 ──────────
     if _MSS_OK:
         try:
@@ -351,9 +342,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                         'ob_quality': _mss.get('ob_quality'),
                         'fvg_active': _mss.get('fvg_active', False),
                     }
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── llm_council_bridge: score≥130触发LLM二次审查（shadow模式）────
     # 设计院 2026-07-02: 阈值 140→130（覆盖更多高质量信号，约15%触发率）
     # [设计院 2026-07-26 性能修复] BRAHMA_SKIP_COUNCIL=1 跳过LLM审查（避免超时）
@@ -364,9 +353,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
             _sc = float(_f.get('score', 0) or 0)
             if _sc >= 130:
                 result = _llm_review(result)
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── [设计院 2026-07-26] 逻辑验证器强制门控 ──────────────────────────────
     # 铁律: 每条信号推送前必须通过 validate_signal
     # 铁证: ETH SHORT SL在入场下方被苏摩误读，根因是从未调用验证器
@@ -392,9 +379,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                 if _err_ids:
                     result['action'] = 'LOGIC_ERROR_BLOCKED'
                     result['_blocked_reason'] = f'逻辑验证失败[{",".join(_err_ids)}]: {result["_logic_errors"][0]}'
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── [设计院 2026-07-26] 决策C: signal_lifecycle结算闭环接入 ────────────
     # 职责: 对已存在的OPEN信号做实时TTL/SL/TP检查，填补result=null盲点
     # fail-safe: 任何异常不阻断主流程
@@ -408,9 +393,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
             _lc_alerts = _tick_lc(sym, _lc_price)
             if _lc_alerts:
                 result['_lifecycle_alerts'] = _lc_alerts
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # [全量接通 2026-08-26 苏摩111] 批次B：评分增强层
     # 接入位置：brahma_analysis_runner → run_analysis()
 
@@ -421,9 +404,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         _ctx_rules = get_brahma_rules(result.get('regime',''), result.get('signal_dir','LONG'))
         result['_context_fangcang'] = _ctx_fc
         result['_context_rules'] = _ctx_rules
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 接入位置：brahma_analysis_runner → run_analysis()
 
     # B1: regime_state_machine — 体制稳定性过滤
@@ -433,36 +414,28 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         if _stable and _stable != result.get('regime'):
             result['regime_raw'] = result.get('regime')
             result['regime'] = _stable
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # B2: regime_scorer — 5-regime精细分类
     try:
         from regime_scorer import score_regime
         _rs = score_regime(symbol)
         if _rs and not _rs.get('error'):
             result['_regime_score'] = _rs
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # B3: brahma_multiframe — 多周期FVG/OB扫描
     try:
         from brahma_multiframe import scan_mtf
         _mf = scan_mtf(symbol, result.get('price', 0))
         if _mf and not _mf.get('error'):
             result['_multiframe'] = _mf
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # B4: brahma_onchain — 链上评分
     try:
         from onchain_engine import onchain_score
         _oc = onchain_score(symbol, result.get('signal_dir', 'LONG'))
         if _oc and not _oc.get('error'):
             result['_onchain'] = _oc
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # B5: Bybit多空比 [Fix P2-B 2026-09-01] bybit_liq_adapter已删除→改用data_cache
     try:
         from brahma_brain.data_cache import get_lsr_bybit as _get_bybit_lsr
@@ -473,18 +446,14 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                 'short_ratio': _bybit_raw['short_ratio'],
                 'source': 'bybit'
             }
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # B6: s7_liq_config — 清算奖励
     try:
         from s7_liq_config import get_liq_bonus
         _lb = get_liq_bonus(result.get('notional', 0), symbol)
         if _lb:
             result['_liq_bonus'] = _lb
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     result['_runner_meta'] = {
         'runner_version': '1.2',
         'entry':          'brahma_analysis_runner.run_analysis',
@@ -542,9 +511,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
             if isinstance(result.get('confluence'), dict):
                 result['confluence']['action'] = _correct_action
             result['action'] = _correct_action
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── signal_trace: 轨迹审计注入 ──────────────────────────────
     if _TRACE_OK:
         try:
@@ -558,18 +525,14 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                 trace_generated(result)
             else:
                 trace_skipped(result)
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── analysis_snapshot: 保存结果快照 ──────────────────────────────
     if _SNAPSHOT_OK:
         try:
             _f = extract_standard_fields(result)
             _dir = _f.get('direction', 'SHORT')
             _snap_save(sym, _dir, result)
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── [设计院 2026-07-06] P3: timing_filter 注入顶层字段 ──────────────────
     # 根因: evaluate_timing只在format_batch_report调用，brahma_analyze.py拿不到
     # 修复: run_analysis返回前直接计算并写入result['timing_status']
@@ -916,9 +879,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         # direction同步
         if not result.get('direction') and result.get('signal_dir'):
             result['direction'] = result['signal_dir']
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── [设计院 2026-07-13] 全景矩阵报告自动挂载 ─────────────────────────
     # 每次 run_analysis() 返回时，自动生成 _panorama_card（精简）和 _panorama_full（完整）
     # 下游可直接读取，无需再次调用 formatter
@@ -935,8 +896,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
     try:
         from grade_utils import enrich_signal_grade as _enrich_grade
         _enrich_grade(result)  # 注入grade_num整数字段，覆盖91%缺失问题
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # [根治 2026-08-24 苏摩111] 信号字段完整性 — 内联写入，消除p1_signal_log外部依赖
     # 根因：p1_signal_log.py已归档→import静默失败→signal_dir/score_final/timing_badge丢失→TIMEOUT 77%
     try:
@@ -1015,9 +975,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
             if not _guard_skip:
                 with open(_sig_log, 'a') as _sf:
                     _sf.write(_sjson.dumps(_sig_record, ensure_ascii=False) + '\n')
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # [协同接入 2026-08-02 设计院自主] condition_order_matrix 条件单计划卡
     # 当score≥120 且有有效params时，生成条件单计划卡存入data/condition_orders.json
     # 供position_guardian/auto_executor读取作为执行参考
@@ -1129,13 +1087,10 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
             'oi_bonus': _sf_oi,
             'final':    _sf_final,
         }
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── [P1 第五轮 2026-08-02] brahma_mem_compressor 接入 ────────────────────
     # score>=120 时压缩信号上下文写入 data/signal_context_memory.jsonl
     # 为后续LLM调用提供压缩上下文，避免重传完整result
-        pass  # mem_compressor失败不影响主流程
 
     # [修复 2026-08-11] 从panorama提取RSI回写到结果字段
     try:
@@ -1145,9 +1100,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         if _m1: result['rsi_1h'] = float(_m1.group(1))
         _m4 = _re_rsi.search(r'4H=([\d.]+)', _pano or '')
         if _m4: result['rsi_4h'] = float(_m4.group(1))
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ══ [P0接入 2026-08-29 苏摩111] signal_15m_engine — 15M触发信号生成 ══
     # 接入位置：brahma_analysis_runner.run_analysis() 返回前
     # 根囤：15M触发层是核心执行路径，但signal_15m_engine.py完全未被调用
@@ -1277,9 +1230,7 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
                     if sym in results:
                         results[sym]['_portfolio_filtered'] = True
                         results[sym]['_portfolio_filter_reason'] = '相关性>0.75，组合优化过滤'
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── brainlog: 记录batch分析摘要 ──────────────────────────────────
     if _BRAINLOG_OK:
         try:
@@ -1287,16 +1238,12 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
             _high_n  = sum(1 for r in results.values()
                           if float((r.get('confluence') or {}).get('score', r.get('score',0)) or 0) >= 130)
             binfo('runner', f"batch完成: {len(results)}标的 valid={_valid_n} high_score={_high_n} elapsed={round(time.time()-t0,1)}s")
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── brahma_health: batch结束后轻量GC（清理过期缓存/信号）────────
     if _HEALTH_OK:
         try:
             _health_gc()
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # [P0-8修复 2026-07-16 苏摩111] run_batch最小注入：BEAR_RECOVERY阈值120 + valid_signal同步
     # 完整注入链(timing/ext/panorama)由未来重构到公共函数处理，此处先修复最高优先级
     for _bs_sym, _bs_r in results.items():
@@ -1309,9 +1256,7 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
             if _bs_pvalid and _bs_kelly > 0 and _bs_score >= _bs_min:
                 _bs_r['valid_signal'] = True
                 _bs_r['valid']        = True
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ─── 跨资产联合推理门控（cross_asset_gate v1.0）────────────────────────
     # 苏摩111批准 · 2026-07-23 · 设计院封印
     # 在所有valid_signal产出后，做BTC/ETH跨资产一致性检查
@@ -1428,9 +1373,7 @@ def run_analysis_full(symbol: str, deep: bool = True) -> dict:
         if _m1: result['rsi_1h'] = float(_m1.group(1))
         _m4 = _re_rsi.search(r'4H=([\d.]+)', _pano or '')
         if _m4: result['rsi_4h'] = float(_m4.group(1))
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return result
 
 
@@ -1491,9 +1434,7 @@ def format_batch_report(results: dict, mode: str = 'card') -> str:
                 lines.append(format_timing_badge(_timing))
                 # 将timing注入result供下游使用
                 r['_timing'] = _timing
-            except Exception:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # 质量警告
         missing = meta.get('fields_missing', [])
         if missing:
@@ -1549,9 +1490,7 @@ def check_correlation_risk(results: dict) -> dict:
         import requests as _rq
         cg = _rq.get('https://api.coingecko.com/api/v3/global', timeout=5).json()
         btc_dom = float(cg['data']['market_cap_percentage'].get('btc', 55.4))
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if eth_score >= btc_score and btc_dom >= 54:
         primary = 'ETHUSDT'
         secondary = 'BTCUSDT'

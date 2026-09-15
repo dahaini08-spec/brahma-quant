@@ -46,8 +46,7 @@ def get_recent_errors(job_id, n=3):
             d = json.loads(l)
             if d.get('status') == 'error':
                 count += 1
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return count
 
 def format_ms(ms):

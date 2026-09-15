@@ -62,8 +62,7 @@ def load_dedup() -> dict:
     if DEDUP_FILE.exists():
         try:
             return json.loads(DEDUP_FILE.read_text())
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
 
@@ -109,8 +108,7 @@ def get_btc_regime() -> str:
             rs = json.loads(regime_file.read_text())
             btc = rs.get('BTCUSDT', {})
             return btc.get('confirmed', 'UNKNOWN')
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return 'UNKNOWN'
 
 
@@ -286,8 +284,7 @@ def get_regime_cn() -> str:
             ctx = json.loads(CTX_FILE.read_text())
             r = ctx.get('regime', 'UNKNOWN')
             return REGIME_CN.get(r, r)
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return '震荡整理'
 
 
@@ -350,9 +347,7 @@ def build_hot_tickers() -> str:
             if len(vols) >= 4:
                 avg_vol = sum(vols[:-1]) / len(vols[:-1])
                 vol_ratio = vols[-1] / avg_vol if avg_vol > 0 else 1.0
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     mention  = hot_item.get('mentionCount', 0)
     bull_pct = int(hot_item.get('bullishCount', 0) /
                    max(hot_item.get('bullishCount', 0) + hot_item.get('bearishCount', 0) + 1, 1) * 100)
@@ -612,9 +607,7 @@ def build_top_gainers() -> str:
         bt = _r.get('https://fapi.binance.com/fapi/v1/ticker/24hr',
                     params={'symbol': 'BTCUSDT'}, timeout=4).json()
         btc_chg = float(bt.get('priceChangePercent', 0))
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 对前3名拉完整数据
     sym_data = {}
     for x in items[:3]:
@@ -744,9 +737,7 @@ def build_top_losers() -> str:
                      params={'symbol': 'BTCUSDT'}, timeout=4).json()
         btc_chg = float(bt.get('priceChangePercent', 0))
         btc_fr  = float(bfr.get('lastFundingRate', 0)) * 100
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     sym_data = {}
     for x in items[:3]:
         sym_r = x.get('symbol', '')
@@ -872,9 +863,7 @@ def build_hot_news() -> str:
         chg_str   = f'{chg_val:+.1f}%'
         fr_str    = f'{fr_val:.4f}%'
         ls_str    = f'{ls_v:.2f}'
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     mention  = hot_item.get('mentionCount', 0)
     bull_pct = int(hot_item.get('bullishCount', 0) /
                    max(hot_item.get('bullishCount', 0) + hot_item.get('bearishCount', 0) + 1, 1) * 100)
@@ -939,9 +928,7 @@ def build_smart_money() -> str:
                 'fr':  float(fr_r.get('lastFundingRate', 0)) * 100,
                 'chg': float(t_r.get('priceChangePercent', 0)),
             }
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if not sym_data:
         return ''
 
@@ -1002,9 +989,7 @@ def build_pump_alert() -> str:
             ts = pd.get('ts', 0)
             if time.time() - ts <= 7200:  # 2小时内有效
                 candidates = pd.get('candidates', [])[:3]
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 没有预警数据时：实时出主力币盘面简报，不触发备用教育池
     if not candidates:
         import requests as _r2
@@ -1093,9 +1078,7 @@ def build_market_summary() -> str:
         else:
             btc_structure = f'在{recent_low:,.0f}–{recent_high:,.0f}区间内震荡，方向待确认'
         btc_key_level = f'{recent_low:,.0f}'
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 生成收盘判断
     btc_chg = btc.get('chg24h', 0)
     eth_chg = eth.get('chg24h', 0)
@@ -1182,8 +1165,7 @@ def build_education(edu_id: int = 0) -> str:
             if posts:
                 idx = edu_id % len(posts)
                 return posts[idx].replace('{NOW}', now_cst())
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # fallback内置
     fallback = [
         f"""📚 SMC结构精讲 | {now_cst()} CST
@@ -1413,7 +1395,7 @@ def main():
                         _e = json.loads(_l)
                         if float(_e.get('ts', 0)) > _cutoff:
                             _sent_ids.add(_e.get('backup_id', ''))
-                    except: pass
+                    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             _available = [p for p in _posts if p['id'] not in _sent_ids]
             if _available:
                 _chosen = random.choice(_available)

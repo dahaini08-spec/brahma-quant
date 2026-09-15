@@ -74,23 +74,18 @@ try:
     _fcu = _importlib.import_module('brahma_brain.brahma_fangcang_unified')
     _sys.modules['fangcang_unified'] = _fcu
     _sys.modules['brahma_brain.fangcang_unified'] = _fcu
-except Exception:
-    pass
+except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=_sys.stderr)
 # smart_money_engine 别名（module_contracts缺失提示）
 try:
     _sme = _importlib.import_module('brahma_brain.smart_money_engine')
     _sys.modules['smart_money_engine'] = _sme
-except Exception:
-    pass
+except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=_sys.stderr)
 # macro_engine 别名
 try:
     _me = _importlib.import_module('brahma_brain.macro_factor_engine')
     _sys.modules['macro_engine'] = _me
     _sys.modules['brahma_brain.macro_engine'] = _me
-except Exception:
-    pass
-
-
+except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=_sys.stderr)
 # ══════════════════════════════════════════════════════════════════════════════
 # 接口契约标准化层 — 设计院三方封印 2026-09-04 苏摩111
 # 问题根因：各模块函数名不统一，外部调用必须知道私有命名
@@ -104,9 +99,7 @@ def _patch_module_interface(mod_name: str, aliases: dict):
         for std_name, real_name in aliases.items():
             if not hasattr(_m, std_name) and hasattr(_m, real_name):
                 setattr(_m, std_name, getattr(_m, real_name))
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=_sys.stderr)
 # smc_engine: analyze() → analyze_smc()
 _patch_module_interface('smc_engine', {'analyze': 'analyze_smc', 'analyze_multi': 'analyze_smc_multi'})
 # gex_engine: run_gex() → calc_gex_binance()

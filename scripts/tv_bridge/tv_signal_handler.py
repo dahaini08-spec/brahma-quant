@@ -18,6 +18,7 @@ TV Pine Script → POST /hooks/tv → 此脚本 → brahma_bus → brahma_core�
 import json, os, time
 from pathlib import Path
 from datetime import datetime, timezone
+import sys
 
 BASE      = Path(__file__).parent.parent.parent
 TV_CACHE  = BASE / 'data' / 'tv_signals'
@@ -52,8 +53,7 @@ def process_tv_signal(payload: dict) -> dict:
     existing = {}
     if cache_file.exists():
         try: existing = json.loads(cache_file.read_text())
-        except: pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 按类型存储，保留最新5条
     if sig_type not in existing:
         existing[sig_type] = []

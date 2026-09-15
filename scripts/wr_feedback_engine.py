@@ -32,7 +32,7 @@ from datetime import datetime, timezone
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
 
-WR_MATRIX_FILE  = BASE / 'data' / 'wr_matrix_realtime.json'
+WR_MATRIX_FILE  = BASE / 'data' / 'wr_matrix_live.json'  # [9.15修复] realtime→live，与settler输出对齐
 OVERRIDE_FILE   = BASE / 'data' / 'regime_mult_override.json'
 FEEDBACK_LOG    = BASE / 'logs' / 'wr_feedback.log'
 
@@ -87,10 +87,7 @@ def log(msg: str):
     try:
         with open(FEEDBACK_LOG, 'a') as f:
             f.write(line + '\n')
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def load_wr_matrix() -> dict:
     if not WR_MATRIX_FILE.exists():
         return {}
@@ -106,8 +103,7 @@ def load_override() -> dict:
     if OVERRIDE_FILE.exists():
         try:
             return json.loads(OVERRIDE_FILE.read_text())
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
 
@@ -212,8 +208,7 @@ def compute_alpha_attribution():
     for line in flog_path.read_text().splitlines():
         if line.strip():
             try: flog.append(_json.loads(line))
-            except: pass
-    
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 读取已结算交易
     settled_path = BASE / 'data' / 'wuqu_paper_settled.jsonl'
     if not settled_path.exists():
@@ -223,8 +218,7 @@ def compute_alpha_attribution():
     for line in settled_path.read_text().splitlines():
         if line.strip():
             try: settled.append(_json.loads(line))
-            except: pass
-    
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if len(settled) < 5:
         return {}
     
@@ -316,8 +310,7 @@ def main():
             import sys as _s; _s.path.insert(0, str(BASE))
             from scripts.brahma_alert import alert_error
             alert_error('wr_feedback', f'WR权重更新失败', _e_wr)
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         print(f'ERROR: {_e_wr}')
         return
 
@@ -391,9 +384,7 @@ def main():
         if _llm_flags:
             summary += '\n⚠️ LLM异常告警:\n' + '\n'.join(f'  {f}' for f in _llm_flags)
         _pj(summary, level='P2')
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     log('=== 反哺完成 ===')
 
 

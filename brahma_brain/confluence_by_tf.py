@@ -23,7 +23,6 @@ confluence_by_tf.py — 多时间框架汇合评分引擎 P2-A
   4个时间框架同向 → +8分（全周期共振，极罕见）
   上限: +8分
 """
-from __future__ import annotations
 import sys
 from pathlib import Path
 

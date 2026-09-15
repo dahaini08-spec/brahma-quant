@@ -18,7 +18,7 @@ brahma_core_block_a.py — 技术分析层 (维度1-6)
         score = r['score']
         breakdown = r['breakdown']
 """
-import math
+import sys
 
 
 def calc_block_a(ms: dict, smc: dict, signal_dir: str,
@@ -106,8 +106,7 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
             elif signal_dir == 'SHORT' and _above_ema200:
                 s1 = max(s1 - 6, 0)    # 价格>EMA200做空，逆大势-6
                 breakdown['EMA200逆势'] = f'-6 (价格{_price_now:.0f}>EMA200={_ema200_1h:.0f}，逆势空)'
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     s1 = min(s1, 20)
     score += s1
     breakdown['趋势一致性'] = s1
@@ -510,7 +509,12 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
     try:
         _k = extra_data.get('_klines_1h') if extra_data else None
         if _k and len(_k.get('c', [])) >= 20:
-            _rng = range_score(_k['h'], _k['l'], _k['c'], signal_dir)
+            _rng = None
+            try:
+                from brahma_brain.range_engine import range_score as _rng_fn
+                _rng = _rng_fn(_k['h'], _k['l'], _k['c'], signal_dir)
+            except Exception:
+                _rng = {'score': 0}
             s5b = _rng.get('score', 0)
             if s5b > 0:
                 breakdown['区间结构'] = s5b
@@ -540,13 +544,10 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
                     if _rng_add != 0:
                         s5b += _rng_add
                         breakdown['区间Zone_v2'] = f'{_zone}({_qual}) {_rng_add:+d}'
-            except Exception:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         elif extra_data:  # fallback: 用 bb 计算层已有的 k1h
             pass
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     score += s5b
 
     wave  = ms['wave']
@@ -597,9 +598,7 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
         score += resonance_score
         breakdown['OB_FVG跨周期共振'] = resonance_score
         breakdown['_resonance_detail'] = ' | '.join(res['details'][:2])
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── Step3: EMA多周期排列分（设计院 2026-08-25 苏摔111 Step3封印）────
     try:
         from multi_tf_context_builder import _snapshot_one_tf as _stf
@@ -613,9 +612,7 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
         ema_desc = ' '.join(f'{tf}:{"↑" if snaps[tf].get("ema_bull") else "↓"}' for tf in tfs_ema)
         breakdown['EMA多周期共振'] = ema_score
         breakdown['_ema_align'] = f'{agree}/4TF同向 {ema_desc}'
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ══ [v5.1 Alpha#101 K线实体比 2026-08-28 设计院自主封印] ══════════════════
     # WorldQuant Alpha#101: (close-open)/((high-low)+0.001)
     # 含义: 实体比高(+1)→大阳线方向明确 / 实体比低(≈0)→十字星信号质量差 / 负→大阴线
@@ -650,9 +647,7 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
                 # [达摩院v6.0] Alpha101 IC=-0.0064 → 降为信息层
                 breakdown['Alpha101_实体比_info'] = _a101_score
                 breakdown['Alpha101_实体比'] = f'{_a101_score:+d}(实体比:{_body_ratio:.2f})'
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ══ [v5.1 Alpha#012 量价背离 2026-08-28 设计院自主封印] ════════════════════
     # WorldQuant Alpha#012: sign(delta(volume,1)) * (-delta(close,1))
     # 量能增 + 价格下跌 → 底部吸笹看多 / 量能增 + 价格上涨 → 追涨风险看空
@@ -690,9 +685,7 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
                 # [达摩院v6.0] Alpha012 IC=-0.0064 → 降为信息层
                 breakdown['Alpha012_量价背离_info'] = _a012_score
                 breakdown['Alpha012_量价背离'] = f'{_a012_score:+d}({_a012_desc})'
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ══ [v5.1 Alpha#053 K线结构变化率 2026-08-28 设计院自主封印] ══════════════
     # WorldQuant Alpha#053: -delta(body_ratio*close, 9)
     # 衡量上下影线比例变9日变化率，CHoCH预警因子
@@ -744,9 +737,7 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
                 # [达摩院v6.0] Alpha053 IC=-0.0064 → 降为信息层
                 breakdown['Alpha053_K线结构_info'] = _a053_score
                 breakdown['Alpha053_K线结构'] = f'{_a053_score:+d}({_a053_desc})'
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ══════════════════════════════════════════════════════════════════
     # 【设计院封印 2026-09-04 苏摩111】
     # 多周期 FVG / OB 完整地图写入 breakdown

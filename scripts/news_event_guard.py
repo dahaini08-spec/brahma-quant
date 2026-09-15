@@ -51,8 +51,7 @@ def _load_state() -> dict:
             s = json.loads(GUARD_FILE.read_text())
             if time.time() - s.get('ts', 0) < CACHE_TTL:
                 return s
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
 
@@ -61,10 +60,7 @@ def _save_state(data: dict):
         GUARD_FILE.parent.mkdir(parents=True, exist_ok=True)
         data['ts'] = time.time()
         GUARD_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2))
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def detect_extreme_move(symbol: str) -> dict:
     """检测价格极端变动（闪崩/闪涨）"""
     sym = symbol.upper()

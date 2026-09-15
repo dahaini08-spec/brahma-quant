@@ -58,9 +58,7 @@ def calc_vol_beta(currency: str = "ETH") -> dict:
         _cached = _dg(_key, ttl=_TTL)
         if _cached is not None:
             return _cached
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     symbol = f"{currency}USDT"
 
     # 1. 历史IV（Deribit有BTC/ETH 384天；其他币种用滚动HV20替代）
@@ -134,8 +132,7 @@ def calc_vol_beta(currency: str = "ETH") -> dict:
     try:
         from disk_cache import disk_set as _ds, TTL_VOL_BETA as _TTL
         _ds(f'vol_beta:{currency}', _result_vb)
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return _result_vb
 
 def run(currency: str = "ETH", verbose: bool = False):
@@ -152,8 +149,7 @@ def run(currency: str = "ETH", verbose: bool = False):
     if OUT_FILE.exists():
         try:
             existing = json.loads(OUT_FILE.read_text())
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     existing[currency] = r
     OUT_FILE.write_text(json.dumps(existing, ensure_ascii=False))
 

@@ -92,8 +92,7 @@ def _get_lot_size(sym: str):
                 _TICK_SIZE_CACHE[f['symbol']] = tick
         if sym in _LOT_SIZE_CACHE:
             return _LOT_SIZE_CACHE[sym]
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return ('0.001', 3, 0.001)  # fallback
 LOG_FILE = DATA_DIR / 'auto_execute_log.jsonl'
 
@@ -118,8 +117,7 @@ def _open_positions() -> list:
             return raw
         elif isinstance(raw, dict):
             return list(raw.values())
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return []
 
 
@@ -191,8 +189,7 @@ def _dedup_check(signal: dict) -> tuple:
         _ids = _ids[-500:]
     try:
         _DEDUP_FILE.write_text(json.dumps(_ids, ensure_ascii=False))
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return False, ''
 # ─── [END P1] ─────────────────────────────────────────────────────────────────
 
@@ -393,8 +390,7 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
             import binance_fapi as _bf2
             _acct_rg = _bf2.get_account()[0]
             _nav_for_rg = float(_acct_rg['totalMarginBalance'])
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         _margin_est = _nav_for_rg * 0.10  # 估算保证金
         _rg_result = _rg_check(
             symbol=sym, nav=_nav_for_rg,
@@ -463,7 +459,7 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
                 _mark = float(_mark_r.json()['price'])
             if _qty > 0 and _mark > 0 and _lev > 0:
                 total_margin += (_mark * _qty) / _lev
-        except: pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if nav > 0 and total_margin / nav > 0.90:
         r = f'总保证金率={total_margin/nav:.0%} > 90% NAV，拒绝新增仓位'
         _log('BLOCKED', signal, r)

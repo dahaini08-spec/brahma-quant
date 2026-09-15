@@ -177,8 +177,7 @@ def get_market_data(sym):
                 l1d = [float(k[3]) for k in kl_1d[-31:-1]]
                 day30_high = max(h1d) if h1d else px
                 day30_low  = min(l1d) if l1d else px
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         try:
             kl_4h = _fetch(f'{FAPI}/fapi/v1/klines?symbol={sym}&interval=4h&limit=20')
             if kl_4h and len(kl_4h) >= 16:
@@ -187,18 +186,14 @@ def get_market_data(sym):
                 l4 = [max(c4h[i-1]-c4h[i],0) for i in range(1,len(c4h))]
                 ag4 = sum(g4[-14:])/14; al4 = sum(l4[-14:])/14
                 rsi_4h = round(100-100/(1+ag4/al4),1) if al4 > 0 else 100.0
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # [P1-2 2026-08-21 苏摩111] 资金费率历史
         funding_rates = []
         try:
             fr_data = _fetch(f'{FAPI}/fapi/v1/fundingRate?symbol={sym}&limit=8')
             if fr_data:
                 funding_rates = [float(f['fundingRate'])*100 for f in fr_data]
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         return dict(
             sym=sym, px=px,
             rsi_1h=rsi_1h,
@@ -373,10 +368,7 @@ def detect_events(data, prev_state, sym):
                 'chg_48h': round(_48h_chg_ts, 2),
                 '_cooldown_key': _ts_key,
             })
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── E_VOL_DRYUP: 成交量枯竭预警（P0-1 2026-08-21 苏摩111）──────────────────
     # 核心逻辑：卖盘枯竭+价格收敛 = 多头积累完毕，随时爆发
     # 触发条件（全部满足）：
@@ -405,9 +397,7 @@ def detect_events(data, prev_state, sym):
                     'avg_vol_ratio': round(_avg_vr, 3),
                     '_cooldown_key': _vd_key,
                 })
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── E_OI_DIVERGE: OI+价格背离（P0-2 2026-08-21 苏摩111）──────────────────
     # 核心逻辑：OI持续增加但价格不创新低 = 空头加仓压不下去 = 轧空即将发生
     # 触发条件：
@@ -436,10 +426,7 @@ def detect_events(data, prev_state, sym):
                     'oi_chg_3h': round(_oi_chg3h, 2),
                     '_cooldown_key': _od_key,
                 })
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── E_MTF_SUPPORT: 多周期结构共振做多背景（P1-1 2026-08-21 苏摩111）────────
     # 核心逻辑：日线大周期支撑 + 4H RSI回调 + 1H结构转换 = 最高置信度预判信号
     # 触发条件（满足2项及以上）：
@@ -477,9 +464,7 @@ def detect_events(data, prev_state, sym):
                 'pos30': round(_pos30, 3),
                 '_cooldown_key': _mtf_key,
             })
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── E_FUNDING_FLIP: 资金费率翻转监控（P1-2 2026-08-21 苏摩111）────────────
     # 核心逻辑：资金费率从正值（多头拥挤）趋近0或转负 = 空头开始占优，轧空前兆
     # 触发条件：
@@ -512,9 +497,7 @@ def detect_events(data, prev_state, sym):
                     'fr_prev': round(_fr_was, 5),
                     '_cooldown_key': _ff_key,
                 })
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── E11: 清算墙逼近(<0.5%) — 轧空/踩踏即将触发 [设计院 2026-08-05] ────
     try:
         import sys as _sys_e11
@@ -535,9 +518,7 @@ def detect_events(data, prev_state, sym):
                     'priority': 'HIGH',
                 })
                 break   # 只取最近一堵墙
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── E10: RSI回弹确认（设计院 2026-07-13）————————————————————————————
     # 核心逻辑： RSI_1H从<30回弹至>35 → 超卖消化，为多头入场提供确认信号
     # 意义：直接在最低点入场 WR=72%, 回弹后入场 WR=78%（+6%）
@@ -657,9 +638,7 @@ def detect_events(data, prev_state, sym):
                     'rsi_4h': round(_rsi4h_sc, 1),
                     '_cooldown_key': _sc_key,
                 })
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return events, 'ACTIVE' if events else 'NO_EVENT'
 
 
@@ -863,8 +842,7 @@ def run():
                                      '--message', _notify],
                                     stdout=_sp2.DEVNULL, stderr=_sp2.DEVNULL
                                 )
-                        except Exception:
-                            pass
+                        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
                     _thr.Thread(target=_cpu_run, daemon=True).start()
                 except Exception:
                     pass  # CPU接入失败不影响主流程
@@ -1025,13 +1003,12 @@ def run():
                     p.kill()
                 finally:
                     try: lf.unlink(missing_ok=True)
-                    except: pass
+                    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             import threading
             threading.Thread(target=_cleanup_lock, args=(proc, lock_file), daemon=True).start()
         except Exception as e:
             try: Path(BASE / 'data/.rsi_scan_chain.lock').unlink(missing_ok=True)
-            except: pass
-            pass  # [静默]
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     elif not silent_syms:
         pass  # triggered_syms已推送，无需重复
 

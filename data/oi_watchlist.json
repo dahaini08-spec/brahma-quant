@@ -13,12 +13,12 @@
     "sl_rule": "最近swing high + 1.5×ATR1H",
     "size_pct": 1.0,
     "status": "WATCHING",
-    "last_check": "2026-09-14 03:59 UTC",
+    "last_check": "2026-09-14 14:00 UTC",
     "triggered": false,
-    "last_fr": -0.111269,
-    "last_price": 112.05,
-    "last_trigger_pct": 25.0,
-    "last_smc": "NONE"
+    "last_fr": 0.050575,
+    "last_price": 102.57,
+    "last_trigger_pct": 100.0,
+    "last_smc": "SHOOTING_STAR"
   },
   "XAUUSDT": {
     "added_at": "2026-09-02T13:05:00Z",
@@ -34,10 +34,10 @@
     "sl_rule": "洗盘低点之下 + 1.5×ATR1H",
     "size_pct": 1.0,
     "status": "WATCHING",
-    "last_check": "2026-09-14 03:59 UTC",
+    "last_check": "2026-09-14 14:00 UTC",
     "triggered": false,
-    "last_fr": 0.0,
-    "last_price": 4334.71,
+    "last_fr": 0.016148,
+    "last_price": 4278.23,
     "last_trigger_pct": 75.0,
     "last_smc": "NONE"
   },
@@ -56,11 +56,11 @@
     "size_pct": 1.0,
     "status": "WATCHING",
     "extreme_fr_note": "FR=-0.9453%极端负值=反向多头信号，等FR回归才是入场点",
-    "last_check": "2026-09-14 03:59 UTC",
+    "last_check": "2026-09-14 14:00 UTC",
     "triggered": false,
-    "last_fr": -0.002178,
-    "last_price": 0.06562,
-    "last_trigger_pct": 60.0,
+    "last_fr": -0.420763,
+    "last_price": 0.07165,
+    "last_trigger_pct": 40.0,
     "last_smc": "NONE"
   },
   "ACEUSDT": {
@@ -78,10 +78,10 @@
     "size_pct": 0.5,
     "status": "WATCHING",
     "extreme_fr_note": "FR=-0.5589%=反弹炸弹，空头回补会快速推价格上涨",
-    "last_check": "2026-09-14 03:59 UTC",
+    "last_check": "2026-09-14 14:00 UTC",
     "triggered": false,
-    "last_fr": -0.147047,
-    "last_price": 0.14908,
+    "last_fr": -0.064419,
+    "last_price": 0.14966,
     "last_trigger_pct": 75.0,
     "last_smc": "NONE"
   },
@@ -98,9 +98,9 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 100,
     "mode": "A",
-    "last_check": "2026-09-14 03:59 UTC",
-    "last_fr": -0.133412,
-    "last_price": 0.0007347,
+    "last_check": "2026-09-14 04:16 UTC",
+    "last_fr": -0.241766,
+    "last_price": 0.0007501,
     "last_trigger_pct": 50.0,
     "last_smc": "NONE"
   },
@@ -117,11 +117,11 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 76.37,
     "mode": "B",
-    "last_check": "2026-09-14 03:59 UTC",
-    "last_fr": -0.000979,
-    "last_price": 0.6482,
-    "last_trigger_pct": 50.0,
-    "last_smc": "NONE"
+    "last_check": "2026-09-14 04:16 UTC",
+    "last_fr": 0.005,
+    "last_price": 0.6522,
+    "last_trigger_pct": 100.0,
+    "last_smc": "HAMMER"
   },
   "MTLUSDT": {
     "status": "WATCHING",
@@ -136,10 +136,80 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 71,
     "mode": "A",
-    "last_check": "2026-09-14 03:59 UTC",
-    "last_fr": -0.144163,
-    "last_price": 0.361,
-    "last_trigger_pct": 0.0,
+    "last_check": "2026-09-14 04:16 UTC",
+    "last_fr": -0.263465,
+    "last_price": 0.3677,
+    "last_trigger_pct": 25.0,
     "last_smc": "NONE"
+  },
+  "KORUUSDT": {
+    "status": "WATCHING",
+    "direction": "LONG",
+    "size_pct": 0.5,
+    "trigger_conditions": {
+      "fr": true,
+      "price": true,
+      "oi": true
+    },
+    "added": "2026-09-15",
+    "source": "oi_advanced_scanner_auto",
+    "oi_score": 91.67750000000001,
+    "mode": "A"
+  },
+  "ORCLUSDT": {
+    "status": "WATCHING",
+    "direction": "LONG",
+    "size_pct": 0.5,
+    "trigger_conditions": {
+      "fr": true,
+      "price": true,
+      "oi": true
+    },
+    "added": "2026-09-15",
+    "source": "oi_advanced_scanner_auto",
+    "oi_score": 68,
+    "mode": "A"
+  },
+  "CBRSUSDT": {
+    "status": "WATCHING",
+    "direction": "LONG",
+    "size_pct": 0.5,
+    "trigger_conditions": {
+      "fr": true,
+      "price": true,
+      "oi": true
+    },
+    "added": "2026-09-15",
+    "source": "oi_advanced_scanner_auto",
+    "oi_score": 64.8725,
+    "mode": "A"
+  },
+  "ZHIPUUSDT": {
+    "status": "WATCHING",
+    "direction": "LONG",
+    "size_pct": 0.5,
+    "trigger_conditions": {
+      "fr": true,
+      "price": true,
+      "oi": true
+    },
+    "added": "2026-09-15",
+    "source": "oi_advanced_scanner_auto",
+    "oi_score": 64.346,
+    "mode": "A"
+  },
+  "EWYUSDT": {
+    "status": "WATCHING",
+    "direction": "LONG",
+    "size_pct": 1.0,
+    "trigger_conditions": {
+      "fr": true,
+      "price": true,
+      "oi": true
+    },
+    "added": "2026-09-15",
+    "source": "oi_advanced_scanner_auto",
+    "oi_score": 60.007999999999996,
+    "mode": "B"
   }
 }

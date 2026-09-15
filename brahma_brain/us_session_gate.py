@@ -24,6 +24,7 @@ us_session_gate.py — 美股时段门控
 from datetime import datetime, timezone
 from typing import Optional
 import logging
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -99,13 +100,12 @@ def check_macro_event_block() -> Optional[str]:
     """
     try:
         from brahma_brain.narrative_engine import get_upcoming_events
-        events = get_upcoming_events(hours_ahead=2)
+        events = get_upcoming_events(days_ahead=1)  # [9.15修复] hours_ahead→days_ahead接口对齐
         critical = [e for e in events if e.get('impact') == 'CRITICAL']
         if critical:
             evt = critical[0]
             return f"宏观事件封禁: {evt.get('event','')} ({evt.get('date','')})"
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return None
 
 

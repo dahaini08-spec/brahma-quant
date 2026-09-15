@@ -16,6 +16,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 import requests
+import sys
 
 BASE = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(BASE / 'scripts'))
@@ -39,8 +40,7 @@ def load_cooldown():
     try:
         if COOLDOWN_FILE.exists():
             return json.loads(COOLDOWN_FILE.read_text())
-    except:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
 
@@ -68,8 +68,7 @@ def is_symbol_duplicate(symbol):
     if SHARED_DEDUP_FILE.exists():
         try:
             d = json.loads(SHARED_DEDUP_FILE.read_text())
-        except:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     now = time.time()
     d = {k: v for k, v in d.items() if now - v < 86400}
     return key in d
@@ -81,8 +80,7 @@ def mark_symbol_posted(symbol):
     if SHARED_DEDUP_FILE.exists():
         try:
             d = json.loads(SHARED_DEDUP_FILE.read_text())
-        except:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     now = time.time()
     d = {k: v for k, v in d.items() if now - v < 86400}
     d[key] = now
@@ -95,8 +93,7 @@ def is_duplicate(content):
     if SHARED_DEDUP_FILE.exists():
         try:
             d = json.loads(SHARED_DEDUP_FILE.read_text())
-        except:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     now = time.time()
     d = {k: v for k, v in d.items() if now - v < 86400}
     return h in d
@@ -108,8 +105,7 @@ def mark_posted(content):
     if SHARED_DEDUP_FILE.exists():
         try:
             d = json.loads(SHARED_DEDUP_FILE.read_text())
-        except:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     now = time.time()
     d = {k: v for k, v in d.items() if now - v < 86400}
     d[h] = now
@@ -166,8 +162,7 @@ def fetch_smc_data(symbol):
             if liq:
                 smc['liq_above'] = liq.get('nearest_short', 0)
                 smc['liq_below'] = liq.get('nearest_long', 0)
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return smc
 
 
@@ -185,8 +180,7 @@ def fetch_oi_data(symbol):
                 oi['signal'] = 'SHORT_BUILD'  # 价格涨+OI增=多头增仓；价格跌+OI增=空头增仓
             else:
                 oi['signal'] = 'LONG_UNWIND'
-    except:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return oi
 
 

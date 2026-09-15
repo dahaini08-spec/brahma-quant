@@ -17,6 +17,7 @@ signal_utils.py · 设计院标准信号读取层 v1.0
 import json, os
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+import sys
 
 BASE = Path(__file__).parent.parent
 
@@ -77,9 +78,7 @@ def load_signals(
                 exp_ts = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
                 if now > exp_ts:
                     continue  # 已超TTL，僵尸信号，跳过
-            except Exception:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # ── 评分过滤 ─────────────────────────────────────────
         score = float(rec.get('score', 0) or 0)
         if score < min_score:
@@ -185,8 +184,7 @@ def get_signal_by_id(signal_id: str) -> dict | None:
             rec = json.loads(line)
             if rec.get('signal_id') == signal_id:
                 return rec
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return None
 
 

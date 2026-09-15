@@ -24,8 +24,8 @@ import math
 import time
 import logging
 from pathlib import Path
-from typing import Optional
 from data_cache import _SSL_CTX as _DC_SSL_CTX
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -41,8 +41,7 @@ def _fetch_klines(symbol: str, interval: str = '1h', limit: int = 30) -> list:
         raw = _dc(symbol, interval, limit)
         if raw and isinstance(raw, list) and len(raw) >= 3:
             return raw
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     import urllib.request
     url = f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}'
     try:
@@ -158,9 +157,7 @@ def get_har_rv(symbol: str) -> dict:
                 cached_all = json.loads(_CACHE_PATH.read_text())
             cached_all[symbol] = {'ts': now, 'data': result}
             _CACHE_PATH.write_text(json.dumps(cached_all, indent=2))
-        except Exception:
-            pass
-        
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         return result
         
     except Exception as e:

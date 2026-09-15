@@ -29,7 +29,7 @@ VERSION = v1.0 · 2026-07-20
 import json
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import Optional
+import sys
 
 _STATE_PATH = Path(__file__).parent.parent / 'data' / 'ssi_state.json'
 
@@ -53,8 +53,7 @@ def _load_state(symbol: str) -> dict:
     try:
         if _STATE_PATH.exists():
             return json.loads(_STATE_PATH.read_text()).get(symbol, {})
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
 def _save_state(symbol: str, data: dict):
@@ -64,13 +63,10 @@ def _save_state(symbol: str, data: dict):
         if _STATE_PATH.exists():
             try:
                 all_s = json.loads(_STATE_PATH.read_text())
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         all_s[symbol] = data
         _STATE_PATH.write_text(json.dumps(all_s, ensure_ascii=False))
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 # ─── SSI 核心计算 ─────────────────────────────────────────────
 def compute_ssi(
     symbol: str,

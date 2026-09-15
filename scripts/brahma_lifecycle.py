@@ -156,8 +156,7 @@ def load_db() -> list:
                 r = json.loads(line.strip())
                 if r.get('status') not in ('CLOSED',):
                     records.append(r)
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return records
 
 
@@ -438,8 +437,7 @@ def monitor_and_execute():
 # [import_autoclean] 模块不存在，已注释
 # from copy_signal_pusher import push_copy_close
                 push_copy_close(rec, 'SL', cp, pnl_pct)
-            except Exception: pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # ── TP2触发 → 剩余全量平仓 ─────────────────────────
         elif tp2_hit and tp1_closed:
             remain = round(size * 0.5, 8)
@@ -459,8 +457,7 @@ def monitor_and_execute():
 # [import_autoclean] 模块不存在，已注释
 # from copy_signal_pusher import push_copy_close
                 push_copy_close(rec, 'TP2', cp, pnl_pct)
-            except Exception: pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # ── TP1触发且未做过 → 50%止盈 + 保本止损 ──────────────
         elif tp1_hit and not tp1_closed:
             close_qty = round(size * TP1_CLOSE_PCT, 8)
@@ -478,9 +475,7 @@ def monitor_and_execute():
                                     close_qty = size  # 不足一手，全量
                                 break
                         break
-            except Exception:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             order = place_market_order(sym, close_side, str(close_qty), reduce_only=True)
             pnl_usdt = (cp - entry) * close_qty if dr == 'LONG' else (entry - cp) * close_qty
 
@@ -506,8 +501,7 @@ def monitor_and_execute():
 # [import_autoclean] 模块不存在，已注释
 # from copy_signal_pusher import push_copy_close
                 push_copy_close(rec, 'TP1', cp, pnl_pct)
-            except Exception: pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 更新DB
     update_db(db)
 
@@ -534,9 +528,7 @@ def scan_and_open():
     executed = set()
     try:
         executed = set(json.load(open(executed_file)))
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 读信号
     signals = {}
     try:
@@ -559,11 +551,8 @@ def scan_and_open():
                     prev = float(signals[sym].get('score_final', signals[sym].get('score', 0)) or 0) if sym in signals else -1
                     if sc > prev:
                         signals[sym] = {**s, '_sig_id': sig_id}
-                except Exception:
-                    pass
-    except Exception:
-        pass
-
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     for sym, sig in signals.items():
         result = auto_open(sig)
         if result.get('ok'):

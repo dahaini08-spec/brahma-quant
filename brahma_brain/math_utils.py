@@ -13,9 +13,8 @@ math_utils.py — 梵天数学工具统一库
   改一处 = 全系统生效
 """
 
-from __future__ import annotations
 import math
-from typing import Sequence, Optional
+from typing import Sequence
 
 
 # ─────────────────────────────────────────────────────────

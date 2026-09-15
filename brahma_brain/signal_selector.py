@@ -17,8 +17,7 @@ signal_selector.py — 梵天方向裁决器 v1.0
      |short_w - long_w| <  15 AND chop_prob >= 0.4 → 双向推送（各50%仓位）
      其他 → 推高分方向
 
-  3. 信号有效门槛：weighted_score >= 110（原始门槛140 × 最低乘数0.5=70，
-     但逆势信号需要更高原始分才能通过）
+  3. 信号有效门槛：weighted_score >= 60 [P0同步 2026-09-13 苏摩111] 110→60
 
 【仓位公式】
   base = 2.0%（基础仓位）
@@ -44,7 +43,7 @@ sys.path.insert(0, str(_DIR))
 sys.path.insert(0, str(_DIR / 'brahma_brain'))
 
 BASE_POSITION   = 2.0   # 基础仓位百分比
-MIN_WEIGHTED    = 110   # 最低加权分门槛
+MIN_WEIGHTED    = 60    # 最低加权分门槛 [P0同步 2026-09-13 苏摩111] 110→60
 SINGLE_DIR_DIFF = 15    # 超过此差值推单向
 
 
@@ -319,9 +318,7 @@ def format_signal_card(sig: dict) -> str:
         expire_dt = now_dt + timedelta(hours=4)
         time_str   = now_dt.isoformat()[:16] + ' UTC'
         expire_str = expire_dt.isoformat()[:16] + ' UTC (有效期4H)'
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return f'''{chain_info}
 {sym}/USDT {dirn}  加权分={sig["weighted"]:.0f}(原始{sig["raw_score"]:.0f}×{sig["regime_mult"]})
 体制={sig["regime"]} 熊={sig["bear_prob"]:.0%} 牛={sig["bull_prob"]:.0%} 震={sig["chop_prob"]:.0%}

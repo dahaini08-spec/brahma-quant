@@ -39,8 +39,7 @@ def fetch_json(url: str, timeout: int = DEFAULT_TIMEOUT,
     try:
         from error_collector import log_error
         log_error(module, last_err, context=url[:100])
-    except:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return None
 
 def fetch_price(symbol: str, timeout: int = 6) -> float | None:
@@ -49,13 +48,13 @@ def fetch_price(symbol: str, timeout: int = 6) -> float | None:
     data = fetch_json(url, timeout=timeout, module='fetch_price')
     if data:
         try: return float(data['price'])
-        except: pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # fallback: 现货
     url2 = f'{BINANCE_API}/ticker/price?symbol={symbol}'
     data2 = fetch_json(url2, timeout=timeout, module='fetch_price_spot')
     if data2:
         try: return float(data2['price'])
-        except: pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return None
 
 def fetch_ticker_24h(symbol: str, timeout: int = 8) -> dict | None:
@@ -75,7 +74,7 @@ def fetch_funding_rate(symbol: str, timeout: int = 6) -> float | None:
     data = fetch_json(url, timeout=timeout, module='fetch_funding_rate')
     if data:
         try: return float(data['lastFundingRate'])
-        except: pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return None
 
 def fetch_multi_prices(symbols: list, timeout: int = 8) -> dict:
@@ -88,7 +87,7 @@ def fetch_multi_prices(symbols: list, timeout: int = 8) -> dict:
         sym = item.get('symbol','')
         if sym in symbols:
             try: prices[sym] = float(item['price'])
-            except: pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return prices
 
 if __name__ == '__main__':

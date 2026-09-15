@@ -31,8 +31,7 @@ def _fetch_klines(symbol: str, interval: str, limit: int) -> list:
         raw = _dc(symbol, interval, limit)
         if raw and isinstance(raw, list) and len(raw) >= 4:
             return raw
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     try:
         import requests
         r = requests.get(
@@ -43,8 +42,7 @@ def _fetch_klines(symbol: str, interval: str, limit: int) -> list:
         data = r.json()
         if isinstance(data, list):
             return data
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return []
 
 

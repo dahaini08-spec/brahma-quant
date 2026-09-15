@@ -818,3 +818,27 @@
 {"ts": 1789288533.4333453, "ts_iso": "2026-09-13T08:35:33.433346+00:00", "symbol": "BTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "Layer1评分失败: expected an indented block after 'try' statement on line 111 (brahma_core_step4.py, line 114)", "score": 0, "layer": 1}
 {"ts": 1789289032.8664522, "ts_iso": "2026-09-13T08:43:52.866453+00:00", "symbol": "BTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "Layer1评分失败: expected an indented block after 'try' statement on line 111 (brahma_core_step4.py, line 114)", "score": 0, "layer": 1}
 {"ts": 1789294872.5758812, "ts_iso": "2026-09-13T10:21:12.575882+00:00", "symbol": "ETHUSDTUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "Layer1评分失败: 'ms'", "score": 0, "layer": 1}
+{"ts": 1789305692.733175, "ts_iso": "2026-09-13T13:21:32.733176+00:00", "symbol": "BTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 39.8, "layer": 0}
+{"ts": 1789305695.793431, "ts_iso": "2026-09-13T13:21:35.793432+00:00", "symbol": "ETHUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 21.2, "layer": 0}
+{"ts": 1789305936.9602811, "ts_iso": "2026-09-13T13:25:36.960282+00:00", "symbol": "BTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 53.9, "layer": 0}
+{"ts": 1789305937.0302355, "ts_iso": "2026-09-13T13:25:37.030236+00:00", "symbol": "ETHUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 21.2, "layer": 0}
+{"ts": 1789306072.667236, "ts_iso": "2026-09-13T13:27:52.667237+00:00", "symbol": "ETHUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 21.2, "layer": 0}
+{"ts": 1789306072.746349, "ts_iso": "2026-09-13T13:27:52.746350+00:00", "symbol": "BTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 39.1, "layer": 0}
+{"ts": 1789306192.179513, "ts_iso": "2026-09-13T13:29:52.179514+00:00", "symbol": "ETHUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 21.2, "layer": 0}
+{"ts": 1789306192.38332, "ts_iso": "2026-09-13T13:29:52.383321+00:00", "symbol": "BTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 56.0, "layer": 0}
+{"ts": 1789306235.351112, "ts_iso": "2026-09-13T13:30:35.351113+00:00", "symbol": "BTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 44.0, "layer": 0}
+{"ts": 1789306266.9790547, "ts_iso": "2026-09-13T13:31:06.979055+00:00", "symbol": "ETHUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 21.2, "layer": 0}
+{"ts": 1789306372.3183477, "ts_iso": "2026-09-13T13:32:52.318348+00:00", "symbol": "ETHUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 21.2, "layer": 0}
+{"ts": 1789306372.4371877, "ts_iso": "2026-09-13T13:32:52.437188+00:00", "symbol": "BTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 32.9, "layer": 0}
+{"ts": 1789307437.2063937, "ts_iso": "2026-09-13T13:50:37.206394+00:00", "symbol": "BTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 22.4, "layer": 0}
+{"ts": 1789307481.4367943, "ts_iso": "2026-09-13T13:51:21.436796+00:00", "symbol": "ETHUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 12.4, "layer": 0}
+{"ts": 1789307668.607572, "ts_iso": "2026-09-13T13:54:28.607573+00:00", "symbol": "BTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 51.0, "layer": 0}
+{"ts": 1789307668.9182243, "ts_iso": "2026-09-13T13:54:28.918225+00:00", "symbol": "ETHUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 21.2, "layer": 0}
+{"ts": 1789312008.3628109, "ts_iso": "2026-09-13T15:06:48.362812+00:00", "symbol": "ETHUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 8.2, "layer": 0}
+{"ts": 1789312009.7963383, "ts_iso": "2026-09-13T15:06:49.796339+00:00", "symbol": "BTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -23.9, "layer": 0}
+{"ts": 1789313487.5850832, "ts_iso": "2026-09-13T15:31:27.585084+00:00", "symbol": "BTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -2.5, "layer": 0}
+{"ts": 1789313488.1804955, "ts_iso": "2026-09-13T15:31:28.180497+00:00", "symbol": "ETHUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 17.0, "layer": 0}
+{"ts": 1789313927.5840578, "ts_iso": "2026-09-13T15:38:47.584059+00:00", "symbol": "BTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": -2.5, "layer": 0}
+{"ts": 1789313928.6755133, "ts_iso": "2026-09-13T15:38:48.675514+00:00", "symbol": "ETHUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 17.0, "layer": 0}
+{"ts": 1789314073.4684172, "ts_iso": "2026-09-13T15:41:13.468418+00:00", "symbol": "ETHUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 17.0, "layer": 0}
+{"ts": 1789314075.679542, "ts_iso": "2026-09-13T15:41:15.679543+00:00", "symbol": "BTCUSDT", "signal_dir": "SHORT", "decision": "SKIP", "reason": "体制死穴 CHOP_MID×SHORT", "score": 8.1, "layer": 0}

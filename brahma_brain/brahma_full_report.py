@@ -168,10 +168,8 @@ def _bj_ts(ts) -> str:
                 try:
                     dt = datetime.strptime(ts[:len(fmt)], fmt).replace(tzinfo=timezone.utc).astimezone(BJ)
                     return dt.strftime('%m-%d %H:%M CST')
-                except Exception:
-                    pass
-    except Exception:
-        pass
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return str(ts)[:16]
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -489,9 +487,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
                         f'非交易时段(UTC {_utc_now.hour:02d}:{_utc_now.minute:02d})'
                         f' score-60 valid=False'
                     )
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 将s27~29追加到report末尾（始终显示，0=未触发）
     try:
         _s27r = r.get('s27_gap_up', 0) or 0
@@ -502,9 +498,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
             f's29_FRD={_s29r:+d}  统计模式合计={_s27r+_s28r+_s29r:+d}'
         )
         report = report + _stat_line
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # [P0接通 2026-08-26 苏摩111] price_zone_engine → full_report 战场预判层
     try:
         import sys as _sys_pz, os as _os_pz
@@ -552,9 +546,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
             _narr_line = f"\n🌊 叙事层: bias={_nb} score={_ns} | {_nk[:60]}"
             report = report + _narr_line
             r['_narrative'] = _narr
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # [全量接通 2026-08-26 苏摩111] 批次A：分析增强层
     # 接入位置：brahma_full_report → run_full_analysis()
 
@@ -564,9 +556,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
         _mtf = build_context(symbol)
         if _mtf and not _mtf.get('error'):
             r['_mtf_context'] = _mtf
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # A2: failure_pattern_db — 失败模式预警
     try:
         from brahma_brain.brahma_experience_engine import get_current_risk_score
@@ -575,11 +565,8 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
             _fp_line = f"\n⚠️ 失败模式: risk={_fp.get('risk_score')} | {_fp.get('top_pattern','')[:50]}"
             report = report + _fp_line
             r['_failure_pattern'] = _fp
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # A3: causal_regime_verifier — 因果体制验证
-        pass
 
     # A4: macro_calendar — 宏观日历事件
     try:
@@ -587,18 +574,14 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
         _mc = get_upcoming_events()
         if _mc:
             r['_macro_calendar'] = _mc[:3]
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # A5: brahma_intel_layer — 智能体情报
     try:
         from brahma_intel_layer import identify_pattern
         _il = identify_pattern(symbol, r)
         if _il and not _il.get('error'):
             r['_intel'] = _il
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # A6: tradfi_dump_detector — TradFi抛压检测
     try:
         from brahma_brain.tradfi_signal_layer import m5_monthly_trend_filter
@@ -608,9 +591,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
         )
         if _td and not _td.get('error'):
             r['_tradfi_dump'] = _td
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ══ [ADAPTIVE v3.0 2026-08-30 苏摩111封印] S0/S1/S2 自适应决策层 ════════════════════
     try:
         _ms   = r.get('market_state_raw', {}) or {}
@@ -977,9 +958,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
                     _spot_lines.append(f'  🌐 跨市场: score={_cm.get("score",0):+d} | {_cm.get("summary","")[:60]}')
                 _spot_lines.append('')
                 _s0s1s2 += _spot_lines
-            except Exception:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # ══ DUAL双模并排颜外标注 ══
         if _mode == 'dual':
             _s0s1s2.insert(3, '  ⚠️ DUAL双模：上方为HF高频合约视角，S4-SPOT为现货周期视角')
@@ -1023,8 +1002,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
         if not _health['healthy']:
             _warn = f'\n🚨 [梵天360自愈] 覆盖率{_health["rate"]}%<90%，缺失项: {", ".join(_health["missing"][:5])}\n'
             report = _warn + report
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ══ [END 360自愈] ═════════════════════════════════════════════
 
     # ══ [P0-A/B 2026-08-31 苏摩111] 战场三维接入主链路 ═══════════════════════
@@ -1061,8 +1039,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
             f'  {_war["detail"]}\n'
         )
         report = _war_line + report
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ══ [END P0-A/B 接入] ════════════════════════════════════════════════════
 
     # [Toolaria行动2 2026-08-31 苏摩111] 报告写入文件+摘要注入上下文，防止20K全量OOM
@@ -1075,9 +1052,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
             _rf.write(report)
         r['_report_file'] = _rpt_file
         r['_report_summary'] = report[:600]
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # [P0接通 2026-08-31 苏摩111] execution_precision → 精度执行层追加
     # [Fix 2026-09-01] NAV接真实API，不再硬编码1000
     try:

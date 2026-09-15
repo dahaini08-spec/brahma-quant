@@ -15,6 +15,7 @@ position_manager.py — 仓位倍数管理器
 import json
 from pathlib import Path
 from typing import Callable
+import sys
 
 _DATA_ROOT = Path(__file__).parent.parent / 'data'
 _SIGNAL_LOG = _DATA_ROOT / 'live_signal_log.jsonl'
@@ -40,8 +41,7 @@ def _load_recent_results(n: int = 10) -> list[str]:
             settled = [e for e in entries if e.get('outcome') in ('win', 'loss', 'timeout')]
             settled.sort(key=lambda x: x.get('ts', 0), reverse=True)
             results = [e['outcome'] for e in settled[:n]]
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return results
 
 

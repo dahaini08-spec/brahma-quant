@@ -27,6 +27,7 @@ TTL：
 import json, time, os
 from pathlib import Path
 from data_cache import _SSL_CTX as _DC_SSL_CTX
+import sys
 
 LIVE_PRICE_FILE = Path('/tmp/live_prices.json')
 WS_PRICE_TTL    = 30   # WS价格有效期（秒）
@@ -113,10 +114,7 @@ def bulk_update_from_api(symbols: list):
             p = price_map.get(sym.upper(), 0)
             if p > 0:
                 update_price(sym, p, source='bulk_rest')
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 if __name__ == '__main__':
     # 测试
     import urllib.request

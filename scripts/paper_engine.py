@@ -76,10 +76,7 @@ def _push(msg: str) -> None:
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def _load_dedup() -> dict:
     if DEDUP_FILE.exists():
         try:
@@ -105,8 +102,7 @@ def _get_nav() -> float:
     try:
         if PAPER_ACCOUNT.exists():
             return float(json.loads(PAPER_ACCOUNT.read_text()).get("nav_current", SETTINGS.start_nav))
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return float(SETTINGS.start_nav)
 
 
@@ -120,8 +116,7 @@ def _count_open() -> int:
         try:
             if json.loads(line).get("status") in ("FILLED", "PENDING"):
                 n += 1
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return n
 
 
@@ -501,9 +496,7 @@ def settle_orders() -> list:
             acc["realized_pnl"] = acc.get("realized_pnl", 0) + total_pnl
             acc["updated_at"] = int(now_ts)
             PAPER_ACCOUNT.write_text(json.dumps(acc, indent=2))
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return settled
 
 

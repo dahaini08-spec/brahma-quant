@@ -122,10 +122,7 @@ def _save_cache(symbol: str, data: dict):
     p = _cache_path(symbol)
     try:
         p.write_text(json.dumps(data, ensure_ascii=False, default=str))
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def _compute_fresh(symbol: str) -> dict:
     """
     调用brahma_core.analyze()计算94维特征
@@ -136,8 +133,15 @@ def _compute_fresh(symbol: str) -> dict:
     sys.path.insert(0, str(BASE / 'brahma_brain'))
     
     from brahma_brain.brahma_core import analyze
-    
-    r = analyze(symbol, deep=True)
+
+    # [果蝇架构修复 2026-09-13 苏摩111] 防无限递归：
+    # brahma_core.analyze() L1864 会调 get_features() → _compute_fresh() → analyze() 无限循环
+    # 用环境变量标记当前正在compute_fresh，analyze()内检查此标记跳过get_features
+    _os.environ['_BRAHMA_FEATURE_COMPUTING'] = '1'
+    try:
+        r = analyze(symbol, deep=True)
+    finally:
+        _os.environ.pop('_BRAHMA_FEATURE_COMPUTING', None)
     x   = r.get('extra') or {}
     par = r.get('params') or {}
     smc = r.get('smc') or {}
@@ -336,8 +340,7 @@ def get_cache_stats() -> dict:
                 'fresh': age < TTL_SECONDS,
                 'n_features': data.get('n_features', 0),
             })
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {'caches': stats, 'ttl_seconds': TTL_SECONDS}
 
 

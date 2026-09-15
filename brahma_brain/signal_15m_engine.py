@@ -31,6 +31,7 @@ import os, sys, time, math, json
 from math_utils import _ema as calc_ema_series, _rsi as calc_rsi_series, _atr as calc_atr_series, ema, calc_rsi, atr  # [2026-08-28 math_utils SSOT迁移]
 from datetime import datetime, timezone
 from pathlib import Path
+import sys
 
 BASE_DIR = Path(__file__).parent
 ROOT_DIR = BASE_DIR.parent
@@ -267,8 +268,7 @@ def generate_15m_signal(symbol: str, verbose: bool = False) -> dict | None:
         # 铁证：三层架构 BTC WR=62.7% ETH WR=64.7% EV>0.7%/笔
         # 无1H触发时15m独立触发WR=34%，不发信号
         try:
-# [import_autoclean] 模块不存在，已注释
-# from brahma_brain.rsi_1h_trigger import detect_1h_trigger as _1h_chk
+            from brahma_brain.rsi_1h_trigger import detect_1h_trigger as _1h_chk
             _1h_r = _1h_chk(symbol)
             if _1h_r is None:
                 return None
@@ -288,8 +288,7 @@ def generate_15m_signal(symbol: str, verbose: bool = False) -> dict | None:
                 data = _dc(sym, interval, limit + 1)
                 if data and isinstance(data, list) and len(data) >= 2:
                     return data[:-1]  # 丢弃最后1根未收盘
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             r = requests.get(
                 'https://fapi.binance.com/fapi/v1/klines',
                 params={'symbol': sym, 'interval': interval, 'limit': limit + 1},
@@ -600,9 +599,7 @@ def scan_and_push(dry_run: bool = False) -> list[dict]:
                     age = time.time() - s.get('ts', 0)
                     if age < 10800:
                         recent_sigs.add(f'{s.get("symbol")}_{s.get("direction")}')
-            except Exception:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     for sym in symbols:
         key = f'{sym}_LONG'
         key_s = f'{sym}_SHORT'
@@ -632,8 +629,7 @@ def scan_and_push(dry_run: bool = False) -> list[dict]:
             # 触发 dharma_data_bridge 标准化入库
             try:
                 sys.path.insert(0, str(ROOT_DIR))
-# [import_autoclean] 模块不存在，已注释
-# from brahma_brain.dharma_data_bridge import log_signal
+                from brahma_brain.dharma_data_bridge import log_signal
                 log_signal(sig)
             except Exception as e:
                 pass  # bridge失败不阻断

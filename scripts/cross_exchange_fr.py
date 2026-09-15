@@ -34,8 +34,7 @@ def _bybit_fr(sym: str) -> float:
                          params={'category': 'linear', 'symbol': sym}, timeout=6).json()
         if r.get('retCode') == 0:
             return float(r['result']['list'][0].get('fundingRate', 0)) * 100
-    except:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return None
 
 
@@ -45,8 +44,7 @@ def _okx_fr(inst: str) -> float:
                          params={'instId': inst}, timeout=6).json()
         if r.get('code') == '0':
             return float(r['data'][0].get('fundingRate', 0)) * 100
-    except:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return None
 
 

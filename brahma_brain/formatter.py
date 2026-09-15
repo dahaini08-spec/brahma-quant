@@ -6,7 +6,6 @@ brahma_brain/formatter.py — 分析报告格式化模块
 
 提取自 brahma_core.py L3484 · 2026-06-10 设计院架构拆分 v25.0
 """
-from typing import Any
 
 
 def _fmt_price(price: float) -> str:
@@ -468,8 +467,7 @@ def format_standard_card(r: dict, ts: str = None) -> str:
             _fc_reason = (_fc or {}).get('reason', '')
             lines.append('  【方仓】 ' + _fc_status +
                          ('：' + _fc_reason[:40] if _fc_reason else '：数据不足'))
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     try:
         _dt = r.get('decision', {})
         _dt_action = _dt.get('action', '')
@@ -483,8 +481,7 @@ def format_standard_card(r: dict, ts: str = None) -> str:
             _ep = _dt.get('entry_plan', {})
             if _ep and _ep.get('price'):
                 lines.append(f'    入场:${_ep["price"]:,.2f} SL:${_ep.get("sl_price",0):,.2f} RR:{_ep.get("rr",0):.1f}x')
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── [END 方仓+决策树] ──────────────────────────────────────────────
 
     lines.append(SEP)
@@ -519,6 +516,7 @@ if __name__ == '__main__':
 
 import hashlib as _hashlib
 from datetime import datetime as _dt, timezone as _tz
+import sys
 
 
 def build_output_tag(r: dict, source: str = 'RUNNER') -> str:
@@ -953,9 +951,7 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
         # 排序：贡献值高的先显示
         try:
             plus_items.sort(key=lambda x: -x[2])
-        except:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         lines.append('  🟢 得分贡献（主力）:')
         for k, v, _ in plus_items[:8]:
             lines.append(f'    {k[:18]:<18} {v[:30]}')

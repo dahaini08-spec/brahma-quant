@@ -9,10 +9,8 @@ core_factors.py — Step5-6 多周期因子层适配（第四刀）
 3. 捕获所有import/运行异常 —— 这两层都是fail-safe设计，失败不影响主流程
 4. 返回 TfFactorResult / CausalFactorResult dataclass，替代裸dict+side-effect修改
 """
-from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
 
 
 # ─────────────────────────────────────────────────────────

@@ -12,6 +12,7 @@ import json, traceback, time, os, sys
 from pathlib import Path
 from datetime import datetime, timezone
 from functools import wraps
+import sys
 
 BASE     = Path(__file__).parent.parent
 ERR_LOG  = BASE / 'data' / 'error_log.jsonl'
@@ -76,8 +77,7 @@ def get_recent_errors(hours: float = 24, module: str = None) -> list:
             if ts < cutoff: continue
             if module and e.get('module') != module: continue
             errors.append(e)
-        except:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return errors
 
 def error_summary(hours: float = 6) -> str:

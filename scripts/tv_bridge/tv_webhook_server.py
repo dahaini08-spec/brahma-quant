@@ -23,6 +23,7 @@ TV Pine Script Alert URL格式:
 import json, sys, os, subprocess
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
+import sys
 
 BASE    = Path(__file__).parent.parent.parent
 TV_AUTH = "brahma_tv_2026"    # TV Alert配置中的token
@@ -57,10 +58,7 @@ def push_to_jarvis(message: str):
             '--to', JARVIS_TARGET,
             '--message', message,
         ], capture_output=True, timeout=10)
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 class TVWebhookHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):

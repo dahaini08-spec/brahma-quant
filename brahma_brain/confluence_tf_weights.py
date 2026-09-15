@@ -13,7 +13,6 @@ confluence_tf_weights.py — 多周期评分权重路由配置
   weights = get_tf_weights(symbol='REUSDT', primary_tf='1h', signal_source='pump_auto')
 """
 
-from __future__ import annotations
 
 # ── 流动性层级定义 ──────────────────────────────────────────
 LIQUIDITY_TIER: dict[str, int] = {

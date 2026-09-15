@@ -260,9 +260,7 @@ def check_cron_health() -> dict:
                     continue
                 name = l.split()[1] if len(l.split()) > 1 else cid[:8]
                 errors.append(f'{name}: {err_msg[:50]}')
-            except:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         return {'real_errors': errors, 'ok': len(errors) == 0,
                 'warn': f'真实cron错误: {errors}' if errors else ''}
     except Exception as e:
@@ -362,9 +360,7 @@ def run():
 try:
     import gc as _gc
     _check_and_gc()
-except Exception:
-    pass
-
+except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 if __name__ == '__main__':
     run()
     # 集成自愈层：5类🚨故障检测+自愈+告警

@@ -35,9 +35,7 @@ logger = logging.getLogger('brahma_screener')
 try:
     import resource as _res
     _res.setrlimit(_res.RLIMIT_AS, (1500*1024*1024, 1500*1024*1024))
-except Exception:
-    pass
-
+except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 # ── 常量 ─────────────────────────────────────────────────────────────────────
 FAPI = 'https://fapi.binance.com'
 EXCLUDE = {

@@ -18,6 +18,7 @@ brahma_brain_ai.py — 梵天大脑 AI决策层主入口
 """
 import json, os, ssl, time, urllib.request, re
 from pathlib import Path
+import sys
 
 BASE = Path(__file__).parent.parent
 sys_path = str(BASE)
@@ -120,9 +121,7 @@ def brahma_brain_decide(d: dict, fvg: dict, ob: dict, liq: dict, res: dict,
         }
         with open(log_path, 'a') as _lf:
             _lf.write(_json.dumps(log_entry, ensure_ascii=False) + '\n')
-    except Exception:
-        pass
-    
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {
         'core_logic': validated.get('core_logic', ''),
         'reverse_arg': validated.get('reverse_arg', ''),

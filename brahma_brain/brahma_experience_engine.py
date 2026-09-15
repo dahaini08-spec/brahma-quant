@@ -25,7 +25,6 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import Optional
 
 ROOT  = Path(__file__).parent.parent
 DATA  = ROOT / 'data' / 'historical'
@@ -542,8 +541,7 @@ def load_all_cases() -> list:
             data = json.loads(Path(f).read_text())
             if isinstance(data, list):
                 all_cases.extend(data)
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return all_cases
 
 
@@ -916,9 +914,7 @@ def _build_current_vec(klines: list, symbol: str = 'BTCUSDT') -> dict:
         _S      = (_std if _std > 0 else 1)
         _rs     = _R / _S
         hurst_approx = round(math.log(_rs) / math.log(len(_rs_closes)) if _rs > 0 else 0.5, 3)
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ATR百分位排名(0~1)
     _atr_list = [highs[i] - lows[i] for i in range(max(0, len(highs)-20), len(highs))]
     _atr_now  = _atr_list[-1] if _atr_list else 0
@@ -935,9 +931,7 @@ def _build_current_vec(klines: list, symbol: str = 'BTCUSDT') -> dict:
             _oi_now  = float(_oi_hist[-1].get('sumOpenInterest', 0))
             _oi_prev = float(_oi_hist[-4].get('sumOpenInterest', _oi_now))
             oi_chg_3d = round((_oi_now - _oi_prev) / _oi_prev * 100, 2) if _oi_prev else 0
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # FR平均资金费率
     fr_mean = 0.0
     try:
@@ -948,9 +942,7 @@ def _build_current_vec(klines: list, symbol: str = 'BTCUSDT') -> dict:
         if isinstance(_fr_hist, list):
             _frs = [float(x.get('fundingRate', 0)) * 100 for x in _fr_hist]
             fr_mean = round(sum(_frs) / len(_frs), 4) if _frs else 0
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 体制编码 - 从 brahma_state 读取
     regime_code = 5  # 默认 CHOP_MID
     score_rank  = 0.5
@@ -961,9 +953,7 @@ def _build_current_vec(klines: list, symbol: str = 'BTCUSDT') -> dict:
             regime_code = REGIME_MAP.get(_bs.get('regime', 'CHOP_MID'), 5)
             _score = float(_bs.get('score_final', _bs.get('score', 50)))
             score_rank = round(min(1.0, _score / 200), 2)
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 宏观事件距离 - 从 macro_cal_cache 读取
     macro_days = 30  # 默认无事件
     try:
@@ -976,9 +966,7 @@ def _build_current_vec(klines: list, symbol: str = 'BTCUSDT') -> dict:
                 _dists  = [abs(e.get('ts', _now_ts + 9999) - _now_ts) / 86400
                            for e in _events if isinstance(e, dict)]
                 macro_days = round(min(_dists), 1) if _dists else 30
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # StochRSI近伧4
     stoch_rsi = 50.0
     try:
@@ -988,9 +976,7 @@ def _build_current_vec(klines: list, symbol: str = 'BTCUSDT') -> dict:
             _lo = min(_rsi_vals); _hi = max(_rsi_vals)
             stoch_rsi = round((_rsi_vals[-1] - _lo) / (_hi - _lo) * 100
                               if _hi > _lo else 50.0, 1)
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {
         'rsi_4h':      round(rsi_4h, 2),
         'change_3d':   round(change_3d, 2),
@@ -1361,7 +1347,6 @@ failure_pattern_db.py — 梵天大脑 Layer A1: 失败模式数据库
 """
 import os, sys, json, time, logging
 from pathlib import Path
-from typing import Optional
 
 _BB = os.path.dirname(os.path.abspath(__file__))
 _ROOT = os.path.dirname(_BB)
@@ -1420,8 +1405,7 @@ def record_outcome(
             try:
                 if check_fn(record):
                     failure_dims.append(dim_name)
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     record['failure_dims'] = failure_dims
 
     if extra:
@@ -1517,9 +1501,7 @@ def get_current_risk_score(signal: dict) -> dict:
         try:
             if check_fn(record_check):
                 active_dims.append(dim_name)
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     risk_note = ''
     if pattern['warning']:
         risk_note = pattern['warning']
@@ -1546,8 +1528,7 @@ def _load_records() -> list:
                 if line:
                     try:
                         records.append(json.loads(line))
-                    except Exception:
-                        pass
+                    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     except Exception as e:
         logger.warning(f'read failure_db: {e}')
     return records

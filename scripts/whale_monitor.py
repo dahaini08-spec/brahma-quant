@@ -109,9 +109,7 @@ def get_whale_signal(sym: str = 'BTCUSDT') -> dict:
             elif oi_1h_chg > 1.0:   oi_signal = '📈温和建仓(+{:.2f}%)'.format(oi_1h_chg)
             elif oi_1h_chg < -2.0:  oi_signal = '🔻大幅清仓({:.2f}%)'.format(oi_1h_chg)
             elif oi_1h_chg < -1.0:  oi_signal = '📉温和清仓({:.2f}%)'.format(oi_1h_chg)
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 4. 梵天评分贡献
     whale_score = 0
     if whale_net > 5_000_000:  whale_score += 10  # 鲸鱼净买入>500万U
@@ -139,6 +137,25 @@ def get_whale_signal(sym: str = 'BTCUSDT') -> dict:
 
     cache = BASE / 'data' / f'whale_{sym}.json'
     cache.write_text(json.dumps(result, indent=2))
+    
+    # [9.15苏摩111 P2] 鲸鱼大额异动→写入oi_watchlist候选池
+    if abs(whale_net) > 5_000_000 or abs(oi_1h_chg) > 2.0:
+        try:
+            wl_path = BASE / 'data' / 'oi_watchlist.json'
+            wl = json.loads(wl_path.read_text()) if wl_path.exists() else []
+            if not any(w.get('symbol') == sym for w in wl):
+                wl.append({
+                    'symbol': sym,
+                    'source': 'whale_monitor',
+                    'whale_net': whale_net,
+                    'oi_1h_chg': oi_1h_chg,
+                    'whale_score': whale_score,
+                    'added_at': time.time()
+                })
+                wl_path.write_text(json.dumps(wl, indent=2))
+        except Exception as _e:
+            print(f'[WARN] whale→oi_watchlist写入失败: {_e}', file=sys.stderr)
+    
     return result
 
 

@@ -1,15 +1,15 @@
 {
   "symbol": "BTCUSDT",
   "frs": {
-    "binance": 0.003203,
-    "bybit": 0.001641,
-    "okx": 0.0064888032136
+    "binance": 0.004014,
+    "bybit": 0.004842,
+    "okx": 0.00449531412896
   },
-  "spread": 0.00485,
-  "max_ex": "okx",
-  "min_ex": "bybit",
+  "spread": 0.00083,
+  "max_ex": "bybit",
+  "min_ex": "binance",
   "arb_signal": "NONE",
   "arb_score": 0,
   "bull_fr_bonus": 0,
-  "ts": 1789290799.9423828
+  "ts": 1789435008.4641898
 }

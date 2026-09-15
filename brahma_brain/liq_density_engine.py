@@ -19,7 +19,6 @@ import requests
 import json
 import time
 import os
-from typing import Optional
 
 # ── brahma_bus 总线接入（设计院 2026-06-29）──
 try:
@@ -422,8 +421,7 @@ def _get_hyperliquid_liquidations(symbol_base: str = 'BTC') -> list:
                 'side': bn_side, 'pos_side': pos_side,
                 'source': 'hyperliquid_proxy',
             })
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return results
 
 
@@ -528,9 +526,7 @@ def get_liq_bonus(side_usd: float, symbol: str = '') -> tuple[int, str]:
         try:
             from brahma_brain.confluence_tf_weights import _get_tier
             tier = _get_tier(symbol)
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     thresholds = LIQ_DENSITY_THRESHOLDS_BY_TIER.get(
         tier, LIQ_DENSITY_THRESHOLDS_BY_TIER[3]
     )
@@ -720,8 +716,7 @@ def get_liq_snapshot(symbol: str) -> dict:
         bybit_oi_val = float(
             bybit_oi_raw.get("result", {}).get("list", [{}])[0].get("openInterest", 0)
         ) * price / 1e9
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     result["bybit_oi_b"] = round(bybit_oi_val, 3)
 
     # Bybit 多空比
@@ -736,9 +731,7 @@ def get_liq_snapshot(symbol: str) -> dict:
         if bb_ls:
             result["bybit_long_pct"]  = round(float(bb_ls[0]["buyRatio"]) * 100, 1)
             result["bybit_short_pct"] = round(float(bb_ls[0]["sellRatio"]) * 100, 1)
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # Bybit FR + 价格
     bybit_tk_raw = _fetch(
         f"{BYBIT}/v5/market/tickers?category=linear&symbol={sym_bybit}",
@@ -750,9 +743,7 @@ def get_liq_snapshot(symbol: str) -> dict:
         bb_info = bybit_tk_raw.get("result", {}).get("list", [{}])[0]
         result["bybit_fr"]    = round(float(bb_info.get("fundingRate", 0)) * 100, 4)
         result["bybit_price"] = float(bb_info.get("lastPrice", 0))
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # Hyperliquid OI + FR + 清算位
     result["hl_oi_b"]       = 0.0
     result["hl_fr"]         = 0.0
@@ -784,9 +775,7 @@ def get_liq_snapshot(symbol: str) -> dict:
                     result["hl_liq_25x_long"]  = round(hl_price * (1 - 1/25  * 0.9), 4)
                     result["hl_liq_25x_short"] = round(hl_price * (1 + 1/25  * 0.9), 4)
                 break
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 三所汇总OI
     result["total_oi_b"] = round(
         result["oi_b"] + result["bybit_oi_b"] + result["hl_oi_b"], 3
@@ -935,8 +924,6 @@ realtime_liq_tracker.py — 实时清算流追踪
 import json
 import time
 import os
-from typing import Optional
-from collections import defaultdict
 from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 # ws_guardian 清算缓存文件路径
@@ -1064,9 +1051,7 @@ def _read_from_ws_guardian_state(symbol: str) -> list:
                         'usd': price * qty, 'side': side,
                         'ts': ts,
                     })
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 也读专用清算缓存
     try:
         if os.path.exists(_LIQ_CACHE_FILE):
@@ -1074,9 +1059,7 @@ def _read_from_ws_guardian_state(symbol: str) -> list:
                 cache = json.load(f)
             sym_events = cache.get(symbol, [])
             events.extend(sym_events)
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return events
 
 

@@ -542,8 +542,7 @@ class RegimeStateMachine:
                     # confirmed_at 存在则用它，否则用当前时间（视为刚刚更新过）
                     state['last_update_ts'] = state.get('confirmed_at') or time.time()
                 return state
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         return self._default_state()
 
     def _default_state(self) -> dict:
@@ -616,8 +615,7 @@ class RegimeStateMachine:
                     _hmm_boost = 1   # HMM一致+高概率 → 加速confirm
                 elif _hmm_top != raw_regime and _hmm_prob > 0.70:
                     _hmm_boost = -1  # HMM不同+高概率 → 降权，需更多确认
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         s = self._state
         confirmed = s['confirmed']
 

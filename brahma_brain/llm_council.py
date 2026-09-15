@@ -18,7 +18,6 @@ llm_council.py — 梵天本地LLM Council裁决层
   confidence: HIGH/MED/LOW
 """
 
-from __future__ import annotations
 from typing import Optional
 
 

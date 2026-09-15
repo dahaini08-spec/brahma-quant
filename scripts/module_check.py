@@ -5,6 +5,7 @@
 """
 import json, os, sys, time
 from pathlib import Path
+import sys
 
 BASE = Path(__file__).parent.parent
 REGISTRY = BASE / 'data' / 'module_registry.json'
@@ -63,9 +64,6 @@ def main():
             with open(alert_path, 'a') as f:
                 for a in all_alerts:
                     f.write(json.dumps({'type': 'module_check', 'msg': a, 'ts': time.time()}) + '\n')
-        except Exception:
-            pass
-
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 if __name__ == '__main__':
     main()

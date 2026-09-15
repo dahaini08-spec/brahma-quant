@@ -28,8 +28,7 @@ def _load_state() -> dict:
     if STATE_FILE.exists():
         try:
             return json.loads(STATE_FILE.read_text())
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {
         'peak_nav': None,
         'current_nav': None,
@@ -55,9 +54,7 @@ def _get_current_nav() -> float:
         balance = bus.balance()  # [P1修复 2026-08-26] bus.balance()是正确接口
         if balance and balance.get('totalWalletBalance'):
             return float(balance['totalWalletBalance'])
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # fallback: 读取历史NAV
     if NAV_FILE.exists():
         lines = NAV_FILE.read_text().strip().splitlines()
@@ -225,9 +222,7 @@ def _notify_warn(state: dict):
         subprocess.Popen(['openclaw', 'message', '--channel', 'jarvis', '--to',
                          '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6',
                          '--message', msg], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def _notify_halt(state: dict):
     try:
         import subprocess
@@ -235,9 +230,7 @@ def _notify_halt(state: dict):
         subprocess.Popen(['openclaw', 'message', '--channel', 'jarvis', '--to',
                          '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6',
                          '--message', msg], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def _notify_lockout(state: dict):
     try:
         import subprocess
@@ -245,10 +238,7 @@ def _notify_lockout(state: dict):
         subprocess.Popen(['openclaw', 'message', '--channel', 'jarvis', '--to',
                          '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6',
                          '--message', msg], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 if __name__ == '__main__':
     import sys
     if len(sys.argv) > 1 and sys.argv[1] == 'unlock':

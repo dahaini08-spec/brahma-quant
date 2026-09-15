@@ -29,9 +29,8 @@ brahma_brain · Phase 1 完整整合
 """
 import sys
 import os, sys, time
-import copy  # [P1-C audit-fix] deepcopy for cf dict
 import json  # [D1-fix] 提升到顶部
-from datetime import datetime, timezone, timedelta  # [D1-fix] 提升到顶部
+from datetime import datetime  # [D1-fix] 提升到顶部
 from pathlib import Path  # [D1-fix] 提升到顶部
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -41,8 +40,6 @@ sys.path.insert(0, os.path.join(BASE_DIR, '..'))
 from data_cache        import prefetch_symbol, get_klines, klines_to_ohlcv
 from market_state      import analyze   as ms_analyze
 from smc_engine        import analyze_smc
-from brahma_brain.smc_engine import divergence_score
-from brahma_brain.volume_unified import volume_score
 from range_engine      import range_score  # [Phase2a] 区间结构引擎
 import sys
 try:

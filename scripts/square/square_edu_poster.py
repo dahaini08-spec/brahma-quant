@@ -10,6 +10,7 @@ square_edu_poster.py — 教育帖自动发帖 v1.0
 import json, os, sys, time, hashlib, ssl, urllib.request
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+import sys
 
 BASE = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(BASE / 'scripts'))
@@ -32,8 +33,7 @@ def load_state():
     if STATE_FILE.exists():
         try:
             return json.loads(STATE_FILE.read_text())
-        except:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {'last_edu_id': 0, 'posted_ids': []}
 
 
@@ -53,8 +53,7 @@ def is_duplicate(content):
     if DEDUP_FILE.exists():
         try:
             d = json.loads(DEDUP_FILE.read_text())
-        except:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     now = time.time()
     d = {k: v for k, v in d.items() if now - v < 86400}
     return h in d
@@ -66,8 +65,7 @@ def mark_posted(content):
     if DEDUP_FILE.exists():
         try:
             d = json.loads(DEDUP_FILE.read_text())
-        except:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     now = time.time()
     d = {k: v for k, v in d.items() if now - v < 86400}
     d[h] = now
@@ -111,8 +109,7 @@ def fetch_live_fvg(symbol='BTCUSDT'):
                 'hi': fvg.get('hi', 0),
                 'mid': fvg.get('mid', 0) or fvg.get('magnet', 0),
             }
-    except:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return None
 
 

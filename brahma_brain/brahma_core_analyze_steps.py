@@ -78,7 +78,7 @@ def _analyze_step1(symbol: str, signal_dir: str) -> dict:
             pass  # [静默] f'[RSM] {_sym} 体制稳定: {_stable_regime}（无切换）'
         ms['regime'] = _stable_regime
     except Exception as _rsm_e:
-        pass  # [静默] f'[RSM] 状态机异常（不阻断，维持原始体制）: {_rsm_e}'
+        import sys as _sys_rsm; print(f"[RSM] 状态机异常: {_rsm_e}", file=_sys_rsm.stderr)  # 不阻断 f'[RSM] 状态机异常（不阻断，维持原始体制）: {_rsm_e}'
     # ── [P0-A END] ────────────────────────────────────────────────────────
 
     # ── [ROOT-FIX-3 2026-08-23 苏摩111封印] 实时体制覆盖门控 ─────────────────
@@ -129,7 +129,7 @@ def _analyze_step1(symbol: str, signal_dir: str) -> dict:
             pass  # [静默] f'[CausalVerifier] ⚡ {_sym} verdict={_cv_verdict} conf={_causal_v_result.get("ca
         pass  # extra_data5c1a672a521d59cb5316Ff0c7ed3679c5b585728_causal_v_result4e2d
     except Exception as _cv_e:
-        pass  # [静默] f'[CausalVerifier] ⚠ 异常（不阻断）: {_cv_e}'
+        import sys as _sys_cv; print(f"[CausalVerifier] 异常（不阻断）: {_cv_e}", file=_sys_cv.stderr)
 
 
     return {
@@ -244,19 +244,20 @@ def _analyze_step3(symbol: str, ms: dict, signal_dir: str, price: float) -> dict
         smc['fvg_1d']  = _smc_1d.get('fvg', {})
         # [v21.0] MTF路由：4H战略区优先，1H确认（自顶向下）
         try:
-# [import_autoclean] 模块不存在，已注释
-# from brahma_brain.multi_timeframe_router import route_entry_zone as _mtf_route
-            _mtf_result = _mtf_route(symbol, signal_dir, price, smc, _smc_4h)
-            _tf_used = _mtf_result.get('timeframe', '1H')
-            _tf_warn = _mtf_result.get('warning', '')
-            _tf_upgrade = _mtf_result.get('upgrade_reason', '')
-            if _tf_used == '4H':
-                _mtf_lo = _mtf_result['entry_lo']
-                _mtf_hi = _mtf_result['entry_hi']
-                if _tf_warn:
-                    pass  # [静默]
-        except Exception as _mtf_err:
-            _mtf_result = None
+            from brahma_brain.multi_timeframe_router import route_entry_zone as _mtf_route
+        except ImportError:
+            _mtf_route = None  # [9.15清理] 模块不存在
+        if _mtf_route:
+            try:
+                _mtf_result = _mtf_route(symbol, signal_dir, price, smc, _smc_4h)
+                _tf_used = _mtf_result.get('timeframe', '1H')
+                _tf_warn = _mtf_result.get('warning', '')
+                _tf_upgrade = _mtf_result.get('upgrade_reason', '')
+                if _tf_used == '4H':
+                    _mtf_lo = _mtf_result['entry_lo']
+                    _mtf_hi = _mtf_result['entry_hi']
+            except Exception as _mtf_err:
+                _mtf_result = None
 
         # [旧逻辑兼容] 如果MTF路由未激活，保留原1H→4H降级逻辑
         if _mtf_result is None or _mtf_result.get('timeframe') == '1H':

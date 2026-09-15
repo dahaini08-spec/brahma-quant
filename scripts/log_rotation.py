@@ -43,8 +43,7 @@ def clean_core_dumps() -> float:
                     freed += p.stat().st_size
                     p.unlink()
                     count += 1
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if count > 0:
         print(f"  [CORE] 清理{count}个core dump: 释放{freed/1024/1024/1024:.2f}GB")
     return freed / 1024 / 1024
@@ -62,8 +61,7 @@ def clean_cron_tmp() -> float:
             if f.stat().st_mtime < cutoff:
                 freed += f.stat().st_size
                 f.unlink()
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return freed / 1024 / 1024
 
 
@@ -79,8 +77,7 @@ def clean_brahma_cache() -> float:
             if f.is_file() and f.stat().st_mtime < cutoff:
                 freed += f.stat().st_size
                 f.unlink()
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return freed / 1024 / 1024
 
 
@@ -120,8 +117,7 @@ def rotate():
             sys.path.insert(0, str(BASE / 'scripts'))
             from push_hub import _jarvis
             _jarvis(msg)
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     else:
         print("no_rotation_needed")
 
@@ -143,9 +139,6 @@ def rotate():
             sys.path.insert(0, str(BASE / 'scripts'))
             from push_hub import _jarvis
             _jarvis(f"[DISK ALERT]\n{disk_msg}\nPlease check disk usage.")
-        except Exception:
-            pass
-
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 if __name__ == '__main__':
     rotate()

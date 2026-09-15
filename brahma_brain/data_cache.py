@@ -77,8 +77,7 @@ def _load_keys():
         if callable(bk):
             r = bk()
             return r[0], r[1]
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return '', ''
 
 API_KEY, API_SECRET = _load_keys()
@@ -130,8 +129,7 @@ def _cache_get(key: str):
             if time.time() < disk.get('exp', 0):
                 _cache[key] = disk  # 热加载回内存
                 return disk['data']
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return None
 
 def _cache_set(key: str, data, ttl: int):
@@ -284,8 +282,7 @@ def get_open_interest(symbol: str) -> dict:
                 if oi_change_pct > 1.0:   oi_momentum = 'INCREASING'
                 elif oi_change_pct < -1.0: oi_momentum = 'DECREASING'
                 else:                      oi_momentum = 'NEUTRAL'
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         oi = {
             'oi':             oi_now,
             'ts':             int(data.get('time', 0)),
@@ -592,8 +589,7 @@ def get_lsr_bybit(symbol: str) -> dict:
             result = {'long_ratio': ls, 'short_ratio': 1 - ls, 'source': 'bybit'}
             _cache_set(key, result, TTL.get('lsr', 120))
             return result
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
 def get_lsr_okx(symbol: str) -> dict:
@@ -694,6 +690,5 @@ def flush_stale_disk_cache(max_age_hours: float = 2.0) -> dict:
                     removed += 1
                 except Exception:
                     errors += 1
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {'removed': removed, 'kept': kept, 'errors': errors}

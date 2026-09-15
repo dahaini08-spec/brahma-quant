@@ -19,11 +19,10 @@ trader_brain.py — 交易员大脑 v2.0
 
 接入位置：brahma_manual_analysis.py → trader_brain.decide() + format_output()
 """
-import math
 import json
 import pathlib
 import time as _time_mod
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, Tuple
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # IC数据加载（全局缓存）
@@ -680,6 +679,64 @@ def decide(
     except Exception:
         pass  # 风控引擎不可用时不阻塞交易
 
+    # ── AMBUSCADE 伏击层 [2026-09-14 苏摩111] ──────────────────
+    # 预判埋伏：WAIT时检查预判信号≥2个→覆盖为AMBUSCADE
+    _ambuscade = None
+    # 提取AMBUSCADE所需变量（从vol/res/liq中提取）
+    _amb_rsi_15m = float(vol.get('rsi_15m', 50) or 50)
+    _amb_cvd_1h = cvd_1h  # L494已定义
+    _amb_min_gex = float(vol.get('min_gex_price', 0) or 0)
+    _amb_fc = res.get('fangcang', {}) if isinstance(res, dict) else {}
+    _amb_fc_future = float(_amb_fc.get('avg_future_ret', 0) or _amb_fc.get('future_ret', 0) or 0)
+    _amb_fc_dir = _amb_fc.get('signal_hint', '') or _amb_fc.get('direction', '')
+    _amb_support_pool = liq.get('nearest_long', 0)  # 支撑池=做多者止损聚集区
+    if action == 'WAIT':
+        try:
+            from brahma_brain.ambuscade_engine import should_ambuscade
+            _ambuscade = should_ambuscade(
+                symbol=symbol, direction=direction, price=price, regime=regime,
+                fvg_data={'consensus': fvg_consensus, 'magnet_price': _fvg_magnet},
+                liq_data={'stop_wall_up': _ns, 'support_pool_down': _amb_support_pool, 'key_levels': []},
+                hurst=hurst,
+                rsi={'rsi_15m': _amb_rsi_15m},
+                fangcang_data={'future_ret': _amb_fc_future, 'direction': _amb_fc_dir},
+                oi_signal=oi_signal, cvd_1h=_amb_cvd_1h,
+                gex_data={'min_gex_price': _amb_min_gex},
+                macro_data={'event': _event_type, 'event_triggered': _event_driven, 'event_direction': direction},
+                regime_state=regime_state,
+                current_action=action, missing=missing,
+            )
+        except Exception as e:
+            import sys; print(f'[AMBUSCADE] {e}', file=sys.stderr)
+            pass  # AMBUSCADE不可用时不阻塞
+    
+    if _ambuscade and _ambuscade.get('action') in ('AMBUSCADE', 'AMBUSCADE_WATCH'):
+        action = _ambuscade['action']
+        direction = _ambuscade['direction']
+        # AMBUSCADE仓位0.5%NAV（失效期×0.5=0.25%）
+        position_pct = 1  # 基础0.5%→取整1%
+        if regime_state == 'RED':
+            position_pct = 1  # 0.25%取整=1%
+        leverage = max(3, lev_base // 2)
+        # 重新计算入场区/SL/TP
+        if direction == 'SHORT':
+            entry_lo = _ns * 0.998 if _ns > 0 else price * 1.01
+            entry_hi = _ns if _ns > 0 else price * 1.02
+            sl = entry_hi * (1 + sl_pct / 100)
+            tp1 = _amb_support_pool if _amb_support_pool > 0 else price * 0.97
+            tp2 = tp1 * 0.99
+            tp3 = tp2 * 0.98
+        else:
+            entry_lo = _amb_support_pool if _amb_support_pool > 0 else price * 0.98
+            entry_hi = entry_lo * 1.005
+            sl = entry_lo * (1 - sl_pct / 100)
+            tp1 = _ns if _ns > 0 else price * 1.03
+            tp2 = tp1 * 1.01
+            tp3 = tp2 * 1.02
+        rr = abs(tp1 - sl) / abs(sl - entry_lo) if abs(sl - entry_lo) > 0 else 0
+        reason = f'AMBUSCADE伏击 | 预判{len(_ambuscade["ambuscade_triggers"])}信号 | 多{_ambuscade["ambuscade_long_score"]}/空{_ambuscade["ambuscade_short_score"]} | 优势{_ambuscade["ambuscade_margin"]}%'
+        missing = []  # AMBUSCADE不需要missing=0
+
     return {
         'action': action, 'direction': direction,
         'entry_lo': entry_lo, 'entry_hi': entry_hi, 'sl': sl,
@@ -782,37 +839,129 @@ def format_opinion(result: Dict, symbol: str, price: float, regime: str) -> str:
 
     if action == 'ENTER':
         return _format_vip_enter(result, sym, d, emoji, regime)
+    elif action in ('AMBUSCADE', 'AMBUSCADE_WATCH'):
+        return _format_vip_ambuscade(result, sym, d, emoji, regime)
     elif action == 'WATCH':
-        return _format_vip_watch(result, sym, d, emoji)
+        return _format_vip_watch(result, sym, d, emoji, regime)
     else:
         return _format_opinion_wait(result, sym, d, emoji, price)
 
 
+def _format_vip_ambuscade(r, sym, d, emoji, regime):
+    # 严格按封印模板 2026-09-14 苏摩111 AMBUSCADE伏击层
+    # 仓位0.5%NAV，预判埋伏不需要CVD/交叉验证确认
+    if d == 'LONG':
+        main_line = f'🟢 多单｜挂单区 ${r["entry_lo"]:,.1f}~${r["entry_hi"]:,.1f}'
+        main_params = f'止损 ${r["sl"]:,.1f}｜目标 ${r["tp1"]:,.0f}→${r["tp2"]:,.0f}→${r["tp3"]:,.0f}'
+        main_lev = f'杠杆 {r["leverage"]}x｜仓位 {r["position_pct"]}%'
+        side_line = '🔴 暂无空单｜等待结构'
+    else:
+        main_line = f'🔴 空单｜挂单区 ${r["entry_lo"]:,.1f}~${r["entry_hi"]:,.1f}'
+        main_params = f'止损 ${r["sl"]:,.1f}｜目标 ${r["tp1"]:,.0f}→${r["tp2"]:,.0f}→${r["tp3"]:,.0f}'
+        main_lev = f'杠杆 {r["leverage"]}x｜仓位 {r["position_pct"]}%'
+        side_line = '🟢 暂无多单｜等待结构'
+    _logic = r.get('reason', '伏击')[:20]
+    return '\n'.join([
+        f'🌿 姓赵不宣 | {sym} 今日布局',
+        f'——— {sym} ———',
+        main_line,
+        main_params,
+        main_lev,
+        side_line,
+        '',
+        '',
+        f'⚠️ {_logic}',
+        f'🚫 破${r["sl"]:,.1f}作废',
+        f'🌿 姓赵不宣 | 不是建议',
+    ])
+
+
 def _format_vip_enter(r, sym, d, emoji, regime):
-    return (
-        f'🌿 姓赵不宣 | {sym} 今日布局\n\n'
-        f'{emoji} {"多单" if d == "LONG" else "空单"}｜{"回调" if d == "LONG" else "反弹"}入场区 ${r["entry_lo"]:,.1f}~${r["entry_hi"]:,.1f}\n'
-        f'止损 ${r["sl"]:,.1f}｜目标 ${r["tp1"]:,.0f}→${r["tp2"]:,.0f}→${r["tp3"]:,.0f}\n'
-        f'杠杆 {r["leverage"]}x｜仓位 {r["position_pct"]}%  RR={r["rr"]:.1f}x  SL={r["sl_pct"]:.1f}% ✅\n\n'
-        f'{"🔴 暂无空单｜等待结构" if "BULL" in regime or "RECOVERY" in regime else "🟢 暂无多单｜等待结构" if "BEAR" in regime else "⚠️ CHOP体制｜区间交易"}\n'
-        f'\n🚫 破${r["sl"]:,.1f}策略作废\n\n'
-        f'⚠️ {r["reason"]}\n'
-        f'{"⚙️ " + r["conflict_resolution"] + chr(10) if r.get("conflict_resolution") else ""}'
-        f'📊 梵天系统｜数据驱动｜不是建议'
-    )
+    # 严格按封印模板 2026-09-13 苏摩111
+    _is_bull = 'BULL' in regime or 'RECOVERY' in regime
+    _is_bear = 'BEAR' in regime
+    if d == 'LONG':
+        main_line = f'🟢 多单｜挂单区 ${r["entry_lo"]:,.1f}~${r["entry_hi"]:,.1f}'
+        main_params = f'止损 ${r["sl"]:,.1f}｜目标 ${r["tp1"]:,.0f}→${r["tp2"]:,.0f}→${r["tp3"]:,.0f}'
+        main_lev = f'杠杆 {r["leverage"]}x｜仓位 {r["position_pct"]}%'
+        if _is_bear:
+            side_line = '🟢 暂无多单｜等待结构'
+            side_params = ''
+            side_lev = ''
+        else:
+            side_line = '🔴 暂无空单｜等待结构'
+            side_params = ''
+            side_lev = ''
+    else:
+        main_line = f'🔴 空单｜挂单区 ${r["entry_lo"]:,.1f}~${r["entry_hi"]:,.1f}'
+        main_params = f'止损 ${r["sl"]:,.1f}｜目标 ${r["tp1"]:,.0f}→${r["tp2"]:,.0f}→${r["tp3"]:,.0f}'
+        main_lev = f'杠杆 {r["leverage"]}x｜仓位 {r["position_pct"]}%'
+        if _is_bull:
+            side_line = '🔴 暂无空单｜等待结构'
+            side_params = ''
+            side_lev = ''
+        else:
+            side_line = '🟢 暂无多单｜等待结构'
+            side_params = ''
+            side_lev = ''
+    _logic = r.get('reason', '')[:20]
+    return '\n'.join([
+        f'🌿 姓赵不宣 | {sym} 今日布局',
+        f'——— {sym} ———',
+        main_line,
+        main_params,
+        main_lev,
+        side_line,
+        side_params,
+        side_lev,
+        f'⚠️ {_logic}',
+        f'🚫 破${r["sl"]:,.1f}作废',
+        f'🌿 姓赵不宣 | 不是建议',
+    ])
 
 
-def _format_vip_watch(r, sym, d, emoji):
-    return (
-        f'🌿 姓赵不宣 | {sym} 今日布局（WATCH轻仓）\n\n'
-        f'{emoji} {"多单" if d == "LONG" else "空单"}｜{"回调" if d == "LONG" else "反弹"}入场区 ${r["entry_lo"]:,.1f}~${r["entry_hi"]:,.1f}\n'
-        f'止损 ${r["sl"]:,.1f}｜目标 ${r["tp1"]:,.0f}→${r["tp2"]:,.0f}→${r["tp3"]:,.0f}\n'
-        f'杠杆 {r["leverage"]}x｜仓位 {r["position_pct"]}%  RR={r["rr"]:.1f}x  SL={r["sl_pct"]:.1f}% ⏳\n\n'
-        f'⏳ 待确认：{" / ".join(r["missing"][:4])}\n'
-        f'⚠️ 条件未满，轻仓试探\n'
-        f'{"⚙️ " + r["conflict_resolution"] + chr(10) if r.get("conflict_resolution") else ""}'
-        f'📊 梵天系统｜数据驱动｜不是建议'
-    )
+def _format_vip_watch(r, sym, d, emoji, regime=''):
+    # 严格按封印模板 2026-09-13 苏摩111
+    _is_bull = 'BULL' in regime or 'RECOVERY' in regime
+    _is_bear = 'BEAR' in regime
+    if d == 'LONG':
+        main_line = f'🟢 多单｜挂单区 ${r["entry_lo"]:,.1f}~${r["entry_hi"]:,.1f}'
+        main_params = f'止损 ${r["sl"]:,.1f}｜目标 ${r["tp1"]:,.0f}→${r["tp2"]:,.0f}→${r["tp3"]:,.0f}'
+        main_lev = f'杠杆 {r["leverage"]}x｜仓位 {r["position_pct"]}%'
+        if _is_bear:
+            side_line = '🟢 暂无多单｜等待结构'
+            side_params = ''
+            side_lev = ''
+        else:
+            side_line = '🔴 暂无空单｜等待结构'
+            side_params = ''
+            side_lev = ''
+    else:
+        main_line = f'🔴 空单｜挂单区 ${r["entry_lo"]:,.1f}~${r["entry_hi"]:,.1f}'
+        main_params = f'止损 ${r["sl"]:,.1f}｜目标 ${r["tp1"]:,.0f}→${r["tp2"]:,.0f}→${r["tp3"]:,.0f}'
+        main_lev = f'杠杆 {r["leverage"]}x｜仓位 {r["position_pct"]}%'
+        if _is_bull:
+            side_line = '🔴 暂无空单｜等待结构'
+            side_params = ''
+            side_lev = ''
+        else:
+            side_line = '🟢 暂无多单｜等待结构'
+            side_params = ''
+            side_lev = ''
+    _logic = r.get('reason', '条件未满')[:20]
+    return '\n'.join([
+        f'🌿 姓赵不宣 | {sym} 今日布局',
+        f'——— {sym} ———',
+        main_line,
+        main_params,
+        main_lev,
+        side_line,
+        side_params,
+        side_lev,
+        f'⚠️ {_logic}',
+        f'🚫 破${r["sl"]:,.1f}作废',
+        f'🌿 姓赵不宣 | 不是建议',
+    ])
 
 
 def _format_opinion_wait(r, sym, d, emoji, price):

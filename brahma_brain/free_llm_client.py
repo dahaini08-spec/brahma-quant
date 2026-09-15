@@ -31,6 +31,7 @@ free_llm_client.py — OpenRouter免费LLM客户端
 """
 import json, os, ssl, time, urllib.request
 from pathlib import Path
+import sys
 
 # ── Key加载 ──────────────────────────────────────────────────────────────
 def _load_key() -> str:
@@ -214,9 +215,7 @@ Hurst: {hurst:.3f}（>0.65=趋势，<0.45=均值回归）
             # 验证字段
             if all(k in d for k in ('bias', 'reason', 'action', 'confidence')):
                 return d
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
 
@@ -300,8 +299,7 @@ def signal_conflict_resolve(
             bias   = d.get('bias', '?')
             reason = d.get('reason', '')
             return f"{winner}信号更可信 → {bias}（{reason}）"
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # fallback: 直接返回原始文本首句
     return raw.split('\n')[0].strip()[:50]
 
@@ -360,8 +358,7 @@ def council_three_way(
                 d = _j.loads(raw[s:e])
                 if 'vote' in d:
                     return role, d
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         return role, {}
 
     # 三方并行调用
@@ -372,9 +369,7 @@ def council_three_way(
                 role, d = fut.result()
                 if d:
                     results[role] = d
-            except Exception:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if not results:
         return {}
 

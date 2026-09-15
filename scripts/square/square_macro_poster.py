@@ -9,6 +9,7 @@ CPI/NFP/FOMC前1天自动发帖，蹭Trending Hashtag流量
 import json, os, sys, time, hashlib, ssl, urllib.request
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+import sys
 
 BASE = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(BASE / 'scripts'))
@@ -39,8 +40,7 @@ def is_duplicate(content):
     if DEDUP_FILE.exists():
         try:
             d = json.loads(DEDUP_FILE.read_text())
-        except:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     now = time.time()
     d = {k: v for k, v in d.items() if now - v < 86400}
     return h in d
@@ -52,8 +52,7 @@ def mark_posted(content):
     if DEDUP_FILE.exists():
         try:
             d = json.loads(DEDUP_FILE.read_text())
-        except:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     now = time.time()
     d = {k: v for k, v in d.items() if now - v < 86400}
     d[h] = now

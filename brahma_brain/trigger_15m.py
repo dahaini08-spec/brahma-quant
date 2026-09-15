@@ -29,6 +29,7 @@ trigger_15m.py · 梵天15分钟精确触发层 v1.0
 import os, sys, time
 import numpy as np
 import requests
+import sys
 
 # ── brahma_bus 总线接入（设计院 2026-06-29）──
 try:
@@ -55,8 +56,7 @@ def _fetch_15m(symbol: str, limit: int = 96) -> list:
                 'ts': k[0], 'o': float(k[1]), 'h': float(k[2]),
                 'l': float(k[3]), 'c': float(k[4]), 'v': float(k[5])
             } for k in raw]
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     url = 'https://fapi.binance.com/fapi/v1/klines'
     try:
         r = requests.get(url, params={

@@ -34,13 +34,13 @@ def _load() -> dict:
     try:
         if PERSIST_FILE.exists():
             reg.update(json.loads(PERSIST_FILE.read_text()))
-    except: pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 再读内存级（优先级更高）
     try:
         if REGISTER_FILE.exists():
             mem = json.loads(REGISTER_FILE.read_text())
             reg.update(mem)
-    except: pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return reg
 
 

@@ -97,8 +97,7 @@ def get_regime():
         _rb_r_m = _rb_get_m('BTCUSDT', layer='MONITOR')
         if _rb_r_m and _rb_r_m != 'UNKNOWN':
             return _rb_r_m
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     """读取当前体制（BTC为主）"""
     # 1. regime_state.json 是按symbol分层的，需读 BTCUSDT.confirmed
     f1 = BASE / 'data' / 'regime_state.json'
@@ -114,8 +113,7 @@ def get_regime():
             r2 = d.get('regime') or d.get('btc_regime')
             if r2 and r2 != 'UNKNOWN':
                 return r2
-    except:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 2. fallback brahma_state.json
     f2 = BASE / 'brahma_brain' / 'brahma_state.json'
     try:
@@ -124,8 +122,7 @@ def get_regime():
             r = d.get('regime') or d.get('btc_regime')
             if r and r != 'UNKNOWN':
                 return r
-    except:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return 'UNKNOWN'
 
 
@@ -144,8 +141,7 @@ def get_top_signal():
                     if today in str(d.get('ts_iso', d.get('ts', ''))):
                         if d.get('valid') and d.get('score', 0) >= 100:
                             signals.append(d)
-                except:
-                    pass
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         if not signals:
             return None
         return max(signals, key=lambda x: x.get('score', 0))
@@ -176,9 +172,7 @@ def get_smc_levels(symbol):
                         'liq_below': d.get('liq_below', ''),
                         'source': 'cache',
                     }
-        except:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # Fallback：用价格结构估算（标注来源为"价格区间估算"）
     try:
         kl = requests.get(f'{API}/fapi/v1/klines',

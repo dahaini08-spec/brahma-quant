@@ -17,6 +17,7 @@ import json, time, sys
 import numpy as np
 from pathlib import Path
 from datetime import datetime, timezone
+import sys
 
 DATA_DIR = Path(__file__).parent.parent / 'data'
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -122,9 +123,7 @@ def predict_regime_proba(symbol: str, klines_4h: list = None) -> dict:
             cached = json.loads(cache_path.read_text())
             if ts_now - cached.get('ts', 0) < 1800:
                 return cached
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 获取K线
     if klines_4h is None:
         try:
@@ -178,9 +177,7 @@ def predict_regime_proba(symbol: str, klines_4h: list = None) -> dict:
     # 写入缓存
     try:
         cache_path.write_text(json.dumps(result, ensure_ascii=False))
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return result
 
 

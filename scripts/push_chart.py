@@ -81,8 +81,7 @@ def push_oi_fr(symbol: str = 'BTCUSDT', caption: str = '') -> bool:
     """推送OI+FR趋势图"""
     try:
         sys.path.insert(0, str(_ROOT))
-# [import_autoclean] 模块不存在，已注释
-# from brahma_brain.chart_renderer import render_oi_fr
+        from brahma_brain.chart_renderer import render_oi_fr
         coin = symbol.replace('USDT', '')
         path = render_oi_fr(symbol)
         if not path:

@@ -18,9 +18,7 @@ OPENROUTER_KEY = os.environ.get('OPENROUTER_API_KEY', '')
 try:
     from free_llm_client import API_KEY
     OPENROUTER_KEY = API_KEY
-except Exception:
-    pass
-
+except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 _ctx = ssl.create_default_context()
 _ctx.check_hostname = True
 _ctx.verify_mode = ssl.CERT_REQUIRED
@@ -117,10 +115,7 @@ def push_jarvis(message: str):
              '--message', message],
             capture_output=True, text=True, timeout=10
         )
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def run(symbols: list, dry_run: bool = False):
     for sym in symbols:
         print(f'[{sym}] 运行现货策略...', flush=True)

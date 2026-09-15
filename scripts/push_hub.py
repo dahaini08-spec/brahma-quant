@@ -22,6 +22,7 @@ push_hub.py — 梵天统一推送模块（subprocess CLI，稳定可靠）
 """
 import json, sys, time, subprocess
 from pathlib import Path
+import sys
 
 # 推送配置（SSOT来自 MEMORY.md）
 JARVIS_USER_ID   = "73295708"
@@ -63,9 +64,7 @@ def push_jarvis(msg: str, timeout: int = 8, retries: int = 3) -> bool:
                 "msg": msg[:500],
             }, ensure_ascii=False) + "\n")
         print(f"[push_hub] 降级写入失败队列: {str(fallback_path)}", file=sys.stderr)
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return False
 
 

@@ -52,9 +52,7 @@ def aggregate_heatmap():
                 elif side == "BUY":          # 空头强平
                     heat[bucket]["short_liq"] += qty * price / 1e6
                 heat[bucket]["count"] += 1
-            except Exception:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {str(k): v for k, v in heat.items()}
 
 def save_heatmap():

@@ -12,7 +12,6 @@ fangcang_builder_30.py — 方仓数据库每日重建脚本
 
 import json
 import glob
-import os
 from pathlib import Path
 from collections import defaultdict
 from datetime import datetime, timezone

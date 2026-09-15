@@ -20,12 +20,12 @@ brahma_brain/disk_cache.py — 统一磁盘缓存层
   brahma_brain/har_rv_engine.py    get_har_rv_score()
 """
 
-import os
 import time
 import pickle
 import hashlib
 import logging
 from pathlib import Path
+import sys
 
 _logger = logging.getLogger('disk_cache')
 
@@ -89,8 +89,7 @@ def disk_clear(prefix: str = ''):
             try:
                 f.unlink()
                 cleared += 1
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return cleared
 
 

@@ -1,0 +1,73 @@
+# 梵天系统cron | 2026-09-13 苏摩111全量审计优化封印
+# 49条→31条 | 1738次/天→612次/天 (-65%) | 傻刷全部清除
+PYTHONDONTWRITEBYTECODE=1
+SQUARE_KEY_0=d9f19e3f6ba3480584db27b09bec0f27
+SQUARE_KEY_1=c43ebad6a8434d1b91a039dbf43fda29
+SQUARE_KEY_2=278f3e81efda4274a1d8e15dbc32ec88
+OPENCLAW_API_KEY=sk-proj-3vqo
+BINANCE_API_KEY=6a5e1c5b34f54b7b8e9c2a3d4e5f6a7b
+BINANCE_SECRET=a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0
+DERIBIT_API_KEY=Zx9aB2cD3eF4gH5i
+DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
+
+# 看门狗（1个，10m）
+*/10 * * * * cd /root/.openclaw/workspace/trading-system && bash scripts/watchdog_round.sh >> logs/watchdog_v2.log 2>&1
+
+# 核心分析（1个，体制1h）
+0 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/regime_realtime_watcher.py >> logs/regime_watcher.log 2>&1
+
+# 基线刷新（1个，每天2次UTC 00:00+12:00）
+0 0,12 * * * cd /root/.openclaw/workspace/trading-system && bash scripts/data_baseline_refresh.sh >> logs/baseline_refresh.log 2>&1
+
+# 采集器保活（2个）
+@hourly cd /root/.openclaw/workspace/trading-system && pgrep -f cvd_ws_collector >/dev/null || setsid python3 scripts/cvd_ws_collector.py >> logs/cvd_ws.log 2>&1 &
+0 * * * * cd /root/.openclaw/workspace/trading-system && pgrep -f liqmap_collector >/dev/null || setsid python3 brahma_brain/liqmap_collector.py >> logs/liqmap.log 2>&1
+
+# 执行链路（3个，30m）
+*/30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 55 bash scripts/run_paper_engine.sh >> logs/syscron.log 2>&1
+*/30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/paper_tp_monitor.py >> logs/syscron.log 2>&1
+*/30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 55 bash scripts/guardian_wrapper.sh >> logs/syscron.log 2>&1
+
+# 维护（7个）
+0 */6 * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_autocheck.py --push >> logs/syscron.log 2>&1
+0 */6 * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/log_rotation.py >> logs/syscron.log 2>&1
+0 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 -c "from brahma_brain.drawdown_tracker import update_drawdown; update_drawdown(); import json,time; d=json.load(open('data/circuit_breaker.json')); d['ts']=time.time(); json.dump(d,open('data/circuit_breaker.json','w'))" >> logs/syscron.log 2>&1
+0 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/cron_health_board.py >> logs/syscron.log 2>&1
+0 */2 * * * python3 -c "import os,glob; [os.remove(f) for f in glob.glob('/tmp/core.*')+glob.glob('/root/core.*') if os.path.exists(f)]" >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+0 */2 * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/session_disk_cleanup.py >> logs/syscron.log 2>&1
+0 3 * * 0 cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_wiring_check.py >> logs/wiring_check.log 2>&1
+
+# AI/反馈（5个）
+0 2 * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/wr_feedback_engine.py >> logs/syscron.log 2>&1
+0 3 * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_data_ttl.py >> logs/syscron.log 2>&1
+0 3 * * * cd /root/.openclaw/workspace/trading-system/brahma_brain && python3 fangcang_builder_30.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+0 3 * * * cd /root/.openclaw/workspace/trading-system && python3 -c "from pathlib import Path; q=Path('data/signal_queue.jsonl'); lines=[l for l in q.read_text().strip().split('\n') if l.strip()] if q.exists() else []; q.write_text('\n'.join(lines[-500:])+'\n') if len(lines)>500 else None" >> logs/syscron.log 2>&1
+0 4 * * 1 cd /root/.openclaw/workspace/trading-system && python3 scripts/ic_feedback_engine.py >> logs/syscron.log 2>&1
+
+# 其他（2个）
+0 16 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/daily_review_llm.py >> logs/daily_review.log 2>&1
+0 12 * * * cd /root/.openclaw/workspace/trading-system && timeout 55 python3 scripts/brahma_screener.py >> logs/syscron.log 2>&1
+
+# Square（9个）
+0 1 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type hot_tickers --no-delay >> logs/syscron.log 2>&1
+0 7 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type top_gainers --no-delay >> logs/syscron.log 2>&1
+0 9 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type pump_alert >> logs/syscron.log 2>&1
+0 11 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type market_summary >> logs/syscron.log 2>&1
+0 13 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type top_losers --no-delay >> logs/syscron.log 2>&1
+0 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square/square_extreme_alert.py >> logs/syscron.log 2>&1
+30 1 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_auto_post.py --sym BTC ETH 2>&1 >> logs/syscron.log
+30 9 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_auto_post.py --sym BTC ETH 2>&1 >> logs/syscron.log
+0 3 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/spot_strategy_square.py --symbols BTC ETH 2>&1 >> logs/syscron.log
+
+# ── 2026-09-14 苏摩111 三方联合：激活闲置扫描器 ──
+# oi_advanced_scanner: 全市场OI高级扫描（A/B/C三类信号），6h运行一次
+0 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/oi_advanced_scanner.py >> logs/oi_advanced.log 2>&1
+# oi_watchlist_monitor: OI watchlist触发条件检测，2h运行一次
+0 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/oi_watchlist_monitor.py >> logs/oi_watchlist.log 2>&1
+# whale_monitor: 鲸鱼大额转账监控，4h运行一次
+0 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/whale_monitor.py >> logs/whale_monitor.log 2>&1
+# liq_heatmap: top 20标的清算热力图，4h运行一次
+0 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/liq_heatmap.py >> logs/liq_heatmap.log 2>&1
+*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 10 python3 brahma_brain/battlefield_intel.py merge >> logs/battlefield_intel.log 2>&1
+*/30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 15 python3 scripts/battlefield_candidates.py >> logs/battlefield_candidates.log 2>&1
+0 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/battlefield_auto_analysis.py >> logs/auto_analysis.log 2>&1

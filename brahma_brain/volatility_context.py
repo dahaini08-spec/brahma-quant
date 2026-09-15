@@ -10,7 +10,6 @@ volatility_context.py — HCME M5波动率历史分位评估
 不依赖外部API，用固定历史基准（来自6.5年历史数据统计）做分位判断。
 """
 
-from typing import Optional
 
 # ── 历史基准（来自6.5年BTC/ETH数据，ATR为价格占比，BBW为BB宽度比） ──
 # ATR1H占价格比：p10=0.0008, p25=0.0012, p50=0.0020, p75=0.0035, p90=0.0060

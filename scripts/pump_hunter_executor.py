@@ -60,9 +60,7 @@ def main():
                 e = json.loads(line)
                 if now_ts - e.get('ts', 0) < COOL_SECS:
                     processed[e['symbol']] = e['ts']
-            except Exception:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 筛选 exec_eligible 且未冷却的信号
     candidates = [
         (sym, v) for sym, v in push_data.items()
@@ -132,8 +130,7 @@ def main():
                 # 推送苏摩
                 try:
                     _push_to_jarvis(sym, score, w_score, br_score, br.get('params', {}))
-                except Exception:
-                    pass
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             else:
                 print(f"    ⏸ 主信号未达标: score={br_score}<{BRAHMA_MIN} 或 timing={br_timing}")
 
@@ -166,9 +163,6 @@ def _push_to_jarvis(sym, hunter_score, weighted, brahma_score, params):
             '--to', f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}',
             '--channel', 'jarvis', '--message', msg
         ])
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 if __name__ == '__main__':
     main()

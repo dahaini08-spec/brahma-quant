@@ -275,7 +275,7 @@ def lsr_oi_score(symbol: str, signal_dir: str,
                 'https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
                 params={'symbol': symbol, 'period': '1h', 'limit': 48}, timeout=4
             ).json()
-            _hist = [float(x['longAccountRatio'])*100 for x in _lr]
+            _hist = [float(x.get('longAccount', x.get('longAccountRatio', 0.5)))*100 for x in _lr]
             if len(_hist) >= 8:
                 _mean = sum(_hist)/len(_hist)
                 _std  = _m.sqrt(sum((x-_mean)**2 for x in _hist)/len(_hist))
@@ -290,8 +290,7 @@ def lsr_oi_score(symbol: str, signal_dir: str,
                 elif signal_dir == 'SHORT' and _z >= LSR_ZSCORE_HIGH:
                     s_lsr += 5
                     note_lsr += f' [Z={_z:.2f}空头燃料+5]'
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # ───────────────────────────────────────────────────────────
 
         # ── P1-L: Top Trader大户持仓比背离（2026-07-20 苏摩111批准）──────────
@@ -322,9 +321,7 @@ def lsr_oi_score(symbol: str, signal_dir: str,
                     elif signal_dir == 'LONG' and _divergence < -10:
                         _top_trader_bonus = -4
                         _top_note = f'大户空头领先{abs(_divergence):.0f}%→LONG-4'
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         s_lsr += _top_trader_bonus
         # 总分（两个维度加总，上下限±20）
         total = int(max(MAX_PENALTY, min(MAX_BONUS, s_lsr + s_oi)))

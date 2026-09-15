@@ -14,8 +14,9 @@ brahma_parallel_engine.py — 梵天并行引擎层
 
 import time
 import threading
-from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError
-from typing import Callable, Optional
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Optional
+import sys
 
 # 最大并发工作线程（内存87%，控制并发避免OOM）
 _MAX_WORKERS = 8
@@ -135,9 +136,7 @@ def pump_hunter_parallel_scan(symbols: list = None) -> list:
                     # 接入梵天体制加权
                     enhanced = pump_to_brahma_score(alert, BTC_regime)
                     alerts.append(enhanced)
-            except Exception:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return sorted(alerts, key=lambda x: x.get('brahma_weighted_score', 0), reverse=True)
 
 
@@ -169,7 +168,6 @@ def market_wide_scan(min_score: int = 120, regime_filter: str = None) -> list:
     返回：所有 score >= min_score 的有效信号（排序）
     """
     import requests
-    from brahma_brain.universal_asset_router import apply_asset_routing
 
     # 获取候选池（screener分数 >= 50）
     try:
@@ -238,9 +236,7 @@ def batch_analyze_with_regime(symbols: list, max_workers: int = _MAX_WORKERS) ->
                     _reg_map[sym] = None
                 if _reg_map[sym]:
                     pass  # [静默]
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     results = {}
     with ThreadPoolExecutor(max_workers=max_workers) as ex:
         futs = {ex.submit(analyze, sym, _reg_map.get(sym)): sym for sym in symbols}

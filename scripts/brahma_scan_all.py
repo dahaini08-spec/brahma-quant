@@ -126,8 +126,7 @@ elif args.candidates:
             s = r['symbol']
             if s not in symbols:
                 symbols.append(s)
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 源B: pre_filter输出（全市圶65个零成本预筛）
     pf_path = BASE / 'data' / 'pre_filter_candidates.json'
     try:
@@ -136,14 +135,35 @@ elif args.candidates:
             s = r['symbol']
             if s not in symbols:
                 symbols.append(s)
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if not symbols:
         symbols = FAST_SYMBOLS
 elif args.full:
     symbols = ALL_SYMBOLS
 else:
-    symbols = FAST_SYMBOLS
+    # 2026-09-14 苏摩111 默认模式改为动态候选池（FAST_SYMBOLS + screener候选 + ai_pro候选）
+    symbols = list(FAST_SYMBOLS)
+    # 源A: market_screener输出
+    cand_path = BASE / 'data' / 'scan_candidates.json'
+    try:
+        cand_data = json.loads(cand_path.read_text())
+        for r in cand_data.get('candidates', []):
+            s = r['symbol']
+            if s not in symbols:
+                symbols.append(s)
+    except Exception:
+        pass
+    # 源B: ai_pro_screener输出
+    _aip_path = BASE / 'data' / 'ai_pro_candidates.json'
+    if _aip_path.exists():
+        try:
+            _aip_data = json.loads(_aip_path.read_text())
+            for c in _aip_data.get('candidates', [])[:10]:
+                s = c['symbol']
+                if s not in symbols:
+                    symbols.append(s)
+        except Exception:
+            pass
 
 pass  # [静默]
 t0 = time.time()

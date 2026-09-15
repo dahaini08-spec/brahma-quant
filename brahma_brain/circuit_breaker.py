@@ -26,6 +26,7 @@ from pathlib import Path
 from typing import Any, Callable, Optional
 from dataclasses import dataclass, field
 from enum import Enum
+import sys
 
 logger = logging.getLogger('brahma.circuit_breaker')
 BASE = Path(__file__).parent.parent
@@ -101,9 +102,7 @@ class CircuitBreaker:
                 json.dump(data, f)
             import os
             os.replace(tmp, str(self._state_file))
-        except Exception:
-            pass
-    
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     @property
     def is_open(self) -> bool:
         """当前是否熔断"""

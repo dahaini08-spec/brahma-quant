@@ -24,8 +24,7 @@ def _ema(values, n):
         sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'brahma_brain'))
         from math_utils import ema as _mu
         return _mu(values, n)
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if not values: return 0
     e = values[0]; k = 2 / (n + 1)
     for v in values[1:]: e = v * k + e * (1 - k)

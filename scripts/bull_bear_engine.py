@@ -50,8 +50,7 @@ def _rsi(c, n=14):
         sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'brahma_brain'))
         from math_utils import calc_rsi as _mu
         return round(_mu(c, n), 1)
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if len(c) < n + 1: return 50.0
     g = [max(c[i]-c[i-1], 0) for i in range(1, len(c))]
     lo = [max(c[i-1]-c[i], 0) for i in range(1, len(c))]
@@ -85,9 +84,7 @@ def debate(symbol: str, price: float = 0) -> dict:
             else:
                 t = _fetch(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}')
                 price = float(t.get('price', 0))
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     c1, h1, l1, v1 = _klines(sym, '1h', 48)
     c4, h4, l4, v4 = _klines(sym, '4h', 20)
     c1d, _, _, _ = _klines(sym, '1d', 10)

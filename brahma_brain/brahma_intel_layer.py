@@ -11,10 +11,9 @@ brahma_intel_layer.py — 梵天智慧层 v1.0
 太极原则：指标（现在）× 经验（历史）= 智慧（行动）
 """
 
-from __future__ import annotations
-from typing import Optional
 import json, time, os
 from pathlib import Path
+import sys
 
 # ── 情境类型定义 ─────────────────────────────────────────────────
 PATTERN_INDUCING_LONG   = '诱多派发型'   # 主力拉高出货
@@ -273,10 +272,7 @@ def record_analysis(symbol: str, price: float, hcme_wr: float,
 
         _MEMORY_FILE.parent.mkdir(exist_ok=True)
         _MEMORY_FILE.write_text(json.dumps(memory, ensure_ascii=False, indent=2))
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def get_today_timeline(symbol: str) -> list:
     """获取今日该标的的分析时间线"""
     try:

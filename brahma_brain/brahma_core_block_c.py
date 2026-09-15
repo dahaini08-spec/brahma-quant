@@ -22,9 +22,6 @@ s_research: 研究增强层 [timesfm_lite缺失→归零]
 输入: ms, smc, signal_dir, extra_data, score, breakdown
 输出: dict {维度分数..., score, breakdown}
 """
-import sys
-import math
-import datetime
 
 # ─── 进程内 TTL 缓存（防止每次评分发 HTTP）────────────────────────────────
 import time as _time_bc

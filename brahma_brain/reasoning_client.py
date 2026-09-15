@@ -21,7 +21,6 @@ reasoning_client.py — 梵天 LLM 推理客户端
 import subprocess
 import json
 import re
-import os
 from pathlib import Path
 
 BASE = Path(__file__).parent.parent
@@ -72,9 +71,7 @@ def call_reasoning(prompt: str, max_tokens: int = 200,
                 return result.stdout.strip()
     except subprocess.TimeoutExpired:
         pass
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── 方案2: OpenRouter (key 完整时) ────────────────────────────────────
     try:
         cfg_path = BASE / 'config' / 'omniroute.json'
@@ -100,9 +97,7 @@ def call_reasoning(prompt: str, max_tokens: int = 200,
                 )
                 if r.status_code == 200:
                     return r.json()['choices'][0]['message']['content']
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── 方案3: 规则降级 ───────────────────────────────────────────────────
     return _rule_fallback(prompt)
 
@@ -166,9 +161,7 @@ def reasoning_gate(result: dict, inject_context: bool = True) -> dict:
                 symbol, regime, signal_dir, ms,
                 include_cases=False, max_chars=800
             )
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── 构建LLM提示词 ─────────────────────────────────────────────
     score_str = f'{score:.0f}'
     bd_str = ''

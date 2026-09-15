@@ -57,8 +57,7 @@ def _load_feat_cache(symbol: str, tf: str) -> list:
                 data = _pkl.load(f)
             _FEAT_CACHE[key] = (time.time(), data)
             return data
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return []
 
 def _save_feat_cache(symbol: str, tf: str, feats: list) -> None:
@@ -68,9 +67,7 @@ def _save_feat_cache(symbol: str, tf: str, feats: list) -> None:
     try:
         with open(cache_file,'wb') as f:
             _pkl.dump(feats, f)
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 _DATA_DIR_BACKTEST = _BASE / "data" / "backtest"
 
 # ── 缓存层（内存级，TTL=60min，15m扫描较慢故延长）─────────────────────────
@@ -132,8 +129,7 @@ def _load_klines_native(symbol: str, tf: str) -> List[dict]:
                 try:  # 写pkl（失败不影响）
                     with open(_pkl_path,'wb') as _pf:
                         _pkl.dump(raw, _pf, protocol=4)
-                except Exception:
-                    pass
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             _KLINES_NATIVE_CACHE[_cache_key] = (_mtime, raw)
         if _TAIL_LIMIT and len(raw) > _TAIL_LIMIT:
             raw = raw[-_TAIL_LIMIT:]
@@ -176,16 +172,14 @@ def _load_klines(symbol: str, tf: str) -> List[dict]:
         if _disk_val is not None:
             _KLINES_CACHE[_cache_key] = {'data': _disk_val, 'ts': _now_k}
             return _disk_val
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     bars = _load_klines_native(symbol, tf)
     if bars:
         _KLINES_CACHE[_cache_key] = {'data': bars, 'ts': _now_k}
         try:
             from disk_cache import disk_set as _ds, TTL_KLINES as _TTL_K
             _ds(_cache_key, bars)
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         return bars
     # fallback: 旧路径 jsonl.gz 格式
     path = _DATA_DIR_LEGACY / f"{symbol}_{tf}.jsonl.gz"
@@ -202,8 +196,7 @@ def _load_klines(symbol: str, tf: str) -> List[dict]:
         try:
             from disk_cache import disk_set as _ds, TTL_KLINES as _TTL_K
             _ds(_cache_key, bars)
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         return bars
     except Exception:
         return []
@@ -957,9 +950,7 @@ def get_fangcang_context(
                 symbol=_sym if _sym in ('BTC','ETH','SOL') else None,
                 top_k=20,
             )
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # TOP3文字摘要
         top3_lines = []
         for s in top_similar[:3]:
@@ -982,7 +973,7 @@ def get_fangcang_context(
                 for _p5 in [_sp5, _sp5b]:
                     if _p5 not in _sys5.path:
                         _sys5.path.insert(0, _p5)
-                from free_llm_client import _call_openrouter as _llm_hcme
+                from free_llm_client import chat as _llm_hcme  # [9.15修复] _call_openrouter已改为chat
                 _case_lines = []
                 for _s in top_similar[:3]:
                     _arrow = '上涨' if _s['future_ret'] > 0 else '下跌'
@@ -997,8 +988,7 @@ def get_fangcang_context(
                 _llm_mirror = _llm_hcme(_mirror_prompt, max_tokens=45)
                 if _llm_mirror:
                     _llm_mirror = _llm_mirror.strip()[:80]
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # ── end P2-3 ─────────────────────────────────────────────────────
 
         # 陷阱预警（综合）
@@ -1283,9 +1273,7 @@ def _normalize_new_case(d: dict, sym: str) -> dict:
         try:
             from datetime import datetime
             _ts_epoch = datetime.fromisoformat(str(_ts_raw)).timestamp()
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     _direction = str(d.get('direction', '')).upper()
     _ret24h    = float(d.get('future_return_24h', d.get('future_return', 0)) or 0)
 
@@ -1353,9 +1341,7 @@ def _load_fangcang_cases() -> list:
                 if isinstance(raw, list):
                     for d in raw:
                         cases.append(_normalize_new_case(d, sym))
-            except Exception:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     _log.info(f'[fangcang_hcme_bridge] 加载完成: 总{len(cases)}条案例')
     _FANGCANG_CACHE = cases
     _CACHE_LOADED = True
@@ -1625,8 +1611,7 @@ def _load_weights() -> dict:
     try:
         if _WEIGHT_FILE.exists():
             return _json.loads(_WEIGHT_FILE.read_text())
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
 
@@ -1634,10 +1619,7 @@ def _save_weights(w: dict):
     try:
         _WEIGHT_FILE.parent.mkdir(exist_ok=True)
         _WEIGHT_FILE.write_text(_json.dumps(w, ensure_ascii=False))
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def feedback_settlement(symbol: str, signal_dir: str, predicted_hint: str,
                         actual_direction: str, pnl_pct: float) -> dict:
     """
@@ -1801,8 +1783,7 @@ def _get_ath(symbol: str) -> float:
                 ath = max(_safe_float(r[2]) for r in rows)  # col-2 = high
                 _ATH_CACHE[symbol] = ath
                 return ath
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     _ATH_CACHE[symbol] = 0.0
     return 0.0
 
@@ -1852,8 +1833,7 @@ class HCMEMatcher:
                 if len(existing) == len(self.signals):
                     # [2026-09-04 设计院扩展封印] 接入位置: 追加扩展日线案例库
                     return self._append_expanded(existing)
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         base_index = self._build_index()
         return self._append_expanded(base_index)
 
@@ -1872,8 +1852,7 @@ class HCMEMatcher:
             if _mem_avail_mb < 2048:
                 print(f"[HCME] 内存不足({_mem_avail_mb}MB<2048MB)，跳过扩展案例库(3890条，省~800MB)")
                 return base_index
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         try:
             with open(HCME_EXPANDED_INDEX_PATH) as f:
                 expanded = json.load(f)
@@ -2842,9 +2821,7 @@ def _get_cases_adj(symbol: str, ms: dict, signal_dir: str, regime: str) -> tuple
                 adj += 1.5
             elif 0 < _avg_burst < 0.5:
                 adj -= 3.0   # 平均弱突破惩罚
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         adj = max(MIN_ADJ, min(MAX_ADJ, adj))
 
         # 样本量权重（n越多越可信）

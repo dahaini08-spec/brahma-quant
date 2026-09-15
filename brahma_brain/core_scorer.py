@@ -8,10 +8,8 @@ core_scorer.py — confluence_score() 独立可测试适配层
 2. 调用confluence_score()并捕获所有异常
 3. 返回标准化的ScoreResult，外部无需知道内部block结构
 """
-from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
 
 
 @dataclass

@@ -1190,7 +1190,6 @@ smc_resonance.py — 梵天强制前置链路模块
 接入位置：brahma_full_report.run_full_analysis() 精度执行层之后
 """
 
-from typing import Optional
 
 
 # ─────────────────────────────────────────────
@@ -1240,15 +1239,13 @@ def run_smc_resonance(r: dict) -> dict:
                     _f['tf'] = _tag
                     _f['source'] = _tag
                     _mtf_bear.append(_f)
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # 合并后替换fvg_data
         fvg_data = dict(fvg_data)
         fvg_data['bull_fvg'] = _mtf_bull
         fvg_data['bear_fvg'] = _mtf_bear
         fvg_data['_mtf_enabled'] = True
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── end MTF FVG ──
 
     liq_heat = r.get('_liq_heatmap', {})
@@ -1713,8 +1710,6 @@ structure_quality_engine.py — 结构质量引擎 v1.0
   X (0-29):   无结构，入场区≈现价，拒绝
 """
 
-import math
-from typing import Optional
 
 # ── 结构等级定义 ─────────────────────────────────────────────────────────────
 GRADE_S = 90   # FVG+OB双重
@@ -2848,9 +2843,7 @@ def divergence_score(opens: list, highs: list, lows: list,
             if weekday in (5, 6):  # 周六/周日
                 vol_bonus += 2
                 time_note += ' ✅周末加成+2（实训胜率55-80%）'
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── 体制切换检测（单边牛市降权）───────────────────────────
     regime_penalty = 0
     regime_note = ''

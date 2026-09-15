@@ -36,6 +36,7 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
 
     Returns: dict with s7-s10, score, breakdown
     """
+    _sym = ms.get('symbol', '')  # [9.15修复] block_b需要symbol但从未定义
     # ── 维度7：清算带/OI（0~10）────────────────────────────────
     oi  = ms['sentiment']['oi']
     s7  = 0
@@ -97,8 +98,7 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
     # ── s7增强层①: orderbook_heatmap 订单簿大单压力（权重升级 2026-07-01）──────────────
     # 否决权: ASK/BID>10倍做多 → -20分，允许负分传递到 score（不 clip 0）
     try:
-# [import_autoclean] 模块不存在，已注释
-# from brahma_brain.orderbook_heatmap import get_ob_score as _ob_score
+        from brahma_brain.orderbook_heatmap import get_ob_score as _ob_score
         _ob_pts, _ob_desc = _ob_score(_sym, signal_dir)
         if _ob_pts != 0:
             if _ob_pts < 0:  # 否决权场景：允许负分流入总分，不 clip
@@ -128,15 +128,15 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
     # 封印：s7全局上限=20（设计上限10→适度放开20，但禁止三层叠加超额）
     #       下限=-20（已有，保留否决权机制）
     s7 = max(-20, min(20, s7))
-    # [达摩院v6.0 2026-09-09 苏摩111] s7 清算/OI IC=-0.0131 → 降为信息层
-    breakdown['清算/OI'] = s7  # 信息层展示，不计分
+    # [9.15苏摩111 恢复s7计分] 达摩院v6.0因IC=-0.0131降权 → 但清算地图是SMC核心组件
+    breakdown['清算/OI'] = s7  # 恢复计分
+    score += s7
 
     # ── s7增强层③: bybit_liq_adapter L/S拥挤度补充（2026-08-09 设计院接入）──
     # 独立于liq_density_engine，提供L/S拥挤度方向性信号
     # LONG_CROWDED(ratio>1.5) 做空 +3 / SHORT_CROWDED(ratio<0.7) 做多 +3
     try:
-# [import_autoclean] 模块不存在，已注释
-# from brahma_brain.bybit_liq_adapter import get_ls_ratio_signal as _bla_ls
+        from brahma_brain.bybit_liq_adapter import get_ls_ratio_signal as _bla_ls
         _bla = _bla_ls(_sym)
         _bla_pressure = _bla.get('liq_pressure', 'BALANCED')
         _bla_delta = 0
@@ -184,7 +184,9 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
         _oc_bonus = 0
     # ── 维度8：资金费率+情绪（0~10）──────────────────────────────
     fr = ms['sentiment']['funding_rate']
-    if extra_data and extra_data.get('sentiment'):
+    if extra_data and extra_data.get('sentiment_nlp'):
+        s8_base = extra_data['sentiment_nlp'].get('score', 0)
+    elif extra_data and extra_data.get('sentiment'):
         s8_base = extra_data['sentiment'].get('score', 0)
     else:
         s8_base = 0

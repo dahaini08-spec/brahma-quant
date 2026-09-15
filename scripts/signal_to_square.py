@@ -218,9 +218,7 @@ def get_latest_sqe_signal() -> dict | None:
                     entry = json.loads(line)
                     if entry.get('success'):
                         posted_ts.add(entry.get('ts'))
-                except Exception:
-                    pass
-
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 读取信号日志，找最新未发布的高质量信号
     signals = []
     with open(SIGNAL_LOG) as f:
@@ -229,9 +227,7 @@ def get_latest_sqe_signal() -> dict | None:
                 s = json.loads(line.strip())
                 if isinstance(s, dict) and s.get('score', 0):
                     signals.append(s)
-            except Exception:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if not signals:
         return None
 

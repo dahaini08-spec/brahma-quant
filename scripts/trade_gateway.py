@@ -42,7 +42,7 @@ try:
     JARVIS_TARGET = os.environ.get('JARVIS_TARGET', _SSOT_T)
 except Exception:
     JARVIS_TARGET = os.environ.get('JARVIS_TARGET', '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6')
-MIN_WEIGHTED  = 110   # 同 signal_selector 门槛（BEAR_RECOVERY LONG特例:95）
+MIN_WEIGHTED  = 60    # 同 signal_selector 门槛 [P0同步 2026-09-13] 110→60
 
 # 推送去重：同symbol+direction 6H内不重复推送
 # [v25.3-fix] 改为持久化文件，避免进程重启后冷却清零
@@ -55,8 +55,7 @@ def _load_dedup() -> dict:
         if _DEDUP_FILE.exists():
             with open(_DEDUP_FILE) as f:
                 return json.load(f)
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
 def _save_dedup(d: dict) -> None:
@@ -66,9 +65,7 @@ def _save_dedup(d: dict) -> None:
     try:
         with open(_DEDUP_FILE, 'w') as f:
             json.dump(cleaned, f)
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 _push_dedup = _load_dedup()  # 启动时从文件恢复
 
 

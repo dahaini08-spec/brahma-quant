@@ -159,10 +159,7 @@ def _append_regime_history(old_regime: str, new_regime: str, trigger: str = ''):
             history = history[-200:]
         with open(REGIME_HISTORY_FILE, 'w') as f:
             json.dump(history, f, ensure_ascii=False, indent=2)
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def save_state(state):
     os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
     # [设计院 2026-07-06] 同步写入ETH体制
@@ -234,7 +231,7 @@ def save_state(state):
                 import sys as _sys_rb; _sys_rb.path.insert(0, os.path.join(BASE_DIR,'scripts'))
                 from regime_bus import update as _rb_upd_w
                 _rb_upd_w('BTCUSDT', _new_regime, 'CONFIRMED', 'btc_regime_watcher', score=0)
-            except Exception: pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     except Exception as _e_sync:
         pass  # 同步失败不影响主流程
     # ─────────────────────────────────────────────────────────────────────────
@@ -249,10 +246,7 @@ def push_alert(msg):
              '--message', msg],
             capture_output=True, text=True, timeout=15
         )
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def trigger_position_check():
     """触发持仓体制匹配检查"""
     try:

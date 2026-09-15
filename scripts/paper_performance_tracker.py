@@ -98,7 +98,7 @@ def _update_account(pnl_pct: float, is_win: bool):
 def _load_account() -> dict:
     if PAPER_ACC.exists():
         try: return json.loads(PAPER_ACC.read_text())
-        except: pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {'mode': 'PAPER_LIVE', 'start_nav': 100.0, 'current_nav': 100.0,
             'peak_nav': 100.0, 'total_trades': 0, 'win_trades': 0,
             'loss_trades': 0, 'total_pnl_pct': 0.0, 'max_drawdown_pct': 0.0}
@@ -111,8 +111,7 @@ def generate_performance_report() -> str:
     if PAPER_TRADES.exists():
         for l in PAPER_TRADES.read_text().strip().splitlines():
             try: trades.append(json.loads(l))
-            except: pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     n       = len(trades)
     wins    = [t for t in trades if t.get('is_win')]
     losses  = [t for t in trades if not t.get('is_win')]
@@ -207,8 +206,7 @@ def get_quick_stats() -> dict:
     if PAPER_TRADES.exists():
         for l in PAPER_TRADES.read_text().strip().splitlines():
             try: trades.append(json.loads(l))
-            except: pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     n    = len(trades)
     wins = sum(1 for t in trades if t.get('is_win'))
     wr   = wins / n if n > 0 else 0

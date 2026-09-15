@@ -34,11 +34,10 @@ llm_council_bridge.py — 梵天 LLM 议会二次审查层 v1.0
 # 当前运行在shadow模式，记录建议但不修改score
 # LAST_REVIEW: 2026-07-01 | 设计院初次封印
 
-from __future__ import annotations
 import os, json, time, hashlib, logging
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple
 try:
     from reasoning_client import call_reasoning as _call_reasoning_global
 except ImportError:
@@ -155,8 +154,7 @@ def _load_cache() -> Dict:
     if CACHE_FILE.exists():
         try:
             return json.loads(CACHE_FILE.read_text())
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
 
@@ -282,9 +280,7 @@ def _risk_agent_review(signal: Dict) -> Dict:
                 _liq_below_str = f'${_bl[0][0]:,.0f}(-{(_cur_px-_bl[0][0])/_cur_px*100:.1f}%, ${_bl[0][1]/1e6:.0f}M)'
             _liq_bias_str = _ld.get('liq_bias', 'NEUTRAL')
             _liq_src_str  = _ld.get('sources', 'N/A')
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     prompt = RISK_AGENT_PROMPT.format(
         symbol=symbol, direction=direction, score=score, regime=regime,
         key_level_score=key_level_score,
@@ -642,9 +638,7 @@ def review(
                 'macro_score': ctx['macro_score'], 'macro_note': str(ctx.get('macro_note',''))[:80],
                 'dxy': ctx.get('dxy', 100),
             }
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # [P1 2026-08-30 苏摩111] 实时BTC/ETH价格注入MacroAgent
     # AI-Trader论文铁证：实时数据 > 快照，让MacroAgent看到当前市场位置
     try:
@@ -689,9 +683,7 @@ def review(
                     'recent_wr': round(_recent_wr, 1),
                     'summary': f'最近{len(_similar)}条{_regime_key}{_dir_key}: WR={_recent_wr:.1f}% TP={_tp} SL={_sl}',
                 }
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # [P2修复 2026-08-26] 轻量模式: score 120-139 仅运行RiskAgent单专家，节省token成本
     _is_lite_mode = (score < SCORE_TRIGGER_FULL)
 
@@ -928,9 +920,7 @@ def get_shadow_stats() -> Dict:
         for line in f:
             try:
                 records.append(json.loads(line.strip()))
-            except Exception:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if not records:
         return {'status': 'empty', 'n': 0}
 

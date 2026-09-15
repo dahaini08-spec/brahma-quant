@@ -25,9 +25,7 @@ _BASE = Path(__file__).parent
 sys.path.insert(0, str(_BASE))
 
 import json
-import time
 import requests
-from functools import lru_cache
 
 
 # ── 工具：拉取K线 ──────────────────────────────────────────────
@@ -37,8 +35,7 @@ def _fetch_klines(symbol: str, interval: str, limit: int = 200) -> list:
         raw = _dc(symbol, interval, limit)
         if raw and isinstance(raw, list) and len(raw) >= 3:
             return raw
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     try:
         url = 'https://fapi.binance.com/fapi/v1/klines'
         r = requests.get(url, params={'symbol': symbol, 'interval': interval,

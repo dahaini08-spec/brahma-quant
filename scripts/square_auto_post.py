@@ -17,6 +17,7 @@ v2.0变更：
 import json, os, ssl, sys, time, urllib.request
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
+import sys
 
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE / "scripts"))
@@ -65,8 +66,7 @@ def _is_duplicate(content: str) -> bool:
             d = {k: v for k, v in d.items() if now - v < 86400}
             if h in d:
                 return True
-        except:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return False
 
 
@@ -77,8 +77,7 @@ def _mark_posted(content: str):
     if DEDUP_FILE.exists():
         try:
             d = json.loads(DEDUP_FILE.read_text())
-        except:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     now = time.time()
     d = {k: v for k, v in d.items() if now - v < 86400}
     d[h] = now

@@ -15,7 +15,6 @@ brahma_brain · Phase 2
   - 成交量分布（简化Volume Profile）
   - 量能综合评分（0~20分）
 """
-import math
 
 # ═══════════════════════════════════════════════════════════════
 # 一、OBV（能量潮）
@@ -317,7 +316,6 @@ if __name__ == '__main__':
 ╚══════════════════════════════════════════════════════════════════╝
 """
 import statistics
-from typing import Optional
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -967,8 +965,7 @@ def _aggTrades_cvd(symbol: str) -> float:
             age = time.time() - snap.get('ts', 0)
             if age < 120:  # 2分钟内的快照视为新鲜
                 return float(snap.get('cvd_5m', snap.get('cvd_1h', 0.0)))
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ② 降级：REST aggTrades（原始逻辑）
     url = f"{FAPI}/fapi/v1/aggTrades?symbol={symbol}&limit=500"
     trades = _get(url, ttl=15)
@@ -1045,9 +1042,7 @@ def get_multi_tf_cvd(symbol: str) -> dict:
             _d = _json_ws.loads(_ws_path.read_text())
             if _time_ws.time() - _d.get('ts', 0) < 120:
                 _ws_snap = _d
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 当前价格趋势（1H）
     k1h = _get(f"{FAPI}/fapi/v1/klines?symbol={sym}&interval=1h&limit=6", ttl=60)
     if k1h and len(k1h) >= 2:

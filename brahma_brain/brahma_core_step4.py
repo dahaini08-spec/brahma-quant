@@ -274,10 +274,8 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     try:
         from sentiment_engine import get_sentiment_score as _sent_fn
         sent = _sent_fn(
-            symbol, signal_dir,
-            ms['sentiment']['funding_rate'],
-            ms['sentiment']['long_short_ratio']
-        )
+            ms or {}, signal_dir
+        )  # [9.15修复] get_sentiment_score只接受(ms, signal_dir)2参数
         extra_data['sentiment'] = sent
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=_s4_sys.stderr)
     # P1b/P2c/P2d: 链上+订单流+宏观 并发执行（原串行3×~1s → 并发后只需最慢1个）

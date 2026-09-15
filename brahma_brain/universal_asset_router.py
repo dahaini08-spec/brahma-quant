@@ -17,8 +17,6 @@ universal_asset_router.py — 梵天通用资产路由器
 """
 
 import time
-import re
-from typing import Optional
 
 # ─────────────────────────────────────────────────────────
 # 一、资产分类器
@@ -349,9 +347,7 @@ def apply_asset_routing(result: dict) -> dict:
             if _bb_ca not in _sys_ca.path: _sys_ca.path.insert(0, _bb_ca)
             from commodity_adapter import apply_commodity_filter as _ca_filter
             result = _ca_filter(result)
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return result
 
 

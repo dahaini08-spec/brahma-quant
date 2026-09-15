@@ -23,7 +23,6 @@ dag_executor.py — 轻量DAG执行器
   - 未在config中声明的维度保持原样（不丢信息）
 """
 import json
-import time
 from pathlib import Path
 
 CONFIG_FILE = Path(__file__).parent.parent / 'data' / 'scoring_config.json'

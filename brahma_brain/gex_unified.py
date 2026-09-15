@@ -23,7 +23,6 @@ import time
 import urllib.request
 import urllib.error
 import re
-import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -103,9 +102,7 @@ def compute_gex(currency: str = 'BTC',
             if (time.time() - cached.get('_ts', 0)) < CACHE_TTL and \
                cached.get('currency') == currency:
                 return cached
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── 获取期权汇总 ──────────────────────────────────────
     data = _deribit_get(
         f'get_book_summary_by_currency?currency={currency}&kind=option'
@@ -188,9 +185,7 @@ def compute_gex(currency: str = 'BTC',
     # 缓存
     try:
         CACHE_F.write_text(json.dumps(result, ensure_ascii=False))
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return result
 
 
@@ -658,10 +653,7 @@ def scan_gex(currency: str = 'BTC', force: bool = False) -> dict:
             if age < CACHE_TTL_SEC:
                 pass  # [静默]
                 return cached
-        except Exception:
-            pass
-
-    pass  # [静默]
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     t0 = time.time()
 
     # 获取数据
@@ -690,8 +682,7 @@ def scan_gex(currency: str = 'BTC', force: bool = False) -> dict:
     if _GEX_STATE_FILE.exists():
         try:
             state = json.loads(_GEX_STATE_FILE.read_text())
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     state[currency] = profile
     _GEX_STATE_FILE.write_text(json.dumps(state, indent=2))
 

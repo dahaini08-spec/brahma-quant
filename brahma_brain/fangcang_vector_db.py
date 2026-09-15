@@ -11,12 +11,12 @@ fangcang_vector_db.py — 历史引擎向量统计接口
 接口与原fangcang_vector_db保持一致（兼容brahma_wiring_check注册表）。
 """
 
-import os
 import json
 import math
 import time
 from pathlib import Path
 from typing import Optional
+import sys
 
 BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / 'data'
@@ -97,9 +97,7 @@ def query_stats(
             if age < 86400 * 7:  # 7天内有效
                 with open(HCME_INDEX_PATH) as f:
                     index = json.load(f)
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if not index:
         return empty
 

@@ -129,8 +129,7 @@ def get_sess_disk_mb() -> float:
     for f in SESS_DIR.iterdir():
         try:
             total += f.stat().st_size
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return total / 1024 / 1024
 
 
@@ -165,9 +164,7 @@ def main():
                 f"释放: {freed}MB / {result['removed_files']}个孤儿文件\n"
                 f"当前Sessions目录: {result['disk_after_mb']}MB"
             )
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return result
 
 

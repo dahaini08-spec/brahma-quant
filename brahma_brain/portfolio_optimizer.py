@@ -31,7 +31,6 @@ portfolio_optimizer.py — 梵天投资组合层优化器 v1.0
 # LAST_REVIEW: 2026-07-01 | 设计院初次封印
 # ─────────────────────────────────────────────────────────────
 
-from __future__ import annotations
 import json, time, logging
 import numpy as np
 import pandas as pd

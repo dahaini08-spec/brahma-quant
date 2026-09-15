@@ -1,1 +1,34 @@
-[]
+[
+  {
+    "symbol": "BTCUSDT",
+    "direction": "SHORT",
+    "entry_price": 78458,
+    "sl_price": 80300,
+    "sl_pct": 2.35,
+    "tp1": 76300,
+    "tp2": 75000,
+    "leverage": 10,
+    "nav_pct": 5,
+    "score": 120,
+    "regime": "CHOP_MID",
+    "source": "square_post_366420356749874",
+    "logic_line": "FVG\u78c1\u94c178193+\u6b62\u635f\u589978458\u53d7\u963b+OI SHORT_BUILD\u5171\u632f",
+    "vip_status": "ENTER"
+  },
+  {
+    "symbol": "XAUUSDT",
+    "direction": "SHORT",
+    "entry_price": 4400,
+    "sl_price": 4490,
+    "sl_pct": 2.0,
+    "tp1": 4300,
+    "tp2": 4280,
+    "leverage": 5,
+    "nav_pct": 3,
+    "score": 115,
+    "regime": "CHOP_MID",
+    "source": "square_post_366422054217164",
+    "logic_line": "\u5b9e\u9645\u5229\u7387price in+\u592e\u884c\u8d2d\u91d1\u653e\u7f13+RSI\u8d85\u4e70",
+    "vip_status": "ENTER"
+  }
+]

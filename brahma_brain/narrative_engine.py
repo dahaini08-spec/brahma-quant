@@ -14,7 +14,6 @@ narrative_engine.py — B3市场叙事识别引擎
 
 叙事修正接入 position_sizer.get_position_pct()。
 """
-from __future__ import annotations
 import json, os, sys
 from pathlib import Path
 
@@ -31,8 +30,7 @@ def _load_macro_state() -> dict:
         path = BASE / 'data' / 'macro_state.json'
         if path.exists():
             return json.loads(path.read_text())
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
 
@@ -99,9 +97,7 @@ def get_narrative_score(symbol: str) -> dict:
                 fg_val = int(_fg.get('value', 50))
             elif _fg is not None:
                 fg_val = int(_fg)
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 更新FG历史（叙事破裂检测）
     _update_fg_history(fg_val)
 
@@ -112,9 +108,7 @@ def get_narrative_score(symbol: str) -> dict:
         ms = _load_macro_state()
         macro_bias = ms.get('macro_bias', 'NEUTRAL') or 'NEUTRAL'
         macro_note = ms.get('macro_note', '') or ''
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── 叙事方向 ─────────────────────────────────────────────────
     # FG极值解读（逆向思维）
     if fg_val <= 20:
@@ -200,9 +194,7 @@ def get_crowd_sentiment(symbol: str) -> dict:
     try:
         from data_cache import get_long_short_ratio as _get_lsr
         lsr_pct = float(_get_lsr(symbol))
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if lsr_pct >= 70:
         # 多头极拥挤（散户做多超70%） → 反向看空
         lsr_score = -40
@@ -233,9 +225,7 @@ def get_crowd_sentiment(symbol: str) -> dict:
     try:
         from data_cache import get_funding_rate as _get_fr
         fr = float(_get_fr(symbol))
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if fr > 0.01:
         # 多头付钱偏贵 → 多头过热
         fr_score = -30
@@ -269,9 +259,7 @@ def get_crowd_sentiment(symbol: str) -> dict:
         oi_data = _get_oi(symbol)
         oi_change = float(oi_data.get('oi_change_pct', 0.0))
         oi_momentum = oi_data.get('oi_momentum', 'NEUTRAL')
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if oi_change >= 3.0:
         # OI大幅上升 → 新资金涌入，趋势加强
         oi_score = +20
@@ -474,7 +462,7 @@ macro_calendar.py — 宏观事件日历引擎
 import json
 import time
 import requests
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from pathlib import Path
 
 CACHE_FILE = Path(__file__).parent.parent / 'data' / 'macro_cal_cache.json'
@@ -536,8 +524,7 @@ def _load_cache() -> dict:
             c = json.loads(CACHE_FILE.read_text())
             if time.time() - c.get('ts', 0) < CACHE_TTL:
                 return c
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
 
@@ -545,10 +532,7 @@ def _save_cache(data: dict):
     try:
         CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
         CACHE_FILE.write_text(json.dumps({**data, 'ts': time.time()}))
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def _get_fng() -> dict:
     """恐贪指数"""
     cached = _load_cache()
@@ -567,8 +551,9 @@ def _get_fng() -> dict:
 
 def _get_btc_dominance() -> float:
     """BTC主导率"""
+    # [果蝇架构修复 2026-09-13 苏摩111] 缩短超时+静默降级
     try:
-        r = requests.get('https://api.coingecko.com/api/v3/global', timeout=6).json()
+        r = requests.get('https://api.coingecko.com/api/v3/global', timeout=3).json()
         return round(r['data']['market_cap_percentage']['btc'], 1)
     except Exception:
         return 0.0
@@ -934,9 +919,7 @@ def macro_score_v2(symbol: str, signal_dir: str) -> dict:
                 score += 4; notes.append(f'BTC.D={btc_d:.1f}% 高位吸血→山寨更弱 +4')
             elif btc_d >= 53:
                 score += 2; notes.append(f'BTC.D={btc_d:.1f}% 偏高→山寨承压 +2')
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {
         'score_addon': min(max(score, -3), 6),  # 限制范围 -3~+6
         'dxy':    dxy,
@@ -1048,8 +1031,7 @@ def write_macro_state() -> dict:
                 _gspc_cls = [x for x in _gd['chart']['result'][0]['indicators']['quote'][0]['close'] if x]
                 spx_chg_1d = (_gspc_cls[-1] - _gspc_cls[-2]) / _gspc_cls[-2] * 100 if len(_gspc_cls) >= 2 else 0.0
                 snap['spx'] = {'chg_1d_pct': round(spx_chg_1d, 2), 'source': 'GSPC'}
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     except Exception as _nq_e:
         snap['nq']  = {'error': str(_nq_e)}
         snap['qqq'] = {}

@@ -17,14 +17,12 @@ brahma_bus.py — 梵天统一数据总线
   自动去重，analyze() 内相同数据只拉一次
 """
 
-from __future__ import annotations
 import time
 import requests
 import hmac
 import hashlib
 import os
 import threading
-from typing import Optional
 
 # ─────────────────────────────────────────────────────────
 # API 配置
@@ -109,14 +107,12 @@ class BrahmaBus:
                 _r2 = _SESS.get(f'https://www.okx.com/api/v5/market/ticker',
                                 params={'instId': f'{_base}-USDT-SWAP'}, timeout=5)
                 return float(_r2.json()['data'][0]['last'])
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             try:
                 _r3 = _SESS.get('https://api.bybit.com/v5/market/tickers',
                                 params={'category': 'linear', 'symbol': symbol}, timeout=5)
                 return float(_r3.json()['result']['list'][0]['lastPrice'])
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             raise _e1  # 全部失败才报错，不返回过期价格
 
     def ticker(self, symbol: str) -> dict:
@@ -322,8 +318,7 @@ def get_price(symbol: str) -> float:
         p = _price_bus.price(symbol)
         if p and p > 0:
             return p
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     import urllib.request, json as _json
     with urllib.request.urlopen(
         f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}', timeout=5
@@ -337,8 +332,7 @@ def get_klines(symbol: str, interval: str = '1h', limit: int = 100) -> list:
     try:
         from data_cache import get_klines as _dc_gk
         return _dc_gk(symbol, interval, limit)
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     try:
         return bus.klines(symbol, interval, limit)
     except Exception:
@@ -416,6 +410,7 @@ from collections import defaultdict
 from typing import Callable, Any
 from pathlib import Path
 from data_cache import _SSL_CTX as _DC_SSL_CTX
+import sys
 
 logger = logging.getLogger("BrahmaEventBus")
 
@@ -571,8 +566,7 @@ class BrahmaEventBus:
                     e = json.loads(line.strip())
                     if event_type is None or e.get("type") == event_type:
                         events.append(e)
-                except:
-                    pass
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         return events[-limit:]
 
     def handler_count(self, event_type: str) -> int:

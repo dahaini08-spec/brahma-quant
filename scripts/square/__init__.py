@@ -39,9 +39,7 @@ for _name in _SUBMODULES:
         _m = _register(_name)
         if _m is not None:
             globals()[_name] = _m
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def __getattr__(attr):
     m = _register(attr)
     if m is not None:

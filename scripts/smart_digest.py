@@ -81,8 +81,7 @@ def load_regime_alerts():
                     ts_epoch = calendar.timegm(t.timetuple())
                     if time.time() - ts_epoch > 86400:
                         continue  # 超过24h跳过
-                except:
-                    pass
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             alerts.append(line.strip()[-120:])
     return alerts[-3:]
 
@@ -158,8 +157,7 @@ def load_signal_trace():
         try:
             r = json.loads(line)
             records.append(r)
-        except:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return records[-20:]
 
 def format_digest():
@@ -219,9 +217,7 @@ def format_digest():
         updated = bstate.get('updated_at', '')[:16]
         lines.append(f'**🧠 当前体制**: `{regime_now}` | 更新: {updated} UTC')
         lines.append('')
-    except:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── 信号trace摘要 ─────────────────────────────────────
     traces = load_signal_trace()
     gen = [t for t in traces if t.get('action') == 'SIGNAL_GENERATED']

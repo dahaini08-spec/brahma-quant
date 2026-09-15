@@ -20,6 +20,7 @@ BASE = Path(__file__).parent.parent
 
 # ── API Key ────────────────────────────────────────────────────────
 import re
+import sys
 _tools = (BASE.parent / 'TOOLS.md').read_text()
 api_key = re.search(r'API Key:\s*(\S+)', _tools).group(1)
 secret  = re.search(r'Secret:\s*(\S+)',  _tools).group(1)
@@ -201,9 +202,7 @@ def main():
                     cfg_now = load_sl_config()
                     cfg_now.pop(sym, None)
                     SL_STATE_FILE.write_text(json.dumps(cfg_now, indent=2))
-                except Exception:
-                    pass
-
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             elif dist_sl < 1.0:
                 # 距SL不足1% → 发出警告（去重1h）
                 warn = (

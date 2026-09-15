@@ -16,6 +16,7 @@ paper_executor.py — 纸面系统专属开单执行器
 import json, sys, time
 from pathlib import Path
 from datetime import datetime, timezone
+import sys
 
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
@@ -44,8 +45,7 @@ def load_paper_positions() -> dict:
     if PAPER_POS_FILE.exists():
         try:
             return json.loads(PAPER_POS_FILE.read_text())
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {'positions': [], 'closed': [], 'stats': {'total': 0, 'win': 0, 'pnl': 0.0}}
 
 
@@ -58,8 +58,7 @@ def load_signal_queue() -> list:
         try:
             d = json.loads(SIGNAL_QUEUE.read_text())
             return d if isinstance(d, list) else d.get('signals', [])
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return []
 
 
@@ -70,10 +69,7 @@ def log(msg: str):
     try:
         with open(PAPER_LOG, 'a') as f:
             f.write(line + '\n')
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def get_current_price(symbol: str) -> float:
     try:
         import urllib.request
@@ -188,8 +184,7 @@ def main():
         # 更新signal_queue标记已消费
         try:
             SIGNAL_QUEUE.write_text(json.dumps(signals, indent=2))
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         log(f'本轮开单 {opened} 笔，当前持仓 {len(positions_data["positions"])} 个')
     else:
         print('HEARTBEAT_OK')

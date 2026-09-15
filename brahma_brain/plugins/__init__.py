@@ -8,6 +8,7 @@ brahma_full_report.py 自动加载并调用
 """
 import importlib, os
 from pathlib import Path
+import sys
 
 PLUGIN_DIR = Path(__file__).parent
 
@@ -32,6 +33,5 @@ def run_all_plugins(r: dict) -> str:
             out = mod.run(r)
             if out and out.strip():
                 results.append(out.strip())
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return '\n'.join(results)

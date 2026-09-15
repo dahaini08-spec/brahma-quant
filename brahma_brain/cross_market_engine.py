@@ -20,6 +20,7 @@ brahma_brain · P2
 
 import json, urllib.request, time, math
 from data_cache import _SSL_CTX as _DC_SSL_CTX
+import sys
 try:
     from brahma_brain.data_cache import get_klines as _dc_klines, get_ticker as _dc_ticker
     from brahma_brain.brahma_bus import get_price as _bus_price
@@ -359,26 +360,20 @@ def get_cross_fr_basis(symbol: str = 'BTCUSDT') -> dict:
         r = _get(f'https://api.bybit.com/v5/market/tickers?category=linear&symbol={bybit_sym}')
         if r and r.get('result', {}).get('list'):
             result['bybit_fr'] = round(float(r['result']['list'][0]['fundingRate']) * 100, 5)
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── OKX FR ──
     try:
         okx_inst = f'{sym_base}-USDT-SWAP'
         r = _get(f'https://www.okx.com/api/v5/public/funding-rate?instId={okx_inst}')
         if r and r.get('data'):
             result['okx_fr'] = round(float(r['data'][0]['fundingRate']) * 100, 5)
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── Binance FR ──
     try:
         r = _get(f'https://fapi.binance.com/fapi/v1/premiumIndex?symbol={symbol}')
         if r and r.get('lastFundingRate'):
             result['binance_fr'] = round(float(r['lastFundingRate']) * 100, 5)
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── Perp/Spot Basis ──
     try:
         spot_r = _get(f'https://api.binance.com/api/v3/ticker/price?symbol={symbol}')
@@ -387,9 +382,7 @@ def get_cross_fr_basis(symbol: str = 'BTCUSDT') -> dict:
             spot_p = float(spot_r['price'])
             perp_p = float(perp_r['price'])
             result['basis_pct'] = round((perp_p - spot_p) / spot_p * 100, 4) if spot_p > 0 else 0.0
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── 综合评估 ──
     fr_vals = [v for v in [result['bybit_fr'], result['okx_fr'], result['binance_fr']] if v != 0]
     if fr_vals:
@@ -455,9 +448,7 @@ def get_cross_fr_basis(symbol: str = 'BTCUSDT') -> dict:
         result['oi_bybit_b']   = round(_by_oi / 1e9, 2)
         result['oi_total_b']   = round(_total / 1e9, 2)
         result['oi_dom_pct']   = round(_bn_oi / _total * 100, 1) if _total > 0 else 0.0
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     _CACHE[cache_key] = {'data': result, 'ts': now}
     return result
 # 设计院·四方共识落地：免费公开API，期权市场情绪层

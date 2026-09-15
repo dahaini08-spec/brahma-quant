@@ -44,8 +44,7 @@ def load_weights() -> dict:
     if WEIGHT_FILE.exists():
         try:
             return json.loads(WEIGHT_FILE.read_text())
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return DEFAULT_WEIGHTS.copy()
 
 
@@ -102,8 +101,7 @@ def load_performance(days: int = 30) -> list:
             if float(r.get('settled_at', r.get('ts', 0))) > cutoff:
                 if r.get('result') in ('WIN', 'LOSS', 'BE'):
                     records.append(r)
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return records
 
 

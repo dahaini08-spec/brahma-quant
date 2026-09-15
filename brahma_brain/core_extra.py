@@ -9,7 +9,6 @@ core_extra.py — Step4 extra_data构建适配层（第三刀）
 3. 捕获所有外部引擎异常（CoinGlass/OI/Deribit等），ok=False不崩溃
 4. 提供 .get() 兼容方法，平滑迁移旧代码
 """
-from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any

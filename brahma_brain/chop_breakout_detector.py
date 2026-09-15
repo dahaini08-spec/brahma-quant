@@ -34,7 +34,7 @@ chop_breakout_detector.py — CHOP震荡突破预判器
 """
 import json, sys
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import timezone
 
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
@@ -143,7 +143,6 @@ def detect_chop_breakout(state: dict, symbol: str = 'BTCUSDT') -> dict:
     bull_prob = 0.0
     try:
         sys.path.insert(0, str(BASE / 'brahma_brain'))
-        from brahma_brain.regime_hmm_v2 import predict_regime_proba
         # 用缓存数据，不触发新API调用
         hmm_cache = BASE / 'data' / 'regime_hmm_cache.json'
         if hmm_cache.exists():

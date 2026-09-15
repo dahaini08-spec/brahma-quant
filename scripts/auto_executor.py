@@ -76,13 +76,7 @@ except Exception:
     _bus_get_price = None
 
 # ── 运行时依赖自检 ────────────────────────────────
-try:
-# [import_autoclean] 模块不存在，已注释
-# from scripts.ensure_deps import ensure as _ensure_deps
-    _ensure_deps()
-except Exception:
-    pass
-
+# [import_autoclean] _ensure_deps() 已移除，不需要运行时依赖检查
 from pathlib import Path
 from datetime import datetime, timezone
 try:
@@ -215,20 +209,10 @@ if not API_KEY or not API_SECRET:
                     API_KEY = _v
                 elif _k in ('BINANCE_SECRET', 'BINANCE_API_SECRET') and not API_SECRET:
                     API_SECRET = _v
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 # ── [P0-2] 全局安全闸 ─────────────────────────────────────────────
-try:
-# [import_autoclean] 模块不存在，已注释
-# from brahma_brain.safety import require_api_keys, safety_report as _sr
-    require_api_keys()
-except RuntimeError as _safety_err:
-    import logging as _sl
-    _sl.getLogger('auto_executor').critical(f'[SAFETY] {_safety_err}')
-    # 不中断导入，但 _signed() 调用时会因空 KEY 失败
-except ImportError:
-    pass
+# [import_autoclean] brahma_brain.safety 不存在，require_api_keys/safety_report 已移除
+# _signed() 调用时会因空 KEY 失败，起到安全作用
 
 if not API_KEY or not API_SECRET:
     import logging as _sec_log
@@ -282,10 +266,7 @@ def _push(msg: str):
             '--to', f'{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}',
             '--message', msg,
         ], capture_output=True, timeout=10)
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 # 核心：筛选可执行信号
 
 def find_executable_signals() -> list[dict]:
@@ -350,8 +331,7 @@ def find_executable_signals() -> list[dict]:
                 _liq_bonus = 5
             if (direction == 'LONG' and _bias == 'ABOVE_HEAVY') or                (direction == 'SHORT' and _bias == 'BELOW_HEAVY'):
                 _liq_bonus += 3
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         _effective_tier1 = TIER_1_LIQ_ADJUSTED if _liq_bonus >= LIQ_BONUS_THRESHOLD else TIER_1_SCORE
 
         # ── [2026-08-12 苏摩111] 体制分层门控 ──────────────────────────────
@@ -441,12 +421,10 @@ def find_executable_signals() -> list[dict]:
             from brahma_brain.position_sizer import get_position_pct as _ps_fes
             _fg_fes = None
             try:
-# [import_autoclean] 模块不存在，已注释
-# from brahma_brain.options_engine import get_fear_greed as _fg_fn
+                from brahma_brain.options_engine import get_fear_greed as _fg_fn
                 _fg_raw = _fg_fn()
                 _fg_fes = float(_fg_raw.get('value', 50)) if isinstance(_fg_raw, dict) else float(_fg_raw or 50)
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             _ps_res_fes = _ps_fes(
                 symbol=s.get('symbol', ''),
                 score=float(s.get('score', 0) or 0),
@@ -522,8 +500,7 @@ def find_executable_signals() -> list[dict]:
                     # 若peak是当前nav的10倍以上，说明是历史异常数据，用fallback
                     if _np_peak > 0 and _np_peak <= _nav_cur_hr * 10:
                         _nav_peak_hr = _np_peak
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             _hr_result = _apply_hr(
                 base_pct=_base_pct,
                 nav_current=_nav_cur_hr,
@@ -550,8 +527,7 @@ def find_executable_signals() -> list[dict]:
                 s['_tier_nav_pct'] = round(_pre_pct * _macro_mult, 5)
                 s['_pos_source'] = (s.get('_pos_source', '') + f'+macro×{_macro_mult}').lstrip('+')
                 print(f"[macro_mult] {s.get('symbol')} 宏观事件仓位调整 {_pre_pct*100:.1f}%→{s['_tier_nav_pct']*100:.1f}% ×{_macro_mult}")
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # ⑥ RR门槛
         rr1 = float(s.get('rr1', 0) or 0)
         if rr1 < MIN_RR:
@@ -626,8 +602,7 @@ def find_executable_signals() -> list[dict]:
                 exp_ts = datetime.fromisoformat(str(exp).replace('Z', '+00:00')).timestamp()
                 if now_ts > exp_ts:
                     continue
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # [2026-08-28 苏摩111修复] TTL兑底：expires_at为None时，信号超过4小时强制过期，防止旧信号堆积推送
         _sig_ts = s.get('ts', 0) or s.get('timestamp', 0) or 0
         MAX_SIGNAL_AGE_H = 4  # 信号最大有效期4小时
@@ -726,9 +701,7 @@ def find_executable_signals() -> list[dict]:
             if _hmm.get('confidence', 1.0) < 0.40:
                 s['_hmm_low_conf'] = True
                 pass  # [静默]
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # [v6.0 设计院 2026-07-08] 小币BEAR_TREND做多禁止（实盘复盘: SYN/NEAR/RENDER均亏损）
         # BTC/ETH已有死穴规则，小币缺失导致 43.8%胜率 根因
         _sym_regime = s.get('regime', '')
@@ -793,11 +766,8 @@ def find_executable_signals() -> list[dict]:
                         'valid':           True,
                     })
                     _pq_seen.add(_pq_sid)
-                except Exception:
-                    pass
-    except Exception:
-        pass
-
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ══ [P2-B 设计院苏摩111 2026-07-11] portfolio_optimizer 相关性过滤 ══
     # 多信号时，用30天滚动相关性矩阵选出最优子集（max 3个，corr<0.75）
     # 单信号时直接通过（不增加延迟）
@@ -1158,8 +1128,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
                 else:
                     _r = _req.get(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}', timeout=3)
                     _fapi_ok = _r.status_code == 200
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             if not _fapi_ok:
                 result = {'signal_id': signal.get('signal_id',''), 'symbol': sym,
                           'direction': direction, 'score': float(signal.get('score',0)),
@@ -1571,8 +1540,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
             _pending = {}
             if APPROVAL_RECORD_PATH.exists():
                 try: _pending = _j.loads(APPROVAL_RECORD_PATH.read_text())
-                except: pass
-
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             _key = f'{sym}_{direction}_{int(notional)}'
             _rec = _pending.get(_key, {})
             _req_ts = _rec.get('requested_at', 0)
@@ -1625,7 +1593,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
                          '--message', _msg],
                         stdout=_sp.DEVNULL, stderr=_sp.DEVNULL
                     )
-                except: pass
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
                 result['reason'] = f'blacktea: 审批请求已发出，等待30min'
                 return result
         except Exception as _be:
@@ -1726,8 +1694,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     if POS_STATE_PATH.exists():
         try:
             sl_state = json.loads(POS_STATE_PATH.read_text())
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     sl_state[sym] = {
         'symbol':      sym,
         'side':        direction,
@@ -1751,8 +1718,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
             elif isinstance(raw, dict):
                 # 旧dict格式兼容读取，转为list
                 wuqu_list = [v for k, v in raw.items() if k != sym]
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     wuqu_list.append({
         'symbol':      sym,
         'side':        direction,
@@ -1785,13 +1751,10 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
                     s['fill_qty']     = fill_qty
                     s['executed_at']  = datetime.now(timezone.utc).isoformat()
                     line = json.dumps(s, ensure_ascii=False) + '\n'
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             new_lines.append(line)
         open(SIGNAL_LOG_PATH, 'w').writelines(new_lines)
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── CubeSandbox对标: 开单后合法性验证 + 异常自动回滚 (v5.5 最小改动) ─────
     # 设计院2026-07-10: 对标CubeSandbox快照回滚机制
     # 原理: 开单成功后立即验证方向×体制的合法性
@@ -1833,8 +1796,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
                     _wq.pop(sym, None)
                     _wq = list(_wq.values())  # 转list
                 WUQU_PATH.write_text(json.dumps(_wq, indent=2, ensure_ascii=False))
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             result['rollback'] = True
             result['rollback_reason'] = _rollback_reason
             result['reason'] = f'ROLLED_BACK: {_rollback_reason}'
@@ -1859,8 +1821,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     # 根因：signal_expiry_tracker 完全孤立（0次import），成交后无法追踪信号有效期
     # 修复：EXECUTED后立即注册，记录信号有效期供 sense_signal_validity 感知
     try:
-# [import_autoclean] 模块不存在，已注释
-# from brahma_brain.signal_expiry_tracker import register as _expiry_register
+        from brahma_brain.signal_expiry_tracker import register as _expiry_register
         _sig_type = signal.get('signal_type', signal.get('primary_signal', 'DEFAULT'))
         _expiry_register(
             symbol=sym,
@@ -2039,8 +2000,7 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
 
         # ── [P3-B 设计院 2026-07-08] RL A/B仓位分流 ──────────────────
         try:
-# [import_autoclean] 模块不存在，已注释
-# from brahma_brain.rl_position_ab import decide_position_size
+            from brahma_brain.rl_position_ab import decide_position_size
             _std_nav_pct = BIG_SYM_NAV_HIGH if score >= 155 else (
                 BIG_SYM_NAV_LOW  # [IC铁证 2026-07-23] score<155不应进入此分支，保守fallback
             ) if sym in ('BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT') else 0.03
@@ -2122,7 +2082,7 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
                 )
                 from scripts.system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
                 _phj_paper(f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}', _paper_msg)
-            except Exception: pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         except Exception as _sq_e:
             print(f'  [paper_queue] 写入失败: {_sq_e}')
         _paper_result = {

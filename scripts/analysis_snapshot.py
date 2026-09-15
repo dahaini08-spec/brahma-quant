@@ -74,8 +74,7 @@ def list_snapshots() -> list:
                 'score': score,
                 'fresh': age_min <= MAX_AGE_DEFAULT,
             })
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return results
 
 def clear_stale(max_age_min: int = 60):
@@ -90,8 +89,7 @@ def clear_stale(max_age_min: int = 60):
             if age_min > max_age_min:
                 f.unlink()
                 cleared += 1
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return cleared
 
 if __name__ == '__main__':

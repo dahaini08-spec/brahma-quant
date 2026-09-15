@@ -18,12 +18,11 @@ brahma_context_injector.py — 梵天AI记忆注射器
   层4: 极端事件类比（当前市场特征 vs 历史极端）
 """
 
-import os
 import sys
 import json
 import time
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime
 
 _BASE = Path(__file__).parent
 _DATA = _BASE.parent / 'data'
@@ -70,8 +69,7 @@ def _load_wr_matrix():
         fp = _DATA / 'brahma_experience_matrix.json'
         if fp.exists():
             _WR_MATRIX_CACHE = json.loads(fp.read_text())
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     _WR_MATRIX_LOADED = True
 
 
@@ -85,10 +83,7 @@ def _warm_fangcang_cache(symbol: str) -> None:
             if fpath.exists() and str(fpath) not in _FANGCANG_FILE_CACHE:
                 try:
                     _FANGCANG_FILE_CACHE[str(fpath)] = json.loads(fpath.read_text())
-                except Exception:
-                    pass
-
-
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def get_fangcang_summary(symbol: str, regime: str, signal_dir: str) -> dict:
     """
     获取该标的在当前体制+方向下的历史表现摘要。
@@ -143,9 +138,7 @@ def get_fangcang_summary(symbol: str, regime: str, signal_dir: str) -> dict:
                         ts = datetime.fromisoformat(ts_str.replace('+00:00', '')).timestamp()
                         if ts > cutoff:
                             recent_n += 1
-                except Exception:
-                    pass
-
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             summary['by_tf'][tf] = {
                 'n': len(dir_cases), 'wr': round(wr, 3),
                 'avg_ret': round(avg_ret, 2), 'recent_1y': recent_n,
@@ -340,9 +333,7 @@ def inject_brahma_context(
         multi_ctx = build_multi_tf_context(symbol, signal_dir, max_chars=700)
         lines.append(multi_ctx)
         lines.append('')
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     lines.append('基于以上梵天专有数据（不是通用金融知识）给出你的裁决：')
     lines.append('═══════════════════════════════════════')
 

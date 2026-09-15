@@ -179,8 +179,7 @@ def compute_tradfi_context(symbol: str, direction: str, base_score: float,
                     r = fut.result()
                     if r:
                         prices[ticker] = r
-                except Exception:
-                    pass
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         elapsed_ms = (time.time() - t0) * 1000
 
         # ── 市场状态 ─────────────────────────────────────────────────
@@ -316,9 +315,7 @@ def compute_tradfi_context(symbol: str, direction: str, base_score: float,
             lines = TRADFI_LOG.read_text().strip().split('\n')
             if len(lines) > 1000:
                 TRADFI_LOG.write_text('\n'.join(lines[-500:]) + '\n')
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # ── [tradfi→1hao全能力闭环 2026-08-19 苏摩111] ────────────────────
         # Phase A 只记录日志，但高质量信号应触发1hao全能力分析写入live_signal_log
         # 触发条件：score_delta>=0（非负面信号） + base_score>=95（品种本身分数够）
@@ -337,8 +334,7 @@ def compute_tradfi_context(symbol: str, direction: str, base_score: float,
                 try:
                     if _trigger_f.exists():
                         _existing = json.loads(_trigger_f.read_text())
-                except Exception:
-                    pass
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
                 _existing[symbol] = {
                     'symbol': symbol,
                     'direction': direction,
@@ -349,13 +345,10 @@ def compute_tradfi_context(symbol: str, direction: str, base_score: float,
                     'source': 'tradfi_signal_layer',
                 }
                 _trigger_f.write_text(json.dumps(_existing, ensure_ascii=False, indent=2))
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # ──────────────────────────────────────────────────────────────────
 
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return result
 
 
@@ -1062,6 +1055,7 @@ tradfi_dump_detector.py — 美股代币放量下跌识别引擎
 import logging
 from typing import Optional
 from data_cache import _SSL_CTX as _DC_SSL_CTX
+import sys
 
 logger = logging.getLogger(__name__)
 

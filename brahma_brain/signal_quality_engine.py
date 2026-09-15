@@ -15,8 +15,7 @@ signal_quality_engine.py — 梵天信号质量引擎（唯一真相）
   Gate 4 — RSI_4H 60-70 + score<148: EV=+0.055% (方仓铁证，但需实盘验证)
 """
 
-from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 
@@ -235,8 +234,7 @@ signal_queue.py — I5 多品种信号优先级调度队列 (Brahma v12.9)
 """
 import json, time, statistics
 from pathlib import Path
-from datetime import datetime, timezone, timedelta
-from collections import defaultdict
+from datetime import datetime, timezone
 
 DATA_DIR  = Path(__file__).parent.parent / 'data'
 QUEUE_LOG = DATA_DIR / 'signal_queue.jsonl'
@@ -514,8 +512,7 @@ def get_status() -> dict:
             remain = cd_min - elapsed
             if remain > 0:
                 active_cds[sym] = f"{remain:.0f}min"
-        except:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {
         'queue_depth': len(q),
         'active_positions': len(active),
@@ -891,8 +888,7 @@ def _parse_tag(tag: str) -> dict:
                 'ts_tag':    parts[7],
                 'sha8':      parts[8],
             }
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
 
@@ -1047,7 +1043,6 @@ signal_weight_updater.py — 结算闭环权重更新器 v1.0
 
 import json
 import time
-from collections import defaultdict
 from pathlib import Path
 
 BASE = Path(__file__).parent.parent

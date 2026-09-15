@@ -75,9 +75,7 @@ def _send_alert(fault_id: str, title: str, detail: str, healed: bool):
                     'healed': bool(healed),
                     'err':    str(e)
                 }, ensure_ascii=False) + '\n')
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def _supervisorctl(cmd: str) -> bool:
     try:
         r = subprocess.run(
@@ -561,7 +559,7 @@ def check_f12_smc_structure() -> dict:
                 if d.get('metrics'):
                     last_full = d
                     break
-            except: pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         if not last_full:
             result['detail'] = 'structured_log 无 metrics 记录'
             return result
@@ -722,8 +720,7 @@ def check_f14_tardis_freshness() -> dict:
                     r = get_tardis_liq_walls(sym)
                     if r.get('available') and r.get('date', '') >= expected_date[:7]:
                         healed_syms.append(sym)
-                except Exception:
-                    pass
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             result['healed'] = len(healed_syms) == len(missing)
             result['detail'] = (
                 f'tardis数据缺失({expected_date}): {missing} → '

@@ -223,8 +223,7 @@ def _load_portfolio() -> dict:
         p_path = BASE / 'data' / 'positions_state.json'
         if p_path.exists():
             return json.loads(p_path.read_text())
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
 
@@ -258,9 +257,7 @@ def execute_kill_switch(reason: str) -> dict:
         ks_path = BASE / 'data' / 'kill_switch_log.jsonl'
         with open(ks_path, 'a') as f:
             f.write(json.dumps(result, ensure_ascii=False) + '\n')
-    except Exception:
-        pass
-    
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return result
 
 
@@ -279,22 +276,16 @@ def get_status() -> dict:
         nav = _get_daily_nav()
         status['daily_pnl'] = nav['daily_pnl_pct']
         status['kill_switch_active'] = nav['daily_pnl_pct'] <= -KILL_SWITCH_DAILY_LOSS_PCT
-    except Exception:
-        pass
-    
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     try:
         from brahma_brain.circuit_breaker import BrahmaCircuitRegistry
         registry = BrahmaCircuitRegistry.get()
         status['open_breakers'] = [k for k, v in registry.status_all().items() if v.get('state') == 'OPEN']
-    except Exception:
-        pass
-    
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     try:
         from brahma_brain.drawdown_tracker import get_status_report
         status['dd_status'] = get_status_report()[:200]
-    except Exception:
-        pass
-    
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return status
 
 

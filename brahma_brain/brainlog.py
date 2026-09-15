@@ -29,7 +29,6 @@ brainlog.py — 梵天统一日志格式封装
 
 import time
 import threading
-import sys
 import os
 from typing import Optional
 

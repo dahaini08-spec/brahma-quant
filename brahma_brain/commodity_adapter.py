@@ -11,6 +11,7 @@ commodity_adapter.py — 梵天商品资产适配层
 """
 import requests, time, json
 from pathlib import Path
+import sys
 
 BASE = Path(__file__).parent.parent
 
@@ -71,9 +72,7 @@ def get_cot_signal(symbol: str) -> dict:
                 d = json.loads(cot_cache.read_text())
                 if s in d:
                     return d[s]
-            except Exception:
-                pass
-
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 暂时返回中性（COT数据源需要额外配置）
     return {"signal": "NEUTRAL", "commercial_net": 0, "score_addon": 0, "source": "no_data"}
 
@@ -102,9 +101,7 @@ def get_commodity_macro(symbol: str) -> dict:
         elif eur_chg < -0.3:    # EUR跌=DXY涨=XAU利空
             result["score_addon"] -= 3
             result["signals"].append(f"DXY走强(EUR{eur_chg:.2f}%) → XAU利空-3")
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     try:
         # BTC作为风险情绪代理（BTC暴跌=避险需求升=XAU利好）
         r2 = requests.get("https://fapi.binance.com/fapi/v1/ticker/24hr",
@@ -116,9 +113,7 @@ def get_commodity_macro(symbol: str) -> dict:
         elif btc_chg > 5.0:
             result["score_addon"] -= 2
             result["signals"].append(f"BTC大涨{btc_chg:.1f}% → 风险偏好↑ XAU-2")
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return result
 
 # ── 商品评分适配器 ────────────────────────────────────────────────

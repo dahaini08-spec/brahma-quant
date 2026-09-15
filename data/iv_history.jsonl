@@ -88,3 +88,11 @@
 {"ts": 1789041605.0432062, "currency": "XAU", "iv": 20.69, "pct": 42.2, "kappa": 0.0416, "regime": "Neutral"}
 {"ts": 1789258667.0560577, "currency": "BTC", "iv": 32.98, "pct": 23.3, "kappa": 0.0403, "regime": "Neutral"}
 {"ts": 1789258667.5377467, "currency": "ETH", "iv": 49.31, "pct": 62.2, "kappa": -0.1172, "regime": "Neutral"}
+{"ts": 1789305673.635442, "currency": "BTC", "iv": 33.01, "pct": 14.4, "kappa": 0.0234, "regime": "Neutral"}
+{"ts": 1789305693.4217086, "currency": "ETH", "iv": 49.68, "pct": 68.9, "kappa": -0.0194, "regime": "Neutral"}
+{"ts": 1789353652.1683216, "currency": "BTC", "iv": 33.31, "pct": 70.0, "kappa": -0.0093, "regime": "Neutral"}
+{"ts": 1789353652.510239, "currency": "ETH", "iv": 50.26, "pct": 73.3, "kappa": -0.0708, "regime": "Neutral"}
+{"ts": 1789379064.1363447, "currency": "ETH", "iv": 50.39, "pct": 72.2, "kappa": -0.0208, "regime": "Neutral"}
+{"ts": 1789379064.4695377, "currency": "BTC", "iv": 33.49, "pct": 70.0, "kappa": -0.0313, "regime": "Neutral"}
+{"ts": 1789430694.893672, "currency": "BTC", "iv": 33.6, "pct": 64.4, "kappa": 0.1252, "regime": "Neutral"}
+{"ts": 1789430695.7697368, "currency": "ETH", "iv": 50.06, "pct": 52.2, "kappa": 0.0851, "regime": "Neutral"}

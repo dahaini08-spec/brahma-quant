@@ -400,9 +400,7 @@ def fmt_entry(r: dict) -> str:
                         sl_dist = (_p - sl_rec) / _p * 100
                         near = " ⭐最近" if p == _sl_hints[0][0] else ""
                         lines.append(f"    💡 SL参考(止损池{n}次密集下方): {sl_rec:.2f} (-{sl_dist:.2f}%){near}")
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return "\n".join(lines) if lines else "  (等待体制确认后计算)"
 
 
@@ -432,10 +430,8 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
             _key_pf = f'price:{symbol}'
             _bus_pf._mem.pop(_key_pf, None)  # 删除旧缓存
             _bus_pf._mem[_key_pf] = {'v': _realtime_price, 'exp': __import__('time').time() + 5}
-        except Exception:
-            pass
-    except Exception:
-        pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # [Ponytail P2 2026-08-24] 改为内部调用 brahma_analysis_runner.run_analysis()
     # 原因：runner 包含 Kronos预热/缓存复用/体制感知方向预注入/params展平，消除重复逻辑
     t0 = time.time()
@@ -546,8 +542,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
             _bb_pos = round((_cur_p - _bb_lo) / (_bb_up - _bb_lo) * 100, 1) if (_bb_up - _bb_lo) > 0 else 50
             _bb_zone = '上轨区' if _bb_pos > 80 else '下轨区' if _bb_pos < 20 else '中轨区'
             lines.append(f"  BB(1H·20)：pos={_bb_pos}%({_bb_zone}) 上轨=${_bb_up:,.0f} 中轨=${_bb_mid:,.0f} 下轨=${_bb_lo:,.0f}")
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # GEX
     try:
         from brahma_brain.gex_unified import get_gex_state as _get_gex
@@ -565,8 +560,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
             _dist_flip = round((_gex_flip - _gex_spot) / _gex_spot * 100, 2) if _gex_spot else 0
             lines.append(f"  GEX：{_gex_icon}")
             lines.append(f"    MAX_GEX=${_gex_max:,.0f}({_dist_max:+.1f}%) MIN_GEX=${_gex_min:,.0f}({_dist_min:+.1f}%) ZeroFlip=${_gex_flip:,.0f}({_dist_flip:+.1f}%)")
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── [END 封印补全] ─────────────────────────────────────────────────────────
 
     # [Fix 2026-07-26] BULL_CHOCH + SHORT 矛盾检测
@@ -751,8 +745,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
             _liq_p = __import__('pathlib').Path(__file__).parent.parent / f'data/liq_heatmap_{symbol}.json'
             if _liq_p.exists():
                 _liq_d = _ljson.loads(_liq_p.read_text())
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         _verdict = council_verdict(bd, direction, regime, score_final, _liq_d)
         lines.insert(-1, f"  {_fmt_vl(_verdict, symbol)}")
     except Exception as _lce:
@@ -779,8 +772,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
                 lines.insert(-1, f"  🤖第三视角(Qwen): AVOID 扣分-10")
             elif _third:
                 lines.insert(-1, f"  🤖第三视角(Qwen): {str(_third).strip().upper()[:8]}")
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ──────────────────────────────────────────────────────────────────────
 
     # ══ [设计院 2026-08-08] 方仓铁证层注入 ══════════════════════════════
@@ -827,8 +819,7 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
                 _cur_price_htf = float(r.get('price', 0) if isinstance(r, dict) else 0)
                 _wma_inst = _wma_get(symbol)
                 _htf = {**_htf, **_wma_inst.get_features(current_price=_cur_price_htf)}
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             _ew  = _fc_data.get('elliott_wave', {})
             _vpa = _fc_data.get('vpa', {})
             if _htf and (_htf.get('htf_bias') or _htf.get('_anchor_summary')):
@@ -949,17 +940,14 @@ def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) ->
             _anti_flags = _manip_r.get('flags', [])
             _anti_adj = _manip_r.get('score_adj', 0)
             _ext_lines += ["", f"  🔍 操控防御: risk={_anti_risk} adj={_anti_adj:+.0f}  flags={_anti_flags[:2] if _anti_flags else '无'}"]
-        except Exception:
-            pass
-
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # 11. 战场预判（price_zone_engine已在full_report追加，这里补标注）
         _pz = r.get('_price_zones', {})
         if not _pz:  # 如果runner里有
             try:
                 from price_zone_engine import calc_zones as _czones
                 _pz = _czones(r.get('symbol','BTCUSDT'))
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         if _pz and not _pz.get('error'):
             _hz = _pz.get('high_short', _pz.get('high_zone', {}))
             _lz = _pz.get('low_long',  _pz.get('low_zone',  {}))
@@ -1564,9 +1552,7 @@ def _build_tradfi_supplement(symbol: str, r: dict) -> list:
             chg20d = round((closes[-1] - closes[-21]) / closes[-21] * 100, 2) if len(closes) >= 21 else 0
             lines.append(f"  Fib当前位置: {fib_pos}")
             lines.append(f"  20D区间: 高={h20}  低={l20}  5D{chg5d:+.2f}%  20D{chg20d:+.2f}%")
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 3. 盘口深度
     try:
         ob = _json.loads(urllib.request.urlopen(
@@ -1576,9 +1562,7 @@ def _build_tradfi_supplement(symbol: str, r: dict) -> list:
         ratio = round(bid_vol / max(ask_vol, 0.001), 2)
         ratio_flag = '✅ 买盘主导' if ratio > 1.5 else ('⚠️ 卖盘占优' if ratio < 0.8 else '中性')
         lines.append(f"  盘口买卖比: {ratio}x {ratio_flag}")
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 4. 宏观联动验证（SPXUSDT + XAUTUSDT）
     try:
         from brahma_brain.data_cache import get_ticker
@@ -1589,9 +1573,7 @@ def _build_tradfi_supplement(symbol: str, r: dict) -> list:
         macro_ok = spx_chg > 0
         xau_warn = f' 🟡 避险情绪上升' if xau_chg > 0.5 else ''
         lines.append(f"  宏观门控: SPX{spx_chg:+.2f}% {'✅ 宏观多头' if macro_ok else '❌ 宏观失速'}  XAUT{xau_chg:+.2f}%{xau_warn}")
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 5. 加密体制联动
     btc_regime = r.get('regime', 'UNKNOWN')
     btc_note = {
@@ -1752,7 +1734,7 @@ if __name__ == '__main__':
                     import re as _re
                     _m = _re.search(r'WR=(\d+)%', _hcme_raw)
                     if _m: _hcme_wr_extracted = float(_m.group(1))
-                except: pass
+                except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             # 也尝试从top-level hcme_adj反推（adj>0→WR偏高，adj<0→WR偏低）
             _hcme_adj_val = float(_rd.get('hcme_adj', 0) or 0)
             _hcme_wr  = _hcme_wr_extracted  # 修复后使用真实WR而非默认50
@@ -1876,8 +1858,7 @@ if __name__ == '__main__':
                         _sl_pct_check = _sl_v
                 else:
                     _sl_pct_check = _sl_v
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             _death_zone = (
                 str(_regime_raw) == 'BULL_TREND' and
                 str(r_raw.get('direction','LONG')) == 'LONG' and
@@ -1897,7 +1878,10 @@ if __name__ == '__main__':
                 _score_ok = False
 
             if _score_ok:
-# from brahma_brain.dharma_data_bridge import log_signal
+                try:
+                    from brahma_brain.dharma_data_bridge import log_signal
+                except ImportError:
+                    log_signal = None
                 r_raw['symbol'] = sym
                 r_raw['direction'] = args.direction
                 r_raw['source'] = 'brahma_1hao_auto'
@@ -1919,7 +1903,7 @@ if __name__ == '__main__':
                                 from brahma_brain.price_zone_engine import calc_zones as _pze_fn
                                 _pze_result = _pze_fn(sym)
                                 r_raw['price_zones'] = _pze_result
-                            except Exception: pass
+                            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
                             from scripts.push_hub import push_signal_card_v3
                             push_signal_card_v3(r_raw)
                             print(f'[VIP v3推送] {sym} score={_push_score:.0f} 已推送 💡')

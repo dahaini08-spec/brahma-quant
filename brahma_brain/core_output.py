@@ -26,10 +26,10 @@ brahma_brain/core_output.py — 第五刀：输出格式化 + brahma_os.Signal�
 
 封印: 2026-09-07 苏摩111 · commit 第五刀
 """
-from __future__ import annotations
 
 import time
 from typing import Any, Optional
+import sys
 
 # ── 内部依赖（懒导入，避免循环） ───────────────────────────────────────
 
@@ -106,8 +106,7 @@ def signal_from_result(result: dict, symbol: str = "") -> Optional[Any]:
             logging.getLogger("core_output").warning(
                 "signal_from_result fallback error: %s", e
             )
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         return None
 
 

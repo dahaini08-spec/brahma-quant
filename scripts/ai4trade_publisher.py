@@ -37,8 +37,7 @@ def _already_published(signal_key: str) -> bool:
         try:
             if json.loads(line).get('signal_key') == signal_key:
                 return True
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return False
 
 def _log_publish(signal_key: str, signal_id: int, symbol: str):

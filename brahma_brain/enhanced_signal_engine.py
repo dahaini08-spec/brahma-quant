@@ -16,7 +16,6 @@ brahma_brain · P1
   5. 时段权重精细化（亚洲/欧洲/美国盘特性）
 """
 
-import time
 import datetime
 import urllib.request
 import json

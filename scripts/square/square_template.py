@@ -9,11 +9,20 @@ square_template.py — 姓赵不宣广场统一品牌模板引擎 v1.0
   - 0内部术语泄漏（模板不产生禁用词）
   - 100%品牌统一（每帖🌿前缀+📊后缀）
 
-4套模板：
+5套模板：
   1. 旗舰帖 — 战场报告（80维全输出）
-  2. 信号帖 — 异动捕捉（20维SMC+OI+FR+清算）
-  3. 教育帖 — 实盘案例教学（1个SMC概念+当日实盘）
-  4. 宏观帖 — 事件前瞻（宏观+体制+影响标的）
+  2. 深度分析帖 — "X美元的Y"四段式+方向表态
+  3. 信号帖 — 异动捕捉（20维SMC+OI+FR+清算）
+  4. 教育帖 — 实盘案例教学（1个SMC概念+当日实盘）
+  5. 宏观帖 — 事件前瞻（宏观+体制+影响标的）
+  6. 热度帖 — 争议钩子+数据锤+互动引爆
+  7. 交易闭环帖 — 入场/持仓/平仓三段式
+
+v2.0变更 2026-09-14 苏摩111：
+  - 新增模板B/D/E
+  - 所有模板加互动钩子
+  - 审计函数放行互动引导
+  - 标题签名化统一品牌识别
 """
 
 from datetime import datetime, timezone, timedelta
@@ -27,6 +36,18 @@ UTC = timezone.utc
 
 BRAND_PREFIX = ''  # 顶端不出现IP，放在后缀
 BRAND_SUFFIX = '🌿 姓赵不宣 | 不是建议'
+
+# 互动钩子库
+INTERACTION_HOOKS = {
+    'battlefield': '你觉得这周破支撑还是冲止损墙？评论投票',
+    'deep_analysis': '你选A还是B？评论区聊',
+    'signal': '这个异动你会跟吗？评论说你的判断',
+    'education': '你犯过这个错误吗？评论告诉我',
+    'macro': 'CPI前你减仓还是硬扛？评论投票',
+    'heat': '你站哪边？评论区投票',
+    'trade_open': '这笔你跟还是观望？评论说理由',
+    'trade_close': '这笔该止盈还是继续拿？评论投票',
+}
 
 # ═══════════════════════════════════════════════════════════════
 # 1. 旗舰帖模板 — 战场报告
@@ -113,6 +134,8 @@ def build_battlefield_report(sym, analysis_data):
     lines.extend([
         f'{BRAND_SUFFIX}',
         f'#{sym} #合约交易',
+        f'',
+        f'{INTERACTION_HOOKS["battlefield"]}',
     ])
     return '\n'.join(lines)
 
@@ -219,65 +242,99 @@ def build_signal_alert(sym, chg, price, high, low, vol, fr, ls,
                        entry_cond='', sl_price=0, tp_price=0,
                        monitor_fr='', monitor_oi=''):
     """
-    信号帖：异动捕捉，20维SMC+OI+FR+清算
+    信号帖 v2.0：姓赵不宣KOL叙事风格，非数据堆砌
+    [设计院封印 2026-09-15 苏摩111]
+    改造点：去━━━分隔符 → 自然段落 | 数据→交易员语言 | 明确方向≠等回踩确认
     """
     now_str = datetime.now(CST).strftime('%m/%d %H:%M')
 
-    # 结构读
-    structure_lines = []
-    if fvg_dir and fvg_magnet:
-        structure_lines.append(f'{fvg_dir} FVG中点{fvg_mid:.4f}，磁铁{fvg_magnet:.4f}')
-    if ob_test:
-        structure_lines.append(ob_test)
-    if oi_signal:
-        structure_lines.append(f'OI {oi_signal} → {_oi_short(oi_signal)}')
-    structure_lines.append(f'FR {fr:.4f}% = {_fr_meaning(fr)}')
-    if liq_above and liq_below:
-        structure_lines.append(f'清算：上方空头止损密集{liq_above:.4f}，下方多头止损{liq_below:.4f}')
+    # ── 构建叙事段落 ──
+    lines = []
 
-    # 判断
-    judge_lines = []
+    # 开场：一句话冲击
+    if chg > 0:
+        lines.append(f'{sym}涨了{chg:.0f}%。')
+    else:
+        lines.append(f'{sym}跌了{abs(chg):.0f}%。')
+    lines.append('')
+
+    # 第二段：大多数人视角 vs 懂行的人视角
     pullback = (high - price) / high * 100 if high > 0 else 0
+    rebound = (price - low) / low * 100 if low > 0 else 0
+    range_pct = (high - low) / low * 100 if low > 0 else 0
+
+    if chg > 0:
+        lines.append(f'大多数人看到+{chg:.0f}%开始心动的那一刻，恰恰是做市商开始出货的时候。')
+        lines.append(f'今天最低{low:.4f}拉到{high:.4f}，振幅{range_pct:.0f}%，但成交额只有{vol/1e6:.0f}万U——流动性薄，少量资金就能打出涨幅，出的时候未必有人接。')
+    else:
+        lines.append(f'大多数人看到-{abs(chg):.0f}%开始恐慌的那一刻，恰恰是做市商在收集筹码的时候。')
+        lines.append(f'今天最高{high:.4f}砸到{low:.4f}，振幅{range_pct:.0f}%，成交额{vol/1e6:.0f}万U。')
+    lines.append('')
+
+    # 第三段：结构读（自然段落，非清单）
+    structure_parts = []
+    if fvg_dir and fvg_magnet:
+        if fvg_dir == 'BEAR':
+            structure_parts.append(f'Bear FVG中点{fvg_mid:.4f}在上方，磁铁向下拉')
+        elif fvg_dir == 'BULL':
+            structure_parts.append(f'Bull FVG中点{fvg_mid:.4f}在下方，磁铁向上拉')
+    if ob_test:
+        structure_parts.append(ob_test)
+    if oi_signal:
+        structure_parts.append(f'OI {_oi_short(oi_signal)}')
+    if liq_above and liq_below:
+        structure_parts.append(f'上方空头止损{liq_above:.4f}，下方多头止损{liq_below:.4f}')
+
+    if structure_parts:
+        lines.append('结构上：' + '，'.join(structure_parts) + '。')
+        lines.append('')
+
+    # FR解读（交易员语言）
+    if fr > 0.01:
+        lines.append(f'FR {fr:.4f}%，多头每8小时在付费。这笔钱不是白付的，是市场在定价「这个方向拥挤了」。')
+    elif fr < -0.01:
+        lines.append(f'FR {fr:.4f}%，空头在付费。轧空的火药桶，一点火星就炸。')
+    else:
+        lines.append(f'FR {fr:.4f}%，多空均衡，没有拥挤。')
+    lines.append('')
+
+    # 第四段：我的判断（明确方向，非"等回踩确认"）
     if chg > 0:
         if fr < -0.1:
-            judge_lines.append(f'轧空信号确认，但已从高点回落{pullback:.0f}%，不追')
+            lines.append(f'我的判断：不追。已从高点回落{pullback:.0f}%，轧空信号确认但肉已吃完了。')
         else:
-            judge_lines.append(f'涨幅{chg:.0f}%后追高风险大，等回踩确认')
+            lines.append(f'我的判断：不追。+{chg:.0f}%追进去，你在给前面的人接盘。')
     else:
-        rebound = (price - low) / low * 100 if low > 0 else 0
-        judge_lines.append(f'跌幅{abs(chg):.0f}%，已从低点反弹{rebound:.0f}%')
+        if fr < -0.05:
+            lines.append(f'我的判断：不抄底。跌了{abs(chg):.0f}%不代表便宜，FR告诉我们空头在加码。')
+        else:
+            lines.append(f'我的判断：观望。跌{abs(chg):.0f}%后反弹{rebound:.0f}%，但没到我的入场区。')
 
-    if entry_cond:
-        judge_lines.append(entry_cond)
-    if sl_price and tp_price:
-        judge_lines.append(f'止损{sl_price:.4f} | 目标{tp_price:.4f}')
+    # 入场条件（如果有）
+    if entry_cond and sl_price and tp_price:
+        lines.append(f'如果真要参与：{entry_cond}，止损{sl_price:.4f}，目标{tp_price:.4f}。但说实话，这种小标的的波动，不值得用大仓位去赌。')
+    elif entry_cond:
+        lines.append(f'如果真要参与：{entry_cond}。但说实话，这种波动不值得用大仓位去赌。')
 
-    # 监控
-    monitor_lines = []
+    lines.append('')
+    lines.append('见过太多这种行情了。')
+    lines.append('')
+
+    # 监控信号（如果有，自然段落）
+    monitor_parts = []
     if monitor_fr:
-        monitor_lines.append(monitor_fr)
+        monitor_parts.append(monitor_fr)
     if monitor_oi:
-        monitor_lines.append(monitor_oi)
+        monitor_parts.append(monitor_oi)
+    if monitor_parts:
+        lines.append('要盯的话：' + '；'.join(monitor_parts) + '。')
+        lines.append('')
 
-    lines = [
-        f'异动捕捉',
-        f'',
-        f'{sym} {chg:+.0f}% | {now_str} CST',
-        f'现价 {price:.4f}U | 高 {high:.4f} | 低 {low:.4f} | 成交额 {vol/1e6:.0f}万U',
-        f'',
-        f'━━━ 结构读 ━━━',
-    ]
-    lines.extend([f'  {s}' for s in structure_lines])
-    lines.append(f'')
-    lines.append(f'━━━ 判断 ━━━')
-    lines.extend([f'  {j}' for j in judge_lines])
-    lines.append(f'')
-    if monitor_lines:
-        lines.append(f'━━━ 监控 ━━━')
-        lines.extend([f'  {m}' for m in monitor_lines])
-        lines.append(f'')
+    # 品牌后缀
     lines.append(f'{BRAND_SUFFIX}')
     lines.append(f'#{sym} #合约交易')
+    lines.append('')
+    lines.append(f'{INTERACTION_HOOKS["signal"]}')
     return '\n'.join(lines)
 
 
@@ -314,6 +371,8 @@ def build_education_post(edu_id, concept, definition_lines, live_example, how_to
         lines.append(historical_case)
     lines.append(f'')
     lines.append(f'{BRAND_SUFFIX}')
+    lines.append(f'')
+    lines.append(f'{INTERACTION_HOOKS["education"]}')
     return '\n'.join(lines)
 
 
@@ -352,6 +411,159 @@ def build_macro_outlook(event_name, event_time, expectations,
     lines.append(f'')
     lines.append(f'{BRAND_SUFFIX}')
     lines.append(f'{hashtag} #BTC')
+    lines.append(f'')
+    lines.append(f'{INTERACTION_HOOKS["macro"]}')
+    return '\n'.join(lines)
+
+
+# ═══════════════════════════════════════════════════════════════
+# 5. 深度分析帖模板 — "X美元的Y"四段式+方向表态
+# ═══════════════════════════════════════════════════════════════
+
+def build_deep_analysis(sym, price, surface_text, event1_data, event2_data, event3_data,
+                        scenario_a, scenario_b, my_choice, risk_note=''):
+    """
+    深度分析帖：小羊四段式+姓赵不宣方向表态
+    sym: 'BTC' / 'ETH'
+    price: 77069
+    surface_text: 'BTC在$77,069，横盘第3天，成交量萎缩'
+    event1_data: '灰度GBTC昨日净流入$1.2亿，连续5日净流入'
+    event2_data: 'CryptoQuant：大户地址净增持+12,400 BTC，散户减持-3,800'
+    event3_data: '4H图：RSI=42，价格在EMA200下方，FVG $76,200-$77,800未填补'
+    scenario_a: '震荡：$75,500-$78,500区间，高拋低吸'
+    scenario_b: '利空：跌破$75,500支撑池→追空，目标$72,000'
+    my_choice: 'A' or 'B'
+    risk_note: 'Hurst=0.43<0.5，随机游走，信号可能翻转'
+    """
+    price_str = f'${price:,.0f}' if price > 100 else f'${price:.4f}'
+    lines = [
+        f'{price_str}的{sym}，你敢动手吗？',
+        f'',
+        f'先看表面：{surface_text}',
+        f'',
+        f'━━━ 第一件事 ━━━',
+        event1_data,
+        f'',
+        f'━━━ 第二件事 ━━━',
+        event2_data,
+        f'',
+        f'━━━ 第三件事 ━━━',
+        event3_data,
+        f'',
+        f'━━━ 操作策略 ━━━',
+        f'情景A：{scenario_a}',
+        f'情景B：{scenario_b}',
+        f'',
+        f'我选{my_choice}。',
+    ]
+    if risk_note:
+        lines.append(f'⚠️ {risk_note}')
+    lines.append(f'')
+    lines.append(f'{BRAND_SUFFIX}')
+    lines.append(f'#{sym}')
+    lines.append(f'')
+    lines.append(f'{INTERACTION_HOOKS["deep_analysis"]}')
+    return '\n'.join(lines)
+
+
+# ═══════════════════════════════════════════════════════════════
+# 6. 热度帖模板 — 争议钩子+数据锤+互动引爆
+# ═══════════════════════════════════════════════════════════════
+
+def build_heat_post(title, hook_text, data_hammer, controversy, heat_type='controversy'):
+    """
+    热度帖：小波总式情绪化但升级为数据驱动
+    title: '48K粉丝博主喊单翻车率65%，数据比情绪更冷'
+    hook_text: '有人喊“大概率亏不了”，结果亏了14%。'
+    data_hammer: '采样40条帖子，喊多翻车率61%，喊空翻车率75%'
+    controversy: '你被广场博主喊单坑过吗？'
+    heat_type: 'controversy' / 'education' / 'takedown'
+    """
+    lines = [
+        f'🔥 {title}',
+        f'',
+        hook_text,
+        f'',
+        f'数据锤：{data_hammer}',
+        f'',
+    ]
+    if heat_type == 'education':
+        prefix = '📚'
+        lines[0] = f'📚 {title}'
+    lines.append(controversy)
+    lines.append(f'')
+    lines.append(f'{BRAND_SUFFIX}')
+    lines.append(f'')
+    lines.append(f'{INTERACTION_HOOKS["heat"]}')
+    return '\n'.join(lines)
+
+
+# ═══════════════════════════════════════════════════════════════
+# 7. 交易闭环帖模板 — 入场/持仓/平仓
+# ═══════════════════════════════════════════════════════════════
+
+def build_trade_open(sym, direction, entry_price, sl_price, tp_price, leverage, position_pct,
+                     logic_line=''):
+    """交易闭环-入场帖"""
+    emoji = '🔴' if direction == 'SHORT' else '🟢'
+    dir_cn = '空单' if direction == 'SHORT' else '多单'
+    lines = [
+        f'{emoji} {sym} {dir_cn} 入场',
+        f'',
+        f'入场 ${entry_price:,.0f}' if entry_price > 100 else f'入场 ${entry_price:.4f}',
+        f'止损 ${sl_price:,.0f}' if sl_price > 100 else f'止损 ${sl_price:.4f}',
+        f'目标 ${tp_price:,.0f}' if tp_price > 100 else f'目标 ${tp_price:.4f}',
+        f'杠杆 {leverage}x | 仓位 {position_pct}%NAV',
+    ]
+    if logic_line:
+        lines.append(f'')
+        lines.append(f'逻辑：{logic_line}')
+    lines.append(f'')
+    lines.append(f'{BRAND_SUFFIX}')
+    lines.append(f'#{sym}')
+    lines.append(f'')
+    lines.append(f'{INTERACTION_HOOKS["trade_open"]}')
+    return '\n'.join(lines)
+
+
+def build_trade_hold(sym, direction, entry_price, current_price, pnl_pct, adjust_note=''):
+    """交易闭环-持仓帖"""
+    emoji = '🔴' if direction == 'SHORT' else '🟢'
+    dir_cn = '空单' if direction == 'SHORT' else '多单'
+    lines = [
+        f'{emoji} {sym} {dir_cn} 持仓中',
+        f'',
+        f'入场 ${entry_price:,.0f}' if entry_price > 100 else f'入场 ${entry_price:.4f}',
+        f'现价 ${current_price:,.0f}' if current_price > 100 else f'现价 ${current_price:.4f}',
+        f'浮盈 {pnl_pct:+.0f}%',
+    ]
+    if adjust_note:
+        lines.append(f'')
+        lines.append(f'调整：{adjust_note}')
+    lines.append(f'')
+    lines.append(f'{BRAND_SUFFIX}')
+    return '\n'.join(lines)
+
+
+def build_trade_close(sym, direction, entry_price, exit_price, pnl_pct, review_line=''):
+    """交易闭环-平仓帖"""
+    emoji = '✅' if pnl_pct > 0 else '❌'
+    dir_cn = '空单' if direction == 'SHORT' else '多单'
+    lines = [
+        f'{emoji} {sym} {dir_cn} 平仓',
+        f'',
+        f'入场 ${entry_price:,.0f}' if entry_price > 100 else f'入场 ${entry_price:.4f}',
+        f'平仓 ${exit_price:,.0f}' if exit_price > 100 else f'平仓 ${exit_price:.4f}',
+        f'盈亏 {pnl_pct:+.0f}%',
+    ]
+    if review_line:
+        lines.append(f'')
+        lines.append(f'复盘：{review_line}')
+    lines.append(f'')
+    lines.append(f'{BRAND_SUFFIX}')
+    lines.append(f'#{sym}')
+    lines.append(f'')
+    lines.append(f'{INTERACTION_HOOKS["trade_close"]}')
     return '\n'.join(lines)
 
 
@@ -477,10 +689,9 @@ def audit_post(content):
     if '姓赵不宣' not in content or '不是建议' not in content:
         issues.append('缺少姓赵不宣签名')
 
-    # 铁律9: 不允许"你怎么看"
-    for bad in ['你怎么看', '你认为', '你会持有']:
-        if bad in content:
-            issues.append(f'假互动：含「{bad}」')
+    # 铁律9: 允许互动钩子（v2.0修改）
+    # 旧规则禁止"你怎么看"，新规则鼓励互动
+    # 不再阻止互动钩子
 
     # 铁律10: 必须>100字
     char_count = len(content)

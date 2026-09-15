@@ -42,11 +42,11 @@
     "mode": "B"
   },
   "XAUUSDT": {
-    "hash": "ec53d2b9",
-    "ts": 1788367108.305509,
+    "hash": "09ee9e35",
+    "ts": 1789432201.764375,
     "direction": "LONG",
-    "score": 84.675,
-    "mode": "A"
+    "score": 87.206,
+    "mode": "B"
   },
   "TSMUSDT": {
     "hash": "06d92c52",
@@ -56,11 +56,11 @@
     "mode": "A"
   },
   "KORUUSDT": {
-    "hash": "09ee9e35",
-    "ts": 1787716872.55088,
+    "hash": "bb9b5c35",
+    "ts": 1789432201.764375,
     "direction": "LONG",
-    "score": 92.324,
-    "mode": "B"
+    "score": 91.67750000000001,
+    "mode": "A"
   },
   "0GUSDT": {
     "hash": "3ddb0339",
@@ -70,11 +70,11 @@
     "mode": "A"
   },
   "ORCLUSDT": {
-    "hash": "60145eb8",
-    "ts": 1785860586.444735,
+    "hash": "06d92c52",
+    "ts": 1789432201.764375,
     "direction": "LONG",
-    "score": 82,
-    "mode": "B"
+    "score": 68,
+    "mode": "A"
   },
   "METAUSDT": {
     "hash": "81047746",
@@ -126,11 +126,11 @@
     "mode": "B"
   },
   "SOXLUSDT": {
-    "hash": "81047746",
-    "ts": 1788424876.228577,
+    "hash": "7e612a3b",
+    "ts": 1789432201.764375,
     "direction": "LONG",
-    "score": 78.3825,
-    "mode": "A"
+    "score": 66,
+    "mode": "B"
   },
   "QQQUSDT": {
     "hash": "81047746",
@@ -224,10 +224,10 @@
     "mode": "B"
   },
   "EWYUSDT": {
-    "hash": "f6b13f42",
-    "ts": 1788219758.581191,
+    "hash": "16b72c03",
+    "ts": 1789432201.764375,
     "direction": "LONG",
-    "score": 61.99000000000001,
+    "score": 60.007999999999996,
     "mode": "B"
   },
   "TRADOORUSDT": {
@@ -308,10 +308,10 @@
     "mode": "A"
   },
   "ETHFIUSDT": {
-    "hash": "09ee9e35",
-    "ts": 1785590788.650047,
+    "hash": "16b72c03",
+    "ts": 1789355394.567215,
     "direction": "LONG",
-    "score": 61.454,
+    "score": 76.37,
     "mode": "B"
   },
   "REUSDT": {
@@ -434,18 +434,18 @@
     "mode": "B"
   },
   "CBRSUSDT": {
-    "hash": "16b72c03",
-    "ts": 1789036057.951688,
+    "hash": "75322418",
+    "ts": 1789432201.764375,
     "direction": "LONG",
-    "score": 80.26599999999999,
-    "mode": "B"
+    "score": 64.8725,
+    "mode": "A"
   },
   "ZHIPUUSDT": {
-    "hash": "09ee9e35",
-    "ts": 1788417672.854025,
+    "hash": "81047746",
+    "ts": 1789432201.764375,
     "direction": "LONG",
-    "score": 100,
-    "mode": "B"
+    "score": 64.346,
+    "mode": "A"
   },
   "DRAMUSDT": {
     "hash": "f6b13f42",
@@ -1670,6 +1670,20 @@
     "ts": 1789036057.951688,
     "direction": "LONG",
     "score": 79,
+    "mode": "A"
+  },
+  "VTHOUSDT": {
+    "hash": "81047746",
+    "ts": 1789355394.567215,
+    "direction": "LONG",
+    "score": 100,
+    "mode": "A"
+  },
+  "MTLUSDT": {
+    "hash": "13426d0e",
+    "ts": 1789355394.567215,
+    "direction": "LONG",
+    "score": 71,
     "mode": "A"
   }
 }

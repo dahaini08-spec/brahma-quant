@@ -18,6 +18,7 @@ paper_tp_monitor.py — 纸面系统止盈追踪器
 import json, sys, time, urllib.request
 from pathlib import Path
 from datetime import datetime, timezone
+import sys
 
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
@@ -31,8 +32,7 @@ def load_positions() -> dict:
     if PAPER_POS_FILE.exists():
         try:
             return json.loads(PAPER_POS_FILE.read_text())
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {'positions': [], 'closed': [], 'stats': {'total': 0, 'win': 0, 'pnl': 0.0}}
 
 
@@ -56,10 +56,7 @@ def log(msg: str):
     try:
         with open(PAPER_LOG, 'a') as f:
             f.write(line + '\n')
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def push_alert(msg: str):
     """推送到Jarvis主线程"""
     try:

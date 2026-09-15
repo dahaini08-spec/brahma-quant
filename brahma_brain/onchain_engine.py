@@ -60,8 +60,7 @@ def _cg(path: str, qs: str = ''):
                 data = d.get('data', d)
                 _cache[url] = {'ts': now, 'data': data}
                 return data
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return None
 
 

@@ -46,8 +46,7 @@ def get_regime() -> str:
         _rb_r_m = _rb_get_m('BTCUSDT', layer='SIGNAL')
         if _rb_r_m and _rb_r_m != 'UNKNOWN':
             return _rb_r_m
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     try:
         with open(STATE_FILE) as f:
             return json.load(f).get("regime", "UNKNOWN")

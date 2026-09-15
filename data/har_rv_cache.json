@@ -1,28 +1,28 @@
 {
   "BTCUSDT": {
-    "ts": 1789275439.4696126,
+    "ts": 1789437550.9441829,
     "data": {
-      "rv_1d": 0.004,
-      "rv_5d": 0.01333,
+      "rv_1d": 0.01596,
+      "rv_5d": 0.02148,
       "rv_22d": 0.02,
-      "rv_forecast": 0.01177,
-      "rv_percentile": 100,
-      "regime_vol": "LOW",
-      "score_adj": 3,
+      "rv_forecast": 0.01881,
+      "rv_percentile": 80,
+      "regime_vol": "MEDIUM",
+      "score_adj": 0,
       "p_up_proxy": 0.45
     }
   },
   "ETHUSDT": {
-    "ts": 1789273370.997584,
+    "ts": 1789439811.2176352,
     "data": {
-      "rv_1d": 0.00836,
-      "rv_5d": 0.04486,
+      "rv_1d": 0.02165,
+      "rv_5d": 0.0316,
       "rv_22d": 0.02,
-      "rv_forecast": 0.02433,
-      "rv_percentile": 100,
+      "rv_forecast": 0.02434,
+      "rv_percentile": 80,
       "regime_vol": "MEDIUM",
       "score_adj": 0,
-      "p_up_proxy": 0.45
+      "p_up_proxy": 0.5
     }
   },
   "CYSUSDT": {
@@ -2846,4 +2846,4 @@
       "p_up_proxy": 0.55
     }
   }
-}}
+}

@@ -17,13 +17,11 @@ brahma_decision_engine.py — 梵天决策树 2.0
   - fail-safe：任何步骤异常 → 降级到原有score机制
 """
 
-from __future__ import annotations
 import json
 import time
 import traceback
 import requests
 from pathlib import Path
-from typing import Optional
 
 _BASE = Path(__file__).parent.parent
 
@@ -80,8 +78,7 @@ def _get_oi_change_1h(symbol: str) -> float:
             v0 = float(h[0]['sumOpenInterestValue'])
             v1 = float(h[-1]['sumOpenInterestValue'])
             return (v1 - v0) / v0 * 100 if v0 > 0 else 0
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return 0.0
 
 
@@ -121,8 +118,7 @@ def _get_liq_distances(symbol: str, price: float) -> dict:
                 'nearest_short': ns,                          # 真实止损墙价格
                 'nearest_long':  nl,                          # 真实支撑池价格
             }
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 回退：用合理默认值而非硬编码0.95%
     return {
         'up_100x': 2.0, 'dn_100x': 2.0,

@@ -72,14 +72,13 @@ def get_regime():
         _rb_r_m = _rb_get_m('BTCUSDT', layer='MONITOR')
         if _rb_r_m and _rb_r_m != 'UNKNOWN':
             return _rb_r_m
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     try:
         state = BASE / 'data' / 'regime_state.json'
         if state.exists():
             d = json.loads(state.read_text())
             return d.get('regime', d.get('btc_regime', 'UNKNOWN'))
-    except: pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return 'UNKNOWN'
 
 def get_performance():
@@ -94,7 +93,7 @@ def get_performance():
                 'total_trades': d.get('total_trades', d.get('totalTrades', 0)),
                 'today_pnl': d.get('today_pnl', d.get('todayPnl', 0)),
             }
-    except: pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {'total_pnl': 0, 'wr': 0, 'total_trades': 0, 'today_pnl': 0}
 
 def get_signals_today():
@@ -110,7 +109,7 @@ def get_signals_today():
                 s = json.loads(l)
                 if s.get('ts', 0) > today_start:
                     sigs.append(float(s.get('score', 0)))
-            except: pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         return {
             'count': len(sigs),
             'max_score': max(sigs) if sigs else 0,
@@ -150,7 +149,7 @@ def get_kronos_status():
                 total = min(50, len(lines))
                 wr = correct/total*100 if total > 0 else 0
                 return f"SHADOW | n={n} WR={wr:.0f}% (需n≥100且WR≥Lite+2pp升级)"
-    except: pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return "SHADOW | 数据不足"
 
 if __name__ == '__main__':

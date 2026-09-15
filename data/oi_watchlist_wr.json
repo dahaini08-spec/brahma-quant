@@ -1,0 +1,23 @@
+{
+  "signals": [
+    {
+      "symbol": "ETHFIUSDT",
+      "direction": "LONG",
+      "price": 0.6522,
+      "triggered_at": "2026-09-14 04:16 UTC",
+      "settled": false,
+      "outcome": null,
+      "pnl_pct": null
+    },
+    {
+      "symbol": "SOXLUSDT",
+      "direction": "SHORT",
+      "price": 102.57,
+      "triggered_at": "2026-09-14 14:00 UTC",
+      "settled": false,
+      "outcome": null,
+      "pnl_pct": null
+    }
+  ],
+  "stats": {}
+}

@@ -27,7 +27,6 @@ brahma_cpu.py — 梵天中央决策处理器 (CPU大脑)
   SKIP     → 静默丢弃
 """
 
-import os
 import sys
 import json
 import time
@@ -88,9 +87,7 @@ def _layer0_fast_reject(symbol: str, regime: str, signal_dir: str) -> tuple:
         guard = full_guard_check()
         if guard.get('blocked'):
             return True, f'反脆弱门控: {guard.get("reason", "未知")}'
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # FG极度贪婪>85
     try:
         from narrative_engine import get_narrative_score
@@ -98,9 +95,7 @@ def _layer0_fast_reject(symbol: str, regime: str, signal_dir: str) -> tuple:
         fg = ns.get('fg_index', 50) if isinstance(ns, dict) else 50
         if isinstance(fg, (int, float)) and fg > 85:
             return True, f'FG={fg}极度贪婪，情绪熔断'
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return False, ''
 
 
@@ -226,9 +221,7 @@ def _check_position_risk(symbol: str, signal_dir: str, score_result: dict) -> tu
         ) / max(nav, 1)
         if total_pos_pct > MAX_NAV_PCT:
             return False, f'总仓位{total_pos_pct:.1%}>8%NAV上限'
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return True, ''
 
 
@@ -239,8 +232,7 @@ def _get_nav() -> float:
         if nav_file.exists():
             d = json.loads(nav_file.read_text())
             return float(d.get('nav', 0) or 0)
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return 130.0  # 保守默认值
 
 
@@ -357,10 +349,7 @@ def _log_decision(symbol: str, signal_dir: str, decision: str,
         _DATA.mkdir(exist_ok=True)
         with open(_CPU_LOG, 'a') as f:
             f.write(json.dumps(entry, ensure_ascii=False) + '\n')
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 # ══════════════════════════════════════════════════════════════════════
 # 主入口：process_event
 # ══════════════════════════════════════════════════════════════════════
@@ -393,9 +382,7 @@ def process_event(symbol: str, signal_dir: str = None,
         if state_file.exists():
             state = json.loads(state_file.read_text())
             regime = state.get(sym, {}).get('regime', 'UNKNOWN')
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if signal_dir:
         rejected, reason = _layer0_fast_reject(sym, regime, signal_dir)
         if rejected:

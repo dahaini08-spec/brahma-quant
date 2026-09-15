@@ -151,6 +151,7 @@ _FALLBACK_MULT = 0.85  # 未知体制，保守降权
 # 只覆盖统计显著(n>=30)且偏差>0.1的组合，其余保持手写铁证值
 import json as _json
 from pathlib import Path as _Path
+import sys
 
 _OVERRIDE_FILE = _Path(__file__).parent.parent / 'data' / 'regime_mult_override.json'
 
@@ -158,8 +159,7 @@ def _load_override() -> dict:
     try:
         if _OVERRIDE_FILE.exists():
             return _json.loads(_OVERRIDE_FILE.read_text())
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
 

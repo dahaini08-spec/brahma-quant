@@ -18,7 +18,6 @@ cross_market_alpha.py — 跨市场alpha提取器
 """
 import json, time, os
 from pathlib import Path
-from collections import defaultdict
 
 BASE = Path(__file__).parent.parent
 FR_DIR = BASE / 'data'

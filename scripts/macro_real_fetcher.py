@@ -14,6 +14,7 @@
 import json, time, urllib.request
 from pathlib import Path
 from datetime import datetime, timezone
+import sys
 
 DATA_DIR = Path(__file__).parent.parent / 'data'
 
@@ -65,8 +66,7 @@ def _calc_yoy(series_id: str, months: int = 13) -> float:
                 yoy = float(d[months-1]['value']) if len(d) >= months else 0
                 if yoy > 0:
                     return round((latest - yoy) / yoy * 100, 2)
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return 0.0
 
 def _get_start_year() -> str:
@@ -171,9 +171,7 @@ def update_macro_real():
         try:
             ms = json.loads(macro_state_path.read_text())
             data['fear_greed'] = ms.get('fear_greed', 50)
-        except Exception:
-            pass
-    
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # 写入
     output_path = DATA_DIR / 'macro_real.json'
     output_path.parent.mkdir(parents=True, exist_ok=True)

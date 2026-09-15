@@ -126,8 +126,7 @@ def _load_matrix() -> dict:
     try:
         if WR_MATRIX_PATH.exists():
             return json.loads(WR_MATRIX_PATH.read_text())
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
 
@@ -159,18 +158,14 @@ def _trigger_param_nudge(matrix_key: str, m: dict):
 # [import_autoclean] 模块不存在，已注释
 # from dharma_online_learner import run_online_learning as _dl_run
             _dl_run()
-        except Exception:
-            pass
+        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # ── 断点B修复：同步更新 CONFIDENCE_TABLE（2026-07-03）──
         try:
             from position_sizer import sync_confidence_table_from_wr as _sync_ct
             _sync_ct(min_n=10)
         except Exception as _ct_e:
             pass  # [静默]
-    except Exception:
-        pass
-
-
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def _generate_nudge(m: dict) -> str:
     """基于EV趋势生成参数微调建议"""
     wr = m['wr']

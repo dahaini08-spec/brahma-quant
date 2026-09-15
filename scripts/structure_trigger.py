@@ -53,8 +53,7 @@ def get_recent_kline_structure(sym):
                 structure = r.get('structure', 'NONE')
                 if ts > cutoff_ms and structure in ('BOS', 'CHoCH'):
                     results.append(r)
-            except:
-                pass
+            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return results
 
 def run():

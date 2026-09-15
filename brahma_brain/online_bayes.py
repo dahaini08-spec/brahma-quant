@@ -16,7 +16,6 @@ online_bayes.py · 梵天在线贝叶斯引擎
 接口：score(symbol, regime, direction, score_raw) → (adj_score, detail)
 """
 import json, os, time
-from pathlib import Path
 from collections import defaultdict
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
