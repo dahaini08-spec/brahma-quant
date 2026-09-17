@@ -7,10 +7,10 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789643756.0175245,
+    "last_update_ts": 1789647560.670977,
     "confirmed_cn": "弱震荡",
     "last_sw_reset": 1789609255.5509894,
-    "candidate_start_ts": 1789639119.4606602
+    "candidate_start_ts": 1789647560.6684656
   },
   "ETHUSDT": {
     "confirmed": "CHOP_MID",
@@ -20,7 +20,7 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789646263.401234,
+    "last_update_ts": 1789646853.774659,
     "last_sw_reset": 1789568133.1667855,
     "candidate_start_ts": 1789639105.260733,
     "confirmed_cn": "弱震荡"

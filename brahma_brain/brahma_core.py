@@ -50,89 +50,6 @@ try:
 except Exception:
     _CALIB_WEIGHTS = {}
 
-def _apply_calib(dim_key: str, raw_score: float) -> float:
-    mult = _CALIB_WEIGHTS.get(dim_key, {}).get('mult', 1.0)
-    return round(raw_score * float(mult), 3)
-
-try:
-    from onchain_engine import onchain_score as _onchain_score
-    _ONCHAIN_OK = True
-except Exception:
-    _ONCHAIN_OK = False
-try:
-    from pattern_engine import pattern_score as _pattern_score
-    _PATTERN_OK = True
-except Exception:
-    _PATTERN_OK = False
-try:
-    from order_flow_engine import order_flow_score as _order_flow_score
-    _OF_OK = True
-except Exception:
-    _OF_OK = False
-try:
-    from brahma_brain.narrative_engine import macro_score as _macro_score
-    _MACRO_OK = True
-except Exception:
-    _MACRO_OK = False
-_HARMONIC_OK = False
-try:
-    from brahma_brain.volume_unified import volume_exhaustion_score as _vol_exh_score
-    _VOL_EXH_OK = True
-except Exception:
-    _VOL_EXH_OK = False
-try:
-    from brahma_brain.smc_engine import multitf_divergence_score as _multitf_div_score
-    _MULTITF_DIV_OK = True
-except Exception:
-    _MULTITF_DIV_OK = False
-    _MULTITF_OK = False
-try:
-    from enhanced_signal_engine import enhanced_score as _enhanced_score
-    _ENHANCED_OK = True
-except Exception:
-    _ENHANCED_OK = False
-try:
-    from brahma_brain.onchain_engine import whale_score as _whale_score
-    _WHALE_OK = True
-except Exception:
-    _WHALE_OK = False
-try:
-    from cross_market_engine import cross_market_score as _cross_market_score
-    _CROSS_OK = True
-except Exception:
-    _CROSS_OK = False
-try:
-    from microstructure_engine import microstructure_score as _micro_score
-    _MICRO_OK = True
-except Exception:
-    _MICRO_OK = False
-
-# [架构拆分 2026-07-01] 入场参数计算已移至 brahma_core_entry
-try:
-    from brahma_brain.brahma_core_entry import (
-        calc_trade_params as _ctp_entry,
-        rebase_params as _rbp_entry,
-    )
-    _ENTRY_OK = True
-except Exception:
-    _ENTRY_OK = False
-
-# 150分共振评分器（Phase 1 内置版）
-
-def _calc_mtf_alignment(closes_1h, closes_4h, closes_1d):
-    """多周期趋势对齐 — 原brahma_engine独有函数，合并入brahma_core [2026-08-09]"""
-    def _trend(closes):
-        if len(closes) < 5: return 'NEUTRAL'
-        return 'UP' if closes[-1] > closes[-5] else 'DOWN'
-    t1h = _trend(closes_1h)
-    t4h = _trend(closes_4h)
-    t1d = _trend(closes_1d)
-    aligned = t1h == t4h == t1d
-    return {'1h': t1h, '4h': t4h, '1d': t1d,
-            'aligned': aligned,
-            'consensus': t1h if aligned else 'MIXED'}
-
-
 def confluence_score(ms: dict, smc: dict, signal_dir: str,
                      extra_data: dict = None) -> dict:
     """
@@ -1069,14 +986,6 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
 
 # 精确交易参数生成
 
-def _nearest_swing_above(swing_highs: list, entry: float) -> float:
-    """找到入场价上方最近的摆动高点（用于做空止损）"""
-    candidates = [v for v in swing_highs if v > entry]
-    return min(candidates) if candidates else entry * 1.015
-
-def _nearest_swing_below(swing_lows: list, entry: float) -> float:
-    """找到入场价下方最近的摆动低点（用于做多止损）"""
-    candidates = [v for v in swing_lows if v < entry]
     return max(candidates) if candidates else entry * 0.985
 
 def calc_trade_params(ms: dict, smc: dict, signal_dir: str,
@@ -4528,6 +4437,3 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     if 'symbol' not in _result:
         _result['symbol'] = _sym
     return _result
-    """[shim] 已迁移到 brahma_brain/formatter.py · v25.0"""
-    from brahma_brain.formatter import format_report as _fmt
-    return _fmt(r)
