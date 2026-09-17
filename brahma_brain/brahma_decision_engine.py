@@ -29,16 +29,10 @@ _BASE = Path(__file__).parent.parent
 FAPI = 'https://fapi.binance.com'
 
 # 死穴组合：体制×方向（不允许执行）
-DEAD_COMBOS = {
-    ('BEAR_TREND', 'LONG'),     # ✅铁证 WR=45% n=3322
-    ('BULL_TREND', 'SHORT'),    # ✅铁证 WR=47.7% n=4999
-    # ('BEAR_EARLY','SHORT'),   # ❌移除：实盘WR=80.8% n=52，高WR不该封禁
-    # ('CHOP_MID',  'LONG'),    # ❌移除：由chop_breakout_detector精细控制
-    # ('BULL_EARLY','LONG'),    # ❌移除：WR=100% n=5铁证多头
-}
+DEAD_COMBOS = set()  # [9.17 苏摩111] 清空死穴表——放开系统
 
 MAX_SL_PCT       = 2.0   # SQE Gate1：基础限制（2.0%），动态门控函数会根据grade调整
-MIN_GRADE        = 80    # 结构质量门槛
+MIN_GRADE        = 0     # [9.17 苏摩111] grade门槛降为0——放开系统
 
 def _dynamic_sl_max(grade: float, regime: str, direction: str, sl_pct: float) -> float:
     """
@@ -356,11 +350,8 @@ class BrahmaDecisionEngine:
 
             step2['catalysts'] = catalysts
             if not catalysts:
-                result['reason'] = 'Step2否决: 无催化剂(OI/FR/清算位均不达标)'
-                result['details']['step2'] = step2
-                result['details']['step1'] = step1
-                return result
-
+                # [9.17 苏摩111] 不再因无催化剂否决——放开系统
+                step2['note'] = '无催化剂但不再否决 [9.17放开]'
             result['step_passed'] = 2
             step2['passed'] = True
             result['details']['step2'] = step2
@@ -466,7 +457,10 @@ class BrahmaDecisionEngine:
             if confirmed_15m:
                 result['step_passed'] = 5
                 result['action'] = 'EXECUTE'
-                result['reason'] = f'五步全通过 | 催化剂:{catalysts[0]} | {reason_15m} | RR={rr:.2f}x'
+                if catalysts:
+                    result['reason'] = f'五步全通过 | 催化剂:{catalysts[0]} | {reason_15m} | RR={rr:.2f}x'
+                else:
+                    result['reason'] = f'五步全通过 | 无催化剂(放开) | {reason_15m} | RR={rr:.2f}x'
             else:
                 result['action'] = 'WAIT_15M'
                 result['reason'] = f'步骤1-4通过，等待15m确认({reason_15m}) | RR={rr:.2f}x'

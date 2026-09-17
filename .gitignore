@@ -39,3 +39,16 @@ config/omniroute.json
 
 # pip cache (large binaries)
 pip_cache/
+
+# V3-1 大扫除: archive目录全部移除
+archive/
+brahma_brain/archive/
+brahma_brain/_archived_20260826/
+scripts/_archive/
+scripts/archive/
+
+# 旧报告和大数据文件
+data/reports/
+data/dim_trace.jsonl
+data/nerve_bus.jsonl
+data/brahma_structured.jsonl

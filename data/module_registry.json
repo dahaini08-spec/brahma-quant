@@ -1,560 +1,185 @@
 {
   "_meta": {
-    "description": "梵天模块注册表 v3 - 2026-09-15重建",
-    "created": "2026-09-13",
-    "rebuilt": "2026-09-15T09:57:00Z",
-    "sealed_by": "苏摩111",
-    "total_modules": 61
+    "version": "v3-1",
+    "updated": "2026-09-17",
+    "approved_by": "苏摩111",
+    "description": "V3架构18个核心模块注册表，取代旧27模块注册表"
   },
-  "critical_modules": {
-    "brahma_1hao_analysis": {
-      "file": "scripts/brahma_1hao_analysis.py",
-      "imported_by": [],
-      "import_count": 0,
-      "status": "active"
-    },
-    "brahma_analysis_runner": {
-      "file": "brahma_brain/brahma_analysis_runner.py",
-      "imported_by": [
-        "brahma_full_report",
-        "signal_change_detector",
-        "brahma_1hao_analysis"
-      ],
-      "import_count": 3,
-      "status": "active"
-    },
-    "brahma_core": {
-      "file": "brahma_brain/brahma_core.py",
-      "imported_by": [
-        "brahma_analysis_runner",
-        "brahma_health",
-        "brahma_parallel_engine"
-      ],
-      "import_count": 10,
-      "status": "active"
-    },
-    "brahma_core_entry": {
-      "file": "brahma_brain/brahma_core_entry.py",
-      "imported_by": [
-        "brahma_core"
-      ],
-      "import_count": 1,
-      "status": "active"
-    },
-    "brahma_experience_engine": {
-      "file": "brahma_brain/brahma_experience_engine.py",
-      "imported_by": [
-        "brahma_full_report",
-        "brahma_core",
-        "signal_settler"
-      ],
-      "import_count": 4,
-      "status": "active"
-    },
-    "brahma_full_report": {
-      "file": "brahma_brain/brahma_full_report.py",
-      "imported_by": [
-        "brahma_health",
-        "brahma_mcp_server",
-        "ai4trade_publisher"
-      ],
-      "import_count": 3,
-      "status": "active"
-    },
-    "enhanced_signal_engine": {
-      "file": "brahma_brain/enhanced_signal_engine.py",
-      "imported_by": [
-        "brahma_manual_analysis"
-      ],
-      "import_count": 1,
-      "status": "active"
-    },
-    "fangcang_engine": {
-      "file": "brahma_brain/fangcang_engine.py",
-      "imported_by": [
-        "brahma_decision_engine",
-        "data_cache",
-        "brahma_context_injector"
-      ],
-      "import_count": 13,
-      "status": "active"
-    },
-    "formatter": {
-      "file": "brahma_brain/formatter.py",
-      "imported_by": [
-        "brahma_analysis_runner",
-        "core_output",
-        "brahma_health"
-      ],
-      "import_count": 5,
-      "status": "active"
-    },
-    "gex_engine": {
-      "file": "brahma_brain/gex_engine.py",
-      "imported_by": [],
-      "import_count": 0,
-      "status": "active"
-    },
-    "ic_tracker": {
-      "file": "brahma_brain/ic_tracker.py",
-      "imported_by": [
-        "brahma_manual_analysis"
-      ],
-      "import_count": 1,
-      "status": "active"
-    },
-    "liq_density_engine": {
-      "file": "brahma_brain/liq_density_engine.py",
-      "imported_by": [
-        "brahma_core_entry",
-        "brahma_core_step4",
-        "s7_liq_config"
-      ],
-      "import_count": 6,
-      "status": "active"
-    },
-    "liq_heatmap": {
-      "file": "scripts/liq_heatmap.py",
-      "imported_by": [],
-      "import_count": 0,
-      "status": "active"
-    },
-    "llm_council": {
-      "file": "brahma_brain/llm_council.py",
-      "imported_by": [
-        "ai_council_bridge",
-        "brahma_1hao_analysis"
-      ],
-      "import_count": 2,
-      "status": "active"
-    },
-    "narrative_engine": {
-      "file": "brahma_brain/narrative_engine.py",
-      "imported_by": [
-        "position_sizer",
-        "brahma_core_entry",
-        "brahma_core_step4"
-      ],
-      "import_count": 9,
-      "status": "active"
-    },
-    "online_bayes": {
-      "file": "brahma_brain/online_bayes.py",
-      "imported_by": [
-        "ai_council_bridge"
-      ],
-      "import_count": 1,
-      "status": "active"
-    },
-    "online_learner_v2": {
-      "file": "brahma_brain/online_learner_v2.py",
-      "imported_by": [
-        "ai_council_bridge"
-      ],
-      "import_count": 1,
-      "status": "active"
-    },
-    "pattern_engine": {
-      "file": "brahma_brain/pattern_engine.py",
-      "imported_by": [
-        "brahma_manual_analysis"
-      ],
-      "import_count": 1,
-      "status": "active"
-    },
-    "position_sizer": {
-      "file": "brahma_brain/position_sizer.py",
-      "imported_by": [
-        "brahma_core_step4",
-        "brahma_full_report",
-        "brahma_core"
-      ],
-      "import_count": 8,
-      "status": "active"
-    },
-    "price_zone_engine": {
-      "file": "brahma_brain/price_zone_engine.py",
-      "imported_by": [
-        "auto_executor",
-        "brahma_1hao_analysis"
-      ],
-      "import_count": 2,
-      "status": "active"
-    },
-    "range_engine": {
-      "file": "brahma_brain/range_engine.py",
-      "imported_by": [
-        "brahma_core_block_a",
-        "brahma_manual_analysis"
-      ],
-      "import_count": 2,
-      "status": "active"
-    },
-    "reasoning_client": {
-      "file": "brahma_brain/reasoning_client.py",
-      "imported_by": [
-        "brahma_1hao_analysis"
-      ],
-      "import_count": 1,
-      "status": "active"
-    },
-    "regime_scorer": {
-      "file": "brahma_brain/regime_scorer.py",
-      "imported_by": [
-        "position_sizer",
-        "brahma_analysis_runner",
-        "market_state"
-      ],
-      "import_count": 6,
-      "status": "active"
-    },
-    "signal_quality_engine": {
-      "file": "brahma_brain/signal_quality_engine.py",
-      "imported_by": [
-        "signal_queue",
-        "signal_weight_updater",
-        "brahma_analysis_runner"
-      ],
-      "import_count": 9,
-      "status": "active"
+  "modules": {
+    "data_fetcher": {
+      "path": "brahma_brain/data_fetcher.py",
+      "layer": "L0",
+      "inputs": ["binance_api", "data/brahma_cache/"],
+      "outputs": ["market_state", "oi_data", "cvd_data", "whale_data"],
+      "deps": ["data_health"],
+      "status": "planned",
+      "replaces": ["market_state.py", "data_cache.py", "onchain_engine.py", "volume_unified.py"]
     },
     "smc_engine": {
-      "file": "brahma_brain/smc_engine.py",
-      "imported_by": [
-        "brahma_core_entry",
-        "divergence_engine",
-        "brahma_core_step4"
-      ],
-      "import_count": 6,
-      "status": "active"
+      "path": "brahma_brain/smc_engine.py",
+      "layer": "L0",
+      "inputs": ["kline_data"],
+      "outputs": ["fvg", "ob", "smc_structure"],
+      "deps": [],
+      "status": "exists",
+      "replaces": []
     },
-    "trigger_15m": {
-      "file": "brahma_brain/trigger_15m.py",
-      "imported_by": [
-        "brahma_manual_analysis"
-      ],
-      "import_count": 1,
-      "status": "active"
+    "liq_engine": {
+      "path": "brahma_brain/liq_engine.py",
+      "layer": "L0",
+      "inputs": ["kline_data", "oi_data"],
+      "outputs": ["liq_wall", "liq_pool", "liq_heatmap"],
+      "deps": [],
+      "status": "planned",
+      "replaces": ["liq_density_engine.py", "scripts/liq_heatmap.py"]
     },
-    "vol_beta_engine": {
-      "file": "brahma_brain/vol_beta_engine.py",
-      "imported_by": [],
-      "import_count": 0,
-      "status": "active"
-    }
-  },
-  "enhancement_modules": {
-    "ai_council_bridge": {
-      "file": "brahma_brain/ai_council_bridge.py",
-      "imported_by": [
-        "brahma_core",
-        "brahma_manual_analysis"
-      ],
-      "import_count": 2,
-      "status": "active"
+    "macro_engine": {
+      "path": "brahma_brain/macro_engine.py",
+      "layer": "L0",
+      "inputs": ["macro_config.json", "bls_api", "tradfi_api"],
+      "outputs": ["macro_event", "cross_market", "fomc_window"],
+      "deps": ["data_health"],
+      "status": "planned",
+      "replaces": ["tradfi_signal_layer.py", "brahma_brain/cross_market_engine.py"]
     },
-    "brahma_360": {
-      "file": "brahma_brain/brahma_360.py",
-      "imported_by": [
-        "brahma_manual_analysis"
-      ],
-      "import_count": 1,
-      "status": "active"
+    "data_health": {
+      "path": "brahma_brain/data_health.py",
+      "layer": "L0",
+      "inputs": ["data/*.json", "data/*.jsonl"],
+      "outputs": ["freshness_report", "degradation_flags"],
+      "deps": [],
+      "status": "planned",
+      "replaces": ["data_contract_validator.py", "brahma_health.py"]
     },
-    "brahma_core_analyze_steps": {
-      "file": "brahma_brain/brahma_core_analyze_steps.py",
-      "imported_by": [
-        "core_data",
-        "brahma_core"
-      ],
-      "import_count": 2,
-      "status": "active"
+    "scoring_engine": {
+      "path": "brahma_brain/scoring_engine.py",
+      "layer": "L1",
+      "inputs": ["market_state", "fvg", "ob", "oi_data", "whale_data", "macro_event"],
+      "outputs": ["confluence_score", "breakdown", "grade", "scoring_config.json"],
+      "deps": ["smc_engine", "liq_engine", "data_fetcher", "regime_engine"],
+      "status": "planned",
+      "replaces": ["brahma_core.py", "brahma_core_block_a.py", "brahma_core_step4.py", "brahma_core_analyze_steps.py", "brahma_core_entry.py", "dag_executor.py"]
     },
-    "brahma_core_block_a": {
-      "file": "brahma_brain/brahma_core_block_a.py",
-      "imported_by": [
-        "brahma_core"
-      ],
-      "import_count": 1,
-      "status": "active"
+    "resonance": {
+      "path": "brahma_brain/resonance.py",
+      "layer": "L1",
+      "inputs": ["fvg", "ob", "liq_wall", "liq_pool", "oi_data", "whale_data"],
+      "outputs": ["resonance_score", "entry_zone", "cross_validation"],
+      "deps": ["smc_engine", "liq_engine"],
+      "status": "planned",
+      "replaces": ["brahma_brain/ensemble_engine.py", "scripts/oi_advanced_scanner.py"]
     },
-    "brahma_core_block_b": {
-      "file": "brahma_brain/brahma_core_block_b.py",
-      "imported_by": [
-        "brahma_core"
-      ],
-      "import_count": 1,
-      "status": "active"
-    },
-    "brahma_core_block_c": {
-      "file": "brahma_brain/brahma_core_block_c.py",
-      "imported_by": [
-        "brahma_core"
-      ],
-      "import_count": 1,
-      "status": "active"
-    },
-    "brahma_core_step4": {
-      "file": "brahma_brain/brahma_core_step4.py",
-      "imported_by": [
-        "brahma_core",
-        "core_extra"
-      ],
-      "import_count": 2,
-      "status": "active"
-    },
-    "brahma_decision_engine": {
-      "file": "brahma_brain/brahma_decision_engine.py",
-      "imported_by": [
-        "brahma_core",
-        "auto_executor",
-        "brahma_state_refresh"
-      ],
-      "import_count": 4,
-      "status": "active"
-    },
-    "brahma_mcp_server": {
-      "file": "brahma_brain/brahma_mcp_server.py",
-      "imported_by": [
-        "seal_v2"
-      ],
-      "import_count": 1,
-      "status": "active"
-    },
-    "cross_asset_gate": {
-      "file": "brahma_brain/cross_asset_gate.py",
-      "imported_by": [
-        "brahma_analysis_runner",
-        "brahma_core",
-        "auto_executor"
-      ],
-      "import_count": 3,
-      "status": "active"
-    },
-    "dag_executor": {
-      "file": "brahma_brain/dag_executor.py",
-      "imported_by": [
-        "brahma_mcp_server",
-        "brahma_core",
-        "seal_v2"
-      ],
-      "import_count": 3,
-      "status": "active"
-    },
-    "dharma_nodes": {
-      "file": "brahma_brain/dharma_nodes.py",
-      "imported_by": [
-        "brahma_core"
-      ],
-      "import_count": 1,
-      "status": "active"
-    },
-    "dim_trace_writer": {
-      "file": "brahma_brain/dim_trace_writer.py",
-      "imported_by": [
-        "brahma_core",
-        "seal_v2"
-      ],
-      "import_count": 2,
-      "status": "active"
-    },
-    "ensemble_engine": {
-      "file": "brahma_brain/ensemble_engine.py",
-      "imported_by": [
-        "ai_council_bridge",
-        "brahma_core",
-        "brahma_manual_analysis"
-      ],
-      "import_count": 3,
-      "status": "active"
-    },
-    "feature_store": {
-      "file": "brahma_brain/feature_store.py",
-      "imported_by": [
-        "brahma_core"
-      ],
-      "import_count": 1,
-      "status": "active"
-    },
-    "free_llm_client": {
-      "file": "brahma_brain/free_llm_client.py",
-      "imported_by": [],
-      "import_count": 0,
-      "status": "active"
-    },
-    "gex_unified": {
-      "file": "brahma_brain/gex_unified.py",
-      "imported_by": [
-        "data_cache",
-        "brahma_full_report",
-        "brahma_core"
-      ],
-      "import_count": 5,
-      "status": "active"
-    },
-    "onchain_engine": {
-      "file": "brahma_brain/onchain_engine.py",
-      "imported_by": [
-        "brahma_core_entry",
-        "brahma_core_step4",
-        "brahma_core"
-      ],
-      "import_count": 5,
-      "status": "active"
-    },
-    "regime_config": {
-      "file": "brahma_brain/regime_config.py",
-      "imported_by": [
-        "brahma_core"
-      ],
-      "import_count": 1,
-      "status": "active"
-    },
-    "sentiment_engine": {
-      "file": "brahma_brain/sentiment_engine.py",
-      "imported_by": [],
-      "import_count": 0,
-      "status": "active"
-    },
-    "ssi_engine": {
-      "file": "brahma_brain/ssi_engine.py",
-      "imported_by": [
-        "brahma_core"
-      ],
-      "import_count": 1,
-      "status": "active"
-    },
-    "timing_filter": {
-      "file": "brahma_brain/timing_filter.py",
-      "imported_by": [
-        "brahma_analysis_runner",
-        "brahma_core"
-      ],
-      "import_count": 2,
-      "status": "active"
+    "regime_engine": {
+      "path": "brahma_brain/regime_engine.py",
+      "layer": "L1",
+      "inputs": ["kline_data", "hurst", "gex", "har_rv", "oi_trend"],
+      "outputs": ["regime", "regime_state", "failure_state", "position_mult"],
+      "deps": [],
+      "status": "planned",
+      "replaces": ["regime_scorer.py", "gex_unified.py", "har_rv_engine.py", "volatility_context.py"]
     },
     "trader_brain": {
-      "file": "brahma_brain/trader_brain.py",
-      "imported_by": [
-        "brahma_core",
-        "brahma_manual_analysis"
-      ],
-      "import_count": 2,
-      "status": "active"
+      "path": "brahma_brain/trader_brain.py",
+      "layer": "L2",
+      "inputs": ["confluence_score", "regime", "fvg", "ob", "liq", "oi", "sm", "vol", "res", "b2_proximity"],
+      "outputs": ["action", "direction", "entry_lo", "entry_hi", "sl", "tp", "confidence", "missing"],
+      "deps": ["scoring_engine", "regime_engine", "resonance"],
+      "status": "exists",
+      "replaces": []
     },
-    "tradfi_signal_layer": {
-      "file": "brahma_brain/tradfi_signal_layer.py",
-      "imported_by": [
-        "brahma_full_report",
-        "brahma_core",
-        "signal_quality_engine"
-      ],
-      "import_count": 4,
-      "status": "active"
+    "risk_engine": {
+      "path": "brahma_brain/risk_engine.py",
+      "layer": "L2",
+      "inputs": ["action", "direction", "regime_state", "nav", "failure_state"],
+      "outputs": ["position_pct", "leverage", "risk_approved", "circuit_breaker"],
+      "deps": ["trader_brain"],
+      "status": "planned",
+      "replaces": ["risk_engine.py", "position_sizer.py"]
     },
-    "universal_asset_router": {
-      "file": "brahma_brain/universal_asset_router.py",
-      "imported_by": [
-        "brahma_parallel_engine",
-        "brahma_full_report",
-        "brahma_core"
-      ],
-      "import_count": 4,
-      "status": "active"
+    "formatter": {
+      "path": "brahma_brain/formatter.py",
+      "layer": "L3",
+      "inputs": ["analysis_result", "trader_brain_result"],
+      "outputs": ["vip_card", "battlefield_report", "full_report"],
+      "deps": ["trader_brain"],
+      "status": "exists",
+      "replaces": ["brahma_full_report.py", "narrative_engine.py"]
     },
-    "us_session_gate": {
-      "file": "brahma_brain/us_session_gate.py",
-      "imported_by": [
-        "brahma_core",
-        "brahma_manual_analysis"
-      ],
-      "import_count": 2,
-      "status": "active"
+    "square_poster": {
+      "path": "brahma_brain/square_poster.py",
+      "layer": "L3",
+      "inputs": ["battlefield_report", "analysis_result"],
+      "outputs": ["square_post", "post_log"],
+      "deps": ["formatter"],
+      "status": "planned",
+      "replaces": ["scripts/square_auto_post.py", "scripts/square/square_template.py", "scripts/square/square_hot_poster.py", "scripts/square/zhao_bu_xuan_ip.py"]
     },
-    "volatility_context": {
-      "file": "brahma_brain/volatility_context.py",
-      "imported_by": [
-        "brahma_core"
-      ],
-      "import_count": 1,
-      "status": "active"
+    "executor": {
+      "path": "brahma_brain/executor.py",
+      "layer": "L4",
+      "inputs": ["action", "direction", "entry", "sl", "tp", "position_pct", "leverage"],
+      "outputs": ["order", "position_state", "sl_monitor"],
+      "deps": ["risk_engine", "trader_brain"],
+      "status": "planned",
+      "replaces": ["scripts/auto_executor.py", "scripts/auto_execute_gate.py", "scripts/signal_settler.py"]
     },
-    "volume_unified": {
-      "file": "brahma_brain/volume_unified.py",
-      "imported_by": [
-        "brahma_core_entry",
-        "brahma_core_step4",
-        "brahma_core"
-      ],
-      "import_count": 6,
-      "status": "active"
+    "analysis_runner": {
+      "path": "brahma_brain/brahma_analysis_runner.py",
+      "layer": "L1.5",
+      "inputs": ["symbol"],
+      "outputs": ["analysis_result_dict"],
+      "deps": ["data_fetcher", "scoring_engine", "regime_engine", "trader_brain", "risk_engine", "formatter"],
+      "status": "exists",
+      "replaces": [],
+      "note": "唯一入口，编排L0-L3"
     },
-    "weekly_monthly_anchor": {
-      "file": "brahma_brain/weekly_monthly_anchor.py",
-      "imported_by": [
-        "brahma_full_report",
-        "brahma_core",
-        "fangcang_engine"
-      ],
-      "import_count": 4,
-      "status": "active"
+    "dag_weight_calibrator": {
+      "path": "brahma_brain/dag_weight_calibrator.py",
+      "layer": "L1",
+      "inputs": ["wr_feedback", "scoring_config.json"],
+      "outputs": ["updated_weights", "bayesian_posterior"],
+      "deps": ["scoring_engine"],
+      "status": "exists",
+      "replaces": []
     },
-    "cvd_engine": {
-      "file": "brahma_brain/cvd_engine.py",
-      "imported_by": [
-        "brahma_core",
-        "volume_unified",
-        "__init__"
-      ],
-      "import_count": 3,
-      "status": "shim",
-      "note": "9.1合并到volume_unified.py, 此为接口shim"
+    "wr_feedback_engine": {
+      "path": "scripts/wr_feedback_engine.py",
+      "layer": "L1.5",
+      "inputs": ["live_signal_log", "settlement_ledger"],
+      "outputs": ["wr_matrix", "dimension_wr", "weight_adjustments"],
+      "deps": ["dag_weight_calibrator"],
+      "status": "exists",
+      "replaces": [],
+      "note": "蘑菇体自学习，每日02:00运行"
     },
-    "market_quadrant": {
-      "file": "brahma_brain/market_quadrant.py",
-      "imported_by": [
-        "brahma_core",
-        "regime_scorer",
-        "brahma_analysis_runner",
-        "__init__"
-      ],
-      "import_count": 4,
-      "status": "shim",
-      "note": "9.1合并到regime_scorer.py, 此为接口shim"
+    "signal_settler": {
+      "path": "scripts/signal_settler.py",
+      "layer": "L4",
+      "inputs": ["signal_log", "price_data"],
+      "outputs": ["settlement_result", "win_loss"],
+      "deps": [],
+      "status": "exists",
+      "replaces": []
     },
-    "macro_calendar": {
-      "file": "brahma_brain/macro_calendar.py",
-      "imported_by": [
-        "brahma_core_step4",
-        "brahma_full_report",
-        "trader_brain",
-        "narrative_engine",
-        "__init__"
-      ],
-      "import_count": 5,
-      "status": "shim",
-      "note": "9.1合并到narrative_engine.py, 此为接口shim"
-    },
-    "capital_allocator": {
-      "file": "brahma_brain/capital_allocator.py",
-      "imported_by": [
-        "position_sizer",
-        "portfolio_optimizer",
-        "__init__"
-      ],
-      "import_count": 3,
-      "status": "shim",
-      "note": "9.1合并到position_sizer.py, 此为接口shim"
-    },
-    "square_template": {
-      "file": "scripts/square/square_template.py",
-      "imported_by": [
-        "brahma_analysis_runner",
-        "square_auto_post"
-      ],
-      "import_count": 2,
-      "status": "active",
-      "note": "在scripts/square/目录下"
+    "independent_watchdog": {
+      "path": "scripts/independent_watchdog.sh",
+      "layer": "L0.5",
+      "inputs": [],
+      "outputs": ["process_health", "auto_restart"],
+      "deps": [],
+      "status": "exists",
+      "note": "60s循环看门狗，被openclaw cron(watchdog-guardian)二级监控"
     }
+  },
+  "orphans": [],
+  "layer_summary": {
+    "L0": 5,
+    "L1": 4,
+    "L1.5": 2,
+    "L2": 2,
+    "L3": 2,
+    "L4": 2,
+    "L0.5": 1,
+    "total": 18
   }
 }

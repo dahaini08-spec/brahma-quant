@@ -507,6 +507,37 @@ def main():
         except Exception as _fc_e:
             print(f'[settler] 方仓反馈跳过: {_fc_e}')
 
+        # [V3-1.4 2026-09-17 苏摩111] 每笔交易后贝叶斯权重更新
+        # 接入位置: 方仓反馈后，LLM复盘前
+        # 调用dag_weight_calibrator做在线贝叶斯更新
+        try:
+            import sys as _sys_dag
+            _sys_dag.path.insert(0, str(BASE / 'brahma_brain'))
+            from dag_weight_calibrator import calibrate_weights as _dag_calib
+            _dag_config_path = BASE / 'data' / 'scoring_config.json'
+            if _dag_config_path.exists():
+                import json as _dag_json
+                _dag_cfg = _dag_json.loads(_dag_config_path.read_text())
+                # 构建维度WR反馈
+                _dag_dim_wr = {}
+                for _s in settled_new:
+                    _dag_regime = _s.get('regime', 'CHOP_MID')
+                    _dag_dir = _s.get('signal_dir', 'LONG')
+                    _dag_won = _s.get('outcome') in ('TP1', 'TP2')
+                    _dag_key = f'{_dag_regime}:{_dag_dir}'
+                    if _dag_key not in _dag_dim_wr:
+                        _dag_dim_wr[_dag_key] = {'wins': 0, 'losses': 0}
+                    if _dag_won:
+                        _dag_dim_wr[_dag_key]['wins'] += 1
+                    else:
+                        _dag_dim_wr[_dag_key]['losses'] += 1
+                _dag_result = _dag_calib(_dag_cfg, _dag_dim_wr, {})
+                _dag_actions = len(_dag_result[1]) if isinstance(_dag_result, tuple) and len(_dag_result) > 1 else 0
+                if _dag_actions > 0:
+                    print(f'[settler] 贝叶斯权重更新: {_dag_actions}维度调整')
+        except Exception as _dag_e:
+            print(f'[settler] 贝叶斯更新跳过: {_dag_e}', file=__import__('sys').stderr)
+
         # P1-2: 结算后LLM复盘 → learning_log.jsonl (2026-09-04 苏摩111封印)
         # 接入位置: 方仓反馈后，推送简报前
         try:

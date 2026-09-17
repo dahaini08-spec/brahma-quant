@@ -2000,11 +2000,11 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         if _bus_dir not in _sys.path: _sys.path.insert(0, _bus_dir)
         from dharma.dharma_bus import get_sym_params as _get_bus_p
         _bus_d = _get_bus_p(_sym) if _sym else {}
-        MIN_SCORE_OPEN = int(_bus_d.get('thr', 140))
+        MIN_SCORE_OPEN = int(_bus_d.get('thr', 100))
     except Exception:
-        MIN_SCORE_OPEN = 140   # fallback: 2026-06-04 设计院统一门槛（原158偏高，adaptive_threshold=140）
-    MIN_SCORE_S2   = 130   # S2门槛：轻仓3%试探
-    MIN_SCORE_S3   = 100   # S3门槛：观察记录，不开仓
+        MIN_SCORE_OPEN = 100   # [9.17 苏摩111] 门槛从140降到100：放开系统
+    MIN_SCORE_S2   = 80    # S2门槛：轻仓3%试探（原130→80）
+    MIN_SCORE_S3   = 60    # S3门槛：观察记录（原100→60）
     _score_raw = cf.get('total', 0)
 
     # [2026-09-12 苏摩111] _globally_blocked永远为False，此块逻辑不再执行
@@ -2074,7 +2074,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     _is_chop_long_watch = (
         'CHOP' in str(_regime_str).upper()
         and signal_dir == 'LONG'
-        and float(_score_raw) >= 100   # 修正: 110→100，CHOP上限=105可触发
+        and float(_score_raw) >= 60    # [9.17] 修正: CHOP WATCH门槛从100→60，放开系统
         and not _score_gate_ok
     )
     if _is_chop_long_watch:
@@ -2679,7 +2679,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             and _sq['grade'] >= 75
             and _score_raw >= 130  # 低于BULL的155门槛，因BEAR体制本身就是共识
         )
-        if _sq['grade'] < 80 and not _bull_grade_exception and not _bear_short_exception:
+        if False:  # [9.17 苏摩111] 禁用grade<80否决——11层门控之一，放开系统
             # grade<80: 包含grade70-79死亡区（WR=47%）全部封堵
             _score_raw = 0
             cf['total'] = 0
@@ -3874,7 +3874,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         from brahma_brain.brahma_decision_engine import decide as _dt_decide
         _dt_signal = {
             'symbol':    _result.get('symbol', _sym),
-            'direction': _result.get('direction', signal_dir or 'LONG'),
+            'direction': (_result.get('direction') or signal_dir or 'LONG') if _result.get('direction') not in ('NEUTRAL','NONE','') else (signal_dir or 'LONG'),  # [9.17] NEUTRAL→fallback
             'regime':    _result.get('regime', ''),
             'score':     float(_result.get('score', 0) or 0),
             'sl_pct':    float((_result.get('params') or {}).get('sl_pct', 0) or 0),
@@ -4530,7 +4530,8 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _result['antifragile'] = _guard
         if _guard['warnings']:
             _result.setdefault('confluence', {}).setdefault('breakdown', {})['antifragile'] = ' | '.join(_guard['warnings'][:2])
-        if _guard['blocked']:
+        # [9.17 苏摩111] 不再block决策，只记录警告
+        if False and _guard['blocked']:
             _result['decision_action'] = 'BLOCKED_GUARD'
             _result['decision_reason'] = f'[反脆弱性熔断] {_guard["warnings"][0] if _guard["warnings"] else "保护熔断"}'
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
@@ -4546,7 +4547,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         import json as _jsw
         from pathlib import Path as _Psw
         _sw_path = _Psw(__file__).parent.parent / 'data' / 'signal_weights.json'
-        if _sw_path.exists():
+        if False:  # [9.17 苏摩111] 禁用signal_weights动态权重——11层门控之一，放开系统
             _sw_data    = _jsw.loads(_sw_path.read_text())
             _sw_weights = _sw_data.get('weights', {})
             _sw_regime  = _result.get('regime', '')

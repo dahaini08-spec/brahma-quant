@@ -99,8 +99,8 @@ def get_sparse_config(regime: str, direction: str) -> dict:
     dir_cfg = regime_cfg.get(direction, {})
 
     return {
-        'active_dims': set(dir_cfg.get('active_dims', [])),
-        'sleep_dims': set(dir_cfg.get('sleep_dims', [])),
+        'active_dims': dir_cfg.get('active_dims', []),
+        'sleep_dims': dir_cfg.get('sleep_dims', []),
         'weights': dir_cfg.get('weights', {}),
         'position_mult': float(dir_cfg.get('position_mult', 1.0)),
     }
@@ -155,10 +155,13 @@ def apply_sparse_activation(dim_scores: dict, regime: str, direction: str,
             'vol_gain_log': '',
         }
 
-    # 处理 'all' 关键字 = 全部休眠
-    if 'all' in sleep:
+    # 处理 'all' 关键字
+    if isinstance(sleep, list) and 'all' in sleep:
         sleep = set(_ALL_DIMS)
         active = set()
+    if isinstance(active, list) and 'all' in active:
+        active = set(_ALL_DIMS)
+        sleep = set()
 
     new_dims = {}
     new_score = 0
