@@ -85,22 +85,7 @@ def emit_signal(symbol: str, direction: str, entry: float, sl: float,
             'regime': regime,
         }
     )
-    # Phase 2C: 记录预测，供4h后验证 prediction error
-    try:
-        from brahma_brain.prediction_recorder import record_prediction
-        record_prediction(
-            signal_id=signal_id or f'{symbol}_{int(time.time())}',
-            symbol=symbol,
-            direction=direction,
-            entry_lo=entry_lo or entry,
-            entry_hi=entry_hi or entry,
-            score=score,
-            regime=regime,
-            tp1=tp,
-            stop_loss=sl,
-        )
-    except Exception as e:
-        import sys; print(f'[nerve_bus] prediction记录失败: {e}', file=sys.stderr)
+    # Phase 2C: 预测编码管道已移除（2026-09-17 苏摩111）
 
 def emit_alert(module: str, msg: str, urgency: str = 'P2', data: dict = None):
     """系统告警"""

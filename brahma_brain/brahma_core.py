@@ -1249,6 +1249,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     """
     t0 = time.time()
     _sym = symbol.upper()
+    _result = {}  # [2026-09-15 苏摩111] 防御性初始化,防止early return路径返回未定义
     pass  # [静默] f'[BrahmaBrain] 开始分析 {_sym} dir={signal_dir or "AUTO"}'
 
     # ══ [设计院 2026-06-30 P3] BrahmaBus 数据总线初始化 ══════════════════════
@@ -1283,6 +1284,41 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _pf(_sym)
     except Exception:
         pass  # 预热失败不影响主流程，自动降级到串行拉取
+
+    # ══ [2026-09-16 苏摩111 FinanceMCP借鉴] 数据健康检查 + 降级标记 ════════════
+    # 设计院P0-②：分析开始前检查CVD/liqmap/GEX/HAR-RV数据新鲜度
+    # 借鉴FinanceMCP的来源可追溯+降级路径标注机制
+    # 脏数据不阻断分析，但标记降级模式供下游（DAG校准器/full_report）使用
+    _data_health = {}
+    try:
+        import os as _os_dh, time as _time_dh
+        _dh_base = _os_dh.path.join(BASE_DIR, '..', 'data')
+        _dh_files = {
+            'cvd_btc':  ('cvd_realtime_btcusdt.json',  2.0),
+            'cvd_eth':  ('cvd_realtime_ethusdt.json',  2.0),
+            'liqmap_btc': ('liq_heatmap_btcusdt.json', 2.0),
+            'liqmap_eth': ('liq_heatmap_ethusdt.json', 2.0),
+            'gex':      ('gex_state.json',            4.0),
+            'har_rv':   ('har_rv_cache.json',         4.0),
+        }
+        _now = _time_dh.time()
+        for _dh_key, (_dh_fn, _dh_max_age) in _dh_files.items():
+            _dh_path = _os_dh.path.join(_dh_base, _dh_fn)
+            if _os_dh.path.exists(_dh_path):
+                _dh_age = (_now - _os_dh.path.getmtime(_dh_path)) / 3600
+                _data_health[_dh_key] = {
+                    'age_hours': round(_dh_age, 2),
+                    'healthy': _dh_age < _dh_max_age,
+                    'source': 'binance_api' if 'cvd' in _dh_key or 'liqmap' in _dh_key else 'supercronic',
+                }
+            else:
+                _data_health[_dh_key] = {'age_hours': 999, 'healthy': False, 'source': 'missing'}
+        _dh_stale = {k: v for k, v in _data_health.items() if not v['healthy']}
+        if _dh_stale:
+            _dh_warn = ', '.join(f"{k}过期{v['age_hours']:.1f}h" for k, v in _dh_stale.items())
+            print(f'[DataHealth] ⚠️ {_sym} 降级模式: {_dh_warn}', file=sys.stderr)
+    except Exception as _dh_e:
+        print(f'[DataHealth] 检查异常(不阻断): {_dh_e}', file=sys.stderr)
 
     # ╔══════════════════════════════════════════════════════════════════╗
     # ║ Step1-3: 市场分析/方向/SMC                                        ║
@@ -3153,6 +3189,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         'price':       ms['price'],
         'price_ts':    time.time(),   # [设计院 2026-08-25] 强制写入实时时间戳，防旧数据输出
         'data_age_sec': 0,             # 刚从API取，age=0
+        'data_health': _data_health,  # [2026-09-16 FinanceMCP借鉴] 数据健康检查+降级标记
         'signal_dir':  signal_dir,
         'regime':      ms['regime'],
         'regime_cn':   _REGIME_CN.get(ms['regime'], ms['regime']),  # [v25.3] 体制中文
@@ -4573,6 +4610,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 'fangcang': _result.get('fangcang', {}),
             },
             symbol=_result.get('symbol', ''),
+            b2_proximity=str((_result.get('confluence') or {}).get('b2_proximity', '') or ''),
         )
         _result['trader_brain'] = {
             'action': _tb_r.get('action'),
@@ -4584,6 +4622,19 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             'confidence': _tb_r.get('confidence'),
             'missing': _tb_r.get('missing', []),
         }
+        # [2026-09-17 设计院S1修复] trader_brain action覆盖confluence_score action
+        # 根因：format_full_report读c.get('action')即confluence_score.action，不是trader_brain.action
+        # 修复：trader_brain是最终决策层，其action应覆盖confluence_score的初步action
+        _tb_action = _tb_r.get('action')
+        if _tb_action and _tb_action != 'ENTER':
+            # trader_brain说不能ENTER → 覆盖confluence_score的ENTER_FULL
+            try:
+                _cf_ref = _result.get('confluence', {})
+                if isinstance(_cf_ref, dict) and _cf_ref.get('action') in ('ENTER_FULL', 'ENTER'):
+                    _cf_ref['action'] = _tb_action
+                    _result['confluence'] = _cf_ref
+            except Exception:
+                pass
     except Exception:
         pass  # trader_brain失败不阻断分析
 
@@ -4605,6 +4656,11 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception:
         pass  # nerve_bus不能影响主流程
 
+    # [2026-09-15 苏摩111] 防御性保证：analyze()永远返回dict
+    if not isinstance(_result, dict):
+        _result = {'symbol': _sym, 'error': f'non-dict return: {type(_result).__name__}', 'score_final': 0}
+    if 'symbol' not in _result:
+        _result['symbol'] = _sym
     return _result
     """[shim] 已迁移到 brahma_brain/formatter.py · v25.0"""
     from brahma_brain.formatter import format_report as _fmt

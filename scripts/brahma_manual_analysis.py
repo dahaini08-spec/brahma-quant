@@ -138,7 +138,7 @@ def step0_fetch_all(sym: str) -> dict:
     bids_sum = sum(float(x[1]) for x in dep.get('bids', []))
     asks_sum = sum(float(x[1]) for x in dep.get('asks', []))
 
-    liq_b    = load_json(DATA / f'liq_heatmap_{usdt}.json')
+    liq_b    = load_json(DATA / f'liq_heatmap_{usdt.lower()}.json')
     # 优先读取标的专属state文件（修复ETH OB/FVG数据污染）
     # brahma_state_refresh.py 已封印为每个标的写入独立文件
     _sym_lower    = sym.lower()  # btc / eth / near / zec ...
@@ -1334,12 +1334,14 @@ def step8_macro(d: dict) -> dict:
             _evt_name = _layer0_macro['event']
             _phase = _layer0_macro['phase']
             _hours = _layer0_macro.get('hours_to_event', 0)
+            _action = _layer0_macro.get('action', '')
             if _phase == 'pre_event':
                 high_impact.append(f'{_evt_name}({_hours:.1f}h后)')
-            elif _phase == 'post_event':
+            elif _phase == 'post_event' and _action != 'DONE':
                 high_impact.append(f'{_evt_name}(已公布{-_hours:.1f}h)')
             elif _phase == 'normal':
                 high_impact.append(f'{_evt_name}(今日)')
+            # [9.17修复] post_event + action=DONE → 不加入high_impact，不触发持仓减半
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     has_event = len(high_impact) > 0
     
@@ -2741,6 +2743,8 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         # 用当前分析结果作为主方向，构造简化regime dict
         _regime_for_sel = {
             'symbol': sym+'USDT',
+            'primary': str(regime_c),
+            'regime': str(regime_c),
             'bull_prob': 0.3, 'bear_prob': 0.4, 'chop_prob': 0.3,
             'multiplier': {'SHORT': 0.88 if 'CHOP' in str(regime_c) else 0.5, 'LONG': 0.5 if 'CHOP' in str(regime_c) else 1.3},
         }
@@ -2792,6 +2796,15 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         _step_gc()
     except Exception as _b360_e:
         lines += [f'', f'─── 🔄 brahma_360 自检 ───', f'  ⚠️ 未启用: {str(_b360_e)[:60]}']
+
+    # [2026-09-16 苏摩111] 推理层接入 — 因果+博弈+周期因果链
+    # 在brahma_360自检之后、return之前
+    try:
+        from brahma_brain.brahma_inference import format_inference_block
+        _inf_block = format_inference_block(d.get('bs', {}))
+        lines.append(_inf_block)
+    except Exception as _inf_err:
+        lines.append(f'\n  [推理层] 加载失败: {_inf_err}')
 
     return '\n'.join(lines)
 
@@ -2850,6 +2863,56 @@ def main():
     # 战场情报推送已移除 — battlefield cron通过AI agent推送，脚本不再直接推Jarvis
     # 避免square_auto_post等调用方通过.pyc缓存意外触发推送
     
+    # ── [9.16苏摩111] 多标的方向一致性 + 分阶段策略标注 ──
+    try:
+        import json as _json2, re as _re_mod
+        _cross_lines = []
+        _sym_dirs = {}
+        _sym_entries = {}
+        for _sym in symbols:
+            _state_path = Path(__file__).parent.parent / 'data' / f'brahma_state_{_sym.lower()}.json'
+            if _state_path.exists():
+                _st = _json2.loads(_state_path.read_text())
+                # Extract direction from the output text
+                _out_text = results.get(_sym, '')
+                _dir = 'NONE'
+                if '🟢 多单' in _out_text:
+                    _dir = 'LONG'
+                elif '🔴 空单' in _out_text:
+                    _dir = 'SHORT'
+                _sym_dirs[_sym] = _dir
+                # Extract entry zone
+                _entry_match = _re_mod.search(r'入场区 \$([\d,.]+)~\$([\d,.]+)', _out_text)
+                if _entry_match:
+                    _sym_entries[_sym] = (float(_entry_match.group(1).replace(',','')), float(_entry_match.group(2).replace(',','')))
+        
+        # Check for direction conflict among high-correlation assets
+        if 'BTC' in _sym_dirs and 'ETH' in _sym_dirs:
+            _btc_dir = _sym_dirs['BTC']
+            _eth_dir = _sym_dirs['ETH']
+            # BTC-ETH correlation is 0.85 (from Step9 risk)
+            if _btc_dir != 'NONE' and _eth_dir != 'NONE' and _btc_dir != _eth_dir:
+                _cross_lines.append('')
+                _cross_lines.append('━━━ 🔄 分阶段策略标注 ━━━')
+                _cross_lines.append(f'  BTC={_btc_dir} ETH={_eth_dir} 相关性0.85 → 非矛盾，是分阶段操作')
+                if _btc_dir == 'LONG' and _eth_dir == 'SHORT':
+                    _cross_lines.append('  阶段1: ETH反弹做空（1H短期）')
+                    _cross_lines.append('  阶段2: ETH下跌带动BTC回调 → 接多（4H/1D中线）')
+                    _cross_lines.append('  阶段3: BTC到位时ETH空单止盈')
+                elif _btc_dir == 'SHORT' and _eth_dir == 'LONG':
+                    _cross_lines.append('  阶段1: BTC反弹做空（1H短期）')
+                    _cross_lines.append('  阶段2: BTC下跌带动ETH回调 → 接多（4H/1D中线）')
+                    _cross_lines.append('  阶段3: ETH到位时BTC空单止盈')
+                _cross_lines.append('  ⚠️ 不同周期对应不同阶段，不是同时矛盾')
+                _cross_lines.append('')
+        
+        if _cross_lines:
+            _cross_text = '\n'.join(_cross_lines)
+            print(_cross_text)
+            full_output.append(_cross_text)
+    except Exception as _cross_e:
+        print(f'[WARN] 分阶段策略标注失败: {_cross_e}', file=sys.stderr)
+
     # [9.15苏摩111 Step2] 写入auto_analysis_latest.json — 统一出口
     try:
         from pathlib import Path as _P

@@ -49,13 +49,32 @@ READY_THRESHOLD   = int(os.environ.get('TIMING_READY_THRESHOLD', '65'))
 MONITOR_THRESHOLD = int(os.environ.get('TIMING_MONITOR_THRESHOLD', '40'))
 
 # Pro 版体制感知阈值（开源版统一使用默认值）
+# [改革3 2026-09-17 苏摩111] 从scoring_config.json读取，硬编码降级为fallback
+from pathlib import Path as _Path_tf
+import json as _json_tf
+
 _REGIME_THRESHOLDS = {
-    'BEAR_TREND':    {'ready': 65, 'monitor': 40},  # Pro: 精调值
+    'BEAR_TREND':    {'ready': 65, 'monitor': 40},
     'BULL_TREND':    {'ready': 60, 'monitor': 35},
     'CHOP_MID':      {'ready': 70, 'monitor': 45},
     'BEAR_EARLY':    {'ready': 65, 'monitor': 40},
     'BEAR_RECOVERY': {'ready': 62, 'monitor': 38},
 }
+try:
+    _sc_path = _Path_tf(__file__).parent.parent / 'data' / 'scoring_config.json'
+    if _sc_path.exists():
+        _sc = _json_tf.loads(_sc_path.read_text())
+        for _reg, _rv in _sc.items():
+            if _reg.startswith('_') or not isinstance(_rv, dict):
+                continue
+            for _dir, _dv in _rv.items():
+                if isinstance(_dv, dict) and 'timing_ready' in _dv and 'timing_monitor' in _dv:
+                    if _reg not in _REGIME_THRESHOLDS:
+                        _REGIME_THRESHOLDS[_reg] = {}
+                    _REGIME_THRESHOLDS[_reg]['ready'] = _dv['timing_ready']
+                    _REGIME_THRESHOLDS[_reg]['monitor'] = _dv['timing_monitor']
+except Exception as _e:
+    import sys as _sys_tf; print(f'[WARN] timing_filter scoring_config: {_e}', file=_sys_tf.stderr)
 
 _STATUS_BADGES = {
     'READY':   '🟢 READY',

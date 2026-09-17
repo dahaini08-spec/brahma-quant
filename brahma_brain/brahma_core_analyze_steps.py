@@ -119,7 +119,7 @@ def _analyze_step1(symbol: str, signal_dir: str) -> dict:
         if _cv_root not in _cv_sys.path:
             if _cv_root not in _cv_sys.path: _cv_sys.path.insert(0, _cv_root)
 # 模块不存在，已注释
-# from causal_regime_verifier import verify as _cv_verify
+        from brahma_brain.causal_regime_verifier import verify as _cv_verify
         _cv_regime = ms.get('regime', '?')
         _cv_dir = signal_dir or ms.get('signal_bias', 'SHORT')
         _causal_v_result = _cv_verify(_sym, _cv_regime, _cv_dir, ms, timeout_ms=150)

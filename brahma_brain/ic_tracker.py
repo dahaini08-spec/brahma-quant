@@ -126,7 +126,15 @@ def compute_all_ic() -> dict:
             label = rec['label']
             for dim_key, val in rec['breakdown'].items():
                 try:
-                    score_val = float(str(val).split('(')[0].strip().replace('+',''))
+                    # 清洗值：提取数字部分，处理中文/emoji/复合字符串
+                    import re as _re_ic
+                    _str_val = str(val)
+                    # 提取第一个浮点数（正负均可）
+                    _match = _re_ic.search(r'-?\d+\.?\d*', _str_val)
+                    if _match:
+                        score_val = float(_match.group())
+                    else:
+                        continue  # 无数字的值跳过
                     dim_data[dim_key]['scores'].append(score_val)
                     dim_data[dim_key]['labels'].append(label)
                 except Exception as e:

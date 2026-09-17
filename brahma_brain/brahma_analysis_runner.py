@@ -417,14 +417,14 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # B2: regime_scorer — 5-regime精细分类
     try:
-        from regime_scorer import score_regime
+        from regime_scorer import score as score_regime
         _rs = score_regime(symbol)
         if _rs and not _rs.get('error'):
             result['_regime_score'] = _rs
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # B3: brahma_multiframe — 多周期FVG/OB扫描
     try:
-        from brahma_multiframe import scan_mtf
+        from brahma_multiframe import scan as scan_mtf
         _mf = scan_mtf(symbol, result.get('price', 0))
         if _mf and not _mf.get('error'):
             result['_multiframe'] = _mf
@@ -447,12 +447,12 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                 'source': 'bybit'
             }
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-    # B6: s7_liq_config — 清算奖励
+    # B6: s7_liq_config — 清算奖励 (2026-09-17修复: get_liq_bonus已废弃,改用get_liq_density)
     try:
-        from s7_liq_config import get_liq_bonus
-        _lb = get_liq_bonus(result.get('notional', 0), symbol)
-        if _lb:
-            result['_liq_bonus'] = _lb
+        from liq_density_engine import get_liq_density
+        _ld = get_liq_density(symbol, result.get('price', 0))
+        if _ld:
+            result['_liq_density'] = _ld
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     result['_runner_meta'] = {
         'runner_version': '1.2',
@@ -975,6 +975,24 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
             if not _guard_skip:
                 with open(_sig_log, 'a') as _sf:
                     _sf.write(_sjson.dumps(_sig_record, ensure_ascii=False) + '\n')
+                # [2026-09-15 苏摩111] 管道接通：信号写入时同步emit_signal→prediction_recorder
+                try:
+                    from brahma_brain.nerve_bus_writer import emit_signal
+                    _es_sym = _sig_record.get('symbol', 'UNKNOWN')
+                    _es_dir = _sig_record.get('signal_dir', 'UNKNOWN')
+                    _es_entry = float(_sig_record.get('price', 0) or 0)
+                    _es_sl = float(_sig_record.get('stop_loss', 0) or 0)
+                    _es_tp = float(_sig_record.get('tp1', 0) or 0)
+                    _es_score = float(_sig_record.get('score', 0) or _sig_record.get('score_final', 0) or 0)
+                    _es_regime = _sig_record.get('regime', 'UNKNOWN')
+                    _es_sid = _sig_record.get('signal_id', '')
+                    _es_lo = float(_sig_record.get('entry_lo', 0) or 0)
+                    _es_hi = float(_sig_record.get('entry_hi', 0) or 0)
+                    emit_signal(_es_sym, _es_dir, _es_entry, _es_sl, _es_tp,
+                               _es_score, _es_regime,
+                               entry_lo=_es_lo, entry_hi=_es_hi, signal_id=_es_sid)
+                except Exception as _es_e:
+                    import sys as _es_sys; print(f'[emit_signal] {_es_e}', file=_es_sys.stderr)
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # [协同接入 2026-08-02 设计院自主] condition_order_matrix 条件单计划卡
     # 当score≥120 且有有效params时，生成条件单计划卡存入data/condition_orders.json

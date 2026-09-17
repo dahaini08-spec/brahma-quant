@@ -29,8 +29,13 @@ from pathlib import Path
 from typing import Optional, Dict
 
 ROOT    = Path(__file__).parent.parent
-CACHE_F = ROOT / 'data/gex_cache.json'
+CACHE_DIR = ROOT / 'data'
 CACHE_TTL = 1800  # 30分钟缓存
+
+
+def _cache_f(currency: str) -> Path:
+    """按标的分文件存储GEX cache，避免轮换覆盖"""
+    return CACHE_DIR / f'gex_cache_{currency.lower()}.json'
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -96,9 +101,9 @@ def compute_gex(currency: str = 'BTC',
         ts            : 计算时间
     """
     # ── 检查缓存 ─────────────────────────────────────────
-    if CACHE_F.exists():
+    if _cache_f(currency).exists():
         try:
-            cached = json.loads(CACHE_F.read_text())
+            cached = json.loads(_cache_f(currency).read_text())
             if (time.time() - cached.get('_ts', 0)) < CACHE_TTL and \
                cached.get('currency') == currency:
                 return cached
@@ -184,7 +189,7 @@ def compute_gex(currency: str = 'BTC',
 
     # 缓存
     try:
-        CACHE_F.write_text(json.dumps(result, ensure_ascii=False))
+        _cache_f(currency).write_text(json.dumps(result, ensure_ascii=False))
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return result
 

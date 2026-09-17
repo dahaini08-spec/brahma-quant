@@ -24,7 +24,7 @@ import math
 import time
 import logging
 from pathlib import Path
-from data_cache import _SSL_CTX as _DC_SSL_CTX
+from brahma_brain.data_cache import get_klines as _dc, _SSL_CTX as _DC_SSL_CTX
 import sys
 
 logger = logging.getLogger(__name__)
@@ -72,24 +72,26 @@ def get_har_rv(symbol: str) -> dict:
                         regime_vol, score_adj, p_up_proxy
     """
     now = time.time()
-    cache_key = f'har_{symbol}'
+    # 标准化symbol为USDT交易对
+    _sym = symbol.upper().replace('USDT','').replace('USDC','')
+    _sym_usdt = _sym + 'USDT'
+    cache_key = f'har_{_sym}'
     
     # 缓存检查
     if cache_key in _CACHE and now - _CACHE[cache_key]['ts'] < _CACHE_TTL:
         return _CACHE[cache_key]['data']
     
     try:
-        # 拉取1H K线（最近30根够算日/周波动率）
-        klines_1h = _fetch_klines(symbol, '1h', 30)
-        klines_4h = _fetch_klines(symbol, '4h', 28)  # 7天 4H
+        klines_1h = _fetch_klines(_sym_usdt, '1h', 168)  # 7天1H=168根
+        klines_4h = _fetch_klines(_sym_usdt, '4h', 42)   # 7天4H=42根
         
-        if len(klines_1h) < 10:
-            raise ValueError('K线数据不足')
+        if len(klines_1h) < 25:
+            raise ValueError(f'K线数据不足: 1H={len(klines_1h)} 4H={len(klines_4h)}')
         
         # 计算三个时间维度的RV
         rv_d  = _calc_realized_vol(klines_1h, 24)    # 日度: 24×1H
         rv_w  = _calc_realized_vol(klines_4h, 14)    # 周度: 14×4H ≈ 7天
-        rv_m  = _calc_realized_vol(klines_4h, 28)    # 月度: 28×4H ≈ 14天
+        rv_m  = _calc_realized_vol(klines_4h, 28) if len(klines_4h) >= 29 else _calc_realized_vol(klines_4h, len(klines_4h)-1) if len(klines_4h) > 5 else rv_w
         
         # HAR-RV 回归参数（基于BTC 2019-2024校准，文献值）
         alpha = 0.0001

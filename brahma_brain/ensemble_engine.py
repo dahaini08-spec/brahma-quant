@@ -64,11 +64,12 @@ REGIME_MAP = {
 }
 
 # 体制×方向IC权重(达摩院N-A: 逆势PF=2.248 > 顺势PF=2.094)
+# [改革4 2026-09-17 苏摩111] 从scoring_config.json读取position_mult，硬编码降级为fallback
 REGIME_DIRECTION_WEIGHTS = {
-    ('BEAR_TREND', 'SHORT'):    1.5,   # 顺势
-    ('BEAR_TREND', 'LONG'):     0.7,   # 逆势但达摩院说不该放弃
-    ('BULL_TREND', 'LONG'):     1.5,   # 顺势
-    ('BULL_TREND', 'SHORT'):    0.7,   # 逆势
+    ('BEAR_TREND', 'SHORT'):    1.5,
+    ('BEAR_TREND', 'LONG'):     0.7,
+    ('BULL_TREND', 'LONG'):     1.5,
+    ('BULL_TREND', 'SHORT'):    0.7,
     ('CHOP_MID', 'LONG'):       0.88,
     ('CHOP_MID', 'SHORT'):      0.88,
     ('BEAR_RECOVERY', 'LONG'):  1.2,
@@ -76,6 +77,21 @@ REGIME_DIRECTION_WEIGHTS = {
     ('BULL_EARLY', 'LONG'):     1.3,
     ('BEAR_EARLY', 'SHORT'):    1.3,
 }
+try:
+    from pathlib import Path as _Path_ee
+    import json as _json_ee
+    _sc_path = _Path_ee(__file__).parent.parent / 'data' / 'scoring_config.json'
+    if _sc_path.exists():
+        _sc = _json_ee.loads(_sc_path.read_text())
+        for _reg, _rv in _sc.items():
+            if _reg.startswith('_') or not isinstance(_rv, dict):
+                continue
+            for _dir, _dv in _rv.items():
+                if isinstance(_dv, dict) and 'position_mult' in _dv:
+                    _key = (_reg, _dir.upper())
+                    REGIME_DIRECTION_WEIGHTS[_key] = _dv['position_mult']
+except Exception as _e:
+    import sys as _sys_ee; print(f'[WARN] ensemble_engine scoring_config: {_e}', file=_sys_ee.stderr)
 
 
 def get_ensemble_score(symbol: str, direction: str, brahma_result: dict = None) -> dict:

@@ -1,0 +1,39 @@
+{
+  "BTC": {
+    "symbol": "BTC",
+    "created_at": "2026-09-15T11:20:55.163347+00:00",
+    "short_entry": 0,
+    "long_entry": 77038.3,
+    "short_notional": 0,
+    "long_notional": 50,
+    "liq_price": 64557.59391054999,
+    "triggers": {
+      "P0_生死线": {
+        "condition": "价格 ≤ 74241.23300（强平价64557.5939的115%，上方15%缓冲）",
+        "action": "立即减仓50%，不商量",
+        "price": 74241.23299713248,
+        "trigger_dir": "lte",
+        "priority": 0
+      },
+      "P1_多单止盈": {
+        "condition": "多单浮盈 ≥ 40%（入场价+40%=107853.62000）",
+        "action": "多单市价止盈，锁定利润",
+        "price": 107853.62,
+        "priority": 1
+      },
+      "P2_调仓线": {
+        "condition": "空/多比 > 2.0（当前=0.00:1）",
+        "action": "减空单至与多单等量（1:1）",
+        "triggered_now": false,
+        "priority": 2
+      },
+      "P3_时间止损": {
+        "condition": "持仓超72H（截止 2026-09-18T11:20）",
+        "action": "若未回本则全平，接受损失，重新布局",
+        "deadline": "2026-09-18T11:20:55.163347+00:00",
+        "priority": 3
+      }
+    },
+    "immediate_warnings": []
+  }
+}

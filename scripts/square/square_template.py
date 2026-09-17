@@ -142,62 +142,75 @@ def build_battlefield_report(sym, analysis_data):
 def _generate_viewpoint(sym, regime, score, fvg_dir, fvg_magnet, price,
                        liq_wall, liq_pool, oi_signal, cvd_1h,
                        big_long, retail_long, hurst, kappa, bias, vip_status):
-    """生成核心观点：用交易员语言解读数据，不是罗列数据"""
+    """生成核心观点：用交易员语言解读数据，不是罗列数据
+    [2026-09-17 设计院修复] 方向跟随交易员大脑bias，不跟随FVG单维度"""
+    # 交易员大脑方向优先 = 系统真实方向
+    tb_dir = bias if bias and bias != 'NONE' else None
+
+    # === 交易员大脑=SHORT ===
+    if tb_dir == 'SHORT':
+        _wall_pct = (liq_wall - price) / price * 100 if liq_wall and price else 0
+        if oi_signal == 'SHORT_BUILD':
+            return (f'{sym}在${price:,.0f}，空头在加码。'
+                    f'上方止损墙${liq_wall:,.0f}({_wall_pct:+.1f}%)是反弹阻力，'
+                    f'反弹到那附近空单集中，容易被猎杀。'
+                    f'剧本很清楚：反弹到止损墙受阻→回落，不追多。')
+        else:
+            return (f'{sym}在${price:,.0f}，系统判空。'
+                    f'上方止损墙${liq_wall:,.0f}是阻力，下方支撑池${liq_pool:,.0f}是目标。'
+                    f'中间位置不追多，等反弹到阻力位再评估做空。')
+
+    # === 交易员大脑=LONG ===
+    if tb_dir == 'LONG':
+        if oi_signal == 'SHORT_BUILD':
+            return (f'{sym}在${price:,.0f}，空头在堆仓位，但系统看多。'
+                    f'下方支撑池${liq_pool:,.0f}有多头止损堆积，到了可能被猎杀后反弹。'
+                    f'等支撑池企稳+1H收阳再评估试多。')
+        else:
+            return (f'{sym}在${price:,.0f}，系统看多。'
+                    f'下方支撑池${liq_pool:,.0f}是回踩买点，上方止损墙${liq_wall:,.0f}是目标。'
+                    f'回调到支撑池附近+1H收阳可以试多。')
+
+    # === 交易员大脑=NONE/WATCH → 双向观察 ===
+    if vip_status == 'WAIT' or score < 60:
+        return (f'{sym}在${price:,.0f}，系统判断为观察。'
+                f'上方止损墙${liq_wall:,.0f}，下方支撑池${liq_pool:,.0f}。'
+                f'没有明确方向，等走出来再跟——不赌方向。')
+
+    # FVG辅助描述（不决定方向）
     if fvg_dir == 'BULL' and fvg_magnet > price:
         gap_pct = (fvg_magnet - price) / price * 100
-        if oi_signal == 'SHORT_BUILD':
-            return (f'{sym}在${price:,.0f}，磁铁拉向${fvg_magnet:,.0f}，上方还差{gap_pct:.1f}%。'
-                    f'空头在$78,000上方堆了不少仓位，磁铁会先把他们扫掉。'
-                    f'剧本很清楚：反弹扫空头→到磁铁位受阻→回落。别在中间位置追多。')
-        elif oi_signal == 'LONG_UNWIND':
-            return (f'{sym}在${price:,.0f}，磁铁在上方${fvg_magnet:,.0f}，但多头在撤资。'
-                    f'反弹没人接力，到磁铁位大概率是假突破。这种行情追多就是给别人接盘。')
-        else:
-            return (f'{sym}在${price:,.0f}，磁铁在上方${fvg_magnet:,.0f}，距离{gap_pct:.1f}%。'
-                    f'等价格到磁铁位再看结构确认方向，中间位置不动。')
+        return (f'{sym}在${price:,.0f}，FVG磁铁在上方${fvg_magnet:,.0f}（{gap_pct:+.1f}%）。'
+                f'等价格到磁铁位或止损墙/支撑池附近再看结构确认，中间不动。')
     elif fvg_dir == 'BEAR' and fvg_magnet < price:
         gap_pct = (price - fvg_magnet) / price * 100
-        if oi_signal == 'SHORT_BUILD':
-            return (f'{sym}在${price:,.0f}，磁铁往下拉向${fvg_magnet:,.0f}，空头还在加码。'
-                    f'卖方主导的行情，下跌动能没结束。下面第一个落脚点是${liq_pool:,.0f}，'
-                    f'那里有多头止损堆积，到了可能会有一波清算。')
-        else:
-            return (f'{sym}在${price:,.0f}，磁铁往下拉。但如果到${liq_pool:,.0f}企稳+1H收阳，'
-                    f'可能是诱空后的反弹。别急着追空，等结构确认。')
-    elif fvg_dir == 'BULL' and abs(fvg_magnet - price) / price < 0.005:
-        return (f'{sym}在${price:,.0f}，磁铁已经到位了。方向选择的关键位置——'
-                f'破上方止损墙${liq_wall:,.0f}就是轧空，破下方支撑池${liq_pool:,.0f}就是猎杀。'
-                f'这种位置不动，等走出来再跟。')
-    elif fvg_dir == 'BEAR' and abs(fvg_magnet - price) / price < 0.005:
-        return (f'{sym}在${price:,.0f}，磁铁到位。反弹到上方止损墙${liq_wall:,.0f}受阻=可空，'
-                f'跌破下方支撑池${liq_pool:,.0f}=可追空。中间不动。')
+        return (f'{sym}在${price:,.0f}，FVG磁铁在下方${fvg_magnet:,.0f}（{gap_pct:+.1f}%）。'
+                f'等价格到磁铁位或支撑池附近再看结构确认，中间不动。')
     else:
-        if score < 60:
-            return (f'{sym}在${price:,.0f}，没有明确方向。这种位置我不做——'
-                    f'没有结构的震荡，做了就是送钱。等结构走出来再说。')
-        return (f'{sym}在${price:,.0f}，等价格到上方${liq_wall:,.0f}或下方${liq_pool:,.0f}附近再判断。'
-                f'中间位置不动。')
+        return (f'{sym}在${price:,.0f}，上方止损墙${liq_wall:,.0f}，下方支撑池${liq_pool:,.0f}。'
+                f'等方向走出来再跟，中间不动。')
 
 
 def _generate_action(fvg_dir, fvg_magnet, price, liq_wall, liq_pool,
                      oi_signal, entry_lo, entry_hi, sl, tp1, bias, vip_status):
-    """生成可操作的建议"""
+    """生成可操作的建议
+    [2026-09-17 设计院修复] 方向跟随交易员大脑bias，不跟随FVG单维度"""
+    tb_dir = bias if bias and bias != 'NONE' else None
+
     if vip_status == 'ENTER' and entry_lo > 0:
-        if bias == 'SHORT':
+        if tb_dir == 'SHORT' or bias == 'SHORT':
             return f'反弹到${entry_lo:,.0f}-${entry_hi:,.0f}+1H收阴 → 做空 | 止损${sl:,.0f} | 目标${tp1:,.0f}'
-        elif bias == 'LONG':
+        elif tb_dir == 'LONG' or bias == 'LONG':
             return f'回调到${entry_lo:,.0f}-${entry_hi:,.0f}+1H收阳 → 做多 | 止损${sl:,.0f} | 目标${tp1:,.0f}'
-    # WAIT状态也要给具体监控条件
-    if fvg_dir == 'BULL' and fvg_magnet > price:
-        return f'不做空。等价格反弹到${fvg_magnet:,.0f}附近+1H收阴再评估做空。如果直接突破止损墙${liq_wall:,.0f}，追多也不追，等回踩确认。'
-    elif fvg_dir == 'BEAR' and fvg_magnet < price:
-        return f'不做多。等价格到支撑池${liq_pool:,.0f}+1H收阳再评估试多。如果直接破支撑池，不抄底，等清算结束后看结构。'
-    elif fvg_dir == 'BULL' and abs(fvg_magnet - price) / max(price,1) < 0.005:
-        return f'等方向选择。破止损墙${liq_wall:,.0f}+放量=追多确认；破支撑池${liq_pool:,.0f}+放量=追空确认。横盘就不动。'
-    elif fvg_dir == 'BEAR' and abs(fvg_magnet - price) / max(price,1) < 0.005:
-        return f'等方向选择。反弹到止损墙${liq_wall:,.0f}+1H收阴=可空；跌破支撑池${liq_pool:,.0f}+放量=可追空。'
+
+    # WAIT状态：跟随交易员大脑方向给监控条件
+    if tb_dir == 'SHORT':
+        return f'系统判空。等价格反弹到止损墙${liq_wall:,.0f}+1H收阴=做空确认；跌破支撑池${liq_pool:,.0f}+放量=追空确认。中间不追多。'
+    elif tb_dir == 'LONG':
+        return f'系统判多。等价格回调到支撑池${liq_pool:,.0f}+1H收阳=做多确认；突破止损墙${liq_wall:,.0f}+放量=追多确认。中间不追空。'
     else:
-        return f'等价格到止损墙${liq_wall:,.0f}或支撑池${liq_pool:,.0f}附近再判断。中间位置不动。'
+        # 交易员大脑=NONE → 双向观察
+        return f'等方向选择。破止损墙${liq_wall:,.0f}+放量=追多确认；破支撑池${liq_pool:,.0f}+放量=追空确认。横盘就不动。'
 
 
 def _generate_contradiction(fvg_dir, oi_signal, big_long, retail_long, hurst, kappa):
@@ -818,14 +831,13 @@ def parse_analysis_output(report_text):
     if m:
         data['tp1'] = float(m.group(1).replace(',', ''))
 
-    # 方向
-    if '方向=NONE' in report_text or '方向=SHORT' in report_text:
-        if '方向=SHORT' in report_text:
-            data['bias'] = 'SHORT'
-        elif '方向=LONG' in report_text:
-            data['bias'] = 'LONG'
-        else:
-            data['bias'] = 'NONE'
+    # 方向（交易员大脑方向 = 系统真实方向）
+    if '方向=SHORT' in report_text:
+        data['bias'] = 'SHORT'
+    elif '方向=LONG' in report_text:
+        data['bias'] = 'LONG'
+    else:
+        data['bias'] = 'NONE'
 
     return data
 

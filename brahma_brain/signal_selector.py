@@ -43,7 +43,33 @@ sys.path.insert(0, str(_DIR))
 sys.path.insert(0, str(_DIR / 'brahma_brain'))
 
 BASE_POSITION   = 2.0   # 基础仓位百分比
-MIN_WEIGHTED    = 60    # 最低加权分门槛 [P0同步 2026-09-13 苏摩111] 110→60
+
+# [改革1 2026-09-17 苏摩111] 门槛从scoring_config.json读取，硬编码降级为fallback
+_SC_CFG_PATH = _DIR / 'data' / 'scoring_config.json'
+DYNAMIC_MIN = {
+    'CHOP_MID': 40,
+    'BEAR_TREND': 60, 'BEAR_EARLY': 60,
+    'BULL_TREND': 60, 'BULL_EARLY': 60,
+    'BEAR_RECOVERY': 50,
+}
+try:
+    import json as _json_sc
+    if _SC_CFG_PATH.exists():
+        _sc = _json_sc.loads(_SC_CFG_PATH.read_text())
+        for _reg, _rv in _sc.items():
+            if _reg.startswith('_') or not isinstance(_rv, dict):
+                continue
+            # 取LONG/SHORT的min_score，用较低的作为体制门槛
+            _scores = []
+            for _dir, _dv in _rv.items():
+                if isinstance(_dv, dict) and 'min_score' in _dv:
+                    _scores.append(_dv['min_score'])
+            if _scores:
+                DYNAMIC_MIN[_reg] = min(_scores)
+except Exception as _e:
+    import sys as _sys_sc; print(f'[WARN] signal_selector scoring_config: {_e}', file=_sys_sc.stderr)
+
+MIN_WEIGHTED    = 60    # 默认门槛（动态覆盖）
 SINGLE_DIR_DIFF = 15    # 超过此差值推单向
 
 
@@ -99,9 +125,11 @@ def select(short_analysis: dict, long_analysis: dict, regime: dict) -> dict:
     short_w = short_raw * mult_short
     long_w  = long_raw  * mult_long
 
-    # ── 有效性检查 ──
-    short_ok = short_valid and short_w >= MIN_WEIGHTED
-    long_ok  = long_valid  and long_w  >= MIN_WEIGHTED
+    # [改革1 2026-09-16 苏摩111] 门槛动态调整：CHOP_MID降到40
+    primary_regime = regime.get('regime', regime.get('primary', ''))
+    _dyn_min = DYNAMIC_MIN.get(primary_regime, 60)
+    short_ok = short_valid and short_w >= _dyn_min
+    long_ok  = long_valid  and long_w  >= _dyn_min
 
     pass  # [静默]
 
@@ -110,7 +138,6 @@ def select(short_analysis: dict, long_analysis: dict, regime: dict) -> dict:
     #       BEAR_EARLY_LONG  n=225,623 WR=49.9% avgPnL=-0.139
     # ⚠️  BEAR_RECOVERY_LONG WR=72.5% avgPnL=+0.255（反直觉alpha，不封禁！）
     # 封禁逻辑：精确匹配 BEAR_TREND/BEAR_EARLY，BEAR_RECOVERY不封禁
-    primary_regime = regime.get('regime', regime.get('primary', ''))
     _bear_block = primary_regime in ('BEAR_TREND', 'BEAR_EARLY') or mult_long == 0.0
     if _bear_block:
         long_ok = False
@@ -192,7 +219,7 @@ def select(short_analysis: dict, long_analysis: dict, regime: dict) -> dict:
     decision = ''
 
     if not short_ok and not long_ok:
-        decision = f'双向均未通过门槛({MIN_WEIGHTED}) SHORT_w={short_w:.0f} LONG_w={long_w:.0f}'
+        decision = f'双向均未通过门槛({_dyn_min}) SHORT_w={short_w:.0f} LONG_w={long_w:.0f}'
         return {'signals': [], 'decision': decision, 'regime_summary': _regime_summary(regime)}
 
     # ── 裁决逻辑 ──
@@ -264,12 +291,12 @@ def _build_signal(analysis: dict, direction: str, mult: float,
         'stop_loss':   float(params.get('stop_loss', 0)),
         'tp1':         float(params.get('tp1', 0)),
         'tp2':         float(params.get('tp2', 0)),
-        'regime':      regime['primary'],
-        'phase':       regime['phase'],
-        'momentum':    regime['momentum'],
-        'bull_prob':   regime['bull_prob'],
-        'bear_prob':   regime['bear_prob'],
-        'chop_prob':   regime['chop_prob'],
+        'regime':      regime.get('primary', str(regime)),
+        'phase':       regime.get('phase', '?'),
+        'momentum':    regime.get('momentum', '?'),
+        'bull_prob':   regime.get('bull_prob', 0.3),
+        'bear_prob':   regime.get('bear_prob', 0.4),
+        'chop_prob':   regime.get('chop_prob', 0.3),
         'grade':       float(analysis.get('confluence', {}).get('structure_grade') or 0),
         'valid':       bool(analysis.get('valid_signal') or analysis.get('valid')),
         'analysis':    analysis,    # 保留原始分析供pre_trade_engine使用

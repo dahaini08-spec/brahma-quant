@@ -49,7 +49,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # regime watcher — :00
 00 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/regime_realtime_watcher.py >> logs/regime_watcher.log 2>&1
 # drawdown+circuit_breaker — :03
-03 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 -c "from brahma_brain.drawdown_tracker import update_drawdown; update_drawdown(); import json,time; d=json.load(open('data/circuit_breaker.json')); d['ts']=time.time(); json.dump(d,open('data/circuit_breaker.json','w'))" >> logs/syscron.log 2>&1
+03 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 -c "from brahma_brain.drawdown_tracker import update_drawdown; update_drawdown(); import json,time; d=json.load(open('data/circuit_breaker.json')); d['ts']=time.time(); d['last_updated']=time.time(); json.dump(d,open('data/circuit_breaker.json','w')); dd=json.load(open('data/drawdown_state.json')); dd['ts']=time.time(); dd['last_updated']=time.time(); json.dump(dd,open('data/drawdown_state.json','w'))" >> logs/syscron.log 2>&1
 # CVD存活检查 — :06
 06 * * * * cd /root/.openclaw/workspace/trading-system && pgrep -f cvd_ws_collector >/dev/null || setsid python3 scripts/cvd_ws_collector.py >> logs/cvd_ws.log 2>&1
 # liqmap OKX REST轮询 — :09每2h（替代常驻WS）
@@ -144,3 +144,6 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # signal-settler — 每6h纯脚本,WR反馈闭环结算 [9.15苏摩111 从OpenClaw cron移入supercronic]
 0 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/signal_settler.py --push >> logs/settler.log 2>&1
 */30 * * * * cd /root/.openclaw/workspace/trading-system && /usr/bin/python3 -c "from brahma_brain.prediction_verifier import verify_predictions; s=verify_predictions(4.0); print(f'prediction_verify: {s}')" >> logs/prediction_verify.log 2>&1
+
+# macro数据刷新 — 每天06:00 UTC（北京14:00）
+0 6 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/macro_real_fetcher.py >> logs/macro_cron.log 2>&1

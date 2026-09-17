@@ -1063,6 +1063,7 @@ def get_multi_tf_cvd(symbol: str) -> dict:
             divergence_type = "BULLISH_DIV"   # 价格跌但宏观CVD升 → 底背离
 
     # 综合评分（供 enhanced_signal_engine 调用）
+    # [2026-09-17 设计院修复B2] CVD标注基于CVD实际方向，不是交易方向
     def score_for_dir(direction: str) -> tuple[int, list[str]]:
         is_sell = direction == "SHORT"
         notes = []
@@ -1071,14 +1072,18 @@ def get_multi_tf_cvd(symbol: str) -> dict:
         meso_match  = (meso["direction"]  == "SELL") == is_sell
         micro_match = (micro["direction"] == "SELL") == is_sell
 
+        # CVD实际方向标注（不是交易方向）
+        _macro_dir = '卖方' if macro["direction"] == "SELL" else '买方'
+        _meso_dir  = '卖方' if meso["direction"]  == "SELL" else '买方'
+
         if macro_match and meso_match:
-            s += 6; notes.append(f"CVD宏观+中期{'卖方' if is_sell else '买方'}主导 +6")
+            s += 6; notes.append(f"CVD宏观+中期{_macro_dir}主导 +6")
         elif macro_match and micro_match:
-            s += 4; notes.append(f"CVD宏观+微观{'卖方' if is_sell else '买方'}主导 +4")
+            s += 4; notes.append(f"CVD宏观+微观{_macro_dir}主导 +4")
         elif macro_match:
-            s += 3; notes.append(f"CVD宏观{'卖方' if is_sell else '买方'}主导 +3")
+            s += 3; notes.append(f"CVD宏观{_macro_dir}主导 +3")
         elif meso_match:
-            s += 2; notes.append(f"CVD中期{'卖方' if is_sell else '买方'}主导 +2")
+            s += 2; notes.append(f"CVD中期{_meso_dir}主导 +2")
 
         # 背离加分
         if divergence:

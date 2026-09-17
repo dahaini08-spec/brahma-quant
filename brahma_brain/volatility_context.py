@@ -22,12 +22,26 @@ _BBW_HIST = {
 }
 
 # 不同标的ATR基准倍数（相对BTC，粗略修正）
+# [改革5 2026-09-17 苏摩111] 优先读scoring_config.json的atr_scale，硬编码降级为fallback
+# 注意：vol_beta_state.json的beta_plus是波动率beta不是ATR缩放，不适用
 _SYMBOL_ATR_SCALE = {
     'ETHUSDT':  1.15,
     'SOLUSDT':  1.40,
     'BNBUSDT':  1.05,
     'BTCUSDT':  1.00,
 }
+try:
+    from pathlib import Path as _Path_vc
+    import json as _json_vc
+    _sc_path = _Path_vc(__file__).parent.parent / 'data' / 'scoring_config.json'
+    if _sc_path.exists():
+        _sc = _json_vc.loads(_sc_path.read_text())
+        _atr_cfg = _sc.get('_meta', {}).get('atr_scale', {})
+        if isinstance(_atr_cfg, dict):
+            for _sym, _val in _atr_cfg.items():
+                _SYMBOL_ATR_SCALE[_sym] = float(_val)
+except Exception as _e:
+    import sys as _sys_vc; print(f'[WARN] volatility_context scoring_config: {_e}', file=_sys_vc.stderr)
 
 def get_volatility_context(
     symbol: str,

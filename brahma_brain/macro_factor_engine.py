@@ -97,8 +97,24 @@ def get_event_window() -> dict:
     """
     检查当前是否在重大事件窗口期
     返回 {'in_window': bool, 'event': str, 'days_to': int, 'action': str}
+    [2026-09-16 苏摩111] FOMC已出结果时立即解除SUSPEND
     """
     now = datetime.now(timezone.utc)
+    
+    # [2026-09-16 苏摩111] 检查macro_config是否标记FOMC已出结果
+    _macro_config = {}
+    try:
+        import os
+        _cfg_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'macro_config.json')
+        if os.path.exists(_cfg_path):
+            import json
+            _macro_config = json.load(open(_cfg_path))
+    except Exception:
+        pass
+    
+    # 如果FOMC已出结果（POST_FOMC），跳过当前FOMC事件窗口
+    _fomc_resolved = _macro_config.get('fomc_stance', '') == 'POST_FOMC'
+    
     all_events = (
         [(d, 'FOMC') for d in FOMC_DATES_2026] +
         [(d, 'CPI')  for d in CPI_DATES_2026]
@@ -112,6 +128,9 @@ def get_event_window() -> dict:
         if -1 <= diff_days <= 2:  # 事件前后窗口
             if diff_h < -24:
                 continue  # 已过去超过24H，跳过
+            # [2026-09-16 苏摩111] FOMC已出结果 → 立即解除SUSPEND
+            if event_type == 'FOMC' and _fomc_resolved:
+                continue  # FOMC已出结果，跳过这个事件
             action = 'SUSPEND' if event_type == 'FOMC' else 'REDUCE'
             return {
                 'in_window': True,

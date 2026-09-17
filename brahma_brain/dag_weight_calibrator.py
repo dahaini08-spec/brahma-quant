@@ -119,7 +119,7 @@ def compute_dim_wr_by_regime(signals, evidence):
     return regime_dir_wr, dim_wr
 
 
-def calibrate_weights(config, regime_dir_wr, dim_wr, prediction_acc=None):
+def calibrate_weights(config, regime_dir_wr, dim_wr, prediction_acc=None, data_health=None):
     """
     校准scoring_config的weights
     规则：
@@ -131,9 +131,30 @@ def calibrate_weights(config, regime_dir_wr, dim_wr, prediction_acc=None):
     Phase 2C: prediction_acc作为辅助验证
     - 如果prediction_acc存在且<45%，即使WR>60%也不强化（可能是有假止损垫高WR）
     - 如果prediction_acc>60%，即使WR<45%也不修剪（可能是假止损拉低WR）
+    
+    Phase 2D: data_health作为数据质量门控
+    - 如果data_health中存在unhealthy的数据源，跳过依赖该数据源的维度校准
+    - 防止脏数据（如CVD断流45H期间的分析结果）污染WR矩阵
     """
     changes = []
     calibrated = json.loads(json.dumps(config))  # 深拷贝
+    
+    # Phase 2D: 数据健康→维度映射表
+    _data_dim_map = {
+        'cvd_btc':    ['s14_cvd', 's14_cvd_btc', 'CVD', 'CVD背离'],
+        'cvd_eth':    ['s14_cvd', 's14_cvd_eth', 'CVD', 'CVD背离'],
+        'liqmap_btc': ['s15_liq', 's15_liqmap', '清算', '清算地图', '止损墙'],
+        'liqmap_eth': ['s15_liq', 's15_liqmap', '清算', '清算地图', '止损墙'],
+        'gex':        ['s22_gex', 's22b_gex', 'GEX', 'GEX方向'],
+        'har_rv':     ['s23_vol_beta', 's23_har_rv', 'HAR-RV', '波动率', 'VolBeta'],
+    }
+    _stale_dims = set()
+    if data_health:
+        for _src, _info in data_health.items():
+            if not _info.get('healthy', True):
+                _stale_dims.update(_data_dim_map.get(_src, []))
+        if _stale_dims:
+            print(f"  [DataHealth] 跳过{len(_stale_dims)}个脏数据维度的校准: {', '.join(sorted(_stale_dims))}")
 
     for regime in ['CHOP_MID', 'BEAR_TREND', 'BEAR_EARLY', 'BULL_TREND', 'BEAR_RECOVERY', 'BULL_EARLY']:
         if regime not in calibrated:
@@ -162,6 +183,20 @@ def calibrate_weights(config, regime_dir_wr, dim_wr, prediction_acc=None):
 
             for dim in weights:
                 old_w = weights[dim]
+
+                # Phase 2D: 脏数据维度跳过校准（不强化也不修剪）
+                if dim in _stale_dims:
+                    changes.append({
+                        'regime': regime,
+                        'direction': direction,
+                        'dim': dim,
+                        'old_weight': old_w,
+                        'new_weight': old_w,
+                        'wr': 0,
+                        'action': 'SKIP_STALE_DATA',
+                        'source': 'data_health: stale source',
+                    })
+                    continue
 
                 # 优先用维度级WR，否则用体制×方向总WR
                 if dim in dim_data:
@@ -195,7 +230,7 @@ def calibrate_weights(config, regime_dir_wr, dim_wr, prediction_acc=None):
                     new_w = old_w
                     action = 'KEEP'
 
-                if new_w != old_w:
+                if new_w != old_w or action == 'KEEP_PRED_OVERRIDE':
                     weights[dim] = round(new_w, 3)
                     changes.append({
                         'regime': regime,
@@ -232,26 +267,46 @@ def main():
         if dims:
             print(f"    {reg}:{direction}: {len(dims)}个维度有实盘数据")
 
-    # 3. 加载预测准确率（Phase 2C）
-    print("\n[3] 加载预测准确率...")
-    prediction_acc = None
+    # 3. 预测准确率管道已移除（2026-09-17 苏摩111）
+
+    # 3.5 加载数据健康状态（Phase 2D）
+    print("\n[3.5] 加载数据健康状态...")
+    data_health = None
     try:
-        from brahma_brain.prediction_verifier import get_prediction_accuracy
-        prediction_acc = get_prediction_accuracy()
-        print(f"  预测准确率: {prediction_acc['accuracy']:.1%} ({prediction_acc['correct']}/{prediction_acc['total']})")
-        for regime, s in prediction_acc.get('by_regime', {}).items():
-            if s['total'] >= 10:
-                r_acc = s['correct'] / s['total'] * 100
-                print(f"    {regime}: {r_acc:.1f}% ({s['correct']}/{s['total']})")
+        import os as _os_dh, time as _time_dh, json as _json_dh
+        _dh_base = _os_dh.path.join(_os_dh.path.dirname(_os_dh.path.abspath(__file__)), '..', 'data')
+        _dh_files = {
+            'cvd_btc':    ('cvd_realtime_btcusdt.json',  2.0),
+            'cvd_eth':    ('cvd_realtime_ethusdt.json',  2.0),
+            'liqmap_btc': ('liq_heatmap_btcusdt.json',  2.0),
+            'liqmap_eth': ('liq_heatmap_ethusdt.json',  2.0),
+            'gex':        ('gex_state.json',            4.0),
+            'har_rv':     ('har_rv_cache.json',         4.0),
+        }
+        _now = _time_dh.time()
+        data_health = {}
+        for _dh_key, (_dh_fn, _dh_max_age) in _dh_files.items():
+            _dh_path = _os_dh.path.join(_dh_base, _dh_fn)
+            if _os_dh.path.exists(_dh_path):
+                _dh_age = (_now - _os_dh.path.getmtime(_dh_path)) / 3600
+                data_health[_dh_key] = {
+                    'age_hours': round(_dh_age, 2),
+                    'healthy': _dh_age < _dh_max_age,
+                    'source': 'binance_api' if 'cvd' in _dh_key or 'liqmap' in _dh_key else 'supercronic',
+                }
+            else:
+                data_health[_dh_key] = {'age_hours': 999, 'healthy': False, 'source': 'missing'}
+        _stale_count = sum(1 for v in data_health.values() if not v['healthy'])
+        print(f"  数据健康: {len(data_health) - _stale_count}/{len(data_health)} 健康" + (f", {_stale_count}过期" if _stale_count else ""))
     except Exception as e:
-        print(f"  预测准确率加载失败(降级WR校准): {e}")
+        print(f"  数据健康加载失败(降级跳过): {e}")
 
     # 4. 校准
     print("\n[4] 校准权重...")
     with open(CONFIG_FILE) as f:
         config = json.load(f)
 
-    calibrated, changes = calibrate_weights(config, regime_dir_wr, dim_wr, prediction_acc)
+    calibrated, changes = calibrate_weights(config, regime_dir_wr, dim_wr, prediction_acc, data_health)
 
     if not changes:
         print("  无变化（所有权重在合理范围内）")
@@ -275,11 +330,13 @@ def main():
     boost_count = sum(1 for c in changes if c['action'] == 'BOOST')
     prune_count = sum(1 for c in changes if c['action'] == 'PRUNE')
     keep_count = sum(1 for c in changes if c['action'] == 'KEEP')
+    stale_count = sum(1 for c in changes if c['action'] == 'SKIP_STALE_DATA')
 
     print(f"\n[6] 校准总结:")
     print(f"  强化(BOOST): {boost_count}项")
     print(f"  修剪(PRUNE): {prune_count}项")
     print(f"  保持(KEEP): {keep_count}项")
+    print(f"  跳过脏数据(STALE): {stale_count}项")
     print(f"  总调整: {len(changes)}项")
 
     # 输出JSON供日志

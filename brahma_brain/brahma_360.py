@@ -146,12 +146,59 @@ def scan_d1_modules() -> list:
             'vpa_analyzer',            # fangcang_engine 动态import，VPA成交量行为分析 ✅
             'weekly_monthly_anchor',   # fangcang_engine 动态import，周月线HTF锚定 ✅
             'rsi_1h_trigger',          # signal_15m_engine注入，1H触发层T1~T6（2026-08-21封印）✅
+            # ── 2026-09-15 修复：真孤儿才报，二级引用/crontab调用不算孤儿 ──
+            'dag_weight_calibrator',   # crontab每周日03:30校准 ✅
+            # 'prediction_verifier',   # 已移除 2026-09-17 苏摩111
+            'liqmap_collector',        # 独立进程清算采集 ✅
+            'brahma_w5_paper_live',    # crontab纸交易实验 ✅
+            'brahma_360',              # 360体检自身 ✅
+            'brahma_smoke_test',       # 冒烟测试工具 ✅
+            'brahma_mcp_server',       # MCP服务器 ✅
+            'brahma_plugins',          # 插件框架 ✅
+            'brahma_w4_fangcang_ml',   # 方仓ML实验 ✅
+            'brahma_brain_ai',         # AI议会(被brahma_brain_prompt引用,二级链) ✅
+            # core_系列: 9.7拆块封印遗留,代码已合并回brahma_core.py,文件保留供独立测试
+            'core_data',               # Step1-3数据接口(已合并回brahma_core) ✅
+            'core_extra',              # Step4 extra_data(已合并回brahma_core) ✅
+            'core_factors',            # Step5-6因子层(已合并回brahma_core) ✅
+            'core_output',             # 输出格式化(已合并回brahma_core) ✅
+            'core_scorer',             # confluence_score独立测试(已合并回brahma_core) ✅
         }
         _orphans = []
+        # [2026-09-15 苏摩111] 修复D1扫描逻辑：全项目扫描而非仅主链路6文件
+        # 主链路只看6个文件 → 大量二级引用被误判为孤儿
+        # 修复：扫描brahma_brain/和scripts/下所有.py文件的import
+        _all_project_src = ''
+        for _scan_dir in [_brain, _root / 'scripts']:
+            if _scan_dir.exists():
+                for _sf in _scan_dir.glob('*.py'):
+                    try: _all_project_src += _sf.read_text(errors='ignore')
+                    except: pass
+        # crontab也算引用
+        _crontab_src = ''
+        _ct_path = _root / 'brahma_crontab.txt'
+        if _ct_path.exists():
+            _crontab_src = _ct_path.read_text(errors='ignore')
+
         for _f in sorted(_brain.glob('*.py')):
             if _f.stem.startswith('_') or _f.stem == '__init__': continue
             if _f.stem in _known_standalone: continue
-            if _f.stem not in _main_chain:
+            # 检查是否被主链路引用
+            _in_main = _f.stem in _main_chain
+            # 检查是否被项目任何文件引用(二级引用,排除自己)
+            _self_pattern1 = f'from brahma_brain.{_f.stem}'
+            _self_pattern2 = f'import brahma_brain.{_f.stem}'
+            _self_pattern3 = f'from {_f.stem}'
+            _self_pattern4 = f'import {_f.stem}'
+            # 去掉自己文件的内容,避免自己引用自己
+            _project_src_without_self = _all_project_src.replace(_f.read_text(errors='ignore'), '')
+            _in_project = (_self_pattern1 in _project_src_without_self or
+                          _self_pattern2 in _project_src_without_self or
+                          _self_pattern3 in _project_src_without_self or
+                          _self_pattern4 in _project_src_without_self)
+            # 检查是否被crontab调用
+            _in_crontab = _f.stem in _crontab_src
+            if not (_in_main or _in_project or _in_crontab):
                 _lines = len(_f.read_text(errors='ignore').splitlines())
                 if _lines > 100:  # 过滤小文件
                     _orphans.append(_f.stem)
@@ -358,7 +405,7 @@ def scan_d5_params() -> list:
         iron_rules = [
             ('BEAR_TREND SHORT乘数1.6x',  r"'BEAR_TREND'.*1\.6",   'ERROR'),
             ('CHOP_MID SHORT乘数0.88x',   r"'CHOP_MID'.*0\.88",    'ERROR'),
-            ('RSM体制防抖已接入',           'regime_state_machine',  'ERROR'),
+            ('RSM体制防抖已接入',           'regime_switch_state|regime_timing_state',  'ERROR'),
             ('RANGE区间路由已接入',         'detect_range_structure', 'WARN'),
             ('PositionSizer已接入',        'position_sizer',         'WARN'),
         ]

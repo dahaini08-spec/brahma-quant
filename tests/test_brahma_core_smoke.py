@@ -40,7 +40,7 @@ class TestAnalyzeStructure:
     def test_has_required_fields(self):
         from brahma_brain.brahma_core import analyze
         r = analyze('ETHUSDT', deep=False)
-        required = ['score', 'regime', 'action', 'signal_dir']
+        required = ['score', 'regime', 'decision_action', 'signal_dir']
         for field in required:
             assert field in r, f"analyze()结果缺少字段: {field}"
 
@@ -106,47 +106,44 @@ class TestAnalyzeStructure:
 class TestGates:
     """门控铁律验证"""
 
+    def _make_signal(self, **kw):
+        from brahma_os.contracts import Signal
+        from brahma_os.config import Settings
+        _now = time.time()
+        sig = Signal(
+            signal_id='test', ts=_now, symbol=kw.get('symbol','ETHUSDT'),
+            side=kw.get('side','LONG'), regime=kw.get('regime','CHOP_MID'),
+            score=kw.get('score',137.0), grade=kw.get('grade',60.0),
+            entry_lo=kw.get('entry_lo',2400.0), entry_hi=kw.get('entry_hi',2420.0),
+            stop=kw.get('stop',2350.0), target=kw.get('target',2500.0),
+            valid_until=_now + 86400,
+        )
+        settings = Settings()
+        return sig, settings
+
     def test_dead_zone_blocks_130_145(self):
         """130-145死亡区间在CHOP/BEAR体制下必须被拦截"""
-        from brahma_os.gates import check_gates
-        fake_signal = {
-            'symbol': 'ETHUSDT', 'side': 'LONG', 'score': 137.0,
-            'regime': 'CHOP_MID', 'grade': 60.0,
-            'entry_lo': 2400.0, 'entry_hi': 2420.0,
-            'stop': 2350.0, 'target': 2500.0,
-            'valid_until': time.time() + 86400,
-        }
-        result = check_gates(fake_signal)
-        assert result.get('blocked') is True, \
-            f"CHOP_MID score=137应被死亡区间门控拦截，但结果: {result}"
+        from brahma_os.gates import evaluate_gates as check_gates
+        sig, settings = self._make_signal(symbol='ETHUSDT', side='LONG', score=137.0, regime='CHOP_MID', grade=60.0)
+        result = check_gates(sig, settings, open_positions=0, symbol_exposure=0.0, gross_exposure=0.0)
+        assert result.allow is False, \
+            f"CHOP_MID score=137应被门控拦截，但结果: {result}"
 
     def test_bear_recovery_short_blocked(self):
         """BEAR_RECOVERY:SHORT WR=0%应被永久封禁"""
-        from brahma_os.gates import check_gates
-        fake_signal = {
-            'symbol': 'ETHUSDT', 'side': 'SHORT', 'score': 155.0,
-            'regime': 'BEAR_RECOVERY', 'grade': 80.0,
-            'entry_lo': 2500.0, 'entry_hi': 2520.0,
-            'stop': 2570.0, 'target': 2350.0,
-            'valid_until': time.time() + 86400,
-        }
-        result = check_gates(fake_signal)
-        assert result.get('blocked') is True, \
-            f"BEAR_RECOVERY:SHORT应被永久封禁，但结果: {result}"
+        from brahma_os.gates import evaluate_gates as check_gates
+        sig, settings = self._make_signal(symbol='ETHUSDT', side='SHORT', score=155.0, regime='BEAR_RECOVERY', grade=80.0, entry_lo=2500.0, entry_hi=2520.0, stop=2570.0, target=2350.0)
+        result = check_gates(sig, settings, open_positions=0, symbol_exposure=0.0, gross_exposure=0.0)
+        assert result.allow is False, \
+            f"BEAR_RECOVERY:SHORT应被门控拦截，但结果: {result}"
 
     def test_high_score_bull_long_passes(self):
         """BULL_TREND:LONG高分信号应通过门控"""
-        from brahma_os.gates import check_gates
-        fake_signal = {
-            'symbol': 'BTCUSDT', 'side': 'LONG', 'score': 150.0,
-            'regime': 'BULL_TREND', 'grade': 85.0,
-            'entry_lo': 65000.0, 'entry_hi': 65500.0,
-            'stop': 63000.0, 'target': 70000.0,
-            'valid_until': time.time() + 86400,
-        }
-        result = check_gates(fake_signal)
+        from brahma_os.gates import evaluate_gates as check_gates
+        sig, settings = self._make_signal(symbol='BTCUSDT', side='LONG', score=150.0, regime='BULL_TREND', grade=85.0, entry_lo=65000.0, entry_hi=65500.0, stop=63000.0, target=70000.0)
+        result = check_gates(sig, settings, open_positions=0, symbol_exposure=0.0, gross_exposure=0.0)
         # 高分BULL_TREND:LONG不应该被直接blocked（可能WATCH但不blocked）
-        assert 'block_reason' not in result or 'DEAD' not in result.get('block_reason',''), \
+        assert result.allow is True or 'DEAD' not in (result.code or ''), \
             f"BULL_TREND:LONG score=150不应被死亡区间拦截: {result}"
 
 

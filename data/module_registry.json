@@ -4,7 +4,7 @@
     "created": "2026-09-13",
     "rebuilt": "2026-09-15T09:57:00Z",
     "sealed_by": "苏摩111",
-    "total_modules": 60
+    "total_modules": 61
   },
   "critical_modules": {
     "brahma_1hao_analysis": {
@@ -545,6 +545,16 @@
       "import_count": 3,
       "status": "shim",
       "note": "9.1合并到position_sizer.py, 此为接口shim"
+    },
+    "square_template": {
+      "file": "scripts/square/square_template.py",
+      "imported_by": [
+        "brahma_analysis_runner",
+        "square_auto_post"
+      ],
+      "import_count": 2,
+      "status": "active",
+      "note": "在scripts/square/目录下"
     }
   }
 }

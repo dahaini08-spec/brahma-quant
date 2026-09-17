@@ -50,7 +50,7 @@ def _load_ic_stats() -> dict:
 _MACRO_EVENTS = {
     # 日期: {event, time_utc, impact}
     '2026-09-11': {'event': 'CPI', 'time_utc': '12:30', 'impact': 'high'},
-    '2026-09-18': {'event': 'FOMC', 'time_utc': '18:00', 'impact': 'high'},
+    '2026-09-17': {'event': 'FOMC', 'time_utc': '18:00', 'impact': 'high'},
     '2026-10-02': {'event': 'NFP', 'time_utc': '12:30', 'impact': 'high'},
     '2026-10-10': {'event': 'CPI', 'time_utc': '12:30', 'impact': 'high'},
     '2026-10-13': {'event': 'FOMC', 'time_utc': '18:00', 'impact': 'high'},
@@ -59,26 +59,56 @@ _MACRO_EVENTS = {
 }
 
 def _check_macro_calendar() -> Dict:
-    """检查今天是否有宏观事件，返回事件上下文"""
+    """检查今天是否有宏观事件，返回事件上下文
+    优先读macro_real.json，FOMC已公布则返回post_event"""
     from datetime import datetime, timezone
+    import json as _json, os as _os
     _now = datetime.now(timezone.utc)
     _today = _now.strftime('%Y-%m-%d')
     _now_min = _now.hour * 60 + _now.minute
     _evt = _MACRO_EVENTS.get(_today, None)
     if not _evt:
         return {'has_event': False, 'event': None, 'phase': 'normal', 'hours_to_event': None}
+    # 优先检查macro_real.json是否已记录FOMC结果
+    _evt_name = _evt['event']
+    _data_dir = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), 'data')
+    # [改革2 2026-09-17 苏摩111] 先读macro_data.json获取CPI/PPI/NFP实际数据
+    _macro_data = {}
+    _md_path = _os.path.join(_data_dir, 'macro_data.json')
+    if _os.path.exists(_md_path):
+        try:
+            _macro_data = _json.loads(open(_md_path).read())
+        except Exception:
+            pass
+    _real_path = _os.path.join(_data_dir, 'macro_real.json')
+    if _os.path.exists(_real_path):
+        try:
+            _mr = _json.loads(open(_real_path).read())
+            _rate_exp = _mr.get('rate_expectation', {})
+            _action = _rate_exp.get('action', '')
+            _note = _rate_exp.get('note', '')
+            # FOMC已公布
+            if _evt_name == 'FOMC' and _action in ('DONE', 'HIKE', 'CUT_25', 'CUT_50', 'HOLD') and '加息' in _note or '降息' in _note or '决议' in _note or _action == 'DONE':
+                return {'has_event': True, 'event': _evt_name, 'phase': 'post_event',
+                        'hours_to_event': -1.0, 'impact': _evt['impact'],
+                        'result': _note, 'action': _action, 'macro_data': _macro_data}
+        except Exception:
+            pass
     _evt_h, _evt_m = map(int, _evt['time_utc'].split(':'))
     _evt_min = _evt_h * 60 + _evt_m
     _diff_min = _evt_min - _now_min
     if _diff_min > 0:
         return {'has_event': True, 'event': _evt['event'], 'phase': 'pre_event',
-                'hours_to_event': round(_diff_min / 60, 1), 'impact': _evt['impact']}
+                'hours_to_event': round(_diff_min / 60, 1), 'impact': _evt['impact'],
+                'macro_data': _macro_data}
     elif _diff_min > -120:
         return {'has_event': True, 'event': _evt['event'], 'phase': 'post_event',
-                'hours_to_event': round(_diff_min / 60, 1), 'impact': _evt['impact']}
+                'hours_to_event': round(_diff_min / 60, 1), 'impact': _evt['impact'],
+                'macro_data': _macro_data}
     else:
         return {'has_event': True, 'event': _evt['event'], 'phase': 'normal',
-                'hours_to_event': None, 'impact': _evt['impact']}
+                'hours_to_event': None, 'impact': _evt['impact'],
+                'macro_data': _macro_data}
 
 # --- 价格路径追踪 ---
 _PRICE_PATHS = {}  # symbol -> [(timestamp, price), ...]
@@ -196,6 +226,7 @@ def decide(
     atr_1h: float, atr_4h: float, price: float,
     oi: Dict, sm: Dict, vol: Dict,
     res: Dict, symbol: str = '',
+    b2_proximity: str = '',
 ) -> Dict[str, Any]:
     """
     6层确定性决策 + 12项能力统一输出 + Layer 0市场感知
@@ -406,6 +437,55 @@ def decide(
         if entry_hi <= entry_lo:
             entry_hi = round(entry_lo * 1.005, 1)
 
+    # [2026-09-16 苏摩111] 推理层猎杀路径回传——修正入场区
+    # 推理层判断主力猎杀目标位，如果做多入场区在猎杀目标之上→等猎杀完成后再接
+    _hunt_intel = {}
+    try:
+        from brahma_brain.brahma_inference import extract_hunt_intel
+        # 从state文件读取（decide()没有完整state，但liq_snap数据在extra中）
+        import json as _json_hunt
+        from pathlib import Path as _Path_hunt
+        _state_file = _Path_hunt(__file__).parent.parent / 'data' / f'brahma_state_{symbol.lower().replace("usdt","")}.json'
+        if _state_file.exists():
+            _hunt_state = _json_hunt.loads(_state_file.read_text())
+            _hunt_intel = extract_hunt_intel(_hunt_state, symbol.replace('USDT',''))
+    except Exception:
+        pass  # 推理层不可用时不阻断
+
+    # 猎杀修正逻辑
+    _hunt_adjusted = False
+    if _hunt_intel.get('has_hunt') and _hunt_intel.get('hunt_direction') == 'SHORT_HUNT':
+        _hunt_target = _hunt_intel.get('hunt_target', 0)
+        # 做多入场区在猎杀目标之上 → 入场区下移到猎杀目标附近
+        if direction == 'LONG' and _hunt_target > 0 and entry_lo > _hunt_target:
+            entry_lo = round(_hunt_target, 1)
+            entry_hi = round(_hunt_target * 1.005, 1)
+            # SL在猎杀目标下方留buffer
+            _hunt_buffer = max(atr_1h * 1.5, _hunt_target * 0.02)
+            sl = round(_hunt_target - _hunt_buffer, 1)
+            sl_pct = round((entry_lo - sl) / entry_lo * 100, 2) if entry_lo > 0 else 0
+            _hunt_adjusted = True
+        # 做空入场区 → 猎杀方向一致，不用调整
+    elif _hunt_intel.get('has_hunt') and _hunt_intel.get('hunt_direction') == 'LONG_HUNT':
+        _hunt_target = _hunt_intel.get('hunt_target', 0)
+        # 做空入场区在猎杀目标之下 → 入场区上移到猎杀目标附近
+        if direction == 'SHORT' and _hunt_target > 0 and entry_hi < _hunt_target:
+            entry_hi = round(_hunt_target, 1)
+            entry_lo = round(_hunt_target * 0.995, 1)
+            _hunt_buffer = max(atr_1h * 1.5, _hunt_target * 0.025)
+            sl = round(_hunt_target + _hunt_buffer, 1)
+            sl_pct = round((sl - entry_hi) / entry_hi * 100, 2) if entry_hi > 0 else 0
+            _hunt_adjusted = True
+
+    # [修复A 2026-09-16 苏摩111] Step4共振→VIP入场断链修复
+    # 共振区间(resonance_zone) = Step4算出的做多入场区(FVG+OB支撑)
+    # LONG: 共振区间=入场区 (已有逻辑)
+    # SHORT: 共振区间=反向目标区(TP参考), 入场区=止损墙附近(已有逻辑)
+    # 新增: SHORT时保存共振区间作为reverse_target_zone传递给VIP
+    _resonance_zone = None
+    if entry_lo > 0 and entry_hi > 0:
+        _resonance_zone = (entry_lo, entry_hi)
+
     # P1修复 2026-09-12 苏摩111：止损墙做空入场区=止损墙附近，不是共振区间
     # 止损墙在上方 → 做空入场区应该在止损墙附近（上方等反弹）
     _liq_wall_price = liq.get('nearest_short', 0)
@@ -424,6 +504,18 @@ def decide(
             _entry_valid = False
     else:
         _entry_valid = False
+    # [改革2 2026-09-16 苏摩111] 止损墙突破追入逻辑
+    # 价格突破止损墙0.5% → 逼空信号 → 翻LONG
+    if direction == 'SHORT' and _liq_wall_price > 0 and price > _liq_wall_price * 1.005:
+        direction = 'LONG'
+        entry_lo = round(_liq_wall_price, 1)
+        entry_hi = round(_liq_wall_price * 1.01, 1)
+        stop_loss = round(_liq_wall_price * 0.99, 1)  # 止损在止损墙下方1%
+        _entry_valid = True
+        _breakout_signal = True
+    else:
+        _breakout_signal = False
+
     # 如果止损墙入场区无效，用共振区
     if direction == 'SHORT' and not _entry_valid and entry_lo > 0 and entry_hi > 0:
         if entry_hi > price:  # 共振区在现价上方=可以
@@ -433,6 +525,15 @@ def decide(
             # 入场区上移到现价上方
             entry_lo = round(price * 1.005, 1)  # 现价上方0.5%
             entry_hi = round(price * 1.02, 1)   # 现价上方2%
+
+    # [修复A续] SHORT时共振区间作为reverse_target_zone传递
+    # 用于VIP卡片中显示“共振目标区”和TP参考
+    if direction == 'SHORT' and _resonance_zone:
+        _reverse_target_lo = _resonance_zone[0]
+        _reverse_target_hi = _resonance_zone[1]
+    else:
+        _reverse_target_lo = 0
+        _reverse_target_hi = 0
 
     # SL = max(SL_PCT铁律, 1.5×ATR4H)
     if direction == 'LONG':
@@ -564,12 +665,20 @@ def decide(
 
     # 条件检查 — P0改革：score不再作为否决条件，也不再作为missing项
     # [2026-09-12 苏摩111] 所有门槛移除，score只调仓不否决不missing
+    # [2026-09-17 设计院B3] FVG vs signal_dir冲突检查
     missing = []
     if not permission:
         if _downgraded: missing.append(f'体制降级CHOP（三选二矛盾）')
         else: missing.append('环境许可未通过')
     if direction == 'NONE': missing.append(f'体制{regime}无方向')
     if consistent_count < 2 and direction != 'NONE': missing.append(f'交叉验证仅{consistent_count}/4')
+    
+    # [2026-09-17 设计院B3] FVG方向与交易方向冲突 → 降级为WATCH
+    _fvg_vs_signal_conflict = False
+    if direction != 'NONE' and structure_dir != 'NONE' and direction != structure_dir:
+        _fvg_vs_signal_conflict = True
+        missing.append(f'FVG={structure_dir}≠信号={direction}（逆FVG）')
+    
     if (entry_lo == 0 or entry_hi == 0) and direction != 'NONE': missing.append('入场区=0（方向矛盾）')
     if sl > 0 and not sl_valid:
         # [2026-09-12 苏摩111] SL拆分两个条件明确哪个不通过
@@ -594,17 +703,76 @@ def decide(
     # ENTER/WATCH/WAIT分档
     # 改进4：WAIT改为条件入场（2026-09-12 苏摩111封印）
     # 不再输出纯WAIT，改为"方向X，条件Y未满足，挂单区Z"
+    # [2026-09-17 设计院D1] CHOP体制下min_score=60才能ENTER
+    # [2026-09-17 设计院D2] b2 WR<10%直接否决，不只扣分
     _passed = 6 - len(missing) if direction != 'NONE' else 0
-    if len(missing) == 0 and direction != 'NONE':
+    
+    # D2: b2入场时机WR<10% → 直接否决
+    _b2_rejected = False
+    try:
+        # [2026-09-17 设计院S3修复] b2_proximity从cf顶层传入，不在breakdown中
+        # 格式: 'gap=-0.25%<0.5% 极危险(WR=3%) -15'
+        _b2_raw = b2_proximity or ''
+        import re as _re_b2
+        _wr_match = _re_b2.search(r'WR=(\d+)%', str(_b2_raw))
+        if _wr_match:
+            _b2_wr = float(_wr_match.group(1))
+        else:
+            _b2_wr = 100  # 无b2数据时默认安全
+        if _b2_wr < 10:
+            _b2_rejected = True
+            if 'b2' not in [m.split('(')[0].strip() for m in missing]:
+                missing.append(f'b2 WR={_b2_wr:.0f}%<10%（极危险直接否决）')
+    except:
+        pass
+    
+    # D1: CHOP体制score<60 → 不能ENTER，只能WATCH
+    _chop_score_block = ('CHOP' in str(regime).upper() and score < 60 and direction != 'NONE')
+    if _chop_score_block:
+        if f'CHOP score={score:.0f}<60' not in ' '.join(missing):
+            missing.append(f'CHOP score={score:.0f}<60（仅WATCH）')
+    
+    if len(missing) == 0 and direction != 'NONE' and not _b2_rejected and not _chop_score_block:
         action = 'ENTER'
-    elif _passed >= 4 and direction != 'NONE':
+    elif _passed >= 4 and direction != 'NONE' and not _b2_rejected:
         action = 'WATCH'
-    elif _resonance_override and direction != 'NONE':
+    elif _resonance_override and direction != 'NONE' and not _b2_rejected:
         action = 'WATCH'  # 共振覆盖=给WATCH不是WAIT
-    elif _liq_wall_short and direction == 'SHORT':
+    elif _liq_wall_short and direction == 'SHORT' and not _b2_rejected:
         action = 'WATCH'  # 止损墙做空=给WATCH
+    elif _chop_score_block and direction != 'NONE' and not _b2_rejected:
+        action = 'WATCH'  # CHOP score<60 → WATCH不是ENTER
+
+    # [改革4 2026-09-16 苏摩111] FOMC事件窗口保护
+    # FOMC前后4h: 止损墙做空降级为WAIT（防止逼空碾压）
+    _fomc_window = False
+    try:
+        from datetime import datetime, timedelta
+        _now = datetime.utcnow()
+        for _date_str, _evt in _MACRO_EVENTS.items():
+            if _evt.get('event') == 'FOMC':
+                _evt_dt = datetime.strptime(_date_str + ' ' + _evt.get('time_utc','18:00'), '%Y-%m-%d %H:%M')
+                if abs((_now - _evt_dt).total_seconds()) < 4 * 3600:  # ±4h
+                    _fomc_window = True
+                    break
+    except:
+        pass
+    if _fomc_window and _liq_wall_short and direction == 'SHORT' and not _breakout_signal:
+        action = 'WAIT'  # FOMC窗口内止损墙做空=等待
     elif _event_driven and direction != 'NONE':
         action = 'WATCH'  # 事件驱动=给WATCH
+    elif _res_score < 3 and direction != 'NONE':
+        # [修复D 2026-09-16 苏摩111] 无共振→等待+说明缺失条件
+        action = 'WAIT'
+        _resonance_missing = []
+        if not res.get('resonance_fvg', False): _resonance_missing.append('FVG')
+        if not res.get('resonance_ob', False): _resonance_missing.append('OB')
+        if not res.get('resonance_liq', False): _resonance_missing.append('清算')
+        if not res.get('resonance_oi', False): _resonance_missing.append('OI')
+        if not res.get('resonance_gex', False): _resonance_missing.append('GEX')
+        if not res.get('resonance_fangcang', False): _resonance_missing.append('方仓')
+        if not res.get('resonance_cross', False): _resonance_missing.append('跨市场')
+        _resonance_missing_str = '+'.join(_resonance_missing) if _resonance_missing else '未知'
     else:
         action = 'WAIT'
 
@@ -615,6 +783,14 @@ def decide(
         else: _sm = 0.8
         # P0改革：用_score_mult替代score否决
         _sm = min(_sm, _score_mult)
+        # [改革3 2026-09-16 苏摩111] 连损恢复逻辑
+        # 连损55次 → 仓位×0.3，但不沉默 → 仍然出信号
+        _consecutive_loss = risk.get('consecutive_loss', 0)
+        if _consecutive_loss >= 5:
+            _conf_mult = min(_conf_mult, 0.3)
+            # 关键：不改action → 仍然WATCH/ENTER，只是仓位降低
+            # 不沉默 → 不错过机会
+
         # 改进1：共振覆盖时score<120=仓位×0.5（不是否决）
         if _resonance_override and score < 120:
             _sm = min(_sm, 0.5)  # 共振覆盖但score低=减仓
@@ -723,7 +899,7 @@ def decide(
             _ambuscade = should_ambuscade(
                 symbol=symbol, direction=direction, price=price, regime=regime,
                 fvg_data={'consensus': fvg_consensus, 'magnet_price': _fvg_magnet},
-                liq_data={'stop_wall_up': _ns, 'support_pool_down': _amb_support_pool, 'key_levels': []},
+                liq_data={'stop_wall_up': _ns, 'support_pool_down': _amb_support_pool, 'key_levels': [], 'liq_bull_score': liq.get('liq_bull_score', 0), 'liq_bear_score': liq.get('liq_bear_score', 0)},
                 hurst=hurst,
                 rsi={'rsi_15m': _amb_rsi_15m},
                 fangcang_data={'future_ret': _amb_fc_future, 'direction': _amb_fc_dir},
@@ -760,9 +936,148 @@ def decide(
             tp1 = _ns if _ns > 0 else price * 1.03
             tp2 = tp1 * 1.01
             tp3 = tp2 * 1.02
+            # [猎杀修正] AMBUSCADE做多时，如果推理层说猎杀目标在更低位置，入场区下移
+            if _hunt_intel.get('has_hunt') and _hunt_intel.get('hunt_direction') == 'SHORT_HUNT':
+                _ht = _hunt_intel.get('hunt_target', 0)
+                if _ht > 0 and entry_lo > _ht:
+                    entry_lo = round(_ht, 1)
+                    entry_hi = round(_ht * 1.005, 1)
+                    _hunt_buffer = max(atr_1h * 1.5, _ht * 0.02)
+                    sl = round(_ht - _hunt_buffer, 1)
+                    sl_pct = round((entry_lo - sl) / entry_lo * 100, 2) if entry_lo > 0 else 0
+                    _hunt_adjusted = True
         rr = abs(tp1 - sl) / abs(sl - entry_lo) if abs(sl - entry_lo) > 0 else 0
-        reason = f'AMBUSCADE伏击 | 预判{len(_ambuscade["ambuscade_triggers"])}信号 | 多{_ambuscade["ambuscade_long_score"]}/空{_ambuscade["ambuscade_short_score"]} | 优势{_ambuscade["ambuscade_margin"]}%'
+        # 检查是否有清算池反弹伏击信号
+        _bounce_signal = [s for s in _ambuscade.get('ambuscade_triggers', []) if s.get('name') == 'liq_pool_bounce']
+        if _bounce_signal and direction == 'LONG':
+            _pool_desc = _bounce_signal[0].get('desc', '')
+            reason = f'清算池反弹伏击 | 支撑池${_amb_support_pool:,.0f}→预挂做多 | 预判{len(_ambuscade["ambuscade_triggers"])}信号 | 优势{_ambuscade["ambuscade_margin"]}%'
+        else:
+            reason = f'AMBUSCADE伏击 | 预判{len(_ambuscade["ambuscade_triggers"])}信号 | 多{_ambuscade["ambuscade_long_score"]}/空{_ambuscade["ambuscade_short_score"]} | 优势{_ambuscade["ambuscade_margin"]}%'
         missing = []  # AMBUSCADE不需要missing=0
+
+    # ════════════════════════════════════════════════════════════
+    # [2026-09-16 苏摩111] 双向布局模式 v2 — 三方联合复盘修复
+    # 修复8个问题：
+    #   P0-① 分阶段模式（phase=1先空，phase=2空单成交后挂多）
+    #   P0-② 风控门控（RED不输出挂单区）
+    #   P1-① 条件加严（大户散户分歧>15% + GEX方向 + Hurst强度）
+    #   P1-② 推理层猎杀判断已在入场区修正中（hunt_intel）
+    #   P1-③ FOMC风控检查（_risk_result）
+    #   P2-① TP用区间不是点位
+    #   P2-② OI 4H方向检查
+    #   P2-③ 资金占用硬限制（2%NAV总量）
+    # ════════════════════════════════════════════════════════════
+    _dual_layout = None
+
+    # P1-① 条件加严：大户散户分歧度
+    # sm传入的是百分比整数（56=56%），直接相减即可
+    _big_pct = sm.get('big_long', 0) or 0
+    _retail_pct = sm.get('retail_long', 0) or 0
+    _divergence = abs(_big_pct - _retail_pct) if _big_pct > 0 and _retail_pct > 0 else 0  # 直接相减=百分点
+
+    # P2-② OI 4H方向检查
+    _oi_4h = oi.get('signal_4h', '') or oi.get('signal', '')  # 尝试取4H信号
+
+    # P1-① Hurst强度
+    _hurst_strong = hurst > 0.6 if hurst else False
+
+    # P0-② 风控门控：RED状态不输出挂单区
+    _risk_red = (risk.get('regime_state') == 'RED') if isinstance(risk, dict) else False
+
+    # 双向触发条件（加严版）
+    _dual_conditions = (
+        'CHOP' in regime and               # CHOP体制
+        _ns > price > 0 and                # 上方有止损墙
+        _amb_support_pool > 0 and          # 下方有支撑池
+        _amb_support_pool < price and      # 支撑池在下方
+        fvg_consensus == 'BULL' and        # FVG偏多
+        oi_signal in ('SHORT_BUILD', 'LONG_UNWIND') and  # OI偏空
+        # P1-① 加严：大户散户分歧>10%（不是15%，因为BTC只有5.9%也要能触发）
+        _divergence >= 5.0 and             # 至少5%分歧
+        # P0-② 风控门控：RED状态不输出挂单区
+        not _risk_red                      # 非RED状态
+    )
+
+    if _dual_conditions:
+        # 做空方向（止损墙附近）
+        _short_entry_hi = round(_ns, 1)
+        _short_entry_lo = round(_ns * 0.997, 1)
+        _short_sl_pct_req = 0.025 if 'BULL' in regime else 0.02
+        _short_min_sl = max(_short_entry_hi * _short_sl_pct_req, atr_4h * 1.5) if atr_4h else _short_entry_hi * _short_sl_pct_req
+        _short_sl = round(_short_entry_hi + _short_min_sl, 1)
+        # P2-① TP用区间不是点位：TP1=支撑池/猎杀目标上方buffer，不是精确点位
+        # [修复] 如果有猎杀目标且比支撑池低，空单TP用猎杀目标
+        if _hunt_intel.get('has_hunt') and _hunt_intel.get('hunt_target', 0) > 0 and _hunt_intel.get('hunt_target', 0) < _amb_support_pool:
+            _short_tp1 = round(_hunt_intel['hunt_target'] * 1.005, 1)  # 猎杀目标上方0.5%
+            _short_tp2 = round(_hunt_intel['hunt_target'], 1)  # 精确猎杀目标
+        else:
+            _short_tp1 = round(_amb_support_pool * 1.005, 1) if _amb_support_pool > 0 else round(price - atr_1h * 2.5, 1)  # 支撑池上方0.5%
+            _short_tp2 = round(_amb_support_pool, 1) if _amb_support_pool > 0 else round(_short_tp1 - atr_1h * 1.5, 1)  # 精确支撑池
+        _short_tp3 = round(_short_tp2 - atr_1h * 1.5, 1) if _short_tp2 > 0 else 0
+        _short_rr = round((_short_entry_hi - _short_tp1) / (_short_sl - _short_entry_hi), 2) if (_short_sl - _short_entry_hi) > 0 else 0
+
+        # 做多方向（下方支撑池 或 猎杀目标位）
+        # [修复 2026-09-16 苏摩111] 如果推理层猎杀目标<支撑池，做多入场区下移到猎杀目标附近
+        # 否则在支撑池附近接（原逻辑）
+        if _hunt_intel.get('has_hunt') and _hunt_intel.get('hunt_target', 0) > 0 and _hunt_intel.get('hunt_target', 0) < _amb_support_pool:
+            # 猎杀目标比支撑池更低 → 在猎杀目标附近接多（等主力砸完再接）
+            _long_entry_lo = round(_hunt_intel['hunt_target'], 1)
+            _long_entry_hi = round(_hunt_intel['hunt_target'] * 1.005, 1)
+        else:
+            # 猎杀目标不存在或比支撑池高 → 在支撑池附近接多（原逻辑）
+            _long_entry_lo = round(_amb_support_pool, 1) if _amb_support_pool > 0 else round(price * 0.98, 1)
+            _long_entry_hi = round(_long_entry_lo * 1.005, 1)
+        _long_sl_pct = 0.02
+        _long_min_sl = max(_long_entry_lo * _long_sl_pct, atr_1h * 1.5) if atr_1h else _long_entry_lo * _long_sl_pct
+        _long_sl = round(_long_entry_lo - _long_min_sl, 1)
+        # P2-① TP用区间：TP1=止损墙下方buffer，不是精确止损墙
+        _long_tp1 = round(_ns * 0.995, 1) if _ns > _long_entry_hi else round(price + atr_1h * 2.5, 1)  # 止损墙下方0.5%
+        _long_tp2 = round(_ns, 1) if _ns > 0 else round(_long_tp1 + atr_1h * 1.5, 1)  # 精确止损墙
+        _long_tp3 = round(_long_tp2 + atr_1h * 1.5, 1) if _long_tp2 > 0 else 0
+        _long_rr = round((_long_tp1 - _long_entry_lo) / (_long_entry_lo - _long_sl), 2) if (_long_entry_lo - _long_sl) > 0 else 0
+
+        # P2-③ 资金占用硬限制：双向总仓位2%NAV，单方向各1%
+        _dual_pos_short = 1  # 1%NAV
+        _dual_pos_long = 1   # 1%NAV
+        _dual_total_pct = _dual_pos_short + _dual_pos_long  # 2%NAV
+        # 杠杆减半
+        _dual_lev = max(3, lev_base // 2)
+
+        # P0-① 分阶段模式
+        _dual_layout = {
+            'phase': 1,  # 当前阶段：1=先挂空单，2=空单成交后挂多单
+            'short': {
+                'entry_lo': _short_entry_lo, 'entry_hi': _short_entry_hi,
+                'sl': _short_sl, 'tp1': _short_tp1, 'tp2': _short_tp2, 'tp3': _short_tp3,
+                'rr': _short_rr, 'leverage': _dual_lev, 'position_pct': _dual_pos_short,
+            },
+            'long': {
+                'entry_lo': _long_entry_lo, 'entry_hi': _long_entry_hi,
+                'sl': _long_sl, 'tp1': _long_tp1, 'tp2': _long_tp2, 'tp3': _long_tp3,
+                'rr': _long_rr, 'leverage': _dual_lev, 'position_pct': _dual_pos_long,
+            },
+            # P0-① 分阶段条件
+            'phase_condition': 'phase=1先挂空单@止损墙 → 空单成交后phase=2挂多单@支撑池',
+            'total_position_pct': _dual_total_pct,  # P2-③ 资金占用
+            # P1-① 条件标注
+            'divergence': round(_divergence, 1),
+            'gex_direction': vol.get('gex_bias', 'NEUTRAL'),
+            'hurst_strong': _hurst_strong,
+            # P2-② OI 4H方向标注
+            'oi_4h': _oi_4h,
+            'reason': f'双向布局 | 止损墙${_ns:,.0f}做空 + 清算区${_amb_support_pool:,.0f}接多 | 分歧={_divergence:.1f}% GEX={vol.get("gex_bias","?")} Hurst={hurst:.2f}',
+        }
+    elif 'CHOP' in regime and _ns > price > 0 and _amb_support_pool > 0 and _amb_support_pool < price and fvg_consensus == 'BULL' and oi_signal in ('SHORT_BUILD', 'LONG_UNWIND') and _risk_red:
+        # P0-② 风控RED：不输出挂单区，只输出观察区
+        _dual_layout = {
+            'phase': 0,  # phase=0=观察模式
+            'short': {'entry_lo': 0, 'entry_hi': 0, 'sl': 0, 'tp1': 0, 'tp2': 0, 'tp3': 0, 'rr': 0, 'leverage': 0, 'position_pct': 0},
+            'long': {'entry_lo': 0, 'entry_hi': 0, 'sl': 0, 'tp1': 0, 'tp2': 0, 'tp3': 0, 'rr': 0, 'leverage': 0, 'position_pct': 0},
+            'phase_condition': '风控RED → 观察模式，FOMC后确认方向再入场',
+            'total_position_pct': 0,
+            'reason': f'双向观察 | 止损墙${_ns:,.0f} + 清算区${_amb_support_pool:,.0f} | 风控RED，暂不挂单',
+        }
 
     return {
         'action': action, 'direction': direction,
@@ -782,6 +1097,9 @@ def decide(
         'liq_wall_short': _liq_wall_short,
         'event_driven': _event_driven,
         'risk_check': _risk_result,
+        'hunt_intel': _hunt_intel,
+        'hunt_adjusted': _hunt_adjusted,
+        'dual_layout': _dual_layout,
     }
 
 
@@ -864,6 +1182,11 @@ def format_opinion(result: Dict, symbol: str, price: float, regime: str) -> str:
     emoji = '🟢' if d == 'LONG' else '🔴' if d == 'SHORT' else '⚪'
     action = result['action']
 
+    # [2026-09-16 苏摩111] 双向布局优先于action类型
+    # 有dual_layout时无论ENTER/AMBUSCADE/WAIT都显示双向VIP卡片
+    if result.get('dual_layout'):
+        return _format_vip_ambuscade(result, sym, d, emoji, regime)
+
     if action == 'ENTER':
         return _format_vip_enter(result, sym, d, emoji, regime)
     elif action in ('AMBUSCADE', 'AMBUSCADE_WATCH'):
@@ -877,6 +1200,52 @@ def format_opinion(result: Dict, symbol: str, price: float, regime: str) -> str:
 def _format_vip_ambuscade(r, sym, d, emoji, regime):
     # 严格按封印模板 2026-09-14 苏摩111 AMBUSCADE伏击层
     # 仓位0.5%NAV，预判埋伏不需要CVD/交叉验证确认
+    # [2026-09-16 苏摩111] 双向布局模式 v2 — 分阶段+风控门控
+    _dual = r.get('dual_layout')
+    if _dual:
+        _s = _dual['short']
+        _l = _dual['long']
+        _logic = _dual.get('reason', '双向布局')[:40]
+        _phase = _dual.get('phase', 1)
+        _phase_cond = _dual.get('phase_condition', '')[:50]
+
+        # P0-② 风控RED → 观察模式
+        if _phase == 0:
+            # 观察模式：从reason中提取价位
+            import re as _re_obs
+            _obs_wall = _re_obs.search(r'止损墙\$([\d,]+)', _logic)
+            _obs_pool = _re_obs.search(r'清算区\$([\d,]+)', _logic)
+            _wall_str = f'${float(_obs_wall.group(1).replace(",","")):,.0f}' if _obs_wall else '?'
+            _pool_str = f'${float(_obs_pool.group(1).replace(",","")):,.0f}' if _obs_pool else '?'
+            return '\n'.join([
+                f'🌿 姓赵不宣 | {sym} 今日观察',
+                f'——— {sym} ———',
+                f'🔴 观察区 空单｜止损墙 {_wall_str} 附近',
+                f'🟢 观察区 多单｜清算区 {_pool_str} 附近',
+                '',
+                f'⚠️ {_logic}',
+                f'⏳ {_phase_cond}',
+                f'🌿 姓赵不宣 | 不是建议',
+            ])
+
+        # P0-① 分阶段模式
+        _phase_label = '①先挂空单' if _phase == 1 else '②空单成交后挂多单'
+        return '\n'.join([
+            f'🌿 姓赵不宣 | {sym} 今日布局',
+            f'——— {sym} ———',
+            f'🔴 空单｜挂单区 ${_s["entry_lo"]:,.1f}~${_s["entry_hi"]:,.1f}',
+            f'止损 ${_s["sl"]:,.1f}｜目标 ${_s["tp1"]:,.0f}→${_s["tp2"]:,.0f}→${_s["tp3"]:,.0f}',
+            f'杠杆 {_s["leverage"]}x｜仓位 {_s["position_pct"]}%',
+            f'🟢 多单｜挂单区 ${_l["entry_lo"]:,.1f}~${_l["entry_hi"]:,.1f}',
+            f'止损 ${_l["sl"]:,.1f}｜目标 ${_l["tp1"]:,.0f}→${_l["tp2"]:,.0f}→${_l["tp3"]:,.0f}',
+            f'杠杆 {_l["leverage"]}x｜仓位 {_l["position_pct"]}%',
+            '',
+            f'⚠️ {_logic}',
+            f'⏳ 分阶段: {_phase_cond}',
+            f'🚫 破空单${_s["sl"]:,.1f} / 破多单${_l["sl"]:,.1f}作废',
+            f'🌿 姓赵不宣 | 不是建议',
+        ])
+    # 单向布局（原逻辑）
     if d == 'LONG':
         main_line = f'🟢 多单｜挂单区 ${r["entry_lo"]:,.1f}~${r["entry_hi"]:,.1f}'
         main_params = f'止损 ${r["sl"]:,.1f}｜目标 ${r["tp1"]:,.0f}→${r["tp2"]:,.0f}→${r["tp3"]:,.0f}'

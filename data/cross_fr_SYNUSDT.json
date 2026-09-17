@@ -1,0 +1,13 @@
+{
+  "symbol": "SYNUSDT",
+  "frs": {
+    "binance": -0.001121
+  },
+  "spread": 0.0,
+  "max_ex": "binance",
+  "min_ex": "binance",
+  "arb_signal": "NONE",
+  "arb_score": 0,
+  "bull_fr_bonus": 8,
+  "ts": 1789610889.881668
+}

@@ -1,0 +1,7121 @@
+{
+  "symbol": "ETHUSDT",
+  "direction": "NEUTRAL",
+  "ts": 1789613021,
+  "dt": "2026-09-17 02:43 UTC",
+  "result": {
+    "symbol": "ETHUSDT",
+    "price": 2431.68,
+    "price_ts": 1789613018.7934544,
+    "data_age_sec": 0,
+    "data_health": {
+      "cvd_btc": {
+        "age_hours": 1.06,
+        "healthy": true,
+        "source": "binance_api"
+      },
+      "cvd_eth": {
+        "age_hours": 1.06,
+        "healthy": true,
+        "source": "binance_api"
+      },
+      "liqmap_btc": {
+        "age_hours": 0.0,
+        "healthy": true,
+        "source": "binance_api"
+      },
+      "liqmap_eth": {
+        "age_hours": 0.04,
+        "healthy": true,
+        "source": "binance_api"
+      },
+      "gex": {
+        "age_hours": 1.54,
+        "healthy": true,
+        "source": "supercronic"
+      },
+      "har_rv": {
+        "age_hours": 0.0,
+        "healthy": true,
+        "source": "supercronic"
+      }
+    },
+    "signal_dir": "NEUTRAL",
+    "regime": "CHOP_MID",
+    "regime_cn": "中位震荡",
+    "consensus": "NEUTRAL",
+    "wave": {
+      "wave": "DOWNTREND",
+      "bias": "SHORT",
+      "note": "LH+LL下降结构"
+    },
+    "momentum": {
+      "rsi_15m": 55.34,
+      "rsi_1h": 57.14,
+      "rsi_4h": 41.71,
+      "rsi_1d": 51.91,
+      "atr_1h": 23.0461,
+      "atr_4h": 42.4247,
+      "atr_pct": 0.948,
+      "bb": {
+        "mid": 2404.5825,
+        "upper": 2429.70161852,
+        "lower": 2379.46338148,
+        "width": 0.0209,
+        "pos": 1.043
+      }
+    },
+    "sentiment": {
+      "funding_rate": 0.0033,
+      "long_short_ratio": 76.1,
+      "oi": 2312406.544,
+      "oi_change_pct": 0.3061,
+      "oi_momentum": "NEUTRAL"
+    },
+    "key_levels": {
+      "price": 2431.86,
+      "fib": {
+        "high": 2666.0,
+        "low": 2355.12,
+        "0.236": 2592.63232,
+        "0.382": 2547.24384,
+        "0.500": 2510.56,
+        "0.618": 2473.87616,
+        "0.786": 2421.64832,
+        "1.272": 2270.56064,
+        "1.618": 2162.99616,
+        "2.618": 1852.11616
+      },
+      "pivot": {
+        "pp": 2426.44333333,
+        "r1": 2437.89666667,
+        "r2": 2443.93333333,
+        "r3": 2455.38666667,
+        "s1": 2420.40666667,
+        "s2": 2408.95333333,
+        "s3": 2402.91666667
+      },
+      "bb": {
+        "mid": 2404.5825,
+        "upper": 2429.70161852,
+        "lower": 2379.46338148,
+        "width": 0.0209,
+        "pos": 1.043
+      },
+      "swings": {
+        "swing_highs": [
+          [
+            320,
+            2515.78
+          ],
+          [
+            333,
+            2534.76
+          ],
+          [
+            345,
+            2614.99
+          ],
+          [
+            384,
+            2429.0
+          ],
+          [
+            391,
+            2429.9
+          ]
+        ],
+        "swing_lows": [
+          [
+            325,
+            2461.1
+          ],
+          [
+            338,
+            2485.77
+          ],
+          [
+            367,
+            2357.0
+          ],
+          [
+            381,
+            2381.0
+          ],
+          [
+            391,
+            2365.0
+          ]
+        ],
+        "last_high": 2429.9,
+        "last_low": 2365.0
+      },
+      "resistance": [
+        2437.89666667,
+        2443.93333333,
+        2451.6384,
+        2466.5568,
+        2547.24384
+      ],
+      "support": [
+        2427.5588,
+        2421.64832,
+        2420.40666667,
+        2410.2246,
+        2408.95333333
+      ],
+      "range_high": 2666.0,
+      "range_low": 2355.12
+    },
+    "swing_4h": {
+      "highs": [
+        2536.0,
+        2522.75,
+        2666.0,
+        2546.11,
+        2614.99
+      ],
+      "lows": [
+        2440.09,
+        2403.33,
+        2433.04,
+        2460.3,
+        2357.0
+      ],
+      "last_high": 2614.99,
+      "last_low": 2357.0
+    },
+    "smc": {
+      "symbol": "ETHUSDT",
+      "price": 2431.86,
+      "signal_dir": "LONG",
+      "structure": {
+        "structure": "UPTREND",
+        "bos": [
+          {
+            "type": "BULL_BOS",
+            "level": 2429.9,
+            "note": "突破前高，多头结构延续"
+          }
+        ],
+        "choch": [],
+        "swing_highs": [
+          {
+            "idx": 90,
+            "type": "HIGH",
+            "price": 2546.11
+          },
+          {
+            "idx": 120,
+            "type": "HIGH",
+            "price": 2515.78
+          },
+          {
+            "idx": 133,
+            "type": "HIGH",
+            "price": 2534.76
+          },
+          {
+            "idx": 145,
+            "type": "HIGH",
+            "price": 2614.99
+          },
+          {
+            "idx": 184,
+            "type": "HIGH",
+            "price": 2429.0
+          },
+          {
+            "idx": 191,
+            "type": "HIGH",
+            "price": 2429.9
+          }
+        ],
+        "swing_lows": [
+          {
+            "idx": 96,
+            "type": "LOW",
+            "price": 2513.51
+          },
+          {
+            "idx": 114,
+            "type": "LOW",
+            "price": 2460.3
+          },
+          {
+            "idx": 125,
+            "type": "LOW",
+            "price": 2461.1
+          },
+          {
+            "idx": 138,
+            "type": "LOW",
+            "price": 2485.77
+          },
+          {
+            "idx": 167,
+            "type": "LOW",
+            "price": 2357.0
+          },
+          {
+            "idx": 181,
+            "type": "LOW",
+            "price": 2381.0
+          }
+        ],
+        "last_sh": 2429.9,
+        "last_sl": 2381.0
+      },
+      "order_blocks": {
+        "bull_obs": [
+          {
+            "type": "BULL_OB",
+            "high": 2443.75,
+            "low": 2430.66,
+            "mid": 2437.205,
+            "idx": 44,
+            "age_bars": 155,
+            "broken": false,
+            "dist_pct": 0.05,
+            "note": "看多OB区间 $2430.6600~$2443.7500 age=155bars"
+          },
+          {
+            "type": "BULL_OB",
+            "high": 2424.76,
+            "low": 2411.34,
+            "mid": 2418.05,
+            "idx": 165,
+            "age_bars": 34,
+            "broken": false,
+            "dist_pct": 0.85,
+            "note": "看多OB区间 $2411.3400~$2424.7600 age=34bars"
+          },
+          {
+            "type": "BULL_OB",
+            "high": 2410.79,
+            "low": 2399.0,
+            "mid": 2404.895,
+            "idx": 176,
+            "age_bars": 23,
+            "broken": false,
+            "dist_pct": 1.37,
+            "note": "看多OB区间 $2399.0000~$2410.7900 age=23bars"
+          }
+        ],
+        "bear_obs": [
+          {
+            "type": "BEAR_OB",
+            "high": 2448.1,
+            "low": 2411.44,
+            "mid": 2429.77,
+            "idx": 166,
+            "age_bars": 33,
+            "broken": false,
+            "dist_pct": 0.67,
+            "note": "看空OB区间 $2411.4400~$2448.1000 age=33bars"
+          },
+          {
+            "type": "BEAR_OB",
+            "high": 2467.79,
+            "low": 2456.4,
+            "mid": 2462.095,
+            "idx": 58,
+            "age_bars": 141,
+            "broken": false,
+            "dist_pct": 1.48,
+            "note": "看空OB区间 $2456.4000~$2467.7900 age=141bars"
+          },
+          {
+            "type": "BEAR_OB",
+            "high": 2468.74,
+            "low": 2453.51,
+            "mid": 2461.125,
+            "idx": 47,
+            "age_bars": 152,
+            "broken": false,
+            "dist_pct": 1.52,
+            "note": "看空OB区间 $2453.5100~$2468.7400 age=152bars"
+          }
+        ],
+        "nearest_bull_ob": {
+          "type": "BULL_OB",
+          "high": 2443.75,
+          "low": 2430.66,
+          "mid": 2437.205,
+          "idx": 44,
+          "age_bars": 155,
+          "broken": false,
+          "dist_pct": 0.05,
+          "note": "看多OB区间 $2430.6600~$2443.7500 age=155bars"
+        },
+        "nearest_bear_ob": {
+          "type": "BEAR_OB",
+          "high": 2448.1,
+          "low": 2411.44,
+          "mid": 2429.77,
+          "idx": 166,
+          "age_bars": 33,
+          "broken": false,
+          "dist_pct": 0.67,
+          "note": "看空OB区间 $2411.4400~$2448.1000 age=33bars"
+        }
+      },
+      "fvg": {
+        "bull_fvg": [
+          {
+            "type": "BULL_FVG",
+            "top": 2590.85,
+            "bottom": 2447.83,
+            "mid": 2519.34,
+            "gap_pct": 5.843,
+            "filled": false,
+            "idx": 56,
+            "note": "合并FVG $2447.8300~$2590.8500 (5.84%)",
+            "merged": true,
+            "historical_only": false
+          }
+        ],
+        "bear_fvg": [
+          {
+            "type": "BEAR_FVG",
+            "top": 2401.78,
+            "bottom": 2397.78,
+            "mid": 2399.78,
+            "gap_pct": 0.167,
+            "filled": false,
+            "idx": 185,
+            "note": "看空FVG $2397.7800~$2401.7800 (0.17%)",
+            "historical_only": false
+          }
+        ],
+        "bull_fvg_all": [
+          {
+            "type": "BULL_FVG",
+            "top": 2590.85,
+            "bottom": 2447.83,
+            "mid": 2519.34,
+            "gap_pct": 5.843,
+            "filled": false,
+            "idx": 56,
+            "note": "合并FVG $2447.8300~$2590.8500 (5.84%)",
+            "merged": true,
+            "historical_only": false
+          }
+        ],
+        "bear_fvg_all": [
+          {
+            "type": "BEAR_FVG",
+            "top": 2401.78,
+            "bottom": 2397.78,
+            "mid": 2399.78,
+            "gap_pct": 0.167,
+            "filled": false,
+            "idx": 185,
+            "note": "看空FVG $2397.7800~$2401.7800 (0.17%)",
+            "historical_only": false
+          }
+        ],
+        "supply_bear": [],
+        "target_bear": [
+          {
+            "type": "BEAR_FVG",
+            "top": 2401.78,
+            "bottom": 2397.78,
+            "mid": 2399.78,
+            "gap_pct": 0.167,
+            "filled": false,
+            "idx": 185,
+            "note": "看空FVG $2397.7800~$2401.7800 (0.17%)",
+            "historical_only": false
+          }
+        ],
+        "demand_bull": [],
+        "target_bull": [
+          {
+            "type": "BULL_FVG",
+            "top": 2590.85,
+            "bottom": 2447.83,
+            "mid": 2519.34,
+            "gap_pct": 5.843,
+            "filled": false,
+            "idx": 56,
+            "note": "合并FVG $2447.8300~$2590.8500 (5.84%)",
+            "merged": true,
+            "historical_only": false
+          }
+        ],
+        "nearest_bull": {
+          "type": "BULL_FVG",
+          "top": 2590.85,
+          "bottom": 2447.83,
+          "mid": 2519.34,
+          "gap_pct": 5.843,
+          "filled": false,
+          "idx": 56,
+          "note": "合并FVG $2447.8300~$2590.8500 (5.84%)",
+          "merged": true,
+          "historical_only": false
+        },
+        "nearest_bear": {
+          "type": "BEAR_FVG",
+          "top": 2401.78,
+          "bottom": 2397.78,
+          "mid": 2399.78,
+          "gap_pct": 0.167,
+          "filled": false,
+          "idx": 185,
+          "note": "看空FVG $2397.7800~$2401.7800 (0.17%)",
+          "historical_only": false
+        },
+        "raw_bull_count": 11,
+        "raw_bear_count": 14,
+        "magnet_up": 2519.34,
+        "magnet_down": 2399.78
+      },
+      "liquidity": {
+        "equal_highs": [
+          {
+            "level": 2478.885,
+            "dist_pct": 1.93,
+            "note": "等高点（做空止损池） $2478.8850"
+          },
+          {
+            "level": 2478.7,
+            "dist_pct": 1.93,
+            "note": "等高点（做空止损池） $2478.7000"
+          },
+          {
+            "level": 2479.46,
+            "dist_pct": 1.96,
+            "note": "等高点（做空止损池） $2479.4600"
+          }
+        ],
+        "equal_lows": [
+          {
+            "level": 2413.065,
+            "dist_pct": 0.77,
+            "note": "等低点（做多止损池） $2413.0650"
+          },
+          {
+            "level": 2413.115,
+            "dist_pct": 0.77,
+            "note": "等低点（做多止损池） $2413.1150"
+          },
+          {
+            "level": 2402.71,
+            "dist_pct": 1.2,
+            "note": "等低点（做多止损池） $2402.7100"
+          }
+        ],
+        "nearest_above": {
+          "level": 2478.885,
+          "dist_pct": 1.93,
+          "note": "等高点（做空止损池） $2478.8850"
+        },
+        "nearest_below": {
+          "level": 2413.065,
+          "dist_pct": 0.77,
+          "note": "等低点（做多止损池） $2413.0650"
+        }
+      },
+      "pd_zone": {
+        "zone": "DISCOUNT",
+        "bias": "LONG",
+        "position": 0.29,
+        "mid": 2485.995,
+        "note": "折价区（<38.2%），机构倾向建仓，适合做多"
+      },
+      "score": {
+        "score": 17,
+        "max": 20,
+        "details": [
+          "BOS看多 +4",
+          "看多OB精确回踩 +6",
+          "FVG向下磁吸支撑 +2",
+          "看多FVG区域 +2",
+          "Discount区做多 +3"
+        ],
+        "grade": "优"
+      },
+      "order_blocks_4h": {
+        "bull_obs": [
+          {
+            "type": "BULL_OB",
+            "high": 2465.82,
+            "low": 2403.33,
+            "mid": 2434.575,
+            "idx": 60,
+            "age_bars": 39,
+            "broken": false,
+            "dist_pct": 1.19,
+            "note": "看多OB区间 $2403.3300~$2465.8200 age=39bars",
+            "timeframe": "4h"
+          },
+          {
+            "type": "BULL_OB",
+            "high": 2410.92,
+            "low": 2391.75,
+            "mid": 2401.335,
+            "idx": 94,
+            "age_bars": 5,
+            "broken": false,
+            "dist_pct": 1.68,
+            "note": "看多OB区间 $2391.7500~$2410.9200 age=5bars",
+            "timeframe": "4h"
+          },
+          {
+            "type": "BULL_OB",
+            "high": 2423.61,
+            "low": 2384.37,
+            "mid": 2403.99,
+            "idx": 9,
+            "age_bars": 90,
+            "broken": false,
+            "dist_pct": 1.99,
+            "note": "看多OB区间 $2384.3700~$2423.6100 age=90bars",
+            "timeframe": "4h"
+          }
+        ],
+        "bear_obs": [
+          {
+            "type": "BEAR_OB",
+            "high": 2471.41,
+            "low": 2440.09,
+            "mid": 2455.75,
+            "idx": 56,
+            "age_bars": 43,
+            "broken": false,
+            "dist_pct": 1.63,
+            "note": "看空OB区间 $2440.0900~$2471.4100 age=43bars",
+            "timeframe": "4h"
+          },
+          {
+            "type": "BEAR_OB",
+            "high": 2477.68,
+            "low": 2436.05,
+            "mid": 2456.865,
+            "idx": 0,
+            "age_bars": 99,
+            "broken": false,
+            "dist_pct": 1.88,
+            "note": "看空OB区间 $2436.0500~$2477.6800 age=99bars",
+            "timeframe": "4h"
+          },
+          {
+            "type": "BEAR_OB",
+            "high": 2478.3,
+            "low": 2454.32,
+            "mid": 2466.31,
+            "idx": 57,
+            "age_bars": 42,
+            "broken": false,
+            "dist_pct": 1.91,
+            "note": "看空OB区间 $2454.3200~$2478.3000 age=42bars",
+            "timeframe": "4h"
+          }
+        ],
+        "nearest_bull_ob": {
+          "type": "BULL_OB",
+          "high": 2465.82,
+          "low": 2403.33,
+          "mid": 2434.575,
+          "idx": 60,
+          "age_bars": 39,
+          "broken": false,
+          "dist_pct": 1.19,
+          "note": "看多OB区间 $2403.3300~$2465.8200 age=39bars",
+          "timeframe": "4h"
+        },
+        "nearest_bear_ob": {
+          "type": "BEAR_OB",
+          "high": 2471.41,
+          "low": 2440.09,
+          "mid": 2455.75,
+          "idx": 56,
+          "age_bars": 43,
+          "broken": false,
+          "dist_pct": 1.63,
+          "note": "看空OB区间 $2440.0900~$2471.4100 age=43bars",
+          "timeframe": "4h"
+        }
+      },
+      "order_blocks_15m": {
+        "bull_obs": [
+          {
+            "type": "BULL_OB",
+            "high": 2431.57,
+            "low": 2421.44,
+            "mid": 2426.505,
+            "idx": 360,
+            "age_bars": 139,
+            "broken": false,
+            "dist_pct": 0.43,
+            "note": "看多OB区间 $2421.4400~$2431.5700 age=139bars",
+            "timeframe": "15m"
+          },
+          {
+            "type": "BULL_OB",
+            "high": 2423.85,
+            "low": 2417.58,
+            "mid": 2420.715,
+            "idx": 492,
+            "age_bars": 7,
+            "broken": false,
+            "dist_pct": 0.59,
+            "note": "看多OB区间 $2417.5800~$2423.8500 age=7bars",
+            "timeframe": "15m"
+          },
+          {
+            "type": "BULL_OB",
+            "high": 2424.36,
+            "low": 2416.14,
+            "mid": 2420.25,
+            "idx": 363,
+            "age_bars": 136,
+            "broken": false,
+            "dist_pct": 0.65,
+            "note": "看多OB区间 $2416.1400~$2424.3600 age=136bars",
+            "timeframe": "15m"
+          }
+        ],
+        "bear_obs": [
+          {
+            "type": "BEAR_OB",
+            "high": 2444.16,
+            "low": 2428.49,
+            "mid": 2436.325,
+            "idx": 368,
+            "age_bars": 131,
+            "broken": false,
+            "dist_pct": 0.51,
+            "note": "看空OB区间 $2428.4900~$2444.1600 age=131bars",
+            "timeframe": "15m"
+          },
+          {
+            "type": "BEAR_OB",
+            "high": 2448.1,
+            "low": 2422.35,
+            "mid": 2435.225,
+            "idx": 367,
+            "age_bars": 132,
+            "broken": false,
+            "dist_pct": 0.67,
+            "note": "看空OB区间 $2422.3500~$2448.1000 age=132bars",
+            "timeframe": "15m"
+          },
+          {
+            "type": "BEAR_OB",
+            "high": 2452.94,
+            "low": 2438.4,
+            "mid": 2445.67,
+            "idx": 352,
+            "age_bars": 147,
+            "broken": false,
+            "dist_pct": 0.87,
+            "note": "看空OB区间 $2438.4000~$2452.9400 age=147bars",
+            "timeframe": "15m"
+          }
+        ],
+        "nearest_bull_ob": {
+          "type": "BULL_OB",
+          "high": 2431.57,
+          "low": 2421.44,
+          "mid": 2426.505,
+          "idx": 360,
+          "age_bars": 139,
+          "broken": false,
+          "dist_pct": 0.43,
+          "note": "看多OB区间 $2421.4400~$2431.5700 age=139bars",
+          "timeframe": "15m"
+        },
+        "nearest_bear_ob": {
+          "type": "BEAR_OB",
+          "high": 2444.16,
+          "low": 2428.49,
+          "mid": 2436.325,
+          "idx": 368,
+          "age_bars": 131,
+          "broken": false,
+          "dist_pct": 0.51,
+          "note": "看空OB区间 $2428.4900~$2444.1600 age=131bars",
+          "timeframe": "15m"
+        }
+      },
+      "order_blocks_1d": {
+        "bull_obs": [
+          {
+            "type": "BULL_OB",
+            "high": 2533.47,
+            "low": 2412.69,
+            "mid": 2473.08,
+            "idx": 36,
+            "age_bars": 23,
+            "broken": false,
+            "dist_pct": 0.63,
+            "note": "看多OB区间 $2412.6900~$2533.4700 age=23bars",
+            "timeframe": "1d"
+          },
+          {
+            "type": "BULL_OB",
+            "high": 2483.99,
+            "low": 2403.33,
+            "mid": 2443.66,
+            "idx": 52,
+            "age_bars": 7,
+            "broken": false,
+            "dist_pct": 1.03,
+            "note": "看多OB区间 $2403.3300~$2483.9900 age=7bars",
+            "timeframe": "1d"
+          },
+          {
+            "type": "BULL_OB",
+            "high": 2534.22,
+            "low": 2384.2,
+            "mid": 2459.21,
+            "idx": 41,
+            "age_bars": 18,
+            "broken": false,
+            "dist_pct": 1.84,
+            "note": "看多OB区间 $2384.2000~$2534.2200 age=18bars",
+            "timeframe": "1d"
+          }
+        ],
+        "bear_obs": [
+          {
+            "type": "BEAR_OB",
+            "high": 2458.75,
+            "low": 2429.04,
+            "mid": 2443.895,
+            "idx": 40,
+            "age_bars": 19,
+            "broken": false,
+            "dist_pct": 1.27,
+            "note": "看空OB区间 $2429.0400~$2458.7500 age=19bars",
+            "timeframe": "1d"
+          },
+          {
+            "type": "BEAR_OB",
+            "high": 2490.24,
+            "low": 2400.19,
+            "mid": 2445.215,
+            "idx": 42,
+            "age_bars": 17,
+            "broken": false,
+            "dist_pct": 2.56,
+            "note": "看空OB区间 $2400.1900~$2490.2400 age=17bars",
+            "timeframe": "1d"
+          },
+          {
+            "type": "BEAR_OB",
+            "high": 2492.58,
+            "low": 2443.69,
+            "mid": 2468.135,
+            "idx": 47,
+            "age_bars": 12,
+            "broken": false,
+            "dist_pct": 2.66,
+            "note": "看空OB区间 $2443.6900~$2492.5800 age=12bars",
+            "timeframe": "1d"
+          }
+        ],
+        "nearest_bull_ob": {
+          "type": "BULL_OB",
+          "high": 2533.47,
+          "low": 2412.69,
+          "mid": 2473.08,
+          "idx": 36,
+          "age_bars": 23,
+          "broken": false,
+          "dist_pct": 0.63,
+          "note": "看多OB区间 $2412.6900~$2533.4700 age=23bars",
+          "timeframe": "1d"
+        },
+        "nearest_bear_ob": {
+          "type": "BEAR_OB",
+          "high": 2458.75,
+          "low": 2429.04,
+          "mid": 2443.895,
+          "idx": 40,
+          "age_bars": 19,
+          "broken": false,
+          "dist_pct": 1.27,
+          "note": "看空OB区间 $2429.0400~$2458.7500 age=19bars",
+          "timeframe": "1d"
+        }
+      },
+      "fvg_4h": {
+        "bull_fvg": [
+          {
+            "type": "BULL_FVG",
+            "top": 2530.4,
+            "bottom": 2412.23,
+            "mid": 2471.315,
+            "gap_pct": 4.899,
+            "filled": false,
+            "idx": 17,
+            "note": "合并FVG $2412.2300~$2530.4000 (4.90%)",
+            "active_fill_down": false,
+            "fill_target": 2412.23,
+            "merged": true,
+            "historical_only": false,
+            "timeframe": "4h"
+          }
+        ],
+        "bear_fvg": [],
+        "bull_fvg_all": [
+          {
+            "type": "BULL_FVG",
+            "top": 2530.4,
+            "bottom": 2412.23,
+            "mid": 2471.315,
+            "gap_pct": 4.899,
+            "filled": false,
+            "idx": 17,
+            "note": "合并FVG $2412.2300~$2530.4000 (4.90%)",
+            "active_fill_down": false,
+            "fill_target": 2412.23,
+            "merged": true,
+            "historical_only": false,
+            "timeframe": "4h"
+          }
+        ],
+        "bear_fvg_all": [],
+        "supply_bear": [],
+        "target_bear": [],
+        "demand_bull": [],
+        "target_bull": [
+          {
+            "type": "BULL_FVG",
+            "top": 2530.4,
+            "bottom": 2412.23,
+            "mid": 2471.315,
+            "gap_pct": 4.899,
+            "filled": false,
+            "idx": 17,
+            "note": "合并FVG $2412.2300~$2530.4000 (4.90%)",
+            "active_fill_down": false,
+            "fill_target": 2412.23,
+            "merged": true,
+            "historical_only": false,
+            "timeframe": "4h"
+          }
+        ],
+        "nearest_bull": {
+          "type": "BULL_FVG",
+          "top": 2530.4,
+          "bottom": 2412.23,
+          "mid": 2471.315,
+          "gap_pct": 4.899,
+          "filled": false,
+          "idx": 17,
+          "note": "合并FVG $2412.2300~$2530.4000 (4.90%)",
+          "active_fill_down": false,
+          "fill_target": 2412.23,
+          "merged": true,
+          "historical_only": false,
+          "timeframe": "4h"
+        },
+        "nearest_bear": null,
+        "raw_bull_count": 5,
+        "raw_bear_count": 7,
+        "magnet_up": 2471.315,
+        "magnet_down": null
+      },
+      "fvg_15m": {
+        "bull_fvg": [
+          {
+            "type": "BULL_FVG",
+            "top": 2519.65,
+            "bottom": 2485.4,
+            "mid": 2502.525,
+            "gap_pct": 1.378,
+            "filled": false,
+            "idx": 207,
+            "note": "合并FVG $2485.4000~$2519.6500 (1.38%)",
+            "merged": true,
+            "historical_only": false,
+            "timeframe": "15m"
+          },
+          {
+            "type": "BULL_FVG",
+            "top": 2585.27,
+            "bottom": 2544.74,
+            "mid": 2565.005,
+            "gap_pct": 1.593,
+            "filled": false,
+            "idx": 280,
+            "note": "合并FVG $2544.7400~$2585.2700 (1.59%)",
+            "merged": true,
+            "historical_only": false,
+            "timeframe": "15m"
+          }
+        ],
+        "bear_fvg": [
+          {
+            "type": "BEAR_FVG",
+            "top": 2433.78,
+            "bottom": 2416.85,
+            "mid": 2425.315,
+            "gap_pct": 0.7,
+            "filled": false,
+            "idx": 354,
+            "note": "合并FVG $2416.8500~$2433.7800 (0.70%)",
+            "merged": true,
+            "historical_only": false,
+            "timeframe": "15m"
+          }
+        ],
+        "bull_fvg_all": [
+          {
+            "type": "BULL_FVG",
+            "top": 2519.65,
+            "bottom": 2485.4,
+            "mid": 2502.525,
+            "gap_pct": 1.378,
+            "filled": false,
+            "idx": 207,
+            "note": "合并FVG $2485.4000~$2519.6500 (1.38%)",
+            "merged": true,
+            "historical_only": false,
+            "timeframe": "15m"
+          },
+          {
+            "type": "BULL_FVG",
+            "top": 2585.27,
+            "bottom": 2544.74,
+            "mid": 2565.005,
+            "gap_pct": 1.593,
+            "filled": false,
+            "idx": 280,
+            "note": "合并FVG $2544.7400~$2585.2700 (1.59%)",
+            "merged": true,
+            "historical_only": false,
+            "timeframe": "15m"
+          }
+        ],
+        "bear_fvg_all": [
+          {
+            "type": "BEAR_FVG",
+            "top": 2433.78,
+            "bottom": 2416.85,
+            "mid": 2425.315,
+            "gap_pct": 0.7,
+            "filled": false,
+            "idx": 354,
+            "note": "合并FVG $2416.8500~$2433.7800 (0.70%)",
+            "merged": true,
+            "historical_only": false,
+            "timeframe": "15m"
+          }
+        ],
+        "supply_bear": [],
+        "target_bear": [
+          {
+            "type": "BEAR_FVG",
+            "top": 2433.78,
+            "bottom": 2416.85,
+            "mid": 2425.315,
+            "gap_pct": 0.7,
+            "filled": false,
+            "idx": 354,
+            "note": "合并FVG $2416.8500~$2433.7800 (0.70%)",
+            "merged": true,
+            "historical_only": false,
+            "timeframe": "15m"
+          }
+        ],
+        "demand_bull": [],
+        "target_bull": [
+          {
+            "type": "BULL_FVG",
+            "top": 2519.65,
+            "bottom": 2485.4,
+            "mid": 2502.525,
+            "gap_pct": 1.378,
+            "filled": false,
+            "idx": 207,
+            "note": "合并FVG $2485.4000~$2519.6500 (1.38%)",
+            "merged": true,
+            "historical_only": false,
+            "timeframe": "15m"
+          },
+          {
+            "type": "BULL_FVG",
+            "top": 2585.27,
+            "bottom": 2544.74,
+            "mid": 2565.005,
+            "gap_pct": 1.593,
+            "filled": false,
+            "idx": 280,
+            "note": "合并FVG $2544.7400~$2585.2700 (1.59%)",
+            "merged": true,
+            "historical_only": false,
+            "timeframe": "15m"
+          }
+        ],
+        "nearest_bull": {
+          "type": "BULL_FVG",
+          "top": 2519.65,
+          "bottom": 2485.4,
+          "mid": 2502.525,
+          "gap_pct": 1.378,
+          "filled": false,
+          "idx": 207,
+          "note": "合并FVG $2485.4000~$2519.6500 (1.38%)",
+          "merged": true,
+          "historical_only": false,
+          "timeframe": "15m"
+        },
+        "nearest_bear": {
+          "type": "BEAR_FVG",
+          "top": 2433.78,
+          "bottom": 2416.85,
+          "mid": 2425.315,
+          "gap_pct": 0.7,
+          "filled": false,
+          "idx": 354,
+          "note": "合并FVG $2416.8500~$2433.7800 (0.70%)",
+          "merged": true,
+          "historical_only": false,
+          "timeframe": "15m"
+        },
+        "raw_bull_count": 15,
+        "raw_bear_count": 12,
+        "magnet_up": 2502.525,
+        "magnet_down": 2425.315
+      },
+      "fvg_1d": {
+        "bull_fvg": [
+          {
+            "type": "BULL_FVG",
+            "top": 2507.6,
+            "bottom": 2483.99,
+            "mid": 2495.795,
+            "gap_pct": 0.95,
+            "filled": false,
+            "idx": 52,
+            "note": "看多FVG $2483.9900~$2507.6000 (0.95%)",
+            "historical_only": false,
+            "timeframe": "1d"
+          }
+        ],
+        "bear_fvg": [
+          {
+            "type": "BEAR_FVG",
+            "top": 1906.41,
+            "bottom": 1874.44,
+            "mid": 1890.425,
+            "gap_pct": 1.706,
+            "filled": false,
+            "idx": 10,
+            "note": "合并FVG $1874.4400~$1906.4100 (1.71%)",
+            "merged": true,
+            "historical_only": false,
+            "timeframe": "1d"
+          }
+        ],
+        "bull_fvg_all": [
+          {
+            "type": "BULL_FVG",
+            "top": 2507.6,
+            "bottom": 2483.99,
+            "mid": 2495.795,
+            "gap_pct": 0.95,
+            "filled": false,
+            "idx": 52,
+            "note": "看多FVG $2483.9900~$2507.6000 (0.95%)",
+            "historical_only": false,
+            "timeframe": "1d"
+          }
+        ],
+        "bear_fvg_all": [
+          {
+            "type": "BEAR_FVG",
+            "top": 1906.41,
+            "bottom": 1874.44,
+            "mid": 1890.425,
+            "gap_pct": 1.706,
+            "filled": false,
+            "idx": 10,
+            "note": "合并FVG $1874.4400~$1906.4100 (1.71%)",
+            "merged": true,
+            "historical_only": false,
+            "timeframe": "1d"
+          }
+        ],
+        "supply_bear": [],
+        "target_bear": [
+          {
+            "type": "BEAR_FVG",
+            "top": 1906.41,
+            "bottom": 1874.44,
+            "mid": 1890.425,
+            "gap_pct": 1.706,
+            "filled": false,
+            "idx": 10,
+            "note": "合并FVG $1874.4400~$1906.4100 (1.71%)",
+            "merged": true,
+            "historical_only": false,
+            "timeframe": "1d"
+          }
+        ],
+        "demand_bull": [],
+        "target_bull": [
+          {
+            "type": "BULL_FVG",
+            "top": 2507.6,
+            "bottom": 2483.99,
+            "mid": 2495.795,
+            "gap_pct": 0.95,
+            "filled": false,
+            "idx": 52,
+            "note": "看多FVG $2483.9900~$2507.6000 (0.95%)",
+            "historical_only": false,
+            "timeframe": "1d"
+          }
+        ],
+        "nearest_bull": {
+          "type": "BULL_FVG",
+          "top": 2507.6,
+          "bottom": 2483.99,
+          "mid": 2495.795,
+          "gap_pct": 0.95,
+          "filled": false,
+          "idx": 52,
+          "note": "看多FVG $2483.9900~$2507.6000 (0.95%)",
+          "historical_only": false,
+          "timeframe": "1d"
+        },
+        "nearest_bear": {
+          "type": "BEAR_FVG",
+          "top": 1906.41,
+          "bottom": 1874.44,
+          "mid": 1890.425,
+          "gap_pct": 1.706,
+          "filled": false,
+          "idx": 10,
+          "note": "合并FVG $1874.4400~$1906.4100 (1.71%)",
+          "merged": true,
+          "historical_only": false,
+          "timeframe": "1d"
+        },
+        "raw_bull_count": 5,
+        "raw_bear_count": 4,
+        "magnet_up": 2495.795,
+        "magnet_down": 1890.425
+      }
+    },
+    "confluence": {
+      "total": 0,
+      "score": 39.0,
+      "max": 150,
+      "grade": "⚫放弃",
+      "grade_num": 45,
+      "kelly_mult": 0,
+      "action": "SKIP",
+      "breakdown": {
+        "_T01_boot_ref": "QP(B)>EMA(C)>ML(C)>MACD_div(A-WR)",
+        "_signal_dir_inferred_block_a": "LONG",
+        "EMA200逆势": "-6 (价格2432<EMA200=2467，逆势多)",
+        "趋势一致性": 0,
+        "OB新鲜度_1H_LONG": "age乘数=0.00 原始=5 实得=0",
+        "OB新鲜度_4H_LONG": "age乘数=0.30 原始=3 实得=0 [4H]",
+        "OB_1D_LONG": "+1 age乘数=0.30 dist=0.63% [大周期头寸]",
+        "FVG_4H_LONG": "+2 dist=1.63% [磁铁2471.3]",
+        "关键位精确度": 7,
+        "RSI状态描述": "1H:中性(57) 4H:中性(42) 1D:中性(52)",
+        "CHOP背离奖励": "+4 (CHOP+背离T04验证PF=1.628)",
+        "StochRSI": "-4 (K=100>70 超买区做多)",
+        "动量背离": 10,
+        "SMC结构": 17,
+        "QEW权重": "×0.85 (CHOP_MID)",
+        "OBV方向_v2": "⚠️ OBV反向(0分)",
+        "量能验证": 10,
+        "区间结构": 2,
+        "区间Zone": "MIDDLE",
+        "区间中部惩罚": -5,
+        "区间Zone_v2": "MIDDLE(HIGH) -5",
+        "形态成熟度": 0,
+        "OB_FVG跨周期共振": 5,
+        "_resonance_detail": "FVG存在但不重叠 +2 | OB存在但不共振 +3",
+        "EMA多周期共振": 0,
+        "_ema_align": "2/4TF同向 15m:↑ 1h:↓ 4h:↑ 1d:↓",
+        "_fvg_map": {
+          "1h": [
+            {
+              "type": "BULL",
+              "lo": 2447.8,
+              "hi": 2590.8,
+              "mid": 2519.3,
+              "dist_pct": 3.6,
+              "filled": false,
+              "magnet": "向上"
+            },
+            {
+              "type": "BEAR",
+              "lo": 2397.8,
+              "hi": 2401.8,
+              "mid": 2399.8,
+              "dist_pct": -1.31,
+              "filled": false,
+              "magnet": "向下"
+            }
+          ],
+          "4h": [
+            {
+              "type": "BULL",
+              "lo": 2412.2,
+              "hi": 2530.4,
+              "mid": 2471.3,
+              "dist_pct": 1.63,
+              "filled": false,
+              "magnet": "向上"
+            }
+          ],
+          "15m": [
+            {
+              "type": "BULL",
+              "lo": 2485.4,
+              "hi": 2519.7,
+              "mid": 2502.5,
+              "dist_pct": 2.91,
+              "filled": false,
+              "magnet": "向上"
+            },
+            {
+              "type": "BEAR",
+              "lo": 2416.8,
+              "hi": 2433.8,
+              "mid": 2425.3,
+              "dist_pct": -0.26,
+              "filled": false,
+              "magnet": "向下"
+            }
+          ],
+          "1d": [
+            {
+              "type": "BULL",
+              "lo": 2484.0,
+              "hi": 2507.6,
+              "mid": 2495.8,
+              "dist_pct": 2.64,
+              "filled": false,
+              "magnet": "向上"
+            },
+            {
+              "type": "BEAR",
+              "lo": 1874.4,
+              "hi": 1906.4,
+              "mid": 1890.4,
+              "dist_pct": -22.26,
+              "filled": false,
+              "magnet": "向下"
+            }
+          ]
+        },
+        "_ob_map": {
+          "1h": [
+            {
+              "type": "BULL",
+              "lo": 2430.7,
+              "hi": 2443.8,
+              "age": 155,
+              "valid": false,
+              "broken": false,
+              "dist_pct": 0.05,
+              "note": "EXPIRED"
+            },
+            {
+              "type": "BEAR",
+              "lo": 2411.4,
+              "hi": 2448.1,
+              "age": 33,
+              "valid": true,
+              "broken": false,
+              "dist_pct": 0.67,
+              "note": "FRESH"
+            }
+          ],
+          "4h": [
+            {
+              "type": "BULL",
+              "lo": 2403.3,
+              "hi": 2465.8,
+              "age": 39,
+              "valid": true,
+              "broken": false,
+              "dist_pct": 1.19,
+              "note": "AGING"
+            },
+            {
+              "type": "BEAR",
+              "lo": 2440.1,
+              "hi": 2471.4,
+              "age": 43,
+              "valid": true,
+              "broken": false,
+              "dist_pct": 1.63,
+              "note": "AGING"
+            }
+          ],
+          "15m": [
+            {
+              "type": "BULL",
+              "lo": 2421.4,
+              "hi": 2431.6,
+              "age": 139,
+              "valid": false,
+              "broken": false,
+              "dist_pct": 0.43,
+              "note": "EXPIRED"
+            },
+            {
+              "type": "BEAR",
+              "lo": 2428.5,
+              "hi": 2444.2,
+              "age": 131,
+              "valid": false,
+              "broken": false,
+              "dist_pct": 0.51,
+              "note": "EXPIRED"
+            }
+          ],
+          "1d": [
+            {
+              "type": "BULL",
+              "lo": 2412.7,
+              "hi": 2533.5,
+              "age": 23,
+              "valid": true,
+              "broken": false,
+              "dist_pct": 0.63,
+              "note": "AGING"
+            },
+            {
+              "type": "BEAR",
+              "lo": 2429.0,
+              "hi": 2458.8,
+              "age": 19,
+              "valid": true,
+              "broken": false,
+              "dist_pct": 1.27,
+              "note": "AGING"
+            }
+          ]
+        },
+        "清算/OI": 2,
+        "情绪/费率": 2.0,
+        "时段权重": 4,
+        "多周期对齐": 4,
+        "Amihud流动性_info": 0,
+        "鲸鱼+微观": 5,
+        "期权+订单流": 7,
+        "L2+贝叶斯+宏观": 5,
+        "ML+在线贝叶斯+滑点": 0,
+        "LSTM+NLP情绪": 0,
+        "量能衰竭+背离共振": 10,
+        "资金费情绪": 0,
+        "bull_bear校准": 0,
+        "宏观+事件": 0,
+        "成交量比率_v2": 0,
+        "研究增强层": "0 (P2归零)",
+        "HMM乘数": "降级(规则乘数=0.880) conf=0.50",
+        "_regime_mult": 0.88,
+        "_regime_v4_key": "CHOP",
+        "_regime": "CHOP_MID",
+        "_regime_position_cap": 0.88,
+        "N06持仓建议": "⚡CHOP最优持仓2h (N06实训)",
+        "N16_ATR体制": "N16_CHOP优区 +3 (ATR=0.0095 PF≈1.5+)",
+        "N15_分层仓位": "N15_C层(47分) 不执行",
+        "HAR-RV波动率": "-3 HIGH RV=0.0307",
+        "Hurst体制验证": "H=0.604 CHOP但H偏高⚠️ 趋势性隐现 +5",
+        "VolProfile密度": "-4 中密度筹码区1.4x→支撑中等",
+        "_causal_regime": "-5(体制因果:MODERATE conf=0.50)",
+        "_cross_fr_basis": "-2(FR均值=0.0037% Basis=-0.033%)",
+        "_options_pc": "-2(P/C=0.50 CALL_HEAVY)",
+        "_smart_money": "-3(大户持仓=58% 背离=-0.101)",
+        "M07时间效应": "-5(9月低流动性)+3(周四)",
+        "M06相关惩罚": "-2(ETHUSDT coef=0 双向等概率)",
+        "s22_gex": "+1 GEX=+12.9M(POSITIVE) | 强度=WEAK | s22=+1 | ZeroFlip距离+1.7% | ",
+        "s22b_gex_hist": "-1 GEX历史v2[NEUTRAL] WR=49% Wilson=46% n=733 IV溢价=-23.6%",
+        "s28_signal_quality": "+1 [质量门控:PASS]",
+        "s23_vol_beta": "-3 IV溢价=-9.6% 分位=98 κ=-0.020 [ETH]",
+        "HCME情境匹配": 2,
+        "HTF周月线锚定": "-8 (NEUTRAL 共振=0.33)"
+      },
+      "rr_gate": "PASS",
+      "primary_tf": "4H",
+      "entry_tf": "1H+15M",
+      "sl_basis": "swing_4h+atr4h×0.3 / 15M精确触发",
+      "structure_grade": 67,
+      "v2_error": "name '_v2_enhance' is not defined",
+      "score_gate_reject": true,
+      "score_gate_min": 140,
+      "structure_label": "B-弱结构",
+      "structure_sources": [
+        "强OB精确对齐(price_dist=0.23% in_ob=True overlap=True)",
+        "Fib0.786=2422 对齐",
+        "入场区合理(0.50%)",
+        "15M触发置信=75(+15)"
+      ],
+      "effective_grade": 67.0,
+      "grade_mult": 1.0,
+      "structure_reject": "grade=67.0(B-弱结构) grade<80 WR=47%死亡区封堵 [v25.4]",
+      "_gex_max": 2500.0,
+      "_gex_min": 2350.0,
+      "_gex_pos_pct": 42.5,
+      "_s22_gex": 1
+    },
+    "params": {
+      "entry_lo": 2425.6008,
+      "entry_hi": 2437.7592,
+      "stop_loss": 2397.94548,
+      "tp1": 2492.402136,
+      "tp2": 2540.979845,
+      "sl_pct": 1.387,
+      "sl_atr_mult": 1.2,
+      "tp1_pct": 1.68,
+      "rr1": 1.8,
+      "rr2": 3.24,
+      "primary_tf": "4H",
+      "entry_tf": "1H+15M",
+      "sl_basis": "swing_4h+atr4h×0.3 / 15M精确触发",
+      "trigger_15m": {
+        "trigger_valid": true,
+        "symbol": "ETHUSDT",
+        "price": 2431.86,
+        "signal_dir": "NEUTRAL",
+        "entry_15m": 2440.196959,
+        "stop_15m": 2410.16002,
+        "sl_pct_15m": 1.231,
+        "rr_15m": 1.51,
+        "confidence": 75,
+        "in_zone": true,
+        "near_zone": false,
+        "gap_to_entry": -0.24,
+        "choch": {
+          "confirmed": false,
+          "type": "NO_CHOCH",
+          "note": "15M多头结构未确认"
+        },
+        "ob_15m": null,
+        "wick_rejection": {
+          "type": "WICK_REJECT_LONG",
+          "high": 2422.7,
+          "low": 2414.99,
+          "body_ratio": 0.008
+        },
+        "bos_15m": null,
+        "entry_lo_1h": 2425.6008,
+        "entry_hi_1h": 2437.7591999999995,
+        "elapsed": 0.0,
+        "trigger_ts": "2026-09-17T02:43:38.690272+00:00",
+        "entry_actual": 2431.86,
+        "entry_source": "market_15m"
+      },
+      "trigger_15m_confidence": 75,
+      "valid": true,
+      "entry_source": "OB_4H",
+      "ob_dist_pct": 1.19,
+      "ob_top": 2465.82,
+      "ob_bottom": 2403.33,
+      "ob_source_type": "BULL_OB",
+      "fvg_active": true,
+      "fvg_top": 0,
+      "fvg_bottom": 0,
+      "swing_high_4h": 2614.99,
+      "swing_low_4h": 2357.0,
+      "key_level_proximity": 1.19,
+      "mtf_override": false,
+      "_spec_override": "ETHUSDT 专项sl=1.2x mh=18h PF=1.735",
+      "pos_pct_asset": 2.0
+    },
+    "summary": "中性 | 中位震荡 | LH+LL下降结构",
+    "elapsed": 5.38,
+    "valid_signal": false,
+    "primary_tf": "4H",
+    "entry_tf": "1H+15M",
+    "sl_basis": "swing_4h+atr4h×0.3 / 15M精确触发",
+    "sl_atr_mult": 1.2,
+    "extra": {
+      "_symbol": "ETHUSDT",
+      "price": 2431.68,
+      "_k4h_closes": [
+        2475.48,
+        2511.98,
+        2521.97,
+        2508.4,
+        2507.28,
+        2538.48,
+        2513.93,
+        2497.64,
+        2472.77,
+        2475.15,
+        2423.27,
+        2415.49,
+        2397.15,
+        2400.77,
+        2395.53,
+        2421.33,
+        2391.66,
+        2407.4,
+        2417.49,
+        2431.86
+      ],
+      "_k4h_volumes": [
+        452237.998,
+        676834.535,
+        358096.246,
+        509161.506,
+        1027323.131,
+        737035.655,
+        1250179.091,
+        473697.866,
+        625050.992,
+        470719.845,
+        1702662.602,
+        2009632.774,
+        598848.683,
+        338300.084,
+        394005.058,
+        535002.568,
+        821129.139,
+        1896780.891,
+        449806.274,
+        398345.508
+      ],
+      "_klines_1h": {
+        "o": [
+          2485.68,
+          2480.99,
+          2481.96,
+          2481.9,
+          2488.08,
+          2483.87,
+          2495.54,
+          2496.72,
+          2492.64,
+          2487.78,
+          2508.68,
+          2495.46,
+          2500.06,
+          2509.5,
+          2519.0,
+          2489.13,
+          2486.31,
+          2499.86,
+          2510.65,
+          2501.44,
+          2498.16,
+          2488.96,
+          2494.83,
+          2492.54,
+          2480.15,
+          2464.28,
+          2470.37,
+          2460.58,
+          2449.13,
+          2466.96,
+          2463.76,
+          2463.0,
+          2473.99,
+          2474.34,
+          2477.7,
+          2481.11,
+          2479.26,
+          2471.49,
+          2470.19,
+          2467.65,
+          2463.08,
+          2461.04,
+          2413.44,
+          2433.86,
+          2442.29,
+          2440.01,
+          2447.62,
+          2464.85,
+          2467.37,
+          2461.47,
+          2460.53,
+          2459.28,
+          2443.85,
+          2437.03,
+          2455.45,
+          2453.25,
+          2445.86,
+          2446.2,
+          2457.95,
+          2467.78,
+          2465.9,
+          2466.5,
+          2475.81,
+          2468.39,
+          2461.09,
+          2457.19,
+          2509.74,
+          2628.22,
+          2606.53,
+          2558.01,
+          2576.38,
+          2565.32,
+          2536.24,
+          2538.3,
+          2529.4,
+          2515.07,
+          2510.64,
+          2515.47,
+          2509.49,
+          2512.47,
+          2513.1,
+          2511.99,
+          2511.51,
+          2510.61,
+          2518.21,
+          2523.0,
+          2532.29,
+          2530.0,
+          2532.52,
+          2535.21,
+          2534.39,
+          2543.63,
+          2539.0,
+          2533.99,
+          2530.68,
+          2524.94,
+          2521.57,
+          2518.15,
+          2519.44,
+          2523.01,
+          2521.79,
+          2524.77,
+          2524.22,
+          2524.81,
+          2520.49,
+          2519.76,
+          2519.23,
+          2521.59,
+          2511.72,
+          2516.61,
+          2493.25,
+          2483.68,
+          2471.09,
+          2480.13,
+          2476.21,
+          2477.83,
+          2491.3,
+          2489.56,
+          2503.45,
+          2503.98,
+          2508.35,
+          2505.09,
+          2511.98,
+          2507.94,
+          2474.4,
+          2475.49,
+          2483.27,
+          2492.22,
+          2509.99,
+          2511.99,
+          2513.73,
+          2515.49,
+          2513.42,
+          2521.98,
+          2517.67,
+          2522.82,
+          2512.26,
+          2508.39,
+          2504.49,
+          2499.51,
+          2500.37,
+          2507.28,
+          2528.14,
+          2532.43,
+          2537.49,
+          2538.49,
+          2569.67,
+          2545.54,
+          2532.2,
+          2513.92,
+          2514.7,
+          2514.1,
+          2511.01,
+          2497.63,
+          2489.42,
+          2495.0,
+          2484.63,
+          2472.77,
+          2475.77,
+          2472.87,
+          2482.25,
+          2475.15,
+          2477.88,
+          2452.58,
+          2406.74,
+          2423.28,
+          2421.14,
+          2439.91,
+          2401.7,
+          2415.5,
+          2407.01,
+          2389.24,
+          2395.76,
+          2397.15,
+          2397.64,
+          2389.66,
+          2401.82,
+          2400.77,
+          2402.51,
+          2406.12,
+          2405.53,
+          2395.52,
+          2401.69,
+          2404.72,
+          2405.42,
+          2421.32,
+          2405.65,
+          2393.0,
+          2389.47,
+          2391.67,
+          2390.71,
+          2389.47,
+          2397.24,
+          2407.4,
+          2410.02,
+          2403.61,
+          2391.22,
+          2417.5,
+          2417.58,
+          2426.53
+        ],
+        "h": [
+          2490.65,
+          2490.73,
+          2486.31,
+          2489.28,
+          2489.53,
+          2496.74,
+          2498.94,
+          2499.5,
+          2492.82,
+          2513.2,
+          2510.68,
+          2504.73,
+          2517.03,
+          2522.75,
+          2519.55,
+          2493.08,
+          2504.68,
+          2511.9,
+          2520.58,
+          2513.43,
+          2511.98,
+          2498.5,
+          2498.57,
+          2494.78,
+          2483.84,
+          2471.28,
+          2471.41,
+          2462.14,
+          2467.97,
+          2470.74,
+          2478.3,
+          2475.41,
+          2478.24,
+          2480.3,
+          2483.0,
+          2483.99,
+          2479.26,
+          2473.66,
+          2476.94,
+          2470.91,
+          2468.83,
+          2465.82,
+          2435.51,
+          2442.97,
+          2443.75,
+          2449.93,
+          2474.18,
+          2468.74,
+          2471.41,
+          2468.09,
+          2462.12,
+          2461.0,
+          2446.15,
+          2457.36,
+          2459.52,
+          2453.96,
+          2447.83,
+          2464.0,
+          2467.79,
+          2470.27,
+          2472.74,
+          2483.73,
+          2476.79,
+          2474.36,
+          2461.1,
+          2514.49,
+          2647.66,
+          2666.0,
+          2616.42,
+          2582.53,
+          2580.93,
+          2567.24,
+          2547.25,
+          2546.6,
+          2539.69,
+          2522.65,
+          2515.63,
+          2516.73,
+          2516.13,
+          2514.82,
+          2514.99,
+          2513.97,
+          2512.0,
+          2521.62,
+          2523.74,
+          2535.8,
+          2536.35,
+          2535.37,
+          2536.11,
+          2535.21,
+          2546.11,
+          2544.4,
+          2541.56,
+          2535.32,
+          2533.92,
+          2526.89,
+          2522.1,
+          2523.77,
+          2527.64,
+          2525.12,
+          2525.76,
+          2526.41,
+          2526.71,
+          2524.81,
+          2521.96,
+          2522.43,
+          2523.28,
+          2521.98,
+          2519.18,
+          2518.5,
+          2496.43,
+          2484.97,
+          2481.37,
+          2482.52,
+          2482.63,
+          2494.44,
+          2492.33,
+          2504.96,
+          2512.0,
+          2508.6,
+          2515.78,
+          2514.29,
+          2515.68,
+          2507.94,
+          2481.0,
+          2491.32,
+          2495.76,
+          2512.6,
+          2519.27,
+          2517.34,
+          2515.49,
+          2525.99,
+          2525.32,
+          2534.76,
+          2534.26,
+          2524.41,
+          2515.64,
+          2517.5,
+          2517.4,
+          2515.72,
+          2512.45,
+          2538.0,
+          2534.71,
+          2543.27,
+          2548.67,
+          2614.99,
+          2570.66,
+          2555.33,
+          2533.67,
+          2516.32,
+          2518.34,
+          2518.6,
+          2511.01,
+          2499.32,
+          2496.55,
+          2499.36,
+          2484.77,
+          2476.4,
+          2479.2,
+          2485.94,
+          2487.05,
+          2484.89,
+          2485.55,
+          2457.42,
+          2431.57,
+          2424.76,
+          2448.1,
+          2445.99,
+          2419.64,
+          2417.38,
+          2407.01,
+          2401.53,
+          2412.0,
+          2404.78,
+          2406.7,
+          2410.23,
+          2410.79,
+          2409.32,
+          2406.2,
+          2408.0,
+          2410.92,
+          2402.28,
+          2406.11,
+          2406.0,
+          2429.0,
+          2422.67,
+          2405.78,
+          2397.78,
+          2401.35,
+          2398.84,
+          2396.0,
+          2429.9,
+          2417.77,
+          2419.09,
+          2412.37,
+          2404.7,
+          2422.1,
+          2427.48,
+          2444.39,
+          2432.48
+        ],
+        "l": [
+          2475.0,
+          2479.19,
+          2477.47,
+          2480.55,
+          2481.67,
+          2483.87,
+          2488.08,
+          2488.55,
+          2485.2,
+          2487.78,
+          2490.0,
+          2491.45,
+          2498.7,
+          2509.39,
+          2489.0,
+          2480.52,
+          2480.79,
+          2497.48,
+          2498.39,
+          2493.12,
+          2469.1,
+          2483.65,
+          2487.03,
+          2480.0,
+          2460.5,
+          2452.51,
+          2455.15,
+          2440.09,
+          2448.87,
+          2461.55,
+          2454.32,
+          2459.0,
+          2470.38,
+          2473.81,
+          2472.79,
+          2470.56,
+          2462.59,
+          2467.85,
+          2463.33,
+          2461.61,
+          2457.15,
+          2406.21,
+          2403.33,
+          2424.11,
+          2430.66,
+          2430.56,
+          2445.88,
+          2453.51,
+          2459.11,
+          2460.0,
+          2456.8,
+          2442.5,
+          2433.35,
+          2436.25,
+          2444.89,
+          2443.09,
+          2439.01,
+          2445.22,
+          2456.4,
+          2462.2,
+          2465.21,
+          2462.56,
+          2460.54,
+          2461.05,
+          2450.75,
+          2433.04,
+          2488.76,
+          2590.85,
+          2541.39,
+          2542.55,
+          2562.11,
+          2527.2,
+          2531.6,
+          2521.57,
+          2512.12,
+          2504.57,
+          2507.4,
+          2509.49,
+          2508.3,
+          2511.02,
+          2508.1,
+          2508.58,
+          2507.6,
+          2509.21,
+          2518.2,
+          2522.01,
+          2528.17,
+          2529.99,
+          2529.51,
+          2530.72,
+          2532.34,
+          2538.05,
+          2530.4,
+          2529.18,
+          2523.51,
+          2518.48,
+          2513.51,
+          2518.14,
+          2518.81,
+          2519.04,
+          2521.33,
+          2522.11,
+          2521.29,
+          2520.01,
+          2518.23,
+          2517.44,
+          2519.22,
+          2508.38,
+          2510.65,
+          2486.49,
+          2468.0,
+          2466.37,
+          2466.5,
+          2473.62,
+          2460.3,
+          2477.49,
+          2480.58,
+          2489.16,
+          2501.65,
+          2503.3,
+          2502.31,
+          2505.09,
+          2507.34,
+          2470.11,
+          2468.97,
+          2461.1,
+          2472.23,
+          2489.52,
+          2506.66,
+          2510.03,
+          2509.26,
+          2506.14,
+          2510.09,
+          2515.11,
+          2510.09,
+          2512.14,
+          2504.3,
+          2502.0,
+          2485.77,
+          2493.36,
+          2494.82,
+          2502.91,
+          2521.36,
+          2528.49,
+          2533.08,
+          2538.46,
+          2537.52,
+          2530.51,
+          2511.53,
+          2505.74,
+          2506.61,
+          2507.78,
+          2493.79,
+          2488.08,
+          2476.6,
+          2480.14,
+          2469.0,
+          2463.0,
+          2471.52,
+          2470.26,
+          2471.57,
+          2473.44,
+          2431.05,
+          2388.0,
+          2396.23,
+          2411.34,
+          2411.44,
+          2357.0,
+          2396.31,
+          2393.22,
+          2388.13,
+          2380.3,
+          2395.39,
+          2396.29,
+          2389.25,
+          2386.92,
+          2399.0,
+          2400.67,
+          2391.75,
+          2392.05,
+          2395.01,
+          2381.0,
+          2397.83,
+          2396.88,
+          2401.46,
+          2401.78,
+          2388.61,
+          2375.08,
+          2382.73,
+          2386.08,
+          2368.03,
+          2365.0,
+          2375.51,
+          2403.64,
+          2398.67,
+          2386.78,
+          2388.64,
+          2414.79,
+          2412.55,
+          2414.99
+        ],
+        "c": [
+          2480.99,
+          2481.95,
+          2481.91,
+          2488.07,
+          2483.87,
+          2495.54,
+          2496.73,
+          2492.64,
+          2487.79,
+          2508.68,
+          2495.45,
+          2500.05,
+          2509.49,
+          2519.0,
+          2489.13,
+          2486.3,
+          2499.86,
+          2510.66,
+          2501.44,
+          2498.16,
+          2488.97,
+          2494.84,
+          2492.54,
+          2480.15,
+          2464.28,
+          2470.37,
+          2460.58,
+          2449.12,
+          2466.97,
+          2463.76,
+          2463.0,
+          2473.99,
+          2474.34,
+          2477.69,
+          2481.11,
+          2479.25,
+          2471.5,
+          2470.18,
+          2467.65,
+          2463.08,
+          2461.03,
+          2413.44,
+          2433.87,
+          2442.29,
+          2440.01,
+          2447.62,
+          2464.85,
+          2467.37,
+          2461.46,
+          2460.53,
+          2459.27,
+          2443.84,
+          2437.04,
+          2455.46,
+          2453.25,
+          2445.86,
+          2446.2,
+          2457.96,
+          2467.78,
+          2465.9,
+          2466.51,
+          2475.8,
+          2468.39,
+          2461.09,
+          2457.19,
+          2509.74,
+          2628.21,
+          2606.52,
+          2558.01,
+          2576.38,
+          2565.31,
+          2536.23,
+          2538.3,
+          2529.4,
+          2515.07,
+          2510.64,
+          2515.47,
+          2509.5,
+          2512.46,
+          2513.11,
+          2511.98,
+          2511.5,
+          2510.61,
+          2518.21,
+          2522.99,
+          2532.29,
+          2529.99,
+          2532.52,
+          2535.21,
+          2534.39,
+          2543.62,
+          2538.99,
+          2534.0,
+          2530.69,
+          2524.93,
+          2521.58,
+          2518.15,
+          2519.44,
+          2523.01,
+          2521.78,
+          2524.76,
+          2524.22,
+          2524.81,
+          2520.48,
+          2519.76,
+          2519.23,
+          2521.59,
+          2511.73,
+          2516.62,
+          2493.25,
+          2483.69,
+          2471.09,
+          2480.13,
+          2476.21,
+          2477.84,
+          2491.3,
+          2489.55,
+          2503.44,
+          2503.99,
+          2508.35,
+          2505.09,
+          2511.98,
+          2507.94,
+          2474.41,
+          2475.48,
+          2483.28,
+          2492.22,
+          2510.0,
+          2511.98,
+          2513.72,
+          2515.48,
+          2513.41,
+          2521.97,
+          2517.67,
+          2522.82,
+          2512.25,
+          2508.4,
+          2504.49,
+          2499.52,
+          2500.38,
+          2507.28,
+          2528.14,
+          2532.44,
+          2537.48,
+          2538.48,
+          2569.67,
+          2545.54,
+          2532.2,
+          2513.93,
+          2514.7,
+          2514.11,
+          2511.01,
+          2497.64,
+          2489.43,
+          2495.0,
+          2484.63,
+          2472.77,
+          2475.77,
+          2472.87,
+          2482.24,
+          2475.15,
+          2477.88,
+          2452.58,
+          2406.73,
+          2423.27,
+          2421.14,
+          2439.91,
+          2401.7,
+          2415.49,
+          2407.0,
+          2389.24,
+          2395.77,
+          2397.15,
+          2397.64,
+          2389.65,
+          2401.81,
+          2400.77,
+          2402.5,
+          2406.12,
+          2405.54,
+          2395.53,
+          2401.7,
+          2404.73,
+          2405.42,
+          2421.33,
+          2405.66,
+          2393.0,
+          2389.47,
+          2391.66,
+          2390.71,
+          2389.49,
+          2397.23,
+          2407.4,
+          2410.03,
+          2403.61,
+          2391.22,
+          2417.49,
+          2417.58,
+          2426.53,
+          2431.86
+        ],
+        "v": [
+          120946.419,
+          58949.874,
+          47769.944,
+          40553.483,
+          35689.613,
+          54287.946,
+          71024.655,
+          53078.98,
+          59018.632,
+          194966.931,
+          151436.174,
+          63107.837,
+          163706.114,
+          155346.54,
+          205731.296,
+          179781.928,
+          148324.716,
+          135287.129,
+          285909.782,
+          255924.979,
+          478479.378,
+          119310.242,
+          75018.502,
+          64347.238,
+          175670.644,
+          159400.251,
+          75518.969,
+          196065.143,
+          81762.267,
+          120752.871,
+          126760.583,
+          72248.319,
+          93720.38,
+          60039.017,
+          59077.947,
+          86390.483,
+          99047.463,
+          62174.768,
+          80726.312,
+          54184.811,
+          92596.416,
+          741129.454,
+          473253.142,
+          238246.724,
+          116536.697,
+          148229.25,
+          276096.329,
+          134476.77,
+          127441.127,
+          41018.173,
+          36915.951,
+          88149.961,
+          126668.058,
+          128113.548,
+          89357.563,
+          63763.507,
+          63722.573,
+          128127.019,
+          71496.526,
+          87999.73,
+          70878.709,
+          139589.401,
+          91413.345,
+          55292.599,
+          117448.854,
+          1047227.442,
+          1201055.671,
+          945424.212,
+          535211.108,
+          445804.718,
+          125368.716,
+          365168.61,
+          122447.237,
+          143455.183,
+          95626.492,
+          168533.481,
+          65879.538,
+          69899.202,
+          58979.891,
+          40047.128,
+          48504.771,
+          34187.312,
+          46644.532,
+          74779.766,
+          51798.96,
+          106567.754,
+          79943.034,
+          33671.21,
+          36678.389,
+          40293.212,
+          131545.966,
+          54947.53,
+          92460.15,
+          48392.956,
+          66340.844,
+          71536.105,
+          69482.712,
+          42668.407,
+          41509.192,
+          31901.827,
+          18990.195,
+          19240.99,
+          37005.836,
+          30141.929,
+          36088.108,
+          28174.13,
+          20975.913,
+          70752.599,
+          65640.103,
+          231626.048,
+          304321.639,
+          122884.572,
+          100266.771,
+          75081.451,
+          187166.723,
+          164909.253,
+          79270.469,
+          122156.259,
+          78403.708,
+          32970.675,
+          78297.838,
+          35228.641,
+          39114.789,
+          280375.445,
+          97519.123,
+          201885.944,
+          124216.787,
+          206413.446,
+          144318.358,
+          69009.237,
+          56163.514,
+          156634.253,
+          76289.242,
+          157211.774,
+          187417.832,
+          75985.189,
+          88546.711,
+          123335.505,
+          418692.006,
+          300768.977,
+          184526.643,
+          290107.304,
+          119672.76,
+          168500.828,
+          158754.763,
+          642591.782,
+          310428.216,
+          152411.909,
+          144747.184,
+          137453.406,
+          121865.33,
+          67733.431,
+          146645.699,
+          127017.718,
+          199915.06,
+          119010.048,
+          179108.166,
+          156224.286,
+          93075.134,
+          121057.751,
+          100362.674,
+          91652.655,
+          536695.164,
+          719402.136,
+          354912.647,
+          162634.893,
+          304188.378,
+          1242325.133,
+          300484.37,
+          171343.507,
+          110775.275,
+          172266.53,
+          144463.371,
+          76909.576,
+          97626.554,
+          95824.524,
+          67939.43,
+          74391.713,
+          105280.49,
+          82925.421,
+          131407.434,
+          179323.934,
+          85676.332,
+          58884.145,
+          211118.157,
+          154142.757,
+          225261.234,
+          276211.93,
+          165513.218,
+          98467.927,
+          256146.822,
+          1164348.297,
+          377817.845,
+          132047.474,
+          41081.023,
+          117648.405,
+          159029.372,
+          110198.882,
+          194402.706,
+          93742.584
+        ],
+        "ts": [
+          1788894000000,
+          1788897600000,
+          1788901200000,
+          1788904800000,
+          1788908400000,
+          1788912000000,
+          1788915600000,
+          1788919200000,
+          1788922800000,
+          1788926400000,
+          1788930000000,
+          1788933600000,
+          1788937200000,
+          1788940800000,
+          1788944400000,
+          1788948000000,
+          1788951600000,
+          1788955200000,
+          1788958800000,
+          1788962400000,
+          1788966000000,
+          1788969600000,
+          1788973200000,
+          1788976800000,
+          1788980400000,
+          1788984000000,
+          1788987600000,
+          1788991200000,
+          1788994800000,
+          1788998400000,
+          1789002000000,
+          1789005600000,
+          1789009200000,
+          1789012800000,
+          1789016400000,
+          1789020000000,
+          1789023600000,
+          1789027200000,
+          1789030800000,
+          1789034400000,
+          1789038000000,
+          1789041600000,
+          1789045200000,
+          1789048800000,
+          1789052400000,
+          1789056000000,
+          1789059600000,
+          1789063200000,
+          1789066800000,
+          1789070400000,
+          1789074000000,
+          1789077600000,
+          1789081200000,
+          1789084800000,
+          1789088400000,
+          1789092000000,
+          1789095600000,
+          1789099200000,
+          1789102800000,
+          1789106400000,
+          1789110000000,
+          1789113600000,
+          1789117200000,
+          1789120800000,
+          1789124400000,
+          1789128000000,
+          1789131600000,
+          1789135200000,
+          1789138800000,
+          1789142400000,
+          1789146000000,
+          1789149600000,
+          1789153200000,
+          1789156800000,
+          1789160400000,
+          1789164000000,
+          1789167600000,
+          1789171200000,
+          1789174800000,
+          1789178400000,
+          1789182000000,
+          1789185600000,
+          1789189200000,
+          1789192800000,
+          1789196400000,
+          1789200000000,
+          1789203600000,
+          1789207200000,
+          1789210800000,
+          1789214400000,
+          1789218000000,
+          1789221600000,
+          1789225200000,
+          1789228800000,
+          1789232400000,
+          1789236000000,
+          1789239600000,
+          1789243200000,
+          1789246800000,
+          1789250400000,
+          1789254000000,
+          1789257600000,
+          1789261200000,
+          1789264800000,
+          1789268400000,
+          1789272000000,
+          1789275600000,
+          1789279200000,
+          1789282800000,
+          1789286400000,
+          1789290000000,
+          1789293600000,
+          1789297200000,
+          1789300800000,
+          1789304400000,
+          1789308000000,
+          1789311600000,
+          1789315200000,
+          1789318800000,
+          1789322400000,
+          1789326000000,
+          1789329600000,
+          1789333200000,
+          1789336800000,
+          1789340400000,
+          1789344000000,
+          1789347600000,
+          1789351200000,
+          1789354800000,
+          1789358400000,
+          1789362000000,
+          1789365600000,
+          1789369200000,
+          1789372800000,
+          1789376400000,
+          1789380000000,
+          1789383600000,
+          1789387200000,
+          1789390800000,
+          1789394400000,
+          1789398000000,
+          1789401600000,
+          1789405200000,
+          1789408800000,
+          1789412400000,
+          1789416000000,
+          1789419600000,
+          1789423200000,
+          1789426800000,
+          1789430400000,
+          1789434000000,
+          1789437600000,
+          1789441200000,
+          1789444800000,
+          1789448400000,
+          1789452000000,
+          1789455600000,
+          1789459200000,
+          1789462800000,
+          1789466400000,
+          1789470000000,
+          1789473600000,
+          1789477200000,
+          1789480800000,
+          1789484400000,
+          1789488000000,
+          1789491600000,
+          1789495200000,
+          1789498800000,
+          1789502400000,
+          1789506000000,
+          1789509600000,
+          1789513200000,
+          1789516800000,
+          1789520400000,
+          1789524000000,
+          1789527600000,
+          1789531200000,
+          1789534800000,
+          1789538400000,
+          1789542000000,
+          1789545600000,
+          1789549200000,
+          1789552800000,
+          1789556400000,
+          1789560000000,
+          1789563600000,
+          1789567200000,
+          1789570800000,
+          1789574400000,
+          1789578000000,
+          1789581600000,
+          1789585200000,
+          1789588800000,
+          1789592400000,
+          1789596000000,
+          1789599600000,
+          1789603200000,
+          1789606800000,
+          1789610400000
+        ]
+      },
+      "_k1h_raw": [
+        [
+          1789434000000,
+          "2514.70",
+          "2518.34",
+          "2506.61",
+          "2514.11",
+          "121865.330",
+          1789437599999,
+          "306225341.34736",
+          170591,
+          "68012.222",
+          "170905573.27419",
+          "0"
+        ],
+        [
+          1789437600000,
+          "2514.10",
+          "2518.60",
+          "2507.78",
+          "2511.01",
+          "67733.431",
+          1789441199999,
+          "170240137.50338",
+          104517,
+          "31591.503",
+          "79408199.06115",
+          "0"
+        ],
+        [
+          1789441200000,
+          "2511.01",
+          "2511.01",
+          "2493.79",
+          "2497.64",
+          "146645.699",
+          1789444799999,
+          "366740696.82391",
+          169706,
+          "64667.054",
+          "161722382.75279",
+          "0"
+        ],
+        [
+          1789444800000,
+          "2497.63",
+          "2499.32",
+          "2488.08",
+          "2489.43",
+          "127017.718",
+          1789448399999,
+          "316708413.52673",
+          168813,
+          "51290.686",
+          "127898485.93285",
+          "0"
+        ],
+        [
+          1789448400000,
+          "2489.42",
+          "2496.55",
+          "2476.60",
+          "2495.00",
+          "199915.060",
+          1789451999999,
+          "497022391.47576",
+          223193,
+          "96634.152",
+          "240312360.46593",
+          "0"
+        ],
+        [
+          1789452000000,
+          "2495.00",
+          "2499.36",
+          "2480.14",
+          "2484.63",
+          "119010.048",
+          1789455599999,
+          "296375812.85239",
+          142982,
+          "43931.355",
+          "109409485.38746",
+          "0"
+        ],
+        [
+          1789455600000,
+          "2484.63",
+          "2484.77",
+          "2469.00",
+          "2472.77",
+          "179108.166",
+          1789459199999,
+          "443645272.25133",
+          200965,
+          "78768.894",
+          "195130567.88258",
+          "0"
+        ],
+        [
+          1789459200000,
+          "2472.77",
+          "2476.40",
+          "2463.00",
+          "2475.77",
+          "156224.286",
+          1789462799999,
+          "385864292.54829",
+          168405,
+          "77137.236",
+          "190541582.76174",
+          "0"
+        ],
+        [
+          1789462800000,
+          "2475.77",
+          "2479.20",
+          "2471.52",
+          "2472.87",
+          "93075.134",
+          1789466399999,
+          "230315002.54599",
+          101734,
+          "40909.188",
+          "101237039.96102",
+          "0"
+        ],
+        [
+          1789466400000,
+          "2472.87",
+          "2485.94",
+          "2470.26",
+          "2482.24",
+          "121057.751",
+          1789469999999,
+          "299946120.55325",
+          145300,
+          "69431.516",
+          "172053584.83127",
+          "0"
+        ],
+        [
+          1789470000000,
+          "2482.25",
+          "2487.05",
+          "2471.57",
+          "2475.15",
+          "100362.674",
+          1789473599999,
+          "248771110.86711",
+          121559,
+          "47075.480",
+          "116696360.40332",
+          "0"
+        ],
+        [
+          1789473600000,
+          "2475.15",
+          "2484.89",
+          "2473.44",
+          "2477.88",
+          "91652.655",
+          1789477199999,
+          "227160402.43875",
+          147867,
+          "47075.076",
+          "116673116.14972",
+          "0"
+        ],
+        [
+          1789477200000,
+          "2477.88",
+          "2485.55",
+          "2431.05",
+          "2452.58",
+          "536695.164",
+          1789480799999,
+          "1316250146.67083",
+          575358,
+          "238024.547",
+          "583793380.24082",
+          "0"
+        ],
+        [
+          1789480800000,
+          "2452.58",
+          "2457.42",
+          "2388.00",
+          "2406.73",
+          "719402.136",
+          1789484399999,
+          "1738556953.31961",
+          796099,
+          "340052.343",
+          "821643528.76807",
+          "0"
+        ],
+        [
+          1789484400000,
+          "2406.74",
+          "2431.57",
+          "2396.23",
+          "2423.27",
+          "354912.647",
+          1789487999999,
+          "858227918.79931",
+          449557,
+          "185062.485",
+          "447522468.12306",
+          "0"
+        ],
+        [
+          1789488000000,
+          "2423.28",
+          "2424.76",
+          "2411.34",
+          "2421.14",
+          "162634.893",
+          1789491599999,
+          "393492671.72683",
+          229460,
+          "78991.920",
+          "191131289.11062",
+          "0"
+        ],
+        [
+          1789491600000,
+          "2421.14",
+          "2448.10",
+          "2411.44",
+          "2439.91",
+          "304188.378",
+          1789495199999,
+          "739985882.65175",
+          348978,
+          "165207.742",
+          "402006115.94088",
+          "0"
+        ],
+        [
+          1789495200000,
+          "2439.91",
+          "2445.99",
+          "2357.00",
+          "2401.70",
+          "1242325.133",
+          1789498799999,
+          "2978747598.17007",
+          1283155,
+          "575422.665",
+          "1380069064.67648",
+          "0"
+        ],
+        [
+          1789498800000,
+          "2401.70",
+          "2419.64",
+          "2396.31",
+          "2415.49",
+          "300484.370",
+          1789502399999,
+          "723193013.45674",
+          532386,
+          "160982.727",
+          "387489466.04620",
+          "0"
+        ],
+        [
+          1789502400000,
+          "2415.50",
+          "2417.38",
+          "2393.22",
+          "2407.00",
+          "171343.507",
+          1789505999999,
+          "411988789.13780",
+          246263,
+          "84639.414",
+          "203519565.04659",
+          "0"
+        ],
+        [
+          1789506000000,
+          "2407.01",
+          "2407.01",
+          "2388.13",
+          "2389.24",
+          "110775.275",
+          1789509599999,
+          "265665041.06419",
+          147665,
+          "48997.461",
+          "117532513.14844",
+          "0"
+        ],
+        [
+          1789509600000,
+          "2389.24",
+          "2401.53",
+          "2380.30",
+          "2395.77",
+          "172266.530",
+          1789513199999,
+          "412057587.45180",
+          235723,
+          "93074.490",
+          "222680539.05706",
+          "0"
+        ],
+        [
+          1789513200000,
+          "2395.76",
+          "2412.00",
+          "2395.39",
+          "2397.15",
+          "144463.371",
+          1789516799999,
+          "347338749.95368",
+          183803,
+          "78498.049",
+          "188784012.72030",
+          "0"
+        ],
+        [
+          1789516800000,
+          "2397.15",
+          "2404.78",
+          "2396.29",
+          "2397.64",
+          "76909.576",
+          1789520399999,
+          "184668672.70839",
+          138529,
+          "36101.494",
+          "86688813.37303",
+          "0"
+        ],
+        [
+          1789520400000,
+          "2397.64",
+          "2406.70",
+          "2389.25",
+          "2389.65",
+          "97626.554",
+          1789523999999,
+          "233998347.07227",
+          179813,
+          "47183.770",
+          "113112297.82336",
+          "0"
+        ],
+        [
+          1789524000000,
+          "2389.66",
+          "2410.23",
+          "2386.92",
+          "2401.81",
+          "95824.524",
+          1789527599999,
+          "229999073.14460",
+          173738,
+          "48153.671",
+          "115591451.96050",
+          "0"
+        ],
+        [
+          1789527600000,
+          "2401.82",
+          "2410.79",
+          "2399.00",
+          "2400.77",
+          "67939.430",
+          1789531199999,
+          "163353872.50566",
+          127654,
+          "33098.699",
+          "79588942.07057",
+          "0"
+        ],
+        [
+          1789531200000,
+          "2400.77",
+          "2409.32",
+          "2400.67",
+          "2402.50",
+          "74391.713",
+          1789534799999,
+          "178917673.88923",
+          104112,
+          "34994.646",
+          "84156769.90071",
+          "0"
+        ],
+        [
+          1789534800000,
+          "2402.51",
+          "2406.20",
+          "2391.75",
+          "2406.12",
+          "105280.490",
+          1789538399999,
+          "252571734.98780",
+          127401,
+          "54268.269",
+          "130195150.49447",
+          "0"
+        ],
+        [
+          1789538400000,
+          "2406.12",
+          "2408.00",
+          "2392.05",
+          "2405.54",
+          "82925.421",
+          1789541999999,
+          "199045222.60439",
+          102548,
+          "35611.240",
+          "85470653.23307",
+          "0"
+        ],
+        [
+          1789542000000,
+          "2405.53",
+          "2410.92",
+          "2395.01",
+          "2395.53",
+          "131407.434",
+          1789545599999,
+          "315639410.96426",
+          150458,
+          "70651.898",
+          "169747406.88523",
+          "0"
+        ],
+        [
+          1789545600000,
+          "2395.52",
+          "2402.28",
+          "2381.00",
+          "2401.70",
+          "179323.934",
+          1789549199999,
+          "428568661.92909",
+          203617,
+          "79549.136",
+          "190143121.63404",
+          "0"
+        ],
+        [
+          1789549200000,
+          "2401.69",
+          "2406.11",
+          "2397.83",
+          "2404.73",
+          "85676.332",
+          1789552799999,
+          "205827994.45589",
+          119736,
+          "39677.597",
+          "95331833.87174",
+          "0"
+        ],
+        [
+          1789552800000,
+          "2404.72",
+          "2406.00",
+          "2396.88",
+          "2405.42",
+          "58884.145",
+          1789556399999,
+          "141452899.08547",
+          89381,
+          "29444.482",
+          "70734995.07924",
+          "0"
+        ],
+        [
+          1789556400000,
+          "2405.42",
+          "2429.00",
+          "2401.46",
+          "2421.33",
+          "211118.157",
+          1789559999999,
+          "510137057.75600",
+          227586,
+          "128694.614",
+          "310958753.81199",
+          "0"
+        ],
+        [
+          1789560000000,
+          "2421.32",
+          "2422.67",
+          "2401.78",
+          "2405.66",
+          "154142.757",
+          1789563599999,
+          "371508082.90176",
+          200891,
+          "67599.201",
+          "162913775.47377",
+          "0"
+        ],
+        [
+          1789563600000,
+          "2405.65",
+          "2405.78",
+          "2388.61",
+          "2393.00",
+          "225261.234",
+          1789567199999,
+          "540008821.99755",
+          366508,
+          "101589.876",
+          "243549421.24008",
+          "0"
+        ],
+        [
+          1789567200000,
+          "2393.00",
+          "2397.78",
+          "2375.08",
+          "2389.47",
+          "276211.930",
+          1789570799999,
+          "659630926.72519",
+          409323,
+          "125872.440",
+          "300668843.37633",
+          "0"
+        ],
+        [
+          1789570800000,
+          "2389.47",
+          "2401.35",
+          "2382.73",
+          "2391.66",
+          "165513.218",
+          1789574399999,
+          "395831078.76436",
+          317763,
+          "88664.878",
+          "212051962.98197",
+          "0"
+        ],
+        [
+          1789574400000,
+          "2391.67",
+          "2398.84",
+          "2386.08",
+          "2390.71",
+          "98467.927",
+          1789577999999,
+          "235605802.46503",
+          199976,
+          "49009.691",
+          "117276292.65125",
+          "0"
+        ],
+        [
+          1789578000000,
+          "2390.71",
+          "2396.00",
+          "2368.03",
+          "2389.49",
+          "256146.822",
+          1789581599999,
+          "609901818.00714",
+          363845,
+          "120512.638",
+          "286990507.09455",
+          "0"
+        ],
+        [
+          1789581600000,
+          "2389.47",
+          "2429.90",
+          "2365.00",
+          "2397.23",
+          "1164348.297",
+          1789585199999,
+          "2794408414.56623",
+          1619901,
+          "580116.769",
+          "1392757068.47517",
+          "0"
+        ],
+        [
+          1789585200000,
+          "2397.24",
+          "2417.77",
+          "2375.51",
+          "2407.40",
+          "377817.845",
+          1789588799999,
+          "906619329.92196",
+          694317,
+          "189614.612",
+          "455080035.63932",
+          "0"
+        ],
+        [
+          1789588800000,
+          "2407.40",
+          "2419.09",
+          "2403.64",
+          "2410.03",
+          "132047.474",
+          1789592399999,
+          "318398790.71046",
+          232413,
+          "66908.291",
+          "161350643.69268",
+          "0"
+        ],
+        [
+          1789592400000,
+          "2410.02",
+          "2412.37",
+          "2398.67",
+          "2403.61",
+          "41081.023",
+          1789595999999,
+          "98816403.01578",
+          94473,
+          "18036.873",
+          "43389076.24148",
+          "0"
+        ],
+        [
+          1789596000000,
+          "2403.61",
+          "2404.70",
+          "2386.78",
+          "2391.22",
+          "117648.405",
+          1789599599999,
+          "281548872.75904",
+          153617,
+          "55986.317",
+          "133934320.98389",
+          "0"
+        ],
+        [
+          1789599600000,
+          "2391.22",
+          "2422.10",
+          "2388.64",
+          "2417.49",
+          "159029.372",
+          1789603199999,
+          "383692934.87635",
+          208819,
+          "87253.219",
+          "210494411.10894",
+          "0"
+        ],
+        [
+          1789603200000,
+          "2417.50",
+          "2427.48",
+          "2414.79",
+          "2417.58",
+          "110198.882",
+          1789606799999,
+          "266850178.60072",
+          185544,
+          "52654.550",
+          "127521049.47610",
+          "0"
+        ],
+        [
+          1789606800000,
+          "2417.58",
+          "2444.39",
+          "2412.55",
+          "2426.53",
+          "194402.706",
+          1789610399999,
+          "472746871.45923",
+          305093,
+          "108612.793",
+          "264174386.83429",
+          "0"
+        ],
+        [
+          1789610400000,
+          "2426.53",
+          "2432.48",
+          "2414.99",
+          "2431.86",
+          "93742.584",
+          1789613999999,
+          "227131540.09600",
+          159438,
+          "50662.376",
+          "122767845.40365",
+          "0"
+        ]
+      ],
+      "causal_verifier": {
+        "score_adj": -5,
+        "verdict": "MODERATE",
+        "causal_confidence": 0.5,
+        "reason": "CHOP_MID 不确定"
+      },
+      "coinglass": {
+        "liquidation": {
+          "long_liq": 0,
+          "short_liq": 0,
+          "liq_ratio": 1.0,
+          "bias": "NEUTRAL",
+          "available": true
+        }
+      },
+      "liq_snap": {
+        "symbol": "ETHUSDT",
+        "price": 2431.68,
+        "chg24": 1.068,
+        "vol24b": 10.9956835276,
+        "oi_b": 5.62303274491392,
+        "oi_chg4h": 0.12,
+        "long_pct": 76.14,
+        "short_pct": 23.86,
+        "top_long_pct": 57.220000000000006,
+        "fund_rate": 0.0029,
+        "fund_bias": "NEUTRAL",
+        "liq_short_5pct": 2553.3,
+        "liq_short_10pct": 2674.8,
+        "liq_long_5pct": 2310.1,
+        "liq_long_10pct": 2188.5,
+        "liq_bias": "NEUTRAL",
+        "liq_risk": "⚠️ BN散户76%做多（极度拥挤） | ⚠️ Bybit散户70%做多（双所极拥挤🚨） | 🚨 双所散户同步极度拥挤→逆向做空信号极强 | HL 50x多头清算: $2,388.09(-1.79%) | 空头清算: $2,475.63(+1.81%)",
+        "cg_long_liq_m": null,
+        "cg_short_liq_m": null,
+        "cg_available": false,
+        "ts": "10:43 北京时间",
+        "live_liq": {
+          "available": false,
+          "events": 0,
+          "long_usd_1h": 0.0,
+          "short_usd_1h": 0.0
+        },
+        "bybit_oi_b": 1.892,
+        "bybit_long_pct": 69.6,
+        "bybit_short_pct": 30.4,
+        "bybit_fr": 0.0029,
+        "bybit_price": 2432.0,
+        "hl_oi_b": 2.383,
+        "hl_fr": 0.0013,
+        "hl_liq_50x_long": 2388.0865,
+        "hl_liq_50x_short": 2475.6335,
+        "hl_liq_25x_long": 2344.313,
+        "hl_liq_25x_short": 2519.407,
+        "total_oi_b": 9.898,
+        "weighted_long_pct": 71.6,
+        "fr_cross_agreement": false
+      },
+      "divergence": {
+        "score": 10,
+        "score_long": 0,
+        "score_short": 0,
+        "details_1h": [
+          "🟢 常观看空背离(A级) 顶部反转信号 +10"
+        ],
+        "details_4h": [],
+        "rsi_div": {
+          "regular_bearish": true,
+          "regular_bullish": true,
+          "hidden_bearish": false,
+          "hidden_bullish": false,
+          "fts_bearish": false,
+          "fts_bullish": false,
+          "details": [
+            "常规看空背离: 价格2406.12→2421.33↑  RSI74.8→49.3↓",
+            "常规看多背离: 价格2395.53→2389.47↓  RSI36.2→37.7↑"
+          ],
+          "score_long": 8,
+          "score_short": 8
+        },
+        "macd_div": {
+          "regular_bearish": false,
+          "regular_bullish": false,
+          "hidden_bearish": false,
+          "hidden_bullish": false,
+          "zero_cross_up": false,
+          "zero_cross_down": false,
+          "details": [],
+          "score_long": 0,
+          "score_short": 0
+        },
+        "macd_zero": "0轴下方(空头区)",
+        "vol_1h": {
+          "vol_contraction": true,
+          "vol_ratio": 0.443,
+          "price_extreme_hi": true,
+          "price_extreme_lo": false,
+          "vol_ma": 211623.52
+        },
+        "vol_4h": {
+          "vol_contraction": true,
+          "vol_ratio": 0.507,
+          "price_extreme_hi": true,
+          "price_extreme_lo": false,
+          "vol_ma": 786242.52
+        },
+        "time_penalty": 0,
+        "regime_adj": 0
+      },
+      "volume": {
+        "score": 5,
+        "details": [
+          "量价同向 +2",
+          "量减价涨(量=0.4x) 上涨动能衰竭"
+        ]
+      },
+      "sentiment": [
+        1.0,
+        "FnG=50 base=+1.0 trend=+0.0"
+      ],
+      "order_flow": {
+        "score": 3,
+        "breakdown": {
+          "ob_score": 1,
+          "tf_score": 2
+        },
+        "notes": [
+          "挂单逆向",
+          "主动买入不足50.0%"
+        ],
+        "raw": {
+          "order_book": {
+            "bid_vol": 30.29,
+            "ask_vol": 222.67,
+            "imbalance": -0.761,
+            "bias": "SELL_WALL"
+          },
+          "trade_flow": {
+            "buy_vol": 131.521,
+            "sell_vol": 131.57,
+            "buy_pct": 49.99,
+            "large_buy": 12,
+            "large_sell": 8
+          }
+        }
+      },
+      "macro": {
+        "score": 6,
+        "notes": [
+          "中性(50)",
+          "BTC主导(58%)→山寨弱"
+        ],
+        "raw": {
+          "fear_greed": {
+            "value": 50,
+            "label": "Neutral",
+            "trend": "FALLING",
+            "prev": 69
+          },
+          "btc_dominance": {
+            "btc_dom": 58.36,
+            "signal": "BTC_DOMINANT"
+          }
+        }
+      },
+      "harmonic": {
+        "score": 0,
+        "patterns": [],
+        "note": "无明显形态",
+        "best": null
+      },
+      "enhanced": {
+        "score": 4,
+        "max": 25,
+        "breakdown": {
+          "cvd": 0,
+          "liquidation": 0,
+          "lsr_trend": 0,
+          "session": 4
+        },
+        "notes": [
+          "亚洲盘开盘(0.8x) +4",
+          "下一活跃: 5h后 欧洲盘开盘"
+        ],
+        "lsr": {
+          "trend": "SHORT_GROWING",
+          "current": 3.191,
+          "delta": -0.039,
+          "long_pct": 76.1,
+          "series": [
+            3.205,
+            3.23,
+            3.203,
+            3.174,
+            3.191
+          ],
+          "notes": [
+            "多空比下降(-0.04) → 空头增仓中 动能增强"
+          ]
+        },
+        "session": {
+          "utc_hour": 2,
+          "session": "亚洲盘开盘",
+          "vol_mult": 0.8,
+          "notes": "流动性较低 假突破多 信号折扣20%",
+          "next_active": "5h后 欧洲盘开盘",
+          "score": 4
+        },
+        "vol_spike": false
+      },
+      "whale": {
+        "score": 2,
+        "max": 20,
+        "breakdown": {
+          "exchange_flow": 2,
+          "whale_activity": 0,
+          "derivatives_sm": 0
+        },
+        "notes": [],
+        "flow": {
+          "inflow": 0.68,
+          "outflow": 1.049,
+          "net": -0.369,
+          "notes": [
+            "大单净买入 $0.37M → 机构积累"
+          ],
+          "source": "aggTrades_proxy"
+        },
+        "whale": {
+          "whale_dir": "NEUTRAL",
+          "big_buy": 0.0,
+          "big_sell": 0.0,
+          "whale_net": 0.0,
+          "retail_net": 0.069,
+          "diverge": false,
+          "notes": []
+        },
+        "derivatives": {
+          "score": 0,
+          "max": 5,
+          "breakdown": {
+            "funding_rate": 0,
+            "long_short_ratio": 0,
+            "oi_change": 0
+          },
+          "notes": [],
+          "source": "binance_fapi_realtime"
+        },
+        "source": "whale_engine_v2_p2"
+      },
+      "cross_market": {
+        "score": 4,
+        "max": 15,
+        "breakdown": {
+          "btc_eth_corr": 4,
+          "dxy": 0,
+          "risk_regime": 0
+        },
+        "notes": [
+          "BTC上涨+高相关(0.92) → ETH跟涨 +4"
+        ],
+        "corr": {
+          "corr": 0.915,
+          "regime": "HIGH_CORR",
+          "note": "BTC-ETH高相关(0.92)→ ETH跟随BTC方向",
+          "btc_trend": "UP",
+          "btc_price": 76413.0,
+          "eth_price": 2431.86
+        },
+        "dxy": {
+          "proxy": "EURUSD",
+          "value": 1.1468,
+          "change": -0.64,
+          "trend": "DOWN",
+          "signal": "BULLISH_DXY",
+          "note": "EUR/USD 1.1468 (-0.64%) → DXY强(加密压力)"
+        },
+        "risk": {}
+      },
+      "cross_fr_basis": {
+        "bybit_fr": 0.00293,
+        "okx_fr": 0.00512,
+        "binance_fr": 0.00292,
+        "fr_avg": 0.00366,
+        "fr_extreme": false,
+        "basis_pct": -0.0333,
+        "bias": "NEUTRAL",
+        "score_adj": 2,
+        "note": "跨所FR轻微偏高(0.0051%) +1 | Basis轻微贴水(-0.033%) +1",
+        "oi_binance_b": 5.62,
+        "oi_okx_b": 1.53,
+        "oi_bybit_b": 1.9,
+        "oi_total_b": 9.05,
+        "oi_dom_pct": 62.1
+      },
+      "deribit_pc": {
+        "pc_oi_ratio": 0.496,
+        "put_oi": 641021.0,
+        "call_oi": 1292020.0,
+        "signal": "CALL_HEAVY",
+        "score_adj": 2,
+        "note": "P/C OI=0.50(Call重) 做市商负Gamma加速下跌 +2",
+        "currency": "ETH"
+      },
+      "macro_v2": {
+        "score_addon": 0,
+        "dxy": {
+          "price": 100.35,
+          "chg_1h_pct": 0.005,
+          "chg_24h_pct": 0.688,
+          "direction": "FLAT"
+        },
+        "nasdaq": {
+          "price": 29428.0,
+          "chg_1h_pct": -0.017,
+          "direction": "FLAT"
+        },
+        "notes": []
+      },
+      "microstructure": {
+        "score": 2,
+        "max": 15,
+        "breakdown": {
+          "absorption": 2,
+          "order_flow_imbalance": 0,
+          "price_stall": 0
+        },
+        "notes": [
+          "空头动能耗尽 +2"
+        ],
+        "absorption": {
+          "absorbed": true,
+          "type": "BUY_ABSORBED",
+          "absorbed_buys": 3,
+          "absorbed_sells": 3,
+          "exhausted_buys": 4,
+          "exhausted_sells": 10,
+          "notes": [
+            "大买单被吸收(3次) → 上方卖压强 看空",
+            "多头动能耗尽(4次) → 上涨乏力",
+            "空头动能耗尽(10次) → 下跌乏力"
+          ]
+        },
+        "ofi": {
+          "imbalance": 0.154,
+          "direction": "NEUTRAL",
+          "buy_vol": 0.792,
+          "sell_vol": 0.581,
+          "momentum_shift": -0.567,
+          "notes": [
+            "订单流动量转移: 卖方加速(-0.57)"
+          ]
+        },
+        "stall": {
+          "stall": false,
+          "stall_type": "NONE",
+          "range_ratio": 0.609,
+          "recent_range": 19.38,
+          "notes": []
+        }
+      },
+      "vol_exhaustion": {
+        "score": 0,
+        "components": {
+          "exhaustion": {
+            "detected": false,
+            "score": 0,
+            "note": "无量能衰竭信号",
+            "exhaustion_ratio": 0.114,
+            "max_vol_idx": 11,
+            "peak_vol_mult": 5.5
+          },
+          "pin_bar": {
+            "detected": false,
+            "score": 0,
+            "note": "无Pin Bar"
+          },
+          "vol_price_div": {
+            "detected": false,
+            "score": 0,
+            "note": "无量价背离"
+          },
+          "vol_decay": {
+            "detected": false,
+            "score": 0,
+            "consecutive_shrink": 1,
+            "note": ""
+          }
+        },
+        "notes": [],
+        "exhaustion_level": "NONE",
+        "exhaustion_ratio": 0.114
+      },
+      "multitf_div": {
+        "score": 16,
+        "resonance": "DOUBLE",
+        "tf_scores": {
+          "15m": 8,
+          "1h": 10,
+          "4h": 2
+        },
+        "active_tfs": [
+          "15m",
+          "1h"
+        ],
+        "notes": [
+          "⚡ 双级共振 ['15m', '1h'] → 顶部确认增强",
+          "15M 背离=A score=8",
+          "1H 背离=A score=10",
+          "4H 背离=NONE score=2",
+          "15M A级背离 +2",
+          "1H A级背离 +2"
+        ],
+        "details": {
+          "15m": "🟢A级(常观)",
+          "1h": "🟢A级(常观)",
+          "4h": "⚪无背离"
+        }
+      },
+      "orderbook": {
+        "score": 9,
+        "obi": 0.539,
+        "bid_wall": 2431.64,
+        "ask_wall": 2431.65,
+        "liquidity_short": 0.0,
+        "liquidity_long": 0.0,
+        "slippage_est": 0.0,
+        "notes": [
+          "买压强OBI=0.54 +5",
+          "下方买单墙@2431.64 +4"
+        ]
+      },
+      "var": {
+        "symbol": "ETHUSDT",
+        "direction": "NEUTRAL",
+        "var_95_pct": 0.902,
+        "var_99_pct": 1.882,
+        "var_95_usd": 0.14,
+        "var_99_usd": 0.28,
+        "daily_vol_pct": 3.039,
+        "risk_grade": "HIGH",
+        "pos_usd": 15.0,
+        "note": "日波动率=3.04% | 95%VaR=0.90%仓位($0.14) | 风险=HIGH",
+        "available": true,
+        "ts": "2026-09-17 02:43 UTC"
+      },
+      "macro_calendar": {
+        "score": 0,
+        "total": 0,
+        "upcoming_events": [],
+        "risk_events": [],
+        "event": {},
+        "fng": {
+          "value": 50,
+          "label": "Neutral"
+        },
+        "btc_dominance": 58.4,
+        "fng_note": "",
+        "summary": "宏观风险=0 | FNG=50(Neutral) | BTC.D=58.4% | 近期事件=无",
+        "available": true,
+        "ts": "2026-09-17 02:43 UTC"
+      },
+      "basis": {
+        "basis_pct": -0.03446,
+        "mark_price": 2432.06,
+        "index_price": 2432.89837209,
+        "spread": -0.8384
+      },
+      "atr_percentile": {
+        "atr_val": 23.0428,
+        "atr_pct": 0.948,
+        "atr_percentile": 77.8,
+        "regime": "ELEVATED",
+        "score_adj": -1,
+        "window": 90
+      },
+      "onchain_ws_err": "name 'sys' is not defined",
+      "_snap_for_xgb": {
+        "confluence": {},
+        "direction": "NEUTRAL",
+        "regime": "CHOP_MID",
+        "params": {
+          "rr1": 2.0
+        },
+        "market_state": {
+          "symbol": "ETHUSDT",
+          "price": 2431.68,
+          "price_source": "ws_realtime",
+          "chg24": 1.068,
+          "vol24": 10995683527.6,
+          "trend": {
+            "1h": {
+              "direction": "BEAR",
+              "strength": "NORMAL",
+              "bull_score": 1,
+              "adx": 21.7,
+              "price": 2431.86,
+              "ema20": 2410.2246,
+              "ema50": 2427.5588,
+              "ema100": 2451.6384,
+              "ema200": 2466.5568
+            },
+            "4h": {
+              "direction": "CHOP",
+              "strength": "LOW_VOL",
+              "bull_score": 2,
+              "adx": 17.89,
+              "price": 2431.86,
+              "ema20": 2444.1684,
+              "ema50": 2465.5172,
+              "ema100": 2445.7456,
+              "ema200": 2375.4292
+            },
+            "1d": {
+              "direction": "BULL",
+              "strength": "WEAK",
+              "bull_score": 3,
+              "adx": 46.69,
+              "price": 2427.99,
+              "ema20": 2431.9264,
+              "ema50": 2280.8557,
+              "ema100": 2155.6151,
+              "ema200": 2067.2992
+            },
+            "consensus": {
+              "consensus": "NEUTRAL",
+              "confidence": 30,
+              "1h_dir": "BEAR",
+              "4h_dir": "CHOP",
+              "1d_dir": "BULL",
+              "signal_dir": "NEUTRAL"
+            }
+          },
+          "regime": "CHOP_MID",
+          "regime_raw": "BULL_CORRECTION",
+          "regime_probs": {
+            "symbol": "ETHUSDT",
+            "regime": "BULL_TREND",
+            "bull_prob": 0.678,
+            "bear_prob": 0.322,
+            "chop_prob": -0.0,
+            "primary": "BULL",
+            "confidence": 0.356,
+            "phase": "CHOP",
+            "momentum": "BULLISH",
+            "rsi_1d": 50.25,
+            "rsi_4h": 39.18,
+            "rsi_1h": 53.54,
+            "hh_1h": true,
+            "hl_1h": true,
+            "multiplier": {
+              "LONG": 1.5,
+              "SHORT": 0.5
+            },
+            "ts": 1789613014.6581373
+          },
+          "key_levels": {
+            "price": 2431.86,
+            "fib": {
+              "high": 2666.0,
+              "low": 2355.12,
+              "0.236": 2592.63232,
+              "0.382": 2547.24384,
+              "0.500": 2510.56,
+              "0.618": 2473.87616,
+              "0.786": 2421.64832,
+              "1.272": 2270.56064,
+              "1.618": 2162.99616,
+              "2.618": 1852.11616
+            },
+            "pivot": {
+              "pp": 2426.44333333,
+              "r1": 2437.89666667,
+              "r2": 2443.93333333,
+              "r3": 2455.38666667,
+              "s1": 2420.40666667,
+              "s2": 2408.95333333,
+              "s3": 2402.91666667
+            },
+            "bb": {
+              "mid": 2404.5825,
+              "upper": 2429.70161852,
+              "lower": 2379.46338148,
+              "width": 0.0209,
+              "pos": 1.043
+            },
+            "swings": {
+              "swing_highs": [
+                [
+                  320,
+                  2515.78
+                ],
+                [
+                  333,
+                  2534.76
+                ],
+                [
+                  345,
+                  2614.99
+                ],
+                [
+                  384,
+                  2429.0
+                ],
+                [
+                  391,
+                  2429.9
+                ]
+              ],
+              "swing_lows": [
+                [
+                  325,
+                  2461.1
+                ],
+                [
+                  338,
+                  2485.77
+                ],
+                [
+                  367,
+                  2357.0
+                ],
+                [
+                  381,
+                  2381.0
+                ],
+                [
+                  391,
+                  2365.0
+                ]
+              ],
+              "last_high": 2429.9,
+              "last_low": 2365.0
+            },
+            "resistance": [
+              2437.89666667,
+              2443.93333333,
+              2451.6384,
+              2466.5568,
+              2547.24384
+            ],
+            "support": [
+              2427.5588,
+              2421.64832,
+              2420.40666667,
+              2410.2246,
+              2408.95333333
+            ],
+            "range_high": 2666.0,
+            "range_low": 2355.12
+          },
+          "wave": {
+            "wave": "DOWNTREND",
+            "bias": "SHORT",
+            "note": "LH+LL下降结构"
+          },
+          "momentum": {
+            "rsi_15m": 55.34,
+            "rsi_1h": 57.14,
+            "rsi_4h": 41.71,
+            "rsi_1d": 51.91,
+            "atr_1h": 23.0461,
+            "atr_4h": 42.4247,
+            "atr_pct": 0.948,
+            "bb": {
+              "mid": 2404.5825,
+              "upper": 2429.70161852,
+              "lower": 2379.46338148,
+              "width": 0.0209,
+              "pos": 1.043
+            }
+          },
+          "swing_4h": {
+            "highs": [
+              2536.0,
+              2522.75,
+              2666.0,
+              2546.11,
+              2614.99
+            ],
+            "lows": [
+              2440.09,
+              2403.33,
+              2433.04,
+              2460.3,
+              2357.0
+            ],
+            "last_high": 2614.99,
+            "last_low": 2357.0
+          },
+          "sentiment": {
+            "funding_rate": 0.0033,
+            "long_short_ratio": 76.1,
+            "oi": 2312406.544,
+            "oi_change_pct": 0.3061,
+            "oi_momentum": "NEUTRAL"
+          },
+          "signal_bias": "NEUTRAL",
+          "summary": "中性 | 中位震荡 | LH+LL下降结构",
+          "raw_closes": [
+            2514.11,
+            2511.01,
+            2497.64,
+            2489.43,
+            2495.0,
+            2484.63,
+            2472.77,
+            2475.77,
+            2472.87,
+            2482.24,
+            2475.15,
+            2477.88,
+            2452.58,
+            2406.73,
+            2423.27,
+            2421.14,
+            2439.91,
+            2401.7,
+            2415.49,
+            2407.0,
+            2389.24,
+            2395.77,
+            2397.15,
+            2397.64,
+            2389.65,
+            2401.81,
+            2400.77,
+            2402.5,
+            2406.12,
+            2405.54,
+            2395.53,
+            2401.7,
+            2404.73,
+            2405.42,
+            2421.33,
+            2405.66,
+            2393.0,
+            2389.47,
+            2391.66,
+            2390.71,
+            2389.49,
+            2397.23,
+            2407.4,
+            2410.03,
+            2403.61,
+            2391.22,
+            2417.49,
+            2417.58,
+            2426.53,
+            2431.86
+          ],
+          "raw_volumes": [
+            121865.33,
+            67733.431,
+            146645.699,
+            127017.718,
+            199915.06,
+            119010.048,
+            179108.166,
+            156224.286,
+            93075.134,
+            121057.751,
+            100362.674,
+            91652.655,
+            536695.164,
+            719402.136,
+            354912.647,
+            162634.893,
+            304188.378,
+            1242325.133,
+            300484.37,
+            171343.507,
+            110775.275,
+            172266.53,
+            144463.371,
+            76909.576,
+            97626.554,
+            95824.524,
+            67939.43,
+            74391.713,
+            105280.49,
+            82925.421,
+            131407.434,
+            179323.934,
+            85676.332,
+            58884.145,
+            211118.157,
+            154142.757,
+            225261.234,
+            276211.93,
+            165513.218,
+            98467.927,
+            256146.822,
+            1164348.297,
+            377817.845,
+            132047.474,
+            41081.023,
+            117648.405,
+            159029.372,
+            110198.882,
+            194402.706,
+            93742.584
+          ],
+          "klines_15m": [
+            {
+              "o": 2512.25,
+              "h": 2515.91,
+              "l": 2511.16,
+              "c": 2514.7,
+              "v": 20654.276,
+              "t": 1789433100000
+            },
+            {
+              "o": 2514.7,
+              "h": 2514.92,
+              "l": 2506.61,
+              "c": 2510.64,
+              "v": 25237.43,
+              "t": 1789434000000
+            },
+            {
+              "o": 2510.63,
+              "h": 2517.16,
+              "l": 2506.63,
+              "c": 2509.81,
+              "v": 43198.285,
+              "t": 1789434900000
+            },
+            {
+              "o": 2509.81,
+              "h": 2515.59,
+              "l": 2508.48,
+              "c": 2515.21,
+              "v": 27809.569,
+              "t": 1789435800000
+            },
+            {
+              "o": 2515.22,
+              "h": 2518.34,
+              "l": 2512.19,
+              "c": 2514.11,
+              "v": 25620.046,
+              "t": 1789436700000
+            },
+            {
+              "o": 2514.1,
+              "h": 2518.6,
+              "l": 2513.22,
+              "c": 2516.68,
+              "v": 16691.163,
+              "t": 1789437600000
+            },
+            {
+              "o": 2516.68,
+              "h": 2518.43,
+              "l": 2514.5,
+              "c": 2515.41,
+              "v": 9587.821,
+              "t": 1789438500000
+            },
+            {
+              "o": 2515.4,
+              "h": 2516.4,
+              "l": 2509.7,
+              "c": 2511.36,
+              "v": 23388.917,
+              "t": 1789439400000
+            },
+            {
+              "o": 2511.35,
+              "h": 2511.85,
+              "l": 2507.78,
+              "c": 2511.01,
+              "v": 18065.53,
+              "t": 1789440300000
+            },
+            {
+              "o": 2511.01,
+              "h": 2511.01,
+              "l": 2493.79,
+              "c": 2497.16,
+              "v": 82896.549,
+              "t": 1789441200000
+            },
+            {
+              "o": 2497.16,
+              "h": 2501.57,
+              "l": 2495.58,
+              "c": 2501.37,
+              "v": 23274.531,
+              "t": 1789442100000
+            },
+            {
+              "o": 2501.38,
+              "h": 2504.12,
+              "l": 2500.0,
+              "c": 2502.67,
+              "v": 20062.446,
+              "t": 1789443000000
+            },
+            {
+              "o": 2502.66,
+              "h": 2503.75,
+              "l": 2496.2,
+              "c": 2497.64,
+              "v": 20412.173,
+              "t": 1789443900000
+            },
+            {
+              "o": 2497.63,
+              "h": 2499.32,
+              "l": 2494.3,
+              "c": 2497.32,
+              "v": 29217.081,
+              "t": 1789444800000
+            },
+            {
+              "o": 2497.33,
+              "h": 2499.0,
+              "l": 2491.55,
+              "c": 2492.65,
+              "v": 32276.572,
+              "t": 1789445700000
+            },
+            {
+              "o": 2492.65,
+              "h": 2494.25,
+              "l": 2488.08,
+              "c": 2492.86,
+              "v": 52187.346,
+              "t": 1789446600000
+            },
+            {
+              "o": 2492.86,
+              "h": 2493.23,
+              "l": 2489.21,
+              "c": 2489.43,
+              "v": 13336.719,
+              "t": 1789447500000
+            },
+            {
+              "o": 2489.42,
+              "h": 2492.89,
+              "l": 2476.6,
+              "c": 2482.51,
+              "v": 76510.751,
+              "t": 1789448400000
+            },
+            {
+              "o": 2482.51,
+              "h": 2488.85,
+              "l": 2478.03,
+              "c": 2487.06,
+              "v": 53748.513,
+              "t": 1789449300000
+            },
+            {
+              "o": 2487.06,
+              "h": 2489.84,
+              "l": 2484.22,
+              "c": 2489.22,
+              "v": 23566.866,
+              "t": 1789450200000
+            },
+            {
+              "o": 2489.23,
+              "h": 2496.55,
+              "l": 2489.15,
+              "c": 2495.0,
+              "v": 46088.93,
+              "t": 1789451100000
+            },
+            {
+              "o": 2495.0,
+              "h": 2499.36,
+              "l": 2494.49,
+              "c": 2495.18,
+              "v": 39172.393,
+              "t": 1789452000000
+            },
+            {
+              "o": 2495.17,
+              "h": 2495.18,
+              "l": 2487.06,
+              "c": 2487.6,
+              "v": 23263.115,
+              "t": 1789452900000
+            },
+            {
+              "o": 2487.6,
+              "h": 2489.55,
+              "l": 2485.37,
+              "c": 2488.42,
+              "v": 25528.418,
+              "t": 1789453800000
+            },
+            {
+              "o": 2488.43,
+              "h": 2489.21,
+              "l": 2480.14,
+              "c": 2484.63,
+              "v": 31046.122,
+              "t": 1789454700000
+            },
+            {
+              "o": 2484.63,
+              "h": 2484.77,
+              "l": 2478.0,
+              "c": 2479.64,
+              "v": 40486.141,
+              "t": 1789455600000
+            },
+            {
+              "o": 2479.63,
+              "h": 2483.47,
+              "l": 2475.66,
+              "c": 2482.21,
+              "v": 32314.631,
+              "t": 1789456500000
+            },
+            {
+              "o": 2482.21,
+              "h": 2482.21,
+              "l": 2473.64,
+              "c": 2476.58,
+              "v": 43098.241,
+              "t": 1789457400000
+            },
+            {
+              "o": 2476.58,
+              "h": 2480.49,
+              "l": 2469.0,
+              "c": 2472.77,
+              "v": 63209.153,
+              "t": 1789458300000
+            },
+            {
+              "o": 2472.77,
+              "h": 2472.78,
+              "l": 2463.0,
+              "c": 2470.18,
+              "v": 65797.399,
+              "t": 1789459200000
+            },
+            {
+              "o": 2470.17,
+              "h": 2473.0,
+              "l": 2465.52,
+              "c": 2470.89,
+              "v": 37331.37,
+              "t": 1789460100000
+            },
+            {
+              "o": 2470.9,
+              "h": 2473.21,
+              "l": 2468.55,
+              "c": 2471.49,
+              "v": 22017.32,
+              "t": 1789461000000
+            },
+            {
+              "o": 2471.48,
+              "h": 2476.4,
+              "l": 2471.48,
+              "c": 2475.77,
+              "v": 31078.197,
+              "t": 1789461900000
+            },
+            {
+              "o": 2475.77,
+              "h": 2475.77,
+              "l": 2471.52,
+              "c": 2472.68,
+              "v": 23019.354,
+              "t": 1789462800000
+            },
+            {
+              "o": 2472.68,
+              "h": 2474.72,
+              "l": 2471.98,
+              "c": 2473.9,
+              "v": 18019.105,
+              "t": 1789463700000
+            },
+            {
+              "o": 2473.9,
+              "h": 2476.29,
+              "l": 2472.74,
+              "c": 2474.95,
+              "v": 17266.987,
+              "t": 1789464600000
+            },
+            {
+              "o": 2474.95,
+              "h": 2479.2,
+              "l": 2472.19,
+              "c": 2472.87,
+              "v": 34769.688,
+              "t": 1789465500000
+            },
+            {
+              "o": 2472.87,
+              "h": 2477.81,
+              "l": 2470.26,
+              "c": 2473.89,
+              "v": 30152.562,
+              "t": 1789466400000
+            },
+            {
+              "o": 2473.89,
+              "h": 2476.98,
+              "l": 2472.65,
+              "c": 2472.72,
+              "v": 17108.525,
+              "t": 1789467300000
+            },
+            {
+              "o": 2472.73,
+              "h": 2479.14,
+              "l": 2472.09,
+              "c": 2477.78,
+              "v": 20635.255,
+              "t": 1789468200000
+            },
+            {
+              "o": 2477.77,
+              "h": 2485.94,
+              "l": 2477.69,
+              "c": 2482.24,
+              "v": 53161.409,
+              "t": 1789469100000
+            },
+            {
+              "o": 2482.25,
+              "h": 2487.05,
+              "l": 2480.13,
+              "c": 2481.23,
+              "v": 30636.349,
+              "t": 1789470000000
+            },
+            {
+              "o": 2481.23,
+              "h": 2484.4,
+              "l": 2478.67,
+              "c": 2479.15,
+              "v": 19133.568,
+              "t": 1789470900000
+            },
+            {
+              "o": 2479.16,
+              "h": 2479.97,
+              "l": 2472.35,
+              "c": 2474.29,
+              "v": 35282.811,
+              "t": 1789471800000
+            },
+            {
+              "o": 2474.29,
+              "h": 2476.03,
+              "l": 2471.57,
+              "c": 2475.15,
+              "v": 15309.946,
+              "t": 1789472700000
+            },
+            {
+              "o": 2475.15,
+              "h": 2480.08,
+              "l": 2473.74,
+              "c": 2478.95,
+              "v": 20029.07,
+              "t": 1789473600000
+            },
+            {
+              "o": 2478.94,
+              "h": 2480.64,
+              "l": 2476.0,
+              "c": 2478.05,
+              "v": 18985.416,
+              "t": 1789474500000
+            },
+            {
+              "o": 2478.04,
+              "h": 2478.5,
+              "l": 2473.44,
+              "c": 2475.03,
+              "v": 15382.125,
+              "t": 1789475400000
+            },
+            {
+              "o": 2475.03,
+              "h": 2484.89,
+              "l": 2473.8,
+              "c": 2477.88,
+              "v": 37256.044,
+              "t": 1789476300000
+            },
+            {
+              "o": 2477.88,
+              "h": 2485.55,
+              "l": 2475.37,
+              "c": 2477.48,
+              "v": 25802.592,
+              "t": 1789477200000
+            },
+            {
+              "o": 2477.48,
+              "h": 2478.67,
+              "l": 2476.22,
+              "c": 2477.47,
+              "v": 14312.456,
+              "t": 1789478100000
+            },
+            {
+              "o": 2477.48,
+              "h": 2477.48,
+              "l": 2431.05,
+              "c": 2449.09,
+              "v": 395927.18,
+              "t": 1789479000000
+            },
+            {
+              "o": 2449.09,
+              "h": 2452.94,
+              "l": 2438.4,
+              "c": 2452.58,
+              "v": 100652.936,
+              "t": 1789479900000
+            },
+            {
+              "o": 2452.58,
+              "h": 2457.42,
+              "l": 2444.23,
+              "c": 2445.53,
+              "v": 73651.156,
+              "t": 1789480800000
+            },
+            {
+              "o": 2445.52,
+              "h": 2448.81,
+              "l": 2433.78,
+              "c": 2437.74,
+              "v": 65591.468,
+              "t": 1789481700000
+            },
+            {
+              "o": 2437.75,
+              "h": 2437.82,
+              "l": 2409.76,
+              "c": 2415.46,
+              "v": 262208.261,
+              "t": 1789482600000
+            },
+            {
+              "o": 2415.46,
+              "h": 2416.85,
+              "l": 2388.0,
+              "c": 2406.73,
+              "v": 317951.251,
+              "t": 1789483500000
+            },
+            {
+              "o": 2406.74,
+              "h": 2413.03,
+              "l": 2396.23,
+              "c": 2411.78,
+              "v": 125705.13,
+              "t": 1789484400000
+            },
+            {
+              "o": 2411.77,
+              "h": 2428.79,
+              "l": 2409.25,
+              "c": 2423.99,
+              "v": 117468.832,
+              "t": 1789485300000
+            },
+            {
+              "o": 2423.99,
+              "h": 2429.99,
+              "l": 2422.27,
+              "c": 2426.04,
+              "v": 58988.535,
+              "t": 1789486200000
+            },
+            {
+              "o": 2426.04,
+              "h": 2431.57,
+              "l": 2421.44,
+              "c": 2423.27,
+              "v": 52750.15,
+              "t": 1789487100000
+            },
+            {
+              "o": 2423.28,
+              "h": 2424.44,
+              "l": 2411.34,
+              "c": 2412.79,
+              "v": 74635.755,
+              "t": 1789488000000
+            },
+            {
+              "o": 2412.8,
+              "h": 2424.35,
+              "l": 2412.8,
+              "c": 2422.81,
+              "v": 41612.255,
+              "t": 1789488900000
+            },
+            {
+              "o": 2422.81,
+              "h": 2424.36,
+              "l": 2416.14,
+              "c": 2419.0,
+              "v": 25959.604,
+              "t": 1789489800000
+            },
+            {
+              "o": 2418.99,
+              "h": 2424.76,
+              "l": 2418.7,
+              "c": 2421.14,
+              "v": 20427.279,
+              "t": 1789490700000
+            },
+            {
+              "o": 2421.14,
+              "h": 2422.74,
+              "l": 2411.44,
+              "c": 2415.75,
+              "v": 38852.847,
+              "t": 1789491600000
+            },
+            {
+              "o": 2415.74,
+              "h": 2424.6,
+              "l": 2414.13,
+              "c": 2423.78,
+              "v": 23112.712,
+              "t": 1789492500000
+            },
+            {
+              "o": 2423.78,
+              "h": 2448.1,
+              "l": 2422.35,
+              "c": 2428.49,
+              "v": 171248.806,
+              "t": 1789493400000
+            },
+            {
+              "o": 2428.5,
+              "h": 2444.16,
+              "l": 2428.49,
+              "c": 2439.91,
+              "v": 70974.013,
+              "t": 1789494300000
+            },
+            {
+              "o": 2439.91,
+              "h": 2441.92,
+              "l": 2431.91,
+              "c": 2434.68,
+              "v": 59259.895,
+              "t": 1789495200000
+            },
+            {
+              "o": 2434.69,
+              "h": 2445.99,
+              "l": 2421.78,
+              "c": 2434.31,
+              "v": 127066.855,
+              "t": 1789496100000
+            },
+            {
+              "o": 2434.29,
+              "h": 2435.76,
+              "l": 2371.5,
+              "c": 2386.29,
+              "v": 531844.768,
+              "t": 1789497000000
+            },
+            {
+              "o": 2386.29,
+              "h": 2417.79,
+              "l": 2357.0,
+              "c": 2401.7,
+              "v": 524153.615,
+              "t": 1789497900000
+            },
+            {
+              "o": 2401.7,
+              "h": 2413.0,
+              "l": 2396.31,
+              "c": 2404.06,
+              "v": 104111.277,
+              "t": 1789498800000
+            },
+            {
+              "o": 2404.06,
+              "h": 2419.64,
+              "l": 2400.33,
+              "c": 2403.27,
+              "v": 88984.083,
+              "t": 1789499700000
+            },
+            {
+              "o": 2403.26,
+              "h": 2408.49,
+              "l": 2398.0,
+              "c": 2402.91,
+              "v": 55169.494,
+              "t": 1789500600000
+            },
+            {
+              "o": 2402.92,
+              "h": 2415.5,
+              "l": 2401.74,
+              "c": 2415.49,
+              "v": 52219.516,
+              "t": 1789501500000
+            },
+            {
+              "o": 2415.5,
+              "h": 2417.38,
+              "l": 2404.18,
+              "c": 2408.7,
+              "v": 49142.21,
+              "t": 1789502400000
+            },
+            {
+              "o": 2408.71,
+              "h": 2408.9,
+              "l": 2397.11,
+              "c": 2398.05,
+              "v": 40903.948,
+              "t": 1789503300000
+            },
+            {
+              "o": 2398.06,
+              "h": 2404.98,
+              "l": 2393.22,
+              "c": 2404.74,
+              "v": 44203.721,
+              "t": 1789504200000
+            },
+            {
+              "o": 2404.74,
+              "h": 2409.9,
+              "l": 2404.18,
+              "c": 2407.0,
+              "v": 37093.628,
+              "t": 1789505100000
+            },
+            {
+              "o": 2407.01,
+              "h": 2407.01,
+              "l": 2398.1,
+              "c": 2400.59,
+              "v": 41080.1,
+              "t": 1789506000000
+            },
+            {
+              "o": 2400.59,
+              "h": 2403.82,
+              "l": 2395.0,
+              "c": 2397.21,
+              "v": 23788.105,
+              "t": 1789506900000
+            },
+            {
+              "o": 2397.22,
+              "h": 2401.62,
+              "l": 2394.69,
+              "c": 2400.4,
+              "v": 19249.914,
+              "t": 1789507800000
+            },
+            {
+              "o": 2400.41,
+              "h": 2400.41,
+              "l": 2388.13,
+              "c": 2389.24,
+              "v": 26657.156,
+              "t": 1789508700000
+            },
+            {
+              "o": 2389.24,
+              "h": 2396.41,
+              "l": 2385.32,
+              "c": 2386.96,
+              "v": 38896.497,
+              "t": 1789509600000
+            },
+            {
+              "o": 2386.96,
+              "h": 2397.51,
+              "l": 2380.3,
+              "c": 2392.85,
+              "v": 64033.021,
+              "t": 1789510500000
+            },
+            {
+              "o": 2392.86,
+              "h": 2401.53,
+              "l": 2392.72,
+              "c": 2395.11,
+              "v": 40436.009,
+              "t": 1789511400000
+            },
+            {
+              "o": 2395.11,
+              "h": 2400.49,
+              "l": 2394.76,
+              "c": 2395.77,
+              "v": 28901.003,
+              "t": 1789512300000
+            },
+            {
+              "o": 2395.76,
+              "h": 2409.72,
+              "l": 2395.39,
+              "c": 2408.25,
+              "v": 43956.259,
+              "t": 1789513200000
+            },
+            {
+              "o": 2408.26,
+              "h": 2412.0,
+              "l": 2404.55,
+              "c": 2405.0,
+              "v": 51423.509,
+              "t": 1789514100000
+            },
+            {
+              "o": 2405.0,
+              "h": 2405.0,
+              "l": 2396.2,
+              "c": 2399.99,
+              "v": 39108.116,
+              "t": 1789515000000
+            },
+            {
+              "o": 2400.0,
+              "h": 2401.31,
+              "l": 2396.82,
+              "c": 2397.15,
+              "v": 9975.487,
+              "t": 1789515900000
+            },
+            {
+              "o": 2397.15,
+              "h": 2404.3,
+              "l": 2396.29,
+              "c": 2400.12,
+              "v": 19026.367,
+              "t": 1789516800000
+            },
+            {
+              "o": 2400.12,
+              "h": 2404.23,
+              "l": 2399.53,
+              "c": 2403.65,
+              "v": 13066.909,
+              "t": 1789517700000
+            },
+            {
+              "o": 2403.66,
+              "h": 2404.78,
+              "l": 2400.72,
+              "c": 2402.37,
+              "v": 10753.047,
+              "t": 1789518600000
+            },
+            {
+              "o": 2402.37,
+              "h": 2404.53,
+              "l": 2397.35,
+              "c": 2397.64,
+              "v": 34063.253,
+              "t": 1789519500000
+            },
+            {
+              "o": 2397.64,
+              "h": 2402.38,
+              "l": 2393.41,
+              "c": 2399.09,
+              "v": 25922.559,
+              "t": 1789520400000
+            },
+            {
+              "o": 2399.09,
+              "h": 2406.7,
+              "l": 2397.32,
+              "c": 2402.51,
+              "v": 17183.346,
+              "t": 1789521300000
+            },
+            {
+              "o": 2402.51,
+              "h": 2402.51,
+              "l": 2392.1,
+              "c": 2396.94,
+              "v": 30164.932,
+              "t": 1789522200000
+            },
+            {
+              "o": 2396.94,
+              "h": 2399.25,
+              "l": 2389.25,
+              "c": 2389.65,
+              "v": 24355.717,
+              "t": 1789523100000
+            },
+            {
+              "o": 2389.66,
+              "h": 2395.73,
+              "l": 2386.92,
+              "c": 2392.38,
+              "v": 23152.442,
+              "t": 1789524000000
+            },
+            {
+              "o": 2392.38,
+              "h": 2401.32,
+              "l": 2391.86,
+              "c": 2401.18,
+              "v": 20814.1,
+              "t": 1789524900000
+            },
+            {
+              "o": 2401.17,
+              "h": 2410.23,
+              "l": 2401.08,
+              "c": 2405.39,
+              "v": 36345.576,
+              "t": 1789525800000
+            },
+            {
+              "o": 2405.38,
+              "h": 2406.88,
+              "l": 2398.44,
+              "c": 2401.81,
+              "v": 15512.406,
+              "t": 1789526700000
+            },
+            {
+              "o": 2401.82,
+              "h": 2405.99,
+              "l": 2399.51,
+              "c": 2405.42,
+              "v": 14658.195,
+              "t": 1789527600000
+            },
+            {
+              "o": 2405.43,
+              "h": 2410.79,
+              "l": 2403.34,
+              "c": 2403.34,
+              "v": 24913.26,
+              "t": 1789528500000
+            },
+            {
+              "o": 2403.35,
+              "h": 2405.5,
+              "l": 2399.0,
+              "c": 2400.59,
+              "v": 19861.533,
+              "t": 1789529400000
+            },
+            {
+              "o": 2400.6,
+              "h": 2402.33,
+              "l": 2399.27,
+              "c": 2400.77,
+              "v": 8506.442,
+              "t": 1789530300000
+            },
+            {
+              "o": 2400.77,
+              "h": 2404.5,
+              "l": 2400.67,
+              "c": 2402.51,
+              "v": 10018.868,
+              "t": 1789531200000
+            },
+            {
+              "o": 2402.52,
+              "h": 2408.5,
+              "l": 2400.73,
+              "c": 2403.19,
+              "v": 27005.622,
+              "t": 1789532100000
+            },
+            {
+              "o": 2403.18,
+              "h": 2409.32,
+              "l": 2401.0,
+              "c": 2404.93,
+              "v": 24217.045,
+              "t": 1789533000000
+            },
+            {
+              "o": 2404.93,
+              "h": 2407.21,
+              "l": 2401.57,
+              "c": 2402.5,
+              "v": 13150.178,
+              "t": 1789533900000
+            },
+            {
+              "o": 2402.51,
+              "h": 2403.42,
+              "l": 2391.75,
+              "c": 2399.02,
+              "v": 62326.444,
+              "t": 1789534800000
+            },
+            {
+              "o": 2399.03,
+              "h": 2403.42,
+              "l": 2398.71,
+              "c": 2403.29,
+              "v": 11355.222,
+              "t": 1789535700000
+            },
+            {
+              "o": 2403.29,
+              "h": 2405.68,
+              "l": 2401.51,
+              "c": 2405.58,
+              "v": 15353.873,
+              "t": 1789536600000
+            },
+            {
+              "o": 2405.59,
+              "h": 2406.2,
+              "l": 2402.76,
+              "c": 2406.12,
+              "v": 16244.951,
+              "t": 1789537500000
+            },
+            {
+              "o": 2406.12,
+              "h": 2408.0,
+              "l": 2402.34,
+              "c": 2403.0,
+              "v": 15555.509,
+              "t": 1789538400000
+            },
+            {
+              "o": 2403.0,
+              "h": 2403.7,
+              "l": 2399.4,
+              "c": 2399.99,
+              "v": 8954.758,
+              "t": 1789539300000
+            },
+            {
+              "o": 2400.0,
+              "h": 2400.09,
+              "l": 2392.05,
+              "c": 2397.15,
+              "v": 32303.648,
+              "t": 1789540200000
+            },
+            {
+              "o": 2397.16,
+              "h": 2406.37,
+              "l": 2397.15,
+              "c": 2405.54,
+              "v": 26111.506,
+              "t": 1789541100000
+            },
+            {
+              "o": 2405.53,
+              "h": 2410.92,
+              "l": 2397.87,
+              "c": 2401.28,
+              "v": 78343.497,
+              "t": 1789542000000
+            },
+            {
+              "o": 2401.28,
+              "h": 2403.76,
+              "l": 2397.21,
+              "c": 2398.34,
+              "v": 19686.808,
+              "t": 1789542900000
+            },
+            {
+              "o": 2398.33,
+              "h": 2400.29,
+              "l": 2397.01,
+              "c": 2397.61,
+              "v": 13604.392,
+              "t": 1789543800000
+            },
+            {
+              "o": 2397.61,
+              "h": 2398.79,
+              "l": 2395.01,
+              "c": 2395.53,
+              "v": 19772.737,
+              "t": 1789544700000
+            },
+            {
+              "o": 2395.52,
+              "h": 2396.03,
+              "l": 2381.0,
+              "c": 2386.29,
+              "v": 87426.741,
+              "t": 1789545600000
+            },
+            {
+              "o": 2386.28,
+              "h": 2392.54,
+              "l": 2383.6,
+              "c": 2387.37,
+              "v": 48908.507,
+              "t": 1789546500000
+            },
+            {
+              "o": 2387.38,
+              "h": 2392.73,
+              "l": 2387.19,
+              "c": 2392.55,
+              "v": 14776.471,
+              "t": 1789547400000
+            },
+            {
+              "o": 2392.54,
+              "h": 2402.28,
+              "l": 2391.93,
+              "c": 2401.7,
+              "v": 28212.215,
+              "t": 1789548300000
+            },
+            {
+              "o": 2401.69,
+              "h": 2406.11,
+              "l": 2399.88,
+              "c": 2400.18,
+              "v": 39199.037,
+              "t": 1789549200000
+            },
+            {
+              "o": 2400.17,
+              "h": 2403.93,
+              "l": 2397.83,
+              "c": 2401.01,
+              "v": 19597.716,
+              "t": 1789550100000
+            },
+            {
+              "o": 2401.0,
+              "h": 2403.65,
+              "l": 2400.0,
+              "c": 2402.16,
+              "v": 14040.12,
+              "t": 1789551000000
+            },
+            {
+              "o": 2402.16,
+              "h": 2405.29,
+              "l": 2400.48,
+              "c": 2404.73,
+              "v": 12839.459,
+              "t": 1789551900000
+            },
+            {
+              "o": 2404.72,
+              "h": 2405.57,
+              "l": 2396.88,
+              "c": 2398.57,
+              "v": 20277.613,
+              "t": 1789552800000
+            },
+            {
+              "o": 2398.56,
+              "h": 2403.13,
+              "l": 2398.33,
+              "c": 2401.6,
+              "v": 11059.403,
+              "t": 1789553700000
+            },
+            {
+              "o": 2401.6,
+              "h": 2406.0,
+              "l": 2400.7,
+              "c": 2405.26,
+              "v": 12974.276,
+              "t": 1789554600000
+            },
+            {
+              "o": 2405.25,
+              "h": 2405.65,
+              "l": 2400.68,
+              "c": 2405.42,
+              "v": 14572.853,
+              "t": 1789555500000
+            },
+            {
+              "o": 2405.42,
+              "h": 2408.37,
+              "l": 2403.41,
+              "c": 2403.41,
+              "v": 25926.71,
+              "t": 1789556400000
+            },
+            {
+              "o": 2403.41,
+              "h": 2406.78,
+              "l": 2401.46,
+              "c": 2406.14,
+              "v": 15663.669,
+              "t": 1789557300000
+            },
+            {
+              "o": 2406.13,
+              "h": 2429.0,
+              "l": 2405.76,
+              "c": 2424.8,
+              "v": 121132.21,
+              "t": 1789558200000
+            },
+            {
+              "o": 2424.8,
+              "h": 2426.16,
+              "l": 2418.36,
+              "c": 2421.33,
+              "v": 48395.568,
+              "t": 1789559100000
+            },
+            {
+              "o": 2421.32,
+              "h": 2422.67,
+              "l": 2411.71,
+              "c": 2412.65,
+              "v": 39690.203,
+              "t": 1789560000000
+            },
+            {
+              "o": 2412.64,
+              "h": 2416.98,
+              "l": 2404.15,
+              "c": 2405.99,
+              "v": 45664.763,
+              "t": 1789560900000
+            },
+            {
+              "o": 2406.0,
+              "h": 2409.92,
+              "l": 2401.78,
+              "c": 2405.81,
+              "v": 36789.744,
+              "t": 1789561800000
+            },
+            {
+              "o": 2405.8,
+              "h": 2410.04,
+              "l": 2402.3,
+              "c": 2405.66,
+              "v": 31998.047,
+              "t": 1789562700000
+            },
+            {
+              "o": 2405.65,
+              "h": 2405.78,
+              "l": 2393.72,
+              "c": 2400.87,
+              "v": 69469.159,
+              "t": 1789563600000
+            },
+            {
+              "o": 2400.87,
+              "h": 2404.77,
+              "l": 2397.04,
+              "c": 2399.77,
+              "v": 32379.959,
+              "t": 1789564500000
+            },
+            {
+              "o": 2399.76,
+              "h": 2401.39,
+              "l": 2388.61,
+              "c": 2397.84,
+              "v": 77102.823,
+              "t": 1789565400000
+            },
+            {
+              "o": 2397.83,
+              "h": 2402.82,
+              "l": 2390.8,
+              "c": 2393.0,
+              "v": 46309.293,
+              "t": 1789566300000
+            },
+            {
+              "o": 2393.0,
+              "h": 2394.0,
+              "l": 2381.6,
+              "c": 2389.16,
+              "v": 77917.526,
+              "t": 1789567200000
+            },
+            {
+              "o": 2389.15,
+              "h": 2397.78,
+              "l": 2386.71,
+              "c": 2397.32,
+              "v": 61762.154,
+              "t": 1789568100000
+            },
+            {
+              "o": 2397.32,
+              "h": 2397.51,
+              "l": 2383.44,
+              "c": 2390.68,
+              "v": 64570.521,
+              "t": 1789569000000
+            },
+            {
+              "o": 2390.67,
+              "h": 2390.67,
+              "l": 2375.08,
+              "c": 2389.47,
+              "v": 71961.729,
+              "t": 1789569900000
+            },
+            {
+              "o": 2389.47,
+              "h": 2395.26,
+              "l": 2385.33,
+              "c": 2392.75,
+              "v": 48965.242,
+              "t": 1789570800000
+            },
+            {
+              "o": 2392.75,
+              "h": 2393.5,
+              "l": 2385.86,
+              "c": 2386.3,
+              "v": 24444.485,
+              "t": 1789571700000
+            },
+            {
+              "o": 2386.31,
+              "h": 2394.49,
+              "l": 2382.73,
+              "c": 2389.61,
+              "v": 41889.867,
+              "t": 1789572600000
+            },
+            {
+              "o": 2389.62,
+              "h": 2401.35,
+              "l": 2389.33,
+              "c": 2391.66,
+              "v": 50213.624,
+              "t": 1789573500000
+            },
+            {
+              "o": 2391.67,
+              "h": 2396.61,
+              "l": 2387.4,
+              "c": 2395.99,
+              "v": 30032.562,
+              "t": 1789574400000
+            },
+            {
+              "o": 2395.99,
+              "h": 2398.84,
+              "l": 2391.77,
+              "c": 2395.2,
+              "v": 28524.48,
+              "t": 1789575300000
+            },
+            {
+              "o": 2395.19,
+              "h": 2397.21,
+              "l": 2386.08,
+              "c": 2387.33,
+              "v": 26675.753,
+              "t": 1789576200000
+            },
+            {
+              "o": 2387.32,
+              "h": 2394.63,
+              "l": 2387.18,
+              "c": 2390.71,
+              "v": 13235.132,
+              "t": 1789577100000
+            },
+            {
+              "o": 2390.71,
+              "h": 2393.0,
+              "l": 2385.57,
+              "c": 2390.08,
+              "v": 20127.464,
+              "t": 1789578000000
+            },
+            {
+              "o": 2390.08,
+              "h": 2393.11,
+              "l": 2385.79,
+              "c": 2387.94,
+              "v": 21770.239,
+              "t": 1789578900000
+            },
+            {
+              "o": 2387.93,
+              "h": 2388.12,
+              "l": 2368.03,
+              "c": 2375.04,
+              "v": 95860.481,
+              "t": 1789579800000
+            },
+            {
+              "o": 2375.04,
+              "h": 2396.0,
+              "l": 2368.89,
+              "c": 2389.49,
+              "v": 118388.638,
+              "t": 1789580700000
+            },
+            {
+              "o": 2389.47,
+              "h": 2429.9,
+              "l": 2365.0,
+              "c": 2401.4,
+              "v": 589961.302,
+              "t": 1789581600000
+            },
+            {
+              "o": 2401.39,
+              "h": 2412.11,
+              "l": 2395.11,
+              "c": 2411.17,
+              "v": 152343.692,
+              "t": 1789582500000
+            },
+            {
+              "o": 2411.18,
+              "h": 2422.7,
+              "l": 2366.67,
+              "c": 2408.4,
+              "v": 301164.91,
+              "t": 1789583400000
+            },
+            {
+              "o": 2408.39,
+              "h": 2411.83,
+              "l": 2388.39,
+              "c": 2397.23,
+              "v": 120878.393,
+              "t": 1789584300000
+            },
+            {
+              "o": 2397.24,
+              "h": 2417.77,
+              "l": 2397.24,
+              "c": 2406.19,
+              "v": 125803.237,
+              "t": 1789585200000
+            },
+            {
+              "o": 2406.19,
+              "h": 2409.32,
+              "l": 2375.51,
+              "c": 2387.03,
+              "v": 117904.127,
+              "t": 1789586100000
+            },
+            {
+              "o": 2387.04,
+              "h": 2406.93,
+              "l": 2380.57,
+              "c": 2405.08,
+              "v": 79036.705,
+              "t": 1789587000000
+            },
+            {
+              "o": 2405.07,
+              "h": 2410.72,
+              "l": 2404.55,
+              "c": 2407.4,
+              "v": 55073.776,
+              "t": 1789587900000
+            },
+            {
+              "o": 2407.4,
+              "h": 2419.09,
+              "l": 2404.0,
+              "c": 2411.56,
+              "v": 54793.66,
+              "t": 1789588800000
+            },
+            {
+              "o": 2411.55,
+              "h": 2417.13,
+              "l": 2406.45,
+              "c": 2410.85,
+              "v": 38206.684,
+              "t": 1789589700000
+            },
+            {
+              "o": 2410.84,
+              "h": 2414.45,
+              "l": 2403.64,
+              "c": 2408.1,
+              "v": 22798.714,
+              "t": 1789590600000
+            },
+            {
+              "o": 2408.1,
+              "h": 2412.02,
+              "l": 2406.1,
+              "c": 2410.03,
+              "v": 16248.416,
+              "t": 1789591500000
+            },
+            {
+              "o": 2410.02,
+              "h": 2412.37,
+              "l": 2406.8,
+              "c": 2408.6,
+              "v": 11856.15,
+              "t": 1789592400000
+            },
+            {
+              "o": 2408.6,
+              "h": 2410.55,
+              "l": 2404.12,
+              "c": 2404.65,
+              "v": 7922.72,
+              "t": 1789593300000
+            },
+            {
+              "o": 2404.66,
+              "h": 2407.0,
+              "l": 2398.67,
+              "c": 2401.22,
+              "v": 11444.648,
+              "t": 1789594200000
+            },
+            {
+              "o": 2401.23,
+              "h": 2405.15,
+              "l": 2400.47,
+              "c": 2403.61,
+              "v": 9857.505,
+              "t": 1789595100000
+            },
+            {
+              "o": 2403.61,
+              "h": 2404.7,
+              "l": 2386.78,
+              "c": 2397.71,
+              "v": 78783.242,
+              "t": 1789596000000
+            },
+            {
+              "o": 2397.7,
+              "h": 2401.18,
+              "l": 2391.69,
+              "c": 2393.31,
+              "v": 18721.506,
+              "t": 1789596900000
+            },
+            {
+              "o": 2393.31,
+              "h": 2397.15,
+              "l": 2390.63,
+              "c": 2397.14,
+              "v": 11010.27,
+              "t": 1789597800000
+            },
+            {
+              "o": 2397.14,
+              "h": 2397.83,
+              "l": 2390.06,
+              "c": 2391.22,
+              "v": 9133.387,
+              "t": 1789598700000
+            },
+            {
+              "o": 2391.22,
+              "h": 2397.79,
+              "l": 2388.64,
+              "c": 2397.78,
+              "v": 10212.84,
+              "t": 1789599600000
+            },
+            {
+              "o": 2397.79,
+              "h": 2414.39,
+              "l": 2397.79,
+              "c": 2412.11,
+              "v": 58576.669,
+              "t": 1789600500000
+            },
+            {
+              "o": 2412.11,
+              "h": 2422.1,
+              "l": 2410.82,
+              "c": 2418.44,
+              "v": 52986.745,
+              "t": 1789601400000
+            },
+            {
+              "o": 2418.44,
+              "h": 2421.48,
+              "l": 2414.73,
+              "c": 2417.49,
+              "v": 37253.118,
+              "t": 1789602300000
+            },
+            {
+              "o": 2417.5,
+              "h": 2423.92,
+              "l": 2414.79,
+              "c": 2420.69,
+              "v": 39198.461,
+              "t": 1789603200000
+            },
+            {
+              "o": 2420.69,
+              "h": 2426.29,
+              "l": 2419.68,
+              "c": 2421.19,
+              "v": 32335.225,
+              "t": 1789604100000
+            },
+            {
+              "o": 2421.19,
+              "h": 2427.48,
+              "l": 2420.16,
+              "c": 2423.0,
+              "v": 23573.097,
+              "t": 1789605000000
+            },
+            {
+              "o": 2423.01,
+              "h": 2423.85,
+              "l": 2417.58,
+              "c": 2417.58,
+              "v": 15092.099,
+              "t": 1789605900000
+            },
+            {
+              "o": 2417.58,
+              "h": 2420.2,
+              "l": 2412.55,
+              "c": 2417.52,
+              "v": 23974.374,
+              "t": 1789606800000
+            },
+            {
+              "o": 2417.53,
+              "h": 2439.9,
+              "l": 2415.75,
+              "c": 2437.51,
+              "v": 76011.48,
+              "t": 1789607700000
+            },
+            {
+              "o": 2437.52,
+              "h": 2444.39,
+              "l": 2429.04,
+              "c": 2433.8,
+              "v": 73986.416,
+              "t": 1789608600000
+            },
+            {
+              "o": 2433.81,
+              "h": 2434.37,
+              "l": 2426.03,
+              "c": 2426.53,
+              "v": 20430.436,
+              "t": 1789609500000
+            },
+            {
+              "o": 2426.53,
+              "h": 2427.82,
+              "l": 2416.8,
+              "c": 2421.4,
+              "v": 33222.799,
+              "t": 1789610400000
+            },
+            {
+              "o": 2421.4,
+              "h": 2422.7,
+              "l": 2414.99,
+              "c": 2421.46,
+              "v": 27042.332,
+              "t": 1789611300000
+            },
+            {
+              "o": 2421.46,
+              "h": 2432.48,
+              "l": 2419.6,
+              "c": 2431.86,
+              "v": 33478.789,
+              "t": 1789612200000
+            }
+          ],
+          "atr_pct": 0.009477,
+          "atr_1h": 23.0461,
+          "atr_4h": 42.4247,
+          "rsi_15m": 55.34,
+          "rsi_1h": 57.14,
+          "rsi_4h": 41.71,
+          "rsi_1d": 51.91,
+          "_harv_p_up": 0.45
+        }
+      },
+      "sentiment_nlp": {
+        "score": 1.0,
+        "detail": "FnG=50 base=+1.0 trend=+0.0"
+      },
+      "anti_manip": {
+        "risk_score": 0,
+        "risk_level": "LOW",
+        "score_adj": 0,
+        "action": "OK",
+        "signals": [],
+        "modules": {
+          "spread": {
+            "spread_pct": 0.0004,
+            "spread_z": -1.95,
+            "risk": 0,
+            "signal": "OK"
+          },
+          "taker": {
+            "taker_buy_ratio": 0.601,
+            "risk_long": 0,
+            "risk_short": 0,
+            "signal": "OK"
+          },
+          "oi_anomaly": {
+            "oi_change_pct": 0.15,
+            "price_chg_pct": 1.08,
+            "risk": 0,
+            "signal": "OK"
+          },
+          "fr_window": {
+            "minutes_to_funding": 999,
+            "fr": 0,
+            "risk": 0,
+            "signal": "OK",
+            "err": "name 'now' is not defined"
+          },
+          "mark_price": {
+            "mark_price": 2431.95,
+            "index_price": 2432.89837209,
+            "deviation_pct": 0.039,
+            "risk": 0,
+            "signal": "OK"
+          }
+        }
+      },
+      "score_tier": "C",
+      "score_pos": 0.0,
+      "smart_money": {
+        "big_acct_long": 0.6603,
+        "big_pos_long": 0.5751,
+        "retail_long": 0.7611,
+        "whale_retail_gap": -0.1008,
+        "pos_trend_5h": 0.0029,
+        "signal": "NEUTRAL",
+        "score_adj": 3,
+        "note": "大户比散户更空(差-0.101) 背离做空 +3",
+        "confidence": 0.75
+      },
+      "capital": {
+        "position_usdt": 5.0,
+        "risk_usdt": 6.935,
+        "budget_total": 2.6,
+        "budget_used": 0.0,
+        "budget_remaining": 2.6,
+        "budget_used_pct": 2.667,
+        "n_active": 0,
+        "allowed": true,
+        "reason": "NAV=130.0 budget=2.60u avail=2.60u sym_w=0.9 dd_m=1.0 pos=5.0u risk=6.94u",
+        "adjustments": {
+          "symbol_weight": 0.9,
+          "drawdown_mult": 1.0,
+          "drawdown": 0.0,
+          "score_mult": 0.705
+        },
+        "ts": "2026-09-17T02:43:38.690904+00:00"
+      },
+      "attribution": {
+        "error": "name '_os' is not defined"
+      },
+      "ensemble": {
+        "ensemble_score": 40.2,
+        "ensemble_signal": -0.1959,
+        "ic_weighted": {
+          "rsi_4h": -0.2155,
+          "change_3d": 0.0,
+          "bbw": -0.6,
+          "hurst": 0.0,
+          "oi_chg_3d": 0.0,
+          "fr_mean": 0.0638,
+          "atr_rank": 0.8,
+          "regime_code": 0.0,
+          "macro_days": -0.9,
+          "vol_rank": -0.8,
+          "score_rank": -0.413,
+          "stoch_rsi": 0.1704,
+          "cross_market": -0.6524
+        },
+        "regime_direction_mult": 1.0,
+        "true_alpha": [
+          "macro_days",
+          "atr_rank",
+          "vol_rank"
+        ],
+        "n_dims": 13,
+        "raw_vec": {
+          "rsi_4h": 41.71,
+          "change_3d": 0,
+          "bbw": 0,
+          "hurst": 0.5,
+          "oi_chg_3d": 0,
+          "fr_mean": 0.0029,
+          "atr_rank": 0.0,
+          "regime_code": 4,
+          "macro_days": 30,
+          "vol_rank": 0.0,
+          "score_rank": 0.205,
+          "stoch_rsi": 57.1,
+          "cross_market": -0.6524
+        }
+      },
+      "ai_council": {
+        "council_bias": "偏空",
+        "council_action": "WAIT",
+        "council_confidence": "MED",
+        "council_reason": "体制中性，SMC结构偏多(17)",
+        "bayes_adjustment": 0.0,
+        "bayes_detail": "prior=55.0% post=55.0% n=0 conf=LOW",
+        "weight_calibration": {
+          "weights": {
+            "kronos": 0.7,
+            "macro": 0.8,
+            "smart_money": 0.6,
+            "obv": 0.8,
+            "oi_signal": 0.7
+          },
+          "n_adjusted": 5,
+          "status": "CALIBRATED"
+        },
+        "experience_nudge": "",
+        "council_score": 1,
+        "combined_score": 40.2
+      },
+      "regime_timing": {
+        "current": "CHOP_MID",
+        "age_hours": 17.2,
+        "is_early": false,
+        "prev": "BULL_CORRECTION",
+        "bars_est": 4
+      }
+    },
+    "rsi_1h": 57.14,
+    "rsi_4h": 41.71,
+    "rsi_1d": 51.91,
+    "market_state_raw": {
+      "consensus": "NEUTRAL",
+      "trend_dir_1h": "BEAR",
+      "trend_dir_4h": "CHOP",
+      "trend_dir_1d": "BULL",
+      "adx_1h": 21.7,
+      "adx_4h": 17.89,
+      "ema20_1h": 2410.2246,
+      "ema50_1h": 2427.5588,
+      "ema200_1h": 2466.5568,
+      "ema20_4h": 2444.1684,
+      "ema50_4h": 2465.5172,
+      "ema200_1d": 2067.2992,
+      "rsi_15m": 55.34,
+      "rsi_1h": 57.14,
+      "rsi_4h": 41.71,
+      "rsi_1d": 51.91,
+      "atr_1h": 23.0461,
+      "atr_4h": 42.4247,
+      "atr_pct": 0.948,
+      "bb_width": 0.0209,
+      "bb_pos": 1.043,
+      "bb_upper": 2429.70161852,
+      "bb_lower": 2379.46338148,
+      "funding_rate": 0.0033,
+      "long_short_ratio": 76.1,
+      "oi": 2312406.544,
+      "oi_change_pct": 0.3061,
+      "oi_momentum": "NEUTRAL",
+      "dxy": 100.35,
+      "dxy_dir": "FLAT",
+      "nasdaq_price": 29428.0,
+      "macro_v2_score": 0,
+      "macro_v2_notes": [],
+      "cvd_score": 0,
+      "cvd_notes": [
+        "亚洲盘开盘(0.8x) +4",
+        "下一活跃: 5h后 欧洲盘开盘"
+      ],
+      "lsr_trend": "SHORT_GROWING",
+      "lsr_current": 3.191,
+      "session_name": "亚洲盘开盘",
+      "session_vol_mult": 0.8,
+      "liq_bias": null,
+      "liq_long": 0,
+      "liq_short": 0,
+      "structure_grade": 67,
+      "effective_grade": 67.0,
+      "smc_structure": "UPTREND",
+      "bos_count": 1,
+      "choch_count": 0,
+      "ob_bull_count": 3,
+      "ob_bear_count": 3,
+      "fvg_count": 14,
+      "hurst_4h": 0.604,
+      "utc_hour": 2,
+      "weekday": 3,
+      "month": 9,
+      "kronos_p_up": null,
+      "xgb_score": null,
+      "cross_fr_avg": 0.00366,
+      "cross_basis": -0.0333,
+      "pc_ratio": 0.496
+    },
+    "dharma_nodes": {
+      "nodes_pass": 4,
+      "verdict": "PASS",
+      "score_mult": 1.0,
+      "detail": "N1✓ N2✓ N3✓ N4✗ N5✓ N6✗"
+    },
+    "nodes_pass": 4,
+    "nodes_verdict": "PASS",
+    "score_final": 38.8,
+    "grade": 67,
+    "effective_grade": 67.0,
+    "grade_mult": 1.0,
+    "asset_type": "BTC_ETH",
+    "asset_weight_mult": 0.8,
+    "score_final_raw": 41,
+    "fangcang": {
+      "status": "ok",
+      "symbol": "ETHUSDT",
+      "run_at": "2026-09-17T02:43:40.262996+00:00",
+      "current_regime": "CHOP_MID",
+      "top_similar": [
+        {
+          "dt": "2020-06-09",
+          "score": 0.2127,
+          "future_ret": -3.9,
+          "future_max": 3.11,
+          "future_min": -10.43,
+          "regime": "BULL_TREND"
+        },
+        {
+          "dt": "2024-02-03",
+          "score": 0.2835,
+          "future_ret": 8.22,
+          "future_max": 8.97,
+          "future_min": -2.54,
+          "regime": "CHOP_MID"
+        },
+        {
+          "dt": "2025-05-04",
+          "score": 0.3082,
+          "future_ret": 38.5,
+          "future_max": 42.42,
+          "future_min": -4.44,
+          "regime": "BEAR_TREND"
+        },
+        {
+          "dt": "2023-06-28",
+          "score": 0.3201,
+          "future_ret": 4.02,
+          "future_max": 6.01,
+          "future_min": -2.9,
+          "regime": "CHOP_MID"
+        },
+        {
+          "dt": "2025-12-31",
+          "score": 0.3326,
+          "future_ret": 7.27,
+          "future_max": 10.25,
+          "future_min": -1.43,
+          "regime": "BEAR_TREND"
+        },
+        {
+          "dt": "2022-12-24",
+          "score": 0.3468,
+          "future_ret": -1.65,
+          "future_max": 0.91,
+          "future_min": -3.71,
+          "regime": "BEAR_TREND"
+        },
+        {
+          "dt": "2026-07-23",
+          "score": 0.3472,
+          "future_ret": -0.12,
+          "future_max": 2.98,
+          "future_min": -4.08,
+          "regime": "CHOP_MID"
+        },
+        {
+          "dt": "2022-10-23",
+          "score": 0.3523,
+          "future_ret": 23.54,
+          "future_max": 26.83,
+          "future_min": -1.11,
+          "regime": "BEAR_EARLY"
+        },
+        {
+          "dt": "2022-10-21",
+          "score": 0.3726,
+          "future_ret": 19.5,
+          "future_max": 22.42,
+          "future_min": -0.7,
+          "regime": "BEAR_TREND"
+        },
+        {
+          "dt": "2024-09-28",
+          "score": 0.3746,
+          "future_ret": -10.5,
+          "future_max": 0.23,
+          "future_min": -13.78,
+          "regime": "BEAR_EARLY"
+        },
+        {
+          "dt": "2024-09-27",
+          "score": 0.3781,
+          "future_ret": -10.0,
+          "future_max": 2.92,
+          "future_min": -12.91,
+          "regime": "BEAR_EARLY"
+        },
+        {
+          "dt": "2023-05-27",
+          "score": 0.3871,
+          "future_ret": 3.58,
+          "future_max": 5.27,
+          "future_min": -1.24,
+          "regime": "BEAR_TREND"
+        },
+        {
+          "dt": "2024-06-02",
+          "score": 0.3895,
+          "future_ret": -3.52,
+          "future_max": 2.18,
+          "future_min": -6.67,
+          "regime": "BULL_TREND"
+        },
+        {
+          "dt": "2022-12-23",
+          "score": 0.3904,
+          "future_ret": -2.6,
+          "future_max": 0.98,
+          "future_min": -3.66,
+          "regime": "BEAR_TREND"
+        },
+        {
+          "dt": "2023-03-01",
+          "score": 0.3916,
+          "future_ret": -5.99,
+          "future_max": 1.33,
+          "future_min": -7.96,
+          "regime": "BULL_TREND"
+        },
+        {
+          "dt": "2023-10-31",
+          "score": 0.3973,
+          "future_ret": 3.53,
+          "future_max": 5.89,
+          "future_min": -1.92,
+          "regime": "BULL_TREND"
+        },
+        {
+          "dt": "2024-10-12",
+          "score": 0.4024,
+          "future_ret": 8.51,
+          "future_max": 10.29,
+          "future_min": -0.12,
+          "regime": "BEAR_TREND"
+        },
+        {
+          "dt": "2023-11-04",
+          "score": 0.4065,
+          "future_ret": 12.09,
+          "future_max": 16.45,
+          "future_min": -0.51,
+          "regime": "BULL_TREND"
+        },
+        {
+          "dt": "2025-05-05",
+          "score": 0.4072,
+          "future_ret": 40.22,
+          "future_max": 45.52,
+          "future_min": -2.98,
+          "regime": "BEAR_EARLY"
+        },
+        {
+          "dt": "2023-05-23",
+          "score": 0.4274,
+          "future_ret": 1.87,
+          "future_max": 3.49,
+          "future_min": -5.73,
+          "regime": "BEAR_TREND"
+        }
+      ],
+      "prob_matrix": {
+        "p_up": 0.55,
+        "p_down": 0.3,
+        "p_flat": 0.15,
+        "ev": 6.629,
+        "median": 3.58,
+        "max_upside": 45.52,
+        "max_downside": -13.78,
+        "tail_down_risk": 0.15,
+        "n": 20
+      },
+      "signal_hint": "NEUTRAL",
+      "long_prob": 0.55,
+      "short_prob": 0.3,
+      "chop_prob": 0.15,
+      "top3_summary": "  2020-06-09 [BULL] ↓3.9% (最高+3.1% 最低-10.4%)\n  2024-02-03 [CHOP] ↑8.2% (最高+9.0% 最低-2.5%)\n  2025-05-04 [BEAR] ↑38.5% (最高+42.4% 最低-4.4%)",
+      "llm_mirror": "",
+      "main_force_intent": {
+        "intent": "NEUTRAL",
+        "confidence": 0.55,
+        "evidence": [
+          "方向分散：↑55% ↓25%",
+          "⚠ 15m微结构极度压缩(BBW=0.36%)=假突破高风险",
+          "近12H有放量K线（成交量>均量×2）",
+          "近12H CHoCH=14次，结构频繁转变中"
+        ],
+        "trap_warning": true,
+        "trap_reason": "15m BBW=0.36%极度压缩，假突破风险高"
+      },
+      "micro_structure": {
+        "choch_count": 14,
+        "bos_count": 8,
+        "momentum_shift": 0.0,
+        "micro_compress": 0.363,
+        "vol_climax": 1
+      },
+      "similar_cases_count": 20,
+      "n_cases": 20,
+      "regime": "CHOP_MID",
+      "best_entry_window": "无M4数据",
+      "trap_alert": true,
+      "confidence_level": "MEDIUM",
+      "market_bias": {},
+      "hcme_wr_adj": 2,
+      "hcme_context": "Top-5 similar cases [fallback all-dir (same-dir cases<5)]: outcomes=['TP1', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN']. Historical WR=100% vs regime baseline=50%. Confidence=0.99. Suggestion: raise score by 2 pts (adj=+2).",
+      "fangcang_summary": "ETHUSDT $1,917 [CHOP_M] 中性 | ↑55% ↓30% EV=+6.6% | 意图不明(置信55%) [MEDIUM/20案例] ⚠ 陷阱预警",
+      "vector_stats": {
+        "top_k": 20,
+        "matched": 0,
+        "win_rate": 0.0,
+        "avg_ret": 0.0,
+        "max_ret": 0.0,
+        "min_ret": 0.0,
+        "cases": [],
+        "source": "empty"
+      },
+      "pip_shape": "UNKNOWN",
+      "pip_score": 0.0,
+      "htf_anchor": {
+        "52w_high": 4754.0,
+        "52w_low": 1503.6,
+        "52w_mid": 3128.8,
+        "weekly_position": 0.127,
+        "htf_resonance": 0.0,
+        "ema20_weekly": 2179.96,
+        "ema20_monthly": 2491.85,
+        "htf_bias": "BEARISH",
+        "score_addon": -8,
+        "_anchor_summary": "52W区间: $1,504~$4,754 | 周线位置:12.7% | HTF共振:0.00"
+      },
+      "elliott_wave": {},
+      "vpa": {},
+      "_ts": 1789613019.1039312
+    },
+    "score": 38.8,
+    "hcme_adj": 2,
+    "hcme_ctx": "Top-5 similar cases [fallback all-dir (same-dir cases<5)]: outcomes=['TP1', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN']. Historical WR=100% vs regime baseline=50%. Confidence=0.99. Suggestion: raise s",
+    "decision": {
+      "action": "SKIP",
+      "reason": "Step1否决: grade=67.0<80",
+      "step_passed": 0,
+      "details": {
+        "step1": {
+          "dead_combo": false,
+          "sl_pct": 1.54,
+          "sl_atr_min": 1.54,
+          "sl_max_dynamic": 2.0,
+          "grade": 67.0
+        }
+      },
+      "entry_plan": {},
+      "ts": 1789613020.263896
+    },
+    "decision_action": "SKIP",
+    "decision_reason": "Step1否决: grade=67.0<80",
+    "decision_step": 0,
+    "fangcang_trap": true,
+    "htf_score_addon": -8,
+    "timing_badge": "⚫ STANDBY",
+    "timing_result": {
+      "status": "STANDBY",
+      "score": 0,
+      "badge": "⚫ STANDBY",
+      "breakdown": {
+        "reason": "score=26.8/grade=67.0 低于门槛"
+      }
+    },
+    "cross_asset_gate": {
+      "symbol": "ETHUSDT",
+      "direction": "NEUTRAL",
+      "price": 2431.68,
+      "entry_lo": 2402.49984,
+      "entry_hi": 2460.8601599999997,
+      "sl_pct": 1.2,
+      "regime": "CHOP_MID",
+      "score": 26.8,
+      "cross_asset_check": "NO_BTC_SIGNAL"
+    },
+    "integrity_gate": {
+      "passed": true,
+      "reason": ""
+    },
+    "us_session": {
+      "session": "overnight",
+      "delta": {
+        "delta": -5,
+        "note": "CHOP深夜-5",
+        "block": false,
+        "block_reason": ""
+      }
+    },
+    "volatility_context": {
+      "vol_regime": "NORMAL",
+      "atr_pct": 0.919,
+      "bbw_pct": 0.25,
+      "combined_pct": 0.651,
+      "pos_scale": 1.0,
+      "note": "波动率正常区间，仓位正常",
+      "symbol": "ETHUSDT"
+    },
+    "breakdown_extra": {
+      "market_quadrant": "+12(NEUTRAL LSR=76%)"
+    },
+    "_market_quadrant": {
+      "quadrant": "NEUTRAL",
+      "retail_bias": "LONG",
+      "whale_bias": "NEUTRAL",
+      "signal": "NEUTRAL",
+      "stars": 1,
+      "confidence": 0.3,
+      "lsr": 76.1,
+      "whale_net": 0.0,
+      "whale_diverge": false,
+      "note": "散户LONG 大户NEUTRAL → 信号不明，观望",
+      "raw": {
+        "big_buy": 0.0,
+        "big_sell": 0.0,
+        "whale_notes": [],
+        "smart_bias": "NEUTRAL"
+      }
+    },
+    "market_quadrant_label": "NEUTRAL",
+    "_oi_quadrant": "NEUTRAL",
+    "antifragile": {
+      "blocked": false,
+      "size_mult": 1.0,
+      "warnings": [],
+      "critical": false,
+      "blackswan": {
+        "detected": false,
+        "level": "NORMAL",
+        "reason": "波动正常 1H=0.1% 4H=1.0% 24H=0.7%",
+        "chg_1h": 0.10231244465170704,
+        "chg_4h": 1.0123322638937755,
+        "chg_24h": 0.7380054341879083
+      }
+    },
+    "direction": "NEUTRAL",
+    "trader_brain": {
+      "action": "WAIT",
+      "direction": "NONE",
+      "entry_lo": 0,
+      "entry_hi": 0,
+      "sl": 0,
+      "rr": 0,
+      "confidence": "LOW",
+      "missing": [
+        "体制CHOP_MID无方向"
+      ]
+    },
+    "_context_fangcang": {
+      "total_n": 873,
+      "by_tf": {
+        "15m": {
+          "n": 140,
+          "wr": 0.657,
+          "avg_ret": -0.26,
+          "recent_1y": 79
+        },
+        "1h": {
+          "n": 70,
+          "wr": 0.671,
+          "avg_ret": -0.75,
+          "recent_1y": 25
+        },
+        "4h": {
+          "n": 636,
+          "wr": 0.489,
+          "avg_ret": 0.07,
+          "recent_1y": 78
+        },
+        "1d": {
+          "n": 8,
+          "wr": 0.75,
+          "avg_ret": -1.24,
+          "recent_1y": 1
+        },
+        "1w": {
+          "n": 19,
+          "wr": 0.474,
+          "avg_ret": 0.43,
+          "recent_1y": 1
+        }
+      },
+      "best_tf": "1d",
+      "best_wr": 0.75
+    },
+    "_context_rules": "[CHOP_MID × NEUTRAL] ⚪ 无特定规则，参考通用评分",
+    "_regime_score": {
+      "symbol": "ETHUSDT",
+      "regime": "BULL_TREND",
+      "bull_prob": 0.678,
+      "bear_prob": 0.322,
+      "chop_prob": -0.0,
+      "primary": "BULL",
+      "confidence": 0.356,
+      "phase": "CHOP",
+      "momentum": "BULLISH",
+      "rsi_1d": 50.25,
+      "rsi_4h": 39.18,
+      "rsi_1h": 53.54,
+      "hh_1h": true,
+      "hl_1h": true,
+      "multiplier": {
+        "LONG": 1.5,
+        "SHORT": 0.5
+      },
+      "ts": 1789613014.6581373
+    },
+    "_multiframe": {
+      "price": 2432.07,
+      "mtf_bias": "NEUTRAL",
+      "mtf_score_adj": 1,
+      "mtf_summary": "\n╬══ 🌐 全周期FVG/OB地图 (MTF Confluence) ══╬\n  当前价: $2,432  综合偏向: NEUTRAL  MTF调分: +1\n\n  [15分钟 15M]\n    ↑ BearFVG $2,438~$2,444 gap=0.26% 距+0.2% 🧲上方磁铁\n    ↑ BearFVG $2,453~$2,476 gap=0.95% 距+0.9% 🧲上方磁铁\n    ↔ BearFVG $2,417~$2,434 gap=0.7% ⚠️空头压制\n    ↓ BullFVG $2,420~$2,429 gap=0.37% 距-0.1% 下方磁铁\n    ↓ BullFVG $2,413~$2,422 gap=0.38% 距-0.4% 下方磁铁\n    🟢 Bull OB $2,413~$2,420 [下方0.5%]\n    🔴 Bear OB $2,400~$2,405 [下方-1.1%]\n    🔴 Bear OB $2,420~$2,428 [下方-0.2%]\n\n  [1小时 1H]\n    ↑ BullFVG $2,435~$2,478 gap=1.77% 距+0.1% 🧲上方磁铁\n    ↑ BearFVG $2,436~$2,457 gap=0.89% 距+0.1% 🧲上方磁铁\n    ↑ BearFVG $2,439~$2,459 gap=0.8% 距+0.3% 🧲上方磁铁\n    ↓ BullFVG $2,420~$2,430 gap=0.4% 距-0.1% 下方磁铁\n    ↓ BearFVG $2,399~$2,416 gap=0.71% 距-0.7% 下方磁铁\n    🟢 Bull OB $2,368~$2,396 [下方1.5%]\n    🟢 Bull OB $2,387~$2,405 [下方1.1%]\n    🔴 Bear OB $2,396~$2,405 [下方-1.1%]\n    🔴 Bear OB $2,404~$2,419 [下方-0.5%]\n\n  [4小时 4H]\n    ↑ BullFVG $2,412~$2,487 gap=3.11% 距+-0.8% 🧲上方磁铁\n    ↑ BullFVG $2,432~$2,489 gap=2.34% 距+-0.0% 🧲上方磁铁\n    ↑ BearFVG $2,439~$2,478 gap=1.59% 距+0.3% 🧲上方磁铁\n    ↓ BullFVG $2,107~$2,222 gap=5.44% 距-8.6% 下方磁铁\n    🟢 Bull OB $2,486~$2,518 [上方]\n    🟢 Bull OB $2,392~$2,411 [下方0.9%]\n    🔴 Bear OB $2,489~$2,516 [上方]\n    🔴 Bear OB $2,463~$2,487 [上方]\n\n  [日线 1D]\n    ↑ BearFVG $2,459~$2,481 gap=0.89% 距+1.1% 🧲上方磁铁\n    ↑ BullFVG $2,484~$2,508 gap=0.95% 距+2.1% 🧲上方磁铁\n    ↔ BearFVG $2,430~$2,461 gap=1.28% ⚠️空头压制\n    ↓ BullFVG $2,360~$2,384 gap=1.03% 距-2.0% 下方磁铁\n    ↓ BearFVG $2,321~$2,335 gap=0.63% 距-4.0% 下方磁铁\n    🟢 Bull OB $2,355~$2,429 [下方0.1%]\n    🟢 Bull OB $2,403~$2,484 [上方]\n    🔴 Bear OB $2,429~$2,459 [下方1.1%]\n    🔴 Bear OB $2,508~$2,546 [上方]\n    🔴 Bear OB $2,461~$2,615 [上方]\n\n  [周线 1W]\n    ↑ BearFVG $2,523~$2,604 gap=3.22% 距+3.7% 🧲上方磁铁\n    ↔ BearFVG $2,395~$2,784 gap=16.23% ⚠️空头压制\n    ↓ BearFVG $2,157~$2,263 gap=4.93% 距-6.9% 下方磁铁\n    ↓ BearFVG $2,148~$2,202 gap=2.53% 距-9.4% 下方磁铁\n    🔴 Bear OB $2,263~$2,422 [下方-0.4%]\n\n  MTF综合: bias=NEUTRAL adj=+1\n╬══════════════════════════════════════════╬",
+      "multiframe_context": {
+        "15m": {
+          "label": "15分钟",
+          "fvg_above": [
+            {
+              "type": "Bear",
+              "bot": 2437.8,
+              "top": 2444.2,
+              "gap": 0.26,
+              "tf": "15m",
+              "ts": 1789480800000
+            },
+            {
+              "type": "Bear",
+              "bot": 2452.9,
+              "top": 2476.2,
+              "gap": 0.95,
+              "tf": "15m",
+              "ts": 1789478100000
+            }
+          ],
+          "fvg_below": [
+            {
+              "type": "Bull",
+              "bot": 2420.2,
+              "top": 2429.0,
+              "gap": 0.37,
+              "tf": "15m",
+              "ts": 1789606800000
+            },
+            {
+              "type": "Bull",
+              "bot": 2413.0,
+              "top": 2422.3,
+              "gap": 0.38,
+              "tf": "15m",
+              "ts": 1789484400000
+            },
+            {
+              "type": "Bull",
+              "bot": 2406.8,
+              "top": 2418.4,
+              "gap": 0.48,
+              "tf": "15m",
+              "ts": 1789557300000
+            }
+          ],
+          "fvg_cross": [
+            {
+              "type": "Bear",
+              "bot": 2416.8,
+              "top": 2433.8,
+              "gap": 0.7,
+              "tf": "15m",
+              "ts": 1789481700000
+            }
+          ],
+          "ob_bull": [
+            {
+              "bot": 2412.6,
+              "top": 2420.2,
+              "tf": "15m",
+              "ts": 1789606800000,
+              "dist_pct": 0.49,
+              "above": false
+            }
+          ],
+          "ob_bear": [
+            {
+              "bot": 2400.5,
+              "top": 2405.2,
+              "tf": "15m",
+              "ts": 1789595100000,
+              "dist_pct": -1.11,
+              "above": false
+            },
+            {
+              "bot": 2420.2,
+              "top": 2427.5,
+              "tf": "15m",
+              "ts": 1789605000000,
+              "dist_pct": -0.19,
+              "above": false
+            }
+          ]
+        },
+        "1h": {
+          "label": "1小时",
+          "fvg_above": [
+            {
+              "type": "Bull",
+              "bot": 2435.3,
+              "top": 2478.4,
+              "gap": 1.77,
+              "tf": "1h",
+              "ts": 1788440400000
+            },
+            {
+              "type": "Bear",
+              "bot": 2435.5,
+              "top": 2457.2,
+              "gap": 0.89,
+              "tf": "1h",
+              "ts": 1789038000000
+            },
+            {
+              "type": "Bear",
+              "bot": 2439.0,
+              "top": 2458.6,
+              "gap": 0.8,
+              "tf": "1h",
+              "ts": 1788127200000
+            }
+          ],
+          "fvg_below": [
+            {
+              "type": "Bull",
+              "bot": 2420.4,
+              "top": 2430.1,
+              "gap": 0.4,
+              "tf": "1h",
+              "ts": 1788148800000
+            },
+            {
+              "type": "Bear",
+              "bot": 2399.2,
+              "top": 2416.2,
+              "gap": 0.71,
+              "tf": "1h",
+              "ts": 1788332400000
+            },
+            {
+              "type": "Bull",
+              "bot": 2404.7,
+              "top": 2414.8,
+              "gap": 0.42,
+              "tf": "1h",
+              "ts": 1789596000000
+            }
+          ],
+          "fvg_cross": [],
+          "ob_bull": [
+            {
+              "bot": 2368.0,
+              "top": 2396.0,
+              "tf": "1h",
+              "ts": 1789578000000,
+              "dist_pct": 1.48,
+              "above": false
+            },
+            {
+              "bot": 2386.8,
+              "top": 2404.7,
+              "tf": "1h",
+              "ts": 1789596000000,
+              "dist_pct": 1.13,
+              "above": false
+            }
+          ],
+          "ob_bear": [
+            {
+              "bot": 2396.3,
+              "top": 2404.8,
+              "tf": "1h",
+              "ts": 1789516800000,
+              "dist_pct": -1.12,
+              "above": false
+            },
+            {
+              "bot": 2403.6,
+              "top": 2419.1,
+              "tf": "1h",
+              "ts": 1789588800000,
+              "dist_pct": -0.53,
+              "above": false
+            }
+          ]
+        },
+        "4h": {
+          "label": "4小时",
+          "fvg_above": [
+            {
+              "type": "Bull",
+              "bot": 2412.2,
+              "top": 2487.3,
+              "gap": 3.11,
+              "tf": "4h",
+              "ts": 1788422400000
+            },
+            {
+              "type": "Bull",
+              "bot": 2431.9,
+              "top": 2488.9,
+              "gap": 2.34,
+              "tf": "4h",
+              "ts": 1787328000000
+            },
+            {
+              "type": "Bear",
+              "bot": 2439.0,
+              "top": 2477.9,
+              "gap": 1.59,
+              "tf": "4h",
+              "ts": 1788105600000
+            }
+          ],
+          "fvg_below": [
+            {
+              "type": "Bull",
+              "bot": 2107.4,
+              "top": 2222.0,
+              "gap": 5.44,
+              "tf": "4h",
+              "ts": 1787155200000
+            }
+          ],
+          "fvg_cross": [],
+          "ob_bull": [
+            {
+              "bot": 2485.8,
+              "top": 2517.5,
+              "tf": "4h",
+              "ts": 1789387200000,
+              "dist_pct": -3.51,
+              "above": true
+            },
+            {
+              "bot": 2391.8,
+              "top": 2410.9,
+              "tf": "4h",
+              "ts": 1789531200000,
+              "dist_pct": 0.87,
+              "above": false
+            }
+          ],
+          "ob_bear": [
+            {
+              "bot": 2489.2,
+              "top": 2515.8,
+              "tf": "4h",
+              "ts": 1789315200000,
+              "dist_pct": 3.44,
+              "above": true
+            },
+            {
+              "bot": 2463.0,
+              "top": 2487.1,
+              "tf": "4h",
+              "ts": 1789459200000,
+              "dist_pct": 2.26,
+              "above": true
+            }
+          ]
+        },
+        "1d": {
+          "label": "日线",
+          "fvg_above": [
+            {
+              "type": "Bear",
+              "bot": 2458.8,
+              "top": 2480.6,
+              "gap": 0.89,
+              "tf": "1d",
+              "ts": 1787788800000
+            },
+            {
+              "type": "Bull",
+              "bot": 2484.0,
+              "top": 2507.6,
+              "gap": 0.95,
+              "tf": "1d",
+              "ts": 1788998400000
+            }
+          ],
+          "fvg_below": [
+            {
+              "type": "Bull",
+              "bot": 2359.7,
+              "top": 2384.0,
+              "gap": 1.03,
+              "tf": "1d",
+              "ts": 1787184000000
+            },
+            {
+              "type": "Bear",
+              "bot": 2320.7,
+              "top": 2335.2,
+              "gap": 0.63,
+              "tf": "1d",
+              "ts": 1778025600000
+            },
+            {
+              "type": "Bull",
+              "bot": 2288.1,
+              "top": 2301.6,
+              "gap": 0.59,
+              "tf": "1d",
+              "ts": 1775952000000
+            }
+          ],
+          "fvg_cross": [
+            {
+              "type": "Bear",
+              "bot": 2429.9,
+              "top": 2461.1,
+              "gap": 1.28,
+              "tf": "1d",
+              "ts": 1789344000000
+            }
+          ],
+          "ob_bull": [
+            {
+              "bot": 2355.1,
+              "top": 2429.3,
+              "tf": "1d",
+              "ts": 1788307200000,
+              "dist_pct": 0.11,
+              "above": false
+            },
+            {
+              "bot": 2403.3,
+              "top": 2484.0,
+              "tf": "1d",
+              "ts": 1788998400000,
+              "dist_pct": -2.13,
+              "above": true
+            }
+          ],
+          "ob_bear": [
+            {
+              "bot": 2429.0,
+              "top": 2458.8,
+              "tf": "1d",
+              "ts": 1787961600000,
+              "dist_pct": 1.1,
+              "above": false
+            },
+            {
+              "bot": 2507.6,
+              "top": 2546.1,
+              "tf": "1d",
+              "ts": 1789171200000,
+              "dist_pct": 4.69,
+              "above": true
+            },
+            {
+              "bot": 2461.1,
+              "top": 2615.0,
+              "tf": "1d",
+              "ts": 1789344000000,
+              "dist_pct": 7.52,
+              "above": true
+            }
+          ]
+        },
+        "1w": {
+          "label": "周线",
+          "fvg_above": [
+            {
+              "type": "Bear",
+              "bot": 2522.8,
+              "top": 2604.2,
+              "gap": 3.22,
+              "tf": "1w",
+              "ts": 1739750400000
+            }
+          ],
+          "fvg_below": [
+            {
+              "type": "Bear",
+              "bot": 2157.0,
+              "top": 2263.4,
+              "gap": 4.93,
+              "tf": "1w",
+              "ts": 1777852800000
+            },
+            {
+              "type": "Bear",
+              "bot": 2148.0,
+              "top": 2202.4,
+              "gap": 2.53,
+              "tf": "1w",
+              "ts": 1769385600000
+            },
+            {
+              "type": "Bull",
+              "bot": 2167.2,
+              "top": 2174.5,
+              "gap": 0.34,
+              "tf": "1w",
+              "ts": 1774828800000
+            }
+          ],
+          "fvg_cross": [
+            {
+              "type": "Bear",
+              "bot": 2395.4,
+              "top": 2784.2,
+              "gap": 16.23,
+              "tf": "1w",
+              "ts": 1768780800000
+            }
+          ],
+          "ob_bull": [],
+          "ob_bear": [
+            {
+              "bot": 2263.4,
+              "top": 2422.5,
+              "tf": "1w",
+              "ts": 1777852800000,
+              "dist_pct": -0.39,
+              "above": false
+            }
+          ]
+        }
+      }
+    },
+    "_bybit_ls": {
+      "long_ratio": 0.6955,
+      "short_ratio": 0.3045,
+      "source": "bybit"
+    },
+    "_liq_density": {
+      "symbol": "ETHUSDT",
+      "current_price": 2431.68,
+      "above_walls": [
+        [
+          2437.76,
+          4283176.0
+        ],
+        [
+          2449.92,
+          82141.0
+        ]
+      ],
+      "below_walls": [
+        [
+          2425.6,
+          4441878.0
+        ],
+        [
+          2413.44,
+          189007.0
+        ]
+      ],
+      "nearest_above": 2437.76,
+      "nearest_below": 2425.6,
+      "above_total_usd": 4365317.0,
+      "below_total_usd": 4630885.0,
+      "liq_bias": "NEUTRAL",
+      "score_adj": 0,
+      "confidence": 0.67,
+      "oi_liq_levels": [
+        {
+          "leverage": 5,
+          "weight": 0.3,
+          "long_liq_price": 1969.7,
+          "long_liq_usd": 1279716739,
+          "short_liq_price": 2893.7,
+          "short_liq_usd": 401024972,
+          "long_dist_pct": -19.0,
+          "short_dist_pct": 19.0
+        },
+        {
+          "leverage": 10,
+          "weight": 0.35,
+          "long_liq_price": 2200.7,
+          "long_liq_usd": 1493002862,
+          "short_liq_price": 2662.7,
+          "short_liq_usd": 467862468,
+          "long_dist_pct": -9.5,
+          "short_dist_pct": 9.5
+        },
+        {
+          "leverage": 20,
+          "weight": 0.2,
+          "long_liq_price": 2316.2,
+          "long_liq_usd": 853144492,
+          "short_liq_price": 2547.2,
+          "short_liq_usd": 267349981,
+          "long_dist_pct": -4.75,
+          "short_dist_pct": 4.75
+        },
+        {
+          "leverage": 50,
+          "weight": 0.1,
+          "long_liq_price": 2385.5,
+          "long_liq_usd": 426572246,
+          "short_liq_price": 2477.9,
+          "short_liq_usd": 133674991,
+          "long_dist_pct": -1.9,
+          "short_dist_pct": 1.9
+        },
+        {
+          "leverage": 100,
+          "weight": 0.05,
+          "long_liq_price": 2408.6,
+          "long_liq_usd": 213286123,
+          "short_liq_price": 2454.8,
+          "short_liq_usd": 66837495,
+          "long_dist_pct": -0.95,
+          "short_dist_pct": 0.95
+        }
+      ],
+      "top_long_liq": {
+        "leverage": 10,
+        "weight": 0.35,
+        "long_liq_price": 2200.7,
+        "long_liq_usd": 1493002862,
+        "short_liq_price": 2662.7,
+        "short_liq_usd": 467862468,
+        "long_dist_pct": -9.5,
+        "short_dist_pct": 9.5
+      },
+      "top_short_liq": {
+        "leverage": 10,
+        "weight": 0.35,
+        "long_liq_price": 2200.7,
+        "long_liq_usd": 1493002862,
+        "short_liq_price": 2662.7,
+        "short_liq_usd": 467862468,
+        "long_dist_pct": -9.5,
+        "short_dist_pct": 9.5
+      },
+      "sources": "binance(26⚠️proxy) bybit(0⚠️proxy) okx(100✅real) hl(0⚠️proxy)",
+      "ts": 1789613021.0565271
+    },
+    "_runner_meta": {
+      "runner_version": "1.2",
+      "entry": "brahma_analysis_runner.run_analysis",
+      "symbol": "ETHUSDT",
+      "ts": "2026-09-17 02:43 UTC",
+      "elapsed": 8.24,
+      "fields_missing": [],
+      "fields_ok": true,
+      "output_tag": "[BRAHMA:WARN:RUNNER:ETH:38.8:NEUTRAL:CHOP_MID:202609170243:a0948ef3]",
+      "modules_active": {
+        "timing_filter": true,
+        "snapshot": true,
+        "brainlog": true,
+        "portfolio_opt": true,
+        "mss": true,
+        "llm_council": true,
+        "signal_trace": true
+      }
+    },
+    "valid": false,
+    "_score_for_trace": 38.8,
+    "_direction_for_trace": "NEUTRAL"
+  }
+}

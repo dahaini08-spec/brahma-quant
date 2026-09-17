@@ -149,3 +149,4 @@
 {"ts": 1787923433.8877857, "ts_str": "2026-08-28 13:23 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
 {"ts": 1787923896.7278388, "ts_str": "2026-08-28 13:31 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
 {"ts": 1787924301.1163774, "ts_str": "2026-08-28 13:38 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}
+{"ts": 1789562647.3791878, "ts_str": "2026-09-16 12:44 UTC", "symbol": "SMOKE_TEST", "regime": "BEAR_TREND", "direction": "SHORT", "outcome": "WIN", "pnl_pct": 0.5, "score": 0}

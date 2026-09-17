@@ -70,10 +70,10 @@
     "mode": "A"
   },
   "ORCLUSDT": {
-    "hash": "06d92c52",
-    "ts": 1789432201.764375,
+    "hash": "81047746",
+    "ts": 1789516811.147231,
     "direction": "LONG",
-    "score": 68,
+    "score": 63.32,
     "mode": "A"
   },
   "METAUSDT": {
@@ -99,9 +99,9 @@
   },
   "NATGASUSDT": {
     "hash": "16b72c03",
-    "ts": 1786434426.62055,
+    "ts": 1789626601.297441,
     "direction": "LONG",
-    "score": 73.59,
+    "score": 100,
     "mode": "B"
   },
   "PUMPUSDT": {
@@ -175,10 +175,10 @@
     "mode": "B"
   },
   "SNXXUSDT": {
-    "hash": "09ee9e35",
-    "ts": 1787772261.525178,
+    "hash": "60145eb8",
+    "ts": 1789516811.147231,
     "direction": "LONG",
-    "score": 70.326,
+    "score": 64.892,
     "mode": "B"
   },
   "LDOUSDT": {
@@ -476,10 +476,10 @@
     "mode": "A"
   },
   "CRCLUSDT": {
-    "hash": "16b72c03",
-    "ts": 1785590788.650047,
+    "hash": "b294ffd8",
+    "ts": 1789626601.297441,
     "direction": "LONG",
-    "score": 68.23400000000001,
+    "score": 71.902,
     "mode": "B"
   },
   "DEXEUSDT": {
@@ -1267,11 +1267,11 @@
     "mode": "B"
   },
   "BMNRUSDT": {
-    "hash": "81047746",
-    "ts": 1788379202.514127,
+    "hash": "7e612a3b",
+    "ts": 1789516811.147231,
     "direction": "LONG",
-    "score": 78.64750000000001,
-    "mode": "A"
+    "score": 65,
+    "mode": "B"
   },
   "SUPERUSDT": {
     "hash": "41410240",
@@ -1659,11 +1659,11 @@
     "mode": "A"
   },
   "RAYSOLUSDT": {
-    "hash": "81047746",
-    "ts": 1789031248.826976,
+    "hash": "f6b13f42",
+    "ts": 1789516811.147231,
     "direction": "LONG",
-    "score": 69.7375,
-    "mode": "A"
+    "score": 72.238,
+    "mode": "B"
   },
   "IOSTUSDT": {
     "hash": "13426d0e",
@@ -1684,6 +1684,34 @@
     "ts": 1789355394.567215,
     "direction": "LONG",
     "score": 71,
+    "mode": "A"
+  },
+  "LSKUSDT": {
+    "hash": "c0bb3f9c",
+    "ts": 1789626601.297441,
+    "direction": "LONG",
+    "score": 100,
+    "mode": "A"
+  },
+  "PONSUSDT": {
+    "hash": "81047746",
+    "ts": 1789516811.147231,
+    "direction": "LONG",
+    "score": 72.65,
+    "mode": "A"
+  },
+  "SAGAUSDT": {
+    "hash": "81047746",
+    "ts": 1789626601.297441,
+    "direction": "LONG",
+    "score": 62.107,
+    "mode": "A"
+  },
+  "AINUSDT": {
+    "hash": "75322418",
+    "ts": 1789626601.297441,
+    "direction": "LONG",
+    "score": 77,
     "mode": "A"
   }
 }

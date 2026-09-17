@@ -566,7 +566,7 @@ def get_upcoming_events(days_ahead: int = 7) -> list:
     for ev in MACRO_EVENTS_2026:
         ev_date = datetime.strptime(ev['date'], '%Y-%m-%d').date()
         days_to = (ev_date - now).days
-        if -1 <= days_to <= days_ahead:   # 包含昨天（可能今天还有影响）
+        if 0 <= days_to <= days_ahead:   # [2026-09-17] 只包含今天及未来事件，不包含昨天
             upcoming.append({
                 **ev,
                 'days_to': days_to,
@@ -593,6 +593,9 @@ def get_active_risk() -> dict:
     for ev in upcoming:
         days = ev.get('days_to', 99)
         impact = ev.get('impact', 'LOW')
+        # [2026-09-17 苏摩111] FOMC已结束后不再扣风险分
+        if days < 0:
+            continue  # 事件已过去，不再影响风险评分
         if impact == 'CRITICAL':
             if days <= 1:
                 risk_score -= 15

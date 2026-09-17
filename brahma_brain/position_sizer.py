@@ -22,7 +22,7 @@ position_sizer.py — 梵天仓位定量器 v1.0
   SOL 160+分:    WR=0%  n=9  → BANNED
   ETH 160+分:    WR=0%  n=6  → BANNED
 """
-import json, os, time
+import json, os, sys, time
 from pathlib import Path
 
 BASE = Path(__file__).parent.parent

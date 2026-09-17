@@ -1,17 +1,17 @@
 {
   "currency": "ETH",
-  "total_call_oi": 1147727.0,
-  "total_put_oi": 623586.0,
-  "pc_oi_ratio": 0.543,
-  "pc_vol_ratio": 0.556,
-  "interpretation_oi": "\ud83d\udfe2\u504f\u591a(0.5~0.8\uff0cCall\u9700\u6c42\u65fa\u76db)",
-  "interpretation_vol": "\ud83d\udfe2\u504f\u591a(0.5~0.8\uff0cCall\u9700\u6c42\u65fa\u76db)",
+  "total_call_oi": 1292020.0,
+  "total_put_oi": 641021.0,
+  "pc_oi_ratio": 0.496,
+  "pc_vol_ratio": 0.433,
+  "interpretation_oi": "\ud83d\udd25\u6781\u5ea6\u8d2a\u5a6a(<0.5\uff0c\u5e02\u573a\u8d85\u4e50\u89c2)",
+  "interpretation_vol": "\ud83d\udd25\u6781\u5ea6\u8d2a\u5a6a(<0.5\uff0c\u5e02\u573a\u8d85\u4e50\u89c2)",
   "near_expiry_ratios": {
-    "13SEP26": 1.461,
-    "14SEP26": 1.113,
-    "15SEP26": 1.399
+    "17SEP26": 0.216,
+    "18SEP26": 0.523,
+    "19SEP26": 1.641
   },
-  "near_expiry_pc": 1.461,
+  "near_expiry_pc": 0.216,
   "pc_score": 8,
-  "ts": 1789260845.7860982
+  "ts": 1789613022.463119
 }

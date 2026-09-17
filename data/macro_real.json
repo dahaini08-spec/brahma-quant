@@ -1,6 +1,6 @@
 {
   "data_source": "BLS API + 苏摩配置(macro_config.json)",
-  "data_time": "2026-09-15 06:48 UTC",
+  "data_time": "2026-09-17 06:20 UTC",
   "cpi_core": {
     "value": 338.041,
     "period": "M08",
@@ -21,18 +21,18 @@
   },
   "cpi_yoy": 2.45,
   "ppi_yoy": -0.43,
-  "fed_rate": 5.25,
+  "fed_rate": 5.5,
   "rate_expectation": {
-    "bias": "HAWKISH",
-    "action": "HIKE",
-    "probability": 65,
-    "note": "FOMC前鹰派基调，加息预期升温",
+    "bias": "CONFIRMED",
+    "action": "DONE",
+    "probability": 100,
+    "note": "加息25bp已确认，美联储决议落地",
     "inflation_pressure": 2.32,
-    "reasoning": "CPI虽回落至2.45%但核心通胀仍高于2%目标，就业市场紧俏，美联储前瞻指引偏鹰，市场定价加息预期"
+    "reasoning": "美联储2026年9月议息会议确认加息25bp至5.50%，CPI核心通胀2.45%仍高于2%目标"
   },
   "macro_calendar": {
-    "next_fomc": "2026-09-17",
-    "days_to_fomc": 1
+    "next_fomc": "2026-11-04",
+    "days_to_fomc": 47
   },
   "fear_greed": 61
 }

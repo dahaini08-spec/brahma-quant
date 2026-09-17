@@ -142,7 +142,7 @@ def get_liq_heatmap(sym: str = 'BTCUSDT') -> dict:
         }
 
         # 缓存到data/
-        cache = BASE / 'data' / f'liq_heatmap_{sym}.json'
+        cache = BASE / 'data' / f'liq_heatmap_{sym.lower()}.json'
         cache.write_text(json.dumps(result, indent=2))
         return result
 

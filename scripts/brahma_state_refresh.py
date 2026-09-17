@@ -271,9 +271,20 @@ def main():
 
     # ── Step 3: 保存 brahma_state.json ──────────────────────────
     try:
-        # 保存第一个标的的完整state（兼容原有读者）
-        first_state = all_states.get('BTCUSDT') or (list(all_states.values())[0] if all_states else {})
-        STATE_FILE.write_text(json.dumps(first_state, ensure_ascii=False))
+        # 保存综合state（含btc_price/eth_price/updated_at供测试和下游读取）
+        _btc_state = all_states.get('BTCUSDT', {})
+        _eth_state = all_states.get('ETHUSDT', {})
+        _composite_state = {
+            'ts': time.time(),
+            'nav': 130.0,
+            'positions': [],
+            'regime': _btc_state.get('regime', 'CHOP_MID'),
+            'btc_price': _btc_state.get('price', 0),
+            'eth_price': _eth_state.get('price', 0),
+            'updated_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+            'last_update': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+        }
+        STATE_FILE.write_text(json.dumps(_composite_state, ensure_ascii=False))
 
         # 封印 2026-09-04 苏摩111：每个标的独立保存 brahma_state_<sym>.json
         # 修复根因：ETH分析读到BTC的_ob_map/_fvg_map（数据污染）

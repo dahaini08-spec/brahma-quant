@@ -1,17 +1,17 @@
 {
-  "ts": "2026-09-14 14:15 UTC",
+  "ts": "2026-09-17 00:50 UTC",
   "score": 62,
   "passed": 5,
-  "warned": 1,
-  "failed": 2,
+  "warned": 2,
+  "failed": 1,
   "results": {
     "L1 \u6838\u5fc3\u5bfc\u5165": "\u5168\u90e88\u4e2a\u6838\u5fc3\u6a21\u5757\u5bfc\u5165\u6b63\u5e38",
-    "L2 \u6570\u636e\u65b0\u9c9c\u5ea6": "brahma_state.json\u5df2163min\u672a\u66f4\u65b0(\u9650120min) | wr_matrix_realtime.json\u5df210176min\u672a\u66f4\u65b0(\u96501440min) | gex_state.json\u5df229823255min\u672a\u66f4\u65b0(\u9650180min)",
-    "L3 \u6027\u80fd\u57fa\u51c6": "\u5206\u6790\u4e25\u91cd\u8d85\u65f616.16s(\u76ee\u6807<5s)",
-    "L4 \u7ef4\u5ea6\u8986\u76d6": "\u6709\u6548\u7ef4\u5ea646/53(87%) \u9519\u8bef2\u4e2a",
+    "L2 \u6570\u636e\u65b0\u9c9c\u5ea6": "brahma_state.json\u5df2627min\u672a\u66f4\u65b0(\u9650120min) | wr_matrix_realtime.json\u5df213690min\u672a\u66f4\u65b0(\u96501440min) | gex_state.json\u5df229826770min\u672a\u66f4\u65b0(\u9650180min) | paper_positions.json\u5df22895min\u672a\u66f4\u65b0(\u96501440min)",
+    "L3 \u6027\u80fd\u57fa\u51c6": "\u5206\u6790\u504f\u61629.94s(\u76ee\u6807<5s) score=33.4",
+    "L4 \u7ef4\u5ea6\u8986\u76d6": "\u6709\u6548\u7ef4\u5ea645/53(85%) \u9519\u8bef1\u4e2a",
     "L5 \u9519\u8bef\u65e5\u5fd7": "\u6700\u8fd1200\u884c\u65e0\u4e25\u91cd\u9519\u8bef",
-    "L6 \u5185\u5b58\u72b6\u6001": "\u5185\u5b58\u504f\u7d27\u53ef\u7528570MB(<600MB)",
-    "L7 supercronic": "supercronic\u8fd0\u884c\u4e2d pid=2251382",
-    "L8 \u78c1\u76d8\u7f13\u5b58": "\u7f13\u5b5814\u4e2a\u6587\u4ef6 91.34MB \u8fc7\u671f11\u4e2a"
+    "L6 \u5185\u5b58\u72b6\u6001": "\u5185\u5b58\u504f\u7d27\u53ef\u7528396MB(<600MB)",
+    "L7 supercronic": "supercronic\u8fd0\u884c\u4e2d pid=3081176",
+    "L8 \u78c1\u76d8\u7f13\u5b58": "\u7f13\u5b5814\u4e2a\u6587\u4ef6 91.34MB \u8fc7\u671f12\u4e2a"
   }
 }

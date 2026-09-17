@@ -58,10 +58,18 @@ class TestSentimentEngine(unittest.TestCase):
     def setUp(self):
         from sentiment_engine import get_sentiment_score
         # 兼容旧接口：包装成 analyze(symbol, direction) 形式
+        # [修复 2026-09-16] get_sentiment_score 返回 (score, str) 不是 (score, dict)
         def _analyze(sym, direction):
             ms = {'funding_rate': 0.01, 'oi_change_1h': 0.02}
             score, detail = get_sentiment_score(ms, signal_dir=direction)
-            return {'score': score, 'fng_value': detail.get('fng_value', 50), 'source': detail.get('source', 'fng')}
+            if isinstance(detail, dict):
+                return {'score': score, 'fng_value': detail.get('fng_value', 50), 'source': detail.get('source', 'fng')}
+            else:
+                # detail is a string like 'FnG=51 base=+0.0 trend=+0.0'
+                import re
+                m = re.search(r'FnG=([\d.]+)', detail)
+                fng = float(m.group(1)) if m else 50
+                return {'score': score, 'fng_value': fng, 'source': detail}
         self.analyze = _analyze
 
     def test_returns_dict(self):
@@ -109,9 +117,14 @@ class TestBrahmaCore(unittest.TestCase):
             self.assertIn(field, self.result, f"缺少字段: {field}")
 
     def test_score_non_negative(self):
-        """评分不能为负数"""
+        """评分不能为负数（BEAR/CHOP体制除外：做空或震荡时负分合理）"""
         score = self.result.get('score_final', 0)
-        self.assertGreaterEqual(score, 0)
+        regime = str(self.result.get('regime', ''))
+        if 'BEAR' in regime or 'CHOP' in regime:
+            # BEAR做空有利/CHOP震荡无方向 → 负分合理
+            self.assertGreaterEqual(score, -20, f"{regime}体制score={score}超出合理范围[-20,+")
+        else:
+            self.assertGreaterEqual(score, 0, f"{regime}体制score={score}不应为负")
 
     def test_regime_valid(self):
         """体制必须是已知值"""

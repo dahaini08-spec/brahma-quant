@@ -431,7 +431,7 @@ def get_cross_fr_basis(symbol: str = 'BTCUSDT') -> dict:
     try:
         import requests as _rq
         _px_r = _bus_price(symbol) if _bus_price else float(_rq.get(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}', timeout=4).json().get('price',0))
-        _px = float(_px_r.json()['price'])
+        _px = float(_px_r) if isinstance(_px_r, (int, float)) else float(_px_r.json()['price'])
         # Binance
         _bn_r = _rq.get(f'https://fapi.binance.com/fapi/v1/openInterest?symbol={symbol}', timeout=4)
         _bn_oi = float(_bn_r.json().get('openInterest', 0)) * _px

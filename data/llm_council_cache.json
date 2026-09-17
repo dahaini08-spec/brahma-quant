@@ -760,5 +760,101 @@
       "council_mode": "lite(RiskOnly)",
       "injected_adj": 0
     }
+  },
+  "f8b46e8663da": {
+    "ts": 1789471249.589094,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "risk_level": "MEDIUM",
+        "top_risk": "LLM降级:规则模式",
+        "liq_insight": "清算数据已注入但推理降级",
+        "veto": false,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": 0,
+        "macro_trend": "NEUTRAL",
+        "key_event": "LLM降级",
+        "market_bias": "中性",
+        "source": "llm",
+        "macro_bias": "NEUTRAL",
+        "key_factor": "LLM降级"
+      },
+      "quant": {
+        "score_adj": 0,
+        "quant_bias": "NEUTRAL",
+        "wr_verdict": "UNKNOWN",
+        "source": "rule_fallback"
+      },
+      "devil": {
+        "score_adj": 0,
+        "veto": false,
+        "veto_reason": "",
+        "top_flaw": "",
+        "summary": "",
+        "reversal_path": "",
+        "reversal_prob": 0,
+        "agent": "DevilAgent"
+      },
+      "final_adj": 0,
+      "score_before": 189.7,
+      "score_after": 189.7,
+      "mode": "live",
+      "elapsed_ms": 2200,
+      "react_triggered": false,
+      "ts": "2026-09-15T11:20:51.846524+00:00",
+      "from_cache": false,
+      "council_mode": "full(4agents)",
+      "injected_adj": 0
+    }
+  },
+  "75a8df6ea5e9": {
+    "ts": 1789471255.164165,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "risk_level": "MEDIUM",
+        "top_risk": "LLM降级:规则模式",
+        "liq_insight": "清算数据已注入但推理降级",
+        "veto": false,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": 0,
+        "macro_trend": "NEUTRAL",
+        "key_event": "LLM降级",
+        "market_bias": "中性",
+        "source": "llm",
+        "macro_bias": "NEUTRAL",
+        "key_factor": "LLM降级"
+      },
+      "quant": {
+        "score_adj": 0,
+        "quant_bias": "NEUTRAL",
+        "wr_verdict": "UNKNOWN",
+        "source": "rule_fallback"
+      },
+      "devil": {
+        "score_adj": 0,
+        "veto": false,
+        "veto_reason": "",
+        "top_flaw": "",
+        "summary": "",
+        "reversal_path": "",
+        "reversal_prob": 0,
+        "agent": "DevilAgent"
+      },
+      "final_adj": 0,
+      "score_before": 220.7,
+      "score_after": 220.7,
+      "mode": "live",
+      "elapsed_ms": 1922,
+      "react_triggered": false,
+      "ts": "2026-09-15T11:20:57.109096+00:00",
+      "from_cache": false,
+      "council_mode": "full(4agents)",
+      "injected_adj": 0
+    }
   }
 }

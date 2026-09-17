@@ -29,14 +29,16 @@ if ! python3 -c 'import lightgbm' 2>/dev/null; then
     pip install narwhals --break-system-packages -q 2>/dev/null
     echo "[startup] lightgbm restored"
 fi
-# jesse + jesse_rust: pip环境重启后丢失
-if ! python3 -c 'from jesse.indicators import rsi' 2>/dev/null; then
-    pip install --break-system-packages jesse jesse_rust 2>/dev/null
-    if python3 -c 'from jesse.indicators import rsi' 2>/dev/null; then
-        echo "[startup] jesse restored"
+# jesse + jesse_rust: 已预装到venv，重启后只需检查
+if ! venv/bin/python3 -c 'from jesse.indicators import rsi' 2>/dev/null; then
+    venv/bin/pip install --break-system-packages jesse jesse_rust 2>/dev/null
+    if venv/bin/python3 -c 'from jesse.indicators import rsi' 2>/dev/null; then
+        echo "[startup] jesse restored (fresh install)"
     else
         echo "[startup] jesse FAILED - pip install error"
     fi
+else
+    echo "[startup] jesse already available in venv"
 fi
 # =====================================================
 

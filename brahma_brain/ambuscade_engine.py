@@ -18,7 +18,8 @@ import time
 # ── 预判信号权重 ──────────────────────────────────────────
 SIGNAL_WEIGHTS = {
     'fvg_magnet':    0.8,  # FVG是核心结构信号
-    'liq_hunt':      0.7,  # 清算地图是主力意图
+    'liq_hunt':       0.7,  # 清算地图是主力意图
+    'liq_pool_bounce': 0.5,  # 支撑池反弹伏击（预挂）
     'hurst_rsi':     0.6,  # 趋势+超卖组合
     'fangcang':      0.7,  # 6.8年历史匹配
     'oi_cvd_div':    0.5,  # 背离是辅助信号
@@ -86,6 +87,24 @@ def detect_ambuscade_signals(
                 'name': 'liq_hunt', 'direction': 'LONG',
                 'weight': SIGNAL_WEIGHTS['liq_hunt'],
                 'desc': f'支撑池${support_pool:,.0f}→猎杀做多'
+            })
+
+    # 2b. 支撑池反弹伏击（预挂）[9.16苏摩111]
+    # 当价格在支撑池上方1-5%时，预挂反弹多单
+    # 支撑池=大量多头止损集中处→价格触及时会加速下跌→然后反弹
+    if support_pool > 0 and price > 0:
+        _dist_to_pool = (price - support_pool) / price * 100
+        if 1.0 <= _dist_to_pool <= 5.0:
+            _liq_bull = liq_data.get('liq_bull_score', 0)
+            _liq_bear = liq_data.get('liq_bear_score', 0)
+            # 买盘集群比卖盘多 → 支撑更强 → 权重更高
+            _bounce_weight = SIGNAL_WEIGHTS['liq_pool_bounce']
+            if _liq_bull >= _liq_bear and _liq_bull > 0:
+                _bounce_weight = 0.6  # 买盘更强→加权
+            signals.append({
+                'name': 'liq_pool_bounce', 'direction': 'LONG',
+                'weight': _bounce_weight,
+                'desc': f'支撑池${support_pool:,.0f}上方{_dist_to_pool:.1f}%→预挂反弹伏击'
             })
     
     # 3. Hurst+RSI超卖/超买
