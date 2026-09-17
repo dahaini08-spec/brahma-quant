@@ -36,3 +36,6 @@ config/omniroute.json
 
 # 敏感配置（GitHub Push Protection）
 .env
+
+# pip cache (large binaries)
+pip_cache/
