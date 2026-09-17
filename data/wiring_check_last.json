@@ -1,12 +1,14 @@
 {
-  "ts": "2026-09-17T11:43:06.299018",
-  "wired": 51,
+  "ts": "2026-09-17T12:20:00.117268",
+  "wired": 50,
   "zero_output": [],
   "orphans": [
     "ambuscade_engine",
     "battlefield_intel",
     "brahma_brain_ai",
     "brahma_brain_prompt",
+    "brahma_core_entry",
+    "brahma_core_v1_backup",
     "brahma_engine_v5",
     "brahma_mcp_server",
     "brahma_plugins",

@@ -1773,11 +1773,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     MIN_SCORE_S3   = 60    # S3门槛：观察记录（原100→60）
     _score_raw = cf.get('total', 0)
 
-    # [2026-09-12 苏摩111] _globally_blocked永远为False，此块逻辑不再执行
-    # 保留以防外部代码引用，但score不会被清零
-    if _globally_blocked:
-        _score_raw = cf.get('total', 0)  # 不清零
-        _score_gate_ok = True  # 不封锁
+    # [V3-3] _globally_blocked死分支已删除(永远为False)
 
     # ── [P2-C] N19 BTC传导系数 ─────────────────────────────────────────────
     # 低传导标的(<40%) 在BTC强势突破(1H涨幅>1.5%)时 score×0.90
