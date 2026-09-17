@@ -332,18 +332,161 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     # _direction_block 永久废除 —— 封禁是懒人修复，降权是外科手术。
     _direction_block = False  # 永久保持False，历史遗留字段保留兼容性
 
-    # ── [V3-3 2026-09-17 苏摩111] 体制乘数矩阵已提取到 regime_config.py
-    # brahma_core只调用get_regime_mult()，不再内联矩阵（-156行）
+    # ── BTC/ETH 双向 regime_mult 矩阵 v4.0 ─────────────────────
     _sym_upper = (ms.get('symbol') or ms.get('sym') or '').upper()
     _is_long_signal = (signal_dir == 'LONG')
-    _matched_regime_key = None
+
+    # 通用矩阵（默认，适用非BTC/ETH标的）
+    _REGIME_MULT_DEFAULT = {
+        # 体制            SHORT   LONG
+        'BEAR_TREND':    (1.50,  0.50),   # [2026-09-12 苏摩111] 0.35→0.50 解除极端降权 | SHORT S+级WR=71.8% | LONG逆势降权非封禁
+        'BEAR_EARLY':    (1.15,  0.50),   # [2026-09-12 苏摩111] 0.35→0.50 | SHORT强Alpha WR=66.5% | LONG降权非封禁
+        'BEAR_RECOVERY': (0.50,  1.20),   # [2026-09-12 苏摩111] 0.35→0.50 | LONG=反直觉alpha WR=72.5% | SHORT降权非封禁
+        'BULL_TREND':    (0.50,  1.10),   # [v25.1] LONG=正alpha WR=70.3% | SHORT逆势降权非封禁
+        'BULL_EARLY':    (0.50,  1.20),   # [2026-09-12 苏摩111] 0.35→0.50 | LONG=S级alpha WR=64.4% | SHORT降权非封禁
+        'BULL_CORRECTION':(1.10, 0.65),   # 牛回调: SHORT强，LONG样本不足
+        'BULL_PEAK':     (1.00,  0.75),   # 牛顶:   SHORT尚可
+        'BULL_BREAK':    (1.00,  0.75),   # 牛突破: 参考BULL_TREND
+        'BEAR_CRASH':    (0.90,  0.65),   # 崩盘:   极端体制，两向均降权
+        'CHOP':          (0.88,  0.50),   # [v25.4 苏摩111 2026-06-28] 铁证EV=+0.37%/笔(n=3636) SHORT解锁0.88x | LONG保持0.5x（无铁证）
+        'CHOP_HIGH':     (0.80,  0.50),   # [v25.4] 高波动CHOP SHORT=0.80x保守 | LONG=0.5x
+        'CHOP_MID':      (0.88,  0.50),   # [v25.4] CHOP_MID SHORT解锁0.88x（WR=57.3%铁证） | LONG=0.5x
+        'CHOP_LOW':      (0.88,  0.50),   # [v25.4] CHOP_LOW SHORT解锁0.88x | LONG=0.5x
+        # [设计院 2026-06-30 P2-D] RANGE_LOCK区间状态独立乘数通道（苏摩111审批）
+        # 达摩院验证：DISCOUNT債 WR=70.0% | PREMIUM空 WR=61.3%
+        'CHOP_RANGE_DISCOUNT': (0.50,  1.20),  # 区间底部做多解锁: LONG=1.20x(达摩院验证WR=70.0% n=120)
+        'CHOP_RANGE_PREMIUM':  (1.10,  0.50),  # [2026-09-12 苏摩111] 0.35→0.50 区间顶部做空: SHORT=1.10x
+    }
+    _REGIME_MULT_BTC = {
+        # 体制            SHORT   LONG    # Calmar(S) / Calmar(L)
+        'BEAR_TREND':    (1.60,  0.50),   # [2026-09-12 苏摩111] 0.35→0.50 | BTC SHORT WR=72% S+级 | LONG降权非封禁
+        'BEAR_EARLY':    (1.20,  0.50),   # [2026-09-12 苏摩111] 0.35→0.50 | BTC SHORT WR=68% S级 | LONG降权非封禁
+        'BEAR_RECOVERY': (0.50,  1.25),   # [2026-09-12 苏摩111] 0.35→0.50 | BTC LONG WR=77.6% | SHORT降权非封禁
+        'BULL_TREND':    (0.50,  1.20),   # [v25.1] LONG=S级alpha WR=70.5% | SHORT降权非封禁
+        'BULL_EARLY':    (0.50,  1.20),   # [2026-09-12 苏摩111] 0.35→0.50 | BTC LONG WR=64.6% S级 | SHORT降权非封禁
+        'BULL_CORRECTION':(1.20, 0.60),   # S=14.6 WR=97% / L=不激活
+        'BULL_PEAK':     (1.05,  0.70),   # 参考BULL_TREND/BULL_CORRECTION
+        'BULL_BREAK':    (1.08,  0.65),
+        'BEAR_CRASH':    (0.75,  0.60),
+        'CHOP':          (0.88,  0.50),   # [v25.4 苏摩111 2026-06-28] BTC CHOP SHORT n=3636 WR=57.3% EV=+0.365%/笔(v4.0参数)
+        'CHOP_HIGH':     (0.80,  0.50),   # [v25.4] BTC CHOP_HIGH SHORT=0.80x保守
+        'CHOP_MID':      (0.88,  0.50),   # [v25.4] BTC CHOP_MID SHORT解锁0.88x
+        'CHOP_LOW':      (0.88,  0.50),   # [v25.4] BTC CHOP_LOW SHORT解锁0.88x
+        'CHOP_RANGE_DISCOUNT': (0.50,  1.20),  # [设计院 P2-D] BTC区间底部做多: LONG=1.20x
+        'CHOP_RANGE_PREMIUM':  (1.10,  0.50),  # [2026-09-12 苏摩111] 0.35→0.50 BTC区间顶部做空: SHORT=1.10x
+    }
+
+    # ETH专属矩阵（达摩院v4.0铁证）
+    _REGIME_MULT_ETH = {
+        # 体制            SHORT   LONG    # Calmar(S) / Calmar(L)
+        'BEAR_TREND':    (1.60,  0.50),   # [2026-09-12 苏摩111] 0.35→0.50 | ETH SHORT WR=74% S+级 | LONG降权非封禁
+        'BEAR_EARLY':    (1.20,  0.50),   # [2026-09-12 苏摩111] 0.35→0.50 | ETH SHORT WR=70% S级 | LONG降权非封禁
+        'BEAR_RECOVERY': (0.50,  1.15),   # [2026-09-12 苏摩111] 0.35→0.50 | ETH LONG WR=67.1% | SHORT降权非封禁
+        'BULL_TREND':    (0.50,  1.30),   # [v25.1] LONG=最强alpha WR=70.0% | SHORT降权非封禁
+        'BULL_EARLY':    (0.50,  1.10),   # [2026-09-12 苏摩111] 0.35→0.50 | ETH LONG WR=64.2% S级 | SHORT降权非封禁
+        'BULL_CORRECTION':(1.02, 0.60),   # S=1.5 / L=不激活(n/yr=6.3)
+        'BULL_PEAK':     (1.05,  0.70),
+        'BULL_BREAK':    (1.10,  0.75),
+        'BEAR_CRASH':    (0.75,  0.60),
+        'CHOP':          (0.88,  0.50),   # [v25.4 苏摩111 2026-06-28] ETH CHOP SHORT n=3663 WR=57.5% EV=+0.375%/笔(v4.0参数)
+        'CHOP_HIGH':     (0.80,  0.50),   # [v25.4] ETH CHOP_HIGH SHORT=0.80x保守
+        'CHOP_MID':      (0.88,  0.50),   # [v25.4] ETH CHOP_MID SHORT解锁0.88x
+        'CHOP_LOW':      (0.88,  0.50),   # [v25.4] ETH CHOP_LOW SHORT解锁0.88x
+        'CHOP_RANGE_DISCOUNT': (0.50,  1.20),  # [设计院 P2-D] ETH区间底部做多: LONG=1.20x
+        'CHOP_RANGE_PREMIUM':  (1.10,  0.50),  # [2026-09-12 苏摩111] 0.35→0.50 ETH区间顶部做空: SHORT=1.10x
+    }
+
+    # ── [P1-哲学修复 设计院 2026-06-24] 中小币专属乘数矩阵 ──────────────────
+    # 哲学：不封禁，让评分自然淘汰。
+    # 方法：每个标的的铁证WR / BTC+ETH参考WR = 标的专属乘数
+    # 来源：达摩院 altcoin_iron_evidence.json（5标的 2020~2026 离线回放）
+    # 未覆盖的组合降级到 _REGIME_MULT_DEFAULT，不猜测，不封禁。
+    # 更新规则：auto_learner 每 N 条实盘后自动更新此表
+    _REGIME_MULT_ALTCOIN = {
+        'SOLUSDT': {
+            # 铁证WR / BTC+ETH参考 → 比例乘数（范围0.25~1.2）
+            'BEAR_TREND':     (0.75, 0.28),  # SHORT n=28 WR=53.6%  | LONG n=20 WR=20.0%
+            'BEAR_EARLY':     (0.58, 0.50),  # SHORT n=412 WR=38.3% | LONG 降权对齐DEFAULT
+            'BULL_EARLY':     (0.35, 0.56),  # LONG n=411 WR=35.8%  | SHORT 降权
+            'BULL_TREND':     (0.35, 0.28),  # LONG n=20 WR=20.0% → 极端降权
+            'BEAR_RECOVERY':  (0.35, 0.80),  # 无足够样本，保守
+            'BULL_CORRECTION':(0.60, 0.50),
+            'CHOP':           (0.50, 0.50), 'CHOP_HIGH': (0.50,0.50),
+            'CHOP_MID':       (0.50, 0.50), 'CHOP_LOW':  (0.55,0.55),
+        },
+        'NEARUSDT': {
+            'BEAR_TREND':     (0.70, 0.50),  # SHORT n=10 WR=50.0%  | LONG 无样本
+            'BEAR_EARLY':     (0.57, 0.50),  # SHORT n=435 WR=38.2% | LONG 降权
+            'BULL_EARLY':     (0.35, 0.58),  # LONG n=413 WR=37.5%  | SHORT 降权
+            'BULL_TREND':     (0.35, 0.81),  # LONG n=14 WR=57.1%（n偏少，保守）
+            'BEAR_RECOVERY':  (0.35, 0.80),
+            'BULL_CORRECTION':(0.60, 0.50),
+            'CHOP':           (0.50, 0.50), 'CHOP_HIGH': (0.50,0.50),
+            'CHOP_MID':       (0.50, 0.50), 'CHOP_LOW':  (0.55,0.55),
+        },
+        'MANAUSDT': {
+            'BEAR_TREND':     (0.35, 0.50),  # SHORT n=12 WR=25.0% → 极端降权
+            'BEAR_EARLY':     (0.59, 0.50),  # SHORT n=422 WR=39.1%
+            'BULL_EARLY':     (0.35, 0.51),  # LONG n=342 WR=33.0%
+            'BULL_TREND':     (0.35, 0.55),  # LONG n=13 WR=38.5%（n偏少）
+            'BEAR_RECOVERY':  (0.35, 0.70),
+            'BULL_CORRECTION':(0.50, 0.50),
+            'CHOP':           (0.50, 0.50), 'CHOP_HIGH': (0.50,0.50),
+            'CHOP_MID':       (0.50, 0.50), 'CHOP_LOW':  (0.55,0.55),
+        },
+        'AXSUSDT': {
+            'BEAR_TREND':     (0.46, 0.50),  # SHORT n=15 WR=33.3%
+            'BEAR_EARLY':     (0.55, 0.50),  # SHORT n=438 WR=36.5%
+            'BULL_EARLY':     (0.35, 0.50),  # LONG n=363 WR=32.5%
+            'BULL_TREND':     (0.35, 0.50),  # 无足够样本
+            'BEAR_RECOVERY':  (0.35, 0.70),
+            'BULL_CORRECTION':(0.50, 0.50),
+            'CHOP':           (0.50, 0.50), 'CHOP_HIGH': (0.50,0.50),
+            'CHOP_MID':       (0.50, 0.50), 'CHOP_LOW':  (0.55,0.55),
+        },
+        'GALAUSDT': {
+            'BEAR_TREND':     (0.70, 0.50),  # SHORT n=18 WR=50.0%
+            'BEAR_EARLY':     (0.57, 0.50),  # SHORT n=418 WR=38.0%
+            'BULL_EARLY':     (0.35, 0.51),  # LONG n=280 WR=32.9%
+            'BULL_TREND':     (0.35, 0.50),
+            'BEAR_RECOVERY':  (0.35, 0.70),
+            'BULL_CORRECTION':(0.55, 0.50),
+            'CHOP':           (0.50, 0.50), 'CHOP_HIGH': (0.50,0.50),
+            'CHOP_MID':       (0.50, 0.50), 'CHOP_LOW':  (0.55,0.55),
+        },
+    }
+
+    # 选择矩阵 → 委托 regime_config.get_regime_mult() [2026-08-24 设计院提取]
+    # 矩阵数据源: brahma_brain/regime_config.py (SSOT，热更新友好)
+    _matched_regime_key = None  # 初始化
     try:
         from regime_config import get_regime_mult as _get_rm
         _rm_val = _get_rm(_sym_upper, _regime_upper, signal_dir)
         if _rm_val is not None:
             _regime_mult = _rm_val
+            # 找到匹配的key用于breakdown记录
+            _matched_regime_key = next(
+                (_rk for _rk in (_REGIME_MULT_BTC if 'BTC' in _sym_upper
+                                 else _REGIME_MULT_ETH if 'ETH' in _sym_upper
+                                 else _REGIME_MULT_DEFAULT)
+                 if _rk in _regime_upper), _regime_upper or 'UNKNOWN'
+            )
     except Exception:
-        _regime_mult = 0.85  # 安全fallback
+        # fallback: 内联矩阵（regime_config.py不可用时保底）
+        if _sym_upper in _REGIME_MULT_ALTCOIN:
+            _mult_table = _REGIME_MULT_ALTCOIN[_sym_upper]
+        elif 'BTC' in _sym_upper:
+            _mult_table = _REGIME_MULT_BTC
+        elif 'ETH' in _sym_upper:
+            _mult_table = _REGIME_MULT_ETH
+        else:
+            _mult_table = _REGIME_MULT_DEFAULT
+        _matched_regime_key = next((_rk for _rk in _mult_table if _rk in _regime_upper), None)
+        if _matched_regime_key:
+            _s_mult, _l_mult = _mult_table[_matched_regime_key]
+            _regime_mult = _l_mult if _is_long_signal else _s_mult
+        else:
+            _regime_mult = 0.85
 
     # ── [P1-B 苏摩111批准 2026-07-11] regime_hmm_v2 概率化乘数接入 ──────────────────
     # 架构: HMM概率分布 → get_weighted_multiplier() → 概率加权乘数
