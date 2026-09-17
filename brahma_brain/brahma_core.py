@@ -3744,7 +3744,15 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _ps_trap  = bool(_result.get('fangcang_trap', False))
         _pos_res  = _pos_fn(_sym, _ps_score, _ps_dir,
                             nav=nav if nav else 0,
-                            sl_pct=_ps_sl if _ps_sl > 0 else None)
+                            sl_pct=_ps_sl if _ps_sl > 0 else None,
+                            regime=_result.get('regime',''))
+        # [9.17 苏摩111] regime_mult从breakdown读取，应用到仓位上限
+        _regime_mult_val = float(breakdown.get('_regime_mult', 1.0) or 1.0) if isinstance(breakdown, dict) else 1.0
+        if _pos_res.get('allowed') and _regime_mult_val < 1.0:
+            _orig_pct = _pos_res.get('pct', 0)
+            _capped_pct = round(_orig_pct * _regime_mult_val, 2)
+            _pos_res['pct'] = _capped_pct
+            _pos_res['reason'] = _pos_res.get('reason','') + f' [regime_mult×{_regime_mult_val:.2f}]'
         if _pos_res.get('allowed'):
             _pos_pct = _pos_res.get('pct', 0)
             if _ps_trap and _pos_pct > 0:

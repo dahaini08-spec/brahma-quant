@@ -30,8 +30,15 @@ SIGNAL_LOG = DATA / "live_signal_log.jsonl"
 BACKUP_DIR = DATA / "scoring_config_backups"
 
 # 校准参数
-STRONG_WR = 0.60    # WR>60% → 强化×1.2
-WEAK_WR = 0.45      # WR<45% → 修剪×0.5
+STRONG_WR = 0.60    # 旧阶跃阈值（保留参考）
+WEAK_WR = 0.45      # 旧阶跃阈值（保留参考）
+
+# [9.17 苏摩111] 贝叶斯Hebbian更新 + 遗忘机制
+BAYESIAN_ALPHA = 2.0   # Beta先验α
+BAYESIAN_BETA = 2.0    # Beta先验β
+DECAY_LAMBDA = 0.5     # 遗忘衰期（0.5=半年衰减50%）
+MAX_WEIGHT = 2.0       # 权重上限
+MIN_WEIGHT = 0.1       # 权重下限
 NEUTRAL_MIN = 0.45  # 45-60% → 不变
 NEUTRAL_MAX = 0.60
 BOOST_FACTOR = 1.2
@@ -207,28 +214,36 @@ def calibrate_weights(config, regime_dir_wr, dim_wr, prediction_acc=None, data_h
                     dim_wr_val = total_wr
                     source = f'regime(n={total_n})'
 
-                # 校准逻辑
-                if dim_wr_val >= STRONG_WR:
-                    # Phase 2C: 如果prediction_acc<45%,不强化(可能假止损垫高WR)
-                    if pred_acc is not None and pred_acc < 0.45:
-                        new_w = old_w
-                        action = 'KEEP_PRED_OVERRIDE'
-                        source += f' pred_acc={pred_acc:.1%}<45%'
+                # [9.17 苏摩111] 贝叶斯Hebbian更新
+                from math import exp as _exp
+                
+                if dim in dim_data:
+                    wins = dim_data[dim].get('win', 0)
+                    losses = dim_data[dim].get('loss', 0)
+                    dim_n = dim_data[dim].get('n', 0)
+                else:
+                    dim_n = total_n
+                    wins = int(total_wr * total_n)
+                    losses = total_n - wins
+                
+                _alpha = BAYESIAN_ALPHA * _exp(-DECAY_LAMBDA * 0.5)
+                _beta = BAYESIAN_BETA * _exp(-DECAY_LAMBDA * 0.5)
+                _posterior_mean = (_alpha + wins) / (_alpha + _beta + wins + losses)
+                
+                if dim_n >= 5:
+                    new_w = MIN_WEIGHT + (MAX_WEIGHT - MIN_WEIGHT) * _posterior_mean
+                    new_w = max(MIN_WEIGHT, min(MAX_WEIGHT, new_w))
+                    if abs(new_w - old_w) < 0.05:
+                        action = 'KEEP_BAYES'
+                    elif new_w > old_w:
+                        action = 'BOOST_BAYES'
                     else:
-                        new_w = min(old_w * BOOST_FACTOR, MAX_WEIGHT)
-                        action = 'BOOST'
-                elif dim_wr_val <= WEAK_WR:
-                    # Phase 2C: 如果prediction_acc>60%,不修剪(可能假止损拉低WR)
-                    if pred_acc is not None and pred_acc > 0.60:
-                        new_w = old_w
-                        action = 'KEEP_PRED_OVERRIDE'
-                        source += f' pred_acc={pred_acc:.1%}>60%'
-                    else:
-                        new_w = max(old_w * PRUNE_FACTOR, MIN_WEIGHT)
-                        action = 'PRUNE'
+                        action = 'PRUNE_BAYES'
+                    source += f' bayes(α={_alpha:.1f}+W={wins} β={_beta:.1f}+L={losses} → μ={_posterior_mean:.3f})'
                 else:
                     new_w = old_w
-                    action = 'KEEP'
+                    action = 'KEEP_LOW_N'
+                    source += f' low_n={dim_n}<5'
 
                 if new_w != old_w or action == 'KEEP_PRED_OVERRIDE':
                     weights[dim] = round(new_w, 3)

@@ -7,10 +7,10 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789634582.7497792,
+    "last_update_ts": 1789639830.5258543,
     "confirmed_cn": "弱震荡",
     "last_sw_reset": 1789609255.5509894,
-    "candidate_start_ts": 1789632531.5487347
+    "candidate_start_ts": 1789639119.4606602
   },
   "ETHUSDT": {
     "confirmed": "CHOP_MID",
@@ -20,9 +20,9 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789634591.7660785,
+    "last_update_ts": 1789639815.1855724,
     "last_sw_reset": 1789568133.1667855,
-    "candidate_start_ts": 1789632518.5352597,
+    "candidate_start_ts": 1789639105.260733,
     "confirmed_cn": "弱震荡"
   },
   "SPCXUSDT": {
@@ -59,7 +59,7 @@
     "confirmed_at": 1789507466.8972108,
     "switch_count_24h": 0,
     "last_raw": "BULL_CORRECTION",
-    "last_update_ts": 1789626279.9289594,
+    "last_update_ts": 1789637089.1010833,
     "confirmed_cn": "牛市回调",
     "last_sw_reset": 1789626265.322496,
     "candidate_start_ts": 1789626265.322496,
@@ -97,10 +97,10 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789626279.9095745,
+    "last_update_ts": 1789637089.0959268,
     "confirmed_cn": "弱震荡",
-    "last_sw_reset": 1789539869.5538018,
-    "candidate_start_ts": 1789626265.3496773
+    "last_sw_reset": 1789637089.0920856,
+    "candidate_start_ts": 1789637089.0920856
   },
   "NVDAUSDT": {
     "confirmed": "CHOP_MID",
@@ -149,10 +149,10 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789626279.8907413,
+    "last_update_ts": 1789637089.1502333,
     "confirmed_cn": "弱震荡",
     "last_sw_reset": 1789550698.360244,
-    "candidate_start_ts": 1789626265.2524953
+    "candidate_start_ts": 1789637089.1459446
   },
   "CLUSDT": {
     "confirmed": "CHOP_MID",
@@ -241,10 +241,10 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789634337.3252451,
+    "last_update_ts": 1789639789.9297748,
     "confirmed_cn": "弱震荡",
     "last_sw_reset": 1789568157.8504522,
-    "candidate_start_ts": 1789632541.9244225
+    "candidate_start_ts": 1789639452.993144
   },
   "ESPORTSUSDT": {
     "confirmed": "CHOP_MID",
@@ -254,10 +254,10 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789634338.4807482,
+    "last_update_ts": 1789639790.9928226,
     "confirmed_cn": "弱震荡",
     "last_sw_reset": 1789559877.0271187,
-    "candidate_start_ts": 1789633767.9778957
+    "candidate_start_ts": 1789639790.9897318
   },
   "TEST_SMOKE": {
     "confirmed": "CHOP_MID",

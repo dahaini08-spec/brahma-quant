@@ -151,36 +151,31 @@ def _analyze_step2(symbol: str, ms: dict, signal_dir, deep: bool) -> dict:
     _sym = symbol
 
     if signal_dir is None:
-        signal_dir = ms['signal_bias']
+        signal_dir = ms.get('signal_bias') or ms.get('signal_dir')
+    # [9.17 修复] signal_dir=None时ENTER信号全部EXPIRED → 强制降级为WATCH
+    if not signal_dir or signal_dir == 'NEUTRAL':
+        if not deep:
+            return {
+                'symbol': symbol,
+                'signal_dir': 'NEUTRAL',
+                'action': '不入场',
+                'reason': '方向中性或缺失，无共识',
+                'summary': ms.get('summary', ''),
+            }
+        # deep模式下强制选方向
+        from brahma_brain.regime_scorer import score as _rs_fn, _CACHE as _RS_CACHE
+        _RS_CACHE.clear()
+        _live_reg = _rs_fn(symbol, force=True)
+        _live_regime = _live_reg.get('regime', '')
+        _bear_p = _live_reg.get('bear_prob', 0)
+        _bull_p = _live_reg.get('bull_prob', 0)
+        signal_dir = 'SHORT' if _bear_p >= _bull_p else 'LONG'
 
     # ── [HARD_BLOCK END] ──────────────────────────────────────────────────
     _rcn = {'BULL_TREND':'牛市趋势','BULL_EARLY':'牛市初期','BULL_PEAK':'牛市末期','BULL_CORRECTION':'牛市回调','BEAR_TREND':'熊市趋势','BEAR_EARLY':'熊市初期','BEAR_CRASH':'暴跌体制','BEAR_RECOVERY':'熊市反弹','CHOP_HIGH':'高位震荡','CHOP_LOW':'低位震荡','CHOP_MID':'中位震荡','BREAKOUT':'突破体制'}
     _reg_raw = ms.get('regime','?')
     _reg_display = f'{_reg_raw}({_rcn.get(_reg_raw,_reg_raw)})'
     pass  # [静默] f'[BrahmaBrain] {_sym} 体制={_reg_display} 方向={signal_dir} RSI_1H={ms.get("momentu
-    if signal_dir == 'NEUTRAL':
-        pass  # [静默] f'[BrahmaBrain] {_sym} 方向中性，不入场'
-        if not deep:
-            return {
-                'symbol': symbol,
-                'signal_dir': 'NEUTRAL',
-                'action': '不入场',
-                'reason': '三框架方向中性，无共识',
-                'summary': ms['summary'],
-            }
-        # [deep=True] 中性体制下仍继续运行，选择体制最优方向
-        from brahma_brain.regime_scorer import score as _rs_fn, _CACHE as _RS_CACHE
-        _RS_CACHE.clear()
-        _live_reg = _rs_fn(symbol, force=True)
-        _live_regime = _live_reg.get('regime','')
-        _bear_p = _live_reg.get('bear_prob',0)
-        _bull_p = _live_reg.get('bull_prob',0)
-        if _bear_p >= _bull_p:
-            signal_dir = 'SHORT'
-        else:
-            signal_dir = 'LONG'
-        pass  # [静默] f'[BrahmaBrain][deep] {_sym} 深度模式强制方向={signal_dir}（bear={_bear_p:.1%} bull={_bul
-
 
     return {'signal_dir': signal_dir}
 
