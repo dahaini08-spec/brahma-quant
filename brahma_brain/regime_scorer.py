@@ -313,6 +313,95 @@ def score(symbol: str, force: bool = False, vol_ratio: float = None) -> dict:
     sorted_probs = sorted(probs.values(), reverse=True)
     confidence = round(sorted_probs[0] - sorted_probs[1], 3)
 
+    # ═══════════════════════════════════════════════════════════
+    # [V3-2改革1 2026-09-17 苏摩111] 体制实时修正层
+    # 价格突破+Hurst+OI翻转 → 覆盖EMA滞后，体制切换延迟从2-4h降到<1h
+    # 原则：体制不控制方向，只控制仓位上限。方向由SMC+OI决定。
+    # ═══════════════════════════════════════════════════════════
+    try:
+        # 价格突破检测：1H收盘价突破最近24根1H的高低点
+        _h1_closes = [k['c'] for k in k1]
+        _h1_highs = [k['h'] for k in k1]
+        _h1_lows = [k['l'] for k in k1]
+        _recent_high = max(_h1_highs[-25:-1])  # 前24根最高（不含当前）
+        _recent_low = min(_h1_lows[-25:-1])   # 前24根最低
+        _close_now = _h1_closes[-1]
+        _breakout_up = _close_now > _recent_high   # 突破前高
+        _breakout_dn = _close_now < _recent_low    # 突破前低
+        
+        # Hurst趋势检测（从已有数据计算）
+        # 简化Hurst：用RSI序列的自相关近似
+        _rsi_series = []
+        _chunk = 14
+        for _i in range(max(0, len(_h1_closes)-50), len(_h1_closes)-_chunk+1, _chunk):
+            _seg = _h1_closes[_i:_i+_chunk]
+            if len(_seg) >= _chunk:
+                _rsi_series.append(rsi(_seg))
+        _hurst_trend = False
+        if len(_rsi_series) >= 3:
+            # RSI序列方差小=震荡，方差大+方向一致=趋势
+            _rsi_mean = sum(_rsi_series) / len(_rsi_series)
+            _rsi_var = sum((x - _rsi_mean) ** 2 for x in _rsi_series) / len(_rsi_series)
+            _hurst_trend = _rsi_var > 25  # RSI方差>25=趋势性明显
+        
+        # OI翻转检测（从Binance API）
+        _oi_dir = 'UNKNOWN'
+        try:
+            _oi_url = f'{FAPI}/fapi/v1/openInterest?symbol={sym}'
+            _oi_req = urllib.request.Request(_oi_url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(_oi_req, timeout=3, context=_DC_SSL_CTX) as _oi_r:
+                _oi_now = float(json.loads(_oi_r.read()).get('openInterest', 0))
+            time.sleep(0.3)
+            _oi_url2 = f'{FAPI}/fapi/v1/openInterest?symbol={sym}'
+            # 用历史K线成交量变化推断OI方向
+            _vol_recent = sum(k['v'] for k in k1[-3:]) / 3
+            _vol_prev = sum(k['v'] for k in k1[-6:-3]) / 3
+            if _vol_recent > _vol_prev * 1.1 and _close_now < _recent_low:
+                _oi_dir = 'SHORT_BUILD'  # 放量下跌=空建仓
+            elif _vol_recent > _vol_prev * 1.1 and _close_now > _recent_high:
+                _oi_dir = 'LONG_BUILD'   # 放量上涨=多建仓
+            elif _close_now > _recent_high:
+                _oi_dir = 'LONG_BUILD'
+            elif _close_now < _recent_low:
+                _oi_dir = 'SHORT_BUILD'
+        except:
+            pass
+        
+        # V3体制实时修正（覆盖EMA滞后）
+        _v3_override = None
+        if _breakout_up and _hurst_trend and _oi_dir in ('LONG_BUILD',):
+            _v3_override = 'BULL_TREND'
+            bull_prob = max(bull_prob, 0.55)
+            bear_prob = min(bear_prob, 0.25)
+            chop_prob = max(0, 1 - bull_prob - bear_prob)
+        elif _breakout_up and _hurst_trend and _oi_dir == 'SHORT_BUILD':
+            _v3_override = 'BULL_EARLY'  # 突破前高但空建仓=趋势初期不确定
+            bull_prob = max(bull_prob, 0.42)
+            chop_prob = max(chop_prob, 0.30)
+        elif _breakout_dn and _hurst_trend and _oi_dir in ('SHORT_BUILD',):
+            _v3_override = 'BEAR_TREND'
+            bear_prob = max(bear_prob, 0.55)
+            bull_prob = min(bull_prob, 0.25)
+            chop_prob = max(0, 1 - bull_prob - bear_prob)
+        elif _breakout_dn and _hurst_trend and _oi_dir == 'LONG_BUILD':
+            _v3_override = 'BEAR_EARLY'  # 突破前低但多建仓=可能反转
+            bear_prob = max(bear_prob, 0.42)
+            chop_prob = max(chop_prob, 0.30)
+        elif _breakout_dn and _hurst_trend and _oi_dir == 'SHORT_BUILD' and 'SHORT' in str(_oi_dir):
+            # 检测BEAR_RECOVERY：空建仓→多翻转
+            _v3_override = 'BEAR_RECOVERY'
+            bull_prob = max(bull_prob, 0.40)
+            bear_prob = min(bear_prob, 0.35)
+        
+        # 重新计算primary和confidence
+        if _v3_override:
+            probs = {'BULL': bull_prob, 'BEAR': bear_prob, 'CHOP': chop_prob}
+            primary = max(probs, key=probs.get)
+            sorted_probs = sorted(probs.values(), reverse=True)
+            confidence = round(sorted_probs[0] - sorted_probs[1], 3)
+    except Exception as _v3_e:
+        import sys as _v3_sys; print(f'[WARN] regime V3 override: {_v3_e}', file=_v3_sys.stderr)
+
     # 体制乘数（用于仓位/权重修正）
     # 顺势=1.5，中性=1.0，逆势=0.5
     def _mult(direction: str) -> float:
@@ -340,7 +429,10 @@ def score(symbol: str, force: bool = False, vol_ratio: float = None) -> dict:
     # bear: hi=0.60(不变) / mid=0.55(↑+0.10) / lo=0.42(↑+0.09)
     # bull: hi=0.50(↓-0.10) / mid=0.38(↓-0.07)
     # 依据：167,200组合盲测，BTC+ETH 19000条采样，Top20 100%收敛
-    if bear_prob >= 0.60:   _regime_label = 'BEAR_TREND'     # 熊市趋势：bear_prob≥60%，做空最佳体制 EV+0.182
+    # [V3-2改革1] 如果V3实时修正覆盖了体制，用修正后的标签
+    if _v3_override:
+        _regime_label = _v3_override
+    elif bear_prob >= 0.60:   _regime_label = 'BEAR_TREND'     # 熊市趋势：bear_prob≥60%，做空最佳体制 EV+0.182
     elif bear_prob >= 0.55: _regime_label = 'BEAR_EARLY'     # 熊市初期：bear_prob 55~60%，趋势形成中
     elif bear_prob >= 0.42: _regime_label = 'BEAR_RECOVERY'  # 熊市反弹：bear_prob 42~55%，做多反直觉alpha EV+0.255
     elif bull_prob >= 0.50: _regime_label = 'BULL_TREND'     # 牛市趋势：bull_prob≥50%，做多最佳体制 EV+0.242

@@ -44,30 +44,25 @@ sys.path.insert(0, str(_DIR / 'brahma_brain'))
 
 BASE_POSITION   = 2.0   # 基础仓位百分比
 
-# [改革1 2026-09-17 苏摩111] 门槛从scoring_config.json读取，硬编码降级为fallback
+# [V3-2改革3 2026-09-17 苏摩111] score_gate从scoring_config.json读取，硬编码降级为fallback
 _SC_CFG_PATH = _DIR / 'data' / 'scoring_config.json'
 DYNAMIC_MIN = {
-    'CHOP_MID': 40,
-    'BEAR_TREND': 60, 'BEAR_EARLY': 60,
-    'BULL_TREND': 60, 'BULL_EARLY': 60,
-    'BEAR_RECOVERY': 50,
+    'CHOP_MID': 80,      # V3: 从40提升到80，解决CHOP死系统
+    'BEAR_TREND': 100,   # V3: 从60提升到100
+    'BEAR_EARLY': 90,    # V3: 从60提升到90
+    'BULL_TREND': 120,   # V3: 从60提升到120，趋势体制要求更高分
+    'BULL_EARLY': 100,   # V3: 从60提升到100
+    'BEAR_RECOVERY': 90, # V3: 从50提升到90
 }
 try:
-    import json as _json_sc
+    import json as _json_sc, os as _os_sc
     if _SC_CFG_PATH.exists():
         _sc = _json_sc.loads(_SC_CFG_PATH.read_text())
-        for _reg, _rv in _sc.items():
-            if _reg.startswith('_') or not isinstance(_rv, dict):
-                continue
-            # 取LONG/SHORT的min_score，用较低的作为体制门槛
-            _scores = []
-            for _dir, _dv in _rv.items():
-                if isinstance(_dv, dict) and 'min_score' in _dv:
-                    _scores.append(_dv['min_score'])
-            if _scores:
-                DYNAMIC_MIN[_reg] = min(_scores)
+        _sg = _sc.get('score_gate', {})
+        if _sg:
+            DYNAMIC_MIN.update(_sg)
 except Exception as _e:
-    import sys as _sys_sc; print(f'[WARN] signal_selector scoring_config: {_e}', file=_sys_sc.stderr)
+    import sys as _sys_sc; print(f'[WARN] signal_selector score_gate: {_e}', file=_sys_sc.stderr)
 
 MIN_WEIGHTED    = 60    # 默认门槛（动态覆盖）
 SINGLE_DIR_DIFF = 15    # 超过此差值推单向

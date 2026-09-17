@@ -6,39 +6,146 @@
     "_design_principle": "体制=仓位建议 不是方向限制。所有维度参与评分，让score自己说话"
   },
   "BEAR_TREND": {
-    "LONG": {"active_dims": "all", "sleep_dims": [], "position_mult": 1.0, "weights": {}},
-    "SHORT": {"active_dims": "all", "sleep_dims": [], "position_mult": 1.0, "weights": {}}
+    "LONG": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.0,
+      "weights": {}
+    },
+    "SHORT": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.0,
+      "weights": {}
+    }
   },
   "BEAR_EARLY": {
-    "LONG": {"active_dims": "all", "sleep_dims": [], "position_mult": 1.0, "weights": {}},
-    "SHORT": {"active_dims": "all", "sleep_dims": [], "position_mult": 1.0, "weights": {}}
+    "LONG": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.0,
+      "weights": {}
+    },
+    "SHORT": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.0,
+      "weights": {}
+    }
   },
   "BEAR_RECOVERY": {
-    "LONG": {"active_dims": "all", "sleep_dims": [], "position_mult": 1.0, "weights": {}},
-    "SHORT": {"active_dims": "all", "sleep_dims": [], "position_mult": 1.0, "weights": {}}
+    "LONG": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.0,
+      "weights": {}
+    },
+    "SHORT": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.0,
+      "weights": {}
+    }
   },
   "BULL_TREND": {
-    "LONG": {"active_dims": "all", "sleep_dims": [], "position_mult": 1.0, "weights": {}},
-    "SHORT": {"active_dims": "all", "sleep_dims": [], "position_mult": 1.0, "weights": {}}
+    "LONG": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.0,
+      "weights": {}
+    },
+    "SHORT": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.0,
+      "weights": {}
+    }
   },
   "BULL_EARLY": {
-    "LONG": {"active_dims": "all", "sleep_dims": [], "position_mult": 1.0, "weights": {}},
-    "SHORT": {"active_dims": "all", "sleep_dims": [], "position_mult": 1.0, "weights": {}}
+    "LONG": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.0,
+      "weights": {}
+    },
+    "SHORT": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.0,
+      "weights": {}
+    }
   },
   "CHOP_MID": {
-    "LONG": {"active_dims": "all", "sleep_dims": [], "position_mult": 1.0, "weights": {}},
-    "SHORT": {"active_dims": "all", "sleep_dims": [], "position_mult": 1.0, "weights": {}}
+    "LONG": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.0,
+      "weights": {}
+    },
+    "SHORT": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.0,
+      "weights": {}
+    }
   },
   "CHOP_LOW": {
-    "LONG": {"active_dims": "all", "sleep_dims": [], "position_mult": 1.0, "weights": {}},
-    "SHORT": {"active_dims": "all", "sleep_dims": [], "position_mult": 1.0, "weights": {}}
+    "LONG": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.0,
+      "weights": {}
+    },
+    "SHORT": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.0,
+      "weights": {}
+    }
   },
   "CHOP_HIGH": {
-    "LONG": {"active_dims": "all", "sleep_dims": [], "position_mult": 1.0, "weights": {}},
-    "SHORT": {"active_dims": "all", "sleep_dims": [], "position_mult": 1.0, "weights": {}}
+    "LONG": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.0,
+      "weights": {}
+    },
+    "SHORT": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.0,
+      "weights": {}
+    }
   },
   "UNKNOWN": {
-    "LONG": {"active_dims": "all", "sleep_dims": [], "position_mult": 1.0, "weights": {}},
-    "SHORT": {"active_dims": "all", "sleep_dims": [], "position_mult": 1.0, "weights": {}}
+    "LONG": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.0,
+      "weights": {}
+    },
+    "SHORT": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.0,
+      "weights": {}
+    }
+  },
+  "score_gate": {
+    "CHOP_MID": 80,
+    "BULL_TREND": 120,
+    "BULL_EARLY": 100,
+    "BEAR_TREND": 100,
+    "BEAR_EARLY": 90,
+    "BEAR_RECOVERY": 90,
+    "CHOP_LOW": 80,
+    "CHOP_HIGH": 80,
+    "UNKNOWN": 140
+  },
+  "score_gate_atr": {
+    "enabled": true,
+    "chop_atr_mult": 100,
+    "trend_atr_mult": 50,
+    "description": "score_gate = base + ATR_pct * mult, 热更新生效"
   }
 }

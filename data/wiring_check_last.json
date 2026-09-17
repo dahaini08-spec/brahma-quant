@@ -1,8 +1,24 @@
 {
-  "ts": "2026-09-12T03:03:45.320334",
-  "wired": 43,
+  "ts": "2026-09-17T11:43:06.299018",
+  "wired": 51,
   "zero_output": [],
   "orphans": [
-    "regime_engine_v2"
+    "ambuscade_engine",
+    "battlefield_intel",
+    "brahma_brain_ai",
+    "brahma_brain_prompt",
+    "brahma_engine_v5",
+    "brahma_mcp_server",
+    "brahma_plugins",
+    "brahma_w4_fangcang_ml",
+    "brahma_w5_paper_live",
+    "capital_allocator",
+    "cost_adapter",
+    "cross_market_alpha",
+    "cvd_engine",
+    "dag_weight_calibrator",
+    "data_contract_validator",
+    "dim_ic_audit",
+    "risk_engine"
   ]
 }

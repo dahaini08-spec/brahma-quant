@@ -663,106 +663,120 @@ def decide(
                 elif _score_range == '140+' and score >= 140:
                     _ic_ev = _data.get('ev'); _ic_wr = _data.get('wr')
 
-    # 条件检查 — P0改革：score不再作为否决条件，也不再作为missing项
-    # [2026-09-12 苏摩111] 所有门槛移除，score只调仓不否决不missing
-    # [2026-09-17 设计院B3] FVG vs signal_dir冲突检查
+    # ═════════════════════════════════════════════════════════
+    # [V3-2改革2 2026-09-17 苏摩111] 3层门控替代11层
+    # Gate1: score > 动态阈值(score_gate)
+    # Gate2: 成本后EV > 0
+    # Gate3: 风控熔断
+    # 保留硬否决: b2 WR<10%(极危险)
+    # 降级为信息标记(不阻挡ENTER): FVG冲突/OI矛盾/交叉验证<2/4
+    # ═════════════════════════════════════════════════════════
     missing = []
-    if not permission:
-        if _downgraded: missing.append(f'体制降级CHOP（三选二矛盾）')
-        else: missing.append('环境许可未通过')
-    if direction == 'NONE': missing.append(f'体制{regime}无方向')
-    if consistent_count < 2 and direction != 'NONE': missing.append(f'交叉验证仅{consistent_count}/4')
-    
-    # [2026-09-17 设计院B3] FVG方向与交易方向冲突 → 降级为WATCH
-    _fvg_vs_signal_conflict = False
-    if direction != 'NONE' and structure_dir != 'NONE' and direction != structure_dir:
-        _fvg_vs_signal_conflict = True
-        missing.append(f'FVG={structure_dir}≠信号={direction}（逆FVG）')
-    
-    if (entry_lo == 0 or entry_hi == 0) and direction != 'NONE': missing.append('入场区=0（方向矛盾）')
-    if sl > 0 and not sl_valid:
-        # [2026-09-12 苏摩111] SL拆分两个条件明确哪个不通过
-        _sl_dist = abs(entry_lo - sl) if direction == 'LONG' else abs(sl - entry_hi) if direction == 'SHORT' else 0
-        _atr4h_thresh = atr_4h * 1.5 if atr_4h else 0
-        if _sl_dist <= _atr4h_thresh:
-            missing.append(f'SL距离${_sl_dist:.0f}<1.5×ATR4H(${_atr4h_thresh:.0f})')
-        if sl_pct < _sl_pct_req * 100 - 0.01:
-            missing.append(f'SL={sl_pct:.2f}%<铁律{_sl_pct_req*100:.1f}%')
-    if 0 < rr < 2.0: missing.append(f'RR={rr:.1f}<2.0')
-    if rr == 0 and direction != 'NONE': missing.append('RR无法计算')
-    # [2026-09-12 苏摩111] 死穴门控移除：所有封禁都是错误的
-    # BULL:LONG:score≥140不再标记为死穴，改为降仓信息
-    _dead_zone = False  # 永久关闭死穴门控
-    # OI矛盾
-    if direction == 'LONG' and oi_signal == 'SHORT_BUILD': missing.append(f'做多但OI={oi_signal}')
-    if direction == 'SHORT' and oi_signal == 'LONG_BUILD': missing.append(f'做空但OI={oi_signal}')
-    # IC验证标注（改为信息而非否决）
-    if _ic_ev is not None and _ic_ev < 0 and direction != 'NONE':
-        missing.append(f'IC历史EV={_ic_ev:+.2f}%（减仓参考）')
+    _info_flags = []  # 信息标记，不阻挡ENTER
 
-    # ENTER/WATCH/WAIT分档
-    # 改进4：WAIT改为条件入场（2026-09-12 苏摩111封印）
-    # 不再输出纯WAIT，改为"方向X，条件Y未满足，挂单区Z"
-    # [2026-09-17 设计院D1] CHOP体制下min_score=60才能ENTER
-    # [2026-09-17 设计院D2] b2 WR<10%直接否决，不只扣分
-    _passed = 6 - len(missing) if direction != 'NONE' else 0
-    
-    # D2: b2入场时机WR<10% → 直接否决
+    # === 硬否决: b2 WR<10% ===
     _b2_rejected = False
     try:
-        # [2026-09-17 设计院S3修复] b2_proximity从cf顶层传入，不在breakdown中
-        # 格式: 'gap=-0.25%<0.5% 极危险(WR=3%) -15'
         _b2_raw = b2_proximity or ''
         import re as _re_b2
         _wr_match = _re_b2.search(r'WR=(\d+)%', str(_b2_raw))
         if _wr_match:
             _b2_wr = float(_wr_match.group(1))
         else:
-            _b2_wr = 100  # 无b2数据时默认安全
+            _b2_wr = 100
         if _b2_wr < 10:
             _b2_rejected = True
-            if 'b2' not in [m.split('(')[0].strip() for m in missing]:
-                missing.append(f'b2 WR={_b2_wr:.0f}%<10%（极危险直接否决）')
+            missing.append(f'b2 WR={_b2_wr:.0f}%<10%（极危险直接否决）')
     except:
         pass
-    
-    # D1: CHOP体制score<60 → 不能ENTER，只能WATCH
-    _chop_score_block = ('CHOP' in str(regime).upper() and score < 60 and direction != 'NONE')
-    if _chop_score_block:
-        if f'CHOP score={score:.0f}<60' not in ' '.join(missing):
-            missing.append(f'CHOP score={score:.0f}<60（仅WATCH）')
-    
-    if len(missing) == 0 and direction != 'NONE' and not _b2_rejected and not _chop_score_block:
-        action = 'ENTER'
-    elif _passed >= 4 and direction != 'NONE' and not _b2_rejected:
-        action = 'WATCH'
-    elif _resonance_override and direction != 'NONE' and not _b2_rejected:
-        action = 'WATCH'  # 共振覆盖=给WATCH不是WAIT
-    elif _liq_wall_short and direction == 'SHORT' and not _b2_rejected:
-        action = 'WATCH'  # 止损墙做空=给WATCH
-    elif _chop_score_block and direction != 'NONE' and not _b2_rejected:
-        action = 'WATCH'  # CHOP score<60 → WATCH不是ENTER
 
-    # [改革4 2026-09-16 苏摩111] FOMC事件窗口保护
-    # FOMC前后4h: 止损墙做空降级为WAIT（防止逼空碾压）
+    # === Gate1: score > 动态阈值 ===
+    _score_gate = 80  # 默认
+    try:
+        import json as _gate_json, os as _gate_os
+        _gate_path = _gate_os.path.join(_gate_os.path.dirname(__file__), '..', 'data', 'scoring_config.json')
+        if _gate_os.path.exists(_gate_path):
+            _gate_cfg = _gate_json.loads(open(_gate_path).read())
+            _gate_map = _gate_cfg.get('score_gate', {})
+            _score_gate = _gate_map.get(regime, 80)
+    except:
+        pass
+    _gate1_pass = score >= _score_gate and direction != 'NONE'
+    if not _gate1_pass and direction != 'NONE':
+        missing.append(f'score={score:.0f}<gate={_score_gate}（{regime}）')
+
+    # === Gate2: 成本后EV > 0 ===
+    _gate2_pass = True
+    _net_ev = 0.0
+    try:
+        from brahma_brain.cost_adapter import compute_net_ev
+        _net_ev = compute_net_ev(score, regime, direction, rr, sl_pct)
+        if _net_ev <= 0 and direction != 'NONE':
+            _gate2_pass = False
+            missing.append(f'成本后EV={_net_ev:+.2f}%≤0')
+    except:
+        pass  # cost_adapter不可用时Gate2默认通过
+
+    # === Gate3: 风控熔断 ===
+    _gate3_pass = True
+    if not permission:
+        _gate3_pass = False
+        if _downgraded: missing.append(f'体制降级CHOP（三选二矛盾）')
+        else: missing.append('环境许可未通过')
+    if direction == 'NONE':
+        _gate3_pass = False
+        missing.append(f'体制{regime}无方向')
+    # 风控熔断: regime_state=RED + FOMC窗口
+    if regime_state == 'RED' and direction != 'NONE':
+        _info_flags.append(f'风控RED（仓位减半）')
+    # FOMC窗口止损墙做空→WAIT
     _fomc_window = False
     try:
-        from datetime import datetime, timedelta
+        from datetime import datetime
         _now = datetime.utcnow()
         for _date_str, _evt in _MACRO_EVENTS.items():
             if _evt.get('event') == 'FOMC':
                 _evt_dt = datetime.strptime(_date_str + ' ' + _evt.get('time_utc','18:00'), '%Y-%m-%d %H:%M')
-                if abs((_now - _evt_dt).total_seconds()) < 4 * 3600:  # ±4h
+                if abs((_now - _evt_dt).total_seconds()) < 4 * 3600:
                     _fomc_window = True
                     break
     except:
         pass
     if _fomc_window and _liq_wall_short and direction == 'SHORT' and not _breakout_signal:
-        action = 'WAIT'  # FOMC窗口内止损墙做空=等待
+        _gate3_pass = False
+        missing.append('FOMC窗口止损墙做空→等待')
+
+    # === 信息标记(不阻挡ENTER) ===
+    if direction != 'NONE' and structure_dir != 'NONE' and direction != structure_dir:
+        _info_flags.append(f'FVG={structure_dir}≠信号={direction}（逆FVG注意）')
+    if direction == 'LONG' and oi_signal == 'SHORT_BUILD':
+        _info_flags.append(f'做多但OI={oi_signal}')
+    if direction == 'SHORT' and oi_signal == 'LONG_BUILD':
+        _info_flags.append(f'做空但OI={oi_signal}')
+    if consistent_count < 2 and direction != 'NONE':
+        _info_flags.append(f'交叉验证仅{consistent_count}/4')
+    if _ic_ev is not None and _ic_ev < 0 and direction != 'NONE':
+        _info_flags.append(f'IC历史EV={_ic_ev:+.2f}%（减仓参考）')
+
+    # === 3层门控决策 ===
+    if _gate1_pass and _gate2_pass and _gate3_pass and not _b2_rejected:
+        action = 'ENTER'
+    elif _gate1_pass and not _gate2_pass and _gate3_pass and not _b2_rejected:
+        action = 'WATCH'  # Gate1过但EV不足→WATCH等条件改善
+    elif _gate1_pass and _gate2_pass and not _gate3_pass and not _b2_rejected:
+        action = 'WAIT'   # 风控熔断→强制等待
+    elif _gate1_pass and not _b2_rejected and direction != 'NONE':
+        action = 'WATCH'  # Gate1过但其他未过→WATCH
+    elif direction != 'NONE' and not _b2_rejected:
+        # Gate1未过→给挂单区WATCH，不是WAIT
+        action = 'WATCH'
+    elif _resonance_override and direction != 'NONE' and not _b2_rejected:
+        action = 'WATCH'  # 共振覆盖=给WATCH
+    elif _liq_wall_short and direction == 'SHORT' and not _b2_rejected:
+        action = 'WATCH'  # 止损墙做空=给WATCH
     elif _event_driven and direction != 'NONE':
         action = 'WATCH'  # 事件驱动=给WATCH
     elif _res_score < 3 and direction != 'NONE':
-        # [修复D 2026-09-16 苏摩111] 无共振→等待+说明缺失条件
         action = 'WAIT'
         _resonance_missing = []
         if not res.get('resonance_fvg', False): _resonance_missing.append('FVG')
@@ -1087,7 +1101,7 @@ def decide(
         'confidence': confidence, 'consistent_count': consistent_count,
         'cross_check': {'layer_directions': layer_dirs, 'conflicts': conflicts},
         'conflict_resolution': conflict_res,
-        'reason': reason, 'missing': missing, 'dead_zone': _dead_zone,
+        'reason': reason, 'missing': missing, 'dead_zone': False,
         'triggers': triggers, 'scenarios': scenarios,
         'ic_ev': _ic_ev, 'ic_wr': _ic_wr,
         'score': score, 'regime': regime,
