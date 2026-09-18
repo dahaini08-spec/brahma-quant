@@ -19,7 +19,7 @@ import copy  # [P1-C audit-fix] deepcopy for cf dict
 import json  # [D1-fix] 提升到顶部
 from datetime import datetime, timezone  # [D1-fix] 提升到顶部
 
-# [修复 2026-09-18] _ENTRY_OK 定义
+# [修复 2026-09-18] _ENTRY_OK 定义 + fallback双路径import
 try:
     from brahma_brain.brahma_core_entry import (
         calc_trade_params as _ctp_entry,
@@ -29,11 +29,20 @@ try:
     )
     _ENTRY_OK = True
 except Exception:
-    _ENTRY_OK = False
-    _ctp_entry = None
-    _rbp_entry = None
-    _nearest_swing_above = None
-    _nearest_swing_below = None
+    try:
+        from brahma_core_entry import (
+            calc_trade_params as _ctp_entry,
+            rebase_params as _rbp_entry,
+            _nearest_swing_above,
+            _nearest_swing_below,
+        )
+        _ENTRY_OK = True
+    except Exception:
+        _ENTRY_OK = False
+        _ctp_entry = None
+        _rbp_entry = None
+        _nearest_swing_above = None
+        _nearest_swing_below = None
 from pathlib import Path  # [D1-fix] 提升到顶部
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

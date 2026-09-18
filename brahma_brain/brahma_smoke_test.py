@@ -68,6 +68,7 @@ except Exception as e:
     _fail('T01', '方仓数据库', str(e)[:60])
 
 # ── T02 蒸馏矩阵 ──────────────────────────────────────────
+m = {}  # [FIX 2026-09-18] 默认空dict，防止T02失败后T11 NameError
 try:
     mfile = DATA / 'brahma_experience_matrix.json'
     assert mfile.exists(), "文件缺失"
