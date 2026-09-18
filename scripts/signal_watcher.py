@@ -223,7 +223,7 @@ def _format_signal_card(s: dict, price: float, gap_pct: float) -> str:
         gap_label = f"📏 距入场区 {gap_pct:.2f}%"
 
     text = f"""🏯 梵天信号 · {sym}/USDT {direct}
-━━━━━━━━━━━━━━━━━━━
+————————————━
 🆔 {signal_id}
 现价: {p(price)}  体制: {regime}
 评分: {score:.0f}  grade: {grade}  {gap_label}
@@ -232,7 +232,7 @@ def _format_signal_card(s: dict, price: float, gap_pct: float) -> str:
 止损:   {p(sl)}
 T1:     {p(tp1)}  R:R={rr}x
 T2:     {p(tp2)}
-━━━━━━━━━━━━━━━━━━━
+————————————━
 信号时间: {ts} UTC
 ⚠️ 仅供参考，注意风控"""
     return text

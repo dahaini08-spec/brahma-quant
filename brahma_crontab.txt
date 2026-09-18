@@ -47,8 +47,10 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # Layer 3: 每小时任务 (错峰到不同分钟)
 # ============================================================
 # regime watcher — :00
-00 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/regime_realtime_watcher.py >> logs/regime_watcher.log 2>&1
+# [9.18 修复] regime从:00移到:02错峰避免:00风暴
+02 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/regime_realtime_watcher.py >> logs/regime_watcher.log 2>&1
 # drawdown+circuit_breaker — :03
+# [9.18 修复] drawdown+cb从:03移到:03保持（和:02 regime间隔1min足够）
 03 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 -c "from brahma_brain.drawdown_tracker import update_drawdown; update_drawdown(); import json,time; d=json.load(open('data/circuit_breaker.json')); d['ts']=time.time(); d['last_updated']=time.time(); json.dump(d,open('data/circuit_breaker.json','w')); dd=json.load(open('data/drawdown_state.json')); dd['ts']=time.time(); dd['last_updated']=time.time(); json.dump(dd,open('data/drawdown_state.json','w'))" >> logs/syscron.log 2>&1
 # CVD存活检查 — :06
 06 * * * * cd /root/.openclaw/workspace/trading-system && pgrep -f cvd_ws_collector >/dev/null || setsid python3 scripts/cvd_ws_collector.py >> logs/cvd_ws.log 2>&1
@@ -62,7 +64,8 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 17 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 brahma_brain/brahma_w5_paper_live.py >> logs/w5_paper.log 2>&1
 
 # OI watchlist — :00 偶数小时
-00 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/oi_watchlist_monitor.py >> logs/oi_watchlist.log 2>&1
+# [9.18 修复] oi_watchlist从:00移到:22错峰
+22 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/oi_watchlist_monitor.py >> logs/oi_watchlist.log 2>&1
 # battlefield auto analysis — :15 偶数小时
 15 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/battlefield_auto_analysis.py >> logs/auto_analysis.log 2>&1
 # core cleanup — :20 偶数小时
@@ -76,7 +79,8 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # OI advanced scanner — :30 每6h
 30 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/oi_advanced_scanner.py >> logs/oi_advanced.log 2>&1
 # whale monitor — :30 每4h
-30 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/whale_monitor.py >> logs/whale_monitor.log 2>&1
+# [9.18 修复] whale_monitor从:30移到:33错峰避免与oi_advanced重叠
+33 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/whale_monitor.py >> logs/whale_monitor.log 2>&1
 # liq heatmap — :45 每4h
 45 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/liq_heatmap.py >> logs/liq_heatmap.log 2>&1
 # brahma autocheck — :50 每6h
@@ -133,17 +137,26 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 
 # GEX刷新 — 每4小时, 用gex_unified.scan_gex写gex_state.json
 # [9.15苏摩111 P1修复] 扩展到tier1标的
-0 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 -c "from brahma_brain.gex_unified import scan_gex; [scan_gex(s,force=True) for s in ['BTC','ETH','HYPE','XAU','CL','SKHY','SPCX','NVDA','MSTR','SOXL']]" >> logs/gex_cron.log 2>&1
+# [9.18苏摩111 顶层修复] GEX从10标的→BTC+ETH防OOM
+0 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 -c "from brahma_brain.gex_unified import scan_gex; [scan_gex(s,force=True) for s in ['BTC','ETH']]" >> logs/gex_cron.log 2>&1
 # vol_beta刷新 — 每4小时
-0 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 -c "from brahma_brain.vol_beta_engine import run; run('BTC'); run('ETH')" >> logs/vol_beta_cron.log 2>&1
+# [9.18 修复] vol_beta从:00移到:04错峰
+4 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 -c "from brahma_brain.vol_beta_engine import run; run('BTC'); run('ETH')" >> logs/vol_beta_cron.log 2>&1
 
 # process-guardian — 每10min纯脚本,不消耗AI积分
 */10 * * * * cd /root/.openclaw/workspace/trading-system && timeout 15 bash scripts/process_guardian.sh >> logs/process_guardian.log 2>&1
 # auto-executor — 每小时纯脚本,不消耗AI积分
-0 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/paper_executor.py >> logs/paper_executor.log 2>&1
+# [9.18 修复] paper_executor从:00移到:07错峰
+07 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/paper_executor.py >> logs/paper_executor.log 2>&1
 # signal-settler — 每6h纯脚本,WR反馈闭环结算 [9.15苏摩111 从OpenClaw cron移入supercronic]
-0 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/signal_settler.py --push >> logs/settler.log 2>&1
+# [9.18 修复] signal_settler从:00移到:52错峰
+52 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/signal_settler.py --push >> logs/settler.log 2>&1
 */30 * * * * cd /root/.openclaw/workspace/trading-system && /usr/bin/python3 -c "from brahma_brain.prediction_verifier import verify_predictions; s=verify_predictions(4.0); print(f'prediction_verify: {s}')" >> logs/prediction_verify.log 2>&1
 
 # macro数据刷新 — 每天06:00 UTC（北京14:00）
 0 6 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/macro_real_fetcher.py >> logs/macro_cron.log 2>&1
+
+# ============================================================
+# Layer -1: 二级看门狗 (每5min, 纯bash防OOM) [9.18苏摩111]
+# ============================================================
+*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 10 bash scripts/watchdog_l2.sh >> logs/watchdog_l2.log 2>&1

@@ -2427,9 +2427,9 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         _freshness_tag = ' ✅数据全新鲜'
 
     lines = [
-        f'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        f'——————————————————————————━━',
         f'🏛️ 梵天80维全能力分析 | {sym}/USDT 基准${p:,.0f}→实时${_live:,.0f} | {ts} (耗时{_elapsed:.0f}s){_freshness_tag}',
-        f'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        f'——————————————————————————━━',
         f'',
         f'【体制】{regime}  score={score:.0f}  grade={grade}',
         f'',
@@ -2893,7 +2893,7 @@ def main():
             # BTC-ETH correlation is 0.85 (from Step9 risk)
             if _btc_dir != 'NONE' and _eth_dir != 'NONE' and _btc_dir != _eth_dir:
                 _cross_lines.append('')
-                _cross_lines.append('━━━ 🔄 分阶段策略标注 ━━━')
+                _cross_lines.append('—— 🔄 分阶段策略标注 ——')
                 _cross_lines.append(f'  BTC={_btc_dir} ETH={_eth_dir} 相关性0.85 → 非矛盾，是分阶段操作')
                 if _btc_dir == 'LONG' and _eth_dir == 'SHORT':
                     _cross_lines.append('  阶段1: ETH反弹做空（1H短期）')

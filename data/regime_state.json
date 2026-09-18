@@ -7,10 +7,10 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789658658.6984255,
+    "last_update_ts": 1789718685.0972893,
     "confirmed_cn": "弱震荡",
-    "last_sw_reset": 1789609255.5509894,
-    "candidate_start_ts": 1789658658.6952076
+    "last_sw_reset": 1789704113.3462245,
+    "candidate_start_ts": 1789714846.9064696
   },
   "ETHUSDT": {
     "confirmed": "CHOP_MID",
@@ -20,9 +20,9 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789647697.8759828,
-    "last_sw_reset": 1789568133.1667855,
-    "candidate_start_ts": 1789639105.260733,
+    "last_update_ts": 1789718685.0871005,
+    "last_sw_reset": 1789658966.741098,
+    "candidate_start_ts": 1789712664.406263,
     "confirmed_cn": "弱震荡"
   },
   "SPCXUSDT": {
@@ -59,10 +59,10 @@
     "confirmed_at": 1789507466.8972108,
     "switch_count_24h": 0,
     "last_raw": "BULL_CORRECTION",
-    "last_update_ts": 1789637089.1010833,
+    "last_update_ts": 1789691085.6155708,
     "confirmed_cn": "牛市回调",
     "last_sw_reset": 1789626265.322496,
-    "candidate_start_ts": 1789626265.322496,
+    "candidate_start_ts": 1789691085.611216,
     "last_switch_latency_sec": 43194,
     "last_switch_latency_4h_bars": 3.0,
     "last_switch_from": "CHOP_MID",
@@ -97,10 +97,10 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789637089.0959268,
+    "last_update_ts": 1789680259.3743956,
     "confirmed_cn": "弱震荡",
     "last_sw_reset": 1789637089.0920856,
-    "candidate_start_ts": 1789637089.0920856
+    "candidate_start_ts": 1789680259.3687115
   },
   "NVDAUSDT": {
     "confirmed": "CHOP_MID",
@@ -149,10 +149,10 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789637089.1502333,
+    "last_update_ts": 1789680259.4218574,
     "confirmed_cn": "弱震荡",
-    "last_sw_reset": 1789550698.360244,
-    "candidate_start_ts": 1789637089.1459446
+    "last_sw_reset": 1789680259.4192011,
+    "candidate_start_ts": 1789680259.4192011
   },
   "CLUSDT": {
     "confirmed": "CHOP_MID",

@@ -126,7 +126,7 @@ def run():
     except Exception:
         disk_pct, disk_free, disk_icon = 0, 0, '⚠️'
 
-    lines.append('━━━━━━━━━━━━━━━━━━━━')
+    lines.append('————————————━━')
     # [P0-3内存监控 2026-09-03 苏摩111]
     try:
         _mf = open('/proc/meminfo').read()
@@ -160,7 +160,7 @@ def run():
             lines.append('  %-28s %s %s' % (
                 w['name'][:28], w['status'], format_ms(w['duration'])))
 
-    lines.append('━━━━━━━━━━━━━━━━━━━━')
+    lines.append('————————————━━')
 
     msg = '\n'.join(lines)
     print(msg)

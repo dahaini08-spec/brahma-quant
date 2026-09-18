@@ -1,6 +1,6 @@
 {
   "data_source": "BLS API + 苏摩配置(macro_config.json)",
-  "data_time": "2026-09-17 06:20 UTC",
+  "data_time": "2026-09-18 07:29 UTC",
   "cpi_core": {
     "value": 338.041,
     "period": "M08",
@@ -32,7 +32,7 @@
   },
   "macro_calendar": {
     "next_fomc": "2026-11-04",
-    "days_to_fomc": 47
+    "days_to_fomc": 46
   },
   "fear_greed": 61
 }

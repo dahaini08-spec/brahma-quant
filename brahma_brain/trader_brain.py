@@ -858,6 +858,7 @@ def decide(
         if _resonance_override: _extra = f' | 共振覆盖({_res_score}/5+OI+大户一致)'
         if _liq_wall_short: _extra += f' | 止损墙做空@${_ns:,.0f}'
         if _event_driven: _extra += f' | 事件驱动({_event_type})'
+        _passed = sum([_gate1_pass, _gate2_pass, _gate3_pass, not _b2_rejected, _resonance_override or _liq_wall_short or _event_driven, consistent_count >= 2])
         reason = f'WATCH({_passed}/6通过){_extra} — ' + ' / '.join(missing[:3])
     else:
         # 改进4：WAIT也给出挂单区和条件

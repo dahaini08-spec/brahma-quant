@@ -1940,7 +1940,7 @@ if __name__ == '__main__':
                         f'🎯 **人工入场窗口！** {sym}\n'
                         f'梵天强信号：HCME WR={_hcme_wr:.0f}% | grade={_grade_num:.0f} | 体制={_regime}\n'
                         f'系统拦截原因：{_block_reason}，无法自动执行\n'
-                        f'━━━━━━━━━━━━━━━━━━━━\n'
+                        f'————————————━━\n'
                         f'当前价：${_price:.2f}\n'
                         f'入场区：${_entry_lo:.2f}~${_entry_hi:.2f}\n'
                         f'止损：  ${_sl_price:.2f}（{_sl_pct:.1f}%）\n'

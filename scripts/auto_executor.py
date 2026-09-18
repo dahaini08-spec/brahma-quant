@@ -1945,12 +1945,12 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
                 _ts = _dt.datetime.now(_dt.timezone(_dt.timedelta(hours=8))).strftime('%m-%d %H:%M')
                 _watch_msg = (
                     f"👁 **梵天WATCH信号 · 待苏摩确认**\n"
-                    f"━━━━━━━━━━━━━━━━━━━━━━\n"
+                    f"——————————————━\n"
                     f"  {_tag}/USDT {_dir_cn} | score={_s:.0f} | {_regime}\n"
                     f"  入场区: ${_entry_lo:,.4f} ~ ${_entry_hi:,.4f}\n"
                     f"  止损:   ${_sl:,.4f}  -{_sl_pct}%\n"
                     f"  止盈:   ${_tp1:,.4f}  RR={_rr}x\n"
-                    f"━━━━━━━━━━━━━━━━━━━━━━\n"
+                    f"——————————————━\n"
                     f"  [操作指令]\n"
                     f"  ⏳ 等15M触发后入场 — 回复「执行」开仓\n"
                     f"  评分={_s:.0f}，需≥155自动开，当前等苏摩确认\n"
@@ -2073,7 +2073,7 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
                 _sl_pct_p = round(abs(float(_entry_p)-float(_sl_p))/float(_entry_p)*100, 2) if _entry_p and _sl_p else 0
                 _paper_msg = (
                     f"📋 **梵天纸面信号 · 已自动入队**\n"
-                    f"━━━━━━━━━━━━━━━━━━━━━━\n"
+                    f"——————————————━\n"
                     f"  {_tag_p}/USDT {_dir_cn_p} | score={score:.0f} | {regime}\n"
                     f"  入场: ${float(_entry_p):,.2f}  止损: ${float(_sl_p):,.2f} (-{_sl_pct_p}%)\n"
                     f"  止盈: ${float(_tp_p):,.2f}  RR={_rr_p}x\n"
@@ -2143,14 +2143,14 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
             lev      = exec_result.get('leverage', DEFAULT_LEV)
             _push(
                 f'⚡ 梵天自动开单\n'
-                f'━━━━━━━━━━━━━━━━\n'
+                f'——————————━\n'
                 f'标的：{sym}  {direct}\n'
                 f'评分：{score:.0f}  体制：{regime}\n'
                 f'成交：${fill_px:.4f}  {lev}x\n'
                 f'名义：${notional:.2f}\n'
                 f'止损：${sl_price:.4f}（SL={exec_result.get("sl_pct",2):.1f}%）\n'
                 f'止盈：${tp_price:.4f}\n'
-                f'━━━━━━━━━━━━━━━━\n'
+                f'——————————━\n'
                 f'signal_id: {sig_id}'
             )
             print(f'  ✅ 执行成功 fill=${fill_px:.4f} SL=${sl_price:.4f} TP=${tp_price:.4f}')

@@ -183,7 +183,7 @@ def generate_report(watchlist: dict, crypto_results: list, stock_results: list,
     lines.append("")
     
     # Crypto观察池
-    lines.append("━━━ Crypto 观察池 ━━━")
+    lines.append("—— Crypto 观察池 ——")
     for r in crypto_results:
         if 'error' in r:
             lines.append(f"  ❌ {r['symbol']}: {r['error']}")
@@ -197,7 +197,7 @@ def generate_report(watchlist: dict, crypto_results: list, stock_results: list,
     # 美股观察池
     if stock_results:
         lines.append("")
-        lines.append("━━━ 美股观察池 ━━━")
+        lines.append("—— 美股观察池 ——")
         for r in stock_results:
             if 'error' in r or not r:
                 lines.append(f"  ❌ {r.get('symbol','?')}: 数据获取失败")
@@ -216,7 +216,7 @@ def generate_report(watchlist: dict, crypto_results: list, stock_results: list,
     
     lines.append("")
     if all_triggers:
-        lines.append("━━━ ⚠️ 触发关注 ━━━")
+        lines.append("—— ⚠️ 触发关注 ——")
         for sym, trigger in all_triggers:
             lines.append(f"  🔔 {sym}: {trigger}")
         
@@ -225,7 +225,7 @@ def generate_report(watchlist: dict, crypto_results: list, stock_results: list,
             lines.append("")
             lines.append("  📌 恐慌区间已触发，建议进入深度研究（第三步）")
     else:
-        lines.append("━━━ ✅ 无触发 | 继续等待 ━━━")
+        lines.append("—— ✅ 无触发 | 继续等待 ——")
     
     lines.append("")
     lines.append("📊 梵天带血筹码监控器 | 不是建议")

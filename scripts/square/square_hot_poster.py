@@ -177,7 +177,7 @@ def rewrite_as_trader(draft: str) -> str:
             rewritten = re.sub(r'\*(.+?)\*', r'\1', rewritten)            # *斜体* → 斜体
             rewritten = re.sub(r'^#{1,6}\s+', '', rewritten, flags=re.MULTILINE)  # ##标题 → 无格式
             rewritten = re.sub(r'`(.+?)`', r'\1', rewritten)               # `代码` → 代码
-            rewritten = re.sub(r'^---+$', '━━━━━━', rewritten, flags=re.MULTILINE)  # --- → ━━━
+            rewritten = re.sub(r'^---+$', '——', rewritten, flags=re.MULTILINE)  # --- → ——
             rewritten = rewritten.strip()
             print(f'[rewrite] ✅ 重写完成 {len(draft)}→{len(rewritten)}字')
             return rewritten
@@ -390,9 +390,7 @@ def build_hot_tickers() -> str:
             f'📊 {now_cst()} CST',
             f'  {price_str} | 24H: {chg:+.1f}% | 今日高: {recent_high:.4f} | 低: {recent_low:.4f}',
             '',
-            f'━━━ 发生了什么 ━━━', '',
             mechanism, '',
-            f'━━━ 我的判断 ━━━', '',
             stance, '',
             question, '',
             f'#{hot_sym} #合约交易 #加密货币',

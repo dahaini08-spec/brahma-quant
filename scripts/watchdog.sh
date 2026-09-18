@@ -40,7 +40,7 @@ if ! ps aux | grep -q "[c]loudflared"; then
         
         # 推送新URL到Jarvis
         MSG="🔄 梵天系统自动恢复
-━━━━━━━━━━━━━━━
+——————————
 ✅ 后端服务：在线
 ✅ Tunnel已重建
 

@@ -107,7 +107,7 @@ def push_signal_card_v3(r_raw: dict) -> bool:
         # VIP卡片格式（姓赵不宣封印格式）
         msg = (
             f'🚨 梵天VIP信号 · {tier}\n'
-            f'━━━━━━━━━━━━━━━━━━━━━\n'
+            f'——————————————\n'
             f'{emoji} {sym}/USDT {direction} | score={score:.0f} grade={grade:.0f}\n'
             f'体制: {regime}\n'
             f'入场: ${entry_lo:,.2f} ~ ${entry_hi:,.2f}\n'
@@ -119,7 +119,7 @@ def push_signal_card_v3(r_raw: dict) -> bool:
         if hcme_wr > 0:
             msg += f'HCME: WR={hcme_wr:.0f}%\n'
         msg += (
-            f'━━━━━━━━━━━━━━━━━━━━━\n'
+            f'——————————————\n'
             f'{ts} UTC [事件驱动]'
         )
         

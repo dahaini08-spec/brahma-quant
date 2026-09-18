@@ -151,15 +151,15 @@ def generate_performance_report() -> str:
 
     lines = [
         f'📊 **梵天纸面实盘绩效报告**',
-        f'━━━━━━━━━━━━━━━━━━━━━━',
+        f'——————————————━',
         f'📅 {start} 启动 → {now_str} UTC',
-        f'━━━━━━━━━━━━━━━━━━━━━━',
+        f'——————————————━',
         f'💰 NAV: {acc.get("start_nav",100):.1f} → {acc.get("current_nav",100):.2f} ({nav_chg:+.2f}单位)',
         f'📈 总收益: {acc.get("total_pnl_pct",0):+.2f}%  |  最大回撤: -{acc.get("max_drawdown_pct",0):.2f}%',
         f'🎯 胜率: {wr:.1%} ({len(wins)}W/{len(losses)}L/{n}总)',
         f'⚡ EV/笔: {ev:+.3f}%  |  Sharpe: {sharpe}',
         f'💹 平均盈利: {avg_win:+.2f}%  |  平均亏损: {avg_loss:+.2f}%',
-        f'━━━━━━━━━━━━━━━━━━━━━━',
+        f'——————————————━',
     ]
 
     if regime_stats:
@@ -178,7 +178,7 @@ def generate_performance_report() -> str:
                 lines.append(f'  score{bucket}: WR={s_wr:.0%} n={s["n"]}')
 
     # 注资建议
-    lines.append('━━━━━━━━━━━━━━━━━━━━━━')
+    lines.append('——————————————━')
     days_run = max((time.time() - time.mktime(
         __import__('time').strptime(start, '%Y-%m-%d'))) / 86400, 0.1)
     days_left = max(30 - days_run, 0)

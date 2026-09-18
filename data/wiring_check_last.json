@@ -1,5 +1,5 @@
 {
-  "ts": "2026-09-17T12:21:42.746558",
+  "ts": "2026-09-17T15:29:31.722951",
   "wired": 50,
   "zero_output": [],
   "orphans": [
@@ -8,7 +8,6 @@
     "brahma_brain_ai",
     "brahma_brain_prompt",
     "brahma_core_entry",
-    "brahma_core_v1_backup",
     "brahma_engine_v5",
     "brahma_mcp_server",
     "brahma_plugins",
