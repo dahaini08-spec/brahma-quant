@@ -148,7 +148,7 @@ def get_position_pct(symbol: str, score: float, direction: str,
     }
     """
     import datetime as _dt_ps
-    _now_ps = _dt_ps.datetime.utcnow()
+    _now_ps = _dt_ps.datetime.now(timezone.utc)
 
     sr = _score_range(score)
     dir_upper = direction.upper() if direction else 'ANY'

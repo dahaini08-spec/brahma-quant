@@ -18,6 +18,22 @@ import os, sys, time
 import copy  # [P1-C audit-fix] deepcopy for cf dict
 import json  # [D1-fix] 提升到顶部
 from datetime import datetime, timezone  # [D1-fix] 提升到顶部
+
+# [修复 2026-09-18] _ENTRY_OK 定义
+try:
+    from brahma_brain.brahma_core_entry import (
+        calc_trade_params as _ctp_entry,
+        rebase_params as _rbp_entry,
+        _nearest_swing_above,
+        _nearest_swing_below,
+    )
+    _ENTRY_OK = True
+except Exception:
+    _ENTRY_OK = False
+    _ctp_entry = None
+    _rbp_entry = None
+    _nearest_swing_above = None
+    _nearest_swing_below = None
 from pathlib import Path  # [D1-fix] 提升到顶部
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -973,6 +989,19 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     except Exception:
         pass  # trace不能影响主流程
 
+    # ── [FIX-3 2026-09-18] 逆势方向最终惩罚 — return前最后一步 ──────────
+    # 根因：Phase C取消score乘数后，逆势RSI超卖加分导致BEAR_TREND LONG>SHORT
+    # 修复：在所有加分层完成后对逆势组合施加×0.68（对应WR=45%信息比）
+    _is_counter_trend_final = (
+        ('BEAR_TREND' in str(breakdown.get('_regime', '')).upper() and
+         str(signal_dir).upper() in ('LONG', '做多', 'UP')) or
+        ('BULL_TREND' in str(breakdown.get('_regime', '')).upper() and
+         str(signal_dir).upper() in ('SHORT', '做空', 'DOWN'))
+    )
+    if _is_counter_trend_final and score > 0:
+        score = int(score * 0.68)
+        breakdown['_counter_trend_penalty'] = 'FIX-3: 逆势最终惩罚×0.68'
+
     return {
         'total':      score,
         'score':      score,    # [P1修复 2026-07-12] 补充score别名 — analyze()/run_analysis读.get('score')，原只有'total'导致永远None
@@ -984,9 +1013,9 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         'breakdown':  breakdown,
     }
 
-# 精确交易参数生成
-
-    return max(candidates) if candidates else entry * 0.985
+# ── [FIX-1 2026-09-18] 删除游离return + _ENTRY_OK守卫已存在L22-32 ──────
+# 原Bug: L1004 游离 return max(candidates) 在函数体外 → 不可达代码
+# _ENTRY_OK try/except 守卫已在L22-32定义，无需重复
 
 def calc_trade_params(ms: dict, smc: dict, signal_dir: str,
                       mtf_result: dict = None) -> dict:
@@ -1251,7 +1280,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # 最佳时段(UTC): 18H/22H/11H/7H → EV高40%+  最差月份: 8/9月 → 降权
     # 最佳交易日: 周四/周三/周一
     import datetime as _dt_m07
-    _now_m07 = _dt_m07.datetime.utcnow()
+    _now_m07 = _dt_m07.datetime.now(timezone.utc)
     _hour_m07 = _now_m07.hour
     _wday_m07 = _now_m07.weekday()  # 0=Mon, 3=Thu
     _month_m07 = _now_m07.month
@@ -2743,7 +2772,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # [细化 2026-07-01] 7月内部分层：上旬冷起动 / 中旬品质 / 下旬谨慎
     try:
         import datetime as _dt_p2
-        _now_p2 = _dt_p2.datetime.utcnow()
+        _now_p2 = _dt_p2.datetime.now(timezone.utc)
         _mth = _now_p2.month
         _day = _now_p2.day
         if signal_dir == 'SHORT' and 'BEAR' in str(ms.get('regime','') if ms else '').upper():
@@ -3037,9 +3066,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             # ══ [P2封印 2026-08-30 苏摩111] Hurst解析字段 ══
             'hurst_4h':       (lambda _s: float(__import__('re').search(r'H=([0-9.]+)', _s).group(1)) if __import__('re').search(r'H=([0-9.]+)', str(_s or '')) else None)(cf.get('breakdown', {}).get('Hurst体制验证')),
             # ── 时段（实时计算）──
-            'utc_hour':       __import__('datetime').datetime.utcnow().hour,
-            'weekday':        __import__('datetime').datetime.utcnow().weekday(),
-            'month':          __import__('datetime').datetime.utcnow().month,
+            'utc_hour':       __import__('datetime').datetime.now(__import__('datetime').timezone.utc).hour,
+            'weekday':        __import__('datetime').datetime.now(__import__('datetime').timezone.utc).weekday(),
+            'month':          __import__('datetime').datetime.now(__import__('datetime').timezone.utc).month,
             # ── ML/Kronos ──
             'kronos_p_up':    (extra_data or {}).get('kronos_p_up'),
             'xgb_score':      ((extra_data or {}).get('_snap_for_xgb') or {}).get('xgb_score',
@@ -3147,7 +3176,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                     # 每月最后一个周五 = 期权到期日，GEX磁铁效应最强→权重×1.5
                     try:
                         import datetime as _dt_gex
-                        _today = _dt_gex.datetime.utcnow()
+                        _today = _dt_gex.datetime.now(timezone.utc)
                         # 找当月最后一个周五
                         import calendar as _cal_gex
                         _last_day = _cal_gex.monthrange(_today.year, _today.month)[1]
@@ -4143,7 +4172,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     try:
         if _result.get('asset_type') == 'TRADFI_STOCK':
             import datetime as _dt_trd
-            _utc_now = _dt_trd.datetime.utcnow()
+            _utc_now = _dt_trd.datetime.now(timezone.utc)
             _tot_min = _utc_now.hour * 60 + _utc_now.minute
             # 美股交易时段: UTC 13:30(810min) ~ 20:00(1200min)
             _in_us_session = (810 <= _tot_min <= 1200)
@@ -4255,7 +4284,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _sl2_score  = float(_result.get('score_final', _result.get('score', 0)) or 0)
         _sl2_entry = {
             'ts':        _tsl2.time(),
-            'iso':       __import__('datetime').datetime.utcnow().isoformat() + 'Z',
+            'iso':       __import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat() + 'Z',
             'level':     'SIGNAL',
             'module':    'brahma_core',
             'event':     'analysis_complete',
