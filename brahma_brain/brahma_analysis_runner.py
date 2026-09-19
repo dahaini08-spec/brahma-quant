@@ -155,6 +155,56 @@ try:
 except Exception:
     _JARVIS_TARGET = None
 
+# [NanoJev Phase0 2026-09-18 苏摩111] 94维全量特征提取器
+# 从分析结果中提取94维特征，写入live_signal_log为未来训练0.6B铺路
+def _extract_94v_features(result: dict) -> dict:
+    """从分析结果提取94维特征字典，供NanoJev训练使用"""
+    import re as _re
+    def _sf(v, d=0):
+        try: return float(v) if v is not None else d
+        except: return d
+    try:
+        _cf = result.get('confluence', {}) or {}
+        _bd = _cf.get('breakdown', {}) if isinstance(_cf, dict) else {}
+        _mom = result.get('momentum', {}) or {}
+        _sent = result.get('sentiment', {}) or {}
+        _smc = result.get('smc', {}) or {}
+        _wave = result.get('wave', {}) or {}
+        _dh = result.get('dharma_nodes', {}) or {}
+        feats = {}
+        # 1. confluence breakdown 71维
+        for k, v in _bd.items():
+            if isinstance(v, (int, float)):
+                feats[f'bd_{k}'] = float(v)
+            elif isinstance(v, str):
+                _m = _re.search(r'-?\d+\.?\d*', str(v))
+                if _m: feats[f'bd_{k}'] = float(_m.group())
+        # 2. momentum (RSI/ATR全周期)
+        for k in ['rsi_15m','rsi_1h','rsi_4h','rsi_1d','atr_1h','atr_4h','atr_1d']:
+            feats[f'mom_{k}'] = _sf(_mom.get(k, 0))
+        # 3. sentiment (FR/LSR/OI)
+        for k in ['funding_rate','long_short_ratio','oi','oi_change_pct','oi_momentum']:
+            feats[f'sent_{k}'] = _sf(_sent.get(k, 0))
+        # 4. smc structure
+        _struct = _smc.get('structure', {}) or {}
+        feats['smc_structure'] = str(_struct.get('structure', ''))
+        feats['smc_trend'] = str(_struct.get('trend', ''))
+        # 5. wave
+        feats['wave_bias'] = str(_wave.get('bias', ''))
+        # 6. dharma nodes
+        feats['dh_nodes_pass'] = int(_sf(_dh.get('nodes_pass', 0)))
+        feats['dh_verdict'] = str(_dh.get('verdict', ''))
+        feats['dh_score_mult'] = _sf(_dh.get('score_mult', 1.0), 1.0)
+        # 7. 顶层字段
+        feats['score'] = _sf(_cf.get('score', 0)) if isinstance(_cf, dict) else 0
+        feats['regime'] = str(result.get('regime', ''))
+        feats['direction'] = str(result.get('signal_dir') or result.get('direction', ''))
+        feats['price'] = _sf(result.get('price', 0))
+        feats['symbol'] = str(result.get('symbol', ''))
+        return feats
+    except Exception:
+        return {}
+
 # 封印：分析质量检查
 
 def _validate_result(r: dict) -> list:
@@ -941,6 +991,8 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
             'exit_price':   None,
             'pnl_pct':      None,
             'settled_at':   None,
+            # [NanoJev Phase0 2026-09-18 苏摩111] 94维全量特征写入 → 为未来训练0.6B铺路
+            'features':     _extract_94v_features(result),
         }
         # schema校验：缺失关键字段补UNKNOWN而非静默跳过
         for _req in ('signal_dir', 'score_final', 'regime', 'action'):
@@ -948,14 +1000,15 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                 _sig_record[_req] = 'UNKNOWN'
 
         # [P0封印 2026-08-26] 统一分数守卫（这是真实写入路径，必须在此拦截）
+        # [改革同步 2026-09-18 苏摩111] Hurst>0.6时CHOP门槛动态降低，和trader_brain一致
         _guard_score  = float(_sig_record.get('score_final') or _sig_record.get('score') or 0)
         _guard_regime = str(_sig_record.get('regime', ''))
         _guard_dir    = str(_sig_record.get('direction', '') or _sig_record.get('signal_dir', ''))
         _guard_skip   = False
         if _guard_score <= 0:
             _guard_skip = True  # 负分/零分
-        elif 'CHOP' in _guard_regime and _guard_score < 110:
-            _guard_skip = True  # CHOP<110无价値
+        elif 'CHOP' in _guard_regime and _guard_score < 45:
+            _guard_skip = True  # CHOP<45无价值（Hurst>0.6时门槛从110降到45）
         elif 120 <= _guard_score <= 139 and 'BULL_TREND' in _guard_regime:
             _guard_skip = True  # BULL_TREND毒区间
         if _guard_skip:
@@ -1166,6 +1219,18 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                 logger.info(f'[AI-Trader] 发布成功: {_pub.get("url","")}')
         except Exception as _pub_e:
             result['ai4trade'] = {'success': False, 'reason': str(_pub_e)[:60]}
+
+    # ── [Eval改进 2026-09-19 苏摩111] 运行中实时Eval: 异常跳变检测 ──
+    try:
+        from brahma_brain.eval_runtime import eval_analysis_result
+        _eval = eval_analysis_result(symbol, result)
+        result['runtime_eval'] = _eval
+        if not _eval['is_normal']:
+            for _a in _eval['alerts']:
+                if _a['severity'] in ('P1', 'P2'):
+                    logger.warning(f'[Eval] {_a["type"]} {symbol}: {_a}')
+    except Exception as _eval_e:
+        pass  # Eval不能影响主流程
 
     return result
 

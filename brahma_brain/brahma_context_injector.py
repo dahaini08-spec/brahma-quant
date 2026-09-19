@@ -234,13 +234,25 @@ def inject_brahma_context(
     把梵天专有知识压缩成AI可读的系统提示词前缀。
     每次AI议会调用前注入，让AI拥有梵天专属思维。
 
-    参数:
-      symbol:     交易对
-      regime:     当前体制
-      signal_dir: LONG/SHORT
-      ms:         market_state（含rsi/bbw/fg等）
-      max_chars:  最大字符数（控制token消耗）
+    [Phase 1 2026-09-19 苏摩111] 动态Select裁剪:
+    - 铁律层: 始终注入（最关键）
+    - 方仓历史: 只注入当前标的+当前方向
+    - 蒸馏矩阵: 只注入当前体制+方向的WR，不注入全市场排名
+    - 相似案例: 只在score<100时注入（score高时不需要案例参考）
+    - 极端事件: 只在RSI极端(>80或<20)时注入
+    - 多周期: 始终注入（影响LLM对趋势的判断）
     """
+    # ── [Phase 1 2026-09-19] 动态Select: 按体制+方向选择记忆层 ──
+    rsi_1h = ms.get('rsi_1h', 50)
+    score = ms.get('score', ms.get('score_final', 100))
+    is_rsi_extreme = rsi_1h > 80 or rsi_1h < 20
+    # score高时不需要案例参考，score低时注入案例帮助LLM判断
+    need_cases = include_cases and score < 100
+    # 极端事件只在RSI极端时才注入
+    need_extreme = include_extreme and is_rsi_extreme
+    # 蒸馏矩阵只在非BULL_TREND时注入（BULL_TREND方向明确，不需要全市场对比）
+    need_matrix = regime not in ('BULL_TREND', 'BULL_EARLY')
+
     lines = [
         '═══ 梵天专属知识库（优先于通用金融知识）═══',
         '',
@@ -248,14 +260,14 @@ def inject_brahma_context(
         '',
     ]
 
-    # 层2: 铁律（最重要，放最前）
+    # 层2: 铁律（最重要，始终注入）
     lines += [
         '【梵天铁律】',
         get_brahma_rules(regime, signal_dir),
         '',
     ]
 
-    # 层1: 方仓历史摘要
+    # 层1: 方仓历史摘要（始终注入当前标的+当前方向）
     fc_summary = get_fangcang_summary(symbol, regime, signal_dir)
     total_n    = fc_summary.get('total_n', 0)
     best_tf    = fc_summary.get('best_tf')
@@ -264,7 +276,8 @@ def inject_brahma_context(
     if total_n > 0:
         lines.append('【方仓历史】')
         by_tf = fc_summary.get('by_tf', {})
-        for tf in ['1d', '4h', '1h', '15m']:
+        # [Phase 1] 只注入最优周期+1h，减少不相关周期干扰
+        for tf in ['1h', '4h']:
             if tf not in by_tf:
                 continue
             d = by_tf[tf]
@@ -276,58 +289,49 @@ def inject_brahma_context(
             lines.append(f'  ★ 最优周期: {best_tf} WR={best_wr:.0%}')
         lines.append('')
 
-    # 层1b: 蒸馏矩阵 — 全市场同体制同方向WR对比
-    _load_wr_matrix()
-    if _WR_MATRIX_CACHE:
-        sym_key = symbol.replace('USDT', '').upper()
-        mkt_parts = []
-        for tf in ['15m', '1h', '4h']:
-            # 优先查 regime:dir:tf，降级查 ALL:dir:tf
-            k_rgm = f'{regime}:{signal_dir}:{tf}'
-            k_all = f'ALL:{signal_dir}:{tf}'
-            s = (_WR_MATRIX_CACHE.get('by_regime_dir_tf', {}).get(k_rgm)
-                 or _WR_MATRIX_CACHE.get('by_regime_dir_tf', {}).get(k_all))
-            if s and s.get('n', 0) >= 20:
-                mkt_parts.append(f'{tf}:WR={s["wr"]:.0%}(n={s["n"]})')
-        if mkt_parts:
-            lines.append('【全市场同条件WR（蒸馏矩阵）】')
-            lines.append('  ' + '  '.join(mkt_parts))
-            # 当前币在全市场的排名
-            coin_tbl = _WR_MATRIX_CACHE.get('by_coin_dir_tf', {})
-            best_coin_wr = None
-            best_coin_tf = None
+    # 层1b: 蒸馏矩阵 — [Phase 1] 只在非BULL体制注入，只注入当前体制+方向
+    if need_matrix:
+        _load_wr_matrix()
+        if _WR_MATRIX_CACHE:
+            sym_key = symbol.replace('USDT', '').upper()
+            mkt_parts = []
             for tf in ['15m', '1h', '4h']:
-                ck = f'{sym_key}:{signal_dir}:{tf}'
-                cs = coin_tbl.get(ck)
-                if cs and cs.get('n', 0) >= 5:
-                    if best_coin_wr is None or cs['wr'] > best_coin_wr:
-                        best_coin_wr = cs['wr']
-                        best_coin_tf = tf
-            if best_coin_wr is not None:
-                lines.append(f'  {sym_key}单币最优: {best_coin_tf} WR={best_coin_wr:.0%}')
-            # top coins
-            rd_key = f'{regime}:{signal_dir}'
-            top_coins = _WR_MATRIX_CACHE.get('top_coins_by_regime_dir', {}).get(rd_key, [])
-            if not top_coins:
-                top_coins = _WR_MATRIX_CACHE.get('top_coins_by_regime_dir', {}).get(
-                    f'ALL:{signal_dir}', [])
-            if top_coins:
-                tc_str = ' '.join(f'{c["coin"]}:{c["wr"]:.0%}' for c in top_coins[:3])
-                lines.append(f'  ★ 当前体制最优前3: {tc_str}')
-            lines.append('')
+                k_rgm = f'{regime}:{signal_dir}:{tf}'
+                k_all = f'ALL:{signal_dir}:{tf}'
+                s = (_WR_MATRIX_CACHE.get('by_regime_dir_tf', {}).get(k_rgm)
+                     or _WR_MATRIX_CACHE.get('by_regime_dir_tf', {}).get(k_all))
+                if s and s.get('n', 0) >= 20:
+                    mkt_parts.append(f'{tf}:WR={s["wr"]:.0%}(n={s["n"]})')
+            if mkt_parts:
+                lines.append('【全市场同条件WR】')
+                lines.append('  ' + '  '.join(mkt_parts))
+                # [Phase 1] 只注入当前币最优，不注入top3排名（减少干扰）
+                coin_tbl = _WR_MATRIX_CACHE.get('by_coin_dir_tf', {})
+                best_coin_wr = None
+                best_coin_tf = None
+                for tf in ['15m', '1h', '4h']:
+                    ck = f'{sym_key}:{signal_dir}:{tf}'
+                    cs = coin_tbl.get(ck)
+                    if cs and cs.get('n', 0) >= 5:
+                        if best_coin_wr is None or cs['wr'] > best_coin_wr:
+                            best_coin_wr = cs['wr']
+                            best_coin_tf = tf
+                if best_coin_wr is not None:
+                    lines.append(f'  {sym_key}单币最优: {best_coin_tf} WR={best_coin_wr:.0%}')
+                lines.append('')
 
-    # 层3: 相似案例
-    if include_cases and total_n > 0:
+    # 层3: 相似案例 — [Phase 1] 只在score<100时注入
+    if need_cases and total_n > 0:
         lines += ['【最相似历史案例 Top3】']
         ms_with_context = {**ms, 'regime': regime, 'signal_dir': signal_dir}
         lines.append(get_top3_similar(symbol, ms_with_context))
         lines.append('')
 
-    # 层4: 极端事件
-    if include_extreme:
+    # 层4: 极端事件 — [Phase 1] 只在RSI极端时注入
+    if need_extreme:
         lines += ['【极端事件类比】', get_extreme_analog({**ms, 'symbol': symbol}), '']
 
-    # 层5: 多周期快照（multi_tf_context_builder）
+    # 层5: 多周期快照（始终注入）
     try:
         from multi_tf_context_builder import build_multi_tf_context
         multi_ctx = build_multi_tf_context(symbol, signal_dir, max_chars=700)

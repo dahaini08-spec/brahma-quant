@@ -258,7 +258,7 @@ def decide(
     if _event_type and _macro_ctx.get('phase') == 'post_event':
         # 事件后判断方向：用OI信号翻转作为方向确认
         _oi_flip_long = oi.get('signal', '') in ('SHORT_SQUEEZE', 'LONG_BUILD')
-        _oi_flip_short = oi.get('signal', '') in ('LONG_UNWIND', 'SHORT_BUILD')
+        _oi_flip_short = oi.get('signal', '') in ('SHORT_BUILD',)  # [改革3] LONG_UNWIND不再是做空信号
         if _oi_flip_long:
             _event_driven = True
             direction = 'LONG'
@@ -269,7 +269,27 @@ def decide(
             permission = True
 
     # 方向判定
-    direction = 'LONG' if 'BULL' in regime or 'RECOVERY' in regime else 'SHORT' if 'BEAR' in regime else 'NONE'
+    # [改革1 2026-09-18 苏摩111] 方向由FVG+OI+CVD三票决定，不由体制默认
+    # BULL/BEAR体制仍按原逻辑，CHOP_MID改为三票投票
+    if 'BULL' in regime or 'RECOVERY' in regime:
+        direction = 'LONG'
+    elif 'BEAR' in regime:
+        direction = 'SHORT'
+    else:
+        # CHOP_MID: 三票投票（FVG+OI+CVD）
+        _fvg_dir = 'LONG' if fvg.get('consensus', '') == 'BULL' else 'SHORT' if fvg.get('consensus', '') == 'BEAR' else 'NONE'
+        _oi_sig = oi.get('signal', '')
+        _oi_dir = 'LONG' if _oi_sig in ('LONG_BUILD', 'SHORT_SQUEEZE') else 'SHORT' if _oi_sig in ('SHORT_BUILD',) else 'NONE'  # [改革3] LONG_UNWIND不再=SHORT
+        _cvd_val = oi.get('cvd_1h', 0)  # [改革1修正] 从oi获取CVD，不是ms
+        _cvd_dir = 'LONG' if _cvd_val > 0 else 'SHORT' if _cvd_val < 0 else 'NONE'
+        _votes_long = sum(1 for d in [_fvg_dir, _oi_dir, _cvd_dir] if d == 'LONG')
+        _votes_short = sum(1 for d in [_fvg_dir, _oi_dir, _cvd_dir] if d == 'SHORT')
+        if _votes_long >= 2 and _votes_long > _votes_short:
+            direction = 'LONG'
+        elif _votes_short >= 2 and _votes_short > _votes_long:
+            direction = 'SHORT'
+        else:
+            direction = 'NONE'  # 三票分歧=不入场
 
     # ════════════════════════════════════════════════════════════
     # P1改革：价格突破事件驱动体制（2026-09-12 苏摩111封印）
@@ -311,7 +331,7 @@ def decide(
         if _ls > 0 and _ll > 0 and price > 0:
             _mid = (_ls + _ll) / 2
             _chop_range = True
-            if score >= 60:
+            if score >= 60 and direction == 'NONE':  # [修复 2026-09-18] 只有三票NONE时才用价格位置
                 direction = 'LONG' if price < _mid else 'SHORT'
 
     # 体制自我怀疑（OI/κ/Hurst三选二矛盾→降级CHOP）
@@ -320,7 +340,7 @@ def decide(
     if direction != 'NONE':
         _contra = 0
         _contra_list = []
-        _oi_dir = 'LONG' if oi.get('signal') in ('LONG_BUILD','SHORT_SQUEEZE') else 'SHORT' if oi.get('signal') in ('SHORT_BUILD','LONG_UNWIND') else 'NONE'
+        _oi_dir = 'LONG' if oi.get('signal') in ('LONG_BUILD','SHORT_SQUEEZE') else 'SHORT' if oi.get('signal') in ('SHORT_BUILD',) else 'NONE'  # [改革3]
         if _oi_dir != 'NONE' and _oi_dir != direction:
             _contra += 1; _contra_list.append(f'OI={_oi_dir}')
         _kappa_dir = 'LONG' if vol.get('kappa', 0) < -0.05 else 'SHORT' if vol.get('kappa', 0) > 0.05 else 'NONE'
@@ -371,7 +391,7 @@ def decide(
     _res_score = res.get('resonance_score', 0)
     _oi_dir_raw = oi.get('signal', 'NO_DATA')
     _oi_long = _oi_dir_raw in ('LONG_BUILD', 'SHORT_SQUEEZE')
-    _oi_short = _oi_dir_raw in ('SHORT_BUILD', 'LONG_UNWIND')
+    _oi_short = _oi_dir_raw in ('SHORT_BUILD',)  # [改革3] LONG_UNWIND不再=SHORT
     _sm_long = sm.get('big_long', 50) > sm.get('retail_long', 50)
     _sm_short = not _sm_long and sm.get('big_long', 50) < sm.get('retail_long', 50) - 3
     if _res_score >= 4 and direction != 'NONE':
@@ -393,9 +413,9 @@ def decide(
         _liq_dist_pct = (_ns - price) / price
         if 0.005 < _liq_dist_pct < 0.08:  # 止损墙在上方0.5%~8%
             _liq_wall_short = True
-            if direction == 'NONE':
-                direction = 'SHORT'  # 止损墙在上方=给做空方向
-                permission = True
+            # [修复 2026-09-18 苏摩111] 止损墙不再覆盖三票决定的方向
+            # direction='SHORT'删除，止损墙只标记_liq_wall_short=True
+            # 方向由FVG+OI+CVD三票投票决定，止损墙不绕过三票
 
     # 杠杆基数
     lev_base = 10
@@ -574,8 +594,12 @@ def decide(
         sl = 0; sl_pct = 0; tp1 = 0; tp2 = 0; tp3 = 0
         _sl_pct_req = 0.02
 
-    # RR计算
-    if direction == 'LONG' and entry_lo > 0 and sl > 0 and tp1 > 0:
+    # RR计算 [改革P0-1 2026-09-18 苏摩111] RR用TP2评估，TP1是减仓位不是全平位
+    if direction == 'LONG' and entry_lo > 0 and sl > 0 and tp2 > 0:
+        rr = round((tp2 - entry_lo) / (entry_lo - sl), 2)
+    elif direction == 'SHORT' and entry_hi > 0 and sl > 0 and tp2 > 0:
+        rr = round((entry_hi - tp2) / (sl - entry_hi), 2)
+    elif direction == 'LONG' and entry_lo > 0 and sl > 0 and tp1 > 0:  # fallback: TP2不存在用TP1
         rr = round((tp1 - entry_lo) / (entry_lo - sl), 2)
     elif direction == 'SHORT' and entry_hi > 0 and sl > 0 and tp1 > 0:
         rr = round((entry_hi - tp1) / (sl - entry_hi), 2)
@@ -593,7 +617,7 @@ def decide(
     oi_signal = oi.get('signal', 'NO_DATA')
     cvd_1h = oi.get('cvd_1h', 0)
     oi_bull = oi_signal in ('LONG_BUILD', 'SHORT_SQUEEZE')
-    money_flow_dir = 'LONG' if oi_bull else 'SHORT' if oi_signal in ('SHORT_BUILD', 'LONG_UNWIND') else 'NONE'
+    money_flow_dir = 'LONG' if oi_bull else 'SHORT' if oi_signal in ('SHORT_BUILD',) else 'NONE'  # [改革3] LONG_UNWIND不再=SHORT
     cvd_consistent = (oi_bull and cvd_1h >= 0) or (not oi_bull and cvd_1h <= 0) if oi_signal != 'NO_DATA' else True
 
     big_long = sm.get('big_long', 50)
@@ -626,13 +650,37 @@ def decide(
 
     # ════════════════════════════════════════════════════════════
     # Layer 5: 交叉验证层 — 4层方向一致性
+    # [改革5 2026-09-18 苏摩111] Hurst>0.6+FVG方向→趋势方向确认
     # ════════════════════════════════════════════════════════════
+    # Hurst趋势方向确认
+    _hurst_dir = 'NONE'
+    if hurst > 0.6 and structure_dir != 'NONE':
+        _hurst_dir = structure_dir  # Hurst>0.6时跟随FVG方向
+    elif hurst > 0.6 and _price_trend != 'FLAT':
+        _hurst_dir = 'LONG' if _price_trend == 'UP' else 'SHORT'
+
     layer_dirs = {
         'regime': direction,
         'structure': structure_dir,
         'money_flow': money_flow_dir,
         'volatility': vol_dir,
     }
+    # [P1-4修复 2026-09-19 苏摩111] OI对冲识别：OI方向与大户方向矛盾时降级
+    # 40年交易员审核：OI=SHORT_BUILD + 大户60%多 = 对冲不是看空
+    # OI不作为独立共振维度，降级为信息标记
+    _oi_hedge = False
+    _info_flags = []  # 提前定义，供后续所有信息标记使用
+    if oi_signal != 'NO_DATA' and oi_signal:
+        _big_long_pct = sm.get('big_long', 50) or 50
+        _oi_is_short = 'SHORT' in str(oi_signal).upper()
+        _oi_is_long = 'LONG' in str(oi_signal).upper()
+        if _oi_is_short and _big_long_pct >= 55:
+            _oi_hedge = True
+            _info_flags.append(f'OI对冲识别: OI={oi_signal}+大户{_big_long_pct:.0f}%多=对冲非看空')
+        elif _oi_is_long and _big_long_pct <= 45:
+            _oi_hedge = True
+            _info_flags.append(f'OI对冲识别: OI={oi_signal}+大户{_big_long_pct:.0f}%空=对冲非看多')
+
     consistent_count = sum(1 for v in layer_dirs.values() if v == direction) if direction != 'NONE' else 0
     conflicts = [f'{k}={v}' for k, v in layer_dirs.items() if v != 'NONE' and v != direction and direction != 'NONE']
 
@@ -642,6 +690,15 @@ def decide(
     if not cvd_consistent:
         _conf_mult *= 0.8
         confidence = 'MED' if confidence == 'HIGH' else 'LOW' if confidence == 'MED' else confidence
+
+    # [改革4 2026-09-18 苏摩111] CVD与方向矛盾时降级：ENTER→WATCH
+    _cvd_conflict = False
+    _cvd_conflict_flags = []  # 提前定义避免作用域问题
+    if direction != 'NONE' and oi_signal != 'NO_DATA':
+        _dir_cvd = 'LONG' if cvd_1h > 0 else 'SHORT' if cvd_1h < 0 else 'NONE'
+        if _dir_cvd != 'NONE' and _dir_cvd != direction:
+            _cvd_conflict = True
+            _cvd_conflict_flags.append(f'CVD与方向矛盾(cvd_1h={cvd_1h:+.0f})')
 
     # ════════════════════════════════════════════════════════════
     # Layer 6: 决策层 — IC验证+条件检查+ENTER/WATCH/WAIT分档
@@ -665,14 +722,16 @@ def decide(
 
     # ═════════════════════════════════════════════════════════
     # [V3-2改革2 2026-09-17 苏摩111] 3层门控替代11层
+    # [改革2 2026-09-18 苏摩111] 交叉验证<2/4从信息标记升级为硬阻挡
     # Gate1: score > 动态阈值(score_gate)
     # Gate2: 成本后EV > 0
     # Gate3: 风控熔断
+    # Gate4 [新增]: 交叉验证≥2/4才ENTER
     # 保留硬否决: b2 WR<10%(极危险)
-    # 降级为信息标记(不阻挡ENTER): FVG冲突/OI矛盾/交叉验证<2/4
+    # 降级为信息标记(不阻挡ENTER): FVG冲突/OI矛盾
     # ═════════════════════════════════════════════════════════
     missing = []
-    _info_flags = []  # 信息标记，不阻挡ENTER
+    _info_flags.extend(_cvd_conflict_flags) if _cvd_conflict_flags else None  # _info_flags已在Layer5提前定义
 
     # === 硬否决: b2 WR<10% ===
     _b2_rejected = False
@@ -691,6 +750,7 @@ def decide(
         pass
 
     # === Gate1: score > 动态阈值 ===
+    # [改革P1-1 2026-09-18 苏摩111] Hurst>0.6时门槛动态降低（趋势正在形成，提前放行）
     _score_gate = 80  # 默认
     try:
         import json as _gate_json, os as _gate_os
@@ -701,9 +761,18 @@ def decide(
             _score_gate = _gate_map.get(regime, 80)
     except:
         pass
+    # Hurst>0.6 → CHOP_MID门槛从60降到45（趋势隐现，提前放行）
+    # [P0-1修复 2026-09-19 苏摩111] Hurst>0.6 + κ<-0.1 → CHOP_TREND_TRANSITION gate降到30
+    # 三方联合审核：两个独立维度共振才切换，最少误判
+    if regime == 'CHOP_MID' and hurst > 0.6:
+        _score_gate = min(_score_gate, 45)
+    if regime == 'CHOP_MID' and hurst > 0.6 and kappa < -0.1:
+        _score_gate = min(_score_gate, 30)
+        _info_flags.append(f'CHOP_TREND_TRANSITION: Hurst={hurst:.3f}+κ={kappa:.3f}→gate降到30')
     _gate1_pass = score >= _score_gate and direction != 'NONE'
     if not _gate1_pass and direction != 'NONE':
-        missing.append(f'score={score:.0f}<gate={_score_gate}（{regime}）')
+        _hurst_note = f'+Hurst{hurst:.2f}>0.6门槛降至{_score_gate}' if regime == 'CHOP_MID' and hurst > 0.6 else ''
+        missing.append(f'score={score:.0f}<gate={_score_gate}（{regime}）{_hurst_note}')
 
     # === Gate2: 成本后EV > 0 ===
     _gate2_pass = True
@@ -732,8 +801,8 @@ def decide(
     # FOMC窗口止损墙做空→WAIT
     _fomc_window = False
     try:
-        from datetime import datetime
-        _now = datetime.utcnow()
+        from datetime import datetime, timezone
+        _now = datetime.now(timezone.utc)
         for _date_str, _evt in _MACRO_EVENTS.items():
             if _evt.get('event') == 'FOMC':
                 _evt_dt = datetime.strptime(_date_str + ' ' + _evt.get('time_utc','18:00'), '%Y-%m-%d %H:%M')
@@ -758,13 +827,20 @@ def decide(
     if _ic_ev is not None and _ic_ev < 0 and direction != 'NONE':
         _info_flags.append(f'IC历史EV={_ic_ev:+.2f}%（减仓参考）')
 
+    # [改革2 2026-09-18 苏摩111] 交叉验证<2/4硬阻挡ENTER
+    _gate4_pass = consistent_count >= 2 if direction != 'NONE' else False
+
     # === 3层门控决策 ===
-    if _gate1_pass and _gate2_pass and _gate3_pass and not _b2_rejected:
+    if _gate1_pass and _gate2_pass and _gate3_pass and _gate4_pass and not _b2_rejected and not _cvd_conflict:
         action = 'ENTER'
     elif _gate1_pass and not _gate2_pass and _gate3_pass and not _b2_rejected:
         action = 'WATCH'  # Gate1过但EV不足→WATCH等条件改善
     elif _gate1_pass and _gate2_pass and not _gate3_pass and not _b2_rejected:
         action = 'WAIT'   # 风控熔断→强制等待
+    elif _gate1_pass and _gate2_pass and _gate3_pass and not _gate4_pass and not _b2_rejected:
+        action = 'WATCH'  # [改革2] 交叉验证<2/4→WATCH不是ENTER
+    elif _gate1_pass and _gate2_pass and _gate3_pass and _gate4_pass and _cvd_conflict and not _b2_rejected:
+        action = 'WATCH'  # [改革4] CVD与方向矛盾→降级WATCH不是ENTER
     elif _gate1_pass and not _b2_rejected and direction != 'NONE':
         action = 'WATCH'  # Gate1过但其他未过→WATCH
     elif direction != 'NONE' and not _b2_rejected:
@@ -789,6 +865,35 @@ def decide(
         _resonance_missing_str = '+'.join(_resonance_missing) if _resonance_missing else '未知'
     else:
         action = 'WAIT'
+
+    # ── [Loop改进 2026-09-19 苏摩111] WATCH状态加显式条件指令 ──
+    _next_condition = ''
+    _improvement_hint = ''
+    if action == 'WATCH':
+        if not _gate2_pass:
+            _next_condition = '等EV转正或RR改善'
+            _improvement_hint = '等待入场价靠近TP1以提升EV'
+        elif not _gate4_pass:
+            _missing = []
+            if not res.get('resonance_fvg', False): _missing.append('FVG')
+            if not res.get('resonance_oi', False): _missing.append('OI')
+            _next_condition = f'等交叉验证对齐(缺{"+".join(_missing[:3])})'
+            _improvement_hint = '等待FVG/OI与方向一致'
+        elif _cvd_conflict:
+            _next_condition = '等CVD与方向一致'
+            _improvement_hint = 'CVD背离消除后再入场'
+        elif not _gate1_pass:
+            _next_condition = f'等score>={_score_gate}'
+            _improvement_hint = '等待更多共振维度激活提升score'
+        elif _liq_wall_short and direction == 'SHORT':
+            _next_condition = '等止损墙消化'
+            _improvement_hint = '止损墙消耗后做空信号更可靠'
+        elif _event_driven:
+            _next_condition = '等事件后1H收盘确认'
+            _improvement_hint = '事件后1H收阳+OI翻转=方向确认'
+        else:
+            _next_condition = '等Gate2/3通过'
+            _improvement_hint = '检查EV/风控熔断状态'
 
     # 仓位计算 — P0改革：score从否决改为系数
     if action in ('ENTER', 'WATCH'):
@@ -1030,7 +1135,7 @@ def decide(
             _short_tp1 = round(_amb_support_pool * 1.005, 1) if _amb_support_pool > 0 else round(price - atr_1h * 2.5, 1)  # 支撑池上方0.5%
             _short_tp2 = round(_amb_support_pool, 1) if _amb_support_pool > 0 else round(_short_tp1 - atr_1h * 1.5, 1)  # 精确支撑池
         _short_tp3 = round(_short_tp2 - atr_1h * 1.5, 1) if _short_tp2 > 0 else 0
-        _short_rr = round((_short_entry_hi - _short_tp1) / (_short_sl - _short_entry_hi), 2) if (_short_sl - _short_entry_hi) > 0 else 0
+        _short_rr = round((_short_entry_hi - _short_tp2) / (_short_sl - _short_entry_hi), 2) if (_short_sl - _short_entry_hi) > 0 and _short_tp2 > 0 else round((_short_entry_hi - _short_tp1) / (_short_sl - _short_entry_hi), 2) if (_short_sl - _short_entry_hi) > 0 else 0
 
         # 做多方向（下方支撑池 或 猎杀目标位）
         # [修复 2026-09-16 苏摩111] 如果推理层猎杀目标<支撑池，做多入场区下移到猎杀目标附近
@@ -1050,7 +1155,7 @@ def decide(
         _long_tp1 = round(_ns * 0.995, 1) if _ns > _long_entry_hi else round(price + atr_1h * 2.5, 1)  # 止损墙下方0.5%
         _long_tp2 = round(_ns, 1) if _ns > 0 else round(_long_tp1 + atr_1h * 1.5, 1)  # 精确止损墙
         _long_tp3 = round(_long_tp2 + atr_1h * 1.5, 1) if _long_tp2 > 0 else 0
-        _long_rr = round((_long_tp1 - _long_entry_lo) / (_long_entry_lo - _long_sl), 2) if (_long_entry_lo - _long_sl) > 0 else 0
+        _long_rr = round((_long_tp2 - _long_entry_lo) / (_long_entry_lo - _long_sl), 2) if (_long_entry_lo - _long_sl) > 0 and _long_tp2 > 0 else round((_long_tp1 - _long_entry_lo) / (_long_entry_lo - _long_sl), 2) if (_long_entry_lo - _long_sl) > 0 else 0
 
         # P2-③ 资金占用硬限制：双向总仓位2%NAV，单方向各1%
         _dual_pos_short = 1  # 1%NAV
@@ -1115,6 +1220,14 @@ def decide(
         'hunt_intel': _hunt_intel,
         'hunt_adjusted': _hunt_adjusted,
         'dual_layout': _dual_layout,
+        # [Loop改进 2026-09-19 苏摩111] WATCH状态显式条件指令
+        'next_condition': _next_condition if action == 'WATCH' else '',
+        'improvement_hint': _improvement_hint if action == 'WATCH' else '',
+        # [改革P1-2 2026-09-18] VIP双向预案需要反向入场区
+        'reverse_target_lo': _reverse_target_lo if direction == 'SHORT' else 0,
+        'reverse_target_hi': _reverse_target_hi if direction == 'SHORT' else 0,
+        'amb_support_pool': liq.get('nearest_long', 0),
+        'liq_nearest_short': liq.get('nearest_short', 0),
     }
 
 
@@ -1260,18 +1373,53 @@ def _format_vip_ambuscade(r, sym, d, emoji, regime):
             f'🚫 破空单${_s["sl"]:,.1f} / 破多单${_l["sl"]:,.1f}作废',
             f'🌿 姓赵不宣 | 不是建议',
         ])
-    # 单向布局（原逻辑）
+    # [改革P1-2 2026-09-18 苏摩111] WATCH模板改双向预案：不预判方向，等市场选择后触发
+    _logic = r.get('reason', '伏击')[:20]
+    _rev_lo = r.get('reverse_target_lo', 0)
+    _rev_hi = r.get('reverse_target_hi', 0)
+    _amb_support = r.get('amb_support_pool', 0)
+    # 主方向入场区
     if d == 'LONG':
         main_line = f'🟢 多单｜挂单区 ${r["entry_lo"]:,.1f}~${r["entry_hi"]:,.1f}'
         main_params = f'止损 ${r["sl"]:,.1f}｜目标 ${r["tp1"]:,.0f}→${r["tp2"]:,.0f}→${r["tp3"]:,.0f}'
         main_lev = f'杠杆 {r["leverage"]}x｜仓位 {r["position_pct"]}%'
-        side_line = '🔴 暂无空单｜等待结构'
+        # 反向：空单在止损墙位置
+        if _rev_lo > 0 and _rev_hi > 0:
+            side_line = f'🔴 空单｜观察区 ${_rev_lo:,.1f}~${_rev_hi:,.1f}'
+        elif r.get('liq_nearest_short', 0) > 0:
+            _ns_val = r['liq_nearest_short']
+            side_line = f'🔴 空单｜观察区 ${_ns_val:,.1f}附近'
+        else:
+            _ns = r.get("liq_nearest_short", 0) or 0
+            _nl = r.get("liq_nearest_long", 0) or 0
+            _short_sl = round(_ns * 1.02, 0) if _ns > 0 else 0
+            _short_tp1 = _nl if _nl > 0 else (r.get('entry_lo', 0) or 0)
+            _short_tp2 = round(_nl * 0.98, 0) if _nl > 0 else round((r.get('entry_lo', 0) or 0) * 0.98, 0)
+            _short_rr = round((_ns - _short_tp1) / (_short_sl - _ns), 1) if _short_sl > _ns > _short_tp1 > 0 else 0
+            side_line = f'🔴 空单（条件）｜止损墙 ${_ns:,.0f} 假突破回落'
+            side_params = f'触发: 4H收阴+CVD转负+OI翻空 | SL ${_short_sl:,.0f} | TP ${_short_tp1:,.0f}→${_short_tp2:,.0f} | RR {_short_rr}:1 | 杠杆3x | 0.5%'
+            side_lev = '3x'
+            side_nav = '0.5%'
     else:
         main_line = f'🔴 空单｜挂单区 ${r["entry_lo"]:,.1f}~${r["entry_hi"]:,.1f}'
         main_params = f'止损 ${r["sl"]:,.1f}｜目标 ${r["tp1"]:,.0f}→${r["tp2"]:,.0f}→${r["tp3"]:,.0f}'
         main_lev = f'杠杆 {r["leverage"]}x｜仓位 {r["position_pct"]}%'
-        side_line = '🟢 暂无多单｜等待结构'
-    _logic = r.get('reason', '伏击')[:20]
+        # 反向：多单在支撑池位置
+        if _amb_support > 0:
+            side_line = f'🟢 多单｜观察区 ${_amb_support:,.1f}附近'
+        elif _rev_lo > 0 and _rev_hi > 0:
+            side_line = f'🟢 多单｜观察区 ${_rev_lo:,.1f}~${_rev_hi:,.1f}'
+        else:
+            _nl2 = r.get("liq_nearest_long", 0) or 0
+            _ns2 = r.get("liq_nearest_short", 0) or 0
+            _long_sl = round(_nl2 * 0.98, 0) if _nl2 > 0 else 0
+            _long_tp1 = _ns2 if _ns2 > 0 else (r.get('entry_hi', 0) or 0)
+            _long_tp2 = round(_ns2 * 1.02, 0) if _ns2 > 0 else round((r.get('entry_hi', 0) or 0) * 1.02, 0)
+            _long_rr = round((_long_tp1 - _nl2) / (_nl2 - _long_sl), 1) if _nl2 > _long_sl > 0 < _long_tp1 else 0
+            side_line = f'🟢 多单（条件）｜支撑池 ${_nl2:,.0f} 接多'
+            side_params = f'触发: 4H收阳+CVD转正+OI翻多 | SL ${_long_sl:,.0f} | TP ${_long_tp1:,.0f}→${_long_tp2:,.0f} | RR {_long_rr}:1 | 杠杆3x | 0.5%'
+            side_lev = '3x'
+            side_nav = '0.5%'
     return '\n'.join([
         f'🌿 姓赵不宣 | {sym} 今日布局',
         f'——— {sym} ———',
@@ -1296,25 +1444,53 @@ def _format_vip_enter(r, sym, d, emoji, regime):
         main_params = f'止损 ${r["sl"]:,.1f}｜目标 ${r["tp1"]:,.0f}→${r["tp2"]:,.0f}→${r["tp3"]:,.0f}'
         main_lev = f'杠杆 {r["leverage"]}x｜仓位 {r["position_pct"]}%'
         if _is_bear:
-            side_line = '🟢 暂无多单｜等待结构'
-            side_params = ''
-            side_lev = ''
+            _nl2 = r.get("liq_nearest_long", 0) or 0
+            _ns2 = r.get("liq_nearest_short", 0) or 0
+            _long_sl = round(_nl2 * 0.98, 0) if _nl2 > 0 else 0
+            _long_tp1 = _ns2 if _ns2 > 0 else (r.get('entry_hi', 0) or 0)
+            _long_tp2 = round(_ns2 * 1.02, 0) if _ns2 > 0 else round((r.get('entry_hi', 0) or 0) * 1.02, 0)
+            _long_rr = round((_long_tp1 - _nl2) / (_nl2 - _long_sl), 1) if _nl2 > _long_sl > 0 < _long_tp1 else 0
+            side_line = f'🟢 多单（条件）｜支撑池 ${_nl2:,.0f} 接多'
+            side_params = f'触发: 4H收阳+CVD转正+OI翻多 | SL ${_long_sl:,.0f} | TP ${_long_tp1:,.0f}→${_long_tp2:,.0f} | RR {_long_rr}:1 | 杠杆3x | 0.5%'
+            side_lev = '3x'
+            side_nav = '0.5%'
         else:
-            side_line = '🔴 暂无空单｜等待结构'
-            side_params = ''
-            side_lev = ''
+            _ns = r.get("liq_nearest_short", 0) or 0
+            _nl = r.get("liq_nearest_long", 0) or 0
+            _short_sl = round(_ns * 1.02, 0) if _ns > 0 else 0
+            _short_tp1 = _nl if _nl > 0 else (r.get('entry_lo', 0) or 0)
+            _short_tp2 = round(_nl * 0.98, 0) if _nl > 0 else round((r.get('entry_lo', 0) or 0) * 0.98, 0)
+            _short_rr = round((_ns - _short_tp1) / (_short_sl - _ns), 1) if _short_sl > _ns > _short_tp1 > 0 else 0
+            side_line = f'🔴 空单（条件）｜止损墙 ${_ns:,.0f} 假突破回落'
+            side_params = f'触发: 4H收阴+CVD转负+OI翻空 | SL ${_short_sl:,.0f} | TP ${_short_tp1:,.0f}→${_short_tp2:,.0f} | RR {_short_rr}:1 | 杠杆3x | 0.5%'
+            side_lev = '3x'
+            side_nav = '0.5%'
     else:
         main_line = f'🔴 空单｜挂单区 ${r["entry_lo"]:,.1f}~${r["entry_hi"]:,.1f}'
         main_params = f'止损 ${r["sl"]:,.1f}｜目标 ${r["tp1"]:,.0f}→${r["tp2"]:,.0f}→${r["tp3"]:,.0f}'
         main_lev = f'杠杆 {r["leverage"]}x｜仓位 {r["position_pct"]}%'
         if _is_bull:
-            side_line = '🔴 暂无空单｜等待结构'
-            side_params = ''
-            side_lev = ''
+            _ns = r.get("liq_nearest_short", 0) or 0
+            _nl = r.get("liq_nearest_long", 0) or 0
+            _short_sl = round(_ns * 1.02, 0) if _ns > 0 else 0
+            _short_tp1 = _nl if _nl > 0 else (r.get('entry_lo', 0) or 0)
+            _short_tp2 = round(_nl * 0.98, 0) if _nl > 0 else round((r.get('entry_lo', 0) or 0) * 0.98, 0)
+            _short_rr = round((_ns - _short_tp1) / (_short_sl - _ns), 1) if _short_sl > _ns > _short_tp1 > 0 else 0
+            side_line = f'🔴 空单（条件）｜止损墙 ${_ns:,.0f} 假突破回落'
+            side_params = f'触发: 4H收阴+CVD转负+OI翻空 | SL ${_short_sl:,.0f} | TP ${_short_tp1:,.0f}→${_short_tp2:,.0f} | RR {_short_rr}:1 | 杠杆3x | 0.5%'
+            side_lev = '3x'
+            side_nav = '0.5%'
         else:
-            side_line = '🟢 暂无多单｜等待结构'
-            side_params = ''
-            side_lev = ''
+            _nl2 = r.get("liq_nearest_long", 0) or 0
+            _ns2 = r.get("liq_nearest_short", 0) or 0
+            _long_sl = round(_nl2 * 0.98, 0) if _nl2 > 0 else 0
+            _long_tp1 = _ns2 if _ns2 > 0 else (r.get('entry_hi', 0) or 0)
+            _long_tp2 = round(_ns2 * 1.02, 0) if _ns2 > 0 else round((r.get('entry_hi', 0) or 0) * 1.02, 0)
+            _long_rr = round((_long_tp1 - _nl2) / (_nl2 - _long_sl), 1) if _nl2 > _long_sl > 0 < _long_tp1 else 0
+            side_line = f'🟢 多单（条件）｜支撑池 ${_nl2:,.0f} 接多'
+            side_params = f'触发: 4H收阳+CVD转正+OI翻多 | SL ${_long_sl:,.0f} | TP ${_long_tp1:,.0f}→${_long_tp2:,.0f} | RR {_long_rr}:1 | 杠杆3x | 0.5%'
+            side_lev = '3x'
+            side_nav = '0.5%'
     _logic = r.get('reason', '')[:20]
     return '\n'.join([
         f'🌿 姓赵不宣 | {sym} 今日布局',
@@ -1324,7 +1500,6 @@ def _format_vip_enter(r, sym, d, emoji, regime):
         main_lev,
         side_line,
         side_params,
-        side_lev,
         f'⚠️ {_logic}',
         f'🚫 破${r["sl"]:,.1f}作废',
         f'🌿 姓赵不宣 | 不是建议',
@@ -1340,25 +1515,53 @@ def _format_vip_watch(r, sym, d, emoji, regime=''):
         main_params = f'止损 ${r["sl"]:,.1f}｜目标 ${r["tp1"]:,.0f}→${r["tp2"]:,.0f}→${r["tp3"]:,.0f}'
         main_lev = f'杠杆 {r["leverage"]}x｜仓位 {r["position_pct"]}%'
         if _is_bear:
-            side_line = '🟢 暂无多单｜等待结构'
-            side_params = ''
-            side_lev = ''
+            _nl2 = r.get("liq_nearest_long", 0) or 0
+            _ns2 = r.get("liq_nearest_short", 0) or 0
+            _long_sl = round(_nl2 * 0.98, 0) if _nl2 > 0 else 0
+            _long_tp1 = _ns2 if _ns2 > 0 else (r.get('entry_hi', 0) or 0)
+            _long_tp2 = round(_ns2 * 1.02, 0) if _ns2 > 0 else round((r.get('entry_hi', 0) or 0) * 1.02, 0)
+            _long_rr = round((_long_tp1 - _nl2) / (_nl2 - _long_sl), 1) if _nl2 > _long_sl > 0 < _long_tp1 else 0
+            side_line = f'🟢 多单（条件）｜支撑池 ${_nl2:,.0f} 接多'
+            side_params = f'触发: 4H收阳+CVD转正+OI翻多 | SL ${_long_sl:,.0f} | TP ${_long_tp1:,.0f}→${_long_tp2:,.0f} | RR {_long_rr}:1 | 杠杆3x | 0.5%'
+            side_lev = '3x'
+            side_nav = '0.5%'
         else:
-            side_line = '🔴 暂无空单｜等待结构'
-            side_params = ''
-            side_lev = ''
+            _ns = r.get("liq_nearest_short", 0) or 0
+            _nl = r.get("liq_nearest_long", 0) or 0
+            _short_sl = round(_ns * 1.02, 0) if _ns > 0 else 0
+            _short_tp1 = _nl if _nl > 0 else (r.get('entry_lo', 0) or 0)
+            _short_tp2 = round(_nl * 0.98, 0) if _nl > 0 else round((r.get('entry_lo', 0) or 0) * 0.98, 0)
+            _short_rr = round((_ns - _short_tp1) / (_short_sl - _ns), 1) if _short_sl > _ns > _short_tp1 > 0 else 0
+            side_line = f'🔴 空单（条件）｜止损墙 ${_ns:,.0f} 假突破回落'
+            side_params = f'触发: 4H收阴+CVD转负+OI翻空 | SL ${_short_sl:,.0f} | TP ${_short_tp1:,.0f}→${_short_tp2:,.0f} | RR {_short_rr}:1 | 杠杆3x | 0.5%'
+            side_lev = '3x'
+            side_nav = '0.5%'
     else:
         main_line = f'🔴 空单｜挂单区 ${r["entry_lo"]:,.1f}~${r["entry_hi"]:,.1f}'
         main_params = f'止损 ${r["sl"]:,.1f}｜目标 ${r["tp1"]:,.0f}→${r["tp2"]:,.0f}→${r["tp3"]:,.0f}'
         main_lev = f'杠杆 {r["leverage"]}x｜仓位 {r["position_pct"]}%'
         if _is_bull:
-            side_line = '🔴 暂无空单｜等待结构'
-            side_params = ''
-            side_lev = ''
+            _ns = r.get("liq_nearest_short", 0) or 0
+            _nl = r.get("liq_nearest_long", 0) or 0
+            _short_sl = round(_ns * 1.02, 0) if _ns > 0 else 0
+            _short_tp1 = _nl if _nl > 0 else (r.get('entry_lo', 0) or 0)
+            _short_tp2 = round(_nl * 0.98, 0) if _nl > 0 else round((r.get('entry_lo', 0) or 0) * 0.98, 0)
+            _short_rr = round((_ns - _short_tp1) / (_short_sl - _ns), 1) if _short_sl > _ns > _short_tp1 > 0 else 0
+            side_line = f'🔴 空单（条件）｜止损墙 ${_ns:,.0f} 假突破回落'
+            side_params = f'触发: 4H收阴+CVD转负+OI翻空 | SL ${_short_sl:,.0f} | TP ${_short_tp1:,.0f}→${_short_tp2:,.0f} | RR {_short_rr}:1 | 杠杆3x | 0.5%'
+            side_lev = '3x'
+            side_nav = '0.5%'
         else:
-            side_line = '🟢 暂无多单｜等待结构'
-            side_params = ''
-            side_lev = ''
+            _nl2 = r.get("liq_nearest_long", 0) or 0
+            _ns2 = r.get("liq_nearest_short", 0) or 0
+            _long_sl = round(_nl2 * 0.98, 0) if _nl2 > 0 else 0
+            _long_tp1 = _ns2 if _ns2 > 0 else (r.get('entry_hi', 0) or 0)
+            _long_tp2 = round(_ns2 * 1.02, 0) if _ns2 > 0 else round((r.get('entry_hi', 0) or 0) * 1.02, 0)
+            _long_rr = round((_long_tp1 - _nl2) / (_nl2 - _long_sl), 1) if _nl2 > _long_sl > 0 < _long_tp1 else 0
+            side_line = f'🟢 多单（条件）｜支撑池 ${_nl2:,.0f} 接多'
+            side_params = f'触发: 4H收阳+CVD转正+OI翻多 | SL ${_long_sl:,.0f} | TP ${_long_tp1:,.0f}→${_long_tp2:,.0f} | RR {_long_rr}:1 | 杠杆3x | 0.5%'
+            side_lev = '3x'
+            side_nav = '0.5%'
     _logic = r.get('reason', '条件未满')[:20]
     return '\n'.join([
         f'🌿 姓赵不宣 | {sym} 今日布局',
@@ -1368,7 +1571,6 @@ def _format_vip_watch(r, sym, d, emoji, regime=''):
         main_lev,
         side_line,
         side_params,
-        side_lev,
         f'⚠️ {_logic}',
         f'🚫 破${r["sl"]:,.1f}作废',
         f'🌿 姓赵不宣 | 不是建议',

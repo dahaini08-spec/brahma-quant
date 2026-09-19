@@ -210,9 +210,18 @@ PASS=正常 WARN=降分8 BLOCK=拒绝执行"""
             elif 'warn' in raw_l:
                 verdict, reason = 'WARN', 'LLM关键词:WARN'
 
-    return {
+    result = {
         'verdict':    verdict,
         'confidence': confidence,
         'reason':     reason,
         'elapsed':    elapsed,
     }
+
+    # ── [Phase 3 2026-09-19 苏摩111] 保存判断日志 ──
+    try:
+        from jev_judgment_log import log_judgment
+        log_judgment(result.get('symbol', ''), result, {'regime': result.get('regime', ''), 'signal_dir': result.get('direction', ''), 'score_final': result.get('score', 0)}, result)
+    except Exception:
+        pass
+
+    return result
