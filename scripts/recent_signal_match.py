@@ -73,38 +73,53 @@ def extract_current_features(regime: str, direction: str, oi_signal: str,
     }
 
 def calc_similarity(current: Dict, historical: Dict) -> float:
-    """计算5特征相似度 (0~1)"""
+    """计算相似度 (0~1)
+    [9.20修复 苏摩111] 历史信号缺少oi_signal/liq_dist_pct/sm_divergence字段
+    → 只用regime+direction匹配，权重重分配为regime 0.5 / direction 0.5
+    → 有oi_signal时额外加分（权重0.2），但不影响基础匹配
+    """
     score = 0.0
-    weights = {
-        'regime': 0.25,
-        'direction': 0.25,
-        'oi_signal': 0.20,
-        'liq_dist_pct': 0.15,
-        'sm_divergence': 0.15,
+    # [9.20修复] 基础权重：regime + direction（历史信号一定有）
+    base_weights = {
+        'regime': 0.50,
+        'direction': 0.50,
     }
-    # 精确匹配
-    for k in ('regime', 'direction', 'oi_signal'):
-        if current.get(k) == historical.get(k):
-            score += weights[k]
-        elif current.get(k, '').split('_')[0] == historical.get(k, '').split('_')[0]:
-            score += weights[k] * 0.5  # 同前缀（BULL_TREND vs BULL_EARLY）
-    # 数值匹配（容差10%）
+    for k in ('regime', 'direction'):
+        c_val = str(current.get(k, ''))
+        h_val = str(historical.get(k, ''))
+        if c_val == h_val:
+            score += base_weights[k]
+        elif c_val.split('_')[0] == h_val.split('_')[0]:
+            score += base_weights[k] * 0.5  # 同前缀（BULL_TREND vs BULL_EARLY）
+    # [9.20修复] OI信号可选加分（历史信号可能没有）
+    h_oi = historical.get('oi_signal')
+    if h_oi and h_oi != 'NO_DATA' and h_oi is not None:
+        c_oi = str(current.get('oi_signal', ''))
+        h_oi = str(h_oi)
+        if c_oi == h_oi:
+            score = min(1.0, score + 0.20)
+        elif c_oi.split('_')[0] == h_oi.split('_')[0]:
+            score = min(1.0, score + 0.10)
+    # [9.20修复] 数值匹配（历史信号可能没有）
     for k in ('liq_dist_pct', 'sm_divergence'):
-        c = abs(current.get(k, 0))
-        h = abs(historical.get(k, 0))
+        h_val = historical.get(k)
+        if h_val is None:
+            continue  # 历史信号没有此字段，跳过
+        c = abs(float(current.get(k, 0) or 0))
+        h = abs(float(h_val or 0))
         if c == 0 and h == 0:
-            score += weights[k]
+            score = min(1.0, score + 0.05)
         elif max(c, h) > 0:
             diff = abs(c - h) / max(c, h)
             if diff < 0.1:
-                score += weights[k]
+                score = min(1.0, score + 0.05)
             elif diff < 0.3:
-                score += weights[k] * 0.5
+                score = min(1.0, score + 0.025)
     return round(score, 3)
 
 def match(symbol: str, regime: str, direction: str, oi_signal: str,
           liq_dist_pct: float = 0, sm_divergence: float = 0,
-          min_similarity: float = 0.6, max_results: int = 5) -> Dict:
+          min_similarity: float = 0.4, max_results: int = 5) -> Dict:
     """
     匹配最近90天同标的信号
     返回：匹配案例 + WR + EV参考
@@ -126,7 +141,7 @@ def match(symbol: str, regime: str, direction: str, oi_signal: str,
         sim = calc_similarity(current, hist)
         if sim >= min_similarity:
             outcome = s.get('outcome', '')
-            is_win = outcome in ('TP1_HIT', 'TP2_HIT', 'TP3_HIT', 'WIN')
+            is_win = outcome in ('TP1_HIT', 'TP2_HIT', 'TP3_HIT', 'TP1_REACHED', 'TP2_REACHED', 'TP3_REACHED', 'WIN', 'TP1')
             pnl = s.get('pnl_pct', 0)
             matches.append({
                 'similarity': sim,
@@ -156,7 +171,9 @@ def match(symbol: str, regime: str, direction: str, oi_signal: str,
     wins = sum(1 for m in matches if m['win'])
     total = len(matches)
     wr = wins / total if total else 0
-    avg_pnl = sum(m['pnl_pct'] for m in matches) / total if total else 0
+    # [9.20修复] pnl_pct可能是None
+    _pnls = [float(m['pnl_pct'] or 0) for m in matches]
+    avg_pnl = sum(_pnls) / total if total else 0
 
     return {
         'matched': True,

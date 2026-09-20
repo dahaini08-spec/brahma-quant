@@ -25,7 +25,7 @@ rm -f /tmp/wd_state_$$
 SP_PID=$(pgrep -f "supercronic.*brahma_crontab" | head -1)
 if [ -z "$SP_PID" ]; then
     ALERT="${ALERT}⚠️ supercronic未运行 "
-    bash start_supercronic.sh >> logs/syscron.log 2>&1
+    timeout 30 bash start_supercronic.sh >> logs/syscron.log 2>&1
     sleep 3
     SP_PID=$(pgrep -f "supercronic.*brahma_crontab" | head -1)
     ALERT="${ALERT}→ 重启PID=$SP_PID "

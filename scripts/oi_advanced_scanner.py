@@ -1120,9 +1120,14 @@ def run():
               f"{r['whale_l']:>6.0f}% {action_flag}")
 
     # ── Step5: 写入 oi_candidates.json（修复BUG-1/2）──────────
+    # [9.20修复 苏摩111] FORCE_INCLUDE标的不被TOP_N截断
     candidates_dict = {}
     for r in valid[:TOP_N]:
         candidates_dict[r['symbol']] = r
+    # FORCE_INCLUDE标的即使排在TOP_N外也强制写入
+    for r in valid:
+        if r['symbol'] in FORCE_INCLUDE and r['symbol'] not in candidates_dict:
+            candidates_dict[r['symbol']] = r
 
     oi_output = {
         'updated_at':  now.timestamp(),

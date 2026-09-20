@@ -11,7 +11,7 @@ import sys
 from typing import Any
 
 
-def calc_replay(ms: dict, signal_dir: str, score: int, breakdown: dict, _result: dict) -> tuple[int, dict]:
+def calc_replay(ms: dict, signal_dir: str, score: int, breakdown: dict, _result: dict, _regime_upper: str = '') -> tuple[int, dict]:
     """
     40年经验复盘升级——四修正
     只修改 score 和 breakdown，不引入新变量到外层

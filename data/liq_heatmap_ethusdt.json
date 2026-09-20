@@ -1,1 +1,39 @@
-{"symbol": "ETHUSDT", "ts": 1789903914642.862, "levels": []}
+{
+  "symbol": "ETHUSDT",
+  "price": 2580.82,
+  "short_liq_map": {
+    "2": 3871.2,
+    "3": 3441.1,
+    "5": 3097.0,
+    "10": 2838.9,
+    "20": 2709.9,
+    "50": 2632.4
+  },
+  "long_liq_map": {
+    "2": 1290.4,
+    "3": 1720.5,
+    "5": 2064.7,
+    "10": 2322.7,
+    "20": 2451.8,
+    "50": 2529.2
+  },
+  "nearest_short_liq": 2632.4,
+  "nearest_long_liq": 2529.2,
+  "dist_to_short_liq": 2.0,
+  "dist_to_long_liq": 2.0,
+  "top_ask_clusters": [
+    [
+      2580.8,
+      2441604.0
+    ]
+  ],
+  "top_bid_clusters": [
+    [
+      2580.8,
+      2710177.0
+    ]
+  ],
+  "liq_bull_score": 5,
+  "liq_bear_score": 5,
+  "ts": 1789915676.6653273
+}

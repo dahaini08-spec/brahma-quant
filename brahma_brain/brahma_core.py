@@ -87,6 +87,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     import sys
     score = 0
     breakdown = {}
+    _result = {}
 
     # [2026-08-12 苏摹封印] RSI扁平化修复
     # 根因: ms['rsi_1h']存在momentum子字典里，顶层ms.get('rsi_1h')返回None
@@ -601,7 +602,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         from brahma_brain.brahma_core_replay import calc_replay as _calc_replay
     except ImportError:
         from brahma_core_replay import calc_replay as _calc_replay
-    score, breakdown = _calc_replay(ms, signal_dir, score, breakdown, _result)
+    score, breakdown = _calc_replay(ms, signal_dir, score, breakdown, _result, _regime_upper)
 
     # ══ [设计院 2026-06-30] CVD/HAR-RV/Hurst/VolumeProfile/清算流 因子层 ══════════
     # [封印 2026-09-20] 已提取到 brahma_core_factors.py

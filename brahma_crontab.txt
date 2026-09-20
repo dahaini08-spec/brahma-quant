@@ -82,7 +82,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [9.18 修复] whale_monitor从:30移到:33错峰避免与oi_advanced重叠
 33 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/whale_monitor.py >> logs/whale_monitor.log 2>&1
 # liq heatmap — :45 每4h
-45 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/liq_heatmap.py >> logs/liq_heatmap.log 2>&1
+45 */1 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/liq_heatmap.py >> logs/liq_heatmap.log 2>&1
 # brahma autocheck — :50 每6h
 50 */6 * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_autocheck.py --push >> logs/syscron.log 2>&1
 # log rotation — :55 每6h

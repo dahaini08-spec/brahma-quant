@@ -30,12 +30,13 @@ if ! python3 -c 'import lightgbm' 2>/dev/null; then
     echo "[startup] lightgbm restored"
 fi
 # jesse + jesse_rust: 已预装到venv，重启后只需检查
+# [9.20修复 苏摩111] pip install加timeout防止阻塞看门狗
 if ! venv/bin/python3 -c 'from jesse.indicators import rsi' 2>/dev/null; then
-    venv/bin/pip install --break-system-packages jesse jesse_rust 2>/dev/null
+    timeout 60 venv/bin/pip install --break-system-packages jesse jesse_rust 2>/dev/null
     if venv/bin/python3 -c 'from jesse.indicators import rsi' 2>/dev/null; then
         echo "[startup] jesse restored (fresh install)"
     else
-        echo "[startup] jesse FAILED - pip install error"
+        echo "[startup] jesse FAILED - pip install timeout/error"
     fi
 else
     echo "[startup] jesse already available in venv"

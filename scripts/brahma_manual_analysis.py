@@ -707,7 +707,7 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict, oi: dict = None, vo
         missing.append('入场区方向错误（商品价格不在入场区正确一侧）')
 
     # [2026-09-12 苏摩111] OI/GEX共振维度增加方向一致性校验
-    # OI方向与FVG一致才+1分，不一致+0分（避免多空混合信号虚高共振得分）
+    # [9.20修复 苏摩111] OI有数据=维度通过，方向不一致在cross_check记录而非维度缺失
     has_oi = False
     has_gex = False
     _fvg_consensus = fvg.get('consensus', fvg_dir)  # 共识方向优先
@@ -716,30 +716,39 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict, oi: dict = None, vo
     if oi and oi.get('signal','') not in ('NO_DATA','MIXED'):
         _oi_bull = oi['signal'] in ('LONG_BUILD', 'SHORT_SQUEEZE')
         _oi_bear = oi['signal'] in ('SHORT_BUILD', 'LONG_UNWIND')
-        # OI方向与FVG一致才加分
+        _oi_neutral = oi['signal'] in ('NEUTRAL', 'WATCH')
+        # [9.20修复] OI有数据=维度通过（不管方向）
+        has_oi = True
+        score += 1
+        # OI方向与FVG一致=额外+0.5分（共振加分），不一致=不额外加分
         if (_fvg_bull and _oi_bull) or (_fvg_bear and _oi_bear):
-            has_oi = True
-            score += 1
-        # OI方向与FVG不一致=不加分但不扣分（信号矛盾已在cross_check记录）
+            score += 0  # 已+1，方向一致不再额外加（避免OI权重过大）
+        # NEUTRAL或方向不一致：维度通过但cross_check记录矛盾
     if vol and vol.get('gex_note','') and not vol.get('gex_expired', False):
         # GEX方向与FVG一致才加分（P0修复: 过期GEX不参与共振）
+        # [9.20修复] GEX有数据=维度通过，方向不一致在cross_check记录
         _gex_bull = 'POSITIVE' in vol.get('gex_bias','').upper() or vol.get('kappa', 0) < -0.05
         _gex_bear = 'NEGATIVE' in vol.get('gex_bias','').upper() or vol.get('kappa', 0) > 0.05
+        _gex_neutral = not _gex_bull and not _gex_bear
+        has_gex = True
+        score += 1
         if (_fvg_bull and _gex_bull) or (_fvg_bear and _gex_bear):
-            has_gex = True
-            score += 1
-        # GEX中性=不加分
+            pass  # 已+1，方向一致不再额外加
+        # GEX中性或方向不一致：维度通过但cross_check记录矛盾
     elif vol and vol.get('gex_expired', False):
         # P0修复: GEX过期→缺失但不报错，共振标准降为≥3/4（不含GEX）
         pass
     # [P3新增] 方仓历史匹配维度
+    # [9.20修复 苏摩111] 方仓有数据=维度通过，方向不一致在cross_check记录
     has_fc = False
     if fc and fc.get('top5'):
         _fc_dir = fc.get('direction', 'NEUTRAL')
-        # 方仓方向与FVG一致才加分
+        has_fc = True
+        score += 1
+        # 方仓方向与FVG一致=额外确认，不一致=cross_check记录
         if (_fvg_bull and _fc_dir == 'LONG') or (_fvg_bear and _fc_dir == 'SHORT'):
-            has_fc = True
-            score += 1
+            pass  # 已+1
+        # NEUTRAL或方向不一致：维度通过但不额外加分
     
     # [P3新增] 跨市场alpha维度
     has_cma = False

@@ -13,10 +13,11 @@ while true; do
   RECOVERED=""
 
   # 进程检查+自动重启
+  # [9.20修复 苏摩111] start_supercronic.sh加timeout防止阻塞看门狗循环
   SP_PID=$(pgrep -f "supercronic.*brahma_crontab" | head -1)
   if [ -z "$SP_PID" ]; then
     ALERT="${ALERT}⚠️ supercronic未运行 "
-    bash start_supercronic.sh >> logs/syscron.log 2>&1
+    timeout 30 bash start_supercronic.sh >> logs/syscron.log 2>&1
     sleep 3
     SP_PID=$(pgrep -f "supercronic.*brahma_crontab" | head -1)
     ALERT="${ALERT}→ 重启PID=$SP_PID "

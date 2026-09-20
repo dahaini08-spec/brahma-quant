@@ -1,10 +1,10 @@
 {
-  "ts": 1789911323.7374926,
+  "ts": 1789915898.4617665,
   "window_n": 100,
-  "recent_win_rate": 0.89,
-  "recent_ev": 0.471,
+  "recent_win_rate": 0.97,
+  "recent_ev": 0.511,
   "current_threshold": 115.0,
   "default_threshold": 120.0,
   "adjustment": -5.0,
-  "note": "\u57fa\u4e8e\u6700\u8fd1100\u7b14\u5b9e\u76d8\uff0cWR=89.0%"
+  "note": "\u57fa\u4e8e\u6700\u8fd1100\u7b14\u5b9e\u76d8\uff0cWR=97.0%"
 }
