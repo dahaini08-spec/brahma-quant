@@ -17,6 +17,7 @@ def calc_factors(ms: dict, signal_dir: str, score: int, breakdown: dict,
     + 逆势最终惩罚
     只修改 score 和 breakdown
     """
+    import sys
     # ══ [设计院 2026-06-30 全量接入 N10-A] CVD 订单流因子 ════════════════════
     # 模块: cvd_engine · 订单流核心指标，多周期CVD累积成交量差
     # 达摩院铁证：CVD顺势+15分 / 逆势-10分

@@ -53,3 +53,5 @@ data/dim_trace.jsonl
 data/nerve_bus.jsonl
 data/brahma_structured.jsonl
 None/
+.env*
+.git-rewrite/

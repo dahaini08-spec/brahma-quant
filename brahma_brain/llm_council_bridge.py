@@ -221,6 +221,7 @@ def _risk_agent_review(signal: Dict) -> Dict:
     Risk Agent：风控视角评分调整
     降级：评分>120+BEAR_TREND做多 → 自动扣分，无需LLM
     """
+    import sys
     symbol    = signal.get('symbol', 'UNKNOWN')
     direction = signal.get('direction', 'LONG')
     score     = signal.get('score', 0)
@@ -539,6 +540,7 @@ def review(
         dict: 原始signal_result + 新增字段:
               'llm_council': {risk, macro, final_adj, shadow_log}
     """
+    import sys
     # [P0修复 2026-08-24 苏摩111] 根因：confluence.score=原始分(~123)，LLM Council永远不触发
     # 正确应读 score_final（体制乘数加权后），才与 SCORE_TRIGGER=140 可比
     score  = float(signal_result.get('score_final', 0)

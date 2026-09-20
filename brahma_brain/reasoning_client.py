@@ -133,6 +133,7 @@ def reasoning_gate(result: dict, inject_context: bool = True) -> dict:
         reason: str
         elapsed: float (秒)
     """
+    import sys
     import time
     t0 = time.time()
 

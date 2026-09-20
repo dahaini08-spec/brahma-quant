@@ -314,6 +314,7 @@ def apply_asset_routing(result: dict) -> dict:
 
     在 brahma_core analyze() 末端调用一次即可实现全资产差异化
     """
+    import sys
     symbol  = result.get('symbol', '')
     regime  = result.get('regime', 'CHOP_MID')
     score   = result.get('score_final', 0) or 0

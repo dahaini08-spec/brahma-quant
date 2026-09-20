@@ -130,6 +130,7 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
 
     Returns: {extra_data, _bd, _spec, _sm}
     """
+    import sys
     _sym = symbol
     extra_data: dict = {}
     _bd = {}; _spec = {}; _sm = {}

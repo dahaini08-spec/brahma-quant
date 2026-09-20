@@ -36,6 +36,7 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
 
     Returns: dict with s7-s10, score, breakdown
     """
+    import sys
     _sym = ms.get('symbol', '')  # [9.15修复] block_b需要symbol但从未定义
     # ── 维度7：清算带/OI（0~10）────────────────────────────────
     oi  = ms['sentiment']['oi']

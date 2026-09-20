@@ -51,6 +51,7 @@ DERIBIT_COINS = {"BTC", "ETH"}
 def calc_vol_beta(currency: str = "ETH") -> dict:
     # [P0磁盘缓存 2026-09-03 苏摩111] 跨进程持久化，TTL=3600s
     """计算vol beta"""
+    import sys
     try:
         import sys as _s, os as _o
         _bb = _o.path.dirname(_o.path.abspath(__file__))

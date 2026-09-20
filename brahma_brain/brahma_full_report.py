@@ -459,6 +459,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto') -> Any:
     包含：94维评分 + SMC/FVG/OB + 清算地图 + MTF五周期 + 决策树5步漏斗 + 方仓铁证
     返回: (report_str, r_dict) — report给人看，r给机器读
     """
+    import sys
     import sys as _sys_rfа, os as _os_rfа, time as _time_rfа
     _sd = _os_rfа.path.join(_os_rfа.path.dirname(_os_rfа.path.abspath(__file__)), '..', 'scripts')
     if _sd not in _sys_rfа.path:

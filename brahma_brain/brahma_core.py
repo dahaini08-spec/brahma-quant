@@ -84,6 +84,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     150分共振评分引擎
     基于 skills/ta-engine/references/analysis_engine.md
     """
+    import sys
     score = 0
     breakdown = {}
 
@@ -652,6 +653,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     signal_dir: 强制方向（LONG/SHORT），None=自动判断
     deep:       True=深度分析模式，跳过方向中性快速退出，返回完整数据
     """
+    import sys
     t0 = time.time()
     _sym = symbol.upper()
     _result = {}  # [2026-09-15 苏摩111] 防御性初始化,防止early return路径返回未定义

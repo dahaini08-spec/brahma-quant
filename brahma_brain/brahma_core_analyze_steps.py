@@ -50,6 +50,7 @@ def _analyze_step1(symbol: str, signal_dir: str) -> dict:
     输入: symbol, signal_dir (ms由内部ms_analyze获取)
     输出: {ms, _cv_adj, _causal_v_result}
     """
+    import sys
     _sym = symbol
     ms = None
     _cv_adj = 0

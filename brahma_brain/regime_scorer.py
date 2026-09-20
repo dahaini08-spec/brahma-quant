@@ -265,6 +265,7 @@ def score(symbol: str, force: bool = False, vol_ratio: float = None) -> dict:
       rsi_1d/4h/1h: RSI参考
       multiplier  : dict SHORT/LONG 体制乘数（0.5~1.5）
     """
+    import sys
     sym = symbol.upper()
     if not sym.endswith('USDT'):
         sym += 'USDT'

@@ -52,6 +52,7 @@ def detect_chop_breakout(state: dict, symbol: str = 'BTCUSDT') -> dict:
             'score': int,                # 0-7
         }
     """
+    import sys
     bd    = state.get('confluence', {}).get('breakdown', {})
     extra = state.get('extra', {})
     regime= state.get('regime', '')

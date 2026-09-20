@@ -830,6 +830,7 @@ def get_fangcang_context(
       'pip_score':         float,  # 形态清晰度 [0,1]
     }
     """
+    import sys
     cache_key = f"{symbol}:{current_regime}"
     now = time.time()
 

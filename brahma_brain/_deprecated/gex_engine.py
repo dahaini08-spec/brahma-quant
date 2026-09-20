@@ -263,6 +263,7 @@ def calc_gex(currency: str) -> dict:
 # ── 持久化 ────────────────────────────────────────────────────────
 def run(currency: str = "ETH", verbose: bool = False) -> None:
     """run"""
+    import sys
     try:
         r = calc_gex(currency)
     except Exception as e:

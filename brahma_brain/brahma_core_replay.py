@@ -16,6 +16,7 @@ def calc_replay(ms: dict, signal_dir: str, score: int, breakdown: dict, _result:
     40年经验复盘升级——四修正
     只修改 score 和 breakdown，不引入新变量到外层
     """
+    import sys
     # ══ [N_REPLAY 2026-08-29 苏摩111] 40年经验复盘升级——四修正 ══════════════
     # 铁证: 20392条案例 + 2001笔回测(IS/OOS偏差3%)
     try:

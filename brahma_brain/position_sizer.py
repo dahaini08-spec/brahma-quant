@@ -150,6 +150,7 @@ def get_position_pct(symbol: str, score: float, direction: str,
       'allowed': True/False
     }
     """
+    import sys
     import datetime as _dt_ps
     _now_ps = _dt_ps.datetime.now(timezone.utc)
 
@@ -1638,6 +1639,7 @@ def compute(
           'adjustments':      dict
         }
     """
+    import sys
     nav = nav_override or _get_nav()
     n_active, used_risk = _get_active_exposure()
     drawdown = _recent_drawdown()

@@ -20,7 +20,7 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789912157.5582728,
+    "last_update_ts": 1789913931.6448026,
     "confirmed_cn": "弱震荡",
     "last_sw_reset": 1789827571.9112523,
     "candidate_start_ts": 1789908606.4113758
@@ -98,7 +98,7 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789912144.3744216,
+    "last_update_ts": 1789913930.8915513,
     "confirmed_cn": "弱震荡"
   },
   "CLUSDT": {

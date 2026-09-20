@@ -142,6 +142,7 @@ def _trigger_param_nudge(matrix_key: str, m: dict) -> None:
     每10笔触发参数微调建议
     仅写入建议文件，不直接修改brahma_core（设计院安全原则）
     """
+    import sys
     try:
         nudge_path = BASE / 'data' / 'param_nudge_suggestions.jsonl'
         suggestion = {

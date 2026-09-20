@@ -42,6 +42,7 @@ sys.path.insert(0, str(_ROOT))
 
 def scan_d1_modules() -> list:
     """D1: 模块接入完整性（孤儿模块）"""
+    import sys
     issues = []
     # [Phase0 2026-07-23 设计院降噪] 改用自定义孤儿模块检查，屏蔽auto_review错误干扰
     try:

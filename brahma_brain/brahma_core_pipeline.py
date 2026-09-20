@@ -49,6 +49,7 @@ except Exception:
 # ═══════════════════════════════════════════════════════════════
 def step1_init(ctx: 'SimpleNamespace', symbol: str, signal_dir: str = None, deep: bool = False) -> 'SimpleNamespace':
     """初始化ctx，拉取市场数据，预热缓存"""
+    import sys
     ctx.t0 = time.time()
     ctx.symbol = symbol
     ctx.signal_dir_orig = signal_dir

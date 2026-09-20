@@ -46,6 +46,7 @@ def council_verdict(
         confidence: 'HIGH' | 'MED' | 'LOW'
         council_score: int  (三专家综合分, -3~+3)
     """
+    import sys
     # ── 优先：真实LLM裁决（OpenRouter免费模型）────────────────────────────
     # 设计院三方封印 2026-09-04 苏摩111
     # [P0修复 2026-09-07 苏摩111] score<145不调用LLM — 节省免费额度

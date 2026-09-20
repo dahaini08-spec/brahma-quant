@@ -243,6 +243,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
 
     返回: analyze() 原始结果 + _runner_meta
     """
+    import sys
     t0 = time.time()
     sym = symbol.upper().replace('/','').replace('-','')
     if not sym.endswith('USDT'):
@@ -1255,6 +1256,7 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
 
     返回: {symbol: run_analysis结果}
     """
+    import sys
     # [Phase0 2026-07-23 设计院] 熔断门控 — 连续亏损保护
     try:
         import sys as _cb_sys, os as _cb_os

@@ -591,6 +591,7 @@ def get_liq_snapshot(symbol: str) -> dict:
     获取完整清算快照
     返回标准化字典，所有字段保证存在（失败为0/N/A）
     """
+    import sys
     sym = symbol.upper().replace("USDT", "") + "USDT"
     sym_base = sym.replace("USDT", "")
 
