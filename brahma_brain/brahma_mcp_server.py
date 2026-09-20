@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+from typing import Any
 """
 brahma_mcp_server.py — 梵天MCP服务器
 [果蝇架构Phase 2] Langflow借鉴5：MCP暴露
@@ -76,10 +78,12 @@ _TOOLS = [
 
 # ── 工具实现 ──────────────────────────────────────────────────
 
-async def _on_list_tools(ctx, params):
+async def _on_list_tools(ctx, params) -> Any:
+    """on list tools"""
     return types.ListToolsResult(tools=_TOOLS)
 
-async def _on_call_tool(ctx, params):
+async def _on_call_tool(ctx, params) -> Any:
+    """on call tool"""
     name = params.name
     args = params.arguments or {}
     try:
@@ -98,6 +102,7 @@ async def _on_call_tool(ctx, params):
         return types.CallToolResult(content=[types.TextContent(type="text", text=f"工具执行失败: {e}")], isError=True)
 
 async def _tool_analyze(args: dict) -> str:
+    """tool analyze"""
     symbol = args.get("symbol", "BTCUSDT").upper()
     mode = args.get("mode", "auto")
     from brahma_brain.brahma_full_report import run_full_analysis
@@ -109,6 +114,7 @@ async def _tool_analyze(args: dict) -> str:
     return f"## 梵天分析 {symbol}\n```json\n{json.dumps(summary, ensure_ascii=False, indent=2)}\n```\n\n{report}"
 
 async def _tool_score(args: dict) -> str:
+    """tool score"""
     symbol = args.get("symbol", "BTCUSDT").upper()
     from brahma_brain.brahma_core import analyze
     result = analyze(symbol)
@@ -120,6 +126,7 @@ async def _tool_score(args: dict) -> str:
     return json.dumps(summary, ensure_ascii=False, indent=2)
 
 async def _tool_config(args: dict) -> str:
+    """tool config"""
     regime = args.get("regime", "")
     from brahma_brain.dag_executor import _load_config
     cfg = _load_config()
@@ -134,6 +141,7 @@ async def _tool_config(args: dict) -> str:
     return '\n'.join(lines)
 
 async def _tool_health(args: dict) -> str:
+    """tool health"""
     from scripts.module_check import check_modules
     alive, missing, port_issues, alerts = check_modules()
     result = {"alive": len(alive), "missing": len(missing), "port_issues": len(port_issues), "alerts": alerts or "全部正常"}
@@ -144,7 +152,8 @@ async def _tool_health(args: dict) -> str:
 server.add_request_handler("tools/list", types.PaginatedRequestParams, _on_list_tools)
 server.add_request_handler("tools/call", types.CallToolRequestParams, _on_call_tool)
 
-async def main():
+async def main() -> None:
+    """main"""
     async with stdio_server() as (read_stream, write_stream):
         await server.run(read_stream, write_stream, server.create_initialization_options())
 

@@ -92,8 +92,8 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
                     s7 = min(s7 + _liq_bonus, 15)
                 elif _total_usd > LIQ_CHAOS_THRESHOLD:
                     s7 = max(s7 + int(LIQ_CHAOS_PENALTY), 0)
-    except Exception:
-        pass  # ws_guardian 未启动时静默降级
+    except Exception as _e:
+        print(f"[WARN] brahma_core_block_b: _e", file=sys.stderr)
 
     # ── s7增强层①: orderbook_heatmap 订单簿大单压力（权重升级 2026-07-01）──────────────
     # 否决权: ASK/BID>10倍做多 → -20分，允许负分传递到 score（不 clip 0）
@@ -156,7 +156,7 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
     # 高密度区(>1.5x)→做多+8 / 空洞区(<0.6x)→做多-15（踩踏风险）
     try:
         from brahma_brain.volume_unified import get_vp_score as _vp_score_fn
-        _vp_pts, _vp_desc = _vp_score_fn(_sym, float(extra_data.get('price', price) if extra_data else price), signal_dir)
+        _vp_pts, _vp_desc = _vp_score_fn(_sym, float(extra_data.get('price', 0) if extra_data else 0), signal_dir)
         if _vp_pts != 0:
             s7_vp = max(-15, min(8, _vp_pts))  # 边界保护
             # [达摩院v6.0] VolProfile IC=-0.0131 → 信息层
@@ -259,7 +259,8 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── 维度9：时段权重（精细化）─────────────────────────────────
     import datetime
-    hour = datetime.datetime.utcnow().hour
+    from datetime import timezone
+    hour = datetime.datetime.now(timezone.utc).hour
     if extra_data and extra_data.get('enhanced'):
         en = extra_data['enhanced']
         s9 = en.get('breakdown', {}).get('session', 4)

@@ -20,7 +20,8 @@ BASE = Path(__file__).parent
 DATA = BASE / 'data'
 
 
-def build():
+def build() -> None:
+    """build"""
     merged_file = DATA / 'fangcang_merged_v2.json'
     if not merged_file.exists():
         print(f'[ERROR] {merged_file} 不存在，跳过重建')

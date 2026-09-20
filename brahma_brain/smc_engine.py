@@ -457,6 +457,7 @@ def find_liquidity_clusters(highs: list, lows: list, closes: list,
 
     # ── Step3: 计算集群属性 ──
     def calc_cluster(cluster: list, direction: str, price: float) -> dict:
+        """计算cluster"""
         prices = [c['price'] for c in cluster]
         lo = min(prices)
         hi = max(prices)
@@ -1381,7 +1382,7 @@ def run_smc_resonance(r: dict) -> dict:
     return result
 
 
-def _find_short_resonance(price, bull_fvgs, valid_bear_obs, liq_up, min_sl):
+def _find_short_resonance(price: float, bull_fvgs: list, valid_bear_obs: list, liq_up: list, min_sl: float) -> dict:
     """寻找做空共振点：FVG中点/上沿 + 有效Bear OB + 清算山"""
     candidates = []
 
@@ -1446,7 +1447,7 @@ def _find_short_resonance(price, bull_fvgs, valid_bear_obs, liq_up, min_sl):
     return best if best and best_score >= 2 else None
 
 
-def _find_long_resonance(price, bear_fvgs, valid_bull_obs, liq_dn, min_sl):
+def _find_long_resonance(price: float, bear_fvgs: list, valid_bull_obs: list, liq_dn: list, min_sl: float) -> dict:
     """寻找做多共振点：Bear FVG中点 + 有效Bull OB + 清算池"""
     candidates = []
 
@@ -1525,7 +1526,7 @@ def format_vip_card(r: dict, res: dict) -> str:
             params={'symbol': symbol}, timeout=5).json()
         chg_pct = float(r24['priceChangePercent'])
         chg_str = f"+{chg_pct:.2f}%" if chg_pct >= 0 else f"{chg_pct:.2f}%"
-    except:
+    except Exception as _e:
         chg_str = "N/A"
 
     # 标的简写
@@ -2234,7 +2235,8 @@ def format_report(r: dict) -> str:
     gex   = r.get('gex', {})
     fvg   = r.get('fvg', {})
 
-    def pf(v, is_usd=True):
+    def pf(v: float, is_usd: bool = True) -> str:
+        """pf"""
         if not v: return 'N/A'
         if is_usd:
             if v > 1000: return f'${v:,.0f}'
@@ -2325,7 +2327,7 @@ except Exception:
     JARVIS_CHANNEL = 'jarvis'
 
 
-def _push(message: str):
+def _push(message: str) -> None:
     """openclaw message send 直接推送，保留换行格式"""
     import subprocess
     subprocess.run(
@@ -2341,7 +2343,8 @@ def _push(message: str):
 # 主入口
 # ════════════════════════════════════════════════════════════════
 
-def main():
+def main() -> None:
+    """main"""
     import argparse
     from datetime import datetime, timezone
 
@@ -2419,7 +2422,8 @@ def calc_rsi_series(closes: list, n: int = 14) -> list:
     return results[-len(closes):]
 def calc_macd_series(closes: list, fast: int = 12, slow: int = 26, signal: int = 9) -> dict:
     """返回完整MACD序列"""
-    def ema_s(data, n):
+    def ema_s(data: list, n: int) -> float:
+        """ema s"""
         if len(data) < n:
             return [data[i] for i in range(len(data))]
         k = 2 / (n + 1)
@@ -2683,11 +2687,16 @@ def detect_candlestick_patterns(opens: list, highs: list,
     score_short = 0
 
     # 最近3根K线
-    def body(i):   return abs(c[i] - o[i])
-    def upper(i):  return h[i] - max(c[i], o[i])
-    def lower(i):  return min(c[i], o[i]) - l[i]
-    def is_bull(i): return c[i] > o[i]
-    def is_bear(i): return c[i] < o[i]
+    """body"""
+    def body(i: int) -> float:   return abs(c[i] - o[i])
+    """upper"""
+    def upper(i: int) -> float:  return h[i] - max(c[i], o[i])
+    """lower"""
+    def lower(i: int) -> float:  return min(c[i], o[i]) - l[i]
+    """判断bull"""
+    def is_bull(i: int) -> bool: return c[i] > o[i]
+    """判断bear"""
+    def is_bear(i: int) -> bool: return c[i] < o[i]
 
     avg_body = sum(body(i) for i in range(-5, 0)) / 5 if len(closes) >= 5 else body(-1)
 

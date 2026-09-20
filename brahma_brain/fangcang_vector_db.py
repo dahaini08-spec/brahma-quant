@@ -25,6 +25,7 @@ HCME_INDEX_PATH   = DATA_DIR / 'hcme_index_cache.json'
 
 # ── 简单余弦相似度（无qdrant） ───────────────────────────────
 def _cosine(a: list, b: list) -> float:
+    """cosine"""
     dot = sum(x * y for x, y in zip(a, b))
     na  = math.sqrt(sum(x * x for x in a)) or 1e-9
     nb  = math.sqrt(sum(x * x for x in b)) or 1e-9

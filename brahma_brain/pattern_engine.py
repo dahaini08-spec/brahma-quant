@@ -80,6 +80,7 @@ def detect_flag_wedge(highs: list, lows: list, closes: list,
 
 def detect_double_pattern(highs: list, lows: list, closes: list,
                           signal_dir: str, lookback: int = 30) -> dict:
+    """detect double pattern"""
     if len(highs) < lookback:
         return {'pattern': None, 'score': 0, 'note': ''}
 
@@ -120,6 +121,7 @@ def detect_double_pattern(highs: list, lows: list, closes: list,
 
 def detect_head_shoulders(highs: list, lows: list,
                           signal_dir: str, lookback: int = 40) -> dict:
+    """detect head shoulders"""
     if len(highs) < lookback:
         return {'pattern': None, 'score': 0, 'note': ''}
 

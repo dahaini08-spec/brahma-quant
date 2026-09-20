@@ -41,6 +41,7 @@ DEFAULT_WEIGHTS = {
 
 
 def load_weights() -> dict:
+    """加载weights"""
     if WEIGHT_FILE.exists():
         try:
             return json.loads(WEIGHT_FILE.read_text())
@@ -63,7 +64,8 @@ _DIM_MAP = {
 _CALIB_WEIGHTS_FILE = Path(__file__).parent.parent / 'data' / 'calibrated_weights.json'
 
 
-def save_weights(w: dict):
+def save_weights(w: dict) -> None:
+    """保存weights"""
     WEIGHT_FILE.parent.mkdir(exist_ok=True)
     WEIGHT_FILE.write_text(json.dumps(w, indent=2, ensure_ascii=False))
     # [达摩院接入 2026-07-16] 同步写入 calibrated_weights.json（brahma_scoring INT-1读取源）
@@ -86,7 +88,7 @@ def save_weights(w: dict):
                 }
         _CALIB_WEIGHTS_FILE.write_text(json.dumps(calib, indent=2, ensure_ascii=False))
     except Exception as _se:
-        pass  # 写入失败不阻断主流程
+        print(f"[WARN] online_learner_v2: _se", file=sys.stderr)
 
 
 def load_performance(days: int = 30) -> list:
@@ -177,7 +179,8 @@ def calibrate_weights(biases: dict, current_weights: dict) -> tuple[dict, list]:
     return new_weights, actions
 
 
-def write_calib_log(actions: list, summary: dict):
+def write_calib_log(actions: list, summary: dict) -> None:
+    """write calib log"""
     entry = {
         'ts'      : time.time(),
         'ts_iso'  : time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),

@@ -18,6 +18,8 @@ ai_council_bridge.py — 梵天AI议会+在线学习集成桥
   - online_learner_v2.py (240行): 信号权重自动校准
   - ev_feedback.py (231行): 经验矩阵+参数微调
 """
+
+from typing import Any
 import sys, json
 from pathlib import Path
 
@@ -89,7 +91,7 @@ def get_council_verdict(symbol: str, direction: str, brahma_result: dict = None,
     }
 
 
-def _get_council_verdict(r, direction, regime, score, x, symbol):
+def _get_council_verdict(r, direction, regime, score, x, symbol) -> Any:
     """调用llm_council.council_verdict()"""
     try:
         from brahma_brain.llm_council import council_verdict
@@ -122,7 +124,7 @@ def _get_council_verdict(r, direction, regime, score, x, symbol):
                 'reason': f'council error: {str(e)[:50]}', 'council_score': 0}
 
 
-def _get_bayes_adjustment(symbol, regime, direction, score):
+def _get_bayes_adjustment(symbol, regime, direction, score) -> dict:
     """调用online_bayes.score()获取贝叶斯增量"""
     try:
         from brahma_brain.online_bayes import score as bayes_score
@@ -145,7 +147,7 @@ def _get_bayes_adjustment(symbol, regime, direction, score):
         return {'adjustment': 0, 'detail': f'bayes error: {str(e)[:50]}'}
 
 
-def _get_weight_calibration():
+def _get_weight_calibration() -> dict:
     """读取online_learner_v2的权重校准状态"""
     try:
         from brahma_brain.online_learner_v2 import load_weights
@@ -171,7 +173,7 @@ def _get_weight_calibration():
         return {'weights': {}, 'n_adjusted': 0, 'status': 'N/A'}
 
 
-def _get_experience_nudge(regime, direction, score):
+def _get_experience_nudge(regime, direction, score) -> Any:
     """读取ev_feedback经验矩阵，输出微调提示"""
     try:
         from brahma_brain.ev_feedback import get_ev_summary, _load_matrix
@@ -199,7 +201,8 @@ def _get_experience_nudge(regime, direction, score):
         return ''
 
 
-def _empty_verdict():
+def _empty_verdict() -> dict:
+    """empty verdict"""
     return {
         'council_bias': '中性',
         'council_action': 'WAIT',

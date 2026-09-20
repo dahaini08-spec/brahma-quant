@@ -35,6 +35,7 @@ import sys
 
 # ── Key加载 ──────────────────────────────────────────────────────────────
 def _load_key() -> str:
+    """load key"""
     env_path = Path(__file__).parent.parent / '.env'
     if env_path.exists():
         for line in env_path.read_text().splitlines():
@@ -347,7 +348,8 @@ def council_three_way(
     results = {}
     # 三方各用专项模型：宏观用regime，结构用council，量化用council
     _role_tasks = {'宏观': 'regime', '结构': 'council', '量化': 'council'}
-    def _call(role, prompt):
+    def _call(role, prompt) -> tuple:
+        """call"""
         raw = chat(prompt, max_tokens=60, timeout=15, task=_role_tasks.get(role, 'council'))
         if not raw:
             return role, {}  

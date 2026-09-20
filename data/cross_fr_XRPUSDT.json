@@ -1,0 +1,15 @@
+{
+  "symbol": "XRPUSDT",
+  "frs": {
+    "binance": 0.006566000000000001,
+    "bybit": 0.0049169999999999995,
+    "okx": 0.00436573055899
+  },
+  "spread": 0.0022,
+  "max_ex": "binance",
+  "min_ex": "okx",
+  "arb_signal": "NONE",
+  "arb_score": 0,
+  "bull_fr_bonus": 0,
+  "ts": 1789734337.4751935
+}

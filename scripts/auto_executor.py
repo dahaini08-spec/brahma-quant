@@ -310,8 +310,12 @@ def find_executable_signals() -> list[dict]:
                 pass  # SQE失败不阻断
 
         # ② 评分门槛
+        # [V2.0修复 2026-09-20 苏摩111] AMBUSCADE信号跳过score门控
+        # 根因：P0改革废除了trader_brain层score门控，但auto_executor层仍有score≥120硬门控
+        # AMBUSCADE是trader_brain在WAIT时由ambuscade_engine生成的伏击信号，score不做入场门控
         score = float(s.get('score', 0) or 0)
-        if score < AUTO_SCORE_THRESHOLD:
+        _is_ambuscade = s.get('action', '') in ('AMBUSCADE', 'AMBUSCADE_WATCH')
+        if not _is_ambuscade and score < AUTO_SCORE_THRESHOLD:
             continue
         # ②-P1A 执行器分流：三档阈值自主执行（2026-07-18 苏摩111封印）
         # [P1 2026-08-05] 清算感知动态门槛：清算顺势时TIER_1降至150
@@ -337,11 +341,13 @@ def find_executable_signals() -> list[dict]:
         # ── [2026-08-12 苏摩111] 体制分层门控 ──────────────────────────────
         # v63铁证: BULL_TREND_LONG WR=95-96%, BEAR_TREND_SHORT WR=69-87%
         # 统一155分=WR0%死亡区 → 按体制分层取代
+        # [V2.0修复 2026-09-20 苏摩111] AMBUSCADE跳过体制分层门控
+        # 根因：AMBUSCADE是伏击信号，score不做门控（P0改革），体制分层也不适用
         _regime_key = (str(s.get('regime','')), str(s.get('signal_dir') or s.get('direction','')))
         _regime_thr = REGIME_EXEC_LINE.get(_regime_key)
         # CHOP体制：不在此层封禁，由chop_breakout_detector专项处理（解决64k→81k错过）
         # 其他体制：封禁只由brahma_core统一执行，此层只管执行线门槛
-        if _regime_thr is not None and score < _regime_thr:
+        if not _is_ambuscade and _regime_thr is not None and score < _regime_thr:
             # 体制执行线不够 → 不执行
             s['_tier'] = 0
             continue
@@ -357,6 +363,15 @@ def find_executable_signals() -> list[dict]:
         if _sig_action == 'ENTER_WATCH':
             continue  # ENTER_WATCH由sub_executor处理，auto不执行
 
+        # [V2.0修复 2026-09-20 苏摩111] AMBUSCADE信号识别
+        # 根因：auto_executor只识别ENTER/ENTER_FULL，AMBUSCADE被静默跳过
+        # 修复：AMBUSCADE/AMBUSCADE_WATCH统一视为ENTER_FULL执行
+        # 保留：风控熔断+SQE质量门控仍然生效（在前置检查中已通过）
+        if _sig_action in ('AMBUSCADE', 'AMBUSCADE_WATCH'):
+            _sig_action = 'ENTER_FULL'
+            s['action'] = 'ENTER_FULL'
+            s['_ambuscade_origin'] = True  # 标记来源供日志追溯
+
         # [2026-08-18 苏摩111封印] 修复：action='ENTER'等同于'ENTER_FULL'
         # 根因：brahma_engine输出action='ENTER'(113条)，auto_executor只识别'ENTER_FULL'(7条)
         # 导致所有action='ENTER'信号被静默跳过，SNDK score=153.8也未执行
@@ -364,7 +379,12 @@ def find_executable_signals() -> list[dict]:
             _sig_action = 'ENTER_FULL'  # 统一处理
             s['action'] = 'ENTER_FULL'
 
-        if score >= _effective_tier1:
+        # [V2.0修复 2026-09-20 苏摩111] AMBUSCADE仓位：固定1%NAV（与trader_brain一致）
+        # AMBUSCADE是伏击信号，仓位由trader_brain已设定为1%NAV，不参与TIER分档
+        if s.get('_ambuscade_origin'):
+            s['_tier'] = 3
+            s['_tier_nav_pct'] = 0.01  # 1% NAV，与trader_brain AMBUSCADE仓位一致
+        elif score >= _effective_tier1:
             # TIER_1: 强信号，无论timing均执行（STANDBY时等突破已发生）
             s['_tier'] = 1
             s['_tier_nav_pct'] = 0.05
@@ -372,22 +392,7 @@ def find_executable_signals() -> list[dict]:
             # TIER_2: 标准仓，timing=READY或空（未注入）才执行，STANDBY/WAIT拦截
             if _timing_badge in ('STANDBY', 'WAIT', 'MONITOR') or _timing_badge == '':  # [P1修复 2026-07-20] 空timing也拦截，防TIMEOUT亏损
                 continue  # timing明确不佳，等待
-            # [铁证封印 2026-08-07 设计院] READY+score>=138+RSI4H>55 追高陷阱门控
-            # 数据铁证：16条READY+score>=130信号 TP1=0 SL=16 WR=0%
-            # 根因：score高=趋势确认后期，READY=价格位置好，两者叠加=已在高位追高
-            if 'READY' in _timing_badge.upper():
-                _rsi_4h_val = float(s.get('rsi_4h', 0) or 0)
-                # [铁证封印 2026-08-07] READY信号全面降权
-                # 数据：READY avg_RSI4H=58.8，avg_OB距离=0.39%（OB内部追高）
-                # READY+RSI4H>=50 = 价格在中高位 + timing确认 = 追高组合 WR<20%
-                # 只有 RSI4H<50 的 READY 才是真正低位时机信号
-                if _rsi_4h_val >= 50:
-                    s['_observe_reason'] = f'READY+RSI4H={_rsi_4h_val:.1f}>=50 价格中高位追高WR<20%'
-                    continue
-                # 极端情况：高分+RSI偏强双重封锁（保留原逻辑作为后备）
-                if _rsi_4h_val > 55 and score >= 138:
-                    s['_observe_reason'] = f'READY+score{score:.0f}+RSI4H={_rsi_4h_val:.1f}>55 追高陷阱WR=0%'
-                    continue
+            # [9.20 P0改革] RSI_4H门控废除 — score/RSI不做入场门控
             s['_tier'] = 2
             s['_tier_nav_pct'] = 0.03
         elif score >= TIER_3_SCORE:
@@ -400,7 +405,9 @@ def find_executable_signals() -> list[dict]:
             s['_tier'] = 3
             s['_tier_nav_pct'] = 0.015
         else:
-            continue  # score < 120，跳过
+            s['_tier'] = 3
+            s['_tier_nav_pct'] = 0.015  # [P0改革] 不再跳过，给最小仓位
+            # continue  # [P0改革] score不做门控，不再跳过
         # [协同接入 2026-08-02 设计院自主] pos_pct_sizer 动态仓位覆盖
         # brahma_engine已计算精确仓位建议(pos_pct_sizer)，优先于固定tier值
         # 规则: pos_pct_sizer存在且>0 → 用它覆盖_tier_nav_pct（但不超过tier上限）
@@ -532,59 +539,13 @@ def find_executable_signals() -> list[dict]:
         rr1 = float(s.get('rr1', 0) or 0)
         if rr1 < MIN_RR:
             continue
-        # ④ 死穴检测
+        # ④ 死穴检测（保留：0%WR=数学否决）
         regime    = s.get('regime', '')
         direction = s.get('direction') or s.get('signal_dir', '')
         if (regime, direction) in DEAD_ZONE:
             continue
-        # ④+ [FIX 2026-08-02 设计院自主] BULL_TREND LONG WR门控
-        # 根据：真实WR=33.6%(n=192)，严重低于饱和线45%，继续自动执行EV为负
-        # 键入OBSERVE模式：只记录不执行，直到真实WR重新校准超过45%
-        # [设计院 2026-08-06] 暴涨猎手双确认信号豁免 OBSERVE
-        _observe_bypass = s.get('observe_bypass', False)
-        _observe_wr_gate = float(s.get('observe_wr_gate', 0.45))
-
-        if regime == 'BULL_TREND' and direction == 'LONG':
-            _wr_ok = False
-            try:
-                import json as _wr_j
-                from pathlib import Path as _wr_P
-                _wr_records = [_wr_j.loads(l) for l in _wr_P('data/live_signal_log.jsonl').read_text().strip().split('\n') if l.strip()]
-                # [P0-B 2026-08-11 苏摩111] 排除虚假结算：只统计 valid=True 的真实执行信号
-                # 根因：signal_settler 扫描所有OPEN信号，低分信号也会被结算，污染WR统计
-                _wr_bull = [r for r in _wr_records if r.get('regime')=='BULL_TREND'
-                            and (r.get('direction') or r.get('signal_dir','')) == 'LONG'  # [P0-A] 兼容signal_dir别名
-                            and r.get('outcome') in ('TP1','SL') and r.get('valid') == True]
-                _wr_tp   = sum(1 for r in _wr_bull if r.get('outcome')=='TP1')
-                _wr_n    = len(_wr_bull)
-                _wr_val  = _wr_tp/_wr_n if _wr_n >= 20 else None  # n<20数据不足，不强制拦截
-                if _wr_val is not None and _wr_val >= _observe_wr_gate:
-                    _wr_ok = True  # WR达标，允许执行
-                elif _wr_val is not None and _wr_val < _observe_wr_gate:
-                    _wr_ok = False
-                    _gate_label = '猎手豁免35%' if _observe_bypass else '标准45%'
-                    print(f'[WR门控-OBSERVE] BULL_TREND LONG WR={_wr_val*100:.1f}%({_wr_n}条)<{_observe_wr_gate*100:.0f}%({_gate_label}) 不达标，降级OBSERVE')
-                else:
-                    _wr_ok = True  # 数据不足，不拦截
-            except Exception:
-                _wr_ok = True  # 读取失败不拦截
-            if not _wr_ok:
-                continue  # OBSERVE模式：展示信号但不执行
-
-            # ④++ [设计院铁证封印 2026-08-07] RSI_4H 精准门控
-            # 铁证: BULL_TREND LONG RSI_4H>60 WR=9%(n=54) EV严重为负 → 禁止执行
-            #       RSI_4H 50-60 WR=39%(n=90) → 需score>=148才执行
-            #       RSI_4H<50  WR=59%(n=61) → 维持score>=138
-            _rsi_4h = float(s.get('rsi_4h') or 0)
-            if _rsi_4h > 0:  # 有RSI_4H数据才执行门控
-                if _rsi_4h > 60:
-                    print(f'[RSI4H门控] {s.get("symbol")} RSI_4H={_rsi_4h:.1f}>60 WR=9% 强制OBSERVE')
-                    continue  # 死亡区，严禁做多
-                elif _rsi_4h >= 50:
-                    _r4h_min_score = 148
-                    if float(s.get('score', 0)) < _r4h_min_score and not _observe_bypass:
-                        print(f'[RSI4H门控] {s.get("symbol")} RSI_4H={_rsi_4h:.1f}(50-60) WR=39% score={s.get("score")}<{_r4h_min_score} 降级OBSERVE')
-                        continue
+        # [9.20 P0改革] BULL_TREND LONG WR门控+RSI_4H门控已删除
+        # 保留死穴封禁DEAD_ZONE（0%WR=数学否决）
         # ⑤b [设计院 A3 2026-06-30] BRAHMA标签验证：拒绝执行WARN/ERR信号
         _tag = s.get('output_tag', '')
         if _tag:

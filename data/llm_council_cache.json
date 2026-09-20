@@ -856,5 +856,131 @@
       "council_mode": "full(4agents)",
       "injected_adj": 0
     }
+  },
+  "66112a3f5b3f": {
+    "ts": 1789734311.586279,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "risk_level": "MEDIUM",
+        "top_risk": "LLM降级:规则模式",
+        "liq_insight": "清算数据已注入但推理降级",
+        "veto": false,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "MacroAgent"
+      },
+      "quant": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "QuantAgent"
+      },
+      "devil": {
+        "score_adj": 0,
+        "veto": false,
+        "summary": "lite_mode_skip",
+        "agent": "DevilAgent"
+      },
+      "final_adj": 0,
+      "score_before": 148.5,
+      "score_after": 148.5,
+      "mode": "live",
+      "elapsed_ms": 768,
+      "react_triggered": false,
+      "ts": "2026-09-18T12:25:12.425306+00:00",
+      "from_cache": false,
+      "council_mode": "lite(RiskOnly)",
+      "injected_adj": 0
+    }
+  },
+  "40675076b5cf": {
+    "ts": 1789734355.6977081,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "risk_level": "MEDIUM",
+        "top_risk": "LLM降级:规则模式",
+        "liq_insight": "清算数据已注入但推理降级",
+        "veto": false,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "MacroAgent"
+      },
+      "quant": {
+        "score_adj": 0,
+        "summary": "lite_mode_skip",
+        "agent": "QuantAgent"
+      },
+      "devil": {
+        "score_adj": 0,
+        "veto": false,
+        "summary": "lite_mode_skip",
+        "agent": "DevilAgent"
+      },
+      "final_adj": 0,
+      "score_before": 145.9,
+      "score_after": 145.9,
+      "mode": "live",
+      "elapsed_ms": 560,
+      "react_triggered": false,
+      "ts": "2026-09-18T12:25:56.354660+00:00",
+      "from_cache": false,
+      "council_mode": "lite(RiskOnly)",
+      "injected_adj": 0
+    }
+  },
+  "615035ea3094": {
+    "ts": 1789734358.4952962,
+    "result": {
+      "risk": {
+        "score_adj": 0,
+        "risk_level": "MEDIUM",
+        "top_risk": "LLM降级:规则模式",
+        "liq_insight": "清算数据已注入但推理降级",
+        "veto": false,
+        "source": "llm"
+      },
+      "macro": {
+        "score_adj": 0,
+        "macro_trend": "NEUTRAL",
+        "key_event": "LLM降级",
+        "market_bias": "中性",
+        "source": "llm",
+        "macro_bias": "NEUTRAL",
+        "key_factor": "LLM降级"
+      },
+      "quant": {
+        "score_adj": 0,
+        "quant_bias": "NEUTRAL",
+        "wr_verdict": "UNKNOWN",
+        "source": "rule_fallback"
+      },
+      "devil": {
+        "score_adj": 0,
+        "veto": false,
+        "veto_reason": "",
+        "top_flaw": "",
+        "summary": "",
+        "reversal_path": "",
+        "reversal_prob": 0,
+        "agent": "DevilAgent"
+      },
+      "final_adj": 0,
+      "score_before": 158.9,
+      "score_after": 158.9,
+      "mode": "live",
+      "elapsed_ms": 2177,
+      "react_triggered": false,
+      "ts": "2026-09-18T12:26:00.699585+00:00",
+      "from_cache": false,
+      "council_mode": "full(4agents)",
+      "injected_adj": 0
+    }
   }
 }

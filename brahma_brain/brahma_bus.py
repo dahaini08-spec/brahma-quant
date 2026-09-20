@@ -1,3 +1,4 @@
+from typing import Optional, Any
 # ponytail: brahma_bus 383行，有意为之，重构前先 grep 所有调用方
 """
 brahma_bus.py — 梵天统一数据总线
@@ -60,11 +61,11 @@ class BrahmaBus:
     使用方式：from brahma_brain.brahma_bus import bus
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._cache: dict = {}
         self._lock  = threading.Lock()
 
-    def _get(self, key: str, fn, ttl: int):
+    def _get(self, key: str, fn, ttl: int) -> Optional[Any]:
         """通用缓存读取（线程安全）"""
         now = time.time()
         with self._lock:
@@ -117,7 +118,8 @@ class BrahmaBus:
 
     def ticker(self, symbol: str) -> dict:
         """24H ticker（10s缓存）"""
-        def _fetch():
+        def _fetch() -> Any:
+            """fetch"""
             r = _SESS.get(f'{_FAPI}/fapi/v1/ticker/24hr',
                           params={'symbol': symbol}, timeout=5)
             return r.json()
@@ -136,7 +138,8 @@ class BrahmaBus:
         K线数据（60s缓存）
         返回格式：[[open_time, open, high, low, close, volume, ...], ...]
         """
-        def _fetch():
+        def _fetch() -> Any:
+            """fetch"""
             r = _SESS.get(f'{_FAPI}/fapi/v1/klines',
                           params={'symbol': symbol, 'interval': interval,
                                   'limit': limit}, timeout=8)
@@ -165,7 +168,8 @@ class BrahmaBus:
 
     def funding_rate(self, symbol: str) -> float:
         """当前资金费率（120s缓存）"""
-        def _fetch():
+        def _fetch() -> float:
+            """fetch"""
             r = _SESS.get(f'{_FAPI}/fapi/v1/premiumIndex',
                           params={'symbol': symbol}, timeout=5)
             return float(r.json().get('lastFundingRate', 0)) * 100  # 转换为百分比(%)
@@ -176,7 +180,8 @@ class BrahmaBus:
 
     def open_interest(self, symbol: str) -> float:
         """当前持仓量（60s缓存）"""
-        def _fetch():
+        def _fetch() -> float:
+            """fetch"""
             r = _SESS.get(f'{_FAPI}/fapi/v1/openInterest',
                           params={'symbol': symbol}, timeout=5)
             return float(r.json().get('openInterest', 0))
@@ -186,7 +191,8 @@ class BrahmaBus:
     def oi_history(self, symbol: str, period: str = '1h',
                    limit: int = 30) -> list[dict]:
         """OI历史（60s缓存）"""
-        def _fetch():
+        def _fetch() -> Any:
+            """fetch"""
             r = _SESS.get(f'{_FAPI}/futures/data/openInterestHist',
                           params={'symbol': symbol, 'period': period,
                                   'limit': limit}, timeout=8)
@@ -199,7 +205,8 @@ class BrahmaBus:
     def long_short_ratio(self, symbol: str, period: str = '1h',
                          limit: int = 1) -> float:
         """全体账户多空比（60s缓存）"""
-        def _fetch():
+        def _fetch() -> Any:
+            """fetch"""
             r = _SESS.get(f'{_FAPI}/futures/data/globalLongShortAccountRatio',
                           params={'symbol': symbol, 'period': period,
                                   'limit': limit}, timeout=5)
@@ -212,7 +219,8 @@ class BrahmaBus:
 
     def depth(self, symbol: str, limit: int = 20) -> dict:
         """订单簿（30s缓存）"""
-        def _fetch():
+        def _fetch() -> Any:
+            """fetch"""
             r = _SESS.get(f'{_FAPI}/fapi/v1/depth',
                           params={'symbol': symbol, 'limit': limit}, timeout=5)
             return r.json()
@@ -231,14 +239,16 @@ class BrahmaBus:
 
     def positions(self) -> list[dict]:
         """账户持仓（10s缓存）"""
-        def _fetch():
+        def _fetch() -> list:
+            """fetch"""
             data = self._signed_get('/fapi/v2/positionRisk')
             return [p for p in data if float(p.get('positionAmt', 0)) != 0]
         return self._get('positions', _fetch, 10) or []
 
     def balance(self) -> dict:
         """账户余额摘要（10s缓存）"""
-        def _fetch():
+        def _fetch() -> dict:
+            """fetch"""
             acc = self._signed_get('/fapi/v2/account')
             return {
                 'nav':       float(acc.get('totalWalletBalance', 0)) + float(acc.get('totalUnrealizedProfit', 0)),
@@ -250,7 +260,7 @@ class BrahmaBus:
 
     # ── 缓存管理 ─────────────────────────────────────────────
 
-    def invalidate(self, pattern: str = None):
+    def invalidate(self, pattern: str = None) -> None:
         """清除缓存（pattern=None 清全部）"""
         with self._lock:
             if pattern:
@@ -360,7 +370,7 @@ def get_oi(symbol: str) -> float:
 # 迁移状态追踪（记录哪些文件已完成迁移）
 _MIGRATED_FILES = set()
 
-def mark_migrated(filename: str):
+def mark_migrated(filename: str) -> None:
     """标记文件已完成数据层迁移"""
     _MIGRATED_FILES.add(filename)
 
@@ -447,12 +457,13 @@ class BrahmaEvent:
 #  事件数据包
 # ═══════════════════════════════════════════════════════
 class Event:
-    def __init__(self, event_type: str, data: Any = None):
+    def __init__(self, event_type: str, data: Any = None) -> None:
         self.type = event_type
         self.data = data or {}
         self.ts   = time.time()
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
+        """to dict"""
         return {"type": self.type, "data": self.data, "ts": self.ts}
 
 
@@ -470,7 +481,7 @@ class BrahmaEventBus:
     _instance = None
     _lock = threading.Lock()
 
-    def __new__(cls):
+    def __new__(cls) -> Any:
         # 单例模式，全系统共享一个EventBus
         with cls._lock:
             if cls._instance is None:
@@ -478,7 +489,7 @@ class BrahmaEventBus:
                 cls._instance._initialized = False
         return cls._instance
 
-    def __init__(self):
+    def __init__(self) -> None:
         if self._initialized:
             return
         self._handlers: dict[str, list[Callable]] = defaultdict(list)
@@ -487,18 +498,18 @@ class BrahmaEventBus:
         self._initialized = True
         logger.info("BrahmaEventBus v1.0 初始化完成")
 
-    def register(self, event_type: str, handler: Callable):
+    def register(self, event_type: str, handler: Callable) -> None:
         """注册事件处理器"""
         if handler not in self._handlers[event_type]:
             self._handlers[event_type].append(handler)
             logger.debug(f"注册处理器: {event_type} → {handler.__name__}")
 
-    def unregister(self, event_type: str, handler: Callable):
+    def unregister(self, event_type: str, handler: Callable) -> None:
         """注销事件处理器"""
         if handler in self._handlers[event_type]:
             self._handlers[event_type].remove(handler)
 
-    def emit(self, event: Event, persist: bool = False):
+    def emit(self, event: Event, persist: bool = False) -> None:
         """
         发射事件 → 调用所有注册的处理器
         persist=True 时写入事件日志文件
@@ -514,7 +525,7 @@ class BrahmaEventBus:
             self._log_event(event)
 
     def emit_position_open(self, symbol: str, side: str, entry: float,
-                            sl: float, tp1: float, signal_id: str, **kwargs):
+                            sl: float, tp1: float, signal_id: str, **kwargs) -> None:
         """便捷方法：发射持仓开仓事件"""
         data = {
             "symbol": symbol, "side": side, "entry": entry,
@@ -524,7 +535,7 @@ class BrahmaEventBus:
         self.emit(Event(BrahmaEvent.POSITION_OPEN, data), persist=True)
 
     def emit_position_close(self, symbol: str, outcome: str, pnl_pct: float,
-                             signal_id: str, **kwargs):
+                             signal_id: str, **kwargs) -> None:
         """便捷方法：发射持仓平仓事件"""
         data = {
             "symbol": symbol, "outcome": outcome,
@@ -533,13 +544,13 @@ class BrahmaEventBus:
         }
         self.emit(Event(BrahmaEvent.POSITION_CLOSE, data), persist=True)
 
-    def emit_regime_change(self, symbol: str, old_regime: str, new_regime: str):
+    def emit_regime_change(self, symbol: str, old_regime: str, new_regime: str) -> None:
         """便捷方法：发射体制切换事件"""
         data = {"symbol": symbol, "old": old_regime, "new": new_regime}
         self.emit(Event(BrahmaEvent.REGIME_CHANGE, data), persist=True)
 
     def emit_sl_triggered(self, symbol: str, trigger_price: float,
-                           sl_price: float, signal_id: str):
+                           sl_price: float, signal_id: str) -> None:
         """便捷方法：发射软止损触发事件"""
         data = {
             "symbol": symbol, "trigger_price": trigger_price,
@@ -547,7 +558,7 @@ class BrahmaEventBus:
         }
         self.emit(Event(BrahmaEvent.SL_TRIGGERED, data), persist=True)
 
-    def _log_event(self, event: Event):
+    def _log_event(self, event: Event) -> None:
         """写入事件日志（追加模式）"""
         try:
             with open(self._event_log_path, "a") as f:
@@ -570,9 +581,11 @@ class BrahmaEventBus:
         return events[-limit:]
 
     def handler_count(self, event_type: str) -> int:
+        """handler count"""
         return len(self._handlers.get(event_type, []))
 
     def status(self) -> dict:
+        """status"""
         return {
             "registered_types": list(self._handlers.keys()),
             "handler_counts": {k: len(v) for k, v in self._handlers.items()},
@@ -587,7 +600,7 @@ event_bus = BrahmaEventBus()
 # ── [Fix3 2026-08-30 苏摩111] REGIME_CHANGE 事件 Handler — 清除旧体制的逾期 PENDING 信号 ──────────────────
 # 根因：体制切换后（如 BEAR_TREND → BULL_TREND），队列里旧体制的与新体制方向相反的 PENDING 信号应该失效
 # 40年交易员常识：体制变了，上一个体制的仓位逻辑全作废
-def _handle_regime_change_purge(event: 'Event'):
+def _handle_regime_change_purge(event: 'Event') -> None:
     """
     体制切换时，清除队列中与新体制方向矛盾的 PENDING 信号。
     规则：

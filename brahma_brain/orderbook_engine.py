@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+from typing import Any
 """
 
 # STATUS: ACTIVE
@@ -22,12 +24,14 @@ FAPI = 'https://fapi.binance.com'
 _cache = {}
 TTL = 15  # 15秒缓存
 
-def _get(url, timeout=6):
+def _get(url, timeout=6) -> Any:
+    """get"""
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     with urllib.request.urlopen(req, timeout=timeout, context=_DC_SSL_CTX) as r:
         return json.loads(r.read())
 
-def _cached(key, fn):
+def _cached(key, fn) -> Any:
+    """cached"""
     entry = _cache.get(key)
     if entry and time.time() < entry['exp']:
         return entry['data']
@@ -37,7 +41,8 @@ def _cached(key, fn):
 
 def get_depth(symbol: str, limit: int = 20) -> dict:
     """获取订单簿深度快照"""
-    def _fetch():
+    def _fetch() -> Any:
+        """fetch"""
         return _get(f'{FAPI}/fapi/v1/depth?symbol={symbol}&limit={limit}')
     return _cached(f'{symbol}:depth{limit}', _fetch)
 

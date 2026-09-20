@@ -31,15 +31,18 @@ RST        = '\033[0m'
 
 results = []
 
-def _ok(tid, name, detail=''):
+def _ok(tid, name, detail='') -> None:
+    """ok"""
     results.append((tid, '✅', name, detail))
     print(f"  ✅ {tid} {name}" + (f"  [{detail}]" if detail else ''))
 
-def _warn(tid, name, detail=''):
+def _warn(tid, name, detail='') -> None:
+    """warn"""
     results.append((tid, '⚠️', name, detail))
     print(f"  ⚠️  {tid} {name}" + (f"  [{detail}]" if detail else ''))
 
-def _fail(tid, name, detail=''):
+def _fail(tid, name, detail='') -> None:
+    """fail"""
     results.append((tid, '❌', name, detail))
     print(f"  ❌ {tid} {name}" + (f"  [{detail}]" if detail else ''))
 

@@ -15,6 +15,8 @@ anti_manipulation_engine.py — 梵天操控防御层
   brahma_core_block_b.calc_block_b() → score扣分（高风险=-15，中等=-8）
 """
 
+from typing import Any, Optional
+
 import time
 import os
 import sys
@@ -25,8 +27,14 @@ if _BASE not in sys.path:
     sys.path.insert(0, _BASE)
 
 try:
-    from brahma_brain.data_cache import get_open_interest as _dc_oi, get_ticker as _dc_ticker, get_long_short_ratio as _dc_lsr
-    from brahma_brain.brahma_bus import get_price as _bus_price
+    try:
+        from brahma_brain.data_cache import get_open_interest as _dc_oi, get_ticker as _dc_ticker, get_long_short_ratio as _dc_lsr
+    except ImportError:
+        from data_cache import get_open_interest as _dc_oi, get_ticker as _dc_ticker, get_long_short_ratio as _dc_lsr
+    try:
+        from brahma_brain.brahma_bus import get_price as _bus_price
+    except ImportError:
+        from brahma_bus import get_price as _bus_price
 except ImportError:
     try:
         from data_cache import get_open_interest as _dc_oi, get_ticker as _dc_ticker, get_long_short_ratio as _dc_lsr
@@ -41,13 +49,15 @@ except ImportError:
 _CACHE: dict = {}
 _TTL = 60  # 秒
 
-def _get_cached(key: str):
+def _get_cached(key: str) -> Optional[Any]:
+    """get cached"""
     entry = _CACHE.get(key)
     if entry and time.time() - entry['ts'] < _TTL:
         return entry['data']
     return None
 
-def _set_cached(key: str, data):
+def _set_cached(key: str, data) -> Any:
+    """set cached"""
     _CACHE[key] = {'data': data, 'ts': time.time()}
     return data
 

@@ -29,6 +29,7 @@ _HIST_TTL      = 3600   # 1小时
 
 
 def _get_fg() -> int:
+    """get fg"""
     global _FG_CACHE
     now = time.time()
     if now - _FG_CACHE['ts'] < _CACHE_TTL:
@@ -137,12 +138,61 @@ def get_sentiment_score(ms: dict, signal_dir: str) -> tuple:
     """
     兼容接口：供 brahma_core_step4.py 调用
     [P1-A修复 2026-09-03 苏摩111] 接入sentiment_engine
+    [FIX-6 2026-09-18] 补 FR + LSR 评分逻辑，从 ms.sentiment 读取
     """
     symbol = ms.get('symbol', 'BTCUSDT') if isinstance(ms, dict) else 'BTCUSDT'
     regime = ms.get('regime', '') if isinstance(ms, dict) else ''
-    result = analyze(symbol, signal_dir, regime=regime)
-    score  = result.get('score', 0)
-    detail = (f"FnG={result.get('fng_value',0)} "
-              f"base={result.get('score_base',0):+.1f} "
-              f"trend={result.get('score_trend',0):+.1f}")
-    return score, detail
+
+    # ── 从 ms.sentiment 读取 funding_rate / long_short_ratio ──
+    sentiment = ms.get('sentiment', {}) if isinstance(ms, dict) else {}
+    fr = sentiment.get('funding_rate', sentiment.get('funding', 0)) or 0
+    lsr = sentiment.get('long_short_ratio', sentiment.get('lsr', 1.0)) or 1.0
+    oi_mom = sentiment.get('oi_momentum', 'NEUTRAL')
+
+    # ── FNG 基础分（离线时回退到缓存值）──
+    fg = _get_fg()
+    base_s = _fg_to_score(fg, signal_dir)
+    trend_s = _fg_trend_score(signal_dir)
+    fg_total = base_s + trend_s
+
+    # ── FR 评分（资金费率）──
+    fr_score = 0
+    if signal_dir in ('SHORT', '做空'):
+        if fr > 0.0003:   # >0.03% 多头拥挤，做空有利
+            fr_score = 4
+        elif fr > 0.0001:
+            fr_score = 2
+        elif fr < -0.0001:  # 负费率空头拥挤，做空不利
+            fr_score = -2
+    else:  # LONG
+        if fr < -0.0001:  # 负费率空头拥挤，做多有利
+            fr_score = 4
+        elif fr < 0.0001:
+            fr_score = 2
+        elif fr > 0.0003:  # 高费率多头拥挤，做多不利
+            fr_score = -2
+
+    # ── LSR 评分（多空比拥挤度）──
+    lsr_score = 0
+    lsr_detail = ''
+    if signal_dir in ('SHORT', '做空'):
+        if lsr > 1.5:       # 多头拥挤，做空有利
+            lsr_score = 3
+            lsr_detail = 'lsr_crowded_long'
+        elif lsr > 1.2:
+            lsr_score = 1
+    else:  # LONG
+        if lsr < 0.7:       # 空头拥挤，做多有利
+            lsr_score = 3
+            lsr_detail = 'lsr_crowded_short'
+        elif lsr < 0.9:
+            lsr_score = 1
+
+    # ── 合成 ──
+    total = int(fg_total + fr_score + lsr_score)
+    total = max(-8, min(8, total))  # 钳位到 [-8, 8]
+
+    detail = (f"FnG={fg} base={base_s:+.1f} trend={trend_s:+.1f} "
+              f"fr={fr:.4f}({fr_score:+d}) lsr={lsr:.2f}({lsr_score:+d}) {lsr_detail}".strip())
+
+    return total, detail

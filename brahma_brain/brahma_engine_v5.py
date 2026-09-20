@@ -1,3 +1,4 @@
+from typing import Any
 #!/usr/bin/env python3
 """
 brahma_engine_v5.py — 梵天v5.0 核心回测引擎
@@ -34,6 +35,7 @@ from jesse.indicators import atr as jesse_atr
 DATA_DIR = Path(__file__).parent.parent / "data" / "historical"
 
 def load_candles(symbol: str, tf: str = "1h") -> Tuple[np.ndarray, list]:
+    """加载candles"""
     fname = DATA_DIR / f"{symbol}_{tf}.jsonl.gz"
     with gzip.open(fname, 'rt') as f:
         bars = sorted([json.loads(l) for l in f if l.strip()], key=lambda x: x['ts'])
@@ -44,6 +46,7 @@ def load_candles(symbol: str, tf: str = "1h") -> Tuple[np.ndarray, list]:
     return candles, bars
 
 def load_regimes(symbol: str) -> Dict[int, str]:
+    """加载regimes"""
     fname = DATA_DIR / f"{symbol}_regime_labels.jsonl.gz"
     if not fname.exists(): return {}
     with gzip.open(fname, 'rt') as f:
@@ -125,7 +128,7 @@ class BrahmaStrategy12:
         },
     }
     
-    def __init__(self, params: dict = None):
+    def __init__(self, params: dict = None) -> None:
         self.p = {**self.DEFAULT_PARAMS, **(params or {})}
         self.trades: List[Trade] = []
         self.nav = 10000.0
@@ -323,6 +326,7 @@ class BrahmaStrategy12:
         return self._summary()
     
     def _summary(self) -> dict:
+        """summary"""
         if not self.trades:
             return {'n': 0, 'wr': 0, 'ev': 0, 'nav': self.nav, 'trades': []}
         
@@ -431,7 +435,8 @@ def walk_forward(candles, regimes, rsi_seq, ema_seq, bbw_seq, atr_seq,
         test_ts_end = int(candles[test_end_idx - 1][0])
         
         # Train: 优化参数
-        def objective(trial):
+        def objective(trial) -> Any:
+            """objective"""
             strategy = BrahmaStrategy12({
                 'rsi_long': trial.suggest_int('rsi_long', 25, 40),
                 'rsi_short': trial.suggest_int('rsi_short', 60, 75),

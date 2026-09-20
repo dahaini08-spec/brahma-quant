@@ -1,0 +1,27 @@
+[
+  {
+    "type": "SCORE_JUMP",
+    "symbol": "TESTBTC",
+    "old_score": 80.0,
+    "new_score": 130.0,
+    "delta": 50.0,
+    "timestamp": "2026-09-19T01:45:34.929443+00:00",
+    "severity": "P2"
+  },
+  {
+    "type": "DIRECTION_FLIP",
+    "symbol": "TESTBTC",
+    "old_direction": "LONG",
+    "new_direction": "SHORT",
+    "timestamp": "2026-09-19T01:45:34.929620+00:00",
+    "severity": "P1"
+  },
+  {
+    "type": "DIRECTION_FLIP",
+    "symbol": "TESTBTC",
+    "old_direction": "SHORT",
+    "new_direction": "LONG",
+    "timestamp": "2026-09-19T01:45:34.929833+00:00",
+    "severity": "P1"
+  }
+]

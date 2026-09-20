@@ -13,6 +13,8 @@ IC接近0 = 该维度是噪音，应降权
   Phase3（200条后）：XGBoost接管，维度作为特征
 """
 
+from typing import Any
+
 import json, os, time
 import numpy as np
 from pathlib import Path
@@ -58,7 +60,7 @@ def load_signal_data() -> list[dict]:
         if not line: continue
         try:
             s = json.loads(line)
-        except: continue
+        except Exception as _e: continue
         outcome = s.get('outcome','')
         if outcome not in WIN_OUTCOMES and outcome not in LOSS_OUTCOMES:
             continue
@@ -92,7 +94,8 @@ def calc_ic(dim_scores: list, labels: list) -> float:
         return round(float(corr), 4) if not np.isnan(corr) else None
     except Exception:
         # 手算rank correlation
-        def rank(a):
+        def rank(a) -> Any:
+            """rank"""
             tmp = sorted(enumerate(a), key=lambda x: x[1])
             r = np.zeros(len(a))
             for rank_i, (orig_i, _) in enumerate(tmp):
@@ -160,7 +163,8 @@ def compute_all_ic() -> dict:
     return ic_results
 
 
-def save_ic_state(ic_results: dict):
+def save_ic_state(ic_results: dict) -> Any:
+    """保存ic state"""
     IC_STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
     state = {
         'updated_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
@@ -171,11 +175,12 @@ def save_ic_state(ic_results: dict):
 
 
 def load_ic_state() -> dict:
+    """加载ic state"""
     if not IC_STATE_PATH.exists():
         return {}
     try:
         return json.loads(IC_STATE_PATH.read_text())
-    except: return {}
+    except Exception as _e: return {}
 
 
 def get_dim_weight_adjust(dim_key: str, regime: str = 'ALL') -> float:

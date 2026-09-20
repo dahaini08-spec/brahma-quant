@@ -33,7 +33,7 @@
     },
     "sl_rule": "洗盘低点之下 + 1.5×ATR1H",
     "size_pct": 1.0,
-    "status": "WATCHING",
+    "status": "RETIRED",
     "last_check": "2026-09-16 00:00 UTC",
     "triggered": false,
     "last_fr": 0.002638,
@@ -54,7 +54,7 @@
     },
     "sl_rule": "上次低点之下 + 1.5×ATR1H",
     "size_pct": 1.0,
-    "status": "WATCHING",
+    "status": "RETIRED",
     "extreme_fr_note": "FR=-0.9453%极端负值=反向多头信号，等FR回归才是入场点",
     "last_check": "2026-09-16 00:00 UTC",
     "triggered": false,
@@ -76,7 +76,7 @@
     },
     "sl_rule": "今日低点之下 + 1.5×ATR1H",
     "size_pct": 0.5,
-    "status": "WATCHING",
+    "status": "RETIRED",
     "extreme_fr_note": "FR=-0.5589%=反弹炸弹，空头回补会快速推价格上涨",
     "last_check": "2026-09-16 00:00 UTC",
     "triggered": false,
@@ -98,10 +98,10 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 100,
     "mode": "A",
-    "last_check": "2026-09-16 00:00 UTC",
-    "last_fr": -0.094698,
-    "last_price": 0.0007396,
-    "last_trigger_pct": 25.0,
+    "last_check": "2026-09-20 12:22 UTC",
+    "last_fr": -0.081566,
+    "last_price": 0.0006707,
+    "last_trigger_pct": 50.0,
     "last_smc": "NONE"
   },
   "ETHFIUSDT": {
@@ -117,9 +117,9 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 76.37,
     "mode": "B",
-    "last_check": "2026-09-16 00:00 UTC",
+    "last_check": "2026-09-20 12:22 UTC",
     "last_fr": 0.005,
-    "last_price": 0.5935,
+    "last_price": 0.6943,
     "last_trigger_pct": 75.0,
     "last_smc": "NONE"
   },
@@ -136,11 +136,11 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 71,
     "mode": "A",
-    "last_check": "2026-09-16 00:00 UTC",
-    "last_fr": -0.1034,
-    "last_price": 0.271,
+    "last_check": "2026-09-20 12:22 UTC",
+    "last_fr": 0.004516,
+    "last_price": 0.2997,
     "last_trigger_pct": 75.0,
-    "last_smc": "HAMMER"
+    "last_smc": "NONE"
   },
   "KORUUSDT": {
     "status": "WATCHING",
@@ -155,10 +155,10 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 91.67750000000001,
     "mode": "A",
-    "last_check": "2026-09-16 00:00 UTC",
-    "last_fr": 0.011347,
-    "last_price": 18.77,
-    "last_trigger_pct": 75.0,
+    "last_check": "2026-09-20 12:22 UTC",
+    "last_fr": 0.0,
+    "last_price": 19.72,
+    "last_trigger_pct": 50.0,
     "last_smc": "NONE"
   },
   "ORCLUSDT": {
@@ -174,11 +174,11 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 68,
     "mode": "A",
-    "last_check": "2026-09-16 00:00 UTC",
-    "last_fr": 0.006146,
-    "last_price": 140.06,
+    "last_check": "2026-09-20 12:22 UTC",
+    "last_fr": 0.0,
+    "last_price": 146.05,
     "last_trigger_pct": 75.0,
-    "last_smc": "NONE"
+    "last_smc": "HAMMER"
   },
   "CBRSUSDT": {
     "status": "WATCHING",
@@ -193,11 +193,11 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 64.8725,
     "mode": "A",
-    "last_check": "2026-09-16 00:00 UTC",
+    "last_check": "2026-09-20 12:22 UTC",
     "last_fr": 0.0,
-    "last_price": 183.85,
-    "last_trigger_pct": 75.0,
-    "last_smc": "HAMMER"
+    "last_price": 197.4,
+    "last_trigger_pct": 50.0,
+    "last_smc": "NONE"
   },
   "ZHIPUUSDT": {
     "status": "WATCHING",
@@ -212,14 +212,14 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 64.346,
     "mode": "A",
-    "last_check": "2026-09-16 00:00 UTC",
-    "last_fr": 0.046239,
-    "last_price": 84.79,
+    "last_check": "2026-09-20 12:22 UTC",
+    "last_fr": 0.002527,
+    "last_price": 93.27,
     "last_trigger_pct": 75.0,
     "last_smc": "NONE"
   },
   "EWYUSDT": {
-    "status": "WATCHING",
+    "status": "RETIRED",
     "direction": "LONG",
     "size_pct": 1.0,
     "trigger_conditions": {
@@ -249,7 +249,12 @@
     "added": "2026-09-16",
     "source": "oi_advanced_scanner_auto",
     "oi_score": 73.568,
-    "mode": "A"
+    "mode": "A",
+    "last_check": "2026-09-20 12:22 UTC",
+    "last_fr": -0.094803,
+    "last_price": 0.37517,
+    "last_trigger_pct": 25.0,
+    "last_smc": "NONE"
   },
   "PONSUSDT": {
     "status": "WATCHING",
@@ -263,7 +268,12 @@
     "added": "2026-09-16",
     "source": "oi_advanced_scanner_auto",
     "oi_score": 72.65,
-    "mode": "A"
+    "mode": "A",
+    "last_check": "2026-09-20 12:22 UTC",
+    "last_fr": 0.013264,
+    "last_price": 0.5717,
+    "last_trigger_pct": 75.0,
+    "last_smc": "NONE"
   },
   "RAYSOLUSDT": {
     "status": "WATCHING",
@@ -277,7 +287,12 @@
     "added": "2026-09-16",
     "source": "oi_advanced_scanner_auto",
     "oi_score": 72.238,
-    "mode": "B"
+    "mode": "B",
+    "last_check": "2026-09-20 12:22 UTC",
+    "last_fr": 0.005,
+    "last_price": 1.6279,
+    "last_trigger_pct": 75.0,
+    "last_smc": "NONE"
   },
   "BMNRUSDT": {
     "status": "WATCHING",
@@ -291,7 +306,12 @@
     "added": "2026-09-16",
     "source": "oi_advanced_scanner_auto",
     "oi_score": 65,
-    "mode": "B"
+    "mode": "B",
+    "last_check": "2026-09-20 12:22 UTC",
+    "last_fr": -0.051046,
+    "last_price": 25.4,
+    "last_trigger_pct": 50.0,
+    "last_smc": "NONE"
   },
   "SNXXUSDT": {
     "status": "WATCHING",
@@ -305,10 +325,15 @@
     "added": "2026-09-16",
     "source": "oi_advanced_scanner_auto",
     "oi_score": 64.892,
-    "mode": "B"
+    "mode": "B",
+    "last_check": "2026-09-20 12:22 UTC",
+    "last_fr": -0.033155,
+    "last_price": 17.43,
+    "last_trigger_pct": 50.0,
+    "last_smc": "NONE"
   },
   "SAGAUSDT": {
-    "status": "WATCHING",
+    "status": "RETIRED",
     "direction": "LONG",
     "size_pct": 0.5,
     "trigger_conditions": {
@@ -333,7 +358,12 @@
     "added": "2026-09-17",
     "source": "oi_advanced_scanner_auto",
     "oi_score": 100,
-    "mode": "B"
+    "mode": "B",
+    "last_check": "2026-09-20 12:22 UTC",
+    "last_fr": 0.0,
+    "last_price": 3.051,
+    "last_trigger_pct": 50.0,
+    "last_smc": "NONE"
   },
   "AINUSDT": {
     "status": "WATCHING",
@@ -347,7 +377,12 @@
     "added": "2026-09-17",
     "source": "oi_advanced_scanner_auto",
     "oi_score": 77,
-    "mode": "A"
+    "mode": "A",
+    "last_check": "2026-09-20 12:22 UTC",
+    "last_fr": 0.013636,
+    "last_price": 0.02046,
+    "last_trigger_pct": 75.0,
+    "last_smc": "NONE"
   },
   "CRCLUSDT": {
     "status": "WATCHING",
@@ -361,6 +396,134 @@
     "added": "2026-09-17",
     "source": "oi_advanced_scanner_auto",
     "oi_score": 71.902,
+    "mode": "B",
+    "last_check": "2026-09-20 12:22 UTC",
+    "last_fr": -0.077125,
+    "last_price": 90.04,
+    "last_trigger_pct": 50.0,
+    "last_smc": "NONE"
+  },
+  "FILUSDT": {
+    "status": "WATCHING",
+    "direction": "LONG",
+    "size_pct": 1.0,
+    "trigger_conditions": {
+      "fr": true,
+      "price": true,
+      "oi": true
+    },
+    "added": "2026-09-20",
+    "source": "oi_advanced_scanner_auto",
+    "oi_score": 80.826,
+    "mode": "B",
+    "last_check": "2026-09-20 12:22 UTC",
+    "last_fr": 0.01,
+    "last_price": 0.951,
+    "last_trigger_pct": 75.0,
+    "last_smc": "NONE"
+  },
+  "STRKUSDT": {
+    "status": "WATCHING",
+    "direction": "LONG",
+    "size_pct": 0.5,
+    "trigger_conditions": {
+      "fr": true,
+      "price": true,
+      "oi": true
+    },
+    "added": "2026-09-20",
+    "source": "oi_advanced_scanner_auto",
+    "oi_score": 80.72,
+    "mode": "A",
+    "last_check": "2026-09-20 12:22 UTC",
+    "last_fr": 0.005,
+    "last_price": 0.0453,
+    "last_trigger_pct": 75.0,
+    "last_smc": "NONE"
+  },
+  "MYXUSDT": {
+    "status": "WATCHING",
+    "direction": "LONG",
+    "size_pct": 0.5,
+    "trigger_conditions": {
+      "fr": true,
+      "price": true,
+      "oi": true
+    },
+    "added": "2026-09-20",
+    "source": "oi_advanced_scanner_auto",
+    "oi_score": 71.152,
+    "mode": "A",
+    "last_check": "2026-09-20 12:22 UTC",
+    "last_fr": 0.005,
+    "last_price": 0.07781,
+    "last_trigger_pct": 50.0,
+    "last_smc": "NONE"
+  },
+  "ZILUSDT": {
+    "status": "RETIRED",
+    "direction": "LONG",
+    "size_pct": 0.5,
+    "trigger_conditions": {
+      "fr": true,
+      "price": true,
+      "oi": true
+    },
+    "added": "2026-09-20",
+    "source": "oi_advanced_scanner_auto",
+    "oi_score": 64.2945,
+    "mode": "A",
+    "last_check": "2026-09-20 12:22 UTC",
+    "last_fr": -0.310949,
+    "last_price": 0.003558,
+    "last_trigger_pct": 25.0,
+    "last_smc": "NONE"
+  },
+  "ZAMAUSDT": {
+    "status": "WATCHING",
+    "direction": "LONG",
+    "size_pct": 0.5,
+    "trigger_conditions": {
+      "fr": true,
+      "price": true,
+      "oi": true
+    },
+    "added": "2026-09-20",
+    "source": "oi_advanced_scanner_auto",
+    "oi_score": 65.34,
+    "mode": "A"
+  },
+  "CUSDT": {
+    "status": "WATCHING",
+    "direction": "LONG",
+    "size_pct": 0.5,
+    "trigger_conditions": {
+      "fr": true,
+      "price": true,
+      "oi": true
+    },
+    "added": "2026-09-20",
+    "source": "oi_advanced_scanner_auto",
+    "oi_score": 66.1275,
+    "mode": "A",
+    "last_check": "2026-09-20 12:22 UTC",
+    "last_fr": 0.005,
+    "last_price": 0.07608,
+    "last_trigger_pct": 50.0,
+    "last_smc": "NONE"
+  },
+  "COTIUSDT": {
+    "status": "RETIRED",
+    "direction": "LONG",
+    "size_pct": 1.0,
+    "trigger_conditions": {
+      "fr": true,
+      "price": true,
+      "oi": true
+    },
+    "added": "2026-09-20",
+    "source": "oi_advanced_scanner_auto",
+    "oi_score": 62.628,
     "mode": "B"
   }
 }

@@ -19,11 +19,12 @@ VERSION = v1.0 · 2026-07-20
 import json
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
-from typing import Optional
+from typing import Any, Optional
 
 _STATE_PATH = Path(__file__).parent.parent / 'data' / 'condition_orders.json'
 
-def _load():
+def _load() -> Any:
+    """load"""
     try:
         if _STATE_PATH.exists():
             return json.loads(_STATE_PATH.read_text())
@@ -32,7 +33,8 @@ def _load():
         pass
     return {}
 
-def _save(data):
+def _save(data) -> None:
+    """save"""
     try:
         _STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
         _STATE_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2))

@@ -1,1 +1,1 @@
-{"peak_nav": 100.0, "current_nav": 100.0, "drawdown_pct": 0.0, "status": "NORMAL", "halt_until": null, "halt_reason": "", "last_updated": 1789662298.582623, "restart_required": false, "unlock_code": null, "ts": 1789705990.390549, "updated_at": "2026-09-04T00:01:31Z"}
+{"max_dd": 0, "current_dd": 0, "ts": 1789909380.6907752, "last_updated": 1789909380.6907756}

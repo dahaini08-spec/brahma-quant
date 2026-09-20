@@ -13,6 +13,8 @@ brahma_multiframe.py — 全周期FVG/OB扫描引擎
   mtf_summary       — 人类可读摘要
 """
 
+from typing import Any
+
 import sys, os
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -32,7 +34,7 @@ MIN_GAP_PCT = 0.25  # 最小FVG缺口过滤噪音
 PRICE_RANGE = 0.20  # 扫描当前价±20%
 
 
-def _scan_fvg(highs, lows, closes, times, price, tf):
+def _scan_fvg(highs, lows, closes, times, price, tf) -> tuple:
     """扫描单周期FVG，返回分类列表"""
     lo, hi = price * (1 - PRICE_RANGE), price * (1 + PRICE_RANGE)
     above, below, cross = [], [], []
@@ -70,7 +72,7 @@ def _scan_fvg(highs, lows, closes, times, price, tf):
     return above, below, cross
 
 
-def _scan_ob(highs, lows, closes, times, price, tf, lookback=30):
+def _scan_ob(highs, lows, closes, times, price, tf, lookback=30) -> tuple:
     """扫描Order Block（最近N根K线）"""
     obs_bull, obs_bear = [], []
     start = max(1, len(closes) - lookback)
@@ -96,7 +98,7 @@ def _scan_ob(highs, lows, closes, times, price, tf, lookback=30):
     return obs_bull[-3:], obs_bear[-3:]
 
 
-def opens_approx(closes, i):
+def opens_approx(closes, i) -> Any:
     """用上根收盘近似开盘（Binance K线无独立开盘价字段）"""
     return closes[i - 1] if i > 0 else closes[i]
 
@@ -245,7 +247,8 @@ def scan(symbol: str, direction: str = 'LONG') -> dict:
     }
 
 
-def _empty():
+def _empty() -> dict:
+    """empty"""
     return {
         'price': 0, 'mtf_bias': 'NEUTRAL',
         'mtf_score_adj': 0, 'mtf_summary': '',

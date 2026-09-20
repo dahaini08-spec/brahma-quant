@@ -293,7 +293,61 @@ def lsr_oi_score(symbol: str, signal_dir: str,
         except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         # ───────────────────────────────────────────────────────────
 
-        # ── P1-L: Top Trader大户持仓比背离（2026-07-20 苏摩111批准）──────────
+        # [V2.0 2026-09-20 苏摩111] LSR多周期（4H+15M）
+        try:
+            import requests as _rq_lsr
+            # 4H LSR趋势
+            _lr_4h = _rq_lsr.get(
+                'https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
+                params={'symbol': symbol, 'period': '4h', 'limit': 2}, timeout=4
+            ).json()
+            if len(_lr_4h) >= 2:
+                _lsr_4h_prev = float(_lr_4h[0].get('longAccount', 0.5))
+                _lsr_4h_cur = float(_lr_4h[1].get('longAccount', 0.5))
+                _lsr_4h_delta = (_lsr_4h_cur - _lsr_4h_prev) * 100
+                if abs(_lsr_4h_delta) > 3:
+                    if signal_dir == 'LONG' and _lsr_4h_delta > 3:
+                        s_lsr += 2; note_lsr += f' [4H LSR+{_lsr_4h_delta:.1f}%多增+2]'
+                    elif signal_dir == 'SHORT' and _lsr_4h_delta < -3:
+                        s_lsr += 2; note_lsr += f' [4H LSR{_lsr_4h_delta:.1f}%空增+2]'
+            # 15M LSR快照
+            _lr_15m = _rq_lsr.get(
+                'https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
+                params={'symbol': symbol, 'period': '15m', 'limit': 2}, timeout=4
+            ).json()
+            if _lr_15m:
+                _lsr_15m = float(_lr_15m[0].get('longAccount', 0.5)) * 100
+                note_lsr += f' [15M LSR={_lsr_15m:.1f}%]'
+        except Exception as _e_320:
+            print(f'[WARN] {__name__}: {_e_320}', file=sys.stderr)
+
+
+        # ── P1-L: Top Trader大户持仓比背离（2026-07-20 苏摩111批准）──
+        # [V2.0 2026-09-20 苏摩111] 多周期OI趋势（1D+4H）
+        _oi_1d_pct = 0.0
+        try:
+            import requests as _rq_oi
+            _oi_1d = _rq_oi.get(
+                'https://fapi.binance.com/futures/data/openInterestHist',
+                params={'symbol': symbol, 'period': '1d', 'limit': 2}, timeout=4
+            )
+            if _oi_1d and len(_oi_1d) >= 2:
+                _prev_oi = float(_oi_1d[0].get('sumOpenInterest', 0))
+                _cur_oi = float(_oi_1d[1].get('sumOpenInterest', 0))
+                if _prev_oi > 0:
+                    _oi_1d_pct = (_cur_oi - _prev_oi) / _prev_oi * 100
+            if abs(_oi_1d_pct) > 2:
+                if signal_dir == 'LONG' and _oi_1d_pct > 2:
+                    s_oi += 3; note_oi += f' [1D OI+{_oi_1d_pct:.1f}%多加仓+3]'
+                elif signal_dir == 'SHORT' and _oi_1d_pct < -2:
+                    s_oi += 3; note_oi += f' [1D OI{_oi_1d_pct:.1f}%空加仓+3]'
+                elif signal_dir == 'LONG' and _oi_1d_pct < -2:
+                    s_oi -= 3; note_oi += f' [1D OI{_oi_1d_pct:.1f}%多撤退-3]'
+                elif signal_dir == 'SHORT' and _oi_1d_pct > 2:
+                    s_oi -= 3; note_oi += f' [1D OI+{_oi_1d_pct:.1f}%空撤退-3]'
+        except Exception as _e_347:
+            print(f'[WARN] {__name__}: {_e_347}', file=sys.stderr)
+
         # 价值：大户vs散户背离 = 最经典逆向信号（clawby-quant S04核心策略）
         _top_trader_bonus = 0
         _top_note = ''

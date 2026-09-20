@@ -1,4 +1,6 @@
 # ponytail: microstructure_engine 332行，独立计算引擎，功能内聚，拆分条件: 单引擎>3000行且有完整测试
+
+from typing import Any, Optional
 """
 
 # STATUS: ACTIVE
@@ -42,7 +44,8 @@ FAPI = 'https://fapi.binance.com'
 _CACHE = {}
 _TTL   = 60  # 1分钟（微观数据需要更新）
 
-def _get(url, timeout=8):
+def _get(url, timeout=8) -> Optional[Any]:
+    """get"""
     t = time.time()
     if url in _CACHE and t - _CACHE[url]['ts'] < _TTL:
         return _CACHE[url]['data']

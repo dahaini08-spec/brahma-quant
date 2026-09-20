@@ -254,6 +254,18 @@ def settle_signal(sig: dict, dry_run: bool = False) -> dict | None:
     except Exception:
         pass  # IC引擎不可用时静默降级，不影响结算主链路
 
+    # [Phase 3 2026-09-19 苏摩111] Jev判断结算钩子
+    # 每次信号结算后回填jev_judgment_log的outcome，驱动校准数据集
+    try:
+        from brahma_brain.jev_judgment_log import settle_judgment as _jev_settle
+        _jev_sym = sig.get('symbol', '')
+        _jev_outcome = new_outcome  # TP/SL/TIMEOUT
+        _jev_pnl = round(pnl, 4)
+        _jev_win = new_outcome in ('TP', 'TP1', 'TIMEOUT') and pnl >= 0
+        _jev_settle(_jev_sym, _jev_win, _jev_pnl)
+    except Exception as _e_jev:
+        print(f'[WARN] jev_settle: {_e_jev}', file=sys.stderr)
+
     # [Ch8轨迹自学习钩子 2026-08-13 苏摩111封印]
     # 每次结算后写入标准化轨迹记录，驱动经验知识库进化
     # 参考: ai-agent-book Ch8 gaia-experience/experience_documents.py

@@ -1,0 +1,38 @@
+{
+  "BULL_TREND": {
+    "LONG": {
+      "wr": 0.4815,
+      "n": 54,
+      "wins": 26,
+      "losses": 28
+    }
+  },
+  "BULL_EARLY": {
+    "LONG": {
+      "wr": 1.0,
+      "n": 5,
+      "wins": 5,
+      "losses": 0
+    },
+    "SHORT": {
+      "wr": 0.5,
+      "n": 4,
+      "wins": 2,
+      "losses": 2
+    }
+  },
+  "BEAR_RECOVERY": {
+    "LONG": {
+      "wr": 1.0,
+      "n": 5,
+      "wins": 5,
+      "losses": 0
+    },
+    "SHORT": {
+      "wr": 0.0,
+      "n": 3,
+      "wins": 0,
+      "losses": 3
+    }
+  }
+}

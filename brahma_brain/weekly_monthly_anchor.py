@@ -27,7 +27,10 @@ _TTL = 3600  # 周月线1小时缓存够了
 def _fetch_klines(symbol: str, interval: str, limit: int) -> list:
     """拉取K线 — data_cache优先，fallback直连"""
     try:
-        from brahma_brain.data_cache import get_klines as _dc
+        try:
+            from brahma_brain.data_cache import get_klines as _dc
+        except ImportError:
+            from data_cache import get_klines as _dc
         raw = _dc(symbol, interval, limit)
         if raw and isinstance(raw, list) and len(raw) >= 4:
             return raw
@@ -49,13 +52,14 @@ def _fetch_klines(symbol: str, interval: str, limit: int) -> list:
 class WeeklyMonthlyAnchor:
     """周月线HTF锚定对象"""
 
-    def __init__(self, symbol: str):
+    def __init__(self, symbol: str) -> None:
         self.symbol = symbol.upper()
         self._weekly = []
         self._monthly = []
         self._loaded = False
 
-    def _load(self):
+    def _load(self) -> None:
+        """load"""
         if self._loaded:
             return
         cache_key = f'htf_{self.symbol}'
@@ -204,7 +208,10 @@ if __name__ == '__main__':
     anchor = get_anchor(sym)
     # 获取当前价
     try:
-        from brahma_brain.brahma_bus import get_price as _gp
+        try:
+            from brahma_brain.brahma_bus import get_price as _gp
+        except ImportError:
+            from brahma_bus import get_price as _gp
         px = _gp(sym)
     except Exception:
         px = 0.0

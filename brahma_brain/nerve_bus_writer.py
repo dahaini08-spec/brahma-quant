@@ -11,13 +11,14 @@ nerve_bus_writer.py — 梵天统一神经总线
 读取：任何模块都能读nerve_bus.jsonl知道"系统刚才发生了什么"
 """
 
+import sys
 import json, time, os
 from pathlib import Path
 
 BUS_FILE = Path(__file__).parent.parent / 'data' / 'nerve_bus.jsonl'
 
 def emit(event_type: str, module: str, level: str = 'INFO',
-         msg: str = '', data: dict = None, urgency: str = 'P4'):
+         msg: str = '', data: dict = None, urgency: str = 'P4') -> None:
     """
     写入神经总线
     event_type: ANALYSIS_DONE | SIGNAL | ALERT | ENGINE_FAIL | REGIME_SWITCH
@@ -39,12 +40,12 @@ def emit(event_type: str, module: str, level: str = 'INFO',
         }
         with open(BUS_FILE, 'a') as f:
             f.write(json.dumps(record, ensure_ascii=False, default=str) + '\n')
-    except Exception:
-        pass  # 神经总线不能影响主流程
+    except Exception as _e:
+        print(f"[WARN] nerve_bus_writer: _e", file=sys.stderr)
 
 def emit_analysis_done(symbol: str, score: float, regime: str, direction: str,
                        dim_count: int, active_dims: list, sleep_dims: list,
-                       ev: float = 0, signal: str = 'WATCH'):
+                       ev: float = 0, signal: str = 'WATCH') -> None:
     """分析完成事件"""
     emit(
         event_type='ANALYSIS_DONE',
@@ -67,7 +68,7 @@ def emit_analysis_done(symbol: str, score: float, regime: str, direction: str,
 
 def emit_signal(symbol: str, direction: str, entry: float, sl: float,
                 tp: float, score: float, regime: str, source: str = 'brahma',
-                entry_lo: float = None, entry_hi: float = None, signal_id: str = None):
+                entry_lo: float = None, entry_hi: float = None, signal_id: str = None) -> None:
     """信号产生事件 + 预测记录"""
     emit(
         event_type='SIGNAL',
@@ -87,7 +88,7 @@ def emit_signal(symbol: str, direction: str, entry: float, sl: float,
     )
     # Phase 2C: 预测编码管道已移除（2026-09-17 苏摩111）
 
-def emit_alert(module: str, msg: str, urgency: str = 'P2', data: dict = None):
+def emit_alert(module: str, msg: str, urgency: str = 'P2', data: dict = None) -> None:
     """系统告警"""
     emit(
         event_type='ALERT',

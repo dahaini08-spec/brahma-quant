@@ -1,13 +1,13 @@
 {
-  "ts": "2026-09-17T15:29:31.722951",
-  "wired": 50,
+  "ts": "2026-09-19T01:44:01.642137",
+  "wired": 51,
   "zero_output": [],
   "orphans": [
     "ambuscade_engine",
     "battlefield_intel",
+    "bollinger_engine",
     "brahma_brain_ai",
     "brahma_brain_prompt",
-    "brahma_core_entry",
     "brahma_engine_v5",
     "brahma_mcp_server",
     "brahma_plugins",
@@ -20,6 +20,10 @@
     "dag_weight_calibrator",
     "data_contract_validator",
     "dim_ic_audit",
-    "risk_engine"
+    "eval_runtime",
+    "jev_judgment_log",
+    "risk_engine",
+    "rsi_extreme_engine",
+    "signal_settlement_engine"
   ]
 }

@@ -18,7 +18,7 @@ price_zone_engine.py — 梵天战场预判层 v1.0
   P2: hcme_matcher + gex_engine
 """
 import os, sys, time, json, logging
-from typing import Optional
+from typing import Any, Optional
 import sys
 
 _BB = os.path.dirname(os.path.abspath(__file__))
@@ -37,10 +37,12 @@ _CACHE_TTL = 4 * 3600  # 4H
 
 
 def _cache_key(symbol: str) -> str:
+    """cache key"""
     return symbol.upper()
 
 
 def _get_cached(symbol: str) -> Optional[dict]:
+    """get cached"""
     k = _cache_key(symbol)
     if k in _ZONE_CACHE:
         ts, data = _ZONE_CACHE[k]
@@ -49,7 +51,8 @@ def _get_cached(symbol: str) -> Optional[dict]:
     return None
 
 
-def _set_cached(symbol: str, data: dict):
+def _set_cached(symbol: str, data: dict) -> None:
+    """set cached"""
     _ZONE_CACHE[_cache_key(symbol)] = (time.time(), data)
 
 
@@ -116,6 +119,7 @@ def _get_regime_from_ssot(symbol: str, fallback_fn) -> str:
 
 
 def _calc_zones_internal(symbol: str) -> dict:
+    """calc zones internal"""
     from data_cache import (get_klines, get_ticker,
                             get_funding_rate, get_long_short_ratio)
     import market_state as ms_mod
@@ -556,6 +560,7 @@ def _calc_zones_internal(symbol: str) -> dict:
 
 
 def _empty_zones(symbol: str, price: float) -> dict:
+    """empty zones"""
     return {
         'symbol': symbol, 'price': price, 'bias': 'NEUTRAL',
         'bias_score': 0, 'bias_reasons': ['数据获取失败'],
@@ -681,7 +686,7 @@ def check_zone_touch(symbol: str, current_price: float = 0) -> Optional[dict]:
 # CLI 入口
 # ═══════════════════════════════════════════════════════════════
 
-def run_zone_report(symbols: list = None, push: bool = False):
+def run_zone_report(symbols: list = None, push: bool = False) -> Any:
     """生成并可选推送战场预判报告"""
     if not symbols:
         symbols = ['BTCUSDT', 'ETHUSDT']

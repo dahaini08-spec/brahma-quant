@@ -17,7 +17,7 @@ causal_regime_verifier — 因果体制验证器 stub
 import time
 
 
-def verify(symbol, regime, signal_dir, ms=None, timeout_ms=5000):
+def verify(symbol, regime, signal_dir, ms=None, timeout_ms=5000) -> dict:
     """因果体制验证 stub — 基于宪法铁律的静态规则"""
     _ = symbol  # unused
     regime = (regime or '').upper()

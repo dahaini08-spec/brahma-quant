@@ -35,7 +35,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # Layer 2: 中频数据采集+维护 (30min级，错峰到 :05/:35)
 # ============================================================
 # 候选池生成 — :05和:35
-05,35 * * * * cd /root/.openclaw/workspace/trading-system && timeout 15 python3 scripts/battlefield_candidates.py >> logs/battlefield_candidates.log 2>&1
+07,37 * * * * cd /root/.openclaw/workspace/trading-system && timeout 15 python3 scripts/battlefield_candidates.py >> logs/battlefield_candidates.log 2>&1
 # paper engine — :08和:38
 08,38 * * * * cd /root/.openclaw/workspace/trading-system && timeout 55 bash scripts/run_paper_engine.sh >> logs/syscron.log 2>&1
 # paper TP monitor — :10和:40
@@ -151,7 +151,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # signal-settler — 每6h纯脚本,WR反馈闭环结算 [9.15苏摩111 从OpenClaw cron移入supercronic]
 # [9.18 修复] signal_settler从:00移到:52错峰
 52 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/signal_settler.py --push >> logs/settler.log 2>&1
-*/30 * * * * cd /root/.openclaw/workspace/trading-system && /usr/bin/python3 -c "from brahma_brain.prediction_verifier import verify_predictions; s=verify_predictions(4.0); print(f'prediction_verify: {s}')" >> logs/prediction_verify.log 2>&1
+#*/30 * * * * cd /root/.openclaw/workspace/trading-system && /usr/bin/python3 -c "from brahma_brain.prediction_verifier import verify_predictions; s=verify_predictions(4.0); print(f'prediction_verify: {s}')" >> logs/prediction_verify.log 2>&1
 
 # macro数据刷新 — 每天06:00 UTC（北京14:00）
 0 6 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/macro_real_fetcher.py >> logs/macro_cron.log 2>&1
@@ -160,3 +160,17 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # Layer -1: 二级看门狗 (每5min, 纯bash防OOM) [9.18苏摩111]
 # ============================================================
 */5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 10 bash scripts/watchdog_l2.sh >> logs/watchdog_l2.log 2>&1
+
+# ============================================================
+# Phase 5: 条件触发监控 (每5min) [9.18苏摩111]
+# ============================================================
+*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/price_trigger_monitor.py >> logs/price_trigger.log 2>&1
+
+# [9.19 设计院] 配置漂移+引用检查 每6小时
+0 */6 * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/cron_reference_check.py >> logs/cron_ref_check.log 2>&1
+5 */6 * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/config_contract_check.py >> logs/config_contract_check.log 2>&1
+# [9.19] @reboot不兼容supercronic，改为开机后1分钟延迟启动
+1 1 * * * cd /root/.openclaw/workspace/trading-system && bash scripts/brahma_autostart.sh >> logs/autostart.log 2>&1
+
+# 亏损记忆自动记录（每小时）
+0 * * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/loss_memory_recorder.py >> logs/loss_memory.log 2>&1

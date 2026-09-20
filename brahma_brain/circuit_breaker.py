@@ -64,13 +64,13 @@ class CircuitBreaker:
     线程安全（基于GIL），适合单进程多cron场景
     """
     
-    def __init__(self, config: CircuitBreakerConfig):
+    def __init__(self, config: CircuitBreakerConfig) -> None:
         self.config = config
         self._state = CircuitBreakerState()
         self._state_file = BASE / 'data' / f'cb_{config.name}.json'
         self._load_state()
     
-    def _load_state(self):
+    def _load_state(self) -> None:
         """从文件恢复状态（进程重启后保持记忆）"""
         try:
             if self._state_file.exists():
@@ -80,10 +80,10 @@ class CircuitBreaker:
                 self._state.last_failure_time = data.get('last_failure_time', 0.0)
                 self._state.total_calls = data.get('total_calls', 0)
                 self._state.total_failures = data.get('total_failures', 0)
-        except Exception:
-            pass  # 加载失败 → 从CLOSED开始
+        except Exception as _e:
+            print(f"[WARN] circuit_breaker: _e", file=sys.stderr)
     
-    def _save_state(self):
+    def _save_state(self) -> None:
         """持久化状态"""
         try:
             data = {
@@ -114,7 +114,8 @@ class CircuitBreaker:
             return True
         return False
     
-    def _transition(self, new_state: CBState):
+    def _transition(self, new_state: CBState) -> None:
+        """transition"""
         old = self._state.state
         self._state.state = new_state
         self._state.last_state_change = time.time()
@@ -172,6 +173,7 @@ class CircuitBreaker:
             return self.config.fallback
     
     def status(self) -> dict:
+        """status"""
         return {
             'name': self.config.name,
             'state': self._state.state.value,
@@ -184,7 +186,7 @@ class CircuitBreaker:
             ),
         }
     
-    def reset(self):
+    def reset(self) -> None:
         """手动重置（苏摩干预用）"""
         self._transition(CBState.CLOSED)
         self._state.total_failures = 0
@@ -202,15 +204,16 @@ class BrahmaCircuitRegistry:
     
     @classmethod
     def get(cls) -> 'BrahmaCircuitRegistry':
+        """get"""
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance
     
-    def __init__(self):
+    def __init__(self) -> None:
         self._breakers = {}
         self._init_default_breakers()
     
-    def _init_default_breakers(self):
+    def _init_default_breakers(self) -> None:
         """初始化9层数据链路的熔断器"""
         configs = [
             # 层0 守望层 - 零成本，容错高
@@ -268,6 +271,7 @@ class BrahmaCircuitRegistry:
             self._breakers[cfg.name] = CircuitBreaker(cfg)
     
     def get_breaker(self, name: str) -> Optional[CircuitBreaker]:
+        """获取breaker"""
         return self._breakers.get(name)
     
     def call_safe(self, layer: str, func: Callable, *args, **kwargs) -> Any:
@@ -292,7 +296,7 @@ class BrahmaCircuitRegistry:
             for cb in self._breakers.values()
         )
     
-    def reset_all(self):
+    def reset_all(self) -> None:
         """全部重置（苏摩紧急干预）"""
         for cb in self._breakers.values():
             cb.reset()
@@ -300,7 +304,7 @@ class BrahmaCircuitRegistry:
 
 
 # ── 装饰器（函数级熔断） ──────────────────────────────────────────────
-def circuit_protected(layer: str, fallback=None):
+def circuit_protected(layer: str, fallback=None) -> Any:
     """
     装饰器：为函数添加熔断保护
     
@@ -309,12 +313,14 @@ def circuit_protected(layer: str, fallback=None):
         def run_analysis(symbol):
             ...
     """
-    def decorator(func):
+    def decorator(func) -> Any:
+        """decorator"""
         cfg = CircuitBreakerConfig(name=layer, fallback=fallback)
         cb = CircuitBreaker(cfg)
         
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> Any:
+            """wrapper"""
             return cb.call(func, *args, **kwargs)
         
         wrapper._circuit_breaker = cb  # 允许外部访问状态

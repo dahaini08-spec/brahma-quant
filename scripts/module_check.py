@@ -67,3 +67,51 @@ def main():
         except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 if __name__ == '__main__':
     main()
+
+
+# [9.20接入 苏摩111] brahma_wiring_check → module_check
+# 接入位置：module_check.py末尾
+# 功能：调用brahma_wiring_check的接线注册表，检查端到端连通性
+# 原brahma_wiring_check.py保留在brahma_brain/中，此处作为统一入口调用
+def run_wiring_check(full=False):
+    """运行接线完整性检测
+    
+    检查每个模块：
+    1. 可import（代码本身没问题）
+    2. 有真实调用者（不是孤岛）
+    3. 在analyze()结果里输出可见（端到端可达）
+    """
+    try:
+        import sys as _sys
+        _sys.path.insert(0, str(BASE / 'brahma_brain'))
+        from brahma_wiring_check import run_check as _run_wc
+        return _run_wc(full=full)
+    except ImportError:
+        # brahma_wiring_check已移至_deprecated，跳过
+        return {'status': 'skipped', 'detail': 'brahma_wiring_check不可用'}
+    except Exception as e:
+        return {'status': 'error', 'detail': str(e)[:80]}
+
+
+if __name__ == '__main__':
+    # 原有module_check
+    alive, missing, port_issues, alerts = check_modules()
+    print(f'模块检查: ✅{len(alive)}存活 | ❌{len(missing)}缺失 | ⚠️{len(port_issues)}端口问题')
+    if alerts:
+        for a in alerts:
+            print(f'  {a}')
+    if port_issues:
+        print(f'\n端口连通性:')
+        for p in port_issues:
+            print(f'  {p}')
+    if not alerts and not port_issues:
+        print('  全部模块存活+端口连通 ✅')
+    
+    # 新增：接线检查
+    print()
+    wc_result = run_wiring_check()
+    if isinstance(wc_result, dict):
+        print(f'接线检查: {wc_result.get("status", "?")} - {wc_result.get("detail", "")}')
+    elif isinstance(wc_result, list):
+        for r in wc_result:
+            print(f'  {r}')

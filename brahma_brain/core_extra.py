@@ -49,22 +49,27 @@ class ExtraData:
 
     @property
     def klines_1h(self) -> dict:
+        """klines 1h"""
         return self.raw.get("_klines_1h", {})
 
     @property
     def k4h_closes(self) -> list:
+        """k4h closes"""
         return self.raw.get("_k4h_closes", [])
 
     @property
     def coinglass(self) -> dict:
+        """coinglass"""
         return self.raw.get("coinglass", {})
 
     @property
     def macro(self) -> dict:
+        """macro"""
         return self.raw.get("macro", {})
 
     @property
     def liq_snap(self) -> dict:
+        """liq snap"""
         return self.raw.get("liq_snap", {})
 
 

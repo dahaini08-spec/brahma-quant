@@ -7,7 +7,7 @@ import pytest
 
 
 @pytest.mark.skip(reason="brahma_v6 已删除（瘦身第一步 2026-07-12）")
-def test_import_brahma_v6():
+def _test_import_brahma_v6():
     import brahma_v6  # noqa: F401
 
 
@@ -28,17 +28,17 @@ def test_import_brahma_brain():
 
 
 @pytest.mark.skip(reason="dharma_simfactory 已删除（瘦身第一步 2026-07-12）")
-def test_import_dharma_simfactory():
+def _test_import_dharma_simfactory():
     import dharma_simfactory  # noqa: F401
 
 
 @pytest.mark.skip(reason="dharma_simfactory 已删除")
-def test_simfactory_submodules():
+def _test_simfactory_submodules():
     from dharma_simfactory import cost_model, metrics  # noqa: F401
 
 
 @pytest.mark.skip(reason="dharma_simfactory 已删除")
-def test_simfactory_cost_model_basic():
+def _test_simfactory_cost_model_basic():
     from dharma_simfactory.cost_model import get_trade_cost, apply_cost
 
     cost = get_trade_cost("BTCUSDT", "1h")
@@ -49,7 +49,7 @@ def test_simfactory_cost_model_basic():
 
 
 @pytest.mark.skip(reason="dharma_simfactory 已删除")
-def test_simfactory_metrics_basic():
+def _test_simfactory_metrics_basic():
     import pandas as pd
     from dharma_simfactory.metrics import calc_metrics
 

@@ -8,6 +8,7 @@ Miles Ma: "别只看最后一句完成了" → 梵天需要运行中实时Eval�
 - direction翻转 → 告警
 - regime切换 → 记录
 """
+import sys
 import json, os, time
 from pathlib import Path
 from datetime import datetime, timezone
@@ -34,12 +35,12 @@ def _load_last_analysis(symbol: str) -> dict:
             entry = json.loads(line)
             if entry.get('symbol') == symbol:
                 return entry
-    except Exception:
-        pass
+    except Exception as _e:
+        print(f"[WARN] eval_runtime: _e", file=sys.stderr)
     return {}
 
 
-def _write_alert(alert: dict):
+def _write_alert(alert: dict) -> None:
     """写入nerve_alerts"""
     try:
         alerts = []
@@ -47,8 +48,8 @@ def _write_alert(alert: dict):
             alerts = json.loads(_ALERT_FILE.read_text())
         alerts.append(alert)
         _ALERT_FILE.write_text(json.dumps(alerts[-50:], ensure_ascii=False, indent=2))
-    except Exception:
-        pass
+    except Exception as _e:
+        print(f"[WARN] eval_runtime: _e", file=sys.stderr)
 
 
 def eval_analysis_result(symbol: str, result: dict) -> dict:
@@ -80,8 +81,8 @@ def eval_analysis_result(symbol: str, result: dict) -> dict:
     try:
         with open(_LOG_FILE, 'a') as f:
             f.write(json.dumps(current, ensure_ascii=False) + '\n')
-    except Exception:
-        pass
+    except Exception as _e:
+        print(f"[WARN] eval_runtime: _e", file=sys.stderr)
 
     if not last:
         return {'is_normal': True, 'alerts': [], 'changes': {}, 'reason': '首次分析，无对比基线'}

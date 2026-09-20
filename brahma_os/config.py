@@ -20,14 +20,10 @@ class Settings:
     high_quality_regime_dir: dict = None  # 当设置None时用默认
     high_quality_max_weight: float = 0.08  # 8%NAV 上限
     max_open_positions: int = 3
-    min_score: float = 140.0
+    # [9.20 P0改革] score门控废除 — 字段已删除
     min_grade: float = 80.0
     min_rr: float = 1.5
     max_rr: float = 2.5
-    # [2026-09-07 三方评估封印] score死亡区间
-    # 130-145小段WR=17.9%，在CHOP/BEAR体制下擦益拦截
-    score_dead_zone_lo: float = 130.0
-    score_dead_zone_hi: float = 145.0
     taker_fee_bps: float = 4.0
     maker_fee_bps: float = 2.0
     slippage_bps: float = 3.0

@@ -55,6 +55,7 @@ LIQ_NEAR_PCT     = 1.0   # 清算位距现价<1% = 催化剂
 # ── 工具函数 ──────────────────────────────────────────────────────────
 
 def _get_current_price(symbol: str) -> float:
+    """get current price"""
     try:
         r = requests.get(f'{FAPI}/fapi/v1/ticker/price?symbol={symbol}', timeout=5).json()
         return float(r['price'])
@@ -505,6 +506,7 @@ class BrahmaDecisionEngine:
 _engine = None
 
 def get_decision_engine() -> BrahmaDecisionEngine:
+    """获取decision engine"""
     global _engine
     if _engine is None:
         _engine = BrahmaDecisionEngine()

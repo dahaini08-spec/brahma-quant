@@ -29,6 +29,7 @@ from typing import Dict, Any, Tuple
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 _IC_STATS = None
 def _load_ic_stats() -> dict:
+    """load ic stats"""
     global _IC_STATS
     if _IC_STATS is not None:
         return _IC_STATS
@@ -78,8 +79,8 @@ def _check_macro_calendar() -> Dict:
     if _os.path.exists(_md_path):
         try:
             _macro_data = _json.loads(open(_md_path).read())
-        except Exception:
-            pass
+        except Exception as _e:
+            print(f"[WARN] trader_brain: _e", file=sys.stderr)
     _real_path = _os.path.join(_data_dir, 'macro_real.json')
     if _os.path.exists(_real_path):
         try:
@@ -92,8 +93,8 @@ def _check_macro_calendar() -> Dict:
                 return {'has_event': True, 'event': _evt_name, 'phase': 'post_event',
                         'hours_to_event': -1.0, 'impact': _evt['impact'],
                         'result': _note, 'action': _action, 'macro_data': _macro_data}
-        except Exception:
-            pass
+        except Exception as _e:
+            print(f"[WARN] trader_brain: _e", file=sys.stderr)
     _evt_h, _evt_m = map(int, _evt['time_utc'].split(':'))
     _evt_min = _evt_h * 60 + _evt_m
     _diff_min = _evt_min - _now_min
@@ -113,7 +114,7 @@ def _check_macro_calendar() -> Dict:
 # --- 价格路径追踪 ---
 _PRICE_PATHS = {}  # symbol -> [(timestamp, price), ...]
 
-def _track_price(symbol: str, price: float, max_points: int = 36):
+def _track_price(symbol: str, price: float, max_points: int = 36) -> None:
     """记录价格路径，每5分钟一个点，最多3小时"""
     _now = _time_mod.time()
     if symbol not in _PRICE_PATHS:
@@ -469,8 +470,8 @@ def decide(
         if _state_file.exists():
             _hunt_state = _json_hunt.loads(_state_file.read_text())
             _hunt_intel = extract_hunt_intel(_hunt_state, symbol.replace('USDT',''))
-    except Exception:
-        pass  # 推理层不可用时不阻断
+    except Exception as _e:
+        print(f"[WARN] trader_brain: _e", file=sys.stderr)
 
     # 猎杀修正逻辑
     _hunt_adjusted = False
@@ -746,8 +747,8 @@ def decide(
         if _b2_wr < 10:
             _b2_rejected = True
             missing.append(f'b2 WR={_b2_wr:.0f}%<10%（极危险直接否决）')
-    except:
-        pass
+    except Exception as _e:
+        print(f"[WARN] trader_brain: _e", file=sys.stderr)
 
     # === Gate1: score > 动态阈值 ===
     # [改革P1-1 2026-09-18 苏摩111] Hurst>0.6时门槛动态降低（趋势正在形成，提前放行）
@@ -759,8 +760,8 @@ def decide(
             _gate_cfg = _gate_json.loads(open(_gate_path).read())
             _gate_map = _gate_cfg.get('score_gate', {})
             _score_gate = _gate_map.get(regime, 80)
-    except:
-        pass
+    except Exception as _e:
+        print(f"[WARN] trader_brain: _e", file=sys.stderr)
     # Hurst>0.6 → CHOP_MID门槛从60降到45（趋势隐现，提前放行）
     # [P0-1修复 2026-09-19 苏摩111] Hurst>0.6 + κ<-0.1 → CHOP_TREND_TRANSITION gate降到30
     # 三方联合审核：两个独立维度共振才切换，最少误判
@@ -783,8 +784,8 @@ def decide(
         if _net_ev <= 0 and direction != 'NONE':
             _gate2_pass = False
             missing.append(f'成本后EV={_net_ev:+.2f}%≤0')
-    except:
-        pass  # cost_adapter不可用时Gate2默认通过
+    except Exception as _e:
+        print(f"[WARN] trader_brain: _e", file=sys.stderr)
 
     # === Gate3: 风控熔断 ===
     _gate3_pass = True
@@ -809,8 +810,8 @@ def decide(
                 if abs((_now - _evt_dt).total_seconds()) < 4 * 3600:
                     _fomc_window = True
                     break
-    except:
-        pass
+    except Exception as _e:
+        print(f"[WARN] trader_brain: _e", file=sys.stderr)
     if _fomc_window and _liq_wall_short and direction == 'SHORT' and not _breakout_signal:
         _gate3_pass = False
         missing.append('FOMC窗口止损墙做空→等待')
@@ -952,6 +953,36 @@ def decide(
         except Exception as _ne:
             _novelty_log = ''
             import sys; print(f'[novelty_gate] {_ne}', file=sys.stderr)
+
+        # ══ [V2.0 2026-09-20 苏摩111] 仓位自适应：历史WR×仓位系数 ═══════════════
+        try:
+            _lm = res.get('loss_memory', {}) if isinstance(res, dict) else {}
+            _lm_wr = float(_lm.get('win_rate', 0.5) or 0.5)
+            _lm_n = int(_lm.get('n', 0) or 0)
+            if _lm_n >= 3:
+                if _lm_wr >= 0.7:
+                    _old_pos = position_pct
+                    position_pct = max(1, round(position_pct * 1.2))
+                    _info_flags.append(f'亏损记忆WR={_lm_wr:.0%}(n={_lm_n})→加仓×1.2 ({_old_pos}→{position_pct})')
+                elif _lm_wr <= 0.3:
+                    _old_pos = position_pct
+                    position_pct = max(1, round(position_pct * 0.5))
+                    _info_flags.append(f'亏损记忆WR={_lm_wr:.0%}(n={_lm_n})→减仓×0.5 ({_old_pos}→{position_pct})')
+                elif _lm_wr <= 0.4:
+                    _old_pos = position_pct
+                    position_pct = max(1, round(position_pct * 0.8))
+                    _info_flags.append(f'亏损记忆WR={_lm_wr:.0%}(n={_lm_n})→减仓×0.8 ({_old_pos}→{position_pct})')
+            _tfi = res.get('tradfi_xref', {}) if isinstance(res, dict) else {}
+            _tfi_bullish = sum(1 for v in _tfi.values() if isinstance(v, dict) and v.get('wr', 0.5) >= 0.6)
+            _tfi_bearish = sum(1 for v in _tfi.values() if isinstance(v, dict) and v.get('wr', 0.5) <= 0.4)
+            if _tfi_bullish >= 2 and direction == 'LONG':
+                position_pct = max(1, round(position_pct * 1.1))
+                _info_flags.append(f'TradFi 40年共振看多→加仓×1.1')
+            elif _tfi_bearish >= 2 and direction == 'SHORT':
+                position_pct = max(1, round(position_pct * 1.1))
+                _info_flags.append(f'TradFi 40年共振看空→加仓×1.1')
+        except Exception as _e:
+            import sys; print(f'[pos_adapt] {_e}', file=sys.stderr)
     else:
         position_pct = 0; leverage = 0
 
@@ -999,8 +1030,8 @@ def decide(
             reason = '风控否决: ' + ' / '.join(_risk_result['reasons'][:2])
         elif _risk_result['modified'].get('position_pct', 0) != position_pct:
             position_pct = _risk_result['modified']['position_pct']
-    except Exception:
-        pass  # 风控引擎不可用时不阻塞交易
+    except Exception as _e:
+        print(f"[WARN] trader_brain: _e", file=sys.stderr)
 
     # ── AMBUSCADE 伏击层 [2026-09-14 苏摩111] ──────────────────
     # 预判埋伏：WAIT时检查预判信号≥2个→覆盖为AMBUSCADE
@@ -1325,10 +1356,11 @@ def format_opinion(result: Dict, symbol: str, price: float, regime: str) -> str:
         return _format_opinion_wait(result, sym, d, emoji, price)
 
 
-def _format_vip_ambuscade(r, sym, d, emoji, regime):
+def _format_vip_ambuscade(r: dict, sym: str, d: str, emoji: str, regime: str) -> str:
     # 严格按封印模板 2026-09-14 苏摩111 AMBUSCADE伏击层
     # 仓位0.5%NAV，预判埋伏不需要CVD/交叉验证确认
     # [2026-09-16 苏摩111] 双向布局模式 v2 — 分阶段+风控门控
+    """format vip ambuscade"""
     _dual = r.get('dual_layout')
     if _dual:
         _s = _dual['short']
@@ -1435,8 +1467,9 @@ def _format_vip_ambuscade(r, sym, d, emoji, regime):
     ])
 
 
-def _format_vip_enter(r, sym, d, emoji, regime):
+def _format_vip_enter(r: dict, sym: str, d: str, emoji: str, regime: str) -> str:
     # 严格按封印模板 2026-09-13 苏摩111
+    """format vip enter"""
     _is_bull = 'BULL' in regime or 'RECOVERY' in regime
     _is_bear = 'BEAR' in regime
     if d == 'LONG':
@@ -1506,8 +1539,9 @@ def _format_vip_enter(r, sym, d, emoji, regime):
     ])
 
 
-def _format_vip_watch(r, sym, d, emoji, regime=''):
+def _format_vip_watch(r: dict, sym: str, d: str, emoji: str, regime: str = '') -> str:
     # 严格按封印模板 2026-09-13 苏摩111
+    """format vip watch"""
     _is_bull = 'BULL' in regime or 'RECOVERY' in regime
     _is_bear = 'BEAR' in regime
     if d == 'LONG':
@@ -1577,7 +1611,8 @@ def _format_vip_watch(r, sym, d, emoji, regime=''):
     ])
 
 
-def _format_opinion_wait(r, sym, d, emoji, price):
+def _format_opinion_wait(r: dict, sym: str, d: str, emoji: str, price: float) -> str:
+    """format opinion wait"""
     lines = [f'🌿 姓赵不宣 | {sym} 今日观点', '']
     # 修复3：负RR<1.0不展示入场区，只给监测位
     _show_entry = r['entry_lo'] > 0 and r['entry_hi'] > 0 and r.get('rr', 0) >= 1.0
@@ -1697,4 +1732,5 @@ def format_narrative(result: Dict, symbol: str, price: float, regime: str, fvg: 
 
 # 向后兼容
 def format_vip_card(result: Dict, symbol: str, price: float, regime: str) -> str:
+    """format vip card"""
     return format_opinion(result, symbol, price, regime)

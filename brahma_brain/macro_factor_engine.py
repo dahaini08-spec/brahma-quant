@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+from typing import Any
 """
 macro_factor_engine.py — 第18维度：宏观因子引擎
 设计院 梵天v20.0 · 2026-06-07
@@ -39,7 +41,8 @@ CPI_DATES_2026 = [
 ]
 
 
-def _fetch(url: str, timeout: int = 6):
+def _fetch(url: str, timeout: int = 6) -> Any:
+    """fetch"""
     try:
         return json.loads(urllib.request.urlopen(url, timeout=timeout).read())
     except Exception:
@@ -47,6 +50,7 @@ def _fetch(url: str, timeout: int = 6):
 
 
 def _load_cache() -> dict:
+    """load cache"""
     try:
         if CACHE_FILE.exists():
             c = json.loads(CACHE_FILE.read_text())
@@ -56,7 +60,8 @@ def _load_cache() -> dict:
     return {}
 
 
-def _save_cache(data: dict):
+def _save_cache(data: dict) -> None:
+    """save cache"""
     try:
         CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
         data['ts'] = time.time()
@@ -109,8 +114,8 @@ def get_event_window() -> dict:
         if os.path.exists(_cfg_path):
             import json
             _macro_config = json.load(open(_cfg_path))
-    except Exception:
-        pass
+    except Exception as _e:
+        print(f"[WARN] macro_factor_engine: _e", file=sys.stderr)
     
     # 如果FOMC已出结果（POST_FOMC），跳过当前FOMC事件窗口
     _fomc_resolved = _macro_config.get('fomc_stance', '') == 'POST_FOMC'

@@ -1,4 +1,6 @@
 # ponytail: data_cache 657行，有意为之，重构前先 grep 所有调用方
+
+from typing import Any, Optional
 """
 
 # ── STATUS: ACTIVE ──────────────────────────────────────────
@@ -45,14 +47,15 @@ OFFLINE_CTX: dict  = {
 # kronos_engine / realtime_fetch 等绕过 data_cache 的模块）发起真实请求。
 _orig_urlopen = None
 
-def enable_offline_network_block():
+def enable_offline_network_block() -> Optional[Any]:
     """激活 OFFLINE_MODE 时 patch urllib.request.urlopen，拦截所有 Binance API 请求。"""
     global _orig_urlopen
     import urllib.request as _ureq
     if _orig_urlopen is not None:
         return  # 已经 patch 过
     _orig_urlopen = _ureq.urlopen
-    def _blocked_urlopen(req, *a, **kw):
+    def _blocked_urlopen(req, *a, **kw) -> Any:
+        """blocked urlopen"""
         url = req if isinstance(req, str) else getattr(req, 'full_url', str(req))
         # 只拦截 Binance API 请求，其他允许通过
         if 'binance.com' in url or 'fapi.' in url:
@@ -64,7 +67,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(BASE_DIR, '..'))
 
 # ─── API Key 加载 ───────────────────────────────────────────
-def _load_keys():
+def _load_keys() -> tuple:
+    """load keys"""
     try:
         import importlib.util
         conf = os.path.abspath(os.path.join(BASE_DIR, '..', 'config.py'))
@@ -108,16 +112,19 @@ _cache: dict = {}
 
 def _cache_key(symbol: str, kind: str, limit: int = 0) -> str:
     # limit>0时加入key，防止小limit覆盖大limit缓存
+    """cache key"""
     if limit > 0:
         return f'{symbol}:{kind}:{limit}'
     return f'{symbol}:{kind}'
 
 def _disk_path(key: str) -> str:
+    """disk path"""
     safe = key.replace(':', '_').replace('/', '_')
     return os.path.join(_DISK_CACHE_DIR, f'{safe}.json')
 
-def _cache_get(key: str):
+def _cache_get(key: str) -> Optional[Any]:
     # 1. 内存命中
+    """cache get"""
     entry = _cache.get(key)
     if entry and time.time() < entry['exp']:
         return entry['data']
@@ -132,7 +139,8 @@ def _cache_get(key: str):
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return None
 
-def _cache_set(key: str, data, ttl: int):
+def _cache_set(key: str, data, ttl: int) -> None:
+    """cache set"""
     exp = time.time() + ttl
     with _cache_lock:  # [C2-fix] 写入加锁
         _cache[key] = {'data': data, 'exp': exp}
@@ -144,20 +152,22 @@ def _cache_set(key: str, data, ttl: int):
         path = _disk_path(key)
         with open(path, 'w') as f:
             json.dump({'data': data, 'exp': exp}, f)
-    except Exception:
-        pass  # 磁盘写失败不影响内存缓存
+    except Exception as _e:
+        print(f"[WARN] data_cache: _e", file=sys.stderr)
 
 # ─── SSL全局单例（2026-08-28 B2优化: 避免每次请求重建SSL context，节省~3.5s/全流程）──
 import ssl as _ssl_mod
 _SSL_CTX = _ssl_mod.create_default_context()  # 进程级单例，只建一次
 
 # ─── HTTP工具 ────────────────────────────────────────────────
-def _get(url: str, timeout=8):
+def _get(url: str, timeout=8) -> Any:
+    """get"""
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     with urllib.request.urlopen(req, timeout=timeout, context=_SSL_CTX) as r:
         return json.loads(r.read())
 
-def _signed_get(path: str, params: dict = None, timeout=8):
+def _signed_get(path: str, params: dict = None, timeout=8) -> Any:
+    """signed get"""
     p = dict(params or {})
     p['timestamp'] = int(time.time() * 1000)
     qs  = urllib.parse.urlencode(p)
@@ -219,6 +229,7 @@ def get_klines(symbol: str, interval: str, limit: int = 200) -> list:
         return []
 
 def get_ticker(symbol: str) -> dict:
+    """获取ticker"""
     if OFFLINE_MODE: return OFFLINE_CTX.get('ticker', {})  # [offline]
     """24H行情（symbol 先 ASCII 校验）
     [2026-07-22] 美股代币走现货API
@@ -243,6 +254,7 @@ def get_ticker(symbol: str) -> dict:
         return {}
 
 def get_funding_rate(symbol: str) -> float:
+    """获取funding rate"""
     if OFFLINE_MODE: return OFFLINE_CTX.get("fr", 0)  # [offline]
     """当前资金费率"""
     key = _cache_key(symbol, 'fr')
@@ -258,6 +270,7 @@ def get_funding_rate(symbol: str) -> float:
         return 0.0
 
 def get_open_interest(symbol: str) -> dict:
+    """获取open interest"""
     if OFFLINE_MODE: return OFFLINE_CTX.get("oi", 0)  # [offline]
     """未平仓量 + OI动量（oi_change_pct）[P2 2026-05-22]"""
     key = _cache_key(symbol, 'oi')
@@ -295,6 +308,7 @@ def get_open_interest(symbol: str) -> dict:
         return {'oi': 0, 'ts': 0, 'oi_change_pct': 0.0, 'oi_momentum': 'NEUTRAL'}
 
 def get_long_short_ratio(symbol: str) -> float:
+    """获取long short ratio"""
     if OFFLINE_MODE: return OFFLINE_CTX.get('lsr', 50.0)  # [offline]
     """多空比（多头占比%）"""
     key = _cache_key(symbol, 'lsr')
@@ -393,7 +407,7 @@ def prefetch_symbol(symbol: str) -> dict:
                 result[key] = None
     return result
 
-def clear_expired():
+def clear_expired() -> None:
     """清理过期缓存（内存 + 磁盘）"""
     now = time.time()
     # 内存缓存清理
@@ -417,7 +431,7 @@ def clear_expired():
         if purged:
             pass  # [静默]
     except Exception as _e:
-        pass  # 磁盘清理失败不影响主流程
+        print(f"[WARN] data_cache: _e", file=sys.stderr)
 
 # ─── 便捷工具 ────────────────────────────────────────────────
 def klines_to_ohlcv(raw: list) -> dict:
@@ -434,6 +448,7 @@ def klines_to_ohlcv(raw: list) -> dict:
     }
 
 def get_basis(symbol: str) -> dict:
+    """获取basis"""
     if OFFLINE_MODE: return {'basis_pct': 0.0, 'mark_price': 0.0, 'index_price': 0.0, 'spread': 0.0}  # [offline]
     """
     合约基差 = (合约标记价格 - 现货指数价格) / 现货指数价格 × 100%
@@ -613,7 +628,7 @@ def get_lsr_okx(symbol: str) -> dict:
             _cache_set(key, result, TTL.get('lsr', 120))
             return result
     except Exception as e:
-        pass
+        print(f"[WARN] data_cache: e", file=sys.stderr)
     return {}
 
 def get_lsr_aggregated(symbol: str) -> dict:

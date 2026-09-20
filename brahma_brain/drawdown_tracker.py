@@ -25,6 +25,7 @@ THRESHOLD_LOCKOUT = 0.15   # 15% → 系统级锁定
 
 # ══ 状态管理 ══
 def _load_state() -> dict:
+    """load state"""
     if STATE_FILE.exists():
         try:
             return json.loads(STATE_FILE.read_text())
@@ -41,7 +42,8 @@ def _load_state() -> dict:
         'unlock_code': None,     # 苏摩111解锁码
     }
 
-def _save_state(state: dict):
+def _save_state(state: dict) -> None:
+    """save state"""
     STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
     STATE_FILE.write_text(json.dumps(state, indent=2, ensure_ascii=False))
 
@@ -63,7 +65,7 @@ def _get_current_nav() -> float:
             return float(last.get('nav', 0))
     return 0.0
 
-def record_nav(nav: float):
+def record_nav(nav: float) -> None:
     """记录NAV快照"""
     NAV_FILE.parent.mkdir(parents=True, exist_ok=True)
     record = {
@@ -215,7 +217,8 @@ def get_status_report() -> str:
     return '\n'.join(lines)
 
 # ══ 通知函数 ══
-def _notify_warn(state: dict):
+def _notify_warn(state: dict) -> None:
+    """notify warn"""
     try:
         import subprocess
         msg = f'⚠️ 梵天Drawdown WARN\n回撤{state["drawdown_pct"]}%≥5%\n降仓50%，暂停新信号3天\n峰值NAV=${state["peak_nav"]:.2f}'
@@ -223,7 +226,8 @@ def _notify_warn(state: dict):
                          '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6',
                          '--message', msg], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-def _notify_halt(state: dict):
+def _notify_halt(state: dict) -> None:
+    """notify halt"""
     try:
         import subprocess
         msg = f'🛑 梵天Drawdown HALT\n回撤{state["drawdown_pct"]}%≥10%\n暂停所有自动执行\n需苏摩111重启\n峰值NAV=${state["peak_nav"]:.2f}'
@@ -231,7 +235,8 @@ def _notify_halt(state: dict):
                          '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6',
                          '--message', msg], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-def _notify_lockout(state: dict):
+def _notify_lockout(state: dict) -> None:
+    """notify lockout"""
     try:
         import subprocess
         msg = f'🚨 梵天Drawdown LOCKOUT\n回撤{state["drawdown_pct"]}%≥15%\n系统级锁定\n需苏摩111全面复盘后重启\n峰值NAV=${state["peak_nav"]:.2f}'

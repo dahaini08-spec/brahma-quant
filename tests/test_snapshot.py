@@ -5,7 +5,9 @@ from brahma_os.contracts import Signal
 from brahma_os.snapshot import append_snapshot, load_snapshots, signal_record
 
 
-def test_append_only_does_not_rewrite(tmp_path: Path):
+def test_append_only_does_not_rewrite():
+    import tempfile
+    tmp_path = tempfile.mkdtemp()
     st = Settings(repo_root=str(tmp_path))
     sig = Signal(
         signal_id="a1",

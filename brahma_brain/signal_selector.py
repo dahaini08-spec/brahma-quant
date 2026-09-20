@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 # ponytail: signal_selector 305行，有意为之，重构前先 grep 所有调用方
+# ══ [P0改革 2026-09-20 苏摩111] 已废除P0改革，DYNAMIC_MIN=0, MIN_WEIGHTED=0 ══
+# score IC=-0.2130反向指标，不再做门控
+# 体制乘数已废除（regime_config.get_regime_mult返回1.0）
+# 本文件保留供兼容，signal_selector.select()仍可调用但不再做score门控
+# ══════════════════════════════════════════════════════════════
+
+from typing import Any
 """
 signal_selector.py — 梵天方向裁决器 v1.0
 设计院 2026-06-10
@@ -47,12 +54,12 @@ BASE_POSITION   = 2.0   # 基础仓位百分比
 # [V3-2改革3 2026-09-17 苏摩111] score_gate从scoring_config.json读取，硬编码降级为fallback
 _SC_CFG_PATH = _DIR / 'data' / 'scoring_config.json'
 DYNAMIC_MIN = {
-    'CHOP_MID': 80,      # V3: 从40提升到80，解决CHOP死系统
-    'BEAR_TREND': 100,   # V3: 从60提升到100
-    'BEAR_EARLY': 90,    # V3: 从60提升到90
-    'BULL_TREND': 120,   # V3: 从60提升到120，趋势体制要求更高分
-    'BULL_EARLY': 100,   # V3: 从60提升到100
-    'BEAR_RECOVERY': 90, # V3: 从50提升到90
+    'CHOP_MID': 0,      # [P0改革 2026-09-19 苏摩111] score不做门控
+    'BEAR_TREND': 0,
+    'BEAR_EARLY': 0,
+    'BULL_TREND': 0,
+    'BULL_EARLY': 0,
+    'BEAR_RECOVERY': 0,
 }
 try:
     import json as _json_sc, os as _os_sc
@@ -64,7 +71,17 @@ try:
 except Exception as _e:
     import sys as _sys_sc; print(f'[WARN] signal_selector score_gate: {_e}', file=_sys_sc.stderr)
 
-MIN_WEIGHTED    = 60    # 默认门槛（动态覆盖）
+MIN_WEIGHTED    = 0    # [P0改革 2026-09-19 苏摩111] score不做门控，降为0
+# [改革4 2026-09-18 苏摩111] 动态门槛：从实盘WR自动调整
+try:
+    from brahma_brain.signal_settlement_engine import get_dynamic_threshold as _get_dt
+    _dyn_threshold = _get_dt()
+    if _dyn_threshold != 80:
+        # 动态门槛覆盖所有体制（保持相对差异）
+        for _k in DYNAMIC_MIN:
+            DYNAMIC_MIN[_k] = _dyn_threshold
+except Exception as _e:
+    print(f"[WARN] signal_selector: _e", file=sys.stderr)
 SINGLE_DIR_DIFF = 15    # 超过此差值推单向
 
 
@@ -92,6 +109,7 @@ def select(short_analysis: dict, long_analysis: dict, regime: dict) -> dict:
 
     # ── 提取原始分 ──
     def _raw(a: dict) -> float:
+        """raw"""
         return float(
             a.get('score_final') or
             a.get('score') or
@@ -99,6 +117,7 @@ def select(short_analysis: dict, long_analysis: dict, regime: dict) -> dict:
         )
 
     def _grade(a: dict) -> float:
+        """grade"""
         return float(
             a.get('grade') or
             a.get('confluence', {}).get('structure_grade') or 0
@@ -107,6 +126,7 @@ def select(short_analysis: dict, long_analysis: dict, regime: dict) -> dict:
     def _valid(a: dict) -> bool:
         # brahma_analyze --json 输出 valid=false 时仍有参考价值
         # 体制加权后若分数足够，即可推送（selector自己判断门槛）
+        """valid"""
         return True  # 有效性由 weighted_score >= MIN_WEIGHTED 控制
 
     short_raw   = _raw(short_analysis)
@@ -147,7 +167,7 @@ def select(short_analysis: dict, long_analysis: dict, regime: dict) -> dict:
                         (long_analysis.get('ms', {}) or {}).get('indicators', {}).get('rsi_1h') or \
                         long_analysis.get('rsi_1h') or 55
             try: _rsi_long = float(_rsi_long)
-            except: _rsi_long = 55
+            except Exception as _e: _rsi_long = 55
             _grade_long = long_analysis.get('grade', 0) or 0
             # 三重限制: RSI<55 + grade>=85 + raw_score>=120 → 开放0.5%NAV试仓
             if _rsi_long <= 55 and _grade_long >= 85 and long_raw >= 120:
@@ -300,6 +320,7 @@ def _build_signal(analysis: dict, direction: str, mult: float,
 
 def _regime_summary(r: dict) -> str:
     # [FIX-SSOT 2026-06-14] 兼容新7体制dict（无 bear_recovery_prob 等字段）
+    """regime summary"""
     _label = r.get('primary', r.get('regime', '?'))
     _cn = r.get('regime_cn', _label)
     _bear = r.get('bear_prob', 0)
@@ -320,7 +341,8 @@ def format_signal_card(sig: dict) -> str:
     tp1  = sig['tp1']
     tp2  = sig['tp2']
 
-    def p(v): return f'${v:,.0f}' if v > 100 else f'${v:.4f}'
+    """p"""
+    def p(v) -> Any: return f'${v:,.0f}' if v > 100 else f'${v:.4f}'
 
     risk = abs(elo - sl) if sl and elo else 1
     rr1 = round(abs(tp1 - elo) / max(risk, 1e-9), 1) if tp1 else 0

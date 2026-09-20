@@ -29,8 +29,17 @@ JARVIS_USER_ID   = "73295708"
 JARVIS_THREAD_ID = "01a07628-0405-7e85-a34b-e68cd029dfc6"
 _TARGET          = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"
 
+# [V2.0 2026-09-20 苏摩111] 推送分级线程路由
+_PRIORITY_THREADS = {
+    'P0': JARVIS_THREAD_ID,           # 主线程（VIP信号/清算事件/止损触发）
+    'P1': JARVIS_THREAD_ID,           # 主线程（体制切换/重要告警）
+    'P2': '019f15c9',                 # 次要线程（OI报告/市场概况）
+    'P3': '019f04e3',                 # 低优先（健康检查/日常播报）
+    'P4': JARVIS_THREAD_ID,           # P4=静默OK，不推送
+}
 
-def push_jarvis(msg: str, timeout: int = 8, retries: int = 3) -> bool:
+
+def push_jarvis(msg: str, timeout: int = 8, retries: int = 3, priority: str = 'P1') -> bool:
     """
     直接HTTP推送到Jarvis，不依赖openclaw CLI子进程。
     timeout: 单次请求超时秒数（默认8s，远低于原来的15s subprocess）
@@ -40,11 +49,19 @@ def push_jarvis(msg: str, timeout: int = 8, retries: int = 3) -> bool:
     if not msg or not msg.strip():
         return False
 
+    # P4=静默，不推送
+    if priority == 'P4':
+        return True
+
+    # [V2.0 2026-09-20] 按优先级路由线程
+    _thread_id = _PRIORITY_THREADS.get(priority, JARVIS_THREAD_ID)
+    _target = f"{JARVIS_USER_ID}:thread:{_thread_id}"
+
     # 方式1: subprocess Popen非阻塞CLI推送
     try:
         subprocess.Popen(
             ['openclaw', 'message', 'send',
-             '-t', _TARGET,
+             '-t', _target,
              '--channel', 'jarvis',
              '--message', msg[:2000]],
             stdout=subprocess.DEVNULL,

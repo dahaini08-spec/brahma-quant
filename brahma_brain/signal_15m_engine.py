@@ -1,4 +1,6 @@
 # ponytail: signal_15m_engine 684行，独立计算引擎，功能内聚，拆分条件: 单引擎>3000行且有完整测试
+
+from typing import Any
 """
 signal_15m_engine.py · 梵天 15M 主框架信号生成器
 设计院 × 达摩院 P1-A 封印 2026-08-03 苏摩111
@@ -282,9 +284,13 @@ def generate_15m_signal(symbol: str, verbose: bool = False) -> dict | None:
         # ─────────────────────────────────────────────────────────
 
         # ── 获取多周期K线（只拿已关闭K线：limit+1，丢弃最后一根未收盘）──
-        def _fetch(interval, limit=100):
+        def _fetch(interval, limit=100) -> Any:
+            """fetch"""
             try:
-                from brahma_brain.data_cache import get_klines as _dc
+                try:
+                    from brahma_brain.data_cache import get_klines as _dc
+                except ImportError:
+                    from data_cache import get_klines as _dc
                 data = _dc(sym, interval, limit + 1)
                 if data and isinstance(data, list) and len(data) >= 2:
                     return data[:-1]  # 丢弃最后1根未收盘
@@ -632,7 +638,7 @@ def scan_and_push(dry_run: bool = False) -> list[dict]:
                 from brahma_brain.dharma_data_bridge import log_signal
                 log_signal(sig)
             except Exception as e:
-                pass  # bridge失败不阻断
+                print(f"[WARN] signal_15m_engine: e", file=sys.stderr)
 
     return results
 

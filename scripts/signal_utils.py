@@ -101,7 +101,7 @@ def load_signals(
     return sorted(result, key=lambda x: x.get('ts', ''), reverse=True)
 
 
-def load_broadcastable_signals(min_score: float = 145.0, hours: float = 8.0) -> list:  # SSOT broadcast_min=145.0
+def load_broadcastable_signals(min_score: float = 0.0, hours: float = 8.0) -> list:  # [P0改革] 废除
     """
     专为广播脚本设计：只返回当前可播报的有效信号。
     条件: valid=True + unsettled + 时间窗内 + 无数据污染 + 评分达标
@@ -190,7 +190,7 @@ def get_signal_by_id(signal_id: str) -> dict | None:
 
 if __name__ == '__main__':
     # 自检
-    sigs = load_broadcastable_signals(min_score=145)
+    sigs = load_broadcastable_signals(min_score=0)
     print(f'当前可播报信号: {len(sigs)}条')
     for s in sigs:
         sym = s.get('symbol','?'); sc = s.get('score',0); ts2 = s.get('ts','')[:16]; vld = s.get('valid')

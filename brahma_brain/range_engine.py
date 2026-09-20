@@ -95,7 +95,8 @@ def detect_range_structure(highs: list, lows: list, closes: list,
     }
 
 
-def _no_range():
+def _no_range() -> dict:
+    """no range"""
     return {
         'is_range': False, 'range_high': 0, 'range_low': 0,
         'mid': 0, 'position': 0.5, 'zone': 'UNKNOWN',

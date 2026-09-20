@@ -20,7 +20,8 @@ BUCKET_SZ = 50   # 50美元一个区间
 
 running = True
 
-def signal_handler(sig, frame):
+def signal_handler(sig, frame) -> None:
+    """signal handler"""
     global running
     running = False
 
@@ -28,7 +29,7 @@ signal.signal(signal.SIGTERM, signal_handler)
 signal.signal(signal.SIGINT,  signal_handler)
 
 # ── 聚合热力图 ─────────────────────────────────────────────────────
-def aggregate_heatmap():
+def aggregate_heatmap() -> dict:
     """从raw jsonl重新聚合热力图"""
     if not RAW_FILE.exists():
         return {}
@@ -55,7 +56,8 @@ def aggregate_heatmap():
             except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {str(k): v for k, v in heat.items()}
 
-def save_heatmap():
+def save_heatmap() -> None:
+    """保存heatmap"""
     heat = aggregate_heatmap()
     total_long  = sum(v["long_liq"]  for v in heat.values())
     total_short = sum(v["short_liq"] for v in heat.values())
@@ -69,14 +71,16 @@ def save_heatmap():
     print(f"[liqmap] 热力图已更新 long={total_long:.2f}M short={total_short:.2f}M buckets={len(heat)}")
 
 # ── WebSocket 主循环 ───────────────────────────────────────────────
-def run():
+def run() -> None:
+    """run"""
     import websocket
 
     BASE.joinpath("data").mkdir(exist_ok=True)
     last_aggregate = time.time()
     received = [0]
 
-    def on_message(ws, msg):
+    def on_message(ws, msg) -> None:
+        """on message"""
         try:
             d    = json.loads(msg)
             order = d.get("o", {})
@@ -94,13 +98,16 @@ def run():
         except Exception as e:
             print(f"[liqmap] parse error: {e}", file=sys.stderr)
 
-    def on_error(ws, err):
+    def on_error(ws, err) -> None:
+        """on error"""
         print(f"[liqmap] WS error: {err}", file=sys.stderr)
 
-    def on_close(ws, *args):
+    def on_close(ws, *args) -> None:
+        """on close"""
         print("[liqmap] WS closed, reconnecting...")
 
-    def on_open(ws):
+    def on_open(ws) -> None:
+        """on open"""
         print("[liqmap] ✅ WebSocket connected: !forceOrder@arr")
 
     reconnect_delay = 5

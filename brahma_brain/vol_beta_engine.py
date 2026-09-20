@@ -36,6 +36,7 @@ def get_daily_returns(symbol: str, limit: int = 400) -> list:
     return [math.log(float(k[4]) / float(k[1])) for k in klines]
 
 def pearson_corr(x: list, y: list) -> float:
+    """pearson corr"""
     n = len(x)
     if n < 3:
         return 0.0
@@ -49,6 +50,7 @@ DERIBIT_COINS = {"BTC", "ETH"}
 
 def calc_vol_beta(currency: str = "ETH") -> dict:
     # [P0磁盘缓存 2026-09-03 苏摩111] 跨进程持久化，TTL=3600s
+    """计算vol beta"""
     try:
         import sys as _s, os as _o
         _bb = _o.path.dirname(_o.path.abspath(__file__))
@@ -135,7 +137,8 @@ def calc_vol_beta(currency: str = "ETH") -> dict:
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return _result_vb
 
-def run(currency: str = "ETH", verbose: bool = False):
+def run(currency: str = "ETH", verbose: bool = False) -> None:
+    """run"""
     try:
         r = calc_vol_beta(currency)
     except Exception as e:

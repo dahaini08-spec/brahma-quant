@@ -6,7 +6,7 @@ tests/test_core_output.py — core_output.py 第五刀冒烟测试
 import time
 import pytest
 
-from brahma_brain.core_output import (
+from brahma_brain._deprecated.core_output import (
     format_vip,
     format_signal_line,
     signal_from_result,

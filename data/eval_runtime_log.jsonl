@@ -1,0 +1,7 @@
+{"symbol": "TESTBTC", "timestamp": "2026-09-19T01:45:34.929297+00:00", "score": 80, "regime": "CHOP_MID", "direction": "LONG", "action": "WATCH"}
+{"symbol": "TESTBTC", "timestamp": "2026-09-19T01:45:34.929443+00:00", "score": 130, "regime": "CHOP_MID", "direction": "LONG", "action": "ENTER"}
+{"symbol": "TESTBTC", "timestamp": "2026-09-19T01:45:34.929620+00:00", "score": 100, "regime": "CHOP_MID", "direction": "SHORT", "action": "WATCH"}
+{"symbol": "TESTBTC", "timestamp": "2026-09-19T01:45:34.929833+00:00", "score": 90, "regime": "BULL_TREND", "direction": "LONG", "action": "WATCH"}
+{"symbol": "BTCUSDT", "timestamp": "2026-09-19T07:00:52.565217+00:00", "score": 115.5, "regime": "CHOP_MID", "direction": "LONG", "action": "WATCH"}
+{"symbol": "ETHUSDT", "timestamp": "2026-09-19T07:01:12.177786+00:00", "score": 96.5, "regime": "CHOP_MID", "direction": "LONG", "action": "WATCH"}
+{"symbol": "BTC", "timestamp": "2026-09-20T09:01:10.272126+00:00", "score": 18.7, "regime": "CHOP_MID", "direction": "LONG", "action": "WATCH"}

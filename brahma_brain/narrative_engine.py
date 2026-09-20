@@ -2,6 +2,8 @@
 # STATUS: ACTIVE
 # B3叙事识别引擎 — 梵天设计院 2026-08-25
 # 功能: 市场叙事强度/方向、多空情绪量化、仓位修正
+
+from typing import Any, Optional
 """
 narrative_engine.py — B3市场叙事识别引擎
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -519,6 +521,7 @@ MACRO_EVENTS_2026 = [
 
 
 def _load_cache() -> dict:
+    """load cache"""
     try:
         if CACHE_FILE.exists():
             c = json.loads(CACHE_FILE.read_text())
@@ -528,7 +531,8 @@ def _load_cache() -> dict:
     return {}
 
 
-def _save_cache(data: dict):
+def _save_cache(data: dict) -> None:
+    """save cache"""
     try:
         CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
         CACHE_FILE.write_text(json.dumps({**data, 'ts': time.time()}))
@@ -665,7 +669,8 @@ from data_cache import _SSL_CTX as _DC_SSL_CTX
 _cache: dict = {}
 _TTL = 300  # 5分钟
 
-def _get(url: str, headers: dict = None):
+def _get(url: str, headers: dict = None) -> Optional[Any]:
+    """get"""
     now = time.time()
     if url in _cache and now - _cache[url]['ts'] < _TTL:
         return _cache[url]['data']

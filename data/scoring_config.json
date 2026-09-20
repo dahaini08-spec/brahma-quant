@@ -1,67 +1,49 @@
 {
-  "_meta": {
-    "_comment": "V3 体制配置 — 9.17 苏摩111 放开系统：体制只控制仓位上限，不sleep维度，不限制方向",
-    "_updated": "2026-09-17 10:42 UTC",
-    "_updated_by": "苏摩111",
-    "_design_principle": "体制=仓位建议 不是方向限制。所有维度参与评分，让score自己说话"
+  "_comment": "Phase 2 果蝇架构重构 2026-09-20 苏摩111: 体制激活→Hurst激活",
+  "_updated": "2026-09-20",
+  "_updated_by": "苏摩111",
+  "_design_principle": "Hurst-based sparse activation: TREND/MEAN_REVERT/RANDOM 3 buckets × 2 directions",
+  "_p0_reform": "2026-09-19 苏摩111: score_gate全部降为0，废除一票否决",
+  "score_gate": {
+    "TREND": 0,
+    "MEAN_REVERT": 0,
+    "RANDOM": 0,
+    "CHOP_MID": 0,
+    "BEAR_TREND": 0,
+    "BEAR_EARLY": 0,
+    "BULL_TREND": 0,
+    "BULL_EARLY": 0,
+    "BEAR_RECOVERY": 0
   },
-  "BEAR_TREND": {
+  "TREND": {
     "LONG": {
       "active_dims": "all",
       "sleep_dims": [],
-      "position_mult": 1.0,
+      "position_mult": 1.2,
       "weights": {}
     },
     "SHORT": {
       "active_dims": "all",
       "sleep_dims": [],
-      "position_mult": 1.0,
+      "position_mult": 1.2,
       "weights": {}
     }
   },
-  "BEAR_EARLY": {
+  "MEAN_REVERT": {
     "LONG": {
       "active_dims": "all",
       "sleep_dims": [],
-      "position_mult": 1.0,
+      "position_mult": 0.8,
       "weights": {}
     },
     "SHORT": {
       "active_dims": "all",
       "sleep_dims": [],
-      "position_mult": 1.0,
+      "position_mult": 0.8,
       "weights": {}
     }
   },
-  "BEAR_RECOVERY": {
-    "LONG": {
-      "active_dims": "all",
-      "sleep_dims": [],
-      "position_mult": 1.0,
-      "weights": {}
-    },
-    "SHORT": {
-      "active_dims": "all",
-      "sleep_dims": [],
-      "position_mult": 1.0,
-      "weights": {}
-    }
-  },
-  "BULL_TREND": {
-    "LONG": {
-      "active_dims": "all",
-      "sleep_dims": [],
-      "position_mult": 1.0,
-      "weights": {}
-    },
-    "SHORT": {
-      "active_dims": "all",
-      "sleep_dims": [],
-      "position_mult": 1.0,
-      "weights": {}
-    }
-  },
-  "BULL_EARLY": {
+  "RANDOM": {
     "LONG": {
       "active_dims": "all",
       "sleep_dims": [],
@@ -117,6 +99,76 @@
       "weights": {}
     }
   },
+  "BEAR_TREND": {
+    "LONG": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 0.5,
+      "weights": {}
+    },
+    "SHORT": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.6,
+      "weights": {}
+    }
+  },
+  "BEAR_EARLY": {
+    "LONG": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 0.5,
+      "weights": {}
+    },
+    "SHORT": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.2,
+      "weights": {}
+    }
+  },
+  "BULL_TREND": {
+    "LONG": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.3,
+      "weights": {}
+    },
+    "SHORT": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 0.5,
+      "weights": {}
+    }
+  },
+  "BULL_EARLY": {
+    "LONG": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.3,
+      "weights": {}
+    },
+    "SHORT": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 0.5,
+      "weights": {}
+    }
+  },
+  "BEAR_RECOVERY": {
+    "LONG": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 1.15,
+      "weights": {}
+    },
+    "SHORT": {
+      "active_dims": "all",
+      "sleep_dims": [],
+      "position_mult": 0.5,
+      "weights": {}
+    }
+  },
   "UNKNOWN": {
     "LONG": {
       "active_dims": "all",
@@ -131,21 +183,5 @@
       "weights": {}
     }
   },
-  "score_gate": {
-    "CHOP_MID": 80,
-    "BULL_TREND": 120,
-    "BULL_EARLY": 100,
-    "BEAR_TREND": 100,
-    "BEAR_EARLY": 90,
-    "BEAR_RECOVERY": 90,
-    "CHOP_LOW": 80,
-    "CHOP_HIGH": 80,
-    "UNKNOWN": 140
-  },
-  "score_gate_atr": {
-    "enabled": true,
-    "chop_atr_mult": 100,
-    "trend_atr_mult": 50,
-    "description": "score_gate = base + ATR_pct * mult, 热更新生效"
-  }
+  "score_gate_atr": {}
 }

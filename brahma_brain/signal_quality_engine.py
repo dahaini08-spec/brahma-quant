@@ -16,7 +16,7 @@ signal_quality_engine.py — 梵天信号质量引擎（唯一真相）
 """
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Optional
 
 
 # ── 常量（铁证封印，不得随意修改）────────────────────────────────────────
@@ -39,13 +39,15 @@ class GateResult:
 
     @property
     def rejected(self) -> bool:
+        """rejected"""
         return self.status == 'REJECT'
 
     @property
     def passed(self) -> bool:
+        """passed"""
         return self.status == 'PASS'
 
-    def __repr__(self):
+    def __repr__(self) -> Any:
         if self.passed:
             return 'GateResult(PASS)'
         return f'GateResult(REJECT gate={self.gate_name} reason={self.reason!r})'
@@ -292,15 +294,17 @@ CORR_GROUPS = [
 
 
 def _load_state() -> dict:
+    """load state"""
     if STATE_F.exists():
         try: return json.loads(STATE_F.read_text())
-        except:
+        except Exception as _e:
             import sys as _sys_ep; print(f"[EXCEPT-PASS] signal_quality_engine.py:L299", file=_sys_ep.stderr)
             pass
     return {'queue': [], 'cooldowns': {}, 'active_positions': [], 'last_updated': ''}
 
 
-def _save_state(state: dict):
+def _save_state(state: dict) -> None:
+    """save state"""
     state['last_updated'] = datetime.now(timezone.utc).isoformat()
     STATE_F.write_text(json.dumps(state, ensure_ascii=False, indent=2))
 
@@ -351,6 +355,7 @@ def _is_in_cooldown(symbol: str, state: dict, regime: str = '', grade: int = 0) 
 
 
 def _corr_group(symbol: str) -> int:
+    """corr group"""
     for i, grp in enumerate(CORR_GROUPS):
         if symbol in grp: return i
     return -1  # 独立品种
@@ -385,7 +390,7 @@ def _load_recent_wr(symbol: str) -> float:
             r = json.loads(l)
             if r.get('symbol','') == symbol and r.get('result') in ('WIN','WIN_T1','WIN_T2','LOSS'):
                 records.append(r)
-        except:
+        except Exception as _e:
             import sys as _sys_ep; print(f"[EXCEPT-PASS] signal_quality_engine.py:L388", file=_sys_ep.stderr)
             pass
         if len(records) >= 20: break
@@ -465,7 +470,7 @@ def add_signal(symbol: str, signal_dir: str, score: float, regime: str,
     try:
         with open(QUEUE_LOG, 'a') as f:
             f.write(json.dumps({'action':'ADD', **entry}) + '\n')
-    except:
+    except Exception as _e:
         import sys as _sys_ep; print(f"[EXCEPT-PASS] signal_quality_engine.py:L466", file=_sys_ep.stderr)
         pass
 
@@ -760,7 +765,10 @@ def audit_score_with_realtime(symbol: str, score_breakdown: dict) -> dict:
     try:
         # 拉取1H K线
         try:
-            from brahma_brain.data_cache import get_klines as _dc
+            try:
+                from brahma_brain.data_cache import get_klines as _dc
+            except ImportError:
+                from data_cache import get_klines as _dc
             klines = _dc(symbol, '1h', 20) or []
         except Exception:
             url = f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=1h&limit=20'
@@ -863,13 +871,14 @@ import json
 import hashlib
 import os
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Any, Optional
 
 _TRACE_LOG = os.path.join(os.path.dirname(__file__), '..', 'logs', 'signal_trace.jsonl')
 _TRACE_LOG = os.path.normpath(_TRACE_LOG)
 
 
 def _sha8(data: str) -> str:
+    """sha8"""
     return hashlib.sha256(data.encode()).hexdigest()[:8]
 
 
@@ -939,7 +948,7 @@ def log_signal_trace(
             f.write(json.dumps(record, ensure_ascii=False) + '\n')
 
     except Exception as e:
-        pass  # 审计日志不应影响主流程
+        print(f"[WARN] signal_quality_engine: e", file=sys.stderr)
 
 
 def get_trace_history(symbol: Optional[str] = None, limit: int = 50) -> list:
@@ -1450,6 +1459,7 @@ def gate_check(cf: dict, params: dict, ms: dict) -> tuple:
 
 # [迁移] 从brahma_signal.py迁入
 def get_queue_status() -> dict:
+    """获取queue status"""
     try:
         from brahma_brain.signal_quality_engine import get_status as _f
         return _f()

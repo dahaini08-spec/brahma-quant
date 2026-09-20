@@ -226,6 +226,22 @@ def step0_fetch_all(sym: str) -> dict:
     if _stale_caches:
         print(f'[FRESHNESS] ⚠️ {sym} 过期缓存: {", ".join(_stale_caches)}', file=sys.stderr)
 
+    # ══ 闸门1: 数据新鲜度硬门控 [9.18 苏摩111 顶层修复] ══
+    # 核心数据源过期=拒绝分析，而不是用过期数据跑出虚假信号
+    # 关键认知：过期缓存不是"数据不新鲜"，是"数据是假的"
+    _CRITICAL_SOURCES = ['cvd', 'gex', 'liq_heatmap']  # CVD 1h / GEX 4h / liqmap 4h
+    _critical_stale = [c for c in _stale_caches if any(c.startswith(s) for s in _CRITICAL_SOURCES)]
+    if _critical_stale:
+        _reject_msg = (
+            f'❌ 拒绝分析：核心数据源过期 → {", ".join(_critical_stale)}\n'
+            f'   过期数据=虚假信号，不是"数据不新鲜"\n'
+            f'   请先重启进程+刷新数据：bash scripts/start_supercronic.sh + 手动刷新\n'
+            f'   闸门1封印 2026-09-18 苏摩111'
+        )
+        print(_reject_msg, file=sys.stderr)
+        # 返回特殊标记，让run_analysis知道是被闸门拦截
+        return {'_gate1_rejected': True, '_reject_msg': _reject_msg, '_stale': _critical_stale}
+
     return {
         'sym': sym, 'usdt': usdt, 'price': price,
         'k1h': k1h, 'k4h': k4h, 'k15m': k15m, 'k1d': k1d,
@@ -736,9 +752,53 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict, oi: dict = None, vo
             has_cma = True
             score += 1
     
-    # 共振标准: ≥4/7 = 有效共振 (P3升级)
-    _max_score = 7 if not (vol and vol.get('gex_expired', False)) else 6
-    resonance = score >= 4
+    # ══ Phase 2修复 2026-09-18 苏摩111: 体制×维度权重矩阵 ══
+    # 原逻辑：7维简单计数，每维1分，≥4/7通过
+    # 新逻辑：体制感知加权，CHOP下GEX权重1.5，趋势下FVG权重1.5
+    # 共振分 = Σ(维度通过 × 体制权重) / Σ(体制权重)
+    # 共振分 > 0.6 = 有效共振（替代原≥4/7）
+    _REGIME_WEIGHTS = {
+        'BULL_TREND':     {'FVG': 1.5, 'OB': 1.2, 'LIQ': 0.8, 'OI': 1.0, 'GEX': 0.8, 'FC': 1.0, 'CMA': 0.8},
+        'BEAR_TREND':     {'FVG': 1.5, 'OB': 1.2, 'LIQ': 0.8, 'OI': 1.0, 'GEX': 0.8, 'FC': 1.0, 'CMA': 0.8},
+        'CHOP_MID':       {'FVG': 0.8, 'OB': 1.0, 'LIQ': 1.2, 'OI': 1.2, 'GEX': 1.5, 'FC': 0.8, 'CMA': 1.0},
+        'BEAR_RECOVERY':  {'FVG': 1.0, 'OB': 1.0, 'LIQ': 1.2, 'OI': 1.0, 'GEX': 1.0, 'FC': 1.0, 'CMA': 0.8},
+        'BEAR_EARLY':     {'FVG': 1.0, 'OB': 1.0, 'LIQ': 1.0, 'OI': 1.2, 'GEX': 1.0, 'FC': 1.0, 'CMA': 0.8},
+        'BULL_EARLY':     {'FVG': 1.2, 'OB': 1.0, 'LIQ': 1.0, 'OI': 1.0, 'GEX': 1.0, 'FC': 1.0, 'CMA': 1.0},
+    }
+    _regime_key = 'CHOP_MID'
+    for _rk in _REGIME_WEIGHTS:
+        if _rk in str(d.get('regime_s', {}).get('confirmed', '')):
+            _regime_key = _rk
+            break
+    _rw = _REGIME_WEIGHTS.get(_regime_key, _REGIME_WEIGHTS['CHOP_MID'])
+    
+    # 加权共振分计算
+    _dim_pass = {'FVG': has_fvg, 'OB': has_ob, 'LIQ': has_liq, 'OI': has_oi, 'GEX': has_gex, 'FC': has_fc, 'CMA': has_cma}
+    _total_weight = sum(_rw.values())
+    _weighted_score = sum(_rw[k] for k, v in _dim_pass.items() if v)
+    _resonance_ratio = _weighted_score / _total_weight if _total_weight > 0 else 0
+    
+    # 共振标准: [P0改革 2026-09-19 苏摩111] 从0.6降到0.4 + score>=2
+    # 根因：FVG+OB+清算=结构完整=够一单，但0.6门槛把3/7拦住了
+    # 40年交易员：FVG磁铁+有效OB+清算区=入场理由，不需要7维全绿
+    resonance = _resonance_ratio > 0.4 or score >= 2  # 降到0.4 + 2/7即可
+    
+    # ══ Phase 4修复 2026-09-18 苏摩111: 推理层反馈降权 ══
+    # 推理层提前到step4之前运行，这里读取feedback做共振降权
+    _inf_fb = d.get('_inference_feedback', {})
+    _dim_down = _inf_fb.get('dim_down_weight', {})
+    if _dim_down:
+        # 矛盾维度降权：CVD/OI矛盾时两个维度权重×0.5
+        for _dim_key, _mult in _dim_down.items():
+            if _dim_key in _rw and isinstance(_mult, (int, float)):
+                _rw[_dim_key] = _rw[_dim_key] * _mult
+        # 重算加权共振分
+        _total_weight = sum(_rw.values())
+        _weighted_score = sum(_rw[k] for k, v in _dim_pass.items() if v)
+        _resonance_ratio = _weighted_score / _total_weight if _total_weight > 0 else 0
+        resonance = _resonance_ratio > 0.4 or score >= 2  # [P0改革] 同步降低
+        if not resonance and score >= 4:
+            print(f'[推理层降权] {sym} 共振从{score}/7降级: {_dim_down.get("_reason","")}', file=sys.stderr)
 
     # [P2-5修复 2026-09-11] 交叉验证层：Step1-4结构层 vs Step5-9市场层
     # [D1修复 2026-09-11] 用共识方向(fvg_consensus)而非主磁铁方向(fvg_dir)
@@ -1363,6 +1423,13 @@ def step8_macro(d: dict) -> dict:
     else:
         pos_note = f'⚪ {rate_note} → 正常仓位'
 
+    # [P0-2修复 2026-09-19 苏摩111] macro>24h → 降级NEUTRAL
+    if not mr_fresh and mr_age_hours > 24:
+        macro_bias = 'NEUTRAL'
+        rate_action = 'HOLD'
+        rate_note = f'宏观数据过期{mr_age_hours:.0f}h，降级为NEUTRAL'
+        pos_note = f'⚪ 宏观数据过期({mr_age_hours:.0f}h) → 降级NEUTRAL，正常仓位'
+
     return {
         'fear_greed':   fear_greed,
         'macro_bias':   macro_bias,       # HAWKISH/NEUTRAL/DOVISH (基于真实CPI/PPI)
@@ -1584,6 +1651,20 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     regime_s= d['regime_s']
     reg_now = regime_s.get(sym + 'USDT', {}).get('confirmed', regime)
 
+    # ══ Phase 6修复 2026-09-18 苏摩111: 价格突破体制切换 ══
+    # 三轨体制判定：轨1=价格突破(实时) + 轨2=Hurst(4H) + 轨3=事件驱动(临时)
+    # 价格突破止损墙=BULL_TREND信号, 破支撑池=BEAR_TREND信号
+    _stop_wall = liq.get('nearest_short', 0)  # 上方止损墙
+    _support_pool = liq.get('nearest_long', 0)  # 下方支撑池
+    _price_break_regime = ''
+    if _stop_wall > 0 and price > _stop_wall:
+        _price_break_regime = 'BULL_TREND'  # 破止损墙=多头突破
+    elif _support_pool > 0 and price < _support_pool:
+        _price_break_regime = 'BEAR_TREND'  # 破支撑池=空头突破
+    # 价格突破体制优先于Hurst体制
+    if _price_break_regime:
+        reg_now = _price_break_regime
+
     # ══════════════════════════════════════════════════════
     # L1【一票否决层】三方战略架构 2026-09-04 苏摩111封印
     # 任何一项触发 → 禁止入场，直接返回等待卡片
@@ -1599,7 +1680,13 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
 
     score_val = float(bs.get('score_final', bs.get('score', 0)))
 
-    # L1-①: 死穴门控
+    # [9.19 P0改革 苏摩111] 废除score一票否决 + 三票NONE不出观察清单
+    # 根因：score IC≈0，低分ENTER PnL=+0.38% > 高分=-1.20%，用反向指标做门控
+    # 改革：score降级为仓位系数（DAG已有机制），不做入场门控
+    #       三票分歧时用trader_brain方向+减仓，不出观察清单
+    _trader_dir = d.get('signal_dir', d.get('direction', 'NONE'))
+
+    # L1-①: 死穴门控（保留，这是唯一正确的硬否决）
     _DEAD = [
         ('BEAR_TREND', 'LONG'),
         ('BEAR_RECOVERY', 'SHORT'),
@@ -1609,13 +1696,18 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
         if dead_regime in reg_now and _bias_hint == dead_dir:
             return _wait_card(f'死穴封禁 {dead_regime}:{dead_dir}', 'L1-死穴')
 
-    # L1-②: CHOP_MID低分禁止（score<60且体制CHOP）
-    # [果蝇架构 2026-09-13 苏摩111] P0修复：门槛从80→60
-    # 根因：confluence_score本身只有52.8（CHOP体制合理分数），80门槛=永远不通过
-    # 修复：门槛降到60，仓位由position_mult独立控制（CHOP×0.3=小仓位）
-    # 哲学：score反映信号质量，仓位控制风险——不是用高分门槛阻止交易
-    if 'CHOP' in reg_now and score_val < 60:
-        return _wait_card(f'CHOP_MID体制score={score_val:.0f}<60，信号质量不足禁止入场', 'L1-CHOP')
+    # [9.19 P0改革] L1-②: CHOP_MID score门控废除
+    # score不做入场门控，降级为仓位系数（DAG已有机制）
+    # _score_gate变量保留供后续仓位计算使用
+    _score_gate = 110  # 保留变量供仓位计算参考，不做门控
+    try:
+        import json as _gate_json_l0, os as _gate_os_l0
+        _gate_path_l0 = _gate_os_l0.join(_gate_os_l0.dirname(__file__), '..', 'data', 'scoring_config.json')
+        if _gate_os_l0.exists(_gate_path_l0):
+            _gate_cfg_l0 = _gate_json_l0.loads(open(_gate_path_l0).read())
+            _score_gate = _gate_cfg_l0.get('score_gate', {}).get(reg_now, 110)
+    except Exception:
+        pass
 
     # L1-③: 宏观红色日历
     if mac.get('red_flag'):
@@ -1735,7 +1827,15 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     # 合约参考SL = max(1.5×ATR1H, 1.0×ATR4H)
     atr_sl_ref = max(atr_1h * 1.5, atr_4h * 1.0) if atr_4h else atr_1h * 1.5
 
-    # 方向判断（综合5个信号投票）
+    # ══ Phase 3修复 2026-09-18 苏摩111: VIP方向优先读trader_brain ══
+    # 根因：step10_vip的bias通过5信号投票独立计算，不读trader_brain的direction
+    # 修复：trader_brain给了明确方向时，VIP必须跟随，不再各算各的
+    _trader_brain_dir = d.get('_trader_brain_direction', '')  # 由run_analysis注入
+    _trader_brain_action = d.get('_trader_brain_action', '')  # ENTER/WATCH/WAIT
+    
+    # [9.19 P0改革] 废除L0-GATE-2 score门控
+    # score不做入场门控，降级为仓位系数
+    # 5信号投票（保留作为参考和fallback）
     bull_votes = 0
     bear_votes = 0
 
@@ -1755,7 +1855,17 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     if 'BULL' in reg_now: bull_votes += 2
     if 'BEAR' in reg_now: bear_votes += 2
 
-    bias = 'LONG' if bull_votes > bear_votes else ('SHORT' if bear_votes > bull_votes else 'NEUTRAL')
+    _vote_bias = 'LONG' if bull_votes > bear_votes else ('SHORT' if bear_votes > bull_votes else 'NEUTRAL')
+    
+    # 关键修复：trader_brain方向优先，5信号投票作为fallback
+    if _trader_brain_dir in ('LONG', 'SHORT') and _trader_brain_action != 'WAIT':
+        bias = _trader_brain_dir  # trader_brain说了算
+        _bias_source = f'trader_brain({_trader_brain_action})'
+    else:
+        bias = _vote_bias  # fallback到5信号投票
+        _bias_source = f'5信号投票({_vote_bias})'
+        # 保留旧的_bias_hint逻辑兼容L1死穴门控
+    _bias_hint = bias if bias != 'NEUTRAL' else ('LONG' if fvg['dir'] == 'BULL' else 'SHORT')
 
     # ══ 死穴门控（MEMORY.md封印铁律）══
     # BULL_TREND:LONG score≥140+SL≥3% → WR=0% 永久封禁
@@ -1781,7 +1891,7 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
             f'──── VIP ────\n'
             f'🌿 姓赵不宣 | {sym} 今日布局\n'
             f'🚫 禁止入场 — {_dead_reason}\n'
-            f'   当前体制: {reg_now}  方向: {bias}  score: {_score_now:.0f}'
+            f'   当前体制: {reg_now}  方向: {bias}'
         )
 
     # 无共振点 → 等待
@@ -1886,10 +1996,15 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
         main_line   = f'🟢 多单｜回调入场区 ${entry_lo:,.1f}~${entry_hi:,.1f}（价格跌到此区挂单）'
         main_params = f'止损 ${sl:,.1f}｜目标 ${tp1:,.0f}→${tp2:,.0f}→${tp3:,.0f}'
 
-        # [P1修复 2026-09-10] BULL_TREND → 只出多单，不出空单
+        # [修复 2026-09-18 苏摩111] 方向=LONG时也输出止损墙空单条件，不再写“暂无空单”
         if 'BULL' in str(reg_now) or 'BEAR_RECOVERY' in str(reg_now):
-            side_line  = '🔴 暂无空单｜等待结构'
-            side_params = 'BULL体制不做空'
+            # BULL体制：多单止盈位=空单入场位
+            _short_entry = tp1  # 多单第一目标=空单入场
+            _short_sl = round(_short_entry + max(_short_entry * 0.025, atr_4h * 1.5 if atr_4h else _short_entry * 0.025), 1)
+            _short_tp1 = round(entry_lo, 1)  # 空单目标=多单入场区
+            _short_tp2 = round(_short_tp1 - atr_1h * 1.5, 1) if atr_1h else round(_short_tp1 * 0.98, 1)
+            side_line  = f'🔴 空单（条件）｜止损墙 ${_short_entry:,.1f} 附近假突破回落再空'
+            side_params= f'止损 ${_short_sl:,.1f}｜目标 ${_short_tp1:,.0f}→${_short_tp2:,.0f}'
         else:
             side_hi    = round(entry_lo + atr_1h * 2.0, 1)
             side_lo    = round(entry_lo + atr_1h * 1.2, 1)
@@ -1917,10 +2032,15 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
         main_line   = f'🔴 空单｜反弹入场区 ${entry_lo:,.1f}~${entry_hi:,.1f}（价格反弹到此区挂单）'
         main_params = f'止损 ${sl:,.1f}｜目标 ${tp1:,.0f}→${tp2:,.0f}→${tp3:,.0f}'
 
-        # [P1修复 2026-09-10] BEAR_TREND → 只出空单，不出多单
+        # [修复 2026-09-18 苏摩111] 方向=SHORT时也输出支搜池接多条件，不再写“暂无多单”
         if 'BEAR' in str(reg_now):
-            side_line  = '🟢 暂无多单｜等待结构'
-            side_params = 'BEAR体制不做多'
+            _long_entry_lo = tp1  # 空单第一目标=多单入场
+            _long_entry_hi = round(_long_entry_lo + atr_1h * 0.5, 1) if atr_1h else round(_long_entry_lo * 1.01, 1)
+            _long_sl = round(_long_entry_lo - max(_long_entry_lo * 0.02, atr_4h * 1.5 if atr_4h else _long_entry_lo * 0.02), 1)
+            _long_tp1 = round(entry_hi, 1)  # 多单目标=空单入场区
+            _long_tp2 = round(_long_tp1 + atr_1h * 1.5, 1) if atr_1h else round(_long_tp1 * 1.02, 1)
+            side_line  = f'🟢 多单（条件）｜支搜池 ${_long_entry_lo:,.1f}~${_long_entry_hi:,.1f} 接多'
+            side_params= f'止损 ${_long_sl:,.1f}｜目标 ${_long_tp1:,.0f}→${_long_tp2:,.0f}'
         else:
             hunt_lo    = round(entry_lo - atr_1h * 1.5, 1)
             hunt_hi    = round(entry_lo - atr_1h * 0.5, 1)
@@ -1946,6 +2066,46 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     sl_ok = sl_distance >= atr4h_threshold
     sl_tag = '✅' if sl_ok else '⚠️偏窄'
 
+    # ══ 闸门2: VIP铁律自动校验 [9.18 苏摩111 顶层修复] ══
+    # 在VIP输出前，自动检查所有铁律，不满足=拒绝输出策略
+    _gate2_errors = []
+    
+    # 铁律1: SL距离 ≥ 1.5×ATR4H
+    if atr_4h and sl_distance < atr_4h * 1.5:
+        _gate2_errors.append(f'SL距离${sl_distance:.0f} < 1.5×ATR4H ${atr_4h*1.5:.0f}')
+    # 铁律2: SL距离 ≥ 1.5×ATR1H
+    if atr_1h and sl_distance < atr_1h * 1.5:
+        _gate2_errors.append(f'SL距离${sl_distance:.0f} < 1.5×ATR1H ${atr_1h*1.5:.0f}')
+    # 铁律3: RR ≥ 2.0（用TP2计算）
+    if bias == 'LONG' and tp2:
+        _rr_tp2 = round((tp2 - entry_lo) / (entry_lo - sl), 2) if entry_lo > sl else 0
+        if _rr_tp2 < 2.0:
+            _gate2_errors.append(f'RR(TP2)={_rr_tp2} < 2.0')
+    elif bias == 'SHORT' and tp2:
+        _rr_tp2 = round((entry_hi - tp2) / (sl - entry_hi), 2) if sl > entry_hi else 0
+        if _rr_tp2 < 2.0:
+            _gate2_errors.append(f'RR(TP2)={_rr_tp2} < 2.0')
+    # 铁律4: 仓位 ≤ 10%NAV
+    if base_nav_main > 10:
+        _gate2_errors.append(f'仓位{base_nav_main}% > 10%NAV上限')
+    # 铁律5: 概念校验 — 止损墙/支撑池/清算区不可混淆
+    _liq_short = liq.get('nearest_short', 0)
+    _liq_long = liq.get('nearest_long', 0)
+    _support_pool = liq.get('nearest_long', 0)  # 支撑池=下方多头止损区
+    _liquidation = round(price * 0.95, 0)  # 清算区=-5%
+    # 如果多单目标标成了"清算区"但实际是支撑池距离 → 告警
+    
+    if _gate2_errors:
+        _gate2_msg = ' | '.join(_gate2_errors)
+        return (
+            f'──── VIP ────\n'
+            f'🌿 姓赵不宣 | {sym} 今日观察\n'
+            f'⏳ [闸门2] 策略未通过铁律校验，拒绝输出\n'
+            f'   ❌ {_gate2_msg}\n'
+            f'   当前 体制={reg_now}\n'
+            f'   闸门2封印 2026-09-18 苏摩111'
+        )
+
     lines = [
         f'──── VIP ────',
         f'🌿 姓赵不宣 | {sym}({reg_now}) 今日布局',
@@ -1959,12 +2119,20 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
         f'杠杆 {lev_side}x｜仓位 {nav_side}%',
         f'',
         f'⚠️ {main_dir}  ATR1H=${atr_1h:.0f} ATR4H=${atr_4h:.0f}',
-        f'🚫 破${sl:,.0f} 策略作废',
     ]
+    # [NEW-1修复 2026-09-19 苏摩111] RSI 1H超买/超卖在VIP卡片中强调
+    # RSI 1H在d.bs.momentum中
+    _rsi_1h_val = mom.get('rsi_1h', 0) or vol.get('rsi_1h', 0) or 0
+    if _rsi_1h_val >= 75:
+        lines.append(f'🔥 RSI 1H={_rsi_1h_val:.0f}超买！做空高胜率setup')
+    elif _rsi_1h_val <= 25:
+        lines.append(f'🔥 RSI 1H={_rsi_1h_val:.0f}超卖！做多高胜率setup')
+    lines.append(f'🚫 破${sl:,.0f} 策略作废')
     if risk_note:
         lines.append(risk_note)
 
     return '\n'.join(lines)
+
 
 # ══════════════════════════════════════════════════════════
 # 主报告组装
@@ -2012,13 +2180,13 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
     elif _rsi_4h > 70:
         _rsi_note = f' RSI4H={_rsi_4h:.1f}🔴超买'
     if regime == 'CHOP_MID' and score < 110:
-        parts.append(f'{sym}在${price:,.0f}横盘，CHOP体制score={score:.0f}，大户{big_long:.0f}%多但OI={oi_signal}。{_rsi_note}'.strip())
+        parts.append(f'{sym}在${price:,.0f}横盘，CHOP体制，大户{big_long:.0f}%多但OI={oi_signal}。{_rsi_note}'.strip())
     elif 'BULL' in regime:
-        parts.append(f'{sym}在${price:,.0f}，{regime} score={score:.0f}，FVG{fvg_consensus}共识，OI={oi_signal}。{_rsi_note}'.strip())
+        parts.append(f'{sym}在${price:,.0f}，{regime}，FVG{fvg_consensus}共识，OI={oi_signal}。{_rsi_note}'.strip())
     elif 'BEAR' in regime:
-        parts.append(f'{sym}在${price:,.0f}，{regime} score={score:.0f}，FVG{fvg_consensus}共识，OI={oi_signal}。{_rsi_note}'.strip())
+        parts.append(f'{sym}在${price:,.0f}，{regime}，FVG{fvg_consensus}共识，OI={oi_signal}。{_rsi_note}'.strip())
     else:
-        parts.append(f'{sym}在${price:,.0f}，体制{regime} score={score:.0f}。{_rsi_note}'.strip())
+        parts.append(f'{sym}在${price:,.0f}，体制{regime}。{_rsi_note}'.strip())
 
     # 2. 主力意图 + 推断（40年交易员不只是描述，要推断主力在等什么）
     _intent = ''
@@ -2177,7 +2345,7 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
             if 'OI' in ' '.join(missing):
                 _triggers.append(f'如果OI从{oi_signal}翻转为LONG_BUILD → 资金流确认，这单可以进（通常1-2根4H K线内确认）')
             if 'score' in ' '.join(missing):
-                _triggers.append(f'如果score从{score:.0f}涨过{120 if regime_state == "RED" else 110} → 体制确认，可以进')
+                _triggers.append(f'如果体制确认（Hurst翻转/价格突破轨制）→ 可以进')
             if _hcme_case:
                 _triggers.append(f'HCME最相似{_hcme_case}→历史参考时间线')
             if _triggers:
@@ -2245,6 +2413,11 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     print(f'[{sym}] Step 0: 拉取实时数据...', flush=True)
     t_start = __import__('time').time()  # P1修复：移到step0之前，含数据拉取耗时
     d   = step0_fetch_all(sym)
+    
+    # ══ 闸门1检查: 数据新鲜度硬门控 [9.18 苏摩111] ══
+    if d.get('_gate1_rejected'):
+        return d['_reject_msg']
+    
     p   = d['price']  # 分析基准价（拉取时刻）
 
     # ── CHOP盲区旁路检测（不影响主链路）──────────────────────
@@ -2290,6 +2463,23 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         from brahma_brain.cross_market_alpha import get_cross_market_alpha
         _cma = get_cross_market_alpha()
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+    
+    # ══ Phase 4修复 2026-09-18 苏摩111: 推理层提前到step4之前 ══
+    # 根因：推理层在step10之后运行，feedback信号写入但无人读取
+    # 修复：推理层提前到step4之前，step4共振矩阵读取feedback做降权
+    _inference_feedback = {}
+    try:
+        from brahma_brain.brahma_inference import run_inference
+        _inf_result = run_inference([sym])
+        _inference_feedback = _inf_result.get('feedback', {}).get(sym, {})
+        d['_inference_feedback'] = _inference_feedback
+        _dim_down = _inference_feedback.get('dim_down_weight', {})
+        _regime_bonus = _inference_feedback.get('regime_confirm_bonus', 0)
+        if _dim_down or _regime_bonus:
+            print(f'[{sym}] 推理层反馈: 降权={_dim_down} 体制确认+{_regime_bonus}', flush=True)
+    except Exception as _inf_pre_e:
+        print(f'[WARN] 推理层预加载失败: {_inf_pre_e}', file=sys.stderr)
+    
     res = step4_resonance(d, fvg, ob, liq, oi=oi, vol=vol, fc=fc, cma=_cma)
     pat = step4b_pattern(d)  # 新增: 形态识别
     lsr_trig = step5b_lsr_trigger(d, res)  # 新增: LSR/OI + 15M触发
@@ -2339,6 +2529,11 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     final_missing = tb_result.get('missing', [])
     final_confidence = tb_result.get('confidence', council.get('confidence', 'LOW'))
     final_consistent = tb_result.get('consistent_count', 0)
+
+    # ══ Phase 3修复 2026-09-18 苏摩111: 注入trader_brain方向到d ══
+    # 让step10_vip能读到trader_brain的真实方向，不再各算各的
+    d['_trader_brain_direction'] = final_direction
+    d['_trader_brain_action'] = final_action
 
     # BUG-1修复：分析完成后拉一次实时价，检测漂移
     import time as _t, urllib.request as _ur, ssl as _ssl, json as _js
@@ -2431,8 +2626,6 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         f'🏛️ 梵天80维全能力分析 | {sym}/USDT 基准${p:,.0f}→实时${_live:,.0f} | {ts} (耗时{_elapsed:.0f}s){_freshness_tag}',
         f'——————————————————————————━━',
         f'',
-        f'【体制】{regime}  score={score:.0f}  grade={grade}',
-        f'',
         f'【Step1 FVG磁铁】全周期',
         (f'  共识方向: {fvg.get("consensus",fvg.get("dir","?"))}  多{fvg.get("bull_score",0)}分 vs 空{fvg.get("bear_score",0)}分  主磁铁: {fvg.get("dir","?")}@${fvg.get("magnet",0):,.0f}') if fvg['magnet'] else '  无有效FVG',
         f'  {fvg.get("desc","")[:120]}',
@@ -2475,9 +2668,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         + (f'  → 第二层: ${liq["second_short"]:,.0f}' if liq.get('second_short') else ''),
         f'  🛡️下方多头支撑池: ${liq.get("nearest_long",0):,.0f} (-{liq.get("support_pct",0):.1f}%)',
         f'',
-        f'【Step4 共振点】7维（FVG+OB+清算+OI+GEX+方仓+跨市场）',
-        f'  共振得分: {res.get("score",0)}/7  {"✅有效共振，可布局" if res.get("resonance",False) and res.get("entry_lo",0) > 0 else ("⚠️共振但方向矛盾，不出入场区" if res.get("resonance",False) and res.get("entry_lo",0) == 0 else "❌共振不足，等待")}',
-        f'  FVG={res["has_fvg"]} OB={res["has_ob"]} 清算={res["has_liq"]} OI={res.get("has_oi",False)} GEX={res.get("has_gex",False)} 方仓={res.get("has_fc",False)} 跨市场={res.get("has_cma",False)}',
+        f'【Step4 共振】FVG={res["has_fvg"]} OB={res["has_ob"]} 清算={res["has_liq"]} OI={res.get("has_oi",False)} GEX={res.get("has_gex",False)} 方仓={res.get("has_fc",False)} 跨市场={res.get("has_cma",False)} → {res.get("score",0)}/7',
         f'  入场区间: ${res.get("entry_lo",0):,.1f} ~ ${res.get("entry_hi",0):,.1f}',
     ]
     if res['missing']:
@@ -2605,6 +2796,30 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     if _narrative:
         lines += [f'', f'── 交易员视角 ──', _narrative]
 
+    # [V2.0 2026-09-20 苏摩111] 交易叙事引擎 — 40年交易员因果链
+    try:
+        from brahma_brain.trade_narrative_engine import generate_trade_narrative
+        _narr_input = {
+            'symbol': sym + 'USDT', 'price': p, 'regime': regime_c,
+            'score': score, 'hurst': vol.get('hurst', 0), 'action': tb_result.get('action', 'WAIT'),
+            'direction': tb_result.get('direction', 'NONE'),
+            'fvg_consensus': fvg.get('consensus', ''), 'fvg_magnet_price': fvg.get('magnet', 0),
+            'oi_signal': oi.get('signal', ''), 'smart_money': sm, 'gex': vol.get('gex', 0),
+            'gex_signal': vol.get('gex_signal', ''), 'cvd_1h': oi.get('cvd_1h', 0),
+            'cvd_dir_1h': oi.get('cvd_dir_1h', 'NEUTRAL'), 'resonance_count': res.get('count', 0),
+            'resonance_max': 7, 'resonance_missing': res.get('missing', []),
+            'liq_wall_price': liq.get('nearest_short', 0), 'liq_pool_price': liq.get('nearest_long', 0),
+            'entry_lo': tb_result.get('entry_lo', 0), 'entry_hi': tb_result.get('entry_hi', 0),
+            'stop_loss': tb_result.get('sl', 0), 'sl_pct': tb_result.get('sl_pct', 0),
+            'rr1': tb_result.get('rr', 0), 'tp1': tb_result.get('tp1', 0),
+            'tp2': tb_result.get('tp2', 0), 'tp3': tb_result.get('tp3', 0),
+        }
+        _narrative_v2 = generate_trade_narrative(_narr_input)
+        if _narrative_v2:
+            lines += [f'', f'── 交易叙事引擎 ──', _narrative_v2]
+    except Exception as _ne:
+        pass
+
     lines += [
         f'',
         f'{"─"*43}',
@@ -2612,18 +2827,23 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
 
     # ── trader_brain裁决替代AI议会（2026-09-11 苏摩111封印）──
     _tb_action = tb_result.get('action', 'WAIT')
-    # 统一输出：ENTER=VIP / WATCH=轻仓VIP / WAIT=观点
-    try:
-        _section = 'VIP' if _tb_action == 'ENTER' else 'VIP' if _tb_action == 'WATCH' else '观点'
-        _vip_out = f'──── {_section} ────\n' + tb_format(
-            tb_result, sym+'USDT', p, _regime_c
-        )
-    except Exception:
-        _vip_out = (
-            f'──── 观点 ────\n'
-            f'🌿 姓赵不宣 | {sym} 今日观点\n'
-            f'⏳ {tb_result.get("reason", "等待")[:60]}'
-        )
+    # [9.19修复] L0-GATE门控：step10_vip返回等待/观察卡片时，覆盖trader_brain的VIP输出
+    # 根因：step10_vip的vip变量赋值后从未使用，trader_brain的tb_format绕过了L0-GATE
+    if vip and ('⏳' in vip or '观察' in vip or '禁止' in vip):
+        _vip_out = vip  # step10_vip的等待/观察卡片优先
+    else:
+        # 统一输出：ENTER=VIP / WATCH=轻仓VIP / WAIT=观点
+        try:
+            _section = 'VIP' if _tb_action == 'ENTER' else 'VIP' if _tb_action == 'WATCH' else '观点'
+            _vip_out = f'──── {_section} ────\n' + tb_format(
+                tb_result, sym+'USDT', p, _regime_c
+            )
+        except Exception:
+            _vip_out = (
+                f'──── 观点 ────\n'
+                f'🌿 姓赵不宣 | {sym} 今日观点\n'
+                f'⏳ {tb_result.get("reason", "等待")[:60]}'
+            )
 
     # BUG-1：如果入场区已失效，在VIP之前追加警告
     if _price_warn and abs(_drift_pct) >= 1.0:
@@ -2665,9 +2885,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         lines += [
             f'',
             f'── P3/P4对比 ──',
-            f'  原始score: {_raw_score}',
-            f'  Ensemble: score={_ens.get("ensemble_score",0)} signal={_ens.get("ensemble_signal",0)} n_dims={_ens.get("n_dims",0)}',
-            f'  AI Council: {_council.get("council_bias","?")}/{_council.get("council_action","?")}/{_council.get("council_confidence","?")} score={_council.get("council_score",0)}',
+            f'  AI Council: {_council.get("council_bias","?")}/{_council.get("council_action","?")}/{_council.get("council_confidence","?")}',
             f'  Bayes: adj={_council.get("bayes_adjustment",0):+.2f} detail={_council.get("bayes_detail","?")[:50]}',
             f'  Combined: {_council.get("combined_score",0)} = ensemble({_ens.get("ensemble_score",0)}) + bayes({_council.get("bayes_adjustment",0):+.2f})',
         ]
@@ -2715,55 +2933,47 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     # brahma_cpu/LLM议会/梵天大脑已砍除（P1修复）
     # lines += [f'', f'  (brahma_cpu/LLM议会/梵天大脑已砍除——P1果蝇架构修复)']
     
-    # ── 阶段3: signal_selector 信号筛选 ──
-    # [果蝇架构修复 2026-09-13 苏摩111] 修正调用签名
-    # select(short_analysis, long_analysis, regime) → 传3个dict，不是signal_dir kwarg
-    _sel_result = None
-    import sys as _sel_sys
-    try:
-        from brahma_brain.signal_selector import select as _sig_select
-        _sig_dir = 'SHORT' if 'BEAR' in str(regime_c) or 'CHOP' in str(regime_c) else 'LONG'
-        # 收集信号摘要（展示用）
-        _signals = []
-        if fvg and fvg.get('consensus'):
-            _signals.append(('FVG', fvg.get('consensus', 'NONE')))
-        if res and res.get('resonance'):
-            _signals.append(('Resonance', f'{res.get("score",0)}/7'))
-        if oi and oi.get('signal'):
-            _signals.append(('OI', oi.get('signal', 'NEUTRAL')))
-        if sm and sm.get('diverge', 0) > 15:
-            _signals.append(('SmartMoney', f'diverge={sm.get("diverge",0)}%'))
-        if _enhanced_result and _enhanced_result.get('score', 0) > 0:
-            _signals.append(('Enhanced', f'{_enhanced_result.get("score",0)}/25'))
-        if _cpu_result and _cpu_result.get('decision'):
-            _signals.append(('CPU', f'L{_cpu_result.get("layer","?")}={_cpu_result.get("decision","?")}'))
-        if _council_bridge_result:
-            _signals.append(('Council', f'adj={_council_bridge_result.get("final_adj",0):+.1f}'))
-        # 正确调用：select(short_analysis, long_analysis, regime)
-        # 用当前分析结果作为主方向，构造简化regime dict
-        _regime_for_sel = {
-            'symbol': sym+'USDT',
-            'primary': str(regime_c),
-            'regime': str(regime_c),
-            'bull_prob': 0.3, 'bear_prob': 0.4, 'chop_prob': 0.3,
-            'multiplier': {'SHORT': 0.88 if 'CHOP' in str(regime_c) else 0.5, 'LONG': 0.5 if 'CHOP' in str(regime_c) else 1.3},
-        }
-        _short_analysis = {'symbol': sym+'USDT', 'score_final': d.get('bs',{}).get('score_final',0), 'confluence': {'total': d.get('bs',{}).get('confluence',{}).get('total',0)}}
-        _long_analysis = {'symbol': sym+'USDT', 'score_final': 0, 'confluence': {'total': 0}}
-        _sel_result = _sig_select(_short_analysis, _long_analysis, _regime_for_sel)
-        _sel_action = _sel_result.get('decision', '?')
-        _sel_confidence = _sel_result.get('confidence', 0)
-        lines += [f'', f'─── 🎯 signal_selector ───', f'  decision: {_sel_action} | signals: {len(_sel_result.get("signals",[]))}']
-        if _signals:
-            lines.append(f'  信号源: {", ".join(f"{k}={v}" for k,v in _signals)}')
-        _step_gc()
-    except Exception as _sel_e:
-        lines += [f'', f'─── 🎯 signal_selector ───', f'  ⚠️ 未启用: {str(_sel_e)[:60]}']
+    # signal_selector 已废除（P0改革 2026-09-19 苏摩111）— score IC≈0，无有效门控价值
 
     # [果蝇架构 2026-09-13 苏摩111] P1修复：梵天大脑已砍除（超时无效）
     # 原代码：brahma_brain_ai.brahma_brain_decide() 30s超时→规则版VIP覆盖
     # 保留：规则版VIP卡片（step10_vip）已覆盖所有有用输出
     # _bb_result = None  # 已砍除
+
+    # [改革2+3 2026-09-18 苏摩111] 信号结算闭环：每次分析后结算pending + 记录新信号
+    try:
+        from brahma_brain.signal_settlement_engine import settle_pending, record_signal, get_wr_stats, get_dynamic_threshold
+        _settle_price = d.get('price', 0) or 0
+        if _settle_price == 0:
+            # fallback: 从结果中获取
+            _settle_price = d.get('bs', {}).get('price', 0) or 78000
+        _settle_r = settle_pending(_settle_price, sym+'USDT')
+        if _settle_r['settled'] > 0:
+            lines += [f'', f'─── 📊 信号结算 ───', f'  本次结算: {_settle_r["settled"]}笔 | 待结算: {_settle_r["pending"]}笔']
+            for s in _settle_r.get('settled_details', []):
+                lines.append(f'  {s["symbol"]} {s["direction"]} → {s["outcome"]} PnL={s.get("pnl_pct",0):+.2f}%')
+        _wr_stats = get_wr_stats()
+        _dyn_threshold = get_dynamic_threshold()
+        if _wr_stats['total'] > 0:
+            lines.append(f'  累计WR: {_wr_stats["wr"]:.1%} ({_wr_stats["wins"]}W/{_wr_stats["losses"]}L n={_wr_stats["total"]})')
+            lines.append(f'  动态门槛: {_dyn_threshold} (默认80)')
+        # 如果当前是EXECUTE/AMBUSCADE，记录新信号
+        _final_action = d.get('decision_action', 'WATCH')
+        if _final_action in ('EXECUTE', 'AMBUSCADE', 'ENTER') and d.get('signal_dir'):
+            _entry = d.get('key_levels', {})
+            record_signal(
+                symbol=sym+'USDT',
+                direction=d['signal_dir'],
+                entry_lo=_entry.get('entry_lo', _settle_price * 0.99),
+                entry_hi=_entry.get('entry_hi', _settle_price * 1.01),
+                sl=_entry.get('sl', _settle_price * 0.98 if d['signal_dir']=='LONG' else _settle_price * 1.02),
+                tp1=_entry.get('tp1', _settle_price * 1.02 if d['signal_dir']=='LONG' else _settle_price * 0.98),
+                score=d.get('score', 0),
+                regime=str(regime_c),
+            )
+            lines.append(f'  → 已记录模拟入场 {sym} {d["signal_dir"]}')
+    except Exception as _settle_e:
+        import sys as _se_sys; print(f'[WARN] settlement: {_settle_e}', file=_se_sys.stderr)
 
     # ── brahma_360 系统自检（非阻塞） ──
     import sys as _b360_sys
@@ -2805,6 +3015,106 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         lines.append(_inf_block)
     except Exception as _inf_err:
         lines.append(f'\n  [推理层] 加载失败: {_inf_err}')
+
+    # [NanoJev Phase0 2026-09-18 苏摩111] 写入live_signal_log + 88维特征
+    try:
+        import json as _njson, time as _ntime, secrets as _nsec, re as _nre
+        from pathlib import Path as _nP
+        from datetime import datetime as _ndt, timezone as _ntz
+        _nsig_log = _nP(__file__).parent.parent / 'data' / 'live_signal_log.jsonl'
+        _nsig_log.parent.mkdir(parents=True, exist_ok=True)
+        _ncf = d.get('bs', {}).get('confluence', {}) or {}
+        _nbd = _ncf.get('breakdown', {}) if isinstance(_ncf, dict) else {}
+        
+        # [V2.0修复 2026-09-20 苏摩111] CVD快照直接读取，写入顶层字段
+        # 根因：CVD数据在step5b中读取但未传递到信号写入区域
+        _cvd_snapshot = {}
+        try:
+            _cvd_path = _nP(__file__).parent.parent / 'data' / f'cvd_realtime_{sym.lower()}usdt.json'
+            if _cvd_path.exists():
+                _cvd_snapshot = _njson.loads(_cvd_path.read_text())
+        except Exception:
+            pass
+        _nfeats = {}
+        def _nsf(v, dft=0):
+            try: return float(v) if v is not None else dft
+            except: return dft
+        for k, v in _nbd.items():
+            if isinstance(v, (int, float)): _nfeats[f'bd_{k}'] = float(v)
+            elif isinstance(v, str):
+                _nm = _nre.search(r'-?\d+\.?\d*', str(v))
+                if _nm: _nfeats[f'bd_{k}'] = float(_nm.group())
+        for k in ['rsi_15m','rsi_1h','rsi_4h','rsi_1d','atr_1h','atr_4h','atr_1d']:
+            _nfeats[f'mom_{k}'] = _nsf(vol.get(k, 0))
+        for k in ['funding_rate','long_short_ratio','oi','oi_change_pct','oi_momentum']:
+            _nfeats[f'sent_{k}'] = _nsf(oi.get(k, 0))
+        _nfeats['score'] = _nsf(score)
+        _nfeats['regime'] = str(regime)
+        _nfeats['direction'] = str(tb_result.get('direction', 'UNKNOWN'))
+        _nfeats['price'] = _nsf(p)
+        _nfeats['symbol'] = sym + 'USDT'
+        _nfeats['hurst'] = _nsf(vol.get('hurst', 0))
+        _nfeats['atr_1h'] = _nsf(vol.get('atr_1h', 0))
+        _nfeats['atr_4h'] = _nsf(vol.get('atr_4h', 0))
+        _nfeats['gex'] = _nsf(vol.get('gex', 0))
+        # [V2.0修复 2026-09-20] CVD写入features
+        _nfeats['cvd_1h'] = _nsf(_cvd_snapshot.get('cvd_1h', 0))
+        _nfeats['cvd_dir_1h'] = str(_cvd_snapshot.get('dir_1h', 'NEUTRAL'))
+        # [V2.0 2026-09-20 苏摩111] CVD多周期暴露
+        try:
+            from brahma_brain.volume_unified import get_multi_tf_cvd
+            _cvd_mtf = get_multi_tf_cvd(sym + 'USDT')
+            _nfeats['cvd_4h'] = _nsf(_cvd_mtf.get('macro',{}).get('strength',0))
+            _nfeats['cvd_4h_dir'] = str(_cvd_mtf.get('macro',{}).get('direction','NEUTRAL'))
+            _nfeats['cvd_5m'] = _nsf(_cvd_mtf.get('micro',{}).get('strength',0))
+            _nfeats['cvd_5m_dir'] = str(_cvd_mtf.get('micro',{}).get('direction','NEUTRAL'))
+        except Exception:
+            pass
+        _nfeats['oi_trend'] = str(oi.get('trend', ''))
+        _nfeats['sm_divergence'] = _nsf(sm.get('divergence', 0))
+        _nts = _ntime.time()
+        _nsig = {
+            'signal_id': _nsec.token_hex(6),
+            'ts': _nts, 'timestamp': _nts,
+            'ts_iso': _ndt.fromtimestamp(_nts, tz=_ntz.utc).isoformat(),
+            'symbol': sym + 'USDT',
+            'signal_dir': str(tb_result.get('direction', 'UNKNOWN')),
+            'direction': str(tb_result.get('direction', 'UNKNOWN')),
+            'regime': str(regime),
+            'score': _nsf(score),
+            'action': str(tb_result.get('action', 'WAIT')),
+            'valid': True,
+            'price': _nsf(p),
+            'entry_lo': _nsf(tb_result.get('entry_lo', 0)),
+            'entry_hi': _nsf(tb_result.get('entry_hi', 0)),
+            'stop_loss': _nsf(tb_result.get('sl', 0)),
+            'tp1': _nsf(tb_result.get('tp1', 0)),
+            'tp2': _nsf(tb_result.get('tp2', 0)),
+            'sl_pct': _nsf(tb_result.get('sl_pct', 0)),
+            'rr1': _nsf(tb_result.get('rr', 0)),
+            'status': 'OPEN',
+            'features': _nfeats,
+            # [V2.0修复 2026-09-20 苏摩111] CVD顶层字段 — 之前CVD只在breakdown深处，没暴露到顶层
+            'cvd_1h': _nsf(_cvd_snapshot.get('cvd_1h', 0)),
+            'cvd_dir_1h': str(_cvd_snapshot.get('dir_1h', 'NEUTRAL')),
+            'cvd_buy_vol_1h': _nsf(_cvd_snapshot.get('buy_vol_1h', 0)),
+            'cvd_sell_vol_1h': _nsf(_cvd_snapshot.get('sell_vol_1h', 0)),
+            # [V2.0 2026-09-20] CVD多周期顶层字段
+            'cvd_4h_dir': _nfeats.get('cvd_4h_dir', 'NEUTRAL'),
+            'cvd_5m_dir': _nfeats.get('cvd_5m_dir', 'NEUTRAL'),
+        }
+        # 分数守卫
+        _nguard = _nsig.get('score', 0)
+        _nreg = _nsig.get('regime', '')
+        _nskip = False  # [9.20 P0改革] NanoJev守卫废除 — score不做门控
+        if not _nskip:
+            with open(_nsig_log, 'a') as _nf:
+                _nf.write(_njson.dumps(_nsig, ensure_ascii=False) + '\n')
+            print(f'[NanoJev] {sym}信号写入live_signal_log ({len(_nfeats)}维特征)', file=sys.stderr)
+        else:
+            print(f'[NanoJev] {sym}被守卫拦截 (score={_nguard} regime={_nreg})', file=sys.stderr)
+    except Exception as _ne:
+        print(f'[WARN] live_signal_log写入失败: {_ne}', file=sys.stderr)
 
     return '\n'.join(lines)
 

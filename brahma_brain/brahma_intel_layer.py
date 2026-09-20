@@ -240,7 +240,7 @@ def generate_three_line_strategy(
 _MEMORY_FILE = Path(__file__).parent.parent / 'data' / 'intraday_memory.json'
 
 def record_analysis(symbol: str, price: float, hcme_wr: float,
-                    oi_1h: float, pattern: str, decision: str):
+                    oi_1h: float, pattern: str, decision: str) -> None:
     """记录今日分析轨迹，用于主力意图追踪"""
     try:
         memory = {}

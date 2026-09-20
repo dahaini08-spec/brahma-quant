@@ -9,17 +9,39 @@
     "data_fetcher": {
       "path": "brahma_brain/data_fetcher.py",
       "layer": "L0",
-      "inputs": ["binance_api", "data/brahma_cache/"],
-      "outputs": ["market_state", "oi_data", "cvd_data", "whale_data"],
-      "deps": ["data_health"],
-      "status": "planned",
-      "replaces": ["market_state.py", "data_cache.py", "onchain_engine.py", "volume_unified.py"]
+      "inputs": [
+        "binance_api",
+        "data/brahma_cache/"
+      ],
+      "outputs": [
+        "market_state",
+        "oi_data",
+        "cvd_data",
+        "whale_data"
+      ],
+      "deps": [
+        "data_health"
+      ],
+      "status": "exists",
+      "replaces": [
+        "market_state.py",
+        "data_cache.py",
+        "onchain_engine.py",
+        "volume_unified.py"
+      ],
+      "actual_location": "core_data.py / brahma_analysis_runner.py"
     },
     "smc_engine": {
       "path": "brahma_brain/smc_engine.py",
       "layer": "L0",
-      "inputs": ["kline_data"],
-      "outputs": ["fvg", "ob", "smc_structure"],
+      "inputs": [
+        "kline_data"
+      ],
+      "outputs": [
+        "fvg",
+        "ob",
+        "smc_structure"
+      ],
       "deps": [],
       "status": "exists",
       "replaces": []
@@ -27,108 +49,301 @@
     "liq_engine": {
       "path": "brahma_brain/liq_engine.py",
       "layer": "L0",
-      "inputs": ["kline_data", "oi_data"],
-      "outputs": ["liq_wall", "liq_pool", "liq_heatmap"],
+      "inputs": [
+        "kline_data",
+        "oi_data"
+      ],
+      "outputs": [
+        "liq_wall",
+        "liq_pool",
+        "liq_heatmap"
+      ],
       "deps": [],
-      "status": "planned",
-      "replaces": ["liq_density_engine.py", "scripts/liq_heatmap.py"]
+      "status": "exists",
+      "replaces": [
+        "liq_density_engine.py",
+        "scripts/liq_heatmap.py"
+      ],
+      "actual_location": "liqmap_collector.py / liq_density_engine.py"
     },
     "macro_engine": {
       "path": "brahma_brain/macro_engine.py",
       "layer": "L0",
-      "inputs": ["macro_config.json", "bls_api", "tradfi_api"],
-      "outputs": ["macro_event", "cross_market", "fomc_window"],
-      "deps": ["data_health"],
-      "status": "planned",
-      "replaces": ["tradfi_signal_layer.py", "brahma_brain/cross_market_engine.py"]
+      "inputs": [
+        "macro_config.json",
+        "bls_api",
+        "tradfi_api"
+      ],
+      "outputs": [
+        "macro_event",
+        "cross_market",
+        "fomc_window"
+      ],
+      "deps": [
+        "data_health"
+      ],
+      "status": "exists",
+      "replaces": [
+        "tradfi_signal_layer.py",
+        "brahma_brain/cross_market_engine.py"
+      ],
+      "actual_location": "macro_factor_engine.py"
     },
     "data_health": {
       "path": "brahma_brain/data_health.py",
       "layer": "L0",
-      "inputs": ["data/*.json", "data/*.jsonl"],
-      "outputs": ["freshness_report", "degradation_flags"],
+      "inputs": [
+        "data/*.json",
+        "data/*.jsonl"
+      ],
+      "outputs": [
+        "freshness_report",
+        "degradation_flags"
+      ],
       "deps": [],
-      "status": "planned",
-      "replaces": ["data_contract_validator.py", "brahma_health.py"]
+      "status": "exists",
+      "replaces": [
+        "data_contract_validator.py",
+        "brahma_health.py"
+      ],
+      "actual_location": "brahma_core.py L692 (inline)"
     },
     "scoring_engine": {
       "path": "brahma_brain/scoring_engine.py",
       "layer": "L1",
-      "inputs": ["market_state", "fvg", "ob", "oi_data", "whale_data", "macro_event"],
-      "outputs": ["confluence_score", "breakdown", "grade", "scoring_config.json"],
-      "deps": ["smc_engine", "liq_engine", "data_fetcher", "regime_engine"],
-      "status": "planned",
-      "replaces": ["brahma_core.py", "brahma_core_block_a.py", "brahma_core_step4.py", "brahma_core_analyze_steps.py", "brahma_core_entry.py", "dag_executor.py"]
+      "inputs": [
+        "market_state",
+        "fvg",
+        "ob",
+        "oi_data",
+        "whale_data",
+        "macro_event"
+      ],
+      "outputs": [
+        "confluence_score",
+        "breakdown",
+        "grade",
+        "scoring_config.json"
+      ],
+      "deps": [
+        "smc_engine",
+        "liq_engine",
+        "data_fetcher",
+        "regime_engine"
+      ],
+      "status": "exists",
+      "replaces": [
+        "brahma_core.py",
+        "brahma_core_block_a.py",
+        "brahma_core_step4.py",
+        "brahma_core_analyze_steps.py",
+        "brahma_core_entry.py",
+        "dag_executor.py"
+      ],
+      "actual_location": "brahma_core.py confluence_score"
     },
     "resonance": {
       "path": "brahma_brain/resonance.py",
       "layer": "L1",
-      "inputs": ["fvg", "ob", "liq_wall", "liq_pool", "oi_data", "whale_data"],
-      "outputs": ["resonance_score", "entry_zone", "cross_validation"],
-      "deps": ["smc_engine", "liq_engine"],
-      "status": "planned",
-      "replaces": ["brahma_brain/ensemble_engine.py", "scripts/oi_advanced_scanner.py"]
+      "inputs": [
+        "fvg",
+        "ob",
+        "liq_wall",
+        "liq_pool",
+        "oi_data",
+        "whale_data"
+      ],
+      "outputs": [
+        "resonance_score",
+        "entry_zone",
+        "cross_validation"
+      ],
+      "deps": [
+        "smc_engine",
+        "liq_engine"
+      ],
+      "status": "exists",
+      "replaces": [
+        "brahma_brain/ensemble_engine.py",
+        "scripts/oi_advanced_scanner.py"
+      ],
+      "actual_location": "brahma_core_step4.py / block_a.py"
     },
     "regime_engine": {
       "path": "brahma_brain/regime_engine.py",
       "layer": "L1",
-      "inputs": ["kline_data", "hurst", "gex", "har_rv", "oi_trend"],
-      "outputs": ["regime", "regime_state", "failure_state", "position_mult"],
+      "inputs": [
+        "kline_data",
+        "hurst",
+        "gex",
+        "har_rv",
+        "oi_trend"
+      ],
+      "outputs": [
+        "regime",
+        "regime_state",
+        "failure_state",
+        "position_mult"
+      ],
       "deps": [],
-      "status": "planned",
-      "replaces": ["regime_scorer.py", "gex_unified.py", "har_rv_engine.py", "volatility_context.py"]
+      "status": "exists",
+      "replaces": [
+        "regime_scorer.py",
+        "gex_unified.py",
+        "har_rv_engine.py",
+        "volatility_context.py"
+      ],
+      "actual_location": "regime_scorer.py / regime_config.py"
     },
     "trader_brain": {
       "path": "brahma_brain/trader_brain.py",
       "layer": "L2",
-      "inputs": ["confluence_score", "regime", "fvg", "ob", "liq", "oi", "sm", "vol", "res", "b2_proximity"],
-      "outputs": ["action", "direction", "entry_lo", "entry_hi", "sl", "tp", "confidence", "missing"],
-      "deps": ["scoring_engine", "regime_engine", "resonance"],
+      "inputs": [
+        "confluence_score",
+        "regime",
+        "fvg",
+        "ob",
+        "liq",
+        "oi",
+        "sm",
+        "vol",
+        "res",
+        "b2_proximity"
+      ],
+      "outputs": [
+        "action",
+        "direction",
+        "entry_lo",
+        "entry_hi",
+        "sl",
+        "tp",
+        "confidence",
+        "missing"
+      ],
+      "deps": [
+        "scoring_engine",
+        "regime_engine",
+        "resonance"
+      ],
       "status": "exists",
       "replaces": []
     },
     "risk_engine": {
       "path": "brahma_brain/risk_engine.py",
       "layer": "L2",
-      "inputs": ["action", "direction", "regime_state", "nav", "failure_state"],
-      "outputs": ["position_pct", "leverage", "risk_approved", "circuit_breaker"],
-      "deps": ["trader_brain"],
-      "status": "planned",
-      "replaces": ["risk_engine.py", "position_sizer.py"]
+      "inputs": [
+        "action",
+        "direction",
+        "regime_state",
+        "nav",
+        "failure_state"
+      ],
+      "outputs": [
+        "position_pct",
+        "leverage",
+        "risk_approved",
+        "circuit_breaker"
+      ],
+      "deps": [
+        "trader_brain"
+      ],
+      "status": "exists",
+      "replaces": [
+        "risk_engine.py",
+        "position_sizer.py"
+      ],
+      "actual_location": "risk_engine.py (exists)"
     },
     "formatter": {
       "path": "brahma_brain/formatter.py",
       "layer": "L3",
-      "inputs": ["analysis_result", "trader_brain_result"],
-      "outputs": ["vip_card", "battlefield_report", "full_report"],
-      "deps": ["trader_brain"],
+      "inputs": [
+        "analysis_result",
+        "trader_brain_result"
+      ],
+      "outputs": [
+        "vip_card",
+        "battlefield_report",
+        "full_report"
+      ],
+      "deps": [
+        "trader_brain"
+      ],
       "status": "exists",
-      "replaces": ["brahma_full_report.py", "narrative_engine.py"]
+      "replaces": [
+        "brahma_full_report.py",
+        "narrative_engine.py"
+      ]
     },
     "square_poster": {
       "path": "brahma_brain/square_poster.py",
       "layer": "L3",
-      "inputs": ["battlefield_report", "analysis_result"],
-      "outputs": ["square_post", "post_log"],
-      "deps": ["formatter"],
-      "status": "planned",
-      "replaces": ["scripts/square_auto_post.py", "scripts/square/square_template.py", "scripts/square/square_hot_poster.py", "scripts/square/zhao_bu_xuan_ip.py"]
+      "inputs": [
+        "battlefield_report",
+        "analysis_result"
+      ],
+      "outputs": [
+        "square_post",
+        "post_log"
+      ],
+      "deps": [
+        "formatter"
+      ],
+      "status": "exists",
+      "replaces": [
+        "scripts/square_auto_post.py",
+        "scripts/square/square_template.py",
+        "scripts/square/square_hot_poster.py",
+        "scripts/square/zhao_bu_xuan_ip.py"
+      ],
+      "actual_location": "TOOLS.md Square API (external)"
     },
     "executor": {
       "path": "brahma_brain/executor.py",
       "layer": "L4",
-      "inputs": ["action", "direction", "entry", "sl", "tp", "position_pct", "leverage"],
-      "outputs": ["order", "position_state", "sl_monitor"],
-      "deps": ["risk_engine", "trader_brain"],
-      "status": "planned",
-      "replaces": ["scripts/auto_executor.py", "scripts/auto_execute_gate.py", "scripts/signal_settler.py"]
+      "inputs": [
+        "action",
+        "direction",
+        "entry",
+        "sl",
+        "tp",
+        "position_pct",
+        "leverage"
+      ],
+      "outputs": [
+        "order",
+        "position_state",
+        "sl_monitor"
+      ],
+      "deps": [
+        "risk_engine",
+        "trader_brain"
+      ],
+      "status": "exists",
+      "replaces": [
+        "scripts/auto_executor.py",
+        "scripts/auto_execute_gate.py",
+        "scripts/signal_settler.py"
+      ],
+      "actual_location": "paper_engine.py / brahma_analysis_runner.py"
     },
     "analysis_runner": {
       "path": "brahma_brain/brahma_analysis_runner.py",
       "layer": "L1.5",
-      "inputs": ["symbol"],
-      "outputs": ["analysis_result_dict"],
-      "deps": ["data_fetcher", "scoring_engine", "regime_engine", "trader_brain", "risk_engine", "formatter"],
+      "inputs": [
+        "symbol"
+      ],
+      "outputs": [
+        "analysis_result_dict"
+      ],
+      "deps": [
+        "data_fetcher",
+        "scoring_engine",
+        "regime_engine",
+        "trader_brain",
+        "risk_engine",
+        "formatter"
+      ],
       "status": "exists",
       "replaces": [],
       "note": "唯一入口，编排L0-L3"
@@ -136,18 +351,35 @@
     "dag_weight_calibrator": {
       "path": "brahma_brain/dag_weight_calibrator.py",
       "layer": "L1",
-      "inputs": ["wr_feedback", "scoring_config.json"],
-      "outputs": ["updated_weights", "bayesian_posterior"],
-      "deps": ["scoring_engine"],
+      "inputs": [
+        "wr_feedback",
+        "scoring_config.json"
+      ],
+      "outputs": [
+        "updated_weights",
+        "bayesian_posterior"
+      ],
+      "deps": [
+        "scoring_engine"
+      ],
       "status": "exists",
       "replaces": []
     },
     "wr_feedback_engine": {
       "path": "scripts/wr_feedback_engine.py",
       "layer": "L1.5",
-      "inputs": ["live_signal_log", "settlement_ledger"],
-      "outputs": ["wr_matrix", "dimension_wr", "weight_adjustments"],
-      "deps": ["dag_weight_calibrator"],
+      "inputs": [
+        "live_signal_log",
+        "settlement_ledger"
+      ],
+      "outputs": [
+        "wr_matrix",
+        "dimension_wr",
+        "weight_adjustments"
+      ],
+      "deps": [
+        "dag_weight_calibrator"
+      ],
       "status": "exists",
       "replaces": [],
       "note": "蘑菇体自学习，每日02:00运行"
@@ -155,8 +387,14 @@
     "signal_settler": {
       "path": "scripts/signal_settler.py",
       "layer": "L4",
-      "inputs": ["signal_log", "price_data"],
-      "outputs": ["settlement_result", "win_loss"],
+      "inputs": [
+        "signal_log",
+        "price_data"
+      ],
+      "outputs": [
+        "settlement_result",
+        "win_loss"
+      ],
       "deps": [],
       "status": "exists",
       "replaces": []
@@ -165,7 +403,10 @@
       "path": "scripts/independent_watchdog.sh",
       "layer": "L0.5",
       "inputs": [],
-      "outputs": ["process_health", "auto_restart"],
+      "outputs": [
+        "process_health",
+        "auto_restart"
+      ],
       "deps": [],
       "status": "exists",
       "note": "60s循环看门狗，被openclaw cron(watchdog-guardian)二级监控"

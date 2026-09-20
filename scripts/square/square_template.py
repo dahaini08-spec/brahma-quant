@@ -172,7 +172,7 @@ def _generate_viewpoint(sym, regime, score, fvg_dir, fvg_magnet, price,
                     f'回调到支撑池附近+1H收阳可以试多。')
 
     # === 交易员大脑=NONE/WATCH → 双向观察 ===
-    if vip_status == 'WAIT' or score < 60:
+    if vip_status == 'WAIT':
         return (f'{sym}在${price:,.0f}，系统判断为观察。'
                 f'上方止损墙${liq_wall:,.0f}，下方支撑池${liq_pool:,.0f}。'
                 f'没有明确方向，等走出来再跟——不赌方向。')

@@ -1,34 +1,4 @@
 {
-  "2026-09-06": {
-    "BTCUSDT": [
-      {
-        "ts": "03:00",
-        "price": 79876.4,
-        "hcme_wr": 50.0,
-        "oi_1h": -0.01984027507034932,
-        "pattern": "方向待定",
-        "decision": "SKIP"
-      },
-      {
-        "ts": "03:45",
-        "price": 80080.3,
-        "hcme_wr": 50.0,
-        "oi_1h": -0.01984027507034932,
-        "pattern": "方向待定",
-        "decision": "SKIP"
-      }
-    ],
-    "ETHUSDT": [
-      {
-        "ts": "03:45",
-        "price": 2511.78,
-        "hcme_wr": 0.0,
-        "oi_1h": 0.23830609843043912,
-        "pattern": "方向待定",
-        "decision": "SKIP"
-      }
-    ]
-  },
   "2026-09-10": {
     "BTCUSDT": [
       {
@@ -68,6 +38,38 @@
         "price": 2452.0,
         "hcme_wr": 0.0,
         "oi_1h": 0.22923858689390436,
+        "pattern": "方向待定",
+        "decision": "SKIP"
+      }
+    ]
+  },
+  "2026-09-18": {
+    "HYPEUSDT": [
+      {
+        "ts": "12:25",
+        "price": 90.52,
+        "hcme_wr": 50.0,
+        "oi_1h": -0.5832676817746028,
+        "pattern": "方向待定",
+        "decision": "SKIP"
+      }
+    ],
+    "XRPUSDT": [
+      {
+        "ts": "12:25",
+        "price": 1.32,
+        "hcme_wr": 50.0,
+        "oi_1h": -0.0709160073545967,
+        "pattern": "方向待定",
+        "decision": "SKIP"
+      }
+    ],
+    "SKHYUSDT": [
+      {
+        "ts": "12:26",
+        "price": 184.16,
+        "hcme_wr": 50.0,
+        "oi_1h": -0.18387155973680022,
         "pattern": "方向待定",
         "decision": "SKIP"
       }

@@ -6,13 +6,15 @@
 每个插件文件实现 run(r: dict) -> str 函数
 brahma_full_report.py 自动加载并调用
 """
+
+from typing import Any
 import importlib, os
 from pathlib import Path
 import sys
 
 PLUGIN_DIR = Path(__file__).parent
 
-def load_all_plugins():
+def load_all_plugins() -> Any:
     """返回所有可用插件列表"""
     plugins = []
     for f in sorted(PLUGIN_DIR.glob('plugin_*.py')):
@@ -22,7 +24,7 @@ def load_all_plugins():
             if hasattr(mod, 'run'):
                 plugins.append((name, mod))
         except Exception as e:
-            pass
+            print(f"[WARN] __init__: e", file=sys.stderr)
     return plugins
 
 def run_all_plugins(r: dict) -> str:

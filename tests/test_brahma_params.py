@@ -16,11 +16,14 @@ tests/test_brahma_params.py
 import sys, os, unittest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from brahma_brain.brahma_brain import calc_trade_params
+from brahma_brain.brahma_core_entry import calc_trade_params
 try:
     from brahma_brain.brahma_core_entry import rebase_params
 except ImportError:
-    from brahma_brain.brahma_brain import rebase_params
+    try:
+        from brahma_brain.brahma_core import rebase_params
+    except ImportError:
+        rebase_params = None
 
 VERSION = 'v1.0'
 
@@ -290,7 +293,7 @@ def test_rr_not_from_current_price() -> bool:
     """ERR-005 回归：验证R:R不从当前价算（返回True=通过）"""
     import sys, os
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-    from brahma_brain.brahma_brain import calc_trade_params
+    from brahma_brain.brahma_core import calc_trade_params
     ms = {
         'price': 1800.0, 'regime': 'BEAR_TREND',
         'momentum': {'rsi_1h': 50,'rsi_4h': 45,'atr_1h': 13,'atr_4h': 30,'obv_trend': 'DOWN'},
@@ -315,7 +318,7 @@ def test_extreme_low_price_sl_direction() -> bool:
     """ERR-008 回归：price=0.0001 SL方向必须正确（True=通过）"""
     import sys, os
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-    from brahma_brain.brahma_brain import calc_trade_params
+    from brahma_brain.brahma_core import calc_trade_params
     for price in [0.00001, 0.0001, 0.001]:
         sw = price * 0.01
         ms = {

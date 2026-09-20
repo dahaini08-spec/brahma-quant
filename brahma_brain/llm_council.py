@@ -93,8 +93,8 @@ def council_verdict(
                 _llm_result['votes'] = []
                 _llm_result['source'] = 'LLM'
                 return _llm_result
-        except Exception:
-            pass  # 降级到规则引擎
+        except Exception as _e:
+            print(f"[WARN] llm_council: _e", file=sys.stderr)
 
     # ── Fallback：规则引擎 ─────────────────────────────────────────────────
     votes = []   # 每项 +1/-1/0
@@ -132,7 +132,7 @@ def council_verdict(
     smc_score = breakdown.get('SMC结构', 0)
     if isinstance(smc_score, str):
         try: smc_score = float(smc_score.split()[0])
-        except: smc_score = 0
+        except Exception as _e: smc_score = 0
     _fvg_c = fvg_dir  # [D2修复] 用函数参数fvg_dir
     if smc_score >= 12:
         if _fvg_c == 'BEAR':
@@ -165,7 +165,7 @@ def council_verdict(
     sm_raw = breakdown.get('_smart_money', 0)
     if isinstance(sm_raw, str):
         try: sm_raw = float(sm_raw.split()[0].replace('+',''))
-        except: sm_raw = 0
+        except Exception as _e: sm_raw = 0
     if signal_dir == 'LONG' and sm_raw >= 3:
         votes.append(+1); struct_reasons.append('大户偏多')
     elif signal_dir == 'LONG' and sm_raw <= -3:
@@ -182,7 +182,7 @@ def council_verdict(
     mtf = breakdown.get('n22a_mtf_consensus', 0)
     if isinstance(mtf, str):
         try: mtf = float(mtf.split()[0].replace('+',''))
-        except: mtf = 0
+        except Exception as _e: mtf = 0
     if mtf >= 3:
         votes.append(+1); quant_reasons.append('MTF共振')
     elif mtf <= -3:
@@ -199,7 +199,7 @@ def council_verdict(
     decay = breakdown.get('量能衰竭+背离共振', 0)
     if isinstance(decay, str):
         try: decay = float(decay.split()[0].replace('+',''))
-        except: decay = 0
+        except Exception as _e: decay = 0
     if signal_dir == 'LONG' and isinstance(decay, (int, float)) and decay <= -8:
         votes.append(-1); quant_reasons.append('多头拥挤')
 

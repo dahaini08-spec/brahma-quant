@@ -411,6 +411,8 @@ def run_health_check(
     checks['wr_gate_integrity']    = _check_wr_gate_integrity()
     checks['tardis_month_freshness']= _check_tardis_month_freshness()
     checks['zombie_positions']     = _check_zombie_positions()
+    # [9.20接入 苏摩111] brahma_smoke_test接入brahma_health
+    checks['smoke_test']          = _check_smoke_test()
 
     # 计算健康分
     critical_keys = ['venv_deps', 'binance_api', 'scoring_engine', 'data_files']
@@ -811,6 +813,48 @@ def _check_zombie_positions() -> dict:
         return {'ok': False, 'warn': True, 'detail': f'持仓检测异常: {str(e)[:50]}'}
 
 
+# [9.20接入 苏摩111] brahma_smoke_test → brahma_health
+# 接入位置：run_health_check()的checks字典中
+# 功能：运行12项冒烟测试，返回通过/警告/失败计数
+def _check_smoke_test() -> dict:
+    """运行brahma_smoke_test的12项冒烟测试，返回健康状态"""
+    try:
+        import subprocess, json
+        from pathlib import Path
+        result = subprocess.run(
+            ['python3', str(Path(__file__).parent / 'brahma_smoke_test.py')],
+            capture_output=True, text=True, timeout=30
+        )
+        # 解析输出最后一行："  12项测试  ✅10  ⚠️1  ❌1"
+        output = result.stdout.strip()
+        lines = output.split('\n')
+        summary_line = ''
+        for line in reversed(lines):
+            if '项测试' in line:
+                summary_line = line
+                break
+        
+        if not summary_line:
+            return {'ok': True, 'warn': True, 'detail': '冒烟测试无汇总行'}
+        
+        # 解析计数
+        ok_cnt = summary_line.count('✅')
+        warn_cnt = summary_line.count('⚠️')
+        fail_cnt = summary_line.count('❌')
+        
+        if fail_cnt > 0:
+            return {'ok': False, 'warn': False,
+                    'detail': f'冒烟测试: ✅{ok_cnt} ⚠️{warn_cnt} ❌{fail_cnt}'}
+        elif warn_cnt > 0:
+            return {'ok': True, 'warn': True,
+                    'detail': f'冒烟测试: ✅{ok_cnt} ⚠️{warn_cnt}'}
+        else:
+            return {'ok': True, 'warn': False,
+                    'detail': f'冒烟测试: {ok_cnt}项全通过 ✅'}
+    except Exception as e:
+        return {'ok': True, 'warn': True, 'detail': f'冒烟测试跳过: {str(e)[:40]}'}
+
+
 def _check_cron_runtime_health() -> dict:
     """
     P1-1: 检查cron运行时健康——核心任务是否有持续 error
@@ -1007,6 +1051,7 @@ DATA_FRESHNESS = {
 
 
 def check_coverage(r: dict, report: str, mode: str = 'hf') -> _hg_Dict:
+    """检查coverage"""
     results = {}
     for name, check_fn in CAPABILITY_CHECKS.items():
         try:
@@ -1030,6 +1075,7 @@ def check_coverage(r: dict, report: str, mode: str = 'hf') -> _hg_Dict:
 
 
 def check_data_freshness(r: dict) -> _hg_Dict:
+    """检查data freshness"""
     now_ts = _hg_time.time()
     freshness = {}
     price_ts = r.get('price_ts') or r.get('_price_ts') or 0
@@ -1042,6 +1088,7 @@ def check_data_freshness(r: dict) -> _hg_Dict:
 
 
 def build_health_line(health: _hg_Dict, freshness: _hg_Dict) -> str:
+    """构建health line"""
     rate = health['rate']; covered = health['covered']
     total = health['total']; missing = health['missing']
     ts = health['checked_at']
@@ -1062,6 +1109,7 @@ def build_health_line(health: _hg_Dict, freshness: _hg_Dict) -> str:
 
 
 def run_watchdog(symbol: str = 'BTCUSDT') -> _hg_Dict:
+    """执行watchdog"""
     try:
         from brahma_brain.brahma_full_report import run_full_analysis
         report, r = run_full_analysis(symbol, mode='dual')

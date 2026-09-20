@@ -365,12 +365,7 @@ def _build_action_guide(r: dict, f: dict) -> list:
             tp2_str = f' → ${tp2:,.2f}' if tp2 else ''
             lines.append(f'     目标 ${tp1:,.2f}{tp2_str}')
 
-    if score and score >= 160:
-        lines.append(f'  🚨 高分信号 score={score}')
-    elif score and score >= 140:
-        lines.append(f'  ✅ 达标 score={score}')
-    else:
-        lines.append(f'  ⚠️ 观望 score={score} < 140')
+    # score/体制显示已废除（P0改革 2026-09-19）— score IC=-0.2130，不具门控价值
 
     return lines
 
@@ -408,7 +403,7 @@ def format_standard_card(r: dict, ts: str = None) -> str:
     if direction == 'NEUTRAL':
         return (
             f'📊 {sym}/USDT · {regime}\n'
-            f'   score={score} | RSI1H={rsi1h} | 无明确方向，等待'
+            f'   RSI1H={rsi1h} | 无明确方向，等待'
         )
 
     # SKIP/WATCH 状态仍然展示完整卡片+操作指令（苏摩需要知道为什么等和下一步条件）
@@ -416,16 +411,15 @@ def format_standard_card(r: dict, ts: str = None) -> str:
 
     dir_icon   = '🔴 SHORT' if direction == 'SHORT' else '🟢 LONG'
     valid_icon = '✅' if valid else '⏳'
-    thresh_icon = '🚨' if score >= 160 else ('✅' if score >= 140 else '⚠️')
-
+    # score/体制显示已废除（P0改革 2026-09-19）— thresh_icon已移除
     lines = [
         SEP,
     ]
     if ts:
         lines.append(f'  ⏱ {ts}')
     lines += [
-        f'  {thresh_icon} {sym}/USDT · {dir_icon}  score={score}/175',
-        f'  体制: {regime} | 多周期: {consensus}',
+        f'  {sym}/USDT · {dir_icon}',
+        f'  多周期: {consensus}',
     ]
     if p:
         lines.append(f'  当前价: ${p:,.2f}')
@@ -663,7 +657,7 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
     # ── 图标计算 ─────────────────────────────────────────────────────────
     dir_icon   = '🟢 LONG' if direction == 'LONG' else ('🔴 SHORT' if direction == 'SHORT' else '⚪ NEUTRAL')
     valid_icon = '✅ 有效信号' if valid else '⏳ 等待确认'
-    score_icon = '🚨' if score >= 165 else ('🔥' if score >= 155 else ('⚠️' if score >= 130 else '📊'))
+    # score_icon已废除（P0改革 2026-09-19）— score不具参考价值
     timing_icon = {'READY': '🟢', 'MONITOR': '🟡', 'WAIT': '⏸', 'STANDBY': '⚫'}.get(timing, '❓')
 
     SEP = '─' * 44
@@ -676,7 +670,7 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
     # ── A: 核心信号 ───────────────────────────────────────────────────────
     lines += [
         f'**A · 核心信号**',
-        f'  {score_icon} score={score:.1f}/175  {valid_icon}',
+        f'  {valid_icon}',
         f'  方向: {dir_icon}  |  体制: {regime}',
         f'  多周期共识: {consensus}  |  结构等级: {grade}',
         f'  动作: {action}  |  {timing_icon} 时机: {timing}(得分={t_score})',
@@ -942,7 +936,7 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
                     val = float(sv.split('(')[0].replace('+','').strip())
                     if val > 0:
                         plus_items.append((k, sv, val))
-                except:
+                except Exception as _e:
                     if '+' in sv:
                         plus_items.append((k, sv, 0))
             elif sv.startswith('-') or (sv.startswith('0') and '(' not in sv):
@@ -1135,8 +1129,8 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
             lines.append('')
             lines.append('  【方仓引擎】 ' + _fc_status +
                          ('：' + _fc_reason[:40] if _fc_reason else '：未运行或数据不足'))
-    except Exception:
-        pass  # 降级静默，不影响主卡片
+    except Exception as _e:
+        print(f"[WARN] formatter: _e", file=sys.stderr)
 
     # ── 决策树输出 [设计院封印 2026-08-09 苏摩111] ────────────────────
     # [修复] brahma_engine.analyze()现已调用decide()，结果注入_result['decision']
@@ -1155,7 +1149,7 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
             _ep = _dt.get('entry_plan', {})
             if _ep and _ep.get('price'):
                 lines.append(f'    入场: ${_ep["price"]:,.2f}  SL: ${_ep.get("sl_price",0):,.2f}  RR: {_ep.get("rr",0):.1f}x')
-    except Exception:
-        pass  # 决策树格式化失败不影响主卡片
+    except Exception as _e:
+        print(f"[WARN] formatter: _e", file=sys.stderr)
 
     return '\n'.join(lines)

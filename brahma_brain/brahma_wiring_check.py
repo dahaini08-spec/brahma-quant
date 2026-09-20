@@ -195,7 +195,7 @@ def _check_caller(module: str) -> tuple:
             try:
                 if module in f.read_text(errors='ignore'):
                     callers.append(f.name)
-            except:
+            except Exception as _e:
                 import sys as _sys_ep; print(f"[EXCEPT-PASS] brahma_wiring_check.py:L198", file=_sys_ep.stderr)
                 pass
     return bool(callers), callers
@@ -327,6 +327,7 @@ def _run_static_concurrency_scan() -> tuple:
 
 
 def run_check(full: bool = False) -> dict:
+    """执行check"""
     results = []
     ok_count = 0
     warn_count = 0

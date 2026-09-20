@@ -364,10 +364,10 @@
     "mode": "B"
   },
   "FILUSDT": {
-    "hash": "b294ffd8",
-    "ts": 1788341082.250765,
+    "hash": "16b72c03",
+    "ts": 1789905615.879022,
     "direction": "LONG",
-    "score": 60.56999999999999,
+    "score": 80.826,
     "mode": "B"
   },
   "HEMIUSDT": {
@@ -385,11 +385,11 @@
     "mode": "A"
   },
   "ZAMAUSDT": {
-    "hash": "09ee9e35",
-    "ts": 1787604993.230039,
+    "hash": "06d92c52",
+    "ts": 1789907401.010122,
     "direction": "LONG",
-    "score": 70.506,
-    "mode": "B"
+    "score": 65.34,
+    "mode": "A"
   },
   "ERAUSDT": {
     "hash": "81047746",
@@ -659,9 +659,9 @@
   },
   "COTIUSDT": {
     "hash": "f6b13f42",
-    "ts": 1788097348.940933,
+    "ts": 1789907400.941068,
     "direction": "LONG",
-    "score": 56.206,
+    "score": 62.628,
     "mode": "B"
   },
   "SOXSUSDT": {
@@ -680,9 +680,9 @@
   },
   "ZILUSDT": {
     "hash": "01774b48",
-    "ts": 1785590788.650047,
+    "ts": 1789905615.781617,
     "direction": "LONG",
-    "score": 86,
+    "score": 64.2945,
     "mode": "A"
   },
   "BEATUSDT": {
@@ -1712,6 +1712,27 @@
     "ts": 1789626601.297441,
     "direction": "LONG",
     "score": 77,
+    "mode": "A"
+  },
+  "STRKUSDT": {
+    "hash": "e5dee6f0",
+    "ts": 1789907400.941068,
+    "direction": "LONG",
+    "score": 69.09,
+    "mode": "A"
+  },
+  "MYXUSDT": {
+    "hash": "06d92c52",
+    "ts": 1789905615.879022,
+    "direction": "LONG",
+    "score": 71.152,
+    "mode": "A"
+  },
+  "CUSDT": {
+    "hash": "e5dee6f0",
+    "ts": 1789905615.781617,
+    "direction": "LONG",
+    "score": 66.1275,
     "mode": "A"
   }
 }

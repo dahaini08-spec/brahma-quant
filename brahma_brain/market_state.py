@@ -10,6 +10,7 @@ brahma_brain · Phase 1
   - Elliott浪型快速定位
   - 输出结构化市场状态报告
 """
+import sys
 import math
 from data_cache import get_klines, get_ticker, get_funding_rate, \
                        get_open_interest, get_long_short_ratio, klines_to_ohlcv
@@ -21,6 +22,7 @@ from data_cache import get_klines, get_ticker, get_funding_rate, \
 def ema(closes: list, n: int) -> float:
 
     # [INT-1] 统一实现已移至 math_utils.ema，此函数保留兼容
+    """ema"""
     if len(closes) < n:
         return closes[-1] if closes else 0.0
     k = 2 / (n + 1)
@@ -42,6 +44,7 @@ def ema_series(closes: list, n: int) -> list:
     return result
 
 def atr(highs: list, lows: list, closes: list, n: int = 14) -> float:
+    """atr"""
     trs = []
     for i in range(1, len(closes)):
         trs.append(max(
@@ -62,6 +65,7 @@ def rsi(closes: list, n: int = 14) -> float:
     from math_utils import calc_rsi as _mu_rsi
     return _mu_rsi(closes, n)
 def bb(closes: list, n: int = 20) -> dict:
+    """bb"""
     if len(closes) < n:
         return {'mid': closes[-1], 'upper': closes[-1], 'lower': closes[-1], 'width': 0}
     w   = closes[-n:]
@@ -546,7 +550,7 @@ def analyze(symbol: str) -> dict:
                 _ls_val = float(_rt['lsr'][0].get('longAccount', 0.5)) * 100
                 _cache_set(_cache_key(symbol, 'lsr'), _ls_val, 30)
     except Exception as _rt_err:
-        pass  # 实时拉取失败 → 降级走缓存
+        print(f'[WARN] {__name__}: {_rt_err}', file=sys.stderr)
 
     # 拉取数据（优先命中上面注入的实时缓存）
     # [P2修复 2026-08-28] 1H拉400根：EMA200需要200根收敛，200根拉取计算出的EMA200严重失真
@@ -622,7 +626,9 @@ def analyze(symbol: str) -> dict:
     # ATR
     atr_1h  = atr(k1h['h'], k1h['l'], k1h['c'])
     atr_4h  = atr(k4h['h'], k4h['l'], k4h['c'])   # [v13.0] 4H ATR for SL layer
+    atr_15m = atr(k15['h'], k15['l'], k15['c'])  # [V2.0 2026-09-20 苏摩111] 15M ATR for precise SL
     atr_pct = atr_1h / price * 100 if price else 0
+    atr_15m_pct = atr_15m / price * 100 if price else 0
 
     # 4H 摆动结构（用于止损 layer2）
     sw4h = find_swing_highs_lows(k4h['h'], k4h['l'], lookback=3)
@@ -674,7 +680,9 @@ def analyze(symbol: str) -> dict:
             'rsi_1d':  rsi_1d,
             'atr_1h':  round(atr_1h, 4),
             'atr_4h':  round(atr_4h, 4),   # [v13.0]
+            'atr_15m': round(atr_15m, 4), # [V2.0 2026-09-20] 15M ATR
             'atr_pct': round(atr_pct, 3),
+            'atr_15m_pct': round(atr_15m_pct, 3),
             'bb':      bb_1h,
         },
 
@@ -715,6 +723,7 @@ def analyze(symbol: str) -> dict:
         'atr_pct':  round(atr_1h / price, 6) if price else 0.01,
         'atr_1h':   round(atr_1h, 4),
         'atr_4h':   round(atr_4h, 4),
+        'atr_15m':  round(atr_15m, 4),
     }
 
 def _build_summary(consensus: dict, regime: str, wave: dict,

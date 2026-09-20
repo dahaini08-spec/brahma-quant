@@ -1,4 +1,6 @@
 # ponytail: brahma_analysis_runner 1595行，流程编排层，入口唯一性有意为之，不可拆
+
+from typing import Any
 """
 brahma_analysis_runner.py — 梵天分析唯一入口
 设计院·达摩院 固化封印 2026-06-30
@@ -25,8 +27,10 @@ import sys
 try:
     from brahma_brain.signal_quality_engine import trace_generated, trace_skipped
 except ImportError:
-    def trace_generated(*a, **kw): pass
-    def trace_skipped(*a, **kw): pass  # fallback
+    """trace generated"""
+    def trace_generated(*a, **kw) -> None: pass
+    """trace skipped"""
+    def trace_skipped(*a, **kw) -> None: pass  # fallback
 import os
 
 # ── 安全防护：禁止core dump（设计院封印2026-08-07）──────────────
@@ -160,9 +164,10 @@ except Exception:
 def _extract_94v_features(result: dict) -> dict:
     """从分析结果提取94维特征字典，供NanoJev训练使用"""
     import re as _re
-    def _sf(v, d=0):
+    def _sf(v, d=0) -> Any:
+        """sf"""
         try: return float(v) if v is not None else d
-        except: return d
+        except Exception as _e: return d
     try:
         _cf = result.get('confluence', {}) or {}
         _bd = _cf.get('breakdown', {}) if isinstance(_cf, dict) else {}
@@ -283,8 +288,8 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                                             'decision_step','fangcang'):
                                     if _fk in _fresh:
                                         _cached[_fk] = _fresh[_fk]
-                            except Exception:
-                                pass  # 补充失败不阻断缓存返回
+                            except Exception as _e285:
+                                print(f'[WARN] {__name__}: {_e285}', file=sys.stderr)
                         return _cached
         except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── [设计院 2026-07-03 v5.1] 体制感知方向预注入 ────────────────────────────
@@ -320,7 +325,8 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
     # 将 anti_manip 注入到全局 extra_data（brahma_core_block_b 会读取）
     import brahma_brain.brahma_core as _bc_mod
     _orig_analyze = _bc_mod.analyze
-    def _patched_analyze(ms_or_sym, *args, **kwargs):
+    def _patched_analyze(ms_or_sym, *args, **kwargs) -> Any:
+        """patched analyze"""
         if 'extra_data' not in kwargs:
             kwargs['extra_data'] = {}
         if kwargs['extra_data'] is None:
@@ -488,7 +494,10 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # B5: Bybit多空比 [Fix P2-B 2026-09-01] bybit_liq_adapter已删除→改用data_cache
     try:
-        from brahma_brain.data_cache import get_lsr_bybit as _get_bybit_lsr
+        try:
+            from brahma_brain.data_cache import get_lsr_bybit as _get_bybit_lsr
+        except ImportError:
+            from data_cache import get_lsr_bybit as _get_bybit_lsr
         _bybit_raw = _get_bybit_lsr(symbol)
         if _bybit_raw and _bybit_raw.get('long_ratio'):
             result['_bybit_ls'] = {
@@ -680,7 +689,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                 _lhm['_has_tardis']        = True
                 result['_liq_heatmap'] = _lhm
         except Exception as _twe:
-            pass  # tardis注入失败不影响主流程
+            print(f'[WARN] {__name__}: {_twe}', file=sys.stderr)
 
         # --- 1b. liq_density_engine 三所实时强平数据注入 [Bug3修复 2026-08-05] ---
         # 将三所实时强平结果注入 _liq_heatmap['_liq_density_walls']，供 formatter B3节使用
@@ -711,7 +720,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                 }
                 result['_liq_heatmap'] = _lhm_cur
         except Exception as _lde:
-            pass  # 静默降级，不影响主流程
+            print(f'[WARN] {__name__}: {_lde}', file=sys.stderr)  # 静默降级，不影响主流程
 
         # --- 1c. liq_scanner 三所清算集群注入 [2026-08-12 苏摩封印] ---
         # 将 Binance+Bybit+Hyperliquid 三所实时数据固化进清算矩阵
@@ -773,7 +782,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                 _lhm_ls['price'] = _ls_px
                 result['_liq_heatmap'] = _lhm_ls
         except Exception as _lse:
-            pass  # 静默降级，不影响主流程
+            print(f'[WARN] {__name__}: {_lse}', file=sys.stderr)  # 静默降级，不影响主流程
         try:
             from cross_exchange_fr import get_cross_fr as _get_fr
             _cfr = _get_fr(sym)
@@ -892,7 +901,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
             result['_oi_details'] = _oi_details[:3]
             result.setdefault('_ext_scores', {})['s12_oi'] = _s12_bonus
     except Exception as _oi_e:
-        pass  # 非阻断
+        print(f'[WARN] {__name__}: {_oi_e}', file=sys.stderr)
 
 
     # ── [设计院 2026-07-12 P0修复] params子字段展平到顶层 ─────────────────────
@@ -1022,8 +1031,8 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                 if _sqe_result.status == 'REJECT':
                     print(f'[SQE拦截] {_sig_record.get("symbol")} 被质量门控拦截: {_sqe_result.reason}')
                     _guard_skip = True
-            except Exception:
-                pass  # SQE不可用时静默降级
+            except Exception as _e1027:
+                print(f'[WARN] {__name__}: {_e1027}', file=sys.stderr)
             # 写入信号池（已通过所有守卫）
             if not _guard_skip:
                 with open(_sig_log, 'a') as _sf:
@@ -1080,10 +1089,10 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                     if _real_amt == 0.0:
                         result['_condition_plan'] = None  # 无真实持仓，不写condition_orders
                         raise StopIteration  # 跳过写入
-            except StopIteration:
-                pass
-            except Exception:
-                pass  # 网络失败时保守跳过，不产生幽灵记录
+            except StopIteration as _e_1085:
+                print(f'[WARN] {__name__}: {_e_1085}', file=sys.stderr)
+            except Exception as _e1087:
+                print(f'[WARN] {__name__}: {_e1087}', file=sys.stderr)
             else:
                 pass  # 有真实持仓才继续往下写
             from condition_order_matrix import create_trade_plan as _create_plan
@@ -1102,8 +1111,8 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                         short_notional=0, long_notional=_com_params.get('notional', 50),
                         liq_price=_liq)
                 result['_condition_plan'] = _plan
-    except Exception:
-        pass  # 非阻断
+    except Exception as _e1107:
+        print(f'[WARN] {__name__}: {_e1107}', file=sys.stderr)
 
     if _freshness_warnings:
         result['_data_freshness_warnings'] = _freshness_warnings
@@ -1143,8 +1152,8 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                         'risk':    _lc_council.get('top_risk', '')[:100],
                         'cached':  _lc_council.get('from_cache', False),
                     }
-    except Exception:
-        pass  # 非阻断
+    except Exception as _e1148:
+        print(f'[WARN] {__name__}: {_e1148}', file=sys.stderr)
 
     # [Fix-1 2026-08-02 设计院] score_final审计trail：记录各层贡献，防止覆写混乱
     try:
@@ -1183,8 +1192,8 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
             result['signal_15m_trigger']  = _s15.get('trigger', False)
             result['signal_15m_grade']    = _s15.get('grade', 0)
             result['signal_15m_reason']   = _s15.get('reason', '')
-    except Exception:
-        pass  # signal_15m_engine失败不影响主流程
+    except Exception as _e1188:
+        print(f'[WARN] {__name__}: {_e1188}', file=sys.stderr)
 
     # ══ [P0接入 2026-08-29 苏摩111] market_quadrant — 四象限市场状态 ══
     # 接入位置：brahma_analysis_runner.run_analysis() 返回前
@@ -1201,8 +1210,8 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
             if _mq_delta != 0:
                 result['score_final'] = round(float(result.get('score_final', 0) or 0) + _mq_delta, 1)
                 result['score'] = result['score_final']
-    except Exception:
-        pass  # market_quadrant失败不影响主流程
+    except Exception as _e1206:
+        print(f'[WARN] {__name__}: {_e1206}', file=sys.stderr)
 
     # ── [AI-Trader自动发布 2026-08-29 苏摩111] ──────────────────────
     # 触发条件: valid=True + rr1≥1.0（赔率足够才发布）
@@ -1230,7 +1239,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                 if _a['severity'] in ('P1', 'P2'):
                     logger.warning(f'[Eval] {_a["type"]} {symbol}: {_a}')
     except Exception as _eval_e:
-        pass  # Eval不能影响主流程
+        print(f'[WARN] {__name__}: {_eval_e}', file=sys.stderr)
 
     return result
 
@@ -1260,8 +1269,8 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
                 '[CircuitBreaker] 熳断开路→跳过本次分析（连续失败保护）')
             return {s: {'error': 'CIRCUIT_BREAKER_OPEN', 'score': 0, '_skipped': True}
                     for s in symbols}
-    except Exception:
-        pass  # 熔断检查失败不阻断主流程
+    except Exception as _e1265:
+        print(f'[WARN] {__name__}: {_e1265}', file=sys.stderr)
     t0 = time.time()
     norm_syms = []
     for s in symbols:
@@ -1279,8 +1288,8 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
                    _os_kw.path.join(_kw_root,'external','Kronos')]:
             if _p not in _sys_kw.path:
                 _sys_kw.path.insert(0, _p)
-    except Exception:
-        pass  # Kronos不可用时不阻塞分析
+    except Exception as _e1284:
+        print(f'[WARN] {__name__}: {_e1284}', file=sys.stderr)
 
     raw_results = _batch_analyze_regime(norm_syms)
     ts = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
@@ -1386,7 +1395,7 @@ def run_batch(symbols: list, deep: bool = True) -> dict:
             elif _sym in _cag_map:
                 _cag_map[_sym]['cross_asset_check'] = _cag_item.get('cross_asset_check', 'OK')
     except Exception as _cag_err:
-            pass
+            print(f'[WARN] {__name__}: {_cag_err}', file=sys.stderr)
 
     return results
 

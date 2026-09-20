@@ -32,7 +32,8 @@ from brahma_brain.formatter import format_report
 try:
     from brahma_brain.brahma_core import _calc_mtf_alignment
 except ImportError:
-    def _calc_mtf_alignment(*args, **kwargs):
+    def _calc_mtf_alignment(*args, **kwargs) -> dict:
+        """calc mtf alignment"""
         return {}
 
 # 向后兼容：部分脚本可能用 from brahma_engine import xxx

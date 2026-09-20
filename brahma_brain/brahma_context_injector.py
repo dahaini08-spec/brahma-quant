@@ -61,7 +61,8 @@ _WR_MATRIX_LOADED = False
 _FANGCANG_FILE_CACHE: dict = {}
 
 
-def _load_wr_matrix():
+def _load_wr_matrix() -> None:
+    """load wr matrix"""
     global _WR_MATRIX_CACHE, _WR_MATRIX_LOADED
     if _WR_MATRIX_LOADED:
         return

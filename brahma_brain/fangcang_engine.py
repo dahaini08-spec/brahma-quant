@@ -42,9 +42,11 @@ _FEAT_CACHE: dict = {}
 _KLINES_NATIVE_CACHE: dict = {}  # path→(mtime, bars) 进程级klines缓存
 
 def _get_feat_cache_key(symbol: str, tf: str) -> str:
+    """get feat cache key"""
     return f'{symbol}_{tf}'
 
 def _load_feat_cache(symbol: str, tf: str) -> list:
+    """load feat cache"""
     key = _get_feat_cache_key(symbol, tf)
     if key in _FEAT_CACHE:
         ts, data = _FEAT_CACHE[key]
@@ -61,6 +63,7 @@ def _load_feat_cache(symbol: str, tf: str) -> list:
     return []
 
 def _save_feat_cache(symbol: str, tf: str, feats: list) -> None:
+    """save feat cache"""
     key = _get_feat_cache_key(symbol, tf)
     _FEAT_CACHE[key] = (time.time(), feats)
     cache_file = _BASE_DIR / f'.feat_cache_{symbol}_{tf}.pkl'
@@ -1233,7 +1236,7 @@ _NEW_30_SYMBOLS = [
 
 # [9.15苏摩111 P1修复] 动态Tier1标的列表，与battlefield_candidates对齐
 # 优先使用battlefield_candidates.json的tier1_strong，fallback到_NEW_30_SYMBOLS
-def _get_tier1_symbols():
+def _get_tier1_symbols() -> list:
     """从battlefield_candidates.json读取当前tier1标的列表"""
     try:
         import json as _json_t1, os as _os_t1
@@ -1248,8 +1251,8 @@ def _get_tier1_symbols():
                     _syms.append(_s)
             if _syms:
                 return _syms
-    except Exception:
-        pass
+    except Exception as _e:
+        print(f"[WARN] fangcang_engine: _e", file=sys.stderr)
     return _NEW_30_SYMBOLS
 
 
@@ -1629,6 +1632,7 @@ _WEIGHT_FILE = _Path(__file__).parent.parent / 'data' / 'fangcang_case_weights.j
 
 
 def _load_weights() -> dict:
+    """load weights"""
     try:
         if _WEIGHT_FILE.exists():
             return _json.loads(_WEIGHT_FILE.read_text())
@@ -1636,7 +1640,8 @@ def _load_weights() -> dict:
     return {}
 
 
-def _save_weights(w: dict):
+def _save_weights(w: dict) -> None:
+    """save weights"""
     try:
         _WEIGHT_FILE.parent.mkdir(exist_ok=True)
         _WEIGHT_FILE.write_text(_json.dumps(w, ensure_ascii=False))
@@ -1819,13 +1824,14 @@ class HCMEMatcher:
     result = m.find_similar(signal_dict, top_k=5)
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.signals: list[dict] = self._load_signals()
         self.index: list[dict] = self._build_or_load_index()
 
     # ── data loading ──────────────────────────────────────────────────────────
 
     def _load_signals(self) -> list[dict]:
+        """load signals"""
         signals = []
         # 1. 加载实盘信号（live_signal_log.jsonl）
         if os.path.exists(SIGNAL_LOG_PATH):
@@ -2225,6 +2231,7 @@ _EXP_TTL = 3600  # 1小时重载一次
 
 
 def _load_matrix() -> dict:
+    """load matrix"""
     global _EXP_CACHE, _EXP_LOADED_AT
     if _EXP_CACHE and (time.time() - _EXP_LOADED_AT) < _EXP_TTL:
         return _EXP_CACHE
@@ -2240,6 +2247,7 @@ def _load_matrix() -> dict:
 
 
 def _rsi_bucket(rsi: float) -> str:
+    """rsi bucket"""
     if rsi < 30:   return '0_30'
     if rsi < 45:   return '30_45'
     if rsi < 55:   return '45_55'
@@ -2248,6 +2256,7 @@ def _rsi_bucket(rsi: float) -> str:
 
 
 def _burst_bucket(burst: float) -> str:
+    """burst bucket"""
     if burst < 0.5:  return '0_0.5'
     if burst < 1.5:  return '0.5_1.5'
     return '1.5_99'
@@ -2461,16 +2470,19 @@ _build_ts  = 0.0
 _cases_raw: List[dict] = []
 
 
-def _clip(v, lo, hi):
+def _clip(v: float, lo: float, hi: float) -> float:
+    """clip"""
     return max(0.0, min(1.0, (v-lo)/(hi-lo))) if hi != lo else 0.5
 
 
 def _normalize_bbw(bb_raw: float, stock: str) -> float:
+    """normalize bbw"""
     avg = STOCK_AVG_BBW.get(stock, 2.0)
     return bb_raw * (BTC_AVG_BBW / avg)
 
 
 def _to_vector(c: dict) -> List[float]:
+    """to vector"""
     stock  = c.get('stock_ticker', 'NVDA')
     bb_raw = c.get('min_bb_width', 1.0)
     bb_n   = c.get('min_bb_width_norm') or _normalize_bbw(bb_raw, stock)
@@ -2486,7 +2498,8 @@ def _to_vector(c: dict) -> List[float]:
     ]
 
 
-def _build():
+def _build() -> None:
+    """build"""
     global _client, _cases_raw, _build_ts
     try:
         from qdrant_client import QdrantClient
@@ -2540,7 +2553,8 @@ def _build():
     return True
 
 
-def _ensure():
+def _ensure() -> None:
+    """ensure"""
     global _client
     if _client is None:
         _build()
@@ -2617,6 +2631,7 @@ def query_tradfi(
 
 
 def get_index_info() -> dict:
+    """获取index info"""
     _ensure()
     if _client is None:
         return {'status':'unavailable','n':0}

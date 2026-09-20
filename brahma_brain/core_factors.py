@@ -31,6 +31,7 @@ class TfFactorResult:
 
     @property
     def delta(self) -> float:
+        """delta"""
         return self.score_out - self.score_in
 
     @property
@@ -108,6 +109,7 @@ class CausalFactorResult:
 
     @property
     def breakdown_entry(self) -> str | None:
+        """breakdown entry"""
         if self.score_adj == 0:
             return None
         return (f'{self.score_adj:+d}(因果归因:{self.verdict} '

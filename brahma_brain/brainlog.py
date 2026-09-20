@@ -42,19 +42,20 @@ _lock = threading.Lock()
 _PROD = os.environ.get('BRAHMA_ENV', 'prod') == 'prod'
 
 
-def set_level(level: str):
+def set_level(level: str) -> None:
     """全局日志级别设置"""
     global _current_level
     _current_level = _LEVELS.get(level.upper(), _LEVELS['INFO'])
 
 
-def set_module_filter(*module_names: str):
+def set_module_filter(*module_names: str) -> None:
     """只输出指定模块的日志，None=全部"""
     global _module_filter
     _module_filter = set(module_names) if module_names else None
 
 
 def _should_log(module: str, level_int: int) -> bool:
+    """should log"""
     if level_int < _current_level:
         return False
     if _module_filter is not None:
@@ -88,22 +89,27 @@ class BrainLogger:
 
     __slots__ = ('_name',)
 
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         self._name = name
 
-    def debug(self, msg: str, tag: str = '', exc: Exception = None):
+    def debug(self, msg: str, tag: str = '', exc: Exception = None) -> None:
+        """debug"""
         self._emit('DEBUG', 0, msg, tag, exc)
 
-    def info(self, msg: str, tag: str = '', exc: Exception = None):
+    def info(self, msg: str, tag: str = '', exc: Exception = None) -> None:
+        """info"""
         self._emit('INFO', 1, msg, tag, exc)
 
-    def warn(self, msg: str, tag: str = '', exc: Exception = None):
+    def warn(self, msg: str, tag: str = '', exc: Exception = None) -> None:
+        """warn"""
         self._emit('WARN', 2, msg, tag, exc)
 
-    def error(self, msg: str, tag: str = '', exc: Exception = None):
+    def error(self, msg: str, tag: str = '', exc: Exception = None) -> None:
+        """error"""
         self._emit('ERROR', 3, msg, tag, exc)
 
-    def _emit(self, level: str, level_int: int, msg: str, tag: str, exc: Optional[Exception]):
+    def _emit(self, level: str, level_int: int, msg: str, tag: str, exc: Optional[Exception]) -> None:
+        """emit"""
         if not _should_log(self._name, level_int):
             return
         line = _format(self._name, level, msg, tag)
@@ -113,7 +119,7 @@ class BrainLogger:
             print(line, flush=True)
 
     # ── 兼容旧式 print(f'[TAG] ...') 模式 ──
-    def raw(self, msg: str):
+    def raw(self, msg: str) -> None:
         """直接输出，不加前缀（兼容现有 print(f'[s7-xxx]...') ）"""
         if _should_log(self._name, _LEVELS['INFO']):
             with _lock:
@@ -132,16 +138,18 @@ def get_logger(name: str) -> BrainLogger:
 
 
 # ── 快捷函数（零迁移成本）──────────────────────────────────────
-def binfo(module: str, msg: str, tag: str = ''):
+def binfo(module: str, msg: str, tag: str = '') -> None:
     """零迁移成本快捷函数，直接替换 print(f'[{tag}] {msg}')"""
     get_logger(module).info(msg, tag=tag)
 
 
-def bwarn(module: str, msg: str, tag: str = ''):
+def bwarn(module: str, msg: str, tag: str = '') -> None:
+    """bwarn"""
     get_logger(module).warn(msg, tag=tag)
 
 
-def berror(module: str, msg: str, tag: str = '', exc: Exception = None):
+def berror(module: str, msg: str, tag: str = '', exc: Exception = None) -> None:
+    """berror"""
     get_logger(module).error(msg, tag=tag, exc=exc)
 
 
@@ -151,7 +159,8 @@ _warn_counts: dict = {}
 
 _original_emit = BrainLogger._emit
 
-def _patched_emit(self, level, level_int, msg, tag, exc):
+def _patched_emit(self, level, level_int, msg, tag, exc) -> None:
+    """patched emit"""
     if level == 'ERROR':
         _error_counts[self._name] = _error_counts.get(self._name, 0) + 1
     elif level == 'WARN':
@@ -172,7 +181,7 @@ def get_stats() -> dict:
     }
 
 
-def reset_stats():
+def reset_stats() -> None:
     """重置计数（健康检查后调用）"""
     _error_counts.clear()
     _warn_counts.clear()

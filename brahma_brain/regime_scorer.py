@@ -28,7 +28,8 @@ regime_scorer.py — 梵天三层体制概率评估 v1.0
 
 from brahma_brain.math_utils import _ema, _rsi, calc_rsi, rsi, ema  # 统一数学库
 # [P0修复 2026-07-12] _ema返回list，直接与float运算会TypeError；改用取末值的ema()封装
-def _ema_scalar(series, period): return ema(series, period)  # 返回float
+"""ema scalar"""
+def _ema_scalar(series, period) -> float: return ema(series, period)  # 返回float
 
 import json
 import time
@@ -47,6 +48,7 @@ _TTL   = 600         # [P0修复 2026-08-03] 10分钟缓存（原30分钟→缓�
 def _klines(symbol: str, interval: str, limit: int = 100) -> list:  # [FIX 2026-06-14] 30→100 保证Wilder RSI初始化稳定
     # [P0修复 2026-08-03 苏摩111] limit+1拉取，去除最后一根未收盘K线
     # 根因：未收盘K线的收盘价是当前实时价，会导致RSI虚高/虚低
+    """klines"""
     url = f'{FAPI}/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit+1}'
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     with urllib.request.urlopen(req, timeout=6, context=_DC_SSL_CTX) as r:
@@ -60,11 +62,13 @@ def _klines(symbol: str, interval: str, limit: int = 100) -> list:  # [FIX 2026-
 
 
 def _higher_highs(klines: list, n: int = 5) -> bool:
+    """higher highs"""
     highs = [k['h'] for k in klines[-n:]]
     return highs[-1] > highs[0] and highs[-1] > highs[-2]
 
 
 def _lower_lows(klines: list, n: int = 5) -> bool:
+    """lower lows"""
     lows = [k['l'] for k in klines[-n:]]
     return lows[-1] < lows[0] and lows[-1] < lows[-2]
 
@@ -198,6 +202,7 @@ def _score_4h(k4: list) -> dict:
 # ══════════════════════════════════════════════════════════════
 
 def _score_1h(k1: list) -> dict:
+    """score 1h"""
     bull, bear = 0, 0
     closes = [k['c'] for k in k1]
     price  = closes[-1]
@@ -364,8 +369,8 @@ def score(symbol: str, force: bool = False, vol_ratio: float = None) -> dict:
                 _oi_dir = 'LONG_BUILD'
             elif _close_now < _recent_low:
                 _oi_dir = 'SHORT_BUILD'
-        except:
-            pass
+        except Exception as _e:
+            print(f"[WARN] regime_scorer: _e", file=sys.stderr)
         
         # V3体制实时修正（覆盖EMA滞后）
         _v3_override = None
@@ -409,6 +414,7 @@ def score(symbol: str, force: bool = False, vol_ratio: float = None) -> dict:
         # 旧: ≥55%→1.5 / ≥40%→1.0 / else→0.5（熊市35-45%时SHORT永远×0.5，无法过门槛）
         # 新: ≥50%→1.5 / ≥33%→1.0 / 震荡→0.7 / 逆势→0.5
         # 依据: 大样本12万笔验证，BEAR_TREND(熊市趋势) SHORT WR=54%，不应被体制乘数封死
+        """mult"""
         if direction == 'LONG':  # 做多乘数
             # 铁证：熊市做多是宪法级死穴（225K+样本验证）
             # BEAR_EARLY_LONG WR=49.9% avgPnL=-0.139 / BEAR_TREND_LONG WR=45.6% avgPnL=-0.218
@@ -467,6 +473,7 @@ def score(symbol: str, force: bool = False, vol_ratio: float = None) -> dict:
 
 
 def format_regime(r: dict) -> str:
+    """format regime"""
     bull_bar = '█' * int(r['bull_prob'] * 20)
     bear_bar = '█' * int(r['bear_prob'] * 20)
     chop_bar = '█' * int(r['chop_prob'] * 20)
@@ -618,7 +625,7 @@ class RegimeStateMachine:
     负责将 detect_regime 的原始单点输出转化为稳定的确认体制
     """
 
-    def __init__(self, symbol: str = 'BTCUSDT'):
+    def __init__(self, symbol: str = 'BTCUSDT') -> None:
         self.symbol = symbol
         self._state = self._load_state()
 
@@ -638,6 +645,7 @@ class RegimeStateMachine:
         return self._default_state()
 
     def _default_state(self) -> dict:
+        """default state"""
         return {
             'confirmed':      'CHOP_MID',    # 当前确认体制
             'candidate':      None,           # 候选体制（未确认）
@@ -649,7 +657,7 @@ class RegimeStateMachine:
             'last_update_ts': 0,              # [防抖] 上次有效计数更新时间戳
         }
 
-    def _save_state(self):
+    def _save_state(self) -> None:
         """持久化状态（始终同步confirmed_cn，防止历史遗留字段错位）
         [9.13修复] except pass → 告警+自愈尝试
         接入位置: brahma_brain/regime_scorer.py L561
@@ -683,8 +691,8 @@ class RegimeStateMachine:
                 with open(_alert_path, 'a') as _af:
                     _af.write(json.dumps({'type': 'regime_save_failed', 'msg': str(e),
                         'symbol': getattr(self, 'symbol', '?'), 'ts': time.time()}) + '\n')
-            except Exception:
-                pass  # 告警也失败了，至少stderr有记录
+            except Exception as _e:
+                print(f"[WARN] regime_scorer: _e", file=sys.stderr)
 
     def update(self, raw_regime: str, symbol: str = None, klines_4h: list = None) -> str:
         """
@@ -808,10 +816,12 @@ class RegimeStateMachine:
 
     @property
     def confirmed_regime(self) -> str:
+        """confirmed regime"""
         return self._state['confirmed']
 
     @property
     def candidate_regime(self) -> Optional[str]:
+        """candidate regime"""
         return self._state.get('candidate')
 
     @property

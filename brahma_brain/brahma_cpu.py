@@ -335,6 +335,7 @@ def _do_watch(symbol: str, signal_dir: str, score_result: dict) -> None:
 # ══════════════════════════════════════════════════════════════════════
 def _log_decision(symbol: str, signal_dir: str, decision: str,
                   reason: str, score: float, layer: int) -> None:
+    """log decision"""
     try:
         entry = {
             'ts':         time.time(),

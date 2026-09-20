@@ -24,7 +24,10 @@ import math
 import time
 import logging
 from pathlib import Path
-from brahma_brain.data_cache import get_klines as _dc, _SSL_CTX as _DC_SSL_CTX
+try:
+    from brahma_brain.data_cache import get_klines as _dc, _SSL_CTX as _DC_SSL_CTX
+except ImportError:
+    from data_cache import get_klines as _dc, _SSL_CTX as _DC_SSL_CTX
 import sys
 
 logger = logging.getLogger(__name__)
@@ -37,7 +40,10 @@ _CACHE_TTL = 300  # 5分钟
 def _fetch_klines(symbol: str, interval: str = '1h', limit: int = 30) -> list:
     """拉取K线数据 — data_cache优先"""
     try:
-        from brahma_brain.data_cache import get_klines as _dc
+        try:
+            from brahma_brain.data_cache import get_klines as _dc
+        except ImportError:
+            from data_cache import get_klines as _dc
         raw = _dc(symbol, interval, limit)
         if raw and isinstance(raw, list) and len(raw) >= 3:
             return raw

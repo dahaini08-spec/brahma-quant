@@ -26,7 +26,7 @@ sys.path.insert(0, str(BASE))
 STATE_FILE    = DATA / 'signal_push_state.json'
 WATCHER_STATE = DATA / 'rsi_watcher_state.json'
 SCORE_BUCKET  = 5        # 5分桶，消除噪音波动
-MIN_SCORE     = 138      # 低于此分不推送
+MIN_SCORE     = 0  # [P0改革] 废除      # 低于此分不推送
 SAME_HASH_TTL = 86400    # 同哈希24H内不重复推送
 
 SYMS = ['BTCUSDT', 'ETHUSDT']

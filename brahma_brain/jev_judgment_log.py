@@ -6,6 +6,7 @@ brahma_brain/jev_judgment_log.py — Jev判断日志 [Phase 3 2026-09-19 苏摩1
 - 交易结算后对比: Jev说PASS但亏损 / Jev说WARN但盈利
 - 形成校准数据集 → 3个月后评估Jev准确率
 """
+import sys
 import json, os
 from pathlib import Path
 from datetime import datetime, timezone
@@ -14,7 +15,7 @@ _DATA = Path(__file__).parent.parent / 'data'
 _LOG_FILE = _DATA / 'jev_judgment_log.jsonl'
 
 
-def log_judgment(symbol: str, judgment: dict, market_state: dict, result: dict):
+def log_judgment(symbol: str, judgment: dict, market_state: dict, result: dict) -> None:
     """
     记录每次reasoning_gate判断结果。
 
@@ -37,11 +38,11 @@ def log_judgment(symbol: str, judgment: dict, market_state: dict, result: dict):
     try:
         with open(_LOG_FILE, 'a') as f:
             f.write(json.dumps(entry, ensure_ascii=False) + '\n')
-    except Exception:
-        pass
+    except Exception as _e:
+        print(f"[WARN] jev_judgment_log: _e", file=sys.stderr)
 
 
-def settle_judgment(symbol: str, win: bool, pnl_pct: float):
+def settle_judgment(symbol: str, win: bool, pnl_pct: float) -> None:
     """
     交易结算后回填结果。
 
@@ -65,8 +66,8 @@ def settle_judgment(symbol: str, win: bool, pnl_pct: float):
                 break
         if updated:
             _LOG_FILE.write_text('\n'.join(lines))
-    except Exception:
-        pass
+    except Exception as _e:
+        print(f"[WARN] jev_judgment_log: _e", file=sys.stderr)
 
 
 def get_calibration_stats() -> dict:

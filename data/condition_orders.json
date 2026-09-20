@@ -35,5 +35,79 @@
       }
     },
     "immediate_warnings": []
+  },
+  "HYPEUSDT": {
+    "symbol": "HYPEUSDT",
+    "created_at": "2026-09-18T12:25:14.514358+00:00",
+    "short_entry": 0,
+    "long_entry": 90.549,
+    "short_notional": 0,
+    "long_notional": 50,
+    "liq_price": 68.76602,
+    "triggers": {
+      "P0_生死线": {
+        "condition": "价格 ≤ 79.08092（强平价68.7660的115%，上方15%缓冲）",
+        "action": "立即减仓50%，不商量",
+        "price": 79.08092299999998,
+        "trigger_dir": "lte",
+        "priority": 0
+      },
+      "P1_多单止盈": {
+        "condition": "多单浮盈 ≥ 40%（入场价+40%=126.76860）",
+        "action": "多单市价止盈，锁定利润",
+        "price": 126.7686,
+        "priority": 1
+      },
+      "P2_调仓线": {
+        "condition": "空/多比 > 2.0（当前=0.00:1）",
+        "action": "减空单至与多单等量（1:1）",
+        "triggered_now": false,
+        "priority": 2
+      },
+      "P3_时间止损": {
+        "condition": "持仓超72H（截止 2026-09-21T12:25）",
+        "action": "若未回本则全平，接受损失，重新布局",
+        "deadline": "2026-09-21T12:25:14.514358+00:00",
+        "priority": 3
+      }
+    },
+    "immediate_warnings": []
+  },
+  "SKHYUSDT": {
+    "symbol": "SKHYUSDT",
+    "created_at": "2026-09-18T12:25:58.494232+00:00",
+    "short_entry": 0,
+    "long_entry": 184.12,
+    "short_notional": 0,
+    "long_notional": 50,
+    "liq_price": 151.590615,
+    "triggers": {
+      "P0_生死线": {
+        "condition": "价格 ≤ 174.32921（强平价151.5906的115%，上方15%缓冲）",
+        "action": "立即减仓50%，不商量",
+        "price": 174.32920725,
+        "trigger_dir": "lte",
+        "priority": 0
+      },
+      "P1_多单止盈": {
+        "condition": "多单浮盈 ≥ 40%（入场价+40%=257.76800）",
+        "action": "多单市价止盈，锁定利润",
+        "price": 257.768,
+        "priority": 1
+      },
+      "P2_调仓线": {
+        "condition": "空/多比 > 2.0（当前=0.00:1）",
+        "action": "减空单至与多单等量（1:1）",
+        "triggered_now": false,
+        "priority": 2
+      },
+      "P3_时间止损": {
+        "condition": "持仓超72H（截止 2026-09-21T12:25）",
+        "action": "若未回本则全平，接受损失，重新布局",
+        "deadline": "2026-09-21T12:25:58.494232+00:00",
+        "priority": 3
+      }
+    },
+    "immediate_warnings": []
   }
 }

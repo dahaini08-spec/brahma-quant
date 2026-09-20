@@ -785,9 +785,8 @@ def scan_symbol(sym, ticker_data):
         _dir_bias  = sig_info.get('direction_bias', 'LONG')
         _is_dead   = (
             ('BEAR_TREND' in _regime_up and _dir_bias == 'LONG') or
-            ('BULL_TREND' in _regime_up and _dir_bias == 'SHORT') or
-            ('CHOP' in _regime_up and _dir_bias == 'LONG' and score < 110)
-        )
+            ('BULL_TREND' in _regime_up and _dir_bias == 'SHORT')
+        )  # [P0改革] 删除CHOP+LONG死穴判断（score已废除）
         if _is_dead:
             result['action']           = 'watchlist'
             result['_dead_zone_note']  = f'死穴:{_regime_up}+{_dir_bias}→降级WATCH'

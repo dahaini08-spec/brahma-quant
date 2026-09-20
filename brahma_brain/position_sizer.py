@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # ponytail: position_sizer 642行，有意为之，重构前先 grep 所有调用方
 """
+from typing import Any
 
 # STATUS: ACTIVE
 # 仓位计算器，执行层
@@ -29,7 +30,8 @@ BASE = Path(__file__).parent.parent
 
 # ── IC反馈回路：自动读取实测WR数据 ─────────────────────────
 # ponytail: IC反馈由ic_feedback_engine.py每周写入，此处自动读取
-def _load_ic_feedback():
+def _load_ic_feedback() -> Any:
+    """load ic feedback"""
     try:
         rt = json.loads((BASE/'data'/'wr_matrix_realtime.json').read_text())
         return rt.get('ic_feedback', {})
@@ -89,6 +91,7 @@ DEFAULT_BY_SCORE = {
 
 
 def _score_range(score: float) -> str:
+    """score range"""
     if score >= 175: return '175+'   # 合并入160+
     if score >= 160: return '160+'
     if score >= 140: return '140~159'
@@ -204,8 +207,8 @@ def get_position_pct(symbol: str, score: float, direction: str,
                     if _protected_pct < max_pct:
                         max_pct = _protected_pct
                         level = f'{level}+SMALL_SAMPLE_GUARD(n={_total_n}<15→2%NAV)'
-        except Exception:
-            pass  # 保护失败不阻塞主流程
+        except Exception as _e:
+            print(f"[WARN] position_sizer: _e", file=sys.stderr)
     # ─────────────────────────────────────────────────────────────────────────
 
     # ── [D: BEAR_RECOVERY_TRANSITION 前瞻仓位 2026-07-20 苏摩111批准] ────────
@@ -974,16 +977,25 @@ from datetime import datetime, timezone
 
 # ── brahma_bus 总线接入 ──
 try:
-    from brahma_brain.brahma_bus import bus as _brahma_bus
+    try:
+        from brahma_brain.brahma_bus import bus as _brahma_bus
+    except ImportError:
+        from brahma_bus import bus as _brahma_bus
 except Exception:
     _brahma_bus = None
 try:
-    from brahma_brain.data_cache import get_klines as _dc_get_klines, get_ticker as _dc_get_ticker
+    try:
+        from brahma_brain.data_cache import get_klines as _dc_get_klines, get_ticker as _dc_get_ticker
+    except ImportError:
+        from data_cache import get_klines as _dc_get_klines, get_ticker as _dc_get_ticker
 except ImportError:
     _dc_get_klines = None
     _dc_get_ticker = None
 try:
-    from brahma_brain.brahma_bus import get_price as _bus_get_price
+    try:
+        from brahma_brain.brahma_bus import get_price as _bus_get_price
+    except ImportError:
+        from brahma_bus import get_price as _bus_get_price
 except ImportError:
     _bus_get_price = None
 
@@ -1269,7 +1281,7 @@ def _atr14_from_parquet(symbol: str, interval: str = '1h') -> float | None:
         for tr in trs[1:]:
             atr = atr * 13/14 + tr * 1/14
         return atr
-    except: return None
+    except Exception as _e: return None
 
 
 def _snap_to_key_level(price: float, key_levels: list, side: str,
@@ -1407,8 +1419,8 @@ def compute(
                 sl_price_snapped = entry_price * (1 + sl_pct)
             bandit_note = (f' BANDIT:arm={_br["arm"]}'
                            f',conf={_conf:.2f},rec={_br["recommended_sl_pct"]:.2f}%')
-    except Exception:
-        pass  # Bandit不可用时静默降级，不影响主链路
+    except Exception as _e:
+        print(f"[WARN] position_sizer: _e", file=sys.stderr)
     # ────────────────────────────────────────────────────────
 
     return {
@@ -1508,6 +1520,7 @@ TIER_WEIGHTS = {
 
 def _get_nav() -> float:
     # [FIX-C v6.0] 优先读 brahma_state.json 的实时 NAV
+    """get nav"""
     try:
         _bs_path = DATA_DIR / 'brahma_state.json'
         if _bs_path.exists():
@@ -1515,7 +1528,7 @@ def _get_nav() -> float:
             _nav = _bs.get('nav') or _bs.get('nav_verified')
             if _nav and float(_nav) > 50:
                 return float(_nav)
-    except:
+    except Exception as _e:
         import sys as _sys_ep; print(f"[EXCEPT-PASS] position_sizer.py:L1526", file=_sys_ep.stderr)
         pass
     try:
@@ -1523,7 +1536,7 @@ def _get_nav() -> float:
             d = json.loads(NAV_F.read_text())
             if isinstance(d, list) and d: return float(d[-1].get('nav', 127.62))
             if isinstance(d, dict): return float(d.get('latest_nav', 127.62))
-    except:
+    except Exception as _e:
         import sys as _sys_ep; print(f"[EXCEPT-PASS] position_sizer.py:L1532", file=_sys_ep.stderr)
         pass
     try:
@@ -1537,7 +1550,7 @@ def _get_nav() -> float:
                 candidates.append(float(nav))
         if candidates:
             return max(candidates)  # 取最大值（最近真实NAV）
-    except:
+    except Exception as _e:
         import sys as _sys_ep; print(f"[EXCEPT-PASS] position_sizer.py:L1544", file=_sys_ep.stderr)
         pass
     return 127.62
@@ -1554,7 +1567,7 @@ def _get_active_exposure() -> tuple:
             r = json.loads(l)
             if not r.get('_is_simulation') and r.get('result') in (None,'','OPEN'):
                 active.append(r)
-        except:
+        except Exception as _e:
             import sys as _sys_ep; print(f"[EXCEPT-PASS] position_sizer.py:L1559", file=_sys_ep.stderr)
             pass
     # 估算每个持仓占用的风险
@@ -1574,6 +1587,7 @@ def _get_active_exposure() -> tuple:
 
 
 def _symbol_weight(symbol: str) -> float:
+    """symbol weight"""
     for tier, syms in TIER_WEIGHTS.items():
         if tier == 'DEFAULT': continue
         if symbol in syms: return syms[symbol]
@@ -1590,7 +1604,7 @@ def _recent_drawdown() -> float:
             r = json.loads(l)
             if not r.get('_is_simulation') and r.get('pnl_pct'):
                 pnls.append(float(r['pnl_pct']))
-        except:
+        except Exception as _e:
             import sys as _sys_ep; print(f"[EXCEPT-PASS] position_sizer.py:L1593", file=_sys_ep.stderr)
             pass
         if len(pnls) >= 20: break
@@ -1710,7 +1724,7 @@ def compute(
             if len(lines) > 3000:
                 ALLOC_LOG.write_text('\n'.join(lines[-2000:]) + '\n')
         except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-    except:
+    except Exception as _e:
         import sys as _sys_ep; print(f"[EXCEPT-PASS] position_sizer.py:L1712", file=_sys_ep.stderr)
         pass
 
@@ -1836,6 +1850,7 @@ def _save_state(state: dict) -> None:
 
 
 def _arm_key(regime: str, direction: str, arm_name: str) -> str:
+    """arm key"""
     return f"{regime}:{direction}:{arm_name}"
 
 

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+from typing import Any
 """
 
 # STATUS: ACTIVE
@@ -54,7 +56,7 @@ MIN_POOL_N = 5  # 经验池至少5条才参与后验
 
 _cache = {'data': {}, 'ts': 0}
 
-def _load_experience_pool():
+def _load_experience_pool() -> Any:
     """从 live_signal_log.jsonl 构建经验池"""
     global _cache
     now = time.time()
@@ -71,7 +73,7 @@ def _load_experience_pool():
                 continue
             try:
                 s = json.loads(line)
-            except:
+            except Exception as _e:
                 continue
             # 排除 LEGACY 污染数据
             if s.get('_data_quality'):

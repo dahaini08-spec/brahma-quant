@@ -732,7 +732,7 @@ tradfi_sector_engine.py — 美股代币板块联动评分引擎
 """
 
 import logging
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 _log = logging.getLogger(__name__)
 
@@ -1080,6 +1080,7 @@ CRYPTO_NATIVE_EXCLUDE = {
 
 # 判断是否为美股代币
 def is_tradfi_token(symbol: str) -> bool:
+    """判断tradfi token"""
     if symbol in TRADFI_TOKEN_LIST:
         return True
     # 常见美股代币后缀模式
@@ -1348,7 +1349,8 @@ def m3_obv_divergence_weight(klines: list, direction: str) -> dict:
         return result
 
     # 计算OBV序列（过去24根1H K线）
-    def calc_obv(bars):
+    def calc_obv(bars) -> Any:
+        """计算obv"""
         obv = 0.0
         obv_series = []
         for i, k in enumerate(bars):
@@ -1715,7 +1717,7 @@ def analyze_tradfi_dump(
 # ═══════════════════════════════════════════════════════════════════════════════
 # SNDK 7月27日历史回测验证
 # ═══════════════════════════════════════════════════════════════════════════════
-def backtest_sndk_0727():
+def backtest_sndk_0727() -> Any:
     """
     回测验证：SNDK 7月27日历史数据
     验证5个模块是否能在暴跌前给出正确信号

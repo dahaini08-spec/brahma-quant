@@ -23,10 +23,12 @@ class ScoreResult:
 
     @property
     def is_valid(self) -> bool:
+        """判断valid"""
         return not self.error and self.score > 0
 
     @property
     def bucket(self) -> str:
+        """bucket"""
         if self.score < 80:   return "<80"
         if self.score < 100:  return "80-100"
         if self.score < 120:  return "100-120"

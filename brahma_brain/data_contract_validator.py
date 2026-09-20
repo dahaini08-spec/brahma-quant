@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+from typing import Any
 """
 data_contract_validator.py — 数据契约验证器
 设计院 2026-09-17 苏摩111封印
@@ -115,7 +117,8 @@ def validate_all_contracts() -> dict:
     }
 
 
-def main():
+def main() -> Any:
+    """main"""
     result = validate_all_contracts()
     print(f"=== 数据契约验证 {result['timestamp']} ===")
     print(f"契约总数: {result['total_contracts']} | 断裂: {result['break_count']} | 状态: {'✅全绿' if result['all_ok'] else '❌有断裂'}")

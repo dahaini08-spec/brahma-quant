@@ -217,6 +217,7 @@ def stoch_rsi(series: Sequence[float], rsi_period: int = 14,
 
     # 平滑 K
     def _sma(vals: list[float], n: int) -> list[float]:
+        """sma"""
         return [sum(vals[i - n + 1: i + 1]) / n
                 for i in range(n - 1, len(vals))]
 
@@ -256,6 +257,7 @@ GRADE_LABEL_MAP = {
 }
 
 def grade_to_label(grade_num: int) -> str:
+    """grade to label"""
     if grade_num >= 90: return '🔴神级'
     if grade_num >= 80: return '🟠极强'
     if grade_num >= 75: return '🟡强+'
@@ -264,6 +266,7 @@ def grade_to_label(grade_num: int) -> str:
     return '⚫放弃'
 
 def parse_grade(grade_val, structure_grade=0, effective_grade=0) -> int:
+    """解析grade"""
     if isinstance(grade_val, (int, float)):
         n = int(grade_val)
     elif isinstance(grade_val, str) and grade_val.strip():
@@ -281,6 +284,7 @@ def parse_grade(grade_val, structure_grade=0, effective_grade=0) -> int:
     return max(0, min(100, n))
 
 def enrich_signal_grade(signal_dict: dict) -> dict:
+    """enrich signal grade"""
     grade_num = parse_grade(
         signal_dict.get('grade', 0),
         structure_grade=int(signal_dict.get('structure_grade', 0) or 0),

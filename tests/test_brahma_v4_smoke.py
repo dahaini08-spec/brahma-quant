@@ -85,8 +85,8 @@ def test_grade_num_in_confluence():
 # ══ Test 5: RANGE乘数字典完整性 ══
 def test_range_multiplier_exists():
     """CHOP_RANGE_DISCOUNT 和 CHOP_RANGE_PREMIUM 必须在乘数字典中"""
-    from brahma_brain import brahma_core  # noqa — import for side-effects only
-    with open('brahma_brain/brahma_core.py') as f:
+    from brahma_brain import regime_config  # noqa — import for side-effects only
+    with open('brahma_brain/regime_config.py') as f:
         content = f.read()
     assert 'CHOP_RANGE_DISCOUNT' in content, "RANGE乘数字典缺失DISCOUNT条目"
     assert 'CHOP_RANGE_PREMIUM' in content,  "RANGE乘数字典缺失PREMIUM条目"

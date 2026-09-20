@@ -31,6 +31,7 @@ _STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
 # ═══════════════════════════════════════════════════════════════
 
 def _load_state() -> dict:
+    """load state"""
     try:
         if _STATE_PATH.exists():
             return json.loads(_STATE_PATH.read_text())
@@ -47,7 +48,8 @@ def _load_state() -> dict:
     }
 
 
-def _save_state(state: dict):
+def _save_state(state: dict) -> None:
+    """save state"""
     try:
         _STATE_PATH.write_text(json.dumps(state, ensure_ascii=False, indent=2))
     except Exception as e:

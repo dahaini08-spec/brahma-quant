@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+from typing import Any
 """
 battlefield_intel.py — 统一战场情报中心
 2026-09-14 苏摩111 三方联合封印
@@ -35,24 +37,35 @@ INTEL_PATH = BASE / 'data' / 'battlefield_intel.json'
 # 写锁（防止并发写冲突）
 _WRITE_LOCK = None
 
-def _load_intel():
+def _load_intel() -> Any:
     """加载现有intel数据"""
     try:
         if INTEL_PATH.exists():
             return json.loads(INTEL_PATH.read_text())
-    except (json.JSONDecodeError, IOError):
-        pass
+    except (IOError) as _e:
+        print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
     return {}
 
-def _save_intel(data):
-    """保存intel数据（原子写入）"""
+def _save_intel(data) -> None:
+    """保存intel数据（原子写入，并发安全）"""
     INTEL_PATH.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = str(INTEL_PATH) + '.tmp'
+    payload = json.dumps(data, ensure_ascii=False, default=str)
+    for attempt in range(3):
+        try:
+            with open(tmp_path, 'w') as f:
+                f.write(payload)
+            os.replace(tmp_path, str(INTEL_PATH))
+            return
+        except FileNotFoundError:
+            # 并发写冲突：另一个进程已replace了tmp文件，等一下重试
+            time.sleep(0.15)
+    # 3次重试失败，最后再试一次
     with open(tmp_path, 'w') as f:
-        f.write(json.dumps(data, ensure_ascii=False, default=str))
+        f.write(payload)
     os.replace(tmp_path, str(INTEL_PATH))
 
-def update_symbol(symbol: str, source: str, **fields):
+def update_symbol(symbol: str, source: str, **fields) -> None:
     """
     更新单个标的的情报字段
     
@@ -69,7 +82,7 @@ def update_symbol(symbol: str, source: str, **fields):
     data[symbol]['last_source'] = source
     _save_intel(data)
 
-def update_batch(source: str, updates: dict):
+def update_batch(source: str, updates: dict) -> None:
     """
     批量更新多个标的的情报
     
@@ -126,7 +139,7 @@ def get_coverage_report() -> dict:
         'coverage_pct': total / 718 * 100 if total > 0 else 0,
     }
 
-def merge_cvd_snapshots():
+def merge_cvd_snapshots() -> Any:
     """从CVD快照文件合并到intel"""
     updates = {}
     for f in os.listdir(BASE / 'data'):
@@ -138,13 +151,13 @@ def merge_cvd_snapshots():
                 cvd_1h = d.get('cvd_1h')
                 if cvd_1h is not None:
                     updates[sym] = {'cvd_1h': cvd_1h}
-            except:
-                pass
+            except Exception as _e:
+                print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
     if updates:
         update_batch('cvd', updates)
     return len(updates)
 
-def merge_liq_heatmaps():
+def merge_liq_heatmaps() -> Any:
     """从清算热图文件合并到intel"""
     updates = {}
     for f in os.listdir(BASE / 'data'):
@@ -168,13 +181,13 @@ def merge_liq_heatmaps():
                     fields['liq_bear_score'] = int(bear_score)
                 if fields:
                     updates[sym] = fields
-            except:
-                pass
+            except Exception as _e:
+                print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
     if updates:
         update_batch('liq_heatmap', updates)
     return len(updates)
 
-def merge_scan_candidates():
+def merge_scan_candidates() -> Any:
     """从screener候选文件合并到intel"""
     updates = {}
     cand_path = BASE / 'data' / 'scan_candidates.json'
@@ -185,13 +198,13 @@ def merge_scan_candidates():
                 sym = c.get('symbol', '')
                 if sym:
                     updates[sym] = {'screener_score': c.get('score', 0)}
-        except:
-            pass
+        except Exception as _e:
+            print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
     if updates:
         update_batch('screener', updates)
     return len(updates)
 
-def merge_rsi_watcher():
+def merge_rsi_watcher() -> Any:
     """从rsi_structure_watcher状态文件合并到intel"""
     updates = {}
     state_path = BASE / 'data' / 'rsi_watcher_state.json'
@@ -248,13 +261,13 @@ def merge_rsi_watcher():
                     rsi_1h = v.get('rsi_1h')
                     if rsi_1h is not None and 'rsi_15m' not in updates.get(sym,{}):
                         updates[sym]['rsi_15m'] = float(rsi_1h)
-        except:
-            pass
+        except Exception as _e:
+            print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
     if updates:
         update_batch('rsi_watcher', updates)
     return len(updates)
 
-def merge_oi_signals():
+def merge_oi_signals() -> Any:
     """从oi_advanced_scanner jsonl合并到intel"""
     updates = {}
     signals_path = BASE / 'data' / 'oi_advanced_signals.jsonl'
@@ -294,15 +307,15 @@ def merge_oi_signals():
                         if fields:
                             # jsonl追加写，取最新条目覆盖
                             updates[sym] = fields
-                    except:
-                        pass
-        except:
-            pass
+                    except Exception as _e:
+                        print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
+        except Exception as _e:
+            print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
     if updates:
         update_batch('oi_scanner', updates)
     return len(updates)
 
-def merge_whale_monitor():
+def merge_whale_monitor() -> Any:
     """从whale_monitor文件合并到intel"""
     updates = {}
     data_dir = BASE / 'data'
@@ -321,8 +334,8 @@ def merge_whale_monitor():
             if whale_net is not None:
                 try:
                     fields['whale_net_usd'] = float(whale_net)
-                except:
-                    pass
+                except Exception as _e:
+                    print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
             whale_score = d.get('whale_score')
             if whale_score is not None:
                 fields['whale_score'] = int(whale_score)
@@ -333,20 +346,20 @@ def merge_whale_monitor():
             if whale_ls is not None:
                 try:
                     fields['whale_ls_ratio'] = float(whale_ls)
-                except:
-                    pass
+                except Exception as _e:
+                    print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
             whale_oi = d.get('oi_signal')
             if whale_oi:
                 fields['whale_oi_signal'] = str(whale_oi)
             if fields:
                 updates[sym] = fields
-        except:
-            pass
+        except Exception as _e:
+            print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
     if updates:
         update_batch('whale_monitor', updates)
     return len(updates)
 
-def merge_breakout_watch():
+def merge_breakout_watch() -> Any:
     """从breakout_watch文件合并到intel"""
     updates = {}
     bw_path = BASE / 'data' / 'breakout_watch_latest.json'
@@ -375,13 +388,13 @@ def merge_breakout_watch():
             for sym in results:
                 if sym not in alert_syms:
                     updates[sym] = {'breakout_signal': 'WATCH'}
-        except:
-            pass
+        except Exception as _e:
+            print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
     if updates:
         update_batch('breakout_watch', updates)
     return len(updates)
 
-def merge_square_extreme():
+def merge_square_extreme() -> Any:
     """从square_extreme_alert文件合并到intel"""
     updates = {}
     # 查找square相关文件
@@ -403,8 +416,8 @@ def merge_square_extreme():
                     for sym, v in d.items():
                         if isinstance(v, dict) and v.get('extreme') or v.get('alert'):
                             updates[sym] = {'square_extreme': True}
-            except:
-                pass
+            except Exception as _e:
+                print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
     if updates:
         update_batch('square_extreme', updates)
     return len(updates)
@@ -543,7 +556,7 @@ def get_candidates(min_dimensions: int = 3, direction: str = None, min_score: fl
     candidates.sort(key=lambda x: (-x['score'], -x['dim_count']))
     return candidates
 
-def merge_all():
+def merge_all() -> dict:
     """一次性合并所有8个数据源"""
     cvd_count = merge_cvd_snapshots()
     liq_count = merge_liq_heatmaps()

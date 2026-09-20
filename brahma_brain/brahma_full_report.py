@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # ponytail: brahma_full_report 330行，有意为之，重构前先 grep 所有调用方
+
+from typing import Any
 """
 brahma_full_report.py — 梵天全能力标准输出函数 v2.0
 设计院 2026-08-23 苏摩111封印（全字段版）
@@ -155,9 +157,11 @@ def build_war_report(
     return '\n'.join(lines)
 
 def _bj_now() -> str:
+    """bj now"""
     return datetime.now(BJ).strftime('%Y-%m-%d %H:%M CST')
 
 def _bj_ts(ts) -> str:
+    """bj ts"""
     if not ts:
         return 'N/A'
     try:
@@ -228,10 +232,12 @@ def format_full_report(r: dict) -> str:
         _dh_parts = [f"{k.replace('_',' ').upper()}过期{v['age_hours']:.1f}h" for k, v in _dh_stale.items()]
         _dh_warn = f" | ⚠️ 降级: {', '.join(_dh_parts)}"
 
-    def _v(val, default='N/A'):
+    def _v(val, default: str = 'N/A') -> str:
+        """v"""
         return val if val not in (None, '', {}, []) else default
 
-    def _row(label, val, warn=''):
+    def _row(label: str, val, warn: str = '') -> str:
+        """row"""
         v = _v(val)
         w = f' ⚠️{warn}' if warn and v == 'N/A' else ''
         return f'  {label:<26} {v}{w}'
@@ -444,7 +450,7 @@ def _run_sqe(r: dict) -> dict:
     except Exception as e:
         return {'sqe_result': f'ERROR:{e}', 'sqe_reject_reason': 'N/A'}
 
-def run_full_analysis(symbol: str, mode: str = 'auto'):
+def run_full_analysis(symbol: str, mode: str = 'auto') -> Any:
     """
     主入口：运行梵天1号工程全能力报告
     [封印 2026-08-30 苏摩111 ADAPTIVE v3.0]
@@ -726,10 +732,14 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
         _path_up   = float(_sp.get('up_first',   0.57) * 100) if _sp else 57
         _path_down = float(_sp.get('down_first', 0.42) * 100) if _sp else 42
         # 字段别名兼容: low/high 或 lo/hi
-        def _zlo(z): return z.get('low', z.get('lo', 0))
-        def _zhi(z): return z.get('high', z.get('hi', 0))
-        def _zsl(z): return z.get('stop_loss', z.get('sl', 0))
-        def _zrr(z): return z.get('rr1', z.get('rr', 0))
+        """zlo"""
+        def _zlo(z: dict) -> float: return z.get('low', z.get('lo', 0))
+        """zhi"""
+        def _zhi(z: dict) -> float: return z.get('high', z.get('hi', 0))
+        """zsl"""
+        def _zsl(z: dict) -> float: return z.get('stop_loss', z.get('sl', 0))
+        """zrr"""
+        def _zrr(z: dict) -> float: return z.get('rr1', z.get('rr', 0))
 
         # 双边猎杀检测
         _double_hunt = False
@@ -981,7 +991,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto'):
 
         report = '\n'.join(_s0s1s2) + '\n' + report
     except Exception as _adap_err:
-        pass
+        print(f"[WARN] brahma_full_report: _adap_err", file=sys.stderr)
     # ══ [END ADAPTIVE v3.0] ══════════════════════════════════════════════
 
     # ══ [360自愈机制 2026-08-30 苏摩111] 实时健康检测 ═══════════════════════

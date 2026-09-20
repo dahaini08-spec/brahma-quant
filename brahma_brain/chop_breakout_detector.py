@@ -110,8 +110,8 @@ def detect_chop_breakout(state: dict, symbol: str = 'BTCUSDT') -> dict:
                 cvd = _cvd_raw
             elif 'BUY' in _cvd_signal and _cvd_raw > 0:
                 cvd = max(_cvd_raw, 6)  # BUY signal + 正CVD = 买压确认
-        except Exception:
-            pass
+        except Exception as _e:
+            print(f"[WARN] chop_breakout_detector: _e", file=sys.stderr)
     # fallback: enhanced.breakdown.cvd
     if cvd == 0:
         enhanced = extra.get('enhanced', {})
@@ -154,7 +154,7 @@ def detect_chop_breakout(state: dict, symbol: str = 'BTCUSDT') -> dict:
     if bull_prob == 0.0:
         score_f  = float(state.get('score_final') or state.get('score') or 0)
         try: score_f = float(str(score_f).split()[0])
-        except:
+        except Exception as _e:
             import sys as _sys_ep; print(f"[EXCEPT-PASS] chop_breakout_detector.py:L139", file=_sys_ep.stderr)
             pass
         smart_l  = extra.get('smart_money', {}).get('big_pos_long', 0.5)
@@ -222,8 +222,8 @@ def detect_chop_breakout(state: dict, symbol: str = 'BTCUSDT') -> dict:
                     signal = 'READY'
                     nav_pct = 0.01
                     reason = f'LLM降级:假突破风险 | {reason}'
-        except Exception:
-            pass  # LLM不可用时静默降级，不影响主流程
+        except Exception as _e:
+            print(f"[WARN] chop_breakout_detector: _e", file=sys.stderr)
     # ── end P1-1 ────────────────────────────────────────────────────────────
 
     return {

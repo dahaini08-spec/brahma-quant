@@ -606,7 +606,7 @@ def check_01_regime_freshness() -> dict:
             d = json.load(f)
         age = (time.time() - d.get('last_update', d.get('timestamp', 0))) / 60
         ok = age < 60
-        score = 10 if age < 60 else (7 if age < 120 else 0)
+        score = 0  # [P0改革] 废除
         return _check_result('体制新鲜度', ok, score,
             f'{age:.0f}min BTC={d.get("regime","?")}',
             'python3 scripts/brahma_state_refresh.py')

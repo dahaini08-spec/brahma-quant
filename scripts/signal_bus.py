@@ -153,7 +153,7 @@ def write(signal: dict) -> bool:
     finally:
         _unlock()
 
-def read_pending(max_age_h=12, min_score=100) -> list:
+def read_pending(max_age_h=12, min_score=0) -> list:  # [P0改革] 废除score门槛
     """
     读取待执行信号
     过滤：status=pending / valid=True / 未过期 / score≥门槛

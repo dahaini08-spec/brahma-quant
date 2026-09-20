@@ -250,7 +250,8 @@ def get_liq_density(symbol: str, current_price: float) -> dict:
             buckets_below[bucket] = buckets_below.get(bucket, 0) + usd
 
     # 3. 找最密集区间
-    def top_walls(buckets, above=True):
+    def top_walls(buckets, above=True) -> list:
+        """top walls"""
         walls = []
         for b, usd in sorted(buckets.items(), key=lambda x: x[1], reverse=True)[:5]:
             if above:
@@ -367,6 +368,7 @@ def get_liq_density(symbol: str, current_price: float) -> dict:
 
 
 def _empty_liq(symbol: str) -> dict:
+    """empty liq"""
     return {
         'symbol': symbol, 'current_price': 0,
         'above_walls': [], 'below_walls': [],
@@ -570,6 +572,7 @@ _cache = {}
 
 
 def _fetch(url: str, ttl: int = 30) -> dict | list | None:
+    """fetch"""
     now = time.time()
     if url in _cache and now - _cache[url][0] < ttl:
         return _cache[url][1]
@@ -1064,6 +1067,7 @@ def _read_from_ws_guardian_state(symbol: str) -> list:
 
 
 def _empty_liq_result(symbol: str) -> dict:
+    """empty liq result"""
     return {
         'symbol': symbol, 'window_minutes': 5,
         'long_liq_usd': 0, 'short_liq_usd': 0, 'total_liq_usd': 0,

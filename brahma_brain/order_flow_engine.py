@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+from typing import Any, Optional
 """
 
 # STATUS: ACTIVE
@@ -18,7 +20,8 @@ FAPI = "https://fapi.binance.com"
 _cache: dict = {}
 _TTL = 60  # 1分钟
 
-def _get(url: str):
+def _get(url: str) -> Optional[Any]:
+    """get"""
     now = time.time()
     if url in _cache and now - _cache[url]['ts'] < _TTL:
         return _cache[url]['data']

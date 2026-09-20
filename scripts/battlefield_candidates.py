@@ -32,9 +32,9 @@ def generate_and_save():
     }
     
     for tier, min_dim, key in [
-        ('strong', 5, 'tier1_strong'),
-        ('medium', 4, 'tier2_medium'),
-        ('watch', 3, 'tier3_watch'),
+        ('strong', 4, 'tier1_strong'),
+        ('medium', 3, 'tier2_medium'),
+        ('watch', 2, 'tier3_watch'),
     ]:
         cands = get_candidates(min_dimensions=min_dim)
         # 转为可序列化格式

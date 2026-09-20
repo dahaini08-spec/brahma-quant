@@ -26,7 +26,7 @@ cross_asset_gate.py — 梵天跨资产联合推理门控 v1.0
 
 import sys, os, time, json, requests, urllib.parse
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 from datetime import datetime, timezone
 
 BASE = Path(__file__).parent.parent
@@ -42,7 +42,8 @@ FAPI = 'https://fapi.binance.com'
 
 # ─── 工具函数 ─────────────────────────────────────────────
 
-def _pub(path, params={}):
+def _pub(path, params={}) -> Any:
+    """pub"""
     qs = urllib.parse.urlencode(params)
     try:
         r = _HTTP.get(f'{FAPI}{path}?{qs}', timeout=6)
@@ -51,6 +52,7 @@ def _pub(path, params={}):
         return {}
 
 def _get_price(symbol: str) -> float:
+    """get price"""
     d = _pub('/fapi/v1/ticker/price', {'symbol': symbol})
     return float(d.get('price', 0))
 
@@ -83,13 +85,13 @@ class CrossAssetGate:
         signal = gate.check(eth_signal, all_active_signals)
     """
 
-    def __init__(self, beta_hours: int = 48):
+    def __init__(self, beta_hours: int = 48) -> None:
         self._beta_cache: dict = {}
         self._price_cache: dict = {}
         self._cache_ts: float = 0
         self._beta_hours = beta_hours
 
-    def _refresh_prices(self):
+    def _refresh_prices(self) -> None:
         """刷新价格缓存（60s TTL）"""
         if time.time() - self._cache_ts < 60:
             return
@@ -100,6 +102,7 @@ class CrossAssetGate:
         self._cache_ts = time.time()
 
     def _get_beta(self, anchor: str, target: str) -> float:
+        """get beta"""
         key = f'{anchor}_{target}'
         if key not in self._beta_cache:
             self._beta_cache[key] = _calc_beta(anchor, target, self._beta_hours)
@@ -209,8 +212,8 @@ class CrossAssetGate:
                 ).timestamp()
                 if now_ts > exp_ts:
                     return False   # 已过期
-            except Exception:
-                pass  # 解析失败时不拦截
+            except Exception as _e:
+                print(f"[WARN] cross_asset_gate: _e", file=sys.stderr)
 
         # ── 检查 valid 字段 ──────────────────────────────────
         if 'valid' in sig and not sig['valid']:
@@ -276,6 +279,7 @@ class CrossAssetGate:
 _gate_instance: Optional[CrossAssetGate] = None
 
 def get_gate() -> CrossAssetGate:
+    """获取gate"""
     global _gate_instance
     if _gate_instance is None:
         _gate_instance = CrossAssetGate()
@@ -306,7 +310,8 @@ except ImportError:
 
     print('=== cross_asset_gate 实时测试 ===\n')
 
-    def pub(path, params={}):
+    def pub(path, params={}) -> Any:
+        """pub"""
         qs = urllib.parse.urlencode(params)
         return req.get(f'https://fapi.binance.com{path}?{qs}', timeout=8).json()
 

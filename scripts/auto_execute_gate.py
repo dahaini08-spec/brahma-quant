@@ -11,17 +11,7 @@ import json, time, pathlib, datetime
 from pathlib import Path
 
 # ── 苏摩授权边界常量 ──────────────────────────────────────────────
-MIN_SCORE          = 140  # [铁证封印 2026-08-05 设计院自主] 155→140
-# 历史WR反推：grade≥极强+score≥140 WR=58%(n=19) EV正向；score115-145死亡区已绕过
-# 执行条件：MIN_SCORE=140 AND grade_num≥80（见下方门控）
-
-# [铁证封印 2026-08-06 设计院自主] 标的差异化阈值
-# BTC WR=33%(n=52) → 需要score≥145才有正EV；ETH WR=58%(n=19) → 140足够
-MIN_SCORE_BTC      = 145
-MIN_SCORE_ETH      = 145   # [2026-09-07 三方评估] 140→145，跳过score死亡区间(130-145)
-MIN_SCORE_OTHER    = 148
-
-# [铁证封印 2026-08-06 设计院自主] TRADFI代币硬封禁
+    # [铁证封印 2026-08-06 设计院自主] TRADFI代币硬封禁
 # 实证：22条信号WR=0%，梵天SMC/OB逻辑在美股代币上结构性失效
 TRADFI_HARD_BLOCK = {
     'SNDKUSDT','TSLAUSDT','AAPLUSDT','NVDAUSDT','MSFTUSDT','GOOGLUSDT',
@@ -212,31 +202,10 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
     _regime_p2  = signal.get('regime', '?')
     _dir_p2     = signal.get('direction', signal.get('signal_dir', '?'))
 
-    # 规则1: score≥155 但 timing明确为WAIT/STANDBY → 禁止执行
-    # FIX-M1: 空字符串/UNKNOWN视为timing未注入，不触发拦截（auto_executor TIER_1逻辑一致）
-    if _score_p2 >= 155 and _timing_p2 in ('WAIT', 'STANDBY'):
-        return {'executed': False,
-                'reason': f'P2高分timing拦截: score={_score_p2:.0f} timing={_timing_p2}（等待入场时机）',
-                'order': None}
+    # [9.20 P0改革] score timing检查废除 — 删除原if False死代码
 
-    # 规则2: BULL_TREND LONG 分层门控 [降权型改造 2026-08-16 苏摩111封印]
-    # 设计院原则：梵天是为交易而生，分析层是为了看清楚，不是相互封禁没有信号
-    # 铁证：score≥140 实盘WR=66.7%，score≥155 WR=100% → 高分信号解封
-    # 只封禁：score<120（无铁证支撑）/ 120-139（EXPIRED根因=entry zone，降权观察）
-    if _regime_p2 == 'BULL_TREND' and _dir_p2 == 'LONG':
-        if _score_p2 >= 145:
-            # ≥145分：铁证WR=66.7%~100%，直接放行，不做额外门控
-            pass  # 继续执行流程
-        elif _score_p2 >= 120:
-            # 120-139分：EXPIRED根因已修复(±0.5%)，降权观察仓1%NAV
-            # 不直接BLOCK，改为标记observation让auto_executor降仓执行
-            signal['_observation_tier'] = True
-            signal['_pos_override_pct'] = 1.0  # 1%NAV观察仓
-        else:
-            # <120分：无铁证，封禁
-            return {'executed': False,
-                    'reason': f'P2 WR门控: BULL_TREND LONG score={_score_p2:.0f}<120 无铁证支撑',
-                    'order': None}
+    # [9.20 P0改革] BULL_TREND LONG score门控废除 — score不做入场门控
+    # 保留死穴封禁（HARD_BLOCK），score/体制不再拦截信号
 
     # 规则2b: Kronos方向置信度 → 降权型（不再二元否决）[2026-08-16 苏摩111封印]
     # 设计院原则：Kronos误差±15%，用不确定的模型否决高分信号是错误的
@@ -324,22 +293,7 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
         _log('BLOCKED', signal, r)
         return {'executed': False, 'reason': r, 'order': None}
 
-    # ── 门控1：score 门槛（标的差异化）─────────────────────────────
-    # [铁证封印 2026-08-06 设计院] BTC WR=33% → 需score≥145；ETH WR=58% → 140足够
-    if sym == 'BTCUSDT':
-        _min_score_eff = MIN_SCORE_BTC
-    elif sym == 'ETHUSDT':
-        _min_score_eff = MIN_SCORE_ETH
-    elif sym in TRADFI_HARD_BLOCK:
-        r = f'TRADFI_BLOCK: {sym} 代币化美股，梵天SMC逻辑结构性失效(22条信号WR=0%)'
-        _log('BLOCKED', signal, r)
-        return {'executed': False, 'reason': r, 'order': None}
-    else:
-        _min_score_eff = MIN_SCORE_OTHER
-    if score < _min_score_eff:
-        r = f'score={score} < {_min_score_eff}({sym}专属门槛)'
-        _log('BLOCKED', signal, r)
-        return {'executed': False, 'reason': r, 'order': None}
+    # ── [9.20 P0改革] 门控1废除：score不做入场门控 ──
 
     # ── 门控2：死穴硬拒绝 ──────────────────────────────────────────
     combo = f'{regime}_{direction}'
@@ -365,11 +319,7 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
             _log('BLOCKED', signal, r)
             return {'executed': False, 'reason': r, 'order': None}
         else:
-            _penalized = score * _mult
-            if _penalized < MIN_SCORE:
-                r = f'LIVE_WR_PENALTY: {_live_key} WR={_wr}%(n={_n}) 降权后={_penalized:.0f}<{MIN_SCORE}'
-                _log('BLOCKED', signal, r)
-                return {'executed': False, 'reason': r, 'order': None}
+            pass  # [9.20 P0改革] WR降权score检查废除
 
     # ── 门控3：熔断检查 ────────────────────────────────────────────
     bs = _load_state()

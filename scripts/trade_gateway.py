@@ -42,7 +42,8 @@ try:
     JARVIS_TARGET = os.environ.get('JARVIS_TARGET', _SSOT_T)
 except Exception:
     JARVIS_TARGET = os.environ.get('JARVIS_TARGET', '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6')
-MIN_WEIGHTED  = 60    # 同 signal_selector 门槛 [P0同步 2026-09-13] 110→60
+
+# [9.20 P0改革] MIN_WEIGHTED废除 — score不做门控
 
 # 推送去重：同symbol+direction 6H内不重复推送
 # [v25.3-fix] 改为持久化文件，避免进程重启后冷却清零
@@ -256,10 +257,8 @@ def run(symbol: str, force_regime: bool = False, zone: dict = None) -> dict:
                            dedup_ttl=21600)  # 6H去重，与PUSH_COOLDOWN对齐
                 continue
         else:
-            # 无法运行五关时，仅检查加权分
-            if sig['weighted'] < MIN_WEIGHTED:
-                pass  # [静默]
-                continue
+            # [9.20 P0改革] weighted<0门控废除 — score不做入场拦截
+            pass
 
         # ── Step 5: 推送信号 ──
         card = format_signal_card(sig)

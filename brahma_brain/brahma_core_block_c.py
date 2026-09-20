@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # ponytail: brahma_core_block_c 458行，核心计算，94维共享_result状态，拆分条件: 状态隔离方案成熟后
+
+from typing import Any
 """
 brahma_core_block_c.py — 高级信号层 (维度11-19 + s_research)
 [设计院封印 2026-08-11 苏摩111]
@@ -27,11 +29,13 @@ s_research: 研究增强层 [timesfm_lite缺失→归零]
 import time as _time_bc
 _BC_CALL_CACHE: dict = {}
 
-def _bc_get(key: str):
+def _bc_get(key: str) -> Any:
+    """bc get"""
     e = _BC_CALL_CACHE.get(key)
     return e[0] if e and _time_bc.time() < e[1] else None
 
-def _bc_set(key: str, val, ttl: float = 300.0):
+def _bc_set(key: str, val, ttl: float = 300.0) -> None:
+    """bc set"""
     _BC_CALL_CACHE[key] = (val, _time_bc.time() + ttl)
 
 

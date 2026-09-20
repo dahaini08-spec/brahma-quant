@@ -27,7 +27,7 @@ HIST = BRAIN.parent / "data" / "historical"
 # 但我们没有94维的历史score数据，只有W3策略的12维特征
 # 改为：用原始价格特征计算IC
 
-def compute_feature_ic(candles, feature_name, feature_values, forward_bars=4):
+def compute_feature_ic(candles, feature_name, feature_values, forward_bars=4) -> tuple:
     """计算单个特征的前向IC"""
     n = len(candles)
     forward_returns = np.zeros(n)
@@ -44,7 +44,8 @@ def compute_feature_ic(candles, feature_name, feature_values, forward_bars=4):
     ic, pval = spearmanr(feature_values[valid], forward_returns[valid])
     return ic, pval
 
-def main():
+def main() -> None:
+    """main"""
     print("=" * 60)
     print("94维IC诊断（确认达摩院结论）")
     print("=" * 60)

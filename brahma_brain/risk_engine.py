@@ -135,7 +135,7 @@ def check(signal: dict, portfolio: dict = None) -> dict:
     }
 
 
-def _apply_position_mult(signal: dict, mult: float, reason: str):
+def _apply_position_mult(signal: dict, mult: float, reason: str) -> None:
     """应用仓位乘数"""
     orig_pct = signal.get('position_pct', 0)
     new_pct = orig_pct * mult

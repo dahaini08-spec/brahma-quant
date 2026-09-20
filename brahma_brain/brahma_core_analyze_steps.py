@@ -30,13 +30,15 @@ for _p in [_BRAIN_DIR, _SCRIPTS_DIR]:
 try:
     from market_state import analyze as ms_analyze
 except ImportError:
-    def ms_analyze(symbol):
+    def ms_analyze(symbol) -> dict:
+        """ms analyze"""
         return {'error': f'market_state not available for {symbol}'}
 
 try:
     from smc_engine import analyze_smc
 except ImportError:
-    def analyze_smc(symbol, direction, tf, limit):
+    def analyze_smc(symbol, direction, tf, limit) -> dict:
+        """analyze smc"""
         return {}
 
 
@@ -104,8 +106,8 @@ def _analyze_step1(symbol: str, signal_dir: str) -> dict:
                     elif _rtc_drop > 0.05:  # 4H内跌超5%
                         ms['regime'] = 'BEAR_EARLY'
                         ms['_rtc_override'] = f'实时覆盖: {_cur_regime}→BEAR_EARLY drop={_rtc_drop:.1%}'
-    except Exception:
-        pass  # 实时体制覆盖异常，不阻断
+    except Exception as _e:
+        print(f"[WARN] brahma_core_analyze_steps: _e", file=sys.stderr)
     # ── [ROOT-FIX-3 END] ─────────────────────────────────────────────────
 
     # ── [因果AI P0-A] Causal Regime Verifier ────────────────────

@@ -688,13 +688,19 @@ volume_profile.py — 成交量分布密度分析（Volume Profile）
 
 import requests
 import time
-from typing import Tuple
+from typing import Any, Optional, Tuple
 try:
-    from brahma_brain.data_cache import get_klines as _dc_get_klines
+    try:
+        from brahma_brain.data_cache import get_klines as _dc_get_klines
+    except ImportError:
+        from data_cache import get_klines as _dc_get_klines
 except ImportError:
     _dc_get_klines = None
 try:
-    from brahma_brain.brahma_bus import get_price as _bus_get_price
+    try:
+        from brahma_brain.brahma_bus import get_price as _bus_get_price
+    except ImportError:
+        from brahma_bus import get_price as _bus_get_price
 except ImportError:
     _bus_get_price = None
 
@@ -842,6 +848,7 @@ def get_vp_score(symbol: str, price: float, signal_dir: str) -> Tuple[int, str]:
 
 
 def _empty(price: float) -> dict:
+    """empty"""
     return {
         'density_ratio': 1.0, 'density_label': 'NORMAL',
         'score_adj_long': 0, 'score_adj_short': 0,
@@ -905,7 +912,8 @@ FAPI = "https://fapi.binance.com"
 _cache: dict = {}
 
 
-def _get(url: str, ttl: int = 30):
+def _get(url: str, ttl: int = 30) -> Optional[Any]:
+    """get"""
     now = time.time()
     if url in _cache and now - _cache[url][0] < ttl:
         return _cache[url][1]
@@ -1065,6 +1073,7 @@ def get_multi_tf_cvd(symbol: str) -> dict:
     # 综合评分（供 enhanced_signal_engine 调用）
     # [2026-09-17 设计院修复B2] CVD标注基于CVD实际方向，不是交易方向
     def score_for_dir(direction: str) -> tuple[int, list[str]]:
+        """score for dir"""
         is_sell = direction == "SHORT"
         notes = []
         s = 0

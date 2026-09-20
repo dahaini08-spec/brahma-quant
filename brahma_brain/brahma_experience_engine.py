@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+from typing import Any, Optional
 """
 brahma_experience_engine.py — 梵天经验引擎
 2026-08-27 苏摩111批准封印
@@ -53,6 +55,7 @@ REGIME_MAP = {
 
 def calc_bbw(highs: np.ndarray, lows: np.ndarray,
              closes: np.ndarray, period: int = 20) -> float:
+    """计算bbw"""
     if len(closes) < period:
         return 5.0
     c = closes[-period:]
@@ -67,6 +70,7 @@ def calc_bbw(highs: np.ndarray, lows: np.ndarray,
 
 def calc_atr_pct(highs: np.ndarray, lows: np.ndarray,
                  closes: np.ndarray, period: int = 14) -> float:
+    """计算atr pct"""
     if len(closes) < period + 1:
         return 2.0
     trs = []
@@ -208,7 +212,7 @@ def process_symbol(symbol: str, timeframe: str,
             # 时间戳
             try:
                 ts_val = int(pd.Timestamp(ts_col.iloc[i]).timestamp())
-            except:
+            except Exception as _e:
                 ts_val = i
 
             vec = build_experience_vector(
@@ -243,7 +247,8 @@ def process_symbol(symbol: str, timeframe: str,
 
 # ── Qdrant写入 ────────────────────────────────────────────────────
 
-def get_qdrant_client():
+def get_qdrant_client() -> Optional[Any]:
+    """获取qdrant client"""
     try:
         from qdrant_client import QdrantClient
         from qdrant_client.http.models import Distance, VectorParams
@@ -263,7 +268,8 @@ def get_qdrant_client():
         return None
 
 
-def upsert_batch(client, experiences: list, batch_size: int = 500):
+def upsert_batch(client, experiences: list, batch_size: int = 500) -> Any:
+    """upsert batch"""
     if not experiences:
         return 0
     if client is None:
@@ -349,7 +355,7 @@ def query_similar_experiences(
             try:
                 from datetime import datetime, timezone as tz
                 dt = datetime.fromtimestamp(ts_val, tz=tz.utc).strftime('%Y-%m-%d') if ts_val > 0 else '?'
-            except:
+            except Exception as _e:
                 dt = '?'
             cases.append({
                 'symbol': p.get('sym',''), 'tf': p.get('tf',''), 'date': dt,
@@ -378,7 +384,7 @@ def build_full_experience_db(
     symbols: list = None,
     timeframes: list = None,
     max_per_symbol: int = 50000
-):
+) -> Any:
     """全量构建经验数据库"""
     if symbols is None:
         symbols = ['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','ADAUSDT','XRPUSDT',
@@ -439,7 +445,8 @@ def build_full_experience_db(
     return total_inserted
 
 
-def _update_memory(total: int):
+def _update_memory(total: int) -> None:
+    """update memory"""
     mem = Path('/root/.openclaw/workspace/MEMORY.md')
     note = f'\n\n## 🏛️ 梵天经验引擎封印（2026-08-27 苏摩111）\n- 写入经验片段: {total:,}条\n- collection: {COLLECTION_NAME}\n- 接入: brahma_full_report Step4 战场预判层\n'
     with open(mem, 'a') as f:
@@ -517,6 +524,7 @@ TIMEFRAMES  = ['15m', '1h', '4h', '1d', '1w', '1M']
 
 # ── 方仓案例的方向字段映射 ─────────────────────────────────────────
 def _norm_dir(raw: str) -> str:
+    """norm dir"""
     r = str(raw).upper()
     if r in ('UP', 'LONG'):    return 'LONG'
     if r in ('DOWN', 'SHORT'): return 'SHORT'
@@ -532,6 +540,7 @@ def _is_win(ret: float, direction: str) -> bool:
 
 # ── 加载所有方仓JSON ───────────────────────────────────────────────
 def load_all_cases() -> list:
+    """加载all cases"""
     files = glob.glob(str(_DATA / 'fangcang_*_*.json'))
     files = [f for f in files if 'snapshot' not in f and 'cases_' not in f
              and 'weights' not in f]
@@ -644,6 +653,7 @@ def distill(cases: list) -> dict:
             buckets_rd_coin.setdefault(k_rdc, []).append((ret, win))
 
     def _calc(entries: list) -> dict:
+        """calc"""
         if not entries:
             return {'n': 0, 'wr': 0.0, 'avg_ret': 0.0}
         rets = [e[0] for e in entries]
@@ -718,6 +728,7 @@ def build_coin_wr_table(matrix: dict) -> dict:
 
 # ── 人工可读报告 ──────────────────────────────────────────────────
 def build_report(matrix: dict) -> str:
+    """构建report"""
     lines = [
         '═══ 梵天经验蒸馏矩阵 Phase3 报告 ═══',
         f'生成时间: {matrix["meta"]["built_at"]}',
@@ -1117,8 +1128,8 @@ def _load_events() -> list:
                 line = line.strip()
                 if line:
                     events.append(json.loads(line))
-    except FileNotFoundError:
-        pass
+    except FileNotFoundError as _e:
+        print(f"[WARN] brahma_experience_engine: _e", file=sys.stderr)
     except Exception as e:
         print(f"[extreme_event_db] 加载事件库失败: {e}", file=sys.stderr)
     return events
@@ -1159,6 +1170,7 @@ def match_current_similarity(symbol: str = 'BTCUSDT') -> dict:
 
     # 途径不匹配时用旧版写字段兼容
     def _ev_vec(ev: dict) -> list:
+        """ev vec"""
         return [
             ev.get('pre_3d_rsi',   50.0),
             ev.get('pre_3d_change', 0.0),
@@ -1175,6 +1187,7 @@ def match_current_similarity(symbol: str = 'BTCUSDT') -> dict:
         ]
 
     def _cur_vec() -> list:
+        """cur vec"""
         return [
             cur['rsi_4h'],
             cur['change_3d'],

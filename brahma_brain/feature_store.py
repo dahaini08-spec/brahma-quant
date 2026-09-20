@@ -68,6 +68,7 @@ ALPHA_GROUPS = {
 
 
 def _cache_path(symbol: str) -> Path:
+    """cache path"""
     return CACHE_DIR / f"{symbol}_features.json"
 
 
@@ -117,7 +118,7 @@ def _load_cache(symbol: str) -> dict:
         return {}
 
 
-def _save_cache(symbol: str, data: dict):
+def _save_cache(symbol: str, data: dict) -> None:
     """保存缓存"""
     p = _cache_path(symbol)
     try:
@@ -308,7 +309,7 @@ def _compute_fresh(symbol: str) -> dict:
     }
 
 
-def log_features(symbol: str, features: dict):
+def log_features(symbol: str, features: dict) -> None:
     """记录特征快照到日志（供attribution_engine使用）"""
     log_path = BASE / 'data' / 'feature_log.jsonl'
     entry = {

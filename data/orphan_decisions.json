@@ -1,0 +1,260 @@
+{
+  "DELETE_EMPTY": [
+    {
+      "name": "capital_allocator",
+      "lines": 10,
+      "reason": "\u7a7a\u58f3\u6587\u4ef6\uff0c\u65e0\u5b9e\u8d28\u4ee3\u7801"
+    },
+    {
+      "name": "macro_calendar",
+      "lines": 10,
+      "reason": "\u7a7a\u58f3\u6587\u4ef6\uff0c\u65e0\u5b9e\u8d28\u4ee3\u7801"
+    },
+    {
+      "name": "market_quadrant",
+      "lines": 10,
+      "reason": "\u7a7a\u58f3\u6587\u4ef6\uff0c\u65e0\u5b9e\u8d28\u4ee3\u7801"
+    },
+    {
+      "name": "cvd_engine",
+      "lines": 9,
+      "reason": "\u7a7a\u58f3\u6587\u4ef6\uff0c\u65e0\u5b9e\u8d28\u4ee3\u7801"
+    },
+    {
+      "name": "smart_money_engine",
+      "lines": 7,
+      "reason": "\u7a7a\u58f3\u6587\u4ef6\uff0c\u65e0\u5b9e\u8d28\u4ee3\u7801"
+    },
+    {
+      "name": "volume_exhaustion_engine",
+      "lines": 4,
+      "reason": "\u7a7a\u58f3\u6587\u4ef6\uff0c\u65e0\u5b9e\u8d28\u4ee3\u7801"
+    },
+    {
+      "name": "signal_queue",
+      "lines": 2,
+      "reason": "\u7a7a\u58f3\u6587\u4ef6\uff0c\u65e0\u5b9e\u8d28\u4ee3\u7801"
+    },
+    {
+      "name": "divergence_engine",
+      "lines": 2,
+      "reason": "\u7a7a\u58f3\u6587\u4ef6\uff0c\u65e0\u5b9e\u8d28\u4ee3\u7801"
+    },
+    {
+      "name": "signal_weight_updater",
+      "lines": 2,
+      "reason": "\u7a7a\u58f3\u6587\u4ef6\uff0c\u65e0\u5b9e\u8d28\u4ee3\u7801"
+    },
+    {
+      "name": "brahma_fangcang_unified",
+      "lines": 2,
+      "reason": "\u7a7a\u58f3\u6587\u4ef6\uff0c\u65e0\u5b9e\u8d28\u4ee3\u7801"
+    },
+    {
+      "name": "fangcang_hcme_bridge",
+      "lines": 2,
+      "reason": "\u7a7a\u58f3\u6587\u4ef6\uff0c\u65e0\u5b9e\u8d28\u4ee3\u7801"
+    },
+    {
+      "name": "sl_bandit",
+      "lines": 2,
+      "reason": "\u7a7a\u58f3\u6587\u4ef6\uff0c\u65e0\u5b9e\u8d28\u4ee3\u7801"
+    },
+    {
+      "name": "tradfi_macro_gate",
+      "lines": 2,
+      "reason": "\u7a7a\u58f3\u6587\u4ef6\uff0c\u65e0\u5b9e\u8d28\u4ee3\u7801"
+    },
+    {
+      "name": "signal_integrity_gate",
+      "lines": 2,
+      "reason": "\u7a7a\u58f3\u6587\u4ef6\uff0c\u65e0\u5b9e\u8d28\u4ee3\u7801"
+    },
+    {
+      "name": "headroom",
+      "lines": 2,
+      "reason": "\u7a7a\u58f3\u6587\u4ef6\uff0c\u65e0\u5b9e\u8d28\u4ee3\u7801"
+    },
+    {
+      "name": "hcme_matcher",
+      "lines": 2,
+      "reason": "\u7a7a\u58f3\u6587\u4ef6\uff0c\u65e0\u5b9e\u8d28\u4ee3\u7801"
+    }
+  ],
+  "DEPRECATED": [
+    {
+      "name": "llm_council_bridge",
+      "lines": 994,
+      "reason": "LLM\u8bae\u4f1a\u6865\u63a5\uff0c\u529f\u80fd\u5df2\u88abreasoning_client\u66ff\u4ee3"
+    },
+    {
+      "name": "brahma_cpu",
+      "lines": 587,
+      "reason": "CPU\u5927\u8111\uff0c\u529f\u80fd\u5df2\u88abtrader_brain+brahma_core\u66ff\u4ee3"
+    },
+    {
+      "name": "brahma_engine_v5",
+      "lines": 585,
+      "reason": "v5\u56de\u6d4b\u5f15\u64ce\uff0c\u72ec\u7acb\u5de5\u5177\u4e0d\u662f\u751f\u4ea7\u6a21\u5757"
+    },
+    {
+      "name": "brahma_w4_fangcang_ml",
+      "lines": 511,
+      "reason": "W4\u65b9\u4ed3ML\uff0cPhase 3\u63a8\u8fdf\uff0c\u6682\u4e0d\u63a5\u5165"
+    },
+    {
+      "name": "signal_selector",
+      "lines": 403,
+      "reason": "\u65b9\u5411\u88c1\u51b3\u5668\uff0c\u529f\u80fd\u5df2\u88abtrader_brain\u66ff\u4ee3"
+    },
+    {
+      "name": "brahma_plugins",
+      "lines": 402,
+      "reason": "v5 Plugin\u5c42\uff0cv5\u672a\u4e0a\u7ebf"
+    },
+    {
+      "name": "brahma_brain_ai",
+      "lines": 347,
+      "reason": "AI\u51b3\u7b56\u5c42\u5165\u53e3\uff0c\u529f\u80fd\u5df2\u88abreasoning_client\u66ff\u4ee3"
+    },
+    {
+      "name": "brahma_intel_layer",
+      "lines": 311,
+      "reason": "\u667a\u6167\u5c42\uff0c\u529f\u80fd\u5df2\u5206\u6563\u5230\u5404\u5206\u6790\u6a21\u5757"
+    },
+    {
+      "name": "commodity_adapter",
+      "lines": 216,
+      "reason": "\u5546\u54c1\u9002\u914d\u5c42\uff0cXAU/XAG\u4ea4\u6613\u5df2\u79fb\u9664"
+    },
+    {
+      "name": "brahma_w5_paper_live",
+      "lines": 210,
+      "reason": "W5\u6a21\u62df\u76d8\uff0cv5\u672a\u4e0a\u7ebf"
+    },
+    {
+      "name": "kronos_bridge",
+      "lines": 23,
+      "reason": "Kronos\u6865\u63a5\uff0c\u5df2\u7531HAR-RV\u66ff\u4ee3"
+    }
+  ],
+  "INTEGRATE": [
+    {
+      "name": "battlefield_intel",
+      "lines": 602,
+      "reason": "\u6218\u573a\u60c5\u62a5\u4e2d\u5fc3\uff0c\u5e94\u63a5\u5165brahma_full_report"
+    },
+    {
+      "name": "brahma_wiring_check",
+      "lines": 563,
+      "reason": "\u63a5\u7ebf\u68c0\u6d4b\u5668\uff0c\u5e94\u63a5\u5165brahma_health\u6216module_check"
+    },
+    {
+      "name": "free_llm_client",
+      "lines": 411,
+      "reason": "OpenRouter\u514d\u8d39LLM\uff0c\u5e94\u63a5\u5165reasoning_client\u4f5c\u4e3afallback"
+    },
+    {
+      "name": "dag_weight_calibrator",
+      "lines": 371,
+      "reason": "DAG\u6743\u91cd\u6821\u51c6\u5668\uff0c\u5e94\u63a5\u5165dag_executor"
+    },
+    {
+      "name": "brahma_context_injector",
+      "lines": 361,
+      "reason": "AI\u8bb0\u5fc6\u6ce8\u5c04\u5668\uff0c\u5e94\u63a5\u5165reasoning_client"
+    },
+    {
+      "name": "multi_tf_context_builder",
+      "lines": 361,
+      "reason": "\u591a\u5468\u671f\u5feb\u7167\u6784\u5efa\u5668\uff0c\u5e94\u63a5\u5165brahma_core_entry"
+    },
+    {
+      "name": "core_output",
+      "lines": 290,
+      "reason": "\u8f93\u51fa\u683c\u5f0f\u5316\uff0c\u5e94\u63a5\u5165formatter"
+    },
+    {
+      "name": "macro_factor_engine",
+      "lines": 284,
+      "reason": "\u5b8f\u89c2\u56e0\u5b50\u5f15\u64ce\uff0c\u5e94\u63a5\u5165brahma_core"
+    },
+    {
+      "name": "brahma_multiframe",
+      "lines": 262,
+      "reason": "\u5168\u5468\u671fFVG/OB\u626b\u63cf\uff0c\u5e94\u63a5\u5165smc_engine"
+    },
+    {
+      "name": "brahma_smoke_test",
+      "lines": 230,
+      "reason": "\u5192\u70df\u6d4b\u8bd5\uff0c\u5e94\u63a5\u5165brahma_health"
+    },
+    {
+      "name": "hurst_engine",
+      "lines": 199,
+      "reason": "Hurst\u6307\u6570\u5f15\u64ce\uff0c\u5e94\u63a5\u5165regime_scorer\u6216vol_beta_engine"
+    },
+    {
+      "name": "sentiment_engine",
+      "lines": 197,
+      "reason": "\u60c5\u7eea\u5f15\u64ce\uff0c\u5e94\u63a5\u5165brahma_core"
+    },
+    {
+      "name": "confluence_by_tf",
+      "lines": 196,
+      "reason": "\u591aTF\u6c47\u5408\u8bc4\u5206\uff0c\u5e94\u63a5\u5165brahma_core"
+    },
+    {
+      "name": "brainlog",
+      "lines": 193,
+      "reason": "\u7edf\u4e00\u65e5\u5fd7\uff0c\u5e94\u5168\u5c40\u63a5\u5165\u66ff\u4ee3print"
+    },
+    {
+      "name": "order_flow_engine",
+      "lines": 173,
+      "reason": "\u8ba2\u5355\u6d41\u5f15\u64ce\uff0c\u5e94\u63a5\u5165lsr_oi_engine"
+    },
+    {
+      "name": "orderbook_engine",
+      "lines": 141,
+      "reason": "\u8ba2\u5355\u7c3f\u5f15\u64ce\uff0c\u5e94\u63a5\u5165liq_density_engine"
+    },
+    {
+      "name": "liqmap_collector",
+      "lines": 138,
+      "reason": "\u6e05\u7b97\u91c7\u96c6\u5668\uff0c\u5b9e\u9645\u5728\u8fd0\u884c\u4f46\u672a\u88ab\u4ee3\u7801import\uff08\u72ec\u7acb\u8fdb\u7a0b\uff09"
+    },
+    {
+      "name": "live_price_feed",
+      "lines": 125,
+      "reason": "\u5b9e\u65f6\u4ef7\u683c\uff0c\u5e94\u63a5\u5165data_cache"
+    },
+    {
+      "name": "dim_ic_audit",
+      "lines": 99,
+      "reason": "IC\u8bca\u65ad\uff0c\u5e94\u63a5\u5165dim_trace_writer"
+    },
+    {
+      "name": "fangcang_builder_30",
+      "lines": 90,
+      "reason": "\u65b9\u4ed3\u91cd\u5efa\u811a\u672c\uff0c\u5b9e\u9645\u7531cron\u8fd0\u884c\u4f46\u672a\u88abimport"
+    },
+    {
+      "name": "rsi_extreme_engine",
+      "lines": 86,
+      "reason": "RSI\u6781\u503c\uff0c\u5e94\u63a5\u5165brahma_core"
+    },
+    {
+      "name": "bollinger_engine",
+      "lines": 71,
+      "reason": "\u5e03\u6797\u5e26\uff0c\u5e94\u63a5\u5165brahma_core"
+    }
+  ],
+  "REPLACED_BY": [
+    {
+      "name": "gex_engine",
+      "lines": 303,
+      "reason": "\u88abgex_unified\u66ff\u4ee3"
+    }
+  ]
+}

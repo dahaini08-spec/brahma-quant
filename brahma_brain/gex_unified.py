@@ -42,6 +42,7 @@ def _cache_f(currency: str) -> Path:
 # Black-Scholes Gamma
 # ─────────────────────────────────────────────────────────────────
 def bs_gamma(S: float, K: float, T: float, sigma: float, r: float = 0.05) -> float:
+    """bs gamma"""
     if T <= 1e-6 or sigma <= 0 or K <= 0 or S <= 0:
         return 0.0
     try:
@@ -56,6 +57,7 @@ def bs_gamma(S: float, K: float, T: float, sigma: float, r: float = 0.05) -> flo
 # Deribit API
 # ─────────────────────────────────────────────────────────────────
 def _deribit_get(path: str, timeout: int = 10) -> Optional[dict]:
+    """deribit get"""
     url = f'https://www.deribit.com/api/v2/public/{path}'
     try:
         with urllib.request.urlopen(url, timeout=timeout) as r:
@@ -305,7 +307,8 @@ def score_gex(symbol: str, direction: str,
 # ─────────────────────────────────────────────────────────────────
 # 主程序 / CLI
 # ─────────────────────────────────────────────────────────────────
-def main():
+def main() -> None:
+    """main"""
     print(f'\n🏯 梵天 GEX 引擎 (s22维度)')
     print(f'   {datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")}')
     print(f'   数据源: Deribit 公开期权 API\n')
@@ -710,8 +713,8 @@ def scan_gex(currency: str = 'BTC', force: bool = False) -> dict:
         }
         with open(_GEX_HISTORY_FILE, 'a') as _hf:
             _hf.write(json.dumps(hist_record) + '\n')
-    except Exception:
-        pass  # [静默] 历史写入失败不阻断主流程
+    except Exception as _e:
+        print(f"[WARN] gex_unified: _e", file=sys.stderr)
 
     pass  # [静默]
     print(f'  MAX GEX: ${profile["max_gex_strike"]:,.0f}  '

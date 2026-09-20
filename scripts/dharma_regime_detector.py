@@ -141,28 +141,40 @@ def main():
                    for j in range(1, len(window_prices)) if window_prices[j-1] > 0]
         h = hurst_exponent(returns)
         
-        # 2. 体制切换频率（30天内）
-        start_ts = klines_1h[i - window_bars]['ts']
-        end_ts = ts
-        switches = regime_switch_count(regimes, start_ts, end_ts)
-        
-        # 3. 信号密度（1H K线绝对收益率 > 0.5%占比）
-        window_returns = [(klines_1h[j]['c'] - klines_1h[j-1]['c']) / klines_1h[j-1]['c']
-                          for j in range(i - window_bars, i) if klines_1h[j-1]['c'] > 0]
-        if window_returns:
-            sig_density = sum(1 for r in window_returns if abs(r) > 0.005) / len(window_returns)
+        # 2. [V2.0改革 2026-09-20 苏摩111] 无结构锚点 = 真失效期
+        # 旧: 体制切换>5次 → 新: 最近24h价格波动率<0.3%（无波动=无结构=失效）
+        # 用价格波动率替代体制切换：体制已不做门控，切换次数无意义
+        # 波动率低=市场无结构=主力没有猎杀目标=真失效期
+        recent_24h_returns = [(klines_1h[j]['c'] - klines_1h[j-1]['c']) / klines_1h[j-1]['c']
+                             for j in range(max(0, i-24), i) if klines_1h[j-1]['c'] > 0]
+        if recent_24h_returns:
+            vol_24h = math.sqrt(sum(r*r for r in recent_24h_returns) / len(recent_24h_returns))
         else:
-            sig_density = 0
+            vol_24h = 0
+        no_structure = vol_24h < 0.003  # 24h波动率<0.3%=无结构=失效
         
-        # 4. ATR突变系数
+        # 3. [V2.0改革] 清算区距离>10% = 主力没有猎杀目标 = 失效期
+        # 旧: 信号密度<30% → 新: 30天最高价最低价差/当前价<8%=低波动=失效
+        # 用价格区间替代信号密度：旧架构信号密度受score门控影响，V2.0后不可靠
+        # 价格区间窄=主力没有空间猎杀=真失效期
+        period_high = max(b['h'] for b in klines_1h[i-window_bars:i])
+        period_low = min(b['l'] for b in klines_1h[i-window_bars:i])
+        current_price = klines_1h[i]['c']
+        if current_price > 0:
+            price_range_pct = (period_high - period_low) / current_price
+        else:
+            price_range_pct = 0
+        low_range = price_range_pct < 0.08  # 30天价格区间<8%=低波动=失效
+        
+        # 4. ATR突变系数（保留不变）
         atr_ratio = calc_atr_ratio(atrs[:i+1], klines_1h[:i+1], window_bars)
         
-        # 信号触发判断
+        # 信号触发判断 [V2.0改革]
         signals = {
-            'hurst_low': h < 0.45,        # 随机游走（更严格）
-            'switches_high': switches > 5,  # 体制频繁切换（更严格）
-            'density_low': sig_density < 0.30,  # 信号密度低（30天>0.5%波动K线<30%）
-            'atr_spike': atr_ratio > 2.5,  # ATR突变（更严格）
+            'hurst_low': h < 0.45,        # Hurst<0.45=随机游走（保留）
+            'no_structure': no_structure,   # 24h波动率<0.3%=无结构（新）
+            'low_range': low_range,         # 30天价格区间<8%=低波动（新）
+            'atr_spike': atr_ratio > 2.5,   # ATR突变（保留）
         }
         trigger_count = sum(signals.values())
         
@@ -178,8 +190,8 @@ def main():
             'ts': ts,
             'date': dt.strftime('%Y-%m-%d'),
             'hurst': round(h, 3),
-            'switches': switches,
-            'sig_density': round(sig_density, 3),
+            'vol_24h': round(vol_24h, 4),      # [V2.0] 替代switches
+            'price_range_pct': round(price_range_pct, 3),  # [V2.0] 替代sig_density
             'atr_ratio': round(atr_ratio, 2),
             'signals': signals,
             'trigger_count': trigger_count,
@@ -202,7 +214,7 @@ def main():
     
     # 信号触发频率
     print(f"\n信号触发频率:")
-    for sig_name in ['hurst_low', 'switches_high', 'density_low', 'atr_spike']:
+    for sig_name in ['hurst_low', 'no_structure', 'low_range', 'atr_spike']:
         count = sum(1 for d in daily_signals if d['signals'].get(sig_name))
         print(f"  {sig_name}: {count}/{total} ({count/total*100:.1f}%)")
     
@@ -230,17 +242,17 @@ def main():
     for d in daily_signals[-30:]:
         emoji = {'GREEN': '🟢', 'YELLOW': '🟡', 'RED': '🔴'}[d['state']]
         triggers = d['trigger_count']
-        print(f"  {emoji} {d['date']} H={d['hurst']:.2f} SW={d['switches']} SD={d['sig_density']:.2f} ATR={d['atr_ratio']:.1f}x [{triggers}/4]")
+        print(f"  {emoji} {d['date']} H={d['hurst']:.2f} V24h={d.get('vol_24h',0):.4f} PR={d.get('price_range_pct',0):.2f} ATR={d['atr_ratio']:.1f}x [{triggers}/4]")
     
     # 当前状态
     current = daily_signals[-1] if daily_signals else None
     if current:
         print(f"\n{'='*70}")
         print(f"🎯 当前状态: {current['state']}")
-        print(f"  Hurst: {current['hurst']:.3f} ({'低<0.5' if current['signals']['hurst_low'] else '正常'})")
-        print(f"  体制切换: {current['switches']}次/30天 ({'频繁>3' if current['signals']['switches_high'] else '正常'})")
-        print(f"  信号密度: {current['sig_density']:.1%} ({'低<15%' if current['signals']['density_low'] else '正常'})")
-        print(f"  ATR突变: {current['atr_ratio']:.2f}x ({'突变>2x' if current['signals']['atr_spike'] else '正常'})")
+        print(f"  Hurst: {current['hurst']:.3f} ({'低<0.45' if current['signals']['hurst_low'] else '正常'})")
+        print(f"  24h波动率: {current.get('vol_24h',0):.4f} ({'无结构<0.3%' if current['signals'].get('no_structure') else '有结构'})")
+        print(f"  30天价格区间: {current.get('price_range_pct',0):.1%} ({'低<8%' if current['signals'].get('low_range') else '正常'})")
+        print(f"  ATR突变: {current['atr_ratio']:.2f}x ({'突变>2.5x' if current['signals']['atr_spike'] else '正常'})")
         print(f"  触发: {current['trigger_count']}/4 → {current['state']}")
         
         if current['state'] == 'RED':

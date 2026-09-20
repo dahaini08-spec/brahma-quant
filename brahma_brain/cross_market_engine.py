@@ -1,4 +1,6 @@
 # ponytail: cross_market_engine 535行，独立计算引擎，功能内聚，拆分条件: 单引擎>3000行且有完整测试
+
+from typing import Any, Optional
 """
 cross_market_engine.py · 跨市场相关性引擎
 brahma_brain · P2
@@ -22,8 +24,14 @@ import json, urllib.request, time, math
 from data_cache import _SSL_CTX as _DC_SSL_CTX
 import sys
 try:
-    from brahma_brain.data_cache import get_klines as _dc_klines, get_ticker as _dc_ticker
-    from brahma_brain.brahma_bus import get_price as _bus_price
+    try:
+        from brahma_brain.data_cache import get_klines as _dc_klines, get_ticker as _dc_ticker
+    except ImportError:
+        from data_cache import get_klines as _dc_klines, get_ticker as _dc_ticker
+    try:
+        from brahma_brain.brahma_bus import get_price as _bus_price
+    except ImportError:
+        from brahma_bus import get_price as _bus_price
 except ImportError:
     _dc_klines = None
     _dc_ticker = None
@@ -35,7 +43,8 @@ CGECKO = 'https://api.coingecko.com/api/v3'
 _CACHE = {}
 _TTL   = 120  # 2分钟（原10分钟，修复：跨市场相关性需要更频繁更新）
 
-def _get(url, timeout=8):
+def _get(url, timeout=8) -> Optional[Any]:
+    """get"""
     t = time.time()
     if url in _CACHE and t - _CACHE[url]['ts'] < _TTL:
         return _CACHE[url]['data']

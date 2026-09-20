@@ -1,0 +1,12 @@
+{
+  "BTC": {
+    "stop_wall": 79610,
+    "support_pool": 76488,
+    "liquidation": 72596
+  },
+  "ETH": {
+    "stop_wall": 2552,
+    "support_pool": 2452,
+    "liquidation": 2376
+  }
+}

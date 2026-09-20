@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # ponytail: brahma_core_block_a 366行，核心计算，94维共享_result状态，拆分条件: 状态隔离方案成熟后
+
+from typing import Any
 """
 brahma_core_block_a.py — 技术分析层 (维度1-6)
 [设计院封印 2026-08-11 苏摩111]
@@ -242,7 +244,8 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
     rsi4 = mom['rsi_4h']
     rsid = mom['rsi_1d']
     # RSI状态描述（不评分，仅供报告使用）
-    def _rsi_state(v):
+    def _rsi_state(v) -> Any:
+        """rsi state"""
         if v >= 70: return f'超买({v:.0f})'
         if v <= 30: return f'超卖({v:.0f})'
         return f'中性({v:.0f})'
@@ -698,7 +701,8 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
         # 获取9期历史K线数据
         _klines_9 = ms.get('klines_1h', [])
         if _c1h and _h1h > _l1h and len(_klines_9) >= 2:
-            def _body_r(c, o, h, l):
+            def _body_r(c, o, h, l) -> float:
+                """body r"""
                 rng = (h - l) + 0.001
                 return ((c - l) - (h - c)) / rng  # 上下影线比例
             _br_now  = _body_r(_c1h, _o1h, _h1h, _l1h) * _c1h
@@ -822,8 +826,8 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
         if ob_map:
             breakdown['_ob_map'] = ob_map
 
-    except Exception:
-        pass  # 不影响主链路评分
+    except Exception as _e:
+        print(f"[WARN] brahma_core_block_a: _e", file=sys.stderr)
 
     return {
         's1': s1, 's2': s2, 's3': s3, 's4': s4,

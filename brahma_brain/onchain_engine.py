@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # ponytail: onchain_engine 469行，独立计算引擎，功能内聚，拆分条件: 单引擎>3000行且有完整测试
 """
+from typing import Any
 
 # STATUS: ACTIVE
 # 链上数据引擎，间接调用
@@ -13,6 +14,7 @@
 ║  评分贡献：机构视角 0~30分（接入brahma_brain.py）                 ║
 ╚══════════════════════════════════════════════════════════════════╝
 """
+import sys
 import urllib.request, json, time
 
 FAPI = "https://fapi.binance.com"
@@ -22,6 +24,7 @@ _cache: dict = {}
 _TTL = 180  # 3分钟
 
 def _get(url: str) -> dict | list | None:
+    """get"""
     now = time.time()
     if url in _cache and now - _cache[url]['ts'] < _TTL:
         return _cache[url]['data']
@@ -44,7 +47,7 @@ except Exception:
     CG_KEY = "a56a2491bca5491ca3f7c7f53b6a6963"  # fallback
 CG_BASE = "https://open-api-v4.coinglass.com"
 
-def _cg(path: str, qs: str = ''):
+def _cg(path: str, qs: str = '') -> Optional[Any]:
     """CoinGlass v4 付费 API，带TTL缓存"""
     url = f"{CG_BASE}{path}" + (f"?{qs}" if qs else '')
     now = time.time()
@@ -495,8 +498,14 @@ smart_money_engine.py — 聪明钱流向分析引擎
 # ║ Deps      : requests(fapi futures/data)
 # ╚════════════════════════════════════════════════════════════════╝
 try:
-    from brahma_brain.brahma_bus import _SESS as _HTTP, get_price as _bus_price  # [HTTP Session共享 2026-08-02 设计院自主]
-    from brahma_brain.data_cache import get_long_short_ratio as _dc_lsr
+    try:
+        from brahma_brain.brahma_bus import _SESS as _HTTP, get_price as _bus_price  # [HTTP Session共享 2026-08-02 设计院自主]
+    except ImportError:
+        from brahma_bus import _SESS as _HTTP, get_price as _bus_price  # [HTTP Session共享 2026-08-02 设计院自主]
+    try:
+        from brahma_brain.data_cache import get_long_short_ratio as _dc_lsr
+    except ImportError:
+        from data_cache import get_long_short_ratio as _dc_lsr
 except ImportError:
     try:
         from brahma_bus import _SESS as _HTTP, get_price as _bus_price
@@ -507,13 +516,14 @@ except ImportError:
         _bus_price = None
         _dc_lsr = None
 import time
-from typing import Optional
+from typing import Any, Optional
 
 _CACHE: dict = {}
 _CACHE_TTL = 120  # 2分钟
 
 
 def _get(url: str, timeout: int = 8) -> Optional[list]:
+    """get"""
     now = time.time()
     if url in _CACHE and now - _CACHE[url]['ts'] < _CACHE_TTL:
         return _CACHE[url]['data']
@@ -623,12 +633,29 @@ def get_smart_money_signal(symbol: str = 'BTCUSDT') -> dict:
         else:
             signal = 'NEUTRAL'
 
+        # [V2.0 2026-09-20 苏摩111] 聪明钱加4H周期
+        # [Fix 2026-09-20] _lr未定义 → 用_get调Binance futures data API
+        # big_pos_long_4h: topLongShortPositionRatio (大户持仓多仓比)
+        # retail_long_4h: globalLongShortAccountRatio (散户多仓比)
+        _sm_4h = {}
+        try:
+            _pos4h = _get(f'https://fapi.binance.com/futures/data/topLongShortPositionRatio?symbol={symbol}&period=4h&limit=1')
+            _ret4h = _get(f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol={symbol}&period=4h&limit=1')
+            if _pos4h:
+                _sm_4h['big_pos_long_4h'] = float(_pos4h[0].get('longAccount', 0.5))
+            if _ret4h:
+                _sm_4h['retail_long_4h'] = float(_ret4h[0].get('longAccount', 0.5))
+        except Exception as _e_643:
+            print(f'[WARN] {__name__}: {_e_643}', file=sys.stderr)
+
         result = {
             'big_acct_long':    round(ba, 4),
             'big_pos_long':     round(bp, 4),
             'retail_long':      round(rr, 4),
             'whale_retail_gap': round(whale_gap, 4),
             'pos_trend_5h':     round(pos_trend, 4),
+            'big_pos_long_4h':  round(_sm_4h.get('big_pos_long_4h', 0), 4) if _sm_4h else 0,
+            'retail_long_4h':   round(_sm_4h.get('retail_long_4h', 0), 4) if _sm_4h else 0,
             'signal':           signal,
             'score_adj':        min(max(score_adj, -5), 8),
             'note':             ' | '.join(notes) if notes else f'大户持仓={bp:.2%} 散户={rr:.2%}',
@@ -689,7 +716,10 @@ from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 # ── brahma_bus 总线接入（设计院 2026-06-29）──
 try:
-    from brahma_brain.brahma_bus import bus as _brahma_bus
+    try:
+        from brahma_brain.brahma_bus import bus as _brahma_bus
+    except ImportError:
+        from brahma_bus import bus as _brahma_bus
 except Exception:
     _brahma_bus = None
 
@@ -708,6 +738,7 @@ _CACHE = {}
 _CACHE_TTL = 300  # 5分钟缓存
 
 def _get(url: str, timeout: int = 8) -> dict | list | None:
+    """get"""
     now = time.time()
     if url in _CACHE and now - _CACHE[url]['ts'] < _CACHE_TTL:
         return _CACHE[url]['data']

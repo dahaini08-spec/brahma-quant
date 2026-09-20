@@ -38,6 +38,7 @@ FAPI  = 'https://fapi.binance.com'
 DAPI  = 'https://dapi.binance.com'
 
 def _get(url: str, timeout: int = 6) -> dict | list | None:
+    """get"""
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         with urllib.request.urlopen(req, timeout=timeout, context=_DC_SSL_CTX) as r:
@@ -232,7 +233,8 @@ def get_session_weight(utc_hour: int = None) -> dict:
     根据当前UTC时间返回时段权重
     """
     if utc_hour is None:
-        utc_hour = datetime.datetime.utcnow().hour
+        from datetime import timezone
+        utc_hour = datetime.datetime.now(timezone.utc).hour
 
     # 找当前时段
     session_name = '亚洲盘'
@@ -354,10 +356,18 @@ def enhanced_score(symbol: str, signal_dir: str) -> dict:
     # 时段权重
     try:
         session = get_session_weight()
-        sess_s = session['score']
+        # [P1-6修复 2026-09-19 苏摩111] 低流动性时段应减分不是加分
+        # 40年交易员审核: 亚洲盘0.8x=流动性低，滑点大，应减分
+        if session['vol_mult'] >= 1.3:
+            sess_s = session['score']  # 高波动时段保持加分
+        elif session['vol_mult'] >= 1.0:
+            sess_s = session['score']  # 正常时段保持
+        else:
+            sess_s = -2  # 低流动性时段(0.7-0.8x)翻转为减分
+            notes.append(f'低流动性减分 -2')
         breakdown['session'] = sess_s
         score += sess_s
-        notes.append(f'{session["session"]}({session["vol_mult"]}x) +{sess_s}')
+        notes.append(f'{session["session"]}({session["vol_mult"]}x) {"+" if sess_s >= 0 else ""}{sess_s}')
         if session['next_active']:
             notes.append(f'下一活跃: {session["next_active"]}')
     except Exception:

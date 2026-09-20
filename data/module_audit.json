@@ -1,0 +1,1182 @@
+{
+  "total": 143,
+  "active": 93,
+  "orphan": 50,
+  "orphans": [
+    {
+      "name": "llm_council_bridge",
+      "lines": 994,
+      "path": "brahma_brain/llm_council_bridge.py"
+    },
+    {
+      "name": "battlefield_intel",
+      "lines": 602,
+      "path": "brahma_brain/battlefield_intel.py"
+    },
+    {
+      "name": "brahma_cpu",
+      "lines": 587,
+      "path": "brahma_brain/brahma_cpu.py"
+    },
+    {
+      "name": "brahma_engine_v5",
+      "lines": 585,
+      "path": "brahma_brain/brahma_engine_v5.py"
+    },
+    {
+      "name": "brahma_wiring_check",
+      "lines": 563,
+      "path": "brahma_brain/brahma_wiring_check.py"
+    },
+    {
+      "name": "brahma_w4_fangcang_ml",
+      "lines": 511,
+      "path": "brahma_brain/brahma_w4_fangcang_ml.py"
+    },
+    {
+      "name": "free_llm_client",
+      "lines": 411,
+      "path": "brahma_brain/free_llm_client.py"
+    },
+    {
+      "name": "signal_selector",
+      "lines": 403,
+      "path": "brahma_brain/signal_selector.py"
+    },
+    {
+      "name": "brahma_plugins",
+      "lines": 402,
+      "path": "brahma_brain/brahma_plugins.py"
+    },
+    {
+      "name": "dag_weight_calibrator",
+      "lines": 371,
+      "path": "brahma_brain/dag_weight_calibrator.py"
+    },
+    {
+      "name": "brahma_context_injector",
+      "lines": 361,
+      "path": "brahma_brain/brahma_context_injector.py"
+    },
+    {
+      "name": "multi_tf_context_builder",
+      "lines": 361,
+      "path": "brahma_brain/multi_tf_context_builder.py"
+    },
+    {
+      "name": "brahma_brain_ai",
+      "lines": 347,
+      "path": "brahma_brain/brahma_brain_ai.py"
+    },
+    {
+      "name": "brahma_intel_layer",
+      "lines": 311,
+      "path": "brahma_brain/brahma_intel_layer.py"
+    },
+    {
+      "name": "gex_engine",
+      "lines": 303,
+      "path": "brahma_brain/gex_engine.py"
+    },
+    {
+      "name": "core_output",
+      "lines": 290,
+      "path": "brahma_brain/core_output.py"
+    },
+    {
+      "name": "macro_factor_engine",
+      "lines": 284,
+      "path": "brahma_brain/macro_factor_engine.py"
+    },
+    {
+      "name": "brahma_multiframe",
+      "lines": 262,
+      "path": "brahma_brain/brahma_multiframe.py"
+    },
+    {
+      "name": "brahma_smoke_test",
+      "lines": 230,
+      "path": "brahma_brain/brahma_smoke_test.py"
+    },
+    {
+      "name": "commodity_adapter",
+      "lines": 216,
+      "path": "brahma_brain/commodity_adapter.py"
+    },
+    {
+      "name": "brahma_w5_paper_live",
+      "lines": 210,
+      "path": "brahma_brain/brahma_w5_paper_live.py"
+    },
+    {
+      "name": "hurst_engine",
+      "lines": 199,
+      "path": "brahma_brain/hurst_engine.py"
+    },
+    {
+      "name": "sentiment_engine",
+      "lines": 197,
+      "path": "brahma_brain/sentiment_engine.py"
+    },
+    {
+      "name": "confluence_by_tf",
+      "lines": 196,
+      "path": "brahma_brain/confluence_by_tf.py"
+    },
+    {
+      "name": "brainlog",
+      "lines": 193,
+      "path": "brahma_brain/brainlog.py"
+    },
+    {
+      "name": "order_flow_engine",
+      "lines": 173,
+      "path": "brahma_brain/order_flow_engine.py"
+    },
+    {
+      "name": "orderbook_engine",
+      "lines": 141,
+      "path": "brahma_brain/orderbook_engine.py"
+    },
+    {
+      "name": "liqmap_collector",
+      "lines": 138,
+      "path": "brahma_brain/liqmap_collector.py"
+    },
+    {
+      "name": "live_price_feed",
+      "lines": 125,
+      "path": "brahma_brain/live_price_feed.py"
+    },
+    {
+      "name": "dim_ic_audit",
+      "lines": 99,
+      "path": "brahma_brain/dim_ic_audit.py"
+    },
+    {
+      "name": "fangcang_builder_30",
+      "lines": 90,
+      "path": "brahma_brain/fangcang_builder_30.py"
+    },
+    {
+      "name": "rsi_extreme_engine",
+      "lines": 86,
+      "path": "brahma_brain/rsi_extreme_engine.py"
+    },
+    {
+      "name": "bollinger_engine",
+      "lines": 71,
+      "path": "brahma_brain/bollinger_engine.py"
+    },
+    {
+      "name": "kronos_bridge",
+      "lines": 23,
+      "path": "brahma_brain/kronos_bridge.py"
+    },
+    {
+      "name": "capital_allocator",
+      "lines": 10,
+      "path": "brahma_brain/capital_allocator.py"
+    },
+    {
+      "name": "macro_calendar",
+      "lines": 10,
+      "path": "brahma_brain/macro_calendar.py"
+    },
+    {
+      "name": "market_quadrant",
+      "lines": 10,
+      "path": "brahma_brain/market_quadrant.py"
+    },
+    {
+      "name": "cvd_engine",
+      "lines": 9,
+      "path": "brahma_brain/cvd_engine.py"
+    },
+    {
+      "name": "smart_money_engine",
+      "lines": 7,
+      "path": "brahma_brain/smart_money_engine.py"
+    },
+    {
+      "name": "volume_exhaustion_engine",
+      "lines": 4,
+      "path": "brahma_brain/volume_exhaustion_engine.py"
+    },
+    {
+      "name": "signal_queue",
+      "lines": 2,
+      "path": "brahma_brain/signal_queue.py"
+    },
+    {
+      "name": "divergence_engine",
+      "lines": 2,
+      "path": "brahma_brain/divergence_engine.py"
+    },
+    {
+      "name": "signal_weight_updater",
+      "lines": 2,
+      "path": "brahma_brain/signal_weight_updater.py"
+    },
+    {
+      "name": "brahma_fangcang_unified",
+      "lines": 2,
+      "path": "brahma_brain/brahma_fangcang_unified.py"
+    },
+    {
+      "name": "fangcang_hcme_bridge",
+      "lines": 2,
+      "path": "brahma_brain/fangcang_hcme_bridge.py"
+    },
+    {
+      "name": "sl_bandit",
+      "lines": 2,
+      "path": "brahma_brain/sl_bandit.py"
+    },
+    {
+      "name": "tradfi_macro_gate",
+      "lines": 2,
+      "path": "brahma_brain/tradfi_macro_gate.py"
+    },
+    {
+      "name": "signal_integrity_gate",
+      "lines": 2,
+      "path": "brahma_brain/signal_integrity_gate.py"
+    },
+    {
+      "name": "headroom",
+      "lines": 2,
+      "path": "brahma_brain/headroom.py"
+    },
+    {
+      "name": "hcme_matcher",
+      "lines": 2,
+      "path": "brahma_brain/hcme_matcher.py"
+    }
+  ],
+  "active_modules": [
+    {
+      "name": "brahma_core",
+      "lines": 4412,
+      "imported_by": [
+        "brahma_analysis_runner",
+        "brahma_health",
+        "brahma_parallel_engine",
+        "core_scorer",
+        "brahma_mcp_server",
+        "ensemble_engine",
+        "feature_store",
+        "brahma_engine",
+        "seal_v2",
+        "pump_hunter_executor",
+        "verify_4_phases",
+        "seal_v2",
+        "pump_hunter_executor",
+        "verify_4_phases"
+      ]
+    },
+    {
+      "name": "smc_engine",
+      "lines": 3132,
+      "imported_by": [
+        "brahma_core_entry",
+        "divergence_engine",
+        "brahma_core_step4",
+        "brahma_analysis_runner",
+        "brahma_full_report",
+        "brahma_core",
+        "smc_engine"
+      ]
+    },
+    {
+      "name": "fangcang_engine",
+      "lines": 2998,
+      "imported_by": [
+        "brahma_decision_engine",
+        "data_cache",
+        "brahma_context_injector",
+        "brahma_fangcang_unified",
+        "brahma_core",
+        "formatter",
+        "fangcang_hcme_bridge",
+        "llm_council_bridge",
+        "fangcang_engine",
+        "hcme_matcher",
+        "price_zone_engine",
+        "signal_settler",
+        "structure_trigger",
+        "brahma_1hao_analysis",
+        "signal_settler",
+        "structure_trigger",
+        "brahma_1hao_analysis"
+      ]
+    },
+    {
+      "name": "position_sizer",
+      "lines": 2133,
+      "imported_by": [
+        "position_sizer",
+        "brahma_core_step4",
+        "capital_allocator",
+        "brahma_full_report",
+        "brahma_core",
+        "llm_council_bridge",
+        "sl_bandit",
+        "headroom",
+        "signal_settler",
+        "auto_executor",
+        "signal_settler",
+        "auto_executor"
+      ]
+    },
+    {
+      "name": "tradfi_signal_layer",
+      "lines": 1783,
+      "imported_by": [
+        "brahma_full_report",
+        "brahma_core",
+        "tradfi_signal_layer",
+        "signal_quality_engine",
+        "tradfi_macro_gate"
+      ]
+    },
+    {
+      "name": "trader_brain",
+      "lines": 1691,
+      "imported_by": [
+        "brahma_core",
+        "verify_4_phases",
+        "brahma_manual_analysis",
+        "verify_4_phases",
+        "brahma_manual_analysis"
+      ]
+    },
+    {
+      "name": "brahma_analysis_runner",
+      "lines": 1653,
+      "imported_by": [
+        "brahma_analysis_runner",
+        "brahma_full_report",
+        "signal_change_detector",
+        "brahma_1hao_analysis",
+        "signal_change_detector",
+        "brahma_1hao_analysis"
+      ]
+    },
+    {
+      "name": "brahma_experience_engine",
+      "lines": 1559,
+      "imported_by": [
+        "brahma_full_report",
+        "brahma_core",
+        "signal_settler",
+        "brahma_1hao_analysis",
+        "signal_settler",
+        "brahma_1hao_analysis"
+      ]
+    },
+    {
+      "name": "signal_quality_engine",
+      "lines": 1462,
+      "imported_by": [
+        "signal_queue",
+        "signal_weight_updater",
+        "brahma_analysis_runner",
+        "brahma_health",
+        "brahma_full_report",
+        "brahma_core",
+        "signal_quality_engine",
+        "signal_integrity_gate",
+        "signal_settler",
+        "brahma_1hao_analysis",
+        "signal_settler",
+        "brahma_1hao_analysis"
+      ]
+    },
+    {
+      "name": "regime_scorer",
+      "lines": 1302,
+      "imported_by": [
+        "position_sizer",
+        "brahma_analysis_runner",
+        "market_state",
+        "brahma_core",
+        "regime_scorer",
+        "market_quadrant",
+        "brahma_core_analyze_steps",
+        "universal_asset_router"
+      ]
+    },
+    {
+      "name": "volume_unified",
+      "lines": 1164,
+      "imported_by": [
+        "brahma_core_entry",
+        "brahma_core_step4",
+        "brahma_core",
+        "cvd_engine",
+        "enhanced_signal_engine",
+        "brahma_core_block_b",
+        "volume_exhaustion_engine"
+      ]
+    },
+    {
+      "name": "formatter",
+      "lines": 1155,
+      "imported_by": [
+        "brahma_analysis_runner",
+        "core_output",
+        "brahma_health",
+        "formatter",
+        "brahma_engine"
+      ]
+    },
+    {
+      "name": "brahma_full_report",
+      "lines": 1140,
+      "imported_by": [
+        "brahma_health",
+        "brahma_mcp_server",
+        "ai4trade_publisher",
+        "ai4trade_publisher"
+      ]
+    },
+    {
+      "name": "onchain_engine",
+      "lines": 1118,
+      "imported_by": [
+        "brahma_core_entry",
+        "brahma_core_step4",
+        "brahma_core",
+        "regime_scorer",
+        "smart_money_engine"
+      ]
+    },
+    {
+      "name": "liq_density_engine",
+      "lines": 1107,
+      "imported_by": [
+        "brahma_core_entry",
+        "brahma_core_step4",
+        "s7_liq_config",
+        "brahma_core",
+        "brahma_core_block_b",
+        "smc_engine"
+      ]
+    },
+    {
+      "name": "brahma_health",
+      "lines": 1082,
+      "imported_by": [
+        "brahma_full_report",
+        "brahma_360_watchdog",
+        "brahma_360_watchdog"
+      ]
+    },
+    {
+      "name": "narrative_engine",
+      "lines": 1078,
+      "imported_by": [
+        "position_sizer",
+        "brahma_core_entry",
+        "brahma_core_step4",
+        "antifragile_guard",
+        "macro_calendar",
+        "us_session_gate",
+        "brahma_full_report",
+        "narrative_engine",
+        "oi_advanced_scanner",
+        "signal_queue_writer",
+        "oi_advanced_scanner",
+        "signal_queue_writer"
+      ]
+    },
+    {
+      "name": "brahma_360",
+      "lines": 924,
+      "imported_by": [
+        "brahma_manual_analysis",
+        "brahma_manual_analysis"
+      ]
+    },
+    {
+      "name": "brahma_inference",
+      "lines": 874,
+      "imported_by": [
+        "brahma_full_report",
+        "trader_brain",
+        "brahma_manual_analysis",
+        "brahma_manual_analysis"
+      ]
+    },
+    {
+      "name": "gex_unified",
+      "lines": 873,
+      "imported_by": [
+        "data_cache",
+        "brahma_full_report",
+        "brahma_core",
+        "gex_unified",
+        "price_zone_engine",
+        "brahma_1hao_analysis",
+        "brahma_1hao_analysis"
+      ]
+    },
+    {
+      "name": "brahma_core_entry",
+      "lines": 855,
+      "imported_by": [
+        "brahma_core"
+      ]
+    },
+    {
+      "name": "brahma_core_block_a",
+      "lines": 832,
+      "imported_by": [
+        "brahma_core_block_a",
+        "brahma_core"
+      ]
+    },
+    {
+      "name": "market_state",
+      "lines": 770,
+      "imported_by": [
+        "signal_selector"
+      ]
+    },
+    {
+      "name": "price_zone_engine",
+      "lines": 741,
+      "imported_by": [
+        "auto_executor",
+        "brahma_1hao_analysis",
+        "auto_executor",
+        "brahma_1hao_analysis"
+      ]
+    },
+    {
+      "name": "data_cache",
+      "lines": 694,
+      "imported_by": [
+        "position_sizer",
+        "trigger_15m",
+        "data_cache",
+        "volume_unified",
+        "brahma_analysis_runner",
+        "onchain_engine",
+        "har_rv_engine",
+        "signal_quality_engine",
+        "multi_tf_context_builder",
+        "weekly_monthly_anchor",
+        "anti_manipulation_engine",
+        "cross_market_engine",
+        "hurst_engine",
+        "smc_engine",
+        "signal_15m_engine",
+        "auto_executor",
+        "bull_bear_engine",
+        "btc_regime_watcher",
+        "brahma_daily_report",
+        "whale_monitor",
+        "news_event_guard",
+        "brahma_1hao_analysis",
+        "auto_executor",
+        "bull_bear_engine",
+        "btc_regime_watcher",
+        "brahma_daily_report",
+        "whale_monitor",
+        "news_event_guard",
+        "brahma_1hao_analysis"
+      ]
+    },
+    {
+      "name": "signal_15m_engine",
+      "lines": 663,
+      "imported_by": [
+        "brahma_analysis_runner"
+      ]
+    },
+    {
+      "name": "brahma_bus",
+      "lines": 658,
+      "imported_by": [
+        "position_sizer",
+        "trigger_15m",
+        "regime_hmm_v2",
+        "volume_unified",
+        "onchain_engine",
+        "brahma_health",
+        "timing_filter",
+        "brahma_bus",
+        "tradfi_signal_layer",
+        "weekly_monthly_anchor",
+        "anti_manipulation_engine",
+        "enhanced_signal_engine",
+        "cross_market_engine",
+        "smc_engine",
+        "microstructure_engine",
+        "liq_density_engine",
+        "signal_watcher",
+        "auto_executor",
+        "bull_bear_engine",
+        "brahma_daily_report",
+        "whale_monitor",
+        "brahma_1hao_analysis",
+        "signal_watcher",
+        "auto_executor",
+        "bull_bear_engine",
+        "brahma_daily_report",
+        "whale_monitor",
+        "brahma_1hao_analysis"
+      ]
+    },
+    {
+      "name": "brahma_core_step4",
+      "lines": 637,
+      "imported_by": [
+        "brahma_core",
+        "core_extra"
+      ]
+    },
+    {
+      "name": "brahma_decision_engine",
+      "lines": 555,
+      "imported_by": [
+        "brahma_core",
+        "auto_executor",
+        "brahma_state_refresh",
+        "brahma_1hao_analysis",
+        "auto_executor",
+        "brahma_state_refresh",
+        "brahma_1hao_analysis"
+      ]
+    },
+    {
+      "name": "cross_market_engine",
+      "lines": 540,
+      "imported_by": [
+        "brahma_1hao_analysis",
+        "brahma_1hao_analysis"
+      ]
+    },
+    {
+      "name": "portfolio_optimizer",
+      "lines": 514,
+      "imported_by": [
+        "auto_executor",
+        "brahma_manual_analysis",
+        "auto_executor",
+        "brahma_manual_analysis"
+      ]
+    },
+    {
+      "name": "trigger_15m",
+      "lines": 505,
+      "imported_by": [
+        "brahma_manual_analysis",
+        "brahma_manual_analysis"
+      ]
+    },
+    {
+      "name": "brahma_brain_prompt",
+      "lines": 458,
+      "imported_by": [
+        "brahma_brain_ai"
+      ]
+    },
+    {
+      "name": "anti_manipulation_engine",
+      "lines": 438,
+      "imported_by": [
+        "brahma_analysis_runner",
+        "brahma_1hao_analysis",
+        "brahma_manual_analysis",
+        "brahma_1hao_analysis",
+        "brahma_manual_analysis"
+      ]
+    },
+    {
+      "name": "universal_asset_router",
+      "lines": 408,
+      "imported_by": [
+        "brahma_parallel_engine",
+        "brahma_full_report",
+        "brahma_core",
+        "auto_executor",
+        "auto_executor"
+      ]
+    },
+    {
+      "name": "brahma_core_block_b",
+      "lines": 388,
+      "imported_by": [
+        "brahma_core"
+      ]
+    },
+    {
+      "name": "enhanced_signal_engine",
+      "lines": 386,
+      "imported_by": [
+        "brahma_manual_analysis",
+        "brahma_manual_analysis"
+      ]
+    },
+    {
+      "name": "timing_filter",
+      "lines": 379,
+      "imported_by": [
+        "brahma_analysis_runner",
+        "brahma_core"
+      ]
+    },
+    {
+      "name": "lsr_oi_engine",
+      "lines": 377,
+      "imported_by": [
+        "brahma_manual_analysis",
+        "brahma_manual_analysis"
+      ]
+    },
+    {
+      "name": "ambuscade_engine",
+      "lines": 375,
+      "imported_by": [
+        "trader_brain"
+      ]
+    },
+    {
+      "name": "ensemble_engine",
+      "lines": 366,
+      "imported_by": [
+        "ai_council_bridge",
+        "brahma_core",
+        "brahma_manual_analysis",
+        "brahma_manual_analysis"
+      ]
+    },
+    {
+      "name": "antifragile_guard",
+      "lines": 359,
+      "imported_by": [
+        "risk_engine"
+      ]
+    },
+    {
+      "name": "feature_store",
+      "lines": 359,
+      "imported_by": [
+        "brahma_core"
+      ]
+    },
+    {
+      "name": "circuit_breaker",
+      "lines": 358,
+      "imported_by": [
+        "brahma_analysis_runner",
+        "risk_engine",
+        "auto_executor",
+        "auto_executor"
+      ]
+    },
+    {
+      "name": "cross_asset_gate",
+      "lines": 348,
+      "imported_by": [
+        "brahma_analysis_runner",
+        "brahma_core",
+        "auto_executor",
+        "auto_executor"
+      ]
+    },
+    {
+      "name": "microstructure_engine",
+      "lines": 329,
+      "imported_by": [
+        "brahma_manual_analysis",
+        "brahma_manual_analysis"
+      ]
+    },
+    {
+      "name": "risk_engine",
+      "lines": 315,
+      "imported_by": [
+        "trader_brain",
+        "brahma_manual_analysis",
+        "brahma_manual_analysis"
+      ]
+    },
+    {
+      "name": "brahma_core_analyze_steps",
+      "lines": 310,
+      "imported_by": [
+        "core_data",
+        "brahma_core"
+      ]
+    },
+    {
+      "name": "math_utils",
+      "lines": 290,
+      "imported_by": [
+        "brahma_core_block_a",
+        "grade_utils",
+        "math_utils",
+        "regime_scorer",
+        "smc_engine",
+        "fangcang_engine",
+        "bull_bear_engine",
+        "oi_advanced_scanner",
+        "bull_bear_engine",
+        "oi_advanced_scanner"
+      ]
+    },
+    {
+      "name": "chop_breakout_detector",
+      "lines": 290,
+      "imported_by": [
+        "brahma_state_refresh",
+        "brahma_state_refresh"
+      ]
+    },
+    {
+      "name": "range_engine",
+      "lines": 287,
+      "imported_by": [
+        "brahma_core_block_a",
+        "brahma_manual_analysis",
+        "brahma_manual_analysis"
+      ]
+    },
+    {
+      "name": "dag_executor",
+      "lines": 286,
+      "imported_by": [
+        "dag_executor",
+        "brahma_mcp_server",
+        "brahma_core",
+        "seal_v2",
+        "seal_v2"
+      ]
+    },
+    {
+      "name": "llm_council",
+      "lines": 267,
+      "imported_by": [
+        "ai_council_bridge",
+        "brahma_1hao_analysis",
+        "brahma_1hao_analysis"
+      ]
+    },
+    {
+      "name": "drawdown_tracker",
+      "lines": 254,
+      "imported_by": [
+        "risk_engine"
+      ]
+    },
+    {
+      "name": "reasoning_client",
+      "lines": 252,
+      "imported_by": [
+        "brahma_1hao_analysis",
+        "brahma_1hao_analysis"
+      ]
+    },
+    {
+      "name": "brahma_parallel_engine",
+      "lines": 249,
+      "imported_by": [
+        "brahma_analysis_runner"
+      ]
+    },
+    {
+      "name": "regime_hmm_v2",
+      "lines": 247,
+      "imported_by": [
+        "auto_executor",
+        "auto_executor"
+      ]
+    },
+    {
+      "name": "ai_council_bridge",
+      "lines": 246,
+      "imported_by": [
+        "brahma_core",
+        "brahma_manual_analysis",
+        "brahma_manual_analysis"
+      ]
+    },
+    {
+      "name": "brahma_core_block_c",
+      "lines": 240,
+      "imported_by": [
+        "brahma_core"
+      ]
+    },
+    {
+      "name": "online_learner_v2",
+      "lines": 238,
+      "imported_by": [
+        "ai_council_bridge"
+      ]
+    },
+    {
+      "name": "ic_tracker",
+      "lines": 230,
+      "imported_by": [
+        "brahma_manual_analysis",
+        "brahma_manual_analysis"
+      ]
+    },
+    {
+      "name": "ev_feedback",
+      "lines": 227,
+      "imported_by": [
+        "ai_council_bridge",
+        "brahma_full_report",
+        "brahma_1hao_analysis",
+        "brahma_1hao_analysis"
+      ]
+    },
+    {
+      "name": "ssi_engine",
+      "lines": 220,
+      "imported_by": [
+        "brahma_core"
+      ]
+    },
+    {
+      "name": "condition_order_matrix",
+      "lines": 220,
+      "imported_by": [
+        "auto_executor",
+        "auto_executor"
+      ]
+    },
+    {
+      "name": "pattern_engine",
+      "lines": 219,
+      "imported_by": [
+        "brahma_manual_analysis",
+        "brahma_manual_analysis"
+      ]
+    },
+    {
+      "name": "weekly_monthly_anchor",
+      "lines": 218,
+      "imported_by": [
+        "brahma_full_report",
+        "brahma_core",
+        "fangcang_engine",
+        "brahma_1hao_analysis",
+        "brahma_1hao_analysis"
+      ]
+    },
+    {
+      "name": "signal_settlement_engine",
+      "lines": 208,
+      "imported_by": [
+        "signal_selector",
+        "brahma_manual_analysis",
+        "brahma_manual_analysis"
+      ]
+    },
+    {
+      "name": "cross_market_alpha",
+      "lines": 197,
+      "imported_by": [
+        "ensemble_engine",
+        "brahma_manual_analysis",
+        "brahma_manual_analysis"
+      ]
+    },
+    {
+      "name": "vol_beta_engine",
+      "lines": 180,
+      "imported_by": []
+    },
+    {
+      "name": "har_rv_engine",
+      "lines": 179,
+      "imported_by": [
+        "kronos_bridge",
+        "dag_executor"
+      ]
+    },
+    {
+      "name": "regime_config",
+      "lines": 172,
+      "imported_by": [
+        "brahma_core"
+      ]
+    },
+    {
+      "name": "dharma_nodes",
+      "lines": 167,
+      "imported_by": [
+        "brahma_core"
+      ]
+    },
+    {
+      "name": "eval_runtime",
+      "lines": 164,
+      "imported_by": [
+        "brahma_analysis_runner",
+        "verify_4_phases",
+        "verify_4_phases"
+      ]
+    },
+    {
+      "name": "us_session_gate",
+      "lines": 160,
+      "imported_by": [
+        "brahma_core",
+        "brahma_manual_analysis",
+        "brahma_manual_analysis"
+      ]
+    },
+    {
+      "name": "confluence_tf_weights",
+      "lines": 158,
+      "imported_by": [
+        "confluence_by_tf",
+        "liq_density_engine"
+      ]
+    },
+    {
+      "name": "online_bayes",
+      "lines": 154,
+      "imported_by": [
+        "ai_council_bridge"
+      ]
+    },
+    {
+      "name": "brahma_mcp_server",
+      "lines": 152,
+      "imported_by": [
+        "seal_v2",
+        "seal_v2"
+      ]
+    },
+    {
+      "name": "core_factors",
+      "lines": 151,
+      "imported_by": [
+        "core_factors"
+      ]
+    },
+    {
+      "name": "fangcang_vector_db",
+      "lines": 144,
+      "imported_by": [
+        "fangcang_engine"
+      ]
+    },
+    {
+      "name": "data_contract_validator",
+      "lines": 136,
+      "imported_by": [
+        "data_contract_validator"
+      ]
+    },
+    {
+      "name": "core_extra",
+      "lines": 135,
+      "imported_by": [
+        "core_extra"
+      ]
+    },
+    {
+      "name": "volatility_context",
+      "lines": 134,
+      "imported_by": [
+        "brahma_core"
+      ]
+    },
+    {
+      "name": "core_scorer",
+      "lines": 132,
+      "imported_by": [
+        "core_scorer"
+      ]
+    },
+    {
+      "name": "core_data",
+      "lines": 131,
+      "imported_by": [
+        "core_data"
+      ]
+    },
+    {
+      "name": "disk_cache",
+      "lines": 107,
+      "imported_by": []
+    },
+    {
+      "name": "jev_judgment_log",
+      "lines": 101,
+      "imported_by": [
+        "signal_settler",
+        "verify_4_phases",
+        "signal_settler",
+        "verify_4_phases"
+      ]
+    },
+    {
+      "name": "nerve_bus_writer",
+      "lines": 99,
+      "imported_by": [
+        "brahma_analysis_runner",
+        "brahma_core"
+      ]
+    },
+    {
+      "name": "dim_trace_writer",
+      "lines": 97,
+      "imported_by": [
+        "brahma_core",
+        "seal_v2",
+        "seal_v2"
+      ]
+    },
+    {
+      "name": "cost_adapter",
+      "lines": 96,
+      "imported_by": [
+        "cost_adapter",
+        "trader_brain"
+      ]
+    },
+    {
+      "name": "causal_regime_verifier",
+      "lines": 96,
+      "imported_by": [
+        "brahma_core_analyze_steps"
+      ]
+    },
+    {
+      "name": "brahma_engine",
+      "lines": 41,
+      "imported_by": [
+        "brahma_1hao_analysis",
+        "brahma_1hao_analysis"
+      ]
+    },
+    {
+      "name": "s7_liq_config",
+      "lines": 18,
+      "imported_by": [
+        "brahma_core_block_b"
+      ]
+    },
+    {
+      "name": "grade_utils",
+      "lines": 13,
+      "imported_by": [
+        "signal_watcher",
+        "auto_execute_gate",
+        "signal_watcher",
+        "auto_execute_gate"
+      ]
+    }
+  ]
+}

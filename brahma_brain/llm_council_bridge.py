@@ -158,7 +158,7 @@ def _load_cache() -> Dict:
     return {}
 
 
-def _save_cache(cache: Dict):
+def _save_cache(cache: Dict) -> None:
     """持久化缓存"""
     try:
         LOG_DIR.mkdir(exist_ok=True)
@@ -206,8 +206,8 @@ def _call_llm(prompt: str, agent_name: str, model: str | None = None) -> Optiona
             m = re.search(r'\{.*\}', resp, re.DOTALL)
             if m:
                 return json.loads(m.group())
-    except ImportError:
-        pass
+    except ImportError as _e:
+        print(f"[WARN] llm_council_bridge: _e", file=sys.stderr)
     except Exception as e:
         logger.debug(f"[{agent_name}] LLM调用失败: {e}")
 
@@ -380,8 +380,8 @@ def _macro_agent_review(signal: Dict, market_ctx: Dict) -> Dict:
                     + '\n'.join(case_lines) +
                     '\n注意：跨资产参照，驱动机制与加密货币不同，仅作宏观环境定位参考'
                 )
-    except Exception:
-        pass  # TradFi注入失败不影响主流程
+    except Exception as _e:
+        print(f"[WARN] llm_council_bridge: _e", file=sys.stderr)
 
     prompt = MACRO_AGENT_PROMPT.format(
         symbol=symbol, direction=direction, score=score, regime=regime,
@@ -654,8 +654,8 @@ def review(
         if _eth_px and _eth_px > 0:
             ctx['eth_price_realtime'] = round(_eth_px, 2)
             flat_signal.setdefault('_macro_ctx', {})['eth_price'] = round(_eth_px, 2)
-    except Exception:
-        pass  # 实时价格注入失败不阻塞主流程
+    except Exception as _e:
+        print(f"[WARN] llm_council_bridge: _e", file=sys.stderr)
 
     # [设计院 2026-08-04] 注入2: 历史相似信号 — 找最近10条同体制同方向已结算信号
     try:
@@ -873,7 +873,7 @@ def review(
 
 # 5. Shadow Log（达摩院验证数据）
 
-def _shadow_log(signal: Dict, council: Dict):
+def _shadow_log(signal: Dict, council: Dict) -> None:
     """记录shadow模式建议 [升级 2026-08-04: 完整字段+裁决追踪]"""
     try:
         LOG_DIR.mkdir(exist_ok=True)

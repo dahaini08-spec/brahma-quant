@@ -3,21 +3,24 @@ plugin_macro_l0.py — L0宏观守门插件
 [P2-A/D 2026-08-31 苏摩111封印]
 自动被 brahma_brain/plugins/__init__.py 加载
 """
+
+from typing import Any, Optional
 import urllib.request, json, time
 
 _CACHE = {}
 _CACHE_TTL = 14400  # 4H缓存
 
 
-def _fetch(url, timeout=6):
+def _fetch(url, timeout=6) -> Optional[Any]:
+    """fetch"""
     try:
         with urllib.request.urlopen(url, timeout=timeout) as r:
             return json.loads(r.read())
-    except:
+    except Exception as _e:
         return None
 
 
-def _get_dxy():
+def _get_dxy() -> Optional[Any]:
     """用EUR/USD反向代理DXY"""
     cached = _CACHE.get('dxy')
     if cached and time.time() - cached['ts'] < _CACHE_TTL:
@@ -33,7 +36,7 @@ def _get_dxy():
     return None
 
 
-def _get_fear_greed():
+def _get_fear_greed() -> Optional[Any]:
     """恐贪指数"""
     cached = _CACHE.get('fg')
     if cached and time.time() - cached['ts'] < _CACHE_TTL:

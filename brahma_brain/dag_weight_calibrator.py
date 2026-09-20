@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+from typing import Any
 """
 dag_weight_calibrator.py — DAG权重自动校准器（蘑菇体机制）
 ============================================================
@@ -47,13 +49,13 @@ MIN_WEIGHT = 0.3    # 最低权重（不归零）
 MAX_WEIGHT = 2.0    # 最高权重
 
 
-def load_evidence():
+def load_evidence() -> Any:
     """加载达摩院铁证"""
     with open(EVIDENCE_FILE) as f:
         return json.load(f)
 
 
-def load_live_signals():
+def load_live_signals() -> Any:
     """加载实盘信号日志"""
     signals = []
     if SIGNAL_LOG.exists():
@@ -62,12 +64,12 @@ def load_live_signals():
                 if line.strip():
                     try:
                         signals.append(json.loads(line))
-                    except:
-                        pass
+                    except Exception as _e:
+                        print(f"[WARN] dag_weight_calibrator: _e", file=sys.stderr)
     return signals
 
 
-def compute_dim_wr_by_regime(signals, evidence):
+def compute_dim_wr_by_regime(signals, evidence) -> tuple:
     """
     计算每个维度在不同体制×方向下的实际WR
     返回: {(regime, direction): {dim_name: {'wr': float, 'n': int}}}
@@ -126,7 +128,7 @@ def compute_dim_wr_by_regime(signals, evidence):
     return regime_dir_wr, dim_wr
 
 
-def calibrate_weights(config, regime_dir_wr, dim_wr, prediction_acc=None, data_health=None):
+def calibrate_weights(config, regime_dir_wr, dim_wr, prediction_acc=None, data_health=None) -> tuple:
     """
     校准scoring_config的weights
     规则：
@@ -261,7 +263,8 @@ def calibrate_weights(config, regime_dir_wr, dim_wr, prediction_acc=None, data_h
     return calibrated, changes
 
 
-def main():
+def main() -> Any:
+    """main"""
     print("=" * 60)
     print("DAG权重自动校准器（蘑菇体机制）")
     print("=" * 60)

@@ -50,13 +50,15 @@ def get_ssi_level(ssi: float) -> tuple:
 
 # ─── 状态持久化 ───────────────────────────────────────────────
 def _load_state(symbol: str) -> dict:
+    """load state"""
     try:
         if _STATE_PATH.exists():
             return json.loads(_STATE_PATH.read_text()).get(symbol, {})
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
-def _save_state(symbol: str, data: dict):
+def _save_state(symbol: str, data: dict) -> None:
+    """save state"""
     try:
         _STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
         all_s = {}

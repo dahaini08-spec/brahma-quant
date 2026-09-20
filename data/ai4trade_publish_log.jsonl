@@ -64,3 +64,8 @@
 {"signal_key": "BTCUSDT_SHORT_2026091701", "signal_id": 4497365, "symbol": "BTCUSDT", "ts": "2026-09-17T01:35:00.288237+00:00"}
 {"signal_key": "BTCUSDT_SHORT_2026091702", "signal_id": 4500868, "symbol": "BTCUSDT", "ts": "2026-09-17T02:01:01.855597+00:00"}
 {"signal_key": "BTCUSDT_LONG_2026091704", "signal_id": 4524877, "symbol": "BTCUSDT", "ts": "2026-09-17T04:55:10.993703+00:00"}
+{"signal_key": "HYPEUSDT_LONG_2026091812", "signal_id": 4780581, "symbol": "HYPEUSDT", "ts": "2026-09-18T12:25:15.422276+00:00"}
+{"signal_key": "XRPUSDT_LONG_2026091812", "signal_id": 4780640, "symbol": "XRPUSDT", "ts": "2026-09-18T12:25:39.347135+00:00"}
+{"signal_key": "BTCUSDT_LONG_2026091907", "signal_id": 4931597, "symbol": "BTCUSDT", "ts": "2026-09-19T07:00:52.563055+00:00"}
+{"signal_key": "ETHUSDT_LONG_2026091907", "signal_id": 4931793, "symbol": "ETHUSDT", "ts": "2026-09-19T07:01:12.176030+00:00"}
+{"signal_key": "BTCUSDT_LONG_2026092009", "signal_id": 5153168, "symbol": "BTCUSDT", "ts": "2026-09-20T09:01:10.269707+00:00"}

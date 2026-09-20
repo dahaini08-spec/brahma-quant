@@ -75,7 +75,6 @@ def _load() -> dict:
         'champion_params': {},
         'blacklist': list(BLACKLIST_PERMANENT),
         'global': {
-            'min_score': 158,
             'default_sl': 2.0,
             'default_mh': 12,
             'default_pos': 0.05,
@@ -151,9 +150,6 @@ def push_m01(results: dict, min_n: int = 30, min_pf: float = 1.3):
                 'ts':         _ts(),
             }
             updated += 1
-
-        # 更新全局最优 MIN_SCORE（基于M01铁证 thr=160品种均PF最高）
-        state['global']['min_score'] = 158  # M01铁证安全边际
 
         _save(state)
         print(f'[M01] 写入{updated}品种专项参数 | 跳过黑名单{skipped_blacklist}个')
@@ -393,7 +389,6 @@ def push_m08(champion: dict):
         state['champion_params']['_ts'] = _ts()
         # 更新全局默认参数
         if champion.get('ci99_low', 0) >= 1.5:
-            state['global']['min_score']  = champion.get('thr', 158)
             state['global']['default_sl'] = champion.get('sl',  2.0)
             state['global']['default_mh'] = champion.get('mh',  12)
             print(f'[M08] 🏆 冠军参数已锁定: {champion}')
@@ -631,7 +626,7 @@ def status_report():
     print()
     print(f'  黑名单: {state.get("blacklist",[])}')
     g = state.get('global', {})
-    print(f'  全局参数: MIN_SCORE={g.get("min_score")} default_sl={g.get("default_sl")} '
+    print(f'  全局参数: default_sl={g.get("default_sl")} '
           f'mh={g.get("default_mh")} risk={g.get("risk_per_trade",0)*100:.1f}%/笔')
     print('╚══════════════════════════════════════════════════╝')
 
@@ -687,9 +682,6 @@ def update_thresholds(new_thr: int) -> int:
             updated += 1
     # 更新 global
     g = state.setdefault('global', {})
-    if g.get('min_score', 999) != new_thr:
-        g['min_score'] = new_thr
-        updated += 1
     _save(state)
     print(f'[DharmaBus] update_thresholds: {new_thr} → {updated}项已更新')
     return updated

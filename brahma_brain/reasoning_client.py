@@ -136,6 +136,7 @@ def reasoning_gate(result: dict, inject_context: bool = True) -> dict:
     import time
     t0 = time.time()
 
+    _input = result  # 保存原始输入，不被后续覆盖
     symbol     = result.get('symbol', '')
     regime     = result.get('regime', result.get('market_state', 'CHOP_MID'))
     signal_dir = result.get('signal_dir', result.get('direction', 'LONG'))
@@ -162,19 +163,38 @@ def reasoning_gate(result: dict, inject_context: bool = True) -> dict:
                 include_cases=False, max_chars=800
             )
         except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-    # ── 构建LLM提示词 ─────────────────────────────────────────────
-    score_str = f'{score:.0f}'
+    # ── 构建LLM提示词 [P0改革 2026-09-19] ─────────────────────────
+    # 废除score做判断依据：score IC≈0，低分ENTER PnL>高分
+    # 改用结构维度（FVG/OB/清算/OI/聪明钱）做风控判断
     bd_str = ''
     bd = result.get('confluence', {}).get('breakdown', {})
     if bd:
         top_items = sorted(bd.items(), key=lambda x: abs(x[1]) if isinstance(x[1], (int,float)) else 0, reverse=True)[:5]
         bd_str = ' | '.join(f'{k}={v}' for k,v in top_items if isinstance(v, (int,float)))
 
+    # 结构维度摘要（替代score）
+    _fvg_dir = result.get('fvg_dir', result.get('structure_dir', 'UNKNOWN'))
+    _oi_signal = result.get('oi_signal', 'UNKNOWN')
+    _liq_near = result.get('liq_nearest', 0)
+    _hurst = result.get('hurst', 0)
+    _kappa = result.get('kappa', 0)
+    _big_long = result.get('big_long', 50)
+
     prompt = f"""{memory_ctx}
 
-你是梵天风控专家（RiskAgent）。基于以上专有数据，评估此信号：
-标的={symbol} 体制={regime} 方向={signal_dir} 评分={score_str}
-评分分项（TOP5）: {bd_str}
+你是梵天风控专家（RiskAgent）。基于以下结构维度数据评估此信号：
+标的={symbol} 体制={regime} 方向={signal_dir}
+FVG方向={_fvg_dir} | OI信号={_oi_signal} | 大户多头={_big_long:.0f}%
+Hurst={_hurst:.3f} | κ={_kappa:.3f} | 清算目标=${_liq_near:,.0f}
+核心维度（TOP5）: {bd_str}
+
+⚠️ 体制判定由regime_scorer独立完成，具有最高权威性。
+   - 死穴（仅这两组=BLOCK）：BEAR_TREND+LONG / BEAR_RECOVERY+SHORT
+   - 顺势 = 方向与体制策略一致 → 倾向PASS
+   - 逆势 = 方向与体制策略相反 → 倾向WARN或BLOCK
+   - 只有存在明确风控风险（清算磁铁极近、RSI极端逆势、大户方向严重矛盾）才BLOCK
+   - score不做门控，仅供仓位参考
+   - CHOP_MID+LONG不是死穴，不应BLOCK，最多WARN
 
 请直接输出JSON（无其他文字）：
 {{"verdict":"PASS|WARN|BLOCK","confidence":0.0~1.0,"reason":"<20字核心风险>"}}
@@ -210,18 +230,23 @@ PASS=正常 WARN=降分8 BLOCK=拒绝执行"""
             elif 'warn' in raw_l:
                 verdict, reason = 'WARN', 'LLM关键词:WARN'
 
-    result = {
+    # ── [Phase 3 2026-09-19 苏摩111] 保存判断日志 ──
+    # [P0修复] 传参修正：原始输入=_input_result，判断结果=_gate_result
+    _gate_result = {
         'verdict':    verdict,
         'confidence': confidence,
         'reason':     reason,
         'elapsed':    elapsed,
     }
-
-    # ── [Phase 3 2026-09-19 苏摩111] 保存判断日志 ──
     try:
         from jev_judgment_log import log_judgment
-        log_judgment(result.get('symbol', ''), result, {'regime': result.get('regime', ''), 'signal_dir': result.get('direction', ''), 'score_final': result.get('score', 0)}, result)
-    except Exception:
-        pass
+        log_judgment(
+            symbol,
+            _gate_result,  # judgment
+            {'regime': regime, 'signal_dir': signal_dir, 'score_final': score},  # market_state
+            _gate_result   # result (冗余但兼容签名)
+        )
+    except Exception as _e:
+        print(f"[WARN] reasoning_client: _e", file=sys.stderr)
 
-    return result
+    return _gate_result

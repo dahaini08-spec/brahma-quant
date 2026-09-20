@@ -55,7 +55,7 @@ def scan_d1_modules() -> list:
                     'brahma_core_block_a.py','brahma_core_block_b.py','brahma_core_block_c.py',
                     'brahma_core_analyze_steps.py','brahma_core_step4.py']:
             try: _main_chain += (_brain/_f).read_text(errors='ignore')
-            except:
+            except Exception as _e:
                 import sys as _sys_ep; print(f"[EXCEPT-PASS] brahma_360.py:L58", file=_sys_ep.stderr)
                 pass
         # 已知合法孤立模块（有明确用途不需主链路直接引用）
@@ -173,7 +173,7 @@ def scan_d1_modules() -> list:
             if _scan_dir.exists():
                 for _sf in _scan_dir.glob('*.py'):
                     try: _all_project_src += _sf.read_text(errors='ignore')
-                    except: pass
+                    except Exception as _e: print(f'[WARN] brahma_360: {_e}', file=sys.stderr)
         # crontab也算引用
         _crontab_src = ''
         _ct_path = _root / 'brahma_crontab.txt'
@@ -320,14 +320,12 @@ def _has_open_positions() -> bool:
         import json as _j
         state = _j.load(open(_DATA / 'brahma_state.json'))
         return any(p.get('status') == 'OPEN' for p in state.get('positions', []))
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] brahma_360: {_e}', file=sys.stderr)
     try:
         import json as _j
         wp = _j.load(open(_DATA / 'wuqu_positions.json'))
         return any(p.get('status') == 'OPEN' for p in wp)
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] brahma_360: {_e}', file=sys.stderr)
     return False
 
 
@@ -470,8 +468,7 @@ def scan_d6_silent_failures() -> list:
                     'auto_fix': False,
                     'detail': '修复方案: 将path初始化移至模块顶部',
                 })
-    except Exception:
-        pass
+    except Exception as _e: print(f'[WARN] brahma_360: {_e}', file=sys.stderr)
     return issues
 
 
@@ -575,8 +572,7 @@ def scan_d9_signal_pipeline() -> list:
                         'msg': f'信号断崖: 最近信号={_age_days:.1f}天前，生产链路可能断裂（当前体制CHOP则属正常）',
                         'auto_fix': False,
                     })
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] brahma_360: {_e}', file=sys.stderr)
     except Exception as e:
         pass  # D9非关键维度，失败不告警
     return issues
@@ -634,8 +630,7 @@ def fix_init_live_prices(issue: dict) -> bool:
                 with urllib.request.urlopen(url, timeout=5, context=_DC_SSL_CTX) as r:
                     data = json.loads(r.read())
                 prices[sym] = {'price': float(data['price']), 'ts': time.time(), 'source': 'brahma_360_fix'}
-            except Exception:
-                pass
+            except Exception as _e: print(f'[WARN] brahma_360: {_e}', file=sys.stderr)
         if prices:
             (_DATA / 'live_prices.json').write_text(json.dumps(prices, indent=2))
             print(f'[360-Fix] ✅ live_prices.json 初始化 {len(prices)}个标的')
@@ -744,7 +739,7 @@ def verify_fixes(fix_log: list) -> list:
 # Layer5: Reporter — 健康报告
 # ════════════════════════════════════════════════════════════════
 
-def save_history(scan_result: dict, fix_log: list, verify_log: list):
+def save_history(scan_result: dict, fix_log: list, verify_log: list) -> None:
     """追加记录到历史文件"""
     record = {
         'ts': scan_result['ts'],
@@ -848,9 +843,7 @@ def format_report(scan_result: dict, fix_log: list = None, verify_log: list = No
         oi_section = get_oi_win_rate_section()
         if oi_section:
             lines.append(oi_section)
-    except Exception:
-        pass
-
+    except Exception as _e: print(f'[WARN] brahma_360: {_e}', file=sys.stderr)
     return '\n'.join(lines)
 
 

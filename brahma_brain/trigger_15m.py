@@ -33,7 +33,10 @@ import sys
 
 # ── brahma_bus 总线接入（设计院 2026-06-29）──
 try:
-    from brahma_brain.brahma_bus import bus as _brahma_bus
+    try:
+        from brahma_brain.brahma_bus import bus as _brahma_bus
+    except ImportError:
+        from brahma_bus import bus as _brahma_bus
 except Exception:
     _brahma_bus = None
 
@@ -48,8 +51,12 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def _fetch_15m(symbol: str, limit: int = 96) -> list:
+    """fetch 15m"""
     try:
-        from brahma_brain.data_cache import get_klines as _dc_klines
+        try:
+            from brahma_brain.data_cache import get_klines as _dc_klines
+        except ImportError:
+            from data_cache import get_klines as _dc_klines
         raw = _dc_klines(symbol.upper(), '15m', limit)
         if raw and isinstance(raw, list):
             return [{

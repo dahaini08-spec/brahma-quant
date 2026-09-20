@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # ponytail: brahma_core_step4 591行，核心计算，94维共享_result状态，拆分条件: 状态隔离方案成熟后
+
+from typing import Any, Optional
 """
 brahma_core_step4.py — analyze() Step4: extra_data 构建层
 [设计院封印 2026-08-11 苏摩111]
@@ -32,7 +34,8 @@ for _p in [_S4_BRAIN, _S4_SCRIPTS, _S4_ROOT]:
 try:
     from market_state import analyze as ms_analyze
 except ImportError:
-    def ms_analyze(s): return {}
+    """ms analyze"""
+    def ms_analyze(s) -> dict: return {}
 
 # [2026-08-12 苏摩111封印 v3] 标志位从brahma_core同步导入，修复NameError
 # [P4修复 2026-08-28 设计院] divergence_score + volume_score 从未import → NameError被吞 → 长期归零
@@ -104,11 +107,13 @@ try:
     # [总线接入 2026-08-13] 优先走brahma_bus缓存，fallback到binance_fapi
     from brahma_bus import get_klines
 except ImportError:
-    def get_klines(s, tf, limit=200): return []
+    """获取klines"""
+    def get_klines(s, tf, limit=200) -> list: return []
 try:
     from market_state import klines_to_ohlcv
 except ImportError:
-    def klines_to_ohlcv(klines): return {}
+    """klines to ohlcv"""
+    def klines_to_ohlcv(klines) -> dict: return {}
 
 
 def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
@@ -187,7 +192,7 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
             _src = _cg_snap_fb['fear_greed'].get('source','?')
             pass  # [静默] f'[BrahmaBrain] CoinGlass降级[{_src}]: F&G={_cg_snap_fb["fear_greed"]["value"]} FR
         except Exception as _fb_e:
-            pass  # [静默] f'[BrahmaBrain] CoinGlass+降级均失败: {_cg_e}'
+            print(f"[WARN] brahma_core_step4: _fb_e", file=sys.stderr)
     # ── liq_scanner 补充清算数据（Binance公开接口，无需Coinglass Key）────
     try:
         from brahma_brain.liq_density_engine import get_liq_snapshot
@@ -208,7 +213,7 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
         extra_data['liq_snap'] = _liq_snap
         pass  # [静默] f'[BrahmaBrain] LiqScan: 散户多{_liq_snap["long_pct"]:.0f}% 大户多{_liq_snap["top_long
     except Exception as _liq_e:
-        pass  # [静默] f'[BrahmaBrain] LiqScan跳过: {_liq_e}'
+        print(f"[WARN] brahma_core_step4: _liq_e", file=sys.stderr)
     # ─────────────────────────────────────────────────────────────
     try:
         # 达摩院 v3 升级：传入 volumes + regime + 当前时间戳
@@ -270,7 +275,7 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
         # analyze_elliott已从 elliott_engine 移除，此处跳过
         pass
     except Exception as _ew_err:
-        pass  # 已禁用，无需记录错误
+        print(f"[WARN] brahma_core_step4: _ew_err", file=sys.stderr)
     try:
         from sentiment_engine import get_sentiment_score as _sent_fn
         sent = _sent_fn(
@@ -283,21 +288,25 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     _fg_pass = extra_data.get('fear_greed')
     _k1h_ohlcv_pat = klines_to_ohlcv(get_klines(symbol, '1h', 200))
 
-    def _run_onchain():
+    def _run_onchain() -> Optional[Any]:
+        """run onchain"""
         if not _ONCHAIN_OK: return None
         return _onchain_score(symbol, signal_dir)
 
-    def _run_pattern():
+    def _run_pattern() -> Optional[Any]:
+        """run pattern"""
         if not _PATTERN_OK: return None
         if _k1h_ohlcv_pat and len(_k1h_ohlcv_pat.get('h',[])) >= 20:
             return _pattern_score(_k1h_ohlcv_pat['h'], _k1h_ohlcv_pat['l'], _k1h_ohlcv_pat['c'], signal_dir)
         return None
 
-    def _run_orderflow():
+    def _run_orderflow() -> Optional[Any]:
+        """run orderflow"""
         if not _OF_OK: return None
         return _order_flow_score(symbol, _dir_for_engines)
 
-    def _run_macro():
+    def _run_macro() -> Optional[Any]:
+        """run macro"""
         if not _MACRO_OK: return None
         return _macro_score(symbol, signal_dir, fg_data=_fg_pass)
 
@@ -392,36 +401,42 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     # [并行化 2026-09-02 苏摩111] P2引擎组并发执行
     # whale(0.35s) + cross(0.13s) + macro_v2(0.2s) + micro(0.18s) 串行→并发
     # 理论加速: 0.86s串行 → 0.35s并发（最慢whale决定下限）
-    def _run_whale():
+    def _run_whale() -> Optional[Any]:
+        """run whale"""
         if not _WHALE_OK: return None
         return _whale_score(symbol, _dir_for_engines)
 
-    def _run_cross():
+    def _run_cross() -> Optional[Any]:
+        """run cross"""
         if not _CROSS_OK: return None
         return _cross_score(symbol, _dir_for_engines)
 
-    def _run_cross_fr():
+    def _run_cross_fr() -> Optional[Any]:
+        """run cross fr"""
         try:
             from cross_market_engine import get_cross_fr_basis as _cfb_fn
             return _cfb_fn(symbol)
         except Exception:
             return None
 
-    def _run_deribit_pc():
+    def _run_deribit_pc() -> Optional[Any]:
+        """run deribit pc"""
         try:
             from cross_market_engine import get_deribit_pc as _dpc_fn
             return _dpc_fn(symbol)
         except Exception:
             return None
 
-    def _run_macro_v2():
+    def _run_macro_v2() -> Optional[Any]:
+        """run macro v2"""
         try:
             from brahma_brain.narrative_engine import macro_score_v2 as _mv2_fn
             return _mv2_fn(symbol, signal_dir)
         except Exception:
             return None
 
-    def _run_micro():
+    def _run_micro() -> Optional[Any]:
+        """run micro"""
         if not _MICRO_OK: return None
         return _micro_score(symbol, _dir_for_engines)
 
@@ -550,7 +565,7 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     try:
         pass  # B2已禁用，结果在主评分流程的s14段处理
     except Exception as _e:
-        pass
+        print(f"[WARN] brahma_core_step4: _e", file=sys.stderr)
 
     # B3: 滑点模型
     try:
@@ -593,7 +608,7 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     try:
         pass  # C2已禁用
     except Exception as _e:
-        pass
+        print(f"[WARN] brahma_core_step4: _e", file=sys.stderr)
 
     # C3: NLP 情绪引擎
     try:

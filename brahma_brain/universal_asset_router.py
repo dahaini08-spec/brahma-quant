@@ -288,7 +288,7 @@ def get_regime_cached(symbol: str) -> str:
         return _REGIME_CACHE.get(symbol, ('CHOP_MID', 0))[0]
 
 
-def invalidate_regime_cache(symbol: str = None):
+def invalidate_regime_cache(symbol: str = None) -> None:
     """手动清除体制缓存（体制切换事件触发）"""
     if symbol:
         _REGIME_CACHE.pop(symbol, None)

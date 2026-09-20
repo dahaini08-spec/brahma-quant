@@ -11,6 +11,7 @@ dag_executor.py — 轻量DAG执行器
 
 接入位置：brahma_core.py confluence_score() Block C之后、regime_mult之前
 调用方式：
+import sys
     from brahma_brain.dag_executor import apply_sparse_activation
     _dag = apply_sparse_activation({'s1': s1, 's2': s2, ...}, regime, signal_dir)
     s1, s2, ... = _dag['dims']['s1'], _dag['dims']['s2'], ...
@@ -81,23 +82,49 @@ def _load_config() -> dict:
 
 # ── 核心接口 ──────────────────────────────────────────────────
 
-def get_sparse_config(regime: str, direction: str) -> dict:
+def _hurst_bucket(hurst: float) -> str:
+    """Hurst值转bucket名：TREND/MEAN_REVERT/RANDOM/UNKNOWN"""
+    h = float(hurst or 0)
+    if h == 0:
+        return 'UNKNOWN'  # 无Hurst数据，走旧体制fallback
+    if h > 0.6:
+        return 'TREND'
+    elif h < 0.4:
+        return 'MEAN_REVERT'
+    return 'RANDOM'
+
+def get_sparse_config(regime: str, direction: str, hurst: float = 0) -> dict:
     """获取指定体制+方向的稀疏激活配置
 
+    [Phase 2 改革 2026-09-20 苏摩111] 优先用Hurst bucket，fallback到regime
     Args:
-        regime: 'CHOP_MID' / 'BULL_TREND' / 'BEAR_TREND' / etc.
-        direction: 'LONG' / 'SHORT'
-
+        regime: 旧体制名（fallback）
+        direction: LONG/SHORT
+        hurst: Hurst指数值（优先激活依据）
     Returns:
         {active_dims: set, sleep_dims: set, weights: dict, position_mult: float}
     """
     cfg = _load_config()
-    regime = (regime or '').upper()
     direction = (direction or '').upper()
-
+    
+    # Phase 2: 优先用Hurst bucket
+    bucket = _hurst_bucket(hurst)
+    if bucket != 'UNKNOWN':
+        bucket_cfg = cfg.get(bucket, {})
+        if bucket_cfg:
+            dir_cfg = bucket_cfg.get(direction, {})
+            if dir_cfg:
+                return {
+                    'active_dims': dir_cfg.get('active_dims', []),
+                    'sleep_dims': dir_cfg.get('sleep_dims', []),
+                    'weights': dir_cfg.get('weights', {}),
+                    'position_mult': float(dir_cfg.get('position_mult', 1.0)),
+                }
+    
+    # Fallback: 旧体制key（Hurst=0或bucket未配置）
+    regime = (regime or '').upper()
     regime_cfg = cfg.get(regime, {})
     dir_cfg = regime_cfg.get(direction, {})
-
     return {
         'active_dims': dir_cfg.get('active_dims', []),
         'sleep_dims': dir_cfg.get('sleep_dims', []),
@@ -112,31 +139,22 @@ _ALL_DIMS = [f's{i}' for i in range(1, 23)] + ['s5b']
 _ALL_DIMS = sorted(set(_ALL_DIMS))
 
 def apply_sparse_activation(dim_scores: dict, regime: str, direction: str,
-                            raw_score: int = 0, symbol: str = 'BTC') -> dict:
+                            raw_score: int = 0, symbol: str = 'BTC',
+                            hurst: float = 0) -> dict:
     """对s1-s22做稀疏激活过滤 + 波动率Context Gain
 
+    [Phase 2 改革] 优先用Hurst bucket做激活，fallback到regime
     Args:
         dim_scores: {'s1': 5, 's2': 13, 's3': 20, ...} 各维度原始分数
-        regime: 当前体制
+        regime: 旧体制名（fallback）
         direction: 信号方向 LONG/SHORT
         raw_score: Block A/B/C累加的原始总分（用于对比）
         symbol: 交易对符号（用于HAR-RV波动率查询）
-
+        hurst: Hurst指数值（优先激活依据）
     Returns:
-        {
-            'dims': {dim: filtered_score},  # 过滤后各维度分数
-            'score': int,                   # 加权后新总分
-            'raw_score': int,               # 原始总分（对比用）
-            'active_dims': list,
-            'sleep_dims': list,
-            'position_mult': float,
-            'weights': dict,
-            'applied': bool,                # 是否实际执行了过滤
-            'vol_context': str,             # 波动率体制 LOW/MEDIUM/HIGH/EXTREME
-            'vol_applied': bool,            # 是否应用了波动率gain
-        }
+        {dims, score, raw_score, active_dims, sleep_dims, position_mult, ...}
     """
-    cfg = get_sparse_config(regime, direction)
+    cfg = get_sparse_config(regime, direction, hurst)
     active = cfg['active_dims']
     sleep = cfg['sleep_dims']
     weights = cfg['weights']
@@ -155,11 +173,11 @@ def apply_sparse_activation(dim_scores: dict, regime: str, direction: str,
             'vol_gain_log': '',
         }
 
-    # 处理 'all' 关键字
-    if isinstance(sleep, list) and 'all' in sleep:
+    # 处理 'all' 关键字（兼容str和list两种形式）
+    if (isinstance(sleep, list) and 'all' in sleep) or sleep == 'all':
         sleep = set(_ALL_DIMS)
         active = set()
-    if isinstance(active, list) and 'all' in active:
+    if (isinstance(active, list) and 'all' in active) or active == 'all':
         active = set(_ALL_DIMS)
         sleep = set()
 

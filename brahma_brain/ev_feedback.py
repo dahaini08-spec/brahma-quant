@@ -123,6 +123,7 @@ def _score_bin(score: float) -> str:
 
 
 def _load_matrix() -> dict:
+    """load matrix"""
     try:
         if WR_MATRIX_PATH.exists():
             return json.loads(WR_MATRIX_PATH.read_text())
@@ -130,12 +131,13 @@ def _load_matrix() -> dict:
     return {}
 
 
-def _save_matrix(matrix: dict):
+def _save_matrix(matrix: dict) -> None:
+    """save matrix"""
     WR_MATRIX_PATH.parent.mkdir(parents=True, exist_ok=True)
     WR_MATRIX_PATH.write_text(json.dumps(matrix, ensure_ascii=False, indent=2))
 
 
-def _trigger_param_nudge(matrix_key: str, m: dict):
+def _trigger_param_nudge(matrix_key: str, m: dict) -> None:
     """
     每10笔触发参数微调建议
     仅写入建议文件，不直接修改brahma_core（设计院安全原则）
@@ -164,7 +166,7 @@ def _trigger_param_nudge(matrix_key: str, m: dict):
             from position_sizer import sync_confidence_table_from_wr as _sync_ct
             _sync_ct(min_n=10)
         except Exception as _ct_e:
-            pass  # [静默]
+            print(f"[WARN] ev_feedback: _ct_e", file=sys.stderr)
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def _generate_nudge(m: dict) -> str:
     """基于EV趋势生成参数微调建议"""

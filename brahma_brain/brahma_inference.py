@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """
+import sys
 brahma_inference.py — 梵天推理层 v2.0
 [2026-09-16 苏摩111] 把"40年交易员思维"编码为因果推理+博弈建模+周期因果链
 [2026-09-16 v2修复] 修正数据路径，对接真实state文件结构
@@ -20,7 +21,7 @@ brahma_inference.py — 梵天推理层 v2.0
 
 import json, sys, os, re
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from datetime import datetime, timezone, timedelta
 
 DATA_DIR = Path(__file__).parent.parent / 'data'
@@ -34,7 +35,7 @@ def _load_state(symbol: str) -> dict:
         return {}
     return json.loads(f.read_text())
 
-def _safe_get(d: dict, *keys, default=None):
+def _safe_get(d: dict, *keys, default=None) -> Any:
     """安全嵌套取值"""
     for k in keys:
         if not isinstance(d, dict):
@@ -42,7 +43,7 @@ def _safe_get(d: dict, *keys, default=None):
         d = d.get(k, default)
     return d
 
-def _fmt_price(p, sym='BTC'):
+def _fmt_price(p, sym='BTC') -> Any:
     """格式化价格"""
     if not p or p == 0:
         return '?'
@@ -437,7 +438,7 @@ def build_timeframe_chain(state: dict, symbol: str) -> List[dict]:
     rsi_1h = mom.get('rsi_1h', 50) or 50
     rsi_15m = mom.get('rsi_15m', 50) or 50
 
-    def _extract_fvg_data(fvg_dict, timeframe, phase):
+    def _extract_fvg_data(fvg_dict, timeframe, phase) -> Any:
         """从FVG字典提取数据"""
         results = []
         if not fvg_dict:
@@ -541,6 +542,72 @@ def run_inference(symbols: List[str] = None) -> dict:
         'timeframe_chains': timeframes,
         'report': report
     }
+
+    # ══ Phase 4修复 2026-09-18 苏摩111: 推理层信号反馈到层2/3/4 ══
+    # 推理层不再只给人看，输出3个可被下游使用的信号
+    feedback = {}
+    for sym in symbols:
+        _fb = {'dim_down_weight': {}, 'regime_confirm_bonus': 0.0, 'hunt_zone': {}}
+        _state = states.get(sym, {})
+        
+        # 1. 矛盾检测 → 维度降权（反馈到层3共振矩阵）
+        _cvd = _state.get('cvd_1h', 0)
+        _oi_chg = _state.get('oi_change_pct', 0)
+        _oi_signal = _state.get('oi_signal', '')
+        # CVD与OI矛盾 → 两个维度都降权50%
+        if _cvd > 100 and _oi_chg < -0.5:
+            _fb['dim_down_weight']['CVD'] = 0.5
+            _fb['dim_down_weight']['OI'] = 0.5
+            _fb['dim_down_weight']['_reason'] = f'CVD={_cvd:+.0f}买方但OI={_oi_chg:+.2f}%多头平仓=矛盾降权'
+        if _cvd < -100 and _oi_chg > 0.5:
+            _fb['dim_down_weight']['CVD'] = 0.5
+            _fb['dim_down_weight']['OI'] = 0.5
+            _fb['dim_down_weight']['_reason'] = f'CVD={_cvd:+.0f}卖方但OI={_oi_chg:+.2f}%多头加仓=矛盾降权'
+        
+        # 2. 周期共振 → 体制确认+0.2（反馈到层2体制判定）
+        _tf_chains = timeframes.get(sym, [])
+        _dirs = [c.get('fvg_direction','') for c in _tf_chains]
+        if 'BULL' in _dirs and _dirs.count('BULL') >= 2:
+            _fb['regime_confirm_bonus'] = 0.2
+            _fb['_regime_hint'] = 'BULL'
+        elif 'BEAR' in _dirs and _dirs.count('BEAR') >= 2:
+            _fb['regime_confirm_bonus'] = 0.2
+            _fb['_regime_hint'] = 'BEAR'
+        else:
+            _fb['regime_confirm_bonus'] = 0.0
+            _fb['_regime_hint'] = 'MIXED'
+        
+        # 3. 猎杀剧本 → 入场区（反馈到层5 VIP生成）
+        # games[sym]是list，需要遍历提取猎杀信号
+        _gt_list = games.get(sym, [])
+        _hunt = False
+        _hunt_dir = ''
+        _hunt_target = 0
+        _hunt_reason = ''
+        for _g in _gt_list:
+            _g_intent = str(_g.get('intent', ''))
+            _g_target_str = str(_g.get('target', ''))
+            # 从target字段提取价格
+            try:
+                import re as _re_hunt
+                _prices = _re_hunt.findall(r'\$([\d,]+)', _g_target_str)
+                if _prices:
+                    _hunt_target = float(_prices[0].replace(',', ''))
+            except Exception as _e: print(f'[WARN] brahma_inference: {_e}', file=sys.stderr)
+            if '猎杀' in _g_intent or '清算' in _g_intent:
+                _hunt = True
+                _hunt_dir = 'SHORT_HUNT' if '下方' in _g_intent or '多头止损' in _g_intent else 'LONG_HUNT'
+                _hunt_reason = _g.get('intent', '')
+        if _hunt and _hunt_target > 0:
+            _fb['hunt_zone'] = {
+                'direction': 'LONG' if 'SHORT_HUNT' in _hunt_dir else 'SHORT' if 'LONG_HUNT' in _hunt_dir else 'NONE',
+                'target_price': _hunt_target,
+                'reason': _hunt_reason
+            }
+        
+        feedback[sym] = _fb
+    
+    result['feedback'] = feedback
 
     # 保存
     out_file = DATA_DIR / 'inference_latest.json'

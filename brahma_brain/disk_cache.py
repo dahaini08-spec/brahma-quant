@@ -20,6 +20,8 @@ brahma_brain/disk_cache.py — 统一磁盘缓存层
   brahma_brain/har_rv_engine.py    get_har_rv_score()
 """
 
+from typing import Any, Optional
+
 import time
 import pickle
 import hashlib
@@ -50,7 +52,7 @@ def _cache_path(key: str) -> Path:
     return _CACHE_DIR / f"{safe_prefix}_{h}.pkl"
 
 
-def disk_get(key: str, ttl: int = TTL_DEFAULT):
+def disk_get(key: str, ttl: int = TTL_DEFAULT) -> Optional[Any]:
     """
     读取缓存。未命中或过期返回None。
     key格式建议：'module:symbol:tf'，如 'fangcang:BTCUSDT:4h'
@@ -81,7 +83,7 @@ def disk_set(key: str, value) -> bool:
         return False
 
 
-def disk_clear(prefix: str = ''):
+def disk_clear(prefix: str = '') -> Any:
     """清理缓存文件（可按前缀过滤）"""
     cleared = 0
     for f in _CACHE_DIR.glob('*.pkl'):

@@ -42,18 +42,22 @@ class MarketSnapshot:
 
     @property
     def rsi_1h(self) -> float:
+        """rsi 1h"""
         return float(self.ms.get("rsi_1h") or self.ms.get("momentum", {}).get("rsi_1h") or 50.0)
 
     @property
     def atr_1h(self) -> float:
+        """atr 1h"""
         return float(self.ms.get("atr_1h") or self.ms.get("momentum", {}).get("atr_1h") or 0.0)
 
     @property
     def is_chop(self) -> bool:
+        """判断chop"""
         return "CHOP" in self.regime.upper()
 
     @property
     def is_bear(self) -> bool:
+        """判断bear"""
         return "BEAR" in self.regime.upper()
 
 

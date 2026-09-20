@@ -30,8 +30,12 @@ import requests
 
 # ── 工具：拉取K线 ──────────────────────────────────────────────
 def _fetch_klines(symbol: str, interval: str, limit: int = 200) -> list:
+    """fetch klines"""
     try:
-        from brahma_brain.data_cache import get_klines as _dc
+        try:
+            from brahma_brain.data_cache import get_klines as _dc
+        except ImportError:
+            from data_cache import get_klines as _dc
         raw = _dc(symbol, interval, limit)
         if raw and isinstance(raw, list) and len(raw) >= 3:
             return raw
@@ -46,6 +50,7 @@ def _fetch_klines(symbol: str, interval: str, limit: int = 200) -> list:
 
 
 def _parse_ohlcv(raw: list) -> dict:
+    """parse ohlcv"""
     if not raw:
         return {'o': [], 'h': [], 'l': [], 'c': [], 'v': []}
     return {
@@ -71,6 +76,7 @@ def _ema(closes: list, period: int) -> float:
 
 # ── 工具：RSI计算 ─────────────────────────────────────────────
 def _rsi(closes: list, period: int = 14) -> float:
+    """rsi"""
     if len(closes) < period + 1:
         return 50.0
     deltas = [closes[i] - closes[i-1] for i in range(1, len(closes))]

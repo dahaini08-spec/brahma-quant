@@ -237,8 +237,8 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
                     pass  # [静默]
                     entry_lo = _clo_lo
                     entry_hi = _clo_hi
-        except Exception as _audit_e:  # [S1-fix] 原静默except
-            pass  # [S1-fix] 已捕获: _audit_e (静默保留兼容性)
+        except Exception as _audit_e:
+            print(f"[WARN] brahma_core_entry: _audit_e", file=sys.stderr)
 
         # [v25.7 P0a 2026-06-21] 入场区最小宽度保证（LONG）
         # 根因：v22.1只做宽→压缩，但OB本身偏窄时触达率低 → TIMEOUT
@@ -256,8 +256,8 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
                     pass  # [静默]
                     entry_lo = _new_lo
                     entry_hi = _new_hi
-        except Exception:
-            pass  # 宽度保证失败不影响主流程
+        except Exception as _e:
+            print(f"[WARN] brahma_core_entry: _e", file=sys.stderr)
 
         # Layer 2+3: 止损 = 入场区下方最近4H摆低 - ATR4H×0.3
         struct_low = _nearest_swing_below(sw4h_l, entry_lo) if sw4h_l else entry_lo * 0.985
@@ -365,8 +365,8 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
                     pass  # [静默]
                     entry_lo = _compressed_lo
                     entry_hi = _compressed_hi
-        except Exception:
-            pass  # ATR压缩失败不影响主流程
+        except Exception as _e:
+            print(f"[WARN] brahma_core_entry: _e", file=sys.stderr)
 
         # [v25.7 P0a 2026-06-21] 入场区最小宽度保证（SHORT）
         # 根因：v22.1只做宽→压缩，但OB本身偏窄时触达率低 → TIMEOUT
@@ -384,8 +384,8 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
                     pass  # [静默]
                     entry_lo = _new_lo_s
                     entry_hi = _new_hi_s
-        except Exception:
-            pass  # 宽度保证失败不影响主流程
+        except Exception as _e:
+            print(f"[WARN] brahma_core_entry: _e", file=sys.stderr)
 
         # [v21.0 MTF覆盖] 如果自顶向下路由器输出4H入场区，覆盖1H结果
         if mtf_result and mtf_result.get('timeframe') == '4H':
@@ -541,7 +541,7 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
             if _v4_applied:
                 pass  # [静默]
     except Exception as _ev4:
-        pass  # [静默]
+        print(f"[WARN] brahma_core_entry: _ev4", file=sys.stderr)
     # ── [END exit_params_v4] ─────────────────────────────────────────────────
     # ── [P0 2026-08-23 苏摩111封印] BBW分档SL优化 ──────────────────────────
     # 铁证：BULL_TREND震荡区 SL=swing_4h+atr4h×2.527 平均SL=2.0~2.5% RR<1.0
@@ -581,8 +581,8 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
                 ms['_p0_bbw_tier'] = ms.get('_p0_bbw_tier', 'B-')
             elif _bbw >= 0.010:
                 ms['_p0_bbw_tier'] = ms.get('_p0_bbw_tier', 'B+')
-    except Exception:
-        pass  # P0 BBW分档异常，不阻断
+    except Exception as _e:
+        print(f"[WARN] brahma_core_entry: _e", file=sys.stderr)
     # ── [P0 END] ──────────────────────────────────────────────────────────
 
     # ══ [A: LIQ_MAP TP2 磁吸位优化 2026-07-20 苏摩111批准] ══════════════════
@@ -610,8 +610,8 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
                     if tp2_liq > tp1 and tp2_liq < entry_mid * 20:
                         tp2 = tp2_liq
                         rr2 = round(abs(tp2 - entry_mid) / max(risk, 1e-9), 2)
-    except Exception:
-        pass  # LIQ_MAP 降级，失败不影响主流程
+    except Exception as _e:
+        print(f"[WARN] brahma_core_entry: _e", file=sys.stderr)
     # ══ [END LIQ_MAP TP2] ════════════════════════════════════════════════════
 
     # 动态精度：防止0.0001等极端低价被 round(...,4) 戒断到相同小数
