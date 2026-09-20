@@ -7,7 +7,7 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789917851.6764932,
+    "last_update_ts": 1789918898.9632704,
     "last_sw_reset": 1789898069.7824252,
     "candidate_start_ts": 1789915865.12266,
     "confirmed_cn": "弱震荡"
@@ -20,7 +20,7 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789917029.8878365,
+    "last_update_ts": 1789919748.5957336,
     "confirmed_cn": "弱震荡",
     "last_sw_reset": 1789827571.9112523,
     "candidate_start_ts": 1789908606.4113758
@@ -192,7 +192,7 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789918804.5423982,
+    "last_update_ts": 1789919728.510977,
     "confirmed_cn": "弱震荡"
   },
   "BERAUSDT": {
@@ -203,7 +203,7 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789918809.8106437,
+    "last_update_ts": 1789919734.2432013,
     "confirmed_cn": "弱震荡"
   }
 }

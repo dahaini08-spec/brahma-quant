@@ -79,7 +79,7 @@ def inject_fangcang(_result: dict, ms: dict, score: int, breakdown: dict,
         _result['fangcang'] = {'status': 'unavailable', 'reason': str(_fc_e)[:60]}
 
     # [设计院 2026-08-25 苏摩111] 长期记忆注入：跨资产20年知识库
-        import logging as _lm_log; _lm_log.getLogger('brahma').debug(f'[longmem] {_lm_e}')
+        import logging as _lm_log; _lm_log.getLogger('brahma').debug(f'[longmem] {_fc_e}')
 
     # ══ [N_EXP 2026-08-29 苏摩111] 40年经验引擎注入 ══════════════════════════
     # 使命：把20392条6.5年K线蒸馏的经验矩阵实时注入评分

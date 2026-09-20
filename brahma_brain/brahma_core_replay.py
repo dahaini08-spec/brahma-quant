@@ -17,6 +17,9 @@ def calc_replay(ms: dict, signal_dir: str, score: int, breakdown: dict, _result:
     只修改 score 和 breakdown，不引入新变量到外层
     """
     import sys
+    # [9.20修复] _is_long_signal + _direction_block定义（原在brahma_core.py中定义但replay中未定义）
+    _is_long_signal = (signal_dir == 'LONG')
+    _direction_block = False  # 永久保持False，历史遗留字段
     # ══ [N_REPLAY 2026-08-29 苏摩111] 40年经验复盘升级——四修正 ══════════════
     # 铁证: 20392条案例 + 2001笔回测(IS/OOS偏差3%)
     try:
@@ -201,9 +204,11 @@ def calc_replay(ms: dict, signal_dir: str, score: int, breakdown: dict, _result:
     else:
         _kelly_tier = 'C';   _pos_tier = 0.0
     # 将仓位分级注入 extra_data 供执行层使用
-    if extra_data is not None and isinstance(extra_data, dict):
-        extra_data['score_tier'] = _kelly_tier
-        extra_data['score_pos']  = _pos_tier
+    # [9.20修复] extra_data可能未传入，用_result替代
+    _extra = extra_data if 'extra_data' in dir() and extra_data is not None else _result
+    if isinstance(_extra, dict):
+        _extra['score_tier'] = _kelly_tier
+        _extra['score_pos']  = _pos_tier
     breakdown['N15_分层仓位'] = _score_tier_tag if _score_tier_tag else f'N15_C层({score}分) 不执行'
 
     # ── [GAP2 仓位管理器 2026-06-03] 中仓解锁 + 动态仓位 ─────────────────────

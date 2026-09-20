@@ -614,6 +614,11 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     score, breakdown = _calc_factors(ms, signal_dir, score, breakdown, extra_data, _result, _fac_sym)
 
 
+    # [9.20修复] grade/kelly_mult/action在confluence_score中从未定义，从score推导
+    grade = 'S' if score >= 140 else 'A' if score >= 120 else 'B' if score >= 100 else 'C' if score >= 80 else 'D'
+    kelly_mult = 1.5 if score >= 140 else 1.0 if score >= 120 else 0.5 if score >= 100 else 0.0
+    action = 'EXECUTE' if score >= 140 else 'ALERT' if score >= 120 else 'WATCH' if score >= 100 else 'SKIP'
+
     return {
         'total':      score,
         'score':      score,    # [P1修复 2026-07-12] 补充score别名 — analyze()/run_analysis读.get('score')，原只有'total'导致永远None
@@ -770,6 +775,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # Step 5: 共振评分
     cf = confluence_score(ms, smc, signal_dir, extra_data)
+    # [9.20修复] 从cf中提取score到外层变量（L3199 _inject_fc需要）
+    score = cf.get('score', 0)
+    breakdown = cf.get('breakdown', {})
     # [根本修复 2026-07-12 设计院封印] cf 将在_result初始化后立即写入
     # 见 L4550后: _result['confluence'] = cf  (平现注入，不在这里操作_result)
 
@@ -3217,5 +3225,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         from brahma_core_tradfi_inject import inject_tradfi as _inject_tradfi
     _result, score, breakdown = _inject_tradfi(_result, ms, score, breakdown, signal_dir, _sym, extra_data)
 
+    # [9.20修复] 确保score写入_result（下游brahma_cpu读_result['score']）
+    if score is not None and 'score' not in _result:
+        _result['score'] = score
+    if 'total' not in _result and cf.get('total') is not None:
+        _result['total'] = cf.get('total', 0)
 
     return _result

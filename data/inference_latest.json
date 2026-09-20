@@ -1,60 +1,53 @@
 {
-  "timestamp": "2026-09-20T15:24:18.101729+00:00",
+  "timestamp": "2026-09-20T15:55:54.666702+00:00",
   "symbols": [
-    "XRP"
+    "BTC"
   ],
   "causal_chains": [],
   "game_theory": {
-    "XRP": [
+    "BTC": [
       {
-        "actor": "散户",
-        "action": "散户多头占比69%高于大户66%",
-        "intent": "散户追多 → 但大户不跟 → 多头陷阱风险",
-        "evidence": "散户=69% > 大户=66% | 分歧=3.6% | 大户持仓偏多(65.91%) 聪明钱看多 -3",
-        "target": "散户是猎物"
+        "actor": "做市商（GEX）",
+        "action": "正GEX=+435.8M → 波动率抑制",
+        "intent": "做市商在正GEX区域抑制波动 → 价格可能被锚定 → 突破需要外力",
+        "evidence": "GEX=+3 GEX=+435.8M(POSITIVE) | 强度=STRONG | s22=+3 | ZeroFlip距离-4",
+        "target": "正GEX抑制波动，等外力突破"
+      },
+      {
+        "actor": "主力",
+        "action": "下方清算区$76,843(-5.0%)",
+        "intent": "砸到下方清算区 → 触发多头止损 → 接货 → 反弹",
+        "evidence": "liq_long=$76,843 | -5.0%",
+        "target": "多头止损=接货机会"
       }
     ]
   },
   "timeframe_chains": {
-    "XRP": [
+    "BTC": [
       {
         "timeframe": "1D",
         "fvg_direction": "BEAR",
-        "fvg_price": 1.0486,
+        "fvg_price": 63913.3,
         "fvg_range": [
           0,
           0
         ],
-        "distance": "+25.8%",
-        "rsi": 55.43,
+        "distance": "+21.0%",
+        "rsi": 64.33,
         "role": "支撑",
         "action": "突破Bear FVG=看空失效",
         "phase": "中线（阶段2/3）"
       },
       {
         "timeframe": "4H",
-        "fvg_direction": "BULL",
-        "fvg_price": 1.41035,
-        "fvg_range": [
-          0,
-          0
-        ],
-        "distance": "+0.2%",
-        "rsi": 64.96,
-        "role": "支撑",
-        "action": "回调到FVG=做多入场点",
-        "phase": "波段（阶段1/2）"
-      },
-      {
-        "timeframe": "4H",
         "fvg_direction": "BEAR",
-        "fvg_price": 1.3368,
+        "fvg_price": 77783.8,
         "fvg_range": [
           0,
           0
         ],
-        "distance": "+5.4%",
-        "rsi": 64.96,
+        "distance": "+3.8%",
+        "rsi": 62.16,
         "role": "支撑",
         "action": "突破Bear FVG=看空失效",
         "phase": "波段（阶段1/2）"
@@ -62,13 +55,13 @@
       {
         "timeframe": "1H",
         "fvg_direction": "BULL",
-        "fvg_price": 1.4178,
+        "fvg_price": 81425.1,
         "fvg_range": [
           0,
           0
         ],
-        "distance": "-0.4%",
-        "rsi": 61.85,
+        "distance": "-0.7%",
+        "rsi": 50.3,
         "role": "阻力",
         "action": "突破FVG=看多",
         "phase": "短期（阶段1）"
@@ -76,13 +69,13 @@
       {
         "timeframe": "1H",
         "fvg_direction": "BEAR",
-        "fvg_price": 1.2859,
+        "fvg_price": 76973.45,
         "fvg_range": [
           0,
           0
         ],
-        "distance": "+9.0%",
-        "rsi": 61.85,
+        "distance": "+4.8%",
+        "rsi": 50.3,
         "role": "支撑",
         "action": "突破Bear FVG=看空失效",
         "phase": "短期（阶段1）"
@@ -90,13 +83,13 @@
       {
         "timeframe": "15M",
         "fvg_direction": "BULL",
-        "fvg_price": 1.44165,
+        "fvg_price": 81087.2,
         "fvg_range": [
           0,
           0
         ],
-        "distance": "-2.0%",
-        "rsi": 40.49,
+        "distance": "-0.2%",
+        "rsi": 65.91,
         "role": "阻力",
         "action": "突破FVG=看多",
         "phase": "精确入场"
@@ -104,22 +97,22 @@
       {
         "timeframe": "15M",
         "fvg_direction": "BEAR",
-        "fvg_price": 1.2927,
+        "fvg_price": 76418.0,
         "fvg_range": [
           0,
           0
         ],
-        "distance": "+8.5%",
-        "rsi": 40.49,
+        "distance": "+5.5%",
+        "rsi": 65.91,
         "role": "支撑",
         "action": "突破Bear FVG=看空失效",
         "phase": "精确入场"
       }
     ]
   },
-  "report": "\n╬══════════════════════════════════════════════════════════\n  🧠 梵天推理层 | 因果+博弈+周期\n╬══════════════════════════════════════════════════════════\n  ━━━ 2. 博弈建模 | XRP ━━━\n  👤 散户: 散户多头占比69%高于大户66%\n      → 散户追多 → 但大户不跟 → 多头陷阱风险\n      📎 散户=69% > 大户=66% | 分歧=3.6% | 大户持仓偏多(65.91%) 聪明钱看多 -3\n      🎯 猎杀目标: 散户是猎物\n\n  ━━━ 3. 周期因果链 | XRP ━━━\n  [1D] FVG=BEAR @$1 (+25.8%) | RSI=55\n      角色: 支撑 | 阶段: 中线（阶段2/3）\n      → 突破Bear FVG=看空失效\n  [4H] FVG=BULL @$1 (+0.2%) | RSI=65\n      角色: 支撑 | 阶段: 波段（阶段1/2）\n      → 回调到FVG=做多入场点\n  [4H] FVG=BEAR @$1 (+5.4%) | RSI=65\n      角色: 支撑 | 阶段: 波段（阶段1/2）\n      → 突破Bear FVG=看空失效\n  [1H] FVG=BULL @$1 (-0.4%) | RSI=62\n      角色: 阻力 | 阶段: 短期（阶段1）\n      → 突破FVG=看多\n  [1H] FVG=BEAR @$1 (+9.0%) | RSI=62\n      角色: 支撑 | 阶段: 短期（阶段1）\n      → 突破Bear FVG=看空失效\n  [15M] FVG=BULL @$1 (-2.0%) | RSI=40\n      角色: 阻力 | 阶段: 精确入场\n      → 突破FVG=看多\n  [15M] FVG=BEAR @$1 (+8.5%) | RSI=40\n      角色: 支撑 | 阶段: 精确入场\n      → 突破Bear FVG=看空失效\n      ── 周期综合 ──\n      1D=BEAR 1H=BULL 方向不一致 → 短期可能是中线级别的回调 → 分阶段操作\n\n  📌 推理层结论：\n  博弈分析: 1条\n  周期链: 7条\n  ⚠️ 推理层=辅助决策，最终判断由交易员大脑决定\n╬══════════════════════════════════════════════════════════",
+  "report": "\n╬══════════════════════════════════════════════════════════\n  🧠 梵天推理层 | 因果+博弈+周期\n╬══════════════════════════════════════════════════════════\n  ━━━ 2. 博弈建模 | BTC ━━━\n  👤 做市商（GEX）: 正GEX=+435.8M → 波动率抑制\n      → 做市商在正GEX区域抑制波动 → 价格可能被锚定 → 突破需要外力\n      📎 GEX=+3 GEX=+435.8M(POSITIVE) | 强度=STRONG | s22=+3 | ZeroFlip距离-4\n      🎯 猎杀目标: 正GEX抑制波动，等外力突破\n  👤 主力: 下方清算区$76,843(-5.0%)\n      → 砸到下方清算区 → 触发多头止损 → 接货 → 反弹\n      📎 liq_long=$76,843 | -5.0%\n      🎯 猎杀目标: 多头止损=接货机会\n\n  ━━━ 3. 周期因果链 | BTC ━━━\n  [1D] FVG=BEAR @$63,913 (+21.0%) | RSI=64\n      角色: 支撑 | 阶段: 中线（阶段2/3）\n      → 突破Bear FVG=看空失效\n  [4H] FVG=BEAR @$77,784 (+3.8%) | RSI=62\n      角色: 支撑 | 阶段: 波段（阶段1/2）\n      → 突破Bear FVG=看空失效\n  [1H] FVG=BULL @$81,425 (-0.7%) | RSI=50\n      角色: 阻力 | 阶段: 短期（阶段1）\n      → 突破FVG=看多\n  [1H] FVG=BEAR @$76,973 (+4.8%) | RSI=50\n      角色: 支撑 | 阶段: 短期（阶段1）\n      → 突破Bear FVG=看空失效\n  [15M] FVG=BULL @$81,087 (-0.2%) | RSI=66\n      角色: 阻力 | 阶段: 精确入场\n      → 突破FVG=看多\n  [15M] FVG=BEAR @$76,418 (+5.5%) | RSI=66\n      角色: 支撑 | 阶段: 精确入场\n      → 突破Bear FVG=看空失效\n      ── 周期综合 ──\n      1D=BEAR 1H=BULL 方向不一致 → 短期可能是中线级别的回调 → 分阶段操作\n\n  📌 推理层结论：\n  博弈分析: 2条\n  周期链: 6条\n  ⚠️ 推理层=辅助决策，最终判断由交易员大脑决定\n╬══════════════════════════════════════════════════════════",
   "feedback": {
-    "XRP": {
+    "BTC": {
       "dim_down_weight": {},
       "regime_confirm_bonus": 0.2,
       "hunt_zone": {},

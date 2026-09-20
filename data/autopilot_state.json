@@ -1,29 +1,29 @@
 {
-  "ts": 1789918812.0983975,
+  "ts": 1789919736.4535978,
   "version": "1.0",
   "market_state": {
     "EPIC": {
-      "price": 0,
-      "regime": "UNKNOWN",
-      "score": 0
+      "price": 0.5518,
+      "regime": "CHOP_MID",
+      "score": 90.0
     },
     "BERA": {
-      "price": 0,
-      "regime": "UNKNOWN",
-      "score": 0
+      "price": 0.2116,
+      "regime": "CHOP_MID",
+      "score": 52.5
     }
   },
   "active_signals": [],
   "positions": [],
   "last_decision": {
-    "ts": 1789918812.0983977,
+    "ts": 1789919736.4535983,
     "symbol": "BERAUSDT",
     "action": "SKIP",
-    "score": 0,
-    "signal_dir": "AUTO"
+    "score": 52.5,
+    "signal_dir": "LONG"
   },
   "data_health": {
-    "fresh": 0,
+    "fresh": 10,
     "dead": 0
   },
   "autopilot_enabled": false

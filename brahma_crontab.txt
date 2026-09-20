@@ -190,24 +190,5 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # 执行层 dry-run模式每10分钟（Phase 4: 验证用，Phase 5后改为实盘）
 */10 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/auto_executor.py --dry >> logs/autopilot_exec.log 2>&1
 
-# L0工作记忆刷新（每5分钟，由分析脚本更新状态文件）
-*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 -c "
-import json, time
-from pathlib import Path
-p = Path('data/autopilot_state.json')
-state = json.loads(p.read_text()) if p.exists() else {}
-state['ts'] = time.time()
-# 数据健康检查
-from pathlib import Path as _P
-now = time.time()
-fresh = dead = 0
-for f in ['liq_heatmap_btcusdt.json','cvd_realtime_btcusdt.json','oi_candidates.json','regime_state.json','gex_state.json','vol_beta_state.json','macro_real.json','har_rv_cache.json']:
-    fp = _P(f'data/{f}')
-    if fp.exists():
-        age = (now - fp.stat().st_mtime) / 3600
-        if age < 12: fresh += 1
-        else: dead += 1
-    else: dead += 1
-state['data_health'] = {'fresh': fresh, 'dead': dead}
-p.write_text(json.dumps(state, ensure_ascii=False, indent=2))
-" >> logs/autopilot_l0.log 2>&1
+# L0工作记忆刷新（每5分钟，独立脚本）
+*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/autopilot_l0_refresh.py >> logs/autopilot_l0.log 2>&1
