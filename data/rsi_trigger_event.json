@@ -515,5 +515,23 @@
       }
     ],
     "high_priority": true
+  },
+  "EPICUSDT": {
+    "symbol": "EPICUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 91.0925,
+    "mode": "A",
+    "ts": 1789916967.5621269,
+    "source": "oi_advanced_scanner"
+  },
+  "BERAUSDT": {
+    "symbol": "BERAUSDT",
+    "direction": "LONG",
+    "trigger_type": "oi_anomaly",
+    "oi_score": 81.75399999999999,
+    "mode": "B",
+    "ts": 1789916967.5621288,
+    "source": "oi_advanced_scanner"
   }
 }

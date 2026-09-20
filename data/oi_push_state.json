@@ -462,11 +462,11 @@
     "mode": "B"
   },
   "EPICUSDT": {
-    "hash": "60145eb8",
-    "ts": 1786158225.88117,
+    "hash": "06d92c52",
+    "ts": 1789916934.992405,
     "direction": "LONG",
-    "score": 70.624,
-    "mode": "B"
+    "score": 91.0925,
+    "mode": "A"
   },
   "COINUSDT": {
     "hash": "81047746",
@@ -1734,5 +1734,12 @@
     "direction": "LONG",
     "score": 66.1275,
     "mode": "A"
+  },
+  "BERAUSDT": {
+    "hash": "16b72c03",
+    "ts": 1789916934.992405,
+    "direction": "LONG",
+    "score": 81.75399999999999,
+    "mode": "B"
   }
 }

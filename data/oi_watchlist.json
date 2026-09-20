@@ -181,7 +181,7 @@
     "last_smc": "HAMMER"
   },
   "CBRSUSDT": {
-    "status": "WATCHING",
+    "status": "RETIRED",
     "direction": "LONG",
     "size_pct": 0.5,
     "trigger_conditions": {
@@ -200,7 +200,7 @@
     "last_smc": "NONE"
   },
   "ZHIPUUSDT": {
-    "status": "WATCHING",
+    "status": "RETIRED",
     "direction": "LONG",
     "size_pct": 0.5,
     "trigger_conditions": {
@@ -314,7 +314,7 @@
     "last_smc": "NONE"
   },
   "SNXXUSDT": {
-    "status": "WATCHING",
+    "status": "RETIRED",
     "direction": "LONG",
     "size_pct": 1.0,
     "trigger_conditions": {
@@ -461,7 +461,7 @@
     "last_smc": "NONE"
   },
   "ZILUSDT": {
-    "status": "RETIRED",
+    "status": "WATCHING",
     "direction": "LONG",
     "size_pct": 0.5,
     "trigger_conditions": {
@@ -471,13 +471,8 @@
     },
     "added": "2026-09-20",
     "source": "oi_advanced_scanner_auto",
-    "oi_score": 64.2945,
-    "mode": "A",
-    "last_check": "2026-09-20 12:22 UTC",
-    "last_fr": -0.310949,
-    "last_price": 0.003558,
-    "last_trigger_pct": 25.0,
-    "last_smc": "NONE"
+    "oi_score": 68.1645,
+    "mode": "A"
   },
   "ZAMAUSDT": {
     "status": "WATCHING",
@@ -524,6 +519,34 @@
     "added": "2026-09-20",
     "source": "oi_advanced_scanner_auto",
     "oi_score": 62.628,
+    "mode": "B"
+  },
+  "EPICUSDT": {
+    "status": "WATCHING",
+    "direction": "LONG",
+    "size_pct": 0.5,
+    "trigger_conditions": {
+      "fr": true,
+      "price": true,
+      "oi": true
+    },
+    "added": "2026-09-20",
+    "source": "oi_advanced_scanner_auto",
+    "oi_score": 91.0925,
+    "mode": "A"
+  },
+  "BERAUSDT": {
+    "status": "WATCHING",
+    "direction": "LONG",
+    "size_pct": 1.0,
+    "trigger_conditions": {
+      "fr": true,
+      "price": true,
+      "oi": true
+    },
+    "added": "2026-09-20",
+    "source": "oi_advanced_scanner_auto",
+    "oi_score": 81.75399999999999,
     "mode": "B"
   }
 }

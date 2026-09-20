@@ -61,7 +61,8 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # Layer 4: 每2小时任务 (错峰)
 # ============================================================
 # W5 paper live scan — :17每2h（错峰）
-17 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 brahma_brain/brahma_w5_paper_live.py >> logs/w5_paper.log 2>&1
+# 17 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 brahma_brain/brahma_w5_paper_live.py >> logs/w5_paper.log 2>&1
+# [9.20] 已废弃，文件已移入_deprecated
 
 # OI watchlist — :00 偶数小时
 # [9.18 修复] oi_watchlist从:00移到:22错峰

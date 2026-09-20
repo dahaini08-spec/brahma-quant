@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 from typing import Any
 """
 battlefield_intel.py — 统一战场情报中心
