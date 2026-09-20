@@ -385,7 +385,84 @@ def main():
             summary += '\n⚠️ LLM异常告警:\n' + '\n'.join(f'  {f}' for f in _llm_flags)
         _pj(summary, level='P2')
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-    log('=== 反哺完成 ===')
+
+    # ── L2语义记忆生成 [9.20 苏摩111] Autopilot记忆层 ──
+    try:
+        _generate_l2_lessons(changes, matrix)
+    except Exception as _l2e:
+        log(f'L2语义记忆生成失败: {_l2e}')
+
+    log('=== 反哺完成')
+
+
+def _generate_l2_lessons(changes: list, matrix: dict) -> None:
+    """从WR矩阵+L1情景记忆中提炼L2语义记忆规则"""
+    import json as _j
+    from pathlib import Path as _P
+    _l0 = _P(__file__).parent.parent / 'data'
+    _l2_file = _l0 / 'autopilot_lessons.json'
+    _l1_file = _l0 / 'autopilot_decisions.jsonl'
+
+    lessons = []
+    # 1. 从WR矩阵提取规则
+    for key, data in matrix.items():
+        n = int(data.get('settled', data.get('n', 0)))
+        wr = float(data.get('wr', 0))
+        if n >= 10:
+            if wr >= 0.60:
+                lessons.append({
+                    'rule': f'{key} WR={wr:.0%} n={n} → 高胜率策略',
+                    'evidence': {'n': n, 'wr': wr, 'avg_pnl': data.get('avg_pnl', 0)},
+                    'action': 'PROMOTE',
+                })
+            elif wr <= 0.30:
+                lessons.append({
+                    'rule': f'{key} WR={wr:.0%} n={n} → 低胜率策略',
+                    'evidence': {'n': n, 'wr': wr, 'avg_pnl': data.get('avg_pnl', 0)},
+                    'action': 'DEMOTE',
+                })
+
+    # 2. 从L1情景记忆提取WATCH/SKIP正确率
+    if _l1_file.exists():
+        _decisions = []
+        with open(_l1_file) as _f:
+            for _line in _f:
+                try: _decisions.append(_j.loads(_line))
+                except: pass
+        # 按decision统计
+        from collections import Counter as _C
+        _counts = _C(d.get('decision') for d in _decisions if d.get('decision'))
+        _total = sum(_counts.values())
+        if _total > 0:
+            lessons.append({
+                'rule': f'Autopilot决策分布: {_dict_to_str(_counts)} 总计{_total}条',
+                'evidence': {'total': _total, 'distribution': {k: v for k, v in _counts.items()}},
+                'action': 'MONITOR',
+            })
+
+    # 3. 阈值调优建议
+    threshold_suggestions = []
+    for c in changes:
+        threshold_suggestions.append({
+            'param': f"{c['key']}_{c.get('score_bin','all')}",
+            'old_mult': c['old_mult'],
+            'new_mult': c['new_mult'],
+            'reason': f"WR={c['wilson_wr']:.0%} n={c['n']}",
+        })
+
+    # 4. 写入L2语义记忆
+    _l2_data = {
+        'version': '1.0',
+        'last_updated': time.time(),
+        'lessons': lessons[-50:],  # 保留最近50条
+        'threshold_suggestions': threshold_suggestions,
+        'wr_matrix_snapshot': {k: {'wr': v.get('wr',0), 'n': v.get('n',0)} for k, v in list(matrix.items())[:20]},
+    }
+    _l2_file.write_text(_j.dumps(_l2_data, ensure_ascii=False, indent=2))
+    log(f'L2语义记忆已生成: {len(lessons)}条规则 + {len(threshold_suggestions)}条阈值建议')
+
+def _dict_to_str(d: dict) -> str:
+    return ', '.join(f'{k}={v}' for k, v in sorted(d.items(), key=lambda x: -x[1]))
 
 
 if __name__ == '__main__':

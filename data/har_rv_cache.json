@@ -2860,12 +2860,12 @@
     }
   },
   "ETH": {
-    "ts": 1789917105.648011,
+    "ts": 1789917857.729387,
     "data": {
-      "rv_1d": 0.02158,
-      "rv_5d": 0.04295,
-      "rv_22d": 0.04994,
-      "rv_forecast": 0.03667,
+      "rv_1d": 0.02169,
+      "rv_5d": 0.04299,
+      "rv_22d": 0.04997,
+      "rv_forecast": 0.03673,
       "rv_percentile": 100,
       "regime_vol": "HIGH",
       "score_adj": -3,
@@ -2912,12 +2912,12 @@
     }
   },
   "XRP": {
-    "ts": 1789853063.6420946,
+    "ts": 1789917857.7416666,
     "data": {
-      "rv_1d": 0.02497,
-      "rv_5d": 0.06094,
-      "rv_22d": 0.10442,
-      "rv_forecast": 0.05941,
+      "rv_1d": 0.02996,
+      "rv_5d": 0.06205,
+      "rv_22d": 0.077,
+      "rv_forecast": 0.05386,
       "rv_percentile": 100,
       "regime_vol": "EXTREME",
       "score_adj": -5,
@@ -3114,6 +3114,32 @@
       "rv_22d": 0.14718,
       "rv_forecast": 0.08242,
       "rv_percentile": 100,
+      "regime_vol": "EXTREME",
+      "score_adj": -5,
+      "p_up_proxy": 0.45
+    }
+  },
+  "EPIC": {
+    "ts": 1789918809.31572,
+    "data": {
+      "rv_1d": 0.18365,
+      "rv_5d": 0.25317,
+      "rv_22d": 0.26341,
+      "rv_forecast": 0.22674,
+      "rv_percentile": 90,
+      "regime_vol": "EXTREME",
+      "score_adj": -5,
+      "p_up_proxy": 0.45
+    }
+  },
+  "BERA": {
+    "ts": 1789918812.0922003,
+    "data": {
+      "rv_1d": 0.08463,
+      "rv_5d": 0.09989,
+      "rv_22d": 0.13049,
+      "rv_forecast": 0.10122,
+      "rv_percentile": 90,
       "regime_vol": "EXTREME",
       "score_adj": -5,
       "p_up_proxy": 0.45

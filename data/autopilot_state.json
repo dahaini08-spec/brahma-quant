@@ -1,0 +1,30 @@
+{
+  "ts": 1789918812.0983975,
+  "version": "1.0",
+  "market_state": {
+    "EPIC": {
+      "price": 0,
+      "regime": "UNKNOWN",
+      "score": 0
+    },
+    "BERA": {
+      "price": 0,
+      "regime": "UNKNOWN",
+      "score": 0
+    }
+  },
+  "active_signals": [],
+  "positions": [],
+  "last_decision": {
+    "ts": 1789918812.0983977,
+    "symbol": "BERAUSDT",
+    "action": "SKIP",
+    "score": 0,
+    "signal_dir": "AUTO"
+  },
+  "data_health": {
+    "fresh": 0,
+    "dead": 0
+  },
+  "autopilot_enabled": false
+}

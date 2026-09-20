@@ -1,1 +1,1 @@
-{"data": {"atr_val": 0.016, "atr_pct": 1.134, "atr_percentile": 37.8, "regime": "NORMAL", "score_adj": 0, "window": 90}, "exp": 1789853182.7796736}
+{"data": {"atr_val": 0.0125, "atr_pct": 0.9, "atr_percentile": 20.0, "regime": "COMPRESSED", "score_adj": 2, "window": 90}, "exp": 1789917976.977931}

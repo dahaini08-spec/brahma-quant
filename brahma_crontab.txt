@@ -122,7 +122,8 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # Layer 7: 每日/每周维护 (凌晨低负载)
 # ============================================================
 # wr feedback — 02:00
-0 2 * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/wr_feedback_engine.py >> logs/syscron.log 2>&1
+# 0 2 * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/wr_feedback_engine.py >> logs/syscron.log 2>&1
+# [9.20] 已由Autopilot L2学习层替代（见下方 autopilot 区块）
 # data TTL — 03:00
 0 3 * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_data_ttl.py >> logs/syscron.log 2>&1
 # fangcang builder — 03:00
@@ -175,3 +176,38 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 
 # 亏损记忆自动记录（每小时）
 0 * * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/loss_memory_recorder.py >> logs/loss_memory.log 2>&1
+
+# ═══════════════════════════════════════════════════════════════
+# [9.20 苏摩111] Brahma Autopilot 自动驾驶记忆决策机器人
+# ═══════════════════════════════════════════════════════════════
+
+# L0+L1: 决策机器人每5分钟运行（WATCH/ALERT模式，不自主EXECUTE）
+*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 brahma_brain/brahma_cpu.py --auto >> logs/autopilot_cpu.log 2>&1
+
+# L2: 学习层每天02:00 UTC运行（WR反哺+L2语义记忆生成）
+0 2 * * * cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/wr_feedback_engine.py >> logs/autopilot_learn.log 2>&1
+
+# 执行层 dry-run模式每10分钟（Phase 4: 验证用，Phase 5后改为实盘）
+*/10 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/auto_executor.py --dry >> logs/autopilot_exec.log 2>&1
+
+# L0工作记忆刷新（每5分钟，由分析脚本更新状态文件）
+*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 -c "
+import json, time
+from pathlib import Path
+p = Path('data/autopilot_state.json')
+state = json.loads(p.read_text()) if p.exists() else {}
+state['ts'] = time.time()
+# 数据健康检查
+from pathlib import Path as _P
+now = time.time()
+fresh = dead = 0
+for f in ['liq_heatmap_btcusdt.json','cvd_realtime_btcusdt.json','oi_candidates.json','regime_state.json','gex_state.json','vol_beta_state.json','macro_real.json','har_rv_cache.json']:
+    fp = _P(f'data/{f}')
+    if fp.exists():
+        age = (now - fp.stat().st_mtime) / 3600
+        if age < 12: fresh += 1
+        else: dead += 1
+    else: dead += 1
+state['data_health'] = {'fresh': fresh, 'dead': dead}
+p.write_text(json.dumps(state, ensure_ascii=False, indent=2))
+" >> logs/autopilot_l0.log 2>&1

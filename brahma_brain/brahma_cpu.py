@@ -64,6 +64,12 @@ _CPU_LOG        = _DATA / 'brahma_cpu_log.jsonl'
 _JARVIS_USER    = '73295708'
 _JARVIS_THREAD  = '01a07628-0405-7e85-a34b-e68cd029dfc6'
 
+# ── Autopilot记忆层 [9.20 苏摩111] ─────────────────────────────────
+_L0_STATE       = _DATA / 'autopilot_state.json'      # L0工作记忆
+_L1_DECISIONS   = _DATA / 'autopilot_decisions.jsonl' # L1情景记忆
+_L2_LESSONS     = _DATA / 'autopilot_lessons.json'     # L2语义记忆
+_AUTOPILOT_ENABLED = False  # Phase 5改为True，开启自主EXECUTE
+
 # ══════════════════════════════════════════════════════════════════════
 # Layer0: 快速否决（0 tokens，纯规则）
 # ══════════════════════════════════════════════════════════════════════
@@ -334,8 +340,9 @@ def _do_watch(symbol: str, signal_dir: str, score_result: dict) -> None:
 # CPU 日志
 # ══════════════════════════════════════════════════════════════════════
 def _log_decision(symbol: str, signal_dir: str, decision: str,
-                  reason: str, score: float, layer: int) -> None:
-    """log decision"""
+                  reason: str, score: float, layer: int,
+                  score_result: dict = None, council: dict = None) -> None:
+    """log decision + 写入L1情景记忆"""
     try:
         entry = {
             'ts':         time.time(),
@@ -346,11 +353,71 @@ def _log_decision(symbol: str, signal_dir: str, decision: str,
             'reason':     reason,
             'score':      score,
             'layer':      layer,
+            # L1情景记忆额外字段
+            'context':    _extract_context(score_result),
+            'council':    {'support': council.get('support_votes',0), 'veto': council.get('veto_votes',0)} if council else None,
+            'outcome':    None,   # signal_settler回填
+            'pnl_pct':    None,   # signal_settler回填
+            'lesson':     None,   # L2学习层回填
         }
         _DATA.mkdir(exist_ok=True)
         with open(_CPU_LOG, 'a') as f:
             f.write(json.dumps(entry, ensure_ascii=False) + '\n')
+        # 写入L1情景记忆
+        with open(_L1_DECISIONS, 'a') as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + '\n')
+        # 更新L0工作记忆
+        _update_l0_state(symbol, decision, score, signal_dir, score_result)
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+
+def _extract_context(score_result: dict = None) -> dict:
+    """从评分结果中提取关键上下文（精简版，避免L1过大）"""
+    if not score_result or not isinstance(score_result, dict):
+        return {}
+    return {
+        'regime':   score_result.get('regime', 'UNKNOWN'),
+        'price':    score_result.get('price', 0),
+        'score':    score_result.get('score', 0),
+        'resonance': score_result.get('resonance', {}),
+        'oi_signal': score_result.get('oi_signal', 'N/A'),
+        'fvg_dir':   score_result.get('fvg_dir', 'NONE'),
+        'hurst':     score_result.get('hurst', 0),
+    }
+
+def _update_l0_state(symbol: str, decision: str, score: float,
+                      signal_dir: str, score_result: dict = None) -> None:
+    """更新L0工作记忆"""
+    try:
+        state = {}
+        if _L0_STATE.exists():
+            state = json.loads(_L0_STATE.read_text())
+        state['ts'] = time.time()
+        state['last_decision'] = {
+            'ts': time.time(),
+            'symbol': symbol,
+            'action': decision,
+            'score': score,
+            'signal_dir': signal_dir,
+        }
+        # 更新market_state
+        if score_result and isinstance(score_result, dict):
+            sym_key = symbol.replace('USDT', '')
+            state.setdefault('market_state', {})[sym_key] = {
+                'price': score_result.get('price', 0),
+                'regime': score_result.get('regime', 'UNKNOWN'),
+                'score': score_result.get('score', 0),
+            }
+        _L0_STATE.write_text(json.dumps(state, ensure_ascii=False, indent=2))
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+
+def _load_l2_lessons() -> dict:
+    """读取L2语义记忆（决策时参考历史教训）"""
+    try:
+        if _L2_LESSONS.exists():
+            return json.loads(_L2_LESSONS.read_text())
+    except Exception:
+        pass
+    return {'lessons': [], 'threshold_suggestions': []}
 # ══════════════════════════════════════════════════════════════════════
 # 主入口：process_event
 # ══════════════════════════════════════════════════════════════════════
@@ -387,7 +454,7 @@ def process_event(symbol: str, signal_dir: str = None,
     if signal_dir:
         rejected, reason = _layer0_fast_reject(sym, regime, signal_dir)
         if rejected:
-            _log_decision(sym, signal_dir or 'AUTO', 'SKIP', reason, 0, layer=0)
+            _log_decision(sym, signal_dir or 'AUTO', 'SKIP', reason, 0, layer=0, score_result=None)
             return {'decision': 'SKIP', 'reason': reason, 'layer': 0,
                     'symbol': sym, 'score': 0, 'elapsed': time.time() - t0}
 
@@ -395,7 +462,7 @@ def process_event(symbol: str, signal_dir: str = None,
     result = _layer1_score(sym, signal_dir)
     if not result.get('_layer1_ok'):
         reason = f'Layer1评分失败: {result.get("_error")}'
-        _log_decision(sym, signal_dir or 'AUTO', 'SKIP', reason, 0, layer=1)
+        _log_decision(sym, signal_dir or 'AUTO', 'SKIP', reason, 0, layer=1, score_result=result)
         return {'decision': 'SKIP', 'reason': reason, 'layer': 1,
                 'symbol': sym, 'score': 0, 'elapsed': time.time() - t0}
 
@@ -406,20 +473,20 @@ def process_event(symbol: str, signal_dir: str = None,
     # Layer0复查（现在有了真实regime）
     rejected, reason = _layer0_fast_reject(sym, regime, signal_dir)
     if rejected:
-        _log_decision(sym, signal_dir, 'SKIP', reason, score, layer=0)
+        _log_decision(sym, signal_dir, 'SKIP', reason, score, layer=0, score_result=result)
         return {'decision': 'SKIP', 'reason': reason, 'layer': 0,
                 'symbol': sym, 'score': score, 'elapsed': time.time() - t0}
 
     if score < SCORE_SKIP:
         reason = f'score={score:.1f}<{SCORE_SKIP}门槛'
-        _log_decision(sym, signal_dir, 'SKIP', reason, score, layer=1)
+        _log_decision(sym, signal_dir, 'SKIP', reason, score, layer=1, score_result=result)
         return {'decision': 'SKIP', 'reason': reason, 'layer': 1,
                 'symbol': sym, 'score': score, 'elapsed': time.time() - t0}
 
     if score < SCORE_WATCH:
         reason = f'score={score:.1f}进入WATCH区({SCORE_SKIP}-{SCORE_WATCH})'
         _do_watch(sym, signal_dir, result)
-        _log_decision(sym, signal_dir, 'WATCH', reason, score, layer=1)
+        _log_decision(sym, signal_dir, 'WATCH', reason, score, layer=1, score_result=result)
         return {'decision': 'WATCH', 'reason': reason, 'layer': 1,
                 'symbol': sym, 'score': score, 'elapsed': time.time() - t0}
 
@@ -433,7 +500,7 @@ def process_event(symbol: str, signal_dir: str = None,
     if council.get('council_ok') and veto >= COUNCIL_VETO_MIN:
         reason = f'议会{veto}票反对，降为WATCH (score={score:.1f} adj={adj:+.1f})'
         _do_watch(sym, signal_dir, result)
-        _log_decision(sym, signal_dir, 'WATCH', reason, score_adj, layer=2)
+        _log_decision(sym, signal_dir, 'WATCH', reason, score_adj, layer=2, score_result=result, council=council)
         return {'decision': 'WATCH', 'reason': reason, 'layer': 2,
                 'symbol': sym, 'score': score_adj, 'elapsed': time.time() - t0}
 
@@ -443,7 +510,7 @@ def process_event(symbol: str, signal_dir: str = None,
                   f'需score≥{SCORE_EXECUTE}且≥{COUNCIL_SUPPORT_EXEC}票支持')
         if not dry_run:
             _do_alert(sym, signal_dir, result, council, reason)
-        _log_decision(sym, signal_dir, 'ALERT', reason, score_adj, layer=2)
+        _log_decision(sym, signal_dir, 'ALERT', reason, score_adj, layer=2, score_result=result, council=council)
         return {'decision': 'ALERT', 'reason': reason, 'layer': 2,
                 'symbol': sym, 'score': score_adj, 'elapsed': time.time() - t0}
 
@@ -451,7 +518,7 @@ def process_event(symbol: str, signal_dir: str = None,
     pos_ok, pos_reason = _check_position_risk(sym, signal_dir, result)
     if not pos_ok:
         reason = f'仓位门控拒绝: {pos_reason}'
-        _log_decision(sym, signal_dir, 'SKIP', reason, score_adj, layer=3)
+        _log_decision(sym, signal_dir, 'SKIP', reason, score_adj, layer=3, score_result=result, council=council)
         return {'decision': 'SKIP', 'reason': reason, 'layer': 3,
                 'symbol': sym, 'score': score_adj, 'elapsed': time.time() - t0}
 
@@ -468,7 +535,7 @@ def process_event(symbol: str, signal_dir: str = None,
                 auto_paper_trade(sym, signal_dir, score_adj, support, result)
             except Exception as _pe:
                 _log.warning(f'[CPU·paper] 纸面开单失败: {_pe}')
-        _log_decision(sym, signal_dir, 'ALERT', reason, score_adj, layer=3)
+        _log_decision(sym, signal_dir, 'ALERT', reason, score_adj, layer=3, score_result=result, council=council)
         return {'decision': 'ALERT', 'reason': reason, 'layer': 3,
                 'symbol': sym, 'score': score_adj, 'elapsed': time.time() - t0}
 
@@ -487,7 +554,7 @@ def process_event(symbol: str, signal_dir: str = None,
             exec_result['paper_error'] = str(_pe)
         # 实盘执行
         exec_result.update(_do_execute(sym, signal_dir, result, council))
-    _log_decision(sym, signal_dir, 'EXECUTE', reason, score_adj, layer=3)
+    _log_decision(sym, signal_dir, 'EXECUTE', reason, score_adj, layer=3, score_result=result, council=council)
     return {
         'decision':    'EXECUTE',
         'reason':      reason,
@@ -554,9 +621,28 @@ if __name__ == '__main__':
     parser.add_argument('--dry-run', action='store_true', help='只判断不执行')
     parser.add_argument('--trigger', action='store_true',
                         help='批量处理rsi_trigger_event.json')
+    parser.add_argument('--auto', action='store_true',
+                        help='[Autopilot] 自动模式：批量处理trigger + 写入记忆层')
     args = parser.parse_args()
 
-    if args.trigger or not args.symbol:
+    if args.auto:
+        # [9.20 苏摩111] Autopilot自动模式
+        _l2 = _load_l2_lessons()
+        if _l2.get('lessons'):
+            print(f'[Autopilot] L2语义记忆: {len(_l2["lessons"])}条规则')
+        results = process_trigger_file()
+        for r in results:
+            sym  = r.get('symbol', '?')
+            dec  = r.get('decision', '?')
+            sc   = r.get('score', 0)
+            lyr  = r.get('layer', '?')
+            rsn  = r.get('reason', '')
+            ela  = r.get('elapsed', 0)
+            icon = {'EXECUTE':'🟢','ALERT':'🟡','WATCH':'🔵','SKIP':'⚫'}.get(dec, '?')
+            print(f'{icon} {sym:<12} L{lyr} {dec:<8} score={sc:.1f} [{ela:.1f}s] {rsn}')
+        if not results:
+            print('[Autopilot] 没有待处理的感知事件')
+    elif args.trigger or not args.symbol:
         print('[CPU] 批量处理感知事件...')
         results = process_trigger_file()
         for r in results:
