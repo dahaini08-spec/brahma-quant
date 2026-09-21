@@ -175,10 +175,12 @@ def match(symbol: str, regime: str, direction: str, oi_signal: str,
     _pnls = [float(m['pnl_pct'] or 0) for m in matches]
     avg_pnl = sum(_pnls) / total if total else 0
 
+    _best_sim = max((m.get('similarity', 0) for m in matches), default=0)
     return {
         'matched': True,
         'total_signals': len(sigs),
         'matched_count': total,
+        'best_similarity': _best_sim,
         'wr': round(wr * 100, 1),
         'avg_pnl': round(avg_pnl, 3),
         'ev': round(wr * avg_pnl if avg_pnl > 0 else -wr * abs(avg_pnl), 3),

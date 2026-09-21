@@ -1,39 +1,39 @@
 {
-  "timestamp": "2026-09-20T23:44:54.631437+00:00",
+  "timestamp": "2026-09-21T00:29:49.058007+00:00",
   "symbols": [
-    "BTC"
+    "ETH"
   ],
   "causal_chains": [],
   "game_theory": {
-    "BTC": [
+    "ETH": [
       {
         "actor": "做市商（GEX）",
-        "action": "正GEX=+422.4M → 波动率抑制",
+        "action": "正GEX=+32.6M → 波动率抑制",
         "intent": "做市商在正GEX区域抑制波动 → 价格可能被锚定 → 突破需要外力",
-        "evidence": "GEX=+3 GEX=+422.4M(POSITIVE) | 强度=STRONG | s22=+3 | ZeroFlip距离-5",
+        "evidence": "GEX=+1 GEX=+32.6M(POSITIVE) | 强度=WEAK | s22=+1 | ZeroFlip距离-19.1",
         "target": "正GEX抑制波动，等外力突破"
       },
       {
         "actor": "主力",
-        "action": "上方清算区$85,280(+5.0%)",
-        "intent": "引诱价格上行 → 触发空头止损 → 然后反转做空",
-        "evidence": "liq_short=$85,280 | +5.0%",
-        "target": "空头止损=猎物"
+        "action": "下方清算区$2,545(-4.9%)",
+        "intent": "砸到下方清算区 → 触发多头止损 → 接货 → 反弹",
+        "evidence": "liq_long=$2,545 | -4.9%",
+        "target": "多头止损=接货机会"
       }
     ]
   },
   "timeframe_chains": {
-    "BTC": [
+    "ETH": [
       {
         "timeframe": "1D",
         "fvg_direction": "BEAR",
-        "fvg_price": 63913.3,
+        "fvg_price": 1890.425,
         "fvg_range": [
           0,
           0
         ],
-        "distance": "+21.3%",
-        "rsi": 64.33,
+        "distance": "+29.3%",
+        "rsi": 66.11,
         "role": "支撑",
         "action": "突破Bear FVG=看空失效",
         "phase": "中线（阶段2/3）"
@@ -41,82 +41,54 @@
       {
         "timeframe": "4H",
         "fvg_direction": "BEAR",
-        "fvg_price": 77783.8,
+        "fvg_price": 2455.55,
         "fvg_range": [
           0,
           0
         ],
-        "distance": "+4.2%",
-        "rsi": 67.04,
+        "distance": "+8.2%",
+        "rsi": 66.71,
         "role": "支撑",
         "action": "突破Bear FVG=看空失效",
         "phase": "波段（阶段1/2）"
       },
       {
         "timeframe": "1H",
-        "fvg_direction": "BULL",
-        "fvg_price": 81425.1,
-        "fvg_range": [
-          0,
-          0
-        ],
-        "distance": "-0.3%",
-        "rsi": 58.29,
-        "role": "阻力",
-        "action": "突破FVG=看多",
-        "phase": "短期（阶段1）"
-      },
-      {
-        "timeframe": "1H",
         "fvg_direction": "BEAR",
-        "fvg_price": 76973.45,
+        "fvg_price": 2399.78,
         "fvg_range": [
           0,
           0
         ],
-        "distance": "+5.2%",
-        "rsi": 58.29,
+        "distance": "+10.3%",
+        "rsi": 65.66,
         "role": "支撑",
         "action": "突破Bear FVG=看空失效",
         "phase": "短期（阶段1）"
       },
       {
         "timeframe": "15M",
-        "fvg_direction": "BULL",
-        "fvg_price": 81151.05,
-        "fvg_range": [
-          0,
-          0
-        ],
-        "distance": "+0.1%",
-        "rsi": 53.59,
-        "role": "支撑",
-        "action": "回调到FVG=做多入场点",
-        "phase": "精确入场"
-      },
-      {
-        "timeframe": "15M",
         "fvg_direction": "BEAR",
-        "fvg_price": 76373.6,
+        "fvg_price": 2458.025,
         "fvg_range": [
           0,
           0
         ],
-        "distance": "+6.0%",
-        "rsi": 53.59,
+        "distance": "+8.1%",
+        "rsi": 73.34,
         "role": "支撑",
         "action": "突破Bear FVG=看空失效",
         "phase": "精确入场"
       }
     ]
   },
-  "report": "\n╬══════════════════════════════════════════════════════════\n  🧠 梵天推理层 | 因果+博弈+周期\n╬══════════════════════════════════════════════════════════\n  ━━━ 2. 博弈建模 | BTC ━━━\n  👤 做市商（GEX）: 正GEX=+422.4M → 波动率抑制\n      → 做市商在正GEX区域抑制波动 → 价格可能被锚定 → 突破需要外力\n      📎 GEX=+3 GEX=+422.4M(POSITIVE) | 强度=STRONG | s22=+3 | ZeroFlip距离-5\n      🎯 猎杀目标: 正GEX抑制波动，等外力突破\n  👤 主力: 上方清算区$85,280(+5.0%)\n      → 引诱价格上行 → 触发空头止损 → 然后反转做空\n      📎 liq_short=$85,280 | +5.0%\n      🎯 猎杀目标: 空头止损=猎物\n\n  ━━━ 3. 周期因果链 | BTC ━━━\n  [1D] FVG=BEAR @$63,913 (+21.3%) | RSI=64\n      角色: 支撑 | 阶段: 中线（阶段2/3）\n      → 突破Bear FVG=看空失效\n  [4H] FVG=BEAR @$77,784 (+4.2%) | RSI=67\n      角色: 支撑 | 阶段: 波段（阶段1/2）\n      → 突破Bear FVG=看空失效\n  [1H] FVG=BULL @$81,425 (-0.3%) | RSI=58\n      角色: 阻力 | 阶段: 短期（阶段1）\n      → 突破FVG=看多\n  [1H] FVG=BEAR @$76,973 (+5.2%) | RSI=58\n      角色: 支撑 | 阶段: 短期（阶段1）\n      → 突破Bear FVG=看空失效\n  [15M] FVG=BULL @$81,151 (+0.1%) | RSI=54\n      角色: 支撑 | 阶段: 精确入场\n      → 回调到FVG=做多入场点\n  [15M] FVG=BEAR @$76,374 (+6.0%) | RSI=54\n      角色: 支撑 | 阶段: 精确入场\n      → 突破Bear FVG=看空失效\n      ── 周期综合 ──\n      1D=BEAR 1H=BULL 方向不一致 → 短期可能是中线级别的回调 → 分阶段操作\n\n  📌 推理层结论：\n  博弈分析: 2条\n  周期链: 6条\n  ⚠️ 推理层=辅助决策，最终判断由交易员大脑决定\n╬══════════════════════════════════════════════════════════",
+  "report": "\n╬══════════════════════════════════════════════════════════\n  🧠 梵天推理层 | 因果+博弈+周期\n╬══════════════════════════════════════════════════════════\n  ━━━ 2. 博弈建模 | ETH ━━━\n  👤 做市商（GEX）: 正GEX=+32.6M → 波动率抑制\n      → 做市商在正GEX区域抑制波动 → 价格可能被锚定 → 突破需要外力\n      📎 GEX=+1 GEX=+32.6M(POSITIVE) | 强度=WEAK | s22=+1 | ZeroFlip距离-19.1\n      🎯 猎杀目标: 正GEX抑制波动，等外力突破\n  👤 主力: 下方清算区$2,545(-4.9%)\n      → 砸到下方清算区 → 触发多头止损 → 接货 → 反弹\n      📎 liq_long=$2,545 | -4.9%\n      🎯 猎杀目标: 多头止损=接货机会\n\n  ━━━ 3. 周期因果链 | ETH ━━━\n  [1D] FVG=BEAR @$1,890 (+29.3%) | RSI=66\n      角色: 支撑 | 阶段: 中线（阶段2/3）\n      → 突破Bear FVG=看空失效\n  [4H] FVG=BEAR @$2,456 (+8.2%) | RSI=67\n      角色: 支撑 | 阶段: 波段（阶段1/2）\n      → 突破Bear FVG=看空失效\n  [1H] FVG=BEAR @$2,400 (+10.3%) | RSI=66\n      角色: 支撑 | 阶段: 短期（阶段1）\n      → 突破Bear FVG=看空失效\n  [15M] FVG=BEAR @$2,458 (+8.1%) | RSI=73\n      角色: 支撑 | 阶段: 精确入场\n      → 突破Bear FVG=看空失效\n      ── 周期综合 ──\n      1D和1H方向一致(BEAR) → 短期操作与中线趋势对齐 → 信号可靠\n\n  📌 推理层结论：\n  博弈分析: 2条\n  周期链: 4条\n  ⚠️ 推理层=辅助决策，最终判断由交易员大脑决定\n╬══════════════════════════════════════════════════════════",
   "feedback": {
-    "BTC": {
+    "ETH": {
       "dim_down_weight": {},
       "regime_confirm_bonus": 0.2,
       "hunt_zone": {},
-      "_regime_hint": "BULL"
+      "_regime_hint": "BEAR"
     }
   }
 }

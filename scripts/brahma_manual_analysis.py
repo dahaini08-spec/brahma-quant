@@ -751,15 +751,18 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict, oi: dict = None, vo
         # NEUTRAL或方向不一致：维度通过但不额外加分
     
     # [P3新增] 跨市场alpha维度
+    # [9.21修复 苏摩111] 跨市场有数据=维度通过，方向不一致在cross_check记录
     has_cma = False
     if cma and cma.get('cross_market_alpha', 0) != 0:
         _cma_alpha = cma['cross_market_alpha']
         _cma_risk_on = cma.get('direction', '') == 'RISK_ON'
         _cma_risk_off = cma.get('direction', '') == 'RISK_OFF'
-        # RISK_ON与做多一致 / RISK_OFF与做空一致
+        # [9.21修复] 有数据=维度通过（不管方向）
+        has_cma = True
+        score += 1
         if (_fvg_bull and _cma_risk_on) or (_fvg_bear and _cma_risk_off):
-            has_cma = True
-            score += 1
+            pass  # 已+1，方向一致不再额外加
+        # 方向不一致：维度通过但cross_check记录矛盾
     
     # ══ Phase 2修复 2026-09-18 苏摩111: 体制×维度权重矩阵 ══
     # 原逻辑：7维简单计数，每维1分，≥4/7通过
@@ -2079,11 +2082,11 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     # 在VIP输出前，自动检查所有铁律，不满足=拒绝输出策略
     _gate2_errors = []
     
-    # 铁律1: SL距离 ≥ 1.5×ATR4H
-    if atr_4h and sl_distance < atr_4h * 1.5:
+    # 铁律1: SL距离 ≥ 1.5×ATR4H (加0.1%容差防浮点精度)
+    if atr_4h and sl_distance < atr_4h * 1.5 * 0.999:
         _gate2_errors.append(f'SL距离${sl_distance:.0f} < 1.5×ATR4H ${atr_4h*1.5:.0f}')
-    # 铁律2: SL距离 ≥ 1.5×ATR1H
-    if atr_1h and sl_distance < atr_1h * 1.5:
+    # 铁律2: SL距离 ≥ 1.5×ATR1H (加0.1%容差防浮点精度)
+    if atr_1h and sl_distance < atr_1h * 1.5 * 0.999:
         _gate2_errors.append(f'SL距离${sl_distance:.0f} < 1.5×ATR1H ${atr_1h*1.5:.0f}')
     # 铁律3: RR ≥ 2.0（用TP2计算）
     if bias == 'LONG' and tp2:
