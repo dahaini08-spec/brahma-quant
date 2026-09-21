@@ -526,34 +526,11 @@ def analyze(symbol: str) -> dict:
     返回结构化dict，供共振评分器使用
     """
     import sys
-    # [设计院2026-05-28] 强制实时拉取原则
-    # 每次分析必须从币安FAPI拉最新数据，缓存仅作降级备用
-    # 并发拉取耗时约200ms，保证所有技术指标基于最新K线
-    try:
-        import sys as _sys_rt, os as _os_rt
-        _rt_dir = _os_rt.path.dirname(_os_rt.path.abspath(__file__))
-        if _rt_dir not in _sys_rt.path: _sys_rt.path.insert(0, _rt_dir)
-# 模块不存在，已注释
-# from realtime_fetch import fetch_realtime as _rt_fetch
-        _rt = _rt_fetch(symbol)
-        if not _rt.get('_errors') or len(_rt['_errors']) < 3:
-            # 注入实时数据到缓存层（强制覆盖，TTL=30s仅作短暂防重复）
-            from data_cache import _cache_set, _cache_key
-            for _iv in ['15m', '1h', '4h', '1d']:
-                if _iv in _rt and _rt[_iv]:
-                    _cache_set(_cache_key(symbol, _iv, 250), _rt[_iv], 30)
-            if 'ticker' in _rt:
-                _cache_set(_cache_key(symbol, 'ticker'), _rt['ticker'], 15)
-            if 'fr' in _rt and isinstance(_rt['fr'], list) and _rt['fr']:
-                _fr_val = float(_rt['fr'][0].get('fundingRate', 0)) * 100  # 转换为百分比(%)
-                _cache_set(_cache_key(symbol, 'fr'), _fr_val, 30)
-            if 'lsr' in _rt and isinstance(_rt['lsr'], list) and _rt['lsr']:
-                _ls_val = float(_rt['lsr'][0].get('longAccount', 0.5)) * 100
-                _cache_set(_cache_key(symbol, 'lsr'), _ls_val, 30)
-    except Exception as _rt_err:
-        print(f'[WARN] {__name__}: {_rt_err}', file=sys.stderr)
-
-    # 拉取数据（优先命中上面注入的实时缓存）
+    # [2026-09-21] realtime_fetch模块已删除，旧_rt_fetch注入层已移除
+    # data_cache.get_klines现支持base symbol自动标准化（BTC→BTCUSDT）
+    # 并直接从Binance API实时拉取，无需中间注入层
+    # ────────────────────────────────────────────────────────────────
+    # 拉取数据（直接从API，data_cache自带缓存+实时拉取）
     # [P2修复 2026-08-28] 1H拉400根：EMA200需要200根收敛，200根拉取计算出的EMA200严重失真
     k15  = klines_to_ohlcv(get_klines(symbol, '15m', 200))
     k1h  = klines_to_ohlcv(get_klines(symbol, '1h',  400))  # [P2修复] 200→400根，EMA200收敛修复

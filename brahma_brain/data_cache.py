@@ -15,7 +15,7 @@ brahma_brain · Phase 1
   - TTL自动过期管理（零重复API调用）
   - 辅助数据：资金费率/OI/24H行情
 """
-VERSION = 'v1.1'  # 设计院 2026-05-20 · [360fix] 2026-06-18 OFFLINE_MODE
+VERSION = 'v1.2'  # 设计院 2026-05-20 · [360fix] 2026-06-18 OFFLINE_MODE · [2026-09-21] symbol标准化
 import os, sys, time
 import threading
 import json, hmac, hashlib  # [C2-fix audit-2026-06-17]
@@ -29,6 +29,19 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 # 激活后，所有 get_funding_rate / get_open_interest / get_lsr / get_ticker
 # 直接返回 OFFLINE_CTX 里的中性默认值，仅 get_klines 允许真实传入
 OFFLINE_MODE: bool = False
+
+
+def _norm_symbol(symbol: str) -> str:
+    """[2026-09-21] symbol标准化：BTC→BTCUSDT，确保所有API调用使用完整交易对"""
+    if not symbol:
+        return symbol
+    s = symbol.upper().strip()
+    # 已有报价后缀，直接返回
+    for suffix in ('USDT', 'BUSD', 'USDC', 'FDUSD', 'TUSD'):
+        if s.endswith(suffix):
+            return s
+    # 纯base asset，自动补USDT
+    return s + 'USDT'
 OFFLINE_CTX: dict  = {
     'fr':           0.0001,
     'oi':           100000,
@@ -193,7 +206,9 @@ def _is_spot_symbol(symbol: str) -> bool:
 def get_klines(symbol: str, interval: str, limit: int = 200) -> list:
     """拉取K线，带缓存（symbol 先 ASCII 校验，跳过 CJK 非法标的）
     [2026-07-22] 自动路由：美股代币走现货API，其他走期货API
+    [2026-09-21] symbol标准化：BTC→BTCUSDT（修复market_state传base symbol的bug）
     """
+    symbol = _norm_symbol(symbol)
     try:
         symbol.encode('ascii')
     except UnicodeEncodeError:
@@ -230,6 +245,7 @@ def get_klines(symbol: str, interval: str, limit: int = 200) -> list:
 
 def get_ticker(symbol: str) -> dict:
     """获取ticker"""
+    symbol = _norm_symbol(symbol)
     if OFFLINE_MODE: return OFFLINE_CTX.get('ticker', {})  # [offline]
     """24H行情（symbol 先 ASCII 校验）
     [2026-07-22] 美股代币走现货API
@@ -255,6 +271,7 @@ def get_ticker(symbol: str) -> dict:
 
 def get_funding_rate(symbol: str) -> float:
     """获取funding rate"""
+    symbol = _norm_symbol(symbol)
     if OFFLINE_MODE: return OFFLINE_CTX.get("fr", 0)  # [offline]
     """当前资金费率"""
     key = _cache_key(symbol, 'fr')
@@ -271,6 +288,7 @@ def get_funding_rate(symbol: str) -> float:
 
 def get_open_interest(symbol: str) -> dict:
     """获取open interest"""
+    symbol = _norm_symbol(symbol)
     if OFFLINE_MODE: return OFFLINE_CTX.get("oi", 0)  # [offline]
     """未平仓量 + OI动量（oi_change_pct）[P2 2026-05-22]"""
     key = _cache_key(symbol, 'oi')
@@ -309,6 +327,7 @@ def get_open_interest(symbol: str) -> dict:
 
 def get_long_short_ratio(symbol: str) -> float:
     """获取long short ratio"""
+    symbol = _norm_symbol(symbol)
     if OFFLINE_MODE: return OFFLINE_CTX.get('lsr', 50.0)  # [offline]
     """多空比（多头占比%）"""
     key = _cache_key(symbol, 'lsr')
