@@ -556,15 +556,25 @@ def step3_liq(d: dict) -> dict:
         from liq_heatmap import get_liq_heatmap
         _realtime_liq = get_liq_heatmap(sym)
         if _realtime_liq and 'error' not in _realtime_liq:
+            # [2026-09-21 P2修复] 标准化key名：nearest_xxx_liq → nearest_xxx
             liq = _realtime_liq
+            liq['nearest_short'] = _realtime_liq.get('nearest_short_liq', 0)
+            liq['nearest_long'] = _realtime_liq.get('nearest_long_liq', 0)
+            liq['second_short'] = _realtime_liq.get('second_short_liq', 0) if 'second_short_liq' in _realtime_liq else liq.get('second_short', 0)
+            liq['second_long'] = _realtime_liq.get('second_long_liq', 0) if 'second_long_liq' in _realtime_liq else liq.get('second_long', 0)
             # 更新d['liq']为实时数据
             d['liq'] = liq
         else:
             # 降级：用缓存
             liq = d['liq']
+            # 缓存也标准化key
+            liq['nearest_short'] = liq.get('nearest_short_liq', liq.get('nearest_short', 0))
+            liq['nearest_long'] = liq.get('nearest_long_liq', liq.get('nearest_long', 0))
     except Exception as _e:
         print(f"[WARN] step3_liq: 实时拉取失败，降级缓存: {_e}", file=sys.stderr)
         liq = d['liq']
+        liq['nearest_short'] = liq.get('nearest_short_liq', liq.get('nearest_short', 0))
+        liq['nearest_long'] = liq.get('nearest_long_liq', liq.get('nearest_long', 0))
 
     short_map = liq.get('short_liq_map', {})
     long_map  = liq.get('long_liq_map', {})
@@ -1691,6 +1701,7 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     # 价格突破止损墙=BULL_TREND信号, 破支撑池=BEAR_TREND信号
     _stop_wall = liq.get('nearest_short', 0)  # 上方止损墙
     _support_pool = liq.get('nearest_long', 0)  # 下方支撑池
+    import sys as _sys_dbg; print(f'[DEBUG step10] price={price} stop_wall={_stop_wall} support_pool={_support_pool} liq_keys={list(liq.keys())[:8]}', file=_sys_dbg.stderr)
     _price_break_regime = ''
     if _stop_wall > 0 and price > _stop_wall:
         _price_break_regime = 'BULL_TREND'  # 破止损墙=多头突破
@@ -1699,6 +1710,7 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     # 价格突破体制优先于Hurst体制
     if _price_break_regime:
         reg_now = _price_break_regime
+    print(f'[DEBUG step10] reg_now={reg_now} _price_break={_price_break_regime}', file=_sys_dbg.stderr)
 
     # ══════════════════════════════════════════════════════
     # L1【一票否决层】三方战略架构 2026-09-04 苏摩111封印
@@ -1891,7 +1903,7 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     if 'BEAR' in reg_now: bear_votes += 2
 
     _vote_bias = 'LONG' if bull_votes > bear_votes else ('SHORT' if bear_votes > bull_votes else 'NEUTRAL')
-    
+    print(f'[DEBUG step10 BIAS] _trader_brain_dir={_trader_brain_dir} _trader_brain_action={_trader_brain_action} _vote_bias={_vote_bias} bull={bull_votes} bear={bear_votes}', file=sys.stderr)
     # 关键修复：trader_brain方向优先，5信号投票作为fallback
     if _trader_brain_dir in ('LONG', 'SHORT') and _trader_brain_action != 'WAIT':
         bias = _trader_brain_dir  # trader_brain说了算
@@ -1942,6 +1954,7 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
 
     entry_lo = res['entry_lo']
     entry_hi = res['entry_hi']
+    print(f'[DEBUG step10 ENTRY] res.entry_lo={entry_lo} res.entry_hi={entry_hi} bias={bias}', file=sys.stderr)
 
     # [P1修复 2026-09-10] 入场区 = max(共振下沿, 支撑池)
     _liq_support = res.get('liq_nearest_long', 0) or liq.get('nearest_long', 0)
@@ -2054,11 +2067,12 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
         main_dir   = '主方向做多'
 
     else:  # SHORT
+        print(f'[DEBUG step10 SHORT] entry_lo={entry_lo} entry_hi={entry_hi} tp1_pre={liq.get("nearest_long",0)} price={price} atr_1h={atr_1h} atr_4h={atr_4h}', file=sys.stderr)
         sl_pct_required = 0.025 if 'BULL' in str(reg_now) else 0.02  # BULL做空2.5%/BEAR做空2.0%
         min_sl = max(entry_hi * sl_pct_required, atr_4h * 1.5) if atr_4h else entry_hi * sl_pct_required
         sl       = round(entry_hi + min_sl, 1)
         sl_pct   = round((sl - entry_hi) / entry_hi * 100, 2)
-        tp1      = round(liq['nearest_long'] if liq['nearest_long'] < price else price - atr_1h * 2.5, 1)
+        tp1      = round(liq.get('nearest_long', 0) if liq.get('nearest_long', 0) and liq['nearest_long'] < price else price - atr_1h * 2.5, 1)
         tp2      = round(liq['second_long']  if liq.get('second_long', 0) > 0 and liq['second_long'] < tp1 else tp1 - atr_1h * 2, 1)
         tp3      = round(tp2 - atr_1h * 2, 1)
         rr       = round((entry_hi - tp1) / (sl - entry_hi), 2) if sl > entry_hi else 0
@@ -2077,11 +2091,14 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
             side_line  = f'🟢 多单（条件）｜支搜池 ${_long_entry_lo:,.1f}~${_long_entry_hi:,.1f} 接多'
             side_params= f'止损 ${_long_sl:,.1f}｜目标 ${_long_tp1:,.0f}→${_long_tp2:,.0f}'
         else:
-            hunt_lo    = round(entry_lo - atr_1h * 1.5, 1)
-            hunt_hi    = round(entry_lo - atr_1h * 0.5, 1)
+            # [2026-09-21 P2修复 苏摩111] entry_lo=0时用tp1(支撑池)作为多单入场区
+            _hunt_base = entry_lo if entry_lo > 0 else tp1
+            print(f'[DEBUG step10 ELSE] entry_lo={entry_lo} tp1={tp1} _hunt_base={_hunt_base} atr_1h={atr_1h}', file=sys.stderr)
+            hunt_lo    = round(_hunt_base - atr_1h * 1.5, 1)
+            hunt_hi    = round(_hunt_base - atr_1h * 0.5, 1)
             side_min_sl = max(hunt_lo * 0.02, atr_4h * 1.5) if atr_4h else hunt_lo * 0.02
             side_sl    = round(hunt_lo - side_min_sl, 1)
-            side_tp1   = round(entry_lo + atr_1h * 1.5, 1)
+            side_tp1   = round(_hunt_base + atr_1h * 1.5, 1)
             side_tp2   = round(side_tp1 + atr_1h * 1.5, 1)
             side_tp    = f'${side_tp1:,.0f}→${side_tp2:,.0f}'
             side_line  = f'🟢 多单（轻）｜若下探 ${hunt_lo:,.1f}~${hunt_hi:,.1f} 被扫后接'
@@ -2868,6 +2885,9 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         _vip_out = vip  # step10_vip的等待/观察卡片优先
     else:
         # 统一输出：ENTER=VIP / WATCH=轻仓VIP / WAIT=观点
+        # [2026-09-21 P2修复 苏摩111] 注入liq数据到tb_result，修复多单$0
+        tb_result['liq_nearest_short'] = liq.get('nearest_short', 0)
+        tb_result['liq_nearest_long'] = liq.get('nearest_long', 0)
         try:
             _section = 'VIP' if _tb_action == 'ENTER' else 'VIP' if _tb_action == 'WATCH' else '观点'
             _vip_out = f'──── {_section} ────\n' + tb_format(

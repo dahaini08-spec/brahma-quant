@@ -1,41 +1,41 @@
 {
   "symbol": "BTCUSDT",
   "direction": "LONG",
-  "ts": 1789978260,
-  "dt": "2026-09-21 08:11 UTC",
+  "ts": 1789993695,
+  "dt": "2026-09-21 12:28 UTC",
   "result": {
     "symbol": "BTCUSDT",
-    "price": 81888.9,
-    "price_ts": 1789978253.3850286,
+    "price": 85020.4,
+    "price_ts": 1789993689.7521532,
     "data_age_sec": 0,
     "data_health": {
       "cvd_btc": {
-        "age_hours": 3.26,
-        "healthy": false,
+        "age_hours": 0.16,
+        "healthy": true,
         "source": "binance_api"
       },
       "cvd_eth": {
-        "age_hours": 3.26,
-        "healthy": false,
+        "age_hours": 0.16,
+        "healthy": true,
         "source": "binance_api"
       },
       "liqmap_btc": {
-        "age_hours": 4.52,
-        "healthy": false,
+        "age_hours": 0.06,
+        "healthy": true,
         "source": "binance_api"
       },
       "liqmap_eth": {
-        "age_hours": 4.52,
+        "age_hours": 4.26,
         "healthy": false,
         "source": "binance_api"
       },
       "gex": {
-        "age_hours": 8.44,
+        "age_hours": 12.72,
         "healthy": false,
         "source": "supercronic"
       },
       "har_rv": {
-        "age_hours": 0.01,
+        "age_hours": 0.06,
         "healthy": true,
         "source": "supercronic"
       }
@@ -50,102 +50,102 @@
       "note": "可能5浪末端，RSI高位，警惕反转"
     },
     "momentum": {
-      "rsi_15m": 56.73,
-      "rsi_1h": 62.57,
-      "rsi_4h": 70.83,
+      "rsi_15m": 76.75,
+      "rsi_1h": 81.63,
+      "rsi_4h": 83.11,
       "rsi_1d": 63.99,
-      "atr_1h": 409.7978,
-      "atr_4h": 775.1601,
-      "atr_15m": 237.6035,
-      "atr_pct": 0.5,
-      "atr_15m_pct": 0.29,
+      "atr_1h": 646.3576,
+      "atr_4h": 987.5431,
+      "atr_15m": 388.8829,
+      "atr_pct": 0.76,
+      "atr_15m_pct": 0.457,
       "bb": {
-        "mid": 81209.545,
-        "upper": 81889.12689639,
-        "lower": 80529.96310361,
-        "width": 0.0167,
-        "pos": 1.005
+        "mid": 82077.725,
+        "upper": 84967.13687017,
+        "lower": 79188.31312983,
+        "width": 0.0704,
+        "pos": 1.008
       }
     },
     "sentiment": {
       "funding_rate": 0.01,
-      "long_short_ratio": 46.4,
-      "oi": 110189.13,
-      "oi_change_pct": 1.64,
-      "oi_momentum": "INCREASING"
+      "long_short_ratio": 47.8,
+      "oi": 111136.208,
+      "oi_change_pct": 0.6799,
+      "oi_momentum": "NEUTRAL"
     },
     "key_levels": {
-      "price": 81895.9,
+      "price": 85015.3,
       "fib": {
-        "high": 82099.9,
+        "high": 85449.0,
         "low": 74909.4,
-        "0.236": 80402.942,
-        "0.382": 79353.129,
-        "0.500": 78504.65,
-        "0.618": 77656.171,
-        "0.786": 76448.167,
-        "1.272": 72953.584,
-        "1.618": 70465.671,
-        "2.618": 63275.171
+        "0.236": 82961.6544,
+        "0.382": 81422.8728,
+        "0.500": 80179.2,
+        "0.618": 78935.5272,
+        "0.786": 77164.8744,
+        "1.272": 72042.6288,
+        "1.618": 68395.9272,
+        "2.618": 57856.3272
       },
       "pivot": {
-        "pp": 81856.26666667,
-        "r1": 82015.33333333,
-        "r2": 82134.76666667,
-        "r3": 82293.83333333,
-        "s1": 81736.83333333,
-        "s2": 81577.76666667,
-        "s3": 81458.33333333
+        "pp": 85079.23333333,
+        "r1": 85385.06666667,
+        "r2": 85754.83333333,
+        "r3": 86060.66666667,
+        "s1": 84709.46666667,
+        "s2": 84403.63333333,
+        "s3": 84033.86666667
       },
       "bb": {
-        "mid": 81209.545,
-        "upper": 81889.12689639,
-        "lower": 80529.96310361,
-        "width": 0.0167,
-        "pos": 1.005
+        "mid": 82077.725,
+        "upper": 84967.13687017,
+        "lower": 79188.31312983,
+        "width": 0.0704,
+        "pos": 1.008
       },
       "swings": {
         "swing_highs": [
           [
-            307,
+            303,
             77149.8
           ],
           [
-            344,
+            340,
             81732.4
           ],
           [
-            358,
+            354,
             81933.9
           ],
           [
-            383,
+            379,
             81472.6
           ],
           [
-            392,
+            388,
             82099.9
           ]
         ],
         "swing_lows": [
           [
-            308,
+            304,
             75975.0
           ],
           [
-            317,
+            313,
             76210.0
           ],
           [
-            343,
+            339,
             80802.6
           ],
           [
-            370,
+            366,
             80095.9
           ],
           [
-            388,
+            384,
             80533.6
           ]
         ],
@@ -153,18 +153,17 @@
         "last_low": 80533.6
       },
       "resistance": [
-        82015.33333333,
-        82099.9,
-        82134.76666667
+        85385.06666667,
+        85754.83333333
       ],
       "support": [
-        81736.83333333,
-        81577.76666667,
-        81272.0472,
-        80831.7956,
+        84709.46666667,
+        84403.63333333,
+        82533.5257,
+        81469.2515,
         80533.6
       ],
-      "range_high": 82099.9,
+      "range_high": 85449.0,
       "range_low": 74909.4
     },
     "swing_4h": {
@@ -187,72 +186,78 @@
     },
     "smc": {
       "symbol": "BTCUSDT",
-      "price": 81891.2,
+      "price": 85019.5,
       "signal_dir": "LONG",
       "structure": {
         "structure": "UPTREND",
-        "bos": [],
+        "bos": [
+          {
+            "type": "BULL_BOS",
+            "level": 82099.9,
+            "note": "突破前高，多头结构延续"
+          }
+        ],
         "choch": [],
         "swing_highs": [
           {
-            "idx": 96,
+            "idx": 92,
             "type": "HIGH",
             "price": 76749.1
           },
           {
-            "idx": 107,
+            "idx": 103,
             "type": "HIGH",
             "price": 77149.8
           },
           {
-            "idx": 144,
+            "idx": 140,
             "type": "HIGH",
             "price": 81732.4
           },
           {
-            "idx": 158,
+            "idx": 154,
             "type": "HIGH",
             "price": 81933.9
           },
           {
-            "idx": 183,
+            "idx": 179,
             "type": "HIGH",
             "price": 81472.6
           },
           {
-            "idx": 192,
+            "idx": 188,
             "type": "HIGH",
             "price": 82099.9
           }
         ],
         "swing_lows": [
           {
-            "idx": 79,
+            "idx": 75,
             "type": "LOW",
             "price": 75308.4
           },
           {
-            "idx": 108,
+            "idx": 104,
             "type": "LOW",
             "price": 75975.0
           },
           {
-            "idx": 117,
+            "idx": 113,
             "type": "LOW",
             "price": 76210.0
           },
           {
-            "idx": 143,
+            "idx": 139,
             "type": "LOW",
             "price": 80802.6
           },
           {
-            "idx": 170,
+            "idx": 166,
             "type": "LOW",
             "price": 80095.9
           },
           {
-            "idx": 188,
+            "idx": 184,
             "type": "LOW",
             "price": 80533.6
           }
@@ -267,70 +272,48 @@
             "high": 81481.5,
             "low": 81199.9,
             "mid": 81340.7,
-            "idx": 195,
-            "age_bars": 4,
-            "broken": false,
-            "dist_pct": 0.85,
-            "note": "看多OB区间 $81199.9000~$81481.5000 age=4bars"
+            "idx": 191,
+            "age_bars": 8,
+            "broken": true,
+            "dist_pct": 4.7,
+            "note": "看多OB区间 $81199.9000~$81481.5000 age=8bars"
           },
           {
             "type": "BULL_OB",
             "high": 81309.6,
             "low": 81171.3,
             "mid": 81240.45,
-            "idx": 153,
-            "age_bars": 46,
-            "broken": false,
-            "dist_pct": 0.89,
-            "note": "看多OB区间 $81171.3000~$81309.6000 age=46bars"
+            "idx": 149,
+            "age_bars": 50,
+            "broken": true,
+            "dist_pct": 4.74,
+            "note": "看多OB区间 $81171.3000~$81309.6000 age=50bars"
           },
           {
             "type": "BULL_OB",
             "high": 81311.0,
             "low": 81090.0,
             "mid": 81200.5,
-            "idx": 190,
-            "age_bars": 9,
-            "broken": false,
-            "dist_pct": 0.99,
-            "note": "看多OB区间 $81090.0000~$81311.0000 age=9bars"
+            "idx": 186,
+            "age_bars": 13,
+            "broken": true,
+            "dist_pct": 4.85,
+            "note": "看多OB区间 $81090.0000~$81311.0000 age=13bars"
           }
         ],
-        "bear_obs": [
-          {
-            "type": "BEAR_OB",
-            "high": 81933.9,
-            "low": 81522.8,
-            "mid": 81728.35,
-            "idx": 158,
-            "age_bars": 41,
-            "broken": false,
-            "dist_pct": 0.05,
-            "note": "看空OB区间 $81522.8000~$81933.9000 age=41bars"
-          }
-        ],
+        "bear_obs": [],
         "nearest_bull_ob": {
           "type": "BULL_OB",
           "high": 81481.5,
           "low": 81199.9,
           "mid": 81340.7,
-          "idx": 195,
-          "age_bars": 4,
-          "broken": false,
-          "dist_pct": 0.85,
-          "note": "看多OB区间 $81199.9000~$81481.5000 age=4bars"
+          "idx": 191,
+          "age_bars": 8,
+          "broken": true,
+          "dist_pct": 4.7,
+          "note": "看多OB区间 $81199.9000~$81481.5000 age=8bars"
         },
-        "nearest_bear_ob": {
-          "type": "BEAR_OB",
-          "high": 81933.9,
-          "low": 81522.8,
-          "mid": 81728.35,
-          "idx": 158,
-          "age_bars": 41,
-          "broken": false,
-          "dist_pct": 0.05,
-          "note": "看空OB区间 $81522.8000~$81933.9000 age=41bars"
-        }
+        "nearest_bear_ob": null
       },
       "fvg": {
         "bull_fvg": [],
@@ -342,7 +325,7 @@
             "mid": 76973.45,
             "gap_pct": 0.789,
             "filled": false,
-            "idx": 59,
+            "idx": 55,
             "note": "合并FVG $76670.8000~$77276.1000 (0.79%)",
             "merged": true,
             "historical_only": false
@@ -354,7 +337,7 @@
             "mid": 78463.25,
             "gap_pct": 0.614,
             "filled": false,
-            "idx": 45,
+            "idx": 41,
             "note": "合并FVG $78223.3000~$78703.2000 (0.61%)",
             "merged": true,
             "historical_only": false
@@ -366,7 +349,7 @@
             "mid": 80756.1,
             "gap_pct": 0.606,
             "filled": false,
-            "idx": 168,
+            "idx": 164,
             "note": "看空FVG $80512.2000~$81000.0000 (0.61%)",
             "historical_only": false
           }
@@ -380,7 +363,7 @@
             "mid": 80756.1,
             "gap_pct": 0.606,
             "filled": false,
-            "idx": 168,
+            "idx": 164,
             "note": "看空FVG $80512.2000~$81000.0000 (0.61%)",
             "historical_only": false
           },
@@ -391,7 +374,7 @@
             "mid": 78463.25,
             "gap_pct": 0.614,
             "filled": false,
-            "idx": 45,
+            "idx": 41,
             "note": "合并FVG $78223.3000~$78703.2000 (0.61%)",
             "merged": true,
             "historical_only": false
@@ -403,7 +386,7 @@
             "mid": 76973.45,
             "gap_pct": 0.789,
             "filled": false,
-            "idx": 59,
+            "idx": 55,
             "note": "合并FVG $76670.8000~$77276.1000 (0.79%)",
             "merged": true,
             "historical_only": false
@@ -418,7 +401,7 @@
             "mid": 80756.1,
             "gap_pct": 0.606,
             "filled": false,
-            "idx": 168,
+            "idx": 164,
             "note": "看空FVG $80512.2000~$81000.0000 (0.61%)",
             "historical_only": false
           },
@@ -429,7 +412,7 @@
             "mid": 78463.25,
             "gap_pct": 0.614,
             "filled": false,
-            "idx": 45,
+            "idx": 41,
             "note": "合并FVG $78223.3000~$78703.2000 (0.61%)",
             "merged": true,
             "historical_only": false
@@ -445,73 +428,53 @@
           "mid": 80756.1,
           "gap_pct": 0.606,
           "filled": false,
-          "idx": 168,
+          "idx": 164,
           "note": "看空FVG $80512.2000~$81000.0000 (0.61%)",
           "historical_only": false
         },
-        "raw_bull_count": 8,
+        "raw_bull_count": 9,
         "raw_bear_count": 7,
         "magnet_up": null,
         "magnet_down": 80756.1
       },
       "liquidity": {
-        "equal_highs": [
-          {
-            "level": 81895.5,
-            "dist_pct": 0.01,
-            "note": "等高点（做空止损池） $81895.5000"
-          },
-          {
-            "level": 81978.5,
-            "dist_pct": 0.11,
-            "note": "等高点（做空止损池） $81978.5000"
-          },
-          {
-            "level": 81989.9,
-            "dist_pct": 0.12,
-            "note": "等高点（做空止损池） $81989.9000"
-          }
-        ],
+        "equal_highs": [],
         "equal_lows": [
           {
+            "level": 81610.0,
+            "dist_pct": 4.01,
+            "note": "等低点（做多止损池） $81610.0000"
+          },
+          {
+            "level": 81478.0,
+            "dist_pct": 4.17,
+            "note": "等低点（做多止损池） $81478.0000"
+          },
+          {
             "level": 81439.4,
-            "dist_pct": 0.55,
+            "dist_pct": 4.21,
             "note": "等低点（做多止损池） $81439.4000"
-          },
-          {
-            "level": 81406.05,
-            "dist_pct": 0.59,
-            "note": "等低点（做多止损池） $81406.0500"
-          },
-          {
-            "level": 81392.6,
-            "dist_pct": 0.61,
-            "note": "等低点（做多止损池） $81392.6000"
           }
         ],
-        "nearest_above": {
-          "level": 81895.5,
-          "dist_pct": 0.01,
-          "note": "等高点（做空止损池） $81895.5000"
-        },
+        "nearest_above": null,
         "nearest_below": {
-          "level": 81439.4,
-          "dist_pct": 0.55,
-          "note": "等低点（做多止损池） $81439.4000"
+          "level": 81610.0,
+          "dist_pct": 4.01,
+          "note": "等低点（做多止损池） $81610.0000"
         }
       },
       "pd_zone": {
         "zone": "PREMIUM",
         "bias": "SHORT",
-        "position": 0.966,
-        "mid": 79037.45,
+        "position": 0.955,
+        "mid": 80712.0,
         "note": "溢价区（>61.8%），机构倾向出货，适合做空"
       },
       "score": {
-        "score": 8,
+        "score": 6,
         "max": 20,
         "details": [
-          "看多OB精确回踩 +6",
+          "BOS看多 +4",
           "FVG向下磁吸支撑 +2"
         ],
         "grade": "中"
@@ -523,11 +486,11 @@
             "high": 81232.4,
             "low": 80882.0,
             "mid": 81057.2,
-            "idx": 86,
-            "age_bars": 13,
-            "broken": false,
-            "dist_pct": 1.26,
-            "note": "看多OB区间 $80882.0000~$81232.4000 age=13bars",
+            "idx": 85,
+            "age_bars": 14,
+            "broken": true,
+            "dist_pct": 5.3,
+            "note": "看多OB区间 $80882.0000~$81232.4000 age=14bars",
             "timeframe": "4h"
           },
           {
@@ -535,11 +498,11 @@
             "high": 81402.6,
             "low": 80875.0,
             "mid": 81138.8,
-            "idx": 90,
-            "age_bars": 9,
-            "broken": false,
-            "dist_pct": 1.27,
-            "note": "看多OB区间 $80875.0000~$81402.6000 age=9bars",
+            "idx": 89,
+            "age_bars": 10,
+            "broken": true,
+            "dist_pct": 5.31,
+            "note": "看多OB区间 $80875.0000~$81402.6000 age=10bars",
             "timeframe": "4h"
           },
           {
@@ -547,103 +510,79 @@
             "high": 81341.4,
             "low": 80814.6,
             "mid": 81078.0,
-            "idx": 84,
-            "age_bars": 15,
-            "broken": false,
-            "dist_pct": 1.34,
-            "note": "看多OB区间 $80814.6000~$81341.4000 age=15bars",
+            "idx": 83,
+            "age_bars": 16,
+            "broken": true,
+            "dist_pct": 5.39,
+            "note": "看多OB区间 $80814.6000~$81341.4000 age=16bars",
             "timeframe": "4h"
           }
         ],
-        "bear_obs": [
-          {
-            "type": "BEAR_OB",
-            "high": 81933.9,
-            "low": 81142.7,
-            "mid": 81538.3,
-            "idx": 88,
-            "age_bars": 11,
-            "broken": false,
-            "dist_pct": 0.04,
-            "note": "看空OB区间 $81142.7000~$81933.9000 age=11bars",
-            "timeframe": "4h"
-          }
-        ],
+        "bear_obs": [],
         "nearest_bull_ob": {
           "type": "BULL_OB",
           "high": 81232.4,
           "low": 80882.0,
           "mid": 81057.2,
-          "idx": 86,
-          "age_bars": 13,
-          "broken": false,
-          "dist_pct": 1.26,
-          "note": "看多OB区间 $80882.0000~$81232.4000 age=13bars",
+          "idx": 85,
+          "age_bars": 14,
+          "broken": true,
+          "dist_pct": 5.3,
+          "note": "看多OB区间 $80882.0000~$81232.4000 age=14bars",
           "timeframe": "4h"
         },
-        "nearest_bear_ob": {
-          "type": "BEAR_OB",
-          "high": 81933.9,
-          "low": 81142.7,
-          "mid": 81538.3,
-          "idx": 88,
-          "age_bars": 11,
-          "broken": false,
-          "dist_pct": 0.04,
-          "note": "看空OB区间 $81142.7000~$81933.9000 age=11bars",
-          "timeframe": "4h"
-        }
+        "nearest_bear_ob": null
       },
       "order_blocks_15m": {
         "bull_obs": [
           {
             "type": "BULL_OB",
-            "high": 81395.0,
-            "low": 81271.0,
-            "mid": 81333.0,
-            "idx": 487,
-            "age_bars": 12,
+            "high": 84800.8,
+            "low": 84460.8,
+            "mid": 84630.8,
+            "idx": 490,
+            "age_bars": 9,
             "broken": false,
-            "dist_pct": 0.76,
-            "note": "看多OB区间 $81271.0000~$81395.0000 age=12bars",
+            "dist_pct": 0.66,
+            "note": "看多OB区间 $84460.8000~$84800.8000 age=9bars",
             "timeframe": "15m"
           },
           {
             "type": "BULL_OB",
-            "high": 81439.2,
-            "low": 81249.1,
-            "mid": 81344.15,
-            "idx": 483,
-            "age_bars": 16,
+            "high": 84717.2,
+            "low": 84337.0,
+            "mid": 84527.1,
+            "idx": 491,
+            "age_bars": 8,
             "broken": false,
-            "dist_pct": 0.79,
-            "note": "看多OB区间 $81249.1000~$81439.2000 age=16bars",
+            "dist_pct": 0.81,
+            "note": "看多OB区间 $84337.0000~$84717.2000 age=8bars",
             "timeframe": "15m"
           },
           {
             "type": "BULL_OB",
-            "high": 81310.0,
-            "low": 81191.4,
-            "mid": 81250.7,
-            "idx": 328,
-            "age_bars": 171,
+            "high": 84444.2,
+            "low": 84100.3,
+            "mid": 84272.25,
+            "idx": 492,
+            "age_bars": 7,
             "broken": false,
-            "dist_pct": 0.86,
-            "note": "看多OB区间 $81191.4000~$81310.0000 age=171bars",
+            "dist_pct": 1.09,
+            "note": "看多OB区间 $84100.3000~$84444.2000 age=7bars",
             "timeframe": "15m"
           }
         ],
         "bear_obs": [],
         "nearest_bull_ob": {
           "type": "BULL_OB",
-          "high": 81395.0,
-          "low": 81271.0,
-          "mid": 81333.0,
-          "idx": 487,
-          "age_bars": 12,
+          "high": 84800.8,
+          "low": 84460.8,
+          "mid": 84630.8,
+          "idx": 490,
+          "age_bars": 9,
           "broken": false,
-          "dist_pct": 0.76,
-          "note": "看多OB区间 $81271.0000~$81395.0000 age=12bars",
+          "dist_pct": 0.66,
+          "note": "看多OB区间 $84460.8000~$84800.8000 age=9bars",
           "timeframe": "15m"
         },
         "nearest_bear_ob": null
@@ -657,50 +596,25 @@
             "mid": 79539.3,
             "idx": 32,
             "age_bars": 27,
-            "broken": false,
-            "dist_pct": 5.26,
+            "broken": true,
+            "dist_pct": 9.26,
             "note": "看多OB区间 $77808.1000~$81270.5000 age=27bars",
             "timeframe": "1d"
           },
           {
             "type": "BULL_OB",
-            "high": 79737.3,
-            "low": 77706.1,
-            "mid": 78721.7,
-            "idx": 47,
-            "age_bars": 12,
+            "high": 81500.0,
+            "low": 76853.1,
+            "mid": 79176.55,
+            "idx": 35,
+            "age_bars": 24,
             "broken": true,
-            "dist_pct": 5.4,
-            "note": "看多OB区间 $77706.1000~$79737.3000 age=12bars",
-            "timeframe": "1d"
-          },
-          {
-            "type": "BULL_OB",
-            "high": 79384.4,
-            "low": 76947.2,
-            "mid": 78165.8,
-            "idx": 37,
-            "age_bars": 22,
-            "broken": true,
-            "dist_pct": 6.44,
-            "note": "看多OB区间 $76947.2000~$79384.4000 age=22bars",
+            "dist_pct": 10.62,
+            "note": "看多OB区间 $76853.1000~$81500.0000 age=24bars",
             "timeframe": "1d"
           }
         ],
-        "bear_obs": [
-          {
-            "type": "BEAR_OB",
-            "high": 82282.8,
-            "low": 76927.3,
-            "mid": 79605.05,
-            "idx": 41,
-            "age_bars": 18,
-            "broken": false,
-            "dist_pct": 0.47,
-            "note": "看空OB区间 $76927.3000~$82282.8000 age=18bars",
-            "timeframe": "1d"
-          }
-        ],
+        "bear_obs": [],
         "nearest_bull_ob": {
           "type": "BULL_OB",
           "high": 81270.5,
@@ -708,23 +622,12 @@
           "mid": 79539.3,
           "idx": 32,
           "age_bars": 27,
-          "broken": false,
-          "dist_pct": 5.26,
+          "broken": true,
+          "dist_pct": 9.26,
           "note": "看多OB区间 $77808.1000~$81270.5000 age=27bars",
           "timeframe": "1d"
         },
-        "nearest_bear_ob": {
-          "type": "BEAR_OB",
-          "high": 82282.8,
-          "low": 76927.3,
-          "mid": 79605.05,
-          "idx": 41,
-          "age_bars": 18,
-          "broken": false,
-          "dist_pct": 0.47,
-          "note": "看空OB区间 $76927.3000~$82282.8000 age=18bars",
-          "timeframe": "1d"
-        }
+        "nearest_bear_ob": null
       },
       "fvg_4h": {
         "bull_fvg": [],
@@ -736,7 +639,7 @@
             "mid": 77783.8,
             "gap_pct": 1.544,
             "filled": false,
-            "idx": 61,
+            "idx": 60,
             "note": "合并FVG $77188.0000~$78379.6000 (1.54%)",
             "merged": true,
             "historical_only": false,
@@ -749,7 +652,7 @@
             "mid": 80746.5,
             "gap_pct": 0.319,
             "filled": false,
-            "idx": 90,
+            "idx": 89,
             "note": "看空FVG $80618.0000~$80875.0000 (0.32%)",
             "historical_only": false,
             "timeframe": "4h"
@@ -764,7 +667,7 @@
             "mid": 80746.5,
             "gap_pct": 0.319,
             "filled": false,
-            "idx": 90,
+            "idx": 89,
             "note": "看空FVG $80618.0000~$80875.0000 (0.32%)",
             "historical_only": false,
             "timeframe": "4h"
@@ -776,7 +679,7 @@
             "mid": 77783.8,
             "gap_pct": 1.544,
             "filled": false,
-            "idx": 61,
+            "idx": 60,
             "note": "合并FVG $77188.0000~$78379.6000 (1.54%)",
             "merged": true,
             "historical_only": false,
@@ -792,7 +695,7 @@
             "mid": 80746.5,
             "gap_pct": 0.319,
             "filled": false,
-            "idx": 90,
+            "idx": 89,
             "note": "看空FVG $80618.0000~$80875.0000 (0.32%)",
             "historical_only": false,
             "timeframe": "4h"
@@ -804,7 +707,7 @@
             "mid": 77783.8,
             "gap_pct": 1.544,
             "filled": false,
-            "idx": 61,
+            "idx": 60,
             "note": "合并FVG $77188.0000~$78379.6000 (1.54%)",
             "merged": true,
             "historical_only": false,
@@ -821,12 +724,12 @@
           "mid": 80746.5,
           "gap_pct": 0.319,
           "filled": false,
-          "idx": 90,
+          "idx": 89,
           "note": "看空FVG $80618.0000~$80875.0000 (0.32%)",
           "historical_only": false,
           "timeframe": "4h"
         },
-        "raw_bull_count": 3,
+        "raw_bull_count": 4,
         "raw_bear_count": 5,
         "magnet_up": null,
         "magnet_down": 80746.5
@@ -841,7 +744,7 @@
             "mid": 76373.6,
             "gap_pct": 0.506,
             "filled": false,
-            "idx": 90,
+            "idx": 73,
             "note": "合并FVG $76181.0000~$76566.2000 (0.51%)",
             "merged": true,
             "historical_only": false,
@@ -854,7 +757,7 @@
             "mid": 80850.45,
             "gap_pct": 0.455,
             "filled": false,
-            "idx": 380,
+            "idx": 363,
             "note": "合并FVG $80666.9000~$81034.0000 (0.46%)",
             "merged": true,
             "historical_only": false,
@@ -870,7 +773,7 @@
             "mid": 80850.45,
             "gap_pct": 0.455,
             "filled": false,
-            "idx": 380,
+            "idx": 363,
             "note": "合并FVG $80666.9000~$81034.0000 (0.46%)",
             "merged": true,
             "historical_only": false,
@@ -883,7 +786,7 @@
             "mid": 76373.6,
             "gap_pct": 0.506,
             "filled": false,
-            "idx": 90,
+            "idx": 73,
             "note": "合并FVG $76181.0000~$76566.2000 (0.51%)",
             "merged": true,
             "historical_only": false,
@@ -899,7 +802,7 @@
             "mid": 80850.45,
             "gap_pct": 0.455,
             "filled": false,
-            "idx": 380,
+            "idx": 363,
             "note": "合并FVG $80666.9000~$81034.0000 (0.46%)",
             "merged": true,
             "historical_only": false,
@@ -912,7 +815,7 @@
             "mid": 76373.6,
             "gap_pct": 0.506,
             "filled": false,
-            "idx": 90,
+            "idx": 73,
             "note": "合并FVG $76181.0000~$76566.2000 (0.51%)",
             "merged": true,
             "historical_only": false,
@@ -929,13 +832,13 @@
           "mid": 80850.45,
           "gap_pct": 0.455,
           "filled": false,
-          "idx": 380,
+          "idx": 363,
           "note": "合并FVG $80666.9000~$81034.0000 (0.46%)",
           "merged": true,
           "historical_only": false,
           "timeframe": "15m"
         },
-        "raw_bull_count": 16,
+        "raw_bull_count": 20,
         "raw_bear_count": 4,
         "magnet_up": null,
         "magnet_down": 80850.45
@@ -1047,28 +950,29 @@
       }
     },
     "confluence": {
-      "total": 135.6,
-      "score": 129.0,
+      "total": 111.1,
+      "score": 110.0,
       "max": 150,
       "grade": "A",
-      "grade_num": 135,
+      "grade_num": 121,
       "kelly_mult": 1.0,
-      "action": "WAIT",
+      "action": "ALERT",
       "breakdown": {
         "_T01_boot_ref": "QP(B)>EMA(C)>ML(C)>MACD_div(A-WR)",
-        "EMA200确认": "+4 (价格81889>EMA200=79155，顺势多)",
+        "EMA200确认": "+4 (价格85020>EMA200=79392，顺势多)",
         "趋势一致性": 20,
-        "OB新鲜度_4H_LONG": "age乘数=0.75 原始=3 实得=2 [4H]",
-        "关键位精确度": 5,
-        "RSI状态描述": "1H:中性(63) 4H:超买(71) 1D:中性(64)",
-        "StochRSI": "-4 (K=73>70 超买区做多)",
-        "动量背离": 0,
-        "SMC结构": 8,
+        "OB新鲜度_1H_LONG": "age乘数=0.00 原始=0 实得=0",
+        "OB_15M_LONG": "+1 age乘数=1.00 dist=0.66%",
+        "关键位精确度": 1,
+        "RSI状态描述": "1H:超买(82) 4H:超买(83) 1D:中性(64)",
+        "StochRSI": "-4 (K=94>70 超买区做多)",
+        "动量背离": -2,
+        "SMC结构": 6,
         "QEW权重": "×0.85 (CHOP_MID)",
-        "OBV方向": "✅ 与LONG同向 +4",
-        "量能验证": 15,
+        "OBV方向": "✅ 与LONG同向 +6 (加速)",
+        "量能验证": 11,
         "形态成熟度": 0,
-        "OB_FVG跨周期共振": 20,
+        "OB_FVG跨周期共振": 16,
         "_resonance_detail": "EMA大周期共振✅ +7 (3/4 TF同向) | 结构部分共振 +4 (2/3 TF对齐)",
         "EMA多周期共振": 5,
         "_ema_align": "3/4TF同向 15m:↑ 1h:↑ 4h:↑ 1d:↓",
@@ -1079,7 +983,7 @@
               "lo": 80512.2,
               "hi": 81000.0,
               "mid": 80756.1,
-              "dist_pct": -1.38,
+              "dist_pct": -5.02,
               "filled": false,
               "magnet": "向下"
             }
@@ -1090,7 +994,7 @@
               "lo": 80618.0,
               "hi": 80875.0,
               "mid": 80746.5,
-              "dist_pct": -1.4,
+              "dist_pct": -5.03,
               "filled": false,
               "magnet": "向下"
             }
@@ -1101,7 +1005,7 @@
               "lo": 80666.9,
               "hi": 81034.0,
               "mid": 80850.4,
-              "dist_pct": -1.27,
+              "dist_pct": -4.9,
               "filled": false,
               "magnet": "向下"
             }
@@ -1112,7 +1016,7 @@
               "lo": 78314.9,
               "hi": 78522.1,
               "mid": 78418.5,
-              "dist_pct": -4.24,
+              "dist_pct": -7.77,
               "filled": false,
               "magnet": "向下"
             }
@@ -1124,21 +1028,11 @@
               "type": "BULL",
               "lo": 81199.9,
               "hi": 81481.5,
-              "age": 4,
-              "valid": true,
-              "broken": false,
-              "dist_pct": 0.85,
+              "age": 8,
+              "valid": false,
+              "broken": true,
+              "dist_pct": 4.7,
               "note": "NEW"
-            },
-            {
-              "type": "BEAR",
-              "lo": 81522.8,
-              "hi": 81933.9,
-              "age": 41,
-              "valid": true,
-              "broken": false,
-              "dist_pct": 0.05,
-              "note": "FRESH"
             }
           ],
           "4h": [
@@ -1146,33 +1040,23 @@
               "type": "BULL",
               "lo": 80882.0,
               "hi": 81232.4,
-              "age": 13,
-              "valid": true,
-              "broken": false,
-              "dist_pct": 1.26,
-              "note": "FRESH"
-            },
-            {
-              "type": "BEAR",
-              "lo": 81142.7,
-              "hi": 81933.9,
-              "age": 11,
-              "valid": true,
-              "broken": false,
-              "dist_pct": 0.04,
+              "age": 14,
+              "valid": false,
+              "broken": true,
+              "dist_pct": 5.3,
               "note": "FRESH"
             }
           ],
           "15m": [
             {
               "type": "BULL",
-              "lo": 81271.0,
-              "hi": 81395.0,
-              "age": 12,
+              "lo": 84460.8,
+              "hi": 84800.8,
+              "age": 9,
               "valid": true,
               "broken": false,
-              "dist_pct": 0.76,
-              "note": "FRESH"
+              "dist_pct": 0.66,
+              "note": "NEW"
             }
           ],
           "1d": [
@@ -1181,34 +1065,24 @@
               "lo": 77808.1,
               "hi": 81270.5,
               "age": 27,
-              "valid": true,
-              "broken": false,
-              "dist_pct": 5.26,
-              "note": "AGING"
-            },
-            {
-              "type": "BEAR",
-              "lo": 76927.3,
-              "hi": 82282.8,
-              "age": 18,
-              "valid": true,
-              "broken": false,
-              "dist_pct": 0.47,
+              "valid": false,
+              "broken": true,
+              "dist_pct": 9.26,
               "note": "AGING"
             }
           ]
         },
-        "清算/OI": 8,
-        "VolProfile_info": 8,
-        "VolProfile": 8,
-        "情绪/费率": 2,
+        "清算/OI": 2,
+        "VolProfile_info": 4,
+        "VolProfile": 4,
+        "情绪/费率": 3,
         "VolSkew_info": 8,
         "VolSkew": 8,
-        "时段权重": 14,
+        "时段权重": 10,
         "多周期对齐": 10,
         "Amihud流动性_info": 0,
         "鲸鱼+微观": 5,
-        "期权+订单流": 3,
+        "期权+订单流": 5,
         "L2+贝叶斯+宏观": 4,
         "ML+在线贝叶斯+滑点": 0,
         "LSTM+NLP情绪": 0,
@@ -1218,89 +1092,91 @@
         "宏观+事件": 0,
         "成交量比率_v2": 0,
         "研究增强层": "0 (P2归零)",
-        "_dag_applied": "DAG稀疏激活: raw=89→102 active=23 sleep=0 pos_mult=0.50",
+        "_dag_applied": "DAG稀疏激活: raw=71→93 active=23 sleep=0 pos_mult=0.50",
+        "_dag_vol_gain": "波动率ContextGain: HIGH HIGH_VOL:结构×1.5动量×0.7 raw=71→93",
         "HMM乘数": "降级(规则乘数=1.000) conf=0.50",
         "_regime_mult": 1.0,
         "_regime_v4_key": "UNKNOWN",
         "_regime": "CHOP_MID",
         "_regime_position_cap": 1.0,
-        "N03时段奖励": "+10 (欧盘UTC08h WR=77.3%)",
+        "N03时段奖励": "+10 (欧盘UTC12h WR=77.3%)",
         "N06持仓建议": "⚡CHOP最优持仓2h (N06实训)",
-        "N16_ATR体制": "N16_CHOP优区 +3 (ATR=0.0050 PF≈1.5+)",
-        "N15_分层仓位": "N15_C层(115分) 不执行",
-        "CVD订单流": "+4 CVD宏观+微观买方主导 +4",
-        "HAR-RV波动率": "+0 MEDIUM RV=0.0207",
-        "Hurst体制验证": "H=0.645 CHOP但1D=0.71趋势确认⚠️ 多周期转势 +8",
-        "VolProfile密度": "+8 高密度筹码区1.6x→支撑强",
+        "N16_ATR体制": "N16_CHOP优区 +3 (ATR=0.0076 PF≈1.5+)",
+        "N15_分层仓位": "N15_C层(106分) 不执行",
+        "CVD订单流": "+6 CVD宏观+中期买方主导 +6",
+        "HAR-RV波动率": "-3 HIGH RV=0.0387",
+        "Hurst体制验证": "H=0.661 CHOP但1D=0.71趋势确认⚠️ 多周期转势 +8",
+        "VolProfile密度": "+4 中密度筹码区1.2x→支撑中等",
         "TF共振奖励": "+3 [双周期共振(1H+4H) +3]",
         "_causal_regime": "-5(体制因果:MODERATE conf=0.50)",
-        "_cross_fr_basis": "-6(FR均值=0.0100% Basis=-0.021%)",
-        "_options_pc": "-2(P/C=0.56 CALL_HEAVY)",
-        "聪明钱分歧": "大户=68% 散户=50% 分歧=+3.2% 大户持仓偏多(67.59%) 聪明钱看多 -3",
-        "_smart_money": "+3(大户持仓=68% 背离=+0.032)",
+        "_cross_fr_basis": "-8(FR均值=0.0100% Basis=-0.052%)",
+        "_options_pc": "-2(P/C=0.57 CALL_HEAVY)",
+        "聪明钱分歧": "大户=67% 散户=50% 分歧=+3.0% 大户持仓偏多(67.47%) 聪明钱看多 -3",
+        "_smart_money": "+3(大户持仓=67% 背离=+0.030)",
         "M07时间效应": "-5(9月低流动性)",
-        "CHOP硬性上限": "P2保护tc_neutral: 127→110（CHOP LONG上限110）",
+        "CHOP硬性上限": "P2保护tc_neutral: 114→110（CHOP LONG上限110）",
         "GATE_ATR_Q4": -4.0,
-        "RSI_60_70": 6.0,
-        "dfe_total": 2.0,
-        "_extra_data_adjust": "-10.0(Causal+FR+PC+宏观+聪明钱)",
+        "dfe_total": -4.0,
+        "_extra_data_adjust": "-12.0(Causal+FR+PC+宏观+聪明钱)",
         "风控circuit": "L1=None L2=None L3=False NAV峰=130.0",
         "风控drawdown": "DD=0.0% MaxDD=0.0% 仓位×1.00",
         "N_EXP40年经验": "WR=50% n=0 adj=+0.0",
         "亏损记忆": "n=0 无匹配场景",
-        "s22_gex": "+3 GEX=+406.0M(POSITIVE) | 强度=STRONG | s22=+3 | ZeroFlip距离-5.6%",
+        "s22_gex": "+3 GEX=+401.9M(POSITIVE) | 强度=STRONG | s22=+3 | ZeroFlip距离-8.4%",
         "s28_signal_quality": "+1 [质量门控:PASS]",
-        "VolBeta期权": "IV溢价=+3.0% 分位=43 κ=-0.189 [BTC]",
+        "VolBeta期权": "IV溢价=+3.1% 分位=99 κ=-0.030 [BTC]",
+        "s23_vol_beta": "-3 IV溢价=+3.1% 分位=99 κ=-0.030 [BTC]",
         "HCME情境匹配": 0.72,
-        "P1方仓RSI": "P1方仓RSI分层做多(RSI4H=71>65) +12",
+        "P1方仓RSI": "P1方仓RSI分层做多(RSI4H=83>65) +12",
         "HTF周月线锚定": "-4 (NEUTRAL 共振=0.67)",
         "TradFi跨市场共振": "+2 40年TradFi看多"
       },
       "rr_gate": "PASS",
-      "rr_min_used": 1.0,
-      "structure_grade": 70,
+      "primary_tf": "4H",
+      "entry_tf": "1H+15M",
+      "sl_basis": "swing_4h+atr4h×0.3 / 15M精确触发",
+      "structure_grade": 33,
       "v2_error": "name '_v2_enhance' is not defined",
-      "mtf_4h_neutral": "4H NEUTRAL 降权×0.98 130→127",
+      "mtf_4h_neutral": "4H NEUTRAL 降权×0.98 116→114",
       "b2_proximity": "gap=-0.25%<0.5% 贴近区间 -5",
-      "structure_label": "A-强结构",
+      "structure_label": "C-极弱结构",
       "structure_sources": [
-        "OB对齐(price_dist=0.7%)",
         "4H摆动低点=7.635e+04 对齐",
         "入场区合理(0.50%)",
-        "15M触发置信=90满分(+25)"
+        "15M触发置信=55(+8)"
       ],
-      "effective_grade": 61.6,
+      "effective_grade": 29.0,
       "grade_mult": 0.88,
-      "n20_lsr_oi": "LSR[LSR中性46%/54% ±0 [15M LSR=46.4%]] OI[OI轻增+1.6%+价涨→做多+6] TT[大户多头领先21%→LONG+8]",
+      "n20_lsr_oi": "LSR[LSR中性48%/52% ±0 [15M LSR=47.8%]] OI[OI轻增+0.7%+价涨→做多+6] TT[大户多头领先21%→LONG+8]",
       "_gex_max": 82000.0,
       "_gex_min": 75000.0,
       "_gex_pos_pct": 89.2,
       "_s22_gex": 3
     },
     "params": {
-      "entry_lo": 81684.1778,
-      "entry_hi": 82093.6222,
-      "stop_loss": 80338.5798,
-      "tp1": 85764.7005,
-      "tp2": 88865.3409,
-      "sl_pct": 1.89,
-      "sl_atr_mult": 2.61,
-      "tp1_pct": 2.04,
-      "rr1": 2.5,
-      "rr2": 4.5,
+      "entry_lo": 84807.849,
+      "entry_hi": 85232.951,
+      "stop_loss": 83174.503345,
+      "tp1": 88645.74103,
+      "tp2": 91546.013855,
+      "sl_pct": 2.171,
+      "sl_atr_mult": 2.527,
+      "tp1_pct": 9.21,
+      "rr1": 1.96,
+      "rr2": 3.54,
       "primary_tf": "4H",
       "entry_tf": "1H+15M",
-      "sl_basis": "atr4h×2.0(拓展重算)",
+      "sl_basis": "swing_4h+atr4h×0.3 / 15M精确触发",
       "trigger_15m": {
         "trigger_valid": false,
         "symbol": "BTCUSDT",
-        "price": 81891.2,
+        "price": 85019.5,
         "signal_dir": "LONG",
-        "entry_15m": 82175.715872,
-        "stop_15m": 81194.6852,
-        "sl_pct_15m": 1.194,
-        "rr_15m": 1.48,
-        "confidence": 90,
+        "entry_15m": 85318.183951,
+        "stop_15m": 83949.1652,
+        "sl_pct_15m": 1.605,
+        "rr_15m": 1.74,
+        "confidence": 55,
         "in_zone": true,
         "near_zone": false,
         "gap_to_entry": -0.25,
@@ -1313,25 +1189,21 @@
           "high": 81807.7,
           "low": 81356.0,
           "type": "BULL_OB_15M",
-          "idx": 23
+          "idx": 6
         },
         "wick_rejection": null,
-        "bos_15m": {
-          "type": "BOS_LONG",
-          "level": 81857.1,
-          "note": "15M BOS做多确认 突破$81857.1000"
-        },
-        "entry_lo_1h": 81684.17775,
-        "entry_hi_1h": 82093.62224999999,
+        "bos_15m": null,
+        "entry_lo_1h": 84807.849,
+        "entry_hi_1h": 85232.95099999999,
         "elapsed": 0.0,
         "trigger_ts": null,
         "entry_actual": null,
         "entry_source": null
       },
-      "trigger_15m_confidence": 90,
+      "trigger_15m_confidence": 55,
       "valid": true,
-      "entry_source": "OB_4H",
-      "ob_dist_pct": 1.26,
+      "entry_source": "FIB",
+      "ob_dist_pct": 5.3,
       "ob_top": 81232.4,
       "ob_bottom": 80882.0,
       "ob_source_type": "BULL_OB",
@@ -1340,22 +1212,22 @@
       "fvg_bottom": 0,
       "swing_high_4h": 81933.9,
       "swing_low_4h": 80095.9,
-      "key_level_proximity": 1.26,
+      "key_level_proximity": 5.3,
       "mtf_override": false,
+      "_spec_override": "BTCUSDT 专项sl=2.527x mh=17h PF=1.662",
       "pos_pct_asset": 2.0
     },
-    "summary": "强多头 | 中位震荡 | 可能5浪末端，RSI高位，警惕反转",
-    "elapsed": 6.84,
+    "summary": "强多头 | 中位震荡 | 可能5浪末端，RSI高位，警惕反转 RSI超买",
+    "elapsed": 9.67,
     "valid_signal": true,
     "primary_tf": "4H",
     "entry_tf": "1H+15M",
-    "sl_basis": "atr4h×2.0(拓展重算)",
-    "sl_atr_mult": 2.61,
+    "sl_basis": "swing_4h+atr4h×0.3 / 15M精确触发",
+    "sl_atr_mult": 2.527,
     "extra": {
       "_symbol": "BTCUSDT",
-      "price": 81888.9,
+      "price": 85020.4,
       "_k4h_closes": [
-        77776.1,
         78031.0,
         80688.7,
         81169.1,
@@ -1374,10 +1246,10 @@
         81143.9,
         81403.7,
         81699.9,
-        81899.7
+        84849.9,
+        85166.9
       ],
       "_k4h_volumes": [
-        23928.087,
         30007.589,
         93465.237,
         35563.768,
@@ -1396,14 +1268,11 @@
         13234.87,
         36767.289,
         15356.873,
-        2036.258
+        98708.638,
+        8578.689
       ],
       "_klines_1h": {
         "o": [
-          77239.5,
-          77285.6,
-          77263.9,
-          77162.3,
           77179.0,
           77280.7,
           77082.1,
@@ -1599,13 +1468,13 @@
           81365.5,
           81520.0,
           81609.1,
-          81700.0
+          81700.0,
+          83717.3,
+          84625.9,
+          84400.2,
+          84849.9
         ],
         "h": [
-          77321.0,
-          77287.0,
-          77287.9,
-          77227.7,
           77290.0,
           77291.2,
           77136.4,
@@ -1801,13 +1670,13 @@
           81765.5,
           81857.1,
           81700.0,
-          81975.7
+          84275.5,
+          85285.0,
+          84800.8,
+          84882.2,
+          85449.0
         ],
         "l": [
-          77207.2,
-          77208.4,
-          77150.9,
-          77155.5,
           77179.0,
           77003.4,
           77052.1,
@@ -2003,13 +1872,13 @@
           81271.0,
           81356.0,
           81433.2,
-          81697.2
+          81697.2,
+          83660.4,
+          84100.3,
+          84350.8,
+          84773.4
         ],
         "c": [
-          77285.5,
-          77263.9,
-          77162.2,
-          77179.0,
           77280.7,
           77082.0,
           77087.7,
@@ -2205,13 +2074,13 @@
           81520.0,
           81609.0,
           81699.9,
-          81891.2
+          83717.3,
+          84626.0,
+          84400.1,
+          84849.9,
+          85019.5
         ],
         "v": [
-          1855.862,
-          1192.75,
-          1572.831,
-          889.064,
           844.032,
           2358.331,
           1869.584,
@@ -2407,13 +2276,13 @@
           4060.532,
           5580.807,
           3337.296,
-          2044.373
+          40829.826,
+          35913.342,
+          13667.001,
+          8298.469,
+          9215.16
         ],
         "ts": [
-          1789261200000,
-          1789264800000,
-          1789268400000,
-          1789272000000,
           1789275600000,
           1789279200000,
           1789282800000,
@@ -2609,66 +2478,14 @@
           1789966800000,
           1789970400000,
           1789974000000,
-          1789977600000
+          1789977600000,
+          1789981200000,
+          1789984800000,
+          1789988400000,
+          1789992000000
         ]
       },
       "_k1h_raw": [
-        [
-          1789801200000,
-          "81027.20",
-          "81232.40",
-          "81000.00",
-          "81077.00",
-          "2206.780",
-          1789804799999,
-          "178981747.42740",
-          56650,
-          "1209.668",
-          "98118396.01160",
-          "0"
-        ],
-        [
-          1789804800000,
-          "81077.10",
-          "81383.80",
-          "81040.90",
-          "81288.10",
-          "2972.412",
-          1789808399999,
-          "241521775.35080",
-          81960,
-          "1677.501",
-          "136300709.20950",
-          "0"
-        ],
-        [
-          1789808400000,
-          "81288.00",
-          "81512.50",
-          "81227.00",
-          "81303.00",
-          "3796.043",
-          1789811999999,
-          "308883395.29570",
-          82807,
-          "1874.284",
-          "152534155.58230",
-          "0"
-        ],
-        [
-          1789812000000,
-          "81303.10",
-          "81309.60",
-          "81171.30",
-          "81193.30",
-          "3003.930",
-          1789815599999,
-          "244050132.54260",
-          62442,
-          "1211.807",
-          "98446882.28180",
-          "0"
-        ],
         [
           1789815600000,
           "81193.40",
@@ -3302,15 +3119,71 @@
         [
           1789977600000,
           "81700.00",
-          "81975.70",
+          "84275.50",
           "81697.20",
-          "81903.50",
-          "2058.709",
+          "83717.30",
+          "40829.826",
           1789981199999,
-          "168536220.93300",
-          39794,
-          "1196.972",
-          "97996388.20410",
+          "3393677755.44100",
+          713383,
+          "24135.659",
+          "2005533546.36750",
+          "0"
+        ],
+        [
+          1789981200000,
+          "83717.30",
+          "85285.00",
+          "83660.40",
+          "84626.00",
+          "35913.342",
+          1789984799999,
+          "3035741849.75280",
+          691057,
+          "19785.514",
+          "1672695750.61250",
+          "0"
+        ],
+        [
+          1789984800000,
+          "84625.90",
+          "84800.80",
+          "84100.30",
+          "84400.10",
+          "13667.001",
+          1789988399999,
+          "1153847988.59600",
+          267524,
+          "6710.419",
+          "566481470.12580",
+          "0"
+        ],
+        [
+          1789988400000,
+          "84400.20",
+          "84882.20",
+          "84350.80",
+          "84849.90",
+          "8298.469",
+          1789991999999,
+          "702450344.41930",
+          192819,
+          "4421.378",
+          "374236623.06920",
+          "0"
+        ],
+        [
+          1789992000000,
+          "84849.90",
+          "85449.00",
+          "84773.40",
+          "85019.50",
+          "9215.160",
+          1789995599999,
+          "784021740.35130",
+          200092,
+          "4857.797",
+          "413343980.52190",
           "0"
         ]
       ],
@@ -3331,53 +3204,53 @@
       },
       "liq_snap": {
         "symbol": "BTCUSDT",
-        "price": 81888.9,
-        "chg24": 1.853,
-        "vol24b": 9.122273630950001,
-        "oi_b": 9.023266647657,
-        "oi_chg4h": 1.41,
-        "long_pct": 46.400000000000006,
-        "short_pct": 53.6,
-        "top_long_pct": 67.58,
+        "price": 85019.6,
+        "chg24": 5.791,
+        "vol24b": 17.221786121810002,
+        "oi_b": 9.4487559496768,
+        "oi_chg4h": 0.4,
+        "long_pct": 47.82,
+        "short_pct": 52.18000000000001,
+        "top_long_pct": 69.08,
         "fund_rate": 0.01,
         "fund_bias": "NEUTRAL",
-        "liq_short_5pct": 85983.3,
-        "liq_short_10pct": 90077.8,
-        "liq_long_5pct": 77794.5,
-        "liq_long_10pct": 73700.0,
+        "liq_short_5pct": 89270.6,
+        "liq_short_10pct": 93521.6,
+        "liq_long_5pct": 80768.6,
+        "liq_long_10pct": 76517.6,
         "liq_bias": "NEUTRAL",
-        "liq_risk": "HL 50x多头清算: $80,482.76(-1.72%) | 空头清算: $83,433.24(+1.89%)",
+        "liq_risk": "HL 50x多头清算: $83,597.66(-1.67%) | 空头清算: $86,662.34(+1.93%)",
         "cg_long_liq_m": null,
         "cg_short_liq_m": null,
         "cg_available": false,
-        "ts": "16:10 北京时间",
+        "ts": "20:28 北京时间",
         "live_liq": {
           "available": false,
           "events": 0,
           "long_usd_1h": 0.0,
           "short_usd_1h": 0.0
         },
-        "bybit_oi_b": 4.656,
-        "bybit_long_pct": 52.0,
-        "bybit_short_pct": 48.0,
+        "bybit_oi_b": 4.925,
+        "bybit_long_pct": 53.3,
+        "bybit_short_pct": 46.7,
         "bybit_fr": 0.01,
-        "bybit_price": 81888.8,
-        "hl_oi_b": 3.586,
-        "hl_fr": 0.0013,
-        "hl_liq_50x_long": 80482.756,
-        "hl_liq_50x_short": 83433.244,
-        "hl_liq_25x_long": 79007.512,
-        "hl_liq_25x_short": 84908.488,
-        "total_oi_b": 17.265,
-        "weighted_long_pct": 48.4,
+        "bybit_price": 85019.8,
+        "hl_oi_b": 3.88,
+        "hl_fr": 0.0058,
+        "hl_liq_50x_long": 83597.66,
+        "hl_liq_50x_short": 86662.34,
+        "hl_liq_25x_long": 82065.32,
+        "hl_liq_25x_short": 88194.68,
+        "total_oi_b": 18.254,
+        "weighted_long_pct": 49.7,
         "fr_cross_agreement": false
       },
       "divergence": {
-        "score": 2,
-        "score_long": 2,
+        "score": 0,
+        "score_long": 0,
         "score_short": 0,
         "details_1h": [
-          "K线大阳线(多头强势) +3"
+          "⚠️放量空间惩分-2(量价背离密度降低)"
         ],
         "details_4h": [
           "⚠️ 对手看空背离，做多谨慎"
@@ -3387,79 +3260,77 @@
           "regular_bullish": false,
           "hidden_bearish": false,
           "hidden_bullish": false,
-          "fts_bearish": false,
+          "fts_bearish": true,
           "fts_bullish": false,
-          "details": [],
+          "details": [
+            "RSI失败摆动看空(FTS) 极强顶部信号"
+          ],
           "score_long": 0,
-          "score_short": 0
+          "score_short": 6
         },
         "macd_div": {
-          "regular_bearish": true,
+          "regular_bearish": false,
           "regular_bullish": false,
           "hidden_bearish": false,
           "hidden_bullish": false,
           "zero_cross_up": false,
           "zero_cross_down": false,
-          "details": [
-            "MACD柱看空背离 +5"
-          ],
+          "details": [],
           "score_long": 0,
-          "score_short": 5
+          "score_short": 0
         },
         "macd_zero": "0轴下方(空头区)",
         "vol_1h": {
-          "vol_contraction": true,
-          "vol_ratio": 0.404,
+          "vol_contraction": false,
+          "vol_ratio": 1.001,
           "price_extreme_hi": true,
           "price_extreme_lo": false,
-          "vol_ma": 5056.94
+          "vol_ma": 9202.22
         },
         "vol_4h": {
           "vol_contraction": true,
-          "vol_ratio": 0.096,
+          "vol_ratio": 0.341,
           "price_extreme_hi": true,
           "price_extreme_lo": false,
-          "vol_ma": 21126.49
+          "vol_ma": 25192.64
         },
         "time_penalty": 0,
         "regime_adj": 0
       },
       "volume": {
-        "score": 7,
+        "score": 5,
         "details": [
           "量价同向 +2",
-          "量减价涨(量=0.4x) 上涨动能衰竭",
-          "价格在VWAP上方 +3",
-          "POC磁吸区附近(0.68%) +2"
+          "价格在VWAP上方 +3"
         ]
       },
       "sentiment": [
         1,
-        "FnG=70 base=+3.0 trend=+0.0 fr=0.0100(-2) lsr=46.40(+0)"
+        "FnG=70 base=+3.0 trend=+0.0 fr=0.0100(-2) lsr=47.80(+0)"
       ],
       "order_flow": {
-        "score": 3,
+        "score": 5,
         "breakdown": {
-          "ob_score": 1,
+          "ob_score": 3,
           "tf_score": 2
         },
         "notes": [
-          "挂单逆向",
-          "主动买入不足45.4%"
+          "挂单均衡",
+          "主动买入不足30.5%"
         ],
         "raw": {
           "order_book": {
-            "bid_vol": 6.67,
-            "ask_vol": 12.96,
-            "imbalance": -0.321,
-            "bias": "SELL_WALL"
+            "bid_vol": 8.04,
+            "ask_vol": 6.19,
+            "imbalance": 0.13,
+            "bias": "NEUTRAL"
           },
           "trade_flow": {
-            "buy_vol": 2.861,
-            "sell_vol": 3.448,
-            "buy_pct": 45.35,
-            "large_buy": 7,
-            "large_sell": 13
+            "buy_vol": 1.876,
+            "sell_vol": 4.276,
+            "buy_pct": 30.49,
+            "large_buy": 9,
+            "large_sell": 11
           }
         }
       },
@@ -3476,7 +3347,7 @@
             "prev": 71
           },
           "btc_dominance": {
-            "btc_dom": 58.25,
+            "btc_dom": 59.24,
             "signal": "BTC_DOMINANT"
           }
         }
@@ -3495,112 +3366,116 @@
         "timeframe": "1d"
       },
       "enhanced": {
-        "score": 15,
+        "score": 14,
         "max": 25,
         "breakdown": {
-          "cvd": 4,
+          "cvd": 6,
           "liquidation": 0,
-          "lsr_trend": 5,
+          "lsr_trend": 2,
           "session": 6
         },
         "notes": [
-          "CVD宏观+微观买方主导 +4",
-          "空头拥挤反转信号 +5",
-          "欧洲盘开盘(1.3x) +6",
-          "下一活跃: 5h后 美国盘开盘"
+          "CVD宏观+中期买方主导 +6",
+          "多头持续增仓 +2",
+          "欧洲盘(1.1x) +6",
+          "下一活跃: 1h后 美国盘开盘"
         ],
         "lsr": {
-          "trend": "SHORT_CROWDED",
-          "current": 0.866,
-          "delta": -0.066,
-          "long_pct": 46.4,
+          "trend": "LONG_GROWING",
+          "current": 0.916,
+          "delta": 0.026,
+          "long_pct": 47.8,
           "series": [
-            0.934,
-            0.932,
-            0.926,
-            0.873,
-            0.866
+            0.866,
+            0.891,
+            0.915,
+            0.912,
+            0.916
           ],
-          "notes": []
+          "notes": [
+            "多空比上升(+0.03) → 多头增仓 短期强势但需警惕"
+          ]
         },
         "session": {
-          "utc_hour": 8,
-          "session": "欧洲盘开盘",
-          "vol_mult": 1.3,
-          "notes": "欧洲资金入场 方向明确 +30%",
-          "next_active": "5h后 美国盘开盘",
+          "utc_hour": 12,
+          "session": "欧洲盘",
+          "vol_mult": 1.1,
+          "notes": "欧洲主力时段 趋势延续",
+          "next_active": "1h后 美国盘开盘",
           "score": 6
         },
         "vol_spike": false
       },
       "whale": {
-        "score": 5,
+        "score": 1,
         "max": 20,
         "breakdown": {
-          "exchange_flow": 5,
+          "exchange_flow": 0,
           "whale_activity": 0,
-          "derivatives_sm": 0
+          "derivatives_sm": 1
         },
         "notes": [
-          "大单净买入 $5.34M → 机构积累"
+          "OI上升0.60%（多头新开，势头活跃）"
         ],
         "flow": {
-          "inflow": 3.369,
-          "outflow": 8.707,
-          "net": -5.338,
+          "inflow": 6.225,
+          "outflow": 0.932,
+          "net": 5.292,
           "notes": [
-            "大单净买入 $5.34M → 机构积累"
+            "大单净卖出 $5.29M → 机构减仓"
           ],
           "source": "aggTrades_proxy"
         },
         "whale": {
-          "whale_dir": "NEUTRAL",
+          "whale_dir": "SELL",
           "big_buy": 0.0,
-          "big_sell": 0.0,
-          "whale_net": 0.0,
-          "retail_net": -0.367,
+          "big_sell": 1.863,
+          "whale_net": -1.863,
+          "retail_net": -0.179,
           "diverge": false,
-          "notes": []
+          "notes": [
+            "巨鲸积极卖出 $1.86M"
+          ]
         },
         "derivatives": {
-          "score": 0,
+          "score": 1,
           "max": 5,
           "breakdown": {
             "funding_rate": 0,
             "long_short_ratio": 0,
-            "oi_change": 0
+            "oi_change": 1
           },
-          "notes": [],
+          "notes": [
+            "OI上升0.60%（多头新开，势头活跃）"
+          ],
           "source": "binance_fapi_realtime"
         },
         "source": "whale_engine_v2_p2"
       },
       "cross_market": {
-        "score": 4,
+        "score": 1,
         "max": 15,
         "breakdown": {
-          "btc_eth_corr": 4,
+          "btc_eth_corr": 1,
           "dxy": 0,
           "risk_regime": 0
         },
-        "notes": [
-          "BTC上涨+高相关(0.87) → ETH跟涨 +4"
-        ],
+        "notes": [],
         "corr": {
-          "corr": 0.873,
-          "regime": "HIGH_CORR",
-          "note": "BTC-ETH高相关(0.87)→ ETH跟随BTC方向",
+          "corr": 0.776,
+          "regime": "MODERATE_CORR",
+          "note": "BTC-ETH中等相关(0.78)",
           "btc_trend": "UP",
-          "btc_price": 81889.0,
-          "eth_price": 2666.58
+          "btc_price": 85020.0,
+          "eth_price": 2718.4
         },
         "dxy": {
           "proxy": "EURUSD",
-          "value": 1.1482,
-          "change": -0.38,
+          "value": 1.1491,
+          "change": -1.08,
           "trend": "DOWN",
           "signal": "BULLISH_DXY",
-          "note": "EUR/USD 1.1482 (-0.38%) → DXY强(加密压力)"
+          "note": "EUR/USD 1.1491 (-1.08%) → DXY强(加密压力)"
         },
         "risk": {}
       },
@@ -3610,93 +3485,95 @@
         "binance_fr": 0.01,
         "fr_avg": 0.01,
         "fr_extreme": true,
-        "basis_pct": -0.0208,
+        "basis_pct": -0.0521,
         "bias": "SHORT_FAVORABLE",
-        "score_adj": 6,
-        "note": "跨所FR极高(0.0100%) 多头成本压垮 +5 | Basis轻微贴水(-0.021%) +1",
-        "oi_binance_b": 9.02,
-        "oi_okx_b": 2.51,
-        "oi_bybit_b": 4.66,
-        "oi_total_b": 16.2,
-        "oi_dom_pct": 55.7
+        "score_adj": 8,
+        "note": "跨所FR极高(0.0100%) 多头成本压垮 +5 | Basis贴水(-0.052%) 空头确认 +3",
+        "oi_binance_b": 9.45,
+        "oi_okx_b": 2.55,
+        "oi_bybit_b": 4.91,
+        "oi_total_b": 16.9,
+        "oi_dom_pct": 55.9
       },
       "deribit_pc": {
-        "pc_oi_ratio": 0.565,
-        "put_oi": 154287.0,
-        "call_oi": 272865.0,
+        "pc_oi_ratio": 0.574,
+        "put_oi": 160008.0,
+        "call_oi": 278952.0,
         "signal": "CALL_HEAVY",
         "score_adj": 2,
-        "note": "P/C OI=0.56(Call重) 做市商负Gamma加速下跌 +2",
+        "note": "P/C OI=0.57(Call重) 做市商负Gamma加速下跌 +2",
         "currency": "BTC"
       },
       "macro_v2": {
         "score_addon": 0,
         "dxy": {
-          "price": 100.33,
-          "chg_1h_pct": -0.003,
-          "chg_24h_pct": 0.064,
+          "price": 100.23,
+          "chg_1h_pct": -0.002,
+          "chg_24h_pct": -0.039,
           "direction": "FLAT"
         },
         "nasdaq": {
-          "price": 30189.0,
-          "chg_1h_pct": -0.007,
+          "price": 30247.0,
+          "chg_1h_pct": -0.033,
           "direction": "FLAT"
         },
         "notes": []
       },
       "microstructure": {
-        "score": 2,
+        "score": 8,
         "max": 15,
         "breakdown": {
-          "absorption": 2,
+          "absorption": 8,
           "order_flow_imbalance": 0,
           "price_stall": 0
         },
         "notes": [
+          "大卖单被吸收(7次) → 下方支撑强 看多",
+          "多头动能耗尽(3次) → 上涨乏力",
+          "空头动能耗尽(6次) → 下跌乏力",
           "空头动能耗尽 +2"
         ],
         "absorption": {
           "absorbed": true,
-          "type": "BUY_ABSORBED",
-          "absorbed_buys": 4,
-          "absorbed_sells": 8,
-          "exhausted_buys": 5,
-          "exhausted_sells": 2,
+          "type": "SELL_ABSORBED",
+          "absorbed_buys": 0,
+          "absorbed_sells": 7,
+          "exhausted_buys": 3,
+          "exhausted_sells": 6,
           "notes": [
-            "大买单被吸收(4次) → 上方卖压强 看空",
-            "多头动能耗尽(5次) → 上涨乏力",
-            "空头动能耗尽(2次) → 下跌乏力"
+            "大卖单被吸收(7次) → 下方支撑强 看多",
+            "多头动能耗尽(3次) → 上涨乏力",
+            "空头动能耗尽(6次) → 下跌乏力"
           ]
         },
         "ofi": {
-          "imbalance": -0.522,
-          "direction": "SELL",
-          "buy_vol": 0.293,
-          "sell_vol": 0.931,
-          "momentum_shift": -0.333,
+          "imbalance": -0.096,
+          "direction": "NEUTRAL",
+          "buy_vol": 0.598,
+          "sell_vol": 0.725,
+          "momentum_shift": -0.213,
           "notes": [
-            "卖方主导失衡 -52.2%",
-            "订单流动量转移: 卖方加速(-0.33)"
+            "订单流动量转移: 卖方加速(-0.21)"
           ]
         },
         "stall": {
           "stall": false,
           "stall_type": "NONE",
-          "range_ratio": 0.875,
-          "recent_range": 542.5,
+          "range_ratio": 0.649,
+          "recent_range": 875.9,
           "notes": []
         }
       },
       "vol_exhaustion": {
-        "score": 11,
+        "score": 10,
         "components": {
           "exhaustion": {
             "detected": true,
             "score": 10,
-            "note": "放量暴跌后缩量24% → 卖压耗尽 +8 | 峰值量=15291(均值5057×3.0倍) 真实恐慌 +2",
-            "exhaustion_ratio": 0.239,
-            "max_vol_idx": 12,
-            "peak_vol_mult": 3.02
+            "note": "放量暴跌后缩量25% → 卖压耗尽 +8 | 峰值量=40830(均值9202×4.4倍) 真实恐慌 +2",
+            "exhaustion_ratio": 0.255,
+            "max_vol_idx": 15,
+            "peak_vol_mult": 4.44
           },
           "pin_bar": {
             "detected": false,
@@ -3706,35 +3583,34 @@
           "vol_price_div": {
             "detected": false,
             "score": 0,
-            "note": "样本不足"
+            "note": "无量价背离"
           },
           "vol_decay": {
-            "detected": true,
-            "score": 1,
-            "consecutive_shrink": 2,
-            "note": "连续2根缩量 +1"
+            "detected": false,
+            "score": 0,
+            "consecutive_shrink": 0,
+            "note": ""
           }
         },
         "notes": [
-          "放量暴跌后缩量24% → 卖压耗尽 +8 | 峰值量=15291(均值5057×3.0倍) 真实恐慌 +2",
-          "连续2根缩量 +1"
+          "放量暴跌后缩量25% → 卖压耗尽 +8 | 峰值量=40830(均值9202×4.4倍) 真实恐慌 +2"
         ],
         "exhaustion_level": "STRONG",
-        "exhaustion_ratio": 0.239
+        "exhaustion_ratio": 0.255
       },
       "multitf_div": {
         "score": 0,
         "resonance": "NONE",
         "tf_scores": {
           "15m": 0,
-          "1h": 2,
+          "1h": 0,
           "4h": 0
         },
         "active_tfs": [],
         "notes": [
           "无多周期背离共振",
           "15M 背离=NONE score=0",
-          "1H 背离=NONE score=2",
+          "1H 背离=NONE score=0",
           "4H 背离=NONE score=0"
         ],
         "details": {
@@ -3745,14 +3621,14 @@
       },
       "orderbook": {
         "score": 4,
-        "obi": -0.5506,
-        "bid_wall": 81871.4,
-        "ask_wall": 81871.5,
+        "obi": -0.1935,
+        "bid_wall": 85009.9,
+        "ask_wall": 85010.0,
         "liquidity_short": 0.0,
         "liquidity_long": 0.0,
         "slippage_est": 0.0,
         "notes": [
-          "下方买单墙@81871.40 +4"
+          "下方买单墙@85009.90 +4"
         ]
       },
       "var_err": "name 'Any' is not defined",
@@ -3784,60 +3660,60 @@
           "value": 70,
           "label": "Greed"
         },
-        "btc_dominance": 58.2,
+        "btc_dominance": 59.2,
         "fng_note": "",
-        "summary": "宏观风险=0 | FNG=70(Greed) | BTC.D=58.2% | 近期事件=无",
+        "summary": "宏观风险=0 | FNG=70(Greed) | BTC.D=59.2% | 近期事件=无",
         "available": true,
-        "ts": "2026-09-21 08:10 UTC"
+        "ts": "2026-09-21 12:28 UTC"
       },
       "basis": {
-        "basis_pct": -0.03267,
-        "mark_price": 81886.62302099,
-        "index_price": 81913.38543478,
-        "spread": -26.7624
+        "basis_pct": -0.05835,
+        "mark_price": 85013.42511594,
+        "index_price": 85063.05934783,
+        "spread": -49.6342
       },
       "atr_percentile": {
-        "atr_val": 409.7326,
-        "atr_pct": 0.5,
-        "atr_percentile": 66.7,
-        "regime": "ELEVATED",
-        "score_adj": -1,
+        "atr_val": 646.3211,
+        "atr_pct": 0.76,
+        "atr_percentile": 97.8,
+        "regime": "EXPANDED",
+        "score_adj": -2,
         "window": 90
       },
       "onchain_ws": {
         "score": 18,
         "max": 30,
         "breakdown": {
-          "oi_score": 7,
+          "oi_score": 5,
           "ls_score": 5,
-          "taker_score": 3,
+          "taker_score": 5,
           "fund_score": 3,
           "cg_score": 0
         },
         "notes": [
-          "OI温和上升+1.6%",
-          "多空中性46%多",
-          "大单均衡",
+          "OI稳定",
+          "多空中性48%多",
+          "大单BUY_DOMINANT与信号同向",
           "费率BULL_MILD温和"
         ],
         "raw": {
           "oi": {
-            "oi_now": 109752.972,
-            "oi_value_now": 8966598306.456,
-            "oi_chg_5": 1.64,
-            "oi_chg_1": 0.274,
-            "oi_trend": "RISING"
+            "oi_now": 110196.805,
+            "oi_value_now": 9349664005.32424,
+            "oi_chg_5": 0.68,
+            "oi_chg_1": 0.235,
+            "oi_trend": "FLAT"
           },
           "ls": {
-            "ls_ratio": 0.866,
-            "long_pct": 46.4,
+            "ls_ratio": 0.916,
+            "long_pct": 47.82,
             "ls_extreme": "NEUTRAL",
-            "ls_trend": "FALLING"
+            "ls_trend": "FLAT"
           },
           "taker": {
-            "buy_ratio": 48.09,
-            "sell_ratio": 51.91,
-            "taker_bias": "BALANCED"
+            "buy_ratio": 55.65,
+            "sell_ratio": 44.35,
+            "taker_bias": "BUY_DOMINANT"
           },
           "funding": {
             "funding_now": 1.0,
@@ -3867,43 +3743,43 @@
         },
         "market_state": {
           "symbol": "BTCUSDT",
-          "price": 81888.9,
+          "price": 85020.4,
           "price_source": "ws_realtime",
-          "chg24": 1.853,
-          "vol24": 9122273630.95,
+          "chg24": 5.792,
+          "vol24": 17218631286.38,
           "trend": {
             "1h": {
               "direction": "BULL",
-              "strength": "NORMAL",
+              "strength": "STRONG",
               "bull_score": 4,
-              "adx": 22.68,
-              "price": 81895.9,
-              "ema20": 81272.0472,
-              "ema50": 80831.7956,
-              "ema100": 79993.7737,
-              "ema200": 79155.4435
+              "adx": 38.26,
+              "price": 85015.3,
+              "ema20": 82533.5257,
+              "ema50": 81469.2515,
+              "ema100": 80391.0397,
+              "ema200": 79392.0602
             },
             "4h": {
               "direction": "BULL",
               "strength": "STRONG",
               "bull_score": 4,
-              "adx": 39.31,
-              "price": 81899.7,
-              "ema20": 80469.5438,
-              "ema50": 79202.535,
-              "ema100": 78532.7115,
-              "ema200": 77908.1795
+              "adx": 42.89,
+              "price": 85166.9,
+              "ema20": 81171.1233,
+              "ema50": 79547.9769,
+              "ema100": 78736.0601,
+              "ema200": 78027.4345
             },
             "1d": {
               "direction": "BULL",
               "strength": "STRONG",
               "bull_score": 4,
-              "adx": 42.23,
-              "price": 81899.7,
-              "ema20": 78315.2901,
-              "ema50": 74794.2486,
-              "ema100": 72091.6365,
-              "ema200": 70561.785
+              "adx": 42.94,
+              "price": 85015.3,
+              "ema20": 78612.0139,
+              "ema50": 74916.429,
+              "ema100": 72153.3315,
+              "ema200": 70577.363
             },
             "consensus": {
               "consensus": "FULL_BULL",
@@ -3919,96 +3795,96 @@
           "regime_probs": {
             "symbol": "BTCUSDT",
             "regime": "BULL_TREND",
-            "bull_prob": 0.966,
-            "bear_prob": 0.034,
+            "bull_prob": 1.0,
+            "bear_prob": 0.0,
             "chop_prob": 0.0,
             "primary": "BULL",
-            "confidence": 0.932,
-            "phase": "CHOP",
+            "confidence": 1.0,
+            "phase": "UPTREND",
             "momentum": "BULLISH",
             "rsi_1d": 64.22,
-            "rsi_4h": 68.87,
-            "rsi_1h": 61.15,
+            "rsi_4h": 70.85,
+            "rsi_1h": 79.78,
             "hh_1h": false,
             "hl_1h": true,
             "multiplier": {
               "LONG": 1.5,
               "SHORT": 0.5
             },
-            "ts": 1789978248.4439168
+            "ts": 1789993681.1949546
           },
           "key_levels": {
-            "price": 81895.9,
+            "price": 85015.3,
             "fib": {
-              "high": 82099.9,
+              "high": 85449.0,
               "low": 74909.4,
-              "0.236": 80402.942,
-              "0.382": 79353.129,
-              "0.500": 78504.65,
-              "0.618": 77656.171,
-              "0.786": 76448.167,
-              "1.272": 72953.584,
-              "1.618": 70465.671,
-              "2.618": 63275.171
+              "0.236": 82961.6544,
+              "0.382": 81422.8728,
+              "0.500": 80179.2,
+              "0.618": 78935.5272,
+              "0.786": 77164.8744,
+              "1.272": 72042.6288,
+              "1.618": 68395.9272,
+              "2.618": 57856.3272
             },
             "pivot": {
-              "pp": 81856.26666667,
-              "r1": 82015.33333333,
-              "r2": 82134.76666667,
-              "r3": 82293.83333333,
-              "s1": 81736.83333333,
-              "s2": 81577.76666667,
-              "s3": 81458.33333333
+              "pp": 85079.23333333,
+              "r1": 85385.06666667,
+              "r2": 85754.83333333,
+              "r3": 86060.66666667,
+              "s1": 84709.46666667,
+              "s2": 84403.63333333,
+              "s3": 84033.86666667
             },
             "bb": {
-              "mid": 81209.545,
-              "upper": 81889.12689639,
-              "lower": 80529.96310361,
-              "width": 0.0167,
-              "pos": 1.005
+              "mid": 82077.725,
+              "upper": 84967.13687017,
+              "lower": 79188.31312983,
+              "width": 0.0704,
+              "pos": 1.008
             },
             "swings": {
               "swing_highs": [
                 [
-                  307,
+                  303,
                   77149.8
                 ],
                 [
-                  344,
+                  340,
                   81732.4
                 ],
                 [
-                  358,
+                  354,
                   81933.9
                 ],
                 [
-                  383,
+                  379,
                   81472.6
                 ],
                 [
-                  392,
+                  388,
                   82099.9
                 ]
               ],
               "swing_lows": [
                 [
-                  308,
+                  304,
                   75975.0
                 ],
                 [
-                  317,
+                  313,
                   76210.0
                 ],
                 [
-                  343,
+                  339,
                   80802.6
                 ],
                 [
-                  370,
+                  366,
                   80095.9
                 ],
                 [
-                  388,
+                  384,
                   80533.6
                 ]
               ],
@@ -4016,18 +3892,17 @@
               "last_low": 80533.6
             },
             "resistance": [
-              82015.33333333,
-              82099.9,
-              82134.76666667
+              85385.06666667,
+              85754.83333333
             ],
             "support": [
-              81736.83333333,
-              81577.76666667,
-              81272.0472,
-              80831.7956,
+              84709.46666667,
+              84403.63333333,
+              82533.5257,
+              81469.2515,
               80533.6
             ],
-            "range_high": 82099.9,
+            "range_high": 85449.0,
             "range_low": 74909.4
           },
           "wave": {
@@ -4036,21 +3911,21 @@
             "note": "可能5浪末端，RSI高位，警惕反转"
           },
           "momentum": {
-            "rsi_15m": 56.73,
-            "rsi_1h": 62.57,
-            "rsi_4h": 70.83,
+            "rsi_15m": 76.75,
+            "rsi_1h": 81.63,
+            "rsi_4h": 83.11,
             "rsi_1d": 63.99,
-            "atr_1h": 409.7978,
-            "atr_4h": 775.1601,
-            "atr_15m": 237.6035,
-            "atr_pct": 0.5,
-            "atr_15m_pct": 0.29,
+            "atr_1h": 646.3576,
+            "atr_4h": 987.5431,
+            "atr_15m": 388.8829,
+            "atr_pct": 0.76,
+            "atr_15m_pct": 0.457,
             "bb": {
-              "mid": 81209.545,
-              "upper": 81889.12689639,
-              "lower": 80529.96310361,
-              "width": 0.0167,
-              "pos": 1.005
+              "mid": 82077.725,
+              "upper": 84967.13687017,
+              "lower": 79188.31312983,
+              "width": 0.0704,
+              "pos": 1.008
             }
           },
           "swing_4h": {
@@ -4073,18 +3948,14 @@
           },
           "sentiment": {
             "funding_rate": 0.01,
-            "long_short_ratio": 46.4,
-            "oi": 110189.13,
-            "oi_change_pct": 1.64,
-            "oi_momentum": "INCREASING"
+            "long_short_ratio": 47.8,
+            "oi": 111136.208,
+            "oi_change_pct": 0.6799,
+            "oi_momentum": "NEUTRAL"
           },
           "signal_bias": "LONG",
-          "summary": "强多头 | 中位震荡 | 可能5浪末端，RSI高位，警惕反转",
+          "summary": "强多头 | 中位震荡 | 可能5浪末端，RSI高位，警惕反转 RSI超买",
           "raw_closes": [
-            81077.0,
-            81288.1,
-            81303.0,
-            81193.3,
             81274.7,
             81306.6,
             81319.1,
@@ -4130,13 +4001,13 @@
             81520.0,
             81609.0,
             81699.9,
-            81895.9
+            83717.3,
+            84626.0,
+            84400.1,
+            84849.9,
+            85015.3
           ],
           "raw_volumes": [
-            2206.78,
-            2972.412,
-            3796.043,
-            3003.93,
             1417.84,
             1795.362,
             2000.321,
@@ -4182,145 +4053,13 @@
             4060.532,
             5580.807,
             3337.296,
-            2041.547
+            40829.826,
+            35913.342,
+            13667.001,
+            8298.469,
+            9208.602
           ],
           "klines_15m": [
-            {
-              "o": 80970.0,
-              "h": 81026.0,
-              "l": 80902.0,
-              "c": 80939.4,
-              "v": 509.321,
-              "t": 1789798500000
-            },
-            {
-              "o": 80939.4,
-              "h": 81060.3,
-              "l": 80939.3,
-              "c": 81035.2,
-              "v": 487.388,
-              "t": 1789799400000
-            },
-            {
-              "o": 81035.2,
-              "h": 81078.6,
-              "l": 80990.3,
-              "c": 81027.2,
-              "v": 318.731,
-              "t": 1789800300000
-            },
-            {
-              "o": 81027.2,
-              "h": 81135.3,
-              "l": 81027.2,
-              "c": 81135.2,
-              "v": 360.042,
-              "t": 1789801200000
-            },
-            {
-              "o": 81135.3,
-              "h": 81232.4,
-              "l": 81038.9,
-              "c": 81076.4,
-              "v": 856.055,
-              "t": 1789802100000
-            },
-            {
-              "o": 81076.5,
-              "h": 81096.0,
-              "l": 81008.2,
-              "c": 81032.2,
-              "v": 333.603,
-              "t": 1789803000000
-            },
-            {
-              "o": 81032.3,
-              "h": 81152.8,
-              "l": 81000.0,
-              "c": 81077.0,
-              "v": 657.08,
-              "t": 1789803900000
-            },
-            {
-              "o": 81077.1,
-              "h": 81215.2,
-              "l": 81040.9,
-              "c": 81213.6,
-              "v": 572.774,
-              "t": 1789804800000
-            },
-            {
-              "o": 81213.6,
-              "h": 81383.8,
-              "l": 81160.3,
-              "c": 81269.2,
-              "v": 1434.134,
-              "t": 1789805700000
-            },
-            {
-              "o": 81269.2,
-              "h": 81368.2,
-              "l": 81241.6,
-              "c": 81281.3,
-              "v": 572.807,
-              "t": 1789806600000
-            },
-            {
-              "o": 81281.3,
-              "h": 81353.4,
-              "l": 81252.8,
-              "c": 81288.1,
-              "v": 392.697,
-              "t": 1789807500000
-            },
-            {
-              "o": 81288.0,
-              "h": 81512.5,
-              "l": 81253.8,
-              "c": 81403.8,
-              "v": 1640.282,
-              "t": 1789808400000
-            },
-            {
-              "o": 81403.7,
-              "h": 81476.0,
-              "l": 81357.8,
-              "c": 81383.3,
-              "v": 793.495,
-              "t": 1789809300000
-            },
-            {
-              "o": 81383.3,
-              "h": 81413.9,
-              "l": 81227.0,
-              "c": 81238.1,
-              "v": 934.451,
-              "t": 1789810200000
-            },
-            {
-              "o": 81238.1,
-              "h": 81318.8,
-              "l": 81237.6,
-              "c": 81303.0,
-              "v": 427.815,
-              "t": 1789811100000
-            },
-            {
-              "o": 81303.1,
-              "h": 81309.6,
-              "l": 81175.7,
-              "c": 81276.5,
-              "v": 1178.839,
-              "t": 1789812000000
-            },
-            {
-              "o": 81276.4,
-              "h": 81295.6,
-              "l": 81228.3,
-              "c": 81250.0,
-              "v": 887.967,
-              "t": 1789812900000
-            },
             {
               "o": 81250.0,
               "h": 81273.9,
@@ -5781,25 +5520,161 @@
               "o": 81700.0,
               "h": 81975.7,
               "l": 81697.2,
-              "c": 81895.9,
-              "v": 2041.547,
+              "c": 81860.0,
+              "v": 2745.964,
               "t": 1789977600000
+            },
+            {
+              "o": 81859.9,
+              "h": 82249.9,
+              "l": 81838.6,
+              "c": 82204.8,
+              "v": 4236.581,
+              "t": 1789978500000
+            },
+            {
+              "o": 82204.7,
+              "h": 84275.5,
+              "l": 82153.2,
+              "c": 83501.5,
+              "v": 27043.942,
+              "t": 1789979400000
+            },
+            {
+              "o": 83501.6,
+              "h": 83865.6,
+              "l": 83273.6,
+              "c": 83717.3,
+              "v": 6803.339,
+              "t": 1789980300000
+            },
+            {
+              "o": 83717.3,
+              "h": 84020.6,
+              "l": 83660.4,
+              "c": 83892.7,
+              "v": 5400.913,
+              "t": 1789981200000
+            },
+            {
+              "o": 83892.7,
+              "h": 84578.9,
+              "l": 83861.5,
+              "c": 84419.0,
+              "v": 9187.381,
+              "t": 1789982100000
+            },
+            {
+              "o": 84418.9,
+              "h": 85285.0,
+              "l": 84291.1,
+              "c": 84990.0,
+              "v": 15654.771,
+              "t": 1789983000000
+            },
+            {
+              "o": 84990.0,
+              "h": 85033.9,
+              "l": 84543.4,
+              "c": 84626.0,
+              "v": 5670.277,
+              "t": 1789983900000
+            },
+            {
+              "o": 84625.9,
+              "h": 84800.8,
+              "l": 84460.8,
+              "c": 84543.7,
+              "v": 4809.022,
+              "t": 1789984800000
+            },
+            {
+              "o": 84543.6,
+              "h": 84717.2,
+              "l": 84337.0,
+              "c": 84339.7,
+              "v": 2778.597,
+              "t": 1789985700000
+            },
+            {
+              "o": 84339.6,
+              "h": 84444.2,
+              "l": 84100.3,
+              "c": 84231.4,
+              "v": 3524.727,
+              "t": 1789986600000
+            },
+            {
+              "o": 84231.4,
+              "h": 84421.2,
+              "l": 84117.4,
+              "c": 84400.1,
+              "v": 2554.655,
+              "t": 1789987500000
+            },
+            {
+              "o": 84400.2,
+              "h": 84617.8,
+              "l": 84350.8,
+              "c": 84560.1,
+              "v": 2877.081,
+              "t": 1789988400000
+            },
+            {
+              "o": 84560.0,
+              "h": 84675.8,
+              "l": 84488.0,
+              "c": 84632.0,
+              "v": 1360.337,
+              "t": 1789989300000
+            },
+            {
+              "o": 84632.0,
+              "h": 84855.5,
+              "l": 84573.1,
+              "c": 84788.9,
+              "v": 2165.885,
+              "t": 1789990200000
+            },
+            {
+              "o": 84788.8,
+              "h": 84882.2,
+              "l": 84672.0,
+              "c": 84849.9,
+              "v": 1895.166,
+              "t": 1789991100000
+            },
+            {
+              "o": 84849.9,
+              "h": 85133.0,
+              "l": 84773.4,
+              "c": 84954.8,
+              "v": 4154.093,
+              "t": 1789992000000
+            },
+            {
+              "o": 84954.9,
+              "h": 85449.0,
+              "l": 84937.3,
+              "c": 85015.3,
+              "v": 5054.509,
+              "t": 1789992900000
             }
           ],
-          "atr_pct": 0.005004,
-          "atr_1h": 409.7978,
-          "atr_4h": 775.1601,
-          "atr_15m": 237.6035,
-          "rsi_15m": 56.73,
-          "rsi_1h": 62.57,
-          "rsi_4h": 70.83,
+          "atr_pct": 0.007602,
+          "atr_1h": 646.3576,
+          "atr_4h": 987.5431,
+          "atr_15m": 388.8829,
+          "rsi_15m": 76.75,
+          "rsi_1h": 81.63,
+          "rsi_4h": 83.11,
           "rsi_1d": 63.99,
           "_harv_p_up": 0.45
         }
       },
       "sentiment_nlp": {
         "score": 1,
-        "detail": "FnG=70 base=+3.0 trend=+0.0 fr=0.0100(-2) lsr=46.40(+0)"
+        "detail": "FnG=70 base=+3.0 trend=+0.0 fr=0.0100(-2) lsr=47.80(+0)"
       },
       "anti_manip": {
         "risk_score": 0,
@@ -5815,14 +5690,14 @@
             "signal": "OK"
           },
           "taker": {
-            "taker_buy_ratio": 0.551,
+            "taker_buy_ratio": 0.513,
             "risk_long": 0,
             "risk_short": 0,
             "signal": "OK"
           },
           "oi_anomaly": {
-            "oi_change_pct": 0.67,
-            "price_chg_pct": 1.85,
+            "oi_change_pct": 1.09,
+            "price_chg_pct": 5.81,
             "risk": 0,
             "signal": "OK"
           },
@@ -5834,9 +5709,9 @@
             "err": "name 'now' is not defined"
           },
           "mark_price": {
-            "mark_price": 81886.62302099,
-            "index_price": 81913.38543478,
-            "deviation_pct": 0.033,
+            "mark_price": 85013.42511594,
+            "index_price": 85063.05934783,
+            "deviation_pct": 0.058,
             "risk": 0,
             "signal": "OK"
           }
@@ -5845,8 +5720,8 @@
       "dag_position_mult": 0.5,
       "tf_confluence": {
         "15m": 0,
-        "1h": 2,
-        "4h": 2,
+        "1h": 1,
+        "4h": 1,
         "1d": 0,
         "active_tfs": [
           "1h",
@@ -5862,32 +5737,32 @@
           "4h": 0.4,
           "1d": 0.1
         },
-        "original_score": 135.0,
-        "adjusted_score": 138.0,
+        "original_score": 121.0,
+        "adjusted_score": 124.0,
         "primary_tf": "1h",
         "signal_source": "default"
       },
       "smart_money": {
-        "big_acct_long": 0.5148,
-        "big_pos_long": 0.6759,
-        "retail_long": 0.4828,
-        "whale_retail_gap": 0.032,
-        "pos_trend_5h": 0.0001,
-        "big_pos_long_4h": 0.6758,
-        "retail_long_4h": 0.464,
+        "big_acct_long": 0.4961,
+        "big_pos_long": 0.6747,
+        "retail_long": 0.4662,
+        "whale_retail_gap": 0.0299,
+        "pos_trend_5h": -0.0161,
+        "big_pos_long_4h": 0.6908,
+        "retail_long_4h": 0.4782,
         "signal": "SMART_MONEY_LONG",
         "score_adj": -3,
-        "note": "大户持仓偏多(67.59%) 聪明钱看多 -3",
+        "note": "大户持仓偏多(67.47%) 聪明钱看多 -3",
         "confidence": 0.75
       },
       "attribution": {
         "error": "name '_os' is not defined"
       },
       "ensemble": {
-        "ensemble_score": 46.74,
-        "ensemble_signal": -0.0652,
+        "ensemble_score": 48.91,
+        "ensemble_signal": -0.0219,
         "ic_weighted": {
-          "rsi_4h": 0.5416,
+          "rsi_4h": 0.8609,
           "change_3d": 0.0,
           "bbw": -0.6,
           "hurst": 0.0,
@@ -5897,19 +5772,19 @@
           "regime_code": 0.0,
           "macro_days": -0.9,
           "vol_rank": -0.8,
-          "score_rank": 0.21,
-          "stoch_rsi": 0.3024,
-          "cross_market": -0.6214
+          "score_rank": 0.112,
+          "stoch_rsi": 0.7584,
+          "cross_market": -0.7356
         },
         "regime_direction_mult": 1.0,
         "true_alpha": [
           "macro_days",
-          "atr_rank",
-          "vol_rank"
+          "rsi_4h",
+          "atr_rank"
         ],
         "n_dims": 13,
         "raw_vec": {
-          "rsi_4h": 70.83,
+          "rsi_4h": 83.11,
           "change_3d": 0,
           "bbw": 0,
           "hurst": 0.5,
@@ -5919,16 +5794,16 @@
           "regime_code": 4,
           "macro_days": 30,
           "vol_rank": 0.0,
-          "score_rank": 0.65,
-          "stoch_rsi": 62.6,
-          "cross_market": -0.6214
+          "score_rank": 0.58,
+          "stoch_rsi": 81.6,
+          "cross_market": -0.7356
         }
       },
       "ai_council": {
-        "council_bias": "偏空",
+        "council_bias": "中性",
         "council_action": "WAIT",
         "council_confidence": "MED",
-        "council_reason": "体制中性，量能满分",
+        "council_reason": "体制中性",
         "bayes_adjustment": 0.0,
         "bayes_detail": "prior=55.0% post=55.0% n=0 conf=LOW",
         "weight_calibration": {
@@ -5943,83 +5818,83 @@
           "status": "CALIBRATED"
         },
         "experience_nudge": "",
-        "council_score": 1,
-        "combined_score": 46.74
+        "council_score": 0,
+        "combined_score": 48.91
       },
       "regime_timing": {
         "current": "CHOP_MID",
-        "age_hours": 94.8,
+        "age_hours": 99.1,
         "is_early": false,
         "prev": "BULL_CORRECTION",
-        "bars_est": 24
+        "bars_est": 25
       }
     },
-    "rsi_1h": 62.57,
-    "rsi_4h": 70.83,
+    "rsi_1h": 81.63,
+    "rsi_4h": 83.11,
     "rsi_1d": 63.99,
     "market_state_raw": {
       "consensus": "FULL_BULL",
       "trend_dir_1h": "BULL",
       "trend_dir_4h": "BULL",
       "trend_dir_1d": "BULL",
-      "adx_1h": 22.68,
-      "adx_4h": 39.31,
-      "ema20_1h": 81272.0472,
-      "ema50_1h": 80831.7956,
-      "ema200_1h": 79155.4435,
-      "ema20_4h": 80469.5438,
-      "ema50_4h": 79202.535,
-      "ema200_1d": 70561.785,
-      "rsi_15m": 56.73,
-      "rsi_1h": 62.57,
-      "rsi_4h": 70.83,
+      "adx_1h": 38.26,
+      "adx_4h": 42.89,
+      "ema20_1h": 82533.5257,
+      "ema50_1h": 81469.2515,
+      "ema200_1h": 79392.0602,
+      "ema20_4h": 81171.1233,
+      "ema50_4h": 79547.9769,
+      "ema200_1d": 70577.363,
+      "rsi_15m": 76.75,
+      "rsi_1h": 81.63,
+      "rsi_4h": 83.11,
       "rsi_1d": 63.99,
-      "atr_1h": 409.7978,
-      "atr_4h": 775.1601,
-      "atr_pct": 0.5,
-      "bb_width": 0.0167,
-      "bb_pos": 1.005,
-      "bb_upper": 81889.12689639,
-      "bb_lower": 80529.96310361,
+      "atr_1h": 646.3576,
+      "atr_4h": 987.5431,
+      "atr_pct": 0.76,
+      "bb_width": 0.0704,
+      "bb_pos": 1.008,
+      "bb_upper": 84967.13687017,
+      "bb_lower": 79188.31312983,
       "funding_rate": 0.01,
-      "long_short_ratio": 46.4,
-      "oi": 110189.13,
-      "oi_change_pct": 1.64,
-      "oi_momentum": "INCREASING",
-      "dxy": 100.33,
+      "long_short_ratio": 47.8,
+      "oi": 111136.208,
+      "oi_change_pct": 0.6799,
+      "oi_momentum": "NEUTRAL",
+      "dxy": 100.23,
       "dxy_dir": "FLAT",
-      "nasdaq_price": 30189.0,
+      "nasdaq_price": 30247.0,
       "macro_v2_score": 0,
       "macro_v2_notes": [],
-      "cvd_score": 4,
+      "cvd_score": 6,
       "cvd_notes": [
-        "CVD宏观+微观买方主导 +4",
-        "空头拥挤反转信号 +5"
+        "CVD宏观+中期买方主导 +6",
+        "多头持续增仓 +2"
       ],
-      "lsr_trend": "SHORT_CROWDED",
-      "lsr_current": 0.866,
-      "session_name": "欧洲盘开盘",
-      "session_vol_mult": 1.3,
+      "lsr_trend": "LONG_GROWING",
+      "lsr_current": 0.916,
+      "session_name": "欧洲盘",
+      "session_vol_mult": 1.1,
       "liq_bias": null,
       "liq_long": 0,
       "liq_short": 0,
-      "structure_grade": 70,
-      "effective_grade": 61.6,
+      "structure_grade": 33,
+      "effective_grade": 29.0,
       "smc_structure": "UPTREND",
-      "bos_count": 0,
+      "bos_count": 1,
       "choch_count": 0,
       "ob_bull_count": 3,
-      "ob_bear_count": 1,
+      "ob_bear_count": 0,
       "fvg_count": 14,
-      "hurst_4h": 0.645,
-      "utc_hour": 8,
+      "hurst_4h": 0.661,
+      "utc_hour": 12,
       "weekday": 0,
       "month": 9,
       "kronos_p_up": null,
       "xgb_score": null,
       "cross_fr_avg": 0.01,
-      "cross_basis": -0.0208,
-      "pc_ratio": 0.565
+      "cross_basis": -0.0521,
+      "pc_ratio": 0.574
     },
     "dharma_nodes": {
       "nodes_pass": 3,
@@ -6029,18 +5904,18 @@
     },
     "nodes_pass": 3,
     "nodes_verdict": "PASS",
-    "score_final": 111.2,
-    "score_final_raw": 125.6,
-    "grade": 70,
-    "effective_grade": 61.6,
+    "score_final": 90.0,
+    "score_final_raw": 99.1,
+    "grade": 33,
+    "effective_grade": 29.0,
     "grade_mult": 0.88,
-    "score": 109.2,
+    "score": 88.0,
     "asset_type": "BTC_ETH",
     "asset_weight_mult": 0.8,
     "fangcang": {
       "status": "ok",
       "symbol": "BTCUSDT",
-      "run_at": "2026-09-21T08:10:54.068825+00:00",
+      "run_at": "2026-09-21T12:28:10.513072+00:00",
       "current_regime": "CHOP_MID",
       "top_similar": [
         {
@@ -6268,15 +6143,15 @@
         "52w_mid": 91983.55,
         "weekly_position": 0.102,
         "htf_resonance": 0.0,
-        "ema20_weekly": 73443.29,
-        "ema20_monthly": 80483.68,
+        "ema20_weekly": 73758.03,
+        "ema20_monthly": 80798.03,
         "htf_bias": "BEARISH",
         "score_addon": -4,
         "_anchor_summary": "52W区间: $57,759~$126,208 | 周线位置:10.2% | HTF共振:0.00"
       },
       "elliott_wave": {},
       "vpa": {},
-      "_ts": 1789978253.400033,
+      "_ts": 1789993689.770627,
       "hcme_source": "unified_v1",
       "unified_s1_adj": 1.8,
       "unified_s2_adj": 0.0,
@@ -6286,79 +6161,25 @@
     "hcme_adj": 0.72,
     "hcme_ctx": "方仓中性(adj=+0.7): 信号不明确",
     "decision": {
-      "action": "EXECUTE",
-      "reason": "五步全通过 | 无催化剂(放开) | 15m BOS向上 收盘$81699.90>前高$81586.60 | RR=1.06x",
-      "step_passed": 5,
+      "action": "SKIP",
+      "reason": "Step1否决: SL=2.2%>2.00%(grade=33动态限制)",
+      "step_passed": 0,
       "details": {
         "step1": {
           "dead_combo": false,
-          "sl_pct": 1.89,
+          "sl_pct": 2.171,
           "sl_atr_min": 1.5,
-          "sl_max_dynamic": 2.0,
-          "grade": 70.0,
-          "passed": true
-        },
-        "step2": {
-          "oi_chg_1h": 1.8715119443286428,
-          "fr": 0.01,
-          "liq": {
-            "up_100x": 2.0,
-            "dn_100x": 2.0,
-            "up_50x": 4.0,
-            "dn_50x": 4.0,
-            "nearest_short": 83526.678,
-            "nearest_long": 80251.12199999999
-          },
-          "catalysts": [],
-          "note": "无催化剂但不再否决 [9.17放开]",
-          "passed": true
-        },
-        "step3": {
-          "choch_15m": 19,
-          "mtf_count": 0,
-          "fangcang_ev": 2.948,
-          "confirmations": [
-            "15m CHoCH=19",
-            "方仓EV=+2.95%"
-          ],
-          "passed": true
-        },
-        "step4": {
-          "price": 81888.9,
-          "sl_price": 80341.19979,
-          "tp_price": 83526.678,
-          "sl_pct": 1.89,
-          "tp_pct": 2.0,
-          "rr": 1.06,
-          "passed": true
-        },
-        "step5": {
-          "confirmed": true,
-          "reason": "15m BOS向上 收盘$81699.90>前高$81586.60"
+          "sl_max_dynamic": 2.0
         }
       },
-      "entry_plan": {
-        "symbol": "BTCUSDT",
-        "direction": "LONG",
-        "price": 81888.9,
-        "sl_price": 80341.1998,
-        "tp1_price": 83526.678,
-        "tp2_price": 85164.456,
-        "sl_pct": 1.89,
-        "rr": 1.058201058201065,
-        "catalysts": [],
-        "confirmations": [
-          "15m CHoCH=19",
-          "方仓EV=+2.95%"
-        ]
-      },
-      "ts": 1789978256.496944
+      "entry_plan": {},
+      "ts": 1789993691.3921225
     },
-    "decision_action": "EXECUTE",
-    "decision_reason": "五步全通过 | 无催化剂(放开) | 15m BOS向上 收盘$81699.90>前高$81586.60 | RR=1.06x",
-    "decision_step": 5,
+    "decision_action": "SKIP",
+    "decision_reason": "Step1否决: SL=2.2%>2.00%(grade=33动态限制)",
+    "decision_step": 0,
     "fangcang_rsi_adj": 12,
-    "fangcang_rsi_note": "P1方仓RSI分层做多(RSI4H=71>65) +12",
+    "fangcang_rsi_note": "P1方仓RSI分层做多(RSI4H=83>65) +12",
     "fangcang_trap": true,
     "htf_score_addon": -4,
     "timing_badge": "⚫ STANDBY",
@@ -6367,19 +6188,19 @@
       "score": 0,
       "badge": "⚫ STANDBY",
       "breakdown": {
-        "reason": "score=109.2/grade=70.0 低于门槛"
+        "reason": "score=88.0/grade=33.0 低于门槛"
       }
     },
     "tradfi_xref": {
       "NVDAUSDT": {
         "wr": 0.6,
         "n": 20,
-        "ev": 3.16
+        "ev": 2.86
       },
       "XAUUSDT": {
-        "wr": 0.6,
+        "wr": 0.65,
         "n": 20,
-        "ev": 0.57
+        "ev": 0.47
       }
     },
     "exp_payloads": {
@@ -6398,19 +6219,19 @@
       "reason": ""
     },
     "us_session": {
-      "session": "overnight",
+      "session": "premarket",
       "delta": {
         "delta": -5,
-        "note": "CHOP深夜-5",
+        "note": "CHOP盘前-5",
         "block": false,
         "block_reason": ""
       }
     },
     "volatility_context": {
       "vol_regime": "NORMAL",
-      "atr_pct": 0.84,
+      "atr_pct": 0.913,
       "bbw_pct": 0.25,
-      "combined_pct": 0.604,
+      "combined_pct": 0.648,
       "pos_scale": 1.0,
       "note": "波动率正常区间，仓位正常",
       "symbol": "BTCUSDT"
@@ -6418,18 +6239,20 @@
     "_market_quadrant": {
       "quadrant": "NEUTRAL",
       "retail_bias": "NEUTRAL",
-      "whale_bias": "NEUTRAL",
+      "whale_bias": "SHORT",
       "signal": "NEUTRAL",
       "stars": 1,
       "confidence": 0.3,
-      "lsr": 46.4,
-      "whale_net": 0.0,
+      "lsr": 47.8,
+      "whale_net": -1.86,
       "whale_diverge": false,
-      "note": "散户NEUTRAL 大户NEUTRAL → 信号不明，观望",
+      "note": "散户NEUTRAL 大户SHORT → 信号不明，观望",
       "raw": {
         "big_buy": 0.0,
-        "big_sell": 0.0,
-        "whale_notes": [],
+        "big_sell": 1.863,
+        "whale_notes": [
+          "巨鲸积极卖出 $1.86M"
+        ],
         "smart_bias": "NEUTRAL"
       }
     },
@@ -6443,18 +6266,18 @@
       "blackswan": {
         "detected": false,
         "level": "NORMAL",
-        "reason": "波动正常 1H=0.2% 4H=0.7% 24H=2.1%",
-        "chg_1h": 0.24920471138888278,
-        "chg_4h": 0.6612139051563624,
-        "chg_24h": 2.079261969808766
+        "reason": "波动正常 1H=0.2% 4H=1.5% 24H=5.7%",
+        "chg_1h": 0.1935182009643048,
+        "chg_4h": 1.5490227229019604,
+        "chg_24h": 5.664019289806984
       }
     },
     "direction": "LONG",
     "trader_brain": {
       "action": "WAIT",
       "direction": "NONE",
-      "entry_lo": 0,
-      "entry_hi": 0,
+      "entry_lo": 0.0,
+      "entry_hi": 0.0,
       "sl": 0,
       "rr": 0,
       "confidence": "LOW",
@@ -6462,7 +6285,7 @@
         "体制CHOP_MID无方向"
       ]
     },
-    "total": 135.6,
+    "total": 111.1,
     "_context_fangcang": {
       "total_n": 710,
       "by_tf": {
@@ -6504,30 +6327,423 @@
     "_regime_score": {
       "symbol": "BTCUSDT",
       "regime": "BULL_TREND",
-      "bull_prob": 0.966,
-      "bear_prob": 0.034,
+      "bull_prob": 1.0,
+      "bear_prob": 0.0,
       "chop_prob": 0.0,
       "primary": "BULL",
-      "confidence": 0.932,
-      "phase": "CHOP",
+      "confidence": 1.0,
+      "phase": "UPTREND",
       "momentum": "BULLISH",
       "rsi_1d": 64.22,
-      "rsi_4h": 68.87,
-      "rsi_1h": 61.15,
+      "rsi_4h": 70.85,
+      "rsi_1h": 79.78,
       "hh_1h": false,
       "hl_1h": true,
       "multiplier": {
         "LONG": 1.5,
         "SHORT": 0.5
       },
-      "ts": 1789978248.4439168
+      "ts": 1789993681.1949546
     },
     "_multiframe": {
-      "price": 81846.2,
+      "price": 85019.5,
       "mtf_bias": "NEUTRAL",
-      "mtf_score_adj": -2,
-      "mtf_summary": "\n╬══ 🌐 全周期FVG/OB地图 (MTF Confluence) ══╬\n  当前价: $81,846  综合偏向: NEUTRAL  MTF调分: -2\n\n  MTF综合: bias=NEUTRAL adj=-2\n╬══════════════════════════════════════════╬",
-      "multiframe_context": {}
+      "mtf_score_adj": 1,
+      "mtf_summary": "\n╬══ 🌐 全周期FVG/OB地图 (MTF Confluence) ══╬\n  当前价: $85,020  综合偏向: NEUTRAL  MTF调分: +1\n\n  [15分钟 15M]\n    ↓ BullFVG $84,021~$84,291 gap=0.32% 距-0.9% 下方磁铁\n    ↓ BullFVG $82,250~$83,274 gap=1.24% 距-2.1% 下方磁铁\n    🟢 Bull OB $81,271~$81,395 [下方4.3%]\n    🟢 Bull OB $81,433~$81,587 [下方4.0%]\n    🔴 Bear OB $81,552~$81,766 [下方-3.8%]\n    🔴 Bear OB $81,640~$81,857 [下方-3.7%]\n    🔴 Bear OB $81,504~$81,639 [下方-4.0%]\n\n  [1小时 1H]\n    ↓ BullFVG $81,700~$83,660 gap=2.4% 距-1.6% 下方磁铁\n    ↓ BearFVG $79,670~$81,041 gap=1.72% 距-4.7% 下方磁铁\n    🟢 Bull OB $81,090~$81,311 [下方4.4%]\n    🟢 Bull OB $81,200~$81,482 [下方4.2%]\n    🟢 Bull OB $84,100~$84,801 [下方0.3%]\n    🔴 Bear OB $80,254~$80,400 [下方-5.4%]\n    🔴 Bear OB $81,135~$81,816 [下方-3.8%]\n\n  [4小时 4H]\n    ↓ BullFVG $81,857~$84,773 gap=3.56% 距-0.3% 下方磁铁\n    ↓ BearFVG $80,618~$80,875 gap=0.32% 距-4.9% 下方磁铁\n    🟢 Bull OB $76,210~$76,711 [下方9.8%]\n    🟢 Bull OB $80,882~$81,232 [下方4.5%]\n    🟢 Bull OB $80,534~$81,311 [下方4.4%]\n\n  [日线 1D]\n    ↓ BullFVG $77,150~$80,803 gap=4.73% 距-5.0% 下方磁铁\n    ↓ BullFVG $79,429~$79,761 gap=0.42% 距-6.2% 下方磁铁\n    🟢 Bull OB $76,152~$77,768 [下方8.5%]\n    🟢 Bull OB $76,459~$77,427 [下方8.9%]\n    🟢 Bull OB $80,096~$81,473 [下方4.2%]\n    🔴 Bear OB $79,125~$80,536 [下方-5.3%]\n    🔴 Bear OB $77,025~$77,477 [下方-8.9%]\n    🔴 Bear OB $76,350~$79,571 [下方-6.4%]\n\n  [周线 1W]\n    ↑ BullFVG $81,700~$89,422 gap=9.45% 距+-3.9% 🧲上方磁铁\n    ↑ BullFVG $86,443~$92,700 gap=7.24% 距+1.7% 🧲上方磁铁\n    ↑ BearFVG $96,012~$98,889 gap=3.0% 距+12.9% 🧲上方磁铁\n    ↔ BearFVG $79,311~$86,022 gap=8.46% ⚠️空头压制\n    ↓ BullFVG $80,411~$80,819 gap=0.51% 距-4.9% 下方磁铁\n    ↓ BullFVG $73,660~$80,261 gap=8.96% 距-5.6% 下方磁铁\n    🟢 Bull OB $74,868~$79,455 [下方6.5%]\n    🟢 Bull OB $76,000~$80,411 [下方5.4%]\n    🔴 Bear OB $78,128~$82,829 [下方-2.6%]\n    🔴 Bear OB $63,666~$66,924 [下方-21.3%]\n\n  MTF综合: bias=NEUTRAL adj=+1\n╬══════════════════════════════════════════╬",
+      "multiframe_context": {
+        "15m": {
+          "label": "15分钟",
+          "fvg_above": [],
+          "fvg_below": [
+            {
+              "type": "Bull",
+              "bot": 84020.6,
+              "top": 84291.1,
+              "gap": 0.32,
+              "tf": "15m",
+              "ts": 1789981200000
+            },
+            {
+              "type": "Bull",
+              "bot": 82249.9,
+              "top": 83273.6,
+              "gap": 1.24,
+              "tf": "15m",
+              "ts": 1789978500000
+            },
+            {
+              "type": "Bear",
+              "bot": 80666.9,
+              "top": 80946.8,
+              "gap": 0.35,
+              "tf": "15m",
+              "ts": 1789870500000
+            }
+          ],
+          "fvg_cross": [],
+          "ob_bull": [
+            {
+              "bot": 81271.0,
+              "top": 81395.0,
+              "tf": "15m",
+              "ts": 1789966800000,
+              "dist_pct": 4.26,
+              "above": false
+            },
+            {
+              "bot": 81433.2,
+              "top": 81586.6,
+              "tf": "15m",
+              "ts": 1789975800000,
+              "dist_pct": 4.04,
+              "above": false
+            }
+          ],
+          "ob_bear": [
+            {
+              "bot": 81551.5,
+              "top": 81765.5,
+              "tf": "15m",
+              "ts": 1789968600000,
+              "dist_pct": -3.83,
+              "above": false
+            },
+            {
+              "bot": 81639.9,
+              "top": 81857.1,
+              "tf": "15m",
+              "ts": 1789971300000,
+              "dist_pct": -3.72,
+              "above": false
+            },
+            {
+              "bot": 81504.2,
+              "top": 81638.8,
+              "tf": "15m",
+              "ts": 1789974900000,
+              "dist_pct": -3.98,
+              "above": false
+            }
+          ]
+        },
+        "1h": {
+          "label": "1小时",
+          "fvg_above": [],
+          "fvg_below": [
+            {
+              "type": "Bull",
+              "bot": 81700.0,
+              "top": 83660.4,
+              "gap": 2.4,
+              "tf": "1h",
+              "ts": 1789974000000
+            },
+            {
+              "type": "Bear",
+              "bot": 79670.0,
+              "top": 81041.2,
+              "gap": 1.72,
+              "tf": "1h",
+              "ts": 1788519600000
+            },
+            {
+              "type": "Bear",
+              "bot": 80512.2,
+              "top": 81000.0,
+              "gap": 0.61,
+              "tf": "1h",
+              "ts": 1789866000000
+            }
+          ],
+          "fvg_cross": [],
+          "ob_bull": [
+            {
+              "bot": 81090.0,
+              "top": 81311.0,
+              "tf": "1h",
+              "ts": 1789945200000,
+              "dist_pct": 4.36,
+              "above": false
+            },
+            {
+              "bot": 81199.9,
+              "top": 81481.5,
+              "tf": "1h",
+              "ts": 1789963200000,
+              "dist_pct": 4.16,
+              "above": false
+            },
+            {
+              "bot": 84100.3,
+              "top": 84800.8,
+              "tf": "1h",
+              "ts": 1789984800000,
+              "dist_pct": 0.26,
+              "above": false
+            }
+          ],
+          "ob_bear": [
+            {
+              "bot": 80254.0,
+              "top": 80400.4,
+              "tf": "1h",
+              "ts": 1789887600000,
+              "dist_pct": -5.43,
+              "above": false
+            },
+            {
+              "bot": 81135.1,
+              "top": 81815.5,
+              "tf": "1h",
+              "ts": 1789948800000,
+              "dist_pct": -3.77,
+              "above": false
+            }
+          ]
+        },
+        "4h": {
+          "label": "4小时",
+          "fvg_above": [],
+          "fvg_below": [
+            {
+              "type": "Bull",
+              "bot": 81857.1,
+              "top": 84773.4,
+              "gap": 3.56,
+              "tf": "4h",
+              "ts": 1789963200000
+            },
+            {
+              "type": "Bear",
+              "bot": 80618.0,
+              "top": 80875.0,
+              "gap": 0.32,
+              "tf": "4h",
+              "ts": 1789848000000
+            },
+            {
+              "type": "Bull",
+              "bot": 80555.0,
+              "top": 80767.7,
+              "gap": 0.26,
+              "tf": "4h",
+              "ts": 1789891200000
+            }
+          ],
+          "fvg_cross": [],
+          "ob_bull": [
+            {
+              "bot": 76210.0,
+              "top": 76711.0,
+              "tf": "4h",
+              "ts": 1789675200000,
+              "dist_pct": 9.77,
+              "above": false
+            },
+            {
+              "bot": 80882.0,
+              "top": 81232.4,
+              "tf": "4h",
+              "ts": 1789790400000,
+              "dist_pct": 4.45,
+              "above": false
+            },
+            {
+              "bot": 80533.6,
+              "top": 81311.0,
+              "tf": "4h",
+              "ts": 1789934400000,
+              "dist_pct": 4.36,
+              "above": false
+            }
+          ],
+          "ob_bear": []
+        },
+        "1d": {
+          "label": "日线",
+          "fvg_above": [],
+          "fvg_below": [
+            {
+              "type": "Bull",
+              "bot": 77149.8,
+              "top": 80802.6,
+              "gap": 4.73,
+              "tf": "1d",
+              "ts": 1789603200000
+            },
+            {
+              "type": "Bull",
+              "bot": 79428.9,
+              "top": 79761.2,
+              "gap": 0.42,
+              "tf": "1d",
+              "ts": 1777766400000
+            },
+            {
+              "type": "Bull",
+              "bot": 77767.8,
+              "top": 78618.1,
+              "gap": 1.09,
+              "tf": "1d",
+              "ts": 1788307200000
+            }
+          ],
+          "fvg_cross": [],
+          "ob_bull": [
+            {
+              "bot": 76151.9,
+              "top": 77767.8,
+              "tf": "1d",
+              "ts": 1788307200000,
+              "dist_pct": 8.53,
+              "above": false
+            },
+            {
+              "bot": 76458.9,
+              "top": 77427.4,
+              "tf": "1d",
+              "ts": 1789257600000,
+              "dist_pct": 8.93,
+              "above": false
+            },
+            {
+              "bot": 80095.9,
+              "top": 81472.6,
+              "tf": "1d",
+              "ts": 1789862400000,
+              "dist_pct": 4.17,
+              "above": false
+            }
+          ],
+          "ob_bear": [
+            {
+              "bot": 79125.3,
+              "top": 80536.1,
+              "tf": "1d",
+              "ts": 1788652800000,
+              "dist_pct": -5.27,
+              "above": false
+            },
+            {
+              "bot": 77025.1,
+              "top": 77477.4,
+              "tf": "1d",
+              "ts": 1789171200000,
+              "dist_pct": -8.87,
+              "above": false
+            },
+            {
+              "bot": 76350.1,
+              "top": 79570.9,
+              "tf": "1d",
+              "ts": 1789344000000,
+              "dist_pct": -6.41,
+              "above": false
+            }
+          ]
+        },
+        "1w": {
+          "label": "周线",
+          "fvg_above": [
+            {
+              "type": "Bull",
+              "bot": 81699.8,
+              "top": 89422.1,
+              "gap": 9.45,
+              "tf": "1w",
+              "ts": 1730678400000
+            },
+            {
+              "type": "Bull",
+              "bot": 86443.0,
+              "top": 92700.0,
+              "gap": 7.24,
+              "tf": "1w",
+              "ts": 1744588800000
+            },
+            {
+              "type": "Bear",
+              "bot": 96012.2,
+              "top": 98888.8,
+              "gap": 3.0,
+              "tf": "1w",
+              "ts": 1762128000000
+            }
+          ],
+          "fvg_below": [
+            {
+              "type": "Bull",
+              "bot": 80410.8,
+              "top": 80819.4,
+              "gap": 0.51,
+              "tf": "1w",
+              "ts": 1788739200000
+            },
+            {
+              "type": "Bull",
+              "bot": 73660.0,
+              "top": 80261.2,
+              "gap": 8.96,
+              "tf": "1w",
+              "ts": 1730073600000
+            },
+            {
+              "type": "Bear",
+              "bot": 71434.9,
+              "top": 75500.0,
+              "gap": 5.69,
+              "tf": "1w",
+              "ts": 1769385600000
+            }
+          ],
+          "fvg_cross": [
+            {
+              "type": "Bear",
+              "bot": 79311.0,
+              "top": 86021.7,
+              "gap": 8.46,
+              "tf": "1w",
+              "ts": 1768780800000
+            }
+          ],
+          "ob_bull": [
+            {
+              "bot": 74868.0,
+              "top": 79455.0,
+              "tf": "1w",
+              "ts": 1777248000000,
+              "dist_pct": 6.54,
+              "above": false
+            },
+            {
+              "bot": 76000.3,
+              "top": 80410.8,
+              "tf": "1w",
+              "ts": 1788739200000,
+              "dist_pct": 5.42,
+              "above": false
+            }
+          ],
+          "ob_bear": [
+            {
+              "bot": 78128.3,
+              "top": 82828.7,
+              "tf": "1w",
+              "ts": 1777852800000,
+              "dist_pct": -2.58,
+              "above": false
+            },
+            {
+              "bot": 63666.0,
+              "top": 66924.1,
+              "tf": "1w",
+              "ts": 1784505600000,
+              "dist_pct": -21.28,
+              "above": false
+            }
+          ]
+        }
+      }
     },
     "_onchain": {
       "score": 18,
@@ -6535,39 +6751,39 @@
       "breakdown": {
         "oi_score": 5,
         "ls_score": 5,
-        "taker_score": 3,
-        "fund_score": 5,
+        "taker_score": 5,
+        "fund_score": 3,
         "cg_score": 0
       },
       "notes": [
         "OI稳定",
-        "多空中性50%多",
-        "大单均衡",
-        "费率中性✅"
+        "多空中性48%多",
+        "大单BUY_DOMINANT与信号同向",
+        "费率BULL_MILD温和"
       ],
       "raw": {
         "oi": {
-          "oi_trend": "UNKNOWN",
-          "oi_chg_5": 0,
-          "oi_chg_1": 0,
-          "oi_now": 0,
-          "oi_value_now": 0
+          "oi_now": 110196.805,
+          "oi_value_now": 9349664005.32424,
+          "oi_chg_5": 0.68,
+          "oi_chg_1": 0.235,
+          "oi_trend": "FLAT"
         },
         "ls": {
-          "ls_ratio": 1.0,
-          "long_pct": 50.0,
+          "ls_ratio": 0.916,
+          "long_pct": 47.82,
           "ls_extreme": "NEUTRAL",
           "ls_trend": "FLAT"
         },
         "taker": {
-          "buy_ratio": 50.0,
-          "sell_ratio": 50.0,
-          "taker_bias": "BALANCED"
+          "buy_ratio": 55.65,
+          "sell_ratio": 44.35,
+          "taker_bias": "BUY_DOMINANT"
         },
         "funding": {
-          "funding_now": 0.0,
-          "funding_trend": "NEUTRAL",
-          "funding_signal": "-"
+          "funding_now": 1.0,
+          "funding_trend": "BULL_MILD",
+          "funding_signal": "多头温和，趋势延续"
         },
         "liquidation": {
           "liq_1h": 0,
@@ -6583,47 +6799,117 @@
         }
       }
     },
+    "_bybit_ls": {
+      "long_ratio": 0.5308,
+      "short_ratio": 0.46919999999999995,
+      "source": "bybit"
+    },
     "_liq_density": {
-      "symbol": "BTC",
-      "current_price": 81888.9,
+      "symbol": "BTCUSDT",
+      "current_price": 85020.4,
       "above_walls": [
         [
-          82093.62,
-          28141564.0
+          85232.95,
+          74496489.0
         ]
       ],
       "below_walls": [
         [
-          81684.18,
-          6548191.0
-        ],
-        [
-          81274.73,
-          6861831.0
+          84807.85,
+          10488806.0
         ]
       ],
-      "nearest_above": 82093.62,
-      "nearest_below": 81684.18,
-      "above_total_usd": 28141564.0,
-      "below_total_usd": 13410022.0,
+      "nearest_above": 85232.95,
+      "nearest_below": 84807.85,
+      "above_total_usd": 74496489.0,
+      "below_total_usd": 10488806.0,
       "liq_bias": "ABOVE_HEAVY",
       "score_adj": 0,
-      "confidence": 0.33,
-      "oi_liq_levels": [],
-      "top_long_liq": {},
-      "top_short_liq": {},
-      "sources": "binance(0⚠️proxy) bybit(0⚠️proxy) okx(100✅real) hl(0⚠️proxy)",
-      "ts": 1789978259.8176947
+      "confidence": 1.0,
+      "oi_liq_levels": [
+        {
+          "leverage": 5,
+          "weight": 0.3,
+          "long_liq_price": 68866.5,
+          "long_liq_usd": 1341302798,
+          "short_liq_price": 101174.3,
+          "short_liq_usd": 1463596403,
+          "long_dist_pct": -19.0,
+          "short_dist_pct": 19.0
+        },
+        {
+          "leverage": 10,
+          "weight": 0.35,
+          "long_liq_price": 76943.5,
+          "long_liq_usd": 1564853265,
+          "short_liq_price": 93097.3,
+          "short_liq_usd": 1707529137,
+          "long_dist_pct": -9.5,
+          "short_dist_pct": 9.5
+        },
+        {
+          "leverage": 20,
+          "weight": 0.2,
+          "long_liq_price": 80981.9,
+          "long_liq_usd": 894201865,
+          "short_liq_price": 89058.9,
+          "short_liq_usd": 975730936,
+          "long_dist_pct": -4.75,
+          "short_dist_pct": 4.75
+        },
+        {
+          "leverage": 50,
+          "weight": 0.1,
+          "long_liq_price": 83405.0,
+          "long_liq_usd": 447100933,
+          "short_liq_price": 86635.8,
+          "short_liq_usd": 487865468,
+          "long_dist_pct": -1.9,
+          "short_dist_pct": 1.9
+        },
+        {
+          "leverage": 100,
+          "weight": 0.05,
+          "long_liq_price": 84212.7,
+          "long_liq_usd": 223550466,
+          "short_liq_price": 85828.1,
+          "short_liq_usd": 243932734,
+          "long_dist_pct": -0.95,
+          "short_dist_pct": 0.95
+        }
+      ],
+      "top_long_liq": {
+        "leverage": 10,
+        "weight": 0.35,
+        "long_liq_price": 76943.5,
+        "long_liq_usd": 1564853265,
+        "short_liq_price": 93097.3,
+        "short_liq_usd": 1707529137,
+        "long_dist_pct": -9.5,
+        "short_dist_pct": 9.5
+      },
+      "top_short_liq": {
+        "leverage": 10,
+        "weight": 0.35,
+        "long_liq_price": 76943.5,
+        "long_liq_usd": 1564853265,
+        "short_liq_price": 93097.3,
+        "short_liq_usd": 1707529137,
+        "long_dist_pct": -9.5,
+        "short_dist_pct": 9.5
+      },
+      "sources": "binance(66⚠️proxy) bybit(4⚠️proxy) okx(100✅real) hl(0⚠️proxy)",
+      "ts": 1789993694.6167464
     },
     "_runner_meta": {
       "runner_version": "1.2",
       "entry": "brahma_analysis_runner.run_analysis",
       "symbol": "BTCUSDT",
-      "ts": "2026-09-21 08:11 UTC",
-      "elapsed": 14.03,
+      "ts": "2026-09-21 12:28 UTC",
+      "elapsed": 15.4,
       "fields_missing": [],
       "fields_ok": true,
-      "output_tag": "[BRAHMA:WARN:RUNNER:BTC:111.2:LONG:CHOP_MID:202609210811:794e13c5]",
+      "output_tag": "[BRAHMA:WARN:RUNNER:BTC:90.0:LONG:CHOP_MID:202609211228:dac4ce6f]",
       "modules_active": {
         "timing_filter": true,
         "snapshot": true,
@@ -6635,7 +6921,7 @@
       }
     },
     "valid": true,
-    "_score_for_trace": 111.2,
+    "_score_for_trace": 90.0,
     "_direction_for_trace": "LONG"
   }
 }

@@ -1,17 +1,17 @@
 {
   "currency": "BTC",
-  "total_call_oi": 272867.3,
-  "total_put_oi": 154287.7,
-  "pc_oi_ratio": 0.565,
-  "pc_vol_ratio": 0.509,
+  "total_call_oi": 278952.4,
+  "total_put_oi": 160008.8,
+  "pc_oi_ratio": 0.574,
+  "pc_vol_ratio": 0.563,
   "interpretation_oi": "\ud83d\udfe2\u504f\u591a(0.5~0.8\uff0cCall\u9700\u6c42\u65fa\u76db)",
   "interpretation_vol": "\ud83d\udfe2\u504f\u591a(0.5~0.8\uff0cCall\u9700\u6c42\u65fa\u76db)",
   "near_expiry_ratios": {
-    "22SEP26": 0.719,
-    "23SEP26": 1.257,
-    "24SEP26": 0.151
+    "22SEP26": 1.115,
+    "23SEP26": 1.093,
+    "24SEP26": 0.581
   },
-  "near_expiry_pc": 0.719,
+  "near_expiry_pc": 1.115,
   "pc_score": 8,
-  "ts": 1789978261.9562879
+  "ts": 1789993698.9551628
 }

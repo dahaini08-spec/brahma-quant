@@ -1,14 +1,14 @@
 {
   "symbol": "BTCUSDT",
-  "price": 81856.7,
+  "price": 85002.1,
   "difficulty": 132757073449487.0,
-  "hash_rate_gh": 1022905437044.2543,
+  "hash_rate_gh": 1042703606793.4978,
   "production_cost_est": 28000,
-  "price_to_cost": 2.923,
-  "miner_margin_pct": 192.3,
-  "miner_profit_ratio": 2.923,
+  "price_to_cost": 3.036,
+  "miner_margin_pct": 203.6,
+  "miner_profit_ratio": 3.036,
   "pressure_signal": "\u2705\u6781\u4f4e\u5356\u538b(\u77ff\u5de5\u9ad8\u5229\u6da6,\u6301\u5e01\u5f85\u6da8)",
   "pressure_level": "VERY_LOW",
   "miner_score": 8,
-  "ts": 1789978262.3085682
+  "ts": 1789993699.3749323
 }
