@@ -883,6 +883,13 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _sm_adj = _sm.get('score_adj', 0)
         if signal_dir != 'SHORT':
             _sm_adj = -_sm_adj  # 做多时反转
+        # [9.21苏摩设计院] 始终写入breakdown（即使adj=0），交易员需要看到聪明钱数据
+        cf.setdefault('breakdown', {})['聪明钱分歧'] = (
+            f'大户={_sm.get("big_pos_long",0.5):.0%} '
+            f'散户={_sm.get("retail_pos_long",0.5):.0%} '
+            f'分歧={_sm.get("whale_retail_gap",0):+.1%} '
+            f'{_sm.get("note","")[:40]}'
+        )
         if _sm_adj != 0 and _sm.get('confidence', 0) >= 0.5:
             _sm_pre = float(cf.get('score', 0) or 0)
             cf['score'] = _sm_pre + _sm_adj
@@ -2732,6 +2739,56 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _result['score'] = _result['score_final']
         _result.setdefault('confluence', {}).setdefault('breakdown', {})[ '_extra_data_adjust'] = f'{_extra_data_score_adj:+.1f}(Causal+FR+PC+宏观+聪明钱)'
 
+    # [9.21苏摩设计院] Step9风控写入breakdown — 交易员需要看到circuit/drawdown状态
+    try:
+        import json as _json9, os as _os9
+        _cb_path = os.path.join(os.path.dirname(BASE_DIR), 'data', 'circuit_breaker.json')
+        if os.path.exists(_cb_path):
+            with open(_cb_path) as _f9:
+                _cb = _json9.load(_f9)
+            _result.setdefault('confluence', {}).setdefault('breakdown', {})['风控circuit'] = (
+                f"L1={_cb.get('l1','?')} L2={_cb.get('l2','?')} L3={_cb.get('l3','?')} "
+                f"NAV峰={_cb.get('nav_peak',0):.1f}"
+            )
+    except Exception as _e9:
+        import sys as _sys9; _sys9.stderr.write(f'[circuit] ERROR: {_e9}\n')
+    try:
+        import json as _json9b, os as _os9b
+        _dd_path = os.path.join(os.path.dirname(BASE_DIR), 'data', 'drawdown_state.json')
+        if os.path.exists(_dd_path):
+            with open(_dd_path) as _f9b:
+                _dd = _json9b.load(_f9b)
+            _dd_pct = _dd.get('current_dd', _dd.get('drawdown_pct', 0))
+            _dd_max = _dd.get('max_dd', 0)
+            _dd_mult = 1.0 if _dd_pct < 5 else 0.75 if _dd_pct < 10 else 0.5 if _dd_pct < 15 else 0.25 if _dd_pct < 20 else 0
+            _result.setdefault('confluence', {}).setdefault('breakdown', {})['风控drawdown'] = (
+                f"DD={_dd_pct:.1f}% MaxDD={_dd_max:.1f}% 仓位×{_dd_mult:.2f}"
+            )
+    except Exception as _e9b:
+        import sys as _sys9b2; _sys9b2.stderr.write(f'[drawdown] ERROR: {_e9b}\n')
+
+    # [9.21苏摩设计院] N_EXP40年经验写入breakdown
+    try:
+        from brahma_brain.fangcang_engine import get_exp_adj as _gea
+        _exp_r = _gea(_result.get('regime','CHOP_MID'), _result.get('signal_dir','LONG'), '4h',
+                      int(_result.get('rsi_1h',50)), 1.0)
+        _result.setdefault('confluence', {}).setdefault('breakdown', {})['N_EXP40年经验'] = (
+            f"WR={_exp_r.get('wr',0):.0%} n={_exp_r.get('n',0)} adj={_exp_r.get('adj',0):+.1f}"
+        )
+    except: pass
+
+    # [9.21苏摩设计院] 亏损记忆写入breakdown
+    try:
+        _lm = _result.get('loss_memory', {})
+        if _lm:
+            _result.setdefault('confluence', {}).setdefault('breakdown', {})['亏损记忆'] = (
+                f"n={_lm.get('n',0)} WR={_lm.get('win_rate',0):.0%} "
+                f"{_lm.get('warning','')}"
+            )
+        else:
+            _result.setdefault('confluence', {}).setdefault('breakdown', {})['亏损记忆'] = 'n=0 无匹配场景'
+    except: pass
+
     # [WFV-v1 闭环 2026-05-28] 达摩院信号日志（live_signal_log.jsonl）
     # [双写修复 2026-07-23 设计院] brahma_engine.analyze()已在外层写入，此处跳过防止重复
     # brahma_core.analyze()是内层函数，由brahma_engine调用，写入责任在engine层
@@ -2996,6 +3053,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             if _kappa23 > 0.3:
                 _s23 = max(-5, min(8, _s23 + 2))
             _s23 = max(-5, min(8, _s23))
+            # [9.21苏摩设计院] 始终写入breakdown
+            _result['confluence'].setdefault('breakdown', {})['VolBeta期权'] = (
+                f'IV溢价={_iv_prem23:+.1f}% 分位={_iv_pct23:.0f} κ={_kappa23:.3f} [{_vb_currency23}]'
+            )
             if _s23 != 0:
                 _cur23 = float(_result.get('confluence', {}).get('score', 0))
                 _result['confluence']['score'] = _cur23 + _s23

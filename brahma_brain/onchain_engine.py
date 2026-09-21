@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # ponytail: onchain_engine 469行，独立计算引擎，功能内聚，拆分条件: 单引擎>3000行且有完整测试
-"""
-from typing import Any
+from typing import Any, Optional
 
+"""
 # STATUS: ACTIVE
 # 链上数据引擎，间接调用
 # LAST_REVIEW: 2026-07-01 | 属于辅助计算层，修改前确认调用链
