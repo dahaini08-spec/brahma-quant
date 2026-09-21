@@ -7,9 +7,9 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789981228.4050817,
+    "last_update_ts": 1789987241.4471693,
     "last_sw_reset": 1789974048.2369432,
-    "candidate_start_ts": 1789974048.2369432,
+    "candidate_start_ts": 1789987241.444621,
     "confirmed_cn": "弱震荡"
   },
   "BTCUSDT": {

@@ -431,9 +431,9 @@ def decide(
     fvg_consensus = fvg.get('consensus', fvg.get('dir', 'NONE'))
     structure_dir = 'LONG' if fvg_consensus == 'BULL' else 'SHORT' if fvg_consensus == 'BEAR' else 'NONE'
 
-    entry_lo = res.get('entry_lo', 0)
-    entry_hi = res.get('entry_hi', 0)
-    liq_support = res.get('liq_nearest_long', 0) or liq.get('nearest_long', 0)
+    entry_lo = float(res.get('entry_lo', 0) or 0)
+    entry_hi = float(res.get('entry_hi', 0) or 0)
+    liq_support = float(res.get('liq_nearest_long', 0) or liq.get('nearest_long', 0) or 0)
 
     # [BUG修复 2026-09-13 苏摩111] 共振入场区=0时（FVG=NONE），用支撑池+ATR重算
     if direction == 'LONG' and entry_lo <= 0 and liq_support > 0:
@@ -609,7 +609,7 @@ def decide(
         rr = 0
 
     # SL铁律验证
-    _sl_dist = abs(entry_lo - sl) if direction == 'LONG' else abs(sl - entry_hi) if direction == 'SHORT' else 0
+    _sl_dist = abs(float(entry_lo) - float(sl)) if direction == 'LONG' else abs(float(sl) - float(entry_hi)) if direction == 'SHORT' else 0
     _atr4h_thresh = atr_4h * 1.5 if atr_4h else 0
     sl_valid = (_sl_dist >= _atr4h_thresh - 0.01 and sl_pct >= _sl_pct_req * 100 - 0.01) if _sl_dist > 0 else False  # [2026-09-12] 容差0.01防边界
 
@@ -624,7 +624,7 @@ def decide(
 
     big_long = sm.get('big_long', 50)
     retail_long = sm.get('retail_long', 50)
-    sm_divergence = abs(big_long - retail_long)
+    sm_divergence = abs(float(big_long) - float(retail_long))
     sm_bull = big_long > retail_long
 
     # ════════════════════════════════════════════════════════════
@@ -780,8 +780,10 @@ def decide(
     _gate2_pass = True
     _net_ev = 0.0
     try:
-        from brahma_brain.cost_adapter import compute_net_ev
-        _net_ev = compute_net_ev(score, regime, direction, rr, sl_pct)
+        from brahma_brain.cost_adapter import calc_round_trip_cost
+        _notional = float(score) * 100  # score作为notional的代理
+        _cost = calc_round_trip_cost(_notional, symbol or 'BTCUSDT', atr_pct=abs(float(atr_1h)/float(price)) if price > 0 else 0.01)
+        _net_ev = float(score) * 0.001 - _cost['total_pct']  # 粗略净EV
         if _net_ev <= 0 and direction != 'NONE':
             _gate2_pass = False
             missing.append(f'成本后EV={_net_ev:+.2f}%≤0')
@@ -807,7 +809,7 @@ def decide(
         _now = datetime.now(timezone.utc)
         for _date_str, _evt in _MACRO_EVENTS.items():
             if _evt.get('event') == 'FOMC':
-                _evt_dt = datetime.strptime(_date_str + ' ' + _evt.get('time_utc','18:00'), '%Y-%m-%d %H:%M')
+                _evt_dt = datetime.strptime(_date_str + ' ' + _evt.get('time_utc','18:00'), '%Y-%m-%d %H:%M').replace(tzinfo=timezone.utc)
                 if abs((_now - _evt_dt).total_seconds()) < 4 * 3600:
                     _fomc_window = True
                     break
@@ -1007,7 +1009,7 @@ def decide(
     # 矛盾裁决
     conflict_res = ''
     if oi_bull != sm_bull and oi_signal != 'NO_DATA':
-        _oi_change = abs(oi.get('total_change', 0))
+        _oi_change = abs(float(oi.get('total_change', 0) or 0))
         conflict_res = f'OI vs 聪明钱矛盾 → 跟随OI({oi_signal})' if _oi_change > 5000 else f'OI vs 聪明钱矛盾 → 跟随聪明钱({sm.get("signal","")})'
 
     # 触发器（决策直接生成）
@@ -1098,7 +1100,7 @@ def decide(
                     sl = round(_ht - _hunt_buffer, 1)
                     sl_pct = round((entry_lo - sl) / entry_lo * 100, 2) if entry_lo > 0 else 0
                     _hunt_adjusted = True
-        rr = abs(tp1 - sl) / abs(sl - entry_lo) if abs(sl - entry_lo) > 0 else 0
+        rr = abs(float(tp1) - float(sl)) / abs(float(sl) - float(entry_lo)) if abs(float(sl) - float(entry_lo)) > 0 else 0
         # 检查是否有清算池反弹伏击信号
         _bounce_signal = [s for s in _ambuscade.get('ambuscade_triggers', []) if s.get('name') == 'liq_pool_bounce']
         if _bounce_signal and direction == 'LONG':
@@ -1126,7 +1128,7 @@ def decide(
     # sm传入的是百分比整数（56=56%），直接相减即可
     _big_pct = sm.get('big_long', 0) or 0
     _retail_pct = sm.get('retail_long', 0) or 0
-    _divergence = abs(_big_pct - _retail_pct) if _big_pct > 0 and _retail_pct > 0 else 0  # 直接相减=百分点
+    _divergence = abs(float(_big_pct) - float(_retail_pct)) if _big_pct > 0 and _retail_pct > 0 else 0  # 直接相减=百分点
 
     # P2-② OI 4H方向检查
     _oi_4h = oi.get('signal_4h', '') or oi.get('signal', '')  # 尝试取4H信号
@@ -1317,7 +1319,7 @@ def _build_scenarios(hurst, liq, price, oi_signal, direction) -> list:
 
     _sc = []
     # Bug4修复：止损墙在±0.5%内=正在被测试，仍输出剧本A
-    _ls_near = _ls > 0 and abs(_ls - price) / price * 100 <= 0.5
+    _ls_near = _ls > 0 and abs(float(_ls) - float(price)) / float(price) * 100 <= 0.5
     if _ls > price or _ls_near:
         _ut = f'${_ls2:,.0f}' if _ls2 > _ls else f'${_ls:,.0f}'
         if _ls_near:
