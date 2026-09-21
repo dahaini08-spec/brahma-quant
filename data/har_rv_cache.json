@@ -1,14 +1,14 @@
 {
   "BTCUSDT": {
-    "ts": 1789908615.4498913,
+    "ts": 1789959824.7862039,
     "data": {
-      "rv_1d": 0.01284,
-      "rv_5d": 0.03667,
-      "rv_22d": 0.03965,
-      "rv_forecast": 0.02853,
+      "rv_1d": 0.01378,
+      "rv_5d": 0.01459,
+      "rv_22d": 0.03937,
+      "rv_forecast": 0.02105,
       "rv_percentile": 100,
-      "regime_vol": "HIGH",
-      "score_adj": -3,
+      "regime_vol": "MEDIUM",
+      "score_adj": 0,
       "p_up_proxy": 0.45
     }
   },
@@ -2847,12 +2847,12 @@
     }
   },
   "BTC": {
-    "ts": 1789954177.4359105,
+    "ts": 1789960169.8251739,
     "data": {
-      "rv_1d": 0.01465,
-      "rv_5d": 0.01514,
-      "rv_22d": 0.03941,
-      "rv_forecast": 0.02156,
+      "rv_1d": 0.01375,
+      "rv_5d": 0.01485,
+      "rv_22d": 0.03937,
+      "rv_forecast": 0.02113,
       "rv_percentile": 100,
       "regime_vol": "MEDIUM",
       "score_adj": 0,
@@ -2860,12 +2860,12 @@
     }
   },
   "ETH": {
-    "ts": 1789954185.065073,
+    "ts": 1789959622.0992897,
     "data": {
-      "rv_1d": 0.03112,
-      "rv_5d": 0.0314,
-      "rv_22d": 0.05164,
-      "rv_forecast": 0.03644,
+      "rv_1d": 0.02915,
+      "rv_5d": 0.02806,
+      "rv_22d": 0.05024,
+      "rv_forecast": 0.03419,
       "rv_percentile": 80,
       "regime_vol": "HIGH",
       "score_adj": -3,

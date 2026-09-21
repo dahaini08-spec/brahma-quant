@@ -2578,13 +2578,27 @@ def query_tradfi(
         ])
 
         # [9.21苏摩设计院] scipy KD-Tree查询
+        # KD-Tree不支持payload过滤，查询更多条然后按标的过滤
         tree = _client['tree']
         cases = _client['cases']
-        dist, idx = tree.query(qvec, k=min(top_k, len(cases)))
+        stock_filter = TOKEN_TO_STOCK.get(token, '')
+        # 查询足够多条确保过滤后有top_k条
+        k_query = min(len(cases), max(top_k * 20, 500))
+        dist, idx = tree.query(qvec, k=k_query)
         if isinstance(idx, (int, np.integer)):
             idx = [idx]
             dist = [dist]
-        sel_cases = [cases[i] for i in idx]
+        # 按stock_ticker过滤
+        sel_cases = []
+        for d, i in zip(dist, idx):
+            c = cases[i]
+            if not stock_filter or c.get('stock_ticker', '') == stock_filter:
+                sel_cases.append(c)
+                if len(sel_cases) >= top_k:
+                    break
+        if not sel_cases:
+            # Fallback: 如果标的没数据，用全部
+            sel_cases = [cases[i] for i in idx[:top_k]]
         rets   = np.array([c['future_return_24h'] for c in sel_cases])
         if len(rets) == 0:
             return {'n':0,'wr':0.5,'wr_directional':0.5,'ev':0.0,'median':0.0,'cases':[]}
@@ -2593,7 +2607,7 @@ def query_tradfi(
         wr_short = float((rets<0).mean())
         wr_dir   = wr_long if direction=='UP' else wr_short
         return {
-            'n':              len(cases),
+            'n':              len(sel_cases),
             'wr':             round(wr_long, 3),
             'wr_directional': round(wr_dir, 3),
             'ev':             round(float(rets.mean()), 4),

@@ -51,7 +51,7 @@ def calc_round_trip_cost(notional: float, symbol: str = 'BTCUSDT',
     }
 
 
-def calc_net_ev(gross_ev: float, notional: float, symbol: str = 'BTCUSDT',
+def compute_net_ev(gross_ev: float, notional: float, symbol: str = 'BTCUSDT',
                 atr_pct: float = 0.0, hours_held: float = 12.0) -> dict:
     """
     从毛EV计算净EV

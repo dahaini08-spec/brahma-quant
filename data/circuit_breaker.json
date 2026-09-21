@@ -1,5 +1,9 @@
 {
-  "state": "NORMAL",
-  "ts": 1789947109.0118077,
-  "last_updated": 1789947109.0118084
+  "l1": null,
+  "l2": null,
+  "l3": false,
+  "nav_peak": 130.0,
+  "nav_history": {
+    "2026-09-21": 130.0
+  }
 }

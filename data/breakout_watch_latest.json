@@ -1,5 +1,5 @@
 {
-  "ts": 1789950912.3333023,
+  "ts": 1789958105.3223011,
   "results": {
     "BTCUSDT": {
       "symbol": "BTCUSDT",
@@ -8,32 +8,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.12,
-        "cur_vol": 3303.0,
-        "avg_vol": 2953.0,
+        "vol_ratio": 2.57,
+        "cur_vol": 15291.0,
+        "avg_vol": 5944.0,
         "breakout": false,
-        "cur_price": 81143.9,
-        "prev_high": 81279.7,
-        "reason": "量能1.1x 未突破 cur=81144 prev_high=81280",
-        "entry_ref": 80738.18,
-        "sl_ref": 80198.01
+        "cur_price": 80964.3,
+        "prev_high": 81815.5,
+        "reason": "量能2.6x 未突破 cur=80964 prev_high=81816",
+        "entry_ref": 80559.48,
+        "sl_ref": 79930.39
       },
       "c2_lsr": {
         "ok": true,
-        "retail_short": 50.7,
-        "smart_long": 67.8,
-        "short_building": true,
-        "reason": "散户空头50.7%(阈值>45.0%) 大户多头67.8%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 51.7,
+        "smart_long": 67.7,
+        "short_building": false,
+        "reason": "散户空头51.7%(阈值>45.0%) 大户多头67.7%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 1.72,
         "range_hi": 81472.6,
         "range_lo": 80095.9,
-        "oi_chg_pct": 0.621,
+        "oi_chg_pct": 0.151,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间1.72%(阈值<1.5%) 非横盘❌ OI+0.62% 稳定✅"
+        "reason": "4H区间1.72%(阈值<1.5%) 非横盘❌ OI+0.15% 稳定✅"
       }
     },
     "ETHUSDT": {
@@ -43,32 +43,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.91,
-        "cur_vol": 94235.0,
-        "avg_vol": 103219.0,
+        "vol_ratio": 1.44,
+        "cur_vol": 370647.0,
+        "avg_vol": 258160.0,
         "breakout": false,
-        "cur_price": 2643.71,
-        "prev_high": 2647.0,
-        "reason": "量能0.9x 未突破 cur=2644 prev_high=2647",
-        "entry_ref": 2630.49,
-        "sl_ref": 2601.61
+        "cur_price": 2648.1,
+        "prev_high": 2708.0,
+        "reason": "量能1.4x 未突破 cur=2648 prev_high=2708",
+        "entry_ref": 2634.86,
+        "sl_ref": 2613.3
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 30.5,
-        "smart_long": 61.0,
-        "short_building": true,
-        "reason": "散户空头30.5%(阈值>45.0%) 大户多头61.0%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 30.9,
+        "smart_long": 60.3,
+        "short_building": false,
+        "reason": "散户空头30.9%(阈值>45.0%) 大户多头60.3%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 3.41,
         "range_hi": 2649.8,
         "range_lo": 2562.31,
-        "oi_chg_pct": 0.154,
+        "oi_chg_pct": 0.873,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间3.41%(阈值<1.5%) 非横盘❌ OI+0.15% 稳定✅"
+        "reason": "4H区间3.41%(阈值<1.5%) 非横盘❌ OI+0.87% 稳定✅"
       }
     },
     "SOLUSDT": {
@@ -78,32 +78,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.06,
-        "cur_vol": 695671.0,
-        "avg_vol": 656030.0,
-        "breakout": true,
-        "cur_price": 111.09,
-        "prev_high": 111.03,
-        "reason": "量能1.1x 突破前高 cur=111 prev_high=111",
-        "entry_ref": 110.53,
-        "sl_ref": 109.28
+        "vol_ratio": 1.73,
+        "cur_vol": 1687438.0,
+        "avg_vol": 973944.0,
+        "breakout": false,
+        "cur_price": 110.92,
+        "prev_high": 112.88,
+        "reason": "量能1.7x 未突破 cur=111 prev_high=113",
+        "entry_ref": 110.37,
+        "sl_ref": 109.45
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 35.6,
-        "smart_long": 70.4,
+        "retail_short": 36.0,
+        "smart_long": 70.0,
         "short_building": false,
-        "reason": "散户空头35.6%(阈值>45.0%) 大户多头70.4%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头36.0%(阈值>45.0%) 大户多头70.0%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 3.8,
         "range_hi": 111.42,
         "range_lo": 107.34,
-        "oi_chg_pct": -1.219,
+        "oi_chg_pct": -1.909,
         "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间3.80%(阈值<1.5%) 非横盘❌ OI-1.22% 下跌❌"
+        "reason": "4H区间3.80%(阈值<1.5%) 非横盘❌ OI-1.91% 下跌❌"
       }
     },
     "BNBUSDT": {
@@ -113,32 +113,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.9,
-        "cur_vol": 23236.0,
-        "avg_vol": 25729.0,
+        "vol_ratio": 1.82,
+        "cur_vol": 61990.0,
+        "avg_vol": 33973.0,
         "breakout": false,
-        "cur_price": 773.12,
-        "prev_high": 778.51,
-        "reason": "量能0.9x 未突破 cur=773 prev_high=779",
-        "entry_ref": 769.25,
-        "sl_ref": 763.5
+        "cur_price": 774.99,
+        "prev_high": 783.29,
+        "reason": "量能1.8x 未突破 cur=775 prev_high=783",
+        "entry_ref": 771.12,
+        "sl_ref": 765.71
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 31.7,
-        "smart_long": 61.6,
+        "retail_short": 32.0,
+        "smart_long": 62.5,
         "short_building": true,
-        "reason": "散户空头31.7%(阈值>45.0%) 大户多头61.6%(阈值>58.0%) 空头堆积中🔴"
+        "reason": "散户空头32.0%(阈值>45.0%) 大户多头62.5%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 4.5,
         "range_hi": 778.51,
         "range_lo": 745.01,
-        "oi_chg_pct": 1.717,
+        "oi_chg_pct": 0.626,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间4.50%(阈值<1.5%) 非横盘❌ OI+1.72% 稳定✅"
+        "reason": "4H区间4.50%(阈值<1.5%) 非横盘❌ OI+0.63% 稳定✅"
       }
     },
     "XRPUSDT": {
@@ -148,32 +148,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.84,
-        "cur_vol": 21477510.0,
-        "avg_vol": 25591254.0,
+        "vol_ratio": 1.56,
+        "cur_vol": 55060693.0,
+        "avg_vol": 35396076.0,
         "breakout": false,
         "cur_price": 1.41,
-        "prev_high": 1.41,
-        "reason": "量能0.8x 未突破 cur=1 prev_high=1",
+        "prev_high": 1.43,
+        "reason": "量能1.6x 未突破 cur=1 prev_high=1",
         "entry_ref": 1.4,
         "sl_ref": 1.39
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 30.4,
-        "smart_long": 66.3,
+        "retail_short": 31.0,
+        "smart_long": 66.9,
         "short_building": false,
-        "reason": "散户空头30.4%(阈值>45.0%) 大户多头66.3%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头31.0%(阈值>45.0%) 大户多头66.9%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 3.63,
         "range_hi": 1.42,
         "range_lo": 1.37,
-        "oi_chg_pct": -0.037,
-        "oi_stable": true,
+        "oi_chg_pct": -0.764,
+        "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间3.63%(阈值<1.5%) 非横盘❌ OI-0.04% 稳定✅"
+        "reason": "4H区间3.63%(阈值<1.5%) 非横盘❌ OI-0.76% 下跌❌"
       }
     },
     "ADAUSDT": {
@@ -183,32 +183,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.83,
-        "cur_vol": 26261287.0,
-        "avg_vol": 31685336.0,
+        "vol_ratio": 2.14,
+        "cur_vol": 89028766.0,
+        "avg_vol": 41654378.0,
         "breakout": false,
         "cur_price": 0.23,
         "prev_high": 0.23,
-        "reason": "量能0.8x 未突破 cur=0 prev_high=0",
+        "reason": "量能2.1x 未突破 cur=0 prev_high=0",
         "entry_ref": 0.23,
         "sl_ref": 0.22
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 30.9,
-        "smart_long": 64.9,
+        "retail_short": 31.3,
+        "smart_long": 66.5,
         "short_building": true,
-        "reason": "散户空头30.9%(阈值>45.0%) 大户多头64.9%(阈值>58.0%) 空头堆积中🔴"
+        "reason": "散户空头31.3%(阈值>45.0%) 大户多头66.5%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 6.83,
         "range_hi": 0.23,
         "range_lo": 0.22,
-        "oi_chg_pct": -0.345,
+        "oi_chg_pct": 0.822,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间6.83%(阈值<1.5%) 非横盘❌ OI-0.34% 稳定✅"
+        "reason": "4H区间6.83%(阈值<1.5%) 非横盘❌ OI+0.82% 稳定✅"
       }
     },
     "AVAXUSDT": {
@@ -218,32 +218,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.96,
-        "cur_vol": 1743667.0,
-        "avg_vol": 1812781.0,
+        "vol_ratio": 1.47,
+        "cur_vol": 3766734.0,
+        "avg_vol": 2557252.0,
         "breakout": false,
-        "cur_price": 11.31,
-        "prev_high": 11.48,
-        "reason": "量能1.0x 未突破 cur=11 prev_high=11",
-        "entry_ref": 11.25,
-        "sl_ref": 11.01
+        "cur_price": 11.1,
+        "prev_high": 11.79,
+        "reason": "量能1.5x 未突破 cur=11 prev_high=12",
+        "entry_ref": 11.05,
+        "sl_ref": 10.98
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 29.9,
-        "smart_long": 70.2,
+        "retail_short": 29.1,
+        "smart_long": 70.3,
         "short_building": false,
-        "reason": "散户空头29.9%(阈值>45.0%) 大户多头70.2%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头29.1%(阈值>45.0%) 大户多头70.3%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 21.73,
         "range_hi": 11.48,
         "range_lo": 9.43,
-        "oi_chg_pct": 3.106,
-        "oi_stable": true,
+        "oi_chg_pct": -1.848,
+        "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间21.73%(阈值<1.5%) 非横盘❌ OI+3.11% 稳定✅"
+        "reason": "4H区间21.73%(阈值<1.5%) 非横盘❌ OI-1.85% 下跌❌"
       }
     },
     "LINKUSDT": {
@@ -253,32 +253,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.64,
-        "cur_vol": 346485.0,
-        "avg_vol": 543135.0,
+        "vol_ratio": 1.92,
+        "cur_vol": 1469163.0,
+        "avg_vol": 765237.0,
         "breakout": false,
-        "cur_price": 12.51,
-        "prev_high": 12.57,
-        "reason": "量能0.6x 未突破 cur=13 prev_high=13",
-        "entry_ref": 12.45,
-        "sl_ref": 12.32
+        "cur_price": 12.48,
+        "prev_high": 12.79,
+        "reason": "量能1.9x 未突破 cur=12 prev_high=13",
+        "entry_ref": 12.41,
+        "sl_ref": 12.31
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 40.6,
-        "smart_long": 67.8,
+        "retail_short": 40.5,
+        "smart_long": 67.7,
         "short_building": false,
-        "reason": "散户空头40.6%(阈值>45.0%) 大户多头67.8%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头40.5%(阈值>45.0%) 大户多头67.7%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 5.88,
         "range_hi": 12.61,
         "range_lo": 11.91,
-        "oi_chg_pct": 1.26,
+        "oi_chg_pct": -0.203,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间5.88%(阈值<1.5%) 非横盘❌ OI+1.26% 稳定✅"
+        "reason": "4H区间5.88%(阈值<1.5%) 非横盘❌ OI-0.20% 稳定✅"
       }
     },
     "LTCUSDT": {
@@ -288,67 +288,67 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.69,
-        "cur_vol": 37734.0,
-        "avg_vol": 55003.0,
+        "vol_ratio": 2.84,
+        "cur_vol": 200469.0,
+        "avg_vol": 70559.0,
         "breakout": false,
-        "cur_price": 58.72,
-        "prev_high": 59.16,
-        "reason": "量能0.7x 未突破 cur=59 prev_high=59",
-        "entry_ref": 58.43,
-        "sl_ref": 57.96
+        "cur_price": 58.56,
+        "prev_high": 59.39,
+        "reason": "量能2.8x 未突破 cur=59 prev_high=59",
+        "entry_ref": 58.27,
+        "sl_ref": 57.69
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 30.8,
-        "smart_long": 77.7,
+        "retail_short": 30.9,
+        "smart_long": 78.7,
         "short_building": false,
-        "reason": "散户空头30.8%(阈值>45.0%) 大户多头77.7%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头30.9%(阈值>45.0%) 大户多头78.7%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 5.1,
         "range_hi": 59.37,
         "range_lo": 56.49,
-        "oi_chg_pct": 0.727,
+        "oi_chg_pct": 1.455,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间5.10%(阈值<1.5%) 非横盘❌ OI+0.73% 稳定✅"
+        "reason": "4H区间5.10%(阈值<1.5%) 非横盘❌ OI+1.46% 稳定✅"
       }
     },
     "BCHUSDT": {
       "symbol": "BCHUSDT",
       "level": "NORMAL",
-      "score": 1,
+      "score": 0,
       "triggered": false,
       "c1_volume": {
-        "ok": true,
-        "vol_ratio": 4.2,
-        "cur_vol": 50747.0,
-        "avg_vol": 12094.0,
-        "breakout": true,
-        "cur_price": 252.66,
-        "prev_high": 252.14,
-        "reason": "量能4.2x 突破前高 cur=253 prev_high=252",
-        "entry_ref": 251.4,
-        "sl_ref": 246.99
+        "ok": false,
+        "vol_ratio": 2.74,
+        "cur_vol": 91725.0,
+        "avg_vol": 33464.0,
+        "breakout": false,
+        "cur_price": 251.45,
+        "prev_high": 258.36,
+        "reason": "量能2.7x 未突破 cur=251 prev_high=258",
+        "entry_ref": 250.19,
+        "sl_ref": 246.59
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 41.4,
-        "smart_long": 52.5,
+        "retail_short": 46.4,
+        "smart_long": 52.3,
         "short_building": true,
-        "reason": "散户空头41.4%(阈值>45.0%) 大户多头52.5%(阈值>58.0%) 空头堆积中🔴"
+        "reason": "散户空头46.4%(阈值>45.0%) 大户多头52.3%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 5.41,
         "range_hi": 255.46,
         "range_lo": 242.36,
-        "oi_chg_pct": 4.284,
+        "oi_chg_pct": 6.536,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间5.41%(阈值<1.5%) 非横盘❌ OI+4.28% 稳定✅"
+        "reason": "4H区间5.41%(阈值<1.5%) 非横盘❌ OI+6.54% 稳定✅"
       }
     },
     "NEARUSDT": {
@@ -358,32 +358,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.65,
-        "cur_vol": 7073560.0,
-        "avg_vol": 10867326.0,
+        "vol_ratio": 0.97,
+        "cur_vol": 11149014.0,
+        "avg_vol": 11478398.0,
         "breakout": false,
-        "cur_price": 4.17,
-        "prev_high": 4.28,
-        "reason": "量能0.7x 未突破 cur=4 prev_high=4",
-        "entry_ref": 4.15,
-        "sl_ref": 4.02
+        "cur_price": 4.16,
+        "prev_high": 4.36,
+        "reason": "量能1.0x 未突破 cur=4 prev_high=4",
+        "entry_ref": 4.14,
+        "sl_ref": 4.07
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 36.6,
-        "smart_long": 78.9,
-        "short_building": true,
-        "reason": "散户空头36.6%(阈值>45.0%) 大户多头78.9%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 35.9,
+        "smart_long": 78.3,
+        "short_building": false,
+        "reason": "散户空头35.9%(阈值>45.0%) 大户多头78.3%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 25.79,
         "range_hi": 4.31,
         "range_lo": 3.42,
-        "oi_chg_pct": -1.248,
-        "oi_stable": false,
+        "oi_chg_pct": 1.844,
+        "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间25.79%(阈值<1.5%) 非横盘❌ OI-1.25% 下跌❌"
+        "reason": "4H区间25.79%(阈值<1.5%) 非横盘❌ OI+1.84% 稳定✅"
       }
     },
     "TAOUSDT": {
@@ -393,32 +393,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.25,
-        "cur_vol": 36667.0,
-        "avg_vol": 29443.0,
+        "vol_ratio": 1.96,
+        "cur_vol": 73001.0,
+        "avg_vol": 37200.0,
         "breakout": false,
-        "cur_price": 261.66,
-        "prev_high": 266.47,
-        "reason": "量能1.2x 未突破 cur=262 prev_high=266",
-        "entry_ref": 260.35,
-        "sl_ref": 257.71
+        "cur_price": 261.61,
+        "prev_high": 267.29,
+        "reason": "量能2.0x 未突破 cur=262 prev_high=267",
+        "entry_ref": 260.3,
+        "sl_ref": 257.19
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 40.3,
-        "smart_long": 76.3,
+        "retail_short": 40.7,
+        "smart_long": 76.2,
         "short_building": false,
-        "reason": "散户空头40.3%(阈值>45.0%) 大户多头76.3%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头40.7%(阈值>45.0%) 大户多头76.2%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 8.44,
         "range_hi": 268.92,
         "range_lo": 248.0,
-        "oi_chg_pct": -1.437,
+        "oi_chg_pct": -0.852,
         "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间8.44%(阈值<1.5%) 非横盘❌ OI-1.44% 下跌❌"
+        "reason": "4H区间8.44%(阈值<1.5%) 非横盘❌ OI-0.85% 下跌❌"
       }
     },
     "HYPEUSDT": {
@@ -428,32 +428,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.6,
-        "cur_vol": 148916.0,
-        "avg_vol": 248107.0,
+        "vol_ratio": 2.28,
+        "cur_vol": 592057.0,
+        "avg_vol": 259957.0,
         "breakout": false,
-        "cur_price": 93.66,
-        "prev_high": 93.97,
-        "reason": "量能0.6x 未突破 cur=94 prev_high=94",
-        "entry_ref": 93.19,
-        "sl_ref": 92.35
+        "cur_price": 92.61,
+        "prev_high": 94.39,
+        "reason": "量能2.3x 未突破 cur=93 prev_high=94",
+        "entry_ref": 92.15,
+        "sl_ref": 91.32
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 44.6,
+        "retail_short": 44.7,
         "smart_long": 63.0,
         "short_building": false,
-        "reason": "散户空头44.6%(阈值>45.0%) 大户多头63.0%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头44.7%(阈值>45.0%) 大户多头63.0%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 4.86,
         "range_hi": 93.97,
         "range_lo": 89.62,
-        "oi_chg_pct": 1.495,
+        "oi_chg_pct": 0.103,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间4.86%(阈值<1.5%) 非横盘❌ OI+1.49% 稳定✅"
+        "reason": "4H区间4.86%(阈值<1.5%) 非横盘❌ OI+0.10% 稳定✅"
       }
     },
     "SUIUSDT": {
@@ -463,32 +463,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.77,
-        "cur_vol": 16472747.0,
-        "avg_vol": 21365569.0,
+        "vol_ratio": 1.68,
+        "cur_vol": 52596701.0,
+        "avg_vol": 31219924.0,
         "breakout": false,
-        "cur_price": 0.9,
-        "prev_high": 0.9,
-        "reason": "量能0.8x 未突破 cur=1 prev_high=1",
-        "entry_ref": 0.89,
-        "sl_ref": 0.88
+        "cur_price": 0.92,
+        "prev_high": 0.95,
+        "reason": "量能1.7x 未突破 cur=1 prev_high=1",
+        "entry_ref": 0.92,
+        "sl_ref": 0.91
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 25.8,
-        "smart_long": 70.6,
+        "retail_short": 29.9,
+        "smart_long": 70.4,
         "short_building": false,
-        "reason": "散户空头25.8%(阈值>45.0%) 大户多头70.6%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头29.9%(阈值>45.0%) 大户多头70.4%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 13.93,
         "range_hi": 0.92,
         "range_lo": 0.81,
-        "oi_chg_pct": 1.377,
-        "oi_stable": true,
+        "oi_chg_pct": -1.229,
+        "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间13.93%(阈值<1.5%) 非横盘❌ OI+1.38% 稳定✅"
+        "reason": "4H区间13.93%(阈值<1.5%) 非横盘❌ OI-1.23% 下跌❌"
       }
     },
     "ENAUSDT": {
@@ -498,67 +498,67 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.83,
-        "cur_vol": 69241823.0,
-        "avg_vol": 82951104.0,
+        "vol_ratio": 1.8,
+        "cur_vol": 153557035.0,
+        "avg_vol": 85224329.0,
         "breakout": false,
-        "cur_price": 0.22,
-        "prev_high": 0.23,
-        "reason": "量能0.8x 未突破 cur=0 prev_high=0",
-        "entry_ref": 0.22,
+        "cur_price": 0.21,
+        "prev_high": 0.22,
+        "reason": "量能1.8x 未突破 cur=0 prev_high=0",
+        "entry_ref": 0.21,
         "sl_ref": 0.21
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 33.3,
-        "smart_long": 56.4,
+        "retail_short": 32.0,
+        "smart_long": 56.7,
         "short_building": false,
-        "reason": "散户空头33.3%(阈值>45.0%) 大户多头56.4%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头32.0%(阈值>45.0%) 大户多头56.7%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 21.03,
         "range_hi": 0.23,
         "range_lo": 0.19,
-        "oi_chg_pct": -2.685,
+        "oi_chg_pct": -2.456,
         "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间21.03%(阈值<1.5%) 非横盘❌ OI-2.69% 下跌❌"
+        "reason": "4H区间21.03%(阈值<1.5%) 非横盘❌ OI-2.46% 下跌❌"
       }
     },
     "AAVEUSDT": {
       "symbol": "AAVEUSDT",
       "level": "NORMAL",
-      "score": 0,
+      "score": 1,
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.95,
-        "cur_vol": 23438.0,
-        "avg_vol": 24738.0,
+        "vol_ratio": 1.89,
+        "cur_vol": 69752.0,
+        "avg_vol": 36828.0,
         "breakout": false,
-        "cur_price": 137.46,
-        "prev_high": 138.48,
-        "reason": "量能0.9x 未突破 cur=137 prev_high=138",
-        "entry_ref": 136.77,
-        "sl_ref": 135.64
+        "cur_price": 136.84,
+        "prev_high": 139.84,
+        "reason": "量能1.9x 未突破 cur=137 prev_high=140",
+        "entry_ref": 136.16,
+        "sl_ref": 135.02
       },
       "c2_lsr": {
-        "ok": false,
+        "ok": true,
         "retail_short": 45.0,
-        "smart_long": 71.3,
+        "smart_long": 71.8,
         "short_building": false,
-        "reason": "散户空头45.0%(阈值>45.0%) 大户多头71.3%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头45.0%(阈值>45.0%) 大户多头71.8%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 6.59,
         "range_hi": 141.92,
         "range_lo": 133.15,
-        "oi_chg_pct": 0.292,
-        "oi_stable": true,
+        "oi_chg_pct": -0.973,
+        "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间6.59%(阈值<1.5%) 非横盘❌ OI+0.29% 稳定✅"
+        "reason": "4H区间6.59%(阈值<1.5%) 非横盘❌ OI-0.97% 下跌❌"
       }
     },
     "WLDUSDT": {
@@ -568,32 +568,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.71,
-        "cur_vol": 10329531.0,
-        "avg_vol": 14637922.0,
+        "vol_ratio": 1.55,
+        "cur_vol": 24803959.0,
+        "avg_vol": 16019668.0,
         "breakout": false,
-        "cur_price": 0.44,
-        "prev_high": 0.44,
-        "reason": "量能0.7x 未突破 cur=0 prev_high=0",
+        "cur_price": 0.43,
+        "prev_high": 0.45,
+        "reason": "量能1.5x 未突破 cur=0 prev_high=0",
         "entry_ref": 0.43,
         "sl_ref": 0.43
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 41.7,
-        "smart_long": 72.2,
-        "short_building": true,
-        "reason": "散户空头41.7%(阈值>45.0%) 大户多头72.2%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 40.6,
+        "smart_long": 72.8,
+        "short_building": false,
+        "reason": "散户空头40.6%(阈值>45.0%) 大户多头72.8%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 9.24,
         "range_hi": 0.45,
         "range_lo": 0.42,
-        "oi_chg_pct": -2.352,
+        "oi_chg_pct": -1.083,
         "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间9.24%(阈值<1.5%) 非横盘❌ OI-2.35% 下跌❌"
+        "reason": "4H区间9.24%(阈值<1.5%) 非横盘❌ OI-1.08% 下跌❌"
       }
     },
     "PENGUUSDT": {
@@ -603,32 +603,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.93,
-        "cur_vol": 177476283.0,
-        "avg_vol": 189992332.0,
+        "vol_ratio": 3.07,
+        "cur_vol": 1009256991.0,
+        "avg_vol": 329221692.0,
         "breakout": false,
         "cur_price": 0.01,
         "prev_high": 0.01,
-        "reason": "量能0.9x 未突破 cur=0 prev_high=0",
+        "reason": "量能3.1x 未突破 cur=0 prev_high=0",
         "entry_ref": 0.01,
         "sl_ref": 0.01
       },
       "c2_lsr": {
         "ok": true,
-        "retail_short": 56.0,
-        "smart_long": 77.4,
+        "retail_short": 55.2,
+        "smart_long": 76.7,
         "short_building": false,
-        "reason": "散户空头56.0%(阈值>45.0%) 大户多头77.4%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头55.2%(阈值>45.0%) 大户多头76.7%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 6.61,
         "range_hi": 0.01,
         "range_lo": 0.01,
-        "oi_chg_pct": -0.226,
-        "oi_stable": true,
+        "oi_chg_pct": -0.999,
+        "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间6.61%(阈值<1.5%) 非横盘❌ OI-0.23% 稳定✅"
+        "reason": "4H区间6.61%(阈值<1.5%) 非横盘❌ OI-1.00% 下跌❌"
       }
     },
     "1000PEPEUSDT": {
@@ -638,32 +638,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.51,
-        "cur_vol": 1649960533.0,
-        "avg_vol": 3211379087.0,
+        "vol_ratio": 1.59,
+        "cur_vol": 6819813134.0,
+        "avg_vol": 4281017122.0,
         "breakout": false,
         "cur_price": 0.0,
         "prev_high": 0.0,
-        "reason": "量能0.5x 未突破 cur=0 prev_high=0",
+        "reason": "量能1.6x 未突破 cur=0 prev_high=0",
         "entry_ref": 0.0,
         "sl_ref": 0.0
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 30.9,
-        "smart_long": 64.0,
+        "retail_short": 31.6,
+        "smart_long": 64.1,
         "short_building": false,
-        "reason": "散户空头30.9%(阈值>45.0%) 大户多头64.0%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头31.6%(阈值>45.0%) 大户多头64.1%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 7.24,
         "range_hi": 0.0,
         "range_lo": 0.0,
-        "oi_chg_pct": -0.976,
-        "oi_stable": false,
+        "oi_chg_pct": 1.262,
+        "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间7.24%(阈值<1.5%) 非横盘❌ OI-0.98% 下跌❌"
+        "reason": "4H区间7.24%(阈值<1.5%) 非横盘❌ OI+1.26% 稳定✅"
       }
     },
     "TRUMPUSDT": {
@@ -673,32 +673,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.85,
-        "cur_vol": 1357961.0,
-        "avg_vol": 1605204.0,
+        "vol_ratio": 1.64,
+        "cur_vol": 4770346.0,
+        "avg_vol": 2909168.0,
         "breakout": false,
-        "cur_price": 2.07,
-        "prev_high": 2.09,
-        "reason": "量能0.8x 未突破 cur=2 prev_high=2",
-        "entry_ref": 2.06,
-        "sl_ref": 2.04
+        "cur_price": 2.05,
+        "prev_high": 2.13,
+        "reason": "量能1.6x 未突破 cur=2 prev_high=2",
+        "entry_ref": 2.04,
+        "sl_ref": 2.02
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 39.2,
-        "smart_long": 68.3,
+        "retail_short": 39.0,
+        "smart_long": 69.6,
         "short_building": true,
-        "reason": "散户空头39.2%(阈值>45.0%) 大户多头68.3%(阈值>58.0%) 空头堆积中🔴"
+        "reason": "散户空头39.0%(阈值>45.0%) 大户多头69.6%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 7.33,
         "range_hi": 2.14,
         "range_lo": 1.99,
-        "oi_chg_pct": 0.997,
+        "oi_chg_pct": 0.092,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间7.33%(阈值<1.5%) 非横盘❌ OI+1.00% 稳定✅"
+        "reason": "4H区间7.33%(阈值<1.5%) 非横盘❌ OI+0.09% 稳定✅"
       }
     },
     "SYNUSDT": {
@@ -708,32 +708,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.97,
-        "cur_vol": 4573380.0,
-        "avg_vol": 4726280.0,
+        "vol_ratio": 1.46,
+        "cur_vol": 6411615.0,
+        "avg_vol": 4386482.0,
         "breakout": false,
         "cur_price": 0.22,
-        "prev_high": 0.23,
-        "reason": "量能1.0x 未突破 cur=0 prev_high=0",
-        "entry_ref": 0.22,
+        "prev_high": 0.22,
+        "reason": "量能1.5x 未突破 cur=0 prev_high=0",
+        "entry_ref": 0.21,
         "sl_ref": 0.21
       },
       "c2_lsr": {
         "ok": true,
-        "retail_short": 60.2,
+        "retail_short": 59.9,
         "smart_long": 60.8,
-        "short_building": false,
-        "reason": "散户空头60.2%(阈值>45.0%) 大户多头60.8%(阈值>58.0%) 空头平稳"
+        "short_building": true,
+        "reason": "散户空头59.9%(阈值>45.0%) 大户多头60.8%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 34.36,
         "range_hi": 0.25,
         "range_lo": 0.19,
-        "oi_chg_pct": 0.703,
+        "oi_chg_pct": 0.585,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间34.36%(阈值<1.5%) 非横盘❌ OI+0.70% 稳定✅"
+        "reason": "4H区间34.36%(阈值<1.5%) 非横盘❌ OI+0.58% 稳定✅"
       }
     },
     "SNDKUSDT": {
@@ -743,32 +743,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.96,
-        "cur_vol": 10654.0,
-        "avg_vol": 5442.0,
+        "vol_ratio": 1.17,
+        "cur_vol": 24601.0,
+        "avg_vol": 21053.0,
         "breakout": false,
-        "cur_price": 1790.83,
-        "prev_high": 1792.57,
-        "reason": "量能2.0x 未突破 cur=1791 prev_high=1793",
-        "entry_ref": 1781.88,
-        "sl_ref": 1767.55
+        "cur_price": 1796.53,
+        "prev_high": 1813.69,
+        "reason": "量能1.2x 未突破 cur=1797 prev_high=1814",
+        "entry_ref": 1787.55,
+        "sl_ref": 1776.67
       },
       "c2_lsr": {
         "ok": false,
         "retail_short": 61.0,
-        "smart_long": 43.4,
-        "short_building": false,
-        "reason": "散户空头61.0%(阈值>45.0%) 大户多头43.4%(阈值>58.0%) 空头平稳"
+        "smart_long": 42.8,
+        "short_building": true,
+        "reason": "散户空头61.0%(阈值>45.0%) 大户多头42.8%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 2.31,
         "range_hi": 1792.58,
         "range_lo": 1752.06,
-        "oi_chg_pct": 1.541,
+        "oi_chg_pct": 4.251,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间2.31%(阈值<1.5%) 非横盘❌ OI+1.54% 稳定✅"
+        "reason": "4H区间2.31%(阈值<1.5%) 非横盘❌ OI+4.25% 稳定✅"
       }
     },
     "NVDAUSDT": {
@@ -778,32 +778,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.84,
-        "cur_vol": 8697.0,
-        "avg_vol": 4738.0,
-        "breakout": true,
-        "cur_price": 222.58,
-        "prev_high": 222.34,
-        "reason": "量能1.8x 突破前高 cur=223 prev_high=222",
-        "entry_ref": 221.47,
-        "sl_ref": 219.8
+        "vol_ratio": 1.2,
+        "cur_vol": 14131.0,
+        "avg_vol": 11747.0,
+        "breakout": false,
+        "cur_price": 223.25,
+        "prev_high": 223.53,
+        "reason": "量能1.2x 未突破 cur=223 prev_high=224",
+        "entry_ref": 222.13,
+        "sl_ref": 220.75
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 36.6,
-        "smart_long": 79.7,
-        "short_building": true,
-        "reason": "散户空头36.6%(阈值>45.0%) 大户多头79.7%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 36.1,
+        "smart_long": 79.6,
+        "short_building": false,
+        "reason": "散户空头36.1%(阈值>45.0%) 大户多头79.6%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": true,
         "range_pct": 1.1,
         "range_hi": 222.66,
         "range_lo": 220.24,
-        "oi_chg_pct": 0.217,
+        "oi_chg_pct": -0.128,
         "oi_stable": true,
         "is_chop": true,
-        "reason": "4H区间1.10%(阈值<1.5%) 横盘✅ OI+0.22% 稳定✅"
+        "reason": "4H区间1.10%(阈值<1.5%) 横盘✅ OI-0.13% 稳定✅"
       }
     },
     "TSLAUSDT": {
@@ -813,32 +813,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.37,
-        "cur_vol": 994.0,
-        "avg_vol": 724.0,
+        "vol_ratio": 1.23,
+        "cur_vol": 2594.0,
+        "avg_vol": 2111.0,
         "breakout": false,
-        "cur_price": 365.55,
-        "prev_high": 365.55,
-        "reason": "量能1.4x 未突破 cur=366 prev_high=366",
-        "entry_ref": 363.72,
-        "sl_ref": 361.06
+        "cur_price": 366.29,
+        "prev_high": 367.32,
+        "reason": "量能1.2x 未突破 cur=366 prev_high=367",
+        "entry_ref": 364.46,
+        "sl_ref": 362.17
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 27.6,
-        "smart_long": 55.9,
-        "short_building": true,
-        "reason": "散户空头27.6%(阈值>45.0%) 大户多头55.9%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 27.2,
+        "smart_long": 56.0,
+        "short_building": false,
+        "reason": "散户空头27.2%(阈值>45.0%) 大户多头56.0%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": true,
         "range_pct": 0.8,
         "range_hi": 365.72,
         "range_lo": 362.83,
-        "oi_chg_pct": 0.089,
+        "oi_chg_pct": 0.046,
         "oi_stable": true,
         "is_chop": true,
-        "reason": "4H区间0.80%(阈值<1.5%) 横盘✅ OI+0.09% 稳定✅"
+        "reason": "4H区间0.80%(阈值<1.5%) 横盘✅ OI+0.05% 稳定✅"
       }
     },
     "MSTRUSDT": {
@@ -848,32 +848,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.29,
-        "cur_vol": 35693.0,
-        "avg_vol": 27747.0,
+        "vol_ratio": 1.56,
+        "cur_vol": 108617.0,
+        "avg_vol": 69491.0,
         "breakout": false,
-        "cur_price": 156.55,
-        "prev_high": 157.01,
-        "reason": "量能1.3x 未突破 cur=157 prev_high=157",
-        "entry_ref": 155.77,
-        "sl_ref": 154.64
+        "cur_price": 154.62,
+        "prev_high": 159.03,
+        "reason": "量能1.6x 未突破 cur=155 prev_high=159",
+        "entry_ref": 153.85,
+        "sl_ref": 152.37
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 40.5,
-        "smart_long": 62.9,
+        "retail_short": 42.5,
+        "smart_long": 63.4,
         "short_building": true,
-        "reason": "散户空头40.5%(阈值>45.0%) 大户多头62.9%(阈值>58.0%) 空头堆积中🔴"
+        "reason": "散户空头42.5%(阈值>45.0%) 大户多头63.4%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 5.44,
         "range_hi": 159.31,
         "range_lo": 151.09,
-        "oi_chg_pct": 1.936,
+        "oi_chg_pct": 0.421,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间5.44%(阈值<1.5%) 非横盘❌ OI+1.94% 稳定✅"
+        "reason": "4H区间5.44%(阈值<1.5%) 非横盘❌ OI+0.42% 稳定✅"
       }
     },
     "AMDUSDT": {
@@ -883,32 +883,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.69,
-        "cur_vol": 2081.0,
-        "avg_vol": 1235.0,
+        "vol_ratio": 1.05,
+        "cur_vol": 3954.0,
+        "avg_vol": 3753.0,
         "breakout": false,
-        "cur_price": 564.33,
-        "prev_high": 567.0,
-        "reason": "量能1.7x 未突破 cur=564 prev_high=567",
-        "entry_ref": 561.51,
-        "sl_ref": 557.4
+        "cur_price": 569.02,
+        "prev_high": 573.07,
+        "reason": "量能1.1x 未突破 cur=569 prev_high=573",
+        "entry_ref": 566.17,
+        "sl_ref": 562.4
       },
       "c2_lsr": {
         "ok": true,
-        "retail_short": 60.6,
-        "smart_long": 68.3,
-        "short_building": true,
-        "reason": "散户空头60.6%(阈值>45.0%) 大户多头68.3%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 58.7,
+        "smart_long": 68.1,
+        "short_building": false,
+        "reason": "散户空头58.7%(阈值>45.0%) 大户多头68.1%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 2.68,
         "range_hi": 567.0,
         "range_lo": 552.2,
-        "oi_chg_pct": 0.328,
+        "oi_chg_pct": 2.397,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间2.68%(阈值<1.5%) 非横盘❌ OI+0.33% 稳定✅"
+        "reason": "4H区间2.68%(阈值<1.5%) 非横盘❌ OI+2.40% 稳定✅"
       }
     },
     "INTCUSDT": {
@@ -918,32 +918,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.64,
-        "cur_vol": 32938.0,
-        "avg_vol": 20078.0,
+        "vol_ratio": 0.88,
+        "cur_vol": 48663.0,
+        "avg_vol": 55007.0,
         "breakout": false,
-        "cur_price": 111.87,
-        "prev_high": 112.54,
-        "reason": "量能1.6x 未突破 cur=112 prev_high=113",
-        "entry_ref": 111.31,
-        "sl_ref": 110.4
+        "cur_price": 112.72,
+        "prev_high": 113.47,
+        "reason": "量能0.9x 未突破 cur=113 prev_high=113",
+        "entry_ref": 112.16,
+        "sl_ref": 111.35
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 34.4,
-        "smart_long": 80.1,
-        "short_building": true,
-        "reason": "散户空头34.4%(阈值>45.0%) 大户多头80.1%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 35.5,
+        "smart_long": 79.7,
+        "short_building": false,
+        "reason": "散户空头35.5%(阈值>45.0%) 大户多头79.7%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 3.2,
         "range_hi": 112.54,
         "range_lo": 109.05,
-        "oi_chg_pct": 3.296,
+        "oi_chg_pct": 5.241,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间3.20%(阈值<1.5%) 非横盘❌ OI+3.30% 稳定✅"
+        "reason": "4H区间3.20%(阈值<1.5%) 非横盘❌ OI+5.24% 稳定✅"
       }
     },
     "XAUUSDT": {
@@ -953,67 +953,67 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.92,
-        "cur_vol": 9365.0,
-        "avg_vol": 4887.0,
+        "vol_ratio": 2.12,
+        "cur_vol": 26353.0,
+        "avg_vol": 12456.0,
         "breakout": false,
-        "cur_price": 4377.0,
+        "cur_price": 4382.35,
         "prev_high": 4387.05,
-        "reason": "量能1.9x 未突破 cur=4377 prev_high=4387",
-        "entry_ref": 4355.11,
-        "sl_ref": 4325.6
+        "reason": "量能2.1x 未突破 cur=4382 prev_high=4387",
+        "entry_ref": 4360.44,
+        "sl_ref": 4324.47
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 25.8,
-        "smart_long": 70.5,
-        "short_building": true,
-        "reason": "散户空头25.8%(阈值>45.0%) 大户多头70.5%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 26.3,
+        "smart_long": 68.8,
+        "short_building": false,
+        "reason": "散户空头26.3%(阈值>45.0%) 大户多头68.8%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": true,
         "range_pct": 0.39,
         "range_hi": 4387.05,
         "range_lo": 4370.0,
-        "oi_chg_pct": -0.065,
+        "oi_chg_pct": 5.345,
         "oi_stable": true,
         "is_chop": true,
-        "reason": "4H区间0.39%(阈值<1.5%) 横盘✅ OI-0.07% 稳定✅"
+        "reason": "4H区间0.39%(阈值<1.5%) 横盘✅ OI+5.35% 稳定✅"
       }
     },
     "XAGUSDT": {
       "symbol": "XAGUSDT",
       "level": "NORMAL",
-      "score": 1,
+      "score": 0,
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.83,
-        "cur_vol": 485027.0,
-        "avg_vol": 583432.0,
-        "breakout": false,
-        "cur_price": 66.4,
-        "prev_high": 66.55,
-        "reason": "量能0.8x 未突破 cur=66 prev_high=67",
-        "entry_ref": 66.07,
-        "sl_ref": 65.56
+        "vol_ratio": 0.8,
+        "cur_vol": 665150.0,
+        "avg_vol": 830837.0,
+        "breakout": true,
+        "cur_price": 66.67,
+        "prev_high": 66.66,
+        "reason": "量能0.8x 突破前高 cur=67 prev_high=67",
+        "entry_ref": 66.34,
+        "sl_ref": 65.74
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 24.2,
-        "smart_long": 69.7,
-        "short_building": true,
-        "reason": "散户空头24.2%(阈值>45.0%) 大户多头69.7%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 23.1,
+        "smart_long": 70.6,
+        "short_building": false,
+        "reason": "散户空头23.1%(阈值>45.0%) 大户多头70.6%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
-        "ok": true,
+        "ok": false,
         "range_pct": 1.2,
         "range_hi": 66.63,
         "range_lo": 65.84,
-        "oi_chg_pct": 0.712,
-        "oi_stable": true,
+        "oi_chg_pct": -1.463,
+        "oi_stable": false,
         "is_chop": true,
-        "reason": "4H区间1.20%(阈值<1.5%) 横盘✅ OI+0.71% 稳定✅"
+        "reason": "4H区间1.20%(阈值<1.5%) 横盘✅ OI-1.46% 下跌❌"
       }
     },
     "QQQUSDT": {
@@ -1023,32 +1023,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.66,
-        "cur_vol": 2974.0,
-        "avg_vol": 4531.0,
+        "vol_ratio": 0.84,
+        "cur_vol": 8671.0,
+        "avg_vol": 10262.0,
         "breakout": false,
-        "cur_price": 724.25,
-        "prev_high": 724.35,
-        "reason": "量能0.7x 未突破 cur=724 prev_high=724",
-        "entry_ref": 720.63,
-        "sl_ref": 715.9
+        "cur_price": 725.01,
+        "prev_high": 725.55,
+        "reason": "量能0.8x 未突破 cur=725 prev_high=726",
+        "entry_ref": 721.38,
+        "sl_ref": 717.02
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 39.5,
-        "smart_long": 65.6,
-        "short_building": false,
-        "reason": "散户空头39.5%(阈值>45.0%) 大户多头65.6%(阈值>58.0%) 空头平稳"
+        "retail_short": 39.8,
+        "smart_long": 65.7,
+        "short_building": true,
+        "reason": "散户空头39.8%(阈值>45.0%) 大户多头65.7%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
         "ok": true,
         "range_pct": 0.73,
         "range_hi": 724.39,
         "range_lo": 719.11,
-        "oi_chg_pct": 1.253,
+        "oi_chg_pct": 0.094,
         "oi_stable": true,
         "is_chop": true,
-        "reason": "4H区间0.73%(阈值<1.5%) 横盘✅ OI+1.25% 稳定✅"
+        "reason": "4H区间0.73%(阈值<1.5%) 横盘✅ OI+0.09% 稳定✅"
       }
     },
     "SOXLUSDT": {
@@ -1058,32 +1058,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 3.29,
-        "cur_vol": 244178.0,
-        "avg_vol": 74280.0,
+        "vol_ratio": 1.11,
+        "cur_vol": 251803.0,
+        "avg_vol": 227394.0,
         "breakout": false,
-        "cur_price": 124.62,
-        "prev_high": 125.39,
-        "reason": "量能3.3x 未突破 cur=125 prev_high=125",
-        "entry_ref": 124.0,
-        "sl_ref": 123.2
+        "cur_price": 127.3,
+        "prev_high": 127.8,
+        "reason": "量能1.1x 未突破 cur=127 prev_high=128",
+        "entry_ref": 126.66,
+        "sl_ref": 125.84
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 31.3,
-        "smart_long": 76.7,
+        "retail_short": 32.6,
+        "smart_long": 75.7,
         "short_building": false,
-        "reason": "散户空头31.3%(阈值>45.0%) 大户多头76.7%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头32.6%(阈值>45.0%) 大户多头75.7%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 5.77,
         "range_hi": 126.22,
         "range_lo": 119.34,
-        "oi_chg_pct": -1.144,
-        "oi_stable": false,
+        "oi_chg_pct": 0.302,
+        "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间5.77%(阈值<1.5%) 非横盘❌ OI-1.14% 下跌❌"
+        "reason": "4H区间5.77%(阈值<1.5%) 非横盘❌ OI+0.30% 稳定✅"
       }
     },
     "ZECUSDT": {
@@ -1093,32 +1093,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.39,
-        "cur_vol": 40899.0,
-        "avg_vol": 106097.0,
+        "vol_ratio": 1.39,
+        "cur_vol": 100973.0,
+        "avg_vol": 72860.0,
         "breakout": false,
-        "cur_price": 1508.75,
-        "prev_high": 1533.75,
-        "reason": "量能0.4x 未突破 cur=1509 prev_high=1534",
-        "entry_ref": 1501.21,
-        "sl_ref": 1484.97
+        "cur_price": 1506.35,
+        "prev_high": 1545.0,
+        "reason": "量能1.4x 未突破 cur=1506 prev_high=1545",
+        "entry_ref": 1498.82,
+        "sl_ref": 1486.42
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 65.2,
-        "smart_long": 48.9,
+        "retail_short": 66.2,
+        "smart_long": 48.6,
         "short_building": false,
-        "reason": "散户空头65.2%(阈值>45.0%) 大户多头48.9%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头66.2%(阈值>45.0%) 大户多头48.6%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 7.41,
         "range_hi": 1533.75,
         "range_lo": 1428.0,
-        "oi_chg_pct": -2.393,
+        "oi_chg_pct": -2.041,
         "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间7.41%(阈值<1.5%) 非横盘❌ OI-2.39% 下跌❌"
+        "reason": "4H区间7.41%(阈值<1.5%) 非横盘❌ OI-2.04% 下跌❌"
       }
     },
     "LABUSDT": {
@@ -1128,32 +1128,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.82,
-        "cur_vol": 4563770.0,
-        "avg_vol": 5596362.0,
+        "vol_ratio": 1.29,
+        "cur_vol": 7878703.0,
+        "avg_vol": 6097039.0,
         "breakout": false,
         "cur_price": 0.05,
         "prev_high": 0.05,
-        "reason": "量能0.8x 未突破 cur=0 prev_high=0",
+        "reason": "量能1.3x 未突破 cur=0 prev_high=0",
         "entry_ref": 0.05,
         "sl_ref": 0.05
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 23.0,
-        "smart_long": 66.8,
+        "retail_short": 23.1,
+        "smart_long": 67.6,
         "short_building": false,
-        "reason": "散户空头23.0%(阈值>45.0%) 大户多头66.8%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头23.1%(阈值>45.0%) 大户多头67.6%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 12.85,
         "range_hi": 0.06,
         "range_lo": 0.05,
-        "oi_chg_pct": -0.59,
+        "oi_chg_pct": -0.564,
         "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间12.85%(阈值<1.5%) 非横盘❌ OI-0.59% 下跌❌"
+        "reason": "4H区间12.85%(阈值<1.5%) 非横盘❌ OI-0.56% 下跌❌"
       }
     },
     "CLUSDT": {
@@ -1163,32 +1163,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.57,
-        "cur_vol": 389844.0,
-        "avg_vol": 247932.0,
+        "vol_ratio": 1.47,
+        "cur_vol": 791512.0,
+        "avg_vol": 538435.0,
         "breakout": false,
-        "cur_price": 95.62,
-        "prev_high": 97.79,
-        "reason": "量能1.6x 未突破 cur=96 prev_high=98",
-        "entry_ref": 95.14,
-        "sl_ref": 94.54
+        "cur_price": 93.93,
+        "prev_high": 97.72,
+        "reason": "量能1.5x 未突破 cur=94 prev_high=98",
+        "entry_ref": 93.46,
+        "sl_ref": 92.54
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 71.9,
-        "smart_long": 32.8,
+        "retail_short": 70.4,
+        "smart_long": 32.6,
         "short_building": false,
-        "reason": "散户空头71.9%(阈值>45.0%) 大户多头32.8%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头70.4%(阈值>45.0%) 大户多头32.6%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 2.3,
         "range_hi": 97.79,
         "range_lo": 95.59,
-        "oi_chg_pct": -4.433,
+        "oi_chg_pct": -5.904,
         "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间2.30%(阈值<1.5%) 非横盘❌ OI-4.43% 下跌❌"
+        "reason": "4H区间2.30%(阈值<1.5%) 非横盘❌ OI-5.90% 下跌❌"
       }
     },
     "USUSDT": {
@@ -1198,32 +1198,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.17,
-        "cur_vol": 3771692.0,
-        "avg_vol": 3224025.0,
+        "vol_ratio": 0.92,
+        "cur_vol": 3372776.0,
+        "avg_vol": 3681276.0,
         "breakout": false,
         "cur_price": 0.02,
         "prev_high": 0.02,
-        "reason": "量能1.2x 未突破 cur=0 prev_high=0",
+        "reason": "量能0.9x 未突破 cur=0 prev_high=0",
         "entry_ref": 0.02,
         "sl_ref": 0.02
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 34.4,
-        "smart_long": 55.8,
-        "short_building": true,
-        "reason": "散户空头34.4%(阈值>45.0%) 大户多头55.8%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 34.5,
+        "smart_long": 55.9,
+        "short_building": false,
+        "reason": "散户空头34.5%(阈值>45.0%) 大户多头55.9%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 9.39,
         "range_hi": 0.02,
         "range_lo": 0.01,
-        "oi_chg_pct": -0.166,
+        "oi_chg_pct": -0.124,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间9.39%(阈值<1.5%) 非横盘❌ OI-0.17% 稳定✅"
+        "reason": "4H区间9.39%(阈值<1.5%) 非横盘❌ OI-0.12% 稳定✅"
       }
     },
     "BANKUSDT": {
@@ -1233,32 +1233,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.59,
-        "cur_vol": 34340890.0,
-        "avg_vol": 21596271.0,
+        "vol_ratio": 1.42,
+        "cur_vol": 43963572.0,
+        "avg_vol": 31062465.0,
         "breakout": false,
         "cur_price": 0.03,
         "prev_high": 0.03,
-        "reason": "量能1.6x 未突破 cur=0 prev_high=0",
+        "reason": "量能1.4x 未突破 cur=0 prev_high=0",
         "entry_ref": 0.03,
         "sl_ref": 0.03
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 38.5,
-        "smart_long": 64.0,
-        "short_building": false,
-        "reason": "散户空头38.5%(阈值>45.0%) 大户多头64.0%(阈值>58.0%) 空头平稳"
+        "retail_short": 38.9,
+        "smart_long": 63.8,
+        "short_building": true,
+        "reason": "散户空头38.9%(阈值>45.0%) 大户多头63.8%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 27.28,
         "range_hi": 0.04,
         "range_lo": 0.03,
-        "oi_chg_pct": -1.181,
+        "oi_chg_pct": -1.455,
         "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间27.28%(阈值<1.5%) 非横盘❌ OI-1.18% 下跌❌"
+        "reason": "4H区间27.28%(阈值<1.5%) 非横盘❌ OI-1.45% 下跌❌"
       }
     },
     "NBISUSDT": {
@@ -1268,32 +1268,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 2.15,
-        "cur_vol": 3867.0,
-        "avg_vol": 1802.0,
-        "breakout": true,
-        "cur_price": 224.85,
-        "prev_high": 223.92,
-        "reason": "量能2.1x 突破前高 cur=225 prev_high=224",
-        "entry_ref": 223.73,
-        "sl_ref": 220.94
+        "vol_ratio": 1.85,
+        "cur_vol": 9112.0,
+        "avg_vol": 4924.0,
+        "breakout": false,
+        "cur_price": 227.01,
+        "prev_high": 227.56,
+        "reason": "量能1.9x 未突破 cur=227 prev_high=228",
+        "entry_ref": 225.87,
+        "sl_ref": 224.2
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 35.1,
-        "smart_long": 75.8,
-        "short_building": false,
-        "reason": "散户空头35.1%(阈值>45.0%) 大户多头75.8%(阈值>58.0%) 空头平稳"
+        "retail_short": 37.4,
+        "smart_long": 75.7,
+        "short_building": true,
+        "reason": "散户空头37.4%(阈值>45.0%) 大户多头75.7%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 3.13,
         "range_hi": 224.95,
         "range_lo": 218.13,
-        "oi_chg_pct": 0.159,
+        "oi_chg_pct": 0.973,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间3.13%(阈值<1.5%) 非横盘❌ OI+0.16% 稳定✅"
+        "reason": "4H区间3.13%(阈值<1.5%) 非横盘❌ OI+0.97% 稳定✅"
       }
     },
     "SKHYNIXUSDT": {
@@ -1303,137 +1303,137 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 8.67,
-        "cur_vol": 24871.0,
-        "avg_vol": 2870.0,
+        "vol_ratio": 1.5,
+        "cur_vol": 50261.0,
+        "avg_vol": 33444.0,
         "breakout": false,
-        "cur_price": 1351.63,
-        "prev_high": 1353.52,
-        "reason": "量能8.7x 未突破 cur=1352 prev_high=1354",
-        "entry_ref": 1344.87,
-        "sl_ref": 1331.81
+        "cur_price": 1347.97,
+        "prev_high": 1363.9,
+        "reason": "量能1.5x 未突破 cur=1348 prev_high=1364",
+        "entry_ref": 1341.23,
+        "sl_ref": 1332.65
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 30.8,
-        "smart_long": 74.9,
-        "short_building": true,
-        "reason": "散户空头30.8%(阈值>45.0%) 大户多头74.9%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 32.3,
+        "smart_long": 76.0,
+        "short_building": false,
+        "reason": "散户空头32.3%(阈值>45.0%) 大户多头76.0%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 2.11,
         "range_hi": 1357.65,
         "range_lo": 1329.58,
-        "oi_chg_pct": 0.789,
+        "oi_chg_pct": 3.546,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间2.11%(阈值<1.5%) 非横盘❌ OI+0.79% 稳定✅"
+        "reason": "4H区间2.11%(阈值<1.5%) 非横盘❌ OI+3.55% 稳定✅"
       }
     },
     "SAMSUNGUSDT": {
       "symbol": "SAMSUNGUSDT",
       "level": "NORMAL",
-      "score": 1,
+      "score": 0,
       "triggered": false,
       "c1_volume": {
-        "ok": true,
-        "vol_ratio": 8.35,
-        "cur_vol": 20179.0,
-        "avg_vol": 2416.0,
-        "breakout": true,
-        "cur_price": 190.71,
-        "prev_high": 189.98,
-        "reason": "量能8.4x 突破前高 cur=191 prev_high=190",
-        "entry_ref": 189.76,
-        "sl_ref": 187.45
+        "ok": false,
+        "vol_ratio": 1.32,
+        "cur_vol": 65174.0,
+        "avg_vol": 49357.0,
+        "breakout": false,
+        "cur_price": 195.54,
+        "prev_high": 195.63,
+        "reason": "量能1.3x 未突破 cur=196 prev_high=196",
+        "entry_ref": 194.56,
+        "sl_ref": 192.14
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 36.8,
-        "smart_long": 48.1,
+        "retail_short": 39.5,
+        "smart_long": 46.7,
         "short_building": false,
-        "reason": "散户空头36.8%(阈值>45.0%) 大户多头48.1%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头39.5%(阈值>45.0%) 大户多头46.7%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 1.99,
         "range_hi": 190.96,
         "range_lo": 187.23,
-        "oi_chg_pct": 0.347,
+        "oi_chg_pct": 3.302,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间1.99%(阈值<1.5%) 非横盘❌ OI+0.35% 稳定✅"
+        "reason": "4H区间1.99%(阈值<1.5%) 非横盘❌ OI+3.30% 稳定✅"
       }
     },
     "KORUUSDT": {
       "symbol": "KORUUSDT",
       "level": "NORMAL",
-      "score": 1,
+      "score": 0,
       "triggered": false,
       "c1_volume": {
-        "ok": true,
-        "vol_ratio": 7.17,
-        "cur_vol": 740536.0,
-        "avg_vol": 103324.0,
-        "breakout": true,
-        "cur_price": 20.39,
-        "prev_high": 20.22,
-        "reason": "量能7.2x 突破前高 cur=20 prev_high=20",
-        "entry_ref": 20.29,
-        "sl_ref": 19.91
+        "ok": false,
+        "vol_ratio": 1.31,
+        "cur_vol": 976837.0,
+        "avg_vol": 744017.0,
+        "breakout": false,
+        "cur_price": 20.55,
+        "prev_high": 20.82,
+        "reason": "量能1.3x 未突破 cur=21 prev_high=21",
+        "entry_ref": 20.45,
+        "sl_ref": 20.23
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 29.9,
-        "smart_long": 75.1,
-        "short_building": false,
-        "reason": "散户空头29.9%(阈值>45.0%) 大户多头75.1%(阈值>58.0%) 空头平稳"
+        "retail_short": 31.6,
+        "smart_long": 74.7,
+        "short_building": true,
+        "reason": "散户空头31.6%(阈值>45.0%) 大户多头74.7%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 4.23,
         "range_hi": 20.47,
         "range_lo": 19.64,
-        "oi_chg_pct": 4.645,
+        "oi_chg_pct": 3.882,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间4.23%(阈值<1.5%) 非横盘❌ OI+4.65% 稳定✅"
+        "reason": "4H区间4.23%(阈值<1.5%) 非横盘❌ OI+3.88% 稳定✅"
       }
     },
     "EWYUSDT": {
       "symbol": "EWYUSDT",
-      "level": "BREAKOUT_WATCH",
-      "score": 3,
-      "triggered": true,
+      "level": "WATCH_PARTIAL",
+      "score": 2,
+      "triggered": false,
       "c1_volume": {
-        "ok": true,
-        "vol_ratio": 8.53,
-        "cur_vol": 22407.0,
-        "avg_vol": 2626.0,
-        "breakout": true,
-        "cur_price": 182.67,
-        "prev_high": 182.03,
-        "reason": "量能8.5x 突破前高 cur=183 prev_high=182",
-        "entry_ref": 181.76,
-        "sl_ref": 179.77
+        "ok": false,
+        "vol_ratio": 1.05,
+        "cur_vol": 19875.0,
+        "avg_vol": 18949.0,
+        "breakout": false,
+        "cur_price": 183.16,
+        "prev_high": 183.92,
+        "reason": "量能1.0x 未突破 cur=183 prev_high=184",
+        "entry_ref": 182.24,
+        "sl_ref": 180.8
       },
       "c2_lsr": {
         "ok": true,
-        "retail_short": 50.4,
-        "smart_long": 67.6,
-        "short_building": true,
-        "reason": "散户空头50.4%(阈值>45.0%) 大户多头67.6%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 51.3,
+        "smart_long": 67.5,
+        "short_building": false,
+        "reason": "散户空头51.3%(阈值>45.0%) 大户多头67.5%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": true,
         "range_pct": 1.45,
         "range_hi": 182.89,
         "range_lo": 180.28,
-        "oi_chg_pct": 3.478,
+        "oi_chg_pct": 0.738,
         "oi_stable": true,
         "is_chop": true,
-        "reason": "4H区间1.45%(阈值<1.5%) 横盘✅ OI+3.48% 稳定✅"
+        "reason": "4H区间1.45%(阈值<1.5%) 横盘✅ OI+0.74% 稳定✅"
       }
     },
     "PUMPUSDT": {
@@ -1443,32 +1443,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.63,
-        "cur_vol": 923428647.0,
-        "avg_vol": 1465643264.0,
+        "vol_ratio": 1.53,
+        "cur_vol": 1854834623.0,
+        "avg_vol": 1210442574.0,
         "breakout": false,
         "cur_price": 0.0,
         "prev_high": 0.0,
-        "reason": "量能0.6x 未突破 cur=0 prev_high=0",
+        "reason": "量能1.5x 未突破 cur=0 prev_high=0",
         "entry_ref": 0.0,
         "sl_ref": 0.0
       },
       "c2_lsr": {
         "ok": true,
-        "retail_short": 58.1,
-        "smart_long": 68.2,
-        "short_building": true,
-        "reason": "散户空头58.1%(阈值>45.0%) 大户多头68.2%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 58.4,
+        "smart_long": 68.8,
+        "short_building": false,
+        "reason": "散户空头58.4%(阈值>45.0%) 大户多头68.8%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 11.71,
         "range_hi": 0.0,
         "range_lo": 0.0,
-        "oi_chg_pct": -0.823,
+        "oi_chg_pct": -0.729,
         "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间11.71%(阈值<1.5%) 非横盘❌ OI-0.82% 下跌❌"
+        "reason": "4H区间11.71%(阈值<1.5%) 非横盘❌ OI-0.73% 下跌❌"
       }
     },
     "JTOUSDT": {
@@ -1478,32 +1478,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.06,
-        "cur_vol": 1614562.0,
-        "avg_vol": 1529129.0,
+        "vol_ratio": 1.57,
+        "cur_vol": 3288705.0,
+        "avg_vol": 2090609.0,
         "breakout": false,
-        "cur_price": 0.5,
+        "cur_price": 0.49,
         "prev_high": 0.51,
-        "reason": "量能1.1x 未突破 cur=1 prev_high=1",
-        "entry_ref": 0.5,
-        "sl_ref": 0.49
+        "reason": "量能1.6x 未突破 cur=0 prev_high=1",
+        "entry_ref": 0.49,
+        "sl_ref": 0.48
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 40.5,
-        "smart_long": 71.2,
+        "retail_short": 41.0,
+        "smart_long": 72.1,
         "short_building": false,
-        "reason": "散户空头40.5%(阈值>45.0%) 大户多头71.2%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头41.0%(阈值>45.0%) 大户多头72.1%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 8.96,
         "range_hi": 0.51,
         "range_lo": 0.47,
-        "oi_chg_pct": -2.961,
+        "oi_chg_pct": -4.434,
         "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间8.96%(阈值<1.5%) 非横盘❌ OI-2.96% 下跌❌"
+        "reason": "4H区间8.96%(阈值<1.5%) 非横盘❌ OI-4.43% 下跌❌"
       }
     },
     "BEATUSDT": {
@@ -1513,32 +1513,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.73,
-        "cur_vol": 2142210.0,
-        "avg_vol": 2933713.0,
+        "vol_ratio": 1.52,
+        "cur_vol": 4696852.0,
+        "avg_vol": 3086583.0,
         "breakout": false,
         "cur_price": 0.09,
         "prev_high": 0.09,
-        "reason": "量能0.7x 未突破 cur=0 prev_high=0",
-        "entry_ref": 0.09,
-        "sl_ref": 0.09
+        "reason": "量能1.5x 未突破 cur=0 prev_high=0",
+        "entry_ref": 0.08,
+        "sl_ref": 0.08
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 30.1,
-        "smart_long": 64.3,
+        "retail_short": 30.0,
+        "smart_long": 65.3,
         "short_building": false,
-        "reason": "散户空头30.1%(阈值>45.0%) 大户多头64.3%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头30.0%(阈值>45.0%) 大户多头65.3%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 6.83,
         "range_hi": 0.09,
         "range_lo": 0.08,
-        "oi_chg_pct": -1.345,
-        "oi_stable": false,
+        "oi_chg_pct": -0.281,
+        "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间6.83%(阈值<1.5%) 非横盘❌ OI-1.34% 下跌❌"
+        "reason": "4H区间6.83%(阈值<1.5%) 非横盘❌ OI-0.28% 稳定✅"
       }
     },
     "BASUSDT": {
@@ -1548,32 +1548,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.73,
-        "cur_vol": 1364749.0,
-        "avg_vol": 1881774.0,
+        "vol_ratio": 1.42,
+        "cur_vol": 3023125.0,
+        "avg_vol": 2125903.0,
         "breakout": false,
         "cur_price": 0.02,
         "prev_high": 0.02,
-        "reason": "量能0.7x 未突破 cur=0 prev_high=0",
+        "reason": "量能1.4x 未突破 cur=0 prev_high=0",
         "entry_ref": 0.02,
         "sl_ref": 0.02
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 20.3,
-        "smart_long": 59.8,
-        "short_building": false,
-        "reason": "散户空头20.3%(阈值>45.0%) 大户多头59.8%(阈值>58.0%) 空头平稳"
+        "retail_short": 20.5,
+        "smart_long": 60.1,
+        "short_building": true,
+        "reason": "散户空头20.5%(阈值>45.0%) 大户多头60.1%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 10.67,
         "range_hi": 0.03,
         "range_lo": 0.02,
-        "oi_chg_pct": -0.357,
+        "oi_chg_pct": 0.264,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间10.67%(阈值<1.5%) 非横盘❌ OI-0.36% 稳定✅"
+        "reason": "4H区间10.67%(阈值<1.5%) 非横盘❌ OI+0.26% 稳定✅"
       }
     },
     "TACUSDT": {
@@ -1583,32 +1583,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.78,
-        "cur_vol": 27188285.0,
-        "avg_vol": 34861549.0,
+        "vol_ratio": 1.32,
+        "cur_vol": 53936781.0,
+        "avg_vol": 40757771.0,
         "breakout": false,
         "cur_price": 0.0,
         "prev_high": 0.0,
-        "reason": "量能0.8x 未突破 cur=0 prev_high=0",
+        "reason": "量能1.3x 未突破 cur=0 prev_high=0",
         "entry_ref": 0.0,
         "sl_ref": 0.0
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 22.9,
-        "smart_long": 52.3,
-        "short_building": false,
-        "reason": "散户空头22.9%(阈值>45.0%) 大户多头52.3%(阈值>58.0%) 空头平稳"
+        "retail_short": 22.7,
+        "smart_long": 52.5,
+        "short_building": true,
+        "reason": "散户空头22.7%(阈值>45.0%) 大户多头52.5%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 8.82,
         "range_hi": 0.0,
         "range_lo": 0.0,
-        "oi_chg_pct": -0.134,
-        "oi_stable": true,
+        "oi_chg_pct": -0.589,
+        "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间8.82%(阈值<1.5%) 非横盘❌ OI-0.13% 稳定✅"
+        "reason": "4H区间8.82%(阈值<1.5%) 非横盘❌ OI-0.59% 下跌❌"
       }
     },
     "1000XECUSDT": {
@@ -1618,32 +1618,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.58,
-        "cur_vol": 3244643.0,
-        "avg_vol": 5572200.0,
+        "vol_ratio": 1.12,
+        "cur_vol": 9630995.0,
+        "avg_vol": 8624349.0,
         "breakout": false,
         "cur_price": 0.01,
         "prev_high": 0.01,
-        "reason": "量能0.6x 未突破 cur=0 prev_high=0",
+        "reason": "量能1.1x 未突破 cur=0 prev_high=0",
         "entry_ref": 0.01,
         "sl_ref": 0.01
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 31.6,
-        "smart_long": 61.9,
-        "short_building": false,
-        "reason": "散户空头31.6%(阈值>45.0%) 大户多头61.9%(阈值>58.0%) 空头平稳"
+        "retail_short": 31.4,
+        "smart_long": 61.5,
+        "short_building": true,
+        "reason": "散户空头31.4%(阈值>45.0%) 大户多头61.5%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 7.49,
         "range_hi": 0.01,
         "range_lo": 0.01,
-        "oi_chg_pct": -2.055,
+        "oi_chg_pct": -0.563,
         "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间7.49%(阈值<1.5%) 非横盘❌ OI-2.05% 下跌❌"
+        "reason": "4H区间7.49%(阈值<1.5%) 非横盘❌ OI-0.56% 下跌❌"
       }
     },
     "CRCLUSDT": {
@@ -1653,32 +1653,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.1,
-        "cur_vol": 23285.0,
-        "avg_vol": 21195.0,
+        "vol_ratio": 4.31,
+        "cur_vol": 221760.0,
+        "avg_vol": 51486.0,
         "breakout": false,
-        "cur_price": 91.87,
-        "prev_high": 91.99,
-        "reason": "量能1.1x 未突破 cur=92 prev_high=92",
-        "entry_ref": 91.41,
-        "sl_ref": 90.75
+        "cur_price": 91.21,
+        "prev_high": 93.22,
+        "reason": "量能4.3x 未突破 cur=91 prev_high=93",
+        "entry_ref": 90.75,
+        "sl_ref": 89.9
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 23.9,
-        "smart_long": 80.1,
-        "short_building": true,
-        "reason": "散户空头23.9%(阈值>45.0%) 大户多头80.1%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 23.0,
+        "smart_long": 80.4,
+        "short_building": false,
+        "reason": "散户空头23.0%(阈值>45.0%) 大户多头80.4%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 3.19,
         "range_hi": 92.19,
         "range_lo": 89.34,
-        "oi_chg_pct": -0.006,
-        "oi_stable": true,
+        "oi_chg_pct": -0.719,
+        "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间3.19%(阈值<1.5%) 非横盘❌ OI-0.01% 稳定✅"
+        "reason": "4H区间3.19%(阈值<1.5%) 非横盘❌ OI-0.72% 下跌❌"
       }
     },
     "AKEUSDT": {
@@ -1688,32 +1688,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.63,
-        "cur_vol": 138175248.0,
-        "avg_vol": 218087878.0,
+        "vol_ratio": 1.84,
+        "cur_vol": 280986637.0,
+        "avg_vol": 153005355.0,
         "breakout": false,
-        "cur_price": 0.06,
-        "prev_high": 0.07,
-        "reason": "量能0.6x 未突破 cur=0 prev_high=0",
-        "entry_ref": 0.06,
-        "sl_ref": 0.06
+        "cur_price": 0.05,
+        "prev_high": 0.06,
+        "reason": "量能1.8x 未突破 cur=0 prev_high=0",
+        "entry_ref": 0.05,
+        "sl_ref": 0.05
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 48.4,
-        "smart_long": 34.5,
-        "short_building": true,
-        "reason": "散户空头48.4%(阈值>45.0%) 大户多头34.5%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 48.3,
+        "smart_long": 36.4,
+        "short_building": false,
+        "reason": "散户空头48.3%(阈值>45.0%) 大户多头36.4%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 263.36,
         "range_hi": 0.16,
         "range_lo": 0.05,
-        "oi_chg_pct": -8.646,
-        "oi_stable": false,
+        "oi_chg_pct": 1.441,
+        "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间263.36%(阈值<1.5%) 非横盘❌ OI-8.65% 下跌❌"
+        "reason": "4H区间263.36%(阈值<1.5%) 非横盘❌ OI+1.44% 稳定✅"
       }
     },
     "HOMEUSDT": {
@@ -1723,32 +1723,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.73,
-        "cur_vol": 24430468.0,
-        "avg_vol": 33696718.0,
+        "vol_ratio": 1.39,
+        "cur_vol": 39605583.0,
+        "avg_vol": 28513135.0,
         "breakout": false,
         "cur_price": 0.01,
         "prev_high": 0.01,
-        "reason": "量能0.7x 未突破 cur=0 prev_high=0",
+        "reason": "量能1.4x 未突破 cur=0 prev_high=0",
         "entry_ref": 0.01,
         "sl_ref": 0.01
       },
       "c2_lsr": {
         "ok": true,
-        "retail_short": 49.5,
-        "smart_long": 67.7,
-        "short_building": false,
-        "reason": "散户空头49.5%(阈值>45.0%) 大户多头67.7%(阈值>58.0%) 空头平稳"
+        "retail_short": 50.2,
+        "smart_long": 68.1,
+        "short_building": true,
+        "reason": "散户空头50.2%(阈值>45.0%) 大户多头68.1%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 13.47,
         "range_hi": 0.01,
         "range_lo": 0.01,
-        "oi_chg_pct": 0.617,
-        "oi_stable": true,
+        "oi_chg_pct": -0.886,
+        "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间13.47%(阈值<1.5%) 非横盘❌ OI+0.62% 稳定✅"
+        "reason": "4H区间13.47%(阈值<1.5%) 非横盘❌ OI-0.89% 下跌❌"
       }
     },
     "ESPORTSUSDT": {
@@ -1758,32 +1758,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.88,
-        "cur_vol": 7909092.0,
-        "avg_vol": 8989599.0,
+        "vol_ratio": 1.59,
+        "cur_vol": 18877407.0,
+        "avg_vol": 11909742.0,
         "breakout": false,
         "cur_price": 0.01,
         "prev_high": 0.01,
-        "reason": "量能0.9x 未突破 cur=0 prev_high=0",
+        "reason": "量能1.6x 未突破 cur=0 prev_high=0",
         "entry_ref": 0.01,
         "sl_ref": 0.01
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 17.1,
-        "smart_long": 59.7,
-        "short_building": true,
-        "reason": "散户空头17.1%(阈值>45.0%) 大户多头59.7%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 17.0,
+        "smart_long": 60.2,
+        "short_building": false,
+        "reason": "散户空头17.0%(阈值>45.0%) 大户多头60.2%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 5.33,
         "range_hi": 0.01,
         "range_lo": 0.01,
-        "oi_chg_pct": -1.191,
+        "oi_chg_pct": -1.03,
         "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间5.33%(阈值<1.5%) 非横盘❌ OI-1.19% 下跌❌"
+        "reason": "4H区间5.33%(阈值<1.5%) 非横盘❌ OI-1.03% 下跌❌"
       }
     },
     "BZUSDT": {
@@ -1793,67 +1793,67 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 3.56,
-        "cur_vol": 320374.0,
-        "avg_vol": 90055.0,
+        "vol_ratio": 1.13,
+        "cur_vol": 325947.0,
+        "avg_vol": 289527.0,
         "breakout": false,
-        "cur_price": 98.91,
-        "prev_high": 100.97,
-        "reason": "量能3.6x 未突破 cur=99 prev_high=101",
-        "entry_ref": 98.42,
-        "sl_ref": 97.8
+        "cur_price": 97.36,
+        "prev_high": 100.86,
+        "reason": "量能1.1x 未突破 cur=97 prev_high=101",
+        "entry_ref": 96.87,
+        "sl_ref": 95.87
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 71.7,
-        "smart_long": 34.2,
+        "retail_short": 71.3,
+        "smart_long": 31.1,
         "short_building": true,
-        "reason": "散户空头71.7%(阈值>45.0%) 大户多头34.2%(阈值>58.0%) 空头堆积中🔴"
+        "reason": "散户空头71.3%(阈值>45.0%) 大户多头31.1%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 2.11,
         "range_hi": 100.98,
         "range_lo": 98.89,
-        "oi_chg_pct": 0.553,
+        "oi_chg_pct": 0.268,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间2.11%(阈值<1.5%) 非横盘❌ OI+0.55% 稳定✅"
+        "reason": "4H区间2.11%(阈值<1.5%) 非横盘❌ OI+0.27% 稳定✅"
       }
     },
     "SPCXUSDT": {
       "symbol": "SPCXUSDT",
       "level": "NORMAL",
-      "score": 0,
+      "score": 1,
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.41,
-        "cur_vol": 22132.0,
-        "avg_vol": 15647.0,
+        "vol_ratio": 1.28,
+        "cur_vol": 61583.0,
+        "avg_vol": 48003.0,
         "breakout": false,
-        "cur_price": 153.59,
-        "prev_high": 153.87,
-        "reason": "量能1.4x 未突破 cur=154 prev_high=154",
-        "entry_ref": 152.82,
-        "sl_ref": 151.79
+        "cur_price": 153.73,
+        "prev_high": 153.9,
+        "reason": "量能1.3x 未突破 cur=154 prev_high=154",
+        "entry_ref": 152.96,
+        "sl_ref": 151.85
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 35.7,
-        "smart_long": 57.3,
-        "short_building": false,
-        "reason": "散户空头35.7%(阈值>45.0%) 大户多头57.3%(阈值>58.0%) 空头平稳"
+        "retail_short": 35.5,
+        "smart_long": 57.2,
+        "short_building": true,
+        "reason": "散户空头35.5%(阈值>45.0%) 大户多头57.2%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
-        "ok": false,
+        "ok": true,
         "range_pct": 1.06,
         "range_hi": 153.87,
         "range_lo": 152.25,
-        "oi_chg_pct": -0.512,
-        "oi_stable": false,
+        "oi_chg_pct": -0.007,
+        "oi_stable": true,
         "is_chop": true,
-        "reason": "4H区间1.06%(阈值<1.5%) 横盘✅ OI-0.51% 下跌❌"
+        "reason": "4H区间1.06%(阈值<1.5%) 横盘✅ OI-0.01% 稳定✅"
       }
     },
     "MUUSDT": {
@@ -1863,32 +1863,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 2.88,
-        "cur_vol": 8848.0,
-        "avg_vol": 3067.0,
-        "breakout": true,
-        "cur_price": 1016.27,
-        "prev_high": 1013.48,
-        "reason": "量能2.9x 突破前高 cur=1016 prev_high=1013",
-        "entry_ref": 1011.19,
-        "sl_ref": 1001.33
+        "vol_ratio": 1.03,
+        "cur_vol": 12242.0,
+        "avg_vol": 11888.0,
+        "breakout": false,
+        "cur_price": 1024.36,
+        "prev_high": 1028.69,
+        "reason": "量能1.0x 未突破 cur=1024 prev_high=1029",
+        "entry_ref": 1019.24,
+        "sl_ref": 1012.69
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 38.4,
-        "smart_long": 67.4,
+        "retail_short": 39.5,
+        "smart_long": 67.5,
         "short_building": true,
-        "reason": "散户空头38.4%(阈值>45.0%) 大户多头67.4%(阈值>58.0%) 空头堆积中🔴"
+        "reason": "散户空头39.5%(阈值>45.0%) 大户多头67.5%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 1.79,
         "range_hi": 1017.44,
         "range_lo": 999.59,
-        "oi_chg_pct": 1.518,
+        "oi_chg_pct": 0.245,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间1.79%(阈值<1.5%) 非横盘❌ OI+1.52% 稳定✅"
+        "reason": "4H区间1.79%(阈值<1.5%) 非横盘❌ OI+0.25% 稳定✅"
       }
     },
     "SNXXUSDT": {
@@ -1898,102 +1898,102 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 2.71,
-        "cur_vol": 273689.0,
-        "avg_vol": 100980.0,
+        "vol_ratio": 1.04,
+        "cur_vol": 462534.0,
+        "avg_vol": 446585.0,
         "breakout": false,
-        "cur_price": 17.97,
-        "prev_high": 18.0,
-        "reason": "量能2.7x 未突破 cur=18 prev_high=18",
-        "entry_ref": 17.88,
-        "sl_ref": 17.69
+        "cur_price": 18.11,
+        "prev_high": 18.43,
+        "reason": "量能1.0x 未突破 cur=18 prev_high=18",
+        "entry_ref": 18.02,
+        "sl_ref": 17.9
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 59.9,
-        "smart_long": 34.8,
-        "short_building": true,
-        "reason": "散户空头59.9%(阈值>45.0%) 大户多头34.8%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 54.9,
+        "smart_long": 35.7,
+        "short_building": false,
+        "reason": "散户空头54.9%(阈值>45.0%) 大户多头35.7%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 5.94,
         "range_hi": 18.0,
         "range_lo": 16.99,
-        "oi_chg_pct": 1.381,
-        "oi_stable": true,
+        "oi_chg_pct": -2.088,
+        "oi_stable": false,
         "is_chop": false,
-        "reason": "4H区间5.94%(阈值<1.5%) 非横盘❌ OI+1.38% 稳定✅"
+        "reason": "4H区间5.94%(阈值<1.5%) 非横盘❌ OI-2.09% 下跌❌"
       }
     },
     "SKHYUSDT": {
       "symbol": "SKHYUSDT",
       "level": "NORMAL",
-      "score": 1,
+      "score": 0,
       "triggered": false,
       "c1_volume": {
-        "ok": true,
-        "vol_ratio": 3.88,
-        "cur_vol": 37678.0,
-        "avg_vol": 9702.0,
-        "breakout": true,
-        "cur_price": 188.14,
-        "prev_high": 187.97,
-        "reason": "量能3.9x 突破前高 cur=188 prev_high=188",
-        "entry_ref": 187.2,
-        "sl_ref": 185.4
+        "ok": false,
+        "vol_ratio": 1.37,
+        "cur_vol": 69257.0,
+        "avg_vol": 50486.0,
+        "breakout": false,
+        "cur_price": 187.98,
+        "prev_high": 189.5,
+        "reason": "量能1.4x 未突破 cur=188 prev_high=190",
+        "entry_ref": 187.04,
+        "sl_ref": 185.75
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 54.9,
-        "smart_long": 37.2,
-        "short_building": true,
-        "reason": "散户空头54.9%(阈值>45.0%) 大户多头37.2%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 55.0,
+        "smart_long": 36.9,
+        "short_building": false,
+        "reason": "散户空头55.0%(阈值>45.0%) 大户多头36.9%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 1.79,
         "range_hi": 188.52,
         "range_lo": 185.21,
-        "oi_chg_pct": 0.597,
+        "oi_chg_pct": 1.379,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间1.79%(阈值<1.5%) 非横盘❌ OI+0.60% 稳定✅"
+        "reason": "4H区间1.79%(阈值<1.5%) 非横盘❌ OI+1.38% 稳定✅"
       }
     },
     "DRAMUSDT": {
       "symbol": "DRAMUSDT",
       "level": "NORMAL",
-      "score": 1,
+      "score": 0,
       "triggered": false,
       "c1_volume": {
-        "ok": true,
-        "vol_ratio": 4.28,
-        "cur_vol": 40146.0,
-        "avg_vol": 9369.0,
-        "breakout": true,
-        "cur_price": 59.91,
-        "prev_high": 59.88,
-        "reason": "量能4.3x 突破前高 cur=60 prev_high=60",
-        "entry_ref": 59.61,
-        "sl_ref": 59.06
+        "ok": false,
+        "vol_ratio": 1.16,
+        "cur_vol": 55561.0,
+        "avg_vol": 48101.0,
+        "breakout": false,
+        "cur_price": 60.28,
+        "prev_high": 60.54,
+        "reason": "量能1.2x 未突破 cur=60 prev_high=61",
+        "entry_ref": 59.98,
+        "sl_ref": 59.61
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 35.4,
-        "smart_long": 79.1,
+        "retail_short": 35.9,
+        "smart_long": 78.8,
         "short_building": false,
-        "reason": "散户空头35.4%(阈值>45.0%) 大户多头79.1%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头35.9%(阈值>45.0%) 大户多头78.8%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 2.04,
         "range_hi": 60.06,
         "range_lo": 58.86,
-        "oi_chg_pct": 0.782,
+        "oi_chg_pct": 4.535,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间2.04%(阈值<1.5%) 非横盘❌ OI+0.78% 稳定✅"
+        "reason": "4H区间2.04%(阈值<1.5%) 非横盘❌ OI+4.53% 稳定✅"
       }
     },
     "SOXSUSDT": {
@@ -2003,32 +2003,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 3.72,
-        "cur_vol": 147332.0,
-        "avg_vol": 39606.0,
+        "vol_ratio": 1.0,
+        "cur_vol": 118965.0,
+        "avg_vol": 119166.0,
         "breakout": false,
-        "cur_price": 41.27,
-        "prev_high": 42.36,
-        "reason": "量能3.7x 未突破 cur=41 prev_high=42",
-        "entry_ref": 41.06,
-        "sl_ref": 40.29
+        "cur_price": 40.41,
+        "prev_high": 42.25,
+        "reason": "量能1.0x 未突破 cur=40 prev_high=42",
+        "entry_ref": 40.21,
+        "sl_ref": 39.4
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 32.2,
-        "smart_long": 45.5,
-        "short_building": true,
-        "reason": "散户空头32.2%(阈值>45.0%) 大户多头45.5%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 31.4,
+        "smart_long": 47.1,
+        "short_building": false,
+        "reason": "散户空头31.4%(阈值>45.0%) 大户多头47.1%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 5.35,
         "range_hi": 42.92,
         "range_lo": 40.74,
-        "oi_chg_pct": 4.053,
+        "oi_chg_pct": 4.901,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间5.35%(阈值<1.5%) 非横盘❌ OI+4.05% 稳定✅"
+        "reason": "4H区间5.35%(阈值<1.5%) 非横盘❌ OI+4.90% 稳定✅"
       }
     },
     "MRVLUSDT": {
@@ -2038,32 +2038,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.59,
-        "cur_vol": 4432.0,
-        "avg_vol": 2795.0,
+        "vol_ratio": 4.69,
+        "cur_vol": 31211.0,
+        "avg_vol": 6658.0,
         "breakout": false,
-        "cur_price": 244.77,
-        "prev_high": 245.79,
-        "reason": "量能1.6x 未突破 cur=245 prev_high=246",
-        "entry_ref": 243.55,
-        "sl_ref": 241.62
+        "cur_price": 247.07,
+        "prev_high": 247.69,
+        "reason": "量能4.7x 未突破 cur=247 prev_high=248",
+        "entry_ref": 245.83,
+        "sl_ref": 244.25
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 33.3,
-        "smart_long": 60.1,
+        "retail_short": 36.0,
+        "smart_long": 61.2,
         "short_building": true,
-        "reason": "散户空头33.3%(阈值>45.0%) 大户多头60.1%(阈值>58.0%) 空头堆积中🔴"
+        "reason": "散户空头36.0%(阈值>45.0%) 大户多头61.2%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 2.43,
         "range_hi": 245.9,
         "range_lo": 240.07,
-        "oi_chg_pct": -0.988,
-        "oi_stable": false,
+        "oi_chg_pct": 9.336,
+        "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间2.43%(阈值<1.5%) 非横盘❌ OI-0.99% 下跌❌"
+        "reason": "4H区间2.43%(阈值<1.5%) 非横盘❌ OI+9.34% 稳定✅"
       }
     },
     "GOOGLUSDT": {
@@ -2073,67 +2073,67 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.45,
-        "cur_vol": 1602.0,
-        "avg_vol": 1104.0,
-        "breakout": true,
-        "cur_price": 351.18,
-        "prev_high": 351.14,
-        "reason": "量能1.5x 突破前高 cur=351 prev_high=351",
-        "entry_ref": 349.42,
-        "sl_ref": 347.05
+        "vol_ratio": 1.73,
+        "cur_vol": 5783.0,
+        "avg_vol": 3339.0,
+        "breakout": false,
+        "cur_price": 351.9,
+        "prev_high": 352.14,
+        "reason": "量能1.7x 未突破 cur=352 prev_high=352",
+        "entry_ref": 350.14,
+        "sl_ref": 347.34
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 20.1,
-        "smart_long": 84.4,
-        "short_building": true,
-        "reason": "散户空头20.1%(阈值>45.0%) 大户多头84.4%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 19.8,
+        "smart_long": 84.5,
+        "short_building": false,
+        "reason": "散户空头19.8%(阈值>45.0%) 大户多头84.5%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": true,
         "range_pct": 1.17,
         "range_hi": 353.2,
         "range_lo": 349.12,
-        "oi_chg_pct": -0.015,
+        "oi_chg_pct": 0.58,
         "oi_stable": true,
         "is_chop": true,
-        "reason": "4H区间1.17%(阈值<1.5%) 横盘✅ OI-0.02% 稳定✅"
+        "reason": "4H区间1.17%(阈值<1.5%) 横盘✅ OI+0.58% 稳定✅"
       }
     },
     "AAPLUSDT": {
       "symbol": "AAPLUSDT",
-      "level": "WATCH_PARTIAL",
-      "score": 2,
+      "level": "NORMAL",
+      "score": 1,
       "triggered": false,
       "c1_volume": {
-        "ok": true,
-        "vol_ratio": 3.06,
-        "cur_vol": 2159.0,
-        "avg_vol": 706.0,
-        "breakout": true,
-        "cur_price": 335.46,
-        "prev_high": 335.43,
-        "reason": "量能3.1x 突破前高 cur=335 prev_high=335",
-        "entry_ref": 333.78,
-        "sl_ref": 331.56
+        "ok": false,
+        "vol_ratio": 0.77,
+        "cur_vol": 1422.0,
+        "avg_vol": 1841.0,
+        "breakout": false,
+        "cur_price": 335.08,
+        "prev_high": 335.92,
+        "reason": "量能0.8x 未突破 cur=335 prev_high=336",
+        "entry_ref": 333.4,
+        "sl_ref": 331.28
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 48.9,
-        "smart_long": 49.6,
-        "short_building": true,
-        "reason": "散户空头48.9%(阈值>45.0%) 大户多头49.6%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 48.6,
+        "smart_long": 49.8,
+        "short_building": false,
+        "reason": "散户空头48.6%(阈值>45.0%) 大户多头49.8%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": true,
         "range_pct": 0.7,
         "range_hi": 335.92,
         "range_lo": 333.59,
-        "oi_chg_pct": 0.844,
+        "oi_chg_pct": -0.121,
         "oi_stable": true,
         "is_chop": true,
-        "reason": "4H区间0.70%(阈值<1.5%) 横盘✅ OI+0.84% 稳定✅"
+        "reason": "4H区间0.70%(阈值<1.5%) 横盘✅ OI-0.12% 稳定✅"
       }
     },
     "METAUSDT": {
@@ -2143,32 +2143,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.62,
-        "cur_vol": 252.0,
-        "avg_vol": 410.0,
-        "breakout": true,
-        "cur_price": 673.0,
-        "prev_high": 672.41,
-        "reason": "量能0.6x 突破前高 cur=673 prev_high=672",
-        "entry_ref": 669.63,
-        "sl_ref": 664.87
+        "vol_ratio": 2.14,
+        "cur_vol": 2850.0,
+        "avg_vol": 1333.0,
+        "breakout": false,
+        "cur_price": 675.08,
+        "prev_high": 676.51,
+        "reason": "量能2.1x 未突破 cur=675 prev_high=677",
+        "entry_ref": 671.7,
+        "sl_ref": 666.55
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 57.0,
-        "smart_long": 52.2,
+        "retail_short": 57.7,
+        "smart_long": 52.9,
         "short_building": false,
-        "reason": "散户空头57.0%(阈值>45.0%) 大户多头52.2%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头57.7%(阈值>45.0%) 大户多头52.9%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": true,
         "range_pct": 0.78,
         "range_hi": 673.23,
         "range_lo": 668.0,
-        "oi_chg_pct": 0.008,
+        "oi_chg_pct": -0.017,
         "oi_stable": true,
         "is_chop": true,
-        "reason": "4H区间0.78%(阈值<1.5%) 横盘✅ OI+0.01% 稳定✅"
+        "reason": "4H区间0.78%(阈值<1.5%) 横盘✅ OI-0.02% 稳定✅"
       }
     },
     "TQQQUSDT": {
@@ -2178,32 +2178,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.26,
-        "cur_vol": 8574.0,
-        "avg_vol": 6806.0,
-        "breakout": true,
-        "cur_price": 73.13,
-        "prev_high": 73.1,
-        "reason": "量能1.3x 突破前高 cur=73 prev_high=73",
-        "entry_ref": 72.76,
-        "sl_ref": 72.17
+        "vol_ratio": 1.15,
+        "cur_vol": 20560.0,
+        "avg_vol": 17901.0,
+        "breakout": false,
+        "cur_price": 73.71,
+        "prev_high": 73.87,
+        "reason": "量能1.1x 未突破 cur=74 prev_high=74",
+        "entry_ref": 73.34,
+        "sl_ref": 72.89
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 31.9,
-        "smart_long": 42.9,
-        "short_building": false,
-        "reason": "散户空头31.9%(阈值>45.0%) 大户多头42.9%(阈值>58.0%) 空头平稳"
+        "retail_short": 31.8,
+        "smart_long": 41.7,
+        "short_building": true,
+        "reason": "散户空头31.8%(阈值>45.0%) 大户多头41.7%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 1.78,
         "range_hi": 73.14,
         "range_lo": 71.86,
-        "oi_chg_pct": 5.323,
+        "oi_chg_pct": 3.341,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间1.78%(阈值<1.5%) 非横盘❌ OI+5.32% 稳定✅"
+        "reason": "4H区间1.78%(阈值<1.5%) 非横盘❌ OI+3.34% 稳定✅"
       }
     },
     "SPYUSDT": {
@@ -2213,32 +2213,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 0.91,
-        "cur_vol": 2447.0,
-        "avg_vol": 2686.0,
+        "vol_ratio": 1.18,
+        "cur_vol": 4204.0,
+        "avg_vol": 3569.0,
         "breakout": false,
-        "cur_price": 764.93,
-        "prev_high": 765.0,
-        "reason": "量能0.9x 未突破 cur=765 prev_high=765",
-        "entry_ref": 761.11,
-        "sl_ref": 756.24
+        "cur_price": 765.24,
+        "prev_high": 765.31,
+        "reason": "量能1.2x 未突破 cur=765 prev_high=765",
+        "entry_ref": 761.41,
+        "sl_ref": 756.73
       },
       "c2_lsr": {
         "ok": true,
         "retail_short": 45.9,
-        "smart_long": 63.4,
+        "smart_long": 63.9,
         "short_building": false,
-        "reason": "散户空头45.9%(阈值>45.0%) 大户多头63.4%(阈值>58.0%) 空头平稳"
+        "reason": "散户空头45.9%(阈值>45.0%) 大户多头63.9%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": true,
         "range_pct": 0.41,
         "range_hi": 765.04,
         "range_lo": 761.92,
-        "oi_chg_pct": 1.281,
+        "oi_chg_pct": 1.986,
         "oi_stable": true,
         "is_chop": true,
-        "reason": "4H区间0.41%(阈值<1.5%) 横盘✅ OI+1.28% 稳定✅"
+        "reason": "4H区间0.41%(阈值<1.5%) 横盘✅ OI+1.99% 稳定✅"
       }
     },
     "MSFTUSDT": {
@@ -2248,32 +2248,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.47,
-        "cur_vol": 406.0,
-        "avg_vol": 276.0,
+        "vol_ratio": 0.37,
+        "cur_vol": 267.0,
+        "avg_vol": 715.0,
         "breakout": false,
-        "cur_price": 496.64,
+        "cur_price": 495.47,
         "prev_high": 497.13,
-        "reason": "量能1.5x 未突破 cur=497 prev_high=497",
-        "entry_ref": 494.16,
-        "sl_ref": 491.0
+        "reason": "量能0.4x 未突破 cur=495 prev_high=497",
+        "entry_ref": 492.99,
+        "sl_ref": 489.74
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 53.5,
-        "smart_long": 35.2,
-        "short_building": true,
-        "reason": "散户空头53.5%(阈值>45.0%) 大户多头35.2%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 53.9,
+        "smart_long": 35.7,
+        "short_building": false,
+        "reason": "散户空头53.9%(阈值>45.0%) 大户多头35.7%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": true,
         "range_pct": 0.67,
         "range_hi": 497.13,
         "range_lo": 493.84,
-        "oi_chg_pct": 0.273,
+        "oi_chg_pct": -0.371,
         "oi_stable": true,
         "is_chop": true,
-        "reason": "4H区间0.67%(阈值<1.5%) 横盘✅ OI+0.27% 稳定✅"
+        "reason": "4H区间0.67%(阈值<1.5%) 横盘✅ OI-0.37% 稳定✅"
       }
     },
     "PLTRUSDT": {
@@ -2283,32 +2283,32 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 4.24,
-        "cur_vol": 2859.0,
-        "avg_vol": 674.0,
+        "vol_ratio": 0.41,
+        "cur_vol": 822.0,
+        "avg_vol": 2016.0,
         "breakout": false,
-        "cur_price": 177.89,
-        "prev_high": 178.04,
-        "reason": "量能4.2x 未突破 cur=178 prev_high=178",
-        "entry_ref": 177.0,
-        "sl_ref": 175.33
+        "cur_price": 178.0,
+        "prev_high": 178.29,
+        "reason": "量能0.4x 未突破 cur=178 prev_high=178",
+        "entry_ref": 177.11,
+        "sl_ref": 176.0
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 48.4,
-        "smart_long": 34.4,
-        "short_building": false,
-        "reason": "散户空头48.4%(阈值>45.0%) 大户多头34.4%(阈值>58.0%) 空头平稳"
+        "retail_short": 48.5,
+        "smart_long": 34.5,
+        "short_building": true,
+        "reason": "散户空头48.5%(阈值>45.0%) 大户多头34.5%(阈值>58.0%) 空头堆积中🔴"
       },
       "c3_spring": {
         "ok": true,
         "range_pct": 0.97,
         "range_hi": 178.25,
         "range_lo": 176.53,
-        "oi_chg_pct": 0.124,
+        "oi_chg_pct": 0.157,
         "oi_stable": true,
         "is_chop": true,
-        "reason": "4H区间0.97%(阈值<1.5%) 横盘✅ OI+0.12% 稳定✅"
+        "reason": "4H区间0.97%(阈值<1.5%) 横盘✅ OI+0.16% 稳定✅"
       }
     },
     "COINUSDT": {
@@ -2318,65 +2318,55 @@
       "triggered": false,
       "c1_volume": {
         "ok": false,
-        "vol_ratio": 1.03,
-        "cur_vol": 3396.0,
-        "avg_vol": 3304.0,
+        "vol_ratio": 1.74,
+        "cur_vol": 12225.0,
+        "avg_vol": 7037.0,
         "breakout": false,
-        "cur_price": 195.42,
-        "prev_high": 195.92,
-        "reason": "量能1.0x 未突破 cur=195 prev_high=196",
-        "entry_ref": 194.44,
-        "sl_ref": 192.95
+        "cur_price": 194.3,
+        "prev_high": 197.75,
+        "reason": "量能1.7x 未突破 cur=194 prev_high=198",
+        "entry_ref": 193.33,
+        "sl_ref": 192.08
       },
       "c2_lsr": {
         "ok": false,
-        "retail_short": 36.7,
-        "smart_long": 74.1,
-        "short_building": true,
-        "reason": "散户空头36.7%(阈值>45.0%) 大户多头74.1%(阈值>58.0%) 空头堆积中🔴"
+        "retail_short": 35.6,
+        "smart_long": 74.3,
+        "short_building": false,
+        "reason": "散户空头35.6%(阈值>45.0%) 大户多头74.3%(阈值>58.0%) 空头平稳"
       },
       "c3_spring": {
         "ok": false,
         "range_pct": 2.02,
         "range_hi": 195.93,
         "range_lo": 192.05,
-        "oi_chg_pct": 2.558,
+        "oi_chg_pct": 3.207,
         "oi_stable": true,
         "is_chop": false,
-        "reason": "4H区间2.02%(阈值<1.5%) 非横盘❌ OI+2.56% 稳定✅"
+        "reason": "4H区间2.02%(阈值<1.5%) 非横盘❌ OI+3.21% 稳定✅"
       }
     }
   },
   "alerts": [
     {
       "symbol": "EWYUSDT",
-      "level": "BREAKOUT_WATCH",
-      "score": 3,
-      "entry_ref": 181.76,
-      "sl_ref": 179.77,
-      "c1": "量能8.5x 突破前高 cur=183 prev_high=182",
-      "c2": "散户空头50.4%(阈值>45.0%) 大户多头67.6%(阈值>58.0%) 空头堆积中🔴",
-      "c3": "4H区间1.45%(阈值<1.5%) 横盘✅ OI+3.48% 稳定✅"
-    },
-    {
-      "symbol": "AAPLUSDT",
       "level": "WATCH_PARTIAL",
       "score": 2,
-      "entry_ref": 333.78,
-      "sl_ref": 331.56,
-      "c1": "量能3.1x 突破前高 cur=335 prev_high=335",
-      "c2": "散户空头48.9%(阈值>45.0%) 大户多头49.6%(阈值>58.0%) 空头堆积中🔴",
-      "c3": "4H区间0.70%(阈值<1.5%) 横盘✅ OI+0.84% 稳定✅"
+      "entry_ref": 182.24,
+      "sl_ref": 180.8,
+      "c1": "量能1.0x 未突破 cur=183 prev_high=184",
+      "c2": "散户空头51.3%(阈值>45.0%) 大户多头67.5%(阈值>58.0%) 空头平稳",
+      "c3": "4H区间1.45%(阈值<1.5%) 横盘✅ OI+0.74% 稳定✅"
     },
     {
       "symbol": "SPYUSDT",
       "level": "WATCH_PARTIAL",
       "score": 2,
-      "entry_ref": 761.11,
-      "sl_ref": 756.24,
-      "c1": "量能0.9x 未突破 cur=765 prev_high=765",
-      "c2": "散户空头45.9%(阈值>45.0%) 大户多头63.4%(阈值>58.0%) 空头平稳",
-      "c3": "4H区间0.41%(阈值<1.5%) 横盘✅ OI+1.28% 稳定✅"
+      "entry_ref": 761.41,
+      "sl_ref": 756.73,
+      "c1": "量能1.2x 未突破 cur=765 prev_high=765",
+      "c2": "散户空头45.9%(阈值>45.0%) 大户多头63.9%(阈值>58.0%) 空头平稳",
+      "c3": "4H区间0.41%(阈值<1.5%) 横盘✅ OI+1.99% 稳定✅"
     }
   ]
 }
