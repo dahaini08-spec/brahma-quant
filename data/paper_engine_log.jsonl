@@ -447,3 +447,5 @@
 {"ts": 1789911481, "signals_in": 0, "opened": 0, "settled": 0, "elapsed_s": 1.4, "os": "v7"}
 {"ts": 1789913281, "signals_in": 0, "opened": 0, "settled": 0, "elapsed_s": 1.5, "os": "v7"}
 {"ts": 1789916881, "signals_in": 0, "opened": 0, "settled": 0, "elapsed_s": 0.9, "os": "v7"}
+{"ts": 1789920480, "signals_in": 2, "opened": 0, "settled": 0, "elapsed_s": 0.8, "os": "v7"}
+{"ts": 1789947480, "signals_in": 3, "opened": 0, "settled": 0, "elapsed_s": 0.8, "os": "v7"}

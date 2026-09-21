@@ -126,9 +126,9 @@ def apply_causal_factors(
 ) -> CausalFactorResult:
     """
     封装 counterfactual_score_check。
-    score < 100 直接跳过（与原逻辑一致）。
+    [9.20 苏摩111] score<60才跳过（从100降到60）
     """
-    if score < 100:
+    if score < 60:
         return CausalFactorResult(skipped=True)
 
     try:

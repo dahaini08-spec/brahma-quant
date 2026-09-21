@@ -153,7 +153,10 @@ def select(short_analysis: dict, long_analysis: dict, regime: dict) -> dict:
     #       BEAR_EARLY_LONG  n=225,623 WR=49.9% avgPnL=-0.139
     # ⚠️  BEAR_RECOVERY_LONG WR=72.5% avgPnL=+0.255（反直觉alpha，不封禁！）
     # 封禁逻辑：精确匹配 BEAR_TREND/BEAR_EARLY，BEAR_RECOVERY不封禁
-    _bear_block = primary_regime in ('BEAR_TREND', 'BEAR_EARLY') or mult_long == 0.0
+    # [9.20 苏摩111] 不封禁任何体制×方向，改为降仓
+    _bear_block = False  # 不再封禁BEAR_TREND/BEAR_EARLY做多
+    if mult_long == 0.0:
+        _bear_block = True  # position_mult=0时仍封禁（配置层面）
     if _bear_block:
         long_ok = False
         long_w  = 0.0

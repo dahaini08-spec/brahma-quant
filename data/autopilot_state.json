@@ -1,25 +1,50 @@
 {
-  "ts": 1789919736.4535978,
+  "ts": 1789948920.356306,
   "version": "1.0",
   "market_state": {
     "EPIC": {
-      "price": 0.5518,
+      "price": 0.5432,
       "regime": "CHOP_MID",
-      "score": 90.0
+      "score": 87.6
     },
     "BERA": {
-      "price": 0.2116,
+      "price": 0.2133,
       "regime": "CHOP_MID",
-      "score": 52.5
+      "score": 96.0
+    },
+    "KORU": {
+      "price": 20.25,
+      "regime": "CHOP_MID",
+      "score": 19.2
+    },
+    "ZAMA": {
+      "price": 0.08404,
+      "regime": "CHOP_MID",
+      "score": -9.2
+    },
+    "MYX": {
+      "price": 0.07924,
+      "regime": "CHOP_MID",
+      "score": 47.0
+    },
+    "BTC": {
+      "price": 81321.8,
+      "regime": "CHOP_MID",
+      "score": 93.7
+    },
+    "ETH": {
+      "price": 2650.64,
+      "regime": "CHOP_MID",
+      "score": 45.6
     }
   },
   "active_signals": [],
   "positions": [],
   "last_decision": {
-    "ts": 1789919736.4535983,
-    "symbol": "BERAUSDT",
+    "ts": 1789948920.3563063,
+    "symbol": "ETHUSDT",
     "action": "SKIP",
-    "score": 52.5,
+    "score": 45.6,
     "signal_dir": "LONG"
   },
   "data_health": {

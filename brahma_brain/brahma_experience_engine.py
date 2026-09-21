@@ -1380,7 +1380,7 @@ FAILURE_DIMS = {
     'bear_trend_long':  lambda r: 'BEAR_TREND' in r.get('regime','') and r.get('dir') == 'LONG',
     'chop_long':        lambda r: 'CHOP' in r.get('regime','') and r.get('dir') == 'LONG',
     'bull_trend_short': lambda r: 'BULL_TREND' in r.get('regime','') and r.get('dir') == 'SHORT',
-    'score_below_120':  lambda r: r.get('score', 0) < 120,
+    'score_below_80':   lambda r: r.get('score', 0) < 80,  # [9.20] 从120降到80
     'high_atr_low_rr':  lambda r: r.get('atr_pct', 0) > 3.0,
 }
 

@@ -1,0 +1,11 @@
+{
+  "BTCUSDT": {
+    "symbol": "BTCUSDT",
+    "signal_dir": "LONG",
+    "score": 93.7,
+    "regime": "CHOP_MID",
+    "ts": 1789948919.1821032,
+    "ts_iso": "2026-09-21T00:01:59.182103+00:00",
+    "expires_at": 1789963319.1821122
+  }
+}

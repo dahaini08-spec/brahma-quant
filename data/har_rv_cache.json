@@ -2847,25 +2847,25 @@
     }
   },
   "BTC": {
-    "ts": 1789919752.61562,
+    "ts": 1789948905.5296423,
     "data": {
-      "rv_1d": 0.01303,
-      "rv_5d": 0.03654,
-      "rv_22d": 0.03958,
-      "rv_forecast": 0.02853,
+      "rv_1d": 0.01399,
+      "rv_5d": 0.0146,
+      "rv_22d": 0.03936,
+      "rv_forecast": 0.02113,
       "rv_percentile": 100,
-      "regime_vol": "HIGH",
-      "score_adj": -3,
+      "regime_vol": "MEDIUM",
+      "score_adj": 0,
       "p_up_proxy": 0.45
     }
   },
   "ETH": {
-    "ts": 1789919152.5515556,
+    "ts": 1789948916.919712,
     "data": {
-      "rv_1d": 0.02216,
-      "rv_5d": 0.04321,
-      "rv_22d": 0.05016,
-      "rv_forecast": 0.03702,
+      "rv_1d": 0.02626,
+      "rv_5d": 0.02744,
+      "rv_22d": 0.05015,
+      "rv_forecast": 0.03293,
       "rv_percentile": 100,
       "regime_vol": "HIGH",
       "score_adj": -3,
@@ -2925,12 +2925,12 @@
     }
   },
   "SOXL": {
-    "ts": 1789896264.6099527,
+    "ts": 1789928655.4209547,
     "data": {
-      "rv_1d": 0.02383,
-      "rv_5d": 0.06689,
-      "rv_22d": 0.09398,
-      "rv_forecast": 0.05816,
+      "rv_1d": 0.02394,
+      "rv_5d": 0.05528,
+      "rv_22d": 0.09331,
+      "rv_forecast": 0.05395,
       "rv_percentile": 100,
       "regime_vol": "EXTREME",
       "score_adj": -5,
@@ -3016,12 +3016,12 @@
     }
   },
   "XAU": {
-    "ts": 1789842259.2425299,
+    "ts": 1789939458.6535842,
     "data": {
-      "rv_1d": 0.00209,
-      "rv_5d": 0.0139,
-      "rv_22d": 0.02845,
-      "rv_forecast": 0.01366,
+      "rv_1d": 0.00188,
+      "rv_5d": 0.0047,
+      "rv_22d": 0.02582,
+      "rv_forecast": 0.00963,
       "rv_percentile": 100,
       "regime_vol": "LOW",
       "score_adj": 3,
@@ -3120,26 +3120,65 @@
     }
   },
   "EPIC": {
-    "ts": 1789919732.1315975,
+    "ts": 1789920306.7540138,
     "data": {
-      "rv_1d": 0.18383,
-      "rv_5d": 0.25387,
-      "rv_22d": 0.26415,
-      "rv_forecast": 0.22726,
-      "rv_percentile": 90,
+      "rv_1d": 0.18134,
+      "rv_5d": 0.25663,
+      "rv_22d": 0.26509,
+      "rv_forecast": 0.22761,
+      "rv_percentile": 100,
       "regime_vol": "EXTREME",
       "score_adj": -5,
       "p_up_proxy": 0.45
     }
   },
   "BERA": {
-    "ts": 1789919735.9610827,
+    "ts": 1789920606.9031827,
     "data": {
-      "rv_1d": 0.08566,
-      "rv_5d": 0.10057,
-      "rv_22d": 0.13101,
-      "rv_forecast": 0.10196,
+      "rv_1d": 0.0833,
+      "rv_5d": 0.10031,
+      "rv_22d": 0.12945,
+      "rv_forecast": 0.10061,
       "rv_percentile": 90,
+      "regime_vol": "EXTREME",
+      "score_adj": -5,
+      "p_up_proxy": 0.45
+    }
+  },
+  "KORU": {
+    "ts": 1789947610.4137976,
+    "data": {
+      "rv_1d": 0.02921,
+      "rv_5d": 0.04731,
+      "rv_22d": 0.11294,
+      "rv_forecast": 0.05851,
+      "rv_percentile": 100,
+      "regime_vol": "EXTREME",
+      "score_adj": -5,
+      "p_up_proxy": 0.45
+    }
+  },
+  "ZAMA": {
+    "ts": 1789947614.9504101,
+    "data": {
+      "rv_1d": 0.20089,
+      "rv_5d": 0.24318,
+      "rv_22d": 0.25593,
+      "rv_forecast": 0.22719,
+      "rv_percentile": 80,
+      "regime_vol": "EXTREME",
+      "score_adj": -5,
+      "p_up_proxy": 0.45
+    }
+  },
+  "MYX": {
+    "ts": 1789947618.2030792,
+    "data": {
+      "rv_1d": 0.11817,
+      "rv_5d": 0.23613,
+      "rv_22d": 0.40861,
+      "rv_forecast": 0.23851,
+      "rv_percentile": 100,
       "regime_vol": "EXTREME",
       "score_adj": -5,
       "p_up_proxy": 0.45

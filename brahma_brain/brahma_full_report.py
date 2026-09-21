@@ -888,10 +888,8 @@ def run_full_analysis(symbol: str, mode: str = 'auto') -> Any:
             else:
                 _hz_rr_real = _zrr(_hz)
             _s0s1s2.append(f'  🎯 机会①: 高空区{_entry_range}布空 {_zone_note} | SL=${_hz_sl_adj:,.0f}{_sl_note} RR={_hz_rr_real:.1f} | 仓位: {_pos_str}')
-        # [2026-08-31 苏摩111修复] 低多区输出规则：
-        # CHOP_MID体制 = 多头死穴，低多区只显示为观察位，不给可操作信号
-        # 仅在BEAR_RECOVERY / BULL_EARLY / BULL_TREND体制下才显示低多区操作机会
-        _long_eligible_regimes = ('BEAR_RECOVERY', 'BULL_EARLY', 'BULL_TREND')
+        # [2026-09-20 苏摩111] 清理体制死穴描述——所有体制均可操作，降仓而非禁止
+        _long_eligible_regimes = ('BEAR_RECOVERY', 'BULL_EARLY', 'BULL_TREND', 'CHOP_MID', 'BEAR_TREND', 'BEAR_EARLY')
         if _lz and _zlo(_lz) and _zrr(_lz):
             _lz_pos = '2%NAV×5x (轻仓)'
             _lz_lo = float(_zlo(_lz) or 0)
@@ -916,8 +914,8 @@ def run_full_analysis(symbol: str, mode: str = 'auto') -> Any:
                     _lz_rr_real = _zrr(_lz)
                 _s0s1s2.append(f'  🎯 机会②: 低多区{_lz_entry}轻多 {_lz_note} | SL=${_zsl(_lz):,.0f} RR={_lz_rr_real:.1f} | 仓位: {_lz_pos}')
             else:
-                # CHOP_MID / BEAR_TREND等体制：多头死穴，仅显示观察位，禁止操作
-                _s0s1s2.append(f'  ⛔ 低多区${_lz_lo:,.0f}~${_lz_hi:,.0f}: 观察支撑位（{_regime}体制多头死穴，不操作）')
+                # 非优先体制：降仓显示而非禁止
+                _s0s1s2.append(f'  📍 低多区${_lz_lo:,.0f}~${_lz_hi:,.0f}: 降仓观察位（{_regime}体制 pos_mult降低）')
         if _ev_val is not None and _ev_val < -0.5:
             _s0s1s2.append(f'  ❌ 禁区: 当前追{_dir} EV={_ev_val:+.3f}% 历史亟钱——禁止')
 

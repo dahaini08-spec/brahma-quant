@@ -46,10 +46,10 @@ sys.path.insert(0, str(_SCRIPTS))
 _log = logging.getLogger('brahma.cpu')
 
 # ── 门控阈值（与MEMORY.md封印值对齐）────────────────────────────────
-SCORE_SKIP        = 130     # 低于此直接SKIP
-SCORE_WATCH       = 150     # 低于此WATCH（130-149）
+SCORE_SKIP        = 80      # [9.20 苏摩111] 从130降到80：纸面单门槛
+SCORE_WATCH       = 100     # [9.20 苏摩111] 从150降到100：WATCH门槛
+SCORE_EXECUTE     = 165     # 实盘执行门槛（不变）
 SCORE_ALERT       = 165     # 低于此ALERT（150-164）
-SCORE_EXECUTE     = 165     # ≥165且议会≥3票→EXECUTE
 
 COUNCIL_VETO_MIN  = 3       # 议会反对票数≥3 → 降为WATCH
 COUNCIL_SUPPORT_ALERT = 2   # 议会支持票数≥2 → ALERT
@@ -78,12 +78,10 @@ def _layer0_fast_reject(symbol: str, regime: str, signal_dir: str) -> tuple:
     纯规则快速否决。返回 (reject: bool, reason: str)
     0 tokens，<1ms
     """
-    # 体制死穴
-    DEAD_COMBOS = {
-        'BEAR_TREND':     ['LONG'],
-        'CHOP_MID':       ['LONG', 'SHORT'],
-        'BULL_TREND':     ['SHORT'],
-    }
+    # [9.20修复 苏摩111] DEAD_COMBOS已废弃 — 9.12改革已清理所有体制死穴
+    # 改为降仓信息(trader_brain.py L240+brahma_core.py L1721)，不再硬封禁
+    # CHOP_MID×LONG/SHORT 不再L0直接SKIP，而是进入4层漏斗正常评分
+    DEAD_COMBOS = {}  # 空=不封锁任何组合
     if regime in DEAD_COMBOS and signal_dir in DEAD_COMBOS[regime]:
         return True, f'体制死穴 {regime}×{signal_dir}'
 

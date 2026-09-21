@@ -1,187 +1,92 @@
 {
-  "_comment": "Phase 2 果蝇架构重构 2026-09-20 苏摩111: 体制激活→Hurst激活",
-  "_updated": "2026-09-20",
-  "_updated_by": "苏摩111",
-  "_design_principle": "Hurst-based sparse activation: TREND/MEAN_REVERT/RANDOM 3 buckets × 2 directions",
-  "_p0_reform": "2026-09-19 苏摩111: score_gate全部降为0，废除一票否决",
-  "score_gate": {
-    "TREND": 0,
-    "MEAN_REVERT": 0,
-    "RANDOM": 0,
-    "CHOP_MID": 0,
-    "BEAR_TREND": 0,
-    "BEAR_EARLY": 0,
-    "BULL_TREND": 0,
-    "BULL_EARLY": 0,
-    "BEAR_RECOVERY": 0
-  },
-  "TREND": {
-    "LONG": {
-      "active_dims": "all",
-      "sleep_dims": [],
-      "position_mult": 1.2,
-      "weights": {}
-    },
-    "SHORT": {
-      "active_dims": "all",
-      "sleep_dims": [],
-      "position_mult": 1.2,
-      "weights": {}
-    }
-  },
-  "MEAN_REVERT": {
-    "LONG": {
-      "active_dims": "all",
-      "sleep_dims": [],
-      "position_mult": 0.8,
-      "weights": {}
-    },
-    "SHORT": {
-      "active_dims": "all",
-      "sleep_dims": [],
-      "position_mult": 0.8,
-      "weights": {}
-    }
-  },
-  "RANDOM": {
-    "LONG": {
-      "active_dims": "all",
-      "sleep_dims": [],
-      "position_mult": 1.0,
-      "weights": {}
-    },
-    "SHORT": {
-      "active_dims": "all",
-      "sleep_dims": [],
-      "position_mult": 1.0,
-      "weights": {}
-    }
-  },
-  "CHOP_MID": {
-    "LONG": {
-      "active_dims": "all",
-      "sleep_dims": [],
-      "position_mult": 1.0,
-      "weights": {}
-    },
-    "SHORT": {
-      "active_dims": "all",
-      "sleep_dims": [],
-      "position_mult": 1.0,
-      "weights": {}
-    }
-  },
-  "CHOP_LOW": {
-    "LONG": {
-      "active_dims": "all",
-      "sleep_dims": [],
-      "position_mult": 1.0,
-      "weights": {}
-    },
-    "SHORT": {
-      "active_dims": "all",
-      "sleep_dims": [],
-      "position_mult": 1.0,
-      "weights": {}
-    }
-  },
-  "CHOP_HIGH": {
-    "LONG": {
-      "active_dims": "all",
-      "sleep_dims": [],
-      "position_mult": 1.0,
-      "weights": {}
-    },
-    "SHORT": {
-      "active_dims": "all",
-      "sleep_dims": [],
-      "position_mult": 1.0,
-      "weights": {}
-    }
-  },
   "BEAR_TREND": {
     "LONG": {
-      "active_dims": "all",
       "sleep_dims": [],
-      "position_mult": 0.5,
-      "weights": {}
+      "active_dims": [
+        "all"
+      ],
+      "weight": 1.0,
+      "position_mult": 0.5
     },
     "SHORT": {
-      "active_dims": "all",
       "sleep_dims": [],
-      "position_mult": 1.6,
-      "weights": {}
+      "active_dims": [
+        "all"
+      ],
+      "weight": 1.0,
+      "position_mult": 1.6
     }
   },
   "BEAR_EARLY": {
     "LONG": {
-      "active_dims": "all",
       "sleep_dims": [],
-      "position_mult": 0.5,
-      "weights": {}
+      "active_dims": [
+        "all"
+      ],
+      "weight": 1.0,
+      "position_mult": 0.5
     },
     "SHORT": {
-      "active_dims": "all",
       "sleep_dims": [],
-      "position_mult": 1.2,
-      "weights": {}
+      "active_dims": [
+        "all"
+      ],
+      "weight": 1.0,
+      "position_mult": 1.2
+    }
+  },
+  "CHOP_MID": {
+    "LONG": {
+      "sleep_dims": [],
+      "active_dims": [
+        "all"
+      ],
+      "weight": 1.0,
+      "position_mult": 0.5
+    },
+    "SHORT": {
+      "sleep_dims": [],
+      "active_dims": [
+        "all"
+      ],
+      "weight": 1.0,
+      "position_mult": 0.88
     }
   },
   "BULL_TREND": {
     "LONG": {
-      "active_dims": "all",
       "sleep_dims": [],
-      "position_mult": 1.3,
-      "weights": {}
+      "active_dims": [
+        "all"
+      ],
+      "weight": 1.0,
+      "position_mult": 1.3
     },
     "SHORT": {
-      "active_dims": "all",
       "sleep_dims": [],
-      "position_mult": 0.5,
-      "weights": {}
-    }
-  },
-  "BULL_EARLY": {
-    "LONG": {
-      "active_dims": "all",
-      "sleep_dims": [],
-      "position_mult": 1.3,
-      "weights": {}
-    },
-    "SHORT": {
-      "active_dims": "all",
-      "sleep_dims": [],
-      "position_mult": 0.5,
-      "weights": {}
+      "active_dims": [
+        "all"
+      ],
+      "weight": 1.0,
+      "position_mult": 0.5
     }
   },
   "BEAR_RECOVERY": {
     "LONG": {
-      "active_dims": "all",
       "sleep_dims": [],
-      "position_mult": 1.15,
-      "weights": {}
+      "active_dims": [
+        "all"
+      ],
+      "weight": 1.0,
+      "position_mult": 1.25
     },
     "SHORT": {
-      "active_dims": "all",
       "sleep_dims": [],
-      "position_mult": 0.5,
-      "weights": {}
+      "active_dims": [
+        "all"
+      ],
+      "weight": 1.0,
+      "position_mult": 0.5
     }
-  },
-  "UNKNOWN": {
-    "LONG": {
-      "active_dims": "all",
-      "sleep_dims": [],
-      "position_mult": 1.0,
-      "weights": {}
-    },
-    "SHORT": {
-      "active_dims": "all",
-      "sleep_dims": [],
-      "position_mult": 1.0,
-      "weights": {}
-    }
-  },
-  "score_gate_atr": {}
+  }
 }

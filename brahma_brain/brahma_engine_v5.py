@@ -257,12 +257,13 @@ class BrahmaStrategy12:
             regime = regimes.get(ts)
             if regime is None: continue
             
-            # BEAR_EARLY封禁
-            if p['bear_early_block'] and 'BEAR_EARLY' in regime:
-                continue
+            # [9.20 苏摩111] 不封禁任何体制
+            # if p['bear_early_block'] and 'BEAR_EARLY' in regime:
+            #     continue
             
             regime_dir = 1 if 'BULL' in regime else (-1 if 'BEAR' in regime else 0)
-            if regime_dir == 0: continue  # CHOP不交易
+            # [9.20 苏摩111] CHOP也交易（不再跳过）
+            # if regime_dir == 0: continue  # CHOP不交易
             
             rsi_val = rsi_seq[i]
             rsi_signal = 1 if rsi_val < p['rsi_long'] else (-1 if rsi_val > p['rsi_short'] else 0)

@@ -123,3 +123,5 @@
 {"ts": 1789903889.8095767, "currency": "ETH", "iv": 48.1, "pct": 25.6, "kappa": 0.1378, "regime": "Neutral"}
 {"ts": 1789904764.2732575, "currency": "BTC", "iv": 32.24, "pct": 25.6, "kappa": 0.0739, "regime": "Neutral"}
 {"ts": 1789903889.8095767, "currency": "ETH", "iv": 48.1, "pct": 25.6, "kappa": 0.1378, "regime": "Neutral"}
+{"ts": 1789919539.6816463, "currency": "BTC", "iv": 32.26, "pct": 30.0, "kappa": -0.1092, "regime": "Neutral"}
+{"ts": 1789919790.8213406, "currency": "ETH", "iv": 48.11, "pct": 27.8, "kappa": -0.0381, "regime": "Neutral"}

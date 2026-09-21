@@ -37,15 +37,15 @@ BRAHMA_IRON_RULES = {
     },
     'BULL_TREND': {
         'LONG':  '✅ 优先 WR=72% SL=2.0% RR=1.0 最佳入场: RSI回踩+EMA20支撑',
-        'SHORT': '❌ 封禁 死穴 严禁做空（逆势风险极高）',
+        'SHORT': '⚠️  降仓 pos_mult=0.5 逆势风险较高',
     },
     'CHOP_MID': {
-        'LONG':  '❌ 死穴 CHOP体制做多 WR不足 严禁',
-        'SHORT': '⚠️  条件触发 min_score=120 WR=65% SL=2.5% EV=+0.811%/笔',
+        'LONG':  '⚠️  降仓 pos_mult=0.5 CHOP做多WR较低',
+        'SHORT': '⚠️  降仓 pos_mult=0.88 CHOP做空min_score=100',
     },
     'BEAR_RECOVERY': {
-        'LONG':  '⚠️  谨慎 仅多单 SIZE=5% LEV=5x 严禁空单',
-        'SHORT': '❌ 封禁 BEAR_RECOVERY严禁做空',
+        'LONG':  '✅ 优先 仅多单 SIZE=5% LEV=5x pos_mult=1.25',
+        'SHORT': '⚠️  降仓 pos_mult=0.5 非死穴但WR较低',
     },
     'BULL_EARLY': {
         'LONG':  '✅ 可做 新牛市初期 SIZE适中',
