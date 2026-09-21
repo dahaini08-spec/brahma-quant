@@ -83,7 +83,8 @@ def query_similar(rsi: float, bbw: float, mg: float, ml: float,
     
     # 查询
     # 如果有过滤条件，多查一些然后过滤
-    k = top_k * 10 if (sym_filter or reg_filter) else top_k
+    # [9.21苏摩设计院] top_k*10不够（BTC在top1000只有30条），改为top_k*100
+    k = top_k * 100 if (sym_filter or reg_filter) else top_k
     k = min(k, len(_meta))
     
     dist, idx = _tree.query(q_norm, k=k)

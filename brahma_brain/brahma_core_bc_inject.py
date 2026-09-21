@@ -84,7 +84,7 @@ def inject_bc_modules(_result: dict, ms: dict, score: int, breakdown: dict,
     try:
         from brahma_brain.cross_asset_gate import get_gate as _cag_get
         _cag_dir   = _result.get('signal_dir', 'LONG')
-        _cag_sym   = _sym
+        _cag_sym   = symbol  # [9.21修复] _sym→symbol
         # 只对ETH/山寨做联动检查（BTC本身是锚）
         if _cag_sym not in ('BTCUSDT', 'BTCDOMUSDT'):
             _cag_gate = _cag_get()

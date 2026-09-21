@@ -2500,57 +2500,32 @@ def _to_vector(c: dict) -> List[float]:
 
 
 def _build() -> None:
-    """build"""
+    """build — [9.21苏摩设计院] scipy KD-Tree替代Qdrant"""
     global _client, _cases_raw, _build_ts
     try:
-        from qdrant_client import QdrantClient
-        from qdrant_client.models import (
-            Distance, VectorParams, PointStruct, OptimizersConfigDiff
-        )
+        from scipy.spatial import KDTree as _ScipyKDTree
+        import numpy as _np
     except ImportError:
-        logger.warning('qdrant_client未安装，TradFi向量检索不可用')
+        logger.warning('scipy未安装，TradFi向量检索不可用')
         return False
-
     if not DATA_PATH.exists():
         logger.warning('TradFi案例库不存在: %s', DATA_PATH)
         return False
-
     t0 = time.time()
     cases = json.loads(DATA_PATH.read_text())
     if not cases:
         return False
-
-    # BBW标准化写入
     for c in cases:
         stock = c.get('stock_ticker', 'NVDA')
         c['min_bb_width_norm'] = round(_normalize_bbw(c['min_bb_width'], stock), 4)
-
-    client = QdrantClient(':memory:')
-    client.create_collection(
-        collection_name=_COLL,
-        vectors_config=VectorParams(size=8, distance=Distance.COSINE),
-        optimizers_config=OptimizersConfigDiff(indexing_threshold=0),
-    )
-
-    points = []
-    for idx, c in enumerate(cases):
-        points.append(PointStruct(
-            id=idx, vector=_to_vector(c),
-            payload={k: c[k] for k in (
-                'symbol','stock_ticker','tier','direction',
-                'min_bb_width','min_bb_width_norm','squeeze_bars',
-                'burst_atr_mult','vol_ratio_peak','rsi_at_burst',
-                'future_return_24h','is_genuine_breakout',
-            ) if k in c}
-        ))
-
-    for i in range(0, len(points), 500):
-        client.upsert(collection_name=_COLL, points=points[i:i+500])
-
-    _client    = client
+    vectors = []
+    for c in cases:
+        vectors.append(_to_vector(c))
+    arr = _np.array(vectors, dtype=float)
+    _client = {'tree': _ScipyKDTree(arr), 'cases': cases}
     _cases_raw = cases
-    _build_ts  = time.time()
-    logger.info('TradFi向量库建立: %d案例 %.2fs', len(cases), time.time()-t0)
+    _build_ts = time.time()
+    logger.info('TradFi KD-Tree建立: %d案例 %.2fs', len(cases), time.time()-t0)
     return True
 
 
@@ -2591,7 +2566,7 @@ def query_tradfi(
         bb_n   = _normalize_bbw(bb_width_raw, stock)
         tier_c = 1.0  # 查询时不限制tier
 
-        qvec = [
+        qvec = np.array([
             _clip(bb_n,       *NORM_BOUNDS['bb_norm']),
             _clip(squeeze_bars,*NORM_BOUNDS['squeeze_bars']),
             _clip(burst_atr,  *NORM_BOUNDS['burst_atr']),
@@ -2600,16 +2575,17 @@ def query_tradfi(
             1.0 if direction=='UP' else 0.0,
             1.0,  # genuine
             tier_c,
-        ]
+        ])
 
-        res = _client.query_points(
-            collection_name=_COLL,
-            query=qvec,
-            limit=top_k,
-            with_payload=True,
-        )
-        cases  = [r.payload for r in res.points]
-        rets   = np.array([c['future_return_24h'] for c in cases])
+        # [9.21苏摩设计院] scipy KD-Tree查询
+        tree = _client['tree']
+        cases = _client['cases']
+        dist, idx = tree.query(qvec, k=min(top_k, len(cases)))
+        if isinstance(idx, (int, np.integer)):
+            idx = [idx]
+            dist = [dist]
+        sel_cases = [cases[i] for i in idx]
+        rets   = np.array([c['future_return_24h'] for c in sel_cases])
         if len(rets) == 0:
             return {'n':0,'wr':0.5,'wr_directional':0.5,'ev':0.0,'median':0.0,'cases':[]}
 
@@ -2637,8 +2613,7 @@ def get_index_info() -> dict:
     if _client is None:
         return {'status':'unavailable','n':0}
     try:
-        info = _client.get_collection(_COLL)
-        return {'status':'ok','n':info.points_count,
+        return {'status':'ok','n':len(_cases_raw),
                 'build_age_s': round(time.time()-_build_ts,1)}
     except Exception as e:
         return {'status':'error','error':str(e)}
