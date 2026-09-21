@@ -547,7 +547,7 @@ def step3_liq(d: dict) -> dict:
     修复：每次分析时实时拉取价格+订单簿+计算清算价位
     """
     price = d['price']
-    sym = d.get('symbol', 'BTC') + 'USDT'
+    sym = d.get('sym', d.get('symbol', 'BTC')) + 'USDT'  # [2026-09-21修复] step0用'sym'不是'symbol'
 
     # 实时拉取清算热力图（不用缓存文件）
     try:
