@@ -1,5 +1,26 @@
 {
-  "positions": [],
+  "positions": [
+    {
+      "symbol": "BTCUSDT",
+      "side": "LONG",
+      "entry_price": 86615.4,
+      "sl_price": 84883.09,
+      "tp1": 88347.71,
+      "tp1_price": 88347.71,
+      "tp2": 90080.02,
+      "tp2_price": 90080.02,
+      "nav_pct": 0.025,
+      "score": 83.0,
+      "grade": 93.0,
+      "regime": "CHOP_MID",
+      "sl_pct": 2.0,
+      "open_ts": 1790032500,
+      "open_at": "2026-09-21T23:15:00.316217+00:00",
+      "partial_tp1": false,
+      "status": "open",
+      "source": "unknown"
+    }
+  ],
   "closed": [
     {
       "symbol": "BTCUSDT",
@@ -206,7 +227,7 @@
     }
   ],
   "stats": {
-    "total": 10,
+    "total": 11,
     "win": 1,
     "pnl": -13.692
   }

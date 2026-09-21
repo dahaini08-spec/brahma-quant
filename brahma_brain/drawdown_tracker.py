@@ -87,7 +87,17 @@ def update_drawdown(current_nav: float = None) -> dict:
         current_nav = _get_current_nav()
 
     if current_nav <= 0:
-        return state  # 无法获取NAV，跳过
+        # [修复 2026-09-21 苏摩111] NAV=0时也写入ts+status=GREEN，
+        # 否则mtime永不更新 → 闸门1永远判过期
+        now = time.time()
+        state['current_nav'] = 0
+        state['last_updated'] = now
+        state['drawdown_pct'] = 0.0
+        if state['status'] not in ('LOCKOUT', 'HALT'):
+            state['status'] = 'GREEN'
+        state['ts'] = now
+        _save_state(state)
+        return state  # 无法获取NAV，跳过回撤计算但已写入ts
 
     now = time.time()
     state['current_nav'] = current_nav

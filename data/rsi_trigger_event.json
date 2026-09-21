@@ -1,51 +1,21 @@
 {
   "BTCUSDT": {
-    "ts": 1790005320.811757,
-    "ts_iso": "2026-09-21T15:42:00.811759+00:00",
     "symbol": "BTCUSDT",
-    "px": 85858.7,
-    "rsi_1h": 95.1,
-    "bb_width": 4.634,
-    "events": [
-      {
-        "event": "E5_BB_EXPANSION",
-        "desc": "BB宽度 0.68%→4.63% 压缩释放，方向即将选择",
-        "priority": "MEDIUM"
-      },
-      {
-        "event": "E_TREND_SURGE",
-        "desc": "🚀 趋势暴涨触发! 48H涨幅7.2% 4H阳线确认 RSI=95.1 → 动量层匹配，全量扫描做多",
-        "priority": "HIGH",
-        "direction": "LONG",
-        "chg_48h": 7.19,
-        "_cooldown_key": "BTCUSDT_trend_surge_ts"
-      }
-    ],
-    "high_priority": true
+    "direction": "LONG",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 100.0,
+    "ts": 1790033005.4230735,
+    "source": "tradfi_signal_layer"
   },
   "ETHUSDT": {
-    "ts": 1790005321.566863,
-    "ts_iso": "2026-09-21T15:42:01.566865+00:00",
     "symbol": "ETHUSDT",
-    "px": 2735.53,
-    "rsi_1h": 88.3,
-    "bb_width": 2.818,
-    "events": [
-      {
-        "event": "E_TREND_SURGE",
-        "desc": "🚀 趋势暴涨触发! 48H涨幅6.8% 4H阳线确认 RSI=88.3 → 动量层匹配，全量扫描做多",
-        "priority": "HIGH",
-        "direction": "LONG",
-        "chg_48h": 6.76,
-        "_cooldown_key": "ETHUSDT_trend_surge_ts"
-      },
-      {
-        "event": "E8_ETH_LONG_GATE_OPEN",
-        "desc": "🔔 ETH LONG门控通过! 价格$2735.53>EMA20$2682.35 RSI=88.3 入场$1858~$1861 SL=$1812 TP1=$1904 TP2=$1928 — 苏摩是否执行?",
-        "priority": "HIGH"
-      }
-    ],
-    "high_priority": true
+    "direction": "SHORT",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 105.8,
+    "ts": 1790034115.1502686,
+    "source": "tradfi_signal_layer"
   },
   "SOLUSDT": {
     "ts": 1790005322.4902706,
@@ -103,21 +73,13 @@
     "high_priority": true
   },
   "HYPEUSDT": {
-    "ts": 1789987328.5631886,
-    "ts_iso": "2026-09-21T10:42:08.563190+00:00",
     "symbol": "HYPEUSDT",
-    "px": 95.207,
-    "rsi_1h": 67.5,
-    "bb_width": 1.98,
-    "events": [
-      {
-        "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=1.980%极度压缩(历史最低区间) RSI=67.5 弹簧即将释放",
-        "priority": "HIGH",
-        "bbw_shrinking": true
-      }
-    ],
-    "high_priority": true
+    "direction": "LONG",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 115.0,
+    "ts": 1790015063.6419408,
+    "source": "tradfi_signal_layer"
   },
   "SYNUSDT": {
     "ts": 1789954931.525614,

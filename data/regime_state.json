@@ -7,9 +7,9 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1790004467.627948,
+    "last_update_ts": 1790034098.9906335,
     "last_sw_reset": 1789974048.2369432,
-    "candidate_start_ts": 1790002600.9480197,
+    "candidate_start_ts": 1790032314.3457108,
     "confirmed_cn": "弱震荡"
   },
   "BTCUSDT": {
@@ -20,10 +20,10 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1790004467.609177,
+    "last_update_ts": 1790032314.3314295,
     "confirmed_cn": "弱震荡",
     "last_sw_reset": 1789978248.800791,
-    "candidate_start_ts": 1790002600.9442546
+    "candidate_start_ts": 1790032314.3283646
   },
   "BTC": {
     "confirmed": "CHOP_MID",
@@ -68,10 +68,10 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1790004260.355906,
+    "last_update_ts": 1790015055.2008429,
     "confirmed_cn": "弱震荡",
     "last_sw_reset": 1790004260.3524117,
-    "candidate_start_ts": 1790004260.3524117
+    "candidate_start_ts": 1790015055.1961205
   },
   "XRPUSDT": {
     "confirmed": "CHOP_MID",
@@ -81,10 +81,10 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1790004260.96482,
+    "last_update_ts": 1790025849.2480533,
     "confirmed_cn": "弱震荡",
     "last_sw_reset": 1790004260.9608698,
-    "candidate_start_ts": 1790004260.9608698
+    "candidate_start_ts": 1790025849.2435553
   },
   "SOXLUSDT": {
     "confirmed": "CHOP_MID",
@@ -94,8 +94,10 @@
     "confirmed_at": 0,
     "switch_count_24h": 0,
     "last_raw": "CHOP_MID",
-    "last_update_ts": 1789993468.7992883,
-    "confirmed_cn": "弱震荡"
+    "last_update_ts": 1790025849.5778806,
+    "confirmed_cn": "弱震荡",
+    "last_sw_reset": 1790025849.5753725,
+    "candidate_start_ts": 1790025849.5753725
   },
   "SOLUSDT": {
     "confirmed": "CHOP_MID",

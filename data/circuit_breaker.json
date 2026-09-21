@@ -1,1 +1,6 @@
-{"status": "GREEN", "reason": "", "ts": 1790005780.96712}
+{
+  "state": "GREEN",
+  "suspended": false,
+  "timestamp": 1790032605.4699676,
+  "checks": {}
+}

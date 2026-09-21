@@ -453,7 +453,7 @@ def build_timeframe_chain(state: dict, symbol: str) -> List[dict]:
             lo = f.get('lo', 0) or 0
             hi = f.get('hi', 0) or 0
             if mid > 0 and price > 0:
-                dist = (price - mid) / price * 100
+                dist = (mid - price) / price * 100  # [2026-09-21修复] mid在上方=正, 下方=负
                 role = '支撑' if price > mid else '阻力'
                 action = '回调到FVG=做多入场点' if price > mid else '突破FVG=看多'
                 results.append({
@@ -474,7 +474,7 @@ def build_timeframe_chain(state: dict, symbol: str) -> List[dict]:
             lo = f.get('lo', 0) or 0
             hi = f.get('hi', 0) or 0
             if mid > 0 and price > 0:
-                dist = (price - mid) / price * 100
+                dist = (mid - price) / price * 100  # [2026-09-21修复] mid在上方=正, 下方=负
                 role = '阻力' if price < mid else '支撑'
                 action = '反弹到Bear FVG=做空入场点' if price < mid else '突破Bear FVG=看空失效'
                 results.append({

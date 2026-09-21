@@ -1,1 +1,10 @@
-{"current_drawdown": 0, "max_drawdown": 0, "status": "GREEN", "ts": 1790005780.9673254}
+{
+  "current_drawdown": 0,
+  "max_drawdown": 0,
+  "status": "GREEN",
+  "peak_nav": 0,
+  "current_nav": 0,
+  "last_updated": 1790034075.0567548,
+  "ts": 1790034075.0567548,
+  "drawdown_pct": 0.0
+}

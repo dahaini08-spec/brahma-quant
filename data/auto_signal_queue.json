@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "symbol": "BTCUSDT",
+    "direction": "LONG",
+    "signal_dir": "LONG",
+    "score": 83.0,
+    "score_final": 83.0,
+    "grade_num": 93.0,
+    "grade": 93.0,
+    "regime": "CHOP_MID",
+    "sl_pct": 2.0,
+    "signal_id": "BTCUSDT_LONG_1790006420",
+    "ts": 1790006420.2632835,
+    "paper_consumed": true
+  }
+]

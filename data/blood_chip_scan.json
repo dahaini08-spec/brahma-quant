@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-21T06:00:25.247038+00:00",
+  "timestamp": "2026-09-21T18:00:21.846351+00:00",
   "fear_greed": {
     "value": 70,
     "classification": "Greed",
@@ -34,45 +34,45 @@
   "crypto": [
     {
       "symbol": "BTCUSDT",
-      "current": 81545.88,
+      "current": 85895.07,
       "high_1y": 124658.54,
       "high_2y": 124658.54,
       "low_2y": 58624.71,
-      "avg_200d": 70593.30334999999,
-      "discount_pct": -34.58,
-      "vs_200d_pct": 15.52,
+      "avg_200d": 70615.04929999998,
+      "discount_pct": -31.1,
+      "vs_200d_pct": 21.64,
       "max_drawdown_2y": -52.97,
       "source": "binance",
       "data_points": 730,
       "name": "Bitcoin",
       "notes": "加密之王",
-      "drawdown_percentile": 65.3
+      "drawdown_percentile": 58.7
     },
     {
       "symbol": "ETHUSDT",
-      "current": 2664.6,
+      "current": 2742.38,
       "high_1y": 4684.01,
       "high_2y": 4832.07,
       "low_2y": 1473.41,
-      "avg_200d": 2080.112599999999,
-      "discount_pct": -43.11,
-      "vs_200d_pct": 28.1,
+      "avg_200d": 2080.5014999999994,
+      "discount_pct": -41.45,
+      "vs_200d_pct": 31.81,
       "max_drawdown_2y": -69.51,
       "source": "binance",
       "data_points": 730,
       "name": "Ethereum",
       "notes": "智能合约平台",
-      "drawdown_percentile": 62.0
+      "drawdown_percentile": 59.6
     }
   ],
   "stocks": [
     {
       "symbol": "AAPL",
-      "current": 336.1300048828125,
+      "current": 338.32000732421875,
       "high_1y": 340.0799865722656,
-      "avg_200d": 286.3411993408203,
-      "discount_pct": -1.161486075457066,
-      "vs_200d_pct": 17.38792938515655,
+      "avg_200d": 286.6018493652344,
+      "discount_pct": -0.5175192065214006,
+      "vs_200d_pct": 18.045298058449276,
       "source": "yahoo",
       "name": "Apple Inc.",
       "notes": "请在Yahoo Finance或其他数据源填写"
@@ -82,14 +82,14 @@
     "BTCUSDT": {
       "triggered": true,
       "triggers": [
-        "折价-34.6% ≤ -20%阈值"
+        "折价-31.1% ≤ -20%阈值"
       ],
       "needs_deep_research": false
     },
     "ETHUSDT": {
       "triggered": true,
       "triggers": [
-        "折价-43.1% ≤ -20%阈值"
+        "折价-41.5% ≤ -20%阈值"
       ],
       "needs_deep_research": false
     },
@@ -99,5 +99,5 @@
       "needs_deep_research": false
     }
   },
-  "report": "🩸 带血筹码扫描 | 09-21 14:00 北京时间\n\n市场情绪: 🟢 Crypto恐慌指数 = 70 (Greed)\n\n—— Crypto 观察池 ——\n  🩸 BTCUSDT: $81,545.88\n     1y高=$124,658.54 折价=-34.6% | 200d均=$70,593.30 vs200d=+15.5%\n  🩸 ETHUSDT: $2,664.60\n     1y高=$4,684.01 折价=-43.1% | 200d均=$2,080.11 vs200d=+28.1%\n\n—— 美股观察池 ——\n  🟢 AAPL: $336.13\n     1y高=$340.08 折价=-1.2% | 200d均=$286.34 vs200d=+17.4%\n\n—— ⚠️ 触发关注 ——\n  🔔 BTCUSDT: 折价-34.6% ≤ -20%阈值\n  🔔 ETHUSDT: 折价-43.1% ≤ -20%阈值\n\n📊 梵天带血筹码监控器 | 不是建议"
+  "report": "🩸 带血筹码扫描 | 09-22 02:00 北京时间\n\n市场情绪: 🟢 Crypto恐慌指数 = 70 (Greed)\n\n—— Crypto 观察池 ——\n  🩸 BTCUSDT: $85,895.07\n     1y高=$124,658.54 折价=-31.1% | 200d均=$70,615.05 vs200d=+21.6%\n  🩸 ETHUSDT: $2,742.38\n     1y高=$4,684.01 折价=-41.5% | 200d均=$2,080.50 vs200d=+31.8%\n\n—— 美股观察池 ——\n  🟢 AAPL: $338.32\n     1y高=$340.08 折价=-0.5% | 200d均=$286.60 vs200d=+18.0%\n\n—— ⚠️ 触发关注 ——\n  🔔 BTCUSDT: 折价-31.1% ≤ -20%阈值\n  🔔 ETHUSDT: 折价-41.5% ≤ -20%阈值\n\n📊 梵天带血筹码监控器 | 不是建议"
 }

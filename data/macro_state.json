@@ -1,9 +1,23 @@
 {
-  "fear_greed": 61,
-  "fng_class": "Greed",
-  "ts": 1789307540.289067,
-  "source": "alternative.me",
-  "cpi": "2.45%",
-  "nfp": "N/A",
-  "ppi": "-0.43%"
+  "score": 0.0,
+  "fg_value": 70,
+  "fg_label": "Greed",
+  "btc_dom": 58.8,
+  "event": {
+    "in_window": false,
+    "event": "CPI",
+    "event_date": "2026-10-14",
+    "days_to": 22,
+    "hours_to": 528.7,
+    "action": "NORMAL"
+  },
+  "suspended": false,
+  "direction": "SHORT",
+  "regime": "BEAR_TREND",
+  "details": [
+    "F&G=70贪婪 → 空单-3",
+    "BTC主导58.8%高(避险) → 空单+3"
+  ],
+  "label": "🟢中性",
+  "ts": 1790032853.7366593
 }

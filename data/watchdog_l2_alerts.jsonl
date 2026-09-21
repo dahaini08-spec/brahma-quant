@@ -38,3 +38,4 @@
 {"ts":1789986300,"actions":" restart_watchdog_l1"}
 {"ts":1790004600,"actions":" restart_cvd restart_watchdog_l1"}
 {"ts":1790004900,"actions":" restart_watchdog_l1"}
+{"ts":1790006100,"actions":" restart_watchdog_l1"}
