@@ -265,7 +265,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
                 _regime_upper = 'BEAR_TREND'
                 print(f'[Fix1-上位共识锁] {_sym} 1H仍在EMA下方(RSI={_d1h_rsi:.0f}) → BEAR_RECOVERY降级处理为BEAR_TREND权重')
         except Exception as _e:
-            print(f"[WARN] brahma_core: _e", file=sys.stderr)
+            print(f"[WARN] brahma_core: {_e}", file=sys.stderr)
     # Fix2: 三周期全BEAR时，BEAR_RECOVERY乘数限制上限
     _full_bear_consensus = (ms.get('d1d') == 'BEAR' and ms.get('d1w','BEAR') == 'BEAR')
     if _regime_upper == 'BEAR_RECOVERY' and _full_bear_consensus:
@@ -321,7 +321,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         else:
             breakdown['HMM乘数'] = f'降级(规则乘数={_regime_mult:.3f}) conf={_hmm_conf:.2f}'
     except Exception as _e:
-        print(f"[WARN] brahma_core: _e", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_e}", file=sys.stderr)
 
     # [Phase C 2026-09-13 苏摩111 顶层全局修复] 体制乘数不再乘score
     # 根因: 体制检测用价格EMA趋势 → 方向信号也用价格结构 → 乘score=双重计算
@@ -350,7 +350,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
                 breakdown['_regime_position_cap'] = _regime_mult
                 breakdown['_wr_override'] = f'WR反馈覆盖: {_regime_upper}|{signal_dir} → {_regime_mult:.3f} (updated={_rmo_today})'
     except Exception as _e_rmo:
-        print(f"[WARN] brahma_core: _e_rmo", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_e_rmo}", file=sys.stderr)
 
     # ── [v25.4 设计院封印] 硬封禁门控 — mult=0.00 后强制 score=0 ──────────
     # 防止：乘数为0但其他维度加分（s_research / T04奖励等）绕过封禁
@@ -683,7 +683,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _lpf_bulk([_sym])
         pass  # [静默] f'[PriceFix] {_sym} 入口强制刷新价格 ✅'
     except Exception as _lpf_e:
-        print(f"[WARN] brahma_core: _lpf_e", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_lpf_e}", file=sys.stderr)
 
     # ══ [矛盾1-A预热 2026-09-07 苏摩111] BrahmaBus启动预热 ══════════════════════
     # 根因: step4串行调get_klines×9次 + step1 API调用 = 6s主要瓶颈
@@ -695,7 +695,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         # prefetch_symbol内部已用ThreadPoolExecutor并发拉取，总耗时~1-1.5s
         _pf(_sym)
     except Exception as _e:
-        print(f"[WARN] brahma_core: _e", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_e}", file=sys.stderr)
 
     # ══ [2026-09-16 苏摩111 FinanceMCP借鉴] 数据健康检查 + 降级标记 ════════════
     # 设计院P0-②：分析开始前检查CVD/liqmap/GEX/HAR-RV数据新鲜度
@@ -795,7 +795,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             score = round(score * _tf_mult, 1)
             breakdown['TF权重调整'] = f'×{_tf_mult:.2f} {_score_before_tf:.0f}→{score:.0f}'
     except Exception as _e:
-        print(f"[WARN] brahma_core: _e", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_e}", file=sys.stderr)
 
     # ── [P2-A增强版 苏摩111批准 2026-07-11] confluence_by_tf 多周期共振奖励 ──────
     # 架构: 分析breakdown各维度所属周期 → 计算共振奖励(+0~+8)
@@ -817,7 +817,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             if extra_data is not None:
                 extra_data['tf_confluence'] = _tf_meta
     except Exception as _e:
-        print(f"[WARN] brahma_core: _e", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_e}", file=sys.stderr)
 
     # 对 score ≥ 100 的信号执行维度因果归因，识别相关性掃车维度
     # fail-safe: 异常不阻断主流程
@@ -1182,7 +1182,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                             params['sl_basis'] = f'min1xATR_1H(orig={_c_cur_sl_pct:.2f}%)'
                             print(f'[修复C] {signal_dir} SL拖宽: {_c_cur_sl_pct:.2f}%→{_c_min_sl_pct:.2f}%(1×ATR_1H={_c_atr_1h:.4f}) rr1={_c_new_rr1:.2f}')
             except Exception as _c_err:
-                print(f"[WARN] brahma_core: _c_err", file=sys.stderr)
+                print(f"[WARN] brahma_core: {_c_err}", file=sys.stderr)
             cf['action']  = 'ENTER_FULL'
             cf['rr_gate'] = 'PASS'
             cf['rr_min_used'] = _rr_min
@@ -1214,7 +1214,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         if _drift['alert'] == 'ALERT':
             pass  # [静默] f'[BrahmaBrain] ⚠️ DRIFT ALERT {_sym}: {_drift["summary"]}'
     except Exception as _de:
-        print(f"[WARN] brahma_core: _de", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_de}", file=sys.stderr)
 
     # I2: 冲突解析
         pass
@@ -1237,7 +1237,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         )
         extra_data['kelly'] = _kelly_result
     except Exception as _ke:
-        print(f"[WARN] brahma_core: _ke", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_ke}", file=sys.stderr)
 
     # [v24.3] PRE-COMPUTE structure grade（前移，供Queue check使用）
     # 原设计：structure计算在行3101，Queue check在行2662，grade=0导致冷却死循环
@@ -1264,7 +1264,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         if os.environ.get('BRAHMA_DEBUG'):
             pass  # [静默] f'[PRE-SQE] {_sym} price={ms.get("price",0):.0f} entry={params.get("entry_lo",0)
     except Exception as _pre_sq_err:
-        print(f"[WARN] brahma_core: _pre_sq_err", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_pre_sq_err}", file=sys.stderr)
 
     # [v12.9] I5 队列/资金 / I3 动态SL / I7 归因（Phase 1）
 
@@ -1287,7 +1287,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['kelly_mult'] = 0.0
             cf['queue_reject'] = _sq_result['reason']
     except Exception as _sqe:
-        print(f"[WARN] brahma_core: _sqe", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_sqe}", file=sys.stderr)
 
     # I5: 资金分配
     try:
@@ -1303,7 +1303,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['kelly_mult'] = 0.0
             cf['capital_reject'] = _ca_result['reason']
     except Exception as _cae:
-        print(f"[WARN] brahma_core: _cae", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_cae}", file=sys.stderr)
 
     # I3: 动态止损
     try:
@@ -1326,7 +1326,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         params['sl_pct_dyn']   = _dsl.get('sl_pct')
         params['sl_reasoning'] = _dsl.get('reasoning')
     except Exception as _dsle:
-        print(f"[WARN] brahma_core: _dsle", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_dsle}", file=sys.stderr)
 
     # I7: 实时归因（从feature_store读alpha_contribs） [2026-09-12 苏摩111]
     # [果蝇架构修复 2026-09-13 苏摩111] 防无限递归：
@@ -1619,7 +1619,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
             pass  # [静默] f'[Dharma] 🌟 HIGH_CONF {_sym}: score加成 ×1.05 → {_score_raw:.0f}'
     except Exception as _dne:
-        print(f"[WARN] brahma_core: _dne", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_dne}", file=sys.stderr)
 
     elapsed = round(time.time() - t0, 2)
 
@@ -1658,7 +1658,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 _score_raw = round(_score_raw + _gap_penalty_l, 1)
                 cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
     except Exception as _e:
-        print(f"[WARN] brahma_core: _e", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_e}", file=sys.stderr)
 
     _score = _score_raw
 
@@ -2134,7 +2134,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _tw = get_time_weight(_utc_hour)
         cf['time_weight_ref'] = f'UTC{_utc_hour:02d}:00 ref={_tw}'  # 仅记录，不调分
     except Exception as _sqe:
-        print(f"[WARN] brahma_core: _sqe", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_sqe}", file=sys.stderr)
 
     # ── [v25.7 设计院 2026-06-18] P0 体制专项过滤器 ─────────────────────────
     # 原则：为交易而生，不封禁；通过精准条件过滤提升低WR组合质量
@@ -2168,7 +2168,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                         _p0_reason = (f'P0-B BEAR_RECOVERY_SHORT: price={_cur_price:.1f} '
                                       f'距4H高点{_dist_to_swing*100:.1f}%>5%（反弹未到阻力位，拒绝逆势空）')
             except Exception as _e:
-                print(f"[WARN] brahma_core: _e", file=sys.stderr)
+                print(f"[WARN] brahma_core: {_e}", file=sys.stderr)
 
         # ── P0-C: BULL_TREND（牛市趋势）× SHORT 回调深度过滤 ──────────────
         # 根因：牛市小回调噪音做空，没有吃到中级回调
@@ -2238,7 +2238,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['total'] = _score_raw
             cf['n20_lsr_oi'] = _lsr_oi_res.get('note', '')
     except Exception as _lsr_e:
-        print(f"[WARN] brahma_core: _lsr_e", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_lsr_e}", file=sys.stderr)
     # ── [END N20 LSR+OI] | N20 多空比+持仓量段结束 ─────────────────────────────────────────────────────
 
     # ── [设计院 2026-06-07] N21 宏观Fib+EMA200+周线RSI（六方辩论落地）────────
@@ -2452,7 +2452,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 cf['n22_market_maker'] = f"stage={_mm_res.get('stage','')} conf={_mm_res.get('confidence',0)}% {_mm_pts:+d}pts"
                 print(f'[N22-MM轨道B] {_sym} {signal_dir}: stage={_mm_res.get("stage","")} {_mm_pts:+d}分 → {_score_raw:.0f}')
     except Exception as _mm_e:
-        print(f"[WARN] brahma_core: _mm_e", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_mm_e}", file=sys.stderr)
 
     # ── [达摩院因子引擎 2026-06-03] DharmaFactorEngine 标准化落地层 ──────────
     # 读取 dharma/factor_weights.yaml，应用所有 pending/live 因子
@@ -2524,7 +2524,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['total'] = _score_raw
             _score = _score_raw
     except Exception as _dfe_e:
-        print(f"[WARN] brahma_core: _dfe_e", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_dfe_e}", file=sys.stderr)
 
     # ── [15m信号层 P1-B 2026-06-05] ─────────────────────────────────────────
     # 训练铁证：BB_EDGE_LONG k=2.5 WR=75.7% n=19,479 | TRIPLE WR=75.5% n=13,778
@@ -2822,7 +2822,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             from error_collector import log_error as _le
             _le('brahma_brain_chop_filter', _chop_e)
         except Exception as _bare_e:
-            print(f"[WARN] brahma_core: _bare_e", file=sys.stderr)
+            print(f"[WARN] brahma_core: {_bare_e}", file=sys.stderr)
 
     # ── Score过热拦截（设计院 2026-06-06）─────────────────────────
     # 铁证：score>175 WR=0%，score 150~160 WR=96%（武曲Paper 121条）
@@ -2899,9 +2899,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 _gex_data = _gex_cached
                 raise StopIteration  # 跳过旧gex_engine
         except StopIteration as _e:
-            print(f"[WARN] brahma_core: _e", file=sys.stderr)
+            print(f"[WARN] brahma_core: {_e}", file=sys.stderr)
         except Exception as _e:
-            print(f"[WARN] brahma_core: _e", file=sys.stderr)
+            print(f"[WARN] brahma_core: {_e}", file=sys.stderr)
         _gex_data = _compute_gex22(_currency_g)
         if _gex_data:
             _s22_res = _score_gex22(_sym_t, _dir_t_gex, _gex_data)
@@ -2964,7 +2964,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                         )
                         print(f'[s22b-GEXv2] {_sym_t} {_dir22b}: {_pts22b_gex:+d} | {_gex_lbl22b} WR={_hist_wr22b:.0%} Wilson={_wilson22b:.0%} n={_n22b}')
     except Exception as _e:
-        print(f"[WARN] brahma_core: _e", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_e}", file=sys.stderr)
 
 
         # ── s24: 已归档 (2026-06-26 设计院封印) ────────────────────────────

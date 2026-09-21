@@ -248,6 +248,6 @@ PASS=正常 WARN=降分8 BLOCK=拒绝执行"""
             _gate_result   # result (冗余但兼容签名)
         )
     except Exception as _e:
-        print(f"[WARN] reasoning_client: _e", file=sys.stderr)
+        print(f"[WARN] reasoning_client: {_e}", file=sys.stderr)
 
     return _gate_result

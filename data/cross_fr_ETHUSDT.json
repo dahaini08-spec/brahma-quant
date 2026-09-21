@@ -1,15 +1,15 @@
 {
   "symbol": "ETHUSDT",
   "frs": {
-    "binance": 0.01,
+    "binance": 0.009607,
     "bybit": 0.01,
-    "okx": 0.0062576354397499995
+    "okx": 0.00833358535542
   },
-  "spread": 0.00374,
-  "max_ex": "binance",
+  "spread": 0.00167,
+  "max_ex": "bybit",
   "min_ex": "okx",
   "arb_signal": "NONE",
   "arb_score": 0,
   "bull_fr_bonus": 0,
-  "ts": 1789801270.2171216
+  "ts": 1789978359.2435088
 }

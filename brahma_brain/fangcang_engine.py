@@ -1253,7 +1253,7 @@ def _get_tier1_symbols() -> list:
             if _syms:
                 return _syms
     except Exception as _e:
-        print(f"[WARN] fangcang_engine: _e", file=sys.stderr)
+        print(f"[WARN] fangcang_engine: {_e}", file=sys.stderr)
     return _NEW_30_SYMBOLS
 
 

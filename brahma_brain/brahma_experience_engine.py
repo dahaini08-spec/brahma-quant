@@ -1129,7 +1129,7 @@ def _load_events() -> list:
                 if line:
                     events.append(json.loads(line))
     except FileNotFoundError as _e:
-        print(f"[WARN] brahma_experience_engine: _e", file=sys.stderr)
+        print(f"[WARN] brahma_experience_engine: {_e}", file=sys.stderr)
     except Exception as e:
         print(f"[extreme_event_db] 加载事件库失败: {e}", file=sys.stderr)
     return events

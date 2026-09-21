@@ -76,7 +76,7 @@ def inject_bc_modules(_result: dict, ms: dict, score: int, breakdown: dict,
             _result['score_final'] = round(_old_s3 + _ssi_pen, 1)
             _result['score']       = _result['score_final']
     except Exception as _ssi_e:
-        print(f"[WARN] brahma_core_bc_inject: _ssi_e", file=sys.stderr)
+        print(f"[WARN] brahma_core_bc_inject: {_ssi_e}", file=sys.stderr)
 
     # ══ [设计院 2026-08-12 苏摩111封印] cross_asset_gate BTC/ETH相关性门控接线 ══
     # 根因：cross_asset_gate.py存在但完全未接入，BTC/ETH双开时1.85x风险敞口无法检测
@@ -136,7 +136,7 @@ def inject_bc_modules(_result: dict, ms: dict, score: int, breakdown: dict,
             _result['score_final'] = (_result.get('score_final') or 0) - 10
             _result.setdefault('breakdown_extra', {})['integrity_gate'] = -10
     except Exception as _e:
-        print(f"[WARN] brahma_core_bc_inject: _e", file=sys.stderr)
+        print(f"[WARN] brahma_core_bc_inject: {_e}", file=sys.stderr)
 
     # B4: mode_c_detector — 庄家行情识别，高波动假信号过滤
         pass  # mode_c失败不阻断

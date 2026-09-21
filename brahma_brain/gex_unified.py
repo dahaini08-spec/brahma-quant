@@ -714,7 +714,7 @@ def scan_gex(currency: str = 'BTC', force: bool = False) -> dict:
         with open(_GEX_HISTORY_FILE, 'a') as _hf:
             _hf.write(json.dumps(hist_record) + '\n')
     except Exception as _e:
-        print(f"[WARN] gex_unified: _e", file=sys.stderr)
+        print(f"[WARN] gex_unified: {_e}", file=sys.stderr)
 
     pass  # [静默]
     print(f'  MAX GEX: ${profile["max_gex_strike"]:,.0f}  '

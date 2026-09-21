@@ -230,7 +230,7 @@ def calc_replay(ms: dict, signal_dir: str, score: int, breakdown: dict, _result:
                 f'({"中仓已解锁" if _pm_mult==1.5 else "连胜加仓"})'
             )
     except Exception as _pm_e:
-        print(f"[WARN] brahma_core_replay: _pm_e", file=sys.stderr)
+        print(f"[WARN] brahma_core_replay: {_pm_e}", file=sys.stderr)
 
     # [达摩院v2.0 M09] 品种×维度权重修正层
     # 来源：full_universe_backtest dim_contrib铁证

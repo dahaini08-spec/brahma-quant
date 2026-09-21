@@ -167,7 +167,7 @@ def _trigger_param_nudge(matrix_key: str, m: dict) -> None:
             from position_sizer import sync_confidence_table_from_wr as _sync_ct
             _sync_ct(min_n=10)
         except Exception as _ct_e:
-            print(f"[WARN] ev_feedback: _ct_e", file=sys.stderr)
+            print(f"[WARN] ev_feedback: {_ct_e}", file=sys.stderr)
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def _generate_nudge(m: dict) -> str:
     """基于EV趋势生成参数微调建议"""

@@ -371,7 +371,7 @@ def score(symbol: str, force: bool = False, vol_ratio: float = None) -> dict:
             elif _close_now < _recent_low:
                 _oi_dir = 'SHORT_BUILD'
         except Exception as _e:
-            print(f"[WARN] regime_scorer: _e", file=sys.stderr)
+            print(f"[WARN] regime_scorer: {_e}", file=sys.stderr)
         
         # V3体制实时修正（覆盖EMA滞后）
         _v3_override = None
@@ -693,7 +693,7 @@ class RegimeStateMachine:
                     _af.write(json.dumps({'type': 'regime_save_failed', 'msg': str(e),
                         'symbol': getattr(self, 'symbol', '?'), 'ts': time.time()}) + '\n')
             except Exception as _e:
-                print(f"[WARN] regime_scorer: _e", file=sys.stderr)
+                print(f"[WARN] regime_scorer: {_e}", file=sys.stderr)
 
     def update(self, raw_regime: str, symbol: str = None, klines_4h: list = None) -> str:
         """

@@ -77,14 +77,14 @@ def step1_init(ctx: 'SimpleNamespace', symbol: str, signal_dir: str = None, deep
         from live_price_feed import bulk_update_from_api as _lpf_bulk
         _lpf_bulk([_sym])
     except Exception as _lpf_e:
-        print(f"[WARN] brahma_core: _lpf_e", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_lpf_e}", file=sys.stderr)
 
     # 矛盾1-A预热
     try:
         from data_cache import prefetch_symbol as _pf
         _pf(_sym)
     except Exception as _e:
-        print(f"[WARN] brahma_core: _e", file=sys.stderr)
+        print(f"[WARN] brahma_core: {_e}", file=sys.stderr)
 
     # 数据健康检查 + 降级标记
     try:

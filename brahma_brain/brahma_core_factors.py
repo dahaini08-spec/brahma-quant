@@ -66,7 +66,7 @@ def calc_factors(ms: dict, signal_dir: str, score: int, breakdown: dict,
         if _hurst_adj != 0:
             score += _hurst_adj
     except Exception as _hurst_e:
-        print(f"[WARN] brahma_core_factors: _hurst_e", file=sys.stderr)
+        print(f"[WARN] brahma_core_factors: {_hurst_e}", file=sys.stderr)
 
     # ══ [设计院 2026-08-12 苏摩111封印] Volume Profile成交量分布接入 ══
     # 根因：volume_profile.py存在但未接入，POC价格磁力区信息缺失
@@ -78,7 +78,7 @@ def calc_factors(ms: dict, signal_dir: str, score: int, breakdown: dict,
             score += _vp_score
             breakdown['VolProfile密度'] = f'{_vp_score:+d} {_vp_reason[:40]}'
     except Exception as _vp_e:
-        print(f"[WARN] brahma_core_factors: _vp_e", file=sys.stderr)
+        print(f"[WARN] brahma_core_factors: {_vp_e}", file=sys.stderr)
 
     # ══ [设计院 2026-06-30 全量接入 N10-B] 实时清算流 因子 ════════════════════
     # 模块: realtime_liq_tracker · 追踪近5分钟三所清算流方向
@@ -123,7 +123,7 @@ def calc_factors(ms: dict, signal_dir: str, score: int, breakdown: dict,
             _trace(_dn, {'symbol': _sym_for_trace, 'regime': _regime_for_trace, 'dir': signal_dir},
                    {'score': _ds}, _status, 0)
     except Exception as _e:
-        print(f"[WARN] brahma_core_factors: _e", file=sys.stderr)
+        print(f"[WARN] brahma_core_factors: {_e}", file=sys.stderr)
 
     # ── [FIX-3 2026-09-18] 逆势方向最终惩罚 — return前最后一步 ──────────
     # 根因：Phase C取消score乘数后，逆势RSI超卖加分导致BEAR_TREND LONG>SHORT

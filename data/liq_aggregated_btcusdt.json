@@ -1,14 +1,14 @@
 {
   "symbol": "BTCUSDT",
-  "ts": 1789909840517.4917,
-  "updated": "2026-09-20T13:10:40.517494+00:00",
+  "ts": 1789986885077.5715,
+  "updated": "2026-09-21T10:34:45.077574+00:00",
   "exchanges": {
     "binance": {
       "exchange": "binance",
-      "long_short_ratio": 2.1928,
-      "long_acct": 0.6868,
-      "short_acct": 0.3132,
-      "ts": 1789909200000
+      "long_short_ratio": 2.2218,
+      "long_acct": 0.6896,
+      "short_acct": 0.3104,
+      "ts": 1789984800000
     },
     "okx": {
       "exchange": "okx",
@@ -24,9 +24,9 @@
     }
   },
   "aggregated": {
-    "lsr": 2.1928,
-    "long_pressure": 0.687,
-    "short_pressure": 0.313,
+    "lsr": 2.2218,
+    "long_pressure": 0.69,
+    "short_pressure": 0.31,
     "total_liq_events": 0,
     "long_liq": 0,
     "short_liq": 0

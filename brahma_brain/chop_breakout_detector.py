@@ -112,7 +112,7 @@ def detect_chop_breakout(state: dict, symbol: str = 'BTCUSDT') -> dict:
             elif 'BUY' in _cvd_signal and _cvd_raw > 0:
                 cvd = max(_cvd_raw, 6)  # BUY signal + 正CVD = 买压确认
         except Exception as _e:
-            print(f"[WARN] chop_breakout_detector: _e", file=sys.stderr)
+            print(f"[WARN] chop_breakout_detector: {_e}", file=sys.stderr)
     # fallback: enhanced.breakdown.cvd
     if cvd == 0:
         enhanced = extra.get('enhanced', {})
@@ -224,7 +224,7 @@ def detect_chop_breakout(state: dict, symbol: str = 'BTCUSDT') -> dict:
                     nav_pct = 0.01
                     reason = f'LLM降级:假突破风险 | {reason}'
         except Exception as _e:
-            print(f"[WARN] chop_breakout_detector: _e", file=sys.stderr)
+            print(f"[WARN] chop_breakout_detector: {_e}", file=sys.stderr)
     # ── end P1-1 ────────────────────────────────────────────────────────────
 
     return {

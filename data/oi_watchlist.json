@@ -98,9 +98,9 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 100,
     "mode": "A",
-    "last_check": "2026-09-20 12:22 UTC",
-    "last_fr": -0.081566,
-    "last_price": 0.0006707,
+    "last_check": "2026-09-21 10:22 UTC",
+    "last_fr": -0.11289,
+    "last_price": 0.0006687,
     "last_trigger_pct": 50.0,
     "last_smc": "NONE"
   },
@@ -117,10 +117,10 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 76.37,
     "mode": "B",
-    "last_check": "2026-09-20 12:22 UTC",
+    "last_check": "2026-09-21 10:22 UTC",
     "last_fr": 0.005,
-    "last_price": 0.6943,
-    "last_trigger_pct": 75.0,
+    "last_price": 0.7538,
+    "last_trigger_pct": 50.0,
     "last_smc": "NONE"
   },
   "MTLUSDT": {
@@ -136,9 +136,9 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 71,
     "mode": "A",
-    "last_check": "2026-09-20 12:22 UTC",
-    "last_fr": 0.004516,
-    "last_price": 0.2997,
+    "last_check": "2026-09-21 10:22 UTC",
+    "last_fr": 0.000165,
+    "last_price": 0.3077,
     "last_trigger_pct": 75.0,
     "last_smc": "NONE"
   },
@@ -155,10 +155,10 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 91.67750000000001,
     "mode": "A",
-    "last_check": "2026-09-20 12:22 UTC",
+    "last_check": "2026-09-21 10:22 UTC",
     "last_fr": 0.0,
-    "last_price": 19.72,
-    "last_trigger_pct": 50.0,
+    "last_price": 21.6,
+    "last_trigger_pct": 25.0,
     "last_smc": "NONE"
   },
   "ORCLUSDT": {
@@ -174,11 +174,11 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 68,
     "mode": "A",
-    "last_check": "2026-09-20 12:22 UTC",
-    "last_fr": 0.0,
-    "last_price": 146.05,
+    "last_check": "2026-09-21 10:22 UTC",
+    "last_fr": 0.010422,
+    "last_price": 149.24,
     "last_trigger_pct": 75.0,
-    "last_smc": "HAMMER"
+    "last_smc": "NONE"
   },
   "CBRSUSDT": {
     "status": "RETIRED",
@@ -250,9 +250,9 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 73.568,
     "mode": "A",
-    "last_check": "2026-09-20 12:22 UTC",
-    "last_fr": -0.094803,
-    "last_price": 0.37517,
+    "last_check": "2026-09-21 10:22 UTC",
+    "last_fr": -0.040129,
+    "last_price": 0.39142,
     "last_trigger_pct": 25.0,
     "last_smc": "NONE"
   },
@@ -269,10 +269,10 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 72.65,
     "mode": "A",
-    "last_check": "2026-09-20 12:22 UTC",
-    "last_fr": 0.013264,
-    "last_price": 0.5717,
-    "last_trigger_pct": 75.0,
+    "last_check": "2026-09-21 10:22 UTC",
+    "last_fr": 0.017831,
+    "last_price": 0.6246,
+    "last_trigger_pct": 50.0,
     "last_smc": "NONE"
   },
   "RAYSOLUSDT": {
@@ -288,10 +288,10 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 72.238,
     "mode": "B",
-    "last_check": "2026-09-20 12:22 UTC",
+    "last_check": "2026-09-21 10:22 UTC",
     "last_fr": 0.005,
-    "last_price": 1.6279,
-    "last_trigger_pct": 75.0,
+    "last_price": 1.7366,
+    "last_trigger_pct": 50.0,
     "last_smc": "NONE"
   },
   "BMNRUSDT": {
@@ -307,10 +307,10 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 65,
     "mode": "B",
-    "last_check": "2026-09-20 12:22 UTC",
-    "last_fr": -0.051046,
-    "last_price": 25.4,
-    "last_trigger_pct": 50.0,
+    "last_check": "2026-09-21 10:22 UTC",
+    "last_fr": 0.0,
+    "last_price": 27.3,
+    "last_trigger_pct": 25.0,
     "last_smc": "NONE"
   },
   "SNXXUSDT": {
@@ -359,10 +359,10 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 100,
     "mode": "B",
-    "last_check": "2026-09-20 12:22 UTC",
-    "last_fr": 0.0,
-    "last_price": 3.051,
-    "last_trigger_pct": 50.0,
+    "last_check": "2026-09-21 10:22 UTC",
+    "last_fr": 0.026391,
+    "last_price": 3.026,
+    "last_trigger_pct": 75.0,
     "last_smc": "NONE"
   },
   "AINUSDT": {
@@ -378,9 +378,9 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 77,
     "mode": "A",
-    "last_check": "2026-09-20 12:22 UTC",
-    "last_fr": 0.013636,
-    "last_price": 0.02046,
+    "last_check": "2026-09-21 10:22 UTC",
+    "last_fr": 0.049308,
+    "last_price": 0.02116,
     "last_trigger_pct": 75.0,
     "last_smc": "NONE"
   },
@@ -397,9 +397,9 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 71.902,
     "mode": "B",
-    "last_check": "2026-09-20 12:22 UTC",
-    "last_fr": -0.077125,
-    "last_price": 90.04,
+    "last_check": "2026-09-21 10:22 UTC",
+    "last_fr": 0.009966,
+    "last_price": 96.37,
     "last_trigger_pct": 50.0,
     "last_smc": "NONE"
   },
@@ -416,10 +416,10 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 80.826,
     "mode": "B",
-    "last_check": "2026-09-20 12:22 UTC",
-    "last_fr": 0.01,
-    "last_price": 0.951,
-    "last_trigger_pct": 75.0,
+    "last_check": "2026-09-21 10:22 UTC",
+    "last_fr": 0.000718,
+    "last_price": 0.9806,
+    "last_trigger_pct": 50.0,
     "last_smc": "NONE"
   },
   "STRKUSDT": {
@@ -435,10 +435,10 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 80.72,
     "mode": "A",
-    "last_check": "2026-09-20 12:22 UTC",
+    "last_check": "2026-09-21 10:22 UTC",
     "last_fr": 0.005,
-    "last_price": 0.0453,
-    "last_trigger_pct": 75.0,
+    "last_price": 0.04751,
+    "last_trigger_pct": 50.0,
     "last_smc": "NONE"
   },
   "MYXUSDT": {
@@ -454,10 +454,10 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 71.152,
     "mode": "A",
-    "last_check": "2026-09-20 12:22 UTC",
+    "last_check": "2026-09-21 10:22 UTC",
     "last_fr": 0.005,
-    "last_price": 0.07781,
-    "last_trigger_pct": 50.0,
+    "last_price": 0.08206,
+    "last_trigger_pct": 75.0,
     "last_smc": "NONE"
   },
   "ZILUSDT": {
@@ -472,7 +472,12 @@
     "added": "2026-09-20",
     "source": "oi_advanced_scanner_auto",
     "oi_score": 68.1645,
-    "mode": "A"
+    "mode": "A",
+    "last_check": "2026-09-21 10:22 UTC",
+    "last_fr": -0.050496,
+    "last_price": 0.003619,
+    "last_trigger_pct": 50.0,
+    "last_smc": "NONE"
   },
   "ZAMAUSDT": {
     "status": "WATCHING",
@@ -486,7 +491,12 @@
     "added": "2026-09-20",
     "source": "oi_advanced_scanner_auto",
     "oi_score": 65.34,
-    "mode": "A"
+    "mode": "A",
+    "last_check": "2026-09-21 10:22 UTC",
+    "last_fr": 0.005,
+    "last_price": 0.0987,
+    "last_trigger_pct": 50.0,
+    "last_smc": "NONE"
   },
   "CUSDT": {
     "status": "WATCHING",
@@ -501,9 +511,9 @@
     "source": "oi_advanced_scanner_auto",
     "oi_score": 66.1275,
     "mode": "A",
-    "last_check": "2026-09-20 12:22 UTC",
+    "last_check": "2026-09-21 10:22 UTC",
     "last_fr": 0.005,
-    "last_price": 0.07608,
+    "last_price": 0.07857,
     "last_trigger_pct": 50.0,
     "last_smc": "NONE"
   },
@@ -533,7 +543,12 @@
     "added": "2026-09-20",
     "source": "oi_advanced_scanner_auto",
     "oi_score": 91.0925,
-    "mode": "A"
+    "mode": "A",
+    "last_check": "2026-09-21 10:22 UTC",
+    "last_fr": 0.005,
+    "last_price": 0.5768,
+    "last_trigger_pct": 50.0,
+    "last_smc": "NONE"
   },
   "BERAUSDT": {
     "status": "WATCHING",
@@ -547,6 +562,11 @@
     "added": "2026-09-20",
     "source": "oi_advanced_scanner_auto",
     "oi_score": 81.75399999999999,
-    "mode": "B"
+    "mode": "B",
+    "last_check": "2026-09-21 10:22 UTC",
+    "last_fr": 0.005,
+    "last_price": 0.2272,
+    "last_trigger_pct": 50.0,
+    "last_smc": "NONE"
   }
 }

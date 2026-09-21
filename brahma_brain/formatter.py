@@ -1130,7 +1130,7 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
             lines.append('  【方仓引擎】 ' + _fc_status +
                          ('：' + _fc_reason[:40] if _fc_reason else '：未运行或数据不足'))
     except Exception as _e:
-        print(f"[WARN] formatter: _e", file=sys.stderr)
+        print(f"[WARN] formatter: {_e}", file=sys.stderr)
 
     # ── 决策树输出 [设计院封印 2026-08-09 苏摩111] ────────────────────
     # [修复] brahma_engine.analyze()现已调用decide()，结果注入_result['decision']
@@ -1150,6 +1150,6 @@ def brahma_panorama_report(r: dict, compact: bool = False) -> str:
             if _ep and _ep.get('price'):
                 lines.append(f'    入场: ${_ep["price"]:,.2f}  SL: ${_ep.get("sl_price",0):,.2f}  RR: {_ep.get("rr",0):.1f}x')
     except Exception as _e:
-        print(f"[WARN] formatter: _e", file=sys.stderr)
+        print(f"[WARN] formatter: {_e}", file=sys.stderr)
 
     return '\n'.join(lines)

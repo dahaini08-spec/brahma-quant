@@ -94,7 +94,7 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
                 elif _total_usd > LIQ_CHAOS_THRESHOLD:
                     s7 = max(s7 + int(LIQ_CHAOS_PENALTY), 0)
     except Exception as _e:
-        print(f"[WARN] brahma_core_block_b: _e", file=sys.stderr)
+        print(f"[WARN] brahma_core_block_b: {_e}", file=sys.stderr)
 
     # ── s7增强层①: orderbook_heatmap 订单簿大单压力（权重升级 2026-07-01）──────────────
     # 否决权: ASK/BID>10倍做多 → -20分，允许负分传递到 score（不 clip 0）

@@ -29,3 +29,10 @@
 {"ts":1789910100,"actions":" restart_supercronic"}
 {"ts":1789919400,"actions":" restart_cvd"}
 {"ts":1789954800,"actions":" restart_supercronic"}
+{"ts":1789978800,"actions":" restart_supercronic"}
+{"ts":1789979100,"actions":" restart_supercronic"}
+{"ts":1789979400,"actions":" restart_supercronic"}
+{"ts":1789979700,"actions":" restart_supercronic"}
+{"ts":1789980000,"actions":" restart_supercronic"}
+{"ts":1789986300,"actions":" restart_watchdog_l1"}
+{"ts":1789986300,"actions":" restart_watchdog_l1"}

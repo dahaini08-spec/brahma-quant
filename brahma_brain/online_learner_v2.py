@@ -88,7 +88,7 @@ def save_weights(w: dict) -> None:
                 }
         _CALIB_WEIGHTS_FILE.write_text(json.dumps(calib, indent=2, ensure_ascii=False))
     except Exception as _se:
-        print(f"[WARN] online_learner_v2: _se", file=sys.stderr)
+        print(f"[WARN] online_learner_v2: {_se}", file=sys.stderr)
 
 
 def load_performance(days: int = 30) -> list:

@@ -193,7 +193,7 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
             _src = _cg_snap_fb['fear_greed'].get('source','?')
             pass  # [静默] f'[BrahmaBrain] CoinGlass降级[{_src}]: F&G={_cg_snap_fb["fear_greed"]["value"]} FR
         except Exception as _fb_e:
-            print(f"[WARN] brahma_core_step4: _fb_e", file=sys.stderr)
+            print(f"[WARN] brahma_core_step4: {_fb_e}", file=sys.stderr)
     # ── liq_scanner 补充清算数据（Binance公开接口，无需Coinglass Key）────
     try:
         from brahma_brain.liq_density_engine import get_liq_snapshot
@@ -214,7 +214,7 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
         extra_data['liq_snap'] = _liq_snap
         pass  # [静默] f'[BrahmaBrain] LiqScan: 散户多{_liq_snap["long_pct"]:.0f}% 大户多{_liq_snap["top_long
     except Exception as _liq_e:
-        print(f"[WARN] brahma_core_step4: _liq_e", file=sys.stderr)
+        print(f"[WARN] brahma_core_step4: {_liq_e}", file=sys.stderr)
     # ─────────────────────────────────────────────────────────────
     try:
         # 达摩院 v3 升级：传入 volumes + regime + 当前时间戳
@@ -276,7 +276,7 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
         # analyze_elliott已从 elliott_engine 移除，此处跳过
         pass
     except Exception as _ew_err:
-        print(f"[WARN] brahma_core_step4: _ew_err", file=sys.stderr)
+        print(f"[WARN] brahma_core_step4: {_ew_err}", file=sys.stderr)
     try:
         from sentiment_engine import get_sentiment_score as _sent_fn
         sent = _sent_fn(
@@ -566,7 +566,7 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     try:
         pass  # B2已禁用，结果在主评分流程的s14段处理
     except Exception as _e:
-        print(f"[WARN] brahma_core_step4: _e", file=sys.stderr)
+        print(f"[WARN] brahma_core_step4: {_e}", file=sys.stderr)
 
     # B3: 滑点模型
     try:
@@ -609,7 +609,7 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     try:
         pass  # C2已禁用
     except Exception as _e:
-        print(f"[WARN] brahma_core_step4: _e", file=sys.stderr)
+        print(f"[WARN] brahma_core_step4: {_e}", file=sys.stderr)
 
     # C3: NLP 情绪引擎
     try:

@@ -95,7 +95,7 @@ def council_verdict(
                 _llm_result['source'] = 'LLM'
                 return _llm_result
         except Exception as _e:
-            print(f"[WARN] llm_council: _e", file=sys.stderr)
+            print(f"[WARN] llm_council: {_e}", file=sys.stderr)
 
     # ── Fallback：规则引擎 ─────────────────────────────────────────────────
     votes = []   # 每项 +1/-1/0

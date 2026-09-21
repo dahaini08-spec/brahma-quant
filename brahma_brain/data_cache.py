@@ -166,7 +166,7 @@ def _cache_set(key: str, data, ttl: int) -> None:
         with open(path, 'w') as f:
             json.dump({'data': data, 'exp': exp}, f)
     except Exception as _e:
-        print(f"[WARN] data_cache: _e", file=sys.stderr)
+        print(f"[WARN] data_cache: {_e}", file=sys.stderr)
 
 # ─── SSL全局单例（2026-08-28 B2优化: 避免每次请求重建SSL context，节省~3.5s/全流程）──
 import ssl as _ssl_mod
@@ -450,7 +450,7 @@ def clear_expired() -> None:
         if purged:
             pass  # [静默]
     except Exception as _e:
-        print(f"[WARN] data_cache: _e", file=sys.stderr)
+        print(f"[WARN] data_cache: {_e}", file=sys.stderr)
 
 # ─── 便捷工具 ────────────────────────────────────────────────
 def klines_to_ohlcv(raw: list) -> dict:

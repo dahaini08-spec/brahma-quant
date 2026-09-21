@@ -42,7 +42,7 @@ def trace_dim(dim_name, input_data=None, output_data=None,
         with open(TRACE_FILE, 'a') as f:
             f.write(json.dumps(record, ensure_ascii=False) + '\n')
     except Exception as _e:
-        print(f"[WARN] dim_trace_writer: _e", file=sys.stderr)
+        print(f"[WARN] dim_trace_writer: {_e}", file=sys.stderr)
 
 def trace_vip_decision(sym, direction, action, score,
                        gate_results, vip_output, reason='') -> None:
@@ -71,7 +71,7 @@ def trace_vip_decision(sym, direction, action, score,
         with open(TRACE_FILE, 'a') as f:
             f.write(json.dumps(record, ensure_ascii=False) + '\n')
     except Exception as _e:
-        print(f"[WARN] dim_trace_writer: _e", file=sys.stderr)
+        print(f"[WARN] dim_trace_writer: {_e}", file=sys.stderr)
 
 def read_recent(n=10) -> Any:
     """read recent"""
@@ -88,7 +88,7 @@ def read_recent(n=10) -> Any:
                 except json.JSONDecodeError:
                     pass
     except Exception as _e:
-        print(f"[WARN] dim_trace_writer: _e", file=sys.stderr)
+        print(f"[WARN] dim_trace_writer: {_e}", file=sys.stderr)
     return records
 
 if __name__ == '__main__':

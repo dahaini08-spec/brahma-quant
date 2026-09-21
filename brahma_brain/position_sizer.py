@@ -209,7 +209,7 @@ def get_position_pct(symbol: str, score: float, direction: str,
                         max_pct = _protected_pct
                         level = f'{level}+SMALL_SAMPLE_GUARD(n={_total_n}<15→2%NAV)'
         except Exception as _e:
-            print(f"[WARN] position_sizer: _e", file=sys.stderr)
+            print(f"[WARN] position_sizer: {_e}", file=sys.stderr)
     # ─────────────────────────────────────────────────────────────────────────
 
     # ── [D: BEAR_RECOVERY_TRANSITION 前瞻仓位 2026-07-20 苏摩111批准] ────────
@@ -1421,7 +1421,7 @@ def compute(
             bandit_note = (f' BANDIT:arm={_br["arm"]}'
                            f',conf={_conf:.2f},rec={_br["recommended_sl_pct"]:.2f}%')
     except Exception as _e:
-        print(f"[WARN] position_sizer: _e", file=sys.stderr)
+        print(f"[WARN] position_sizer: {_e}", file=sys.stderr)
     # ────────────────────────────────────────────────────────
 
     return {

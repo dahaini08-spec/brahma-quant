@@ -990,7 +990,7 @@ def run_full_analysis(symbol: str, mode: str = 'auto') -> Any:
 
         report = '\n'.join(_s0s1s2) + '\n' + report
     except Exception as _adap_err:
-        print(f"[WARN] brahma_full_report: _adap_err", file=sys.stderr)
+        print(f"[WARN] brahma_full_report: {_adap_err}", file=sys.stderr)
     # ══ [END ADAPTIVE v3.0] ══════════════════════════════════════════════
 
     # ══ [360自愈机制 2026-08-30 苏摩111] 实时健康检测 ═══════════════════════

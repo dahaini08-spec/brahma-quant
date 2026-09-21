@@ -213,7 +213,7 @@ class CrossAssetGate:
                 if now_ts > exp_ts:
                     return False   # 已过期
             except Exception as _e:
-                print(f"[WARN] cross_asset_gate: _e", file=sys.stderr)
+                print(f"[WARN] cross_asset_gate: {_e}", file=sys.stderr)
 
         # ── 检查 valid 字段 ──────────────────────────────────
         if 'valid' in sig and not sig['valid']:

@@ -23,5 +23,14 @@
     "new_direction": "LONG",
     "timestamp": "2026-09-19T01:45:34.929833+00:00",
     "severity": "P1"
+  },
+  {
+    "type": "SCORE_JUMP",
+    "symbol": "BTC",
+    "old_score": 18.7,
+    "new_score": 132.2,
+    "delta": 113.5,
+    "timestamp": "2026-09-21T08:11:03.672066+00:00",
+    "severity": "P1"
   }
 ]

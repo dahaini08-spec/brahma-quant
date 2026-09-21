@@ -1,11 +1,11 @@
 {
   "BTCUSDT": {
-    "ts": 1789959824.7862039,
+    "ts": 1789965462.922486,
     "data": {
-      "rv_1d": 0.01378,
-      "rv_5d": 0.01459,
-      "rv_22d": 0.03937,
-      "rv_forecast": 0.02105,
+      "rv_1d": 0.01379,
+      "rv_5d": 0.01427,
+      "rv_22d": 0.03856,
+      "rv_forecast": 0.02072,
       "rv_percentile": 100,
       "regime_vol": "MEDIUM",
       "score_adj": 0,
@@ -13,13 +13,13 @@
     }
   },
   "ETHUSDT": {
-    "ts": 1789903888.4898,
+    "ts": 1789965462.9966197,
     "data": {
-      "rv_1d": 0.02031,
-      "rv_5d": 0.04285,
-      "rv_22d": 0.05087,
-      "rv_forecast": 0.03645,
-      "rv_percentile": 100,
+      "rv_1d": 0.02876,
+      "rv_5d": 0.02659,
+      "rv_22d": 0.04804,
+      "rv_forecast": 0.03292,
+      "rv_percentile": 80,
       "regime_vol": "HIGH",
       "score_adj": -3,
       "p_up_proxy": 0.45
@@ -2847,25 +2847,25 @@
     }
   },
   "BTC": {
-    "ts": 1789960169.8251739,
+    "ts": 1789986118.9021978,
     "data": {
-      "rv_1d": 0.01375,
-      "rv_5d": 0.01485,
-      "rv_22d": 0.03937,
-      "rv_forecast": 0.02113,
+      "rv_1d": 0.0285,
+      "rv_5d": 0.03658,
+      "rv_22d": 0.0497,
+      "rv_forecast": 0.0368,
       "rv_percentile": 100,
-      "regime_vol": "MEDIUM",
-      "score_adj": 0,
+      "regime_vol": "HIGH",
+      "score_adj": -3,
       "p_up_proxy": 0.45
     }
   },
   "ETH": {
-    "ts": 1789959622.0992897,
+    "ts": 1789981233.7169423,
     "data": {
-      "rv_1d": 0.02915,
-      "rv_5d": 0.02806,
-      "rv_22d": 0.05024,
-      "rv_forecast": 0.03419,
+      "rv_1d": 0.0308,
+      "rv_5d": 0.02867,
+      "rv_22d": 0.04864,
+      "rv_forecast": 0.03453,
       "rv_percentile": 80,
       "regime_vol": "HIGH",
       "score_adj": -3,
@@ -2925,12 +2925,12 @@
     }
   },
   "SOXL": {
-    "ts": 1789928655.4209547,
+    "ts": 1789971862.5969186,
     "data": {
-      "rv_1d": 0.02394,
-      "rv_5d": 0.05528,
-      "rv_22d": 0.09331,
-      "rv_forecast": 0.05395,
+      "rv_1d": 0.03823,
+      "rv_5d": 0.03927,
+      "rv_22d": 0.09556,
+      "rv_forecast": 0.05398,
       "rv_percentile": 100,
       "regime_vol": "EXTREME",
       "score_adj": -5,
@@ -2964,15 +2964,15 @@
     }
   },
   "EWY": {
-    "ts": 1789475107.7058568,
+    "ts": 1789971862.9099822,
     "data": {
-      "rv_1d": 0.02641,
-      "rv_5d": 0.0308,
-      "rv_22d": 0.03858,
-      "rv_forecast": 0.03093,
-      "rv_percentile": 80,
-      "regime_vol": "HIGH",
-      "score_adj": -3,
+      "rv_1d": 0.00847,
+      "rv_5d": 0.01326,
+      "rv_22d": 0.03828,
+      "rv_forecast": 0.01843,
+      "rv_percentile": 100,
+      "regime_vol": "MEDIUM",
+      "score_adj": 0,
       "p_up_proxy": 0.45
     }
   },
@@ -3016,12 +3016,12 @@
     }
   },
   "XAU": {
-    "ts": 1789939458.6535842,
+    "ts": 1789982671.8611054,
     "data": {
-      "rv_1d": 0.00188,
-      "rv_5d": 0.0047,
-      "rv_22d": 0.02582,
-      "rv_forecast": 0.00963,
+      "rv_1d": 0.00559,
+      "rv_5d": 0.00525,
+      "rv_22d": 0.01787,
+      "rv_forecast": 0.0089,
       "rv_percentile": 100,
       "regime_vol": "LOW",
       "score_adj": 3,
@@ -3029,15 +3029,15 @@
     }
   },
   "HYPE": {
-    "ts": 1789874659.5494363,
+    "ts": 1789971862.4256396,
     "data": {
-      "rv_1d": 0.03469,
-      "rv_5d": 0.0434,
-      "rv_22d": 0.06605,
-      "rv_forecast": 0.04592,
-      "rv_percentile": 100,
-      "regime_vol": "EXTREME",
-      "score_adj": -5,
+      "rv_1d": 0.03294,
+      "rv_5d": 0.02868,
+      "rv_22d": 0.05554,
+      "rv_forecast": 0.03722,
+      "rv_percentile": 80,
+      "regime_vol": "HIGH",
+      "score_adj": -3,
       "p_up_proxy": 0.45
     }
   },

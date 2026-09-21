@@ -207,7 +207,7 @@ def _call_llm(prompt: str, agent_name: str, model: str | None = None) -> Optiona
             if m:
                 return json.loads(m.group())
     except ImportError as _e:
-        print(f"[WARN] llm_council_bridge: _e", file=sys.stderr)
+        print(f"[WARN] llm_council_bridge: {_e}", file=sys.stderr)
     except Exception as e:
         logger.debug(f"[{agent_name}] LLM调用失败: {e}")
 
@@ -382,7 +382,7 @@ def _macro_agent_review(signal: Dict, market_ctx: Dict) -> Dict:
                     '\n注意：跨资产参照，驱动机制与加密货币不同，仅作宏观环境定位参考'
                 )
     except Exception as _e:
-        print(f"[WARN] llm_council_bridge: _e", file=sys.stderr)
+        print(f"[WARN] llm_council_bridge: {_e}", file=sys.stderr)
 
     prompt = MACRO_AGENT_PROMPT.format(
         symbol=symbol, direction=direction, score=score, regime=regime,
@@ -657,7 +657,7 @@ def review(
             ctx['eth_price_realtime'] = round(_eth_px, 2)
             flat_signal.setdefault('_macro_ctx', {})['eth_price'] = round(_eth_px, 2)
     except Exception as _e:
-        print(f"[WARN] llm_council_bridge: _e", file=sys.stderr)
+        print(f"[WARN] llm_council_bridge: {_e}", file=sys.stderr)
 
     # [设计院 2026-08-04] 注入2: 历史相似信号 — 找最近10条同体制同方向已结算信号
     try:

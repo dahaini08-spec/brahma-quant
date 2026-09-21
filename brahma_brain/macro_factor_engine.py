@@ -115,7 +115,7 @@ def get_event_window() -> dict:
             import json
             _macro_config = json.load(open(_cfg_path))
     except Exception as _e:
-        print(f"[WARN] macro_factor_engine: _e", file=sys.stderr)
+        print(f"[WARN] macro_factor_engine: {_e}", file=sys.stderr)
     
     # 如果FOMC已出结果（POST_FOMC），跳过当前FOMC事件窗口
     _fomc_resolved = _macro_config.get('fomc_stance', '') == 'POST_FOMC'

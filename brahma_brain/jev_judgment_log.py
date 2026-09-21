@@ -39,7 +39,7 @@ def log_judgment(symbol: str, judgment: dict, market_state: dict, result: dict) 
         with open(_LOG_FILE, 'a') as f:
             f.write(json.dumps(entry, ensure_ascii=False) + '\n')
     except Exception as _e:
-        print(f"[WARN] jev_judgment_log: _e", file=sys.stderr)
+        print(f"[WARN] jev_judgment_log: {_e}", file=sys.stderr)
 
 
 def settle_judgment(symbol: str, win: bool, pnl_pct: float) -> None:
@@ -67,7 +67,7 @@ def settle_judgment(symbol: str, win: bool, pnl_pct: float) -> None:
         if updated:
             _LOG_FILE.write_text('\n'.join(lines))
     except Exception as _e:
-        print(f"[WARN] jev_judgment_log: _e", file=sys.stderr)
+        print(f"[WARN] jev_judgment_log: {_e}", file=sys.stderr)
 
 
 def get_calibration_stats() -> dict:

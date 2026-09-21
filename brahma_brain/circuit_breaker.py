@@ -81,7 +81,7 @@ class CircuitBreaker:
                 self._state.total_calls = data.get('total_calls', 0)
                 self._state.total_failures = data.get('total_failures', 0)
         except Exception as _e:
-            print(f"[WARN] circuit_breaker: _e", file=sys.stderr)
+            print(f"[WARN] circuit_breaker: {_e}", file=sys.stderr)
     
     def _save_state(self) -> None:
         """持久化状态"""

@@ -80,7 +80,7 @@ def _check_macro_calendar() -> Dict:
         try:
             _macro_data = _json.loads(open(_md_path).read())
         except Exception as _e:
-            print(f"[WARN] trader_brain: _e", file=sys.stderr)
+            print(f"[WARN] trader_brain: {_e}", file=sys.stderr)
     _real_path = _os.path.join(_data_dir, 'macro_real.json')
     if _os.path.exists(_real_path):
         try:
@@ -94,7 +94,7 @@ def _check_macro_calendar() -> Dict:
                         'hours_to_event': -1.0, 'impact': _evt['impact'],
                         'result': _note, 'action': _action, 'macro_data': _macro_data}
         except Exception as _e:
-            print(f"[WARN] trader_brain: _e", file=sys.stderr)
+            print(f"[WARN] trader_brain: {_e}", file=sys.stderr)
     _evt_h, _evt_m = map(int, _evt['time_utc'].split(':'))
     _evt_min = _evt_h * 60 + _evt_m
     _diff_min = _evt_min - _now_min
@@ -472,7 +472,7 @@ def decide(
             _hunt_state = _json_hunt.loads(_state_file.read_text())
             _hunt_intel = extract_hunt_intel(_hunt_state, symbol.replace('USDT',''))
     except Exception as _e:
-        print(f"[WARN] trader_brain: _e", file=sys.stderr)
+        print(f"[WARN] trader_brain: {_e}", file=sys.stderr)
 
     # 猎杀修正逻辑
     _hunt_adjusted = False
@@ -749,7 +749,7 @@ def decide(
             _b2_rejected = True
             missing.append(f'b2 WR={_b2_wr:.0f}%<10%（极危险直接否决）')
     except Exception as _e:
-        print(f"[WARN] trader_brain: _e", file=sys.stderr)
+        print(f"[WARN] trader_brain: {_e}", file=sys.stderr)
 
     # === Gate1: score > 动态阈值 ===
     # [改革P1-1 2026-09-18 苏摩111] Hurst>0.6时门槛动态降低（趋势正在形成，提前放行）
@@ -762,7 +762,7 @@ def decide(
             _gate_map = _gate_cfg.get('score_gate', {})
             _score_gate = _gate_map.get(regime, 80)
     except Exception as _e:
-        print(f"[WARN] trader_brain: _e", file=sys.stderr)
+        print(f"[WARN] trader_brain: {_e}", file=sys.stderr)
     # Hurst>0.6 → CHOP_MID门槛从60降到45（趋势隐现，提前放行）
     # [P0-1修复 2026-09-19 苏摩111] Hurst>0.6 + κ<-0.1 → CHOP_TREND_TRANSITION gate降到30
     # 三方联合审核：两个独立维度共振才切换，最少误判
@@ -786,7 +786,7 @@ def decide(
             _gate2_pass = False
             missing.append(f'成本后EV={_net_ev:+.2f}%≤0')
     except Exception as _e:
-        print(f"[WARN] trader_brain: _e", file=sys.stderr)
+        print(f"[WARN] trader_brain: {_e}", file=sys.stderr)
 
     # === Gate3: 风控熔断 ===
     _gate3_pass = True
@@ -812,7 +812,7 @@ def decide(
                     _fomc_window = True
                     break
     except Exception as _e:
-        print(f"[WARN] trader_brain: _e", file=sys.stderr)
+        print(f"[WARN] trader_brain: {_e}", file=sys.stderr)
     if _fomc_window and _liq_wall_short and direction == 'SHORT' and not _breakout_signal:
         _gate3_pass = False
         missing.append('FOMC窗口止损墙做空→等待')
@@ -1032,7 +1032,7 @@ def decide(
         elif _risk_result['modified'].get('position_pct', 0) != position_pct:
             position_pct = _risk_result['modified']['position_pct']
     except Exception as _e:
-        print(f"[WARN] trader_brain: _e", file=sys.stderr)
+        print(f"[WARN] trader_brain: {_e}", file=sys.stderr)
 
     # ── AMBUSCADE 伏击层 [2026-09-14 苏摩111] ──────────────────
     # 预判埋伏：WAIT时检查预判信号≥2个→覆盖为AMBUSCADE

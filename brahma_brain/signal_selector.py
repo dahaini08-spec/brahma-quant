@@ -81,7 +81,7 @@ try:
         for _k in DYNAMIC_MIN:
             DYNAMIC_MIN[_k] = _dyn_threshold
 except Exception as _e:
-    print(f"[WARN] signal_selector: _e", file=sys.stderr)
+    print(f"[WARN] signal_selector: {_e}", file=sys.stderr)
 SINGLE_DIR_DIFF = 15    # 超过此差值推单向
 
 

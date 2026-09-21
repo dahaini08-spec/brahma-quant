@@ -146,7 +146,7 @@ def _safe_score_symbol(symbol: str) -> Optional[dict]:
         from dharma.pump_hunter.scan_and_alert import score_single
         return score_single(symbol)
     except ImportError as _e:
-        print(f"[WARN] brahma_parallel_engine: _e", file=sys.stderr)
+        print(f"[WARN] brahma_parallel_engine: {_e}", file=sys.stderr)
     try:
         # 降级：直接从 scan_and_alert 调用逻辑
 # 模块不存在，已注释

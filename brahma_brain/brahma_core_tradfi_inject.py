@@ -286,9 +286,9 @@ def inject_tradfi(_result: dict, ms: dict, score: int, breakdown: dict,
                     _cf_ref['action'] = _tb_action
                     _result['confluence'] = _cf_ref
             except Exception as _e:
-                print(f"[WARN] brahma_core_tradfi_inject: _e", file=sys.stderr)
+                print(f"[WARN] brahma_core_tradfi_inject: {_e}", file=sys.stderr)
     except Exception as _e:
-        print(f"[WARN] brahma_core_tradfi_inject: _e", file=sys.stderr)
+        print(f"[WARN] brahma_core_tradfi_inject: {_e}", file=sys.stderr)
 
     # [2026-09-15 苏摩111] 神经总线感知 — 分析完成时emit
     try:
@@ -306,7 +306,7 @@ def inject_tradfi(_result: dict, ms: dict, score: int, breakdown: dict,
                           len(_breakdown), _active[:10], _sleep[:10],
                           float(_ev or 0), _signal)
     except Exception as _e:
-        print(f"[WARN] brahma_core_tradfi_inject: _e", file=sys.stderr)
+        print(f"[WARN] brahma_core_tradfi_inject: {_e}", file=sys.stderr)
 
     # [2026-09-15 苏摩111] 防御性保证：analyze()永远返回dict
     if not isinstance(_result, dict):

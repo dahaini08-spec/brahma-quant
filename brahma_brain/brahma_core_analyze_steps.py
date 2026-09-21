@@ -108,7 +108,7 @@ def _analyze_step1(symbol: str, signal_dir: str) -> dict:
                         ms['regime'] = 'BEAR_EARLY'
                         ms['_rtc_override'] = f'实时覆盖: {_cur_regime}→BEAR_EARLY drop={_rtc_drop:.1%}'
     except Exception as _e:
-        print(f"[WARN] brahma_core_analyze_steps: _e", file=sys.stderr)
+        print(f"[WARN] brahma_core_analyze_steps: {_e}", file=sys.stderr)
     # ── [ROOT-FIX-3 END] ─────────────────────────────────────────────────
 
     # ── [因果AI P0-A] Causal Regime Verifier ────────────────────

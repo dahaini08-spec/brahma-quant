@@ -65,7 +65,7 @@ def load_live_signals() -> Any:
                     try:
                         signals.append(json.loads(line))
                     except Exception as _e:
-                        print(f"[WARN] dag_weight_calibrator: _e", file=sys.stderr)
+                        print(f"[WARN] dag_weight_calibrator: {_e}", file=sys.stderr)
     return signals
 
 

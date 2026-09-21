@@ -827,7 +827,7 @@ def calc_block_a(ms: dict, smc: dict, signal_dir: str,
             breakdown['_ob_map'] = ob_map
 
     except Exception as _e:
-        print(f"[WARN] brahma_core_block_a: _e", file=sys.stderr)
+        print(f"[WARN] brahma_core_block_a: {_e}", file=sys.stderr)
 
     return {
         's1': s1, 's2': s2, 's3': s3, 's4': s4,

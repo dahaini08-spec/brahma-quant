@@ -92,7 +92,7 @@ def settle_pending(current_price: float, symbol: str) -> dict:
                 else:
                     positions.append(p)
             except Exception as _e:
-                print(f"[WARN] signal_settlement_engine: _e", file=sys.stderr)
+                print(f"[WARN] signal_settlement_engine: {_e}", file=sys.stderr)
 
     # 回写未结算的
     with open(PAPER_FILE, 'w') as f:
@@ -155,7 +155,7 @@ def get_wr_stats() -> dict:
                     stats[key]['lose'] += 1
                 stats[key]['scores'].append(d.get('score', 0))
             except Exception as _e:
-                print(f"[WARN] signal_settlement_engine: _e", file=sys.stderr)
+                print(f"[WARN] signal_settlement_engine: {_e}", file=sys.stderr)
 
     result = {}
     for key, v in stats.items():

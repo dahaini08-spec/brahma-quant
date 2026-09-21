@@ -1,17 +1,17 @@
 {
   "currency": "ETH",
-  "total_call_oi": 1208770.0,
-  "total_put_oi": 644541.0,
+  "total_call_oi": 1183200.0,
+  "total_put_oi": 631086.0,
   "pc_oi_ratio": 0.533,
-  "pc_vol_ratio": 0.643,
+  "pc_vol_ratio": 0.679,
   "interpretation_oi": "\ud83d\udfe2\u504f\u591a(0.5~0.8\uff0cCall\u9700\u6c42\u65fa\u76db)",
   "interpretation_vol": "\ud83d\udfe2\u504f\u591a(0.5~0.8\uff0cCall\u9700\u6c42\u65fa\u76db)",
   "near_expiry_ratios": {
-    "19SEP26": 1.168,
-    "20SEP26": 1.191,
-    "21SEP26": 0.542
+    "22SEP26": 0.729,
+    "23SEP26": 1.16,
+    "24SEP26": 1.691
   },
-  "near_expiry_pc": 1.168,
+  "near_expiry_pc": 0.729,
   "pc_score": 8,
-  "ts": 1789801270.9647207
+  "ts": 1789978360.0202808
 }

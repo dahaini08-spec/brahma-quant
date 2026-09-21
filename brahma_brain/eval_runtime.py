@@ -36,7 +36,7 @@ def _load_last_analysis(symbol: str) -> dict:
             if entry.get('symbol') == symbol:
                 return entry
     except Exception as _e:
-        print(f"[WARN] eval_runtime: _e", file=sys.stderr)
+        print(f"[WARN] eval_runtime: {_e}", file=sys.stderr)
     return {}
 
 
@@ -49,7 +49,7 @@ def _write_alert(alert: dict) -> None:
         alerts.append(alert)
         _ALERT_FILE.write_text(json.dumps(alerts[-50:], ensure_ascii=False, indent=2))
     except Exception as _e:
-        print(f"[WARN] eval_runtime: _e", file=sys.stderr)
+        print(f"[WARN] eval_runtime: {_e}", file=sys.stderr)
 
 
 def eval_analysis_result(symbol: str, result: dict) -> dict:
@@ -82,7 +82,7 @@ def eval_analysis_result(symbol: str, result: dict) -> dict:
         with open(_LOG_FILE, 'a') as f:
             f.write(json.dumps(current, ensure_ascii=False) + '\n')
     except Exception as _e:
-        print(f"[WARN] eval_runtime: _e", file=sys.stderr)
+        print(f"[WARN] eval_runtime: {_e}", file=sys.stderr)
 
     if not last:
         return {'is_normal': True, 'alerts': [], 'changes': {}, 'reason': '首次分析，无对比基线'}

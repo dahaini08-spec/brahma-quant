@@ -41,7 +41,7 @@ def emit(event_type: str, module: str, level: str = 'INFO',
         with open(BUS_FILE, 'a') as f:
             f.write(json.dumps(record, ensure_ascii=False, default=str) + '\n')
     except Exception as _e:
-        print(f"[WARN] nerve_bus_writer: _e", file=sys.stderr)
+        print(f"[WARN] nerve_bus_writer: {_e}", file=sys.stderr)
 
 def emit_analysis_done(symbol: str, score: float, regime: str, direction: str,
                        dim_count: int, active_dims: list, sleep_dims: list,

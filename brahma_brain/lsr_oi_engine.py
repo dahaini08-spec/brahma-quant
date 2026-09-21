@@ -271,11 +271,12 @@ def lsr_oi_score(symbol: str, signal_dir: str,
         # 回测铁证：Z>1.5时做多WR从63%→41%，Z>2.0触发额外-10否决权
         try:
             import math as _m, requests as _rq
-            _lr = _rq.get(
+            _lr_resp = _rq.get(
                 'https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
                 params={'symbol': symbol, 'period': '1h', 'limit': 48}, timeout=4
-            ).json()
-            _hist = [float(x.get('longAccount', x.get('longAccountRatio', 0.5)))*100 for x in _lr]
+            )
+            _lr = _lr_resp.json() if _lr_resp.status_code == 200 else []
+            _hist = [float(x.get('longAccount', x.get('longAccountRatio', 0.5)))*100 for x in _lr] if isinstance(_lr, list) else []
             if len(_hist) >= 8:
                 _mean = sum(_hist)/len(_hist)
                 _std  = _m.sqrt(sum((x-_mean)**2 for x in _hist)/len(_hist))
@@ -297,11 +298,12 @@ def lsr_oi_score(symbol: str, signal_dir: str,
         try:
             import requests as _rq_lsr
             # 4H LSR趋势
-            _lr_4h = _rq_lsr.get(
+            _lr_4h_resp = _rq_lsr.get(
                 'https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
                 params={'symbol': symbol, 'period': '4h', 'limit': 2}, timeout=4
-            ).json()
-            if len(_lr_4h) >= 2:
+            )
+            _lr_4h = _lr_4h_resp.json() if _lr_4h_resp.status_code == 200 else []
+            if isinstance(_lr_4h, list) and len(_lr_4h) >= 2:
                 _lsr_4h_prev = float(_lr_4h[0].get('longAccount', 0.5))
                 _lsr_4h_cur = float(_lr_4h[1].get('longAccount', 0.5))
                 _lsr_4h_delta = (_lsr_4h_cur - _lsr_4h_prev) * 100
@@ -311,11 +313,12 @@ def lsr_oi_score(symbol: str, signal_dir: str,
                     elif signal_dir == 'SHORT' and _lsr_4h_delta < -3:
                         s_lsr += 2; note_lsr += f' [4H LSR{_lsr_4h_delta:.1f}%空增+2]'
             # 15M LSR快照
-            _lr_15m = _rq_lsr.get(
+            _lr_15m_resp = _rq_lsr.get(
                 'https://fapi.binance.com/futures/data/globalLongShortAccountRatio',
                 params={'symbol': symbol, 'period': '15m', 'limit': 2}, timeout=4
-            ).json()
-            if _lr_15m:
+            )
+            _lr_15m = _lr_15m_resp.json() if _lr_15m_resp.status_code == 200 else []
+            if isinstance(_lr_15m, list) and _lr_15m:
                 _lsr_15m = float(_lr_15m[0].get('longAccount', 0.5)) * 100
                 note_lsr += f' [15M LSR={_lsr_15m:.1f}%]'
         except Exception as _e_320:
@@ -327,11 +330,12 @@ def lsr_oi_score(symbol: str, signal_dir: str,
         _oi_1d_pct = 0.0
         try:
             import requests as _rq_oi
-            _oi_1d = _rq_oi.get(
+            _oi_1d_resp = _rq_oi.get(
                 'https://fapi.binance.com/futures/data/openInterestHist',
                 params={'symbol': symbol, 'period': '1d', 'limit': 2}, timeout=4
             )
-            if _oi_1d and len(_oi_1d) >= 2:
+            _oi_1d = _oi_1d_resp.json() if _oi_1d_resp.status_code == 200 else []
+            if isinstance(_oi_1d, list) and _oi_1d and len(_oi_1d) >= 2:
                 _prev_oi = float(_oi_1d[0].get('sumOpenInterest', 0))
                 _cur_oi = float(_oi_1d[1].get('sumOpenInterest', 0))
                 if _prev_oi > 0:

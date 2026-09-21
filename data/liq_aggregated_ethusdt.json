@@ -1,14 +1,14 @@
 {
   "symbol": "ETHUSDT",
-  "ts": 1789909840772.5125,
-  "updated": "2026-09-20T13:10:40.772514+00:00",
+  "ts": 1789986885366.8994,
+  "updated": "2026-09-21T10:34:45.366902+00:00",
   "exchanges": {
     "binance": {
       "exchange": "binance",
-      "long_short_ratio": 1.6217,
-      "long_acct": 0.6186,
-      "short_acct": 0.3814,
-      "ts": 1789909200000
+      "long_short_ratio": 1.5036,
+      "long_acct": 0.6006,
+      "short_acct": 0.3994,
+      "ts": 1789984800000
     },
     "okx": {
       "exchange": "okx",
@@ -24,9 +24,9 @@
     }
   },
   "aggregated": {
-    "lsr": 1.6217,
-    "long_pressure": 0.619,
-    "short_pressure": 0.381,
+    "lsr": 1.5036,
+    "long_pressure": 0.601,
+    "short_pressure": 0.399,
     "total_liq_events": 0,
     "long_liq": 0,
     "short_liq": 0

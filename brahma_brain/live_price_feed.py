@@ -51,7 +51,7 @@ def update_price(symbol: str, price: float, source: str = 'ws') -> None:
         }
         LIVE_PRICE_FILE.write_text(json.dumps(data))
     except Exception as _e:
-        print(f"[WARN] live_price_feed: _e", file=sys.stderr)
+        print(f"[WARN] live_price_feed: {_e}", file=sys.stderr)
 
 
 # ─── 读取（brahma_brain 分析时调用）────────────────────────────

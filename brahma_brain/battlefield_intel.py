@@ -44,7 +44,7 @@ def _load_intel() -> Any:
         if INTEL_PATH.exists():
             return json.loads(INTEL_PATH.read_text())
     except (IOError) as _e:
-        print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
+        print(f"[WARN] battlefield_intel: {_e}", file=sys.stderr)
     return {}
 
 def _save_intel(data) -> None:
@@ -153,7 +153,7 @@ def merge_cvd_snapshots() -> Any:
                 if cvd_1h is not None:
                     updates[sym] = {'cvd_1h': cvd_1h}
             except Exception as _e:
-                print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
+                print(f"[WARN] battlefield_intel: {_e}", file=sys.stderr)
     if updates:
         update_batch('cvd', updates)
     return len(updates)
@@ -183,7 +183,7 @@ def merge_liq_heatmaps() -> Any:
                 if fields:
                     updates[sym] = fields
             except Exception as _e:
-                print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
+                print(f"[WARN] battlefield_intel: {_e}", file=sys.stderr)
     if updates:
         update_batch('liq_heatmap', updates)
     return len(updates)
@@ -200,7 +200,7 @@ def merge_scan_candidates() -> Any:
                 if sym:
                     updates[sym] = {'screener_score': c.get('score', 0)}
         except Exception as _e:
-            print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
+            print(f"[WARN] battlefield_intel: {_e}", file=sys.stderr)
     if updates:
         update_batch('screener', updates)
     return len(updates)
@@ -263,7 +263,7 @@ def merge_rsi_watcher() -> Any:
                     if rsi_1h is not None and 'rsi_15m' not in updates.get(sym,{}):
                         updates[sym]['rsi_15m'] = float(rsi_1h)
         except Exception as _e:
-            print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
+            print(f"[WARN] battlefield_intel: {_e}", file=sys.stderr)
     if updates:
         update_batch('rsi_watcher', updates)
     return len(updates)
@@ -309,9 +309,9 @@ def merge_oi_signals() -> Any:
                             # jsonl追加写，取最新条目覆盖
                             updates[sym] = fields
                     except Exception as _e:
-                        print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
+                        print(f"[WARN] battlefield_intel: {_e}", file=sys.stderr)
         except Exception as _e:
-            print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
+            print(f"[WARN] battlefield_intel: {_e}", file=sys.stderr)
     if updates:
         update_batch('oi_scanner', updates)
     return len(updates)
@@ -336,7 +336,7 @@ def merge_whale_monitor() -> Any:
                 try:
                     fields['whale_net_usd'] = float(whale_net)
                 except Exception as _e:
-                    print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
+                    print(f"[WARN] battlefield_intel: {_e}", file=sys.stderr)
             whale_score = d.get('whale_score')
             if whale_score is not None:
                 fields['whale_score'] = int(whale_score)
@@ -348,14 +348,14 @@ def merge_whale_monitor() -> Any:
                 try:
                     fields['whale_ls_ratio'] = float(whale_ls)
                 except Exception as _e:
-                    print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
+                    print(f"[WARN] battlefield_intel: {_e}", file=sys.stderr)
             whale_oi = d.get('oi_signal')
             if whale_oi:
                 fields['whale_oi_signal'] = str(whale_oi)
             if fields:
                 updates[sym] = fields
         except Exception as _e:
-            print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
+            print(f"[WARN] battlefield_intel: {_e}", file=sys.stderr)
     if updates:
         update_batch('whale_monitor', updates)
     return len(updates)
@@ -390,7 +390,7 @@ def merge_breakout_watch() -> Any:
                 if sym not in alert_syms:
                     updates[sym] = {'breakout_signal': 'WATCH'}
         except Exception as _e:
-            print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
+            print(f"[WARN] battlefield_intel: {_e}", file=sys.stderr)
     if updates:
         update_batch('breakout_watch', updates)
     return len(updates)
@@ -418,7 +418,7 @@ def merge_square_extreme() -> Any:
                         if isinstance(v, dict) and v.get('extreme') or v.get('alert'):
                             updates[sym] = {'square_extreme': True}
             except Exception as _e:
-                print(f"[WARN] battlefield_intel: _e", file=sys.stderr)
+                print(f"[WARN] battlefield_intel: {_e}", file=sys.stderr)
     if updates:
         update_batch('square_extreme', updates)
     return len(updates)

@@ -46,7 +46,7 @@ _urllib_request.urlopen = _ssl_urlopen
 try:
     from data_cache import _SSL_CTX as _DC_SSL_CTX
 except ImportError as _e:
-    print(f"[WARN] __init__: _e", file=sys.stderr)
+    print(f"[WARN] __init__: {_e}", file=sys.stderr)
 
 # [P0-2 2026-09-03 苏摩111] safe_json全局注入 — 防circular reference
 import json as _json
