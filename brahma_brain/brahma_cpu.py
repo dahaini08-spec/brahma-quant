@@ -315,7 +315,7 @@ def _do_alert(symbol: str, signal_dir: str, score_result: dict,
 
 
 def _do_watch(symbol: str, signal_dir: str, score_result: dict) -> None:
-    """写入监控列表"""
+    """写入监控列表 + 写入auto_signal_queue供paper_executor消费"""
     try:
         watch = {}
         if _WATCH_FILE.exists():
@@ -330,6 +330,35 @@ def _do_watch(symbol: str, signal_dir: str, score_result: dict) -> None:
             'expires_at': time.time() + 4 * 3600,  # 4小时过期
         }
         _WATCH_FILE.write_text(json.dumps(watch, ensure_ascii=False, indent=2))
+        
+        # [9.21 苏摩111] 写入auto_signal_queue供paper_executor开纸面单
+        _queue_path = _DATA / 'auto_signal_queue.json'
+        queue = []
+        if _queue_path.exists():
+            try:
+                queue = json.loads(_queue_path.read_text())
+            except Exception:
+                queue = []
+        # 构建信号（带grade_num，paper_executor必需）
+        _cf = score_result.get('confluence', {})
+        _signal = {
+            'symbol':       symbol,
+            'direction':    signal_dir or 'LONG',
+            'signal_dir':   signal_dir or 'LONG',
+            'score':        score_result.get('score', 0),
+            'score_final':  score_result.get('score', 0),
+            'grade_num':    _cf.get('score', score_result.get('score', 0)),  # 用confluence原始score作为grade
+            'grade':        _cf.get('score', score_result.get('score', 0)),
+            'regime':       score_result.get('regime', 'UNKNOWN'),
+            'sl_pct':       2.0,
+            'signal_id':    f'{symbol}_{signal_dir or "LONG"}_{int(time.time())}',
+            'ts':           time.time(),
+        }
+        # 去重：同symbol+direction的旧信号移除
+        queue = [q for q in queue if not (q.get('symbol') == symbol and q.get('direction') == _signal['direction'])]
+        queue.append(_signal)
+        _queue_path.write_text(json.dumps(queue, ensure_ascii=False, indent=2))
+        print(f'[CPU·WATCH] {symbol} {signal_dir} score={_signal["score"]:.1f} → auto_signal_queue')
     except Exception as e:
         _log.warning(f'[CPU·WATCH] 写入失败: {e}')
 
@@ -621,6 +650,8 @@ if __name__ == '__main__':
                         help='批量处理rsi_trigger_event.json')
     parser.add_argument('--auto', action='store_true',
                         help='[Autopilot] 自动模式：批量处理trigger + 写入记忆层')
+    parser.add_argument('--symbols', default=None,
+                        help='[Autopilot] 强制分析指定标的，逗号分隔，如 BTCUSDT,ETHUSDT')
     args = parser.parse_args()
 
     if args.auto:
@@ -628,7 +659,20 @@ if __name__ == '__main__':
         _l2 = _load_l2_lessons()
         if _l2.get('lessons'):
             print(f'[Autopilot] L2语义记忆: {len(_l2["lessons"])}条规则')
-        results = process_trigger_file()
+        
+        # [9.21 苏摩111] --symbols强制分析指定标的（不依赖trigger_file）
+        if args.symbols:
+            _force_syms = [s.strip().upper() for s in args.symbols.split(',')]
+            print(f'[Autopilot] 强制分析: {_force_syms}')
+            results = []
+            for sym in _force_syms:
+                _t0 = time.time()
+                r = process_event(symbol=sym, signal_dir=None)
+                r['elapsed'] = time.time() - _t0
+                results.append(r)
+        else:
+            results = process_trigger_file()
+        
         for r in results:
             sym  = r.get('symbol', '?')
             dec  = r.get('decision', '?')

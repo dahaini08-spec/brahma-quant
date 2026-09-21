@@ -39,7 +39,8 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # paper engine — :08和:38
 08,38 * * * * cd /root/.openclaw/workspace/trading-system && timeout 55 bash scripts/run_paper_engine.sh >> logs/syscron.log 2>&1
 # paper TP monitor — :10和:40
-10,40 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/paper_tp_monitor.py >> logs/syscron.log 2>&1
+# 10,40 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/paper_tp_monitor.py >> logs/syscron.log 2>&1
+# [9.21] 已由Autopilot区块的paper_tp_monitor替代(每6H)
 # guardian — :12和:42
 12,42 * * * * cd /root/.openclaw/workspace/trading-system && timeout 55 bash scripts/guardian_wrapper.sh >> logs/syscron.log 2>&1
 
@@ -148,8 +149,8 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # process-guardian — 每10min纯脚本,不消耗AI积分
 */10 * * * * cd /root/.openclaw/workspace/trading-system && timeout 15 bash scripts/process_guardian.sh >> logs/process_guardian.log 2>&1
 # auto-executor — 每小时纯脚本,不消耗AI积分
-# [9.18 修复] paper_executor从:00移到:07错峰
-07 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/paper_executor.py >> logs/paper_executor.log 2>&1
+# 07 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/paper_executor.py >> logs/paper_executor.log 2>&1
+# [9.21] 已由Autopilot区块的paper_executor替代(每1H:15)
 # signal-settler — 每6h纯脚本,WR反馈闭环结算 [9.15苏摩111 从OpenClaw cron移入supercronic]
 # [9.18 修复] signal_settler从:00移到:52错峰
 52 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/signal_settler.py --push >> logs/settler.log 2>&1
@@ -181,14 +182,18 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [9.20 苏摩111] Brahma Autopilot 自动驾驶记忆决策机器人
 # ═══════════════════════════════════════════════════════════════
 
-# L0+L1: 决策机器人每5分钟运行（WATCH/ALERT模式，不自主EXECUTE）
-*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 brahma_brain/brahma_cpu.py --auto >> logs/autopilot_cpu.log 2>&1
+# [9.21 苏摩111] Autopilot cron优化：1H频率 + 强制BTC/ETH + 省积分
+# L0+L1: 决策机器人每1H运行（强制BTC+ETH，不依赖trigger_file）
+0 * * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 brahma_brain/brahma_cpu.py --auto --symbols BTCUSDT,ETHUSDT >> logs/autopilot_cpu.log 2>&1
 
 # L2: 学习层每天02:00 UTC运行（WR反哺+L2语义记忆生成）
 0 2 * * * cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/wr_feedback_engine.py >> logs/autopilot_learn.log 2>&1
 
-# 执行层 dry-run模式每10分钟（Phase 4: 验证用，Phase 5后改为实盘）
-*/10 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/auto_executor.py --dry >> logs/autopilot_exec.log 2>&1
+# 执行层: paper_executor每1H消费auto_signal_queue开纸面单
+15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/paper_executor.py >> logs/paper_executor.log 2>&1
+
+# 纸面单TP/SL检查: 每6H
+30 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/paper_tp_monitor.py >> logs/paper_tp.log 2>&1
 
 # L0工作记忆刷新（每5分钟，独立脚本）
 */5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/autopilot_l0_refresh.py >> logs/autopilot_l0.log 2>&1
