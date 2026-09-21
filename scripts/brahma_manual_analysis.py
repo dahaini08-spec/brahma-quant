@@ -229,7 +229,8 @@ def step0_fetch_all(sym: str) -> dict:
     # ══ 闸门1: 数据新鲜度硬门控 [9.18 苏摩111 顶层修复] ══
     # 核心数据源过期=拒绝分析，而不是用过期数据跑出虚假信号
     # 关键认知：过期缓存不是"数据不新鲜"，是"数据是假的"
-    _CRITICAL_SOURCES = ['cvd', 'gex', 'liq_heatmap']  # CVD 1h / GEX 4h / liqmap 4h
+    # [2026-09-21 P4.3根修 苏摩111] liq_heatmap改为step3实时拉取，不再列为关键数据源
+    _CRITICAL_SOURCES = ['cvd', 'gex']  # CVD 1h / GEX 4h（liq_heatmap已改为实时拉取）
     _critical_stale = [c for c in _stale_caches if any(c.startswith(s) for s in _CRITICAL_SOURCES)]
     if _critical_stale:
         _reject_msg = (
@@ -540,8 +541,30 @@ def step2_ob(d: dict) -> dict:
 # ══════════════════════════════════════════════════════════
 
 def step3_liq(d: dict) -> dict:
-    liq   = d['liq']
+    """[2026-09-21 P4.3根修 苏摩111] 实时调用get_liq_heatmap，不再用过期缓存
+    根因：缓存快照写入时价格$81,861，3.5h后价格涨到$84,723
+          止损墙$83,498从上方变成下方→VIP卡片逻辑反了
+    修复：每次分析时实时拉取价格+订单簿+计算清算价位
+    """
     price = d['price']
+    sym = d.get('symbol', 'BTC') + 'USDT'
+
+    # 实时拉取清算热力图（不用缓存文件）
+    try:
+        import sys as _sys
+        _sys.path.insert(0, str(Path(__file__).parent / 'scripts'))
+        from liq_heatmap import get_liq_heatmap
+        _realtime_liq = get_liq_heatmap(sym)
+        if _realtime_liq and 'error' not in _realtime_liq:
+            liq = _realtime_liq
+            # 更新d['liq']为实时数据
+            d['liq'] = liq
+        else:
+            # 降级：用缓存
+            liq = d['liq']
+    except Exception as _e:
+        print(f"[WARN] step3_liq: 实时拉取失败，降级缓存: {_e}", file=sys.stderr)
+        liq = d['liq']
 
     short_map = liq.get('short_liq_map', {})
     long_map  = liq.get('long_liq_map', {})
