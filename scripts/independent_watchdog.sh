@@ -32,12 +32,12 @@ while true; do
     ALERT="${ALERT}→ CVD重启PID=$CVD_PID "
   fi
 
-  LIQ_PID=$(pgrep -f "liqmap_collector" | head -1)
+  LIQ_PID=$(pgrep -f "liq_multi_exchange_collector" | head -1)
   if [ -z "$LIQ_PID" ]; then
     ALERT="${ALERT}⚠️ liqmap未运行 "
-    nohup python3 brahma_brain/liqmap_collector.py >> logs/liqmap.log 2>&1 &
+    nohup python3 scripts/liq_multi_exchange_collector.py >> logs/liqmap.log 2>&1 &
     sleep 2
-    LIQ_PID=$(pgrep -f "liqmap_collector" | head -1)
+    LIQ_PID=$(pgrep -f "liq_multi_exchange_collector" | head -1)
     ALERT="${ALERT}→ liqmap重启PID=$LIQ_PID "
   fi
 

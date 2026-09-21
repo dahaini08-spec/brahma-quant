@@ -1,5 +1,5 @@
 {
-  "ts": 1789987200.404682,
+  "ts": 1790005200.0529268,
   "version": "1.0",
   "market_state": {
     "EPIC": {
@@ -48,8 +48,8 @@
     "signal_dir": "LONG"
   },
   "data_health": {
-    "fresh": 10,
-    "dead": 0
+    "fresh": 9,
+    "dead": 1
   },
   "autopilot_enabled": false
 }

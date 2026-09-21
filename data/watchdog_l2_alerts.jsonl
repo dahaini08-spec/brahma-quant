@@ -36,3 +36,5 @@
 {"ts":1789980000,"actions":" restart_supercronic"}
 {"ts":1789986300,"actions":" restart_watchdog_l1"}
 {"ts":1789986300,"actions":" restart_watchdog_l1"}
+{"ts":1790004600,"actions":" restart_cvd restart_watchdog_l1"}
+{"ts":1790004900,"actions":" restart_watchdog_l1"}

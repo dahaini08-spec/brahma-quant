@@ -731,13 +731,16 @@ def format_inference_block(r: dict) -> str:
     report_lines.append('╬══════════════════════════════════════════════════════════')
 
     if causal:
-        report_lines.append('  ━━━ 1. 因果推理链 ━━━')
-        for c in causal:
-            report_lines.append(f'  [{c["step"]}] {c["cause"]}')
-            report_lines.append(f'      → {c["effect"]}')
-            report_lines.append(f'      📎 {c["evidence"]}')
-            report_lines.append(f'      🎯 {c["direction"]}')
-        report_lines.append('')
+        # [2026-09-21 P2修复 苏摩111] 按symbol过滤因果链，不跨标的混输出
+        _sym_causal = [c for c in causal if sym_clean in c.get('direction', '') or 'BTC' not in c.get('direction', '') and 'ETH' not in c.get('direction', '')]
+        if _sym_causal:
+            report_lines.append('  ━━━ 1. 因果推理链 ━━━')
+            for c in _sym_causal:
+                report_lines.append(f'  [{c["step"]}] {c["cause"]}')
+                report_lines.append(f'      → {c["effect"]}')
+                report_lines.append(f'      📎 {c["evidence"]}')
+                report_lines.append(f'      🎯 {c["direction"]}')
+            report_lines.append('')
 
     if games:
         report_lines.append(f'  ━━━ 2. 博弈建模 | {sym_clean} ━━━')

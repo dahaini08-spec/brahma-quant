@@ -2847,12 +2847,12 @@
     }
   },
   "BTC": {
-    "ts": 1790003435.8720737,
+    "ts": 1790004474.639133,
     "data": {
       "rv_1d": 0.0291,
-      "rv_5d": 0.04185,
-      "rv_22d": 0.05352,
-      "rv_forecast": 0.03992,
+      "rv_5d": 0.04061,
+      "rv_22d": 0.05261,
+      "rv_forecast": 0.03923,
       "rv_percentile": 100,
       "regime_vol": "HIGH",
       "score_adj": -3,
@@ -2860,12 +2860,12 @@
     }
   },
   "ETH": {
-    "ts": 1790003391.6868443,
+    "ts": 1790004476.028574,
     "data": {
-      "rv_1d": 0.03028,
-      "rv_5d": 0.0351,
-      "rv_22d": 0.052,
-      "rv_forecast": 0.03754,
+      "rv_1d": 0.03036,
+      "rv_5d": 0.03462,
+      "rv_22d": 0.05186,
+      "rv_forecast": 0.03736,
       "rv_percentile": 90,
       "regime_vol": "HIGH",
       "score_adj": -3,
@@ -2912,12 +2912,12 @@
     }
   },
   "XRP": {
-    "ts": 1789993476.2024715,
+    "ts": 1790004268.8439155,
     "data": {
-      "rv_1d": 0.03749,
-      "rv_5d": 0.04776,
-      "rv_22d": 0.07337,
-      "rv_forecast": 0.05048,
+      "rv_1d": 0.03798,
+      "rv_5d": 0.0478,
+      "rv_22d": 0.07341,
+      "rv_forecast": 0.05068,
       "rv_percentile": 100,
       "regime_vol": "EXTREME",
       "score_adj": -5,
@@ -3016,28 +3016,28 @@
     }
   },
   "XAU": {
-    "ts": 1789982671.8611054,
+    "ts": 1790004269.6690063,
     "data": {
-      "rv_1d": 0.00559,
-      "rv_5d": 0.00525,
-      "rv_22d": 0.01787,
-      "rv_forecast": 0.0089,
-      "rv_percentile": 100,
+      "rv_1d": 0.00978,
+      "rv_5d": 0.00877,
+      "rv_22d": 0.01919,
+      "rv_forecast": 0.01197,
+      "rv_percentile": 90,
       "regime_vol": "LOW",
       "score_adj": 3,
       "p_up_proxy": 0.45
     }
   },
   "HYPE": {
-    "ts": 1789993476.4586852,
+    "ts": 1790004269.5757763,
     "data": {
-      "rv_1d": 0.03306,
-      "rv_5d": 0.02877,
-      "rv_22d": 0.05423,
-      "rv_forecast": 0.03692,
-      "rv_percentile": 70,
-      "regime_vol": "HIGH",
-      "score_adj": -3,
+      "rv_1d": 0.03425,
+      "rv_5d": 0.036,
+      "rv_22d": 0.06048,
+      "rv_forecast": 0.04162,
+      "rv_percentile": 90,
+      "regime_vol": "EXTREME",
+      "score_adj": -5,
       "p_up_proxy": 0.45
     }
   },

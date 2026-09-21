@@ -1,9 +1,1 @@
-{
-  "l1": null,
-  "l2": null,
-  "l3": false,
-  "nav_peak": 130.0,
-  "nav_history": {
-    "2026-09-21": 130.0
-  }
-}
+{"status": "GREEN", "reason": "", "ts": 1790005780.96712}

@@ -31,7 +31,7 @@ SYMBOLS        = [
     'HYPEUSDT', 'XAUUSDT', 'CLUSDT', 'SKHYUSDT',
 ]  # 4→8标的，覆盖tier1交叉验证≥3/4的高信心标的
 POLL_INTERVAL  = 300   # 秒（5分钟，分析系统不需要更高频率）
-WINDOW_SECONDS = 3600  # 保留1H
+WINDOW_SECONDS = 14400  # [2026-09-21 P3 苏摩111] 保留4H（原3600=1H）
 SNAPSHOT_EVERY = 1     # 每次轮询后写快照
 FAPI           = 'https://fapi.binance.com'
 
@@ -128,6 +128,8 @@ def _write_snapshot(sym: str):
         return
 
     now = time.time()
+    c4h, b4h, s4h = _cvd_window(buf, 14400)   # [2026-09-21 P3 苏摩111] 新增4h
+    c15m, b15m, s15m = _cvd_window(buf, 900) # [2026-09-21 P3 苏摩111] 新增15m
     c1h, b1h, s1h = _cvd_window(buf, 3600)
     c5m, b5m, s5m = _cvd_window(buf, 300)
     c1m, b1m, s1m = _cvd_window(buf, 60)
@@ -141,6 +143,12 @@ def _write_snapshot(sym: str):
         'poll_interval': POLL_INTERVAL,
         'n_trades':   len(buf),
         'window_sec': WINDOW_SECONDS,
+        'cvd_4h':     round(c4h, 4),       # [2026-09-21 P3]
+        'buy_vol_4h': round(b4h, 4),
+        'sell_vol_4h':round(s4h, 4),
+        'dir_4h':     _dir(c4h, b4h + s4h),
+        'cvd_15m':    round(c15m, 4),      # [2026-09-21 P3]
+        'dir_15m':    _dir(c15m, b15m + s15m),
         'cvd_1h':     round(c1h, 4),
         'buy_vol_1h': round(b1h, 4),
         'sell_vol_1h':round(s1h, 4),

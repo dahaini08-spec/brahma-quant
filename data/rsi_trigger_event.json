@@ -1,62 +1,86 @@
 {
   "BTCUSDT": {
+    "ts": 1790005320.811757,
+    "ts_iso": "2026-09-21T15:42:00.811759+00:00",
     "symbol": "BTCUSDT",
-    "direction": "LONG",
-    "trigger_type": "tradfi_macro",
-    "score_delta": 0,
-    "base_score": 97.7,
-    "ts": 1789993072.537285,
-    "source": "tradfi_signal_layer"
-  },
-  "ETHUSDT": {
-    "ts": 1789987321.129659,
-    "ts_iso": "2026-09-21T10:42:01.129661+00:00",
-    "symbol": "ETHUSDT",
-    "px": 2713.0,
-    "rsi_1h": 70.7,
-    "bb_width": 2.224,
+    "px": 85858.7,
+    "rsi_1h": 95.1,
+    "bb_width": 4.634,
     "events": [
       {
-        "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=2.224%极度压缩(历史最低区间) RSI=70.7 弹簧即将释放",
+        "event": "E5_BB_EXPANSION",
+        "desc": "BB宽度 0.68%→4.63% 压缩释放，方向即将选择",
+        "priority": "MEDIUM"
+      },
+      {
+        "event": "E_TREND_SURGE",
+        "desc": "🚀 趋势暴涨触发! 48H涨幅7.2% 4H阳线确认 RSI=95.1 → 动量层匹配，全量扫描做多",
         "priority": "HIGH",
-        "bbw_shrinking": false
+        "direction": "LONG",
+        "chg_48h": 7.19,
+        "_cooldown_key": "BTCUSDT_trend_surge_ts"
+      }
+    ],
+    "high_priority": true
+  },
+  "ETHUSDT": {
+    "ts": 1790005321.566863,
+    "ts_iso": "2026-09-21T15:42:01.566865+00:00",
+    "symbol": "ETHUSDT",
+    "px": 2735.53,
+    "rsi_1h": 88.3,
+    "bb_width": 2.818,
+    "events": [
+      {
+        "event": "E_TREND_SURGE",
+        "desc": "🚀 趋势暴涨触发! 48H涨幅6.8% 4H阳线确认 RSI=88.3 → 动量层匹配，全量扫描做多",
+        "priority": "HIGH",
+        "direction": "LONG",
+        "chg_48h": 6.76,
+        "_cooldown_key": "ETHUSDT_trend_surge_ts"
+      },
+      {
+        "event": "E8_ETH_LONG_GATE_OPEN",
+        "desc": "🔔 ETH LONG门控通过! 价格$2735.53>EMA20$2682.35 RSI=88.3 入场$1858~$1861 SL=$1812 TP1=$1904 TP2=$1928 — 苏摩是否执行?",
+        "priority": "HIGH"
       }
     ],
     "high_priority": true
   },
   "SOLUSDT": {
-    "ts": 1789987321.6768365,
-    "ts_iso": "2026-09-21T10:42:01.676838+00:00",
+    "ts": 1790005322.4902706,
+    "ts_iso": "2026-09-21T15:42:02.490277+00:00",
     "symbol": "SOLUSDT",
-    "px": 115.75,
-    "rsi_1h": 79.8,
-    "bb_width": 3.587,
+    "px": 117.47,
+    "rsi_1h": 91.1,
+    "bb_width": 5.091,
     "events": [
       {
         "event": "E_TREND_SURGE",
-        "desc": "🚀 趋势暴涨触发! 48H涨幅7.8% 4H阳线确认 RSI=79.8 → 动量层匹配，全量扫描做多",
+        "desc": "🚀 趋势暴涨触发! 48H涨幅9.4% 4H阳线确认 RSI=91.1 → 动量层匹配，全量扫描做多",
         "priority": "HIGH",
         "direction": "LONG",
-        "chg_48h": 7.83,
+        "chg_48h": 9.44,
         "_cooldown_key": "SOLUSDT_trend_surge_ts"
       }
     ],
     "high_priority": true
   },
   "BNBUSDT": {
-    "ts": 1789987322.298738,
-    "ts_iso": "2026-09-21T10:42:02.298741+00:00",
+    "ts": 1790005323.6994083,
+    "ts_iso": "2026-09-21T15:42:03.699411+00:00",
     "symbol": "BNBUSDT",
-    "px": 784.21,
-    "rsi_1h": 64.4,
-    "bb_width": 1.826,
+    "px": 803.75,
+    "rsi_1h": 80.4,
+    "bb_width": 2.664,
     "events": [
       {
-        "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=1.826%极度压缩(历史最低区间) RSI=64.4 弹簧即将释放",
+        "event": "E_TREND_SURGE",
+        "desc": "🚀 趋势暴涨触发! 48H涨幅7.9% 4H阳线确认 RSI=80.4 → 动量层匹配，全量扫描做多",
         "priority": "HIGH",
-        "bbw_shrinking": true
+        "direction": "LONG",
+        "chg_48h": 7.88,
+        "_cooldown_key": "BNBUSDT_trend_surge_ts"
       }
     ],
     "high_priority": true
@@ -422,19 +446,19 @@
     "high_priority": true
   },
   "XRPUSDT": {
-    "ts": 1789987322.6892095,
-    "ts_iso": "2026-09-21T10:42:02.689212+00:00",
+    "ts": 1790005325.0106134,
+    "ts_iso": "2026-09-21T15:42:05.010617+00:00",
     "symbol": "XRPUSDT",
-    "px": 1.4891,
-    "rsi_1h": 80.2,
-    "bb_width": 3.81,
+    "px": 1.4931,
+    "rsi_1h": 87.3,
+    "bb_width": 4.969,
     "events": [
       {
         "event": "E_TREND_SURGE",
-        "desc": "🚀 趋势暴涨触发! 48H涨幅8.9% 4H阳线确认 RSI=80.2 → 动量层匹配，全量扫描做多",
+        "desc": "🚀 趋势暴涨触发! 48H涨幅9.2% 4H阳线确认 RSI=87.3 → 动量层匹配，全量扫描做多",
         "priority": "HIGH",
         "direction": "LONG",
-        "chg_48h": 8.89,
+        "chg_48h": 9.18,
         "_cooldown_key": "XRPUSDT_trend_surge_ts"
       }
     ],

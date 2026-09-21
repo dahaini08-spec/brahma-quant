@@ -44,8 +44,8 @@ def generate_trade_narrative(analysis_result: dict) -> str:
         smart_money = analysis_result.get('smart_money', {})
         sm_div = smart_money.get('divergence', 0) if isinstance(smart_money, dict) else 0
         sm_dir = smart_money.get('direction', '') if isinstance(smart_money, dict) else ''
-        big_player_pct = smart_money.get('long_pct', 0) if isinstance(smart_money, dict) else 0
-        retail_pct = smart_money.get('retail_long_pct', 0) if isinstance(smart_money, dict) else 0
+        big_player_pct = smart_money.get("big_long", 0) if isinstance(smart_money, dict) else 0
+        retail_pct = smart_money.get("retail_long", 0) if isinstance(smart_money, dict) else 0
         gex = analysis_result.get('gex', 0)
         gex_signal = analysis_result.get('gex_signal', '')
         cvd_1h = analysis_result.get('cvd_1h', 0)

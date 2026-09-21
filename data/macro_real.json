@@ -1,6 +1,6 @@
 {
   "data_source": "BLS API + 苏摩配置(macro_config.json)",
-  "data_time": "2026-09-21 10:34 UTC",
+  "data_time": "2026-09-21 15:49 UTC",
   "cpi_core": {
     "value": 338.041,
     "period": "M08",
