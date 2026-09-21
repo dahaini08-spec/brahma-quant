@@ -628,10 +628,10 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict, oi: dict = None, vo
     resonance  = score >= 2  # 至少2/3条件
 
     if resonance and has_fvg:
-        # BUG-6修复：入场区必须在现价的正确一侧
-        # BEAR：做空应等反弹到现价上方阻力位，入场区必须 > price
-        # BULL：做多应等回调到现价下方支撑位，入场区必须 < price
-        if fvg_dir == 'BEAR':
+        # [9.21苏摩设计院修复] 入场区方向用signal_dir而不是fvg_dir
+        # FVG共识是BEAR但信号可能是LONG（逼空做多），入场区应该在下方
+        _entry_signal_dir = d.get('signal_dir') or d.get('_signal_dir') or ('SHORT' if (d.get('regime','').startswith('BEAR') or d.get('regime','') == 'CHOP_MID') else 'LONG')
+        if _entry_signal_dir == 'SHORT':
             # 空单：入场区在现价上方（等反弹到FVG上沿/OB阻力）
             # 取有效OB中最近的上方阻力，没有就用吸力目标上方ATR
             bear_obs = [k for k in valid_obs if 'BEAR' in k]

@@ -677,7 +677,14 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
             else:
                 stop_loss = _sl_15m_candidate
                 entry_lo  = min(entry_lo, _t15m['entry_15m'])
-                entry_hi  = max(entry_hi, _t15m['entry_15m'])
+                # [9.21苏摩设计院] LONG方向entry_15m不能超过现价（追涨修复）
+                # SHORT方向entry_15m不能低于现价（追跌修复）
+                _e15m = _t15m['entry_15m']
+                if signal_dir == 'LONG' and _e15m > entry_mid:
+                    _e15m = entry_mid  # cap到入场中点，不追涨
+                elif signal_dir == 'SHORT' and _e15m < entry_mid:
+                    _e15m = entry_mid  # cap到入场中点，不追跌
+                entry_hi  = max(entry_hi, _e15m)
                 # 重算risk/rr
                 risk    = abs(stop_loss - entry_mid)
                 sl_pct  = round(abs(stop_loss - entry_mid) / entry_mid * 100, 2)
