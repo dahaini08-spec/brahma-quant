@@ -18,6 +18,7 @@ def calc_factors(ms: dict, signal_dir: str, score: int, breakdown: dict,
     只修改 score 和 breakdown
     """
     import sys
+    _sym = symbol  # [9.21修复] _sym从参数获取，不再从未定义的全局变量读
     # ══ [设计院 2026-06-30 全量接入 N10-A] CVD 订单流因子 ════════════════════
     # 模块: cvd_engine · 订单流核心指标，多周期CVD累积成交量差
     # 达摩院铁证：CVD顺势+15分 / 逆势-10分
@@ -57,7 +58,7 @@ def calc_factors(ms: dict, signal_dir: str, score: int, breakdown: dict,
     # ══ [设计院 2026-08-12 苏摩111封印] Hurst指数体制验证接入 ══
     # 给CHOP_MID识别加数学底座，防止趋势策略在随机游走区间错误触发
     try:
-        from hurst_engine import get_hurst as _hurst_fn
+        from brahma_brain.hurst_engine import get_hurst as _hurst_fn
         _hurst_regime = ms.get('regime', 'CHOP_MID')
         _hurst_res = _hurst_fn(_sym, _hurst_regime)
         _hurst_adj = int(_hurst_res.get('score_adj', 0))

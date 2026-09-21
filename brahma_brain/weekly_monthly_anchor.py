@@ -175,10 +175,10 @@ class WeeklyMonthlyAnchor:
 
             if resonance >= 0.67:
                 result['htf_bias'] = 'BULLISH'
-                result['score_addon'] = +8
+                result['score_addon'] = +4  # [9.21苏摩设计院] +8→+4 过重
             elif resonance <= 0.33:
                 result['htf_bias'] = 'BEARISH'
-                result['score_addon'] = -8
+                result['score_addon'] = -4  # [9.21苏摩设计院] -8→-4 过重
             else:
                 result['htf_bias'] = 'NEUTRAL'
                 result['score_addon'] = 0

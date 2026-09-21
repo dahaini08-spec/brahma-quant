@@ -1,20 +1,12 @@
 {
   "BTCUSDT": {
-    "ts": 1789949520.467724,
-    "ts_iso": "2026-09-21T00:12:00.467725+00:00",
     "symbol": "BTCUSDT",
-    "px": 81464.3,
-    "rsi_1h": 75.1,
-    "bb_width": 0.977,
-    "events": [
-      {
-        "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=0.977%极度压缩(历史最低区间) RSI=75.1 弹簧即将释放",
-        "priority": "HIGH",
-        "bbw_shrinking": false
-      }
-    ],
-    "high_priority": true
+    "direction": "LONG",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 106.1,
+    "ts": 1789954181.1578047,
+    "source": "tradfi_signal_layer"
   },
   "ETHUSDT": {
     "ts": 1789949520.7092154,

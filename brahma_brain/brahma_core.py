@@ -452,11 +452,10 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
         _dow = _ts2.dayofweek if hasattr(_ts2, 'dayofweek') else -1
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if _dow in {5, 6} and not _direction_block and score > 0:  # Sat=5, Sun=6
-        # [v24.3-fix] 周末 硬拒绝→降权-20分 — 哲学: 降权不封禁
-        # 周末WR=65%(干净数据,样本少)，不是封死的理由；grade≥70的A级信号降权后仍可通过
-        _weekend_penalty = 20
+        # [v24.3-fix→9.21苏摩设计院] 周末降权-20→-10（过重，周末仍有A级信号）
+        _weekend_penalty = 10
         score = max(0, score - _weekend_penalty)
-        breakdown['N04周末降权'] = f'周{"六" if _dow==5 else "日"} -20分降权(v24.3) 当前score={score:.0f}'
+        breakdown['N04周末降权'] = f'周{"六" if _dow==5 else "日"} -10分降权(9.21) 当前score={score:.0f}'
 
     # N06: CHOP体制持仓期提示（最优2h vs 全局12h）
     if 'CHOP' in _regime_upper and not _direction_block:
@@ -826,10 +825,12 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # ── Causal Verifier 评分叠加 ─────────────────────────────
     # 将 P0-A 的 score_adj 运用到最终评分
+    _extra_data_score_adj = 0  # [9.21苏摩设计院] 累积extra_data叠加值
     _cv_adj = extra_data.get('causal_verifier', {}).get('score_adj', 0)
     if _cv_adj != 0:
         _cf_score_pre = float(cf.get('score', 0) or 0)
         cf['score'] = _cf_score_pre + _cv_adj
+        _extra_data_score_adj += _cv_adj
         cf.setdefault('breakdown', {})['_causal_regime'] = (
             f'{_cv_adj:+d}(体制因果:{extra_data.get("causal_verifier",{}).get("verdict","?")} '
             f'conf={extra_data.get("causal_verifier",{}).get("causal_confidence",0):.2f})'
@@ -843,6 +844,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     if _cfb_adj != 0:
         _cfb_pre = float(cf.get('score', 0) or 0)
         cf['score'] = _cfb_pre + _cfb_adj
+        _extra_data_score_adj += _cfb_adj
         cf.setdefault('breakdown', {})['_cross_fr_basis'] = (
             f'{_cfb_adj:+d}(FR均值={extra_data.get("cross_fr_basis",{}).get("fr_avg",0):.4f}% '
             f'Basis={extra_data.get("cross_fr_basis",{}).get("basis_pct",0):.3f}%)'
@@ -855,6 +857,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     if _dpc_adj != 0:
         _dpc_pre = float(cf.get('score', 0) or 0)
         cf['score'] = _dpc_pre + _dpc_adj
+        _extra_data_score_adj += _dpc_adj
         cf.setdefault('breakdown', {})['_options_pc'] = (
             f'{_dpc_adj:+d}(P/C={extra_data.get("deribit_pc",{}).get("pc_oi_ratio",0):.2f} '
             f'{extra_data.get("deribit_pc",{}).get("signal","")})'
@@ -865,6 +868,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     if _mv2_adj != 0:
         _mv2_pre = float(cf.get('score', 0) or 0)
         cf['score'] = _mv2_pre + _mv2_adj
+        _extra_data_score_adj += _mv2_adj
         cf.setdefault('breakdown', {})['_macro_v2'] = (
             f'{_mv2_adj:+d}(' + ' | '.join(extra_data.get('macro_v2', {}).get('notes', [])[:2]) + ')'
         )
@@ -882,6 +886,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         if _sm_adj != 0 and _sm.get('confidence', 0) >= 0.5:
             _sm_pre = float(cf.get('score', 0) or 0)
             cf['score'] = _sm_pre + _sm_adj
+            _extra_data_score_adj += _sm_adj
             cf.setdefault('breakdown', {})['_smart_money'] = (
                 f'{_sm_adj:+d}(大户持仓={_sm.get("big_pos_long",0.5):.0%} '
                 f'背离={_sm.get("whale_retail_gap",0):+.3f})'
@@ -1556,10 +1561,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用; cf['mtf_4h_confirm'] = f'4H✅BEAR RSI={_rsi_4h:.0f} +5%'
         pass  # [静默] f'[BrahmaBrain] 📊 {_sym} 4H共振BEAR: score×1.05 → {_score_raw:.0f}'
     elif _4h_align != 'NEUTRAL' and _4h_align == ('BEAR' if signal_dir=='LONG' else 'BULL'):
-        # [v24.3-fix] 4H方向冲突 → 降权-25分（哲学: 降权不封禁）
-        # 4H逆势是风险因子，用分数惩罚体现，grade≥70仍可通过
-        # 顺势+5%奖励 vs 逆势-25分惩罚，不对称反映风险
-        _4h_penalty = 25
+        # [v24.3-fix→9.21苏摩设计院] 4H方向冲突 → 降权-10分（原-25过重，体制乘数已降权）
+        # 4H逆势是风险因子，但体制乘数矩阵已有0.5×降权，此处不应二次重罚
+        _4h_penalty = 10
         _score_raw = max(0, _score_raw - _4h_penalty)
         cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
         cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
@@ -1596,9 +1600,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             pass  # [静默] f'[Dharma] 🔱 {_sym} 节点={_dharma_nodes["nodes_pass"]}/6 mult={_node_mult} score: 
         else:
             pass  # [静默] f'[Dharma] ✅ {_sym} 节点={_dharma_nodes["nodes_pass"]}/6 verdict={_dharma_nodes["v
-        # [v24.3-fix] 节点数<3 → 额外-15分而非强制拒绝（哲学: 降权）
-        if _dharma_nodes['nodes_pass'] < 3:
-            _score_raw = max(0, _score_raw - 15)
+        # [v24.3-fix→9.21苏摩设计院] 节点数<3 → 额外-5分（原-15过重）
+        # 但如果_node_mult已经是0.85（节点=2），不再额外扣分（避免双重惩罚）
+        if _dharma_nodes['nodes_pass'] < 3 and _node_mult == 1.0:
+            _score_raw = max(0, _score_raw - 5)
             cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
         _score_gate_ok = _score_gate_ok  # 不再因节点数强制block
         # [设计院 2026-05-24] ≥5节点为高置信（HIGH_CONF），分数額外加成
@@ -1701,13 +1706,14 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 cf['breakdown']['CHOP危险'] = f'tc同向顺势 tc={_tc_val} WR=30~46% 上限75: {_score_before_cap:.0f}→75'
                 pass  # [静默] f'[P2-CHOP-DANGER] {ms.get("symbol","?")} CHOP×tc同向: {_score_before_cap:.0f}→75'
         else:
-            # tc_neutral(0)：SHORT方向上限120，LONG方向维持90
-            # [2026-08-12 苏摩111修复P3] CHOP SHORT执行线155，上限90永远不可达，修复为120
+            # tc_neutral(0)：SHORT方向上限120，LONG方向上限110（原90过严）
+            # [2026-09-21 苏摩设计院] CHOP LONG上限90→110，42维评分>90被强制cap不合理
+            # CHOP是反转体制，tc_neutral下LONG信号仍有价值，不应硬封顶到90
             _chop_dir = str(signal_dir or '').upper()
-            _chop_cap_applied = 120 if _chop_dir == 'SHORT' else 90
+            _chop_cap_applied = 120 if _chop_dir == 'SHORT' else 110
             if _score > _chop_cap_applied:
                 _score = _chop_cap_applied
-                cf['breakdown']['CHOP硬性上限'] = f'P2保护tc_neutral: {_score_before_cap:.0f}→{_chop_cap_applied}（CHOP {"SHORT上限120" if _chop_dir=="SHORT" else "LONG上限90 EV=-0.11%"}）'
+                cf['breakdown']['CHOP硬性上限'] = f'P2保护tc_neutral: {_score_before_cap:.0f}→{_chop_cap_applied}（CHOP {"SHORT上限120" if _chop_dir=="SHORT" else "LONG上限110"}）'
                 pass  # [静默]
     # ── 死穴精英解锁通道（苏摩哲学校正 2026-06-30）────────────────────────────
     # 哲学：梵天为交易而生，体制=仓位权重调节器，不是封禁系统
@@ -1881,15 +1887,16 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _b2_dir_ok = True
         if _b2_dir_ok and (_entry_lo_b2 if signal_dir=='SHORT' else _entry_hi_b2):
             if _gap_b2 < 0.5:
-                # [v3修复 2026-05-31] 极危险：入场即止损，SL组实盘均值0.57%在此区间
-                _b2_bonus = -15
+                # [v3修复→9.21苏摩设计院] gap<0.5%改为-5（原-15过重）
+                # gap小=入场近=优势，不是危险；B2.0报告铁证gap<0.5%=最优入场
+                _b2_bonus = -5
                 cf = copy.deepcopy(cf)
-                cf['b2_proximity'] = f'gap={_gap_b2:.2f}%<0.5% 极危险(WR=3%) -15'  # [B2-fix]
+                cf['b2_proximity'] = f'gap={_gap_b2:.2f}%<0.5% 贴近区间 -5'  # [B2-fix→9.21]
             elif _gap_b2 < 1.0:
-                # [v3修复 2026-05-31] 危险区：SL组均值0.57%全部落在此区间
-                _b2_bonus = -8
+                # [v3修复→9.21苏摩设计院] 危险区-8→-3（过重，gap<1%是正常入场范围）
+                _b2_bonus = -3
                 cf = copy.deepcopy(cf)
-                cf['b2_proximity'] = f'gap={_gap_b2:.2f}% 危险区(SL高频) -8'  # [B2-fix]
+                cf['b2_proximity'] = f'gap={_gap_b2:.2f}% 近区间 -3'  # [B2-fix→9.21]
             elif _gap_b2 <= 1.5:
                 # 边界区，中性
                 cf = copy.deepcopy(cf)
@@ -2706,11 +2713,24 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         'nodes_pass':   _dharma_nodes.get('nodes_pass', 0),
         'nodes_verdict':_dharma_nodes.get('verdict', 'UNKNOWN'),
         'score_final':  _score,
+        # [9.21苏摩设计院] extra_data叠叠加权：Causal/FR/PC/宏观/聪明钱的扣分从cf['score']注入score_final
+        # 根因：cf['score']=138+叠加，cf['total']=138，但score_final只用_score(cf['total']路径)
+        # 导致Causal -5 / FR -8 / PC -2的扣分从未进入最终输出
+        # 修复：将cf['score']-cf['total']的差值注入score_final初始值
+        'score_final_raw': _score,
         # [v25.4c effective_grade] 体制感知grade写入顶层，供offline_replay使用
         'grade':          int(cf.get('structure_grade', 0) or 0),
         'effective_grade': round(float(cf.get('effective_grade', cf.get('structure_grade', 0)) or 0), 1),
         'grade_mult':      round(float(cf.get('grade_mult', 1.0) or 1.0), 2),
     }
+
+    # [9.21苏摩设计院] extra_data叠叠加权注入score_final
+    # Causal/FR/PC/宏观/聪明钱的扣分只改了cf['score']，未进入score_final路径
+    # 修复：将累积的extra_data叠加值注入score_final初始值
+    if _extra_data_score_adj != 0 and _result.get('score_final', 0) != 0:
+        _result['score_final'] = round(float(_result['score_final']) + _extra_data_score_adj, 1)
+        _result['score'] = _result['score_final']
+        _result.setdefault('confluence', {}).setdefault('breakdown', {})[ '_extra_data_adjust'] = f'{_extra_data_score_adj:+.1f}(Causal+FR+PC+宏观+聪明钱)'
 
     # [WFV-v1 闭环 2026-05-28] 达摩院信号日志（live_signal_log.jsonl）
     # [双写修复 2026-07-23 设计院] brahma_engine.analyze()已在外层写入，此处跳过防止重复

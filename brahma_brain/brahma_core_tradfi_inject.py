@@ -16,6 +16,7 @@ def inject_tradfi(_result: dict, ms: dict, score: int, breakdown: dict,
     TradFi交易时段门控 + sector_corr + macro_link + TradFi三类路由器
     + 最终SL/TP覆写
     """
+    _sym = (_result.get('symbol') or ms.get('symbol') or '').upper()  # [9.21修复]
     # ══ [P0 设计院封印 2026-08-11 苏摩111] TRADFI交易时段门控 ══════════════
     # 美股代币非交易时段(亚洲白天)流动性极低，发信号有执行风险
     # UTC 13:30~20:00 = 北京21:30~04:00 = 美股正常交易时段

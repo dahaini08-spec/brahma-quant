@@ -19,6 +19,7 @@ def inject_fangcang(_result: dict, ms: dict, score: int, breakdown: dict,
     + HTF周月线锚定
     + P4 三周期RSI共振
     """
+    _sym = (_result.get('symbol') or ms.get('symbol') or '').upper()  # [9.21修复]
     # ══ [设计院 2026-08-09 苏摩111封印] 方仓向量WR → score_final 架构接线 ══
     # 铁证：Qdrant 3071案例 黄金区(bb1.5-2%+RSI60-75) WR=70.8% EV=+3.41%
     # 接线逻辑：fangcang.vector_stats.wr_directional 影响最终执行评分

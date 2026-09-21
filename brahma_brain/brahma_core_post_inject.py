@@ -15,6 +15,7 @@ def inject_post_score(_result: dict, ms: dict, score: int, breakdown: dict,
     """
     TradFi跨市场参照 + 212K经验库 + 亏损记忆仓位自适应
     """
+    _sym = (_result.get('symbol') or ms.get('symbol') or '').upper()  # [9.21修复]
     # ══ [V2.0 2026-09-20 苏摩111] TradFi跨市场参照 + 212K经验库 + 亏损记忆 ═══════
     try:
         if _sym in ('BTCUSDT', 'ETHUSDT'):

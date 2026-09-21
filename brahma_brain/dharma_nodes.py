@@ -135,7 +135,7 @@ def evaluate_nodes(ms: dict, signal_dir: str, fg: int = 50) -> dict:
         score_mult = 1.0
     elif nodes_pass == 2:
         verdict = 'WEAK'
-        score_mult = 0.85
+        score_mult = 0.92  # [9.21苏摩设计院] 0.85→0.92 过重，42维评分已充分评估
     else:
         verdict = 'FAIL'
         score_mult = 0.0  # 主流程会-30分

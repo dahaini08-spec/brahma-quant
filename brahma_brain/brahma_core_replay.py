@@ -222,9 +222,9 @@ def calc_replay(ms: dict, signal_dir: str, score: int, breakdown: dict, _result:
         _pm_mult = _get_pm()
         if _pm_mult > 1.0 and _pos_tier > 0:
             _pos_tier_adjusted = round(_pos_tier * _pm_mult, 4)
-            if extra_data is not None and isinstance(extra_data, dict):
-                extra_data['score_pos']   = _pos_tier_adjusted
-                extra_data['pos_mult']    = _pm_mult
+            if _extra is not None and isinstance(_extra, dict):
+                _extra['score_pos']   = _pos_tier_adjusted
+                _extra['pos_mult']    = _pm_mult
             breakdown['N15_仓位倍数'] = (
                 f'×{_pm_mult} → pos={_pos_tier_adjusted:.1%} '
                 f'({"中仓已解锁" if _pm_mult==1.5 else "连胜加仓"})'
@@ -279,7 +279,7 @@ def calc_replay(ms: dict, signal_dir: str, score: int, breakdown: dict, _result:
     # 逻辑：下影线主导（>实体+上影线×1.5）+ 触碰近期低点支撑 + 收盘收复 → +20分
     # fail-safe：异常静默，不阻断主流程
     try:
-        _k15m = extra_data.get('_klines_15m') if extra_data else None
+        _k15m = _extra.get('_klines_15m') if extra_data else None
         if _k15m and len(_k15m.get('c', [])) >= 5:
             _wh_o = _k15m['o'][-1]
             _wh_h = _k15m['h'][-1]
