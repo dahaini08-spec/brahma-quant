@@ -41,6 +41,13 @@ while true; do
     ALERT="${ALERT}→ liqmap重启PID=$LIQ_PID "
   fi
 
+  # === [9.22苏摩111] 数据自愈检查 ===
+  # 每5分钟跑一次self_heal_daemon --once，自动修复过期数据
+  MIN5=$(date -u '+%-M')
+  if [ $((MIN5 % 5)) -eq 0 ]; then
+    python3 brahma_brain/self_heal_daemon.py --once >> logs/self_heal.log 2>&1
+  fi
+
   # === 去重逻辑 ===
   CUR_HASH=$(echo "$ALERT" | md5sum | cut -d' ' -f1)
   PREV_HASH=""

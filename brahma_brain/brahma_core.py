@@ -2777,6 +2777,25 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         )
     except: pass
 
+    # ══ [9.22苏摩111封印] 40年实战经验规则引擎接入主链 ══
+    # 接入位置：Step9风控后、trader_brain前
+    # 将口头实战经验固化为代码硬规则，不再是口头分析
+    try:
+        from brahma_brain.veteran_rules_engine import evaluate_veteran_rules as _vet_eval
+        _vet_result = _vet_eval(_result, extra_data, ms)
+        if _vet_result['score_adj'] != 0:
+            _cf_vet = _result.setdefault('confluence', {})
+            _cf_vet['score'] = float(_cf_vet.get('score', 0)) + _vet_result['score_adj']
+        _result.setdefault('confluence', {}).setdefault('breakdown', {})['VETERAN规则'] = _vet_result['summary']
+        for _rid, _rval in _vet_result.get('breakdown', {}).items():
+            _result.setdefault('confluence', {}).setdefault('breakdown', {})[_rid] = (
+                f"adj={_rval['score_adj']:+d} | {' | '.join(_rval['flags'])}"
+            )
+        if _vet_result.get('risk_flags'):
+            _result.setdefault('confluence', {}).setdefault('breakdown', {})['VETERAN风险'] = ' | '.join(_vet_result['risk_flags'])
+    except Exception as _vet_err:
+        import sys as _sys_vet; _sys_vet.stderr.write(f'[veteran_rules] ERROR: {_vet_err}\n')
+
     # [9.21苏摩设计院] 亏损记忆写入breakdown
     try:
         _lm = _result.get('loss_memory', {})
