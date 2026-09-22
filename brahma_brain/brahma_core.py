@@ -697,6 +697,22 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     except Exception as _e:
         print(f"[WARN] brahma_core: {_e}", file=sys.stderr)
 
+    # ══ [9.22苏摩111封印] 按需拉取3个新数据源（0个新常驻进程） ══════════════
+    # 资金费率/爆仓量/盘口深度 — 分析时拉取一次，写入缓存，VETERAN VR07-09消费
+    # 设计原则：人工分析辅助工具，不需要高频采集器常驻
+    try:
+        from brahma_brain.funding_rate_fetch import fetch_funding_rate as _ffr
+        _ffr(_sym)
+    except Exception as _e: print(f'[WARN] funding_rate_fetch: {_e}', file=sys.stderr)
+    try:
+        from brahma_brain.liquidation_fetch import fetch_liquidation_24h as _flq
+        _flq(_sym)
+    except Exception as _e: print(f'[WARN] liquidation_fetch: {_e}', file=sys.stderr)
+    try:
+        from brahma_brain.orderbook_fetch import fetch_orderbook_snapshot as _fob
+        _fob(_sym)
+    except Exception as _e: print(f'[WARN] orderbook_fetch: {_e}', file=sys.stderr)
+
     # ══ [2026-09-16 苏摩111 FinanceMCP借鉴] 数据健康检查 + 降级标记 ════════════
     # 设计院P0-②：分析开始前检查CVD/liqmap/GEX/HAR-RV数据新鲜度
     # 借鉴FinanceMCP的来源可追溯+降级路径标注机制

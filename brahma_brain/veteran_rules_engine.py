@@ -317,6 +317,295 @@ def _rule_session_liquidity(result: dict, extra: dict, ms: dict) -> dict:
 
 
 # ═══════════════════════════════════════════════════════════
+# 规则7：资金费率极值 — 40年老炮：费率极值=拥挤度=反向信号
+# ═══════════════════════════════════════════════════════════
+def _rule_funding_rate(result: dict, extra: dict, ms: dict) -> dict:
+    """
+    40年老炮：资金费率>0.1%连续8h=多头拥挤做空。
+    资金费率<-0.05%连续8h=空头拥挤做多。
+    费率是合约交易的核心成本指标。
+    """
+    sym = ms.get('symbol', 'BTC')
+    sym_usdt = f'{sym}USDT'
+    fr = _load_json(DATA_DIR / f'funding_rate_{sym_usdt.lower()}')
+    if not fr or fr.get('ts', 0) == 0:
+        return {'id': 'VR07_资金费率极值', 'fired': False, 'score_adj': 0, 'flags': []}
+
+    current_rate = fr.get('current_rate', 0)
+    consec_pos_h = fr.get('consecutive_positive_h', 0)
+    consec_neg_h = fr.get('consecutive_negative_h', 0)
+    rate_8h_avg = fr.get('rate_8h_avg', 0)
+    
+    flags = []
+    score_adj = 0
+    
+    # 多头拥挤: 费率>0.1%连续8h+
+    if current_rate > 0.001 and consec_pos_h >= 8:
+        score_adj += 5
+        flags.append(f'资金费率{current_rate*100:.4f}%连续{consec_pos_h}h正→多头拥挤做空+5')
+        if result.get('signal_dir') == 'SHORT':
+            score_adj += 2
+            flags.append('做空+多头拥挤=顺势+2')
+    # 空头拥挤: 费率<-0.05%连续8h+
+    elif current_rate < -0.0005 and consec_neg_h >= 8:
+        score_adj += 5
+        flags.append(f'资金费率{current_rate*100:.4f}%连续{consec_neg_h}h负→空头拥挤做多+5')
+        if result.get('signal_dir') == 'LONG':
+            score_adj += 2
+            flags.append('做多+空头拥挤=顺势+2')
+    # 中性区间
+    else:
+        rate_pct = current_rate * 100
+        if abs(rate_pct) < 0.01:
+            flags.append(f'资金费率{rate_pct:.4f}%→中性区间')
+        elif rate_pct > 0.01:
+            flags.append(f'资金费率{rate_pct:.4f}%→轻微多头成本')
+        else:
+            flags.append(f'资金费率{rate_pct:.4f}%→轻微空头成本')
+    
+    return {
+        'id': 'VR07_资金费率极值',
+        'fired': True,
+        'score_adj': score_adj,
+        'flags': flags,
+    }
+
+
+# ═══════════════════════════════════════════════════════════
+# 规则8：爆仓反转 — 40年老炮：爆仓后1-2h是最佳反向入场窗口
+# ═══════════════════════════════════════════════════════════
+def _rule_liquidation_reversal(result: dict, extra: dict, ms: dict) -> dict:
+    """
+    40年老炮：24h爆仓>$500M+恐贪<30=底部反转做多。
+    24h爆仓>$500M+恐贪>70=顶部反转做空。
+    爆仓量是猎杀完成的确认信号。
+    """
+    sym = ms.get('symbol', 'BTC')
+    sym_usdt = f'{sym}USDT'
+    liq = _load_json(DATA_DIR / f'liquidation_{sym_usdt.lower()}')
+    if not liq or liq.get('total_24h_usd', 0) == 0:
+        # 无数据=不触发，不影响主链
+        return {'id': 'VR08_爆仓反转', 'fired': False, 'score_adj': 0, 'flags': ['爆仓量数据不可用→跳过']}
+    
+    total_24h = liq.get('total_24h_usd', 0)
+    long_24h = liq.get('long_24h_usd', 0)
+    short_24h = liq.get('short_24h_usd', 0)
+    ratio = liq.get('long_short_ratio', 1)
+    
+    flags = []
+    score_adj = 0
+    
+    # 大规模爆仓检测
+    if total_24h > 500_000_000:  # >$500M
+        if long_24h > short_24h * 2:
+            # 多单爆仓远大于空单 → 底部反转
+            score_adj += 5
+            flags.append(f'24h多单爆仓${long_24h/1e6:.0f}M>>空单${short_24h/1e6:.0f}M→底部反转做多+5')
+        elif short_24h > long_24h * 2:
+            # 空单爆仓远大于多单 → 顶部反转
+            score_adj += 5
+            flags.append(f'24h空单爆仓${short_24h/1e6:.0f}M>>多单${long_24h/1e6:.0f}M→顶部反转做空+5')
+        else:
+            flags.append(f'24h爆仓${total_24h/1e6:.0f}M但多空接近→无方向性信号')
+    elif total_24h > 100_000_000:  # >$100M
+        flags.append(f'24h爆仓${total_24h/1e6:.0f}M→中等规模')
+    else:
+        flags.append(f'24h爆仓${total_24h/1e6:.1f}M→正常水平')
+    
+    return {
+        'id': 'VR08_爆仓反转',
+        'fired': True,
+        'score_adj': score_adj,
+        'flags': flags,
+    }
+
+
+# ═══════════════════════════════════════════════════════════
+# 规则9：盘口吸筹 — 40年老炮：卖盘>买盘2倍但价格不跌=主力吸筹
+# ═══════════════════════════════════════════════════════════
+def _rule_orderbook_absorption(result: dict, extra: dict, ms: dict) -> dict:
+    """
+    40年老炮：盘口卖盘>买盘2倍但价格不跌=主力在吸筹做多。
+    盘口买盘>卖盘2倍但价格不涨=主力在派发做空。
+    这是"看庄家底牌"的核心维度。
+    """
+    sym = ms.get('symbol', 'BTC')
+    sym_usdt = f'{sym}USDT'
+    ob = _load_json(DATA_DIR / f'orderbook_{sym_usdt.lower()}')
+    if not ob or ob.get('ts', 0) == 0:
+        return {'id': 'VR09_盘口吸筹', 'fired': False, 'score_adj': 0, 'flags': ['盘口数据不可用→跳过']}
+    
+    imbalance = ob.get('imbalance', 0.5)  # >0.5=卖盘多
+    bid_ask_ratio = ob.get('bid_ask_ratio', 1.0)
+    wall_bid = ob.get('wall_bid', 0)
+    wall_ask = ob.get('wall_ask', 0)
+    
+    flags = []
+    score_adj = 0
+    
+    # 卖盘远大于买盘=潜在吸筹
+    if imbalance > 0.67:  # 卖盘占2/3以上
+        score_adj += 3
+        flags.append(f'盘口卖盘占{imbalance*100:.0f}%→卖压>买盘{bid_ask_ratio:.1f}倍→潜在吸筹做多+3')
+        if result.get('signal_dir') == 'LONG':
+            score_adj += 2
+            flags.append('做多+盘口吸筹=主力在买入+2')
+    # 买盘远大于卖盘=潜在派发
+    elif imbalance < 0.33:  # 买盘占2/3以上
+        score_adj += 3
+        flags.append(f'盘口买盘占{(1-imbalance)*100:.0f}%→买压>卖盘{1/bid_ask_ratio:.1f}倍→潜在派发做空+3')
+        if result.get('signal_dir') == 'SHORT':
+            score_adj += 2
+            flags.append('做空+盘口派发=主力在卖出+2')
+    else:
+        flags.append(f'盘口平衡(卖盘{imbalance*100:.0f}%/买盘{(1-imbalance)*100:.0f}%)')
+    
+    # 盘口墙检测
+    if wall_ask > wall_bid * 2 and wall_ask > 0:
+        flags.append(f'卖盘墙${wall_ask:,.0f}>>买盘墙${wall_bid:,.0f}→上方阻力强')
+    elif wall_bid > wall_ask * 2 and wall_bid > 0:
+        flags.append(f'买盘墙${wall_bid:,.0f}>>卖盘墙${wall_ask:,.0f}→下方支撑强')
+    
+    return {
+        'id': 'VR09_盘口吸筹',
+        'fired': True,
+        'score_adj': score_adj,
+        'flags': flags,
+    }
+
+
+# ═══════════════════════════════════════════════════════════
+# 规则10：基差极端值 — 40年老炮：基差>1%=逼空 / <-0.5%=恐慌
+# ═══════════════════════════════════════════════════════════
+def _rule_basis_extreme(result: dict, extra: dict, ms: dict) -> dict:
+    """
+    40年老炮：永续vs现货基差是市场情绪温度计。
+    基差>1%且持续=逼空行情(空头被迫平仓推高价格)。
+    基差<-0.5%=恐慌性做空(市场极度悲观)。
+    """
+    # 从extra_data获取基差（由Step0计算）
+    basis_pct = extra.get('basis_pct', 0)
+    if basis_pct == 0:
+        return {'id': 'VR10_基差极端值', 'fired': False, 'score_adj': 0, 'flags': ['基差数据不可用→跳过']}
+    
+    flags = []
+    score_adj = 0
+    
+    if basis_pct > 1.0:
+        score_adj += 3
+        flags.append(f'基差{basis_pct:+.2f}%>1%→逼空行情→做空+3(逼空将反转)')
+        if result.get('signal_dir') == 'SHORT':
+            score_adj += 2
+            flags.append('做空+逼空反转=顺势+2')
+    elif basis_pct < -0.5:
+        score_adj += 3
+        flags.append(f'基差{basis_pct:+.2f}%<-0.5%→恐慌性做空→做多+3(恐慌将反转)')
+        if result.get('signal_dir') == 'LONG':
+            score_adj += 2
+            flags.append('做多+恐慌反转=顺势+2')
+    else:
+        flags.append(f'基差{basis_pct:+.2f}%→正常区间')
+    
+    return {
+        'id': 'VR10_基差极端值',
+        'fired': True,
+        'score_adj': score_adj,
+        'flags': flags,
+    }
+
+
+# ═══════════════════════════════════════════════════════════
+# 规则11：多TF收敛 — 40年老炮：三周期同向=最高概率交易
+# ═══════════════════════════════════════════════════════════
+def _rule_multi_tf_convergence(result: dict, extra: dict, ms: dict) -> dict:
+    """
+    40年老炮：4H+1H+15M趋势同向=最强趋势信号。
+    4H+1H同向但15M反向=回调入场机会。
+    三周期收敛+共振=接近确定性交易。
+    """
+    # 从extra_data获取多TF方向（由Step1计算）
+    tf_4h = extra.get('tf_4h_dir', '')
+    tf_1h = extra.get('tf_1h_dir', '')
+    tf_15m = extra.get('tf_15m_dir', '')
+    
+    if not tf_4h or not tf_1h:
+        return {'id': 'VR11_多TF收敛', 'fired': False, 'score_adj': 0, 'flags': ['多TF数据不可用→跳过']}
+    
+    flags = []
+    score_adj = 0
+    signal = result.get('signal_dir', '')
+    
+    # 三周期同向
+    if tf_4h == tf_1h == tf_15m and tf_4h:
+        score_adj += 5
+        dir_cn = '做多' if tf_4h == 'LONG' else '做空'
+        flags.append(f'4H+1H+15M三周期同向{dir_cn}→最高概率交易+5')
+        if signal == tf_4h:
+            score_adj += 2
+            flags.append(f'信号与三周期一致=顺势+2')
+    # 4H+1H同向，15M反向
+    elif tf_4h == tf_1h and tf_4h != tf_15m and tf_4h:
+        score_adj += 2
+        flags.append(f'4H+1H同向但15M反向→回调入场机会+2')
+        if signal == tf_4h:
+            score_adj += 1
+            flags.append('信号与大周期一致=顺势+1')
+    # 4H与1H反向
+    elif tf_4h != tf_1h:
+        flags.append(f'4H({tf_4h})与1H({tf_1h})反向→趋势不一致，谨慎')
+    else:
+        flags.append(f'4H={tf_4h} 1H={tf_1h} 15M={tf_15m}→无明确收敛')
+    
+    return {
+        'id': 'VR11_多TF收敛',
+        'fired': True,
+        'score_adj': score_adj,
+        'flags': flags,
+    }
+
+
+# ═══════════════════════════════════════════════════════════
+# 规则12：恐贪极端值 — 40年老炮：恐贪+OI+价格=顶/底信号
+# ═══════════════════════════════════════════════════════════
+def _rule_fear_greed_extreme(result: dict, extra: dict, ms: dict) -> dict:
+    """
+    40年老炮：恐贪>80+OI下降+价格滞涨=顶部。
+    恐贪<20+OI上升+价格止跌=底部。
+    恐贪极值+OI方向=反转确认。
+    """
+    # 从extra_data获取恐贪指数（由Step8 macro提供）
+    fg = extra.get('fear_greed', 0) or ms.get('fear_greed', 0)
+    if fg == 0:
+        return {'id': 'VR12_恐贪极端值', 'fired': False, 'score_adj': 0, 'flags': ['恐贪数据不可用→跳过']}
+    
+    oi_signal = ms.get('oi_signal', '') or extra.get('oi_signal', '')
+    price_24h_change = extra.get('price_24h_change', 0)
+    
+    flags = []
+    score_adj = 0
+    
+    if fg > 80:
+        flags.append(f'恐贪{fg:.0f}>80→极度贪婪')
+        if 'UNWIND' in str(oi_signal) or 'SHORT' in str(oi_signal):
+            score_adj += 5
+            flags.append(f'恐贪{fg:.0f}+OI{oi_signal}+价格24h={price_24h_change:+.1f}%→顶部信号做空+5')
+    elif fg < 20:
+        flags.append(f'恐贪{fg:.0f}<20→极度恐惧')
+        if 'BUILD' in str(oi_signal) and 'LONG' in str(oi_signal):
+            score_adj += 5
+            flags.append(f'恐贪{fg:.0f}+OI{oi_signal}+价格24h={price_24h_change:+.1f}%→底部信号做多+5')
+    else:
+        flags.append(f'恐贪{fg:.0f}→中性区间')
+    
+    return {
+        'id': 'VR12_恐贪极端值',
+        'fired': True,
+        'score_adj': score_adj,
+        'flags': flags,
+    }
+
+
+# ═══════════════════════════════════════════════════════════
 # 主函数
 # ═══════════════════════════════════════════════════════════
 def evaluate_veteran_rules(result: dict, extra_data: dict = None, ms: dict = None) -> dict:
@@ -346,6 +635,12 @@ def evaluate_veteran_rules(result: dict, extra_data: dict = None, ms: dict = Non
         _rule_range_logic,
         _rule_expiry_window,
         _rule_session_liquidity,
+        _rule_funding_rate,
+        _rule_liquidation_reversal,
+        _rule_orderbook_absorption,
+        _rule_basis_extreme,
+        _rule_multi_tf_convergence,
+        _rule_fear_greed_extreme,
     ]
 
     total_adj = 0
@@ -367,8 +662,8 @@ def evaluate_veteran_rules(result: dict, extra_data: dict = None, ms: dict = Non
         except Exception as e:
             breakdown[f'ERROR_{rule_fn.__name__}'] = str(e)
 
-    # 总分限制：±15分
-    total_adj = max(-15, min(15, total_adj))
+    # 总分限制：±20分（12规则升级后）
+    total_adj = max(-20, min(20, total_adj))
 
     summary = f'40年经验: {" | ".join(all_flags[:4])}'
     if len(all_flags) > 4:
