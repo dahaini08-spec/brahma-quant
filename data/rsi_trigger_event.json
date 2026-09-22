@@ -4,17 +4,17 @@
     "direction": "LONG",
     "trigger_type": "tradfi_macro",
     "score_delta": 0,
-    "base_score": 100.0,
-    "ts": 1790033005.4230735,
+    "base_score": 110.7,
+    "ts": 1790071234.5322604,
     "source": "tradfi_signal_layer"
   },
   "ETHUSDT": {
     "symbol": "ETHUSDT",
-    "direction": "SHORT",
+    "direction": "LONG",
     "trigger_type": "tradfi_macro",
     "score_delta": 0,
-    "base_score": 105.8,
-    "ts": 1790034115.1502686,
+    "base_score": 104.8,
+    "ts": 1790066766.0727665,
     "source": "tradfi_signal_layer"
   },
   "SOLUSDT": {
@@ -37,20 +37,18 @@
     "high_priority": true
   },
   "BNBUSDT": {
-    "ts": 1790005323.6994083,
-    "ts_iso": "2026-09-21T15:42:03.699411+00:00",
+    "ts": 1790043121.625941,
+    "ts_iso": "2026-09-22T02:12:01.625944+00:00",
     "symbol": "BNBUSDT",
-    "px": 803.75,
-    "rsi_1h": 80.4,
-    "bb_width": 2.664,
+    "px": 788.76,
+    "rsi_1h": 47.8,
+    "bb_width": 2.29,
     "events": [
       {
-        "event": "E_TREND_SURGE",
-        "desc": "🚀 趋势暴涨触发! 48H涨幅7.9% 4H阳线确认 RSI=80.4 → 动量层匹配，全量扫描做多",
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=2.290%极度压缩(历史最低区间) RSI=47.8 弹簧即将释放",
         "priority": "HIGH",
-        "direction": "LONG",
-        "chg_48h": 7.88,
-        "_cooldown_key": "BNBUSDT_trend_surge_ts"
+        "bbw_shrinking": true
       }
     ],
     "high_priority": true
@@ -73,33 +71,38 @@
     "high_priority": true
   },
   "HYPEUSDT": {
+    "ts": 1790043128.6935058,
+    "ts_iso": "2026-09-22T02:12:08.693509+00:00",
     "symbol": "HYPEUSDT",
-    "direction": "LONG",
-    "trigger_type": "tradfi_macro",
-    "score_delta": 0,
-    "base_score": 115.0,
-    "ts": 1790015063.6419408,
-    "source": "tradfi_signal_layer"
-  },
-  "SYNUSDT": {
-    "ts": 1789954931.525614,
-    "ts_iso": "2026-09-21T01:42:11.525616+00:00",
-    "symbol": "SYNUSDT",
-    "px": 0.22902,
-    "rsi_1h": 61.3,
-    "bb_width": 10.046,
+    "px": 93.255,
+    "rsi_1h": 33.4,
+    "bb_width": 2.026,
     "events": [
       {
-        "event": "E_TREND_SURGE",
-        "desc": "🚀 趋势暴涨触发! 48H涨幅21.7% 4H阳线确认 RSI=61.3 → 动量层匹配，全量扫描做多",
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=2.026%极度压缩(历史最低区间) RSI=33.4 弹簧即将释放",
         "priority": "HIGH",
-        "direction": "LONG",
-        "chg_48h": 21.72,
-        "_cooldown_key": "SYNUSDT_trend_surge_ts"
+        "bbw_shrinking": true
+      }
+    ],
+    "high_priority": true
+  },
+  "SYNUSDT": {
+    "ts": 1790043135.139517,
+    "ts_iso": "2026-09-22T02:12:15.139520+00:00",
+    "symbol": "SYNUSDT",
+    "px": 0.23452,
+    "rsi_1h": 57.7,
+    "bb_width": 12.535,
+    "events": [
+      {
+        "event": "E7_OI_SURGE",
+        "desc": "OI 1H变化-3.8% 资金减仓，注意方向",
+        "priority": "MEDIUM"
       },
       {
         "event": "E10_RSI_BOUNCE_CONFIRM",
-        "desc": "RSI_1H 20.6→61.3 超卖回弹确认（从<30回升>35），多头入场+6%WR提升",
+        "desc": "RSI_1H 20.6→57.7 超卖回弹确认（从<30回升>35），多头入场+6%WR提升",
         "priority": "HIGH"
       }
     ],
@@ -278,21 +281,13 @@
     "high_priority": true
   },
   "ZECUSDT": {
-    "ts": 1789913530.995111,
-    "ts_iso": "2026-09-20T14:12:10.995112+00:00",
     "symbol": "ZECUSDT",
-    "px": 1440.1,
-    "rsi_1h": 29.2,
-    "bb_width": 2.015,
-    "events": [
-      {
-        "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=2.015%极度压缩(历史最低区间) RSI=29.2 弹簧即将释放",
-        "priority": "HIGH",
-        "bbw_shrinking": true
-      }
-    ],
-    "high_priority": true
+    "direction": "LONG",
+    "trigger_type": "tradfi_macro",
+    "score_delta": 0,
+    "base_score": 264.0,
+    "ts": 1790047660.1214125,
+    "source": "tradfi_signal_layer"
   },
   "CLUSDT": {
     "ts": 1789913531.716274,
@@ -446,24 +441,24 @@
     "high_priority": true
   },
   "NEARUSDT": {
-    "ts": 1789954926.7459397,
-    "ts_iso": "2026-09-21T01:42:06.745943+00:00",
+    "ts": 1790043127.0159419,
+    "ts_iso": "2026-09-22T02:12:07.015945+00:00",
     "symbol": "NEARUSDT",
-    "px": 4.186,
-    "rsi_1h": 68.6,
-    "bb_width": 15.289,
+    "px": 4.373,
+    "rsi_1h": 60.6,
+    "bb_width": 5.712,
     "events": [
       {
         "event": "E7_OI_SURGE",
-        "desc": "OI 1H变化+3.8% 资金增仓，注意方向",
+        "desc": "OI 1H变化+3.4% 资金增仓，注意方向",
         "priority": "MEDIUM"
       },
       {
         "event": "E_TREND_SURGE",
-        "desc": "🚀 趋势暴涨触发! 48H涨幅23.0% 4H阳线确认 RSI=68.6 → 动量层匹配，全量扫描做多",
+        "desc": "🚀 趋势暴涨触发! 48H涨幅27.7% 4H阳线确认 RSI=60.6 → 动量层匹配，全量扫描做多",
         "priority": "HIGH",
         "direction": "LONG",
-        "chg_48h": 23.01,
+        "chg_48h": 27.72,
         "_cooldown_key": "NEARUSDT_trend_surge_ts"
       }
     ],
@@ -579,20 +574,18 @@
     "source": "oi_advanced_scanner"
   },
   "LINKUSDT": {
-    "ts": 1789987324.9314966,
-    "ts_iso": "2026-09-21T10:42:04.931500+00:00",
+    "ts": 1790043124.6525352,
+    "ts_iso": "2026-09-22T02:12:04.652538+00:00",
     "symbol": "LINKUSDT",
-    "px": 13.002,
-    "rsi_1h": 68.4,
-    "bb_width": 2.643,
+    "px": 12.98,
+    "rsi_1h": 43.3,
+    "bb_width": 2.282,
     "events": [
       {
-        "event": "E_TREND_SURGE",
-        "desc": "🚀 趋势暴涨触发! 48H涨幅9.2% 4H阳线确认 RSI=68.4 → 动量层匹配，全量扫描做多",
+        "event": "E8_BBW_EXTREME_COMPRESS",
+        "desc": "BBW=2.282%极度压缩(历史最低区间) RSI=43.3 弹簧即将释放",
         "priority": "HIGH",
-        "direction": "LONG",
-        "chg_48h": 9.17,
-        "_cooldown_key": "LINKUSDT_trend_surge_ts"
+        "bbw_shrinking": false
       }
     ],
     "high_priority": true
@@ -617,19 +610,19 @@
     "high_priority": true
   },
   "TAOUSDT": {
-    "ts": 1789987327.7199163,
-    "ts_iso": "2026-09-21T10:42:07.719919+00:00",
+    "ts": 1790043127.8557317,
+    "ts_iso": "2026-09-22T02:12:07.855734+00:00",
     "symbol": "TAOUSDT",
-    "px": 280.3,
-    "rsi_1h": 72.8,
-    "bb_width": 4.746,
+    "px": 316.77,
+    "rsi_1h": 72.9,
+    "bb_width": 10.608,
     "events": [
       {
         "event": "E_TREND_SURGE",
-        "desc": "🚀 趋势暴涨触发! 48H涨幅13.0% 4H阳线确认 RSI=72.8 → 动量层匹配，全量扫描做多",
+        "desc": "🚀 趋势暴涨触发! 48H涨幅27.7% 4H阳线确认 RSI=72.9 → 动量层匹配，全量扫描做多",
         "priority": "HIGH",
         "direction": "LONG",
-        "chg_48h": 13.02,
+        "chg_48h": 27.73,
         "_cooldown_key": "TAOUSDT_trend_surge_ts"
       }
     ],
@@ -672,69 +665,62 @@
     "high_priority": true
   },
   "1000PEPEUSDT": {
-    "ts": 1789954930.303396,
-    "ts_iso": "2026-09-21T01:42:10.303397+00:00",
+    "ts": 1790043133.5612164,
+    "ts_iso": "2026-09-22T02:12:13.561219+00:00",
     "symbol": "1000PEPEUSDT",
-    "px": 0.0040546,
-    "rsi_1h": 60.0,
-    "bb_width": 2.05,
+    "px": 0.0050223,
+    "rsi_1h": 71.2,
+    "bb_width": 16.323,
     "events": [
       {
-        "event": "E8_BBW_EXTREME_COMPRESS",
-        "desc": "BBW=2.050%极度压缩(历史最低区间) RSI=60.0 弹簧即将释放",
+        "event": "E7_OI_SURGE",
+        "desc": "OI 1H变化+6.0% 资金增仓，注意方向",
+        "priority": "MEDIUM"
+      },
+      {
+        "event": "E_TREND_SURGE",
+        "desc": "🚀 趋势暴涨触发! 48H涨幅30.0% 4H阳线确认 RSI=71.2 → 动量层匹配，全量扫描做多",
         "priority": "HIGH",
-        "bbw_shrinking": true
+        "direction": "LONG",
+        "chg_48h": 29.96,
+        "_cooldown_key": "1000PEPEUSDT_trend_surge_ts"
       }
     ],
     "high_priority": true
   },
   "TRUMPUSDT": {
-    "ts": 1789954930.724208,
-    "ts_iso": "2026-09-21T01:42:10.724210+00:00",
+    "ts": 1790043134.2629256,
+    "ts_iso": "2026-09-22T02:12:14.262928+00:00",
     "symbol": "TRUMPUSDT",
-    "px": 2.091,
-    "rsi_1h": 63.0,
-    "bb_width": 3.274,
+    "px": 2.173,
+    "rsi_1h": 52.9,
+    "bb_width": 2.606,
     "events": [
       {
-        "event": "E_TREND_SURGE",
-        "desc": "🚀 趋势暴涨触发! 48H涨幅5.0% 4H阳线确认 RSI=63.0 → 动量层匹配，全量扫描做多",
+        "event": "E_OI_DIVERGE",
+        "desc": "🚨 OI+价格背离! OI连续3H增+1.77% 但价格未创新低 RSI=52.9 → 空头加仓压不下，轧空风险升高",
         "priority": "HIGH",
         "direction": "LONG",
-        "chg_48h": 5.02,
-        "_cooldown_key": "TRUMPUSDT_trend_surge_ts"
-      },
-      {
-        "event": "E_MTF_SUPPORT",
-        "desc": "🏗️ 多周期结构共振! 触发2项(M1,M3) 30日区间位=15% RSI_4H=47.2 → 大周期支撑确认，高置信度做多背景",
-        "priority": "HIGH",
-        "direction": "LONG",
-        "mtf_hits": 2,
-        "pos30": 0.15,
-        "_cooldown_key": "TRUMPUSDT_mtf_support_ts"
+        "oi_chg_3h": 1.77,
+        "_cooldown_key": "TRUMPUSDT_oi_diverge_ts"
       }
     ],
     "high_priority": true
   },
   "PENGUUSDT": {
-    "ts": 1789954929.7875874,
-    "ts_iso": "2026-09-21T01:42:09.787590+00:00",
+    "ts": 1790043133.0915701,
+    "ts_iso": "2026-09-22T02:12:13.091573+00:00",
     "symbol": "PENGUUSDT",
-    "px": 0.008056,
-    "rsi_1h": 68.1,
-    "bb_width": 3.82,
+    "px": 0.0087,
+    "rsi_1h": 60.9,
+    "bb_width": 6.314,
     "events": [
       {
-        "event": "E6_VOLUME_SURGE",
-        "desc": "1H量比2.3x 异常放量，结构可能变化",
-        "priority": "MEDIUM"
-      },
-      {
         "event": "E_TREND_SURGE",
-        "desc": "🚀 趋势暴涨触发! 48H涨幅6.8% 4H阳线确认 RSI=68.1 → 动量层匹配，全量扫描做多",
+        "desc": "🚀 趋势暴涨触发! 48H涨幅15.3% 4H阳线确认 RSI=60.9 → 动量层匹配，全量扫描做多",
         "priority": "HIGH",
         "direction": "LONG",
-        "chg_48h": 6.77,
+        "chg_48h": 15.31,
         "_cooldown_key": "PENGUUSDT_trend_surge_ts"
       }
     ],
@@ -745,17 +731,17 @@
     "direction": "LONG",
     "trigger_type": "tradfi_macro",
     "score_delta": 0,
-    "base_score": 118.8,
-    "ts": 1789978455.446578,
+    "base_score": 105.2,
+    "ts": 1790070923.7430959,
     "source": "tradfi_signal_layer"
   },
   "ETH": {
     "symbol": "ETH",
-    "direction": "LONG",
+    "direction": "SHORT",
     "trigger_type": "tradfi_macro",
     "score_delta": 0,
-    "base_score": 203.0,
-    "ts": 1789978486.4524152,
+    "base_score": 114.0,
+    "ts": 1790070927.9443898,
     "source": "tradfi_signal_layer"
   }
 }

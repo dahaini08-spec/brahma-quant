@@ -1,0 +1,11 @@
+{
+  "symbol": "BTC",
+  "current_rate": 0.0,
+  "next_funding_time": 0,
+  "mark_price": 0.0,
+  "rate_8h_avg": 0,
+  "consecutive_positive_h": 0,
+  "consecutive_negative_h": 0,
+  "rate_extreme_flag": false,
+  "ts": 1790070915.5750859
+}

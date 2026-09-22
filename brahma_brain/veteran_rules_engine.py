@@ -606,6 +606,170 @@ def _rule_fear_greed_extreme(result: dict, extra: dict, ms: dict) -> dict:
 
 
 # ═══════════════════════════════════════════════════════════
+# VR13-15 [2026-09-22 苏摩111] Day 9+ 新增3条规则
+# ═══════════════════════════════════════════════════════════
+
+def _rule_oi_spike(result: dict, extra: dict, ms: dict) -> dict:
+    """VR13: OI异常飙升/暴跌 → 聪明钱建仓/平仓信号"""
+    # 从ms.sentiment获取OI变化
+    sentiment = ms.get('sentiment', {}) if isinstance(ms, dict) else {}
+    oi_change = sentiment.get('oi_change_pct', 0) or 0
+    oi_momentum = sentiment.get('oi_momentum', 'NEUTRAL')
+    signal_dir = result.get('signal_dir', '')
+    
+    if not oi_change:
+        # 也尝试从extra获取
+        oi_change = extra.get('oi_change_pct', 0)
+    
+    if not oi_change:
+        return {'id': 'VR13_OI异常波动', 'fired': False, 'score_adj': 0, 'flags': ['OI变化数据不可用→跳过']}
+    
+    flags = []
+    score_adj = 0
+    
+    # OI飙升>3% = 大量建仓
+    if abs(oi_change) > 3:
+        if oi_change > 0:
+            flags.append(f'OI +{oi_change:.1f}%→大量建仓')
+            if 'LONG' in str(signal_dir).upper() or 'LONG' in str(oi_momentum).upper():
+                score_adj += 3
+                flags.append(f'OI飙升+做多方向→聪明钱多仓+3')
+            elif 'SHORT' in str(signal_dir).upper() or 'SHORT' in str(oi_momentum).upper():
+                score_adj += 3
+                flags.append(f'OI飙升+做空方向→聪明钱空仓+3')
+        else:
+            flags.append(f'OI {oi_change:.1f}%→大量平仓')
+            if 'LONG' in str(signal_dir).upper():
+                score_adj -= 2
+                flags.append(f'OI暴跌+做多方向→多头撤退-2')
+            elif 'SHORT' in str(signal_dir).upper():
+                score_adj -= 2
+                flags.append(f'OI暴跌+做空方向→空头撤退-2')
+    
+    # OI极端>5% = 趋势性建仓/平仓
+    if abs(oi_change) > 5:
+        if oi_change > 0:
+            flags.append(f'OI +{oi_change:.1f}%>5%→趋势性建仓')
+            score_adj += 2
+        else:
+            flags.append(f'OI {oi_change:.1f}%<-5%→趋势性平仓')
+            score_adj -= 2
+    
+    if not flags:
+        return {'id': 'VR13_OI异常波动', 'fired': False, 'score_adj': 0, 'flags': [f'OI变化{oi_change:.1f}%→正常']}
+    
+    return {
+        'id': 'VR13_OI异常波动',
+        'fired': True,
+        'score_adj': score_adj,
+        'flags': flags,
+    }
+
+
+def _rule_whale_divergence(result: dict, extra: dict, ms: dict) -> dict:
+    """VR14: 鲸鱼/大户极端背离 → 跟随聪明钱"""
+    big_long = ms.get('big_long_pct', 0) or extra.get('big_long_pct', 0)
+    retail_long = ms.get('retail_long_pct', 0) or extra.get('retail_long_pct', 0)
+    big_2h_change = ms.get('big_2h_change', 0) or extra.get('big_2h_change', 0)
+    
+    if not big_long or not retail_long:
+        return {'id': 'VR14_鲸鱼背离', 'fired': False, 'score_adj': 0, 'flags': ['大户/散户数据不可用→跳过']}
+    
+    divergence = big_long - retail_long
+    flags = []
+    score_adj = 0
+    
+    # 极端背离>20% = 聪明钱与散户完全相反
+    if abs(divergence) > 20:
+        if divergence > 0:
+            # 大户极端做多，散户极端做空 → 跟随大户做多
+            score_adj += 4
+            flags.append(f'大户{big_long:.0f}%vs散户{retail_long:.0f}%→极端做多背离+4')
+        else:
+            # 大户极端做空，散户极端做多 → 跟随大户做空
+            score_adj -= 4
+            flags.append(f'大户{big_long:.0f}%vs散户{retail_long:.0f}%→极端做空背离-4')
+    elif abs(divergence) > 10:
+        if divergence > 0:
+            score_adj += 2
+            flags.append(f'大户{big_long:.0f}%vs散户{retail_long:.0f}%→做多背离+2')
+        else:
+            score_adj -= 2
+            flags.append(f'大户{big_long:.0f}%vs散户{retail_long:.0f}%→做空背离-2')
+    
+    # 大户2H变化方向
+    if big_2h_change and abs(big_2h_change) > 0.5:
+        if big_2h_change > 0:
+            flags.append(f'大户2H+{big_2h_change:.2f}%→加多')
+        else:
+            flags.append(f'大户2H{big_2h_change:.2f}%→减多')
+    
+    if not flags:
+        return {'id': 'VR14_鲸鱼背离', 'fired': False, 'score_adj': 0, 'flags': [f'分歧{divergence:.1f}%→正常']}
+    
+    return {
+        'id': 'VR14_鲸鱼背离',
+        'fired': True,
+        'score_adj': score_adj,
+        'flags': flags,
+    }
+
+
+def _rule_crowding_reversal(result: dict, extra: dict, ms: dict) -> dict:
+    """VR15: 多头/空头拥挤度极端 → 反转信号"""
+    # 从ms.sentiment获取持仓比例
+    sentiment = ms.get('sentiment', {}) if isinstance(ms, dict) else {}
+    long_pct = sentiment.get('long_short_ratio', 0) or 0
+    fr = sentiment.get('funding_rate', 0) or 0
+    
+    # 也从ms直接获取（Step6聪明钱数据）
+    if not long_pct:
+        long_pct = ms.get('big_long_pct', 0) or 0
+    retail_long = ms.get('retail_long_pct', 0) or 0
+    
+    if not long_pct:
+        return {'id': 'VR15_拥挤反转', 'fired': False, 'score_adj': 0, 'flags': ['持仓比例数据不可用→跳过']}
+    
+    flags = []
+    score_adj = 0
+    
+    # 多头拥挤>75% + 高费率 → 反转做空
+    if long_pct > 75:
+        flags.append(f'多头拥挤{long_pct:.0f}%>75%')
+        score_adj -= 4
+        if fr and fr > 0.01:
+            flags.append(f'多头拥挤+费率{fr:.4f}%→拥挤反转做空-4')
+        else:
+            flags.append(f'多头拥挤→反转风险-4')
+    # 空头拥挤<25% + 负费率 → 反转做多
+    elif long_pct < 25:
+        flags.append(f'空头拥挤{100-long_pct:.0f}%>75%')
+        score_adj += 4
+        if fr and fr < -0.01:
+            flags.append(f'空头拥挤+费率{fr:.4f}%→拥挤反转做多+4')
+        else:
+            flags.append(f'空头拥挤→反转风险+4')
+    
+    # 散户极端+大户反向 = 更强信号
+    if retail_long and long_pct:
+        spread = long_pct - retail_long
+        if abs(spread) > 15 and (long_pct > 70 or long_pct < 30):
+            score_adj += 2 if long_pct < 30 else -2
+            direction = '做空' if long_pct > 70 else '做多'
+            flags.append(f'散户{retail_long:.0f}%vs持仓{long_pct:.0f}%→{direction}叠加+2')
+    
+    if not flags:
+        return {'id': 'VR15_拥挤反转', 'fired': False, 'score_adj': 0, 'flags': [f'多头{long_pct:.0f}%→正常']}
+    
+    return {
+        'id': 'VR15_拥挤反转',
+        'fired': True,
+        'score_adj': score_adj,
+        'flags': flags,
+    }
+
+
+# ═══════════════════════════════════════════════════════════
 # 主函数
 # ═══════════════════════════════════════════════════════════
 def evaluate_veteran_rules(result: dict, extra_data: dict = None, ms: dict = None) -> dict:
@@ -641,6 +805,9 @@ def evaluate_veteran_rules(result: dict, extra_data: dict = None, ms: dict = Non
         _rule_basis_extreme,
         _rule_multi_tf_convergence,
         _rule_fear_greed_extreme,
+        _rule_oi_spike,
+        _rule_whale_divergence,
+        _rule_crowding_reversal,
     ]
 
     total_adj = 0
@@ -662,8 +829,8 @@ def evaluate_veteran_rules(result: dict, extra_data: dict = None, ms: dict = Non
         except Exception as e:
             breakdown[f'ERROR_{rule_fn.__name__}'] = str(e)
 
-    # 总分限制：±20分（12规则升级后）
-    total_adj = max(-20, min(20, total_adj))
+    # 总分限制：±25分（15规则升级后）
+    total_adj = max(-25, min(25, total_adj))
 
     summary = f'40年经验: {" | ".join(all_flags[:4])}'
     if len(all_flags) > 4:

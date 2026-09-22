@@ -1,0 +1,11 @@
+{
+  "symbol": "ETHUSDT",
+  "current_rate": 9.032e-05,
+  "next_funding_time": 1790092800000,
+  "mark_price": 2743.93841085,
+  "rate_8h_avg": 8.007666666666668e-05,
+  "consecutive_positive_h": 24,
+  "consecutive_negative_h": 0,
+  "rate_extreme_flag": false,
+  "ts": 1790072622.49987
+}

@@ -1,0 +1,11 @@
+{
+  "symbol": "BTCUSDT",
+  "current_rate": 0.0001,
+  "next_funding_time": 1790092800000,
+  "mark_price": 86201.46034783,
+  "rate_8h_avg": 7.716e-05,
+  "consecutive_positive_h": 24,
+  "consecutive_negative_h": 0,
+  "rate_extreme_flag": false,
+  "ts": 1790071204.7956336
+}

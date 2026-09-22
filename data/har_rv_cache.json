@@ -2847,26 +2847,26 @@
     }
   },
   "BTC": {
-    "ts": 1790032320.1835327,
+    "ts": 1790046025.8665457,
     "data": {
-      "rv_1d": 0.02926,
-      "rv_5d": 0.04079,
-      "rv_22d": 0.0526,
-      "rv_forecast": 0.03935,
+      "rv_1d": 0.03008,
+      "rv_5d": 0.04276,
+      "rv_22d": 0.05453,
+      "rv_forecast": 0.04086,
       "rv_percentile": 100,
-      "regime_vol": "HIGH",
-      "score_adj": -3,
+      "regime_vol": "EXTREME",
+      "score_adj": -5,
       "p_up_proxy": 0.45
     }
   },
   "ETH": {
-    "ts": 1790034103.9035144,
+    "ts": 1790045452.0366979,
     "data": {
-      "rv_1d": 0.031,
-      "rv_5d": 0.03543,
-      "rv_22d": 0.0522,
-      "rv_forecast": 0.03797,
-      "rv_percentile": 90,
+      "rv_1d": 0.02318,
+      "rv_5d": 0.03806,
+      "rv_22d": 0.0543,
+      "rv_forecast": 0.03674,
+      "rv_percentile": 100,
       "regime_vol": "HIGH",
       "score_adj": -3,
       "p_up_proxy": 0.45
@@ -3029,12 +3029,12 @@
     }
   },
   "HYPE": {
-    "ts": 1790015061.2667844,
+    "ts": 1790047478.367541,
     "data": {
-      "rv_1d": 0.03501,
-      "rv_5d": 0.03889,
-      "rv_22d": 0.06298,
-      "rv_forecast": 0.0436,
+      "rv_1d": 0.02763,
+      "rv_5d": 0.0428,
+      "rv_22d": 0.06728,
+      "rv_forecast": 0.04359,
       "rv_percentile": 100,
       "regime_vol": "EXTREME",
       "score_adj": -5,
@@ -3055,12 +3055,12 @@
     }
   },
   "SOL": {
-    "ts": 1789993477.761624,
+    "ts": 1790047478.4105868,
     "data": {
-      "rv_1d": 0.03849,
-      "rv_5d": 0.04973,
-      "rv_22d": 0.08136,
-      "rv_forecast": 0.05376,
+      "rv_1d": 0.03522,
+      "rv_5d": 0.05471,
+      "rv_22d": 0.08472,
+      "rv_forecast": 0.0553,
       "rv_percentile": 100,
       "regime_vol": "EXTREME",
       "score_adj": -5,
@@ -3107,12 +3107,12 @@
     }
   },
   "ZEC": {
-    "ts": 1789898248.7454357,
+    "ts": 1790046453.5240564,
     "data": {
-      "rv_1d": 0.03101,
-      "rv_5d": 0.08645,
-      "rv_22d": 0.14718,
-      "rv_forecast": 0.08242,
+      "rv_1d": 0.05262,
+      "rv_5d": 0.09149,
+      "rv_22d": 0.15332,
+      "rv_forecast": 0.09347,
       "rv_percentile": 100,
       "regime_vol": "EXTREME",
       "score_adj": -5,
@@ -3184,4 +3184,4 @@
       "p_up_proxy": 0.45
     }
   }
-}
+}}

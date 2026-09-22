@@ -1,5 +1,5 @@
 {
-  "ts": 1790033100.0616739,
+  "ts": 1790071234.8039505,
   "version": "1.0",
   "market_state": {
     "EPIC": {
@@ -28,9 +28,9 @@
       "score": 47.0
     },
     "BTC": {
-      "price": 85877.4,
+      "price": 86206.2,
       "regime": "CHOP_MID",
-      "score": 83.0
+      "score": 108.7
     },
     "ETH": {
       "price": 2689.8,
@@ -41,15 +41,15 @@
   "active_signals": [],
   "positions": [],
   "last_decision": {
-    "ts": 1790006420.2654278,
+    "ts": 1790071234.8039513,
     "symbol": "BTCUSDT",
-    "action": "WATCH",
-    "score": 83.0,
+    "action": "ALERT",
+    "score": 108.7,
     "signal_dir": "LONG"
   },
   "data_health": {
-    "fresh": 9,
-    "dead": 1
+    "fresh": 8,
+    "dead": 2
   },
   "autopilot_enabled": false
 }

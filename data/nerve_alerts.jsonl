@@ -1,23 +1,3 @@
-{"ts": "2026-09-02T22:38:21Z", "layer": "L5_FRESHNESS", "level": "WARN", "check": "scan_active", "issue": "字段不存在: last_scan_ts", "data": ""}
-{"ts": "2026-09-02T22:38:21Z", "layer": "L5_FRESHNESS", "level": "WARN", "check": "funnel_log", "issue": "数据过期 116138.7min（阈值180min）", "data": "data/funnel_log.jsonl=2026-06-14T06:59:36Z"}
-{"ts": "2026-09-02T22:38:21Z", "layer": "L5_FRESHNESS", "level": "WARN", "check": "nav_history", "issue": "数据过期 116138.7min（阈值200min）", "data": "data/nav_history.jsonl=2026-06-14T06:59:36Z"}
-{"ts": "2026-09-02T22:38:21Z", "layer": "L5_FRESHNESS", "level": "WARN", "check": "attribution", "issue": "数据过期 75723.7min（阈值1440min）", "data": "data/attribution_log.jsonl=2026-07-12T08:34:36Z"}
-{"ts": "2026-09-02T22:38:21Z", "layer": "L5_FRESHNESS", "level": "WARN", "check": "dharma_data", "issue": "文件不存在: dharma/data/live_signals.jsonl", "data": ""}
-{"ts": "2026-09-02T22:39:03Z", "layer": "L5_FRESHNESS", "level": "ERROR", "check": "brahma_state", "issue": "数据过期 128.8min（阈值30min）", "data": "data/brahma_state.json=2026-09-02T20:30:14Z"}
-{"ts": "2026-09-02T22:39:03Z", "layer": "L5_FRESHNESS", "level": "WARN", "check": "binance_sync", "issue": "字段不存在: last_binance_sync", "data": ""}
-{"ts": "2026-09-02T22:39:03Z", "layer": "L5_FRESHNESS", "level": "ERROR", "check": "ws_guardian", "issue": "数据过期 1302.8min（阈值15min）", "data": "data/ws_guardian_state.json=2026-09-02T00:56:18Z"}
-{"ts": "2026-09-02T22:39:03Z", "layer": "L5_FRESHNESS", "level": "WARN", "check": "scan_active", "issue": "字段不存在: last_scan_ts", "data": ""}
-{"ts": "2026-09-02T22:39:03Z", "layer": "L5_FRESHNESS", "level": "WARN", "check": "funnel_log", "issue": "数据过期 116139.4min（阈值180min）", "data": "data/funnel_log.jsonl=2026-06-14T06:59:36Z"}
-{"ts": "2026-09-02T22:39:03Z", "layer": "L5_FRESHNESS", "level": "WARN", "check": "nav_history", "issue": "数据过期 116139.4min（阈值200min）", "data": "data/nav_history.jsonl=2026-06-14T06:59:36Z"}
-{"ts": "2026-09-02T22:39:03Z", "layer": "L5_FRESHNESS", "level": "WARN", "check": "attribution", "issue": "数据过期 75724.4min（阈值1440min）", "data": "data/attribution_log.jsonl=2026-07-12T08:34:36Z"}
-{"ts": "2026-09-02T22:39:03Z", "layer": "L5_FRESHNESS", "level": "WARN", "check": "dharma_data", "issue": "文件不存在: dharma/data/live_signals.jsonl", "data": ""}
-{"ts": "2026-09-02T23:10:47Z", "layer": "L5_FRESHNESS", "level": "WARN", "check": "binance_sync", "issue": "字段不存在: last_binance_sync", "data": ""}
-{"ts": "2026-09-02T23:10:47Z", "layer": "L5_FRESHNESS", "level": "ERROR", "check": "ws_guardian", "issue": "数据过期 1334.5min（阈值15min）", "data": "data/ws_guardian_state.json=2026-09-02T00:56:18Z"}
-{"ts": "2026-09-02T23:10:47Z", "layer": "L5_FRESHNESS", "level": "WARN", "check": "scan_active", "issue": "字段不存在: last_scan_ts", "data": ""}
-{"ts": "2026-09-02T23:10:47Z", "layer": "L5_FRESHNESS", "level": "WARN", "check": "funnel_log", "issue": "数据过期 116171.2min（阈值180min）", "data": "data/funnel_log.jsonl=2026-06-14T06:59:36Z"}
-{"ts": "2026-09-02T23:10:47Z", "layer": "L5_FRESHNESS", "level": "WARN", "check": "nav_history", "issue": "数据过期 116171.2min（阈值200min）", "data": "data/nav_history.jsonl=2026-06-14T06:59:36Z"}
-{"ts": "2026-09-02T23:10:47Z", "layer": "L5_FRESHNESS", "level": "WARN", "check": "attribution", "issue": "数据过期 75756.2min（阈值1440min）", "data": "data/attribution_log.jsonl=2026-07-12T08:34:36Z"}
-{"ts": "2026-09-02T23:10:47Z", "layer": "L5_FRESHNESS", "level": "WARN", "check": "dharma_data", "issue": "文件不存在: dharma/data/live_signals.jsonl", "data": ""}
 {"ts": "2026-09-02T23:11:06Z", "layer": "L5_FRESHNESS", "level": "WARN", "check": "binance_sync", "issue": "字段不存在: last_binance_sync", "data": ""}
 {"ts": "2026-09-02T23:11:06Z", "layer": "L5_FRESHNESS", "level": "ERROR", "check": "ws_guardian", "issue": "数据过期 1334.8min（阈值15min）", "data": "data/ws_guardian_state.json=2026-09-02T00:56:18Z"}
 {"ts": "2026-09-02T23:11:06Z", "layer": "L5_FRESHNESS", "level": "WARN", "check": "scan_active", "issue": "字段不存在: last_scan_ts", "data": ""}
@@ -505,3 +485,80 @@
 {"type": "regime_save_failed", "msg": "[Errno 2] No such file or directory: '/root/.openclaw/workspace/trading-system/brahma_brain/../data/regime_state.json.tmp' -> '/root/.openclaw/workspace/trading-system/brahma_brain/../data/regime_state.json'", "symbol": "ETHUSDT", "ts": 1789971161.5920856}
 {"type": "regime_save_failed", "msg": "[Errno 2] No such file or directory: '/root/.openclaw/workspace/trading-system/brahma_brain/../data/regime_state.json.tmp' -> '/root/.openclaw/workspace/trading-system/brahma_brain/../data/regime_state.json'", "symbol": "BTCUSDT", "ts": 1789973271.1718423}
 {"type": "regime_save_failed", "msg": "[Errno 2] No such file or directory: '/root/.openclaw/workspace/trading-system/brahma_brain/../data/regime_state.json.tmp' -> '/root/.openclaw/workspace/trading-system/brahma_brain/../data/regime_state.json'", "symbol": "ETHUSDT", "ts": 1789976460.6221087}
+{"type": "regime_save_failed", "msg": "[Errno 2] No such file or directory: '/root/.openclaw/workspace/trading-system/brahma_brain/../data/regime_state.json.tmp' -> '/root/.openclaw/workspace/trading-system/brahma_brain/../data/regime_state.json'", "symbol": "BTCUSDT", "ts": 1790042623.719231}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETHUSDT", "ts": 1790042790.4604194}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETHUSDT", "ts": 1790042790.4633303}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTC", "ts": 1790042861.5248172}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTC", "ts": 1790042861.527637}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "SOLUSDT", "ts": 1790044236.8757353}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "SOLUSDT", "ts": 1790044236.8814151}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ZECUSDT", "ts": 1790044236.8770895}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ZECUSDT", "ts": 1790044236.8851004}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETHUSDT", "ts": 1790045446.5132267}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETHUSDT", "ts": 1790045446.5161011}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTC", "ts": 1790045491.7001626}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTC", "ts": 1790045491.704429}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTCUSDT", "ts": 1790046015.0283785}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTCUSDT", "ts": 1790046015.0306425}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ZECUSDT", "ts": 1790046446.6614504}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "SOLUSDT", "ts": 1790046446.6643858}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ZECUSDT", "ts": 1790046446.666575}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "SOLUSDT", "ts": 1790046446.6669197}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "HYPEUSDT", "ts": 1790047470.753369}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "HYPEUSDT", "ts": 1790047470.7560556}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "SOLUSDT", "ts": 1790047470.7740068}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "SOLUSDT", "ts": 1790047470.7764535}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ZECUSDT", "ts": 1790047520.9335406}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ZECUSDT", "ts": 1790047520.9363883}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "SOLUSDT", "ts": 1790047520.9364536}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "SOLUSDT", "ts": 1790047520.9391322}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETHUSDT", "ts": 1790047520.9523592}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETHUSDT", "ts": 1790047520.95491}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ZECUSDT", "ts": 1790047639.8137884}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ZECUSDT", "ts": 1790047639.8162804}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTC", "ts": 1790048127.1036305}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTC", "ts": 1790048127.1082182}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETH", "ts": 1790048136.098582}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETH", "ts": 1790048136.102835}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTCUSDT", "ts": 1790058269.2457116}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTCUSDT", "ts": 1790058269.248331}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETHUSDT", "ts": 1790060442.4133544}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETHUSDT", "ts": 1790060442.4160414}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTCUSDT", "ts": 1790060442.4300864}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTCUSDT", "ts": 1790060442.432632}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTCUSDT", "ts": 1790065187.0463016}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTCUSDT", "ts": 1790065187.0511794}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTCUSDT", "ts": 1790066651.4684553}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTCUSDT", "ts": 1790066651.4711754}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETHUSDT", "ts": 1790066651.4808788}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETHUSDT", "ts": 1790066651.4832096}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETHUSDT", "ts": 1790066755.5386689}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETHUSDT", "ts": 1790066755.5412736}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTCUSDT", "ts": 1790066755.5418622}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTCUSDT", "ts": 1790066755.5469296}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTC", "ts": 1790067500.1964772}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTC", "ts": 1790067500.200976}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETH", "ts": 1790067509.1283329}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETH", "ts": 1790067509.1326869}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTCUSDT", "ts": 1790067620.5998895}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTCUSDT", "ts": 1790067620.6045768}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "XAUUSDT", "ts": 1790069059.3302498}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "XAUUSDT", "ts": 1790069059.3347735}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETHUSDT", "ts": 1790070423.710859}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETHUSDT", "ts": 1790070423.7136846}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETHUSDT", "ts": 1790070728.0579321}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETHUSDT", "ts": 1790070728.0609787}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTC", "ts": 1790070879.8875322}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTC", "ts": 1790070879.8904378}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETH", "ts": 1790070888.2851603}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETH", "ts": 1790070888.2893946}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTC", "ts": 1790070916.0932157}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTC", "ts": 1790070916.097451}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETH", "ts": 1790070924.6162732}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETH", "ts": 1790070924.6205444}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTCUSDT", "ts": 1790071205.3188982}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "BTCUSDT", "ts": 1790071205.3211815}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETHUSDT", "ts": 1790072593.690668}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETHUSDT", "ts": 1790072593.6935346}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETHUSDT", "ts": 1790072623.005722}
+{"type": "regime_save_failed", "msg": "'utf-8' codec can't decode byte 0xa1 in position 2955: invalid start byte", "symbol": "ETHUSDT", "ts": 1790072623.0082984}
