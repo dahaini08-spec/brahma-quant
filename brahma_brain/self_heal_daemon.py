@@ -49,6 +49,11 @@ DATA_SOURCES = [
     ('drawdown',    'data/drawdown_state.json',        3600, 'drawdown'),
     ('antifragile', 'data/antifragile_state.json',    86400, 'antifragile'),
     ('regime_state','data/regime_state.json',          3600, 'regime'),
+    # [9.22苏摩111] 新增3个按需数据源
+    ('funding_btc', 'data/funding_rate_btcusdt.json', 28800, 'funding'),  # 8h TTL
+    ('funding_eth', 'data/funding_rate_ethusdt.json', 28800, 'funding'),
+    ('orderbook_btc','data/orderbook_btcusdt.json',    300, 'orderbook'),  # 5min TTL
+    ('orderbook_eth','data/orderbook_ethusdt.json',     300, 'orderbook'),
 ]
 
 # ── 进程配置：进程名, 启动命令 ──
@@ -199,6 +204,42 @@ def _refresh_regime():
     pass
 
 
+def _refresh_funding():
+    """资金费率按需拉取（分析时触发，非常驻进程）"""
+    try:
+        import sys as _sys
+        _root = str(BASE_DIR)
+        if _root not in _sys.path:
+            _sys.path.insert(0, _root)
+        _bb = str(Path(__file__).parent)
+        if _bb not in _sys.path:
+            _sys.path.insert(0, _bb)
+        from brahma_brain.funding_rate_fetch import fetch_funding_rate
+        for sym in ['BTCUSDT', 'ETHUSDT']:
+            fetch_funding_rate(sym)
+        log.info('✅ 资金费率拉取成功')
+    except Exception as e:
+        log.error(f'❌ 资金费率拉取失败: {e}')
+
+
+def _refresh_orderbook():
+    """盘口深度按需拉取（分析时触发，非常驻进程）"""
+    try:
+        import sys as _sys
+        _root = str(BASE_DIR)
+        if _root not in _sys.path:
+            _sys.path.insert(0, _root)
+        _bb = str(Path(__file__).parent)
+        if _bb not in _sys.path:
+            _sys.path.insert(0, _bb)
+        from brahma_brain.orderbook_fetch import fetch_orderbook_snapshot
+        for sym in ['BTCUSDT', 'ETHUSDT']:
+            fetch_orderbook_snapshot(sym)
+        log.info('✅ 盘口深度拉取成功')
+    except Exception as e:
+        log.error(f'❌ 盘口深度拉取失败: {e}')
+
+
 REFRESH_FNS = {
     'cvd': _refresh_cvd,
     'gex': _refresh_gex,
@@ -209,6 +250,8 @@ REFRESH_FNS = {
     'drawdown': _refresh_drawdown,
     'antifragile': _refresh_antifragile,
     'regime': _refresh_regime,
+    'funding': _refresh_funding,
+    'orderbook': _refresh_orderbook,
 }
 
 
