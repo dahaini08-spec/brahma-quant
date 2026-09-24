@@ -4,7 +4,7 @@ paper_executor.py — 纸面系统专属开单执行器
 设计院封印 2026-09-03 苏摩111
 
 定位：独立于 auto_executor.py，专为纸面验证系统设计
-门槛：score≥80 + grade≥75（比实盘宽松，用于系统验证）
+门槛：score≥100（对齐MIN_SCORE_OPEN，P0封堵LLM建议层，见三方体检报告）
 持仓：BTC/ETH各最多1单，每单5%NAV（纸面）
 记录：写入 data/paper_positions.json，供 paper_tp_monitor.py 追踪
 
@@ -27,8 +27,8 @@ SIGNAL_QUEUE     = BASE / 'data' / 'auto_signal_queue.json'
 PAPER_LOG        = BASE / 'logs' / 'paper_executor.log'
 
 # 纸面系统专属门槛（比实盘宽松）
-PAPER_SCORE_MIN  = 80
-PAPER_GRADE_MIN  = 75
+PAPER_SCORE_MIN  = 100  # [P0对齐 2026-09-24 苏摩111] 80→100对齐MIN_SCORE_OPEN（LLM建议采纳线非硬风控，见三方体检报告）
+PAPER_GRADE_MIN  = 0  # [P0对齐 2026-09-24] grade线废除——SSOT唯一裁判=cf_action+score，grade回退路径已封禁
 PAPER_NAV_PCT    = 0.05   # 5%NAV per trade
 MAX_POSITIONS    = 1       # 每个标的最多1单
 

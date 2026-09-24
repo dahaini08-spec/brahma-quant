@@ -69,7 +69,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [9.18 修复] oi_watchlist从:00移到:22错峰
 22 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/oi_watchlist_monitor.py >> logs/oi_watchlist.log 2>&1
 # battlefield auto analysis — :15 偶数小时
-15 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/battlefield_auto_analysis.py >> logs/auto_analysis.log 2>&1
+15 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 900 python3 scripts/battlefield_auto_analysis.py >> logs/auto_analysis.log 2>&1
 # core cleanup — :20 偶数小时
 20 */2 * * * python3 -c "import os,glob; [os.remove(f) for f in glob.glob('/tmp/core.*')+glob.glob('/root/core.*') if os.path.exists(f)]" >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
 # session disk cleanup — :25 偶数小时
@@ -136,7 +136,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # wiring check — 03:00 Sunday
 0 3 * * 0 cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_wiring_check.py >> logs/wiring_check.log 2>&1
 # DAG weight calibrator — 03:30 Sunday (蘑菇体机制)
-30 3 * * 0 cd /root/.openclaw/workspace/trading-system && python3 brahma_brain/dag_weight_calibrator.py >> logs/dag_calibrator.log 2>&1
+30 3 * * 2,5 cd /root/.openclaw/workspace/trading-system && timeout 300 python3 brahma_brain/dag_weight_calibrator.py >> logs/dag_calibrator.log 2>&1
 
 # GEX刷新 — 每4小时, 用gex_unified.scan_gex写gex_state.json
 # [9.15苏摩111 P1修复] 扩展到tier1标的
@@ -197,3 +197,9 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 
 # L0工作记忆刷新（每5分钟，独立脚本）
 */5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/autopilot_l0_refresh.py >> logs/autopilot_l0.log 2>&1
+
+# [9.23苏摩111] 独立watchdog拉起任务（带单实例锁，已有实例则退出）
+*/5 * * * * cd /root/.openclaw/workspace/trading-system && nohup bash scripts/independent_watchdog.sh >> logs/watchdog.log 2>&1 &
+
+# [9.23苏摩111 P0] 每分钟拉起核心进程（带单实例锁，进程死了自动复活）
+* * * * * cd /root/.openclaw/workspace/trading-system && bash scripts/process_resurrect.sh >> logs/resurrect.log 2>&1
