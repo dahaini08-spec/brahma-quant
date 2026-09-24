@@ -34,6 +34,9 @@ DEAD_COMBOS = set()  # [9.17 苏摩111] 清空死穴表——放开系统
 MAX_SL_PCT       = 2.0   # SQE Gate1：基础限制（2.0%），动态门控函数会根据grade调整
 MIN_GRADE        = 0     # [9.17 苏摩111] grade门槛降为0——放开系统
 
+# [唯一裁判封印 2026-09-23 苏摩111] SSOT action白名单：只有评分层给出的ENTER系action才可进入五步终审
+_SSOT_ACTIONS_ENTER = {'ENTER', 'ENTER_WATCH', 'ENTER_READY', 'ENTER_STRONG'}
+
 def _dynamic_sl_max(grade: float, regime: str, direction: str, sl_pct: float) -> float:
     """
     动态SL上限计算 [设计院 2026-08-12 苏摩111修复P1]
@@ -311,10 +314,22 @@ class BrahmaDecisionEngine:
                 result['details']['step1'] = step1
                 return result
 
-            # 1c. 结构质量
+            # 1c. 结构质量 —— [唯一裁判封印 2026-09-23] 读SSOT action而非grade门槛
             step1['grade'] = grade
-            if grade < MIN_GRADE:
-                result['reason'] = f'Step1否决: grade={grade}<{MIN_GRADE}'
+            _ssot_act = str(signal.get('cf_action', '') or '').upper()
+            if _ssot_act:
+                if _ssot_act == 'SKIP':
+                    result['reason'] = f'Step1否决: 评分层action=SKIP（SSOT唯一裁判）'
+                    result['details']['step1'] = step1
+                    return result
+                if _ssot_act not in _SSOT_ACTIONS_ENTER:
+                    result['reason'] = f'Step1否决: 评分层action={_ssot_act}非ENTER系（SSOT唯一裁判）'
+                    result['details']['step1'] = step1
+                    return result
+            else:
+                # [P0封堵 2026-09-24 苏摩111] 缺cf_action=违规入口，一律拒绝（原回退grade>=80已封禁）
+                # 依据三方联合体检：state_refresh建议层83.2分单经此回退绕过P1-1封禁入纸面
+                result['reason'] = f'Step1否决: 缺cf_action=违规入口（SSOT唯一裁判，禁止grade回退）'
                 result['details']['step1'] = step1
                 return result
 
