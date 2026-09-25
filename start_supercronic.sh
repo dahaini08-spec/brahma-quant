@@ -26,18 +26,27 @@ if ! python3 -c 'import lightgbm' 2>/dev/null; then
     VENV_LGBM=/root/.openclaw/workspace/trading-system/venv/lib/python3.11/site-packages/lightgbm
     SYS_PKGS=/usr/local/lib/python3.11/dist-packages
     cp -r "$VENV_LGBM" "$SYS_PKGS/" 2>/dev/null
-    pip install narwhals --break-system-packages -q 2>/dev/null
+    timeout 20 pip install narwhals --break-system-packages -q 2>/dev/null
     echo "[startup] lightgbm restored"
 fi
-# jesse + jesse_rust: 已预装到venv，重启后只需检查
-# [9.20修复 苏摩111] pip install加timeout防止阻塞看门狗
+# jesse + jesse_rust: 已预装（系统python dist-packages）
+# [9.25 苏摩111封印] 禁止启动时pip install：08:22事故根因——兜底pip install jesse全依赖
+# (ray/optuna/sklearn/matplotlib/eth全家桶)吃满CPU+IO 11min，cron全阻塞、进程族全灭
+# 新策略：缺失时只告警推送，安装由人工低峰执行
 if ! venv/bin/python3 -c 'from jesse.indicators import rsi' 2>/dev/null; then
-    timeout 60 venv/bin/pip install --break-system-packages jesse jesse_rust 2>/dev/null
-    if venv/bin/python3 -c 'from jesse.indicators import rsi' 2>/dev/null; then
-        echo "[startup] jesse restored (fresh install)"
-    else
-        echo "[startup] jesse FAILED - pip install timeout/error"
-    fi
+    echo "[startup][ALERT] jesse MISSING - auto-install DISABLED (0925 incident), alerting"
+    python3 - <<'PYALERT' 2>/dev/null || true
+import sys
+sys.path.insert(0, 'brahma_brain')
+sys.path.insert(0, 'scripts')
+try:
+    from push_hub import _jarvis
+    from system_config import JARVIS_USER_ID, JARVIS_THREAD_ID
+    _jarvis(f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}',
+            '⚠️ 启动检查：jesse缺失，自动安装已禁用(9.25事故根因)。94维引擎路径将降级，请低峰期人工安装 jesse jesse_rust')
+except Exception:
+    pass
+PYALERT
 else
     echo "[startup] jesse already available in venv"
 fi

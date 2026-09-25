@@ -55,3 +55,12 @@ data/brahma_structured.jsonl
 None/
 .env*
 .git-rewrite/
+
+# [9.25封印 苏摩111] data/ 全量为运行时状态，不再入git（.git 677M治理）
+data/**
+!data/
+!data/scoring_config.json
+!data/macro_config.json
+!data/veteran_rules_config.json
+!data/BRAHMA_ANALYSIS_CANONICAL.md
+!data/BRAHMA_ANALYSIS_CANONICAL_v2.md
