@@ -84,6 +84,12 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
     """开纸面仓位"""
     sym    = signal.get('symbol', '')
     side   = signal.get('signal_dir', signal.get('direction', 'LONG'))
+    # [P0-1执行端封堵 2026-09-25 苏摩111] WAIT_15M/WAIT_ENTRY/SKIP/WATCH=非执行指令
+    # 双保险：即使上游误入队，执行端也拒绝市价开单（根修在brahma_state_refresh）
+    _action = str(signal.get('action', '') or '').upper()
+    if _action in ('WAIT_15M', 'WAIT_ENTRY', 'SKIP', 'WATCH'):
+        log(f'SKIP {sym} {side}: action={_action} 非执行指令（结构未确认），拒绝开单')
+        return False
     score  = float(signal.get('score_final', signal.get('score', 0)))
     grade  = float(signal.get('grade_num', signal.get('grade', 0)))
     regime = signal.get('regime', '')

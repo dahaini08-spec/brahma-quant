@@ -26,28 +26,62 @@ import sys
 
 # 推送配置（SSOT来自 MEMORY.md）
 JARVIS_USER_ID   = "73295708"
-JARVIS_THREAD_ID = "01a07628-0405-7e85-a34b-e68cd029dfc6"
+# [V2.1 2026-09-23 苏摩111] 当前线程SSOT（userId路由测试验证通过）
+JARVIS_THREAD_ID = "01a0d79b-fea4-71b1-9f2a-c02a9844b4ed"
 _TARGET          = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"
 
-# [V2.0 2026-09-20 苏摩111] 推送分级线程路由
+# [V2.1 2026-09-23] P2/P3伪UUID线程(019f15c9/019f04e3)从未实现，统一走主线程
+# 保留分级语义：消息前缀由调用方携带，不按线程分裂
 _PRIORITY_THREADS = {
     'P0': JARVIS_THREAD_ID,           # 主线程（VIP信号/清算事件/止损触发）
     'P1': JARVIS_THREAD_ID,           # 主线程（体制切换/重要告警）
-    'P2': '019f15c9',                 # 次要线程（OI报告/市场概况）
-    'P3': '019f04e3',                 # 低优先（健康检查/日常播报）
+    'P2': JARVIS_THREAD_ID,           # 次要（OI报告/市场概况）→ 主线程
+    'P3': JARVIS_THREAD_ID,           # 低优先（健康检查/日常播报）→ 主线程
     'P4': JARVIS_THREAD_ID,           # P4=静默OK，不推送
 }
 
 
-def push_jarvis(msg: str, timeout: int = 8, retries: int = 3, priority: str = 'P1') -> bool:
+def push_jarvis(msg: str, timeout: int = 8, retries: int = 3, priority: str = 'P1',
+                dedup_key: str = None, dedup_ttl: int = 0, **kwargs) -> bool:
     """
-    直接HTTP推送到Jarvis，不依赖openclaw CLI子进程。
-    timeout: 单次请求超时秒数（默认8s，远低于原来的15s subprocess）
-    retries: 失败重试次数（默认3次）
-    返回: True=成功 False=全部失败
+    推送到Jarvis主线程（subprocess CLI非阻塞）。
+    V2.1: 接受dedup_key/dedup_ttl等历史kwargs（原先TypeError静默丢消息）
+    dedup_key非空时启用文件去重：TTL内同key只推一次。
     """
     if not msg or not msg.strip():
         return False
+
+    # [V2.2 2026-09-25 苏摩111] 哨兵校验：拒绝「target裸奔」异常消息体
+    # 根因: 9.25复盘推送把 target(73295708:thread:uuid) + 用户原话当消息体发送
+    # 模式: 行首裸 target 格式 ^\d+:thread:[0-9a-f-]{36}（或消息仅由target组成）
+    import re as _re
+    if _re.search(r'^\s*\d+:thread:[0-9a-f]{8}-[0-9a-f-]{27,}\s*$', msg, _re.M) or \
+       _re.fullmatch(r'(?:\s*\d+:thread:[0-9a-f-]{36}\s*)+', msg):
+        print(f'[push_hub] 哨兵拦截: 消息体含裸target格式，疑似参数错位，拒绝发送: {msg[:80]!r}', file=sys.stderr)
+        return False
+
+    # [V2.1] dedup去重：TTL内同key直接吞掉（防重复轰炸）
+    if dedup_key:
+        try:
+            _dd = Path(__file__).parent.parent / "data" / "push_dedup.json"
+            _now = time.time()
+            _state = {}
+            try:
+                _state = json.loads(_dd.read_text(encoding='utf-8'))
+            except Exception:
+                pass
+            _last = float(_state.get(dedup_key, 0) or 0)
+            if _now - _last < float(dedup_ttl or 3600):
+                return True  # 已在TTL内推过 → 视为成功但不重复推
+            _state[dedup_key] = _now
+            # 只保留最近500个key防膨胀
+            if len(_state) > 500:
+                _state = dict(sorted(_state.items(), key=lambda x: x[1])[-500:])
+            _dd.parent.mkdir(parents=True, exist_ok=True)
+            _dd.write_text(json.dumps(_state), encoding='utf-8')
+        except Exception as _e:
+            print(f'[push_hub] dedup检查异常(不阻塞推送): {_e}', file=sys.stderr)
+
 
     # P4=静默，不推送
     if priority == 'P4':

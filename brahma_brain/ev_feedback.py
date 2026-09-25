@@ -11,7 +11,7 @@ ev_feedback.py — EV实时反馈模块
   - 轻量级：每次结算只操作单条记录，O(1)复杂度
 """
 
-import json, os, time
+import json, os, time, sys  # [P1-3修复 2026-09-23] 补sys（L130/171引用sys.stderr）
 from pathlib import Path
 from datetime import datetime, timezone
 

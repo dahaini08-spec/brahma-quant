@@ -48,16 +48,31 @@ def _save_state(state: dict) -> None:
     STATE_FILE.write_text(json.dumps(state, indent=2, ensure_ascii=False))
 
 def _get_current_nav() -> float:
-    """从binance_cli或持仓状态估算当前NAV"""
+    """从binance_api或持仓状态估算当前NAV
+    [修复 2026-09-23 苏摩111] NAV=0根因链:
+    1. 当前API key无/papi/权限 → PM账户资金不可见
+    2. UM子账户余额全为0 → bus.balance()返回0
+    3. 返回0 → drawdown永远算0% → 协议失效
+    修复: API返回0 → fallback到brahma_state.json的nav(手动维护值130.0)
+    """
     try:
         import sys
         sys.path.insert(0, str(BASE / 'brahma_brain'))
         from brahma_bus import bus
         balance = bus.balance()  # [P1修复 2026-08-26] bus.balance()是正确接口
         if balance and balance.get('totalWalletBalance'):
-            return float(balance['totalWalletBalance'])
+            v = float(balance['totalWalletBalance'])
+            if v > 0:
+                return v
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-    # fallback: 读取历史NAV
+    # [修复 2026-09-23 苏摩111] API返回0 → fallback到brahma_state.json nav
+    try:
+        bs = json.loads((BASE / 'data' / 'brahma_state.json').read_text())
+        nav = float(bs.get('nav', 0) or 0)
+        if nav > 0:
+            return nav
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+    # 最后fallback: 读取历史NAV
     if NAV_FILE.exists():
         lines = NAV_FILE.read_text().strip().splitlines()
         if lines:
@@ -233,7 +248,7 @@ def _notify_warn(state: dict) -> None:
         import subprocess
         msg = f'⚠️ 梵天Drawdown WARN\n回撤{state["drawdown_pct"]}%≥5%\n降仓50%，暂停新信号3天\n峰值NAV=${state["peak_nav"]:.2f}'
         subprocess.Popen(['openclaw', 'message', '--channel', 'jarvis', '--to',
-                         '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6',
+                         '73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed',
                          '--message', msg], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def _notify_halt(state: dict) -> None:
@@ -242,7 +257,7 @@ def _notify_halt(state: dict) -> None:
         import subprocess
         msg = f'🛑 梵天Drawdown HALT\n回撤{state["drawdown_pct"]}%≥10%\n暂停所有自动执行\n需苏摩111重启\n峰值NAV=${state["peak_nav"]:.2f}'
         subprocess.Popen(['openclaw', 'message', '--channel', 'jarvis', '--to',
-                         '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6',
+                         '73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed',
                          '--message', msg], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def _notify_lockout(state: dict) -> None:
@@ -251,7 +266,7 @@ def _notify_lockout(state: dict) -> None:
         import subprocess
         msg = f'🚨 梵天Drawdown LOCKOUT\n回撤{state["drawdown_pct"]}%≥15%\n系统级锁定\n需苏摩111全面复盘后重启\n峰值NAV=${state["peak_nav"]:.2f}'
         subprocess.Popen(['openclaw', 'message', '--channel', 'jarvis', '--to',
-                         '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6',
+                         '73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed',
                          '--message', msg], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 if __name__ == '__main__':

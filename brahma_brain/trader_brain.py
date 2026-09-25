@@ -228,9 +228,13 @@ def decide(
     oi: Dict, sm: Dict, vol: Dict,
     res: Dict, symbol: str = '',
     b2_proximity: str = '',
+    cf_action: str = '',
 ) -> Dict[str, Any]:
     """
     6层确定性决策 + 12项能力统一输出 + Layer 0市场感知
+    [唯一裁判封印 2026-09-23 苏摩111] cf_action = calc_factors的SSOT action。
+      Gate1改为读cf_action（评分层已裁决），本层不再自设score_gate门槛。
+      cf_action为空时回退score>=80（兼容旧调用方），SKIP直接否决。
     """
     import sys
     # ════════════════════════════════════════════════════════════
@@ -391,6 +395,11 @@ def decide(
     # ════════════════════════════════════════════════════════════
     _resonance_override = False
     _res_score = res.get('resonance_score', 0)
+    # [P0-2b修复 2026-09-23 苏摩111] Gate4吃方向一致计数（40年交易员口径）
+    # 共振覆盖的前提从"数据存在≥4"升级为"方向一致≥4/7"——数据齐≠方向对
+    _res_align = res.get('align_count', 0)
+    if _res_align:
+        _res_score = _res_align  # align_count存在时优先（新口径），否则退回旧口径
     _oi_dir_raw = oi.get('signal', 'NO_DATA')
     _oi_long = _oi_dir_raw in ('LONG_BUILD', 'SHORT_SQUEEZE')
     _oi_short = _oi_dir_raw in ('SHORT_BUILD',)  # [改革3] LONG_UNWIND不再=SHORT
@@ -751,30 +760,23 @@ def decide(
     except Exception as _e:
         print(f"[WARN] trader_brain: {_e}", file=sys.stderr)
 
-    # === Gate1: score > 动态阈值 ===
-    # [改革P1-1 2026-09-18 苏摩111] Hurst>0.6时门槛动态降低（趋势正在形成，提前放行）
-    _score_gate = 80  # 默认
-    try:
-        import json as _gate_json, os as _gate_os
-        _gate_path = _gate_os.path.join(_gate_os.path.dirname(__file__), '..', 'data', 'scoring_config.json')
-        if _gate_os.path.exists(_gate_path):
-            _gate_cfg = _gate_json.loads(open(_gate_path).read())
-            _gate_map = _gate_cfg.get('score_gate', {})
-            _score_gate = _gate_map.get(regime, 80)
-    except Exception as _e:
-        print(f"[WARN] trader_brain: {_e}", file=sys.stderr)
-    # Hurst>0.6 → CHOP_MID门槛从60降到45（趋势隐现，提前放行）
-    # [P0-1修复 2026-09-19 苏摩111] Hurst>0.6 + κ<-0.1 → CHOP_TREND_TRANSITION gate降到30
-    # 三方联合审核：两个独立维度共振才切换，最少误判
-    if regime == 'CHOP_MID' and hurst > 0.6:
-        _score_gate = min(_score_gate, 45)
-    if regime == 'CHOP_MID' and hurst > 0.6 and kappa < -0.1:
-        _score_gate = min(_score_gate, 30)
-        _info_flags.append(f'CHOP_TREND_TRANSITION: Hurst={hurst:.3f}+κ={kappa:.3f}→gate降到30')
-    _gate1_pass = score >= _score_gate and direction != 'NONE'
-    if not _gate1_pass and direction != 'NONE':
-        _hurst_note = f'+Hurst{hurst:.2f}>0.6门槛降至{_score_gate}' if regime == 'CHOP_MID' and hurst > 0.6 else ''
-        missing.append(f'score={score:.0f}<gate={_score_gate}（{regime}）{_hurst_note}')
+    # === Gate1: 统一裁判（[唯一裁判封印 2026-09-23 苏摩111]）===
+    # 废除score_gate(80/45/30)自设门槛——Gate1只读calc_factors的SSOT action
+    # 硬否决：score<0一票否决任何action（7天铁证：负分ENTER 7连败全灭）
+    _score_gate = 80  # [P0修复 2026-09-23] 旧路径提示用变量，cf_action路径也要初始化（否则L886 UnboundLocalError）
+    if score < 0:
+        _gate1_pass = False
+        if direction != 'NONE':
+            missing.append(f'score={score:.1f}<0 一票否决（负分ENTER铁证7连败，SSOT唯一裁判）')
+    elif cf_action:
+        _gate1_pass = cf_action in ('ENTER_FULL', 'ENTER', 'ENTER_WATCH') and direction != 'NONE'
+        if not _gate1_pass and direction != 'NONE':
+            missing.append(f'评分层action={cf_action or "空"}未达ENTER（SSOT唯一裁判，不再二次降门）')
+    else:
+        _score_gate = 80  # 旧调用方兼容（无cf_action参数时）
+        _gate1_pass = score >= _score_gate and direction != 'NONE'
+        if not _gate1_pass and direction != 'NONE':
+            missing.append(f'score={score:.0f}<gate={_score_gate}（旧路径兼容模式）')
 
     # === Gate2: 成本后EV > 0 ===
     _gate2_pass = True

@@ -117,7 +117,7 @@ def fast_regime_refresh(sym: str):
     state = load_json(state_path)
 
     # 快速拉取关键数据
-    k1h  = fetch(f'https://fapi.binance.com/fapi/v1/klines?symbol={usdt}&interval=1h&limit=14')
+    k1h  = fetch(f'https://fapi.binance.com/fapi/v1/klines?symbol={usdt}&interval=1h&limit=30')  # [9.23修复] 原limit=14→RSI需15根(永远fallback50.0)+BB需20根，双双失真
     k4h  = fetch(f'https://fapi.binance.com/fapi/v1/klines?symbol={usdt}&interval=4h&limit=6')
     fr   = fetch(f'https://fapi.binance.com/fapi/v1/fundingRate?symbol={usdt}&limit=1')
     oi   = fetch(f'https://fapi.binance.com/fapi/v2/openInterest?symbol={usdt}')
@@ -189,6 +189,32 @@ def fast_regime_refresh(sym: str):
         'fr':          round(fr_val, 4),
     }
     signal_path.write_text(json.dumps(signal, ensure_ascii=False))
+
+    # [P2-5修复 2026-09-23 苏摩111] 回写confirmed（regime_state.json自愈）
+    # 根因：9.13文件损坏重建后BTC/ETH条目只有'regime'没有'confirmed'，
+    # Step4权重查询（P0-1修复后）读confirmed会拿到空→回退bs.regime
+    # 现在每次快速感知都回写confirmed，文件损坏自愈+字段永远新鲜
+    try:
+        _rs = load_json(DATA / 'regime_state.json')
+        _rs_entry = _rs.get(usdt, {})
+        if isinstance(_rs_entry, dict):
+            # [9.23修复] confirmed死锁修复：原逻辑confirmed非空永不更新，
+            # 而RSI bug让fast_regime永远CHOP_MID→94维权威BULL_TREND被锁死覆盖。
+            # 新语义：confirmed跟随权威来源（brahma_state的94维体制），
+            # fast_regime只作为触发器，不作为confirmed来源。
+            _authority_regime = str(state.get('regime', '') or '')  # 94维权威
+            if _authority_regime:
+                _rs_entry['confirmed'] = _authority_regime
+            elif not _rs_entry.get('confirmed'):
+                _rs_entry['confirmed'] = cur_regime  # 兜底
+            # confirmed语义=被确认的体制；fast_regime仅当变化确认后才改写
+            if new_regime != cur_regime and not _rs_entry.get('confirmed'):
+                _rs_entry['confirmed'] = new_regime
+            _rs_entry['confirmed_ts'] = time.time()
+            _rs[usdt] = _rs_entry
+            (DATA / 'regime_state.json').write_text(json.dumps(_rs, ensure_ascii=False))
+    except Exception as _rse:
+        print(f'[regime_realtime] confirmed回写失败: {_rse}', file=sys.stderr)
 
     if new_regime != cur_regime:
         log(f'⚡ {sym} 体制快速感知: {cur_regime} → {new_regime} '

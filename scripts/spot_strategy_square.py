@@ -12,7 +12,7 @@ sys.path.insert(0, str(BASE / 'scripts'))
 
 SQUARE_KEY = 'd9f19e3f6ba3480584db27b09bec0f27'
 SQUARE_URL = 'https://www.binance.com/bapi/composite/v1/public/pgc/openApi/content/add'
-JARVIS_TO = '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6'
+JARVIS_TO = '73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed'
 OPENROUTER_KEY = os.environ.get('OPENROUTER_API_KEY', '')
 # 从free_llm_client读取API key
 try:

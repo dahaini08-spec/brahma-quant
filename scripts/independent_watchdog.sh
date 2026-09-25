@@ -1,11 +1,22 @@
 #!/bin/bash
-# independent_watchdog.sh — 独立看门狗 v2 [2026-09-14 苏摩111]
+# independent_watchdog.sh — 独立看门狗 v3 [2026-09-14 苏摩111 | 9.23加固]
 # 修复刷屏：告警去重 + 状态文件 + 恢复通知
 # 运行方式：nohup bash scripts/independent_watchdog.sh >> logs/watchdog.log 2>&1 &
 # 每60s检查一次
-
+# [9.23修复 苏摩111] 单实例锁：防止多个watchdog并存；防自杀锁：确保重启时能接管
+# 锁模式改为通配：同时匹配相对路径(bash scripts/...)与绝对路径启动的实例
 cd /root/.openclaw/workspace/trading-system
 STATE_FILE="data/watchdog_indep_state.json"
+
+# === 单实例锁：如果已有watchdog实例运行，本实例退出 ===
+MY_PID=$$
+EXISTING=$(pgrep -f "bash.*independent_watchdog\.sh" | grep -v "^${MY_PID}$" | head -1)
+if [ -n "$EXISTING" ]; then
+  # 已有实例，检查它是否真的活着（用 /proc/PID/stat 验证）
+  if [ -d "/proc/$EXISTING" ]; then
+    exit 0  # 已有活实例，本实例不重复
+  fi
+fi
 
 while true; do
   TS=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
@@ -26,18 +37,18 @@ while true; do
   CVD_PID=$(pgrep -f "cvd_ws_collector" | head -1)
   if [ -z "$CVD_PID" ]; then
     ALERT="${ALERT}⚠️ CVD未运行 "
-    nohup python3 scripts/cvd_ws_collector.py >> logs/cvd_ws.log 2>&1 &
+    setsid python3 scripts/cvd_ws_collector.py >> logs/cvd_ws.log 2>&1 < /dev/null &
     sleep 2
     CVD_PID=$(pgrep -f "cvd_ws_collector" | head -1)
     ALERT="${ALERT}→ CVD重启PID=$CVD_PID "
   fi
 
-  LIQ_PID=$(pgrep -f "liq_multi_exchange_collector" | head -1)
+  LIQ_PID=$(pgrep -f "liqmap_collector" | head -1)
   if [ -z "$LIQ_PID" ]; then
     ALERT="${ALERT}⚠️ liqmap未运行 "
-    nohup python3 scripts/liq_multi_exchange_collector.py >> logs/liqmap.log 2>&1 &
+    setsid python3 brahma_brain/liqmap_collector.py >> logs/liqmap.log 2>&1 < /dev/null &
     sleep 2
-    LIQ_PID=$(pgrep -f "liq_multi_exchange_collector" | head -1)
+    LIQ_PID=$(pgrep -f "liqmap_collector" | head -1)
     ALERT="${ALERT}→ liqmap重启PID=$LIQ_PID "
   fi
 
@@ -86,7 +97,7 @@ while true; do
   # 推送（仅新告警或恢复）
   if [ -n "$ALERT" ] || [ -n "$RECOVERED" ]; then
     MSG="${ALERT}${RECOVERED}"
-    openclaw message send -t "73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6" --channel jarvis --message "🐕 独立看门狗: $MSG" >/dev/null 2>&1 &
+    openclaw message send -t "73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed" --channel jarvis --message "🐕 独立看门狗: $MSG" >/dev/null 2>&1 &
   fi
 
   sleep 60

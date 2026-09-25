@@ -88,7 +88,7 @@ try:
     from scripts.system_config import JARVIS_THREAD_ID as _TID_SSOT
     _THREAD_ID = os.environ.get("JARVIS_THREAD_ID", _TID_SSOT)
 except Exception:
-    _THREAD_ID = os.environ.get("JARVIS_THREAD_ID", "01a07628-0405-7e85-a34b-e68cd029dfc6")  # SSOT fallback
+    _THREAD_ID = os.environ.get("JARVIS_THREAD_ID", "01a0d79b-fea4-71b1-9f2a-c02a9844b4ed")  # SSOT fallback
 _JARVIS_TO = f"{_USER_ID}:t:{_THREAD_ID}"
 
 TEST_MODE = "--test" in sys.argv
@@ -146,14 +146,16 @@ def _load_valid_signals() -> list:
         try:
             s = json.loads(l)
             score = s.get("score", 0)
+            # [唯一裁判封印 2026-09-23 苏摩111] 读取SSOT action，负分/低分一票否决
+            _act = str(s.get("action", "") or "").upper()
             # TIER2：完整执行（宪法门槛）
             # [IC铁证 2026-07-23] score<155一律静默，无TIER1通道
-            if score >= 155:
+            if score >= 155 and _act.startswith("ENTER"):
                 tier = 'TIER2'
                 if not s.get("valid"):  # TIER2必须 valid=True
                     continue
             else:
-                continue  # [IC铁证 2026-07-23] score<155 完全静默，删除TIER1通道
+                continue  # [唯一裁判] score<155 或 action非ENTER系 → 完全静默
             # [FIX-ROOT 2026-07-22 苏摩111] grade统一解析
             try:
                 from brahma_brain.grade_utils import parse_grade as _pg

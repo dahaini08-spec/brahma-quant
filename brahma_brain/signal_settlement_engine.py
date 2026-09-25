@@ -27,6 +27,52 @@ PAPER_FILE = DATA / 'paper_positions.jsonl'
 SIGNAL_LOG = DATA / 'live_signal_log.jsonl'
 
 
+def settle_paper_json(current_price: float, symbol: str) -> dict:
+    """[P1-3修复2 2026-09-23 苏摩111] 结算paper_positions.json真实纸面仓
+    根因：signal_settlement_engine只读paper_positions.jsonl（永远空=0行），
+    真实纸面仓在paper_positions.json（paper_engine管理），两系统脱节→
+    纸面仓结果永远进不了WR矩阵→学习闭环断裂7天。
+    """
+    out = {'settled': 0, 'pending': 0, 'hits': []}
+    fp = DATA / 'paper_positions.json'
+    if not fp.exists():
+        return out
+    try:
+        d = json.loads(fp.read_text())
+    except Exception:
+        return out
+    pos_list = d.get('positions', [])
+    changed = False
+    for p in pos_list:
+        if p.get('symbol') != symbol or p.get('status') != 'open':
+            continue
+        entry = p.get('entry_price', 0)
+        tp1 = p.get('tp1_price') or p.get('tp1', 0)
+        sl = p.get('sl_price') or p.get('sl', 0)
+        side = p.get('side', 'LONG')
+        if not entry:
+            continue
+        hit_tp = (current_price >= tp1) if side == 'LONG' and tp1 else (current_price <= tp1) if side == 'SHORT' and tp1 else False
+        hit_sl = (current_price <= sl) if side == 'LONG' and sl else (current_price >= sl) if side == 'SHORT' and sl else False
+        if hit_tp or hit_sl:
+            pnl = ((current_price - entry) / entry * 100) if side == 'LONG' else ((entry - current_price) / entry * 100)
+            outcome = 'TP1' if hit_tp else 'SL'
+            p['status'] = 'closed'
+            p['close_outcome'] = outcome
+            p['close_price'] = current_price
+            p['pnl_pct'] = round(pnl, 4)
+            p['closed_at'] = datetime.now(timezone.utc).isoformat()
+            out['hits'].append({'symbol': symbol, 'outcome': outcome, 'pnl_pct': round(pnl, 4)})
+            out['settled'] += 1
+            changed = True
+        else:
+            out['pending'] += 1
+    if changed:
+        d['positions'] = pos_list
+        fp.write_text(json.dumps(d, ensure_ascii=False, indent=1))
+    return out
+
+
 def settle_pending(current_price: float, symbol: str) -> dict:
     """检查所有pending的paper position，用当前价格结算"""
     if not PAPER_FILE.exists():

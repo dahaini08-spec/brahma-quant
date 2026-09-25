@@ -26,6 +26,9 @@ from datetime import datetime, timezone
 from collections import defaultdict
 
 BASE  = Path(__file__).parent.parent
+import sys as _sys_base  # [P1-3修复 2026-09-23] 模块级插BASE路径，所有from brahma_brain钩子共享
+if str(BASE) not in _sys_base.path:
+    _sys_base.path.insert(0, str(BASE))
 LOG   = BASE / 'data' / 'live_signal_log.jsonl'
 WR_F  = BASE / 'data' / 'wr_matrix_live.json'
 
@@ -257,6 +260,8 @@ def settle_signal(sig: dict, dry_run: bool = False) -> dict | None:
     # [Phase 3 2026-09-19 苏摩111] Jev判断结算钩子
     # 每次信号结算后回填jev_judgment_log的outcome，驱动校准数据集
     try:
+        import sys as _jev_sys  # [P1-3修复 2026-09-23] settle_signal作用域插BASE路径
+        _jev_sys.path.insert(0, str(BASE))
         from brahma_brain.jev_judgment_log import settle_judgment as _jev_settle
         _jev_sym = sig.get('symbol', '')
         _jev_outcome = new_outcome  # TP/SL/TIMEOUT
@@ -568,7 +573,7 @@ def main():
                 f"体制分布: {', '.join(set(s.get('regime','?') for s in settled_new[:5]))}"
             )
             # 调用 free_llm_client 生成复盘一句话
-            from free_llm_client import _call_openrouter as _llm_review
+            from free_llm_client import chat as _llm_review  # [P1-3修复 2026-09-23] _call_openrouter不存在，改chat()
             _review_prompt = (
                 f"你是梵天量化系统复盘裁判员。\n"
                 f"{_summary_str}\n"
@@ -616,7 +621,7 @@ def main():
         print(f'[settler] DRY-RUN: 发现 {len(settled_new)} 条可结算信号（未写入）')
     else:
         print('HEARTBEAT_OK')  # [设计院 2026-08-09] 无新结算信号→静默
-        import sys; sys.exit(0)  # 提前退出，不输出WR统计（无变化不刷屏）
+        sys.exit(0)  # [P1-3修复 2026-09-23] 删局部import sys（它让sys在main()变局部变量，导致L458/492/610 UnboundLocalError）；模块头已import sys
 
     # 统计当前WR概况
     all_settled = [l for l in updated_lines if l.get('outcome') in ('TP1','SL','TP2')]
@@ -652,7 +657,7 @@ def main():
     if len(settled_new) > 0:
         try:
             import sys as _ed_sys
-            _ed_sys.path.insert(0, str(BASE / 'brahma_brain'))
+            _ed_sys.path.insert(0, str(BASE))  # [P1-3修复 2026-09-23] 插BASE根，brahma_brain是包
             from brahma_brain.brahma_experience_engine import load_all_cases, distill, build_report
             _cases = load_all_cases()
             if len(_cases) >= 5:

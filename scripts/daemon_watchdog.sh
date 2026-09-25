@@ -34,7 +34,7 @@ TTL_REGIME=3600          # 1h
 _push_alert() {
     local msg="$1"
     openclaw message send \
-        -t "73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6" \
+        -t "73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed" \
         --channel jarvis \
         --message "🐕看门狗${WATCHDOG_ROLE}: $msg" \
         >/dev/null 2>&1 || true

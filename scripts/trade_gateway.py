@@ -41,7 +41,7 @@ try:
     from scripts.system_config import JARVIS_TARGET as _SSOT_T
     JARVIS_TARGET = os.environ.get('JARVIS_TARGET', _SSOT_T)
 except Exception:
-    JARVIS_TARGET = os.environ.get('JARVIS_TARGET', '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6')
+    JARVIS_TARGET = os.environ.get('JARVIS_TARGET', '73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed')
 
 # [9.20 P0改革] MIN_WEIGHTED废除 — score不做门控
 

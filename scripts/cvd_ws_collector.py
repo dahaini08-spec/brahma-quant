@@ -11,7 +11,7 @@ cvd_ws_collector.py — 实时CVD采集器（REST高频模式）
   1. supercronic @reboot 常驻启动
   2. brahma_brain/volume_unified.py _aggTrades_cvd() 优先读此快照
 """
-import json, time, signal, sys, urllib.request, ssl
+import json, time, signal, sys, urllib.request, ssl, os, fcntl
 from pathlib import Path
 from datetime import datetime, timezone
 import sys
@@ -20,6 +20,21 @@ BASE   = Path(__file__).parent.parent
 DATA   = BASE / 'data'
 LOGDIR = BASE / 'logs'
 LOGDIR.mkdir(exist_ok=True)
+
+# [9.23修复 苏摩111] 单实例锁：防双实例重复采集+last_id互踩
+LOCK_FILE = Path('/tmp/brahma_cvd_ws.lock')
+import atexit
+try:
+    _lock_fd = open(LOCK_FILE, 'w')
+    import fcntl
+    fcntl.flock(_lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    _lock_fd.write(str(os.getpid()))
+    _lock_fd.flush()
+except OSError:
+    _log_ts = datetime.now(timezone.utc).strftime('%H:%M:%S')
+    print(f'[{_log_ts}] CVD单实例锁被占 → 退出', flush=True)
+    sys.exit(0)
+atexit.register(lambda: None)
 DATA.mkdir(exist_ok=True)
 
 SYMBOLS        = [

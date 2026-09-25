@@ -4,7 +4,7 @@
 
 LOG="/tmp/watchdog.log"
 WORK_DIR="/root/.openclaw/workspace/trading-system"
-JARVIS_THREAD_ID="019fd70a-0942-72b1-aeb9-1bd4fc11b30d"
+JARVIS_THREAD_ID="01a0d79b-fea4-71b1-9f2a-c02a9844b4ed"
 SENDER_ID="73295708"
 OPENCLAW_CHANNEL="jarvis"
 

@@ -543,35 +543,9 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
         _vs = bool(_vs)
     result['valid'] = _vs
 
-    # 修复2: action字段未同步问题
-    # brahma_core已更新score>=130→ENTER_WATCH，score>=138→ENTER
-    # 但confluence.action可能还是旧字段的归因值
-    # 修复：基于最终score重新计算action
-    try:
-        _final_score = float((result.get('confluence') or {}).get('total', result.get('score', 0)) or 0)
-        _cf_ref = result.get('confluence') or {}
-        # [P1-8修复 2026-07-16 苏摩111] BEAR_RECOVERY体制action阈值感知
-        _action_regime = str((_rf.get('params') or {}).get('regime','') or _rf.get('regime','') or '')
-        _is_br_action  = 'BEAR_RECOVERY' in _action_regime.upper()
-        if _final_score >= 155:
-            _correct_action = 'ENTER_FULL'
-        elif _final_score >= 138:
-            _correct_action = 'ENTER'
-        elif _final_score >= 130 or (_is_br_action and _final_score >= 120):
-            _correct_action = 'ENTER_WATCH'  # BEAR_RECOVERY 120-129 也给ENTER_WATCH
-        elif _final_score >= 110:
-            _correct_action = 'WATCH'
-        elif _final_score >= 80:
-            _correct_action = 'WATCH'
-        else:
-            _correct_action = 'SKIP'
-        # 只覆盖如果brahma_core返回的是旧的WATCH但score已在更高层级
-        _cur_action = _cf_ref.get('action', '')
-        if _cur_action == 'WATCH' and _final_score >= 130:
-            if isinstance(result.get('confluence'), dict):
-                result['confluence']['action'] = _correct_action
-            result['action'] = _correct_action
-    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+    # [唯一裁判封印 2026-09-23 苏摩111] 修复2段废除——原“action正确化”按最终score重算ENTER_FULL/ENTER/ENTER_WATCH，
+    # 与calc_factors的SSOT action形成第3套标准。现改为纯透传：只修正entry区，不改action词汇。
+    # action唯一来源 = result['confluence']['action']（calc_factors产出）
     # ── signal_trace: 轨迹审计注入 ──────────────────────────────
     if _TRACE_OK:
         try:
@@ -928,14 +902,11 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                 _p.get('structure_grade') or
                 result.get('grade')
             )
-        # action推导: valid=True且action为None时按score推导
+        # [唯一裁判封印 2026-09-23 苏摩111] 第4套action推导已废除——
+        # action=None时不得自行推导ENTER，否则负分/低分信号靠此旁路入队。
+        # action唯一来源 = confluence.action（calc_factors SSOT）
         if result.get('action') is None:
-            _p_valid = _p.get('valid') or result.get('valid_signal') or result.get('valid')
-            if _p_valid:
-                _sc = float(result.get('confluence', {}).get('score', 0) or 0)
-                result['action'] = ('ENTER_FULL' if _sc >= 155
-                                    else 'ENTER_WATCH' if _sc >= 140  # [2026-08-24 苏摩111] 铁证:140-170 WR=91%，提升阈值
-                                    else 'WATCH')
+            result['action'] = 'WATCH'  # 保守兑底：缺action=无裁决权，只给WATCH
         # direction同步
         if not result.get('direction') and result.get('signal_dir'):
             result['direction'] = result['signal_dir']

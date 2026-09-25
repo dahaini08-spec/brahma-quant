@@ -62,7 +62,7 @@ SOMA_ONLINE_MIN   = 30      # 苏摩30分钟内有消息=在线
 _WATCH_FILE     = _DATA / 'cpu_watch_list.json'
 _CPU_LOG        = _DATA / 'brahma_cpu_log.jsonl'
 _JARVIS_USER    = '73295708'
-_JARVIS_THREAD  = '01a07628-0405-7e85-a34b-e68cd029dfc6'
+_JARVIS_THREAD  = '01a0d79b-fea4-71b1-9f2a-c02a9844b4ed'
 
 # ── Autopilot记忆层 [9.20 苏摩111] ─────────────────────────────────
 _L0_STATE       = _DATA / 'autopilot_state.json'      # L0工作记忆
@@ -345,6 +345,9 @@ def _do_watch(symbol: str, signal_dir: str, score_result: dict) -> None:
             'symbol':       symbol,
             'direction':    signal_dir or 'LONG',
             'signal_dir':   signal_dir or 'LONG',
+            # [P0-1执行端封堵 2026-09-25 苏摩111] CPU-WATCH非SSOT裁决信号，
+            # 无action=旁路。显式标注'WATCH'，paper_executor会拒绝
+            'action':       'WATCH',
             'score':        score_result.get('score', 0),
             'score_final':  score_result.get('score', 0),
             'grade_num':    _cf.get('score', score_result.get('score', 0)),  # 用confluence原始score作为grade

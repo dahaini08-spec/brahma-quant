@@ -126,6 +126,11 @@ def _refresh_macro():
     """手动刷新宏观数据"""
     try:
         import sys as _sys
+        # 双路径修复[2026-09-23]: self_heal_daemon在brahma_brain/内运行时,
+        # Path(__file__).parent = brahma_brain自身, 而brahma_brain包需要其父目录在sys.path
+        _root = str(BASE_DIR)
+        if _root not in _sys.path:
+            _sys.path.insert(0, _root)
         _bb = str(Path(__file__).parent)
         if _bb not in _sys.path:
             _sys.path.insert(0, _bb)

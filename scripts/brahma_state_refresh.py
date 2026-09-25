@@ -181,6 +181,8 @@ def main():
                     'regime':    regime,
                     'score':     score,
                     'grade':     grade,
+                    # [唯一裁判封印 2026-09-23 苏摩111] 传入SSOT action，decision_engine Step1读它
+                    'cf_action': str(cleaned.get('confluence', {}).get('action', '') or cleaned.get('action', '') or ''),
                     'price':     cleaned.get('price'),
                     'sl_pct':    2.0,   # 默认SL 2%，decision_engine会按ATR调整
                     'timing':    cleaned.get('timing', ''),
@@ -206,9 +208,29 @@ def main():
                 if action not in ('EXECUTE', 'WAIT_15M'):
                     continue
 
-                # 检查队列中是否已有该标的同方向信号（去重）
+                # [P0-1根修 2026-09-25 苏摩111] WAIT_15M=结构未确认，不是执行指令
+                # 根因：WAIT_15M带4h TTL入队 → paper_executor按市价直接开单
+                # 修复：WAIT_15M只刷新已有等待信号的确认窗口，绝不作为新信号入队
+                if action == 'WAIT_15M':
+                    _refreshed = False
+                    for _s0 in active:
+                        if (_s0.get('symbol') == sym
+                                and _s0.get('signal_dir') == direction
+                                and _s0.get('action') == 'WAIT_15M'):
+                            _exp = now_ts + SIGNAL_TTL_HOURS * 3600
+                            _s0['expires_at'] = datetime.fromtimestamp(_exp, tz=timezone.utc).isoformat()
+                            _s0['created_at'] = now_iso
+                            _s0['last_wait_refresh'] = now_iso
+                            _refreshed = True
+                    if _refreshed:
+                        print(f'[state_refresh] {sym} {direction}: WAIT_15M刷新确认窗口（不入队）')
+                    continue
+
+                # 检查队列中是否已有该标的同方向可执行信号（去重）
+                # [P0-1] WAIT_15M旧信号不算dup——EXECUTE应能替换等待信号
                 dup = any(
                     s.get('symbol') == sym and s.get('signal_dir') == direction
+                    and s.get('action') != 'WAIT_15M'
                     for s in active
                 )
                 if dup:
@@ -235,6 +257,7 @@ def main():
                     'symbol':      sym,
                     'signal_dir':  direction,
                     'direction':   direction,
+                    'action':      action,
                     'regime':      regime,
                     'score_final': round(score, 1),
                     'score':       round(score, 1),
@@ -250,7 +273,6 @@ def main():
                     'rr':          round(rr, 2),
                     'rr1':         round(rr, 2),
                     'valid':       True,
-                    'action':      action,
                     'catalysts':   ep.get('catalysts', []),
                     'source':      'brahma_state_refresh',
                     'created_at':  now_iso,

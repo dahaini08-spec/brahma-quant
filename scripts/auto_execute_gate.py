@@ -379,12 +379,15 @@ def auto_execute(signal: dict, dry_run: bool = False) -> dict:
     # ── 门控4：持仓数量上限 + 总保证金率上限 ──────────────────────
     open_pos = _open_positions()
     # [设计院修复 2026-06-23] NAV 实时从交易所获取，避免 brahma_state 旧值导致误拦截
+    # [9.23苏摩111修复] API返回0（无papi权限）时fallback到brahma_state.nav=130
     try:
         import sys as _sys
         _sys.path.insert(0, str(Path(__file__).parent))
         import binance_fapi as _bf
         _acct = _bf.get_account()[0]
         nav = float(_acct['totalMarginBalance'])
+        if nav <= 0:
+            nav = float(bs.get('nav', bs.get('nav_usdt', 130)))
     except Exception:
         nav = float(bs.get('nav', bs.get('nav_usdt', 130)))
     # 检查同标的同方向是否已持仓

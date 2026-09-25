@@ -671,7 +671,7 @@ def _check_cron_route_ssot() -> dict:
     """Cron路由一致性 — 全部核心任务应路由到SSOT线程"""
     import json as _json
     from pathlib import Path as _Path
-    SSOT = '01a07628-0405-7e85-a34b-e68cd029dfc6'
+    SSOT = '01a0d79b-fea4-71b1-9f2a-c02a9844b4ed'
     OLD  = '019f443a'
     jobs_path = _Path.home() / '.openclaw/cron/jobs.json'
     try:

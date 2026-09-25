@@ -108,6 +108,12 @@ def calc_factors(ms: dict, signal_dir: str, score: int, breakdown: dict,
     else:
         grade = '⚫放弃';   kelly_mult = 0.0;  action = 'SKIP'
 
+    # [唯一裁判封印 2026-09-23 苏摩111] SSOT：action+grade+kelly_mult随breakdown透传
+    # 接入位置：confluence_score()末尾读取本字段作为唯一action来源，废除L619内嵌推导
+    breakdown['_ssot_action'] = action
+    breakdown['_ssot_grade'] = grade
+    breakdown['_ssot_kelly_mult'] = kelly_mult
+
     # [果蝇Phase 0] 维度级trace写入 — 每个维度的最终分数和状态
     try:
         from brahma_brain.dim_trace_writer import trace_dim as _trace

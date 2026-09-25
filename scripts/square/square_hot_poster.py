@@ -1316,7 +1316,7 @@ def post_to_square(content: str, dry_run: bool = False) -> bool:
                 _msg = f'📢 梵天发帖成功\n\n{_preview}...'
                 _sp.run(['openclaw', 'message', 'send',
                          '--channel', 'jarvis',
-                         '--to', '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6',
+                         '--to', '73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed',
                          '--message', _msg], timeout=10, capture_output=True)
             except Exception as _pe:
                 print(f'[post] ⚠️ 推送苏摩失败: {_pe}', file=sys.stderr)

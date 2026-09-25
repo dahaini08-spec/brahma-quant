@@ -263,6 +263,7 @@ def inject_tradfi(_result: dict, ms: dict, score: int, breakdown: dict,
             },
             symbol=_result.get('symbol', ''),
             b2_proximity=str((_result.get('confluence') or {}).get('b2_proximity', '') or ''),
+            cf_action=str((_result.get('confluence') or {}).get('action', '') or ''),  # [唯一裁判 2026-09-23] Gate1读SSOT action
         )
         _result['trader_brain'] = {
             'action': _tb_r.get('action'),

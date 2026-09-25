@@ -45,16 +45,9 @@ WIRING_REGISTRY = [
     },
     # [归档 2026-08-11] brahma_coordinator 已移至archive，try/except静默失败，不需监控
 
-    {
-        'module': 'signal_integrity_gate',
-        'desc': 'P0~P2信号完整性校验',
-        'caller': 'brahma_core.py (analyze返回前)',
-        'result_key': 'integrity_gate',
-        'visible_in': 'result[integrity_gate] → score惩罚',
-        'trigger': '每次analyze()调用',
-        'test': lambda: __import__('brahma_brain.signal_integrity_gate', fromlist=['gate_check']).gate_check({}, {}, {}),
-    },
     # [归档 2026-08-11] mode_c_detector 已移至archive，try/except静默失败，不需监控
+    # [9.23清偿 苏摩111] signal_integrity_gate条目删除：源文件9.20封印移入_empty_trash，
+    #   校验逻辑并入signal_quality_engine（GateResult/evaluate_signal）。保留条目导致import必炸→BROKEN误报。
 
     {
         'module': 'us_session_gate',
@@ -86,17 +79,9 @@ WIRING_REGISTRY = [
     },
     # [归档 2026-08-11] mtf_resonance 已移至archive，try/except静默失败，不需监控
 
-    {
-        'module': 'sl_bandit',
-        'desc': 'SL自适应Bandit引擎',
-        'caller': 'brahma_brain/dynamic_sl.py + signal_settler',
-        'result_key': None,  # 通过dynamic_sl间接
-        'visible_in': 'dynamic_sl → params[stop_loss]',
-        'trigger': 'signal_settler结算 / dynamic_sl计算SL',
-        'test': lambda: __import__('brahma_brain.sl_bandit', fromlist=['get_optimal_sl']).get_optimal_sl(
-            'BULL_TREND', 'LONG') if hasattr(
-            __import__('brahma_brain.sl_bandit', fromlist=['']), 'get_optimal_sl') else 'ok_indirect',
-    },
+    # [9.23清偿 苏摩111] sl_bandit条目删除：源文件移入_empty_trash，Bandit逻辑并入
+    #   position_sizer（recommend_sl_pct L1876 + update_from_outcome L1985），
+    #   signal_settler学习闭环实际调position_sizer.update_from_outcome，已验证存在。
     {
         'module': 'signal_quality_engine',
         'desc': '信号质量门控',
@@ -106,16 +91,8 @@ WIRING_REGISTRY = [
         'trigger': 'auto_executor每次执行前',
         'test': lambda: __import__('brahma_brain.signal_quality_engine', fromlist=['SignalQualityEngine']).SignalQualityEngine,
     },
-    {
-        'module': 'signal_weight_updater',
-        'desc': '结算闭环权重更新',
-        'caller': 'scripts/signal_settler.py',
-        'result_key': None,
-        'visible_in': 'signal_weights.json → 下次评分乘数',
-        'trigger': 'signal_settler每次结算后',
-        'test': lambda: __import__('brahma_brain.signal_weight_updater', fromlist=['update_weights']).update_weights if hasattr(
-            __import__('brahma_brain.signal_weight_updater', fromlist=['']), 'update_weights') else 'ok_import',
-    },
+    # [9.23清偿 苏摩111] signal_weight_updater条目删除：并入signal_quality_engine.update_weights，
+    #   signal_settler结算闭环实际调该函数，已验证存在。
     {
         'module': 'fangcang_vector_db',
         'desc': '方仓向量检索',
@@ -127,22 +104,10 @@ WIRING_REGISTRY = [
             __import__('brahma_brain.fangcang_vector_db', fromlist=['']), 'search_similar') else 'ok_import',
     },
     # ── step4引擎 [修复 2026-08-24 苏摩追问封印] 原来全部缺失，今日7个空转30天根因 ──
-    {
-        'module': 'volume_exhaustion_engine',
-        'desc': '量能衰竭引擎',
-        'caller': 'brahma_brain/brahma_core_step4.py → VOL_EXH_OK',
-        'visible_in': 'extra_data[vol_exhaustion]',
-        'trigger': 'analyze()',
-        'test': lambda: getattr(__import__('volume_exhaustion_engine'), 'volume_exhaustion_score'),
-    },
-    {
-        'module': 'divergence_engine',
-        'desc': '多周期背离引擎',
-        'caller': 'brahma_brain/brahma_core_step4.py → MULTITF_DIV_OK',
-        'visible_in': 'extra_data[multitf_div]',
-        'trigger': 'analyze()',
-        'test': lambda: getattr(__import__('divergence_engine'), 'multitf_divergence_score'),
-    },
+    # [9.23清偿 苏摩111] volume_exhaustion_engine条目删除：并入volume_unified.volume_exhaustion_score，
+    #   brahma_core_step4.py L82实际import该函数，已验证存在。
+    # [9.23清偿 苏摩111] divergence_engine条目删除：并入smc_engine.multitf_divergence_score，
+    #   brahma_core_step4.py L44实际import该函数，已验证存在。
     {
         'module': 'microstructure_engine',
         'desc': '微观结构引擎',

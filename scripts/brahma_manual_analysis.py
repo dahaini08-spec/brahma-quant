@@ -646,6 +646,7 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict, oi: dict = None, vo
     共振标准: ≥4/7 = 有效共振
     """
     price = d['price']
+    sym = d.get('sym', d.get('symbol', 'BTC'))  # [P0-1修复] regime查询需要标的键
 
     fvg_mid     = fvg['magnet']
     fvg_dir     = fvg['dir']
@@ -811,10 +812,18 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict, oi: dict = None, vo
         'BULL_EARLY':     {'FVG': 1.2, 'OB': 1.0, 'LIQ': 1.0, 'OI': 1.0, 'GEX': 1.0, 'FC': 1.0, 'CMA': 1.0},
     }
     _regime_key = 'CHOP_MID'
-    for _rk in _REGIME_WEIGHTS:
-        if _rk in str(d.get('regime_s', {}).get('confirmed', '')):
-            _regime_key = _rk
-            break
+    # [P0-1修复 2026-09-23 苏摩111] 权重查询路径修复（与step10_vip L1691对齐）
+    # 原bug：读顶层d['regime_s']['confirmed']（不存在）→ 永远默认CHOP_MID权重
+    # 9.18批准的体制×维度权重矩阵在生产从未生效。另回退：bs.regime > 分析时体制
+    _rs_sym = (d.get('regime_s') or {}).get(sym + 'USDT', {}) if isinstance(d.get('regime_s'), dict) else {}
+    _confirmed_regime = str(_rs_sym.get('confirmed', '') or '')
+    if not _confirmed_regime:
+        _confirmed_regime = str((d.get('bs') or {}).get('regime', '') or '')
+    if _confirmed_regime:
+        for _rk in _REGIME_WEIGHTS:
+            if _rk in _confirmed_regime:
+                _regime_key = _rk
+                break
     _rw = _REGIME_WEIGHTS.get(_regime_key, _REGIME_WEIGHTS['CHOP_MID'])
     
     # 加权共振分计算
@@ -865,9 +874,50 @@ def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict, oi: dict = None, vo
     if vol and vol.get('hurst', 0.5) < 0.55 and resonance:
         cross_check['conflicts'].append(f'共振但Hurst={vol["hurst"]:.3f}<0.55=随机游走')
 
+    # [P0-2修复 2026-09-23 苏摩111] 方向一致性计数（40年交易员口径）
+    # 数据存在≠方向一致。7/7满绿必须拆成两个数：
+    #   数据N/7 = 数据管道健康检查（原口径，无信息量）
+    #   方向一致N/7 = 结构层各维与信号方向的真实一致计数（进Gate4的依据）
+    _sig_bull = str(d.get('signal_dir', '') or '').upper() == 'LONG'
+    _sig_dir_norm = str(d.get('signal_dir', '') or '').upper()
+    _align = 0
+    if _sig_dir_norm in ('LONG', 'SHORT'):
+        # 结构三维度用共识方向比对；FVG无共识(NONE)不算一致也不算矛盾
+        _struct_consensus = _fvg_consensus  # BULL/BEAR/NONE
+        if _struct_consensus == _sig_dir_norm:
+            _align += 1  # FVG方向一致
+        # OB: 用有效OB的BULL/BEAR多数派
+        _ob_bull = sum(1 for k in valid_obs if 'BULL' in k)
+        _ob_bear = sum(1 for k in valid_obs if 'BEAR' in k)
+        if (_sig_bull and _ob_bull > _ob_bear) or (not _sig_bull and _ob_bear > _ob_bull):
+            _align += 1
+        # 清算: 空单看上方止损墙作为目标=空向一致；多单看下方支撑池
+        if _sig_dir_norm == 'SHORT' and nearest_liq > price:
+            _align += 1
+        elif _sig_dir_norm == 'LONG' and nearest_liq < price:
+            _align += 1
+        # OI/GEX/方仓/跨市场: 方向一致才计（有数据但矛盾=0）
+        if oi and oi.get('signal','') not in ('NO_DATA','MIXED'):
+            if (_sig_bull and _oi_bull) or (not _sig_bull and _oi_bear):
+                _align += 1
+        if has_gex:
+            if (_sig_bull and _gex_bull) or (not _sig_bull and _gex_bear):
+                _align += 1
+        if has_fc:
+            if (_sig_bull and _fc_dir == 'LONG') or (not _sig_bull and _fc_dir == 'SHORT'):
+                _align += 1
+        if has_cma:
+            if (_sig_bull and _cma_risk_on) or (not _sig_bull and _cma_risk_off):
+                _align += 1
+    else:
+        _align = 0  # 无信号方向（如FVG共识NONE的BTC）→ 方向一致数=0，不授信
+
     return {
         'resonance':   resonance,
         'score':       score,
+        'align_count': _align,          # [P0-2] 方向一致计数（Gate4依据）
+        'resonance_ratio': _resonance_ratio,  # [P0-1] 体制加权共振比
+        'regime_key': _regime_key,     # [P0-1] 实际生效的体制权重键
         'has_fvg':     has_fvg,
         'has_ob':      has_ob,
         'has_liq':     has_liq,
@@ -1565,7 +1615,8 @@ def step9_risk(d: dict) -> dict:
 
     dd_pct    = dd.get('drawdown_pct', 0)
     dd_status = dd.get('status', 'NORMAL')
-    dd_ok     = dd_status == 'NORMAL'
+    # [9.23苏摩111修复] GREEN是9.21修复后NAV=0时写入的合法状态，等同NORMAL
+    dd_ok     = dd_status in ('NORMAL', 'GREEN')
 
     consec_loss = af.get('consecutive_losses', 0)
     af_ok       = consec_loss < 3
@@ -1903,7 +1954,8 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     if 'BEAR' in reg_now: bear_votes += 2
 
     _vote_bias = 'LONG' if bull_votes > bear_votes else ('SHORT' if bear_votes > bull_votes else 'NEUTRAL')
-    print(f'[DEBUG step10 BIAS] _trader_brain_dir={_trader_brain_dir} _trader_brain_action={_trader_brain_action} _vote_bias={_vote_bias} bull={bull_votes} bear={bear_votes}', file=sys.stderr)
+    # [P2-4修复 2026-09-23 苏摩111] DEBUG行静默（诊断时恢复）: _trader_brain_dir/_action/_vote_bias/bull/bear
+    # print(f'[DEBUG step10 BIAS] ...', file=sys.stderr)
     # 关键修复：trader_brain方向优先，5信号投票作为fallback
     if _trader_brain_dir in ('LONG', 'SHORT') and _trader_brain_action != 'WAIT':
         bias = _trader_brain_dir  # trader_brain说了算
@@ -1922,10 +1974,17 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     _dead_reason = ''
     _score_now = float(bs.get('score_final', bs.get('score', 0)))
     if 'BULL_TREND' in reg_now and bias == 'LONG' and _score_now >= 140:
-        _sl_est = abs(res['entry_lo'] - (res['entry_lo'] * 0.97)) / res['entry_lo'] * 100
-        if _sl_est >= 3.0:
-            _is_dead = True
-            _dead_reason = f'死穴: BULL_TREND:LONG score={_score_now:.0f}≥140 + SL≥3% → WR=0% 永久封禁'
+        # [9.23修复2] 死穴SL估算硬编码bug：原代码 _sl_est=abs(el-el*0.97)/el≡3.0%恒真
+        # → score≥140必然封禁，死穴失去「SL≥3%」条件意义。
+        # 修复：用真实入场区计算SL距离（做多SL_PCT=2.0% + 1.5×ATR4H铁律）
+        _el = float(res.get('entry_lo', 0) or 0)
+        if _el > 0:
+            _atr4h = float(res.get('atr_4h', 0) or 0)  # res里有atr_4h（L1346），不在state
+            _min_sl = max(_el * 0.02, _atr4h * 1.5) if _atr4h else _el * 0.02
+            _sl_est = _min_sl / _el * 100
+            if _sl_est >= 3.0:
+                _is_dead = True
+                _dead_reason = f'死穴: BULL_TREND:LONG score={_score_now:.0f}≥140 + SL≥3% → WR=0% 永久封禁'
     if 'BEAR_RECOVERY' in reg_now and bias == 'SHORT':
         _is_dead = True
         _dead_reason = 'BEAR_RECOVERY:SHORT → WR=0% 严禁'
@@ -2565,6 +2624,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
             vol=vol,
             res=res,
             symbol=sym+'USDT',
+            cf_action=str((d['bs'].get('confluence', {}) or {}).get('action', '') or ''),  # [唯一裁判 2026-09-23] Gate1读SSOT action
         )
     except Exception as _tbe:
         tb_result = {'action':'WAIT','reason':f'trader_brain异常: {str(_tbe)[:60]}','missing':['trader_brain异常']}
@@ -2689,7 +2749,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     _top5 = fc.get('top5', [])
     if _top5:
         _pm = fc.get('prob_matrix', {})
-        lines.append(f'  概率矩阵: 多{_pm.get("long",0):.0f}% / 空{_pm.get("short",0):.0f}% / 横盘{_pm.get("chop",0):.0f}%')
+        lines.append(f'  概率矩阵(全库): 多{_pm.get("long",0):.0f}% / 空{_pm.get("short",0):.0f}% / 横盘{_pm.get("chop",0):.0f}%')
         for t in _top5[:3]:
             lines.append(f'  #{t["rank"]} {t["date"]} 相似{t["similarity"]:.3f} 未来{t["future_ret"]:+.1f}% (max:{t["future_max"]:+.1f}% min:{t["future_min"]:+.1f}%) [{t["regime"]}]')
     if fc.get('trap_alert'):
@@ -2720,7 +2780,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         + (f'  → 第二层: ${liq["second_short"]:,.0f}' if liq.get('second_short') else ''),
         f'  🛡️下方多头支撑池: ${liq.get("nearest_long",0):,.0f} (-{liq.get("support_pct",0):.1f}%)',
         f'',
-        f'【Step4 共振】FVG={res["has_fvg"]} OB={res["has_ob"]} 清算={res["has_liq"]} OI={res.get("has_oi",False)} GEX={res.get("has_gex",False)} 方仓={res.get("has_fc",False)} 跨市场={res.get("has_cma",False)} → {res.get("score",0)}/7',
+        f'【Step4 共振】FVG={res["has_fvg"]} OB={res["has_ob"]} 清算={res["has_liq"]} OI={res.get("has_oi",False)} GEX={res.get("has_gex",False)} 方仓={res.get("has_fc",False)} 跨市场={res.get("has_cma",False)} → 数据{res.get("score",0)}/7｜方向一致{res.get("align_count",0)}/7（体制{res.get("regime_key","CHOP_MID")}权重共振比{res.get("resonance_ratio",0):.2f}）',
         f'  入场区间: ${res.get("entry_lo",0):,.1f} ~ ${res.get("entry_hi",0):,.1f}',
     ]
     if res['missing']:
@@ -2783,7 +2843,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         f'回撤: {risk["dd_pct"]:.1f}% {"✅正常" if risk["dd_ok"] else "⚠️"}  '
         f'连亏: {risk["consec"]}笔 {"✅" if risk["af_ok"] else "⚠️冷却"}',
         f'  失效期: {risk.get("regime_state","GREEN")} {risk.get("regime_note","")}',  # [P1] 失效期展示
-        f'  仓位系数: x{risk["nav_mult"]}',
+        f'  仓位系数: x{risk["nav_mult"]:.2f}',
     ]
     if risk['blocks']:
         for b in risk['blocks']:
@@ -2858,7 +2918,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
             'fvg_consensus': fvg.get('consensus', ''), 'fvg_magnet_price': fvg.get('magnet', 0),
             'oi_signal': oi.get('signal', ''), 'smart_money': sm, 'gex': vol.get('gex', 0),
             'gex_signal': vol.get('gex_signal', ''), 'cvd_1h': oi.get('cvd_1h', 0),
-            'cvd_dir_1h': oi.get('cvd_dir_1h', 'NEUTRAL'), 'resonance_count': res.get('count', 0),
+            'cvd_dir_1h': oi.get('cvd_dir_1h', 'NEUTRAL'), 'resonance_count': res.get('score', 0),
             'resonance_max': 7, 'resonance_missing': res.get('missing', []),
             'liq_wall_price': liq.get('nearest_short', 0), 'liq_pool_price': liq.get('nearest_long', 0),
             'entry_lo': tb_result.get('entry_lo', 0), 'entry_hi': tb_result.get('entry_hi', 0),
@@ -2940,7 +3000,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         lines += [
             f'',
             f'── P3/P4对比 ──',
-            f'  AI Council: {_council.get("council_bias","?")}/{_council.get("council_action","?")}/{_council.get("council_confidence","?")}',
+            f'  AI Council(参考): {_council.get("council_bias","?")}/{_council.get("council_action","?")}/{_council.get("council_confidence","?")}',
             f'  Bayes: adj={_council.get("bayes_adjustment",0):+.2f} detail={_council.get("bayes_detail","?")[:50]}',
             f'  Combined: {_council.get("combined_score",0)} = ensemble({_ens.get("ensemble_score",0)}) + bayes({_council.get("bayes_adjustment",0):+.2f})',
         ]
@@ -2997,16 +3057,21 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
 
     # [改革2+3 2026-09-18 苏摩111] 信号结算闭环：每次分析后结算pending + 记录新信号
     try:
-        from brahma_brain.signal_settlement_engine import settle_pending, record_signal, get_wr_stats, get_dynamic_threshold
+        from brahma_brain.signal_settlement_engine import settle_pending, settle_paper_json, record_signal, get_wr_stats, get_dynamic_threshold
         _settle_price = d.get('price', 0) or 0
         if _settle_price == 0:
             # fallback: 从结果中获取
             _settle_price = d.get('bs', {}).get('price', 0) or 78000
         _settle_r = settle_pending(_settle_price, sym+'USDT')
+        _settle_r2 = settle_paper_json(_settle_price, sym+'USDT')  # [P1-3修复2 2026-09-23] 真实纸面仓结算（paper_positions.json）
         if _settle_r['settled'] > 0:
             lines += [f'', f'─── 📊 信号结算 ───', f'  本次结算: {_settle_r["settled"]}笔 | 待结算: {_settle_r["pending"]}笔']
             for s in _settle_r.get('settled_details', []):
                 lines.append(f'  {s["symbol"]} {s["direction"]} → {s["outcome"]} PnL={s.get("pnl_pct",0):+.2f}%')
+        if _settle_r2.get('settled', 0) > 0:
+            lines += [f'  📄 纸面仓结算: {_settle_r2["settled"]}笔']
+            for s in _settle_r2.get('hits', []):
+                lines.append(f'  {s["symbol"]} → {s["outcome"]} PnL={s.get("pnl_pct",0):+.2f}%')
         _wr_stats = get_wr_stats()
         _dyn_threshold = get_dynamic_threshold()
         if _wr_stats['total'] > 0:
@@ -3278,19 +3343,48 @@ def main():
     except Exception as _cross_e:
         print(f'[WARN] 分阶段策略标注失败: {_cross_e}', file=sys.stderr)
 
-    # [9.15苏摩111 Step2] 写入auto_analysis_latest.json — 统一出口
+    # ── [9.15苏摩111 Step2] 写入auto_analysis_latest.json — 统一出口 ──
+    # [唯一裁判封印 2026-09-23 苏摩111] 附带结构化signals：从brahma_state读SSOT action，
+    # battlefield不再用正则从文本猜方向/门槛——直接读这里
     try:
         from pathlib import Path as _P
         import json as _json, time as _time
+        _structured = []
+        for _sym in symbols:
+            try:
+                _state_path = Path(__file__).parent.parent / 'data' / f'brahma_state_{_sym.lower()}.json'
+                if not _state_path.exists():
+                    continue
+                _st = _json.loads(_state_path.read_text())
+                _conf = _st.get('confluence', {}) or {}
+                _act = str(_conf.get('action', '') or '')
+                if not _act.startswith('ENTER'):
+                    continue  # 只入队SSOT裁决的ENTER系信号
+                _structured.append({
+                    'symbol': _sym + 'USDT',
+                    'action': _act,
+                    'direction': _st.get('decision', {}).get('direction', '') if isinstance(_st.get('decision'), dict) else _st.get('direction', ''),
+                    'score': _conf.get('total', _conf.get('score', 0)),
+                    'entry_lo': _st.get('entry_lo'),
+                    'entry_hi': _st.get('entry_hi'),
+                    'stop_loss': _st.get('stop_loss'),
+                    'tp1': _st.get('tp1'),
+                    'regime': _st.get('regime', ''),
+                    'source': 'auto_analysis_ssot',
+                    'ts': _time.time(),
+                })
+            except Exception:
+                pass
         _summary = {
             'timestamp': _time.strftime('%Y-%m-%d %H:%M:%S UTC', _time.gmtime()),
             'symbols': symbols,
             'elapsed_s': round(elapsed, 1),
             'output': '\n'.join(full_output),
+            'ssot_signals': _structured,  # [唯一裁判] ENTER系结构化信号
         }
         _out_path = _P(__file__).parent.parent / 'data' / 'auto_analysis_latest.json'
         _out_path.write_text(_json.dumps(_summary, ensure_ascii=False))
-        print(f'[auto_analysis_latest] 已写入 {_out_path.name} ({len(symbols)}标的)', file=sys.stderr)
+        print(f'[auto_analysis_latest] 已写入 {_out_path.name} ({len(symbols)}标的, SSOT信号{len(_structured)}条)', file=sys.stderr)
     except Exception as _e:
         print(f'[WARN] auto_analysis_latest写入失败: {_e}', file=sys.stderr)
 

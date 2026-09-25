@@ -74,8 +74,8 @@ check_cache "vol_beta_state.json" 43200 "vol_beta"
 check_cache "macro_state.json" 86400 "宏观"
 check_cache "cvd_realtime_btcusdt.json" 3600 "CVD_BTC"
 check_cache "cvd_realtime_ethusdt.json" 3600 "CVD_ETH"
-check_cache "liq_heatmap_BTCUSDT.json" 14400 "清算热图BTC"
-check_cache "liq_heatmap_ETHUSDT.json" 14400 "清算热图ETH"
+check_cache "liq_heatmap_btcusdt.json" 14400 "清算热图BTC"
+check_cache "liq_heatmap_ethusdt.json" 14400 "清算热图ETH"
 check_cache "circuit_breaker.json" 3600 "风控熔断"
 check_cache "drawdown_state.json" 3600 "回撤"
 check_cache "antifragile_state.json" 86400 "反脆弱"
@@ -142,7 +142,7 @@ fi
 if [ -n "$ALERT" ] || [ -n "$RECOVERED" ]; then
     MSG="${ALERT}${RECOVERED}"
     openclaw message send \
-        -t "73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6" \
+        -t "73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed" \
         --channel jarvis \
         --message "🐕看门狗: $MSG" \
         >/dev/null 2>&1 || true

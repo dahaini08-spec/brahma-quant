@@ -1734,15 +1734,18 @@ from datetime import datetime, timezone
 from typing import Optional
 
 # ── paths ────────────────────────────────────────────────────────────────────
+# [9.23修复] _DATA统一为Path：L1224已定义Path版，此处的str版覆盖导致 _load_fangcang_cases 里
+# merged_path = _DATA / 'fangcang_merged_v2.json' 抛 TypeError → 案例库静默归零
+import pathlib as _pathlib
 _DIR = os.path.dirname(os.path.abspath(__file__))
-_DATA = os.path.join(_DIR, "..", "data")
-SIGNAL_LOG_PATH       = os.path.join(_DATA, "live_signal_log.jsonl")
-HCME_INDEX_PATH       = os.path.join(_DATA, "hcme_index.json")
+_DATA = _pathlib.Path(_DIR).parent / 'data'
+SIGNAL_LOG_PATH       = str(_DATA / "live_signal_log.jsonl")
+HCME_INDEX_PATH       = str(_DATA / "hcme_index.json")
 # Phase1升级：伪信号历史库（2177+条，6.5年历史回测生成）
-HCME_PSEUDO_PATH      = os.path.join(_DATA, "hcme", "hcme_pseudo_signals.jsonl.gz")
-HCME_PSEUDO_INDEX_PATH = os.path.join(_DATA, "hcme", "hcme_pseudo_index.json")
+HCME_PSEUDO_PATH      = str(_DATA / "hcme" / "hcme_pseudo_signals.jsonl.gz")
+HCME_PSEUDO_INDEX_PATH = str(_DATA / "hcme" / "hcme_pseudo_index.json")
 # [2026-09-04 设计院扩展封印] 日线K线扩展案例库（3890条，BTC/ETH日线历史匹配）
-HCME_EXPANDED_INDEX_PATH = os.path.join(_DATA, "hcme_expanded_index.json")
+HCME_EXPANDED_INDEX_PATH = str(_DATA / "hcme_expanded_index.json")
 
 # ── regime encoder ───────────────────────────────────────────────────────────
 REGIME_MAP = {
@@ -1799,8 +1802,8 @@ def _get_ath(symbol: str) -> float:
     if symbol in _ATH_CACHE:
         return _ATH_CACHE[symbol]
     candidate_files = [
-        os.path.join(_DATA, "backtest", f"{symbol}_4h.json"),
-        os.path.join(_DATA, "backtest", f"{symbol}_1h.json"),
+        str(_DATA / "backtest" / f"{symbol}_4h.json"),
+        str(_DATA / "backtest" / f"{symbol}_1h.json"),
     ]
     for path in candidate_files:
         if os.path.exists(path):
@@ -2951,19 +2954,31 @@ def unified_fangcang(
 
     # 加权合并
     raw_adj = s1_adj * W1 + s2_adj * W2 * genuine_w
-    unified_adj = round(max(MIN_ADJ, min(MAX_ADJ, raw_adj)), 2)
 
-    # 置信度降级（两套都insufficient时，adj归零）
-    both_low = s1_conf in ('insufficient', 'error', 'unavailable') and \
-               s2_conf in ('insufficient', 'error', 'unavailable')
-    if both_low:
+    # [9.23苏摩111修复 P1] 案例库n=0时禁止方向性结论
+    # 9.12改革P2原则: 方仓信号必须基于案例库证据，n=0=无证据=归零
+    # K线相似度(s1)单独不足以给出方向性adj（避免无数据支撑误导）
+    if s2_n == 0 and s2_conf in ('insufficient', 'error', 'unavailable'):
         unified_adj = 0.0
+        summary = f'方仓无证据(adj=0.0): 案例库n=0，K线相似度不足以定方向'
+    else:
+        unified_adj = round(max(MIN_ADJ, min(MAX_ADJ, raw_adj)), 2)
+
+        # 置信度降级（两套都insufficient时，adj归零）
+        both_low = s1_conf in ('insufficient', 'error', 'unavailable') and \
+                   s2_conf in ('insufficient', 'error', 'unavailable')
+        if both_low:
+            unified_adj = 0.0
 
     # 一句话总结
-    dir_cn = '做多' if signal_dir == 'LONG' else '做空'
-    if unified_adj > 5:
+    if unified_adj == 0.0 and s2_n == 0:
+        dir_cn = '做多' if signal_dir == 'LONG' else '做空'
+        summary = f'方仓无证据(adj=0.0): 案例库n=0，不给予{dir_cn}方向性分数'
+    elif unified_adj > 5:
+        dir_cn = '做多' if signal_dir == 'LONG' else '做空'
         summary = f'方仓强力确认{dir_cn}(adj={unified_adj:+.1f}): K线相似+案例库WR={s2_wr:.0%}'
     elif unified_adj > 1:
+        dir_cn = '做多' if signal_dir == 'LONG' else '做空'
         summary = f'方仓轻微支持{dir_cn}(adj={unified_adj:+.1f}): 案例库n={s2_n} WR={s2_wr:.0%}'
     elif unified_adj < -5:
         summary = f'方仓强力反对{dir_cn}(adj={unified_adj:+.1f}): 历史数据不支持'

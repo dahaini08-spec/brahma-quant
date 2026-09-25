@@ -11,9 +11,9 @@ if [ -z "$PID" ]; then
   if [ -n "$NEW_PID" ]; then
     echo "$(date -u '+%Y-%m-%d %H:%M UTC') [watchdog] supercronic已重启 PID=$NEW_PID"
     # 推送通知
-    openclaw message send -t "73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6" --channel jarvis --message "⚠️ Supercronic已重启 PID=$NEW_PID" >/dev/null 2>&1 &
+    openclaw message send -t "73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed" --channel jarvis --message "⚠️ Supercronic已重启 PID=$NEW_PID" >/dev/null 2>&1 &
   else
     echo "$(date -u '+%Y-%m-%d %H:%M UTC') [watchdog] supercronic重启失败！"
-    openclaw message send -t "73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6" --channel jarvis --message "🔴 Supercronic重启失败！手动检查" >/dev/null 2>&1 &
+    openclaw message send -t "73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed" --channel jarvis --message "🔴 Supercronic重启失败！手动检查" >/dev/null 2>&1 &
   fi
 fi
