@@ -30,7 +30,7 @@ try:
     from scripts.system_config import JARVIS_TARGET as _SSOT_T
     PUSH_TARGET = os.environ.get('JARVIS_TARGET', _SSOT_T)
 except Exception:
-    PUSH_TARGET = os.environ.get('JARVIS_TARGET', '73295708:thread:01a07628-0405-7e85-a34b-e68cd029dfc6')
+    PUSH_TARGET = os.environ.get('JARVIS_TARGET', '73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed')
 PUSH_CHANNEL = 'jarvis'
 
 # ── 监控标的 ──────────────────────────────────────────────
@@ -212,7 +212,7 @@ f"""🔄 梵天体制升级
             _sp4 = str(_P4(__file__).parent)
             if _sp4 not in _sys4.path:
                 _sys4.path.insert(0, _sp4)
-            from free_llm_client import _call_openrouter as _llm_regime
+            from free_llm_client import chat as _llm_regime  # [9.25修复] _call_openrouter已改为chat
             from regime_bus import get as _rb_get  # type: ignore
         except Exception:
             _llm_regime = None

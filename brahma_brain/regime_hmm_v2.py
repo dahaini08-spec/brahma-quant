@@ -213,16 +213,19 @@ def get_weighted_multiplier(symbol: str, direction: str) -> float:
     替代当前硬切换的 REGIME_MULT 矩阵
     
     Example:
-      BEAR=0.65, CHOP=0.22, BULL=0.13
-      LONG乘数: 0.65×0.10 + 0.22×0.50 + 0.13×1.60 = 0.482
+      BEAR=0.65, CHOP=0.22, BULL=0.13 (BTC)
+      LONG乘数: 0.65×0.50 + 0.22×0.50 + 0.13×1.20 = 0.591
     """
     proba = predict_regime_proba(symbol)
 
-    # 各体制各方向乘数（来自 brahma_core _REGIME_MULT）
+    # [9.25修复 苏摩111] 对齐宪法矩阵（MEMORY.md 体制→策略映射）
+    # 修复项④：数值漂移——BULL LONG 1.60(宪法1.30ETH/1.20BTC) / BEAR LONG 0.10(宪法0.50)
+    #          BULL SHORT 0.15(宪法0.50)；BEAR/CHOP SHORT与宪法一致保持不变
+    _sym_up = (symbol or '').upper()
     MULT = {
-        'BEAR_TREND': {'LONG': 0.10, 'SHORT': 1.60},
+        'BEAR_TREND': {'LONG': 0.50, 'SHORT': 1.60},
         'CHOP_MID':   {'LONG': 0.50, 'SHORT': 0.88},
-        'BULL_TREND': {'LONG': 1.60, 'SHORT': 0.15},
+        'BULL_TREND': {'LONG': 1.30 if 'ETH' in _sym_up else 1.20, 'SHORT': 0.50},
     }
     dir_key = 'LONG' if direction in ('LONG', 'BUY') else 'SHORT'
 

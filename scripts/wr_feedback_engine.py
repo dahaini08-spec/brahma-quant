@@ -25,7 +25,7 @@ wr_feedback_engine.py — WR矩阵每日反哺信号矩阵权重
   - brahma_brain/regime_config.py get_regime_mult() 读取override
   - crontab: 0 2 * * * python3 scripts/wr_feedback_engine.py（每日凌晨2点）
 """
-import json, math, sys
+import json, math, sys, time
 from pathlib import Path
 from datetime import datetime, timezone
 
@@ -119,26 +119,43 @@ def compute_new_override(matrix: dict) -> tuple[dict, list]:
     返回: (override_dict, change_log)
     """
     current_override = load_override()
-    new_override = {k: v for k, v in current_override.items() if not k.startswith('_')}
+    # [9.25修复 苏摩111] ⑥嵌套格式统一：core内联读取方是 {REGIME:{DIR:mult}}，
+    # 旧代码写平铺 {"REGIME:DIR": mult} → core读不到。只保留嵌套结构（顺带清理legacy平铺键）
+    new_override = {k: v for k, v in current_override.items() if not k.startswith('_') and isinstance(v, dict)}
     changes = []
 
     for key, entry in matrix.items():
-        # 只处理 regime:direction:score_bin 格式（不处理symbol格式）
-        # [P0修复 2026-09-07 苏摩111] 跳过paper_realtime:X:Y格式（3段但含paper_realtime前缀）
-        # 根因：paper_realtime:BEAR_EARLY:SHORT被误解析为regime=paper_realtime，n_win缺失→WR=0%
+        # [9.25修复 苏摩111] ③格式错配根治：settler实盘矩阵是2段key(regime:dir)
+        # + total/win/loss/expired/wr字段；旧代码按3段key(regime:dir:bin)+n/n_win解析
+        # → 所有实盘key被跳过 → override永远写不出（三方死闭环实锤）
+        # 现兼容2段（主）与3段（legacy）两种格式；跳过symbol/paper_realtime前缀
         parts = key.split(':')
-        if len(parts) != 3 or 'USDT' in key or key.startswith('paper_realtime'):
+        if 'USDT' in key or key.startswith('paper_realtime'):
             continue
 
-        regime, direction, score_bin = parts
-        n       = int(entry.get('n', 0))
-        # [P0修复] 优先用entry['wr']*n计算n_win，防止paper_realtime格式无n_win字段导致WR=0%
-        _wr_direct = entry.get('wr')
-        if _wr_direct is not None and entry.get('n_win') is None:
-            n_win = round(float(_wr_direct) * n)
+        if len(parts) == 2:
+            # 实盘settler格式：{"BULL_TREND:LONG": {"total":165,"win":29,"loss":51,"expired":85,"wr":0.3625}}
+            regime, direction = parts
+            score_bin = 'ALL'
+            _win  = int(entry.get('win', 0))
+            _loss = int(entry.get('loss', 0))
+            settled = _win + _loss
+            if settled <= 0:
+                settled = int(entry.get('total', 0)) - int(entry.get('expired', 0))
+            n = int(entry.get('total', settled))
+            n_win = _win
+        elif len(parts) == 3:
+            # legacy格式：regime:direction:score_bin（历史paper数据）
+            regime, direction, score_bin = parts
+            n       = int(entry.get('n', 0))
+            _wr_direct = entry.get('wr')
+            if _wr_direct is not None and entry.get('n_win') is None:
+                n_win = round(float(_wr_direct) * n)
+            else:
+                n_win = int(entry.get('n_win', 0))
+            settled = int(entry.get('settled', n))  # settled优先，否则用n
         else:
-            n_win = int(entry.get('n_win', 0))
-        settled = int(entry.get('settled', n))  # settled优先，否则用n
+            continue
 
         # 样本门槛
         if settled < MIN_N:
@@ -167,16 +184,18 @@ def compute_new_override(matrix: dict) -> tuple[dict, list]:
         new_mult = max(baseline - MAX_DEVIATION,
                       min(baseline + MAX_DEVIATION, new_mult))
 
-        # 限制单次调整步长
-        old_mult = current_override.get(regime_dir_key, baseline)
+        # 限制单次调整步长（⑥嵌套格式读取上次override）
+        _prev_regime = current_override.get(regime)
+        _prev = _prev_regime if isinstance(_prev_regime, dict) else {}
+        old_mult = float(_prev.get(direction) or baseline)
         if abs(new_mult - old_mult) > MAX_STEP:
             new_mult = old_mult + MAX_STEP * (1 if new_mult > old_mult else -1)
 
         new_mult = round(new_mult, 4)
 
-        # 只在有实质变化时更新
+        # 只在有实质变化时更新（⑥写嵌套格式 {REGIME:{DIR:mult}}）
         if abs(new_mult - old_mult) > 0.01:
-            new_override[regime_dir_key] = new_mult
+            new_override.setdefault(regime, {})[direction] = new_mult
             changes.append({
                 'key':       regime_dir_key,
                 'score_bin': score_bin,
@@ -338,7 +357,7 @@ def main():
             _llm_review_path = str(BASE / 'scripts')
             if _llm_review_path not in sys.path:
                 sys.path.insert(0, _llm_review_path)
-            from free_llm_client import _call_openrouter as _llm_wr
+            from free_llm_client import chat as _llm_wr  # [9.25修复] _call_openrouter已改为chat
             for _ch in _big_changes[:3]:  # 每次最多审查3个
                 _prompt = (
                     f"梵天WR自学习审核：{_ch['key']}\n"

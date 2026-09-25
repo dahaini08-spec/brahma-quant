@@ -205,7 +205,7 @@ def detect_chop_breakout(state: dict, symbol: str = 'BTCUSDT') -> dict:
             _sp = str(_P2(__file__).parent.parent / 'scripts')
             if _sp not in _sys2.path:
                 _sys2.path.insert(0, _sp)
-            from free_llm_client import _call_openrouter as _llm_call
+            from free_llm_client import chat as _llm_call  # [9.25修复] _call_openrouter已改为chat
             _price = float(state.get('price') or state.get('last_price') or 0)
             _regime = state.get('regime', 'CHOP_MID')
             _score_f = float(state.get('score_final') or state.get('score') or 0)

@@ -291,6 +291,17 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
             _regime_mult = _rm_val
     except Exception:
         _regime_mult = 0.85  # 安全fallback
+    # [9.25修复 苏摩111] 恢复_matched_regime_key赋值链（fe2183bc提取矩阵时被删）
+    # 修复项：①P0体制专项过滤器(L2167 clobber)全灭 ②_regime_v4_key恒UNKNOWN
+    #        ③L1484动态阈值boost表死查（BEAR_EARLY_LONG等负期望补偿门控失效）
+    try:
+        _matched_regime_key = next(
+            (rk for rk in ('BULL_TREND', 'BEAR_TREND', 'CHOP_MID', 'BULL_EARLY',
+                           'BEAR_EARLY', 'BEAR_RECOVERY', 'BULL_CORRECTION')
+             if rk in (_regime_upper or '')),
+            (_regime_upper or 'UNKNOWN'))
+    except Exception:
+        _matched_regime_key = None
 
     # ── [P1-B 苏摩111批准 2026-07-11] regime_hmm_v2 概率化乘数接入 ──────────────────
     # 架构: HMM概率分布 → get_weighted_multiplier() → 概率加权乘数
@@ -613,10 +624,18 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     score, breakdown = _calc_factors(ms, signal_dir, score, breakdown, extra_data, _result, _fac_sym)
 
 
-    # [9.20修复] grade/kelly_mult/action在confluence_score中从未定义，从score推导
-    grade = 'S' if score >= 140 else 'A' if score >= 120 else 'B' if score >= 100 else 'C' if score >= 80 else 'D'
-    kelly_mult = 1.5 if score >= 140 else 1.0 if score >= 120 else 0.5 if score >= 100 else 0.0
-    action = 'EXECUTE' if score >= 140 else 'ALERT' if score >= 120 else 'WATCH' if score >= 100 else 'SKIP'
+    # [9.20修复] grade/kelly_mult/action统一从calc_factors的SSOT读取（唯一裁判封印 2026-09-23 苏摩111）
+    # 原L619内嵌推导(EXECUTE/ALERT/SKIP词汇表)已废除——与calc_factors(ENTER_FULL/ENTER/ENTER_WATCH)词汇表打架
+    _ssot_action = breakdown.get('_ssot_action')
+    if _ssot_action:
+        grade = breakdown.get('_ssot_grade', 'D')
+        kelly_mult = breakdown.get('_ssot_kelly_mult', 0.0)
+        action = _ssot_action
+    else:
+        # 兼容旳异常路径：calc_factors异常时按score降级推导（保守：只给WATCH）
+        grade = 'S' if score >= 140 else 'A' if score >= 120 else 'B' if score >= 100 else 'C' if score >= 80 else 'D'
+        kelly_mult = 1.5 if score >= 140 else 1.0 if score >= 120 else 0.5 if score >= 100 else 0.0
+        action = 'WATCH' if score >= 100 else 'SKIP'
 
     return {
         'total':      score,
@@ -1472,8 +1491,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # 原则：不封禁，但低WR组合需要更高评分才能通过（精化筛选）
     # 数据：BEAR_EARLY_LONG WR=50.4% / BULL_EARLY_SHORT WR=51.9%（n>6000铁证）
     # 解决：提高这些组合的动态门控阈值，要求信号质量更高才入场
-    # analyze() 作用域内不存在。改从 cf(breakdown) 读取 _regime_v4_key。
-    _regime_dir_key = f"{(cf or {}).get('_regime_v4_key','') or ''}_{signal_dir}"
+    # analyze() 作用域内不存在。改从 breakdown 读取 _regime_v4_key。
+    # [9.25修复 苏摩111] ⑦修复：_regime_v4_key在cf['breakdown']里，旧代码读cf顶层→恒空→boost表死查
+    _regime_dir_key = f"{((cf or {}).get('breakdown') or {}).get('_regime_v4_key','') or ''}_{signal_dir}"
     _DYNAMIC_THRESHOLD_BOOST = {
         # 负期望组合：要求额外+18分才能通过（约等于要求score≥158）
         'BEAR_EARLY_LONG':       18,   # WR=50.4% avg=-0.110% → 高门控筛出低质信号
@@ -2156,7 +2176,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # 原则：为交易而生，不封禁；通过精准条件过滤提升低WR组合质量
     # 每个体制×方向组合针对其根本失败原因做专项检测
     try:
-        _regime_now = _matched_regime_key or ''
+        # [9.25修复 苏摩111] ⑧修复：_matched_regime_key是confluence_score()局部变量，
+        # 在analyze()作用域NameError被try/except吞掉→P0四条专项过滤全灭。
+        # 改从confluence输出的breakdown读（①修复已写入_regime_v4_key）
+        _regime_now = ((cf or {}).get('breakdown') or {}).get('_regime_v4_key') or ''
         _p0_reject  = False
         _p0_reason  = ''
 
