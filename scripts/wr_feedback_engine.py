@@ -43,20 +43,19 @@ MAX_STEP        = 0.15     # 单次最大调整步长
 MULT_FLOOR      = 0.10     # 乘数下限
 MULT_CEIL       = 2.00     # 乘数上限
 
-# 手写铁证乘数基准（来自regime_config.py，用于限制过度偏移）
-BASELINE_MULT = {
-    'BULL_TREND:LONG':      1.10,
-    'BULL_TREND:SHORT':     0.50,
-    'BEAR_TREND:LONG':      0.35,
-    'BEAR_TREND:SHORT':     1.60,
-    'BEAR_RECOVERY:LONG':   1.20,
-    'BEAR_RECOVERY:SHORT':  0.35,
-    'BULL_EARLY:LONG':      1.20,
-    'BULL_EARLY:SHORT':     0.35,
-    'CHOP_MID:LONG':        0.50,
-    'CHOP_MID:SHORT':       0.88,
-}
-MAX_DEVIATION = 0.40  # 允许偏离baseline最多±0.40
+# 手写铁证乘数基准已废除 [路线A 2026-09-26 苏摩111]
+# 根治双源: baseline改从 regime_config.REGIME_DIRECTION_ADVICE 导入（SSOT），
+# 死穴侧降权值 = 建议，中性侧 = 1.0。WRENGINE与runtime共享同一张表，永不再漂移。
+from pathlib import Path as _RP
+sys.path.insert(0, str(_RP(__file__).parent.parent / 'brahma_brain'))
+from regime_config import REGIME_DIRECTION_ADVICE as _ADVICE_SSOT
+
+BASELINE_MULT = {}
+for _reg, _dirs in _ADVICE_SSOT.items():
+    for _d, _v in _dirs.items():
+        BASELINE_MULT[f'{_reg}:{_d}'] = float(_v)
+# 未列出的体制×方向 baseline=1.0（中性，deviation钳制±0.40仍适用）
+MAX_DEVIATION = 0.40  # 允许偏离baseline最多±0.40（WR反哺放大上限=1.40）
 
 
 def wilson_ci_lower(n_win: int, n: int, z: float = 1.645) -> float:
@@ -108,9 +107,14 @@ def load_override() -> dict:
 
 
 def save_override(data: dict):
+    # [路线A 2026-09-26 苏摩111] 原子写: tmp+os.replace，防截断/竞态（9.13事故同根因）
+    import os
     data['_updated_at'] = datetime.now(timezone.utc).isoformat()
     data['_updated_date'] = datetime.now(timezone.utc).strftime('%Y-%m-%d')
-    OVERRIDE_FILE.write_text(json.dumps(data, indent=2))
+    tmp = str(OVERRIDE_FILE) + '.tmp'
+    with open(tmp, 'w') as f:
+        f.write(json.dumps(data, indent=2))
+    os.replace(tmp, str(OVERRIDE_FILE))
 
 
 def compute_new_override(matrix: dict) -> tuple[dict, list]:

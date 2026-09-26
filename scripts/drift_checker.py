@@ -91,12 +91,19 @@ def d4():
     return True, f"记录: brahma_os start_nav={v} (P2账本重建统一前仅观测)"
 
 
-@check("D5", "get_regime_mult 活性守卫: regime_config.py 必须定义且被 brahma_core 调用（防'废而未删'复发）")
+@check("D5", "get_regime_mult SSOT守卫: brahma_core只走regime_config，禁止override后门/内联矩阵复活（路线A 2026-09-26 苏摩111）")
 def d5():
     defined = _grep(r"def get_regime_mult", "brahma_brain/regime_config.py")
-    called = _grep(r"(_get_rm|get_regime_mult)[[:space:]]*\(", "brahma_brain/brahma_core.py")
-    ok = bool(defined) and bool(called)
-    return ok, f"定义={len(defined)}处 调用={len(called)}处"
+    info_defined = _grep(r"def get_regime_mult_info", "brahma_brain/regime_config.py")
+    called = _grep(r"get_regime_mult(_info)?[[:space:]]*\(", "brahma_brain/brahma_core.py")
+    # 守卫1: SSOT定义存在且被brahma_core调用
+    ok_ssot = bool(defined) and bool(called)
+    # 守卫2: brahma_core不得内联直读override文件（后门封印检测）
+    backdoor = _grep(r"regime_mult_override", "brahma_brain/brahma_core.py")
+    # 守卫3: trade_gateway不得内联乘数表（_REGIME_MULT = { 复活检测）
+    gateway_inline = _grep(r"_REGIME_MULT[[:space:]]*=", "scripts/trade_gateway.py")
+    ok = ok_ssot and not backdoor and not gateway_inline and bool(info_defined)
+    return ok, f"定义={len(defined)} 调用={len(called)} 后门残留={len(backdoor)} gateway内联表={len(gateway_inline)}"
 
 
 @check("D7", "命名劫持守卫: _path_guard不得预注册brahma_brain为非包模块（9.25 WARN风暴根因）")

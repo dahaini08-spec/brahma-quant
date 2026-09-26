@@ -149,25 +149,20 @@ def run(symbol: str, force_regime: bool = False, zone: dict = None) -> dict:
     _regime_label = _ms.get('regime', 'CHOP_MID')
     _trend = _ms.get('trend', {})
     _mom = _ms.get('momentum', {})
-    # 7体制乘数矩阵（与brahma_core对齐，设计院2026-06-14）
-    _REGIME_MULT = {
-        'BULL_TREND':     {'LONG': 1.5,  'SHORT': 0.5},
-        'BULL_EARLY':     {'LONG': 1.5,  'SHORT': 0.5},
-        'BULL_CORRECTION':{'LONG': 1.0,  'SHORT': 1.0},
-        'BEAR_TREND':     {'LONG': 0.0,  'SHORT': 1.5},  # LONG硬封禁 n=225623铁证
-        'BEAR_EARLY':     {'LONG': 0.5,  'SHORT': 1.5},
-        'BEAR_RECOVERY':  {'LONG': 0.95, 'SHORT': 0.4},  # LONG反直觉alpha WR=72.5%
-        'CHOP_HIGH':      {'LONG': 0.5,  'SHORT': 0.7},  # P2 2026-06-29: SHORT乘数0.5→0.7，按需放开
-        'CHOP_MID':       {'LONG': 0.5,  'SHORT': 0.7},  # P2 2026-06-29: SHORT乘数0.5→0.7，联动信号不漏
-        'CHOP_LOW':       {'LONG': 0.5,  'SHORT': 0.5},  # LOW低位震荡保持不变
-        'BREAKOUT':       {'LONG': 1.0,  'SHORT': 1.0},
-    }
+    # [路线A 2026-09-26 苏摩111] 内联乘数表已删除 → regime_config方向建议SSOT
+    # 旧表矛盾值(BULL_TREND LONG=1.5 vs 宪法1.10 / BEAR_TREND LONG=0.0 vs 矩阵0.35)清零，
+    # 统一语义: override新鲜→WR实盘值 / 过期→建议表降权 / 死穴侧0.35兑底（只降不升）
+    try:
+        from regime_config import get_regime_mult as _grm_ssot
+        _mult = {'LONG': round(_grm_ssot(sym, _regime_label, 'LONG'), 3),
+                 'SHORT': round(_grm_ssot(sym, _regime_label, 'SHORT'), 3)}
+    except Exception:
+        _mult = {'LONG': 0.85, 'SHORT': 0.85}
     _REGIME_CN = {
         'BULL_TREND':'牛市趋势','BULL_EARLY':'牛市初期','BULL_CORRECTION':'牛市回调',
         'BEAR_TREND':'熊市趋势','BEAR_EARLY':'熊市初期','BEAR_RECOVERY':'熊市反弹',
         'CHOP_HIGH':'高位震荡','CHOP_MID':'弱震荡','CHOP_LOW':'低位震荡',
     }
-    _mult = _REGIME_MULT.get(_regime_label, {'LONG': 0.85, 'SHORT': 0.85})
     _primary = 'BULL' if 'BULL' in _regime_label else ('BEAR' if 'BEAR' in _regime_label else 'CHOP')
     _bear_p = _ms.get('momentum',{}).get('rsi_1d', 50) / 100  # 近似值，仅用于显示
     _bull_p = 1.0 - _bear_p
@@ -218,6 +213,11 @@ def run(symbol: str, force_regime: bool = False, zone: dict = None) -> dict:
                 'decision': sel['decision']}
 
     # ── Step 4: Pre-Trade Engine 五关门控 ──
+    # [根因修复 2026-09-26 苏摩111] pre_trade_engine.py从未存在（幻影模块）→
+    # evaluate未定义NameError，signals非空即崩（HEAD既有bug，非本次改动引入）。
+    # 修复: evaluate作为可选注入点，None=跳过门控直接推送（与9.20 P0「score不做入场拦截」宪法一致）。
+    # 接入位置：未来五关门控真身实现后在此注入 evaluate 函数。
+    evaluate = None
     pushed = 0
     final_signals = []
 

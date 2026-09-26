@@ -279,18 +279,18 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     # _direction_block 永久废除 —— 封禁是懒人修复，降权是外科手术。
     _direction_block = False  # 永久保持False，历史遗留字段保留兼容性
 
-    # ── [V3-3 2026-09-17 苏摩111] 体制乘数矩阵已提取到 regime_config.py
-    # brahma_core只调用get_regime_mult()，不再内联矩阵（-156行）
+    # ── [V3-3 2026-09-17 苏摩111 → 路线A 2026-09-26] 体制乘数SSOT在regime_config
+    # brahma_core只调get_regime_mult_info()（含新鲜度门+override优先+建议表兑底）
     _sym_upper = (ms.get('symbol') or ms.get('sym') or '').upper()
     _is_long_signal = (signal_dir == 'LONG')
-    _matched_regime_key = None
+    _rm_src = 'fallback'
     try:
-        from regime_config import get_regime_mult as _get_rm
-        _rm_val = _get_rm(_sym_upper, _regime_upper, signal_dir)
-        if _rm_val is not None:
-            _regime_mult = _rm_val
+        from regime_config import get_regime_mult_info as _get_rm_info
+        _rm_val, _rm_src = _get_rm_info(_sym_upper, _regime_upper, signal_dir)
+        _regime_mult = _rm_val
     except Exception:
         _regime_mult = 0.85  # 安全fallback
+        _rm_src = 'fallback_error'
     # [9.25修复 苏摩111] 恢复_matched_regime_key赋值链（fe2183bc提取矩阵时被删）
     # 修复项：①P0体制专项过滤器(L2167 clobber)全灭 ②_regime_v4_key恒UNKNOWN
     #        ③L1484动态阈值boost表死查（BEAR_EARLY_LONG等负期望补偿门控失效）
@@ -345,23 +345,10 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     # 传递仓位乘数给position_sizer（不乘score）
     breakdown['_regime_position_cap'] = _regime_mult  # position_sizer读此字段控制仓位
 
-    # ── [9.15苏摩111 WR反馈闭环修复] 读取wr_feedback_engine的override ──
-    # wr_feedback_engine每日02:00跑，根据实盘WR写regime_mult_override.json
-    # 此处读取override，覆盖regime_mult，实现WR→权重→下次分析的自学习闭环
-    try:
-        import json as _json_rmo, os as _os_rmo
-        _rmo_path = _os_rmo.path.join(_os_rmo.path.dirname(_os_rmo.path.dirname(_os_rmo.path.abspath(__file__))), 'data', 'regime_mult_override.json')
-        if _os_rmo.path.exists(_rmo_path):
-            _rmo_data = _json_rmo.loads(open(_rmo_path).read())
-            _rmo_today = _rmo_data.get('_updated_date', '')
-            _rmo_mult = _rmo_data.get(_regime_upper, {}).get(signal_dir or 'LONG')
-            if _rmo_mult is not None and isinstance(_rmo_mult, (int, float)):
-                _regime_mult = float(_rmo_mult)
-                breakdown['_regime_mult'] = _regime_mult
-                breakdown['_regime_position_cap'] = _regime_mult
-                breakdown['_wr_override'] = f'WR反馈覆盖: {_regime_upper}|{signal_dir} → {_regime_mult:.3f} (updated={_rmo_today})'
-    except Exception as _e_rmo:
-        print(f"[WARN] brahma_core: {_e_rmo}", file=sys.stderr)
+    # ── [路线A 2026-09-26 苏摩111] override后门已封印，统一走regime_config SSOT ──
+    # 旧内联直读(_rmo_path)删除三宗罪: 无新鲜度门（wr引擎死→陈旧乘数永久生效）/
+    # 重复I/O / 绕过建议表兑底。get_regime_mult_info()内部已完整闭环。
+    breakdown['_wr_override'] = _rm_src
 
     # ── [v25.4 设计院封印] 硬封禁门控 — mult=0.00 后强制 score=0 ──────────
     # 防止：乘数为0但其他维度加分（s_research / T04奖励等）绕过封禁
@@ -1409,42 +1396,10 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         import sys as _v2_sys, os as _v2_os
         _v2_base = _v2_os.path.dirname(_v2_os.path.dirname(_v2_os.path.abspath(__file__)))
         if _v2_base not in _v2_sys.path: _v2_sys.path.insert(0, _v2_base)
-# from upgrade_v2.v2_integrator import v2_enhance_signal as _v2_enhance
-        _v2_result = _v2_enhance(
-            symbol    = _sym,
-            direction = signal_dir,
-            score     = float(cf.get('total', 0)),
-            ms        = ms,
-            breakdown = cf.get('breakdown', {}),
-            nav       = float(ms.get('nav', 127.62) or 127.62),
-            interval  = '1h',
-        )
-        # 写入 cf 供日志记录
-        cf['v2_audit']     = _v2_result.get('audit', {})
-        cf['v2_mode']      = _v2_result.get('mode', '')
-        cf['v2_mtf_note']  = _v2_result.get('mtf_note', '')
-        cf['v2_pos_pct']   = _v2_result.get('pos_pct', 0)
-        cf['v2_breakdown'] = _v2_result.get('breakdown_ext', {})
-
-        _globally_blocked = False  # [2026-09-12 苏摩111] V2不再硬封锁，改为降权
-        _v2_allowed = _v2_result.get('allowed', True)
-        if not _v2_allowed:
-            # v2 降权 → 评分减半，不归零，不封锁
-            _block_reason = _v2_result.get('block_reason', 'v2降权')
-            _v2_final_score = _v2_result.get('final_score', cf.get('total', 0))
-            cf['total']         = int(_v2_final_score * 0.5)  # 降权50%而非归零
-            cf['score_final']   = cf['total']
-            cf['kelly_mult']    = 0.5  # 降权而非归零
-            cf['v2_penalized']  = True
-            cf['v2_block_reason'] = _block_reason
-        else:
-            # v2 通过 → 更新评分和仓位
-            _v2_final_score = _v2_result.get('final_score', cf.get('total', 0))
-            if _v2_final_score != cf.get('total', 0):
-                pass  # [静默] f'[BrahmaBrain-v2] 📊 {_sym} 评分调整: {cf.get("total",0):.0f}→{_v2_final_score:.0f} 
-                cf['total'] = _v2_final_score
-            # 仓位由v2接管
-            cf['v2_pos_pct'] = _v2_result.get('pos_pct', 0)
+        # [设计院 2026-09-26 苏摩111] v2_integrator已移除，六层防线v2入口封印，防NameError污染state
+        # 根因：原L1412 import被注释但_v2_enhance调用仍在 → NameError → except把v2_error写进cf污染live state
+        # 处置：调用+下游赋值整体封印；_globally_blocked=False在封印块外（L1406默认值）保持不变
+        pass
     except Exception as _v2_err:
         # v2失败降级，不影响原有流程
         _v2_err_str = str(_v2_err)

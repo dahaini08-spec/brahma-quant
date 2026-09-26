@@ -190,11 +190,10 @@ def fast_regime_refresh(sym: str):
     }
     signal_path.write_text(json.dumps(signal, ensure_ascii=False))
 
-    # [P2-5修复 2026-09-23 苏摩111] 回写confirmed（regime_state.json自愈）
-    # 根因：9.13文件损坏重建后BTC/ETH条目只有'regime'没有'confirmed'，
-    # Step4权重查询（P0-1修复后）读confirmed会拿到空→回退bs.regime
-    # 现在每次快速感知都回写confirmed，文件损坏自愈+字段永远新鲜
+    # [路线A 2026-09-26 苏摩111] 回写confirmed（regime_state.json自愈）改原子写
+    # 旧write_text直写在并发read-modify-write下有截断/丢更新风险（9.13损坏事故同根因）
     try:
+        import os as _os
         _rs = load_json(DATA / 'regime_state.json')
         _rs_entry = _rs.get(usdt, {})
         if isinstance(_rs_entry, dict):
@@ -212,7 +211,10 @@ def fast_regime_refresh(sym: str):
                 _rs_entry['confirmed'] = new_regime
             _rs_entry['confirmed_ts'] = time.time()
             _rs[usdt] = _rs_entry
-            (DATA / 'regime_state.json').write_text(json.dumps(_rs, ensure_ascii=False))
+            _rs_tmp = str(DATA / 'regime_state.json') + '.tmp'
+            with open(_rs_tmp, 'w') as _rs_f:
+                _rs_f.write(json.dumps(_rs, ensure_ascii=False))
+            _os.replace(_rs_tmp, str(DATA / 'regime_state.json'))
     except Exception as _rse:
         print(f'[regime_realtime] confirmed回写失败: {_rse}', file=sys.stderr)
 

@@ -1,73 +1,107 @@
 """
-regime_config.py — 梵天体制×方向仓位上限矩阵 SSOT
+regime_config.py — 梵天体制×方向 SSOT（方向建议 + WR反哺override统一入口）
 设计院 2026-08-24 从brahma_core.py提取封印
 [Phase C 2026-09-13] 乘数定位变更: 不再乘score → 只作为仓位上限
+[路线A 2026-09-26 苏摩111] 体制链审计终版裁决:
+  - 删除三套死矩阵(DEFAULT/BTC/ETH) + ALTCOIN矩阵（9.20 P0改革后恒1.0死代码）
+  - 宪法语义改为「方向建议」：只保留 <1.0 的降权铁证（BEAR做多/BULL做空等死穴侧）
+  - WR反哺override统一由 get_regime_mult() 收口（新鲜优先→建议表降权兜底）
+  - 新鲜度门: _updated_date != 今日UTC → override作废，走兜底（防wr引擎死亡后陈旧乘数永久生效）
 
-职责: 集中管理所有体制仓位上限配置，brahma_core.py通过 get_regime_mult() 调用
-好处: 更新乘数不需要改动核心评分逻辑，热更新友好
-
+职责: brahma_core / trade_gateway 的体制方向唯一乘数来源（SSOT）
 调用方式:
-    from regime_config import get_regime_mult
-    _regime_mult = get_regime_mult(symbol, regime, signal_dir)
+    from regime_config import get_regime_mult_info
+    _mult, _src = get_regime_mult_info(symbol, regime, signal_dir)
+
+语义（路线A封印）:
+    1. override新鲜（今日UTC写入）→ 用WR实盘值（9.25三方修复后的现行宪法）
+    2. override缺失/过期 → 建议表降权值或1.0中性（只降权不放大；WR引擎死亡时绝不裸奔）
+    3. 未知体制 → 0.85 保守降权
+    放大（>1.0）只可能来自WR反哺实盘数据，永不来自静态建议表
 """
 
-# ── 通用矩阵（默认，适用非BTC/ETH标的）──────────────────────────────────────
-# 格式: (SHORT乘数, LONG乘数)
-REGIME_MULT_DEFAULT = {
-    'BEAR_TREND':    (1.50,  0.35),   # SHORT S+级WR=71.8% n=2413 | LONG极端降权0.35×
-    'BEAR_EARLY':    (1.15,  0.35),   # SHORT强Alpha WR=66.5% | LONG降权0.35x WR=50.4%
-    'BEAR_RECOVERY': (0.35,  1.20),   # LONG=反直觉alpha WR=72.5% | SHORT极端降权
-    'BULL_TREND':    (0.50,  1.10),   # LONG正alpha WR=70.3% | SHORT死穴WR=47.7%
-    'BULL_EARLY':    (0.35,  1.20),   # LONG S级WR=64.4% | SHORT降权0.35x
-    'BULL_CORRECTION':(1.10, 0.65),   # SHORT强，LONG样本不足
-    'BULL_PEAK':     (1.00,  0.75),
-    'BULL_BREAK':    (1.00,  0.75),
-    'BEAR_CRASH':    (0.90,  0.65),   # 极端体制，两向均降权
-    'CHOP':          (0.88,  0.50),   # SHORT解锁0.88x EV=+0.37%/笔 | LONG=0.5x
-    'CHOP_HIGH':     (0.80,  0.50),
-    'CHOP_MID':      (0.88,  0.50),   # CHOP_MID SHORT解锁0.88x WR=57.3%铁证
-    'CHOP_LOW':      (0.88,  0.50),
-    'CHOP_RANGE_DISCOUNT': (0.50,  1.20),  # 区间底部做多 LONG=1.20x WR=70.0% n=120
-    'CHOP_RANGE_PREMIUM':  (1.10,  0.35),  # 区间顶部做空 SHORT=1.10x WR=61.3% n=163
-}
+import json as _json
+from pathlib import Path as _Path
+from datetime import datetime as _dt, timezone as _tz
+import sys
 
-# ── BTC专属矩阵（达摩院v4.0铁证）──────────────────────────────────────────────
-REGIME_MULT_BTC = {
-    'BEAR_TREND':    (1.60,  0.35),   # BTC SHORT WR=72% S+级
-    'BEAR_EARLY':    (1.20,  0.35),   # BTC SHORT WR=68% S级
-    'BEAR_RECOVERY': (0.35,  1.25),   # BTC LONG WR=77.6%
-    'BULL_TREND':    (0.50,  1.20),   # LONG S级alpha WR=70.5% | SHORT死穴WR=48.2%
-    'BULL_EARLY':    (0.35,  1.20),   # BTC BULL_EARLY LONG WR=64.6%
-    'BULL_CORRECTION':(1.20, 0.60),
-    'BULL_PEAK':     (1.05,  0.70),
-    'BULL_BREAK':    (1.08,  0.65),
-    'BEAR_CRASH':    (0.75,  0.60),
-    'CHOP':          (0.88,  0.50),   # BTC CHOP SHORT WR=57.3% EV=+0.365%/笔
-    'CHOP_HIGH':     (0.80,  0.50),
-    'CHOP_MID':      (0.88,  0.50),
-    'CHOP_LOW':      (0.88,  0.50),
-    'CHOP_RANGE_DISCOUNT': (0.50,  1.20),
-    'CHOP_RANGE_PREMIUM':  (1.10,  0.35),
-}
+_OVERRIDE_FILE = _Path(__file__).parent.parent / 'data' / 'regime_mult_override.json'
 
-# ── ETH专属矩阵（达摩院v4.0铁证）──────────────────────────────────────────────
-REGIME_MULT_ETH = {
-    'BEAR_TREND':    (1.60,  0.35),   # ETH SHORT WR=74% S+级
-    'BEAR_EARLY':    (1.20,  0.35),   # ETH SHORT WR=70% S级
-    'BEAR_RECOVERY': (0.35,  1.15),   # ETH LONG WR=67.1%
-    'BULL_TREND':    (0.50,  1.30),   # LONG最强alpha WR=70.0% | SHORT死穴WR=47.1%
-    'BULL_EARLY':    (0.35,  1.10),   # ETH BULL_EARLY LONG WR=64.2%
-    'BULL_CORRECTION':(1.02, 0.60),
-    'BULL_PEAK':     (1.05,  0.70),
-    'BULL_BREAK':    (1.10,  0.75),
-    'BEAR_CRASH':    (0.75,  0.60),
-    'CHOP':          (0.88,  0.50),   # ETH CHOP SHORT WR=57.5% EV=+0.375%/笔
-    'CHOP_HIGH':     (0.80,  0.50),
-    'CHOP_MID':      (0.88,  0.50),
-    'CHOP_LOW':      (0.88,  0.50),
-    'CHOP_RANGE_DISCOUNT': (0.50,  1.20),
-    'CHOP_RANGE_PREMIUM':  (1.10,  0.35),
+# ── 方向建议表（宪法语义：死穴侧降权，只降不升）─────────────────────────────
+# 覆盖 market_state 全部14体制。放大侧（旧矩阵×1.1~1.6）已按9.20 P0宪法中性化=1.0。
+REGIME_DIRECTION_ADVICE = {
+    'BEAR_TREND':     {'LONG': 0.35},            # LONG死穴 WR=44.6% n=225623
+    'BEAR_EARLY':     {'LONG': 0.35},            # LONG降权 WR=50.4%
+    'BEAR_RECOVERY':  {'SHORT': 0.35},           # SHORT严禁（宪法+WR=0%封禁）
+    'BULL_TREND':     {'SHORT': 0.50},           # SHORT死穴 WR=48.2%
+    'BULL_EARLY':     {'SHORT': 0.35},           # SHORT降权
+    'BULL_CORRECTION':{'LONG': 0.65},            # LONG样本不足降权
+    'BULL_PEAK':      {'LONG': 0.75},
+    'BULL_BREAK':     {'LONG': 0.75},
+    'BEAR_CRASH':     {'SHORT': 0.90, 'LONG': 0.65},   # 极端体制两向降权
+    'CHOP':           {'LONG': 0.50},
+    'CHOP_HIGH':      {'SHORT': 0.80, 'LONG': 0.50},
+    'CHOP_MID':       {'LONG': 0.50},            # SHORT 0.88解锁→中性1.0（WR=57.3%铁证）
+    'CHOP_LOW':       {'SHORT': 0.88, 'LONG': 0.50},
+    'CHOP_RANGE_DISCOUNT': {'SHORT': 0.50},
+    'CHOP_RANGE_PREMIUM':  {'LONG': 0.35},
+    'MOMENTUM_BULL':  {'SHORT': 0.50},           # 动量上行做空降权（无做多铁证，不放大）
+    'MOMENTUM_STRONG':{'SHORT': 0.50},
+    'BREAKOUT':       {},                        # 突破体制双向中性1.0
 }
+# 注意: 表中未列出的体制×方向 = 1.0中性（建议表只写降权侧，防宪法语义漂移）
+
+_FALLBACK_MULT = 0.85  # 未知体制，保守降权
+
+
+# ── WR反哺Override（P2 2026-09-03 苏摩111 / 9.25嵌套格式统一）───────────────
+# 每日02:00由 scripts/wr_feedback_engine.py 原子写入 data/regime_mult_override.json
+# 格式: {"BULL_TREND": {"LONG": 0.95}, "_updated_date": "2026-09-26", ...}
+# 新鲜度门: _updated_date != 今日UTC → 视为过期，走建议表兜底
+def _load_override_fresh() -> dict:
+    """读取override，含新鲜度校验。返回: {REGIME: {DIR: mult}} 或 {}（过期/缺失/损坏）"""
+    try:
+        if not _OVERRIDE_FILE.exists():
+            return {}
+        data = _json.loads(_OVERRIDE_FILE.read_text())
+        updated = data.get('_updated_date', '')
+        today = _dt.now(_tz.utc).strftime('%Y-%m-%d')
+        if updated != today:
+            return {}
+        # 只保留嵌套dict结构（平铺legacy键已在9.25被wr引擎清理，此处防御）
+        return {k: v for k, v in data.items()
+                if not k.startswith('_') and isinstance(v, dict)}
+    except Exception as _e:
+        print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+        return {}
+
+
+def get_regime_mult_info(symbol: str, regime: str, signal_dir: str) -> tuple:
+    """
+    返回 (mult, source)。source: override_fresh | advice_fallback | neutral | unknown_regime
+    symbol保留在签名中兼容下游（WR反哺为全局矩阵，方仓标的专属化是后续P2）。
+    """
+    regime_upper = (regime or '').upper()
+    direction = (signal_dir or 'LONG').upper()
+    override = _load_override_fresh()
+    ov_regime = override.get(regime_upper)
+    if isinstance(ov_regime, dict):
+        ov = ov_regime.get(direction)
+        if isinstance(ov, (int, float)):
+            return float(ov), 'override_fresh'
+    dirs = REGIME_DIRECTION_ADVICE.get(regime_upper)
+    if dirs is None:
+        return _FALLBACK_MULT, 'unknown_regime'
+    v = dirs.get(direction)
+    if v is not None:
+        return float(v), 'advice_fallback'
+    return 1.0, 'neutral'
+
+
+def get_regime_mult(symbol: str, regime: str, signal_dir: str) -> float:
+    """统一入口（SSOT）：override新鲜 → WR实盘值；过期/缺失 → 建议表降权兜底"""
+    return get_regime_mult_info(symbol, regime, signal_dir)[0]
+
 
 # ── [2026-08-30 苏摩111] ETH订单流维度权重放大系数 ──────────────────────────
 # 铁证：arXiv ETH订单流论文 — ETH盘口状态依赖性比BTC强，CVD信号更可靠
@@ -87,87 +121,3 @@ def get_order_flow_mult(symbol: str) -> float:
     elif 'BTC' in sym_upper:
         return ORDER_FLOW_MULT['BTCUSDT']
     return ORDER_FLOW_MULT['DEFAULT']
-
-# ── 山寨币专属矩阵（达摩院离线回放 5标的 2020~2026）──────────────────────────
-REGIME_MULT_ALTCOIN = {
-    'SOLUSDT': {
-        'BEAR_TREND':     (0.75, 0.28),  # SHORT n=28 WR=53.6%  | LONG n=20 WR=20.0%
-        'BEAR_EARLY':     (0.58, 0.35),
-        'BULL_EARLY':     (0.35, 0.56),
-        'BULL_TREND':     (0.35, 0.28),
-        'BEAR_RECOVERY':  (0.35, 0.80),
-        'BULL_CORRECTION':(0.60, 0.35),
-        'CHOP': (0.50,0.50), 'CHOP_HIGH': (0.50,0.50),
-        'CHOP_MID': (0.50,0.50), 'CHOP_LOW': (0.55,0.55),
-    },
-    'NEARUSDT': {
-        'BEAR_TREND':     (0.70, 0.35),
-        'BEAR_EARLY':     (0.57, 0.35),
-        'BULL_EARLY':     (0.35, 0.58),
-        'BULL_TREND':     (0.35, 0.81),
-        'BEAR_RECOVERY':  (0.35, 0.80),
-        'BULL_CORRECTION':(0.60, 0.35),
-        'CHOP': (0.50,0.50), 'CHOP_HIGH': (0.50,0.50),
-        'CHOP_MID': (0.50,0.50), 'CHOP_LOW': (0.55,0.55),
-    },
-    'MANAUSDT': {
-        'BEAR_TREND':     (0.35, 0.35),
-        'BEAR_EARLY':     (0.59, 0.35),
-        'BULL_EARLY':     (0.35, 0.51),
-        'BULL_TREND':     (0.35, 0.55),
-        'BEAR_RECOVERY':  (0.35, 0.70),
-        'BULL_CORRECTION':(0.50, 0.35),
-        'CHOP': (0.50,0.50), 'CHOP_HIGH': (0.50,0.50),
-        'CHOP_MID': (0.50,0.50), 'CHOP_LOW': (0.55,0.55),
-    },
-    'AXSUSDT': {
-        'BEAR_TREND':     (0.46, 0.35),
-        'BEAR_EARLY':     (0.55, 0.35),
-        'BULL_EARLY':     (0.35, 0.50),
-        'BULL_TREND':     (0.35, 0.50),
-        'BEAR_RECOVERY':  (0.35, 0.70),
-        'BULL_CORRECTION':(0.50, 0.35),
-        'CHOP': (0.50,0.50), 'CHOP_HIGH': (0.50,0.50),
-        'CHOP_MID': (0.50,0.50), 'CHOP_LOW': (0.55,0.55),
-    },
-    'GALAUSDT': {
-        'BEAR_TREND':     (0.70, 0.35),
-        'BEAR_EARLY':     (0.57, 0.35),
-        'BULL_EARLY':     (0.35, 0.51),
-        'BULL_TREND':     (0.35, 0.50),
-        'BEAR_RECOVERY':  (0.35, 0.70),
-        'BULL_CORRECTION':(0.55, 0.35),
-        'CHOP': (0.50,0.50), 'CHOP_HIGH': (0.50,0.50),
-        'CHOP_MID': (0.50,0.50), 'CHOP_LOW': (0.55,0.55),
-    },
-}
-
-_FALLBACK_MULT = 0.85  # 未知体制，保守降权
-
-
-# ── WR反哺Override（P2 2026-09-03 苏摩111）──────────────────────────────────
-# 每日由 scripts/wr_feedback_engine.py 写入 data/regime_mult_override.json
-# 格式: {"BULL_TREND:LONG": 1.15, "BEAR_TREND:SHORT": 1.62, ...}
-# 只覆盖统计显著(n>=30)且偏差>0.1的组合，其余保持手写铁证值
-import json as _json
-from pathlib import Path as _Path
-import sys
-
-_OVERRIDE_FILE = _Path(__file__).parent.parent / 'data' / 'regime_mult_override.json'
-
-def _load_override() -> dict:
-    """load override"""
-    try:
-        if _OVERRIDE_FILE.exists():
-            return _json.loads(_OVERRIDE_FILE.read_text())
-    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-    return {}
-
-
-def get_regime_mult(symbol: str, regime: str, signal_dir: str) -> float:
-    """
-    统一入口：根据标的、体制、方向返回乘数
-    [P0改革 2026-09-20 苏摩111] 体制乘数已废除，返回1.0中性值
-    保留函数签名供 brahma_core.position_sizer 等模块兼容调用
-    """
-    return 1.0
