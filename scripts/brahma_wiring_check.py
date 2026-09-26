@@ -211,8 +211,8 @@ def main(fix: bool = False):
     # 运行一次分析获取结果
     print('🔄 运行梵天分析获取输出...')
     try:
-# 模块不存在，已注释
-# from brahma_brain import brahma_core
+        # [9.26修复 2026-09-26 苏摩111] fa5bb68d机械替换误杀：模块一直存在，恢复注入
+        from brahma_brain import brahma_core
         result = brahma_core.analyze('BTCUSDT', signal_dir='SHORT')
         print(f'   score={result.get("score_final", 0):.1f} regime={result.get("regime")}\n')
     except Exception as e:
