@@ -55,7 +55,9 @@ for _reg, _dirs in _ADVICE_SSOT.items():
     for _d, _v in _dirs.items():
         BASELINE_MULT[f'{_reg}:{_d}'] = float(_v)
 # 未列出的体制×方向 baseline=1.0（中性，deviation钳制±0.40仍适用）
-MAX_DEVIATION = 0.40  # 允许偏离baseline最多±0.40（WR反哺放大上限=1.40）
+# [9.26封印] 与SSOT「只降不升」对齐：WR反哺只能下调乘数（放大上限=baseline本身），
+# 下调仍允许到baseline-0.40。正向偏离（>baseline）一律钳回baseline。
+MAX_DEVIATION = 0.40  # 下调偏离下限=baseline-0.40（WR反哺最低=0.6×baseline）
 
 
 def wilson_ci_lower(n_win: int, n: int, z: float = 1.645) -> float:
@@ -185,8 +187,9 @@ def compute_new_override(matrix: dict) -> tuple[dict, list]:
         # 对比baseline，限制偏离
         regime_dir_key = f'{regime}:{direction}'
         baseline = BASELINE_MULT.get(regime_dir_key, 1.0)
+        # [9.26封印] 单边化：只降不升——new_mult>baseline时钳回baseline
         new_mult = max(baseline - MAX_DEVIATION,
-                      min(baseline + MAX_DEVIATION, new_mult))
+                      min(baseline, new_mult))
 
         # 限制单次调整步长（⑥嵌套格式读取上次override）
         _prev_regime = current_override.get(regime)
