@@ -1,1 +1,1 @@
-{"total_lines": 64446, "total_funcs": 1170, "total_classes": 25, "avg_complexity": 0, "large_modules": ["battlefield_intel.py(605L)", "brahma_360.py(918L)", "brahma_analysis_runner.py(1661L)", "brahma_bus.py(671L)", "brahma_core.py(3315L)"], "module_count": 128}
+{"total_lines": 66077, "total_funcs": 1215, "total_classes": 25, "avg_complexity": 0, "large_modules": ["battlefield_intel.py(605L)", "brahma_360.py(918L)", "brahma_analysis_runner.py(1632L)", "brahma_bus.py(671L)", "brahma_core.py(3328L)"], "module_count": 133}

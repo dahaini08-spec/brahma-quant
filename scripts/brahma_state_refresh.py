@@ -205,6 +205,17 @@ def main():
 
                 print(f'[state_refresh] {sym} {direction}: action={action} reason={reason[:60]}')
 
+                # [entry-SSOT P0-2 2026-09-26 苏摩111] 决策块写入per-symbol state顶层
+                # P2 battlefield_auto_analysis 优先读 state['decision']，回退state顶层
+                _state_obj = all_states.get(sym)
+                if isinstance(_state_obj, dict):
+                    _state_obj['decision'] = {
+                        'action': action,
+                        'reason': str(reason)[:160],
+                        'direction': direction,
+                        'ts': now_iso,
+                    }
+
                 if action not in ('EXECUTE', 'WAIT_15M'):
                     continue
 
@@ -248,9 +259,26 @@ def main():
                 sl_pct    = ep.get('sl_pct', 2.0)
                 rr        = ep.get('rr', 0)
 
-                # entry区间：在当前价附近±0.3%
-                entry_lo = round(price_now * (0.997 if direction == 'LONG' else 1.000), 2)
-                entry_hi = round(price_now * (1.000 if direction == 'LONG' else 1.003), 2)
+                # [entry-SSOT P0-2 2026-09-26 苏摩111] entry区间优先读decision_engine entry_plan结构位
+                # 根因：L252-253 ±0.3%硬编码与决策层entry_plan脱节（SSOT断裂）
+                # 修复：ep有entry_lo/entry_hi用决策层结构位；无字段才fallback ±0.3%，entry_source='hardcoded_fallback'
+                _ep_lo, _ep_hi = ep.get('entry_lo'), ep.get('entry_hi')
+                if _ep_lo and _ep_hi and _ep_lo > 0 and _ep_hi > 0:
+                    entry_lo = round(float(_ep_lo), 2)
+                    entry_hi = round(float(_ep_hi), 2)
+                    entry_source = str(ep.get('entry_source', 'decision_engine'))
+                else:
+                    entry_lo = round(price_now * (0.997 if direction == 'LONG' else 1.000), 2)
+                    entry_hi = round(price_now * (1.000 if direction == 'LONG' else 1.003), 2)
+                    entry_source = 'hardcoded_fallback'
+
+                # [entry-SSOT P0-2 2026-09-26 苏摩111] 决策字段展开写state顶层（signal消费方统一从state读）
+                _state_obj = all_states.get(sym)
+                if isinstance(_state_obj, dict):
+                    _state_obj['entry_lo'] = entry_lo
+                    _state_obj['entry_hi'] = entry_hi
+                    _state_obj['stop_loss'] = round(float(sl_price), 2) if sl_price else None
+                    _state_obj['entry_source'] = entry_source
 
                 sig = {
                     'signal_id':   f'{sym}_{direction}_{int(now_ts)}',

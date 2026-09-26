@@ -872,15 +872,35 @@ def _calc_oi_strategy(r: dict) -> dict:
     else:  # SHORT
         sl_pct = 0.025 if 'BULL' in regime.upper() or 'CHOP' in regime.upper() else 0.020
 
-    # ── 入场区间（当前价±0.3%，避免追高） ────────────────────
-    entry_lo = round(price * 0.997, 6)
-    entry_hi = round(price * 1.003, 6)
+    # ── 入场区间（结构位推导优先，fallback ±0.3%） ────────────────
+    # [entry-SSOT P0-1 2026-09-26 苏摩111] ±0.3%硬编码 → smc_state FVG/OB结构位 > ATR fallback
+    _entry_src = 'atr_fallback'
+    _zone_lo = _zone_hi = None
+    _struct_sl = None
+    try:
+        import sys as _es
+        _es.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        from brahma_brain.brahma_decision_engine import _get_entry_zone as _gez
+        _zone_lo, _zone_hi, _entry_src, _struct_sl = _gez(
+            str(r.get('symbol', '')), str(direction), price)
+    except Exception:
+        _zone_lo = _zone_hi = None
+        _entry_src = 'atr_fallback'
+    if _zone_lo and _zone_hi and _zone_lo > 0 and _zone_hi > 0:
+        entry_lo = round(_zone_lo, 6)
+        entry_hi = round(_zone_hi, 6)
+        # 结构SL锚点：LONG用区间下沿，SHORT用区间上沿
+        _struct_anchor = _zone_lo if direction == 'LONG' else _zone_hi
+    else:
+        entry_lo = round(price * 0.997, 6)
+        entry_hi = round(price * 1.003, 6)
+        _struct_anchor = None
 
     # ── 止损价 ────────────────────────────────────────────────
     if direction == 'LONG':
-        sl_price = round(entry_lo * (1 - sl_pct), 6)
+        sl_price = round(_struct_anchor * (1 - sl_pct), 6) if _struct_anchor else round(entry_lo * (1 - sl_pct), 6)
     else:
-        sl_price = round(entry_hi * (1 + sl_pct), 6)
+        sl_price = round(_struct_anchor * (1 + sl_pct), 6) if _struct_anchor else round(entry_hi * (1 + sl_pct), 6)
 
     # ── RR & TP（宪法：BEAR做空RR=1.0 / 其他RR=1.5-2.0） ────
     exec_p = OI_EXEC_PARAMS.get(mode + ('_BULL' if 'BULL' in regime.upper() else
@@ -951,6 +971,7 @@ def _calc_oi_strategy(r: dict) -> dict:
 
     return {
         'entry_lo':  entry_lo, 'entry_hi':  entry_hi,
+        'entry_source': _entry_src,
         'sl_price':  sl_price, 'sl_pct':    round(sl_pct*100, 1),
         'tp1':       tp1,       'tp2':       tp2,
         'rr':        rr,        'lev':       lev,

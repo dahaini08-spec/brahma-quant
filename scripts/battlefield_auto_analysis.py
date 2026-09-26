@@ -191,6 +191,31 @@ if __name__ == '__main__':
                 ssot_signals = []
         if ssot_signals:
             try:
+                # [entry-SSOT P2 2026-09-26 苏摩111] ssot_signals读决策层
+                # state['decision']字段优先 → 回退state顶层（entry四字段）
+                # 决策层action非ENTER系 = 被唯一裁判否决，不入队
+                _enriched = 0
+                for _sig in ssot_signals:
+                    try:
+                        _sym0 = str(_sig.get('symbol', '')).replace('USDT', '').replace('usdt', '').lower()
+                        _sp = BASE / 'data' / f'brahma_state_{_sym0}.json'
+                        if not _sp.exists():
+                            continue
+                        _st = json.loads(_sp.read_text())
+                        _dec = _st.get('decision') if isinstance(_st.get('decision'), dict) else {}
+                        _dec_act = str(_dec.get('action', '') or '').upper()
+                        if _dec_act:
+                            _sig['action'] = _dec_act
+                        for _k in ('entry_lo', 'entry_hi', 'stop_loss', 'entry_source'):
+                            _v = _dec.get(_k) if _dec.get(_k) is not None else _st.get(_k)
+                            if _v is not None and _sig.get(_k) is None:
+                                _sig[_k] = _v
+                        _enriched += 1
+                    except Exception:
+                        continue
+                ssot_signals = [s for s in ssot_signals
+                                if str(s.get('action', '')).upper().startswith('ENTER')]
+                print(f'[auto_analysis] 决策层富化{_enriched}条，剩{len(ssot_signals)}条ENTER系')
                 sq = []
                 if SQ_PATH.exists():
                     _old = json.loads(SQ_PATH.read_text())

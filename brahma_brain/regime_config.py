@@ -28,28 +28,22 @@ import sys
 _OVERRIDE_FILE = _Path(__file__).parent.parent / 'data' / 'regime_mult_override.json'
 
 # ── 方向建议表（宪法语义：死穴侧降权，只降不升）─────────────────────────────
-# 覆盖 market_state 全部14体制。放大侧（旧矩阵×1.1~1.6）已按9.20 P0宪法中性化=1.0。
+# [词汇表收敛P2 2026-09-26 苏摩111] 18体制收敛→6体制：
+# 保留 = watcher5体制(HMM4∪BREAKOUT) ∪ BULL_EARLY（SCORE_GATE消费方）；
+# 删12行 = 无生产者体制（watcher5∪HMM4=6体制之外）。未知体制走 _FALLBACK_MULT=0.85。
+# ⚠️ DIRECTION_GATE/SCORE_GATE 门控表不动（独立表，键覆盖不受本收敛影响）。
 REGIME_DIRECTION_ADVICE = {
     'BEAR_TREND':     {'LONG': 0.35},            # LONG死穴 WR=44.6% n=225623
     'BEAR_EARLY':     {'LONG': 0.35},            # LONG降权 WR=50.4%
-    'BEAR_RECOVERY':  {'SHORT': 0.35},           # SHORT严禁（宪法+WR=0%封禁）
+    'BEAR_RECOVERY':  {'SHORT': 0.35},           # SHORT高证据标准（DIRECTION_GATE needs_event）
     'BULL_TREND':     {'SHORT': 0.50},           # SHORT死穴 WR=48.2%
     'BULL_EARLY':     {'SHORT': 0.35},           # SHORT降权
-    'BULL_CORRECTION':{'LONG': 0.65},            # LONG样本不足降权
-    'BULL_PEAK':      {'LONG': 0.75},
-    'BULL_BREAK':     {'LONG': 0.75},
-    'BEAR_CRASH':     {'SHORT': 0.90, 'LONG': 0.65},   # 极端体制两向降权
-    'CHOP':           {'LONG': 0.50},
-    'CHOP_HIGH':      {'SHORT': 0.80, 'LONG': 0.50},
     'CHOP_MID':       {'LONG': 0.50},            # SHORT 0.88解锁→中性1.0（WR=57.3%铁证）
-    'CHOP_LOW':       {'SHORT': 0.88, 'LONG': 0.50},
-    'CHOP_RANGE_DISCOUNT': {'SHORT': 0.50},
-    'CHOP_RANGE_PREMIUM':  {'LONG': 0.35},
-    'MOMENTUM_BULL':  {'SHORT': 0.50},           # 动量上行做空降权（无做多铁证，不放大）
-    'MOMENTUM_STRONG':{'SHORT': 0.50},
-    'BREAKOUT':       {},                        # 突破体制双向中性1.0
 }
-# 注意: 表中未列出的体制×方向 = 1.0中性（建议表只写降权侧，防宪法语义漂移）
+# [词汇表收敛P2 2026-09-26 苏摩111] 12个无生产者体制行删除（watcher5∪HMM4=6体制）；
+# 删除行: BULL_CORRECTION/BULL_PEAK/BULL_BREAK/BEAR_CRASH/CHOP/CHOP_HIGH/CHOP_LOW/
+#         CHOP_RANGE_DISCOUNT/CHOP_RANGE_PREMIUM/MOMENTUM_BULL/MOMENTUM_STRONG/BREAKOUT
+# 未知体制走 _FALLBACK_MULT=0.85
 
 _FALLBACK_MULT = 0.85  # 未知体制，保守降权
 
@@ -79,11 +73,17 @@ SCORE_GATE = {
     'BEAR_TREND:LONG':  {'min_score': 140, 'min_samples': 14, 'note': '死亡区间执法点，n<30→半开门，可被新样本推翻'},
     'CHOP_MID:LONG':    {'min_score': 110, 'min_samples': 0,  'note': '宪法CHOP禁单语义→110'},
     'CHOP_MID:SHORT':   {'min_score': 100, 'min_samples': 0,  'note': 'WR57.3%铁证中性'},
+    # ── P1-2接线 2026-09-26 苏摩111：内联boost迁移（单源化，原brahma_core._DYNAMIC_THRESHOLD_BOOST）
+    'BEAR_EARLY:LONG':  {'min_score': 118, 'min_samples': 0,  'note': '内联boost+18迁移(WR=50.4% n>6000)'},
+    'BULL_EARLY:SHORT': {'min_score': 118, 'min_samples': 0,  'note': '内联boost+18迁移(WR=51.9% n>6000)'},
+    'CHOP:LONG':        {'min_score': 108, 'min_samples': 0,  'note': '内联boost+8迁移(WR=56%)'},
+    'CHOP_LOW:LONG':    {'min_score': 105, 'min_samples': 0,  'note': '内联boost+5迁移'},
     # ── TIER级锁（P1-3 STATIC_LOCK合并 2026-09-26 苏摩111）───────
     # locked=True = 动态WR反哺不许改写（原STATIC_LOCK语义），score门语义保留
     'CHOP_MID:LONG:155+':      {'min_score': 155, 'min_samples': 0, 'locked': True, 'note': '原STATIC_LOCK: 死穴永久封禁'},
     'BEAR_TREND:LONG:155+':    {'min_score': 155, 'min_samples': 0, 'locked': True, 'note': '原STATIC_LOCK: 逆势死亡区'},
     'BEAR_TREND:LONG:140-154': {'min_score': 140, 'min_samples': 0, 'locked': True, 'note': '原STATIC_LOCK: 逆势极危'},
+    'BULL_TREND:LONG:140-154': {'min_score': 140, 'min_samples': 14, 'locked': True, 'note': 'WR=1.3% n=74(120~154实盘) SL≥3%触发'},
 }
 _SCORE_GATE_DEFAULT = {'min_score': 100, 'min_samples': 0, 'note': '默认门'}
 

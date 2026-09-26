@@ -231,6 +231,116 @@ def _get_15m_struct_sl(symbol: str, direction: str, current_price: float) -> flo
         return 1.5
 
 
+# [entry-SSOT P0-1 2026-09-26 苏摩111] 挂单区推导 + SL铁律对齐
+# SL铁律：SHORT SL=挂单区上沿×1.02~1.025 / LONG SL=下沿×0.98；SL距离≥1.5×ATR1H（ETH≥$37.5/BTC≥$825取大者）
+_SYMBOL_MIN_SL_ABS = {'ETHUSDT': 37.5, 'BTCUSDT': 825.0}
+
+def _get_atr_1h_abs(symbol: str, price: float) -> float:
+    """1H ATR绝对值（美元），复用_get_atr_1h()的百分比结果"""
+    _pct = _get_atr_1h(symbol)
+    if not _pct or not price:
+        return 0.0
+    return abs(price) * _pct / 100.0
+
+
+def _get_entry_zone(symbol: str, direction: str, current_price: float) -> tuple:
+    """
+    从smc_state结构数据推导挂单区（entry_lo/entry_hi/entry_source）。
+    优先级：smc_state的FVG中点/OB边界 > 15m摆动位 > fallback price±0.15%。
+    返回 (entry_lo, entry_hi, entry_source, struct_sl_price or None)
+    """
+    import json as _json
+    from pathlib import Path as _P
+    try:
+        _p = _P(__file__).parent.parent / 'data' / f'brahma_state_{symbol.lower().replace("usdt", "")}.json'
+        if _p.exists():
+            _st = _json.loads(_p.read_text())
+            _smc = _st.get('smc') or {}
+            _zone = None
+            _struct_sl = None
+            if direction == 'LONG':
+                # 距价最近的下方BULL FVG（mid<price，取最近）
+                _cands = sorted([f for f in ((_smc.get('fvg') or {}).get('bull_fvg') or [])
+                                 if f.get('mid', 0) < current_price],
+                                key=lambda f: current_price - f['mid'])
+                if _cands:
+                    _f = _cands[0]
+                    _zone = (float(_f.get('bottom', 0)), float(_f.get('top', 0)))
+                    _struct_sl = _zone[0]  # FVG下沿=结构失效位
+                # age<50bars且未穿越的BULL OB才有效（封印铁律）
+                _obs = sorted([o for o in ((_smc.get('order_blocks') or {}).get('bull_obs') or [])
+                               if o.get('mid', 0) < current_price and not o.get('broken')
+                               and o.get('age_bars', 999) < 50],
+                              key=lambda o: current_price - o['mid'])
+                if _obs:
+                    _o = _obs[0]
+                    _ob_zone = (float(_o.get('low', 0)), float(_o.get('high', 0)))
+                    _zone = _ob_zone if _zone is None else (
+                        min(_zone[0], _ob_zone[0]), max(_zone[1], _ob_zone[1]))
+                    _struct_sl = _ob_zone[0]
+            else:  # SHORT
+                _cands = sorted([f for f in ((_smc.get('fvg') or {}).get('bear_fvg') or [])
+                                 if f.get('mid', 0) > current_price],
+                                key=lambda f: f['mid'] - current_price)
+                if _cands:
+                    _f = _cands[0]
+                    _zone = (float(_f.get('bottom', 0)), float(_f.get('top', 0)))
+                    _struct_sl = _zone[1]  # FVG上沿=结构失效位
+                _obs = sorted([o for o in ((_smc.get('order_blocks') or {}).get('bear_obs') or [])
+                               if o.get('mid', 0) > current_price and not o.get('broken')
+                               and o.get('age_bars', 999) < 50],
+                              key=lambda o: o['mid'] - current_price)
+                if _obs:
+                    _o = _obs[0]
+                    _ob_zone = (float(_o.get('low', 0)), float(_o.get('high', 0)))
+                    _zone = _ob_zone if _zone is None else (
+                        min(_zone[0], _ob_zone[0]), max(_zone[1], _ob_zone[1]))
+                    _struct_sl = _ob_zone[1]
+            if _zone:
+                _lo, _hi = _zone
+                if _lo > 0 and _hi > 0 and _lo < _hi:
+                    return round(_lo, 2), round(_hi, 2), 'smc_fvg_ob', _struct_sl
+            # 15m摆动位 fallback
+            try:
+                kl = requests.get(
+                    f'{FAPI}/fapi/v1/klines?symbol={symbol}&interval=15m&limit=16',
+                    timeout=5
+                ).json()
+                if isinstance(kl, list) and len(kl) >= 8:
+                    bars = kl[-13:-1]
+                    lows  = [float(b[3]) for b in bars]
+                    highs = [float(b[2]) for b in bars]
+                    if direction == 'LONG':
+                        return round(min(lows), 2), round(min(lows) * 1.002, 2), '15m_swing', min(lows)
+                    else:
+                        return round(max(highs) * 0.998, 2), round(max(highs), 2), '15m_swing', max(highs)
+            except Exception:
+                pass
+    except Exception:
+        pass
+    return (round(current_price * 0.9985, 2), round(current_price * 1.0015, 2),
+            'fallback', None)
+
+
+def _sl_per_ironlaw(symbol: str, direction: str, entry_lo: float, entry_hi: float,
+                    struct_sl: float | None, price: float) -> float:
+    """
+    SL铁律：SHORT SL=挂单区上沿×1.02 / LONG SL=下沿×0.98；
+    SL距离≥1.5×ATR1H，且≥品种绝对下限（ETH≥$37.5/BTC≥$825），取大者。返回SL价格。
+    """
+    if direction == 'LONG':
+        _anchor = struct_sl if (struct_sl and struct_sl < entry_lo) else entry_lo
+        sl_price = _anchor * 0.98
+    else:
+        _anchor = struct_sl if (struct_sl and struct_sl > entry_hi) else entry_hi
+        sl_price = _anchor * 1.02
+    atr_abs = _get_atr_1h_abs(symbol, price)
+    min_dist = max(atr_abs * 1.5, _SYMBOL_MIN_SL_ABS.get(symbol, 0.0))
+    if min_dist > 0 and abs(price - sl_price) < min_dist:
+        sl_price = price - min_dist if direction == 'LONG' else price + min_dist
+    return round(sl_price, 4)
+
+
 # ── 核心决策引擎 ───────────────────────────────────────────────────────
 
 class BrahmaDecisionEngine:
@@ -469,6 +579,20 @@ class BrahmaDecisionEngine:
                 'catalysts': catalysts,
                 'confirmations': confirmations,
             }
+
+            # [entry-SSOT P0-1 2026-09-26 苏摩111] entry_plan补齐挂单区三字段
+            # 结构位推导：smc_state FVG中点/OB边界 > 15m摆动位 > fallback ±0.15%
+            try:
+                _zone_lo, _zone_hi, _entry_source, _struct_sl = _get_entry_zone(sym, direction, price)
+                entry_plan['entry_lo'] = _zone_lo
+                entry_plan['entry_hi'] = _zone_hi
+                entry_plan['entry_source'] = _entry_source
+                # SL铁律对齐：SHORT SL=上沿×1.02 / LONG SL=下沿×0.98，且≥1.5×ATR1H
+                _sl_ironlaw = _sl_per_ironlaw(sym, direction, _zone_lo, _zone_hi, _struct_sl, price)
+                entry_plan['sl_ironlaw_price'] = _sl_ironlaw
+                entry_plan['sl_ironlaw_pct'] = round(abs(price - _sl_ironlaw) / price * 100, 2)
+            except Exception as _ze:
+                entry_plan['entry_source'] = f'zone_error:{_ze}'[:60]
             result['entry_plan'] = entry_plan
 
             if confirmed_15m:

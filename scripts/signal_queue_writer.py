@@ -14,7 +14,8 @@ def push_signal(symbol: str, source: str, meta: dict = None,
                 score: float = None, regime: str = None,
                 direction: str = None, signal_id: str = None,
                 grade: float = None, sl_pct: float = None,
-                entry_lo: float = None, entry_hi: float = None):
+                entry_lo: float = None, entry_hi: float = None,
+                entry_source: str = None):
     """写入信号队列（完整字段版）"""
     # [Boris缺口1 2026-08-30 苏摩111] 写入前验收断言——防止空壳信号进队列
     # 根因: rsi_watcher等调用push_signals()时不传direction/score，导致空壳信号
@@ -52,6 +53,8 @@ def push_signal(symbol: str, source: str, meta: dict = None,
         'sl_pct':     sl_pct,
         'entry_lo':   entry_lo,
         'entry_hi':   entry_hi,
+        # [entry-SSOT P0-2 2026-09-26 苏摩111] 透传entry_source，消费方验证结构位来源
+        'entry_source': entry_source,
         'status':     'PENDING',
         'meta':       meta or {},
     }
@@ -101,4 +104,6 @@ def push_signal_full(signal: dict):
         sl_pct    = signal.get('sl_pct'),
         entry_lo  = signal.get('entry_lo'),
         entry_hi  = signal.get('entry_hi'),
+        # [entry-SSOT P0-2 2026-09-26 苏摩111] sl_pct/entry_source透传链完整化
+        entry_source = signal.get('entry_source'),
     )

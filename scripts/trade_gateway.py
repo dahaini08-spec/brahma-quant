@@ -158,10 +158,10 @@ def run(symbol: str, force_regime: bool = False, zone: dict = None) -> dict:
                  'SHORT': round(_grm_ssot(sym, _regime_label, 'SHORT'), 3)}
     except Exception:
         _mult = {'LONG': 0.85, 'SHORT': 0.85}
+    # [词汇表收敛P2 2026-09-26 苏摩111] 收敛到6体制（未列体制显示原文，fallback无损失）
     _REGIME_CN = {
-        'BULL_TREND':'牛市趋势','BULL_EARLY':'牛市初期','BULL_CORRECTION':'牛市回调',
-        'BEAR_TREND':'熊市趋势','BEAR_EARLY':'熊市初期','BEAR_RECOVERY':'熊市反弹',
-        'CHOP_HIGH':'高位震荡','CHOP_MID':'弱震荡','CHOP_LOW':'低位震荡',
+        'BULL_TREND':'牛市趋势','BULL_EARLY':'牛市初期','BEAR_TREND':'熊市趋势',
+        'BEAR_EARLY':'熊市初期','BEAR_RECOVERY':'熊市反弹','CHOP_MID':'中位震荡',
     }
     _primary = 'BULL' if 'BULL' in _regime_label else ('BEAR' if 'BEAR' in _regime_label else 'CHOP')
     _bear_p = _ms.get('momentum',{}).get('rsi_1d', 50) / 100  # 近似值，仅用于显示

@@ -39,5 +39,6 @@ ulimit -v 786432 2>/dev/null || echo "[warn] ulimit -v not supported"
 echo "[start_lowmem_live] mode=LOWMEM allow_live=${BRAHMA_ALLOW_LIVE_ORDER} $(date -u +%H:%M UTC)"
 
 # flock 防多进程
+# [A/B分离硬闸 2026-09-26 苏摩111] 无BRAHMA_ALLOW_LIVE环境变量时强制干跑（内层闸生效）
 exec flock -n /tmp/brahma_auto_executor.lock \
     python3 scripts/auto_executor.py

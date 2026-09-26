@@ -1824,6 +1824,14 @@ def run(dry_run: bool = False) -> list[dict]:
 
 
 def _run_locked(dry_run: bool = False) -> list[dict]:
+    # [A/B分离硬闸 2026-09-26 苏摩111] 内层双保险：默认强制干跑。
+    # 只有环境变量 BRAHMA_ALLOW_LIVE=1 显式设置时才允许真实下单。
+    import os as _os
+    if not _os.environ.get('BRAHMA_ALLOW_LIVE'):
+        if not dry_run:
+            dry_run = True
+    else:
+        pass  # 苏摩111显式解锁路径（--allow-live + 环境变量双确认）
     """实际执行体（文件锁保护内）"""
     now_iso = fmt_beijing()
 
@@ -2199,7 +2207,17 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='梵天自动开单触发器')
     parser.add_argument('--dry', action='store_true', help='dry-run模式，不真实开单')
     parser.add_argument('--stats', action='store_true', help='显示统计信息')
+    # [A/B分离硬闸 2026-09-26 苏摩111] A线宪法：分析系统不对交易结果负责。
+    # 默认拒真单，显式 --allow-live 才解锁。cron/schedule调法不带此参数=永远只会干跑。
+    parser.add_argument('--allow-live', action='store_true',
+        help='[A/B硬闸] 允许真实下单。仅苏摩111显式授权时使用')
     args = parser.parse_args()
+
+    if not args.allow_live and not args.stats:
+        print('[A/B硬闸] 真实下单已禁用（A线宪法：分析系统不对交易结果负责）')
+        print('[A/B硬闸] 恢复实盘需显式: python3 scripts/auto_executor.py --allow-live')
+        print('[A/B硬闸] 本次按dry-run运行:')
+        args.dry = True
 
     if args.stats:
         if LOG_PATH.exists():
@@ -2213,6 +2231,8 @@ if __name__ == '__main__':
             print('暂无自动开单记录')
     else:
         _lazy_mem_gate()  # P2修复: 懒加载mem_gate
+        if not args.allow_live and not args.dry:
+            args.dry = True  # [A/B硬闸] 双保险：run()内层再次强制干跑
         results = run(dry_run=args.dry)
         ok = [r for r in (results or []) if r.get('status') == 'EXECUTED']
         pass  # [静默]

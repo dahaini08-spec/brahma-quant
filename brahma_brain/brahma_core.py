@@ -1442,27 +1442,21 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 _log(f'[BrahmaBrain] 📉 P2-C N19低传导惩罚: {_sym} ×{_cond_factor} BTC1H={_btc_chg_1h:+.1f}% score→{_score_raw}')
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── [END P2-C] | P2-C 阶段结束 ──────────────────────────────────────────────────────────
-    # ── [v25.5 能力升级-A] 体制×方向动态门控提升 ─────────────────────────
-    # 原则：不封禁，但低WR组合需要更高评分才能通过（精化筛选）
-    # 数据：BEAR_EARLY_LONG WR=50.4% / BULL_EARLY_SHORT WR=51.9%（n>6000铁证）
-    # 解决：提高这些组合的动态门控阈值，要求信号质量更高才入场
-    # analyze() 作用域内不存在。改从 breakdown 读取 _regime_v4_key。
+    # ── [体制重设计P1-2 2026-09-26 苏摩111] 体制×方向门控单源化 ─────────
+    # 原内联boost表（+18/+8/+5）已迁移至 regime_config.SCORE_GATE（Fix-1a补表）
+    # 本层只消费 get_score_gate()，不再自持表（单源铁律，D8哨兵看守）
     # [9.25修复 苏摩111] ⑦修复：_regime_v4_key在cf['breakdown']里，旧代码读cf顶层→恒空→boost表死查
-    _regime_dir_key = f"{((cf or {}).get('breakdown') or {}).get('_regime_v4_key','') or ''}_{signal_dir}"
-    _DYNAMIC_THRESHOLD_BOOST = {
-        # 负期望组合：要求额外+18分才能通过（约等于要求score≥158）
-        'BEAR_EARLY_LONG':       18,   # WR=50.4% avg=-0.110% → 高门控筛出低质信号
-        'BULL_EARLY_SHORT':      18,   # WR=51.9% avg=-0.137% → 高门控筛出低质信号
-        # 震荡×多：WR=56%，略提高
-        'CHOP_LONG':              8,   # WR=56.0% avg=-0.001% → 轻提高
-        'CHOP_MID_LONG':          8,
-        'CHOP_LOW_LONG':          5,
-    }
-    _thr_boost = _DYNAMIC_THRESHOLD_BOOST.get(_regime_dir_key, 0)
-    _MIN_SCORE_EFFECTIVE = MIN_SCORE_OPEN + _thr_boost
-    if _thr_boost > 0:
-        cf['dynamic_threshold_boost'] = _thr_boost
-        cf['dynamic_threshold_effective'] = _MIN_SCORE_EFFECTIVE
+    _regime_v4_key = ((cf or {}).get('breakdown') or {}).get('_regime_v4_key', '') or ''
+    _gate = {}
+    try:
+        from regime_config import get_score_gate as _get_score_gate
+        _gate = _get_score_gate(_regime_v4_key, signal_dir)
+    except Exception as _e:
+        print(f'[WARN] {__name__}: {_e}', file=sys.stderr)  # 降级 _gate={} → 走默认门100
+    # 取大值防降门：gate未列(100默认)时保持MIN_SCORE_OPEN现行语义
+    _MIN_SCORE_EFFECTIVE = max(int(_gate.get('min_score', 100)), MIN_SCORE_OPEN)
+    if _gate:
+        cf['score_gate_note'] = _gate.get('note', '')
 
     # ── [v25.5 能力升级-D] 1D方向性修正 ─────────────────────────────────────
     # 原则：逆1D大趋势方向时降权（非封禁），要求更高质量信号
@@ -1481,6 +1475,11 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['_1d_direction_penalty'] = f'+{_1d_penalty}门控(1D={_phase_1d}逆势做空)'
         _MIN_SCORE_EFFECTIVE += _1d_penalty
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+    # [体制重设计P1-2 2026-09-26 苏摩111] min_samples执法（半开语义标记层）
+    # 实测n<min_samples时下游mult×0.5+WATCH处理；本层只挂标记不阻断（非硬拒）
+    _gate_min_samples = int(_gate.get('min_samples', 0)) if _gate else 0
+    if _gate_min_samples > 0:
+        cf['score_gate_min_samples'] = _gate_min_samples
     _score_gate_ok = float(_score_raw) >= _MIN_SCORE_EFFECTIVE
 
     # [苏摩哲学校正 2026-06-30 A1修正] CHOP_MID做多WATCH通道
@@ -1501,7 +1500,8 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         pass  # [静默] f'[BrahmaBrain] ⚠️ Score gate {_sym}: {_score_raw:.0f} < {_MIN_SCORE_EFFECTIVE} 
         cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
         cf['score_gate_reject'] = True
-        cf['score_gate_min'] = MIN_SCORE_OPEN
+        # [P1-2口径幽灵修复] min改为动态有效门（原来恒写MIN_SCORE_OPEN，BOG反查时对不上）
+        cf['score_gate_min'] = _MIN_SCORE_EFFECTIVE
 
     # [2026-09-12 苏摩111] entry_source=? 不再压score，改为降仓信息
     _entry_src_raw = params.get('entry_source', '') or ''

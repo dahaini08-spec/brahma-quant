@@ -123,6 +123,14 @@ def d6():
     return ok, f"调用方传参={'有' if ok else '缺失!'}"
 
 
+@check("D8", "P1-2接线哨兵: brahma_core消费get_score_gate + trader_brain消费get_direction_gate（防空转复发）")
+def d8():
+    core = _grep(r"get_score_gate[[:space:]]*\(", "brahma_brain/brahma_core.py")
+    tb = _grep(r"get_direction_gate[[:space:]]*\(", "brahma_brain/trader_brain.py")
+    ok = bool(core) and bool(tb)
+    return ok, f"brahma_core消费={len(core)} trader_brain消费={len(tb)}"
+
+
 # 已实锤、已登记R-registry、待苏摩111批准修复的项（不重复推送，P2统一修）
 ACK_PENDING = {"D2"}  # R-004 双NAV并存 → P2账本重建
 

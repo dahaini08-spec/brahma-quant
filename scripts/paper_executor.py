@@ -142,6 +142,37 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
         tp1_price = tp1 if tp1 else price * 0.98
         tp2_price = tp2 if tp2 else price * 0.96
 
+    # [B线铁律 2026-09-26 苏摩111] RR硬门槛：盈亏比≥1.5，不达标直接SKIP
+    # 复盘铁证：98笔闭环盈亏比0.34=数学必然亏损；此门是止血第一关
+    rr = abs(tp1_price - price) / max(1e-9, abs(price - sl_price))
+    if rr < 1.5:
+        log(f'SKIP {sym} {side}: RR={rr:.2f} < 1.5 (B线盈亏比硬门槛，复盘铁证0.34病根)')
+        return False
+
+    # [B线铁律] SL距离≥1.5×ATR验证用paper SL距离下限0.8%笆底（过窄SL=噪音打损）
+    if sl_pct < 0.8:
+        log(f'SKIP {sym} {side}: sl_pct={sl_pct}% 过窄(<0.8%)，噪音打损风险')
+        return False
+
+    # [B线记账闭环 2026-09-26 苏摩111] 开仓必经SSOT账本：费用立扣+订单落库
+    # 幻影教训：不经账本的开仓=幻影记录（9.26复盘铁证）
+    try:
+        import paper_ledger as _pl
+        if _pl.circuit_breaker_active():
+            log(f'SKIP {sym}: 单日亏损≥3%NAV，熔断中')
+            return False
+        rec = _pl.open_position(
+            symbol=sym, side=side, price=price,
+            nav_pct=nav_pct, leverage=5.0,
+            sl=sl_price, tp1=tp1_price, tp2=tp2_price,
+            regime=regime, score=score, rr=round(rr, 3),
+            source=signal.get('source', 'unknown'),
+        )
+        log(f'LEDGER+ OPEN {sym} {side} notional={rec["notional"]:.0f} fee={rec["entry_fee"]:.2f} NAV_after={_pl.nav():,.2f}')
+    except Exception as _le:
+        log(f'ABORT {sym}: 账本记账失败 {_le} — 拒绝开单（无账本不交易）')
+        return False
+
     pos = {
         'symbol':       sym,
         'side':         side,
@@ -156,6 +187,12 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
         'grade':        grade,
         'regime':       regime,
         'sl_pct':       sl_pct,
+        'rr':           round(rr, 3),
+        'ledger_id':    rec['id'],
+        'qty':          rec['qty'],
+        'notional':     rec['notional'],
+        'margin':       rec['margin'],
+        'leverage':     rec['leverage'],
         'open_ts':      int(time.time()),
         'open_at':      __import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat(),
         'partial_tp1':  False,

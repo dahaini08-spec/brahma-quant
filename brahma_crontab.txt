@@ -37,7 +37,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # 候选池生成 — :05和:35
 07,37 * * * * cd /root/.openclaw/workspace/trading-system && timeout 15 python3 scripts/battlefield_candidates.py >> logs/battlefield_candidates.log 2>&1
 # paper engine — :08和:38
-08,38 * * * * cd /root/.openclaw/workspace/trading-system && timeout 55 bash scripts/run_paper_engine.sh >> logs/syscron.log 2>&1
+# [9.26 B线封印] 停用paper_engine双账本（bar回放引擎）: 08,38 * * * * cd /root/.openclaw/workspace/trading-system && timeout 55 bash scripts/run_paper_engine.sh >> logs/syscron.log 2>&1
 # paper TP monitor — :10和:40
 # 10,40 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/paper_tp_monitor.py >> logs/syscron.log 2>&1
 # [9.21] 已由Autopilot区块的paper_tp_monitor替代(每6H)
@@ -193,7 +193,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/paper_executor.py >> logs/paper_executor.log 2>&1
 
 # 纸面单TP/SL检查: 每6H
-30 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/paper_tp_monitor.py >> logs/paper_tp.log 2>&1
+*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/paper_tp_monitor.py >> logs/paper_tp.log 2>&1  # [9.26 B线] SL/TP硬监控 6h→5min
 
 # L0工作记忆刷新（每5分钟，独立脚本）
 */5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/autopilot_l0_refresh.py >> logs/autopilot_l0.log 2>&1
@@ -205,3 +205,9 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 * * * * * cd /root/.openclaw/workspace/trading-system && bash scripts/process_resurrect.sh >> logs/resurrect.log 2>&1
 # drift checker — 03:05 daily (三方审核Phase0: 封印常量↔代码实值比对, L1字面grep)
 5 3 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/drift_checker.py >> logs/drift_checker.log 2>&1
+
+# [9.26苏摩111 P0-2] state_refresh挂回调度（entry SSOT，错开07,37/08,38/12,42/30 1|9）
+13,43 * * * * cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/brahma_state_refresh.py >> logs/state_refresh.log 2>&1
+
+# [9.26 B线] 纸面每日复盘（23:30北京）
+30 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/paper_daily_review.py >> logs/paper_daily_review.log 2>&1  # [9.26 B线] 每日复盘 23:30北京

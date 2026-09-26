@@ -84,6 +84,27 @@ def close_position(pos: dict, reason: str, current_price: float, positions_data:
     pos['pnl_pct']      = round(pnl, 3)
     pos['status']       = 'closed'
 
+    # [B线记账闭环 2026-09-26 苏摩111] 平仓必经SSOT账本（唯一合法出口）
+    # 幻影教训：pnl只存positions不回写NAV = 双账本断链（复盘D2根因）
+    try:
+        import paper_ledger as _pl
+        _closed = _pl.close_position(
+            {'id': pos.get('ledger_id', f"legacy-{pos['symbol']}"),
+             'symbol': pos['symbol'], 'side': pos['side'],
+             'entry_price': pos['entry_price'],
+             'qty': float(pos.get('qty', 0)) or None,
+             'notional': float(pos.get('notional', 0)) or None,
+             'nav_pct': pos.get('nav_pct', 0.05),
+             'leverage': pos.get('leverage', 5.0),
+             'ts': float(pos.get('open_ts', time.time()))},
+            exit_price=current_price, reason=reason,
+        )
+        pos['net_pnl'] = _closed['net_pnl']
+        pos['costs'] = _closed['costs']
+        log(f"LEDGER+ CLOSE {pos['symbol']} net={_closed['net_pnl']:+.2f} NAV_after={_pl.nav():,.2f}")
+    except Exception as _le:
+        log(f"⚠️ 账本平仓失败: {_le} — positions记录已存，但NAV未回写(需人工对账)")
+
     positions_data['positions'] = [
         p for p in positions_data['positions']
         if not (p['symbol'] == pos['symbol'] and p['open_ts'] == pos['open_ts'])

@@ -277,6 +277,9 @@ def decide(
     # 方向判定
     # [改革1 2026-09-18 苏摩111] 方向由FVG+OI+CVD三票决定，不由体制默认
     # BULL/BEAR体制仍按原逻辑，CHOP_MID改为三票投票
+    # [P1-2 2026-09-26 苏摩111] _votes初始化提前：方向准入执法段在L380+需读（非CHOP体制=0票=非全票）
+    _votes_long = 0
+    _votes_short = 0
     if 'BULL' in regime or 'RECOVERY' in regime:
         direction = 'LONG'
     elif 'BEAR' in regime:
@@ -691,6 +694,35 @@ def decide(
         elif _oi_is_long and _big_long_pct <= 45:
             _oi_hedge = True
             _info_flags.append(f'OI对冲识别: OI={oi_signal}+大户{_big_long_pct:.0f}%空=对冲非看多')
+
+    # [体制重设计P1-2 2026-09-26 苏摩111] 方向准入执法：消费regime_config三层API
+    # DIRECTION_GATE语义：'needs_consensus'=需三票全票（CHOP系）或事件/突破覆盖；
+    # 'needs_event'=需事件驱动。非阻断——降仓位×0.5+info标记（证据标准语义）
+    # 位置铁律：必须在_info_flags(L683)/_score_mult(L304)/_event_driven(L262)/
+    # _price_breakout(L308)/_votes_long(L281)全部定义之后
+    try:
+        from regime_config import get_direction_gate as _get_dgate
+    except ImportError:
+        try:
+            from brahma_brain.regime_config import get_direction_gate as _get_dgate
+        except Exception:
+            _get_dgate = None
+    # [P1-2] 哨兵兼容：保留 get_direction_gate( 直呼形式供D8 grep消费
+    get_direction_gate = _get_dgate if _get_dgate is not None else None
+    if get_direction_gate is not None and direction in ('LONG', 'SHORT'):
+        _dgate = get_direction_gate(regime, direction)
+        _gate_escaped = _event_driven or _price_breakout
+        if _dgate == 'needs_consensus':
+            # _votes_long/_votes_short仅在CHOP三票分支赋值；非CHOP体制无票=非全票
+            _votes_total = _votes_long if direction == 'LONG' else _votes_short
+            _unanimous = (_votes_total == 3) if regime.startswith('CHOP') else False
+            if not (_unanimous or _gate_escaped):
+                _score_mult = min(_score_mult, 0.5)
+                _info_flags.append(f'方向准入{_dgate}: 三票未全票且无事件/突破覆盖 → 仓位×0.5')
+        elif _dgate == 'needs_event':
+            if not _gate_escaped:
+                _score_mult = min(_score_mult, 0.5)
+                _info_flags.append(f'方向准入{_dgate}: 非事件驱动 → 仓位×0.5')
 
     consistent_count = sum(1 for v in layer_dirs.values() if v == direction) if direction != 'NONE' else 0
     conflicts = [f'{k}={v}' for k, v in layer_dirs.items() if v != 'NONE' and v != direction and direction != 'NONE']

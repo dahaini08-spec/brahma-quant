@@ -1752,7 +1752,8 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     # 价格突破止损墙=BULL_TREND信号, 破支撑池=BEAR_TREND信号
     _stop_wall = liq.get('nearest_short', 0)  # 上方止损墙
     _support_pool = liq.get('nearest_long', 0)  # 下方支撑池
-    import sys as _sys_dbg; print(f'[DEBUG step10] price={price} stop_wall={_stop_wall} support_pool={_support_pool} liq_keys={list(liq.keys())[:8]}', file=_sys_dbg.stderr)
+    # [P2-4 2026-09-26 苏摩111] DEBUG行静默（诊断时恢复）: price/stop_wall/support_pool/liq_keys
+    # import sys as _sys_dbg; print(f'[DEBUG step10] price={price} stop_wall={_stop_wall} support_pool={_support_pool} liq_keys={list(liq.keys())[:8]}', file=_sys_dbg.stderr)
     _price_break_regime = ''
     if _stop_wall > 0 and price > _stop_wall:
         _price_break_regime = 'BULL_TREND'  # 破止损墙=多头突破
@@ -1761,7 +1762,8 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     # 价格突破体制优先于Hurst体制
     if _price_break_regime:
         reg_now = _price_break_regime
-    print(f'[DEBUG step10] reg_now={reg_now} _price_break={_price_break_regime}', file=_sys_dbg.stderr)
+    # [P2-4 2026-09-26 苏摩111] DEBUG行静默（诊断时恢复）: reg_now/_price_break
+    # print(f'[DEBUG step10] reg_now={reg_now} _price_break={_price_break_regime}', file=_sys_dbg.stderr)
 
     # ══════════════════════════════════════════════════════
     # L1【一票否决层】三方战略架构 2026-09-04 苏摩111封印
@@ -1785,6 +1787,7 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     _trader_dir = d.get('signal_dir', d.get('direction', 'NONE'))
 
     # L1-①: 死穴门控（保留，这是唯一正确的硬否决）
+    # [P1-2 2026-09-26 苏摩111] 语义修正：非「封禁」而是高证据标准（三层API）
     _DEAD = [
         ('BEAR_TREND', 'LONG'),
         ('BEAR_RECOVERY', 'SHORT'),
@@ -1792,7 +1795,8 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     _bias_hint = 'LONG' if (fvg['dir'] == 'BULL' or bs.get('bias') == 'LONG') else 'SHORT'
     for dead_regime, dead_dir in _DEAD:
         if dead_regime in reg_now and _bias_hint == dead_dir:
-            return _wait_card(f'死穴封禁 {dead_regime}:{dead_dir}', 'L1-死穴')
+            _l1_kind = '事件驱动' if dead_dir == 'SHORT' else '全票共识'
+            return _wait_card(f'高证据标准 {dead_regime}:{dead_dir}（非封禁，需{_l1_kind}，等待更强证据）', 'L1-准入')
 
     # [9.19 P0改革] L1-②: CHOP_MID score门控废除
     # score不做入场门控，降级为仓位系数（DAG已有机制）
@@ -1954,6 +1958,15 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     if 'BEAR' in reg_now: bear_votes += 2
 
     _vote_bias = 'LONG' if bull_votes > bear_votes else ('SHORT' if bear_votes > bull_votes else 'NEUTRAL')
+
+    # [P1-2收尾 2026-09-26 苏摩111] 死穴门控所需的score/SL估算（tier计算依赖）
+    _score_now = float(bs.get('score_final', bs.get('score', 0)))
+    _sl_est_tier = 0.0
+    _el = float(res.get('entry_lo', 0) or 0)
+    if _el > 0:
+        _atr4h = float(vol.get('atr_4h', 0) or 0) if vol else 0.0  # atr在vol字典（L1346），不在res
+        _min_sl = max(_el * 0.02, _atr4h * 1.5) if _atr4h else _el * 0.02
+        _sl_est_tier = _min_sl / _el * 100
     # [P2-4修复 2026-09-23 苏摩111] DEBUG行静默（诊断时恢复）: _trader_brain_dir/_action/_vote_bias/bull/bear
     # print(f'[DEBUG step10 BIAS] ...', file=sys.stderr)
     # 关键修复：trader_brain方向优先，5信号投票作为fallback
@@ -1966,37 +1979,44 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
         # 保留旧的_bias_hint逻辑兼容L1死穴门控
     _bias_hint = bias if bias != 'NEUTRAL' else ('LONG' if fvg['dir'] == 'BULL' else 'SHORT')
 
-    # ══ 死穴门控（MEMORY.md封印铁律）══
-    # BULL_TREND:LONG score≥140+SL≥3% → WR=0% 永久封禁
-    # BEAR_RECOVERY:SHORT → WR=0% 严禁
-    # BEAR_TREND:LONG → WR=45% 封禁
+    # ══ 死穴门控（体制重设计P1-2 2026-09-26 苏摩111：语义修正）══
+    # 旧语义「永久封禁/严禁」作废。新语义=三层API证据标准：
+    #   tier锁(get_score_gate locked) → 🚫高证据标准锁（非永久封禁，n=14可推翻）
+    #   needs_consensus/needs_event  → ⚠️高证据标准，不入场非封禁
+    _reg_upper = str(reg_now).upper()
+    _bias_upper = str(bias).upper()
+    _tier = None
+    if _score_now >= 165: _tier = '165+'
+    elif _score_now >= 155: _tier = '155+'
+    elif _score_now >= 140: _tier = '140-154'
     _is_dead = False
     _dead_reason = ''
-    _score_now = float(bs.get('score_final', bs.get('score', 0)))
-    if 'BULL_TREND' in reg_now and bias == 'LONG' and _score_now >= 140:
-        # [9.23修复2] 死穴SL估算硬编码bug：原代码 _sl_est=abs(el-el*0.97)/el≡3.0%恒真
-        # → score≥140必然封禁，死穴失去「SL≥3%」条件意义。
-        # 修复：用真实入场区计算SL距离（做多SL_PCT=2.0% + 1.5×ATR4H铁律）
-        _el = float(res.get('entry_lo', 0) or 0)
-        if _el > 0:
-            _atr4h = float(res.get('atr_4h', 0) or 0)  # res里有atr_4h（L1346），不在state
-            _min_sl = max(_el * 0.02, _atr4h * 1.5) if _atr4h else _el * 0.02
-            _sl_est = _min_sl / _el * 100
-            if _sl_est >= 3.0:
+    try:
+        from regime_config import get_score_gate as _get_sg, get_direction_gate as _get_dg
+    except ImportError:
+        try:
+            from brahma_brain.regime_config import get_score_gate as _get_sg, get_direction_gate as _get_dg
+        except Exception:
+            _get_sg = None; _get_dg = None
+    if _get_sg is not None and _bias_upper in ('LONG', 'SHORT'):
+        if _tier:
+            _tier_gate = _get_sg(_reg_upper, _bias_upper, _tier)
+            # BULL_TREND:LONG 的 SL≥3% 条件保留（P1-2铁律：tier锁+宽SL才拒）
+            if _tier_gate.get('locked') and not (_reg_upper == 'BULL_TREND' and _bias_upper == 'LONG'
+                                                and _tier == '140-154' and _sl_est_tier < 3.0):
                 _is_dead = True
-                _dead_reason = f'死穴: BULL_TREND:LONG score={_score_now:.0f}≥140 + SL≥3% → WR=0% 永久封禁'
-    if 'BEAR_RECOVERY' in reg_now and bias == 'SHORT':
-        _is_dead = True
-        _dead_reason = 'BEAR_RECOVERY:SHORT → WR=0% 严禁'
-    if 'BEAR_TREND' in reg_now and bias == 'LONG':
-        _is_dead = True
-        _dead_reason = f'BEAR_TREND:LONG → WR=45% EV=-2.0 封禁（精英解锁: score≥155+grade≥90+RSI<20）'
+                _dead_reason = f'🚫 高证据标准锁 — {_tier_gate.get("note", "")}（score={_score_now:.0f} 命中 {_reg_upper}:{_bias_upper}:{_tier}）'
+        if not _is_dead and _get_dg(_reg_upper, _bias_upper) in ('needs_consensus', 'needs_event'):
+            _gate_kind = '全票共识' if _get_dg(_reg_upper, _bias_upper) == 'needs_consensus' else '事件驱动'
+            _is_dead = True
+            _dead_reason = f'⚠️ 高证据标准 — {_reg_upper}:{_bias_upper} 需{_gate_kind}，当前不入场（非封禁）'
+    # 两查都通过 → _is_dead=False → 走原正常VIP流程
 
     if _is_dead:
         return (
             f'──── VIP ────\n'
             f'🌿 姓赵不宣 | {sym} 今日布局\n'
-            f'🚫 禁止入场 — {_dead_reason}\n'
+            f'🚫 {_dead_reason}\n'
             f'   当前体制: {reg_now}  方向: {bias}'
         )
 
@@ -2013,7 +2033,8 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
 
     entry_lo = res['entry_lo']
     entry_hi = res['entry_hi']
-    print(f'[DEBUG step10 ENTRY] res.entry_lo={entry_lo} res.entry_hi={entry_hi} bias={bias}', file=sys.stderr)
+    # [P2-4 2026-09-26 苏摩111] DEBUG行静默（诊断时恢复）: entry_lo/entry_hi/bias
+    # print(f'[DEBUG step10 ENTRY] res.entry_lo={entry_lo} res.entry_hi={entry_hi} bias={bias}', file=sys.stderr)
 
     # [P1修复 2026-09-10] 入场区 = max(共振下沿, 支撑池)
     _liq_support = res.get('liq_nearest_long', 0) or liq.get('nearest_long', 0)
@@ -2126,7 +2147,8 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
         main_dir   = '主方向做多'
 
     else:  # SHORT
-        print(f'[DEBUG step10 SHORT] entry_lo={entry_lo} entry_hi={entry_hi} tp1_pre={liq.get("nearest_long",0)} price={price} atr_1h={atr_1h} atr_4h={atr_4h}', file=sys.stderr)
+        # [P2-4 2026-09-26 苏摩111] DEBUG行静默（诊断时恢复）: SHORT tp1_pre
+        # print(f'[DEBUG step10 SHORT] entry_lo={entry_lo} entry_hi={entry_hi} tp1_pre={liq.get("nearest_long",0)} price={price} atr_1h={atr_1h} atr_4h={atr_4h}', file=sys.stderr)
         sl_pct_required = 0.025 if 'BULL' in str(reg_now) else 0.02  # BULL做空2.5%/BEAR做空2.0%
         min_sl = max(entry_hi * sl_pct_required, atr_4h * 1.5) if atr_4h else entry_hi * sl_pct_required
         sl       = round(entry_hi + min_sl, 1)
@@ -2152,7 +2174,8 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
         else:
             # [2026-09-21 P2修复 苏摩111] entry_lo=0时用tp1(支撑池)作为多单入场区
             _hunt_base = entry_lo if entry_lo > 0 else tp1
-            print(f'[DEBUG step10 ELSE] entry_lo={entry_lo} tp1={tp1} _hunt_base={_hunt_base} atr_1h={atr_1h}', file=sys.stderr)
+            # [P2-4 2026-09-26 苏摩111] DEBUG行静默（诊断时恢复）: ELSE tp1/_hunt_base
+            # print(f'[DEBUG step10 ELSE] entry_lo={entry_lo} tp1={tp1} _hunt_base={_hunt_base} atr_1h={atr_1h}', file=sys.stderr)
             hunt_lo    = round(_hunt_base - atr_1h * 1.5, 1)
             hunt_hi    = round(_hunt_base - atr_1h * 0.5, 1)
             side_min_sl = max(hunt_lo * 0.02, atr_4h * 1.5) if atr_4h else hunt_lo * 0.02
