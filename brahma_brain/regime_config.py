@@ -53,6 +53,63 @@ REGIME_DIRECTION_ADVICE = {
 
 _FALLBACK_MULT = 0.85  # 未知体制，保守降权
 
+# ── 方向准入表（体制重设计P1 2026-09-26 苏摩111）─────────────────────────────
+# 语义: 「封禁」→「证据标准」。逆势方向不是禁手，是需要更硬的证据。
+#   'open'            = 三票2/3即可（trader_brain现有投票语义）
+#   'needs_consensus' = 需三票3/3全票（或事件/突破覆盖）才不降仓
+#   'needs_event'     = 需事件驱动来源（_event_driven）才不降仓
+# 表未列 = 'open'（含全部'CHOP'前缀体制：CHOP_HIGH/CHOP_LOW/CHOP_RANGE_*等）
+DIRECTION_GATE = {
+    'BULL_TREND':    {'SHORT': 'needs_consensus'},
+    'BULL_EARLY':    {'SHORT': 'needs_consensus'},
+    'BEAR_TREND':    {'LONG': 'needs_consensus'},
+    'BEAR_EARLY':    {'LONG': 'needs_consensus'},
+    'BEAR_RECOVERY': {'SHORT': 'needs_event'},   # 宪法语义落表执法（WR=0%铁证→事件标准）
+    # CHOP_MID: 双向open（三票2/3），WR=57.3%铁证中性
+}
+
+# ── 许可层：体制差异化开仓门（体制重设计P1 2026-09-26 苏摩111）─────────────
+# min_score = 该体制×方向的最低开仓score（signal层SELECTED分数）
+# min_samples = 小样本执法阈值：实测n < min_samples → 半开门（mult×0.5+WATCH），不是硬拒
+# 表未列 = {'min_score': 100}（现行MIN_SCORE_OPEN=100默认）
+SCORE_GATE = {
+    'BULL_TREND:LONG':  {'min_score': 100, 'min_samples': 0,  'note': '回测WR56.7% n=3655大样本'},
+    'BULL_TREND:SHORT': {'min_score': 120, 'min_samples': 0,  'note': '逆势方向从严'},
+    'BEAR_TREND:SHORT': {'min_score': 100, 'min_samples': 0,  'note': '顺势'},
+    'BEAR_TREND:LONG':  {'min_score': 140, 'min_samples': 14, 'note': '死亡区间执法点，n<30→半开门，可被新样本推翻'},
+    'CHOP_MID:LONG':    {'min_score': 110, 'min_samples': 0,  'note': '宪法CHOP禁单语义→110'},
+    'CHOP_MID:SHORT':   {'min_score': 100, 'min_samples': 0,  'note': 'WR57.3%铁证中性'},
+}
+_SCORE_GATE_DEFAULT = {'min_score': 100, 'min_samples': 0, 'note': '默认门'}
+
+
+def get_direction_gate(regime: str, direction: str) -> str:
+    """方向准入（三层语义·方向层）：'open' | 'needs_consensus' | 'needs_event'
+    regime/dir统一upper；'CHOP'前缀体制未列→'open'。"""
+    r = (regime or '').upper()
+    d = (direction or 'LONG').upper()
+    return str(DIRECTION_GATE.get(r, {}).get(d, 'open'))
+
+
+def get_score_gate(regime: str, direction: str) -> dict:
+    """许可层：返回{'min_score': int, 'min_samples': int, 'note': str}。
+    表未列 = min_score 100默认（现行统一开仓门）。"""
+    r = (regime or '').upper()
+    d = (direction or 'LONG').upper()
+    return dict(SCORE_GATE.get(f'{r}:{d}', _SCORE_GATE_DEFAULT))
+
+
+def get_gate_state(regime: str, direction: str) -> dict:
+    """聚合层（P2哨兵挂点）：{direction_gate, score_gate, mult_info}。"""
+    r = (regime or '').upper()
+    d = (direction or 'LONG').upper()
+    _mult, _src = get_regime_mult_info('', r, d)
+    return {
+        'direction_gate': get_direction_gate(r, d),
+        'score_gate': get_score_gate(r, d),
+        'mult_info': {'mult': _mult, 'source': _src},
+    }
+
 
 # ── WR反哺Override（P2 2026-09-03 苏摩111 / 9.25嵌套格式统一）───────────────
 # 每日02:00由 scripts/wr_feedback_engine.py 原子写入 data/regime_mult_override.json
