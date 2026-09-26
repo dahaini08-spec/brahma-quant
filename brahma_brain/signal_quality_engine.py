@@ -1066,13 +1066,27 @@ WR_HIGH     = 0.62  # WR >= 62% → multiplier 向 1.2 靠拢
 WR_LOW      = 0.42  # WR <= 42% → multiplier 向 0.3 靠拢
 WR_DEAD     = 0.30  # WR <= 30% → 考虑降为 0.0（需连续3次确认）
 
-# ── 不允许动态覆盖的静态铁证规则（手工封印优先）──────────────────────────
+# ── 静态铁证规则（P1-3已合并进regime_config.SCORE_GATE locked键 2026-09-26 苏摩111）
+# 本集合保留为兼容别名；消费点统一走 _is_locked()（新SSOT优先）
+from regime_config import SCORE_GATE as _SCORE_GATE_SSOT
+
 STATIC_LOCK = {
     'CHOP_MID:LONG',           # 死穴永久封禁
     'CHOP_MID:LONG:155+',      # 死穴
     'BEAR_TREND:LONG:155+',    # 逆势死亡区
     'BEAR_TREND:LONG:140-154', # 逆势极危
 }
+
+def _is_locked(key: str) -> bool:
+    """统一锁判定：查SCORE_GATE locked键（新SSOT），兼容旧STATIC_LOCK集合。"""
+    if key in STATIC_LOCK:
+        return True
+    parts = key.split(':')
+    if len(parts) >= 3:
+        g = _SCORE_GATE_SSOT.get(f'{parts[0]}:{parts[1]}:{parts[2]}')
+        if g and g.get('locked'):
+            return True
+    return False
 
 
 def _score_tier(score: float) -> str:
@@ -1184,8 +1198,8 @@ def update_weights(dry_run: bool = False) -> dict:
 
     # 遍历所有现有 key
     for key, entry in weights.items():
-        # 静态锁定检查
-        if key in STATIC_LOCK:
+        # 静态锁定检查（P1-3: _is_locked统一SSOT）
+        if _is_locked(key):
             skipped += 1
             continue
 

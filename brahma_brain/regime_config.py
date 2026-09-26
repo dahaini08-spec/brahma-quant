@@ -79,6 +79,11 @@ SCORE_GATE = {
     'BEAR_TREND:LONG':  {'min_score': 140, 'min_samples': 14, 'note': '死亡区间执法点，n<30→半开门，可被新样本推翻'},
     'CHOP_MID:LONG':    {'min_score': 110, 'min_samples': 0,  'note': '宪法CHOP禁单语义→110'},
     'CHOP_MID:SHORT':   {'min_score': 100, 'min_samples': 0,  'note': 'WR57.3%铁证中性'},
+    # ── TIER级锁（P1-3 STATIC_LOCK合并 2026-09-26 苏摩111）───────
+    # locked=True = 动态WR反哺不许改写（原STATIC_LOCK语义），score门语义保留
+    'CHOP_MID:LONG:155+':      {'min_score': 155, 'min_samples': 0, 'locked': True, 'note': '原STATIC_LOCK: 死穴永久封禁'},
+    'BEAR_TREND:LONG:155+':    {'min_score': 155, 'min_samples': 0, 'locked': True, 'note': '原STATIC_LOCK: 逆势死亡区'},
+    'BEAR_TREND:LONG:140-154': {'min_score': 140, 'min_samples': 0, 'locked': True, 'note': '原STATIC_LOCK: 逆势极危'},
 }
 _SCORE_GATE_DEFAULT = {'min_score': 100, 'min_samples': 0, 'note': '默认门'}
 
@@ -91,11 +96,16 @@ def get_direction_gate(regime: str, direction: str) -> str:
     return str(DIRECTION_GATE.get(r, {}).get(d, 'open'))
 
 
-def get_score_gate(regime: str, direction: str) -> dict:
-    """许可层：返回{'min_score': int, 'min_samples': int, 'note': str}。
-    表未列 = min_score 100默认（现行统一开仓门）。"""
+def get_score_gate(regime: str, direction: str, tier: str | None = None) -> dict:
+    """许可层：返回{'min_score': int, 'min_samples': int, 'note': str, 'locked': bool}。
+    表未列 = min_score 100默认（现行统一开仓门）。
+    tier传入时先查 'REGIME:DIR:TIER' 锁键，未命中回落 'REGIME:DIR'。"""
     r = (regime or '').upper()
     d = (direction or 'LONG').upper()
+    if tier:
+        gate = SCORE_GATE.get(f'{r}:{d}:{str(tier).upper()}')
+        if gate is not None:
+            return dict(gate)
     return dict(SCORE_GATE.get(f'{r}:{d}', _SCORE_GATE_DEFAULT))
 
 
