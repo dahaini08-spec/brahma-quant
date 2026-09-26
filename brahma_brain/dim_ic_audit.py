@@ -2,6 +2,8 @@
 """
 dim_ic_audit.py — 94维逐维IC诊断
 [2026-09-15 苏摩111] 确认达摩院结论
+[孤岛登记 2026-09-26 苏摩111] 接线4：jesse未安装→懒加载回退至brahma_engine_v5本地指标
+（Wilder RSI/EMA/ATR/BBW），IC审计cron可运行；jesse可用时自动优先jesse
 
 IC = Spearman corr(dim_score, forward_4h_return)
 目标：确认哪些维度有alpha，哪些是噪音
@@ -15,10 +17,14 @@ BRAIN = Path(__file__).parent
 sys.path.insert(0, str(BRAIN))
 sys.path.insert(0, str(BRAIN.parent))
 
-from jesse.indicators import rsi as jesse_rsi
-from jesse.indicators import ema as jesse_ema
-from jesse.indicators import bollinger_bands_width as jesse_bbw
-from jesse.indicators import atr as jesse_atr
+# [9.26接线 苏摩111] jesse懒加载+本地回退（与engine_v5同一套回退指标）
+try:
+    from jesse.indicators import rsi as jesse_rsi
+    from jesse.indicators import ema as jesse_ema
+    from jesse.indicators import bollinger_bands_width as jesse_bbw
+    from jesse.indicators import atr as jesse_atr
+except ImportError:
+    from brahma_engine_v5 import jesse_rsi, jesse_ema, jesse_bbw, jesse_atr
 from brahma_engine_v5 import load_candles, load_regimes, BrahmaStrategy12
 
 HIST = BRAIN.parent / "data" / "historical"

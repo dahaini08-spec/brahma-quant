@@ -4,6 +4,7 @@ from typing import Any
 """
 data_contract_validator.py — 数据契约验证器
 设计院 2026-09-17 苏摩111封印
+[孤岛登记 2026-09-26 苏摩111] 合理孤岛：独立验证工具（无运行时caller），用法见下
 
 启动时自动检查所有硬编码字典 vs data文件，发现断裂则告警
 接入位置：brahma_core.py 启动时调用 / module_check.py

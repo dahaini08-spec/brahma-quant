@@ -88,7 +88,16 @@ def _generate_review(data: dict) -> str:
             f"3. 明日需要关注的关键位\n"
             f"风格：直接简洁，像写日记，不要废话开场"
         )
-        return chat(prompt, max_tokens=200, timeout=20, task="review")
+        # [9.26接线 苏摩111] 40年交易员人格SSOT接入：brahma_brain_prompt.TRADER_SYSTEM_PROMPT
+        # 接入位置：scripts/daily_review_llm.py → 每日复盘LLM system人格
+        _trader_persona = ''
+        try:
+            _sys_path = Path(__file__).resolve().parent.parent / 'brahma_brain'
+            sys.path.insert(0, str(_sys_path))
+            from brahma_brain_prompt import TRADER_SYSTEM_PROMPT as _trader_persona
+        except Exception:
+            pass
+        return chat(prompt, max_tokens=200, timeout=20, task="review", system=_trader_persona)
     except Exception as e:
         return f"LLM复盘生成失败: {e}"
 

@@ -4,6 +4,8 @@ from typing import Any
 brahma_engine_v5.py — 梵天v5.0 核心回测引擎
 复刻Jesse的step_simulator防前视偏差机制 + jesse_rust指标 + 12维精简信号
 不依赖PostgreSQL/Redis — 纯Python + jesse_rust
+[孤岛登记 2026-09-26 苏摩111] 合理孤岛：依赖jesse（未安装）当前不可运行，
+冻结保留；引用方dim_ic_audit同链冻结
 
 关键设计：
 1. 逐K线推进（指标只看已完成K线，消灭前视偏差）
@@ -22,11 +24,71 @@ from pathlib import Path
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Tuple
 
-# Jesse指标
-from jesse.indicators import rsi as jesse_rsi
-from jesse.indicators import ema as jesse_ema
-from jesse.indicators import bollinger_bands_width as jesse_bbw
-from jesse.indicators import atr as jesse_atr
+# Jesse指标 — [9.26接线 苏摩111] jesse未安装（PEP668环境），懒加载+本地回退：
+# rsi/ema/atr本地实现（Wilder RSI + 标准EMA + Wilder ATR），bbw本地实现
+# jesse可用时优先用jesse（保持数值一致性），否则回退本地指标
+try:
+    from jesse.indicators import rsi as jesse_rsi
+    from jesse.indicators import ema as jesse_ema
+    from jesse.indicators import bollinger_bands_width as jesse_bbw
+    from jesse.indicators import atr as jesse_atr
+    JESSE_AVAILABLE = True
+except ImportError:
+    JESSE_AVAILABLE = False
+
+    def jesse_rsi(candles, period=14, sequential=False):
+        """RSI Wilder平滑本地回退，输入输出与jesse对齐 (n,6) candles"""
+        import numpy as _np
+        close = _np.asarray(candles)[:, 4]
+        delta = _np.diff(close, prepend=close[0])
+        up = _np.clip(delta, 0, None)
+        down = _np.clip(-delta, 0, None)
+        # Wilder smoothing = EMA(alpha=1/period)
+        alpha = 1.0 / period
+        def _wilder(x):
+            out = _np.zeros_like(x); out[0] = x[0]
+            for i in range(1, len(x)):
+                out[i] = alpha * x[i] + (1 - alpha) * out[i-1]
+            return out
+        au, ad = _wilder(up), _wilder(down)
+        rs = au / _np.where(ad == 0, 1e-10, ad)
+        return 100 - 100 / (1 + rs)
+
+    def jesse_ema(candles, period=200, sequential=False):
+        import numpy as _np
+        close = _np.asarray(candles)[:, 4]
+        alpha = 2.0 / (period + 1)
+        out = _np.zeros_like(close); out[0] = close[0]
+        for i in range(1, len(close)):
+            out[i] = alpha * close[i] + (1 - alpha) * out[i-1]
+        return out
+
+    def jesse_atr(candles, period=14, sequential=False):
+        import numpy as _np
+        c = _np.asarray(candles)
+        tr = _np.maximum(c[:, 2] - c[:, 3],
+              _np.maximum(_np.abs(c[:, 2] - _np.roll(c[:, 4], 1)),
+                          _np.abs(c[:, 3] - _np.roll(c[:, 4], 1))))
+        tr[0] = c[0, 2] - c[0, 3]
+        alpha = 1.0 / period
+        out = _np.zeros_like(tr); out[0] = tr[0]
+        for i in range(1, len(tr)):
+            out[i] = alpha * tr[i] + (1 - alpha) * out[i-1]
+        return out
+
+    def jesse_bbw(candles, period=20, sequential=False):
+        import numpy as _np
+        close = _np.asarray(candles)[:, 4]
+        n = len(close)
+        out = _np.zeros(n)
+        # 简单移动均值与总体std（jesse用SMA基础布林带）
+        for i in range(n):
+            lo = max(0, i - period + 1)
+            w = close[lo:i+1]
+            mid = w.mean()
+            sd = w.std()
+            out[i] = (4 * sd / mid) if mid > 0 else 0
+        return out
 
 # ============================================================
 # 数据层
@@ -414,9 +476,12 @@ def monte_carlo(trades: List[Trade], n_sims: int = 5000, block_size: int = 6,
 
 def walk_forward(candles, regimes, rsi_seq, ema_seq, bbw_seq, atr_seq, 
                  n_segments: int = 3, optuna_trials: int = 50) -> dict:
-    """Walk-Forward验证"""
-    import optuna
-    optuna.logging.set_verbosity(optuna.logging.WARNING)
+    """Walk-Forward验证 [9.26] optuna懒加载，未安装则返回明确跳过标记（不炸主链）"""
+    try:
+        import optuna
+        optuna.logging.set_verbosity(optuna.logging.WARNING)
+    except ImportError:
+        return {'segments': [], 'params': [], 'skipped': 'optuna未安装，walk-forward跳过'}
     
     n = len(candles)
     seg_size = n // n_segments

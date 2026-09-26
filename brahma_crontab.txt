@@ -135,6 +135,10 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 0 4 * * 1 cd /root/.openclaw/workspace/trading-system && python3 scripts/ic_feedback_engine.py >> logs/syscron.log 2>&1
 # wiring check — 03:00 Sunday
 0 3 * * 0 cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_wiring_check.py >> logs/wiring_check.log 2>&1
+# IC审计 — 03:40 Sunday [9.26接线 苏摩111] dim_ic_audit懒加载回退版，jesse缺失用本地指标
+40 3 * * 0 cd /root/.openclaw/workspace/trading-system && timeout 600 python3 brahma_brain/dim_ic_audit.py >> logs/ic_audit.log 2>&1
+# v5回测 — 03:45 Sunday [9.26接线 苏摩111] engine_v5本地指标回退版，周度WR/EV基准
+45 3 * * 0 cd /root/.openclaw/workspace/trading-system && timeout 1800 python3 brahma_brain/brahma_engine_v5.py >> logs/engine_v5_backtest.log 2>&1
 # DAG weight calibrator — 03:30 Sunday (蘑菇体机制)
 30 3 * * 2,5 cd /root/.openclaw/workspace/trading-system && timeout 300 python3 brahma_brain/dag_weight_calibrator.py >> logs/dag_calibrator.log 2>&1
 

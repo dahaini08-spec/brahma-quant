@@ -164,6 +164,12 @@ def scan_d1_modules() -> list:
             'core_factors',            # Step5-6因子层(已合并回brahma_core) ✅
             'core_output',             # 输出格式化(已合并回brahma_core) ✅
             'core_scorer',             # confluence_score独立测试(已合并回brahma_core) ✅
+            # 孤岛登记 2026-09-26 苏摩111（与scripts/orphan_check.py豁免名单同步）
+            'data_contract_validator',  # 独立契约验证工具（无运行时caller）✅
+            'dim_ic_audit',             # 一次性IC审计工具（jesse冻结，结论已出）✅
+            'brahma_brain_prompt',      # 人格prompt库（唯一caller在_deprecated/冻结）✅
+            'brahma_engine_v5',         # v5回测引擎（jesse冻结，dim_ic_audit同链）✅
+            'brahma_mcp_server',        # MCP服务器（独立启动进程非import消费）✅
         }
         _orphans = []
         # [2026-09-15 苏摩111] 修复D1扫描逻辑：全项目扫描而非仅主链路6文件

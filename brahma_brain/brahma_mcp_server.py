@@ -4,6 +4,7 @@ from typing import Any
 """
 brahma_mcp_server.py — 梵天MCP服务器
 [果蝇架构Phase 2] Langflow借鉴5：MCP暴露
+[孤岛登记 2026-09-26 苏摩111] 合理孤岛：独立启动进程（python3直接运行，非import消费）
 
 把run_full_analysis封装为MCP工具，供外部AI代理调用。
 

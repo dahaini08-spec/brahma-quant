@@ -1,6 +1,8 @@
 """
 brahma_brain_prompt.py — 梵天大脑 40年交易员人格 + Few-Shot Examples
 设计院三方联合封印 2026-09-12 苏摩111
+[孤岛登记 2026-09-26 苏摩111] 合理孤岛：唯一caller在_deprecated/（冻结），
+prompt资产保留供AI议会/内容生产复用
 
 职责：
   1. TRADER_SYSTEM_PROMPT: 编码40年顶级合约交易员的经验体系

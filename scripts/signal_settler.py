@@ -574,12 +574,20 @@ def main():
             )
             # 调用 free_llm_client 生成复盘一句话
             from free_llm_client import chat as _llm_review  # [P1-3修复 2026-09-23] _call_openrouter不存在，改chat()
+            # [9.26接线 苏摩111] 40年交易员人格SSOT接入：brahma_brain_prompt.TRADER_SYSTEM_PROMPT
+            # 接入位置：scripts/signal_settler.py → 复盘裁判员LLM system人格
+            _trader_persona = ''
+            try:
+                sys.path.insert(0, str(BASE / 'brahma_brain'))
+                from brahma_brain_prompt import TRADER_SYSTEM_PROMPT as _trader_persona
+            except Exception:
+                pass
             _review_prompt = (
                 f"你是梵天量化系统复盘裁判员。\n"
                 f"{_summary_str}\n"
                 f"用一句话(不超过30字)指出本批信号最大教词或需要注意的模式："
             )
-            _llm_lesson = _llm_review(_review_prompt, max_tokens=50)
+            _llm_lesson = _llm_review(_review_prompt, max_tokens=50, system=_trader_persona)
             if _llm_lesson:
                 _ll_entry = {
                     'ts':       time.time(),

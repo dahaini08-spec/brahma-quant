@@ -1,6 +1,7 @@
 """
 core_scorer.py — confluence_score() 独立可测试适配层
 接入位置：brahma_brain/brahma_core.py → from brahma_brain.core_scorer import score_signal
+[孤岛登记 2026-09-26 苏摩111] 主链不可达=已合并回brahma_core，保留供tests/test_core_scorer.py独立测试
 2026-09-07 设计院拆块封印（苏摩111）
 
 职责：

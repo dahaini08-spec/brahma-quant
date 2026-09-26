@@ -447,6 +447,12 @@ _WHITELIST = frozenset([
     'core_extra',    # 第三刀：Step4 extra_data适配层
     'core_factors',  # 第四刀：Step5-6因子层适配
     'core_output',   # 第五刀：输出格式化适配层
+    # 孤岛登记 2026-09-26 苏摩111（与scripts/orphan_check.py豁免名单同步）
+    'data_contract_validator',  # 独立契约验证工具（无运行时caller）
+    'dim_ic_audit',             # 一次性IC审计工具（jesse冻结，结论已出）
+    'brahma_brain_prompt',      # 人格prompt库（唯一caller在_deprecated/冻结）
+    'brahma_engine_v5',         # v5回测引擎（jesse冻结，dim_ic_audit同链）
+    'brahma_mcp_server',        # MCP服务器（独立启动进程非import消费）
 ])
 
 # 高价值孤岛（写好但未接入，每个-5健康分）

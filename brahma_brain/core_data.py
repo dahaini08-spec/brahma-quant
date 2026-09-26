@@ -1,6 +1,7 @@
 """
 core_data.py — Step1-3 市场数据接口适配层（第二刀）
 接入位置：brahma_brain/brahma_core.py → from brahma_brain.core_data import fetch_market_data
+[孤岛登记 2026-09-26 苏摩111] 主链不可达=已合并回brahma_core，保留供tests/test_core_data.py独立测试
 2026-09-07 设计院拆块封印（苏摩111）
 
 职责：
