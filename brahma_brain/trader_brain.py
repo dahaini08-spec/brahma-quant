@@ -795,7 +795,11 @@ def decide(
     # === Gate1: 统一裁判（[唯一裁判封印 2026-09-23 苏摩111]）===
     # 废除score_gate(80/45/30)自设门槛——Gate1只读calc_factors的SSOT action
     # 硬否决：score<0一票否决任何action（7天铁证：负分ENTER 7连败全灭）
+    # [B分级降权 2026-09-27 苏摩111批准·三方联合裁定] SSOT action=SKIP不再硬拒：
+    #   reject→warn（_score_gate_warn=True）→仍走Gate2(EV硬门)/Gate3/Gate4，
+    #   若全过=ENTER但仓位×0.5。EV门保留为唯一硬门，WR矩阵等铁证不再被官僚门挡住
     _score_gate = 80  # [P0修复 2026-09-23] 旧路径提示用变量，cf_action路径也要初始化（否则L886 UnboundLocalError）
+    _score_gate_warn = False
     if score < 0:
         _gate1_pass = False
         if direction != 'NONE':
@@ -803,7 +807,13 @@ def decide(
     elif cf_action:
         _gate1_pass = cf_action in ('ENTER_FULL', 'ENTER', 'ENTER_WATCH') and direction != 'NONE'
         if not _gate1_pass and direction != 'NONE':
-            missing.append(f'评分层action={cf_action or "空"}未达ENTER（SSOT唯一裁判，不再二次降门）')
+            if cf_action == 'SKIP':
+                # [B分级降权] SKIP=评分层不背书→降权通道而非拒绝：标记warn，后续仓位×0.5
+                _score_gate_warn = True
+                _gate1_pass = True
+                _info_flags.append('B降权: 评分层SKIP→warn通道（仓位×0.5，EV门保留）')
+            else:
+                missing.append(f'评分层action={cf_action or "空"}未达ENTER（SSOT唯一裁判，不再二次降门）')
     else:
         _score_gate = 80  # 旧调用方兼容（无cf_action参数时）
         _gate1_pass = score >= _score_gate and direction != 'NONE'
@@ -951,6 +961,10 @@ def decide(
         # 改进1：共振覆盖时score<120=仓位×0.5（不是否决）
         if _resonance_override and score < 120:
             _sm = min(_sm, 0.5)  # 共振覆盖但score低=减仓
+        # [B分级降权 2026-09-27 苏摩111] 评分层SKIP→warn通道：仓位×0.5
+        if _score_gate_warn:
+            _sm = min(_sm, 0.5)
+            _info_flags.append('B降权执行: 仓位×0.5（评分层SKIP warn通道）')
         _nav = risk.get('nav_mult', 1.0)
         _base = 5.0
         _mult = 1.0 if action == 'ENTER' else 0.4  # WATCH轻仓×0.4

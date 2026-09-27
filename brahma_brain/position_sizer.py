@@ -1304,7 +1304,7 @@ def _snap_to_key_level(price: float, key_levels: list, side: str,
     return best
 
 
-def compute(
+def compute_dynamic_sl(
     symbol: str,
     entry_price: float,
     signal_dir: str,
@@ -1877,7 +1877,7 @@ def _ucb1_score(wins: int, n: int, total_n: int, c: float = UCB_C) -> float:
 def recommend_sl_pct(
     regime: str,
     direction: str,
-    base_sl_pct: float,
+    base_sl_pct: float = 2.0,  # [9.27顶层修复] 默认2.0——L428的bandit臂统计调用不带入场SL，参数仅用于微调
     score: float = 100.0,
     verbose: bool = False,
 ) -> dict:

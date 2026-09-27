@@ -287,8 +287,9 @@ def scan_d2_data() -> list:
     contracts = {
         # 体制状态: regime_state_machine每次信号扫描更新，12h内正常
         'data/regime_state.json':       {'max_min': 720,  'level': 'ERROR',    'fix': 'none'},
-        # 仓位状态: position-guardian每5min更新，60min内正常
-        'data/brahma_state.json':       {'max_min': 60,   'level': 'WARN',     'fix': 'none'},
+        # 仓位状态: state_refresh每30min更新（13,43错峰），gateway杀家族事故后收紧=45min报警
+        # [9.27freshness 苏摩111] 从max_min=60收紧到45：gateway重启后bridge最长15m恢复，30min班次+15m恢复窗口
+        'data/brahma_state.json':       {'max_min': 45,   'level': 'WARN',     'fix': 'none'},
         # 实时价格: cron每小时刷新，120min内正常
         'data/live_prices.json':        {'max_min': 120,  'level': 'WARN',     'fix': 'init_live_prices'},
         # ws_guardian_state: 空仓时 idle 状态，仅有持仓时才需新鲜（达摩院2026-07-16）

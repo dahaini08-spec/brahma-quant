@@ -132,6 +132,11 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
         nav_pct = PAPER_NAV_PCT / 2
         log(f'CHOP体制，仓位减半 → {nav_pct*100:.1f}%NAV')
 
+    # [B分级降权 2026-09-27 苏摩111] 评分层SKIP warn通道：仓位再×0.5（EV门保留）
+    if signal.get('score_gate_warn'):
+        nav_pct = nav_pct * 0.5
+        log(f'B降权warn通道: 评分层SKIP，仓位×0.5 → {nav_pct*100:.2f}%NAV')
+
     # SL/TP计算
     if side == 'LONG':
         sl_price = price * (1 - sl_pct / 100)

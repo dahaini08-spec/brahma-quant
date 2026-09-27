@@ -1314,7 +1314,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # I3: 动态止损
     try:
-        from brahma_brain.position_sizer import compute as _dsl_compute
+        from brahma_brain.position_sizer import compute_dynamic_sl as _dsl_compute
         _drift_alert = extra_data.get('drift', {}).get('alert', 'OK')
         _kls = [lvl for lvl in ms.get('key_levels', {}).values()
                 if isinstance(lvl, (int,float)) and lvl > 0] if ms.get('key_levels') else []
@@ -3226,8 +3226,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         # [P3 陷阱预警仓位减半 2026-08-22 苏摩111封印]
         # 方仓陷阱=True：入场减仓×0.5，等待CHoCH确认后恢复满仓
         _ps_trap  = bool(_result.get('fangcang_trap', False))
+        # [9.27顶层修复 苏摩111] 死引用nav清除——analyze()签名无nav参数（历史遗留），
+        # get_position_pct内部自取NAV（_get_nav() SSOT），透传None
         _pos_res  = _pos_fn(_sym, _ps_score, _ps_dir,
-                            nav=nav if nav else 0,
                             sl_pct=_ps_sl if _ps_sl > 0 else None,
                             regime=_result.get('regime',''))
         # [9.17 苏摩111] regime_mult从breakdown读取，应用到仓位上限

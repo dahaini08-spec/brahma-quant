@@ -164,7 +164,20 @@ def get_har_rv(symbol: str) -> dict:
             if _CACHE_PATH.exists():
                 cached_all = json.loads(_CACHE_PATH.read_text())
             cached_all[symbol] = {'ts': now, 'data': result}
-            _CACHE_PATH.write_text(json.dumps(cached_all, indent=2))
+            # [9.27HAR-RV原子写 苏摩111] tmp+rename替代write_text：
+            # BTC/ETH并行分析线程各自整文件写 → Sep24双JSON拼接炸
+            # （Extra data: line 3227）→ 原子写后永不出现半截/拼接缓存
+            import tempfile as _tempfile
+            import os as _os
+            _fd, _tmp = _tempfile.mkstemp(dir=str(_CACHE_PATH.parent), suffix='.tmp')
+            try:
+                with _os.fdopen(_fd, 'w') as _f:
+                    json.dump(cached_all, _f, indent=2)
+                _os.replace(_tmp, str(_CACHE_PATH))
+            except Exception:
+                try: _os.unlink(_tmp)
+                except Exception: pass
+                raise
         except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         return result
         

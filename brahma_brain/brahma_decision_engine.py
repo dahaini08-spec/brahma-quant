@@ -127,8 +127,47 @@ def _get_liq_distances(symbol: str, price: float) -> dict:
 
 
 def _get_mtf_alignment(symbol: str, direction: str) -> int:
-    """返回与方向一致的周期数(0-4)"""
-    return 0
+    """[9.27MTF修复 苏摩111·三方联合批准] 真实现：多周期对齐计数(0-4)
+    数据源=data/brahma_state_{sym}.json（state_refresh每30min刷新，mtime新鲜度D2已守）
+    4个周期判定：1H/4H/1D用RSI>50(多)/<50(空)动量对齐，15M用最近BOS方向对齐。
+    替代前stub硬编码return 0（共振从未生效的根因）。
+    """
+    import json as _json
+    import os as _os
+    from pathlib import Path as _Path
+    try:
+        sym_lower = symbol.replace('USDT', '').lower()
+        sf = _Path('data') / f'brahma_state_{sym_lower}.json'
+        if not sf.exists():
+            return 0
+        # mtime>10min = 数据过期，不参与共振（防用陈旧数据给共振分）
+        if time.time() - sf.stat().st_mtime > 600:
+            return 0
+        st = _json.load(open(sf))
+        mom = st.get('momentum') or {}
+        rsi_map = {'15m': mom.get('rsi_15m'), '1h': mom.get('rsi_1h'),
+                   '4h': mom.get('rsi_4h'), '1d': mom.get('rsi_1d')}
+        count = 0
+        for tf, rsi in rsi_map.items():
+            if rsi is None:
+                continue
+            if direction == 'LONG' and rsi > 50:
+                count += 1
+            elif direction == 'SHORT' and rsi < 50:
+                count += 1
+        # 15M用结构BOS方向微调（若BOS与方向一致+1，与15M RSI不重复计）
+        smc = st.get('smc') or {}
+        bos_list = (smc.get('structure') or {}).get('bos') or []
+        if bos_list:
+            last_bos = str(bos_list[-1].get('type', ''))
+            if direction == 'LONG' and 'BULL' in last_bos:
+                count += 1
+            elif direction == 'SHORT' and 'BEAR' in last_bos:
+                count += 1
+        return max(0, min(4, count))
+    except Exception as e:
+        print(f'[WARN] _get_mtf_alignment: {e}', file=sys.stderr)
+        return 0
 
 
 def _get_fangcang_ev(symbol: str) -> float:
@@ -428,12 +467,16 @@ class BrahmaDecisionEngine:
             # 1c. 结构质量 —— [唯一裁判封印 2026-09-23] 读SSOT action而非grade门槛
             step1['grade'] = grade
             _ssot_act = str(signal.get('cf_action', '') or '').upper()
+            # [B分级降权 2026-09-27 苏摩111] SKIP→warn通道（不再硬拒）：Steps2-5照走，
+            # 全过后 EXECUTE/WAIT_15M 但标记 score_gate_warn=True，消费方仓位×0.5
+            # EV门/交叉验证/风控门全部保留，评分官僚门降级为减仓信号
+            _score_warn = False
             if _ssot_act:
                 if _ssot_act == 'SKIP':
-                    result['reason'] = f'Step1否决: 评分层action=SKIP（SSOT唯一裁判）'
-                    result['details']['step1'] = step1
-                    return result
-                if _ssot_act not in _SSOT_ACTIONS_ENTER:
+                    _score_warn = True
+                    step1['score_gate_warn'] = True
+                    step1['warn_note'] = 'B降权: 评分层SKIP→warn通道（后续仓位×0.5）'
+                elif _ssot_act not in _SSOT_ACTIONS_ENTER:
                     result['reason'] = f'Step1否决: 评分层action={_ssot_act}非ENTER系（SSOT唯一裁判）'
                     result['details']['step1'] = step1
                     return result
@@ -598,12 +641,16 @@ class BrahmaDecisionEngine:
             if confirmed_15m:
                 result['step_passed'] = 5
                 result['action'] = 'EXECUTE'
+                if _score_warn:
+                    result['score_gate_warn'] = True
                 if catalysts:
                     result['reason'] = f'五步全通过 | 催化剂:{catalysts[0]} | {reason_15m} | RR={rr:.2f}x'
                 else:
                     result['reason'] = f'五步全通过 | 无催化剂(放开) | {reason_15m} | RR={rr:.2f}x'
             else:
                 result['action'] = 'WAIT_15M'
+                if _score_warn:
+                    result['score_gate_warn'] = True
                 result['reason'] = f'步骤1-4通过，等待15m确认({reason_15m}) | RR={rr:.2f}x'
 
         except Exception as e:

@@ -59,6 +59,22 @@ def _load_queue() -> list:
         except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return []
 
+def _atomic_write(path, obj):
+    """[9.27freshness 苏摩111] 原子写：tmp+rename，防并发读到半截JSON（har_rv_cache同款病根）"""
+    import tempfile, os as _os
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=str(path.parent), suffix='.tmp')
+    try:
+        with os.fdopen(fd, 'w') as f:
+            json.dump(obj, f, ensure_ascii=False)
+        _os.replace(tmp, str(path))
+    except Exception:
+        try: _os.unlink(tmp)
+        except Exception: pass
+        raise
+
+
 def _save_queue(signals: list):
     SIGNAL_QUEUE_FILE.parent.mkdir(parents=True, exist_ok=True)
     SIGNAL_QUEUE_FILE.write_text(json.dumps(signals, ensure_ascii=False, indent=2))
@@ -308,6 +324,8 @@ def main():
                     # CHOP解锁信号额外字段
                     'chop_unlock': _chop_nav_override is not None,
                     'nav_pct_override': _chop_nav_override,  # None=正常仳位, float=CHOP限制仓位
+                    # [B分级降权 2026-09-27 苏摩111] 评分层SKIP warn通道：消费方仓位×0.5
+                    'score_gate_warn': bool(decision.get('score_gate_warn')),
                     # 供 paper_executor / auto_executor 判断用
                     'paper_only':  True,   # 纸面优先，实盘切换时改False
                 }
@@ -324,8 +342,9 @@ def main():
         # 保存综合state（含btc_price/eth_price/updated_at供测试和下游读取）
         _btc_state = all_states.get('BTCUSDT', {})
         _eth_state = all_states.get('ETHUSDT', {})
+        _now_epoch = time.time()
         _composite_state = {
-            'ts': time.time(),
+            'ts': _now_epoch,
             'nav': 130.0,
             'positions': [],
             'regime': _btc_state.get('regime', 'CHOP_MID'),
@@ -333,8 +352,11 @@ def main():
             'eth_price': _eth_state.get('price', 0),
             'updated_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
             'last_update': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+            # [9.27freshness 苏摩111] 快照年龄字段：下游健康检查用文件mtime+此字段双重验证
+            '_snapshot_age_sec': 0,
+            '_snapshot_written_epoch': _now_epoch,
         }
-        STATE_FILE.write_text(json.dumps(_composite_state, ensure_ascii=False))
+        _atomic_write(STATE_FILE, _composite_state)
 
         # 封印 2026-09-04 苏摩111：每个标的独立保存 brahma_state_<sym>.json
         # 修复根因：ETH分析读到BTC的_ob_map/_fvg_map（数据污染）
@@ -343,7 +365,9 @@ def main():
             _sym_file  = STATE_FILE.parent / f'brahma_state_{_sym_lower}.json'
             _state_copy = dict(_state)
             _state_copy['_sym_key'] = _sym
-            _sym_file.write_text(json.dumps(_state_copy, ensure_ascii=False))
+            _state_copy['_snapshot_age_sec'] = 0
+            _state_copy['_snapshot_written_epoch'] = _now_epoch
+            _atomic_write(_sym_file, _state_copy)
         print(f'[state_refresh] 已写入独立state: {list(all_states.keys())}')
     except Exception as e:
         print(f'[state_refresh] ⚠️  brahma_state.json写入失败: {e}')
