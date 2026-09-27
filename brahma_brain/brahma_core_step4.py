@@ -71,6 +71,17 @@ try:
     _WHALE_OK = True
 except Exception:
     _WHALE_OK = False
+# [9.27修复] _run_onchain/_run_pattern调用的两个名字从未import（顶层修复遗留）
+try:
+    from brahma_brain.onchain_engine import onchain_score as _onchain_score
+    _ONCHAIN_OK = True
+except Exception:
+    _ONCHAIN_OK = False
+try:
+    from brahma_brain.pattern_engine import pattern_score as _pattern_score
+    _PATTERN_OK = True
+except Exception:
+    _PATTERN_OK = False
 try:
     from brahma_brain.narrative_engine import macro_score as _macro_score
     _MACRO_OK = True
@@ -134,9 +145,6 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     _sym = symbol
     extra_data: dict = {}
     _bd = {}; _spec = {}; _sm = {}
-    if _s4_os.environ.get('BRAHMA_STEP4_TIMING'):
-        print('[step4-timing] _analyze_step4 ENTER', flush=True)
-
     # [修复 2026-09-02] signal_dir推断：CHOP体制下为时间框架标签(如'1h')，引擎需要LONG/SHORT
     # 推断规则：用ms评分偏向；若无法判断则用LONG（保守，避免错误惩罚）
     _eff_dir = signal_dir
@@ -313,31 +321,23 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     _ex = _TPE(max_workers=4)
     import os as _os_dbg4, time as _t_dbg4
     _STEP4_DBG = _os_dbg4.environ.get('BRAHMA_STEP4_TIMING') or (_os_dbg4.path.exists('/tmp/brahma_step4_timing'))
-    def _tlog(name, fn, *a):
-        print(f"[step4-timing] _tlog called: {name}", flush=True)
-        try:
-            with open('/tmp/s4_tlog_trace.txt','a') as _tf:
-                _tf.write(f'{name}\n')
-        except Exception:
-            pass
-        if not (_STEP4_DBG or _s4_os.environ.get('BRAHMA_STEP4_TIMING')): return fn(*a)
+    def _tlog(name, fn, *a, **kw):
+        if not (_STEP4_DBG or _s4_os.environ.get('BRAHMA_STEP4_TIMING')): return fn(*a, **kw)
         _t0 = _t_dbg4.time()
         try:
-            _r = fn(*a)
+            _r = fn(*a, **kw)
         except Exception as _te:
             print(f"[step4-timing] {name}: EXC after {_t_dbg4.time()-_t0:.2f}s: {type(_te).__name__}", flush=True)
             raise
         print(f"[step4-timing] {name}: {_t_dbg4.time()-_t0:.2f}s", flush=True)
         return _r
     try:
-        print('[step4-timing] pre-submit', flush=True)
         _f_oc  = _ex.submit(_run_onchain)
-        print('[step4-timing] post-submit-oc', flush=True)
-        print('[step4-timing] pre-submit-pt', flush=True)
         _f_pt  = _ex.submit(_run_pattern)
         _f_of  = _ex.submit(_run_orderflow)
         _f_mc  = _ex.submit(_run_macro)
-        try: extra_data['onchain'] = _tlog('onchain', _f_oc.result, timeout=5)
+        try:
+            extra_data['onchain'] = _tlog('onchain', _f_oc.result, timeout=5)
         except Exception: _f_oc.cancel()
         try:
             _pt = _tlog('pattern', _f_pt.result, timeout=5)
@@ -459,11 +459,11 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
         return _micro_score(symbol, _dir_for_engines)
 
     _ex2 = _TPE(max_workers=6)
-    def _tlog2(name, fn, *a):
-        if not (_STEP4_DBG or _s4_os.environ.get('BRAHMA_STEP4_TIMING')): return fn(*a)
+    def _tlog2(name, fn, *a, **kw):
+        if not (_STEP4_DBG or _s4_os.environ.get('BRAHMA_STEP4_TIMING')): return fn(*a, **kw)
         _t0 = _t_dbg4.time()
         try:
-            _r = fn(*a)
+            _r = fn(*a, **kw)
         except Exception as _te:
             print(f"[step4-timing] {name}: EXC after {_t_dbg4.time()-_t0:.2f}s: {type(_te).__name__}", flush=True)
             raise

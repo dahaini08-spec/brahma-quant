@@ -517,8 +517,9 @@ def _scan_history(
 
     # [加速 2026-09-02][9.27修复] 预计算特征缓存按end_ts绝对键存（窗口滚动不失配）
     # 原bug：_new_feats从未保存+key用first_ts导致4h新bar全量重算
+    # [9.27审计修复 苏摩111] NameError根因：引用了不存在的symbol_key → 正确参数名是symbol
     import hashlib as _hkey
-    _sym_key = _hkey.md5(f'{symbol_key}_4h'.encode()).hexdigest()[:8]
+    _sym_key = _hkey.md5(f'{symbol}_4h'.encode()).hexdigest()[:8]
     _cached_feats = _load_feat_cache(_sym_key, '4h')
     _feat_map: dict = {}  # end_ts -> feat_hist
     if _cached_feats:
