@@ -26,8 +26,18 @@ import sys
 
 # 推送配置（SSOT来自 MEMORY.md）
 JARVIS_USER_ID   = "73295708"
-# [V2.1 2026-09-23 苏摩111] 当前线程SSOT（userId路由测试验证通过）
-JARVIS_THREAD_ID = "01a0d79b-fea4-71b1-9f2a-c02a9844b4ed"
+# [V2.3 2026-09-27 苏摩111] 线程SSOT外置alerts/.env（会话级易变资产禁硬编码）
+# 优先级: alerts/.env(新值) > 9.23封印值(兜底) > P4静默
+def _load_thread_id() -> str:
+    try:
+        env = Path(__file__).parent.parent / "alerts" / ".env"
+        for line in env.read_text(encoding="utf-8").splitlines():
+            if line.startswith("JARVIS_THREAD_ID="):
+                return line.split("=", 1)[1].strip()
+    except Exception:
+        pass
+    return "01a0d79b-fea4-71b1-9f2a-c02a9844b4ed"  # 9.23封印值兜底
+JARVIS_THREAD_ID = _load_thread_id()
 _TARGET          = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"
 
 # [V2.1 2026-09-23] P2/P3伪UUID线程(019f15c9/019f04e3)从未实现，统一走主线程

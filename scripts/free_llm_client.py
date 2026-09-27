@@ -29,7 +29,7 @@ free_llm_client.py — OpenRouter免费LLM客户端
   brahma_brain/fangcang_engine.py
   brahma_brain/chop_breakout_detector.py
 """
-import json, os, ssl, time, urllib.request
+import json, os, ssl, time, urllib.request, urllib.error
 from pathlib import Path
 import sys
 
@@ -70,7 +70,8 @@ TASK_MODEL_MAP = {
 
 # fallback链：主模型失败时的备选顺序 [9.27重修]
 FALLBACK_MODELS = [
-    'nvidia/nemotron-3-super-120b-a12b:free',   # 可用但思考链泄漏（消费方空返回兑底）
+    'nvidia/nemotron-3-super-120b-a12b:free',   # 可用但思考链泄漏（finish=length拒收）
+    'qwen/qwen3.8-27b:free',                    # [9.27新增] 中文可用备选
     'inclusionai/ling-3.0-flash-fin:free',      # 上游日配额波动，重置窗口可能恢复
     'google/gemma-4-31b-it:free',               # 同上
 ]
@@ -87,6 +88,8 @@ BRAHMA_CONSTITUTION = """你是梵天量化系统的专项AI分析员。
 
 # ── 冷却管理：防429，同一模型3秒内不重复调用 ─────────────────────────
 _model_last_called: dict = {}   # {model_id: last_call_timestamp}
+_global_backoff_until = 0.0     # [V3] 全局429退避：全池共享配额，一模型429=全池退避
+llm_last_error = ''            # [V3] 最近一次失败原因（消费方可查）
 _COOLDOWN_S = 3                  # 同一模型最小间隔秒数
 
 def _pick_model(preferred: str) -> str:
@@ -130,9 +133,16 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
         {'role': 'user',   'content': prompt},
     ]
 
-    # 尝试preferred，失败则轮换fallback
-    tried = [model]
-    for attempt_model in ([model] + [m for m in FALLBACK_MODELS if m not in tried]):
+    # [V3 2026-09-27 苏摩111] 429感知退避 + 失败留证 + finish=length拒收
+    global _global_backoff_until
+    now = time.time()
+    last_err = ''
+    for attempt_model in ([model] + [m for m in FALLBACK_MODELS if m != model]):
+        if attempt_model not in _model_last_called:
+            _model_last_called[attempt_model] = 0
+        # 全局429退避：冷却未到直接跳过网络调用（省时间不烧配额）
+        if now < _global_backoff_until:
+            continue
         try:
             payload = json.dumps({
                 'model':       attempt_model,
@@ -150,14 +160,56 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
                 },
             )
             resp = json.loads(urllib.request.urlopen(req, timeout=timeout, context=_ctx).read())
-            content = resp['choices'][0]['message']['content'].strip()
-            if content:
-                _model_last_called[attempt_model] = time.time()
+            _model_last_called[attempt_model] = time.time()
+            _global_backoff_until = 0
+            choice = (resp.get('choices') or [{}])[0]
+            content = (choice.get('message') or {}).get('content', '').strip()
+            if content and choice.get('finish_reason') != 'length':
                 return content
-        except Exception:
-            _model_last_called[attempt_model] = time.time()  # 冷却记录
-            continue
+            if choice.get('finish_reason') == 'length':
+                last_err = f'{attempt_model}: finish=length(思考链泄漏/截断)'; continue
+        except urllib.error.HTTPError as e:
+            body = ''
+            try:
+                body = e.read().decode()[:200]
+            except Exception:
+                pass
+            _model_last_called[attempt_model] = time.time()
+            if e.code == 429:
+                # 上游配额耗尽：解析reset时间（epoch_ms），精确退避到重置点
+                reset_ms = e.headers.get('x-ratelimit-reset') if e.headers else None
+                if reset_ms:
+                    try:
+                        wait = max(60, int(int(reset_ms) / 1000 - time.time()) + 30)
+                    except Exception:
+                        wait = 600
+                else:
+                    wait = 600
+                _global_backoff_until = time.time() + wait
+                last_err = f'429 quota exhausted, backoff {wait}s'
+                # 429=全池共享配额，同源限额，轮换无意义 → 立即放弃
+                break
+            else:
+                last_err = f'{attempt_model}: HTTP {e.code} {body[:100]}'
+        except Exception as e:
+            _model_last_called[attempt_model] = time.time()
+            last_err = f'{attempt_model}: {type(e).__name__}: {str(e)[:100]}'
 
+    # [9.27修复] 失败留证：不再静默空返回，写诊断文件供消费方/哨兵读取
+    try:
+        state_f = Path(__file__).parent.parent / 'data' / 'llm_channel_state.json'
+        import datetime as _dt
+        state_f.write_text(json.dumps({
+            'last_failure_at': _dt.datetime.now(_dt.timezone.utc).isoformat(),
+            'last_error': last_err,
+            'backoff_until': _global_backoff_until,
+            'backoff_until_iso': _dt.datetime.fromtimestamp(_global_backoff_until, _dt.timezone.utc).isoformat() if _global_backoff_until else '',
+        }, ensure_ascii=False, indent=2))
+    except Exception:
+        pass
+    global llm_last_error
+    llm_last_error = last_err
+    print(f'[llm] all models failed: {last_err}', file=sys.stderr)
     return ''
 
 

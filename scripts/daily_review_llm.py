@@ -102,6 +102,25 @@ def _generate_review(data: dict) -> str:
         return f"LLM复盘生成失败: {e}"
 
 
+def _llm_channel_down() -> bool:
+    """[9.27 苏摩111] 静默失败根除：读free_llm_client失败留证文件"""
+    try:
+        st = DATA / 'llm_channel_state.json'
+        if not st.exists():
+            return False
+        import time as _t
+        d = json.loads(st.read_text())
+        # 状态文件24h内 且 记录了失败 → 通道异常
+        ts = d.get('last_failure_at', '')
+        if not ts:
+            return False
+        from datetime import datetime as _dt
+        age_h = (_dt.now(_dt.timezone.utc) - _dt.fromisoformat(ts)).total_seconds() / 3600
+        return age_h < 24
+    except Exception:
+        return False
+
+
 def run() -> None:
     print("每日复盘LLM总结开始...", flush=True)
     data   = _load_today_signals()
@@ -109,7 +128,24 @@ def run() -> None:
 
     if not review or 'failed' in review.lower():
         print("复盘生成失败，退出")
+        # [9.27修复] 静默失败→告警推送（push_hub哨兵格式合规）
+        try:
+            from push_hub import push_jarvis
+            push_jarvis(
+                "🤖⚠️ 每日复盘LLM通道失败（free_llm_client全模型无响应，详见data/llm_channel_state.json）",
+                priority='P1', dedup_key='daily_review_llm_fail', dedup_ttl=86400)
+        except Exception as _e:
+            print(f"告警推送失败: {_e}", file=sys.stderr)
         return
+    # 成功路径但通道24h内有失败记录 → P3提醒（退避中可能自愈）
+    if _llm_channel_down():
+        try:
+            from push_hub import push_jarvis
+            push_jarvis(
+                "🤖ℹ️ daily_review成功但LLM通道24h内有失败记录（429退避中，UTC明0点重置自愈）",
+                priority='P3', dedup_key='llm_channel_warn', dedup_ttl=86400)
+        except Exception:
+            pass
 
     # 写入memory文件
     today  = datetime.now(timezone.utc).strftime('%Y-%m-%d')
