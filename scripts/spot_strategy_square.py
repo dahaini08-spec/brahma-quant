@@ -30,6 +30,49 @@ BLOCKED_WORDS = [
 ]
 
 
+def _load_last_card_state(sym: str) -> dict:
+    """读取上次发布的卡片关键数字 [P0-3 2026-09-27 接入位置: spot_strategy_square.py run()]"""
+    path = BASE / 'data' / f'spot_card_last_{sym}.json'
+    if path.exists():
+        try:
+            return json.loads(path.read_text())
+        except Exception:
+            return {}
+    return {}
+
+
+def _should_post(sym: str, rec: dict) -> tuple:
+    """P0-3降频门控：数字变动>2%才发（复盘实锤：BTC/ETH卡片一字不差重发=重复内容降权+读者拿旧信息）
+
+    规则：
+    - 首次发：放行
+    - entry_lo/entry_hi/sl/tp1/tp2 任一变动>2%：放行并更新快照
+    - bias变化：放行并更新快照
+    - 其余：跳过
+    """
+    last = _load_last_card_state(sym)
+    if not last:
+        return True, '首次发布'
+
+    # bias变化优先
+    if last.get('bias') != rec.get('bias'):
+        return True, f"bias变化 {last.get('bias')}→{rec.get('bias')}"
+
+    # 关键数字变动>2%
+    for k in ('entry_lo', 'entry_hi', 'sl', 'tp1', 'tp2'):
+        old_v, new_v = last.get(k), rec.get(k)
+        if old_v is None or new_v is None:
+            continue
+        try:
+            old_f, new_f = float(old_v), float(new_v)
+        except (TypeError, ValueError):
+            continue
+        if old_f and abs(new_f - old_f) / old_f * 100 > 2.0:
+            return True, f'{k}变动{abs(new_f-old_f)/old_f*100:.1f}%'
+
+    return False, '数字变动<2%，24h内不发'
+
+
 def run_spot(symbol: str) -> dict:
     subprocess.run(
         ['python3', str(BASE / 'scripts' / 'spot_strategy_runner.py'),
@@ -129,6 +172,12 @@ def run(symbols: list, dry_run: bool = False):
             print(f'[{sym}] 策略内容为空，跳过')
             continue
 
+        # [P0-3 2026-09-27] 降频门控：数字变动>2%才发
+        should_post, reason = _should_post(sym, rec)
+        print(f'[{sym}] 降频门控: {reason}')
+        if not should_post:
+            continue
+
         print(f'[{sym}] LLM重写...', flush=True)
         content = rewrite_for_square(card)
 
@@ -145,6 +194,11 @@ def run(symbols: list, dry_run: bool = False):
             post_id = result.get('data', {}).get('id', '')
             print(f'[{sym}] ✅ Square发布成功 id={post_id}')
             push_jarvis(f'📢 拳头二现货策略发帖成功\n\n{sym} id={post_id}')
+            # [P0-3] 更新已发布快照
+            snap = {k: rec.get(k) for k in ('bias', 'entry_lo', 'entry_hi', 'sl', 'tp1', 'tp2')}
+            snap['ts'] = rec.get('ts', '')
+            (BASE / 'data' / f'spot_card_last_{sym}.json').write_text(
+                json.dumps(snap, ensure_ascii=False, indent=2))
         else:
             print(f'[{sym}] ❌ Square发布失败: {result}')
 

@@ -97,52 +97,96 @@ def _log_post(post_type: str, content: str, resp: dict):
 
 
 def run(syms: list, dry_run: bool = False) -> None:
-    """跑分析→模板填充→发帖"""
-    from square.square_template import build_battlefield_report, parse_analysis_output, audit_post
+    """跑分析→模板填充→发帖
+
+    [2026-09-27 苏摩111 P0-2] BTC/ETH合并为单帖双币联读：
+    - 复盘实锤：早间战场报告周发14帖0爆款、数据开头无钩子
+    - 合并后频率减半（省出额度给旗舰帖），主题钩子开头（事件反直觉公式）
+    - 2币并行分析→build_battlefield_report_combined单帖发布
+    - 接入位置：cron square-auto-post（11:30/17:30 UTC触发，--sym BTC ETH）
+    - 兼容性：单币种调用（--sym BTC）自动回退逐币旧路径build_battlefield_report
+    """
+    from square.square_template import build_battlefield_report, build_battlefield_report_combined, parse_analysis_output, audit_post
     from brahma_manual_analysis import run_analysis
 
-    for sym in syms:
-        print(f'[{sym}] 生成分析报告...', flush=True)
-        try:
-            report = run_analysis(sym, push_jarvis=False)
-        except Exception as e:
-            print(f'[{sym}] 分析失败: {e}')
-            continue
+    # ── 多币种：合并单帖路径（P0-2）──
+    if len(syms) > 1:
+        analysis_by_sym = {}
+        for sym in syms:
+            print(f'[{sym}] 生成分析报告...', flush=True)
+            try:
+                report = run_analysis(sym, push_jarvis=False)
+            except Exception as e:
+                print(f'[{sym}] 分析失败: {e}')
+                continue
+            analysis_by_sym[sym] = parse_analysis_output(report)
 
-        # 解析分析报告数据
-        data = parse_analysis_output(report)
-        data['price'] = data.get('price', 0)
+        if not analysis_by_sym:
+            print('全部分析失败，本轮跳过发帖')
+            return
 
-        # 如果VIP=WAIT，构建战场报告（不带入场条件）
-        # 如果VIP=ENTER，构建带入场条件的战场报告
-        content = build_battlefield_report(sym, data)
+        content = build_battlefield_report_combined(analysis_by_sym)
 
-        # 审计
         ok, issues = audit_post(content)
         if not ok:
-            print(f'[{sym}] 审计失败: {issues}')
-            continue
+            print(f'审计失败: {issues}')
+            return
 
-        # 去重
         if _is_duplicate(content):
-            print(f'[{sym}] 24h内重复，跳过')
-            continue
+            print('24h内重复，跳过')
+            return
 
-        print(f'[{sym}] 准备发帖 ({len(content)}字):')
+        print(f'准备合并发帖 ({len(content)}字):')
         print(content[:200] + '...')
 
         if dry_run:
-            print(f'[{sym}] DRY-RUN，跳过发帖')
-            continue
+            print('DRY-RUN，跳过发帖')
+            return
 
-        # 发帖
         resp = _post_to_square(content)
         if 'error' in resp:
-            print(f'[{sym}] 发帖失败: {resp["error"]}')
+            print(f'发帖失败: {resp["error"]}')
         else:
-            print(f'[{sym}] ✅ 发布成功')
+            print('✅ 合并发布成功')
             _mark_posted(content)
             _log_post('battlefield', content, resp)
+        return
+
+    # ── 单币种：逐币旧路径（兼容保留）──
+    sym = syms[0]
+    print(f'[{sym}] 生成分析报告...', flush=True)
+    try:
+        report = run_analysis(sym, push_jarvis=False)
+    except Exception as e:
+        print(f'[{sym}] 分析失败: {e}')
+        return
+    data = parse_analysis_output(report)
+    data['price'] = data.get('price', 0)
+    content = build_battlefield_report(sym, data)
+
+    ok, issues = audit_post(content)
+    if not ok:
+        print(f'[{sym}] 审计失败: {issues}')
+        return
+
+    if _is_duplicate(content):
+        print(f'[{sym}] 24h内重复，跳过')
+        return
+
+    print(f'[{sym}] 准备发帖 ({len(content)}字):')
+    print(content[:200] + '...')
+
+    if dry_run:
+        print(f'[{sym}] DRY-RUN，跳过发帖')
+        return
+
+    resp = _post_to_square(content)
+    if 'error' in resp:
+        print(f'[{sym}] 发帖失败: {resp["error"]}')
+    else:
+        print(f'[{sym}] ✅ 发布成功')
+        _mark_posted(content)
+        _log_post('battlefield', content, resp)
 
 
 if __name__ == '__main__':

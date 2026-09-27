@@ -139,6 +139,156 @@ def build_battlefield_report(sym, analysis_data):
     return '\n'.join(lines)
 
 
+def build_battlefield_report_combined(analysis_by_sym: dict) -> str:
+    """
+    BTC/ETH合并战场报告（单帖）：主题钩子→两币判断→两币操作→风险→互动
+    [2026-09-27 苏摩111 P0-2] 接入位置：square_auto_post.py run()（日发1:30/9:30两轮心cron）
+    复盘实锤：早间战场报告周发14帇0爆款，数据开头无钩子；合并后频率减半，
+    主题钩子开头（事件反直觉公式），两币并重对比引导读者关注差异。
+    数据缺失时任何币种降级为观察句，不酷刑、不崩溃（守卫：audit len>=100）。
+    """
+    data_btc = analysis_by_sym.get('BTC', {})
+    data_eth = analysis_by_sym.get('ETH', {})
+    date_str = datetime.now(CST).strftime('%m/%d')
+
+    def _num(sym, field, default=0.0):
+        v = analysis_by_sym.get(sym, {}).get(field, default)
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            return default
+
+    def _short(sym, field, fmt='{:,.0f}', default=0.0):
+        v = _num(sym, field, default)
+        if v == default:
+            return ''
+        return fmt.format(v)
+
+    btc_wall = _short('BTC', 'liq_wall')
+    btc_pool = _short('BTC', 'liq_pool')
+    eth_wall = _short('ETH', 'liq_wall')
+    eth_pool = _short('ETH', 'liq_pool')
+
+    bias_map = {'BTC': data_btc.get('bias', 'NONE'), 'ETH': data_eth.get('bias', 'NONE')}
+    n_bear = sum(1 for b in bias_map.values() if b == 'SHORT')
+    n_bull = sum(1 for b in bias_map.values() if b == 'LONG')
+
+    # ── 主题钩子：事件反直觉公式（数据支撑）——三选一，缩小重复风险 ──
+    if n_bear >= 1 and n_bull >= 1:
+        # 分歧反共振：一多一空
+        if bias_map['BTC'] == 'SHORT':
+            hook = (f'BTC系统判空，ETH反而看多——同一个盘面，两个币种却走向两个方向。'
+                    f'这不是矛盾，是主力在换仓位。')
+        else:
+            hook = (f'ETH系统判空，BTC反而看多——同一个盘面，两个币种却走向两个方向。'
+                    f'这不是矛盾，是主力在换仓位。')
+    elif n_bear == 2:
+        hook = (f'BTC和ETH系统判空，但大户持仓偶然偏多。'
+                f'聊天室里吼抄底的人不少——聊天室从来不是仓位，只是情绪。')
+    elif n_bull == 2:
+        hook = (f'BTC和ETH系统同时看多，但散户多空比已经挤向同一边。'
+                f'方向一致的时候我反而要问：谁在对面开单？')
+    else:
+        hook = (f'早盘最值得注意的不是方向，是BTC和ETH的多空分歧在变大。'
+                f'分歧不可怕，怕的是一边倒带另一边被动。')
+
+    # ── 两币并重判断（每币1~2句，数据缺失降级观察句） ──
+    segments = []
+    for sym in ('BTC', 'ETH'):
+        d = analysis_by_sym.get(sym, {})
+        b = d.get('bias', 'NONE')
+        wall = d.get('liq_wall')
+        pool = d.get('liq_pool')
+        wall_s = _short(sym, 'liq_wall')
+        pool_s = _short(sym, 'liq_pool')
+        if b == 'SHORT':
+            parts = []
+            if wall_s:
+                parts.append(f'上方止损墙${wall_s}是反弹阻力')
+            if pool_s:
+                parts.append(f'下方支撑池${pool_s}是目标')
+            if parts:
+                seg = f'{sym}：系统判空。' + '，'.join(parts) + '。'
+            else:
+                seg = f'{sym}：系统判空。等反弹到阻力位再评估空。'
+        elif b == 'LONG':
+            parts = []
+            if pool_s:
+                parts.append(f'下方支撑池${pool_s}是回踩买点')
+            if wall_s:
+                parts.append(f'上方止损墙${wall_s}是目标')
+            if parts:
+                seg = f'{sym}：系统看多。' + '，'.join(parts) + '。'
+            else:
+                seg = f'{sym}：系统看多。等回调到支撑位再评估多。'
+        else:
+            seg = f'{sym}：今天不给方向，两侧触发再动手。'
+            if wall_s and pool_s:
+                seg += f'破${wall_s}看多一步，破${pool_s}看空一步。'
+        segments.append(seg)
+
+    # ── 操作建议：逐币调单行（ENTER才出挂单区，WAIT出等待触发条件） ──
+    action_lines = []
+    for sym in ('BTC', 'ETH'):
+        d = analysis_by_sym.get(sym, {})
+        vip = d.get('vip_status', 'WAIT')
+        b = d.get('bias', 'NONE')
+        lo = d.get('entry_lo')
+        hi = d.get('entry_hi')
+        sl = d.get('sl')
+        tp1 = d.get('tp1')
+        def _fmt(v, spec=',.0f'):
+            try:
+                return format(float(v), spec)
+            except (TypeError, ValueError):
+                return ''
+        if vip == 'ENTER' and lo and hi and sl:
+            emoji = '🔴' if b == 'SHORT' else '🟢'
+            side = '空单' if b == 'SHORT' else '多单'
+            line = f'{emoji} {sym}{side}挂单区${_fmt(lo)}~${_fmt(hi)}'
+            line += f'｜止损${_fmt(sl)}'
+            if tp1:
+                line += f'｜目标${_fmt(tp1)}'
+            action_lines.append(line)
+        else:
+            wall_s2 = _short(sym, 'liq_wall')
+            pool_s2 = _short(sym, 'liq_pool')
+            line = f'{sym}：暂无单，等结构触发。'
+            if wall_s2 and pool_s2:
+                line += f'反弹到${wall_s2}+收阴看空确认；回踩${pool_s2}+收阳看多确认。'
+            action_lines.append(line)
+
+    # ── 组装 ──
+    lines = [f'早盘战场报告 {date_str}｜BTC+ETH双币联读', '']
+    lines.append(hook)
+    lines.append('')
+    lines.append('先看两个盘子：')
+    for seg in segments:
+        lines.append(seg)
+    lines.append('')
+    lines.append('操作上：')
+    for a in action_lines:
+        lines.append(a)
+    lines.append('')
+
+    # 失效期（取两币更差）
+    failure_states = [d.get('failure_state', 'GREEN') for d in (data_btc, data_eth)]
+    if 'RED' in failure_states:
+        lines.append('当前市场处于失效期，信号不可靠，仓位减半。')
+        lines.append('')
+    elif 'YELLOW' in failure_states:
+        lines.append('失效期YELLOW，仓位打折。')
+        lines.append('')
+
+    lines.extend([
+        f'{BRAND_SUFFIX}',
+        f'#BTC #ETH #合约交易',
+        f'',
+        f'{INTERACTION_HOOKS["battlefield"]}',
+    ])
+    return '\n'.join(lines)
+
+
 def _generate_viewpoint(sym, regime, score, fvg_dir, fvg_magnet, price,
                        liq_wall, liq_pool, oi_signal, cvd_1h,
                        big_long, retail_long, hurst, kappa, bias, vip_status):
