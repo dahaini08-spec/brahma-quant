@@ -976,6 +976,47 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
         pass  # drawdown_tracker不可用时静默降级，不阻断执行
     # ── end drawdown_tracker ─────────────────────────────────────────────
 
+    # ── [梵天2.0影子风控评估 2026-09-27 苏摩111] BRAHMA_SHADOW=1: risk_gate只记录不拦截 ──
+    # 接入位置: brahma_brain/risk_gate.py / reports/brahma_2.0_design.md §6 T1
+    # 双层硬闸(--allow-live + BRAHMA_ALLOW_LIVE)原样不动；1.0行为100%不变
+    if os.environ.get('BRAHMA_SHADOW') == '1':
+        try:
+            from brahma_brain import risk_gate as _rg
+            _dir = (direction or 'SHORT').upper()
+            if _dir in ('BUY',): _dir = 'LONG'
+            if _dir in ('SELL',): _dir = 'SHORT'
+            _open_pos = []
+            try:
+                _ap_iter = active_positions if isinstance(active_positions, list) else (active_positions or {}).values()
+                for _ap in _ap_iter:
+                    _s = _ap.get('symbol') if isinstance(_ap, dict) else getattr(_ap, 'symbol', None)
+                    _side = _ap.get('side') if isinstance(_ap, dict) else getattr(_ap, 'side', None)
+                    if _s: _open_pos.append({'symbol': str(_s).upper(), 'side': str(_side or '').upper()})
+            except Exception:
+                pass
+            _state = {'open_positions': _open_pos, 'now_ts': time.time()}
+            _sig = {'symbol': sym, 'side': _dir, 'regime': signal.get('regime', ''),
+                    'score': float(signal.get('score', 0)),
+                    'sl_pct': float(signal.get('sl_pct', signal.get('stop_pct', 2.0)) or 2.0),
+                    'price': float(signal.get('price', 0) or 0),
+                    'leverage': float(signal.get('leverage', 5) or 5),
+                    'nav_pct': float(signal.get('nav_pct', 0) or 0),
+                    'atr1h': signal.get('atr1h') or (signal.get('momentum') or {}).get('atr_1h') if isinstance(signal.get('momentum'), dict) else signal.get('atr1h')}
+            _verdict = _rg.evaluate(_sig, _state)
+            _rec = {'ts': round(time.time(), 3), 'ts_iso': datetime.now(timezone.utc).isoformat(),
+                    'mode': 'shadow', 'source': 'auto_executor',
+                    'signal_id': signal.get('signal_id', ''), 'symbol': sym, 'side': _dir,
+                    'regime': _sig['regime'], 'score': _sig['score'], 'risk_gate': _verdict}
+            with open(Path(__file__).parent.parent / 'data' / 'shadow_decisions.jsonl', 'a') as _f:
+                _f.write(json.dumps(_rec, ensure_ascii=False) + '\n')
+        except Exception as _sge:
+            try:
+                from brahma_brain import error_ledger as _el
+                _el.count('risk_gate', error=_sge, context={'phase': 'auto_shadow', 'symbol': sym})
+            except Exception:
+                pass
+    # ── end 2.0影子评估 ─────────────────────────────────────────────
+
     # ── [A0b 议会veto检查 2026-08-26 P1修复 | P0-1增强 2026-09-04 苏摩111] ────────
     # llm_council_bridge在veto时设置signal['action']='SKIP'，auto_executor必须检查
     # P0-1修复：同时检查 AVOID（free_llm_client council_three_way返回格式）

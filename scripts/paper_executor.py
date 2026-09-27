@@ -13,7 +13,7 @@ paper_executor.py — 纸面系统专属开单执行器
   - supercronic: */40 * * * * python3 scripts/paper_executor.py
   - paper_tp_monitor.py 读取 paper_positions.json 做止盈追踪
 """
-import json, sys, time
+import json, os, sys, time
 from pathlib import Path
 from datetime import datetime, timezone
 import sys
@@ -28,6 +28,51 @@ PAPER_LOG        = BASE / 'logs' / 'paper_executor.log'
 
 # 纸面系统专属门槛（比实盘宽松）
 PAPER_SCORE_MIN  = 100  # [P0对齐 2026-09-24 苏摩111] 80→100对齐MIN_SCORE_OPEN（LLM建议采纳线非硬风控，见三方体检报告）
+
+
+def _shadow_evaluate_risk_gate(signal: dict, sym: str, side: str, positions_data: dict) -> None:
+    """[梵天2.0影子评估 2026-09-27] risk_gate纯评估→data/shadow_decisions.jsonl，零拦截。
+    接入位置: brahma_brain/risk_gate.py + reports/brahma_2.0_design.md §6 T1
+    """
+    try:
+        from brahma_brain import risk_gate
+        import paper_ledger as _pl
+        now_ts = time.time()
+        # state构建: open_positions(仅未平仓) + NAV/今日盈亏 + atr1h(信号带则传,否则缺省)
+        open_pos = [{'symbol': p.get('symbol'), 'side': p.get('side')}
+                    for p in (positions_data.get('positions') or []) if p.get('status') != 'closed']
+        today_pnl_pct = None
+        try:
+            _today = 0.0
+            for line in open(BASE / 'data' / 'paper_ledger_log.jsonl'):
+                try:
+                    o = json.loads(line)
+                    if time.strftime('%Y-%m-%d', time.gmtime(o.get('ts', 0))) == time.strftime('%Y-%m-%d', time.gmtime(now_ts)):
+                        _today += float(o.get('pnl', 0) or 0)
+                except Exception:
+                    pass
+            start_nav = float(getattr(_pl, 'START_NAV', 100000))
+            today_pnl_pct = _today / start_nav * 100.0
+        except Exception:
+            pass
+        state = {'open_positions': open_pos, 'today_pnl_pct': today_pnl_pct, 'now_ts': now_ts}
+        sig = {'symbol': sym, 'side': side, 'regime': signal.get('regime', ''),
+               'score': signal.get('score_final', signal.get('score', 0)),
+               'sl_pct': signal.get('sl_pct', 2.0), 'price': signal.get('price', 0),
+               'leverage': signal.get('leverage', 5),
+               'nav_pct': signal.get('nav_pct', 0),
+               'atr1h': signal.get('atr1h', signal.get('atr_1h'))}
+        verdict = risk_gate.evaluate(sig, state)
+        rec = {'ts': round(now_ts, 3), 'ts_iso': datetime.now(timezone.utc).isoformat(),
+               'mode': 'shadow', 'source': 'paper_executor',
+               'signal_id': signal.get('signal_id') or signal.get('id'),
+               'symbol': sym, 'side': side, 'regime': sig['regime'], 'score': sig['score'],
+               'risk_gate': verdict}
+        with open(BASE / 'data' / 'shadow_decisions.jsonl', 'a') as f:
+            f.write(json.dumps(rec, ensure_ascii=False) + '\n')
+    except Exception as e:
+        from brahma_brain import error_ledger
+        error_ledger.count('risk_gate', error=e, context={'phase': 'shadow_eval', 'symbol': sym})
 PAPER_GRADE_MIN  = 0  # [P0对齐 2026-09-24] grade线废除——SSOT唯一裁判=cf_action+score，grade回退路径已封禁
 PAPER_NAV_PCT    = 0.05   # 5%NAV per trade
 MAX_POSITIONS    = 1       # 每个标的最多1单
@@ -84,6 +129,15 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
     """开纸面仓位"""
     sym    = signal.get('symbol', '')
     side   = signal.get('signal_dir', signal.get('direction', 'LONG'))
+    if side in ('BUY',): side = 'LONG'
+    if side in ('SELL',): side = 'SHORT'
+    # [梵天2.0影子风控评估 2026-09-27 苏摩111] BRAHMA_SHADOW=1: risk_gate只记录不拦截
+    # 1.0行为100%不变；影子结果写入 data/shadow_decisions.jsonl（T2 A/B对照盘数据源）
+    if os.environ.get('BRAHMA_SHADOW') == '1':
+        try:
+            _shadow_evaluate_risk_gate(signal, sym, side, positions_data)
+        except Exception as _se:
+            print(f'[WARN] shadow risk_gate eval failed: {_se}', file=sys.stderr)
     # [P0-1执行端封堵 2026-09-25 苏摩111] WAIT_15M/WAIT_ENTRY/SKIP/WATCH=非执行指令
     # 双保险：即使上游误入队，执行端也拒绝市价开单（根修在brahma_state_refresh）
     _action = str(signal.get('action', '') or '').upper()

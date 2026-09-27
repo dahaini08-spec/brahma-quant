@@ -33,6 +33,7 @@ ROOT = Path(__file__).parent.parent
 #   brahma_mcp_server                 MCP服务器（独立启动进程，非import消费）
 # 以下为v2.0 hook遗留豁免（历史登记，含已删文件名，保留无害）：
 _EXEMPT = frozenset('''
+    error_ledger risk_gate
     brahma_360 brahma_health brahma_wiring_check brahma_smoke_test_v2 math_utils safe_fetch
     state_store brahma_bus regime_config brahma_ci brahma_cpu brahma_pipeline brahma_gateway
     brahma_readiness market_quadrant brahma_context_injector multi_tf_context_builder
