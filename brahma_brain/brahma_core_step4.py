@@ -182,16 +182,10 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
         extra_data['fear_greed'] = _cg_snap['fear_greed']
         extra_data['onchain_score'] = _cg_snap['onchain_score']
     except Exception as _cg_e:
-        # [设计院 2026-05-30] 降级链：尝试备用数据源
+        # [设计院 2026-05-30] 降级链
+        # [9.27顶层修复 苏摩111] coinglass_fallback模块不存在已确认（死链路）
         try:
-# 模块不存在，已注释
-# from coinglass_fallback import get_full_snapshot_with_fallback as _cg_fb
-            _cg_snap_fb = _cg_fb(_sym)
-            extra_data['coinglass']     = _cg_snap_fb
-            extra_data['fear_greed']    = _cg_snap_fb['fear_greed']
-            extra_data['onchain_score'] = _cg_snap_fb.get('onchain_score', 0)
-            _src = _cg_snap_fb['fear_greed'].get('source','?')
-            pass  # [静默] f'[BrahmaBrain] CoinGlass降级[{_src}]: F&G={_cg_snap_fb["fear_greed"]["value"]} FR
+            raise ModuleNotFoundError('coinglass_fallback')
         except Exception as _fb_e:
             print(f"[WARN] brahma_core_step4: {_fb_e}", file=sys.stderr)
     # ── liq_scanner 补充清算数据（Binance公开接口，无需Coinglass Key）────

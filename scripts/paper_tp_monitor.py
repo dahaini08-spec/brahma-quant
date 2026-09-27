@@ -128,6 +128,16 @@ def close_position(pos: dict, reason: str, current_price: float, positions_data:
 
 
 def main():
+    # [B线单实例锁 2026-09-27 苏摩111] tp_monitor与executor共用锁（SL/TP监控不吃竞态）
+    from paper_lock import paper_lock
+    with paper_lock('paper_tp_monitor') as ok:
+        if not ok:
+            print('HEARTBEAT_OK (lock busy, skip)')
+            return
+        _main_locked()
+
+
+def _main_locked():
     data = load_positions()
     positions = data.get('positions', [])
 

@@ -114,20 +114,17 @@ def calc_factors(ms: dict, signal_dir: str, score: int, breakdown: dict,
     breakdown['_ssot_grade'] = grade
     breakdown['_ssot_kelly_mult'] = kelly_mult
 
-    # [果蝇Phase 0] 维度级trace写入 — 每个维度的最终分数和状态
+    # [果蝇Phase 0] 维度级trace写入
+    # [9.27顶层修复 苏摩111] s1-s22死引用清除——calc_factors签名无这些变量（V3-3拆分遗留），
+    # trace改用breakdown实际维度名，不再静默烧WARN
     try:
         from brahma_brain.dim_trace_writer import trace_dim as _trace
         _sym_for_trace = (ms.get('symbol') or '').upper()
         _regime_for_trace = str(ms.get('regime', '')).upper()
-        for _dn, _ds in [('s1', s1), ('s2', s2), ('s3', s3), ('s4', s4),
-                        ('s5', s5), ('s5b', s5b), ('s6', s6),
-                        ('s7', s7), ('s8', s8), ('s9', s9), ('s10', s10),
-                        ('s11', s11), ('s12', s12), ('s13', s13), ('s14', s14),
-                        ('s15', s15), ('s16', s16), ('s17', s17), ('s18', s18),
-                        ('s19', s19), ('s20', s20), ('s21', s21), ('s22', s22)]:
-            _status = 'sleep' if _ds == 0 else 'ok'
-            _trace(_dn, {'symbol': _sym_for_trace, 'regime': _regime_for_trace, 'dir': signal_dir},
-                   {'score': _ds}, _status, 0)
+        for _bk_name, _bk_val in list(breakdown.items())[:25]:
+            if isinstance(_bk_val, (int, float)):
+                _trace(_bk_name[:20], {'symbol': _sym_for_trace, 'regime': _regime_for_trace, 'dir': signal_dir},
+                       {'score': _bk_val}, 'ok', 0)
     except Exception as _e:
         print(f"[WARN] brahma_core_factors: {_e}", file=sys.stderr)
 

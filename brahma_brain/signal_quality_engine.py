@@ -400,12 +400,14 @@ def _load_recent_wr(symbol: str) -> float:
 
 
 def add_signal(symbol: str, signal_dir: str, score: float, regime: str,
-               extra: dict = None, grade: int = 0) -> dict:
+               extra: dict = None, grade: int = 0, **kwargs) -> dict:
     """
     尝试将信号加入队列
     grade: 结构质量分(0-100)，用于分级冷却豁免（设计院 v2.0）
+    [9.27顶层修复 苏摩111] **kwargs兼容：brahma_core传入effective_grade/grade_mult
+    （v25.4b体制感知grade），透传到返回meta，不再TypeError烧WARN
     Returns:
-        {'accepted': bool, 'reason': str, 'priority': float, 'rank': int}
+        {'accepted': bool, 'reason': str, 'priority': float, 'rank': int, 'meta': dict}
     """
     state = _load_state()
     now = datetime.now(timezone.utc)
@@ -475,7 +477,7 @@ def add_signal(symbol: str, signal_dir: str, score: float, regime: str,
         pass
 
     rank = next((i+1 for i,e in enumerate(queue) if e['symbol']==symbol), 99)
-    return {
+    result = {
         'accepted': True,
         'reason': f'Added to queue rank #{rank}',
         'priority': round(priority, 4),
@@ -483,6 +485,10 @@ def add_signal(symbol: str, signal_dir: str, score: float, regime: str,
         'queue_depth': len(queue),
         'regime_match': regime_b > 0.5,
     }
+    # [9.27顶层修复 苏摩111] kwargs元数据透传（effective_grade/grade_mult供执行层分级）
+    if kwargs:
+        result['meta'] = dict(kwargs)
+    return result
 
 
 def get_next() -> dict | None:

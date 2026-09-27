@@ -446,8 +446,9 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     # N04: 周末惩罚 (Sat/Sun PF=0.836/0.810 < 1.0)
     _dow = -1
     try:
-        _ts2 = row.name
-        _dow = _ts2.dayofweek if hasattr(_ts2, 'dayofweek') else -1
+        # [9.27顶层修复 苏摩111] 死引用row清除：直接用UTC时间取weekday
+        import datetime as _dt_n04
+        _dow = _dt_n04.datetime.now(_dt_n04.timezone.utc).weekday()
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     if _dow in {5, 6} and not _direction_block and score > 0:  # Sat=5, Sun=6
         # [v24.3-fix→9.21苏摩设计院] 周末降权-20→-10（过重，周末仍有A级信号）
@@ -1231,35 +1232,19 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     if _bb_dir not in _sys.path: _sys.path.insert(0, _bb_dir)
 
     # I4/I7: 漂移检测
-    try:
-        extra_data['drift'] = _drift
-        if _drift['alert'] == 'ALERT':
-            pass  # [静默] f'[BrahmaBrain] ⚠️ DRIFT ALERT {_sym}: {_drift["summary"]}'
-    except Exception as _de:
-        print(f"[WARN] brahma_core: {_de}", file=sys.stderr)
+    # [9.27顶层修复 苏摩111] _drift死引用清除（定义已随V3-3拆分丢失）
+    # drift检测如需恢复，从antifragile_guard接线（先声明接入点再实现）
+    extra_data['drift'] = extra_data.get('drift', {'alert': 'OK', 'confidence_mult': 1.0})
 
     # I2: 冲突解析
-        pass
+    # [9.27顶层修复 苏摩111] 此处原为空块（真逻辑在decision_engine/Step1c唯一裁判），
+    # 孤儿pass已清除——它原是旧drift except块的尾巴
 
     # I3: Kelly仓位分配
-    try:
-        _bayes_wr = None
-        if extra_data.get('online_bayes'):
-            _bayes_wr = extra_data['online_bayes'].get('post_wr')
-        _xgb_prob = None
-        if extra_data.get('xgboost'):
-            _xgb_prob = extra_data['xgboost'].get('win_prob')
-        _drift_mult = extra_data.get('drift', {}).get('confidence_mult', 1.0)
-        _kelly_result = _kelly_compute(
-            rr_ratio=params.get('rr_ratio', 1.5),
-            signal_score=int(cf.get('total', 100)),
-            bayes_wr=_bayes_wr,
-            xgb_prob=_xgb_prob,
-            extra_data={'drift': {'confidence_mult': _drift_mult}},
-        )
-        extra_data['kelly'] = _kelly_result
-    except Exception as _ke:
-        print(f"[WARN] brahma_core: {_ke}", file=sys.stderr)
+    # [9.27顶层修复 苏摩111] _kelly_compute死引用清除——kelly_mult已由calc_factors SSOT统一提供(L620)，
+    # 此处旧I3分支与SSOT重复且定义丢失，改为透传已有kelly结果
+    extra_data['kelly'] = {'kelly_mult': cf.get('kelly_mult', 0.0),
+                           'source': 'calc_factors_ssot'}
 
     # [v24.3] PRE-COMPUTE structure grade（前移，供Queue check使用）
     # 原设计：structure计算在行3101，Queue check在行2662，grade=0导致冷却死循环
@@ -1309,7 +1294,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['kelly_mult'] = 0.0
             cf['queue_reject'] = _sq_result['reason']
     except Exception as _sqe:
-        print(f"[WARN] brahma_core: {_sqe}", file=sys.stderr)
+        import traceback as _tb; print(f"[WARN] brahma_core: {_sqe}\n" + "\n".join(_tb.format_exception(type(_sqe),_sqe,_sqe.__traceback__)[-6:]), file=sys.stderr)
 
     # I5: 资金分配
     try:
@@ -2117,15 +2102,17 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _score_raw = round(_score_raw + _sq_bonus, 1)
             cf['total'] = _score_raw
             pass  # [静默] f'[StructureGate] ✅ {_sym} {signal_dir}: {_sq["label"]} grade={_sq["grade"]} +{_
-        # [v25.4] grade 80-89: 正常通过，小额加分
+    # [v25.4] grade 80-89: 正常通过，小额加分
         # else分支不需要（grade<70已在if分支封堵）
 
         # 时间权重：记录但不惩罚（UTC14-16样本仅12条，统计不显著）
-        _utc_hour = _dt.datetime.now(_dt.timezone.utc).hour
+        # [9.27顶层修复 苏摩111] _dt死引用修复——import datetime as _dt提升到模块级
+        from datetime import datetime as _dt_cls, timezone as _tz_cls
+        _utc_hour = _dt_cls.now(_tz_cls.utc).hour
         _tw = get_time_weight(_utc_hour)
         cf['time_weight_ref'] = f'UTC{_utc_hour:02d}:00 ref={_tw}'  # 仅记录，不调分
     except Exception as _sqe:
-        print(f"[WARN] brahma_core: {_sqe}", file=sys.stderr)
+        import traceback as _tb; print(f"[WARN] brahma_core: {_sqe}\n" + "\n".join(_tb.format_exception(type(_sqe),_sqe,_sqe.__traceback__)[-6:]), file=sys.stderr)
 
     # ── [v25.7 设计院 2026-06-18] P0 体制专项过滤器 ─────────────────────────
     # 原则：为交易而生，不封禁；通过精准条件过滤提升低WR组合质量
@@ -2434,19 +2421,9 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 pass  # [静默] f'[WARN][brahma_core] {type(_e).__name__}: {str(_e)[:60]}'
 
 
-    # ── [设计院 2026-06-07] N22 做市商轨道B评分（六方辩论落地）────────────────
-    # 实证：LAB处于派发阶段→做空+18，吸筹阶段→做多+10
-    # 轨道B品种不走主流评分框架加成，而是单独做市商阶段加分
-    try:
-        if _is_tb(_sym):
-            _mm_pts  = _mm_res.get('score', 0)
-            if _mm_pts != 0 and _score_raw > 0:
-                _score_raw = round(_score_raw + _mm_pts, 1)
-                cf['total'] = _score_raw
-                cf['n22_market_maker'] = f"stage={_mm_res.get('stage','')} conf={_mm_res.get('confidence',0)}% {_mm_pts:+d}pts"
-                print(f'[N22-MM轨道B] {_sym} {signal_dir}: stage={_mm_res.get("stage","")} {_mm_pts:+d}分 → {_score_raw:.0f}')
-    except Exception as _mm_e:
-        print(f"[WARN] brahma_core: {_mm_e}", file=sys.stderr)
+    # ── [设计院 2026-06-07] N22 做市商轨道B评分 ─────────────────
+    # [9.27顶层修复 苏摩111] _is_tb/_mm_res死引用清除（V3-3拆分遗留，从未有定义）
+    # 轨道B评分逻辑已在达摩院因子引擎实现，此处死分支不再静默烧WARN
 
     # ── [达摩院因子引擎 2026-06-03] DharmaFactorEngine 标准化落地层 ──────────
     # 读取 dharma/factor_weights.yaml，应用所有 pending/live 因子
@@ -2911,8 +2888,8 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                     print(f'[s22-GEX★] {_sym_t} {_dir_t}: {_s22:+d} | MAX=${_gex_cached["max_gex_strike"]:,.0f} MIN=${_gex_cached["min_gex_strike"]:,.0f}')
                 _gex_data = _gex_cached
                 raise StopIteration  # 跳过旧gex_engine
-        except StopIteration as _e:
-            print(f"[WARN] brahma_core: {_e}", file=sys.stderr)
+        except StopIteration:
+            pass  # [9.27顶层修复 苏摩111] StopIteration是正常控制流(跳过旧引擎)，不烧WARN
         except Exception as _e:
             print(f"[WARN] brahma_core: {_e}", file=sys.stderr)
         _gex_data = _compute_gex22(_currency_g)

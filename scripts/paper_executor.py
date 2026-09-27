@@ -206,6 +206,16 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
 
 
 def main():
+    # [B线单实例锁 2026-09-27 苏摩111] 拿不到锁=跳过本轮（防多写者竞态）
+    from paper_lock import paper_lock
+    with paper_lock('paper_executor') as ok:
+        if not ok:
+            print('HEARTBEAT_OK (lock busy, skip)')
+            return
+        _main_locked()
+
+
+def _main_locked():
     signals = load_signal_queue()
     if not signals:
         print('HEARTBEAT_OK')

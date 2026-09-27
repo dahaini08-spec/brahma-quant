@@ -77,6 +77,11 @@ def open_cost(notional: float) -> float:
     return notional * (TAKER_FEE_BPS + SLIPPAGE_BPS) / 10_000.0
 
 
+def close_cost(notional: float) -> float:
+    """平仓成本 = taker费 + 滑点（与open_cost对称）"""
+    return notional * (TAKER_FEE_BPS + SLIPPAGE_BPS) / 10_000.0
+
+
 def round_trip_cost(notional: float, hours_held: float = 0.0) -> float:
     """往返成本 = 双边taker+滑点 + funding(按8h计提)"""
     base = 2 * notional * (TAKER_FEE_BPS + SLIPPAGE_BPS) / 10_000.0

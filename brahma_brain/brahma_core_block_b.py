@@ -106,6 +106,8 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
                 s7 = max(-20, s7 + _ob_pts)  # 下限-20
             else:
                 s7 = min(15, s7 + _ob_pts)   # 上限保持15
+    except ImportError:
+        pass  # [9.27顶层修复] 9.1精简封印有意删除该模块——静默降级，非故障
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── s7增强层②: liq_density_engine 三所清算密度（方向性加权 2026-07-01）──────────────────
     # liq_density 评分基准视角: +分 = 顺势做空 / -分 = 逆势做空
@@ -151,6 +153,8 @@ def calc_block_b(ms: dict, smc: dict, signal_dir: str,
             # [达摩院v6.0] L/S拥挤度 IC=-0.0131 → 信息层
             breakdown['L/S拥挤度_info'] = _bla_delta
             breakdown['L/S拥挤度'] = _bla_delta
+    except ImportError:
+        pass  # [9.27顶层修复] 9.1精简封印有意删除该模块——静默降级，非故障
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── s8增强层: Volume Profile 成交密度分析（三院审核修复 2026-07-08）────────────────
     # 职责：识别当前价格区间是高密度支撑区还是低密度空洞

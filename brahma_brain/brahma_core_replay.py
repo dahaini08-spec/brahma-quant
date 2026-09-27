@@ -205,7 +205,8 @@ def calc_replay(ms: dict, signal_dir: str, score: int, breakdown: dict, _result:
         _kelly_tier = 'C';   _pos_tier = 0.0
     # 将仓位分级注入 extra_data 供执行层使用
     # [9.20修复] extra_data可能未传入，用_result替代
-    _extra = extra_data if 'extra_data' in dir() and extra_data is not None else _result
+    # [9.27顶层修复 苏摩111] calc_replay签名无extra_data——_result是唯一载体
+    _extra = _result if isinstance(_result, dict) else {}
     if isinstance(_extra, dict):
         _extra['score_tier'] = _kelly_tier
         _extra['score_pos']  = _pos_tier
@@ -255,9 +256,11 @@ def calc_replay(ms: dict, signal_dir: str, score: int, breakdown: dict, _result:
         }
         _m09_delta = 0
         _m09_log = []
+        # [9.27顶层修复 苏摩111] _sym死引用修复——calc_replay无sym参数，从ms取
+        _sym_replay = (ms.get('symbol') or '').upper()
         for _dim, _orig in _m09_dims.items():
             if _orig <= 0: continue
-            _w = _get_dw(_sym, _dim)
+            _w = _get_dw(_sym_replay, _dim)
             if _w == 1.0: continue
             _adjusted = round(_orig * _w)
             _delta = _adjusted - _orig
@@ -271,7 +274,7 @@ def calc_replay(ms: dict, signal_dir: str, score: int, breakdown: dict, _result:
             breakdown['M09_维度权重'] = f'Δ{_m09_delta:+d}分 [{" | ".join(_m09_log[:4])}]'
             pass  # [静默] f'[M09-DimWeight] {_sym}: {_m09_delta:+d}分 | {" | ".join(_m09_log)}'
     except Exception as _e09:
-        print(f"[WARN] brahma_core_replay: _e09", file=sys.stderr)
+        print(f"[WARN] brahma_core_replay: {type(_e09).__name__}: {_e09}", file=sys.stderr)
 
     # ─── [设计院 2026-06-30 P1-C] WICK_HUNTER 第10因子 ──────────────────────
     # 根因：系统缺乏15m插针信号识别，58,850/58,888极端下影线未被捕捉
@@ -279,7 +282,7 @@ def calc_replay(ms: dict, signal_dir: str, score: int, breakdown: dict, _result:
     # 逻辑：下影线主导（>实体+上影线×1.5）+ 触碰近期低点支撑 + 收盘收复 → +20分
     # fail-safe：异常静默，不阻断主流程
     try:
-        _k15m = _extra.get('_klines_15m') if extra_data else None
+        _k15m = _extra.get('_klines_15m')
         if _k15m and len(_k15m.get('c', [])) >= 5:
             _wh_o = _k15m['o'][-1]
             _wh_h = _k15m['h'][-1]

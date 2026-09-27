@@ -592,7 +592,8 @@ def calc_trade_params(ms: dict, smc: dict, signal_dir: str, mtf_result: dict = N
     #       置信度 >= 0.3 才生效（至少有真实清算数据）
     try:
         from brahma_brain.liq_density_engine import get_liq_density as _get_ld_tp
-        _ld_tp = _get_ld_tp(symbol if symbol else ms.get('symbol', ''), entry_mid)
+        # [9.27顶层修复 苏摩111] 死引用symbol清除——calc_trade_params签名无symbol，从ms取
+        _ld_tp = _get_ld_tp(ms.get('symbol', ''), entry_mid)
         if _ld_tp and _ld_tp.get('confidence', 0) >= 0.3:
             if signal_dir == 'SHORT':
                 _liq_nearest = _ld_tp.get('nearest_below', 0)

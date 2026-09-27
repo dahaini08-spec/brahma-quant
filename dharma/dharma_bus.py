@@ -481,7 +481,9 @@ def get_pos_with_ci_discount(sym: str) -> float:
     """获取应用CI折扣后的品种最大仓位"""
     state = _load()
     pl = state.get('pos_limits', {}).get(sym, {})
-    return pl.get('max_pos', state['global']['default_pos'])
+    # [9.27顶层修复 苏摩111] KeyError('global')修复：_load()返回的state可能无'global'键
+    # （L392的写入方push_m11先运行才有），此处取默认兜底
+    return pl.get('max_pos', state.get('global', {}).get('default_pos', 0.10))
 
 
 # ══════════════════════════════════════════════════════

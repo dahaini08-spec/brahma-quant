@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # ponytail: position_sizer 642行，有意为之，重构前先 grep 所有调用方
 """
-from typing import Any
+# ponytail: position_sizer 642行，有意为之，重构前先 grep 所有调用方
 
 # STATUS: ACTIVE
 # 仓位计算器，执行层
@@ -24,6 +24,7 @@ position_sizer.py — 梵天仓位定量器 v1.0
   ETH 160+分:    WR=0%  n=6  → BANNED
 """
 import json, os, sys, time
+from typing import Any  # [9.27顶层修复 苏摩111] 从docstring里救出（原L4被L3未闭合三引号吞掉）
 from pathlib import Path
 
 BASE = Path(__file__).parent.parent

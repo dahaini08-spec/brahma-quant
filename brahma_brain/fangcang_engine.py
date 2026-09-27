@@ -2971,14 +2971,13 @@ def unified_fangcang(
             unified_adj = 0.0
 
     # 一句话总结
+    # [9.27顶层修复 苏摩111] dir_cn提到分支外——elif< -5/<-1分支引用了它但只在>分支定义（UnboundLocalError烧WARN）
+    dir_cn = '做多' if signal_dir == 'LONG' else '做空'
     if unified_adj == 0.0 and s2_n == 0:
-        dir_cn = '做多' if signal_dir == 'LONG' else '做空'
         summary = f'方仓无证据(adj=0.0): 案例库n=0，不给予{dir_cn}方向性分数'
     elif unified_adj > 5:
-        dir_cn = '做多' if signal_dir == 'LONG' else '做空'
         summary = f'方仓强力确认{dir_cn}(adj={unified_adj:+.1f}): K线相似+案例库WR={s2_wr:.0%}'
     elif unified_adj > 1:
-        dir_cn = '做多' if signal_dir == 'LONG' else '做空'
         summary = f'方仓轻微支持{dir_cn}(adj={unified_adj:+.1f}): 案例库n={s2_n} WR={s2_wr:.0%}'
     elif unified_adj < -5:
         summary = f'方仓强力反对{dir_cn}(adj={unified_adj:+.1f}): 历史数据不支持'
