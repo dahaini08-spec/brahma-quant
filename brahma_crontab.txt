@@ -23,6 +23,10 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # ============================================================
 # Layer 0: 看门狗 (错峰到 :02/:12/:22/:32/:42/:52)
 # ============================================================
+# [9.27 苏摩111] 上下文溢出哨兵 P2: 每日扫描compaction死锁（P2静默+P1/P0推送）
+*/10 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/context_overflow_sentinel.py >> logs/context_overflow.log 2>&1
+
+# ============================================================
 */10 * * * * cd /root/.openclaw/workspace/trading-system && bash scripts/watchdog_round.sh >> logs/watchdog_v2.log 2>&1
 
 # ============================================================
