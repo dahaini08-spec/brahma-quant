@@ -131,6 +131,25 @@ def load_core_content() -> str:
         fp = BASE / f
         if fp.exists():
             content += fp.read_text()
+    # [9.26孤岛判定面修复 2026-09-26 苏摩111] 30个预存孤岛深度排查结论：
+    # 全部有真实接线面（cron/shell/scripts/函数内懒加载），纯CORE_FILES静态扫描=判定盲区
+    # 补全扫描面：cron表 + scripts/ + brahma_brain/交叉引用（排除archive）
+    for extra in [BASE / 'brahma_crontab.txt']:
+        if extra.exists():
+            content += extra.read_text(errors='ignore')
+    for scan_dir in [BASE / 'scripts', BASE / 'brahma_brain']:
+        if not scan_dir.exists():
+            continue
+        for sf in scan_dir.glob('*.py'):
+            try:
+                content += sf.read_text(errors='ignore')
+            except Exception:
+                pass
+    for shell_f in (BASE / 'scripts').glob('*.sh'):
+        try:
+            content += shell_f.read_text(errors='ignore')
+        except Exception:
+            pass
     return content
 
 
@@ -150,6 +169,7 @@ def check_module_imported(mod: str, core_content: str) -> bool:
         f'import {mod}',
         f'"{mod}"',
         f"'{mod}'",
+        f'{mod}.py',  # [9.26修复] shell/路径调用式接线（如 watchdog → self_heal_daemon.py）
     ]
     return any(p in core_content for p in patterns)
 
