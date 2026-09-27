@@ -1285,6 +1285,7 @@ def decide(
         'liq_wall_short': _liq_wall_short,
         'event_driven': _event_driven,
         'risk_check': _risk_result,
+        'info_flags': _info_flags,  # [P1-2收尾 2026-09-26 苏摩111] 断头路修复：18处填充从未消费，方向准入×0.5等标记必须透传
         'hunt_intel': _hunt_intel,
         'hunt_adjusted': _hunt_adjusted,
         'dual_layout': _dual_layout,
