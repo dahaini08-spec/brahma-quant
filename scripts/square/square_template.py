@@ -244,7 +244,31 @@ def _fvg_direction(fvg_dir, fvg_magnet, price):
 
 
 # ═══════════════════════════════════════════════════════════════
-# 2. 信号帖模板 — 异动捕捉
+# 2. 信号帖模板 — 异动捕捉（个案深度拆解版）
+
+# [2026-09-27 苏摩111 P0-1] 「涨了N%」疲劳模板停用
+# 复盘实锤：7天13连发0爆款（425-1823浏览），固定句式被算法判重复内容降权
+# 改为单币个案深度拆解：事件钩子（轮换）→ 机制拆解 → 交易员判断 → 盯盘清单
+# 接入位置：square_extreme_alert.py build_signal_post（唯一调用方，签名不变）
+_EXTREME_HOOKS = (
+    lambda c: f'${c["sym"]} 单日振幅{c["range_pct"]:.0f}%，成交额只有{c["vol_wan"]:.0f}万U。这个涨幅的含金量，值得算清楚。',
+    lambda c: f'一天{c["chg"]:+.0f}%，${c["sym"]}这根K线你敢接吗？先别急着回答。',
+    lambda c: f'${c["sym"]} {c["chg"]:+.0f}%的盘面里，有个细节大多数人不看。',
+    lambda c: f'又是单日{c["chg"]:+.0f}%这种级别的波动。${c["sym"]}这波，和之前见过的剧本哪里像，哪里不像？',
+    lambda c: f'${c["sym"]} 今天{c["chg"]:+.0f}%。追之前，先回答一个问题：这笔钱是谁赚走的？',
+)
+
+_EXTREME_CLOSINGS = (
+    '这种单边暴动的行情，见过太多次了。结论从来不变：不追。',
+    '行情越热闹，越要回到基本盘。流动性、费率、结构，三样看完再说。',
+    '暴动之后必有清算。我的做法从来是等它落下来，再看谁在接。',
+)
+
+
+def _pick_hook(sym: str, pool) -> int:
+    doy = datetime.now(CST).timetuple().tm_yday
+    h = sum(ord(ch) for ch in sym)
+    return (doy + h) % len(pool)
 # ═══════════════════════════════════════════════════════════════
 
 def build_signal_alert(sym, chg, price, high, low, vol, fr, ls,
@@ -263,24 +287,20 @@ def build_signal_alert(sym, chg, price, high, low, vol, fr, ls,
     # ── 构建叙事段落 ──
     lines = []
 
-    # 开场：一句话冲击
-    if chg > 0:
-        lines.append(f'{sym}涨了{chg:.0f}%。')
-    else:
-        lines.append(f'{sym}跌了{abs(chg):.0f}%。')
-    lines.append('')
-
-    # 第二段：大多数人视角 vs 懂行的人视角
+    # [P0-1 2026-09-27] 个案钩子（轮换库），替代「大多数人看到+X%心动」疲劳句式
     pullback = (high - price) / high * 100 if high > 0 else 0
     rebound = (price - low) / low * 100 if low > 0 else 0
     range_pct = (high - low) / low * 100 if low > 0 else 0
+    _ctx = {'sym': sym, 'chg': chg, 'range_pct': range_pct,
+            'vol_wan': vol / 1e6 if vol else 0}
+    lines.append(_EXTREME_HOOKS[_pick_hook(sym, _EXTREME_HOOKS)](_ctx))
+    lines.append('')
 
+    # 第二段：事件机制拆解（数据背书，随涨跌变体）
     if chg > 0:
-        lines.append(f'大多数人看到+{chg:.0f}%开始心动的那一刻，恰恰是做市商开始出货的时候。')
-        lines.append(f'今天最低{low:.4f}拉到{high:.4f}，振幅{range_pct:.0f}%，但成交额只有{vol/1e6:.0f}万U——流动性薄，少量资金就能打出涨幅，出的时候未必有人接。')
+        lines.append(f'今天最低{low:.4f}拉到{high:.4f}，振幅{range_pct:.0f}%，成交额只有{vol/1e6:.0f}万U。池子浅，少量资金就能打出这个涨幅，出的时候未必有人接。')
     else:
-        lines.append(f'大多数人看到-{abs(chg):.0f}%开始恐慌的那一刻，恰恰是做市商在收集筹码的时候。')
-        lines.append(f'今天最高{high:.4f}砸到{low:.4f}，振幅{range_pct:.0f}%，成交额{vol/1e6:.0f}万U。')
+        lines.append(f'今天最高{high:.4f}砸到{low:.4f}，振幅{range_pct:.0f}%，成交额{vol/1e6:.0f}万U。杀得凶不代表有人接货，先看谁在接。')
     lines.append('')
 
     # 第三段：结构读（自然段落，非清单）
@@ -329,7 +349,7 @@ def build_signal_alert(sym, chg, price, high, low, vol, fr, ls,
         lines.append(f'如果真要参与：{entry_cond}。但说实话，这种波动不值得用大仓位去赌。')
 
     lines.append('')
-    lines.append('见过太多这种行情了。')
+    lines.append(_EXTREME_CLOSINGS[_pick_hook(sym, _EXTREME_CLOSINGS)])
     lines.append('')
 
     # 监控信号（如果有，自然段落）
