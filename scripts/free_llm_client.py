@@ -48,31 +48,31 @@ def _load_key() -> str:
 API_KEY  = _load_key()
 BASE_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
-# ── 任务路由表：task → 专项模型 (2026-09-05 苏摩111封印) ─────────────────
-# [2026-09-07 三方深度评估 苏摩111] 18个免费模型全量分析 + 最优任务分配
-# 永久不可用: inkling系列(403) / minimax-m2.7(None解析失败)
-# 今日429超限(UTC 00:00重置): 除minimax-m3外全部超限
-# 最优分配（重置后生效）：按模型特长分配梵天任务
+# ── 任务路由表：task → 专项模型 (2026-09-05 苏摩111封印 / 2026-09-27重修) ─
+# [2026-09-27 苏摩111] 通道全灭事故修复：
+#   - minimax-m3:free被OpenRouter下架转付费（404 "unavailable for free"）→ 永久踢出
+#   - super-120b/lightning为思考链泄漏模型（content装英文推理，finish=length）→ 降级fallback
+#   - ultra-550b实测干净可用+中文最佳（finish=stop）→ 全任务主模型
+#   - ling-fin/gemma受上游provider日配额限流（429波动）→ 尾部fallback
+# 永久不可用: inkling系列(403) / deepseek全系(404付费) / llama-4-maverick(404付费)
 TASK_MODEL_MAP = {
-    'council':  'minimax/minimax-m3:free',                   # 中文最佳★★★★★ 议会主裁决
-    'vip':      'minimax/minimax-m3:free',                   # 中文最佳 VIP摘要
-    'oi':       'minimax/minimax-m3:free',                   # 中文最佳 OI解读
+    'council':  'nvidia/nemotron-3-ultra-550b-a55b:free',    # 中文最佳★★★★★ 议会主裁决
+    'vip':      'nvidia/nemotron-3-ultra-550b-a55b:free',    # 中文最佳 VIP摘要
+    'oi':       'nvidia/nemotron-3-ultra-550b-a55b:free',    # 中文最佳 OI解读
     'regime':   'nvidia/nemotron-3-ultra-550b-a55b:free',    # 550B深度推理★★★★☆ 宏观体制
-    'wr_audit': 'inclusionai/ling-3.0-flash-fin:free',       # 金融专项★★★★☆ WR审核
-    'review':   'inclusionai/ling-3.0-flash-fin:free',       # 金融专项 复盘lesson
+    'wr_audit': 'nvidia/nemotron-3-ultra-550b-a55b:free',    # 金融可用主力
+    'review':   'nvidia/nemotron-3-ultra-550b-a55b:free',    # 复盘lesson
     'hcme':     'nvidia/nemotron-3-ultra-550b-a55b:free',    # 550B长上下文 历史镜像
-    'chop':     'nvidia/nemotron-3.5-lightning:free',        # 极速ctx=1M★★★☆☆ CHOP验证
-    'safety':   'nvidia/nemotron-3.5-content-safety:free',   # 专用安全分类器 门控
-    'default':  'minimax/minimax-m3:free',                   # 永久兜底
+    'chop':     'nvidia/nemotron-3-ultra-550b-a55b:free',    # CHOP验证
+    'safety':   'nvidia/nemotron-3-ultra-550b-a55b:free',    # 门控
+    'default':  'nvidia/nemotron-3-ultra-550b-a55b:free',    # 永久兜底
 }
 
-# fallback链：主模型失败时的备选顺序
-# fallback链（2026-09-07全量测试：今日仅minimax-m3可用，其余UTC 00:00重置后轮用）
+# fallback链：主模型失败时的备选顺序 [9.27重修]
 FALLBACK_MODELS = [
-    'minimax/minimax-m3:free',
-    'nvidia/nemotron-3-ultra-550b-a55b:free',
-    'google/gemma-4-31b-it:free',
-    'nvidia/nemotron-3-super-120b-a12b:free',
+    'nvidia/nemotron-3-super-120b-a12b:free',   # 可用但思考链泄漏（消费方空返回兑底）
+    'inclusionai/ling-3.0-flash-fin:free',      # 上游日配额波动，重置窗口可能恢复
+    'google/gemma-4-31b-it:free',               # 同上
 ]
 
 # ── 梵天宪法 System Prompt（所有LLM调用自动注入）────────────────────────
