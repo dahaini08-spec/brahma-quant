@@ -134,6 +134,8 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     _sym = symbol
     extra_data: dict = {}
     _bd = {}; _spec = {}; _sm = {}
+    if _s4_os.environ.get('BRAHMA_STEP4_TIMING'):
+        print('[step4-timing] _analyze_step4 ENTER', flush=True)
 
     # [修复 2026-09-02] signal_dir推断：CHOP体制下为时间框架标签(如'1h')，引擎需要LONG/SHORT
     # 推断规则：用ms评分偏向；若无法判断则用LONG（保守，避免错误惩罚）
@@ -309,22 +311,43 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
     # 根因：with TPE 的 __exit__ 等待所有线程完成，即使 future.result(timeout=N) 超时
     # 底层线程（_run_macro/_run_orderflow）仍在阻塞中，导致 brahma_analyze 挂起 >30s
     _ex = _TPE(max_workers=4)
+    import os as _os_dbg4, time as _t_dbg4
+    _STEP4_DBG = _os_dbg4.environ.get('BRAHMA_STEP4_TIMING') or (_os_dbg4.path.exists('/tmp/brahma_step4_timing'))
+    def _tlog(name, fn, *a):
+        print(f"[step4-timing] _tlog called: {name}", flush=True)
+        try:
+            with open('/tmp/s4_tlog_trace.txt','a') as _tf:
+                _tf.write(f'{name}\n')
+        except Exception:
+            pass
+        if not (_STEP4_DBG or _s4_os.environ.get('BRAHMA_STEP4_TIMING')): return fn(*a)
+        _t0 = _t_dbg4.time()
+        try:
+            _r = fn(*a)
+        except Exception as _te:
+            print(f"[step4-timing] {name}: EXC after {_t_dbg4.time()-_t0:.2f}s: {type(_te).__name__}", flush=True)
+            raise
+        print(f"[step4-timing] {name}: {_t_dbg4.time()-_t0:.2f}s", flush=True)
+        return _r
     try:
+        print('[step4-timing] pre-submit', flush=True)
         _f_oc  = _ex.submit(_run_onchain)
+        print('[step4-timing] post-submit-oc', flush=True)
+        print('[step4-timing] pre-submit-pt', flush=True)
         _f_pt  = _ex.submit(_run_pattern)
         _f_of  = _ex.submit(_run_orderflow)
         _f_mc  = _ex.submit(_run_macro)
-        try: extra_data['onchain'] = _f_oc.result(timeout=5)
+        try: extra_data['onchain'] = _tlog('onchain', _f_oc.result, timeout=5)
         except Exception: _f_oc.cancel()
         try:
-            _pt = _f_pt.result(timeout=5)
+            _pt = _tlog('pattern', _f_pt.result, timeout=5)
             if _pt: extra_data['pattern'] = _pt
         except Exception: _f_pt.cancel()
         try:
-            _of = _f_of.result(timeout=5)
+            _of = _tlog('orderflow', _f_of.result, timeout=5)
             if _of: extra_data['order_flow'] = _of
         except Exception: _f_of.cancel()
-        try: extra_data['macro'] = _f_mc.result(timeout=5)
+        try: extra_data['macro'] = _tlog('macro', _f_mc.result, timeout=5)
         except Exception: _f_mc.cancel()
     finally:
         _ex.shutdown(wait=False)  # 不等待残留线程，立即返回
@@ -436,6 +459,16 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
         return _micro_score(symbol, _dir_for_engines)
 
     _ex2 = _TPE(max_workers=6)
+    def _tlog2(name, fn, *a):
+        if not (_STEP4_DBG or _s4_os.environ.get('BRAHMA_STEP4_TIMING')): return fn(*a)
+        _t0 = _t_dbg4.time()
+        try:
+            _r = fn(*a)
+        except Exception as _te:
+            print(f"[step4-timing] {name}: EXC after {_t_dbg4.time()-_t0:.2f}s: {type(_te).__name__}", flush=True)
+            raise
+        print(f"[step4-timing] {name}: {_t_dbg4.time()-_t0:.2f}s", flush=True)
+        return _r
     try:
         _f_wh  = _ex2.submit(_run_whale)
         _f_cx  = _ex2.submit(_run_cross)
@@ -444,23 +477,23 @@ def _analyze_step4(symbol: str, ms: dict, smc: dict, signal_dir: str,
         _f_mv2 = _ex2.submit(_run_macro_v2)
         _f_mc2 = _ex2.submit(_run_micro)
         try:
-            _wh = _f_wh.result(timeout=4)
+            _wh = _tlog2('whale', _f_wh.result, timeout=4)
             if _wh: extra_data['whale'] = _wh
         except Exception: _f_wh.cancel()
         try:
-            _cx = _f_cx.result(timeout=4)
+            _cx = _tlog2('cross', _f_cx.result, timeout=4)
             if _cx: extra_data['cross_market'] = _cx
         except Exception: _f_cx.cancel()
         try:
-            _cfb = _f_cfb.result(timeout=4)
+            _cfb = _tlog2('cross_fr', _f_cfb.result, timeout=4)
             if _cfb: extra_data['cross_fr_basis'] = _cfb
         except Exception: _f_cfb.cancel()
         try:
-            _dpc = _f_dpc.result(timeout=4)
+            _dpc = _tlog2('deribit', _f_dpc.result, timeout=4)
             if _dpc: extra_data['deribit_pc'] = _dpc
         except Exception: _f_dpc.cancel()
         try:
-            _mv2 = _f_mv2.result(timeout=4)
+            _mv2 = _tlog2('macro_v2', _f_mv2.result, timeout=4)
             if _mv2:
                 extra_data['macro_v2'] = _mv2
                 if _mv2.get('score_addon', 0) != 0:

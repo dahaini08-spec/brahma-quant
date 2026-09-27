@@ -24,8 +24,8 @@ from data_cache import _SSL_CTX as _DC_SSL_CTX
 
 _FG_CACHE      = {'value': 50, 'ts': 0}
 _FG_HIST_CACHE = {'history': [], 'ts': 0}
-_CACHE_TTL     = 1800   # 30分钟
-_HIST_TTL      = 3600   # 1小时
+_CACHE_TTL     = 14400  # [9.27性能] 4小时——FNG每小时才更新，30min缓存白拉外网
+_HIST_TTL      = 14400  # [9.27性能] 4小时，同上
 
 
 def _get_fg() -> int:

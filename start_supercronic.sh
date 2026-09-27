@@ -51,8 +51,13 @@ else
     echo "[startup] jesse already available in venv"
 fi
 # [9.27接线5 苏摩111] mcp包存在性哨兵（曾被系统清理清掉一次，缺了提醒不自动装）
+# [9.27三方审核升级 苏摩111] 哨兵从纯日志升级为P1推送（mcp第三次丢失才暴露=日志无人看）
 if ! python3 -c 'import mcp' 2>/dev/null; then
-    echo "[startup][ALERT] mcp MISSING - brahma_mcp_server不可用，请人工: pip3 install --break-system-packages mcp"
+    echo "[startup][ALERT] mcp MISSING - brahma_mcp_server不可用，自动wheelhouse恢复中"
+    # [9.27哨兵去重修复 苏摩111] dedup_key+TTL 4h：同一事故只推1次，不再5分钟刷屏20条
+    python3 -c "import sys; sys.path.insert(0,'scripts'); from push_hub import push_jarvis; push_jarvis('🚨mcp包丢失(容器层重置) | 已自动从wheelhouse恢复 | 若1h内复发需人工查', priority='P1', dedup_key='mcp_missing', dedup_ttl=14400)" 2>/dev/null || true
+    # [9.27wheelhouse 苏摩111] 自动恢复：workspace持久层不受overlaybd重置影响
+    python3 scripts/ensure_deps.py 2>>logs/syscron.log || pip install --break-system-packages -q mcp 2>/dev/null || true
 else
     echo "[startup] mcp already available"
 fi

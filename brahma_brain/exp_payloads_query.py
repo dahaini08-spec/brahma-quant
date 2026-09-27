@@ -37,6 +37,16 @@ def _ensure() -> bool:
         with open(_META_FILE) as f:
             _meta = json.load(f)
         
+        # [9.27性能] KDTree pickle缓存（构建0.95s→加载0.0s，进程冷启动加速）
+        _TREE_CACHE = _BASE / 'data' / 'exp_payloads_kdtree.pkl'
+        try:
+            if _TREE_CACHE.exists() and _TREE_CACHE.stat().st_mtime > _META_FILE.stat().st_mtime:
+                import pickle as _pkl
+                with open(_TREE_CACHE, 'rb') as f:
+                    _tree = _pkl.load(f)
+                return True
+        except Exception:
+            pass  # 缓存失效→走重建路径
         # 重建向量矩阵并构建KD-Tree
         # 从meta重建太慢，直接从原始数据加载
         import gzip
@@ -53,6 +63,15 @@ def _ensure() -> bool:
         arr = np.array(features)
         arr_norm = (arr - _mean) / _std
         _tree = KDTree(arr_norm)
+        # 写缓存（原子写：tmp+rename）
+        try:
+            import pickle as _pkl2, tempfile as _tf, os as _os2
+            _tmp = _TREE_CACHE.with_suffix('.tmp')
+            with open(_tmp, 'wb') as f:
+                _pkl2.dump(_tree, f, protocol=4)
+            _os2.replace(_tmp, _TREE_CACHE)
+        except Exception:
+            pass  # 写缓存失败不影响功能
         return True
     except Exception as e:
         print(f'[WARN] {__name__}: KD-Tree初始化失败: {e}', file=sys.stderr)

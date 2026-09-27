@@ -494,6 +494,7 @@ def _scan_history(
     klines_15m:  List[dict],
     regime_map:  Dict[int, str],
     current_regime: str,
+    symbol:      str = 'BTCUSDT',
 ) -> List[dict]:
     """
     扫描历史，返回最相似TOP_N案例列表
@@ -514,17 +515,16 @@ def _scan_history(
         for idx, b in enumerate(klines_15m):
             ts_to_15m_idx[b['ts']] = idx
 
-    # [加速 2026-09-02] 预计算特征缓存：第一次全量计算后写pkl，后续直接加载
-    # 用数据长度+首尾ts哈希作为缓存key
+    # [加速 2026-09-02][9.27修复] 预计算特征缓存按end_ts绝对键存（窗口滚动不失配）
+    # 原bug：_new_feats从未保存+key用first_ts导致4h新bar全量重算
     import hashlib as _hkey
-    _ts_str = f'{len(klines_4h)}_{klines_4h[0].get("ts",0) if klines_4h else 0}'
-    _sym_key = _hkey.md5(_ts_str.encode()).hexdigest()[:8]
+    _sym_key = _hkey.md5(f'{symbol_key}_4h'.encode()).hexdigest()[:8]
     _cached_feats = _load_feat_cache(_sym_key, '4h')
-    _feat_map: dict = {}  # start -> feat_hist
-    if _cached_feats and len(_cached_feats) == (total - 100 - WEEK_BARS - FUTURE_BARS) // SCAN_STEP:
+    _feat_map: dict = {}  # end_ts -> feat_hist
+    if _cached_feats:
         for _cf in _cached_feats:
-            _feat_map[_cf['start']] = _cf['feat']
-    _new_feats = []  # 新计算的，用于更新缓存
+            _feat_map[_cf['start']] = _cf['feat']  # start字段实为end_ts
+    _new_feats: list = []  # 新计算的，用于更新缓存（循环后保存）
 
     for start in range(100, total - WEEK_BARS - FUTURE_BARS, SCAN_STEP):
         hist_4h_bars = klines_4h[start : start + WEEK_BARS]
@@ -536,11 +536,11 @@ def _scan_history(
             idx_15m = ts_to_15m_idx[end_ts]
             hist_15m_bars = klines_15m[max(0, idx_15m - BARS_15M_12H) : idx_15m]
 
-        if start in _feat_map:
-            feat_hist = _feat_map[start]  # 命中缓存
+        if end_ts in _feat_map:
+            feat_hist = _feat_map[end_ts]  # 命中缓存（绝对ts键）
         else:
             feat_hist = _extract_features(hist_4h_bars, hist_15m_bars)
-            _new_feats.append({'start': start, 'feat': feat_hist})
+            _new_feats.append({'start': end_ts, 'feat': feat_hist})
         score     = _similarity_score(feat_cur, feat_hist)
 
         # 未来结果
@@ -568,6 +568,10 @@ def _scan_history(
             'future_min': round(future_min, 2),
             'regime':     regime,
         })
+
+    # [9.27修复] 保存新计算特征（原代码漏了这步=缓存形同虚设）
+    if _new_feats:
+        _save_feat_cache(_sym_key, '4h', _new_feats)
 
     results.sort(key=lambda x: x['score'])
     return results[:TOP_N]
@@ -879,7 +883,7 @@ def get_fangcang_context(
         }
 
         # 扫描历史相似案例（传入15m数据）
-        top_similar = _scan_history(klines_4h, klines_15m, regime_map, current_regime)
+        top_similar = _scan_history(klines_4h, klines_15m, regime_map, current_regime, symbol=symbol)
 
         # 概率矩阵
         prob = _build_probability_matrix(top_similar)

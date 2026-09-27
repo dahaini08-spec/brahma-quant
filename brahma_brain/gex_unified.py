@@ -691,6 +691,8 @@ def scan_gex(currency: str = 'BTC', force: bool = False) -> dict:
         try:
             state = json.loads(_GEX_STATE_FILE.read_text())
         except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+    if isinstance(profile, dict):
+        profile['updated_at'] = int(time.time())  # [9.27修复] autocheck L2消费此字段
     state[currency] = profile
     _GEX_STATE_FILE.write_text(json.dumps(state, indent=2))
 

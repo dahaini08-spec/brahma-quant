@@ -357,8 +357,6 @@ def score(symbol: str, force: bool = False, vol_ratio: float = None) -> dict:
             _oi_req = urllib.request.Request(_oi_url, headers={'User-Agent': 'Mozilla/5.0'})
             with urllib.request.urlopen(_oi_req, timeout=3, context=_DC_SSL_CTX) as _oi_r:
                 _oi_now = float(json.loads(_oi_r.read()).get('openInterest', 0))
-            time.sleep(0.3)
-            _oi_url2 = f'{FAPI}/fapi/v1/openInterest?symbol={sym}'
             # 用历史K线成交量变化推断OI方向
             _vol_recent = sum(k['v'] for k in k1[-3:]) / 3
             _vol_prev = sum(k['v'] for k in k1[-6:-3]) / 3

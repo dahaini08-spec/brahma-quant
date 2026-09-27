@@ -1294,7 +1294,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['kelly_mult'] = 0.0
             cf['queue_reject'] = _sq_result['reason']
     except Exception as _sqe:
-        import traceback as _tb; print(f"[WARN] brahma_core: {_sqe}\n" + "\n".join(_tb.format_exception(type(_sqe),_sqe,_sqe.__traceback__)[-6:]), file=sys.stderr)
+        print(f"[WARN] brahma_core: {_sqe}", file=sys.stderr)
 
     # I5: 资金分配
     try:
@@ -2112,7 +2112,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _tw = get_time_weight(_utc_hour)
         cf['time_weight_ref'] = f'UTC{_utc_hour:02d}:00 ref={_tw}'  # 仅记录，不调分
     except Exception as _sqe:
-        import traceback as _tb; print(f"[WARN] brahma_core: {_sqe}\n" + "\n".join(_tb.format_exception(type(_sqe),_sqe,_sqe.__traceback__)[-6:]), file=sys.stderr)
+        print(f"[WARN] brahma_core: {_sqe}", file=sys.stderr)
 
     # ── [v25.7 设计院 2026-06-18] P0 体制专项过滤器 ─────────────────────────
     # 原则：为交易而生，不封禁；通过精准条件过滤提升低WR组合质量

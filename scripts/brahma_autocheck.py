@@ -57,7 +57,7 @@ def check_l2_freshness() -> tuple:
     checks = {
         'brahma_state.json':    (120, 'min'),   # 2h内
         'regime_state.json':    (120, 'min'),
-        'wr_matrix_realtime.json': (1440, 'min'), # 24h内
+        'wr_matrix_realtime.json': (1440, 'min'), # 24h内（无持仓时豁免，见check_l2内paper_positions逻辑）
         'gex_state.json':       (180, 'min'),   # GEX每3h由cron刷新
         'paper_positions.json': (1440, 'min'),
     }
@@ -75,12 +75,23 @@ def check_l2_freshness() -> tuple:
                 btc_ts = gex_d.get('BTC', {}).get('updated_at', 0)
                 eth_ts = gex_d.get('ETH', {}).get('updated_at', 0)
                 latest_ts = max(btc_ts, eth_ts, 1)
+                if latest_ts <= 1:  # 无updated_at字段 → mtime fallback
+                    latest_ts = f.stat().st_mtime
                 age_min = (time.time() - latest_ts) / 60
             except Exception:
                 age_min = (time.time() - f.stat().st_mtime) / 60
         else:
             age_min = (time.time() - f.stat().st_mtime) / 60
         if age_min > limit:
+            # [9.27] wr_matrix豁免：B线无持仓=无结算=不更新是正确状态
+            if fname == 'wr_matrix_realtime.json':
+                try:
+                    import json as _j
+                    _pp = _j.loads((BASE / 'data' / 'paper_positions.json').read_text())
+                    if not _pp.get('positions'):
+                        continue
+                except Exception:
+                    pass
             issues.append(f'{fname}已{age_min:.0f}min未更新(限{limit}min)')
     if not issues:
         return PASS, f'全部{len(checks)}个数据文件新鲜'

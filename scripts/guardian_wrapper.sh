@@ -1,9 +1,11 @@
 #!/bin/bash
 # guardian_wrapper.sh — position+RSI守护，无异常静默，有异常直接推送
 # 不经过AI session，避免event loop阻塞
+# [9.27三方审核修复 苏摩111] position_sl_monitor.py已随A线退役删除 → 改接B线纸面SL/TP监控
+# paper_tp_monitor.py: 单实例锁(与executor共用)，无仓静默HEARTBEAT_OK，SL触达自动平仓+推送
 cd /root/.openclaw/workspace/trading-system
 
-SL_OUT=$(timeout 20 python3 scripts/position_sl_monitor.py 2>&1 | tail -5)
+SL_OUT=$(timeout 20 python3 scripts/paper_tp_monitor.py 2>&1 | tail -5)
 RSI_OUT=$(timeout 20 python3 scripts/rsi_structure_watcher.py 2>&1 | tail -3)
 
 # 检查是否有异常
