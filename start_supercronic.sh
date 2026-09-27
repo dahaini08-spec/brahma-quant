@@ -68,6 +68,11 @@ if [ -f "$PIDFILE" ] && kill -0 "$(cat $PIDFILE)" 2>/dev/null; then
     exit 0
 fi
 
+# [梵天2.0 T2 A/B对照盘 2026-09-27 苏摩111] 影子环境固化：BRAHMA_SHADOW=1传给全部cron子进程
+# 接入位置: scripts/t2_ab_launch.py / reports/brahma_2.0_design.md §6 T2 / 2周影子期结束由苏摩111移除
+# 仅影响: auto_executor/paper_executor的risk_gate分支（只记录不拦截），1.0行为零变化
+export BRAHMA_SHADOW=1
+
 nohup "$SCRON" "$CRONTAB" >> "$LOG" 2>&1 &
 echo $! > "$PIDFILE"
 echo "supercronic started pid=$(cat $PIDFILE)"
