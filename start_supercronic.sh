@@ -50,6 +50,12 @@ PYALERT
 else
     echo "[startup] jesse already available in venv"
 fi
+# [9.27接线5 苏摩111] mcp包存在性哨兵（曾被系统清理清掉一次，缺了提醒不自动装）
+if ! python3 -c 'import mcp' 2>/dev/null; then
+    echo "[startup][ALERT] mcp MISSING - brahma_mcp_server不可用，请人工: pip3 install --break-system-packages mcp"
+else
+    echo "[startup] mcp already available"
+fi
 # =====================================================
 
 if [ -f "$PIDFILE" ] && kill -0 "$(cat $PIDFILE)" 2>/dev/null; then
