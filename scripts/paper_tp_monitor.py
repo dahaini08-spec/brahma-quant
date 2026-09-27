@@ -103,6 +103,14 @@ def close_position(pos: dict, reason: str, current_price: float, positions_data:
         pos['costs'] = _closed['costs']
         log(f"LEDGER+ CLOSE {pos['symbol']} net={_closed['net_pnl']:+.2f} NAV_after={_pl.nav():,.2f}")
     except Exception as _le:
+        # [梵天2.0 T1 error_ledger接线 2026-09-27 苏摩111] settlement关键路径异常必记账
+        try:
+            from brahma_brain import error_ledger as _el
+            _el.count('settlement', error=_le,
+                      context={'phase': 'paper_close', 'symbol': pos.get('symbol'),
+                               'ledger_id': pos.get('ledger_id')})
+        except Exception:
+            pass
         log(f"⚠️ 账本平仓失败: {_le} — positions记录已存，但NAV未回写(需人工对账)")
 
     positions_data['positions'] = [

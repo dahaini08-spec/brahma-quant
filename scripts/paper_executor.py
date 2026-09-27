@@ -229,6 +229,13 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
         )
         log(f'LEDGER+ OPEN {sym} {side} notional={rec["notional"]:.0f} fee={rec["entry_fee"]:.2f} NAV_after={_pl.nav():,.2f}')
     except Exception as _le:
+        # [梵天2.0 T1 error_ledger接线 2026-09-27 苏摩111] execution关键路径异常必记账
+        try:
+            from brahma_brain import error_ledger as _el
+            _el.count('execution', error=_le,
+                      context={'phase': 'paper_open_ledger', 'symbol': sym, 'side': side})
+        except Exception:
+            pass
         log(f'ABORT {sym}: 账本记账失败 {_le} — 拒绝开单（无账本不交易）')
         return False
 

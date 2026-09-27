@@ -212,12 +212,28 @@ def main():
                 try:
                     decision = _decide(signal_in)
                 except Exception as e:
+                    # [梵天2.0 T1 error_ledger接线 2026-09-27 苏摩111] decision关键路径异常必记账
+                    try:
+                        from brahma_brain import error_ledger as _el
+                        _el.count('decision', error=e,
+                                  context={'phase': 'state_refresh_decide',
+                                           'symbol': sym, 'direction': direction})
+                    except Exception:
+                        pass
                     print(f'[state_refresh] {sym} {direction}: decision_engine错误: {e}')
                     continue
 
                 action = decision.get('action', 'SKIP')
                 reason = decision.get('reason', '')
                 ep     = decision.get('entry_plan', {})
+
+                # [梵天2.0 T1 L0录制 2026-09-27 苏摩111] 决策快照落盘（零执行，纯数据）
+                # 接入位置: scripts/replay_ci.py record_decisions() / reports/brahma_2.0_design.md §6 P1
+                try:
+                    from replay_ci import record_decisions as _l0rec
+                    _l0rec([(signal_in, decision)])
+                except Exception:
+                    pass
 
                 print(f'[state_refresh] {sym} {direction}: action={action} reason={reason[:60]}')
 

@@ -126,6 +126,13 @@ def score_signal(
             direction=direction,
         )
     except Exception as e:
+        # [梵天2.0 T1 error_ledger接线 2026-09-27 苏摩111] scoring关键路径异常必记账（失败即返回空分）
+        try:
+            from brahma_brain import error_ledger as _el
+            _el.count('scoring', error=e,
+                      context={'phase': 'score_signal', 'regime': regime, 'direction': direction})
+        except Exception:
+            pass
         return ScoreResult(
             score=0.0,
             grade=0.0,
