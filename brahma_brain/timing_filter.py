@@ -53,6 +53,15 @@ MONITOR_THRESHOLD = int(os.environ.get('TIMING_MONITOR_THRESHOLD', '40'))
 from pathlib import Path as _Path_tf
 import json as _json_tf
 
+# [瘟疫清扫 2026-09-28 苏摩111] _dc_klines未定义瘟疫修复：
+# L241三元引用_dc_klines但从未import——每次EMA20门控都NameError被except吞，
+# 门控永不生效。data_cache.get_klines带缓存+symbol标准化，直接使用。
+try:
+    from brahma_brain import data_cache as _dc_mod
+    _dc_klines = _dc_mod.get_klines
+except Exception:  # pragma: no cover - 降级为requests直拉
+    _dc_klines = None
+
 _REGIME_THRESHOLDS = {
     'BEAR_TREND':    {'ready': 65, 'monitor': 40},
     'BULL_TREND':    {'ready': 60, 'monitor': 35},
@@ -238,7 +247,7 @@ def evaluate_timing(symbol: str,
                     _ema20 = _cached[1]
                     logger.debug(f'[TimingFilter] EMA20缓存命中 {symbol}={_ema20:.2f} age={((_now-_cached[0])/60):.1f}min')
                 else:
-                    _ema20_kl = (_dc_klines(symbol, '1h', 21) if _dc_klines else
+                    _ema20_kl = (data_cache.get_klines(symbol, '1h', 21) if _dc_klines else
                         requests.get(
                             f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=1h&limit=21',
                             timeout=3

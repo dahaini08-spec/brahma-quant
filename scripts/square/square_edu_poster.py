@@ -8,6 +8,7 @@ square_edu_poster.py — 教育帖自动发帖 v1.0
 每帖必有🌿姓赵不宣前缀+📊后缀
 """
 import json, os, sys, time, hashlib, ssl, urllib.request
+import os
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 import sys
@@ -38,9 +39,10 @@ def load_state():
 
 
 def save_state(state):
-    STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2))
-
-
+    # [9.28瘟疫清扫 苏摩111] 原子写: tmp+os.replace 防空读竞态（9.26路线A同款）
+    _tmp = STATE_FILE.with_suffix(".tmp")
+    _tmp.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+    os.replace(str(_tmp), str(STATE_FILE))
 def load_pool():
     if POOL_FILE.exists():
         return json.loads(POOL_FILE.read_text())
@@ -69,9 +71,10 @@ def mark_posted(content):
     now = time.time()
     d = {k: v for k, v in d.items() if now - v < 86400}
     d[h] = now
-    DEDUP_FILE.write_text(json.dumps(d, ensure_ascii=False, indent=2))
-
-
+    # [9.28瘟疫清扫 苏摩111] 原子写: tmp+os.replace 防空读竞态（9.26路线A同款）
+    _tmp = DEDUP_FILE.with_suffix(".tmp")
+    _tmp.write_text(json.dumps(d, ensure_ascii=False, indent=2), encoding="utf-8")
+    os.replace(str(_tmp), str(DEDUP_FILE))
 def post_to_square(content):
     payload = json.dumps({'bodyTextOnly': content}).encode()
     req = urllib.request.Request(API_URL, data=payload, headers={

@@ -46,9 +46,10 @@ def load_cooldown():
 
 def save_cooldown(cd):
     COOLDOWN_FILE.parent.mkdir(parents=True, exist_ok=True)
-    COOLDOWN_FILE.write_text(json.dumps(cd, ensure_ascii=False, indent=2))
-
-
+    # [9.28瘟疫清扫 苏摩111] 原子写: tmp+os.replace 防空读竞态（9.26路线A同款）
+    _tmp = COOLDOWN_FILE.with_suffix(".tmp")
+    _tmp.write_text(json.dumps(cd, ensure_ascii=False, indent=2), encoding="utf-8")
+    os.replace(str(_tmp), str(COOLDOWN_FILE))
 def is_cool(sym, cd):
     key = f'extreme:{sym}'
     now = time.time()
@@ -84,9 +85,10 @@ def mark_symbol_posted(symbol):
     now = time.time()
     d = {k: v for k, v in d.items() if now - v < 86400}
     d[key] = now
-    SHARED_DEDUP_FILE.write_text(json.dumps(d, ensure_ascii=False, indent=2))
-
-
+    # [9.28瘟疫清扫 苏摩111] 原子写: tmp+os.replace 防空读竞态（9.26路线A同款）
+    _tmp = SHARED_DEDUP_FILE.with_suffix(".tmp")
+    _tmp.write_text(json.dumps(d, ensure_ascii=False, indent=2), encoding="utf-8")
+    os.replace(str(_tmp), str(SHARED_DEDUP_FILE))
 def is_duplicate(content):
     h = hashlib.md5(content.encode()).hexdigest()[:12]
     d = {}
@@ -109,9 +111,10 @@ def mark_posted(content):
     now = time.time()
     d = {k: v for k, v in d.items() if now - v < 86400}
     d[h] = now
-    SHARED_DEDUP_FILE.write_text(json.dumps(d, ensure_ascii=False, indent=2))
-
-
+    # [9.28瘟疫清扫 苏摩111] 原子写: tmp+os.replace 防空读竞态（9.26路线A同款）
+    _tmp = SHARED_DEDUP_FILE.with_suffix(".tmp")
+    _tmp.write_text(json.dumps(d, ensure_ascii=False, indent=2), encoding="utf-8")
+    os.replace(str(_tmp), str(SHARED_DEDUP_FILE))
 def post_to_square(content):
     payload = json.dumps({'bodyTextOnly': content}).encode()
     headers = {
@@ -139,38 +142,56 @@ def log_post(post_type, content, resp):
 
 
 def fetch_smc_data(symbol):
-    """拉SMC结构数据：FVG/OB/清算"""
-    smc = {'fvg_dir': '', 'fvg_magnet': 0, 'fvg_mid': 0, 'ob_test': '', 'liq_above': 0, 'liq_below': 0}
+    """拉SMC结构数据：FVG/OB/清算
+
+    [9.28瘟疫清扫 苏摩111] 三重修复：
+    1. path补brahma_brain（此前import必炸→SMC数据静默空壳）
+    2. 字段映射对齐brahma_core.analyze()真实结构（smc.fvg/ob/liquidity子键）
+    3. 字段名对齐：nearest_above/below（原nearest_short/long不存在）
+    """
+    smc_d = {'fvg_dir': '', 'fvg_magnet': 0, 'fvg_mid': 0, 'ob_test': '', 'liq_above': 0, 'liq_below': 0}
     try:
-        # 用brahma_core.analyze()获取SMC数据
-        sys.path.insert(0, str(BASE))
+        sys.path.insert(0, str(BASE / 'brahma_brain'))
         from brahma_core import analyze
         result = analyze(symbol, '15m')
         if result:
-            fvg = result.get('fvg', {})
-            if fvg:
-                smc['fvg_dir'] = fvg.get('dir', '')
-                smc['fvg_magnet'] = fvg.get('magnet', 0)
-                smc['fvg_mid'] = fvg.get('mid', 0)
-            ob = result.get('ob', {})
-            if ob:
-                for k, v in ob.items():
-                    if v.get('valid') and 'BULL' in k:
-                        smc['ob_test'] = f'突破{v.get("note", "")}'
-                        break
-            liq = result.get('liq', {})
-            if liq:
-                smc['liq_above'] = liq.get('nearest_short', 0)
-                smc['liq_below'] = liq.get('nearest_long', 0)
+            s = result.get('smc', {})
+            fvg = s.get('fvg', {}) if isinstance(s, dict) else {}
+            # 磁铁方向：最近的未填充FVG决定磁力方向（bull在下=向上拉，bear在上=向下拉）
+            nb, ns = fvg.get('nearest_bull'), fvg.get('nearest_bear')
+            if nb and ns:
+                smc_d['fvg_dir'] = 'BOTH'
+            elif nb:
+                smc_d['fvg_dir'] = 'BULL'
+            elif ns:
+                smc_d['fvg_dir'] = 'BEAR'
+            near = nb or ns
+            if near:
+                smc_d['fvg_magnet'] = near.get('mid', 0)
+                smc_d['fvg_mid'] = near.get('mid', 0)
+            ob = s.get('order_blocks', {}) if isinstance(s, dict) else {}
+            bulls = ob.get('bull_obs', []) if isinstance(ob, dict) else []
+            for v in bulls:
+                # 宪法OB铁律：age<50且未被穿越才有效
+                if not v.get('broken', False) and v.get('age_bars', 999) < 50:
+                    smc_d['ob_test'] = f'回踩看多OB区间 {v.get("low", 0):.4f}~{v.get("high", 0):.4f}'
+                    break
+            liq = s.get('liquidity', {}) if isinstance(s, dict) else {}
+            na = liq.get('nearest_above') or {}
+            nbw = liq.get('nearest_below') or {}
+            smc_d['liq_above'] = na.get('level', 0)
+            smc_d['liq_below'] = nbw.get('level', 0)
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-    return smc
+    return smc_d
 
 
 def fetch_oi_data(symbol):
     """拉OI+CVD数据"""
     oi = {'signal': '', 'cvd': 0}
     try:
-        oi_data = requests.get(f'{FAPI}/data/openInterestHist',
+        # [9.28瘟疫清扫 苏摩111] 端点修复：原/fapi/v1/data/openInterestHist不存在(404 HTML)
+        # → .json()必炸Expecting value，OI信号从出生起就是空壳。正确路径=futures/data/
+        oi_data = requests.get(f'https://fapi.binance.com/futures/data/openInterestHist',
                                 params={'symbol': symbol, 'period': '15m', 'limit': 8},
                                 timeout=5).json()
         if oi_data and len(oi_data) >= 4:

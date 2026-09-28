@@ -767,6 +767,17 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _analyze_step1, _analyze_step2, _analyze_step3)
 
     _r1 = _analyze_step1(symbol, signal_dir)
+    # [9.28瘟疫清扫 苏摩111] error dict防御：ms_analyze失败（如CJK symbol无数据）时
+    # 不得直接取['ms']炸穿，返回降级结果（宪法：修根因，共享函数修一次）
+    if not isinstance(_r1, dict) or 'error' in _r1 or 'ms' not in _r1:
+        return {
+            'symbol': symbol, 'price': 0, 'signal_dir': 'NEUTRAL',
+            'regime': 'UNKNOWN', 'regime_cn': '数据不可用',
+            'consensus': {}, 'wave': {}, 'momentum': {}, 'sentiment': {},
+            'key_levels': {}, 'swing_4h': {}, 'smc': {}, 'confluence': {},
+            'params': {}, 'summary': f'{symbol} 数据不可用（{_r1.get("error", "unknown") if isinstance(_r1, dict) else "bad result"}）',
+            'elapsed': 0, 'valid_signal': False, 'primary_tf': '15m', 'entry_tf': '15m',
+        }
     ms = _r1['ms']; _cv_adj = _r1['_cv_adj']
     _cv_verdict = _r1['_cv_verdict']; _causal_v_result = _r1['_causal_v_result']
 

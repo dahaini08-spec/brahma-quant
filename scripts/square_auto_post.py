@@ -15,6 +15,7 @@ v2.0变更：
 """
 
 import json, os, ssl, sys, time, urllib.request
+import os
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 import sys
@@ -81,9 +82,10 @@ def _mark_posted(content: str):
     now = time.time()
     d = {k: v for k, v in d.items() if now - v < 86400}
     d[h] = now
-    DEDUP_FILE.write_text(json.dumps(d, ensure_ascii=False, indent=2))
-
-
+    # [9.28瘟疫清扫 苏摩111] 原子写: tmp+os.replace 防空读竞态（9.26路线A同款）
+    _tmp = DEDUP_FILE.with_suffix(".tmp")
+    _tmp.write_text(json.dumps(d, ensure_ascii=False, indent=2), encoding="utf-8")
+    os.replace(str(_tmp), str(DEDUP_FILE))
 def _log_post(post_type: str, content: str, resp: dict):
     entry = {
         'ts': time.time(),
