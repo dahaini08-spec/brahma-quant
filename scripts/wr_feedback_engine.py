@@ -374,7 +374,18 @@ def main():
                     f"请判断：这个乘数调整合理吗？回答格式: 合理 或 异常，附简短原因(15字内)"
                 )
                 _resp = _llm_wr(_prompt, max_tokens=30)
-                if _resp and '异常' in _resp:
+                # [防谎P1 2026-09-28 苏摩111] L1封闭词汇守卫：
+                # LLM只允许答"合理/异常"+定性原因；输出含数字/词汇违约=按异常旗标处理（保守）
+                _resp_ok = False
+                if _resp:
+                    try:
+                        from brahma_brain.ai_output_guard import guard_closed_vocab
+                        _resp_ok, _why, _ = guard_closed_vocab('wr_feedback_review', _resp.strip()[:60], ('合理', '异常'))
+                        if not _resp_ok:
+                            _resp = None  # 违约→落异常旗标（保守）
+                    except Exception as _g_e:
+                        _resp_ok = True  # 守卫不可用时保持旧行为
+                if _resp_ok and _resp and '异常' in _resp:
                     _llm_flags.append(f"{_ch['key']}: LLM告警→{_resp.strip()[:40]}")
                     log(f'[P2-1] LLM异常告警: {_ch["key"]} {_resp.strip()[:50]}')
                 else:

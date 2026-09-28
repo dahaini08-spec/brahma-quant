@@ -260,6 +260,10 @@ def build_from_learning_log() -> list:
     for entry in lines:
         lesson = entry.get('lesson', '')
         wr     = entry.get('wr', 0)
+        # [防谎L3 2026-09-28 苏摩111] 回声切断：只吃达摩院IC周审APPROVE的教训。
+        # pending_ic=true / 缺pending字段（旧数据）→ 一律跳过（fail-closed）。
+        if entry.get('ic_verdict') != 'APPROVE':
+            continue
         if not lesson or len(lesson) < 10:
             continue
         samples.append({

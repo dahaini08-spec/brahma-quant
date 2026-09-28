@@ -234,8 +234,20 @@ f"""🔄 梵天体制升级
                     )
                     _r22 = _llm_regime(_p22_prompt, max_tokens=35)
                     if _r22:
-                        _note = f"🤖 LLM审核: {_r22.strip()[:60]}"
-                        _llm_regime_notes.append(_note)
+                        # [防谎P1 2026-09-28 苏摩111] L1封闭词汇守卫：
+                        # LLM只允许答"支持/质疑"+定性原因；含数字/词汇违约=丢弃AI note，
+                        # 确定性推送不受影响（体制真相源=SSOT，AI只能评论不能宣布）
+                        _r22_ok = False
+                        try:
+                            from brahma_brain.ai_output_guard import guard_closed_vocab
+                            _r22_ok, _why, _ = guard_closed_vocab('regime_llm_review', _r22.strip()[:60], ('支持', '质疑'))
+                        except Exception as _g_e:
+                            _r22_ok = True  # 守卫不可用时保持旧行为
+                        if _r22_ok:
+                            _note = f"🤖 LLM审核: {_r22.strip()[:60]}"
+                            _llm_regime_notes.append(_note)
+                        else:
+                            print(f'[regime_mon] L1守卫拦截AI note: {_why}')
                 except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         if _llm_regime_notes:
             full_msg += '\n\n' + '\n'.join(_llm_regime_notes)

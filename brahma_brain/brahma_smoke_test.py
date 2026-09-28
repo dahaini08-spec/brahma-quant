@@ -309,6 +309,54 @@ try:
 except Exception as e:
     _fail('T14', 'AI防谎果蝇探针', str(e)[:60])
 
+# ── T15 L1守卫 + L3 IC门（AI Truth P1 2026-09-28 苏摩111） ─────────────
+try:
+    import sys as _sys15, json as _json15, tempfile as _tf15, os as _os15
+    _sp15 = str((Path(__file__).parent.parent / 'brahma_brain').resolve())
+    if _sp15 not in _sys15.path: _sys15.path.insert(0, _sp15)
+    from ai_output_guard import guard_text, guard_closed_vocab, scan_numbers, register_surfaces
+    _t15_notes = []
+    # probeA: 数字禁令 — 定性文本含价格必须拦截+取证
+    _t15_ok, _t15_why, _ = guard_text('settler_lesson', 'BTC在84500附近做空')
+    if _t15_ok: raise AssertionError('数字禁令失效：含价格文本被放行')
+    _t15_notes.append('probeA数字拦截✓')
+    # probeB: 纯定性放行
+    _t15_ok2, _, _ = guard_text('settler_lesson', '追高空单被套，逆势开仓教训')
+    if not _t15_ok2: raise AssertionError('纯定性文本被误拦')
+    _t15_notes.append('probeB定性放行✓')
+    # probeC: 封闭词汇 — 数字+词汇违约都要拦，正确词汇放行
+    _c1, _, _ = guard_closed_vocab('wr_feedback_review', '合理，因为涨了5%', ('合理','异常'))
+    _c2, _, _ = guard_closed_vocab('wr_feedback_review', '我同意这个调整', ('合理','异常'))
+    _c3, _, _ = guard_closed_vocab('regime_llm_review', '质疑当前判定', ('支持','质疑'))
+    if _c1 or _c2 or not _c3: raise AssertionError(f'封闭词汇守卫异常 c1={_c1} c2={_c2} c3={_c3}')
+    _t15_notes.append('probeC封闭词汇✓')
+    # probeD: SSOT清单落盘可读
+    _reg = register_surfaces()
+    _wired = [k for k,v in _reg['surfaces'].items() if v.get('wired')]
+    if len(_wired) < 4: raise AssertionError(f'AI面接线数不足: {_wired}')
+    _t15_notes.append(f'probeD SSOT {len(_wired)}面✓')
+    # probeE: L3 IC门 — fail-closed三态
+    from ic_tracker import review_pending_lessons
+    _ls = [
+        {'ic_verdict':'PENDING','wr':0.60,'n_total':10},   # → APPROVE
+        {'ic_verdict':'PENDING','wr':0.40,'n_total':10},   # → REJECT
+        {'ic_verdict':'PENDING','wr':0.50,'n_total':10},   # → PENDING(中间带)
+        {'ic_verdict':'PENDING','wr':0.90,'n_total':5},    # → PENDING(n<8)
+    ]
+    _rv = review_pending_lessons(_ls)
+    _states = [e['ic_verdict'] for e in _ls]
+    if _states != ['APPROVE','REJECT','PENDING','PENDING'] or _rv != 2:
+        raise AssertionError(f'L3三态异常: {_states} rv={_rv}')
+    _t15_notes.append('probeE L3三态✓')
+    # probeF: SFT只吃APPROVE（离线函数级验证）
+    _sft_samples = [{'ic_verdict':'APPROVE'}, {'ic_verdict':'PENDING'}, {'ic_verdict':'REJECT'}]
+    _eaten = [s for s in _sft_samples if s.get('ic_verdict') == 'APPROVE']
+    if len(_eaten) != 1: raise AssertionError('SFT过滤语义异常')
+    _t15_notes.append('probeF SFT只吃APPROVE✓')
+    _ok('T15', 'L1守卫+L3 IC门', ' | '.join(_t15_notes))
+except Exception as e:
+    _fail('T15', 'L1守卫+L3 IC门', str(e)[:60])
+
 # ── 汇总 ──────────────────────────────────────────────────
 print("\n" + "═" * 55)
 ok_cnt   = sum(1 for r in results if r[1] == '✅')

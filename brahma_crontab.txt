@@ -145,6 +145,8 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 0 3 * * * cd /root/.openclaw/workspace/trading-system && python3 -c "from pathlib import Path; q=Path('data/signal_queue.jsonl'); lines=[l for l in q.read_text().strip().split('\n') if l.strip()] if q.exists() else []; q.write_text('\n'.join(lines[-500:])+'\n') if len(lines)>500 else None" >> logs/syscron.log 2>&1
 # IC feedback — 04:00 Monday
 0 4 * * 1 cd /root/.openclaw/workspace/trading-system && python3 scripts/ic_feedback_engine.py >> logs/syscron.log 2>&1
+# L3 IC周审门 — 04:05 Monday [防谎P1 2026-09-28 苏摩111] learning_log pending_ic裁决（fail-closed：n<8=PENDING）
+5 4 * * 1 cd /root/.openclaw/workspace/trading-system && python3 -c "import sys; sys.path.insert(0,'brahma_brain'); from ic_tracker import review_learning_log; r=review_learning_log(); print(f'[L3-IC] reviewed={r[\"reviewed\"]}/{r[\"total\"]}')" >> logs/syscron.log 2>&1
 # wiring check — 03:00 Sunday
 0 3 * * 0 cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_wiring_check.py >> logs/wiring_check.log 2>&1
 # IC审计 — 03:40 Sunday [9.26接线 苏摩111] dim_ic_audit懒加载回退版，jesse缺失用本地指标

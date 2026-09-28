@@ -588,7 +588,21 @@ def main():
                 f"用一句话(不超过30字)指出本批信号最大教词或需要注意的模式："
             )
             _llm_lesson = _llm_review(_review_prompt, max_tokens=50, system=_trader_persona)
+            # [防谎P1 2026-09-28 苏摩111] L1数字禁令+L3 pending_ic：
+            # 复盘教训=定性文本，LLM输出含数字=违约拒收；入库标pending_ic=true，
+            # 等达摩院IC周审APPROVE后才能进SFT数据集（回声切断）。
+            _llm_lesson_ok = False
             if _llm_lesson:
+                try:
+                    from brahma_brain.ai_output_guard import guard_text
+                    _ok, _why, _viol = guard_text('settler_lesson', _llm_lesson.strip()[:100])
+                    _llm_lesson_ok = _ok
+                    if not _ok:
+                        print(f'[settler] L1守卫拦截: {_why}')
+                except Exception as _g_e:
+                    print(f'[settler] L1守卫跳过(守卫不可用): {_g_e}')
+                    _llm_lesson_ok = True  # 守卫模块缺失时保持旧行为，隔离取证留待修复
+            if _llm_lesson and _llm_lesson_ok:
                 _ll_entry = {
                     'ts':       time.time(),
                     'ts_iso':   datetime.now(timezone.utc).isoformat(),
@@ -597,6 +611,8 @@ def main():
                     'n_total':  _total,
                     'n_wins':   _wins,
                     'lesson':   _llm_lesson.strip()[:100],
+                    'pending_ic': True,  # [L3] 待达摩院IC周审，未APPROVE不得进SFT
+                    'ic_verdict': 'PENDING',
                     'summary':  _summary_str[:200],
                 }
                 with open(_ll_path, 'a', encoding='utf-8') as _llf:

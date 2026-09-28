@@ -231,5 +231,56 @@ def report() -> str:
     return '\n'.join(lines)
 
 
+
+# ── L3 IC过滤：learning_log教训周审门 [防谎P1 2026-09-28 苏摩111] ──────────
+# AI教训（settler pending_ic）不是立刻进方仓记忆——等信号结算累积后，
+# 用该批WR对应的真实成交结果算「教训与结果的IC一致性」：WR≥55%=APPROVE，<45%=REJECT。
+# APPROVE教训才进SFT数据集（build_sft_dataset.py 只吃ic_verdict=APPROVE）。
+IC_APPROVE_WR = 0.55
+IC_REJECT_WR  = 0.45
+IC_MIN_N      = 8  # 样本不足=继续PENDING（fail-closed，不许小样本污染）
+
+
+def review_pending_lessons(lessons: list) -> int:
+    """批量裁决pending_ic教训。输入learning_log条目列表（含wr/n_total）。
+    更新ic_verdict: PENDING→APPROVE/REJECT。返回裁决数。
+    规则（fail-closed）：n_total<IC_MIN_N→PENDING；wr≥APPROVE→APPROVE；wr≤REJECT→REJECT；中间→PENDING。
+    """
+    reviewed = 0
+    for e in lessons:
+        if e.get('ic_verdict') != 'PENDING':
+            continue
+        wr = e.get('wr', 0)
+        n  = e.get('n_total', 0)
+        if not isinstance(wr, (int, float)) or not isinstance(n, int) or n < IC_MIN_N:
+            continue  # 样本不足=继续PENDING
+        if wr >= IC_APPROVE_WR:
+            e['ic_verdict'] = 'APPROVE'
+            e['ic_reviewed_at'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+            reviewed += 1
+        elif wr <= IC_REJECT_WR:
+            e['ic_verdict'] = 'REJECT'
+            e['ic_reviewed_at'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+            reviewed += 1
+    return reviewed
+
+
+def review_learning_log() -> dict:
+    """对learning_log.jsonl跑周审门（幂等：只裁决PENDING）。"""
+    from pathlib import Path as _P
+    p = _P(__file__).parent.parent / 'data' / 'learning_log.jsonl'
+    if not p.exists():
+        return {'reviewed': 0, 'total': 0}
+    entries = [json.loads(l) for l in p.read_text().splitlines() if l.strip()]
+    reviewed = review_pending_lessons(entries)
+    # 原子写回（tmp+replace）
+    tmp = p.with_suffix('.tmp')
+    with open(tmp, 'w', encoding='utf-8') as f:
+        for e in entries:
+            f.write(json.dumps(e, ensure_ascii=False) + '\n')
+    tmp.replace(p)
+    return {'reviewed': reviewed, 'total': len(entries)}
+
+
 if __name__ == '__main__':
     print(report())
