@@ -7,6 +7,7 @@ import json, os, sys, time, urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, 'scripts'))
 
 TRIGGER_FILE = os.path.join(ROOT, 'data', 'price_triggers.json')
 STATE_FILE = os.path.join(ROOT, 'data', 'price_trigger_state.json')
@@ -24,6 +25,18 @@ def load_triggers():
     return json.load(open(TRIGGER_FILE))
 
 def main():
+    # ══ [P1 D-10决策生命周期 tick 2026-09-28 苏摩111] ══
+    # 决策包时钟推进（5min周期）：WAIT_TRACKING→ARMED→TRIGGERED→INVALIDATED
+    # 影子运行：只产出决策包与事件，不触任何执行（9.26 A/B分离铁律）
+    try:
+        from brahma_decision_lifecycle import tick_all as _dec_tick
+        _r = _dec_tick(['BTCUSDT', 'ETHUSDT'])
+        for _s in _r:
+            for _a in _s.get('actions', []):
+                print(f"[decision] {_s['symbol']} {_a.get('decision_id','')} {_a.get('action','')} {_a.get('reason','')[:60]}")
+    except Exception as _e:
+        print(f'[decision] tick失败: {_e}', file=sys.stderr)
+
     triggers = load_triggers()
     if not triggers:
         print('[trigger] 无触发条件配置')
