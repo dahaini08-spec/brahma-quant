@@ -258,6 +258,28 @@ def build_battlefield_report_combined(analysis_by_sym: dict) -> str:
                 line += f'反弹到${wall_s2}+收阴看空确认；回踩${pool_s2}+收阳看多确认。'
             action_lines.append(line)
 
+    # ── 共性推理层：双币同向→跨市场推理，反向→轮动信号 ──
+    # [2026-09-28 苏摩111] 接入位置：build_battlefield_report_combined（快照帖升级，差距分析修复B线）
+    # 数据条件→叙事映射：同向=杠杆情绪一致放大下破/上破概率；反向=板块轮动
+    cross_inference = ''
+    if n_bear == 2:
+        cross_inference = ('两个盘子同判空——BTC和ETH的杠杆情绪是一致的，'
+                          '全市场都在防下破。这种一致性本身就是信号：'
+                          '当所有人都看空时，下破的阻力反而变小，但假跌破的概率也变大。'
+                          '我倾向把它当警报而不是入场券：等反弹到止损墙收阴再动手，不提前抢跑。')
+    elif n_bull == 2:
+        cross_inference = ('两个盘子同看多——杠杆情绪一致偏多，全市场都在押上破。'
+                          '一致看多意味着对面空头的燃料在减少，逼空行情可能加速，'
+                          '但追高位置最容易被收割。等回踩支撑池收阳再跟，不追第一波。')
+    elif n_bear == 1 and n_bull == 1:
+        cross_inference = ('BTC和ETH方向分裂——这不是噪音，是板块轮动的第一步。'
+                          '大资金在两个盘子间腾挪仓位，通常弱币先跌、强币后跌（或反之）。'
+                          '这种时候只做方向明确的那一边，另一边看戏。')
+    else:
+        cross_inference = ('BTC和ETH今天都没给方向——两个盘子同时沉默时，'
+                          '最大的风险不是亏钱，是手痒。区间里硬做，盈亏比天然吃亏，'
+                          '不如等两边任一边走出来再跟。')
+
     # ── 组装 ──
     lines = [f'早盘战场报告 {date_str}｜BTC+ETH双币联读', '']
     lines.append(hook)
@@ -265,6 +287,8 @@ def build_battlefield_report_combined(analysis_by_sym: dict) -> str:
     lines.append('先看两个盘子：')
     for seg in segments:
         lines.append(seg)
+    lines.append('')
+    lines.append(cross_inference)
     lines.append('')
     lines.append('操作上：')
     for a in action_lines:

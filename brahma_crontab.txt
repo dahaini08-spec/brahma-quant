@@ -119,9 +119,12 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 0 16 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/daily_review_llm.py >> logs/daily_review.log 2>&1
 # screener — 12:00
 0 12 * * * cd /root/.openclaw/workspace/trading-system && timeout 55 python3 scripts/brahma_screener.py >> logs/syscron.log 2>&1
-# square auto post BTC ETH — 01:30 + 09:30
+# square auto post BTC ETH（快照帖）— 01:30 + 09:30
 30 1 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_auto_post.py --sym BTC ETH 2>&1 >> logs/syscron.log
 30 9 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_auto_post.py --sym BTC ETH 2>&1 >> logs/syscron.log
+# flagship deep post — 每6h门控检查（数据有故事才产帖，非每日必发）
+# [2026-09-28 苏摩111 A线] 快照帖只管盘面，旗舰帖管当周叙事；发布需苏摩111批准（enqueue→flush）
+17 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 600 python3 scripts/square_deep_post.py >> logs/deep_post.log 2>&1
 # spot strategy square — 03:00
 0 3 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/spot_strategy_square.py --symbols BTC ETH 2>&1 >> logs/syscron.log
 # data baseline refresh — 00:00 + 12:00
