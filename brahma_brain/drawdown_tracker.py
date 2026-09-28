@@ -242,31 +242,53 @@ def get_status_report() -> str:
     return '\n'.join(lines)
 
 # ══ 通知函数 ══
+def _push_target():
+    """推送目标SSOT：alerts/.env的JARVIS_THREAD_ID（[2026-09-28 苏摩111] 去硬编码，同push_hub V2.3）
+    接入位置：_notify_warn/_notify_halt/_notify_lockout 三处
+    """
+    try:
+        env = BASE / 'alerts' / '.env'
+        for line in env.read_text(encoding='utf-8').splitlines():
+            if line.startswith('JARVIS_THREAD_ID='):
+                tid = line.split('=', 1)[1].strip()
+                if tid:
+                    return f'73295708:thread:{tid}'
+    except Exception:
+        pass
+    return None  # 无SSOT→不推（会话级易变资产，宁可不发不发错）
+
+
 def _notify_warn(state: dict) -> None:
     """notify warn"""
     try:
+        target = _push_target()
+        if not target:
+            return
         import subprocess
         msg = f'⚠️ 梵天Drawdown WARN\n回撤{state["drawdown_pct"]}%≥5%\n降仓50%，暂停新信号3天\n峰值NAV=${state["peak_nav"]:.2f}'
-        subprocess.Popen(['openclaw', 'message', '--channel', 'jarvis', '--to',
-                         '73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed',
+        subprocess.Popen(['openclaw', 'message', '--channel', 'jarvis', '--to', target,
                          '--message', msg], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def _notify_halt(state: dict) -> None:
     """notify halt"""
     try:
+        target = _push_target()
+        if not target:
+            return
         import subprocess
         msg = f'🛑 梵天Drawdown HALT\n回撤{state["drawdown_pct"]}%≥10%\n暂停所有自动执行\n需苏摩111重启\n峰值NAV=${state["peak_nav"]:.2f}'
-        subprocess.Popen(['openclaw', 'message', '--channel', 'jarvis', '--to',
-                         '73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed',
+        subprocess.Popen(['openclaw', 'message', '--channel', 'jarvis', '--to', target,
                          '--message', msg], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def _notify_lockout(state: dict) -> None:
     """notify lockout"""
     try:
+        target = _push_target()
+        if not target:
+            return
         import subprocess
         msg = f'🚨 梵天Drawdown LOCKOUT\n回撤{state["drawdown_pct"]}%≥15%\n系统级锁定\n需苏摩111全面复盘后重启\n峰值NAV=${state["peak_nav"]:.2f}'
-        subprocess.Popen(['openclaw', 'message', '--channel', 'jarvis', '--to',
-                         '73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed',
+        subprocess.Popen(['openclaw', 'message', '--channel', 'jarvis', '--to', target,
                          '--message', msg], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 if __name__ == '__main__':

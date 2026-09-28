@@ -31,10 +31,14 @@ TTL_AF=86400             # 24h
 TTL_REGIME=3600          # 1h
 
 # Jarvis推送函数
+# [2026-09-28 苏摩111] 线程SSOT化：从alerts/.env读（同push_hub V2.3），禁硬编码
 _push_alert() {
     local msg="$1"
+    local JARVIS_THREAD
+    JARVIS_THREAD=$(grep '^JARVIS_THREAD_ID=' alerts/.env 2>/dev/null | cut -d= -f2 | tr -d '"')
+    [ -z "$JARVIS_THREAD" ] && JARVIS_THREAD="01a0d79b-fea4-71b1-9f2a-c02a9844b4ed"
     openclaw message send \
-        -t "73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed" \
+        -t "73295708:thread:${JARVIS_THREAD}" \
         --channel jarvis \
         --message "🐕看门狗${WATCHDOG_ROLE}: $msg" \
         >/dev/null 2>&1 || true
