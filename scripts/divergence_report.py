@@ -84,6 +84,14 @@ def collect(day_cutoff: float) -> dict:
 
     return {
         'window_hours': LOOKBACK_HOURS,
+        # [P2口径分离 2026-09-28 苏摩111] R2铁证：同信号1.0语义EXPLETE vs 2.0语义WAIT_15M
+        # 两套口径行为不同不是bug（12维终选语义>1.0决策语义），分口记分不混比
+        'semantics': {
+            '1_0': {'label': '1.0旧decide()口径', 'source': 'paper_orders.jsonl',
+                    'note': '五步终审语义：action=ENTER直接开单'},
+            '2_0': {'label': '2.0 D-10决策包口径', 'source': 'shadow_decisions.jsonl + decision_packages',
+                    'note': 'D1-D7生命周期语义：同一信号可能WAIT_15M（更保守，口径差异非回归）'},
+        },
         'n_1_0_open': len(opened_1_0),
         'n_1_0_close': len(closes),
         'net_1_0': round(net_1_0, 2),
@@ -123,6 +131,7 @@ def main() -> int:
 
     lines = [
         f"🔬 梵天2.0 T2 A/B对照盘 · {time.strftime('%m-%d %H:%M', time.gmtime())} UTC",
+        f"⚠️ 口径分离：1.0=旧decide()语义 / 2.0=D-10决策包语义（分歧≠回归，各自记分）",
         f"窗口{LOOKBACK_HOURS}h: 1.0开{r['n_1_0_open']}笔 平{r['n_1_0_close']}笔 净{r['net_1_0']:+.2f}U",
         f"2.0影子评估{r['n_2_0_shadow']}条: 放行{r['n_2_0_pass']} 拦截{r['n_2_0_block']}",
     ]

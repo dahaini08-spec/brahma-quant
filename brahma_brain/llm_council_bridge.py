@@ -56,7 +56,9 @@ LOG_FILE   = LOG_DIR / 'llm_council_shadow_log.jsonl'
 # [设计院 2026-07-26 自主封印] shadow→live
 # 达摩院M1认证通过：215条记录 rule_fallback 18条正确拦截BEAR_TREND_LONG
 # neutral_fallback adj=0 不影响live注入；inject_coeff=0.5 安全
-MODE         = os.environ.get('LLM_COUNCIL_MODE', 'live')
+# [P2停烧 2026-09-28 苏摩111] 默认改回shadow：体制切换日score≥120会烧真实LLM配额，
+# 2.0宪法下council已非决策层（D-10接管），live注入无授权。需显式LLM_COUNCIL_MODE=live才烧
+MODE         = os.environ.get('LLM_COUNCIL_MODE', 'shadow')
 INJECT_COEFF = 0.5    # live模式下，LLM建议 × 0.5 注入score
 SCORE_TRIGGER       = 120   # [P2修复 2026-08-26] 140→1200，中等信号也进入议会审查
 SCORE_TRIGGER_FULL  = 150   # [2026-09-09 苏摩111] 140→150，减少50%全量审查调用
@@ -174,12 +176,19 @@ def _cache_key(symbol: str, regime: str, direction: str, score_bin: int) -> str:
 
 
 def _check_daily_limit() -> bool:
-    """检查每日调用限额"""
+    """检查每日调用限额
+    [P2修复 2026-09-28 苏摩111] 落盘持久化：原内存计数器进程重启即清零（supercronic每cron
+    独立进程），限额形同虚设。改为读写data/llm_council_quota.json（原子写），跨进程有效。
+    """
     today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
-    if _call_count_today['date'] != today:
-        _call_count_today['date']  = today
-        _call_count_today['count'] = 0
-    return _call_count_today['count'] < DAILY_LIMIT
+    qf = BASE / 'data' / 'llm_council_quota.json'
+    try:
+        d = json.loads(qf.read_text()) if qf.exists() else {}
+    except Exception:
+        d = {}
+    if d.get('date') != today:
+        d = {'date': today, 'count': 0}
+    return int(d.get('count', 0)) < DAILY_LIMIT
 
 
 def _call_llm(prompt: str, agent_name: str, model: str | None = None) -> Optional[Dict]:
@@ -589,6 +598,19 @@ def review(
 
     # ── 两个Agent并行审查 ─────────────────────────────────────
     _call_count_today['count'] += 1
+    # [P2修复 2026-09-28 苏摩111] 限额计数同步落盘（防重启清零）
+    try:
+        _qf = BASE / 'data' / 'llm_council_quota.json'
+        _qd = json.loads(_qf.read_text()) if _qf.exists() else {}
+        _today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+        if _qd.get('date') != _today:
+            _qd = {'date': _today, 'count': 0}
+        _qd['count'] = int(_qd.get('count', 0)) + 1
+        _qtmp = _qf.with_suffix('.tmp')
+        _qtmp.write_text(json.dumps(_qd))
+        os.replace(str(_qtmp), str(_qf))
+    except Exception:
+        pass
 
     # 构造完整signal字典（供Agent使用）
     # [接入 2026-08-02 设计院自主] headroom 压缩：减少LLM token消耗

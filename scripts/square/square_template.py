@@ -36,6 +36,7 @@ UTC = timezone.utc
 
 BRAND_PREFIX = ''  # 顶端不出现IP，放在后缀
 BRAND_SUFFIX = '🌿 姓赵不宣 | 不是建议'
+AI_WATERMARK = '🤖 内容含AI生成分析，非实时人工观点'  # [L5水印 2026-09-28 苏摩111] ai_truth_audit L4
 
 # 互动钩子库
 INTERACTION_HOOKS = {
@@ -131,6 +132,7 @@ def build_battlefield_report(sym, analysis_data):
         lines.append('当前市场处于失效期，信号不可靠，仓位减半。')
         lines.append(f'')
     lines.extend([
+        AI_WATERMARK,
         f'{BRAND_SUFFIX}',
         f'#{sym} #合约交易',
         f'',
@@ -305,6 +307,7 @@ def build_battlefield_report_combined(analysis_by_sym: dict) -> str:
         lines.append('')
 
     lines.extend([
+        AI_WATERMARK,
         f'{BRAND_SUFFIX}',
         f'#BTC #ETH #合约交易',
         f'',
@@ -537,6 +540,7 @@ def build_signal_alert(sym, chg, price, high, low, vol, fr, ls,
         lines.append('')
 
     # 品牌后缀
+    lines.append(AI_WATERMARK)
     lines.append(f'{BRAND_SUFFIX}')
     lines.append(f'#{sym} #合约交易')
     lines.append('')
@@ -576,6 +580,7 @@ def build_education_post(edu_id, concept, definition_lines, live_example, how_to
         lines.append(f'')
         lines.append(historical_case)
     lines.append(f'')
+    lines.append(AI_WATERMARK)
     lines.append(f'{BRAND_SUFFIX}')
     lines.append(f'')
     lines.append(f'{INTERACTION_HOOKS["education"]}')
@@ -614,6 +619,7 @@ def build_macro_outlook(event_name, event_time, expectations,
     lines.append(f'')
     lines.append(f'操作建议：{action_advice}')
     lines.append(f'')
+    lines.append(AI_WATERMARK)
     lines.append(f'{BRAND_SUFFIX}')
     lines.append(f'{hashtag} #BTC')
     lines.append(f'')
@@ -664,6 +670,7 @@ def build_deep_analysis(sym, price, surface_text, event1_data, event2_data, even
     if risk_note:
         lines.append(f'⚠️ {risk_note}')
     lines.append(f'')
+    lines.append(AI_WATERMARK)
     lines.append(f'{BRAND_SUFFIX}')
     lines.append(f'#{sym}')
     lines.append(f'')
@@ -697,6 +704,7 @@ def build_heat_post(title, hook_text, data_hammer, controversy, heat_type='contr
         lines[0] = f'📚 {title}'
     lines.append(controversy)
     lines.append(f'')
+    lines.append(AI_WATERMARK)
     lines.append(f'{BRAND_SUFFIX}')
     lines.append(f'')
     lines.append(f'{INTERACTION_HOOKS["heat"]}')
@@ -724,6 +732,7 @@ def build_trade_open(sym, direction, entry_price, sl_price, tp_price, leverage, 
         lines.append(f'')
         lines.append(f'逻辑：{logic_line}')
     lines.append(f'')
+    lines.append(AI_WATERMARK)
     lines.append(f'{BRAND_SUFFIX}')
     lines.append(f'#{sym}')
     lines.append(f'')
@@ -746,6 +755,7 @@ def build_trade_hold(sym, direction, entry_price, current_price, pnl_pct, adjust
         lines.append(f'')
         lines.append(f'调整：{adjust_note}')
     lines.append(f'')
+    lines.append(AI_WATERMARK)
     lines.append(f'{BRAND_SUFFIX}')
     return '\n'.join(lines)
 
@@ -765,6 +775,7 @@ def build_trade_close(sym, direction, entry_price, exit_price, pnl_pct, review_l
         lines.append(f'')
         lines.append(f'复盘：{review_line}')
     lines.append(f'')
+    lines.append(AI_WATERMARK)
     lines.append(f'{BRAND_SUFFIX}')
     lines.append(f'#{sym}')
     lines.append(f'')

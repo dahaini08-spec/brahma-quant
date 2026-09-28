@@ -129,11 +129,60 @@ def get_current_price(symbol: str) -> float:
         return 0.0
 
 
+def _b_track_decision_package(signal: dict, sym: str, side: str) -> dict | None:
+    """[P2 B轨双写 2026-09-28 苏摩111] DecisionPackage作为B轨记录（纯影子，不触执行）。
+    A轨=旧decide()信号照常走（1.0语义）；B轨=D-10决策包（2.0语义），14天T2对照。
+    A/B分离铁律不破：本函数只读包+写影子记录，EXECUTION仍走A轨。
+    接入位置：open_paper_position开单判定前调用（信号消费时对账）。
+    """
+    out = None
+    try:
+        sys.path.insert(0, str(BASE / 'scripts'))
+        from brahma_decision_lifecycle import load_active_packages
+        pkgs = [p for p in load_active_packages() if p.get('symbol') == sym]
+        if not pkgs:
+            return None
+        pkg = pkgs[0]
+        thesis = pkg.get('thesis') or {}
+        out = {'ts': round(time.time(), 3),
+               'ts_iso': datetime.now(timezone.utc).isoformat(),
+               'mode': 'b_track_shadow', 'source': 'paper_executor',
+               'symbol': sym, 'side': side,
+               'decision_id': pkg.get('decision_id'),
+               'pkg_state': pkg.get('state'),
+               'pkg_direction': thesis.get('direction'),
+               'pkg_strength': thesis.get('strength'),
+               'pkg_zone': (pkg.get('trigger') or {}).get('zone'),
+               'pkg_style': (pkg.get('trigger') or {}).get('style'),
+               'd4_confirmed': (pkg.get('d4_structure') or {}).get('confirmed'),
+               'risk_budget_pct': (pkg.get('risk_budget') or {}).get('position_pct'),
+               'a_track_action': str(signal.get('action', ''))[:20],
+               'a_track_score': signal.get('score_final', signal.get('score', 0)),
+               'divergence': None}
+        # 口径分歧判定：A轨开了（能到这=A轨放行）但B轨包方向不同或结构未确认
+        if thesis.get('direction') and thesis['direction'] != side:
+            out['divergence'] = f'DIRECTION:A={side}/B={thesis["direction"]}'
+        elif not out['d4_confirmed']:
+            out['divergence'] = 'D4_UNCONFIRMED:A开/B结构未确认'
+        with open(BASE / 'data' / 'shadow_decisions.jsonl', 'a') as f:
+            f.write(json.dumps(out, ensure_ascii=False) + '\n')
+    except Exception as e:
+        from brahma_brain import error_ledger as _el
+        try:
+            _el.count('decision_package', error=e, context={'phase': 'b_track_shadow', 'symbol': sym})
+        except Exception:
+            pass
+    return out
+
+
 def open_paper_position(signal: dict, positions_data: dict) -> bool:
     """开纸面仓位"""
     sym    = signal.get('symbol', '')
     side   = signal.get('signal_dir', signal.get('direction', 'LONG'))
     if side in ('BUY',): side = 'LONG'
+    if side in ('SELL',): side = 'SHORT'
+    # [P2 B轨双写 2026-09-28 苏摩111] 信号消费时对账B轨（纯影子，不影响A轨流程）
+    _b_track_decision_package(signal, sym, side)
     if side in ('SELL',): side = 'SHORT'
     # [梵天2.0转正 2026-09-27 苏摩111] L2接管拦截权（影子→实权）
     # 苏摩111指令：全面采用2.0，跳过T2等待期直接转正，1.0冻结。

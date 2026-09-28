@@ -179,8 +179,13 @@ def _master_chat(messages: list, max_tokens: int, timeout: int) -> str:
     return ''
 
 
-def _mark_master_success() -> None:
-    """主AI接管成功后留证：保留免费池退避（等重置自愈），追加master字段。"""
+def _mark_master_success(caller: str = '', transit: bool = False) -> None:
+    """主AI接管成功后留证：保留免费池退避（等重置自愈），追加master字段。
+    [P2盲区1修复 2026-09-28 苏摩111] 加caller审计+transit区分：
+    - caller=调用方task标签（council/vip/oi/regime/wr_audit/review/chop/safety/default）
+    - transit=True=退避期内转发（非真实新调用，计数膨胀根因）；False=免费池全灭后真接管
+    事件写入data/master_failover_events.jsonl（追加+留证，供审计定位调用源）
+    """
     try:
         state_f = Path(__file__).parent.parent / 'data' / 'llm_channel_state.json'
         st = {}
@@ -192,6 +197,12 @@ def _mark_master_success() -> None:
         st['master_failover_at'] = _dt.datetime.now(_dt.timezone.utc).isoformat()
         st['master_failover_count'] = int(st.get('master_failover_count') or 0) + 1
         state_f.write_text(json.dumps(st, ensure_ascii=False, indent=2))
+        ev_f = Path(__file__).parent.parent / 'data' / 'master_failover_events.jsonl'
+        ev = {'ts': time.time(), 'caller': caller or 'unknown',
+              'kind': 'transit' if transit else 'real_failover',
+              'count': st['master_failover_count']}
+        with open(ev_f, 'a') as f:
+            f.write(json.dumps(ev, ensure_ascii=False) + '\n')
     except Exception:
         pass
 
@@ -265,7 +276,8 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
         # [主AI failover] 退避期内不盲打免费池 → 主AI接管（免费池重置后自动切回）
         mc = _master_chat(messages, max_tokens, timeout)
         if mc:
-            _mark_master_success()
+            # [P2盲区1修复] transit=True=退避转发（非真实failover），caller=task语义
+            _mark_master_success(caller=task, transit=True)
             print('[llm] 免费池退避中，主AI接管成功', file=sys.stderr)
             return mc
         llm_last_error = f'backoff until {_backoff_until_iso} (cross-process state)'
@@ -334,7 +346,8 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
     # [主AI failover] 免费池全灭（429/网络/fallback全失败）→ 主AI接管
     mc = _master_chat(messages, max_tokens, timeout)
     if mc:
-        _mark_master_success()
+        # [P2盲区1修复] 真实failover：免费池全灭后接管
+        _mark_master_success(caller=task, transit=False)
         print(f'[llm] 免费池全灭({last_err[:60]})，主AI接管成功', file=sys.stderr)
         llm_last_error = f'{last_err} (master failover used)' if last_err else ''
         return mc

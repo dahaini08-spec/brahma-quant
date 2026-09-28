@@ -335,6 +335,154 @@ def _invalidate(pkg: dict, price_now: float, reason: str) -> tuple:
 
 
 # ═══════════════════════════════════════════════════════════════
+# P2: D5确认K线 → D6风险预算 → D7执行结构（苏摩111授权 2026-09-28）
+# ═══════════════════════════════════════════════════════════════
+
+def d5_entry_style(symbol: str, direction: str, zone: list) -> dict:
+    """D5确认K线判定（方案§五）：在挂单区内找确认K线，输出entry_style。
+    LONG=下影收回+缩量→LIMIT；SHORT=上影收回+缩量→LIMIT；
+    无确认K线但BOS突破→STOP；两种都缺→SPLIT（60/40挂单+突破）。
+    返回 {'style': 'LIMIT|STOP|SPLIT', 'confirm': bool, 'note': str}
+    """
+    out = {'style': 'SPLIT', 'confirm': False, 'note': 'default split'}
+    try:
+        from data_cache import get_klines
+        k = get_klines(symbol, '15m', 30)
+        if not k or len(k) < 15:
+            return out
+        lo, hi = float(zone[0]), float(zone[1])
+        # 只看最近15根（覆盖入区时刻附近）
+        bars = k[-15:]
+        o = [float(x[1]) for x in bars]
+        h = [float(x[2]) for x in bars]
+        l = [float(x[3]) for x in bars]
+        c = [float(x[4]) for x in bars]
+        v = [float(x[5]) for x in bars]
+        avg_v = sum(v) / len(v) if v else 1
+        # 找在区内的K线（低点入区才算触区）
+        in_zone = [i for i in range(len(bars)) if l[i] <= hi and c[i] >= lo]
+        if not in_zone:
+            return {'style': 'SPLIT', 'confirm': False, 'note': 'zone not touched yet'}
+        i = in_zone[-1]
+        rng = max(1e-9, h[i] - l[i])
+        lower_wick = min(o[i], c[i]) - l[i]
+        upper_wick = h[i] - max(o[i], c[i])
+        vol_low = v[i] < avg_v * 0.9
+        if direction == 'LONG':
+            if lower_wick / rng >= 0.4 and c[i] >= o[i] and vol_low:
+                return {'style': 'LIMIT', 'confirm': True, 'note': f'下影{lower_wick/rng:.0%}收回+缩量'}
+            if c[i] > h[i-1] if i > 0 else False:
+                return {'style': 'STOP', 'confirm': True, 'note': '突破确认(15m收盘破前高)'}
+        else:
+            if upper_wick / rng >= 0.4 and c[i] <= o[i] and vol_low:
+                return {'style': 'LIMIT', 'confirm': True, 'note': f'上影{upper_wick/rng:.0%}收回+缩量'}
+            if i > 0 and c[i] < l[i-1]:
+                return {'style': 'STOP', 'confirm': True, 'note': '突破确认(15m收盘破前低)'}
+        return out
+    except Exception as _e:
+        return {'style': 'SPLIT', 'confirm': False, 'note': f'error:{_e}'[:60]}
+
+
+REGIME_BUDGET_MULT = {
+    'BEAR_TREND': 1.2, 'BULL_TREND': 1.2, 'BEAR_EARLY': 1.0, 'BULL_EARLY': 1.0,
+    'CHOP_MID': 0.8, 'BEAR_RECOVERY': 1.0,
+}
+
+
+def d6_risk_budget(thesis: dict, sl_dist_pct: float, state: dict) -> dict:
+    """D6风险预算（方案§六）：预算=NAV×0.5%×系数连乘 → max_loss → 仓位。
+    替代score系数连乘：分数决定做不做，预算决定输了疼不疼。
+    返回 {'max_loss_pct', 'max_loss_usd', 'position_pct', 'mults': {...}, 'note'}
+    """
+    nav = 100000.0  # B线纸面本金（paper_ledger.START_NAV）
+    try:
+        import paper_ledger as _pl
+        nav = float(getattr(_pl, 'START_NAV', 100000))
+    except Exception:
+        pass
+    regime = str(thesis.get('regime', 'CHOP_MID') or 'CHOP_MID')
+    mults = {'regime': REGIME_BUDGET_MULT.get(regime, 0.8)}
+    m = mults['regime']
+    # 体制红绿灯（regime_state RED×0.5）
+    rs = str(state.get('regime_state', '') or state.get('antifragile', {}).get('state', '') if isinstance(state.get('antifragile'), dict) else '')
+    if rs == 'RED':
+        m *= 0.5; mults['regime_red'] = 0.5
+    # 连损衰减（loss_memory）
+    lm = state.get('loss_memory') or {}
+    consec = int(lm.get('consecutive_losses', 0) or 0)
+    if consec >= 5:
+        m *= 0.3; mults['consec_loss'] = 0.3
+    elif consec >= 3:
+        m *= 0.7; mults['consec_loss'] = 0.7
+    # 当日亏损衰减（ledger当日净亏）
+    try:
+        import paper_ledger as _pl
+        daily = _pl.day_pnl_pct() if hasattr(_pl, 'day_pnl_pct') else 0
+    except Exception:
+        daily = 0
+    if daily <= -1.5:
+        m *= 0.5; mults['daily_loss'] = 0.5
+    # 相关性折扣（同向BTC+ETH已有持仓→×0.6）
+    corr = 0
+    try:
+        import paper_ledger as _pl
+        for p in _pl.open_positions():
+            if p.get('side') == thesis.get('direction'):
+                corr += 1
+    except Exception:
+        pass
+    if corr > 0:
+        m *= 0.6; mults['corr'] = 0.6
+    strength_mult = {'A': 1.0, 'B': 0.6, 'C': 0.5}.get(thesis.get('strength', 'C'), 0.5)
+    m *= strength_mult; mults['strength'] = strength_mult
+    loss_pct = 0.5 * m
+    sl_dist = max(0.8, float(sl_dist_pct or 2.0))
+    pos_pct = loss_pct / sl_dist * 100
+    # [宪法铁律 9.28] BTC+ETH最大10%NAV仓位cap——预算/SL距离可能得出16%+，宪法不允许
+    if pos_pct > 10.0:
+        pos_pct = 10.0
+        mults['constitution_cap'] = 10.0
+    return {'max_loss_pct': round(loss_pct, 3), 'max_loss_usd': round(nav * loss_pct / 100, 2),
+            'position_pct': round(pos_pct, 3), 'mults': mults,
+            'note': f'预算{loss_pct:.2f}%NAV=${nav*loss_pct/100:.0f} 仓位{pos_pct:.1f}%（SL{sl_dist:.1f}%）'}
+
+
+def d7_execution_structure(pkg: dict, entry_style: str, budget: dict) -> dict:
+    """D7执行结构（方案§五）：分批+TP+移动SL+超时作废。纯计算，影子期不执行。
+    返回执行计划dict（写入decision_package.execution）。
+    """
+    zone = pkg.get('trigger', {}).get('zone') or [0, 0]
+    lo, hi = float(zone[0]), float(zone[1])
+    direction = pkg.get('thesis', {}).get('direction', '')
+    pos_pct = float(budget.get('position_pct', 0) or 0)
+    if entry_style == 'SPLIT':
+        legs = [{'leg': 1, 'pct': 60, 'type': 'LIMIT', 'price': lo if direction == 'LONG' else hi},
+                {'leg': 2, 'pct': 40, 'type': 'STOP', 'price': hi if direction == 'LONG' else lo}]
+    elif entry_style == 'STOP':
+        legs = [{'leg': 1, 'pct': 100, 'type': 'STOP', 'price': hi if direction == 'LONG' else lo}]
+    else:
+        legs = [{'leg': 1, 'pct': 100, 'type': 'LIMIT', 'price': round((lo + hi) / 2, 1)}]
+    fals_px = float((pkg.get('falsification') or {}).get('price', 0) or 0)
+    tp_dists = [0.5, 1.0, 2.0]  # TP1/2/3距离（×SL距离）
+    if fals_px and direction == 'LONG':
+        base = abs(hi - fals_px)
+    elif fals_px:
+        base = abs(fals_px - lo)
+    else:
+        base = max(1e-9, hi - lo)
+    tps = []
+    for i, td in enumerate(tp_dists):
+        px = (lo + td * base) if direction == 'LONG' else (lo - td * base)
+        tps.append({'tp': i + 1, 'pct': [40, 40, 20][i], 'price': round(px, 1)})
+    return {
+        'legs': legs, 'tps': tps,
+        'move_sl': {'rule': '浮盈>1.5×ATR1H→SL移保本', 'atr_mult': 1.5},
+        'timeout': {'hours': 6, 'note': '挂单后6h未触发→作废重评（对齐STALE_HOURS）'},
+        'position_pct': pos_pct, 'entry_style': entry_style,
+    }
+
+
+# ═══════════════════════════════════════════════════════════════
 # 决策包构建（D1+D2+D3一次装配）
 # ═══════════════════════════════════════════════════════════════
 def build_package(symbol: str, state: dict) -> dict | None:
@@ -396,6 +544,11 @@ def build_package(symbol: str, state: dict) -> dict | None:
     else:
         fals_price = round(entry_hi + max(1.5 * atr_1h, entry_hi * 0.015), 1)
 
+    # [P2 2026-09-28 苏摩111] D4结构确认（包内状态记录，不阻塞建包——包在WAIT_TRACKING等D4）
+    d4_ok = direction_ok(thesis, 'mid', state)
+    sl_dist_pct = round(max(1.0, abs(fals_price - price) / price * 100), 2)
+    budget = d6_risk_budget(thesis, sl_dist_pct, state)
+    _es = d5_entry_style(symbol, thesis['direction'], [entry_lo, entry_hi])
     pkg = {
         'decision_id': f'D-{time.strftime("%Y%m%d")}-{symbol.replace("USDT", "")}-{int(time.time()) % 100000}',
         'symbol': symbol,
@@ -403,7 +556,8 @@ def build_package(symbol: str, state: dict) -> dict | None:
         'updated_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
         'thesis': thesis,
         'state': 'WAIT_TRACKING',
-        'trigger': {'zone': [entry_lo, entry_hi], 'zone_src': zone_src, 'style': 'PENDING_P2', 'expiry_hours': STALE_HOURS},
+        'd4_structure': {'confirmed': d4_ok, 'note': '15m CHoCH/BOS+缩量+SL结构位（包内随tick刷新）'},
+        'trigger': {'zone': [entry_lo, entry_hi], 'zone_src': zone_src, 'style': 'PENDING_CONFIRM', 'expiry_hours': STALE_HOURS},
         'falsification': {
             'price': fals_price,
             'structure': [],  # P2: OI翻转/CVD翻转/体制切换
@@ -412,11 +566,14 @@ def build_package(symbol: str, state: dict) -> dict | None:
         },
         'counter_evidence': counter,
         'counter_score': cs,
+        'risk_budget': budget,
         'context': {'price': price, 'atr_1h': atr_1h, 'regime_state': _load_regime_state()},
         'shadow': True,  # P1全程影子
         'transitions': [],
         'review': {'triggered_at': None, 'result': None, 'lesson': None},
     }
+    pkg['execution'] = d7_execution_structure(pkg, _es['style'], budget)
+    pkg['d5_candle'] = _es
     # 初始时钟判定
     pkg, tr = d3_clock(pkg, price)
     if tr.get('transition') and tr['transition'] not in ('none',):
@@ -424,9 +581,52 @@ def build_package(symbol: str, state: dict) -> dict | None:
     return pkg
 
 
-def direction_ok(thesis: dict, _mode: str) -> bool:
-    """占位：结构锚方向校验（P2扩展15m结构确认）。"""
-    return True
+def direction_ok(thesis: dict, _mode: str, state: dict = None) -> bool:
+    """D4结构确认（P2实装，方案§五）：
+    入场区附近时检查15m结构：CHoCH/BOS方向一致 + 缩量回调 + SL在结构失效位。
+    state缺省时退化为True（向后兼容旧调用方）。fail-closed：检查失败=False。
+    接入位置：build_package锚点选择 / d5确认前置（P2接线）
+    """
+    if not state:
+        return True  # 无state则不阻塞旧路径（兼容层）
+    try:
+        direction = thesis.get('direction', '')
+        price = float(state.get('price') or 0)
+        if not price or direction not in ('LONG', 'SHORT'):
+            return False
+        from data_cache import get_klines
+        from smc_engine import detect_bos_choch
+        k = get_klines(state.get('symbol', 'BTCUSDT'), '15m', 60)
+        if not k or len(k) < 30:
+            return False  # 数据不足=结构未确认（fail-closed）
+        highs = [float(x[2]) for x in k]
+        lows = [float(x[3]) for x in k]
+        closes = [float(x[4]) for x in k]
+        vols = [float(x[5]) for x in k]
+        st = detect_bos_choch(highs, lows, closes)
+        # 条件1: 15m结构方向一致（UPTREND↔LONG / DOWNTREND↔SHORT；RANGING看CHoCH）
+        struct = st.get('structure', 'UNKNOWN')
+        if struct == 'UPTREND' and direction == 'SHORT':
+            return False
+        if struct == 'DOWNTREND' and direction == 'LONG':
+            return False
+        if struct in ('UPTREND', 'DOWNTREND'):
+            return True
+        # RANGING/UNKNOWN: 有同向CHoCH/BOS才确认
+        types = [e.get('type', '') for e in (st.get('choch') or []) + (st.get('bos') or [])]
+        if direction == 'LONG' and any('BULL' in t for t in types):
+            return True
+        if direction == 'SHORT' and any('BEAR' in t for t in types):
+            return True
+        # 条件2: 缩量回调（LONG近3根回调量<前5根均量=健康）
+        if len(vols) >= 8:
+            recent = sum(vols[-3:]) / 3
+            prior = sum(vols[-8:-3]) / 5
+            if prior > 0 and recent / prior < 1.2:  # 缩量或温和
+                return True
+        return False
+    except Exception:
+        return False  # fail-closed：异常=结构未确认
 
 
 # ═══════════════════════════════════════════════════════════════
