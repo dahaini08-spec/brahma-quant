@@ -108,11 +108,41 @@ def run(syms: list, dry_run: bool = False) -> None:
     """
     from square.square_template import build_battlefield_report, build_battlefield_report_combined, parse_analysis_output, audit_post
     from brahma_manual_analysis import run_analysis
+    from pathlib import Path as _P
+    import json as _json, time as _time
 
+    # ── [W1 2026-09-28 苏摩111] 信号包SSOT：优先读auto_analysis_latest(≤2h新鲜)，不再重复跑分析 ──
+    # 断层1根治：cron触发→先读包，包不新鲜才跑run_analysis(并回写包)
+    def _fresh_signal_pkg(syms_needed: list, max_age_s: int = 7200):
+        try:
+            f = _P(__file__).parent.parent / 'data' / 'auto_analysis_latest.json'
+            if not f.exists():
+                return {}
+            d = _json.loads(f.read_text())
+            ts = d.get('timestamp', '')
+            from datetime import datetime as _dt, timezone as _tz
+            t = _dt.strptime(ts, '%Y-%m-%d %H:%M:%S UTC').replace(tzinfo=_tz.utc)
+            age = _time.time() - t.timestamp()
+            if age > max_age_s:
+                return {}
+            out = d.get('output', '')
+            pkgs = {}
+            for sym in syms_needed:
+                if sym in out or sym.replace('USDT', '') in out:
+                    pkgs[sym] = parse_analysis_output(out)  # 包含全币种输出，解析一次
+            return pkgs
+        except Exception:
+            return {}
+
+    fresh = _fresh_signal_pkg(syms)
     # ── 多币种：合并单帖路径（P0-2）──
     if len(syms) > 1:
         analysis_by_sym = {}
         for sym in syms:
+            if sym in fresh:
+                print(f'[{sym}] 信号包SSOT命中(≤2h新鲜)，跳过重复分析', flush=True)
+                analysis_by_sym[sym] = fresh[sym]
+                continue
             print(f'[{sym}] 生成分析报告...', flush=True)
             try:
                 report = run_analysis(sym, push_jarvis=False)

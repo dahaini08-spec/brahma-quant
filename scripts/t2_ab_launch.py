@@ -78,8 +78,10 @@ def preflight() -> list:
 
 
 def start_line_b() -> dict:
-    """恢复B线：supercronic带BRAHMA_SHADOW=1 + 复活器"""
+    """恢复B线：supercronic带BRAHMA_ENFORCE=1（2.0转正）+ 复活器
+    [梵天2.0转正 2026-09-27 苏摩111] 影子期结束，L2接管拦截权"""
     env = os.environ.copy()
+    env['BRAHMA_ENFORCE'] = '1'
     env['BRAHMA_SHADOW'] = '1'
     procs = {}
     # supercronic (setsid脱离终端，环境变量传给子进程)

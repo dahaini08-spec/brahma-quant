@@ -89,6 +89,22 @@ def evaluate(signal: dict, state: dict) -> dict:
     atr1h = state.get('atr1h')
     if atr1h is None:
         atr1h = signal.get('atr1h', signal.get('atr_1h'))
+    # [梵天2.0转正 2026-09-27 苏摩111] R1数据面兜底: 信号/调用方都没带ATR时，
+    # 从brahma_state_<sym>.json的momentum.atr_1h兜底读取（数据源=1.0同款分析链，
+    # 非新增网络调用；仍读不到才fail-closed BLOCK）。根治影子期6/6 MISSING_ATR假拦截。
+    if atr1h is None and not state.get('no_state_fallback'):
+        try:
+            import json as _json
+            from pathlib import Path as _Path
+            _sym_lower = symbol.replace('USDT', '').lower()
+            _state_file = _Path(__file__).resolve().parent.parent / 'data' / f'brahma_state_{_sym_lower}.json'
+            if _state_file.exists():
+                _ms = (_json.loads(_state_file.read_text()).get('momentum') or {})
+                _v = _ms.get('atr_1h')
+                if _v:
+                    atr1h = float(_v)
+        except Exception:
+            atr1h = None
 
     # ---- R1 SL距离 ----
     if not sl_pct or sl_pct <= 0:
@@ -178,8 +194,8 @@ def _selftest() -> int:
     # R1: SL<1.5×ATR → BLOCK
     r = evaluate(sig(sl_pct=0.9), {'atr1h': 550.0})  # 0.9%*84000=756 < 825
     t.append(('R1-ATR-block', r['rule'] == 'R1' and r['severity'] == B))
-    # R1: 缺ATR → BLOCK
-    r = evaluate(sig(), {})
+    # R1: 缺ATR → BLOCK（no_state_fallback=测试隔离开关，跳过state文件兜底）
+    r = evaluate(sig(), {'no_state_fallback': True})
     t.append(('R1-missing-ATR', r['rule'] == 'R1' and r['severity'] == B))
     # R1: PASS (2%*84000=1680 ≥ 825)
     r = evaluate(sig(), {'atr1h': 550.0})

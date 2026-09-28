@@ -68,9 +68,11 @@ if [ -f "$PIDFILE" ] && kill -0 "$(cat $PIDFILE)" 2>/dev/null; then
     exit 0
 fi
 
-# [梵天2.0 T2 A/B对照盘 2026-09-27 苏摩111] 影子环境固化：BRAHMA_SHADOW=1传给全部cron子进程
-# 接入位置: scripts/t2_ab_launch.py / reports/brahma_2.0_design.md §6 T2 / 2周影子期结束由苏摩111移除
-# 仅影响: auto_executor/paper_executor的risk_gate分支（只记录不拦截），1.0行为零变化
+# [梵天2.0转正 2026-09-27 苏摩111] L2实权：BRAHMA_ENFORCE=1传给全部cron子进程
+# 接入位置: scripts/auto_executor.py / scripts/paper_executor.py / reports/brahma_2.0_design.md §6 T3
+# 苏摩111指令：全面采用2.0，跳过T2等待期直接转正。fail-closed：BRAHMA_ENFORCE≠1=不开单
+# BRAHMA_SHADOW保留供回滚开关（置0即回影子模式）；1.0风控链原样保留在2.0后侧不变
+export BRAHMA_ENFORCE=1
 export BRAHMA_SHADOW=1
 
 nohup "$SCRON" "$CRONTAB" >> "$LOG" 2>&1 &

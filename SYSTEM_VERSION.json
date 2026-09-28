@@ -825,5 +825,12 @@
         "upgrade_path": "shadow→M1(n≥100,WR+2pp)→live"
       }
     }
+  },
+  "brahma_1_0_frozen": {
+    "frozen_at": "2026-09-27T14:55:00Z",
+    "by": "苏摩111",
+    "instruction": "设计院三方联合深度评估：全面采用2.0，1.0冻结",
+    "meaning": "1.0风控链保留但不再是唯一裁判；2.0 risk_gate=enforce为L2实权拦截层；1.0参数仍作为2.0后侧安全网",
+    "rollback": "start_supercronic.sh去掉BRAHMA_ENFORCE=1即回影子模式；BRAHMA_SHADOW=0+BRAHMA_ENFORCE=0回纯1.0"
   }
 }

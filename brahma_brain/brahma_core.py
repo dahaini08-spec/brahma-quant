@@ -3303,4 +3303,17 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     if 'total' not in _result and cf.get('total') is not None:
         _result['total'] = cf.get('total', 0)
 
+    # ══ [梵天2.0 W2 2026-09-28 苏摩111] 12维终选打分层 ══════════════════
+    # 94维照常计算不删码，冻结进_breakdown_full94；score_final=12维终选合成。
+    # 冷冻维度权重=0，复活需IC周审连续2周>+0.02+苏摩111。
+    try:
+        from brahma_brain.brahma_core_final12 import apply_final12 as _apply_final12
+    except ImportError:
+        from brahma_core_final12 import apply_final12 as _apply_final12
+    try:
+        _result = _apply_final12(_result, ms, extra_data)
+    except Exception as _e12:
+        # fail-open但留证：12维层异常不阻断1.0链路
+        _result.setdefault('confluence', {}).setdefault('breakdown', {})['final12_error'] = str(_e12)[:120]
+
     return _result

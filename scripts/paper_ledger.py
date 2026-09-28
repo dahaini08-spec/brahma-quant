@@ -23,6 +23,16 @@ import json
 import math
 import time
 from pathlib import Path
+import sys as _sys
+
+# [W0 2026-09-28 苏摩111] append-only事件流接线：账本写入点同步append不可变事件
+_scripts_dir = str(Path(__file__).resolve().parent)
+if _scripts_dir not in _sys.path:
+    _sys.path.insert(0, _scripts_dir)
+try:
+    import brahma_events as _events
+except Exception:
+    _events = None  # 事件流不可用时账本照常工作（事件流=增强证据层，非账本依赖）
 
 BASE = Path(__file__).parent.parent
 DATA = BASE / 'data'
@@ -136,6 +146,12 @@ def open_position(symbol: str, side: str, price: float, nav_pct: float, leverage
         f.write(json.dumps(rec, ensure_ascii=False) + '\n')
     with open(LEDGER_LOG, 'a') as f:
         f.write(json.dumps({'ev': 'OPEN', **{k: rec[k] for k in ('id', 'symbol', 'side', 'notional', 'entry_fee')}}, ensure_ascii=False) + '\n')
+    # [W0] 同步append事件流（不可变证据，缺事件流不阻账本）
+    if _events:
+        try:
+            _events.append('order_opened', {k: rec[k] for k in ('id', 'symbol', 'side', 'entry_price', 'qty', 'notional', 'leverage', 'nav_pct', 'sl', 'tp1', 'regime', 'score', 'rr', 'source', 'entry_fee')})
+        except Exception:
+            pass
     return rec
 
 
@@ -193,6 +209,13 @@ def close_position(order: dict, exit_price: float, reason: str) -> dict:
     with open(LEDGER_LOG, 'a') as f:
         f.write(json.dumps({'ev': 'CLOSE', 'id': order.get('id'), 'symbol': order.get('symbol'),
                             'reason': reason, 'net': m['net'], 'nav_after': acc['nav_current']}, ensure_ascii=False) + '\n')
+    # [W0] 同步append事件流：平仓+结算双事件（不可变证据）
+    if _events:
+        try:
+            _events.append('order_closed', {'id': order.get('id'), 'symbol': order.get('symbol'), 'side': order.get('side'), 'entry_price': entry, 'exit_price': exit_price, 'close_reason': reason, 'hours_held': round(hours_held, 2)})
+            _events.append('pnl_settled', {'id': order.get('id'), 'symbol': order.get('symbol'), 'side': order.get('side'), 'regime': order.get('regime', ''), 'net_pnl': m['net'], 'net_pnl_pct': m.get('net_pct_on_nav', 0), 'costs': m['costs'], 'nav_after': acc['nav_current']})
+        except Exception:
+            pass
     _append_nav_history(acc, event=f'close:{order.get("symbol")}:{reason}')
     # 单日熔断标记
     today = time.strftime('%Y-%m-%d', time.gmtime())

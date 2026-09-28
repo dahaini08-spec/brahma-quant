@@ -976,10 +976,13 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
         pass  # drawdown_tracker不可用时静默降级，不阻断执行
     # ── end drawdown_tracker ─────────────────────────────────────────────
 
-    # ── [梵天2.0影子风控评估 2026-09-27 苏摩111] BRAHMA_SHADOW=1: risk_gate只记录不拦截 ──
-    # 接入位置: brahma_brain/risk_gate.py / reports/brahma_2.0_design.md §6 T1
-    # 双层硬闸(--allow-live + BRAHMA_ALLOW_LIVE)原样不动；1.0行为100%不变
-    if os.environ.get('BRAHMA_SHADOW') == '1':
+    # ── [梵天2.0转正 2026-09-27 苏摩111] L2接管拦截权（影子→实权）──
+    # 接入位置: brahma_brain/risk_gate.py / reports/brahma_2.0_design.md §6 T3
+    # 苏摩111指令：全面采用2.0，跳过T2等待期直接转正，1.0冻结。
+    # fail-closed铁律：BRAHMA_ENFORCE≠1 或评估异常 → 拒绝执行（缺证据=不动）
+    # 双层硬闸(--allow-live + BRAHMA_ALLOW_LIVE)原样不动，转正只加锁不减闸。
+    _enforce_20 = os.environ.get('BRAHMA_ENFORCE') == '1'
+    if _enforce_20:
         try:
             from brahma_brain import risk_gate as _rg
             _dir = (direction or 'SHORT').upper()
@@ -1004,18 +1007,55 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
                     'atr1h': signal.get('atr1h') or (signal.get('momentum') or {}).get('atr_1h') if isinstance(signal.get('momentum'), dict) else signal.get('atr1h')}
             _verdict = _rg.evaluate(_sig, _state)
             _rec = {'ts': round(time.time(), 3), 'ts_iso': datetime.now(timezone.utc).isoformat(),
-                    'mode': 'shadow', 'source': 'auto_executor',
+                    'mode': 'enforce', 'source': 'auto_executor',
                     'signal_id': signal.get('signal_id', ''), 'symbol': sym, 'side': _dir,
                     'regime': _sig['regime'], 'score': _sig['score'], 'risk_gate': _verdict}
             with open(Path(__file__).parent.parent / 'data' / 'shadow_decisions.jsonl', 'a') as _f:
                 _f.write(json.dumps(_rec, ensure_ascii=False) + '\n')
+            # enforce模式：BLOCK=拒绝执行（L2实权）
+            if isinstance(_verdict, dict) and not _verdict.get('ok'):
+                print(f'🛡️ [risk_gate:2.0] {sym} {_dir} 被梵天2.0风控拦截: {_verdict.get("rule")}/{_verdict.get("reason")}')
+                return {
+                    'signal_id': signal.get('signal_id',''), 'symbol': sym,
+                    'direction': direction, 'score': float(signal.get('score',0)),
+                    'ts': time.time(), 'ts_iso': datetime.now(timezone.utc).isoformat(),
+                    'status': 'RISK_GATE_BLOCK', 'reason': f'risk_gate {_verdict.get("rule")}/{_verdict.get("reason")}',
+                }
         except Exception as _sge:
+            # fail-closed：评估异常=拒绝执行（关键路径禁静默吞）
             try:
                 from brahma_brain import error_ledger as _el
-                _el.count('risk_gate', error=_sge, context={'phase': 'auto_shadow', 'symbol': sym})
+                _el.count('risk_gate', error=_sge, context={'phase': 'auto_enforce', 'symbol': sym})
             except Exception:
                 pass
-    # ── end 2.0影子评估 ─────────────────────────────────────────────
+            return {
+                'signal_id': signal.get('signal_id',''), 'symbol': sym,
+                'direction': direction, 'score': float(signal.get('score',0)),
+                'ts': time.time(), 'ts_iso': datetime.now(timezone.utc).isoformat(),
+                'status': 'RISK_GATE_ERROR', 'reason': f'risk_gate异常fail-closed: {_sge}',
+            }
+    else:
+        # 非enforce环境（BRAHMA_ENFORCE未开启）：安全网——只记录影子，绝不拦截1.0原有链
+        try:
+            from brahma_brain import risk_gate as _rg
+            _dir = (direction or 'SHORT').upper()
+            if _dir in ('BUY',): _dir = 'LONG'
+            if _dir in ('SELL',): _dir = 'SHORT'
+            _verdict = _rg.evaluate({'symbol': sym, 'side': _dir, 'regime': signal.get('regime',''),
+                'score': float(signal.get('score', 0)),
+                'sl_pct': float(signal.get('sl_pct', signal.get('stop_pct', 2.0)) or 2.0),
+                'price': float(signal.get('price', 0) or 0),
+                'leverage': float(signal.get('leverage', 5) or 5),
+                'nav_pct': float(signal.get('nav_pct', 0) or 0),
+                'atr1h': signal.get('atr1h')}, {'open_positions': [], 'now_ts': time.time()})
+            with open(Path(__file__).parent.parent / 'data' / 'shadow_decisions.jsonl', 'a') as _f:
+                _f.write(json.dumps({'ts': round(time.time(), 3), 'ts_iso': datetime.now(timezone.utc).isoformat(),
+                    'mode': 'shadow', 'source': 'auto_executor', 'signal_id': signal.get('signal_id',''),
+                    'symbol': sym, 'side': _dir, 'regime': signal.get('regime',''),
+                    'score': float(signal.get('score', 0)), 'risk_gate': _verdict}, ensure_ascii=False) + '\n')
+        except Exception:
+            pass
+    # ── end 2.0转正评估 ─────────────────────────────────────────────
 
     # ── [A0b 议会veto检查 2026-08-26 P1修复 | P0-1增强 2026-09-04 苏摩111] ────────
     # llm_council_bridge在veto时设置signal['action']='SKIP'，auto_executor必须检查

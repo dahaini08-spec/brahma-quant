@@ -30,9 +30,11 @@ PAPER_LOG        = BASE / 'logs' / 'paper_executor.log'
 PAPER_SCORE_MIN  = 100  # [P0对齐 2026-09-24 苏摩111] 80→100对齐MIN_SCORE_OPEN（LLM建议采纳线非硬风控，见三方体检报告）
 
 
-def _shadow_evaluate_risk_gate(signal: dict, sym: str, side: str, positions_data: dict) -> None:
-    """[梵天2.0影子评估 2026-09-27] risk_gate纯评估→data/shadow_decisions.jsonl，零拦截。
-    接入位置: brahma_brain/risk_gate.py + reports/brahma_2.0_design.md §6 T1
+def _shadow_evaluate_risk_gate(signal: dict, sym: str, side: str, positions_data: dict,
+                               enforce: bool = False) -> dict:
+    """[梵天2.0转正 2026-09-27 苏摩111] risk_gate评估→data/shadow_decisions.jsonl。
+    mode=enforce: L2实权（返回verdict供调用方拦截）；mode=shadow: 只记录不拦截（T2对照）。
+    接入位置: brahma_brain/risk_gate.py + reports/brahma_2.0_design.md §6 T3
     """
     try:
         from brahma_brain import risk_gate
@@ -64,15 +66,17 @@ def _shadow_evaluate_risk_gate(signal: dict, sym: str, side: str, positions_data
                'atr1h': signal.get('atr1h', signal.get('atr_1h'))}
         verdict = risk_gate.evaluate(sig, state)
         rec = {'ts': round(now_ts, 3), 'ts_iso': datetime.now(timezone.utc).isoformat(),
-               'mode': 'shadow', 'source': 'paper_executor',
+               'mode': 'enforce' if enforce else 'shadow', 'source': 'paper_executor',
                'signal_id': signal.get('signal_id') or signal.get('id'),
                'symbol': sym, 'side': side, 'regime': sig['regime'], 'score': sig['score'],
                'risk_gate': verdict}
         with open(BASE / 'data' / 'shadow_decisions.jsonl', 'a') as f:
             f.write(json.dumps(rec, ensure_ascii=False) + '\n')
+        return verdict
     except Exception as e:
         from brahma_brain import error_ledger
-        error_ledger.count('risk_gate', error=e, context={'phase': 'shadow_eval', 'symbol': sym})
+        error_ledger.count('risk_gate', error=e, context={'phase': 'shadow_eval' if not enforce else 'enforce_eval', 'symbol': sym})
+        raise
 PAPER_GRADE_MIN  = 0  # [P0对齐 2026-09-24] grade线废除——SSOT唯一裁判=cf_action+score，grade回退路径已封禁
 PAPER_NAV_PCT    = 0.05   # 5%NAV per trade
 MAX_POSITIONS    = 1       # 每个标的最多1单
@@ -131,13 +135,25 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
     side   = signal.get('signal_dir', signal.get('direction', 'LONG'))
     if side in ('BUY',): side = 'LONG'
     if side in ('SELL',): side = 'SHORT'
-    # [梵天2.0影子风控评估 2026-09-27 苏摩111] BRAHMA_SHADOW=1: risk_gate只记录不拦截
-    # 1.0行为100%不变；影子结果写入 data/shadow_decisions.jsonl（T2 A/B对照盘数据源）
-    if os.environ.get('BRAHMA_SHADOW') == '1':
-        try:
-            _shadow_evaluate_risk_gate(signal, sym, side, positions_data)
-        except Exception as _se:
-            print(f'[WARN] shadow risk_gate eval failed: {_se}', file=sys.stderr)
+    # [梵天2.0转正 2026-09-27 苏摩111] L2接管拦截权（影子→实权）
+    # 苏摩111指令：全面采用2.0，跳过T2等待期直接转正，1.0冻结。
+    # fail-closed铁律：BRAHMA_ENFORCE≠1 或评估异常 → 拒绝开单（缺证据=不开单）
+    # mode记录：shadow=记录模式 / enforce=2.0实权拦截；影子数据源切至shadow_history
+    import sys as _sys2
+    _enforce = os.environ.get('BRAHMA_ENFORCE') == '1'
+    try:
+        _rg_verdict = _shadow_evaluate_risk_gate(signal, sym, side, positions_data, enforce=_enforce)
+        if _enforce and isinstance(_rg_verdict, dict) and not _rg_verdict.get('ok'):
+            log(f'BLOCK {sym} {side}: risk_gate {_rg_verdict.get("rule")}/{_rg_verdict.get("reason")} [2.0转正fail-closed]')
+            return False
+        if not _enforce:
+            print(f'[WARN] BRAHMA_ENFORCE未开启，risk_gate仅记录模式', file=_sys2.stderr)
+    except Exception as _se:
+        # fail-closed：评估异常=拒绝开单（2.0宪法第4条Fail-loud，关键路径禁静默吞）
+        from brahma_brain import error_ledger as _el
+        _el.count('risk_gate', error=_se, context={'phase': 'enforce_eval', 'symbol': sym})
+        log(f'BLOCK {sym} {side}: risk_gate异常fail-closed {_se}')
+        return False
     # [P0-1执行端封堵 2026-09-25 苏摩111] WAIT_15M/WAIT_ENTRY/SKIP/WATCH=非执行指令
     # 双保险：即使上游误入队，执行端也拒绝市价开单（根修在brahma_state_refresh）
     _action = str(signal.get('action', '') or '').upper()
@@ -215,6 +231,11 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
 
     # [B线记账闭环 2026-09-26 苏摩111] 开仓必经SSOT账本：费用立扣+订单落库
     # 幻影教训：不经账本的开仓=幻影记录（9.26复盘铁证）
+    # [梵天2.0测试隔禹 2026-09-27] BRAHMA_DRYRUN=1 → 跳过账本落盘，风控/门槛/SL全链路照跑
+    # 根因：9.27三方评估enforce dry-run污染账本+17.31fee已回滚，防止复发
+    if os.environ.get('BRAHMA_DRYRUN') == '1':
+        log(f'DRYRUN {sym} {side}: 全链路验证通过，账本隔离未写入 (BRAHMA_DRYRUN=1)')
+        return True
     try:
         import paper_ledger as _pl
         if _pl.circuit_breaker_active():

@@ -342,6 +342,10 @@ def main():
                     'nav_pct_override': _chop_nav_override,  # None=正常仳位, float=CHOP限制仓位
                     # [B分级降权 2026-09-27 苏摩111] 评分层SKIP warn通道：消费方仓位×0.5
                     'score_gate_warn': bool(decision.get('score_gate_warn')),
+                    # [梵天2.0转正 2026-09-27 苏摩111] ATR1H管线缺口修复：
+                    # 影子期6/6 R1 MISSING_ATR假拦截根因=信号不带atr1h。
+                    # 源头=cleaned['momentum']['atr_1h']，risk_gate R1必需字段
+                    'atr1h':       round(float((cleaned.get('momentum') or {}).get('atr_1h') or 0), 2) or None,
                     # 供 paper_executor / auto_executor 判断用
                     'paper_only':  True,   # 纸面优先，实盘切换时改False
                 }
