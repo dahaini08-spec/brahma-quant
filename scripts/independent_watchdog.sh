@@ -52,6 +52,9 @@ while true; do
   ALERT=""        # 真故障（连续失败）才置位
   SELF_HEALED=""  # 单次自愈事件：只记日志不推送
 
+  # [P1 2026-09-28 苏摩111] 死亡快照哨兵: PID变化或消失→瞬间抓系统快照留证
+  python3 "$BASE/scripts/death_snapshot_sentinel.py" >> "$BASE/logs/death_sentinel.log" 2>&1 || true
+
   # 进程检查+自动重启
   # [9.20修复 苏摩111] start_supercronic.sh加timeout防止阻塞看门狗循环
   # [9.27 v4 苏摩111] supercronic清扫是平台常态（每日14-31次），单次自愈只记日志；

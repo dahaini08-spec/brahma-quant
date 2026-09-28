@@ -2746,7 +2746,8 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _result.setdefault('confluence', {}).setdefault('breakdown', {})['N_EXP40年经验'] = (
             f"WR={_exp_r.get('wr',0):.0%} n={_exp_r.get('n',0)} adj={_exp_r.get('adj',0):+.1f}"
         )
-    except: pass
+    except Exception as _e_exp:
+        _result.setdefault('confluence', {}).setdefault('breakdown', {})['N_EXP40年经验'] = f'ERROR: {_e_exp}'
 
     # ══ [9.22苏摩111封印] 40年实战经验规则引擎接入主链 ══
     # 接入位置：Step9风控后、trader_brain前
@@ -2777,7 +2778,8 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             )
         else:
             _result.setdefault('confluence', {}).setdefault('breakdown', {})['亏损记忆'] = 'n=0 无匹配场景'
-    except: pass
+    except Exception as _e_lm:
+        _result.setdefault('confluence', {}).setdefault('breakdown', {})['亏损记忆'] = f'ERROR: {_e_lm}'
 
     # [WFV-v1 闭环 2026-05-28] 达摩院信号日志（live_signal_log.jsonl）
     # [双写修复 2026-07-23 设计院] brahma_engine.analyze()已在外层写入，此处跳过防止重复

@@ -176,7 +176,7 @@ def get_har_rv(symbol: str) -> dict:
                 _os.replace(_tmp, str(_CACHE_PATH))
             except Exception:
                 try: _os.unlink(_tmp)
-                except Exception: pass
+                except OSError as _e_unlink: print(f'[WARN] har_rv临时文件清理失败: {_e_unlink}', file=_sys.stderr)
                 raise
         except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         return result
