@@ -32,6 +32,7 @@ free_llm_client.py — OpenRouter免费LLM客户端
 import json, os, ssl, time, urllib.request, urllib.error
 from pathlib import Path
 import sys
+import datetime as _dt
 
 # ── Key加载 ──────────────────────────────────────────────────────────────
 def _load_key() -> str:
@@ -89,6 +90,7 @@ BRAHMA_CONSTITUTION = """你是梵天量化系统的专项AI分析员。
 # ── 冷却管理：防429，同一模型3秒内不重复调用 ─────────────────────────
 _model_last_called: dict = {}   # {model_id: last_call_timestamp}
 _global_backoff_until = 0.0     # [V3] 全局429退避：全池共享配额，一模型429=全池退避
+_backoff_until_iso = ''         # [P0#1] 跨进程退避可读时间戳
 llm_last_error = ''            # [V3] 最近一次失败原因（消费方可查）
 _COOLDOWN_S = 3                  # 同一模型最小间隔秒数
 
@@ -107,6 +109,39 @@ def _pick_model(preferred: str) -> str:
 _ctx = ssl.create_default_context()
 _ctx.check_hostname = True
 _ctx.verify_mode = ssl.CERT_REQUIRED
+
+
+def _load_backoff_state(now: float = None) -> None:
+    """[P0#1 跨进程退避 2026-09-28 苏摩111] 从state文件同步全池退避状态。
+    接入位置: free_llm_client.chat()单点 — 11+消费方经此函数自动生效（单点修复=全线接线）。
+    只在文件退避晚于内存值且仍在未来时采纳，防旧文件覆盖新退避。"""
+    global _global_backoff_until, _backoff_until_iso
+    try:
+        state_f = Path(__file__).parent.parent / 'data' / 'llm_channel_state.json'
+        if not state_f.exists():
+            return
+        st = json.loads(state_f.read_text())
+        bu = float(st.get('backoff_until') or 0)
+        if bu > _global_backoff_until and (now is None or now < bu):
+            _global_backoff_until = bu
+            _backoff_until_iso = st.get('backoff_until_iso', '') or _dt.datetime.fromtimestamp(bu, _dt.timezone.utc).isoformat()
+    except Exception:
+        pass
+
+
+def _clear_backoff_state() -> None:
+    """[P0#1] 成功调用后清除state文件退避，让其他进程立即恢复（自愈加速）。"""
+    try:
+        state_f = Path(__file__).parent.parent / 'data' / 'llm_channel_state.json'
+        if state_f.exists():
+            st = json.loads(state_f.read_text())
+            if float(st.get('backoff_until') or 0) > 0:
+                st['backoff_until'] = 0
+                st['backoff_until_iso'] = ''
+                st['cleared_at'] = _dt.datetime.now(_dt.timezone.utc).isoformat()
+                state_f.write_text(json.dumps(st, ensure_ascii=False, indent=2))
+    except Exception:
+        pass
 
 
 def chat(prompt: str, system: str = '', max_tokens: int = 200,
@@ -134,8 +169,15 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
     ]
 
     # [V3 2026-09-27 苏摩111] 429感知退避 + 失败留证 + finish=length拒收
-    global _global_backoff_until
+    global _global_backoff_until, _backoff_until_iso, llm_last_error
     now = time.time()
+    # [P0#1 跨进程退避 2026-09-28 苏摩111] 调用前读state文件：退避期内直接降级返回''，
+    # 消费方走本地fallback（不烧配额不盲打）。接入位置=chat()单点，全线生效。
+    _load_backoff_state(now)
+    if time.time() < _global_backoff_until:
+        llm_last_error = f'backoff until {_backoff_until_iso} (cross-process state)'
+        print(f'[llm] 跨进程退避生效至{_backoff_until_iso}，本地降级', file=sys.stderr)
+        return ''
     last_err = ''
     for attempt_model in ([model] + [m for m in FALLBACK_MODELS if m != model]):
         if attempt_model not in _model_last_called:
@@ -162,6 +204,7 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
             resp = json.loads(urllib.request.urlopen(req, timeout=timeout, context=_ctx).read())
             _model_last_called[attempt_model] = time.time()
             _global_backoff_until = 0
+            _clear_backoff_state()
             choice = (resp.get('choices') or [{}])[0]
             content = (choice.get('message') or {}).get('content', '').strip()
             if content and choice.get('finish_reason') != 'length':
@@ -198,7 +241,6 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
     # [9.27修复] 失败留证：不再静默空返回，写诊断文件供消费方/哨兵读取
     try:
         state_f = Path(__file__).parent.parent / 'data' / 'llm_channel_state.json'
-        import datetime as _dt
         state_f.write_text(json.dumps({
             'last_failure_at': _dt.datetime.now(_dt.timezone.utc).isoformat(),
             'last_error': last_err,
@@ -207,7 +249,6 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
         }, ensure_ascii=False, indent=2))
     except Exception:
         pass
-    global llm_last_error
     llm_last_error = last_err
     print(f'[llm] all models failed: {last_err}', file=sys.stderr)
     return ''
