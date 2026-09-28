@@ -111,6 +111,91 @@ _ctx.check_hostname = True
 _ctx.verify_mode = ssl.CERT_REQUIRED
 
 
+# ── 主AI通道failover（2026-09-28 苏摩111）──────────────────────────────
+# 免费池429/退避/全灭时自动切网关自带litellm主AI，免费池重置后自动切回。
+# 免费优先（省成本），主AI只做兜底；key运行时从openclaw.json读取，不落日志不写盘。
+_master_cache = {'ts': 0.0, 'cfg': None}
+_MASTER_CACHE_TTL = 60.0
+
+
+def _master_config() -> dict:
+    """读取OpenClaw网关主AI配置（60s缓存），不可用返回{}"""
+    now = time.time()
+    if _master_cache['cfg'] is not None and now - _master_cache['ts'] < _MASTER_CACHE_TTL:
+        return _master_cache['cfg']
+    cfg = {}
+    try:
+        oc_f = Path(os.path.expanduser('~/.openclaw/openclaw.json'))
+        if oc_f.exists():
+            d = json.loads(oc_f.read_text())
+            prov = ((d.get('models') or {}).get('providers') or {}).get('litellm') or {}
+            base = (prov.get('baseUrl') or '').rstrip('/')
+            key = prov.get('apiKey') or ''
+            if base and key:
+                cfg = {
+                    'base': base,
+                    'key': key,
+                    'models': ['advanced', 'Qwen3.5-397B-A17B-SGLang'],
+                }
+    except Exception:
+        cfg = {}
+    _master_cache['ts'] = now
+    _master_cache['cfg'] = cfg
+    return cfg
+
+
+def _master_chat(messages: list, max_tokens: int, timeout: int) -> str:
+    """主AI通道调用。成功返回content，失败返回''。免费池退避期内也走此函数。"""
+    cfg = _master_config()
+    if not cfg:
+        return ''
+    # reasoning主模型思考消耗预算：max_tokens过小→content为空，给足下限
+    mt = max(max_tokens, 600)
+    last = ''
+    for model in cfg['models']:
+        try:
+            payload = json.dumps({
+                'model': model, 'messages': messages,
+                'max_tokens': mt, 'temperature': 0.2,
+            }).encode()
+            req = urllib.request.Request(
+                cfg['base'] + '/v1/chat/completions', data=payload,
+                headers={
+                    'Authorization': f"Bearer {cfg['key']}",
+                    'Content-Type': 'application/json',
+                },
+            )
+            resp = json.loads(urllib.request.urlopen(
+                req, timeout=max(timeout, 45), context=_ctx).read())
+            choice = (resp.get('choices') or [{}])[0]
+            content = (choice.get('message') or {}).get('content', '').strip()
+            if content:
+                return content
+            last = f'master/{model}: empty content'
+        except urllib.error.HTTPError as e:
+            last = f'master/{model}: HTTP {e.code}'
+        except Exception as e:
+            last = f'master/{model}: {type(e).__name__}: {str(e)[:60]}'
+    return ''
+
+
+def _mark_master_success() -> None:
+    """主AI接管成功后留证：保留免费池退避（等重置自愈），追加master字段。"""
+    try:
+        state_f = Path(__file__).parent.parent / 'data' / 'llm_channel_state.json'
+        st = {}
+        if state_f.exists():
+            try:
+                st = json.loads(state_f.read_text())
+            except Exception:
+                st = {}
+        st['master_failover_at'] = _dt.datetime.now(_dt.timezone.utc).isoformat()
+        st['master_failover_count'] = int(st.get('master_failover_count') or 0) + 1
+        state_f.write_text(json.dumps(st, ensure_ascii=False, indent=2))
+    except Exception:
+        pass
+
+
 def _load_backoff_state(now: float = None) -> None:
     """[P0#1 跨进程退避 2026-09-28 苏摩111] 从state文件同步全池退避状态。
     接入位置: free_llm_client.chat()单点 — 11+消费方经此函数自动生效（单点修复=全线接线）。
@@ -152,12 +237,6 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
     system: 额外system内容（深度封印版梵天宪法已自动注入）
     返回模型回复文本，失败时返回空字符串。
     """
-    if not API_KEY:
-        return ''
-
-    preferred = TASK_MODEL_MAP.get(task, TASK_MODEL_MAP['default'])
-    model = _pick_model(preferred)
-
     # 梵天宪法全局注入：合并外部system + 梵天宪法
     merged_system = BRAHMA_CONSTITUTION
     if system:
@@ -168,6 +247,14 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
         {'role': 'user',   'content': prompt},
     ]
 
+    # [主AI failover] 免费池key缺失 → 主AI直接接管
+    if not API_KEY:
+        return _master_chat(messages, max_tokens, timeout)
+
+    preferred = TASK_MODEL_MAP.get(task, TASK_MODEL_MAP['default'])
+    model = _pick_model(preferred)
+
+
     # [V3 2026-09-27 苏摩111] 429感知退避 + 失败留证 + finish=length拒收
     global _global_backoff_until, _backoff_until_iso, llm_last_error
     now = time.time()
@@ -175,6 +262,12 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
     # 消费方走本地fallback（不烧配额不盲打）。接入位置=chat()单点，全线生效。
     _load_backoff_state(now)
     if time.time() < _global_backoff_until:
+        # [主AI failover] 退避期内不盲打免费池 → 主AI接管（免费池重置后自动切回）
+        mc = _master_chat(messages, max_tokens, timeout)
+        if mc:
+            _mark_master_success()
+            print('[llm] 免费池退避中，主AI接管成功', file=sys.stderr)
+            return mc
         llm_last_error = f'backoff until {_backoff_until_iso} (cross-process state)'
         print(f'[llm] 跨进程退避生效至{_backoff_until_iso}，本地降级', file=sys.stderr)
         return ''
@@ -237,6 +330,14 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
         except Exception as e:
             _model_last_called[attempt_model] = time.time()
             last_err = f'{attempt_model}: {type(e).__name__}: {str(e)[:100]}'
+
+    # [主AI failover] 免费池全灭（429/网络/fallback全失败）→ 主AI接管
+    mc = _master_chat(messages, max_tokens, timeout)
+    if mc:
+        _mark_master_success()
+        print(f'[llm] 免费池全灭({last_err[:60]})，主AI接管成功', file=sys.stderr)
+        llm_last_error = f'{last_err} (master failover used)' if last_err else ''
+        return mc
 
     # [9.27修复] 失败留证：不再静默空返回，写诊断文件供消费方/哨兵读取
     try:
