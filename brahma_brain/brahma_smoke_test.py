@@ -218,6 +218,48 @@ try:
 except Exception as e:
     _fail('T12', '注射器矩阵层', str(e)[:60])
 
+# ── T13 D-10决策生命周期（P1 2026-09-28 苏摩111） ────────────
+try:
+    sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
+    from brahma_decision_lifecycle import (
+        d1_thesis, d2_counter_evidence, counter_score, build_package, d3_clock,
+    )
+    import copy
+    _t13_ok, _t13_detail = True, []
+    # 13a: 真实state无论点路径（当前CHOP_MID score12=5 < 110）
+    _st = json.loads((DATA / 'brahma_state_btc.json').read_text())
+    _t = d1_thesis(_st)
+    _t13_detail.append('real_state_thesis=' + ('none' if _t.get('none') else _t.get('strength', '?')))
+    # 13b: 构造强论点→建包→时钟全路径（纯内存影子，不落盘）
+    _st2 = copy.deepcopy(_st)
+    _st2['regime'] = 'BEAR_TREND'
+    _st2['score_final'] = 128.0
+    _st2['trader_brain'] = {'action': 'WATCH', 'direction': 'SHORT', 'entry_lo': 84000.0, 'entry_hi': 84500.0, 'sl': 0, 'rr': 2.0}
+    _st2['momentum'] = {'rsi_1h': 71.0, 'atr_1h': 389.0}
+    _st2.setdefault('smc', {})
+    _st2['smc'] = dict(_st2['smc'])
+    _ob = dict(_st2['smc'].get('order_blocks') or {})
+    _ob['nearest_bear_ob'] = {'type': 'BEAR_OB', 'high': 84018.4, 'low': 83742.0, 'mid': 83880.2, 'idx': 101, 'age_bars': 12, 'broken': False, 'dist_pct': 0.93, 'note': 'smoke'}
+    _st2['smc']['order_blocks'] = _ob
+    _pkg = build_package('BTCUSDT', _st2)
+    if _pkg:
+        # 时钟三态: WAIT→ARMED→TRIGGERED
+        _p, _tr1 = d3_clock(copy.deepcopy(_pkg), 84700.0)   # 距离远→跟踪
+        _p, _tr2 = d3_clock(copy.deepcopy(_pkg), 84650.0)   # 近→ARMED
+        _p2 = copy.deepcopy(_pkg); _p2['state'] = 'ARMED'
+        _p2, _tr3 = d3_clock(_p2, 84200.0)                  # 入区→TRIGGERED
+        _p3 = copy.deepcopy(_pkg); _p3['state'] = 'TRIGGERED'
+        _p3, _tr4 = d3_clock(_p3, 85800.0)                  # 破证伪位→INVALIDATED
+        _chain = [_tr2.get('transition'), _tr3.get('transition'), _tr4.get('transition')]
+        if _chain == ['ARMED', 'TRIGGERED', 'INVALIDATED']:
+            _ok('T13', 'D-10决策生命周期', f'建包strength={_pkg["thesis"]["strength"]} 时钟链ARMED→TRIGGERED→INVALIDATED')
+        else:
+            _fail('T13', 'D-10决策生命周期', f'时钟链异常: {_chain}')
+    else:
+        _fail('T13', 'D-10决策生命周期', '构造强论点建包失败')
+except Exception as e:
+    _fail('T13', 'D-10决策生命周期', str(e)[:60])
+
 # ── 汇总 ──────────────────────────────────────────────────
 print("\n" + "═" * 55)
 ok_cnt   = sum(1 for r in results if r[1] == '✅')

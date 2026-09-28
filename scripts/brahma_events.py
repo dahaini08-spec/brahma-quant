@@ -21,6 +21,8 @@ _lock = threading.Lock()  # 进程内锁; 跨进程由单一写入者铁律保�
 _EVENT_TYPES = {
     'signal_fired', 'gate_blocked', 'order_opened', 'order_closed',
     'pnl_settled', 'correction', 'circuit_breaker',
+    # [P1决策生命周期 2026-09-28 苏摩111] D-10深度决策引擎事件（append-only同设计）
+    'decision_made', 'decision_upgrade', 'decision_invalidated',
 }
 
 
