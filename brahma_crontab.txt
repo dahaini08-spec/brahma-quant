@@ -65,6 +65,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 11 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/har_rv_refresh.py >> logs/har_rv_refresh.log 2>&1
 # 依赖自愈兜底 — 每15min（[9.27wheelhouse 苏摩111] overlaybd重置回滚dist-packages，wheelhouse持久层恢复）
 */15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/ensure_deps.py >> logs/ensure_deps.log 2>&1
+6-56/15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/cron_replay_sentinel.py --apply --quiet >> logs/cron_replay.log 2>&1
 
 # ============================================================
 # Layer 4: 每2小时任务 (错峰)
