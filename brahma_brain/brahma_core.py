@@ -3112,96 +3112,32 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _s25_parent = str(Path(__file__).parent)
             if _s25_parent not in _sys25.path: _sys25.path.insert(0, _s25_parent)  # [S1修复 2026-08-24]
             from reasoning_client import reasoning_gate as _rg25
-# from macro_reasoning_enhancer import enhance_macro_score as _rmac25
-# from sl_reasoning_enhancer import enhance_stop_loss as _rsl25
-# from trigger_reasoning_enhancer import enhance_trigger_timing as _rtrig25
-
+            # [防谎P0 2026-09-28 苏摩111] 修复9.13死代码清除遗留（git 026bb483删模块漏删调用）：
+            # macro/sl/trigger三增强器已删，import被注释但submit调用残留——
+            # 自9.13起此块跑到submit即NameError被_e25吞掉，
+            # reasoning_gate实际产出从未被消费（僵尸门禁）。恢复单门禁：
             _s25_entry_lo = _s25_params.get('entry_lo', 0)
             _s25_entry_hi = _s25_params.get('entry_hi', 0)
             _s25_sl       = _s25_params.get('stop_loss', 0)
             _s25_entry    = (_s25_entry_lo + _s25_entry_hi) / 2 if _s25_entry_lo else _s25_price
 
-            # ── 并行调用四模块（苏摩B档核心升级）──────────────────
-            _futures = {}
-            with _cf25.ThreadPoolExecutor(max_workers=4, thread_name_prefix='s25') as _ex25:
-                _futures['gate']    = _ex25.submit(_rg25, _result, True)
-                _futures['macro']   = _ex25.submit(_rmac25,
-                    _s25_sym, _s25_dir, _s25_regime,
-                    float(_result.get('confluence',{}).get('breakdown',{}).get('宏观+事件', 10) or 10),
-                    _s25_macro)
-                _futures['sl']      = _ex25.submit(_rsl25,
-                    _s25_sym, _s25_dir,
-                    float(_s25_sl), float(_s25_entry), float(_s25_price),
-                    0.0, 0.0, 0.0, 0.0, _s25_pup, _s25_regime)
-                _s25_t15 = _s25_params.get('trigger_15m', {})
-                _futures['trigger'] = _ex25.submit(_rtrig25,
-                    _s25_sym, _s25_dir,
-                    int(_s25_t15.get('confidence', 70) if _s25_t15 else 70),
-                    float(_s25_price), float(_s25_entry_lo), float(_s25_entry_hi),
-                    str(_s25_t15.get('wick_rejection',{}).get('type','') if _s25_t15 else ''),
-                    _s25_pup, 0.0, 0.0, '', _s25_regime)
-
-            # ── 收集并行结果 ────────────────────────────────────────
+            # ── 单门禁调用（增强器已删，只保留gate）──────────────
+            _gate25 = _rg25(_result, True)
             _bd25 = _result['confluence'].setdefault('breakdown', {})
-
-            # P0: 信号门控
-            try:
-                _gate25 = _futures['gate'].result(timeout=15)
-                _v25 = _gate25.get('verdict', 'PASS')
-                _c25 = _gate25.get('confidence', 0.5)
-                if _v25 == 'WARN':
-                    _result['score_final'] = _result.get('score_final', 0) - 8
-                    _result['confluence']['score'] = _result['confluence'].get('score', 0) - 8
-                elif _v25 == 'BLOCK':
-                    _result['score_final'] = _result.get('score_final', 0) - 25
-                    _result['valid_signal'] = False
-                _bd25['s25_reasoning'] = (
-                    f"{_v25} conf={_c25:.2f} pup={_s25_pup:.2f} | {_gate25.get('reason','')[:55]}"
-                )
-                print(f'[s25-Gate] {_s25_sym} {_s25_dir}: {_v25} conf={_c25:.2f}'
-                      f' pup={_s25_pup:.2f} adj={-8 if _v25=="WARN" else (-25 if _v25=="BLOCK" else 0)}'
-                      f' {_gate25.get("elapsed",0):.1f}s')
-            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-            # P1a: 宏观增强
-            try:
-                _mac25 = _futures['macro'].result(timeout=15)
-                _mac_score = _mac25.get('enhanced_score', 10)
-                _mac_delta = _mac25.get('delta', 0)
-                if abs(_mac_delta) >= 1.0:
-                    _result['score_final'] = (_result.get('score_final', 0) or 0) + _mac_delta
-                    _result['confluence']['score'] = (_result['confluence'].get('score', 0) or 0) + _mac_delta
-                    _bd25['s25_macro'] = (
-                        f"宏观动态={_mac_score:.0f}分(Δ{_mac_delta:+.0f}) "
-                        f"impact={_mac25.get('impact','?')} src={_mac25.get('source','?')}"
-                    )
-                    print(f'[s25-Macro] {_s25_sym}: score={_mac_score:.0f} Δ{_mac_delta:+.0f}'
-                          f' impact={_mac25.get("impact","?")} src={_mac25.get("source","?")}')
-            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-            # P1b: 止损优化
-            try:
-                _sl25 = _futures['sl'].result(timeout=15)
-                if _sl25.get('source') == 'reasoning_model' and _sl25.get('recommended_sl', 0) > 0:
-                    _new_sl = _sl25['recommended_sl']
-                    _result.setdefault('params', {})['stop_loss'] = _new_sl
-                    _bd25['s25_sl'] = (
-                        f"SL推理优化: {_s25_sl:.0f}→{_new_sl:.0f} "
-                        f"action={_sl25.get('action','?')} conf={_sl25.get('confidence',0):.2f}"
-                    )
-                    print(f'[s25-SL] {_s25_sym}: {_s25_sl:.0f}→{_new_sl:.0f}'
-                          f' action={_sl25.get("action","?")} conf={_sl25.get("confidence",0):.2f}')
-            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-            # P2: 触发时机
-            try:
-                _trig25 = _futures['trigger'].result(timeout=15)
-                _cadj = _trig25.get('confidence_adj', 0)
-                if abs(_cadj) >= 5 or not _trig25.get('execute_now', True):
-                    _bd25['s25_trigger'] = (
-                        f"触发推理: exec={_trig25.get('execute_now',True)}"
-                        f" cadj={_cadj:+d} wait={_trig25.get('wait_for','')[:40]}"
-                    )
-                    print(f'[s25-Trigger] {_s25_sym}: exec={_trig25.get("execute_now",True)}'
-                          f' adj={_cadj:+d} {_trig25.get("reasoning","")[:40]}')
-            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+            _v25 = _gate25.get('verdict', 'WARN')
+            _c25 = _gate25.get('confidence', 0.3)
+            if _v25 == 'WARN':
+                _result['score_final'] = _result.get('score_final', 0) - 8
+                _result['confluence']['score'] = _result['confluence'].get('score', 0) - 8
+            elif _v25 == 'BLOCK':
+                _result['score_final'] = _result.get('score_final', 0) - 25
+                _result['valid_signal'] = False
+            _bd25['s25_reasoning'] = (
+                f"{_v25} conf={_c25:.2f} pup={_s25_pup:.2f} | {_gate25.get('reason','')[:55]}"
+            )
+            print(f'[s25-Gate] {_s25_sym} {_s25_dir}: {_v25} conf={_c25:.2f}'
+                  f' pup={_s25_pup:.2f} adj={-8 if _v25=="WARN" else (-25 if _v25=="BLOCK" else 0)}'
+                  f' {_gate25.get("elapsed",0):.1f}s')
     except Exception as _e25:
         print(f"[WARN] brahma_core: _e25", file=sys.stderr)
 

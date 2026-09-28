@@ -208,9 +208,11 @@ PASS=正常 WARN=降分8 BLOCK=拒绝执行"""
     elapsed = round(time.time() - t0, 2)
 
     # ── 解析结果 ─────────────────────────────────────────────────
-    verdict = 'PASS'
-    confidence = 0.6
-    reason = '规则降级'
+    # [防谎P0 2026-09-28 苏摩111] fail-closed：LLM不可用/输出违约=WARN×0.5降权
+    # 旧版默认PASS=fail-open：AI说谎/缺席→系统更激进（谎言放大器）。修复后AI不确定性只能更保守。
+    verdict = 'WARN'
+    confidence = 0.3
+    reason = 'LLM不可用·保守WARN'
 
     if raw:
         try:
@@ -222,7 +224,10 @@ PASS=正常 WARN=降分8 BLOCK=拒绝执行"""
                 confidence = float(data.get('confidence', 0.6))
                 reason     = str(data.get('reason', ''))[:50]
                 if verdict not in ('PASS', 'WARN', 'BLOCK'):
-                    verdict = 'PASS'
+                    # [防谎P0 2026-09-28] 非法verdict=输出违约→WARN（旧版回退PASS=fail-open）
+                    verdict = 'WARN'
+                    confidence = 0.3
+                    reason = f'LLM输出违约·保守WARN'
         except Exception:
             # 关键词降级
             raw_l = raw.lower()

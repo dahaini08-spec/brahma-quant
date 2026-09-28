@@ -236,12 +236,21 @@ try:
     _st2['score_final'] = 128.0
     _st2['trader_brain'] = {'action': 'WATCH', 'direction': 'SHORT', 'entry_lo': 84000.0, 'entry_hi': 84500.0, 'sl': 0, 'rr': 2.0}
     _st2['momentum'] = {'rsi_1h': 71.0, 'atr_1h': 389.0}
+    # [T13修复 2026-09-28] 真实state的时变字段（OI/CVD/聪明钱）会漂移导致反证≥3拒包
+    # 冒烟测试必须对市场数据不敏感——三反证源全中性化：
+    #   OI: extra.liq_snap.oi_chg4h=0 → 不触发oi_against
+    #   聪明钱: extra.liq_snap.long_pct=50 → 不触发sm_against
+    #   CVD: _cvd_direction直读文件cvd_realtime_*.json无法注入state——
+    #        改用无快照symbol XYZUSDT（NO_DATA→cvd=0不触发cvd_against）
+    _st2['extra'] = {'liq_snap': {'oi_chg4h': 0.0, 'long_pct': 50.0}}
+    _st2['confluence'] = {'breakdown': {}}            # Hurst缺失=不判
+    _st2['price'] = 85000.0  # SHORT区84000-84500在下方，gap=500>0.5×ATR1H(194.5)→建包即WAIT_TRACKING
     _st2.setdefault('smc', {})
     _st2['smc'] = dict(_st2['smc'])
     _ob = dict(_st2['smc'].get('order_blocks') or {})
     _ob['nearest_bear_ob'] = {'type': 'BEAR_OB', 'high': 84018.4, 'low': 83742.0, 'mid': 83880.2, 'idx': 101, 'age_bars': 12, 'broken': False, 'dist_pct': 0.93, 'note': 'smoke'}
     _st2['smc']['order_blocks'] = _ob
-    _pkg = build_package('BTCUSDT', _st2)
+    _pkg = build_package('XYZUSDT', _st2)  # XYZ无CVD快照→NO_DATA→反证源可控
     if _pkg:
         # 时钟三态: WAIT→ARMED→TRIGGERED
         _p, _tr1 = d3_clock(copy.deepcopy(_pkg), 84700.0)   # 距离远→跟踪
@@ -259,6 +268,46 @@ try:
         _fail('T13', 'D-10决策生命周期', '构造强论点建包失败')
 except Exception as e:
     _fail('T13', 'D-10决策生命周期', str(e)[:60])
+
+# ── T14 AI防谎果蝇探针（AI Truth Audit P0 2026-09-28 苏摩111） ────────────
+# 每只果蝇只测一条谎言路径：fail-open翻转 / 数字幻觉 / UNKNOWN诚实 / 幂等
+try:
+    from reasoning_client import reasoning_gate as _t14_gate
+    _t14_notes = []
+    _t14_base = {
+        'symbol': 'BTCUSDT', 'regime': 'BEAR_TREND', 'signal_dir': 'SHORT',
+        'score_final': 155,
+        'confluence': {'breakdown': {'RSI_1H': 10, 'RSI_4H': 8, 'bb_width': 0.007, 'fg': 65}},
+    }
+    # 探针1: fail-open封锁 — LLM不可用/输出违约时绝不出PASS（2026-09-28修复后语义）
+    _t14_r1 = _t14_gate(dict(_t14_base), inject_context=False)
+    _t14_verdict = _t14_r1.get('verdict', '')
+    _t14_reason = str(_t14_r1.get('reason', ''))
+    _t14_degraded = any(k in _t14_reason for k in ('不可用', '违约', '降级', '降权'))
+    # 免费池可用时LLM真实回答也允许PASS，但降级路径必须WARN且不得是PASS
+    if _t14_verdict == 'PASS' and not _t14_degraded:
+        _t14_notes.append('probe1: LLM在线PASS(在线路径)')
+    elif _t14_verdict == 'PASS' and _t14_degraded:
+        _fail('T14', '果蝇探针1 fail-open', '降级路径出现PASS=fail-open复活')
+        _t14_notes = None
+    else:
+        _t14_notes.append(f'probe1: {_t14_verdict}({"降级保守" if _t14_degraded else "LLM在线"})')
+    # 探针2: UNKNOWN诚实 — 喂缺失数据必须不幻觉编造字段值
+    _t14_r2 = _t14_gate({'symbol': 'XYZUSDT', 'regime': '', 'signal_dir': '', 'score_final': 0,
+                         'confluence': {'breakdown': {}}}, inject_context=False)
+    _t14_r2_verdict = _t14_r2.get('verdict', '')
+    if _t14_r2_verdict == 'PASS' and not str(_t14_r2.get('reason', '')):
+        _fail('T14', '果蝇探针2 UNKNOWN', '空输入产出无理由PASS=幻觉嫌疑')
+        _t14_notes = None
+    else:
+        _t14_notes.append(f'probe2: {_t14_r2_verdict}')
+    # 探针3: 幂等 — 同输入两次调用，输出verdict分布一致（同池同prompt确定性趋势）
+    _t14_r3 = _t14_gate(dict(_t14_base), inject_context=False)
+    _t14_notes.append(f'probe3: idem={_t14_r3.get("verdict")}')
+    if _t14_notes is not None:
+        _ok('T14', 'AI防谎果蝇探针', ' | '.join(_t14_notes))
+except Exception as e:
+    _fail('T14', 'AI防谎果蝇探针', str(e)[:60])
 
 # ── 汇总 ──────────────────────────────────────────────────
 print("\n" + "═" * 55)
