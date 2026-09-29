@@ -65,6 +65,9 @@ if not _in_test:
 
 import sys, os, json, time, hmac, hashlib, math, requests
 
+# [9.29 卫生包 苏摩111] HTTP连接复用 —— 对标 brahma_bus._SESS / decision_engine._SESS 先例，行为不变
+_HTTP = requests.Session()
+
 # ── data_cache/brahma_bus SSOT (API直连迁移 2026-08-28) ──
 try:
     sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent))
@@ -231,8 +234,8 @@ def _signed(method: str, path: str, params: dict = {}) -> dict:
     url = f'{FAPI_BASE}{path}?{qs}&signature={sig}'
     hdrs = {'X-MBX-APIKEY': API_KEY}
     if method == 'GET':
-        return requests.get(url, headers=hdrs, timeout=8).json()
-    return requests.post(url, headers=hdrs, timeout=8).json()
+        return _HTTP.get(url, headers=hdrs, timeout=8).json()
+    return _HTTP.post(url, headers=hdrs, timeout=8).json()
 
 
 def _load_executed() -> set:
@@ -995,8 +998,13 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
                     _s = _ap.get('symbol') if isinstance(_ap, dict) else getattr(_ap, 'symbol', None)
                     _side = _ap.get('side') if isinstance(_ap, dict) else getattr(_ap, 'side', None)
                     if _s: _open_pos.append({'symbol': str(_s).upper(), 'side': str(_side or '').upper()})
-            except Exception:
-                pass
+            except Exception as _ap_err:
+                # [9.29修复] 解析失败≠空持仓：error_ledger留证可见（语义不变，防止R4盲区静默）
+                try:
+                    from brahma_brain import error_ledger as _el
+                    _el.count('risk_gate_positions', error=_ap_err, context={'phase': 'auto_enforce', 'symbol': sym})
+                except Exception:
+                    pass
             _state = {'open_positions': _open_pos, 'now_ts': time.time()}
             _sig = {'symbol': sym, 'side': _dir, 'regime': signal.get('regime', ''),
                     'score': float(signal.get('score', 0)),
@@ -1188,7 +1196,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     _dir_upper = str(direction).upper()
     if _dir_upper == 'LONG':
         try:
-            _kl_4h = _dc_klines(sym, '4h', 8) if _dc_klines else requests.get(
+            _kl_4h = _dc_klines(sym, '4h', 8) if _dc_klines else _HTTP.get(
                 f'{FAPI_BASE}/fapi/v1/klines?symbol={sym}&interval=4h&limit=8',
                 timeout=4
             ).json()
@@ -1307,7 +1315,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
         try:
             _15m_confirmed = False
             _15m_skip_reason = ''
-            _kl15 = _dc_klines(sym, '15m', 8) if _dc_klines else requests.get(
+            _kl15 = _dc_klines(sym, '15m', 8) if _dc_klines else _HTTP.get(
                 f'{FAPI_BASE}/fapi/v1/klines?symbol={sym}&interval=15m&limit=8',
                 timeout=5
             ).json()
@@ -1351,7 +1359,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     #         ATR自适应：max(固定SL, 1.5×ATR_1H/价格)
     #         低波动期: SL紧缩(更多机会) | 高波动期: SL放宽(不被震出)
     try:
-        _kl_1h = _dc_klines(sym, '1h', 16) if _dc_klines else requests.get(
+        _kl_1h = _dc_klines(sym, '1h', 16) if _dc_klines else _HTTP.get(
             f'{FAPI_BASE}/fapi/v1/klines?symbol={sym}&interval=1h&limit=16',
             timeout=5
         ).json()
@@ -1362,7 +1370,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
                 _pc = float(_kl_1h[_i-1][4])
                 _trs.append(max(_h-_l, abs(_h-_pc), abs(_l-_pc)))
             _atr_1h = sum(_trs[-14:]) / 14
-            _px_ref = _bus_get_price(sym) if _bus_get_price else float(requests.get(
+            _px_ref = _bus_get_price(sym) if _bus_get_price else float(_HTTP.get(
                 f'{FAPI_BASE}/fapi/v1/ticker/price?symbol={sym}', timeout=4
             ).json()['price'])
             _atr_sl_pct = round(_atr_1h * 1.5 / _px_ref * 100, 2)
@@ -1378,7 +1386,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     # ── [P1-15m微结构止损 2026-08-08 设计院自主决策] ──────────────────────
     # 用15m最近摆动低点(做多)/高点(做空)替代固定% → 不被正常波动扫出
     try:
-        _kl15_sl = _dc_klines(sym, '15m', 24) if _dc_klines else requests.get(
+        _kl15_sl = _dc_klines(sym, '15m', 24) if _dc_klines else _HTTP.get(
             f'{FAPI_BASE}/fapi/v1/klines?symbol={sym}&interval=15m&limit=24',
             timeout=5
         ).json()
@@ -1453,7 +1461,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
         from brahma_brain.brahma_bus import get_price as _bus_get_px
         px = _bus_get_px(sym)
     except Exception:
-        r = requests.get(f'{FAPI_BASE}/fapi/v1/ticker/price',
+        r = _HTTP.get(f'{FAPI_BASE}/fapi/v1/ticker/price',
                          params={'symbol': sym}, timeout=5)
         px = float(r.json().get('price', 0))
 
@@ -1645,7 +1653,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
 
     # 获取合约精度
     try:
-        ei = requests.get(f'{FAPI_BASE}/fapi/v1/exchangeInfo', timeout=5).json()
+        ei = _HTTP.get(f'{FAPI_BASE}/fapi/v1/exchangeInfo', timeout=5).json()
         sym_info = next((s for s in ei.get('symbols', []) if s['symbol'] == sym), None)
         qty_prec = 3  # 默认
         if sym_info:

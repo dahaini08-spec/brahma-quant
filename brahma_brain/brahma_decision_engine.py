@@ -357,10 +357,18 @@ def _get_entry_zone(symbol: str, direction: str, current_price: float) -> tuple:
                         return round(min(lows), 2), round(min(lows) * 1.002, 2), '15m_swing', min(lows)
                     else:
                         return round(max(highs) * 0.998, 2), round(max(highs), 2), '15m_swing', max(highs)
-            except Exception:
-                pass
-    except Exception:
-        pass
+            except Exception as _sw_err:
+                try:
+                    from brahma_brain import error_ledger as _el
+                    _el.count('entry_zone_15m_swing', error=_sw_err, context={'symbol': symbol, 'phase': 'decision_engine'})
+                except Exception:
+                    pass
+    except Exception as _smc_err:
+        try:
+            from brahma_brain import error_ledger as _el
+            _el.count('entry_zone_smc', error=_smc_err, context={'symbol': symbol, 'phase': 'decision_engine'})
+        except Exception:
+            pass
     return (round(current_price * 0.9985, 2), round(current_price * 1.0015, 2),
             'fallback', None)
 
