@@ -27,7 +27,7 @@ SIGNAL_QUEUE     = BASE / 'data' / 'auto_signal_queue.json'
 PAPER_LOG        = BASE / 'logs' / 'paper_executor.log'
 
 # 纸面系统专属门槛（比实盘宽松）
-PAPER_SCORE_MIN  = 100  # [P0对齐 2026-09-24 苏摩111] 80→100对齐MIN_SCORE_OPEN（LLM建议采纳线非硬风控，见三方体检报告）
+PAPER_SCORE_MIN  = 100  # [9.29 F1 苏摩111] 已废弃硬门：12维终选(W2)后决策层是唯一裁判，executor不再重复设分门槛（历史：37.8<100拒单与决策层EXECUTE矛盾，见9.29 P0报告）
 
 
 def _shadow_evaluate_risk_gate(signal: dict, sym: str, side: str, positions_data: dict,
@@ -217,9 +217,9 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
     tp2    = float(signal.get('tp2', 0))
 
     # 门槛检查
-    if score < PAPER_SCORE_MIN:
-        log(f'SKIP {sym} {side}: score={score:.1f} < {PAPER_SCORE_MIN}')
-        return False
+    # [9.29 F1 苏摩111] 移除PAPER_SCORE_MIN硬门：决策层五步是唯一裁判
+    # （EXECUTE信号必过五步+风险闸，executor重复设门槛=评分口径分裂，
+    # 9.27两条BTC EXECUTE死于37.8<100，见P0报告根因①）
     if grade < PAPER_GRADE_MIN:
         log(f'SKIP {sym} {side}: grade={grade:.1f} < {PAPER_GRADE_MIN}')
         return False

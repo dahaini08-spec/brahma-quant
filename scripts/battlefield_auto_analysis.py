@@ -215,6 +215,13 @@ if __name__ == '__main__':
                         continue
                 ssot_signals = [s for s in ssot_signals
                                 if str(s.get('action', '')).upper().startswith('ENTER')]
+                # [9.29 F4 苏摩111] direction硬校验：analysis异常降级时signal_dir='NEUTRAL'
+                # （brahma_core L774），入队executor必被R2拒——fail-closed前移，不浪费executor轮次
+                _before = len(ssot_signals)
+                ssot_signals = [s for s in ssot_signals
+                                if str(s.get('direction', '')).upper() in ('LONG', 'SHORT')]
+                if len(ssot_signals) < _before:
+                    print(f'[auto_analysis] F4: 过滤{_before - len(ssot_signals)}条direction无效信号(NEUTRAL/空)')
                 print(f'[auto_analysis] 决策层富化{_enriched}条，剩{len(ssot_signals)}条ENTER系')
                 sq = []
                 if SQ_PATH.exists():

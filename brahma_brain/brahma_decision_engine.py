@@ -53,7 +53,7 @@ def _dynamic_sl_max(grade: float, regime: str, direction: str, sl_pct: float) ->
     if float(grade) >= 85.0:
         return 2.5   # 高质量结构，允许最大宪法止损
     return 2.0       # 低质量结构，严格限制
-MIN_RR           = 1.0   # 最低风险回报比
+MIN_RR           = 1.5   # 最低风险回报比 [9.29 F2 苏摩111] 1.0→1.5对齐MEMORY铁律（RR<1.5在决策层就拒，不产生executor必拒信号；9.27两条BTC EXECUTE RR=1.00死于口径打架）
 OI_SURGE_THR     = 3.0   # OI单小时变化>3% = 大资金进场
 FR_EXTREME_LONG  = 0.10  # 资金费率>0.1% = 多头过热
 FR_EXTREME_SHORT = -0.05 # 资金费率<-0.05% = 空头拥挤 → 做多机会
@@ -99,7 +99,7 @@ def _get_liq_distances(symbol: str, price: float) -> dict:
     import json as _json
     from pathlib import Path as _Path
     try:
-        _liq_path = _Path(__file__).parent.parent / 'data' / f'liq_heatmap_{symbol}.json'
+        _liq_path = _Path(__file__).parent.parent / 'data' / f'liq_heatmap_{symbol.lower()}.json'  # [9.29 P0-5 苏摩111] symbol小写对齐collector输出（原大写永远miss→fallback）
         if _liq_path.exists():
             _liq = _json.loads(_liq_path.read_text())
             ns = _liq.get('nearest_short_liq', 0)
@@ -111,8 +111,14 @@ def _get_liq_distances(symbol: str, price: float) -> dict:
             long_map = _liq.get('long_liq_map', {})
             sorted_s = sorted(float(k) for k in short_map.keys()) if short_map else []
             sorted_l = sorted(float(k) for k in long_map.keys()) if long_map else []
-            second_s_pct = sorted_s[1] if len(sorted_s) >= 2 else (dist_s * 2 if dist_s else 2.0)
-            second_l_pct = sorted_l[1] if len(sorted_l) >= 2 else (dist_l * 2 if dist_l else 2.0)
+            # [9.29 P0-附带修复 苏摩111] 原bug：second取的是「杠杆分位数」（如3.0），
+            # 但消费方把它当「距离百分比」用（×(1+up_50x/100)）。实际语义：
+            # short_liq_map[lev]=该杠杆的清算价，需换算成%距离。
+            # 取第二近杠杆（sorted[1]=次低杠杆）的清算价→%距离。
+            second_s_px = short_map.get(str(int(sorted_s[1]))) if len(sorted_s) >= 2 else 0
+            second_l_px = long_map.get(str(int(sorted_l[1]))) if len(sorted_l) >= 2 else 0
+            second_s_pct = (second_s_px - price) / price * 100 if second_s_px else (dist_s * 2 if dist_s else 2.0)
+            second_l_pct = (price - second_l_px) / price * 100 if second_l_px else (dist_l * 2 if dist_l else 2.0)
             return {
                 'up_100x': dist_s if dist_s > 0 else 2.0,   # 真实止损墙距离%
                 'dn_100x': dist_l if dist_l > 0 else 2.0,   # 真实支撑池距离%
