@@ -38,23 +38,13 @@ _CACHE: dict = {}
 _CACHE_TTL = 300  # 5分钟
 
 def _fetch_klines(symbol: str, interval: str = '1h', limit: int = 30) -> list:
-    """拉取K线数据 — data_cache优先"""
+    """拉取K线数据 — [9.29第四轮重构 苏摩111] 委托bus.get_klines_safe（语义SSOT）
+    原实现(data_cache优先+直连fallback+失败返[])已收编入bus，行为一致"""
     try:
-        try:
-            from brahma_brain.data_cache import get_klines as _dc
-        except ImportError:
-            from data_cache import get_klines as _dc
-        raw = _dc(symbol, interval, limit)
-        if raw and isinstance(raw, list) and len(raw) >= 3:
-            return raw
-    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-    import urllib.request
-    url = f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}'
-    try:
-        with urllib.request.urlopen(url, timeout=8, context=_DC_SSL_CTX) as r:
-            return json.loads(r.read())
-    except Exception:
-        return []
+        from brahma_brain.brahma_bus import get_klines_safe
+    except ImportError:
+        from brahma_bus import get_klines_safe
+    return get_klines_safe(symbol, interval, limit)
 
 def _calc_realized_vol(klines: list, n: int) -> float:
     """计算n根K线的已实现波动率（对数收益率标准差×√n）"""

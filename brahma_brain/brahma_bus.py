@@ -352,6 +352,34 @@ def get_klines(symbol: str, interval: str = '1h', limit: int = 100) -> list:
             return json.loads(r.read())
 
 
+def get_klines_safe(symbol: str, interval: str = '1h', limit: int = 100,
+                    min_len: int = 3) -> list:
+    """[9.29第四轮重构 苏摩111] fail-open版统一K线查询 — 语义SSOT
+
+    与 get_klines 的区别：所有失败路径返回 []（不摇cry），供降级敏感的
+    分析模块使用。对标 har_rv_engine/multi_tf_context_builder/
+    weekly_monthly_anchor 各自重复实现的 _fetch_klines，行为一致：
+      data_cache优先(min_len校验) → 直连fapi → 失败返[]
+    """
+    try:
+        try:
+            from brahma_brain.data_cache import get_klines as _dc
+        except ImportError:
+            from data_cache import get_klines as _dc
+        raw = _dc(symbol, interval, limit)
+        if raw and isinstance(raw, list) and len(raw) >= min_len:
+            return raw
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+    import urllib.request, json
+    url = f'https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}'
+    try:
+        with urllib.request.urlopen(url, timeout=8, context=_DC_SSL_CTX) as r:
+            data = json.loads(r.read())
+            return data if isinstance(data, list) else []
+    except Exception:
+        return []
+
+
 def get_funding(symbol: str) -> float:
     """统一资金费率查询"""
     try:

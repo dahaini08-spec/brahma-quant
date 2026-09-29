@@ -25,28 +25,13 @@ _TTL = 3600  # 周月线1小时缓存够了
 
 
 def _fetch_klines(symbol: str, interval: str, limit: int) -> list:
-    """拉取K线 — data_cache优先，fallback直连"""
+    """[9.29第四轮重构 苏摩111] 委托bus.get_klines_safe（语义SSOT，min_len=4）
+    原实现(data_cache优先+直连fallback+失败返[])已收编入bus，行为一致"""
     try:
-        try:
-            from brahma_brain.data_cache import get_klines as _dc
-        except ImportError:
-            from data_cache import get_klines as _dc
-        raw = _dc(symbol, interval, limit)
-        if raw and isinstance(raw, list) and len(raw) >= 4:
-            return raw
-    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-    try:
-        import requests
-        r = requests.get(
-            'https://fapi.binance.com/fapi/v1/klines',
-            params={'symbol': symbol, 'interval': interval, 'limit': limit},
-            timeout=10
-        )
-        data = r.json()
-        if isinstance(data, list):
-            return data
-    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-    return []
+        from brahma_brain.brahma_bus import get_klines_safe
+    except ImportError:
+        from brahma_bus import get_klines_safe
+    return get_klines_safe(symbol, interval, limit, min_len=4)
 
 
 class WeeklyMonthlyAnchor:

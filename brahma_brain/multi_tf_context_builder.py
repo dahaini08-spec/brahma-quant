@@ -30,23 +30,13 @@ import requests
 
 # ── 工具：拉取K线 ──────────────────────────────────────────────
 def _fetch_klines(symbol: str, interval: str, limit: int = 200) -> list:
-    """fetch klines"""
+    """[9.29第四轮重构 苏摩111] 委托bus.get_klines_safe（语义SSOT）
+    原实现(data_cache优先+直连fallback+失败返[])已收编入bus，行为一致"""
     try:
-        try:
-            from brahma_brain.data_cache import get_klines as _dc
-        except ImportError:
-            from data_cache import get_klines as _dc
-        raw = _dc(symbol, interval, limit)
-        if raw and isinstance(raw, list) and len(raw) >= 3:
-            return raw
-    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-    try:
-        url = 'https://fapi.binance.com/fapi/v1/klines'
-        r = requests.get(url, params={'symbol': symbol, 'interval': interval,
-                                       'limit': limit}, timeout=8)
-        return r.json() if r.status_code == 200 else []
-    except Exception:
-        return []
+        from brahma_brain.brahma_bus import get_klines_safe
+    except ImportError:
+        from brahma_bus import get_klines_safe
+    return get_klines_safe(symbol, interval, limit)
 
 
 def _parse_ohlcv(raw: list) -> dict:
