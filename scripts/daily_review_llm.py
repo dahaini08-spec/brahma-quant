@@ -121,31 +121,54 @@ def _llm_channel_down() -> bool:
         return False
 
 
+def _local_review_fallback(data: dict) -> str:
+    """[9.29 P1 苏摩111] 复盘LLM双通道全灭时的本地规则复盘（不依赖任何LLM）。
+    蓝图铁律4.2-4「降级路径显式」：LLM不可用→出本地降级复盘+降级标记，不静默装正常。
+    数据源与LLM版完全一致（_load_today_signals），口径=四层方法论的压缩版。
+    """
+    ts = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+    btc = data.get('BTC') or {}
+    eth = data.get('ETH') or {}
+    trades = data.get('today_trades', []) or []
+    cvd_b = data.get('cvd_BTC', '?')
+    cvd_e = data.get('cvd_ETH', '?')
+    lines = [
+        f"【本地降级复盘 LLM不可用】 {ts}",
+        f"事实层: BTC=${btc.get('price',0):,.0f} 体制={btc.get('regime','?')} score={btc.get('score',0):.0f} CVD={cvd_b} | "
+        f"ETH=${eth.get('price',0):,.2f} 体制={eth.get('regime','?')} score={eth.get('score',0):.0f} CVD={cvd_e}",
+        f"交易层: 今日信号{len(trades)}条，纸面单见paper_daily_review(23:30北京)",
+        f"关注层: 等待FVG磁铁+止损墙结构变化，vip卡片见auto_analysis_latest",
+        f"来源: daily_review_llm本地降级路径(free_llm+master双通道均不可用)",
+    ]
+    return '\n'.join(lines)
+
+
 def run() -> None:
     print("每日复盘LLM总结开始...", flush=True)
     data   = _load_today_signals()
     review = _generate_review(data)
 
     if not review or 'failed' in review.lower():
-        print("复盘生成失败，退出")
-        # [9.27修复] 静默失败→告警推送（push_hub哨兵格式合规）
+        # [9.29 P1 苏摩111] 双通道全灭→本地规则复盘兜底（降级路径显式，不再空转退出）
+        review = _local_review_fallback(data)
+        print("LLM双通道全灭 → 本地降级复盘已生成", flush=True)
         try:
             from push_hub import push_jarvis
             push_jarvis(
-                "🤖⚠️ 每日复盘LLM通道失败（free_llm_client全模型无响应，详见data/llm_channel_state.json）",
+                "🤖⚠️ 每日复盘LLM双通道失败→本地降级复盘已写入（free+master均不可用，详见data/llm_channel_state.json）",
                 priority='P1', dedup_key='daily_review_llm_fail', dedup_ttl=86400)
         except Exception as _e:
             print(f"告警推送失败: {_e}", file=sys.stderr)
-        return
-    # 成功路径但通道24h内有失败记录 → P3提醒（退避中可能自愈）
-    if _llm_channel_down():
-        try:
-            from push_hub import push_jarvis
-            push_jarvis(
-                "🤖ℹ️ daily_review成功但LLM通道24h内有失败记录（429退避中，UTC明0点重置自愈）",
-                priority='P3', dedup_key='llm_channel_warn', dedup_ttl=86400)
-        except Exception:
-            pass
+    else:
+        # 成功路径但通道24h内有失败记录 → P3提醒（退避中可能自愈）
+        if _llm_channel_down():
+            try:
+                from push_hub import push_jarvis
+                push_jarvis(
+                    "🤖ℹ️ daily_review成功但LLM通道24h内有失败记录（429退避中，UTC明0点重置自愈）",
+                    priority='P3', dedup_key='llm_channel_warn', dedup_ttl=86400)
+            except Exception:
+                pass
 
     # 写入memory文件
     today  = datetime.now(timezone.utc).strftime('%Y-%m-%d')

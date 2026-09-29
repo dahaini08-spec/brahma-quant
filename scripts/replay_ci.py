@@ -181,6 +181,14 @@ def main() -> int:
         report_lines.append('✅ 回放全绿：决策层行为零漂移')
     else:
         report_lines.append(f'🚨 回放发现{total_fail}处漂移：决策层行为已变化，2.0 A/B数据可比性受影响')
+        # [9.29 P1 苏摩111] 漂移必达推送：报红不再只进log无人收（9.28两连漂移无通知教训）
+        try:
+            from push_hub import push_jarvis
+            drift_brief = '\n'.join(report_lines[1:6])  # 首条+前4条漂移详情
+            push_jarvis(f'🤖🚨 replay_ci决策漂移{total_fail}处\n{drift_brief}\n→ 排查: logs/replay_ci.log',
+                        priority='P1', dedup_key='replay_ci_drift', dedup_ttl=86400)
+        except Exception as _e:
+            print(f'[replay_ci] 告警推送失败: {_e}', file=sys.stderr)
     print('\n'.join(report_lines))
     return 1 if total_fail else 0
 
