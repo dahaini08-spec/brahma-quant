@@ -26,6 +26,10 @@ from pathlib import Path
 
 _BASE = Path(__file__).parent.parent
 
+# [9.29 卫生包 苏摩111] HTTP连接复用 —— 对标 brahma_bus._SESS 先例，行为不变
+# 原requests直调每次新建TCP+TLS握手（~100ms/次），7处调用共享Session后仅首个连接付费
+_SESS = requests.Session()
+
 # ── 常量 ──────────────────────────────────────────────────────────────
 FAPI = 'https://fapi.binance.com'
 
@@ -61,7 +65,7 @@ LIQ_NEAR_PCT     = 1.0   # 清算位距现价<1% = 催化剂
 def _get_current_price(symbol: str) -> float:
     """get current price"""
     try:
-        r = requests.get(f'{FAPI}/fapi/v1/ticker/price?symbol={symbol}', timeout=5).json()
+        r = _SESS.get(f'{FAPI}/fapi/v1/ticker/price?symbol={symbol}', timeout=5).json()
         return float(r['price'])
     except Exception:
         return 0.0
@@ -70,7 +74,7 @@ def _get_current_price(symbol: str) -> float:
 def _get_oi_change_1h(symbol: str) -> float:
     """OI近1H变化%"""
     try:
-        h = requests.get(f'{FAPI}/futures/data/openInterestHist',
+        h = _SESS.get(f'{FAPI}/futures/data/openInterestHist',
                          params={'symbol': symbol, 'period': '1h', 'limit': 4},
                          timeout=5).json()
         if isinstance(h, list) and len(h) >= 2:
@@ -84,7 +88,7 @@ def _get_oi_change_1h(symbol: str) -> float:
 def _get_fr(symbol: str) -> float:
     """当前资金费率%"""
     try:
-        r = requests.get(f'{FAPI}/fapi/v1/fundingRate?symbol={symbol}&limit=1', timeout=5).json()
+        r = _SESS.get(f'{FAPI}/fapi/v1/fundingRate?symbol={symbol}&limit=1', timeout=5).json()
         return float(r[-1]['fundingRate']) * 100 if r else 0
     except Exception:
         return 0.0
@@ -186,7 +190,7 @@ def _check_15m_structure(symbol: str, direction: str) -> tuple[bool, str]:
     返回 (confirmed, reason)
     """
     try:
-        kl = requests.get(
+        kl = _SESS.get(
             f'{FAPI}/fapi/v1/klines?symbol={symbol}&interval=15m&limit=8',
             timeout=5
         ).json()
@@ -227,7 +231,7 @@ def _get_atr_1h(symbol: str, n: int = 14) -> float:
     [设计院封印 2026-08-20 苏摩指令：SL必须≥ATR_1H×1.5，不能低于市场噪音]
     """
     try:
-        kl = requests.get(
+        kl = _SESS.get(
             f'{FAPI}/fapi/v1/klines?symbol={symbol}&interval=1h&limit={n+2}',
             timeout=5
         ).json()
@@ -251,7 +255,7 @@ def _get_atr_1h(symbol: str, n: int = 14) -> float:
 def _get_15m_struct_sl(symbol: str, direction: str, current_price: float) -> float:
     """用15m最近3H摆动点计算结构止损%"""
     try:
-        kl = requests.get(
+        kl = _SESS.get(
             f'{FAPI}/fapi/v1/klines?symbol={symbol}&interval=15m&limit=16',
             timeout=5
         ).json()
@@ -341,7 +345,7 @@ def _get_entry_zone(symbol: str, direction: str, current_price: float) -> tuple:
                     return round(_lo, 2), round(_hi, 2), 'smc_fvg_ob', _struct_sl
             # 15m摆动位 fallback
             try:
-                kl = requests.get(
+                kl = _SESS.get(
                     f'{FAPI}/fapi/v1/klines?symbol={symbol}&interval=15m&limit=16',
                     timeout=5
                 ).json()

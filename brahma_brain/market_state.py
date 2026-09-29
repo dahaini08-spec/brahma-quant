@@ -12,12 +12,65 @@ brahma_brain · Phase 1
 """
 import sys
 import math
+import json
+import time
+from pathlib import Path
 from data_cache import get_klines, get_ticker, get_funding_rate, \
                        get_open_interest, get_long_short_ratio, klines_to_ohlcv
 
 # ═══════════════════════════════════════════════════════════════
 # 一、基础指标计算
 # ═══════════════════════════════════════════════════════════════
+
+# [9.29 P0 shadow 苏摩111] ema/atr 双轨差异留证 —— 只观测不切值，功能零变化
+# 背景：market_state.ema/atr（SMA种子+round8）与 math_utils.ema/atr（series[0]种子+首根TR）
+# 语义不同。rsi 已于 2026-08-28 SSOT 迁移，ema/atr 因决策层风险走 shadow_run 流程。
+# 本观测器在 analyze() 出口并行计算两版，差异追加至 data/shadow_run_log.jsonl，
+# 14 天影子期后凭差异证据决定是否切换 math_utils（对标 T2 对照盘）。
+
+_SHADOW_LOG = None
+
+def _shadow_indicators(symbol: str, closes: list, highs: list, lows: list) -> None:
+    """并行计算 math_utils 版 ema20/50 + atr14 与本模块版，差异>0.05%才留证
+    （对标 ARCHITECTURE.md Phase 1C 先例：无差异不刷日志）。
+    fail-open：任何异常静默，绝不影响主链。"""
+    global _SHADOW_LOG
+    try:
+        if not closes or len(closes) < 50:
+            return
+        from math_utils import ema as _mu_ema, atr as _mu_atr
+        now_ts = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+        rec = {'ts': now_ts, 'symbol': symbol, 'bars': len(closes)}
+        max_diff = 0.0
+        for n in (20, 50):
+            v_ms = ema(closes, n)
+            v_mu = _mu_ema(closes, n)
+            if v_ms and v_mu is not None and v_mu == v_mu:  # NaN check
+                rel = abs(v_mu - v_ms) / v_ms * 100 if v_ms else 0.0
+                if rel > 0.05:
+                    rec[f'ema{n}'] = {
+                        'ms': round(v_ms, 6), 'mu': round(v_mu, 6),
+                        'diff_pct': round(rel, 4)}
+                    max_diff = max(max_diff, rel)
+        v_ms = atr(highs, lows, closes)
+        v_mu = _mu_atr(highs, lows, closes)
+        if v_ms and v_mu and v_mu == v_mu:
+            rel = abs(v_mu - v_ms) / v_ms * 100 if v_ms else 0.0
+            if rel > 0.05:
+                rec['atr14'] = {
+                    'ms': round(v_ms, 6), 'mu': round(v_mu, 6),
+                    'diff_pct': round(rel, 4)}
+                max_diff = max(max_diff, rel)
+        if not any(k in rec for k in ('ema20', 'ema50', 'atr14')):
+            return  # 主路径收敛（实测400根diff~1.8e-11），零差异不落盘
+        rec['max_diff_pct'] = round(max_diff, 4)
+        if _SHADOW_LOG is None:
+            _SHADOW_LOG = Path(__file__).resolve().parent.parent / 'data' / 'shadow_run_log.jsonl'
+        with open(_SHADOW_LOG, 'a', encoding='utf-8') as f:
+            f.write(json.dumps(rec, ensure_ascii=False) + '\n')
+    except Exception:
+        pass  # shadow 观测永远不影响主链
+
 
 def ema(closes: list, n: int) -> float:
 
@@ -624,7 +677,7 @@ def analyze(symbol: str) -> dict:
     chg24  = float(ticker.get('priceChangePercent', 0))
     vol24  = float(ticker.get('quoteVolume', 0))
 
-    return {
+    ms_dict = {
         'symbol':    symbol,
         'price':     price,
         'price_source': locals().get('_price_source_tag','?'),
@@ -703,6 +756,13 @@ def analyze(symbol: str) -> dict:
         'atr_4h':   round(atr_4h, 4),
         'atr_15m':  round(atr_15m, 4),
     }
+    # [9.29 P0 shadow 苏摩111] ema/atr双轨差异留证（只观测不切值，fail-open）
+    try:
+        _shadow_indicators(symbol, list(k1h['c']), list(k1h['h']), list(k1h['l']))
+    except Exception:
+        pass
+    return ms_dict
+
 
 def _build_summary(consensus: dict, regime: str, wave: dict,
                    rsi_1h: float, atr_pct: float) -> str:
