@@ -994,7 +994,7 @@ def get_fangcang_context(
                     f"HCME历史镜像Top3：\n" + '\n'.join(_case_lines) + "\n"
                     f"用一句话(20字内)总结历史案例对当前布局的启示："
                 )
-                _llm_mirror = _llm_hcme(_mirror_prompt, max_tokens=45)
+                _llm_mirror = _llm_hcme(_mirror_prompt, max_tokens=45, task='hcme')
                 if _llm_mirror:
                     _llm_mirror = _llm_mirror.strip()[:80]
             except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)

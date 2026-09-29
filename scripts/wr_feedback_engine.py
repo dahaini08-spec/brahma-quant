@@ -373,7 +373,7 @@ def main():
                     f"(差{_ch['new_mult']-_ch['old_mult']:+.3f} baseline={_ch['baseline']:.3f})\n"
                     f"请判断：这个乘数调整合理吗？回答格式: 合理 或 异常，附简短原因(15字内)"
                 )
-                _resp = _llm_wr(_prompt, max_tokens=30)
+                _resp = _llm_wr(_prompt, max_tokens=30, task='wr_audit')
                 # [防谎P1 2026-09-28 苏摩111] L1封闭词汇守卫：
                 # LLM只允许答"合理/异常"+定性原因；输出含数字/词汇违约=按异常旗标处理（保守）
                 _resp_ok = False

@@ -215,7 +215,7 @@ def detect_chop_breakout(state: dict, symbol: str = 'BTCUSDT') -> dict:
                 f"SMC结构:{smc_score:.0f}/20 CVD:{cvd:.1f}% 大户仓位:{big_pos*100:.0f}%\n"
                 f"问题：这是真突破还是假突破？请直接回答 真突破 或 假突破，附一句理由(15字内)"
             )
-            _resp = _llm_call(_prompt, max_tokens=30)
+            _resp = _llm_call(_prompt, max_tokens=30, task='chop')
             if _resp:
                 _llm_verdict = _resp.strip()[:60]
                 # 如果LLM认为是假突破，降级到WATCH

@@ -129,6 +129,74 @@ def push(priority: str, msg: str) -> bool:
         return False
 
 
+def _is_today_file(f: Path) -> bool:
+    """文件mtime是今天（UTC粗判，足够哨兵用）"""
+    day_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
+    try:
+        return f.stat().st_mtime >= day_start
+    except Exception:
+        return False
+
+
+def _evidence_error_sessions() -> None:
+    """[9.28 苏摩111 盲区2修复] 扫今日trajectory的error终局，落盘留证JSONL。
+    增量去重：以session文件名+ended行hash为键，避免重复写入。
+    背景：gateway log无error详情，error上下文只在trajectory的session.ended行。
+    """
+    import hashlib
+    sess_dir = Path.home() / ".openclaw" / "agents" / "main" / "sessions"
+    out = BASE / "data" / "error_session_evidence.jsonl"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    seen = set()
+    if out.exists():
+        for line in out.read_text().strip().splitlines():
+            try:
+                seen.add(json.loads(line).get("evidence_key", ""))
+            except Exception:
+                pass
+    n_new = 0
+    for f in sess_dir.glob("*.trajectory.jsonl"):
+        if not _is_today_file(f):
+            continue
+        try:
+            lines = f.read_text(errors="replace").splitlines()
+        except Exception:
+            continue
+        for i, line in enumerate(lines):
+            if '"session.ended"' not in line:
+                continue
+            try:
+                d = json.loads(line)
+            except Exception:
+                continue
+            data = d.get("data", {})
+            if data.get("status") != "error":
+                continue
+            reason = str(data.get("reason", ""))[:200]
+            # 抽该文件里最后一个model.completed的promptError（中断根因）
+            last_pe = ""
+            for j in range(i, -1, -1):
+                if '"model.completed"' in lines[j]:
+                    m = re.search(r'"promptError":\s*"([^"]{0,120})', lines[j])
+                    if m:
+                        last_pe = m.group(1)
+                    break
+            ek = hashlib.sha1(f"{f.name}:{reason}".encode()).hexdigest()[:16]
+            if ek in seen:
+                continue
+            rec = {"ts": time.time(), "ts_iso": datetime.now(timezone.utc).isoformat(),
+                   "evidence_key": ek, "session_file": f.name[:60],
+                   "reason": reason, "last_model_promptError": last_pe}
+            try:
+                with open(out, "a") as fh:
+                    fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
+                n_new += 1
+            except Exception:
+                pass
+    if n_new:
+        _log(f"error-session evidence: +{n_new} records")
+
+
 def main() -> int:
     day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     logp = _today_log_path()
@@ -155,6 +223,9 @@ def main() -> int:
     daystate = state.setdefault("days", {}).setdefault(day, {
         "clusters": {}, "reset_alerted": False, "p1_alerted": {}
     })
+
+    # ---- [9.28 苏摩111 盲区2修复] error session终局留证 ----
+    _evidence_error_sessions()
 
     # ---- P0: 会话重置（用户已见报错）----
     if resets and not daystate.get("reset_alerted"):
@@ -194,11 +265,36 @@ def main() -> int:
                 # P2静默落盘（不打扰），只有转P1才推
                 _log(f"P2 cluster: {short} count={n} ovf={c['max_overflow']}")
 
+    # ---- [9.28 苏摩111] 线程水位预警（P1）：主线程est>150k→提醒换线程/压缩 ----
+    # 机制：overflow precheck的est字段=当前prompt估算token，>150k=逼近200k窗口
+    # 不等死锁发生，提前预警——AI层唯一可做的主动治理
+    TH_WATERMARK = 150_000
+    wm_alerted = daystate.setdefault("wm_alerted", {})
+    hot_sessions = []
+    for e in precheck_events:
+        if e.get("est", 0) >= TH_WATERMARK:
+            hot_sessions.append(e)
+    if hot_sessions:
+        hot_by_sess = {}
+        for e in hot_sessions:
+            hot_by_sess[e["session"]] = max(e["est"], hot_by_sess.get(e["session"], 0))
+        for sess, est in hot_by_sess.items():
+            if wm_alerted.get(sess, {}).get("ts", 0) and \
+               time.time() - wm_alerted[sess].get("ts", 0) < DEDUP_TTL:
+                continue  # 12h内已提醒
+            wm_alerted[sess] = {"ts": time.time(), "est": est}
+            push("P1",
+                 f"📊 线程水位预警 | {sess.split(':')[-1][:12]}\n"
+                 f"估算prompt={est/1000:.0f}k（超150k阈值）\n"
+                 f"继续对话将频发overflow→建议：换新对话线程或主动压缩\n"
+                 f"根因：compaction三参数死锁（平台层待修）")
+
     # 统计落盘（即使无告警也记录，供daily审计）
     daystate["summary"] = {
         "precheck_hits": len(precheck_events),
         "clusters": {k[:40]: v["count"] for k, v in clusters.items()},
         "resets_seen_in_user_msgs": len(resets),
+        "watermark_150k": {s: e for s, e in wm_alerted.items()} if wm_alerted else {},
         "scanned_at": datetime.now(timezone.utc).isoformat(),
     }
     _save_state(state)

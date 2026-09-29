@@ -232,7 +232,7 @@ f"""🔄 梵天体制升级
                         f"问：当前宏观环境(市场情绪/DXY/流动性)是否支持这个体制切换？\n"
                         f"必须回答: 支持 或 质疑，附一句原因(15字内)"
                     )
-                    _r22 = _llm_regime(_p22_prompt, max_tokens=35)
+                    _r22 = _llm_regime(_p22_prompt, max_tokens=35, task='regime')
                     if _r22:
                         # [防谎P1 2026-09-28 苏摩111] L1封闭词汇守卫：
                         # LLM只允许答"支持/质疑"+定性原因；含数字/词汇违约=丢弃AI note，

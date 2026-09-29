@@ -587,7 +587,7 @@ def main():
                 f"{_summary_str}\n"
                 f"用一句话(不超过30字)指出本批信号最大教词或需要注意的模式："
             )
-            _llm_lesson = _llm_review(_review_prompt, max_tokens=50, system=_trader_persona)
+            _llm_lesson = _llm_review(_review_prompt, max_tokens=50, system=_trader_persona, task='settler_review')
             # [防谎P1 2026-09-28 苏摩111] L1数字禁令+L3 pending_ic：
             # 复盘教训=定性文本，LLM输出含数字=违约拒收；入库标pending_ic=true，
             # 等达摩院IC周审APPROVE后才能进SFT数据集（回声切断）。
