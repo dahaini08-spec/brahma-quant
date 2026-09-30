@@ -37,7 +37,10 @@ def load_positions() -> dict:
 
 
 def save_positions(data: dict):
-    PAPER_POS_FILE.write_text(json.dumps(data, indent=2))
+    # [P0-2加固 2026-09-30 苏摩111] 原子写（与paper_ledger._save同款，防崩溃截断=SL监控失明）
+    tmp = PAPER_POS_FILE.with_suffix('.tmp')
+    tmp.write_text(json.dumps(data, indent=2))
+    tmp.replace(PAPER_POS_FILE)
 
 
 def get_price(symbol: str) -> float:

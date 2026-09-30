@@ -207,8 +207,12 @@ def close_position(order: dict, exit_price: float, reason: str) -> dict:
     with open(DATA / 'paper_orders.jsonl', 'a') as f:
         f.write(json.dumps(closed_rec, ensure_ascii=False) + '\n')
     with open(LEDGER_LOG, 'a') as f:
+        # [P0-1修复 2026-09-30 苏摩111] CLOSE事件补ts/ts_iso——根因：_today_realized()按ts_iso过滤，
+        # 旧CLOSE事件缺该字段→单日熔断永远无法触发（熔断器事实性死亡）
         f.write(json.dumps({'ev': 'CLOSE', 'id': order.get('id'), 'symbol': order.get('symbol'),
-                            'reason': reason, 'net': m['net'], 'nav_after': acc['nav_current']}, ensure_ascii=False) + '\n')
+                            'reason': reason, 'net': m['net'], 'nav_after': acc['nav_current'],
+                            'ts': int(time.time()),
+                            'ts_iso': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}, ensure_ascii=False) + '\n')
     # [W0] 同步append事件流：平仓+结算双事件（不可变证据）
     if _events:
         try:
@@ -234,7 +238,13 @@ def _today_realized() -> float:
                 j = json.loads(line)
             except Exception:
                 continue
-            if j.get('ev') == 'CLOSE' and str(j.get('ts_iso', ''))[:10] == today:
+            if j.get('ev') != 'CLOSE':
+                continue
+            # [P0-1修复 2026-09-30 苏摩111] 日期兼容：新事件有ts_iso，旧事件从ts推导
+            _d = str(j.get('ts_iso', ''))[:10]
+            if not _d and j.get('ts'):
+                _d = time.strftime('%Y-%m-%d', time.gmtime(float(j['ts'])))
+            if _d == today:
                 total += float(j.get('net', 0))
     except FileNotFoundError:
         pass

@@ -99,7 +99,10 @@ def load_paper_positions() -> dict:
 
 
 def save_paper_positions(data: dict):
-    PAPER_POS_FILE.write_text(json.dumps(data, indent=2))
+    # [P0-2加固 2026-09-30 苏摩111] 原子写（与paper_ledger._save同款：崩溃中途写盘=positions截断损坏）
+    tmp = PAPER_POS_FILE.with_suffix('.tmp')
+    tmp.write_text(json.dumps(data, indent=2))
+    tmp.replace(PAPER_POS_FILE)
 
 
 def load_signal_queue() -> list:
@@ -181,6 +184,13 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
     side   = signal.get('signal_dir', signal.get('direction', 'LONG'))
     if side in ('BUY',): side = 'LONG'
     if side in ('SELL',): side = 'SHORT'
+    # [P0-3 合成信号闸 2026-09-30 苏摩111] 合成/验证信号一律禁止入执行面（含B线纸面盘）
+    # 9.29实锤：synthetic_p0_chain_verify score=5.0穿透全链开成真实纸面仓（notional 12,366=12.4%NAV>10%铁律）
+    # 合成信号只进shadow_decisions/对照盘，永不进执行队列；闸放执行入口最前端（B轨记录前）
+    _src = str(signal.get('source', '') or '').strip().lower()
+    if _src.startswith('synthetic') or 'synthetic' in _src or _src == 'p0_chain_verify':
+        log(f'SKIP {sym} {side}: source={_src} 合成/验证信号禁止开单 [P0-3闸]')
+        return False
     # [P2 B轨双写 2026-09-28 苏摩111] 信号消费时对账B轨（纯影子，不影响A轨流程）
     _b_track_decision_package(signal, sym, side)
     if side in ('SELL',): side = 'SHORT'
