@@ -143,6 +143,28 @@ def reasoning_gate(result: dict, inject_context: bool = True) -> dict:
     signal_dir = result.get('signal_dir', result.get('direction', 'LONG'))
     score      = float(result.get('score_final', result.get('score', 100)))
 
+    # ── [死穴硬闸 2026-09-30 苏摩111] 冒烟T07实锤：LLM在线时对BEAR_TREND+LONG返回PASS
+    # 死穴组合不赌LLM自觉，确定性BLOCK（跳过LLM调用）。体制策略映射零权重方向（MEMORY封禁表），
+    # fail-closed哲学：LLM只能更保守不能更宽松，死穴无自由裁量权。
+    _death_combo = (regime == 'BEAR_TREND' and signal_dir == 'LONG') or \
+                   (regime == 'BEAR_RECOVERY' and signal_dir == 'SHORT')
+    if _death_combo:
+        elapsed = round(time.time() - t0, 2)
+        _gate_result = {
+            'verdict':    'BLOCK',
+            'confidence': 1.0,
+            'reason':     '死穴硬闸:LLM无权放行',
+            'elapsed':    elapsed,
+        }
+        try:
+            from jev_judgment_log import log_judgment
+            log_judgment(symbol, _gate_result,
+                         {'regime': regime, 'signal_dir': signal_dir, 'score_final': score},
+                         _gate_result)
+        except Exception as _e:
+            print(f"[WARN] reasoning_client: {_e}", file=sys.stderr)
+        return _gate_result
+
     # ── 注入梵天方仓记忆 ───────────────────────────────────────────
     memory_ctx = ''
     if inject_context and symbol:
