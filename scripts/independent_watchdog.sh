@@ -99,7 +99,7 @@ while true; do
   # 每5分钟跑一次self_heal_daemon --once，自动修复过期数据
   MIN5=$(date -u '+%-M')
   if [ $((MIN5 % 5)) -eq 0 ]; then
-    timeout 60 python3 scripts/self_heal_daemon.py --once >> logs/self_heal.log 2>&1
+    timeout 60 python3 brahma_brain/self_heal_daemon.py --once >> logs/self_heal.log 2>&1
   fi
 
   # === [9.27 v4] 告警分级 ===
