@@ -79,7 +79,7 @@ def _check_stat_health() -> dict:
             try:
                 from datetime import datetime as _dt
                 ts = _dt.fromisoformat(ts_str.replace('Z','+00:00')).timestamp()
-            except: continue
+            except Exception: continue
             if ts >= cutoff and l.get('outcome') in ('TP1','SL'):
                 recent.append(l)
 
@@ -102,7 +102,7 @@ def _now_cst(): return datetime.now(CST).strftime('%Y-%m-%d %H:%M CST')
 
 def _ts_age(ts) -> int:
     try: return int(time.time() - float(ts))
-    except: return 99999
+    except Exception: return 99999
 
 
 # ═══════════════════════════════════════════════════════════
@@ -120,7 +120,7 @@ def sync_command_register() -> dict:
         now = time.time()
         active = {k: v for k, v in reg.items() if _is_active(v, now)}
         return active
-    except:
+    except Exception:
         return {}
 
 
@@ -168,7 +168,7 @@ def post_restart_integrity_check() -> str:
 
     try:
         restart_ts = float(RESTART_TS.read_text().strip())
-    except:
+    except Exception:
         return ''
 
     elapsed = time.time() - restart_ts
@@ -303,7 +303,7 @@ def run():
     try:
         bs = json.loads((DATA / 'brahma_state.json').read_text())
         pos_count = len(bs.get('positions', []))
-    except:
+    except Exception:
         pos_count = 0
 
     # 磁盘

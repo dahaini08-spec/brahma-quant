@@ -68,7 +68,7 @@ def fetch_and_save(symbol: str, interval: str):
             existing = json.loads(out_path.read_text())
             if existing:
                 last_ts = existing[-1][0]
-        except:
+        except Exception:
             existing = []
     
     # 确定起始时间

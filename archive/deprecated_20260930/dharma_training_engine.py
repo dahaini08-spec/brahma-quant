@@ -74,7 +74,7 @@ def load_symbol(symbol: str, timeframe: str) -> pd.DataFrame | None:
         if 'ts' in df.columns:
             df['ts'] = pd.to_datetime(df['ts'], utc=True)
         return df
-    except:
+    except Exception:
         return None
 
 # ── Layer2：特征计算（严格无前视） ───────────────────────────────

@@ -8,7 +8,7 @@ def run():
             'https://api.binance.com/api/v3/ticker/price?symbol=EURUSDT',timeout=6).read())['price'])
         dxy = round(100.0/eurusd*1.0574, 1)
         dxy_note = '偏强⚠️加密承压' if dxy>104 else '偏弱✅加密友好' if dxy<100 else '中性'
-    except:
+    except Exception:
         dxy = None; dxy_note = '获取失败'
 
     try:
@@ -16,7 +16,7 @@ def run():
             'https://api.alternative.me/fng/?limit=1',timeout=6).read())['data'][0]
         fg = int(fg_raw['value']); fg_label = fg_raw['value_classification']
         fg_note = '极度恐慌🔴' if fg<25 else '恐慌🟡' if fg<40 else '极度贪婪🔴' if fg>75 else '正常✅'
-    except:
+    except Exception:
         fg = None; fg_label = ''; fg_note = '获取失败'
 
     try:
@@ -25,7 +25,7 @@ def run():
         eth = float(json.loads(urllib.request.urlopen(
             'https://fapi.binance.com/fapi/v1/ticker/price?symbol=ETHUSDT',timeout=6).read())['price'])
         prices = f'BTC=${btc:,.1f} | ETH=${eth:,.2f}'
-    except:
+    except Exception:
         prices = '价格获取失败'
 
     # 危险级事件日历

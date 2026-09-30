@@ -99,7 +99,7 @@ def load_wr_history() -> dict:
     if WR_HISTORY_FILE.exists():
         try:
             return json.loads(WR_HISTORY_FILE.read_text())
-        except:
+        except Exception:
             pass
     return {'signals': [], 'stats': {}}
 

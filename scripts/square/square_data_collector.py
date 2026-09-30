@@ -84,7 +84,7 @@ def get_rsi_1h(symbol, period=14):
         al = sum(losses[-period:]) / period
         if al == 0: return 100
         return round(100 - 100 / (1 + ag / al), 1)
-    except:
+    except Exception:
         return 50
 
 
@@ -145,7 +145,7 @@ def get_top_signal():
         if not signals:
             return None
         return max(signals, key=lambda x: x.get('score', 0))
-    except:
+    except Exception:
         return None
 
 
@@ -204,7 +204,7 @@ def get_smc_levels(symbol):
             'liq_below': f'{pivot_low:.1f}（10日低点流动性）',
             'source': 'price_structure',
         }
-    except:
+    except Exception:
         return {'bull_ob': '', 'bear_ob': '', 'fvg_target': '', 'liq_above': '', 'liq_below': '', 'source': 'none'}
 
 

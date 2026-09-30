@@ -92,7 +92,7 @@ def get_tv_signals(symbol: str) -> dict:
             if valid:
                 fresh[k] = valid
         return fresh
-    except:
+    except Exception:
         return {}
 
 

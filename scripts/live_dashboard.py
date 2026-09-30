@@ -32,7 +32,7 @@ def fetch_ticker(sym):
             'low': float(r['lowPrice']),
             'vol': float(r['quoteVolume']),
         }
-    except:
+    except Exception:
         return {}
 
 
@@ -40,7 +40,7 @@ def fetch_fr(sym):
     try:
         r = requests.get(f'{FAPI}/premiumIndex?symbol={sym}', timeout=5).json()
         return float(r.get('lastFundingRate', 0)) * 100
-    except:
+    except Exception:
         return 0
 
 
@@ -53,7 +53,7 @@ def fetch_oi(sym):
             trend = 'BUILD' if vals[-1] > vals[0] else 'UNWIND'
             chg = (vals[-1] - vals[0]) / vals[0] * 100
             return {'trend': trend, 'chg_pct': chg, 'current': vals[-1]}
-    except:
+    except Exception:
         pass
     return {}
 
@@ -63,7 +63,7 @@ def load_cvd(sym):
     if path.exists():
         try:
             return json.loads(path.read_text())
-        except:
+        except Exception:
             pass
     return {}
 
@@ -73,7 +73,7 @@ def load_liq(sym):
     if path.exists():
         try:
             return json.loads(path.read_text())
-        except:
+        except Exception:
             pass
     return {}
 
@@ -89,7 +89,7 @@ def load_regime(sym):
                 # try without USDT
                 entry = data.get(sym.replace('USDT',''), {})
             return entry
-        except:
+        except Exception:
             pass
     return {}
 
@@ -103,7 +103,7 @@ def load_gex(sym):
     if path.exists():
         try:
             return json.loads(path.read_text())
-        except:
+        except Exception:
             pass
     return {}
 

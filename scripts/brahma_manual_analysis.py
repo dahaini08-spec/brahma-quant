@@ -43,7 +43,7 @@ import gc, resource as _res
 
 def _mem_rss_mb():
     try: return _res.getrusage(_res.RUSAGE_SELF).ru_maxrss / 1024
-    except: return 0
+    except Exception: return 0
 
 # GC优化: 每个step后主动释放内存
 _gc_counter = 0
@@ -3181,7 +3181,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         _nfeats = {}
         def _nsf(v, dft=0):
             try: return float(v) if v is not None else dft
-            except: return dft
+            except Exception: return dft
         for k, v in _nbd.items():
             if isinstance(v, (int, float)): _nfeats[f'bd_{k}'] = float(v)
             elif isinstance(v, str):

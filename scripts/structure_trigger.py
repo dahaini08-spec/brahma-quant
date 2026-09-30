@@ -31,7 +31,7 @@ def get_current_regime(sym):
         import json
         state = json.load(open(DATA_DIR / 'brahma_state.json'))
         return state.get('regime', 'CHOP_MID')
-    except:
+    except Exception:
         return 'CHOP_MID'
 
 def get_recent_kline_structure(sym):

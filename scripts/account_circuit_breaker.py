@@ -68,7 +68,7 @@ def _get_nav() -> float:
     try:
         bs = json.loads((BASE / 'data/brahma_state.json').read_text())
         return float(bs.get('nav', 0) or 0)
-    except: return 0.0
+    except Exception: return 0.0
 
 
 def _notify(msg: str):
@@ -157,7 +157,7 @@ def check_and_update() -> dict:
             t = datetime.fromisoformat(ct.replace('Z','+00:00'))
             # 10分钟窗口键
             wkey = t.strftime('%Y-%m-%dT%H:') + str(t.minute // 10)
-        except:
+        except Exception:
             wkey = ct[:13]
         windows[wkey].append(s.get('outcome'))
 
@@ -239,7 +239,7 @@ def _ts_to_unix(ts_str: str) -> float:
     try:
         from datetime import datetime
         return datetime.fromisoformat(ts_str.replace('Z','+00:00')).timestamp()
-    except: return 0.0
+    except Exception: return 0.0
 
 
 def status() -> None:

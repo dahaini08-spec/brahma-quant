@@ -43,7 +43,7 @@ def load_traces(limit=10, regime_filter=None):
             traces.append(d)
             if len(traces) >= limit:
                 break
-        except:
+        except Exception:
             continue
     return traces
 

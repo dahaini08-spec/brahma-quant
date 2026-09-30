@@ -1,12 +1,8 @@
 {
   "version": "v9.0",
   "codename": "梵天v9.0-SLIM · Kronos-Lite+达摩院四级流水线+体制解锁",
-  "active_entry": "main.py",
-  "signal_db": "signals/signal_history.json",
-  "executor": "executor.py",
-  "council": "multi_agent_council.py",
-  "monitor": "position_monitor.py",
-  "regime_detector": "market_regime.py",
+  "active_entry": "brahma_brain/brahma_full_report.py:run_full_analysis()",
+  "executor": "scripts/paper_executor.py (paper system; auto_executor.py = dry-run guard layer, A/B separation 2026-09-26)",
   "deprecated_modules": [
     "brahma_v8_engine.py",
     "brahma_v8_5_engine.py",
@@ -143,7 +139,7 @@
     ]
   },
   "nn_input_dim": 24,
-  "updated": "2026-05-13",
+  "updated": "2026-09-30 refactor: removed 5 ghost entries (main.py/executor.py/position_monitor.py/market_regime.py/multi_agent_council.py all nonexistent)",
   "changes_v93": [
     "MIN_SCORE 65→70 (实盘复盘:70-80分胜率25%)",
     "HUSDT加入SYMBOL_BLACKLIST (3次止损同币种)",
@@ -832,5 +828,6 @@
     "instruction": "设计院三方联合深度评估：全面采用2.0，1.0冻结",
     "meaning": "1.0风控链保留但不再是唯一裁判；2.0 risk_gate=enforce为L2实权拦截层；1.0参数仍作为2.0后侧安全网",
     "rollback": "start_supercronic.sh去掉BRAHMA_ENFORCE=1即回影子模式；BRAHMA_SHADOW=0+BRAHMA_ENFORCE=0回纯1.0"
-  }
+  },
+  "deprecated_modules_note": "deprecated_modules list below refers to archived main.py era; files no longer exist at top level"
 }

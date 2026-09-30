@@ -20,7 +20,7 @@ def main():
     try:
         for line in open(DATA / 'paper_orders.jsonl'):
             try: j = json.loads(line)
-            except: continue
+            except Exception: continue
             if str(j.get('ts_iso', ''))[:10] != today: continue
             (closes if j.get('status') == 'CLOSED' else opens).append(j)
     except FileNotFoundError:
@@ -30,7 +30,7 @@ def main():
     try:
         for line in open(DATA / 'paper_ledger_log.jsonl'):
             try: j = json.loads(line)
-            except: continue
+            except Exception: continue
             if j.get('ev') == 'CLOSE' and str(j.get('ts_iso', ''))[:10] == today:
                 nets.append(float(j.get('net', 0)))
     except FileNotFoundError:

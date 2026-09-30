@@ -24,7 +24,7 @@ def _bn_fr(sym: str) -> float:
         r = requests.get('https://fapi.binance.com/fapi/v1/premiumIndex',
                          params={'symbol': sym}, timeout=5).json()
         return float(r.get('lastFundingRate', 0)) * 100
-    except:
+    except Exception:
         return 0.0
 
 

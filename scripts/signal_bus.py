@@ -169,7 +169,7 @@ def read_pending(max_age_h=12, min_score=0) -> list:  # [P0改革] 废除score�
         if not line.strip(): continue
         try:
             s = json.loads(line)
-        except: continue
+        except Exception: continue
 
         # 基本过滤
         if s.get('status') != 'pending': continue
@@ -209,7 +209,7 @@ def mark_status(signal_id: str, status: str, order_id: str = None):
                 if order_id: s['order_id'] = order_id
                 s['updated_at'] = time.time()
             new_lines.append(json.dumps(s, ensure_ascii=False))
-        except:
+        except Exception:
             new_lines.append(line)
     if _lock():
         try:

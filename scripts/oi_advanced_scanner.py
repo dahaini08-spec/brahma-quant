@@ -193,7 +193,7 @@ def send_message(msg):
         _now = _tm.time()
         try:
             _dedup = _js.loads(_dedup_file.read_text()) if _dedup_file.exists() else {}
-        except:
+        except Exception:
             _dedup = {}
         # 清理超过24h的记录
         _dedup = {k: v for k, v in _dedup.items() if _now - v < 86400}

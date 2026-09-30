@@ -317,7 +317,7 @@ def run(dry_run=False):
         try:
             fr_d = requests.get(f'{FAPI}/premiumIndex', params={'symbol': sym}, timeout=5).json()
             d['fr'] = float(fr_d.get('lastFundingRate', 0)) * 100
-        except:
+        except Exception:
             d['fr'] = 0
         d['ls'] = 1.0
 

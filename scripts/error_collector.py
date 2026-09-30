@@ -37,7 +37,7 @@ def log_error(module: str, error: Exception, context: str = '', extra: dict = No
         lines = ERR_LOG.read_text().splitlines()
         if len(lines) > MAX_LINES:
             ERR_LOG.write_text('\n'.join(lines[-MAX_LINES:]) + '\n')
-    except:
+    except Exception:
         pass  # 错误收集器本身不能崩溃
 
 def safe_call(func, *args, module='unknown', context='', default=None, **kwargs):

@@ -26,7 +26,7 @@ sys.path.insert(0, str(BASE / 'brahma_brain'))
 
 try:
     from system_config import JARVIS_TARGET, JARVIS_CHANNEL
-except:
+except Exception:
     JARVIS_TARGET  = os.environ.get('JARVIS_TARGET','73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed')
     JARVIS_CHANNEL = 'jarvis'
 
@@ -59,7 +59,7 @@ def get_market():
                 'fr': float(fr.get('lastFundingRate',0))*100,
                 'oi_chg12h': oi_chg,
             }
-        except:
+        except Exception:
             result[sym] = {'price':0,'chg24h':0,'fr':0,'oi_chg12h':0}
     return result
 
@@ -114,7 +114,7 @@ def get_signals_today():
             'count': len(sigs),
             'max_score': max(sigs) if sigs else 0,
         }
-    except:
+    except Exception:
         return {'count': 0, 'max_score': 0}
 
 def get_open_positions():
@@ -131,7 +131,7 @@ def get_open_positions():
         pos = [p for p in r if float(p.get('positionAmt',0)) != 0]
         pnl = sum(float(p.get('unRealizedProfit',0)) for p in pos)
         return {'count': len(pos), 'unrealized_pnl': pnl, 'positions': pos}
-    except:
+    except Exception:
         return {'count': 0, 'unrealized_pnl': 0, 'positions': []}
 
 def get_kronos_status():

@@ -28,7 +28,7 @@ def parse_ts(v) -> int:
         fmt = '%Y-%m-%dT%H:%M:%S' if 'T' in s else '%Y-%m-%d %H:%M:%S'
         dt = datetime.strptime(s[:19], fmt)
         return int(dt.replace(tzinfo=timezone.utc).timestamp())
-    except:
+    except Exception:
         return 0
 
 
@@ -114,7 +114,7 @@ def build_index():
                 dedup_keys.add(key)
                 all_cases.append(c)
                 stats['tf_series'] += 1
-        except:
+        except Exception:
             stats['error'] += 1
 
     # ── 3. 排序：按 symbol + ts_start ───────────────────────────────

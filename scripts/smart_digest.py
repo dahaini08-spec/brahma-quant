@@ -102,7 +102,7 @@ def get_realtime_prices():
                 'low':   float(d['lowPrice']),
             }
         return result
-    except:
+    except Exception:
         return {}
 
 def load_active_positions():
@@ -127,7 +127,7 @@ def load_active_positions():
             try:
                 r = _rq.get(f'https://fapi.binance.com/fapi/v1/premiumIndex?symbol={sym}', timeout=4)
                 mark = float(r.json()['markPrice'])
-            except:
+            except Exception:
                 mark = float(p.get('markPrice', entry))
             upnl  = (entry - mark) * abs(amt) if side == 'SHORT' else (mark - entry) * abs(amt)
             pct   = (mark - entry) / entry * 100 * (1 if side == 'LONG' else -1)
@@ -141,7 +141,7 @@ def load_active_positions():
                 'leverage':    lev,
             })
         return result
-    except:
+    except Exception:
         return []
 
 def load_signal_trace():

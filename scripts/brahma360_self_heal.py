@@ -83,7 +83,7 @@ def _supervisorctl(cmd: str) -> bool:
             shell=True, capture_output=True, text=True, timeout=10
         )
         return r.returncode == 0
-    except:
+    except Exception:
         return False
 
 # ══════════════════════════════════════════
@@ -119,7 +119,7 @@ def check_f1_ws_guardian() -> dict:
                     shell=True
                 )
                 ok = True
-            except:
+            except Exception:
                 ok = False
         result['healed'] = ok
 
@@ -148,7 +148,7 @@ def check_f2_failed_open() -> dict:
                         ts = rec.get('open_ts', rec.get('ts', 0))
                         if now - float(ts) > 300:  # >5分钟
                             stale.append(rec)
-                except:
+                except Exception:
                     continue
 
         if not stale:
@@ -174,7 +174,7 @@ def check_f2_failed_open() -> dict:
                             rec['rollback_by'] = 'self_heal'
                             healed_count += 1
                     lines.append(json.dumps(rec, ensure_ascii=False) + '\n')
-                except:
+                except Exception:
                     lines.append(line)
         tmp = str(tr_f) + '.tmp'
         with open(tmp, 'w') as f:
@@ -207,7 +207,7 @@ def check_f3_nav() -> dict:
                     last_ts = float(ts_raw)
                 else:
                     last_ts = _dt.fromisoformat(str(ts_raw).replace('Z','+00:00')).timestamp()
-            except:
+            except Exception:
                 last_ts = time.time()
         else:
             last_ts = time.time()
@@ -253,7 +253,7 @@ def check_f4_oi_fr() -> dict:
             try:
                 from datetime import datetime as _dt
                 return _dt.fromisoformat(str(raw).replace('Z','+00:00')).timestamp()
-            except: return now
+            except Exception: return now
         oi_ts = _ts(bs.get('oi_ts') or bs.get('last_updated') or bs.get('updated_at'))
         fr_ts = _ts(bs.get('fr_ts') or bs.get('last_updated') or bs.get('updated_at'))
         state_ts = _ts(bs.get('last_updated') or bs.get('updated_at') or bs.get('last_ts'))
@@ -298,7 +298,7 @@ def check_f5_dd1_queue() -> dict:
                 q = json.loads(f.read_text())
                 if isinstance(q, list):
                     pending_count += sum(1 for x in q if x.get('status') == 'pending')
-            except:
+            except Exception:
                 continue
 
         # 有pending任务但文件消失（Gateway重启）

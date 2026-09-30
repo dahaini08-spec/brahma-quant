@@ -104,7 +104,7 @@ def get_trending_hashtags():
                 seen.add(t.lower())
                 unique.append(f'#{t}')
         return unique[:5]
-    except:
+    except Exception:
         return ['#CPIWatch', '#BTC']
 
 
@@ -124,7 +124,7 @@ def run(event_type='CPI', dry_run=False):
         btc_ticker = requests.get('https://fapi.binance.com/fapi/v1/ticker/24hr',
                                    params={'symbol': 'BTCUSDT'}, timeout=5).json()
         btc_price = float(btc_ticker.get('lastPrice', 77000))
-    except:
+    except Exception:
         btc_price = 77000
 
     # 两种剧本（基于当前价位±3%）

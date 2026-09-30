@@ -16,7 +16,7 @@ def get_price(sym):
     try:
         url = f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}USDT'
         return float(json.loads(urllib.request.urlopen(url, timeout=5).read())['price'])
-    except:
+    except Exception:
         return 0
 
 def load_triggers():

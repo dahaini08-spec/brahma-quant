@@ -2100,7 +2100,7 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
             _sq_existing = []
             if _sq_path.exists():
                 try: _sq_existing = json.loads(_sq_path.read_text())
-                except: _sq_existing = []
+                except Exception: _sq_existing = []
             if not isinstance(_sq_existing, list): _sq_existing = []
             # 防重复：同signal_id不入队
             _sq_ids = {s.get('signal_id','') for s in _sq_existing}

@@ -24,12 +24,12 @@ _PORT = 8899
 
 def _sf(v, d=0):
     try: return float(v) if v is not None else d
-    except: return d
+    except Exception: return d
 
 def load_latest():
     if not _LATEST.exists(): return {}
     try: return json.loads(_LATEST.read_text())
-    except: return {}
+    except Exception: return {}
 
 def load_signals(n=10):
     if not _SIGNAL_LOG.exists(): return []
@@ -37,7 +37,7 @@ def load_signals(n=10):
     for line in reversed(_SIGNAL_LOG.read_text().strip().split('\n')):
         if len(signals) >= n: break
         try: signals.append(json.loads(line))
-        except: pass
+        except Exception: pass
     return signals
 
 def count_signals():
@@ -52,7 +52,7 @@ def check_procs():
         if 'cvd_ws_collector' in out: procs['cvd'] = True
         if 'liq_multi_exchange' in out or 'liqmap' in out: procs['liqmap'] = True
         if 'independent_watchdog' in out: procs['watchdog'] = True
-    except: pass
+    except Exception: pass
     return procs
 
 def parse_output(d):
