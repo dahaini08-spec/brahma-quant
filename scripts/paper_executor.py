@@ -284,11 +284,14 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
         return False
 
     # [EV口径统一 2026-09-30 苏摩111] 9.28决策点2落地：EXECUTE判定用RR口径净EV（分数口径EV只做排序不做硬门）
+    # EV公式SSOT=cost_adapter.ev_rr_net（原4处实现收敛到1处，本处只调不写）
     # net_ev = WR×RR×SL距离 − (1−WR)×SL距离 − round_trip_cost
     # WR来源：wr_matrix_live.json（SSOT=signals库带时间窗重算，E2裁决）；无记录→fallback 0.45保守值
     try:
         import json as _json
+        from brahma_brain.cost_adapter import ev_rr_net as _ev_rr_net
         _wr_val = None
+        _wr_fresh = True
         try:
             _wrj = _json.load(open('/root/.openclaw/workspace/trading-system/data/wr_matrix_live.json'))
             _m = _wrj.get('matrix', {})
@@ -299,13 +302,32 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
                 _wr_val = (_w / _t) if _t >= 8 else None  # n>=8才信矩阵，小样本走fallback
         except Exception:
             pass
+        # [WR矩阵新鲜度门 2026-09-30 苏摩111] 矩阵mtime>48h视为陈旧：WR强制fallback 0.45+P2告警。
+        # 实锤：wr_matrix_live.json 9.24后settler无新结算（vector过期+OPEN堆积592条），若不查新鲜度
+        # 会用陈旧WR算EV=静默使用过期先验。>48h=保守走fallback，保证EV门输入不会静默过期。
+        try:
+            from pathlib import Path as _P
+            _wr_mtime = _P('/root/.openclaw/workspace/trading-system/data/wr_matrix_live.json').stat().st_mtime
+            _wr_age_h = (time.time() - _wr_mtime) / 3600.0
+            if _wr_age_h > 48.0:
+                _wr_fresh = False
+                _wr_val = None  # 强制fallback，不信陈旧矩阵
+                log(f'[P2告警] WR矩阵陈旧{_wr_age_h:.0f}h(>48h)，{regime}:{side}强制fallback 0.45')
+                try:
+                    sys.path.insert(0, str(BASE / 'scripts'))
+                    from push_hub import push_jarvis
+                    push_jarvis(f'⚠️ WR矩阵陈旧{_wr_age_h:.0f}h：wr_matrix_live.json超48h未更新，EV门用fallback WR=0.45。查signal_settler（vector库过期+OPEN堆积592条）', priority='P2', dedup_key='wr_matrix_stale', dedup_ttl=21600)
+                except Exception:
+                    pass
+        except Exception:
+            pass  # mtime读不到时保留原逻辑（不额外阻断）
         _wr = float(_wr_val) / 100 if _wr_val and float(_wr_val) > 1 else (float(_wr_val) if _wr_val else 0.45)
         _trip_cost = 0.0014  # taker4bps×2 + slip3bps×2 = 14bps (paper_ledger口径)
-        _net_ev = _wr * rr * sl_pct - (1 - _wr) * sl_pct - _trip_cost * 100
+        _net_ev = _ev_rr_net(_wr, rr, sl_pct, _trip_cost * 100)  # SSOT公式
         if _net_ev <= 0:
             log(f'SKIP {sym} {side}: RR口径净EV={_net_ev:+.2f}%≤0 (WR={_wr:.0%}, RR={rr:.2f}, SL={sl_pct}%, cost=0.14%)')
             return False
-        log(f'EV门通过: net_ev={_net_ev:+.2f}% (WR={_wr:.0%}, RR={rr:.2f})')
+        log(f'EV门通过: net_ev={_net_ev:+.2f}% (WR={_wr:.0%}, RR={rr:.2f}' + ('' if _wr_fresh else ', WR=fallback陈旧矩阵') + ')')
     except Exception as _ev_e:
         log(f'[WARN] EV门计算失败，保守跳过: {_ev_e}')
         return False

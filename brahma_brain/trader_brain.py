@@ -820,17 +820,16 @@ def decide(
         if not _gate1_pass and direction != 'NONE':
             missing.append(f'score={score:.0f}<gate={_score_gate}（旧路径兼容模式）')
 
-    # === Gate2: 成本后EV > 0 ===
+    # === Gate2: 分数口径粗EV（排序参考，非硬门；硬门=paper_executor RR口径ev_rr_net）===
     _gate2_pass = True
     _net_ev = 0.0
     try:
-        from brahma_brain.cost_adapter import calc_round_trip_cost
-        _notional = float(score) * 100  # score作为notional的代理
-        _cost = calc_round_trip_cost(_notional, symbol or 'BTCUSDT', atr_pct=abs(float(atr_1h)/float(price)) if price > 0 else 0.01)
-        _net_ev = float(score) * 0.001 - _cost['total_pct']  # 粗略净EV
+        from brahma_brain.cost_adapter import ev_score_gate
+        _net_ev = ev_score_gate(float(score), symbol or 'BTCUSDT',
+                                atr_pct=abs(float(atr_1h)/float(price)) if price > 0 else 0.01)
         if _net_ev <= 0 and direction != 'NONE':
             _gate2_pass = False
-            missing.append(f'成本后EV={_net_ev:+.2f}%≤0')
+            missing.append(f'成本后EV={_net_ev:+.2f}%≤0（分数口径粗EV）')
     except Exception as _e:
         print(f"[WARN] trader_brain: {_e}", file=sys.stderr)
 

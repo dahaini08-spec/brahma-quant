@@ -72,11 +72,49 @@ def compute_net_ev(gross_ev: float, notional: float, symbol: str = 'BTCUSDT',
     }
 
 
+def ev_rr_net(wr: float, rr: float, sl_pct: float,
+              cost_pct: float = 0.14) -> float:
+    """
+    [EV口径统一 2026-09-30 苏摩111] RR口径净EV — 执行器硬门唯一公式SSOT。
+    net_ev% = WR×RR×SL距离 − (1−WR)×SL距离 − round_trip_cost%
+    调用方: paper_executor.py（硬门）/ auto_executor.py 如需百分比口径
+    注意: wr∈[0,1], rr为盈亏比, sl_pct为止损距离百分数(如2.2), cost_pct默认14bps=0.14%
+    """
+    return wr * rr * sl_pct - (1 - wr) * sl_pct - cost_pct
+
+
+def ev_r_units(wr: float, rr: float) -> float:
+    """
+    R单位口径EV = WR×RR − (1−WR)，不含成本项（auto_executor历史口径原样保留）。
+    用于RR相对粗筛（cost后判断交给ev_rr_net）。
+    """
+    return wr * rr - (1 - wr)
+
+
+def ev_score_gate(score: float, symbol: str = 'BTCUSDT',
+                  atr_pct: float = 0.0, hours_held: float = 12.0) -> float:
+    """
+    分数口径粗EV（trader_brain Gate2专用）= score×0.001 − 往返成本%。
+    ⚠️ 此口径仅决策层参考/排序，非执行器硬门（硬门=ev_rr_net）。
+    """
+    _cost = calc_round_trip_cost(float(score) * 100, symbol, atr_pct=atr_pct,
+                                 hours_held=hours_held)
+    return float(score) * 0.001 - _cost['total_pct']
+
+
+def breakeven_wr(rr: float, sl_pct: float, cost_pct: float = 0.14) -> float:
+    """
+    盈亏平衡胜率：EV=0时所需WR。WR低于此值=负期望赌注结构。
+    """
+    denom = sl_pct * (1 + rr)
+    return (sl_pct + cost_pct) / denom if denom > 0 else 1.0
+
+
 def is_ev_positive_after_cost(gross_ev: float, notional: float,
                                symbol: str = 'BTCUSDT', atr_pct: float = 0.0,
                                hours_held: float = 12.0) -> bool:
     """扣成本后EV是否为正"""
-    result = calc_net_ev(gross_ev, notional, symbol, atr_pct, hours_held)
+    result = compute_net_ev(gross_ev, notional, symbol, atr_pct, hours_held)
     return result['net_ev'] > 0
 
 
@@ -91,6 +129,6 @@ if __name__ == '__main__':
     print()
     # 净EV测试
     for gross in [0.266, 0.1, 0.5]:
-        r = calc_net_ev(gross, 10000, 'BTCUSDT', atr_pct=0.01, hours_held=12)
+        r = compute_net_ev(gross, 10000, 'BTCUSDT', atr_pct=0.01, hours_held=12)
         print(f"gross_ev={gross:.3f}% → net_ev={r['net_ev']:.3f}% "
               f"(cost={r['cost_pct']:.3f}%, ratio={r['cost_ratio']:.1f}%)")

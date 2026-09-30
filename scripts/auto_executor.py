@@ -613,8 +613,8 @@ def find_executable_signals() -> list[dict]:
         if s.get('result') or s.get('settled'):
             continue
 
-        # [2026-08-29 苏摩111] P4: EV>0门控 — 负EV信号永久封禁
-        # EV = WR × RR - (1-WR) × 1.0
+        # [EV口径统一 2026-09-30 苏摩111] R单位粗筛EV统一到cost_adapter.ev_r_units（原内联公式收敛到SSOT）
+        # 注意：本门是R单位相对粗筛，百分比成本口径硬门在paper_executor.ev_rr_net
         try:
             _ev_rr  = float(s.get('rr1') or s.get('rr') or 0)
             _ev_wr  = float(s.get('wr') or 0)
@@ -627,8 +627,9 @@ def find_executable_signals() -> list[dict]:
                     'BEAR_RECOVERY:LONG':1.0,'BULL_EARLY:LONG':1.0,
                 }
                 _ev_wr = _WR_DEF.get(f'{_ev_regime}:{_ev_dir}', 0.5)
+            from brahma_brain.cost_adapter import ev_r_units as _ev_r_units
             if _ev_rr > 0 and _ev_wr > 0:
-                _ev = _ev_wr * _ev_rr - (1 - _ev_wr) * 1.0
+                _ev = _ev_r_units(_ev_wr, _ev_rr)
                 if _ev <= 0:
                     continue  # P4: EV<=0 负期望信号，封禁
         except Exception:
