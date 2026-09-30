@@ -172,7 +172,10 @@ def build_flagship_proposal(pack: dict) -> str:
 
 
 def audit_deep_post(content: str, pack: dict = None) -> tuple:
-    """深度帖专用审计：8要素逐项检查"""
+    """深度帖专用审计：8要素逐项检查
+    [2026-09-30 苏摩111 统一审计接线] 8要素后追加四道门统一断言（
+    square_template.audit_post，快照帖同源），旗舰帖不过品牌门=不进批准队列。
+    """
     issues = []
     if len(content) < 600:
         issues.append(f'长度不足({len(content)}字<600)')
@@ -196,6 +199,14 @@ def audit_deep_post(content: str, pack: dict = None) -> tuple:
     # 数据矛盾推论：检查是否有「但/反而/却/没」的反转词
     if not re.search(r'但|反而|却|没|不', content):
         issues.append('缺反直觉核心（无反转词）')
+    # [统一审计接线] 四道门断言（IP泄漏/违禁词/水印）
+    try:
+        from square.square_template import audit_post
+        ok, brand_issues = audit_post(content)
+        if not ok:
+            issues.extend(brand_issues)
+    except ImportError:
+        pass
     return (len(issues) == 0, issues)
 
 

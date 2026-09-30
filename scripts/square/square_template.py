@@ -912,33 +912,52 @@ def _build_trigger(bias, entry_lo, entry_hi, sl, tp1, tp2, vip_status):
 # ═══════════════════════════════════════════════════════════════
 
 def audit_post(content):
-    """审计帖子是否符合品牌铁律，返回(ok, issues)"""
+    """审计帖子是否符合品牌铁律，返回(ok, issues)
+    [2026-09-30 苏摩111 统一审计入口接线] 接入位置：
+    ①square_auto_post.py run()（快照帖cron唯一发帖面）
+    ②square_deep_post.py audit_deep_post()（旗舰帖批准链路）
+    ③square_trade_loop.py _pre_post_validate()（单帖面）
+    ④square_macro_poster.py（宏观帖，如有产出）
+    本体=铁律v1 + 内嵌四道门（zhao_bu_xuan_ip同源断言，防零调用孤岛）：
+    Gate1 IP泄漏 / Gate2 结构规范 / Gate4 IP一致性 / AI水印与签名
+    """
     issues = []
 
-    # 铁律1: 必须有品牌前缀
+    # 铁律1: 必须有品牌前缀+后缀
     if '姓赵不宣' not in content:
         issues.append('缺少姓赵不宣签名')
-
-    # 铁律1: 必须有品牌后缀
-    if '姓赵不宣' not in content or '不是建议' not in content:
-        issues.append('缺少姓赵不宣签名')
-
-    # 铁律9: 允许互动钩子（v2.0修改）
-    # 旧规则禁止"你怎么看"，新规则鼓励互动
-    # 不再阻止互动钩子
+    if '不是建议' not in content:
+        issues.append('缺少「不是建议」后缀')
 
     # 铁律10: 必须>100字
     char_count = len(content)
     if char_count < 100:
         issues.append(f'字数{char_count}<100，不达Square流量boost门槛')
 
-    # 内部术语泄漏检查
+    # ── Gate1 内部术语泄漏（zhao_bu_xuan_ip PERSONA.forbidden 同源）──
     forbidden = ['BEAR_TREND', 'CHOP_MID', 'BULL_TREND', 'BEAR_EARLY',
-                'BEAR_RECOVERY', 'brahma', 'brahma_', '梵天设计院',
-                'HCME', 'confluence_score', 'Kronos']
+                'BEAR_RECOVERY', 'CHOP_LOW', 'CHOP_HIGH', 'brahma', 'brahma_',
+                '梵天', '设计院', '方仓', 'HCME', 'confluence_score', 'Kronos']
     for w in forbidden:
         if w in content:
             issues.append(f'内部术语泄漏：{w}')
+
+    # ── Gate4 IP一致性（与zhao_bu_xuan_ip.gate4_ip_consistency同源断言）──
+    # AI/系统类禁词
+    for w in ['AI分析', 'AI模型', '多模型', '系统给出', '引擎输出',
+              '35个维度', '量化体制']:
+        if w in content:
+            issues.append(f'IP违禁：含「{w}」')
+    # 态度类禁词
+    for w in ['大家好', '分享一下', '盯了很久', '保证盈利', '稳赚']:
+        if w in content:
+            issues.append(f'IP违禁：含「{w}」')
+    # 格式类：全角感叹号（广场违规）
+    if '！' in content:
+        issues.append('IP违禁：含全角感叹号「！」')
+    # AI水印必须存在（ai_truth_audit L4水印铁律）
+    if '内容含AI生成分析' not in content:
+        issues.append('缺少AI水印（ai_truth_audit L4）')
 
     return len(issues) == 0, issues
 

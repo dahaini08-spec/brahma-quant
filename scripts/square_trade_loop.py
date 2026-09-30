@@ -132,6 +132,17 @@ def _pre_post_validate(post_content, sig_data, pos_data, current_price):
                 issues.append(f'R5 FAIL: 做多SL{sl:.2f}应低于入场价{entry:.2f}')
             if tp > 0 and tp <= entry:
                 issues.append(f'R5 FAIL: 做多TP{tp:.2f}应高于入场价{entry:.2f}')
+
+    # [2026-09-30 苏摩111 统一审计接线] R6: 品牌审计（四道门同源断言）
+    # 接入位置：_pre_post_validate（square_trade_loop唯一发帖面门控）
+    try:
+        sys.path.insert(0, str(Path(__file__).parent))
+        from square.square_template import audit_post
+        ok, brand_issues = audit_post(post_content)
+        if not ok:
+            issues.extend(f'R6 {e}' for e in brand_issues)
+    except ImportError:
+        pass  # 审计模块缺失不阻塞交易面（降级为原5规则）
     
     passed = len(issues) == 0
     if not passed:
