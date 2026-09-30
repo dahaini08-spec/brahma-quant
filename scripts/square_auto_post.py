@@ -128,13 +128,30 @@ def run(syms: list, dry_run: bool = False) -> None:
             if age > max_age_s:
                 return {}
             out = d.get('output', '')
+            globals()['_fresh_out'] = out   # [2026-09-30 苏摩111] 供合并路径切片用
             pkgs = {}
             for sym in syms_needed:
-                if sym in out or sym.replace('USDT', '') in out:
-                    pkgs[sym] = parse_analysis_output(out)  # 包含全币种输出，解析一次
+                seg = _extract_sym_segment(out, sym)   # [2026-09-30 苏摩111] 单币段解析，修复串币
+                if seg:
+                    pkgs[sym] = parse_analysis_output(seg)
             return pkgs
         except Exception:
             return {}
+
+    def _extract_sym_segment(full_out: str, sym: str) -> str:
+        """从全文截取单币段：【BTC...到下一个【ETH或结尾
+        [2026-09-30 苏摩111 价格串币bug根修] parse_analysis_output正则是全文first-match，
+        传全文会让BTC/ETH拿到同一dict（后者覆盖前者），BTC帖发布ETH价位。
+        接入位置：square_auto_post.py _fresh_signal_pkg + 合并发帖路径
+        """
+        import re as _re
+        m = _re.search(rf'【{sym}(?:USDT)?[^】]*】', full_out)
+        if not m:
+            return ''
+        start = m.start()
+        nxt = _re.search(r'【(?:BTC|ETH|SOL|BNB|XRP|SUI|DOGE|ADA|LTC|LINK|AVAX)(?:USDT)?[^】]*】', full_out[start + 1:])
+        end = (start + 1 + nxt.start()) if nxt else len(full_out)
+        return full_out[start:end]
 
     fresh = _fresh_signal_pkg(syms)
     # ── 多币种：合并单帖路径（P0-2）──
@@ -143,7 +160,13 @@ def run(syms: list, dry_run: bool = False) -> None:
         for sym in syms:
             if sym in fresh:
                 print(f'[{sym}] 信号包SSOT命中(≤2h新鲜)，跳过重复分析', flush=True)
-                analysis_by_sym[sym] = fresh[sym]
+                # [2026-09-30 苏摩111 价格串币bug根修] SSOT包=全文，必须切出单币段再parse
+                # 根因：直接parse全文→两sym共用同一dict（正则全文first-match=ETH数字覆盖BTC）→BTC用ETH价位发布
+                seg = _extract_sym_segment(_fresh_out, sym) if _fresh_out else ''
+                if seg:
+                    analysis_by_sym[sym] = parse_analysis_output(seg)
+                else:
+                    analysis_by_sym[sym] = fresh[sym]
                 continue
             print(f'[{sym}] 生成分析报告...', flush=True)
             try:

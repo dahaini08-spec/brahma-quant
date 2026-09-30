@@ -930,45 +930,72 @@ def audit_post(content):
 # ═══════════════════════════════════════════════════════════════
 
 def parse_analysis_output(report_text):
-    """从run_analysis()返回的文本中解析出模板需要的字段"""
+    """从run_analysis()返回的文本中解析出模板需要的字段
+    [2026-09-30 苏摩111 价格串币bug根修] 必须传【单币段】（_extract_sym_segment切出），
+    本函数正则按优先级：严格格式（上方空头止损墙$X）优先，旧冒号格式仅fallback——
+    因为段内跨币共振区会用冒号格式引用【其他币】的价位，先匹配会串币。
+    """
     import re
 
     data = {}
     lines = report_text.split('\n')
 
-    for line in lines:
-        # 体制
-        m = re.search(r'【体制】(\w+)\s+score=([-\d.]+)\s+grade=(\d+)', line)
-        if m:
-            data['regime'] = m.group(1)
-            data['score'] = float(m.group(2))
-            data['grade'] = int(m.group(3))
+    # 代价/体制：新格式段首【BTCUSDT $83,631 | 震荡市场】+ 体制=XXX行
+    m = re.search(r'体制=(\w+)', report_text)
+    if m:
+        data['regime'] = m.group(1)
+    m2 = re.search(r'score=([-\d.]+)', report_text)
+    if m2:
+        data['score'] = float(m2.group(1))
 
-        # FVG磁铁
+    for line in lines:
+        # FVG磁铁（新格式：FVG共识=BULL，磁铁向上吸引价格到$2,682；旧格式：主磁铁: BULL@$X）
+        m = re.search(r'FVG共识=(\w+)', line)
+        if m:
+            data['fvg_dir'] = m.group(1)
         m = re.search(r'主磁铁:\s*(\w+)@\$?([\d,.]+)', line)
         if m:
             data['fvg_dir'] = m.group(1)
             data['fvg_magnet'] = float(m.group(2).replace(',', ''))
+        if 'fvg_magnet' not in data:
+            m = re.search(r'磁铁[^，。]{0,8}到\$([\d,.]+)', line)
+            if m:
+                data['fvg_magnet'] = float(m.group(1).replace(',', ''))
 
         # FVG百分比
         m = re.search(r'中点\$?[\d,.]+\(([+-]?[\d.]+)%\)', line)
         if m:
             data['fvg_pct'] = float(m.group(1))
 
-        # 清算
-        m = re.search(r'止损墙:\s*\$?([\d,.]+)\s*\(([+-]?[\d.]+)%', line)
-        if m:
+        # 清算（[2026-09-30] 严格格式优先：上方空头止损墙$85,304 / 下方多头支撑池$81,959；
+        # 旧冒号格式仅fallback——段内跨币共振区的冒号行是【其他币】引用，先匹配会串币）
+        m = re.search(r'上方空头止损墙\$?([\d,.]+)', line)
+        if m and 'liq_wall' not in data:
             data['liq_wall'] = float(m.group(1).replace(',', ''))
-            data['liq_wall_pct'] = float(m.group(2))
-        m = re.search(r'支撑池:\s*\$?([\d,.]+)\s*\(([+-]?[\d.]+)%', line)
-        if m:
+        m = re.search(r'下方多头支撑池\$?([\d,.]+)', line)
+        if m and 'liq_pool' not in data:
             data['liq_pool'] = float(m.group(1).replace(',', ''))
-            data['liq_pool_pct'] = float(m.group(2))
+        # 旧格式fallback（仅当严格格式缺失）
+        if 'liq_wall' not in data:
+            m = re.search(r'止损墙:\s*\$?([\d,.]+)\s*\(([+-]?[\d.]+)%', line)
+            if m:
+                data['liq_wall'] = float(m.group(1).replace(',', ''))
+                data['liq_wall_pct'] = float(m.group(2))
+        if 'liq_pool' not in data:
+            m = re.search(r'支撑池:\s*\$?([\d,.]+)\s*\(([+-]?[\d.]+)%', line)
+            if m:
+                data['liq_pool'] = float(m.group(1).replace(',', ''))
+                data['liq_pool_pct'] = float(m.group(2))
 
-        # OI
+        # OI（新格式：OI多头在撤退→SHORT_BUILD类；旧格式：主信号: XXX）
         m = re.search(r'主信号:\s*(\w+)', line)
         if m:
             data['oi_signal'] = m.group(1)
+        if 'oi_signal' not in data:
+            if 'OI多头在撤退' in line:
+                data['oi_signal'] = 'SHORT_BUILD'
+            elif 'OI空头在撤退' in line:
+                data['oi_signal'] = 'LONG_BUILD'
 
         # CVD
         m = re.search(r'CVD\s+1H=([-\d]+)', line)
@@ -1006,10 +1033,14 @@ def parse_analysis_output(report_text):
         if m:
             data['atr_4h'] = float(m.group(1).replace(',', ''))
 
-        # 价格
-        m = re.search(r'基准\$?([\d,.]+)', line)
+        # 价格（新格式段首【BTCUSDT $83,631 | ...】优先，基准/现价fallback）
+        m = re.search(r'【[A-Z]+USDT\s*\$([\d,.]+)', line)
         if m and 'price' not in data:
             data['price'] = float(m.group(1).replace(',', ''))
+        if 'price' not in data:
+            m = re.search(r'(?:基准|现价)\$?([\d,.]+)', line)
+            if m:
+                data['price'] = float(m.group(1).replace(',', ''))
 
         # 失效期
         m = re.search(r'失效期:\s*(\w+)', line)
@@ -1022,13 +1053,15 @@ def parse_analysis_output(report_text):
             data['entry_lo'] = float(m.group(1).replace(',', ''))
             data['entry_hi'] = float(m.group(2).replace(',', ''))
 
-        # VIP状态
-        if 'WAIT' in line and '交易员大脑' in line:
+        # VIP状态（新格式：⏳ WATCH——条件不足，等待。/ 🚀 ENTER...；旧格式：交易员大脑行）
+        if 'WATCH' in line:
             data['vip_status'] = 'WAIT'
         if 'ENTER' in line and '交易员大脑' in line:
             data['vip_status'] = 'ENTER'
+        if '🚀 ENTER' in line or '🚀ENTER' in line:
+            data['vip_status'] = 'ENTER'
 
-    # 从VIP卡片提取SL/TP
+    # 从VIP卡片提取SL/TP（止损 $2,799.0｜目标 $2,650→...）
     m = re.search(r'止损\s*\$?([\d,.]+)', report_text)
     if m:
         data['sl'] = float(m.group(1).replace(',', ''))
@@ -1036,13 +1069,25 @@ def parse_analysis_output(report_text):
     if m:
         data['tp1'] = float(m.group(1).replace(',', ''))
 
-    # 方向（交易员大脑方向 = 系统真实方向）
-    if '方向=SHORT' in report_text:
+    # VIP卡挂单区（新格式：🔴 空单｜挂单区 $2,735.9~$2,744.1）
+    m = re.search(r'🔴\s*空单｜挂单区\s*\$?([\d,.]+)~\$?([\d,.]+)', report_text)
+    if m:
+        data['short_entry_lo'] = float(m.group(1).replace(',', ''))
+        data['short_entry_hi'] = float(m.group(2).replace(',', ''))
         data['bias'] = 'SHORT'
-    elif '方向=LONG' in report_text:
-        data['bias'] = 'LONG'
-    else:
-        data['bias'] = 'NONE'
+    m = re.search(r'🟢\s*多单｜挂单区\s*\$?([\d,.]+)~\$?([\d,.]+)', report_text)
+    if m:
+        data['long_entry_lo'] = float(m.group(1).replace(',', ''))
+        data['long_entry_hi'] = float(m.group(2).replace(',', ''))
+        if 'bias' not in data:
+            data['bias'] = 'LONG'
+    if 'bias' not in data:
+        if '方向=SHORT' in report_text:
+            data['bias'] = 'SHORT'
+        elif '方向=LONG' in report_text:
+            data['bias'] = 'LONG'
+        else:
+            data['bias'] = 'NONE'
 
     return data
 
