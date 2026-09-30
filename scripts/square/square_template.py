@@ -36,6 +36,7 @@ UTC = timezone.utc
 
 BRAND_PREFIX = ''  # 顶端不出现IP，放在后缀
 BRAND_SUFFIX = '🌿 姓赵不宣 | 不是建议'
+LIVE_CTA = '关注我，每晚21:00直播+SMC教学'  # [2026-09-30 苏摩111] 发帖清单#2：签名前必须带CTA，全库原缺失
 AI_WATERMARK = '🤖 内容含AI生成分析，非实时人工观点'  # [L5水印 2026-09-28 苏摩111] ai_truth_audit L4
 
 # 互动钩子库
@@ -323,6 +324,7 @@ def build_battlefield_report_combined(analysis_by_sym: dict) -> str:
 
     lines.extend([
         AI_WATERMARK,
+        LIVE_CTA,
         f'{BRAND_SUFFIX}',
         f'#BTC #ETH #合约交易',
         f'',
@@ -627,7 +629,7 @@ def build_macro_outlook(event_name, event_time, expectations,
     lines.append(f'Hot（偏热）：{hot_script}')
     lines.append(f'Cool（偏冷）：{cool_script}')
     lines.append(f'')
-    lines.append(f'梵天读数：')
+    lines.append(f'盘面读数：')
     lines.append(f'BTC体制{_translate_regime(btc_regime)} score={btc_score} → 宏观决定方向')
     lines.append(f'ETH Hurst={eth_hurst:.2f} → 波动率即将放大')
     lines.append(f'OI={oi_trend} → 资金在撤资=事件前避险')
@@ -635,6 +637,7 @@ def build_macro_outlook(event_name, event_time, expectations,
     lines.append(f'操作建议：{action_advice}')
     lines.append(f'')
     lines.append(AI_WATERMARK)
+    lines.append(LIVE_CTA)
     lines.append(f'{BRAND_SUFFIX}')
     lines.append(f'{hashtag} #BTC')
     lines.append(f'')

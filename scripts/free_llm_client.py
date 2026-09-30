@@ -145,14 +145,26 @@ def _master_config() -> dict:
 
 
 def _master_chat(messages: list, max_tokens: int, timeout: int) -> str:
-    """主AI通道调用。成功返回content，失败返回''。免费池退避期内也走此函数。"""
+    """主AI通道调用。成功返回content，失败返回''。免费池退避期内也走此函数。
+    [2026-09-30 苏摩111 挂死根修] 总预算硬顶deadline：
+    事故=deep-post对6589字真prompt，Qwen3.5慢流生成>115s无响应且逐次recv重置socket timeout，
+    defeat了原有90s超时→进程挂死>295s被cron timeout杀（exit 1，无traceback）。
+    修复：函数级deadline=max(timeout,45)总预算硬顶；每模型socket timeout=min(剩余预算,45)；
+    advanced(reasoning)对长prompt把token全花在思考上→空content快速降级到下一模型。
+    """
     cfg = _master_config()
     if not cfg:
         return ''
     # reasoning主模型思考消耗预算：max_tokens过小→content为空，给足下限
     mt = max(max_tokens, 600)
+    total_budget = max(timeout, 45)
+    deadline = time.time() + total_budget
     last = ''
     for model in cfg['models']:
+        remain = deadline - time.time()
+        if remain < 10:
+            last = f'master/{model}: deadline({total_budget}s) exceeded'
+            break
         try:
             payload = json.dumps({
                 'model': model, 'messages': messages,
@@ -165,8 +177,22 @@ def _master_chat(messages: list, max_tokens: int, timeout: int) -> str:
                     'Content-Type': 'application/json',
                 },
             )
-            resp = json.loads(urllib.request.urlopen(
-                req, timeout=max(timeout, 45), context=_ctx).read())
+            # [挂死根修 v3] 慢流trickle（每0.5s送1字节）会defeat两层防御：
+            # ①socket timeout只防单次recv空闲（有数据就不超时）；
+            # ②read(65536)内部循环不返回，deadline检查放在read后永远轮不到。
+            # 正解：逐字节读+每字节查墙钟deadline，总耗时硬顶在total_budget内。
+            # 快速响应代价可接受：≤100KB ≈ 十万次recv ≈ <1s开销。
+            conn = urllib.request.urlopen(req, timeout=max(1, min(remain, 45)), context=_ctx)
+            raw = b''
+            while True:
+                chunk = conn.read(1)
+                if not chunk:
+                    break
+                raw += chunk
+                if time.time() > deadline:
+                    conn.close()
+                    raise TimeoutError(f'read deadline {total_budget}s exceeded')
+            resp = json.loads(raw)
             choice = (resp.get('choices') or [{}])[0]
             content = (choice.get('message') or {}).get('content', '').strip()
             if content:
