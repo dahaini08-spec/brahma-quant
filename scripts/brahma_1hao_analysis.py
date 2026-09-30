@@ -404,10 +404,15 @@ def fmt_entry(r: dict) -> str:
     return "\n".join(lines) if lines else "  (等待体制确认后计算)"
 
 
-def run_analysis(symbol: str, direction: str = 'LONG', compact: bool = False) -> str:
+def run_report(symbol: str, direction: str = 'LONG', compact: bool = False) -> str:
     """
     执行单币种94维全量分析，返回格式化报告字符串
     compact=True: 压缩输出（节省~35% token），用于cron/auto触发场景
+
+    [P3 API收敛 2026-09-30 苏摩111] run_analysis三胞胎同名消除：
+    本函数职责=「报告生成器」→ 改名run_report；
+    run_analysis名字让位给机器SSOT brahma_analysis_runner.run_analysis（返回dict）。
+    兼容别名保留下方（run_analysis = run_report），外部引用零破坏。
     """
     # [2026-08-18 苏摩封印] 分析开始前强制刷新价格缓存，确保使用币安期货合约实时价格
     # 根因：brahma_bus TTL=30s导致跨会话价格复用，报告价格与实时价格最多差30s
@@ -1301,6 +1306,10 @@ _TRADFI_SYMBOLS = {
 _RWA_CONTRACTS = {}  # TRADIFI_PERPETUAL合约不依赖RWA合约地址
 
 
+# [P3 API收敛 2026-09-30 苏摩111] 兼容别名：历史调用方（shell/外部）零破坏
+run_analysis = run_report
+
+
 def _get_rwa_fundamentals(symbol: str) -> dict:
     """获取美股代币基本面（PE/52W高低/市值）"""
     import urllib.request, json as _json
@@ -1684,7 +1693,7 @@ if __name__ == '__main__':
         # 单符号直接运行（子进程模式或单符号调用）
         sym = args.symbols[0]
         print(f'\n[{sym}] 分析中...', flush=True)
-        result = run_analysis(sym, args.direction)
+        result = run_report(sym, args.direction)
         print(result)
 
         # ── MTF全周期FVG/OB地图（2026-08-20 苏摩指令封印）─────────────────────

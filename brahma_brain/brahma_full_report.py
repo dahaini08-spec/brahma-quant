@@ -467,7 +467,8 @@ def run_full_analysis(symbol: str, mode: str = 'auto') -> Any:
     ts0 = _time_rfа.time()
     # Step1: 调用1号工程完整报告（包含所有层）
     try:
-        from brahma_1hao_analysis import run_analysis as _1hao_main
+        # [P3 API收敛 2026-09-30 苏摩111] 1hao报告入口已改名run_report（消除run_analysis同名混淆）
+        from brahma_1hao_analysis import run_report as _1hao_main
         report = _1hao_main(symbol)
         # ── [封印 2026-08-29 苏摩111] 过滤引擎日志行 ──
         _LOG_PREFIXES = ('[分析开始]','[s_smart]','[KronosBridge','[BrahmaBrain]',

@@ -67,3 +67,11 @@
 - 不动 paper_ledger 账本逻辑（9.30 刚修正 E1 口径）
 - 不改 cron 语义（只归档死脚本后更新 crontab 注释）
 - 不升级 Python/依赖版本（环境冻结）
+
+## Phase 3 封印记录（2026-09-30 苏摩111 · commit见git log）
+1. `brahma_1hao_analysis.run_analysis` → 改名 `run_report`（职责正名：报告生成器），`__main__`同步迁移
+2. 兼容别名 `run_analysis = run_report` 保留 → shell/外部调用零破坏
+3. `brahma_full_report.py:470` 改引 `run_report`（引用唯一化+指向明确）
+4. **反向依赖物理移动撤案**：full_report 下沉到 scripts/ 会破坏 4 个 brahma_brain.brahma_full_report import链（brahma_gate/ai4trade_publisher/brahma_health/brahma_mcp_server），且文件内 7 处 `__file__` 相对路径语义需全量重验——风险>收益（消除的是「1hao在scripts但full_report在brain」的风格不一致，非运行时缺陷）。反向依赖保留但已收敛到唯一调用点，后续如需移动需苏摩111专项批准
+5. run_analysis 三胞胎终态：manual(10步VIP用户入口) / runner(机器SSOT dict) / 1hao=run_report(94维报告) —— 三名三义，同名混淆消除
+验证：冒烟17/17绿(T10=142.4s) + wiring 9/9绿0孤岛 + 4消费方import健康
