@@ -153,6 +153,10 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 40 3 * * 0 cd /root/.openclaw/workspace/trading-system && timeout 600 python3 brahma_brain/dim_ic_audit.py >> logs/ic_audit.log 2>&1
 # v5回测 — 03:45 Sunday [9.26接线 苏摩111] engine_v5本地指标回退版，周度WR/EV基准
 45 3 * * 0 cd /root/.openclaw/workspace/trading-system && timeout 1800 python3 brahma_brain/brahma_engine_v5.py >> logs/engine_v5_backtest.log 2>&1
+# C-3议会闭环周跑 — 03:55 Monday [C线封印 2026-09-30 苏摩111] 正向回填+8分向周报+教训包
+55 3 * * 1 cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/learning_loop.py >> logs/learning_loop.log 2>&1
+# C-2校准蒸馏周重训 — 03:57 Monday [C线封印 2026-09-30 苏摩111] shadow日志满批后重出calibrator
+57 3 * * 1 cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/distill_calibrator.py >> logs/distill_calibrator.log 2>&1
 # DAG weight calibrator — 03:30 Sunday (蘑菇体机制)
 30 3 * * 2,5 cd /root/.openclaw/workspace/trading-system && timeout 300 python3 brahma_brain/dag_weight_calibrator.py >> logs/dag_calibrator.log 2>&1
 

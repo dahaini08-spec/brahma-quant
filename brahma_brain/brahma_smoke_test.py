@@ -357,6 +357,44 @@ try:
 except Exception as e:
     _fail('T15', 'L1守卫+L3 IC门', str(e)[:60])
 
+# ── T16/T17 [C线蒸馏 苏摩111 2026-09-30] ─────────────────────
+try:
+    _t16_notes = []
+    _dpath = Path(__file__).resolve().parent.parent / 'data' / 'distill_calibrator_v1.json'
+    _art = json.loads(_dpath.read_text())
+    _m = _art.get('metrics', {})
+    if _art.get('governance', {}).get('mode') != 'SHADOW_ONLY':
+        raise AssertionError('蒸馏器非shadow模式')
+    if _art.get('governance', {}).get('wired_into_decision_chain') is not False:
+        raise AssertionError('蒸馏器违规接线到决策链')
+    if _m.get('test_auc', 0) < 0.70:
+        raise AssertionError(f"test_auc过低: {_m.get('test_auc')}")
+    if len(_art.get('features', [])) != 7:
+        raise AssertionError('特征数异常')
+    _t16_notes.append(f"AUC={_m.get('test_auc')} n={_m.get('n_total')} shadow✓")
+    _ok('T16', '校准蒸馏工件', ' | '.join(_t16_notes))
+except Exception as e:
+    _fail('T16', '校准蒸馏工件', str(e)[:60])
+
+try:
+    _t17_notes = []
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'scripts'))
+    from learning_loop import council_context as _cc, weekly_report as _wr
+    _ctx = _cc()
+    if not isinstance(_ctx, str):
+        raise AssertionError('council_context非字符串')
+    _r = _wr()
+    if _r.get('strong_signals', -1) < 0:
+        raise AssertionError('周报结构异常')
+    _pkg = json.loads((Path(__file__).resolve().parent.parent / 'data' / 'council_context_package.json').read_text())
+    for _l in _pkg.get('lessons', []):
+        if not all(k in _l for k in ('lesson_type', 'lesson', 'evidence')):
+            raise AssertionError('教训包字段缺失')
+    _t17_notes.append(f"强信号样本={_r.get('strong_signals')} 灰区={_r.get('gray_zone')} 包结构✓")
+    _ok('T17', '议会蒸馏闭环', ' | '.join(_t17_notes))
+except Exception as e:
+    _fail('T17', '议会蒸馏闭环', str(e)[:60])
+
 # ── 汇总 ──────────────────────────────────────────────────
 print("\n" + "═" * 55)
 ok_cnt   = sum(1 for r in results if r[1] == '✅')

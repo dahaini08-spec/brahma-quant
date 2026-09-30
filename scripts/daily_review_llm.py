@@ -76,13 +76,24 @@ def _generate_review(data: dict) -> str:
 
         trade_summary = f"{len(trades)}笔信号记录" if trades else "今日无交易记录"
 
+        # [C-3蒸馏 苏摩111] 议会教训包注入（零API成本，本地工件）
+        # 接入位置：scripts/learning_loop.py council_context() → daily_review prompt
+        _council_ctx = ''
+        try:
+            sys.path.insert(0, str(Path(__file__).resolve().parent))
+            from learning_loop import council_context as _cc
+            _council_ctx = _cc()
+        except Exception:
+            _council_ctx = ''
+
         prompt = (
             f"今日({ts})梵天系统复盘数据：\n"
             f"BTC: 收盘${btc.get('price',0):,.0f} 体制={btc.get('regime','?')} score={btc.get('score',0):.0f}\n"
             f"ETH: 收盘${eth.get('price',0):,.0f} 体制={eth.get('regime','?')} score={eth.get('score',0):.0f}\n"
             f"CVD收盘方向: BTC={cvd_b} ETH={cvd_e}\n"
-            f"交易情况: {trade_summary}\n\n"
-            f"请用中文写一段今日复盘总结（100字内）：\n"
+            f"交易情况: {trade_summary}\n"
+            + (f"\n{_council_ctx}\n" if _council_ctx else '')
+            + "\n请用中文写一段今日复盘总结（100字内）：\n"
             f"1. 今日体制和价格趋势\n"
             f"2. 梵天系统信号质量\n"
             f"3. 明日需要关注的关键位\n"
