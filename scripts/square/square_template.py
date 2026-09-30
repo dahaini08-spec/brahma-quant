@@ -191,7 +191,9 @@ def build_battlefield_report_combined(analysis_by_sym: dict) -> str:
         hook = (f'BTC和ETH系统同时看多，但散户多空比已经挤向同一边。'
                 f'方向一致的时候我反而要问：谁在对面开单？')
     else:
-        hook = (f'早盘最值得注意的不是方向，是BTC和ETH的多空分歧在变大。'
+        beijing_hour2 = datetime.now(CST).hour
+        period2 = '早盘' if beijing_hour2 < 11 else ('午间' if beijing_hour2 < 13 else ('午后' if beijing_hour2 < 18 else '晚间'))
+        hook = (f'{period2}最值得注意的不是方向，是BTC和ETH的多空分歧在变大。'
                 f'分歧不可怕，怕的是一边倒带另一边被动。')
 
     # ── 两币并重判断（每币1~2句，数据缺失降级观察句） ──
@@ -283,7 +285,20 @@ def build_battlefield_report_combined(analysis_by_sym: dict) -> str:
                           '不如等两边任一边走出来再跟。')
 
     # ── 组装 ──
-    lines = [f'早盘战场报告 {date_str}｜BTC+ETH双币联读', '']
+    # [2026-09-30 苏摩111] 标题时段跟北京时间走：<6点凌晨 / 6-11早盘 / 11-13午间 / 13-18午后 / 18-24晚间
+    # （cron 01:30/09:30 UTC = 北京09:30/17:30，过去都叫"早盘"是时区错位）
+    beijing_hour = datetime.now(CST).hour
+    if beijing_hour < 6:
+        period = '凌晨'
+    elif beijing_hour < 11:
+        period = '早盘'
+    elif beijing_hour < 13:
+        period = '午间'
+    elif beijing_hour < 18:
+        period = '午后'
+    else:
+        period = '晚间'
+    lines = [f'{period}战场报告 {date_str}｜BTC+ETH双币联读', '']
     lines.append(hook)
     lines.append('')
     lines.append('先看两个盘子：')
