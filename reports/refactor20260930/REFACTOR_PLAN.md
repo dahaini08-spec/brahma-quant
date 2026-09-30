@@ -38,12 +38,12 @@
 4. SYSTEM_VERSION.json 修正：5 个幽灵入口清除（main.py/executor.py/position_monitor.py/market_regime.py/multi_agent_council.py 均不存在），active_entry → brahma_full_report.run_full_analysis
 5. brahma_smoke_test.py 撤案保留（A-v2 实锤被 8 文件引用）
 
-**Phase 2 — SSOT 收敛（P2）**
-1. 4 文件 5 处重复 RSI/EMA → import math_utils（market_state.ema/rsi 改为委托调用，保持公共 API 签名不变）
-2. auto_executor:625 + ic_feedback_engine:116 乘数表 → import regime_config（保留本地 fallback 注释来源）
-3. brahma_360.py:412-413 正则门更新（SSOT 检查指向 regime_config）
-4. push 封装 12 文件 → push_hub 单入口（分批，先旁路后关键）
-5. _safe_float 双实现合并 math_utils
+**Phase 2 — SSOT 收敛（P2，等价性测试后修订）**
+0. ~~重复 RSI/EMA 委托 math_utils~~ → **已取消**：等价性实测证明 SMA种子 vs 首值种子、Cutler vs Wilder 数值不等（114.64 vs 114.73 / 83.3 vs 80.11），机械替换=改变信号数值，违反"功能不变"铁律。改为注释声明差异（唯一零风险方案），统一算法需苏摩111 拍板（行为变更）
+1. auto_executor:625 + ic_feedback_engine:116 乘数表 → import regime_config（先 diff 确认数值一致才动）
+2. brahma_360.py:412-413 正则门更新（SSOT 检查指向 regime_config）
+3. push 封装 12 文件 → push_hub 单入口（分批，先旁路后关键）
+4. _safe_float 双实现合并 math_utils（先验证等价）
 
 **Phase 3 — API 收敛（P2.5）**
 1. run_analysis 三胞胎：manual 保留（用户入口）、runner 保留（机器 SSOT）、1hao.run_analysis 改名 run_report（full_report 同步改引用），消除同名混淆

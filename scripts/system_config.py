@@ -27,7 +27,23 @@ TESTNET   = os.environ.get('BINANCE_TESTNET', 'false').lower() == 'true'
 
 # ── Jarvis 推送路由（SSOT）────────────────────────────────────────
 JARVIS_USER_ID   = os.environ.get('JARVIS_USER_ID',   '73295708')
-JARVIS_THREAD_ID = os.environ.get('JARVIS_THREAD_ID', '01a0d79b-fea4-71b1-9f2a-c02a9844b4ed')  # 2026-09-07 苏摩111迁移新主线程（三方联合）
+# [P2-4 2026-09-30 重构 苏摩111] 线程SSOT统一：alerts/.env 是唯一线程源（与scripts/push_hub同源）。
+# 旧兑底 01a0d79b... 已是死线程（9.27线程迁移后），环境变量未设时会丢消息——
+# 读取顺序: 环境变量 > alerts/.env > 旧封印值兑底（仅容灾）。
+def _load_thread_id():
+    v = os.environ.get('JARVIS_THREAD_ID')
+    if v:
+        return v
+    try:
+        env = Path(__file__).parent.parent / 'alerts' / '.env'
+        for line in env.read_text(encoding='utf-8').splitlines():
+            if line.startswith('JARVIS_THREAD_ID='):
+                return line.split('=', 1)[1].strip()
+    except Exception:
+        pass
+    return '01a0d79b-fea4-71b1-9f2a-c02a9844b4ed'  # 容灾兑底（历史上曾为主线程）
+
+JARVIS_THREAD_ID = _load_thread_id()
 
 # ── 兼容旧代码（别名）────────────────────────────────────────────
 JARVIS_TARGET  = f"{JARVIS_USER_ID}:t:{JARVIS_THREAD_ID}"

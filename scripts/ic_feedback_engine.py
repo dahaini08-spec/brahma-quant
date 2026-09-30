@@ -111,12 +111,17 @@ def _generate_weight_adjustments(ic, buckets, regime_matrix):
             continue
         wr = stats['win'] / total
         avg_pnl = sum(stats['pnls']) / len(stats['pnls']) if stats['pnls'] else 0
-        # 当前体制乘数（参考MEMORY.md）
-        base_multipliers = {
-            'BEAR_TREND:SHORT': 1.6, 'BULL_TREND:LONG': 1.6,
-            'BEAR_EARLY:SHORT': 1.2, 'CHOP_MID:SHORT': 0.88,
-        }
-        base = base_multipliers.get(key, 1.0)
+        # 当前体制乘数 — [P2-2 2026-09-30 重构v2 苏摩111] SSOT收敛：统一入口 get_regime_mult_info()
+        # （v1直接读REGIME_DIRECTION_ADVICE表有语义错误：存活侧键不在表中会落到_FALLBACK_MULT=0.85
+        #  「未知体制」语义；正确入口是get_regime_mult_info：override新鲜值→建议表降权→neutral 1.0，
+        #  与 brahma_core.analyze 同源同值。接入位置：brahma_brain/regime_config.py）
+        try:
+            from regime_config import get_regime_mult_info
+            _rg, _dr = key.split(':', 1)
+            base, _src = get_regime_mult_info('', _rg, _dr)
+            base = float(base)
+        except Exception:
+            base = 1.0  # 保守降级：读不到 SSOT 就按中性乘数处理
         # WR>80%且avgPnl>2%: 可以提升乘数
         if wr >= 0.80 and avg_pnl >= 2.0:
             suggested = round(min(base * 1.1, 1.8), 2)

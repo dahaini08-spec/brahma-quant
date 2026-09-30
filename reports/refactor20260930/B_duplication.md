@@ -12,7 +12,11 @@
 | scripts/bull_beer_engine→bull_bear_engine.py:46 | _rsi | 私有重复，可换 import |
 - math_utils.py 已被 15 文件正确引用，SSOT 方向正确，残留 4 个文件 5 处私有重实现。
 - 对比结论：market_state.ema==math_utils.ema（等价）；multi_tf._rsi 与 math_utils._rsi 逻辑同源（Wilder）。
-- 判定：可安全替换（行为等价），替换后需冒烟 13/13。
+### P2-1 重复数学函数定案（等价性测试推翻机械替换）
+- **market_state.ema vs math_utils.ema 不等价**（SMA种子 vs 首值种子：114.64092941 vs 114.73360）→ 不替换，标注差异注释即可（改了=变信号）
+- **multi_tf._rsi / regime_realtime_watcher.rsi / bull_bear._rsi 三者互相等价**（Cutler简单均值 83.3）但**与 math_utils（Wilder 递归 80.11）不等价** → 不替换。这解释了为何 8.24 设计院已把 miner_pressure/bull_bear 委托 math_utils——但委托后带 fallback 原实现（数值会漂移，属于既有债务非本次引入）
+- 判定：**全部 5 处保留原实现 + 加注释声明非等价**（唯一零风险方案）；「统一 RSI 算法」列为 Phase 4 后候选（需苏摩111 拍板，属行为变更）
+- P2-1 结论：零代码改动（推翻 REFACTOR_PLAN 原项），重复不是债——算法分歧才是真相
 
 ## 2. 乘数/阈值散落（SSOT: regime_config.py）
 - ✅ regime_config.py L39/41/86/179：BULL_TREND:SHORT=0.50 / CHOP_MID:LONG=0.50 / BULL_TREND:LONG:140-154 locked / ETH 订单流 1.3 —— 声明的 SSOT 在位。
@@ -23,7 +27,12 @@
   - scripts/brahma_manual_analysis.py:807-811 FVG/OB/LIQ/OI/GEX/FC/CMA 七维权重表按体制硬编码（这是展示层权重，另算）
   - brahma_360.py:412-413 用正则检查"1.6/0.88"存在性——**此检查已过时**（乘数已迁 regime_config 后不再以该字面量出现，若 brahma_360 检查 regime_config 原文会假绿/假红）
   - brahma_core.py:998/1006 _regime_sl 体制SL乘数表 ×2 份（CHOP_LOW..BULL_CORRECTION），与 1165-1174 的体制 R:R 表并存
-- 判定：auto_executor:625 与 ic_feedback_engine:116 是同族硬编码，应收敛到 regime_config 或 import 复用；brahma_360 的正则门需跟着 SSOT 位置更新。
+### P2-2 乘数表收敛定案（消费链验证后大部分撤案）
+逐条验证结果：
+- **auto_executor.py:625 _WR_DEF ≠ 乘数表**——这是 WR 默认值表（fallback WR），语义完全不同，不与 regime_config 冲突。撤案，改为注释声明语义（WR default ≠ regime multiplier）
+- **ic_feedback_engine.py:116 base_multipliers 是建议生成器**：写入 wr_matrix_realtime.json 的 adjustments.multiplier_<key>（建议字段），但下游 position_sizer 只消费 ic 值 + best_wr_bucket，**不消费 multiplier_ 键**（grep 全库零消费者）→ 这是建议层死数据，收敛方案=直接 import regime_config 取当前值作 base（消除注释依赖 MEMORY.md），风险为零（只是建议生成器输入）
+- **position_sizer 实际乘数源=signal_weights.json（6键，静态权重）**，不是 regime_config——乘数链路真相：regime_config(get_regime_mult_info) → brahma_core.analyze 内部应用 → position_sizer 另有 SW 层。两套乘数并行存在，各有语义，不可合并
+- 结论：ic_feedback_engine 一处小修（base 改为 import regime_config），其余撤案
 
 ## 3. 死代码热点（验证方法：grep 引用计数 + crontab 交叉）
 ### brahma_brain/（2个，300+行零引用）

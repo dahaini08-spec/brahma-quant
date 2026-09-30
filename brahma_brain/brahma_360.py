@@ -408,12 +408,14 @@ def scan_d5_params() -> list:
             _p = _DIR / _d5f
             if _p.exists(): core += _p.read_text(errors='ignore')
 
+        # [P2-3 2026-09-30 重构 苏摩111] 乘数SSOT已迁 regime_config.py（get_regime_mult_info统一入口），
+        # brahma_core硬编码1.6/0.88已清除——原正则门会永久假红（报铁证参数异常）。
+        # 新门：断言 brahma_core 确实通过SSOT入口取乘数（存在性=绿）。
         iron_rules = [
-            ('BEAR_TREND SHORT乘数1.6x',  r"'BEAR_TREND'.*1\.6",   'ERROR'),
-            ('CHOP_MID SHORT乘数0.88x',   r"'CHOP_MID'.*0\.88",    'ERROR'),
             ('RSM体制防抖已接入',           'regime_switch_state|regime_timing_state',  'ERROR'),
             ('RANGE区间路由已接入',         'detect_range_structure', 'WARN'),
             ('PositionSizer已接入',        'position_sizer',         'WARN'),
+            ('体制乘数SSOT接线',            'get_regime_mult_info',    'ERROR'),
         ]
         for rule_name, pattern, level in iron_rules:
             found = bool(re.search(pattern, core))
