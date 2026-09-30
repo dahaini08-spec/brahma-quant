@@ -12,6 +12,7 @@
 # [9.23修复 苏摩111] 单实例锁：防止多个watchdog并存；防自杀锁：确保重启时能接管
 # 锁模式改为通配：同时匹配相对路径(bash scripts/...)与绝对路径启动的实例
 cd /root/.openclaw/workspace/trading-system
+BASE=/root/.openclaw/workspace/trading-system  # [P0-2附带 2026-09-30 苏摩111] death_sentinel调用引用$BASE但BASE未定义→日志落到/logs/
 STATE_FILE="data/watchdog_indep_state.json"
 FAIL_COUNT_FILE="data/watchdog_fail_count.json"
 

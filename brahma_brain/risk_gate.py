@@ -12,7 +12,15 @@ risk_gate.py — 梵天2.0 L2风控门（fail-closed纯函数）
   data/shadow_decisions.jsonl — 评估结果落盘(接线脚本写入)
 """
 from __future__ import annotations
+import json, time
+from pathlib import Path
 from typing import Optional
+
+# [P2-4 2026-09-29 苏摩111] R1扩展：SL避让清算集群
+# audit实锤：验证单SL 82065距50x清算价82142仅77点(0.09%)，扫进集群=瀑布接飞刀
+R1_LIQ_BUFFER_PCT = 0.5            # SL距最近同侧清算集群 ≥0.5%价格
+R1_LIQ_HEATMAP_MAX_AGE_H = 24      # heatmap超过24h视为stale，跳过检查（不误伤）
+_DATA_DIR = Path(__file__).parent.parent / 'data'
 
 # ---- 参数常量(设计书§2 L2) ----
 RULES = ('R1', 'R2', 'R3', 'R4', 'R5')
@@ -24,6 +32,69 @@ R3_BEAR_RECOVERY_NO_SHORT = True    # BEAR_RECOVERY仅多，严禁空
 R3_CHOP_WATCH_SCORE = 110.0         # CHOP_MID score≥110→WATCH(WARN)
 R5_DAILY_LOSS_PCT = -3.0            # 日亏≥3%NAV停机24h
 R5_HALT_SECONDS = 24 * 3600
+
+
+def _sl_liq_clearance_pct(symbol: str, side: str, sl_pct: float, price: float):
+    """[P2-4 2026-09-29 苏摩111] SL与最近同侧清算集群的距离（%）。
+    返回 (距离%, 集群价位)；无heatmap/数据stale/无同侧集群 → None（跳过检查）。
+    LONG只看价下方long_liq_map（多头清算在下方），SHORT只看价上方short_liq_map。
+    """
+    if not price or price <= 0:
+        return None
+    f = _DATA_DIR / f'liq_heatmap_{(symbol or "").lower()}.json'
+    try:
+        if not f.exists():
+            return None
+        age_h = (time.time() - f.stat().st_mtime) / 3600.0
+        if age_h > R1_LIQ_HEATMAP_MAX_AGE_H:
+            return None  # stale数据不拦截（数据可得性门，非fail-closed场景）
+        d = json.loads(f.read_text())
+    except Exception:
+        return None
+    key = 'long_liq_map' if side == 'LONG' else 'short_liq_map'
+    levels = []
+    for v in (d.get(key) or {}).values():
+        try:
+            lv = float(v)
+            if lv > 0:
+                levels.append(lv)
+        except (TypeError, ValueError):
+            pass
+    if side == 'LONG':
+        cands = [lv for lv in levels if lv < price]
+    else:
+        cands = [lv for lv in levels if lv > price]
+    if not cands:
+        return None
+    sl_price = price * (1 - sl_pct / 100) if side == 'LONG' else price * (1 + sl_pct / 100)
+    nearest = min(cands, key=lambda lv: abs(lv - sl_price))
+    return abs(sl_price - nearest) / price * 100.0, nearest
+
+
+def liq_aware_sl_pct(symbol: str, side: str, sl_pct: float, price: float, max_iter: int = 4):
+    """[P2-4 2026-09-29 苏摩111] SL自动外推避让清算集群（只放宽不收紧）。
+    返回外推后的sl_pct；无法达成0.5%缓冲 → None（调用方SKIP，fail-safe）。
+    无heatmap数据 → 原样返回sl_pct（行为不变）。
+    """
+    for _ in range(max_iter):
+        res = _sl_liq_clearance_pct(symbol, side, sl_pct, price)
+        if res is None:
+            return sl_pct
+        dist, nearest = res
+        if dist >= R1_LIQ_BUFFER_PCT - 1e-6:
+            return sl_pct
+        buf = R1_LIQ_BUFFER_PCT / 100.0 * price * 1.01  # 1%安全余量，防浮点边界闪烁
+        if side == 'LONG':
+            target = nearest - buf          # 外推到集群下方缓冲外（审计姿势：SL放到集群下方）
+            sl_pct = (price - target) / price * 100.0
+        else:
+            target = nearest + buf          # 外推到集群上方缓冲外
+            sl_pct = (target - price) / price * 100.0
+        # 过窄/过宽由调用方(executor RR门+0.8%下限)收口，此处不做主观拒单
+    res = _sl_liq_clearance_pct(symbol, side, sl_pct, price)
+    if res and res[0] >= R1_LIQ_BUFFER_PCT - 1e-6:
+        return sl_pct
+    return None
 
 # 体制→策略乘数(硬编码, MEMORY宪法表)
 REGIME_MULT = {
@@ -133,6 +204,19 @@ def evaluate(signal: dict, state: dict) -> dict:
     elif not atr1h:
         return {'ok': False, 'rule': 'R1', 'reason': 'MISSING_ATR', 'severity': 'BLOCK'}
 
+    # ---- R1-LQ SL避让清算集群 [P2-4 2026-09-29 苏摩111] ----
+    # audit实锤：验证单SL 82065距50x清算价82142仅77点(0.09%)，扫进集群=瀑布接飞刀
+    # 距离<0.5%且未经liq_aware_sl_pct外推 → WARN（不BLOCK：热力图缺失/stale不误伤）
+    # 注意：不early-return，先走完R2/R3/R4/R5实权门，无BLOCK才报WARN（R4重复建仓优先级更高）
+    _r1_liq_warn = None
+    if price > 0 and sl_pct > 0:
+        try:
+            _lq = _sl_liq_clearance_pct(symbol, side, sl_pct, price)
+            if _lq is not None and _lq[0] < R1_LIQ_BUFFER_PCT:
+                _r1_liq_warn = f'LiQ-WARN SL{sl_pct:.2f}%距清算簇{_lq[1]:.0f}仅{_lq[0]:.2f}%(<0.5%)建议外推'
+        except Exception:
+            pass  # 清算检查是增强层，异常不阻断主判定
+
     # ---- R3 体制禁令 ----
     if regime:
         if regime == 'BEAR_RECOVERY' and side == 'SHORT' and R3_BEAR_RECOVERY_NO_SHORT:
@@ -179,6 +263,9 @@ def evaluate(signal: dict, state: dict) -> dict:
         return {'ok': False, 'rule': 'R2', 'reason': f'仓位{nav_pct}%×{mult}>{R2_MAX_NAV_PCT}%NAV',
                 'severity': 'BLOCK'}
 
+    # 实权门全过 → 若有LiQ-WARN则透出WARN [P2-4]
+    if _r1_liq_warn:
+        return {'ok': True, 'rule': 'R1', 'severity': 'WARN', 'reason': _r1_liq_warn}
     return {'ok': True, 'rule': None, 'reason': f'PASS nav≤{cap:.1f}%NAV', 'severity': 'PASS'}
 
 

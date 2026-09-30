@@ -273,6 +273,33 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
         log(f'SKIP {sym} {side}: RR={rr:.2f} < 1.5 (B线盈亏比硬门槛，复盘铁证0.34病根)')
         return False
 
+    # [EV口径统一 2026-09-30 苏摩111] 9.28决策点2落地：EXECUTE判定用RR口径净EV（分数口径EV只做排序不做硬门）
+    # net_ev = WR×RR×SL距离 − (1−WR)×SL距离 − round_trip_cost
+    # WR来源：wr_matrix_live.json（SSOT=signals库带时间窗重算，E2裁决）；无记录→fallback 0.45保守值
+    try:
+        import json as _json
+        _wr_val = None
+        try:
+            _wrj = _json.load(open('/root/.openclaw/workspace/trading-system/data/wr_matrix_live.json'))
+            _m = _wrj.get('matrix', {})
+            _key = f'{regime}:{side}'
+            _v = _m.get(_key)
+            if isinstance(_v, dict):
+                _t, _w = int(_v.get('total', 0)), int(_v.get('win', 0))
+                _wr_val = (_w / _t) if _t >= 8 else None  # n>=8才信矩阵，小样本走fallback
+        except Exception:
+            pass
+        _wr = float(_wr_val) / 100 if _wr_val and float(_wr_val) > 1 else (float(_wr_val) if _wr_val else 0.45)
+        _trip_cost = 0.0014  # taker4bps×2 + slip3bps×2 = 14bps (paper_ledger口径)
+        _net_ev = _wr * rr * sl_pct - (1 - _wr) * sl_pct - _trip_cost * 100
+        if _net_ev <= 0:
+            log(f'SKIP {sym} {side}: RR口径净EV={_net_ev:+.2f}%≤0 (WR={_wr:.0%}, RR={rr:.2f}, SL={sl_pct}%, cost=0.14%)')
+            return False
+        log(f'EV门通过: net_ev={_net_ev:+.2f}% (WR={_wr:.0%}, RR={rr:.2f})')
+    except Exception as _ev_e:
+        log(f'[WARN] EV门计算失败，保守跳过: {_ev_e}')
+        return False
+
     # [B线铁律] SL距离≥1.5×ATR验证用paper SL距离下限0.8%笆底（过窄SL=噪音打损）
     if sl_pct < 0.8:
         log(f'SKIP {sym} {side}: sl_pct={sl_pct}% 过窄(<0.8%)，噪音打损风险')

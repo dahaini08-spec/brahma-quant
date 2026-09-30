@@ -72,7 +72,65 @@ _push_dedup = _load_dedup()  # 启动时从文件恢复
 
 
 def _run_brahma_analyze(symbol: str, direction: str, timeout: int = 65) -> dict:
-    """调用brahma_analyze并返回json结果"""
+    """调用brahma_analyze并返回json结果
+    [P1-⑤ 2026-09-30 苏摩111] in-process化：直接import brahma_analyze主逻辑，
+    消除65s×2进程级冷启动。环境变量 BRAHMA_TRADE_GATEWAY_SPAWN=1 可回退spawn旧路径（保留开关）。
+    """
+    sym = symbol.upper()
+    if not sym.endswith('USDT'):
+        sym += 'USDT'
+    # spawn开关（保留逃生门）
+    if os.environ.get('BRAHMA_TRADE_GATEWAY_SPAWN') == '1':
+        return _run_brahma_analyze_spawn(sym, direction, timeout)
+    # ── in-process路径 ──
+    try:
+        import io, contextlib
+        _bb_root = str(_DIR)
+        if _bb_root not in sys.path:
+            sys.path.insert(0, _bb_root)
+        from brahma_brain.brahma_analysis_runner import run_analysis as _run_analysis
+        _log_buf = io.StringIO()
+        with contextlib.redirect_stdout(_log_buf):
+            r = _run_analysis(sym, signal_dir=direction)
+        # 字段标准化（与brahma_analyze.py --json输出一致）
+        params   = r.get('params', {}) or {}
+        conf     = r.get('confluence', {}) or {}
+        def _sf(v, d=0.0):
+            try: return float(v)
+            except Exception: return d
+        out = {
+            'symbol':     r.get('symbol', sym),
+            'score':      round(_sf(r.get('score_final', conf.get('total', r.get('score', 0)))), 1),
+            'score_raw':  round(_sf(r.get('score_final_raw', r.get('score_final', 0))), 1),
+            'grade':      round(_sf(conf.get('structure_grade', conf.get('grade_num', r.get('grade', 0)))), 0),
+            'valid':      bool(r.get('valid_signal', params.get('valid', False))),
+            'regime':     r.get('regime', '?'),
+            'signal_dir': r.get('signal_dir', direction),
+            'action':     conf.get('action', ''),
+            'rr1':        round(_sf(params.get('rr1', 0)), 2),
+            'sl_pct':     round(_sf(params.get('sl_pct', 0)), 2),
+            'timing':     (r.get('timing_status') or r.get('extra', {}).get('timing_status', '') or conf.get('timing_status', '')),
+            'pos_pct':    round(_sf(r.get('pos_pct_sizer', 0)), 1),
+            'pos_level':  r.get('pos_level_sizer', ''),
+            'entry_lo':   round(_sf(params.get('entry_lo', r.get('entry_lo', 0))), 6),
+            'entry_hi':   round(_sf(params.get('entry_hi', r.get('entry_hi', 0))), 6),
+            'stop_loss':  round(_sf(params.get('stop_loss', r.get('stop_loss', 0))), 6),
+            'tp1':        round(_sf(params.get('tp1', r.get('tp1', 0))), 6),
+        }
+        # 统一字段别名（原spawn路径的setdefault语义）
+        out.setdefault('score_final', out['score'])
+        out.setdefault('valid_signal', out['valid'])
+        out.setdefault('confluence', {'structure_grade': out['grade'], 'total': out['score']})
+        out.setdefault('params', {'entry_lo': out['entry_lo'], 'entry_hi': out['entry_hi'],
+                                  'stop_loss': out['stop_loss'], 'tp1': out['tp1'], 'tp2': 0})
+        return out
+    except Exception as _ip_err:
+        print(f'[trade_gateway] in-process失败，降级spawn: {_ip_err}')
+        return _run_brahma_analyze_spawn(sym, direction, timeout)
+
+
+def _run_brahma_analyze_spawn(symbol: str, direction: str, timeout: int = 65) -> dict:
+    """spawn旧路径（保留开关回退用）"""
     sym = symbol.upper()
     if not sym.endswith('USDT'):
         sym += 'USDT'

@@ -14,7 +14,7 @@ websocket-client、pytest、lightgbm、libgomp.so.1全中过）。镜像内置�
 
 接入位置：start_supercronic.sh（每次启动调用）+ 独立cron兜底（每15min）
 """
-import importlib
+import importlib.util  # [P1-④ 2026-09-30 苏摩111] find_spec替代import_module：不执行模块代码，零CPU瞬时尖峰
 import subprocess
 import sys
 import os
@@ -35,9 +35,12 @@ LIBGOMP_SRC = None  # 由脚本探测
 
 
 def have(mod):
+    # [P1-④ 2026-09-30 苏摩111] find_spec只定位不执行：import_module会把mcp/tornado/lark等
+    # 整个模块树加载进进程（9.29审查实测42%/33% CPU瞬时+内存驻留）。纯存在性检查即可判断依赖在否。
     try:
-        importlib.import_module(mod)
-        return True
+        return importlib.util.find_spec(mod) is not None
+    except Exception:
+        return False
     except Exception:
         return False
 

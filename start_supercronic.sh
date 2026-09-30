@@ -4,6 +4,12 @@ CRONTAB=/root/.openclaw/workspace/trading-system/brahma_crontab.txt
 LOG=/root/.openclaw/workspace/trading-system/logs/supercronic.log
 PIDFILE=/tmp/brahma_supercronic.pid
 
+# ===== [P0-1 2026-09-30 苏摩111] flock单实例锁：彻底封杀双实例竞态 =====
+# 9.29审查实锤：start_supercronic.sh(PIDFILE) 与 brahma_autostart.sh(pgrep直启) 两路径同秒触发=双实例
+# flock是内核级锁，两条路径都走这里=天然互斥；autostart改为调用本脚本
+exec 9>/tmp/brahma_scron.lock
+flock -n 9 || { echo "[startup] supercronic already held (flock), exit"; exit 0; }
+
 mkdir -p "$(dirname $LOG)"
 
 # ===== 依赖恢复（/usr/local/lib 重启后被清空）=====

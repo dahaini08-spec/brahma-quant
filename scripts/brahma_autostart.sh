@@ -37,11 +37,9 @@ fi
 # ── 启动模式 ──
 echo "=== 梵天4进程自启 ==="
 
-# 1. supercronic
+# 1. supercronic — [P0-1 2026-09-30 苏摩111] 直启改调start_supercronic.sh（复用PIDFILE+flock锁+依赖恢复）
 if ! pgrep -f "supercronic.*brahma_crontab" > /dev/null; then
-    cd "$BASE"
-    nohup ./supercronic brahma_crontab.txt >> "$LOG/supercronic.log" 2>&1 &
-    echo "✅ supercronic PID=$!"
+    bash start_supercronic.sh
 else
     echo "✅ supercronic 已运行"
 fi

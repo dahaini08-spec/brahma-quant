@@ -232,7 +232,8 @@ def weighted_vote(signals: List[Dict], regime: str, rsi: Dict, liq_data: Dict, p
     has_liq_short = any(s['name'] == 'liq_hunt' and s['direction'] == 'SHORT' for s in signals)
     if has_regime_short and has_liq_short and direction == 'LONG':
         direction = 'SHORT'
-        action_level = 'AMBUSCADE'
+        # [9.28决策点3 2026-09-30 苏摩111] 弱证据降级：强制翻转后margin<25→WATCH不直接AMBUSCADE
+        action_level = 'AMBUSCADE' if margin >= 25 else 'AMBUSCADE_WATCH'
     
     # 修正5：RSI<20+支撑+Hurst>0.5→强制做多
     rsi_15m = rsi.get('rsi_15m', 50)
@@ -240,7 +241,8 @@ def weighted_vote(signals: List[Dict], regime: str, rsi: Dict, liq_data: Dict, p
     has_hurst_signal = any(s['name'] == 'hurst_rsi' and s['weight'] > 0 for s in signals)
     if rsi_15m < 20 and support_pool > 0 and abs(price - support_pool) / price < 0.03 and has_hurst_signal:
         direction = 'LONG'
-        action_level = 'AMBUSCADE'
+        # [9.28决策点3 2026-09-30 苏摩111] 弱证据降级：RSI触底是单因子证据，margin<25→WATCH
+        action_level = 'AMBUSCADE' if margin >= 25 else 'AMBUSCADE_WATCH'
     
     # 修正7：RSI<25+距支撑池<2%→禁止做空（超卖区不追空）
     if direction == 'SHORT' and rsi_15m < 25 and support_pool > 0:
