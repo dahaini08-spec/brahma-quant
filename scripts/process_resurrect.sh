@@ -36,3 +36,19 @@ if ! pgrep -f "bash.*independent_watchdog\.sh" > /dev/null; then
     setsid bash scripts/independent_watchdog.sh >> logs/watchdog.log 2>&1 < /dev/null &
     sleep 1
 fi
+
+# 5. auto_analysis新鲜度兜底 [2026-09-30 苏摩111]
+# 根因：gateway重启风暴吃掉14:15班（supercronic死窗口内cron全灭）→ 数据断供到下一偶数小时班
+# 本兑底由openclaw bridge每5min调用，supercronic死了也能自愈（破鸡生蛋死锁）
+# 单飞：pgrep在跑不重跑 + flock锁防并发；仅当latest超过150min才补跑（正常班2h+30min余量）
+LATEST="data/auto_analysis_latest.json"
+if [ -f "$LATEST" ]; then
+    AGE_MIN=$(( ( $(date +%s) - $(stat -c %Y "$LATEST") ) / 60 ))
+    if [ "$AGE_MIN" -gt 150 ] && ! pgrep -f "battlefield_auto_analysis" > /dev/null; then
+        echo "[$(date -u '+%H:%M')] auto_analysis断供(${AGE_MIN}min) → 兑底补跑(setsid)"
+        setsid bash -c 'flock -n /tmp/brahma_auto_analysis.lock timeout 900 python3 scripts/battlefield_auto_analysis.py >> logs/auto_analysis.log 2>&1' < /dev/null &
+    fi
+else
+    echo "[$(date -u '+%H:%M')] auto_analysis_latest.json缺失 → 兑底补跑(setsid)"
+    setsid bash -c 'flock -n /tmp/brahma_auto_analysis.lock timeout 900 python3 scripts/battlefield_auto_analysis.py >> logs/auto_analysis.log 2>&1' < /dev/null &
+fi
