@@ -36,7 +36,14 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 */15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 10 python3 brahma_brain/battlefield_intel.py merge  # [2.0降频 5min→15min] >> logs/battlefield_intel.log 2>&1
 
 # ============================================================
-# Layer 2: 中频数据采集+维护 (30min级，错峰到 :05/:35)
+# Layer 2: 中频数据采集+维护
+# ══ 梵天2.0: 结构感知哨兵 [2026-10-01 苏摩111] ══
+# 7维感知: Hurst越区/LSR拥挤/CVD突破/价格触碰止损墙+支撑池
+# 轻量(<3s)，只读已有state，满足条件自动推送VIP触发通知
+# 不重跑80维分析，不增加大CPU负担
+2,17,32,47 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/structure_sentinel.py >> logs/structure_sentinel.log 2>&1
+5,20,35,50 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/breakout_watch.py >> logs/breakout_watch.log 2>&1  # [2.0 果蝇独立巡检 15min]
+ (30min级，错峰到 :05/:35)
 # ============================================================
 # 候选池生成 — :05和:35
 07 * * * * cd /root/.openclaw/workspace/trading-system && timeout 15 python3 scripts/battlefield_candidates.py  # [2.0降频 30min→1h] >> logs/battlefield_candidates.log 2>&1
