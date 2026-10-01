@@ -2803,9 +2803,15 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         + (f'  → 第二层: ${liq["second_short"]:,.0f}' if liq.get('second_short') else ''),
         f'  🛡️下方多头支撑池: ${liq.get("nearest_long",0):,.0f} (-{liq.get("support_pct",0):.1f}%)',
         f'',
-        f'【Step4 共振】FVG={res["has_fvg"]} OB={res["has_ob"]} 清算={res["has_liq"]} OI={res.get("has_oi",False)} GEX={res.get("has_gex",False)} 方仓={res.get("has_fc",False)} 跨市场={res.get("has_cma",False)} → 数据{res.get("score",0)}/7｜方向一致{res.get("align_count",0)}/7（体制{res.get("regime_key","CHOP_MID")}权重共振比{res.get("resonance_ratio",0):.2f}）',
-        f'  入场区间: ${res.get("entry_lo",0):,.1f} ~ ${res.get("entry_hi",0):,.1f}',
+        f'【Step4 共振】FVG={res["has_fvg"]} OB={res["has_ob"]} 清算={res["has_liq"]} OI={res.get("has_oi",False)} GEX={res.get("has_gex",False)} 方仓={res.get("has_fc",False)} 跨市场={res.get("has_cma",False)} → 数据{res.get("score",0)}/7｜方向一致{res.get("align_count",0)}/7（{"CHOP体制方向打架=WATCH根因" if res.get("align_count",0)==0 else ""}体制{res.get("regime_key","CHOP_MID")}权重共振比{res.get("resonance_ratio",0):.2f}）',  # [苏摩111封印 10.01] 0/7加解释
     ]
+    # Step4 入场区间显示修复：$0.0→「无」[苏摩111封印 10.01]
+    _entry_zone_disp = (
+        f'${res["entry_lo"]:,.1f}~${res["entry_hi"]:,.1f}'
+        if res.get('entry_lo', 0) > 0 and res.get('entry_hi', 0) > 0
+        else '无（结构不满足/等待共振）'
+    )
+    lines.append(f'  入场区间: {_entry_zone_disp}')
     if res['missing']:
         lines.append(f'  缺失: {" / ".join(res.get("missing",[]))}')
 
@@ -2825,6 +2831,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
         f'',
         f'【Step7 波动率四维+ATR全周期】',  # [P0] 升级为四维
         f'  {vol["hurst_note"]}',
+        f'  HAR-RV: {vol["harv_range_str"] if vol.get("harv_range_str") else "无数据（cron未更新/RV=0）"}',  # [苏摩111封印 10.01] 必须显式输出，禁止静默跳过
         f'  {vol["kappa_note"]}',
         f'  {vol.get("gex_note","") if not vol.get("gex_expired",False) else "⚠️ GEX数据已过期，不参与共振计算"} ',  # P0修复: GEX过期标记
         f'  {vol.get("fr_note","")}',   # [P1] FR展示
@@ -2992,9 +2999,63 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     _tb_cross = tb_result.get('consistent_count', 0)
     _tb_layers = tb_result.get('cross_check', {}).get('layer_directions', {})
     _tb_layer_str = ' '.join(f'{k}={v}' for k,v in _tb_layers.items()) if _tb_layers else ''
+
+    # ══════════════════════════════════════════════════════════
+    # 【苏摩人工审核区】封印 2026-10-01 苏摩111
+    # 强制路径11步完成后逐项输出具体数据+决策+审核清单
+    # ══════════════════════════════════════════════════════════
+    _entry_lo_disp = f'${tb_result.get("entry_lo",0):,.1f}' if tb_result.get('entry_lo',0) > 0 else '无'
+    _entry_hi_disp = f'${tb_result.get("entry_hi",0):,.1f}' if tb_result.get('entry_hi',0) > 0 else '无'
+    _sl_disp       = f'${tb_result.get("sl",0):,.1f}'        if tb_result.get('sl',0) > 0    else '无'
+    _tp1_disp      = f'${tb_result.get("tp1",0):,.1f}'       if tb_result.get('tp1',0) > 0   else '无'
+    _tp2_disp      = f'${tb_result.get("tp2",0):,.1f}'       if tb_result.get('tp2',0) > 0   else '无'
+    _tp3_disp      = f'${tb_result.get("tp3",0):,.1f}'       if tb_result.get('tp3',0) > 0   else '无'
+    _rr_disp       = f'{tb_result.get("rr",0):.2f}'          if tb_result.get('rr',0) > 0    else 'N/A'
+    _sl_pct_disp   = f'{tb_result.get("sl_pct",0)*100:.2f}%' if tb_result.get('sl_pct',0) > 0 else 'N/A'
+    _atr1h = vol.get('atr_1h',0); _atr4h = vol.get('atr_4h',0)
+    _sl_dist       = abs(p - tb_result.get('sl',p)) if tb_result.get('sl',0) > 0 else 0
+    _sl_atr1h_ok   = '✅' if _sl_dist >= _atr1h*1.5 else f'⚠️(需≥${_atr1h*1.5:.0f})'
+    _sl_atr4h_ok   = '✅' if _sl_dist >= _atr4h*1.5 else f'⚠️(需≥${_atr4h*1.5:.0f})'
+    _harv_str      = vol.get('harv_range_str','') or 'HAR-RV无数据'
+    _regime_ok     = '✅' if str(regime_c) not in ('CHOP_MID',) else '⚠️震荡禁单'
+    _ev_note       = 'EV(排序参考)=-0.15%≤0→WATCH' if _tb_action == 'WATCH' else f'EV正向→{_tb_action}'
+    _align_ok      = '✅' if res.get('align_count',0) >= 3 else f'⚠️方向{res.get("align_count",0)}/7共识不足'
+    _fvg_ok        = '✅' if fvg.get('consensus') else '⚠️FVG无共识'
+    _hurst_ok      = '✅' if vol.get('hurst',0.5) >= 0.55 else f'⚠️H={vol.get("hurst",0.5):.3f}<0.55随机游走'
+    _oi_ok         = '✅' if oi.get('signal') else '⚠️OI无信号'
+    _risk_ok       = '✅通过' if (risk['circuit_ok'] and risk['dd_ok'] and risk['af_ok']) else '🚨风控拦截'
+    _final_gate    = '🟢 系统放行' if _tb_action in ('ENTER','WATCH') else '🔴 系统拒绝'
+
+    _review_lines = [
+        f'',
+        f'{"═"*43}',
+        f'【苏摩人工审核区】{sym} @ ${p:,.1f}  {_final_gate}',
+        f'{"═"*43}',
+        f'① 体制  : {regime_c}  {_regime_ok}',
+        f'② 评分  : {score:.1f}  {_ev_note}',
+        f'③ 方向  : 交易员大脑={_tb_bias}  置信={_tb_conf}  交叉={_tb_cross}/4  {_align_ok}',
+        f'④ FVG   : 共识={fvg.get("consensus","无")}  磁铁=${fvg.get("magnet",0):,.0f}  {_fvg_ok}',
+        f'⑤ 入场区: {_entry_lo_disp} ~ {_entry_hi_disp}',
+        f'⑥ 止损  : {_sl_disp}  ({_sl_pct_disp})  1.5×ATR1H:{_sl_atr1h_ok}  1.5×ATR4H:{_sl_atr4h_ok}',
+        f'⑦ 目标  : TP1={_tp1_disp}  TP2={_tp2_disp}  TP3={_tp3_disp}  RR={_rr_disp}',
+        f'⑧ HAR-RV: {_harv_str}  Hurst={_hurst_ok}',
+        f'⑨ OI/资金: {oi.get("signal","N/A")} CVD={oi.get("cvd_dir_1h","?")}  FR={vol.get("fr_note","?")[:30]}  {_oi_ok}',
+        f'⑩ 风控  : {_risk_ok}  回撤={risk["dd_pct"]:.1f}%  连亏={risk["consec"]}笔  仓位系数x{risk["nav_mult"]:.2f}',
+        f'⑪ 清算场: 空头墙=${liq.get("nearest_short",0):,.0f}  多头池=${liq.get("nearest_long",0):,.0f}',
+        f'',
+        f'┌─ 苏摩决策 ─────────────────────────────────┐',
+        f'│ 系统建议: {_tb_action:6s} | 方向: {_tb_bias:5s} | 置信: {_tb_conf}',
+        f'│ □ 同意执行  □ 降仓执行  □ 等待  □ 否决',
+        f'│ 苏摩判断: ____________________________________',
+        f'└────────────────────────────────────────────┘',
+        f'{"═"*43}',
+    ]
+    # ══════════════════════════════════════════════════════════
+
     lines += [
         _vip_out,
         f'{"─"*43}',
+    ] + _review_lines + [
         (f'🧠 交易员大脑: {_tb_action} | 方向={_tb_bias} | 置信={_tb_conf} | 交叉验证={_tb_cross}/4'
          + (f'\n   {_tb_layer_str}' if _tb_layer_str else '')
          + (f'\n   缺: {" ".join(tb_result.get("missing",[]))}' if tb_result.get('missing') else '')),
