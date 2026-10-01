@@ -82,6 +82,22 @@ except Exception:
 # _ensure_deps() 已移除，不需要运行时依赖检查
 from pathlib import Path
 from datetime import datetime, timezone
+import sys as _sys_ae; _sys_ae.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+try:
+    from safe_io import locked_jsonl_append as _sjsonl_append, locked_json_write as _sjson_write, locked_json_update as _sjson_update
+except ImportError:
+    import json as _j_fb, os as _os_fb, tempfile as _tf_fb
+    def _sjsonl_append(path, entry):
+        with open(path, 'a', encoding='utf-8') as _f: _f.write(_j_fb.dumps(entry, ensure_ascii=False) + '\n')
+    def _sjson_write(path, data):
+        _p = __import__('pathlib').Path(path); _p.parent.mkdir(parents=True, exist_ok=True)
+        _fd, _tp = _tf_fb.mkstemp(dir=_p.parent); _os_fb.close(_fd)
+        with open(_tp, 'w', encoding='utf-8') as _f: _f.write(_j_fb.dumps(data, ensure_ascii=False, indent=2))
+        _os_fb.replace(_tp, _p)
+    def _sjson_update(path, fn, default=None):
+        _p = __import__('pathlib').Path(path)
+        _d = _j_fb.loads(_p.read_text()) if _p.exists() else default
+        _sjson_write(path, fn(_d))
 try:
     from config import fmt_beijing
 except ImportError:
@@ -254,8 +270,7 @@ def _save_executed(executed: set):
 
 def _log(entry: dict):
     LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(LOG_PATH, 'a') as f:
-        f.write(json.dumps(entry, ensure_ascii=False) + '\n')
+    _sjsonl_append(LOG_PATH, entry)  # [2.0 safe_io flock 2026-10-01]
 
 
 def _push(msg: str):
@@ -1019,8 +1034,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
                     'mode': 'enforce', 'source': 'auto_executor',
                     'signal_id': signal.get('signal_id', ''), 'symbol': sym, 'side': _dir,
                     'regime': _sig['regime'], 'score': _sig['score'], 'risk_gate': _verdict}
-            with open(Path(__file__).parent.parent / 'data' / 'shadow_decisions.jsonl', 'a') as _f:
-                _f.write(json.dumps(_rec, ensure_ascii=False) + '\n')
+            _sjsonl_append(Path(__file__).parent.parent / 'data' / 'shadow_decisions.jsonl', _rec)  # [2.0 flock]
             # enforce模式：BLOCK=拒绝执行（L2实权）
             if isinstance(_verdict, dict) and not _verdict.get('ok'):
                 print(f'🛡️ [risk_gate:2.0] {sym} {_dir} 被梵天2.0风控拦截: {_verdict.get("rule")}/{_verdict.get("reason")}')
@@ -1057,11 +1071,11 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
                 'leverage': float(signal.get('leverage', 5) or 5),
                 'nav_pct': float(signal.get('nav_pct', 0) or 0),
                 'atr1h': signal.get('atr1h')}, {'open_positions': [], 'now_ts': time.time()})
-            with open(Path(__file__).parent.parent / 'data' / 'shadow_decisions.jsonl', 'a') as _f:
-                _f.write(json.dumps({'ts': round(time.time(), 3), 'ts_iso': datetime.now(timezone.utc).isoformat(),
+            _sjsonl_append(Path(__file__).parent.parent / 'data' / 'shadow_decisions.jsonl',
+                {'ts': round(time.time(), 3), 'ts_iso': datetime.now(timezone.utc).isoformat(),
                     'mode': 'shadow', 'source': 'auto_executor', 'signal_id': signal.get('signal_id',''),
                     'symbol': sym, 'side': _dir, 'regime': signal.get('regime',''),
-                    'score': float(signal.get('score', 0)), 'risk_gate': _verdict}, ensure_ascii=False) + '\n')
+                    'score': float(signal.get('score', 0)), 'risk_gate': _verdict})  # [2.0 flock]
         except Exception:
             pass
     # ── end 2.0转正评估 ─────────────────────────────────────────────
@@ -1757,7 +1771,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
         'order_id':    order_id,
         'updated_at':  time.time(),
     }
-    POS_STATE_PATH.write_text(json.dumps(sl_state, indent=2, ensure_ascii=False))
+    _sjson_write(POS_STATE_PATH, sl_state)  # [2.0 safe_io atomic rename 2026-10-01]
 
     # wuqu_positions 更新 [B1修复 2026-07-24: 统一为LIST格式，与sub_executor/APM保持一致]
     wuqu_list = []
@@ -1788,23 +1802,28 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
     })
     WUQU_PATH.write_text(json.dumps(wuqu_list, indent=2, ensure_ascii=False))
 
-    # 更新信号日志中的状态
+    # 更新信号日志中的状态 [2.0 safe_io flock 2026-10-01]
     try:
-        lines = open(SIGNAL_LOG_PATH).readlines()
+        _sq_path = SIGNAL_LOG_PATH
+        _sq_entries = []
+        if _sq_path.exists():
+            for line in _sq_path.read_text().splitlines():
+                try: _sq_entries.append(json.loads(line.strip()))
+                except Exception: pass
         new_lines = []
-        for line in lines:
-            try:
-                s = json.loads(line.strip())
-                if s.get('signal_id') == sig_id:
-                    s['executed']     = True
-                    s['order_id']     = order_id
-                    s['fill_price']   = fill_px
-                    s['fill_qty']     = fill_qty
-                    s['executed_at']  = datetime.now(timezone.utc).isoformat()
-                    line = json.dumps(s, ensure_ascii=False) + '\n'
-            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-            new_lines.append(line)
-        open(SIGNAL_LOG_PATH, 'w').writelines(new_lines)
+        for s in _sq_entries:
+            if s.get('signal_id') == sig_id:
+                s['executed']     = True
+                s['order_id']     = order_id
+                s['fill_price']   = fill_px
+                s['fill_qty']     = fill_qty
+                s['executed_at']  = datetime.now(timezone.utc).isoformat()
+            new_lines.append(json.dumps(s, ensure_ascii=False) + '\n')
+        import fcntl as _fcntl
+        with open(_sq_path, 'w', encoding='utf-8') as _slw:
+            _fcntl.flock(_slw.fileno(), _fcntl.LOCK_EX)
+            try: _slw.writelines(new_lines)
+            finally: _fcntl.flock(_slw.fileno(), _fcntl.LOCK_UN)
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── CubeSandbox对标: 开单后合法性验证 + 异常自动回滚 (v5.5 最小改动) ─────
     # 设计院2026-07-10: 对标CubeSandbox快照回滚机制
@@ -2097,27 +2116,22 @@ def _run_locked(dry_run: bool = False) -> list[dict]:
         # 修复：直接写入auto_signal_queue.json，paper_executor每40min消费
         try:
             _sq_path = BASE / 'data' / 'auto_signal_queue.json'
-            _sq_existing = []
-            if _sq_path.exists():
-                try: _sq_existing = json.loads(_sq_path.read_text())
-                except Exception: _sq_existing = []
-            if not isinstance(_sq_existing, list): _sq_existing = []
-            # 防重复：同signal_id不入队
-            _sq_ids = {s.get('signal_id','') for s in _sq_existing}
-            if sig_id not in _sq_ids:
-                _sq_entry = {**sig, 'signal_id': sig_id, 'queued_at': __import__('datetime').datetime.utcnow().isoformat()+'Z'}
-                _sq_existing.append(_sq_entry)
-                _sq_path.write_text(json.dumps(_sq_existing, indent=2, ensure_ascii=False))
-                print(f'  [paper_queue] {sym} {direct} score={score:.0f} → 写入auto_signal_queue')
-                # [2026-09-07 苏摩111 三方合并] 同时写入 signal_queue.jsonl 供 paper_engine.py 消费
-                try:
-                    _sq2_path = BASE / 'data' / 'signal_queue.jsonl'
-                    _sq2_entry = {**_sq_entry, 'ts': __import__('time').time(), 'source': 'auto_executor'}
-                    with open(_sq2_path, 'a') as _sq2_f:
-                        _sq2_f.write(__import__('json').dumps(_sq2_entry) + '\n')
-                    print(f'  [paper_queue] {sym} 同步写入signal_queue.jsonl')
-                except Exception as _sq2_e:
-                    print(f'  [paper_queue] signal_queue.jsonl写入失败: {_sq2_e}')
+            def _sq_updater(existing):
+                if not isinstance(existing, list): existing = []
+                _sq_ids = {s.get('signal_id','') for s in existing}
+                if sig_id not in _sq_ids:
+                    _sq_entry = {**sig, 'signal_id': sig_id, 'queued_at': __import__('datetime').datetime.utcnow().isoformat()+'Z'}
+                    existing.append(_sq_entry)
+                    print(f'  [paper_queue] {sym} {direct} score={score:.0f} → 写入auto_signal_queue')
+                    # 同时写入signal_queue.jsonl
+                    try:
+                        _sq2_entry = {**_sq_entry, 'ts': __import__('time').time(), 'source': 'auto_executor'}
+                        _sjsonl_append(BASE / 'data' / 'signal_queue.jsonl', _sq2_entry)  # [2.0 flock]
+                        print(f'  [paper_queue] {sym} 同步写入signal_queue.jsonl')
+                    except Exception as _sq2_e:
+                        print(f'  [paper_queue] signal_queue.jsonl写入失败: {_sq2_e}')
+                return existing
+            _sjson_update(_sq_path, _sq_updater, default=[])  # [2.0 atomic flock]
             # 同时推送Jarvis通知（不阻塞执行）
             try:
                 from push_hub import _jarvis as _phj_paper

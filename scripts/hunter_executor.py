@@ -12,6 +12,20 @@ from datetime import datetime, timezone
 
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE/'scripts'))
+sys.path.insert(0, str(BASE/'brahma_brain'))  # [2.0 safe_io]
+try:
+    from safe_io import locked_json_update as _sjson_update, locked_jsonl_append as _sjsonl_append, locked_json_write as _sjson_write
+except ImportError:
+    import os as _os_fb, tempfile as _tf_fb
+    def _sjson_write(path, data):
+        _p = Path(path); _fd, _tp = _tf_fb.mkstemp(dir=_p.parent); _os_fb.close(_fd)
+        with open(_tp, 'w') as _f: _f.write(json.dumps(data, ensure_ascii=False, indent=2))
+        _os_fb.replace(_tp, _p)
+    def _sjson_update(path, fn, default=None):
+        _p = Path(path); _d = json.loads(_p.read_text()) if _p.exists() else default
+        _sjson_write(path, fn(_d))
+    def _sjsonl_append(path, entry):
+        with open(path,'a') as _f: _f.write(json.dumps(entry, ensure_ascii=False)+'\n')
 import binance_fapi as bf
 
 STATE_FILE = BASE / 'data' / 'adaptive_order_state.json'
@@ -25,37 +39,29 @@ def _register_soft_sl(symbol: str, direction: str, qty: float,
     """
     import os
     sl_file = BASE / 'data' / 'position_sl_state.json'
-    try:
-        state = json.loads(sl_file.read_text()) if sl_file.exists() else {}
-    except Exception:
-        state = {}
-    state[symbol] = {
-        'symbol':         symbol,
-        'side':           direction,          # LONG / SHORT
-        'qty':            abs(qty),
-        'entry':          entry,
-        'sl_price':       sl,
-        'tp_price':       tp,
-        'registered_at':  datetime.now(timezone.utc).isoformat(),
-        'source':         'hunter_executor',
-    }
-    tmp = str(sl_file) + '.tmp'
-    with open(tmp, 'w') as f:
-        json.dump(state, f, indent=2, ensure_ascii=False)
-    os.replace(tmp, str(sl_file))
+    def _sl_updater(state):
+        if not isinstance(state, dict): state = {}
+        state[symbol] = {
+            'symbol':         symbol,
+            'side':           direction,
+            'qty':            abs(qty),
+            'entry':          entry,
+            'sl_price':       sl,
+            'tp_price':       tp,
+            'registered_at':  datetime.now(timezone.utc).isoformat(),
+            'source':         'hunter_executor',
+        }
+        return state
+    _sjson_update(sl_file, _sl_updater, default={})  # [2.0 atomic flock]
     pass  # [静默]
 
 
 def _save_state(state: dict):
-    import os
-    tmp = str(STATE_FILE)+'.tmp'
-    with open(tmp,'w') as f: json.dump(state, f, ensure_ascii=False, indent=2)
-    os.replace(tmp, str(STATE_FILE))
+    _sjson_write(STATE_FILE, state)  # [2.0 atomic rename]
 
 def _log(entry: dict):
     entry['ts'] = datetime.now(timezone.utc).isoformat()
-    with open(EXEC_LOG,'a') as f:
-        f.write(json.dumps(entry, ensure_ascii=False)+'\n')
+    _sjsonl_append(EXEC_LOG, entry)  # [2.0 flock]
 
 def execute_open(signal: dict, sizing: dict, dry_run: bool = True) -> dict:
     """

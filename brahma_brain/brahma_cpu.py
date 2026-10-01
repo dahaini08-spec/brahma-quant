@@ -34,6 +34,22 @@ import logging
 from datetime import datetime, timezone
 from pathlib import Path
 
+# [2.0 safe_io 封印 2026-10-01]
+try:
+    from safe_io import locked_json_write as _sjson_write, locked_json_update as _sjson_update, locked_jsonl_append as _sjsonl_append
+except ImportError:
+    import os as _os_fb, tempfile as _tf_fb
+    def _sjson_write(path, data):
+        _p = Path(path); _p.parent.mkdir(parents=True, exist_ok=True)
+        _fd, _tp = _tf_fb.mkstemp(dir=_p.parent); _os_fb.close(_fd)
+        with open(_tp, 'w') as _f: _f.write(json.dumps(data, ensure_ascii=False, indent=2))
+        _os_fb.replace(_tp, str(_p))
+    def _sjson_update(path, fn, default=None):
+        _p = Path(path); _d = json.loads(_p.read_text()) if _p.exists() else default
+        _sjson_write(path, fn(_d))
+    def _sjsonl_append(path, entry):
+        with open(path, 'a') as _f: _f.write(json.dumps(entry, ensure_ascii=False) + '\n')
+
 # ── 路径 ──────────────────────────────────────────────────────────────
 _BASE   = Path(__file__).parent
 _ROOT   = _BASE.parent
@@ -259,7 +275,7 @@ def _do_execute(symbol: str, signal_dir: str, score_result: dict, council: dict)
             'cpu_decision': 'EXECUTE',
         }
         trigger_file = _DATA / 'cpu_execute_trigger.json'
-        trigger_file.write_text(json.dumps(trigger, ensure_ascii=False))
+        _sjson_write(trigger_file, trigger)  # [2.0 atomic]
 
         # 直接调用auto_executor
         import subprocess
@@ -329,7 +345,7 @@ def _do_watch(symbol: str, signal_dir: str, score_result: dict) -> None:
             'ts_iso':     datetime.now(timezone.utc).isoformat(),
             'expires_at': time.time() + 4 * 3600,  # 4小时过期
         }
-        _WATCH_FILE.write_text(json.dumps(watch, ensure_ascii=False, indent=2))
+        _sjson_write(_WATCH_FILE, watch)  # [2.0 atomic]
         
         # [9.21 苏摩111] 写入auto_signal_queue供paper_executor开纸面单
         _queue_path = _DATA / 'auto_signal_queue.json'
@@ -357,10 +373,12 @@ def _do_watch(symbol: str, signal_dir: str, score_result: dict) -> None:
             'signal_id':    f'{symbol}_{signal_dir or "LONG"}_{int(time.time())}',
             'ts':           time.time(),
         }
-        # 去重：同symbol+direction的旧信号移除
-        queue = [q for q in queue if not (q.get('symbol') == symbol and q.get('direction') == _signal['direction'])]
-        queue.append(_signal)
-        _queue_path.write_text(json.dumps(queue, ensure_ascii=False, indent=2))
+        def _q_updater(queue):
+            if not isinstance(queue, list): queue = []
+            queue = [q for q in queue if not (q.get('symbol') == symbol and q.get('direction') == _signal['direction'])]
+            queue.append(_signal)
+            return queue
+        _sjson_update(_queue_path, _q_updater, default=[])  # [2.0 atomic flock]
         print(f'[CPU·WATCH] {symbol} {signal_dir} score={_signal["score"]:.1f} → auto_signal_queue')
     except Exception as e:
         _log.warning(f'[CPU·WATCH] 写入失败: {e}')
@@ -437,7 +455,7 @@ def _update_l0_state(symbol: str, decision: str, score: float,
                 'regime': score_result.get('regime', 'UNKNOWN'),
                 'score': score_result.get('score', 0),
             }
-        _L0_STATE.write_text(json.dumps(state, ensure_ascii=False, indent=2))
+        _sjson_write(_L0_STATE, state)  # [2.0 atomic]
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 
 def _load_l2_lessons() -> dict:

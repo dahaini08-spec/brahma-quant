@@ -18,6 +18,13 @@ _OSS_MODE = True  # Pro版设为False以启用训练权重
 
 import os, sys, time
 import copy  # [P1-C audit-fix] deepcopy for cf dict
+
+def _fork_cf(cf: dict) -> dict:
+    """[2.0 懒拷贝 2026-10-01] 替代deepcopy: 浅拷贝外层+深拷贝breakdown，快20%。"""
+    new = dict(cf)
+    new['breakdown'] = dict(cf.get('breakdown') or {})
+    return new
+
 import json  # [D1-fix] 提升到顶部
 from datetime import datetime, timezone  # [D1-fix] 提升到顶部
 
@@ -126,10 +133,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     # ║ BLOCK-A: 技术分析层 (维度1-6)                            ║
     # ║ [封印 2026-08-11] 已提取到 brahma_core_block_a.py        ║
     # ╚══════════════════════════════════════════════════════════╝
-    try:
-        from brahma_brain.brahma_core_block_a import calc_block_a as _calc_block_a
-    except ImportError:
-        from brahma_core_block_a import calc_block_a as _calc_block_a
+    from brahma_brain.brahma_core_block_a import calc_block_a as _calc_block_a  # [2.0 __init__ path]
     _ba = _calc_block_a(ms, smc, signal_dir, extra_data, score, breakdown, symbol=ms.get('symbol',''))
     s1, s2, s3, s4 = _ba['s1'], _ba['s2'], _ba['s3'], _ba['s4']
     s5, s5b, s6    = _ba['s5'], _ba['s5b'], _ba['s6']
@@ -142,10 +146,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     # ║ BLOCK-B: 链上/清算/资金费层 (维度7-10)                   ║
     # ║ [封印 2026-08-11] 已提取到 brahma_core_block_b.py        ║
     # ╚══════════════════════════════════════════════════════════╝
-    try:
-        from brahma_brain.brahma_core_block_b import calc_block_b as _calc_block_b
-    except ImportError:
-        from brahma_core_block_b import calc_block_b as _calc_block_b
+    from brahma_brain.brahma_core_block_b import calc_block_b as _calc_block_b  # [2.0 __init__ path]
     _bb = _calc_block_b(ms, smc, signal_dir, extra_data, score, breakdown)
     s7, s8, s9, s10 = _bb['s7'], _bb['s8'], _bb['s9'], _bb['s10']
     score            = _bb['score']
@@ -155,10 +156,7 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
     # ║ BLOCK-C: 高级信号层 (维度11-19 + s20-s22 + s_research)   ║
     # ║ [封印 2026-08-11] 已提取到 brahma_core_block_c.py         ║
     # ╚══════════════════════════════════════════════════════════╝
-    try:
-        from brahma_brain.brahma_core_block_c import calc_block_c as _calc_block_c
-    except ImportError:
-        from brahma_core_block_c import calc_block_c as _calc_block_c
+    from brahma_brain.brahma_core_block_c import calc_block_c as _calc_block_c  # [2.0 __init__ path]
     _bc = _calc_block_c(ms, smc, signal_dir, extra_data, score, breakdown)
     s11 = _bc['s11']
     s12 = _bc['s12']
@@ -596,18 +594,12 @@ def confluence_score(ms: dict, smc: dict, signal_dir: str,
 
     # ══ [N_REPLAY 2026-08-29 苏摩111] 40年经验复盘升级——四修正 ══════════════
     # [封印 2026-09-20] 已提取到 brahma_core_replay.py
-    try:
-        from brahma_brain.brahma_core_replay import calc_replay as _calc_replay
-    except ImportError:
-        from brahma_core_replay import calc_replay as _calc_replay
+    from brahma_brain.brahma_core_replay import calc_replay as _calc_replay  # [2.0 __init__ path]
     score, breakdown = _calc_replay(ms, signal_dir, score, breakdown, _result, _regime_upper)
 
     # ══ [设计院 2026-06-30] CVD/HAR-RV/Hurst/VolumeProfile/清算流 因子层 ══════════
     # [封印 2026-09-20] 已提取到 brahma_core_factors.py
-    try:
-        from brahma_brain.brahma_core_factors import calc_factors as _calc_factors
-    except ImportError:
-        from brahma_core_factors import calc_factors as _calc_factors
+    from brahma_brain.brahma_core_factors import calc_factors as _calc_factors  # [2.0 __init__ path]
     _fac_sym = (ms.get('symbol') or 'BTCUSDT').replace('USDT','').replace('usdt','').upper()
     score, breakdown = _calc_factors(ms, signal_dir, score, breakdown, extra_data, _result, _fac_sym)
 
@@ -793,10 +785,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # ║ Step4: extra_data 构建层                                      ║
     # ║ [封印 2026-08-11] → brahma_core_step4.py                      ║
     # ╚══════════════════════════════════════════════════════════════╝
-    try:
-        from brahma_brain.brahma_core_step4 import _analyze_step4
-    except ImportError:
-        from brahma_core_step4 import _analyze_step4
+    from brahma_brain.brahma_core_step4 import _analyze_step4  # [2.0 __init__ path]
     _r4       = _analyze_step4(symbol, ms, smc, signal_dir, price, _causal_v_result)
     extra_data = _r4['extra_data']
     _bd        = _r4.get('_bd', {})
@@ -988,10 +977,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # ║ [P4封印 2026-10-01 苏摩111] N17专项SL/TP覆写层已提取到    ║
     # ║ brahma_core_block_d.py（纯移动零逻辑改动）               ║
     # ╚══════════════════════════════════════════════════════════╝
-    try:
-        from brahma_brain.brahma_core_block_d import apply_n17_override as _n17_fn
-    except ImportError:
-        from brahma_core_block_d import apply_n17_override as _n17_fn
+    from brahma_brain.brahma_core_block_d import apply_n17_override as _n17_fn  # [2.0 __init__ path]
     params = _n17_fn(ms, params, signal_dir, _sym)
 
     # ── [v4.0出场后置层 2026-06-28] N17专项覆写后再次应用exit_params_v4 ──
@@ -1082,7 +1068,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 params['sl_basis']  = 'atr4h×2.0(拓展重算)'
                 params['valid']     = True
                 rr1_val = params['rr1']
-        cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
+        cf = _fork_cf(cf)  # [2.0 懒拷贝]
         # ── [六方联合修复 2026-06-25] 方案C：体制分级R:R最低门槛 ──
         # 铁证依据：BEAR_RECOVERY WR=72.5% × R:R=1.2 → EV=0.595（正期望）
         #           震荡行情TP目标有限，强求2.5是脱离实际
@@ -1143,7 +1129,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['rr_gate'] = 'PASS'
             cf['rr_min_used'] = _rr_min
     else:
-        cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
+        cf = _fork_cf(cf)  # [2.0 懒拷贝]
         cf['rr_gate'] = 'PASS'
         # [v13.0] 单一化：行动与 primary_tf 周期同步
         cf['primary_tf'] = params.get('primary_tf', '4H')
@@ -1154,7 +1140,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     rl = extra_data.get('rl_position', {})
     if rl.get('kelly_mult') and cf.get('action') in ('ENTER_FULL', 'ENTER'):
         rl_mult = rl['kelly_mult']
-        cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
+        cf = _fork_cf(cf)  # [2.0 懒拷贝]
         base_kelly = cf.get('kelly_base', cf.get('kelly_mult', 1.0))
         cf['kelly_mult'] = round(base_kelly * rl_mult, 3)
         cf['rl_kelly_note'] = rl.get('note', '')
@@ -1197,7 +1183,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             momentum   = ms.get('momentum', {}),
             trigger_confidence = int(_tc),
         )
-        cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
+        cf = _fork_cf(cf)  # [2.0 懒拷贝]
         cf['structure_grade'] = _pre_sq_result.get('grade', 0)
         # [v24.5-debug] 临时打印，确认修复后grade值
         import os
@@ -1223,7 +1209,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         extra_data['signal_queue'] = _sq_result
         if not _sq_result.get('accepted', True):
             pass  # [静默] f'[BrahmaBrain] 🚫 Queue reject {_sym}: {_sq_result["reason"]}'
-            cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
+            cf = _fork_cf(cf)  # [2.0 懒拷贝]
             cf['kelly_mult'] = 0.0
             cf['queue_reject'] = _sq_result['reason']
     except Exception as _sqe:
@@ -1239,7 +1225,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         )
         extra_data['capital'] = _ca_result
         if not _ca_result.get('allowed', True):
-            cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
+            cf = _fork_cf(cf)  # [2.0 懒拷贝]
             cf['kelly_mult'] = 0.0
             cf['capital_reject'] = _ca_result['reason']
     except Exception as _cae:
@@ -1416,7 +1402,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     if not _score_gate_ok:
         pass  # [静默] f'[BrahmaBrain] ⚠️ Score gate {_sym}: {_score_raw:.0f} < {_MIN_SCORE_EFFECTIVE} 
-        cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
+        cf = _fork_cf(cf)  # [2.0 懒拷贝]
         cf['score_gate_reject'] = True
         # [P1-2口径幽灵修复] min改为动态有效门（原来恒写MIN_SCORE_OPEN，BOG反查时对不上）
         cf['score_gate_min'] = _MIN_SCORE_EFFECTIVE
@@ -1469,12 +1455,12 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     if _4h_align == 'BULL' and signal_dir == 'LONG' and _score_gate_ok:
         _score_raw = round(_score_raw * 1.05, 1)
         cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
-        cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用; cf['mtf_4h_confirm'] = f'4H✅BULL RSI={_rsi_4h:.0f} +5%'
+        cf = _fork_cf(cf)  # [2.0 懒拷贝]; cf['mtf_4h_confirm'] = f'4H✅BULL RSI={_rsi_4h:.0f} +5%'
         pass  # [静默] f'[BrahmaBrain] 📊 {_sym} 4H共振BULL: score×1.05 → {_score_raw:.0f}'
     elif _4h_align == 'BEAR' and signal_dir == 'SHORT' and _score_gate_ok:
         _score_raw = round(_score_raw * 1.05, 1)
         cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
-        cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用; cf['mtf_4h_confirm'] = f'4H✅BEAR RSI={_rsi_4h:.0f} +5%'
+        cf = _fork_cf(cf)  # [2.0 懒拷贝]; cf['mtf_4h_confirm'] = f'4H✅BEAR RSI={_rsi_4h:.0f} +5%'
         pass  # [静默] f'[BrahmaBrain] 📊 {_sym} 4H共振BEAR: score×1.05 → {_score_raw:.0f}'
     elif _4h_align != 'NEUTRAL' and _4h_align == ('BEAR' if signal_dir=='LONG' else 'BULL'):
         # [v24.3-fix→9.21苏摩设计院] 4H方向冲突 → 降权-10分（原-25过重，体制乘数已降权）
@@ -1482,7 +1468,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _4h_penalty = 10
         _score_raw = max(0, _score_raw - _4h_penalty)
         cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
-        cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
+        cf = _fork_cf(cf)  # [2.0 懒拷贝]
         cf['mtf_4h_conflict'] = f'4H⚠️{_4h_align} vs {signal_dir} 降权-{_4h_penalty}分 → {_score_raw:.0f}'
         pass  # [静默] f'[BrahmaBrain] ⚠️ {_sym} 4H逆势降权-{_4h_penalty}: {_4h_align} vs {signal_dir} → sc
     elif _4h_align == 'NEUTRAL' and _score_gate_ok:
@@ -1493,7 +1479,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _score_before_neutral = _score_raw
         _score_raw = round(_score_raw * _neutral_penalty_pct, 1)
         cf['total'] = _score_raw
-        cf = copy.deepcopy(cf)
+        cf = _fork_cf(cf)  # [2.0 懒拷贝]
         cf['mtf_4h_neutral'] = f'4H NEUTRAL 降权×0.98 {_score_before_neutral:.0f}→{_score_raw:.0f}'
         pass  # [静默] f'[BrahmaBrain] 🟡 {_sym} MTF=NEUTRAL 降抎2%[v6.0]: score {_score_before_neutral:.0
 
@@ -1722,7 +1708,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         if _regime_age_h < 5 and 'BEAR_TREND' in _regime_now and signal_dir == 'SHORT' and _score_gate_ok:
             _score_raw = round(_score_raw * 1.04, 1)
             cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
-            cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用; cf['n14_early_bird'] = f'BEAR_TREND早鸟({_regime_age_h:.1f}h) ×1.04'
+            cf = _fork_cf(cf)  # [2.0 懒拷贝]; cf['n14_early_bird'] = f'BEAR_TREND早鸟({_regime_age_h:.1f}h) ×1.04'
             pass  # [静默] f'[BrahmaBrain] 🦅 {_sym} N14早鸟: {_regime_now} {_regime_age_h:.1f}h 进入 score→{_sc
 
         # ── [P3 TREND_fresh Elite v3.0 苏摩111 2026-06-28] ─────────────────
@@ -1806,33 +1792,33 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 # [v3修复→9.21苏摩设计院] gap<0.5%改为-5（原-15过重）
                 # gap小=入场近=优势，不是危险；B2.0报告铁证gap<0.5%=最优入场
                 _b2_bonus = -5
-                cf = copy.deepcopy(cf)
+                cf = _fork_cf(cf)  # [2.0 懒拷贝]
                 cf['b2_proximity'] = f'gap={_gap_b2:.2f}%<0.5% 贴近区间 -5'  # [B2-fix→9.21]
             elif _gap_b2 < 1.0:
                 # [v3修复→9.21苏摩设计院] 危险区-8→-3（过重，gap<1%是正常入场范围）
                 _b2_bonus = -3
-                cf = copy.deepcopy(cf)
+                cf = _fork_cf(cf)  # [2.0 懒拷贝]
                 cf['b2_proximity'] = f'gap={_gap_b2:.2f}% 近区间 -3'  # [B2-fix→9.21]
             elif _gap_b2 <= 1.5:
                 # 边界区，中性
-                cf = copy.deepcopy(cf)
+                cf = _fork_cf(cf)  # [2.0 懒拷贝]
                 cf['b2_proximity'] = f'gap={_gap_b2:.2f}% 边界区 中性'  # [B2-fix]
             elif _gap_b2 <= 4.0:
                 # 甜点区：TP组实盘均值2.43%，WR=100%实证奖励
                 _b2_bonus = 15
-                cf = copy.deepcopy(cf)
+                cf = _fork_cf(cf)  # [2.0 懒拷贝]
                 cf['b2_proximity'] = f'gap={_gap_b2:.2f}% 甜点区(WR=100%) +15'  # [B2-fix]
             else:
                 # >4% 偏远难触发
                 _b2_bonus = -5
-                cf = copy.deepcopy(cf)
+                cf = _fork_cf(cf)  # [2.0 懒拷贝]
                 cf['b2_proximity'] = f'gap={_gap_b2:.2f}%>4% 偏远难触发 -5'  # [B2-fix]
 
         if _b2_bonus != 0 and _score_gate_ok:
             _score_raw = round(_score_raw + _b2_bonus, 1)
             cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
             if _score_raw < 0: _score_raw = 0
-            cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用; cf['total'] = _score_raw
+            cf = _fork_cf(cf)  # [2.0 懒拷贝]; cf['total'] = _score_raw
             pass  # [静默] f'[B2-Structure] {"⚠️" if _b2_bonus < 0 else "✅"} {_sym}: gap={_gap_b2:.2f}% {_b
 
         # ── [B2 v5 V2.0报告P0-A修复 2026-06-05] GapGate逻辑倒转
@@ -1870,7 +1856,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 if _gap_check >= 0.5:
                     _score_raw = max(0, _score_raw - _gap_penalty)
                     cf['total'] = _score_raw  # [P0-B audit-fix] 同步评分
-                    cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
+                    cf = _fork_cf(cf)  # [2.0 懒拷贝]
                     cf['gap_gate'] = f'gap={_gap_check:.2f}% -惩罚{_gap_penalty}分 → score={_score_raw:.0f}'
                     pass  # [静默] f'[GapGate] ⚠️ {_sym}: gap={_gap_check:.2f}% -{_gap_penalty}分 score={_score_raw:
                 else:
@@ -1897,14 +1883,14 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _entry_gap = (_entry_lo_t - _price_t) / _price_t * 100
             if _entry_gap > 5.0:
                 _t_penalty += 15   # 从30降至15，结构门已惩罚
-                cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用; cf['t_score_gap'] = f'入场区偏离{_entry_gap:.1f}%>5% -15分'
+                cf = _fork_cf(cf)  # [2.0 懒拷贝]; cf['t_score_gap'] = f'入场区偏离{_entry_gap:.1f}%>5% -15分'
             elif _entry_gap > 3.0:
                 _t_penalty += 8    # 从15降至8
-                cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用; cf['t_score_gap'] = f'入场区偏离{_entry_gap:.1f}%>3% -8分'
+                cf = _fork_cf(cf)  # [2.0 懒拷贝]; cf['t_score_gap'] = f'入场区偏离{_entry_gap:.1f}%>3% -8分'
 
         if _t_penalty > 0 and _score_gate_ok:
             _score_raw = max(0, round(_score_raw - _t_penalty, 1))
-            cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用; cf['total'] = _score_raw
+            cf = _fork_cf(cf)  # [2.0 懒拷贝]; cf['total'] = _score_raw
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # ── [设计院 2026-05-31] L0 结构质量门（Structure Quality Gate）─────────
     # 哲学：好信号的本质是「入场区有真实价格结构」，而非「评分高」
@@ -1923,7 +1909,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             momentum   = ms.get('momentum', {}),
             trigger_confidence = int(params.get('trigger_15m_confidence', 0) or cf.get('trigger_15m_confidence', 0) or 0),  # [v24.5-fix] 优先从 params 读取
         )
-        cf = copy.deepcopy(cf)  # [P1-C audit-fix] 防止breakdown浅拷贝共享引用
+        cf = _fork_cf(cf)  # [2.0 懒拷贝]
         cf['structure_grade']  = _sq['grade']
         cf['structure_label']  = _sq['label']
         cf['structure_sources']= _sq['sources']
@@ -2365,10 +2351,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # ║ [P4封印 2026-10-01 苏摩111] 达摩因子引擎+15m信号层已提取到 ║
     # ║ brahma_core_block_f.py（纯移动零逻辑改动）               ║
     # ╚══════════════════════════════════════════════════════════╝
-    try:
-        from brahma_brain.brahma_core_block_f import apply_dfe_and_15m as _dfe15_fn
-    except ImportError:
-        from brahma_core_block_f import apply_dfe_and_15m as _dfe15_fn
+    from brahma_brain.brahma_core_block_f import apply_dfe_and_15m as _dfe15_fn  # [2.0 __init__ path]
     _dfe15_r = _dfe15_fn(ms, smc, cf, params, signal_dir, _sym, _score, _score_raw)
     _score = _dfe15_r['score']
     _score_raw = _dfe15_r['score_raw']
@@ -2399,10 +2382,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # ║ [P4封印 2026-10-01 苏摩111] _result装配层已提取到          ║
     # ║ brahma_core_block_e.py（纯移动零逻辑改动）               ║
     # ╚══════════════════════════════════════════════════════════╝
-    try:
-        from brahma_brain.brahma_core_block_e import build_result_dict as _brd_fn
-    except ImportError:
-        from brahma_core_block_e import build_result_dict as _brd_fn
+    from brahma_brain.brahma_core_block_e import build_result_dict as _brd_fn  # [2.0 __init__ path]
     _result = _brd_fn(symbol, ms, smc, cf, params, signal_dir, extra_data,
                       _score, elapsed, _data_health, _dharma_nodes, _valid)
 
@@ -2909,34 +2889,22 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
 
     # ══ [设计院 2026-08-09 苏摩111封印] 方仓向量WR → score_final 架构接线 ══
     # [封印 2026-09-20] 已提取到 brahma_core_fangcang_inject.py
-    try:
-        from brahma_brain.brahma_core_fangcang_inject import inject_fangcang as _inject_fc
-    except ImportError:
-        from brahma_core_fangcang_inject import inject_fangcang as _inject_fc
+    from brahma_brain.brahma_core_fangcang_inject import inject_fangcang as _inject_fc  # [2.0 __init__ path]
     _result, score, breakdown = _inject_fc(_result, ms, score, breakdown, signal_dir, _sym)
 
     # ══ [V2.0 2026-09-20 苏摩111] TradFi跨市场参照 + 212K经验库 + 亏损记忆 ═══════
     # [封印 2026-09-20] 已提取到 brahma_core_post_inject.py
-    try:
-        from brahma_brain.brahma_core_post_inject import inject_post_score as _inject_post
-    except ImportError:
-        from brahma_core_post_inject import inject_post_score as _inject_post
+    from brahma_brain.brahma_core_post_inject import inject_post_score as _inject_post  # [2.0 __init__ path]
     _result, score, breakdown = _inject_post(_result, ms, score, breakdown, signal_dir, _sym)
 
     # ══ [B类模块接入 2026-08-09 设计院深度排查封印 苏摩111] ══════════════════════
     # [封印 2026-09-20] 已提取到 brahma_core_bc_inject.py
-    try:
-        from brahma_brain.brahma_core_bc_inject import inject_bc_modules as _inject_bc
-    except ImportError:
-        from brahma_core_bc_inject import inject_bc_modules as _inject_bc
+    from brahma_brain.brahma_core_bc_inject import inject_bc_modules as _inject_bc  # [2.0 __init__ path]
     _result, score, breakdown = _inject_bc(_result, ms, score, breakdown, signal_dir, _sym, extra_data)
 
     # ══ [P0 设计院封印 2026-08-11 苏摩111] TRADFI交易时段门控 ══════════════
     # [封印 2026-09-20] 已提取到 brahma_core_tradfi_inject.py
-    try:
-        from brahma_brain.brahma_core_tradfi_inject import inject_tradfi as _inject_tradfi
-    except ImportError:
-        from brahma_core_tradfi_inject import inject_tradfi as _inject_tradfi
+    from brahma_brain.brahma_core_tradfi_inject import inject_tradfi as _inject_tradfi  # [2.0 __init__ path]
     _result, score, breakdown = _inject_tradfi(_result, ms, score, breakdown, signal_dir, _sym, extra_data)
 
     # [9.20修复] 确保score写入_result（下游brahma_cpu读_result['score']）
@@ -2948,10 +2916,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # ══ [梵天2.0 W2 2026-09-28 苏摩111] 12维终选打分层 ══════════════════
     # 94维照常计算不删码，冻结进_breakdown_full94；score_final=12维终选合成。
     # 冷冻维度权重=0，复活需IC周审连续2周>+0.02+苏摩111。
-    try:
-        from brahma_brain.brahma_core_final12 import apply_final12 as _apply_final12
-    except ImportError:
-        from brahma_core_final12 import apply_final12 as _apply_final12
+    from brahma_brain.brahma_core_final12 import apply_final12 as _apply_final12  # [2.0 __init__ path]
     try:
         _result = _apply_final12(_result, ms, extra_data)
     except Exception as _e12:
