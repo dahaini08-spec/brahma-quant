@@ -43,7 +43,6 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # 不重跑80维分析，不增加大CPU负担
 2,17,32,47 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/structure_sentinel.py >> logs/structure_sentinel.log 2>&1
 5,20,35,50 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/breakout_watch.py >> logs/breakout_watch.log 2>&1  # [2.0 果蝇独立巡检 15min]
- (30min级，错峰到 :05/:35)
 # ============================================================
 # 候选池生成 — :05和:35
 07 * * * * cd /root/.openclaw/workspace/trading-system && timeout 15 python3 scripts/battlefield_candidates.py  # [2.0降频 30min→1h] >> logs/battlefield_candidates.log 2>&1
@@ -65,7 +64,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [9.18 修复] drawdown+cb从:03移到:03保持（和:02 regime间隔1min足够）
 03 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/cron_drawdown_touch.py >> logs/syscron.log 2>&1  # [2.0 safe_io原子写]
 # CVD存活检查 — :06
-06 * * * * cd /root/.openclaw/workspace/trading-system && pgrep -f cvd_ws_collector >/dev/null || setsid python3 scripts/cvd_ws_collector.py >> logs/cvd_ws.log 2>&1
+06 * * * * cd /root/.openclaw/workspace/trading-system && pgrep -f cvd_ws_collector >/dev/null 2>&1 || (setsid python3 scripts/cvd_ws_collector.py >> logs/cvd_ws.log 2>&1 &)  # [2.0 守护进程正常，无需timeout]
 # liqmap OKX REST轮询 — :09每2h（替代常驻WS）
 09 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/liq_okx_fetcher.py >> logs/liqmap.log 2>&1
 # HAR-RV缓存独立刷新 — :11每4h（[9.27HAR-RV cron挂回 苏摩111] 防分析链懒加载失活；原子写已修并发根因）
@@ -132,7 +131,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 30 9 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_auto_post.py --sym BTC ETH 2>&1 >> logs/syscron.log
 # [2026-09-30 苏摩111 孤岛接线] trade_loop上链：Phase0信号注入+Phase1开单帖+Phase2持仓帖
 # 错峰12/42分避开1:30/9:30快照帖；flock单例防重复发帖
-12,42 * * * * cd /root/.openclaw/workspace/trading-system && timeout 110 flock -n /tmp/brahma_trade_loop.lock python3 scripts/square_trade_loop.py >> logs/syscron.log 2>&1
+14,44 * * * * cd /root/.openclaw/workspace/trading-system && timeout 110 flock -n /tmp/brahma_trade_loop.lock python3 scripts/square_trade_loop.py >> logs/syscron.log 2>&1  # [2.0 错峰 12→14 避免与guardian冲突]
 # flagship deep post — 每6h门控检查（数据有故事才产帖，非每日必发）
 # [2026-09-28 苏摩111 A线] 快照帖只管盘面，旗舰帖管当周叙事；发布需苏摩111批准（enqueue→flush）
 17 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 600 python3 scripts/square_deep_post.py >> logs/deep_post.log 2>&1
