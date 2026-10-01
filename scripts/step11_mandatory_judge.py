@@ -56,10 +56,16 @@ class Step11Judge:
     MIN_RR          = 1.5  # 最低风险收益比
     MIN_ATR_SL_MULT = 1.5  # SL最少是ATR1H的倍数
     CHOP_MAX_SCORE  = 110  # CHOP体制score上限（高于才考虑入场）
-    DEAD_COMBOS = [
-        ('BEAR_TREND',    'LONG'),   # 死穴：趋势熊市做多
-        ('BEAR_RECOVERY', 'SHORT'),  # 死穴：熊市反弹做空
-    ]
+    # [设计院复盘 2026-10-01 苏摩111] 死穴硬封禁 → 高证据标准
+    # 根因：BEAR_TREND:LONG WR=44.6%非0%，硬封禁=系统性失明
+    # 修正：对齐 brahma_decision_engine(9.17清空) + regime_config(needs_consensus/needs_event)
+    # 现在是「高证据标准」而非「永久封禁」
+    HIGH_EVIDENCE_COMBOS: dict = {
+        'BEAR_TREND:LONG':     {'min_score': 140, 'min_align': 5,
+                                 'label': '逆势熊市做多，需铁证(n=14可推翻)'},
+        'BEAR_RECOVERY:SHORT': {'min_score': 130, 'min_align': 4,
+                                 'label': '熊市反弹做空，需事件驱动'},
+    }
 
     def __init__(self, sym: str, d: dict, fvg: dict, ob: dict, liq: dict,
                  res: dict, oi: dict, sm: dict, vol: dict, mac: dict,
@@ -120,13 +126,26 @@ class Step11Judge:
         return True
 
     def gate3_dead_combo(self) -> bool:
-        """Gate3: 死穴检查（一票否决）"""
-        for dead_r, dead_d in self.DEAD_COMBOS:
-            if dead_r in self.regime and self.direction == dead_d:
-                self.blocked_by = f'Gate3_死穴:{dead_r}×{dead_d}'
-                self.reason.append(f'❌ G3死穴触发: {dead_r}做{dead_d}，永久禁止')
+        """Gate3: 高证据标准检查（对齐系统9.17实际语义，非硬封禁）"""
+        key = f'{self.regime}:{self.direction}'
+        combo = self.HIGH_EVIDENCE_COMBOS.get(key)
+        if combo:
+            need_score = combo['min_score']
+            need_align = combo['min_align']
+            label      = combo['label']
+            # 未达高证据标准 → WAIT（不是永封，是暂时条件不足）
+            if self.score < need_score or self.align < need_align:
+                self.blocked_by = f'Gate3_高证据标准:{key} score={self.score:.0f}<{need_score} align={self.align}<{need_align}'
+                self.reason.append(
+                    f'❌ G3高证据标准: {label}\n'
+                    f'   需要 score≥{need_score}(当前{self.score:.0f}) + 共振≥{need_align}(当前{self.align})\n'
+                    f'   条件不足=WAIT，非永封，铁证足够可突破'
+                )
                 return False
-        self.reason.append(f'✅ G3无死穴（{self.regime}×{self.direction}）')
+            else:
+                self.reason.append(f'✅ G3高证据标准通过: {key} score={self.score:.0f}≥{need_score} align={self.align}≥{need_align}')
+                return True
+        self.reason.append(f'✅ G3常规体制方向，无特殊限制')
         return True
 
     def gate4_resonance(self) -> bool:
