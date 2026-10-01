@@ -38,6 +38,31 @@ _os_blas.environ.setdefault('OMP_NUM_THREADS', '1')
 _os_blas.environ.setdefault('MKL_NUM_THREADS', '1')
 
 import json, sys, time, urllib.request, argparse, signal
+
+# [设计院封印 2026-10-01] 常量SSOT
+try:
+    _cdir = __import__('pathlib').Path(__file__).parent
+    sys.path.insert(0, str(_cdir))
+    from analysis_constants import (
+        ATR_SL_MIN_MULT, ATR_TRAIL_MULT, ATR_HARV_MIN_MULT, ATR_4H_HARV_MULT,
+        HURST_TREND, HURST_TRANSITION, HURST_RANDOM,
+        SCORE_CHOP_STD, SCORE_CHOP_TREND, SCORE_CHOP_TRANS,
+        SCORE_BEAR_LONG, SCORE_BEAR_REC_SHT,
+        ALIGN_MIN_GATE4, ALIGN_BEAR_LONG, ALIGN_BEAR_REC_SHT,
+        FC_SIM_THRESHOLD, RR_MIN,
+        LSR_RETAIL_CROWDED, HARV_MIN_WIDTH_PCT,
+        OB_MAX_AGE_BARS, MAX_RUNTIME_S, FETCH_TIMEOUT_S,
+    )
+except ImportError as _ce:
+    # 兜底默认值（向后兼容）
+    ATR_SL_MIN_MULT=ATR_TRAIL_MULT=1.5; ATR_HARV_MIN_MULT=2.0; ATR_4H_HARV_MULT=1.0
+    HURST_TREND=0.6; HURST_TRANSITION=0.55; HURST_RANDOM=0.5
+    SCORE_CHOP_STD=110; SCORE_CHOP_TREND=85; SCORE_CHOP_TRANS=95
+    SCORE_BEAR_LONG=140; SCORE_BEAR_REC_SHT=130
+    ALIGN_MIN_GATE4=3; ALIGN_BEAR_LONG=5; ALIGN_BEAR_REC_SHT=4
+    FC_SIM_THRESHOLD=0.25; RR_MIN=1.5
+    LSR_RETAIL_CROWDED=65.0; HARV_MIN_WIDTH_PCT=0.003
+    OB_MAX_AGE_BARS=50; MAX_RUNTIME_S=90; FETCH_TIMEOUT_S=8
 sys.dont_write_bytecode = True
 import gc, resource as _res
 
@@ -47,6 +72,18 @@ def _mem_rss_mb():
 
 # GC优化: 每个step后主动释放内存
 _gc_counter = 0
+
+def _infer_signal_dir(regime: str, fvg_dir: str = '') -> str:
+    """统一信号方向推断 — 替代3处重复逻辑
+    [设计院封印 2026-10-01]
+    优先级：FVG共识 > 体制默认（BEAR/RECOVERY=SHORT，其余=LONG）
+    """
+    if fvg_dir in ('BULL', 'BEAR'):
+        return 'LONG' if fvg_dir == 'BULL' else 'SHORT'
+    if regime.startswith('BEAR') or regime == 'CHOP_MID':
+        return 'SHORT'
+    return 'LONG'
+
 def _step_gc():
     global _gc_counter
     _gc_counter += 1
@@ -382,7 +419,7 @@ def step1b_range(d: dict) -> dict:
         highs = [x[1] for x in k1h]
         lows = [x[2] for x in k1h]
         closes = [x[3] for x in k1h]
-        signal_dir = 'SHORT' if d.get('regime', '').startswith('BEAR') or d.get('regime', '') == 'CHOP_MID' else 'LONG'
+        signal_dir = _infer_signal_dir(d.get('regime',''), fvg.get('dir','') if 'fvg' in dir() else '')
         result = range_score(highs, lows, closes, signal_dir)
         return result
     except Exception as e:
@@ -445,7 +482,7 @@ def step1b_fangcang_hcme(d: dict, fvg: dict) -> dict:
     # 根因：相似度0.191时方仓信号无统计意义（随机匹配），穿透到G4制造噪音
     # 修复：相似度<0.25=降级为NEUTRAL，输出体制基准WR作为参考
     _top_sim = top5_fmt[0]['similarity'] if top5_fmt else 0
-    _SIM_THRESHOLD = 0.25
+    _SIM_THRESHOLD = FC_SIM_THRESHOLD
     fc_direction = 'NEUTRAL'
     if signal_hint and _top_sim >= _SIM_THRESHOLD:
         if 'LONG' in signal_hint.upper():
@@ -960,7 +997,7 @@ def step4b_pattern(d: dict) -> dict:
         highs = [x[1] for x in k1h]
         lows = [x[2] for x in k1h]
         closes = [x[3] for x in k1h]
-        signal_dir = 'SHORT' if d.get('regime', '').startswith('BEAR') or d.get('regime', '') == 'CHOP_MID' else 'LONG'
+        signal_dir = _infer_signal_dir(d.get('regime',''), fvg.get('dir','') if 'fvg' in dir() else '')
         result = pattern_score(highs, lows, closes, signal_dir)
         return result
     except Exception as e:
@@ -1131,7 +1168,7 @@ def step5b_lsr_trigger(d: dict, res: dict) -> dict:
     """Step5b: LSR/OI联合分析 + 15分钟触发"""
     result = {'lsr_oi': {}, 'trigger_15m': {}}
     sym = d.get('sym', 'BTC')
-    signal_dir = 'SHORT' if d.get('regime', '').startswith('BEAR') or d.get('regime', '') == 'CHOP_MID' else 'LONG'
+    signal_dir = _infer_signal_dir(d.get('regime',''), fvg.get('dir','') if 'fvg' in dir() else '')
 
     # LSR/OI联合
     try:
@@ -1290,7 +1327,7 @@ def step7_volatility(d: dict) -> dict:
         _harv_raw_width = harv_range_hi - harv_range_lo
         _atr4h_ref = d.get('atr_4h', 0) or atr_4h if 'atr_4h' in dir() else 0
         _atr1h_ref = d.get('atr_1h', 0) or 0
-        _min_width = max(_atr4h_ref * 1.0, _atr1h_ref * 2.0, price_now * 0.003)  # 最小0.3%
+        _min_width = max(_atr4h_ref * ATR_4H_HARV_MULT, _atr1h_ref * ATR_HARV_MIN_MULT, price_now * HARV_MIN_WIDTH_PCT)  # 最小0.3%
         if _harv_raw_width < _min_width:
             # ATR兜底展宽
             harv_range_lo = round(price_now - _min_width / 2, 1)

@@ -35,6 +35,23 @@ import sys
 from pathlib import Path
 from typing import Any
 
+# [设计院封印 2026-10-01] 常量SSOT，消灭魔法数字
+try:
+    from analysis_constants import (
+        ATR_SL_MIN_MULT, RR_MIN, ALIGN_MIN_GATE4,
+        SCORE_CHOP_STD, SCORE_CHOP_TREND, SCORE_CHOP_TRANS,
+        SCORE_BEAR_LONG, SCORE_BEAR_REC_SHT,
+        ALIGN_BEAR_LONG, ALIGN_BEAR_REC_SHT,
+        FC_SIM_THRESHOLD, HURST_TREND, HURST_TRANSITION,
+    )
+except ImportError:
+    # 兜底：保持原来的内联值
+    ATR_SL_MIN_MULT=1.5; RR_MIN=1.5; ALIGN_MIN_GATE4=3
+    SCORE_CHOP_STD=110; SCORE_CHOP_TREND=85; SCORE_CHOP_TRANS=95
+    SCORE_BEAR_LONG=140; SCORE_BEAR_REC_SHT=130
+    ALIGN_BEAR_LONG=5; ALIGN_BEAR_REC_SHT=4
+    FC_SIM_THRESHOLD=0.25; HURST_TREND=0.6; HURST_TRANSITION=0.55
+
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE / 'brahma_brain'))
 sys.path.insert(0, str(BASE))
@@ -51,19 +68,19 @@ class Step11Judge:
     """
 
     # ── 闸门阈值（全局常量，封印版）──────────────────────────
-    MIN_ALIGN       = 3    # 七维共振最低一致数（低于=WAIT）
-    MIN_EV          = 0.0  # EV最低门槛（低于=WAIT）
-    MIN_RR          = 1.5  # 最低风险收益比
-    MIN_ATR_SL_MULT = 1.5  # SL最少是ATR1H的倍数
-    CHOP_MAX_SCORE  = 110  # CHOP体制score上限（高于才考虑入场）
+    MIN_ALIGN       = ALIGN_MIN_GATE4    # 七维共振最低一致数（低于=WAIT）
+    MIN_EV          = 0.0                # EV最低门槛（低于=WAIT）
+    MIN_RR          = RR_MIN             # 最低风险收益比
+    MIN_ATR_SL_MULT = ATR_SL_MIN_MULT    # SL最少是ATR1H的倍数
+    CHOP_MAX_SCORE  = SCORE_CHOP_STD     # CHOP体制score上限（高于才考虑入场）
     # [设计院复盘 2026-10-01 苏摩111] 死穴硬封禁 → 高证据标准
     # 根因：BEAR_TREND:LONG WR=44.6%非0%，硬封禁=系统性失明
     # 修正：对齐 brahma_decision_engine(9.17清空) + regime_config(needs_consensus/needs_event)
     # 现在是「高证据标准」而非「永久封禁」
     HIGH_EVIDENCE_COMBOS: dict = {
-        'BEAR_TREND:LONG':     {'min_score': 140, 'min_align': 5,
+        'BEAR_TREND:LONG':     {'min_score': SCORE_BEAR_LONG, 'min_align': ALIGN_BEAR_LONG,
                                  'label': '逆势熊市做多，需铁证(n=14可推翻)'},
-        'BEAR_RECOVERY:SHORT': {'min_score': 130, 'min_align': 4,
+        'BEAR_RECOVERY:SHORT': {'min_score': SCORE_BEAR_REC_SHT, 'min_align': ALIGN_BEAR_REC_SHT,
                                  'label': '熊市反弹做空，需事件驱动'},
     }
 
@@ -165,14 +182,14 @@ class Step11Judge:
         """
         if 'CHOP' in self.regime:
             # Hurst>0.6 = 趋势性隐现，降低门槛
-            if self.hurst >= 0.6:
-                effective_threshold = 85   # 趋势区旁路
+            if self.hurst >= HURST_TREND:
+                effective_threshold = SCORE_CHOP_TREND  # 趋势区旁路
                 _note = f'Hurst={self.hurst:.3f}≥0.6趋势区，CHOP门槛旁路→{effective_threshold}'
-            elif self.hurst >= 0.55:
-                effective_threshold = 95   # 中间过渡区
+            elif self.hurst >= HURST_TRANSITION:
+                effective_threshold = SCORE_CHOP_TRANS  # 中间过渡区
                 _note = f'Hurst={self.hurst:.3f}≥0.55过渡区，门槛→{effective_threshold}'
             else:
-                effective_threshold = self.CHOP_MAX_SCORE  # 标准震荡门槛
+                effective_threshold = SCORE_CHOP_STD    # 标准震荡门槛
                 _note = f'Hurst={self.hurst:.3f}<0.55随机游走，全门槛{effective_threshold}'
             if self.score < effective_threshold:
                 self.blocked_by = f'Gate5_CHOP门槛:{self.score:.0f}<{effective_threshold}'
