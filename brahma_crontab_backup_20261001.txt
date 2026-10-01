@@ -56,7 +56,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 02 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/regime_realtime_watcher.py >> logs/regime_watcher.log 2>&1
 # drawdown+circuit_breaker — :03
 # [9.18 修复] drawdown+cb从:03移到:03保持（和:02 regime间隔1min足够）
-03 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/cron_drawdown_touch.py >> logs/syscron.log 2>&1  # [2.0 safe_io原子写]
+03 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 -c "from brahma_brain.drawdown_tracker import update_drawdown; update_drawdown(); import json,time; d=json.load(open('data/circuit_breaker.json')); d['ts']=time.time(); d['last_updated']=time.time(); json.dump(d,open('data/circuit_breaker.json','w')); dd=json.load(open('data/drawdown_state.json')); dd['ts']=time.time(); dd['last_updated']=time.time(); json.dump(dd,open('data/drawdown_state.json','w'))" >> logs/syscron.log 2>&1
 # CVD存活检查 — :06
 06 * * * * cd /root/.openclaw/workspace/trading-system && pgrep -f cvd_ws_collector >/dev/null || setsid python3 scripts/cvd_ws_collector.py >> logs/cvd_ws.log 2>&1
 # liqmap OKX REST轮询 — :09每2h（替代常驻WS）
@@ -78,7 +78,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [9.18 修复] oi_watchlist从:00移到:22错峰
 22 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/oi_watchlist_monitor.py >> logs/oi_watchlist.log 2>&1
 # battlefield auto analysis — :15 偶数小时
-15 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 900 flock -n /tmp/brahma_battlefield.lock python3 scripts/battlefield_auto_analysis.py >> logs/auto_analysis.log  # [2.0 flock防双实例] 2>&1
+15 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 900 python3 scripts/battlefield_auto_analysis.py >> logs/auto_analysis.log 2>&1
 # core cleanup — :20 偶数小时
 20 */2 * * * python3 -c "import os,glob; [os.remove(f) for f in glob.glob('/tmp/core.*')+glob.glob('/root/core.*')+glob.glob('/root/.openclaw/workspace/trading-system/core.*') if os.path.exists(f)]" >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1  # [P0-2 2026-09-30 苏摩111] glob补trading-system/core.*（9.29审查实锤清理盲区）
 # session disk cleanup — :25 偶数小时
@@ -95,9 +95,9 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # liq heatmap — :45 每4h
 45 */1 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/liq_heatmap.py >> logs/liq_heatmap.log 2>&1
 # brahma autocheck — :50 每6h
-50 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/brahma_autocheck.py --push >> logs/syscron.log  # [2.0 timeout] 2>&1
+50 */6 * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_autocheck.py --push >> logs/syscron.log 2>&1
 # log rotation — :55 每6h
-55 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/log_rotation.py >> logs/syscron.log  # [2.0 timeout] 2>&1
+55 */6 * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/log_rotation.py >> logs/syscron.log 2>&1
 # cron health board — :58 每6h
 58 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/cron_health_board.py >> logs/syscron.log 2>&1
 # square extreme alert — :33 每4h
@@ -130,7 +130,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [2026-09-28 苏摩111 A线] 快照帖只管盘面，旗舰帖管当周叙事；发布需苏摩111批准（enqueue→flush）
 17 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 600 python3 scripts/square_deep_post.py >> logs/deep_post.log 2>&1
 # spot strategy square — 03:00
-0  3 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/spot_strategy_square.py  # [2.0错峰] --symbols BTC ETH 2>&1 >> logs/syscron.log
+0 3 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/spot_strategy_square.py --symbols BTC ETH 2>&1 >> logs/syscron.log
 # data baseline refresh — 00:00 + 12:00
 0 0,12 * * * cd /root/.openclaw/workspace/trading-system && bash scripts/data_baseline_refresh.sh >> logs/baseline_refresh.log 2>&1
 
@@ -141,17 +141,17 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # 0 2 * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/wr_feedback_engine.py >> logs/syscron.log 2>&1
 # [9.20] 已由Autopilot L2学习层替代（见下方 autopilot 区块）
 # data TTL — 03:00
-2  3 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/brahma_data_ttl.py  # [2.0错峰+timeout] >> logs/syscron.log 2>&1
+0 3 * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_data_ttl.py >> logs/syscron.log 2>&1
 # fangcang builder — 03:00
-4  3 * * * cd /root/.openclaw/workspace/trading-system/brahma_brain && timeout 180 python3 fangcang_builder_30.py  # [2.0错峰+timeout] >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
+0 3 * * * cd /root/.openclaw/workspace/trading-system/brahma_brain && python3 fangcang_builder_30.py >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1
 # signal queue trim — 03:00
-6  3 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/cron_signal_queue_trim.py >> logs/syscron.log 2>&1  # [2.0错峰+独立脚本]
+0 3 * * * cd /root/.openclaw/workspace/trading-system && python3 -c "from pathlib import Path; q=Path('data/signal_queue.jsonl'); lines=[l for l in q.read_text().strip().split('\n') if l.strip()] if q.exists() else []; q.write_text('\n'.join(lines[-500:])+'\n') if len(lines)>500 else None" >> logs/syscron.log 2>&1
 # IC feedback — 04:00 Monday
-0 4 * * 1 cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/ic_feedback_engine.py >> logs/syscron.log  # [2.0 timeout] 2>&1
+0 4 * * 1 cd /root/.openclaw/workspace/trading-system && python3 scripts/ic_feedback_engine.py >> logs/syscron.log 2>&1
 # L3 IC周审门 — 04:05 Monday [防谎P1 2026-09-28 苏摩111] learning_log pending_ic裁决（fail-closed：n<8=PENDING）
 5 4 * * 1 cd /root/.openclaw/workspace/trading-system && python3 -c "import sys; sys.path.insert(0,'brahma_brain'); from ic_tracker import review_learning_log; r=review_learning_log(); print(f'[L3-IC] reviewed={r[\"reviewed\"]}/{r[\"total\"]}')" >> logs/syscron.log 2>&1
 # wiring check — 03:00 Sunday
-0 3 * * 0 cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/brahma_wiring_check.py >> logs/wiring_check.log  # [2.0 timeout] 2>&1
+0 3 * * 0 cd /root/.openclaw/workspace/trading-system && python3 scripts/brahma_wiring_check.py >> logs/wiring_check.log 2>&1
 # IC审计 — 03:40 Sunday [9.26接线 苏摩111] dim_ic_audit懒加载回退版，jesse缺失用本地指标
 40 3 * * 0 cd /root/.openclaw/workspace/trading-system && timeout 600 python3 brahma_brain/dim_ic_audit.py >> logs/ic_audit.log 2>&1
 # v5回测 — 03:45 Sunday [9.26接线 苏摩111] engine_v5本地指标回退版，周度WR/EV基准
@@ -197,13 +197,13 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 */5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/price_trigger_monitor.py >> logs/price_trigger.log 2>&1
 
 # [9.19 设计院] 配置漂移+引用检查 每6小时
-0 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/cron_reference_check.py >> logs/cron_ref_check.log  # [2.0 timeout] 2>&1
-5 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/config_contract_check.py >> logs/config_contract_check.log  # [2.0 timeout] 2>&1
+0 */6 * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/cron_reference_check.py >> logs/cron_ref_check.log 2>&1
+5 */6 * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/config_contract_check.py >> logs/config_contract_check.log 2>&1
 # [9.19] @reboot不兼容supercronic，改为开机后1分钟延迟启动
 1 1 * * * cd /root/.openclaw/workspace/trading-system && bash scripts/brahma_autostart.sh >> logs/autostart.log 2>&1
 
 # 亏损记忆自动记录（每小时）
-0 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/loss_memory_recorder.py >> logs/loss_memory.log  # [2.0 timeout] 2>&1
+0 * * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/loss_memory_recorder.py >> logs/loss_memory.log 2>&1
 
 # ═══════════════════════════════════════════════════════════════
 # [9.20 苏摩111] Brahma Autopilot 自动驾驶记忆决策机器人
@@ -211,7 +211,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 
 # [9.21 苏摩111] Autopilot cron优化：1H频率 + 强制BTC/ETH + 省积分
 # L0+L1: 决策机器人每1H运行（强制BTC+ETH，不依赖trigger_file）
-4 * * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 brahma_brain/brahma_cpu.py --auto --symbols BTCUSDT,ETHUSDT  # [2.0 等drawdown写完] >> logs/autopilot_cpu.log 2>&1
+0 * * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 brahma_brain/brahma_cpu.py --auto --symbols BTCUSDT,ETHUSDT >> logs/autopilot_cpu.log 2>&1
 
 # L2: 学习层每天02:00 UTC运行（WR反哺+L2语义记忆生成）
 0 2 * * * cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/wr_feedback_engine.py >> logs/autopilot_learn.log 2>&1
@@ -226,7 +226,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 */5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/autopilot_l0_refresh.py >> logs/autopilot_l0.log 2>&1
 
 # [9.23苏摩111] 独立watchdog拉起任务（带单实例锁，已有实例则退出）
-*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 bash scripts/independent_watchdog.sh >> logs/watchdog.log 2>&1  # [2.0 去nohup&]
+*/5 * * * * cd /root/.openclaw/workspace/trading-system && nohup bash scripts/independent_watchdog.sh >> logs/watchdog.log 2>&1 &
 
 # [9.23苏摩111 P0] 每分钟拉起核心进程（带单实例锁，进程死了自动复活）
 * * * * * cd /root/.openclaw/workspace/trading-system && bash scripts/process_resurrect.sh >> logs/resurrect.log 2>&1
