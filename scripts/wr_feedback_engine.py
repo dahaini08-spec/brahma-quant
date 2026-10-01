@@ -31,6 +31,19 @@ from datetime import datetime, timezone
 
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
+sys.path.insert(0, str(BASE/'brahma_brain'))
+try:
+    from safe_io import locked_json_write as _sj_write, locked_jsonl_append as _sj_append
+except ImportError:
+    import os as _os_fb, tempfile as _tf_fb
+    def _sj_write(path, data):
+        import json as _j; _p=__import__('pathlib').Path(path)
+        _fd,_tp=_tf_fb.mkstemp(dir=_p.parent); _os_fb.close(_fd)
+        with open(_tp,'w') as _f: _f.write(_j.dumps(data,ensure_ascii=False,indent=2))
+        _os_fb.replace(_tp,str(_p))
+    def _sj_append(path, entry):
+        import json as _j
+        with open(path,'a',encoding='utf-8') as _f: _f.write(_j.dumps(entry,ensure_ascii=False)+'\n')
 
 WR_MATRIX_FILE  = BASE / 'data' / 'wr_matrix_live.json'  # [9.15修复] realtime→live，与settler输出对齐
 OVERRIDE_FILE   = BASE / 'data' / 'regime_mult_override.json'
@@ -113,10 +126,7 @@ def save_override(data: dict):
     import os
     data['_updated_at'] = datetime.now(timezone.utc).isoformat()
     data['_updated_date'] = datetime.now(timezone.utc).strftime('%Y-%m-%d')
-    tmp = str(OVERRIDE_FILE) + '.tmp'
-    with open(tmp, 'w') as f:
-        f.write(json.dumps(data, indent=2))
-    os.replace(tmp, str(OVERRIDE_FILE))
+    _sj_write(OVERRIDE_FILE, data)  # [2.0 atomic flock]
 
 
 def compute_new_override(matrix: dict) -> tuple[dict, list]:
@@ -407,7 +417,7 @@ def main():
                 for g, v in _attr.items() if v['n'] >= 3)
             # 保存归因结果
             _attr_path = BASE / 'data' / 'alpha_attribution.json'
-            _attr_path.write_text(json.dumps(_attr, ensure_ascii=False, indent=2, default=str))
+            _sj_write(_attr_path, _attr)  # [2.0 atomic flock]
             log(f'Alpha归因已保存: {len(_attr)}组')
     except Exception as _ae:
         log(f'Alpha归因跳过: {_ae}')
@@ -499,7 +509,7 @@ def _generate_l2_lessons(changes: list, matrix: dict) -> None:
         'threshold_suggestions': threshold_suggestions,
         'wr_matrix_snapshot': {k: {'wr': v.get('wr',0), 'n': v.get('n',0)} for k, v in list(matrix.items())[:20]},
     }
-    _l2_file.write_text(_j.dumps(_l2_data, ensure_ascii=False, indent=2))
+    _sj_write(_l2_file, _l2_data)  # [2.0 atomic flock]
     log(f'L2语义记忆已生成: {len(lessons)}条规则 + {len(threshold_suggestions)}条阈值建议')
 
 def _dict_to_str(d: dict) -> str:

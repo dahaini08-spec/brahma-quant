@@ -29,6 +29,18 @@ BASE  = Path(__file__).parent.parent
 import sys as _sys_base  # [P1-3修复 2026-09-23] 模块级插BASE路径，所有from brahma_brain钩子共享
 if str(BASE) not in _sys_base.path:
     _sys_base.path.insert(0, str(BASE))
+if str(BASE/'brahma_brain') not in _sys_base.path:
+    _sys_base.path.insert(0, str(BASE/'brahma_brain'))
+try:
+    from safe_io import locked_json_write as _sj_write, locked_jsonl_append as _sj_append
+except ImportError:
+    import os as _os_fb, tempfile as _tf_fb
+    def _sj_write(path, data):
+        _p=Path(path); _fd,_tp=_tf_fb.mkstemp(dir=_p.parent); _os_fb.close(_fd)
+        with open(_tp,'w') as _f: _f.write(json.dumps(data,ensure_ascii=False,indent=2))
+        _os_fb.replace(_tp,str(_p))
+    def _sj_append(path, entry):
+        with open(path,'a',encoding='utf-8') as _f: _f.write(json.dumps(entry,ensure_ascii=False)+'\n')
 LOG   = BASE / 'data' / 'live_signal_log.jsonl'
 WR_F  = BASE / 'data' / 'wr_matrix_live.json'
 
@@ -457,9 +469,9 @@ def main():
             'total_settled': sum(v['total'] for v in wr_matrix.values()),
             'matrix': wr_matrix,
         }, indent=2, ensure_ascii=False)
-        WR_F.write_text(_wr_data)
+        _sj_write(WR_F, json.loads(_wr_data))  # [2.0 atomic flock]
         # [根治 2026-08-24 苏摩111] 双写wr_matrix.json，消除文件名不匹配（settler写live，core读wr_matrix）
-        (BASE / 'data' / 'wr_matrix.json').write_text(_wr_data)
+        _sj_write(BASE / 'data' / 'wr_matrix.json', json.loads(_wr_data))  # [2.0 atomic flock]
         print(f'[settler] WR矩阵已更新 → {WR_F} + wr_matrix.json')
 
         # [协同接入 2026-08-02 设计院自主] ev_feedback 结算闭环
