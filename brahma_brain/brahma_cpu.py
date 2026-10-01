@@ -104,7 +104,7 @@ def _layer0_fast_reject(symbol: str, regime: str, signal_dir: str) -> tuple:
     # 反脆弱系统：连亏/情绪熔断
     try:
         from antifragile_guard import full_guard_check
-        guard = full_guard_check()
+        guard = full_guard_check(symbol, signal_dir or '')  # [2.0 bugfix: 补必填symbol参数]
         if guard.get('blocked'):
             return True, f'反脆弱门控: {guard.get("reason", "未知")}'
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
