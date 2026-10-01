@@ -429,7 +429,8 @@ def run_report(symbol: str, direction: str = 'LONG', compact: bool = False) -> s
         # 刷新brahma_bus价格缓存
         try:
             import sys as _sys_pf
-            _bd = str(Path(__file__).parent.parent / 'brahma_brain')
+            # [P3收尾修复 2026-10-01 苏摩111] 历史潜伏bug：裸Path从未import过pathlib，每次都WARN（被try吞掉）
+            _bd = str(__import__('pathlib').Path(__file__).parent.parent / 'brahma_brain')
             if _bd not in _sys_pf.path: _sys_pf.path.insert(0, _bd)
             from brahma_bus import _BUS as _bus_pf
             _key_pf = f'price:{symbol}'
