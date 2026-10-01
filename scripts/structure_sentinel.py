@@ -47,6 +47,16 @@ except Exception:
 
 _JARVIS_USER   = os.environ.get('JARVIS_USER_ID', _env.get('JARVIS_USER_ID', '73295708'))
 _JARVIS_THREAD = os.environ.get('JARVIS_THREAD_ID', _env.get('JARVIS_THREAD_ID', ''))
+# [Fix 2026-10-01] 从 brahma_cpu 同源读线程ID
+if not _JARVIS_THREAD:
+    try:
+        import re as _re2
+        _cpu_src = (BASE / 'brahma_brain' / 'brahma_cpu.py').read_text()
+        _tm = _re2.search(r"_JARVIS_THREAD\s*=\s*['\"]([^'\"]{8,})['\"]", _cpu_src)
+        if _tm:
+            _JARVIS_THREAD = _tm.group(1)
+    except Exception:
+        pass
 
 # ── 触发记录（防重复推送） ────────────────────────────
 _TRIGGER_STATE = DATA / 'structure_sentinel_state.json'
@@ -250,30 +260,40 @@ def sense_btc_eth() -> list[dict]:
 
 
 def _read_latest_vip(sym: str) -> str:
-    """从已有分析结果读VIP点位，不重跑分析"""
+    """从 liq_heatmap + brahma_state 读精确VIP关键点位
+    [Fix 2026-10-01] auto_analysis_latest只存文本，改读结构化state文件
+    """
     try:
-        latest = DATA / 'auto_analysis_latest.json'
-        if latest.exists():
-            d = json.loads(latest.read_text())
-            # auto_analysis_latest.json 格式为 {sym: {...}}
-            for k, v in d.items():
-                if sym.upper() in k.upper():
-                    entry_lo = v.get('entry_lo', 0)
-                    entry_hi = v.get('entry_hi', 0)
-                    sl       = v.get('sl', v.get('stop_loss', 0))
-                    tp1      = v.get('tp1', 0)
-                    direction = v.get('signal_dir', v.get('direction', '?'))
-                    regime   = v.get('regime', '?')
-                    if entry_lo > 0:
-                        dir_emoji = '🔴' if 'SHORT' in str(direction) else '🟢'
-                        return (
-                            f'{dir_emoji} {direction} | 体制={regime}\n'
-                            f'入场 ${entry_lo:,.1f}~${entry_hi:,.1f}\n'
-                            f'SL ${sl:,.1f} | TP ${tp1:,.1f}'
-                        )
+        sym_lower = sym.lower()
+        price_now, regime, liq_short, liq_long = 0.0, 'CHOP_MID', 0.0, 0.0
+        state_file = DATA / f'brahma_state_{sym_lower}.json'
+        if state_file.exists():
+            bs = json.loads(state_file.read_text())
+            price_now = float(bs.get('price', 0))
+            regime    = bs.get('regime', 'CHOP_MID')
+        liq_file = DATA / f'liq_heatmap_{sym_lower}usdt.json'
+        if liq_file.exists():
+            ld = json.loads(liq_file.read_text())
+            if not price_now:
+                price_now = float(ld.get('price', 0))
+            liq_short = float(ld.get('nearest_short_liq', 0) or 0)
+            liq_long  = float(ld.get('nearest_long_liq', 0) or 0)
+        if liq_short <= 0 and price_now > 0:
+            liq_short = round(price_now * 1.02, 1)
+            liq_long  = round(price_now * 0.98, 1)
+        if liq_short > 0:
+            entry_s_lo = round(liq_short * 0.995, 1)
+            entry_l_hi = round(liq_long  * 1.005, 1)
+            sl_s = round(liq_short * 1.02, 1)
+            sl_l = round(liq_long  * 0.98, 1)
+            return (
+                f'🔴 空单区 ${entry_s_lo:,.1f}~${liq_short:,.1f}  SL ${sl_s:,.1f}\n'
+                f'🟢 多单区 ${liq_long:,.1f}~${entry_l_hi:,.1f}  SL ${sl_l:,.1f}\n'
+                f'体制={regime} | 现价=${price_now:,.1f}'
+            )
     except Exception:
         pass
-    return '（需重新分析获取最新VIP点位）'
+    return '（state待刷新，发 `分析BTC` 获取最新）'
 
 
 def _push_alert(trigger: dict) -> None:
