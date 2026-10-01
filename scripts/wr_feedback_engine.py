@@ -145,9 +145,13 @@ def compute_new_override(matrix: dict) -> tuple[dict, list]:
             score_bin = 'ALL'
             _win  = int(entry.get('win', 0))
             _loss = int(entry.get('loss', 0))
-            settled = _win + _loss
+            _exp  = int(entry.get('expired', 0))
+            # [B线 2026-10-01 苏摩111] EXPIRED计入分母：wr=win/(win+loss+expired)
+            # 实锤：CHOP_MID:LONG wr=1.0是「3胜0负+EXPIRED被隐藏」的分母偏差；
+            # EXPIRED计入使先验保守化，且与paper_executor读取口径(total含expired)对齐
+            settled = _win + _loss + _exp
             if settled <= 0:
-                settled = int(entry.get('total', 0)) - int(entry.get('expired', 0))
+                settled = int(entry.get('total', 0))
             n = int(entry.get('total', settled))
             n_win = _win
         elif len(parts) == 3:

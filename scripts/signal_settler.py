@@ -65,7 +65,9 @@ def _get_klines_since(sym: str, since_ts: float, limit: int = 500) -> list:
 
 # [ROOT-FIX-1 2026-08-23 苏摩111封印] 只结算真实执行信号
 # WATCH/SKIP/STANDBY信号不应被结算为SL，这是WR统计失真根因
-EXECUTABLE_ACTIONS = {'ENTER', 'ENTER_FULL', 'ENTER_WATCH'}
+# [A线 2026-10-01 苏摩111] AMBUSCADE纳入结算生命周期：伏击单天生带entry_lo/hi+SL+TP1
+# （实锤：73/73全有sl+tp1），此前不在白名单→52条OPEN永久堆积→WR矩阵5.9天断供。TODO: AMBUSCADE无独立成交判定，先复用ENTER价格触发逻辑
+EXECUTABLE_ACTIONS = {'ENTER', 'ENTER_FULL', 'ENTER_WATCH', 'AMBUSCADE'}
 
 
 def settle_signal(sig: dict, dry_run: bool = False) -> dict | None:
@@ -84,7 +86,9 @@ def settle_signal(sig: dict, dry_run: bool = False) -> dict | None:
     result    = sig.get('result', '')
     action    = sig.get('action', '')
 
-    if outcome in ('TP1', 'SL', 'TP2'):
+    # [A线 2026-10-01 苏摩111] EXPIRED_NO_TOUCH进入口：入结算集供WR矩阵rebuild
+    # （此前EXPIRED只统计不触发rebuild主流程→矩阵不刷新）
+    if outcome in ('TP1', 'SL', 'TP2', 'EXPIRED_NO_TOUCH'):
         return None  # 已结算
 
     # ROOT-FIX-1: 只结算 action in EXECUTABLE_ACTIONS 的真实执行信号
@@ -362,7 +366,9 @@ def rebuild_wr_matrix(lines: list) -> dict:
 
     result = {}
     for k, v in matrix.items():
-        denom = v['win'] + v['loss']
+        # [B线 2026-10-01 苏摩111] EXPIRED计入分母：wr=win/(win+loss+expired)
+        # 与wr_feedback_engine口径统一；EXPIRED pnl=0，ev_avg同分母稀释=诚实归零
+        denom = v['win'] + v['loss'] + v['expired']
         wr    = v['win'] / denom if denom > 0 else None
         avg_score = sum(v['scores']) / len(v['scores']) if v['scores'] else 0
         result[k] = {
@@ -407,7 +413,7 @@ def main():
         updated = settle_signal(sig, dry_run=args.dry_run)
         if updated:
             updated_lines.append(updated)
-            if updated['outcome'] in ('TP1', 'SL', 'TP2'):
+            if updated['outcome'] in ('TP1', 'SL', 'TP2', 'EXPIRED_NO_TOUCH'):
                 settled_new.append(updated)
             print(f"[settler] {updated['symbol']} {updated.get('direction')} "
                   f"outcome={updated['outcome']} pnl={updated.get('pnl_pct',0):+.2f}%")
