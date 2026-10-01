@@ -5,7 +5,7 @@
 # 1. 错峰：整点任务分散到不同分钟，避免并发风暴
 # 2. 分层：数据采集(5min) → 分析(30min/2h) → 推送(定点) → 维护(低频)
 # 3. 资源保护：重型任务加timeout，常驻进程用pgrep守门
-# [2.0删除 watchdog_round: 与process_resurrect+guardian_wrapper职责重叠]
+# 4. 去重：看门狗已加告警去重（watchdog_round.sh v2）
 
 # ============================================================
 # 环境变量
@@ -24,22 +24,22 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # Layer 0: 看门狗 (错峰到 :02/:12/:22/:32/:42/:52)
 # ============================================================
 # [9.27 苏摩111] 上下文溢出哨兵 P2: 每日扫描compaction死锁（P2静默+P1/P0推送）
-*/30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/context_overflow_sentinel.py  # [2.0降频 10min→30min] >> logs/context_overflow.log 2>&1
+*/10 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/context_overflow_sentinel.py >> logs/context_overflow.log 2>&1
 
 # ============================================================
-# [2.0删除 watchdog_round L30: 与process_resurrect+guardian_wrapper职责重叠，冗余]
+*/10 * * * * cd /root/.openclaw/workspace/trading-system && bash scripts/watchdog_round.sh >> logs/watchdog_v2.log 2>&1
 
 # ============================================================
 # Layer 1: 高频数据采集 (5min)
 # ============================================================
 # battlefield_intel merge — 唯一5min级任务
-*/15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 10 python3 brahma_brain/battlefield_intel.py merge  # [2.0降频 5min→15min] >> logs/battlefield_intel.log 2>&1
+*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 10 python3 brahma_brain/battlefield_intel.py merge >> logs/battlefield_intel.log 2>&1
 
 # ============================================================
 # Layer 2: 中频数据采集+维护 (30min级，错峰到 :05/:35)
 # ============================================================
 # 候选池生成 — :05和:35
-07 * * * * cd /root/.openclaw/workspace/trading-system && timeout 15 python3 scripts/battlefield_candidates.py  # [2.0降频 30min→1h] >> logs/battlefield_candidates.log 2>&1
+07,37 * * * * cd /root/.openclaw/workspace/trading-system && timeout 15 python3 scripts/battlefield_candidates.py >> logs/battlefield_candidates.log 2>&1
 # paper engine — :08和:38
 # [9.26 B线封印] 停用paper_engine双账本（bar回放引擎）: 08,38 * * * * cd /root/.openclaw/workspace/trading-system && timeout 55 bash scripts/run_paper_engine.sh >> logs/syscron.log 2>&1
 # paper TP monitor — :10和:40
@@ -64,8 +64,8 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # HAR-RV缓存独立刷新 — :11每4h（[9.27HAR-RV cron挂回 苏摩111] 防分析链懒加载失活；原子写已修并发根因）
 11 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/har_rv_refresh.py >> logs/har_rv_refresh.log 2>&1
 # 依赖自愈兜底 — 每15min（[9.27wheelhouse 苏摩111] overlaybd重置回滚dist-packages，wheelhouse持久层恢复）
-0 * * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/ensure_deps.py  # [2.0降频 15min→1h] >> logs/ensure_deps.log 2>&1
-# [2.0删除 cron_replay_sentinel: 生产无需每小时自动修复回放，brahma_autocheck 6h覆盖]
+*/15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/ensure_deps.py >> logs/ensure_deps.log 2>&1
+6-56/15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/cron_replay_sentinel.py --apply --quiet >> logs/cron_replay.log 2>&1
 
 # ============================================================
 # Layer 4: 每2小时任务 (错峰)
@@ -76,13 +76,13 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 
 # OI watchlist — :00 偶数小时
 # [9.18 修复] oi_watchlist从:00移到:22错峰
-22 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/oi_watchlist_monitor.py  # [2.0降频 2h→4h] >> logs/oi_watchlist.log 2>&1
+22 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/oi_watchlist_monitor.py >> logs/oi_watchlist.log 2>&1
 # battlefield auto analysis — :15 偶数小时
 15 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 900 flock -n /tmp/brahma_battlefield.lock python3 scripts/battlefield_auto_analysis.py >> logs/auto_analysis.log  # [2.0 flock防双实例] 2>&1
 # core cleanup — :20 偶数小时
 20 */2 * * * python3 -c "import os,glob; [os.remove(f) for f in glob.glob('/tmp/core.*')+glob.glob('/root/core.*')+glob.glob('/root/.openclaw/workspace/trading-system/core.*') if os.path.exists(f)]" >> /root/.openclaw/workspace/trading-system/logs/syscron.log 2>&1  # [P0-2 2026-09-30 苏摩111] glob补trading-system/core.*（9.29审查实锤清理盲区）
 # session disk cleanup — :25 偶数小时
-# [2.0删除 session_disk_cleanup: 合并进log_rotation 6h]
+25 */2 * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/session_disk_cleanup.py >> logs/syscron.log 2>&1
 
 # ============================================================
 # Layer 5: 每4-6小时任务 (错峰)
@@ -93,13 +93,13 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [9.18 修复] whale_monitor从:30移到:33错峰避免与oi_advanced重叠
 33 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/whale_monitor.py >> logs/whale_monitor.log 2>&1
 # liq heatmap — :45 每4h
-45 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/liq_heatmap.py  # [2.0降频 1h→2h] >> logs/liq_heatmap.log 2>&1
+45 */1 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/liq_heatmap.py >> logs/liq_heatmap.log 2>&1
 # brahma autocheck — :50 每6h
 50 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/brahma_autocheck.py --push >> logs/syscron.log  # [2.0 timeout] 2>&1
 # log rotation — :55 每6h
 55 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/log_rotation.py >> logs/syscron.log  # [2.0 timeout] 2>&1
 # cron health board — :58 每6h
-# [2.0合并删除 cron_health_board: brahma_autocheck已包含健康检查逻辑] 58 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/cron_health_board.py >> logs/syscron.log 2>&1
+58 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/cron_health_board.py >> logs/syscron.log 2>&1
 # square extreme alert — :33 每4h
 33 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square/square_extreme_alert.py >> logs/syscron.log 2>&1
 
@@ -107,15 +107,15 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # Layer 6: 每日定点任务 (Square发布)
 # ============================================================
 # hot tickers — 01:00
-0 1,7,9,11,13 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_hot_poster_router.py >> logs/syscron.log 2>&1  # [2.0 5合1路由]
+0 1 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type hot_tickers --no-delay >> logs/syscron.log 2>&1
 # top gainers — 07:00
-# [2.0合并删除] 0 7 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type top_gainers --no-delay >> logs/syscron.log 2>&1
+0 7 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type top_gainers --no-delay >> logs/syscron.log 2>&1
 # pump alert — 09:00
-# [2.0合并删除] 0 9 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type pump_alert >> logs/syscron.log 2>&1
+0 9 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type pump_alert >> logs/syscron.log 2>&1
 # market summary — 11:00
-# [2.0合并删除] 0 11 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type market_summary >> logs/syscron.log 2>&1
+0 11 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type market_summary >> logs/syscron.log 2>&1
 # top losers — 13:00
-# [2.0合并删除] 0 13 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type top_losers --no-delay >> logs/syscron.log 2>&1
+0 13 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type top_losers --no-delay >> logs/syscron.log 2>&1
 # daily review — 16:00
 0 16 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/daily_review_llm.py >> logs/daily_review.log 2>&1
 # screener — 12:00
@@ -197,8 +197,8 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 */5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/price_trigger_monitor.py >> logs/price_trigger.log 2>&1
 
 # [9.19 设计院] 配置漂移+引用检查 每6小时
-# [2.0删除 cron_reference_check: 开发期工具，生产不需要]
-# [2.0删除 config_contract_check: 合并进brahma_autocheck]
+0 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/cron_reference_check.py >> logs/cron_ref_check.log  # [2.0 timeout] 2>&1
+5 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/config_contract_check.py >> logs/config_contract_check.log  # [2.0 timeout] 2>&1
 # [9.19] @reboot不兼容supercronic，改为开机后1分钟延迟启动
 1 1 * * * cd /root/.openclaw/workspace/trading-system && bash scripts/brahma_autostart.sh >> logs/autostart.log 2>&1
 
@@ -223,7 +223,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 */5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/paper_tp_monitor.py >> logs/paper_tp.log 2>&1  # [9.26 B线] SL/TP硬监控 6h→5min
 
 # L0工作记忆刷新（每5分钟，独立脚本）
-# [2.0删除 autopilot_l0_refresh: brahma_cpu每小时维护L0，5分钟刷新冗余]
+*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/autopilot_l0_refresh.py >> logs/autopilot_l0.log 2>&1
 
 # [9.23苏摩111] 独立watchdog拉起任务（带单实例锁，已有实例则退出）
 */5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 bash scripts/independent_watchdog.sh >> logs/watchdog.log 2>&1  # [2.0 去nohup&]
@@ -231,15 +231,14 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [9.23苏摩111 P0] 每分钟拉起核心进程（带单实例锁，进程死了自动复活）
 * * * * * cd /root/.openclaw/workspace/trading-system && bash scripts/process_resurrect.sh >> logs/resurrect.log 2>&1
 # drift checker — 03:05 daily (三方审核Phase0: 封印常量↔代码实值比对, L1字面grep)
-# [2.0合并删除] 5 3 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/drift_checker.py >> logs/drift_checker.log 2>&1
+5 3 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/drift_checker.py >> logs/drift_checker.log 2>&1
 
 # [9.26苏摩111 P0-2] state_refresh挂回调度（entry SSOT，错开07,37/08,38/12,42/30 1|9）
 13,43 * * * * cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/brahma_state_refresh.py >> logs/state_refresh.log 2>&1
 
 # [梵天2.0 T2 A/B对照盘 2026-09-27 苏摩111] 影子分歧报告+回放CI（每日23:50北京=15:50UTC复盘前）
-# 50 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/divergence_report.py >> logs/t2_divergence.log 2>&1
-30 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 150 python3 scripts/t2_daily_check.py >> logs/t2_check.log 2>&1  # [2.0 T2三件套合并]
-# [2.0合并删除] 55 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/replay_ci.py --days 2 >> logs/replay_ci.log 2>&1
+50 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/divergence_report.py >> logs/t2_divergence.log 2>&1
+55 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/replay_ci.py --days 2 >> logs/replay_ci.log 2>&1
 
 # [9.26 B线] 纸面每日复盘（23:30北京）
 30 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/paper_daily_review.py >> logs/paper_daily_review.log 2>&1  # [9.26 B线] 每日复盘 23:30北京
