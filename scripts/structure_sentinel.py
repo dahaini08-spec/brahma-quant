@@ -256,6 +256,34 @@ def sense_btc_eth() -> list[dict]:
                 'priority': 'MED',
             })
 
+
+    # ── D7: 果蝇三条件 score≥2（breakout_watch结果文件，零API消耗）──
+    bw_file = DATA / 'breakout_watch_latest.json'
+    try:
+        if bw_file.exists():
+            import time as _t2
+            bw_age = _t2.time() - bw_file.stat().st_mtime
+            if bw_age < 1800:  # 30min内的结果有效
+                bw_data = json.loads(bw_file.read_text())
+                for sym_full, result in bw_data.get('results', {}).items():
+                    sym_short = sym_full[:-4] if sym_full.endswith('USDT') and sym_full in ('BTCUSDT','ETHUSDT') else None
+                    if not sym_short: continue
+                    score = result.get('score', 0)
+                    level = result.get('level', 'NORMAL')
+                    if score >= 2:
+                        c1 = result.get('c1_volume', {})
+                        c2 = result.get('c2_lsr', {})
+                        c3 = result.get('c3_chop', {})
+                        detail = f"量能{c1.get('vol_ratio',0):.1f}x / 轧空{'✅' if c2.get('ok') else '❌'} / 弹簧{'✅' if c3.get('ok') else '❌'}"
+                        triggers.append({
+                            'sym': sym_short, 'dim': 'D7_BREAKOUT', 'price': c1.get('cur_price', 0),
+                            'title': f'🚀 {sym_short} 果蝇突破 {score}/3条件满足',
+                            'detail': f'level={level} · {detail}',
+                            'priority': 'CRITICAL' if score >= 3 else 'HIGH',
+                        })
+    except Exception as _bw_e:
+        print(f'[sentinel] D7果蝇读取失败: {_bw_e}', file=sys.stderr)
+
     return triggers
 
 

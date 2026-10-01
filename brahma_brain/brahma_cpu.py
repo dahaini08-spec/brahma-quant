@@ -78,7 +78,7 @@ SOMA_ONLINE_MIN   = 30      # 苏摩30分钟内有消息=在线
 _WATCH_FILE     = _DATA / 'cpu_watch_list.json'
 _CPU_LOG        = _DATA / 'brahma_cpu_log.jsonl'
 _JARVIS_USER    = '73295708'
-_JARVIS_THREAD  = '01a0d79b-fea4-71b1-9f2a-c02a9844b4ed'
+_JARVIS_THREAD  = '01a0f312-7e0c-7ae0-ae95-f66915d1d13c'
 
 # ── Autopilot记忆层 [9.20 苏摩111] ─────────────────────────────────
 _L0_STATE       = _DATA / 'autopilot_state.json'      # L0工作记忆
