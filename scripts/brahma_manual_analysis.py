@@ -441,12 +441,27 @@ def step1b_fangcang_hcme(d: dict, fvg: dict) -> dict:
     }
 
     # 信号方向
+    # [P3修复 2026-10-01 苏摩111] 低相似度降级：<0.25时方仓信号置NEUTRAL
+    # 根因：相似度0.191时方仓信号无统计意义（随机匹配），穿透到G4制造噪音
+    # 修复：相似度<0.25=降级为NEUTRAL，输出体制基准WR作为参考
+    _top_sim = top5_fmt[0]['similarity'] if top5_fmt else 0
+    _SIM_THRESHOLD = 0.25
     fc_direction = 'NEUTRAL'
-    if signal_hint:
+    if signal_hint and _top_sim >= _SIM_THRESHOLD:
         if 'LONG' in signal_hint.upper():
             fc_direction = 'LONG'
         elif 'SHORT' in signal_hint.upper():
             fc_direction = 'SHORT'
+    elif signal_hint and _top_sim < _SIM_THRESHOLD:
+        # 低相似度：用体制基准WR方向作为方仓方向（不用具体案例）
+        _regime_wr_map = {
+            'BULL_TREND': 'LONG', 'BEAR_TREND': 'SHORT',
+            'BEAR_RECOVERY': 'LONG', 'CHOP_MID': 'NEUTRAL',
+        }
+        _regime_base = str(fc_regime or d.get('bs',{}).get('regime','CHOP_MID')).upper()
+        fc_direction = _regime_wr_map.get(_regime_base, 'NEUTRAL')
+        # 注入低相似度警告，防止下游误用
+        trap_alert = (trap_alert or '') + f' ⚠️方仓相似度{_top_sim:.3f}<{_SIM_THRESHOLD}，降级用体制基准WR={fc_direction}'
 
     # 描述
     desc_parts = []
@@ -1269,7 +1284,21 @@ def step7_volatility(d: dict) -> dict:
         fh_vol    = daily_vol / (6 ** 0.5)    # 日化→4H化
         harv_range_lo = round(price_now * (1 - fh_vol), 1)
         harv_range_hi = round(price_now * (1 + fh_vol), 1)
-        harv_range_str = f'未来4H价格区间: ${harv_range_lo:,.0f}~${harv_range_hi:,.0f}'
+        # [P2修复 2026-10-01 苏摩111] HAR-RV压缩市场兜底
+        # 根因：低波动率时fh_vol极小→区间<0.1%→等于无信息
+        # 修复：ATR4H/ATR1H作为最小区间保底（统计有效的波动参考）
+        _harv_raw_width = harv_range_hi - harv_range_lo
+        _atr4h_ref = d.get('atr_4h', 0) or atr_4h if 'atr_4h' in dir() else 0
+        _atr1h_ref = d.get('atr_1h', 0) or 0
+        _min_width = max(_atr4h_ref * 1.0, _atr1h_ref * 2.0, price_now * 0.003)  # 最小0.3%
+        if _harv_raw_width < _min_width:
+            # ATR兜底展宽
+            harv_range_lo = round(price_now - _min_width / 2, 1)
+            harv_range_hi = round(price_now + _min_width / 2, 1)
+            harv_range_str = (f'未来4H价格区间: ${harv_range_lo:,.0f}~${harv_range_hi:,.0f}'
+                              f' ⚠️ATR兜底(RV区间仅${_harv_raw_width:.0f}过窄)')
+        else:
+            harv_range_str = f'未来4H价格区间: ${harv_range_lo:,.0f}~${harv_range_hi:,.0f}'
 
     kappa    = vb.get('kappa', 0)
     beta_p   = vb.get('beta_plus', 0)
@@ -2669,6 +2698,50 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     # 让step10_vip能读到trader_brain的真实方向，不再各算各的
     d['_trader_brain_direction'] = final_direction
     d['_trader_brain_action'] = final_action
+
+    # ══ P0修复 [2026-10-01 苏摩111]: G4断层——trader_brain执行后重算align_count ══
+    # 根因：step4_resonance(L2617)在trader_brain(L2632)之前，signal_dir=brahma_state旧值
+    # 修复：trader_brain方向确定后，用真实方向重算align_count并回写res
+    if final_direction in ('LONG', 'SHORT'):
+        _tb_dir = final_direction
+        _tb_bull = (_tb_dir == 'LONG')
+        _fvg_c = fvg.get('dir', 'NONE').upper()   # BULL/BEAR
+        _fvg_match = (_tb_bull and _fvg_c == 'BULL') or (not _tb_bull and _fvg_c == 'BEAR')
+        # OB多数派
+        _valid_obs = [k for k, v in ob.items() if isinstance(v, dict) and v.get('valid')]
+        _ob_bull_n = sum(1 for k in _valid_obs if 'BULL' in k)
+        _ob_bear_n = sum(1 for k in _valid_obs if 'BEAR' in k)
+        _ob_match = (_tb_bull and _ob_bull_n > _ob_bear_n) or (not _tb_bull and _ob_bear_n > _ob_bull_n)
+        # 清算方向
+        _liq_short = liq.get('nearest_short', 0)
+        _liq_long  = liq.get('nearest_long', 0)
+        _liq_match = (_tb_dir == 'SHORT' and _liq_short > p) or (_tb_dir == 'LONG' and _liq_long > 0 and _liq_long < p)
+        # OI方向
+        _oi_sig = (oi or {}).get('signal', '')
+        _oi_bull = 'LONG' in _oi_sig or 'BUY' in _oi_sig
+        _oi_bear = 'SHORT' in _oi_sig or 'SELL' in _oi_sig
+        _oi_match = (_tb_bull and _oi_bull) or (not _tb_bull and _oi_bear)
+        # GEX方向
+        _gex_score = (vol or {}).get('gex_score', 0)
+        _gex_match = (_tb_bull and _gex_score > 0) or (not _tb_bull and _gex_score < 0)
+        # 方仓方向
+        _fc_dir = (fc or {}).get('signal', 'NEUTRAL')
+        _fc_match = (_tb_bull and _fc_dir == 'LONG') or (not _tb_bull and _fc_dir == 'SHORT')
+        # 跨市场方向
+        _cma_risk_on = bool(_cma) and _cma.get('regime', '') == 'RISK_ON'
+        _cma_match = (_tb_bull and _cma_risk_on) or (not _tb_bull and not _cma_risk_on and bool(_cma))
+        # 重新累计
+        _tb_align = sum([_fvg_match, _ob_match, _liq_match,
+                         _oi_match if _oi_sig not in ('NO_DATA','MIXED','') else False,
+                         _gex_match if _gex_score != 0 else False,
+                         _fc_match if _fc_dir != 'NEUTRAL' else False,
+                         _cma_match if _cma else False])
+        res['align_count'] = _tb_align   # 回写，Step11 G4 读此值
+        d['_tb_align_recomputed'] = _tb_align
+        print(f'[{sym}] G4重算: tb_dir={_tb_dir} align={_tb_align}/7 (原signal_dir口径={res.get("_orig_align",0)})', flush=True)
+    else:
+        res['align_count'] = 0
+        d['_tb_align_recomputed'] = 0
 
     # BUG-1修复：分析完成后拉一次实时价，检测漂移
     import time as _t, urllib.request as _ur, ssl as _ssl, json as _js

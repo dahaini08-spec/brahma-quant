@@ -158,11 +158,28 @@ class Step11Judge:
         return True
 
     def gate5_chop_score(self) -> bool:
-        """Gate5: CHOP体制需更高分数（震荡市提高门槛）"""
-        if 'CHOP' in self.regime and self.score < self.CHOP_MAX_SCORE:
-            self.blocked_by = f'Gate5_CHOP分数不足:{self.score:.0f}<{self.CHOP_MAX_SCORE}'
-            self.reason.append(f'❌ G5震荡体制score={self.score:.0f} < {self.CHOP_MAX_SCORE}，减少交易频率')
-            return False
+        """Gate5: CHOP体制需更高分数（Hurst>0.6时旁路——趋势区不应锁死）
+        [P1修复 2026-10-01 苏摩111]
+        根因：Hurst=0.622已进趋势区，但CHOP门槛一刀切导致WAIT锁死
+        修正：Hurst>0.6时门槛从110降到85（趋势信号优先，CHOP只是滞后标签）
+        """
+        if 'CHOP' in self.regime:
+            # Hurst>0.6 = 趋势性隐现，降低门槛
+            if self.hurst >= 0.6:
+                effective_threshold = 85   # 趋势区旁路
+                _note = f'Hurst={self.hurst:.3f}≥0.6趋势区，CHOP门槛旁路→{effective_threshold}'
+            elif self.hurst >= 0.55:
+                effective_threshold = 95   # 中间过渡区
+                _note = f'Hurst={self.hurst:.3f}≥0.55过渡区，门槛→{effective_threshold}'
+            else:
+                effective_threshold = self.CHOP_MAX_SCORE  # 标准震荡门槛
+                _note = f'Hurst={self.hurst:.3f}<0.55随机游走，全门槛{effective_threshold}'
+            if self.score < effective_threshold:
+                self.blocked_by = f'Gate5_CHOP门槛:{self.score:.0f}<{effective_threshold}'
+                self.reason.append(f'❌ G5 {_note} score={self.score:.0f} < {effective_threshold}')
+                return False
+            self.reason.append(f'✅ G5 {_note} score={self.score:.0f}通过')
+            return True
         self.reason.append(f'✅ G5体制={self.regime} score={self.score:.0f}通过')
         return True
 
