@@ -271,16 +271,25 @@ def get_liq_density(symbol: str, current_price: float) -> dict:
     # 从Binance获取实时OI，按历史杠杆分布推算各档清算价
     _oi_liq_levels = []
     try:
-        import urllib.request as _ur, json as _json
-        _oi_resp = _ur.urlopen(
-            f'https://fapi.binance.com/futures/data/openInterestHist'
-            f'?symbol={symbol}&period=1h&limit=1', timeout=5)
-        _oi_data = _json.loads(_oi_resp.read())
-        _oi_val = float(_oi_data[0]['sumOpenInterestValue'])  # USD
-        _lsr_resp = _ur.urlopen(
-            f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio'
-            f'?symbol={symbol}&period=1h&limit=1', timeout=5)
-        _lsr = _json.loads(_lsr_resp.read())[0]
+        # [P4-B 2026-10-01 苏摩111] 裸urllib直连→data_cache缓存通道收敛（消除全库重复HTTP实现）
+        # 语义保留：轨道B需要USD名义OI（sumOpenInterestValue，币本位×价）与LSR原始帐户数比例，
+        # data_cache.get_open_interest只返回币本位oi，故走统一_get通道+同TTL表（oi=60s/lsr=120s）
+        from data_cache import _get as _dc_get, _cache_key as _dc_key, _cache_get as _dc_get_c, _cache_set as _dc_set, TTL as _dc_TTL
+        _oi_k, _lsr_k = _dc_key(symbol, 'oi_usd_hist'), _dc_key(symbol, 'lsr_raw')
+        _oi_hist = _dc_get_c(_oi_k)
+        _lsr_raw = _dc_get_c(_lsr_k)
+        if _oi_hist is None:
+            _oi_hist = _dc_get(
+                f'https://fapi.binance.com/futures/data/openInterestHist'
+                f'?symbol={symbol}&period=1h&limit=1')
+            _dc_set(_oi_k, _oi_hist, _dc_TTL.get('oi', 60))
+        if _lsr_raw is None:
+            _lsr_raw = _dc_get(
+                f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio'
+                f'?symbol={symbol}&period=1h&limit=1')
+            _dc_set(_lsr_k, _lsr_raw, _dc_TTL.get('lsr', 120))
+        _oi_val = float(_oi_hist[0]['sumOpenInterestValue'])  # USD
+        _lsr = _lsr_raw[0]
         _long_pct  = float(_lsr['longAccount'])
         _short_pct = float(_lsr['shortAccount'])
         _long_oi   = _oi_val * _long_pct
