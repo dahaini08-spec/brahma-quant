@@ -498,7 +498,7 @@ def step1b_fangcang_hcme(d: dict, fvg: dict) -> dict:
         _regime_base = str(fc_regime or d.get('bs',{}).get('regime','CHOP_MID')).upper()
         fc_direction = _regime_wr_map.get(_regime_base, 'NEUTRAL')
         # 注入低相似度警告，防止下游误用
-        trap_alert = (trap_alert or '') + f' ⚠️方仓相似度{_top_sim:.3f}<{_SIM_THRESHOLD}，降级用体制基准WR={fc_direction}'
+        trap_alert = (str(trap_alert) if trap_alert and not isinstance(trap_alert, str) else (trap_alert or '')) + f' ⚠️方仓相似度{_top_sim:.3f}<{_SIM_THRESHOLD}，降级用体制基准WR={fc_direction}'
 
     # 描述
     desc_parts = []
