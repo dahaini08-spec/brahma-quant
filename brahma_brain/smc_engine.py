@@ -2122,14 +2122,15 @@ def scan_structure(symbol: str = 'BTCUSDT') -> dict:
     result = {'symbol': symbol, 'coin': coin, 'ts': time.time()}
 
     # ── 1. 当前价 ─────────────────────────────────────────────
+    # [P4-B 2026-10-01 苏摩111] 移除裸requests.get备份——scan_structure是模块内函数
+    # bus已在文件头import且单例可用（原except里的裸requests永不缓存、与价格永不缓存封印冲突，
+    # 且在bus真正失败时代表交易所限速，再发裸请求只会加重限速）。语义保持：bus失败则px为空→
+    # 后续逻辑照旧按异常路径处理（result无price键）
     try:
         px = bus.price(symbol)
-    except Exception:
-        import requests
-        px = float(requests.get(
-            f'https://fapi.binance.com/fapi/v1/ticker/price',
-            params={'symbol': symbol}, timeout=5).json()['price'])
-    result['price'] = px
+        result['price'] = px
+    except Exception as _e_px:
+        print(f"[WARN] smc_engine.scan_structure: bus.price失败 {_e_px}", file=sys.stderr)
 
     # ── 2. OB — 订单块 ────────────────────────────────────────
     ob_data = {'bear_ob': {}, 'bull_ob': {}, 'bear_ob_4h': {}, 'bull_ob_4h': {}}
