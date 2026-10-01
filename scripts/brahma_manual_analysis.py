@@ -2721,6 +2721,21 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
 
     vip = step10_vip(sym, p, d, fvg, ob, liq, res, oi, sm, vol, mac, risk)
 
+    # ══ Step11 强制决策裁判 [2026-10-01 苏摩111] ══
+    # 11道硬闸门SSOT：替代分散在step10_vip内的门控逻辑
+    # 结果注入到输出流，作为人工审核区后的最终裁决
+    try:
+        from step11_mandatory_judge import run_step11 as _s11
+        _s11_result = _s11(sym, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, tb_result)
+        d['_step11'] = _s11_result  # 供后续formatter读取
+        _s11_verdict = _s11_result['verdict']
+        _s11_gates   = _s11_result['gates_passed']
+        _s11_blocked = _s11_result['blocked_by'] or '通过'
+        print(f'[{sym}] Step11裁判: {_s11_verdict} | 闸门{_s11_gates}/11 | 阻断={_s11_blocked}', flush=True)
+    except Exception as _s11_e:
+        print(f'[WARN] Step11 Judge: {_s11_e}', file=__import__("sys").stderr)
+        _s11_result = None
+
     # AI议会辩论已移除（2026-09-11 苏摩111）— trader_brain 6层确定性决策替代，debate代码不执行省2s
     _debate_block = ''
 
