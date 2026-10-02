@@ -525,6 +525,37 @@ def process_event(symbol: str, signal_dir: str = None,
         return {'decision': 'SKIP', 'reason': reason, 'layer': 0,
                 'symbol': sym, 'score': score, 'elapsed': time.time() - t0}
 
+    # ── Astra节点③：同向WAIT连续3次→推送达摩院根因诊断 [2026-10-02 苏摩111] ──
+    _wait_key = f'{symbol}:{signal_dir}'
+    _wait_counter_f = _DATA / 'astra_wait_counter.json'
+    try:
+        _wc = json.loads(_wait_counter_f.read_text()) if _wait_counter_f.exists() else {}
+        if score < SCORE_SKIP or (score < SCORE_WATCH):
+            _wc[_wait_key] = _wc.get(_wait_key, 0) + 1
+            if _wc[_wait_key] >= 3 and signal_dir not in ('NONE', 'UNKNOWN', 'NEUTRAL'):
+                # 连续3次同向WAIT → Astra节点③触发
+                _wc[_wait_key] = 0  # 重置计数
+                _astra_msg = (
+                    f'🔍 **Astra节点③** | {symbol} 连续3次{signal_dir} WAIT\n\n'
+                    f'> score={score:.1f} 持续不达标，达摩院根因诊断：\n'
+                    f'> 体制={regime_c} | IC降权中 | 建议等体制切换或OI反转信号\n'
+                    f'> 当前{signal_dir}方向需要：score≥{SCORE_WATCH}\n\n'
+                    f'发 `分析{symbol[:3]}` 获取完整诊断'
+                )
+                import subprocess as _sp
+                _sp.Popen([
+                    'openclaw', 'infer',
+                    '--channel', 'jarvis',
+                    '--to', f'{_JARVIS_USER}:thread:{_JARVIS_THREAD}',
+                    '--message', _astra_msg,
+                ], stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
+                _log.info(f'[Astra③] {symbol} {signal_dir} 连续WAIT推送')
+        else:
+            _wc[_wait_key] = 0  # 有动作则重置
+        _wait_counter_f.write_text(json.dumps(_wc))
+    except Exception as _a3e:
+        _log.warning(f'[Astra③] 计数失败: {_a3e}')
+
     if score < SCORE_SKIP:
         reason = f'score={score:.1f}<{SCORE_SKIP}门槛'
         _log_decision(sym, signal_dir, 'SKIP', reason, score, layer=1, score_result=result)

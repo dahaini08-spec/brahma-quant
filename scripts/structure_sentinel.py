@@ -70,12 +70,12 @@ try:
     )
 except ImportError:
     HURST_TREND = 0.6
-    LSR_RETAIL_CROWDED = 70.0
+    LSR_RETAIL_CROWDED = 67.0  # [修正2026-10-02] 原70%太严，ETH散户实际在68~72区间，67%=进入拥挤区预警
     ATR_SL_MIN_MULT = 1.5
 
 HURST_PREV_THRESHOLD = 0.55   # 从此值以下触发（确保是从随机区跨越）
 CVD_BURST_THRESHOLD  = 800    # CVD绝对值突破阈值
-PRICE_WALL_PCT       = 0.003  # 价格距离止损墙/支撑池 0.3%以内触发
+PRICE_WALL_PCT       = 0.015  # 价格距离止损墙/支撑池 1.5%以内触发（进入射程预警）
 OI_FLIP_LOOKBACK     = 3      # OI翻转需要连续N根15M确认
 
 
