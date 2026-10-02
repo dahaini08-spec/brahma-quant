@@ -319,13 +319,19 @@ def _do_alert(symbol: str, signal_dir: str, score_result: dict,
         lines += ['', '发 `执行` 确认下单 | 发 `跳过` 忽略']
 
         msg = '\n'.join(lines)
-        import subprocess
-        subprocess.Popen([
-            'openclaw', 'infer',
-            '--channel', 'jarvis',
-            '--to', f'{_JARVIS_USER}:thread:{_JARVIS_THREAD}',
-            '--message', msg,
-        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        # push_hub单入口 [Fix 2026-10-02 苏摩111]
+        try:
+            import importlib.util as _ilu, pathlib as _pl
+            _spec = _ilu.spec_from_file_location('push_hub',
+                _pl.Path(__file__).parent.parent / 'scripts' / 'push_hub.py')
+            _ph = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_ph)
+            _ph.push_jarvis(msg, priority='P1')
+        except Exception as _pe:
+            import subprocess as _sp2
+            _sp2.Popen(['openclaw','infer','--channel','jarvis',
+                '--to', f'{_JARVIS_USER}:thread:{_JARVIS_THREAD}',
+                '--message', msg],
+                stdout=_sp2.DEVNULL, stderr=_sp2.DEVNULL)
     except Exception as e:
         _log.warning(f'[CPU·ALERT] 推送失败: {e}')
 
