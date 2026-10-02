@@ -3,6 +3,12 @@
 brahma_manual_analysis.py — 梵天手动全链路分析入口
 设计院封印 2026-09-03 苏摩111
 
+[输出格式封印 2026-10-02 苏摩111]
+每次分析输出强制遵循三方联合标准模版：
+  scripts/brahma_output_template.py — format_full_report() + format_vip_card()
+  D1~D10 + Step11 + 三方决策 + VIP + 一致性评分表
+  角色：🔬量化工程师 / 📐达摩院 / ⚔️40年交易员
+
 P2修复 2026-09-11 苏摩111：pyc根治
 sys.dont_write_bytecode必须在模块顶部设置，
 在函数内部设置无效（import时已生成pyc）
