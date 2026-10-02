@@ -60,7 +60,9 @@ if not _JARVIS_THREAD:
 
 # ── 触发记录（防重复推送） ────────────────────────────
 _TRIGGER_STATE = DATA / 'structure_sentinel_state.json'
-_COOLDOWN_S    = 6 * 3600   # 同维度+同标的 6小时冷却
+_COOLDOWN_S    = 6 * 3600   # 默认冷却 6h（趋势性信号）
+_COOLDOWN_D4   = 2 * 3600   # D4_LSR冷却 2h（散户拥挤持续信号）
+_COOLDOWN_D5D6 = 3 * 3600   # D5/D6冷却 3h（止损墙接近，需持续警觉）
 
 # ── 阈值（对齐 analysis_constants.py） ───────────────
 try:
@@ -113,10 +115,16 @@ def _save_state(state: dict) -> None:
 
 
 def _is_cooled_down(state: dict, sym: str, dim: str) -> bool:
-    """检查是否在冷却期内"""
+    """检查是否在冷却期内（差异化冷却：D4=2h/D5D6=3h/其他=6h）"""
     key = f'{sym}:{dim}'
     last_ts = state.get(key, 0)
-    return (time.time() - last_ts) < _COOLDOWN_S
+    if dim == 'D4_LSR':
+        cooldown = _COOLDOWN_D4
+    elif dim in ('D5_WALL', 'D6_POOL'):
+        cooldown = _COOLDOWN_D5D6
+    else:
+        cooldown = _COOLDOWN_S
+    return (time.time() - last_ts) < cooldown
 
 
 def _mark_triggered(state: dict, sym: str, dim: str) -> None:
