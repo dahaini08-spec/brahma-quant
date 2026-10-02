@@ -3313,6 +3313,30 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
                 regime=str(regime_c),
             )
             lines.append(f'  → 已记录模拟入场 {sym} {d["signal_dir"]}')
+            # [2026-10-02 苏摩111] AMBUSCADE/ENTER信号主动推送
+            if push_jarvis and _final_action in ('AMBUSCADE', 'ENTER', 'EXECUTE'):
+                try:
+                    import importlib.util as _ilu2, pathlib as _pl2
+                    _sp2 = _ilu2.spec_from_file_location('push_hub',
+                        _pl2.Path(__file__).parent / 'push_hub.py')
+                    _ph2 = _ilu2.module_from_spec(_sp2); _sp2.loader.exec_module(_ph2)
+                    _amb_entry = d.get('key_levels', {})
+                    _amb_lo = _amb_entry.get('entry_lo', 0)
+                    _amb_hi = _amb_entry.get('entry_hi', 0)
+                    _amb_sl = _amb_entry.get('sl', 0)
+                    _amb_tp = _amb_entry.get('tp1', 0)
+                    _amb_msg = (
+                        f'🎯 **{_final_action}信号** | {sym} {d["signal_dir"]} | '
+                        f'{time.strftime("%H:%M UTC", time.gmtime())}\n\n'
+                        f'入场区: ${_amb_lo:,.1f}~${_amb_hi:,.1f}\n'
+                        f'止损: ${_amb_sl:,.1f} | 目标: ${_amb_tp:,.1f}\n'
+                        f'体制: {regime_c} | 评分: {d.get("score",0):.0f}'
+                    )
+                    _ph2.push_jarvis(_amb_msg, priority='P1',
+                        dedup_key=f'ambuscade_{sym}_{d["signal_dir"]}_{int(_settle_price//100)}',
+                        dedup_ttl=3600)
+                except Exception as _ambe:
+                    pass  # 不影响主链
     except Exception as _settle_e:
         import sys as _se_sys; print(f'[WARN] settlement: {_settle_e}', file=_se_sys.stderr)
 

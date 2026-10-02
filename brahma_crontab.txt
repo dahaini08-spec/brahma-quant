@@ -254,3 +254,6 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 
 # [9.26 B线] 纸面每日复盘（23:30北京）
 30 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/paper_daily_review.py >> logs/paper_daily_review.log 2>&1  # [9.26 B线] 每日复盘 23:30北京
+
+# 数据目录自动清理 — 每日 03:05 UTC 静默运行
+5 3 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/data_janitor.py >> logs/janitor.log 2>&1
