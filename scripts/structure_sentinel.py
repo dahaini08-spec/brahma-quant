@@ -353,9 +353,14 @@ def _read_latest_vip(sym: str) -> str:
             entry_l_hi = round(liq_long  * 1.005, 1)
             sl_s = round(liq_short * 1.02, 1)
             sl_l = round(liq_long  * 0.98, 1)
+            # TP: 空单TP=支撑池 / 多单TP=止损墙
+            tp_short = liq_long   # 空单目标 = 下方支撑池（多头止损集中区）
+            tp_long  = liq_short  # 多单目标 = 上方止损墙（空头止损集中区）
             return (
-                f'🔴 空单区 ${entry_s_lo:,.1f}~${liq_short:,.1f}  SL ${sl_s:,.1f}\n'
-                f'🟢 多单区 ${liq_long:,.1f}~${entry_l_hi:,.1f}  SL ${sl_l:,.1f}\n'
+                f'🔴 空单区 ${entry_s_lo:,.1f}~${liq_short:,.1f}'
+                f'  SL ${sl_s:,.1f} | TP ${tp_short:,.1f}\n'
+                f'🟢 多单区 ${liq_long:,.1f}~${entry_l_hi:,.1f}'
+                f'  SL ${sl_l:,.1f} | TP ${tp_long:,.1f}\n'
                 f'体制={regime} | 现价=${price_now:,.1f}'
             )
     except Exception:
