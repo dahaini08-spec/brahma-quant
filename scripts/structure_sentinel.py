@@ -493,6 +493,17 @@ def main():
         fired += 1
 
     _save_state(state)
+
+    # [2026-10-02 苏摩111] VIP点位漂移检测 — 止损墙变化>0.5%推送版本更替通知
+    try:
+        import importlib.util as _ilu
+        _spec = _ilu.spec_from_file_location('vip_signal_tracker',
+            Path(__file__).parent / 'vip_signal_tracker.py')
+        _vt = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_vt)
+        _vt.run(['BTC', 'ETH'])
+    except Exception as _vte:
+        pass
+
     print(f'[sentinel] 本轮触发推送 {fired}/{len(triggers)} 条', flush=True)
 
 

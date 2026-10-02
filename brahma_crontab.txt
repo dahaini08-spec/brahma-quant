@@ -246,6 +246,9 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # 50 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/divergence_report.py >> logs/t2_divergence.log 2>&1
 30 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 150 python3 scripts/t2_daily_check.py
 # ══ 梵天2.0: 24h日复盘引擎 [2026-10-01 苏摩111] ══
+# VIP点位漂移检测 — 每小时整点
+5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/vip_signal_tracker.py >> logs/vip_tracker.log 2>&1
+
 30 23 * * * cd /root/.openclaw/workspace/trading-system && timeout 58 python3 scripts/daily_postmortem.py >> logs/daily_postmortem.log 2>&1
 # [2.0合并删除] 55 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/replay_ci.py --days 2 >> logs/replay_ci.log 2>&1
 
