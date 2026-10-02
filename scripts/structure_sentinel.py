@@ -349,25 +349,96 @@ def _read_latest_vip(sym: str) -> str:
     return '（state待刷新，发 `分析BTC` 获取最新）'
 
 
+def _quick_three_party(sym: str, dim: str, price: float) -> str:
+    """
+    Astra模式精简三方快评 [2026-10-02 苏摩111封印]
+    CRITICAL级信号触发时的5s内快评，不跑80维，纯读缓存
+    对标 @thedelost 架构：主力持续跑，架构师只在关键节点介入
+    """
+    try:
+        sym_l = sym.lower()
+        bs_f  = DATA / f'brahma_state_{sym_l}.json'
+        liq_f = DATA / f'liq_heatmap_{sym_l}usdt.json'
+        bw_f  = DATA / 'breakout_watch_latest.json'
+
+        bs  = json.loads(bs_f.read_text()) if bs_f.exists() else {}
+        ld  = json.loads(liq_f.read_text()) if liq_f.exists() else {}
+        bw  = json.loads(bw_f.read_text()) if bw_f.exists() else {}
+
+        regime  = bs.get('regime', 'CHOP_MID')
+        hurst   = bs.get('hurst', 0.0)
+        kl      = bs.get('key_levels', {})
+        resist  = kl.get('resistance', [price*1.02])
+        support = kl.get('support', [price*0.98])
+        r1      = resist[0] if resist else price * 1.02
+        s1      = support[0] if support else price * 0.98
+        liq_s   = float(ld.get('nearest_short_liq', price*1.02) or price*1.02)
+        liq_l   = float(ld.get('nearest_long_liq',  price*0.98) or price*0.98)
+        bw_sym  = bw.get('results', {}).get(f'{sym}USDT', {})
+        bw_score= bw_sym.get('score', 0)
+
+        # 方向逻辑（纯规则，0 LLM）
+        dist_wall = (liq_s - price) / price * 100
+        dist_pool = (price - liq_l) / price * 100
+
+        if dim == 'D2_OI_REVERSAL':
+            quant = f'OI反转=多头入场先行指标。距止损墙{dist_wall:.1f}%，现在是低位布多的窗口。'
+            damo  = f'统计上OI反转后2h内价格跟涨概率>65%。'
+            trader= f'等1H收阳确认，止损支撑池${liq_l:,.1f}下方。'
+            bias  = '🟢 偏多'
+        elif dim in ('D5_WALL', 'D4_LSR'):
+            quant = f'价格触碰止损墙${liq_s:,.1f}，空头止损密集区激活。'
+            damo  = f'止损墙附近做空EV历史正值，RR≥2.0。'
+            trader= f'挂空单${liq_s*0.995:,.1f}~${liq_s:,.1f}，止损${liq_s*1.02:,.1f}。'
+            bias  = '🔴 偏空'
+        elif dim == 'D6_POOL':
+            quant = f'价格触碰支撑池${liq_l:,.1f}，多头清算区入场点。'
+            damo  = f'支撑池接多历史WR≈60%，需量能确认。'
+            trader= f'挂多单${liq_l:,.1f}~${liq_l*1.005:,.1f}，止损${liq_l*0.98:,.1f}。'
+            bias  = '🟢 偏多'
+        else:
+            quant = f'体制={regime} H={hurst:.3f} 果蝇{bw_score}/3。'
+            damo  = f'等主方向确认后入场。'
+            trader= f'当前观察，不追价。'
+            bias  = '⚪ 中性'
+
+        return (
+            f'━━━ 🏛️ 精简三方快评（Astra模式）━━━\n'
+            f'🔬 量化：{quant}\n'
+            f'📐 达摩院：{damo}\n'
+            f'⚔️ 交易员：{trader}\n'
+            f'**方向：{bias}** | 体制={regime} H={hurst:.3f}\n'
+            f'━━━ 发 `分析{sym}` 获取完整D1~D10 ━━━'
+        )
+    except Exception as e:
+        return f'（快评读取失败: {e}）'
+
+
 def _push_alert(trigger: dict) -> None:
-    """推送触发信号到苏摩线程"""
-    sym     = trigger['sym']
-    price   = trigger['price']
-    title   = trigger['title']
-    detail  = trigger['detail']
+    """推送触发信号到苏摩线程（含Astra精简三方快评）"""
+    sym      = trigger['sym']
+    price    = trigger['price']
+    title    = trigger['title']
+    detail   = trigger['detail']
     priority = trigger['priority']
-    ts_utc  = datetime.now(timezone.utc).strftime('%m/%d %H:%M UTC')
+    dim      = trigger['dim']
+    ts_utc   = datetime.now(timezone.utc).strftime('%m/%d %H:%M UTC')
 
     vip_hint = _read_latest_vip(sym)
     priority_icon = {'CRITICAL': '🚨', 'HIGH': '⚠️', 'MED': '📡'}.get(priority, '📡')
+
+    # CRITICAL级追加精简三方快评（Astra模式：关键节点架构师介入）
+    astra_block = ''
+    if priority == 'CRITICAL':
+        astra_block = '\n\n' + _quick_three_party(sym, dim, price)
 
     msg = (
         f'{priority_icon} **结构感知触发** | {ts_utc}\n\n'
         f'**{title}**\n'
         f'{detail}\n\n'
         f'━━━ 参考VIP点位 ━━━\n'
-        f'{vip_hint}\n\n'
-        f'💡 发 `分析{sym}` 获取最新完整VIP策略'
+        f'{vip_hint}'
+        f'{astra_block}'
     )
 
     target = f'{_JARVIS_USER}:thread:{_JARVIS_THREAD}' if _JARVIS_THREAD else _JARVIS_USER
