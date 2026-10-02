@@ -3451,6 +3451,19 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
     except Exception as _ne:
         print(f'[WARN] live_signal_log写入失败: {_ne}', file=sys.stderr)
 
+    # [2026-10-02 苏摩111] output_template 标准格式化尾部追加
+    # 接入位置: run_analysis() 末尾，在返回文本前追加三方联合签名
+    try:
+        import sys as _sys
+        _sys.path.insert(0, str(Path(__file__).parent))
+        from brahma_output_template import format_full_report as _fmt_report
+        _template_block = _fmt_report(sym, d)
+        if _template_block:
+            lines.append('')
+            lines.append(_template_block)
+    except Exception as _te:
+        pass  # template不影响主链
+
     return '\n'.join(lines)
 
 
