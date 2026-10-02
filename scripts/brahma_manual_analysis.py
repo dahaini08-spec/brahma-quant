@@ -3453,10 +3453,20 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:
 
     # [2026-10-02 苏摩111] output_template 标准格式化尾部追加
     # 接入位置: run_analysis() 末尾，在返回文本前追加三方联合签名
+    # [2026-10-02 苏摩111] 补充entry/sl/tp字段，避免format_full_report输出$0
     try:
         import sys as _sys
         _sys.path.insert(0, str(Path(__file__).parent))
         from brahma_output_template import format_full_report as _fmt_report
+        # 把trader_brain决策结果补充到d，供template读取entry/sl/tp
+        if 'entry_lo' not in d and isinstance(tb_result, dict):
+            d['entry_lo']   = tb_result.get('entry_lo',   d.get('entry_lo', 0.0))
+            d['entry_hi']   = tb_result.get('entry_hi',   d.get('entry_hi', 0.0))
+            d['sl']         = tb_result.get('sl',         d.get('sl', 0.0))
+            d['tp1']        = tb_result.get('tp1',        d.get('tp1', 0.0))
+            d['tp2']        = tb_result.get('tp2',        d.get('tp2', 0.0))
+            d['signal_dir'] = tb_result.get('direction',  d.get('signal_dir', 'NONE'))
+            d['regime']     = str(regime_c)
         _template_block = _fmt_report(sym, d)
         if _template_block:
             lines.append('')
