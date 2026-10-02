@@ -186,13 +186,17 @@ def sense_btc_eth() -> list[dict]:
         if liq_long <= 0:
             liq_long  = price * 0.98
 
-        # CVD（从最新cvd文件读）
+        # CVD：先读realtime文件，不存在则从brahma_state.extra读
         cvd_file = DATA / f'cvd_realtime_{sym.lower()}.json'
         cvd_1h = 0.0
         try:
             if cvd_file.exists():
                 cvd_d = json.loads(cvd_file.read_text())
                 cvd_1h = float(cvd_d.get('cvd_1h', 0) or 0)
+            else:
+                # fallback: brahma_state.extra.order_flow or extra._snap_for_xgb
+                _of = (bs.get('extra', {}) or {}).get('order_flow', {}) or {}
+                cvd_1h = float(_of.get('cvd_1h', _of.get('cvd', 0)) or 0)
         except Exception:
             pass
 
@@ -366,7 +370,10 @@ def _quick_three_party(sym: str, dim: str, price: float) -> str:
         bw  = json.loads(bw_f.read_text()) if bw_f.exists() else {}
 
         regime  = bs.get('regime', 'CHOP_MID')
-        hurst   = bs.get('hurst', 0.0)
+        # hurst读取：优先market_state_raw.hurst_4h，再ensemble.raw_vec.hurst，再兜底0.0
+        _ms = bs.get('market_state_raw', {})
+        _ens = bs.get('extra', {}).get('ensemble', {}).get('raw_vec', {})
+        hurst   = float(_ms.get('hurst_4h', _ens.get('hurst', 0.0)) or 0.0)
         kl      = bs.get('key_levels', {})
         resist  = kl.get('resistance', [price*1.02])
         support = kl.get('support', [price*0.98])
