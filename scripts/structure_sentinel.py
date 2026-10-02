@@ -205,8 +205,10 @@ def sense_btc_eth() -> list[dict]:
         oi_live = float(oi_data['openInterest']) if oi_data else oi_now
 
         # 实时LSR
+        # [Fix 2026-10-02] D4散户拥挤用globalLongShortAccountRatio(全市场)
+        # 原topLongShortAccountRatio=大户比例，永远不超65%，D4永远不触发
         lsr_data = _fetch(
-            f'https://fapi.binance.com/futures/data/topLongShortAccountRatio'
+            f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio'
             f'?symbol={sym_full}&period=5m&limit=1'
         )
         lsr_live = float(lsr_data[0]['longAccount']) * 100 if lsr_data else lsr_big
