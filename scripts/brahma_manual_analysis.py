@@ -1850,6 +1850,7 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
             f'   当前体制: {reg_now}  FVG方向: {fvg.get("dir","?")}  AI议会: (见下)'
         )
 
+    # ─── Phase1: 门控层结束 ─── Phase2: 方向计算开始 ───────────────────
     score_val = float(bs.get('score_final', bs.get('score', 0)))
 
     # [9.19 P0改革 苏摩111] 废除score一票否决 + 三票NONE不出观察清单
@@ -2312,6 +2313,7 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
             f'   闸门2封印 2026-09-18 苏摩111'
         )
 
+    # ─── Phase2: 方向计算结束 ─── Phase3: 格式化输出开始 ──────────────
     lines = [
         f'──── VIP ────',
         f'🌿 姓赵不宣 | {sym} 今日布局  [{(d.get("_step11") or {}).get("verdict","WAIT")}]',
@@ -2614,7 +2616,11 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
     return ' '.join(parts)
 
 
-def run_analysis(sym: str, push_jarvis: bool = True) -> str:
+# [SSOT 2026-10-02 苏摩111] 两种run_analysis用途:
+#   ① 人类可读分析文本(str) → 本函数  ← square发帖/step11/手动调用
+#   ② 结构化dict → brahma_brain.brahma_analysis_runner.run_analysis()
+#      不要混用，返回类型完全不同
+def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str非dict
     ts  = datetime.now(timezone.utc).strftime('%m/%d %H:%M UTC')
     print(f'[{sym}] Step 0: 拉取实时数据...', flush=True)
     t_start = __import__('time').time()  # P1修复：移到step0之前，含数据拉取耗时

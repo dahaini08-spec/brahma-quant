@@ -363,12 +363,20 @@ def _quick_three_party(sym: str, dim: str, price: float) -> str:
     """
     try:
         sym_l = sym.lower()
-        bs_f  = DATA / f'brahma_state_{sym_l}.json'
-        liq_f = DATA / f'liq_heatmap_{sym_l}usdt.json'
+        # [state_store 2026-10-02 苏摩111] 统一读取接口，带30s缓存
+        import sys as _ss_sys
+        _ss_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        try:
+            from state_store import get_state as _gs, get_liq as _gl
+            bs = _gs(sym)
+            _sl, _ll = _gl(sym)
+            ld = {'nearest_short_liq': _sl, 'nearest_long_liq': _ll}
+        except Exception:
+            bs_f  = DATA / f'brahma_state_{sym_l}.json'
+            liq_f = DATA / f'liq_heatmap_{sym_l}usdt.json'
+            bs  = json.loads(bs_f.read_text()) if bs_f.exists() else {}
+            ld  = json.loads(liq_f.read_text()) if liq_f.exists() else {}
         bw_f  = DATA / 'breakout_watch_latest.json'
-
-        bs  = json.loads(bs_f.read_text()) if bs_f.exists() else {}
-        ld  = json.loads(liq_f.read_text()) if liq_f.exists() else {}
         bw  = json.loads(bw_f.read_text()) if bw_f.exists() else {}
 
         regime  = bs.get('regime', 'CHOP_MID')
