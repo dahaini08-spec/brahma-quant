@@ -542,13 +542,19 @@ def process_event(symbol: str, signal_dir: str = None,
                     f'> 当前{signal_dir}方向需要：score≥{SCORE_WATCH}\n\n'
                     f'发 `分析{symbol[:3]}` 获取完整诊断'
                 )
-                import subprocess as _sp
-                _sp.Popen([
-                    'openclaw', 'infer',
-                    '--channel', 'jarvis',
-                    '--to', f'{_JARVIS_USER}:thread:{_JARVIS_THREAD}',
-                    '--message', _astra_msg,
-                ], stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
+                # push_hub单入口 [2026-10-02 苏摩111]
+                try:
+                    import importlib.util as _ilu, pathlib as _pl
+                    _spec = _ilu.spec_from_file_location('push_hub',
+                        _pl.Path(__file__).parent.parent / 'scripts' / 'push_hub.py')
+                    _ph = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_ph)
+                    _ph.push_jarvis(_astra_msg, priority='P2')
+                except Exception as _pe:
+                    import subprocess as _sp
+                    _sp.Popen(['openclaw','infer','--channel','jarvis',
+                        '--to', f'{_JARVIS_USER}:thread:{_JARVIS_THREAD}',
+                        '--message', _astra_msg],
+                        stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
                 _log.info(f'[Astra③] {symbol} {signal_dir} 连续WAIT推送')
         else:
             _wc[_wait_key] = 0  # 有动作则重置

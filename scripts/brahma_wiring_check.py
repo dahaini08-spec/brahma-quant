@@ -228,16 +228,45 @@ def main(fix: bool = False):
     print(f'brahma_brain模块总数: {len(all_mods)}个')
     print()
 
-    # 运行一次分析获取结果
-    print('🔄 运行梵天分析获取输出...')
+    # 运行一次分析获取结果（带5min缓存，避免wiring_check每次耗时20s）
+    # [2026-10-02 苏摩111] 缓存key=brahma_state_btc.json mtime，state不变则复用
+    _cache_f = BASE / 'data' / 'wiring_check_cache.json'
+    _state_f = BASE / 'data' / 'brahma_state_btcusdt.json'
+    if not _state_f.exists():
+        _state_f = BASE / 'data' / 'brahma_state_btc.json'
+    _use_cache = False
+    result = {}
     try:
-        # [9.26修复 2026-09-26 苏摩111] fa5bb68d机械替换误杀：模块一直存在，恢复注入
-        from brahma_brain import brahma_core
-        result = brahma_core.analyze('BTCUSDT', signal_dir='SHORT')
-        print(f'   score={result.get("score_final", 0):.1f} regime={result.get("regime")}\n')
-    except Exception as e:
-        print(f'   分析失败: {e}')
-        result = {}
+        if _cache_f.exists():
+            _cache = json.loads(_cache_f.read_text())
+            _cache_age = __import__('time').time() - _cache.get('ts', 0)
+            _state_mtime = _state_f.stat().st_mtime if _state_f.exists() else 0
+            if _cache_age < 300 and abs(_cache.get('state_mtime', 0) - _state_mtime) < 1:
+                result = _cache.get('result', {})
+                _use_cache = True
+                print(f'   ⚡ 缓存命中 ({_cache_age:.0f}s前) score={result.get("score_final",0):.1f}\n')
+    except Exception:
+        pass
+
+    if not _use_cache:
+        print('🔄 运行梵天分析获取输出...')
+        try:
+            from brahma_brain import brahma_core
+            result = brahma_core.analyze('BTCUSDT', signal_dir='SHORT')
+            print(f'   score={result.get("score_final", 0):.1f} regime={result.get("regime")}\n')
+            # 写缓存
+            try:
+                _state_mtime = _state_f.stat().st_mtime if _state_f.exists() else 0
+                _cache_f.write_text(json.dumps({
+                    'ts': __import__('time').time(),
+                    'state_mtime': _state_mtime,
+                    'result': result,
+                }, default=str))
+            except Exception:
+                pass
+        except Exception as e:
+            print(f'   分析失败: {e}')
+            result = {}
 
     wired_with_output = []
     wired_no_output   = []

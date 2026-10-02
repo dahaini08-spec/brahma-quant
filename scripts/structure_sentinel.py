@@ -450,15 +450,13 @@ def _push_alert(trigger: dict) -> None:
         f'{astra_block}'
     )
 
-    target = f'{_JARVIS_USER}:thread:{_JARVIS_THREAD}' if _JARVIS_THREAD else _JARVIS_USER
-
     try:
-        subprocess.Popen([
-            'openclaw', 'infer',
-            '--channel', 'jarvis',
-            '--to', target,
-            '--message', msg,
-        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        # [2026-10-02 苏摩111] 统一到push_hub单入口，不再裸Popen
+        _ph_path = Path(__file__).parent / 'push_hub.py'
+        import importlib.util as _ilu
+        _spec = _ilu.spec_from_file_location('push_hub', _ph_path)
+        _ph = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_ph)
+        _ph.push_jarvis(msg, priority='P1' if priority=='CRITICAL' else 'P2')
         print(f'[sentinel] 推送成功: {sym} {trigger["dim"]} {priority}', flush=True)
     except Exception as e:
         print(f'[sentinel] 推送失败: {e}', file=sys.stderr)
