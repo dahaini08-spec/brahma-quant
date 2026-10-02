@@ -257,6 +257,31 @@ def sense_btc_eth() -> list[dict]:
             })
 
 
+    # ── D2: OI方向反转（连续下跌→连续上涨，最强入场信号）──
+    # [2026-10-02 苏摩111 封印] 今日错过BTC多单根因——OI反转未感知
+    oi_hist = _fetch(
+        f'https://fapi.binance.com/futures/data/openInterestHist'
+        f'?symbol={sym_full}&period=1h&limit=5'
+    )
+    try:
+        if oi_hist and len(oi_hist) >= 4:
+            oi_vals = [float(o['sumOpenInterest']) for o in oi_hist]
+            # 检测：前N根连续下跌，最新1~2根转为上涨
+            recent_up   = oi_vals[-1] > oi_vals[-2]          # 最新1h在涨
+            prev_down   = all(oi_vals[i] < oi_vals[i-1]      # 之前连续下跌
+                              for i in range(1, len(oi_vals)-1))
+            chg_pct     = (oi_vals[-1] - oi_vals[-3]) / oi_vals[-3] * 100
+            if recent_up and prev_down and chg_pct > 0.05:   # 反转+小幅增仓确认
+                oi_seq_str = ' → '.join(f'{v:.0f}' for v in oi_vals)
+                triggers.append({
+                    'sym': sym, 'dim': 'D2_OI_REVERSAL', 'price': price,
+                    'title': f'🔄 {sym} OI反转！连跌后首次上涨 +{chg_pct:.2f}%',
+                    'detail': f'OI序列: {oi_seq_str} | 多头入场信号激活',
+                    'priority': 'CRITICAL',
+                })
+    except Exception as _oi_e:
+        print(f'[sentinel] D2_OI_REVERSAL失败: {_oi_e}', file=sys.stderr)
+
     # ── D7: 果蝇三条件 score≥2（breakout_watch结果文件，零API消耗）──
     bw_file = DATA / 'breakout_watch_latest.json'
     try:
