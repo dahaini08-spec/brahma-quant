@@ -2314,7 +2314,7 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
 
     lines = [
         f'──── VIP ────',
-        f'🌿 姓赵不宣 | {sym}({reg_now}) 今日布局',
+        f'🌿 姓赵不宣 | {sym} 今日布局  [{(d.get("_step11") or {}).get("verdict","WAIT")}]',
         f'',
         f'{main_line}',
         f'{main_params}',
