@@ -35,8 +35,9 @@ UTC = timezone.utc
 # ═══════════════════════════════════════════════════════════════
 
 BRAND_PREFIX = ''  # 顶端不出现IP，放在后缀
-BRAND_SUFFIX = '🌿 姓赵不宣 | 不是建议'
+BRAND_SUFFIX = '🔗 www.bsmkweb.cc/register?ref=XZBX666\n🌿 姓赵不宣 | 不是建议'
 LIVE_CTA = '关注我，每晚21:00直播+SMC教学'  # [2026-09-30 苏摩111] 发帖清单#2：签名前必须带CTA，全库原缺失
+REFERRAL_CTA = '🔗 开通币安：www.bsmkweb.cc/register?ref=XZBX666'  # [2026-10-03 苏摩111] 苏摩那件码，全库自动植入
 AI_WATERMARK = '🤖 内容含AI生成分析，非实时人工观点'  # [L5水印 2026-09-28 苏摩111] ai_truth_audit L4
 
 # 互动钩子库
