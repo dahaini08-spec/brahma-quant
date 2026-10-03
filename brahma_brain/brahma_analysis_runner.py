@@ -1061,7 +1061,7 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                         _q = [x for x in _q if not (x.get('symbol')==_aq['symbol']
                               and x.get('direction')==_aq['direction'])]
                         _q.append(_aq)
-                        _qp.write_text(_qj.dumps(_q, ensure_ascii=False))
+                        _qp.write_text(_qj.dumps(_q, ensure_ascii=False, encoding='utf-8'))
                         print(f'[runner] {_aq_action}→queue: {_aq["symbol"]} {_aq["direction"]} score={_aq["score"]:.1f}', flush=True)
                 except Exception as _qe:
                     pass  # queue写入失败不阻断主流程

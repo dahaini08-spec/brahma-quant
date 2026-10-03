@@ -1848,7 +1848,7 @@ def _save_state(state: dict) -> None:
     """持久化Bandit状态"""
     BANDIT_STATE_PATH.parent.mkdir(exist_ok=True)
     tmp = BANDIT_STATE_PATH.with_suffix('.tmp')
-    tmp.write_text(json.dumps(state, indent=2, ensure_ascii=False))
+    tmp.write_text(json.dumps(state, indent=2, ensure_ascii=False, encoding='utf-8'))
     tmp.replace(BANDIT_STATE_PATH)
 
 

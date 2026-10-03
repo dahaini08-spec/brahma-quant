@@ -1696,7 +1696,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         _now_ts = _tm.time()
         if _last_regime != _regime_now:
             _rts = {'last_regime': _regime_now, 'last_change_ts': _now_ts, 'last_regime_prev': _last_regime}
-            _rts_f.write_text(_j.dumps(_rts))
+            _rts_f.write_text(_j.dumps(_rts), encoding='utf-8')
         _regime_age_h = (_now_ts - _last_change_ts) / 3600
         extra_data['regime_timing'] = {
             'current': _regime_now,

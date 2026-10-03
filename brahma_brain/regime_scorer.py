@@ -675,7 +675,7 @@ class RegimeStateMachine:
                     existing = {}
             existing[self.symbol] = self._state
             tmp = str(STATE_FILE) + '.tmp'
-            with open(tmp, 'w') as f:
+            with open(tmp, 'w', encoding='utf-8') as f:
                 json.dump(existing, f, ensure_ascii=False, indent=2)
             import os
             os.replace(tmp, str(STATE_FILE))

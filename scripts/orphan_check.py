@@ -31,6 +31,7 @@ ROOT = Path(__file__).parent.parent
 #   brahma_brain_prompt               人格prompt库（唯一caller在_deprecated/，冻结）
 #   brahma_engine_v5                  v5回测引擎（jesse依赖缺失冻结，dim_ic_audit同链）
 #   brahma_mcp_server                 MCP服务器（独立启动进程，非import消费）
+#   brahma_http                         统一HTTP入口（2026-10-03封印），待urllib迁移期间现有调用方还未切入
 # 以下为v2.0 hook遗留豁免（历史登记，含已删文件名，保留无害）：
 _EXEMPT = frozenset('''
     error_ledger risk_gate
@@ -41,7 +42,7 @@ _EXEMPT = frozenset('''
     kronos_lite tradfi_dump_detector brahma_learning_loop brahma_experience_distiller llm_council
     llm_council_bridge position_sizer formatter signal_quality_engine brahma_smoke_test trader_brain
     core_data core_extra core_scorer data_contract_validator dim_ic_audit
-    brahma_brain_prompt brahma_engine_v5 brahma_mcp_server
+    brahma_brain_prompt brahma_engine_v5 brahma_mcp_server brahma_http
 '''.split())
 
 # 与stdlib/third-party撞名的模块名（resolve时优先本仓文件，无同名冲突即可用）

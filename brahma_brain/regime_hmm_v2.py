@@ -176,7 +176,7 @@ def predict_regime_proba(symbol: str, klines_4h: list = None) -> dict:
 
     # 写入缓存
     try:
-        cache_path.write_text(json.dumps(result, ensure_ascii=False))
+        cache_path.write_text(json.dumps(result, ensure_ascii=False, encoding='utf-8'))
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return result
 

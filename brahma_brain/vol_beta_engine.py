@@ -155,7 +155,7 @@ def run(currency: str = "ETH", verbose: bool = False) -> None:
             existing = json.loads(OUT_FILE.read_text())
         except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     existing[currency] = r
-    OUT_FILE.write_text(json.dumps(existing, ensure_ascii=False))
+    OUT_FILE.write_text(json.dumps(existing, ensure_ascii=False, encoding='utf-8'))
 
     # 追加IV历史日志
     with open(LOG_FILE, "a") as f:

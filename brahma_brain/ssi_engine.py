@@ -67,7 +67,7 @@ def _save_state(symbol: str, data: dict) -> None:
                 all_s = json.loads(_STATE_PATH.read_text())
             except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
         all_s[symbol] = data
-        _STATE_PATH.write_text(json.dumps(all_s, ensure_ascii=False))
+        _STATE_PATH.write_text(json.dumps(all_s, ensure_ascii=False, encoding='utf-8'))
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 # ─── SSI 核心计算 ─────────────────────────────────────────────
 def compute_ssi(

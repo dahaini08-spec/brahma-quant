@@ -67,7 +67,7 @@ def save_heatmap() -> None:
         "total_short_liq_M": round(total_short, 3),
         "buckets": heat,
     }
-    HEAT_FILE.write_text(json.dumps(out, ensure_ascii=False))
+    HEAT_FILE.write_text(json.dumps(out, ensure_ascii=False, encoding='utf-8'))
     print(f"[liqmap] 热力图已更新 long={total_long:.2f}M short={total_short:.2f}M buckets={len(heat)}")
 
 # ── WebSocket 主循环 ───────────────────────────────────────────────

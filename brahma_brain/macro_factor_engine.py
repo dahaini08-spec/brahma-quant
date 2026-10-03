@@ -65,7 +65,7 @@ def _save_cache(data: dict) -> None:
     try:
         CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
         data['ts'] = time.time()
-        CACHE_FILE.write_text(json.dumps(data, ensure_ascii=False))
+        CACHE_FILE.write_text(json.dumps(data, ensure_ascii=False, encoding='utf-8'))
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def get_fg_index() -> tuple[int, str]:
     """返回 (fg_value:0-100, fg_label)"""

@@ -47,7 +47,7 @@ def _write_alert(alert: dict) -> None:
         if _ALERT_FILE.exists():
             alerts = json.loads(_ALERT_FILE.read_text())
         alerts.append(alert)
-        _ALERT_FILE.write_text(json.dumps(alerts[-50:], ensure_ascii=False, indent=2))
+        _ALERT_FILE.write_text(json.dumps(alerts[-50:], ensure_ascii=False, indent=2, encoding='utf-8'))
     except Exception as _e:
         print(f"[WARN] eval_runtime: {_e}", file=sys.stderr)
 

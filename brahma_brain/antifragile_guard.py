@@ -51,7 +51,7 @@ def _load_state() -> dict:
 def _save_state(state: dict) -> None:
     """save state"""
     try:
-        _STATE_PATH.write_text(json.dumps(state, ensure_ascii=False, indent=2))
+        _STATE_PATH.write_text(json.dumps(state, ensure_ascii=False, indent=2, encoding='utf-8'))
     except Exception as e:
         logger.warning(f'save state: {e}')
 
