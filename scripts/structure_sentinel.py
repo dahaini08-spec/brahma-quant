@@ -29,6 +29,15 @@ import json, sys, time, urllib.request, ssl, os, subprocess
 from pathlib import Path
 from datetime import datetime, timezone
 
+# push_hub统一入口 [Fix 2026-10-03 苏摩111]
+try:
+    import push_hub
+except ImportError:
+    import sys as _ph_sys, pathlib as _ph_pl
+    _ph_sys.path.insert(0, str(_ph_pl.Path(__file__).parent))
+    import push_hub
+
+
 BASE = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(BASE / 'brahma_brain'))

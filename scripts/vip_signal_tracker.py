@@ -18,6 +18,15 @@ vip_signal_tracker.py — VIP策略版本追踪 + 止损墙漂移检测
 import json, time, sys
 from pathlib import Path
 
+# push_hub统一入口 [Fix 2026-10-03 苏摩111]
+try:
+    import push_hub
+except ImportError:
+    import sys as _ph_sys, pathlib as _ph_pl
+    _ph_sys.path.insert(0, str(_ph_pl.Path(__file__).parent))
+    import push_hub
+
+
 _DATA   = Path(__file__).parent.parent / 'data'
 _STATE  = _DATA / 'vip_signal_state.json'
 _DRIFT_THRESHOLD = 0.005   # 0.5% 漂移触发更替通知
