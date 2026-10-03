@@ -3679,6 +3679,35 @@ def main():
         _out_path = _P(__file__).parent.parent / 'data' / 'auto_analysis_latest.json'
         _out_path.write_text(_json.dumps(_summary, ensure_ascii=False))
         print(f'[auto_analysis_latest] 已写入 {_out_path.name} ({len(symbols)}标的, SSOT信号{len(_structured)}条)', file=sys.stderr)
+
+        # [P1-B 2026-10-03 苏摩111] 主链完成→ASD-STE100摘要推送
+        # Boris架构：AI产出→人理解，3句话摘要代替63s原始报告
+        try:
+            import push_hub as _ph
+            _lines = [f'📊 梵天分析 | {_summary.get("ts_utc","")[:16]} UTC']
+            for _s in symbols:
+                _r = _summary.get('results', {}).get(_s, {})
+                if not isinstance(_r, dict): continue
+                _b = _r.get('bias', {})
+                _bias_str = _b.get('bias', '?') if isinstance(_b, dict) else '?'
+                _score = _r.get('score', 0)
+                _action = _r.get('action', 'WAIT')
+                _liq_s = _r.get('liq_short', 0)
+                _liq_l = _r.get('liq_long', 0)
+                _regime = _r.get('regime', '?')
+                _icon = '🔴' if 'BEAR' in str(_bias_str) else '🟢' if 'BULL' in str(_bias_str) else '⚪'
+                _action_tag = f'[{_action}]' if _action not in ('WAIT','WATCH') else ''
+                _liq_str = f'墙${_liq_s:,.0f} 池${_liq_l:,.0f}' if _liq_s and _liq_l else ''
+                _lines.append(f'{_icon} {_s}: {_regime} score={_score:.0f} {_action_tag} {_liq_str}'.strip())
+            _elapsed_s = _summary.get('elapsed_s', 0)
+            _next_sym = symbols[0] if symbols else 'BTC'
+            _lines.append(f'耗时{_elapsed_s:.0f}s | 下次: {_next_sym} brahma_cpu :04')
+            _ph.push_jarvis('\n'.join(_lines), priority='P3',
+                dedup_key=f'auto_analysis_{_summary.get("ts_utc","")[:13]}',
+                dedup_ttl=3300)  # 55min dedup，不重复推送同一小时
+            print(f'[auto_analysis] 摘要推送苏摩 ✅', file=sys.stderr)
+        except Exception as _push_e:
+            print(f'[auto_analysis] 摘要推送失败: {_push_e}', file=sys.stderr)
     except Exception as _e:
         print(f'[WARN] auto_analysis_latest写入失败: {_e}', file=sys.stderr)
 
