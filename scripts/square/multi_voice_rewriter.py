@@ -19,10 +19,18 @@ from typing import Optional
 _KEY1_FORBIDDEN = ['梵天', '姓赵不宣', '设计院', '量化系统', 'brahma']
 _KEY2_FORBIDDEN = ['梵天', '姓赵不宣', '设计院', '量化系统', 'brahma', '蓝桉', '释怀鸟']
 
+# [2026-10-03 苏摩111] 三账号统一签名尾区：邀请码+折扣+仅供参考+$BTC $ETH
+_SHARED_TAIL = (
+    '关注我，每晚21:00直播+SMC教学\n'
+    '注册享20%手续费折扣 🔗 www.bsmkweb.cc/register?ref=XZBX666\n'
+    '{brand_line}\n'
+    '$BTC $ETH #BTC #ETH #合约交易 #永续合约'
+)
+
 _VOICE = {
-    0: {'name': '姓赵不宣',     'suffix': '🌿 姓赵不宣 | 不是建议',      'forbidden': []},
-    1: {'name': '蓝桉VS释怀鸟', 'suffix': '💙 蓝桉VS释怀鸟 | 高频视角',  'forbidden': _KEY1_FORBIDDEN},
-    2: {'name': '牛来PRO',      'suffix': '🐂 牛来PRO | 独立观点',        'forbidden': _KEY2_FORBIDDEN},
+    0: {'name': '姓赵不宣',     'suffix': '🌿 姓赵不宣 | 仅供参考',         'forbidden': []},
+    1: {'name': '蓝桉VS释怀鸟', 'suffix': '💙 蓝桉VS释怀鸟 | 仅供参考',     'forbidden': _KEY1_FORBIDDEN},
+    2: {'name': '牛来PRO',      'suffix': '🐂 牛来PRO | 仅供参考',           'forbidden': _KEY2_FORBIDDEN},
 }
 
 
@@ -218,9 +226,15 @@ def _build_lanhui(info: dict, original: str) -> str:
         f'涨跌都有策略，关注我一起做。',
     ])]
     
-    if info['tags']:
-        parts.append(info['tags'])
-    parts.append('💙 蓝桉VS释怀鸟 | 高频视角')
+    # [2026-10-03] 统一签名区：邀请码+折扣+仅供参考+$BTC $ETH
+    tail = _SHARED_TAIL.format(brand_line='💙 蓝桉VS释怀鸟 | 仅供参考')
+    # 互动钩子
+    hook = random.choice([
+        '你现在是持仓等突破，还是在场外观望？评论说说',
+        '这个位置你跟还是等结构确认？评论 A（跟）B（等）',
+        '你觉得下一个方向是向上还是向下？评论投票',
+    ])
+    parts += ['', tail, '', hook]
     return '\n'.join(parts)
 
 
@@ -266,9 +280,14 @@ def _build_niulai(info: dict, original: str) -> str:
         f'关注我，{coin_str}交易逻辑从入门到进阶全覆盖。',
     ]))
     
-    if info['tags']:
-        parts.append(info['tags'])
-    parts.append('🐂 牛来PRO | 独立观点')
+    # [2026-10-03] 统一签名区：邀请码+折扣+仅供参考+$BTC $ETH
+    tail = _SHARED_TAIL.format(brand_line='🐂 牛来PRO | 仅供参考')
+    hook = random.choice([
+        '你犯过同样的错误吗？评论告诉我你当时怎么想的',
+        '这个市场逻辑你认同吗？评论 A（认同）B（不认同）说理由',
+        '宏观这么看，你的实盘怎么做的？评论分享',
+    ])
+    parts += ['', tail, '', hook]
     return '\n'.join(parts)
 
 
