@@ -163,7 +163,7 @@ def build_frames(btc: dict, eth: dict) -> list:
         ('bsmkweb.cc/register', ORANGE, 'bold'),
         ('?ref=XZBX666', ORANGE, 'bold'),
         ('', WHITE, 'sm'),
-        ('Not Financial Advice', GRAY, 'sm'),
+        ('Not Investment Advice | 仅供参考', GRAY, 'sm'),
     ]), 4,
     '关注我，每晚21:00直播，SMC教学。注册币安领交易奖励。'))
 

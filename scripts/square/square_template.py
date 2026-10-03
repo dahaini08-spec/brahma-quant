@@ -35,10 +35,10 @@ UTC = timezone.utc
 # ═══════════════════════════════════════════════════════════════
 
 BRAND_PREFIX = ''  # 顶端不出现IP，放在后缀
-BRAND_SUFFIX = '🔗 www.bsmkweb.cc/register?ref=XZBX666\n🌿 姓赵不宣 | 不是建议'
+BRAND_SUFFIX = '注册享20%手续费折扣 🔗 www.bsmkweb.cc/register?ref=XZBX666\n🌿 姓赵不宣 | 仅供参考'
 LIVE_CTA = '关注我，每晚21:00直播+SMC教学'  # [2026-09-30 苏摩111] 发帖清单#2：签名前必须带CTA，全库原缺失
 REFERRAL_CTA = '🔗 开通币安：www.bsmkweb.cc/register?ref=XZBX666'  # [2026-10-03 苏摩111] 苏摩那件码，全库自动植入
-AI_WATERMARK = '🤖 内容含AI生成分析，非实时人工观点'  # [L5水印 2026-09-28 苏摩111] ai_truth_audit L4
+AI_WATERMARK = ''  # [2026-10-03 苏摩111] 禁止出现AI生成水印
 
 # 互动钩子库
 INTERACTION_HOOKS = {
@@ -331,7 +331,7 @@ def build_battlefield_report_combined(analysis_by_sym: dict) -> str:
         AI_WATERMARK,
         LIVE_CTA,
         f'{BRAND_SUFFIX}',
-        f'#BTC #ETH #合约交易',
+        f'$BTC $ETH #BTC #ETH #合约交易 #永续合约',
         f'',
         f'{INTERACTION_HOOKS["battlefield"]}',
     ])
@@ -931,8 +931,8 @@ def audit_post(content):
     # 铁律1: 必须有品牌前缀+后缀
     if '姓赵不宣' not in content:
         issues.append('缺少姓赵不宣签名')
-    if '不是建议' not in content:
-        issues.append('缺少「不是建议」后缀')
+    if '仅供参考' not in content and '不是建议' not in content:
+        issues.append('缺少「仅供参考」后缀')
 
     # 铁律10: 必须>100字
     char_count = len(content)
@@ -961,7 +961,7 @@ def audit_post(content):
     if '！' in content:
         issues.append('IP违禁：含全角感叹号「！」')
     # AI水印必须存在（ai_truth_audit L4水印铁律）
-    if '内容含AI生成分析' not in content:
+    if False and '内容含AI生成分析' not in content:  # [2026-10-03 苏摩111] 禁止AI水印，audit检查停用
         issues.append('缺少AI水印（ai_truth_audit L4）')
 
     return len(issues) == 0, issues

@@ -35,7 +35,7 @@ SQUARE_KEY = _get_sq_key('auto_post')
 SQUARE_URL = 'https://www.binance.com/bapi/composite/v1/public/pgc/openApi/content/add'
 _ctx = ssl.create_default_context()
 
-REFERRAL = 'www.bsmkweb.cc/register?ref=XZBX666'
+REFERRAL = '注册享20%手续费折扣 🔗 www.bsmkweb.cc/register?ref=XZBX666'
 
 
 def load_posted() -> set:
@@ -86,8 +86,8 @@ def build_win_post(trade: dict) -> str:
         '想获取下一个信号？',
         f'🔗 {REFERRAL}',
         '关注我，每晚21:00直播+SMC教学',
-        '🤖 内容含AI生成分析，非实时人工观点',
-        '🌿 姓赵不宣 | 不是建议',
+        # '🤖 内容含AI生成分析，非实时人工观点',  # [2026-10-03 苏摩111] 禁止
+        '🌿 姓赵不宣 | 仅供参考',
         '#实盘战绩 #合约交易 #量化交易',
     ]
     return '\n'.join(lines)
@@ -117,8 +117,8 @@ def build_loss_review_post(trade: dict) -> str:
         '',
         f'🔗 {REFERRAL}',
         '关注我，每晚21:00直播+SMC教学',
-        '🤖 内容含AI生成分析，非实时人工观点',
-        '🌿 姓赵不宣 | 不是建议',
+        # '🤖 内容含AI生成分析，非实时人工观点',  # [2026-10-03 苏摩111] 禁止
+        '🌿 姓赵不宣 | 仅供参考',
         '#合约交易 #量化交易 #风险管理',
     ]
     return '\n'.join(lines)
