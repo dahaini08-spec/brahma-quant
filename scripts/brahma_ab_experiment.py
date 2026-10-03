@@ -156,7 +156,7 @@ def run_weekly_experiment_report():
     # 1. 发现新假设
     hypotheses = discover_hypotheses()
     experiments = _load_experiments()
-    existing_ids = {e['id'].split('_')[:-1] for e in experiments}
+    existing_ids = {'_'.join(e['id'].split('_')[:-1]) for e in experiments}
 
     new_count = 0
     for h in hypotheses:
