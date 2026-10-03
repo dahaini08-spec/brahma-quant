@@ -215,10 +215,10 @@ def audit_deep_post(content: str, pack: dict = None) -> tuple:
 # A线：数据门控 —— 当周有故事才产旗舰帖
 # ═══════════════════════════════════════════════════════
 GATE_THRESHOLDS = {
-    'oi_chg_7d_min': 10.0,     # OI 7d变化≥10%
+    'oi_chg_7d_min': 5.0,      # [Fix2 2026-10-03] OI 7d变化≥5%（原10%，CHOP_MID日常难触发）
     'fr_neg_count_min': 2,     # 资金费率近7天转负≥2次
-    'lsr_change_min': 0.30,    # 散户多空比7d变化≥0.3
-    'need_count': 1,           # [2026-10-03 苏摩111 P2] OR逻辑：1项即触发（原2项：CHOP_MID日常永远到不了旗舰帖）
+    'lsr_change_min': 0.20,    # [Fix2 2026-10-03] 散户多空比7d变化≥0.2（原0.3）
+    'need_count': 1,           # OR逻辑：1项即触发
 }
 GATE_STATE_FILE = BASE / 'data' / 'flagship_gate_state.json'
 

@@ -22,14 +22,26 @@ _KEYS = {
 
 # 模块→key索引映射
 _MODULE_KEY = {
-    'auto_post':     0,   # 快照战场报告（品牌核心）
-    'deep_post':     0,   # 旗舰深度帖（品牌核心）
-    'edu_poster':    0,   # 教育帖（品牌核心）
-    'hot_poster':    1,   # 热度帖（高频流量）
-    'macro_poster':  1,   # 宏观帖（行情类）
-    'extreme_alert': 2,   # 极端告警（低频，备用key）
-    'spot_strategy': 1,   # 现货策略（行情类）
-    'trade_loop':    0,   # 交易帖（品牌核心）
+    # KEY_0: 品牌核心内容（姓赵不宣主账号）
+    'auto_post':     0,   # 快照战场报告
+    'deep_post':     0,   # 旗舰深度帖
+    'edu_poster':    0,   # 教育帖
+    'edu':           0,   # 教育帖别名
+    'chart':         0,   # 图文K线帖
+    'chart_post':    0,   # 图文K线帖别名
+    'video':         0,   # 视频帖
+    'video_post':    0,   # 视频帖别名
+    'vip_result':    0,   # VIP战绩帖
+    'signal':        0,   # 信号帖
+    'live_preview':  0,   # 直播预告
+    'battlefield':   0,   # 战场报告
+    'trade_loop':    0,   # 交易帖
+    # KEY_1: 高频流量内容（蓝桉账号）
+    'hot_poster':    1,   # 热度帖（高频）
+    'macro_poster':  1,   # 宏观帖
+    'spot_strategy': 1,   # 现货策略
+    # KEY_2: 告警备用（牛来PRO账号）
+    'extreme_alert': 2,   # 极端告警（低频）
 }
 
 

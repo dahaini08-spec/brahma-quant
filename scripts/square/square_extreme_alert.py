@@ -363,6 +363,8 @@ def run(dry_run=False):
             mark_symbol_posted(sym)
             mark_posted(content)
             log_post('extreme_alert', content, resp)
+            # [Fix1 2026-10-03 苏摩111] 多币种发帖间隔180s，避免同秒多发
+            time.sleep(180)
 
 
 if __name__ == '__main__':
