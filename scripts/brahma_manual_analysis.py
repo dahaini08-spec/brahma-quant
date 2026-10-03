@@ -2734,10 +2734,31 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
 #   ② 结构化dict → brahma_brain.brahma_analysis_runner.run_analysis()
 #      不要混用，返回类型完全不同
 def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str非dict
+    # [决策2 2026-10-03] 分析超时哨兵：>120s推P1告警
+    import time as _t2, threading as _thr
+    _run_start = _t2.time()
+    def _timeout_watchdog():
+        _t2.sleep(120)
+        elapsed = _t2.time() - _run_start
+        try:
+            import sys as _s; _s.path.insert(0, 'scripts')
+            import push_hub as _ph2
+            _ph2.push_jarvis(f'⚠️ {sym} 分析超时{elapsed:.0f}s>120s，可能卡死', priority='P1')
+        except Exception: pass
+    _wd = _thr.Thread(target=_timeout_watchdog, daemon=True)
+    _wd.start()
     ts  = datetime.now(timezone.utc).strftime('%m/%d %H:%M UTC')
     print(f'[{sym}] Step 0: 拉取实时数据...', flush=True)
     t_start = __import__('time').time()  # P1修复：移到step0之前，含数据拉取耗时
-    d   = step0_fetch_all(sym)
+    # [决策2 2026-10-03 自主封印] analyze()防护网：超时告警+完整traceback
+    import traceback as _tb
+    try:
+        d   = step0_fetch_all(sym)
+    except Exception as _step0_e:
+        _tb.print_exc()
+        print(f'[CRITICAL] {sym} Step0数据拉取失败: {_step0_e}', flush=True)
+        return f'[{sym}] Step0失败: {_step0_e}'
+    d = d  # noqa
     
     # ══ 闸门1检查: 数据新鲜度硬门控 [9.18 苏摩111] ══
     if d.get('_gate1_rejected'):

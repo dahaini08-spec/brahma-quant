@@ -56,6 +56,42 @@ IC_WEIGHTS = {
     'cross_market':  1.0,   # Phase 5: 跨市场alpha（134标的FR差异）
 }
 
+# [决策1 2026-10-03 自主封印] 自进化→主链打通
+# meta_cognition_state.json 的 weight_mult 动态覆盖 IC_WEIGHTS
+# 路径: ic_feedback_engine → meta_cognition → 此处加载 → 主链生效
+def _apply_meta_cognition_weights():
+    """从meta_cognition读取自进化权重，动态覆盖IC_WEIGHTS"""
+    import json
+    from pathlib import Path as _P
+    _mc_path = _P(__file__).parent.parent / 'data' / 'meta_cognition_state.json'
+    if not _mc_path.exists():
+        return
+    try:
+        _mc = json.loads(_mc_path.read_text())
+        _dim_map = {
+            'regime':  'regime_code',
+            'fvg':     'change_3d',    # FVG→价格变化动量
+            'oi':      'oi_chg_3d',
+            'lsr':     'fr_mean',
+            'hurst':   'hurst',
+            'gex':     'vol_rank',
+            'timing':  'macro_days',
+        }
+        _adjusted = 0
+        for _dim, _ic_key in _dim_map.items():
+            _stats = _mc.get('dimension_scores', {}).get(_dim, {})
+            _mult = _stats.get('weight_mult', 1.0)
+            if _ic_key in IC_WEIGHTS and abs(_mult - 1.0) > 0.05:
+                IC_WEIGHTS[_ic_key] = round(IC_WEIGHTS[_ic_key] * _mult, 4)
+                _adjusted += 1
+        if _adjusted:
+            import sys
+            print(f'[EnsembleEngine] 自进化权重已加载: {_adjusted}个维度调整', file=sys.stderr)
+    except Exception as _e:
+        pass  # 自进化权重加载失败不影响主链
+
+_apply_meta_cognition_weights()  # 模块加载时执行一次
+
 # 体制编码映射
 REGIME_MAP = {
     'BEAR_TREND': 1, 'BEAR_EARLY': 2, 'BEAR_RECOVERY': 3,
