@@ -274,3 +274,6 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 
 # 数据目录自动清理 — 每日 03:05 UTC 静默运行
 5 3 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/data_janitor.py >> logs/janitor.log 2>&1
+
+# [Z-Score线路B 2026-10-03 苏摩111] FR历史滚动采集 — 每8小时（对齐资金费率结算周期）
+0 0,8,16 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/fr_history_collector.py >> logs/fr_history_collector.log 2>&1

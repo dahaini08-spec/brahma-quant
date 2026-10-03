@@ -1239,6 +1239,80 @@ def step5b_lsr_trigger(d: dict, res: dict) -> dict:
 
     return result
 
+def step5c_zscore(d: dict) -> dict:
+    """Step5c: Z-Score 统计异常感知层
+    [设计院封印 2026-10-03 苏摩111]
+    接入位置：brahma_manual_analysis.py step5b之后，step6之前
+
+    功能：用价格回报的Z-Score检测统计异常，作为进入主链的过滤信号。
+    |Z| >= 2.0 → 统计异常，允许开单信号放行 (PASS)
+    1.5 <= |Z| < 2.0 → 边界区 (WATCH)
+    |Z| < 1.5 → 正常震荡，CHOP_WARN标记 (SKIP)
+
+    数据来源：d['k1h']（step0已拉取，0额外API消耗）
+    """
+    k1h = d.get('k1h', [])  # [(o,h,l,c,v), ...] 最新在末尾
+    sym = d.get('sym', 'BTC')
+
+    # 需要至少21根K线（20根历史+1根最新）
+    if len(k1h) < 3:
+        return {
+            'z': None, 'signal': 'NO_DATA', 'gate': 'SKIP',
+            'note': f'K线不足({len(k1h)}根，需≥3根)'
+        }
+
+    try:
+        # 提取收盘价序列（index 3 = close）
+        closes = [bar[3] for bar in k1h if bar[3] > 0]
+        if len(closes) < 3:
+            return {'z': None, 'signal': 'NO_DATA', 'gate': 'SKIP', 'note': '有效收盘价不足'}
+
+        # 计算逐根回报率
+        returns = [(closes[i] - closes[i-1]) / closes[i-1] for i in range(1, len(closes))]
+        if not returns:
+            return {'z': None, 'signal': 'NO_DATA', 'gate': 'SKIP', 'note': '回报率计算失败'}
+
+        # Z-Score：最新回报 vs 历史窗口统计
+        r_latest = returns[-1]
+        r_hist   = returns[:-1] if len(returns) > 1 else returns
+        mu  = sum(r_hist) / len(r_hist)
+        variance = sum((r - mu) ** 2 for r in r_hist) / max(len(r_hist), 1)
+        sigma = variance ** 0.5
+
+        if sigma < 1e-9:
+            z = 0.0
+        else:
+            z = (r_latest - mu) / sigma
+        z = round(z, 3)
+
+        # 信号分类
+        abs_z = abs(z)
+        if abs_z >= 2.0:
+            signal = 'EXTREME_UP' if z > 0 else 'EXTREME_DOWN'
+            gate   = 'PASS'
+            note   = f'统计异常(|Z|={abs_z:.2f}≥2.0) → 放行信号链'
+        elif abs_z >= 1.5:
+            signal = 'BORDERLINE_UP' if z > 0 else 'BORDERLINE_DOWN'
+            gate   = 'WATCH'
+            note   = f'边界区(|Z|={abs_z:.2f} 1.5~2.0) → 谨慎观察'
+        else:
+            signal = 'NORMAL'
+            gate   = 'SKIP'
+            note   = f'正常震荡(|Z|={abs_z:.2f}<1.5) → CHOP_WARN'
+
+        return {
+            'z':        z,
+            'signal':   signal,
+            'gate':     gate,
+            'mu':       round(mu * 100, 4),    # 转为百分比
+            'sigma':    round(sigma * 100, 4),  # 转为百分比
+            'r_latest': round(r_latest * 100, 4),
+            'n_bars':   len(closes),
+            'note':     note,
+        }
+    except Exception as _e:
+        return {'z': None, 'signal': 'ERROR', 'gate': 'SKIP', 'note': f'Z-Score计算异常: {str(_e)[:60]}'}
+
 # ══════════════════════════════════════════════════════════
 # Step 6: 聪明钱分歧
 # ══════════════════════════════════════════════════════════
@@ -2683,6 +2757,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
 
     print(f'[{sym}] Step 5~9: OI/聪明钱/波动率/宏观/风控...', flush=True)
     oi  = step5_oi(d)
+    zsc = step5c_zscore(d)  # [Z-Score过滤层 2026-10-03 苏摩111]
     sm  = step6_smart_money(d)
     vol = step7_volatility(d)
     mac = step8_macro(d)
@@ -2721,6 +2796,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     res = step4_resonance(d, fvg, ob, liq, oi=oi, vol=vol, fc=fc, cma=_cma)
     pat = step4b_pattern(d)  # 新增: 形态识别
     lsr_trig = step5b_lsr_trigger(d, res)  # 新增: LSR/OI + 15M触发
+    d['zsc'] = zsc  # Z-Score注入主数据字典，供后续输出消费
     _step_gc()
 
     # AI议会实时裁决（纯规则引擎，零延迟零成本）
@@ -3075,6 +3151,21 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             lines += [
                 f'  15M触发: ✅ {tr15.get("note", "")}',
             ]
+
+    # Z-Score过滤层输出 [2026-10-03 苏摩111]
+    _zsc = d.get('zsc', {})
+    if _zsc:
+        _z_val = _zsc.get('z')
+        _z_gate = _zsc.get('gate', 'SKIP')
+        _z_sig  = _zsc.get('signal', 'N/A')
+        _z_note = _zsc.get('note', '')
+        _z_icon = '✅' if _z_gate == 'PASS' else ('⚠️' if _z_gate == 'WATCH' else '❌')
+        lines += [
+            f'',
+            f'【Step5c Z-Score过滤层】',
+            f'  Z分: {_z_val:.3f} | 信号: {_z_sig} | 门控: {_z_gate} {_z_icon}',
+            f'  {_z_note}',
+        ]
 
     lines += [
         f'',
