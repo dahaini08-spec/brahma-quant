@@ -2,7 +2,10 @@
 tests/test_core_output.py — core_output.py 第五刀冒烟测试
 接入位置验证：brahma_brain/core_output.py
 2026-09-07 苏摩111封印
+[2026-10-03] core_output已归档至archive/deprecated，测试跳过
 """
+import pytest
+pytest.skip("core_output已归档，测试过期", allow_module_level=True)
 import time
 import pytest
 
