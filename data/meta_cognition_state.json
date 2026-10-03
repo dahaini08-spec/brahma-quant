@@ -1,24 +1,39 @@
 {
   "version": "1.0",
-  "updated_at": "2026-10-03T16:39:52Z",
-  "total_trades": 0,
-  "attribution_log": [],
+  "updated_at": "2026-10-03T22:02:50Z",
+  "total_trades": 1,
+  "attribution_log": [
+    {
+      "trade_id": "TEST001",
+      "symbol": "BTCUSDT",
+      "direction": "LONG",
+      "pnl": -150.0,
+      "ts": "2026-10-03T16:44:34Z",
+      "questions": {
+        "Q1_regime_wrong": false,
+        "Q2_entry_chased": false,
+        "Q3_fvg_conflict": true,
+        "Q4_oi_misled": true,
+        "Q5_bad_timing": true
+      }
+    }
+  ],
   "dimension_scores": {
     "regime": {
       "wins": 0,
-      "losses": 0,
+      "losses": 1,
       "ic": 0.0,
       "weight_mult": 1.0
     },
     "fvg": {
       "wins": 0,
-      "losses": 0,
+      "losses": 1,
       "ic": 0.0,
       "weight_mult": 1.0
     },
     "oi": {
       "wins": 0,
-      "losses": 0,
+      "losses": 1,
       "ic": 0.0,
       "weight_mult": 1.0
     },
@@ -48,7 +63,7 @@
     },
     "timing": {
       "wins": 0,
-      "losses": 0,
+      "losses": 1,
       "ic": 0.0,
       "weight_mult": 1.0
     }
@@ -59,6 +74,469 @@
     "last_50_wr": null,
     "adjustment_count": 0
   },
-  "host_health_log": [],
-  "evolution_experiments": []
+  "host_health_log": [
+    {
+      "ts": "2026-10-03T16:50:01Z",
+      "memory_pct": 55.2,
+      "disk_pct": 66.4,
+      "api_latency_ms": 22.6,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T18:20:00Z",
+      "memory_pct": 55.7,
+      "disk_pct": 66.4,
+      "api_latency_ms": 74.9,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T18:25:00Z",
+      "memory_pct": 56.4,
+      "disk_pct": 66.5,
+      "api_latency_ms": 63.0,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T18:30:00Z",
+      "memory_pct": 57.5,
+      "disk_pct": 66.5,
+      "api_latency_ms": 259.8,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T18:35:00Z",
+      "memory_pct": 57.1,
+      "disk_pct": 66.5,
+      "api_latency_ms": 60.1,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T18:40:00Z",
+      "memory_pct": 57.1,
+      "disk_pct": 66.4,
+      "api_latency_ms": 32.2,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T18:45:00Z",
+      "memory_pct": 74.9,
+      "disk_pct": 66.4,
+      "api_latency_ms": 81.1,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T18:50:00Z",
+      "memory_pct": 57.7,
+      "disk_pct": 66.4,
+      "api_latency_ms": 1240.0,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T18:55:00Z",
+      "memory_pct": 57.5,
+      "disk_pct": 66.4,
+      "api_latency_ms": 62.2,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T19:00:00Z",
+      "memory_pct": 56.7,
+      "disk_pct": 66.4,
+      "api_latency_ms": 107.2,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T19:05:00Z",
+      "memory_pct": 64.3,
+      "disk_pct": 66.5,
+      "api_latency_ms": 62.1,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T19:10:00Z",
+      "memory_pct": 57.5,
+      "disk_pct": 66.5,
+      "api_latency_ms": 68.6,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T19:20:00Z",
+      "memory_pct": 55.5,
+      "disk_pct": 66.5,
+      "api_latency_ms": 339.2,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T19:25:00Z",
+      "memory_pct": 56.7,
+      "disk_pct": 66.4,
+      "api_latency_ms": 49.4,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T19:30:00Z",
+      "memory_pct": 57.8,
+      "disk_pct": 66.4,
+      "api_latency_ms": 110.0,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T19:35:00Z",
+      "memory_pct": 56.9,
+      "disk_pct": 66.4,
+      "api_latency_ms": 348.0,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T19:40:00Z",
+      "memory_pct": 56.7,
+      "disk_pct": 66.4,
+      "api_latency_ms": 55.3,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T19:50:00Z",
+      "memory_pct": 55.7,
+      "disk_pct": 66.5,
+      "api_latency_ms": 41.9,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T19:55:00Z",
+      "memory_pct": 56.3,
+      "disk_pct": 66.5,
+      "api_latency_ms": 460.7,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T20:00:00Z",
+      "memory_pct": 56.2,
+      "disk_pct": 66.5,
+      "api_latency_ms": 504.5,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T20:05:00Z",
+      "memory_pct": 77.0,
+      "disk_pct": 66.4,
+      "api_latency_ms": 106.7,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T20:10:00Z",
+      "memory_pct": 57.2,
+      "disk_pct": 66.4,
+      "api_latency_ms": 681.9,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T20:15:00Z",
+      "memory_pct": 75.2,
+      "disk_pct": 66.4,
+      "api_latency_ms": 189.0,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T20:20:00Z",
+      "memory_pct": 56.5,
+      "disk_pct": 66.4,
+      "api_latency_ms": 46.9,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T20:25:00Z",
+      "memory_pct": 56.4,
+      "disk_pct": 66.4,
+      "api_latency_ms": 316.4,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T20:30:00Z",
+      "memory_pct": 57.8,
+      "disk_pct": 66.4,
+      "api_latency_ms": 115.9,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T20:35:00Z",
+      "memory_pct": 51.3,
+      "disk_pct": 66.5,
+      "api_latency_ms": 95.6,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T20:40:00Z",
+      "memory_pct": 52.0,
+      "disk_pct": 66.5,
+      "api_latency_ms": 38.0,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T20:45:00Z",
+      "memory_pct": 73.2,
+      "disk_pct": 66.5,
+      "api_latency_ms": 144.7,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T20:50:00Z",
+      "memory_pct": 56.1,
+      "disk_pct": 66.4,
+      "api_latency_ms": 1462.9,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T20:55:00Z",
+      "memory_pct": 56.7,
+      "disk_pct": 66.4,
+      "api_latency_ms": 50.0,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T21:00:00Z",
+      "memory_pct": 53.6,
+      "disk_pct": 66.4,
+      "api_latency_ms": 172.6,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T21:05:00Z",
+      "memory_pct": 74.2,
+      "disk_pct": 66.4,
+      "api_latency_ms": 66.2,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T21:10:00Z",
+      "memory_pct": 57.1,
+      "disk_pct": 66.4,
+      "api_latency_ms": 50.0,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T21:15:00Z",
+      "memory_pct": 75.2,
+      "disk_pct": 66.5,
+      "api_latency_ms": 1466.5,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T21:20:00Z",
+      "memory_pct": 55.6,
+      "disk_pct": 66.5,
+      "api_latency_ms": 1209.8,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T21:25:00Z",
+      "memory_pct": 59.7,
+      "disk_pct": 66.5,
+      "api_latency_ms": 62.6,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T21:30:00Z",
+      "memory_pct": 59.0,
+      "disk_pct": 66.4,
+      "api_latency_ms": 63.2,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T21:35:00Z",
+      "memory_pct": 59.6,
+      "disk_pct": 66.4,
+      "api_latency_ms": 59.7,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T21:40:00Z",
+      "memory_pct": 63.3,
+      "disk_pct": 66.4,
+      "api_latency_ms": 33.8,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T21:50:00Z",
+      "memory_pct": 56.0,
+      "disk_pct": 66.4,
+      "api_latency_ms": 119.9,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T21:55:00Z",
+      "memory_pct": 57.4,
+      "disk_pct": 66.4,
+      "api_latency_ms": 430.9,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T22:00:00Z",
+      "memory_pct": 56.5,
+      "disk_pct": 66.5,
+      "api_latency_ms": 119.6,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    },
+    {
+      "ts": "2026-10-03T22:02:50Z",
+      "memory_pct": 57.3,
+      "disk_pct": 66.5,
+      "api_latency_ms": 15.9,
+      "llm_backoff": false,
+      "llm_backoff_remaining_s": 0,
+      "supercronic_alive": true,
+      "alerts": []
+    }
+  ],
+  "evolution_experiments": [],
+  "per_symbol": {
+    "BTC": {
+      "total_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "wr": null,
+      "best_regime": null,
+      "worst_regime": null,
+      "min_score_override": null,
+      "dimension_ic": {}
+    },
+    "ETH": {
+      "total_trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "wr": null,
+      "best_regime": null,
+      "worst_regime": null,
+      "min_score_override": null,
+      "dimension_ic": {}
+    }
+  }
 }
