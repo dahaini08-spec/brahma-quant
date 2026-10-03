@@ -1027,6 +1027,44 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
                                entry_lo=_es_lo, entry_hi=_es_hi, signal_id=_es_sid)
                 except Exception as _es_e:
                     import sys as _es_sys; print(f'[emit_signal] {_es_e}', file=_es_sys.stderr)
+                # [Fix 2026-10-03 苏摩111] AMBUSCADE/ENTER → auto_signal_queue
+                # 根因：信号只写live_signal_log，paper_executor读queue=空→B线0交易
+                try:
+                    _aq_action = _sig_record.get('action','')
+                    if _aq_action in ('AMBUSCADE','ENTER','ENTER_FULL'):
+                        import json as _qj, time as _qt
+                        _qp = _sPath(__file__).parent.parent / 'data' / 'auto_signal_queue.json'
+                        _q = []
+                        if _qp.exists():
+                            try: _q = _qj.loads(_qp.read_text())
+                            except: _q = []
+                        if not isinstance(_q, list): _q = []
+                        _aq = {
+                            'symbol':      _sig_record.get('symbol',''),
+                            'direction':   _sig_record.get('signal_dir','LONG'),
+                            'signal_dir':  _sig_record.get('signal_dir','LONG'),
+                            'action':      _aq_action,
+                            'score':       float(_sig_record.get('score',0) or 0),
+                            'score_final': float(_sig_record.get('score_final',0) or 0),
+                            'grade_num':   float(_sig_record.get('score_final',0) or _sig_record.get('score',0) or 0),
+                            'grade':       float(_sig_record.get('score_final',0) or _sig_record.get('score',0) or 0),
+                            'regime':      _sig_record.get('regime','UNKNOWN'),
+                            'sl_pct':      2.0,
+                            'entry_lo':    float(_sig_record.get('entry_lo',0) or 0),
+                            'entry_hi':    float(_sig_record.get('entry_hi',0) or 0),
+                            'tp1':         float(_sig_record.get('tp1',0) or 0),
+                            'signal_id':   _sig_record.get('signal_id',''),
+                            'ts':          _qt.time(),
+                            'source':      'analysis_runner',
+                        }
+                        # 去重：同标的同方向只保留最新
+                        _q = [x for x in _q if not (x.get('symbol')==_aq['symbol']
+                              and x.get('direction')==_aq['direction'])]
+                        _q.append(_aq)
+                        _qp.write_text(_qj.dumps(_q, ensure_ascii=False))
+                        print(f'[runner] {_aq_action}→queue: {_aq["symbol"]} {_aq["direction"]} score={_aq["score"]:.1f}', flush=True)
+                except Exception as _qe:
+                    pass  # queue写入失败不阻断主流程
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # [协同接入 2026-08-02 设计院自主] condition_order_matrix 条件单计划卡
     # 当score≥120 且有有效params时，生成条件单计划卡存入data/condition_orders.json
