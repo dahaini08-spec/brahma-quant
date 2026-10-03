@@ -656,6 +656,13 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     symbol:     交易对（如 ETHUSDT）
     signal_dir: 强制方向（LONG/SHORT），None=自动判断
     deep:       True=深度分析模式，跳过方向中性快速退出，返回完整数据
+
+    [Phase拆分计划 2026-10-03 苏摩111]
+    Phase1: 数据拉取 (L660~FVG开始前) → 提取为 _fetch_market_data(sym)
+    Phase2: 结构分析 (FVG/OB/清算/共振) → 提取为 _calc_structure(sym, raw)
+    Phase3: 信号分析 (OI/聪明钱/波动率/宏观) → 提取为 _calc_signals(sym, struct)
+    Phase4: 输出格式化 (Step10/VIP/推送) → 提取为 _format_output(sym, signals)
+    前置条件: 集成测试防护网 + 苏摩111批准
     """
     import sys
     t0 = time.time()

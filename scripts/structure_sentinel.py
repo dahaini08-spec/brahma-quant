@@ -65,8 +65,7 @@ if not _JARVIS_THREAD:
         if _tm:
             _JARVIS_THREAD = _tm.group(1)
     except Exception:
-        pass
-
+        pass  # [WARN] structure_sentinel: silent
 # ── 触发记录（防重复推送） ────────────────────────────
 _TRIGGER_STATE = DATA / 'structure_sentinel_state.json'
 _COOLDOWN_S    = 6 * 3600   # 默认冷却 6h（趋势性信号）
@@ -99,6 +98,14 @@ def _ssl_ctx():
 
 def _fetch(url: str, timeout: int = 5) -> any:
     try:
+        # [Fix 2026-10-03] brahma_http统一入口
+        try:
+            from brahma_http import fetch as _bfetch
+            result = _bfetch(url, timeout=timeout)
+            if result is not None:
+                return result
+        except Exception:
+            pass  # fallback到urllib
         return json.loads(urllib.request.urlopen(url, timeout=timeout, context=_ssl_ctx()).read())
     except Exception as e:
         print(f'[sentinel] fetch失败 {url[:60]}: {e}', file=sys.stderr)
@@ -110,7 +117,7 @@ def _load_state() -> dict:
         if _TRIGGER_STATE.exists():
             return json.loads(_TRIGGER_STATE.read_text())
     except Exception:
-        pass
+        pass  # [WARN] structure_sentinel: silent
     return {}
 
 
@@ -196,7 +203,7 @@ def sense_btc_eth() -> list[dict]:
                 liq_short = float(ld.get('nearest_short', 0) or 0)
                 liq_long  = float(ld.get('nearest_long', 0) or 0)
         except Exception:
-            pass
+            pass  # [WARN] structure_sentinel: silent
         # 从key_levels回退
         if liq_short <= 0:
             liq_short = price * 1.02
@@ -215,8 +222,7 @@ def sense_btc_eth() -> list[dict]:
                 _of = (bs.get('extra', {}) or {}).get('order_flow', {}) or {}
                 cvd_1h = float(_of.get('cvd_1h', _of.get('cvd', 0)) or 0)
         except Exception:
-            pass
-
+            pass  # [WARN] structure_sentinel: silent
         # 实时OI（轻量拉取）
         oi_data = _fetch(f'https://fapi.binance.com/fapi/v1/openInterest?symbol={sym_full}')
         oi_live = float(oi_data['openInterest']) if oi_data else oi_now
@@ -373,7 +379,7 @@ def _read_latest_vip(sym: str) -> str:
                 f'体制={regime} | 现价=${price_now:,.1f}'
             )
     except Exception:
-        pass
+        pass  # [WARN] structure_sentinel: silent
     return '（state待刷新，发 `分析BTC` 获取最新）'
 
 
@@ -524,8 +530,7 @@ def main():
         _vt = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_vt)
         _vt.run(['BTC', 'ETH'])
     except Exception as _vte:
-        pass
-
+        pass  # [WARN] structure_sentinel: silent
     print(f'[sentinel] 本轮触发推送 {fired}/{len(triggers)} 条', flush=True)
 
 

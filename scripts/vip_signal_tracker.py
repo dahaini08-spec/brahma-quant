@@ -151,9 +151,19 @@ def check_trade_result(sym: str, entry: float, sl: float, tp1: float,
         import urllib.request, ssl, json as _j
         _ctx = ssl.create_default_context()
         sym_u = sym.upper() + 'USDT' if not sym.endswith('USDT') else sym.upper()
-        r = _j.loads(urllib.request.urlopen(
-            f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym_u}',
-            timeout=5, context=_ctx).read())
+        # [Fix 2026-10-03] brahma_http统一入口
+        _sym_price = None
+        try:
+            from brahma_http import fetch as _bfetch2
+            _pr = _bfetch2(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym_u}', timeout=5)
+            _sym_price = float(_pr['price']) if _pr else None
+        except Exception:
+            pass  # [WARN] vip_signal_tracker: brahma_http fallback
+        if _sym_price is None:
+            r = _j.loads(urllib.request.urlopen(
+                f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym_u}',
+                timeout=5, context=_ssl_ctx).read())
+            _sym_price = float(r['price'])
         price = float(r.get('price', 0))
     except Exception:
         return {'result': 'running', 'pnl_pct': 0.0}

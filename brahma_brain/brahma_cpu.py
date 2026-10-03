@@ -470,7 +470,7 @@ def _load_l2_lessons() -> dict:
         if _L2_LESSONS.exists():
             return json.loads(_L2_LESSONS.read_text())
     except Exception:
-        pass
+        pass  # [WARN] brahma_cpu: silent
     return {'lessons': [], 'threshold_suggestions': []}
 # ══════════════════════════════════════════════════════════════════════
 # 主入口：process_event
