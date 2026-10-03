@@ -29,6 +29,14 @@ CST = timezone(timedelta(hours=8))
 # Square API
 from square.square_key_router import get_square_key as _get_sq_key
 SQUARE_KEY = _get_sq_key('auto_post')
+
+# 三账号差异化改写引擎 [2026-10-03 苏摩111]
+try:
+    from square.multi_voice_rewriter import generate_three_versions as _gen3v
+    _MULTI_VOICE_ENABLED = True
+except ImportError:
+    _MULTI_VOICE_ENABLED = False
+    _gen3v = None
 SQUARE_URL = 'https://www.binance.com/bapi/composite/v1/public/pgc/openApi/content/add'
 
 _ctx = ssl.create_default_context()
@@ -56,6 +64,56 @@ def _post_to_square(content: str) -> dict:
         return resp
     except Exception as e:
         return {'error': str(e)}
+
+
+def _post_multi_voice(original_content: str) -> None:
+    """
+    三账号差异化发帖 [2026-10-03 苏摩111]
+    KEY_0已发 → 改写KEY_1(蓝桉)/KEY_2(牛来PRO) → 间隔5min分发
+    IP隔离：蓝桉/牛来PRO内容不出现梵天/姓赵不宣字样
+    """
+    from square.square_key_router import get_square_key as _gsk2
+    import ssl as _ssl2, urllib.request as _ur2
+    _keys = {1: _gsk2('hot_poster'), 2: _gsk2('extreme_alert')}
+    _ctx2 = _ssl2.create_default_context()
+
+    def _do_post2(content: str, key_idx: int) -> dict:
+        key = _keys.get(key_idx, '')
+        if not key:
+            return {'error': f'KEY{key_idx}未配置'}
+        payload = json.dumps({'bodyTextOnly': content}).encode()
+        req = _ur2.Request(
+            SQUARE_URL, data=payload,
+            headers={'X-Square-OpenAPI-Key': key,
+                     'Content-Type': 'application/json',
+                     'clienttype': 'binanceSkill'},
+        )
+        try:
+            return json.loads(_ur2.urlopen(req, timeout=15, context=_ctx2).read())
+        except Exception as _e2:
+            return {'error': str(_e2)}
+
+    try:
+        if not _MULTI_VOICE_ENABLED or _gen3v is None:
+            print('[multi_voice] 改写引擎未加载，跳过', flush=True)
+            return
+        versions = _gen3v(original_content)  # {0:原版,1:蓝桉版,2:牛来PRO版}
+        names = {1: '蓝桉VS释怀鸟', 2: '牛来PRO'}
+        for idx in [1, 2]:
+            v = versions.get(idx)
+            if not v:
+                continue
+            print(f'[multi_voice] 等待300s → KEY{idx} {names[idx]}...', flush=True)
+            time.sleep(300)
+            resp = _do_post2(v, idx)
+            if resp.get('success') or resp.get('code') == '000000':
+                link = resp.get('data', {}).get('shareLink', '')
+                print(f'[multi_voice] KEY{idx} {names[idx]} ✅ {link}', flush=True)
+                _log_post(f'multi_voice_key{idx}', v, resp)
+            else:
+                print(f'[multi_voice] KEY{idx} 失败: {resp}', flush=True)
+    except Exception as _mv_e:
+        print(f'[multi_voice] 异常: {_mv_e}', flush=True)
 
 
 def _is_duplicate(content: str) -> bool:
@@ -203,9 +261,12 @@ def run(syms: list, dry_run: bool = False) -> None:
         if 'error' in resp:
             print(f'发帖失败: {resp["error"]}')
         else:
-            print('✅ 合并发布成功')
+            print('✅ 合并发布成功 (KEY_0 姓赵不宣)')
             _mark_posted(content)
             _log_post('battlefield', content, resp)
+            # [三账号差异化分发 2026-10-03 苏摩111]
+            if _MULTI_VOICE_ENABLED and not dry_run:
+                _post_multi_voice(content)
         return
 
     # ── 单币种：逐币旧路径（兼容保留）──
