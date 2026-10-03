@@ -391,7 +391,11 @@ if __name__ == '__main__':
 # ══ [Dreaming循环 2026-10-03 苏摩111] 复盘结论→MEMORY.md自动更新 ══
 # 对标 Anthropic Agent架构：夜里整理记忆，第二天开工比昨天聪明
 def _write_dreaming_to_memory(results: dict) -> None:
-    """把复盘关键结论写入MEMORY.md的动态交易记忆区"""
+    """
+    把复盘关键结论写入MEMORY.md的动态交易记忆区
+    [2026-10-03 苏摩111] 并发保护 + 可审计写入日志
+    Lamis架构：多Agent写同一份记忆要版本追溯
+    """
     import re
     from datetime import datetime, timezone
 
@@ -444,5 +448,31 @@ def _write_dreaming_to_memory(results: dict) -> None:
         # 首次追加（在文件末尾）
         src = src.rstrip() + '\n' + snapshot + '\n'
 
-    mem_path.write_text(src)
+    # 并发保护：flock + 原子写（tmp→rename）
+    import fcntl
+    lock_f = mem_path.with_suffix('.lock')
+    with open(str(lock_f), 'w') as _lf:
+        fcntl.flock(_lf, fcntl.LOCK_EX)
+        try:
+            tmp = mem_path.with_suffix('.tmp')
+            tmp.write_text(src)
+            tmp.rename(mem_path)
+        finally:
+            fcntl.flock(_lf, fcntl.LOCK_UN)
+
+    # 可审计写入日志（Lamis：哪次会话、谁提议、为什么改）
+    audit_f = Path('/root/.openclaw/workspace/memory') / f'dreaming_audit.jsonl'
+    audit_f.parent.mkdir(exist_ok=True)
+    audit_entry = {
+        'ts': time.time(),
+        'date': ts,
+        'source': 'daily_postmortem',
+        'symbols': list(results.keys()),
+        'btc_bias': results.get('BTC',{}).get('bias',{}).get('bias','?'),
+        'eth_bias': results.get('ETH',{}).get('bias',{}).get('bias','?'),
+        'mem_size': len(src),
+    }
+    with open(str(audit_f), 'a') as _af:
+        _af.write(json.dumps(audit_entry) + '\n')
+
     print(f'[postmortem] Dreaming写入MEMORY.md ✅ ({len(lines)-1}个标的)', flush=True)
