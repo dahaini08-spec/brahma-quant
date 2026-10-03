@@ -126,6 +126,83 @@ def push_drift_alert(result: dict) -> None:
     except Exception as e:
         print(f'[vip_tracker] 推送失败: {e}', file=sys.stderr)
 
+# ── VIP战绩帖自动出稿 [2026-10-03 苏摩111] ──────────────────────────────
+_TRADE_STATE = _DATA / 'vip_trade_state.json'
+
+
+def load_trade_state() -> dict:
+    try:
+        return json.loads(_TRADE_STATE.read_text()) if _TRADE_STATE.exists() else {}
+    except Exception:
+        return {}
+
+
+def save_trade_state(state: dict) -> None:
+    _TRADE_STATE.write_text(json.dumps(state, indent=2, ensure_ascii=False))
+
+
+def check_trade_result(sym: str, entry: float, sl: float, tp1: float,
+                       direction: str) -> dict:
+    """
+    检查持仓中的VIP信号是否出现止盈或止据结果。
+    返回: {'result': 'win'|'loss'|'running', 'pnl_pct': float}
+    """
+    try:
+        import urllib.request, ssl, json as _j
+        _ctx = ssl.create_default_context()
+        sym_u = sym.upper() + 'USDT' if not sym.endswith('USDT') else sym.upper()
+        r = _j.loads(urllib.request.urlopen(
+            f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym_u}',
+            timeout=5, context=_ctx).read())
+        price = float(r.get('price', 0))
+    except Exception:
+        return {'result': 'running', 'pnl_pct': 0.0}
+
+    if direction == 'SHORT':
+        pnl_pct = (entry - price) / entry * 100
+        if price <= tp1 and tp1 > 0:
+            return {'result': 'win', 'pnl_pct': pnl_pct, 'price': price}
+        if price >= sl and sl > 0:
+            return {'result': 'loss', 'pnl_pct': pnl_pct, 'price': price}
+    else:  # LONG
+        pnl_pct = (price - entry) / entry * 100
+        if price >= tp1 and tp1 > 0:
+            return {'result': 'win', 'pnl_pct': pnl_pct, 'price': price}
+        if price <= sl and sl > 0:
+            return {'result': 'loss', 'pnl_pct': pnl_pct, 'price': price}
+    return {'result': 'running', 'pnl_pct': pnl_pct if 'pnl_pct' in dir() else 0.0, 'price': price}
+
+
+def generate_trade_result_post(sym: str, direction: str, entry: float,
+                               exit_price: float, pnl_pct: float,
+                               result: str) -> str:
+    """自动生成战绩帖草稿（人工确认后发布）"""
+    from datetime import datetime, timezone, timedelta
+    cst = timezone(timedelta(hours=8))
+    date_str = datetime.now(cst).strftime('%m/%d %H:%M')
+    arrow = '🔴' if direction == 'SHORT' else '🟢'
+    side_cn = '空单' if direction == 'SHORT' else '多单'
+    result_cn = '止盈封单' if result == 'win' else '止据出场'
+    sign = '+' if pnl_pct > 0 else ''
+
+    lines = [
+        f'{arrow} {sym} {side_cn}实盘战绩 | {date_str} CST',
+        '',
+        f'开仓: ${entry:,.2f}',
+        f'出场: ${exit_price:,.2f}',
+        f'此单浮盈: {sign}{pnl_pct:.2f}%（{result_cn}）',
+        '',
+        '策略故事：',
+        f'止据墙区域上方挂空，OI全周期 SHORT_BUILD，散户多头拥挤→主力猾杀目标。',
+        '系统找到共振点入场，硬止据出。',
+        '',
+        '🔗 www.bsmkweb.cc/register?ref=XZBX666',
+        '🌿 姓赵不宣 | 不是建议',
+        '#实盘战绩 #合约交易 #BTC',
+    ]
+    return '\n'.join(lines)
+
+
 def run(symbols=None) -> None:
     if symbols is None:
         symbols = ['BTC', 'ETH']

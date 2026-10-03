@@ -182,10 +182,45 @@ def run(event_type='CPI', dry_run=False):
         log_post(content, resp)
 
 
+def auto_run(dry_run=False):
+    """宏观帖自动运行入口 [2026-10-03 苏摩111]
+    接入位置：cron 每天 10:00 UTC检查明天是否是宏观事件日，是则自动发帖
+    事件日历来自 macro_config.json（苏摩手动维护）
+    """
+    macro_cfg = BASE / 'data' / 'macro_config.json'
+    if not macro_cfg.exists():
+        print('[macro_poster] macro_config.json不存在，跳过')
+        return
+    try:
+        cfg = json.loads(macro_cfg.read_text())
+    except Exception as e:
+        print(f'[macro_poster] 读取配置失败: {e}')
+        return
+
+    tomorrow = (datetime.now(timezone.utc) + timedelta(days=1)).strftime('%Y-%m-%d')
+    events_to_check = {
+        'FOMC':  cfg.get('next_fomc', ''),
+        'CPI':   cfg.get('next_cpi', ''),
+        'NFP':   cfg.get('next_nfp', ''),
+    }
+    fired = False
+    for event_type, event_date in events_to_check.items():
+        if event_date and str(event_date)[:10] == tomorrow:
+            print(f'[macro_poster] 明天是{event_type}日（{event_date}），自动发帖')
+            run(event_type=event_type, dry_run=dry_run)
+            fired = True
+    if not fired:
+        print(f'[macro_poster] 明天（{tomorrow}）无宏观事件，跳过')
+
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--event', default='CPI')
+    parser.add_argument('--event', default='')
     parser.add_argument('--dry-run', action='store_true')
+    parser.add_argument('--auto', action='store_true', help='自动检查明天是否宏观事件日')
     args = parser.parse_args()
-    run(event_type=args.event, dry_run=args.dry_run)
+    if args.auto or not args.event:
+        auto_run(dry_run=args.dry_run)
+    else:
+        run(event_type=args.event, dry_run=args.dry_run)
