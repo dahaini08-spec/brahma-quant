@@ -253,6 +253,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 
 # [9.23苏摩111 P0] 每分钟拉起核心进程（带单实例锁，进程死了自动复活）
 * * * * * cd /root/.openclaw/workspace/trading-system && bash scripts/process_resurrect.sh >> logs/resurrect.log 2>&1
+*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/host_health_sentinel.py >> logs/host_health.log 2>&1  # [Phase2 宿主健康]
 # drift checker — 03:05 daily (三方审核Phase0: 封印常量↔代码实值比对, L1字面grep)
 # [2.0合并删除] 5 3 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/drift_checker.py >> logs/drift_checker.log 2>&1
 

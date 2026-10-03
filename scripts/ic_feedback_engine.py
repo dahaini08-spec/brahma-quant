@@ -228,6 +228,7 @@ if __name__ == '__main__':
     import sys
     run_ic_feedback(verbose=True)
     apply_ic_auto_weight_adjustment()
+    apply_adaptive_score_gate()
 
 
 def apply_ic_auto_weight_adjustment():
@@ -296,3 +297,81 @@ def apply_ic_auto_weight_adjustment():
             print(f"[IC-Auto] 推送失败（不影响调整结果）: {_pe}")
     else:
         print("[IC-Auto] 所有维度IC正常，无需调整")
+
+
+def apply_adaptive_score_gate():
+    """
+    MIN_SCORE自适应边界引擎 [2026-10-03 苏摩111 梵天自进化Phase2]
+    接入位置: ic_feedback_engine.py → meta_cognition_state.json
+    触发条件: 每累计50笔完成交易后检查一次
+
+    规则（铁律）：
+      WR_recent < 40% → MIN_SCORE_OPEN += 5（更严，上限130）
+      WR_recent > 55% 且样本>=30 → MIN_SCORE_OPEN -= 3（更松，下限85）
+      每次变更推送苏摩P1告警 + 写入meta_cognition
+    """
+    import json, time, sys
+    from pathlib import Path
+
+    mc_path = Path(__file__).parent.parent / 'data' / 'meta_cognition_state.json'
+    if not mc_path.exists():
+        print('[AdaptiveGate] meta_cognition_state.json 不存在，跳过')
+        return
+
+    try:
+        mc = json.loads(mc_path.read_text())
+    except Exception as _e:
+        print(f'[WARN] AdaptiveGate: 读取失败: {_e}')
+        return
+
+    ap = mc.get('adaptive_params', {})
+    current_score = ap.get('min_score_open', 100)
+    last_50_wr = ap.get('last_50_wr', None)
+    total_trades = mc.get('total_trades', 0)
+    adj_count = ap.get('adjustment_count', 0)
+
+    # 只在每50笔时触发
+    if total_trades < 50 or total_trades % 50 != 0:
+        print(f'[AdaptiveGate] 当前{total_trades}笔，未达50笔触发点，跳过')
+        return
+
+    if last_50_wr is None:
+        print('[AdaptiveGate] 无WR数据，跳过')
+        return
+
+    new_score = current_score
+    reason = ''
+
+    if last_50_wr < 0.40:
+        new_score = min(130, current_score + 5)
+        reason = f'WR={last_50_wr:.1%}<40% → 提高门槛 {current_score}→{new_score}'
+    elif last_50_wr > 0.55 and total_trades >= 30:
+        new_score = max(85, current_score - 3)
+        reason = f'WR={last_50_wr:.1%}>55% → 放松门槛 {current_score}→{new_score}'
+
+    if new_score != current_score:
+        ap['min_score_open'] = new_score
+        ap['adjustment_count'] = adj_count + 1
+        ap.setdefault('min_score_history', []).append({
+            'ts': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+            'old': current_score,
+            'new': new_score,
+            'wr': last_50_wr,
+            'reason': reason,
+        })
+        mc['adaptive_params'] = ap
+        mc['updated_at'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+        mc_path.write_text(json.dumps(mc, ensure_ascii=False, indent=2))
+
+        try:
+            sys.path.insert(0, str(Path(__file__).parent))
+            import push_hub as _ph
+            msg = (f'⚙️ 梵天自进化 | MIN_SCORE自适应调整\n'
+                   f'{reason}\n'
+                   f'调整次数: {adj_count+1} | 需苏摩111确认实盘生效')
+            _ph.push_jarvis(msg, priority='P1')
+            print(f'[AdaptiveGate] {reason}，已推送苏摩P1确认')
+        except Exception as _pe:
+            print(f'[AdaptiveGate] 推送失败: {_pe}')
+    else:
+        print(f'[AdaptiveGate] WR={last_50_wr:.1%} 在合理范围，MIN_SCORE维持{current_score}')
