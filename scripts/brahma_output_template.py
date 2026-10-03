@@ -176,18 +176,33 @@ def format_full_report(sym: str, d: dict) -> str:
         f'# ║  {sym}/USDT  ${p:,.2f}{"  ║" if p < 10000 else " ║"}',
         f'# ╚{"═"*28}╝',
         '',
-        '## 【D1】FVG磁铁 · 全周期方向投票',
+        '## 【D1】FVG磁铁 · 全周期投票（15M/1H/4H/1D/1W）',
         '',
-        '| 周期 | 方向 | 磁铁中点 | 当前距离 | 权重 |',
-        '|------|------|---------|---------|------|',
+        '| 周期 | 方向 | 磁铁位 | 距当前% | 三方点评 |',
+        '|------|------|--------|---------|---------|',
     ]
-    weight_map = {'1D': '高', '4H': '中', '1H': '中', '15M': '低'}
-    for tf, vote in fvg_votes.items():
+    # [苏摩111 2026-10-03] D1强制5周期：15M/1H/4H/1D/1W
+    weight_map = {'1W': '极高', '1D': '高', '4H': '中', '1H': '中', '15M': '低'}
+    tf_comment = {
+        'BULL': {'1W': '周线看多，中长期支撑', '1D': '日线看多', '4H': '4H多头主导',
+                 '1H': '1H短期偏多', '15M': '超短偏多'},
+        'BEAR': {'1W': '周线看空，中长期压制', '1D': '日线看空', '4H': '4H空头主导',
+                 '1H': '1H短期偏空', '15M': '超短偏空'},
+    }
+    tf_order = ['15M', '1H', '4H', '1D', '1W']
+    # fvg_votes 可能缺1W，用NONE补
+    fvg_votes_full = {tf: fvg_votes.get(tf, 'NONE') for tf in tf_order}
+    bull_v = sum(1 for v in fvg_votes_full.values() if v == 'BULL')
+    bear_v = sum(1 for v in fvg_votes_full.values() if v == 'BEAR')
+    for tf in tf_order:
+        vote = fvg_votes_full[tf]
         mag = d.get(f'fvg_{tf.lower()}_magnet', 0.0)
-        dist = (mag - p) / p * 100 if mag > 0 else 0
-        icon = '🟢 BULL' if vote == 'BULL' else '🔴 BEAR'
-        w = weight_map.get(tf, '低')
-        lines.append(f'| {tf} | {icon} | ${mag:,.1f} | {dist:+.1f}% | {w} |')
+        dist = (mag - p) / p * 100 if mag > 0 and p > 0 else 0
+        icon = '🟢 BULL' if vote == 'BULL' else ('🔴 BEAR' if vote == 'BEAR' else '⚪ NONE')
+        comment = tf_comment.get(vote, {}).get(tf, '—') if vote in ('BULL','BEAR') else '暂无FVG'
+        mag_str = f'${mag:,.1f}' if mag > 0 else '—'
+        dist_str = f'{dist:+.1f}%' if mag > 0 else '—'
+        lines.append(f'| {tf} | {icon} | {mag_str} | {dist_str} | {comment} |')
 
     lines += [
         '',
@@ -204,9 +219,18 @@ def format_full_report(sym: str, d: dict) -> str:
         '',
         '## 【D2】OB订单区块 · 有效性审计',
         '',
-        '| OB | 新鲜度 | 价格区间 | 距现价 | 是否参与共振 |',
-        '|----|--------|---------|--------|------------|',
-        ob_rows.rstrip(),
+        '| 周期 | 类型 | age | 价格区间 | 有效性 |',
+        '|------|------|-----|---------|--------|',
+    ]
+    # [苏摩111 2026-10-03] D2 OB行标准化：周期|类型|age|区间|有效性
+    ob_rows_std = ''
+    for ob in obs:
+        tf_s = ob.get('tf','?'); side = ob.get('side','?')
+        age  = ob.get('age', 999)
+        lo   = ob.get('lo', ob.get('low', 0)); hi = ob.get('hi', ob.get('high',0))
+        valid = '✅新鲜' if age<50 else ('⚠️老化' if age<100 else '❌失效')
+        ob_rows_std += f'| {tf_s} | {side} | {age}bars | ${lo:,.1f}~${hi:,.1f} | {valid} |\n'
+    lines += [ob_rows_std.rstrip() if ob_rows_std else '| — | — | — | 无OB数据 | — |',
         '',
         '---',
         '',
@@ -262,7 +286,10 @@ def format_full_report(sym: str, d: dict) -> str:
         '```',
         f'OI序列：{" → ".join(f"{v:.0f}" for v in oi_seq[-6:])}' if oi_seq else f'OI当前：{d.get("oi_now",0):,.0f}',
         f'累计变化：{oi_chg:+.0f}张',
-        f'CVD 1H = {cvd_1h:+.0f}（{"卖方主导" if cvd_1h < 0 else "买方主导"}）',
+        f'── CVD独立维度 ──',
+        f'CVD 1H = {cvd_1h:+.1f}（{"卖方主导" if cvd_1h < 0 else "买方主导"}）',
+        f'CVD 4H = {d.get("cvd_4h", 0):+.1f}（{"卖方主导" if d.get("cvd_4h",0) < 0 else "买方主导"}）',
+        f'OI+CVD同向: {"✅ 同向做空" if (cvd_1h < 0 and "SHORT" in oi_dir) else "✅ 同向做多" if (cvd_1h > 0 and "LONG" in oi_dir) else "⚠️ 背离警惕"}',
         f'资金费率 = {fr:.4f}%（{"多头付费" if fr > 0 else "空头付费"}）',
         '```',
         '',
