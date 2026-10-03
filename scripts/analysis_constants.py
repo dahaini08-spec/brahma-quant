@@ -27,8 +27,8 @@ HURST_RANDOM        = 0.50  # <此值 = 纯随机游走
 # Score 门槛（体制×方向组合）
 # ══════════════════════════════════════════════════════
 SCORE_CHOP_STD      = 110   # CHOP体制标准入场分数
-SCORE_CHOP_TREND    = 85    # CHOP体制+Hurst趋势旁路分数
-SCORE_CHOP_TRANS    = 95    # CHOP体制+Hurst过渡分数
+SCORE_CHOP_TREND    = 40    # [方案A 2026-10-03 苏摩111] CHOP+Hurst>0.65+OI BUILD 趋势初期解锁
+SCORE_CHOP_TRANS    = 75    # [方案A 2026-10-03 苏摩111] CHOP+Hurst>0.55过渡区降门槛
 SCORE_BEAR_LONG     = 140   # BEAR_TREND:LONG 高证据标准
 SCORE_BEAR_REC_SHT  = 130   # BEAR_RECOVERY:SHORT 高证据标准
 SCORE_MIN_ENTER     = 100   # 全局最低入场分数（MIN_SCORE_OPEN）

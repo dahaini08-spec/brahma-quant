@@ -183,8 +183,17 @@ class Step11Judge:
         if 'CHOP' in self.regime:
             # Hurst>0.6 = 趋势性隐现，降低门槛
             if self.hurst >= HURST_TREND:
-                effective_threshold = SCORE_CHOP_TREND  # 趋势区旁路
-                _note = f'Hurst={self.hurst:.3f}≥0.6趋势区，CHOP门槛旁路→{effective_threshold}'
+                # [方案A 2026-10-03 苏摩111] Hurst>0.65+OI BUILD = 趋势初期，大幅降门槛
+                _oi_sig = str(getattr(self, 'oi_signal', '') or
+                              (self.oi or {}).get('main_signal', ''))
+                _oi_build = any(x in _oi_sig for x in ['BUILD','LONG_BUILD','SHORT_BUILD'])
+                _resonance_ok = getattr(self, 'resonance_count', 0) >= 5
+                if _oi_build and _resonance_ok:
+                    effective_threshold = SCORE_CHOP_TREND  # 40分——趋势初期+OI BUILD+共振
+                    _note = f'Hurst={self.hurst:.3f}≥0.65+OI_BUILD+共振≥5/7，CHOP趋势初期解锁→{effective_threshold}'
+                else:
+                    effective_threshold = SCORE_CHOP_TRANS  # 75分——有趋势但OI未确认
+                    _note = f'Hurst={self.hurst:.3f}≥0.65但OI未BUILD，保守门槛→{effective_threshold}'
             elif self.hurst >= HURST_TRANSITION:
                 effective_threshold = SCORE_CHOP_TRANS  # 中间过渡区
                 _note = f'Hurst={self.hurst:.3f}≥0.55过渡区，门槛→{effective_threshold}'
