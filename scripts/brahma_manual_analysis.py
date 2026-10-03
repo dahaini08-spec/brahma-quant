@@ -145,31 +145,57 @@ def load_json(path):
 # ══════════════════════════════════════════════════════════
 
 def step0_fetch_all(sym: str) -> dict:
-    """并行拉取所有实时数据"""
+    """真正并行拉取所有实时数据 [Fix 2026-10-03 苏摩111]
+    原来注释说并行但实际串行。修复：ThreadPoolExecutor并行所有网络IO。
+    预期：8个串行请求(~8s) → 并行(~1.5s)，每标的节省6s
+    """
+    from concurrent.futures import ThreadPoolExecutor, as_completed as _as_completed
     usdt = sym + 'USDT'
 
-    price = float(fetch(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={usdt}').get('price', 0))
-    k1h   = klines(usdt, '1h', 8)
-    k4h   = klines(usdt, '4h', 6)
-    k15m  = klines(usdt, '15m', 8)
+    # 定义所有需要并行的网络请求
+    _tasks = {
+        'price_raw': lambda: fetch(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={usdt}'),
+        'fr_raw':    lambda: fetch(f'https://fapi.binance.com/fapi/v1/fundingRate?symbol={usdt}&limit=1'),
+        'oi_hist':   lambda: fetch(f'https://fapi.binance.com/futures/data/openInterestHist?symbol={usdt}&period=15m&limit=8'),
+        'oi_1h':     lambda: fetch(f'https://fapi.binance.com/futures/data/openInterestHist?symbol={usdt}&period=1h&limit=8'),
+        'oi_4h':     lambda: fetch(f'https://fapi.binance.com/futures/data/openInterestHist?symbol={usdt}&period=4h&limit=6'),
+        'lsr_raw':   lambda: fetch(f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol={usdt}&period=1h&limit=4'),
+        'top_raw':   lambda: fetch(f'https://fapi.binance.com/futures/data/topLongShortPositionRatio?symbol={usdt}&period=1h&limit=4'),
+        'k1h':       lambda: klines(usdt, '1h', 8),
+        'k4h':       lambda: klines(usdt, '4h', 6),
+        'k15m':      lambda: klines(usdt, '15m', 8),
+    }
+    _results = {}
+    with ThreadPoolExecutor(max_workers=len(_tasks)) as _pool:
+        _futs = {_pool.submit(fn): key for key, fn in _tasks.items()}
+        for _fut in _as_completed(_futs):
+            _key = _futs[_fut]
+            try:
+                _results[_key] = _fut.result()
+            except Exception:
+                _results[_key] = None
 
-    fr_raw = fetch(f'https://fapi.binance.com/fapi/v1/fundingRate?symbol={usdt}&limit=1')
-    fr     = float(fr_raw[0].get('fundingRate', 0)) if isinstance(fr_raw, list) and fr_raw else 0
+    price   = float((_results.get('price_raw') or {}).get('price', 0))
+    k1h     = _results.get('k1h') or []
+    k4h     = _results.get('k4h') or []
+    k15m    = _results.get('k15m') or []
+    fr_raw  = _results.get('fr_raw') or []
+    fr      = float(fr_raw[0].get('fundingRate', 0)) if isinstance(fr_raw, list) and fr_raw else 0
 
     # OI全周期：15M短期 + 1H中期 + 4H主力
-    oi_hist   = fetch(f'https://fapi.binance.com/futures/data/openInterestHist?symbol={usdt}&period=15m&limit=8')
-    oi_1h     = fetch(f'https://fapi.binance.com/futures/data/openInterestHist?symbol={usdt}&period=1h&limit=8')
-    oi_4h     = fetch(f'https://fapi.binance.com/futures/data/openInterestHist?symbol={usdt}&period=4h&limit=6')
+    oi_hist   = _results.get('oi_hist') or []
+    oi_1h     = _results.get('oi_1h') or []
+    oi_4h     = _results.get('oi_4h') or []
     oi_vals   = [float(x.get('sumOpenInterest', 0)) for x in oi_hist] if isinstance(oi_hist, list) else []
     oi_usd    = [float(x.get('sumOpenInterestValue', 0)) for x in oi_hist] if isinstance(oi_hist, list) else []
     oi_1h_vals= [float(x.get('sumOpenInterest', 0)) for x in oi_1h]  if isinstance(oi_1h, list) else []
     oi_4h_vals= [float(x.get('sumOpenInterest', 0)) for x in oi_4h]  if isinstance(oi_4h, list) else []
 
     # 大户仓位：拉3条历史，计算变化速率
-    lsr_raw  = fetch(f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol={usdt}&period=1h&limit=4')
+    lsr_raw  = _results.get('lsr_raw') or []
     lsr_list = [(float(x.get('longAccount', 0)), float(x.get('shortAccount', 0))) for x in lsr_raw] if isinstance(lsr_raw, list) else []
 
-    top_raw  = fetch(f'https://fapi.binance.com/futures/data/topLongShortPositionRatio?symbol={usdt}&period=1h&limit=4')
+    top_raw  = _results.get('top_raw') or []
     top_list = [float(x.get('longAccount', 0)) for x in top_raw] if isinstance(top_raw, list) else []
     # 大户变化速率（最新vs2小时前，正=增仓多，负=减仓多）
     top_delta = (top_list[-1] - top_list[0]) * 100 if len(top_list) >= 2 else 0.0  # P0修复: 最新-最早=净变化方向正确
