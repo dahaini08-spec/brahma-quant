@@ -1050,13 +1050,13 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             if signal_dir == 'SHORT':
                 _new_sl  = _entry_mid + _new_risk
                 _new_tp1 = _entry_mid - _new_risk * 2.5
-                _new_rr1 = abs(_new_tp1 - _entry_mid) / _new_risk
+                _new_rr1 = abs(_new_tp1 - _entry_mid) / max(_new_risk, 1e-8)
             else:
                 _new_sl  = _entry_mid - _new_risk
                 _new_tp1 = _entry_mid + _new_risk * 2.5
-                _new_rr1 = abs(_new_tp1 - _entry_mid) / _new_risk
+                _new_rr1 = abs(_new_tp1 - _entry_mid) / max(_new_risk, 1e-8)
             # 拓展后止损宽度 ≤ 5%，且新RR ≥ 2.5
-            _new_sl_pct = abs(_new_sl - _entry_mid) / _entry_mid * 100
+            _new_sl_pct = abs(_new_sl - _entry_mid) / max(_entry_mid, 1e-8) * 100  # [Fix 2026-10-03 除零保护]
             if _new_rr1 >= 1.5 and _new_sl_pct <= 5.0:  # [FIX-RR-v2 2026-06-14] 1.5允许宽止损策略
                 # [设计院 2026-06-23 P0修复 v5] 拓展重算分支：tp2同步更新
                 _new_tp2 = _entry_mid - _new_risk * 4.5 if signal_dir == 'SHORT' else _entry_mid + _new_risk * 4.5
