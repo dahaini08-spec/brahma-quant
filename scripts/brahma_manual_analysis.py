@@ -176,6 +176,15 @@ def step0_fetch_all(sym: str) -> dict:
                 _results[_key] = None
 
     price   = float((_results.get('price_raw') or {}).get('price', 0))
+    # [Fix 2026-10-03] price=0时用深度降级链，避免state_btc.json里price=0引发后续除零
+    if price <= 0:
+        try:
+            import urllib.request as _ur2, ssl as _ssl2, json as _j2
+            _ctx2 = _ssl2.create_default_context(); _ctx2.check_hostname=False; _ctx2.verify_mode=_ssl2.CERT_NONE
+            _pr2 = _j2.loads(_ur2.urlopen(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={usdt}', timeout=5, context=_ctx2).read())
+            price = float(_pr2.get('price', 0))
+        except Exception:
+            pass
     k1h     = _results.get('k1h') or []
     k4h     = _results.get('k4h') or []
     k15m    = _results.get('k15m') or []
@@ -241,6 +250,8 @@ def step0_fetch_all(sym: str) -> dict:
                 import json as _json_save
                 _sym_state.write_text(_json_save.dumps(bs, ensure_ascii=False))
         except Exception as _e:
+            import sys as _sys_warn
+            print(f'[WARN] brahma_manual_analysis: brahma_core.analyze({sym}USDT) 失败: {_e}', file=_sys_warn.stderr)
             bs = _candidate  # 重算失败→退回缓存（过期总比没有好）
     else:
         # state文件不存在 → 实时调用brahma_core
@@ -253,6 +264,8 @@ def step0_fetch_all(sym: str) -> dict:
                 import json as _json_save
                 _sym_state.write_text(_json_save.dumps(bs, ensure_ascii=False))
         except Exception as _e:
+            import sys as _sys_warn2
+            print(f'[WARN] brahma_manual_analysis: brahma_core.analyze({sym}USDT) fallback失败: {_e}', file=_sys_warn2.stderr)
             bs = load_json(_fallback)
     gex_s    = load_json(DATA / 'gex_state.json')
     vb_s     = load_json(DATA / 'vol_beta_state.json')
