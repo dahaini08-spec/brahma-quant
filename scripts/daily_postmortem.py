@@ -339,6 +339,12 @@ def run_postmortem():
     tmp.write_text(json.dumps(out, ensure_ascii=False, indent=2))
     tmp.rename(DATA / 'postmortem_latest.json')
 
+    # Dreaming循环：复盘结论→MEMORY.md
+    try:
+        _write_dreaming_to_memory(results)
+    except Exception as _de:
+        print(f'[postmortem] Dreaming写入失败: {_de}', flush=True)
+
     # ── 生成推送文本 ──
     lines = [f'📊 **梵天24h复盘** | {ts_utc}\n']
     for sym, r in results.items():
@@ -380,3 +386,63 @@ if __name__ == '__main__':
     _sig.signal(_sig.SIGALRM, lambda s, f: sys.exit(1))
     _sig.alarm(55)
     run_postmortem()
+
+
+# ══ [Dreaming循环 2026-10-03 苏摩111] 复盘结论→MEMORY.md自动更新 ══
+# 对标 Anthropic Agent架构：夜里整理记忆，第二天开工比昨天聪明
+def _write_dreaming_to_memory(results: dict) -> None:
+    """把复盘关键结论写入MEMORY.md的动态交易记忆区"""
+    import re
+    from datetime import datetime, timezone
+
+    mem_path = Path('/root/.openclaw/workspace/MEMORY.md')
+    if not mem_path.exists():
+        return
+
+    ts   = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+    src  = mem_path.read_text()
+
+    # 生成今日交易记忆快照
+    lines = [f'\n## 🌙 Dreaming {ts} UTC']
+    for sym, r in results.items():
+        if not isinstance(r, dict): continue
+        bias    = r.get('bias', {})
+        oi_pat  = r.get('oi', {}).get('pattern', '?')
+        lsr_r   = r.get('lsr_retail', {})
+        kline   = r.get('kline', {})
+        liq_s   = r.get('liq_short', 0)
+        liq_l   = r.get('liq_long', 0)
+        bias_str= bias.get('bias', 'NEUTRAL')
+        bull_p  = bias.get('bull_prob', 50)
+        bear_p  = bias.get('bear_prob', 50)
+        crowd   = lsr_r.get('crowded', False)
+        vol_r   = kline.get('vol_ratio', 1.0)
+
+        lesson = ''
+        if crowd and bias_str in ('BEARISH','NEUTRAL'):
+            lesson = f'散户拥挤({lsr_r.get("end",0):.0f}%)→偏空'
+        elif oi_pat == 'REVERSAL':
+            lesson = 'OI反转→关注入场'
+        elif vol_r < 0.3:
+            lesson = '量能萎缩→等方向确认'
+
+        lines.append(
+            f'- **{sym}** 偏向={bias_str} 多{bull_p}%空{bear_p}% '
+            f'OI={oi_pat} 散户拥挤={crowd} '
+            f'墙=${liq_s:,.0f} 池=${liq_l:,.0f}'
+            + (f' → {lesson}' if lesson else '')
+        )
+
+    snapshot = '\n'.join(lines)
+
+    # 替换或追加到MEMORY.md的Dreaming区块
+    marker = '## 🌙 Dreaming'
+    if marker in src:
+        # 替换上次的dreaming区块
+        src = re.sub(r'\n## 🌙 Dreaming.*?(?=\n## |\Z)', snapshot, src, flags=re.DOTALL)
+    else:
+        # 首次追加（在文件末尾）
+        src = src.rstrip() + '\n' + snapshot + '\n'
+
+    mem_path.write_text(src)
+    print(f'[postmortem] Dreaming写入MEMORY.md ✅ ({len(lines)-1}个标的)', flush=True)
