@@ -3774,28 +3774,47 @@ def main():
         # [P1-B 2026-10-03 苏摩111] 主链完成→ASD-STE100摘要推送
         # Boris架构：AI产出→人理解，3句话摘要代替63s原始报告
         try:
-            import push_hub as _ph
+            import push_hub as _ph, re as _re
+            _out_text = _summary.get('output', '')
+            _elapsed_s = _summary.get('elapsed_s', 0)
+
+            def _parse_sym_line(text, sym):
+                """从output文本提取单标的关键字段"""
+                # 找标的段落
+                seg_m = _re.search(rf'【{sym}USDT[^】]*】(.*?)(?=【[A-Z]|\Z)', text, _re.DOTALL)
+                seg = seg_m.group(1) if seg_m else ''
+                # 提取体制
+                regime_m = _re.search(r'体制=(\w+)', seg)
+                regime = regime_m.group(1) if regime_m else '?'
+                # 提取score
+                score_m = _re.search(r'score=([-\d.]+)', seg)
+                score = float(score_m.group(1)) if score_m else 0
+                # 提取action
+                action = 'WAIT'
+                if 'ENTER' in seg: action = 'ENTER'
+                elif 'AMBUSCADE' in seg: action = 'AMBUSCADE'
+                # 提取清算墙/池（止损墙/支撑池）
+                wall_m = _re.search(r'止损墙\$([\d,]+)', seg)
+                pool_m = _re.search(r'支撑池\$([\d,]+)', seg)
+                liq_s = float(wall_m.group(1).replace(',','')) if wall_m else 0
+                liq_l = float(pool_m.group(1).replace(',','')) if pool_m else 0
+                # 偏向
+                bear = seg.count('BEAR') + seg.count('判空') + seg.count('偏空')
+                bull = seg.count('BULL') + seg.count('判多') + seg.count('偏多')
+                bias = 'BEAR' if bear > bull else ('BULL' if bull > bear else 'NEUTRAL')
+                return regime, score, action, liq_s, liq_l, bias
+
             _lines = [f'📊 梵天分析 | {_summary.get("ts_utc","")[:16]} UTC']
             for _s in symbols:
-                _r = _summary.get('results', {}).get(_s, {})
-                if not isinstance(_r, dict): continue
-                _b = _r.get('bias', {})
-                _bias_str = _b.get('bias', '?') if isinstance(_b, dict) else '?'
-                _score = _r.get('score', 0)
-                _action = _r.get('action', 'WAIT')
-                _liq_s = _r.get('liq_short', 0)
-                _liq_l = _r.get('liq_long', 0)
-                _regime = _r.get('regime', '?')
-                _icon = '🔴' if 'BEAR' in str(_bias_str) else '🟢' if 'BULL' in str(_bias_str) else '⚪'
+                _regime, _score, _action, _liq_s, _liq_l, _bias = _parse_sym_line(_out_text, _s)
+                _icon = '🔴' if _bias == 'BEAR' else '🟢' if _bias == 'BULL' else '⚪'
                 _action_tag = f'[{_action}]' if _action not in ('WAIT','WATCH') else ''
                 _liq_str = f'墙${_liq_s:,.0f} 池${_liq_l:,.0f}' if _liq_s and _liq_l else ''
                 _lines.append(f'{_icon} {_s}: {_regime} score={_score:.0f} {_action_tag} {_liq_str}'.strip())
-            _elapsed_s = _summary.get('elapsed_s', 0)
-            _next_sym = symbols[0] if symbols else 'BTC'
-            _lines.append(f'耗时{_elapsed_s:.0f}s | 下次: {_next_sym} brahma_cpu :04')
+            _lines.append(f'耗时{_elapsed_s:.0f}s | 下次: {symbols[0] if symbols else "BTC"} brahma_cpu :04')
             _ph.push_jarvis('\n'.join(_lines), priority='P3',
                 dedup_key=f'auto_analysis_{_summary.get("ts_utc","")[:13]}',
-                dedup_ttl=3300)  # 55min dedup，不重复推送同一小时
+                dedup_ttl=3300)
             print(f'[auto_analysis] 摘要推送苏摩 ✅', file=sys.stderr)
         except Exception as _push_e:
             print(f'[auto_analysis] 摘要推送失败: {_push_e}', file=sys.stderr)
