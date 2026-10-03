@@ -29,6 +29,8 @@ PIP_PKGS = {
     'websocket': 'websocket-client',
     'pytest': 'pytest',
     'lightgbm': 'lightgbm',
+    'imageio_ffmpeg': 'imageio-ffmpeg',   # [2026-10-03 苏摩111] 视频帖ffmpeg二进制，重启后恢复
+    'gtts': 'gtts',                        # [2026-10-03 苏摩111] TTS语音合成，重启后恢复
 }
 
 LIBGOMP_SRC = None  # 由脚本探测
