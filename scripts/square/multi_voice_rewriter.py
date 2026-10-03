@@ -1,250 +1,316 @@
 #!/usr/bin/env python3
 """
-multi_voice_rewriter.py — 三账号差异化改写引擎
-[2026-10-03 苏摩111封印]
+multi_voice_rewriter.py — 三账号差异化改写引擎 v3.0
+[2026-10-03 苏摩111 v3升级]
 
-核心设计：同源异声
-  同一个市场判断 → 三种声音/风格/视角
-  零LLM依赖：纯规则改写，0ms延迟，0漂移风险
+核心思路：不是改写原文，而是「同一个市场洞察，三种人格自述」
+  姓赵不宣：原文不动（苏摩已认可质量）
+  蓝桉：提取核心结论，用高频交易员自己的话重说一遍
+  牛来PRO：提取核心逻辑，用宏观教育视角讲清楚背后为什么
 
-账号身份：
-  KEY_0 姓赵不宣    → 10年老交易员，冷静犀利，量化背景
-  KEY_1 蓝桉VS释怀鸟 → 高频交易者，数字直白，散户友好（禁梵天字样）
-  KEY_2 牛来PRO      → 独立分析师，宏观教育，温和（禁梵天/姓赵不宣）
-
-接入位置：
-  scripts/square_auto_post.py → _post_multi_voice()
-  scripts/square/square_deep_post.py → 旗舰帖三账号分发
+禁忌：
+  - 蓝桉/牛来PRO 不得出现：梵天 姓赵不宣 设计院
+  - 不得是纯数据堆砌
+  - 不得有AI腔（根据以上分析/综合来看/建议投资者）
 """
-import re
-import time
-import random
+import re, random, time
 from typing import Optional
 
-# ── IP隔离规则 ──────────────────────────────────────────────
-# KEY_1 禁止出现的词（蓝桉独立IP）
 _KEY1_FORBIDDEN = ['梵天', '姓赵不宣', '设计院', '量化系统', 'brahma']
-# KEY_2 禁止出现的词（牛来PRO独立IP）
-_KEY2_FORBIDDEN = ['梵天', '姓赵不宣', '设计院', '量化系统', 'brahma',
-                   '蓝桉', '释怀鸟']
+_KEY2_FORBIDDEN = ['梵天', '姓赵不宣', '设计院', '量化系统', 'brahma', '蓝桉', '释怀鸟']
 
-# ── 各账号风格参数 ────────────────────────────────────────────
-_VOICE_CONFIG = {
-    0: {
-        'name':    '姓赵不宣',
-        'suffix':  '🌿 姓赵不宣 | 不是建议',
-        'style':   'veteran',    # 老交易员：冷静犀利有沧桑感
-        'forbidden': [],
-    },
-    1: {
-        'name':    '蓝桉VS释怀鸟',
-        'suffix':  '💙 蓝桉VS释怀鸟 | 高频视角',
-        'style':   'hft',        # 高频交易：数字直白，节奏快
-        'forbidden': _KEY1_FORBIDDEN,
-    },
-    2: {
-        'name':    '牛来PRO',
-        'suffix':  '🐂 牛来PRO | 独立观点',
-        'style':   'macro',      # 宏观教育：温和叙事
-        'forbidden': _KEY2_FORBIDDEN,
-    },
-}
-
-# ── 风格词汇替换表 ────────────────────────────────────────────
-# veteran（姓赵不宣）→ hft（蓝桉）→ macro（牛来PRO）
-_STYLE_REPLACEMENTS = {
-    # 老交易员表达 → 高频表达
-    'hft': [
-        ('见过太多这种行情了', '数据看过了'),
-        ('这不是意外，这是剧本', '结构很清楚'),
-        ('主力在等', 'OI在减'),
-        ('今天正确的交易，发生在昨天', '入场点要提前规划'),
-        ('记住这一次', '记录一下'),
-        ('沧桑', '高频'),
-        ('等待结构', '等量能确认'),
-        ('做单', '挂单'),
-        ('不在这里追', '当前位置性价比低'),
-    ],
-    # 老交易员表达 → 宏观教育表达
-    'macro': [
-        ('见过太多这种行情了', '这种走势在历史上出现过多次'),
-        ('这不是意外，这是剧本', '市场有其自己的逻辑'),
-        ('主力在等', '聪明钱在观望'),
-        ('今天正确的交易，发生在昨天', '好的机会需要提前布局'),
-        ('记住这一次', '这是一个值得学习的案例'),
-        ('不追', '保持耐心'),
-        ('做单', '参与'),
-        ('追空', '做空'),
-        ('追多', '做多'),
-    ],
-}
-
-# ── 开场句改写 ────────────────────────────────────────────────
-_OPENER_REWRITES = {
-    'hft': [
-        lambda orig: orig,  # 保持原句
-        lambda orig: orig.replace('。', '，数据说话。') if '。' in orig[:20] else orig,
-    ],
-    'macro': [
-        lambda orig: orig,
-        lambda orig: f'今天来聊一个大家都关心的问题。\n\n{orig}',
-    ],
-}
-
-# ── 结尾钩子（各账号独立） ────────────────────────────────────
-_CLOSERS = {
-    0: [  # 姓赵不宣
-        '关注我，每晚21:00直播+SMC教学',
-        '点个关注，持续更新交易思路',
-    ],
-    1: [  # 蓝桉
-        '跟我一起做高频，关注不迷路',
-        '每天更新行情，关注见证真实交易',
-    ],
-    2: [  # 牛来PRO
-        '关注我，每天一篇市场深度解读',
-        '学会看结构，比追热点重要得多',
-    ],
+_VOICE = {
+    0: {'name': '姓赵不宣',     'suffix': '🌿 姓赵不宣 | 不是建议',      'forbidden': []},
+    1: {'name': '蓝桉VS释怀鸟', 'suffix': '💙 蓝桉VS释怀鸟 | 高频视角',  'forbidden': _KEY1_FORBIDDEN},
+    2: {'name': '牛来PRO',      'suffix': '🐂 牛来PRO | 独立观点',        'forbidden': _KEY2_FORBIDDEN},
 }
 
 
 def _clean_ip(text: str, forbidden: list) -> str:
-    """清除IP污染词"""
-    for word in forbidden:
-        # 直接替换为空或通用词
-        text = text.replace(word + '系统', '我的系统')
-        text = text.replace(word + '分析', '分析')
-        text = text.replace(word, '')
-    # 清理多余空格/换行
-    text = re.sub(r'\n{3,}', '\n\n', text)
-    text = re.sub(r'  +', ' ', text)
-    return text.strip()
+    for w in forbidden:
+        text = text.replace(w+'系统', '我的系统').replace(w+'分析', '分析').replace(w, '')
+    return re.sub(r'\n{3,}', '\n\n', text).strip()
 
 
-def _apply_style(text: str, style: str) -> str:
-    """应用风格词汇替换"""
-    if style not in _STYLE_REPLACEMENTS:
-        return text
-    for old, new in _STYLE_REPLACEMENTS[style]:
-        text = text.replace(old, new)
-    return text
+def _get_tags(text: str) -> str:
+    tags = re.findall(r'#\S+', text)
+    return ' '.join(tags[:3]) if tags else ''
 
 
-def _replace_suffix(text: str, old_suffix: str, new_suffix: str) -> str:
-    """替换结尾品牌标识"""
-    if old_suffix in text:
-        return text.replace(old_suffix, new_suffix)
-    # 找最后一行替换
-    lines = text.rstrip().splitlines()
-    if lines and ('不是建议' in lines[-1] or '姓赵' in lines[-1] or
-                  '🌿' in lines[-1]):
-        lines[-1] = new_suffix
-        return '\n'.join(lines)
-    return text + '\n\n' + new_suffix
+def _extract_conclusion(text: str) -> str:
+    """提取原帖的核心结论（最后一个有观点的句子）"""
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    for l in reversed(lines):
+        if (len(l) > 8 and
+            not l.startswith('#') and not l.startswith('🌿') and
+            not l.startswith('关注') and not l.startswith('━')):
+            return l
+    return ''
 
 
-def _add_closer(text: str, key_idx: int) -> str:
-    """在结尾品牌标识前插入互动钩子"""
-    closers = _CLOSERS.get(key_idx, [])
-    if not closers:
-        return text
-    closer = random.choice(closers)
-    lines = text.rstrip().splitlines()
-    # 找最后一个品牌标识行，在它之前插入
-    for i in range(len(lines) - 1, -1, -1):
-        if '🌿' in lines[i] or '💙' in lines[i] or '🐂' in lines[i]:
-            lines.insert(i, f'\n{closer}')
-            return '\n'.join(lines)
-    return text + f'\n\n{closer}'
+def _extract_key_insight(text: str) -> str:
+    """提取最有价值的洞察句（通常是'为什么'）"""
+    insight_kw = ['这不是', '背后', '因为', '说明', '意味着', '其实', '真相',
+                  '剧本', '逻辑', '规律', '聪明钱', '主力', '散户']
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    for l in lines:
+        if any(k in l for k in insight_kw) and len(l) > 10:
+            if not l.startswith('#') and not l.startswith('🌿'):
+                return l
+    return ''
+
+
+def _extract_price_action(text: str) -> str:
+    """提取操作建议句"""
+    action_kw = ['不会追', '不追', '等', '挂', '空单', '多单', '出的机会', '入场', '止损']
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    for l in lines:
+        if any(k in l for k in action_kw) and len(l) > 6:
+            if not l.startswith('#') and not l.startswith('🌿'):
+                return l
+    return ''
+
+
+def _detect_topic(text: str) -> dict:
+    """分析帖子主题，返回结构化信息"""
+    coins = [c for c in ['BTC','ETH','SOL','BNB','SAND','MANA','GALA','AXS','XRP'] if c in text]
+    
+    topic = 'general'
+    if any(k in text for k in ['板块轮动', '游戏板块', 'NFT', '元宇宙']):
+        topic = 'rotation'
+    elif any(k in text for k in ['暴涨', '涨了', '%']):
+        topic = 'pump'
+    elif any(k in text for k in ['CHOP', '震荡', '横盘']):
+        topic = 'chop'
+    elif any(k in text for k in ['BEAR', '判空', '偏空', '做空']):
+        topic = 'short'
+    elif any(k in text for k in ['BULL', '判多', '偏多', '做多']):
+        topic = 'long'
+    
+    # 提取核心数字（不超过3个，避免数据堆砌）
+    prices = re.findall(r'\$[\d,]+(?:\.\d+)?', text)[:3]
+    pcts   = re.findall(r'[-+]?\d+\.?\d*%', text)[:3]
+    
+    return {
+        'topic': topic,
+        'coins': coins[:3],
+        'prices': prices,
+        'pcts': pcts,
+        'conclusion': _extract_conclusion(text),
+        'insight': _extract_key_insight(text),
+        'action': _extract_price_action(text),
+        'tags': _get_tags(text),
+    }
+
+
+# ── 蓝桉开场模板（按主题） ─────────────────────────────────
+_LANHUI_OPENERS = {
+    'rotation': [
+        "板块轮动来了，但这不是追的信号。",
+        "大盘跌，板块涨——这种组合我见过很多次，结局基本一样。",
+        "热点来得快，去得更快。追热点的人，往往是最后一批买家。",
+    ],
+    'pump': [
+        "暴涨之后不是机会，是陷阱。",
+        "看到大涨数字心动？先问：谁在卖给你。",
+        "这种行情，参与者分两种：提前布好局的，和追进去接盘的。",
+    ],
+    'short': [
+        "今天数据给的很清楚，空头占优。",
+        "量能没跟上，这波反弹我不信。",
+        "大户在减仓，散户还在加——这种分歧历来是空头信号。",
+    ],
+    'long': [
+        "量能开始放大，这是我在等的信号。",
+        "支撑位企稳，可以开始布局了。",
+        "今天的回调，是昨天没上车的人第二次机会。",
+    ],
+    'chop': [
+        "今天两边都有陷阱，不好做。",
+        "量能萎缩，没有方向——最贵的操作是追。",
+        "结构不清晰，等端点触发，别在中间猜方向。",
+    ],
+    'general': [
+        "今天的行情说一件事：别追。",
+        "市场永远在教同一堂课，只是每次换个标的。",
+        "数据说话，情绪靠边。",
+    ],
+}
+
+# ── 牛来PRO开场模板（按主题） ────────────────────────────────
+_NIULAI_OPENERS = {
+    'rotation': [
+        "板块轮动是市场中最常见的资金游戏，也是最容易被散户误判的信号。",
+        "大盘下跌时某个板块突然拉升，这不是机会，这是转移注意力的手法。",
+        "热点板块的背后，通常是主力资金的搬家，不是行情的启动。",
+    ],
+    'pump': [
+        "市场总是在最多人追高的时候见顶。今天就是一个教科书级别的案例。",
+        "暴涨不是入场信号，是离场信号。这个逻辑很多人懂，但真到了面前还是会追。",
+        "看到大涨的第一反应不应该是「怎么买」，而应该是「谁在卖」。",
+    ],
+    'short': [
+        "市场总是在最多人看多的时候开始下跌。今天就是一个典型案例。",
+        "每一次下跌前，都有一段「看起来很安全」的时间窗口。",
+        "聪明钱不追涨，它等结构。今天来看它在等什么位置。",
+    ],
+    'long': [
+        "每一次真正的底部，都是在绝望中形成的。",
+        "市场给了一个经典的回踩机会，问题是你有没有在等它。",
+        "支撑结构确认以后，风险收益比开始向多头倾斜。",
+    ],
+    'chop': [
+        "震荡市最考验的不是判断力，是自律。",
+        "大多数人亏钱不是因为方向错了，而是在等待中忍不住频繁操作。",
+        "没有清晰方向的时候，等待本身就是最好的交易。",
+    ],
+    'general': [
+        "市场有自己的逻辑，大多数时候我们能做的只有顺应，不是对抗。",
+        "每一次「这次不一样」的感觉，往往是最危险的时刻。",
+        "好的交易员不预测市场，他们等待市场给出确认之后再行动。",
+    ],
+}
+
+# ── 教育性收尾（牛来PRO） ────────────────────────────────────
+_EDU_CLOSERS = [
+    "交易本质上是概率游戏。赢的人不是猜得准，是在高概率时下注，低概率时观望。",
+    "好的交易员不预测市场，他们等市场给出确认信号后再行动。这一点做到，胜率自然提升。",
+    "学会识别「等待信号」和「追单冲动」的区别，这是从亏钱到盈利最关键的转变。",
+    "风险管理比入场时机更重要。止损不是失败，是保留继续参与的资格。",
+    "大多数人失败在「多做了一笔不该做的单」，而不是「少做了一笔该做的单」。",
+]
+
+
+def _build_lanhui(info: dict, original: str) -> str:
+    """蓝桉版：高频交易员，有自己的独立分析，不是原帖的简单转述"""
+    topic = info['topic']
+    coins = info['coins']
+    coin_str = '+'.join(coins[:2]) if coins else '行情'
+    
+    opener = random.choice(_LANHUI_OPENERS.get(topic, _LANHUI_OPENERS['general']))
+    insight = info['insight']
+    action  = info['action']
+    conclusion = info['conclusion']
+    
+    parts = [opener, '']
+    
+    # 核心洞察（用高频语气表述）
+    if insight:
+        hft_insight = (insight
+            .replace('主力资金', '大资金')
+            .replace('散户没有这种协调性', '散户做不到这种配合')
+            .replace('这是板块轮动的经典剧本', '板块轮动，我见过太多次了')
+            .replace('主力在等', 'OI数据显示主力没动')
+        )
+        parts.append(hft_insight)
+    
+    # 操作结论
+    if action:
+        parts += ['', f'我的判断：{action}']
+    elif conclusion:
+        parts += ['', conclusion.replace('今天正确的交易，昨天就该准备好了',
+                                          '提前布好局，等市场来找你。')]
+    
+    # 结尾
+    parts += ['', random.choice([
+        f'关注我，每天{coin_str}实盘计划，不放空炮。',
+        f'跟着做高频，细节决定成败。关注不迷路。',
+        f'涨跌都有策略，关注我一起做。',
+    ])]
+    
+    if info['tags']:
+        parts.append(info['tags'])
+    parts.append('💙 蓝桉VS释怀鸟 | 高频视角')
+    return '\n'.join(parts)
+
+
+def _build_niulai(info: dict, original: str) -> str:
+    """牛来PRO版：宏观视角，讲清楚背后逻辑，有教育价值"""
+    topic = info['topic']
+    coins = info['coins']
+    coin_str = '/'.join(coins[:2]) if coins else '加密市场'
+    
+    opener = random.choice(_NIULAI_OPENERS.get(topic, _NIULAI_OPENERS['general']))
+    insight = info['insight']
+    action  = info['action']
+    
+    parts = [opener, '']
+    
+    # 核心逻辑展开（宏观教育视角）
+    if insight:
+        macro_insight = (insight
+            .replace('主力资金', '机构资金')
+            .replace('散户没有这种协调性', '这种规模的协调需要机构级别的资金运作')
+            .replace('板块轮动的经典剧本', '板块轮动的经典机制')
+            .replace('主力在等', '聪明钱选择观望')
+        )
+        parts.append(macro_insight)
+        parts.append('')
+    
+    # 从宏观角度给出判断
+    if action:
+        macro_action = (action
+            .replace('我不会追', '这个位置追进去的风险远大于收益')
+            .replace('不在这里追', '在高位追单是散户最常见的亏损来源')
+        )
+        parts.append(f'从风险收益角度看：{macro_action}')
+        parts.append('')
+    
+    # 教育性收尾
+    parts.append(random.choice(_EDU_CLOSERS))
+    parts.append('')
+    
+    parts.append(random.choice([
+        f'关注我，每天一篇{coin_str}深度解读，帮你看懂市场逻辑。',
+        f'学会看宏观，比追热点重要得多。关注我，一起成长。',
+        f'关注我，{coin_str}交易逻辑从入门到进阶全覆盖。',
+    ]))
+    
+    if info['tags']:
+        parts.append(info['tags'])
+    parts.append('🐂 牛来PRO | 独立观点')
+    return '\n'.join(parts)
 
 
 def rewrite_for_account(original: str, key_idx: int,
                         original_key_idx: int = 0) -> Optional[str]:
-    """
-    将原帖内容改写为目标账号的风格版本。
-
-    Args:
-        original: 原始帖子内容（姓赵不宣版）
-        key_idx: 目标账号索引（0/1/2）
-        original_key_idx: 原始帖子的账号索引（默认0）
-
-    Returns:
-        改写后的内容，None表示跳过（不需要改写）
-    """
     if key_idx == original_key_idx:
-        return None  # 同账号不需要改写
-
-    cfg = _VOICE_CONFIG[key_idx]
-    orig_cfg = _VOICE_CONFIG[original_key_idx]
-
-    text = original
-
-    # Step1: 替换结尾品牌标识
-    text = _replace_suffix(text, orig_cfg['suffix'], cfg['suffix'])
-
-    # Step2: 应用风格词汇替换
-    text = _apply_style(text, cfg['style'])
-
-    # Step3: 清除IP污染词
-    text = _clean_ip(text, cfg['forbidden'])
-
-    # Step4: 添加互动钩子（各账号独立）
-    text = _add_closer(text, key_idx)
-
-    # Step5: 验证IP隔离
-    for word in cfg['forbidden']:
-        if word in text:
-            # 强制再清一遍
-            text = text.replace(word, '')
-
+        return None
+    
+    info = _detect_topic(original)
+    
+    if key_idx == 1:
+        text = _build_lanhui(info, original)
+    elif key_idx == 2:
+        text = _build_niulai(info, original)
+    else:
+        return original
+    
+    text = _clean_ip(text, _VOICE[key_idx]['forbidden'])
     return text.strip()
 
 
 def generate_three_versions(original: str) -> dict:
-    """
-    从姓赵不宣版原帖，生成三个账号的差异化版本。
-
-    Returns:
-        {0: 姓赵版, 1: 蓝桉版, 2: 牛来PRO版}
-    """
     versions = {0: original}
     for idx in [1, 2]:
-        rewritten = rewrite_for_account(original, idx, original_key_idx=0)
-        if rewritten:
-            versions[idx] = rewritten
+        v = rewrite_for_account(original, idx)
+        if v:
+            versions[idx] = v
     return versions
 
 
-def post_three_versions(original: str, post_fn,
-                        delay_seconds: int = 300) -> dict:
-    """
-    发布三个账号的差异化版本。
-
-    Args:
-        original: 姓赵不宣版原始内容
-        post_fn: 发帖函数，签名 post_fn(content, key_idx) -> dict
-        delay_seconds: 账号间发帖间隔（默认5分钟，避免同时触发）
-
-    Returns:
-        {0: result0, 1: result1, 2: result2}
-    """
+def post_three_versions(original: str, post_fn, delay_seconds: int = 300) -> dict:
     versions = generate_three_versions(original)
     results = {}
-
     for idx, content in versions.items():
         try:
             result = post_fn(content, idx)
             results[idx] = result
             link = result.get('data', {}).get('shareLink', '')
-            name = _VOICE_CONFIG[idx]['name']
-            print(f'[multi_voice] {name} ✅ {link}', flush=True)
+            print(f'[multi_voice] {_VOICE[idx]["name"]} ✅ {link}', flush=True)
         except Exception as e:
             results[idx] = {'error': str(e)}
             print(f'[multi_voice] KEY{idx} 失败: {e}', flush=True)
-
-        # 账号间间隔（KEY_0已发，KEY_1等5min，KEY_2再等5min）
         if idx < max(versions.keys()):
-            print(f'[multi_voice] 等待{delay_seconds}s → 下一账号...', flush=True)
             time.sleep(delay_seconds)
-
     return results

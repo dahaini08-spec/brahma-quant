@@ -204,11 +204,17 @@ def run(syms: list, dry_run: bool = False) -> None:
         接入位置：square_auto_post.py _fresh_signal_pkg + 合并发帖路径
         """
         import re as _re
-        m = _re.search(rf'【{sym}(?:USDT)?[^】]*】', full_out)
+        # [Fix 2026-10-03 苏摩111] 修复BTC段落提取：输出格式是【BTCUSDT...】
+        # 先找精确匹配（如BTCUSDT），再fallback到宽松匹配（BTC开头）
+        m = _re.search(rf'【{sym}USDT[^】]*】', full_out)
+        if not m:
+            m = _re.search(rf'【{sym}[^】]*】', full_out)
         if not m:
             return ''
         start = m.start()
-        nxt = _re.search(r'【(?:BTC|ETH|SOL|BNB|XRP|SUI|DOGE|ADA|LTC|LINK|AVAX)(?:USDT)?[^】]*】', full_out[start + 1:])
+        # 找下一个【币种...】标记作为段落结束
+        nxt = _re.search(r'【(?:BTC|ETH|SOL|BNB|XRP|SUI|DOGE|ADA|LTC|LINK|AVAX)(?:USDT)?[^】]*】',
+                         full_out[start + 1:])
         end = (start + 1 + nxt.start()) if nxt else len(full_out)
         return full_out[start:end]
 
