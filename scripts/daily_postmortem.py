@@ -512,3 +512,100 @@ def _write_dreaming_to_memory(results: dict) -> None:
         print('[postmortem] Dreaming diff推送苏摩 ✅', flush=True)
     except Exception as _diff_e:
         print(f'[postmortem] diff推送失败: {_diff_e}', flush=True)
+
+def run_loss_attribution(trade: dict) -> dict:
+    """
+    亏损归因5问引擎 [2026-10-03 苏摩111 梵天自进化Phase1]
+    接入位置: daily_postmortem.py → meta_cognition_state.json
+
+    对每笔亏损单自动回答5个问题，更新对应维度的IC计数
+    """
+    import json, time
+    from pathlib import Path
+
+    attr = {
+        "trade_id": trade.get("id", ""),
+        "symbol": trade.get("symbol", ""),
+        "direction": trade.get("direction", ""),
+        "pnl": trade.get("pnl", 0),
+        "ts": time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+        "questions": {}
+    }
+
+    # Q1: 体制判断错了吗？
+    regime = trade.get("regime", "")
+    actual_move = trade.get("actual_move_pct", 0)
+    q1_wrong = (
+        ("CHOP" in regime and abs(actual_move) > 2.0) or
+        ("BULL" in regime and actual_move < -1.5) or
+        ("BEAR" in regime and actual_move > 1.5)
+    )
+    attr["questions"]["Q1_regime_wrong"] = q1_wrong
+
+    # Q2: 入场区错了吗？（追高/追低）
+    entry = trade.get("entry_price", 0)
+    entry_lo = trade.get("entry_lo", 0)
+    entry_hi = trade.get("entry_hi", 0)
+    q2_chased = False
+    if entry_lo and entry_hi and entry:
+        zone_mid = (entry_lo + entry_hi) / 2
+        deviation = abs(entry - zone_mid) / zone_mid if zone_mid > 0 else 0
+        q2_chased = deviation > 0.005  # 偏离入场区超0.5%
+    attr["questions"]["Q2_entry_chased"] = q2_chased
+
+    # Q3: FVG方向错了吗？
+    fvg_dir = trade.get("fvg_consensus", "NONE")
+    signal_dir = trade.get("direction", "")
+    q3_fvg_conflict = (
+        (fvg_dir == "BULL" and signal_dir == "SHORT") or
+        (fvg_dir == "BEAR" and signal_dir == "LONG")
+    )
+    attr["questions"]["Q3_fvg_conflict"] = q3_fvg_conflict
+
+    # Q4: OI信号误导了吗？
+    oi_signal = trade.get("oi_signal", "")
+    q4_oi_misled = (
+        (oi_signal == "SHORT_BUILD" and signal_dir == "LONG") or
+        (oi_signal == "LONG_BUILD" and signal_dir == "SHORT")
+    )
+    attr["questions"]["Q4_oi_misled"] = q4_oi_misled
+
+    # Q5: 时段错了吗？
+    hour_utc = trade.get("hour_utc", -1)
+    q5_bad_timing = hour_utc in [2, 3, 4, 5, 6, 7]  # 亚盘低流动性时段
+    attr["questions"]["Q5_bad_timing"] = q5_bad_timing
+
+    # 更新 meta_cognition_state.json
+    mc_path = Path(__file__).parent.parent / "data" / "meta_cognition_state.json"
+    try:
+        mc = json.loads(mc_path.read_text()) if mc_path.exists() else {}
+        dim = mc.get("dimension_scores", {})
+
+        is_win = trade.get("pnl", 0) > 0
+        key = "wins" if is_win else "losses"
+
+        # 更新各维度计数（归因到对应维度）
+        dim_map = {
+            "Q1_regime_wrong": "regime",
+            "Q3_fvg_conflict": "fvg",
+            "Q4_oi_misled": "oi",
+            "Q5_bad_timing": "timing",
+        }
+        for q_key, dim_key in dim_map.items():
+            if dim_key in dim:
+                dim[dim_key][key] = dim[dim_key].get(key, 0) + 1
+                total = dim[dim_key]["wins"] + dim[dim_key]["losses"]
+                if total >= 10:
+                    wr = dim[dim_key]["wins"] / total
+                    dim[dim_key]["ic"] = round(wr - 0.5, 4)  # IC = WR - 0.5基准
+
+        mc["dimension_scores"] = dim
+        mc["total_trades"] = mc.get("total_trades", 0) + 1
+        mc.setdefault("attribution_log", []).append(attr)
+        mc["attribution_log"] = mc["attribution_log"][-200:]  # 只保留最近200条
+        mc["updated_at"] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+        mc_path.write_text(json.dumps(mc, ensure_ascii=False, indent=2))
+    except Exception as _e:
+        print(f"[WARN] meta_cognition update failed: {_e}")
+
+    return attr

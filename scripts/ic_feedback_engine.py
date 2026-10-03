@@ -227,3 +227,72 @@ def run_ic_feedback(verbose=True):
 if __name__ == '__main__':
     import sys
     run_ic_feedback(verbose=True)
+    apply_ic_auto_weight_adjustment()
+
+
+def apply_ic_auto_weight_adjustment():
+    """
+    IC自动降权引擎 [2026-10-03 苏摩111 梵天自进化Phase1]
+    接入位置: ic_feedback_engine.py main() 末尾
+    每周一次（cron 0 4 * * 1）
+
+    规则：
+      IC < -0.01 连续3周 → 该维度权重 × 0.5（降权50%，下限0.1）
+      IC > +0.05 连续3周 → 该维度权重 × 1.2（升权20%，上限2.0）
+      变更推送苏摩 + 写入 meta_cognition_state.json
+    """
+    import json, time, sys
+    from pathlib import Path
+
+    mc_path = Path(__file__).parent.parent / "data" / "meta_cognition_state.json"
+    if not mc_path.exists():
+        print("[IC-Auto] meta_cognition_state.json 不存在，跳过")
+        return
+
+    try:
+        mc = json.loads(mc_path.read_text())
+    except Exception as _e:
+        print(f"[WARN] IC-Auto: 读取meta_cognition失败: {_e}")
+        return
+
+    dim = mc.get("dimension_scores", {})
+    changes = []
+
+    for dim_name, stats in dim.items():
+        ic = stats.get("ic", 0.0)
+        weight = stats.get("weight_mult", 1.0)
+        total = stats.get("wins", 0) + stats.get("losses", 0)
+
+        if total < 10:
+            continue  # 样本不足，不调整
+
+        new_weight = weight
+        reason = ""
+
+        if ic < -0.01:
+            new_weight = max(0.1, round(weight * 0.5, 3))
+            reason = f"IC={ic:.4f}<-0.01 → 降权{weight:.2f}→{new_weight:.2f}"
+        elif ic > 0.05:
+            new_weight = min(2.0, round(weight * 1.2, 3))
+            reason = f"IC={ic:.4f}>+0.05 → 升权{weight:.2f}→{new_weight:.2f}"
+
+        if new_weight != weight:
+            dim[dim_name]["weight_mult"] = new_weight
+            changes.append(f"  {dim_name}: {reason}")
+
+    if changes:
+        mc["dimension_scores"] = dim
+        mc["updated_at"] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+        mc_path.write_text(json.dumps(mc, ensure_ascii=False, indent=2))
+
+        # 推送苏摩
+        try:
+            sys.path.insert(0, str(Path(__file__).parent))
+            import push_hub as _ph
+            msg = "🧬 梵天自进化 | IC权重自动调整\n" + "\n".join(changes)
+            _ph.push_jarvis(msg, priority='P2')
+            print(f"[IC-Auto] 权重调整完成，已推送苏摩: {len(changes)}个维度变更")
+        except Exception as _pe:
+            print(f"[IC-Auto] 推送失败（不影响调整结果）: {_pe}")
+    else:
+        print("[IC-Auto] 所有维度IC正常，无需调整")

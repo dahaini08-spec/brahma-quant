@@ -1,0 +1,64 @@
+{
+  "version": "1.0",
+  "updated_at": "2026-10-03T16:39:52Z",
+  "total_trades": 0,
+  "attribution_log": [],
+  "dimension_scores": {
+    "regime": {
+      "wins": 0,
+      "losses": 0,
+      "ic": 0.0,
+      "weight_mult": 1.0
+    },
+    "fvg": {
+      "wins": 0,
+      "losses": 0,
+      "ic": 0.0,
+      "weight_mult": 1.0
+    },
+    "oi": {
+      "wins": 0,
+      "losses": 0,
+      "ic": 0.0,
+      "weight_mult": 1.0
+    },
+    "lsr": {
+      "wins": 0,
+      "losses": 0,
+      "ic": 0.0,
+      "weight_mult": 1.0
+    },
+    "hurst": {
+      "wins": 0,
+      "losses": 0,
+      "ic": 0.0,
+      "weight_mult": 1.0
+    },
+    "gex": {
+      "wins": 0,
+      "losses": 0,
+      "ic": 0.0,
+      "weight_mult": 1.0
+    },
+    "ob": {
+      "wins": 0,
+      "losses": 0,
+      "ic": 0.0,
+      "weight_mult": 1.0
+    },
+    "timing": {
+      "wins": 0,
+      "losses": 0,
+      "ic": 0.0,
+      "weight_mult": 1.0
+    }
+  },
+  "adaptive_params": {
+    "min_score_open": 100,
+    "min_score_history": [],
+    "last_50_wr": null,
+    "adjustment_count": 0
+  },
+  "host_health_log": [],
+  "evolution_experiments": []
+}
