@@ -54,68 +54,40 @@ else
 fi
 
 # 6. supercronic重启后补发缺失高价值帖型 [Fix3 2026-10-03 苏摩111]
-# 根因：supercronic重启时间晚于chart(06:00)/edu(05:00,13:00)/video(08:00)/live(11:00)
-# 机制：每次resurrect运行时检查今日是否已发过，没发则补发（每项最多1次/天）
-# 触发：每分钟process_resurrect.sh由watchdog调用
+# 根因：supercronic重启时间晚于chart(06:00)/edu/video → 今日帖型全部缺失
+# 机制：每次resurrect运行检查今日是否已发，未发则在合适时间窗口补发
 CATCHUP_LOG="logs/square_catchup.log"
 TODAY_UTC=$(date -u '+%Y-%m-%d')
+HOUR_UTC=$(date -u '+%H' | sed 's/^0//')
+[ -z "$HOUR_UTC" ] && HOUR_UTC=0
 
-_square_catchup() {
-    local script=$1 marker=$2
-    local stamp_file="data/.catchup_${marker}_${TODAY_UTC}"
-    if [ ! -f "$stamp_file" ]; then
-        # 检查today是否在post_log里有记录
-        if ! grep -q "\"${marker}\"" data/square_post_log.jsonl 2>/dev/null || \
-           ! grep "\"${marker}\"" data/square_post_log.jsonl | grep -q "$(date -u '+%Y-%m-%d')"; then
-            echo "[$(date -u '+%H:%M')] catchup: ${marker} 今日未发，补发..." >> "$CATCHUP_LOG"
-            timeout 120 python3 $script >> "$CATCHUP_LOG" 2>&1
-            touch "$stamp_file"
-        fi
-    fi
-}
-
-# 只在特定时间窗口补发（避免凌晨补发）
-HOUR_UTC=$(date -u '+%H')
-if [ "$HOUR_UTC" -ge 7 ] && [ "$HOUR_UTC" -le 23 ]; then
-    _square_catchup "scripts/square_chart_poster.py" "chart_post"
-fi
-if [ "$HOUR_UTC" -ge 6 ] && [ "$HOUR_UTC" -le 23 ]; then
-    _square_catchup "scripts/square_video_poster.py" "video_post"
-fi
-if [ "$HOUR_UTC" -ge 6 ] && [ "$HOUR_UTC" -le 23 ]; then
-    _square_catchup "scripts/square/square_edu_poster.py" "education"
-fi
-
-# 6. supercronic重启后补发缺失高价值帖型 [Fix3 2026-10-03 苏摩111]
-CATCHUP_LOG="logs/square_catchup.log"
-TODAY_UTC=$(date -u '+%Y-%m-%d')
-
-_square_catchup() {
-    local script=$1 marker=$2
-    local stamp_file="data/.catchup_${marker}_${TODAY_UTC}"
-    if [ ! -f "$stamp_file" ]; then
-        if ! python3 -c "
-import json,sys
+# 检查今日是否已有该帖型
+_has_today_post() {
+    local marker="$1"
+    python3 -c "
+import json, sys
 from pathlib import Path
 lines = Path('data/square_post_log.jsonl').read_text().splitlines() if Path('data/square_post_log.jsonl').exists() else []
 today = '$(date -u +%Y-%m-%d)'
-found = any('${marker}' in l and today in l for l in lines[-100:])
+found = any('$marker' in l and today in l for l in lines[-200:])
 sys.exit(0 if found else 1)
-" 2>/dev/null; then
-            echo "[catchup $(date -u '+%H:%M')] ${marker} 今日未发→补发" >> "\$CATCHUP_LOG"
-            cd /root/.openclaw/workspace/trading-system && timeout 120 python3 \$script >> "\$CATCHUP_LOG" 2>&1
-            touch "\$stamp_file"
-        fi
-    fi
+" 2>/dev/null
 }
 
-HOUR_UTC=\$(date -u '+%H')
-if [ "\$HOUR_UTC" -ge 7 ] && [ "\$HOUR_UTC" -le 22 ]; then
-    _square_catchup "scripts/square_chart_poster.py" "chart_post"
-fi
-if [ "\$HOUR_UTC" -ge 9 ] && [ "\$HOUR_UTC" -le 22 ]; then
-    _square_catchup "scripts/square_video_poster.py" "video_post"
-fi
-if [ "\$HOUR_UTC" -ge 6 ] && [ "\$HOUR_UTC" -le 22 ]; then
-    _square_catchup "scripts/square/square_edu_poster.py" "education"
-fi
+_catchup_post() {
+    local script="$1" marker="$2" min_hour="$3" max_hour="$4"
+    local stamp="data/.catchup_${marker}_${TODAY_UTC}"
+    if [ -f "$stamp" ]; then return; fi
+    if [ "$HOUR_UTC" -lt "$min_hour" ] || [ "$HOUR_UTC" -gt "$max_hour" ]; then return; fi
+    if _has_today_post "$marker"; then
+        touch "$stamp"
+        return
+    fi
+    echo "[catchup $(date -u '+%H:%M')] $marker 今日未发→补发" >> "$CATCHUP_LOG"
+    cd /root/.openclaw/workspace/trading-system && timeout 120 python3 $script >> "$CATCHUP_LOG" 2>&1
+    touch "$stamp"
+}
+
+_catchup_post "scripts/square_chart_poster.py"        "chart_post" 7 22
+_catchup_post "scripts/square_video_poster.py"        "video_post" 9 22
+_catchup_post "scripts/square/square_edu_poster.py"   "education"  6 22
