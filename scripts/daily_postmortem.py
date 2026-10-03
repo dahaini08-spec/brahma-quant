@@ -476,3 +476,30 @@ def _write_dreaming_to_memory(results: dict) -> None:
         _af.write(json.dumps(audit_entry) + '\n')
 
     print(f'[postmortem] Dreaming写入MEMORY.md ✅ ({len(lines)-1}个标的)', flush=True)
+
+    # Diff推送苏摩：「昨天我改了什么，为什么改」
+    # Lamis规范：人审变更，不改权重
+    try:
+        btc_r = results.get('BTC', {})
+        eth_r = results.get('ETH', {})
+        btc_b = btc_r.get('bias', {}).get('bias', '?')
+        eth_b = eth_r.get('bias', {}).get('bias', '?')
+        eth_crowd = eth_r.get('lsr_retail', {}).get('crowded', False)
+        btc_oi = btc_r.get('oi', {}).get('pattern', '?')
+        diff_msg = (
+            f'🌙 **Dreaming完成** | {ts_utc}\n\n'
+            f'**MEMORY.md已更新** — 今晚市场结构快照：\n'
+            f'BTC 偏向={btc_b} OI={btc_oi}\n'
+            f'ETH 偏向={eth_b} 散户拥挤={eth_crowd}\n\n'
+            f'> 审计日志：memory/dreaming_audit.jsonl\n'
+            f'> 回复「确认」接受 / 「撤销」回滚'
+        )
+        import importlib.util as _ilu, pathlib as _pl
+        _spec = _ilu.spec_from_file_location('push_hub',
+            _pl.Path(__file__).parent / 'push_hub.py')
+        _ph = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_ph)
+        _ph.push_jarvis(diff_msg, priority='P3',
+            dedup_key=f'dreaming_{ts_utc[:10]}', dedup_ttl=86400)
+        print('[postmortem] Dreaming diff推送苏摩 ✅', flush=True)
+    except Exception as _diff_e:
+        print(f'[postmortem] diff推送失败: {_diff_e}', flush=True)
