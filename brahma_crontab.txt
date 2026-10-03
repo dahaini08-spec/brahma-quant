@@ -129,6 +129,9 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # square auto post BTC ETH（快照帖）— 01:30 + 09:30
 30 1 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_auto_post.py --sym BTC ETH 2>&1 >> logs/syscron.log
 30 9 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_auto_post.py --sym BTC ETH 2>&1 >> logs/syscron.log
+# [2026-10-03 苏摩111 P1] 教育帖接入cron（历史零产出，广场算法最爱教育类）
+# 北京13:00/21:00发，错峰史上热度帖，内容库存欢8条
+0 5,13 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square/square_edu_poster.py >> logs/syscron.log 2>&1
 # [2026-09-30 苏摩111 孤岛接线] trade_loop上链：Phase0信号注入+Phase1开单帖+Phase2持仓帖
 # 错峰12/42分避开1:30/9:30快照帖；flock单例防重复发帖
 14,44 * * * * cd /root/.openclaw/workspace/trading-system && timeout 110 flock -n /tmp/brahma_trade_loop.lock python3 scripts/square_trade_loop.py >> logs/syscron.log 2>&1  # [2.0 错峰 12→14 避免与guardian冲突]

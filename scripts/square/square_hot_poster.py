@@ -42,7 +42,8 @@ CTX_FILE  = DATA_DIR / 'square_context.json'
 
 # ── Square API ────────────────────────────────────────────────────
 SQUARE_API = 'https://www.binance.com/bapi/composite/v1/public/pgc/openApi/content/add'
-SQUARE_KEY = __import__('os').environ.get('SQUARE_KEY_0', 'd9f19e3f6ba3480584db27b09bec0f27')  # via env  # SQUARE_KEY_0 姓赵不宣主账户
+from square_key_router import get_square_key as _get_sq_key
+SQUARE_KEY = _get_sq_key('hot_poster')
 HEADERS = {
     'X-Square-OpenAPI-Key': SQUARE_KEY,
     'Content-Type': 'application/json',
@@ -235,7 +236,7 @@ def check_content(content: str) -> tuple:
 
 
 # ── binance-pro-cli 调用封装 ─────────────────────────────────────
-def run_pro_cli(args: list, timeout: int = 12) -> dict | None:
+def run_pro_cli(args: list, timeout: int = 8) -> dict | None:
     try:
         result = subprocess.run(
             ['binance-pro-cli'] + args,
@@ -1375,7 +1376,21 @@ def main():
         content = build_education(args.edu_id)
     else:
         builder = POST_BUILDERS[args.type]
-        content = builder()
+        # [2026-10-03 苏摩111 P0超时根修] builder无deadline→挂死超timeout导致备用池永远到不了
+        # 根因: hot_tickers/top_gainers/market_summary串行HTTP 3~5个接口各5~6s+run_pro_cli 12s
+        # 修复: futures.ThreadPoolExecutor包裁判，>35s强制降级到备用池
+        from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
+        BUILD_TIMEOUT = 35  # 35s硬顶，cron timeout=120s有足够余量
+        try:
+            with ThreadPoolExecutor(max_workers=1) as _exe:
+                _fut = _exe.submit(builder)
+                content = _fut.result(timeout=BUILD_TIMEOUT)
+        except FutureTimeout:
+            print(f'[post] ⚠️ {args.type} 数据拉取>{BUILD_TIMEOUT}s超时，降级备用池', flush=True)
+            content = None
+        except Exception as _be:
+            print(f'[post] ⚠️ {args.type} builder异常: {_be}，降级备用池', flush=True)
+            content = None
 
     if not content:
         # [设计院封印 2026-08-21 苏摩指令] 主任务无内容时启用备用内容池，不断更

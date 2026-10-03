@@ -27,7 +27,8 @@ sys.path.insert(0, str(BASE / "scripts" / "square"))
 CST = timezone(timedelta(hours=8))
 
 # Square API
-SQUARE_KEY = os.environ.get('SQUARE_KEY_0', 'd9f19e3f6ba3480584db27b09bec0f27')
+from square.square_key_router import get_square_key as _get_sq_key
+SQUARE_KEY = _get_sq_key('auto_post')
 SQUARE_URL = 'https://www.binance.com/bapi/composite/v1/public/pgc/openApi/content/add'
 
 _ctx = ssl.create_default_context()
