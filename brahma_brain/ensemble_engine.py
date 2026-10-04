@@ -78,17 +78,27 @@ def _apply_meta_cognition_weights():
             'timing':  'macro_days',
         }
         _adjusted = 0
+        _log_lines = []
         for _dim, _ic_key in _dim_map.items():
             _stats = _mc.get('dimension_scores', {}).get(_dim, {})
             _mult = _stats.get('weight_mult', 1.0)
             if _ic_key in IC_WEIGHTS and abs(_mult - 1.0) > 0.05:
-                IC_WEIGHTS[_ic_key] = round(IC_WEIGHTS[_ic_key] * _mult, 4)
+                _old_w = IC_WEIGHTS[_ic_key]
+                IC_WEIGHTS[_ic_key] = round(_old_w * _mult, 4)
+                _log_lines.append(f'  {_dim}({_ic_key}): {_old_w:.4f} × {_mult:.2f} → {IC_WEIGHTS[_ic_key]:.4f}')
                 _adjusted += 1
         if _adjusted:
             import sys
-            print(f'[EnsembleEngine] 自进化权重已加载: {_adjusted}个维度调整', file=sys.stderr)
+            print(f'[EnsembleEngine] 自进化权重加载 {_adjusted}维度:', file=sys.stderr)
+            for _ll in _log_lines:
+                print(_ll, file=sys.stderr)
+        else:
+            import sys
+            total_trades = _mc.get('total_trades', 0)
+            print(f'[EnsembleEngine] 自进化权重: 无调整(样本{total_trades}笔，需积累至≥10笔触发)', file=sys.stderr)
     except Exception as _e:
-        pass  # 自进化权重加载失败不影响主链
+        import sys
+        print(f'[WARN] EnsembleEngine 自进化权重加载失败(不影响主链): {_e}', file=sys.stderr)
 
 _apply_meta_cognition_weights()  # 模块加载时执行一次
 
