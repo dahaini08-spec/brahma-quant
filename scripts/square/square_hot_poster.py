@@ -1281,6 +1281,13 @@ def post_to_square(content: str, dry_run: bool = False) -> bool:
     # ── LLM重写已废弃（2026-09-11）──
     # content = rewrite_as_trader(content)  # 已废弃
 
+    # [2026-10-04 根治hashtag超限] 发帖前自动去重+截断到≤6个
+    _all_tags = list(dict.fromkeys(re.findall(r'#\S+', content)))  # 去重保序
+    if len(_all_tags) > 6:
+        for _t in _all_tags[6:]:  # 移除第7个以后的hashtag
+            content = content.replace(' ' + _t, '').replace('\n' + _t, '').replace(_t, '', 1)
+        content = content.strip()
+
     ok, reason = check_content(content)
     if not ok:
         print(f'[post] ❌ 内容检查失败: {reason}', file=sys.stderr)
