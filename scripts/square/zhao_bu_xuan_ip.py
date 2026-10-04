@@ -38,10 +38,10 @@ PERSONA = {
     ],
     'signature':  '⚠️ 仅供参考 模拟复盘',
     'hashtags': {
-        'analysis':    ['#合约', '#量化交易', '#BTC', '#加密货币'],
+        'analysis':    ['#合约交易', '#永续合约'],  # [Fix 2026-10-04] 最多2个，BRAND_SUFFIX另追加$BTC $ETH #BTC #ETH
         'tradfi':      ['#美股代币', '#合约', '#TradFi'],
         'battle':      ['#实盘', '#战绩', '#合约'],
-        'education':   ['#交易方法', '#新手必看', '#量化'],
+        'education':   ['#合约交易', '#永续合约'],  # [Fix 2026-10-04]
         'hotspot':     ['#热点', '#合约', '#加密货币'],
     },
 }
