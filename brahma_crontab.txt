@@ -33,7 +33,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # Layer 1: 高频数据采集 (5min)
 # ============================================================
 # battlefield_intel merge — 唯一5min级任务
-*/15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 10 python3 brahma_brain/battlefield_intel.py merge  # [2.0降频 5min→15min] >> logs/battlefield_intel.log 2>&1
+*/30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 10 python3 brahma_brain/battlefield_intel.py merge  # [降频优化 2026-10-04] 降频50%:战场情报变化慢
 
 # ============================================================
 # Layer 2: 中频数据采集+维护
@@ -221,7 +221,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # ============================================================
 # Phase 5: 条件触发监控 (每5min) [9.18苏摩111]
 # ============================================================
-*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/price_trigger_monitor.py >> logs/price_trigger.log 2>&1
+*/15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/price_trigger_monitor.py >> logs/price_trigger.log 2>&1  # [降频优化 2026-10-04] 降频67%:价格触发点通常持续多小时
 
 # [9.19 设计院] 配置漂移+引用检查 每6小时
 # [2.0删除 cron_reference_check: 开发期工具，生产不需要]
@@ -257,9 +257,9 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 
 # [9.23苏摩111 P0] 每分钟拉起核心进程（带单实例锁，进程死了自动复活）
 * * * * * cd /root/.openclaw/workspace/trading-system && bash scripts/process_resurrect.sh >> logs/resurrect.log 2>&1
-*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/brahma_autonomous_loop.py >> logs/autonomous_loop.log 2>&1  # [2026-10-04 设计院] 全自主引擎:自愈/自检/自适应/自进化
-*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/host_health_sentinel.py >> logs/host_health.log 2>&1  # [Phase2 宿主健康]
-*/15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/state_quality_sentinel.py --no-push >> logs/state_quality.log 2>&1  # [自主决策 数据质量哨兵]
+*/30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/brahma_autonomous_loop.py >> logs/autonomous_loop.log 2>&1  # [降频优化 2026-10-04] 降频83%:进程守护由process_resurrect覆盖,数据自检30min足够
+*/30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/host_health_sentinel.py >> logs/host_health.log 2>&1  # [降频优化 2026-10-04] 降频83%:宿主资源变化慢,30min足够
+*/30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/state_quality_sentinel.py --no-push >> logs/state_quality.log 2>&1  # [降频优化 2026-10-04] 降频50%:数据质量问题持续性高
 # drift checker — 03:05 daily (三方审核Phase0: 封印常量↔代码实值比对, L1字面grep)
 # [2.0合并删除] 5 3 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/drift_checker.py >> logs/drift_checker.log 2>&1
 

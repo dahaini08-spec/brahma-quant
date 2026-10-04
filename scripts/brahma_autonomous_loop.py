@@ -203,9 +203,32 @@ def main():
     t0 = time.time()
     report = {'ts': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
 
-    # A. 自愈
-    revived = heal_processes()
-    report['revived'] = revived
+    # ── 快速预检：判断是否需要完整运行 ──
+    # 进程守护由 process_resurrect.sh 每分钟覆盖，此处只做数据/资源/进化检查
+    # 若宿主正常+数据新鲜 → 直接HEARTBEAT_OK，节省95%算力
+    now = time.time()
+    import os
+    with open('/proc/meminfo') as _f:
+        _mi = {l.split(':')[0]: int(l.split()[1]) for l in _f if ':' in l and l.split()[1].isdigit()}
+    mem_pct_quick = round((1 - _mi.get('MemAvailable',0)/_mi.get('MemTotal',1))*100, 1)
+    
+    # 检查关键数据新鲜度（轻量，不启动子进程）
+    _stale_quick = []
+    for _fname, _ttl in [
+        (DATA/'brahma_state_btc.json', 7200),
+        (DATA/'brahma_state_eth.json', 7200),
+        (DATA/'cvd_realtime_btcusdt.json', 3600),
+    ]:
+        if not _fname.exists() or (now - os.path.getmtime(_fname)) > _ttl:
+            _stale_quick.append(_fname.name)
+    
+    # 快速通过条件：内存<75% + 无过期关键数据
+    if mem_pct_quick < 75 and not _stale_quick:
+        print('HEARTBEAT_OK', file=sys.stderr)
+        return  # 直接退出，节省算力
+
+    # 需要处理：继续完整检查
+    report['revived'] = []  # 进程守护由process_resurrect负责
 
     # B. 自检
     health = check_data_health()

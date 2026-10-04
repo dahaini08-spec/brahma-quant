@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# [2026-10-04 优化] 无持仓时直接退出，节省算力
+import sys, json
+from pathlib import Path
+_BASE = Path(__file__).parent.parent
+try:
+    import sys as _s; _s.path.insert(0, str(_BASE/'scripts'))
+    import paper_ledger as _pl
+    _acct = json.loads((_BASE/_pl.PAPER_ACCOUNT).read_text()) if Path(_BASE/_pl.PAPER_ACCOUNT).exists() else {}
+    _open = _acct.get('open_positions', {})
+    if not _open:
+        print('HEARTBEAT_OK (no positions)', file=sys.stderr)
+        sys.exit(0)
+except Exception as _e:
+    pass  # 无法检查→继续正常运行
+
 """
 paper_tp_monitor.py — 纸面系统止盈追踪器
 设计院封印 2026-09-03 苏摩111
