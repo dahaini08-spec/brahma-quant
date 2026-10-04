@@ -108,8 +108,6 @@ signal.signal(signal.SIGALRM, _timeout_handler)
 signal.alarm(MAX_RUNTIME_S)
 
 BASE = Path(__file__).parent.parent
-sys.path.insert(0, str(BASE))
-sys.path.insert(0, str(BASE / 'brahma_brain'))
 
 DATA = BASE / 'data'
 
@@ -1378,7 +1376,6 @@ def _get_microstructure(d: dict) -> dict:
     """P5整合: 微结构alpha — 2026-09-12"""
     try:
         import sys as _ms_sys
-        _ms_sys.path.insert(0, str(Path(__file__).parent.parent))
         _ms_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.microstructure_engine import get_microstructure_signal
         return get_microstructure_signal(d.get('sym', 'BTC'))
@@ -1389,7 +1386,6 @@ def _get_anti_manipulation(d: dict) -> dict:
     """P5整合: 反操纵检测 — 2026-09-12"""
     try:
         import sys as _am_sys
-        _am_sys.path.insert(0, str(Path(__file__).parent.parent))
         _am_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.anti_manipulation_engine import detect_manipulation
         return detect_manipulation(d.get('sym', 'BTC'))
@@ -1554,7 +1550,6 @@ def _get_ic_attribution(d: dict) -> dict:
     """P2整合: 从ic_tracker获取实时IC归因 — 2026-09-12"""
     try:
         import sys as _ic_sys
-        _ic_sys.path.insert(0, str(Path(__file__).parent.parent))
         _ic_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.ic_tracker import load_ic_state, compute_all_ic
 
@@ -1742,7 +1737,6 @@ def _get_cross_market_for_step8() -> dict:
     """P4整合: 跨市场alpha状态 — 2026-09-12"""
     try:
         import sys as _cm_sys
-        _cm_sys.path.insert(0, str(Path(__file__).parent.parent))
         _cm_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.cross_market_alpha import get_cross_market_alpha
         cma = get_cross_market_alpha()
@@ -1762,7 +1756,6 @@ def _get_us_session_for_step8() -> dict:
     """P4整合: 美盘时段门控 — 2026-09-12"""
     try:
         import sys as _us_sys
-        _us_sys.path.insert(0, str(Path(__file__).parent.parent))
         _us_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.us_session_gate import get_session_info
         return get_session_info()
@@ -1819,7 +1812,6 @@ def step9_risk(d: dict) -> dict:
     risk_engine_result = None
     try:
         import sys as _re_sys
-        _re_sys.path.insert(0, str(Path(__file__).parent.parent))
         _re_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.risk_engine import check as _re_check
         risk_engine_result = _re_check(_signal)
@@ -1871,7 +1863,6 @@ def step9_risk(d: dict) -> dict:
     _portfolio = {'active_positions': [], 'correlation_risk': None}
     try:
         import sys as _po_sys
-        _po_sys.path.insert(0, str(Path(__file__).parent.parent))
         _po_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.portfolio_optimizer import check_correlation_risk, portfolio_summary
         # 检查BTC+ETH相关性（如果当前标的和另一标的同时持仓）
@@ -2805,7 +2796,6 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     _cma = None
     try:
         import sys as _cma_sys
-        _cma_sys.path.insert(0, str(Path(__file__).parent.parent))
         _cma_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.cross_market_alpha import get_cross_market_alpha
         _cma = get_cross_market_alpha()
@@ -3355,7 +3345,6 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     # P6新增: ensemble+council对比展示
     try:
         import sys as _ens_sys
-        _ens_sys.path.insert(0, str(Path(__file__).parent.parent))
         _ens_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.ensemble_engine import get_ensemble_score
         from brahma_brain.ai_council_bridge import get_council_verdict

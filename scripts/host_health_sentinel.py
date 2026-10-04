@@ -154,7 +154,6 @@ def run_health_check() -> dict:
     # 推送告警（有问题才推）
     if alerts:
         try:
-            sys.path.insert(0, str(BASE / 'scripts'))
             import push_hub as _ph
             priority = 'P0' if 'SUPERCRONIC_DOWN' in status['alerts'] else 'P1' if 'HIGH_MEMORY' in status['alerts'] or 'LOW_DISK' in status['alerts'] else 'P2'
             msg = '🏥 宿主健康告警\n' + '\n'.join(alerts)

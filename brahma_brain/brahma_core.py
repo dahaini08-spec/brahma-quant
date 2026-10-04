@@ -1619,7 +1619,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             # [2026-09-21 苏摩设计院] CHOP LONG上限90→110，42维评分>90被强制cap不合理
             # CHOP是反转体制，tc_neutral下LONG信号仍有价值，不应硬封顶到90
             _chop_dir = str(signal_dir or '').upper()
-            _chop_cap_applied = 120 if _chop_dir == 'SHORT' else 110
+            _chop_cap_applied = 120 if _chop_dir == 'SHORT' else SCORE_CHOP_STD  # [方案A 2026-10-04] 常量化
             if _score > _chop_cap_applied:
                 _score = _chop_cap_applied
                 cf['breakdown']['CHOP硬性上限'] = f'P2保护tc_neutral: {_score_before_cap:.0f}→{_chop_cap_applied}（CHOP {"SHORT上限120" if _chop_dir=="SHORT" else "LONG上限110"}）'

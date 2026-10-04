@@ -19,8 +19,6 @@ from datetime import datetime, timezone
 import sys
 
 BASE = Path(__file__).parent.parent
-sys.path.insert(0, str(BASE))
-sys.path.insert(0, str(BASE / 'brahma_brain'))
 
 PAPER_POS_FILE   = BASE / 'data' / 'paper_positions.json'
 SIGNAL_QUEUE     = BASE / 'data' / 'auto_signal_queue.json'
@@ -140,7 +138,6 @@ def _b_track_decision_package(signal: dict, sym: str, side: str) -> dict | None:
     """
     out = None
     try:
-        sys.path.insert(0, str(BASE / 'scripts'))
         from brahma_decision_lifecycle import load_active_packages
         pkgs = [p for p in load_active_packages() if p.get('symbol') == sym]
         if not pkgs:
@@ -314,7 +311,6 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
                 _wr_val = None  # 强制fallback，不信陈旧矩阵
                 log(f'[P2告警] WR矩阵陈旧{_wr_age_h:.0f}h(>48h)，{regime}:{side}强制fallback 0.45')
                 try:
-                    sys.path.insert(0, str(BASE / 'scripts'))
                     from push_hub import push_jarvis
                     push_jarvis(f'⚠️ WR矩阵陈旧{_wr_age_h:.0f}h：wr_matrix_live.json超48h未更新，EV门用fallback WR=0.45。查signal_settler（vector库过期+OPEN堆积592条）', priority='P2', dedup_key='wr_matrix_stale', dedup_ttl=21600)
                 except Exception:

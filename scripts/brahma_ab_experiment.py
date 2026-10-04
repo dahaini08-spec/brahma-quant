@@ -192,7 +192,6 @@ def run_weekly_experiment_report():
         lines.append('本周无实验结论，继续积累数据中...')
 
     try:
-        sys.path.insert(0, str(BASE / 'scripts'))
         import push_hub as _ph
         _ph.push_jarvis('\n'.join(lines), priority='P2')
         print(f'[ABExperiment] 报告已推送苏摩')

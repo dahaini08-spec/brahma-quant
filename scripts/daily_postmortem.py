@@ -28,8 +28,6 @@ except ImportError:
 
 
 BASE = Path(__file__).parent.parent
-sys.path.insert(0, str(BASE / 'scripts'))
-sys.path.insert(0, str(BASE / 'brahma_brain'))
 DATA = BASE / 'data'
 
 try:

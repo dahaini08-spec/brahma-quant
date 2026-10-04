@@ -53,8 +53,6 @@ except ImportError:
     FC_SIM_THRESHOLD=0.25; HURST_TREND=0.6; HURST_TRANSITION=0.55
 
 BASE = Path(__file__).parent.parent
-sys.path.insert(0, str(BASE / 'brahma_brain'))
-sys.path.insert(0, str(BASE))
 
 
 # ═══════════════════════════════════════════════════════════════

@@ -187,7 +187,6 @@ def run_quality_check(symbols: list = None, push_alert: bool = True) -> dict:
     unhealed = [s for s, r in results.items() if not r['ok'] and not r['healed']]
     if unhealed and push_alert:
         try:
-            sys.path.insert(0, str(BASE / 'scripts'))
             import push_hub as _ph
             msg = (f'🔍 数据质量告警 | {len(unhealed)}个标的未修复\n' +
                    '\n'.join(issues_found))
