@@ -304,7 +304,45 @@ def build_battlefield_report_combined(analysis_by_sym: dict) -> str:
         period = '午后'
     else:
         period = '晚间'
-    lines = [f'{period}战场报告 {date_str}｜BTC+ETH双币联读', '']
+    # [P0 2026-10-04 苏摩111] 标题改悬念式，根据bias动态生成
+    import random as _rand
+    _TITLES_BEAR2 = [
+        f'今天BTC要向下走——但有一个细节大多数人没注意',
+        f'两个盘子都在发同一个信号，你读懂了吗？',
+        f'BTC+ETH同时判空，这种情况历史上接下来通常怎么走',
+        f'空头主导的盘面，猎杀方向在哪？{date_str}',
+        f'今天不给多信号——等的才是机会',
+    ]
+    _TITLES_BULL2 = [
+        f'多头回来了？先别急着追，看完这个再说',
+        f'BTC+ETH同时看多，但有一件事让我还没动手',
+        f'今天可能是入场窗口，条件是这两个',
+        f'系统给多信号了，我在等一个确认再说',
+        f'多头结构成立——但谁在对面接单？{date_str}',
+    ]
+    _TITLES_MIXED = [
+        f'一多一空：今天BTC和ETH走向分歧，主力在换什么？',
+        f'两个币种今天不一样了——这不是矛盾，是信号',
+        f'ETH和BTC方向分裂，历史上这种情况怎么收场',
+        f'分歧盘面里，谁跟谁都是错的——今天只等这一个触发',
+        f'今天最值得关注的不是哪个方向，是两个币的分歧',
+    ]
+    _TITLES_WAIT = [
+        f'今天两个盘子都没给信号——等的人往往赢最多',
+        f'BTC和ETH都在震荡，这是入场前最危险的时候',
+        f'没有信号就是信号：今天为什么我不动',
+        f'横盘的盘面比单边更难做——今天的逻辑在这里',
+        f'市场在等，我也在等——{date_str}今日布局',
+    ]
+    if n_bear == 2:
+        _title = _rand.choice(_TITLES_BEAR2)
+    elif n_bull == 2:
+        _title = _rand.choice(_TITLES_BULL2)
+    elif n_bear >= 1 and n_bull >= 1:
+        _title = _rand.choice(_TITLES_MIXED)
+    else:
+        _title = _rand.choice(_TITLES_WAIT)
+    lines = [_title, '']
     lines.append(hook)
     lines.append('')
     lines.append('先看两个盘子：')

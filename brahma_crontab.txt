@@ -272,6 +272,10 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # VIP点位漂移检测 — 每小时整点
 5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/vip_signal_tracker.py >> logs/vip_tracker.log 2>&1
 
+# [2026-10-04 苏摩111 P1] 每日「我的判断」观点帖 15:00 UTC(北京23:00)
+0 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_opinion_poster.py >> logs/syscron.log 2>&1
+# [2026-10-04 苏摩111 P2] 实盘追踪：每日17:00 UTC持仓状态+自动平仓帖
+0 17 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_trade_tracker.py >> logs/syscron.log 2>&1
 30 23 * * * cd /root/.openclaw/workspace/trading-system && timeout 58 python3 scripts/daily_postmortem.py >> logs/daily_postmortem.log 2>&1
 # [2.0合并删除] 55 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/replay_ci.py --days 2 >> logs/replay_ci.log 2>&1
 
