@@ -238,7 +238,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 
 # [9.21 苏摩111] Autopilot cron优化：1H频率 + 强制BTC/ETH + 省积分
 # L0+L1: 决策机器人每1H运行（强制BTC+ETH，不依赖trigger_file）
-4 * * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 brahma_brain/brahma_cpu.py --auto --symbols BTCUSDT,ETHUSDT  # [2.0 等drawdown写完] >> logs/autopilot_cpu.log 2>&1
+# [取消 2026-10-04 苏摩确认] PNG自动推送已取消 || 4 * * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 brahma_brain/brahma_cpu.py --auto --symbols BTCUSDT,ETHUSDT  # [2.0 等drawdown写完] >> logs/autopilot_cpu.log 2>&1
 
 # L2: 学习层每天02:00 UTC运行（WR反哺+L2语义记忆生成）
 0 2 * * * cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/wr_feedback_engine.py >> logs/autopilot_learn.log 2>&1
