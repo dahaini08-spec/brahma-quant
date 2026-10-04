@@ -78,7 +78,17 @@ SOMA_ONLINE_MIN   = 30      # 苏摩30分钟内有消息=在线
 _WATCH_FILE     = _DATA / 'cpu_watch_list.json'
 _CPU_LOG        = _DATA / 'brahma_cpu_log.jsonl'
 _JARVIS_USER    = '73295708'
-_JARVIS_THREAD  = '01a0f312-7e0c-7ae0-ae95-f66915d1d13c'
+# [Fix 2026-10-04 苏摩111] 线程ID改读alerts/.env SSOT，不硬编码
+def _load_jarvis_thread():
+    try:
+        from pathlib import Path as _P
+        env = _P(__file__).parent.parent / 'alerts' / '.env'
+        for line in env.read_text(encoding='utf-8').splitlines():
+            if line.startswith('JARVIS_THREAD_ID='):
+                return line.split('=',1)[1].strip()
+    except Exception: pass
+    return '01a0d79b-fea4-71b1-9f2a-c02a9844b4ed'  # 兜底
+_JARVIS_THREAD  = _load_jarvis_thread()
 
 # ── Autopilot记忆层 [9.20 苏摩111] ─────────────────────────────────
 _L0_STATE       = _DATA / 'autopilot_state.json'      # L0工作记忆
@@ -328,9 +338,10 @@ def _do_alert(symbol: str, signal_dir: str, score_result: dict,
             _ph.push_jarvis(msg, priority='P1')
         except Exception as _pe:
             import subprocess as _sp2
-            _sp2.Popen(['openclaw','infer','--channel','jarvis',
+            _sp2.Popen(['openclaw','message','send',
                 '--to', f'{_JARVIS_USER}:thread:{_JARVIS_THREAD}',
-                '--message', msg],
+                '--channel', 'jarvis',
+                '--message', msg[:2000]],
                 stdout=_sp2.DEVNULL, stderr=_sp2.DEVNULL)
     except Exception as e:
         _log.warning(f'[CPU·ALERT] 推送失败: {e}')
@@ -557,9 +568,10 @@ def process_event(symbol: str, signal_dir: str = None,
                     _ph.push_jarvis(_astra_msg, priority='P2')
                 except Exception as _pe:
                     import subprocess as _sp
-                    _sp.Popen(['openclaw','infer','--channel','jarvis',
+                    _sp.Popen(['openclaw','message','send',
                         '--to', f'{_JARVIS_USER}:thread:{_JARVIS_THREAD}',
-                        '--message', _astra_msg],
+                        '--channel', 'jarvis',
+                        '--message', _astra_msg[:2000]],
                         stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
                 _log.info(f'[Astra③] {symbol} {signal_dir} 连续WAIT推送')
         else:

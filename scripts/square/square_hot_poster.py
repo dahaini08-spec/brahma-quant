@@ -1324,16 +1324,13 @@ def post_to_square(content: str, dry_run: bool = False) -> bool:
                     'preview': content[:300],
                 }, ensure_ascii=False) + '\n')
             print(f'[post] ✅ 发布成功 id={post_id} chars={len(content)}')
-            # 推送到苏摩主线程
+            # 推送到苏摩主线程 [Fix 2026-10-04 苏摩111] 改push_hub非阻塞
             try:
-                import subprocess as _sp
-                _task_label = args_type if 'args_type' in dir() else 'Square帖子'
-                _preview = content[:200].replace('"', '\"').replace('\n', ' ')
-                _msg = f'📢 梵天发帖成功\n\n{_preview}...'
-                _sp.run(['openclaw', 'message', 'send',
-                         '--channel', 'jarvis',
-                         '--to', '73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed',
-                         '--message', _msg], timeout=10, capture_output=True)
+                import sys as _sys3
+                _sys3.path.insert(0, str(Path(__file__).parent.parent))
+                from push_hub import push_jarvis as _phj
+                _preview = content[:300].replace('\n', ' ')
+                _phj('📢 梵天发帖成功\n\n' + _preview + '...', priority='P3')
             except Exception as _pe:
                 print(f'[post] ⚠️ 推送苏摩失败: {_pe}', file=sys.stderr)
             return True

@@ -169,9 +169,11 @@ def check_atr(symbol):
 
 
 # ── 推送 ─────────────────────────────────────────────────
-def push_jarvis(msg: str):
+def push_jarvis(msg: str, **kwargs):
+    """推送到Jarvis — 统一走push_hub [Fix 2026-10-04 苏摩111]"""
     try:
-        import hashlib as _hl
+        import sys as _sys2, hashlib as _hl
+        # 24h本地去重保留（不依赖push_hub的去重）
         dedup_key = _hl.md5(msg[:100].encode()).hexdigest()[:16]
         if DEDUP_FILE.exists():
             dedup = json.loads(DEDUP_FILE.read_text())
@@ -186,14 +188,9 @@ def push_jarvis(msg: str):
         DEDUP_FILE.write_text(json.dumps(dedup, ensure_ascii=False, indent=2))
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     try:
-        import subprocess
-        subprocess.Popen(
-            ['openclaw', 'message', 'send',
-             '--to', f'{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}',
-             '--channel', 'jarvis',
-             '--message', msg],
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-        )
+        _sys2.path.insert(0, str(Path(__file__).parent))
+        from push_hub import push_jarvis as _ph_push
+        _ph_push(msg, priority='P2')
     except Exception as e:
         print(f"[push_jarvis] 推送失败: {e}", file=sys.stderr)
 

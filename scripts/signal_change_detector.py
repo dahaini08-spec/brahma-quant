@@ -124,16 +124,22 @@ def describe_change(old: dict, new_score: float, new_action: str,
     return changes
 
 
-def push_jarvis(msg: str):
-    """推送到Jarvis"""
-    import subprocess
-    subprocess.run(
-        ['openclaw', 'message', 'send',
-         '--to', JARVIS_TARGET,
-         '--channel', 'jarvis',
-         '--message', msg],
-        capture_output=True, text=True, timeout=15
-    )
+def push_jarvis(msg: str, **kwargs):
+    """推送到Jarvis — 统一走push_hub [Fix 2026-10-04 苏摩111]"""
+    try:
+        import sys as _sys2
+        _sys2.path.insert(0, str(Path(__file__).parent))
+        from push_hub import push_jarvis as _ph_push
+        _ph_push(msg, priority=kwargs.get('priority','P1'))
+    except Exception as _e:
+        import subprocess
+        subprocess.Popen(
+            ['openclaw', 'message', 'send',
+             '--to', JARVIS_TARGET,
+             '--channel', 'jarvis',
+             '--message', msg[:2000]],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
 
 
 def main():
