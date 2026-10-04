@@ -132,8 +132,11 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [2026-10-03 苏摩111 P1-图文帖] 图文战场报告(K线图+止据墙/支撑池/FVG)→images字段，算法推流权重×3~5
 # 北京14:00发（与快照帖错峰1小时）
 0 6 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_chart_poster.py >> logs/syscron.log 2>&1
-# [2026-10-03 苏摩111 P6-视频帖] TTS配音+自动合成MP4→视频帖，算法最高权重
-# 北京16:00发（图文帖后2小时）
+# [2026-10-04 苏摩111自主决策] KEY_1蓝桉: 山寨币暴动分析（独立选题，不KEY_0重叠）*/2h扫涨跌榜
+30 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_altcoin_poster.py >> logs/syscron.log 2>&1
+# [2026-10-04 苏摩111自主决策] KEY_2牛来PRO: 宏观教育（独立选题）每日02:00 UTC（北京10:00）
+0 2 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_macro_edu_poster.py >> logs/syscron.log 2>&1
+# [2026-10-04 苏摩111自主决策] KEY_0视频帖保留（高权重）
 0 8 * * * cd /root/.openclaw/workspace/trading-system && timeout 180 python3 scripts/square_video_poster.py >> logs/syscron.log 2>&1
 # [2026-10-03 苏摩111 P5-VIP战绩帖] B线止盈自动发布，止据推苏摩审核
 */30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/square_vip_result_poster.py >> logs/syscron.log 2>&1
