@@ -147,15 +147,29 @@ def run(dry_run=False, edu_id=None):
         body = edu_text
 
     # 从body提取概念和定义
-    lines = body.split('\n')
+    lines = [l for l in body.split('\n') if l.strip()]
     concept = ''
     definition = []
-    for line in lines:
-        if not concept and ('=' in line or '什么是' in line or '，这是' in line):
-            concept = line.split('=')[0].split('，')[0].split('。')[0].strip()
-        definition.append(line)
+    # concept从第一行提取（去掉括号说明，只保留术语名）
+    if lines:
+        first = lines[0]
+        # 提取「术语（...）：」格式中的术语名
+        import re as _re
+        m = _re.match(r'^([A-Za-z一-鿿·]+)[（(（]', first)
+        if m:
+            concept = m.group(1).strip()
+        elif '：' in first or ':' in first:
+            concept = first.split('：')[0].split(':')[0].strip()
+        elif '=' in first:
+            concept = first.split('=')[0].strip()
+        else:
+            concept = first[:20].strip()
+    # definition只取前3行有效内容
+    for line in lines[:6]:
+        if line.strip() and not line.startswith('#'):
+            definition.append(line)
 
-    if not concept:
+    if not concept or len(concept) > 30:
         concept = '交易方法'
 
     # 实盘联动：拉当前BTC/ETH的FVG

@@ -140,7 +140,7 @@ def build_battlefield_report(sym, analysis_data):
     lines.extend([
         AI_WATERMARK,
         f'{BRAND_SUFFIX}',
-        f'#{sym} #合约交易',
+        f'${sym} #{sym} #合约交易 #永续合约',
         f'',
         f'{INTERACTION_HOOKS["battlefield"]}',
     ])
@@ -564,7 +564,7 @@ def build_signal_alert(sym, chg, price, high, low, vol, fr, ls,
     # 品牌后缀
     lines.append(AI_WATERMARK)
     lines.append(f'{BRAND_SUFFIX}')
-    lines.append(f'#{sym} #合约交易')
+    lines.append(f'${sym} #{sym} #合约交易 #永续合约')
     lines.append('')
     lines.append(f'{INTERACTION_HOOKS["signal"]}')
     return '\n'.join(lines)
@@ -587,7 +587,7 @@ def build_education_post(edu_id, concept, definition_lines, live_example, how_to
     lines = [
         f'实盘教学 #{edu_id:03d}',
         f'',
-        f'今日{live_example.split(chr(10))[0]}',
+        live_example.split(chr(10))[0],
         f'',
         f'什么是{concept}？',
     ]
