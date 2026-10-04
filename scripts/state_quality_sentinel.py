@@ -159,12 +159,18 @@ def check_state_quality(sym: str, auto_heal: bool = True) -> dict:
 def run_quality_check(symbols: list = None, push_alert: bool = True) -> dict:
     """批量检查所有标的数据质量"""
     if symbols is None:
-        # 自动发现所有state文件
-        symbols = []
-        for f in DATA.glob('brahma_state_*.json'):
-            sym = f.stem.replace('brahma_state_', '').upper()
-            if sym not in ('', 'BACKUP'):
-                symbols.append(sym)
+        # [Fix 2026-10-04 苏摩111] 只检查active标的（brahma_cpu实际分析的），
+        # 历史遗留state文件不参与告警（会产生假阳性噪音）
+        _active_file = DATA / 'active_symbols.json'
+        if _active_file.exists():
+            try:
+                import json as _j2
+                symbols = _j2.loads(_active_file.read_text()).get('symbols', ['BTC', 'ETH'])
+            except Exception:
+                symbols = ['BTC', 'ETH']
+        else:
+            # 默认只检查BTC/ETH（brahma_cpu --symbols BTCUSDT,ETHUSDT）
+            symbols = ['BTC', 'ETH']
 
     if not symbols:
         symbols = ['BTC', 'ETH']
