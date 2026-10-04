@@ -3652,7 +3652,16 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             lines.append('')
             lines.append(_template_block)
     except Exception as _te:
-        pass  # template不影响主链
+        import sys as _sys_te
+        print(f'[WARN] format_full_report失败: {_te}', file=_sys_te.stderr)
+        # template失败时输出基础VIP卡片作为兜底
+        try:
+            from brahma_output_template import format_vip_card as _fvc
+            _vip_only = _fvc(sym, d)
+            if _vip_only:
+                lines.append(''); lines.append(_vip_only)
+        except Exception:
+            pass
 
     return '\n'.join(lines)
 
@@ -3793,11 +3802,28 @@ def main():
                 })
             except Exception:
                 pass  # [WARN-suppressed: no var]
+        # [2026-10-04 설계원 강제경로봉인] full_report 저장 — AI는 반드시 이것을 출력
+        _full_reports = {}
+        try:
+            from brahma_output_template import format_full_report as _fmt_r2
+            import sys as _sys_fr
+            for _sym2 in symbols:
+                try:
+                    _sp2 = Path(__file__).parent.parent / 'data' / f'brahma_state_{_sym2.lower()}.json'
+                    if _sp2.exists():
+                        _sd2 = __import__('json').loads(_sp2.read_text())
+                        _full_reports[_sym2] = _fmt_r2(_sym2, _sd2)
+                except Exception as _fe2:
+                    print(f'[WARN] full_report {_sym2}: {_fe2}', file=_sys_fr.stderr)
+        except Exception as _fe:
+            pass
+
         _summary = {
             'timestamp': _time.strftime('%Y-%m-%d %H:%M:%S UTC', _time.gmtime()),
             'symbols': symbols,
             'elapsed_s': round(elapsed, 1),
             'output': '\n'.join(full_output),
+            'full_reports': _full_reports,  # D1-D10완전포맷 — AI강제출력경로
             'ssot_signals': _structured,  # [唯一裁判] ENTER系结构化信号
         }
         _out_path = _P(__file__).parent.parent / 'data' / 'auto_analysis_latest.json'
