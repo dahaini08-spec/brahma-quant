@@ -271,8 +271,23 @@ def run(syms: list, dry_run: bool = False) -> None:
             _mark_posted(content)
             _log_post('battlefield', content, resp)
             # [三账号差异化分发 2026-10-03 苏摩111]
+            # [Fix 2026-10-04 苏摩111] 改为独立后台进程：原同进程sleep300s被cron timeout kill
             if _MULTI_VOICE_ENABLED and not dry_run:
-                _post_multi_voice(content)
+                import subprocess, sys, tempfile, os
+                # 把content写临时文件，setsid子进程独立执行
+                _tmp = tempfile.NamedTemporaryFile(mode='w', suffix='.json',
+                    delete=False, encoding='utf-8')
+                import json as _j
+                _j.dump({'content': content}, _tmp)
+                _tmp.close()
+                _script = str(Path(__file__).parent / 'square_multi_voice_worker.py')
+                subprocess.Popen(
+                    [sys.executable, _script, _tmp.name],
+                    start_new_session=True,
+                    stdout=open('logs/multi_voice.log','a'),
+                    stderr=subprocess.STDOUT,
+                )
+                print('[multi_voice] 后台进程已启动 (setsid)', flush=True)
         return
 
     # ── 单币种：逐币旧路径（兼容保留）──

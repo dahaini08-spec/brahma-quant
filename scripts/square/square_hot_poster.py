@@ -996,7 +996,16 @@ def build_pump_alert() -> str:
         try:
             tickers = _r2.get('https://fapi.binance.com/fapi/v1/ticker/24hr', timeout=8).json()
             main_syms = ['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT']
-            mini_lines = [f'今日没有发现明显的压缩突破形态。', '',
+            # [Fix 2026-10-04] 动态opener，不再重复固定开头
+            import random as _rand
+            _openers = [
+                '今日主力币多空分歧扩大，大盘方向待定。',
+                '震荡收窄，等待方向选择。今日主力币表现：',
+                '量能萎缩，区间内博弈为主。今日数据：',
+                '今日无明显突破信号，继续等结构。',
+                'BTC和ETH今天都在等，主力币表现如下：',
+            ]
+            mini_lines = [_rand.choice(_openers), '',
                           f'今日主力币表现 | {now_cst()} CST', '']
             for sym in main_syms:
                 t = next((x for x in tickers if x['symbol']==sym), None)
