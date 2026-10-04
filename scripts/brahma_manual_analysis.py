@@ -192,7 +192,7 @@ def step0_fetch_all(sym: str) -> dict:
             _pr2 = _j2.loads(_ur2.urlopen(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={usdt}', timeout=5, context=_ctx2).read())
             price = float(_pr2.get('price', 0))
         except Exception:
-            pass
+            pass  # [WARN-suppressed: no var]
     k1h     = _results.get('k1h') or []
     k4h     = _results.get('k4h') or []
     k15m    = _results.get('k15m') or []
@@ -1996,7 +1996,7 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
             _gate_cfg_l0 = _gate_json_l0.loads(open(_gate_path_l0).read())
             _score_gate = _gate_cfg_l0.get('score_gate', {}).get(reg_now, 110)
     except Exception:
-        pass
+        pass  # [WARN-suppressed: no var]
 
     # L1-③: 宏观红色日历
     if mac.get('red_flag'):
@@ -3248,7 +3248,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
         if _narrative_v2:
             lines += [f'', f'── 交易叙事引擎 ──', _narrative_v2]
     except Exception as _ne:
-        pass
+        print(f"[WARN] brahma_manual_analysis: {_ne}", __import__("sys").stderr)
 
     lines += [
         f'',
@@ -3549,7 +3549,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             if _cvd_path.exists():
                 _cvd_snapshot = _njson.loads(_cvd_path.read_text())
         except Exception:
-            pass
+            pass  # [WARN-suppressed: no var]
         _nfeats = {}
         def _nsf(v, dft=0):
             try: return float(v) if v is not None else dft
@@ -3584,7 +3584,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             _nfeats['cvd_5m'] = _nsf(_cvd_mtf.get('micro',{}).get('strength',0))
             _nfeats['cvd_5m_dir'] = str(_cvd_mtf.get('micro',{}).get('direction','NEUTRAL'))
         except Exception:
-            pass
+            pass  # [WARN-suppressed: no var]
         _nfeats['oi_trend'] = str(oi.get('trend', ''))
         _nfeats['sm_divergence'] = _nsf(sm.get('divergence', 0))
         _nts = _ntime.time()
@@ -3792,7 +3792,7 @@ def main():
                     'ts': _time.time(),
                 })
             except Exception:
-                pass
+                pass  # [WARN-suppressed: no var]
         _summary = {
             'timestamp': _time.strftime('%Y-%m-%d %H:%M:%S UTC', _time.gmtime()),
             'symbols': symbols,

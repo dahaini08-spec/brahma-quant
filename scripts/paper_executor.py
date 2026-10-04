@@ -50,11 +50,11 @@ def _shadow_evaluate_risk_gate(signal: dict, sym: str, side: str, positions_data
                     if time.strftime('%Y-%m-%d', time.gmtime(o.get('ts', 0))) == time.strftime('%Y-%m-%d', time.gmtime(now_ts)):
                         _today += float(o.get('pnl', 0) or 0)
                 except Exception:
-                    pass
+                    pass  # [WARN-suppressed: no var]
             start_nav = float(getattr(_pl, 'START_NAV', 100000))
             today_pnl_pct = _today / start_nav * 100.0
         except Exception:
-            pass
+            pass  # [WARN-suppressed: no var]
         state = {'open_positions': open_pos, 'today_pnl_pct': today_pnl_pct, 'now_ts': now_ts}
         sig = {'symbol': sym, 'side': side, 'regime': signal.get('regime', ''),
                'score': signal.get('score_final', signal.get('score', 0)),
@@ -171,7 +171,7 @@ def _b_track_decision_package(signal: dict, sym: str, side: str) -> dict | None:
         try:
             _el.count('decision_package', error=e, context={'phase': 'b_track_shadow', 'symbol': sym})
         except Exception:
-            pass
+            pass  # [WARN-suppressed: no var]
     return out
 
 
@@ -298,7 +298,7 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
                 _t, _w = int(_v.get('total', 0)), int(_v.get('win', 0))
                 _wr_val = (_w / _t) if _t >= 8 else None  # n>=8才信矩阵，小样本走fallback
         except Exception:
-            pass
+            pass  # [WARN-suppressed: no var]
         # [WR矩阵新鲜度门 2026-09-30 苏摩111] 矩阵mtime>48h视为陈旧：WR强制fallback 0.45+P2告警。
         # 实锤：wr_matrix_live.json 9.24后settler无新结算（vector过期+OPEN堆积592条），若不查新鲜度
         # 会用陈旧WR算EV=静默使用过期先验。>48h=保守走fallback，保证EV门输入不会静默过期。
@@ -314,7 +314,7 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
                     from push_hub import push_jarvis
                     push_jarvis(f'⚠️ WR矩阵陈旧{_wr_age_h:.0f}h：wr_matrix_live.json超48h未更新，EV门用fallback WR=0.45。查signal_settler（vector库过期+OPEN堆积592条）', priority='P2', dedup_key='wr_matrix_stale', dedup_ttl=21600)
                 except Exception:
-                    pass
+                    pass  # [WARN-suppressed: no var]
         except Exception:
             pass  # mtime读不到时保留原逻辑（不额外阻断）
         _wr = float(_wr_val) / 100 if _wr_val and float(_wr_val) > 1 else (float(_wr_val) if _wr_val else 0.45)
@@ -360,7 +360,7 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
             _el.count('execution', error=_le,
                       context={'phase': 'paper_open_ledger', 'symbol': sym, 'side': side})
         except Exception:
-            pass
+            pass  # [WARN-suppressed: no var]
         log(f'ABORT {sym}: 账本记账失败 {_le} — 拒绝开单（无账本不交易）')
         return False
 
