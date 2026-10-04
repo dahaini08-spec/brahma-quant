@@ -23,6 +23,13 @@ if ! pgrep -f "cvd_ws_collector" > /dev/null; then
     sleep 1
 fi
 
+# 2.5 Web仪表盘（:8899）[2026-10-04 自主决策]
+if ! pgrep -f "brahma_web_dashboard" > /dev/null; then
+    echo "[$(date -u '+%H:%M')] 仪表盘死 → 拉起(setsid)"
+    setsid python3 scripts/brahma_web_dashboard.py --port 8899 >> logs/dashboard.log 2>&1 < /dev/null &
+    sleep 1
+fi
+
 # 3. liqmap采集器
 if ! pgrep -f "liqmap_collector" > /dev/null; then
     echo "[$(date -u '+%H:%M')] liqmap死 → 拉起(setsid)"

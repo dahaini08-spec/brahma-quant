@@ -229,6 +229,26 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
         params = parse_qs(parsed.query)
+        urlpath = parsed.path
+
+        # [2026-10-04] /reports/ 静态文件路由（无需token，直接访问HTML报告）
+        if urlpath.startswith('/reports/'):
+            fname = urlpath[len('/reports/'):]
+            fpath = _BASE / 'reports' / fname
+            if fpath.exists() and fpath.suffix in ('.html', '.json', '.txt'):
+                data = fpath.read_bytes()
+                ct = 'text/html; charset=utf-8' if fpath.suffix == '.html' else 'application/json'
+                self.send_response(200)
+                self.send_header('Content-Type', ct)
+                self.send_header('Content-Length', str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+            else:
+                self.send_response(404)
+                self.end_headers()
+                self.wfile.write(b'404 Not Found')
+            return
+
         token = params.get('token', [''])[0]
         if token != _TOKEN:
             self.send_response(403)
