@@ -33,7 +33,7 @@ SQUARE_KEY = _get_sq_key('auto_post')
 # 三账号差异化改写引擎 [2026-10-03 苏摩111]
 try:
     from square.multi_voice_rewriter import generate_three_versions as _gen3v
-    _MULTI_VOICE_ENABLED = False  # [2026-10-04 苏摩111自主决策] KEY_1/KEY_2改为独立内容，停止改写分发
+    _MULTI_VOICE_ENABLED = True
 except ImportError:
     _MULTI_VOICE_ENABLED = False
     _gen3v = None
