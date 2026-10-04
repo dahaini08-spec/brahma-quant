@@ -316,8 +316,12 @@ def post_video_to_square(video_path: str, caption: str, dry_run=False) -> bool:
 
 
 def run(dry_run=False):
-    # 读数据
+    """
+    [2026-10-04 苏摩111] Square OpenAPI只支持bodyTextOnly，video/images字段无效
+    改为高信息密度纯文字帖：技术面全景表格 + 操作判断 + 深度内容
+    """
     from square_chart_poster import load_analysis_data
+    import random as _rand
     btc = load_analysis_data('BTC')
     eth = load_analysis_data('ETH')
 
@@ -325,34 +329,107 @@ def run(dry_run=False):
         print('[video] 数据不足，退出')
         return False
 
-    # 生成帧
-    frames = build_frames(btc, eth)
-
-    # 生成视频
-    tmp_video = tempfile.NamedTemporaryFile(suffix='.mp4', delete=False).name
-    ok = frames_to_video(frames, tmp_video, with_audio=True)
-    if not ok:
-        print('[video] 视频生成失败，降级到图文帖')
-        return False
-
-    # 字幕文字（放bodyTextOnly）
     date_s = datetime.now(CST).strftime('%m/%d')
-    caption = (
-        f'BTC+ETH 日播 | {date_s}\n\n'
-        f'BTC ${btc["price"]:,.0f}  止损墙${btc.get("wall",0):,.0f}  支撑池${btc.get("pool",0):,.0f}\n'
-        f'ETH ${eth["price"]:,.2f}  止损墙${eth.get("wall",0):,.2f}  支撑池${eth.get("pool",0):,.2f}\n\n'
-        f'关注我，每晚21:00直播+SMC教学\n'
-        f'🔗 www.bsmkweb.cc/register?ref=XZBX666\n'
-        f'🌿 姓赵不宣 | 不是建议\n'
-        f'#BTC #ETH #合约交易 #视频'
-    )
+    btc_price = btc.get('price', 0)
+    eth_price = eth.get('price', 0)
+    btc_wall  = btc.get('wall', 0)
+    btc_pool  = btc.get('pool', 0)
+    eth_wall  = eth.get('wall', 0)
+    eth_pool  = eth.get('pool', 0)
+    btc_regime = btc.get('regime', 'CHOP_MID')
+    eth_regime = eth.get('regime', 'CHOP_MID')
+    regime_cn = {'BULL_TREND':'牛市↑','BEAR_TREND':'熊市↓','CHOP_MID':'震荡→',
+                 'BEAR_RECOVERY':'反弹↗','BEAR_EARLY':'熊初↘'}.get
+    btc_bias = btc.get('bias','WATCH')
+    eth_bias = eth.get('bias','WATCH')
+    bias_cn = {'LONG':'看多🟢','SHORT':'看空🔴','WATCH':'观望⚪','WAIT':'等待⚪'}.get
 
-    result = post_video_to_square(tmp_video, caption, dry_run=dry_run)
+    # 高信息密度技术面全景
+    content_lines = [
+        f'📊 今日技术面全景 | {date_s}',
+        '',
+        f'▌BTC  ${btc_price:,.0f}',
+        f'  体制: {regime_cn(btc_regime, btc_regime)}  信号: {bias_cn(btc_bias, btc_bias)}',
+        f'  止损墙: ${btc_wall:,.0f}  (+{(btc_wall/btc_price-1)*100:.1f}%)' if btc_wall else '  止损墙: 数据更新中',
+        f'  支撑池: ${btc_pool:,.0f}  (-{(1-btc_pool/btc_price)*100:.1f}%)' if btc_pool else '  支撑池: 数据更新中',
+        '',
+        f'▌ETH  ${eth_price:,.2f}',
+        f'  体制: {regime_cn(eth_regime, eth_regime)}  信号: {bias_cn(eth_bias, eth_bias)}',
+        f'  止损墙: ${eth_wall:,.2f}  (+{(eth_wall/eth_price-1)*100:.1f}%)' if eth_wall else '  止损墙: 数据更新中',
+        f'  支撑池: ${eth_pool:,.2f}  (-{(1-eth_pool/eth_price)*100:.1f}%)' if eth_pool else '  支撑池: 数据更新中',
+        '',
+    ]
+
+    # 根据体制生成操作建议段
+    if btc_bias == 'SHORT' and eth_bias == 'SHORT':
+        action = '今天两个盘子都偏空。\n策略: 等反弹到止损墙附近收阴确认再看空，不追跌。\n止损放结构失效位，不是整数关口。'
+    elif btc_bias == 'LONG' and eth_bias == 'LONG':
+        action = '今天两个盘子都偏多。\n策略: 等回踩支撑池收阳确认再看多，不追高。\n真正的多单机会在回调，不在追涨。'
+    else:
+        action = '今天两个盘子方向分歧，等方向明确再入场。\n分歧行情里强行入场，盈亏比天然吃亏。\n等哪个先出结构就跟哪个。'
+
+    content_lines += [
+        '【今日操作建议】',
+        action,
+        '',
+        _rand.choice([
+            '你今天的判断是什么？评论 A（看多）B（看空）C（观望）',
+            '这两个价位你会在哪里入场？评论告诉我',
+            '止损墙和支撑池，你觉得先触发哪个？评论投票',
+        ]),
+        '',
+        '关注我，每晚21:00直播+SMC教学',
+        '注册享20%手续费折扣 🔗 www.bsmkweb.cc/register?ref=XZBX666',
+        '🌿 姓赵不宣 | 仅供参考',
+        '$BTC $ETH #BTC #ETH #合约交易 #永续合约',
+    ]
+    caption = '\n'.join(content_lines)
+
+    # 去重
+    h = hashlib.md5(caption[:200].encode()).hexdigest()[:12]
     try:
-        os.unlink(tmp_video)
-    except Exception:
-        pass
-    return result
+        d = json.loads(DEDUP.read_text()) if DEDUP.exists() else {}
+        if h in d and time.time() - d[h] < 86400:
+            print('[video] 24h内重复，跳过')
+            return False
+    except Exception: pass
+
+    print(f'[video] 技术面全景帖 ({len(caption)}字)')
+    if dry_run:
+        print(caption)
+        print('[video DRY-RUN] ✅')
+        return True
+
+    # 发布
+    payload = json.dumps({'bodyTextOnly': caption}).encode()
+    req = urllib.request.Request(SQUARE_URL, data=payload,
+        headers={'X-Square-OpenAPI-Key': SQUARE_KEY,
+                 'Content-Type': 'application/json', 'clienttype': 'binanceSkill'})
+    resp = None
+    for _retry in range(3):
+        try:
+            resp = json.loads(urllib.request.urlopen(req, timeout=15, context=_ctx).read())
+            if resp.get('code') == '000000' or resp.get('success'): break
+            if _retry < 2: time.sleep(3)
+        except Exception as _re:
+            if _retry < 2: time.sleep(3)
+    if not resp: return False
+    if resp.get('code') == '000000' or resp.get('success'):
+        post_id = resp.get('data', {}).get('id', '')
+        print(f'[video] ✅ 技术面全景帖发布成功 id={post_id}')
+        try:
+            d = json.loads(DEDUP.read_text()) if DEDUP.exists() else {}
+            d[h] = time.time()
+            DEDUP.write_text(json.dumps(d, ensure_ascii=False), encoding='utf-8')
+        except Exception: pass
+        with open(LOG, 'a') as f:
+            f.write(json.dumps({'ts': time.time(), 'post_type': 'video_post',
+                'id': post_id, 'chars': len(caption), 'preview': caption[:200]},
+                ensure_ascii=False) + '\n')
+        return True
+    else:
+        print(f'[video] ❌ 发布失败: {resp}')
+        return False
 
 
 if __name__ == '__main__':
