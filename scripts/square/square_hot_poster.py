@@ -160,9 +160,9 @@ def rewrite_as_trader(draft: str) -> str:
             for w in BLOCKED_WORDS:
                 if w in rewritten:
                     rewritten = rewritten.replace(w, '')
-            # 自动修剪超出的hashtag（最多保留3个）
+            # 自动修剪超出的hashtag（最多保留6个）
             tags = re.findall(r'#\S+', rewritten)
-            if len(tags) > 3:
+            if len(tags) > 6:
                 for tag in tags[3:]:
                     rewritten = rewritten.replace('\n' + tag, '').replace(' ' + tag, '')
                 rewritten = rewritten.strip()
@@ -228,10 +228,10 @@ def check_content(content: str) -> tuple:
     for w in BLOCKED_WORDS:
         if w in content:
             return False, f'包含禁用词: {repr(w)}'
-    # hashtag不超过3个
+    # hashtag不超过6个（Square实际支持，2026-10-04扩展）
     tags = re.findall(r'#\S+', content)
-    if len(tags) > 3:
-        return False, f'hashtag超限({len(tags)}个>3个): {tags}'
+    if len(tags) > 6:
+        return False, f'hashtag超限({len(tags)}个>6个): {tags}'
     return True, ''
 
 
@@ -1266,12 +1266,17 @@ def post_to_square(content: str, dry_run: bool = False) -> bool:
     """发布到广场。返回True=成功"""
     import requests
 
-    # ── 品牌包装（2026-09-12 苏摩111封印）──
-    BRAND_PREFIX = ''
-    BRAND_SUFFIX = '🌿 姓赵不宣 | 不是建议'
-    # 顶端不加前缀，IP放在后缀
-    if '姓赵不宣' not in content:
-        content = f'{content}\n\n{BRAND_SUFFIX}'
+    # ── 品牌包装（2026-10-04 苏摩111更新）──
+    import sys as _sys2, re as _re2
+    _sys2.path.insert(0, str(Path(__file__).parent))
+    from square_template import BRAND_SUFFIX as _BS, LIVE_CTA as _LCTA
+    # 先移除正文里已有的所有hashtag行，统一由BRAND_SUFFIX提供
+    _lines = content.split('\n')
+    _lines = [l for l in _lines if not _re2.match(r'^[#$][A-Za-z]', l.strip())]
+    content = '\n'.join(_lines).rstrip()
+    _FULL_SUFFIX = f'\n{_LCTA}\n{_BS}\n$BTC $ETH #BTC #ETH #合约交易 #永续合约'
+    if '仅供参考' not in content:
+        content = f'{content}{_FULL_SUFFIX}'
 
     # ── LLM重写已废弃（2026-09-11）──
     # content = rewrite_as_trader(content)  # 已废弃

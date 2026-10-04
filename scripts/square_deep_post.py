@@ -336,9 +336,23 @@ def run(dry_run: bool = False, skip_llm: bool = False):
     fired, reasons, gate_summary = check_story_gate(tuple(gate_syms))
     _record_gate({'ts': time.time(), 'fired': fired, 'reasons': reasons, 'summary': gate_summary})
     if not fired:
-        print(f'[deep-post] 数据门控未触发（无故事不发）：{";".join(reasons[:4])}')
-        return
+        # [2026-10-04 苏摩111] 48h兜底：门控未触发但已超48h未发旗舰帖，强制发一条
+        import time as _t2, json as _j2
+        _gate_f = BASE / 'data' / 'deep_post_last_ts.json'
+        _last_ts = 0
+        try:
+            _last_ts = _j2.loads(_gate_f.read_text()).get('ts', 0)
+        except Exception: pass
+        _force = (_t2.time() - _last_ts) > 48 * 3600
+        if not _force:
+            print(f'[deep-post] 数据门控未触发，距上次{(_t2.time()-_last_ts)/3600:.1f}h<48h，跳过')
+            return
+        print(f'[deep-post] 48h兜底触发（门控{";".join(reasons[:2])}但已{(_t2.time()-_last_ts)/3600:.0f}h未发）', flush=True)
     print(f'[deep-post] 门控触发：{";".join(reasons)}', flush=True)
+    # 记录本次发帖时间（兜底逻辑用）
+    import time as _t3, json as _j3
+    _gate_f2 = BASE / 'data' / 'deep_post_last_ts.json'
+    _gate_f2.write_text(_j3.dumps({'ts': _t3.time()}), encoding='utf-8')
 
     # 1. 数据包
     pack = build_data_pack(syms)
