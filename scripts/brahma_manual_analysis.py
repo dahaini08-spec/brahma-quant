@@ -142,6 +142,16 @@ def load_json(path):
 # Step 0: 并行拉取实时数据
 # ══════════════════════════════════════════════════════════
 
+
+# [2026-10-04 杨志林工程化] analysis/步骤模块包接入
+try:
+    from analysis import (
+        step0_fetch, step1_fvg, step2_ob, step3_liq,
+        step4_resonance, step5_oi, step6_smart_money,
+        step7_volatility, step8_macro, step9_risk, step10_vip,
+    )
+except ImportError:
+    pass  # thin wrapper, 原函数仍在本文件
 def step0_fetch_all(sym: str) -> dict:
     """真正并行拉取所有实时数据 [Fix 2026-10-03 苏摩111]
     原来注释说并行但实际串行。修复：ThreadPoolExecutor并行所有网络IO。

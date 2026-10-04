@@ -75,6 +75,17 @@ except Exception:
 # [2026-09-01 精简封印] options_engine移除：只 import不使用，且无期权交易
 # ══ INT-1: online_learner 校准权重热加载（设计院六方联合 2026-07-11）══
 import json as _json_calib
+
+# [2026-10-04 杨志林工程化] analysis_constants SSOT
+try:
+    from analysis_constants import (
+        SCORE_CHOP_STD, SCORE_CHOP_TREND, SCORE_CHOP_TRANS,
+        HURST_TREND, HURST_TRANSITION,
+    )
+except ImportError:
+    SCORE_CHOP_STD=110; SCORE_CHOP_TREND=40; SCORE_CHOP_TRANS=75
+    HURST_TREND=0.60; HURST_TRANSITION=0.55
+
 _CALIB_WEIGHTS: dict = {}
 try:
     _calib_path = Path(__file__).parent.parent / 'data' / 'calibrated_weights.json'
