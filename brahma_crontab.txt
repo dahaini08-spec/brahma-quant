@@ -113,7 +113,8 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # Layer 6: 每日定点任务 (Square发布)
 # ============================================================
 # hot tickers — 01:00
-0 1,7,9,11,13 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_hot_poster_router.py >> logs/syscron.log 2>&1  # [2.0 5合1路由]
+# 热度帖: 07/09/11/13 UTC(北京15/17/19/21:00) 对齐目标日历 [2026-10-04 苏摩111]
+0 7,9,11,13 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_hot_poster_router.py >> logs/syscron.log 2>&1  # [2.0 5合1路由]
 # top gainers — 07:00
 # [2.0合并删除] 0 7 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type top_gainers --no-delay >> logs/syscron.log 2>&1
 # pump alert — 09:00
