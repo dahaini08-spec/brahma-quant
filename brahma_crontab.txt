@@ -264,7 +264,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [2.0合并删除] 5 3 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/drift_checker.py >> logs/drift_checker.log 2>&1
 
 # [9.26苏摩111 P0-2] state_refresh挂回调度（entry SSOT，错开07,37/08,38/12,42/30 1|9）
-13,43 * * * * cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/brahma_state_refresh.py >> logs/state_refresh.log 2>&1
+13 * * * * cd /root/.openclaw/workspace/trading-system && BRAHMA_NO_LLM=1 timeout 240 python3 scripts/brahma_state_refresh.py >> logs/state_refresh.log 2>&1  # [优化: 每30min→每1h, BRAHMA_NO_LLM防卡死]
 
 # [梵天2.0 T2 A/B对照盘 2026-09-27 苏摩111] 影子分歧报告+回放CI（每日23:50北京=15:50UTC复盘前）
 # 50 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/divergence_report.py >> logs/t2_divergence.log 2>&1

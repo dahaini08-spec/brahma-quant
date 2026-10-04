@@ -3,6 +3,13 @@
 brahma_state_refresh.py — 梵天体制状态刷新 + 信号路由器
 设计院封印 2026-09-03 苏摩111
 
+# [2026-10-04 防卡死封印] LLM退避时强制跳过，防止进程卡死吃内存
+import os as _os_nollm
+if _os_nollm.environ.get('BRAHMA_NO_LLM') == '1':
+    # 注入到 brahma_brain 的 llm_channel，让它走本地降级
+    _os_nollm.environ.setdefault('BRAHMA_LLM_FORCE_LOCAL', '1')
+
+
 接入位置：supercronic */30 * * * *
 流程：
   1. analyze(BTCUSDT) + analyze(ETHUSDT) → brahma_state.json
