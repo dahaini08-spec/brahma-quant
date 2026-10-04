@@ -64,7 +64,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [9.18 修复] drawdown+cb从:03移到:03保持（和:02 regime间隔1min足够）
 03 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/cron_drawdown_touch.py >> logs/syscron.log 2>&1  # [2.0 safe_io原子写]
 # CVD存活检查 — :06
-06 * * * * cd /root/.openclaw/workspace/trading-system && pgrep -f cvd_ws_collector >/dev/null 2>&1 || (setsid python3 scripts/cvd_ws_collector.py >> logs/cvd_ws.log 2>&1 &)  # [2.0 守护进程正常，无需timeout]
+# [DISABLED 2026-10-04 杨志林优化 重复检查] 06 * * * * cd /root/.openclaw/workspace/trading-system && pgrep -f cvd_ws_collector >/dev/null 2>&1 || (setsid python3 scripts/cvd_ws_collector.py >> logs/cvd_ws.log 2>&1 &)  # [2.0 守护进程正常，无需timeout]
 # liqmap OKX REST轮询 — :09每2h（替代常驻WS）
 09 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/liq_okx_fetcher.py >> logs/liqmap.log 2>&1
 # HAR-RV缓存独立刷新 — :11每4h（[9.27HAR-RV cron挂回 苏摩111] 防分析链懒加载失活；原子写已修并发根因）
@@ -126,7 +126,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # daily review — 16:00
 0 16 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/daily_review_llm.py >> logs/daily_review.log 2>&1
 # screener — 12:00
-0 12 * * * cd /root/.openclaw/workspace/trading-system && timeout 55 python3 scripts/brahma_screener.py >> logs/syscron.log 2>&1
+# [DISABLED 2026-10-04 杨志林优化 41天未更新] 0 12 * * * cd /root/.openclaw/workspace/trading-system && timeout 55 python3 scripts/brahma_screener.py >> logs/syscron.log 2>&1
 # square auto post BTC ETH（快照帖）— 01:30 + 09:30
 30 1 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_auto_post.py --sym BTC ETH 2>&1 >> logs/syscron.log
 30 9 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_auto_post.py --sym BTC ETH 2>&1 >> logs/syscron.log
@@ -178,15 +178,15 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # L3 IC周审门 — 04:05 Monday [防谎P1 2026-09-28 苏摩111] learning_log pending_ic裁决（fail-closed：n<8=PENDING）
 5 4 * * 1 cd /root/.openclaw/workspace/trading-system && python3 -c "import sys; sys.path.insert(0,'brahma_brain'); from ic_tracker import review_learning_log; r=review_learning_log(); print(f'[L3-IC] reviewed={r[\"reviewed\"]}/{r[\"total\"]}')" >> logs/syscron.log 2>&1
 # wiring check — 03:00 Sunday
-0 3 * * 0 cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/brahma_wiring_check.py >> logs/wiring_check.log  # [2.0 timeout] 2>&1
+# [DISABLED 2026-10-04 杨志林优化 已由module_check替代] 0 3 * * 0 cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/brahma_wiring_check.py >> logs/wiring_check.log  # [2.0 timeout] 2>&1
 # IC审计 — 03:40 Sunday [9.26接线 苏摩111] dim_ic_audit懒加载回退版，jesse缺失用本地指标
 40 3 * * 0 cd /root/.openclaw/workspace/trading-system && timeout 600 python3 brahma_brain/dim_ic_audit.py >> logs/ic_audit.log 2>&1
 # v5回测 — 03:45 Sunday [9.26接线 苏摩111] engine_v5本地指标回退版，周度WR/EV基准
 45 3 * * 0 cd /root/.openclaw/workspace/trading-system && timeout 1800 python3 brahma_brain/brahma_engine_v5.py >> logs/engine_v5_backtest.log 2>&1
 # C-3议会闭环周跑 — 03:55 Monday [C线封印 2026-09-30 苏摩111] 正向回填+8分向周报+教训包
-55 3 * * 1 cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/learning_loop.py >> logs/learning_loop.log 2>&1
+# [DISABLED 2026-10-04 杨志林优化 日志为空] 55 3 * * 1 cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/learning_loop.py >> logs/learning_loop.log 2>&1
 # C-2校准蒸馏周重训 — 03:57 Monday [C线封印 2026-09-30 苏摩111] shadow日志满批后重出calibrator
-57 3 * * 1 cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/distill_calibrator.py >> logs/distill_calibrator.log 2>&1
+# [DISABLED 2026-10-04 杨志林优化 日志为空] 57 3 * * 1 cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/distill_calibrator.py >> logs/distill_calibrator.log 2>&1
 # DAG weight calibrator — 03:30 Sunday (蘑菇体机制)
 30 3 * * 2,5 cd /root/.openclaw/workspace/trading-system && timeout 300 python3 brahma_brain/dag_weight_calibrator.py >> logs/dag_calibrator.log 2>&1
 
