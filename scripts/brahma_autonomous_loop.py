@@ -23,11 +23,12 @@ sys.path.insert(0, str(BASE / 'scripts'))
 JARVIS_USER   = '73295708'
 JARVIS_THREAD = '01a0f312-7e0c-7ae0-ae95-f66915d1d13c'
 
-def _push(msg: str, priority: str = 'P2'):
-    """推送到Jarvis"""
+def _push(msg: str, priority: str = 'P2', dedup_ttl: int = 3600):
+    """推送到Jarvis，同类消息dedup_ttl内只推一次"""
     try:
-        import push_hub as ph
-        ph.push_jarvis(msg, priority=priority)
+        import push_hub as ph, hashlib as _hl
+        _dk = 'autonomous_' + _hl.md5(msg[:80].encode()).hexdigest()[:12]
+        ph.push_jarvis(msg, priority=priority, dedup_key=_dk, dedup_ttl=dedup_ttl)
     except Exception as e:
         print(f'[WARN] push失败: {e}', file=sys.stderr)
 
@@ -46,9 +47,7 @@ def heal_processes() -> list:
          f'>> {LOGS}/supercronic.log 2>&1'),
         ('cvd_ws_collector', f'python3 {BASE}/scripts/cvd_ws_collector.py',
          f'>> {LOGS}/cvd_ws.log 2>&1'),
-        ('liq_heatmap', f'python3 {BASE}/scripts/liq_heatmap_daemon.py 2>/dev/null ||'
-         f' python3 {BASE}/scripts/liq_heatmap.py BTCUSDT ETHUSDT',
-         f'>> {LOGS}/liqmap.log 2>&1'),
+        # liq_heatmap 不是常驻daemon，通过data_check检查数据时效 [Fix 2026-10-04 苏摩111]
         ('brahma_web_dashboard', f'python3 {BASE}/scripts/brahma_web_dashboard.py --port 8899',
          f'>> {LOGS}/dashboard.log 2>&1'),
     ]
@@ -244,7 +243,8 @@ def main():
         _push(
             f'🔧 梵天自愈完成\n复活进程: {", ".join(revived)}\n'
             f'内存: {host["mem_pct"]}% | 磁盘: {host["disk_pct"]}%',
-            priority='P2'
+            priority='P2',
+            dedup_ttl=1800  # [Fix 2026-10-04] 30min内只推一次，防5min刷屏
         )
     elif has_evolution:
         _push(
