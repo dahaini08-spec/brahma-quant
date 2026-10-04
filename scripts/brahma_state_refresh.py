@@ -138,7 +138,17 @@ def main():
 
     for sym in SYMBOLS:
         try:
-            r = analyze(sym)
+            # [2026-10-04 防卡死封印] analyze()独立90s超时，超时降级读已有state
+            import concurrent.futures as _cf, json as _jf
+            _fb_file = BASE / 'data' / f'brahma_state_{sym.replace("USDT","").lower()}.json'
+            try:
+                with _cf.ThreadPoolExecutor(max_workers=1) as _exe:
+                    _fut = _exe.submit(analyze, sym)
+                    r = _fut.result(timeout=90)
+            except (_cf.TimeoutError, Exception) as _ae:
+                print(f'[state_refresh] ⚠️ {sym} analyze超时({_ae.__class__.__name__}), fallback已有state', file=__import__('sys').stderr)
+                r = __import__('json').loads(_fb_file.read_text()) if _fb_file.exists() else {'sym': sym, 'regime': 'CHOP_MID', 'score': 0}
+                r['_fallback'] = True
             cleaned = clean(r)
             all_states[sym] = cleaned
 
