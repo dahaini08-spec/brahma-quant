@@ -228,7 +228,8 @@ def main():
         return  # 直接退出，节省算力
 
     # 需要处理：继续完整检查
-    report['revived'] = []  # 进程守护由process_resurrect负责
+    revived = []  # 进程守护由process_resurrect负责
+    report['revived'] = revived
 
     # B. 自检
     health = check_data_health()
@@ -244,6 +245,34 @@ def main():
     # D. 自进化
     evo = evolve()
     report['evolution'] = evo
+
+    # E. 触发式监控（有状态才运行，无状态零消耗）
+    _triggered = []
+    # E1. VIP策略止损漂移（有策略才跑）
+    _vip_f = DATA / 'vip_signal_state.json'
+    if _vip_f.exists():
+        import json as _jt
+        _vip = _jt.loads(_vip_f.read_text())
+        if any(_vip.get(k) for k in ['btc_sl','eth_sl','btc_entry','eth_entry']):
+            import subprocess as _spt
+            _r = _spt.run(['python3', str(BASE/'scripts'/'vip_signal_tracker.py')],
+                          capture_output=True, text=True, timeout=20, cwd=str(BASE))
+            if 'CRITICAL' in _r.stderr or '漂移' in _r.stderr:
+                _triggered.append('vip_drift')
+    # E2. 价格触发点（有配置才跑）
+    _pt_files = [DATA/'price_trigger_config.json', DATA/'price_triggers.json']
+    for _ptf in _pt_files:
+        if _ptf.exists():
+            import json as _jpt, subprocess as _sppt
+            try:
+                if _jpt.loads(_ptf.read_text()):
+                    _r2 = _sppt.run(['python3', str(BASE/'scripts'/'price_trigger_monitor.py')],
+                                    capture_output=True, text=True, timeout=20, cwd=str(BASE))
+                    if 'TRIGGERED' in _r2.stdout or '触发' in _r2.stdout:
+                        _triggered.append('price_trigger')
+                    break
+            except Exception: pass
+    report['triggered'] = _triggered
 
     elapsed = round(time.time() - t0, 2)
     report['elapsed_s'] = elapsed

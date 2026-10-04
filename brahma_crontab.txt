@@ -221,7 +221,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # ============================================================
 # Phase 5: 条件触发监控 (每5min) [9.18苏摩111]
 # ============================================================
-*/15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/price_trigger_monitor.py >> logs/price_trigger.log 2>&1  # [降频优化 2026-10-04] 降频67%:价格触发点通常持续多小时
+# [合并到autonomous_loop E模块 2026-10-04] */15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/price_trigger_monitor.py >> logs/price_trigger.log 2>&1  # [降频优化 2026-10-04] 降频67%:价格触发点通常持续多小时
 
 # [9.19 设计院] 配置漂移+引用检查 每6小时
 # [2.0删除 cron_reference_check: 开发期工具，生产不需要]
@@ -271,7 +271,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [TRIM 2026-10-04 苏摩111 精简至40任务 T2对照盘每日检查保留1次] 30 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 150 python3 scripts/t2_daily_check.py
 # ══ 梵天2.0: 24h日复盘引擎 [2026-10-01 苏摩111] ══
 # VIP点位漂移检测 — 每小时整点
-5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/vip_signal_tracker.py >> logs/vip_tracker.log 2>&1
+# [合并到autonomous_loop E模块 2026-10-04] 5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/vip_signal_tracker.py >> logs/vip_tracker.log 2>&1
 
 # [2026-10-04 苏摩111 P1] 每日「我的判断」观点帖 15:00 UTC(北京23:00)
 0 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_opinion_poster.py >> logs/syscron.log 2>&1

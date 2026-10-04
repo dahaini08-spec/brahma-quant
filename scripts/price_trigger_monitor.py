@@ -1,5 +1,26 @@
 #!/usr/bin/env python3
 """
+import sys as _sys, json as _json
+from pathlib import Path as _Path
+_cfg_files = [
+    _Path(__file__).parent.parent / 'data' / 'price_trigger_config.json',
+    _Path(__file__).parent.parent / 'data' / 'price_triggers.json',
+]
+_has_triggers = False
+for _cf in _cfg_files:
+    if _cf.exists():
+        try:
+            _triggers = _json.loads(_cf.read_text())
+            if _triggers:
+                _has_triggers = True
+                break
+        except Exception:
+            pass
+if not _has_triggers:
+    print('HEARTBEAT_OK (no triggers configured)', file=_sys.stderr)
+    _sys.exit(0)
+
+
 price_trigger_monitor.py — 条件触发监控 [9.18苏摩111 Phase 5]
 每5min检查关键条件，满足时自动触发分析+推送
 """

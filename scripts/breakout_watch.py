@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 breakout_watch.py — CHOP体制盲区突破旁路预警
+
 设计院封印 2026-09-04 苏摩111
 
 根因：梵天CHOP_MID体制下两次错过大拉升（64K→81.5K / 77K→82.3K）
@@ -15,6 +16,19 @@ breakout_watch.py — CHOP体制盲区突破旁路预警
   1. scripts/brahma_manual_analysis.py Step0（并行拉取时顺带检测）
   2. OpenClaw cron every 30m（主动巡检，触发时推送预警）
 """
+import sys as _sys, json as _json
+from pathlib import Path as _Path
+_state_f = _Path(__file__).parent.parent / 'data' / 'brahma_state_btc.json'
+try:
+    _state = _json.loads(_state_f.read_text()) if _state_f.exists() else {}
+    _regime = _state.get('regime', 'UNKNOWN')
+    if 'CHOP' not in _regime:
+        print(f'HEARTBEAT_OK (regime={_regime}, not CHOP)', file=_sys.stderr)
+        _sys.exit(0)
+except Exception:
+    pass
+
+
 import sys, json, time, urllib.request, signal
 from pathlib import Path
 from datetime import datetime, timezone

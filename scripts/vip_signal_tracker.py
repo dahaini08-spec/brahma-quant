@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
 """
+import sys as _sys, json as _json
+from pathlib import Path as _Path
+_vip_f = _Path(__file__).parent.parent / 'data' / 'vip_signal_state.json'
+try:
+    _vip = _json.loads(_vip_f.read_text()) if _vip_f.exists() else {}
+    _has_vip = any(_vip.get(k) for k in ['btc_sl','eth_sl','btc_entry','eth_entry'])
+    if not _has_vip:
+        print('HEARTBEAT_OK (no vip strategy)', file=_sys.stderr)
+        _sys.exit(0)
+except Exception:
+    pass
+
+
 vip_signal_tracker.py — VIP策略版本追踪 + 止损墙漂移检测
 [2026-10-02 苏摩111封印]
 
