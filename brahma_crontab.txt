@@ -107,14 +107,14 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # cron health board — :58 每6h
 # [2.0合并删除 cron_health_board: brahma_autocheck已包含健康检查逻辑] 58 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/cron_health_board.py >> logs/syscron.log 2>&1
 # square extreme alert — :33 每4h
-# [TRIM 2026-10-04 苏摩111 精简至40任务 合并到daily_postmortem] 33 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square/square_extreme_alert.py >> logs/syscron.log 2>&1
+33 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square/square_extreme_alert.py >> logs/syscron.log 2>&1
 
 # ============================================================
 # Layer 6: 每日定点任务 (Square发布)
 # ============================================================
 # hot tickers — 01:00
 # 热度帖: 07/09/11/13 UTC(北京15/17/19/21:00) 对齐目标日历 [2026-10-04 苏摩111]
-# [TRIM 2026-10-04 苏摩111 精简至40任务 合并到square_auto_post统一入口] 0 7,9,11,13 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_hot_poster_router.py >> logs/syscron.log 2>&1  # [2.0 5合1路由]
+0 7,9,11,13 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_hot_poster_router.py >> logs/syscron.log 2>&1  # [2.0 5合1路由]
 # top gainers — 07:00
 # [2.0合并删除] 0 7 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square/square_hot_poster.py --type top_gainers --no-delay >> logs/syscron.log 2>&1
 # pump alert — 09:00
@@ -132,22 +132,22 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [TRIM2 2026-10-04] 重复的square_auto_post，保留daily_postmortem统一出口 || 30 9 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_auto_post.py --sym BTC ETH 2>&1 >> logs/syscron.log
 # [2026-10-03 苏摩111 P1-图文帖] 图文战场报告(K线图+止据墙/支撑池/FVG)→images字段，算法推流权重×3~5
 # 北京14:00发（与快照帖错峰1小时）
-# [TRIM 2026-10-04 苏摩111 精简至40任务 图表帖合并到daily_postmortem] 0 6 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_chart_poster.py >> logs/syscron.log 2>&1
+0 6 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_chart_poster.py >> logs/syscron.log 2>&1
 # [2026-10-04 苏摩111自主决策] KEY_1蓝桉: 山寨币暴动分析（独立选题，不KEY_0重叠）*/2h扫涨跌榜
-# [TRIM 2026-10-04 苏摩111 精简至40任务 山寨币帖低价值] 30 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_altcoin_poster.py >> logs/syscron.log 2>&1
+30 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_altcoin_poster.py >> logs/syscron.log 2>&1
 # [2026-10-04 苏摩111自主决策] KEY_2牛来PRO: 宏观教育（独立选题）每日02:00 UTC（北京10:00）
-# [TRIM 2026-10-04 苏摩111 精简至40任务 宏观教育帖合并到daily_postmortem] 0 2 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_macro_edu_poster.py >> logs/syscron.log 2>&1
+0 2 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_macro_edu_poster.py >> logs/syscron.log 2>&1
 # [2026-10-04 苏摩111自主决策] KEY_0视频帖保留（高权重）
-# [TRIM 2026-10-04 苏摩111 精简至40任务 视频帖低优先级] 0 8 * * * cd /root/.openclaw/workspace/trading-system && timeout 180 python3 scripts/square_video_poster.py >> logs/syscron.log 2>&1
+0 8 * * * cd /root/.openclaw/workspace/trading-system && timeout 180 python3 scripts/square_video_poster.py >> logs/syscron.log 2>&1
 # [2026-10-03 苏摩111 P5-VIP战绩帖] B线止盈自动发布，止据推苏摩审核
-# [TRIM2 2026-10-04] VIP结果已由vip_signal_tracker覆盖 || */30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/square_vip_result_poster.py >> logs/syscron.log 2>&1
+*/30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/square_vip_result_poster.py >> logs/syscron.log 2>&1
 # [2026-10-03 苏摩111 P1] 教育帖接入cron（历史零产出，广场算法最爱教育类）
 # 北京13:00/21:00发，错峰史上热度帖，内容库存欢8条
 0 5,13 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square/square_edu_poster.py >> logs/syscron.log 2>&1
 # [2026-10-03 苏摩111] 宏观帖自动检查（明天是事件日则自动发帖）
-# [TRIM 2026-10-04 苏摩111 精简至40任务 重复宏观帖] 0 10 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square/square_macro_poster.py --auto >> logs/syscron.log 2>&1
+0 10 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square/square_macro_poster.py --auto >> logs/syscron.log 2>&1
 # [2026-10-03 苏摩111] 直播预告帖（11:00 UTC=北京19:00，直播前2小时）
-# [TRIM 2026-10-04 苏摩111 精简至40任务 直播预告低优先级] 0 11 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_live_preview.py >> logs/syscron.log 2>&1
+0 11 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_live_preview.py >> logs/syscron.log 2>&1
 # [2026-10-03 苏摩111] 信号发帖（有ENTER信号就发帖）
 */30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/signal_to_square.py >> logs/syscron.log 2>&1
 # [2026-09-30 苏摩111 孤岛接线] trade_loop上链：Phase0信号注入+Phase1开单帖+Phase2持仓帖
@@ -155,9 +155,9 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 14,44 * * * * cd /root/.openclaw/workspace/trading-system && timeout 110 flock -n /tmp/brahma_trade_loop.lock python3 scripts/square_trade_loop.py >> logs/syscron.log 2>&1  # [2.0 错峰 12→14 避免与guardian冲突]
 # flagship deep post — 每6h门控检查（数据有故事才产帖，非每日必发）
 # [2026-09-28 苏摩111 A线] 快照帖只管盘面，旗舰帖管当周叙事；发布需苏摩111批准（enqueue→flush）
-# [TRIM2 2026-10-04] 深度帖低频已有daily_postmortem || 17 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 600 python3 scripts/square_deep_post.py >> logs/deep_post.log 2>&1
+30 3 * * * cd /root/.openclaw/workspace/trading-system && timeout 600 python3 scripts/square_deep_post.py >> logs/deep_post.log 2>&1  # [降频 每日1次]
 # spot strategy square — 03:00
-# [TRIM2 2026-10-04] 现货策略帖低频已有daily_postmortem || 0  3 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/spot_strategy_square.py  # [2.0错峰] --symbols BTC ETH 2>&1 >> logs/syscron.log
+30 3 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/spot_strategy_square.py  # [2.0错峰] --symbols BTC ETH 2>&1 >> logs/syscron.log  # [降频 每日1次]
 # data baseline refresh — 00:00 + 12:00
 # [TRIM 2026-10-04 苏摩111 精简至40任务 基线数据每周1次足够] 0 0,12 * * * cd /root/.openclaw/workspace/trading-system && bash scripts/data_baseline_refresh.sh >> logs/baseline_refresh.log 2>&1
 
@@ -274,14 +274,14 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/vip_signal_tracker.py >> logs/vip_tracker.log 2>&1
 
 # [2026-10-04 苏摩111 P1] 每日「我的判断」观点帖 15:00 UTC(北京23:00)
-# [TRIM 2026-10-04 苏摩111 精简至40任务 观点帖合并到daily_postmortem] 0 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_opinion_poster.py >> logs/syscron.log 2>&1
+0 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_opinion_poster.py >> logs/syscron.log 2>&1
 # [2026-10-04 苏摩111 P2] 实盘追踪：每日17:00 UTC持仓状态+自动平仓帖
-# [TRIM 2026-10-04 苏摩111 精简至40任务 交易追踪合并到vip_signal_tracker] 0 17 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_trade_tracker.py >> logs/syscron.log 2>&1
+0 17 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_trade_tracker.py >> logs/syscron.log 2>&1
 30 23 * * * cd /root/.openclaw/workspace/trading-system && timeout 58 python3 scripts/daily_postmortem.py >> logs/daily_postmortem.log 2>&1
 # [2.0合并删除] 55 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/replay_ci.py --days 2 >> logs/replay_ci.log 2>&1
 
 # [9.26 B线] 纸面每日复盘（23:30北京）
-# [TRIM 2026-10-04 苏摩111 精简至40任务 纸面复盘已在daily_postmortem包含] 30 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/paper_daily_review.py >> logs/paper_daily_review.log 2>&1  # [9.26 B线] 每日复盘 23:30北京
+30 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/paper_daily_review.py >> logs/paper_daily_review.log 2>&1  # [9.26 B线] 每日复盘 23:30北京
 
 # 数据目录自动清理 — 每日 03:05 UTC 静默运行
 5 3 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/data_janitor.py >> logs/janitor.log 2>&1
