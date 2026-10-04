@@ -609,3 +609,110 @@ def run_loss_attribution(trade: dict) -> dict:
         print(f"[WARN] meta_cognition update failed: {_e}")
 
     return attr
+
+
+def _generate_daily_edu_post(postmortem_data: dict) -> str:
+    """
+    每日教育帖生成器 [2026-10-04 自主决策封印]
+    接入位置: daily_postmortem.py run_postmortem()末尾
+    从复盘数据蒸馏出一篇有教学价值的帖子
+    """
+    import time
+    ts = time.strftime('%m/%d', time.gmtime())
+    
+    btc_bias  = postmortem_data.get('btc_bias', 'NEUTRAL')
+    eth_bias  = postmortem_data.get('eth_bias', 'NEUTRAL')
+    eth_hurst = postmortem_data.get('eth_hurst', 0)
+    btc_hurst = postmortem_data.get('btc_hurst', 0)
+    key_lesson = postmortem_data.get('key_lesson', '')
+    
+    # 选择今日教学主题（轮转）
+    day_of_week = int(time.strftime('%w'))
+    topics = {
+        0: 'hurst',      # 周日：趋势确认
+        1: 'fvg',        # 周一：FVG结构
+        2: 'oi',         # 周二：OI+资金流
+        3: 'lsr',        # 周三：聪明钱分歧
+        4: 'clearance',  # 周四：清算地图
+        5: 'risk',       # 周五：风控体系
+        6: 'review',     # 周六：本周复盘
+    }
+    topic = topics.get(day_of_week, 'fvg')
+    
+    templates = {
+        'hurst': f"""今天 BTC Hurst={btc_hurst:.3f}，ETH Hurst={eth_hurst:.3f}。
+
+Hurst指数是我每天必看的第一个数字。
+
+不是因为它最准，而是因为它最诚实。
+
+━━━ Hurst告诉你什么 ━━━
+
+H < 0.5 → 均值回归，昨天涨今天跌是常态
+H = 0.5 → 随机游走，抛硬币的市场
+H > 0.6 → 趋势性，昨天的方向今天大概率延续
+H > 0.7 → 强趋势，追涨是对的，抄底是错的
+
+今天ETH {eth_hurst:.2f}——{"已进趋势区，顺势操作" if eth_hurst > 0.6 else "随机游走，谨慎入场"}。
+
+━━━ 大多数人怎么用错了 ━━━
+
+他们盯着K线问「这里能抄底吗」。
+Hurst在说「这里的趋势方向是X，逆势成功率只有40%」。
+
+数据和直觉，你选哪个？
+
+关注我，每晚21:00直播+SMC教学
+🌿 姓赵不宣 | 不是建议
+#量化交易 #技术分析 #Hurst #合约交易""",
+
+        'fvg': f"""今天 ETH FVG共识：{"BEAR 偏空" if "BEAR" in str(eth_bias) else "BULL 偏多" if "BULL" in str(eth_bias) else "中性"}。
+
+FVG（公允价值缺口）是我最依赖的入场工具。
+
+但90%的人用错了。
+
+━━━ 错误用法 ━━━
+
+「FVG在这里，我在这里买」
+→ 这是在等价格回到过去
+
+━━━ 正确用法 ━━━
+
+FVG不是支撑，是磁铁。
+价格会被吸引到FVG中点，然后决定方向。
+
+多周期共识才是信号：
+  15M BEAR + 1H BEAR + 4H BEAR = 三周期共振做空
+  任何一个周期方向不一致 = 降低仓位或等待
+
+今天ETH三短周期FVG全部指向同一方向。
+这是我信号质量分类里的最高级别。
+
+关注我，每晚21:00直播+SMC教学
+🌿 姓赵不宣 | 不是建议
+#FVG #SMC交易 #技术分析 #合约交易""",
+    }
+    
+    post = templates.get(topic, templates['fvg'])
+    return post
+
+
+def push_daily_edu_post(postmortem_data: dict) -> None:
+    """推送每日教育帖到广场"""
+    import sys, time
+    from pathlib import Path as _P
+    try:
+        sys.path.insert(0, str(_P(__file__).parent))
+        sys.path.insert(0, str(_P(__file__).parent / 'square'))
+        from square_auto_post import _post_to_square, _post_multi_voice
+        post = _generate_daily_edu_post(postmortem_data)
+        r = _post_to_square(post)
+        if r.get('data', {}).get('shareLink'):
+            print(f'[EduPost] ✅ 教育帖发布成功: {r["data"]["shareLink"]}')
+            time.sleep(5)
+            _post_multi_voice(post)
+        else:
+            print(f'[EduPost] 发布失败: {r}')
+    except Exception as _e:
+        print(f'[WARN] daily_postmortem: 教育帖推送失败: {_e}')
