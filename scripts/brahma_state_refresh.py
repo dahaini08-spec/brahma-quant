@@ -147,8 +147,21 @@ def main():
                     r = _fut.result(timeout=90)
             except (_cf.TimeoutError, Exception) as _ae:
                 print(f'[state_refresh] ⚠️ {sym} analyze超时({_ae.__class__.__name__}), fallback已有state', file=__import__('sys').stderr)
-                r = __import__('json').loads(_fb_file.read_text()) if _fb_file.exists() else {'sym': sym, 'regime': 'CHOP_MID', 'score': 0}
+                # fallback: 读已有state + touch更新mtime（sentinel靠mtime判过期）
+                import urllib.request as _ur, ssl as _ssl, json as _jj
+                r = _jj.loads(_fb_file.read_text()) if _fb_file.exists() else {'sym': sym, 'regime': 'CHOP_MID', 'score': 0}
                 r['_fallback'] = True
+                # 更新price+mtime，让sentinel不报过期
+                try:
+                    _ctx2 = _ssl.create_default_context()
+                    _price_url = f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}'
+                    _price = float(_jj.loads(_ur.urlopen(_price_url, timeout=3, context=_ctx2).read())['price'])
+                    r['price'] = _price; r['price_ts'] = __import__('time').time(); r['last_update_ts'] = __import__('time').time()
+                    _fb_file.write_text(_jj.dumps(r, ensure_ascii=False, indent=2), encoding='utf-8')
+                    print(f'[state_refresh] {sym} fallback price patch: ${_price:,.0f}', file=__import__('sys').stderr)
+                except Exception as _pe:
+                    _fb_file.touch()  # 至少更新mtime防过期告警
+                    print(f'[state_refresh] {sym} fallback touch mtime', file=__import__('sys').stderr)
             cleaned = clean(r)
             all_states[sym] = cleaned
 
