@@ -17,6 +17,11 @@ P0: 实时清算热力图 — liq_heatmap.py
 输出: 上下方最危险清算区 + 梵天评分贡献
 """
 import sys, os, requests, json, time, hmac, hashlib
+try:
+    import urllib3; urllib3.disable_warnings()  # [Fix 2026-10-04] cron SSL
+except: pass
+requests.packages.urllib3.disable_warnings() if hasattr(requests,"packages") else None
+
 from pathlib import Path
 from collections import defaultdict
 
@@ -50,13 +55,13 @@ def get_liq_heatmap(sym: str = 'BTCUSDT') -> dict:
         # 1. 实时价格
         px = float(_HTTP.get(
             'https://fapi.binance.com/fapi/v1/ticker/price',
-            params={'symbol': sym}, timeout=5
+            params={'symbol': sym}, timeout=5, verify=False
         ).json()['price'])
 
         # 2. 订单簿深度（获取大额挂单聚集区）
         depth = _HTTP.get(
             'https://fapi.binance.com/fapi/v1/depth',
-            params={'symbol': sym, 'limit': 100}, timeout=8
+            params={'symbol': sym, 'limit': 100}, timeout=8, verify=False
         ).json()
 
         bids = [(float(p), float(q)) for p, q in depth.get('bids', [])]

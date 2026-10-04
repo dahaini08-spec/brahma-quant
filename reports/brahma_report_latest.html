@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🏛️ 梵天设计院 · 三方联合分析</title>
+<style>
+:root{--bg:#0a0e1a;--card:#111827;--border:#1f2937;--text:#e5e7eb;--muted:#6b7280;
+  --bull:#10b981;--bear:#ef4444;--warn:#f59e0b;--blue:#3b82f6;--purple:#8b5cf6}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'SF Pro Display',-apple-system,sans-serif;padding:16px}
+.header{text-align:center;padding:24px 0;border-bottom:1px solid var(--border)}
+.header h1{font-size:20px;font-weight:700;letter-spacing:2px;color:var(--blue)}
+.header .ts{color:var(--muted);font-size:12px;margin-top:4px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+.card h2{font-size:16px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.price{font-size:28px;font-weight:700;margin-bottom:4px}
+.regime{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;
+  background:#1f2937;color:var(--warn);font-weight:600}
+.metric-row{display:flex;justify-content:space-between;align-items:center;
+  padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.metric-row:last-child{border-bottom:none}
+.label{color:var(--muted)}
+.val{font-weight:600}
+.bull{color:var(--bull)} .bear{color:var(--bear)} .warn{color:var(--warn)} .blue{color:var(--blue)}
+.hbar{height:6px;background:#1f2937;border-radius:3px;margin-top:4px}
+.hbar-fill{height:100%;border-radius:3px;transition:width .3s}
+.gate{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-ok{background:var(--bull)} .dot-fail{background:var(--bear)} .dot-skip{background:var(--muted)}
+.verdict{text-align:center;padding:12px;border-radius:8px;font-size:18px;font-weight:700;
+  background:#1f2937;margin-top:12px}
+.cvd-row{display:flex;gap:8px;margin-top:8px}
+.cvd-box{flex:1;padding:8px;background:#0a0e1a;border-radius:6px;text-align:center}
+.cvd-val{font-size:18px;font-weight:700}
+.cvd-label{font-size:10px;color:var(--muted);margin-top:2px}
+.footer{text-align:center;margin-top:24px;color:var(--muted);font-size:11px;padding-top:12px;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🏛️ 梵天设计院 · 三方联合强制分析</h1>
+  <div class="ts">2026-10-04 04:49 UTC · 自动生成 · ASD-STE100</div>
+</div>
+
+<div class="grid">
+<!-- BTC -->
+<div class="card">
+  <h2>₿ BTC/USDT</h2>
+  <div class="price">$84,844</div>
+  <div class="regime">CHOP_MID</div>
+  <br>
+  <div class="metric-row"><span class="label">Hurst</span>
+    <span class="val bull">0.646 🔥趋势</span></div>
+  <div class="hbar"><div class="hbar-fill bull" style="width:65%;background:#10b981"></div></div>
+
+  <div class="metric-row" style="margin-top:8px">
+    <span class="label">OI信号</span>
+    <span class="val warn">?</span></div>
+  <div class="metric-row"><span class="label">止损墙</span>
+    <span class="val bear">$86,436</span></div>
+  <div class="metric-row"><span class="label">支撑池</span>
+    <span class="val bull">$83,047</span></div>
+  <div class="metric-row"><span class="label">方向共振</span>
+    <span class="val warn">2/7</span></div>
+
+  <!-- CVD -->
+  <div class="cvd-row">
+    <div class="cvd-box">
+      <div class="cvd-val bull">+0</div>
+      <div class="cvd-label">CVD 1H</div>
+    </div>
+    <div class="cvd-box">
+      <div class="cvd-val bull">+0</div>
+      <div class="cvd-label">CVD 4H</div>
+    </div>
+  </div>
+
+  <!-- Step11 -->
+  <div style="margin-top:12px;font-size:12px;color:var(--muted);font-weight:600">Step11 · 11道硬闸</div>
+  <div class="gate"><div class="dot dot-ok"></div><span>Gate1 数据新鲜 ✅</span></div><div class="gate"><div class="dot dot-ok"></div><span>Gate2 体制 ⚠️CHOP</span></div><div class="gate"><div class="dot dot-skip"></div><span>Gate3 FVG ✅</span></div><div class="gate"><div class="dot dot-fail"></div><span>Gate4 共振 ❌2/7阻断</span></div><div class="gate"><div class="dot dot-skip"></div><span>Gate5~11 未到达</span></div>
+  <div class="verdict warn">⏸ WAIT</div>
+</div>
+
+<!-- ETH -->
+<div class="card">
+  <h2>Ξ ETH/USDT</h2>
+  <div class="price">$2,695</div>
+  <div class="regime">CHOP_MID</div>
+  <br>
+  <div class="metric-row"><span class="label">Hurst</span>
+    <span class="val bull">0.717 🔥趋势</span></div>
+  <div class="hbar"><div class="hbar-fill" style="width:72%;background:#10b981"></div></div>
+
+  <div class="metric-row" style="margin-top:8px">
+    <span class="label">OI信号</span>
+    <span class="val bear">SHORT_BUILD</span></div>
+  <div class="metric-row"><span class="label">止损墙</span>
+    <span class="val bear">$2,740</span></div>
+  <div class="metric-row"><span class="label">支撑池</span>
+    <span class="val bull">$2,633</span></div>
+  <div class="metric-row"><span class="label">方向共振</span>
+    <span class="val bull">4/7 ✅</span></div>
+
+  <!-- CVD -->
+  <div class="cvd-row">
+    <div class="cvd-box">
+      <div class="cvd-val bear">-1</div>
+      <div class="cvd-label">CVD 1H</div>
+    </div>
+    <div class="cvd-box">
+      <div class="cvd-val bear">-1</div>
+      <div class="cvd-label">CVD 4H</div>
+    </div>
+  </div>
+
+  <!-- Step11 -->
+  <div style="margin-top:12px;font-size:12px;color:var(--muted);font-weight:600">Step11 · 11道硬闸</div>
+  <div class="gate"><div class="dot dot-ok"></div><span>Gate1 数据新鲜 ✅</span></div><div class="gate"><div class="dot dot-ok"></div><span>Gate2 体制 ⚠️CHOP+方案A</span></div><div class="gate"><div class="dot dot-ok"></div><span>Gate3 FVG BEAR ✅</span></div><div class="gate"><div class="dot dot-ok"></div><span>Gate4 共振4/7 ✅</span></div><div class="gate"><div class="dot dot-fail"></div><span>Gate5 score=5<75 ❌阻断</span></div><div class="gate"><div class="dot dot-skip"></div><span>Gate6~11 未到达</span></div>
+  <div class="verdict" style="color:#3b82f6">⏸ WAIT → score≥40触发</div>
+</div>
+</div>
+
+<div class="footer">
+  🌿 姓赵不宣 · 梵天设计院 · 三方联合分析<br>
+  BTC共振2/7 [WAIT] · ETH共振4/7 方案A激活 Hurst=0.717<br>
+  数据更新: 2026-10-04 04:49 UTC · 不是建议
+</div>
+</body>
+</html>
