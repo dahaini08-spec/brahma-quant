@@ -277,28 +277,41 @@ def post_video_to_square(video_path: str, caption: str, dry_run=False) -> bool:
         headers={'X-Square-OpenAPI-Key': SQUARE_KEY,
                  'Content-Type': 'application/json',
                  'clienttype': 'binanceSkill'})
-    try:
-        resp = json.loads(urllib.request.urlopen(req, timeout=30, context=_ctx).read())
-        if resp.get('code') == '000000' or resp.get('success'):
-            post_id = resp.get('data', {}).get('id', '')
-            print(f'[video] ✅ 视频帖发布成功 id={post_id}')
-            try:
-                d = json.loads(DEDUP.read_text()) if DEDUP.exists() else {}
-                d[h] = time.time()
-                DEDUP.write_text(json.dumps(d))
-            except Exception:
-                pass
-            with open(LOG, 'a') as f:
-                f.write(json.dumps({
-                    'ts': time.time(), 'post_type': 'video_post',
-                    'id': post_id, 'chars': len(caption)
-                }, ensure_ascii=False) + '\n')
-            return True
-        else:
-            print(f'[video] ❌ 发布失败: {resp}')
-            return False
-    except Exception as e:
-        print(f'[video] ❌ 异常: {e}')
+    # [Fix 2026-10-04 苏摩111] 3次重试
+    resp = None
+    for _retry in range(3):
+        try:
+            resp = json.loads(urllib.request.urlopen(req, timeout=30, context=_ctx).read())
+            if resp.get('code') == '000000' or resp.get('success'):
+                break
+            if _retry < 2:
+                print(f'[video] 第{_retry+1}次失败，5s后重试: {resp.get("message","")}')
+                time.sleep(5)
+        except Exception as _re:
+            if _retry < 2:
+                print(f'[video] 第{_retry+1}次异常，5s后重试: {_re}')
+                time.sleep(5)
+            else:
+                print(f'[video] ❌ 3次均失败: {_re}')
+                return False
+    if not resp: return False
+    if resp.get('code') == '000000' or resp.get('success'):
+        post_id = resp.get('data', {}).get('id', '')
+        print(f'[video] ✅ 视频帖发布成功 id={post_id}')
+        try:
+            d = json.loads(DEDUP.read_text()) if DEDUP.exists() else {}
+            d[h] = time.time()
+            DEDUP.write_text(json.dumps(d))
+        except Exception:
+            pass
+        with open(LOG, 'a') as f:
+            f.write(json.dumps({
+                'ts': time.time(), 'post_type': 'video_post',
+                'id': post_id, 'chars': len(caption)
+            }, ensure_ascii=False) + '\n')
+        return True
+    else:
+        print(f'[video] ❌ 发布失败: {resp}')
         return False
 
 

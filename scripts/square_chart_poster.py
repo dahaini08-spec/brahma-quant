@@ -389,26 +389,38 @@ def build_and_post_chart(syms=('BTC', 'ETH'), dry_run=False) -> bool:
             'Content-Type': 'application/json',
             'clienttype': 'binanceSkill',
         })
-    try:
-        resp = json.loads(urllib.request.urlopen(req, timeout=20, context=_ctx).read())
-        if resp.get('code') == '000000' or resp.get('success'):
-            post_id = resp.get('data', {}).get('id', '')
-            mark_posted(text_content)
-            print(f'[chart] ✅ 图文帖发布成功 id={post_id}')
-            # 记录日志
-            entry = {
-                'ts': time.time(), 'post_type': 'chart_post',
-                'syms': list(syms), 'images': len(images_b64),
-                'chars': len(text_content), 'id': post_id
-            }
-            with open(LOG_FILE, 'a') as f:
-                f.write(json.dumps(entry, ensure_ascii=False) + '\n')
-            return True
-        else:
-            print(f'[chart] ❌ 发布失败: {resp}')
-            return False
-    except Exception as e:
-        print(f'[chart] ❌ 异常: {e}')
+    # [Fix 2026-10-04 苏摩111] 3次重试，应对Network error 10004瞬时抖动
+    resp = None
+    for _retry in range(3):
+        try:
+            resp = json.loads(urllib.request.urlopen(req, timeout=20, context=_ctx).read())
+            if resp.get('code') == '000000' or resp.get('success'):
+                break
+            if _retry < 2:
+                print(f'[chart] 第{_retry+1}次失败，3s后重试: {resp.get("message","")}')
+                time.sleep(3)
+        except Exception as _re:
+            if _retry < 2:
+                print(f'[chart] 第{_retry+1}次异常，3s后重试: {_re}')
+                time.sleep(3)
+            else:
+                print(f'[chart] ❌ 3次均失败: {_re}')
+                return False
+    if not resp: return False
+    if resp.get('code') == '000000' or resp.get('success'):
+        post_id = resp.get('data', {}).get('id', '')
+        mark_posted(text_content)
+        print(f'[chart] ✅ 图文帖发布成功 id={post_id}')
+        entry = {
+            'ts': time.time(), 'post_type': 'chart_post',
+            'syms': list(syms), 'images': len(images_b64),
+            'chars': len(text_content), 'id': post_id
+        }
+        with open(LOG_FILE, 'a') as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + '\n')
+        return True
+    else:
+        print(f'[chart] ❌ 发布失败: {resp}')
         return False
 
 
