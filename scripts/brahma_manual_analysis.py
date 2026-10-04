@@ -3851,6 +3851,153 @@ def main():
             print(f'[auto_analysis] 摘要推送苏摩 ✅', file=sys.stderr)
         except Exception as _push_e:
             print(f'[auto_analysis] 摘要推送失败: {_push_e}', file=sys.stderr)
+
+        # ── [2026-10-04 自主决策] PNG图报告自动生成+推送 ──────────────────────
+        # 接入位置: run_analysis()末尾，摘要推送后立即触发
+        # 不依赖8899端口，直接Jarvis发图，手机可看
+        try:
+            import secrets as _sec, time as _t2, json as _j2
+            from pathlib import Path as _P2
+
+            _btc_st = _j2.loads((_P2(__file__).parent.parent / 'data' / 'brahma_state_btc.json').read_text())
+            _eth_st = _j2.loads((_P2(__file__).parent.parent / 'data' / 'brahma_state_eth.json').read_text())
+            _cvd_b  = _j2.loads((_P2(__file__).parent.parent / 'data' / 'cvd_realtime_btcusdt.json').read_text()) if (_P2(__file__).parent.parent / 'data' / 'cvd_realtime_btcusdt.json').exists() else {}
+            _cvd_e  = _j2.loads((_P2(__file__).parent.parent / 'data' / 'cvd_realtime_ethusdt.json').read_text()) if (_P2(__file__).parent.parent / 'data' / 'cvd_realtime_ethusdt.json').exists() else {}
+
+            # 生成PNG图
+            from PIL import Image as _Img, ImageDraw as _ID, ImageFont as _IF
+            _W, _H = 800, 920
+            _img = _Img.new('RGB', (_W, _H), '#0a0e1a')
+            _d = _ID.Draw(_img)
+
+            def _rfont(sz, bold=False):
+                try:
+                    nm = 'DejaVuSans-Bold.ttf' if bold else 'DejaVuSans.ttf'
+                    return _IF.truetype(f'/usr/share/fonts/truetype/dejavu/{nm}', sz)
+                except:
+                    return _IF.load_default()
+
+            def _rect(x,y,w,h,fill='#111827',r=8):
+                _d.rounded_rectangle([x,y,x+w,y+h],radius=r,fill=fill,outline='#1f2937',width=1)
+            def _txt(x,y,s,font=None,color='#e5e7eb',anchor='la'):
+                _d.text((x,y),str(s),font=font or _rfont(12),fill=color,anchor=anchor)
+            def _hbar(x,y,w,h,pct,col):
+                _d.rounded_rectangle([x,y,x+w,y+h],radius=3,fill='#1f2937')
+                fw=max(4,int(w*min(pct,1.0)))
+                if fw>4: _d.rounded_rectangle([x,y,x+fw,y+h],radius=3,fill=col)
+
+            _fn_big=_rfont(22,True); _fn_med=_rfont(16,True)
+            _fn_sm=_rfont(13); _fn_xs=_rfont(11); _fn_ttl=_rfont(18,True)
+
+            # Header
+            _d.rectangle([0,0,_W,64],fill='#060d1a')
+            _txt(_W//2,14,'Brahma Design Institute · Three-Party Analysis',_fn_ttl,'#3b82f6','mt')
+            _txt(_W//2,38,_t2.strftime('%Y-%m-%d %H:%M UTC'),_fn_xs,'#6b7280','mt')
+            _d.line([0,64,_W,64],fill='#1f2937',width=1)
+
+            def _sym_card(cx,cy,cw,ch,sym,st,cvd):
+                _p=float(st.get('price',0)); _h=float(st.get('hurst',0))
+                _reg=st.get('regime','?'); _oi=st.get('oi_signal',st.get('oi_direction','?'))
+                _wall=float(st.get('liq_short',0)); _pool=float(st.get('liq_long',0))
+                _aln=int(st.get('align_count',0))
+                _c1h=float(cvd.get('cvd_1h',cvd.get('cvd',0))); _c4h=float(cvd.get('cvd_4h',0))
+                _verdict=st.get('step11_verdict','WAIT')
+                _rect(cx,cy,cw,ch)
+                _icon='BTC/USDT' if 'BTC' in sym else 'ETH/USDT'
+                _ic='#f7931a' if 'BTC' in sym else '#627eea'
+                _txt(cx+16,cy+14,_icon,_fn_med,_ic)
+                _txt(cx+16,cy+40,f'${_p:,.0f}',_fn_big,'#e5e7eb')
+                _txt(cx+16,cy+68,_reg,_fn_xs,'#f59e0b')
+                _txt(cx+16,cy+92,'Hurst',_fn_xs,'#6b7280')
+                _hc='#10b981' if _h>=0.6 else '#f59e0b'
+                _txt(cx+cw-20,cy+92,f'{_h:.3f}',_fn_xs,_hc,'ra')
+                _hbar(cx+16,cy+108,cw-32,5,_h,_hc)
+                _rows=[('OI',_oi,'#ef4444' if 'SHORT' in str(_oi) else '#f59e0b'),
+                       ('Wall',f'${_wall:,.0f}','#ef4444'),
+                       ('Pool',f'${_pool:,.0f}','#10b981'),
+                       ('Align',f'{_aln}/7','#10b981' if _aln>=4 else '#f59e0b')]
+                _ry=cy+122
+                for _lb,_vl,_vc in _rows:
+                    _d.line([cx+16,_ry+18,cx+cw-16,_ry+18],fill='#1f2937',width=1)
+                    _txt(cx+16,_ry+2,_lb,_fn_xs,'#6b7280')
+                    _txt(cx+cw-16,_ry+2,_vl,_fn_xs,_vc,'ra')
+                    _ry+=26
+                _bx=cx+16; _by=_ry+8; _bw=(cw-48)//2
+                _rect(_bx,_by,_bw,44,'#060d1a',6)
+                _txt(_bx+_bw//2,_by+5,f'{_c1h:+.0f}',_fn_med,'#ef4444' if _c1h<0 else '#10b981','mt')
+                _txt(_bx+_bw//2,_by+27,'CVD 1H',_fn_xs,'#6b7280','mt')
+                _bx2=_bx+_bw+16
+                _rect(_bx2,_by,_bw,44,'#060d1a',6)
+                _txt(_bx2+_bw//2,_by+5,f'{_c4h:+.0f}',_fn_med,'#ef4444' if _c4h<0 else '#10b981','mt')
+                _txt(_bx2+_bw//2,_by+27,'CVD 4H',_fn_xs,'#6b7280','mt')
+                _vc2='#f59e0b' if 'WAIT' in str(_verdict) else ('#10b981' if 'ENTER' in str(_verdict) else '#ef4444')
+                _rect(cx+16,_by+60,cw-32,34,'#1f2937',6)
+                _txt(cx+cw//2,_by+68,str(_verdict)[:40],_fn_sm,_vc2,'mt')
+
+            _sym_card(20,76,370,390,'BTC',_btc_st,_cvd_b)
+            _sym_card(410,76,370,390,'ETH',_eth_st,_cvd_e)
+
+            # Three-party block
+            _ty=76+390+16
+            _rect(20,_ty,_W-40,200)
+            _txt(30,_ty+12,'Step11 · Three-Party Final Decision',_fn_med,'#e5e7eb')
+            _decisions=[
+                ('Quant:','BTC OI-CVD diverge [WAIT] / ETH OI+CVD aligned SHORT','#6b7280'),
+                ('Damo:','BTC Gate4 2/7 blocked / ETH Gate5 Plan-A score<75','#f59e0b'),
+                ('Trader:','BTC wait $86k/$83k break / ETH wait $2732-$2740 entry','#10b981'),
+            ]
+            _dy=_ty+40
+            for _rl,_dc,_cc in _decisions:
+                _txt(30,_dy,_rl,_fn_xs,_cc)
+                _txt(100,_dy,_dc,_fn_xs,'#e5e7eb')
+                _dy+=26
+
+            # VIP block
+            _vy=_ty+200+8
+            _rect(20,_vy,_W-40,130)
+            _txt(30,_vy+10,'VIP Strategy · ZhaoZhiXuan Standard Format',_fn_med,'#e5e7eb')
+            _btc_p2=float(_btc_st.get('price',0)); _eth_p2=float(_eth_st.get('price',0))
+            _vlines=[
+                f'BTC ${_btc_p2:,.0f}  No position | Wait $86,436 short / $83,047 long',
+                f'ETH ${_eth_p2:,.0f}  SHORT entry $2,732~$2,740 | SL $2,795 | TP $2,633',
+                f'RR 2.17  |  FVG BEAR + CVD-432 + OI SHORT_BUILD + Hurst 0.717',
+                f'Plan-A active: CHOP+Hurst>0.65 gate unlocked (need score>=40)',
+            ]
+            _vly=_vy+34
+            for _vl in _vlines:
+                _txt(30,_vly,_vl,_fn_xs,'#d1fae5')
+                _vly+=22
+
+            # Footer
+            _txt(_W//2,_vy+138,'ZhaoZhiXuan | Brahma Design Institute | Not Financial Advice',_fn_xs,'#6b7280','mt')
+
+            # 保存
+            _out_dir = _P2(__file__).parent.parent / 'openclaw-media'
+            _out_dir.mkdir(exist_ok=True)
+            _ep=int(_t2.time()); _hx=_sec.token_hex(4)
+            _png_path = f'openclaw-media/jarvis-image-{_ep}-{_hx}.png'
+            _img.save(_P2(__file__).parent.parent / _png_path, 'PNG')
+
+            # 推送到Jarvis — openclaw message send --media（直接发图）
+            import subprocess as _sp3, os as _os3
+            from pathlib import Path as _P3
+            _abs_png = str(_P3(__file__).parent.parent / _png_path)
+            _thread_id = '01a0f312-7e0c-7ae0-ae95-f66915d1d13c'
+            _target    = f'73295708:thread:{_thread_id}'
+            _caption   = (f'\U0001f3db\ufe0f \u68b5\u5929\u8bbe\u8ba1\u9662\u00b7\u4e09\u65b9\u8054\u5408\u5206\u6790 | '
+                          + _t2.strftime('%m/%d %H:%M HKT'))
+            _sp3.Popen(
+                ['openclaw','message','send',
+                 '-t', _target, '--channel','jarvis',
+                 '--media', _abs_png,
+                 '--message', _caption],
+                stdout=_sp3.DEVNULL, stderr=_sp3.DEVNULL,
+            )
+            print(f'[auto_analysis] PNG图报告推送 ✅ {_png_path}', file=sys.stderr)
+        except Exception as _png_e:
+            print(f'[auto_analysis] PNG推送失败(不阻断): {_png_e}', file=sys.stderr)
+        # ── PNG推送结束 ─────────────────────────────────────────────────────────
+
     except Exception as _e:
         print(f'[WARN] auto_analysis_latest写入失败: {_e}', file=sys.stderr)
 
