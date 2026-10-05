@@ -3649,6 +3649,22 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     # 根治 D1-D10 全显示 $0 的根本原因（template读字段缺失→默认0）
     try:
         import json as _json_sync, time as _ts_sync
+        # [P3] 内联RSI计算辅助（自适应期数，K线格式(o,h,l,c,v)）
+        def _calc_rsi(klines, period=14):
+            if len(klines) < 3: return 0.0
+            period = min(period, len(klines) - 1)  # 自适应：K线不足时降期数
+            if period < 2: return 0.0
+            closes = [float(k[3]) for k in klines]
+            deltas = [closes[i]-closes[i-1] for i in range(1,len(closes))]
+            gains  = [max(d,0) for d in deltas]
+            losses = [abs(min(d,0)) for d in deltas]
+            avg_g = sum(gains[:period])/period
+            avg_l = sum(losses[:period])/period
+            for i in range(period, len(deltas)):
+                avg_g = (avg_g*(period-1)+gains[i])/period
+                avg_l = (avg_l*(period-1)+losses[i])/period
+            return round(100-100/(1+avg_g/avg_l),1) if avg_l > 0 else (100.0 if avg_g > 0 else 50.0)
+        _lv    = locals()  # [P1/P2修复] 必须在try块最开头捕获，后续所有_lv引用依赖此
         _state_path = Path(__file__).parent.parent / 'data' / f'brahma_state_{sym.lower()}.json'
 
         # ── FVG全周期投票表（template D1需要） ──
@@ -3666,9 +3682,11 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             _fvg_magnets.setdefault(_tf_fill, 0.0)
 
         # ── ob_list（template D2需要：list of {tf,side,age,lo,hi,valid,dist_pct}）──
+        # [P2修复] 优先从run_analysis局部ob变量（step2_ob结果）构建
+        # 若ob为空（brahma_state无_ob_map），则从K线自算简化OB兜底
+        _ob_src = _lv.get('ob') if isinstance(_lv.get('ob'), dict) else {}
         _ob_list = []
-        for _ob_key, _ob_val in (ob.items() if isinstance(ob, dict) else {}.items()):
-            # key格式: OB_1H_BULL 或 OB_4H_BEAR
+        for _ob_key, _ob_val in _ob_src.items():
             _parts = _ob_key.split('_')
             if len(_parts) >= 3 and _parts[0] == 'OB' and isinstance(_ob_val, dict):
                 _ob_list.append({
@@ -3680,18 +3698,43 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
                     'valid':    bool(_ob_val.get('valid', False)),
                     'dist_pct': float(_ob_val.get('dist_pct', 0)),
                 })
+        # K线兜底：ob为空时从1H/4H K线末尾实体算简化OB
+        if not _ob_list:
+            for _tf_kb, _klines_kb in [('1H', d.get('k1h',[])), ('4H', d.get('k4h',[]))]:
+                if len(_klines_kb) < 3: continue
+                _kb = _klines_kb  # [open,high,low,close,vol]
+                _p_now = float(d.get('price', 0))
+                for _ci in [-2, -3, -4]:  # 最近3根K线
+                    try:
+                        _c = _kb[_ci]
+                        # k线格式: (open,high,low,close,vol) 索引0~4
+                        _o, _h, _l, _cl = float(_c[0]), float(_c[1]), float(_c[2]), float(_c[3])
+                        _is_bull = _cl > _o
+                        _lo_ob, _hi_ob = min(_o, _cl), max(_o, _cl)
+                        _age_kb = abs(_ci)
+                        _dist = (_lo_ob + _hi_ob) / 2 - _p_now
+                        _dist_pct = _dist / _p_now * 100 if _p_now else 0
+                        # 有效：未被穿越（Bull OB在现价下方，Bear OB在现价上方）
+                        _valid_kb = (_is_bull and _hi_ob < _p_now) or (not _is_bull and _lo_ob > _p_now)
+                        if abs(_dist_pct) < 8:  # 只取8%以内的OB
+                            _ob_list.append({
+                                'tf': _tf_kb, 'side': 'BULL' if _is_bull else 'BEAR',
+                                'age': _age_kb, 'lo': round(_lo_ob, 2), 'hi': round(_hi_ob, 2),
+                                'valid': _valid_kb, 'dist_pct': round(_dist_pct, 2),
+                            })
+                    except Exception: pass
 
         # ── OI序列（template D5需要）──
         _oi_seq_raw = d.get('oi_vals', [])
         _oi_sequence = [float(x) for x in _oi_seq_raw[-8:]] if _oi_seq_raw else []
 
-        # ── 步骤结果变量（已在run_analysis作用域）──
-        _vol   = vol   if 'vol'  in dir() else {}
-        _mac   = mac   if 'mac'  in dir() else {}
-        _risk  = risk  if 'risk' in dir() else {}
-        _res   = res   if 'res'  in dir() else {}
+        # ── 步骤结果变量（_lv已在try块开头捕获，此处直接用）──
+        _vol   = _lv.get('vol')   if isinstance(_lv.get('vol'),  dict) else {}
+        _mac   = _lv.get('mac')   if isinstance(_lv.get('mac'),  dict) else {}
+        _risk  = _lv.get('risk')  if isinstance(_lv.get('risk'), dict) else {}
+        _res   = _lv.get('res')   if isinstance(_lv.get('res'),  dict) else {}
         _zsc   = d.get('zsc', {})
-        _bw    = bw    if 'bw'   in dir() else {}
+        _bw    = _lv.get('bw')    if isinstance(_lv.get('bw'),   dict) else {}
         _step11_g = d.get('_step11', {})
         # [Fix-C v2] step11 返回 gates_passed(int)+blocked_by(str), 无gates dict
         # 重建 template 需要的 step11_gates 格式 {G1:bool, ..., G11:bool}
@@ -3713,7 +3756,18 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
         _tb    = tb_result if isinstance(tb_result, dict) else {}
 
         _p_price = float(d.get('price', 0))
-        _p_regime = str(d.get('bs', {}).get('regime', regime_c) if isinstance(d.get('bs'), dict) else regime_c)
+        # [P0修复] regime 优先读 regime_state.json confirmed（权威来源），不读 bs['regime']
+        _rs_data = d.get('regime_s', {})
+        _rs_confirmed = (_rs_data.get(sym+'USDT', {}).get('confirmed', '')
+                         if isinstance(_rs_data, dict) else '')
+        if not _rs_confirmed:
+            # 二次降级：读文件
+            try:
+                import json as _jrs
+                _rs_file = Path(__file__).parent.parent / 'data' / 'regime_state.json'
+                _rs_confirmed = _jrs.loads(_rs_file.read_text()).get(sym+'USDT', {}).get('confirmed', '')
+            except Exception: pass
+        _p_regime = str(_rs_confirmed or regime_c or 'CHOP_MID')
 
         _sync_state = {
             # ── 基础 ──
@@ -3721,7 +3775,9 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             'price':     _p_price,
             'price_ts':  _ts_sync.time(),
             'regime':    _p_regime,
-            'hurst':     float(_vol.get('hurst', d.get('hurst', 0)) if _vol else d.get('hurst', 0)),
+            'hurst':     float(_vol.get('hurst') or d.get('hurst') or
+                               (_rs_data.get(sym+'USDT', {}).get('hurst', 0)
+                                if isinstance(_rs_data, dict) else 0) or 0),
 
             # ── D1 FVG（template需要 fvg_votes + fvg_per_tf_magnet + fvg_consensus + fvg_magnet） ──
             'fvg_votes':     _fvg_votes,
@@ -3780,10 +3836,11 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             'atr_4h':   float(_vol.get('atr_4h',   0)),
             'harv_lo':  float(_vol.get('harv_range_lo', 0)),
             'harv_hi':  float(_vol.get('harv_range_hi', 0)),
-            'rsi_15m':  float(d.get('rsi_15m', d.get('k15m_rsi', 0))),
-            'rsi_1h':   float(d.get('rsi_1h',  d.get('k1h_rsi',  0))),
-            'rsi_4h':   float(d.get('rsi_4h',  d.get('k4h_rsi',  0))),
-            'rsi_1d':   float(d.get('rsi_1d',  d.get('k1d_rsi',  0))),
+            # [P3修复] RSI：内联计算（vol/d均无RSI字段），用K线EMA-RSI(14)
+            'rsi_15m':  float(_vol.get('rsi_15m') or d.get('rsi_15m') or _calc_rsi(d.get('k15m',[])) or 0),
+            'rsi_1h':   float(_vol.get('rsi_1h')  or d.get('rsi_1h')  or _calc_rsi(d.get('k1h', [])) or 0),
+            'rsi_4h':   float(_vol.get('rsi_4h')  or d.get('rsi_4h')  or _calc_rsi(d.get('k4h', [])) or 0),
+            'rsi_1d':   float(_vol.get('rsi_1d')  or d.get('rsi_1d')  or _calc_rsi(d.get('k1d', [])) or 0),
 
             # ── D8 宏观 ──
             'fed_rate':    float(_mac.get('fed_rate',   0)),

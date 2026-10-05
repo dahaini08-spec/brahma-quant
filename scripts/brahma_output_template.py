@@ -51,7 +51,7 @@ def format_full_report(sym: str, d: dict) -> str:
     entry_hi   = d.get('entry_hi', 0.0)
     oi_dir     = d.get('oi_direction', '?')
     cvd_1h     = d.get('cvd_1h', 0)
-    gex        = d.get('gex', 0.0)
+    gex        = float(d.get('gex', 0.0)) if not isinstance(d.get('gex'), dict) else 0.0  # [P0防御] gex可能是dict
 
     # ── OI序列 ──
     oi_seq     = d.get('oi_sequence', [])
