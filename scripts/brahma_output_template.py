@@ -232,6 +232,11 @@ def format_full_report(sym: str, d: dict) -> str:
         ob_rows_std += f'| {tf_s} | {side} | {age}bars | ${lo:,.1f}~${hi:,.1f} | {valid} |\n'
     lines += [ob_rows_std.rstrip() if ob_rows_std else '| — | — | — | 无OB数据 | — |',
         '',
+        # [2026-10-05 GAP-3修复] D2三方独立点评
+        f'> 🔬 量化：共{len(obs)}个OB，有效={sum(1 for o in obs if o.get("valid"))}个，age<50={sum(1 for o in obs if o.get("age",999)<50)}个新鲜。',
+        f'> 📐 达摩院：{"OB密集区=强支撑/阻力，不可忽视。" if obs else "无有效OB，结构参考清算地图。"}',
+        f'> ⚔️ 交易员：{"现价附近OB密集，突破方向=趋势确认信号。" if obs else "OB缺失，依赖FVG+清算地图双锚。"}',
+        '',
         '---',
         '',
         '## 【D3】清算地图 · 主力猎杀坐标',
@@ -402,6 +407,36 @@ def format_full_report(sym: str, d: dict) -> str:
         '',
         '---',
     ]
+
+    # [2026-10-05 GAP-1修复 苏摩111] 末尾追加VIP姓赵不宣标准格式
+    wait = signal_dir in ('WAIT', 'NONE', None, '')
+    if wait:
+        lines += [
+            '```',
+            f'🌿 姓赵不宣 | {sym} 今日布局',
+            f'——— {sym} ${p:,.1f} ———',
+            '⚪ 暂无多单｜等待结构确认',
+            '⚪ 暂无空单｜等待结构确认',
+            f'⚠️ {reg} + Hurst={h:.3f}，等方向确认',
+            f'🚫 破${liq_l:,.1f}支撑池或破${liq_s:,.1f}止损墙后看方向',
+            '🌿 姓赵不宣 | 不是建议',
+            '```',
+        ]
+    else:
+        icon = '🔴' if signal_dir == 'SHORT' else '🟢'
+        dir_cn = '空单' if signal_dir == 'SHORT' else '多单'
+        lines += [
+            '```',
+            f'🌿 姓赵不宣 | {sym} 今日布局',
+            f'——— {sym} ${p:,.1f} ———',
+            f'{icon} {dir_cn}｜挂单区 ${entry_lo:,.1f}~${entry_hi:,.1f}',
+            f'止损 ${sl:,.1f}｜目标 ${tp1:,.1f}→${tp2:,.1f}→${tp3:,.1f}',
+            f'杠杆 {lever}x｜仓位 {pos_size}%',
+            f'⚠️ RR={rr:.1f}｜EV={ev:+.3f}%',
+            f'🚫 破${sl:,.1f}作废',
+            '🌿 姓赵不宣 | 不是建议',
+            '```',
+        ]
 
     return '\n'.join(lines)
 

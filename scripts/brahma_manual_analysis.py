@@ -3698,9 +3698,9 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
                     'valid':    bool(_ob_val.get('valid', False)),
                     'dist_pct': float(_ob_val.get('dist_pct', 0)),
                 })
-        # K线兜底：ob为空时从1H/4H K线末尾实体算简化OB
+        # K线兜底：ob为空时从15M/1H/4H/1D K线末尾实体算简化OB（D2强制4周期）
         if not _ob_list:
-            for _tf_kb, _klines_kb in [('1H', d.get('k1h',[])), ('4H', d.get('k4h',[]))]:
+            for _tf_kb, _klines_kb in [('15M', d.get('k15m',[])), ('1H', d.get('k1h',[])), ('4H', d.get('k4h',[])), ('1D', d.get('k1d',[]))]:
                 if len(_klines_kb) < 3: continue
                 _kb = _klines_kb  # [open,high,low,close,vol]
                 _p_now = float(d.get('price', 0))
