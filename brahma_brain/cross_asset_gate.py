@@ -23,6 +23,12 @@ cross_asset_gate.py — 梵天跨资产联合推理门控 v1.0
   - 只有BTC gap > 1.5% 时才触发门控（小波动不干扰）
   - 联动跌幅 > ETH止损距离的80% 才触发（留20%容错）
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 import sys, os, time, json, requests, urllib.parse
 from pathlib import Path

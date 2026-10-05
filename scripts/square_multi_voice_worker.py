@@ -4,6 +4,12 @@ square_multi_voice_worker.py — multi_voice后台独立进程 [2026-10-04 苏�
 由 square_auto_post.py 用 setsid 启动，脱离cron超时限制
 读取临时文件中的原始内容，改写后分发KEY_1/KEY_2
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, sys, ssl, time, os
 from pathlib import Path
 

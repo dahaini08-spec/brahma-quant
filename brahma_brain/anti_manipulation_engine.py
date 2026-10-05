@@ -14,6 +14,12 @@ anti_manipulation_engine.py — 梵天操控防御层
   brahma_core_step4._analyze_step4() → extra_data['anti_manip']
   brahma_core_block_b.calc_block_b() → score扣分（高风险=-15，中等=-8）
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 from typing import Any, Optional
 

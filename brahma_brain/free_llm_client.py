@@ -8,6 +8,12 @@ free_llm_client.py — SSOT薄代理（brahma_brain侧）
   brahma_brain/llm_council.py   → from free_llm_client import council_* (永久禁用分支)
   brahma_brain/fangcang_engine.py → from free_llm_client import chat
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 from pathlib import Path as _Path
 import sys as _sys
 

@@ -5,6 +5,12 @@ Phase B: Layer 2→3 自动分析触发
 每小时从battlefield_intel筛选候选池，保存到data/battlefield_candidates.json
 供分析引擎读取，实现865标的→10-30候选池的95%算力节省
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, json, time
 from pathlib import Path
 from datetime import datetime, timezone

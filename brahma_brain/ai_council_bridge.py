@@ -18,6 +18,12 @@ ai_council_bridge.py — 梵天AI议会+在线学习集成桥
   - online_learner_v2.py (240行): 信号权重自动校准
   - ev_feedback.py (231行): 经验矩阵+参数微调
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 from typing import Any
 import sys, json

@@ -26,6 +26,12 @@ brahma_cpu.py — 梵天中央决策处理器 (CPU大脑)
   WATCH    → 写监控列表，下次触发再评估
   SKIP     → 静默丢弃
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 import sys
 import json

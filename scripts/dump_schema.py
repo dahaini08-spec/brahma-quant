@@ -10,6 +10,12 @@ dump_schema.py — 从活库生成init_db.sql（schema即代码）
   scripts/replay_ci.py(计划)   — 空库初始化可选
 """
 from __future__ import annotations
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys
 from pathlib import Path
 

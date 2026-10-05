@@ -13,6 +13,12 @@ ai4trade_publisher.py — 梵天信号自动发布到 AI-Trader 平台
 
 API文档：https://ai4trade.ai/SKILL.md
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 import os, sys, json, requests, logging
 from pathlib import Path

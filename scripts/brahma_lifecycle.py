@@ -24,6 +24,12 @@ brahma_lifecycle.py  — 梵天持仓全生命周期管理器
   PARTIAL  → TP1已止盈50%，剩余追踪
   CLOSED   → 全部平仓（SL触发/TP2触发/手动）
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, os
 _ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if _ROOT not in sys.path:

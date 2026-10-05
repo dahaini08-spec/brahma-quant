@@ -7,6 +7,12 @@ Layer 10: 资金费率极端层（FR > 0.1%/8H → 禁新多）
 Layer 11: 系统健康联动（self_heal DEGRADED → 暂停执行）
 Layer 12: LLM议会置信度（分歧>40% → SKIP）
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, time, pathlib, sys
 from pathlib import Path
 

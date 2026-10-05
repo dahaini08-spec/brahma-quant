@@ -13,6 +13,12 @@ regime_hmm_v2.py — 梵天Regime HMM概率模型 v2.0
   4. 平滑: 指数加权平均避免噪声切换
   5. 降级: hmmlearn未安装时回退到规则基线
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, time, sys
 import numpy as np
 from pathlib import Path

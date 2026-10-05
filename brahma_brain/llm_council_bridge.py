@@ -29,6 +29,12 @@ llm_council_bridge.py — 梵天 LLM 议会二次审查层 v1.0
   在 brahma_analysis_runner.py 的 run_analysis() 末尾
   添加一行: result = llm_council_bridge.review(result)
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 # ── STATUS: SHADOW ────────────────────────────────────────────
 # 当前运行在shadow模式，记录建议但不修改score

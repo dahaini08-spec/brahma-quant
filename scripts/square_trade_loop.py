@@ -19,6 +19,12 @@ square_trade_loop.py — 战场报告→纸面开单→Square闭环帖自动发�
   - 依赖 square_template.py build_trade_open/hold/close
   - 依赖 paper_executor.py 开单逻辑
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, sys, time, ssl, urllib.request
 from pathlib import Path
 from datetime import datetime, timezone, timedelta

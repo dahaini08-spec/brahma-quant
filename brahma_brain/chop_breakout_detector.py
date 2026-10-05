@@ -32,6 +32,12 @@ chop_breakout_detector.py — CHOP震荡突破预判器
 禁止加码：即使所有条件满足，CHOP解锁仓位上限 = 2%NAV（不是5%）
 接入位置：paper_executor.py + auto_executor.py 的死穴检查前
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, sys
 from pathlib import Path
 from datetime import timezone

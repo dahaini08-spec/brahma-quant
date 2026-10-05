@@ -7,6 +7,12 @@ square_opinion_poster.py — 每日「我的判断」观点帖 [2026-10-04 苏�
 触发: cron 每日 15:00 UTC (北京23:00，收盘前最后判断)
 内容: 当日BTC/ETH走势判断 + 个人观点 + 明日预判
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, sys, ssl, time, hashlib, urllib.request, random
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
@@ -144,7 +150,7 @@ def mark_posted(content):
         d = json.loads(DEDUP.read_text(encoding='utf-8')) if DEDUP.exists() else {}
         d[h] = time.time()
         DEDUP.write_text(json.dumps(d, ensure_ascii=False), encoding='utf-8')
-    except Exception: pass
+    except Exception: pass  # dedup/文件读取失败，安全降级
 
 def post_to_square(content):
     payload = json.dumps({'bodyTextOnly': content}).encode()

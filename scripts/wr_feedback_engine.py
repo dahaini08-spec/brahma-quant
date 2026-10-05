@@ -25,6 +25,12 @@ wr_feedback_engine.py — WR矩阵每日反哺信号矩阵权重
   - brahma_brain/regime_config.py get_regime_mult() 读取override
   - crontab: 0 2 * * * python3 scripts/wr_feedback_engine.py（每日凌晨2点）
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, math, sys, time
 from pathlib import Path
 from datetime import datetime, timezone

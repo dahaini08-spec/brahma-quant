@@ -14,6 +14,12 @@ def _check_and_gc():
 brahma_analyze.py — 梵天分析CLI入口 v24.0
 用法: python3 brahma_analyze.py BTCUSDT [--json] [--dir SHORT|LONG]
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, os, json, argparse
 
 # [修复 2026-07-06] Kronos LightGBM预注入：必须在kronos_engine import前先import lightgbm

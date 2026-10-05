@@ -12,6 +12,12 @@ spot_strategy_runner.py — 现货策略专属分析器
   python3 scripts/spot_strategy_runner.py --symbol BTC
   python3 scripts/spot_strategy_runner.py --symbol ETH
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, json, time, argparse, urllib.request, signal
 from pathlib import Path
 from datetime import datetime, timezone

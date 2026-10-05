@@ -5,6 +5,12 @@ paper_daily_review.py — B线纸面每日复盘（23:30北京 = 15:30 UTC）
 [2026-09-26 苏摩111] 复盘里缺失的第4件套：每日盈亏复盘
 输出：当日开/平/WR/费用/NAV变动 → 推送主线程
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, sys, time
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))

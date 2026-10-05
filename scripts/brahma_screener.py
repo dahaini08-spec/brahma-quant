@@ -16,6 +16,12 @@ brahma_screener.py — 统一选币层 v1.0
 """
 
 from __future__ import annotations
+
+# [2026-10-05 P1 苏摩111] 统一路径管理
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
 import sys, os, json, time, math, logging
 import urllib.request
 from pathlib import Path

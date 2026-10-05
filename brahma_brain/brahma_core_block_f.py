@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 # ponytail: brahma_core_block_f 达摩因子引擎+15m信号层，纯移动自brahma_core.analyze L2364-L2488
 # [P4封印 2026-10-01 苏摩111] 接入位置：brahma_brain/brahma_core.py analyze
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 def apply_dfe_and_15m(ms: dict, smc: dict, cf: dict, params: dict, signal_dir: str, _sym: str, _score: float, _score_raw: float) -> dict:
     """达摩因子引擎(dharma_factor_engine)标准化落地 + 15m信号层(P1-B)。

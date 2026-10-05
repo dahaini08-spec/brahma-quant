@@ -33,6 +33,12 @@ action_router.py — 梵天系统统一行动路由器
   else:
       print('被拦截:', result.reason)
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 import os
 import re

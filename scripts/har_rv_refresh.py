@@ -3,6 +3,12 @@
 接入位置: brahma_crontab.txt (每4h, 错峰minute 11) + har_rv_engine.py缓存原子写。
 BTC+ETH串行刷新（原子写已修并发根因，串行更稳），失败exit1供cron告警。
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, os, time, traceback
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

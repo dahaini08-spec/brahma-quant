@@ -6,6 +6,12 @@ outcome_tracker_cron.py — 暴涨猎手推送结果追踪
 每次运行：检查所有未结算的推送信号，4H和8H后对比价格涨幅
 结果写入 data/pump_hunter_outcomes.json
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, os, json, time, urllib.request
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from pathlib import Path

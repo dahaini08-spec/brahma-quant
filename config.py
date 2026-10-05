@@ -4,6 +4,12 @@ config.py — 梵天统一配置中心 v2.0
 所有参数从 FANTAN_BLUEPRINT_V3.json 读取，代码只引用，不定义。
 API Key 从 alerts/.env 读取，禁止硬编码。
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import os
 from pathlib import Path
 

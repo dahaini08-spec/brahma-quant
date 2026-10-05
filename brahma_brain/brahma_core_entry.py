@@ -17,6 +17,12 @@ INTERFACE CONTRACT:
   Call Freq : analyze()内每次信号生成时调用一次
   Deps      : structure_quality_engine, trigger_15m, math
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 """
 brahma_brain.py · 梵天分析大脑主入口  VERSION = v3.0
 brahma_brain · Phase 1 完整整合

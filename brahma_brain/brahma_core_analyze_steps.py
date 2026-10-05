@@ -16,6 +16,12 @@ analyze() 调用方式:
     r3 = _analyze_step3(symbol, ms, signal_dir, price)
     smc = r3['smc']; _smc_4h = r3['_smc_4h']; _mtf_result = r3['_mtf_result']
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 
 # 依赖：从 brahma_core 同目录导入（Step1-3需要的所有模块）

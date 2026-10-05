@@ -10,6 +10,12 @@ daily_review_llm.py — 每日复盘LLM总结
 
 接入位置: supercronic crontab (0 16 * * *)
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, json, os
 from pathlib import Path
 from datetime import datetime, timezone, timedelta

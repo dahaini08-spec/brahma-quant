@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 # sys.path 强制修复 — cron环境下路径不稳定根因修复 [设计院封印 2026-07-14]
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys as _sys, os as _os
 _TRADING_SYS = _os.path.abspath(_os.path.join(_os.path.dirname(__file__), '..', '..'))
 if _TRADING_SYS not in _sys.path:

@@ -16,6 +16,12 @@ brahma_wiring_check.py — 梵天接线完整性检测器
   python3 brahma_brain/brahma_wiring_check.py --full    # 含端到端验证
   python3 brahma_brain/brahma_wiring_check.py --fix     # 自动修复可修项
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 import sys, os, json, time, importlib
 from pathlib import Path

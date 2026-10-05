@@ -20,6 +20,12 @@ pump_hunter_executor.py — 暴涨猎手执行桥接器
   - OBSERVE豁免仅适用于猎手双确认信号
   - 仓位上限 1.5%NAV（TIER3），高波动妖币 SL=3.0%
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, os, json, time
 from pathlib import Path
 

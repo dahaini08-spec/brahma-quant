@@ -1,4 +1,10 @@
 # ponytail: brahma_analysis_runner 1595行，流程编排层，入口唯一性有意为之，不可拆
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 from typing import Any
 """

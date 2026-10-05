@@ -16,6 +16,12 @@ square_vip_result_poster.py — VIP战绩帖自动发布 + 引流漏斗 [2026-10
   - CLOSED_SL(止损): 推送苏摩人工审核(不自动发)
   - pnl_pct > 0: 自动发布
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, sys, ssl, time, hashlib, urllib.request
 from pathlib import Path
 from datetime import datetime, timezone, timedelta

@@ -13,6 +13,12 @@ weekly_monthly_anchor.py — 周月线HTF锚定层
   _anchor = get_anchor(symbol)
   _htf_features = _anchor.get_features(current_price=current_price)
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 import time
 import sys

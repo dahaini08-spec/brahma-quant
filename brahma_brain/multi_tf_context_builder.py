@@ -18,6 +18,12 @@ multi_tf_context_builder.py — 梵天多周期快照构建器
   【共振评分】
     OB共振 ✅+8 / FVG共振 ✅+5 / EMA共振 ✅+10 / RSI异常⚠️-5
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys
 from pathlib import Path
 

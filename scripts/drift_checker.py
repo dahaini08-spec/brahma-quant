@@ -5,6 +5,12 @@
 # 设计: 三方审核方案 v1.0 docs/three_party_review_plan_v1.md §Phase0
 #       L1=字面grep实锤自动采信 / 只报事实不做AI推理 / 不对称过滤(默认放行)
 # [封印 2026-09-25 苏摩111]
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 import json
 import re

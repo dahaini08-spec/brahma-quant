@@ -14,6 +14,12 @@ IC(信息系数) = 评分与结果的点二列相关系数
   IC < 0:   评分权重需要反转
   -0.3:     当前梵天状态，高分反而低胜率
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, time, statistics, math
 from pathlib import Path
 from collections import defaultdict

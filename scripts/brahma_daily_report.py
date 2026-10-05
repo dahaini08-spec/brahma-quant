@@ -6,6 +6,12 @@ brahma_daily_report.py — 梵天日报
 合并：brahma-360-daily + live-performance-daily + kronos-m1-check
 输出：单条日报，推送到Jarvis
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, os, json, subprocess, requests, time
 
 try:

@@ -43,6 +43,12 @@ OI高级扫描器 v3.0 — 设计院全局深度完善
   BUG-4: 无独立推送，OI信号从未推给苏摩做决策
 ─────────────────────────────────────────────────
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 # ── 内存门控（设计院2026-08-11修复封印）───────────────────
 # [BUG修复] 原顶层mem_gate(900)在sys.exit(0)时会杀死调用进程（analysis_runner/smoke_test）
 # 修复：改为函数内懒加载，import时不执行sys.exit

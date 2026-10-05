@@ -12,6 +12,12 @@ zhao_bu_xuan_ip.py — 姓赵不宣 IP标准体系 v1.0
   P2 币种分析帖 — 苏摩指令触发，梵天全能力支撑
   P3 其他内容帖 — 战绩/教育/市场洞察
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 # ═══════════════════════════════════════════════════════════════════
 # 核心人设定义（唯一标准）

@@ -3,6 +3,12 @@
 spot_strategy_square.py — 拳头二：现货策略→Square发帖+Jarvis推送
 设计院三方封印 2026-09-10 苏摩111
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, os, json, ssl, urllib.request, time, subprocess, re
 from pathlib import Path
 from datetime import datetime, timezone

@@ -14,6 +14,12 @@ signal_change_detector.py — 梵天信号变化检测器
 状态持久化：data/signal_push_state.json
   { sym: { hash, score, action, regime, direction, ts, push_count } }
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, os, json, time, hashlib
 from pathlib import Path
 

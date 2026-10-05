@@ -19,6 +19,12 @@ brahma_autocheck.py — 梵天自动自查协议
   scripts/brahma_autocheck.py（本文件）
   cron: 每6h运行，结果推送Jarvis
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, os, time, json
 from pathlib import Path
 from datetime import datetime, timezone

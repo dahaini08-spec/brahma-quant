@@ -1,6 +1,12 @@
 # ⚠️ Brahma-Quant Open Source v3.0
 # PRO私有内容: 5-regime分类器阈值（实盘精调值，Pro私有）
 # 开源版：框架公开，参数需自行调参或获取Pro版
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 #!/usr/bin/env python3
 # ponytail: regime_scorer 414行，核心计算，94维共享_result状态，拆分条件: 状态隔离方案成熟后

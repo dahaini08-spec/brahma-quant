@@ -33,6 +33,12 @@ auto_executor.py — 梵天自动开单触发器
   第3档：entry_hi（25% NAV）
   超时：30分钟未成交自动撤单
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 # ── 内存门控（设计院2026-08-04封印）───────────────────
 import sys as _sys, os as _os

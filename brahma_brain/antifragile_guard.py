@@ -12,6 +12,12 @@ antifragile_guard.py — 梵天大脑 Layer C3: 反脆弱性系统
   3. 极端情绪熔断  — FG<10或>90 → 暂停新开仓或限制方向
   4. 交易所异常    — 溢价/折价>2% → 立即推送预警
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import os, sys, json, time, logging
 from pathlib import Path
 import sys

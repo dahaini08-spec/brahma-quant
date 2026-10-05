@@ -9,6 +9,12 @@ square_trade_tracker.py — 实盘追踪栏目 [2026-10-04 苏摩111 P2]
   2. 有平仓   → 战绩帖（盈+亏都发，诚实建立信任）
   3. 每日持仓状态更新（有持仓时）→ 每日17:00 UTC
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, sys, ssl, time, hashlib, urllib.request, random
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
@@ -167,7 +173,7 @@ def mark_dup(content):
         d = json.loads(DEDUP.read_text(encoding='utf-8')) if DEDUP.exists() else {}
         d[h] = time.time()
         DEDUP.write_text(json.dumps(d, ensure_ascii=False), encoding='utf-8')
-    except Exception: pass
+    except Exception: pass  # jsonl解析跳过，预期行为
 
 def post_to_square(content):
     payload = json.dumps({'bodyTextOnly': content}).encode()

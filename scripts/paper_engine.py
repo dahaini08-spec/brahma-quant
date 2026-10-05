@@ -7,6 +7,12 @@ analyze() -> snapshot -> evaluate_gates -> one-sided paper order.
 
 from __future__ import annotations
 
+# [2026-10-05 P1 苏摩111] 统一路径管理
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json
 import logging
 import sys

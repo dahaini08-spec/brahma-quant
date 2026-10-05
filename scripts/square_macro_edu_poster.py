@@ -16,6 +16,12 @@ square_macro_edu_poster.py — KEY_2 牛来PRO | 宏观教育 [2026-10-04 苏摩
   周六: 止损心理学
   周日: 本周复盘 + 下周展望
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, sys, ssl, time, hashlib, urllib.request, random
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
@@ -167,7 +173,7 @@ def is_duplicate(content):
         d = json.loads(DEDUP.read_text(encoding='utf-8')) if DEDUP.exists() else {}
         if h in d and time.time() - d[h] < 86400:
             return True
-    except Exception: pass
+    except Exception: pass  # dedup文件读取失败，安全跳过
     return False
 
 def mark_posted(content):
@@ -176,7 +182,7 @@ def mark_posted(content):
         d = json.loads(DEDUP.read_text(encoding='utf-8')) if DEDUP.exists() else {}
         d[h] = time.time()
         DEDUP.write_text(json.dumps(d, ensure_ascii=False), encoding='utf-8')
-    except Exception: pass
+    except Exception: pass  # dedup文件写入失败，非阻塞
 
 def build_post(topic: dict) -> str:
     title = topic['title']

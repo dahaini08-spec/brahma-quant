@@ -8,6 +8,12 @@
   3. 双__main__块重复执行 → 输出重复推送（9.18旲马重复推送根因之一）
 [9.26接入 苏摩111] data_contract_validator → module_check（原声明接入位从未接线）
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, os, sys, time
 from pathlib import Path
 import sys

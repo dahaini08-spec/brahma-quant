@@ -11,6 +11,12 @@ build_experience_index.py — 梵天经验向量索引构建器
   data/experience_index.npz   — 向量矩阵 + payload索引
   data/experience_meta.json   — 统计摘要
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, os, gzip, json, time
 import numpy as np
 from pathlib import Path

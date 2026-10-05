@@ -19,6 +19,12 @@ square_video_poster.py — 视频帖生成引擎 [2026-10-03 苏摩111]
 
 接入位置: cron 0 8 * * * (北京16:00，每日一次视频帖)
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, sys, ssl, time, io, os, tempfile, hashlib, urllib.request
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
@@ -392,7 +398,7 @@ def run(dry_run=False):
         if h in d and time.time() - d[h] < 86400:
             print('[video] 24h内重复，跳过')
             return False
-    except Exception: pass
+    except Exception: pass  # dedup读取失败，安全降级
 
     print(f'[video] 技术面全景帖 ({len(caption)}字)')
     if dry_run:
@@ -421,7 +427,7 @@ def run(dry_run=False):
             d = json.loads(DEDUP.read_text()) if DEDUP.exists() else {}
             d[h] = time.time()
             DEDUP.write_text(json.dumps(d, ensure_ascii=False), encoding='utf-8')
-        except Exception: pass
+        except Exception: pass  # dedup写入失败，非阻塞
         with open(LOG, 'a') as f:
             f.write(json.dumps({'ts': time.time(), 'post_type': 'video_post',
                 'id': post_id, 'chars': len(caption), 'preview': caption[:200]},

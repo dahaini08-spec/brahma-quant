@@ -15,6 +15,12 @@ paper_backfill_20260926.py — B线账本对账补记 [2026-09-27 苏摩111 顶�
 执行后 total_trades=2, loss=2, NAV按真实SL回写。
 幂等：若orders.jsonl已有PL-20260926记录则跳过。
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json
 import sys
 import time

@@ -19,6 +19,12 @@ paper_ledger.py — B线纸面账本 SSOT（单一真相源）
   3. 单日亏损 >3% NAV → 账本记录 circuit_breaker 标记（供复盘）
   4. nav_history.jsonl 每日一行，永不间断（终结0字节黑洞）
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json
 import math
 import time

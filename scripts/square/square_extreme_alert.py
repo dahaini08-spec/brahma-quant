@@ -11,6 +11,12 @@ v2.0变更：
   - 给具体入场条件+止损+目标+监控信号
   - 不再问"你怎么看"
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import argparse, json, os, sys, time, hashlib
 from datetime import datetime, timezone, timedelta
 from pathlib import Path

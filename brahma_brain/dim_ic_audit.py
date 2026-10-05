@@ -8,6 +8,12 @@ dim_ic_audit.py — 94维逐维IC诊断
 IC = Spearman corr(dim_score, forward_4h_return)
 目标：确认哪些维度有alpha，哪些是噪音
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, json, math, gzip
 import numpy as np
 from pathlib import Path

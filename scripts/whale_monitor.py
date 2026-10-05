@@ -9,6 +9,12 @@ P1b: 鲸鱼大额转账监控 — whale_monitor.py
   - 大户多空比突变检测
 输出: 鲸鱼行为标签 + 梵天评分贡献
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, os, requests, json, time, hmac, hashlib
 from pathlib import Path
 from collections import defaultdict

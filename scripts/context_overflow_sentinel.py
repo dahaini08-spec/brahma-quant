@@ -14,6 +14,12 @@ context_overflow_sentinel.py — 上下文溢出/压缩死锁哨兵（零AI成�
 依赖: scripts/push_hub.py (push_jarvis)
 exit 0 恒定（永不阻塞 cron 链）
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, re, sys, time
 from datetime import datetime, timezone
 from pathlib import Path

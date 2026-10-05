@@ -6,6 +6,12 @@ P1a: 跨所FR套利信号 — cross_exchange_fr.py
 数据源: Binance(已有) + Bybit(公开) + OKX(公开)
 输出: FR差值、套利方向、梵天评分贡献
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, os, requests, json, time
 from pathlib import Path
 

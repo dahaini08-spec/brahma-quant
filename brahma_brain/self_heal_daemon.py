@@ -18,6 +18,12 @@ self_heal_daemon.py — 梵天数据自愈守护
   - 每次自愈写日志（logs/self_heal.log）
   - 不修改代码，只刷新数据
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, os, sys, time, subprocess, logging
 from pathlib import Path
 from datetime import datetime, timezone

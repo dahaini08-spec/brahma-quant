@@ -6,6 +6,12 @@ square_macro_poster.py — 宏观事件前瞻发帖 v1.0
 CPI/NFP/FOMC前1天自动发帖，蹭Trending Hashtag流量
 每帖必有🌿姓赵不宣前缀+📊后缀
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, os, sys, time, hashlib, ssl, urllib.request
 import os
 from datetime import datetime, timezone, timedelta

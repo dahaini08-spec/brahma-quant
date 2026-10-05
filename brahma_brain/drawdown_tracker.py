@@ -8,6 +8,12 @@ drawdown_tracker.py — 梵天回撤保护协议
 - 回撤 ≥10%NAV → 暂停所有自动执行，需苏摩111重启
 - 回撤 ≥15%NAV → 系统级暂停，全面复盘后才能重启
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 import json
 import time

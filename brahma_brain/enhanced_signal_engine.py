@@ -15,6 +15,12 @@ brahma_brain · P1
   4. MaxPain 磁吸效应（到期前价格引力）
   5. 时段权重精细化（亚洲/欧洲/美国盘特性）
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 import datetime
 import urllib.request

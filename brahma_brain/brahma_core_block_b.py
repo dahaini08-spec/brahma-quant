@@ -19,6 +19,12 @@ brahma_core_block_b.py — 链上/清算/资金费层 (维度7-10)
 输入: ms, smc, signal_dir, extra_data, score, breakdown
 输出: dict {s7, s8, s9, s10, score, breakdown}
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys
 import math
 import datetime

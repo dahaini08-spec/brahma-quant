@@ -31,6 +31,12 @@ ensemble_engine.py - 梵天12维精简集成引擎
   - trader_brain.decide() 可读ensemble_score作为参考(并行不替换)
   - 达摩院14节点基础设施复用
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, math, sys
 from pathlib import Path
 from datetime import datetime, timezone

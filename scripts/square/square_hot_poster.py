@@ -20,6 +20,12 @@ square_hot_poster.py — 热度驱动广场发帖主引擎 v1.0
   python3 scripts/square/square_hot_poster.py --type edu --edu-id <N>
   python3 scripts/square/square_hot_poster.py --dry-run --type hot_tickers
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 import argparse
 import hashlib

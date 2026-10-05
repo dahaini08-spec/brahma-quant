@@ -24,6 +24,12 @@ if not _has_triggers:
 price_trigger_monitor.py — 条件触发监控 [9.18苏摩111 Phase 5]
 每5min检查关键条件，满足时自动触发分析+推送
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, os, sys, time, urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

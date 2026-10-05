@@ -6,6 +6,12 @@ cron_drawdown_touch.py — 每小时更新drawdown/circuit_breaker时间戳
 替代原crontab inline python3 -c代码块，使用safe_io原子写防并发损坏。
 接入位置：brahma_crontab.txt 03 * * * *
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, time
 from pathlib import Path
 

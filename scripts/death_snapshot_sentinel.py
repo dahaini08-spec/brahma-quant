@@ -14,6 +14,12 @@ death_snapshot_sentinel.py — 死亡快照哨兵 [P1封印 2026-09-28 苏摩111
 接入位置: scripts/independent_watchdog.sh（每60s调用一次）
 消费方: 设计院审计 / daily_review / 苏摩事后分析
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json
 import os
 import re

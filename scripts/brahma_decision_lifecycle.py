@@ -22,6 +22,12 @@ brahma_decision_lifecycle.py — 梵天2.0 P1：D-10深度决策引擎（D1-D3 +
        ↑______________证伪/超时/远离______________|
 """
 from __future__ import annotations
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 import json
 import os

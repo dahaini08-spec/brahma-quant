@@ -7,6 +7,12 @@ brahma_core_replay.py
 接入位置：Block C之后、regime_mult之后、factors之前。
 接口：calc_replay(ms, signal_dir, score, breakdown, _result) -> (score, breakdown)
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys
 from typing import Any
 

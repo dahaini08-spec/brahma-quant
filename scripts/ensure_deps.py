@@ -14,6 +14,12 @@ websocket-client、pytest、lightgbm、libgomp.so.1全中过）。镜像内置�
 
 接入位置：start_supercronic.sh（每次启动调用）+ 独立cron兜底（每15min）
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import importlib.util  # [P1-④ 2026-09-30 苏摩111] find_spec替代import_module：不执行模块代码，零CPU瞬时尖峰
 import subprocess
 import sys

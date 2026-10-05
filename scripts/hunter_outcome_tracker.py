@@ -12,6 +12,12 @@ hunter_outcome_tracker.py — 猎手结果追踪器 v1.0
 
 运行：python3 scripts/hunter_outcome_tracker.py
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, os, json, time, hmac, hashlib, math
 from pathlib import Path
 from datetime import datetime, timezone

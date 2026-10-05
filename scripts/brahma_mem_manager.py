@@ -18,6 +18,12 @@ brahma_mem_manager.py — 梵天内存稳定性管理器 v1.0
   from brahma_mem_manager import KlinesSharedCache
   klines = KlinesSharedCache.get('BTCUSDT', '15m')
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 import os, sys, time, json, pickle, gzip, resource
 from pathlib import Path

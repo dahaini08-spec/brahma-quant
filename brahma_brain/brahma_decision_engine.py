@@ -16,6 +16,12 @@ brahma_decision_engine.py — 梵天决策树 2.0
   - 否决权优先：任何一个否决条件触发 → 直接结束
   - fail-safe：任何步骤异常 → 降级到原有score机制
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 import json
 import sys

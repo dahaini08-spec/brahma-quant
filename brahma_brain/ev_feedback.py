@@ -10,6 +10,12 @@ ev_feedback.py — EV实时反馈模块
   - 增量式：不改历史，只追加更新
   - 轻量级：每次结算只操作单条记录，O(1)复杂度
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 import json, os, time, sys  # [P1-3修复 2026-09-23] 补sys（L130/171引用sys.stderr）
 from pathlib import Path

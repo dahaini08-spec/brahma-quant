@@ -7,6 +7,12 @@ auto_execute_gate.py — 梵天自动执行门控 v1.1
 职责：接收高分信号，通过五重门控后自动下单
 入口：auto_execute(signal_dict)
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, time, pathlib, datetime
 from pathlib import Path
 

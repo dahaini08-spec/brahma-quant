@@ -12,6 +12,12 @@ brahma_autonomous_loop.py — 梵天∞ 全自主运行引擎
 接入位置：brahma_crontab.txt 每5分钟触发
 推送通道：push_hub.py → Jarvis P2（异常告警）/ P4（健康心跳）
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, os, sys, time, subprocess, re
 from pathlib import Path
 

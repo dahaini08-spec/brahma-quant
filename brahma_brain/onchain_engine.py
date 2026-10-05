@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 # ponytail: onchain_engine 469行，独立计算引擎，功能内聚，拆分条件: 单引擎>3000行且有完整测试
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 from typing import Any, Optional
 
 """

@@ -18,6 +18,12 @@ fangcang_engine.py — 方仓经验引擎 v2.0
   - 失败降级：任何异常 → 返回 {'status': 'unavailable'}
   - fail-safe原则：所有升级功能异常时静默，不影响原有输出
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 # ponytail: 方仓引擎1090行，全部是必要的历史案例匹配逻辑
 # 唯一可优化点: Qdrant向量检索替代线性扫描(n>5000条时)

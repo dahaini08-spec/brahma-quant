@@ -11,6 +11,12 @@ brahma_gate.py — 梵天分析唯一入口守门人
 任何行情分析请求，必须且只能通过此文件。
 禁止绕过此文件直接调用requests/API。
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, os, time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))

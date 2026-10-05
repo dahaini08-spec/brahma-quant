@@ -1,4 +1,10 @@
 # ponytail: data_cache 657行，有意为之，重构前先 grep 所有调用方
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 from typing import Any, Optional
 """

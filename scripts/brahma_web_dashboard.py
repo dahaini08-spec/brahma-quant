@@ -37,7 +37,7 @@ def load_signals(n=10):
     for line in reversed(_SIGNAL_LOG.read_text().strip().split('\n')):
         if len(signals) >= n: break
         try: signals.append(json.loads(line))
-        except Exception: pass
+        except Exception: pass  # jsonl解析跳过，预期行为
     return signals
 
 def count_signals():
@@ -52,7 +52,7 @@ def check_procs():
         if 'cvd_ws_collector' in out: procs['cvd'] = True
         if 'liq_multi_exchange' in out or 'liqmap' in out: procs['liqmap'] = True
         if 'independent_watchdog' in out: procs['watchdog'] = True
-    except Exception: pass
+    except Exception: pass  # ps进程检测失败，安全降级
     return procs
 
 def parse_output(d):

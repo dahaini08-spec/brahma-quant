@@ -7,6 +7,12 @@ brahma_brain目录都在sys.path，解决 data_cache / live_price_feed 等
 [设计院封印 2026-09-03 苏摩111]
 接入位置: brahma_brain/__init__.py（包级别，自动执行）
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 from typing import Any
 import sys as _sys

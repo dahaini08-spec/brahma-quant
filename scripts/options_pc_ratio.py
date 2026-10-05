@@ -6,6 +6,12 @@ P1c: 期权P/C比实时 — options_pc_ratio.py
 数据源: Deribit 公开API (无需API Key)
 输出: P/C OI比、IV偏度、到期结构、梵天评分贡献
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, os, requests, json, time
 from pathlib import Path
 from collections import defaultdict

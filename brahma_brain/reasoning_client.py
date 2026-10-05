@@ -18,6 +18,12 @@ reasoning_client.py — 梵天 LLM 推理客户端
   result = call_reasoning(prompt="...", max_tokens=200, timeout=12)
   result = call_reasoning(prompt="...", model='standard')  # 指定模型
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import subprocess
 import json
 import re

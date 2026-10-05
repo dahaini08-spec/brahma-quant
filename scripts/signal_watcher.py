@@ -35,6 +35,12 @@ signal_watcher.py — 梵天信号实时感知 + Jarvis推送 v1.0
 
 被 brahma-commander cron 在每次扫描后调用
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 import json
 import os

@@ -5,6 +5,12 @@ loss_memory_recorder.py — 亏损记忆自动记录器
 从live_signal_log中提取已结算信号，记录到亏损记忆库。
 每次运行时只处理新的已结算信号。
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, sys, os
 from pathlib import Path
 

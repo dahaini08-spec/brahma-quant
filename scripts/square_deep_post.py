@@ -29,6 +29,12 @@ square_deep_post.py — 旗舰深度帖生成器 [2026-09-28 苏摩111]
   python3 scripts/square_deep_post.py [--dry-run] [--skip-llm]
   环境变量 BRAHMA_DEEP_POST_SYMS=BTC,ETH（默认BTC,ETH）
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import os
 import re
 import sys
@@ -342,7 +348,7 @@ def run(dry_run: bool = False, skip_llm: bool = False):
         _last_ts = 0
         try:
             _last_ts = _j2.loads(_gate_f.read_text()).get('ts', 0)
-        except Exception: pass
+        except Exception: pass  # 48h时间戳读取失败，默认0，安全降级
         _force = (_t2.time() - _last_ts) > 48 * 3600
         if not _force:
             print(f'[deep-post] 数据门控未触发，距上次{(_t2.time()-_last_ts)/3600:.1f}h<48h，跳过')

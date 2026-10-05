@@ -7,6 +7,12 @@ square_altcoin_poster.py — KEY_1 蓝桉VS释怀鸟 | 山寨币暴动分析 [20
 触发: cron */2h，扫24h涨跌幅榜，涨跌>15%且vol>500万U才发
 账号: 蓝桉VS释怀鸟 (KEY_1)
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, sys, ssl, time, hashlib, urllib.request
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
@@ -63,7 +69,7 @@ def load_cooldown():
     try:
         if COOLDOWN.exists():
             return json.loads(COOLDOWN.read_text(encoding='utf-8'))
-    except Exception: pass
+    except Exception: pass  # dedup读取失败，安全降级
     return {}
 
 def save_cooldown(cd):
@@ -85,7 +91,7 @@ def is_duplicate(content):
         d = json.loads(DEDUP.read_text(encoding='utf-8')) if DEDUP.exists() else {}
         if h in d and time.time() - d[h] < 86400:
             return True
-    except Exception: pass
+    except Exception: pass  # dedup读取失败
     return False
 
 def mark_posted(content):
@@ -94,7 +100,7 @@ def mark_posted(content):
         d = json.loads(DEDUP.read_text(encoding='utf-8')) if DEDUP.exists() else {}
         d[h] = time.time()
         DEDUP.write_text(json.dumps(d, ensure_ascii=False), encoding='utf-8')
-    except Exception: pass
+    except Exception: pass  # dedup写入失败，非阻塞
 
 def scan_altcoins():
     """扫24h异动榜，返回达标山寨币列表"""

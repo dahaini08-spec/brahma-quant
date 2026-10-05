@@ -12,6 +12,12 @@ Brahma-Quant Quick Start
     - 需要 .env 配置 BINANCE_API_KEY / BINANCE_SECRET
     - 设置 BRAHMA_SKIP_COUNCIL=1 可跳过 LLM 调用（离线也可跑）
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, os, argparse
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'brahma_brain'))

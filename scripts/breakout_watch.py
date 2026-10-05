@@ -16,6 +16,12 @@ breakout_watch.py — CHOP体制盲区突破旁路预警
   1. scripts/brahma_manual_analysis.py Step0（并行拉取时顺带检测）
   2. OpenClaw cron every 30m（主动巡检，触发时推送预警）
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys as _sys, json as _json
 from pathlib import Path as _Path
 _state_f = _Path(__file__).parent.parent / 'data' / 'brahma_state_btc.json'

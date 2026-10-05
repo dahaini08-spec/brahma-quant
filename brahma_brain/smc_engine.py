@@ -10,6 +10,12 @@ brahma_brain · Phase 1
   - Premium / Discount 区域判断
   - SMC综合评分（0~20分）
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 # ponytail: SMC引擎1107行，教科书级结构识别，行数合理
 # 可优化: BOS/CHoCH检测可提取为独立模块复用
 from brahma_brain.data_cache import get_klines, klines_to_ohlcv

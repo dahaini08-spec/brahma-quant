@@ -5,6 +5,12 @@ square_live_preview.py — 每日直播预告帖自动发布 [2026-10-03 苏摩1
 内容: 今晚21:00直播预告 + 当日核心问题（引导评论互动）
 数据源: auto_analysis_latest.json (梵天分析结果)
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, sys, ssl, time, urllib.request
 from pathlib import Path
 from datetime import datetime, timezone, timedelta

@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 # [2026-10-04 优化] 无持仓时直接退出，节省算力
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, json
 from pathlib import Path
 _BASE = Path(__file__).parent.parent

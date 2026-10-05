@@ -27,6 +27,12 @@ rsi_structure_watcher.py — 梵天信号v5.0 · 零成本守望层
 
 运行方式：openclaw cron every 5min（与btc_regime_watcher并行）
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 import sys, os, json, time, requests
 from pathlib import Path

@@ -16,6 +16,12 @@ def _check_and_gc():
 ————————————————————————————————━━
 # 设计院 2026-05-30 重构
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 
 # ── signal_utils 标准读取（2026-06-02 设计院Bug修复）────────────────────
 def _load_clean_signals(hours=None, min_score=0, valid_only=False, unsettled_only=False):

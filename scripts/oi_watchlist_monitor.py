@@ -11,6 +11,12 @@ oi_watchlist_monitor.py — OI监控标的触发条件检测 v2
 
 核心原则: MEMORY.md铁律"没有SMC结构锚点的OI信号不入场"
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import json, time, sys, os, requests
 from datetime import datetime, timezone
 from pathlib import Path

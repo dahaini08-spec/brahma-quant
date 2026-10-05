@@ -22,6 +22,12 @@ if _os_nollm.environ.get('BRAHMA_NO_LLM') == '1':
      signal_dir/entry_lo/entry_hi/sl_price 全 None，
      auto_signal_queue.json 根本不存在，导致执行链路完全空转。
 """
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
 import sys, json, time
 from pathlib import Path
 from datetime import datetime, timezone
