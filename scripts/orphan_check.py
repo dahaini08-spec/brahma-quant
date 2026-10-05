@@ -32,6 +32,8 @@ ROOT = Path(__file__).parent.parent
 #   brahma_engine_v5                  v5回测引擎（jesse依赖缺失冻结，dim_ic_audit同链）
 #   brahma_mcp_server                 MCP服务器（独立启动进程，非import消费）
 #   brahma_http                         统一HTTP入口（2026-10-03封印），待urllib迁移期间现有调用方还未切入
+#   brahma_path_setup                   路径管理工具模块（2026-10-05封印），被scripts/import，不在brahma_brain主链import图内
+#   brahma_constants                    全局常量SSOT（2026-10-05封印），被各模块import，不在brahma_brain主链import图内
 # 以下为v2.0 hook遗留豁免（历史登记，含已删文件名，保留无害）：
 _EXEMPT = frozenset('''
     error_ledger risk_gate
@@ -43,6 +45,7 @@ _EXEMPT = frozenset('''
     llm_council_bridge position_sizer formatter signal_quality_engine brahma_smoke_test trader_brain
     core_data core_extra core_scorer data_contract_validator dim_ic_audit
     brahma_brain_prompt brahma_engine_v5 brahma_mcp_server brahma_http
+    brahma_path_setup brahma_constants
 '''.split())
 
 # 与stdlib/third-party撞名的模块名（resolve时优先本仓文件，无同名冲突即可用）

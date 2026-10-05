@@ -43,9 +43,8 @@ if not _THREAD:
         _cs = (BASE / 'brahma_brain' / 'brahma_cpu.py').read_text()
         _m = _re.search(r"_JARVIS_THREAD\s*=\s*'([^']{30,})'", _cs)
         if _m: _THREAD = _m.group(1)
-    except Exception: pass
-
-_CTX = ssl.create_default_context()
+    except Exception as _te:
+        import sys; print(f'[WARN] daily_postmortem thread detect: {_te}', file=sys.stderr)
 
 def _get(url: str, timeout: int = 8):
     try:
@@ -188,8 +187,8 @@ def analyze_signal_drift(symbol: str) -> dict:
                 d = e.get('signal_dir', 'UNKNOWN')
                 if d not in ('UNKNOWN', 'NONE', ''):
                     dirs.append(d)
-        except:
-            pass
+        except Exception:
+            pass  # json parse skip — expected for malformed/empty lines
     
     flips = sum(1 for i in range(1, len(dirs)) if dirs[i] != dirs[i-1])
     last_dir = dirs[-1] if dirs else 'UNKNOWN'

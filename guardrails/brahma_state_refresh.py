@@ -20,14 +20,16 @@ def log(msg):
     try:
         with open(LOG, 'a') as f:
             f.write(line + '\n')
-    except: pass
+    except Exception as _log_e:
+        print(f'[log write failed] {_log_e}', file=sys.stderr)  # last resort
 
 def fetch_price(symbol):
     try:
         url = f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}'
         r = urllib.request.urlopen(url, timeout=5)
         return float(json.loads(r.read())['price'])
-    except:
+    except Exception as _fe:
+        print(f'[WARN] fetch_price({symbol}) failed: {_fe}', file=sys.stderr)
         return None
 
 def run():

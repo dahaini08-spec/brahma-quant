@@ -249,7 +249,7 @@ def main():
                                   context={'phase': 'state_refresh_decide',
                                            'symbol': sym, 'direction': direction})
                     except Exception:
-                        pass
+                        pass  # [WARN-suppressed: no var]
                     print(f'[state_refresh] {sym} {direction}: decision_engine错误: {e}')
                     continue
 
@@ -263,7 +263,7 @@ def main():
                     from replay_ci import record_decisions as _l0rec
                     _l0rec([(signal_in, decision)])
                 except Exception:
-                    pass
+                    pass  # [WARN-suppressed: no var]
 
                 print(f'[state_refresh] {sym} {direction}: action={action} reason={reason[:60]}')
 

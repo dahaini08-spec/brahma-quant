@@ -45,10 +45,19 @@ _os_blas.environ.setdefault('MKL_NUM_THREADS', '1')
 
 import json, sys, time, urllib.request, argparse, signal
 
+# [2026-10-05 P1 brahma_path_setup] 统一路径管理，替代函数内裂sys.path.insert
+try:
+    import brahma_path_setup  # noqa — idempotent, already in scripts/
+except ImportError:
+    # 兼容旧环境：直接插入
+    import sys as _ps; from pathlib import Path as _PP
+    _pr = _PP(__file__).resolve().parent
+    for _pp in [str(_pr), str(_pr.parent), str(_pr.parent/'brahma_brain')]:
+        if _pp not in sys.path: sys.path.insert(0, _pp)
+    del _ps, _PP, _pr, _pp
+
 # [设计院封印 2026-10-01] 常量SSOT
 try:
-    _cdir = __import__('pathlib').Path(__file__).parent
-    sys.path.insert(0, str(_cdir))
     from analysis_constants import (
         ATR_SL_MIN_MULT, ATR_TRAIL_MULT, ATR_HARV_MIN_MULT, ATR_4H_HARV_MULT,
         HURST_TREND, HURST_TRANSITION, HURST_RANDOM,
@@ -151,7 +160,7 @@ try:
         step7_volatility, step8_macro, step9_risk, step10_vip,
     )
 except ImportError:
-    pass  # thin wrapper, 原函数仍在本文件
+    pass  # [WARN-suppressed: no var]
 def step0_fetch_all(sym: str) -> dict:
     """真正并行拉取所有实时数据 [Fix 2026-10-03 苏摩111]
     原来注释说并行但实际串行。修复：ThreadPoolExecutor并行所有网络IO。
@@ -258,8 +267,8 @@ def step0_fetch_all(sym: str) -> dict:
                 import json as _json_save
                 _sym_state.write_text(_json_save.dumps(bs, ensure_ascii=False))
         except Exception as _e:
-            import sys as _sys_warn
-            print(f'[WARN] brahma_manual_analysis: brahma_core.analyze({sym}USDT) 失败: {_e}', file=_sys_warn.stderr)
+            # [2026-10-05 P0-A fix] _sys_warn已清除
+            print(f'[WARN] brahma_manual_analysis: brahma_core.analyze({sym}USDT) 失败: {_e}', file=sys.stderr)
             bs = _candidate  # 重算失败→退回缓存（过期总比没有好）
     else:
         # state文件不存在 → 实时调用brahma_core
@@ -272,7 +281,7 @@ def step0_fetch_all(sym: str) -> dict:
                 import json as _json_save
                 _sym_state.write_text(_json_save.dumps(bs, ensure_ascii=False))
         except Exception as _e:
-            import sys as _sys_warn2
+            # [cleaned] import sys as _sys_warn2
             print(f'[WARN] brahma_manual_analysis: brahma_core.analyze({sym}USDT) fallback失败: {_e}', file=_sys_warn2.stderr)
             bs = load_json(_fallback)
     gex_s    = load_json(DATA / 'gex_state.json')
@@ -656,7 +665,7 @@ def step3_liq(d: dict) -> dict:
 
     # 实时拉取清算热力图（不用缓存文件）
     try:
-        import sys as _sys
+        # [cleaned] import sys as _sys
         _sys.path.insert(0, str(Path(__file__).parent / 'scripts'))
         from liq_heatmap import get_liq_heatmap
         _realtime_liq = get_liq_heatmap(sym)
@@ -1385,7 +1394,7 @@ def step6_smart_money(d: dict) -> dict:
 def _get_microstructure(d: dict) -> dict:
     """P5整合: 微结构alpha — 2026-09-12"""
     try:
-        import sys as _ms_sys
+        # [cleaned] import sys as _ms_sys
         _ms_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.microstructure_engine import get_microstructure_signal
         return get_microstructure_signal(d.get('sym', 'BTC'))
@@ -1395,7 +1404,7 @@ def _get_microstructure(d: dict) -> dict:
 def _get_anti_manipulation(d: dict) -> dict:
     """P5整合: 反操纵检测 — 2026-09-12"""
     try:
-        import sys as _am_sys
+        # [cleaned] import sys as _am_sys
         _am_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.anti_manipulation_engine import detect_manipulation
         return detect_manipulation(d.get('sym', 'BTC'))
@@ -1559,7 +1568,7 @@ def step7_volatility(d: dict) -> dict:
 def _get_ic_attribution(d: dict) -> dict:
     """P2整合: 从ic_tracker获取实时IC归因 — 2026-09-12"""
     try:
-        import sys as _ic_sys
+        # [cleaned] import sys as _ic_sys
         _ic_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.ic_tracker import load_ic_state, compute_all_ic
 
@@ -1644,7 +1653,7 @@ def step8_macro(d: dict) -> dict:
     # 如果数据过期，自动刷新
     if not mr_fresh:
         try:
-            import sys as _sys
+            # [cleaned] import sys as _sys
             _sys.path.insert(0, str(Path(__file__).parent))
             from macro_real_fetcher import update_macro_real
             macro_real = update_macro_real()
@@ -1746,7 +1755,7 @@ def step8_macro(d: dict) -> dict:
 def _get_cross_market_for_step8() -> dict:
     """P4整合: 跨市场alpha状态 — 2026-09-12"""
     try:
-        import sys as _cm_sys
+        # [cleaned] import sys as _cm_sys
         _cm_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.cross_market_alpha import get_cross_market_alpha
         cma = get_cross_market_alpha()
@@ -1765,7 +1774,7 @@ def _get_cross_market_for_step8() -> dict:
 def _get_us_session_for_step8() -> dict:
     """P4整合: 美盘时段门控 — 2026-09-12"""
     try:
-        import sys as _us_sys
+        # [cleaned] import sys as _us_sys
         _us_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.us_session_gate import get_session_info
         return get_session_info()
@@ -1821,7 +1830,7 @@ def step9_risk(d: dict) -> dict:
     }
     risk_engine_result = None
     try:
-        import sys as _re_sys
+        # [cleaned] import sys as _re_sys
         _re_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.risk_engine import check as _re_check
         risk_engine_result = _re_check(_signal)
@@ -1872,7 +1881,7 @@ def step9_risk(d: dict) -> dict:
     # P7新增: portfolio_optimizer多标的仓位优化
     _portfolio = {'active_positions': [], 'correlation_risk': None}
     try:
-        import sys as _po_sys
+        # [cleaned] import sys as _po_sys
         _po_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.portfolio_optimizer import check_correlation_risk, portfolio_summary
         # 检查BTC+ETH相关性（如果当前标的和另一标的同时持仓）
@@ -2742,10 +2751,13 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
         _t2.sleep(120)
         elapsed = _t2.time() - _run_start
         try:
-            import sys as _s; _s.path.insert(0, 'scripts')
+            # [2026-10-05 P0-B fix] 顶部已import sys
+            if 'scripts' not in sys.path:
+                sys.path.insert(0, 'scripts')
             import push_hub as _ph2
             _ph2.push_jarvis(f'⚠️ {sym} 分析超时{elapsed:.0f}s>120s，可能卡死', priority='P1')
-        except Exception: pass
+        except Exception as _wd_e:
+            print(f'[WARN] timeout watchdog push失败: {_wd_e}', file=sys.stderr)
     _wd = _thr.Thread(target=_timeout_watchdog, daemon=True)
     _wd.start()
     ts  = datetime.now(timezone.utc).strftime('%m/%d %H:%M UTC')
@@ -2779,7 +2791,8 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             bw_score = bw['results'].get(sym+'USDT', {}).get('score', 0)
             print(f'[{sym}] CHOP旁路: score={bw_score}/3 无触发', flush=True)
     except Exception as _bw_e:
-        pass  # CHOP旁路检测在并行环境不支持signal模块，静默跳过
+        # [2026-10-05 P0-A fix] _sys_warn已清除
+        print(f"[WARN] CHOP旁路失败: {_bw_e}", file=sys.stderr)
     # ─────────────────────────────────────────────────────────
 
     print(f'[{sym}] Step 1~3: FVG/OB/清算...', flush=True)
@@ -2805,7 +2818,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     print(f'[{sym}] Step 4: 共振点（7维：FVG+OB+清算+OI+GEX+方仓+跨市场）...', flush=True)
     _cma = None
     try:
-        import sys as _cma_sys
+        # [cleaned] import sys as _cma_sys
         _cma_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.cross_market_alpha import get_cross_market_alpha
         _cma = get_cross_market_alpha()
@@ -3354,7 +3367,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
 
     # P6新增: ensemble+council对比展示
     try:
-        import sys as _ens_sys
+        # [cleaned] import sys as _ens_sys
         _ens_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.ensemble_engine import get_ensemble_score
         from brahma_brain.ai_council_bridge import get_council_verdict
@@ -3388,7 +3401,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     _cpu_dir = 'SHORT' if 'BEAR' in str(regime_c) or 'CHOP' in str(regime_c) else 'LONG'
 
     # 只保留 enhanced_signal（有价值）
-    import sys as _enh_sys
+    # [cleaned] import sys as _enh_sys
     try:
         from brahma_brain.enhanced_signal_engine import enhanced_score as _enh_score
         _enh_box = {}
@@ -3486,12 +3499,13 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
                         dedup_key=f'ambuscade_{sym}_{d["signal_dir"]}_{int(_settle_price//100)}',
                         dedup_ttl=3600)
                 except Exception as _ambe:
-                    pass  # 不影响主链
+                    # [2026-10-05 P0-A fix] _sys_warn已清除，改用顶部sys
+                    print(f"[WARN] ambuscade push失败: {_ambe}", file=sys.stderr)
     except Exception as _settle_e:
-        import sys as _se_sys; print(f'[WARN] settlement: {_settle_e}', file=_se_sys.stderr)
+        print(f'[WARN] settlement: {_settle_e}', file=sys.stderr)
 
     # ── brahma_360 系统自检（非阻塞） ──
-    import sys as _b360_sys
+    # [cleaned] import sys as _b360_sys
     try:
         from brahma_brain.brahma_360 import scan_d1_modules as _b360_scan
         _b360_box = {}
@@ -3631,12 +3645,60 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     except Exception as _ne:
         print(f'[WARN] live_signal_log写入失败: {_ne}', file=sys.stderr)
 
+    # [2026-10-05 苏摩111] P2双主链合并：step0~10完成后，实时数据同步写入brahma_state_{sym}.json
+    # 根治 format_full_report 读旧state文件导致$0的根本问题
+    try:
+        import json as _json_sync, time as _ts_sync, tempfile as _tf_sync
+        _state_path = Path(__file__).parent.parent / 'data' / f'brahma_state_{sym.lower()}.json'
+        _sync_state = {
+            'symbol': sym + 'USDT',
+            'price':  float(d.get('price', 0)),
+            'price_ts': _ts_sync.time(),
+            'regime': str(d.get('bs', {}).get('regime', 'CHOP_MID')),
+            'hurst':  float(d.get('hurst', 0)),
+            'oi_signal':    str(d.get('oi_main_signal', d.get('oi_direction', '?'))),
+            'oi_direction': str(d.get('oi_direction', '?')),
+            'liq_short': float(d.get('liq_short', d.get('wall_price', 0))),
+            'liq_long':  float(d.get('liq_long',  d.get('pool_price', 0))),
+            'align_count': int(d.get('align_count', 0)),
+            'step11_verdict': str(d.get('_step11', {}).get('verdict', 'WAIT') if isinstance(d.get('_step11'), dict) else 'WAIT'),
+            'entry_lo': float(tb_result.get('entry_lo', d.get('entry_lo', 0)) if isinstance(tb_result, dict) else 0),
+            'entry_hi': float(tb_result.get('entry_hi', d.get('entry_hi', 0)) if isinstance(tb_result, dict) else 0),
+            'sl':  float(tb_result.get('sl',  d.get('sl',  0)) if isinstance(tb_result, dict) else 0),
+            'tp1': float(tb_result.get('tp1', d.get('tp1', 0)) if isinstance(tb_result, dict) else 0),
+            'tp2': float(tb_result.get('tp2', d.get('tp2', 0)) if isinstance(tb_result, dict) else 0),
+            'signal_dir': str(tb_result.get('direction', d.get('signal_dir', 'NONE')) if isinstance(tb_result, dict) else 'NONE'),
+            'score_final': float(d.get('bs', {}).get('score_final', d.get('bs', {}).get('score', 0))),
+            'fvg_1d': str(fvg.get('fvg_1d_dir', '?')),
+            'fvg_4h': str(fvg.get('fvg_4h_dir', '?')),
+            'fvg_1h': str(fvg.get('fvg_1h_dir', '?')),
+            'fvg_magnet': float(fvg.get('primary_magnet', 0)),
+            'ob_1h_lo': float(ob.get('ob_1h_lo', 0)), 'ob_1h_hi': float(ob.get('ob_1h_hi', 0)),
+            'ob_4h_lo': float(ob.get('ob_4h_lo', 0)), 'ob_4h_hi': float(ob.get('ob_4h_hi', 0)),
+            'cvd_1h': float(d.get('cvd_1h', 0)), 'cvd_4h': float(d.get('cvd_4h', 0)),
+            'cvd_dir_1h': str(d.get('cvd_dir_1h', '?')), 'cvd_dir_4h': str(d.get('cvd_dir_4h', '?')),
+            'lsr_retail': float(d.get('lsr_retail', d.get('lsr', 0))),
+            'lsr_big':    float(d.get('lsr_big', 0)),
+            'lsr_zscore': float(d.get('zsc', {}).get('zscore', 0) if isinstance(d.get('zsc'), dict) else 0),
+            'iv_pct': float(d.get('iv_pct', 0)), 'kappa': float(d.get('kappa', 0)),
+            'fed_rate': float(mac.get('fed_rate', 0)), 'fear_greed': int(mac.get('fear_greed', 50)),
+            '_snapshot_written_epoch': _ts_sync.time(), '_snapshot_age_sec': 0,
+            '_data_source': 'brahma_manual_analysis_p2_sync',
+        }
+        _tmp_sync = _state_path.with_suffix('.tmp')
+        _tmp_sync.write_text(_json_sync.dumps(_sync_state, ensure_ascii=False, indent=2), encoding='utf-8')
+        _tmp_sync.replace(_state_path)
+        print(f'[{sym}] ✅ P2同步: brahma_state写入 price=${_sync_state["price"]:,.0f}', flush=True)
+    except Exception as _sync_e:
+        print(f'[WARN] P2 state同步失败: {_sync_e}', file=sys.stderr)
+
     # [2026-10-02 苏摩111] output_template 标准格式化尾部追加
     # 接入位置: run_analysis() 末尾，在返回文本前追加三方联合签名
     # [2026-10-02 苏摩111] 补充entry/sl/tp字段，避免format_full_report输出$0
     try:
-        import sys as _sys
-        _sys.path.insert(0, str(Path(__file__).parent))
+        # [2026-10-05 P0-B fix] 顶部已import sys，删除函数内重复别名
+        if str(Path(__file__).parent) not in sys.path:
+            sys.path.insert(0, str(Path(__file__).parent))
         from brahma_output_template import format_full_report as _fmt_report
         # 把trader_brain决策结果补充到d，供template读取entry/sl/tp
         if 'entry_lo' not in d and isinstance(tb_result, dict):
@@ -3652,16 +3714,17 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             lines.append('')
             lines.append(_template_block)
     except Exception as _te:
-        import sys as _sys_te
-        print(f'[WARN] format_full_report失败: {_te}', file=_sys_te.stderr)
+        # [2026-10-05 苏摩111 P0-A修复] _sys_te NameError根治：直接用sys（顶部已import）
+        print(f'[WARN] format_full_report失败: {_te}', file=sys.stderr)
+        import traceback as _tb_te; _tb_te.print_exc(file=sys.stderr)
         # template失败时输出基础VIP卡片作为兜底
         try:
             from brahma_output_template import format_vip_card as _fvc
             _vip_only = _fvc(sym, d)
             if _vip_only:
                 lines.append(''); lines.append(_vip_only)
-        except Exception:
-            pass
+        except Exception as _fvc_e:
+            print(f'[WARN] format_vip_card兜底也失败: {_fvc_e}', file=sys.stderr)
 
     return '\n'.join(lines)
 
@@ -3695,7 +3758,7 @@ def main():
                 pass  # 等待所有预热完成
         print(f'[P0并发预热] {len(_syms_u)}个标的缓存已就绪 ({_time.time()-t0:.1f}s)')
     except Exception:
-        pass  # 预热失败不阻断主流程
+        pass  # [WARN-suppressed: no var]
 
     with ThreadPoolExecutor(max_workers=len(symbols)) as pool:
         futures = {pool.submit(run_analysis, sym): sym for sym in symbols}
@@ -3806,7 +3869,7 @@ def main():
         _full_reports = {}
         try:
             from brahma_output_template import format_full_report as _fmt_r2
-            import sys as _sys_fr
+            # [cleaned] import sys as _sys_fr
             for _sym2 in symbols:
                 try:
                     _sp2 = Path(__file__).parent.parent / 'data' / f'brahma_state_{_sym2.lower()}.json'
@@ -3814,9 +3877,10 @@ def main():
                         _sd2 = __import__('json').loads(_sp2.read_text())
                         _full_reports[_sym2] = _fmt_r2(_sym2, _sd2)
                 except Exception as _fe2:
-                    print(f'[WARN] full_report {_sym2}: {_fe2}', file=_sys_fr.stderr)
+                    print(f'[WARN] full_report {_sym2}: {_fe2}', file=sys.stderr)
         except Exception as _fe:
-            pass
+            # [2026-10-05 P0-A fix] _sys_warn/_sys_fr已清除
+            print(f"[WARN] auto_analysis_latest写入失败: {_fe}", file=sys.stderr)
 
         _summary = {
             'timestamp': _time.strftime('%Y-%m-%d %H:%M:%S UTC', _time.gmtime()),
@@ -3900,7 +3964,7 @@ def main():
                 try:
                     nm = 'DejaVuSans-Bold.ttf' if bold else 'DejaVuSans.ttf'
                     return _IF.truetype(f'/usr/share/fonts/truetype/dejavu/{nm}', sz)
-                except:
+                except Exception as _font_e:
                     return _IF.load_default()
 
             def _rect(x,y,w,h,fill='#111827',r=8):

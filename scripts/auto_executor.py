@@ -1809,7 +1809,7 @@ def execute_signal(signal: dict, nav: float, active_positions: list) -> dict:
         if _sq_path.exists():
             for line in _sq_path.read_text().splitlines():
                 try: _sq_entries.append(json.loads(line.strip()))
-                except Exception: pass
+                except Exception as _je: pass  # json parse skip — expected for malformed lines
         new_lines = []
         for s in _sq_entries:
             if s.get('signal_id') == sig_id:

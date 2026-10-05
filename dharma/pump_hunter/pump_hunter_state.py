@@ -29,13 +29,15 @@ def _load_states() -> dict:
     try:
         if _STATE_FILE.exists():
             return json.loads(_STATE_FILE.read_text())
-    except Exception: pass
+    except Exception as _e:
+        import sys; print(f'[WARN] pump_hunter_state: load failed: {_e}', file=sys.stderr)
     return {}
 
 def _save_states(data: dict):
     try:
         _STATE_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2))
-    except Exception: pass
+    except Exception as _e:
+        import sys; print(f'[WARN] pump_hunter_state: save failed: {_e}', file=sys.stderr)
 
 # ─── 妖币名单加分 ─────────────────────────────────────────────
 def get_watchlist_bonus(symbol: str) -> int:
@@ -133,7 +135,7 @@ def detect_pump_end(
                 _existing = {}
                 if _pump_end_file.exists():
                     try: _existing = json.loads(_pump_end_file.read_text())
-                    except: pass
+                    except Exception as _pe: import sys; print(f'[WARN] pump_end read: {_pe}', file=sys.stderr)
                 _existing[symbol] = {
                     "ts": datetime.now(timezone.utc).isoformat(),
                     "confidence": confidence,
@@ -141,8 +143,8 @@ def detect_pump_end(
                     "shrink_pct": round((1 - vol_current/vol_prev)*100, 1) if vol_prev > 0 else 0,
                 }
                 _pump_end_file.write_text(json.dumps(_existing, ensure_ascii=False))
-            except Exception: pass
-
+            except Exception as _ppe:
+                import sys; print(f'[WARN] pump_end_signals write: {_ppe}', file=sys.stderr)
     except Exception as e:
         result["signal"] = f"[pump_end_err] {e}"
     return result
@@ -161,7 +163,7 @@ def notify_brahma_mode_c(symbol: str, hunter_score: int, alert_level: int):
         _all = {}
         if _mc_file.exists():
             try: _all = json.loads(_mc_file.read_text())
-            except: pass
+            except Exception as _mce: import sys; print(f'[WARN] mode_c read: {_mce}', file=sys.stderr)
 
         _all[symbol] = {
             "mode": "MODE_C",
@@ -179,7 +181,8 @@ def notify_brahma_mode_c(symbol: str, hunter_score: int, alert_level: int):
             "last_price": 0,
         }
         _mc_file.write_text(json.dumps(_all, ensure_ascii=False))
-    except Exception: pass
+    except Exception as _mc_write_e:
+        import sys; print(f'[WARN] mode_c_state write: {_mc_write_e}', file=sys.stderr)
 
 
 # ─── 评分加成整合（供scan_and_alert.py调用）────────────────────

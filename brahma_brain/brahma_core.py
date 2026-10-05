@@ -2593,7 +2593,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 _gex_data = _gex_cached
                 raise StopIteration  # 跳过旧gex_engine
         except StopIteration:
-            pass  # [9.27顶层修复 苏摩111] StopIteration是正常控制流(跳过旧引擎)，不烧WARN
+            pass  # [WARN-suppressed: no var]
         except Exception as _e:
             print(f"[WARN] brahma_core: {_e}", file=sys.stderr)
         _gex_data = _compute_gex22(_currency_g)
