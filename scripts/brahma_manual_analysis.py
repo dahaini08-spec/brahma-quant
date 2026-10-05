@@ -666,7 +666,7 @@ def step3_liq(d: dict) -> dict:
     # 实时拉取清算热力图（不用缓存文件）
     try:
         # [cleaned] import sys as _sys
-        _sys.path.insert(0, str(Path(__file__).parent / 'scripts'))
+        sys.path.insert(0, str(Path(__file__).parent / 'scripts'))
         from liq_heatmap import get_liq_heatmap
         _realtime_liq = get_liq_heatmap(sym)
         if _realtime_liq and 'error' not in _realtime_liq:
@@ -1395,7 +1395,7 @@ def _get_microstructure(d: dict) -> dict:
     """P5整合: 微结构alpha — 2026-09-12"""
     try:
         # [cleaned] import sys as _ms_sys
-        _ms_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.microstructure_engine import get_microstructure_signal
         return get_microstructure_signal(d.get('sym', 'BTC'))
     except Exception:
@@ -1405,7 +1405,7 @@ def _get_anti_manipulation(d: dict) -> dict:
     """P5整合: 反操纵检测 — 2026-09-12"""
     try:
         # [cleaned] import sys as _am_sys
-        _am_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.anti_manipulation_engine import detect_manipulation
         return detect_manipulation(d.get('sym', 'BTC'))
     except Exception:
@@ -1569,7 +1569,7 @@ def _get_ic_attribution(d: dict) -> dict:
     """P2整合: 从ic_tracker获取实时IC归因 — 2026-09-12"""
     try:
         # [cleaned] import sys as _ic_sys
-        _ic_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.ic_tracker import load_ic_state, compute_all_ic
 
         # 优先读缓存state
@@ -1654,7 +1654,7 @@ def step8_macro(d: dict) -> dict:
     if not mr_fresh:
         try:
             # [cleaned] import sys as _sys
-            _sys.path.insert(0, str(Path(__file__).parent))
+            sys.path.insert(0, str(Path(__file__).parent))
             from macro_real_fetcher import update_macro_real
             macro_real = update_macro_real()
             mr_fresh = True
@@ -1756,7 +1756,7 @@ def _get_cross_market_for_step8() -> dict:
     """P4整合: 跨市场alpha状态 — 2026-09-12"""
     try:
         # [cleaned] import sys as _cm_sys
-        _cm_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.cross_market_alpha import get_cross_market_alpha
         cma = get_cross_market_alpha()
         return {
@@ -1775,7 +1775,7 @@ def _get_us_session_for_step8() -> dict:
     """P4整合: 美盘时段门控 — 2026-09-12"""
     try:
         # [cleaned] import sys as _us_sys
-        _us_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.us_session_gate import get_session_info
         return get_session_info()
     except Exception:
@@ -1831,7 +1831,7 @@ def step9_risk(d: dict) -> dict:
     risk_engine_result = None
     try:
         # [cleaned] import sys as _re_sys
-        _re_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.risk_engine import check as _re_check
         risk_engine_result = _re_check(_signal)
     except Exception as _re_e:
@@ -1882,7 +1882,7 @@ def step9_risk(d: dict) -> dict:
     _portfolio = {'active_positions': [], 'correlation_risk': None}
     try:
         # [cleaned] import sys as _po_sys
-        _po_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.portfolio_optimizer import check_correlation_risk, portfolio_summary
         # 检查BTC+ETH相关性（如果当前标的和另一标的同时持仓）
         _other = 'ETHUSDT' if 'BTC' in usdt else 'BTCUSDT'
@@ -2819,7 +2819,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     _cma = None
     try:
         # [cleaned] import sys as _cma_sys
-        _cma_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.cross_market_alpha import get_cross_market_alpha
         _cma = get_cross_market_alpha()
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
@@ -3368,7 +3368,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     # P6新增: ensemble+council对比展示
     try:
         # [cleaned] import sys as _ens_sys
-        _ens_sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
         from brahma_brain.ensemble_engine import get_ensemble_score
         from brahma_brain.ai_council_bridge import get_council_verdict
         _ens_dir = 'SHORT' if 'BEAR' in str(regime_c) or 'CHOP' in str(regime_c) else 'LONG'
@@ -3693,7 +3693,23 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
         _zsc   = d.get('zsc', {})
         _bw    = bw    if 'bw'   in dir() else {}
         _step11_g = d.get('_step11', {})
-        _gates = _step11_g.get('gates', {}) if isinstance(_step11_g, dict) else {}
+        # [Fix-C v2] step11 返回 gates_passed(int)+blocked_by(str), 无gates dict
+        # 重建 template 需要的 step11_gates 格式 {G1:bool, ..., G11:bool}
+        _s11_cnt = _step11_g.get('gates_passed', 0) if isinstance(_step11_g, dict) else 0
+        _s11_blk = _step11_g.get('blocked_by', '') if isinstance(_step11_g, dict) else ''
+        _s11_verd = _step11_g.get('verdict', 'WAIT') if isinstance(_step11_g, dict) else 'WAIT'
+        # 构建11道门结果（前N门通过，第N+1门阻断）
+        _gate_list = ['G1','G2','G3','G4','G5','G6','G7','G8','G9','G10','G11']
+        _blocked_gate = None
+        if _s11_blk:
+            for _gk in _gate_list:
+                if _gk in _s11_blk: _blocked_gate = _gk; break
+        _gates = {}
+        for _i, _gk in enumerate(_gate_list):
+            if _blocked_gate:
+                _gates[_gk] = (_i < _gate_list.index(_blocked_gate))
+            else:
+                _gates[_gk] = (_i < _s11_cnt)
         _tb    = tb_result if isinstance(tb_result, dict) else {}
 
         _p_price = float(d.get('price', 0))
@@ -3827,16 +3843,20 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
         if str(Path(__file__).parent) not in sys.path:
             sys.path.insert(0, str(Path(__file__).parent))
         from brahma_output_template import format_full_report as _fmt_report
-        # 把trader_brain决策结果补充到d，供template读取entry/sl/tp
-        if 'entry_lo' not in d and isinstance(tb_result, dict):
-            d['entry_lo']   = tb_result.get('entry_lo',   d.get('entry_lo', 0.0))
-            d['entry_hi']   = tb_result.get('entry_hi',   d.get('entry_hi', 0.0))
-            d['sl']         = tb_result.get('sl',         d.get('sl', 0.0))
-            d['tp1']        = tb_result.get('tp1',        d.get('tp1', 0.0))
-            d['tp2']        = tb_result.get('tp2',        d.get('tp2', 0.0))
-            d['signal_dir'] = tb_result.get('direction',  d.get('signal_dir', 'NONE'))
-            d['regime']     = str(regime_c)
-        _template_block = _fmt_report(sym, d)
+        # [2026-10-05 Fix-C v2] 使用_sync_state（44字段完整）替代原始 d
+        # 根因: d['gex']是 dict、d缺 fvg_votes等，会导致 format 崩溃
+        _locs = locals()
+        _fmt_dict = _locs.get('_sync_state') if isinstance(_locs.get('_sync_state'), dict) else d
+        # 兼容：tb_result关键字段回写（_sync_state已包含，重复赋值无害）
+        if isinstance(tb_result, dict):
+            for _k, _v in [('entry_lo', tb_result.get('entry_lo', 0.0)),
+                           ('entry_hi', tb_result.get('entry_hi', 0.0)),
+                           ('sl',       tb_result.get('sl',       0.0)),
+                           ('tp1',      tb_result.get('tp1',      0.0)),
+                           ('signal_dir', tb_result.get('direction', 'NONE'))]:
+                if not _fmt_dict.get(_k):
+                    _fmt_dict[_k] = _v
+        _template_block = _fmt_report(sym, _fmt_dict)
         if _template_block:
             lines.append('')
             lines.append(_template_block)

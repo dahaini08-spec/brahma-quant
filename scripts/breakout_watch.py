@@ -24,15 +24,17 @@ except ImportError:
 
 import sys as _sys, json as _json
 from pathlib import Path as _Path
-_state_f = _Path(__file__).parent.parent / 'data' / 'brahma_state_btc.json'
-try:
-    _state = _json.loads(_state_f.read_text()) if _state_f.exists() else {}
-    _regime = _state.get('regime', 'UNKNOWN')
-    if 'CHOP' not in _regime:
-        print(f'HEARTBEAT_OK (regime={_regime}, not CHOP)', file=_sys.stderr)
-        _sys.exit(0)
-except Exception:
-    pass
+# [2026-10-05 Fix: cron快速退出逻辑只在主程序运行时生效，import时不触发]
+if __name__ == '__main__':
+    _state_f = _Path(__file__).parent.parent / 'data' / 'brahma_state_btc.json'
+    try:
+        _state = _json.loads(_state_f.read_text()) if _state_f.exists() else {}
+        _regime = _state.get('regime', 'UNKNOWN')
+        if 'CHOP' not in _regime:
+            print(f'HEARTBEAT_OK (regime={_regime}, not CHOP)', file=_sys.stderr)
+            _sys.exit(0)
+    except Exception:
+        pass
 
 
 import sys, json, time, urllib.request, signal
