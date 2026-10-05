@@ -3645,51 +3645,178 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     except Exception as _ne:
         print(f'[WARN] live_signal_log写入失败: {_ne}', file=sys.stderr)
 
-    # [2026-10-05 苏摩111] P2双主链合并：step0~10完成后，实时数据同步写入brahma_state_{sym}.json
-    # 根治 format_full_report 读旧state文件导致$0的根本问题
+    # [2026-10-05 Fix C 苏摩111] P2双主链合并 v2：写入 format_full_report 所有42个必须字段
+    # 根治 D1-D10 全显示 $0 的根本原因（template读字段缺失→默认0）
     try:
-        import json as _json_sync, time as _ts_sync, tempfile as _tf_sync
+        import json as _json_sync, time as _ts_sync
         _state_path = Path(__file__).parent.parent / 'data' / f'brahma_state_{sym.lower()}.json'
+
+        # ── FVG全周期投票表（template D1需要） ──
+        _tf_fvg_map = fvg.get('tf_fvg_map', {})  # {tf: fvg_dict}
+        _fvg_votes = {}
+        _fvg_magnets = {}
+        for _tf_key, _fvg_item in _tf_fvg_map.items():
+            _tf_upper = _tf_key.upper().replace('15M','15M').replace('1H','1H').replace('4H','4H').replace('1D','1D').replace('1W','1W')
+            if isinstance(_fvg_item, dict):
+                _fvg_votes[_tf_upper]   = _fvg_item.get('type', 'NONE')
+                _fvg_magnets[_tf_upper] = float(_fvg_item.get('mid', 0))
+        # 补全缺失周期为NONE
+        for _tf_fill in ['15M','1H','4H','1D','1W']:
+            _fvg_votes.setdefault(_tf_fill, 'NONE')
+            _fvg_magnets.setdefault(_tf_fill, 0.0)
+
+        # ── ob_list（template D2需要：list of {tf,side,age,lo,hi,valid,dist_pct}）──
+        _ob_list = []
+        for _ob_key, _ob_val in (ob.items() if isinstance(ob, dict) else {}.items()):
+            # key格式: OB_1H_BULL 或 OB_4H_BEAR
+            _parts = _ob_key.split('_')
+            if len(_parts) >= 3 and _parts[0] == 'OB' and isinstance(_ob_val, dict):
+                _ob_list.append({
+                    'tf':       _parts[1],
+                    'side':     _parts[2],
+                    'age':      int(_ob_val.get('age', 0)),
+                    'lo':       float(_ob_val.get('lo', 0)),
+                    'hi':       float(_ob_val.get('hi', 0)),
+                    'valid':    bool(_ob_val.get('valid', False)),
+                    'dist_pct': float(_ob_val.get('dist_pct', 0)),
+                })
+
+        # ── OI序列（template D5需要）──
+        _oi_seq_raw = d.get('oi_vals', [])
+        _oi_sequence = [float(x) for x in _oi_seq_raw[-8:]] if _oi_seq_raw else []
+
+        # ── 步骤结果变量（已在run_analysis作用域）──
+        _vol   = vol   if 'vol'  in dir() else {}
+        _mac   = mac   if 'mac'  in dir() else {}
+        _risk  = risk  if 'risk' in dir() else {}
+        _res   = res   if 'res'  in dir() else {}
+        _zsc   = d.get('zsc', {})
+        _bw    = bw    if 'bw'   in dir() else {}
+        _step11_g = d.get('_step11', {})
+        _gates = _step11_g.get('gates', {}) if isinstance(_step11_g, dict) else {}
+        _tb    = tb_result if isinstance(tb_result, dict) else {}
+
+        _p_price = float(d.get('price', 0))
+        _p_regime = str(d.get('bs', {}).get('regime', regime_c) if isinstance(d.get('bs'), dict) else regime_c)
+
         _sync_state = {
-            'symbol': sym + 'USDT',
-            'price':  float(d.get('price', 0)),
-            'price_ts': _ts_sync.time(),
-            'regime': str(d.get('bs', {}).get('regime', 'CHOP_MID')),
-            'hurst':  float(d.get('hurst', 0)),
-            'oi_signal':    str(d.get('oi_main_signal', d.get('oi_direction', '?'))),
-            'oi_direction': str(d.get('oi_direction', '?')),
-            'liq_short': float(d.get('liq_short', d.get('wall_price', 0))),
-            'liq_long':  float(d.get('liq_long',  d.get('pool_price', 0))),
-            'align_count': int(d.get('align_count', 0)),
-            'step11_verdict': str(d.get('_step11', {}).get('verdict', 'WAIT') if isinstance(d.get('_step11'), dict) else 'WAIT'),
-            'entry_lo': float(tb_result.get('entry_lo', d.get('entry_lo', 0)) if isinstance(tb_result, dict) else 0),
-            'entry_hi': float(tb_result.get('entry_hi', d.get('entry_hi', 0)) if isinstance(tb_result, dict) else 0),
-            'sl':  float(tb_result.get('sl',  d.get('sl',  0)) if isinstance(tb_result, dict) else 0),
-            'tp1': float(tb_result.get('tp1', d.get('tp1', 0)) if isinstance(tb_result, dict) else 0),
-            'tp2': float(tb_result.get('tp2', d.get('tp2', 0)) if isinstance(tb_result, dict) else 0),
-            'signal_dir': str(tb_result.get('direction', d.get('signal_dir', 'NONE')) if isinstance(tb_result, dict) else 'NONE'),
-            'score_final': float(d.get('bs', {}).get('score_final', d.get('bs', {}).get('score', 0))),
-            'fvg_1d': str(fvg.get('fvg_1d_dir', '?')),
-            'fvg_4h': str(fvg.get('fvg_4h_dir', '?')),
-            'fvg_1h': str(fvg.get('fvg_1h_dir', '?')),
-            'fvg_magnet': float(fvg.get('primary_magnet', 0)),
-            'ob_1h_lo': float(ob.get('ob_1h_lo', 0)), 'ob_1h_hi': float(ob.get('ob_1h_hi', 0)),
-            'ob_4h_lo': float(ob.get('ob_4h_lo', 0)), 'ob_4h_hi': float(ob.get('ob_4h_hi', 0)),
-            'cvd_1h': float(d.get('cvd_1h', 0)), 'cvd_4h': float(d.get('cvd_4h', 0)),
-            'cvd_dir_1h': str(d.get('cvd_dir_1h', '?')), 'cvd_dir_4h': str(d.get('cvd_dir_4h', '?')),
-            'lsr_retail': float(d.get('lsr_retail', d.get('lsr', 0))),
+            # ── 基础 ──
+            'symbol':    sym + 'USDT',
+            'price':     _p_price,
+            'price_ts':  _ts_sync.time(),
+            'regime':    _p_regime,
+            'hurst':     float(_vol.get('hurst', d.get('hurst', 0)) if _vol else d.get('hurst', 0)),
+
+            # ── D1 FVG（template需要 fvg_votes + fvg_per_tf_magnet + fvg_consensus + fvg_magnet） ──
+            'fvg_votes':     _fvg_votes,
+            'fvg_consensus': str(fvg.get('consensus', fvg.get('dir', 'NEUTRAL'))),
+            'fvg_magnet':    float(fvg.get('magnet', 0)),
+            'fvg_15m_magnet': _fvg_magnets.get('15M', 0.0),
+            'fvg_1h_magnet':  _fvg_magnets.get('1H',  0.0),
+            'fvg_4h_magnet':  _fvg_magnets.get('4H',  0.0),
+            'fvg_1d_magnet':  _fvg_magnets.get('1D',  0.0),
+            'fvg_1w_magnet':  _fvg_magnets.get('1W',  0.0),
+            # 兼容旧字段
+            'fvg_1d': str(_fvg_votes.get('1D', '?')),
+            'fvg_4h': str(_fvg_votes.get('4H', '?')),
+            'fvg_1h': str(_fvg_votes.get('1H', '?')),
+
+            # ── D2 OB（ob_list供template渲染表格） ──
+            'ob_list':   _ob_list,
+            'ob_1h_lo':  float(ob.get('OB_1H_BULL', ob.get('OB_1H_BEAR', {})).get('lo', 0) if isinstance(ob, dict) else 0),
+            'ob_1h_hi':  float(ob.get('OB_1H_BULL', ob.get('OB_1H_BEAR', {})).get('hi', 0) if isinstance(ob, dict) else 0),
+            'ob_4h_lo':  float(ob.get('OB_4H_BULL', ob.get('OB_4H_BEAR', {})).get('lo', 0) if isinstance(ob, dict) else 0),
+            'ob_4h_hi':  float(ob.get('OB_4H_BULL', ob.get('OB_4H_BEAR', {})).get('hi', 0) if isinstance(ob, dict) else 0),
+
+            # ── D3 清算 ──
+            'liq_short':  float(d.get('liq_short',  liq.get('nearest_short', 0)  if isinstance(liq, dict) else 0)),
+            'liq_long':   float(d.get('liq_long',   liq.get('nearest_long', 0)   if isinstance(liq, dict) else 0)),
+            'liq_short2': float(liq.get('second_short', 0) if isinstance(liq, dict) else 0),
+            'liq_long2':  float(liq.get('second_long',  0) if isinstance(liq, dict) else 0),
+
+            # ── D4 共振 ──
+            'align_count': int(_res.get('align_count', d.get('align_count', 0))),
+            'entry_lo':  float(_tb.get('entry_lo', d.get('entry_lo', 0))),
+            'entry_hi':  float(_tb.get('entry_hi', d.get('entry_hi', 0))),
+            'oi_direction': str(oi.get('signal', d.get('oi_direction', '?')) if isinstance(oi, dict) else '?'),
+            'cvd_1h':    float(d.get('cvd_1h', 0)),
+            'cvd_4h':    float(d.get('cvd_4h', 0)),
+            'cvd_dir_1h': str(d.get('cvd_dir_1h', '?')),
+            'cvd_dir_4h': str(d.get('cvd_dir_4h', '?')),
+            'gex':       float(_vol.get('gex_note', 0) if isinstance(_vol.get('gex_note'), (int,float)) else 0),
+
+            # ── D5 OI ──
+            'oi_sequence':  _oi_sequence,
+            'oi_chg_total': float(d.get('oi_chg_pct', 0)),
+            'oi_signal':    str(oi.get('signal', '?') if isinstance(oi, dict) else '?'),
+            'fr':           float(d.get('fr', 0)),
+
+            # ── D6 LSR ──
             'lsr_big':    float(d.get('lsr_big', 0)),
-            'lsr_zscore': float(d.get('zsc', {}).get('zscore', 0) if isinstance(d.get('zsc'), dict) else 0),
-            'iv_pct': float(d.get('iv_pct', 0)), 'kappa': float(d.get('kappa', 0)),
-            'fed_rate': float(mac.get('fed_rate', 0)), 'fear_greed': int(mac.get('fear_greed', 50)),
-            '_snapshot_written_epoch': _ts_sync.time(), '_snapshot_age_sec': 0,
-            '_data_source': 'brahma_manual_analysis_p2_sync',
+            'lsr_retail': float(d.get('lsr_retail', d.get('lsr', 0))),
+            'lsr_zscore': float(_zsc.get('zscore', 0) if isinstance(_zsc, dict) else 0),
+
+            # ── D7 波动率 ──
+            'kappa':    float(_vol.get('kappa',    d.get('kappa', 0))),
+            'iv_rank':  float(_vol.get('iv_rank',  0)),
+            'iv_pct':   float(d.get('iv_pct', 0)),
+            'atr_1h':   float(_vol.get('atr_1h',   0)),
+            'atr_4h':   float(_vol.get('atr_4h',   0)),
+            'harv_lo':  float(_vol.get('harv_range_lo', 0)),
+            'harv_hi':  float(_vol.get('harv_range_hi', 0)),
+            'rsi_15m':  float(d.get('rsi_15m', d.get('k15m_rsi', 0))),
+            'rsi_1h':   float(d.get('rsi_1h',  d.get('k1h_rsi',  0))),
+            'rsi_4h':   float(d.get('rsi_4h',  d.get('k4h_rsi',  0))),
+            'rsi_1d':   float(d.get('rsi_1d',  d.get('k1d_rsi',  0))),
+
+            # ── D8 宏观 ──
+            'fed_rate':    float(_mac.get('fed_rate',   0)),
+            'fg_index':    int(_mac.get('fear_greed',  50)),
+            'fear_greed':  int(_mac.get('fear_greed',  50)),
+            'cross_alpha': float(_mac.get('cross_alpha', 0)),
+            'session':     str(_mac.get('session', d.get('session', 'UNKNOWN'))),
+
+            # ── D9 风控 ──
+            'circuit_breaker_ok': bool(_risk.get('circuit_ok', True)),
+            'drawdown_pct':       float(_risk.get('dd_pct', 0)),
+            'position_coef':      float(_risk.get('nav_mult', 1.0)),
+            'btc_eth_corr':       float(d.get('btc_eth_corr', 0.85)),
+
+            # ── D10 果蝇 ──
+            'bw_score': int(_bw.get('results', {}).get(sym+'USDT', {}).get('score', 0) if isinstance(_bw, dict) else 0),
+            'bw_c1':    dict(_bw.get('c1', {}) if isinstance(_bw, dict) else {}),
+            'bw_c2':    dict(_bw.get('c2', {}) if isinstance(_bw, dict) else {}),
+            'bw_c3':    dict(_bw.get('c3', {}) if isinstance(_bw, dict) else {}),
+
+            # ── Step11 ──
+            'step11_gates':   _gates,
+            'step11_verdict': str(_step11_g.get('verdict', 'WAIT') if isinstance(_step11_g, dict) else 'WAIT'),
+            'score_final':    float(d.get('bs', {}).get('score_final', d.get('bs', {}).get('score', 0)) if isinstance(d.get('bs'), dict) else 0),
+            'raw_score':      float(d.get('bs', {}).get('score', 0) if isinstance(d.get('bs'), dict) else 0),
+
+            # ── VIP策略 ──
+            'signal_dir':      str(_tb.get('direction', d.get('signal_dir', 'NONE'))),
+            'sl':              float(_tb.get('sl',  d.get('sl',  0))),
+            'tp1':             float(_tb.get('tp1', d.get('tp1', 0))),
+            'tp2':             float(_tb.get('tp2', d.get('tp2', 0))),
+            'tp3':             float(_tb.get('tp3', d.get('tp3', 0))),
+            'rr':              float(_tb.get('rr',  d.get('rr',  0))),
+            'ev_pct':          float(_tb.get('ev_pct', d.get('ev_pct', 0))),
+            'leverage':        int(_tb.get('leverage', d.get('leverage', 5))),
+            'position_size_pct': float(_tb.get('position_size_pct', d.get('position_size_pct', 1))),
+
+            # ── 元数据 ──
+            '_snapshot_written_epoch': _ts_sync.time(),
+            '_snapshot_age_sec':       0,
+            '_data_source':            'brahma_manual_analysis_fix_c_v2',
         }
         _tmp_sync = _state_path.with_suffix('.tmp')
         _tmp_sync.write_text(_json_sync.dumps(_sync_state, ensure_ascii=False, indent=2), encoding='utf-8')
         _tmp_sync.replace(_state_path)
-        print(f'[{sym}] ✅ P2同步: brahma_state写入 price=${_sync_state["price"]:,.0f}', flush=True)
+        _missing = [k for k in ['fvg_votes','ob_list','fvg_magnet','liq_short','sl','tp1','score_final','step11_gates'] if not _sync_state.get(k) and _sync_state.get(k) != 0]
+        print(f'[{sym}] ✅ Fix-C brahma_state写入 price=${_p_price:,.0f} regime={_p_regime} 缺字段={_missing or "无"}', flush=True)
     except Exception as _sync_e:
+        import traceback as _tb_sync; _tb_sync.print_exc(file=sys.stderr)
         print(f'[WARN] P2 state同步失败: {_sync_e}', file=sys.stderr)
 
     # [2026-10-02 苏摩111] output_template 标准格式化尾部追加
