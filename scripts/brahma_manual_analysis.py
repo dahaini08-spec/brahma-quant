@@ -3874,7 +3874,12 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             'tp2':             float(_tb.get('tp2', d.get('tp2', 0))),
             'tp3':             float(_tb.get('tp3', d.get('tp3', 0))),
             'rr':              float(_tb.get('rr',  d.get('rr',  0))),
-            'ev_pct':          float(_tb.get('ev_pct', d.get('ev_pct', 0))),
+            # [封印修复②] ev_pct = (reward×0.52 - risk×0.48) / entry
+            'ev_pct':          float(_tb.get('ev_pct') or d.get('ev_pct') or (
+                lambda el, er, ep: round((el*0.52 - er*0.48)/ep*100, 3) if el>0 and er>0 and ep>0 else 0.0
+            )(abs(float(_tb.get('entry_hi', d.get('entry_hi',0))) - float(_tb.get('tp1', d.get('tp1',0)))),
+              abs(float(_tb.get('sl', d.get('sl',0))) - float(_tb.get('entry_hi', d.get('entry_hi',0)))),
+              float(_tb.get('entry_hi', d.get('entry_hi',1))))),
             'leverage':        int(_tb.get('leverage', d.get('leverage', 5))),
             'position_size_pct': float(_tb.get('position_size_pct', d.get('position_size_pct', 1))),
 
@@ -4087,6 +4092,7 @@ def main():
             print(f"[WARN] auto_analysis_latest写入失败: {_fe}", file=sys.stderr)
 
         _summary = {
+            'ts': _time.time(),  # [封印修复①] Unix时间戳，AI判断数据时效必用
             'timestamp': _time.strftime('%Y-%m-%d %H:%M:%S UTC', _time.gmtime()),
             'symbols': symbols,
             'elapsed_s': round(elapsed, 1),

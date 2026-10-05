@@ -290,3 +290,8 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [TRIM 2026-10-04 苏摩111 精简至40任务 资金费率历史每日1次足够] 0 0,8,16 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/fr_history_collector.py >> logs/fr_history_collector.log 2>&1
 # [Phase3 A/B实验] 每周日 03:00 UTC 自动运行
 # [TRIM 2026-10-04 苏摩111 精简至40任务 A/B实验每周日已有cron] 0 3 * * 0 cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/brahma_ab_experiment.py >> logs/ab_experiment.log 2>&1  # [Phase3 A/B实验]
+# [封印修复③ 2026-10-05 苏摩111] 梵天定时分析 UTC01/09/17 超时240s防exit124
+0 1,9,17 * * * cd /root/.openclaw/workspace/trading-system && timeout 240 python3 scripts/brahma_manual_analysis.py --symbols BTC ETH >> logs/auto_analysis.log 2>&1
+
+# [封印修复④ 2026-10-05 苏摩111] LSR实时拉取每15min，猎杀信号接入
+*/15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/lsr_patch.py >> logs/state_quality.log 2>&1
