@@ -78,7 +78,7 @@ def _atomic_write(path, obj):
         _os.replace(tmp, str(path))
     except Exception:
         try: _os.unlink(tmp)
-        except Exception: pass
+        except Exception: pass  # tmp文件删除失败，无关紧要
         raise
 
 

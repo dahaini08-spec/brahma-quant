@@ -19,7 +19,7 @@ P0: 实时清算热力图 — liq_heatmap.py
 import sys, os, requests, json, time, hmac, hashlib
 try:
     import urllib3; urllib3.disable_warnings()  # [Fix 2026-10-04] cron SSL
-except: pass
+except Exception: pass  # urllib3可能不安装，安全忽略
 requests.packages.urllib3.disable_warnings() if hasattr(requests,"packages") else None
 
 from pathlib import Path

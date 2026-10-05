@@ -54,7 +54,7 @@ def load_outcomes() -> list:
         with open(OUTCOMES_LOG) as f:
             for line in f:
                 try: outcomes.append(json.loads(line.strip()))
-                except: pass
+                except Exception: pass  # jsonl行解析跳过，预期行为
     return outcomes
 
 

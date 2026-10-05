@@ -39,7 +39,7 @@ def load_signals(days=7):
             ts = datetime.fromisoformat(str(d.get('ts','')).replace('Z','+00:00'))
             if ts >= cutoff:
                 recent.append(d)
-        except: pass
+        except Exception: pass  # ISO日期解析跳过，预期行为
     return all_sigs, recent
 
 def calc_stats(signals):

@@ -479,8 +479,7 @@ def _generate_l2_lessons(changes: list, matrix: dict) -> None:
         with open(_l1_file) as _f:
             for _line in _f:
                 try: _decisions.append(_j.loads(_line))
-                except Exception: pass
-        # 按decision统计
+                except Exception: pass  # json行解析跳过箭形行，预期行为
         from collections import Counter as _C
         _counts = _C(d.get('decision') for d in _decisions if d.get('decision'))
         _total = sum(_counts.values())

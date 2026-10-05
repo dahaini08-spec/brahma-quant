@@ -38,7 +38,7 @@ except ImportError:
                 if m2 and current_key:
                     k, v = m2.group(1), m2.group(2).strip()
                     try: v = float(v) if '.' in v else (int(v) if v.lstrip('-').isdigit() else (True if v=='true' else (False if v=='false' else v)))
-                    except: pass
+                    except Exception: pass  # yaml值类型转换跳过
                     current_section[k] = v
                     continue
                 # 一级 key
@@ -51,7 +51,7 @@ except ImportError:
                         current_section = result[current_key]
                     else:
                         try: v1 = float(v1) if '.' in v1 else (True if v1=='true' else (False if v1=='false' else v1))
-                        except: pass
+                        except Exception: pass  # yaml一级值类型转换跳过
                         result[current_key] = v1
                         current_section = result
             return result

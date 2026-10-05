@@ -49,7 +49,7 @@ def get_watchlist_bonus(symbol: str) -> int:
             if symbol in tier.get('symbols', {}):
                 bonus = wl.get('scoring_bonus', {}).get(f'tier{tier_key[-1]}_bonus', 0)
                 return bonus
-    except Exception: pass
+    except Exception: pass  # watchlist读取失败，返回0加分，安全降级
     return 0
 
 # ─── 状态机：追踪TIGHT压缩持续时间 ───────────────────────────

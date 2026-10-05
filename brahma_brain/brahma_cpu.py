@@ -86,8 +86,7 @@ def _load_jarvis_thread():
         for line in env.read_text(encoding='utf-8').splitlines():
             if line.startswith('JARVIS_THREAD_ID='):
                 return line.split('=',1)[1].strip()
-    except Exception: pass
-    return '01a0d79b-fea4-71b1-9f2a-c02a9844b4ed'  # 兜底
+    except Exception: pass  # fallback内建默认值，读失败不影响功能
 _JARVIS_THREAD  = _load_jarvis_thread()
 
 # ── Autopilot记忆层 [9.20 苏摩111] ─────────────────────────────────

@@ -110,7 +110,7 @@ def check_data_health() -> dict:
                     cwd=str(BASE), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                 )
                 healed.append(f'state({name})')
-            except: pass
+            except Exception: pass  # sentinel子进程启动失败，非阻塞
 
     return {'issues': issues, 'healed': healed}
 
@@ -271,7 +271,7 @@ def main():
                     if 'TRIGGERED' in _r2.stdout or '触发' in _r2.stdout:
                         _triggered.append('price_trigger')
                     break
-            except Exception: pass
+            except Exception: pass  # price_trigger检测失败，跳过
     report['triggered'] = _triggered
 
     elapsed = round(time.time() - t0, 2)
@@ -318,7 +318,7 @@ def main():
     state_file = DATA / 'autonomous_loop_state.json'
     try:
         state_file.write_text(json.dumps(report, ensure_ascii=False, indent=2))
-    except: pass
+    except Exception: pass  # loop状态写入失败，非阻塞
 
     _log(f'完成 {elapsed}s | 复活={len(revived)} 数据问题={len(health["issues"])} '
          f'自进化={evo["status"]} 内存={host["mem_pct"]}%')
