@@ -2889,9 +2889,21 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     regime_c = d['regime_s'].get(sym+'USDT',{}).get('confirmed', d['bs'].get('regime','CHOP_MID'))  # [9.15修复] 提到try外面
     try:
         from brahma_brain.trader_brain import decide as tb_decide, format_vip_card as tb_format
-        # [2026-10-06 苏摩111] 优先用ob_list（含valid/age字段），regime降级CHOP_MID
+        # [2026-10-06 苏摩111 bugfix] 优先用ob_list（含valid/age字段），regime降级CHOP_MID
+        # 修复: _ob_list在state-save块(L3786)才定义，此处用ob实时构建避免NameError
         _regime_for_tb = regime_c if regime_c and regime_c != 'UNKNOWN' else 'CHOP_MID'
-        _ob_for_tb = _ob_list if _ob_list else ob  # ob_list是list格式，含valid+age
+        _ob_for_tb_pre = []
+        if isinstance(ob, dict):
+            for _k, _v in ob.items():
+                _pts = _k.split('_')
+                if len(_pts) >= 3 and _pts[0] == 'OB' and isinstance(_v, dict):
+                    _ob_for_tb_pre.append({'tf': _pts[1], 'side': _pts[2],
+                        'age': int(_v.get('age', 0)), 'lo': float(_v.get('lo', 0)),
+                        'hi': float(_v.get('hi', 0)), 'valid': bool(_v.get('valid', False)),
+                        'dist_pct': float(_v.get('dist_pct', 0))})
+        elif isinstance(ob, list):
+            _ob_for_tb_pre = ob
+        _ob_for_tb = _ob_for_tb_pre if _ob_for_tb_pre else ob
         tb_result = tb_decide(
             regime=_regime_for_tb,
             score=float(d['bs'].get('score_final', d['bs'].get('score', 0))),
@@ -2939,9 +2951,10 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     if final_direction in ('LONG', 'SHORT'):
         _tb_dir = final_direction
         _tb_bull = (_tb_dir == 'LONG')
-        _fvg_c = fvg.get('dir', 'NONE').upper()   # BULL/BEAR
+        # [bugfix 2026-10-06 苏摩111] 用consensus而非dir（consensus=多TF投票，dir=单主导TF）
+        _fvg_c = fvg.get('consensus', fvg.get('dir', 'NONE')).upper()   # BULL/BEAR
         _fvg_match = (_tb_bull and _fvg_c == 'BULL') or (not _tb_bull and _fvg_c == 'BEAR')
-        # OB多数派
+        # OB多数派（ob dict格式：OB_TF_TYPE键）
         _valid_obs = [k for k, v in ob.items() if isinstance(v, dict) and v.get('valid')]
         _ob_bull_n = sum(1 for k in _valid_obs if 'BULL' in k)
         _ob_bear_n = sum(1 for k in _valid_obs if 'BEAR' in k)
@@ -2950,10 +2963,10 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
         _liq_short = liq.get('nearest_short', 0)
         _liq_long  = liq.get('nearest_long', 0)
         _liq_match = (_tb_dir == 'SHORT' and _liq_short > p) or (_tb_dir == 'LONG' and _liq_long > 0 and _liq_long < p)
-        # OI方向
+        # OI方向（改革3：LONG_UNWIND不算LONG也不算SHORT）
         _oi_sig = (oi or {}).get('signal', '')
-        _oi_bull = 'LONG' in _oi_sig or 'BUY' in _oi_sig
-        _oi_bear = 'SHORT' in _oi_sig or 'SELL' in _oi_sig
+        _oi_bull = _oi_sig in ('LONG_BUILD', 'SHORT_SQUEEZE')   # 改革3：精确匹配，非包含
+        _oi_bear = _oi_sig in ('SHORT_BUILD',)                  # 改革3：LONG_UNWIND不是做空
         _oi_match = (_tb_bull and _oi_bull) or (not _tb_bull and _oi_bear)
         # GEX方向
         _gex_score = (vol or {}).get('gex_score', 0)
@@ -3084,6 +3097,31 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
                         price=p, oi=oi, sm=sm, vol=vol, res=res, symbol=sym+'USDT', cf_action=_cf_act_r2)
                 if _r2.get('direction','NONE') != 'NONE': _tb_for_s11 = _r2
             except Exception: pass
+        # [2026-10-06 苏摩111] _tb_for_s11方向确定后重算align_count → G4真实共振
+        _s11_dir = _tb_for_s11.get('direction','NONE')
+        if _s11_dir in ('LONG','SHORT'):
+            _s11_bull = (_s11_dir == 'LONG')
+            _s11_fvg_c = fvg.get('consensus','NONE').upper()
+            _s11_obs = [k for k,v in ob.items() if isinstance(v,dict) and v.get('valid')] if isinstance(ob,dict) else []
+            _s11_ob_bull = sum(1 for k in _s11_obs if 'BULL' in k)
+            _s11_ob_bear = sum(1 for k in _s11_obs if 'BEAR' in k)
+            _s11_oi_sig = (oi or {}).get('signal','')
+            _s11_oi_bull = _s11_oi_sig in ('LONG_BUILD','SHORT_SQUEEZE')
+            _s11_oi_bear = _s11_oi_sig in ('SHORT_BUILD',)
+            _s11_gex = (vol or {}).get('gex_score',0)
+            _s11_fc = (fc or {}).get('signal','NEUTRAL') if 'fc' in dir() else 'NEUTRAL'
+            _s11_cma_on = bool(_cma) and _cma.get('regime','') == 'RISK_ON' if '_cma' in dir() else False
+            _s11_align = sum([
+                (_s11_bull and _s11_fvg_c=='BULL') or (not _s11_bull and _s11_fvg_c=='BEAR'),
+                (_s11_bull and _s11_ob_bull>_s11_ob_bear) or (not _s11_bull and _s11_ob_bear>_s11_ob_bull),
+                (_s11_dir=='SHORT' and liq.get('nearest_short',0)>p) or (_s11_dir=='LONG' and liq.get('nearest_long',0)>0 and liq.get('nearest_long',0)<p),
+                (_s11_oi_sig not in ('NO_DATA','MIXED','')) and ((_s11_bull and _s11_oi_bull) or (not _s11_bull and _s11_oi_bear)),
+                _s11_gex != 0 and ((_s11_bull and _s11_gex>0) or (not _s11_bull and _s11_gex<0)),
+                _s11_fc != 'NEUTRAL' and ((_s11_bull and _s11_fc=='LONG') or (not _s11_bull and _s11_fc=='SHORT')),
+                bool('_cma' in dir() and _cma) and ((_s11_bull and _s11_cma_on) or (not _s11_bull and not _s11_cma_on)),
+            ])
+            res['align_count'] = _s11_align
+            print(f'[{sym}] G4预计算: dir={_s11_dir} align={_s11_align}/7', flush=True)
         _s11_result = _s11(sym, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, _tb_for_s11)
         d['_step11'] = _s11_result  # 供后续formatter读取
         _s11_verdict = _s11_result['verdict']
