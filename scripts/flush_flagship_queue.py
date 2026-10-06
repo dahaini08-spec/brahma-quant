@@ -85,6 +85,36 @@ def flush(dry_run: bool = False) -> int:
         print(f'[flush] 发帖失败: {resp["error"]}（保持PENDING，可重试）')
         return 0
 
+    # [封印 2026-10-06 苏摩111] 旗舰帖三账号差异化发布
+    # KEY_0(姓赵不宣)已发 → 改写KEY_1(蓝桉)/KEY_2(牛来PRO) → 间隔5min
+    try:
+        from square.multi_voice_rewriter import rewrite_for_account
+        from square.square_key_router import get_square_key as _gsk_fq
+        import urllib.request as _ur_fq, ssl as _ssl_fq
+        _ctx_fq = _ssl_fq.create_default_context()
+        _fq_url = 'https://www.binance.com/bapi/composite/v1/public/pgc/openApi/content/add'
+        for _ki in [1, 2]:
+            try:
+                _rewritten = rewrite_for_account(content, _ki)
+                if not _rewritten or len(_rewritten) < 50:
+                    continue
+                import time as _t_fq; _t_fq.sleep(300)  # 5min间隔
+                _k = _gsk_fq('hot_poster' if _ki == 1 else 'extreme_alert')
+                _pl = __import__('json').dumps({'bodyTextOnly': _rewritten}).encode()
+                _rq = _ur_fq.Request(_fq_url, data=_pl,
+                    headers={'X-Square-OpenAPI-Key': _k, 'Content-Type': 'application/json',
+                             'clienttype': 'binanceSkill'})
+                _rs = __import__('json').loads(_ur_fq.urlopen(_rq, timeout=15, context=_ctx_fq).read())
+                _acc = ['蓝桉VS释怀鸟', '牛来PRO'][_ki-1]
+                if _rs.get('code') == '000000':
+                    print(f'[flush] ✅ KEY_{_ki}({_acc})差异化发布成功')
+                else:
+                    print(f'[flush] ⚠️ KEY_{_ki}({_acc})发布返回: {str(_rs)[:80]}')
+            except Exception as _efq:
+                print(f'[flush] KEY_{_ki}差异化失败(非致命): {_efq}')
+    except Exception as _emv:
+        print(f'[flush] 三账号改写模块加载失败(非致命): {_emv}')
+
     item['status'] = 'PUBLISHED'
     item['published_ts'] = time.time()
     item['post_id'] = resp.get('data', {}).get('id', 0) if isinstance(resp.get('data'), dict) else 0

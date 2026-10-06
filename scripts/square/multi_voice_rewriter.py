@@ -13,8 +13,26 @@ multi_voice_rewriter.py — 三账号差异化改写引擎 v3.0
   - 不得是纯数据堆砌
   - 不得有AI腔（根据以上分析/综合来看/建议投资者）
 """
-import re, random, time
+import re, random, time, sys
 from typing import Optional
+from pathlib import Path as _P
+sys.path.insert(0, str(_P(__file__).resolve().parent.parent))
+
+# [封印 2026-10-06 苏摩111] Chutes LLM改写增强：用DeepSeek-V3.2生成人性化内容
+def _llm_rewrite(original: str, persona: str, max_tokens: int = 250) -> str:
+    """调用Chutes LLM生成差异化内容，失败则返回空字符串走模板兜底"""
+    try:
+        from free_llm_client import chat as _fc
+        prompt = (
+            f'你是{persona}。\n'
+            f'根据以下原帖内容，用你自己的口吻改写成一条新帖（不是翻译，是用你的人格重新叙述）：\n\n'
+            f'{original[:800]}\n\n'
+            f'要求：150-300字，有观点，有数字，结尾不加品牌签名，不得出现"梵天""姓赵不宣""设计院"'
+        )
+        result = _fc(prompt, task='vip', max_tokens=max_tokens)
+        return result.strip() if result and len(result) > 50 else ''
+    except Exception:
+        return ''
 
 _KEY1_FORBIDDEN = ['梵天', '姓赵不宣', '设计院', '量化系统', 'brahma']
 _KEY2_FORBIDDEN = ['梵天', '姓赵不宣', '设计院', '量化系统', 'brahma', '蓝桉', '释怀鸟']
@@ -190,7 +208,13 @@ _EDU_CLOSERS = [
 
 
 def _build_lanhui(info: dict, original: str) -> str:
-    """蓝桉版：高频交易员，有自己的独立分析，不是原帖的简单转述"""
+    """蓝桉版：高频交易员，有自己的独立分析，不是原帖的简单转述
+    [封印 2026-10-06] 优先Chutes LLM生成，失败走模板兜底
+    """
+    # 优先LLM
+    llm_result = _llm_rewrite(original, '蓝桉VS释怀鸟：数据驱动的高频交易员，机构视角，冷静分析大户行为')
+    if llm_result:
+        return llm_result
     topic = info['topic']
     coins = info['coins']
     coin_str = '+'.join(coins[:2]) if coins else '行情'
@@ -240,6 +264,10 @@ def _build_lanhui(info: dict, original: str) -> str:
 
 def _build_niulai(info: dict, original: str) -> str:
     """牛来PRO版：宏观视角，讲清楚背后逻辑，有教育价值"""
+    # 优先LLM
+    llm_result = _llm_rewrite(original, '牛来PRO：新手友好型教学导师，解释技术信号背后的逻辑，语言简单明了')
+    if llm_result:
+        return llm_result
     topic = info['topic']
     coins = info['coins']
     coin_str = '/'.join(coins[:2]) if coins else '加密市场'
