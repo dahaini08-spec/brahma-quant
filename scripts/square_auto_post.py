@@ -54,13 +54,18 @@ DEDUP_FILE = BASE / 'data' / 'square_post_dedup.json'
 LOG_FILE = BASE / 'data' / 'square_post_log.jsonl'
 
 
-def _post_to_square(content: str) -> dict:
-    """POST到Binance Square"""
+def _post_to_square(content: str, key: str = None) -> dict:
+    """POST到Binance Square
+    [封印 2026-10-06 苏摩111] key参数化：支持多账号路由
+    key=None → 默认KEY_0(姓赵不宣)；传入具体key→指定账号
+    接入位置：flush_flagship_queue.py / square_auto_post.run()
+    """
+    _key = key if key else SQUARE_KEY
     payload = json.dumps({'bodyTextOnly': content}).encode()
     req = urllib.request.Request(
         SQUARE_URL, data=payload,
         headers={
-            'X-Square-OpenAPI-Key': SQUARE_KEY,
+            'X-Square-OpenAPI-Key': _key,
             'Content-Type': 'application/json',
             'clienttype': 'binanceSkill',
         },
@@ -72,65 +77,37 @@ def _post_to_square(content: str) -> dict:
         return {'error': str(e)}
 
 
-def _post_multi_voice(original_content: str) -> None:
+# [封印 2026-10-06 苏摩111] _post_multi_voice已废弃删除
+# 三账号差异化实际走 square_multi_voice_worker.py setsid子进程
+
+def _semantic_dedup_key(content: str) -> str:
+    """[封印 2026-10-06 苏摩111] 语义去重key：价格区间+方向+时间窗口
+    原MD5(全文)缺陷：多一个空格=不同hash=重复发出
+    新策略：提取价格($数字)+方向词(多单/空单/WAIT)+当前小时，相同=重复
     """
-    三账号差异化发帖 [2026-10-03 苏摩111]
-    KEY_0已发 → 改写KEY_1(蓝桉)/KEY_2(牛来PRO) → 间隔5min分发
-    IP隔离：蓝桉/牛来PRO内容不出现梵天/姓赵不宣字样
-    """
-    from square.square_key_router import get_square_key as _gsk2
-    import ssl as _ssl2, urllib.request as _ur2
-    _keys = {1: _gsk2('hot_poster'), 2: _gsk2('extreme_alert')}
-    _ctx2 = _ssl2.create_default_context()
-
-    def _do_post2(content: str, key_idx: int) -> dict:
-        key = _keys.get(key_idx, '')
-        if not key:
-            return {'error': f'KEY{key_idx}未配置'}
-        payload = json.dumps({'bodyTextOnly': content}).encode()
-        req = _ur2.Request(
-            SQUARE_URL, data=payload,
-            headers={'X-Square-OpenAPI-Key': key,
-                     'Content-Type': 'application/json',
-                     'clienttype': 'binanceSkill'},
-        )
-        try:
-            return json.loads(_ur2.urlopen(req, timeout=15, context=_ctx2).read())
-        except Exception as _e2:
-            return {'error': str(_e2)}
-
-    try:
-        if not _MULTI_VOICE_ENABLED or _gen3v is None:
-            print('[multi_voice] 改写引擎未加载，跳过', flush=True)
-            return
-        versions = _gen3v(original_content)  # {0:原版,1:蓝桉版,2:牛来PRO版}
-        names = {1: '蓝桉VS释怀鸟', 2: '牛来PRO'}
-        for idx in [1, 2]:
-            v = versions.get(idx)
-            if not v:
-                continue
-            print(f'[multi_voice] 等待300s → KEY{idx} {names[idx]}...', flush=True)
-            time.sleep(300)
-            resp = _do_post2(v, idx)
-            if resp.get('success') or resp.get('code') == '000000':
-                link = resp.get('data', {}).get('shareLink', '')
-                print(f'[multi_voice] KEY{idx} {names[idx]} ✅ {link}', flush=True)
-                _log_post(f'multi_voice_key{idx}', v, resp)
-            else:
-                print(f'[multi_voice] KEY{idx} 失败: {resp}', flush=True)
-    except Exception as _mv_e:
-        print(f'[multi_voice] 异常: {_mv_e}', flush=True)
-
+    import re as _re
+    prices = _re.findall(r'\$[\d,]+(?:\.\d+)?', content)
+    price_key = ','.join(prices[:3]) if prices else 'noprice'
+    dirs = []
+    for w in ['空单', '多单', 'WAIT', '暂无操作', '观望']:
+        if w in content:
+            dirs.append(w)
+    dir_key = '+'.join(dirs[:2]) if dirs else 'nodir'
+    import time as _t
+    hour_key = str(int(_t.time()) // 3600)  # 每小时一个窗口
+    return f'{price_key}|{dir_key}|{hour_key}'
 
 def _is_duplicate(content: str) -> bool:
     import hashlib
-    h = hashlib.md5(content.encode()).hexdigest()[:12]
+    # 双重去重：语义key（宽松）+ MD5(全文)（严格）
+    sem_key = _semantic_dedup_key(content)
+    md5_key = hashlib.md5(content.encode()).hexdigest()[:12]
     if DEDUP_FILE.exists():
         try:
             d = json.loads(DEDUP_FILE.read_text())
             now = time.time()
             d = {k: v for k, v in d.items() if now - v < 86400}
-            if h in d:
+            if sem_key in d or md5_key in d:
                 return True
         except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return False
@@ -139,6 +116,7 @@ def _is_duplicate(content: str) -> bool:
 def _mark_posted(content: str):
     import hashlib
     h = hashlib.md5(content.encode()).hexdigest()[:12]
+    sem = _semantic_dedup_key(content)  # [封印 2026-10-06] 同时写语义key
     d = {}
     if DEDUP_FILE.exists():
         try:
@@ -147,6 +125,7 @@ def _mark_posted(content: str):
     now = time.time()
     d = {k: v for k, v in d.items() if now - v < 86400}
     d[h] = now
+    d[sem] = now
     # [9.28瘟疫清扫 苏摩111] 原子写: tmp+os.replace 防空读竞态（9.26路线A同款）
     _tmp = DEDUP_FILE.with_suffix(".tmp")
     _tmp.write_text(json.dumps(d, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -186,10 +165,20 @@ def run(syms: list, dry_run: bool = False) -> None:
             if not f.exists():
                 return {}
             d = _json.loads(f.read_text())
-            ts = d.get('timestamp', '')
-            from datetime import datetime as _dt, timezone as _tz
-            t = _dt.strptime(ts, '%Y-%m-%d %H:%M:%S UTC').replace(tzinfo=_tz.utc)
-            age = _time.time() - t.timestamp()
+            # [封印 2026-10-06 苏摩111] 统一用 ts 数值字段（brahma_manual_analysis已写入）
+            # 旧路径：timestamp字符串解析脆弱（格式变化→crash→每次重跑分析）
+            # 新路径：直接读 ts epoch，zero-dependency，永不crash
+            _ts_val = d.get('ts', 0)
+            if _ts_val:
+                age = _time.time() - float(_ts_val)
+            else:
+                # 兜底：旧timestamp字符串降级解析
+                try:
+                    from datetime import datetime as _dt, timezone as _tz
+                    t = _dt.strptime(d.get('timestamp',''), '%Y-%m-%d %H:%M:%S UTC').replace(tzinfo=_tz.utc)
+                    age = _time.time() - t.timestamp()
+                except Exception:
+                    age = max_age_s + 1  # 解析失败→视为过期→重跑分析
             if age > max_age_s:
                 return {}
             out = d.get('output', '')
@@ -296,15 +285,24 @@ def run(syms: list, dry_run: bool = False) -> None:
                 print('[multi_voice] 后台进程已启动 (setsid)', flush=True)
         return
 
-    # ── 单币种：逐币旧路径（兼容保留）──
+    # ── 单币种：优先SSOT，降级才重跑分析 ──
+    # [封印 2026-10-06 苏摩111] P1⑤修复：单币种旧路径直接重跑94维分析浪费60s
+    # 与多币种路径统一：先读auto_analysis_latest，新鲜则直接用
     sym = syms[0]
-    print(f'[{sym}] 生成分析报告...', flush=True)
-    try:
-        report = run_analysis(sym, push_jarvis=False)
-    except Exception as e:
-        print(f'[{sym}] 分析失败: {e}')
-        return
-    data = parse_analysis_output(report)
+    data = None
+    _fresh1 = _fresh_signal_pkg([sym])
+    if _fresh1 and sym in _fresh1:
+        print(f'[{sym}] SSOT命中，跳过重复分析', flush=True)
+        seg1 = _extract_sym_segment(globals().get('_fresh_out',''), sym)
+        data = parse_analysis_output(seg1) if seg1 else _fresh1[sym]
+    if not data:
+        print(f'[{sym}] SSOT过期，生成分析报告...', flush=True)
+        try:
+            report = run_analysis(sym, push_jarvis=False)
+        except Exception as e:
+            print(f'[{sym}] 分析失败: {e}')
+            return
+        data = parse_analysis_output(report)
     data['price'] = data.get('price', 0)
     content = build_battlefield_report(sym, data)
 

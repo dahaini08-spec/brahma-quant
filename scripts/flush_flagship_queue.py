@@ -80,7 +80,7 @@ def flush(dry_run: bool = False) -> int:
         print('[flush] DRY-RUN，未发布')
         return 0
 
-    resp = _post_to_square(content)
+    resp = _post_to_square(content)  # key=None → KEY_0(姓赵不宣)，符合旗舰帖主账号规范
     if 'error' in resp:
         print(f'[flush] 发帖失败: {resp["error"]}（保持PENDING，可重试）')
         return 0
