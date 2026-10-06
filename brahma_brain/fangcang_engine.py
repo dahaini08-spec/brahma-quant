@@ -1000,7 +1000,13 @@ def get_fangcang_context(
                     f"HCME历史镜像Top3：\n" + '\n'.join(_case_lines) + "\n"
                     f"用一句话(20字内)总结历史案例对当前布局的启示："
                 )
-                _llm_mirror = _llm_hcme(_mirror_prompt, max_tokens=45, task='hcme')
+                # [2026-10-06 苏摩111] 5s超时防analyze卡死
+                try:
+                    import concurrent.futures as _cff
+                    with _cff.ThreadPoolExecutor(max_workers=1) as _fex:
+                        _ff = _fex.submit(_llm_hcme, _mirror_prompt, 45, 'hcme')
+                        _llm_mirror = _ff.result(timeout=5)
+                except Exception: _llm_mirror = ''
                 if _llm_mirror:
                     _llm_mirror = _llm_mirror.strip()[:80]
             except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
@@ -2946,19 +2952,15 @@ def unified_fangcang(
     """
     t0 = time.time()
 
-    # 并行获取两套系统结果
-    import concurrent.futures as cf
-    with cf.ThreadPoolExecutor(max_workers=2) as pool:
-        f1 = pool.submit(_get_engine_adj, symbol, regime, signal_dir)
-        f2 = pool.submit(_get_cases_adj, symbol, ms, signal_dir, regime)
-        try:
-            s1_adj, s1_conf, s1_n   = f1.result(timeout=15)
-        except Exception:
-            s1_adj, s1_conf, s1_n   = 0.0, 'timeout', 0
-        try:
-            s2_adj, s2_conf, s2_n, s2_wr = f2.result(timeout=10)
-        except Exception:
-            s2_adj, s2_conf, s2_n, s2_wr = 0.0, 'timeout', 0, 0.5
+    # [2026-10-06 苏摩111] 顺序执行替代ThreadPoolExecutor，防GIL import死锁
+    try:
+        s1_adj, s1_conf, s1_n = _get_engine_adj(symbol, regime, signal_dir)
+    except Exception:
+        s1_adj, s1_conf, s1_n = 0.0, 'error', 0
+    try:
+        s2_adj, s2_conf, s2_n, s2_wr = _get_cases_adj(symbol, ms, signal_dir, regime)
+    except Exception:
+        s2_adj, s2_conf, s2_n, s2_wr = 0.0, 'error', 0, 0.5
 
     # 假突破权重（降低高假突破率案例库的影响）
     genuine_w = _genuine_breakout_weight(symbol, signal_dir)

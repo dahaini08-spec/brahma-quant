@@ -186,16 +186,13 @@ def get_risk_regime() -> dict:
     - BTC/ETH相对强弱（BTC>ETH=防御模式）
     """
     # BTC & ETH 价格变化（并发拉取，走data_cache缓存）
-    with ThreadPoolExecutor(max_workers=3) as ex:
-        f_btc = ex.submit(_get_closes, 'BTCUSDT', '4h', 24)
-        f_eth = ex.submit(_get_closes, 'ETHUSDT', '4h', 24)
-        f_fg  = ex.submit(_get, 'https://api.alternative.me/fng/?limit=1')
-        btc_c = f_btc.result() or []
-        eth_c = f_eth.result() or []
-        try:
-            fg_data = f_fg.result()
-        except Exception:
-            fg_data = {}
+    # [2026-10-06 苏摩111] 顺序执行替代ThreadPoolExecutor防import死锁
+    try: btc_c = _get_closes('BTCUSDT', '4h', 24) or []
+    except Exception: btc_c = []
+    try: eth_c = _get_closes('ETHUSDT', '4h', 24) or []
+    except Exception: eth_c = []
+    try: fg_data = _get('https://api.alternative.me/fng/?limit=1')
+    except Exception: fg_data = {}
 
     if not btc_c or not eth_c:
         return {'regime': 'UNKNOWN', 'score': 0}

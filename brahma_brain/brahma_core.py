@@ -712,13 +712,15 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # 根因: step4串行调get_klines×9次 + step1 API调用 = 6s主要瓶颈
     # 方案: 在Step1之前并发预拉所有数据写入data_cache，后续调用直接命中缓存
     # 效果: 实际分析时缓存命中，串行6s → 并发内已就绪的数据 ~1s
-    try:
-        from data_cache import prefetch_symbol as _pf
-        # 同步预热（阻塞到完成，确保后续所有步骤缓存命中）
-        # prefetch_symbol内部已用ThreadPoolExecutor并发拉取，总耗时~1-1.5s
-        _pf(_sym)
-    except Exception as _e:
-        print(f"[WARN] brahma_core: {_e}", file=sys.stderr)
+    # [2026-10-06 苏摩111] prefetch_symbol有ThreadPoolExecutor并发import死锁风险
+    # 根因：子线程import同一模块→Python GIL import lock死锁
+    # 修复：跳过prefetch，各步骤自行按需拉取（data_cache单次调用无死锁）
+    # try:
+    #     from data_cache import prefetch_symbol as _pf
+    #     _pf(_sym)  # DISABLED: 死锁风险
+    # except Exception as _e:
+    #     print(f"[WARN] brahma_core: {_e}", file=sys.stderr)
+    pass  # prefetch disabled
 
     # ══ [9.22苏摩111封印] 按需拉取3个新数据源（0个新常驻进程） ══════════════
     # 资金费率/爆仓量/盘口深度 — 分析时拉取一次，写入缓存，VETERAN VR07-09消费

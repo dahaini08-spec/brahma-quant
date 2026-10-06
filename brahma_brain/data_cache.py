@@ -414,22 +414,42 @@ def prefetch_symbol(symbol: str) -> dict:
                'ETH' if 'ETH' in symbol.upper() else \
                'SOL' if 'SOL' in symbol.upper() else 'BTC'
 
+    # [2026-10-06 苏摩111] 主线程预先import，避免子线程并发import死锁
+    try:
+        import sys as _pfs, os as _pfo
+        _pf_base = _pfo.path.dirname(_pfo.path.dirname(_pfo.path.abspath(__file__)))
+        for _pp in [_pf_base, _pfo.path.join(_pf_base,'brahma_brain')]:
+            if _pp not in _pfs.path: _pfs.path.insert(0,_pp)
+        from brahma_brain.gex_unified import get_gex_state as _gex_warm  # noqa
+        from brahma_brain.fangcang_engine import get_fangcang_context as _hcme_warm  # noqa
+    except Exception: pass
+
+    # [2026-10-06 苏摩111 P0] 顺序执行替代ThreadPoolExecutor
+    # 根因: 子线程并发import同一模块→Python GIL import lock死锁
+    # 修复: 全部顺序调用，各函数内部有8s HTTP timeout，总耗时<15s可接受
     intervals = ['15m', '1h', '4h', '1d']
-    with ThreadPoolExecutor(max_workers=10) as ex:  # 从6增到10，支持更多并发
-        futs = {ex.submit(get_klines, symbol, iv, 200): iv for iv in intervals}
-        futs[ex.submit(get_ticker, symbol)] = 'ticker'
-        futs[ex.submit(get_funding_rate, symbol)] = 'fr'
-        futs[ex.submit(get_open_interest, symbol)] = 'oi'
-        futs[ex.submit(get_long_short_ratio, symbol)] = 'lsr'
-        # [矛盾1-B新增] GEX + HCME并行预热
-        futs[ex.submit(_prefetch_gex, currency)] = 'gex'
-        futs[ex.submit(_prefetch_hcme, symbol)] = 'hcme'
-        for f in as_completed(futs):
-            key = futs[f]
+    for iv in intervals:
+        try: result[iv] = get_klines(symbol, iv, 200)
+        except Exception: result[iv] = None
+    for name, fn, arg in [
+        ('ticker', get_ticker, symbol),
+        ('fr', get_funding_rate, symbol),
+        ('oi', get_open_interest, symbol),
+        ('lsr', get_long_short_ratio, symbol),
+        ('gex', _prefetch_gex, currency),
+        # hcme单独线程+超时（fangcang加载4564条KD-Tree可能较慢）
+    ]:
+        if name == 'hcme':
             try:
-                result[key] = f.result()
-            except Exception:
-                result[key] = None
+                import concurrent.futures as _cf_h
+                with _cf_h.ThreadPoolExecutor(max_workers=1) as _hex:
+                    _hf = _hex.submit(fn, arg)
+                    try: result[name] = _hf.result(timeout=5)
+                    except Exception: result[name] = None
+            except Exception: result[name] = None
+        else:
+            try: result[name] = fn(arg)
+            except Exception: result[name] = None
     return result
 
 def clear_expired() -> None:

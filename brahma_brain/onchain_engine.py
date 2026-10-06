@@ -331,16 +331,15 @@ def onchain_score(symbol: str, signal_dir: str) -> dict:
     is_long = signal_dir in ('LONG', '做多')
 
     # 4个数据源并发拉取（原串行→并发，节省~600ms）
-    from concurrent.futures import ThreadPoolExecutor
-    with ThreadPoolExecutor(max_workers=4) as ex:
-        f_oi   = ex.submit(get_oi_change, symbol)
-        f_ls   = ex.submit(get_long_short, symbol)
-        f_tkr  = ex.submit(get_taker_ratio, symbol)
-        f_fund = ex.submit(get_funding_trend, symbol)
-        oi   = f_oi.result()
-        ls   = f_ls.result()
-        tkr  = f_tkr.result()
-        fund = f_fund.result()
+    # [2026-10-06 苏摩111] 顺序执行替代ThreadPoolExecutor防import死锁
+    try: oi = get_oi_change(symbol)
+    except Exception: oi = {}
+    try: ls = get_long_short(symbol)
+    except Exception: ls = {}
+    try: tkr = get_taker_ratio(symbol)
+    except Exception: tkr = {}
+    try: fund = get_funding_trend(symbol)
+    except Exception: fund = {}
 
     score = 0
     notes = []
