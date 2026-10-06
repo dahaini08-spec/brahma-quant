@@ -49,6 +49,41 @@ def _load_key() -> str:
 API_KEY  = _load_key()
 BASE_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
+# ── [封印 2026-10-06 苏摩111] Chutes.ai 双轨并行 ─────────────────────────
+# 解决OpenRouter日配额不足（50次/天烧穿→429断供）
+# 优先级: Chutes → OpenRouter → 主AI
+# Chutes: 14个SOTA模型(DeepSeek-V4/Qwen3.5/Kimi-K3等)，按量付费极低
+# 接入位置: 此文件 chat() 函数，所有下游(council/regime/chop等)自动受益
+CHUTES_BASE_URL = 'https://llm.chutes.ai/v1/chat/completions'
+
+def _load_chutes_key() -> str:
+    """从 .env 读取 CHUTES_API_KEY"""
+    env_path = Path(__file__).parent.parent / '.env'
+    if env_path.exists():
+        for line in env_path.read_text().splitlines():
+            if line.startswith('CHUTES_API_KEY='):
+                return line.split('=', 1)[1].strip()
+    return os.environ.get('CHUTES_API_KEY', '')
+
+CHUTES_KEY = _load_chutes_key()
+
+# Chutes模型路由表（中文最优选择）
+CHUTES_TASK_MODEL_MAP = {
+    'council':  'deepseek-ai/DeepSeek-V3.2-TEE',       # 中文逻辑最强
+    'vip':      'deepseek-ai/DeepSeek-V3.2-TEE',
+    'oi':       'deepseek-ai/DeepSeek-V3.2-TEE',
+    'regime':   'Qwen/Qwen3.5-397B-A17B-TEE',          # 宏观推理
+    'wr_audit': 'deepseek-ai/DeepSeek-V3.2-TEE',
+    'review':   'deepseek-ai/DeepSeek-V3.2-TEE',
+    'hcme':     'deepseek-ai/DeepSeek-V4-Flash-0731-TEE',  # 1M上下文
+    'chop':     'Qwen/Qwen3.8-27B-TEE',                # 快速验证
+    'safety':   'Qwen/Qwen3.8-27B-TEE',
+    'default':  'deepseek-ai/DeepSeek-V3.2-TEE',
+}
+
+# Chutes 退避状态（独立，不影响OpenRouter退避）
+_chutes_backoff_until = 0.0
+
 # ── 任务路由表：task → 专项模型 (2026-09-05 苏摩111封印 / 2026-09-27重修) ─
 # [2026-09-27 苏摩111] 通道全灭事故修复：
 #   - minimax-m3:free被OpenRouter下架转付费（404 "unavailable for free"）→ 永久踢出
@@ -285,8 +320,37 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
     ]
 
     # [主AI failover] 免费池key缺失 → 主AI直接接管
-    if not API_KEY:
+    if not API_KEY and not CHUTES_KEY:
         return _master_chat(messages, max_tokens, timeout)
+
+    # ── [双轨 2026-10-06] Chutes优先：有key且未退避 ──────────────────────
+    global _chutes_backoff_until
+    if CHUTES_KEY and time.time() >= _chutes_backoff_until:
+        _chutes_model = CHUTES_TASK_MODEL_MAP.get(task, CHUTES_TASK_MODEL_MAP['default'])
+        try:
+            _ch_payload = json.dumps({
+                'model': _chutes_model, 'messages': messages,
+                'max_tokens': max_tokens, 'temperature': 0.2,
+            }).encode()
+            _ch_req = urllib.request.Request(
+                CHUTES_BASE_URL, data=_ch_payload,
+                headers={
+                    'Authorization': f'Bearer {CHUTES_KEY}',
+                    'Content-Type': 'application/json',
+                },
+            )
+            _ch_resp = json.loads(urllib.request.urlopen(_ch_req, timeout=timeout, context=_ctx).read())
+            _ch_choice = (_ch_resp.get('choices') or [{}])[0]
+            _ch_content = (_ch_choice.get('message') or {}).get('content', '').strip()
+            if _ch_content and _ch_choice.get('finish_reason') != 'length':
+                return _ch_content  # Chutes成功，直接返回
+        except urllib.error.HTTPError as _che:
+            if _che.code == 429:
+                _chutes_backoff_until = time.time() + 300  # Chutes 429 → 退避5min
+                print(f'[llm] Chutes 429，切换OpenRouter', file=sys.stderr)
+            # 其他错误：静默降级到OpenRouter
+        except Exception:
+            pass  # Chutes失败：静默降级到OpenRouter
 
     preferred = TASK_MODEL_MAP.get(task, TASK_MODEL_MAP['default'])
     model = _pick_model(preferred)
