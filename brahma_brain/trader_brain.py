@@ -822,6 +822,12 @@ def decide(
                 _score_gate_warn = True
                 _gate1_pass = True
                 _info_flags.append('B降权: 评分层SKIP→warn通道（仓位×0.5，EV门保留）')
+            elif cf_action in ('WAIT', 'WATCH'):
+                # [2026-10-06 苏摩111] WAIT/WATCH降权通道
+                # 场景：CHOP_MID 12维score<100但94维信号存在，允许WATCH
+                _score_gate_warn = True
+                _gate1_pass = True
+                _info_flags.append(f'B降权: 评分层{cf_action}→WATCH通道（仓位×0.5，EV保留）')
             else:
                 missing.append(f'评分层action={cf_action or "空"}未达ENTER（SSOT唯一裁判，不再二次降门）')
     else:

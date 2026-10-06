@@ -258,6 +258,25 @@ def step0_fetch_all(sym: str) -> dict:
         _has_confluence = bool(_candidate.get('confluence',{}))
         if _has_confluence:
             bs = _candidate
+            # [2026-10-06 苏摩111] 缓存命中时，轻量级获取analyze().signal_dir
+            # analyze_signal_dir已保存时直接用，否则5s超时运行analyze()
+            _analyze_signal_from_cache = str(_candidate.get('analyze_signal_dir','') or '')
+            if not _analyze_signal_from_cache or _analyze_signal_from_cache == 'NONE':
+                try:
+                    import concurrent.futures as _cf_sig
+                    sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+                    import fangcang_engine as _fe, data_cache as _dc, cross_market_engine as _cme, onchain_engine as _oe
+                    from brahma_core import analyze as _analyze_sig
+                    with _cf_sig.ThreadPoolExecutor(max_workers=1) as _sig_ex:
+                        _sig_fut = _sig_ex.submit(_analyze_sig, f'{sym}USDT')
+                        _sig_res = _sig_fut.result(timeout=20)
+                    if isinstance(_sig_res, dict):
+                        _analyze_signal_from_cache = str(_sig_res.get('signal_dir','') or '')
+                        bs['analyze_signal_dir'] = _analyze_signal_from_cache
+                        bs['confluence'] = _sig_res.get('confluence', bs.get('confluence',{}))
+                        bs['score_final'] = float(_sig_res.get('score_final', bs.get('score_final',0)))
+                except Exception as _e_sig:
+                    _analyze_signal_from_cache = ''
         else:
             try:
                 sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
@@ -3039,10 +3058,30 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             # regime已降级CHOP_MID，重跑trader_brain获取方向
             try:
                 from brahma_brain.trader_brain import decide as _tb2
-                _r2 = _tb2(regime=_regime_for_tb, score=float(d['bs'].get('score_final',d['bs'].get('score',0))),
-                    grade=float(d['bs'].get('grade',0)), macro=mac, risk=risk, hurst=vol.get('hurst',0.5),
-                    fvg=fvg, ob=_ob_for_tb, liq=liq, atr_1h=vol.get('atr_1h',0), atr_4h=vol.get('atr_4h',0),
-                    price=p, oi=oi, sm=sm, vol=vol, res=res, symbol=sym+'USDT', cf_action='')
+                # [2026-10-06 苏摩111] 优先继承analyze()的signal_dir，再用cf_action激活WATCH通道
+                _cf_act_r2 = str((d['bs'].get('confluence',{}) or {}).get('action','') or '')
+                # [2026-10-06 苏摩111] 三路取值：1.缓存analyze_signal_dir 2.bs.analyze_signal_dir 3.bs.signal_dir
+                _bs_signal = str(
+                    locals().get('_analyze_signal_from_cache') or
+                    d['bs'].get('analyze_signal_dir') or
+                    d['bs'].get('signal_dir') or ''
+                )
+                # 如果analyze()已有明确方向，直接注入_r2
+                if _bs_signal in ('LONG','SHORT'):
+                    _r2 = {'direction': _bs_signal, 'action': 'WATCH',
+                           'entry_lo': float(d['bs'].get('entry_lo', liq.get('long',0))),
+                           'entry_hi': float(d['bs'].get('entry_hi', liq.get('short',0))),
+                           'sl': float(d['bs'].get('sl', 0)),
+                           'tp1': float(d['bs'].get('tp1', 0)),
+                           'rr': float(d['bs'].get('rr', 0)),
+                           'leverage': int(d['bs'].get('leverage', 3)),
+                           'position_size_pct': float(d['bs'].get('position_size_pct', 0.5)),
+                           'reason': f'analyze()signal_dir={_bs_signal}（12维score={d["bs"].get("score_final",0):.0f}→WATCH通道）'}
+                else:
+                    _r2 = _tb2(regime=_regime_for_tb, score=float(d['bs'].get('score_final',d['bs'].get('score',0))),
+                        grade=float(d['bs'].get('grade',0)), macro=mac, risk=risk, hurst=vol.get('hurst',0.5),
+                        fvg=fvg, ob=_ob_for_tb, liq=liq, atr_1h=vol.get('atr_1h',0), atr_4h=vol.get('atr_4h',0),
+                        price=p, oi=oi, sm=sm, vol=vol, res=res, symbol=sym+'USDT', cf_action=_cf_act_r2)
                 if _r2.get('direction','NONE') != 'NONE': _tb_for_s11 = _r2
             except Exception: pass
         _s11_result = _s11(sym, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, _tb_for_s11)
@@ -3961,7 +4000,8 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             'raw_score':      float(_live_score if '_live_score' in dir() else (d.get('bs', {}) or {}).get('score', 0)),
 
             # ── VIP策略 ──
-            'signal_dir':      str(_tb.get('direction', d.get('signal_dir', 'NONE'))),
+            # [2026-10-06 苏摩111] 优先用_tb_for_s11（Step11修正后方向）
+            'signal_dir':      str((_tb_for_s11 if '_tb_for_s11' in dir() else _tb).get('direction', d.get('signal_dir', 'NONE'))),
             'sl':              float(_tb.get('sl',  d.get('sl',  0))),
             'tp1':             float(_tb.get('tp1', d.get('tp1', 0))),
             'tp2':             float(_tb.get('tp2', d.get('tp2', 0))),
@@ -3991,6 +4031,9 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
                 _saved['confluence'] = d['bs']['confluence']
                 _saved['score_final'] = float(d['bs'].get('score_final', _saved.get('score_final',0)))
                 _saved['raw_score'] = float(d['bs'].get('score', _saved.get('raw_score',0)))
+                # [2026-10-06 苏摩111] 保存analyze()的signal_dir（94维计算结果）
+                if d['bs'].get('signal_dir','NONE') not in ('NONE', '', None):
+                    _saved['analyze_signal_dir'] = d['bs']['signal_dir']
                 _saved['bs'] = {k:v for k,v in d['bs'].items() if not isinstance(v,(list,dict)) or k in ('confluence','breakdown')}
                 _tmp2 = _state_path.with_suffix('.tmp2')
                 _tmp2.write_text(_json_sync.dumps(_saved, ensure_ascii=False, indent=2), encoding='utf-8')
