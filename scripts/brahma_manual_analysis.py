@@ -786,6 +786,10 @@ def step3_liq(d: dict) -> dict:
 # Step 4: 共振点
 # ══════════════════════════════════════════════════════════
 
+# [封印 2026-10-06 苏摩111 P2重构] 命名说明：
+# step4_resonance 编号虽为4，但实际执行在 step5_oi 之后
+# 原因：共振7维之一=OI方向，必须先拿到oi结果
+# 未来重命名候选：step4_resonance_post_oi
 def step4_resonance(d: dict, fvg: dict, ob: dict, liq: dict, oi: dict = None, vol: dict = None, fc: dict = None, cma: dict = None) -> dict:
     """[P3升级 2026-09-12] 共振升级7维：FVG+OB+清算+OI+GEX+方仓+跨市场
     原P2-4修复: 5维(FVG+OB+清算+OI+GEX)
@@ -2777,6 +2781,15 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
 #   ② 结构化dict → brahma_brain.brahma_analysis_runner.run_analysis()
 #      不要混用，返回类型完全不同
 def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str非dict
+    """[封印 2026-10-06 苏摩111 P2重构] run_analysis 4层结构说明
+    ┌─ Layer1 L~+23  : 初始化（watchdog/ts/p）
+    ├─ Layer2 L~+53  : step调用层（step0→step10，约260行）
+    │    执行顺序: step0→1→1b→2→3→5→5c→6→7→8→9→4→4b→5b→10
+    │    step4在step5之后：依赖oi结果（7维共振需要OI方向）
+    ├─ Layer3 L~+1023: 推理/格式化层（Step11/trader_brain/格式化/推送）
+    └─ Layer4 L~+335 : Fix-C写入层（brahma_state/auto_analysis写入）
+    总计约1360行。P2长期目标：拆分为4个独立函数，当前_lv=locals()锚点阻断拆分。
+    """
     # [决策2 2026-10-03] 分析超时哨兵：>120s推P1告警
     import time as _t2, threading as _thr
     _run_start = _t2.time()
@@ -2798,6 +2811,9 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     t_start = __import__('time').time()  # P1修复：移到step0之前，含数据拉取耗时
     # [决策2 2026-10-03 自主封印] analyze()防护网：超时告警+完整traceback
     import traceback as _tb
+    # ════════════════════════════════════════════════════════
+    # Layer2: step调用层 (step0~step10) [P2重构边界标注]
+    # ════════════════════════════════════════════════════════
     try:
         d   = step0_fetch_all(sym)
     except Exception as _step0_e:
@@ -2873,8 +2889,10 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     except Exception as _inf_pre_e:
         print(f'[WARN] 推理层预加载失败: {_inf_pre_e}', file=sys.stderr)
     
+    # [封印 2026-10-06] step4_resonance 刻意在 step5_oi 之后执行
+    # 执行依赖: oi → res（OI方向是7维共振之一）
     res = step4_resonance(d, fvg, ob, liq, oi=oi, vol=vol, fc=fc, cma=_cma)
-    pat = step4b_pattern(d)  # 新增: 形态识别
+    pat = step4b_pattern(d)  # 形态识别
     lsr_trig = step5b_lsr_trigger(d, res)  # 新增: LSR/OI + 15M触发
     d['zsc'] = zsc  # Z-Score注入主数据字典，供后续输出消费
     _step_gc()
@@ -3060,6 +3078,9 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
 
     vip = step10_vip(sym, p, d, fvg, ob, liq, res, oi, sm, vol, mac, risk)
 
+    # ════════════════════════════════════════════════════════
+    # Layer3: 推理/格式化层 (Step11+trader_brain+格式化+推送)
+    # ════════════════════════════════════════════════════════
     # ══ Step11 强制决策裁判 [2026-10-01 苏摩111] ══
     # 11道硬闸门SSOT：替代分散在step10_vip内的门控逻辑
     # 结果注入到输出流，作为人工审核区后的最终裁决
@@ -3800,6 +3821,10 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
                 avg_g = (avg_g*(period-1)+gains[i])/period
                 avg_l = (avg_l*(period-1)+losses[i])/period
             return round(100-100/(1+avg_g/avg_l),1) if avg_l > 0 else (100.0 if avg_g > 0 else 50.0)
+        # ════════════════════════════════════════════════════════
+        # Layer4: Fix-C写入层 (brahma_state/auto_analysis写入)
+        # 注意: _lv=locals()是此层的数据锚点，必须保持在try块顶部
+        # ════════════════════════════════════════════════════════
         _lv    = locals()  # [P1/P2修复] 必须在try块最开头捕获，后续所有_lv引用依赖此
         _state_path = Path(__file__).parent.parent / 'data' / f'brahma_state_{sym.lower()}.json'
 
