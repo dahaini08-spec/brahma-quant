@@ -144,20 +144,53 @@ def generate_content(signal: dict) -> str:
             tp_str += f"　目标2：{format_price(tp2, sym)}"
         lines.append(tp_str)
 
+    # [2026-10-06 苏摩111] P2: 加「为什么」推理层，把数据翻译为人话
+    _why_lines = []
+    # OI方向推理
+    _oi = signal.get('oi_signal', '') or ''
+    _cvd = float(signal.get('cvd_1h', 0) or 0)
+    _lsr_retail = float(signal.get('lsr_retail', 0) or 0)
+    _lsr_big    = float(signal.get('lsr_big', 0) or 0)
+    _hurst = float(signal.get('hurst', 0) or 0)
+    if 'BUILD' in _oi and direc == 'SHORT':
+        _why_lines.append(f'OI {_oi}：空头在建仓，资金流向与方向一致')
+    elif 'UNWIND' in _oi and direc == 'SHORT':
+        _why_lines.append(f'OI {_oi}：多头在撤退，空头阻力减小')
+    elif 'BUILD' in _oi and direc == 'LONG':
+        _why_lines.append(f'OI {_oi}：多头在建仓，主力方向向上')
+    if _cvd < -500 and direc == 'SHORT':
+        _why_lines.append(f'CVD={_cvd:+.0f}：卖方主导，挂单消耗不对称')
+    elif _cvd > 500 and direc == 'LONG':
+        _why_lines.append(f'CVD={_cvd:+.0f}：买方主导，资金净流入')
+    if _lsr_retail > 65 and direc == 'SHORT':
+        _why_lines.append(f'散户{_lsr_retail:.0f}%多头 = 主力猎杀目标已就位')
+    elif _lsr_retail < 35 and direc == 'LONG':
+        _why_lines.append(f'散户只有{_lsr_retail:.0f}%多头 = 恐慌低点，反转机会')
+    if _hurst >= 0.65:
+        _why_lines.append(f'Hurst={_hurst:.3f}：强趋势性，方向延续概率高')
+    # WATCH级信号加标注
+    _action = signal.get('action', '')
+    if _action == 'ENTER_WATCH':
+        _why_lines.append('当前为WATCH级信号（非最高置信），仓位控制在0.5%以内')
+
     lines += [
         f"",
-        f"📐 技术面",
-        f"RSI(4H)={rsi_4h:.1f}　RSI(1H)={rsi_1h:.1f}",
-        f"梵天评分={score:.0f}　质量等级={grade:.0f}",
+        f"为什么这个位置？",
+    ]
+    if _why_lines:
+        for _w in _why_lines:
+            lines.append(f"• {_w}")
+    else:
+        lines.append(f"RSI(4H)={rsi_4h:.1f} | 梵天评分={score:.0f} | WR={wr:.1f}%")
+
+    lines += [
         f"",
-        f"📚 胜率依据（方仓6.5年历史，n={n:,}）",
-        f"当前区间WR={wr:.1f}%　期望值EV=+{ev:.3f}%/笔",
+        f"📚 方仓数据：n={n:,}笔 | WR={wr:.1f}% | EV=+{ev:.3f}%/笔",
         f"",
-        f"⚙️ 信号质量：SQE通过 | 止损 ≤2.0% | 体制确认",
-        f"",
-        f"⚠️ 本信号基于量化模型，不构成投资建议。合约交易有风险，请控制仓位。",
-        f"",
-        f"#合约交易 #{base} #量化交易 #BinanceSquare",
+        f"关注我，每晚21:00直播+SMC教学",
+        f"注册享20%手续费折扣 bsmkweb.cc/register?ref=XZBX666",
+        f"🌿 姓赵不宣 | 不是建议",
+        f"$BTC $ETH #{base} #合约交易 #永续合约",
     ]
 
     return '\n'.join(lines)

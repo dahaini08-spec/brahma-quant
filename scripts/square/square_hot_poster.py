@@ -649,7 +649,17 @@ def build_top_gainers() -> str:
     else:
         btc_line = f'BTC今日跌{btc_chg:.1f}%，大盘弱势，逆势涨的背后要么是轧空，要么有消息驱动，不能盲目跟。'
 
-    lines = [btc_line, '']
+    # [2026-10-06 苏摩111] P3反直觉钉子：先抛反常识结论，再用数据解释
+    import random as _rand2
+    _contrarian_hooks = [
+        f'今天涨幅榜里有{len(items)}个标的，但我只关注1个。',
+        '涨幅榜不是买入清单，是猎杀清单——告诉你哪里有人被套在高位。',
+        '99%的人看到涨幅榜就想追——我却在找里面最危险的那个。',
+        '今天涨得最猛的，不一定是最值得买的。',
+        '看涨幅榜的正确姿势：先问为什么涨，再问谁会被收割。',
+    ]
+    _hook_line = _rand2.choice(_contrarian_hooks)
+    lines = [_hook_line, '', btc_line, '']
 
     # 逐个标的实质分析
     for i, x in enumerate(items, 1):

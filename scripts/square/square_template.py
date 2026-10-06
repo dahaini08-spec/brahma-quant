@@ -365,6 +365,61 @@ def build_battlefield_report_combined(analysis_by_sym: dict) -> str:
         lines.append('失效期YELLOW，仓位打折。')
         lines.append('')
 
+    # [2026-10-06 苏摩111] P0人格层：把梵天数据翻译为有立场的人话
+    # 公式：当前状态 + 关键数字 + 我的操作逻辑 + 情绪钉子
+    _btc_d = analysis_by_sym.get('BTC', {})
+    _eth_d = analysis_by_sym.get('ETH', {})
+    _btc_sl   = _btc_d.get('sl', 0) or 0
+    _btc_hi   = _btc_d.get('entry_hi', 0) or 0
+    _btc_pool = _btc_d.get('liq_pool', 0) or _btc_d.get('liq_long', 0) or 0
+    _btc_wall = _btc_d.get('liq_wall', 0) or _btc_d.get('liq_short', 0) or 0
+    _btc_cvd  = float(_btc_d.get('cvd_1h', 0) or 0)
+    _btc_lsr  = float(_btc_d.get('lsr_retail', 0) or 0)
+    _eth_sl   = _eth_d.get('sl', 0) or 0
+    _eth_hi   = _eth_d.get('entry_hi', 0) or 0
+    _eth_pool = _eth_d.get('liq_pool', 0) or _eth_d.get('liq_long', 0) or 0
+    _eth_wall = _eth_d.get('liq_wall', 0) or _eth_d.get('liq_short', 0) or 0
+    _eth_lsr  = float(_eth_d.get('lsr_retail', 0) or 0)
+    _btc_vip  = _btc_d.get('vip_status', 'WAIT')
+    _eth_vip  = _eth_d.get('vip_status', 'WAIT')
+
+    # 生成人格判断句
+    _voice_lines = []
+    if n_bear == 2:  # 双空
+        if _btc_hi > 0 and _btc_sl > 0:
+            _voice_lines.append(
+                f'我的操作：空单埋伏在${_btc_hi:,.0f}附近等触发，'
+                f'止损${_btc_sl:,.0f}上方——这不是预测，是等价格来找我。'
+            )
+        else:
+            _voice_lines.append('我的操作：没有挂单，等止损墙被触碰后再说。')
+        if _btc_lsr > 65:
+            _voice_lines.append(f'散户{_btc_lsr:.0f}%多头——这种拥挤程度，主力最爱的就是清洗这批止损。')
+    elif n_bull == 2:  # 双多
+        if _btc_pool > 0:
+            _voice_lines.append(
+                f'我的操作：等BTC回踩${_btc_pool:,.0f}支撑池，'
+                f'1H收阳确认再入场——追第一波的人通常是被第二波收割的那批。'
+            )
+        else:
+            _voice_lines.append('我的操作：等回踩支撑确认，不追第一波。')
+    elif n_bear >= 1 and n_bull >= 1:  # 分歧
+        _voice_lines.append('我的操作：只做方向明确的那一边，另一边今天不碰。')
+        if _eth_lsr > 65:
+            _voice_lines.append(f'ETH散户{_eth_lsr:.0f}%多头，猎杀目标清晰——这种时候空ETH比空BTC风险小。')
+    else:  # 全WAIT
+        _voice_lines.append('我的操作：空仓观望。不是没机会，是两侧都没给触发条件。')
+        if _btc_wall > 0 and _btc_pool > 0:
+            _voice_lines.append(
+                f'盯住BTC：破${_btc_wall:,.0f}=跟多；破${_btc_pool:,.0f}=跟空。'
+                f'等它先选，我再跟，不猜。'
+            )
+
+    if _voice_lines:
+        lines.append('')
+        for _vl in _voice_lines:
+            lines.append(_vl)
+
     lines.extend([
         AI_WATERMARK,
         LIVE_CTA,

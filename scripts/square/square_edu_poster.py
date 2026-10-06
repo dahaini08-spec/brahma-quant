@@ -178,15 +178,43 @@ def run(dry_run=False, edu_id=None):
     if not concept or len(concept) > 30:
         concept = '交易方法'
 
-    # 实盘联动：拉当前BTC/ETH的FVG
+    # [2026-10-06 苏摩111] P1实盘联动升级：接入梵天全量数据，教育帖用真实当日案例
     live_fvg = fetch_live_fvg('BTCUSDT')
+    _btc_price = 0; _btc_wall = 0; _btc_pool = 0; _btc_lsr = 0; _btc_oi = ''
+    try:
+        import json as _j; from pathlib import Path as _P
+        _bs = _j.loads((_P(__file__).parent.parent.parent / 'data' / 'brahma_state_btc.json').read_text())
+        _btc_price = float(_bs.get('price',0) or 0)
+        _btc_wall  = float(_bs.get('liq_short',0) or 0)
+        _btc_pool  = float(_bs.get('liq_long',0) or 0)
+        _btc_lsr   = float(_bs.get('lsr_retail',0) or 0)
+        _btc_oi    = str(_bs.get('oi_signal','') or '')
+    except Exception: pass
+
     live_example = '今日BTC 4H FVG正在走填补'
-    if live_fvg and live_fvg['mid']:
-        live_example = (f"BTC 4H {live_fvg['dir']} FVG ${live_fvg['lo']:,.0f}-${live_fvg['hi']:,.0f}\n"
-                        f"当前磁铁${live_fvg['mid']:,.0f}\n"
-                        f"{'回调支撑区' if live_fvg['dir']=='BULL' else '反弹阻力区'}")
+    if live_fvg and live_fvg['mid'] and _btc_price > 0:
+        _fvg_dir_cn = '多头' if live_fvg['dir']=='BULL' else '空头'
+        live_example = (
+            f"今日BTC ${_btc_price:,.0f} | 4H {_fvg_dir_cn}FVG ${live_fvg['lo']:,.0f}-${live_fvg['hi']:,.0f}\n"
+            f"磁铁价位：${live_fvg['mid']:,.0f}"
+        )
+        if _btc_wall > 0 and _btc_pool > 0:
+            live_example += f"\n上方止损墙${_btc_wall:,.0f} | 下方支撑池${_btc_pool:,.0f}"
+        if _btc_lsr > 65:
+            live_example += f"\n散户{_btc_lsr:.0f}%多头 = 主力猎杀目标已锁定"
+    elif _btc_price > 0 and _btc_wall > 0:
+        live_example = (
+            f"今日BTC ${_btc_price:,.0f}\n"
+            f"关键区：止损墙${_btc_wall:,.0f} / 支撑池${_btc_pool:,.0f}"
+        )
+
+    _oi_note = ''
+    if 'BUILD' in _btc_oi: _oi_note = f'OI {_btc_oi} = 资金在建仓，方向值得跟'
+    elif 'UNWIND' in _btc_oi: _oi_note = f'OI {_btc_oi} = 资金在撤退，不是入场时机'
 
     how_to_use = '结合FVG中点+1H收线确认方向再入场\n止损放FVG失效位之外'
+    if _oi_note:
+        how_to_use += f'\n今日附加参考：{_oi_note}'
 
     historical = '实盘案例见上述数据'
 
