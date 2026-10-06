@@ -3564,6 +3564,17 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
                 _cvd_snapshot = _njson.loads(_cvd_path.read_text())
         except Exception:
             pass  # [WARN-suppressed: no var]
+        # [2026-10-06 苏摩111] LSR实时拉取，LLM退避期d.lsr_big=0
+        _lsr_big_rt = 0.0; _lsr_retail_rt = 0.0
+        try:
+            import urllib.request as _ur2, ssl as _ssl2
+            _ctx2 = _ssl2.create_default_context()
+            _usdt2 = sym.upper()+'USDT'
+            _top2 = _njson.loads(_ur2.urlopen(f'https://fapi.binance.com/futures/data/topLongShortPositionRatio?symbol={_usdt2}&period=5m&limit=1', timeout=4, context=_ctx2).read())
+            _glb2 = _njson.loads(_ur2.urlopen(f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol={_usdt2}&period=5m&limit=1', timeout=4, context=_ctx2).read())
+            _lsr_big_rt    = float(_top2[0]['longAccount'])*100 if _top2 else 0.0
+            _lsr_retail_rt = float(_glb2[0]['longAccount'])*100 if _glb2 else 0.0
+        except Exception: pass
         _nfeats = {}
         def _nsf(v, dft=0):
             try: return float(v) if v is not None else dft
@@ -3811,10 +3822,11 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             'entry_lo':  float(_tb.get('entry_lo', d.get('entry_lo', 0))),
             'entry_hi':  float(_tb.get('entry_hi', d.get('entry_hi', 0))),
             'oi_direction': str(oi.get('signal', d.get('oi_direction', '?')) if isinstance(oi, dict) else '?'),
-            'cvd_1h':    float(d.get('cvd_1h', 0)),
-            'cvd_4h':    float(d.get('cvd_4h', 0)),
-            'cvd_dir_1h': str(d.get('cvd_dir_1h', '?')),
-            'cvd_dir_4h': str(d.get('cvd_dir_4h', '?')),
+            # [2026-10-06 苏摩111] 优先用_cvd_snapshot（实时文件），d.cvd_1h在LLM退避期为0
+            'cvd_1h':    float(_cvd_snapshot.get('cvd_1h', d.get('cvd_1h', 0))),
+            'cvd_4h':    float(_cvd_snapshot.get('cvd_4h', d.get('cvd_4h', 0))),
+            'cvd_dir_1h': str(_cvd_snapshot.get('dir_1h', d.get('cvd_dir_1h', '?'))),
+            'cvd_dir_4h': str(_cvd_snapshot.get('dir_4h', d.get('cvd_dir_4h', '?'))),
             'gex':       float(_vol.get('gex_note', 0) if isinstance(_vol.get('gex_note'), (int,float)) else 0),
 
             # ── D5 OI ──
@@ -3824,8 +3836,9 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             'fr':           float(d.get('fr', 0)),
 
             # ── D6 LSR ──
-            'lsr_big':    float(d.get('lsr_big', 0)),
-            'lsr_retail': float(d.get('lsr_retail', d.get('lsr', 0))),
+            # [2026-10-06 苏摩111] 优先用实时LSR，LLM退避期d.lsr_big=0
+            'lsr_big':    _lsr_big_rt or float(d.get('lsr_big', 0)),
+            'lsr_retail': _lsr_retail_rt or float(d.get('lsr_retail', d.get('lsr', 0))),
             'lsr_zscore': float(_zsc.get('zscore', 0) if isinstance(_zsc, dict) else 0),
 
             # ── D7 波动率 ──
