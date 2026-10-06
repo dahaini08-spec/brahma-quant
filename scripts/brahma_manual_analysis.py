@@ -3984,6 +3984,20 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
         _tmp_sync = _state_path.with_suffix('.tmp')
         _tmp_sync.write_text(_json_sync.dumps(_sync_state, ensure_ascii=False, indent=2), encoding='utf-8')
         _tmp_sync.replace(_state_path)
+        # [2026-10-06 苏摩111] 写入后追加confluence字段（来自analyze()的bs）
+        try:
+            if isinstance(d.get('bs'),dict) and d['bs'].get('confluence'):
+                _saved = _json_sync.loads(_state_path.read_text(encoding='utf-8'))
+                _saved['confluence'] = d['bs']['confluence']
+                _saved['score_final'] = float(d['bs'].get('score_final', _saved.get('score_final',0)))
+                _saved['raw_score'] = float(d['bs'].get('score', _saved.get('raw_score',0)))
+                _saved['bs'] = {k:v for k,v in d['bs'].items() if not isinstance(v,(list,dict)) or k in ('confluence','breakdown')}
+                _tmp2 = _state_path.with_suffix('.tmp2')
+                _tmp2.write_text(_json_sync.dumps(_saved, ensure_ascii=False, indent=2), encoding='utf-8')
+                _tmp2.replace(_state_path)
+        except Exception as _cf_e:
+            pass  # 非致命
+
         # [2026-10-06 苏摩111] 把bs的confluence/score写入_sync_state供output_template使用
         if isinstance(d.get('bs'),dict) and d['bs']:
             _bs_src = d['bs']
