@@ -58,8 +58,13 @@ def save_state(state: dict):
     STATE_FILE.write_text(json.dumps(state, indent=2, ensure_ascii=False))
 
 
-def make_hash(score: float, action: str, regime: str, direction: str) -> str:
-    """状态哈希：score5分桶 + action + regime大类 + direction"""
+def make_hash(score: float, action: str, regime: str, direction: str,
+              entry_lo: float = 0, sl: float = 0) -> str:
+    """[封印 2026-10-06 苏摩111 P0修复] 状态哈希扩展：
+    原: score5分桶 + action + regime大类 + direction
+    新增: entry_lo 1%桶 + sl 1%桶
+    解决CHOP_MID体制下策略参数变化检测不到的问题
+    """
     score_bucket = int(score // SCORE_BUCKET) * SCORE_BUCKET
     # regime大类化（消除子标签差异）
     regime_major = (
@@ -68,7 +73,10 @@ def make_hash(score: float, action: str, regime: str, direction: str) -> str:
         'BEAR' if 'BEAR' in regime.upper() else
         'CHOP'
     )
-    raw = f'{score_bucket}|{action}|{regime_major}|{direction}'
+    # entry_lo/sl 1%桶（消除微小噪音）
+    entry_bucket = int(entry_lo // max(entry_lo * 0.01, 1)) if entry_lo > 0 else 0
+    sl_bucket    = int(sl       // max(sl       * 0.01, 1)) if sl > 0 else 0
+    raw = f'{score_bucket}|{action}|{regime_major}|{direction}|{entry_bucket}|{sl_bucket}'
     return hashlib.md5(raw.encode()).hexdigest()[:8]
 
 
@@ -151,10 +159,10 @@ def push_jarvis(msg: str, **kwargs):
 def main():
     now = time.time()
 
-    # 1. 检查RSI触发事件
-    if not check_rsi_trigger():
-        print('[signal_change_detector] 无RSI触发事件，静默')
-        return
+    # [封印 2026-10-06 苏摩111 P1修复] 去除RSI触发依赖
+    # 原逻辑: check_rsi_trigger() == False 则直接返回 → 60min内无RSI事件=策略更新永远检测不到
+    # 新逻辑: 直接运行，RSI事件只作为推送内容附加信息（不再門控运行）
+    rsi_triggered = check_rsi_trigger()  # 保留作为推送内容附加信息
 
     # 2. 加载上次推送状态
     state = load_state()
@@ -173,9 +181,12 @@ def main():
         regime    = str(result.get('regime', '?') or '?')
         direction = str(result.get('direction', result.get('signal_dir', '?')) or '?')
         valid     = bool(result.get('valid_signal', False))
+        # [封印 2026-10-06 P0②] 新增: entry_lo/sl字段加入hash
+        entry_lo  = float(result.get('entry_lo', 0) or 0)
+        sl        = float(result.get('sl', 0) or 0)
 
-        # 4. 计算状态哈希
-        new_hash = make_hash(score, action, regime, direction)
+        # 4. 计算状态哈希（扩展维度）
+        new_hash = make_hash(score, action, regime, direction, entry_lo, sl)
         sym_state = state.get(sym, {})
         old_hash  = sym_state.get('hash', '')
         last_push = sym_state.get('ts', 0)

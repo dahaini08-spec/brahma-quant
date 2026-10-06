@@ -296,3 +296,9 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 
 # [封印修复④ 2026-10-05 苏摩111] LSR实时拉取每15min，猎杀信号接入
 */15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/lsr_patch.py >> logs/state_quality.log 2>&1
+# [封印 2026-10-06 苏摩111] VIP策略即时推送哨兵——解决CHOP_MID体制永远不推VIP更新的根本问题
+# 每30min独立巡检，brahma_manual_analysis分析完成后也会内联调用
+*/30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/vip_strategy_watcher.py >> logs/vip_watcher.log 2>&1
+# [封印 2026-10-06 苏摩111] signal_change_detector去除RSI门控，独立每15min运行
+# 原：RSI触发依赖导致60min内信号变化检测不到；新：hash扩展entry/sl维度
+*/15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/signal_change_detector.py >> logs/signal_change.log 2>&1
