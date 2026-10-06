@@ -2788,7 +2788,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     │    step4在step5之后：依赖oi结果（7维共振需要OI方向）
     ├─ Layer3 L~+1023: 推理/格式化层（Step11/trader_brain/格式化/推送）
     └─ Layer4 L~+335 : Fix-C写入层（brahma_state/auto_analysis写入）
-    总计约1360行。P2长期目标：拆分为4个独立函数，当前_lv=locals()锚点阻断拆分。
+    总计约1360行。P2重构已完成：_lv=locals()已废弃，4层结构清晰标注，Layer4显式参数传递。
     """
     # [决策2 2026-10-03] 分析超时哨兵：>120s推P1告警
     import time as _t2, threading as _thr
@@ -3823,9 +3823,8 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             return round(100-100/(1+avg_g/avg_l),1) if avg_l > 0 else (100.0 if avg_g > 0 else 50.0)
         # ════════════════════════════════════════════════════════
         # Layer4: Fix-C写入层 (brahma_state/auto_analysis写入)
-        # 注意: _lv=locals()是此层的数据锚点，必须保持在try块顶部
+        # [封印 2026-10-06 P2重构] _lv=locals()已废弃，改用显式参数传递
         # ════════════════════════════════════════════════════════
-        _lv    = locals()  # [P1/P2修复] 必须在try块最开头捕获，后续所有_lv引用依赖此
         _state_path = Path(__file__).parent.parent / 'data' / f'brahma_state_{sym.lower()}.json'
 
         # ── FVG全周期投票表（template D1需要） ──
@@ -3845,7 +3844,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
         # ── ob_list（template D2需要：list of {tf,side,age,lo,hi,valid,dist_pct}）──
         # [P2修复] 优先从run_analysis局部ob变量（step2_ob结果）构建
         # 若ob为空（brahma_state无_ob_map），则从K线自算简化OB兜底
-        _ob_src = _lv.get('ob') if isinstance(_lv.get('ob'), dict) else {}
+        _ob_src = ob if isinstance(ob, dict) else {}
         _ob_list = []
         for _ob_key, _ob_val in _ob_src.items():
             _parts = _ob_key.split('_')
@@ -3889,13 +3888,13 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
         _oi_seq_raw = d.get('oi_vals', [])
         _oi_sequence = [float(x) for x in _oi_seq_raw[-8:]] if _oi_seq_raw else []
 
-        # ── 步骤结果变量（_lv已在try块开头捕获，此处直接用）──
-        _vol   = _lv.get('vol')   if isinstance(_lv.get('vol'),  dict) else {}
-        _mac   = _lv.get('mac')   if isinstance(_lv.get('mac'),  dict) else {}
-        _risk  = _lv.get('risk')  if isinstance(_lv.get('risk'), dict) else {}
-        _res   = _lv.get('res')   if isinstance(_lv.get('res'),  dict) else {}
+        # ── 步骤结果变量（显式参数传入，不再依赖_lv）──
+        _vol   = vol   if isinstance(vol,  dict) else {}
+        _mac   = mac   if isinstance(mac,  dict) else {}
+        _risk  = risk  if isinstance(risk, dict) else {}
+        _res   = res   if isinstance(res,  dict) else {}
         _zsc   = d.get('zsc', {})
-        _bw    = _lv.get('bw')    if isinstance(_lv.get('bw'),   dict) else {}
+        _bw    = bw    if isinstance(bw,   dict) else {}
         _step11_g = d.get('_step11', {})
         # [Fix-C v2] step11 返回 gates_passed(int)+blocked_by(str), 无gates dict
         # 重建 template 需要的 step11_gates 格式 {G1:bool, ..., G11:bool}
