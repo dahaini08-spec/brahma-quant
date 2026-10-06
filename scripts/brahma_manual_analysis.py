@@ -254,7 +254,21 @@ def step0_fetch_all(sym: str) -> dict:
     
     if _candidate and _state_price > 0 and _price_ok and not _state_stale:
         # 缓存新鲜且价格匹配 → 直接使用
-        bs = _candidate
+        # [2026-10-06 苏摩111] 但如果没有confluence字段，强制重新analyze()
+        _has_confluence = bool(_candidate.get('confluence',{}))
+        if _has_confluence:
+            bs = _candidate
+        else:
+            try:
+                sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+                from brahma_core import analyze as _analyze
+                bs = _analyze(f'{sym}USDT')
+                if bs and isinstance(bs, dict):
+                    import json as _json_save
+                    _sym_state.write_text(_json_save.dumps(bs, ensure_ascii=False))
+            except Exception as _e:
+                print(f'[WARN] brahma_manual_analysis: analyze重跑失败: {_e}', file=sys.stderr)
+                bs = _candidate
     elif _candidate and _state_price > 0 and (_price_dev >= 0.005 or _state_stale):
         # 缓存过期或价格偏差过大 → 实时重算
         try:
@@ -2962,6 +2976,25 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     elif abs(_drift_pct) >= 0.5:
         _price_warn = f'\n⚠️ 价格微偏：分析${p:,.0f}→当前${_live:,.0f}({_drift_pct:+.1f}%)，入场区仅供参考'
 
+    # [2026-10-06 苏摩111] 注入live_score到d['bs']供step10/step11使用
+    if '_live_score' not in dir() or not _live_score:
+        try:
+            _align_ls = int(res.get('align_count', 0) if isinstance(res, dict) else 0)
+            _oi_ls = str(oi.get('signal','?') if isinstance(oi,dict) else '?')
+            _cvd_ls2 = float(oi.get('cvd_1h',0) if isinstance(oi,dict) else 0)
+            _lsr_b2 = float(sm.get('lsr_big',0) if isinstance(sm,dict) else 0)
+            _lsr_r2 = float(sm.get('lsr_retail',0) if isinstance(sm,dict) else 0)
+            _rsi_ls = float(vol.get('rsi_1h',50) if isinstance(vol,dict) else 50)
+            _live_score = max(0.0, float(_align_ls*10
+                + (15 if 'LONG_BUILD' in _oi_ls else 10 if 'SHORT_BUILD' in _oi_ls else 0)
+                + (10 if _cvd_ls2>100 else 5 if _cvd_ls2>0 else 0)
+                + (8 if _lsr_b2>60 else 0)
+                + (8 if _rsi_ls<30 else 0)))
+        except Exception: _live_score = 0.0
+    if isinstance(d.get('bs'), dict) and _live_score > 0:
+        d['bs']['score_final'] = _live_score
+        d['bs']['score'] = _live_score
+
     print(f'[{sym}] Step 10: 生成VIP卡片...', flush=True)
 
     bd      = d['bs'].get('confluence', {}).get('breakdown', {})
@@ -3794,6 +3827,23 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
                 _rs_confirmed = _jrs.loads(_rs_file.read_text()).get(sym+'USDT', {}).get('confirmed', '')
             except Exception: pass
         # [2026-10-06 苏摩111] regime=UNKNOWN时用Hurst+OI本地推断
+        # [2026-10-06 苏摩111] 本轮10步信号评分（regime恢复前的合理评分）
+        try:
+            _align = int(res.get('align_count', 0) if isinstance(res, dict) else 0)
+            _oi_sig_ls = str(oi.get('signal','?') if isinstance(oi,dict) else '?')
+            _cvd_ls = float(_cvd_snapshot.get('cvd_1h', 0))
+            _lsr_b_ls = float(_lsr_big_rt or 0)
+            _lsr_r_ls = float(_lsr_retail_rt or 0)
+            _rsi1h_ls = float(d.get('rsi_1h', vol.get('rsi_1h', 50) if isinstance(vol,dict) else 50) or 50)
+            _live_score = (_align * 10
+                + (15 if 'LONG_BUILD' in _oi_sig_ls else 10 if 'SHORT_BUILD' in _oi_sig_ls else -5 if 'UNWIND' in _oi_sig_ls else 0)
+                + (10 if _cvd_ls > 100 else 5 if _cvd_ls > 0 else -5 if _cvd_ls < -100 else 0)
+                + (8 if _lsr_b_ls > 60 else 0)
+                + (-5 if _lsr_r_ls > 65 else 0)
+                + (8 if _rsi1h_ls < 30 else 0))
+            _live_score = max(0.0, float(_live_score))
+        except Exception: _live_score = 0.0
+
         _p_regime_raw = str(_rs_confirmed or regime_c or '')
         if _p_regime_raw in ('UNKNOWN','','None'):
             # 本地推断：Hurst>0.6=趋势 / OI=LONG_UNWIND+CVD>0=BULL_TREND候选 / 否则CHOP_MID
@@ -3906,8 +3956,9 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             # ── Step11 ──
             'step11_gates':   _gates,
             'step11_verdict': str(_step11_g.get('verdict', 'WAIT') if isinstance(_step11_g, dict) else 'WAIT'),
-            'score_final':    float(d.get('bs', {}).get('score_final', d.get('bs', {}).get('score', 0)) if isinstance(d.get('bs'), dict) else 0),
-            'raw_score':      float(d.get('bs', {}).get('score', 0) if isinstance(d.get('bs'), dict) else 0),
+            # [2026-10-06 苏摩111] 本轮10步评分计算（不依赖bs.score_final）
+            'score_final':    float(_live_score if '_live_score' in dir() else (d.get('bs', {}) or {}).get('score_final', 0)),
+            'raw_score':      float(_live_score if '_live_score' in dir() else (d.get('bs', {}) or {}).get('score', 0)),
 
             # ── VIP策略 ──
             'signal_dir':      str(_tb.get('direction', d.get('signal_dir', 'NONE'))),
@@ -3933,6 +3984,17 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
         _tmp_sync = _state_path.with_suffix('.tmp')
         _tmp_sync.write_text(_json_sync.dumps(_sync_state, ensure_ascii=False, indent=2), encoding='utf-8')
         _tmp_sync.replace(_state_path)
+        # [2026-10-06 苏摩111] 把bs的confluence/score写入_sync_state供output_template使用
+        if isinstance(d.get('bs'),dict) and d['bs']:
+            _bs_src = d['bs']
+            if _bs_src.get('confluence') and not _sync_state.get('confluence'):
+                _sync_state['confluence'] = _bs_src['confluence']
+            if _bs_src.get('score_final',0) > _sync_state.get('score_final',0):
+                _sync_state['score_final'] = float(_bs_src.get('score_final',0))
+                _sync_state['raw_score'] = float(_bs_src.get('score',0))
+            # 把bs整体合并进state供brahma_manual_analysis读取
+            _sync_state['bs'] = {k:v for k,v in _bs_src.items() if k not in _sync_state}
+
         _missing = [k for k in ['fvg_votes','ob_list','fvg_magnet','liq_short','sl','tp1','score_final','step11_gates'] if not _sync_state.get(k) and _sync_state.get(k) != 0]
         print(f'[{sym}] ✅ Fix-C brahma_state写入 price=${_p_price:,.0f} regime={_p_regime} 缺字段={_missing or "无"}', flush=True)
     except Exception as _sync_e:
