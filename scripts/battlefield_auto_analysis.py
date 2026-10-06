@@ -80,12 +80,46 @@ def run_analysis(symbols: list) -> dict:
     }
 
 def save_result(result: dict):
-    """保存分析结果"""
+    """[封印修复 2026-10-06 苏摩111]
+    battlefield_auto_analysis不再覆盖auto_analysis_latest.json。
+    brahma_manual_analysis.py内部已正确写入full_reports字段。
+    本脚本的subprocess结果 dict格式会把full_reports套除成None。
+    修复: 只补充尰1个层的字段，不整体覆盖。
+    """
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    # 读现有文件（brahma_manual_analysis已正确写入full_reports）
+    existing = {}
+    try:
+        if OUT_PATH.exists():
+            existing = json.loads(OUT_PATH.read_text())
+    except Exception:
+        pass
+    # 只更新非 full_reports 字段，保留现有full_reports
+    merged = existing.copy() if existing else {}
+    for k, v in result.items():
+        if k not in ('full_reports', 'ts', 'ssot_signals'):
+            merged[k] = v  # 覆盖subprocess元数据（output/error/returncode/elapsed）
+    # 确保 full_reports 不被破坏
+    if not merged.get('full_reports'):
+        # 如果现有full_reports为空，尝试从 brahma_state 重建
+        try:
+            sys.path.insert(0, str(BASE / 'scripts'))
+            from brahma_output_template import format_full_report as _fmt_r
+            _reports = {}
+            for _sym in (result.get('symbols') or []):
+                _sp = BASE / 'data' / f'brahma_state_{_sym.lower()}.json'
+                if _sp.exists():
+                    _sd = json.loads(_sp.read_text())
+                    _reports[_sym] = _fmt_r(_sym, _sd)
+            if _reports:
+                merged['full_reports'] = _reports
+                print(f'[auto_analysis] full_reports与 brahma_state重建: {list(_reports.keys())}', flush=True)
+        except Exception as _e:
+            print(f'[WARN] full_reports重建失败: {_e}', file=sys.stderr)
     tmp = OUT_PATH.with_suffix('.tmp')
-    tmp.write_text(json.dumps(result, ensure_ascii=False, default=str))
+    tmp.write_text(json.dumps(merged, ensure_ascii=False, default=str))
     tmp.rename(OUT_PATH)
-    print(f'[auto_analysis] 结果已保存: {OUT_PATH}', flush=True)
+    print(f'[auto_analysis] 结果已合并保存: {OUT_PATH} | full_reports={list((merged.get("full_reports") or {}).keys())}', flush=True)
 
 def build_push_text(result: dict, symbols: list) -> str | None:
     """构建推送文本：提取auto_analysis_latest的output（VIP卡区）+ 触发摘要"""
