@@ -2856,15 +2856,18 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     regime_c = d['regime_s'].get(sym+'USDT',{}).get('confirmed', d['bs'].get('regime','CHOP_MID'))  # [9.15修复] 提到try外面
     try:
         from brahma_brain.trader_brain import decide as tb_decide, format_vip_card as tb_format
+        # [2026-10-06 苏摩111] 优先用ob_list（含valid/age字段），regime降级CHOP_MID
+        _regime_for_tb = regime_c if regime_c and regime_c != 'UNKNOWN' else 'CHOP_MID'
+        _ob_for_tb = _ob_list if _ob_list else ob  # ob_list是list格式，含valid+age
         tb_result = tb_decide(
-            regime=regime_c,
+            regime=_regime_for_tb,
             score=float(d['bs'].get('score_final', d['bs'].get('score', 0))),
             grade=float(d['bs'].get('grade', 0)),
             macro=mac,
             risk=risk,
             hurst=vol.get('hurst', 0.5),
             fvg=fvg,
-            ob=ob,
+            ob=_ob_for_tb,
             liq=liq,
             atr_1h=vol.get('atr_1h', 0),
             atr_4h=vol.get('atr_4h', 0),
@@ -2997,7 +3000,19 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     # 结果注入到输出流，作为人工审核区后的最终裁决
     try:
         from step11_mandatory_judge import run_step11 as _s11
-        _s11_result = _s11(sym, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, tb_result)
+        # [2026-10-06 苏摩111] Step11用修正后的tb_result（含降级体制+OB补票方向）
+        _tb_for_s11 = tb_result.copy() if isinstance(tb_result,dict) else {}
+        if _tb_for_s11.get('direction','NONE') == 'NONE':
+            # regime已降级CHOP_MID，重跑trader_brain获取方向
+            try:
+                from brahma_brain.trader_brain import decide as _tb2
+                _r2 = _tb2(regime=_regime_for_tb, score=float(d['bs'].get('score_final',d['bs'].get('score',0))),
+                    grade=float(d['bs'].get('grade',0)), macro=mac, risk=risk, hurst=vol.get('hurst',0.5),
+                    fvg=fvg, ob=_ob_for_tb, liq=liq, atr_1h=vol.get('atr_1h',0), atr_4h=vol.get('atr_4h',0),
+                    price=p, oi=oi, sm=sm, vol=vol, res=res, symbol=sym+'USDT', cf_action='')
+                if _r2.get('direction','NONE') != 'NONE': _tb_for_s11 = _r2
+            except Exception: pass
+        _s11_result = _s11(sym, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, _tb_for_s11)
         d['_step11'] = _s11_result  # 供后续formatter读取
         _s11_verdict = _s11_result['verdict']
         _s11_gates   = _s11_result['gates_passed']
@@ -3778,7 +3793,21 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
                 _rs_file = Path(__file__).parent.parent / 'data' / 'regime_state.json'
                 _rs_confirmed = _jrs.loads(_rs_file.read_text()).get(sym+'USDT', {}).get('confirmed', '')
             except Exception: pass
-        _p_regime = str(_rs_confirmed or regime_c or 'CHOP_MID')
+        # [2026-10-06 苏摩111] regime=UNKNOWN时用Hurst+OI本地推断
+        _p_regime_raw = str(_rs_confirmed or regime_c or '')
+        if _p_regime_raw in ('UNKNOWN','','None'):
+            # 本地推断：Hurst>0.6=趋势 / OI=LONG_UNWIND+CVD>0=BULL_TREND候选 / 否则CHOP_MID
+            _h_val = float(_vol.get('hurst') or 0.5)
+            _oi_sig_rt = str(oi.get('signal','?'))
+            _cvd_rt = float(_cvd_snapshot.get('cvd_1h',0))
+            if _h_val > 0.62:
+                _p_regime_raw = 'BULL_TREND' if _cvd_rt > 0 else 'BEAR_TREND'
+            elif _oi_sig_rt == 'SHORT_BUILD' and _cvd_rt < 0:
+                _p_regime_raw = 'BEAR_EARLY'
+            else:
+                _p_regime_raw = 'CHOP_MID'
+            print(f'[{sym}] regime UNKNOWN → 本地推断={_p_regime_raw} (H={_h_val:.3f} OI={_oi_sig_rt} CVD={_cvd_rt:+.0f})', flush=True)
+        _p_regime = _p_regime_raw
 
         _sync_state = {
             # ── 基础 ──

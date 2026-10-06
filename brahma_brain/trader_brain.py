@@ -287,6 +287,16 @@ def decide(
     else:
         # CHOP_MID: 三票投票（FVG+OI+CVD）
         _fvg_dir = 'LONG' if fvg.get('consensus', '') == 'BULL' else 'SHORT' if fvg.get('consensus', '') == 'BEAR' else 'NONE'
+        # [2026-10-06 苏摩111] FVG=NONE时用OB多数方向补票（超过半数同向才计入）
+        if _fvg_dir == 'NONE':
+            # 支持ob为list格式(ob_list)或dict格式
+            _ob_items = ob if isinstance(ob, list) else ([v for v in ob.values() if isinstance(v,dict)] if isinstance(ob,dict) else [])
+            _ob_fresh = [v for v in _ob_items if isinstance(v,dict) and v.get('valid') and v.get('age',999)<=4]
+            if _ob_fresh:
+                _ob_bull = sum(1 for o in _ob_fresh if str(o.get('side','')).upper()=='BULL')
+                _ob_bear = sum(1 for o in _ob_fresh if str(o.get('side','')).upper()=='BEAR')
+                if _ob_bull > _ob_bear: _fvg_dir = 'LONG'
+                elif _ob_bear > _ob_bull: _fvg_dir = 'SHORT'
         _oi_sig = oi.get('signal', '')
         _oi_dir = 'LONG' if _oi_sig in ('LONG_BUILD', 'SHORT_SQUEEZE') else 'SHORT' if _oi_sig in ('SHORT_BUILD',) else 'NONE'  # [改革3] LONG_UNWIND不再=SHORT
         _cvd_val = oi.get('cvd_1h', 0)  # [改革1修正] 从oi获取CVD，不是ms
