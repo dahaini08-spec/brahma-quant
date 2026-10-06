@@ -393,8 +393,13 @@ def build_battlefield_report_combined(analysis_by_sym: dict) -> str:
             )
         else:
             _voice_lines.append('我的操作：没有挂单，等止损墙被触碰后再说。')
-        if _btc_lsr > 65:
-            _voice_lines.append(f'散户{_btc_lsr:.0f}%多头——这种拥挤程度，主力最爱的就是清洗这批止损。')
+        # 优先用LSR更极端的那个币提示猎杀
+        _max_lsr = max(_btc_lsr, _eth_lsr)
+        _lsr_sym = 'ETH' if _eth_lsr > _btc_lsr else 'BTC'
+        if _eth_lsr > 65:
+            _voice_lines.append(f'ETH散户{_eth_lsr:.0f}%多头——主力最喜欢的猎杀场景，空ETH优先。')
+        elif _btc_lsr > 65:
+            _voice_lines.append(f'BTC散户{_btc_lsr:.0f}%多头——这种拥挤程度，主力最爱的就是清洗这批止损。')
     elif n_bull == 2:  # 双多
         if _btc_pool > 0:
             _voice_lines.append(

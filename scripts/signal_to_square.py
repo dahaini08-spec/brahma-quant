@@ -152,15 +152,19 @@ def generate_content(signal: dict) -> str:
     _lsr_retail = float(signal.get('lsr_retail', 0) or 0)
     _lsr_big    = float(signal.get('lsr_big', 0) or 0)
     _hurst = float(signal.get('hurst', 0) or 0)
-    if 'BUILD' in _oi and direc == 'SHORT':
-        _why_lines.append(f'OI {_oi}：空头在建仓，资金流向与方向一致')
-    elif 'UNWIND' in _oi and direc == 'SHORT':
-        _why_lines.append(f'OI {_oi}：多头在撤退，空头阻力减小')
-    elif 'BUILD' in _oi and direc == 'LONG':
-        _why_lines.append(f'OI {_oi}：多头在建仓，主力方向向上')
-    if _cvd < -500 and direc == 'SHORT':
+    if 'SHORT_BUILD' in _oi and direc == 'SHORT':
+        _why_lines.append(f'OI SHORT_BUILD：空头主动建仓，资金方向做空')
+    elif 'SHORT_SQUEEZE' in _oi and direc == 'SHORT':
+        _why_lines.append(f'OI SHORT_SQUEEZE：轧空行情中，挂单位置需要比止损墙更远')
+    elif 'LONG_UNWIND' in _oi and direc == 'SHORT':
+        _why_lines.append(f'OI LONG_UNWIND：多头在撤退，空头阻力减小')
+    elif 'LONG_BUILD' in _oi and direc == 'LONG':
+        _why_lines.append(f'OI LONG_BUILD：多头主动建仓，资金方向做多')
+    elif 'SHORT_UNWIND' in _oi and direc == 'LONG':
+        _why_lines.append(f'OI SHORT_UNWIND：空头在撤退，多头阻力减小')
+    if _cvd < -100 and direc == 'SHORT':
         _why_lines.append(f'CVD={_cvd:+.0f}：卖方主导，挂单消耗不对称')
-    elif _cvd > 500 and direc == 'LONG':
+    elif _cvd > 100 and direc == 'LONG':
         _why_lines.append(f'CVD={_cvd:+.0f}：买方主导，资金净流入')
     if _lsr_retail > 65 and direc == 'SHORT':
         _why_lines.append(f'散户{_lsr_retail:.0f}%多头 = 主力猎杀目标已就位')
