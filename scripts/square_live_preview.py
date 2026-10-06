@@ -95,23 +95,24 @@ def build_live_preview() -> str:
     btc_str = f'${btc_price:,.0f}' if btc_price > 0 else '实时价格'
     eth_str = f'${eth_price:,.0f}' if eth_price > 0 else '实时价格'
 
+    # [2026-10-06 苏摩111] 强化互动钩子：明确征集答案，算法识别评论=更高推送权重
     lines = [
-        f'今晚21:00 直播预告 | {date_str}',
-        '',
-        '这场要讨论的核心问题：',
-        f'「{question}」',
+        f'今晚21:00 直播 | {date_str}',
         '',
         f'BTC {btc_str} | ETH {eth_str}',
-        '数据已经给出答案，但答案在哪里？',
-        '直播里一起看。',
         '',
-        '21:00 准时开始，不见不散。',
-        '评论告诉我你的判断——我会直播里点名回应。',
+        f'今晚要解答这个问题：',
+        f'「{question}」',
+        '',
+        '评论区先说你的判断——多/空/观望？',
+        '我会在直播里逐个点名回应。',
+        '',
+        '21:00 准时，不见不散。',
         '',
         '关注我，每晚21:00直播+SMC教学',
-        '🔗 www.bsmkweb.cc/register?ref=XZBX666',
+        '注册享20%手续费折扣 bsmkweb.cc/register?ref=XZBX666',
         '🌿 姓赵不宣 | 不是建议',
-        '#直播预告 #BTC #合约交易',
+        '$BTC $ETH #直播预告 #BTC #合约交易',
     ]
     return '\n'.join(lines)
 

@@ -134,7 +134,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # 北京14:00发（与快照帖错峰1小时）
 # [100%실패 비활성화] 0 6 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/square_chart_poster.py >> logs/syscron.log 2>&1
 # [2026-10-04 苏摩111自主决策] KEY_1蓝桉: 山寨币暴动分析（独立选题，不KEY_0重叠）*/2h扫涨跌榜
-30 */2 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_altcoin_poster.py >> logs/syscron.log 2>&1
+30 0,8,16 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_altcoin_poster.py >> logs/syscron.log 2>&1  # [2026-10-06 苏摩111] 降频 */2→0/8/16时 防稀释账号权重
 # [2026-10-04 苏摩111自主决策] KEY_2牛来PRO: 宏观教育（独立选题）每日02:00 UTC（北京10:00）
 0 2 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_macro_edu_poster.py >> logs/syscron.log 2>&1
 # [2026-10-04 苏摩111自主决策] KEY_0视频帖保留（高权重）
@@ -148,6 +148,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 0 10 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square/square_macro_poster.py --auto >> logs/syscron.log 2>&1
 # [2026-10-03 苏摩111] 直播预告帖（11:00 UTC=北京19:00，直播前2小时）
 0 11 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_live_preview.py >> logs/syscron.log 2>&1
+0 6 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_key_levels_poster.py >> logs/syscron.log 2>&1  # [2026-10-06 苏摩111] 北京14:00 今日关键价位+互动钩子
 # [2026-10-03 苏摩111] 信号发帖（有ENTER信号就发帖）
 */30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/signal_to_square.py >> logs/syscron.log 2>&1
 # [2026-09-30 苏摩111 孤岛接线] trade_loop上链：Phase0信号注入+Phase1开单帖+Phase2持仓帖

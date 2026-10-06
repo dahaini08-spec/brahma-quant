@@ -231,13 +231,14 @@ def get_latest_sqe_signal() -> dict | None:
     if not signals:
         return None
 
-    # 过滤：最近24H内、score≥130、SQE通过（sl_pct<=2.0%）
+    # [2026-10-06 苏摩111] 门槛降低：score≥80（含WATCH级），便于日常发帖展示系统运行
+    # ENTER级(score≥130)正常发；WATCH级(score≥80)附带WATCH标签发
     now = time.time()
     candidates = [
         s for s in signals
         if (now - float(s.get('timestamp', 0) or 0)) < 86400  # 24H内
-        and (s.get('score', 0) or 0) >= 130
-        and 0 < (s.get('sl_pct', 0) or s.get('params', {}).get('sl_pct', 0) or 0) <= 2.0
+        and (s.get('score', 0) or 0) >= 80
+        and 0 < (s.get('sl_pct', 0) or s.get('params', {}).get('sl_pct', 0) or 0) <= 3.0
     ]
 
     if not candidates:
@@ -264,7 +265,7 @@ def main():
     else:
         signal = get_latest_sqe_signal()
         if not signal:
-            print("ℹ️ 无可发布信号（无24H内score≥130且sl<=2%的信号）")
+            print("ℹ️ 无可发布信号（无24H内score≥80且sl<=3%的信号）")
             print("HEARTBEAT_OK")
             sys.exit(0)
 

@@ -57,7 +57,15 @@ ORANGE = (255, 166, 87)
 def _load_fonts():
     try:
         from PIL import ImageFont
-        bold = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf', 22)
+        # [2026-10-06 苏摩111] CJK字体修复：DejaVu无中文字形→NotoSansSC
+        _FONT_PATHS = [
+            str(Path(__file__).parent.parent / 'assets/fonts/NotoSansSC-Regular.ttf'),
+            '/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc',
+            '/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc',
+            '/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf',  # fallback
+        ]
+        _font_path = next((f for f in _FONT_PATHS if Path(f).exists()), _FONT_PATHS[-1])
+        bold = ImageFont.truetype(_font_path, 22)
         med  = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf', 16)
         sm   = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf', 13)
         return bold, med, sm
