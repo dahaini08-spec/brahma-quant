@@ -68,18 +68,36 @@ def _load_chutes_key() -> str:
 CHUTES_KEY = _load_chutes_key()
 
 # Chutes模型路由表（中文最优选择）
+# [封印 2026-10-06 苏摩111] Chutes全量放开——14个SOTA模型全部免费，按任务最优分配
+# 全部14模型确认免费（pricing.input=0, pricing.output=0）
+# 高复杂推理→旗舰1M上下文 / 中等推理→主力级 / 快速门控→轻量级
 CHUTES_TASK_MODEL_MAP = {
-    'council':  'deepseek-ai/DeepSeek-V3.2-TEE',       # 中文逻辑最强
-    'vip':      'deepseek-ai/DeepSeek-V3.2-TEE',
-    'oi':       'deepseek-ai/DeepSeek-V3.2-TEE',
-    'regime':   'Qwen/Qwen3.5-397B-A17B-TEE',          # 宏观推理
-    'wr_audit': 'deepseek-ai/DeepSeek-V3.2-TEE',
-    'review':   'deepseek-ai/DeepSeek-V3.2-TEE',
-    'hcme':     'deepseek-ai/DeepSeek-V4-Flash-0731-TEE',  # 1M上下文
-    'chop':     'Qwen/Qwen3.8-27B-TEE',                # 快速验证
-    'safety':   'Qwen/Qwen3.8-27B-TEE',
-    'default':  'deepseek-ai/DeepSeek-V3.2-TEE',
+    # ── 旗舰级 1M上下文（复杂多维推理）────────────────────────────────
+    'council':  'zai-org/GLM-5.2-TEE',                     # 1M ctx，中文深度推理最强
+    'hcme':     'deepseek-ai/DeepSeek-V4-Flash-0731-TEE',  # 1M ctx，长历史情境匹配
+    'regime':   'moonshotai/Kimi-K3-TEE',                  # 1M ctx，宏观体制推理
+
+    # ── 主力级 131K~262K（中等复杂度任务）─────────────────────────────
+    'vip':      'deepseek-ai/DeepSeek-V3.2-TEE',           # 131K，VIP中文格式输出精准
+    'oi':       'zai-org/GLM-5.1-TEE',                     # 202K，OI/资金流向解读
+    'wr_audit': 'deepseek-ai/DeepSeek-V3.2-TEE',           # 131K，WR数学审核
+    'review':   'moonshotai/Kimi-K2.6-TEE',                # 262K，复盘lesson生成
+
+    # ── 轻量级（快速门控，延迟优先）───────────────────────────────────
+    'chop':     'Qwen/Qwen3.8-27B-TEE',                    # 262K，CHOP突破快速验证
+    'safety':   'google/gemma-4-31B-turbo-TEE',            # 131K，安全门控极速响应
+
+    # ── 默认兜底 ──────────────────────────────────────────────────────
+    'default':  'deepseek-ai/DeepSeek-V3.2-TEE',           # 通用兜底
 }
+
+# Chutes fallback链（主模型失败时轮换）
+CHUTES_FALLBACK_MODELS = [
+    'deepseek-ai/DeepSeek-V3.2-TEE',
+    'Qwen/Qwen3.5-397B-A17B-TEE',
+    'Qwen/Qwen3.8-27B-TEE',
+    'zai-org/GLM-5.1-TEE',
+]
 
 # Chutes 退避状态（独立，不影响OpenRouter退避）
 _chutes_backoff_until = 0.0
@@ -327,30 +345,34 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
     global _chutes_backoff_until
     if CHUTES_KEY and time.time() >= _chutes_backoff_until:
         _chutes_model = CHUTES_TASK_MODEL_MAP.get(task, CHUTES_TASK_MODEL_MAP['default'])
-        try:
-            _ch_payload = json.dumps({
-                'model': _chutes_model, 'messages': messages,
-                'max_tokens': max_tokens, 'temperature': 0.2,
-            }).encode()
-            _ch_req = urllib.request.Request(
-                CHUTES_BASE_URL, data=_ch_payload,
-                headers={
-                    'Authorization': f'Bearer {CHUTES_KEY}',
-                    'Content-Type': 'application/json',
-                },
-            )
-            _ch_resp = json.loads(urllib.request.urlopen(_ch_req, timeout=timeout, context=_ctx).read())
-            _ch_choice = (_ch_resp.get('choices') or [{}])[0]
-            _ch_content = (_ch_choice.get('message') or {}).get('content', '').strip()
-            if _ch_content and _ch_choice.get('finish_reason') != 'length':
-                return _ch_content  # Chutes成功，直接返回
-        except urllib.error.HTTPError as _che:
-            if _che.code == 429:
-                _chutes_backoff_until = time.time() + 300  # Chutes 429 → 退避5min
-                print(f'[llm] Chutes 429，切换OpenRouter', file=sys.stderr)
-            # 其他错误：静默降级到OpenRouter
-        except Exception:
-            pass  # Chutes失败：静默降级到OpenRouter
+        # Chutes带fallback链：主模型失败→轮换CHUTES_FALLBACK_MODELS
+        _chutes_candidates = [_chutes_model] + [m for m in CHUTES_FALLBACK_MODELS if m != _chutes_model]
+        for _chm in _chutes_candidates:
+            try:
+                _ch_payload = json.dumps({
+                    'model': _chm, 'messages': messages,
+                    'max_tokens': max_tokens, 'temperature': 0.2,
+                }).encode()
+                _ch_req = urllib.request.Request(
+                    CHUTES_BASE_URL, data=_ch_payload,
+                    headers={
+                        'Authorization': f'Bearer {CHUTES_KEY}',
+                        'Content-Type': 'application/json',
+                    },
+                )
+                _ch_resp = json.loads(urllib.request.urlopen(_ch_req, timeout=timeout, context=_ctx).read())
+                _ch_choice = (_ch_resp.get('choices') or [{}])[0]
+                _ch_content = (_ch_choice.get('message') or {}).get('content', '').strip()
+                if _ch_content and _ch_choice.get('finish_reason') != 'length':
+                    return _ch_content  # Chutes成功
+            except urllib.error.HTTPError as _che:
+                if _che.code == 429:
+                    _chutes_backoff_until = time.time() + 300
+                    print(f'[llm] Chutes 429，退避5min切OpenRouter', file=sys.stderr)
+                    break  # 429=全局退避，不再轮换
+                continue  # 其他HTTP错误：尝试下一个
+            except Exception:
+                continue  # 网络/解析错误：尝试下一个
 
     preferred = TASK_MODEL_MAP.get(task, TASK_MODEL_MAP['default'])
     model = _pick_model(preferred)
