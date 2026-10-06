@@ -96,28 +96,36 @@ def extract_vip_params(sym: str, st: dict) -> dict:
     tp2      = float(tb.get('tp2') or conf.get('tp2') or 0)
     rr       = float(tb.get('rr') or conf.get('rr') or st.get('rr') or 0)
     action   = str(conf.get('action') or st.get('decision_action') or 'WATCH')
-    score    = float(conf.get('total') or conf.get('score') or st.get('score_final') or 0)
+    # [2026-10-06 苏摩111] score用score_final_raw（Step11前原始IC分）
+    # conf.total/score包含non-IC维度，会产生"评分165但WAIT"的误导
+    # score_final_raw = 94维IC加权原始分，更真实反映信号强度
+    score    = float(st.get('score_final_raw') or conf.get('total') or conf.get('score') or st.get('score_final') or 0)
 
     # 清算地图补充
     liq_short = float(kl.get('liq_short_5pct') or st.get('liq_short') or 0)
     liq_long  = float(kl.get('liq_long_5pct')  or st.get('liq_long')  or 0)
 
+    # [2026-10-06 苏摩111] 补入Step11裁决字段，让推送消息更完整
+    step11_verdict = str(st.get('step11_verdict') or '')
+    step11_block   = str(st.get('step11_block') or '')
     return {
-        'sym':       sym,
-        'price':     price,
-        'regime':    regime,
-        'direction': signal_dir,
-        'action':    action,
-        'score':     score,
-        'entry_lo':  entry_lo,
-        'entry_hi':  entry_hi,
-        'sl':        sl,
-        'tp1':       tp1,
-        'tp2':       tp2,
-        'rr':        rr,
-        'liq_short': liq_short,
-        'liq_long':  liq_long,
-        'ts':        float(st.get('price_ts') or st.get('_snapshot_written_epoch') or time.time()),
+        'sym':            sym,
+        'price':          price,
+        'regime':         regime,
+        'direction':      signal_dir,
+        'action':         action,
+        'score':          score,
+        'entry_lo':       entry_lo,
+        'entry_hi':       entry_hi,
+        'sl':             sl,
+        'tp1':            tp1,
+        'tp2':            tp2,
+        'rr':             rr,
+        'liq_short':      liq_short,
+        'liq_long':       liq_long,
+        'step11_verdict': step11_verdict,
+        'step11_block':   step11_block,
+        'ts':             float(st.get('price_ts') or st.get('_snapshot_written_epoch') or time.time()),
     }
 
 
@@ -197,9 +205,14 @@ def build_push_msg(sym: str, params: dict, changes: list, trigger: str) -> str:
     dir_emoji  = '🔴' if p.get('direction') == 'SHORT' else '🟢' if p.get('direction') == 'LONG' else '⚪'
     change_str = '\n'.join(f"  {c}" for c in changes)
 
+    # [2026-10-06 苏摩111] 推送消息加 Step11裁决+阻断原因，防止高score/WAIT误导
+    _s11_v = params.get('step11_verdict', '')
+    _s11_block = params.get('step11_block', '')
+    _verdict_str = f" | Step11:{_s11_v}" if _s11_v else ''
+    _block_str = f" [{_s11_block}]" if _s11_block else ''
     lines = [
         f"🎯 梵天VIP策略更新 | {sym}/USDT {price_str}",
-        f"体制: {p.get('regime','?')} | 评分: {p.get('score',0):.0f} | 动作: {p.get('action','?')}",
+        f"体制: {p.get('regime','?')} | 评分: {p.get('score',0):.0f} | 动作: {p.get('action','?')}{_verdict_str}{_block_str}",
         f"",
         f"变化:",
         change_str,

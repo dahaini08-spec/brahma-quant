@@ -4096,6 +4096,12 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
                 # [2026-10-06 苏摩111] 保存analyze()的signal_dir（94维计算结果）
                 if d['bs'].get('signal_dir','NONE') not in ('NONE', '', None):
                     _saved['analyze_signal_dir'] = d['bs']['signal_dir']
+                # [2026-10-06 苏摩111] 补入step11裁决字段（vip_watcher需要）
+                if _saved.get('step11_verdict') in (None, ''):
+                    _s11g_tmp = d.get('_step11', {})
+                    if isinstance(_s11g_tmp, dict) and _s11g_tmp.get('verdict'):
+                        _saved['step11_verdict'] = _s11g_tmp['verdict']
+                        _saved['step11_block']   = _s11g_tmp.get('blocked_by', '')
                 _saved['bs'] = {k:v for k,v in d['bs'].items() if not isinstance(v,(list,dict)) or k in ('confluence','breakdown')}
                 _tmp2 = _state_path.with_suffix('.tmp2')
                 _tmp2.write_text(_json_sync.dumps(_saved, ensure_ascii=False, indent=2), encoding='utf-8')
