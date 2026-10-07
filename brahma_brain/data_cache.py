@@ -179,11 +179,19 @@ import ssl as _ssl_mod
 _SSL_CTX = _ssl_mod.create_default_context()  # 进程级单例，只建一次
 
 # ─── HTTP工具 ────────────────────────────────────────────────
-def _get(url: str, timeout=8) -> Any:
-    """get"""
-    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    with urllib.request.urlopen(req, timeout=timeout, context=_SSL_CTX) as r:
-        return json.loads(r.read())
+def _get(url: str, timeout=8, _retries: int = 2) -> Any:
+    """get 带指数退避 [P1修复 2026-10-07 苏摩111]"""
+    for attempt in range(_retries + 1):
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=timeout, context=_SSL_CTX) as r:
+                return json.loads(r.read())
+        except urllib.error.HTTPError as e:
+            if e.code >= 500 and attempt < _retries:
+                time.sleep(1.5 ** attempt)
+                continue
+            raise
+    return None
 
 def _signed_get(path: str, params: dict = None, timeout=8) -> Any:
     """signed get"""

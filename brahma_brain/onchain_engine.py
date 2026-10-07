@@ -29,19 +29,26 @@ FAPI = "https://fapi.binance.com"
 _cache: dict = {}
 _TTL = 180  # 3分钟
 
-def _get(url: str) -> dict | list | None:
-    """get"""
+def _get(url: str, _retries: int = 2) -> dict | list | None:
+    """get with exponential backoff on 5xx [P1修复 2026-10-07 苏摩111]"""
     now = time.time()
     if url in _cache and now - _cache[url]['ts'] < _TTL:
         return _cache[url]['data']
-    try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=8, context=_DC_SSL_CTX) as r:
-            data = json.loads(r.read())
-            _cache[url] = {'ts': now, 'data': data}
-            return data
-    except Exception:
-        return None
+    for attempt in range(_retries + 1):
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=8, context=_DC_SSL_CTX) as r:
+                data = json.loads(r.read())
+                _cache[url] = {'ts': now, 'data': data}
+                return data
+        except urllib.error.HTTPError as e:
+            if e.code >= 500 and attempt < _retries:
+                time.sleep(1.5 ** attempt)  # 1s, 1.5s
+                continue
+            return None
+        except Exception:
+            return None
+    return None
 
 
 try:
@@ -59,17 +66,27 @@ def _cg(path: str, qs: str = '') -> Optional[Any]:
     now = time.time()
     if url in _cache and now - _cache[url]['ts'] < _TTL:
         return _cache[url]['data']
-    try:
-        req = urllib.request.Request(url, headers={
-            'CG-API-KEY': CG_KEY, 'User-Agent': 'brahma/4.0'
-        })
-        with urllib.request.urlopen(req, timeout=6, context=_DC_SSL_CTX) as r:
-            d = json.loads(r.read())
-            if str(d.get('code','0')) in ('0','200','None'):
-                data = d.get('data', d)
-                _cache[url] = {'ts': now, 'data': data}
-                return data
-    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+    for _attempt in range(3):  # [P1修复 2026-10-07 苏摩111] 指数退避
+        try:
+            req = urllib.request.Request(url, headers={
+                'CG-API-KEY': CG_KEY, 'User-Agent': 'brahma/4.0'
+            })
+            with urllib.request.urlopen(req, timeout=6, context=_DC_SSL_CTX) as r:
+                d = json.loads(r.read())
+                if str(d.get('code','0')) in ('0','200','None'):
+                    data = d.get('data', d)
+                    _cache[url] = {'ts': now, 'data': data}
+                    return data
+            break  # 성공 시 루프 탈출
+        except urllib.error.HTTPError as _he:
+            if _he.code >= 500 and _attempt < 2:
+                time.sleep(1.5 ** _attempt)
+                continue
+            print(f'[WARN] {__name__}: {_he}', file=sys.stderr)
+            break
+        except Exception as _e:
+            print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+            break
     return None
 
 
