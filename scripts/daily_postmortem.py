@@ -21,6 +21,8 @@ except ImportError:
     pass  # 兜底：原有 sys.path.insert 仍保留
 
 import json, time, sys, os, subprocess, urllib.request, ssl
+# [封印 2026-10-07 苏摩111 P0-1] _CTX模块级声明，不能在函数内第一次使用时未定义
+_CTX = ssl.create_default_context()
 from pathlib import Path
 from datetime import datetime, timezone
 

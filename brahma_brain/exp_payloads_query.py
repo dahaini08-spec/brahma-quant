@@ -61,6 +61,9 @@ def _ensure() -> bool:
             ])
         
         arr = np.array(features)
+        # [P1修复 2026-10-07 苏摩111] 空数组防护
+        if arr.size == 0:
+            return False
         arr_norm = (arr - _mean) / _std
         _tree = KDTree(arr_norm)
         # 写缓存（原子写：tmp+rename）

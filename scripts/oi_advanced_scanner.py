@@ -414,28 +414,32 @@ def score_oi_signal(oi, basis, fr, whale_l, retail_l, direction, klines_1h):
     details = []
     _score_cap = 100  # [P0] 价格涨幅过大时自动降低评分上限
 
+    # ── [P0修复 2026-10-07 苏摩111] chg字段缺失防护 ──────────────────
+    if not isinstance(oi, dict) or not oi.get('chg_1h') and 'chg_1h' not in oi:
+        return {'score': 0, 'details': ['OI数据不完整，跳过评分'], 'signal': 'NEUTRAL'}
+
     # ── D1: 多周期OI趋势强度（35分）──────────────────────────
     # 1H趋势
-    if abs(oi['chg_1h']) >= THRESHOLD['C']['1h_oi_min']:
-        pts = min(8, abs(oi['chg_1h']) * 3)
+    if abs(oi.get('chg_1h', 0)) >= THRESHOLD['C']['1h_oi_min']:
+        pts = min(8, abs(oi.get('chg_1h', 0)) * 3)
         score += pts
         details.append(f'1H:{oi["chg_1h"]:+.1f}%(+{pts:.0f})')
 
     # 4H趋势
-    if abs(oi['chg_4h']) >= THRESHOLD['B']['4h_oi_min']:
-        pts = min(12, abs(oi['chg_4h']) * 2)
+    if abs(oi.get('chg_4h', 0)) >= THRESHOLD['B']['4h_oi_min']:
+        pts = min(12, abs(oi.get('chg_4h', 0)) * 2)
         score += pts
         details.append(f'4H:{oi["chg_4h"]:+.1f}%(+{pts:.0f})')
 
     # 24H趋势
-    if abs(oi['chg_24h']) >= THRESHOLD['B']['24h_oi_min']:
-        pts = min(15, abs(oi['chg_24h']) * 0.6)
+    if abs(oi.get('chg_24h', 0)) >= THRESHOLD['B']['24h_oi_min']:
+        pts = min(15, abs(oi.get('chg_24h', 0)) * 0.6)
         score += pts
         details.append(f'24H:{oi["chg_24h"]:+.1f}%(+{pts:.0f})')
 
     # 7D趋势（A类最重要信号）
-    if abs(oi['chg_7d']) >= THRESHOLD['A']['7d_oi_min']:
-        pts = min(20, abs(oi['chg_7d']) * 0.25)
+    if abs(oi.get('chg_7d', 0)) >= THRESHOLD['A']['7d_oi_min']:
+        pts = min(20, abs(oi.get('chg_7d', 0)) * 0.25)
         score += pts
         details.append(f'7D:{oi["chg_7d"]:+.1f}%(+{pts:.0f})')
 
@@ -616,7 +620,7 @@ def classify_signal(oi, score, direction, basis, fr, whale_l, regime='UNKNOWN'):
     优先A类（长线建仓），次选B类（中线），C类（短线辅助）
     """
     # A类判断：7D持续增仓 + 大户多头 + 资金成本健康
-    if (oi['chg_7d'] >= THRESHOLD['A']['7d_oi_min'] and
+    if (oi.get('chg_7d', 0) >= THRESHOLD['A']['7d_oi_min'] and
         whale_l >= THRESHOLD['A']['whale_l_min'] and
         fr <= THRESHOLD['A']['fr_max'] and
         score >= THRESHOLD['A']['score_min']):
@@ -628,18 +632,18 @@ def classify_signal(oi, score, direction, basis, fr, whale_l, regime='UNKNOWN'):
         lev  = '1-5x'
 
     # B类判断：24H增仓明显 + 方向清晰
-    elif (abs(oi['chg_24h']) >= THRESHOLD['B']['24h_oi_min'] and
+    elif (abs(oi.get('chg_24h', 0)) >= THRESHOLD['B']['24h_oi_min'] and
           direction in ('LONG_BUILD', 'SHORT_BUILD') and
           score >= THRESHOLD['B']['score_min']):
         mode = 'B'
-        params_key = 'B_10X' if abs(oi['chg_24h']) >= 30 else 'B'
+        params_key = 'B_10X' if abs(oi.get('chg_24h', 0)) >= 30 else 'B'
         # [BUG FIX 2026-09-02] 方向偏置与修正后的四象限定义对齐
         direction_bias = 'SHORT' if direction == 'SHORT_BUILD' else 'LONG'
         hold = '3-14天'
         lev  = '5-10x'
 
     # C类判断：1H短线异动
-    elif (abs(oi['chg_1h']) >= THRESHOLD['C']['1h_oi_min'] and
+    elif (abs(oi.get('chg_1h', 0)) >= THRESHOLD['C']['1h_oi_min'] and
           score >= THRESHOLD['C']['score_min']):
         mode = 'C'
         params_key = 'C'
@@ -737,11 +741,11 @@ def scan_symbol(sym, ticker_data):
         'score_details': details[:5],
 
         # OI多周期
-        'chg_1h':   oi['chg_1h'],
-        'chg_4h':   oi['chg_4h'],
-        'chg_24h':  oi['chg_24h'],
-        'chg_7d':   oi['chg_7d'],
-        'chg_30d':  oi['chg_30d'],
+        'chg_1h':   oi.get('chg_1h', 0),
+        'chg_4h':   oi.get('chg_4h', 0),
+        'chg_24h':  oi.get('chg_24h', 0),
+        'chg_7d':   oi.get('chg_7d', 0),
+        'chg_30d':  oi.get('chg_30d', 0),
         'accel_4h': oi['accel_4h'],
         'oi_usd_m': oi['oi_usd_m'],
 
