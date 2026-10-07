@@ -3977,6 +3977,20 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             (liq.get('nearest_long', 0) if isinstance(liq, dict) else 0)
         )
 
+        # [封印 2026-10-07 苏摩111] GEX字段修复：从gex_state.json直接读取
+        # 根因: brahma_state.gex读的是不存在的_vol.gex_note=0，实际数据在gex_state
+        try:
+            _gex_file = Path(__file__).parent.parent / 'data' / 'gex_state.json'
+            _gex_raw = _json_sync.loads(_gex_file.read_text()).get(sym, {})
+            _gex_at_spot   = float(_gex_raw.get('net_gex_at_spot', 0))
+            _gex_dir_fc    = str(_gex_raw.get('gex_direction', 'UNKNOWN'))
+            _zero_flip_fc  = float(_gex_raw.get('zero_flip', 0))
+            _max_gex_fc    = float(_gex_raw.get('max_gex_strike', 0))
+            _kappa_fc      = float(_gex_raw.get('kappa', _vol.get('kappa', 0)))
+        except Exception:
+            _gex_at_spot = _zero_flip_fc = _max_gex_fc = _kappa_fc = 0
+            _gex_dir_fc = 'UNKNOWN'
+
         _sync_state = {
             # ── 基础 ──
             'symbol':    sym + 'USDT',
@@ -4025,7 +4039,10 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             'cvd_4h':    float(_cvd_snapshot.get('cvd_4h', d.get('cvd_4h', 0))),
             'cvd_dir_1h': str(_cvd_snapshot.get('dir_1h', d.get('cvd_dir_1h', '?'))),
             'cvd_dir_4h': str(_cvd_snapshot.get('dir_4h', d.get('cvd_dir_4h', '?'))),
-            'gex':       float(_vol.get('gex_note', 0) if isinstance(_vol.get('gex_note'), (int,float)) else 0),
+            'gex':         _gex_at_spot,        # [封印 2026-10-07] Spot点净GEX(M)，负=波动放大
+            'gex_direction': _gex_dir_fc,         # POSITIVE/NEGATIVE
+            'zero_flip':     _zero_flip_fc,        # ZeroFlip价格（关键翻转线）
+            'max_gex_strike':_max_gex_fc,          # 最大GEX行使价（做市商最强钉住位）
 
             # ── D5 OI ──
             'oi_sequence':  _oi_sequence,
@@ -4040,7 +4057,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             'lsr_zscore': float(_zsc.get('zscore', 0) if isinstance(_zsc, dict) else 0),
 
             # ── D7 波动率 ──
-            'kappa':    float(_vol.get('kappa',    d.get('kappa', 0))),
+            'kappa':    _kappa_fc if _kappa_fc != 0 else float(_vol.get('kappa', d.get('kappa', 0))),  # [封印 2026-10-07] gex_state优先
             'iv_rank':  float(_vol.get('iv_rank',  0)),
             'iv_pct':   float(d.get('iv_pct', 0)),
             'atr_1h':   float(_vol.get('atr_1h',   0)),
