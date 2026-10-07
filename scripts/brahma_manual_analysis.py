@@ -3960,6 +3960,23 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             print(f'[{sym}] regime UNKNOWN → 本地推断={_p_regime_raw} (H={_h_val:.3f} OI={_oi_sig_rt} CVD={_cvd_rt:+.0f})', flush=True)
         _p_regime = _p_regime_raw
 
+        # [封印 2026-10-07 苏摩111] 清算地图字段预计算（必须在_sync_state dict外面）
+        # 优先读 liq_heatmap文件 / fallback step3 liq变量
+        try:
+            _lh_fc = _json_sync.loads(
+                (Path(__file__).parent.parent / 'data' / f'liq_heatmap_{sym.lower()}usdt.json').read_text()
+            )
+        except Exception:
+            _lh_fc = {}
+        _liq_s_fc = float(
+            _lh_fc.get('nearest_short_liq', 0) or
+            (liq.get('nearest_short', 0) if isinstance(liq, dict) else 0)
+        )
+        _liq_l_fc = float(
+            _lh_fc.get('nearest_long_liq', 0) or
+            (liq.get('nearest_long', 0) if isinstance(liq, dict) else 0)
+        )
+
         _sync_state = {
             # ── 基础 ──
             'symbol':    sym + 'USDT',
@@ -3992,18 +4009,9 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             'ob_4h_hi':  float(ob.get('OB_4H_BULL', ob.get('OB_4H_BEAR', {})).get('hi', 0) if isinstance(ob, dict) else 0),
 
             # ── D3 清算 ──
-            # [封印 2026-10-07 苏摩111] 字段扁平化: extra.liq_snap 提升到顶层
-            # Select断路根治: format_full_report读d.get('liq_short')，原先=0
-            'liq_short':  float((
-                d.get('extra', {}).get('liq_snap', {}).get('liq_short_5pct', 0)
-                or d.get('liq_short', 0)
-                or (liq.get('nearest_short', 0) if isinstance(liq, dict) else 0)
-            )),
-            'liq_long':   float((
-                d.get('extra', {}).get('liq_snap', {}).get('liq_long_5pct', 0)
-                or d.get('liq_long', 0)
-                or (liq.get('nearest_long', 0) if isinstance(liq, dict) else 0)
-            )),
+            # [封印 2026-10-07 苏摩111 v2] _liq_s_fc已在dict外预计算
+            'liq_short':  _liq_s_fc,
+            'liq_long':   _liq_l_fc,
             'liq_short2': float(liq.get('second_short', 0) if isinstance(liq, dict) else 0),
             'liq_long2':  float(liq.get('second_long',  0) if isinstance(liq, dict) else 0),
 
