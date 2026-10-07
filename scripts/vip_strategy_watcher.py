@@ -184,9 +184,12 @@ def detect_changes(old: dict, new: dict) -> list:
         if pct_change(old['tp1'], new['tp1']) > TP_CHANGE_PCT:
             changes.append(f"🎯 目标更新 TP1 ${old['tp1']:,.1f} → ${new['tp1']:,.1f}")
 
-    # 分数显著变化（±10）
+    # [2026-10-07 苏摩111] score变化不单独触发推送
+    # 根因: CHOP_MID体制conf.total每次分析波动±13，阈值10太低→几乎每次分析都推
+    # 修复: score变化只在action同时升级时附带记录，不单独作为触发条件
     score_diff = new.get('score', 0) - old.get('score', 0)
-    if abs(score_diff) >= 10:
+    # 仅在action同步升级时记录score变化（辅助信息，非触发条件）
+    if abs(score_diff) >= 30 and new_lv > old_lv:
         arrow = '📈' if score_diff > 0 else '📉'
         changes.append(f"{arrow} 评分 {old.get('score',0):.0f}→{new.get('score',0):.0f} ({score_diff:+.0f})")
 
