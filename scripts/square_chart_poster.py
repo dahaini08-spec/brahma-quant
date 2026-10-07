@@ -234,53 +234,59 @@ def chart_to_base64(img: Image.Image) -> str:
 
 
 def load_analysis_data(sym: str) -> dict:
-    """从auto_analysis_latest读取图表所需字段"""
+    """[2026-10-07 苏摩111] 改从brahma_state读结构化字段
+    根因: 正则解析output文本导致$84,160截断显示$91（格式化右对齐后两位）
+    修复: 直接读brahma_state_{sym}.json，零正则，数据精确
+    """
     import re
+    state_p = Path(__file__).parent.parent / 'data' / f'brahma_state_{sym.lower()}.json'
+    try:
+        if state_p.exists():
+            st = json.loads(state_p.read_text(encoding='utf-8'))
+            price  = float(st.get('price', 0) or 0)
+            # [2026-10-07 苏摩111] 清算数据在extra.liq_snap
+            _liq   = (st.get('extra') or {}).get('liq_snap', {})
+            wall   = float(_liq.get('liq_short_5pct') or st.get('liq_short', 0) or 0)
+            pool   = float(_liq.get('liq_long_5pct')  or st.get('liq_long', 0)  or 0)
+            regime = str(st.get('regime', 'CHOP_MID') or 'CHOP_MID')
+            sig    = str(st.get('signal_dir', '') or '')
+            bias   = 'LONG' if sig == 'LONG' else 'SHORT' if sig == 'SHORT' else 'WATCH'
+            # FVG磁铁从confluence或fvg_magnet字段
+            fvg = float(st.get('fvg_magnet', 0) or 0)
+            if not fvg:
+                cf = st.get('confluence', {}) or {}
+                fvg = float(cf.get('fvg_mid', 0) or 0)
+            if price > 0:
+                return {'price': price, 'wall': wall, 'pool': pool,
+                        'fvg_mid': fvg, 'regime': regime, 'bias': bias}
+    except Exception as e:
+        print(f'[chart] brahma_state读取失败，fallback正则: {e}', file=sys.stderr)
+
+    # fallback: 正则解析output（旧逻辑保留兜底）
     if not LATEST.exists():
         return {}
     try:
         d = json.loads(LATEST.read_text())
         output = d.get('output', '')
-        # 找sym专属段（从'梵天XX维全能力分析 | SYM'开始到下一个梵天标题）
         seg_m = re.search(rf'梵天\d+维.+?\| {re.escape(sym)}', output)
-        if seg_m:
-            start = seg_m.start()
-            # 找下一个梵天标题或结尾
-            next_m = re.search(r'梵天\d+维', output[start+10:])
-            end = start + 10 + next_m.start() if next_m else start + 8000
-            seg = output[start:end]
-        else:
-            seg = output
-
+        seg = output[seg_m.start():seg_m.start()+8000] if seg_m else output
         def _find(patterns, text, default=0.0):
             for pat in patterns:
                 m = re.search(pat, text)
                 if m:
-                    try:
-                        return float(m.group(1).replace(',', ''))
-                    except Exception:
-                        pass
+                    try: return float(m.group(1).replace(',', ''))
+                    except: pass
             return default
-
         price = _find([r'基准\$([0-9,]+)', r'实时\$([0-9,]+)'], seg)
-        wall  = _find([r'上方空头止损墙: \$([0-9,]+)',
-                       r'上方空头止损墙:\$([0-9,]+)',
-                       r'空头止损墙[:：]\s*\$([0-9,]+)'], seg)
-        pool  = _find([r'下方多头支撑池: \$([0-9,]+)',
-                       r'多头支撑池:\$([0-9,]+)',
-                       r'支撑池[:：]\s*\$([0-9,]+)'], seg)
-        fvg   = _find([r'主磁铁[：:]\s*(?:BULL|BEAR)@\$([0-9,]+)',
-                       r'磁铁[：:][^\$]*\$([0-9,]+)',
-                       r'FVG.*?中点\$([0-9,]+)'], seg)
+        wall  = _find([r'上方空头止损墙[：: ]*\$([0-9,]+)', r'空头止损墙[：: ]*\$([0-9,]+)'], seg)
+        pool  = _find([r'下方多头支撑池[：: ]*\$([0-9,]+)', r'支撑池[：: ]*\$([0-9,]+)'], seg)
+        fvg   = _find([r'主磁铁[：:]\s*(?:BULL|BEAR)@\$([0-9,]+)', r'磁铁[：:][^\$]*\$([0-9,]+)'], seg)
         regime_m = re.search(r'CHOP_MID|BULL_TREND|BEAR_TREND|CHOP_HIGH|BEAR_RECOVERY|BEAR_EARLY', seg)
-        bias_m   = re.search(r'交易员大脑[=：:]\s*(SHORT|LONG|WATCH|WAIT)', seg)
-        if not bias_m:
-            bias_m = re.search(r'方向[：:]\s*(SHORT|LONG|WATCH|WAIT)', seg)
-        return {
-            'price': price, 'wall': wall, 'pool': pool, 'fvg_mid': fvg,
-            'regime': regime_m.group(0) if regime_m else 'CHOP_MID',
-            'bias': bias_m.group(1) if bias_m else 'WATCH',
-        }
+        bias_m = re.search(r'交易员大脑[=：:]\s*(SHORT|LONG|WATCH|WAIT)', seg)
+        if not bias_m: bias_m = re.search(r'方向[：:]\s*(SHORT|LONG|WATCH|WAIT)', seg)
+        return {'price': price, 'wall': wall, 'pool': pool, 'fvg_mid': fvg,
+                'regime': regime_m.group(0) if regime_m else 'CHOP_MID',
+                'bias': bias_m.group(1) if bias_m else 'WATCH'}
     except Exception as e:
         print(f'[chart] 解析{sym}数据失败: {e}', file=sys.stderr)
         return {}
