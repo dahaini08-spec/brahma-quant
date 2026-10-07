@@ -4144,20 +4144,11 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
         import traceback as _tb_sync; _tb_sync.print_exc(file=sys.stderr)
         print(f'[WARN] P2 state同步失败: {_sync_e}', file=sys.stderr)
 
-    # [封印 2026-10-06 苏摩111] VIP策略即时推送哨兵
-    # Fix-C写入成功后立即触发：入场区/止损/方向有变化→P1推送苏摩
-    # 解决根本问题: CHOP_MID体制ENTER永远被門控拦截→VIP策略更新永远不推送
-    try:
-        import importlib.util as _ilu_vip, pathlib as _pl_vip, time as _time_vip
-        _vip_path = _pl_vip.Path(__file__).parent / 'vip_strategy_watcher.py'
-        if _vip_path.exists():
-            _vip_sp = _ilu_vip.spec_from_file_location('vip_strategy_watcher', _vip_path)
-            _vip_mod = _ilu_vip.module_from_spec(_vip_sp)
-            _vip_sp.loader.exec_module(_vip_mod)
-            _vip_state = _vip_mod.load_state()
-            _vip_mod.run_sym(sym, _vip_state, _time_vip.time())
-    except Exception as _vip_e:
-        print(f'[WARN] vip_strategy_watcher failed: {_vip_e}', file=sys.stderr)
+    # [2026-10-07 苏摩111 停用] VIP策略即时推送哨兵
+    # 苏摩指令：取消推送任务
+    # try:
+    #     vip_strategy_watcher inline 调用已停用
+    # except: pass
 
     # [2026-10-02 苏摩111] output_template 标准格式化尾部追加
     # 接入位置: run_analysis() 末尾，在返回文本前追加三方联合签名
