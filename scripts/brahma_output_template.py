@@ -38,8 +38,17 @@ def format_full_report(sym: str, d: dict) -> str:
     obs        = d.get('ob_list', [])  # list of {tf, side, age, lo, hi, valid, dist_pct}
 
     # ── 清算 ──
-    liq_s      = d.get('liq_short', 0.0)
-    liq_l      = d.get('liq_long',  0.0)
+    # [封印 2026-10-07 苏摩111] liq_short/long多路降级：
+    # 1. brahma_state 顶层 liq_short (Fix-C写入)
+    # 2. extra.liq_snap.liq_short_5pct (liq_heatmap写入)
+    # 3. extra.liq_snap.hl_liq_50x_short (备用)
+    _liq_snap  = (d.get('extra') or {}).get('liq_snap') or {}
+    liq_s      = d.get('liq_short', 0.0) or \
+                 _liq_snap.get('liq_short_5pct', 0.0) or \
+                 _liq_snap.get('hl_liq_50x_short', 0.0)
+    liq_l      = d.get('liq_long', 0.0) or \
+                 _liq_snap.get('liq_long_5pct', 0.0) or \
+                 _liq_snap.get('hl_liq_50x_long', 0.0)
     liq_s2     = d.get('liq_short2', 0.0)
     liq_l2     = d.get('liq_long2',  0.0)
     dist_s_pct = (liq_s - p) / p * 100 if liq_s > p else 0
@@ -47,7 +56,7 @@ def format_full_report(sym: str, d: dict) -> str:
 
     # ── 共振 ──
     align      = d.get('align_count', 0)
-    entry_lo   = d.get('entry_lo', 0.0)
+    entry_lo   = d.get('entry_lo', 0.0) or _liq_snap.get('liq_short_5pct', 0.0) * 0.0  # 增补路径待trader_brain写入
     entry_hi   = d.get('entry_hi', 0.0)
     oi_dir     = d.get('oi_direction', '?')
     cvd_1h     = d.get('cvd_1h', 0)
@@ -101,9 +110,13 @@ def format_full_report(sym: str, d: dict) -> str:
 
     # ── VIP ──
     signal_dir = d.get('signal_dir', 'SHORT')
-    sl         = d.get('sl', 0.0)
-    tp1        = d.get('tp1', 0.0)
-    tp2        = d.get('tp2', 0.0)
+    # [封印 2026-10-07 苏摩111] sl/tp1/entry 多路降级：
+    # brahma_state顶层 sl=0时，从 trader_brain / smc 补充
+    _tb        = (d.get('trader_brain') or {})
+    _smc       = (d.get('smc') or {})
+    sl         = d.get('sl', 0.0) or _tb.get('sl', 0.0)
+    tp1        = d.get('tp1', 0.0) or _tb.get('tp1', 0.0)
+    tp2        = d.get('tp2', 0.0) or _tb.get('tp2', 0.0)
     tp3        = d.get('tp3', 0.0)
     rr         = d.get('rr', 0.0)
     ev         = d.get('ev_pct', 0.0)
@@ -409,31 +422,98 @@ def format_full_report(sym: str, d: dict) -> str:
     ]
 
     # [2026-10-05 GAP-1修复 苏摩111] 末尾追加VIP姓赵不宣标准格式
-    wait = signal_dir in ('WAIT', 'NONE', None, '')
+    # [封印 2026-10-07 苏摩111] WAIT体制下也输出挂单区 + SL + 目标（基于清算墙/支撑池）
+    wait = signal_dir in ('WAIT', 'NONE', 'NEUTRAL', None, '')
     if wait:
-        lines += [
-            '```',
-            f'🌿 姓赵不宣 | {sym} 今日布局',
-            f'——— {sym} ${p:,.1f} ———',
-            '⚪ 暂无多单｜等待结构确认',
-            '⚪ 暂无空单｜等待结构确认',
-            f'⚠️ {reg} + Hurst={h:.3f}，等方向确认',
-            f'🚫 破${liq_l:,.1f}支撑池或破${liq_s:,.1f}止损墙后看方向',
-            '🌿 姓赵不宣 | 不是建议',
-            '```',
-        ]
+        # CHOP_MID下按清算地图推断挂单方向
+        fvg_con = d.get('fvg_consensus', 'NONE')
+        _h_dir = 'SHORT' if fvg_con == 'BEAR' else 'LONG' if fvg_con == 'BULL' else ('SHORT' if liq_s > p else 'LONG')
+        _atr1h = d.get('atr_1h', 0) or (p * 0.004)
+        _atr4h = d.get('atr_4h', 0) or (p * 0.008)
+        if _h_dir == 'SHORT' and liq_s > p:
+            _e_lo = round(liq_s * 0.997, 1)
+            _e_hi = round(liq_s, 1)
+            _sl   = round(liq_s + max(_atr1h * 1.5, _atr4h * 1.0), 1)
+            _tp1  = round(liq_l if liq_l > 0 else p - _atr4h * 3, 1)
+            _tp2  = round(_tp1 * 0.992, 1)
+            _rr   = round((_e_hi - _tp1) / (_sl - _e_hi), 1) if _sl > _e_hi and _e_hi > _tp1 else 0
+            lines += [
+                '```',
+                f'🌿 姓赵不宣 | {sym} 今日布局',
+                f'——— {sym} ${p:,.1f} ———',
+                f'🔴 空单（挂单等触发）｜挂单区 ${_e_lo:,.1f}~${_e_hi:,.1f}',
+                f'止损 ${_sl:,.1f}｜目标 ${_tp1:,.1f}→${_tp2:,.1f}',
+                f'杠杆 5x｜仓位 1%',
+                f'⚠️ WAIT({reg}) | 止损墙做空 RR={_rr}',
+                f'🚫 破${_sl:,.1f}作废',
+                '🌿 姓赵不宣 | 不是建议',
+                '```',
+            ]
+        elif _h_dir == 'LONG' and liq_l > 0:
+            _e_lo = round(liq_l, 1)
+            _e_hi = round(liq_l * 1.003, 1)
+            _sl   = round(liq_l - max(_atr1h * 1.5, _atr4h * 1.0), 1)
+            _tp1  = round(liq_s if liq_s > p else p + _atr4h * 3, 1)
+            _tp2  = round(_tp1 * 1.008, 1)
+            _rr   = round((_tp1 - _e_lo) / (_e_lo - _sl), 1) if _e_lo > _sl and _tp1 > _e_lo else 0
+            lines += [
+                '```',
+                f'🌿 姓赵不宣 | {sym} 今日布局',
+                f'——— {sym} ${p:,.1f} ———',
+                f'🟢 多单（条件）｜支撑池 ${_e_lo:,.1f} 接多',
+                f'止损 ${_sl:,.1f}｜目标 ${_tp1:,.1f}→${_tp2:,.1f}',
+                f'杠杆 3x｜仓位 0.5%',
+                f'触发: 4H收阳+CVD转正 | ⚠️ WAIT({reg}) | RR={_rr}',
+                f'🚫 破${_sl:,.1f}作废',
+                '🌿 姓赵不宣 | 不是建议',
+                '```',
+            ]
+        else:
+            lines += [
+                '```',
+                f'🌿 姓赵不宣 | {sym} 今日布局',
+                f'——— {sym} ${p:,.1f} ———',
+                f'⚪ 暂无多单｜等待结构',
+                f'⚪ 暂无空单｜等待结构',
+                f'⚠️ {reg} + Hurst={h:.3f}，等方向确认',
+                f'🚫 破${liq_l:,.1f}支撑池或破${liq_s:,.1f}止损墙后看方向',
+                '🌿 姓赵不宣 | 不是建议',
+                '```',
+            ]
     else:
         icon = '🔴' if signal_dir == 'SHORT' else '🟢'
         dir_cn = '空单' if signal_dir == 'SHORT' else '多单'
+        # [封印 2026-10-07 苏摩111] entry/sl为0时用清算地图补充
+        _atr1h = d.get('atr_1h', 0) or (p * 0.004)
+        _atr4h = d.get('atr_4h', 0) or (p * 0.008)
+        _e_lo, _e_hi = entry_lo, entry_hi
+        _sl, _tp1, _tp2, _tp3, _rr = sl, tp1, tp2, tp3, rr
+        if (_e_lo == 0 or _e_hi == 0 or _sl == 0) and liq_s > 0 and liq_l > 0:
+            if signal_dir == 'SHORT' and liq_s > p:
+                _e_lo = round(liq_s * 0.997, 1)
+                _e_hi = round(liq_s, 1)
+                _sl   = round(liq_s + max(_atr1h * 1.5, _atr4h), 1)
+                _tp1  = round(liq_l, 1) if liq_l > 0 else round(p - _atr4h * 3, 1)
+                _tp2  = round(_tp1 * 0.992, 1)
+                _tp3  = round(_tp1 * 0.985, 1)
+                _rr   = round((_e_hi - _tp1) / (_sl - _e_hi), 1) if _sl > _e_hi > _tp1 else 0
+            elif signal_dir == 'LONG' and liq_l < p:
+                _e_lo = round(liq_l, 1)
+                _e_hi = round(liq_l * 1.003, 1)
+                _sl   = round(liq_l - max(_atr1h * 1.5, _atr4h), 1)
+                _tp1  = round(liq_s, 1) if liq_s > p else round(p + _atr4h * 3, 1)
+                _tp2  = round(_tp1 * 1.008, 1)
+                _tp3  = round(_tp1 * 1.015, 1)
+                _rr   = round((_tp1 - _e_lo) / (_e_lo - _sl), 1) if _e_lo > _sl and _tp1 > _e_lo else 0
         lines += [
             '```',
             f'🌿 姓赵不宣 | {sym} 今日布局',
             f'——— {sym} ${p:,.1f} ———',
-            f'{icon} {dir_cn}｜挂单区 ${entry_lo:,.1f}~${entry_hi:,.1f}',
-            f'止损 ${sl:,.1f}｜目标 ${tp1:,.1f}→${tp2:,.1f}→${tp3:,.1f}',
+            f'{icon} {dir_cn}｜挂单区 ${_e_lo:,.1f}~${_e_hi:,.1f}',
+            f'止损 ${_sl:,.1f}｜目标 ${_tp1:,.1f}→${_tp2:,.1f}→${_tp3:,.1f}',
             f'杠杆 {lever}x｜仓位 {pos_size}%',
-            f'⚠️ RR={rr:.1f}｜EV={ev:+.3f}%',
-            f'🚫 破${sl:,.1f}作废',
+            f'⚠️ RR={_rr:.1f}｜EV={ev:+.3f}%',
+            f'🚫 破${_sl:,.1f}作废',
             '🌿 姓赵不宣 | 不是建议',
             '```',
         ]
