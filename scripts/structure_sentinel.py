@@ -16,6 +16,7 @@ structure_sentinel.py — 梵天2.0 结构感知哨兵
   D5: 价格触碰止损墙±0.3%（空单触发区）
   D6: 价格触碰支撑池±0.3%（多单触发区）
   D7: 果蝇三条件 score≥2（CHOP盲区突破前兆）
+  D8: OI突变 15min>0.5%（新仓位建立=方向性资金事件）
 
 触发后行为：
   - 直接从已有state文件读VIP点位（不重跑分析）
@@ -343,6 +344,27 @@ def sense_btc_eth() -> list[dict]:
                         })
     except Exception as _bw_e:
         print(f'[sentinel] D7果蝇读取失败: {_bw_e}', file=sys.stderr)
+
+    # ── D8: OI突变（15min内变化>0.5%）──────────────────────────────
+    # [封印 2026-10-07 苏摩111] 触发器改造：OI突变=新仓位建立事件
+    try:
+        oi_15m = _fetch(
+            f'https://fapi.binance.com/futures/data/openInterestHist'
+            f'?symbol={sym_full}&period=15m&limit=3'
+        )
+        if oi_15m and len(oi_15m) >= 2:
+            _oi_vals15 = [float(o['sumOpenInterest']) for o in oi_15m]
+            _oi_chg_pct = abs(_oi_vals15[-1] - _oi_vals15[0]) / _oi_vals15[0] * 100
+            if _oi_chg_pct >= 0.5:
+                _oi_dir = '建多' if _oi_vals15[-1] > _oi_vals15[0] else '建空'
+                triggers.append({
+                    'sym': sym, 'dim': 'D8_OI_SPIKE', 'price': price,
+                    'title': f'🚨 {sym} OI突变 +{_oi_chg_pct:.2f}%/15min',
+                    'detail': f'OI 15min变化{_oi_chg_pct:.2f}% · {_oi_dir}信号 · 建议实时分析',
+                    'priority': 'HIGH',
+                })
+    except Exception as _oi8_e:
+        print(f'[sentinel] D8_OI_SPIKE失败: {_oi8_e}', file=sys.stderr)
 
     return triggers
 
