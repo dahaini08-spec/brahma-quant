@@ -3992,8 +3992,18 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             'ob_4h_hi':  float(ob.get('OB_4H_BULL', ob.get('OB_4H_BEAR', {})).get('hi', 0) if isinstance(ob, dict) else 0),
 
             # ── D3 清算 ──
-            'liq_short':  float(d.get('liq_short',  liq.get('nearest_short', 0)  if isinstance(liq, dict) else 0)),
-            'liq_long':   float(d.get('liq_long',   liq.get('nearest_long', 0)   if isinstance(liq, dict) else 0)),
+            # [封印 2026-10-07 苏摩111] 字段扁平化: extra.liq_snap 提升到顶层
+            # Select断路根治: format_full_report读d.get('liq_short')，原先=0
+            'liq_short':  float((
+                d.get('extra', {}).get('liq_snap', {}).get('liq_short_5pct', 0)
+                or d.get('liq_short', 0)
+                or (liq.get('nearest_short', 0) if isinstance(liq, dict) else 0)
+            )),
+            'liq_long':   float((
+                d.get('extra', {}).get('liq_snap', {}).get('liq_long_5pct', 0)
+                or d.get('liq_long', 0)
+                or (liq.get('nearest_long', 0) if isinstance(liq, dict) else 0)
+            )),
             'liq_short2': float(liq.get('second_short', 0) if isinstance(liq, dict) else 0),
             'liq_long2':  float(liq.get('second_long',  0) if isinstance(liq, dict) else 0),
 
