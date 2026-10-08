@@ -416,6 +416,17 @@ def main():
 
         # 封印 2026-09-04 苏摩111：每个标的独立保存 brahma_state_<sym>.json
         # 修复根因：ETH分析读到BTC的_ob_map/_fvg_map（数据污染）
+        # [封印 2026-10-08 苏摩111] P0-①修复：保留Fix-C已写入的高价值字段
+        # Fix-C字段（RSI/GEX/FVG/OB/CVD/liq等）在brahma_manual_analysis中计算，
+        # state_refresh的analyze()结果字段较少，合并时Fix-C字段优先
+        _FC_PRESERVE = {
+            'rsi_15m','rsi_1h','rsi_4h','rsi_1d',
+            'gex','gex_direction','zero_flip','max_gex_strike','kappa',
+            'fvg_consensus','fvg_votes','ob_list',
+            'cvd_1h','cvd_4h','cvd_dir_1h','cvd_dir_4h',
+            'liq_short','liq_long','atr_1h','atr_4h',
+            'hurst','harv_lo','harv_hi','oi_direction','oi_sequence',
+        }
         for _sym, _state in all_states.items():
             _sym_lower = _sym.replace('USDT', '').lower()
             _sym_file  = STATE_FILE.parent / f'brahma_state_{_sym_lower}.json'
@@ -423,6 +434,21 @@ def main():
             _state_copy['_sym_key'] = _sym
             _state_copy['_snapshot_age_sec'] = 0
             _state_copy['_snapshot_written_epoch'] = _now_epoch
+            # [P0-① 封印 2026-10-08] 从已有Fix-C state中保留高价值字段，防止被稀少字段覆盖
+            try:
+                import json as _jsn
+                if _sym_file.exists():
+                    _existing = _jsn.loads(_sym_file.read_text())
+                    _fc_age = _now_epoch - _existing.get('price_ts', 0)
+                    if _fc_age < 3600:  # Fix-C数据1h内仍有效
+                        for _fc_k in _FC_PRESERVE:
+                            _fc_v = _existing.get(_fc_k)
+                            _new_v = _state_copy.get(_fc_k)
+                            # Fix-C值有效且state_refresh值为0/None/空时，保留Fix-C
+                            if _fc_v not in (None, 0, 0.0, '', [], {}) and _new_v in (None, 0, 0.0, '', [], {}):
+                                _state_copy[_fc_k] = _fc_v
+            except Exception as _merge_e:
+                print(f'[state_refresh] {_sym} Fix-C merge警告: {_merge_e}')
             _atomic_write(_sym_file, _state_copy)
         print(f'[state_refresh] 已写入独立state: {list(all_states.keys())}')
     except Exception as e:

@@ -56,8 +56,42 @@ def format_full_report(sym: str, d: dict) -> str:
 
     # ── 共振 ──
     align      = d.get('align_count', 0)
-    entry_lo   = d.get('entry_lo', 0.0) or _liq_snap.get('liq_short_5pct', 0.0) * 0.0  # 增补路径待trader_brain写入
-    entry_hi   = d.get('entry_hi', 0.0)
+    # [封印 2026-10-08 苏摩111] P0-② 入场区改为近端OB结构
+    # 根因：entry_lo/hi由清算池±5%机械计算，距现价-5%等不到
+    # 修复：优先用最近有效OB区间，OB缺失时用liq_short±0.5%（近端）
+    _entry_lo_raw = d.get('entry_lo', 0.0)
+    _entry_hi_raw = d.get('entry_hi', 0.0)
+    _signal_dir   = d.get('signal_dir', d.get('direction', ''))
+    _ob_list_raw  = d.get('ob_list', [])
+    _valid_obs    = [o for o in _ob_list_raw if isinstance(o, dict) and o.get('valid', False) and o.get('age', 99) < 50]
+    # 按 age 오름차순 정렬（신선한 것 우선）
+    _valid_obs_sorted = sorted(_valid_obs, key=lambda x: x.get('age', 99))
+    # 방향에 맞는 OB 찾기
+    _bear_obs = [o for o in _valid_obs_sorted if str(o.get('type','')).upper() == 'BEAR' or o.get('lo',0) > p]
+    _bull_obs = [o for o in _valid_obs_sorted if str(o.get('type','')).upper() == 'BULL' or o.get('hi',0) < p]
+    if _signal_dir == 'SHORT' and _bear_obs:
+        _ob_ref = _bear_obs[0]
+        _ob_lo  = float(_ob_ref.get('lo', 0))
+        _ob_hi  = float(_ob_ref.get('hi', 0))
+        if _ob_lo > p * 0.995:  # 현재가 근처 OB만 사용
+            entry_lo = _ob_lo
+            entry_hi = _ob_hi
+        else:
+            entry_lo = _entry_lo_raw or (liq_s * 0.995 if liq_s > p else p * 1.005)
+            entry_hi = _entry_hi_raw or (liq_s * 1.000 if liq_s > p else p * 1.010)
+    elif _signal_dir == 'LONG' and _bull_obs:
+        _ob_ref = _bull_obs[0]
+        _ob_lo  = float(_ob_ref.get('lo', 0))
+        _ob_hi  = float(_ob_ref.get('hi', 0))
+        if _ob_hi < p * 1.005:  # 현재가 근처 OB만 사용
+            entry_lo = _ob_lo
+            entry_hi = _ob_hi
+        else:
+            entry_lo = _entry_lo_raw or (liq_l * 1.000 if liq_l < p else p * 0.995)
+            entry_hi = _entry_hi_raw or (liq_l * 1.005 if liq_l < p else p * 1.000)
+    else:
+        entry_lo = _entry_lo_raw or (liq_s * 0.998 if liq_s > p else liq_l * 1.000)
+        entry_hi = _entry_hi_raw or (liq_s * 1.000 if liq_s > p else liq_l * 1.005)
     oi_dir     = d.get('oi_direction', '?')
     cvd_1h     = d.get('cvd_1h', 0)
     gex        = float(d.get('gex', 0.0)) if not isinstance(d.get('gex'), dict) else 0.0  # [P0防御] gex可能是dict

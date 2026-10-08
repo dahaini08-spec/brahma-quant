@@ -109,6 +109,11 @@ class Step11Judge:
         self.atr_1h   = float(vol.get('atr_1h', 0) or 0)
         self.atr_4h   = float(vol.get('atr_4h', 0) or 0)
         self.hurst    = float(vol.get('hurst', 0.5) or 0.5)
+        # [封印 2026-10-08 苏摩111] P1-③ CVD/GEX 추가 - Gate5 CHOP 조건화에 사용
+        self.cvd_1h   = float(d.get('cvd_1h', 0) or 0)
+        _gex_raw = d.get('gex', 0) or vol.get('gex', 0) or 0
+        self.gex      = float(_gex_raw) if isinstance(_gex_raw, (int, float)) else 0.0
+        self.oi_signal = str((oi or {}).get('signal', '') or (oi or {}).get('main_signal', '') or '')
         self.entry_lo = float(tb_result.get('entry_lo', 0) or 0)
         self.entry_hi = float(tb_result.get('entry_hi', 0) or 0)
         self.sl       = float(tb_result.get('stop_loss', 0) or 0)
@@ -198,6 +203,18 @@ class Step11Judge:
             else:
                 effective_threshold = SCORE_CHOP_STD    # 标准震荡门槛
                 _note = f'Hurst={self.hurst:.3f}<0.55随机游走，全门槛{effective_threshold}'
+            # [封印 2026-10-08 苏摩111] P1-③ CHOP门槛条件化
+            # CVD极端(>±1000)+OI+GEX三向一致时，额外降低CHOP门槛至40
+            _cvd_val = float(getattr(self, 'cvd_1h', 0) or 0)
+            _gex_val = float(getattr(self, 'gex', 0) or 0)
+            _oi_sig2 = str(getattr(self, 'oi_signal', '') or (self.oi or {}).get('main_signal', ''))
+            _cvd_extreme = abs(_cvd_val) >= 1000
+            _gex_neg = _gex_val < 0
+            _oi_build2 = any(x in _oi_sig2 for x in ['BUILD', 'SHORT_BUILD'])
+            if _cvd_extreme and _gex_neg and _oi_build2 and effective_threshold > 40:
+                _old_thresh = effective_threshold
+                effective_threshold = 40
+                _note = (_note + f' | CVD极端({_cvd_val:+.0f})+GEX负值+OI BUILD → 三向共振，CHOP门槛降至{effective_threshold}')
             if self.score < effective_threshold:
                 self.blocked_by = f'Gate5_CHOP门槛:{self.score:.0f}<{effective_threshold}'
                 self.reason.append(f'❌ G5 {_note} score={self.score:.0f} < {effective_threshold}')
