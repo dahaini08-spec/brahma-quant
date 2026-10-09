@@ -37,7 +37,7 @@ CVD_CONFLICT  = -300    # CVD与多单方向冲突阈值
 
 # 冷却时间（同一信号不重复推送）
 COOLDOWN = {
-    'price':    3600,   # 价位：1小时
+    'price':    7200,   # [2026-10-09 苏摩111] 价位：2小时（防止价格震荡多次触发）
     'oi_day':   14400,  # OI日变化：4小时
     'fr':       14400,  # FR极端：4小时
     'lsr_big':  7200,   # 大户追多：2小时
@@ -165,14 +165,40 @@ def m1_price_proximity(state, alerts):
                     f'多单入场区：${liq_l:,.0f}~${liq_l+20:,.0f}\n'
                     f'止损 ${liq_l-60:,.0f} | 目标 ${liq_s:,.0f}\n'
                     f'RR≈3.5 ✅'))
+            # [2026-10-09 苏摩111] GEX决战位：先查OI+CVD方向，再决定推送内容
+            # 根因：无论空头/多头背景都发「两可」信号 → 与signal_conflict矛盾
             gex_2500 = float(ts.get('2500', 0))
             if gex_2500 != 0:
-                extra = '突破+CVD转正→多单 | 未破+1H收阴→空单'
-                levels.append(('gex_2500', 2500.0,
-                    f'⚡ ETH触及GEX决战位 $2,500！\n'
-                    f'当前价 ${p:,.2f} | GEX={gex_2500/1e6:.1f}M\n\n'
-                    f'{extra}\n'
-                    f'今日最高优先级价位'))
+                # 读取OI+CVD实时方向
+                _cvd_eth = get_cvd('ETH')
+                _oi_bias = ''
+                try:
+                    _oi_h = fetch('https://fapi.binance.com/futures/data/openInterestHist?symbol=ETHUSDT&period=1h&limit=4')
+                    _oi_vals = [float(o['sumOpenInterest']) for o in _oi_h]
+                    _oi_chg = (_oi_vals[-1]-_oi_vals[0])/_oi_vals[0]*100 if _oi_vals[0]>0 else 0
+                    _oi_bias = 'BUILD' if _oi_chg > 0.3 else ('UNWIND' if _oi_chg < -0.3 else 'FLAT')
+                except: pass
+
+                # 方向裁决：CVD+OI双重确认
+                _cvd_bearish = _cvd_eth < -300
+                _gex_bearish = gex_2500 < 0
+
+                if _cvd_bearish and _gex_bearish:
+                    # 空头背景：只推空单方向，不发两可信号
+                    extra = f'⛔ GEX{gex_2500/1e6:.1f}M+CVD{_cvd_eth:.0f}=双重阻力\n禁止做多 | 等跌破$2,400+CVD转正才接多'
+                elif not _cvd_bearish and _oi_bias == 'BUILD':
+                    # 多头背景：推多单方向
+                    extra = f'✅ CVD转正+OI BUILD\n突破$2,500+站稳 → 多单入场 | 目标$2,560'
+                else:
+                    # 信号不明确：不推送，等待明确方向
+                    extra = ''
+
+                if extra:  # 方向明确才推送
+                    levels.append(('gex_2500', 2500.0,
+                        f'⚡ ETH触及GEX决战位 $2,500！\n'
+                        f'当前价 ${p:,.2f} | GEX={gex_2500/1e6:.1f}M\n\n'
+                        f'{extra}\n'
+                        f'今日最高优先级价位'))
 
         for level_key, target, msg in levels:
             sk = f'{sym}_M1_{level_key}'

@@ -97,8 +97,10 @@ def check_and_alert(state):
                     f'🔴 ETH止损墙触及！\n入场空单 ${liq_s:,.0f}\n止损 $2,560 | 目标 $2,427→$2,405\n散户77%猎杀区'),
                 'liq_long_2427': (liq_l, 'LONG_LIQ',
                     f'🟢 ETH支撑池触及！\n入场多单 ${liq_l:,.0f}~${liq_l+20:,.0f}\n止损 $2,368 | 目标 $2,526'),
-                'gex_2500': (2500.0, 'GEX_KEY',
-                    f'⚡ ETH触及GEX-9.8M关卡$2,500！\n突破+CVD转正 → 多单\n未突破+1H收阴 → 空单\n今日决战位'),
+                # [2026-10-09 苏摩111] gex_2500已废弃 - 方向由conflict_check统一裁决
+                # 原问题：无论OI/CVD如何都发送「突破看多|未破看空」两可信号
+                # 与ETH_signal_conflict（禁止做多）形成矛盾推送
+                # 'gex_2500': (2500.0, 'GEX_KEY', ''),  # 已停用
                 'lsr_extreme': (0, 'LSR_CHECK', ''),  # 特殊处理
             }
 
@@ -106,7 +108,7 @@ def check_and_alert(state):
             if target == 0 or not msg: continue
             state_key = f'{sym}_{level_key}'
             last_alert = state.get(state_key, 0)
-            cooldown = 3600  # 同一价位1小时内不重复推送
+            cooldown = 7200  # [2026-10-09 苏摩111] 同一价位2小时内不重复推送（防震荡多次触发）
 
             if near(p, target) and (time.time() - last_alert) > cooldown:
                 full_msg = f'🏛️ 梵天价位警报 {sym}\n当前价 ${p:,.2f}\n\n{msg}\n\n🌿 姓赵不宣 | 不是建议'
