@@ -1122,38 +1122,62 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             cf['rr_gate']    = 'FAIL'
             cf['rr_min_used'] = _rr_min
         else:
-            # ── 修复C：最小SL=1×ATR_1H，防止紧SL被针形K线振出 ───────────────
-            # 根因：6/13月6/14 ETH LONG sl_pct=0.8~0.9%，6/14 14:00被针形振出
-            #       6/14 20:00 ETH暴涨至1732 → 如果SL够宽能等到TP
-            # 规则：SL必须≥1×ATR_1H，优先保护SL不过项，RR重算
+            # ── 修复C+P1-⑥：动态ATR百分位SL校准 [2026-10-09 苏摩111] ──────────
+            # 升级：不再用固定1×ATR，根据ATR历史百分位动态调整SL倍数
+            # ATR<20%分位(极压缩) → SL用2.0×ATR  ATR>80%分位(已大) → SL用1.2×ATR
             try:
                 _c_atr_1h = float(ms.get('momentum', {}).get('atr_1h', 0) or
                                   ms.get('atr_1h', 0) or 0) if ms else 0
                 _c_price  = float(ms.get('price', 0) or 0)
                 _c_entry_mid = (float(params.get('entry_lo', _c_price) or _c_price) +
                                 float(params.get('entry_hi', _c_price) or _c_price)) / 2
+
+                # [P1-⑥] asset_config에서 표적별 ATR 백분위 SL 배수 로드
+                _c_sl_mult = 1.5  # 기본값
+                try:
+                    import json as _ac_j, pathlib as _ac_p
+                    _ac = _ac_j.loads((_ac_p.Path(__file__).parent.parent /
+                                      'data' / 'asset_config.json').read_text())
+                    _sym_key = symbol.replace('USDT','').upper() if symbol else 'BTC'
+                    _ac_cfg  = _ac.get(_sym_key, {})
+                    _atr_lo  = float(_ac_cfg.get('sl_atr_low_pct',  0.20))
+                    _atr_hi  = float(_ac_cfg.get('sl_atr_high_pct', 0.80))
+                    _mult_lo = float(_ac_cfg.get('sl_mult_low',  2.0))
+                    _mult_hi = float(_ac_cfg.get('sl_mult_high', 1.2))
+                    _base_m  = float(_ac_cfg.get('sl_atr_mult',  1.5))
+
+                    # ATR 백분위 추정 (최근 50개 1H K선 사용)
+                    _atr_pct_est = ms.get('momentum', {}).get('atr_pct', None) if ms else None
+                    if _atr_pct_est is not None:
+                        _atr_pct_f = float(_atr_pct_est)
+                        if   _atr_pct_f < _atr_lo: _c_sl_mult = _mult_lo
+                        elif _atr_pct_f > _atr_hi: _c_sl_mult = _mult_hi
+                        else:                       _c_sl_mult = _base_m
+                    else:
+                        _c_sl_mult = _base_m
+                except Exception: pass
+
                 if _c_atr_1h > 0 and _c_entry_mid > 0:
-                    _c_min_sl_pct = _c_atr_1h / _c_entry_mid * 100  # 1×ATR_1H百分比
+                    _c_min_sl_pct = _c_atr_1h * _c_sl_mult / _c_entry_mid * 100
                     _c_cur_sl_pct = float(params.get('sl_pct', 0) or 0)
                     if 0 < _c_cur_sl_pct < _c_min_sl_pct:
-                        # SL太紧，拖到ATR_1H宽度
                         _c_new_risk = _c_entry_mid * _c_min_sl_pct / 100
                         _c_tp1 = float(params.get('tp1', 0) or 0)
                         _c_tp_dist = abs(_c_tp1 - _c_entry_mid) if _c_tp1 else 0
                         _c_new_rr1 = _c_tp_dist / _c_new_risk if _c_new_risk > 0 else 0
-                        if _c_new_rr1 >= _rr_min * 0.8:  # 拖宽后仍满足肠门槛皀80%才执行
+                        if _c_new_rr1 >= _rr_min * 0.8:
                             if signal_dir == 'LONG':
                                 params = dict(params)
                                 params['stop_loss'] = round(_c_entry_mid - _c_new_risk, 4)
                             else:
                                 params = dict(params)
                                 params['stop_loss'] = round(_c_entry_mid + _c_new_risk, 4)
-                            params['sl_pct'] = round(_c_min_sl_pct, 3)
-                            params['rr1']    = round(_c_new_rr1, 2)
-                            params['sl_basis'] = f'min1xATR_1H(orig={_c_cur_sl_pct:.2f}%)'
-                            print(f'[修复C] {signal_dir} SL拖宽: {_c_cur_sl_pct:.2f}%→{_c_min_sl_pct:.2f}%(1×ATR_1H={_c_atr_1h:.4f}) rr1={_c_new_rr1:.2f}')
+                            params['sl_pct']   = round(_c_min_sl_pct, 3)
+                            params['rr1']      = round(_c_new_rr1, 2)
+                            params['sl_basis'] = f'dyn{_c_sl_mult:.1f}xATR_1H(orig={_c_cur_sl_pct:.2f}%)'
+                            print(f'[P1-⑥动态ATR] {signal_dir} SL: {_c_cur_sl_pct:.2f}%→{_c_min_sl_pct:.2f}% ({_c_sl_mult:.1f}×ATR=${_c_atr_1h:.1f}) rr1={_c_new_rr1:.2f}')
             except Exception as _c_err:
-                print(f"[WARN] brahma_core: {_c_err}", file=sys.stderr)
+                print(f"[WARN] brahma_core P1-⑥: {_c_err}", file=sys.stderr)
             cf['action']  = 'ENTER_FULL'
             cf['rr_gate'] = 'PASS'
             cf['rr_min_used'] = _rr_min

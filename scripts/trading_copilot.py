@@ -532,6 +532,18 @@ def main():
     except Exception as e:
         print(f'[M6 ERR] {e}')
 
+    # M6.5: BTC→ETH 领先信号 + 相关性监控 [P1-⑤⑦ 2026-10-09]
+    try:
+        import importlib.util as _ilu6
+        _spec6 = _ilu6.spec_from_file_location('lead', str(WORKDIR / 'scripts/brahma_lead_signal.py'))
+        _lead  = _ilu6.module_from_spec(_spec6)
+        _spec6.loader.exec_module(_lead)
+        _lead_alerts = _lead.check_lead_signals()
+        if _lead_alerts:
+            print(f'[M6.5 lead] {len(_lead_alerts)}条领先信号')
+    except Exception as e:
+        print(f'[M6.5 ERR] {e}')
+
     # M7: VIP策略状态监控 — 关键维度变化主动推送
     try:
         import importlib.util as _ilu, sys as _sys
