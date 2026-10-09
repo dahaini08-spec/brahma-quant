@@ -114,21 +114,54 @@ def check_and_alert(state):
                 full_msg = f'🏛️ 梵天价位警报 {sym}\n当前价 ${p:,.2f}\n\n{msg}\n\n🌿 姓赵不宣 | 不是建议'
                 alerts.append((state_key, full_msg))
 
-    # LSR猎杀门槛检查（BTC散户>65%）
+    # [P0-新① 2026-10-09 苏摩111] LSR猎杀门槛检查 — 多标的（从asset_config读取）
     try:
-        lsr_b = fetch('https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol=BTCUSDT&period=5m&limit=1')
-        lsr_val = float(lsr_b[0]['longAccount'])*100
-        key = 'BTC_lsr_65pct'
-        last = state.get(key, 0)
-        btc_p = get_price('BTC')
-        if lsr_val >= 65.0 and (time.time()-last) > 3600:
-            msg = (f'🚨 BTC散户LSR={lsr_val:.1f}%触发猎杀门槛！\n当前价 ${btc_p:,.0f}\n\n'
-                   f'历史规律：散户>65%后主力启动砸盘\n'
-                   f'空单准备：等反弹$83,200~$83,493\n'
-                   f'止损 $84,500 | 目标 $80,219\n\n'
-                   f'🌿 姓赵不宣 | 不是建议')
-            alerts.append((key, msg))
-    except: pass
+        import json as _lj, pathlib as _lp
+        _ac = _lj.loads((_lp.Path(__file__).parent.parent / 'data' / 'asset_config.json').read_text())
+        _active = [(k,v) for k,v in _ac.items()
+                   if not k.startswith('_') and v.get('tier') in ('L1','L2')]
+        for _sym, _cfg in _active:
+            _sf = _cfg.get('full_symbol', f'{_sym}USDT')
+            _hunt = float(_cfg.get('lsr_hunt', 65.0))
+            _near_dist = float(_cfg.get('lsr_near', 1.5))
+            try:
+                _lsr_r = fetch(f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol={_sf}&period=5m&limit=1')
+                _lsr_v = float(_lsr_r[0]['longAccount']) * 100
+                _sym_p = get_price(_sym)
+                _dist  = _hunt - _lsr_v
+
+                # 猎杀触发
+                _key_hunt = f'{_sym}_lsr_hunt'
+                if _dist <= 0 and (time.time() - state.get(_key_hunt, 0)) > 3600:
+                    _inv_lo = _cfg.get('short_entry_lo', int(_sym_p * 1.003))
+                    _inv_hi = _cfg.get('liq_short', int(_sym_p * 1.015))
+                    _sl     = _cfg.get('invalidate_short', int(_sym_p * 1.025))
+                    _tp     = _cfg.get('liq_long', int(_sym_p * 0.985))
+                    _msg = (
+                        f'🚨 {_sym}散户LSR={_lsr_v:.1f}% 触发猎杀门槛{_hunt:.0f}%！\n'
+                        f'当前价 ${_sym_p:,.3f}\n\n'
+                        f'历史规律：散户>{_hunt:.0f}%后主力启动砸盘\n'
+                        f'空单准备：等反弹 ${_inv_lo:,}~${_inv_hi:,}\n'
+                        f'止损 ${_sl:,} | 目标 ${_tp:,}\n\n'
+                        f'🌿 姓赵不宣 | 不是建议'
+                    )
+                    alerts.append((_key_hunt, _msg))
+
+                # 门槛逼近预警
+                _key_near = f'{_sym}_lsr_near'
+                if 0 < _dist <= _near_dist and (time.time() - state.get(_key_near, 0)) > 3600:
+                    _msg_near = (
+                        f'⚠️ {_sym}散户LSR={_lsr_v:.1f}% 距猎杀门槛{_hunt:.0f}%仅差{_dist:.1f}%\n'
+                        f'当前价 ${_sym_p:,.3f}\n\n'
+                        f'空单挂好准备，等FR转正+1H收阴确认\n\n'
+                        f'🌿 姓赵不宣 | 不是建议'
+                    )
+                    alerts.append((_key_near, _msg_near))
+
+            except Exception as _le:
+                import sys as _ls; print(f'[price_alert] {_sym} LSR err: {_le}', file=_ls.stderr)
+    except Exception as _ae:
+        import sys as _as; print(f'[price_alert] asset_config err: {_ae}', file=_as.stderr)
 
     # ── 신호 모순 체크 (ETH GEX 음성구 다단 금지) ──
     try:

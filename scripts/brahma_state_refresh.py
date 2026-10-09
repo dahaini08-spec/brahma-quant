@@ -468,7 +468,72 @@ def main():
     final_queue = active + new_signals
     _save_queue(final_queue)
 
+    # [P0-新②] asset_config 动态字段自动更新
+    try:
+        _update_asset_config_liq_gex()
+    except Exception as _acue:
+        print(f'[state_refresh] asset_config update err: {_acue}')
+
     print(f'[state_refresh] 队列: 保留{len(active)}个有效 | 过期清理{expired_count}个 | 新增{len(new_signals)}个 | 合计{len(final_queue)}个')
+
+
+def _update_asset_config_liq_gex():
+    """
+    P0-新② [2026-10-09 苏摩111]
+    每次state_refresh运行后，自动更新asset_config.json的动态字段：
+    liq_short / liq_long / gex_zf
+    = Goal Loop / m7_vip_monitor 始终使用最新市场结构位
+    """
+    import json as _j, pathlib as _pl
+    AC_FILE = BASE / 'data' / 'asset_config.json'
+    try:
+        ac = _j.loads(AC_FILE.read_text())
+    except:
+        return
+
+    updated = []
+    for sym_key, cfg in ac.items():
+        if sym_key.startswith('_'):
+            continue
+        sym_lower = sym_key.lower()
+        changed = False
+
+        # liq_heatmap 업데이트
+        liq_f = BASE / 'data' / f'liq_heatmap_{sym_lower}usdt.json'
+        if liq_f.exists():
+            try:
+                liq = _j.loads(liq_f.read_text())
+                new_s = float(liq.get('nearest_short_liq', 0))
+                new_l = float(liq.get('nearest_long_liq',  0))
+                if new_s > 0 and new_s != cfg.get('liq_short', 0):
+                    ac[sym_key]['liq_short'] = new_s; changed = True
+                if new_l > 0 and new_l != cfg.get('liq_long', 0):
+                    ac[sym_key]['liq_long']  = new_l; changed = True
+            except Exception as _e:
+                print(f'[asset_cfg] {sym_key} liq err: {_e}')
+
+        # gex ZeroFlip 업데이트
+        gex_f = BASE / 'data' / 'gex_state.json'
+        if gex_f.exists():
+            try:
+                gex = _j.loads(gex_f.read_text()).get(sym_key.upper(), {})
+                new_zf = float(gex.get('zero_flip', 0))
+                if new_zf > 0 and new_zf != cfg.get('gex_zf', 0):
+                    ac[sym_key]['gex_zf'] = new_zf; changed = True
+            except Exception as _e:
+                print(f'[asset_cfg] {sym_key} gex err: {_e}')
+
+        if changed:
+            updated.append(sym_key)
+
+    if updated:
+        tmp = AC_FILE.with_suffix('.tmp')
+        tmp.write_text(_j.dumps(ac, ensure_ascii=False, indent=2))
+        tmp.replace(AC_FILE)
+        print(f'[asset_cfg] 动态字段更新: {updated}')
+    else:
+        print(f'[asset_cfg] 无变化')
+
 
 if __name__ == '__main__':
     main()
