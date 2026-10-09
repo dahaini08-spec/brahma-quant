@@ -327,17 +327,38 @@ def check_all() -> list:
                 ))
 
         # ⑤-B ETH专属：GEX ZeroFlip失守
+        # [2026-10-09 苏摩111] 修复：失守=进入负GEX区=空单主场
+        # 原逻辑只给多单候补位，忽略「现在就是做市商卖出区」
+        # 新逻辑：P1空单(主)+P2多单候补，CVD加持确认方向
         if sym == 'ETH' and 'gex_zf' in cfg and price < cfg['gex_zf']:
             k = f'm7_gex_zf_{sym}'
             if now - state.get(k, 0) > COOLDOWN:
+                zf_price = cfg['gex_zf']
+                atr_1h = cfg.get('atr_1h', 16.0)
+                # 空单：等小幅反弹至ZeroFlip下沿，RR更优
+                short_entry_lo = round(zf_price * 0.993, 1)  # ZeroFlip下方0.7%
+                short_entry_hi = round(zf_price * 0.997, 1)  # ZeroFlip下方0.3%
+                short_sl       = round(zf_price + atr_1h * 1.5, 1)
+                short_tp1      = cfg['long_entry'][0] if 'long_entry' in cfg else round(price - atr_1h * 6, 1)
+                short_rr       = round((short_entry_hi - short_tp1) / (short_sl - short_entry_hi), 1)
+                # 多单：等跌至正GEX区边界（候补）
+                long_lo  = cfg['long_entry'][0] if 'long_entry' in cfg else round(price * 0.975, 0)
+                long_hi  = cfg['long_entry'][1] if 'long_entry' in cfg else round(price * 0.977, 0)
+                long_sl  = round(long_lo - atr_1h * 1.5, 1)
+                long_tp  = cfg.get('long_tp', zf_price)
                 alerts.append((k,
-                    f'⚠️ 梵天VIP提醒 | ETH GEX ZeroFlip失守\n\n'
-                    f'价格 ${price:,.2f} 跌破GEX ZeroFlip ${cfg["gex_zf"]:,}\n'
-                    f'= 进入负GEX区，做市商转为做空对冲\n'
-                    f'= 波动放大风险上升\n\n'
-                    f'📌 策略影响：\n'
-                    f'等${cfg["long_entry"][0]:,}~${cfg["long_entry"][1]:,}区间再接多\n'
-                    f'SL ${cfg["long_sl"]:,} | TP ${cfg["long_tp"]:,}\n\n'
+                    f'⚠️ 梵天VIP | ETH GEX ZeroFlip失守\n\n'
+                    f'价格 ${price:,.2f} 跌破ZeroFlip ${zf_price:,}\n'
+                    f'= 进入负GEX区，做市商转为做空对冲\n\n'
+                    f'🔴 P1 空单（主策略）\n'
+                    f'入场 ${short_entry_lo:,}~${short_entry_hi:,}（反弹至ZeroFlip下沿）\n'
+                    f'止损 ${short_sl:,}（ZeroFlip上方1.5×ATR）\n'
+                    f'目标 ${short_tp1:,}  RR≈{short_rr}\n'
+                    f'条件：1H收阴+CVD持续负\n\n'
+                    f'🟢 P2 多单（候补，等结构）\n'
+                    f'入场 ${long_lo:,}~${long_hi:,}（正GEX区边界）\n'
+                    f'止损 ${long_sl:,}  目标 ${long_tp:,}\n'
+                    f'条件：1H收阳+CVD转正\n\n'
                     f'🌿 姓赵不宣 | 不是建议'
                 ))
 
