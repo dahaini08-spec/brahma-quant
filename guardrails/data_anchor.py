@@ -104,7 +104,7 @@ def get_market_anchor(symbol: str = 'BTC') -> dict:
         cycle_low_date = datetime.fromtimestamp(low_rec[0]/1000, tz=timezone.utc).strftime('%Y-%m-%d')
         if cur and cycle_low:
             bounce_from_low = round((cur - cycle_low) / cycle_low * 100, 2)
-    except Exception: as _audit_e:
+    except Exception as _audit_e:
         import sys as _sys; print(f"[WARN] guardrails/data_anchor.py:108 silenced: {type(_audit_e).__name__}: {_audit_e}", file=_sys.stderr)
 
     result = {
