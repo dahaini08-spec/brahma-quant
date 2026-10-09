@@ -191,6 +191,8 @@ def compute_gex(currency: str = 'BTC',
 
     # 缓存
     try:
+        # [2026-10-09 苏摩111] 写入ts字段，供health_check计算文件时效
+        import time as _time; result['ts'] = int(_time.time())
         _cache_f(currency).write_text(json.dumps(result, ensure_ascii=False))
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return result

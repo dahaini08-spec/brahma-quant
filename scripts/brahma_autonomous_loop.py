@@ -85,7 +85,7 @@ def check_data_health() -> dict:
         ('cvd_eth',    DATA/'cvd_realtime_ethusdt.json', 30*60, 'cvd_ws_collector'),
         ('liq_btc',    DATA/'liq_heatmap_btcusdt.json',  60*60, 'liq_heatmap'),
         ('vol_beta',   DATA/'vol_beta_state.json',    4*3600,  'vol_beta_engine'),
-        ('gex',        DATA/'gex_state.json',         2*3600,  'gex_engine'),
+        ('gex',        DATA/'gex_state.json',         5*3600,  'gex_engine'),  # [2026-10-09 苏摩111] TTL 2h→5h，cron每4h执行，TTL需>4h
     ]
 
     for name, path, ttl, healer in specs:
