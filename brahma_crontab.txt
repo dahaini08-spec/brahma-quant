@@ -302,3 +302,4 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [封印 2026-10-06 苏摩111] signal_change_detector去除RSI门控，独立每15min运行
 # 原：RSI触发依赖导致60min内信号变化检测不到；新：hash扩展entry/sl维度
 */15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/signal_change_detector.py >> logs/signal_change.log 2>&1
+* * * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/price_alert_monitor.py >> logs/price_alert.log 2>&1

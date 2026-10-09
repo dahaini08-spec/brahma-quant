@@ -25,10 +25,12 @@ def fetch(url):
 def push_jarvis(msg):
     """通过openclaw CLI推送到Jarvis"""
     target = f'{JARVIS_USER}:thread:{JARVIS_THREAD}'
-    cmd = ['openclaw', 'message', 'send', '--channel', CHANNEL, '--to', target, '--message', msg]
+    cmd = ['openclaw', 'message', 'send', '--channel', CHANNEL, '-t', target, '-m', msg]
     try:
-        subprocess.run(cmd, timeout=10, check=True, capture_output=True)
-        print(f'[PUSH OK] {msg[:80]}')
+        result = subprocess.run(cmd, timeout=10, check=True, capture_output=True, text=True)
+        print(f'[PUSH OK] {result.stdout.strip()[:80]}')
+    except subprocess.CalledProcessError as e:
+        print(f'[PUSH ERR] RC={e.returncode} {e.stderr[:100] if e.stderr else ""}')
     except Exception as e:
         print(f'[PUSH ERR] {e}')
 
@@ -126,25 +128,57 @@ def check_and_alert(state):
             alerts.append((key, msg))
     except: pass
 
+    # ── 신호 모순 체크 (ETH GEX 음성구 다단 금지) ──
+    try:
+        import pathlib as _pl
+        # ETH CVD + GEX 충돌 체크
+        cvd_d = json.loads(_pl.Path('data/cvd_realtime_ethusdt.json').read_text())
+        cvd_eth = float(cvd_d.get('cvd_1h', cvd_d.get('delta_1h', cvd_d.get('cvd', 0))) or 0)
+        gex_d2 = json.loads(_pl.Path('data/gex_state.json').read_text())
+        eth_ts2 = gex_d2.get('ETH', {}).get('top_strikes', {})
+        gex_2500 = float(eth_ts2.get('2500', 0))
+        eth_p = float(fetch('https://fapi.binance.com/fapi/v1/ticker/price?symbol=ETHUSDT')['price'])
+        
+        # 조건: ETH가 $2,500 근처 + CVD 음수 + GEX 음수
+        near_2500 = abs(eth_p - 2500) / 2500 <= 0.025  # 2.5% 이내
+        cvd_negative = cvd_eth < -300
+        gex_negative = gex_2500 < 0
+        
+        key = 'ETH_signal_conflict'
+        last = state.get(key, 0)
+        if near_2500 and cvd_negative and gex_negative and (time.time() - last) > 7200:
+            conflict_msg = (
+                f'⚠️ 梵天信号冲突警报 ETH\n'
+                f'当前价 ${eth_p:,.1f}（接近$2,500）\n\n'
+                f'❌ CVD={cvd_eth:.0f}（卖方主导）\n'
+                f'❌ GEX $2,500={gex_2500/1e6:.1f}M（最大负GEX=阻力！）\n\n'
+                f'⛔ $2,500附近禁止做多\n'
+                f'= GEX负区+CVD卖方=双重阻力\n'
+                f'等价格跌破$2,400+CVD转正才接多\n\n'
+                f'🌿 姓赵不宣 | 不是建议'
+            )
+            alerts.append((key, conflict_msg))
+    except Exception as e:
+        print(f'[冲突检查ERR] {e}')
+    
     return alerts
 
 def main():
-    print(f'[价位监控] 启动 {time.strftime("%Y-%m-%d %H:%M:%S")}')
-    print(f'  推送目标: {JARVIS_USER}:thread:{JARVIS_THREAD}')
-    print(f'  检查间隔: {CHECK_INTERVAL}s | 触发距离: {PROXIMITY_PCT*100:.1f}%')
-
-    while True:
-        state = load_state()
-        try:
-            alerts = check_and_alert(state)
+    """单次执行版本 — 由supercronic每分钟调用一次"""
+    print(f'[价位监控] {time.strftime("%H:%M:%S")} 检查中...')
+    state = load_state()
+    try:
+        alerts = check_and_alert(state)
+        if alerts:
             for state_key, msg in alerts:
                 push_jarvis(msg)
                 state[state_key] = time.time()
                 save_state(state)
-                print(f'[ALERT] {state_key}')
-        except Exception as e:
-            print(f'[ERR] {e}')
-        time.sleep(CHECK_INTERVAL)
+                print(f'[ALERT SENT] {state_key}')
+        else:
+            print(f'[OK] 无触发 BTC/ETH均在安全区间')
+    except Exception as e:
+        print(f'[ERR] {e}')
 
 if __name__ == '__main__':
     main()
