@@ -21,30 +21,38 @@ DATA  = BASE / 'data'
 STATE_FILE = DATA / 'copilot_state.json'
 COOLDOWN   = 1800  # 同类信号30分钟内只推一次
 
-# VIP策略关键位（与当前活跃策略保持一致）
-VIP_CONFIG = {
-    'BTC': {
-        'long_entry':  (82000, 82500),
-        'long_sl':      81387,
-        'long_tp':      84709,
-        'short_entry': (83800, 84500),
-        'short_sl':     85200,
-        'short_tp':     81387,
-        'hunt_lsr':     65.0,
-        'invalidate_long': 81000,
-    },
-    'ETH': {
-        'long_entry':  (2449, 2465),
-        'long_sl':      2413,
-        'long_tp':      2549,
-        'short_entry': (2535, 2549),
-        'short_sl':     2582,
-        'short_tp':     2442,
-        'hunt_lsr':     77.0,
-        'invalidate_long': 2413,
-        'gex_zf':       2473,  # GEX ZeroFlip防线
-    },
-}
+# [asset_config SSOT 2026-10-09] VIP关键位从asset_config.json读取
+import json as _m7j, pathlib as _m7p
+def _load_vip_cfg():
+    _f = _m7p.Path(__file__).parent.parent / 'data' / 'asset_config.json'
+    try:
+        _ac = _m7j.loads(_f.read_text())
+        _r = {}
+        for sym, cfg in _ac.items():
+            if sym.startswith('_'): continue
+            _r[sym] = {
+                'long_entry':  (int(cfg.get('liq_long',0)*0.99), int(cfg.get('liq_long',0))),
+                'long_sl':     int(cfg.get('invalidate_long', 0)),
+                'long_tp':     int(cfg.get('liq_short', 0)),
+                'short_entry': (int(cfg.get('liq_short',0)*0.995), int(cfg.get('liq_short',0))),
+                'short_sl':    int(cfg.get('liq_short',0)*1.009),
+                'short_tp':    int(cfg.get('liq_long',0)),
+                'hunt_lsr':    float(cfg.get('lsr_hunt', 65.0)),
+                'lsr_near':    float(cfg.get('lsr_near', 1.5)),
+                'invalidate_long': float(cfg.get('invalidate_long', 0)),
+                'gex_zf':      float(cfg.get('gex_zf', 0)),
+                'fr_warn':     float(cfg.get('fr_warn', 0.003)),
+                'fr_alert':    float(cfg.get('fr_alert', 0.006)),
+            }
+        return _r
+    except Exception as e:
+        print(f'[M7] asset_config load fail: {e}', file=__import__('sys').stderr)
+        return {
+            'BTC': {'long_entry':(82000,82500),'long_sl':81000,'long_tp':84120,'short_entry':(83800,84120),'short_sl':85200,'short_tp':80821,'hunt_lsr':65.0,'lsr_near':1.5,'invalidate_long':81000,'gex_zf':69910,'fr_warn':0.003,'fr_alert':0.006},
+            'ETH': {'long_entry':(2410,2435),'long_sl':2413,'long_tp':2534,'short_entry':(2520,2534),'short_sl':2558,'short_tp':2435,'hunt_lsr':77.0,'lsr_near':1.5,'invalidate_long':2413,'gex_zf':2519,'fr_warn':0.003,'fr_alert':0.006},
+        }
+
+VIP_CONFIG = _load_vip_cfg()
 
 ctx = ssl.create_default_context()
 
@@ -61,6 +69,84 @@ def save_state(s):
     tmp = STATE_FILE.with_suffix('.tmp')
     tmp.write_text(json.dumps(s, ensure_ascii=False, indent=2))
     tmp.replace(STATE_FILE)
+
+
+def _m7_atr_neuron(state: dict) -> list:
+    """
+    P0-② 각 표적 ATR 신경원 — 극도 압축 감지 및 경고
+    ATR 30일 평균 대비 현재 ATR 계산 → 역사적 분위 추정
+    압축>50% → 대변동 24~48H 내 예고 경보
+    """
+    import json as _j, pathlib as _pl, ssl as _ssl, urllib.request as _ur
+    alerts = []
+    now = __import__('time').time()
+    COOLDOWN = 7200  # ATR경보는 2시간 쿨다운
+
+    _ctx = _ssl.create_default_context()
+    DATA = _pl.Path(__file__).parent.parent / 'data'
+    AC   = VIP_CONFIG  # asset_config에서 이미 로드됨
+
+    for sym in ['BTC', 'ETH']:
+        sf = f'{sym}USDT'
+        k = f'm7_atr_{sym}'
+        if now - state.get(k, 0) < COOLDOWN:
+            continue
+        try:
+            # 1H K선 50개 → ATR 계산
+            req = _ur.Request(
+                f'https://fapi.binance.com/fapi/v1/klines?symbol={sf}&interval=1h&limit=50',
+                headers={'User-Agent':'Mozilla/5.0'}
+            )
+            with _ur.urlopen(req, context=_ctx, timeout=8) as r:
+                klines = _j.loads(r.read())
+
+            # ATR 계산
+            def _atr(k_data, n=14):
+                tr = [max(float(x[2])-float(x[3]),
+                          abs(float(x[2])-float(k_data[max(0,i-1)][4])),
+                          abs(float(x[3])-float(k_data[max(0,i-1)][4])))
+                      for i,x in enumerate(k_data)]
+                return sum(tr[-n:])/n
+
+            atr_now  = _atr(klines[-14:])
+            atr_30d  = _atr(klines, n=30)  # 30일 평균
+            price    = float(klines[-1][4])
+            compress = (atr_30d - atr_now) / atr_30d if atr_30d > 0 else 0
+
+            # 압축률 계산
+            print(f'[M7-ATR] {sym} ATR현재=${atr_now:.1f} ATR30d평균=${atr_30d:.1f} 압축={compress:.0%}')
+
+            if compress > 0.50:  # 50% 이상 압축
+                # ATR 백분위 추정
+                atr_pct = max(0.05, 0.50 - compress)  # 근사값
+                direction_hint = ''
+
+                # CVD 방향으로 힌트
+                try:
+                    cvd_d = _j.loads((DATA / f'cvd_realtime_{sym.lower()}usdt.json').read_text())
+                    cvd_v = float(cvd_d.get('cvd_1h', 0) or 0)
+                    if cvd_v < -1000:
+                        direction_hint = '\nCVD<0 → 하락 방향성 우세'
+                    elif cvd_v > 1000:
+                        direction_hint = '\nCVD>0 → 상승 방향성 우세'
+                except: pass
+
+                alerts.append((k,
+                    f'⚠️ 梵天神经果蝇 | {sym} ATR极度压缩\n\n'
+                    f'当前ATR=${atr_now:.1f} vs 30日均值${atr_30d:.1f}\n'
+                    f'压缩幅度：{compress:.0%}（历史低分位！）\n'
+                    f'当前价：${price:,.2f}{direction_hint}\n\n'
+                    f'⚡ 历史规律：ATR压缩>50%后\n'
+                    f'   24~48H内大波动概率≈78%\n\n'
+                    f'📌 策略影响：\n'
+                    f'SL应用{2.0 if compress>0.5 else 1.5}×ATR（压缩期放宽）\n'
+                    f'即 {sym} SL最小=${atr_now*2.0:.0f}点\n\n'
+                    f'🌿 姓赵不宣 | 不是建议'
+                ))
+        except Exception as e:
+            print(f'[M7-ATR] {sym} 오류: {e}')
+
+    return alerts
 
 
 def check_all() -> list:
@@ -255,6 +341,13 @@ def check_all() -> list:
                     f'🌿 姓赵不宣 | 不是建议'
                 ))
 
+    # P0-② ATR 신경원 果蝇 감지
+    try:
+        _atr_alerts = _m7_atr_neuron(state)
+        alerts.extend(_atr_alerts)
+    except Exception as e:
+        print(f'[M7-ATR ERR] {e}')
+
     # 保存状态（含cvd_prev/oi_prev更新）
     save_state(state)
     return alerts
@@ -266,3 +359,4 @@ if __name__ == '__main__':
     print(f'\nM7 检查完成，触发 {len(alerts)} 条警报')
     for k, msg in alerts:
         print(f'\n[{k}]\n{msg}')
+

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>梵天2.0 总架构图</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0e1a; color:#e2e8f0; font-family:'SF Pro Display',system-ui,sans-serif; padding:24px; min-width:1400px; }
+
+  h1 { text-align:center; font-size:22px; color:#f0b429; letter-spacing:3px; margin-bottom:4px; }
+  .subtitle { text-align:center; font-size:12px; color:#64748b; margin-bottom:24px; }
+
+  .arch { display:grid; grid-template-columns: 200px 4px 240px 4px 260px 4px 200px 4px 200px; grid-template-rows:auto; gap:0; align-items:start; }
+
+  /* 列标题 */
+  .col-title { text-align:center; font-size:11px; font-weight:700; letter-spacing:2px; padding:8px 4px; border-radius:4px; margin-bottom:12px; }
+  .ct-input   { background:#1e293b; color:#94a3b8; grid-column:1; }
+  .ct-analysis{ background:#1a2744; color:#60a5fa; grid-column:3; }
+  .ct-engine  { background:#1a2a1a; color:#4ade80; grid-column:5; }
+  .ct-exec    { background:#2a1a1a; color:#f87171; grid-column:7; }
+  .ct-output  { background:#1a1a2a; color:#c084fc; grid-column:9; }
+
+  /* 箭头列 */
+  .arrow-col { display:flex; flex-direction:column; justify-content:center; align-items:center; padding-top:60px; }
+  .arrow { font-size:20px; color:#475569; }
+
+  /* 模块卡片 */
+  .module { border-radius:8px; padding:10px 12px; margin-bottom:8px; border:1px solid transparent; font-size:11px; line-height:1.5; }
+  .module-title { font-size:12px; font-weight:700; margin-bottom:4px; }
+  .module-sub   { font-size:10px; color:#94a3b8; }
+  .tag  { display:inline-block; font-size:9px; border-radius:3px; padding:1px 5px; margin:1px; }
+
+  /* 颜色主题 */
+  .blue  { background:#0f2342; border-color:#1e40af; }
+  .blue  .module-title { color:#60a5fa; }
+  .green { background:#0f2a0f; border-color:#166534; }
+  .green .module-title { color:#4ade80; }
+  .red   { background:#2a0f0f; border-color:#7f1d1d; }
+  .red   .module-title { color:#f87171; }
+  .purple{ background:#1a0f2a; border-color:#6b21a8; }
+  .purple .module-title { color:#c084fc; }
+  .gray  { background:#111827; border-color:#374151; }
+  .gray  .module-title { color:#94a3b8; }
+  .yellow{ background:#1c1500; border-color:#78350f; }
+  .yellow .module-title { color:#f0b429; }
+
+  .tag-blue   { background:#1e3a5f; color:#93c5fd; }
+  .tag-green  { background:#14532d; color:#86efac; }
+  .tag-red    { background:#450a0a; color:#fca5a5; }
+  .tag-yellow { background:#431407; color:#fcd34d; }
+  .tag-purple { background:#3b0764; color:#d8b4fe; }
+  .tag-gray   { background:#1f2937; color:#9ca3af; }
+
+  /* 流程区域 */
+  .flow-section { margin-top:24px; }
+  .flow-title { font-size:13px; font-weight:700; color:#f0b429; margin-bottom:12px; letter-spacing:2px; }
+  .flow-row { display:flex; align-items:center; gap:0; margin-bottom:6px; flex-wrap:wrap; }
+  .flow-box { background:#111827; border:1px solid #334155; border-radius:6px; padding:6px 10px; font-size:11px; white-space:nowrap; }
+  .flow-box.trigger { border-color:#f0b429; color:#f0b429; }
+  .flow-box.process { border-color:#3b82f6; color:#93c5fd; }
+  .flow-box.check   { border-color:#f59e0b; color:#fcd34d; }
+  .flow-box.output  { border-color:#10b981; color:#6ee7b7; }
+  .flow-box.block   { border-color:#ef4444; color:#fca5a5; }
+  .flow-box.watch   { border-color:#8b5cf6; color:#c4b5fd; }
+  .flow-arr { color:#475569; font-size:16px; padding:0 6px; }
+
+  /* 指标表格 */
+  .metrics-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:16px; }
+  .metric-card  { background:#111827; border:1px solid #1e293b; border-radius:6px; padding:8px 10px; }
+  .metric-name  { font-size:10px; color:#64748b; margin-bottom:2px; }
+  .metric-val   { font-size:13px; font-weight:700; }
+
+  /* 分隔线 */
+  .divider { border:none; border-top:1px solid #1e293b; margin:20px 0; }
+
+  /* 宪法 */
+  .law-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
+  .law-card { background:#0f1623; border:1px solid #1e3a5f; border-radius:6px; padding:8px 10px; font-size:10px; color:#94a3b8; }
+  .law-card b { color:#f0b429; display:block; margin-bottom:3px; }
+
+  .footer { text-align:center; font-size:10px; color:#374151; margin-top:24px; }
+</style>
+</head>
+<body>
+
+<h1>🏛️ 梵天量化交易系统 2.0 · 总架构图</h1>
+<div class="subtitle">2026-10-09 苏摩111封印 · james-bond 服务器 · 24/7全自动运行</div>
+
+<!-- 主架构五列 -->
+<div class="arch">
+
+  <!-- 列1: 数据输入层 -->
+  <div>
+    <div class="col-title ct-input">DATA INPUT</div>
+
+    <div class="module blue">
+      <div class="module-title">📡 市场数据采集</div>
+      <div class="module-sub">Binance Futures API</div>
+      <span class="tag tag-blue">价格/K线</span>
+      <span class="tag tag-blue">OI历史</span>
+      <span class="tag tag-blue">FR资金费</span>
+      <span class="tag tag-blue">LSR多空比</span>
+      <span class="tag tag-blue">Depth深度</span>
+    </div>
+
+    <div class="module blue">
+      <div class="module-title">🌊 CVD实时采集</div>
+      <div class="module-sub">cvd_ws_collector.py WebSocket</div>
+      <span class="tag tag-blue">aggTrades流</span>
+      <span class="tag tag-blue">买卖方向</span>
+      <span class="tag tag-blue">1H/4H CVD</span>
+    </div>
+
+    <div class="module blue">
+      <div class="module-title">📊 GEX期权数据</div>
+      <div class="module-sub">gex_state.json</div>
+      <span class="tag tag-blue">净GEX</span>
+      <span class="tag tag-blue">ZeroFlip</span>
+      <span class="tag tag-blue">Top Strikes</span>
+    </div>
+
+    <div class="module blue">
+      <div class="module-title">🔗 链上/情绪数据</div>
+      <div class="module-sub">onchain_engine.py</div>
+      <span class="tag tag-blue">恐贪指数</span>
+      <span class="tag tag-blue">清算热图</span>
+      <span class="tag tag-blue">宏观指标</span>
+    </div>
+
+    <div class="module gray">
+      <div class="module-title">⏰ 触发来源</div>
+      <span class="tag tag-gray">价位触及</span>
+      <span class="tag tag-gray">苏摩主动问</span>
+      <span class="tag tag-gray">Cron定时</span>
+      <span class="tag tag-yellow">苏摩111指令</span>
+    </div>
+  </div>
+
+  <!-- 箭头1 -->
+  <div class="arrow-col"><div class="arrow">→</div></div>
+
+  <!-- 列2: 分析引擎层 -->
+  <div>
+    <div class="col-title ct-analysis">ANALYSIS ENGINE</div>
+
+    <div class="module blue">
+      <div class="module-title">🔬 brahma_state_refresh.py</div>
+      <div class="module-sub">每小时:13分 · 状态快照</div>
+      <span class="tag tag-blue">brahma_state_btc.json</span>
+      <span class="tag tag-blue">brahma_state_eth.json</span>
+      <div class="module-sub" style="margin-top:4px">RSI/ATR/BB/Stoch/OI/FR/LSR/CVD/GEX</div>
+    </div>
+
+    <div class="module blue">
+      <div class="module-title">⚡ brahma_manual_analysis.py</div>
+      <div class="module-sub">主链 · UTC 01:05/09:05/17:05 + 手动触发</div>
+      <span class="tag tag-blue">Step0 并行拉取</span>
+      <span class="tag tag-blue">FVG磁铁</span>
+      <span class="tag tag-blue">OB有效性</span>
+      <span class="tag tag-blue">清算地图</span>
+      <span class="tag tag-blue">共振7维</span>
+    </div>
+
+    <div class="module blue">
+      <div class="module-title">🧠 brahma_core.py · 94维分析</div>
+      <div class="module-sub">2,951行 · 四阶段封印</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:4px;font-size:9px;">
+        <span style="color:#60a5fa">Phase1: 数据拉取</span>
+        <span style="color:#60a5fa">Phase2: FVG/OB/清算</span>
+        <span style="color:#60a5fa">Phase3: OI/宏观/风控</span>
+        <span style="color:#60a5fa">Phase4: 输出/VIP</span>
+      </div>
+    </div>
+
+    <div class="module blue">
+      <div class="module-title">📐 达摩院 · 42维评分</div>
+      <div class="module-sub">confluence_score() · IC=+0.1295</div>
+      <span class="tag tag-blue">RSI极端</span>
+      <span class="tag tag-blue">BB压缩</span>
+      <span class="tag tag-blue">体制方向</span>
+      <span class="tag tag-blue">SMC共振</span>
+    </div>
+
+    <div class="module blue">
+      <div class="module-title">🏺 方仓引擎 · 6.5年案例库</div>
+      <div class="module-sub">fangcang_engine.py · Qdrant</div>
+      <span class="tag tag-blue">90天5特征</span>
+      <span class="tag tag-blue">相似度>0.4</span>
+      <span class="tag tag-blue">降级保护</span>
+    </div>
+  </div>
+
+  <!-- 箭头2 -->
+  <div class="arrow-col"><div class="arrow">→</div></div>
+
+  <!-- 列3: 核心决策层 -->
+  <div>
+    <div class="col-title ct-engine">DECISION CORE</div>
+
+    <div class="module green">
+      <div class="module-title">⚔️ 体制识别</div>
+      <div class="module-sub">regime_scorer.py</div>
+      <div style="font-size:10px;color:#94a3b8;margin-top:4px">
+        BEAR_TREND / BEAR_EARLY<br>
+        CHOP_MID / BULL_TREND<br>
+        BEAR_RECOVERY
+      </div>
+      <span class="tag tag-green">Hurst指数</span>
+      <span class="tag tag-green">EMA200</span>
+      <span class="tag tag-green">OI方向</span>
+    </div>
+
+    <div class="module green">
+      <div class="module-title">🛡️ Step11 · 11道硬闸</div>
+      <div class="module-sub">step11_mandatory_judge.py</div>
+      <span class="tag tag-green">G1 方向共振</span>
+      <span class="tag tag-green">G2 FR铁律</span>
+      <span class="tag tag-green">G3 OI方向</span>
+      <span class="tag tag-green">G4 CVD</span>
+      <span class="tag tag-green">G5 入场位</span>
+      <span class="tag tag-red">❌不通过→WAIT</span>
+    </div>
+
+    <div class="module green">
+      <div class="module-title">📊 HAR-RV · 波动率预测</div>
+      <div class="module-sub">har_rv_engine.py · 替代Kronos</div>
+      <span class="tag tag-green">已实现波动率</span>
+      <span class="tag tag-green">ATR修正</span>
+      <span class="tag tag-green">SL动态验证</span>
+    </div>
+
+    <div class="module yellow">
+      <div class="module-title">⚡ 六条血的教训铁律</div>
+      <div class="module-sub">CLAUDE.md永久封印</div>
+      <div style="font-size:10px;color:#fcd34d;margin-top:4px;line-height:1.8">
+        ① GEX负区+CVD&lt;-300 禁多<br>
+        ② FR&gt;+0.003% 禁入场<br>
+        ③ SL≥1.5×ATR1H<br>
+        ④ 支撑池上方禁接多<br>
+        ⑤ 仓位建立后实时跟踪<br>
+        ⑥ 分析必须连接推送
+      </div>
+    </div>
+
+    <div class="module green">
+      <div class="module-title">📉 WR矩阵 · EV硬门</div>
+      <div class="module-sub">B线2026-09-26重置中</div>
+      <span class="tag tag-green">RR≥1.5</span>
+      <span class="tag tag-green">n≥8有效</span>
+      <span class="tag tag-red">CHOP禁震荡单</span>
+    </div>
+  </div>
+
+  <!-- 箭头3 -->
+  <div class="arrow-col"><div class="arrow">→</div></div>
+
+  <!-- 列4: 执行监控层 -->
+  <div>
+    <div class="col-title ct-exec">EXECUTION & MONITOR</div>
+
+    <div class="module red">
+      <div class="module-title">🤖 trading_copilot.py</div>
+      <div class="module-sub">每分钟 · 七模块副驾</div>
+      <div style="font-size:10px;color:#94a3b8;line-height:1.8;margin-top:4px">
+        M1 价位接近±0.3%<br>
+        M2 OI日变化±2.5%<br>
+        M3 FR极端&gt;0.008%<br>
+        M4 大户LSR变化&gt;5%<br>
+        M5 猎杀门槛反向检查<br>
+        M6 Goal Loop守候<br>
+        M7 VIP策略状态监控
+      </div>
+    </div>
+
+    <div class="module red">
+      <div class="module-title">🎯 brahma_goal_loop.py</div>
+      <div class="module-sub">目标导向循环 · Loop Engineer</div>
+      <span class="tag tag-red">条件守候</span>
+      <span class="tag tag-red">48H超时</span>
+      <span class="tag tag-red">失效作废</span>
+      <div class="module-sub" style="margin-top:4px">
+        ETH多单A $2,457 [288aa893]<br>
+        ETH空单 $2,538 [3127688e]
+      </div>
+    </div>
+
+    <div class="module red">
+      <div class="module-title">📋 m7_vip_monitor.py</div>
+      <div class="module-sub">VIP策略状态 · 5维度监控</div>
+      <span class="tag tag-red">FR警戒</span>
+      <span class="tag tag-red">LSR猎杀</span>
+      <span class="tag tag-red">CVD翻转</span>
+      <span class="tag tag-red">OI转变</span>
+      <span class="tag tag-red">作废条件</span>
+    </div>
+
+    <div class="module red">
+      <div class="module-title">📊 brahma_strategy_validator.py</div>
+      <div class="module-sub">红绿循环 · TDD策略验证</div>
+      <span class="tag tag-red">VIP自动记录</span>
+      <span class="tag tag-red">SL/TP检查</span>
+      <span class="tag tag-red">自动复盘</span>
+      <span class="tag tag-red">胜率积累</span>
+    </div>
+
+    <div class="module gray">
+      <div class="module-title">⏰ supercronic · 57个cron任务</div>
+      <div class="module-sub">brahma_crontab.txt · 24/7</div>
+      <span class="tag tag-gray">每分钟副驾</span>
+      <span class="tag tag-gray">每15min LSR/验证</span>
+      <span class="tag tag-gray">每小时状态刷新</span>
+      <span class="tag tag-gray">UTC 01/09/17分析</span>
+    </div>
+  </div>
+
+  <!-- 箭头4 -->
+  <div class="arrow-col"><div class="arrow">→</div></div>
+
+  <!-- 列5: 输出推送层 -->
+  <div>
+    <div class="col-title ct-output">OUTPUT & PUSH</div>
+
+    <div class="module purple">
+      <div class="module-title">📤 push_hub.py · 推送SSOT</div>
+      <div class="module-sub">唯一推送入口</div>
+      <span class="tag tag-purple">P0/P1 主线程</span>
+      <span class="tag tag-purple">P4 静默</span>
+      <div class="module-sub" style="margin-top:4px">
+        JARVIS_USER: 73295708<br>
+        线程: 01a0d79b...
+      </div>
+    </div>
+
+    <div class="module purple">
+      <div class="module-title">🌿 VIP策略卡片</div>
+      <div class="module-sub">姓赵不宣标准格式</div>
+      <div style="font-size:10px;color:#c084fc;line-height:1.8;margin-top:4px">
+        🔴 空单｜挂单区 $X~$X<br>
+        止损 $X｜目标 $X→$X<br>
+        杠杆 Xx｜仓位 X%<br>
+        🚫 破$X作废
+      </div>
+    </div>
+
+    <div class="module purple">
+      <div class="module-title">📱 Jarvis推送分级</div>
+      <div class="module-sub">alerts/.env SSOT</div>
+      <span class="tag tag-purple">P0 立即推送</span>
+      <span class="tag tag-purple">P1 重要信号</span>
+      <span class="tag tag-purple">P2 日常播报</span>
+      <span class="tag tag-gray">P4 静默心跳</span>
+    </div>
+
+    <div class="module purple">
+      <div class="module-title">📰 Binance Square · 三账号</div>
+      <div class="module-sub">自动教育内容发布</div>
+      <span class="tag tag-purple">姓赵不宣</span>
+      <span class="tag tag-purple">蓝桉VS释怀鸟</span>
+      <span class="tag tag-purple">牛来PRO</span>
+    </div>
+
+    <div class="module purple">
+      <div class="module-title">📊 auto_analysis_latest.json</div>
+      <div class="module-sub">SSOT · AI直接读取输出</div>
+      <span class="tag tag-purple">full_reports[BTC/ETH]</span>
+      <span class="tag tag-purple">D1~D10+Step11</span>
+      <span class="tag tag-purple">三方裁决+VIP</span>
+    </div>
+  </div>
+
+</div>
+
+<hr class="divider">
+
+<!-- 主链流程 -->
+<div class="flow-section">
+  <div class="flow-title">⚡ 主链分析全流程（触发→输出）</div>
+
+  <div class="flow-row">
+    <div class="flow-box trigger">触发</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box process">brahma_manual_analysis.py</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box process">Step0 并行数据预取</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box process">brahma_core.py Phase1~4</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box check">Step11 · 11道硬闸</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box check">铁律六条检查</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box output">format_full_report()</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box output">auto_analysis_latest.json</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box output">push_hub → Jarvis</div>
+  </div>
+
+  <div class="flow-title" style="margin-top:16px">🎯 副驾监控循环（每分钟）</div>
+  <div class="flow-row">
+    <div class="flow-box trigger">每60s</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box watch">M1 价位±0.3%</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box watch">M2 OI±2.5%</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box watch">M3 FR极端</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box watch">M4 LSR大户</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box watch">M5 猎杀门槛</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box watch">M6 Goal Loop</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box watch">M7 VIP变更</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box output">触发→push_hub</div>
+  </div>
+
+  <div class="flow-title" style="margin-top:16px">🔴 做空执行判断树</div>
+  <div class="flow-row">
+    <div class="flow-box trigger">散户LSR接近门槛</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box check">LSR≥65%(BTC)/77%(ETH)?</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box check">FR同步转正?</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box check">1H收阴确认?</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box check">CVD&lt;0?</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box output">全部✅→空单入场</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box block">任一❌→等待</div>
+  </div>
+
+  <div class="flow-title" style="margin-top:16px">🟢 做多执行判断树</div>
+  <div class="flow-row">
+    <div class="flow-box trigger">价格回踩目标区间</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box check">FR&lt;+0.003%?</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box check">GEX非负区?</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box check">Stoch&lt;60?</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box check">CVD&gt;0?</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box check">SL≥1.5×ATR?</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box output">全部✅→多单入场</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box block">任一❌→等待</div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- 系统宪法 -->
+<div class="flow-title">🏛️ 梵天宪法核心规则</div>
+<div class="law-grid">
+  <div class="law-card"><b>① 唯一分析入口</b>所有分析→brahma_manual_analysis.py→auto_analysis_latest.json→AI直接输出，严禁手动拼装</div>
+  <div class="law-card"><b>② 苏摩111最高批准权</b>重大改动必须苏摩111批准后封印到MEMORY.md，commit包含「接入位置」</div>
+  <div class="law-card"><b>③ 封印四要素</b>代码完成 + 调用验证 + full_report可见 + 冒烟测试全绿 = 才算封印</div>
+  <div class="law-card"><b>④ 血的教训六条</b>GEX负区禁多/FR>0.003%禁入场/SL≥1.5ATR/假破位确认/仓位跟踪/分析连推送</div>
+  <div class="law-card"><b>⑤ MEMORY.md≤12KB</b>超限被截断=丢记忆，新封印默认写daily，MEMORY只留索引</div>
+  <div class="law-card"><b>⑥ gateway重启=事故</b>nohup进程族全灭+cron打断，重启后必跑process_resurrect.sh</div>
+  <div class="law-card"><b>⑦ 平台安全铁律</b>主session禁长阻塞，复杂工程spawn subagent，单run工具调用≤80次</div>
+  <div class="law-card"><b>⑧ B线真相</b>真实实盘=1笔TRUMP亏1.47U，WR数据重建中，回测BTC=56.7%/ETH=55.2%</div>
+  <div class="law-card"><b>⑨ VIP格式铁律</b>姓赵不宣标准格式，SL必须ATR1H验证，RR&lt;1.5不出现在卡片，入场区≤0.5×ATR</div>
+</div>
+
+<!-- 实时状态 -->
+<hr class="divider">
+<div class="metrics-grid">
+  <div class="metric-card"><div class="metric-name">BTC 当前</div><div class="metric-val" style="color:#f59e0b">$82,900</div></div>
+  <div class="metric-card"><div class="metric-name">ETH 当前</div><div class="metric-val" style="color:#f59e0b">$2,490</div></div>
+  <div class="metric-card"><div class="metric-name">BTC FR</div><div class="metric-val" style="color:#ef4444">+0.0052%⚠️</div></div>
+  <div class="metric-card"><div class="metric-name">ETH FR</div><div class="metric-val" style="color:#10b981">-0.0012%✅</div></div>
+  <div class="metric-card"><div class="metric-name">BTC LSR</div><div class="metric-val" style="color:#10b981">60.9% 安全</div></div>
+  <div class="metric-card"><div class="metric-name">ETH LSR</div><div class="metric-val" style="color:#f59e0b">74.7% ⚠️差2.3%</div></div>
+  <div class="metric-card"><div class="metric-name">Goal Loop</div><div class="metric-val" style="color:#c084fc">3个守候中</div></div>
+  <div class="metric-card"><div class="metric-name">FR结算倒计时</div><div class="metric-val" style="color:#60a5fa">UTC 16:05推送</div></div>
+</div>
+
+<div class="footer">梵天设计院 · 苏摩 × AI协作量化工程团队 · 2026-10-09 · 不是建议</div>
+
+</body>
+</html>

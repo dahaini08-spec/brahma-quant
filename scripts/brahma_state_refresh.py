@@ -44,7 +44,17 @@ PAPER_SCORE_MIN   = 80
 # 信号有效期（小时）
 SIGNAL_TTL_HOURS  = 4
 # 分析标的列表（方向由体制自动决定）
-SYMBOLS = ['BTCUSDT', 'ETHUSDT']
+# [asset_config SSOT 2026-10-09] 활성 L1 표적 동적 로드
+import json as _srj, pathlib as _srp
+def _load_symbols():
+    _f = _srp.Path(__file__).parent.parent / 'data' / 'asset_config.json'
+    try:
+        _ac = _srj.loads(_f.read_text())
+        return [v['full_symbol'] for k,v in _ac.items()
+                if not k.startswith('_') and v.get('tier','L2')=='L1']
+    except:
+        return ['BTCUSDT', 'ETHUSDT']
+SYMBOLS = _load_symbols()
 
 # ── 体制 → 推荐方向映射 ──────────────────────────────────────────
 REGIME_DIRECTION = {

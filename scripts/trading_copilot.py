@@ -31,8 +31,15 @@ OI_DAY_THRESH = 0.025   # OI日变化 ±2.5%（10/05 -3.95% 提前2天预警）
 FR_HIGH       = 0.008   # FR极端高 > +0.008%（10/06 ETH 0.0092% 前兆）
 FR_LOW        = -0.005  # FR极端低 < -0.005%
 LSR_BIG_DELTA = 5.0     # 大户LSR单日变化 > +5%（10/07 ETH +10.6%）
-LSR_HUNT_BTC  = 65.0    # BTC散户猎杀门槛
-LSR_HUNT_ETH  = 77.0    # ETH散户猎杀门槛
+# [asset_config SSOT 2026-10-09] 표적 파라미터 동적 로드
+import json as _acj3, pathlib as _acp3
+def _get_ac():
+    _pp = _acp3.Path(__file__).parent.parent / 'data' / 'asset_config.json'
+    try: return _acj3.loads(_pp.read_text())
+    except: return {}
+
+LSR_HUNT_BTC  = float(_get_ac().get("BTC",{}).get("lsr_hunt",65.0))
+LSR_HUNT_ETH  = float(_get_ac().get("ETH",{}).get("lsr_hunt",77.0))
 CVD_CONFLICT  = -300    # CVD与多单方向冲突阈值
 
 # 冷却时间（同一信号不重复推送）
