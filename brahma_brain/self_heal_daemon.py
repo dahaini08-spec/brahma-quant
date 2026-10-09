@@ -156,7 +156,9 @@ def _refresh_circuit():
     try:
         state = {'state': 'GREEN', 'suspended': False,
                  'timestamp': time.time(), 'last_updated': time.time()}
-        json.dump(state, open(DATA_DIR / 'circuit_breaker.json', 'w'), indent=2)
+        _tmp_p = __import__("pathlib").Path(str(DATA_DIR / 'circuit_breaker.json') + ".tmp")
+        _tmp_p.write_text(__import__("json").dumps(state, ensure_ascii=False))
+        _tmp_p.replace(DATA_DIR / 'circuit_breaker.json')
         log.info('✅ circuit_breaker刷新成功')
     except Exception as e:
         log.error(f'❌ circuit_breaker刷新失败: {e}')
@@ -180,7 +182,9 @@ def _refresh_drawdown():
             d = json.loads(dd_path.read_text())
             d['ts'] = time.time()
             d['last_updated'] = time.time()
-            json.dump(d, open(dd_path, 'w'), indent=2, ensure_ascii=False)
+            _tmp_p = __import__("pathlib").Path(str(dd_path) + ".tmp")
+            _tmp_p.write_text(__import__("json").dumps(d, ensure_ascii=False))
+            _tmp_p.replace(dd_path)
         log.info('✅ drawdown刷新成功')
     except Exception as e:
         log.error(f'❌ drawdown刷新失败: {e}')
@@ -204,7 +208,9 @@ def _refresh_antifragile():
             json.dump(state, open(DATA_DIR / f'antifragile_state_{sym.lower()}.json', 'w'),
                        indent=2)
         combined = {'state': 'GREEN', 'ts': time.time()}
-        json.dump(combined, open(DATA_DIR / 'antifragile_state.json', 'w'), indent=2)
+        _tmp_p = __import__("pathlib").Path(str(DATA_DIR / 'antifragile_state.json') + ".tmp")
+        _tmp_p.write_text(__import__("json").dumps(combined, ensure_ascii=False))
+        _tmp_p.replace(DATA_DIR / 'antifragile_state.json')
         log.info('✅ antifragile刷新成功')
     except Exception as e:
         log.error(f'❌ antifragile刷新失败: {e}')

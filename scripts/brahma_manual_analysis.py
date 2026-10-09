@@ -1944,6 +1944,76 @@ def step9_risk(d: dict) -> dict:
                 regime_note = '警戒期YELLOW → 仓位×0.75'
                 nav_mult = min(nav_mult, 0.75)
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+
+    # ── P2b: ATR反推仓位上限校验 [2026-10-09 苏摩111] ──────────────────
+    # 行业标准: max_size = NAV × 1.5% / (ATR1H × 1.5)
+    # 梵天档位制在高ATR时可能超标，加上限兜底
+    _atr_pos_cap_note = ''
+    try:
+        _vol_d = d.get('vol') or {}
+        _atr1h_v = _vol_d.get('atr_1h', 0) or 0
+        _price_v = d.get('price', 0) or 0
+        if _atr1h_v > 0 and _price_v > 0:
+            # 假设NAV=100000U（从position_sl_state读更精确，这里做保守估算）
+            _nav_est = 100000
+            try:
+                import json as _jj
+                _sl_path = Path(__file__).parent.parent / 'data' / 'position_sl_state.json'
+                if _sl_path.exists():
+                    _sl_d = _jj.loads(_sl_path.read_text())
+                    _nav_est = float(_sl_d.get('nav', 100000) or 100000)
+            except Exception: pass
+            _atr_max_usd   = (_nav_est * 0.015) / (_atr1h_v * 1.5)  # 1.5%NAV风险反推
+            _atr_max_pct   = _atr_max_usd * _price_v / _nav_est * 100
+            _current_pct   = 5.0 * nav_mult  # 当前档位×乘数
+            if _atr_max_pct < _current_pct:
+                _old_mult = nav_mult
+                nav_mult = nav_mult * (_atr_max_pct / _current_pct)
+                nav_mult = round(max(nav_mult, 0.1), 3)
+                _atr_pos_cap_note = (f'ATR仓位上限: ATR1H=${_atr1h_v:.0f} → '
+                                     f'上限{_atr_max_pct:.1f}%NAV < 当前{_current_pct:.1f}%NAV → nav_mult×{nav_mult/_old_mult:.2f}')
+                blocks.append(_atr_pos_cap_note)
+    except Exception as _e: print(f'[WARN] P2b ATR cap: {_e}', file=sys.stderr)
+
+    # ── P2c: 实时BTC/ETH相关性ρ检测 [2026-10-09 苏摩111] ──────────────
+    # portfolio_optimizer已有check_correlation_risk，这里做显式ρ实时校验
+    # 若portfolio_optimizer未能运行或ρ未被消费，此层作为兜底
+    _corr_note = ''
+    _corr_rho  = None
+    try:
+        # 计算近20根1H K线的BTC/ETH收益率相关系数
+        _k1h_self = d.get('k1h', [])
+        _sym_self  = d.get('sym', 'BTC')
+        _sym_other = 'ETH' if 'BTC' in _sym_self else 'BTC'
+        # 尝试从brahma_state读另一标的K线
+        import json as _jcorr
+        _bstate_path = Path(__file__).parent.parent / 'data' / 'brahma_state.json'
+        if _bstate_path.exists() and len(_k1h_self) >= 8:
+            _bs2 = _jcorr.loads(_bstate_path.read_text())
+            _k1h_other_raw = (_bs2.get(_sym_other + 'USDT') or _bs2.get(_sym_other, {})).get('k1h', [])
+            if len(_k1h_other_raw) >= 8:
+                _n = min(len(_k1h_self), len(_k1h_other_raw), 20)
+                _c1 = [x[3] for x in _k1h_self[-_n:]]   # close
+                _c2 = [x[3] if isinstance(x, (list,tuple)) else x.get('close',0)
+                       for x in _k1h_other_raw[-_n:]]
+                _r1 = [((_c1[i]-_c1[i-1])/_c1[i-1]) for i in range(1,len(_c1)) if _c1[i-1]>0]
+                _r2 = [((_c2[i]-_c2[i-1])/_c2[i-1]) for i in range(1,len(_c2)) if _c2[i-1]>0]
+                _n2 = min(len(_r1), len(_r2))
+                if _n2 >= 5:
+                    _mu1 = sum(_r1[:_n2])/_n2; _mu2 = sum(_r2[:_n2])/_n2
+                    _cov  = sum((_r1[i]-_mu1)*(_r2[i]-_mu2) for i in range(_n2))/_n2
+                    _std1 = (_sum:=sum((_r1[i]-_mu1)**2 for i in range(_n2))/_n2)**0.5
+                    _std2 = (sum((_r2[i]-_mu2)**2 for i in range(_n2))/_n2)**0.5
+                    if _std1 > 1e-9 and _std2 > 1e-9:
+                        _corr_rho = round(_cov / (_std1 * _std2), 3)
+                        if abs(_corr_rho) > 0.85 and _portfolio.get('correlation_risk') is None:
+                            # portfolio_optimizer未运行时的兜底
+                            nav_mult = min(nav_mult, 0.5)
+                            _corr_note = (f'实时ρ={_corr_rho:.2f}>0.85 → BTC/ETH高度同向 → '
+                                         f'第二笔仓位×0.5兜底')
+                            blocks.append(_corr_note)
+    except Exception as _e: print(f'[WARN] P2c corr: {_e}', file=sys.stderr)
+
     return {
         'all_green':  all_green,
         'circuit_ok': circuit_ok,
@@ -1955,6 +2025,9 @@ def step9_risk(d: dict) -> dict:
         'nav_mult':   nav_mult,
         'regime_state': regime_state,
         'regime_note':  regime_note,
+        'atr_pos_cap':  _atr_pos_cap_note,   # P2b
+        'corr_rho':     _corr_rho,            # P2c
+        'corr_note':    _corr_note,           # P2c
         # P0新增: risk_engine统一gate结果
         'risk_engine': {
             'approved': re_approved,

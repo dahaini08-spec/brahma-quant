@@ -220,7 +220,9 @@ def sync_wuqu(record: dict):
                 'notional_usdt': record.get('notional', 0),
                 'status':      'open',
             })
-        json.dump(data, open(WUQU_FILE, 'w'), indent=2, ensure_ascii=False)
+        _tmp_p = __import__("pathlib").Path(str(WUQU_FILE) + ".tmp")
+        _tmp_p.write_text(__import__("json").dumps(data, ensure_ascii=False))
+        _tmp_p.replace(WUQU_FILE)
     except Exception as e:
         print(f'[lifecycle] wuqu sync err: {e}')
 

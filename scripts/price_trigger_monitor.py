@@ -14,8 +14,8 @@ for _cf in _cfg_files:
             if _triggers:
                 _has_triggers = True
                 break
-        except Exception:
-            pass
+        except Exception: as _audit_e:
+            import sys as _sys; print(f"[WARN] scripts/price_trigger_monitor.py:18 silenced: {type(_audit_e).__name__}: {_audit_e}", file=_sys.stderr)
 if not _has_triggers:
     print('HEARTBEAT_OK (no triggers configured)', file=_sys.stderr)
     _sys.exit(0)
@@ -103,13 +103,22 @@ def main():
             state[_key] = time.time()
             print(f'[trigger] {sym} {" | ".join(triggered)}')
             # 触发分析
-            os.system(f'cd {ROOT} && timeout 90 python3 scripts/brahma_manual_analysis.py --symbols {sym} --push 2>&1 >> logs/trigger_analysis.log')
+            _result = subprocess.run(
+                ['python3', 'scripts/brahma_manual_analysis.py', '--symbols', sym, '--push'],
+                cwd=str(ROOT), timeout=95, capture_output=True, text=True
+            )
+            if _result.returncode != 0:
+                print(f'[ERROR] {sym} 分析失败 RC={_result.returncode}: {_result.stderr[:200]}')
+            else:
+                print(f'[OK] {sym} 分析完成')
         elif triggered:
             print(f'[trigger] {sym} 触发但30min内已触发过，跳过')
         else:
             print(f'[trigger] {sym} ${price:,.0f} 未触发任何条件')
     
-    json.dump(state, open(STATE_FILE, 'w'))
+    _tmp = pathlib.Path(str(STATE_FILE) + '.tmp')
+    _tmp.write_text(json.dumps(state, ensure_ascii=False))
+    _tmp.replace(STATE_FILE)
 
 if __name__ == '__main__':
     main()

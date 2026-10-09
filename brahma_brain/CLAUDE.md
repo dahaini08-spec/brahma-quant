@@ -219,3 +219,28 @@ SWAP/fallocate/mkswap → 只读，不能执行
 | 4 | 支撑池上方禁接多 | 价格>liq_long + 无D4共振≥5/7 | 等假破位确认后才入 |
 | 5 | 仓位建立后实时跟踪 | 任何持仓存在 | price_alert对照仓位每60s检查 |
 | 6 | 分析必须连接推送 | 关键信号出现 | 60s内推送苏摩，不依赖主动问 |
+
+## ⚠️ signal.alarm 子线程限制（P1 待修复）
+
+**问题：** `scripts/brahma_manual_analysis.py:117` 使用 `signal.alarm(MAX_RUNTIME_S)`
+Python限制：`signal.alarm` 只能在主线程调用，子线程调用会抛 `ValueError: signal only works in main thread`
+
+**影响：** 当分析被并发子线程调用时，超时机制完全失效 → 分析永久挂死
+
+**修复方案（苏摩111批准后执行）：**
+```python
+# 修复前
+signal.signal(signal.SIGALRM, _timeout_handler)
+signal.alarm(MAX_RUNTIME_S)
+
+# 修复后
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
+with ThreadPoolExecutor(max_workers=1) as ex:
+    fut = ex.submit(_run_analysis, symbol)
+    try:
+        result = fut.result(timeout=MAX_RUNTIME_S)
+    except FutureTimeout:
+        raise TimeoutError(f'分析超时 {MAX_RUNTIME_S}s')
+```
+
+**当前状态：** 已记录，单进程模式下不触发，并发场景下有风险

@@ -205,13 +205,22 @@ def find_order_blocks(opens: list, highs: list, lows: list,
 
 # 三、FVG 公平价值缺口识别
 
-def find_fvg(highs: list, lows: list, closes: list, lookback: int = 500) -> dict:
+def find_fvg(highs: list, lows: list, closes: list, lookback: int = 500, atr_1h: float = 0.0) -> dict:
     """识别FVG（公平价值缺口）
     [设计院升级 2026-08-04] lookback 50→500，全量扫描历史级别FVG
+    [P2a封印 2026-10-09 苏摩111] ATR动态门槛：高波动市自动提升FVG门槛，过滤微小噪音FVG
+      gap_min = max(0.15%, 0.5 × ATR_1h / price)
+      当BTC ATR1H=$2000时(约2%)，门槛自动升至1%，与行业标准Pine版对齐
     """
     price    = closes[-1]
     bull_fvg = []   # 看多FVG（K1高 < K3低）
     bear_fvg = []   # 看空FVG（K1低 > K3高）
+
+    # [P2a] ATR动态门槛计算
+    _gap_min_pct = 0.15  # 静态兜底 0.15%
+    if atr_1h > 0 and price > 0:
+        _atr_pct = atr_1h / price * 100  # ATR转百分比
+        _gap_min_pct = max(0.15, 0.5 * _atr_pct)  # max(静态, 0.5×ATR%)
 
     start = max(0, len(closes) - lookback)
 
@@ -225,7 +234,7 @@ def find_fvg(highs: list, lows: list, closes: list, lookback: int = 500) -> dict
         if k1_high < k3_low:
             gap_size = k3_low - k1_high
             gap_pct  = gap_size / k1_high * 100
-            if gap_pct > 0.15:   # [设计院 2026-09-08 苏摩111] 0.3→0.15% 覆盖小币种/低波动FVG
+            if gap_pct > _gap_min_pct:   # [P2a 2026-10-09 苏摩111] ATR动态门槛 max(0.15%, 0.5×ATR%)
                 # [A1修复] filled=价格已完全穿越FVG（不是「在FVG内」）
                 # 现价在FVG内 = actively approaching，不算filled
                 filled = (price > k3_low)  # 牛市FVG: 价格已涨过FVG顶部 → filled
@@ -244,7 +253,7 @@ def find_fvg(highs: list, lows: list, closes: list, lookback: int = 500) -> dict
         if k1_low > k3_high:
             gap_size = k1_low - k3_high
             gap_pct  = gap_size / k3_high * 100
-            if gap_pct > 0.15:   # [设计院 2026-09-08 苏摩111] 0.3→0.15% 覆盖小币种/低波动FVG
+            if gap_pct > _gap_min_pct:   # [P2a 2026-10-09 苏摩111] ATR动态门槛 max(0.15%, 0.5×ATR%)
                 # [A1修复] 熊市FVG: 价格已跌穿FVG底部 → filled
                 filled = (price < k3_high)  # 价格已跌穿熊市FVG底部 → filled
                 bear_fvg.append({
@@ -258,17 +267,42 @@ def find_fvg(highs: list, lows: list, closes: list, lookback: int = 500) -> dict
                     'note':     f'看空FVG ${k3_high:.4f}~${k1_low:.4f} ({gap_pct:.2f}%)',
                 })
 
-    # [P1修复 2026-07-24] FVG填充方向阐检测：如果价格正在FVG区间内回落，说明在填充FVG，应标注确实填充目标
-    # Bull FVG填充方向标注：如果价格在FVG内且向下运动 → active_fill=True，目标是FVG底部
+    # [P1修复 2026-07-24] FVG填充方向检测：如果价格正在FVG区间内回落，说明在填充FVG，应标注确实填充目标
+    # [P1升级 2026-10-09 苏摩111] Partial Fill状态：参考Pine Script版本
+    # Pine版用partialClose()把大Box切成小Box继续追踪，梵天同理增加partially_filled字段
+    # partially_filled=True时：mid更新为未填充区域中点，避免误判为已失效FVG
     for f in bull_fvg:
         if not f['filled'] and f['bottom'] < closes[-1] <= f['top']:
-            # 价格在FVG内，且最近4根收盘均在中为阴线 = 正在向下填充
+            # 价格在FVG内：计算填充深度
+            filled_depth = (closes[-1] - f['bottom']) / max(f['top'] - f['bottom'], 1e-9)
+            f['partially_filled'] = filled_depth > 0.3  # 填充超过30%=部分回补
+            # 更新mid到未填充区域中点（Pine版partialClose同构）
+            if f['partially_filled']:
+                unfilled_top = f['top']
+                unfilled_bot = closes[-1]  # 价格当前位置作为已填充边界
+                f['mid'] = round((unfilled_top + unfilled_bot) / 2, 8)
+                f['fill_depth_pct'] = round(filled_depth * 100, 1)
+            # 最近4根收盘向下 = 正在继续填充
             recent_4_closes = closes[-4:]
             down_count = sum(1 for j in range(1, len(recent_4_closes)) if recent_4_closes[j] < recent_4_closes[j-1])
             f['active_fill_down'] = (down_count >= 2)  # 连续下跌→填充警示
             f['fill_target'] = f['bottom']  # 填充目标 = FVG底部
+        else:
+            f.setdefault('partially_filled', False)
 
-    # 只保留未填补的FVG
+    for f in bear_fvg:
+        if not f['filled'] and f['bottom'] <= closes[-1] < f['top']:
+            filled_depth = (f['top'] - closes[-1]) / max(f['top'] - f['bottom'], 1e-9)
+            f['partially_filled'] = filled_depth > 0.3
+            if f['partially_filled']:
+                unfilled_bot = f['bottom']
+                unfilled_top = closes[-1]
+                f['mid'] = round((unfilled_top + unfilled_bot) / 2, 8)
+                f['fill_depth_pct'] = round(filled_depth * 100, 1)
+        else:
+            f.setdefault('partially_filled', False)
+
+    # 只保留未填补的FVG（partially_filled=True仍保留，Pine版同构）
     bull_fvg_raw_count = len(bull_fvg)  # [设计院 2026-09-08] 透明化：过滤前原始数量
     bear_fvg_raw_count = len(bear_fvg)
     bull_fvg = [f for f in bull_fvg if not f['filled']]
@@ -685,7 +719,9 @@ def analyze_smc(symbol: str, signal_dir: str = 'LONG',
     # 各模块分析
     structure  = detect_bos_choch(h, l, c)
     obs        = find_order_blocks(o, h, l, c)
-    fvgs       = find_fvg(h, l, c)
+    # [P2a 2026-10-09] ATR1H传入find_fvg做动态门槛
+    _atr1h_smc = sum(abs(h[i]-l[i]) for i in range(max(0,len(h)-14), len(h))) / min(14, len(h)) if len(h) >= 2 else 0
+    fvgs       = find_fvg(h, l, c, atr_1h=_atr1h_smc)
     liquidity  = find_liquidity_pools(h, l, c)
 
     # Premium/Discount（用近期100根高低点）

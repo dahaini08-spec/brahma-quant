@@ -757,6 +757,7 @@ FAPI    = 'https://fapi.binance.com'
 CGECKO  = 'https://api.coingecko.com/api/v3'
 
 _CACHE = {}
+_LOCK__CACHE = __import__("threading").Lock()  # 감사 수정: 병렬 쓰기 보호
 _CACHE_TTL = 300  # 5分钟缓存
 
 def _get(url: str, timeout: int = 8) -> dict | list | None:

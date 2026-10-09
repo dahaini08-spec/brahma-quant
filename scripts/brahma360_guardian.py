@@ -142,7 +142,12 @@ def heal_ws_guardian() -> str:
     if alive:
         return '✅ ws_guardian 进程存活'
     try:
-        subprocess.Popen(f'nohup python3 {WD}/ws_guardian.py >> {LOG} 2>&1 &', shell=True, cwd=WD)
+        with open(LOG, 'a') as _lf:
+            subprocess.Popen(
+                ['python3', f'{WD}/ws_guardian.py'],
+                stdout=_lf, stderr=_lf,
+                start_new_session=True, cwd=WD
+            )
         return '🔄 ws_guardian 宕机 → 已自动重启'
     except Exception as e:
         return f'❌ ws_guardian重启失败: {e}'
@@ -156,7 +161,12 @@ def heal_watchdog() -> str:
     if alive:
         return '✅ watchdog 进程存活'
     try:
-        subprocess.Popen(f'nohup bash {WD}/scripts/watchdog_guardian.sh >> {LOG} 2>&1 &', shell=True, cwd=WD)
+        with open(LOG, 'a') as _lf:
+            subprocess.Popen(
+                ['bash', f'{WD}/scripts/watchdog_guardian.sh'],
+                stdout=_lf, stderr=_lf,
+                start_new_session=True, cwd=WD
+            )
         return '🔄 watchdog 宕机 → 已自动重启'
     except Exception as e:
         return f'❌ watchdog重启失败: {e}'
