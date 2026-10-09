@@ -525,6 +525,20 @@ def main():
     except Exception as e:
         print(f'[M6 ERR] {e}')
 
+    # M7: VIP策略状态监控 — 关键维度变化主动推送
+    try:
+        import importlib.util as _ilu, sys as _sys
+        _spec = _ilu.spec_from_file_location('m7', str(WORKDIR / 'scripts/m7_vip_monitor.py'))
+        _m7 = _ilu.module_from_spec(_spec)
+        _spec.loader.exec_module(_m7)
+        _m7_result = _m7.check_all()
+        for sk, msg in _m7_result:
+            alerts.append((sk, msg))
+        if _m7_result:
+            print(f'[M7] {len(_m7_result)}条VIP策略变更警报')
+    except Exception as e:
+        print(f'[M7 ERR] {e}')
+
     if alerts:
         for sk, msg in alerts:
             push(msg, sk)
