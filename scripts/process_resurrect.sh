@@ -98,3 +98,10 @@ _catchup_post() {
 _catchup_post "scripts/square_chart_poster.py"        "chart_post" 7 22
 _catchup_post "scripts/square_video_poster.py"        "video_post" 9 22
 _catchup_post "scripts/square/square_edu_poster.py"   "education"  6 22
+
+# 가격 경보 모니터 (苏摩 복盘 수정 후 추가 2026-10-09)
+if ! pgrep -f "price_alert_monitor" > /dev/null 2>&1; then
+    echo "[resurrect] price_alert_monitor 재시작"
+    nohup python3 /root/.openclaw/workspace/trading-system/scripts/price_alert_monitor.py \
+        >> /root/.openclaw/workspace/trading-system/logs/price_alert.log 2>&1 &
+fi
