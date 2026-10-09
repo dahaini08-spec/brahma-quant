@@ -305,3 +305,4 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 * * * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/price_alert_monitor.py >> logs/price_alert.log 2>&1
 * * * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/trading_copilot.py >> logs/copilot.log 2>&1
 */15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/brahma_strategy_validator.py check >> logs/strategy_validator.log 2>&1
+*/15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/neuron_dashboard.py >> logs/neuron_dashboard.log 2>&1  # [P2-⑫ 2026-10-09 神经果蝇仪表盘]

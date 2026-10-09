@@ -783,6 +783,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
             _analyze_step1, _analyze_step2, _analyze_step3)
     except ImportError:
         from brahma_core_analyze_steps import (
+    # ╚══ Phase1 END ══╝
             _analyze_step1, _analyze_step2, _analyze_step3)
 
     # ╔══ Phase2 START: 结构分析(FVG/OB/清算) ══╗ [苏摩111 2026-10-09]
@@ -821,6 +822,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     _sm        = _r4.get('_sm', {})
     # [Step4防护] Step4提取后，为局部变量提供默认值，防止UnboundLocalError
     _regime_str = str(ms.get('regime', 'UNKNOWN') if ms else 'UNKNOWN')
+    # ╚══ Phase2 END ══╝
     params: dict = {}
 
     # ╔══ Phase3 START: 信号分析(共振/OI/宏观/风控) ══╗ [苏摩111 2026-10-09]
@@ -2437,6 +2439,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     # ╚══════════════════════════════════════════════════════════╝
     from brahma_brain.brahma_core_block_e import build_result_dict as _brd_fn  # [2.0 __init__ path]
     _result = _brd_fn(symbol, ms, smc, cf, params, signal_dir, extra_data,
+    # ╚══ Phase3 END ══╝
                       _score, elapsed, _data_health, _dharma_nodes, _valid)
 
     # ╔══ Phase4 START: 输出格式化(score_final/VIP) ══╗ [苏摩111 2026-10-09]

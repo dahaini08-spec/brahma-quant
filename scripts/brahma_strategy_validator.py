@@ -208,6 +208,60 @@ def cmd_stats(args):
         print(f'  {sym}: {sym_wr:.1f}% ({d["win"]}/{total})')
 
 
+
+def check_vip_expiry():
+    """
+    P2-⑪ VIP策略有效期管理 [2026-10-09 苏摩111]
+    从asset_config读取各标的vip_valid_h
+    超过有效期的策略自动推送过期提醒
+    """
+    import subprocess as _sp
+    tests   = load_tests()
+    now     = get_price.__module__ and __import__('time').time()  # noqa
+    now     = __import__('time').time()
+    expired = []
+
+    try:
+        import json as _j, pathlib as _pl
+        ac = _j.loads((_pl.Path(__file__).parent.parent / 'data' / 'asset_config.json').read_text())
+    except:
+        ac = {}
+
+    for t in tests:
+        if t['status'] != 'PENDING':
+            continue
+        sym     = t.get('symbol','BTC')
+        valid_h = float(ac.get(sym, {}).get('vip_valid_h', 8))
+        age_h   = (now - t['created_at']) / 3600
+
+        if age_h >= valid_h and age_h < valid_h + 0.5:  # 만료 30분 이내에만 알림
+            expired.append(t)
+            t['_expiry_notified'] = True
+
+    if expired:
+        save_tests(tests)
+        JARVIS_USER   = __import__('os').getenv('JARVIS_USER_ID','73295708')
+        JARVIS_THREAD = __import__('os').getenv('JARVIS_THREAD_ID','01a0d79b-fea4-71b1-9f2a-c02a9844b4ed')
+        for t in expired:
+            sym     = t.get('symbol','?')
+            valid_h = ac.get(sym, {}).get('vip_valid_h', 8)
+            msg = (
+                f'⏰ 梵天VIP策略到期提醒\n\n'
+                f'{sym} {t.get("direction","")} [ID:{t["id"]}]\n'
+                f'策略已过 {valid_h}H 有效期\n'
+                f'入场 ${t.get("entry",0):,.2f} | SL ${t.get("sl",0):,.2f} | TP ${t.get("tp1",0):,.2f}\n\n'
+                f'请重新评估市场结构是否仍然有效\n\n'
+                f'🌿 姓赵不宣 | 不是建议'
+            )
+            _sp.run(
+                ['openclaw','message','send','--channel','jarvis',
+                 '-t', f'{JARVIS_USER}:thread:{JARVIS_THREAD}', '-m', msg],
+                capture_output=True, text=True, timeout=15
+            )
+            print(f'[validator] VIP过期通知: {sym} {t["id"]}')
+
+    return expired
+
 def main():
     parser = argparse.ArgumentParser(description='梵天策略自动验证')
     sub = parser.add_subparsers(dest='cmd')
