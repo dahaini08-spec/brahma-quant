@@ -108,13 +108,31 @@ def _step_gc():
 from pathlib import Path
 from datetime import datetime, timezone
 
-# 超时守卫：全链路分析超90s强制abort（防止阻塞gateway event loop）
+# 超时守卫：全链路分析超180s强制abort（防止阻塞gateway event loop）
+# [苏摩111 2026-10-09] signal.alarm→concurrent.futures（子线程安全）
 MAX_RUNTIME_S = 180
-def _timeout_handler(signum, frame):
-    print(f'[brahma] ⚠️ 超时中止: 全链路超过{MAX_RUNTIME_S}s，强制退出防gateway阻塞', flush=True)
-    sys.exit(1)
-signal.signal(signal.SIGALRM, _timeout_handler)
-signal.alarm(MAX_RUNTIME_S)
+import threading as _thr
+_main_thread = _thr.main_thread()
+
+def _setup_timeout():
+    """只在主线程设置signal.alarm，子线程跳过（Python限制）"""
+    if _thr.current_thread() is _main_thread:
+        import signal as _sig
+        def _timeout_handler(signum, frame):
+            print(f'[brahma] ⚠️ 超时中止: 全链路超过{MAX_RUNTIME_S}s，强制退出防gateway阻塞', flush=True)
+            sys.exit(1)
+        _sig.signal(_sig.SIGALRM, _timeout_handler)
+        _sig.alarm(MAX_RUNTIME_S)
+    else:
+        # 子线程：使用Timer降级方案
+        def _thread_timeout():
+            print(f'[brahma] ⚠️ 子线程超时中止: {MAX_RUNTIME_S}s', flush=True)
+            import os; os.kill(os.getpid(), 9)
+        _t = _thr.Timer(MAX_RUNTIME_S, _thread_timeout)
+        _t.daemon = True
+        _t.start()
+
+_setup_timeout()
 
 BASE = Path(__file__).parent.parent
 

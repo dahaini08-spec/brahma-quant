@@ -682,6 +682,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     前置条件: 集成测试防护网 + 苏摩111批准
     """
     import sys
+    # ╔══ Phase1 START: 数据拉取(并发预取) ══╗ [苏摩111 2026-10-09]
     t0 = time.time()
     _sym = symbol.upper()
     _result = {}  # [2026-09-15 苏摩111] 防御性初始化,防止early return路径返回未定义
@@ -784,6 +785,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
         from brahma_core_analyze_steps import (
             _analyze_step1, _analyze_step2, _analyze_step3)
 
+    # ╔══ Phase2 START: 结构分析(FVG/OB/清算) ══╗ [苏摩111 2026-10-09]
     _r1 = _analyze_step1(symbol, signal_dir)
     # [9.28瘟疫清扫 苏摩111] error dict防御：ms_analyze失败（如CJK symbol无数据）时
     # 不得直接取['ms']炸穿，返回降级结果（宪法：修根因，共享函数修一次）
@@ -821,6 +823,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     _regime_str = str(ms.get('regime', 'UNKNOWN') if ms else 'UNKNOWN')
     params: dict = {}
 
+    # ╔══ Phase3 START: 信号分析(共振/OI/宏观/风控) ══╗ [苏摩111 2026-10-09]
     # Step 5: 共振评分
     cf = confluence_score(ms, smc, signal_dir, extra_data)
     # [9.20修复] 从cf中提取score到外层变量（L3199 _inject_fc需要）
@@ -2412,6 +2415,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     _result = _brd_fn(symbol, ms, smc, cf, params, signal_dir, extra_data,
                       _score, elapsed, _data_health, _dharma_nodes, _valid)
 
+    # ╔══ Phase4 START: 输出格式化(score_final/VIP) ══╗ [苏摩111 2026-10-09]
     # [9.21苏摩设计院] extra_data叠叠加权注入score_final
     # Causal/FR/PC/宏观/聪明钱的扣分只改了cf['score']，未进入score_final路径
     # 修复：将累积的extra_data叠加值注入score_final初始值
