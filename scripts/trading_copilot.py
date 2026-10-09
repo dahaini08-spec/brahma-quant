@@ -513,6 +513,18 @@ def main():
     try: m5_hunt_and_position(state, alerts)
     except Exception as e: print(f'[M5 ERR] {e}')
 
+    # M6: Goal Loop Monitor — 目标导向循环检查
+    try:
+        import subprocess as _sp, sys as _sys
+        _gl = _sp.run(
+            ['python3', 'scripts/brahma_goal_loop.py', 'check'],
+            cwd=str(WORKDIR), capture_output=True, text=True, timeout=20
+        )
+        if _gl.stdout.strip():
+            print(f'[M6 goal_loop] {_gl.stdout.strip()[:120]}')
+    except Exception as e:
+        print(f'[M6 ERR] {e}')
+
     if alerts:
         for sk, msg in alerts:
             push(msg, sk)
