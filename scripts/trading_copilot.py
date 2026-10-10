@@ -780,6 +780,20 @@ def m8_groq_smart_layer(state: dict) -> None:
                 pass
 
         # ── C: 每15分钟情境摘要 ──────────────────────────────────────
+        # ── 매1H 심층요약 (C) ────────────────────────────────────────
+        if _now - state.get('m8_hourly_summary', 0) > 3600:  # 1시간
+            state['m8_hourly_summary'] = _now
+            try:
+                from free_llm_client import groq_hourly_summary as _ghs
+                _hsummary = _ghs()
+                if _hsummary:
+                    results['hourly_summary'] = _hsummary
+                    _calls_made += 1
+                    print(f'[M8-Hourly] {_hsummary[:50]}')
+            except Exception:
+                pass
+
+        # ── 매15분 상황 요약 (기존) ────────────────────────────────
         if _now - state.get('m8_summary_15m', 0) > 900:  # 15분
             state['m8_summary_15m'] = _now
             r = _gc(

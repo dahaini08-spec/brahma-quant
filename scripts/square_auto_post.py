@@ -247,6 +247,31 @@ def run(syms: list, dry_run: bool = False) -> None:
             print(f'审计失败: {issues}')
             return
 
+        # [D: 宪法풍제심사 2026-10-10 苏摩111] Groq 발행 전 위반 차단 + 품질 강화
+        try:
+            import sys as _sauto; _sauto.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
+            from free_llm_client import chat as _gc_auto
+            # 위반 검사
+            _chk = _gc_auto(
+                f'检查以下帖子是否违反交易铁律（禁止：无止损/过度杠杆/虚假信号/夸大收益）。'
+                f'回答格式：PASS或BLOCK:原因\n\n{content[:300]}',
+                max_tokens=30, task='safety', timeout=10
+            )
+            if _chk and 'BLOCK' in _chk.upper():
+                print(f'[square-D] 宪法审查拦截: {_chk.strip()[:60]}')
+                return
+            # 품질 강화
+            _enh = _gc_auto(
+                f'优化以下Binance Square帖子，保留所有数字，语气专业简洁，去掉废话，'
+                f'保留🌿姓赵不宣结尾，输出纯文本：\n\n{content[:600]}',
+                max_tokens=700, task='vip', timeout=25
+            )
+            if _enh and len(_enh) > 100:
+                content = _enh.strip()
+                print(f'[square-D] Groq품질강화완료 ({len(content)}자)')
+        except Exception as _de:
+            print(f'[square-D] Groq스킵: {_de}')
+
         if _is_duplicate(content):
             print('24h内重复，跳过')
             return

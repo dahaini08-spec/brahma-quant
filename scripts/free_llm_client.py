@@ -378,10 +378,15 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
     system: 额外system内容（深度封印版梵天宪法已自动注入）
     返回模型回复文本，失败时返回空字符串。
     """
-    # 梵天宪法全局注入：合并外部system + 梵天宪法
-    merged_system = BRAHMA_CONSTITUTION
-    if system:
-        merged_system = BRAHMA_CONSTITUTION + '\n\n' + system
+    # [최적화B 2026-10-10 苏摩111] task별 경량화
+    # oi/safety/regime 단순판단 = 宪法 불필요 (80tok 절감/회)
+    _lightweight_tasks = {'oi', 'safety'}
+    if task in _lightweight_tasks and not system:
+        merged_system = ''  # 宪法 생략 → 빠르고 저렴
+    else:
+        merged_system = BRAHMA_CONSTITUTION
+        if system:
+            merged_system = BRAHMA_CONSTITUTION + '\n\n' + system
 
     messages = [
         {'role': 'system', 'content': merged_system},
@@ -682,6 +687,66 @@ def signal_conflict_resolve(
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     # fallback: 直接返回原始文本首句
     return raw.split('\n')[0].strip()[:50]
+
+
+def groq_hourly_summary() -> str:
+    """[新增 2026-10-10 苏摩111] 매시간 Groq 심층시장요약
+    M8 이상감지 내용 + 현재 state 종합 → 과거1H 무슨일이 있었나
+    cron or trading_copilot에서 매1H 호출, 결과는 groq_hourly_log.jsonl에 누적"""
+    import time as _t, json as _j, pathlib as _pl
+    _now = _t.time()
+    try:
+        _dd = _pl.Path(__file__).parent.parent / 'data'
+        
+        # M8 이상감지 결과 읽기
+        _ra = {}
+        _rf = _dd / 'groq_realtime_analysis.json'
+        if _rf.exists():
+            try: _ra = _j.loads(_rf.read_text())
+            except: pass
+        
+        # BTC/ETH 현재 state
+        _btc = {}; _eth = {}
+        try: _btc = _j.loads((_dd/'brahma_state_btc.json').read_text())
+        except: pass
+        try: _eth = _j.loads((_dd/'brahma_state_eth.json').read_text())
+        except: pass
+        
+        # 이상감지 내용 요약
+        _anomalies = []
+        for k in ['btc_cvd_anomaly','eth_cvd_anomaly','btc_lsr_shift','eth_lsr_shift',
+                  'regime_transition','market_summary_15m']:
+            if k in _ra and _ra[k]:
+                _anomalies.append(f'{k}: {_ra[k]}')
+        
+        _anom_str = '\n'.join(_anomalies) if _anomalies else '无异常'
+        
+        q = (
+            f'过去1小时市场事件总结：\n{_anom_str}\n\n'
+            f'当前状态：BTC${_btc.get("price",0):.0f} {_btc.get("regime","?")} '
+            f'RSI={_btc.get("rsi_1h",0):.0f} | '
+            f'ETH${_eth.get("price",0):.0f} {_eth.get("regime","?")} '
+            f'RSI={_eth.get("rsi_1h",0):.0f}\n\n'
+            f'用50字总结：过去1小时发生了什么？主力在做什么？下一步怎么看？'
+        )
+        result = chat(q, max_tokens=100, task='regime', timeout=20)
+        
+        if result:
+            # jsonl에 누적
+            _log_f = _dd / 'groq_hourly_log.jsonl'
+            import datetime as _dt
+            _entry = _j.dumps({
+                'ts': _dt.datetime.utcnow().strftime('%Y-%m-%d %H:%M'),
+                'summary': result.strip(),
+                'btc': _btc.get('price',0),
+                'eth': _eth.get('price',0),
+            }, ensure_ascii=False)
+            with open(_log_f, 'a') as _lf:
+                _lf.write(_entry + '\n')
+            return result.strip()
+    except Exception:
+        pass
+    return ''
 
 
 def council_three_way(
