@@ -393,8 +393,7 @@ def run_postmortem():
         print(f'[postmortem] 推送失败: {e}', file=sys.stderr)
 
     return out
-
-
+    return results
 
 def _groq_postmortem_lesson(stats: dict) -> str:
     """[新增 2026-10-10 苏摩111] Groq로 오늘 복기 핵심교훈 1문장 추출
@@ -425,7 +424,18 @@ if __name__ == '__main__':
     import signal as _sig
     _sig.signal(_sig.SIGALRM, lambda s, f: sys.exit(1))
     _sig.alarm(55)
-    run_postmortem()
+    results = run_postmortem()
+    # [연결 2026-10-10 苏摩111] Groq 교훈 추출 + push_hub 전송
+    try:
+        if isinstance(results, dict) and results:
+            lesson = _groq_postmortem_lesson(results)
+            if lesson:
+                import sys as _pm; _pm.path.insert(0, str(pathlib.Path(__file__).parent))
+                from push_hub import push_jarvis
+                push_jarvis(f'📚 今日复盘教训\n\n{lesson}', priority='P2', dedup_key='daily_lesson', dedup_ttl=82800)
+                print(f'[postmortem] Groq교훈 추송: {lesson[:50]}')
+    except Exception as _pe:
+        print(f'[postmortem] Groq교훈 실패: {_pe}')
 
 
 # ══ [Dreaming循环 2026-10-03 苏摩111] 复盘结论→MEMORY.md自动更新 ══
