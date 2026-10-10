@@ -136,6 +136,31 @@ _setup_timeout()
 
 BASE = Path(__file__).parent.parent
 
+def check_analysis_staleness(data_file='data/auto_analysis_latest.json', warn_min=30):
+    """
+    P0-③ [2026-10-10 苏摩111] auto_analysis 시효 검사
+    AI가 출력하기 전 반드시 호출. 30분 이상 오래된 경우 경고 추가.
+    반환: (is_stale, age_min, warning_text)
+    """
+    import json as _j, pathlib as _pl, time as _t
+    try:
+        d = _j.loads((_pl.Path(__file__).parent.parent / data_file).read_text())
+        ts = float(d.get('ts', 0))
+        age_min = (_t.time() - ts) / 60
+        if age_min > warn_min:
+            warn = (
+                f'⚠️ [数据时效警告] auto_analysis 已过 {age_min:.0f} 分钟\n'
+                f'当前分析基于 {age_min:.0f} 分钟前的数据快照\n'
+                f'关键实时数据（FR/CVD/LSR）可能已变化\n'
+                f'建议：执行 python3 scripts/brahma_manual_analysis.py --symbols BTC ETH 更新\n'
+            )
+            return True, age_min, warn
+        return False, age_min, ''
+    except Exception as _e:
+        return False, 0, ''
+
+
+
 DATA = BASE / 'data'
 
 # ══════════════════════════════════════════════════════════

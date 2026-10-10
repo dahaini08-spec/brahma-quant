@@ -243,7 +243,8 @@ def check_all() -> list:
         # ══════════════════════════════════════
         if dist <= 0:
             k = f'm7_lsr_hunt_{sym}'
-            if now - state.get(k, 0) > COOLDOWN:
+            # [P0-② 2026-10-10] 猎杀触发冷却5min（极紧急信号）
+            if now - state.get(k, 0) > 300:
                 alerts.append((k,
                     f'🔴 梵天VIP警报 | {sym} 散户猎杀触发！\n\n'
                     f'散户LSR={lsr_v:.1f}% ≥ 门槛{hunt:.0f}%\n'
@@ -256,7 +257,9 @@ def check_all() -> list:
                 ))
         elif dist <= 1.5:
             k = f'm7_lsr_near_{sym}'
-            if now - state.get(k, 0) > COOLDOWN:
+            # [P0-② 2026-10-10 苏摩111] LSR最后1%区间冷却改为5min，防止漏推关键信号
+            _near_cooldown = 300 if dist <= 0.5 else (600 if dist <= 1.0 else COOLDOWN)
+            if now - state.get(k, 0) > _near_cooldown:
                 alerts.append((k,
                     f'⚠️ 梵天VIP预警 | {sym} 猎杀门槛逼近\n\n'
                     f'散户LSR={lsr_v:.1f}% 距{hunt:.0f}%仅差{dist:.1f}%\n'

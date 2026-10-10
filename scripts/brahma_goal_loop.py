@@ -87,6 +87,16 @@ def get_oi_dir(symbol):
     except:
         return 'NEUTRAL'
 
+
+def get_fr_realtime(symbol):
+    """실시간 FR fetch — Goal Loop 트리거 전 철칙② 검증용"""
+    try:
+        d = fetch(f'https://fapi.binance.com/fapi/v1/fundingRate?symbol={symbol}USDT&limit=1')
+        return float(d[0]['fundingRate']) * 100
+    except Exception as e:
+        print(f'[FR ERR] {symbol}: {e}', file=sys.stderr)
+        return 0.0  # 실패 시 0으로 fallback (차단하지 않음)
+
 def eval_condition(condition_str, symbol, price):
     """
     简单条件求值器
@@ -203,24 +213,71 @@ def cmd_check(args):
         met     = eval_condition(g['condition'], sym, price)
 
         if met:
-            g['status'] = 'TRIGGERED'
-            g['triggered_at'] = time.time()
-            g['triggered_price'] = price
-            changed = True
-            msg = (
-                f'🎯 梵天目标达成！[{g["id"]}]\n'
-                f'{sym} {g["direction"]} @ ${price:,.2f}\n\n'
-                f'✅ 触发条件：{g["condition"]}\n\n'
-                f'📌 VIP入场建议：\n'
-                f'  入场区 ${g["entry"]:,.2f}\n'
-                f'  止损   ${g["sl"]:,.2f}\n'
-                f'  目标   ${g["tp1"]:,.2f}\n'
-                f'  RR = {abs(g["tp1"]-g["entry"])/abs(g["entry"]-g["sl"]):.1f}\n\n'
-                f'备注：{g.get("note","")}\n'
-                f'🌿 姓赵不宣 | 不是建议'
-            )
-            push(msg)
-            print(f'[TRIGGERED] {g["id"]} {sym} @ ${price:,.2f}')
+            # [P0-① 漏洞修复 2026-10-10 苏摩111] 触发前实时验证铁律②+CVD
+            _fr_now  = get_fr_realtime(sym)
+            _cvd_now = get_cvd(sym)
+            _dir     = g.get('direction', 'LONG').upper()
+
+            # 铁律②：FR>+0.003% 禁止做多入场
+            if _dir == 'LONG' and _fr_now > 0.003:
+                g['status'] = 'BLOCKED_FR'
+                g['blocked_at'] = time.time()
+                g['blocked_fr'] = _fr_now
+                changed = True
+                msg = (
+                    f'⚠️ 梵天目标价位到达但被铁律封锁 [{g["id"]}]\n'
+                    f'{sym} {_dir} @ ${price:,.2f}\n\n'
+                    f'🚫 FR铁律②封锁：FR={_fr_now:+.4f}%>+0.003%\n'
+                    f'价格已到达目标区，但多头拥挤清洗未完成\n\n'
+                    f'📌 处理：目标暂挂起（BLOCKED），不作废\n'
+                    f'等FR回落<+0.003%后自动重新激活\n\n'
+                    f'🌿 姓赵不宣 | 不是建议'
+                )
+                push(msg)
+                print(f'[BLOCKED_FR] {g["id"]} {sym} FR={_fr_now:+.4f}%')
+
+            # CVD极端卖方（<-1500）禁止做多入场
+            elif _dir == 'LONG' and _cvd_now < -1500:
+                g['status'] = 'BLOCKED_CVD'
+                g['blocked_at'] = time.time()
+                g['blocked_cvd'] = _cvd_now
+                changed = True
+                msg = (
+                    f'⚠️ 梵天目标价位到达但CVD封锁 [{g["id"]}]\n'
+                    f'{sym} {_dir} @ ${price:,.2f}\n\n'
+                    f'🚫 CVD极端卖方：CVD={_cvd_now:.0f}<-1500\n'
+                    f'卖方主导明显，接多有接刀风险\n\n'
+                    f'📌 处理：目标暂挂起，等CVD>0再激活\n\n'
+                    f'🌿 姓赵不宣 | 不是建议'
+                )
+                push(msg)
+                print(f'[BLOCKED_CVD] {g["id"]} {sym} CVD={_cvd_now:.0f}')
+
+            else:
+                # 所有铁律通过 → 正常触发
+                g['status'] = 'TRIGGERED'
+                g['triggered_at'] = time.time()
+                g['triggered_price'] = price
+                g['triggered_fr'] = _fr_now
+                g['triggered_cvd'] = _cvd_now
+                changed = True
+                _rr = abs(g["tp1"]-g["entry"])/abs(g["entry"]-g["sl"]) if abs(g["entry"]-g["sl"])>0 else 0
+                msg = (
+                    f'🎯 梵天目标达成！[{g["id"]}]\n'
+                    f'{sym} {_dir} @ ${price:,.2f}\n\n'
+                    f'✅ 触发条件：{g["condition"]}\n'
+                    f'✅ 铁律②通过：FR={_fr_now:+.4f}%\n'
+                    f'✅ CVD通过：{_cvd_now:+.0f}\n\n'
+                    f'📌 VIP入场建议：\n'
+                    f'  入场区 ${g["entry"]:,.2f}\n'
+                    f'  止损   ${g["sl"]:,.2f}\n'
+                    f'  目标   ${g["tp1"]:,.2f}\n'
+                    f'  RR = {_rr:.1f}\n\n'
+                    f'备注：{g.get("note","")}\n'
+                    f'🌿 姓赵不宣 | 不是建议'
+                )
+                push(msg)
+                print(f'[TRIGGERED] {g["id"]} {sym} @ ${price:,.2f} FR={_fr_now:+.4f}% CVD={_cvd_now:.0f}')
 
         elif invalid:
             g['status'] = 'INVALID'
@@ -255,6 +312,26 @@ def cmd_check(args):
         else:
             dist = abs(price - g['entry']) / price * 100
             print(f'[WATCHING] {g["id"]} {sym} ${price:,.2f} 距入场{dist:.2f}%')
+
+    # [P0-① 추가] BLOCKED 목표 재활성화 체크 (FR 내려가면 WATCHING으로 복귀)
+    for g in goals:
+        if g['status'] in ('BLOCKED_FR', 'BLOCKED_CVD'):
+            sym = g['symbol']
+            _fr = get_fr_realtime(sym)
+            _cvd = get_cvd(sym)
+            _dir = g.get('direction','LONG').upper()
+            if _dir == 'LONG' and _fr <= 0.003 and _cvd > -1500:
+                g['status'] = 'WATCHING'
+                changed = True
+                push(
+                    f'✅ 梵天目标重新激活 [{g["id"]}]\n'
+                    f'{sym} {_dir}\n'
+                    f'FR已回落至{_fr:+.4f}% ≤ +0.003%\n'
+                    f'CVD={_cvd:.0f}（卖压解除）\n'
+                    f'目标重新进入守候状态\n\n'
+                    f'🌿 姓赵不宣 | 不是建议'
+                )
+                print(f'[REACTIVATED] {g["id"]} {sym}')
 
     if changed:
         save_goals(goals)
