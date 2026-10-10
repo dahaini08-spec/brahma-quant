@@ -680,6 +680,15 @@ def m8_groq_smart_layer(state: dict) -> None:
         _eoi  = str(eth.get('oi_direction', 'NEUTRAL'))
         _br   = str(btc.get('regime', 'CHOP_MID'))
         _er   = str(eth.get('regime', 'CHOP_MID'))
+        # [P0 2026-10-10 苏摩111] 별칭 필드 활용
+        _bscore = float(btc.get('score', 0) or 0)
+        _escore = float(eth.get('score', 0) or 0)
+        _bliq_l = float(btc.get('liq_nearest_long', 0) or 0)
+        _bliq_s = float(btc.get('liq_nearest_short', 0) or 0)
+        _eliq_l = float(eth.get('liq_nearest_long', 0) or 0)
+        _eliq_s = float(eth.get('liq_nearest_short', 0) or 0)
+        _bstep11 = str(btc.get('step11_verdict', 'WAIT'))
+        _estep11 = str(eth.get('step11_verdict', 'WAIT'))
 
         # 이전 값 로드
         _out_f = _dd / 'groq_realtime_analysis.json'

@@ -677,9 +677,8 @@ _LIGHT_FIELDS = ['price', 'regime', 'rsi_1h', 'cvd_1h', 'lsr_retail',
                   'hurst', 'oi_direction', 'fr', 'atr_1h', 'gex_zero_flip']
 
 def _write_light_state():
-    """[新增 2026-10-10 苏摩111] M8용 경량 brahma_state 뷰
-    100필드(18KB) → 10필드(~500B) = 18x IO 절감
-    trading_copilot M8이 이 파일을 우선 읽도록 설계"""
+    """[New 2026-10-10 苏摩111] M8용 경량 뷰 + P0 별칭 필드 주입
+    100필드(18KB) → 12필드(~500B) = 18x IO 절감"""
     import json as _jl, pathlib as _pll
     _dd = _pll.Path(__file__).parent.parent / 'data'
     for sym in ['btc', 'eth']:
@@ -691,6 +690,28 @@ def _write_light_state():
             light = {k: full.get(k) for k in _LIGHT_FIELDS if k in full}
             light['symbol'] = sym.upper()
             light['ts'] = full.get('price_ts', 0)
+
+            # [P0 2026-10-10 苏摩111] 필수 별칭 필드 주입
+            # score: confluence.score 최상위 복사
+            _conf = full.get('confluence', {})
+            light['score'] = _conf.get('score', 0) if isinstance(_conf, dict) else 0
+
+            # step11_verdict: Step11 최종 판결
+            light['step11_verdict'] = full.get('step11_verdict',
+                full.get('step11_gates', {}).get('verdict', 'WAIT') if isinstance(full.get('step11_gates'), dict) else 'WAIT'
+            )
+
+            # signal_dir: 현재 신호 방향
+            light['signal_dir'] = full.get('signal_dir', full.get('direction', 'WAIT'))
+
+            # liq 별칭: 실제 필드명 사용
+            light['liq_nearest_long']  = full.get('liq_long',  full.get('liq_long2', 0))
+            light['liq_nearest_short'] = full.get('liq_short', full.get('liq_short2', 0))
+
+            # fvg 가격 별칭: 실제 magnet 사용
+            light['fvg_bull_price'] = full.get('fvg_1h_magnet', full.get('fvg_magnet', 0)) if full.get('fvg_consensus') == 'BULL' else 0
+            light['fvg_bear_price'] = full.get('fvg_1h_magnet', full.get('fvg_magnet', 0)) if full.get('fvg_consensus') == 'BEAR' else 0
+
             (_dd / f'brahma_state_light_{sym}.json').write_text(
                 _jl.dumps(light, ensure_ascii=False)
             )
