@@ -407,15 +407,20 @@ def format_full_report(sym: str, d: dict) -> str:
         _key = f'{_regime_for_wr.upper()}:{signal_dir.upper()}'
         wr_est = _BACKTEST_WR.get(_key, 0.45)  # 체제별회귀WR fallback
         try:
-            import json as _j, pathlib as _pl
-            _wrf = _pl.Path(__file__).parent.parent / 'data' / 'wr_matrix.json'
-            if _wrf.exists():
-                _wrd = _j.loads(_wrf.read_text())
-                _mat = _wrd.get('matrix', {})
-                if _key in _mat and _mat[_key].get('total', 0) >= 8:
-                    _real_wr = float(_mat[_key].get('wr', 0))
-                    if _real_wr > 0:  # 실제WR이 0이 아닐 때만 사용
-                        wr_est = _real_wr
+            import json as _j, pathlib as _pl, time as _t
+            # [성능최적화 2026-10-10 苏摩111] 모듈수준 캐시 60초
+            global _WR_CACHE, _WR_CACHE_TS
+            _now = _t.time()
+            if not hasattr(_j, '_wr_cache_ts') or _now - globals().get('_WR_CACHE_TS', 0) > 60:
+                _wrf = _pl.Path(__file__).parent.parent / 'data' / 'wr_matrix.json'
+                if _wrf.exists():
+                    globals()['_WR_CACHE'] = _j.loads(_wrf.read_text()).get('matrix', {})
+                    globals()['_WR_CACHE_TS'] = _now
+            _mat = globals().get('_WR_CACHE', {})
+            if _key in _mat and _mat[_key].get('total', 0) >= 8:
+                _real_wr = float(_mat[_key].get('wr', 0))
+                if _real_wr > 0:
+                    wr_est = _real_wr
         except Exception:
             pass
         ev_val  = reward * wr_est - risk * (1 - wr_est)
