@@ -604,7 +604,7 @@ def m8_groq_smart_layer(state: dict) -> None:
         _prev = {}
         if _out_f.exists():
             try: _prev = _j.loads(_out_f.read_text())
-            except: pass
+            except Exception as _e607: print(f'[M3] 이전결과로드실패: {_e607}', file=__import__('sys').stderr)
 
         results = {}
         _calls_made = 0

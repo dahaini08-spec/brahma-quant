@@ -391,17 +391,31 @@ def format_full_report(sym: str, d: dict) -> str:
         _e_mid  = (entry_lo + entry_hi) / 2 if entry_lo > 0 else entry_hi
         reward  = abs(_e_mid - tp1)
         risk    = abs(sl - _e_mid)
-        # 从WR矩阵读取实际WR
-        wr_est  = 0.45  # 默认保守值
+        # [架构师方案 2026-10-10 苏摩111] WR矩阵体制别回归테스트fallback
+        # 优先级: 실제WR(n>=8) > 체제별회귀WR > 보수적기본값0.45
+        _BACKTEST_WR = {
+            'BULL_TREND:LONG':    0.560,
+            'BULL_TREND:SHORT':   0.441,
+            'BEAR_TREND:SHORT':   0.559,
+            'BEAR_TREND:LONG':    0.441,
+            'BEAR_RECOVERY:LONG': 0.612,
+            'BEAR_EARLY:SHORT':   0.531,
+            'CHOP_MID:LONG':      0.450,  # 회귀테스트 무의미→보수적값
+            'CHOP_MID:SHORT':     0.450,
+        }
+        _regime_for_wr = str(d.get('regime', 'CHOP_MID'))  # [P0修复 2026-10-10] regime 미정의 버그수정
+        _key = f'{_regime_for_wr.upper()}:{signal_dir.upper()}'
+        wr_est = _BACKTEST_WR.get(_key, 0.45)  # 체제별회귀WR fallback
         try:
             import json as _j, pathlib as _pl
             _wrf = _pl.Path(__file__).parent.parent / 'data' / 'wr_matrix.json'
             if _wrf.exists():
                 _wrd = _j.loads(_wrf.read_text())
                 _mat = _wrd.get('matrix', {})
-                _key = f'{regime.upper()}:{signal_dir.upper()}'
                 if _key in _mat and _mat[_key].get('total', 0) >= 8:
-                    wr_est = float(_mat[_key].get('wr', 0.45))
+                    _real_wr = float(_mat[_key].get('wr', 0))
+                    if _real_wr > 0:  # 실제WR이 0이 아닐 때만 사용
+                        wr_est = _real_wr
         except Exception:
             pass
         ev_val  = reward * wr_est - risk * (1 - wr_est)
