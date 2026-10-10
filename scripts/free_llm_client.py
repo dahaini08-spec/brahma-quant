@@ -67,6 +67,56 @@ def _load_chutes_key() -> str:
 
 CHUTES_KEY = _load_chutes_key()
 
+# ── [Groq 완전무료 통합 2026-10-10 苏摩111] ──────────────────────────────
+# 우선순위 최상위: Groq → Chutes → OpenRouter → 主AI
+# 모델: qwen/qwen3.8-27b (중문 네이티브, ctx=131K)
+# 무료: 일 14400회 (梵天 33회/日 = 432일분 여유)
+GROQ_BASE_URL = 'https://api.groq.com/openai/v1/chat/completions'
+
+def _load_groq_key() -> str:
+    for _ep in [Path(__file__).parent.parent / 'alerts' / '.env',
+                Path(__file__).parent.parent / '.env']:
+        if _ep.exists():
+            for _ln in _ep.read_text().splitlines():
+                if _ln.startswith('GROQ_API_KEY='):
+                    return _ln.split('=',1)[1].strip()
+    return os.environ.get('GROQ_API_KEY', '')
+
+GROQ_KEY = _load_groq_key()
+
+GROQ_TASK_MODEL_MAP = {
+    'council': 'qwen/qwen3.8-27b', 'vip': 'qwen/qwen3.8-27b',
+    'oi': 'qwen/qwen3.8-27b',      'regime': 'qwen/qwen3.8-27b',
+    'wr_audit': 'qwen/qwen3.8-27b','review': 'qwen/qwen3.8-27b',
+    'hcme': 'openai/gpt-oss-120b', 'chop': 'qwen/qwen3.8-27b',
+    'safety': 'qwen/qwen3.8-27b',  'default': 'qwen/qwen3.8-27b',
+}
+_groq_backoff_until = 0.0
+
+def _groq_chat(messages: list, max_tokens: int, timeout: int, task: str) -> str:
+    """Groq 완전무료 채널. 성공시 content, 실패시 '' 반환"""
+    global _groq_backoff_until
+    if not GROQ_KEY or time.time() < _groq_backoff_until:
+        return ''
+    model = GROQ_TASK_MODEL_MAP.get(task, 'qwen/qwen3.8-27b')
+    try:
+        payload = json.dumps({'model': model, 'messages': messages,
+                              'max_tokens': max_tokens, 'temperature': 0.2}).encode()
+        req = urllib.request.Request(GROQ_BASE_URL, data=payload,
+            headers={'Authorization': f'Bearer {GROQ_KEY}',
+                     'Content-Type': 'application/json'})
+        resp = json.loads(urllib.request.urlopen(req, timeout=min(timeout,20), context=_ctx).read())
+        content = ((resp.get('choices') or [{}])[0].get('message') or {}).get('content','')
+        return (content or '').strip()
+    except urllib.error.HTTPError as e:
+        if e.code == 429:
+            _groq_backoff_until = time.time() + 300
+            print('[groq] 429 backoff 5min', file=sys.stderr)
+        return ''
+    except Exception:
+        return ''
+
+
 # Chutes模型路由表（中文最优选择）
 # [封印 2026-10-06 苏摩111] Chutes全量放开——14个SOTA模型全部免费，按任务最优分配
 # 全部14模型确认免费（pricing.input=0, pricing.output=0）
@@ -340,6 +390,11 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
     # [主AI failover] 免费池key缺失 → 主AI直接接管
     if not API_KEY and not CHUTES_KEY:
         return _master_chat(messages, max_tokens, timeout)
+
+    # ── [Groq 우선 2026-10-10 苏摩111] 완전무료 최우선 ──────────────────────
+    _groq_r = _groq_chat(messages, max_tokens, timeout, task)
+    if _groq_r:
+        return _groq_r
 
     # ── [双轨 2026-10-06] Chutes优先：有key且未退避 ──────────────────────
     global _chutes_backoff_until
