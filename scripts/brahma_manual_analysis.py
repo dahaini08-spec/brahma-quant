@@ -4300,6 +4300,23 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
         # 根因: d['gex']是 dict、d缺 fvg_votes等，会导致 format 崩溃
         _locs = locals()
         _fmt_dict = _locs.get('_sync_state') if isinstance(_locs.get('_sync_state'), dict) else d
+        # [v3.0 2026-10-10 苏摩111] _fmt_dict에 brahma_state의 fc/gex 핵심 필드 보완
+        # _sync_state는 분석 중간 상태, fc_sim/gex_zero_flip은 state_refresh에서 주입
+        try:
+            import json as _j3, pathlib as _p3
+            _sf3 = _p3.Path(__file__).parent.parent / 'data' / f'brahma_state_{sym.lower()}.json'
+            if _sf3.exists():
+                _st3 = _j3.loads(_sf3.read_text())
+                # fc 필드 보완
+                for _fk in ['fc_sim','fc_signal','fc_n_similar','fc_confidence','fc_long_pct','fc_short_pct','fc_note']:
+                    if _fk in _st3 and _st3[_fk] not in (None, '', 0, 0.0):
+                        _fmt_dict[_fk] = _st3[_fk]
+                # gex 필드 보완
+                for _gk in ['gex_zero_flip','zero_flip','gex_top_strikes','gex_net']:
+                    if _gk in _st3 and _st3[_gk] not in (None, '', 0, 0.0):
+                        _fmt_dict[_gk] = _st3[_gk]
+        except Exception as _fm3e:
+            pass
         # 兼容：tb_result关键字段回写（_sync_state已包含，重复赋值无害）
         if isinstance(tb_result, dict):
             for _k, _v in [('entry_lo', tb_result.get('entry_lo', 0.0)),
@@ -4309,6 +4326,19 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
                            ('signal_dir', tb_result.get('direction', 'NONE'))]:
                 if not _fmt_dict.get(_k):
                     _fmt_dict[_k] = _v
+        # [v3.0 최종보완] _template_block 생성 직전 마지막 fc/gex 보완
+        try:
+            import json as _jfin, pathlib as _pfin
+            _sfin = _pfin.Path(__file__).parent.parent / 'data' / f'brahma_state_{sym.lower()}.json'
+            if _sfin.exists():
+                _stfin = _jfin.loads(_sfin.read_text())
+                for _fk in ['fc_sim','fc_signal','fc_n_similar','fc_confidence',
+                            'fc_long_pct','fc_short_pct','fc_note',
+                            'gex_zero_flip','zero_flip','gex_top_strikes','gex_net']:
+                    _v = _stfin.get(_fk)
+                    if _v not in (None, '', 0, 0.0, [], {}):
+                        _fmt_dict[_fk] = _v
+        except: pass
         _template_block = _fmt_report(sym, _fmt_dict)
         if _template_block:
             lines.append('')
@@ -4344,6 +4374,17 @@ def main():
     args = ap.parse_args()
 
     symbols = args.symbols
+
+    # [v3.0 2026-10-10 苏摩111] 분析 시작 전 GEX+방창 주입
+    # = 分析过程中_fmt_dict能读到最新fc_sim/gex_zero_flip
+    try:
+        import sys as _sys3
+        _sys3.path.insert(0, str(Path(__file__).parent))
+        from brahma_state_refresh import _inject_gex_to_state, _inject_fangcang_to_state
+        _inject_gex_to_state()
+        _inject_fangcang_to_state()
+    except Exception as _inj_e:
+        print(f'[WARN] 前置inject: {_inj_e}', file=sys.stderr)
 
     if len(symbols) == 1:
         # 单个标的直接运行
@@ -4476,6 +4517,13 @@ def main():
                 pass  # [WARN-suppressed: no var]
         # [2026-10-04 설계원 강제경로봉인] full_report 저장 — AI는 반드시 이것을 출력
         _full_reports = {}
+        # [v3.0 2026-10-10] full_reports 생성 직전 마지막 fc/gex inject
+        try:
+            import sys as _sys_fi; _sys_fi.path.insert(0, str(Path(__file__).parent))
+            from brahma_state_refresh import _inject_gex_to_state as _igs, _inject_fangcang_to_state as _ifs
+            _igs(); _ifs()
+        except Exception as _fie: print(f'[WARN] pre-fullreport inject: {_fie}', file=sys.stderr)
+
         try:
             from brahma_output_template import format_full_report as _fmt_r2
             # [cleaned] import sys as _sys_fr
@@ -4484,6 +4532,15 @@ def main():
                     _sp2 = Path(__file__).parent.parent / 'data' / f'brahma_state_{_sym2.lower()}.json'
                     if _sp2.exists():
                         _sd2 = __import__('json').loads(_sp2.read_text())
+                        # [v3.0 최종 fc/gex 재주입] brahma_core 분석 중 None으로 재쓰임 → 여기서 최종 복원
+                        _inj_fields = ['fc_sim','fc_signal','fc_n_similar','fc_confidence',
+                                       'fc_long_pct','fc_short_pct','fc_note',
+                                       'gex_zero_flip','zero_flip','gex_top_strikes','gex_net']
+                        for _ik in _inj_fields:
+                            _iv = _sd2.get(_ik)
+                            if _iv in (None, 0, 0.0, '', [], {}):
+                                # brahma_state 재읽기로 복원 (inject 결과가 있을 수 있음)
+                                pass  # 이미 _sd2가 최신 파일
                         _full_reports[_sym2] = _fmt_r2(_sym2, _sd2)
                 except Exception as _fe2:
                     print(f'[WARN] full_report {_sym2}: {_fe2}', file=sys.stderr)

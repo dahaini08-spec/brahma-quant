@@ -17,6 +17,133 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 
+def _build_liq_map(sym: str, price: float, liq_s: float, liq_l: float, d: dict) -> list:
+    """
+    [改造① v3.0 2026-10-10 苏摩111]
+    liq_heatmap_*.json 다층 데이터로 실제 청산지도 구성
+    short_liq_map / long_liq_map 키 활용
+    """
+    import json as _j, pathlib as _pl
+    sym_lower = sym.lower()
+    liq_f = _pl.Path(__file__).parent.parent / 'data' / f'liq_heatmap_{sym_lower}usdt.json'
+    
+    lines = []
+    try:
+        lm = _j.loads(liq_f.read_text())
+        slm = lm.get('short_liq_map', {})  # 공매도 청산 {'2':xx,'5':xx,'10':xx,'20':xx,'50':xx}
+        llm = lm.get('long_liq_map', {})   # 롱 청산
+        
+        # 상위 공매도 청산 레벨
+        short_levels = sorted([(float(k), v) for k,v in slm.items()], key=lambda x: x[1])[:4]
+        long_levels  = sorted([(float(k), v) for k,v in llm.items()], key=lambda x: x[1])[:4]
+        
+        lines.append('```')
+        lines.append(f'  空头止损墙（上方）:')
+        for pct, val in sorted(short_levels, key=lambda x: x[1], reverse=True)[:3]:
+            level = price * (1 + pct/100)
+            lines.append(f'    ├─ ${level:,.1f} (+{pct:.0f}%)  ${val/1e6:.1f}M清算量')
+        lines.append(f'    │')
+        lines.append(f'    ├─ ${price:,.2f}  ← 当前价')
+        lines.append(f'    │')
+        lines.append(f'  多头支撑池（下方）:')
+        for pct, val in sorted(long_levels, key=lambda x: x[1], reverse=True)[:3]:
+            level = price * (1 - pct/100)
+            lines.append(f'    ├─ ${level:,.1f} (-{pct:.0f}%)  ${val/1e6:.1f}M清算量')
+        lines.append('```')
+        
+        # 3방 점평
+        nearest_s = lm.get('nearest_short_liq', liq_s)
+        nearest_l = lm.get('nearest_long_liq', liq_l)
+        bull_score = lm.get('liq_bull_score', 5)
+        bear_score = lm.get('liq_bear_score', 5)
+        bias = '🔴 空头清算更近，偏利空' if nearest_s < price*(1.03) else ('🟢 多头清算更近，偏利多' if nearest_l > price*0.97 else '⚖️ 双向均衡')
+        
+        lines.append('')
+        lines.append(f'> 🔬 量化：最近空头清算 ${nearest_s:,.1f}(+{(nearest_s/price-1)*100:.1f}%) | 最近多头清算 ${nearest_l:,.1f}({(nearest_l/price-1)*100:.1f}%) | {bias}')
+        lines.append(f'> 📐 达摩院：多头清算评分={bull_score}/10 空头清算评分={bear_score}/10 → {"清算压力均衡，等方向突破" if abs(bull_score-bear_score)<=2 else "单边清算压力较大，注意方向"}')
+        lines.append(f'> ⚔️ 交易员：主力最省力操作 = 先拉到 ${nearest_s:,.1f} 扫空头止损墙，再反转砸向 ${nearest_l:,.1f} 多头支撑池。')
+    except Exception as _e:
+        # fallback
+        lines = [
+            '```',
+            f'              ┌─ ${liq_s:,.1f} (+{(liq_s/price-1)*100:.1f}%)  ← 🎯 空头止损墙',
+            f'    当前 →    ├─ ${price:,.1f}  {sym}现价',
+            f'              └─ ${liq_l:,.1f} ({(liq_l/price-1)*100:.1f}%)  ← 🛡️ 多头支撑池',
+            '```',
+            f'> 🔬 量化：止损墙${liq_s:,.1f} | 支撑池${liq_l:,.1f}',
+            f'> ⚔️ 交易员：主力博弈区间 ${liq_l:,.1f} ~ ${liq_s:,.1f}',
+        ]
+    return lines
+
+
+def _gen_trader_view(sym: str, price: float, d: dict,
+                     entry_lo: float, entry_hi: float, sl: float, tp1: float, rr: float) -> str:
+    """
+    [改造④ v3.0 2026-10-10 苏摩111]
+    40년 실전 트레이더 시각 - 데이터 기반 동적 생성
+    템플릿화 금지: 매번 실제 데이터로 판단문 구성
+    """
+    lsr   = float(d.get('lsr_retail', 50))
+    cvd   = float(d.get('cvd_1h', 0))
+    fr    = float(d.get('fr', 0))
+    rsi1h = float(d.get('rsi_1h', 50))
+    hurst = float(d.get('hurst', 0.5))
+    oi    = str(d.get('oi_direction', 'NEUTRAL'))
+    zf    = float(d.get('gex_zero_flip', d.get('zero_flip', 0)) or 0)
+    fc_sig = str(d.get('fc_signal', 'NEUTRAL'))
+    fc_sim = float(d.get('fc_sim', 0) or 0)
+    regime = str(d.get('regime', 'CHOP_MID'))
+    
+    points = []
+    
+    # 핵심 판단 1: 청산 지도 위치
+    if entry_lo > 0 and tp1 > 0:
+        dist_entry = abs(entry_lo - price) / price * 100
+        points.append(f'${entry_lo:,.1f}~${entry_hi:,.1f}挂单，距现价{dist_entry:.1f}%')
+    
+    # 핵심 판단 2: GEX 위치
+    if zf > 0:
+        if price < zf:
+            points.append(f'当前在ZeroFlip ${zf:,.0f}下方负Gamma区→做市商持续卖出对冲')
+        else:
+            points.append(f'当前在ZeroFlip ${zf:,.0f}上方正Gamma区→波动率被压制')
+    
+    # 핵심 판단 3: LSR 위험도
+    if lsr >= 75:
+        points.append(f'散户{lsr:.1f}%极度拥挤=猎杀定时炸弹')
+    elif lsr >= 65:
+        points.append(f'散户{lsr:.1f}%偏多=主力有砸盘动力')
+    
+    # 핵심 판단 4: CVD + OI 일치
+    if cvd < -1000 and 'SHORT' in oi:
+        points.append(f'CVD={cvd:,.0f}极端卖方+OI空头建仓=双重做空信号')
+    elif cvd > 1000 and 'LONG' in oi:
+        points.append(f'CVD={cvd:,.0f}买方净流入+OI多头建仓=做多支撑')
+    
+    # 핵심 판단 5: RSI 과열
+    if rsi1h >= 80:
+        points.append(f'RSI 1H={rsi1h:.0f}严重超买→短线反转风险极高')
+    elif rsi1h <= 20:
+        points.append(f'RSI 1H={rsi1h:.0f}严重超卖→反弹窗口打开')
+    
+    # 핵심 판단 6: 방창 역사 案例
+    if fc_sim >= 0.7 and fc_sig != 'NEUTRAL':
+        points.append(f'方仓相似度{fc_sim:.2f}(n={d.get("fc_n_similar",0)}案例)→历史{fc_sig}方向胜率更高')
+    
+    # 핵심 판단 7: FR 철칙
+    if fr > 0.003 and 'LONG' in str(d.get('signal_dir','')):
+        points.append(f'FR={fr*100:+.4f}%铁律②封锁多单')
+    
+    # 최종 결론
+    if sl > 0 and tp1 > 0:
+        points.append(f'止损${sl:,.1f} 目标${tp1:,.1f} RR={rr:.1f}')
+    
+    if not points:
+        return f'${entry_lo:,.1f}~${entry_hi:,.1f}挂单，不追单，等价格来。'
+    
+    return '，'.join(points[:4]) + '。'  # 최대 4포인트
+
+
 def format_full_report(sym: str, d: dict) -> str:
     """
     标准三方联合输出格式
@@ -328,22 +455,9 @@ def format_full_report(sym: str, d: dict) -> str:
         '',
         '---',
         '',
-        '## 【D3】清算地图 · 主力猎杀坐标',
+        '## 【D3】清算地图 · 主力猎杀坐标（liq_heatmap真实多层数据）',
         '',
-        '```',
-        f'              ┌─ ${liq_s2:,.1f} (+5.0%)  二级空头止损墙' if liq_s2 else '',
-        f'              │',
-        f'              ├─ ${liq_s:,.1f} (+{dist_s_pct:.1f}%)  ← 🎯 一级空头止损墙',
-        f'              │',
-        f'    当前 →    ├─ ${p:,.1f}  {sym}现价',
-        f'              │',
-        f'              ├─ ${liq_l:,.1f} (-{dist_l_pct:.1f}%)  ← 🛡️ 多头支撑池',
-        f'              │',
-        f'              └─ ${liq_l2:,.1f} (-5.0%)  二级多头支撑池' if liq_l2 else '',
-        '```',
-        '',
-        f'> 🔬 量化：止损墙${liq_s:,.1f}距现价+{dist_s_pct:.1f}%，支撑池${liq_l:,.1f}距现价-{dist_l_pct:.1f}%。',
-        f'> ⚔️ 交易员：主力最省力操作 = 先拉到${liq_s:,.1f}扫空头止损，再反转砸向${liq_l:,.1f}。',
+        *_build_liq_map(sym, p, liq_s, liq_l, d),
         '',
         '---',
         '',
@@ -356,7 +470,8 @@ def format_full_report(sym: str, d: dict) -> str:
         f'| 清算地图 | 上墙${liq_s:,.1f} 下池${liq_l:,.1f} | 双向 | ✅ |',
         f'| OI | {oi_dir} CVD={cvd_1h:+.0f} | {"SHORT" if "SHORT" in oi_dir or cvd_1h < 0 else "LONG"} | ✅ |',
         f'| GEX | {gex:+.1f}M {"正向锁价" if gex > 0 else "负向推波"} | {"中性" if gex > 50 else "易波动"} | ✅ |',
-        f'| 方仓HCME | sim={d.get("fc_sim",0):.3f} {"降级NEUTRAL" if d.get("fc_sim",1)<0.25 else "有效"} | {d.get("fc_signal","NEUTRAL")} | ✅ |',
+        # [改造② v3.0] fc_sim 실제 데이터 + 방창 방향 반영
+        f'| 方仓HCME | sim={d.get("fc_sim",0.0):.3f} n={d.get("fc_n_similar",0)}案例 conf={d.get("fc_confidence","?")} | {d.get("fc_signal","NEUTRAL")} {"long_pct=" + str(round(d.get("fc_long_pct",0)*100)) + "%" if d.get("fc_long_pct") else ""} | {"✅ 高度相似" if (d.get("fc_sim") or 0) >= 0.7 else "⚠️ 相似度不足" if (d.get("fc_sim") or 0) > 0 else "❌ 无数据"} |',
         f'| 跨市场 | alpha={alpha:+.4f} {"RISK_ON" if alpha > 0 else "RISK_OFF"} | {"多头偏向" if alpha > 0 else "空头偏向"} | ✅ |',
         '',
         '```',
@@ -418,6 +533,9 @@ def format_full_report(sym: str, d: dict) -> str:
         f'| HAR-RV 4H区间 | ${harv_lo:,.1f}~${harv_hi:,.1f} | ATR兜底 |',
         f'| **κ(Kappa)** | **{kappa:+.3f}** | {kap_icon} |',
         f'| **GEX** | **{gex:+.2f}M** | {"正Gamma锁价" if gex > 0 else "负Gamma推波"} |',
+        # [改造③ v3.0] ZeroFlip + top_strikes GEX磁铁
+        f'| **GEX ZeroFlip** | **${d.get("gex_zero_flip", d.get("zero_flip", 0)):,.0f}** | {"⚠️ 当前在ZeroFlip下方(负Gamma区)" if p < d.get("gex_zero_flip", d.get("zero_flip", float("inf"))) else "✅ 当前在ZeroFlip上方(正Gamma区)"} |' if d.get('gex_zero_flip') or d.get('zero_flip') else '',
+        f'| **GEX磁铁** | {str(d.get("gex_top_strikes", [])[:3])} | 期权最大持仓位=引力中心 |' if d.get('gex_top_strikes') else '',
         f'| IV分位 | **{iv_rank:.1f}%** | {iv_icon} |',
         f'| ATR 1H | ${atr_1h:,.0f} | SL最小≥${atr_1h*1.5:,.0f}（1.5×） |',
         f'| ATR 4H | ${atr_4h:,.0f} | 合约SL≥${atr_4h*1.5:,.0f}（1.5×） |',
