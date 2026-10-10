@@ -290,7 +290,8 @@ def open_paper_position(signal: dict, positions_data: dict) -> bool:
         _wr_val = None
         _wr_fresh = True
         try:
-            _wrj = _json.load(open('/root/.openclaw/workspace/trading-system/data/wr_matrix_live.json'))
+            with open('/root/.openclaw/workspace/trading-system/data/wr_matrix_live.json') as _wrf:
+                _wrj = _json.load(_wrf)
             _m = _wrj.get('matrix', {})
             _key = f'{regime}:{side}'
             _v = _m.get(_key)

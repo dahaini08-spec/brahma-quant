@@ -81,7 +81,7 @@ def _load_vip_cfg():
                 try:
                     _gex_d = _j.loads((_data_dir/'gex_state.json').read_text())
                     _gex_zf = float(_gex_d.get(_sym,{}).get('zero_flip',0) or _gex_zf)
-                except: pass
+                except Exception as _e2: pass  # gex_state.json 없으면 기본값 사용
                 _fb[_sym] = {
                     'long_entry': (_long_lo, _long_hi),
                     'long_sl': _long_sl, 'long_tp': round(_hl_s, 0),
@@ -550,7 +550,7 @@ def check_all() -> list:
                 f'https://fapi.binance.com/fapi/v1/premiumIndex?symbol={_sym}USDT',
                 timeout=4, context=_ctx).read())
             state[f'{_sym}_fr_prev'] = float(_fr_r.get('lastFundingRate',0))*100
-    except: pass
+    except Exception as _fe: print(f'[M7] FR조회실패: {_fe}', file=__import__('sys').stderr)
     # 保存状态（含cvd_prev/oi_prev更新）
     save_state(state)
     return alerts

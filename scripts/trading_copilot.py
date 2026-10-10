@@ -837,7 +837,7 @@ def main():
             _pid = int(_lf.read_text().strip())
             try: _os.kill(_pid, 0)
             except ProcessLookupError: _lf.unlink(missing_ok=True)
-    except Exception: pass
+    except Exception as _le: print(f'[lock] flock검사오류(무해): {_le}', file=__import__('sys').stderr)
 
     if alerts:
         for sk, msg in alerts:
