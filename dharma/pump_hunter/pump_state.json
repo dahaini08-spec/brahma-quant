@@ -15,64 +15,66 @@
   },
   "BCHUSDT": {
     "tight_start_price": 274.34,
-    "tight_latest_score": 30,
-    "tight_latest_ts": 1788676825.0252328,
+    "tight_latest_score": 69,
+    "tight_latest_ts": 1791648556.1358504,
     "tight_start_ts": 1787532705.2697809,
-    "tight_hours": 317.8110431810882
+    "tight_hours": 1143.2919072415432
   },
   "LTCUSDT": {
     "tight_start_price": 52.29,
-    "tight_latest_score": 50,
-    "tight_latest_ts": 1788676825.1450212,
+    "tight_latest_score": 55,
+    "tight_latest_ts": 1791648556.183983,
     "tight_start_ts": 1787449925.9804852,
-    "tight_hours": 340.80532348222204
+    "tight_hours": 1166.2861676383018
   },
   "TRXUSDT": {
     "tight_start_ts": 1785719190.2459288,
     "tight_start_price": 0.32616,
-    "tight_hours": 821.5652812591526,
-    "tight_latest_score": 68,
-    "tight_latest_ts": 1788676825.2584617
+    "tight_hours": 1647.0461042003499,
+    "tight_latest_score": 88,
+    "tight_latest_ts": 1791648556.22105
   },
   "ETCUSDT": {
     "tight_start_price": 7.727,
-    "tight_latest_score": 40,
-    "tight_latest_ts": 1788676825.373096,
+    "tight_latest_score": 50,
+    "tight_latest_ts": 1791648556.2518694,
     "tight_start_ts": 1787547408.3798559,
-    "tight_hours": 313.72694256669945
+    "tight_hours": 1139.2077422259913
   },
   "LINKUSDT": {
     "tight_start_price": 11.455,
-    "tight_latest_score": 35,
-    "tight_latest_ts": 1788676825.4906948,
+    "tight_latest_score": 50,
+    "tight_latest_ts": 1791648556.2861156,
     "tight_start_ts": 1787547408.5413473,
-    "tight_hours": 313.72693037430446
+    "tight_hours": 1139.207706880106
   },
   "XLMUSDT": {
     "tight_start_price": 0.19443,
-    "tight_latest_score": 35,
-    "tight_latest_ts": 1788676825.6051354,
+    "tight_latest_score": 55,
+    "tight_latest_ts": 1791648556.318804,
     "tight_start_ts": 1787547408.689786,
-    "tight_hours": 313.72692093041206
+    "tight_hours": 1139.2076747272413
   },
   "ADAUSDT": {
     "tight_start_price": 0.2198,
-    "tight_latest_score": 35,
-    "tight_latest_ts": 1788676825.719266,
+    "tight_latest_score": 45,
+    "tight_latest_ts": 1791648556.3508594,
     "tight_start_ts": 1788631831.676067,
-    "tight_hours": 12.498345333006647
+    "tight_hours": 837.9790763311915
   },
   "XMRUSDT": {
     "tight_start_price": 546.26,
-    "tight_latest_score": 55,
-    "tight_latest_ts": 1788676825.8353722,
+    "tight_latest_score": 47,
+    "tight_latest_ts": 1791648556.3840914,
     "tight_start_ts": 1788631831.794809,
-    "tight_hours": 12.498344600862927
+    "tight_hours": 837.9790525784096
   },
   "DASHUSDT": {
-    "tight_start_price": 42.19,
-    "tight_latest_score": 53,
-    "tight_latest_ts": 1788191156.5858345
+    "tight_start_price": 51.32,
+    "tight_latest_score": 61,
+    "tight_latest_ts": 1791648556.4186323,
+    "tight_start_ts": 1791648556.4186323,
+    "tight_hours": 0.0
   },
   "ZECUSDT": {
     "tight_start_ts": 1785719192.4335632,
@@ -83,10 +85,10 @@
   },
   "XTZUSDT": {
     "tight_start_price": 0.2362,
-    "tight_latest_score": 35,
-    "tight_latest_ts": 1788676825.9504097,
+    "tight_latest_score": 50,
+    "tight_latest_ts": 1791648556.45077,
     "tight_start_ts": 1787406599.3701603,
-    "tight_hours": 352.84071673591933
+    "tight_hours": 1178.3214112804333
   },
   "ATOMUSDT": {
     "tight_start_price": 1.569,
@@ -97,10 +99,10 @@
   },
   "IOTAUSDT": {
     "tight_start_price": 0.04526,
-    "tight_latest_score": 30,
-    "tight_latest_ts": 1788676826.3026276,
+    "tight_latest_score": 51,
+    "tight_latest_ts": 1791648556.5155523,
     "tight_start_ts": 1787547409.7533708,
-    "tight_hours": 313.7268192380005
+    "tight_hours": 1139.2074339393112
   },
   "BATUSDT": {
     "tight_start_price": 0.06953,
@@ -111,73 +113,71 @@
   },
   "VETUSDT": {
     "tight_start_price": 0.006792,
-    "tight_latest_score": 40,
-    "tight_latest_ts": 1788676826.5383148,
+    "tight_latest_score": 50,
+    "tight_latest_ts": 1791648556.548411,
     "tight_start_ts": 1788144577.0772676,
-    "tight_hours": 147.84707251310348
+    "tight_hours": 973.3276308731238
   },
   "NEOUSDT": {
     "tight_start_price": 2.106,
-    "tight_latest_score": 40,
-    "tight_latest_ts": 1788676826.652793,
+    "tight_latest_score": 63,
+    "tight_latest_ts": 1791648556.5813427,
     "tight_start_ts": 1787449928.8509002,
-    "tight_hours": 340.8049449702104
+    "tight_hours": 1166.285480678479
   },
   "ALGOUSDT": {
     "tight_start_price": 0.0921,
-    "tight_latest_score": 52,
-    "tight_latest_ts": 1788676826.9033732,
+    "tight_latest_score": 57,
+    "tight_latest_ts": 1791648556.7162907,
     "tight_start_ts": 1787547410.9222457,
-    "tight_hours": 313.7266614243057
+    "tight_hours": 1139.2071650124922
   },
   "ZILUSDT": {
     "tight_start_price": 0.002741,
-    "tight_latest_score": 48,
-    "tight_latest_ts": 1788676827.0419433,
+    "tight_latest_score": 53,
+    "tight_latest_ts": 1791648556.762511,
     "tight_start_ts": 1787547411.074328,
-    "tight_hours": 313.72665767093497
+    "tight_hours": 1139.2071356064082
   },
   "COMPUSDT": {
     "tight_start_ts": 1785719195.5484035,
     "tight_start_price": 16.4,
-    "tight_hours": 821.564335210522,
+    "tight_hours": 1647.0448123131196,
     "tight_latest_score": 35,
-    "tight_latest_ts": 1788676827.1551614
+    "tight_latest_ts": 1791648556.8727307
   },
   "DOGEUSDT": {
     "tight_start_ts": 1785719195.8265593,
     "tight_start_price": 0.07022,
-    "tight_hours": 712.5013409739732,
-    "tight_latest_score": 52,
-    "tight_latest_ts": 1788284200.6540656
+    "tight_hours": 1647.0447459098366,
+    "tight_latest_score": 55,
+    "tight_latest_ts": 1791648556.9118347
   },
   "KAVAUSDT": {
     "tight_start_ts": 1785719195.9915113,
     "tight_start_price": 0.04073,
-    "tight_hours": 821.5642463573482,
-    "tight_latest_score": 35,
-    "tight_latest_ts": 1788676827.2783978
+    "tight_hours": 1647.0447099399566,
+    "tight_latest_score": 50,
+    "tight_latest_ts": 1791648556.9472952
   },
   "BANDUSDT": {
     "tight_start_price": 0.1811,
-    "tight_latest_score": 40,
-    "tight_latest_ts": 1788676827.3975565,
+    "tight_latest_score": 45,
+    "tight_latest_ts": 1791648556.979469,
     "tight_start_ts": 1788223900.3090186,
-    "tight_hours": 125.8130801494254
+    "tight_hours": 951.2935195695692
   },
   "RLCUSDT": {
     "tight_start_price": 0.3205,
     "tight_latest_score": 60,
-    "tight_latest_ts": 1788676827.5101423,
-    "tight_start_ts": 1787406601.3622496,
-    "tight_hours": 352.84059663686486
+    "tight_latest_ts": 1788676827.5101423
   },
   "SNXUSDT": {
     "tight_start_price": 0.225,
-    "tight_latest_score": 45,
-    "tight_latest_ts": 1788676827.6275282,
+    "tight_latest_score": 35,
+    "tight_latest_ts": 1791648557.0504766,
     "tight_start_ts": 1787547412.1656375,
-    "tight_hours": 313.7265171918604
+    "tight_hours": 1139.2069124552938
   },
   "DOTUSDT": {
     "tight_start_price": 0.9092,
@@ -188,62 +188,66 @@
   },
   "YFIUSDT": {
     "tight_start_price": 2303.0,
-    "tight_latest_score": 45,
-    "tight_latest_ts": 1788676827.8642175,
+    "tight_latest_score": 50,
+    "tight_latest_ts": 1791648557.0843763,
     "tight_start_ts": 1787547412.5671566,
-    "tight_hours": 313.72647140582404
+    "tight_hours": 1139.2068103388283
   },
   "CRVUSDT": {
     "tight_start_price": 0.3586,
-    "tight_latest_score": 35,
-    "tight_latest_ts": 1788676827.978479,
+    "tight_latest_score": 61,
+    "tight_latest_ts": 1791648557.1183422,
     "tight_start_ts": 1788525679.2869778,
-    "tight_hours": 41.98574763920572
+    "tight_hours": 867.466064267887
   },
   "TRBUSDT": {
-    "tight_start_price": 18.568,
-    "tight_latest_score": 46,
-    "tight_latest_ts": 1788284201.377328
+    "tight_start_price": 19.23,
+    "tight_latest_score": 55,
+    "tight_latest_ts": 1791648557.1542313,
+    "tight_start_ts": 1791648557.1542313,
+    "tight_hours": 0.0
   },
   "RUNEUSDT": {
     "tight_start_price": 0.4637,
-    "tight_latest_score": 40,
-    "tight_latest_ts": 1788676828.2064793,
+    "tight_latest_score": 56,
+    "tight_latest_ts": 1791648557.1874497,
     "tight_start_ts": 1788144579.8476894,
-    "tight_hours": 147.84676633053357
+    "tight_hours": 973.3270388223066
   },
   "SUSHIUSDT": {
     "tight_start_price": 0.2016,
-    "tight_latest_score": 47,
-    "tight_latest_ts": 1788525679.8092523,
+    "tight_latest_score": 55,
+    "tight_latest_ts": 1791648557.221164,
     "tight_start_ts": 1787547413.1901429,
-    "tight_hours": 271.7407275303867
+    "tight_hours": 1139.206675283644
   },
   "EGLDUSDT": {
     "tight_start_price": 4.56,
-    "tight_latest_score": 55,
-    "tight_latest_ts": 1788676828.3202963,
+    "tight_latest_score": 61,
+    "tight_latest_ts": 1791648557.2572765,
     "tight_start_ts": 1788631834.174523,
-    "tight_hours": 12.498373825881217
+    "tight_hours": 837.9786340981722
   },
   "UNIUSDT": {
-    "tight_start_price": 6.191,
-    "tight_latest_score": 40,
-    "tight_latest_ts": 1788631834.2880487
+    "tight_start_price": 7.565,
+    "tight_latest_score": 58,
+    "tight_latest_ts": 1791648557.2890754,
+    "tight_start_ts": 1791648557.2890754,
+    "tight_hours": 0.0
   },
   "AVAXUSDT": {
     "tight_start_price": 7.484,
-    "tight_latest_score": 35,
-    "tight_latest_ts": 1788676828.553171,
+    "tight_latest_score": 56,
+    "tight_latest_ts": 1791648557.3231337,
     "tight_start_ts": 1787547413.9426973,
-    "tight_hours": 313.7262806871202
+    "tight_hours": 1139.2064945656723
   },
   "KSMUSDT": {
     "tight_start_price": 3.672,
-    "tight_latest_score": 30,
-    "tight_latest_ts": 1788676828.7865582,
+    "tight_latest_score": 52,
+    "tight_latest_ts": 1791648557.4022644,
     "tight_start_ts": 1787547414.2667775,
-    "tight_hours": 313.72625549462106
+    "tight_hours": 1139.2064265241227
   },
   "NEARUSDT": {
     "tight_start_price": 2.0,
@@ -252,22 +256,24 @@
   },
   "AAVEUSDT": {
     "tight_start_price": 129.29,
-    "tight_latest_score": 35,
-    "tight_latest_ts": 1788676829.0261216,
+    "tight_latest_score": 50,
+    "tight_latest_ts": 1791648557.434545,
     "tight_start_ts": 1787653101.845605,
-    "tight_hours": 284.3686612546444
+    "tight_hours": 1109.8487747055954
   },
   "FILUSDT": {
-    "tight_start_price": 0.7788,
-    "tight_latest_score": 61,
-    "tight_latest_ts": 1788631835.001313
+    "tight_start_price": 1.1259,
+    "tight_latest_score": 45,
+    "tight_latest_ts": 1791648557.4687724,
+    "tight_start_ts": 1791648557.4687724,
+    "tight_hours": 0.0
   },
   "RSRUSDT": {
     "tight_start_price": 0.001445,
-    "tight_latest_score": 35,
-    "tight_latest_ts": 1788676829.2508972,
+    "tight_latest_score": 50,
+    "tight_latest_ts": 1791648557.508479,
     "tight_start_ts": 1787547414.729208,
-    "tight_hours": 313.72625602477126
+    "tight_hours": 1139.2063275753128
   },
   "AXSUSDT": {
     "tight_start_price": 0.9836,
@@ -304,10 +310,10 @@
   },
   "CHZUSDT": {
     "tight_start_price": 0.01436,
-    "tight_latest_score": 40,
-    "tight_latest_ts": 1788676829.7184136,
+    "tight_latest_score": 55,
+    "tight_latest_ts": 1791648557.5550146,
     "tight_start_ts": 1787547415.8772447,
-    "tight_hours": 313.7260669913557
+    "tight_hours": 1139.2060216027498
   },
   "SANDUSDT": {
     "tight_start_price": 0.04475,
@@ -360,10 +366,10 @@
   },
   "1000SHIBUSDT": {
     "tight_start_price": 0.00539,
-    "tight_latest_score": 40,
-    "tight_latest_ts": 1788676830.8022926,
+    "tight_latest_score": 57,
+    "tight_latest_ts": 1791648557.6151564,
     "tight_start_ts": 1787547417.7695305,
-    "tight_hours": 313.7258424339029
+    "tight_hours": 1139.2055126738549
   },
   "GTCUSDT": {
     "tight_start_price": 0.08777,
@@ -403,9 +409,9 @@
   "GALAUSDT": {
     "tight_start_price": 0.001941,
     "tight_latest_score": 40,
-    "tight_latest_ts": 1788676831.442275,
+    "tight_latest_ts": 1791648557.6548278,
     "tight_start_ts": 1787547418.8507705,
-    "tight_hours": 313.7257198623816
+    "tight_hours": 1139.2052233492666
   },
   "ARUSDT": {
     "tight_start_price": 2.167,
@@ -413,9 +419,7 @@
     "tight_latest_ts": 1788284206.4395018
   },
   "ARPAUSDT": {
-    "tight_start_ts": 1785719205.9048688,
     "tight_start_price": 0.008423,
-    "tight_hours": 821.5627443388436,
     "tight_latest_score": 40,
     "tight_latest_ts": 1788676831.7844887
   },
@@ -490,10 +494,10 @@
   },
   "INJUSDT": {
     "tight_start_price": 5.283,
-    "tight_latest_score": 53,
-    "tight_latest_ts": 1788676833.6490722,
+    "tight_latest_score": 45,
+    "tight_latest_ts": 1791648557.7352505,
     "tight_start_ts": 1787760293.983259,
-    "tight_hours": 254.5943516147799
+    "tight_hours": 1080.0732644420862
   },
   "STGUSDT": {
     "tight_start_price": 0.1592,
@@ -570,10 +574,10 @@
   },
   "STXUSDT": {
     "tight_start_price": 0.2618,
-    "tight_latest_score": 44,
-    "tight_latest_ts": 1788676835.1869376,
+    "tight_latest_score": 35,
+    "tight_latest_ts": 1791648557.7957942,
     "tight_start_ts": 1787822596.7910318,
-    "tight_hours": 237.2884433071481
+    "tight_hours": 1062.7669457673364
   },
   "ACHUSDT": {
     "tight_start_price": 0.004921,
@@ -666,10 +670,10 @@
   },
   "AGLDUSDT": {
     "tight_start_price": 0.1708,
-    "tight_latest_score": 40,
-    "tight_latest_ts": 1788227515.1661747,
+    "tight_latest_score": 52,
+    "tight_latest_ts": 1791648557.8955076,
     "tight_start_ts": 1787547427.4945457,
-    "tight_hours": 188.91324211915335
+    "tight_hours": 1139.2028891560767
   },
   "YGGUSDT": {
     "tight_start_price": 0.02256,
@@ -680,10 +684,10 @@
   },
   "DODOXUSDT": {
     "tight_start_price": 0.020091,
-    "tight_latest_score": 40,
-    "tight_latest_ts": 1788676837.559286,
+    "tight_latest_score": 50,
+    "tight_latest_ts": 1791648557.915185,
     "tight_start_ts": 1787547427.7990384,
-    "tight_hours": 313.72493340214095
+    "tight_hours": 1139.2028100407124
   },
   "SEIUSDT": {
     "tight_start_price": 0.04701,
@@ -694,10 +698,10 @@
   },
   "RIFUSDT": {
     "tight_start_price": 0.07869,
-    "tight_latest_score": 72,
-    "tight_latest_ts": 1788676838.158144,
+    "tight_latest_score": 40,
+    "tight_latest_ts": 1791648557.9545684,
     "tight_start_ts": 1787547428.7474267,
-    "tight_hours": 313.7248363103469
+    "tight_hours": 1139.2025575393438
   },
   "TIAUSDT": {
     "tight_start_price": 0.3735,
@@ -727,10 +731,10 @@
   },
   "ORDIUSDT": {
     "tight_start_price": 4.095,
-    "tight_latest_score": 40,
-    "tight_latest_ts": 1788676838.7855973,
+    "tight_latest_score": 50,
+    "tight_latest_ts": 1791648557.9953713,
     "tight_start_ts": 1787547429.9781435,
-    "tight_hours": 313.72466873718633
+    "tight_hours": 1139.2022270077466
   },
   "KASUSDT": {
     "tight_start_price": 0.02906,
@@ -748,10 +752,10 @@
   },
   "PYTHUSDT": {
     "tight_start_price": 0.0476,
-    "tight_latest_score": 45,
-    "tight_latest_ts": 1788676839.3287888,
+    "tight_latest_score": 67,
+    "tight_latest_ts": 1791648558.0362043,
     "tight_start_ts": 1787929867.7687652,
-    "tight_hours": 207.49210000654062
+    "tight_hours": 1032.9695187330908
   },
   "JTOUSDT": {
     "tight_start_price": 0.4896,
@@ -893,10 +897,10 @@
   },
   "IOUSDT": {
     "tight_start_price": 0.1388,
-    "tight_latest_score": 30,
-    "tight_latest_ts": 1788676842.936228,
+    "tight_latest_score": 45,
+    "tight_latest_ts": 1791648558.215339,
     "tight_start_ts": 1787449968.245492,
-    "tight_hours": 340.79852520445985
+    "tight_hours": 1166.2749916241567
   },
   "ZKUSDT": {
     "tight_start_price": 0.009303,
@@ -998,9 +1002,11 @@
     "tight_hours": 271.73871017118296
   },
   "MOODENGUSDT": {
-    "tight_start_price": 0.044,
-    "tight_latest_score": 40,
-    "tight_latest_ts": 1788525698.7880647
+    "tight_start_price": 0.04183,
+    "tight_latest_score": 50,
+    "tight_latest_ts": 1791648558.3155792,
+    "tight_start_ts": 1791648558.3155792,
+    "tight_hours": 0.0
   },
   "GRASSUSDT": {
     "tight_start_price": 0.3539,
@@ -1054,9 +1060,7 @@
   "ORCAUSDT": {
     "tight_start_price": 1.23,
     "tight_latest_score": -999,
-    "tight_latest_ts": 1788676846.9579306,
-    "tight_start_ts": 1788269778.7025535,
-    "tight_hours": 113.07451538251506
+    "tight_latest_ts": 1788676846.9579306
   },
   "MOVEUSDT": {
     "tight_start_price": 0.008938,
@@ -1179,9 +1183,11 @@
     "tight_hours": 148.31638364268673
   },
   "TRUMPUSDT": {
-    "tight_start_price": 2.426,
-    "tight_latest_score": 87,
-    "tight_latest_ts": 1788284227.08699
+    "tight_start_price": 1.89,
+    "tight_latest_score": 62,
+    "tight_latest_ts": 1791648558.4551296,
+    "tight_start_ts": 1791648558.4551296,
+    "tight_hours": 0.0
   },
   "MELANIAUSDT": {
     "tight_start_price": 0.10351,
@@ -1310,9 +1316,9 @@
   "PAXGUSDT": {
     "tight_start_ts": 1785719233.37627,
     "tight_start_price": 4057.99,
-    "tight_hours": 821.560846432315,
-    "tight_latest_score": 75,
-    "tight_latest_ts": 1788676852.4234264
+    "tight_hours": 1647.0347775335445,
+    "tight_latest_score": 50,
+    "tight_latest_ts": 1791648558.5753908
   },
   "WALUSDT": {
     "tight_start_price": 0.02304,
@@ -1433,10 +1439,10 @@
   },
   "AUSDT": {
     "tight_start_price": 0.07357,
-    "tight_latest_score": 40,
-    "tight_latest_ts": 1788676854.7830565,
+    "tight_latest_score": 52,
+    "tight_latest_ts": 1791648558.6958473,
     "tight_start_ts": 1787547454.0518458,
-    "tight_hours": 313.72242533630794
+    "tight_hours": 1139.1957344448567
   },
   "HYPEUSDT": {
     "tight_start_ts": 1785719334.4533396,
@@ -1497,10 +1503,10 @@
   },
   "CROSSUSDT": {
     "tight_start_price": 0.11287,
-    "tight_latest_score": 47,
-    "tight_latest_ts": 1788525711.4527557,
+    "tight_latest_score": 30,
+    "tight_latest_ts": 1791648558.7964654,
     "tight_start_ts": 1787630643.6214037,
-    "tight_hours": 248.62995315333208
+    "tight_hours": 1116.0875486282507
   },
   "VELVETUSDT": {
     "tight_start_price": 0.6843,
@@ -1541,9 +1547,11 @@
     "tight_hours": 313.72232035007744
   },
   "TOWNSUSDT": {
-    "tight_start_price": 0.002484,
-    "tight_latest_score": 51,
-    "tight_latest_ts": 1788284238.9663427
+    "tight_start_price": 0.00187,
+    "tight_latest_score": 45,
+    "tight_latest_ts": 1791648558.8546906,
+    "tight_start_ts": 1791648558.8546906,
+    "tight_hours": 0.0
   },
   "INUSDT": {
     "tight_start_ts": 1785719337.8433177,
@@ -1692,10 +1700,10 @@
   },
   "MIRAUSDT": {
     "tight_start_price": 0.04434,
-    "tight_latest_score": 62,
-    "tight_latest_ts": 1788676860.2695324,
+    "tight_latest_score": 45,
+    "tight_latest_ts": 1791648558.99459,
     "tight_start_ts": 1788256051.3279161,
-    "tight_hours": 116.89137267119355
+    "tight_hours": 942.3632407427497
   },
   "AKEUSDT": {
     "tight_start_price": 0.008575,
@@ -1784,9 +1792,11 @@
     "tight_hours": 313.72140924506715
   },
   "CLOUSDT": {
-    "tight_start_price": 0.11603,
-    "tight_latest_score": -999,
-    "tight_latest_ts": 1787039380.466572
+    "tight_start_price": 0.06095,
+    "tight_latest_score": 57,
+    "tight_latest_ts": 1791648559.075234,
+    "tight_start_ts": 1791648559.075234,
+    "tight_hours": 0.0
   },
   "RECALLUSDT": {
     "tight_start_price": 0.04174,
@@ -1854,10 +1864,10 @@
   },
   "STABLEUSDT": {
     "tight_start_price": 0.02748,
-    "tight_latest_score": 45,
-    "tight_latest_ts": 1788525720.2140236,
+    "tight_latest_score": 40,
+    "tight_latest_ts": 1791648559.1367075,
     "tight_start_ts": 1787822659.9430683,
-    "tight_hours": 195.29451970981228
+    "tight_hours": 1062.7497760109106
   },
   "JCTUSDT": {
     "tight_start_price": 0.001742,
@@ -1875,10 +1885,10 @@
   },
   "BEATUSDT": {
     "tight_start_price": 0.1258,
-    "tight_latest_score": 57,
-    "tight_latest_ts": 1788676863.6551118,
+    "tight_latest_score": 62,
+    "tight_latest_ts": 1791648559.1558177,
     "tight_start_ts": 1788269800.3104768,
-    "tight_hours": 113.07315128750271
+    "tight_hours": 938.5441237058242
   },
   "PIEVERSEUSDT": {
     "tight_start_price": 1.0274,
@@ -2031,9 +2041,9 @@
   "XPTUSDT": {
     "tight_start_ts": 1785721146.4036238,
     "tight_start_price": 1657.9,
-    "tight_hours": 821.0332561524709,
-    "tight_latest_score": 55,
-    "tight_latest_ts": 1788676866.1257727
+    "tight_hours": 1646.5035699862242,
+    "tight_latest_score": 57,
+    "tight_latest_ts": 1791648559.2555742
   },
   "XPDUSDT": {
     "tight_start_ts": 1785721146.5060387,
@@ -2044,10 +2054,10 @@
   },
   "MEGAUSDT": {
     "tight_start_price": 0.03814,
-    "tight_latest_score": 41,
-    "tight_latest_ts": 1788676866.2502356,
+    "tight_latest_score": 56,
+    "tight_latest_ts": 1791648559.283488,
     "tight_start_ts": 1787760365.7539918,
-    "tight_hours": 254.5834711788098
+    "tight_hours": 1080.053758193387
   },
   "INTCUSDT": {
     "tight_start_price": 98.0,
@@ -2070,10 +2080,10 @@
   },
   "MSTRUSDT": {
     "tight_start_price": 144.49,
-    "tight_latest_score": 55,
-    "tight_latest_ts": 1788676866.7152262,
+    "tight_latest_score": 50,
+    "tight_latest_ts": 1791648559.3153074,
     "tight_start_ts": 1788631877.010133,
-    "tight_hours": 12.497140303651491
+    "tight_hours": 837.9673069928753
   },
   "AMZNUSDT": {
     "tight_start_ts": 1785721147.1024413,
@@ -2137,9 +2147,9 @@
   "EWYUSDT": {
     "tight_start_ts": 1785721147.9745774,
     "tight_start_price": 160.83,
-    "tight_hours": 821.0333993358745,
-    "tight_latest_score": 50,
-    "tight_latest_ts": 1788676868.2121866
+    "tight_hours": 1646.5031669420005,
+    "tight_latest_score": 61,
+    "tight_latest_ts": 1791648559.3755686
   },
   "CFGUSDT": {
     "tight_start_price": 0.1115,
@@ -2210,9 +2220,11 @@
     "tight_latest_ts": 1788676869.560201
   },
   "PRLUSDT": {
-    "tight_start_price": 0.2034,
-    "tight_latest_score": 75,
-    "tight_latest_ts": 1788191232.0600553
+    "tight_start_price": 0.1125,
+    "tight_latest_score": 57,
+    "tight_latest_ts": 1791648559.434796,
+    "tight_start_ts": 1791648559.434796,
+    "tight_hours": 0.0
   },
   "QQQUSDT": {
     "tight_start_ts": 1785721149.1424072,
@@ -2231,16 +2243,16 @@
   "AAPLUSDT": {
     "tight_start_ts": 1785721149.3308983,
     "tight_start_price": 308.61,
-    "tight_hours": 821.0334967394008,
-    "tight_latest_score": 75,
-    "tight_latest_ts": 1788676869.9191601
+    "tight_hours": 1646.5028129882282,
+    "tight_latest_score": 62,
+    "tight_latest_ts": 1791648559.457656
   },
   "TSMUSDT": {
     "tight_start_ts": 1785721149.4314156,
     "tight_start_price": 408.62,
-    "tight_hours": 808.5365942405992,
-    "tight_latest_score": 50,
-    "tight_latest_ts": 1788631881.1706817
+    "tight_hours": 1646.5027897489072,
+    "tight_latest_score": 67,
+    "tight_latest_ts": 1791648559.4745116
   },
   "MUUSDT": {
     "tight_start_ts": 1785721149.5302715,
@@ -2251,10 +2263,10 @@
   },
   "GENIUSUSDT": {
     "tight_start_price": 0.3173,
-    "tight_latest_score": 42,
-    "tight_latest_ts": 1788676870.2645845,
+    "tight_latest_score": 62,
+    "tight_latest_ts": 1791648559.4950233,
     "tight_start_ts": 1787547476.74579,
-    "tight_hours": 313.7204218873713
+    "tight_hours": 1139.1896525647905
   },
   "CHIPUSDT": {
     "tight_start_price": 0.03876,
@@ -2264,9 +2276,9 @@
   "MSFTUSDT": {
     "tight_start_ts": 1785721149.8173914,
     "tight_start_price": 469.92,
-    "tight_hours": 821.0335280230311,
-    "tight_latest_score": 67,
-    "tight_latest_ts": 1788676870.5182743
+    "tight_hours": 1646.502693994509,
+    "tight_latest_score": 55,
+    "tight_latest_ts": 1791648559.5157716
   },
   "AVGOUSDT": {
     "tight_start_ts": 1785721149.9131353,
@@ -2450,10 +2462,10 @@
   },
   "DELLUSDT": {
     "tight_start_price": 522.27,
-    "tight_latest_score": 50,
-    "tight_latest_ts": 1788676873.2742705,
+    "tight_latest_score": 62,
+    "tight_latest_ts": 1791648559.6750333,
     "tight_start_ts": 1788631885.6444938,
-    "tight_hours": 12.49656382686562
+    "tight_hours": 837.965008483198
   },
   "IBMUSDT": {
     "tight_start_ts": 1785721152.661113,
@@ -2504,10 +2516,10 @@
   },
   "AXTIUSDT": {
     "tight_start_price": 57.63,
-    "tight_latest_score": 55,
-    "tight_latest_ts": 1788676873.7281935,
+    "tight_latest_score": 92,
+    "tight_latest_ts": 1791648559.7347898,
     "tight_start_ts": 1788144648.7159867,
-    "tight_hours": 147.84028116855356
+    "tight_hours": 973.3086163341999
   },
   "UVXYUSDT": {
     "tight_start_ts": 1785721153.4597263,
@@ -2587,9 +2599,9 @@
   "GRAMUSDT": {
     "tight_start_ts": 1785721154.5440724,
     "tight_start_price": 1.417,
-    "tight_hours": 821.0334372554223,
-    "tight_latest_score": 52,
-    "tight_latest_ts": 1788676874.918192
+    "tight_hours": 1646.5014697495435,
+    "tight_latest_score": 45,
+    "tight_latest_ts": 1791648559.8351707
   },
   "INTWUSDT": {
     "tight_start_price": 18.43,
@@ -2608,9 +2620,9 @@
   "SKHYUSDT": {
     "tight_start_ts": 1785721154.8676796,
     "tight_start_price": 144.77,
-    "tight_hours": 821.0334456415972,
-    "tight_latest_score": 50,
-    "tight_latest_ts": 1788676875.2719893
+    "tight_hours": 1646.5013909092877,
+    "tight_latest_score": 61,
+    "tight_latest_ts": 1791648559.874953
   },
   "MUUUSDT": {
     "tight_start_price": 28.3,
@@ -2764,10 +2776,10 @@
   },
   "THETAUSDT": {
     "tight_start_price": 0.185,
-    "tight_latest_score": 40,
-    "tight_latest_ts": 1788676826.7695858,
+    "tight_latest_score": 35,
+    "tight_latest_ts": 1791648556.6835806,
     "tight_start_ts": 1787547410.7697632,
-    "tight_hours": 313.7266666173935
+    "tight_hours": 1139.2071982826128
   },
   "API3USDT": {
     "tight_start_price": 0.2278,
@@ -2825,10 +2837,10 @@
   },
   "ZRXUSDT": {
     "tight_start_price": 0.0948,
-    "tight_latest_score": 25,
-    "tight_latest_ts": 1788525678.5710444,
+    "tight_latest_score": 68,
+    "tight_latest_ts": 1791648556.831753,
     "tight_start_ts": 1787472413.0338297,
-    "tight_hours": 292.57376033743225
+    "tight_hours": 1160.0399438675906
   },
   "STORJUSDT": {
     "tight_start_price": 0.04344,
@@ -2844,10 +2856,10 @@
   },
   "EPICUSDT": {
     "tight_start_price": 0.3409,
-    "tight_latest_score": 61,
-    "tight_latest_ts": 1788525705.3382187,
+    "tight_latest_score": 63,
+    "tight_latest_ts": 1791648558.5155106,
     "tight_start_ts": 1787547447.753192,
-    "tight_hours": 271.7382180629836
+    "tight_hours": 1139.197433977392
   },
   "HUSDT": {
     "tight_start_price": 0.07792,
@@ -2877,10 +2889,10 @@
   },
   "BMNRUSDT": {
     "tight_start_price": 22.62,
-    "tight_latest_score": 61,
-    "tight_latest_ts": 1788676873.9691436,
+    "tight_latest_score": 55,
+    "tight_latest_ts": 1791648559.7567153,
     "tight_start_ts": 1787320231.0292034,
-    "tight_hours": 376.84526109450394
+    "tight_hours": 1202.3135354199674
   },
   "WOOUSDT": {
     "tight_start_price": 0.01178,
@@ -2955,9 +2967,11 @@
     "tight_latest_ts": 1788525725.3014984
   },
   "ENJUSDT": {
-    "tight_start_price": 0.02729,
-    "tight_latest_score": 50,
-    "tight_latest_ts": 1788525680.6332839
+    "tight_start_price": 0.0319,
+    "tight_latest_score": 57,
+    "tight_latest_ts": 1791648557.3569624,
+    "tight_start_ts": 1791648557.3569624,
+    "tight_hours": 0.0
   },
   "CHRUSDT": {
     "tight_start_price": 0.01496,
@@ -3025,9 +3039,9 @@
   "CRDOUSDT": {
     "tight_start_price": 231.79,
     "tight_latest_score": 55,
-    "tight_latest_ts": 1788676873.5042937,
+    "tight_latest_ts": 1791648559.7153146,
     "tight_start_ts": 1787227789.326619,
-    "tight_hours": 402.5233826874362
+    "tight_hours": 1227.991774637699
   },
   "GMEUSDT": {
     "tight_start_price": 19.23,
@@ -3085,10 +3099,10 @@
   },
   "CUSDT": {
     "tight_start_price": 0.06694,
-    "tight_latest_score": 47,
-    "tight_latest_ts": 1787672133.525802,
+    "tight_latest_score": 40,
+    "tight_latest_ts": 1791648558.8151062,
     "tight_start_ts": 1787630643.9277327,
-    "tight_hours": 11.52488835255305
+    "tight_hours": 1116.0874687148464
   },
   "FLUIDUSDT": {
     "tight_start_price": 1.333,
@@ -3265,10 +3279,10 @@
   },
   "ONTUSDT": {
     "tight_start_price": 0.05835,
-    "tight_latest_score": 40,
-    "tight_latest_ts": 1788676826.1866677,
+    "tight_latest_score": 30,
+    "tight_latest_ts": 1791648556.4833384,
     "tight_start_ts": 1787991732.052637,
-    "tight_hours": 190.3039261196057
+    "tight_hours": 1015.7845640836822
   },
   "DYMUSDT": {
     "tight_start_price": 0.01586,
@@ -3291,10 +3305,10 @@
   },
   "WCTUSDT": {
     "tight_start_price": 0.03839,
-    "tight_latest_score": 35,
-    "tight_latest_ts": 1788525707.307744,
+    "tight_latest_score": 52,
+    "tight_latest_ts": 1791648558.614735,
     "tight_start_ts": 1787547450.9093633,
-    "tight_hours": 271.737888439099
+    "tight_hours": 1139.1965848254495
   },
   "PLAYUSDT": {
     "tight_start_price": 0.03729,
@@ -3351,9 +3365,11 @@
     "tight_latest_ts": 1788269776.3601615
   },
   "FLOCKUSDT": {
-    "tight_start_price": 0.03274,
-    "tight_latest_score": 62,
-    "tight_latest_ts": 1787991778.8068438
+    "tight_start_price": 0.05614,
+    "tight_latest_score": 69,
+    "tight_latest_ts": 1791648558.9410412,
+    "tight_start_ts": 1791648558.9410412,
+    "tight_hours": 0.0
   },
   "MMTUSDT": {
     "tight_start_price": 0.1652,
@@ -3450,9 +3466,11 @@
     "tight_latest_ts": 1788284264.1929505
   },
   "SOFIUSDT": {
-    "tight_start_price": 17.99,
-    "tight_latest_score": -999,
-    "tight_latest_ts": 1785859463.3089938
+    "tight_start_price": 15.8,
+    "tight_latest_score": 50,
+    "tight_latest_ts": 1791648559.9147692,
+    "tight_start_ts": 1791648559.9147692,
+    "tight_hours": 0.0
   },
   "JPMUSDT": {
     "tight_start_ts": 1785821944.7463834,
@@ -3630,10 +3648,10 @@
   },
   "METISUSDT": {
     "tight_start_price": 2.745,
-    "tight_latest_score": 58,
-    "tight_latest_ts": 1788676841.3548732,
+    "tight_latest_score": 67,
+    "tight_latest_ts": 1791648558.1451287,
     "tight_start_ts": 1787547433.949083,
-    "tight_hours": 313.7242793861363
+    "tight_hours": 1139.2011655682325
   },
   "INITUSDT": {
     "tight_start_price": 0.05556,
@@ -3644,10 +3662,10 @@
   },
   "QTUMUSDT": {
     "tight_start_price": 0.814,
-    "tight_latest_score": 62,
-    "tight_latest_ts": 1788525677.8382027,
+    "tight_latest_score": 35,
+    "tight_latest_ts": 1791648556.6137543,
     "tight_start_ts": 1787460732.1516128,
-    "tight_hours": 295.81824627498787
+    "tight_hours": 1163.284572817087
   },
   "PROVEUSDT": {
     "tight_start_ts": 1785917057.3556266,
@@ -3985,10 +4003,10 @@
   },
   "AIOUSDT": {
     "tight_start_price": 0.04936,
-    "tight_latest_score": 53,
-    "tight_latest_ts": 1788676857.5812461,
+    "tight_latest_score": 67,
+    "tight_latest_ts": 1791648558.8756182,
     "tight_start_ts": 1788525713.077549,
-    "tight_hours": 41.984584360321364
+    "tight_hours": 867.457166130344
   },
   "TTWOUSDT": {
     "tight_start_price": 254.32,
@@ -4027,10 +4045,10 @@
   },
   "DEEPUSDT": {
     "tight_start_price": 0.01329,
-    "tight_latest_score": 50,
-    "tight_latest_ts": 1788676853.448024,
+    "tight_latest_score": 45,
+    "tight_latest_ts": 1791648558.6359677,
     "tight_start_ts": 1787560940.4072824,
-    "tight_hours": 309.97584465046725
+    "tight_hours": 1135.4495079681608
   },
   "2ZUSDT": {
     "tight_start_price": 0.05623,
@@ -4048,10 +4066,10 @@
   },
   "MERLUSDT": {
     "tight_start_price": 0.02304,
-    "tight_latest_score": 68,
-    "tight_latest_ts": 1788676855.0134404,
+    "tight_latest_score": 30,
+    "tight_latest_ts": 1791648558.7152193,
     "tight_start_ts": 1788631860.9618669,
-    "tight_hours": 12.498347659309704
+    "tight_hours": 837.9715981534455
   },
   "SKHYNIXUSDT": {
     "tight_start_ts": 1786202984.8833313,
@@ -4084,9 +4102,9 @@
   "IOSTUSDT": {
     "tight_start_ts": 1786426192.427392,
     "tight_start_price": 0.0005776,
-    "tight_hours": 612.6778591203027,
-    "tight_latest_score": 40,
-    "tight_latest_ts": 1788631832.720225
+    "tight_hours": 1450.656728134089,
+    "tight_latest_score": 35,
+    "tight_latest_ts": 1791648556.6486747
   },
   "BLESSUSDT": {
     "tight_start_price": 0.009046,
@@ -4149,10 +4167,10 @@
   },
   "KNCUSDT": {
     "tight_start_price": 0.118,
-    "tight_latest_score": 40,
-    "tight_latest_ts": 1788525678.4446707,
+    "tight_latest_score": 50,
+    "tight_latest_ts": 1791648556.7983558,
     "tight_start_ts": 1787417400.457516,
-    "tight_hours": 307.8549964318673
+    "tight_hours": 1175.3212057888509
   },
   "NEWTUSDT": {
     "tight_start_price": 0.04148,
@@ -4184,10 +4202,10 @@
   },
   "RVNUSDT": {
     "tight_start_price": 0.003305,
-    "tight_latest_score": 40,
-    "tight_latest_ts": 1788676830.076916,
+    "tight_latest_score": 71,
+    "tight_latest_ts": 1791648557.5753424,
     "tight_start_ts": 1787560904.2546165,
-    "tight_hours": 309.979395083189
+    "tight_hours": 1135.4592557571993
   },
   "UMAUSDT": {
     "tight_start_price": 0.3554,

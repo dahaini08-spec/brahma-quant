@@ -544,7 +544,7 @@ _CACHE: dict = {}
 _CACHE_TTL = 120  # 2分钟
 
 
-def _get(url: str, timeout: int = 8) -> Optional[list]:
+def _get_v4_compat(url: str, timeout: int = 8) -> Optional[list]:
     """get"""
     now = time.time()
     if url in _CACHE and now - _CACHE[url]['ts'] < _CACHE_TTL:
@@ -752,7 +752,7 @@ def _bus_price(symbol: str) -> float:
 
 
 
-CG_BASE = 'https://open-api.coinglass.com/public/v2'
+CG_BASE_V2 = 'https://open-api.coinglass.com/public/v2'  # [P0修复] v2备用端点，区分v4
 FAPI    = 'https://fapi.binance.com'
 CGECKO  = 'https://api.coingecko.com/api/v3'
 
@@ -760,7 +760,7 @@ _CACHE = {}
 _LOCK__CACHE = __import__("threading").Lock()  #  修复:
 _CACHE_TTL = 300  # 5分钟缓存
 
-def _get(url: str, timeout: int = 8) -> dict | list | None:
+def _get_v2(url: str, timeout: int = 8) -> dict | list | None:
     """get"""
     now = time.time()
     if url in _CACHE and now - _CACHE[url]['ts'] < _CACHE_TTL:
@@ -1092,7 +1092,7 @@ def get_derivatives_smart_money(symbol: str, signal_dir: str) -> dict:
     }
 
 
-def whale_score(symbol: str, signal_dir: str) -> dict:
+def whale_score_v2(symbol: str, signal_dir: str) -> dict:
     """综合鲸鱼+衍生品聪明钱信号评分 → 0~20分
     [P2 2026-05-22] 旧 0~15 升级至 0~20：+5分 binance_fapi 衍生品维度
     """

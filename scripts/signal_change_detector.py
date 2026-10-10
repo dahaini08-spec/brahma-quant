@@ -95,10 +95,21 @@ def check_rsi_trigger() -> bool:
 
 
 def run_analysis_safe(sym: str) -> dict:
-    """安全执行分析，异常返回空"""
+    """[P0修复 2026-10-10 苏摩111] 直接读state_store，不触发重型94维分析
+    原来调用run_analysis()=60~120s+MemoryError，timeout=60s必然崩溃
+    现在直接读brahma_state缓存，<1s，零内存峰值"""
     try:
-        from brahma_brain.brahma_analysis_runner import run_analysis
-        return run_analysis(sym) or {}
+        import sys as _sys, pathlib as _pl
+        _sys.path.insert(0, str(_pl.Path(__file__).parent.parent / 'brahma_brain'))
+        from state_store import get_state
+        s = get_state(sym)
+        return {
+            'score_final':  s.get('score_final', s.get('confluence', {}).get('score', 0) if isinstance(s.get('confluence'), dict) else 0),
+            'signal_dir':   s.get('signal_dir', s.get('direction', 'NEUTRAL')),
+            'regime':       s.get('regime', 'UNKNOWN'),
+            'action':       s.get('step11_verdict', 'WAIT'),
+            'price':        s.get('price', 0),
+        }
     except Exception as e:
         return {'_error': str(e)}
 

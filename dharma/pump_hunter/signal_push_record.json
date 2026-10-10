@@ -1260,10 +1260,10 @@
     "eth_regime": "CHOP_MID"
   },
   "BCHUSDT": {
-    "last_push_ts": 1786640901.3284712,
-    "last_score": 132,
-    "last_push_at": "2026-08-13T17:08:21.546210",
-    "push_price": 205.66,
+    "last_push_ts": 1791648559.9585485,
+    "last_score": 84,
+    "last_push_at": "2026-10-10T16:09:20.029471",
+    "push_price": 280.27,
     "regime": "CHOP_MID",
     "btc_regime": "CHOP_MID",
     "eth_regime": "CHOP_MID"
@@ -1908,13 +1908,13 @@
     "eth_regime": "CHOP_MID"
   },
   "TRXUSDT": {
-    "last_push_ts": 1788270719.6968534,
-    "last_score": 122,
-    "last_push_at": "2026-09-01T13:51:59.880462",
-    "push_price": 0.32555,
+    "last_push_ts": 1791648559.9585485,
+    "last_score": 118,
+    "last_push_at": "2026-10-10T16:09:19.998910",
+    "push_price": 0.33077,
     "regime": "CHOP_MID",
     "btc_regime": "CHOP_MID",
-    "eth_regime": "BULL_EARLY"
+    "eth_regime": "CHOP_MID"
   },
   "GDXUSDT": {
     "last_push_ts": 1787385068.3108737,
@@ -2016,12 +2016,12 @@
     "eth_regime": "CHOP_MID"
   },
   "AXTIUSDT": {
-    "last_push_ts": 1787378683.271084,
-    "last_score": 106,
-    "last_push_at": "2026-08-22T06:04:43.413011",
-    "push_price": 66.23,
-    "regime": "BEAR_RECOVERY",
-    "btc_regime": "BEAR_RECOVERY",
+    "last_push_ts": 1791648559.9585485,
+    "last_score": 92,
+    "last_push_at": "2026-10-10T16:09:20.014937",
+    "push_price": 68.5,
+    "regime": "CHOP_MID",
+    "btc_regime": "CHOP_MID",
     "eth_regime": "CHOP_MID"
   },
   "GRVTUSDT": {
@@ -2446,5 +2446,23 @@
     "regime": "CHOP_MID",
     "btc_regime": "CHOP_MID",
     "eth_regime": "BULL_EARLY"
+  },
+  "FLOCKUSDT": {
+    "last_push_ts": 1791648559.9585485,
+    "last_score": 82,
+    "last_push_at": "2026-10-10T16:09:20.044749",
+    "push_price": 0.05614,
+    "regime": "CHOP_MID",
+    "btc_regime": "CHOP_MID",
+    "eth_regime": "CHOP_MID"
+  },
+  "METISUSDT": {
+    "last_push_ts": 1791648559.9585485,
+    "last_score": 75,
+    "last_push_at": "2026-10-10T16:09:20.058665",
+    "push_price": 3.331,
+    "regime": "CHOP_MID",
+    "btc_regime": "CHOP_MID",
+    "eth_regime": "CHOP_MID"
   }
 }
