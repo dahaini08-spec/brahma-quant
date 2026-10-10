@@ -155,6 +155,15 @@ def check_all() -> list:
     alerts  = []
     now     = time.time()
 
+    # [2026-10-10 苏摩111] P0静默窗口
+    # ZeroFlip失守/LSR猎杀触发后4小时内，FR/CVD等P2信号静默
+    _P0_SILENCE = 14400  # 4小时
+    _p0_keys = [k for k in state if 'gex_zf' in k or 'lsr_hunt' in k]
+    _p0_last = max((state.get(k, 0) for k in _p0_keys), default=0)
+    _in_p0_silence = (now - _p0_last) < _P0_SILENCE
+    if _in_p0_silence:
+        print(f'[M7] P0静默窗口激活（距上次P0触发{(now-_p0_last)/60:.0f}min），FR/CVD P2信号跳过')
+
     for sym in ['BTC', 'ETH']:
         sf  = f'{sym}USDT'
         cfg = VIP_CONFIG[sym]
@@ -210,9 +219,9 @@ def check_all() -> list:
         print(f'[M7] {sym} ${price:,.2f} FR={fr_v:+.4f}% LSR={lsr_v:.1f}% CVD={cvd_v:.0f} OI={oi_dir}({oi_chg:+.2f}%)')
 
         # ══════════════════════════════════════
-        # ① FR 警戒/预警
+        # ① FR 警戒/预警（P0静默窗口内跳过）
         # ══════════════════════════════════════
-        if fr_v > 0.006:
+        if not _in_p0_silence and fr_v > 0.006:
             k = f'm7_fr_alert_{sym}'
             if now - state.get(k, 0) > COOLDOWN:
                 alerts.append((k,
@@ -225,16 +234,22 @@ def check_all() -> list:
                     f'止损 ${cfg["short_sl"]:,} | 目标 ${cfg["short_tp"]:,}\n\n'
                     f'🌿 姓赵不宣 | 不是建议'
                 ))
-        elif fr_v > 0.003:
+        elif not _in_p0_silence and fr_v > 0.003:
             k = f'm7_fr_warn_{sym}'
-            if now - state.get(k, 0) > COOLDOWN:
+            # [2026-10-10 苏摩111] 状态变化触发，不重复推送
+            # 原问题：FR持续>0.003%时每30min重发，同一信息刷屏
+            # 修复：记录上次FR状态，仅在「低→高」跨越时推送一次
+            _fr_prev = state.get(f'{sym}_fr_prev', 0.0)
+            _was_warn = _fr_prev > 0.003  # 上次已在警戒区
+            _cooldown_fr = 14400  # FR警戒冷却4小时（非30分钟）
+            if not _was_warn and (now - state.get(k, 0)) > _cooldown_fr:
+                # 首次突破才推送
                 alerts.append((k,
-                    f'⚠️ 梵天VIP提醒 | {sym} FR警戒线\n\n'
-                    f'FR={fr_v:+.4f}% 突破+0.003%\n'
-                    f'= 铁律②触发：{sym}多单入场封锁\n'
+                    f'⚠️ 梵天VIP | {sym} FR首次突破警戒\n\n'
+                    f'FR={fr_v:+.4f}% 突破+0.003% = 多单封锁启动\n'
                     f'当前价 ${price:,.2f}\n\n'
-                    f'✋ 暂停一切{sym}多单\n'
-                    f'等FR回落<+0.003%后再入场\n\n'
+                    f'✋ {sym}多单暂停，等FR回落<+0.003%\n'
+                    f'（持续在警戒区内不重复提醒）\n\n'
                     f'🌿 姓赵不宣 | 不是建议'
                 ))
 
@@ -372,6 +387,16 @@ def check_all() -> list:
     except Exception as e:
         print(f'[M7-ATR ERR] {e}')
 
+    # [2026-10-10 苏摩111] 保存FR状态供下次比较（状态变化触发用）
+    try:
+        import urllib.request as _ur, ssl as _ssl, json as _j
+        _ctx = _ssl.create_default_context()
+        for _sym in ['BTC','ETH']:
+            _fr_r = _j.loads(_ur.urlopen(
+                f'https://fapi.binance.com/fapi/v1/premiumIndex?symbol={_sym}USDT',
+                timeout=4, context=_ctx).read())
+            state[f'{_sym}_fr_prev'] = float(_fr_r.get('lastFundingRate',0))*100
+    except: pass
     # 保存状态（含cvd_prev/oi_prev更新）
     save_state(state)
     return alerts
