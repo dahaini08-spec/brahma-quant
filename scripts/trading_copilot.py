@@ -616,8 +616,125 @@ def main():
     else:
         print(f'[副驾] 无触发 — 所有信号在安全区间')
 
+    # M8: Groq恒量分析层 [2026-10-10 苏摩111] 每分钟8次 = 11520次/日 = 80%配额
+    m8_groq_constant_layer(state)
     save_state(state)
 
 
 if __name__ == '__main__':
     main()
+
+# ══════════════════════════════════════════════════════════════════
+# M8: Groq恒量分析层 [新增 2026-10-10 苏摩111]
+# 每分钟运行，8次Groq调用，累计11520次/日 = 80%配额利用率
+# 输出写入 data/groq_realtime_analysis.json，供仪表盘+下次分析读取
+# ══════════════════════════════════════════════════════════════════
+def m8_groq_constant_layer(state: dict) -> None:
+    """
+    每分钟必跑的Groq恒量分析层
+    不推送，只写文件，为梵天大脑提供实时AI判断支撑
+    8个维度 × 1440分钟 = 11,520次/日 = Groq配额80%
+    """
+    import time as _t, json as _j, pathlib as _pl
+    _now = _t.time()
+    
+    # 节流：同一分钟内不重复运行
+    if _now - state.get('m8_last_run', 0) < 55:
+        return
+    state['m8_last_run'] = _now
+    
+    try:
+        _sys = __import__('sys')
+        _sys.path.insert(0, str(_pl.Path(__file__).parent))
+        from free_llm_client import chat as _gc, GROQ_KEY
+        if not GROQ_KEY:
+            return
+        
+        # 读取最新市场状态
+        _data_dir = _pl.Path(__file__).parent.parent / 'data'
+        def _read_state(sym):
+            f = _data_dir / f'brahma_state_{sym.lower()}.json'
+            return _j.loads(f.read_text()) if f.exists() else {}
+        
+        btc = _read_state('btc')
+        eth = _read_state('eth')
+        
+        _bp = float(btc.get('price', 0) or 0)
+        _ep = float(eth.get('price', 0) or 0)
+        _br = str(btc.get('regime', 'CHOP_MID'))
+        _er = str(eth.get('regime', 'CHOP_MID'))
+        _bcvd = float(btc.get('cvd_1h', 0) or 0)
+        _ecvd = float(eth.get('cvd_1h', 0) or 0)
+        _blsr = float(btc.get('lsr_retail', 50) or 50)
+        _elsr = float(eth.get('lsr_retail', 50) or 50)
+        _bfr  = float(btc.get('fr', 0) or 0) * 100
+        _efr  = float(eth.get('fr', 0) or 0) * 100
+        _boi  = str(btc.get('oi_direction', 'NEUTRAL'))
+        _eoi  = str(eth.get('oi_direction', 'NEUTRAL'))
+        _brsi = float(btc.get('rsi_1h', 50) or 50)
+        _ersi = float(eth.get('rsi_1h', 50) or 50)
+        
+        import concurrent.futures as _cf
+        results = {}
+        
+        def _call(key, prompt, task):
+            try:
+                r = _gc(prompt, max_tokens=40, task=task, timeout=12)
+                return key, (r.strip() if r else '')
+            except Exception:
+                return key, ''
+        
+        # 8개 병렬 Groq 호출
+        _calls = [
+            ('btc_sentiment', 
+             f'BTC${_bp:.0f} {_br}体制 RSI={_brsi:.0f} CVD={_bcvd:.0f}。10字内：当前多空情绪？', 
+             'oi'),
+            ('eth_sentiment',
+             f'ETH${_ep:.0f} {_er}体制 RSI={_ersi:.0f} CVD={_ecvd:.0f}。10字内：当前多空情绪？',
+             'oi'),
+            ('btc_flow',
+             f'BTC OI={_boi} CVD={_bcvd:.0f} FR={_bfr:+.3f}%。10字内：资金流向解读？',
+             'council'),
+            ('eth_flow',
+             f'ETH OI={_eoi} CVD={_ecvd:.0f} FR={_efr:+.3f}% LSR散户={_elsr:.0f}%。10字内：资金流向？',
+             'council'),
+            ('correlation',
+             f'BTC {_br} vs ETH {_er}，CVD背离={abs(_bcvd-_ecvd):.0f}。10字内：相关性判断？',
+             'regime'),
+            ('position_advice',
+             f'BTC${_bp:.0f} ETH${_ep:.0f}，体制{_br}。10字内：现在仓位建议？',
+             'vip'),
+            ('risk_8h',
+             f'BTC FR={_bfr:+.3f}% ETH LSR={_elsr:.0f}%。10字内：未来8H最大风险？',
+             'review'),
+            ('constitution_check',
+             f'当前BTC={_br} ETH={_er}，FR={_bfr:+.3f}%。梵天铁律是否有需要注意的？10字内',
+             'safety'),
+        ]
+        
+        with _cf.ThreadPoolExecutor(max_workers=8) as pool:
+            futures = [pool.submit(_call, k, prompt, task) for k, prompt, task in _calls]
+            for fut in _cf.as_completed(futures, timeout=15):
+                try:
+                    k, v = fut.result()
+                    if v:
+                        results[k] = v
+                except Exception:
+                    pass
+        
+        if results:
+            # 파일 저장
+            out_f = _data_dir / 'groq_realtime_analysis.json'
+            _prev = {}
+            if out_f.exists():
+                try: _prev = _j.loads(out_f.read_text())
+                except: pass
+            _prev.update(results)
+            _prev['ts'] = _now
+            _prev['btc_price'] = _bp
+            _prev['eth_price'] = _ep
+            out_f.write_text(_j.dumps(_prev, ensure_ascii=False, indent=2))
+            print(f'[M8-Groq] {len(results)}/8 분석완료 저장')
+    
+    except Exception as _e:
+        pass  # 조용히 실패, 메인 루프 불간섭
