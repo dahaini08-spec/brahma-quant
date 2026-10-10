@@ -52,7 +52,9 @@ _PRIORITY_THREADS = {
 
 
 def push_jarvis(msg: str, timeout: int = 8, retries: int = 3, priority: str = 'P1',
-                dedup_key: str = None, dedup_ttl: int = 0, **kwargs) -> bool:
+                dedup_key: str = None, dedup_ttl: int = 0,
+                groq_comment: str = None,  # [P1 2026-10-10 苏摩111] Groq 해설 직접 첨부
+                **kwargs) -> bool:
     """
     推送到Jarvis主线程（subprocess CLI非阻塞）。
     V2.1: 接受dedup_key/dedup_ttl等历史kwargs（原先TypeError静默丢消息）
@@ -60,6 +62,9 @@ def push_jarvis(msg: str, timeout: int = 8, retries: int = 3, priority: str = 'P
     """
     if not msg or not msg.strip():
         return False
+    # [P1 2026-10-10] groq_comment가 있으면 메시지 말미에 첨부
+    if groq_comment and groq_comment.strip():
+        msg = msg + f'\n💡 {groq_comment.strip()[:60]}'
 
     # [V2.2 2026-09-25 苏摩111] 哨兵校验：拒绝「target裸奔」异常消息体
     # 根因: 9.25复盘推送把 target(73295708:thread:uuid) + 用户原话当消息体发送

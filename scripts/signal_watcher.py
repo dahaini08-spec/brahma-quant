@@ -462,6 +462,15 @@ def run():
             # 唯一推送出口：push_hub._jarvis（dedup_ttl=86400，同信号24H内不重复）
             # [IC铁证 2026-07-23] TIER1通道已删除，此处只剩TIER2（score≥155）信号
             try:
+                # [P1 2026-10-10 苏摩111] 새 신호 Groq 원인분석
+                try:
+                    import sys as _swgs; _swgs.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
+                    from free_llm_client import chat as _swgc
+                    _sw_q = f'梵天新信号触发。20字内：核心原因和风险提示？'
+                    _sw_r = _swgc(_sw_q, max_tokens=40, task='oi', timeout=10)
+                    if _sw_r: card = card + f'\n💡 {_sw_r.strip()[:50]}'
+                except Exception:
+                    pass
                 from push_hub import _jarvis as _pj_sw; _pj_sw(f"🔔 新信号\n{card}", dedup_ttl=86400)
             except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
             # ── [设计院 2026-08-13] 信号触发时附带图表仪表盘 ────────
