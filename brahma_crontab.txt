@@ -99,7 +99,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [9.18 修复] whale_monitor从:30移到:33错峰避免与oi_advanced重叠
 # [TRIM 2026-10-04 苏摩111 精简至40任务 鲸鱼监控低价值，OI+LSR已覆盖] 33 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/whale_monitor.py >> logs/whale_monitor.log 2>&1
 # liq heatmap — :45 每4h
-15,45 * * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/liq_heatmap.py >> logs/liq_heatmap.log 2>&1  # [Fix 2026-10-03] 2h→30min，sentinel D5/D6精度提升
+5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/liq_heatmap.py >> logs/liq_heatmap.log 2>&1  # [频率优化 2026-10-10] 30min→60min，liq结构1~2H才变，state_refresh已同步
 # brahma autocheck — :50 每6h
 # [TRIM 2026-10-04 苏摩111 精简至40任务 系统自检由autonomous_loop覆盖] 50 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/brahma_autocheck.py --push >> logs/syscron.log  # [2.0 timeout] 2>&1
 # log rotation — :55 每6h
@@ -248,7 +248,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/paper_executor.py >> logs/paper_executor.log 2>&1
 
 # 纸面单TP/SL检查: 每6H
-*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/paper_tp_monitor.py >> logs/paper_tp.log 2>&1  # [9.26 B线] SL/TP硬监控 6h→5min
+*/15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/paper_tp_monitor.py >> logs/paper_tp.log 2>&1  # [频率优化 2026-10-10] 5min→15min，B线paper监控，实盘前可降频
 
 # L0工作记忆刷新（每5分钟，独立脚本）
 # [2.0删除 autopilot_l0_refresh: brahma_cpu每小时维护L0，5分钟刷新冗余]
@@ -257,7 +257,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [TRIM 2026-10-04 苏摩111 精简至40任务 已由process_resurrect覆盖] */5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 bash scripts/independent_watchdog.sh >> logs/watchdog.log 2>&1  # [2.0 去nohup&]
 
 # [9.23苏摩111 P0] 每分钟拉起核心进程（带单实例锁，进程死了自动复活）
-* * * * * cd /root/.openclaw/workspace/trading-system && bash scripts/process_resurrect.sh >> logs/resurrect.log 2>&1
+*/2 * * * * cd /root/.openclaw/workspace/trading-system && bash scripts/process_resurrect.sh >> logs/resurrect.log 2>&1  # [频率优化 2026-10-10] 1min→2min，进程2min内复活足够
 */30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/brahma_autonomous_loop.py >> logs/autonomous_loop.log 2>&1  # [降频优化 2026-10-04] 降频83%:进程守护由process_resurrect覆盖,数据自检30min足够
 # [TRIM2 2026-10-04] 宿主健康合并到autonomous_loop || */30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/host_health_sentinel.py >> logs/host_health.log 2>&1  # [降频优化 2026-10-04] 降频83%:宿主资源变化慢,30min足够
 # [TRIM2 2026-10-04] 数据质量合并到autonomous_loop || */30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/state_quality_sentinel.py --no-push >> logs/state_quality.log 2>&1  # [降频优化 2026-10-04] 降频50%:数据质量问题持续性高
@@ -301,8 +301,8 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [2026-10-07 苏摩111 停用] */30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/vip_strategy_watcher.py >> logs/vip_watcher.log 2>&1
 # [封印 2026-10-06 苏摩111] signal_change_detector去除RSI门控，独立每15min运行
 # 原：RSI触发依赖导致60min内信号变化检测不到；新：hash扩展entry/sl维度
-*/15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/signal_change_detector.py >> logs/signal_change.log 2>&1
-* * * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/price_alert_monitor.py >> logs/price_alert.log 2>&1
+*/30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/signal_change_detector.py >> logs/signal_change.log 2>&1  # [频率优化 2026-10-10] 15min→30min，M7已覆盖信号变化
+*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/price_alert_monitor.py >> logs/price_alert.log 2>&1  # [频率优化 2026-10-10] 1min→5min，M7已覆盖FR/LSR，price_alert专注价位+冲突检查
 * * * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/trading_copilot.py >> logs/copilot.log 2>&1
 */15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/brahma_strategy_validator.py check >> logs/strategy_validator.log 2>&1
 */15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/neuron_dashboard.py >> logs/neuron_dashboard.log 2>&1  # [P2-⑫ 2026-10-09 神经果蝇仪表盘]
