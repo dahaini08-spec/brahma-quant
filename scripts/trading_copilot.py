@@ -112,11 +112,27 @@ def get_gex_strikes(sym):
         return {}
 
 def get_cvd(sym):
+    """[2026-10-10 苏摩111] CVD단위불일치 근치
+    cvd_realtime: WS체결량(ETH소수점, -0.039)
+    klines기반: 봉거래량누적(수천~수만)
+    -0.039 < -300 = False → CVD방향 항상 틀림
+    수정: klines8봉 계산으로 교체, 파일은 폴백만
+    """
     try:
-        d = json.loads((WORKDIR/'data'/f'cvd_realtime_{sym.lower()}usdt.json').read_text())
-        return float(d.get('cvd_1h', d.get('delta_1h', d.get('cvd', 0))) or 0)
+        import urllib.request as _ur, ssl as _ss
+        _ctx = _ss.create_default_context()
+        _kl = json.loads(_ur.urlopen(
+            f'https://fapi.binance.com/fapi/v1/klines?symbol={sym}USDT&interval=1h&limit=8',
+            timeout=4, context=_ctx).read())
+        return sum((float(k[5]) if float(k[4])>float(k[1]) else -float(k[5])) for k in _kl)
     except:
-        return 0.0
+        # 폴백: cvd_realtime dir 필드로 방향만 판단
+        try:
+            d = json.loads((WORKDIR/'data'/f'cvd_realtime_{sym.lower()}usdt.json').read_text())
+            _dir = str(d.get('dir_1h', d.get('dir_4h', '')))
+            return -10000 if 'SELL' in _dir else (10000 if 'BUY' in _dir else 0)
+        except:
+            return 0.0
 
 def near(price, target, pct=PROX_PCT):
     if target == 0: return False
