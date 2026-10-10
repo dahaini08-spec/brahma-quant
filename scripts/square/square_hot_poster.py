@@ -141,11 +141,26 @@ TRADER_SYSTEM_PROMPT = """你是拥有40年合约交易经验的顶级交易分�
 
 
 def rewrite_as_trader(draft: str) -> str:
-    """用40年交易员视角重写初稿，每次发帖前强制过滤
-    [2026-09-11 苏摩111] LLM重写已废弃，直接返回原稿
-    模板引擎square_template.py已保证品牌统一，不需要LLM重写"""
-    return draft
-    # ── 以下LLM重写已废弃 ──
+    """[恢复 2026-10-10 苏摩111] Groq免费额度充足，重新启用LLM重写
+    Groq qwen3.8-27b: 中文原生，40年交易员语气"""
+    if not draft or len(draft) < 50:
+        return draft
+    try:
+        import sys as _sys_rw; _sys_rw.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent))
+        from free_llm_client import chat as _llm
+        _prompt = (
+            '用40年顶级合约交易员的简洁风格重写以下加密市场分析帖。'
+            '要求：保留所有数字和价格，语气直接有力，去掉废话，'
+            '禁止Markdown格式，禁止AI腔调，字数控制在原文80%以内：\n\n'
+            + draft[:800]
+        )
+        _r = _llm(_prompt, max_tokens=600, task='vip', timeout=25)
+        if _r and len(_r) > 80:
+            return _r.strip()
+    except Exception:
+        pass
+    return draft  # fallback原稿
+    # ── 旧废弃代码 ──
     if not draft or len(draft) < 50:
         return draft
     try:

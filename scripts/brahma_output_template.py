@@ -144,6 +144,25 @@ def _gen_trader_view(sym: str, price: float, d: dict,
     return '，'.join(points[:4]) + '。'  # 최대 4포인트
 
 
+def _groq_vip_comment(sym: str, price: float, d: dict) -> list:
+    """[改造④ 2026-10-10 苏摩111] Groq生成VIP一句话核心逻辑"""
+    try:
+        import sys as _sg4; _sg4.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
+        from free_llm_client import chat as _gc4
+        lsr = d.get('lsr_retail', 50)
+        cvd = d.get('cvd_1h', 0)
+        regime = d.get('regime', 'CHOP_MID')
+        rsi = d.get('rsi_1h', 50)
+        _q = (f'{sym}${price:.0f} {regime}体制 RSI1H={rsi:.0f} CVD={cvd:.0f} LSR散户={lsr:.0f}%。'
+              f'用20字内给出这个策略最核心的一句话风险提示，直接输出文字，不加前缀。')
+        _r = _gc4(_q, max_tokens=40, task='vip', timeout=10)
+        if _r and len(_r) > 5:
+            return [f'💡 {_r.strip()[:50]}']
+    except Exception:
+        pass
+    return []
+
+
 def format_full_report(sym: str, d: dict) -> str:
     """
     标准三方联合输出格式

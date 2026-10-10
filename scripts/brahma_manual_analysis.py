@@ -3018,10 +3018,34 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     d['zsc'] = zsc  # Z-Score注入主数据字典，供后续输出消费
     _step_gc()
 
-    # AI议会实时裁决（纯规则引擎，零延迟零成本）
-    # ── P2-2: council_verdict移除（2026-09-11 苏摩111）──
-    # 旧AI议会已由trader_brain 6层确定性决策替代
-    council = {'bias':'N/A','reason':'council已废弃','action':'WAIT','confidence':'LOW','source':'废弃'}
+    # [恢复 2026-10-10 苏摩111] council_three_way Groq真实三方投票
+    # Groq 14400次/日免费额度充足，重新启用LLM议会作为参考层
+    council = {'bias':'N/A','reason':'Groq初始化中','action':'WAIT','confidence':'LOW','source':'groq'}
+    try:
+        from free_llm_client import council_three_way as _c3w
+        _c3_r = _c3w(
+            sym=sym, price=d['bs'].get('price', 0),
+            regime=d['bs'].get('regime','CHOP_MID'),
+            score=float(d['bs'].get('score_final', d['bs'].get('score',0)) or 0),
+            fvg_dir=str(d['bs'].get('fvg_direction','NONE')),
+            fvg_magnet=float(d['bs'].get('fvg_magnet',0) or 0),
+            oi_signal=str(d['bs'].get('oi_direction','NEUTRAL')),
+            sm_signal=str(d['bs'].get('smart_money','NEUTRAL')),
+            big_long=float(d['bs'].get('lsr_big',50) or 50),
+            hurst=float(d['bs'].get('hurst',0.5) or 0.5),
+            kappa=float(d['bs'].get('kappa',0) or 0),
+            harv=float(d['bs'].get('har_rv',0) or 0),
+            entry_lo=float(d['bs'].get('entry_lo',0) or 0),
+            entry_hi=float(d['bs'].get('entry_hi',0) or 0),
+            liq_up=float(d['bs'].get('liq_short',0) or 0),
+            liq_dn=float(d['bs'].get('liq_long',0) or 0),
+            macro_bias=str(d['bs'].get('macro_bias','NEUTRAL')),
+            fear_greed=int(d['bs'].get('fear_greed',50) or 50),
+        )
+        if _c3_r and _c3_r.get('bias'):
+            council = _c3_r
+    except Exception as _ce:
+        council = {'bias':'N/A','reason':f'council_err:{str(_ce)[:30]}','action':'WAIT','confidence':'LOW','source':'err'}
 
     # ── trader_brain 6层确定性决策引擎（2026-09-11 苏摩111封印）──
     tb_result = {}
