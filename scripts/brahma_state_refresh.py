@@ -469,10 +469,23 @@ def main():
     _save_queue(final_queue)
 
     # [P0-新②] asset_config 动态字段自动更新
+    # [P0-新②] asset_config 동적 필드 자동 업데이트
     try:
         _update_asset_config_liq_gex()
     except Exception as _acue:
         print(f'[state_refresh] asset_config update err: {_acue}')
+
+    # [P0-① 2026-10-10 苏摩111] GEX ZeroFlip/top_strikes → brahma_state
+    try:
+        _inject_gex_to_state()
+    except Exception as _ge:
+        print(f'[state_refresh] gex inject err: {_ge}')
+
+    # [P0-② 2026-10-10 苏摩111] fangcang fc_sim/fc_signal → brahma_state
+    try:
+        _inject_fangcang_to_state()
+    except Exception as _fe:
+        print(f'[state_refresh] fangcang inject err: {_fe}')
 
     print(f'[state_refresh] 队列: 保留{len(active)}个有效 | 过期清理{expired_count}个 | 新增{len(new_signals)}个 | 合计{len(final_queue)}个')
 
@@ -533,6 +546,108 @@ def _update_asset_config_liq_gex():
         print(f'[asset_cfg] 动态字段更新: {updated}')
     else:
         print(f'[asset_cfg] 无变化')
+
+
+
+def _inject_gex_to_state():
+    """
+    P0-① [2026-10-10 苏摩111] gex_state.json → brahma_state_*.json
+    zero_flip / top_strikes / net_gex → 直接写入brahma_state
+    原因：brahma_state_refresh的analyze()不采集GEX详情
+          导致D7输出缺ZeroFlip和磁铁价位
+    """
+    import json as _j, pathlib as _pl
+    gex_f = BASE / 'data' / 'gex_state.json'
+    if not gex_f.exists():
+        return
+    try:
+        gex_all = _j.loads(gex_f.read_text())
+    except:
+        return
+
+    for sym_key in ('BTC', 'ETH'):
+        gs = gex_all.get(sym_key, {})
+        if not gs:
+            continue
+        state_f = BASE / 'data' / f'brahma_state_{sym_key.lower()}.json'
+        if not state_f.exists():
+            continue
+        try:
+            state = _j.loads(state_f.read_text())
+            changed = False
+            zf = float(gs.get('zero_flip', 0))
+            if zf > 0:
+                state['gex_zero_flip'] = zf
+                state['zero_flip']     = zf
+                changed = True
+            ts = gs.get('top_strikes', {})
+            if ts:
+                state['gex_top_strikes'] = list(ts.keys())[:5]
+                changed = True
+            ng = gs.get('net_gex', gs.get('total_gex', 0))
+            if ng:
+                state['gex_net'] = float(ng)
+                changed = True
+            if changed:
+                tmp = state_f.with_suffix('.tmp')
+                tmp.write_text(_j.dumps(state, ensure_ascii=False))
+                tmp.replace(state_f)
+        except Exception as _e:
+            print(f'[gex_inject] {sym_key}: {_e}')
+
+    print(f'[state_refresh] GEX注入完成: BTC zf={gex_all.get("BTC",{}).get("zero_flip","?")} ETH zf={gex_all.get("ETH",{}).get("zero_flip","?")}')
+
+
+def _inject_fangcang_to_state():
+    """
+    P0-② [2026-10-10 苏摩111] fangcang_engine → brahma_state_*.json
+    fc_sim / fc_signal / fc_note 직접 기록
+    원인: state_refresh에서 fangcang을 호출하지 않아 fc_sim=None
+    """
+    import json as _j, pathlib as _pl, sys as _sys
+    _sys.path.insert(0, str(BASE / 'brahma_brain'))
+    for sym_key in ('BTC', 'ETH'):
+        state_f = BASE / 'data' / f'brahma_state_{sym_key.lower()}.json'
+        if not state_f.exists():
+            continue
+        try:
+            state = _j.loads(state_f.read_text())
+            p_val = float(state.get('price', 0))
+            regime = str(state.get('regime', 'CHOP_MID'))
+            direction = str(state.get('signal_dir', state.get('direction', 'NONE')))
+            if p_val <= 0:
+                continue
+
+            from fangcang_engine import fangcang_context_match as _fcm
+            # brahma_state에서 RSI/BBW 읽기
+            _rsi   = float(state.get('rsi_1h', state.get('rsi', 50)) or 50)
+            _bbw   = float(state.get('bb_width', state.get('bbw', 0.01)) or 0.01)
+            _result = _fcm(
+                symbol=sym_key,
+                current_bbw=_bbw,
+                current_rsi=_rsi,
+                current_regime=regime,
+                signal_dir=direction,
+            )
+            if _result and isinstance(_result, dict) and _result.get('n_similar', 0) > 0:
+                # fangcang_context_match 반환구조: score_adj/confidence/long_pct/short_pct
+                _lp = float(_result.get('long_pct', 0))
+                _sp = float(_result.get('short_pct', 0))
+                _fc_dir = 'LONG' if _lp > _sp else ('SHORT' if _sp > _lp else 'NEUTRAL')
+                _fc_sim = float(_result.get('genuine_rate', 0))  # 진짜 돌파율을 유사도로 활용
+                state['fc_sim']    = _fc_sim
+                state['fc_signal'] = _fc_dir
+                state['fc_long_pct']  = _lp
+                state['fc_short_pct'] = _sp
+                state['fc_confidence'] = str(_result.get('confidence', ''))
+                state['fc_n_similar']  = int(_result.get('n_similar', 0))
+                state['fc_note']   = f"n={_result.get('n_similar',0)} conf={_result.get('confidence','')} burst={_result.get('avg_burst_atr_mult',0):.1f}x"[:100]
+                tmp = state_f.with_suffix('.tmp')
+                tmp.write_text(_j.dumps(state, ensure_ascii=False))
+                tmp.replace(state_f)
+                print(f'[fangcang_inject] {sym_key} sim={state["fc_sim"]:.3f} signal={state["fc_signal"]}')
+        except Exception as _e:
+            print(f'[fangcang_inject] {sym_key} err: {_e}')
 
 
 if __name__ == '__main__':
