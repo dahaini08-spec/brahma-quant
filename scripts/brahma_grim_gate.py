@@ -22,7 +22,7 @@ import json, pathlib, sys, os, subprocess, time, ssl, urllib.request
 BASE  = pathlib.Path(__file__).parent.parent
 DATA  = BASE / 'data'
 JARVIS_USER   = os.getenv('JARVIS_USER_ID', '73295708')
-JARVIS_THREAD = os.getenv('JARVIS_THREAD_ID', '01a0d79b-fea4-71b1-9f2a-c02a9844b4ed')
+JARVIS_THREAD = os.getenv('JARVIS_THREAD_ID') or open(__import__('pathlib').Path(__file__).parent.parent/'alerts'/'.env').read().split('JARVIS_THREAD_ID=')[-1].split('\n')[0].strip().strip('"') if (__import__('pathlib').Path(__file__).parent.parent/'alerts'/'.env').exists() else ''  # [P0-D SSOT]
 CHANNEL = 'jarvis'
 
 ctx = ssl.create_default_context()

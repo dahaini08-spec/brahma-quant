@@ -2443,6 +2443,11 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     base_nav_main = max(1, base_nav_main)
 
+    # [P0-B 2026-10-10 苏摩111] CHOP_MID体制强制仓位×0.54（震荡禁重仓铁律）
+    if 'CHOP' in str(reg_now).upper():
+        base_nav_main = max(1, round(base_nav_main * 0.54))
+        base_lev_main = max(3, round(base_lev_main * 0.7))
+
     # [P1-3修复 2026-09-11] 仓位=f(score)线性映射
     # score=110 → 仓位×1.0（基线）
     # score=130 → 仓位×1.3
@@ -3129,7 +3134,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     try:
         _ctx = _ssl.create_default_context(); _ctx.check_hostname=True; _ctx.verify_mode=_ssl.CERT_REQUIRED
         _live = float(_js.loads(_ur.urlopen(
-            f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}USDT', timeout=4, context=_ctx
+            f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}USDT', timeout=8, context=_ctx
         ).read()).get('price', p))
     except Exception:
         _live = None  # D9修复: 拉价格失败时标记为None，不用p掩盖偏差

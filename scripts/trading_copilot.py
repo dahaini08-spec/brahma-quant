@@ -19,6 +19,7 @@ import json, pathlib, time, subprocess, urllib.request, ssl, os, sys
 
 # ── 配置 ──
 WORKDIR       = pathlib.Path('/root/.openclaw/workspace/trading-system')
+BASE          = WORKDIR  # [P0-A fix 2026-10-10] M0自愈路径别名
 JARVIS_USER   = os.getenv('JARVIS_USER_ID', '73295708')
 JARVIS_THREAD = os.getenv('JARVIS_THREAD_ID', '01a0d79b-fea4-71b1-9f2a-c02a9844b4ed')
 CHANNEL       = 'jarvis'
@@ -515,16 +516,18 @@ def m0_analysis_staleness_guard():
         _age = (time.time() - _ts) / 60
         if _age > 90:
             print(f'[M0] ⚠️ auto_analysis {_age:.0f}min 경과 → 자동 재분석 트리거')
-            _r = _sp.run(
-                ['python3', str(BASE / 'scripts' / 'brahma_manual_analysis.py'),
-                 '--symbols', 'BTC', 'ETH'],
-                capture_output=True, timeout=180, cwd=str(BASE)
-            )
-            if _r.returncode == 0:
-                print(f'[M0] ✅ auto_analysis 자동 갱신 완료')
+            # [P0-A 2026-10-10 苏摩111] Popen非阻塞替换run，防止主链3min阻塞M1~M7
+            _lock_f = pathlib.Path('/tmp/brahma_m0_analysis.lock')
+            if not _lock_f.exists():
+                _lock_f.write_text(str(__import__('os').getpid()))
+                _proc = _sp.Popen(
+                    ['python3', str(BASE / 'scripts' / 'brahma_manual_analysis.py'),
+                     '--symbols', 'BTC', 'ETH'],
+                    stdout=_sp.DEVNULL, stderr=_sp.DEVNULL, cwd=str(BASE)
+                )
+                print(f'[M0] ✅ auto_analysis 非阻塞启动 PID={_proc.pid}')
             else:
-                _err = (_r.stderr or b'').decode()[-120:]
-                print(f'[M0] ❌ 갱신 실패: {_err}')
+                print(f'[M0] 已有分析进程运行中，跳过重复触发')
         elif _age > 30:
             print(f'[M0] auto_analysis {_age:.0f}min (임계치 90min)')
     except Exception as _e:
@@ -594,11 +597,21 @@ def main():
     except Exception as e:
         print(f'[M7 ERR] {e}')
 
+    # [P0-A] M0 lock 정리: 분석 프로세스 완료 시 lock 파일 삭제
+    try:
+        _lf = pathlib.Path('/tmp/brahma_m0_analysis.lock')
+        if _lf.exists():
+            import os as _os
+            _pid = int(_lf.read_text().strip())
+            try: _os.kill(_pid, 0)
+            except ProcessLookupError: _lf.unlink(missing_ok=True)
+    except Exception: pass
+
     if alerts:
         for sk, msg in alerts:
             push(msg, sk)
             state[sk] = time.time()
-            save_state(state)
+        save_state(state)
         print(f'[副驾] 推送 {len(alerts)} 条警报')
     else:
         print(f'[副驾] 无触发 — 所有信号在安全区间')
