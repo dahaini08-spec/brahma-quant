@@ -803,25 +803,25 @@ def main():
     except Exception as e:
         print(f'[M6 ERR] {e}')
 
-    # M6.5: BTC→ETH 领先信号 + 相关性监控 [P1-⑤⑦ 2026-10-09]
+    # M6.5: BTC→ETH 领先信号 + 相关性监控 [P1修复 2026-10-10 苏摩111: importlib→直接import]
     try:
-        import importlib.util as _ilu6
-        _spec6 = _ilu6.spec_from_file_location('lead', str(WORKDIR / 'scripts/brahma_lead_signal.py'))
-        _lead  = _ilu6.module_from_spec(_spec6)
-        _spec6.loader.exec_module(_lead)
-        _lead_alerts = _lead.check_lead_signals()
+        import sys as _sys6
+        if str(WORKDIR / 'scripts') not in _sys6.path:
+            _sys6.path.insert(0, str(WORKDIR / 'scripts'))
+        from brahma_lead_signal import check_lead_signals as _check_lead
+        _lead_alerts = _check_lead()
         if _lead_alerts:
             print(f'[M6.5 lead] {len(_lead_alerts)}条领先信号')
     except Exception as e:
         print(f'[M6.5 ERR] {e}')
 
-    # M7: VIP策略状态监控 — 关键维度变化主动推送
+    # M7: VIP策略状态监控 [P1修复 2026-10-10 苏摩111: importlib→直接import]
     try:
-        import importlib.util as _ilu, sys as _sys
-        _spec = _ilu.spec_from_file_location('m7', str(WORKDIR / 'scripts/m7_vip_monitor.py'))
-        _m7 = _ilu.module_from_spec(_spec)
-        _spec.loader.exec_module(_m7)
-        _m7_result = _m7.check_all()
+        import sys as _sys7
+        if str(WORKDIR / 'scripts') not in _sys7.path:
+            _sys7.path.insert(0, str(WORKDIR / 'scripts'))
+        from m7_vip_monitor import check_all as _m7_check_all
+        _m7_result = _m7_check_all()
         for sk, msg in _m7_result:
             alerts.append((sk, msg))
         if _m7_result:
