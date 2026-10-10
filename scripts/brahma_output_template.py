@@ -304,7 +304,7 @@ def format_full_report(sym: str, d: dict) -> str:
     raw_score  = d.get('raw_score', 0.0)
 
     # ── VIP ──
-    signal_dir = d.get('signal_dir', 'SHORT')
+    signal_dir = d.get('signal_dir', 'WAIT')  # [P1修复 2026-10-10 苏摩111] 기본값 SHORT→WAIT (BTC NEUTRAL 오방향 방지)
     # [封印 2026-10-07 苏摩111] sl/tp1/entry 多路降级：
     # brahma_state顶层 sl=0时，从 trader_brain / smc 补充
     _tb        = (d.get('trader_brain') or {})
@@ -553,7 +553,7 @@ def format_full_report(sym: str, d: dict) -> str:
         f'| **κ(Kappa)** | **{kappa:+.3f}** | {kap_icon} |',
         f'| **GEX** | **{gex:+.2f}M** | {"正Gamma锁价" if gex > 0 else "负Gamma推波"} |',
         # [改造③ v3.0] ZeroFlip + top_strikes GEX磁铁
-        f'| **GEX ZeroFlip** | **${d.get("gex_zero_flip", d.get("zero_flip", 0)):,.0f}** | {"⚠️ 当前在ZeroFlip下方(负Gamma区)" if p < d.get("gex_zero_flip", d.get("zero_flip", float("inf"))) else "✅ 当前在ZeroFlip上方(正Gamma区)"} |' if d.get('gex_zero_flip') or d.get('zero_flip') else '',
+        f'| **GEX ZeroFlip** | **\${d.get("gex_zero_flip", d.get("zero_flip", 0)):,.0f}** | {("⚠️ 当前在ZeroFlip下方(负Gamma区)→做市商空头对冲" if p < d.get("gex_zero_flip", d.get("zero_flip", float("inf"))) else "✅ 当前在ZeroFlip上方(正Gamma区)→做市商多头对冲，空单需谨慎")} |' if d.get('gex_zero_flip') or d.get('zero_flip') else '',
         f'| **GEX磁铁** | {str(d.get("gex_top_strikes", [])[:3])} | 期权最大持仓位=引力中心 |' if d.get('gex_top_strikes') else '',
         f'| IV分位 | **{iv_rank:.1f}%** | {iv_icon} |',
         f'| ATR 1H | ${atr_1h:,.0f} | SL最小≥${atr_1h*1.5:,.0f}（1.5×） |',
@@ -669,7 +669,9 @@ def format_full_report(sym: str, d: dict) -> str:
             _sl   = round(liq_l - max(_atr1h * 1.5, _atr4h * 1.0), 1)
             _tp1  = round(liq_s if liq_s > p else p + _atr4h * 3, 1)
             _tp2  = round(_tp1 * 1.008, 1)
-            _rr   = round((_tp1 - _e_lo) / (_e_lo - _sl), 1) if _e_lo > _sl and _tp1 > _e_lo else 0
+            # [P2修复 2026-10-10 苏摩111] LONG RR 기준: 중간값 (보수적)
+            _e_mid = (_e_lo + _e_hi) / 2
+            _rr   = round((_tp1 - _e_mid) / (_e_mid - _sl), 1) if _e_mid > _sl and _tp1 > _e_mid else 0
             lines += [
                 '```',
                 f'🌿 姓赵不宣 | {sym} 今日布局',
@@ -712,7 +714,9 @@ def format_full_report(sym: str, d: dict) -> str:
                 _tp1  = round(liq_l, 1) if liq_l > 0 else round(p - _atr4h * 3, 1)
                 _tp2  = round(_tp1 * 0.992, 1)
                 _tp3  = round(_tp1 * 0.985, 1)
-                _rr   = round((_e_hi - _tp1) / (_sl - _e_hi), 1) if _sl > _e_hi > _tp1 else 0
+                # [P2修复 2026-10-10 苏摩111] SHORT RR 기준: 중간값 (보수적)
+                _e_mid = (_e_lo + _e_hi) / 2
+                _rr   = round((_e_mid - _tp1) / (_sl - _e_mid), 1) if _sl > _e_mid > _tp1 else 0
             elif signal_dir == 'LONG' and liq_l < p:
                 _e_lo = round(liq_l, 1)
                 _e_hi = round(liq_l * 1.003, 1)
@@ -720,7 +724,9 @@ def format_full_report(sym: str, d: dict) -> str:
                 _tp1  = round(liq_s, 1) if liq_s > p else round(p + _atr4h * 3, 1)
                 _tp2  = round(_tp1 * 1.008, 1)
                 _tp3  = round(_tp1 * 1.015, 1)
-                _rr   = round((_tp1 - _e_lo) / (_e_lo - _sl), 1) if _e_lo > _sl and _tp1 > _e_lo else 0
+                # [P2修复 2026-10-10 苏摩111] LONG RR 기준: 중간값 (보수적)
+            _e_mid = (_e_lo + _e_hi) / 2
+            _rr   = round((_tp1 - _e_mid) / (_e_mid - _sl), 1) if _e_mid > _sl and _tp1 > _e_mid else 0
         lines += [
             '```',
             f'🌿 姓赵不宣 | {sym} 今日布局',

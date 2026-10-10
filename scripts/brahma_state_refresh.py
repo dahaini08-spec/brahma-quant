@@ -705,6 +705,18 @@ def _write_light_state():
             light['signal_dir'] = full.get('signal_dir', full.get('direction', 'WAIT'))
 
             # liq 별칭: 실제 필드명 사용
+            # [P1修复 2026-10-10] LSR 실시간 갱신 — Binance API 직접 조회
+            try:
+                import urllib.request as _ulr, json as _ulj, ssl as _uls
+                _uctx = _uls.create_default_context()
+                _lsr_r = _ulj.loads(_ulr.urlopen(
+                    f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol={sym.upper()}USDT&period=5m&limit=1',
+                    timeout=4, context=_uctx).read())
+                if _lsr_r:
+                    light['lsr_retail'] = float(_lsr_r[-1].get('longAccount', 0)) * 100
+                    full['lsr_retail'] = light['lsr_retail']  # 원본도 갱신
+            except Exception:
+                light['lsr_retail'] = full.get('lsr_retail', 50)
             light['liq_nearest_long']  = full.get('liq_long',  full.get('liq_long2', 0))
             light['liq_nearest_short'] = full.get('liq_short', full.get('liq_short2', 0))
 
