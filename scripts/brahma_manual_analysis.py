@@ -4295,7 +4295,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
         # [2026-10-05 P0-B fix] 顶部已import sys，删除函数内重复别名
         if str(Path(__file__).parent) not in sys.path:
             sys.path.insert(0, str(Path(__file__).parent))
-        from brahma_output_template import format_full_report as _fmt_report
+        from brahma_output_template import format_full_report as _fmt_report, format_consensus_table as _fmt_consensus
         # [2026-10-05 Fix-C v2] 使用_sync_state（44字段完整）替代原始 d
         # 根因: d['gex']是 dict、d缺 fvg_votes等，会导致 format 崩溃
         _locs = locals()
@@ -4313,6 +4313,15 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
         if _template_block:
             lines.append('')
             lines.append(_template_block)
+
+        # [修复② 2026-10-10 苏摩111] 追加三方一致性评分表（SOUL.md强制要求）
+        try:
+            _cons = _fmt_consensus(_fmt_dict, _fmt_dict)  # 单标的时BTC=ETH=同一个dict做示意
+            if _cons and len(_cons) > 20:
+                lines.append('')
+                lines.append(_cons)
+        except Exception as _ce:
+            print(f'[WARN] consensus_table: {_ce}', file=sys.stderr)
     except Exception as _te:
         # [2026-10-05 苏摩111 P0-A修复] _sys_te NameError根治：直接用sys（顶部已import）
         print(f'[WARN] format_full_report失败: {_te}', file=sys.stderr)

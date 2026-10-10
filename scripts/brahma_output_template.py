@@ -101,6 +101,21 @@ def format_full_report(sym: str, d: dict) -> str:
     oi_chg     = d.get('oi_chg_total', 0)
     fr         = d.get('fr', 0.0)
 
+    # [修复① 2026-10-10 苏摩111] oi_sequence推导15M/1H/4H信号
+    # oi_sequence = 8根15min快照，相邻diff即可得方向
+    def _oi_dir_from_seq(seq, n_bars):
+        """从OI序列推导方向: n_bars=最近N根15min均值 vs 前N根"""
+        if not seq or len(seq) < n_bars*2: return d.get('oi_signal','NEUTRAL')
+        recent = sum(seq[-n_bars:]) / n_bars
+        prev   = sum(seq[-n_bars*2:-n_bars]) / n_bars
+        diff_pct = (recent - prev) / prev * 100 if prev else 0
+        if diff_pct > 0.1:  return 'LONG_BUILD'
+        if diff_pct < -0.1: return 'SHORT_BUILD'
+        return 'NEUTRAL'
+    _oi_15m = d.get('oi_15m') or _oi_dir_from_seq(oi_seq, 1)
+    _oi_1h  = d.get('oi_1h')  or _oi_dir_from_seq(oi_seq, 4)
+    _oi_4h  = d.get('oi_4h')  or _oi_dir_from_seq(oi_seq, 8)
+
     # ── LSR ──
     lsr_big    = d.get('lsr_big', 0.0)
     lsr_retail = d.get('lsr_retail', 0.0)
@@ -331,12 +346,12 @@ def format_full_report(sym: str, d: dict) -> str:
         '',
         '| 时框 | OI信号 | 解读 |',
         '|------|--------|------|',
-        f'| 15M | {d.get("oi_15m","?")} | {"多头平仓" if "UNWIND" in d.get("oi_15m","") else "空头建仓" if "SHORT" in d.get("oi_15m","") else "—"} |',
-        f'| 1H  | {d.get("oi_1h","?")} | {"多头持续减仓" if "UNWIND" in d.get("oi_1h","") else "空头增仓" if "SHORT" in d.get("oi_1h","") else "—"} |',
-        f'| 4H  | {d.get("oi_4h","?")} | {"空头建新仓" if "SHORT" in d.get("oi_4h","") else "多头建仓" if "LONG" in d.get("oi_4h","") else "—"} |',
+        f'| 15M | {_oi_15m} | {"多头平仓" if "UNWIND" in _oi_15m else "空头建仓" if "SHORT" in _oi_15m else "多头建仓" if "LONG" in _oi_15m else "中性"} |',
+        f'| 1H  | {_oi_1h}  | {"多头持续减仓" if "UNWIND" in _oi_1h else "空头增仓" if "SHORT" in _oi_1h else "多头增仓" if "LONG" in _oi_1h else "中性"} |',
+        f'| 4H  | {_oi_4h}  | {"空头建新仓" if "SHORT" in _oi_4h else "多头建仓" if "LONG" in _oi_4h else "中性"} |',
         '',
         '```',
-        f'OI序列：{" → ".join(f"{v:.0f}" for v in oi_seq[-6:])}' if oi_seq else f'OI当前：{d.get("oi_now",0):,.0f}',
+        f'OI序列(15min×8)：{" → ".join(f"{v:.0f}" for v in oi_seq[-8:])}' if oi_seq else f'OI当前：{d.get("oi_now",0):,.0f}',
         f'累计变化：{oi_chg:+.0f}张',
         f'── CVD独立维度 ──',
         f'CVD 1H = {cvd_1h:+.1f}（{"卖方主导" if cvd_1h < 0 else "买方主导"}）',
