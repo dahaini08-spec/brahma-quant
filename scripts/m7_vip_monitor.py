@@ -44,15 +44,69 @@ def _load_vip_cfg():
                 'fr_warn':     float(cfg.get('fr_warn', 0.003)),
                 'fr_alert':    float(cfg.get('fr_alert', 0.006)),
             }
+        # atr_1h는 asset_config에 없음 - brahma_state에서 보강
+        try:
+            for _s in list(_r.keys()):
+                _sp = _m7p.Path(__file__).parent.parent/'data'/f'brahma_state_{_s.lower()}.json'
+                if _sp.exists():
+                    _sd = _m7j.loads(_sp.read_text())
+                    _r[_s]['atr_1h'] = float(_sd.get('atr_1h') or (16 if _s=='ETH' else 400))
+        except: pass
         return _r
     except Exception as e:
         print(f'[M7] asset_config load fail: {e}', file=__import__('sys').stderr)
-        return {
-            'BTC': {'long_entry':(82000,82500),'long_sl':81000,'long_tp':84120,'short_entry':(83800,84120),'short_sl':85200,'short_tp':80821,'hunt_lsr':65.0,'lsr_near':1.5,'invalidate_long':81000,'gex_zf':69910,'fr_warn':0.003,'fr_alert':0.006},
-            'ETH': {'long_entry':(2410,2435),'long_sl':2413,'long_tp':2534,'short_entry':(2520,2534),'short_sl':2558,'short_tp':2435,'hunt_lsr':77.0,'lsr_near':1.5,'invalidate_long':2413,'gex_zf':2519,'fr_warn':0.003,'fr_alert':0.006},
-        }
+        # [2026-10-10 苏摩111] 폴백: 정적 하드코딩 대신 liq_snap 동적 읽기
+        # 근인: 하드코딩 BTC short_entry=83800 = 구버전 가격, 실제 wall=86561
+        _fb = {}
+        try:
+            import json as _j
+            _data_dir = Path(__file__).parent.parent / 'data'
+            for _sym, _hunt, _gex_zf in [('BTC',65.0,69910),('ETH',77.0,2519)]:
+                _st = _j.loads((_data_dir/f'brahma_state_{_sym.lower()}.json').read_text())
+                _liq = (_st.get('extra') or {}).get('liq_snap', {})
+                _pr  = float(_st.get('price', 0) or 0)
+                _wall= float(_liq.get('liq_short_5pct') or (_pr*1.05 if _pr else 0))
+                _pool= float(_liq.get('liq_long_5pct')  or (_pr*0.95 if _pr else 0))
+                _hl_s= float(_liq.get('hl_liq_25x_short') or _wall*0.99)
+                _hl_l= float(_liq.get('hl_liq_25x_long')  or _pool*1.01)
+                _atr = float(_st.get('atr_1h') or ((_st.get('extra') or {}).get('atr_1h')) or (16 if _sym=='ETH' else 400))
+                # 동적 가격 레벨
+                _long_lo  = round(_hl_l * 0.999, 0)
+                _long_hi  = round(_hl_l * 1.001, 0)
+                _long_sl  = round(_hl_l - _atr*1.5, 0)
+                _short_lo = round(_hl_s * 0.999, 0)
+                _short_hi = round(_hl_s * 1.001, 0)
+                _short_sl = round(_hl_s + _atr*1.5, 0)
+                # GEX ZeroFlip 동적 읽기
+                try:
+                    _gex_d = _j.loads((_data_dir/'gex_state.json').read_text())
+                    _gex_zf = float(_gex_d.get(_sym,{}).get('zero_flip',0) or _gex_zf)
+                except: pass
+                _fb[_sym] = {
+                    'long_entry': (_long_lo, _long_hi),
+                    'long_sl': _long_sl, 'long_tp': round(_hl_s, 0),
+                    'short_entry': (_short_lo, _short_hi),
+                    'short_sl': _short_sl, 'short_tp': round(_hl_l, 0),
+                    'hunt_lsr': _hunt, 'lsr_near': 1.5,
+                    'invalidate_long': _long_sl,
+                    'gex_zf': _gex_zf, 'atr_1h': _atr,
+                    'fr_warn': 0.003, 'fr_alert': 0.006,
+                }
+        except Exception as _fe:
+            print(f'[M7] 动态config失败，用静态: {_fe}')
+            _fb = {
+                'BTC': {'long_entry':(79463,79800),'long_sl':78700,'long_tp':85398,'short_entry':(85200,85398),'short_sl':86200,'short_tp':79463,'hunt_lsr':65.0,'lsr_near':1.5,'invalidate_long':78700,'gex_zf':69910,'atr_1h':400,'fr_warn':0.003,'fr_alert':0.006},
+                'ETH': {'long_entry':(2391,2410),'long_sl':2369,'long_tp':2570,'short_entry':(2547,2570),'short_sl':2592,'short_tp':2391,'hunt_lsr':77.0,'lsr_near':1.5,'invalidate_long':2369,'gex_zf':2519,'atr_1h':16,'fr_warn':0.003,'fr_alert':0.006},
+            }
+        return _fb
 
-VIP_CONFIG = _load_vip_cfg()
+VIP_CONFIG = _load_vip_cfg()  # 임포트 시 초기값
+
+def _refresh_vip_config():
+    """[2026-10-10 苏摩111] check_all 매번 최신 liq/atr로 갱신"""
+    global VIP_CONFIG
+    VIP_CONFIG = _load_vip_cfg()
+
 
 ctx = ssl.create_default_context()
 
@@ -151,18 +205,24 @@ def _m7_atr_neuron(state: dict) -> list:
 
 def check_all() -> list:
     """返回 [(state_key, message), ...] 列表"""
+    _refresh_vip_config()  # 매번 최신 liq/gex/atr 반영
     state   = load_state()
     alerts  = []
     now     = time.time()
 
     # [2026-10-10 苏摩111] P0静默窗口
-    # ZeroFlip失守/LSR猎杀触发后4小时内，FR/CVD等P2信号静默
+    # ZeroFlip失守/LSR猎杀触发后4小时内，FR等P2信号静默
+    # 例外：CVD极端反转（幅度>20000 BTC / >50000 ETH）= 方向逆转 = 强制穿透静默
     _P0_SILENCE = 14400  # 4小时
     _p0_keys = [k for k in state if 'gex_zf' in k or 'lsr_hunt' in k]
     _p0_last = max((state.get(k, 0) for k in _p0_keys), default=0)
     _in_p0_silence = (now - _p0_last) < _P0_SILENCE
     if _in_p0_silence:
-        print(f'[M7] P0静默窗口激活（距上次P0触发{(now-_p0_last)/60:.0f}min），FR/CVD P2信号跳过')
+        print(f'[M7] P0静默窗口激活（距上次P0触发{(now-_p0_last)/60:.0f}min），FR P2信号跳过')
+
+    # CVD极端反转阈值（穿透P0静默）
+    _CVD_PIERCE_BTC = 20000   # BTC CVD单次变化超过此值=方向逆转
+    _CVD_PIERCE_ETH = 50000   # ETH CVD单次变化超过此值=方向逆转
 
     for sym in ['BTC', 'ETH']:
         sf  = f'{sym}USDT'
@@ -286,11 +346,17 @@ def check_all() -> list:
                 ))
 
         # ══════════════════════════════════════
-        # ③ CVD 极端翻转
+        # ③ CVD 极端翻转（双向：卖→买 / 买→卖）
+        # [2026-10-10 苏摩111] 新增买方翻转，穿透P0静默窗口
+        # 根因：ZeroFlip失守后CVD从-59651→+81580，系统无推送（P0窗口屏蔽）
+        # 修复：CVD极端反转=方向逆转=P0级，强制穿透静默
         # ══════════════════════════════════════
         cvd_prev = state.get(f'm7_cvd_prev_{sym}', 0)
         state[f'm7_cvd_prev_{sym}'] = cvd_v
+        _cvd_pierce = _CVD_PIERCE_ETH if sym == 'ETH' else _CVD_PIERCE_BTC
+        _cvd_delta = cvd_v - cvd_prev
 
+        # 买→卖翻转（原逻辑）
         if cvd_prev > 500 and cvd_v < -2000:
             k = f'm7_cvd_{sym}'
             if now - state.get(k, 0) > COOLDOWN:
@@ -299,11 +365,44 @@ def check_all() -> list:
                     else f'ETH回踩可能加速，等${cfg["long_entry"][0]:,}~${cfg["long_entry"][1]:,}接多'
                 )
                 alerts.append((k,
-                    f'⚠️ 梵天VIP提醒 | {sym} CVD极端翻转\n\n'
+                    f'⚠️ 梵天VIP | {sym} CVD极端翻转（买→卖）\n\n'
                     f'CVD: {cvd_prev:+.0f} → {cvd_v:+.0f}\n'
                     f'= 买方→卖方极端转变\n'
                     f'当前价 ${price:,.2f}\n\n'
                     f'📌 策略影响：{impact}\n\n'
+                    f'🌿 姓赵不宣 | 不是建议'
+                ))
+
+        # 卖→买极端翻转（新增，穿透P0静默）
+        # 条件：前值负+当前强正+变化幅度超阈值 = 方向完全逆转
+        elif cvd_prev < -500 and cvd_v > 2000 and abs(_cvd_delta) > _cvd_pierce:
+            k = f'm7_cvd_bull_{sym}'
+            _cooldown_cvd_bull = 3600  # 1小时冷却（不受P0窗口限制）
+            if now - state.get(k, 0) > _cooldown_cvd_bull:
+                # ZeroFlip状态检查
+                try:
+                    import pathlib as _pl
+                    _gex = json.loads((_pl.Path('data/gex_state.json')).read_text()).get(sym,{})
+                    _zf = float(_gex.get('zero_flip',0) or 0)
+                    _above_zf = price > _zf if _zf > 0 else False
+                except: _zf = 0; _above_zf = False
+
+                if sym == 'ETH' and not _above_zf and _zf > 0:
+                    # ZeroFlip失守状态에서 CVD反转 = Fake Break可能性
+                    action = (
+                        f'⚡ ZeroFlip失守后CVD强反转 = Fake Break警报\n'
+                        f'空单暂缓 | 等1H收阳突破${_zf:,.0f}确认多方向\n'
+                        f'突破站稳 → 入多 SL${price-14*1.5:,.0f} TP${_zf+30:,.0f}'
+                    )
+                else:
+                    action = f'{sym}买方接管，空单暂缓，等1H收阳确认后可入多'
+
+                alerts.append((k,
+                    f'🟢 梵天VIP | {sym} CVD强势反转（卖→买）\n\n'
+                    f'CVD: {cvd_prev:+.0f} → {cvd_v:+.0f}\n'
+                    f'变化幅度: {_cvd_delta:+,.0f}（>{_cvd_pierce:,}阈值）\n'
+                    f'当前价 ${price:,.2f}\n\n'
+                    f'📌 {action}\n\n'
                     f'🌿 姓赵不宣 | 不是建议'
                 ))
 
