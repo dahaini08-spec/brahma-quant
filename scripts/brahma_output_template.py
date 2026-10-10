@@ -385,13 +385,28 @@ def format_full_report(sym: str, d: dict) -> str:
 
     step11_verdict = '✅ ENTER' if not blocked else f'WAIT · 阻断{[k for k,v in g_results.items() if not v][-1] if g_results else "G5"}'
 
-    # ── EV计算展示 ──
+    # ── EV计算展示 (P0修复 2026-10-10 苏摩111: 使用实际WR矩阵) ──
     if entry_hi > 0 and sl > 0 and tp1 > 0:
-        reward = abs(entry_hi - tp1)
-        risk   = abs(sl - entry_hi)
-        wr_est = 0.55
-        ev_val = reward * wr_est - risk * (1 - wr_est)
-        ev_str = f'({reward:,.0f}×{wr_est})-({risk:,.0f}×{1-wr_est:.2f})=**+${ev_val:,.0f}，EV正 ✅**'
+        # 入场中间值基准 (更保守)
+        _e_mid  = (entry_lo + entry_hi) / 2 if entry_lo > 0 else entry_hi
+        reward  = abs(_e_mid - tp1)
+        risk    = abs(sl - _e_mid)
+        # 从WR矩阵读取实际WR
+        wr_est  = 0.45  # 默认保守值
+        try:
+            import json as _j, pathlib as _pl
+            _wrf = _pl.Path(__file__).parent.parent / 'data' / 'wr_matrix.json'
+            if _wrf.exists():
+                _wrd = _j.loads(_wrf.read_text())
+                _mat = _wrd.get('matrix', {})
+                _key = f'{regime.upper()}:{signal_dir.upper()}'
+                if _key in _mat and _mat[_key].get('total', 0) >= 8:
+                    wr_est = float(_mat[_key].get('wr', 0.45))
+        except Exception:
+            pass
+        ev_val  = reward * wr_est - risk * (1 - wr_est)
+        ev_sign = '✅' if ev_val > 0 else '❌'
+        ev_str  = f'({reward:,.0f}×{wr_est:.2f})-({risk:,.0f}×{1-wr_est:.2f})=**{"+" if ev_val>=0 else ""}${ev_val:,.0f}，EV{"正" if ev_val>0 else "负"} {ev_sign}**'
     else:
         ev_str = '—'
 
@@ -727,6 +742,22 @@ def format_full_report(sym: str, d: dict) -> str:
                 # [P2修复 2026-10-10 苏摩111] LONG RR基准: 中间值 (保守)
             _e_mid = (_e_lo + _e_hi) / 2
             _rr   = round((_tp1 - _e_mid) / (_e_mid - _sl), 1) if _e_mid > _sl and _tp1 > _e_mid else 0
+        # [P0修复 2026-10-10 苏摩111] Step11=WAIT时 显示等待，不显示入场区
+    if blocked:
+        lines += [
+            '```',
+            f'🌿 姓赵不宣 | {sym} 今日布局',
+            f'——— {sym} ${p:,.1f} ———',
+            f'⏳ 等待结构确认｜Step11裁决 WAIT',
+            f'条件: {step11_verdict}',
+            f'当前信号方向: {signal_dir} | score={score:.0f}',
+            f'⚠️ 不满足入场条件，不推荐任何方向',
+            '🌿 姓赵不宣 | 不是建议',
+            # [2026-10-10 苏摩111] Groq动态风险提示
+            *_groq_vip_comment(sym, p, d),
+            '```',
+        ]
+    else:
         lines += [
             '```',
             f'🌿 姓赵不宣 | {sym} 今日布局',
@@ -737,7 +768,6 @@ def format_full_report(sym: str, d: dict) -> str:
             f'⚠️ RR={_rr:.1f}｜EV={ev:+.3f}%',
             f'🚫 破${_sl:,.1f}作废',
             '🌿 姓赵不宣 | 不是建议',
-            # [2026-10-10 苏摩111] Groq动态风险提示
             *_groq_vip_comment(sym, p, d),
             '```',
         ]
