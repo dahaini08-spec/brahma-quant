@@ -303,6 +303,6 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # 原：RSI触发依赖导致60min内信号变化检测不到；新：hash扩展entry/sl维度
 7 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/signal_change_detector.py >> logs/signal_change.log 2>&1  # [频率优化 2026-10-10] →60min，brahma_state每小时更新，score变化感知1H足够
 */5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/price_alert_monitor.py >> logs/price_alert.log 2>&1  # [频率优化 2026-10-10] 1min→5min，M7已覆盖FR/LSR，price_alert专注价位+冲突检查
-* * * * * cd /root/.openclaw/workspace/trading-system && timeout 90 python3 scripts/trading_copilot.py >> logs/copilot.log 2>&1
+* * * * * cd /root/.openclaw/workspace/trading-system && flock -n /tmp/brahma_copilot.lock timeout 90 python3 scripts/trading_copilot.py >> logs/copilot.log 2>&1
 */15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/brahma_strategy_validator.py check >> logs/strategy_validator.log 2>&1
 */30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/neuron_dashboard.py >> logs/neuron_dashboard.log 2>&1  # [频率优化 2026-10-10] 15min→30min，仪表盘读取copilot已有数据

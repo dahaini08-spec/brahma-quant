@@ -534,113 +534,6 @@ def m0_analysis_staleness_guard():
         print(f'[M0 ERR] {_e}')
 
 
-def main():
-    ts = time.strftime('%H:%M:%S')
-    state = load_state()
-    alerts = []
-
-    print(f'[副驾] {ts} 五模块检查启动...')
-
-    try: m0_analysis_staleness_guard()
-    except Exception as e: print(f'[M0 ERR] {e}')
-
-    try: m1_price_proximity(state, alerts)
-    except Exception as e: print(f'[M1 ERR] {e}')
-
-    try: m2_oi_daily_change(state, alerts)
-    except Exception as e: print(f'[M2 ERR] {e}')
-
-    try: m3_fr_extreme(state, alerts)
-    except Exception as e: print(f'[M3 ERR] {e}')
-
-    try: m4_big_lsr_delta(state, alerts)
-    except Exception as e: print(f'[M4 ERR] {e}')
-
-    try: m5_hunt_and_position(state, alerts)
-    except Exception as e: print(f'[M5 ERR] {e}')
-
-    # M6: Goal Loop Monitor — 目标导向循环检查
-    try:
-        import subprocess as _sp, sys as _sys
-        _gl = _sp.run(
-            ['python3', 'scripts/brahma_goal_loop.py', 'check'],
-            cwd=str(WORKDIR), capture_output=True, text=True, timeout=20
-        )
-        if _gl.stdout.strip():
-            print(f'[M6 goal_loop] {_gl.stdout.strip()[:120]}')
-    except Exception as e:
-        print(f'[M6 ERR] {e}')
-
-    # M6.5: BTC→ETH 领先信号 + 相关性监控 [P1-⑤⑦ 2026-10-09]
-    try:
-        import importlib.util as _ilu6
-        _spec6 = _ilu6.spec_from_file_location('lead', str(WORKDIR / 'scripts/brahma_lead_signal.py'))
-        _lead  = _ilu6.module_from_spec(_spec6)
-        _spec6.loader.exec_module(_lead)
-        _lead_alerts = _lead.check_lead_signals()
-        if _lead_alerts:
-            print(f'[M6.5 lead] {len(_lead_alerts)}条领先信号')
-    except Exception as e:
-        print(f'[M6.5 ERR] {e}')
-
-    # M7: VIP策略状态监控 — 关键维度变化主动推送
-    try:
-        import importlib.util as _ilu, sys as _sys
-        _spec = _ilu.spec_from_file_location('m7', str(WORKDIR / 'scripts/m7_vip_monitor.py'))
-        _m7 = _ilu.module_from_spec(_spec)
-        _spec.loader.exec_module(_m7)
-        _m7_result = _m7.check_all()
-        for sk, msg in _m7_result:
-            alerts.append((sk, msg))
-        if _m7_result:
-            print(f'[M7] {len(_m7_result)}条VIP策略变更警报')
-    except Exception as e:
-        print(f'[M7 ERR] {e}')
-
-    # [P0-A] M0 lock 정리: 분석 프로세스 완료 시 lock 파일 삭제
-    try:
-        _lf = pathlib.Path('/tmp/brahma_m0_analysis.lock')
-        if _lf.exists():
-            import os as _os
-            _pid = int(_lf.read_text().strip())
-            try: _os.kill(_pid, 0)
-            except ProcessLookupError: _lf.unlink(missing_ok=True)
-    except Exception: pass
-
-    if alerts:
-        for sk, msg in alerts:
-            push(msg, sk)
-            state[sk] = time.time()
-        save_state(state)
-        print(f'[副驾] 推送 {len(alerts)} 条警报')
-    else:
-        print(f'[副驾] 无触发 — 所有信号在安全区间')
-
-    # M8: Groq恒量分析层 [2026-10-10 苏摩111] 每分钟8次 = 11520次/日 = 80%配额
-    m8_groq_smart_layer(state)
-    save_state(state)
-
-
-if __name__ == '__main__':
-    main()
-
-# ══════════════════════════════════════════════════════════════════
-# M8: Groq异常驱动分析层 [重新设计 2026-10-10 苏摩111]
-# 原则: 不追求调用次数，每次调用产生真实增量价值
-#
-# 触发逻辑 (4类，每类独立冷却):
-#   A. 异常检测: CVD突变>500 / LSR突变>2% → 深度解读
-#   B. 关键价位: 距入场<0.3% / 距止损<0.5% → 结构评估
-#   C. 周期摘要: 每15分钟生成 "过去15分钟发生了什么"
-#   D. 体制感知: 每5分钟 Hurst/RSI/OI组合变化 → 体制转换检测
-#
-# 预计调用量:
-#   A异常: ~30次/日 (真实异常时)
-#   B价位: ~10次/日 (接近关键位时)
-#   C摘要: 96次/日 (15min×96)
-#   D体制: 288次/日 (5min×288)
-#   合计: ~424次/日 = 3%配额 (高质量 > 高数量)
-# ══════════════════════════════════════════════════════════════════
 def m8_groq_smart_layer(state: dict) -> None:
     """
     异常驱动的Groq智能分析层
@@ -855,3 +748,112 @@ def m8_groq_smart_layer(state: dict) -> None:
 
     except Exception as _e:
         pass  # 조용히 실패, 메인 루프 불간섭
+
+
+def main():
+    ts = time.strftime('%H:%M:%S')
+    state = load_state()
+    alerts = []
+
+    print(f'[副驾] {ts} 五模块检查启动...')
+
+    try: m0_analysis_staleness_guard()
+    except Exception as e: print(f'[M0 ERR] {e}')
+
+    try: m1_price_proximity(state, alerts)
+    except Exception as e: print(f'[M1 ERR] {e}')
+
+    try: m2_oi_daily_change(state, alerts)
+    except Exception as e: print(f'[M2 ERR] {e}')
+
+    try: m3_fr_extreme(state, alerts)
+    except Exception as e: print(f'[M3 ERR] {e}')
+
+    try: m4_big_lsr_delta(state, alerts)
+    except Exception as e: print(f'[M4 ERR] {e}')
+
+    try: m5_hunt_and_position(state, alerts)
+    except Exception as e: print(f'[M5 ERR] {e}')
+
+    # M6: Goal Loop Monitor — 目标导向循环检查
+    try:
+        import subprocess as _sp, sys as _sys
+        _gl = _sp.run(
+            ['python3', 'scripts/brahma_goal_loop.py', 'check'],
+            cwd=str(WORKDIR), capture_output=True, text=True, timeout=20
+        )
+        if _gl.stdout.strip():
+            print(f'[M6 goal_loop] {_gl.stdout.strip()[:120]}')
+    except Exception as e:
+        print(f'[M6 ERR] {e}')
+
+    # M6.5: BTC→ETH 领先信号 + 相关性监控 [P1-⑤⑦ 2026-10-09]
+    try:
+        import importlib.util as _ilu6
+        _spec6 = _ilu6.spec_from_file_location('lead', str(WORKDIR / 'scripts/brahma_lead_signal.py'))
+        _lead  = _ilu6.module_from_spec(_spec6)
+        _spec6.loader.exec_module(_lead)
+        _lead_alerts = _lead.check_lead_signals()
+        if _lead_alerts:
+            print(f'[M6.5 lead] {len(_lead_alerts)}条领先信号')
+    except Exception as e:
+        print(f'[M6.5 ERR] {e}')
+
+    # M7: VIP策略状态监控 — 关键维度变化主动推送
+    try:
+        import importlib.util as _ilu, sys as _sys
+        _spec = _ilu.spec_from_file_location('m7', str(WORKDIR / 'scripts/m7_vip_monitor.py'))
+        _m7 = _ilu.module_from_spec(_spec)
+        _spec.loader.exec_module(_m7)
+        _m7_result = _m7.check_all()
+        for sk, msg in _m7_result:
+            alerts.append((sk, msg))
+        if _m7_result:
+            print(f'[M7] {len(_m7_result)}条VIP策略变更警报')
+    except Exception as e:
+        print(f'[M7 ERR] {e}')
+
+    # [P0-A] M0 lock 정리: 분석 프로세스 완료 시 lock 파일 삭제
+    try:
+        _lf = pathlib.Path('/tmp/brahma_m0_analysis.lock')
+        if _lf.exists():
+            import os as _os
+            _pid = int(_lf.read_text().strip())
+            try: _os.kill(_pid, 0)
+            except ProcessLookupError: _lf.unlink(missing_ok=True)
+    except Exception: pass
+
+    if alerts:
+        for sk, msg in alerts:
+            push(msg, sk)
+            state[sk] = time.time()
+        save_state(state)
+        print(f'[副驾] 推送 {len(alerts)} 条警报')
+    else:
+        print(f'[副驾] 无触发 — 所有信号在安全区间')
+
+    # M8: Groq恒量分析层 [2026-10-10 苏摩111] 每分钟8次 = 11520次/日 = 80%配额
+    m8_groq_smart_layer(state)
+    save_state(state)
+
+
+if __name__ == '__main__':
+    main()
+
+# ══════════════════════════════════════════════════════════════════
+# M8: Groq异常驱动分析层 [重新设计 2026-10-10 苏摩111]
+# 原则: 不追求调用次数，每次调用产生真实增量价值
+#
+# 触发逻辑 (4类，每类独立冷却):
+#   A. 异常检测: CVD突变>500 / LSR突变>2% → 深度解读
+#   B. 关键价位: 距入场<0.3% / 距止损<0.5% → 结构评估
+#   C. 周期摘要: 每15分钟生成 "过去15分钟发生了什么"
+#   D. 体制感知: 每5分钟 Hurst/RSI/OI组合变化 → 体制转换检测
+#
+# 预计调用量:
+#   A异常: ~30次/日 (真实异常时)
+#   B价位: ~10次/日 (接近关键位时)
+#   C摘要: 96次/日 (15min×96)
+#   D体制: 288次/日 (5min×288)
+#   合计: ~424次/日 = 3%配额 (高质量 > 高数量)
+# ══════════════════════════════════════════════════════════════════
