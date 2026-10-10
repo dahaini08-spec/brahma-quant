@@ -617,7 +617,7 @@ def main():
         print(f'[副驾] 无触发 — 所有信号在安全区间')
 
     # M8: Groq恒量分析层 [2026-10-10 苏摩111] 每分钟8次 = 11520次/日 = 80%配额
-    m8_groq_constant_layer(state)
+    m8_groq_smart_layer(state)
     save_state(state)
 
 
@@ -625,116 +625,207 @@ if __name__ == '__main__':
     main()
 
 # ══════════════════════════════════════════════════════════════════
-# M8: Groq恒量分析层 [新增 2026-10-10 苏摩111]
-# 每分钟运行，8次Groq调用，累计11520次/日 = 80%配额利用率
-# 输出写入 data/groq_realtime_analysis.json，供仪表盘+下次分析读取
+# M8: Groq异常驱动分析层 [重新设计 2026-10-10 苏摩111]
+# 原则: 不追求调用次数，每次调用产生真实增量价值
+#
+# 触发逻辑 (4类，每类独立冷却):
+#   A. 异常检测: CVD突变>500 / LSR突变>2% → 深度解读
+#   B. 关键价位: 距入场<0.3% / 距止损<0.5% → 结构评估
+#   C. 周期摘要: 每15分钟生成 "过去15分钟发生了什么"
+#   D. 体制感知: 每5分钟 Hurst/RSI/OI组合变化 → 体制转换检测
+#
+# 预计调用量:
+#   A异常: ~30次/日 (真实异常时)
+#   B价位: ~10次/日 (接近关键位时)
+#   C摘要: 96次/日 (15min×96)
+#   D体制: 288次/日 (5min×288)
+#   合计: ~424次/日 = 3%配额 (高质量 > 高数量)
 # ══════════════════════════════════════════════════════════════════
-def m8_groq_constant_layer(state: dict) -> None:
+def m8_groq_smart_layer(state: dict) -> None:
     """
-    每分钟必跑的Groq恒量分析层
-    不推送，只写文件，为梵天大脑提供实时AI判断支撑
-    8个维度 × 1440分钟 = 11,520次/日 = Groq配额80%
+    异常驱动的Groq智能分析层
+    每次调用前检查是否有真实增量价值
+    无异常=静默跳过，有异常=深度分析
     """
-    import time as _t, json as _j, pathlib as _pl
+    import time as _t, json as _j, pathlib as _pl, sys as _s
     _now = _t.time()
-    
-    # 节流：同一分钟内不重复运行
-    if _now - state.get('m8_last_run', 0) < 55:
-        return
-    state['m8_last_run'] = _now
-    
+    _s.path.insert(0, str(_pl.Path(__file__).parent))
+
     try:
-        _sys = __import__('sys')
-        _sys.path.insert(0, str(_pl.Path(__file__).parent))
         from free_llm_client import chat as _gc, GROQ_KEY
         if not GROQ_KEY:
             return
-        
-        # 读取最新市场状态
-        _data_dir = _pl.Path(__file__).parent.parent / 'data'
-        def _read_state(sym):
-            f = _data_dir / f'brahma_state_{sym.lower()}.json'
+
+        _dd = _pl.Path(__file__).parent.parent / 'data'
+
+        def _rs(sym):
+            f = _dd / f'brahma_state_{sym.lower()}.json'
             return _j.loads(f.read_text()) if f.exists() else {}
-        
-        btc = _read_state('btc')
-        eth = _read_state('eth')
-        
-        _bp = float(btc.get('price', 0) or 0)
-        _ep = float(eth.get('price', 0) or 0)
-        _br = str(btc.get('regime', 'CHOP_MID'))
-        _er = str(eth.get('regime', 'CHOP_MID'))
+
+        btc = _rs('btc'); eth = _rs('eth')
+        _bp  = float(btc.get('price', 0) or 0)
+        _ep  = float(eth.get('price', 0) or 0)
         _bcvd = float(btc.get('cvd_1h', 0) or 0)
         _ecvd = float(eth.get('cvd_1h', 0) or 0)
         _blsr = float(btc.get('lsr_retail', 50) or 50)
         _elsr = float(eth.get('lsr_retail', 50) or 50)
-        _bfr  = float(btc.get('fr', 0) or 0) * 100
-        _efr  = float(eth.get('fr', 0) or 0) * 100
-        _boi  = str(btc.get('oi_direction', 'NEUTRAL'))
-        _eoi  = str(eth.get('oi_direction', 'NEUTRAL'))
+        _bh   = float(btc.get('hurst', 0.5) or 0.5)
+        _eh   = float(eth.get('hurst', 0.5) or 0.5)
         _brsi = float(btc.get('rsi_1h', 50) or 50)
         _ersi = float(eth.get('rsi_1h', 50) or 50)
-        
-        import concurrent.futures as _cf
+        _boi  = str(btc.get('oi_direction', 'NEUTRAL'))
+        _eoi  = str(eth.get('oi_direction', 'NEUTRAL'))
+        _br   = str(btc.get('regime', 'CHOP_MID'))
+        _er   = str(eth.get('regime', 'CHOP_MID'))
+
+        # 이전 값 로드
+        _out_f = _dd / 'groq_realtime_analysis.json'
+        _prev = {}
+        if _out_f.exists():
+            try: _prev = _j.loads(_out_f.read_text())
+            except: pass
+
         results = {}
-        
-        def _call(key, prompt, task):
+        _calls_made = 0
+
+        # ── A: 异常检测 ─────────────────────────────────────────────
+        # CVD 突变 >500 (진짜 주력 자금 이동)
+        _prev_bcvd = float(_prev.get('_last_bcvd', _bcvd))
+        _prev_ecvd = float(_prev.get('_last_ecvd', _ecvd))
+        _bcvd_delta = abs(_bcvd - _prev_bcvd)
+        _ecvd_delta = abs(_ecvd - _prev_ecvd)
+
+        if _bcvd_delta > 500 and _now - state.get('m8_cvd_btc', 0) > 300:
+            state['m8_cvd_btc'] = _now
+            _dir = '净流入' if _bcvd > _prev_bcvd else '净流出'
+            r = _gc(
+                f'BTC CVD在5分钟内从{_prev_bcvd:.0f}变化到{_bcvd:.0f}（{_dir}{_bcvd_delta:.0f}）。'
+                f'这是主力资金还是散户噪音？结合OI={_boi}分析，30字内。',
+                max_tokens=60, task='council', timeout=12
+            )
+            if r: results['btc_cvd_anomaly'] = r.strip(); _calls_made += 1
+
+        if _ecvd_delta > 300 and _now - state.get('m8_cvd_eth', 0) > 300:
+            state['m8_cvd_eth'] = _now
+            _dir = '净流入' if _ecvd > _prev_ecvd else '净流出'
+            r = _gc(
+                f'ETH CVD突变{_dir}{_ecvd_delta:.0f}，当前散户LSR={_elsr:.1f}%。'
+                f'这次流动的含义？结合LSR判断，25字内。',
+                max_tokens=50, task='council', timeout=12
+            )
+            if r: results['eth_cvd_anomaly'] = r.strip(); _calls_made += 1
+
+        # LSR 突变 >2% (시장심리 급변)
+        _prev_blsr = float(_prev.get('_last_blsr', _blsr))
+        _prev_elsr = float(_prev.get('_last_elsr', _elsr))
+        if abs(_blsr - _prev_blsr) > 2 and _now - state.get('m8_lsr_btc', 0) > 600:
+            state['m8_lsr_btc'] = _now
+            r = _gc(
+                f'BTC散户LSR从{_prev_blsr:.1f}%变化到{_blsr:.1f}%。'
+                f'这是真实仓位变化还是噪音？是入场信号还是陷阱？20字内。',
+                max_tokens=40, task='oi', timeout=10
+            )
+            if r: results['btc_lsr_shift'] = r.strip(); _calls_made += 1
+
+        if abs(_elsr - _prev_elsr) > 1.5 and _now - state.get('m8_lsr_eth', 0) > 600:
+            state['m8_lsr_eth'] = _now
+            r = _gc(
+                f'ETH散户LSR从{_prev_elsr:.1f}%变化到{_elsr:.1f}%，距猎杀阈值77%还差{77-_elsr:.1f}%。'
+                f'主力下一步是什么？20字内。',
+                max_tokens=40, task='oi', timeout=10
+            )
+            if r: results['eth_lsr_shift'] = r.strip(); _calls_made += 1
+
+        # ── B: 关键价位接近 ──────────────────────────────────────────
+        # Goal Loop 진입/손절 임박
+        import json as _jg
+        _gl_f = _dd / 'goal_loop.json'
+        if _gl_f.exists():
             try:
-                r = _gc(prompt, max_tokens=40, task=task, timeout=12)
-                return key, (r.strip() if r else '')
+                _goals = _jg.loads(_gl_f.read_text())
+                for _g in _goals:
+                    if _g.get('status') != 'WATCHING': continue
+                    _gsym = _g.get('symbol','')
+                    _gdir = _g.get('direction','')
+                    _gcond = _g.get('condition','')
+                    _gentry = float(_g.get('entry', 0) or 0)
+                    _gsl = float(_g.get('sl', 0) or 0)
+                    _gprice = _ep if _gsym == 'ETH' else _bp
+                    _gid = _g.get('id','')[:8]
+
+                    # 입장 0.5% 이내
+                    if _gentry > 0 and abs(_gprice - _gentry) / _gentry < 0.005:
+                        _key = f'm8_goal_entry_{_gid}'
+                        if _now - state.get(_key, 0) > 600:
+                            state[_key] = _now
+                            r = _gc(
+                                f'{_gsym}${_gprice:.1f}，距Goal Loop入场${_gentry:.1f}仅{abs(_gprice-_gentry)/_gentry*100:.2f}%。'
+                                f'当前结构支持{_gdir}入场吗？RSI={_ersi if _gsym=="ETH" else _brsi:.0f} CVD={_ecvd if _gsym=="ETH" else _bcvd:.0f}，25字内判断。',
+                                max_tokens=50, task='vip', timeout=12
+                            )
+                            if r: results[f'goal_entry_{_gsym.lower()}'] = r.strip(); _calls_made += 1
+
+                    # 손절 1% 이내
+                    if _gsl > 0 and abs(_gprice - _gsl) / _gsl < 0.01:
+                        _key = f'm8_goal_sl_{_gid}'
+                        if _now - state.get(_key, 0) > 300:
+                            state[_key] = _now
+                            r = _gc(
+                                f'{_gsym}${_gprice:.1f}接近止损位${_gsl:.1f}（距离{abs(_gprice-_gsl)/_gsl*100:.2f}%）。'
+                                f'止损位结构是否仍然有效？还是已被主力盯上？20字内。',
+                                max_tokens=40, task='safety', timeout=10
+                            )
+                            if r: results[f'goal_sl_{_gsym.lower()}'] = r.strip(); _calls_made += 1
             except Exception:
-                return key, ''
-        
-        # 8개 병렬 Groq 호출
-        _calls = [
-            ('btc_sentiment', 
-             f'BTC${_bp:.0f} {_br}体制 RSI={_brsi:.0f} CVD={_bcvd:.0f}。10字内：当前多空情绪？', 
-             'oi'),
-            ('eth_sentiment',
-             f'ETH${_ep:.0f} {_er}体制 RSI={_ersi:.0f} CVD={_ecvd:.0f}。10字内：当前多空情绪？',
-             'oi'),
-            ('btc_flow',
-             f'BTC OI={_boi} CVD={_bcvd:.0f} FR={_bfr:+.3f}%。10字内：资金流向解读？',
-             'council'),
-            ('eth_flow',
-             f'ETH OI={_eoi} CVD={_ecvd:.0f} FR={_efr:+.3f}% LSR散户={_elsr:.0f}%。10字内：资金流向？',
-             'council'),
-            ('correlation',
-             f'BTC {_br} vs ETH {_er}，CVD背离={abs(_bcvd-_ecvd):.0f}。10字内：相关性判断？',
-             'regime'),
-            ('position_advice',
-             f'BTC${_bp:.0f} ETH${_ep:.0f}，体制{_br}。10字内：现在仓位建议？',
-             'vip'),
-            ('risk_8h',
-             f'BTC FR={_bfr:+.3f}% ETH LSR={_elsr:.0f}%。10字内：未来8H最大风险？',
-             'review'),
-            ('constitution_check',
-             f'当前BTC={_br} ETH={_er}，FR={_bfr:+.3f}%。梵天铁律是否有需要注意的？10字内',
-             'safety'),
-        ]
-        
-        with _cf.ThreadPoolExecutor(max_workers=8) as pool:
-            futures = [pool.submit(_call, k, prompt, task) for k, prompt, task in _calls]
-            for fut in _cf.as_completed(futures, timeout=15):
-                try:
-                    k, v = fut.result()
-                    if v:
-                        results[k] = v
-                except Exception:
-                    pass
-        
-        if results:
-            # 파일 저장
-            out_f = _data_dir / 'groq_realtime_analysis.json'
-            _prev = {}
-            if out_f.exists():
-                try: _prev = _j.loads(out_f.read_text())
-                except: pass
-            _prev.update(results)
-            _prev['ts'] = _now
-            _prev['btc_price'] = _bp
-            _prev['eth_price'] = _ep
-            out_f.write_text(_j.dumps(_prev, ensure_ascii=False, indent=2))
-            print(f'[M8-Groq] {len(results)}/8 분석완료 저장')
-    
+                pass
+
+        # ── C: 每15分钟情境摘要 ──────────────────────────────────────
+        if _now - state.get('m8_summary_15m', 0) > 900:  # 15분
+            state['m8_summary_15m'] = _now
+            r = _gc(
+                f'过去15分钟市场快照：'
+                f'BTC${_bp:.0f}(OI={_boi} CVD={_bcvd:.0f}) '
+                f'ETH${_ep:.0f}(OI={_eoi} CVD={_ecvd:.0f} LSR散户={_elsr:.0f}%) '
+                f'体制BTC={_br} ETH={_er}。'
+                f'用30字总结：现在市场在做什么，主力意图是什么？',
+                max_tokens=60, task='regime', timeout=15
+            )
+            if r: results['market_summary_15m'] = r.strip(); _calls_made += 1
+
+        # ── D: 每5分钟体制转换感知 ──────────────────────────────────
+        if _now - state.get('m8_regime_check', 0) > 300:  # 5분
+            state['m8_regime_check'] = _now
+            _bh_prev = float(_prev.get('_last_bh', _bh))
+            _hurst_delta = abs(_bh - _bh_prev)
+            # Hurst 변화 or RSI 극단 or 이상 OI
+            _need_check = (
+                _hurst_delta > 0.05 or
+                _brsi > 75 or _brsi < 25 or
+                _ersi > 80 or _ersi < 20 or
+                'BUILD' in _boi or 'BUILD' in _eoi
+            )
+            if _need_check:
+                r = _gc(
+                    f'体制信号：BTC Hurst={_bh:.3f}(变化{_hurst_delta:+.3f}) RSI={_brsi:.0f} OI={_boi} | '
+                    f'ETH Hurst={_eh:.3f} RSI={_ersi:.0f} OI={_eoi}。'
+                    f'体制是否在转换？转向哪里？20字内给出判断。',
+                    max_tokens=40, task='regime', timeout=12
+                )
+                if r: results['regime_transition'] = r.strip(); _calls_made += 1
+
+        # 이전 값 업데이트
+        _prev.update(results)
+        _prev.update({
+            '_last_bcvd': _bcvd, '_last_ecvd': _ecvd,
+            '_last_blsr': _blsr, '_last_elsr': _elsr,
+            '_last_bh': _bh, 'ts': _now,
+            'btc_price': _bp, 'eth_price': _ep,
+            '_calls_made_today': int(_prev.get('_calls_made_today', 0)) + _calls_made,
+        })
+        _out_f.write_text(_j.dumps(_prev, ensure_ascii=False, indent=2))
+
+        if _calls_made > 0:
+            print(f'[M8-Smart] {_calls_made}회 이상감지 Groq분석 완료')
+
     except Exception as _e:
         pass  # 조용히 실패, 메인 루프 불간섭
