@@ -58,12 +58,25 @@ except Exception:
     _brahma_bus_get_price = None
 
 def _bus_price(symbol: str) -> float:
-    """统一价格获取：优先走 brahma_bus，降级走直接HTTP"""
+    """[P1최적화 2026-10-10 苏摩111] 价格优先顺序: brahma_bus > brahma_state캐시 > 직접API"""
     if _brahma_bus_get_price:
         try:
             p = _brahma_bus_get_price(symbol)
             if p and p > 0: return p
         except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+    # brahma_state 캐시에서 가격 읽기 (30초캐시, API호출 불필요)
+    try:
+        import sys as _bps, pathlib as _bpp
+        _brain = str(_bpp.Path(__file__).parent.parent / 'brahma_brain')
+        if _brain not in _bps.path: _bps.path.insert(0, _brain)
+        from state_store import get_state as _gst_p
+        _sym = symbol.replace('USDT','').upper()
+        _st = _gst_p(_sym)
+        _p = float(_st.get('price', 0) or 0)
+        if _p > 0: return _p
+    except Exception:
+        pass
+    # 최후 수단: 직접 API
     import requests
     r = requests.get(f'https://fapi.binance.com/fapi/v1/ticker/price',
                      params={'symbol': symbol}, timeout=5)

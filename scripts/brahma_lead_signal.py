@@ -77,8 +77,16 @@ def check_lead_signals():
     # ZeroFlip (負GEX区) =    → ETH
     _eth_gex_suppressed = False
     try:
-        import json as _jgs, pathlib as _pgs
-        _bstate = _jgs.loads((_pgs.Path(__file__).parent.parent/'data'/'brahma_state_eth.json').read_text())
+        # [P1성능최적화 2026-10-10 苏摩111] state_store 30초캐시
+        import sys as _jgs_s, pathlib as _pgs
+        _bb = str(_pgs.Path(__file__).parent.parent / 'brahma_brain')
+        if _bb not in _jgs_s.path: _jgs_s.path.insert(0, _bb)
+        try:
+            from state_store import get_state as _gst_eth
+            _bstate = _gst_eth('ETH')
+        except Exception:
+            import json as _jgs
+            _bstate = _jgs.loads((_pgs.Path(__file__).parent.parent/'data'/'brahma_state_eth.json').read_text())
         _eth_price = float(_bstate.get('price', 0) or 0)
         _eth_zf = float(_bstate.get('gex_zero_flip', _bstate.get('zero_flip', 0)) or 0)
         if _eth_zf > 0 and _eth_price < _eth_zf:

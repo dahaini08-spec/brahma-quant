@@ -26,9 +26,17 @@ import sys as _sys, json as _json
 from pathlib import Path as _Path
 # [2026-10-05 Fix: cron快速退出逻辑只在主程序运行时生效，import时不触发]
 if __name__ == '__main__':
-    _state_f = _Path(__file__).parent.parent / 'data' / 'brahma_state_btc.json'
+    # [P1성능최적화 2026-10-10 苏摩111] state_store 30초캐시 사용
     try:
+        import sys as _ss, pathlib as _ssp
+        _brain = str(_ssp.Path(__file__).parent.parent / 'brahma_brain')
+        if _brain not in _ss.path: _ss.path.insert(0, _brain)
+        from state_store import get_state as _get_st
+        _state = _get_st('BTC')
+    except Exception:
+        _state_f = _Path(__file__).parent.parent / 'data' / 'brahma_state_btc.json'
         _state = _json.loads(_state_f.read_text()) if _state_f.exists() else {}
+    try:
         _regime = _state.get('regime', 'UNKNOWN')
         if 'CHOP' not in _regime:
             print(f'HEARTBEAT_OK (regime={_regime}, not CHOP)', file=_sys.stderr)

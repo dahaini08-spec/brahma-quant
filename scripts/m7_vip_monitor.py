@@ -14,7 +14,17 @@ M7: VIP策略状态监控
 
 由 trading_copilot.py 每分钟调用
 """
-import json, pathlib, time, sys, os, ssl, urllib.request
+import json, pathlib, ssl, time, os, sys, urllib.request, urllib.parse
+# [P2최적화 2026-10-10 苏摩111] brahma_http 통일HTTP 사용
+import sys as _bhttp_sys, pathlib as _bhttp_pl
+_BRAHMA_BRAIN = str(_bhttp_pl.Path(__file__).parent.parent / 'brahma_brain')
+if _BRAHMA_BRAIN not in _bhttp_sys.path:
+    _bhttp_sys.path.insert(0, _BRAHMA_BRAIN)
+try:
+    from brahma_http import fetch as _brahma_fetch
+    _USE_BRAHMA_HTTP = True
+except ImportError:
+    _USE_BRAHMA_HTTP = False, pathlib, time, sys, os, ssl, urllib.request
 
 BASE  = pathlib.Path(__file__).parent.parent
 DATA  = BASE / 'data'
