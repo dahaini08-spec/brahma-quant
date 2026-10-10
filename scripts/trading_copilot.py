@@ -498,12 +498,48 @@ def m5_hunt_and_position(state, alerts):
 # ══════════════════════════════════════════
 # 主执行函数
 # ══════════════════════════════════════════
+def m0_analysis_staleness_guard():
+    """
+    [修复 2026-10-10 苏摩111] auto_analysis 시효 守护
+    90분 초과 시 자동 재분석 트리거
+    30분 초과 시 경고 로그
+    """
+    import subprocess as _sp
+    try:
+        _af = BASE / 'data' / 'auto_analysis_latest.json'
+        if not _af.exists():
+            return
+        import json as _jm
+        _d   = _jm.loads(_af.read_text())
+        _ts  = float(_d.get('ts', 0))
+        _age = (time.time() - _ts) / 60
+        if _age > 90:
+            print(f'[M0] ⚠️ auto_analysis {_age:.0f}min 경과 → 자동 재분석 트리거')
+            _r = _sp.run(
+                ['python3', str(BASE / 'scripts' / 'brahma_manual_analysis.py'),
+                 '--symbols', 'BTC', 'ETH'],
+                capture_output=True, timeout=180, cwd=str(BASE)
+            )
+            if _r.returncode == 0:
+                print(f'[M0] ✅ auto_analysis 자동 갱신 완료')
+            else:
+                _err = (_r.stderr or b'').decode()[-120:]
+                print(f'[M0] ❌ 갱신 실패: {_err}')
+        elif _age > 30:
+            print(f'[M0] auto_analysis {_age:.0f}min (임계치 90min)')
+    except Exception as _e:
+        print(f'[M0 ERR] {_e}')
+
+
 def main():
     ts = time.strftime('%H:%M:%S')
     state = load_state()
     alerts = []
 
     print(f'[副驾] {ts} 五模块检查启动...')
+
+    try: m0_analysis_staleness_guard()
+    except Exception as e: print(f'[M0 ERR] {e}')
 
     try: m1_price_proximity(state, alerts)
     except Exception as e: print(f'[M1 ERR] {e}')
