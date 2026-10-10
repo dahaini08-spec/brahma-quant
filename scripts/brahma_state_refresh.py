@@ -671,5 +671,32 @@ def _groq_market_summary() -> str:
     except Exception:
         return ''
 
+
+# M8이 필요한 8개 핵심 필드만 추출 → 18x IO 절감
+_LIGHT_FIELDS = ['price', 'regime', 'rsi_1h', 'cvd_1h', 'lsr_retail',
+                  'hurst', 'oi_direction', 'fr', 'atr_1h', 'gex_zero_flip']
+
+def _write_light_state():
+    """[新增 2026-10-10 苏摩111] M8용 경량 brahma_state 뷰
+    100필드(18KB) → 10필드(~500B) = 18x IO 절감
+    trading_copilot M8이 이 파일을 우선 읽도록 설계"""
+    import json as _jl, pathlib as _pll
+    _dd = _pll.Path(__file__).parent.parent / 'data'
+    for sym in ['btc', 'eth']:
+        full_f = _dd / f'brahma_state_{sym}.json'
+        if not full_f.exists():
+            continue
+        try:
+            full = _jl.loads(full_f.read_text())
+            light = {k: full.get(k) for k in _LIGHT_FIELDS if k in full}
+            light['symbol'] = sym.upper()
+            light['ts'] = full.get('price_ts', 0)
+            (_dd / f'brahma_state_light_{sym}.json').write_text(
+                _jl.dumps(light, ensure_ascii=False)
+            )
+        except Exception:
+            pass
+
 if __name__ == '__main__':
+    _write_light_state()
     main()

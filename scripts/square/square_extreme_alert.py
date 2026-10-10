@@ -373,6 +373,24 @@ def run(dry_run=False):
             time.sleep(180)
 
 
+
+def _groq_extreme_comment(sym: str, price: float, change_pct: float, direction: str) -> str:
+    """[新增 2026-10-10 苏摩111] 극단 행정 Groq 동적 해설
+    고정 템플릿 대신 매번 다른 생생한 분석 제공"""
+    try:
+        import sys as _ex, pathlib as _expl
+        _ex.path.insert(0, str(_expl.Path(__file__).parent.parent))
+        from free_llm_client import chat as _gc
+        move = '暴涨' if change_pct > 0 else '暴跌'
+        q = (
+            f'{sym}${price:,.0f} {change_pct:+.1f}%{move}。'
+            f'用40年顶级合约交易员口吻，20字内：这次{move}的真实原因和下一步看法？'
+        )
+        r = _gc(q, max_tokens=45, task='oi', timeout=10)
+        return r.strip() if r else ''
+    except Exception:
+        return ''
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--dry-run', action='store_true')

@@ -395,6 +395,32 @@ def run_postmortem():
     return out
 
 
+
+def _groq_postmortem_lesson(stats: dict) -> str:
+    """[新增 2026-10-10 苏摩111] Groq로 오늘 복기 핵심교훈 1문장 추출
+    daily_postmortem 실행 후 자동 호출 → 苏摩에게 가장 중요한 한 줄 전달"""
+    try:
+        import sys as _dp, pathlib as _dpl
+        _dp.path.insert(0, str(_dpl.Path(__file__).parent))
+        from free_llm_client import chat as _gc
+        wins = stats.get('wins', 0)
+        losses = stats.get('losses', 0)
+        total = wins + losses
+        wr = stats.get('wr', 0)
+        avg_win = stats.get('avg_win_pct', 0)
+        avg_loss = stats.get('avg_loss_pct', 0)
+        regime = stats.get('best_regime', '')
+        worst = stats.get('worst_regime', '')
+        q = (
+            f'今日复盘：{total}笔 WR={wr:.1%} 平均盈={avg_win:.2f}% 平均亏={avg_loss:.2f}% '
+            f'最优体制={regime} 最差体制={worst}。'
+            f'作为40年顶级合约交易员，提炼今日最重要的一条教训，30字内，直接、具体、可执行。'
+        )
+        r = _gc(q, max_tokens=60, task='review', timeout=15)
+        return r.strip() if r else ''
+    except Exception:
+        return ''
+
 if __name__ == '__main__':
     import signal as _sig
     _sig.signal(_sig.SIGALRM, lambda s, f: sys.exit(1))

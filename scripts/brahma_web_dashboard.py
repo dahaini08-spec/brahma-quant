@@ -225,6 +225,20 @@ td {{ padding:4px; border-bottom:1px solid #222; }}
 </html>'''
 
 
+_dashboard_ai_summary = {'summary': '', 'ts': 0}
+
+def _refresh_dashboard_summary():
+    """[New 2026-10-10 苏摩111] 1H Groq시장요약 캐시"""
+    if __import__('time').time() - _dashboard_ai_summary['ts'] < 3600: return
+    try:
+        import sys as _ds, pathlib as _dsp
+        _ds.path.insert(0, str(_dsp.Path(__file__).parent))
+        from free_llm_client import groq_hourly_summary as _ghs
+        r = _ghs()
+        if r: _dashboard_ai_summary['summary']=r; _dashboard_ai_summary['ts']=__import__('time').time()
+    except Exception: pass
+
+
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)

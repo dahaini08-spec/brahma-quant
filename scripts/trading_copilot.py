@@ -659,7 +659,10 @@ def m8_groq_smart_layer(state: dict) -> None:
         _dd = _pl.Path(__file__).parent.parent / 'data'
 
         def _rs(sym):
-            f = _dd / f'brahma_state_{sym.lower()}.json'
+            # [C최적화 2026-10-10] 경량 뷰 우선 (500B vs 18KB = 18x빠름)
+            light_f = _dd / f'brahma_state_light_{sym.lower()}.json'
+            full_f  = _dd / f'brahma_state_{sym.lower()}.json'
+            f = light_f if light_f.exists() else full_f
             return _j.loads(f.read_text()) if f.exists() else {}
 
         btc = _rs('btc'); eth = _rs('eth')
