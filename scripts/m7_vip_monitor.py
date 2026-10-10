@@ -44,7 +44,7 @@ def _load_vip_cfg():
                 'fr_warn':     float(cfg.get('fr_warn', 0.003)),
                 'fr_alert':    float(cfg.get('fr_alert', 0.006)),
             }
-        # atr_1h는 asset_config에 없음 - brahma_state에서 보강
+        # atr_1h在asset_config中不存在 - 从brahma_state补充
         try:
             for _s in list(_r.keys()):
                 _sp = _m7p.Path(__file__).parent.parent/'data'/f'brahma_state_{_s.lower()}.json'
@@ -55,8 +55,8 @@ def _load_vip_cfg():
         return _r
     except Exception as e:
         print(f'[M7] asset_config load fail: {e}', file=__import__('sys').stderr)
-        # [2026-10-10 苏摩111] 폴백: 정적 하드코딩 대신 liq_snap 동적 읽기
-        # 근인: 하드코딩 BTC short_entry=83800 = 구버전 가격, 실제 wall=86561
+        # [2026-10-10 苏摩111] : 改用liq_snap动态读取，替代静态硬编码
+        # 根因: 硬编码BTC short_entry=83800=旧版价格，实际wall=86561
         _fb = {}
         try:
             import json as _j
@@ -70,14 +70,14 @@ def _load_vip_cfg():
                 _hl_s= float(_liq.get('hl_liq_25x_short') or _wall*0.99)
                 _hl_l= float(_liq.get('hl_liq_25x_long')  or _pool*1.01)
                 _atr = float(_st.get('atr_1h') or ((_st.get('extra') or {}).get('atr_1h')) or (16 if _sym=='ETH' else 400))
-                # 동적 가격 레벨
+                # 动态价格水平
                 _long_lo  = round(_hl_l * 0.999, 0)
                 _long_hi  = round(_hl_l * 1.001, 0)
                 _long_sl  = round(_hl_l - _atr*1.5, 0)
                 _short_lo = round(_hl_s * 0.999, 0)
                 _short_hi = round(_hl_s * 1.001, 0)
                 _short_sl = round(_hl_s + _atr*1.5, 0)
-                # GEX ZeroFlip 동적 읽기
+                # GEX ZeroFlip动态读取
                 try:
                     _gex_d = _j.loads((_data_dir/'gex_state.json').read_text())
                     _gex_zf = float(_gex_d.get(_sym,{}).get('zero_flip',0) or _gex_zf)
@@ -100,10 +100,10 @@ def _load_vip_cfg():
             }
         return _fb
 
-VIP_CONFIG = _load_vip_cfg()  # 임포트 시 초기값
+VIP_CONFIG = _load_vip_cfg()  # 导入时初始值
 
 def _refresh_vip_config():
-    """[2026-10-10 苏摩111] check_all 매번 최신 liq/atr로 갱신"""
+    """[2026-10-10 苏摩111] check_all每次更新最新liq/atr"""
     global VIP_CONFIG
     VIP_CONFIG = _load_vip_cfg()
 
@@ -127,18 +127,18 @@ def save_state(s):
 
 def _m7_atr_neuron(state: dict) -> list:
     """
-    P0-② 각 표적 ATR 신경원 — 극도 압축 감지 및 경고
-    ATR 30일 평균 대비 현재 ATR 계산 → 역사적 분위 추정
-    압축>50% → 대변동 24~48H 내 예고 경보
+    P0-② 各标的ATR神经元 — 极度压缩感知及预警
+    ATR 30日均值对比现值 → 历史分位估算
+    压缩>50% → 24~48H内大波动预警
     """
     import json as _j, pathlib as _pl, ssl as _ssl, urllib.request as _ur
     alerts = []
     now = __import__('time').time()
-    COOLDOWN = 7200  # ATR경보는 2시간 쿨다운
+    COOLDOWN = 7200  # ATR警报2小时冷却
 
     _ctx = _ssl.create_default_context()
     DATA = _pl.Path(__file__).parent.parent / 'data'
-    AC   = VIP_CONFIG  # asset_config에서 이미 로드됨
+    AC   = VIP_CONFIG  # 已从asset_config加载
 
     for sym in ['BTC', 'ETH']:
         sf = f'{sym}USDT'
@@ -146,7 +146,7 @@ def _m7_atr_neuron(state: dict) -> list:
         if now - state.get(k, 0) < COOLDOWN:
             continue
         try:
-            # 1H K선 50개 → ATR 계산
+            # 1H K线50根 → ATR计算
             req = _ur.Request(
                 f'https://fapi.binance.com/fapi/v1/klines?symbol={sf}&interval=1h&limit=50',
                 headers={'User-Agent':'Mozilla/5.0'}
@@ -154,7 +154,7 @@ def _m7_atr_neuron(state: dict) -> list:
             with _ur.urlopen(req, context=_ctx, timeout=8) as r:
                 klines = _j.loads(r.read())
 
-            # ATR 계산
+            # ATR计算
             def _atr(k_data, n=14):
                 tr = [max(float(x[2])-float(x[3]),
                           abs(float(x[2])-float(k_data[max(0,i-1)][4])),
@@ -163,26 +163,26 @@ def _m7_atr_neuron(state: dict) -> list:
                 return sum(tr[-n:])/n
 
             atr_now  = _atr(klines[-14:])
-            atr_30d  = _atr(klines, n=30)  # 30일 평균
+            atr_30d  = _atr(klines, n=30)  # 30日均值
             price    = float(klines[-1][4])
             compress = (atr_30d - atr_now) / atr_30d if atr_30d > 0 else 0
 
-            # 압축률 계산
-            print(f'[M7-ATR] {sym} ATR현재=${atr_now:.1f} ATR30d평균=${atr_30d:.1f} 압축={compress:.0%}')
+            #  
+            print(f'[M7-ATR] {sym} ATR当前=${atr_now:.1f} ATR30d均值=${atr_30d:.1f} 压缩={compress:.0%}')
 
-            if compress > 0.50:  # 50% 이상 압축
-                # ATR 백분위 추정
-                atr_pct = max(0.05, 0.50 - compress)  # 근사값
+            if compress > 0.50:  # 50%以上压缩
+                # ATR百分位估算
+                atr_pct = max(0.05, 0.50 - compress)  # 近似值
                 direction_hint = ''
 
-                # CVD 방향으로 힌트
+                # CVD方向提示
                 try:
                     cvd_d = _j.loads((DATA / f'cvd_realtime_{sym.lower()}usdt.json').read_text())
                     cvd_v = float(cvd_d.get('cvd_1h', 0) or 0)
                     if cvd_v < -1000:
-                        direction_hint = '\nCVD<0 → 하락 방향성 우세'
+                        direction_hint = '\nCVD<0 → 下行方向性占优'
                     elif cvd_v > 1000:
-                        direction_hint = '\nCVD>0 → 상승 방향성 우세'
+                        direction_hint = '\nCVD>0 → 上行方向性占优'
                 except: pass
 
                 alerts.append((k,
@@ -198,14 +198,14 @@ def _m7_atr_neuron(state: dict) -> list:
                     f'🌿 姓赵不宣 | 不是建议'
                 ))
         except Exception as e:
-            print(f'[M7-ATR] {sym} 오류: {e}')
+            print(f'[M7-ATR] {sym} 错误: {e}')
 
     return alerts
 
 
 def check_all() -> list:
     """返回 [(state_key, message), ...] 列表"""
-    _refresh_vip_config()  # 매번 최신 liq/gex/atr 반영
+    _refresh_vip_config()  # 每次反映最新liq/gex/atr
     state   = load_state()
     alerts  = []
     now     = time.time()
@@ -388,7 +388,7 @@ def check_all() -> list:
                 except: _zf = 0; _above_zf = False
 
                 if sym == 'ETH' and not _above_zf and _zf > 0:
-                    # ZeroFlip失守状态에서 CVD反转 = Fake Break可能性
+                    # ZeroFlip失守状态下CVD反转 = Fake Break可能性
                     action = (
                         f'⚡ ZeroFlip失守后CVD强反转 = Fake Break警报\n'
                         f'空单暂缓 | 等1H收阳突破${_zf:,.0f}确认多方向\n'
@@ -478,7 +478,7 @@ def check_all() -> list:
                     _k1h = _j2.loads(_ur2.urlopen(
                         'https://fapi.binance.com/fapi/v1/klines?symbol=ETHUSDT&interval=1h&limit=2',
                         timeout=5, context=_ctx2).read())
-                    _1h_bear = float(_k1h[-2][4]) < float(_k1h[-2][1])  # 최신 완성K 하락?
+                    _1h_bear = float(_k1h[-2][4]) < float(_k1h[-2][1])  # 最新完成K线下跌?
                 except: _1h_bear = False
                 try:
                     import pathlib as _pl2
@@ -507,8 +507,8 @@ def check_all() -> list:
                     f'条件：1H收阳+CVD转正\n\n'
                     f'🌿 姓赵不宣 | 不是建议'
                 ))
-                # [근본수정 2026-10-10 苏摩111] alerts 추가 즉시 state 저장
-                # 이전: state 저장 없음 → 매분 조건 재충족 → 무한 추송
+                # [ 2026-10-10 苏摩111] alerts添加后立即保存state
+                # 修复前: 未保存state → 每分钟条件重新满足 → 无限推送
                 state[k] = now
                 state[f'{k}_price'] = cfg.get('gex_zf', 0)
                 save_state(state)
@@ -525,7 +525,7 @@ def check_all() -> list:
             _dir_key  = f'dedup_short_{_ak[:6]}' if _is_short else (f'dedup_long_{_ak[:6]}' if _is_long else None)
             if _dir_key:
                 _last_same = state.get(_dir_key, 0)
-                if now - _last_same < 1800:  # 30min 쿨다운
+                if now - _last_same < 1800:  # 30min冷却
                     print(f'[M7-DEDUP] {_ak} 同方向30min内去重跳过')
                     continue
                 state[_dir_key] = now
@@ -534,7 +534,7 @@ def check_all() -> list:
     except Exception as _dd_e:
         print(f'[M7-DEDUP ERR] {_dd_e}')
 
-    # P0-② ATR 신경원 果蝇 감지
+    # P0-② ATR神经元果蝇感知
     try:
         _atr_alerts = _m7_atr_neuron(state)
         alerts.extend(_atr_alerts)

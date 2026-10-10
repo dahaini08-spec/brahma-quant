@@ -32,7 +32,7 @@ OI_DAY_THRESH = 0.025   # OI日变化 ±2.5%（10/05 -3.95% 提前2天预警）
 FR_HIGH       = 0.008   # FR极端高 > +0.008%（10/06 ETH 0.0092% 前兆）
 FR_LOW        = -0.005  # FR极端低 < -0.005%
 LSR_BIG_DELTA = 5.0     # 大户LSR单日变化 > +5%（10/07 ETH +10.6%）
-# [asset_config SSOT 2026-10-09] 표적 파라미터 동적 로드
+# [asset_config SSOT 2026-10-09] 目标参数动态加载
 import json as _acj3, pathlib as _acp3
 def _get_ac():
     _pp = _acp3.Path(__file__).parent.parent / 'data' / 'asset_config.json'
@@ -112,11 +112,11 @@ def get_gex_strikes(sym):
         return {}
 
 def get_cvd(sym):
-    """[2026-10-10 苏摩111] CVD단위불일치 근치
-    cvd_realtime: WS체결량(ETH소수점, -0.039)
-    klines기반: 봉거래량누적(수천~수만)
-    -0.039 < -300 = False → CVD방향 항상 틀림
-    수정: klines8봉 계산으로 교체, 파일은 폴백만
+    """[2026-10-10 苏摩111] CVD单位不一致根治
+    cvd_realtime: WS成交量(ETH小数点, -0.039)
+    klines基准: 按K线成交量累积(数千~数万)
+    -0.039 < -300 = False → CVD方向判断永远错误
+    修复: 改用klines8根实时计算，文件仅作降级fallback
     """
     try:
         import urllib.request as _ur, ssl as _ss
@@ -126,7 +126,7 @@ def get_cvd(sym):
             timeout=4, context=_ctx).read())
         return sum((float(k[5]) if float(k[4])>float(k[1]) else -float(k[5])) for k in _kl)
     except:
-        # 폴백: cvd_realtime dir 필드로 방향만 판단
+        # : 从cvd_realtime dir字段判断方向
         try:
             d = json.loads((WORKDIR/'data'/f'cvd_realtime_{sym.lower()}usdt.json').read_text())
             _dir = str(d.get('dir_1h', d.get('dir_4h', '')))
@@ -517,9 +517,9 @@ def m5_hunt_and_position(state, alerts):
 # ══════════════════════════════════════════
 def m0_analysis_staleness_guard():
     """
-    [修复 2026-10-10 苏摩111] auto_analysis 시효 守护
-    90분 초과 시 자동 재분석 트리거
-    30분 초과 시 경고 로그
+    [修复 2026-10-10 苏摩111] auto_analysis时效守护
+    超过90分钟自动触发重新分析
+    超过30分钟输出警告日志
     """
     import subprocess as _sp
     try:
@@ -531,7 +531,7 @@ def m0_analysis_staleness_guard():
         _ts  = float(_d.get('ts', 0))
         _age = (time.time() - _ts) / 60
         if _age > 90:
-            print(f'[M0] ⚠️ auto_analysis {_age:.0f}min 경과 → 자동 재분석 트리거')
+            print(f'[M0] ⚠️ auto_analysis {_age:.0f}min经过 → 自动重新分析触发')
             # [P0-A 2026-10-10 苏摩111] Popen非阻塞替换run，防止主链3min阻塞M1~M7
             _lock_f = pathlib.Path('/tmp/brahma_m0_analysis.lock')
             if not _lock_f.exists():
@@ -545,7 +545,7 @@ def m0_analysis_staleness_guard():
             else:
                 print(f'[M0] 已有分析进程运行中，跳过重复触发')
         elif _age > 30:
-            print(f'[M0] auto_analysis {_age:.0f}min (임계치 90min)')
+            print(f'[M0] auto_analysis {_age:.0f}min (阈值90min)')
     except Exception as _e:
         print(f'[M0 ERR] {_e}')
 
@@ -568,7 +568,7 @@ def m8_groq_smart_layer(state: dict) -> None:
         _dd = _pl.Path(__file__).parent.parent / 'data'
 
         def _rs(sym):
-            # [C최적화 2026-10-10] 경량 뷰 우선 (500B vs 18KB = 18x빠름)
+            # [C 2026-10-10] 优先轻量视图(500B vs 18KB = 18x更快)
             light_f = _dd / f'brahma_state_light_{sym.lower()}.json'
             full_f  = _dd / f'brahma_state_{sym.lower()}.json'
             f = light_f if light_f.exists() else full_f
@@ -589,7 +589,7 @@ def m8_groq_smart_layer(state: dict) -> None:
         _eoi  = str(eth.get('oi_direction', 'NEUTRAL'))
         _br   = str(btc.get('regime', 'CHOP_MID'))
         _er   = str(eth.get('regime', 'CHOP_MID'))
-        # [P0 2026-10-10 苏摩111] 별칭 필드 활용
+        # [P0 2026-10-10 苏摩111] 别名字段活用
         _bscore = float(btc.get('score', 0) or 0)
         _escore = float(eth.get('score', 0) or 0)
         _bliq_l = float(btc.get('liq_nearest_long', 0) or 0)
@@ -599,7 +599,7 @@ def m8_groq_smart_layer(state: dict) -> None:
         _bstep11 = str(btc.get('step11_verdict', 'WAIT'))
         _estep11 = str(eth.get('step11_verdict', 'WAIT'))
 
-        # 이전 값 로드
+        # 加载前值
         _out_f = _dd / 'groq_realtime_analysis.json'
         _prev = {}
         if _out_f.exists():
@@ -610,7 +610,7 @@ def m8_groq_smart_layer(state: dict) -> None:
         _calls_made = 0
 
         # ── A: 异常检测 ─────────────────────────────────────────────
-        # CVD 突变 >500 (진짜 주력 자금 이동)
+        # CVD 突变 >500 (真实主力资金移动)
         _prev_bcvd = float(_prev.get('_last_bcvd', _bcvd))
         _prev_ecvd = float(_prev.get('_last_ecvd', _ecvd))
         _bcvd_delta = abs(_bcvd - _prev_bcvd)
@@ -636,7 +636,7 @@ def m8_groq_smart_layer(state: dict) -> None:
             )
             if r: results['eth_cvd_anomaly'] = r.strip(); _calls_made += 1
 
-        # LSR 突变 >2% (시장심리 급변)
+        # LSR 突变 >2% (市场情绪急变)
         _prev_blsr = float(_prev.get('_last_blsr', _blsr))
         _prev_elsr = float(_prev.get('_last_elsr', _elsr))
         if abs(_blsr - _prev_blsr) > 2 and _now - state.get('m8_lsr_btc', 0) > 600:
@@ -658,7 +658,7 @@ def m8_groq_smart_layer(state: dict) -> None:
             if r: results['eth_lsr_shift'] = r.strip(); _calls_made += 1
 
         # ── B: 关键价位接近 ──────────────────────────────────────────
-        # Goal Loop 진입/손절 임박
+        # Goal Loop入场/止损临近
         import json as _jg
         _gl_f = _dd / 'goal_loop.json'
         if _gl_f.exists():
@@ -674,7 +674,7 @@ def m8_groq_smart_layer(state: dict) -> None:
                     _gprice = _ep if _gsym == 'ETH' else _bp
                     _gid = _g.get('id','')[:8]
 
-                    # 입장 0.5% 이내
+                    # 入场0.5%以内
                     if _gentry > 0 and abs(_gprice - _gentry) / _gentry < 0.005:
                         _key = f'm8_goal_entry_{_gid}'
                         if _now - state.get(_key, 0) > 600:
@@ -686,7 +686,7 @@ def m8_groq_smart_layer(state: dict) -> None:
                             )
                             if r: results[f'goal_entry_{_gsym.lower()}'] = r.strip(); _calls_made += 1
 
-                    # 손절 1% 이내
+                    # 止损1%以内
                     if _gsl > 0 and abs(_gprice - _gsl) / _gsl < 0.01:
                         _key = f'm8_goal_sl_{_gid}'
                         if _now - state.get(_key, 0) > 300:
@@ -701,8 +701,8 @@ def m8_groq_smart_layer(state: dict) -> None:
                 pass
 
         # ── C: 每15分钟情境摘要 ──────────────────────────────────────
-        # ── 매1H 심층요약 (C) ────────────────────────────────────────
-        if _now - state.get('m8_hourly_summary', 0) > 3600:  # 1시간
+        # ── 每1H深层摘要(C) ────────────────────────────────────────
+        if _now - state.get('m8_hourly_summary', 0) > 3600:  # 1小时
             state['m8_hourly_summary'] = _now
             try:
                 from free_llm_client import groq_hourly_summary as _ghs
@@ -714,8 +714,8 @@ def m8_groq_smart_layer(state: dict) -> None:
             except Exception:
                 pass
 
-        # ── 매15분 상황 요약 (기존) ────────────────────────────────
-        if _now - state.get('m8_summary_15m', 0) > 900:  # 15분
+        # ── 每15分钟情境摘要(旧) ────────────────────────────────
+        if _now - state.get('m8_summary_15m', 0) > 900:  # 15分钟
             state['m8_summary_15m'] = _now
             r = _gc(
                 f'过去15分钟市场快照：'
@@ -728,11 +728,11 @@ def m8_groq_smart_layer(state: dict) -> None:
             if r: results['market_summary_15m'] = r.strip(); _calls_made += 1
 
         # ── D: 每5分钟体制转换感知 ──────────────────────────────────
-        if _now - state.get('m8_regime_check', 0) > 300:  # 5분
+        if _now - state.get('m8_regime_check', 0) > 300:  # 5分钟
             state['m8_regime_check'] = _now
             _bh_prev = float(_prev.get('_last_bh', _bh))
             _hurst_delta = abs(_bh - _bh_prev)
-            # Hurst 변화 or RSI 극단 or 이상 OI
+            # Hurst变化 or RSI极端 or 异常OI
             _need_check = (
                 _hurst_delta > 0.05 or
                 _brsi > 75 or _brsi < 25 or
@@ -748,7 +748,7 @@ def m8_groq_smart_layer(state: dict) -> None:
                 )
                 if r: results['regime_transition'] = r.strip(); _calls_made += 1
 
-        # 이전 값 업데이트
+        # 更新前值
         _prev.update(results)
         _prev.update({
             '_last_bcvd': _bcvd, '_last_ecvd': _ecvd,
@@ -760,10 +760,10 @@ def m8_groq_smart_layer(state: dict) -> None:
         _out_f.write_text(_j.dumps(_prev, ensure_ascii=False, indent=2))
 
         if _calls_made > 0:
-            print(f'[M8-Smart] {_calls_made}회 이상감지 Groq분석 완료')
+            print(f'[M8-Smart] {_calls_made}次异常感知Groq分析完成')
 
     except Exception as _e:
-        pass  # 조용히 실패, 메인 루프 불간섭
+        pass  # 静默失败，不干扰主循环
 
 
 def main():
@@ -829,7 +829,7 @@ def main():
     except Exception as e:
         print(f'[M7 ERR] {e}')
 
-    # [P0-A] M0 lock 정리: 분석 프로세스 완료 시 lock 파일 삭제
+    # [P0-A] M0 lock清理: 分析进程完成时删除lock文件
     try:
         _lf = pathlib.Path('/tmp/brahma_m0_analysis.lock')
         if _lf.exists():
