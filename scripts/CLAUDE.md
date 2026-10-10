@@ -159,3 +159,28 @@ push_hub.py
     ↑ 被调用
 几乎所有推送脚本（禁止绕过）
 ```
+
+---
+
+## urllib 통일 이전 계획 (P2 · 2026-10-10 苏摩111)
+
+**현재 상태:** urlopen() 86개 파일에 산재
+**목표:** 전부 brahma_http.fetch()로 교체
+**이전 방법:**
+```python
+# 교체 전
+import urllib.request
+resp = urllib.request.urlopen(req, timeout=8, context=ctx)
+data = json.loads(resp.read())
+
+# 교체 후
+from brahma_http import fetch
+data = fetch(url)
+```
+
+**우선순위:**
+1. 고빈도 스크립트 (trading_copilot, brahma_state_refresh) — 다음 세션
+2. 분석 레이어 (brahma_core, smc_engine) — Phase D
+3. Square 발행 스크립트 — Phase E
+
+**신규 코드 규칙:** urlopen 직접 사용 금지, 반드시 brahma_http.fetch() 사용
