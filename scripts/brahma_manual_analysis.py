@@ -4491,6 +4491,25 @@ def main():
             # [2026-10-05 P0-A fix] _sys_warn/_sys_fr已清除
             print(f"[WARN] auto_analysis_latest写入失败: {_fe}", file=sys.stderr)
 
+        # [수정② 2026-10-10 苏摩111] 三方一致性评分表 — BTC+ETH 동시분석 경로
+        # SOUL.md 마지막 필수 항목: 두 표적의 방향/EV/置信度 비교표
+        try:
+            from brahma_output_template import format_consensus_table as _fct2
+            _btc_st = __import__('json').loads(
+                (Path(__file__).parent.parent/'data'/'brahma_state_btc.json').read_text()
+            ) if (Path(__file__).parent.parent/'data'/'brahma_state_btc.json').exists() else {}
+            _eth_st = __import__('json').loads(
+                (Path(__file__).parent.parent/'data'/'brahma_state_eth.json').read_text()
+            ) if (Path(__file__).parent.parent/'data'/'brahma_state_eth.json').exists() else {}
+            _cons_tbl = _fct2(_btc_st, _eth_st)
+            if _cons_tbl and len(_cons_tbl) > 30:
+                # 각 심볼의 full_report 말미에 추가
+                for _sym2 in symbols:
+                    if _sym2 in _full_reports:
+                        _full_reports[_sym2] = _full_reports[_sym2] + '\n\n' + _cons_tbl
+        except Exception as _ct_e:
+            print(f'[WARN] consensus_table BTC+ETH: {_ct_e}', file=sys.stderr)
+
         _summary = {
             'ts': _time.time(),  # [封印修复①] Unix时间戳，AI判断数据时效必用
             'timestamp': _time.strftime('%Y-%m-%d %H:%M:%S UTC', _time.gmtime()),

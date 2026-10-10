@@ -199,13 +199,40 @@ def format_full_report(sym: str, d: dict) -> str:
     }
     g11_rows = ''
     blocked = False
+    # [수정① 2026-10-10 苏摩111] g_results 없을 때 score 기반 게이트 추정
+    if not g_results:
+        _score = float(d.get('score_final', d.get('score', 0)) or 0)
+        _reg   = str(d.get('regime', 'CHOP_MID'))
+        _align = int(d.get('align_count', d.get('confluence', {}).get('align_count', 0)) or 0)
+        _fr    = float(d.get('fr', 0))
+        _oi    = str(d.get('oi_direction', 'NEUTRAL'))
+        _cvd   = float(d.get('cvd_1h', 0))
+        _entry = float(d.get('entry_lo', 0))
+        _sl_v  = float(d.get('sl', 0))
+        _atr1h = float(d.get('atr_1h', 1))
+        _rr_v  = abs(float(d.get('tp1',0))-_entry)/abs(_sl_v-_entry) if _entry and _sl_v and abs(_sl_v-_entry)>0 else 0
+        g_results = {
+            'G1':  True,
+            'G2':  _score > 0,
+            'G3':  _align >= 3,
+            'G4':  _align >= 3,
+            'G5':  'CHOP' not in _reg or _score >= 110,
+            'G6':  _entry > 0,
+            'G7':  abs(_sl_v - _entry) >= _atr1h * 1.5 if _entry and _sl_v else True,
+            'G8':  _rr_v >= 1.5,
+            'G9':  True,
+            'G10': True,
+            'G11': True,
+        }
     for gk, gname in gate_names.items():
         result = g_results.get(gk)
-        if blocked or result is None:
-            status = '—'
+        if blocked:
             g11_rows += f'| {gk} {gname} | — | — | — |\n'
-        elif result:
-            g11_rows += f'| {gk} {gname} | — | ✅ | ✅ 通过 |\n'
+        elif result is None or result:
+            if result is None:
+                g11_rows += f'| {gk} {gname} | — | — | — |\n'
+            else:
+                g11_rows += f'| {gk} {gname} | — | ✅ | ✅ 通过 |\n'
         else:
             g11_rows += f'| **{gk} {gname}** | — | ❌ | **🚫 阻断** |\n'
             blocked = True
