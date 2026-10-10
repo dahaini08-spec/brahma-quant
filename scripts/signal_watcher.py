@@ -462,7 +462,7 @@ def run():
             # 唯一推送出口：push_hub._jarvis（dedup_ttl=86400，同信号24H内不重复）
             # [IC铁证 2026-07-23] TIER1通道已删除，此处只剩TIER2（score≥155）信号
             try:
-                # [P1 2026-10-10 苏摩111] 새 신호 Groq 원인분석
+                # [P1 2026-10-10 苏摩111] 新信号Groq原因分析
                 try:
                     import sys as _swgs; _swgs.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
                     from free_llm_client import chat as _swgc

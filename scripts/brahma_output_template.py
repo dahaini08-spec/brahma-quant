@@ -304,7 +304,7 @@ def format_full_report(sym: str, d: dict) -> str:
     raw_score  = d.get('raw_score', 0.0)
 
     # ── VIP ──
-    signal_dir = d.get('signal_dir', 'WAIT')  # [P1修复 2026-10-10 苏摩111] 기본값 SHORT→WAIT (BTC NEUTRAL 오방향 방지)
+    signal_dir = d.get('signal_dir', 'WAIT')  # [P1修复 2026-10-10 苏摩111]  SHORT→WAIT (BTC NEUTRAL 方向 )
     # [封印 2026-10-07 苏摩111] sl/tp1/entry 多路降级：
     # brahma_state顶层 sl=0时，从 trader_brain / smc 补充
     _tb        = (d.get('trader_brain') or {})
@@ -669,7 +669,7 @@ def format_full_report(sym: str, d: dict) -> str:
             _sl   = round(liq_l - max(_atr1h * 1.5, _atr4h * 1.0), 1)
             _tp1  = round(liq_s if liq_s > p else p + _atr4h * 3, 1)
             _tp2  = round(_tp1 * 1.008, 1)
-            # [P2修复 2026-10-10 苏摩111] LONG RR 기준: 중간값 (보수적)
+            # [P2修复 2026-10-10 苏摩111] LONG RR基准: 中间值 (保守)
             _e_mid = (_e_lo + _e_hi) / 2
             _rr   = round((_tp1 - _e_mid) / (_e_mid - _sl), 1) if _e_mid > _sl and _tp1 > _e_mid else 0
             lines += [
@@ -714,7 +714,7 @@ def format_full_report(sym: str, d: dict) -> str:
                 _tp1  = round(liq_l, 1) if liq_l > 0 else round(p - _atr4h * 3, 1)
                 _tp2  = round(_tp1 * 0.992, 1)
                 _tp3  = round(_tp1 * 0.985, 1)
-                # [P2修复 2026-10-10 苏摩111] SHORT RR 기준: 중간값 (보수적)
+                # [P2修复 2026-10-10 苏摩111] SHORT RR基准: 中间值 (保守)
                 _e_mid = (_e_lo + _e_hi) / 2
                 _rr   = round((_e_mid - _tp1) / (_sl - _e_mid), 1) if _sl > _e_mid > _tp1 else 0
             elif signal_dir == 'LONG' and liq_l < p:
@@ -724,7 +724,7 @@ def format_full_report(sym: str, d: dict) -> str:
                 _tp1  = round(liq_s, 1) if liq_s > p else round(p + _atr4h * 3, 1)
                 _tp2  = round(_tp1 * 1.008, 1)
                 _tp3  = round(_tp1 * 1.015, 1)
-                # [P2修复 2026-10-10 苏摩111] LONG RR 기준: 중간값 (보수적)
+                # [P2修复 2026-10-10 苏摩111] LONG RR基准: 中间值 (保守)
             _e_mid = (_e_lo + _e_hi) / 2
             _rr   = round((_tp1 - _e_mid) / (_e_mid - _sl), 1) if _e_mid > _sl and _tp1 > _e_mid else 0
         lines += [

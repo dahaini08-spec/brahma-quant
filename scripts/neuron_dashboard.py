@@ -52,7 +52,7 @@ def main():
             hunt   = cfg.get("lsr_hunt", 65.0)
             fr_warn= cfg.get("fr_warn",  0.003)
 
-            # 신호 상태 계산
+            #
             signals = []
             if fr_v > cfg.get("fr_alert", 0.006):      signals.append("🔴FR_EXTREME")
             elif fr_v > fr_warn:                         signals.append("⚠️FR_WARN")
@@ -87,11 +87,11 @@ def main():
 
         status["assets"][sym] = entry
 
-    # 저장
+    #
     tmp = DATA / "neuron_status.tmp"
     tmp.write_text(json.dumps(status, ensure_ascii=False, indent=2))
     tmp.replace(DATA / "neuron_status.json")
-    print(f"[neuro] 대시보드 업데이트 완료: {len(status['assets'])}개 표적")
+    print(f"[neuro] 仪表盘更新完成: {len(status['assets'])}个目标")
 
 if __name__ == "__main__":
     main()

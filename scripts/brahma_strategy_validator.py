@@ -234,7 +234,7 @@ def check_vip_expiry():
         valid_h = float(ac.get(sym, {}).get('vip_valid_h', 8))
         age_h   = (now - t['created_at']) / 3600
 
-        if age_h >= valid_h and age_h < valid_h + 0.5:  # 만료 30분 이내에만 알림
+        if age_h >= valid_h and age_h < valid_h + 0.5:  #  30
             expired.append(t)
             t['_expiry_notified'] = True
 

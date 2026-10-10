@@ -67,10 +67,10 @@ def _load_chutes_key() -> str:
 
 CHUTES_KEY = _load_chutes_key()
 
-# ── [Groq 완전무료 통합 2026-10-10 苏摩111] ──────────────────────────────
-# 우선순위 최상위: Groq → Chutes → OpenRouter → 主AI
-# 모델: qwen/qwen3.8-27b (중문 네이티브, ctx=131K)
-# 무료: 일 14400회 (梵天 33회/日 = 432일분 여유)
+# ── [Groq 完全免费集成 2026-10-10 苏摩111] ──────────────────────────────
+# 优先级最高: Groq → Chutes → OpenRouter → 主AI
+# 模型: qwen/qwen3.8-27b (中文原生, ctx=131K)
+# 免费: 日 14400次(梵天 33次/日 = 432日余量)
 GROQ_BASE_URL = 'https://api.groq.com/openai/v1/chat/completions'
 
 def _load_groq_key() -> str:
@@ -94,7 +94,7 @@ GROQ_TASK_MODEL_MAP = {
 _groq_backoff_until = 0.0
 
 def _groq_chat(messages: list, max_tokens: int, timeout: int, task: str) -> str:
-    """Groq 완전무료 채널. 성공시 content, 실패시 '' 반환"""
+    """Groq 完全免费通道。成功返回content，失败返回 '' 返回"""
     global _groq_backoff_until
     if not GROQ_KEY or time.time() < _groq_backoff_until:
         return ''
@@ -105,7 +105,7 @@ def _groq_chat(messages: list, max_tokens: int, timeout: int, task: str) -> str:
         req = urllib.request.Request(GROQ_BASE_URL, data=payload,
             headers={'Authorization': f'Bearer {GROQ_KEY}',
                      'Content-Type': 'application/json',
-                     'User-Agent': 'curl/8.5.0'})  # Cloudflare 403 우회
+                     'User-Agent': 'curl/8.5.0'})  # Cloudflare 403绕过
         resp = json.loads(urllib.request.urlopen(req, timeout=min(timeout,20), context=_ctx).read())
         content = ((resp.get('choices') or [{}])[0].get('message') or {}).get('content','')
         return (content or '').strip()
@@ -378,11 +378,11 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
     system: 额外system内容（深度封印版梵天宪法已自动注入）
     返回模型回复文本，失败时返回空字符串。
     """
-    # [최적화B 2026-10-10 苏摩111] task별 경량화
-    # oi/safety/regime 단순판단 = 宪法 불필요 (80tok 절감/회)
+    # [P优化B 2026-10-10 苏摩111] 按task轻量化
+    # oi/safety/regime 简单判断=宪法不需要 (80tok tok节省/次)
     _lightweight_tasks = {'oi', 'safety'}
     if task in _lightweight_tasks and not system:
-        merged_system = ''  # 宪法 생략 → 빠르고 저렴
+        merged_system = ''  # 省略宪法→更快更省
     else:
         merged_system = BRAHMA_CONSTITUTION
         if system:
@@ -397,7 +397,7 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
     if not API_KEY and not CHUTES_KEY:
         return _master_chat(messages, max_tokens, timeout)
 
-    # ── [Groq 우선 2026-10-10 苏摩111] 완전무료 최우선 ──────────────────────
+    # ── [Groq 优先 2026-10-10 苏摩111] 完全免费最优先 ──────────────────────
     _groq_r = _groq_chat(messages, max_tokens, timeout, task)
     if _groq_r:
         return _groq_r
@@ -690,29 +690,29 @@ def signal_conflict_resolve(
 
 
 def groq_hourly_summary() -> str:
-    """[新增 2026-10-10 苏摩111] 매시간 Groq 심층시장요약
-    M8 이상감지 내용 + 현재 state 종합 → 과거1H 무슨일이 있었나
-    cron or trading_copilot에서 매1H 호출, 결과는 groq_hourly_log.jsonl에 누적"""
+    """[新增 2026-10-10 苏摩111] 每小时Groq深度市场摘要
+    M8 异常感知内容+当前state综合→过去1H发生了什么
+    由cron或trading_copilot每1H调用，结果写入 groq_hourly_log.累积写入jsonl"""
     import time as _t, json as _j, pathlib as _pl
     _now = _t.time()
     try:
         _dd = _pl.Path(__file__).parent.parent / 'data'
         
-        # M8 이상감지 결과 읽기
+        # M8 读取异常感知结果
         _ra = {}
         _rf = _dd / 'groq_realtime_analysis.json'
         if _rf.exists():
             try: _ra = _j.loads(_rf.read_text())
             except: pass
         
-        # BTC/ETH 현재 state
+        # BTC/ETH 当前state
         _btc = {}; _eth = {}
         try: _btc = _j.loads((_dd/'brahma_state_btc.json').read_text())
         except: pass
         try: _eth = _j.loads((_dd/'brahma_state_eth.json').read_text())
         except: pass
         
-        # 이상감지 내용 요약
+        # 异常感知内容汇总
         _anomalies = []
         for k in ['btc_cvd_anomaly','eth_cvd_anomaly','btc_lsr_shift','eth_lsr_shift',
                   'regime_transition','market_summary_15m']:
@@ -732,7 +732,7 @@ def groq_hourly_summary() -> str:
         result = chat(q, max_tokens=100, task='regime', timeout=20)
         
         if result:
-            # jsonl에 누적
+            # 累积写入jsonl
             _log_f = _dd / 'groq_hourly_log.jsonl'
             import datetime as _dt
             _entry = _j.dumps({

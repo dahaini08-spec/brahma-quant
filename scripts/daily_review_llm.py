@@ -120,15 +120,15 @@ def _generate_review(data: dict) -> str:
 
 
 def _llm_channel_down() -> bool:
-    """[恢복 2026-10-10] Groq있으면 항상 채널 정상"""
+    """[恢复 2026-10-10] Groq存在时通道始终正常"""
     try:
         import sys as _dr; _dr.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
         from free_llm_client import GROQ_KEY
         if GROQ_KEY:
-            return False  # Groq있으면 채널 정상
+            return False  # Groq
     except Exception:
         pass
-    # fallback: 기존 체크
+    # fallback:
     try:
         from pathlib import Path as _P
         import json as _j, time as _t

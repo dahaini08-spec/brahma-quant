@@ -109,7 +109,7 @@ class Step11Judge:
         self.atr_1h   = float(vol.get('atr_1h', 0) or 0)
         self.atr_4h   = float(vol.get('atr_4h', 0) or 0)
         self.hurst    = float(vol.get('hurst', 0.5) or 0.5)
-        # [封印 2026-10-08 苏摩111] P1-③ CVD/GEX 추가 - Gate5 CHOP 조건화에 사용
+        # [封印 2026-10-08 苏摩111] P1-③ CVD/GEX 追加 - Gate5 CHOP
         self.cvd_1h   = float(d.get('cvd_1h', 0) or 0)
         _gex_raw = d.get('gex', 0) or vol.get('gex', 0) or 0
         self.gex      = float(_gex_raw) if isinstance(_gex_raw, (int, float)) else 0.0

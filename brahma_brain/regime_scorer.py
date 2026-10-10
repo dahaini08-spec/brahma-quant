@@ -44,7 +44,7 @@ from pathlib import Path
 
 FAPI   = 'https://fapi.binance.com'
 _CACHE = {}
-_LOCK__CACHE = __import__("threading").Lock()  # 감사 수정: 병렬 쓰기 보호          # {symbol: {ts, result}} | 缓存结构：标的 → {时间戳, 结果}
+_LOCK__CACHE = __import__("threading").Lock()  #  修复:             # {symbol: {ts, result}} | 缓存结构：标的 → {时间戳, 结果}
 _TTL   = 600         # [P0修复 2026-08-03] 10分钟缓存（原30分钟→缓存过长导致反弹时仍用熊市RSI）
 
 

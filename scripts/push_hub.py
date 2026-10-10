@@ -53,7 +53,7 @@ _PRIORITY_THREADS = {
 
 def push_jarvis(msg: str, timeout: int = 8, retries: int = 3, priority: str = 'P1',
                 dedup_key: str = None, dedup_ttl: int = 0,
-                groq_comment: str = None,  # [P1 2026-10-10 苏摩111] Groq 해설 직접 첨부
+                groq_comment: str = None,  # [P1 2026-10-10 苏摩111] Groq
                 **kwargs) -> bool:
     """
     推送到Jarvis主线程（subprocess CLI非阻塞）。
@@ -62,7 +62,7 @@ def push_jarvis(msg: str, timeout: int = 8, retries: int = 3, priority: str = 'P
     """
     if not msg or not msg.strip():
         return False
-    # [P1 2026-10-10] groq_comment가 있으면 메시지 말미에 첨부
+    # [P1 2026-10-10] groq_comment
     if groq_comment and groq_comment.strip():
         msg = msg + f'\n💡 {groq_comment.strip()[:60]}'
 

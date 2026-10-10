@@ -44,7 +44,7 @@ PAPER_SCORE_MIN   = 80
 # 信号有效期（小时）
 SIGNAL_TTL_HOURS  = 4
 # 分析标的列表（方向由体制自动决定）
-# [asset_config SSOT 2026-10-09] 활성 L1 표적 동적 로드
+# [asset_config SSOT 2026-10-09]  L1
 import json as _srj, pathlib as _srp
 def _load_symbols():
     _f = _srp.Path(__file__).parent.parent / 'data' / 'asset_config.json'
@@ -469,7 +469,7 @@ def main():
     _save_queue(final_queue)
 
     # [P0-新②] asset_config 动态字段自动更新
-    # [P0-新②] asset_config 동적 필드 자동 업데이트
+    # [P0-新②] asset_config  字段
     try:
         _update_asset_config_liq_gex()
     except Exception as _acue:
@@ -511,7 +511,7 @@ def _update_asset_config_liq_gex():
         sym_lower = sym_key.lower()
         changed = False
 
-        # liq_heatmap 업데이트
+        # liq_heatmap
         liq_f = BASE / 'data' / f'liq_heatmap_{sym_lower}usdt.json'
         if liq_f.exists():
             try:
@@ -525,7 +525,7 @@ def _update_asset_config_liq_gex():
             except Exception as _e:
                 print(f'[asset_cfg] {sym_key} liq err: {_e}')
 
-        # gex ZeroFlip 업데이트
+        # gex ZeroFlip
         gex_f = BASE / 'data' / 'gex_state.json'
         if gex_f.exists():
             try:
@@ -601,8 +601,8 @@ def _inject_gex_to_state():
 def _inject_fangcang_to_state():
     """
     P0-② [2026-10-10 苏摩111] fangcang_engine → brahma_state_*.json
-    fc_sim / fc_signal / fc_note 직접 기록
-    원인: state_refresh에서 fangcang을 호출하지 않아 fc_sim=None
+    直接记录fc_sim/fc_signal/fc_note
+    原因: state_refresh未调用fangcang导致fc_sim=None
     """
     import json as _j, pathlib as _pl, sys as _sys
     _sys.path.insert(0, str(BASE / 'brahma_brain'))
@@ -619,7 +619,7 @@ def _inject_fangcang_to_state():
                 continue
 
             from fangcang_engine import fangcang_context_match as _fcm
-            # brahma_state에서 RSI/BBW 읽기
+            # brahma_state RSI/BBW 读取
             _rsi   = float(state.get('rsi_1h', state.get('rsi', 50)) or 50)
             _bbw   = float(state.get('bb_width', state.get('bbw', 0.01)) or 0.01)
             _result = _fcm(
@@ -630,11 +630,11 @@ def _inject_fangcang_to_state():
                 signal_dir=direction,
             )
             if _result and isinstance(_result, dict) and _result.get('n_similar', 0) > 0:
-                # fangcang_context_match 반환구조: score_adj/confidence/long_pct/short_pct
+                # fangcang_context_match 返回: score_adj/confidence/long_pct/short_pct
                 _lp = float(_result.get('long_pct', 0))
                 _sp = float(_result.get('short_pct', 0))
                 _fc_dir = 'LONG' if _lp > _sp else ('SHORT' if _sp > _lp else 'NEUTRAL')
-                _fc_sim = float(_result.get('genuine_rate', 0))  # 진짜 돌파율을 유사도로 활용
+                _fc_sim = float(_result.get('genuine_rate', 0))  #
                 state['fc_sim']    = _fc_sim
                 state['fc_signal'] = _fc_dir
                 state['fc_long_pct']  = _lp
@@ -651,8 +651,8 @@ def _inject_fangcang_to_state():
 
 
 def _groq_market_summary() -> str:
-    """[新增 2026-10-10 苏摩111] Groq로 현재 BTC+ETH 시장 상태 한줄 요약
-    state_refresh 완료 후 자동 호출, 모니터링 맥락 제공"""
+    """[新增 2026-10-10 苏摩111] Groq生成当前BTC+ETH市场状态一句话摘要
+    state_refresh完成后自动调用，提供监控上下文"""
     try:
         import json, pathlib as _pl, sys as _sg
         _sg.path.insert(0, str(_pl.Path(__file__).parent))
@@ -672,13 +672,13 @@ def _groq_market_summary() -> str:
         return ''
 
 
-# M8이 필요한 8개 핵심 필드만 추출 → 18x IO 절감
+# M8  8  字段  → 18x IO
 _LIGHT_FIELDS = ['price', 'regime', 'rsi_1h', 'cvd_1h', 'lsr_retail',
                   'hurst', 'oi_direction', 'fr', 'atr_1h', 'gex_zero_flip']
 
 def _write_light_state():
-    """[New 2026-10-10 苏摩111] M8용 경량 뷰 + P0 별칭 필드 주입
-    100필드(18KB) → 12필드(~500B) = 18x IO 절감"""
+    """[New 2026-10-10 苏摩111] M8专用轻量视图 + P0别名字段注入
+    100字段(18KB)→12字段(~500B)=18x IO节省"""
     import json as _jl, pathlib as _pll
     _dd = _pll.Path(__file__).parent.parent / 'data'
     for sym in ['btc', 'eth']:
@@ -691,21 +691,21 @@ def _write_light_state():
             light['symbol'] = sym.upper()
             light['ts'] = full.get('price_ts', 0)
 
-            # [P0 2026-10-10 苏摩111] 필수 별칭 필드 주입
-            # score: confluence.score 최상위 복사
+            # [P0 2026-10-10 苏摩111] 注入必要别名字段
+            # score: confluence.score 复制到顶层
             _conf = full.get('confluence', {})
             light['score'] = _conf.get('score', 0) if isinstance(_conf, dict) else 0
 
-            # step11_verdict: Step11 최종 판결
+            # step11_verdict: Step11 最终裁决
             light['step11_verdict'] = full.get('step11_verdict',
                 full.get('step11_gates', {}).get('verdict', 'WAIT') if isinstance(full.get('step11_gates'), dict) else 'WAIT'
             )
 
-            # signal_dir: 현재 신호 방향
+            # signal_dir: 当前  方向
             light['signal_dir'] = full.get('signal_dir', full.get('direction', 'WAIT'))
 
-            # liq 별칭: 실제 필드명 사용
-            # [P1修复 2026-10-10] LSR 실시간 갱신 — Binance API 직접 조회
+            # liq 别名: 使用实际字段名
+            # [P1修复 2026-10-10] LSR   — Binance API
             try:
                 import urllib.request as _ulr, json as _ulj, ssl as _uls
                 _uctx = _uls.create_default_context()
@@ -714,13 +714,13 @@ def _write_light_state():
                     timeout=4, context=_uctx).read())
                 if _lsr_r:
                     light['lsr_retail'] = float(_lsr_r[-1].get('longAccount', 0)) * 100
-                    full['lsr_retail'] = light['lsr_retail']  # 원본도 갱신
+                    full['lsr_retail'] = light['lsr_retail']  #
             except Exception:
                 light['lsr_retail'] = full.get('lsr_retail', 50)
             light['liq_nearest_long']  = full.get('liq_long',  full.get('liq_long2', 0))
             light['liq_nearest_short'] = full.get('liq_short', full.get('liq_short2', 0))
 
-            # fvg 가격 별칭: 실제 magnet 사용
+            # fvg  别名: 使用实际magnet值
             light['fvg_bull_price'] = full.get('fvg_1h_magnet', full.get('fvg_magnet', 0)) if full.get('fvg_consensus') == 'BULL' else 0
             light['fvg_bear_price'] = full.get('fvg_1h_magnet', full.get('fvg_magnet', 0)) if full.get('fvg_consensus') == 'BEAR' else 0
 

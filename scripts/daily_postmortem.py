@@ -396,8 +396,8 @@ def run_postmortem():
     return results
 
 def _groq_postmortem_lesson(stats: dict) -> str:
-    """[新增 2026-10-10 苏摩111] Groq로 오늘 복기 핵심교훈 1문장 추출
-    daily_postmortem 실행 후 자동 호출 → 苏摩에게 가장 중요한 한 줄 전달"""
+    """[新增 2026-10-10 苏摩111] Groq提取今日复盘核心教训一句话
+    daily_postmortem执行后自动调用→向苏摩传达最重要的一句话"""
     try:
         import sys as _dp, pathlib as _dpl
         _dp.path.insert(0, str(_dpl.Path(__file__).parent))
@@ -425,7 +425,7 @@ if __name__ == '__main__':
     _sig.signal(_sig.SIGALRM, lambda s, f: sys.exit(1))
     _sig.alarm(55)
     results = run_postmortem()
-    # [연결 2026-10-10 苏摩111] Groq 교훈 추출 + push_hub 전송
+    # [ 2026-10-10 苏摩111] Groq   + push_hub
     try:
         if isinstance(results, dict) and results:
             lesson = _groq_postmortem_lesson(results)
@@ -433,9 +433,9 @@ if __name__ == '__main__':
                 import sys as _pm; _pm.path.insert(0, str(pathlib.Path(__file__).parent))
                 from push_hub import push_jarvis
                 push_jarvis(f'📚 今日复盘教训\n\n{lesson}', priority='P2', dedup_key='daily_lesson', dedup_ttl=82800)
-                print(f'[postmortem] Groq교훈 추송: {lesson[:50]}')
+                print(f'[postmortem] Groq教训推送: {lesson[:50]}')
     except Exception as _pe:
-        print(f'[postmortem] Groq교훈 실패: {_pe}')
+        print(f'[postmortem] Groq教训失败: {_pe}')
 
 
 # ══ [Dreaming循环 2026-10-03 苏摩111] 复盘结论→MEMORY.md自动更新 ══

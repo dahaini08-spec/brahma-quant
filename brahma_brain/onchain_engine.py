@@ -77,7 +77,7 @@ def _cg(path: str, qs: str = '') -> Optional[Any]:
                     data = d.get('data', d)
                     _cache[url] = {'ts': now, 'data': data}
                     return data
-            break  # 성공 시 루프 탈출
+            break  #
         except urllib.error.HTTPError as _he:
             if _he.code >= 500 and _attempt < 2:
                 time.sleep(1.5 ** _attempt)
@@ -757,7 +757,7 @@ FAPI    = 'https://fapi.binance.com'
 CGECKO  = 'https://api.coingecko.com/api/v3'
 
 _CACHE = {}
-_LOCK__CACHE = __import__("threading").Lock()  # 감사 수정: 병렬 쓰기 보호
+_LOCK__CACHE = __import__("threading").Lock()  #  修复:
 _CACHE_TTL = 300  # 5分钟缓存
 
 def _get(url: str, timeout: int = 8) -> dict | list | None:

@@ -20,7 +20,7 @@ import json, pathlib, time, sys, os, ssl, math, urllib.request
 BASE   = pathlib.Path(__file__).parent.parent
 DATA   = BASE / 'data'
 STATE_FILE = DATA / 'lead_signal_state.json'
-COOLDOWN   = 1800  # 30분 쿨다운
+COOLDOWN   = 1800  # 30
 
 JARVIS_USER   = os.getenv('JARVIS_USER_ID', '73295708')
 JARVIS_THREAD = os.getenv('JARVIS_THREAD_ID', '01a0d79b-fea4-71b1-9f2a-c02a9844b4ed')
@@ -55,7 +55,7 @@ def save_state(s):
 
 
 def calc_correlation(btc_closes, eth_closes, n=20):
-    """1H K선 n개 수익률 상관계수 계산"""
+    """1H K线n根收益率相关系数计算"""
     if len(btc_closes) < n+1 or len(eth_closes) < n+1:
         return None
     btc_r = [btc_closes[i]/btc_closes[i-1]-1 for i in range(-n, 0)]
@@ -68,13 +68,13 @@ def calc_correlation(btc_closes, eth_closes, n=20):
 
 
 def check_lead_signals():
-    """메인 체크 함수 — trading_copilot에서 호출"""
+    """主检查函数 — 由trading_copilot调用"""
     state = load_state()
     now   = time.time()
     alerts = []
 
-    # [근본수정 2026-10-10 苏摩111] GEX ZeroFlip 실수 시 ETH 다중 방향 신호 억제
-    # ZeroFlip 실수(負GEX区) = 구조적 공매도 환경 → ETH 다중 신호 전송 금지
+    # [根本修复 2026-10-10 苏摩111] GEX ZeroFlip   ETH  方向
+    # ZeroFlip (負GEX区) =    → ETH
     _eth_gex_suppressed = False
     try:
         import json as _jgs, pathlib as _pgs
@@ -83,16 +83,16 @@ def check_lead_signals():
         _eth_zf = float(_bstate.get('gex_zero_flip', _bstate.get('zero_flip', 0)) or 0)
         if _eth_zf > 0 and _eth_price < _eth_zf:
             _eth_gex_suppressed = True
-            print(f'[M6.5] ETH GEX ZeroFlip실수(${_eth_price:.0f}<${_eth_zf:.0f}) → ETH多단신호 억제')
+            print(f'[M6.5] ETH GEX ZeroFlip失守(${_eth_price:.0f}<${_eth_zf:.0f}) → ETH多单信号抑制')
     except Exception:
         pass
 
-    # ── 1. K선 데이터 로드 ──────────────────────────────
+    # ── 1. K   ──────────────────────────────
     try:
         btc_k = fetch('https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1h&limit=25')
         eth_k = fetch('https://fapi.binance.com/fapi/v1/klines?symbol=ETHUSDT&interval=1h&limit=25')
     except Exception as e:
-        print(f'[lead_signal] K선 로드 실패: {e}', file=sys.stderr)
+        print(f'[lead_signal] K线加载失败: {e}', file=sys.stderr)
         return []
 
     btc_c = [float(k[4]) for k in btc_k]
@@ -100,30 +100,30 @@ def check_lead_signals():
     btc_now = btc_c[-1]
     eth_now = eth_c[-1]
 
-    # ── 2. 상관계수 계산 ──────────────────────────────────
+    # ── 2.   ──────────────────────────────────
     rho = calc_correlation(btc_c, eth_c, n=20)
     state['last_rho'] = rho
     state['last_ts']  = now
 
     print(f'[lead_signal] BTC=${btc_now:,.0f} ETH=${eth_now:,.2f} ρ={rho}')
 
-    # ── 3. BTC 돌파 감지 (1H 고점 돌파) ─────────────────
-    btc_prev_high = max(float(k[2]) for k in btc_k[-13:-1])  # 12H 고점
+    # ── 3. BTC  感知 (1H  ) ─────────────────
+    btc_prev_high = max(float(k[2]) for k in btc_k[-13:-1])  # 12H
     btc_1h_close  = btc_c[-1]
     btc_1h_open   = float(btc_k[-1][1])
-    btc_bullish   = btc_1h_close > btc_1h_open  # 현재봉 양봉
+    btc_bullish   = btc_1h_close > btc_1h_open  # 当前
 
     eth_1h_close  = eth_c[-1]
     eth_12h_high  = max(float(k[2]) for k in eth_k[-13:-1])
 
-    # BTC 신고점 돌파
+    # BTC
     btc_breakout = btc_1h_close > btc_prev_high and btc_bullish
-    eth_lagging  = eth_1h_close < eth_12h_high * 0.999  # ETH가 아직 고점 안 갱신
+    eth_lagging  = eth_1h_close < eth_12h_high * 0.999  # ETH
 
     if btc_breakout and eth_lagging:
         k = 'm8_btc_lead_long'
         if now - state.get(k, 0) > COOLDOWN:
-            # asset_config에서 ETH 진입 파라미터 로드
+            # asset_config ETH
             try:
                 ac = json.loads((DATA / 'asset_config.json').read_text())
                 eth_cfg = ac.get('ETH', {})
@@ -132,10 +132,10 @@ def check_lead_signals():
             except:
                 liq_s = int(eth_now*1.02); liq_l = int(eth_now*0.98)
 
-            # [근본수정 2026-10-10 苏摩111] GEX ZeroFlip 실수 시 ETH 다중 신호 억제
-            # ZeroFlip 실수 = 구조적 공매도 환경 → ETH 다중 방향 신호 금지
+            # [根本修复 2026-10-10 苏摩111] GEX ZeroFlip   ETH
+            # ZeroFlip  =    → ETH  方向
             if _eth_gex_suppressed:
-                print(f'[M6.5] GEX억제: ETH多단신호 스킵 (ZeroFlip실수)')
+                print(f'[M6.5] GEX抑制: 跳过ETH多单信号(ZeroFlip失守)')
             else:
                 alerts.append((k,
                     f'🚀 梵天领先信号 | BTC突破→ETH补涨\n\n'
@@ -149,12 +149,12 @@ def check_lead_signals():
                 f'🌿 姓赵不宣 | 不是建议'
                 ))
 
-    # ── 4. ρ 배리 감지 ──────────────────────────────────
+    # ── 4. ρ  感知 ──────────────────────────────────
     if rho is not None:
-        # BTC 1H 변화율 vs ETH 1H 변화율
+        # BTC 1H  vs ETH 1H
         btc_1h_chg = (btc_c[-1] - btc_c[-2]) / btc_c[-2] * 100
         eth_1h_chg = (eth_c[-1] - eth_c[-2]) / eth_c[-2] * 100
-        diverge = abs(btc_1h_chg - eth_1h_chg) > 1.5  # 1.5% 이상 차이
+        diverge = abs(btc_1h_chg - eth_1h_chg) > 1.5  # 1.5%
 
         if rho > 0.85 and diverge:
             k = 'm8_diverge'
@@ -171,8 +171,8 @@ def check_lead_signals():
                     f'🌿 姓赵不宣 | 不是建议'
                 ))
 
-    # ── 5. BTC_settlement 상태 기록 (brahma_core P1 연동) ─
-    # brahma_core L2306이 btc_settlement_state.json을 읽어서 ETH 스코어 조정
+    # ── 5. BTC_settlement   (brahma_core P1 ) ─
+    # brahma_core L2306 btc_settlement_state.json  ETH
     btc_4h_k = fetch('https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=4h&limit=5')
     btc_4h_c = [float(k[4]) for k in btc_4h_k]
     btc_4h_chg = (btc_4h_c[-1] - btc_4h_c[-2]) / btc_4h_c[-2] * 100
@@ -187,7 +187,7 @@ def check_lead_signals():
     tmp.replace(DATA / 'btc_settlement_state.json')
     print(f'[lead_signal] BTC settlement: {settlement["last_result"]} ({btc_4h_chg:+.2f}%)')
 
-    # 경보 발송
+    #
     for key, msg in alerts:
         push(msg, key)
         state[key] = now
@@ -198,4 +198,4 @@ def check_lead_signals():
 
 if __name__ == '__main__':
     result = check_lead_signals()
-    print(f'\n리드 신호 체크 완료: {len(result)}개 경보')
+    print(f'\n领先信号检查完成: {len(result)}个警报')

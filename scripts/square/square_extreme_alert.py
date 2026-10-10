@@ -375,8 +375,8 @@ def run(dry_run=False):
 
 
 def _groq_extreme_comment(sym: str, price: float, change_pct: float, direction: str) -> str:
-    """[新增 2026-10-10 苏摩111] 극단 행정 Groq 동적 해설
-    고정 템플릿 대신 매번 다른 생생한 분석 제공"""
+    """[新增 2026-10-10 苏摩111] 极端行情Groq动态解说
+    替代固定模板，每次提供不同的生动分析"""
     try:
         import sys as _ex, pathlib as _expl
         _ex.path.insert(0, str(_expl.Path(__file__).parent.parent))

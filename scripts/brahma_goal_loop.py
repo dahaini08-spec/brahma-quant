@@ -89,13 +89,13 @@ def get_oi_dir(symbol):
 
 
 def get_fr_realtime(symbol):
-    """실시간 FR fetch — Goal Loop 트리거 전 철칙② 검증용"""
+    """实时FR获取 — Goal Loop触发前验证铁律②"""
     try:
         d = fetch(f'https://fapi.binance.com/fapi/v1/fundingRate?symbol={symbol}USDT&limit=1')
         return float(d[0]['fundingRate']) * 100
     except Exception as e:
         print(f'[FR ERR] {symbol}: {e}', file=sys.stderr)
-        return 0.0  # 실패 시 0으로 fallback (차단하지 않음)
+        return 0.0  #   0 fallback ( )
 
 def eval_condition(condition_str, symbol, price):
     """
@@ -313,7 +313,7 @@ def cmd_check(args):
             dist = abs(price - g['entry']) / price * 100
             print(f'[WATCHING] {g["id"]} {sym} ${price:,.2f} 距入场{dist:.2f}%')
 
-    # [P0-① 추가] BLOCKED 목표 재활성화 체크 (FR 내려가면 WATCHING으로 복귀)
+    # [P0-① 追加] BLOCKED    (FR  WATCHING )
     for g in goals:
         if g['status'] in ('BLOCKED_FR', 'BLOCKED_CVD'):
             sym = g['symbol']

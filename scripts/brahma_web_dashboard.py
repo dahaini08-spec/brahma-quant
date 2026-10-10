@@ -228,7 +228,7 @@ td {{ padding:4px; border-bottom:1px solid #222; }}
 _dashboard_ai_summary = {'summary': '', 'ts': 0}
 
 def _refresh_dashboard_summary():
-    """[New 2026-10-10 苏摩111] 1H Groq시장요약 캐시"""
+    """[New 2026-10-10 苏摩111] 1H Groq市场摘要缓存"""
     if __import__('time').time() - _dashboard_ai_summary['ts'] < 3600: return
     try:
         import sys as _ds, pathlib as _dsp
