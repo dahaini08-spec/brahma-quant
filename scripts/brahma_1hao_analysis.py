@@ -777,7 +777,7 @@ def run_report(symbol: str, direction: str = 'LONG', compact: bool = False) -> s
                 f"体制={regime} HCME={_hcme_wr_v}\n"
                 f"仅用一个英文单词回答: ENTER / WAIT / AVOID"
             )
-            _third = _call_r(_q, max_tokens=10, timeout=12, model='standard')
+            _third = _call_r(_q, max_tokens=150, timeout=12, model='standard')
             if _third and 'AVOID' in str(_third).upper():
                 score_final += -10
                 bd['第三视角_否决'] = -10

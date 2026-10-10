@@ -92,8 +92,20 @@ def run_spot(symbol: str) -> dict:
 
 
 def rewrite_for_square(draft: str) -> str:
-    """直接调OpenRouter，不注入梵天宪法
-    [2026-09-11 苏摩111] LLM重写已废弃，直接返回原稿"""
+    """[恢复 2026-10-10 苏摩111] Groq免费，重新启用LLM重写"""
+    if not draft or len(draft) < 30:
+        return draft
+    try:
+        import sys as _sr; _sr.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
+        from free_llm_client import chat as _gc
+        _r = _gc(
+            '用40年顶级现货交易员语气重写以下分析帖，保留数字，去掉废话，禁止AI腔：\n\n' + draft[:600],
+            max_tokens=500, task='vip', timeout=20
+        )
+        if _r and len(_r) > 60:
+            return _r.strip()
+    except Exception:
+        pass
     return draft
 
     # ── 品牌包装（2026-09-12 苏摩111封印）──

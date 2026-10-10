@@ -1005,7 +1005,7 @@ def get_fangcang_context(
                     import concurrent.futures as _cff
                     with _cff.ThreadPoolExecutor(max_workers=1) as _fex:
                         _ff = _fex.submit(_llm_hcme, _mirror_prompt, 45, 'hcme')
-                        _llm_mirror = _ff.result(timeout=5)
+                        _llm_mirror = _ff.result(timeout=20)  # [恢复 2026-10-10] Groq빠름, 20s충분
                 except Exception: _llm_mirror = ''
                 if _llm_mirror:
                     _llm_mirror = _llm_mirror.strip()[:80]

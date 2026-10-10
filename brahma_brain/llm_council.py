@@ -61,7 +61,7 @@ def council_verdict(
     # [P1-2修复 2026-09-11 苏摩111] AI议会确定性化：移除LLM调用，纯规则引擎
     # 原因：LLM裁决非确定性，同一组数据可能给出不同裁决 → 交易系统必须确定性
     # 规则引擎已足够：体制+SMC+清算+大户+MTF+量能 6维投票，确定性可复现
-    if False:  # 永久禁用LLM调用
+    if True:  # [恢复 2026-10-10 苏摩111] Groq免费，解除禁用
         try:
             import sys as _sys
             from pathlib import Path as _Path

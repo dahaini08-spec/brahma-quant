@@ -206,6 +206,14 @@ def main():
         alerts = check_and_alert(state)
         if alerts:
             for state_key, msg in alerts:
+                # [新增 2026-10-10 苏摩111] Groq한줄 맥락 추가
+                try:
+                    import sys as _pa; _pa.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
+                    from free_llm_client import chat as _pac
+                    _cr = _pac(f'价格触发关键位，{msg[:80]}，15字内博弈判断', max_tokens=30, task='oi', timeout=8)
+                    if _cr: msg = msg + f'\n💡 {_cr.strip()[:40]}'
+                except Exception:
+                    pass
                 push_jarvis(msg)
                 state[state_key] = time.time()
                 save_state(state)

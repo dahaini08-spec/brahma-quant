@@ -104,7 +104,8 @@ def _groq_chat(messages: list, max_tokens: int, timeout: int, task: str) -> str:
                               'max_tokens': max_tokens, 'temperature': 0.2}).encode()
         req = urllib.request.Request(GROQ_BASE_URL, data=payload,
             headers={'Authorization': f'Bearer {GROQ_KEY}',
-                     'Content-Type': 'application/json'})
+                     'Content-Type': 'application/json',
+                     'User-Agent': 'curl/8.5.0'})  # Cloudflare 403 우회
         resp = json.loads(urllib.request.urlopen(req, timeout=min(timeout,20), context=_ctx).read())
         content = ((resp.get('choices') or [{}])[0].get('message') or {}).get('content','')
         return (content or '').strip()

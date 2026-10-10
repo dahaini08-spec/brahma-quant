@@ -650,5 +650,26 @@ def _inject_fangcang_to_state():
             print(f'[fangcang_inject] {sym_key} err: {_e}')
 
 
+def _groq_market_summary() -> str:
+    """[新增 2026-10-10 苏摩111] Groq로 현재 BTC+ETH 시장 상태 한줄 요약
+    state_refresh 완료 후 자동 호출, 모니터링 맥락 제공"""
+    try:
+        import json, pathlib as _pl, sys as _sg
+        _sg.path.insert(0, str(_pl.Path(__file__).parent))
+        from free_llm_client import chat as _gc
+        
+        btc = json.loads((_pl.Path(__file__).parent.parent/'data'/'brahma_state_btc.json').read_text())
+        eth = json.loads((_pl.Path(__file__).parent.parent/'data'/'brahma_state_eth.json').read_text())
+        
+        q = (f'BTC${btc.get("price",0):.0f} {btc.get("regime","?")} RSI={btc.get("rsi_1h",0):.0f} '
+             f'CVD={btc.get("cvd_1h",0):.0f} | '
+             f'ETH${eth.get("price",0):.0f} {eth.get("regime","?")} RSI={eth.get("rsi_1h",0):.0f} '
+             f'CVD={eth.get("cvd_1h",0):.0f} | '
+             f'20字内市场一句话总结')
+        r = _gc(q, max_tokens=40, task='oi', timeout=10)
+        return r.strip() if r else ''
+    except Exception:
+        return ''
+
 if __name__ == '__main__':
     main()

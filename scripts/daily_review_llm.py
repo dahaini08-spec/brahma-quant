@@ -120,23 +120,26 @@ def _generate_review(data: dict) -> str:
 
 
 def _llm_channel_down() -> bool:
-    """[9.27 苏摩111] 静默失败根除：读free_llm_client失败留证文件"""
+    """[恢복 2026-10-10] Groq있으면 항상 채널 정상"""
     try:
-        st = DATA / 'llm_channel_state.json'
-        if not st.exists():
+        import sys as _dr; _dr.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
+        from free_llm_client import GROQ_KEY
+        if GROQ_KEY:
+            return False  # Groq있으면 채널 정상
+    except Exception:
+        pass
+    # fallback: 기존 체크
+    try:
+        from pathlib import Path as _P
+        import json as _j, time as _t
+        f = _P(__file__).parent.parent / 'data' / 'llm_channel_state.json'
+        if not f.exists():
             return False
-        import time as _t
-        d = json.loads(st.read_text())
-        # 状态文件24h内 且 记录了失败 → 通道异常
-        ts = d.get('last_failure_at', '')
-        if not ts:
-            return False
-        from datetime import datetime as _dt
-        age_h = (_dt.now(_dt.timezone.utc) - _dt.fromisoformat(ts)).total_seconds() / 3600
-        return age_h < 24
+        d = _j.loads(f.read_text())
+        bu = float(d.get('backoff_until', 0) or 0)
+        return _t.time() < bu
     except Exception:
         return False
-
 
 def _local_review_fallback(data: dict) -> str:
     """[9.29 P1 苏摩111] 复盘LLM双通道全灭时的本地规则复盘（不依赖任何LLM）。
