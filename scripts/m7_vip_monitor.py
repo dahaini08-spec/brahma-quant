@@ -350,7 +350,15 @@ def check_all() -> list:
         # 新逻辑：P1空单(主)+P2多单候补，CVD加持确认方向
         if sym == 'ETH' and 'gex_zf' in cfg and price < cfg['gex_zf']:
             k = f'm7_gex_zf_{sym}'
-            if now - state.get(k, 0) > COOLDOWN:
+            # [修复 2026-10-10 苏摩111] ZeroFlip失守不重复推送
+            # ZeroFlip是日级别结构信号，失守后会持续触发
+            # 改为：同一ZeroFlip价位 → 4H只推1次（不是每30min）
+            _zf_cd = 14400  # 4小时冷却（之前1800=30min导致重复刷屏）
+            _last_zf_push = state.get(k, 0)
+            _last_zf_price = state.get(f'{k}_price', 0)
+            _zf_price_changed = abs(_last_zf_price - cfg.get('gex_zf', 0)) > 10
+            _zf_should_push = (now - _last_zf_push > _zf_cd) or _zf_price_changed
+            if _zf_should_push:
                 zf_price = cfg['gex_zf']
                 atr_1h = cfg.get('atr_1h', 16.0)
                 # 空单：等小幅反弹至ZeroFlip下沿，RR更优
