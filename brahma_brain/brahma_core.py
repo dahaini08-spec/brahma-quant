@@ -1134,8 +1134,8 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                 _c_entry_mid = (float(params.get('entry_lo', _c_price) or _c_price) +
                                 float(params.get('entry_hi', _c_price) or _c_price)) / 2
 
-                # [P1-⑥] asset_config에서 표적별 ATR 백분위 SL 배수 로드
-                _c_sl_mult = 1.5  # 기본값
+                # [P1-⑥] 从asset_config加载各标的ATR百分位SL倍数
+                _c_sl_mult = 1.5  # 默认值
                 try:
                     import json as _ac_j, pathlib as _ac_p
                     _ac = _ac_j.loads((_ac_p.Path(__file__).parent.parent /
@@ -1148,7 +1148,7 @@ def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
                     _mult_hi = float(_ac_cfg.get('sl_mult_high', 1.2))
                     _base_m  = float(_ac_cfg.get('sl_atr_mult',  1.5))
 
-                    # ATR 백분위 추정 (최근 50개 1H K선 사용)
+                    # ATR百分位估算 (使用最近50根1H K线)
                     _atr_pct_est = ms.get('momentum', {}).get('atr_pct', None) if ms else None
                     if _atr_pct_est is not None:
                         _atr_pct_f = float(_atr_pct_est)

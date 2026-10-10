@@ -20,8 +20,8 @@ from datetime import datetime, timezone
 def _build_liq_map(sym: str, price: float, liq_s: float, liq_l: float, d: dict) -> list:
     """
     [改造① v3.0 2026-10-10 苏摩111]
-    liq_heatmap_*.json 다층 데이터로 실제 청산지도 구성
-    short_liq_map / long_liq_map 키 활용
+    liq_heatmap_*.json多层数据构建真实清算地图
+    使用short_liq_map / long_liq_map字段
     """
     import json as _j, pathlib as _pl
     sym_lower = sym.lower()
@@ -30,10 +30,10 @@ def _build_liq_map(sym: str, price: float, liq_s: float, liq_l: float, d: dict) 
     lines = []
     try:
         lm = _j.loads(liq_f.read_text())
-        slm = lm.get('short_liq_map', {})  # 공매도 청산 {'2':xx,'5':xx,'10':xx,'20':xx,'50':xx}
-        llm = lm.get('long_liq_map', {})   # 롱 청산
+        slm = lm.get('short_liq_map', {})  # 空头清算 {'2':xx,'5':xx,'10':xx,'20':xx,'50':xx}
+        llm = lm.get('long_liq_map', {})   # 多头清算
         
-        # 상위 공매도 청산 레벨
+        #  空头清算 
         short_levels = sorted([(float(k), v) for k,v in slm.items()], key=lambda x: x[1])[:4]
         long_levels  = sorted([(float(k), v) for k,v in llm.items()], key=lambda x: x[1])[:4]
         
@@ -51,7 +51,7 @@ def _build_liq_map(sym: str, price: float, liq_s: float, liq_l: float, d: dict) 
             lines.append(f'    ├─ ${level:,.1f} (-{pct:.0f}%)  ${val/1e6:.1f}M清算量')
         lines.append('```')
         
-        # 3방 점평
+        # 3 
         nearest_s = lm.get('nearest_short_liq', liq_s)
         nearest_l = lm.get('nearest_long_liq', liq_l)
         bull_score = lm.get('liq_bull_score', 5)
@@ -80,8 +80,8 @@ def _gen_trader_view(sym: str, price: float, d: dict,
                      entry_lo: float, entry_hi: float, sl: float, tp1: float, rr: float) -> str:
     """
     [改造④ v3.0 2026-10-10 苏摩111]
-    40년 실전 트레이더 시각 - 데이터 기반 동적 생성
-    템플릿화 금지: 매번 실제 데이터로 판단문 구성
+    40年实战交易员视角 - 基于数据动态生成
+    禁止模板化: 每次用真实数据构建判断句
     """
     lsr   = float(d.get('lsr_retail', 50))
     cvd   = float(d.get('cvd_1h', 0))
@@ -96,52 +96,52 @@ def _gen_trader_view(sym: str, price: float, d: dict,
     
     points = []
     
-    # 핵심 판단 1: 청산 지도 위치
+    #   1:   
     if entry_lo > 0 and tp1 > 0:
         dist_entry = abs(entry_lo - price) / price * 100
         points.append(f'${entry_lo:,.1f}~${entry_hi:,.1f}挂单，距现价{dist_entry:.1f}%')
     
-    # 핵심 판단 2: GEX 위치
+    #   2: GEX 
     if zf > 0:
         if price < zf:
             points.append(f'当前在ZeroFlip ${zf:,.0f}下方负Gamma区→做市商持续卖出对冲')
         else:
             points.append(f'当前在ZeroFlip ${zf:,.0f}上方正Gamma区→波动率被压制')
     
-    # 핵심 판단 3: LSR 위험도
+    #   3: LSR 
     if lsr >= 75:
         points.append(f'散户{lsr:.1f}%极度拥挤=猎杀定时炸弹')
     elif lsr >= 65:
         points.append(f'散户{lsr:.1f}%偏多=主力有砸盘动力')
     
-    # 핵심 판단 4: CVD + OI 일치
+    #   4: CVD + OI 
     if cvd < -1000 and 'SHORT' in oi:
         points.append(f'CVD={cvd:,.0f}极端卖方+OI空头建仓=双重做空信号')
     elif cvd > 1000 and 'LONG' in oi:
         points.append(f'CVD={cvd:,.0f}买方净流入+OI多头建仓=做多支撑')
     
-    # 핵심 판단 5: RSI 과열
+    #   5: RSI 
     if rsi1h >= 80:
         points.append(f'RSI 1H={rsi1h:.0f}严重超买→短线反转风险极高')
     elif rsi1h <= 20:
         points.append(f'RSI 1H={rsi1h:.0f}严重超卖→反弹窗口打开')
     
-    # 핵심 판단 6: 방창 역사 案例
+    #   6:   案例
     if fc_sim >= 0.7 and fc_sig != 'NEUTRAL':
         points.append(f'方仓相似度{fc_sim:.2f}(n={d.get("fc_n_similar",0)}案例)→历史{fc_sig}方向胜率更高')
     
-    # 핵심 판단 7: FR 철칙
+    #   7: FR 
     if fr > 0.003 and 'LONG' in str(d.get('signal_dir','')):
         points.append(f'FR={fr*100:+.4f}%铁律②封锁多单')
     
-    # 최종 결론
+    #  
     if sl > 0 and tp1 > 0:
         points.append(f'止损${sl:,.1f} 目标${tp1:,.1f} RR={rr:.1f}')
     
     if not points:
         return f'${entry_lo:,.1f}~${entry_hi:,.1f}挂单，不追单，等价格来。'
     
-    return '，'.join(points[:4]) + '。'  # 최대 4포인트
+    return '，'.join(points[:4]) + '。'  # 最多4个要点
 
 
 def _groq_vip_comment(sym: str, price: float, d: dict) -> list:
@@ -210,16 +210,16 @@ def format_full_report(sym: str, d: dict) -> str:
     _signal_dir   = d.get('signal_dir', d.get('direction', ''))
     _ob_list_raw  = d.get('ob_list', [])
     _valid_obs    = [o for o in _ob_list_raw if isinstance(o, dict) and o.get('valid', False) and o.get('age', 99) < 50]
-    # 按 age 오름차순 정렬（신선한 것 우선）
+    # 按 age  （  ）
     _valid_obs_sorted = sorted(_valid_obs, key=lambda x: x.get('age', 99))
-    # 방향에 맞는 OB 찾기
+    #   OB 
     _bear_obs = [o for o in _valid_obs_sorted if str(o.get('type','')).upper() == 'BEAR' or o.get('lo',0) > p]
     _bull_obs = [o for o in _valid_obs_sorted if str(o.get('type','')).upper() == 'BULL' or o.get('hi',0) < p]
     if _signal_dir == 'SHORT' and _bear_obs:
         _ob_ref = _bear_obs[0]
         _ob_lo  = float(_ob_ref.get('lo', 0))
         _ob_hi  = float(_ob_ref.get('hi', 0))
-        if _ob_lo > p * 0.995:  # 현재가 근처 OB만 사용
+        if _ob_lo > p * 0.995:  # 只使用当前价附近的OB
             entry_lo = _ob_lo
             entry_hi = _ob_hi
         else:
@@ -229,7 +229,7 @@ def format_full_report(sym: str, d: dict) -> str:
         _ob_ref = _bull_obs[0]
         _ob_lo  = float(_ob_ref.get('lo', 0))
         _ob_hi  = float(_ob_ref.get('hi', 0))
-        if _ob_hi < p * 1.005:  # 현재가 근처 OB만 사용
+        if _ob_hi < p * 1.005:  # 只使用当前价附近的OB
             entry_lo = _ob_lo
             entry_hi = _ob_hi
         else:
@@ -345,7 +345,7 @@ def format_full_report(sym: str, d: dict) -> str:
     }
     g11_rows = ''
     blocked = False
-    # [수정① 2026-10-10 苏摩111] g_results 없을 때 score 기반 게이트 추정
+    # [① 2026-10-10 苏摩111] g_results   score   
     if not g_results:
         _score = float(d.get('score_final', d.get('score', 0)) or 0)
         _reg   = str(d.get('regime', 'CHOP_MID'))
@@ -489,7 +489,7 @@ def format_full_report(sym: str, d: dict) -> str:
         f'| 清算地图 | 上墙${liq_s:,.1f} 下池${liq_l:,.1f} | 双向 | ✅ |',
         f'| OI | {oi_dir} CVD={cvd_1h:+.0f} | {"SHORT" if "SHORT" in oi_dir or cvd_1h < 0 else "LONG"} | ✅ |',
         f'| GEX | {gex:+.1f}M {"正向锁价" if gex > 0 else "负向推波"} | {"中性" if gex > 50 else "易波动"} | ✅ |',
-        # [改造② v3.0] fc_sim 실제 데이터 + 방창 방향 반영
+        # [改造② v3.0] fc_sim   +   
         f'| 方仓HCME | sim={d.get("fc_sim",0.0):.3f} n={d.get("fc_n_similar",0)}案例 conf={d.get("fc_confidence","?")} | {d.get("fc_signal","NEUTRAL")} {"long_pct=" + str(round(d.get("fc_long_pct",0)*100)) + "%" if d.get("fc_long_pct") else ""} | {"✅ 高度相似" if (d.get("fc_sim") or 0) >= 0.7 else "⚠️ 相似度不足" if (d.get("fc_sim") or 0) > 0 else "❌ 无数据"} |',
         f'| 跨市场 | alpha={alpha:+.4f} {"RISK_ON" if alpha > 0 else "RISK_OFF"} | {"多头偏向" if alpha > 0 else "空头偏向"} | ✅ |',
         '',

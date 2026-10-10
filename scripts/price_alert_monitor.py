@@ -163,10 +163,10 @@ def check_and_alert(state):
     except Exception as _ae:
         import sys as _as; print(f'[price_alert] asset_config err: {_ae}', file=_as.stderr)
 
-    # ── 신호 모순 체크 (ETH GEX 음성구 다단 금지) ──
+    # ── 信号冲突检查 (ETH GEX负区禁止做多) ──
     try:
         import pathlib as _pl
-        # ETH CVD + GEX 충돌 체크
+        # ETH CVD + GEX冲突检查
         cvd_d = json.loads(_pl.Path('data/cvd_realtime_ethusdt.json').read_text())
         cvd_eth = float(cvd_d.get('cvd_1h', cvd_d.get('delta_1h', cvd_d.get('cvd', 0))) or 0)
         gex_d2 = json.loads(_pl.Path('data/gex_state.json').read_text())
@@ -174,8 +174,8 @@ def check_and_alert(state):
         gex_2500 = float(eth_ts2.get('2500', 0))
         eth_p = float(fetch('https://fapi.binance.com/fapi/v1/ticker/price?symbol=ETHUSDT')['price'])
         
-        # 조건: ETH가 $2,500 근처 + CVD 음수 + GEX 음수
-        near_2500 = abs(eth_p - 2500) / 2500 <= 0.025  # 2.5% 이내
+        # 条件: ETH在$2,500附近 + CVD负 + GEX负
+        near_2500 = abs(eth_p - 2500) / 2500 <= 0.025  # 2.5%以内
         cvd_negative = cvd_eth < -300
         gex_negative = gex_2500 < 0
         
@@ -206,7 +206,7 @@ def main():
         alerts = check_and_alert(state)
         if alerts:
             for state_key, msg in alerts:
-                # [新增 2026-10-10 苏摩111] Groq한줄 맥락 추가
+                # [新增 2026-10-10 苏摩111] Groq单行上下文补充
                 try:
                     import sys as _pa; _pa.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
                     from free_llm_client import chat as _pac

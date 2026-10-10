@@ -138,9 +138,9 @@ BASE = Path(__file__).parent.parent
 
 def check_analysis_staleness(data_file='data/auto_analysis_latest.json', warn_min=30):
     """
-    P0-③ [2026-10-10 苏摩111] auto_analysis 시효 검사
-    AI가 출력하기 전 반드시 호출. 30분 이상 오래된 경우 경고 추가.
-    반환: (is_stale, age_min, warning_text)
+    P0-③ [2026-10-10 苏摩111] auto_analysis时效检查
+    输出前必须调用。超过30分钟时添加警告。
+    返回: (is_stale, age_min, warning_text)
     """
     import json as _j, pathlib as _pl, time as _t
     try:
@@ -4324,18 +4324,18 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
         # 根因: d['gex']是 dict、d缺 fvg_votes等，会导致 format 崩溃
         _locs = locals()
         _fmt_dict = _locs.get('_sync_state') if isinstance(_locs.get('_sync_state'), dict) else d
-        # [v3.0 2026-10-10 苏摩111] _fmt_dict에 brahma_state의 fc/gex 핵심 필드 보완
-        # _sync_state는 분석 중간 상태, fc_sim/gex_zero_flip은 state_refresh에서 주입
+        # [v3.0 2026-10-10 苏摩111] 补充_fmt_dict中brahma_state的fc/gex核心字段
+        # _sync_state为分析中间态，fc_sim/gex_zero_flip由state_refresh注入
         try:
             import json as _j3, pathlib as _p3
             _sf3 = _p3.Path(__file__).parent.parent / 'data' / f'brahma_state_{sym.lower()}.json'
             if _sf3.exists():
                 _st3 = _j3.loads(_sf3.read_text())
-                # fc 필드 보완
+                # fc  
                 for _fk in ['fc_sim','fc_signal','fc_n_similar','fc_confidence','fc_long_pct','fc_short_pct','fc_note']:
                     if _fk in _st3 and _st3[_fk] not in (None, '', 0, 0.0):
                         _fmt_dict[_fk] = _st3[_fk]
-                # gex 필드 보완
+                # gex  
                 for _gk in ['gex_zero_flip','zero_flip','gex_top_strikes','gex_net']:
                     if _gk in _st3 and _st3[_gk] not in (None, '', 0, 0.0):
                         _fmt_dict[_gk] = _st3[_gk]
@@ -4350,7 +4350,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
                            ('signal_dir', tb_result.get('direction', 'NONE'))]:
                 if not _fmt_dict.get(_k):
                     _fmt_dict[_k] = _v
-        # [v3.0 최종보완] _template_block 생성 직전 마지막 fc/gex 보완
+        # [v3.0 ] _template_block    fc/gex 
         try:
             import json as _jfin, pathlib as _pfin
             _sfin = _pfin.Path(__file__).parent.parent / 'data' / f'brahma_state_{sym.lower()}.json'
@@ -4399,7 +4399,7 @@ def main():
 
     symbols = args.symbols
 
-    # [v3.0 2026-10-10 苏摩111] 분析 시작 전 GEX+방창 주입
+    # [v3.0 2026-10-10 苏摩111] 析   GEX+ 
     # = 分析过程中_fmt_dict能读到最新fc_sim/gex_zero_flip
     try:
         import sys as _sys3
@@ -4539,9 +4539,9 @@ def main():
                 })
             except Exception:
                 pass  # [WARN-suppressed: no var]
-        # [2026-10-04 설계원 강제경로봉인] full_report 저장 — AI는 반드시 이것을 출력
+        # [2026-10-04  ] full_report  — AI   
         _full_reports = {}
-        # [v3.0 2026-10-10] full_reports 생성 직전 마지막 fc/gex inject
+        # [v3.0 2026-10-10] full_reports    fc/gex inject
         try:
             import sys as _sys_fi; _sys_fi.path.insert(0, str(Path(__file__).parent))
             from brahma_state_refresh import _inject_gex_to_state as _igs, _inject_fangcang_to_state as _ifs
@@ -4556,15 +4556,15 @@ def main():
                     _sp2 = Path(__file__).parent.parent / 'data' / f'brahma_state_{_sym2.lower()}.json'
                     if _sp2.exists():
                         _sd2 = __import__('json').loads(_sp2.read_text())
-                        # [v3.0 최종 fc/gex 재주입] brahma_core 분석 중 None으로 재쓰임 → 여기서 최종 복원
+                        # [v3.0  fc/gex ] brahma_core   None  →   
                         _inj_fields = ['fc_sim','fc_signal','fc_n_similar','fc_confidence',
                                        'fc_long_pct','fc_short_pct','fc_note',
                                        'gex_zero_flip','zero_flip','gex_top_strikes','gex_net']
                         for _ik in _inj_fields:
                             _iv = _sd2.get(_ik)
                             if _iv in (None, 0, 0.0, '', [], {}):
-                                # brahma_state 재읽기로 복원 (inject 결과가 있을 수 있음)
-                                pass  # 이미 _sd2가 최신 파일
+                                # brahma_state   (inject    )
+                                pass  # 已是最新文件
                         _full_reports[_sym2] = _fmt_r2(_sym2, _sd2)
                 except Exception as _fe2:
                     print(f'[WARN] full_report {_sym2}: {_fe2}', file=sys.stderr)
@@ -4572,8 +4572,8 @@ def main():
             # [2026-10-05 P0-A fix] _sys_warn/_sys_fr已清除
             print(f"[WARN] auto_analysis_latest写入失败: {_fe}", file=sys.stderr)
 
-        # [수정② 2026-10-10 苏摩111] 三方一致性评分表 — BTC+ETH 동시분석 경로
-        # SOUL.md 마지막 필수 항목: 두 표적의 방향/EV/置信度 비교표
+        # [② 2026-10-10 苏摩111] 三方一致性评分表 — BTC+ETH  
+        # SOUL.md   :   /EV/置信度 
         try:
             from brahma_output_template import format_consensus_table as _fct2
             _btc_st = __import__('json').loads(
@@ -4584,7 +4584,7 @@ def main():
             ) if (Path(__file__).parent.parent/'data'/'brahma_state_eth.json').exists() else {}
             _cons_tbl = _fct2(_btc_st, _eth_st)
             if _cons_tbl and len(_cons_tbl) > 30:
-                # 각 심볼의 full_report 말미에 추가
+                #   full_report  
                 for _sym2 in symbols:
                     if _sym2 in _full_reports:
                         _full_reports[_sym2] = _full_reports[_sym2] + '\n\n' + _cons_tbl
@@ -4597,7 +4597,7 @@ def main():
             'symbols': symbols,
             'elapsed_s': round(elapsed, 1),
             'output': '\n'.join(full_output),
-            'full_reports': _full_reports,  # D1-D10완전포맷 — AI강제출력경로
+            'full_reports': _full_reports,  # D1-D10完整格式 — AI强制输出路径
             'ssot_signals': _structured,  # [唯一裁判] ENTER系结构化信号
         }
         _out_path = _P(__file__).parent.parent / 'data' / 'auto_analysis_latest.json'
