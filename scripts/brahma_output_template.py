@@ -660,6 +660,7 @@ def format_full_report(sym: str, d: dict) -> str:
                 f'⚠️ WAIT({reg}) | 止损墙做空 RR={_rr}',
                 f'🚫 破${_sl:,.1f}作废',
                 '🌿 姓赵不宣 | 不是建议',
+                *_groq_vip_comment(sym, p, d),
                 '```',
             ]
         elif _h_dir == 'LONG' and liq_l > 0:
@@ -679,6 +680,7 @@ def format_full_report(sym: str, d: dict) -> str:
                 f'触发: 4H收阳+CVD转正 | ⚠️ WAIT({reg}) | RR={_rr}',
                 f'🚫 破${_sl:,.1f}作废',
                 '🌿 姓赵不宣 | 不是建议',
+                *_groq_vip_comment(sym, p, d),
                 '```',
             ]
         else:
@@ -691,6 +693,7 @@ def format_full_report(sym: str, d: dict) -> str:
                 f'⚠️ {reg} + Hurst={h:.3f}，等方向确认',
                 f'🚫 破${liq_l:,.1f}支撑池或破${liq_s:,.1f}止损墙后看方向',
                 '🌿 姓赵不宣 | 不是建议',
+                *_groq_vip_comment(sym, p, d),
                 '```',
             ]
     else:
@@ -728,6 +731,8 @@ def format_full_report(sym: str, d: dict) -> str:
             f'⚠️ RR={_rr:.1f}｜EV={ev:+.3f}%',
             f'🚫 破${_sl:,.1f}作废',
             '🌿 姓赵不宣 | 不是建议',
+            # [2026-10-10 苏摩111] Groq动态风险提示
+            *_groq_vip_comment(sym, p, d),
             '```',
         ]
 
@@ -810,6 +815,8 @@ def format_vip_card(btc: dict, eth: dict, ts: str = '') -> str:
         '',
         f'执行优先级：{" > ".join(priority)}',
         '🌿 姓赵不宣 | 不是建议',
+        # [2026-10-10 苏摩111] Groq动态风险提示
+        *_groq_vip_comment(sym, p, d),
         '```',
     ]
 
