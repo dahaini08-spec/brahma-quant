@@ -408,6 +408,11 @@ def check_all() -> list:
                     f'条件：1H收阳+CVD转正\n\n'
                     f'🌿 姓赵不宣 | 不是建议'
                 ))
+                # [근본수정 2026-10-10 苏摩111] alerts 추가 즉시 state 저장
+                # 이전: state 저장 없음 → 매분 조건 재충족 → 무한 추송
+                state[k] = now
+                state[f'{k}_price'] = cfg.get('gex_zf', 0)
+                save_state(state)
 
     # [修复 2026-10-10 苏摩111] 同方向信号30min内去重
     # 防止M7预警和主链VIP在同一时间段重复推送同方向信号

@@ -73,6 +73,20 @@ def check_lead_signals():
     now   = time.time()
     alerts = []
 
+    # [근본수정 2026-10-10 苏摩111] GEX ZeroFlip 실수 시 ETH 다중 방향 신호 억제
+    # ZeroFlip 실수(負GEX区) = 구조적 공매도 환경 → ETH 다중 신호 전송 금지
+    _eth_gex_suppressed = False
+    try:
+        import json as _jgs, pathlib as _pgs
+        _bstate = _jgs.loads((_pgs.Path(__file__).parent.parent/'data'/'brahma_state_eth.json').read_text())
+        _eth_price = float(_bstate.get('price', 0) or 0)
+        _eth_zf = float(_bstate.get('gex_zero_flip', _bstate.get('zero_flip', 0)) or 0)
+        if _eth_zf > 0 and _eth_price < _eth_zf:
+            _eth_gex_suppressed = True
+            print(f'[M6.5] ETH GEX ZeroFlip실수(${_eth_price:.0f}<${_eth_zf:.0f}) → ETH多단신호 억제')
+    except Exception:
+        pass
+
     # ── 1. K선 데이터 로드 ──────────────────────────────
     try:
         btc_k = fetch('https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1h&limit=25')
@@ -118,8 +132,13 @@ def check_lead_signals():
             except:
                 liq_s = int(eth_now*1.02); liq_l = int(eth_now*0.98)
 
-            alerts.append((k,
-                f'🚀 梵天领先信号 | BTC突破→ETH补涨\n\n'
+            # [근본수정 2026-10-10 苏摩111] GEX ZeroFlip 실수 시 ETH 다중 신호 억제
+            # ZeroFlip 실수 = 구조적 공매도 환경 → ETH 다중 방향 신호 금지
+            if _eth_gex_suppressed:
+                print(f'[M6.5] GEX억제: ETH多단신호 스킵 (ZeroFlip실수)')
+            else:
+                alerts.append((k,
+                    f'🚀 梵天领先信号 | BTC突破→ETH补涨\n\n'
                 f'BTC突破12H高点 ${btc_prev_high:,.0f} → ${btc_now:,.0f}\n'
                 f'ETH滞涨中 ${eth_now:,.2f}（距12H高点{(eth_12h_high/eth_now-1)*100:.1f}%落后）\n'
                 f'BTC/ETH相关性 ρ={rho}\n\n'
@@ -128,7 +147,7 @@ def check_lead_signals():
                 f'建议入场：${eth_now:,.2f}~${eth_now*1.005:,.0f}\n'
                 f'目标：${liq_s:,} | 止损：${liq_l:,}\n\n'
                 f'🌿 姓赵不宣 | 不是建议'
-            ))
+                ))
 
     # ── 4. ρ 배리 감지 ──────────────────────────────────
     if rho is not None:
