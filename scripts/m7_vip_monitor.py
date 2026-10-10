@@ -364,21 +364,63 @@ def check_all() -> list:
                 long_hi  = cfg['long_entry'][1] if 'long_entry' in cfg else round(price * 0.977, 0)
                 long_sl  = round(long_lo - atr_1h * 1.5, 1)
                 long_tp  = cfg.get('long_tp', zf_price)
+                # [修复 2026-10-10 苏摩111] 实时校验触发条件，标注[预警]vs[执行]
+                import urllib.request as _ur2, ssl as _ssl2, json as _j2
+                _ctx2 = _ssl2.create_default_context()
+                try:
+                    _k1h = _j2.loads(_ur2.urlopen(
+                        'https://fapi.binance.com/fapi/v1/klines?symbol=ETHUSDT&interval=1h&limit=2',
+                        timeout=5, context=_ctx2).read())
+                    _1h_bear = float(_k1h[-2][4]) < float(_k1h[-2][1])  # 최신 완성K 하락?
+                except: _1h_bear = False
+                try:
+                    import pathlib as _pl2
+                    _cvd_d = _j2.loads((_pl2.Path(__file__).parent.parent/'data'/'cvd_realtime_ethusdt.json').read_text())
+                    _cvd_now = float(_cvd_d.get('cvd_1h', _cvd_d.get('delta_1h', 0)) or 0)
+                except: _cvd_now = 0
+
+                _cond_bear_k   = '✅' if _1h_bear else '❌'
+                _cond_cvd_neg  = '✅' if _cvd_now < -200 else '❌'
+                _all_met       = _1h_bear and _cvd_now < -200
+                _tag = '[✅执行] 条件满足，立即挂单' if _all_met else '[⏳预警] 等待条件满足后挂单'
+
                 alerts.append((k,
-                    f'⚠️ 梵天VIP | ETH GEX ZeroFlip失守\n\n'
+                    f'⚠️ 梵天VIP | ETH GEX ZeroFlip失守\n'
+                    f'{_tag}\n\n'
                     f'价格 ${price:,.2f} 跌破ZeroFlip ${zf_price:,}\n'
                     f'= 进入负GEX区，做市商转为做空对冲\n\n'
                     f'🔴 P1 空单（主策略）\n'
                     f'入场 ${short_entry_lo:,}~${short_entry_hi:,}（反弹至ZeroFlip下沿）\n'
                     f'止损 ${short_sl:,}（ZeroFlip上方1.5×ATR）\n'
                     f'目标 ${short_tp1:,}  RR≈{short_rr}\n'
-                    f'条件：1H收阴+CVD持续负\n\n'
+                    f'条件确认：1H收阴={_cond_bear_k} CVD持续负={_cond_cvd_neg}\n\n'
                     f'🟢 P2 多单（候补，等结构）\n'
                     f'入场 ${long_lo:,}~${long_hi:,}（正GEX区边界）\n'
                     f'止损 ${long_sl:,}  目标 ${long_tp:,}\n'
                     f'条件：1H收阳+CVD转正\n\n'
                     f'🌿 姓赵不宣 | 不是建议'
                 ))
+
+    # [修复 2026-10-10 苏摩111] 同方向信号30min内去重
+    # 防止M7预警和主链VIP在同一时间段重复推送同方向信号
+    try:
+        _dedup_keys = set()
+        _filtered = []
+        for _ak, _am in alerts:
+            # 方向提取
+            _is_short = '空单' in _am or 'SHORT' in _ak
+            _is_long  = '多单' in _am or 'LONG' in _ak
+            _dir_key  = f'dedup_short_{_ak[:6]}' if _is_short else (f'dedup_long_{_ak[:6]}' if _is_long else None)
+            if _dir_key:
+                _last_same = state.get(_dir_key, 0)
+                if now - _last_same < 1800:  # 30min 쿨다운
+                    print(f'[M7-DEDUP] {_ak} 同方向30min内去重跳过')
+                    continue
+                state[_dir_key] = now
+            _filtered.append((_ak, _am))
+        alerts = _filtered
+    except Exception as _dd_e:
+        print(f'[M7-DEDUP ERR] {_dd_e}')
 
     # P0-② ATR 신경원 果蝇 감지
     try:
