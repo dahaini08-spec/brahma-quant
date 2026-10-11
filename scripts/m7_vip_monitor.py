@@ -15,7 +15,7 @@ M7: VIP策略状态监控
 由 trading_copilot.py 每分钟调用
 """
 import json, pathlib, ssl, time, os, sys, urllib.request, urllib.parse
-# [P2최적화 2026-10-10 苏摩111] brahma_http 통일HTTP 사용
+# [P2优化 2026-10-10 苏摩111] brahma_http统一HTTP使用
 import sys as _bhttp_sys, pathlib as _bhttp_pl
 _BRAHMA_BRAIN = str(_bhttp_pl.Path(__file__).parent.parent / 'brahma_brain')
 if _BRAHMA_BRAIN not in _bhttp_sys.path:
@@ -91,7 +91,7 @@ def _load_vip_cfg():
                 try:
                     _gex_d = _j.loads((_data_dir/'gex_state.json').read_text())
                     _gex_zf = float(_gex_d.get(_sym,{}).get('zero_flip',0) or _gex_zf)
-                except Exception as _e2: pass  # gex_state.json 없으면 기본값 사용
+                except Exception as _e2: pass  # gex_state.json不存在时使用默认值
                 _fb[_sym] = {
                     'long_entry': (_long_lo, _long_hi),
                     'long_sl': _long_sl, 'long_tp': round(_hl_s, 0),
@@ -560,7 +560,7 @@ def check_all() -> list:
                 f'https://fapi.binance.com/fapi/v1/premiumIndex?symbol={_sym}USDT',
                 timeout=4, context=_ctx).read())
             state[f'{_sym}_fr_prev'] = float(_fr_r.get('lastFundingRate',0))*100
-    except Exception as _fe: print(f'[M7] FR조회실패: {_fe}', file=__import__('sys').stderr)
+    except Exception as _fe: print(f'[M7] FR查询失败: {_fe}', file=__import__('sys').stderr)
     # 保存状态（含cvd_prev/oi_prev更新）
     save_state(state)
     return alerts

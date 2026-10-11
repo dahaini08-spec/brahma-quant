@@ -2953,7 +2953,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     try:
         from breakout_watch import run_breakout_watch
         bw = run_breakout_watch([sym + 'USDT'])
-        # [P0防御 2026-10-11 苏摩111] bw타입 방어 (간헐적 list반환 대비)
+        # [P0防御 2026-10-11 苏摩111] bw类型防御（防止偶发list返回）
         if not isinstance(bw, dict):
             bw = {'alerts': [], 'results': {}}
         bw_alerts = bw.get('alerts', [])
@@ -4061,7 +4061,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
         for _i, _gk in enumerate(_gate_list):
             if _gk == 'G5':
                 # [体制废弃 2026-10-11 苏摩111封印] G5完全移除出决策
-                continue  # step11_gates에 G5 포함하지 않음
+                continue  # step11_gates不含G5（体制废弃 苏摩111）
             if _blocked_gate and _blocked_gate != 'G5':
                 _gates[_gk] = (_i < _gate_list.index(_blocked_gate))
             else:

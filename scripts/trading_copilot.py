@@ -604,7 +604,7 @@ def m8_groq_smart_layer(state: dict) -> None:
         _prev = {}
         if _out_f.exists():
             try: _prev = _j.loads(_out_f.read_text())
-            except Exception as _e607: print(f'[M3] 이전결과로드실패: {_e607}', file=__import__('sys').stderr)
+            except Exception as _e607: print(f'[M3] 上次结果加载失败: {_e607}', file=__import__('sys').stderr)
 
         results = {}
         _calls_made = 0
@@ -837,7 +837,7 @@ def main():
             _pid = int(_lf.read_text().strip())
             try: _os.kill(_pid, 0)
             except ProcessLookupError: _lf.unlink(missing_ok=True)
-    except Exception as _le: print(f'[lock] flock검사오류(무해): {_le}', file=__import__('sys').stderr)
+    except Exception as _le: print(f'[lock] flock检查错误(无害): {_le}', file=__import__('sys').stderr)
 
     if alerts:
         for sk, msg in alerts:

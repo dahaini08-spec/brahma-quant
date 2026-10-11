@@ -1440,11 +1440,11 @@ def fangcang_context_match(
         if c_bbw <= 0:
             continue
         bbw_ratio = abs(c_bbw - current_bbw) / max(current_bbw, 1e-9)
-        if bbw_ratio > 0.50:  # [P0最适化 2026-10-11 苏摩111] 0.35→0.50 더 많은 케이스 참여
+        if bbw_ratio > 0.50:  # [P0优化 2026-10-11 苏摩111] 0.35→0.50 更多案例参与
             continue
 
         # RSI相似度：±18容差
-        if abs(c_rsi - current_rsi) > 25:  # [P0최적화 2026-10-11 苏摩111] ±18→±25
+        if abs(c_rsi - current_rsi) > 25:  # [P0优化 2026-10-11 苏摩111] ±18→±25
             continue
 
         # [修复 2026-08-29] 体制匹配：精确匹配权重1.0，同大组降权0.6，跨组降权0.3但保留

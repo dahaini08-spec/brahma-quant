@@ -77,7 +77,7 @@ def check_lead_signals():
     # ZeroFlip (負GEX区) =    → ETH
     _eth_gex_suppressed = False
     try:
-        # [P1성능최적화 2026-10-10 苏摩111] state_store 30초캐시
+        # [P1性能优化 2026-10-10 苏摩111] state_store 30秒缓存
         import sys as _jgs_s, pathlib as _pgs
         _bb = str(_pgs.Path(__file__).parent.parent / 'brahma_brain')
         if _bb not in _jgs_s.path: _jgs_s.path.insert(0, _bb)

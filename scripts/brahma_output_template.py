@@ -216,7 +216,7 @@ def format_full_report(sym: str, d: dict) -> str:
     _signal_pre = d.get('signal_dir', 'NONE')
     _atr1h_pre = float(d.get('atr_1h', 0) or 0)
 
-    # 예판 방향 추론
+    # 预判方向推理
     _up_prob = 50
     _reasons = []
     if _cvd_pre > 200: _up_prob += 10; _reasons.append('CVD买方')
@@ -231,7 +231,7 @@ def format_full_report(sym: str, d: dict) -> str:
     _up_prob = max(10, min(90, _up_prob))
     _dn_prob = 100 - _up_prob
 
-    # 다음 청산 목표
+    # 下一个清算目标
     _next_target = ''
     if p > 0 and _liq_s_pre > p:
         _next_target = f'上方清算墙${_liq_s_pre:,.0f}(+{(_liq_s_pre-p)/p*100:.1f}%)'
@@ -384,7 +384,7 @@ def format_full_report(sym: str, d: dict) -> str:
     _raw_gates = d.get('step11_gates', {})
     # [体制废弃 2026-10-11 苏摩111封印] G5完全移除，G1~G4/G6~G11共10道门
     g_results = {k: v for k, v in _raw_gates.items() if k != 'G5'} if _raw_gates else {}
-    # g5_block 폐기 [体制废弃 2026-10-11 苏摩111]
+    # g5_block已废弃 [体制废弃 2026-10-11 苏摩111]
     score      = d.get('score_final', 0.0)
     raw_score  = d.get('raw_score', 0.0)
 
@@ -460,7 +460,7 @@ def format_full_report(sym: str, d: dict) -> str:
     _score_val = float(d.get('score_final', d.get('score', 0)) or 0)
     for gk, gname in gate_names.items():
         result = g_results.get(gk)
-        # G1~G4, G6~G11: 실제 阻断 판단 (G5체制废弃)
+        # G1~G4, G6~G11: 实际阻断判断（G5体制废弃）
         if result is None:
             g11_rows += f'| {gk} {gname} | — | — | — |\n'
         elif result:
@@ -482,8 +482,8 @@ def format_full_report(sym: str, d: dict) -> str:
         _e_mid  = (entry_lo + entry_hi) / 2 if entry_lo > 0 else entry_hi
         reward  = abs(_e_mid - tp1)
         risk    = abs(sl - _e_mid)
-        # [架构师方案 2026-10-10 苏摩111] WR矩阵体制别回归테스트fallback
-        # 优先级: 실제WR(n>=8) > 체제별회귀WR > 보수적기본값0.45
+        # [架构师方案 2026-10-10 苏摩111] WR矩阵体制别回归测试fallback
+        # 优先级: 实际WR(n>=8) > 体制别回归WR > 保守默认值0.45
         _BACKTEST_WR = {
             'BULL_TREND:LONG':    0.560,
             'BULL_TREND:SHORT':   0.441,
@@ -491,15 +491,15 @@ def format_full_report(sym: str, d: dict) -> str:
             'BEAR_TREND:LONG':    0.441,
             'BEAR_RECOVERY:LONG': 0.612,
             'BEAR_EARLY:SHORT':   0.531,
-            'CHOP_MID:LONG':      0.450,  # 회귀테스트 무의미→보수적값
+            'CHOP_MID:LONG':      0.450,  # 回归测试无意义→保守值
             'CHOP_MID:SHORT':     0.450,
         }
-        _regime_for_wr = str(d.get('regime', 'CHOP_MID'))  # [P0修复 2026-10-10] regime 미정의 버그수정
+        _regime_for_wr = str(d.get('regime', 'CHOP_MID'))  # [P0修复 2026-10-10] regime未定义bug修复 regime 未定义
         _key = f'{_regime_for_wr.upper()}:{signal_dir.upper()}'
-        wr_est = _BACKTEST_WR.get(_key, 0.45)  # 체제별회귀WR fallback
+        wr_est = _BACKTEST_WR.get(_key, 0.45)  # 体制别回归WR fallback
         try:
             import json as _j, pathlib as _pl, time as _t
-            # [성능최적화 2026-10-10 苏摩111] 모듈수준 캐시 60초
+            # [性能优化 2026-10-10 苏摩111] 模块级缓存60秒
             global _WR_CACHE, _WR_CACHE_TS
             _now = _t.time()
             if not hasattr(_j, '_wr_cache_ts') or _now - globals().get('_WR_CACHE_TS', 0) > 60:

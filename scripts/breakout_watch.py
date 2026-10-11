@@ -26,7 +26,7 @@ import sys as _sys, json as _json
 from pathlib import Path as _Path
 # [2026-10-05 Fix: cron快速退出逻辑只在主程序运行时生效，import时不触发]
 if __name__ == '__main__':
-    # [P1성능최적화 2026-10-10 苏摩111] state_store 30초캐시 사용
+    # [P1性能优化 2026-10-10 苏摩111] state_store 30秒缓存 使用
     try:
         import sys as _ss, pathlib as _ssp
         _brain = str(_ssp.Path(__file__).parent.parent / 'brahma_brain')
