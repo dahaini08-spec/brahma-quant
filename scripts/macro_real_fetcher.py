@@ -194,6 +194,34 @@ def update_macro_real():
             ms = json.loads(macro_state_path.read_text())
             data['fear_greed'] = ms.get('fear_greed', 50)
         except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+
+    # [P0修复 2026-10-11 苏摩111] QQQ/XAU/BTC主导率实时接入
+    try:
+        import urllib.request as _ur
+        def _get24h(sym):
+            _r = json.loads(_ur.urlopen(
+                f'https://fapi.binance.com/fapi/v1/ticker/24hr?symbol={sym}', timeout=5
+            ).read())
+            return round(float(_r.get('priceChangePercent', 0)), 4)
+        data['qqq_change_1d']  = _get24h('QQQUSDT')
+        data['xau_change_1d']  = _get24h('XAUUSDT')
+    except Exception as _em: print(f'[WARN] macro QQQ/XAU: {_em}', file=sys.stderr)
+
+    try:
+        _fg_r = json.loads(_ur.urlopen(
+            'https://api.alternative.me/fng/?limit=1', timeout=5
+        ).read())
+        data['fear_greed'] = int(_fg_r['data'][0]['value'])
+    except Exception as _ef: pass  # fallback to macro_state
+
+    try:
+        _cg_r = json.loads(_ur.urlopen(
+            'https://api.coingecko.com/api/v3/global', timeout=5
+        ).read())
+        data['btc_dominance'] = round(
+            _cg_r['data']['market_cap_percentage'].get('btc', 0), 1
+        )
+    except Exception as _ed: print(f'[WARN] macro BTC_DOM: {_ed}', file=sys.stderr)
     # 写入
     output_path = DATA_DIR / 'macro_real.json'
     output_path.parent.mkdir(parents=True, exist_ok=True)
