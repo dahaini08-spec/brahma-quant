@@ -3616,7 +3616,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     _harv_str      = vol.get('harv_range_str','') or 'HAR-RV无数据'
     _regime_ok     = '✅' if str(regime_c) not in ('CHOP_MID',) else '⚠️震荡禁单'
     _ev_note       = 'EV(排序参考)=-0.15%≤0→WATCH' if _tb_action == 'WATCH' else f'EV正向→{_tb_action}'
-    _align_ok      = '✅' if res.get('align_count',0) >= 3 else f'⚠️方向{res.get("align_count",0)}/7共识不足'
+    _align_ok      = '✅' if res.get('align_count',0) >= 4 else f'⚠️方向{res.get("align_count",0)}/7共识不足(需≥4)'
     _fvg_ok        = '✅' if fvg.get('consensus') else '⚠️FVG无共识'
     _hurst_ok      = '✅' if vol.get('hurst',0.5) >= 0.55 else f'⚠️H={vol.get("hurst",0.5):.3f}<0.55随机游走'
     _oi_ok         = '✅' if oi.get('signal') else '⚠️OI无信号'

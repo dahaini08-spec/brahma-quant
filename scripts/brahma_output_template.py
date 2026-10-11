@@ -423,8 +423,8 @@ def format_full_report(sym: str, d: dict) -> str:
 
     # ── Step11表格行 ──
     gate_names = {
-        'G1': '数据新鲜', 'G2': '方向明确', 'G3': '高证据标准',
-        'G4': '共振≥3',   'G6': '入场区合规',
+        'G1': '数据新鲜', 'G2': '方向明确', 'G3': '结构共振（FVG+OB+清算）',
+        'G4': '资金共振（CVD+OI+LSR）', 'G6': '入场区合规',
         'G7': 'SL≥1.5×ATR','G8': 'RR≥1.5', 'G9': '熔断器',
         'G10':'宏观',      'G11':'EV>0',
     }
@@ -442,11 +442,41 @@ def format_full_report(sym: str, d: dict) -> str:
         _sl_v  = float(d.get('sl', 0))
         _atr1h = float(d.get('atr_1h', 1))
         _rr_v  = abs(float(d.get('tp1',0))-_entry)/abs(_sl_v-_entry) if _entry and _sl_v and abs(_sl_v-_entry)>0 else 0
+        # [P0决策树 2026-10-11 苏摩111] G3=结构共振 G4=资金共振 独立判断
+        # G3 结构共振：FVG方向 + 有效OB数 + 清算方向 三项≥2项支持当前signal_dir
+        _fvg_votes = d.get('fvg_votes', {})
+        _fvg_bear  = sum(1 for v in _fvg_votes.values() if v == 'BEAR')
+        _fvg_bull  = sum(1 for v in _fvg_votes.values() if v == 'BULL')
+        _fvg_dir   = 'SHORT' if _fvg_bear > _fvg_bull else 'LONG' if _fvg_bull > _fvg_bear else 'NEUTRAL'
+        _obs       = d.get('ob_list', [])
+        _obs_valid = [o for o in _obs if o.get('age', 999) < 50] if isinstance(_obs, list) else []
+        _liq_s     = float(d.get('liq_short', 0) or 0)
+        _liq_l     = float(d.get('liq_long',  0) or 0)
+        _px        = float(d.get('price', 0) or 0)
+        _liq_dir   = ('SHORT' if (_liq_s > 0 and abs(_liq_s - _px) < abs(_liq_l - _px))
+                      else 'LONG' if _liq_l > 0 else 'NEUTRAL')
+        _sdir      = str(d.get('signal_dir', 'SHORT')).upper()
+        _struct_ok = sum([
+            1 if _fvg_dir  == _sdir else 0,
+            1 if len(_obs_valid) >= 2 else 0,
+            1 if _liq_dir  == _sdir else 0,
+        ])
+        # G4 资金共振：CVD + OI方向 + LSR极端反向 三项≥2项支持
+        _cvd_dir  = 'SHORT' if _cvd < -50 else 'LONG' if _cvd > 50 else 'NEUTRAL'
+        _oi_dir   = ('SHORT' if ('SHORT' in _oi.upper() or 'UNWIND' in _oi.upper())
+                     else 'LONG' if 'LONG_BUILD' in _oi.upper() else 'NEUTRAL')
+        _lsr_r    = float(d.get('lsr_retail', 50) or 50)
+        _lsr_sig  = 'SHORT' if _lsr_r > 70 else 'LONG' if _lsr_r < 30 else 'NEUTRAL'
+        _fund_ok  = sum([
+            1 if _cvd_dir == _sdir else 0,
+            1 if _oi_dir  == _sdir else 0,
+            1 if _lsr_sig == _sdir else 0,
+        ])
         g_results = {
             'G1':  True,
             'G2':  _score > 0,
-            'G3':  _align >= 3,
-            'G4':  _align >= 3,
+            'G3':  _struct_ok >= 2,   # 结构共振：FVG+OB+清算 ≥2/3 支持
+            'G4':  _fund_ok  >= 2,    # 资金共振：CVD+OI+LSR ≥2/3 支持
             # G5 废弃
             'G6':  _entry > 0,
             'G7':  abs(_sl_v - _entry) >= _atr1h * 1.5 if _entry and _sl_v else True,
@@ -516,7 +546,19 @@ def format_full_report(sym: str, d: dict) -> str:
             pass
         ev_val  = reward * wr_est - risk * (1 - wr_est)
         ev_sign = '✅' if ev_val > 0 else '❌'
-        ev_str  = f'({reward:,.0f}×{wr_est:.2f})-({risk:,.0f}×{1-wr_est:.2f})=**{"+" if ev_val>=0 else ""}${ev_val:,.0f}，EV{"正" if ev_val>0 else "负"} {ev_sign}**'
+        # [P1决策树 2026-10-11 苏摩111] WR置信度分级显示
+        try:
+            _mat_check = globals().get('_WR_CACHE', {})
+            _n_trades  = int(_mat_check.get(_key, {}).get('total', 0))
+        except Exception:
+            _n_trades = 0
+        _wr_stars = ('★★★实盘可信' if _n_trades >= 50
+                     else '★★☆实盘参考' if _n_trades >= 10
+                     else '★☆☆回归估算' if _n_trades >= 1
+                     else '☆☆☆无实盘(慎用)')
+        ev_str  = (f'({reward:,.0f}×{wr_est:.2f})-({risk:,.0f}×{1-wr_est:.2f})='
+                   f'**{"+" if ev_val>=0 else ""}${ev_val:,.0f}，EV{"正" if ev_val>0 else "负"} {ev_sign}**'
+                   f' | WR={wr_est:.2f} {_wr_stars}(n={_n_trades})')
     else:
         ev_str = '—'
 
