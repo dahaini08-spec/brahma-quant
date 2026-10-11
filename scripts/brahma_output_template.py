@@ -245,14 +245,64 @@ def format_full_report(sym: str, d: dict) -> str:
         f'震荡蓄力等待方向突破'
     )
 
+    # ── [P2 五问决策树 2026-10-11 苏摩111封印] 40年实战推理链 ──
+    # 基于真实数据动态生成，不是AI编造
+    _liq_s_pct   = (_liq_s_pre - p) / p * 100 if p > 0 and _liq_s_pre > p else 0
+    _liq_l_pct   = (p - _liq_l_pre) / p * 100 if p > 0 and _liq_l_pre > 0 else 0
+    _sl_min      = _atr1h_pre * 1.5
+
+    # 第一问：主力在哪里（清算地图+OI+CVD推断）
+    _q1_liq    = (f'上方${_liq_s_pre:,.0f}(+{_liq_s_pct:.1f}%)建了空仓止损' if _liq_s_pct > 0
+              else f'下方${_liq_l_pre:,.0f}(-{_liq_l_pct:.1f}%)建了多仓止损' if _liq_l_pct > 0
+              else '清算数据暂缺')
+    _q1_cvd    = ('买方主动进攻' if _cvd_pre > 200 else
+              '卖方主动进攻' if _cvd_pre < -200 else '双方观望')
+    _q1        = f'{_q1_liq}，CVD={_cvd_pre:.0f}（{_q1_cvd}）'
+
+    # 第二问：散户在哪里（LSR）
+    _q2_lsr    = (_lsr_pre)
+    _q2_side   = ('极度偏多' if _q2_lsr > 70 else '极度偏空' if _q2_lsr < 30 else '中性')
+    _q2_fuel   = ('做空燃料充足→主力可能反向猎杀' if _q2_lsr > 70 else
+              '做多燃料充足→主力可能反向拉升' if _q2_lsr < 30 else '无极端信号')
+    _q2        = f'散户{_q2_lsr:.0f}%多头（{_q2_side}），{_q2_fuel}'
+
+    # 第三问：最省力路径（清算密度决定）
+    _q3_near   = ('上方清算墙' if _liq_s_pct > 0 and (_liq_s_pct < _liq_l_pct or _liq_l_pct == 0)
+              else '下方清算池' if _liq_l_pct > 0 else '方向待确认')
+    _q3_target = (f'${_liq_s_pre:,.0f}(+{_liq_s_pct:.1f}%)' if '上方' in _q3_near
+              else f'${_liq_l_pre:,.0f}(-{_liq_l_pct:.1f}%)' if '下方' in _q3_near else '—')
+    _q3        = f'最省力路径→先去{_q3_near}{_q3_target}触发连锁清算，再反向'
+
+    # 第四问：我在哪里等（OB锚点）
+    _q4_a      = (f'A线：${_liq_l_pre:,.0f}清洗后 1H收阳+OI止跌 → 做多' if _liq_l_pct > 0
+              else f'A线：等价格回踩支撑OB区间确认 → 入场')
+    _q4_b      = (f'B线：${_liq_s_pre:,.0f}阻力确认 1H收阴 → 做空' if _liq_s_pct > 0
+              else f'B线：等价格突破阻力OB区间确认 → 入场')
+    _q4        = f'{_q4_a} | {_q4_b}'
+
+    # 第五问：错了怎么办（ATR止损）
+    _q5_sl     = f'SL铁律≥1.5×ATR1H=${_sl_min:.0f}，结构失效立即出'
+    _q5_rule   = 'GEX负Gamma区跌破ZF加速→不扛单' if p < _gex_zf else '正Gamma锁价→正常SL即可'
+    _q5        = f'{_q5_sl}，{_q5_rule}'
+
+    _five_q_block = f"""## 🧠 五问决策树（40年实战推理链）
+    | 问题 | 数据推理 |
+    |------|----------|
+    | ❶ 主力在哪里？ | {_q1} |
+    | ❷ 散户在哪里？ | {_q2} |
+    | ❸ 最省力路径？ | {_q3} |
+    | ❹ 我在哪里等？ | {_q4} |
+    | ❺ 错了怎么办？ | {_q5} |
+    """
+
     _predict_block = f"""
-## 📍 主力下一步动作预判（预判系统 · 非确认系统）
-**{_predict_action}**
-📊 概率分布：上行 {_up_prob}% | 下行 {_dn_prob}%
-🔑 信号依据：{' / '.join(_reasons) if _reasons else '信号平衡，等待'}
-⏰ GEX ZeroFlip=${_gex_zf:,.0f} | CVD={_cvd_pre:.0f} | LSR={_lsr_pre:.0f}% | FR={_fr_pre:+.4f}%
-> ⚠️ 预判系统：结构+资金流+清算=决策依据，体制仅作信息标签显示
-"""
+    ## 📍 主力下一步动作预判（预判系统 · 非确认系统）
+    **{_predict_action}**
+    📊 概率分布：上行 {_up_prob}% | 下行 {_dn_prob}%
+    🔑 信号依据：{' / '.join(_reasons) if _reasons else '信号平衡，等待'}
+    ⏰ GEX ZeroFlip=${_gex_zf:,.0f} | CVD={_cvd_pre:.0f} | LSR={_lsr_pre:.0f}% | FR={_fr_pre:+.4f}%
+    > ⚠️ 预判系统：结构+资金流+清算=决策依据，体制仅作信息标签显示
+    """
 
     h   = d.get('hurst', 0.0)
 
@@ -565,6 +615,9 @@ def format_full_report(sym: str, d: dict) -> str:
     lines = [
         # [预判系统 2026-10-11 苏摩111封印] 第一块永远是主力预判
         *_predict_block.strip().split('\n'),
+        '',
+        # [P2 五问决策树 2026-10-11 苏摩111封印] 40年实战推理链
+        *_five_q_block.strip().split('\n'),
         '',
         f'# 🏛️ 梵天设计院 · 三方联合强制分析',
         f'## 📅 {ts} · {sym} ${p:,.2f}',
