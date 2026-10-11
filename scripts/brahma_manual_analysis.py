@@ -4059,7 +4059,11 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
                 if _gk in _s11_blk: _blocked_gate = _gk; break
         _gates = {}
         for _i, _gk in enumerate(_gate_list):
-            if _blocked_gate:
+            if _gk == 'G5':
+                # [预判系统 2026-10-11 苏摩111封印] G5体制=背景参数，永远True不阻断
+                _gates[_gk] = True
+                continue
+            if _blocked_gate and _blocked_gate != 'G5':
                 _gates[_gk] = (_i < _gate_list.index(_blocked_gate))
             else:
                 _gates[_gk] = (_i < _s11_cnt)

@@ -381,7 +381,9 @@ def format_full_report(sym: str, d: dict) -> str:
     bw_c3      = d.get('bw_c3', {})
 
     # ── Step11 ──
-    g_results  = d.get('step11_gates', {})  # {G1:True, G2:True, ...G5:False}
+    _raw_gates = d.get('step11_gates', {})
+    # [预判系统 2026-10-11 苏摩111封印] G5体制=背景参数，强制True不阻断
+    g_results = {k: (True if k == 'G5' else v) for k, v in _raw_gates.items()} if _raw_gates else {}
     g5_block   = not g_results.get('G5', True)
     score      = d.get('score_final', 0.0)
     raw_score  = d.get('raw_score', 0.0)
@@ -422,7 +424,7 @@ def format_full_report(sym: str, d: dict) -> str:
     # ── Step11表格行 ──
     gate_names = {
         'G1': '数据新鲜', 'G2': '方向明确', 'G3': '高证据标准',
-        'G4': '共振≥3',   'G5': 'CHOP门槛', 'G6': '入场区合规',
+        'G4': '共振≥3',   'G5': '体制权重（参考）', 'G6': '入场区合规',
         'G7': 'SL≥1.5×ATR','G8': 'RR≥1.5', 'G9': '熔断器',
         'G10':'宏观',      'G11':'EV>0',
     }
@@ -445,7 +447,7 @@ def format_full_report(sym: str, d: dict) -> str:
             'G2':  _score > 0,
             'G3':  _align >= 3,
             'G4':  _align >= 3,
-            'G5':  'CHOP' not in _reg or _score >= 110,
+            'G5':  True,  # [预判系统 2026-10-11 苏摩111] 体制=背景参数，不阻断入场
             'G6':  _entry > 0,
             'G7':  abs(_sl_v - _entry) >= _atr1h * 1.5 if _entry and _sl_v else True,
             'G8':  _rr_v >= 1.5,
@@ -453,20 +455,37 @@ def format_full_report(sym: str, d: dict) -> str:
             'G10': True,
             'G11': True,
         }
+    # [预判系统最终版 2026-10-11 苏摩111封印]
+    # G5 = 体制背景参数，永远不阻断，显示⚠️警示
+    # G1~G4/G6~G11 = 真实阻断门（任一失败=WAIT）
+    # 所有11道门全部计算并显示（透明预判系统）
+    _chop_warn = 'CHOP' in str(d.get('regime','')) and float(d.get('score_final', d.get('score', 0)) or 0) < 110
+    _score_val = float(d.get('score_final', d.get('score', 0)) or 0)
     for gk, gname in gate_names.items():
         result = g_results.get(gk)
-        if blocked:
+        # G5: 체제=배경참고, 절대 阻断 없음
+        if gk == 'G5':
+            if _chop_warn:
+                g11_rows += f'| ⚠️ G5 体制参考 | CHOP_MID score={_score_val:.0f} | ⚠️ | ⚠️ 体制偏弱·仅参考（不阻断） |\n'
+            else:
+                g11_rows += f'| G5 体制参考 | 非CHOP体制 | ✅ | ✅ 通过 |\n'
+            continue
+        # G1~G4, G6~G11: 실제 阻断 판단
+        if result is None:
             g11_rows += f'| {gk} {gname} | — | — | — |\n'
-        elif result is None or result:
-            if result is None:
-                g11_rows += f'| {gk} {gname} | — | — | — |\n'
+        elif result:
+            if blocked:
+                g11_rows += f'| {gk} {gname} | — | 📊 | 📊 体制切换后参考 |\n'
             else:
                 g11_rows += f'| {gk} {gname} | — | ✅ | ✅ 通过 |\n'
         else:
             g11_rows += f'| **{gk} {gname}** | — | ❌ | **🚫 阻断** |\n'
             blocked = True
 
-    step11_verdict = '✅ ENTER' if not blocked else f'WAIT · 阻断{[k for k,v in g_results.items() if not v][-1] if g_results else "G5"}'
+    # [预判系统 2026-10-11 苏摩111] G5不再阻断，只有G1~G4/G6~G11才阻断
+    _failed_gates = [k for k,v in g_results.items() if not v and k != 'G5']
+    _chop_note = f'（体制{d.get("regime","?")},score={float(d.get("score_final",0) or 0):.0f},仅参考）' if _chop_warn else ''
+    step11_verdict = f'✅ ENTER{_chop_note}' if not blocked else f'WAIT · 阻断{_failed_gates[-1] if _failed_gates else "G11"}{_chop_note}'
 
     # ── EV计算展示 (P0修复 2026-10-10 苏摩111: 使用实际WR矩阵) ──
     if entry_hi > 0 and sl > 0 and tp1 > 0:
@@ -747,7 +766,7 @@ def format_full_report(sym: str, d: dict) -> str:
         f'## 【三方最终决策拍板】{sym}',
         '',
         f'**🔬 量化工程师：**',
-        f'> {"G5阻断，系统WAIT。挂单区间合规，SL满足1.5×ATR。静待触发。" if g5_block else "系统ENTER，所有闸门通过。"}',
+        ('> ⚠️体制' + str(d.get('regime','?')) + f'(score={float(d.get("score_final",0) or 0):.0f}) 作为背景参考，实际裁决见Step11。') if _chop_warn else '> 系统ENTER，所有闸门通过。',
         '',
         f'**📐 达摩院：**',
         f'> EV计算：入场${entry_hi:,.1f}、SL${sl:,.1f}、TP${tp1:,.1f}：{ev_str}',
