@@ -163,14 +163,97 @@ def _groq_vip_comment(sym: str, price: float, d: dict) -> list:
     return []
 
 
+def _get_cross_market_block(d: dict) -> list:
+    """[P2跨市场 2026-10-11 苏摩111封印] QQQ纳斯达克/XAUUSDT黄金领先信号"""
+    import pathlib as _pm, json as _jm, time as _tm
+    try:
+        _macro = _pm.Path(__file__).parent.parent / 'data' / 'macro_real.json'
+        if not _macro.exists():
+            return ['> 跨市场数据暂无（macro_real.json缺失）']
+        _md = _jm.loads(_macro.read_text())
+        _qqq = _md.get('qqq_change_1d', _md.get('nasdaq_change', 0)) or 0
+        _xau = _md.get('xau_change_1d', _md.get('gold_change', 0)) or 0
+        _btc_dom = _md.get('btc_dominance', 0) or 0
+        _fear = _md.get('fear_greed', _md.get('fg_index', 50)) or 50
+
+        _qqq_icon = '🟢' if _qqq > 0.5 else '🔴' if _qqq < -0.5 else '⚪'
+        _xau_icon = '🟢' if _xau > 0.3 else '🔴' if _xau < -0.3 else '⚪'
+        _fear_str = '极贪婪' if _fear > 75 else '贪婪' if _fear > 55 else '中性' if _fear > 45 else '恐慌' if _fear > 25 else '极恐'
+
+        return [
+            '| 市场 | 方向 | 今日涨跌 | 对BTC/ETH意义 |',
+            '|------|------|---------|--------------|',
+            f'| {_qqq_icon} 纳斯达克QQQ | {"看多" if _qqq>0 else "看空"} | {_qqq:+.2f}% | ETH相关性0.73，同向跟随 |',
+            f'| {_xau_icon} XAUUSDT黄金 | {"看多" if _xau>0 else "看空"} | {_xau:+.2f}% | 避险→BTC反向，风险on→BTC同向 |',
+            f'| BTC主导率 | — | {_btc_dom:.1f}% | >50%=山寨承压，<45%=山寨季 |',
+            f'| 恐贪指数 | — | {_fear:.0f}({_fear_str}) | 极贪婪=谨慎，极恐=机会 |',
+            '',
+            f'> ⚔️ 40年经验：纳指方向领先ETH 1~2H，黄金大涨=风险偏好降低=BTC短压',
+        ]
+    except Exception as _ex:
+        return [f'> 跨市场数据获取失败: {_ex}']
+
+
 def format_full_report(sym: str, d: dict) -> str:
     """
-    标准三方联合输出格式
+    标准三方联合输出格式（预判系统版 2026-10-11 苏摩111封印）
     d = 分析结果字典，包含所有维度数据
+    输出顺序: 主力预判(第一) → D1~D10 → Step11 → VIP
     """
     ts  = datetime.now(timezone.utc).strftime('%m/%d %H:%M UTC')
     p   = d.get('price', 0)
     reg = d.get('regime', 'CHOP_MID')
+
+    # ── [强制第一块] 主力预判（预判系统核心宪法 2026-10-11 苏摩111封印）──
+    # 分析第一行永远是主力预判，不是体制确认
+    _liq_s_pre = d.get('liq_short', 0.0)
+    _liq_l_pre = d.get('liq_long', 0.0)
+    _cvd_pre   = float(d.get('cvd_1h', 0) or 0)
+    _lsr_pre   = float(d.get('lsr_retail', 0) or 0)
+    _gex_zf    = float(d.get('gex_zero_flip', 0) or 0)
+    _fr_pre    = float(d.get('fr', 0) or 0) * 100
+    _fvg_con   = d.get('fvg_consensus', 'NONE')
+    _signal_pre = d.get('signal_dir', 'NONE')
+    _atr1h_pre = float(d.get('atr_1h', 0) or 0)
+
+    # 예판 방향 추론
+    _up_prob = 50
+    _reasons = []
+    if _cvd_pre > 200: _up_prob += 10; _reasons.append('CVD买方')
+    elif _cvd_pre < -300: _up_prob -= 15; _reasons.append('CVD卖方')
+    if _lsr_pre > 70: _up_prob -= 8; _reasons.append('LSR散户极多→反向')
+    elif _lsr_pre < 35: _up_prob += 8; _reasons.append('LSR散户极空→反向')
+    if _fr_pre < -0.005: _up_prob += 5; _reasons.append('FR空头付费')
+    if p > 0 and _gex_zf > 0 and p < _gex_zf: _up_prob -= 5; _reasons.append('负Gamma区')
+    elif p > 0 and _gex_zf > 0 and p > _gex_zf: _up_prob += 5; _reasons.append('正Gamma区')
+    if _fvg_con == 'BULL': _up_prob += 8; _reasons.append('FVG多头磁铁')
+    elif _fvg_con == 'BEAR': _up_prob -= 8; _reasons.append('FVG空头磁铁')
+    _up_prob = max(10, min(90, _up_prob))
+    _dn_prob = 100 - _up_prob
+
+    # 다음 청산 목표
+    _next_target = ''
+    if p > 0 and _liq_s_pre > p:
+        _next_target = f'上方清算墙${_liq_s_pre:,.0f}(+{(_liq_s_pre-p)/p*100:.1f}%)'
+    elif p > 0 and _liq_l_pre > 0 and _liq_l_pre < p:
+        _next_target = f'下方清算池${_liq_l_pre:,.0f}(-{(p-_liq_l_pre)/p*100:.1f}%)'
+
+    _predict_action = (
+        f'上行测试{_next_target}' if _up_prob >= 55 and _next_target.startswith('上') else
+        f'下方清洗后反弹' if _up_prob >= 55 else
+        f'下行测试{_next_target}' if _dn_prob >= 55 and _next_target.startswith('下') else
+        f'震荡蓄力等待方向突破'
+    )
+
+    _predict_block = f"""
+## 📍 主力下一步动作预判（预判系统 · 非确认系统）
+**{_predict_action}**
+📊 概率分布：上行 {_up_prob}% | 下行 {_dn_prob}%
+🔑 信号依据：{' / '.join(_reasons) if _reasons else '信号平衡，等待'}
+⏰ GEX ZeroFlip=${_gex_zf:,.0f} | CVD={_cvd_pre:.0f} | LSR={_lsr_pre:.0f}% | FR={_fr_pre:+.4f}%
+> ⚠️ 体制{reg}=背景参数（非入场门控），预判优先于体制确认
+"""
+
     h   = d.get('hurst', 0.0)
 
     # ── FVG ──
@@ -430,6 +513,9 @@ def format_full_report(sym: str, d: dict) -> str:
         ev_str = '—'
 
     lines = [
+        # [预判系统 2026-10-11 苏摩111封印] 第一块永远是主力预判
+        *_predict_block.strip().split('\n'),
+        '',
         f'# 🏛️ 梵天设计院 · 三方联合强制分析',
         f'## 📅 {ts} · {sym} ${p:,.2f}',
         '',
@@ -444,6 +530,10 @@ def format_full_report(sym: str, d: dict) -> str:
         f'# ╔{"═"*28}╗',
         f'# ║  {sym}/USDT  ${p:,.2f}{"  ║" if p < 10000 else " ║"}',
         f'# ╚{"═"*28}╝',
+        '',
+        '## 【D0】跨市场宏观背景（第0维度·领先信号）',
+        '',
+        *_get_cross_market_block(d),
         '',
         '## 【D1】FVG磁铁 · 全周期投票（15M/1H/4H/1D/1W）',
         '',
