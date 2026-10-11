@@ -276,6 +276,11 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 
 # [2026-10-04 苏摩111 P1] 每日「我的判断」观点帖 15:00 UTC(北京23:00)
 0 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_opinion_poster.py >> logs/syscron.log 2>&1
+# [2026-10-11 苏摩111] 争议帖：每周二/五 北京11:00(UTC03:00)
+0 3 * * 2,5 cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_controversy_poster.py >> logs/syscron.log 2>&1
+# [2026-10-11 苏摩111] 存档预测帖：周一北京09:00(UTC01:00) + 周日验证北京21:00(UTC13:00)
+0 1 * * 1 cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_forecast_poster.py --mode archive >> logs/syscron.log 2>&1
+0 13 * * 0 cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_forecast_poster.py --mode verify >> logs/syscron.log 2>&1
 # [2026-10-04 苏摩111 P2] 实盘追踪：每日17:00 UTC持仓状态+自动平仓帖
 0 17 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_trade_tracker.py >> logs/syscron.log 2>&1
 30 23 * * * cd /root/.openclaw/workspace/trading-system && timeout 58 python3 scripts/daily_postmortem.py >> logs/daily_postmortem.log 2>&1

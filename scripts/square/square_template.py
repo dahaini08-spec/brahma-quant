@@ -563,9 +563,10 @@ _EXTREME_CLOSINGS = (
 
 
 def _pick_hook(sym: str, pool) -> int:
-    doy = datetime.now(CST).timetuple().tm_yday
-    h = sum(ord(ch) for ch in sym)
-    return (doy + h) % len(pool)
+    # [2026-10-11 苏摩111] 真随机替代确定性(日期+哈希)%5
+    # 根因：同一天同一币种永远同一个开头，伪轮换无效
+    import random as _rnd
+    return _rnd.randrange(len(pool))
 # ═══════════════════════════════════════════════════════════════
 
 def build_signal_alert(sym, chg, price, high, low, vol, fr, ls,

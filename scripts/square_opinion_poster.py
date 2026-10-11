@@ -110,13 +110,21 @@ def build_opinion_post(data: dict) -> str:
             f'明天看哪个先突破，跟突破方向走。'
         )
     else:
+        # [2026-10-11 苏摩111] CHOP_MID分支注入当日实时价位，每天数字不同正文就差异化
+        # 不再7天重复「主力在用震荡清洗浮动笹码」同一段话
+        _btc_price = btc.get('price', 0)
+        _dynamic_signal = ''
+        if _btc_price > 0:
+            _up = _btc_price * 1.015
+            _dn = _btc_price * 0.985
+            _dynamic_signal = f'\n\u4eca天我在等的具体信号：BTC能否突破${_up:,.0f}确认多，或者破${_dn:,.0f}确认空。'
         opinion = (
-            f'今天两个盘子都在震荡等待。\n'
-            f'我的判断是：这种横盘是在酝酿方向，不是无聊的来回。'
-            f'主力在用震荡清洗浮动筹码——清洗完才会选方向。\n'
+            f'\u4eca天两个盘子都在震荡等待。\n'
+            f'我的判断是：这种横盘是在酿造方向，不是无聊的来回。'
+            f'主力在用震荡清洗浮动笹码——清洗完才会选方向。\n'
             f'我现在的操作是：空仓等待，不在区间里博弈。'
-            f'宁可错过，不抢跑。\n'
-            f'明天关注BTC能否突破当前区间，突破哪边就跟哪边。'
+            f'宁可错过，不抜距。'
+            f'{_dynamic_signal}'
         )
 
     closer = random.choice(_CLOSERS)
