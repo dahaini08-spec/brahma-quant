@@ -613,7 +613,9 @@ def build_top_gainers() -> str:
         is_major = sym_r in ('BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'XRPUSDT')
         if is_symbol_duplicate(sym_r):
             continue
-        if chop_mode and not is_major and chg < 30:
+        # [2026-10-11 苏摩111] 根因根治：change字段是0~1小数，旧阈值30=要求3000%涨幅
+        # chg<0.10=涨幅<10%时CHOP_MID体制跳过，正常10%+涨幅均可产出
+        if chop_mode and not is_major and chg < 0.10:
             continue
         filtered.append(x)
         if len(filtered) >= 5:
@@ -747,9 +749,11 @@ def build_top_losers() -> str:
             print(f'[losers] ⚠️ {sym} 24H内已发过，跳过', file=__import__('sys').stderr)
             continue
         # CHOP体制下非主力币跌幅需>50%才值得发
+        # [2026-10-11 苏摩111] 根因根治：change字段是0~1小数，旧阈值50=要求5000%跌幅
+        # chg<0.10=跌幅<10%时CHOP_MID体制跳过，正常10%+跌幅均可产出
         is_major = sym_r in ('BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'XRPUSDT')
-        if chop_mode and not is_major and chg < 50:
-            print(f'[losers] ⚠️ CHOP_MID体制下{sym}跌幅{chg:.0f}%<50%，信号噪音，跳过', file=__import__('sys').stderr)
+        if chop_mode and not is_major and chg < 0.10:
+            print(f'[losers] ⚠️ CHOP_MID体制下{sym}跌幅{chg:.0f}%<10%，信号噪音，跳过', file=__import__('sys').stderr)
             continue
         filtered_items.append(x)
 
