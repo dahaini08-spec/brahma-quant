@@ -251,7 +251,7 @@ def format_full_report(sym: str, d: dict) -> str:
 📊 概率分布：上行 {_up_prob}% | 下行 {_dn_prob}%
 🔑 信号依据：{' / '.join(_reasons) if _reasons else '信号平衡，等待'}
 ⏰ GEX ZeroFlip=${_gex_zf:,.0f} | CVD={_cvd_pre:.0f} | LSR={_lsr_pre:.0f}% | FR={_fr_pre:+.4f}%
-> ⚠️ 体制{reg}=背景参数（非入场门控），预判优先于体制确认
+> ⚠️ 预判系统：结构+资金流+清算=决策依据，体制仅作信息标签显示
 """
 
     h   = d.get('hurst', 0.0)
@@ -382,9 +382,9 @@ def format_full_report(sym: str, d: dict) -> str:
 
     # ── Step11 ──
     _raw_gates = d.get('step11_gates', {})
-    # [预判系统 2026-10-11 苏摩111封印] G5体制=背景参数，强制True不阻断
-    g_results = {k: (True if k == 'G5' else v) for k, v in _raw_gates.items()} if _raw_gates else {}
-    g5_block   = not g_results.get('G5', True)
+    # [体制废弃 2026-10-11 苏摩111封印] G5完全移除，G1~G4/G6~G11共10道门
+    g_results = {k: v for k, v in _raw_gates.items() if k != 'G5'} if _raw_gates else {}
+    # g5_block 폐기 [体制废弃 2026-10-11 苏摩111]
     score      = d.get('score_final', 0.0)
     raw_score  = d.get('raw_score', 0.0)
 
@@ -424,7 +424,7 @@ def format_full_report(sym: str, d: dict) -> str:
     # ── Step11表格行 ──
     gate_names = {
         'G1': '数据新鲜', 'G2': '方向明确', 'G3': '高证据标准',
-        'G4': '共振≥3',   'G5': '体制权重（参考）', 'G6': '入场区合规',
+        'G4': '共振≥3',   'G6': '入场区合规',
         'G7': 'SL≥1.5×ATR','G8': 'RR≥1.5', 'G9': '熔断器',
         'G10':'宏观',      'G11':'EV>0',
     }
@@ -447,7 +447,7 @@ def format_full_report(sym: str, d: dict) -> str:
             'G2':  _score > 0,
             'G3':  _align >= 3,
             'G4':  _align >= 3,
-            'G5':  True,  # [预判系统 2026-10-11 苏摩111] 体制=背景参数，不阻断入场
+            # G5 废弃
             'G6':  _entry > 0,
             'G7':  abs(_sl_v - _entry) >= _atr1h * 1.5 if _entry and _sl_v else True,
             'G8':  _rr_v >= 1.5,
@@ -455,37 +455,26 @@ def format_full_report(sym: str, d: dict) -> str:
             'G10': True,
             'G11': True,
         }
-    # [预判系统最终版 2026-10-11 苏摩111封印]
-    # G5 = 体制背景参数，永远不阻断，显示⚠️警示
-    # G1~G4/G6~G11 = 真实阻断门（任一失败=WAIT）
-    # 所有11道门全部计算并显示（透明预判系统）
-    _chop_warn = 'CHOP' in str(d.get('regime','')) and float(d.get('score_final', d.get('score', 0)) or 0) < 110
+    # [体制废弃 2026-10-11 苏摩111封印] 体制不纳入任何决策
+    # G1~G4, G6~G11 = 10道真实硬闸
     _score_val = float(d.get('score_final', d.get('score', 0)) or 0)
     for gk, gname in gate_names.items():
         result = g_results.get(gk)
-        # G5: 체제=배경참고, 절대 阻断 없음
-        if gk == 'G5':
-            if _chop_warn:
-                g11_rows += f'| ⚠️ G5 体制参考 | CHOP_MID score={_score_val:.0f} | ⚠️ | ⚠️ 体制偏弱·仅参考（不阻断） |\n'
-            else:
-                g11_rows += f'| G5 体制参考 | 非CHOP体制 | ✅ | ✅ 通过 |\n'
-            continue
-        # G1~G4, G6~G11: 실제 阻断 판단
+        # G1~G4, G6~G11: 실제 阻断 판단 (G5체制废弃)
         if result is None:
             g11_rows += f'| {gk} {gname} | — | — | — |\n'
         elif result:
             if blocked:
-                g11_rows += f'| {gk} {gname} | — | 📊 | 📊 体制切换后参考 |\n'
+                g11_rows += f'| {gk} {gname} | — | ✅ | 📊 体制切换后参考 |\n'
             else:
                 g11_rows += f'| {gk} {gname} | — | ✅ | ✅ 通过 |\n'
         else:
             g11_rows += f'| **{gk} {gname}** | — | ❌ | **🚫 阻断** |\n'
             blocked = True
 
-    # [预判系统 2026-10-11 苏摩111] G5不再阻断，只有G1~G4/G6~G11才阻断
-    _failed_gates = [k for k,v in g_results.items() if not v and k != 'G5']
-    _chop_note = f'（体制{d.get("regime","?")},score={float(d.get("score_final",0) or 0):.0f},仅参考）' if _chop_warn else ''
-    step11_verdict = f'✅ ENTER{_chop_note}' if not blocked else f'WAIT · 阻断{_failed_gates[-1] if _failed_gates else "G11"}{_chop_note}'
+    # [体制废弃 2026-10-11 苏摩111封印] 10道门纯数据裁决
+    _failed_gates = [k for k,v in g_results.items() if not v]
+    step11_verdict = '✅ ENTER' if not blocked else f'WAIT · 阻断{_failed_gates[-1] if _failed_gates else "G11"}'
 
     # ── EV计算展示 (P0修复 2026-10-10 苏摩111: 使用实际WR矩阵) ──
     if entry_hi > 0 and sl > 0 and tp1 > 0:
@@ -638,11 +627,11 @@ def format_full_report(sym: str, d: dict) -> str:
         '',
         '```',
         f'数据维度：7/7 全亮',
-        f'方向一致：{align}/7（体制{reg}权重×1.0）',
+        f'方向一致：{align}/7（7维数据共振）',
         f'共振入场区：${entry_lo:,.1f}~${entry_hi:,.1f}',
         '```',
         '',
-        f'> 📐 达摩院：{align}/7共振在{reg}体制下{"属高置信" if align >= 5 else "属正常"}。',
+        f'> 📐 达摩院：{align}/7共振，{"高置信信号" if align >= 5 else "信号有效"}。',
         '',
         '---',
         '',
@@ -766,7 +755,7 @@ def format_full_report(sym: str, d: dict) -> str:
         f'## 【三方最终决策拍板】{sym}',
         '',
         f'**🔬 量化工程师：**',
-        ('> ⚠️体制' + str(d.get('regime','?')) + f'(score={float(d.get("score_final",0) or 0):.0f}) 作为背景参考，实际裁决见Step11。') if _chop_warn else '> 系统ENTER，所有闸门通过。',
+        '> 系统裁决见Step11，入场条件满足后执行。',
         '',
         f'**📐 达摩院：**',
         f'> EV计算：入场${entry_hi:,.1f}、SL${sl:,.1f}、TP${tp1:,.1f}：{ev_str}',

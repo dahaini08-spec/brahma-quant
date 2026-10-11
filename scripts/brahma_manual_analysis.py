@@ -4060,9 +4060,8 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
         _gates = {}
         for _i, _gk in enumerate(_gate_list):
             if _gk == 'G5':
-                # [预判系统 2026-10-11 苏摩111封印] G5体制=背景参数，永远True不阻断
-                _gates[_gk] = True
-                continue
+                # [体制废弃 2026-10-11 苏摩111封印] G5完全移除出决策
+                continue  # step11_gates에 G5 포함하지 않음
             if _blocked_gate and _blocked_gate != 'G5':
                 _gates[_gk] = (_i < _gate_list.index(_blocked_gate))
             else:
