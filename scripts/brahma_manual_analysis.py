@@ -2953,12 +2953,17 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
     try:
         from breakout_watch import run_breakout_watch
         bw = run_breakout_watch([sym + 'USDT'])
+        # [P0防御 2026-10-11 苏摩111] bw타입 방어 (간헐적 list반환 대비)
+        if not isinstance(bw, dict):
+            bw = {'alerts': [], 'results': {}}
         bw_alerts = bw.get('alerts', [])
         if bw_alerts:
             a = bw_alerts[0]
             print(f'[{sym}] 🚨 BREAKOUT_WATCH触发! score={a["score"]}/3 level={a["level"]}', flush=True)
         else:
-            bw_score = bw['results'].get(sym+'USDT', {}).get('score', 0)
+            _bw_res = bw.get('results', {})
+            _bw_sym = _bw_res.get(sym+'USDT', {}) if isinstance(_bw_res, dict) else {}
+            bw_score = _bw_sym.get('score', 0) if isinstance(_bw_sym, dict) else 0
             print(f'[{sym}] CHOP旁路: score={bw_score}/3 无触发', flush=True)
     except Exception as _bw_e:
         # [2026-10-05 P0-A fix] _sys_warn已清除
