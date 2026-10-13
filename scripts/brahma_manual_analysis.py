@@ -418,6 +418,33 @@ def step0_fetch_all(sym: str) -> dict:
         # 返回特殊标记，让run_analysis知道是被闸门拦截
         return {'_gate1_rejected': True, '_reject_msg': _reject_msg, '_stale': _critical_stale}
 
+    # [P2 时间特征+bb_position 2026-10-13 苏摩111] XGBoost审计发现的梵天盲区
+    # XGBoost 21维中 hour/dow/minute 是重要特征，梵天达摩院此前无时间感知
+    import datetime as _dt_tf
+    _now_utc    = _dt_tf.datetime.now(_dt_tf.timezone.utc)
+    _hour_utc   = _now_utc.hour                        # 0~23
+    _dow_utc    = _now_utc.weekday()                   # 0=Mon 6=Sun
+    _minute_utc = _now_utc.minute                      # 0~59
+    # 关键窗口标记（美股开盘/亚洲开盘/资金费率结算）
+    _is_us_open    = 13 <= _hour_utc <= 15             # UTC 13~15 = 美股开盘±1h
+    _is_asia_open  = 0  <= _hour_utc <= 2              # UTC 0~2   = 亚洲开盘
+    _is_fr_settle  = _hour_utc in (0, 8, 16)           # 资金费率结算时段
+
+    # bb_position: 价格在布林带中的相对位置 (0=下轨 0.5=中轨 1=上轨)
+    # XGBoost审计发现梵天有bb_squeeze但无bb_position，补入
+    _bb_pos = 0.5  # 默认中轨
+    try:
+        if len(k1h) >= 20:
+            _c20 = [x[3] for x in k1h[-20:]]
+            _bb_mid = sum(_c20) / 20
+            _bb_std = (sum((c - _bb_mid)**2 for c in _c20) / 20) ** 0.5
+            _bb_up  = _bb_mid + 2 * _bb_std
+            _bb_dn  = _bb_mid - 2 * _bb_std
+            if _bb_up > _bb_dn:
+                _bb_pos = (price - _bb_dn) / (_bb_up - _bb_dn)
+                _bb_pos = round(max(0.0, min(1.0, _bb_pos)), 3)
+    except Exception: pass
+
     return {
         'sym': sym, 'usdt': usdt, 'price': price,
         'k1h': k1h, 'k4h': k4h, 'k15m': k15m, 'k1d': k1d,
@@ -430,6 +457,15 @@ def step0_fetch_all(sym: str) -> dict:
         'cb': cb, 'dd': dd, 'af': af, 'regime_s': regime_s,
         'cache_freshness': _cache_freshness,
         'stale_caches': _stale_caches,
+        # [P2 时间特征 2026-10-13 苏摩111] XGBoost蒸馏
+        'hour_utc':     _hour_utc,
+        'dow_utc':      _dow_utc,
+        'minute_utc':   _minute_utc,
+        'is_us_open':   _is_us_open,
+        'is_asia_open': _is_asia_open,
+        'is_fr_settle': _is_fr_settle,
+        # [P2 bb_position 2026-10-13 苏摩111] XGBoost蒸馏
+        'bb_position':  _bb_pos,
     }
 
 # ══════════════════════════════════════════════════════════
@@ -3503,11 +3539,22 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
         _z_sig  = _zsc.get('signal', 'N/A')
         _z_note = _zsc.get('note', '')
         _z_icon = '✅' if _z_gate == 'PASS' else ('⚠️' if _z_gate == 'WATCH' else '❌')
+        _hour_d  = d.get('hour_utc', -1)
+        _dow_d   = d.get('dow_utc', -1)
+        _bb_d    = d.get('bb_position', 0.5)
+        _dow_names = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+        _dow_str = _dow_names[_dow_d] if 0 <= _dow_d <= 6 else '?'
+        _session = ('🇺🇸美股开盘' if d.get('is_us_open') else
+                    ('🌏亚洲开盘' if d.get('is_asia_open') else
+                     ('💰FR结算' if d.get('is_fr_settle') else '普通时段')))
+        _bb_label = ('超买区' if _bb_d > 0.8 else ('超卖区' if _bb_d < 0.2 else '中性区'))
         lines += [
             f'',
             f'【Step5c Z-Score过滤层】',
             f'  Z分: {_z_val:.3f} | 信号: {_z_sig} | 门控: {_z_gate} {_z_icon}',
             f'  {_z_note}',
+            f'  时间: UTC{_hour_d:02d}h {_dow_str} | 窗口: {_session}',
+            f'  BB位置: {_bb_d:.2f} ({_bb_label}) — 0=下轨 0.5=中轨 1=上轨',
         ]
 
     lines += [
