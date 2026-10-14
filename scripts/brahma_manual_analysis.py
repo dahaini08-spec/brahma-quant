@@ -408,15 +408,43 @@ def step0_fetch_all(sym: str) -> dict:
     _CRITICAL_SOURCES = ['cvd', 'gex']  # CVD 1h / GEX 4h（liq_heatmap已改为实时拉取）
     _critical_stale = [c for c in _stale_caches if any(c.startswith(s) for s in _CRITICAL_SOURCES)]
     if _critical_stale:
-        _reject_msg = (
-            f'❌ 拒绝分析：核心数据源过期 → {", ".join(_critical_stale)}\n'
-            f'   过期数据=虚假信号，不是"数据不新鲜"\n'
-            f'   请先重启进程+刷新数据：bash scripts/start_supercronic.sh + 手动刷新\n'
-            f'   闸门1封印 2026-09-18 苏摩111'
-        )
-        print(_reject_msg, file=sys.stderr)
-        # 返回特殊标记，让run_analysis知道是被闸门拦截
-        return {'_gate1_rejected': True, '_reject_msg': _reject_msg, '_stale': _critical_stale}
+        # [P0-B 工程稳定性 2026-10-14 苏摩111] Gate1 降级运行模式
+        # 根因：gateway重启→进程全灭→数据过期13h+→Gate1硬拒绝→分析完全停止（恶性循环）
+        # 修复：数据过期分级处理，不再一刀切拒绝
+        #   < 2h  → STALE警告，继续运行（标注[STALE]，数据仍有参考价值）
+        #   2~6h  → 强降级运行（跳过CVD/GEX依赖维度，仅用K线+OI）
+        #   > 6h  → 拒绝（当前行为，数据已完全失效）
+        _max_stale_age_h = 0.0
+        for _sc in _critical_stale:
+            try:
+                import re as _re
+                _m = _re.search(r'\(([0-9.]+)h>', _sc)
+                if _m: _max_stale_age_h = max(_max_stale_age_h, float(_m.group(1)))
+            except Exception: pass
+
+        if _max_stale_age_h > 6.0:
+            # 超过6h → 硬拒绝（数据完全失效）
+            _reject_msg = (
+                f'❌ 拒绝分析：核心数据源严重过期(>{_max_stale_age_h:.1f}h) → {", ".join(_critical_stale)}\n'
+                f'   >6h过期=数据完全失效，拒绝输出\n'
+                f'   请重启进程：bash scripts/start_supercronic.sh\n'
+                f'   [P0-B Gate1降级 2026-10-14 苏摩111]'
+            )
+            print(_reject_msg, file=sys.stderr)
+            return {'_gate1_rejected': True, '_reject_msg': _reject_msg, '_stale': _critical_stale}
+        elif _max_stale_age_h > 2.0:
+            # 2~6h → 强降级运行（跳过CVD/GEX，仅K线+OI）
+            print(f'[P0-B] ⚠️ {sym} 强降级运行: {", ".join(_critical_stale)} 过期{_max_stale_age_h:.1f}h，跳过CVD/GEX维度', file=sys.stderr)
+            _downgrade_mode = 'STRONG'  # 供后续step消费
+        else:
+            # <2h → STALE警告，继续运行
+            print(f'[P0-B] ⚠️ {sym} STALE运行: {", ".join(_critical_stale)} 过期{_max_stale_age_h:.1f}h，标注[STALE]继续', file=sys.stderr)
+            _downgrade_mode = 'WARN'
+
+        # 注入降级标记到数据字典（供输出层展示）
+        # 在return之前，_downgrade_mode会被后续代码读取
+    else:
+        _downgrade_mode = 'OK' 
 
     # [P2 时间特征+bb_position 2026-10-13 苏摩111] XGBoost审计发现的梵天盲区
     # XGBoost 21维中 hour/dow/minute 是重要特征，梵天达摩院此前无时间感知

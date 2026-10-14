@@ -122,5 +122,50 @@ while true; do
     fi
   fi
 
+  # === [P0-A 工程稳定性 2026-10-14 苏摩111] 数据新鲜度检查 + 立即P0推送 ===
+  # 根因：gateway重启后进程全灭，数据过期13h+，watchdog未感知也未告警
+  # 修复：每轮检查brahma_state/cvd_realtime新鲜度，超阈值立即P0推送苏摩
+  STALE_ALERT=""
+  NOW_TS=$(date +%s)
+  # 检查 brahma_state.json 新鲜度（阈值：2小时=7200s）
+  BS_FILE="data/brahma_state.json"
+  if [ -f "$BS_FILE" ]; then
+    BS_TS=$(python3 -c "import json; d=json.load(open('$BS_FILE')); print(int(d.get('ts',0)))" 2>/dev/null || echo 0)
+    BS_AGE=$(( NOW_TS - BS_TS ))
+    BS_AGE_MIN=$(( BS_AGE / 60 ))
+    if [ "$BS_AGE" -gt 7200 ]; then
+      STALE_ALERT="${STALE_ALERT}🔴 brahma_state过期${BS_AGE_MIN}min "
+      # 尝试触发刷新（非阻塞）
+      pgrep -f "brahma_state_refresh" > /dev/null ||         setsid timeout 120 python3 scripts/brahma_state_refresh.py >> logs/state_refresh.log 2>&1 < /dev/null &
+    fi
+  else
+    STALE_ALERT="${STALE_ALERT}🔴 brahma_state.json缺失 "
+  fi
+  # 检查 cvd_realtime_BTCUSDT.json 新鲜度（阈值：1小时=3600s）
+  CVD_FILE="data/cvd_realtime_BTCUSDT.json"
+  if [ -f "$CVD_FILE" ]; then
+    CVD_TS=$(python3 -c "import json; d=json.load(open('$CVD_FILE')); print(int(d.get('ts',0)))" 2>/dev/null || echo 0)
+    CVD_AGE=$(( NOW_TS - CVD_TS ))
+    CVD_AGE_MIN=$(( CVD_AGE / 60 ))
+    if [ "$CVD_AGE" -gt 3600 ]; then
+      STALE_ALERT="${STALE_ALERT}🟡 CVD过期${CVD_AGE_MIN}min "
+    fi
+  else
+    STALE_ALERT="${STALE_ALERT}🟡 cvd_realtime_BTCUSDT.json缺失 "
+  fi
+  # STALE_ALERT持久计数：连续2轮(2min)才推送，防瞬时误报
+  STALE_CNT_FILE="data/watchdog_stale_count.json"
+  if [ -n "$STALE_ALERT" ]; then
+    STALE_CNT=$(python3 -c "import json,os; f='$STALE_CNT_FILE'; print(json.load(open(f)).get('cnt',0)+1) if os.path.exists(f) else print(1)" 2>/dev/null || echo 1)
+    echo "{"cnt": $STALE_CNT, "msg": "$(echo $STALE_ALERT | tr '"' "'")"}" > "$STALE_CNT_FILE"
+    if [ "$STALE_CNT" -ge 2 ]; then
+      push_jarvis "🚨 梵天数据断供 | ${STALE_ALERT}| 已自动尝试刷新"
+      echo "$TS [P0-STALE] $STALE_ALERT" >> logs/watchdog.log
+      echo '{"cnt": 0}' > "$STALE_CNT_FILE"
+    fi
+  else
+    [ -f "$STALE_CNT_FILE" ] && echo '{"cnt": 0}' > "$STALE_CNT_FILE"
+  fi
+
   sleep 60
 done
