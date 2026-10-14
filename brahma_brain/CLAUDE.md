@@ -290,6 +290,25 @@ timeout 20 python3 scripts/xxx.py 2>&1 | tail -5
 看到正常输出才算完成，不是"语法OK就封印"
 ```
 
+### ⑤-a Red-Green 测试驱动（核心算法强制）
+<!-- [Red-Green蒸馏 2026-10-14 苏摩111] mattpocock/skills → CLAUDE.md -->
+
+**适用范围：** 纯数学函数（Z-Score/EV/ATR/仓位计算等）新建或重写时
+
+**顺序：先写断言 → 再写实现 → 断言通过 → 冒烟测试 → commit**
+
+```python
+# 示例：新建 Z-Score 函数前，先写断言
+assert calc_zscore(returns=[-0.1,-0.1,-0.1,-0.1,+2.0]) > 2.0   # 极端上涨=高Z
+assert calc_zscore(returns=[0.0, 0.0, 0.0, 0.0, 0.0]) == 0.0   # 无波动=0
+assert step5c_zscore({'k1h':[]})['gate'] == 'SKIP'               # 数据不足=SKIP
+
+# 断言全通过后才写实现代码
+# def calc_zscore(...): ...
+```
+
+**不适用：** 接入新字段/扩展现有函数/配置修改 → 保持现有流程
+
 ### ⑥ 体制相关模块禁止擅自启用
 ```
 btc_regime_watcher.py 等体制模块已被苏摩废弃
