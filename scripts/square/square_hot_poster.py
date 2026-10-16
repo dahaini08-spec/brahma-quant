@@ -31,6 +31,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -250,7 +251,7 @@ def check_content(content: str) -> tuple:
         if w in content:
             return False, f'包含禁用词: {repr(w)}'
     # hashtag不超过6个（Square实际支持，2026-10-04扩展）
-    tags = re.findall(r'#\S+', content)
+    tags = list(dict.fromkeys(re.findall(r'#\S+', content)))  # 去重后计数
     if len(tags) > 6:
         return False, f'hashtag超限({len(tags)}个>6个): {tags}'
     return True, ''
@@ -1310,17 +1311,30 @@ def post_to_square(content: str, dry_run: bool = False) -> bool:
     _lines = [l for l in _lines if not _re2.match(r'^[#$][A-Za-z]', l.strip())]
     content = '\n'.join(_lines).rstrip()
     _FULL_SUFFIX = f'\n{_LCTA}\n{_BS}\n$BTC $ETH #BTC #ETH #合约交易 #永续合约'
-    if '仅供参考' not in content:
+    # [2026-10-16 苏摩111] 备用池用「不是建议」, 原判断漏检导致双重品牌后缀+220095
+    if '仅供参考' not in content and '不是建议' not in content:
         content = f'{content}{_FULL_SUFFIX}'
 
     # ── LLM重写已废弃（2026-09-11）──
     # content = rewrite_as_trader(content)  # 已废弃
 
-    # [2026-10-04 根治hashtag超限] 发帖前自动去重+截断到≤6个
-    _all_tags = list(dict.fromkeys(re.findall(r'#\S+', content)))  # 去重保序
+    # [2026-10-12 根治hashtag重复+超限] 全局去重：移除正文里重复出现的hashtag，保留最后一次（SUFFIX里的）
+    _seen_tags: set = set()
+    _dedup_lines = []
+    for _line in content.split('\n'):
+        _new_line = _line
+        for _t in re.findall(r'#\S+', _line):
+            if _t in _seen_tags:
+                _new_line = re.sub(r'\s*' + re.escape(_t), '', _new_line)
+            else:
+                _seen_tags.add(_t)
+        _dedup_lines.append(_new_line)
+    content = '\n'.join(_dedup_lines).strip()
+    # 截断到≤6个（保险）
+    _all_tags = list(dict.fromkeys(re.findall(r'#\S+', content)))
     if len(_all_tags) > 6:
-        for _t in _all_tags[6:]:  # 移除第7个以后的hashtag
-            content = content.replace(' ' + _t, '').replace('\n' + _t, '').replace(_t, '', 1)
+        for _t in _all_tags[6:]:
+            content = re.sub(r'\s*' + re.escape(_t), '', content)
         content = content.strip()
 
     ok, reason = check_content(content)
