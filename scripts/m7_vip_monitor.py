@@ -465,8 +465,13 @@ def check_all() -> list:
             _zf_cd = 14400  # 4小时冷却（之前1800=30min导致重复刷屏）
             _last_zf_push = state.get(k, 0)
             _last_zf_price = state.get(f'{k}_price', 0)
-            _zf_price_changed = abs(_last_zf_price - cfg.get('gex_zf', 0)) > 10
-            _zf_should_push = (now - _last_zf_push > _zf_cd) or _zf_price_changed
+            # [修复 2026-10-16 苏摩111] ZeroFlip价位变化不绕过冷却
+            # 原逻辑: _zf_price_changed=True → OR短路 → 冷却失效 → 每分钟刷屏
+            # 新逻辑: 价位变化 AND 冷却超过1小时 才重新推送
+            _zf_price_changed = abs(_last_zf_price - cfg.get('gex_zf', 0)) > 50  # 阈值$10→$50，微调不触发
+            _zf_cooldown_ok = (now - _last_zf_push > _zf_cd)  # 4H冷却
+            _zf_price_cd_ok = (now - _last_zf_push > 3600)    # 价位变化最少1H间隔
+            _zf_should_push = _zf_cooldown_ok or (_zf_price_changed and _zf_price_cd_ok)
             if _zf_should_push:
                 zf_price = cfg['gex_zf']
                 atr_1h = cfg.get('atr_1h', 16.0)
