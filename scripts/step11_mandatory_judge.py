@@ -145,6 +145,74 @@ class Step11Judge:
         self.reason.append(f'✅ G2方向={self.direction}')
         return True
 
+    def gate1b_vol_price_truth(self) -> bool:
+        """Gate1.5: 量价真实性（主力行为识别）
+        [设计院 2026-10-16 苏摩111封印] P0
+        复用: brahma_brain/vol_price_gate.py
+        """
+        vpg = self.d.get('_vol_price_gate', {})
+        if not vpg or not vpg.get('has_critical'):
+            self.reason.append(f'✅ G1b量价正常 vol_ratio={vpg.get("vol_ratio","N/A")}')
+            return True
+        if vpg.get('block_long') and self.direction == 'LONG':
+            sigs = [s['desc'] for s in vpg.get('signals', []) if s.get('severity') == 'CRITICAL']
+            self.blocked_by = 'Gate1b_量价背离阻断多单'
+            self.reason.append(f'❌ G1b量价CRITICAL→阻断多单: {sigs[0] if sigs else "CRITICAL"}')
+            return False
+        if vpg.get('block_short') and self.direction == 'SHORT':
+            sigs = [s['desc'] for s in vpg.get('signals', []) if s.get('severity') == 'CRITICAL']
+            self.blocked_by = 'Gate1b_量价背离阻断空单'
+            self.reason.append(f'❌ G1b量价CRITICAL→阻断空单: {sigs[0] if sigs else "CRITICAL"}')
+            return False
+        self.reason.append(f'✅ G1b量价有警告但非CRITICAL，通过')
+        return True
+
+    def gate2b_fangcang_anchor(self) -> bool:
+        """Gate2.5: 方仓锚定门（贝叶斯先验层）
+        [设计院 2026-10-16 苏摩111封印] P0
+        n≥15且dominant≥90% → HARD锁定，反向入场直接WAIT
+        n≥15且dominant≥75% → SOFT锁定，反向仓位×0.3
+        今日回测：10/14 fc=SHORT 100% n=20 → RSI 1H=9.8不能推翻方向 ✅
+        """
+        fc_sig   = str(self.d.get('fc_signal', '') or '')
+        fc_n     = int(self.d.get('fc_n_similar', 0) or 0)
+        fc_short = float(self.d.get('fc_short_pct', 0) or 0)
+        fc_long  = float(self.d.get('fc_long_pct', 0) or 0)
+
+        if fc_n < 15:
+            self.reason.append(f'⚪ G2b方仓n={fc_n}<15，样本不足，跳过锚定')
+            return True
+
+        dominant_pct = max(fc_short, fc_long)
+        anchor_dir   = 'SHORT' if fc_short > fc_long else 'LONG'
+
+        if dominant_pct >= 0.90:
+            if self.direction != anchor_dir:
+                self.blocked_by = f'Gate2b_方仓HARD锁定:{anchor_dir}{dominant_pct*100:.0f}%'
+                self.reason.append(
+                    f'❌ G2b方仓HARD锁定 {anchor_dir} {dominant_pct*100:.0f}%（n={fc_n}）\n'
+                    f'   当前方向={self.direction} 与方仓冲突 → WAIT\n'
+                    f'   RSI/FVG实时信号降级为TIMING_ONLY，不可覆盖方仓方向'
+                )
+                return False
+            self.reason.append(f'✅ G2b方仓HARD {anchor_dir} {dominant_pct*100:.0f}%（n={fc_n}），方向一致')
+            return True
+
+        if dominant_pct >= 0.75:
+            if self.direction != anchor_dir:
+                self.d['_fangcang_soft_lock'] = True
+                self.d['_fangcang_pos_scale']  = 0.3
+                self.reason.append(
+                    f'⚠️ G2b方仓SOFT锁定 {anchor_dir} {dominant_pct*100:.0f}%（n={fc_n}）\n'
+                    f'   反向信号降仓×0.3执行'
+                )
+            else:
+                self.reason.append(f'✅ G2b方仓SOFT {anchor_dir} {dominant_pct*100:.0f}%，方向一致')
+            return True
+
+        self.reason.append(f'⚪ G2b方仓{anchor_dir} {dominant_pct*100:.0f}%（n={fc_n}），置信不足，不锚定')
+        return True
+
     def gate3_dead_combo(self) -> bool:
         """Gate3: 高证据标准检查（对齐系统9.17实际语义，非硬封禁）"""
         key = f'{self.regime}:{self.direction}'
@@ -328,7 +396,9 @@ class Step11Judge:
 
         gates = [
             self.gate1_data_freshness,
+            self.gate1b_vol_price_truth,   # [2026-10-16 苏摩111封印] P0 量价真实性
             self.gate2_direction,
+            self.gate2b_fangcang_anchor,   # [2026-10-16 苏摩111封印] P0 方仓锚定
             self.gate3_dead_combo,
             self.gate4_resonance,
             self.gate5_chop_score,

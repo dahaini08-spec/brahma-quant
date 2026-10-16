@@ -255,6 +255,47 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
     if not sym.endswith('USDT'):
         sym = sym + 'USDT'
 
+    # ── [2026-10-16 苏摩111封印] P1 宏观事件前置拦截门 ──────────────────
+    try:
+        from brahma_brain.event_pre_gate import EventPreGate as _EPG
+        _epg = _EPG().check()
+        if _epg.get('block'):
+            return {
+                'symbol':      sym,
+                'price':       0,
+                'regime':      'UNKNOWN',
+                'score_final': 0,
+                'score':       0,
+                'signal_dir':  'NONE',
+                'step11_verdict': 'WAIT',
+                'blocked_by':  f'EventPreGate_{_epg.get("event","")}_{_epg.get("mins_to","?")}MIN',
+                'reason':      _epg.get('reason', '重大宏观事件窗口，禁止开仓'),
+                '_event_block': _epg,
+                '_runner_meta': {'source': 'event_pre_gate', 'ts': t0},
+            }
+        if _epg.get('warn'):
+            _event_warn_override = _epg  # 注入到result供下游降仓
+        else:
+            _event_warn_override = {}
+    except Exception as _epg_e:
+        import logging as _epg_log
+        _epg_log.getLogger('brahma').warning(f'[event_pre_gate] {_epg_e}')
+        _event_warn_override = {}
+
+    # ── [2026-10-16 苏摩111封印] P0 量价真实性门（预拉1H K线，注入result）──
+    _vpg_result = {}
+    try:
+        from brahma_brain.vol_price_gate import analyze as _vpg_analyze
+        import urllib.request as _ureq, json as _ujson
+        _sym_clean = sym.replace('USDT', '')
+        _kl_url = f'https://api.binance.com/api/v3/klines?symbol={sym}&interval=1h&limit=10'
+        _kl_resp = _ureq.urlopen(_kl_url, timeout=5)
+        _klines_1h = _ujson.loads(_kl_resp.read())
+        _vpg_result = _vpg_analyze(_sym_clean, _klines_1h)
+    except Exception as _vpg_e:
+        import logging as _vpg_log
+        _vpg_log.getLogger('brahma').warning(f'[vol_price_gate] {_vpg_e}')
+
     # Kronos预热已删除 (2026-09-01 苏摩111)
 
     # ── analysis_snapshot: 15分钟内有缓存则复用（减少重复推理）──────
@@ -1132,6 +1173,18 @@ def run_analysis(symbol: str, deep: bool = True, signal_dir: str = None) -> dict
 
     if _freshness_warnings:
         result['_data_freshness_warnings'] = _freshness_warnings
+
+    # ── [2026-10-16 苏摩111封印] P0 量价真实性门→注入result ─────────
+    if _vpg_result:
+        result['_vol_price_gate'] = _vpg_result
+        if _vpg_result.get('has_critical'):
+            result['_vpg_block_long']  = _vpg_result.get('block_long', False)
+            result['_vpg_block_short'] = _vpg_result.get('block_short', False)
+            result['_vpg_summary']     = _vpg_result.get('summary', '')
+    # 宏观事件警告注入
+    if _event_warn_override:
+        result['_event_warn']          = _event_warn_override
+        result['_pos_scale_override']  = _event_warn_override.get('pos_scale', 1.0)
 
     # [Fix-2 2026-08-02 设计院] llm_council_bridge LLM二次审查（score≥140，非阻断）
     # 540行高价值模块，封印2026-07-01，今日接入主链路
