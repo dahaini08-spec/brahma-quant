@@ -621,7 +621,27 @@ def _inject_fangcang_to_state():
             from fangcang_engine import fangcang_context_match as _fcm
             # brahma_state RSI/BBW 读取
             _rsi   = float(state.get('rsi_1h', state.get('rsi', 50)) or 50)
-            _bbw   = float(state.get('bb_width', state.get('bbw', 0.01)) or 0.01)
+            # [修复 2026-10-17 苏摩111] bb_width=None时实时计算真实BBW，不再 fallback 0.01
+            # 根因：0.01命中10,533个错误案例，导致方仓信号失真
+            _bbw_raw = state.get('bb_width') or state.get('bbw')
+            if not _bbw_raw or float(_bbw_raw or 0) <= 0:
+                try:
+                    import urllib.request as _ur, json as _js, statistics as _st
+                    _sym_for_kl = sym_key.upper() + 'USDT' if not sym_key.upper().endswith('USDT') else sym_key.upper()
+                    _kl = _js.loads(_ur.urlopen(
+                        f'https://api.binance.com/api/v3/klines?symbol={_sym_for_kl}&interval=4h&limit=20',
+                        timeout=5).read())
+                    _cl = [float(k[4]) for k in _kl]
+                    _mean = _st.mean(_cl)
+                    _std  = _st.stdev(_cl)
+                    _bbw  = (_std * 2 / _mean) * 100  # 百分比小数格式，与方仓库单位一致
+                    state['bb_width'] = _bbw  # 回写到state供下次使用
+                    print(f'[fangcang_inject] {sym_key} BBW实时计算: {_bbw:.4f}%')
+                except Exception as _bbw_e:
+                    _bbw = 0.8  # 安全备用（BTC 4H普通中位水平）
+                    print(f'[fangcang_inject] {sym_key} BBW计算失败，用备用{_bbw}: {_bbw_e}')
+            else:
+                _bbw = float(_bbw_raw)
             _result = _fcm(
                 symbol=sym_key,
                 current_bbw=_bbw,

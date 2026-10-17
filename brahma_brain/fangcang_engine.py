@@ -1322,7 +1322,7 @@ def _normalize_new_case(d: dict, sym: str) -> dict:
     return {
         'symbol':             sym.upper() + 'USDT' if not sym.upper().endswith('USDT') else sym.upper(),
         '_src_sym':           sym.upper().replace('USDT', ''),
-        'compress_bbw_min':   float(d.get('min_bb_width', 0) or 0) / 100,
+        'compress_bbw_min':   float(d.get('min_bb_width', 0) or 0),  # [修复 2026-10-17 苏摩111] 去掉/100：min_bb_width已是百分比小数(0.5%格式)，不需再除以100
         'rsi_at_end':         float(d.get('rsi_at_burst', 50) or 50),
         'compress_bars':      int(d.get('squeeze_bars', 0) or 0),
         'breakout_direction': 'LONG'  if _direction == 'UP'   else
