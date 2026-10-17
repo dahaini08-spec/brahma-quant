@@ -114,6 +114,13 @@ class Step11Judge:
         _gex_raw = d.get('gex', 0) or vol.get('gex', 0) or 0
         self.gex      = float(_gex_raw) if isinstance(_gex_raw, (int, float)) else 0.0
         self.oi_signal = str((oi or {}).get('signal', '') or (oi or {}).get('main_signal', '') or '')
+        # [封印 2026-10-17 苏摩111] RSI先行信号注入：Gate5豁免判断需要
+        _bs = d.get('bs', {})
+        self.rsi_1h   = float(d.get('rsi_1h', _bs.get('rsi_1h', 50)) or 50)
+        self.rsi_4h   = float(d.get('rsi_4h', _bs.get('rsi_4h', 50)) or 50)
+        self.rsi_1d   = float(d.get('rsi_1d', _bs.get('rsi_1d', 50)) or 50)
+        self.lsr_retail = float(d.get('lsr_retail', 0) or 0)
+        self.zero_flip  = float(d.get('zero_flip', 0) or 0)
         self.entry_lo = float(tb_result.get('entry_lo', 0) or 0)
         self.entry_hi = float(tb_result.get('entry_hi', 0) or 0)
         self.sl       = float(tb_result.get('stop_loss', 0) or 0)
@@ -283,6 +290,16 @@ class Step11Judge:
                 _old_thresh = effective_threshold
                 effective_threshold = 40
                 _note = (_note + f' | CVD极端({_cvd_val:+.0f})+GEX负值+OI BUILD → 三向共振，CHOP门槛降至{effective_threshold}')
+            # [封印 2026-10-17 苏摩111] RSI先行信号豁免
+            # 数据依据：8-9月405次RSI55~75触发 UP=80.7% RR=5.36 期望值+2.26%
+            # 规则：RSI1H在[55,75]偏强区 → 门槛降45分 + 仓位×1/3（不是展宽，是降档通过）
+            _rsi_early = float(getattr(self, 'rsi_1h', 50) or 50)
+            if 55 <= _rsi_early <= 75 and self.score < effective_threshold and effective_threshold > 30:
+                effective_threshold = max(30, effective_threshold - 45)
+                _note = (_note + f' | RSI1H={_rsi_early:.0f}先行信号区[55~75](历史80.7%UP)→降档{effective_threshold}分,仓1/3')
+                self._rsi_override_pos_scale = 0.33  # 仓位系数，下游vip读取
+            else:
+                self._rsi_override_pos_scale = 1.0
             if self.score < effective_threshold:
                 self.blocked_by = f'Gate5_CHOP门槛:{self.score:.0f}<{effective_threshold}'
                 self.reason.append(f'❌ G5 {_note} score={self.score:.0f} < {effective_threshold}')
@@ -429,6 +446,7 @@ class Step11Judge:
 
     def _build_result(self, verdict: str) -> dict:
         gate_count = sum(1 for r in self.reason if r.startswith('✅'))
+        _pos_scale = float(getattr(self, '_rsi_override_pos_scale', 1.0))
         return {
             'verdict':    verdict,
             'direction':  self.direction,
@@ -442,7 +460,9 @@ class Step11Judge:
             'tp1':        self.tp1,
             'tp2':        self.tp2,
             'rr':         self.rr,
+            'rsi_override_pos_scale': _pos_scale,  # [2026-10-17] RSI豁免仓位系数
             'vip_card':   self._format_vip(verdict),
+            '_judge':     self,  # 供外层读取_rsi_override_pos_scale
         }
 
     def _format_vip(self, verdict: str) -> str:
@@ -486,10 +506,18 @@ class Step11Judge:
 
         confidence = self.tb.get('confidence', 'LOW')
         lever = '5x' if 'TREND' in regime else '3x'
-        pos   = '2%' if verdict == 'ENTER' else '1%'
+        # [封印 2026-10-17 苏摩111] RSI豁免降档仓位
+        _ps = float(getattr(self, '_rsi_override_pos_scale', 1.0))
+        _is_rsi_override = _ps < 1.0 and 'CHOP' in regime
+        if _is_rsi_override:
+            pos = '0.5%（RSI先行降档）'
+            lever = '3x'
+        else:
+            pos = '2%' if verdict == 'ENTER' else '1%'
 
         enter_label = 'ENTER' if verdict == 'ENTER' else 'WATCH'
         tag = f'{enter_label} | 共振{align}/7 | {confidence}'
+        rsi_tag = f'\n⚡ RSI1H={float(getattr(self,"rsi_1h",50)):.0f}先行区[55~75]历史80.7%UP · CHOP降档执行' if _is_rsi_override else ''
 
         return (
             f'──── VIP ────\n'
@@ -499,7 +527,7 @@ class Step11Judge:
             f'止损 {sl_str}｜目标 {tp1_str}→{tp2_str}\n'
             f'杠杆 {lever}｜仓位 {pos}\n'
             f'{wait_txt}\n'
-            f'⚠️ {tag}\n'
+            f'⚠️ {tag}{rsi_tag}\n'
             f'🚫 破{sl_str}作废\n'
             f'🌿 姓赵不宣 | 不是建议\n'
         )

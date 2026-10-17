@@ -4368,6 +4368,8 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
               float(_tb.get('entry_hi', d.get('entry_hi',1))))),
             'leverage':        int(_tb.get('leverage', d.get('leverage', 5))),
             'position_size_pct': float(_tb.get('position_size_pct', d.get('position_size_pct', 1))),
+            # [封印 2026-10-17 苏摩111] RSI先行豁免 → 仓位×1/3（CHOP降档信号）
+            'rsi_override_pos_scale': float(getattr(_s11_result.get('_judge') if isinstance(_s11_result,dict) else None, '_rsi_override_pos_scale', 1.0) if '_s11_result' in dir() and _s11_result else 1.0),
 
             # ── 元数据 ──
             '_snapshot_written_epoch': _ts_sync.time(),
