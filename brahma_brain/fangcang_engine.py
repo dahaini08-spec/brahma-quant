@@ -1336,6 +1336,8 @@ def _normalize_new_case(d: dict, sym: str) -> dict:
         'regime_guess':       d.get('regime', d.get('regime_guess', '')) or _infer_regime_from_case(d),
         # 40年经验维度: 突破力度
         'burst_atr_mult':     float(d.get('burst_atr_mult', 0) or 0),
+        # [修复 2026-10-17 苏摩111] 保留timeframe供周期分布统计和调试
+        'timeframe':          str(d.get('timeframe', '') or ''),
     }
 
 
