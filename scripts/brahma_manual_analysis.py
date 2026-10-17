@@ -395,7 +395,7 @@ def step0_fetch_all(sym: str) -> dict:
         ('circuit_breaker', DATA / 'circuit_breaker.json', 86400),  # [修复 2026-10-17 苏摩111] 4h→24h: 实盘熔断文件写入不频繁（cron已TRIM）
         ('drawdown',    DATA / 'drawdown_state.json', 86400),  # [修复 2026-10-17 苏摩111] 4h→24h: drawdown_touch cron已TRIM，文件更新周期长
         ('antifragile', DATA / 'antifragile_state.json', 86400),
-        ('regime_s',    DATA / 'regime_state.json', 3600),
+        ('regime_s',    DATA / 'regime_state.json', 14400),  # [修复 2026-10-17 苏摩111] 1h→4h: regime_watcher已TRIM，brahma_state_refresh每小时覆盖
     ]
     _stale_caches = []
     for _name, _path, _ttl in _cache_specs:
