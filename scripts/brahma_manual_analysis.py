@@ -388,7 +388,7 @@ def step0_fetch_all(sym: str) -> dict:
     _cache_specs = [
         ('brahma_state', _sym_state, 14400),
         ('gex',         DATA / 'gex_state.json', 86400),
-        ('vol_beta',    DATA / 'vol_beta_state.json', 43200),
+        ('vol_beta',    DATA / 'vol_beta_state.json', 86400),  # [修复 2026-10-17] TTL 12h→24h: vol_beta更新周期约24h
         ('macro',       DATA / 'macro_state.json', 86400),
         ('cvd',         DATA / f'cvd_realtime_{usdt.lower()}.json', 3600),  # TTL=1h: CVD采集器重启后需30min预热
         ('liq_heatmap', DATA / f'liq_heatmap_{usdt.lower()}.json', 14400),
