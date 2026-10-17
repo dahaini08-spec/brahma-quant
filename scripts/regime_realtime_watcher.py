@@ -211,6 +211,10 @@ def fast_regime_refresh(sym: str):
                 _rs_entry['confirmed'] = new_regime
             _rs_entry['confirmed_ts'] = time.time()
             _rs[usdt] = _rs_entry
+            # [TEST-FIX 2026-10-17] 同步更新顶层_ts/_updated，防止stale检查误报
+            _rs['_ts'] = time.time()
+            from datetime import datetime as _dt, timezone as _tz
+            _rs['_updated'] = _dt.now(_tz.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
             _rs_tmp = str(DATA / 'regime_state.json') + '.tmp'
             with open(_rs_tmp, 'w') as _rs_f:
                 _rs_f.write(json.dumps(_rs, ensure_ascii=False))
