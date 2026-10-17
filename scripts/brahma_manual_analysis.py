@@ -369,6 +369,17 @@ def step0_fetch_all(sym: str) -> dict:
     af       = load_json(DATA / 'antifragile_state.json')
     regime_s = load_json(DATA / 'regime_state.json')
 
+    # [封印 2026-10-17 苏摩111] CVD/OI预热门控
+    # CVD采集器重启后需>=30min累积才产生有效数据
+    _cvd_file = DATA / f'cvd_realtime_{usdt.lower()}.json'
+    _cvd_warmup = False
+    if _cvd_file.exists():
+        import os as _os_cvd, time as _t_cvd
+        _cvd_age_min = (_t_cvd.time() - _os_cvd.path.getmtime(_cvd_file)) / 60
+        _cvd_raw = float(load_json(_cvd_file).get('cvd_1h', 0) or 0)
+        if _cvd_age_min < 35 and abs(_cvd_raw) < 10:
+            _cvd_warmup = True
+            print(f'[{sym}] [CVD_WARMING_UP] 采集器重启{_cvd_age_min:.0f}min，CVD={_cvd_raw:.3f}，数据预热中，该维度降权', file=sys.stderr)
     # ── [果蝇架构 2026-09-13 苏摩111] 缓存freshness审计 ──
     # 检测所有缓存文件年龄，生成freshness报告供VIP标签+告警使用
     import os as _os_c, time as _time_c
@@ -379,7 +390,7 @@ def step0_fetch_all(sym: str) -> dict:
         ('gex',         DATA / 'gex_state.json', 86400),
         ('vol_beta',    DATA / 'vol_beta_state.json', 43200),
         ('macro',       DATA / 'macro_state.json', 86400),
-        ('cvd',         DATA / f'cvd_realtime_{usdt.lower()}.json', 3600),
+        ('cvd',         DATA / f'cvd_realtime_{usdt.lower()}.json', 3600),  # TTL=1h: CVD采集器重启后需30min预热
         ('liq_heatmap', DATA / f'liq_heatmap_{usdt.lower()}.json', 14400),
         ('circuit_breaker', DATA / 'circuit_breaker.json', 86400),  # [修复 2026-10-17 苏摩111] 4h→24h: 实盘熔断文件写入不频繁（cron已TRIM）
         ('drawdown',    DATA / 'drawdown_state.json', 86400),  # [修复 2026-10-17 苏摩111] 4h→24h: drawdown_touch cron已TRIM，文件更新周期长
