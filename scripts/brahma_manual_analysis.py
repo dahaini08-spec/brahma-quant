@@ -222,7 +222,7 @@ def step0_fetch_all(sym: str) -> dict:
         'lsr_raw':   lambda: fetch(f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol={usdt}&period=1h&limit=4'),
         'top_raw':   lambda: fetch(f'https://fapi.binance.com/futures/data/topLongShortPositionRatio?symbol={usdt}&period=1h&limit=4'),
         'k1h':       lambda: klines(usdt, '1h', 8),
-        'k4h':       lambda: klines(usdt, '4h', 6),
+        'k4h':       lambda: klines(usdt, '4h', 15),  # [修复 2026-10-17 苏摩111] 6→15: FVG计算需要更长历史
         'k15m':      lambda: klines(usdt, '15m', 8),
     }
     _results = {}
@@ -508,6 +508,34 @@ def step1_fvg(d: dict) -> dict:
 
     # ── 优先读取 brahma_state 里的 _fvg_map（由 block_a 实时计算）────────
     fvg_map = bd.get('_fvg_map', {})
+    # [修复 2026-10-17 苏摩111] 若_fvg_map缺失4H，从state的fvg_4h字段补入
+    # 根因：state_refresh的analyze()偶发不输出fvg_4h → _fvg_map无'4h'键
+    # 修复：直接读brahma_state_btc/eth.json里的fvg_4h_magnet字段补入_fvg_map
+    if '4h' not in fvg_map:
+        # [修复 2026-10-17 苏摩111] 4H FVG缺失时，直接从k4h实时K线计算
+        # 根因：state._fvg_map无'4h'键 → 4H维度盲区
+        # 修复：用d['k4h']（step0已拉取）直接计算标准FVG（prev2.high < cur.low）
+        k4h_data = d.get('k4h', [])
+        if len(k4h_data) >= 3:
+            _k4h_fvgs4h = []
+            for _i in range(len(k4h_data) - 2):
+                _p2h = float(k4h_data[_i][1]); _p2l = float(k4h_data[_i][2])
+                _cuh = float(k4h_data[_i+2][1]); _cul = float(k4h_data[_i+2][2])
+                if _p2h < _cul:  # Bull FVG
+                    _mid4 = (_p2h + _cul) / 2
+                    if price * 0.70 <= _mid4 <= price * 1.30:
+                        _k4h_fvgs4h.append(('BULL', _p2h, _cul, _mid4))
+                elif _p2l > _cuh:  # Bear FVG
+                    _mid4 = (_p2l + _cuh) / 2
+                    if price * 0.70 <= _mid4 <= price * 1.30:
+                        _k4h_fvgs4h.append(('BEAR', _cuh, _p2l, _mid4))
+            if _k4h_fvgs4h:
+                _best4h = min(_k4h_fvgs4h, key=lambda x: abs(x[3] - price))
+                _t4h, _lo4h, _hi4h, _mid4h = _best4h
+                _dist4h = (_mid4h - price) / price * 100
+                fvg_map['4h'] = [{'type': _t4h, 'lo': round(_lo4h, 1), 'hi': round(_hi4h, 1),
+                    'mid': round(_mid4h, 1), 'dist_pct': round(_dist4h, 2),
+                    'filled': False, 'magnet': '向上' if _t4h == 'BULL' else '向下'}]
     magnet = 0
     fvg_dir = 'NONE'
     fvg_desc = '无有效FVG数据'

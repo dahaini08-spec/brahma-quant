@@ -179,6 +179,16 @@ def main():
                     _fb_file.touch()  # 至少更新mtime防过期告警
                     print(f'[state_refresh] {sym} fallback touch mtime', file=__import__('sys').stderr)
             cleaned = clean(r)
+            # [修复 2026-10-17 苏摩111] 从confluence.breakdown._fvg_map提取各周期fvg_Xh_magnet到顶层
+            # 根因：state顶层fvg_4h_magnet等字段由Fix-C写入，state_refresh默认不写 → FVG 4H始终=0
+            _bd_fvg = cleaned.get('confluence', {}).get('breakdown', {}).get('_fvg_map', {})
+            _tf_magnet_map = {'15m': 'fvg_15m_magnet', '1h': 'fvg_1h_magnet',
+                              '4h': 'fvg_4h_magnet',  '1d': 'fvg_1d_magnet', '1w': 'fvg_1w_magnet'}
+            for _fvg_tf_k, _fvg_field in _tf_magnet_map.items():
+                _fvg_tf_list = _bd_fvg.get(_fvg_tf_k, [])
+                if _fvg_tf_list:
+                    _nearest = min(_fvg_tf_list, key=lambda x: abs(x.get('mid',0) - cleaned.get('price',0)))
+                    cleaned[_fvg_field] = float(_nearest.get('mid', 0))
             all_states[sym] = cleaned
 
             regime    = cleaned.get('regime', '')
@@ -433,6 +443,7 @@ def main():
             'rsi_15m','rsi_1h','rsi_4h','rsi_1d',
             'gex','gex_direction','zero_flip','max_gex_strike','kappa',
             'fvg_consensus','fvg_votes','ob_list',
+            'fvg_15m_magnet','fvg_1h_magnet','fvg_4h_magnet','fvg_1d_magnet','fvg_1w_magnet',  # [修复 2026-10-17 苏摩111]
             'cvd_1h','cvd_4h','cvd_dir_1h','cvd_dir_4h',
             'liq_short','liq_long','atr_1h','atr_4h',
             'hurst','harv_lo','harv_hi','oi_direction','oi_sequence',
