@@ -1142,6 +1142,17 @@ def run_full_analysis(symbol: str, mode: str = 'auto') -> Any:
     except Exception as _inf_err:
         report = report + f'\n  [推理层] 加载失败: {_inf_err}'
 
+    # [封印 2026-10-17 苏摩111] L0宏观守门插件接入
+    # 接入位置: brahma_full_report.py return之前
+    # 数据: DXY代理(EUR/USD反向) + 恐贪指数 + 宏观日历 → 宏观结论追加到报告末尾
+    try:
+        from brahma_brain.plugins import run_all_plugins as _run_plugins
+        _plugin_out = _run_plugins(r)
+        if _plugin_out and _plugin_out.strip():
+            report = report + '\n' + _plugin_out
+    except Exception as _plug_err:
+        pass  # 插件失败不影响主报告
+
     return report, r
 
 

@@ -381,8 +381,8 @@ def step0_fetch_all(sym: str) -> dict:
         ('macro',       DATA / 'macro_state.json', 86400),
         ('cvd',         DATA / f'cvd_realtime_{usdt.lower()}.json', 3600),
         ('liq_heatmap', DATA / f'liq_heatmap_{usdt.lower()}.json', 14400),
-        ('circuit_breaker', DATA / 'circuit_breaker.json', 3600),
-        ('drawdown',    DATA / 'drawdown_state.json', 3600),
+        ('circuit_breaker', DATA / 'circuit_breaker.json', 86400),  # [修复 2026-10-17 苏摩111] 4h→24h: 实盘熔断文件写入不频繁（cron已TRIM）
+        ('drawdown',    DATA / 'drawdown_state.json', 86400),  # [修复 2026-10-17 苏摩111] 4h→24h: drawdown_touch cron已TRIM，文件更新周期长
         ('antifragile', DATA / 'antifragile_state.json', 86400),
         ('regime_s',    DATA / 'regime_state.json', 3600),
     ]
