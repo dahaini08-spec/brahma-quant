@@ -4761,7 +4761,11 @@ def main():
                 bias = 'BEAR' if bear > bull else ('BULL' if bull > bear else 'NEUTRAL')
                 return regime, score, action, liq_s, liq_l, bias
 
-            _lines = [f'📊 梵天分析 | {_summary.get("ts_utc","")[:16]} UTC']
+            import time as _time_push, os as _os_push
+            _state_mtime = _os_push.path.getmtime('data/brahma_state_btc.json') if _os_push.path.exists('data/brahma_state_btc.json') else 0
+            _data_age_min = (_time_push.time() - _state_mtime) / 60
+            _age_tag = f'⏰ 数据age={_data_age_min:.0f}min' if _data_age_min < 60 else f'🔴 数据已{_data_age_min:.0f}min过期·建议重跑'
+            _lines = [f'📊 梵天分析 | {_summary.get("ts_utc","")[:16]} UTC | {_age_tag}']
             for _s in symbols:
                 _regime, _score, _action, _liq_s, _liq_l, _bias = _parse_sym_line(_out_text, _s)
                 _icon = '🔴' if _bias == 'BEAR' else '🟢' if _bias == 'BULL' else '⚪'

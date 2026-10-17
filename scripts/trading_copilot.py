@@ -544,6 +544,20 @@ def m0_analysis_staleness_guard():
                 print(f'[M0] ✅ auto_analysis 非阻塞启动 PID={_proc.pid}')
             else:
                 print(f'[M0] 已有分析进程运行中，跳过重复触发')
+        elif _age > 120:
+            # [封印 2026-10-17 苏摩111] 2h未更新主动推送苏摩
+            _dedup = f'm0_stale_{int(_age//60)}'
+            try:
+                import push_hub as _ph0
+                _ph0.push_jarvis(
+                    f'⚠️ 梵天分析数据已{_age:.0f}min未更新\n'
+                    f'建议重新运行：brahma_manual_analysis --symbols BTC ETH\n'
+                    f'或等待 M0 自动触发（90min阈值）',
+                    priority='P2', dedup_key=_dedup, dedup_ttl=3600
+                )
+                print(f'[M0] ⚠️ 数据过期{_age:.0f}min → 已推送苏摩')
+            except Exception as _pe:
+                print(f'[M0] 数据过期推送失败: {_pe}')
         elif _age > 30:
             print(f'[M0] auto_analysis {_age:.0f}min (阈值90min)')
     except Exception as _e:
