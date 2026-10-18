@@ -94,23 +94,23 @@ GROQ_TASK_MODEL_MAP = {
 _groq_backoff_until = 0.0
 
 def _groq_chat(messages: list, max_tokens: int, timeout: int, task: str) -> str:
-    """Groq 完全免费通道。成功返回content，失败返回 '' 返回"""
+    """[修复 2026-10-18 苏摩111] Groq SDK通道（替换urllib防Cloudflare 1010封锁）"""
     global _groq_backoff_until
     if not GROQ_KEY or time.time() < _groq_backoff_until:
         return ''
     model = GROQ_TASK_MODEL_MAP.get(task, 'qwen/qwen3.8-27b')
     try:
-        payload = json.dumps({'model': model, 'messages': messages,
-                              'max_tokens': max_tokens, 'temperature': 0.2}).encode()
-        req = urllib.request.Request(GROQ_BASE_URL, data=payload,
-            headers={'Authorization': f'Bearer {GROQ_KEY}',
-                     'Content-Type': 'application/json',
-                     'User-Agent': 'curl/8.5.0'})  # Cloudflare 403绕过
-        resp = json.loads(urllib.request.urlopen(req, timeout=min(timeout,20), context=_ctx).read())
-        content = ((resp.get('choices') or [{}])[0].get('message') or {}).get('content','')
-        return (content or '').strip()
-    except urllib.error.HTTPError as e:
-        if e.code == 429:
+        from groq import Groq as _GroqClient
+        _client = _GroqClient(api_key=GROQ_KEY)
+        _resp = _client.chat.completions.create(
+            model=model, messages=messages,
+            max_tokens=max_tokens, temperature=0.2,
+            timeout=min(timeout, 20))
+        content = (_resp.choices[0].message.content or '') if _resp.choices else ''
+        return content.strip()
+    except Exception as e:
+        _ecode = getattr(e, 'status_code', 0) or getattr(getattr(e,'response',None),'status_code',0)
+        if _ecode == 429:
             _groq_backoff_until = time.time() + 300
             print('[groq] 429 backoff 5min', file=sys.stderr)
         return ''
