@@ -392,6 +392,36 @@ def run_postmortem():
     except Exception as e:
         print(f'[postmortem] 推送失败: {e}', file=sys.stderr)
 
+    # [封印 2026-10-18 苏摩111] 接入决策轨迹 decision_trace.jsonl
+    # 复盘末尾自动附加当日决策质量报告
+    try:
+        import json as _tj
+        from pathlib import Path as _P
+        from collections import Counter as _C
+        _tf = _P(__file__).parent.parent / 'data' / 'decision_trace.jsonl'
+        if _tf.exists():
+            _traces = [_tj.loads(l) for l in _tf.read_text(encoding='utf-8').splitlines() if l.strip()]
+            # 只取今日轨迹
+            _today = __import__('datetime').datetime.utcnow().strftime('%Y-%m-%d')
+            _today_t = [t for t in _traces if t.get('ts','').startswith(_today)]
+            if _today_t:
+                _total = len(_today_t)
+                _vd = _C(t.get('verdict') for t in _today_t)
+                _gates = _C(t.get('blocked_by') for t in _today_t if t.get('blocked_by'))
+                _top_gate = _gates.most_common(1)[0] if _gates else ('无阻断', 0)
+                _sep = chr(10)
+                _trace_summary = (
+                    _sep + _sep + "---" + _sep +
+                    "\U0001f4ca 今日决策轨迹摘要（decision_trace）" + _sep +
+                    f"总决策={_total}次  ENTER={_vd.get('ENTER',0)}  WATCH={_vd.get('WATCH',0)}  WAIT={_vd.get('WAIT',0)}" + _sep +
+                    f"最常阻断Gate: {_top_gate[0]}（{_top_gate[1]}次）" + _sep +
+                    f"入场率: {_vd.get('ENTER',0)//_total*100:.0f}%"
+                )
+                out += _trace_summary
+                print(f'[postmortem] 轨迹摘要注入 ✅ 今日{_total}条')
+    except Exception as _te:
+        print(f'[postmortem] 轨迹注入失败(无害): {_te}', file=__import__('sys').stderr)
+
     return out
     return results
 
