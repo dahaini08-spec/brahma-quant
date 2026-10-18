@@ -1,43 +1,9 @@
-#!/usr/bin/env python3
-"""
-brahma_manual_analysis.py — 梵天手动全链路分析入口
-设计院封印 2026-09-03 苏摩111
+# [seal 2026-10-18 soma111] DATA SOURCE CONSTITUTION
+# All contract analysis data: U-margined perpetual API (fapi.binance.com)
+# Forbidden: api.binance.com for contract OI/LSR/FR/Taker data
+FAPI_BASE = "https://fapi.binance.com"  # U-margined perpetual <- primary source
+SPOT_BASE = "https://api.binance.com"   # spot <- basis calc only
 
-[输出格式封印 2026-10-02 苏摩111]
-每次分析输出强制遵循三方联合标准模版：
-  scripts/brahma_output_template.py — format_full_report() + format_vip_card()
-  D1~D10 + Step11 + 三方决策 + VIP + 一致性评分表
-  角色：🔬量化工程师 / 📐达摩院 / ⚔️40年交易员
-
-P2修复 2026-09-11 苏摩111：pyc根治
-sys.dont_write_bytecode必须在模块顶部设置，
-在函数内部设置无效（import时已生成pyc）
-
-定位：
-  苏摩说「梵天分析」→ 调用此脚本
-  一次输出：10步完整链路 + 80维判断 + VIP策略卡片
-  不需要追问，不需要「这是全能力吗」
-
-10步强制链路（MEMORY.md封印）：
-  Step 0  实时数据并行拉取
-  Step 1  FVG磁铁（Bull/Bear方向）
-  Step 2  OB有效性（age<50bars且未穿越）
-  Step 3  清算地图（止损山/止损池）
-  Step 4  共振点（FVG+OB+清算三交叉）
-  Step 5  OI趋势（15min连续，LONG_BUILD/SHORT_BUILD）
-  Step 6  聪明钱分歧（大户vs散户）
-  Step 7  Hurst+HAR-RV+VolBeta（波动率三维）
-  Step 8  宏观压制（NFP/CPI日历）
-  Step 9  风控门控（熔断/回撤/反脆弱）
-  Step 10 输出VIP卡片（姓赵不宣格式）
-
-接入位置：
-  - python3 scripts/brahma_manual_analysis.py --symbols BTC ETH
-  - morning-battlefield / afternoon-battlefield cron message
-  - AI手动分析触发
-
-2026-09-03 苏摩111封印
-"""
 import os as _os_blas
 _os_blas.environ.setdefault('OPENBLAS_NUM_THREADS', '1')
 _os_blas.environ.setdefault('OMP_NUM_THREADS', '1')
@@ -109,7 +75,6 @@ from pathlib import Path
 from datetime import datetime, timezone
 
 # 超时守卫：全链路分析超180s强制abort（防止阻塞gateway event loop）
-# [苏摩111 2026-10-09] signal.alarm→concurrent.futures（子线程安全）
 MAX_RUNTIME_S = 180
 import threading as _thr
 _main_thread = _thr.main_thread()
@@ -163,9 +128,11 @@ def check_analysis_staleness(data_file='data/auto_analysis_latest.json', warn_mi
 
 DATA = BASE / 'data'
 
-# ══════════════════════════════════════════════════════════
+# [封印 2026-10-18 苏摩111] 数据源最高宪法: 所有合约分析数据来源于U本位fapi.binance.com
+FAPI_BASE = "https://fapi.binance.com"   # U本位永续 ← 最高宪法指定主端点
+SPOT_BASE = "https://api.binance.com"    # 现货 ← 仅限基差计算
+
 # 工具函数
-# ══════════════════════════════════════════════════════════
 
 def fetch(url, timeout=7):
     try:
@@ -190,9 +157,7 @@ def load_json(path):
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
     return {}
 
-# ══════════════════════════════════════════════════════════
 # Step 0: 并行拉取实时数据
-# ══════════════════════════════════════════════════════════
 
 
 # [2026-10-04 杨志林工程化] analysis/步骤模块包接入
@@ -507,9 +472,7 @@ def step0_fetch_all(sym: str) -> dict:
         'bb_position':  _bb_pos,
     }
 
-# ══════════════════════════════════════════════════════════
 # Step 1: FVG磁铁
-# ══════════════════════════════════════════════════════════
 
 def step1_fvg(d: dict) -> dict:
     bd    = d['bs'].get('confluence', {}).get('breakdown', {})
@@ -767,9 +730,7 @@ def step1b_fangcang_hcme(d: dict, fvg: dict) -> dict:
         'desc': desc,
     }
 
-# ══════════════════════════════════════════════════════════
 # Step 2: OB有效性
-# ══════════════════════════════════════════════════════════
 
 def step2_ob(d: dict) -> dict:
     bd = d['bs'].get('confluence', {}).get('breakdown', {})
@@ -829,9 +790,7 @@ def step2_ob(d: dict) -> dict:
 
     return results
 
-# ══════════════════════════════════════════════════════════
 # Step 3: 清算地图
-# ══════════════════════════════════════════════════════════
 
 def step3_liq(d: dict) -> dict:
     """[2026-09-21 P4.3根修 苏摩111] 实时调用get_liq_heatmap，不再用过期缓存
@@ -928,9 +887,7 @@ def step3_liq(d: dict) -> dict:
         'long_map':           long_map,
     }
 
-# ══════════════════════════════════════════════════════════
 # Step 4: 共振点
-# ══════════════════════════════════════════════════════════
 
 # [封印 2026-10-06 苏摩111 P2重构] 命名说明：
 # step4_resonance 编号虽为4，但实际执行在 step5_oi 之后
@@ -1248,9 +1205,7 @@ def step4b_pattern(d: dict) -> dict:
     except Exception as e:
         return {'score': 0, 'patterns': [], 'note': f'形态引擎异常: {str(e)[:50]}'}
 
-# ══════════════════════════════════════════════════════════
 # Step 5: OI趋势
-# ══════════════════════════════════════════════════════════
 
 def step5_oi(d: dict) -> dict:
     """全周期OI趋势：15M短期 + 1H中期 + 4H主力 苏摩111封印 2026-09-04
@@ -1526,9 +1481,7 @@ def step5c_zscore(d: dict) -> dict:
     except Exception as _e:
         return {'z': None, 'signal': 'ERROR', 'gate': 'SKIP', 'note': f'Z-Score计算异常: {str(_e)[:60]}'}
 
-# ══════════════════════════════════════════════════════════
 # Step 6: 聪明钱分歧
-# ══════════════════════════════════════════════════════════
 
 def step6_smart_money(d: dict) -> dict:
     top_list = d['top_list']   # 大户多头占比列表
@@ -1570,9 +1523,7 @@ def step6_smart_money(d: dict) -> dict:
         'anti_manipulation': _get_anti_manipulation(d),
     }
 
-# ══════════════════════════════════════════════════════════
 # Step 7: Hurst + HAR-RV + VolBeta
-# ══════════════════════════════════════════════════════════
 
 def _get_microstructure(d: dict) -> dict:
     """P5整合: 微结构alpha — 2026-09-12"""
@@ -1744,9 +1695,7 @@ def step7_volatility(d: dict) -> dict:
         'ic_attribution': _get_ic_attribution(d),
     }
 
-# ══════════════════════════════════════════════════════════
 # Step 8: 宏观压制
-# ══════════════════════════════════════════════════════════
 
 def _get_ic_attribution(d: dict) -> dict:
     """P2整合: 从ic_tracker获取实时IC归因 — 2026-09-12"""
@@ -1931,9 +1880,7 @@ def step8_macro(d: dict) -> dict:
         'us_session':   _get_us_session_for_step8(),
     }
 
-# ══════════════════════════════════════════════════════════
 # Step 9: 风控门控
-# ══════════════════════════════════════════════════════════
 
 def _get_cross_market_for_step8() -> dict:
     """P4整合: 跨市场alpha状态 — 2026-09-12"""
@@ -2186,9 +2133,7 @@ def step9_risk(d: dict) -> dict:
         'portfolio': _portfolio,
     }
 
-# ══════════════════════════════════════════════════════════
 # Step 10: VIP卡片（姓赵不宣格式）
-# ══════════════════════════════════════════════════════════
 
 def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     bs      = d['bs']
@@ -2726,9 +2671,7 @@ def step10_vip(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk) -> str:
     return '\n'.join(lines)
 
 
-# ══════════════════════════════════════════════════════════
 # 主报告组装
-# ══════════════════════════════════════════════════════════
 
 def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, tb_result) -> str:
     """40年顶级合约交易员视角：用94维数据串成市场故事，不是列条件"""
@@ -3001,8 +2944,6 @@ def _trader_narrative(sym, price, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, 
 
 
 # [SSOT 2026-10-02 苏摩111] 两种run_analysis用途:
-#   ① 人类可读分析文本(str) → 本函数  ← square发帖/step11/手动调用
-#   ② 结构化dict → brahma_brain.brahma_analysis_runner.run_analysis()
 #      不要混用，返回类型完全不同
 def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str非dict
     """[封印 2026-10-06 苏摩111 P2重构] run_analysis 4层结构说明

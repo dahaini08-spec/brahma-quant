@@ -450,3 +450,34 @@ format_full_report() 输出顺序强制调整：
     Step11=WAIT + 有明确预判结构 → 仍然输出布局
     Step11=WAIT + 无结构 → 输出"等待[具体信号]触发"
 ```
+
+## 🏛️ 数据源最高宪法（2026-10-18 苏摩111封印）
+
+**所有合约分析数据必须来源于U本位永续合约专属API（fapi.binance.com）**
+
+### 强制端点
+| 数据 | 端点 |
+|------|------|
+| 价格/统计 | `fapi.binance.com/fapi/v1/ticker/price` |
+| K线 | `fapi.binance.com/fapi/v1/klines` |
+| 标记价/FR | `fapi.binance.com/fapi/v1/premiumIndex` |
+| FR历史 | `fapi.binance.com/fapi/v1/fundingRate` |
+| OI当前 | `fapi.binance.com/fapi/v1/openInterest` |
+| OI历史 | `fapi.binance.com/futures/data/openInterestHist` |
+| 全局LSR | `fapi.binance.com/futures/data/globalLongShortAccountRatio` |
+| 大户账户LSR | `fapi.binance.com/futures/data/topLongShortAccountRatio` |
+| 大户仓位LSR | `fapi.binance.com/futures/data/topLongShortPositionRatio` |
+| Taker比 | `fapi.binance.com/futures/data/takerlongshortRatio` |
+| 深度盘口 | `fapi.binance.com/fapi/v1/depth` |
+
+### 禁止
+- 使用 `api.binance.com/api/v3` 获取合约分析数据（仅允许基差对比）
+- 使用非fapi端点的OI/LSR/FR/Taker数据
+- 用现货价格替代合约标记价做分析
+
+### 数据优先级
+1. U本位fapi API ← 唯一合法主数据源
+2. 梵天state缓存（GEX/清算/Hurst/方仓）← 辅助补充
+3. 现货api.binance.com ← 仅限基差计算
+
+违反此宪法的分析输出作废，必须重新拉取。
