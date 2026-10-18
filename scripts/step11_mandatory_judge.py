@@ -542,6 +542,47 @@ def run_step11(sym: str, d: dict, fvg: dict, ob: dict, liq: dict,
     """
     judge = Step11Judge(sym, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, tb_result)
     result = judge.judge()
+    # [P0封印 2026-10-18 苏摩111] 轨迹记录 Trajectory Logging
+    # 接入位置: run_step11()末尾，每次裁决写入 data/decision_trace.jsonl
+    # 目的: 溯源「为什么做这个决策」，解决前后矛盾问题
+    try:
+        import json as _tj, time as _tt, pathlib as _tp
+        _trace = {
+            'ts':       _tt.strftime('%Y-%m-%dT%H:%MZ', _tt.gmtime()),
+            'ts_epoch': _tt.time(),
+            'sym':      sym,
+            'price':    d.get('price', 0),
+            'regime':   d.get('regime', '?'),
+            'verdict':  result.get('verdict', 'WAIT'),
+            'direction':result.get('direction', 'NONE'),
+            'blocked_by': result.get('blocked_by'),
+            'reason':   result.get('reason', [])[:3],
+            'score':    d.get('score_final', d.get('bs', {}).get('score_final', 0)),
+            'rsi_1h':   d.get('rsi_1h', 0),
+            'cvd_1h':   d.get('cvd_1h', 0),
+            'lsr_retail': d.get('lsr_retail', 0),
+            'zero_flip':  d.get('zero_flip', 0),
+            'align_count': res.get('align_count', 0),
+            'oi_signal':   oi.get('signal', '?'),
+            'entry_lo': result.get('entry_lo', 0),
+            'entry_hi': result.get('entry_hi', 0),
+            'sl':       result.get('sl', 0),
+            'tp1':      result.get('tp1', 0),
+            'rr':       result.get('rr', 0),
+            'ev_pct':   result.get('ev_pct', 0),
+            'vip_summary': (result.get('vip_card','')[:80] if result.get('vip_card') else ''),
+        }
+        _trace_path = _tp.Path(__file__).parent.parent / 'data' / 'decision_trace.jsonl'
+        with open(_trace_path, 'a', encoding='utf-8') as _tf:
+            _tf.write(_tj.dumps(_trace, ensure_ascii=False) + '\n')
+        # 保持最新500条，防文件膨胀
+        try:
+            _lines = _trace_path.read_text(encoding='utf-8').splitlines()
+            if len(_lines) > 500:
+                _trace_path.write_text('\n'.join(_lines[-500:]) + '\n', encoding='utf-8')
+        except Exception: pass
+    except Exception as _te:
+        pass  # 轨迹写入失败不影响主链
     return result
 
 
