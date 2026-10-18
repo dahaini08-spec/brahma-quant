@@ -134,6 +134,8 @@ def apply_causal_factors(
     try:
 # 模块不存在，已注释
 # from counterfactual_score_check import check as _cfc_check
+        if '_cfc_check' not in dir():
+            raise NameError('_cfc_check not available')
         result_raw = _cfc_check(cf_dict, signal_dir, regime, timeout_ms=timeout_ms)
         adj   = result_raw.get('score_adj', 0)
         vrdt  = result_raw.get('verdict', 'NEUTRAL')
@@ -149,5 +151,8 @@ def apply_causal_factors(
             raw=result_raw,
             ok=True,
         )
+    except NameError as e:
+        # counterfactual 모듈 미설치 = 정상 skip
+        return CausalFactorResult(skipped=True, ok=False, error=str(e))
     except Exception as e:
         return CausalFactorResult(ok=False, error=str(e))

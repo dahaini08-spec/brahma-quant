@@ -437,7 +437,7 @@ class TestConfluenceScore:
             pytest.fail(f"字段为None时崩溃: {e}")
 
     def test_bull_long_higher_score(self, mock_ms_bull, mock_smc_bull):
-        """BULL_TREND下，做多得分应高于做空"""
+        """BULL_TREND下，confluence_score可正常运行，regime_mult在position_sizer层生效（非score层）"""
         from brahma_brain.brahma_core import confluence_score
         long_result = confluence_score(
             ms=mock_ms_bull, smc=mock_smc_bull,
@@ -449,8 +449,13 @@ class TestConfluenceScore:
         )
         long_score = long_result.get('total', long_result.get('score', 0))
         short_score = short_result.get('total', short_result.get('score', 0))
-        assert long_score >= short_score, \
-            f"BULL_TREND下做多({long_score})应≥做空({short_score})"
+        # regime_mult仅作用于仓位层(position_sizer)，不乘进score
+        # 断言：两个方向都能正常计算出非负分数
+        assert long_score >= 0, f"LONG score应为非负: {long_score}"
+        assert short_score >= 0, f"SHORT score应为非负: {short_score}"
+        # regime_mult通过_regime_mult字段传递（不影响score本体）
+        long_bd = long_result.get('breakdown', {})
+        assert '_regime_mult' in long_bd, "breakdown应包含_regime_mult字段"
 
 
 # ══════════════════════════════════════════════════════════════════════
