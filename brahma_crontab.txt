@@ -313,3 +313,6 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 */30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/neuron_dashboard.py >> logs/neuron_dashboard.log 2>&1  # [频率优化 2026-10-10] 15min→30min，仪表盘读取copilot已有数据
 
 */15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/signal_early_alert.py >> logs/early_alert.log 2>&1  # [封印 2026-10-17 苏摩111] 先行信号预警层: RSI55~75/LSR>72%/OI急变/GEX穿越 每15min
+
+# [Kronos L7层恢复 2026-10-18 苏摩111] 每30min推理写入/tmp/kronos_signal.json
+*/30 * * * * cd /root/.openclaw/workspace/trading-system && flock -n /tmp/kronos_writer.lock timeout 60 python3 scripts/kronos_realtime_writer.py >> logs/kronos_writer.log 2>&1
