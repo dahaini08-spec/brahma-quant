@@ -843,6 +843,20 @@ def main():
     except Exception as e:
         print(f'[M7 ERR] {e}')
 
+    # [封印 2026-10-18 苏摩111] M7.5 模拟账本SL/TP实时检查
+    # 接入位置: M7末尾，每分钟检查所有paper持仓
+    try:
+        import importlib.util as _iu, pathlib as _pl
+        _sr_spec = _iu.spec_from_file_location('brahma_signal_router',
+            _pl.Path(WORKDIR) / 'scripts' / 'brahma_signal_router.py')
+        _sr = _iu.module_from_spec(_sr_spec)
+        _sr_spec.loader.exec_module(_sr)
+        _triggered = _sr.check_sl_tp_all()
+        if _triggered:
+            print(f'[M7.5] SL/TP触发平仓{len(_triggered)}笔')
+    except Exception as _sre:
+        pass  # 非核心路径，静默失败
+
     # [P0-A] M0 lock清理: 分析进程完成时删除lock文件
     try:
         _lf = pathlib.Path('/tmp/brahma_m0_analysis.lock')

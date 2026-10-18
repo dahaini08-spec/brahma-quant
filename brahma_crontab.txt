@@ -316,3 +316,20 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 
 # [Kronos L7层恢复 2026-10-18 苏摩111] 每30min推理写入/tmp/kronos_signal.json
 */30 * * * * cd /root/.openclaw/workspace/trading-system && flock -n /tmp/kronos_writer.lock timeout 60 python3 scripts/kronos_realtime_writer.py >> logs/kronos_writer.log 2>&1
+
+# ── [封印 2026-10-18 苏摩111] 42标的闭环三层 ──────────────────────────────
+# Layer1: 批量分析（错峰:07，避开:00/:13/:15/:30/:33/:47/:52/:05密集区）
+7 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/brahma_flow_batch.py --pool A_CORE >> logs/flow_batch.log 2>&1  # A组10标的每小时
+7 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/brahma_flow_batch.py --pool B_WATCH >> logs/flow_batch.log 2>&1  # B组20标的每4小时
+7 */8 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/brahma_flow_batch.py --pool C_OPPO >> logs/flow_batch.log 2>&1   # C组12标的每8小时
+# Layer2: 信号路由（:23，batch完成后16min，有充足时间）
+23 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 -c "
+import sys,json; sys.path.insert(0,'scripts'); sys.path.insert(0,'brahma_brain')
+from brahma_signal_router import route_signals
+f='data/batch_signals.json'
+import pathlib
+if pathlib.Path(f).exists():
+    d=json.load(open(f)); syms=[k for k in d if not k.startswith('_')]
+    results=[d[s] for s in syms]
+    route_signals(results)
+" >> logs/signal_router.log 2>&1
