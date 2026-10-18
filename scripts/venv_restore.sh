@@ -10,7 +10,7 @@ WORK_DIR="/root/.openclaw/workspace/trading-system"
 VENV_PYTHON="${WORK_DIR}/venv/bin/python"
 REQ_CORE="${WORK_DIR}/requirements-core.txt"
 LOG="/tmp/venv_restore.log"
-PUSH_TARGET="73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed"
+PUSH_TARGET="73295708:thread:01a12e17-726c-78da-9857-4edab995522b"
 
 echo "[$(date -u '+%Y-%m-%d %H:%M UTC')] venv_restore 开始检查..." >> $LOG
 

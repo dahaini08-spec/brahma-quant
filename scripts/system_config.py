@@ -41,7 +41,7 @@ def _load_thread_id():
                 return line.split('=', 1)[1].strip()
     except Exception:
         pass
-    return '01a0d79b-fea4-71b1-9f2a-c02a9844b4ed'  # 容灾兑底（历史上曾为主线程）
+    return '01a12e17-726c-78da-9857-4edab995522b'  # 容灾兑底（历史上曾为主线程）
 
 JARVIS_THREAD_ID = _load_thread_id()
 

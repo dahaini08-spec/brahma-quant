@@ -36,7 +36,7 @@ def _load_thread_id() -> str:
                 return line.split("=", 1)[1].strip()
     except Exception:
         pass
-    return "01a0d79b-fea4-71b1-9f2a-c02a9844b4ed"  # 9.23封印值兜底
+    return "01a12e17-726c-78da-9857-4edab995522b"  # 9.23封印值兜底
 JARVIS_THREAD_ID = _load_thread_id()
 _TARGET          = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"
 

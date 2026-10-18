@@ -1,0 +1,527 @@
+{
+  "total": 700,
+  "pass": 600,
+  "fail": 100,
+  "bugs_found": [
+    {
+      "id": "L0_data_freshness",
+      "round": 1,
+      "detail": "regime_state stale: 5927min"
+    }
+  ],
+  "bugs_fixed": [],
+  "orphans_found": [],
+  "round_details": [
+    {
+      "round": 1,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 2,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 3,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 4,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 5,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 6,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 7,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 8,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 9,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 10,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 11,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 12,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 13,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 14,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 15,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 16,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 17,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 18,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 19,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 20,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 21,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 22,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 23,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 24,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 25,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 26,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 27,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 28,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 29,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 30,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 31,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 32,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 33,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 34,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 35,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 36,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 37,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 38,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 39,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 40,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 41,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 42,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 43,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 44,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 45,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 46,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 47,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 48,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 49,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 50,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 51,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 52,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 53,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 54,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 55,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 56,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 57,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 58,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 59,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 60,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 61,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 62,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 63,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 64,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 65,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 66,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 67,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 68,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 69,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 70,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 71,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 72,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 73,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 74,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 75,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 76,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 77,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 78,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 79,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 80,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 81,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 82,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 83,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 84,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 85,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 86,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 87,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 88,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 89,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 90,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 91,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 92,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 93,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 94,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 95,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 96,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 97,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 98,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 99,
+      "pass": 6,
+      "fail": 1
+    },
+    {
+      "round": 100,
+      "pass": 6,
+      "fail": 1
+    }
+  ],
+  "start_time": "2026-10-17T02:58:59.307402+00:00",
+  "end_time": "2026-10-17T02:59:26.979423+00:00",
+  "health_score": 95,
+  "pass_rate": 85.7,
+  "audit": {
+    "syntax_errors": [],
+    "todo_count": 3,
+    "total_files": 517,
+    "brain_script_files": 354
+  },
+  "l5_full_run": true
+}

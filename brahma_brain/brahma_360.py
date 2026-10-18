@@ -925,7 +925,7 @@ if __name__ == '__main__':
             _sp.run(
                 ['openclaw', 'message', 'send',
                  '--channel', 'jarvis',
-                 '--target', os.environ.get('JARVIS_TARGET', '73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed'),  # ponytail: JARVIS_TARGET env覆盖，fallback硬编码 SSOT [2026-07-07]
+                 '--target', os.environ.get('JARVIS_TARGET', '73295708:thread:01a12e17-726c-78da-9857-4edab995522b'),  # ponytail: JARVIS_TARGET env覆盖，fallback硬编码 SSOT [2026-07-07]
                  '--message', result['report']],
                 capture_output=True, timeout=15
             )

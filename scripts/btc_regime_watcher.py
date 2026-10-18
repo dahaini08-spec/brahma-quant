@@ -45,7 +45,7 @@ try:
     PUSH_TARGET  = os.environ.get('JARVIS_TARGET', _SSOT_TARGET)
     PUSH_CHANNEL = _SSOT_CHANNEL
 except Exception:
-    PUSH_TARGET  = os.environ.get('JARVIS_TARGET', '73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed')  # SSOT fallback
+    PUSH_TARGET  = os.environ.get('JARVIS_TARGET', '73295708:thread:01a12e17-726c-78da-9857-4edab995522b')  # SSOT fallback
     PUSH_CHANNEL = 'jarvis'
 
 # 心跳间隔：30分钟刷新 regime_state.json，防360误报"陈旧"

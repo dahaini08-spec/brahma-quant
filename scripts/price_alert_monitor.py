@@ -8,7 +8,7 @@ import time, json, os, sys, pathlib, urllib.request, ssl, subprocess
 
 # ── 配置 ──
 JARVIS_USER  = os.getenv('JARVIS_USER_ID', '73295708')
-JARVIS_THREAD = os.getenv('JARVIS_THREAD_ID', '01a0d79b-fea4-71b1-9f2a-c02a9844b4ed')
+JARVIS_THREAD = os.getenv('JARVIS_THREAD_ID', '01a12e17-726c-78da-9857-4edab995522b')
 CHANNEL = 'jarvis'
 WORKDIR = pathlib.Path('/root/.openclaw/workspace/trading-system')
 STATE_FILE = WORKDIR / 'data' / 'price_alert_state.json'

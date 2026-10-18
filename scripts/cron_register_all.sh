@@ -8,7 +8,7 @@ set -e
 echo "[梵天cron注册] 开始 $(date)"
 
 USER_ID="73295708"
-THREAD_MAIN="01a0d79b-fea4-71b1-9f2a-c02a9844b4ed"
+THREAD_MAIN="01a12e17-726c-78da-9857-4edab995522b"
 THREAD_SQUARE="019fe171-b435-7360-a246-b9f04b40bdde"
 COUNT=0
 

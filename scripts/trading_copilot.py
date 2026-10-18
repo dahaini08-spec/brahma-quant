@@ -21,7 +21,7 @@ import json, pathlib, time, subprocess, urllib.request, ssl, os, sys
 WORKDIR       = pathlib.Path('/root/.openclaw/workspace/trading-system')
 BASE          = WORKDIR  # [P0-A fix 2026-10-10] M0自愈路径别名
 JARVIS_USER   = os.getenv('JARVIS_USER_ID', '73295708')
-JARVIS_THREAD = os.getenv('JARVIS_THREAD_ID', '01a0d79b-fea4-71b1-9f2a-c02a9844b4ed')
+JARVIS_THREAD = os.getenv('JARVIS_THREAD_ID', '01a12e17-726c-78da-9857-4edab995522b')
 CHANNEL       = 'jarvis'
 STATE_FILE    = WORKDIR / 'data' / 'copilot_state.json'
 POSITIONS_FILE = WORKDIR / 'data' / 'active_positions.json'

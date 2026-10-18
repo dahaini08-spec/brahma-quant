@@ -143,7 +143,7 @@ fi
 if [ -n "$ALERT" ] || [ -n "$RECOVERED" ]; then
     MSG="${ALERT}${RECOVERED}"
     JARVIS_THREAD=$(grep '^JARVIS_THREAD_ID=' alerts/.env 2>/dev/null | cut -d= -f2 | tr -d '"')
-    [ -z "$JARVIS_THREAD" ] && JARVIS_THREAD="01a0d79b-fea4-71b1-9f2a-c02a9844b4ed"
+    [ -z "$JARVIS_THREAD" ] && JARVIS_THREAD="01a12e17-726c-78da-9857-4edab995522b"
     openclaw message send \
         -t "73295708:thread:${JARVIS_THREAD}" \
         --channel jarvis \

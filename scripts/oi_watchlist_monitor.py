@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 WATCHLIST_FILE = BASE_DIR / "data" / "oi_watchlist.json"
 WR_HISTORY_FILE = BASE_DIR / "data" / "oi_watchlist_wr.json"
 JARVIS_USER_ID = "73295708"
-JARVIS_THREAD_ID = "01a0d79b-fea4-71b1-9f2a-c02a9844b4ed"
+JARVIS_THREAD_ID = "01a12e17-726c-78da-9857-4edab995522b"
 FAPI = "https://fapi.binance.com"
 DEDUP_FILE = BASE_DIR / "data" / "oi_watchlist_dedup.json"
 

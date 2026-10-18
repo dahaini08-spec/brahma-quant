@@ -19,7 +19,7 @@ DATA  = BASE / 'data'
 TESTS_FILE   = DATA / 'strategy_tests.json'
 RESULTS_FILE = DATA / 'strategy_results.json'
 JARVIS_USER   = os.getenv('JARVIS_USER_ID', '73295708')
-JARVIS_THREAD = os.getenv('JARVIS_THREAD_ID', '01a0d79b-fea4-71b1-9f2a-c02a9844b4ed')
+JARVIS_THREAD = os.getenv('JARVIS_THREAD_ID', '01a12e17-726c-78da-9857-4edab995522b')
 CHANNEL = 'jarvis'
 
 ctx = ssl.create_default_context()
@@ -241,7 +241,7 @@ def check_vip_expiry():
     if expired:
         save_tests(tests)
         JARVIS_USER   = __import__('os').getenv('JARVIS_USER_ID','73295708')
-        JARVIS_THREAD = __import__('os').getenv('JARVIS_THREAD_ID','01a0d79b-fea4-71b1-9f2a-c02a9844b4ed')
+        JARVIS_THREAD = __import__('os').getenv('JARVIS_THREAD_ID','01a12e17-726c-78da-9857-4edab995522b')
         for t in expired:
             sym     = t.get('symbol','?')
             valid_h = ac.get(sym, {}).get('vip_valid_h', 8)

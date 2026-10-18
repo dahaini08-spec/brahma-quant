@@ -77,7 +77,7 @@ paper_tp_monitor.py       → 模拟仓位监控
 
 ### 推送铁律
 - **禁止绕过 push_hub.py** — 所有推送必须走 `push_hub.push_jarvis()`
-- 推送目标：`JARVIS_USER_ID:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed`
+- 推送目标：`JARVIS_USER_ID:thread:01a12e17-726c-78da-9857-4edab995522b`
 - 哨兵已内置：裸 target 格式（`^\d+:thread:uuid`）直接拒发
 
 ### 数据铁律

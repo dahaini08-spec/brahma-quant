@@ -39,7 +39,7 @@ try:
     _TARGET  = f"{JARVIS_USER_ID}:thread:{JARVIS_THREAD_ID}"
     _CHANNEL = JARVIS_CHANNEL
 except Exception:
-    _TARGET  = "73295708:thread:01a0d79b-fea4-71b1-9f2a-c02a9844b4ed"
+    _TARGET  = "73295708:thread:01a12e17-726c-78da-9857-4edab995522b"
     _CHANNEL = "jarvis"
 
 
