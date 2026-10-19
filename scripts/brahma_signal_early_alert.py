@@ -182,6 +182,27 @@ def detect_early_signals(curr: dict, prev: dict) -> list:
         signals.append(('LIQ_POOL_NEAR_LONG', 3,
             f"空单止损墙距今{curr['liq_up_pct']:.2f}%⚡⚡⚡ = 逼空在即，注意穿越反转"))
 
+    # E_ob. OB穿越预警（从state检测）
+    sd = {}
+    sf = BASE / 'data' / f'brahma_state_{curr["sym"].lower()}.json'
+    if sf.exists():
+        try: sd = json.load(open(sf))
+        except: pass
+    ob_1h_lo = sd.get('ob_1h_lo', 0)
+    ob_4h_lo = sd.get('ob_4h_lo', 0)
+    if ob_1h_lo > 0 and px < ob_1h_lo * 0.998:
+        signals.append(('OB1H_BREACHED', 3,
+            f"1H OB下沿${ob_1h_lo:,.0f}被穿越⚡⚡⚡ = 多头支撑失守，下一支撑OB4H${ob_4h_lo:,.0f}/GEX ZF"))
+    elif ob_4h_lo > 0 and px < ob_4h_lo * 0.998:
+        signals.append(('OB4H_BREACHED', 3,
+            f"4H OB下沿${ob_4h_lo:,.0f}被穿越⚡⚡⚡ = 主力成本区失守，趋势性下跌信号"))
+
+    # IV低位预警
+    iv_rank = sd.get('iv_rank', 50)
+    if 0 < iv_rank < 8 and curr['bb_width'] < 1.0:
+        signals.append(('IV_BB_COIL', 2,
+            f"IV排名={iv_rank:.1f}(极低)+BB收窄={curr['bb_width']:.3f} = 双重收缩，爆发性突破临近"))
+
     # E. Session切换预警
     if curr['session'] in ('EU_OPEN', 'US_OPEN') and prev:
         if prev.get('session') not in ('EU_OPEN', 'US_OPEN'):

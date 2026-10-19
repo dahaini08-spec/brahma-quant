@@ -345,17 +345,31 @@ def reason_40yr(d: dict) -> dict:
         chain.append(('LSR大户', f"大户仓位={lsr_p} = 大户真实偏多，不宜做空", +1))
         bias += 1
 
-    # ④.5 CVD主力意图（区分散户买入vs主力建仓）
+    # ④.5 CVD真实方向（Taker序列累积计算，区分散户买入vs主力建仓）
     cvd_1h = d.get('cvd_1h', 0)
-    cvd_dir = d.get('cvd_dir_1h', '?')
-    if cvd_1h > 50:
-        chain.append(('CVD', f"1H累积净买入{cvd_1h:+.0f} = 主力级别吸筹，区别于散户追涨", +1))
-        bias += 1
+    tak_vals_raw = d.get('tak_vals', [])
+    # 真实CVD：用Taker序列累积计算方向（>1=净买入 <1=净卖出）
+    if tak_vals_raw and len(tak_vals_raw) >= 3:
+        net_buy = sum(1 for t in tak_vals_raw if t > 1.05)
+        net_sell = sum(1 for t in tak_vals_raw if t < 0.95)
+        cvd_real_dir = 'BUY' if net_buy > net_sell else ('SELL' if net_sell > net_buy else 'NEUTRAL')
+        cvd_momentum = round(tak_vals_raw[-1] - tak_vals_raw[0], 3)
+        if cvd_real_dir == 'BUY' and cvd_momentum > 0:
+            chain.append(('CVD', f"Taker累积净买({net_buy}/{len(tak_vals_raw)}) 动量{cvd_momentum:+.3f} = 主力持续吸筹", +2))
+            bias += 2
+        elif cvd_real_dir == 'BUY' and cvd_momentum < -0.3:
+            chain.append(('CVD', f"Taker累积净买但动量衰减{cvd_momentum:+.3f} = 买盘减弱，警惕反转", 0))
+        elif cvd_real_dir == 'SELL':
+            chain.append(('CVD', f"Taker累积净卖({net_sell}/{len(tak_vals_raw)}) = 主力级别出货", -2))
+            bias -= 2
+        else:
+            chain.append(('CVD', f"CVD中性 买{net_buy}/卖{net_sell}/中{len(tak_vals_raw)-net_buy-net_sell}", 0))
+    elif cvd_1h > 50:
+        chain.append(('CVD', f"state CVD_1H={cvd_1h:+.0f} = 净买入", +1)); bias += 1
     elif cvd_1h < -50:
-        chain.append(('CVD', f"1H累积净卖出{cvd_1h:+.0f} = 主力级别出货信号", -1))
-        bias -= 1
+        chain.append(('CVD', f"state CVD_1H={cvd_1h:+.0f} = 净卖出", -1)); bias -= 1
     else:
-        chain.append(('CVD', f"CVD_1H={cvd_1h:+.0f} 中性，无明确主力方向", 0))
+        chain.append(('CVD', f"CVD中性，无明确主力方向", 0))
 
     # ⑤ OI资金流
     if oi_dir == 'SHORT_BUILD' and tak < 0.8:
@@ -408,6 +422,24 @@ def reason_40yr(d: dict) -> dict:
     else:
         chain.append(('RSI15M', f"={rsi_15m}  RSI多周期: 15M={rsi_15m}/1H={rsi}/4H={rsi_4h}", 0))
 
+    # ⑤.15 RSI背离检测（底部/顶部反转先行信号）
+    candles = d.get('candles', [])
+    if len(candles) >= 3:
+        # 用近4根K线检测价格与RSI的背离
+        prices = [c['c'] for c in candles]
+        rsi_now = d.get('rsi_1h', 50)
+        rsi_prev = d.get('rsi_4h', 50)  # 用4H RSI近似前期RSI
+        price_falling = prices[-1] < prices[0]
+        price_rising  = prices[-1] > prices[0]
+        # 看涨背离：价格新低但RSI未新低（>30）
+        if price_falling and rsi_now > 28 and rsi_now < 45:
+            chain.append(('RSI背离', f"价格↓新低但RSI={rsi_now}未破超卖 = 看涨背离⚡ 底部反转信号", +2))
+            bias += 2
+        # 看跌背离：价格新高但RSI未新高（<75）
+        elif price_rising and rsi_now < 72 and rsi_now > 55:
+            chain.append(('RSI背离', f"价格↑新高但RSI={rsi_now}未破超买 = 看跌背离⚡ 顶部反转信号", -1))
+            bias -= 1
+
     # ⑤.2 HAR-RV波动率边界（P0②）
     harv_hi = d.get('harv_hi', 0); harv_lo = d.get('harv_lo', 0)
     if harv_lo > 0 and harv_hi > 0:
@@ -449,9 +481,13 @@ def reason_40yr(d: dict) -> dict:
     if ob_1h_lo > 0:
         in_ob_1h = ob_1h_lo <= px <= ob_1h_hi
         ob_age_1h = next((o['age'] for o in ob_list if o.get('tf')=='1H' and o.get('side')=='BULL'), 999)
+        ob_breached = px < ob_1h_lo * 0.998  # 跌破OB下沿0.2%确认穿越
         if in_ob_1h:
             chain.append(('OB1H', f"价格在1H Bull OB内[${ob_1h_lo:,.0f}~${ob_1h_hi:,.0f}] age={ob_age_1h}bar = 支撑区有效，偏多", +2))
             bias += 2
+        elif ob_breached:
+            chain.append(('OB1H', f"⚡OB1H被穿越！跌破${ob_1h_lo:,.0f} = 多头支撑失守，1H OB作废，下一支撑OB4H/GEX ZF", -2))
+            bias -= 2
         elif px < ob_1h_lo:
             chain.append(('OB1H', f"价格在1H OB下方${ob_1h_lo:,.0f} = OB未触达，等回踩", 0))
         else:
@@ -463,6 +499,20 @@ def reason_40yr(d: dict) -> dict:
         if in_ob_4h:
             chain.append(('OB4H', f"价格在4H Bull OB内[${ob_4h_lo:,.0f}~${ob_4h_hi:,.0f}] age={ob_age_4h}bar = 强支撑，主力成本区", +2))
             bias += 2
+
+    # ⑥.5 IV排名推理（波动率环境判断）
+    iv_rank = d.get('iv_rank', 0)
+    gex_val = d.get('gex_val', 0)
+    kappa = d.get('kappa', 0)
+    if iv_rank > 0:
+        if iv_rank < 10:
+            chain.append(('IV排名', f"={iv_rank:.1f}(极低⚡<10) = 历史低波动末期，大波动临近；期权便宜=方向突破时赔率高", -1))
+            bias -= 1  # 低IV通常在下跌前
+        elif iv_rank > 80:
+            chain.append(('IV排名', f"={iv_rank:.1f}(极高>80) = 恐慌高位，往往是底部（VIX顶=市场底）", +1))
+            bias += 1
+        else:
+            chain.append(('IV排名', f"={iv_rank:.1f}(正常区间)  GEX量级=${gex_val/1e6:.1f}M  kappa={kappa:.4f}", 0))
 
     # ⑦ GEX ZeroFlip
     if zf > 0:
