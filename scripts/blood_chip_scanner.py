@@ -1,26 +1,21 @@
 #!/usr/bin/env python3
 """
-blood_chip_scanner.py — 带血筹码监控器
-[2026-09-15 苏摩111] 把"找带血筹码"变成长期运行的流程
+blood_chip_scanner.py — 带血筹码监控器 v2
+[2026-10-19 苏摩111] 升级：42标的 + 方仓历史验证 + 三维决策输出
+[2026-09-15 苏摩111] 原版：把"找带血筹码"变成长期运行的流程
 
 触发条件：
   1. 折价率 ≤ -20%（当前价 vs 1年高点）
-  2. vs 200日均价 ≤ -5%（跌破均线，不是只是从高点回落）
-  3. Crypto恐慌指数 ≤ 25（Extreme Fear）→ 触发深度研究
+  2. vs 200日均价 ≤ -5%（跌破均线）
+  3. Crypto恐慌指数 ≤ 25（Extreme Fear）→ 触发方仓历史验证
 
-运行频率：每12h（OpenClaw cron 06:00 UTC + 18:00 UTC）
-输出：
-  - 普通模式：简报（折价+恐慌指数+观察池状态）
-  - 触发模式：深度研究报告（买入理由+反对理由+UDTV四维）
-
-数据源：
-  - Crypto价格：Binance API（/api/v3/klines）
-  - Crypto恐慌：Alternative.me Fear & Greed Index
-  - 美股价格：Yahoo Finance API（如可用）/ web_search fallback
-  - 美股恐慌：CNN Fear & Greed Index（如可用）
+三维输出：
+  维度1：价格折价（折价率 / vs200d / 2年回撤位置）
+  维度2：方仓历史（n案例 / 30日WR / 中位回报 / 体制分布）
+  维度3：当前体制（Regime / Hurst / 与方仓体制匹配度）
 
 接入位置：
-  - OpenClaw cron → 每12h运行 → 推送到Jarvis
+  - OpenClaw cron → 每12h运行（06:15/18:15 UTC）→ 推送到Jarvis
   - 手动触发：python3 scripts/blood_chip_scanner.py
 """
 
@@ -30,7 +25,9 @@ from datetime import datetime, timezone, timedelta
 
 BASE = Path(__file__).parent.parent
 DATA = BASE / 'data'
-WATCHLIST = DATA / 'watchlist.json'
+WATCHLIST    = DATA / 'watchlist_42.json'   # v2: 42标的
+WATCHLIST_v1 = DATA / 'watchlist.json'      # 兜底
+FANGCANG_DB  = DATA / 'fangcang_merged_v2.json'  # 40913案例
 
 # ── 数据获取 ────────────────────────────────────────────────
 

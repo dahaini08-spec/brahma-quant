@@ -28,7 +28,7 @@ TESTNET   = os.environ.get('BINANCE_TESTNET', 'false').lower() == 'true'
 # ── Jarvis 推送路由（SSOT）────────────────────────────────────────
 JARVIS_USER_ID   = os.environ.get('JARVIS_USER_ID',   '73295708')
 # [P2-4 2026-09-30 重构 苏摩111] 线程SSOT统一：alerts/.env 是唯一线程源（与scripts/push_hub同源）。
-# 旧兑底 01a0d79b... 已是死线程（9.27线程迁移后），环境变量未设时会丢消息——
+# [2026-10-18 苏摩111] 线程迁移: 旧ID已废弃，现用01a12e17（alerts/.env SSOT）
 # 读取顺序: 环境变量 > alerts/.env > 旧封印值兑底（仅容灾）。
 def _load_thread_id():
     v = os.environ.get('JARVIS_THREAD_ID')
