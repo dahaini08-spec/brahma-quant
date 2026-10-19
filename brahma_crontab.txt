@@ -348,3 +348,6 @@ print('[deep_analysis] 完成', time.strftime('%H:%M'))
 
 # ── [封印 2026-10-19 苏摩111] 神经感知VIP监控 ──────────────────────────────
 */5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 45 python3 scripts/brahma_vip_watcher.py >> logs/vip_watcher.log 2>&1
+
+# ── [封印 2026-10-19 苏摩111] 先行信号层 每15分钟预判 ──────────────────────
+*/15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/brahma_signal_early_alert.py >> logs/early_alert.log 2>&1

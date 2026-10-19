@@ -345,6 +345,18 @@ def reason_40yr(d: dict) -> dict:
         chain.append(('LSR大户', f"大户仓位={lsr_p} = 大户真实偏多，不宜做空", +1))
         bias += 1
 
+    # ④.5 CVD主力意图（区分散户买入vs主力建仓）
+    cvd_1h = d.get('cvd_1h', 0)
+    cvd_dir = d.get('cvd_dir_1h', '?')
+    if cvd_1h > 50:
+        chain.append(('CVD', f"1H累积净买入{cvd_1h:+.0f} = 主力级别吸筹，区别于散户追涨", +1))
+        bias += 1
+    elif cvd_1h < -50:
+        chain.append(('CVD', f"1H累积净卖出{cvd_1h:+.0f} = 主力级别出货信号", -1))
+        bias -= 1
+    else:
+        chain.append(('CVD', f"CVD_1H={cvd_1h:+.0f} 中性，无明确主力方向", 0))
+
     # ⑤ OI资金流
     if oi_dir == 'SHORT_BUILD' and tak < 0.8:
         chain.append(('OI', f"SHORT_BUILD+Taker卖 = 主力主动建空仓，方向向下", -2))
@@ -354,6 +366,32 @@ def reason_40yr(d: dict) -> dict:
         bias += 1
     elif oi_dir == 'FLAT':
         chain.append(('OI', f"FLAT OI8H={oi_8h:+.2f}% = 无明确建仓方向", 0))
+
+    # ④.8 Session时段（流动性风险）
+    import time as _t
+    utc_hour = _t.gmtime().tm_hour
+    if 0 <= utc_hour < 4:
+        session_label = 'ASIA_LATE'
+        session_risk  = '亚洲盘尾盘，流动性低，插针风险高'
+        chain.append(('Session', f"UTC{utc_hour:02d}:00 {session_label} = {session_risk}", -1))
+        bias -= 1
+    elif 6 <= utc_hour < 10:
+        session_label = 'EU_OPEN'
+        session_risk  = '欧洲盘开盘，流动性切换，大波动高发'
+        chain.append(('Session', f"UTC{utc_hour:02d}:00 {session_label}⚡ = {session_risk}", -1))
+        bias -= 1
+    elif 13 <= utc_hour < 17:
+        session_label = 'US_OPEN'
+        session_risk  = '美国盘开盘，最强流动性，趋势确认时段'
+        chain.append(('Session', f"UTC{utc_hour:02d}:00 {session_label}✅ = {session_risk}", +1))
+        bias += 1
+    elif 21 <= utc_hour < 24:
+        session_label = 'US_CLOSE'
+        session_risk  = '美国盘收盘，持仓调整，方向确认'
+        chain.append(('Session', f"UTC{utc_hour:02d}:00 {session_label} = {session_risk}", 0))
+    else:
+        session_label = 'TRANSITION'
+        chain.append(('Session', f"UTC{utc_hour:02d}:00 过渡时段，流动性一般", 0))
 
     # ⑤.1 RSI_15M 短线时机（P0③）
     rsi_15m = d.get('rsi_15m', 50)
@@ -639,7 +677,7 @@ def format_full(d: dict, reasoning: dict, council: dict) -> str:
         f" Session={d.get('session','?')}  BTC-ETH相关={d.get('btc_eth_corr',0.85):.2f}",
         f"",
         f"【综合判断】",
-        f" 梵天方向={direction}  偏向分={reasoning['bias']:+d}  置信={reasoning.get('confidence','?')}",
+        f" 梵天方向={direction}  偏向分={reasoning['bias']:+d}  置信={reasoning.get('confidence','?')}  Confluence={d.get('confluence_score',0):.0f}",
         f" SL(多)≥${sl_long:,.1f}  SL(空)≤${sl_short:,.1f}  (ATR4H×1.5=${reasoning['sl_min']:,.0f})",
         f" RSI多周期: 15M={d.get('rsi_15m',50)} / 1H={d['rsi_1h']} / 4H={d['rsi_4h']} / 1D={d['rsi_1d']}",
     ]
