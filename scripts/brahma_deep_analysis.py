@@ -197,13 +197,48 @@ def fetch_all(sym: str) -> dict:
         'bb_width':sd.get('bb_width', 2.0),
         'score':   sd.get('score_final', 0),
         # OB字段（梵天大脑核心SMC）
-        'ob_list': [o for o in sd.get('ob_list', []) if o.get('valid', True) and o.get('age', 999) < 50],
-        'ob_1h_lo':sd.get('ob_1h_lo', 0),
-        'ob_1h_hi':sd.get('ob_1h_hi', 0),
-        'ob_4h_lo':sd.get('ob_4h_lo', 0),
-        'ob_4h_hi':sd.get('ob_4h_hi', 0),
-        'fvg_magnet':  sd.get('fvg_magnet', 0),
-        'fvg_4h_magnet':sd.get('fvg_4h_magnet', 0) or sd.get('fvg_magnet', 0),
+        'ob_list':  [o for o in sd.get('ob_list', []) if o.get('valid', True) and o.get('age', 999) < 50],
+        'ob_1h_lo': sd.get('ob_1h_lo', 0),
+        'ob_1h_hi': sd.get('ob_1h_hi', 0),
+        'ob_4h_lo': sd.get('ob_4h_lo', 0),
+        'ob_4h_hi': sd.get('ob_4h_hi', 0),
+        # P0① 多周期FVG磁铁共振
+        'fvg_15m_magnet': sd.get('fvg_15m_magnet', 0),
+        'fvg_1h_magnet':  sd.get('fvg_1h_magnet', 0),
+        'fvg_4h_magnet':  sd.get('fvg_4h_magnet', 0) or sd.get('fvg_magnet', 0),
+        'fvg_1d_magnet':  sd.get('fvg_1d_magnet', 0),
+        'fvg_consensus':  sd.get('fvg_consensus', 'NEUTRAL'),
+        'fvg_votes':      sd.get('fvg_votes', {}),
+        # P0② HAR-RV波动率边界
+        'harv_hi': sd.get('harv_hi', 0),
+        'harv_lo': sd.get('harv_lo', 0),
+        # P0③ RSI 15分钟
+        'rsi_15m': sd.get('rsi_15m', 50),
+        # P0④ Step11系统裁决（避免双套逻辑）
+        'step11_verdict': sd.get('step11_verdict', 'WAIT'),
+        'step11_sl':      sd.get('sl', 0),
+        'step11_tp1':     sd.get('tp1', 0),
+        'step11_tp2':     sd.get('tp2', 0),
+        'step11_rr':      sd.get('rr', 0),
+        'ev_pct':         sd.get('ev_pct', 0),
+        # P0⑤ BB宽度squeeze
+        'bb_width':  sd.get('bb_width', 2.0),
+        # P1 补充
+        'cvd_1h':    sd.get('cvd_1h', 0),
+        'cvd_4h':    sd.get('cvd_4h', 0),
+        'cvd_dir_1h':sd.get('cvd_dir_1h', '?'),
+        'gex_val':   sd.get('gex', 0),
+        'gex_dir':   sd.get('gex_direction', 'POSITIVE'),
+        'iv_rank':   sd.get('iv_rank', 0),
+        'kappa':     sd.get('kappa', 0),
+        'fear_greed':sd.get('fear_greed', 50),
+        'lsr_big_pct':   sd.get('lsr_big', 50),
+        'lsr_retail_pct':sd.get('lsr_retail', 50),
+        'confluence_score': sd.get('confluence', {}).get('score', 0) if isinstance(sd.get('confluence'), dict) else 0,
+        'oi_direction':  sd.get('oi_direction', 'FLAT'),
+        'session':       sd.get('session', 'UNKNOWN'),
+        'btc_eth_corr':  sd.get('btc_eth_corr', 0.85),
+        'score':         sd.get('score_final', 0),
     }
 
 
@@ -320,6 +355,55 @@ def reason_40yr(d: dict) -> dict:
     elif oi_dir == 'FLAT':
         chain.append(('OI', f"FLAT OI8H={oi_8h:+.2f}% = 无明确建仓方向", 0))
 
+    # ⑤.1 RSI_15M 短线时机（P0③）
+    rsi_15m = d.get('rsi_15m', 50)
+    rsi_4h  = d.get('rsi_4h', 50)
+    if rsi_15m <= 30:
+        chain.append(('RSI15M', f"={rsi_15m}(超卖⚡) + RSI_1H={rsi} = 短线洗盘底部，15M企稳信号", +2))
+        bias += 2
+    elif rsi_15m <= 40:
+        chain.append(('RSI15M', f"={rsi_15m}(偏低) + RSI_1H={rsi} = 短线回调中，等15M反弹>50确认", +1))
+        bias += 1
+    elif rsi_15m >= 75:
+        chain.append(('RSI15M', f"={rsi_15m}(超买⚡) = 短线过热，不追多", -1))
+        bias -= 1
+    else:
+        chain.append(('RSI15M', f"={rsi_15m}  RSI多周期: 15M={rsi_15m}/1H={rsi}/4H={rsi_4h}", 0))
+
+    # ⑤.2 HAR-RV波动率边界（P0②）
+    harv_hi = d.get('harv_hi', 0); harv_lo = d.get('harv_lo', 0)
+    if harv_lo > 0 and harv_hi > 0:
+        harv_dist_lo = round((px - harv_lo) / px * 100, 2)
+        harv_dist_hi = round((harv_hi - px) / px * 100, 2)
+        if abs(harv_dist_lo) < 0.3:
+            chain.append(('HAR-RV', f"价格${px:,.0f}≈HAR-RV下边界${harv_lo:,.0f}({harv_dist_lo:+.2f}%) = 波动率模型支撑测试，关键位", +1))
+            bias += 1
+        elif px < harv_lo:
+            chain.append(('HAR-RV', f"跌破HAR-RV下界${harv_lo:,.0f}(-{abs(harv_dist_lo):.2f}%) = 波动率模型看空，下一支撑OB/GEX", -1))
+            bias -= 1
+        else:
+            chain.append(('HAR-RV', f"区间内 下界${harv_lo:,.0f}({harv_dist_lo:+.2f}%) 上界${harv_hi:,.0f}({harv_dist_hi:+.2f}%)", 0))
+
+    # ⑤.3 BB squeeze预警（P0⑤）
+    bb_width = d.get('bb_width', 2.0)
+    if bb_width < 1.2:
+        chain.append(('BB-squeeze', f"bb_width={bb_width:.3f}(极窄⚡<1.2) = 即将方向性突破，OI+Taker决定方向", -1 if tak < 0.8 else +1))
+        bias += (-1 if tak < 0.8 else +1)
+    elif bb_width < 1.5:
+        chain.append(('BB宽度', f"bb_width={bb_width:.3f}(收窄) = 震荡收敛中，突破在即", 0))
+
+    # ⑤.4 EV期望值（P1）
+    ev_pct = d.get('ev_pct', 0)
+    if ev_pct > 0:
+        if ev_pct >= 0.5:
+            chain.append(('EV', f"={ev_pct:.3f}%(≥0.5% ✅) = 数学期望值充足，值得入场", +1))
+            bias += 1
+        elif ev_pct >= 0.3:
+            chain.append(('EV', f"={ev_pct:.3f}%(0.3~0.5%) = 期望值偏低，边缘", 0))
+        else:
+            chain.append(('EV', f"={ev_pct:.3f}%(<0.3% ⚠️) = 期望值不足，数学上WAIT依据", -1))
+            bias -= 1
+
     # ⑥ OB有效性（梵天铁律：age<50且valid才算有效OB）
     ob_list = d.get('ob_list', [])
     ob_1h_lo = d.get('ob_1h_lo', 0); ob_1h_hi = d.get('ob_1h_hi', 0)
@@ -384,10 +468,22 @@ def reason_40yr(d: dict) -> dict:
         p = SMART_MONEY_PATTERNS.get(pid, {})
         chain.append(('主力手法', f"{p.get('name','?')}({conf:.0%}): {p.get('implication','')}", 0))
 
-    # ⑩ SL计算（ATR铁律）
+    # ⑩ P0④ Step11裁决优先（避免双套逻辑冲突）
+    step11_verdict  = d.get('step11_verdict', '')
+    step11_sl       = d.get('step11_sl', 0)
+    step11_tp1      = d.get('step11_tp1', 0)
+    step11_tp2      = d.get('step11_tp2', 0)
+    step11_rr_val   = d.get('step11_rr', 0)
+
+    # SL计算：优先用step11精确SL，备用ATR铁律
     sl_min = atr4h * 1.5
-    sl_long  = round(px - sl_min, 1)
-    sl_short = round(px + sl_min, 1)
+    if step11_sl > 0:
+        sl_long  = round(step11_sl, 1)
+        sl_short = round(px + (px - step11_sl), 1)  # 对称SL
+        chain.append(('Step11-SL', f"系统精确SL=${step11_sl:,.1f}(含11道闸门验证) RR={step11_rr_val:.2f}", 0))
+    else:
+        sl_long  = round(px - sl_min, 1)
+        sl_short = round(px + sl_min, 1)
 
     # GEX插针风险：SL必须在ZF下方
     if zf > 0 and sl_long > zf * 0.999:
@@ -395,7 +491,7 @@ def reason_40yr(d: dict) -> dict:
         sl_long = round(zf - atr4h * 0.5, 1)
         chain.append(('SL修正', f"SL${old_sl:,.1f}在ZF${zf:,.0f}上方 = 必被插针扫损，修正为${sl_long:,.1f}(ZF下方)", 0))
 
-    # 最终方向判断
+    # 最终方向判断：bias≥3或step11一致
     if bias >= 3:
         direction = 'LONG'
         confidence = 'HIGH' if bias >= 5 else 'MED'
@@ -406,15 +502,25 @@ def reason_40yr(d: dict) -> dict:
         direction = 'WAIT'
         confidence = 'LOW'
 
-    # RR验证
-    rr = 0
-    if direction == 'LONG' and liq_up > 0:
-        rr = round((liq_up - px) / (px - sl_long), 2) if (px - sl_long) > 0 else 0
-    elif direction == 'SHORT' and liq_dn > 0:
-        rr = round((px - liq_dn) / (sl_short - px), 2) if (sl_short - px) > 0 else 0
+    # Step11裁决校验：若Step11=WAIT但bias≥3，保守降级
+    if step11_verdict == 'WAIT' and direction != 'WAIT':
+        chain.append(('Step11', f"verdict=WAIT（11道闸门拦截）vs 推理bias={bias:+d}(偏{direction}) = 系统裁决优先，降级WAIT", 0))
+        direction = 'WAIT'
+        confidence = 'MED'
+    elif step11_verdict in ('ENTER','WATCH') and direction == 'WAIT':
+        chain.append(('Step11', f"verdict={step11_verdict}（系统放行）vs 推理bias={bias:+d} = 参考Step11，提升为WATCH", 0))
+        direction = 'WATCH'
 
-    if rr > 0 and rr < 1.2:
-        chain.append(('RR', f"RR={rr}<1.2 = 风险回报不达标，降级WAIT", 0))
+    # RR验证（优先用step11_rr）
+    rr = step11_rr_val if step11_rr_val > 0 else 0
+    if rr == 0:
+        if direction == 'LONG' and liq_up > 0:
+            rr = round((liq_up - px) / (px - sl_long), 2) if (px - sl_long) > 0 else 0
+        elif direction == 'SHORT' and liq_dn > 0:
+            rr = round((px - liq_dn) / (sl_short - px), 2) if (sl_short - px) > 0 else 0
+
+    if rr > 0 and rr < 1.2 and direction not in ('WAIT','WATCH'):
+        chain.append(('RR', f"RR={rr:.2f}<1.2 = 风险回报不达标，降级WAIT", 0))
         direction = 'WAIT'
 
     return {
@@ -422,6 +528,8 @@ def reason_40yr(d: dict) -> dict:
         'direction': direction, 'confidence': confidence,
         'sl_long': sl_long, 'sl_short': sl_short,
         'sl_min': sl_min, 'rr': rr,
+        'step11_sl': step11_sl, 'step11_tp1': step11_tp1,
+        'step11_tp2': step11_tp2, 'step11_verdict': step11_verdict,
     }
 
 
@@ -471,8 +579,10 @@ def format_full(d: dict, reasoning: dict, council: dict) -> str:
         f" 买/卖={d['ba']}x  {'买盘厚✅' if d['ba']>1.5 else '卖盘厚⚡' if d['ba']<0.7 else '均衡'}",
         f"",
         f"【GEX+FVG+OB+清算】",
-        f" GEX ZF=${zf:,.0f}({'站上ZF' if zf_pct>0 else 'ZF下方'} {zf_pct:+.2f}%)",
-        f" FVG4H Bull磁铁={fvg_str}",
+        f" GEX ZF=${zf:,.0f}({'站上ZF' if zf_pct>0 else 'ZF下方'} {zf_pct:+.2f}%)  GEX量级=${d.get('gex_val',0)/1e6:.1f}M {d.get('gex_dir','?')}  IV排名={d.get('iv_rank',0):.1f}",
+        f" FVG磁铁共振: 15M=${d.get('fvg_15m_magnet',0):,.0f} 1H=${d.get('fvg_1h_magnet',0):,.0f} 4H=${d.get('fvg_4h_magnet',0):,.0f} 1D=${d.get('fvg_1d_magnet',0):,.0f}",
+        f" FVG共识={d.get('fvg_consensus','?')}  目标价带=${min(v for v in [d.get('fvg_1h_magnet',0),d.get('fvg_4h_magnet',0),d.get('fvg_1d_magnet',0)] if v>0):,.0f}~${max(v for v in [d.get('fvg_1h_magnet',0),d.get('fvg_4h_magnet',0),d.get('fvg_1d_magnet',0)] if v>0):,.0f}" if any(v>0 for v in [d.get('fvg_1h_magnet',0),d.get('fvg_4h_magnet',0),d.get('fvg_1d_magnet',0)]) else f" FVG共识={d.get('fvg_consensus','?')}",
+        f" HAR-RV: 支撑=${d.get('harv_lo',0):,.1f}  阻力=${d.get('harv_hi',0):,.1f}  BB宽度={d.get('bb_width',0):.3f}{'⚡squeeze' if d.get('bb_width',2)<1.2 else ''}",
     ]
     # OB显示
     ob_list = d.get('ob_list', [])
@@ -523,9 +633,15 @@ def format_full(d: dict, reasoning: dict, council: dict) -> str:
         f" 宏观={council['votes'].get('macro','?')}  结构={council['votes'].get('structure','?')}  量化={council['votes'].get('quant','?')}",
         f" 裁决={council['verdict']} 置信={council['confidence']}",
         f"",
+        f"【Step11系统裁决】",
+        f" verdict={reasoning.get('step11_verdict') or 'N/A'}  SL=${reasoning.get('step11_sl',0):,.1f}  TP1=${reasoning.get('step11_tp1',0):,.1f}  TP2=${reasoning.get('step11_tp2',0):,.1f}",
+        f" EV={d.get('ev_pct',0):.3f}%  RR={reasoning['rr']:.2f}  恐贪={d.get('fear_greed',50)}({'贪婪' if d.get('fear_greed',50)>75 else '恐惧' if d.get('fear_greed',50)<25 else '中性'})",
+        f" Session={d.get('session','?')}  BTC-ETH相关={d.get('btc_eth_corr',0.85):.2f}",
+        f"",
         f"【综合判断】",
-        f" 方向={direction}  偏向分={reasoning['bias']:+d}  RR={reasoning['rr']}",
-        f" SL(多)≥${sl_long:,.1f}  SL(空)≤${sl_short:,.1f}",
+        f" 梵天方向={direction}  偏向分={reasoning['bias']:+d}  置信={reasoning.get('confidence','?')}",
+        f" SL(多)≥${sl_long:,.1f}  SL(空)≤${sl_short:,.1f}  (ATR4H×1.5=${reasoning['sl_min']:,.0f})",
+        f" RSI多周期: 15M={d.get('rsi_15m',50)} / 1H={d['rsi_1h']} / 4H={d['rsi_4h']} / 1D={d['rsi_1d']}",
     ]
 
     return '\n'.join(lines)
