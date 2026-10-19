@@ -655,22 +655,38 @@ def format_vip(d: dict, reasoning: dict) -> str:
     liq_up = d['liq_up']; liq_dn = d['liq_dn']
     zf = d['zf']; atr4h = d['atr4h']
     rr = reasoning['rr']
+    # Step11精确TP（优先）
+    s11_tp1 = reasoning.get('step11_tp1', 0)
+    s11_tp2 = reasoning.get('step11_tp2', 0)
+    ob_1h_lo = d.get('ob_1h_lo', 0)
+    fvg_1h_m = d.get('fvg_1h_magnet', 0)
 
     if direction == 'LONG':
-        tp1 = round(liq_up * 0.998, 1) if liq_up > px * 1.005 else round(px + atr4h * 2, 1)
-        tp2 = round(liq_up * 1.005, 1) if liq_up > px * 1.005 else round(px + atr4h * 3, 1)
+        # TP: step11 > 清算 > FVG > ATR估算
+        tp1 = s11_tp1 if s11_tp1 > px * 1.005 else (round(liq_up * 0.998, 1) if liq_up > px * 1.005 else round(px + atr4h * 2, 1))
+        tp2 = s11_tp2 if s11_tp2 > tp1 * 1.001 else (round(fvg_1h_m, 1) if fvg_1h_m > tp1 else round(px + atr4h * 3, 1))
+        # 入场：OB回踩精确位
+        if ob_1h_lo > 0 and px > ob_1h_lo * 1.001:
+            entry_str = f"等回踩OB ${ob_1h_lo:,.1f}~${ob_1h_lo + atr4h*0.3:,.1f}"
+        else:
+            entry_str = f"${px*0.997:,.1f}~${px*0.999:,.1f}"
         rr_str = f"{rr:.2f}" if rr > 0 else "计算中"
-        long_line  = f"🟢 多单｜挂单区 ${px*0.997:,.1f}~${px*0.999:,.1f}"
+        long_line  = f"🟢 多单｜{entry_str}"
         long_sl    = f"止损${sl_long:,.1f}｜目标${tp1:,.1f}→${tp2:,.1f}"
         short_line = "🔴 暂无空单｜等待结构"
-        warn = f"{'LSR>2.5猎杀结构，等清算池' if d['lsr_g']>2.5 else f'方向={direction} RR={rr_str}'}"
+        warn = f"{'LSR>2.5猎杀结构，等清算池' if d['lsr_g']>2.5 else f'方向={direction} RR={rr_str} EV={d.get(chr(101)+chr(118)+chr(95)+chr(112)+chr(99)+chr(116),0):.3f}%'}"
         bust = f"跌破${sl_long:,.1f}+OI减少作废"
     elif direction == 'SHORT':
-        tp1 = round(liq_dn * 1.002, 1) if 0 < liq_dn < px * 0.995 else round(px - atr4h * 2, 1)
-        tp2 = round(liq_dn * 0.995, 1) if 0 < liq_dn < px * 0.995 else round(px - atr4h * 3, 1)
+        tp1 = s11_tp1 if 0 < s11_tp1 < px * 0.995 else (round(liq_dn * 1.002, 1) if 0 < liq_dn < px * 0.995 else round(px - atr4h * 2, 1))
+        tp2 = s11_tp2 if 0 < s11_tp2 < tp1 * 0.999 else (round(liq_dn * 0.995, 1) if 0 < liq_dn < px * 0.995 else round(px - atr4h * 3, 1))
+        # 空单入场：GEX ZF阻力区
+        if zf > px * 0.998:
+            entry_str = f"等ZF阻力区 ${px*1.001:,.1f}~${zf*0.999:,.1f}"
+        else:
+            entry_str = f"${px*1.001:,.1f}~${px*1.003:,.1f}"
         rr_str = f"{rr:.2f}" if rr > 0 else "计算中"
         long_line  = "🟢 暂无多单｜等待结构"
-        short_line = f"🔴 空单｜挂单区 ${px*1.001:,.1f}~${px*1.003:,.1f}"
+        short_line = f"🔴 空单｜{entry_str}"
         long_sl    = f"止损${sl_short:,.1f}｜目标${tp1:,.1f}→${tp2:,.1f}"
         warn = f"{'Taker<0.6持续卖压' if d['tak']<0.6 else f'方向={direction} RR={rr_str}'}"
         bust = f"突破${sl_short:,.1f}+OI增加作废"

@@ -24,11 +24,21 @@ sys.path.insert(0, str(BASE / 'scripts'))
 STATE_FILE = BASE / 'data' / 'vip_watcher_state.json'
 
 THRESHOLDS = {
-    'taker_delta':  0.4,    # Taker变化阈值
-    'lsr_delta':    0.3,    # LSR变化阈值
+    'taker_delta':  0.4,    # Taker变化阈值（固定，0~2之间的比率变化）
+    'lsr_delta':    0.25,   # LSR变化阈值（调松：散户多空比变化）
     'rsi_delta':    8.0,    # RSI变化阈值
-    'price_atr_pct':0.8,    # 价格变化 > ATR×0.8
+    'price_atr_pct':0.7,    # 价格变化 > ATR×0.7（调松：更早感知）
 }
+
+def _adaptive_taker_thresh(sym: str, atr1h: float) -> float:
+    """ATR自适应Taker阈值：波动大时阈值松，波动小时阈值紧"""
+    # BTC ATR1H≈$450 → base=0.4；ETH ATR1H≈$36 → base=0.35
+    # 高波动(ATR>500) → 阈值0.5；低波动(ATR<100) → 阈值0.25
+    if atr1h <= 0: return THRESHOLDS['taker_delta']
+    if atr1h > 500:   return 0.5
+    if atr1h > 200:   return 0.4
+    if atr1h > 80:    return 0.35
+    return 0.25
 
 
 def fetch(url: str) -> dict:
@@ -101,9 +111,10 @@ def detect_changes(prev: dict, curr: dict) -> list:
         return []
     triggers = []
 
-    # Taker方向切换
+    # Taker方向切换（ATR自适应阈值）
+    tak_thresh = _adaptive_taker_thresh(curr['sym'], curr['atr1h'])
     tak_delta = abs(curr['taker'] - prev['taker'])
-    if tak_delta >= THRESHOLDS['taker_delta']:
+    if tak_delta >= tak_thresh:
         triggers.append(f"Taker{prev['taker']:.2f}→{curr['taker']:.2f}(Δ{tak_delta:.2f})")
 
     # LSR猎杀阈值穿越
