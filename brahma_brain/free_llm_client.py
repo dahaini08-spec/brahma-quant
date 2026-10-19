@@ -160,25 +160,25 @@ _chutes_backoff_until = 0.0
 #   - ultra-550b实测干净可用+中文最佳（finish=stop）→ 全任务主模型
 #   - ling-fin/gemma受上游provider日配额限流（429波动）→ 尾部fallback
 # 永久不可用: inkling系列(403) / deepseek全系(404付费) / llama-4-maverick(404付费)
+# [2026-10-19 苏摩111] 实测可用模型 xing4.0-29b(OR) + qwen3.8-27b(Groq)
+# Chutes=402付费 / nemotron-3.5=响应异常 → 全部降级
 TASK_MODEL_MAP = {
-    'council':  'nvidia/nemotron-3-ultra-550b-a55b:free',    # 中文最佳★★★★★ 议会主裁决
-    'vip':      'nvidia/nemotron-3-ultra-550b-a55b:free',    # 中文最佳 VIP摘要
-    'oi':       'nvidia/nemotron-3-ultra-550b-a55b:free',    # 中文最佳 OI解读
-    'regime':   'nvidia/nemotron-3-ultra-550b-a55b:free',    # 550B深度推理★★★★☆ 宏观体制
-    'wr_audit': 'nvidia/nemotron-3-ultra-550b-a55b:free',    # 金融可用主力
-    'review':   'nvidia/nemotron-3-ultra-550b-a55b:free',    # 复盘lesson
-    'hcme':     'nvidia/nemotron-3-ultra-550b-a55b:free',    # 550B长上下文 历史镜像
-    'chop':     'nvidia/nemotron-3-ultra-550b-a55b:free',    # CHOP验证
-    'safety':   'nvidia/nemotron-3-ultra-550b-a55b:free',    # 门控
-    'default':  'nvidia/nemotron-3-ultra-550b-a55b:free',    # 永久兜底
+    'council':  'xingchen-agi/xing4.0-29b-a4b:free',
+    'vip':      'xingchen-agi/xing4.0-29b-a4b:free',
+    'oi':       'xingchen-agi/xing4.0-29b-a4b:free',
+    'regime':   'xingchen-agi/xing4.0-29b-a4b:free',
+    'wr_audit': 'xingchen-agi/xing4.0-29b-a4b:free',
+    'review':   'xingchen-agi/xing4.0-29b-a4b:free',
+    'hcme':     'xingchen-agi/xing4.0-29b-a4b:free',
+    'chop':     'xingchen-agi/xing4.0-29b-a4b:free',
+    'safety':   'xingchen-agi/xing4.0-29b-a4b:free',
+    'default':  'xingchen-agi/xing4.0-29b-a4b:free',
 }
 
-# fallback链：主模型失败时的备选顺序 [9.27重修]
+# fallback链: OR主力→Groq兜底
 FALLBACK_MODELS = [
-    'nvidia/nemotron-3-super-120b-a12b:free',   # 可用但思考链泄漏（finish=length拒收）
-    'qwen/qwen3.8-27b:free',                    # [9.27新增] 中文可用备选
-    'inclusionai/ling-3.0-flash-fin:free',      # 上游日配额波动，重置窗口可能恢复
-    'google/gemma-4-31b-it:free',               # 同上
+    'liquid/lfm-2.5-2.6b:free',
+    'qwen/qwen3.8-27b',            # Groq路径（free_llm_client.py内部路由）
 ]
 
 # ── 梵天宪法 System Prompt（所有LLM调用自动注入）────────────────────────
