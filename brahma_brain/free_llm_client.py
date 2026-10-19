@@ -402,9 +402,11 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
     if _groq_r:
         return _groq_r
 
-    # ── [双轨 2026-10-06] Chutes优先：有key且未退避 ──────────────────────
+    # ── [2026-10-19 苏摩111] Chutes已转付费(402)，跳过直达OpenRouter ──────
+    # Chutes全系列402付费确认，不再尝试，节省延迟
     global _chutes_backoff_until
-    if CHUTES_KEY and time.time() >= _chutes_backoff_until:
+    _chutes_backoff_until = float('inf')  # 永久跳过
+    if False and CHUTES_KEY and time.time() >= _chutes_backoff_until:
         _chutes_model = CHUTES_TASK_MODEL_MAP.get(task, CHUTES_TASK_MODEL_MAP['default'])
         # Chutes带fallback链：主模型失败→轮换CHUTES_FALLBACK_MODELS
         _chutes_candidates = [_chutes_model] + [m for m in CHUTES_FALLBACK_MODELS if m != _chutes_model]
@@ -854,3 +856,145 @@ def council_three_way(
         'votes':      {role: d.get('vote', '?') for role, d in results.items()},
         'source':     'LLM3',
     }
+
+
+# ══════════════════════════════════════════════════════════════
+# [封印 2026-10-19 苏摩111] 改造2: 规则替代层 + 改造3: AI缓存层
+# 免费资源最大化利用 · 三方联合设计
+# ══════════════════════════════════════════════════════════════
+
+import hashlib as _hashlib, json as _json_cache, time as _time_cache
+from pathlib import Path as _Path
+
+_AI_CACHE_FILE = _Path(__file__).parent.parent / 'data' / 'ai_cache.jsonl'
+_AI_CACHE_TTL  = 86400   # 24H缓存
+_AI_CACHE_MAX  = 500     # 最多500条
+
+# ── 改造2: 规则替代层（safety/regime/chop 零AI调用）──────────────
+RULE_REPLACEABLE = {
+    'safety': lambda d: _rule_safety(d),
+    'regime': lambda d: _rule_regime(d),
+    'chop':   lambda d: _rule_chop(d),
+}
+
+def _rule_safety(ctx: dict) -> str:
+    """Step11 11道闸门已覆盖safety判断，直接返回规则结论"""
+    score  = ctx.get('score', 0)
+    regime = ctx.get('regime', '')
+    if 'BEAR_TREND' in regime and ctx.get('direction') == 'LONG':
+        return 'AVOID: BEAR_TREND体制禁多(WR=45%)'
+    if score < 60:
+        return f'WAIT: score={score}<60，信号不足'
+    return 'OK: 规则门控通过'
+
+def _rule_regime(ctx: dict) -> str:
+    """Hurst+state已判断体制，直接返回"""
+    regime = ctx.get('regime', 'CHOP_MID')
+    hurst  = ctx.get('hurst', 0.5)
+    bias = {'BULL_TREND':'偏多', 'BEAR_TREND':'偏空',
+            'CHOP_MID':'震荡等待', 'BEAR_EARLY':'偏空',
+            'BEAR_RECOVERY':'多头回暖'}.get(regime, '待定')
+    return f'体制={regime} Hurst={hurst:.3f} → {bias}'
+
+def _rule_chop(ctx: dict) -> str:
+    """Gate5已实现CHOP验证"""
+    rsi   = ctx.get('rsi_1h', 50)
+    score = ctx.get('score', 0)
+    if 55 <= rsi <= 75:
+        return f'CHOP豁免区RSI={rsi}，score门槛降低'
+    if score >= 75:
+        return f'CHOP门控通过 score={score}≥75'
+    return f'CHOP_WAIT: score={score}<75，RSI={rsi}不在豁免区'
+
+def chat_with_rule(prompt: str, task: str, ctx: dict = None, **kwargs) -> str:
+    """
+    规则优先路由：可规则替代的任务直接返回，其余走LLM
+    接入位置：替换 from free_llm_client import chat 的调用处
+    """
+    if task in RULE_REPLACEABLE and ctx:
+        return RULE_REPLACEABLE[task](ctx)
+    return chat(prompt, task=task, **kwargs)
+
+# ── 改造3: AI缓存层（相同输入复用24H）───────────────────────────
+def _cache_key(prompt: str, task: str) -> str:
+    raw = f'{task}:{prompt[:200]}'
+    return _hashlib.md5(raw.encode()).hexdigest()[:16]
+
+def _cache_get(key: str) -> str:
+    if not _AI_CACHE_FILE.exists():
+        return ''
+    now = _time_cache.time()
+    for line in reversed(_AI_CACHE_FILE.read_text(encoding='utf-8').splitlines()):
+        try:
+            entry = _json_cache.loads(line)
+            if entry.get('key') == key and (now - entry.get('ts', 0)) < _AI_CACHE_TTL:
+                return entry.get('result', '')
+        except: pass
+    return ''
+
+def _cache_put(key: str, result: str):
+    try:
+        entry = _json_cache.dumps({'key': key, 'ts': _time_cache.time(), 'result': result}, ensure_ascii=False)
+        with open(_AI_CACHE_FILE, 'a', encoding='utf-8') as f:
+            f.write(entry + '\n')
+        # 保持最新500条
+        lines = _AI_CACHE_FILE.read_text(encoding='utf-8').splitlines()
+        if len(lines) > _AI_CACHE_MAX:
+            _AI_CACHE_FILE.write_text('\n'.join(lines[-_AI_CACHE_MAX:]) + '\n', encoding='utf-8')
+    except: pass
+
+def chat_cached(prompt: str, task: str = 'default', use_cache: bool = True, **kwargs) -> str:
+    """
+    带缓存的LLM调用。相同prompt+task在24H内直接返回缓存结果。
+    council/vip/review 默认不缓存（需要实时性）
+    oi/safety/regime/chop 默认缓存（相同市场状态结论相同）
+    """
+    NO_CACHE_TASKS = {'council', 'vip', 'review'}
+    if task in NO_CACHE_TASKS:
+        use_cache = False
+
+    if use_cache:
+        key = _cache_key(prompt, task)
+        cached = _cache_get(key)
+        if cached:
+            return cached  # 命中缓存，零AI调用
+
+    result = chat(prompt, task=task, **kwargs)
+
+    if use_cache and result:
+        _cache_put(key, result)
+
+    return result
+
+# ── 改造4: AI时间窗口统计（不阻塞，只记录）──────────────────────
+_AI_CALL_LOG = _Path(__file__).parent.parent / 'data' / 'ai_call_log.jsonl'
+
+def log_ai_call(task: str, model: str, success: bool):
+    """记录每次AI调用，用于每日统计和配额感知"""
+    try:
+        entry = _json_cache.dumps({
+            'ts': _time_cache.time(),
+            'task': task, 'model': model, 'ok': success,
+            'hour_utc': int(_time_cache.gmtime().tm_hour)
+        })
+        with open(_AI_CALL_LOG, 'a', encoding='utf-8') as f:
+            f.write(entry + '\n')
+    except: pass
+
+def get_today_ai_calls() -> dict:
+    """今日AI调用统计"""
+    if not _AI_CALL_LOG.exists():
+        return {'total': 0, 'by_task': {}, 'by_hour': {}}
+    import datetime
+    today_start = _time_cache.time() - ((_time_cache.time() % 86400))
+    entries = []
+    for line in _AI_CALL_LOG.read_text(encoding='utf-8').splitlines():
+        try:
+            e = _json_cache.loads(line)
+            if e.get('ts', 0) >= today_start:
+                entries.append(e)
+        except: pass
+    from collections import Counter
+    tasks = Counter(e['task'] for e in entries)
+    hours = Counter(e['hour_utc'] for e in entries)
+    return {'total': len(entries), 'by_task': dict(tasks), 'by_hour': dict(hours)}
