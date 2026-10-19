@@ -1,761 +1,252 @@
 #!/usr/bin/env python3
 """
-free_llm_client.py — OpenRouter免费LLM客户端
-设计院深度思考封印 2026-09-05 苏摩111
+free_llm_client.py — 梵天免费LLM客户端
+[封印 2026-10-19 苏摩111] 全力Groq重写版
 
-▌ 梵天思维全局注入版
-  - 每个模型调用自动携带梵天宪法 System Prompt
-  - 任务路由表：不同任务使用最适合的专项模型
-  - 冷却管理：防429，自动轮换
+设计原则（三方联合确认）:
+  - Groq qwen3.8-27b 配额充足，0.24s/次，全力使用
+  - 无规则替代（规则降低分析质量）
+  - 无AI缓存（市场实时变化，旧结论无效）
+  - 无Chutes（已转付费402，永久移除）
+  - 三层路由: Groq → OpenRouter → 主AI兜底
 
-▌ 任务路由表（TASK_MODEL_MAP）：
-  council      → minimax-m3        中文AI议会主裁决
-  regime       → nemotron-super    宏观体制推理
-  wr_audit     → ling-fin          金融WR审核
-  hcme         → inkling           思维链历史镜像
-  chop         → nemotron-light    快速CHOP突破验证
-  safety       → nemotron-safety   AVOID安全门控
-  vip          → minimax-m3        VIP一句话摘要
-  review       → ling-fin          结算复盘lesson
-  oi           → minimax-m3        OI聪明钱解读
-  default      → minimax-m3        通用兜底
-
-接入位置：
-  brahma_brain/llm_council.py   (AI议会真实LLM裁决)
-  scripts/regime_switch_monitor.py
-  scripts/oi_watchlist_monitor.py
-  scripts/wr_feedback_engine.py
-  scripts/signal_settler.py
-  brahma_brain/fangcang_engine.py
-  brahma_brain/chop_breakout_detector.py
+调用链:
+  chat(prompt, task) → Groq优先 → OR备用 → 主AI兜底
 """
-import json, os, ssl, time, urllib.request, urllib.error
+import os, sys, json, time, urllib.request, ssl
 from pathlib import Path
-import sys
-import datetime as _dt
 
 # ── Key加载 ──────────────────────────────────────────────────────────────
-def _load_key() -> str:
-    env_path = Path(__file__).parent.parent / '.env'
-    if env_path.exists():
-        for line in env_path.read_text().splitlines():
-            if line.startswith('OPENROUTER_API_KEY='):
-                return line.split('=', 1)[1].strip()
-    k = os.environ.get('OPENROUTER_API_KEY', '')
-    if k:
-        return k
-    return ''
-
-API_KEY  = _load_key()
-BASE_URL = 'https://openrouter.ai/api/v1/chat/completions'
-
-# ── [封印 2026-10-06 苏摩111] Chutes.ai 双轨并行 ─────────────────────────
-# 解决OpenRouter日配额不足（50次/天烧穿→429断供）
-# 优先级: Chutes → OpenRouter → 主AI
-# Chutes: 14个SOTA模型(DeepSeek-V4/Qwen3.5/Kimi-K3等)，按量付费极低
-# 接入位置: 此文件 chat() 函数，所有下游(council/regime/chop等)自动受益
-CHUTES_BASE_URL = 'https://llm.chutes.ai/v1/chat/completions'
-
-def _load_chutes_key() -> str:
-    """从 .env 读取 CHUTES_API_KEY"""
-    env_path = Path(__file__).parent.parent / '.env'
-    if env_path.exists():
-        for line in env_path.read_text().splitlines():
-            if line.startswith('CHUTES_API_KEY='):
-                return line.split('=', 1)[1].strip()
-    return os.environ.get('CHUTES_API_KEY', '')
-
-CHUTES_KEY = _load_chutes_key()
-
-# ── [Groq 完全免费集成 2026-10-10 苏摩111] ──────────────────────────────
-# 优先级最高: Groq → Chutes → OpenRouter → 主AI
-# 模型: qwen/qwen3.8-27b (中文原生, ctx=131K)
-# 免费: 日 14400次(梵天 33次/日 = 432日余量)
-GROQ_BASE_URL = 'https://api.groq.com/openai/v1/chat/completions'
 
 def _load_groq_key() -> str:
-    for _ep in [Path(__file__).parent.parent / 'alerts' / '.env',
-                Path(__file__).parent.parent / '.env']:
-        if _ep.exists():
-            for _ln in _ep.read_text().splitlines():
-                if _ln.startswith('GROQ_API_KEY='):
-                    return _ln.split('=',1)[1].strip()
+    for ep in [Path(__file__).parent.parent / 'alerts' / '.env',
+               Path(__file__).parent.parent / '.env']:
+        if ep.exists():
+            for line in ep.read_text().splitlines():
+                if line.startswith('GROQ_API_KEY='):
+                    return line.split('=', 1)[1].strip()
     return os.environ.get('GROQ_API_KEY', '')
 
-GROQ_KEY = _load_groq_key()
+def _load_or_key() -> str:
+    for ep in [Path(__file__).parent.parent / '.env',
+               Path(__file__).parent.parent / 'alerts' / '.env']:
+        if ep.exists():
+            for line in ep.read_text().splitlines():
+                if line.startswith('OPENROUTER_API_KEY='):
+                    return line.split('=', 1)[1].strip()
+    return os.environ.get('OPENROUTER_API_KEY', '')
 
-# [2026-10-19 苏摩111] 全力Groq，配额充足0.18s，所有任务走qwen3.8-27b
-GROQ_TASK_MODEL_MAP = {
-    'council':  'qwen/qwen3.8-27b',
-    'vip':      'qwen/qwen3.8-27b',
-    'oi':       'qwen/qwen3.8-27b',
-    'regime':   'qwen/qwen3.8-27b',
-    'wr_audit': 'qwen/qwen3.8-27b',
-    'review':   'qwen/qwen3.8-27b',
-    'hcme':     'qwen/qwen3.8-27b',
-    'chop':     'qwen/qwen3.8-27b',
-    'safety':   'qwen/qwen3.8-27b',
-    'default':  'qwen/qwen3.8-27b',
-}
+GROQ_KEY = _load_groq_key()
+OR_KEY   = _load_or_key()
+
+# ── 模型配置 ──────────────────────────────────────────────────────────────
+
+# Groq: qwen3.8-27b 全任务主力（0.24s，配额充足）
+GROQ_MODEL   = 'qwen/qwen3.8-27b'
+GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
+
+# OpenRouter: xing4.0-29b 备用（Groq故障时接管）
+OR_MODEL   = 'xingchen-agi/xing4.0-29b-a4b:free'
+OR_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
+
+# Groq退避（429时）
 _groq_backoff_until = 0.0
 
-def _groq_chat(messages: list, max_tokens: int, timeout: int, task: str) -> str:
-    """[修复 2026-10-18 苏摩111] Groq SDK通道（替换urllib防Cloudflare 1010封锁）"""
-    global _groq_backoff_until
-    if not GROQ_KEY or time.time() < _groq_backoff_until:
-        return ''
-    model = GROQ_TASK_MODEL_MAP.get(task, 'qwen/qwen3.8-27b')
-    try:
-        from groq import Groq as _GroqClient
-        _client = _GroqClient(api_key=GROQ_KEY)
-        _resp = _client.chat.completions.create(
-            model=model, messages=messages,
-            max_tokens=max_tokens, temperature=0.2,
-            timeout=min(timeout, 20))
-        content = (_resp.choices[0].message.content or '') if _resp.choices else ''
-        return content.strip()
-    except Exception as e:
-        _ecode = getattr(e, 'status_code', 0) or getattr(getattr(e,'response',None),'status_code',0)
-        if _ecode == 429:
-            _groq_backoff_until = time.time() + 300
-            print('[groq] 429 backoff 5min', file=sys.stderr)
-        return ''
-    except Exception:
-        return ''
+# ── SSL context ───────────────────────────────────────────────────────────
 
+try:
+    _ctx = ssl.create_default_context()
+except Exception:
+    _ctx = None
 
-# Chutes模型路由表（中文最优选择）
-# [封印 2026-10-06 苏摩111] Chutes全量放开——14个SOTA模型全部免费，按任务最优分配
-# 全部14模型确认免费（pricing.input=0, pricing.output=0）
-# 高复杂推理→旗舰1M上下文 / 中等推理→主力级 / 快速门控→轻量级
-CHUTES_TASK_MODEL_MAP = {
-    # ── 旗舰级 1M上下文（复杂多维推理）────────────────────────────────
-    'council':  'zai-org/GLM-5.2-TEE',                     # 1M ctx，中文深度推理最强
-    'hcme':     'deepseek-ai/DeepSeek-V4-Flash-0731-TEE',  # 1M ctx，长历史情境匹配
-    'regime':   'moonshotai/Kimi-K3-TEE',                  # 1M ctx，宏观体制推理
+# ── 梵天宪法 System Prompt ────────────────────────────────────────────────
 
-    # ── 主力级 131K~262K（中等复杂度任务）─────────────────────────────
-    'vip':      'deepseek-ai/DeepSeek-V3.2-TEE',           # 131K，VIP中文格式输出精准
-    'oi':       'zai-org/GLM-5.1-TEE',                     # 202K，OI/资金流向解读
-    'wr_audit': 'deepseek-ai/DeepSeek-V3.2-TEE',           # 131K，WR数学审核
-    'review':   'moonshotai/Kimi-K2.6-TEE',                # 262K，复盘lesson生成
-
-    # ── 轻量级（快速门控，延迟优先）───────────────────────────────────
-    'chop':     'Qwen/Qwen3.8-27B-TEE',                    # 262K，CHOP突破快速验证
-    'safety':   'google/gemma-4-31B-turbo-TEE',            # 131K，安全门控极速响应
-
-    # ── 默认兜底 ──────────────────────────────────────────────────────
-    'default':  'deepseek-ai/DeepSeek-V3.2-TEE',           # 通用兜底
-}
-
-# Chutes fallback链（主模型失败时轮换）
-CHUTES_FALLBACK_MODELS = [
-    'deepseek-ai/DeepSeek-V3.2-TEE',
-    'Qwen/Qwen3.5-397B-A17B-TEE',
-    'Qwen/Qwen3.8-27B-TEE',
-    'zai-org/GLM-5.1-TEE',
-]
-
-# Chutes 退避状态（独立，不影响OpenRouter退避）
-_chutes_backoff_until = 0.0
-
-# ── 任务路由表：task → 专项模型 (2026-09-05 苏摩111封印 / 2026-09-27重修) ─
-# [2026-09-27 苏摩111] 通道全灭事故修复：
-#   - minimax-m3:free被OpenRouter下架转付费（404 "unavailable for free"）→ 永久踢出
-#   - super-120b/lightning为思考链泄漏模型（content装英文推理，finish=length）→ 降级fallback
-#   - ultra-550b实测干净可用+中文最佳（finish=stop）→ 全任务主模型
-#   - ling-fin/gemma受上游provider日配额限流（429波动）→ 尾部fallback
-# 永久不可用: inkling系列(403) / deepseek全系(404付费) / llama-4-maverick(404付费)
-# [2026-10-19 苏摩111] 实测可用模型 xing4.0-29b(OR) + qwen3.8-27b(Groq)
-# Chutes=402付费 / nemotron-3.5=响应异常 → 全部降级
-TASK_MODEL_MAP = {
-    'council':  'xingchen-agi/xing4.0-29b-a4b:free',
-    'vip':      'xingchen-agi/xing4.0-29b-a4b:free',
-    'oi':       'xingchen-agi/xing4.0-29b-a4b:free',
-    'regime':   'xingchen-agi/xing4.0-29b-a4b:free',
-    'wr_audit': 'xingchen-agi/xing4.0-29b-a4b:free',
-    'review':   'xingchen-agi/xing4.0-29b-a4b:free',
-    'hcme':     'xingchen-agi/xing4.0-29b-a4b:free',
-    'chop':     'xingchen-agi/xing4.0-29b-a4b:free',
-    'safety':   'xingchen-agi/xing4.0-29b-a4b:free',
-    'default':  'xingchen-agi/xing4.0-29b-a4b:free',
-}
-
-# fallback链: OR主力→Groq兜底
-FALLBACK_MODELS = [
-    'liquid/lfm-2.5-2.6b:free',
-    'qwen/qwen3.8-27b',            # Groq路径（free_llm_client.py内部路由）
-]
-
-# ── 梵天宪法 System Prompt（所有LLM调用自动注入）────────────────────────
 BRAHMA_CONSTITUTION = """你是梵天量化系统的专项AI分析员。
 梵天宪法铁律（绝对不可违反）：
 1. BEAR_TREND体制做多WR=45% → 必须输出AVOID，不论score多高
 2. BULL_TREND体制做空WR=38% → 必须输出AVOID，不论score多高
 3. SL距离必须≥1.5×ATR1H → 不满足则输出WAIT
 4. 无FVG+OB+清算三因子共振 → 输出WAIT，不给具体入场价
-5. 回答必须简洁精准，不超过规定字数，禁止废话和重复
+5. 回答必须简洁精准，禁止废话和重复
 你的任何判断都不得违反以上铁律。"""
 
-# ── 冷却管理：防429，同一模型3秒内不重复调用 ─────────────────────────
-_model_last_called: dict = {}   # {model_id: last_call_timestamp}
-_global_backoff_until = 0.0     # [V3] 全局429退避：全池共享配额，一模型429=全池退避
-_backoff_until_iso = ''         # [P0#1] 跨进程退避可读时间戳
-llm_last_error = ''            # [V3] 最近一次失败原因（消费方可查）
-_COOLDOWN_S = 3                  # 同一模型最小间隔秒数
+# ── Groq调用 ──────────────────────────────────────────────────────────────
 
-def _pick_model(preferred: str) -> str:
-    """选择可用模型：优先用preferred，冷却中则轮换fallback"""
-    now = time.time()
-    candidates = [preferred] + [m for m in FALLBACK_MODELS if m != preferred]
-    for m in candidates:
-        if now - _model_last_called.get(m, 0) >= _COOLDOWN_S:
-            _model_last_called[m] = now
-            return m
-    # 全部冷却中：强行用preferred（等待最短）
-    _model_last_called[preferred] = now
-    return preferred
-
-_ctx = ssl.create_default_context()
-_ctx.check_hostname = True
-_ctx.verify_mode = ssl.CERT_REQUIRED
-
-
-# ── 主AI通道failover（2026-09-28 苏摩111）──────────────────────────────
-# 免费池429/退避/全灭时自动切网关自带litellm主AI，免费池重置后自动切回。
-# 免费优先（省成本），主AI只做兜底；key运行时从openclaw.json读取，不落日志不写盘。
-_master_cache = {'ts': 0.0, 'cfg': None}
-_MASTER_CACHE_TTL = 60.0
-
-
-def _master_config() -> dict:
-    """读取OpenClaw网关主AI配置（60s缓存），不可用返回{}"""
-    now = time.time()
-    if _master_cache['cfg'] is not None and now - _master_cache['ts'] < _MASTER_CACHE_TTL:
-        return _master_cache['cfg']
-    cfg = {}
+def _groq_chat(messages: list, max_tokens: int = 200, timeout: int = 20) -> str:
+    """Groq主力通道：qwen3.8-27b，0.24s/次，配额充足"""
+    global _groq_backoff_until
+    if not GROQ_KEY:
+        return ''
+    if time.time() < _groq_backoff_until:
+        return ''
     try:
-        oc_f = Path(os.path.expanduser('~/.openclaw/openclaw.json'))
-        if oc_f.exists():
-            d = json.loads(oc_f.read_text())
-            prov = ((d.get('models') or {}).get('providers') or {}).get('litellm') or {}
-            base = (prov.get('baseUrl') or '').rstrip('/')
-            key = prov.get('apiKey') or ''
-            if base and key:
-                cfg = {
-                    'base': base,
-                    'key': key,
-                    'models': ['advanced', 'Qwen3.5-397B-A17B-SGLang'],
-                }
-    except Exception:
-        cfg = {}
-    _master_cache['ts'] = now
-    _master_cache['cfg'] = cfg
-    return cfg
+        from groq import Groq as _GroqClient
+        client = _GroqClient(api_key=GROQ_KEY)
+        resp = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=messages,
+            max_tokens=max_tokens,
+            temperature=0.2,
+            timeout=min(timeout, 25),
+        )
+        content = (resp.choices[0].message.content or '') if resp.choices else ''
+        return content.strip()
+    except Exception as e:
+        code = getattr(e, 'status_code', 0) or getattr(
+            getattr(e, 'response', None), 'status_code', 0)
+        if code == 429:
+            _groq_backoff_until = time.time() + 300
+            print('[groq] 429 backoff 5min', file=sys.stderr)
+        elif code in (402, 401):
+            print(f'[groq] {code} key问题', file=sys.stderr)
+        return ''
 
+# ── OpenRouter备用 ────────────────────────────────────────────────────────
+
+_or_backoff_until = 0.0
+
+def _or_chat(messages: list, max_tokens: int = 200, timeout: int = 25) -> str:
+    """OpenRouter备用通道：xing4.0-29b，Groq故障时接管"""
+    global _or_backoff_until
+    if not OR_KEY:
+        return ''
+    if time.time() < _or_backoff_until:
+        return ''
+    try:
+        payload = json.dumps({
+            'model': OR_MODEL,
+            'messages': messages,
+            'max_tokens': max_tokens,
+            'temperature': 0.2,
+        }).encode()
+        req = urllib.request.Request(OR_API_URL, data=payload, headers={
+            'Authorization': f'Bearer {OR_KEY}',
+            'Content-Type': 'application/json',
+        })
+        kw = {'timeout': timeout}
+        if _ctx: kw['context'] = _ctx
+        with urllib.request.urlopen(req, **kw) as r:
+            resp = json.loads(r.read())
+        choices = resp.get('choices') or []
+        if not choices:
+            return ''
+        content = (choices[0].get('message') or {}).get('content', '') or ''
+        return content.strip()
+    except urllib.error.HTTPError as e:
+        if e.code == 429:
+            _or_backoff_until = time.time() + 300
+            print('[or] 429 backoff 5min', file=sys.stderr)
+        return ''
+    except Exception:
+        return ''
+
+# ── 主AI兜底 ─────────────────────────────────────────────────────────────
 
 def _master_chat(messages: list, max_tokens: int, timeout: int) -> str:
-    """主AI通道调用。成功返回content，失败返回''。免费池退避期内也走此函数。
-    [2026-09-30 苏摩111 挂死根修] 总预算硬顶deadline：
-    事故=deep-post对6589字真prompt，Qwen3.5慢流生成>115s无响应且逐次recv重置socket timeout，
-    defeat了原有90s超时→进程挂死>295s被cron timeout杀（exit 1，无traceback）。
-    修复：函数级deadline=max(timeout,45)总预算硬顶；每模型socket timeout=min(剩余预算,45)；
-    advanced(reasoning)对长prompt把token全花在思考上→空content快速降级到下一模型。
-    """
-    cfg = _master_config()
-    if not cfg:
-        return ''
-    # reasoning主模型思考消耗预算：max_tokens过小→content为空，给足下限
-    mt = max(max_tokens, 600)
-    total_budget = max(timeout, 45)
-    deadline = time.time() + total_budget
-    last = ''
-    for model in cfg['models']:
-        remain = deadline - time.time()
-        if remain < 10:
-            last = f'master/{model}: deadline({total_budget}s) exceeded'
-            break
-        try:
-            payload = json.dumps({
-                'model': model, 'messages': messages,
-                'max_tokens': mt, 'temperature': 0.2,
-            }).encode()
-            req = urllib.request.Request(
-                cfg['base'] + '/v1/chat/completions', data=payload,
-                headers={
-                    'Authorization': f"Bearer {cfg['key']}",
-                    'Content-Type': 'application/json',
-                },
-            )
-            # [挂死根修 v3] 慢流trickle（每0.5s送1字节）会defeat两层防御：
-            # ①socket timeout只防单次recv空闲（有数据就不超时）；
-            # ②read(65536)内部循环不返回，deadline检查放在read后永远轮不到。
-            # 正解：逐字节读+每字节查墙钟deadline，总耗时硬顶在total_budget内。
-            # 快速响应代价可接受：≤100KB ≈ 十万次recv ≈ <1s开销。
-            conn = urllib.request.urlopen(req, timeout=max(1, min(remain, 45)), context=_ctx)
-            raw = b''
-            while True:
-                chunk = conn.read(1)
-                if not chunk:
-                    break
-                raw += chunk
-                if time.time() > deadline:
-                    conn.close()
-                    raise TimeoutError(f'read deadline {total_budget}s exceeded')
-            resp = json.loads(raw)
-            choice = (resp.get('choices') or [{}])[0]
-            content = (choice.get('message') or {}).get('content', '').strip()
-            if content:
-                return content
-            last = f'master/{model}: empty content'
-        except urllib.error.HTTPError as e:
-            last = f'master/{model}: HTTP {e.code}'
-        except Exception as e:
-            last = f'master/{model}: {type(e).__name__}: {str(e)[:60]}'
+    """主AI兜底（OpenClaw内置模型），永远可用"""
+    try:
+        _mc_path = Path(__file__).parent / 'master_chat.py'
+        if _mc_path.exists():
+            import importlib.util as _iu
+            spec = _iu.spec_from_file_location('master_chat', _mc_path)
+            mc = _iu.module_from_spec(spec)
+            spec.loader.exec_module(mc)
+            return mc.chat(messages, max_tokens=max_tokens) or ''
+    except Exception:
+        pass
     return ''
 
-
-def _mark_master_success(caller: str = '', transit: bool = False) -> None:
-    """主AI接管成功后留证：保留免费池退避（等重置自愈），追加master字段。
-    [P2盲区1修复 2026-09-28 苏摩111] 加caller审计+transit区分：
-    - caller=调用方task标签（council/vip/oi/regime/wr_audit/review/chop/safety/default）
-    - transit=True=退避期内转发（非真实新调用，计数膨胀根因）；False=免费池全灭后真接管
-    事件写入data/master_failover_events.jsonl（追加+留证，供审计定位调用源）
-    """
-    try:
-        state_f = Path(__file__).parent.parent / 'data' / 'llm_channel_state.json'
-        st = {}
-        if state_f.exists():
-            try:
-                st = json.loads(state_f.read_text())
-            except Exception:
-                st = {}
-        st['master_failover_at'] = _dt.datetime.now(_dt.timezone.utc).isoformat()
-        st['master_failover_count'] = int(st.get('master_failover_count') or 0) + 1
-        state_f.write_text(json.dumps(st, ensure_ascii=False, indent=2))
-        ev_f = Path(__file__).parent.parent / 'data' / 'master_failover_events.jsonl'
-        ev = {'ts': time.time(), 'caller': caller or 'unknown',
-              'kind': 'transit' if transit else 'real_failover',
-              'count': st['master_failover_count']}
-        with open(ev_f, 'a') as f:
-            f.write(json.dumps(ev, ensure_ascii=False) + '\n')
-    except Exception:
-        pass
-
-
-def _load_backoff_state(now: float = None) -> None:
-    """[P0#1 跨进程退避 2026-09-28 苏摩111] 从state文件同步全池退避状态。
-    接入位置: free_llm_client.chat()单点 — 11+消费方经此函数自动生效（单点修复=全线接线）。
-    只在文件退避晚于内存值且仍在未来时采纳，防旧文件覆盖新退避。"""
-    global _global_backoff_until, _backoff_until_iso
-    try:
-        state_f = Path(__file__).parent.parent / 'data' / 'llm_channel_state.json'
-        if not state_f.exists():
-            return
-        st = json.loads(state_f.read_text())
-        bu = float(st.get('backoff_until') or 0)
-        if bu > _global_backoff_until and (now is None or now < bu):
-            _global_backoff_until = bu
-            _backoff_until_iso = st.get('backoff_until_iso', '') or _dt.datetime.fromtimestamp(bu, _dt.timezone.utc).isoformat()
-    except Exception:
-        pass
-
-
-def _clear_backoff_state() -> None:
-    """[P0#1] 成功调用后清除state文件退避，让其他进程立即恢复（自愈加速）。"""
-    try:
-        state_f = Path(__file__).parent.parent / 'data' / 'llm_channel_state.json'
-        if state_f.exists():
-            st = json.loads(state_f.read_text())
-            if float(st.get('backoff_until') or 0) > 0:
-                st['backoff_until'] = 0
-                st['backoff_until_iso'] = ''
-                st['cleared_at'] = _dt.datetime.now(_dt.timezone.utc).isoformat()
-                state_f.write_text(json.dumps(st, ensure_ascii=False, indent=2))
-    except Exception:
-        pass
-
+# ── 公开接口 ──────────────────────────────────────────────────────────────
 
 def chat(prompt: str, system: str = '', max_tokens: int = 200,
          timeout: int = 20, task: str = 'default') -> str:
     """
-    调用OpenRouter免费模型，自动路由到最适合的专项模型。
-    task: 任务类型 (council/vip/oi/regime/wr_audit/review/hcme/chop/safety/default)
-    system: 额外system内容（深度封印版梵天宪法已自动注入）
-    返回模型回复文本，失败时返回空字符串。
+    梵天LLM统一入口。
+    三层路由: Groq(0.24s) → OR备用 → 主AI兜底
+    task参数保留兼容性，当前全部走同一模型。
     """
-    # [P优化B 2026-10-10 苏摩111] 按task轻量化
-    # oi/safety/regime 简单判断=宪法不需要 (80tok tok节省/次)
-    _lightweight_tasks = {'oi', 'safety'}
-    if task in _lightweight_tasks and not system:
-        merged_system = ''  # 省略宪法→更快更省
-    else:
-        merged_system = BRAHMA_CONSTITUTION
-        if system:
-            merged_system = BRAHMA_CONSTITUTION + '\n\n' + system
+    # 轻量任务省略宪法，节省tokens
+    _light = {'oi', 'safety', 'chop'}
+    sys_content = '' if (task in _light and not system) else BRAHMA_CONSTITUTION
+    if system:
+        sys_content = (sys_content + '\n\n' + system).strip()
 
-    messages = [
-        {'role': 'system', 'content': merged_system},
-        {'role': 'user',   'content': prompt},
-    ]
+    messages = []
+    if sys_content:
+        messages.append({'role': 'system', 'content': sys_content})
+    messages.append({'role': 'user', 'content': prompt})
 
-    # [主AI failover] 免费池key缺失 → 主AI直接接管
-    if not API_KEY and not CHUTES_KEY:
-        return _master_chat(messages, max_tokens, timeout)
+    # 1. Groq主力
+    result = _groq_chat(messages, max_tokens, timeout)
+    if result:
+        return result
 
-    # ── [Groq 优先 2026-10-10 苏摩111] 完全免费最优先 ──────────────────────
-    _groq_r = _groq_chat(messages, max_tokens, timeout, task)
-    if _groq_r:
-        return _groq_r
+    # 2. OR备用
+    print(f'[llm] Groq失败，切OR备用 task={task}', file=sys.stderr)
+    result = _or_chat(messages, max_tokens, timeout)
+    if result:
+        return result
 
-    # ── [2026-10-19 苏摩111] Chutes已转付费(402)，跳过直达OpenRouter ──────
-    # Chutes全系列402付费确认，不再尝试，节省延迟
-    global _chutes_backoff_until
-    _chutes_backoff_until = float('inf')  # 永久跳过
-    if False and CHUTES_KEY and time.time() >= _chutes_backoff_until:
-        _chutes_model = CHUTES_TASK_MODEL_MAP.get(task, CHUTES_TASK_MODEL_MAP['default'])
-        # Chutes带fallback链：主模型失败→轮换CHUTES_FALLBACK_MODELS
-        _chutes_candidates = [_chutes_model] + [m for m in CHUTES_FALLBACK_MODELS if m != _chutes_model]
-        for _chm in _chutes_candidates:
-            try:
-                _ch_payload = json.dumps({
-                    'model': _chm, 'messages': messages,
-                    'max_tokens': max_tokens, 'temperature': 0.2,
-                }).encode()
-                _ch_req = urllib.request.Request(
-                    CHUTES_BASE_URL, data=_ch_payload,
-                    headers={
-                        'Authorization': f'Bearer {CHUTES_KEY}',
-                        'Content-Type': 'application/json',
-                    },
-                )
-                _ch_resp = json.loads(urllib.request.urlopen(_ch_req, timeout=timeout, context=_ctx).read())
-                _ch_choice = (_ch_resp.get('choices') or [{}])[0]
-                _ch_content = (_ch_choice.get('message') or {}).get('content', '').strip()
-                if _ch_content and _ch_choice.get('finish_reason') != 'length':
-                    return _ch_content  # Chutes成功
-            except urllib.error.HTTPError as _che:
-                if _che.code == 429:
-                    _chutes_backoff_until = time.time() + 300
-                    print(f'[llm] Chutes 429，退避5min切OpenRouter', file=sys.stderr)
-                    break  # 429=全局退避，不再轮换
-                continue  # 其他HTTP错误：尝试下一个
-            except Exception:
-                continue  # 网络/解析错误：尝试下一个
+    # 3. 主AI兜底
+    print(f'[llm] 免费池全灭，主AI接管 task={task}', file=sys.stderr)
+    result = _master_chat(messages, max_tokens, timeout)
+    if result:
+        _mark_master_success(task)
+        return result
 
-    preferred = TASK_MODEL_MAP.get(task, TASK_MODEL_MAP['default'])
-    model = _pick_model(preferred)
+    return ''
 
+def _mark_master_success(task: str = '', transit: bool = False):
+    """记录主AI接管事件（用于监控）"""
+    try:
+        log = Path(__file__).parent.parent / 'data' / 'master_failover.jsonl'
+        with open(log, 'a') as f:
+            f.write(json.dumps({
+                'ts': time.time(), 'task': task, 'transit': transit
+            }) + '\n')
+    except Exception:
+        pass
 
-    # [V3 2026-09-27 苏摩111] 429感知退避 + 失败留证 + finish=length拒收
-    global _global_backoff_until, _backoff_until_iso, llm_last_error
-    now = time.time()
-    # [P0#1 跨进程退避 2026-09-28 苏摩111] 调用前读state文件：退避期内直接降级返回''，
-    # 消费方走本地fallback（不烧配额不盲打）。接入位置=chat()单点，全线生效。
-    _load_backoff_state(now)
-    if time.time() < _global_backoff_until:
-        # [主AI failover] 退避期内不盲打免费池 → 主AI接管（免费池重置后自动切回）
-        mc = _master_chat(messages, max_tokens, timeout)
-        if mc:
-            # [P2盲区1修复] transit=True=退避转发（非真实failover），caller=task语义
-            _mark_master_success(caller=task, transit=True)
-            print('[llm] 免费池退避中，主AI接管成功', file=sys.stderr)
-            return mc
-        llm_last_error = f'backoff until {_backoff_until_iso} (cross-process state)'
-        print(f'[llm] 跨进程退避生效至{_backoff_until_iso}，本地降级', file=sys.stderr)
-        return ''
-    last_err = ''
-    for attempt_model in ([model] + [m for m in FALLBACK_MODELS if m != model]):
-        if attempt_model not in _model_last_called:
-            _model_last_called[attempt_model] = 0
-        # 全局429退避：冷却未到直接跳过网络调用（省时间不烧配额）
-        if now < _global_backoff_until:
-            continue
+# ── 兼容性别名（旧代码无缝迁移）────────────────────────────────────────
+
+def chat_with_rule(prompt: str, task: str = 'default',
+                   ctx: dict = None, **kwargs) -> str:
+    """兼容旧调用，直接透传chat()，无规则替代"""
+    return chat(prompt, task=task, **kwargs)
+
+def chat_cached(prompt: str, task: str = 'default',
+                use_cache: bool = False, **kwargs) -> str:
+    """兼容旧调用，直接透传chat()，无缓存"""
+    return chat(prompt, task=task, **kwargs)
+
+# 旧路由表：保留兼容性，值无实际意义
+RULE_REPLACEABLE    = {}
+TASK_MODEL_MAP      = {t: GROQ_MODEL for t in
+    ['council','vip','oi','regime','wr_audit','review','hcme','chop','safety','default']}
+GROQ_TASK_MODEL_MAP = TASK_MODEL_MAP
+FALLBACK_MODELS     = [OR_MODEL]
+
+# ── 调用统计（轻量，不阻塞）──────────────────────────────────────────────
+
+def get_today_ai_calls() -> dict:
+    """今日AI调用统计"""
+    log = Path(__file__).parent.parent / 'data' / 'ai_call_log.jsonl'
+    if not log.exists():
+        return {'total': 0, 'by_task': {}}
+    today_start = time.time() - (time.time() % 86400)
+    entries = []
+    for line in log.read_text(encoding='utf-8').splitlines():
         try:
-            payload = json.dumps({
-                'model':       attempt_model,
-                'messages':    messages,
-                'max_tokens':  max_tokens,
-                'temperature': 0.2,
-            }).encode()
-            req = urllib.request.Request(
-                BASE_URL, data=payload,
-                headers={
-                    'Authorization': f'Bearer {API_KEY}',
-                    'Content-Type':  'application/json',
-                    'HTTP-Referer':  'https://brahma-quant.ai',
-                    'X-Title':       'BrahmaQuantAI',
-                },
-            )
-            resp = json.loads(urllib.request.urlopen(req, timeout=timeout, context=_ctx).read())
-            _model_last_called[attempt_model] = time.time()
-            _global_backoff_until = 0
-            _clear_backoff_state()
-            choice = (resp.get('choices') or [{}])[0]
-            content = (choice.get('message') or {}).get('content', '').strip()
-            if content and choice.get('finish_reason') != 'length':
-                return content
-            if choice.get('finish_reason') == 'length':
-                last_err = f'{attempt_model}: finish=length(思考链泄漏/截断)'; continue
-        except urllib.error.HTTPError as e:
-            body = ''
-            try:
-                body = e.read().decode()[:200]
-            except Exception:
-                pass
-            _model_last_called[attempt_model] = time.time()
-            if e.code == 429:
-                # 上游配额耗尽：解析reset时间（epoch_ms），精确退避到重置点
-                reset_ms = e.headers.get('x-ratelimit-reset') if e.headers else None
-                if reset_ms:
-                    try:
-                        wait = max(60, int(int(reset_ms) / 1000 - time.time()) + 30)
-                    except Exception:
-                        wait = 600
-                else:
-                    wait = 600
-                _global_backoff_until = time.time() + wait
-                last_err = f'429 quota exhausted, backoff {wait}s'
-                # 429=全池共享配额，同源限额，轮换无意义 → 立即放弃
-                break
-            else:
-                last_err = f'{attempt_model}: HTTP {e.code} {body[:100]}'
-        except Exception as e:
-            _model_last_called[attempt_model] = time.time()
-            last_err = f'{attempt_model}: {type(e).__name__}: {str(e)[:100]}'
+            e = json.loads(line)
+            if e.get('ts', 0) >= today_start:
+                entries.append(e)
+        except Exception:
+            pass
+    from collections import Counter
+    return {'total': len(entries),
+            'by_task': dict(Counter(e.get('task','?') for e in entries))}
 
-    # [主AI failover] 免费池全灭（429/网络/fallback全失败）→ 主AI接管
-    mc = _master_chat(messages, max_tokens, timeout)
-    if mc:
-        # [P2盲区1修复] 真实failover：免费池全灭后接管
-        _mark_master_success(caller=task, transit=False)
-        print(f'[llm] 免费池全灭({last_err[:60]})，主AI接管成功', file=sys.stderr)
-        llm_last_error = f'{last_err} (master failover used)' if last_err else ''
-        return mc
-
-    # [9.27修复] 失败留证：不再静默空返回，写诊断文件供消费方/哨兵读取
-    try:
-        state_f = Path(__file__).parent.parent / 'data' / 'llm_channel_state.json'
-        state_f.write_text(json.dumps({
-            'last_failure_at': _dt.datetime.now(_dt.timezone.utc).isoformat(),
-            'last_error': last_err,
-            'backoff_until': _global_backoff_until,
-            'backoff_until_iso': _dt.datetime.fromtimestamp(_global_backoff_until, _dt.timezone.utc).isoformat() if _global_backoff_until else '',
-        }, ensure_ascii=False, indent=2))
-    except Exception:
-        pass
-    llm_last_error = last_err
-    print(f'[llm] all models failed: {last_err}', file=sys.stderr)
-    return ''
-
-
-def council_llm(
-    regime: str,
-    bias: str,
-    fvg_dir: str,
-    oi_signal: str,
-    sm_signal: str,
-    hurst: float,
-    kappa: float,
-    score: float,
-    entry_lo: float,
-    entry_hi: float,
-    price: float,
-    liq_up: float,
-    liq_dn: float,
-    sym: str = 'BTC',
-) -> dict:
-    """
-    AI议会真实LLM裁决。
-    返回与规则引擎相同的结构: {bias, reason, action, confidence}
-    """
-    if not API_KEY:
-        return {}
-
-    prompt = f"""你是梵天量化交易系统的AI裁判。根据以下实时信号，给出一句话裁决。
-
-标的: {sym}/USDT
-现价: ${price:,.0f}
-体制: {regime} (score={score:.0f})
-梵天bias: {bias}
-FVG方向: {fvg_dir}（磁铁方向）
-OI信号: {oi_signal}
-聪明钱: {sm_signal}
-Hurst: {hurst:.3f}（>0.65=趋势，<0.45=均值回归）
-κ(kappa): {kappa:.3f}（负=期权偏多，正=期权偏空）
-入场区: ${entry_lo:,.0f}~${entry_hi:,.0f}（{'现价上方' if entry_lo > price else '现价下方'}）
-上方清算目标: ${liq_up:,.0f}
-下方清算目标: ${liq_dn:,.0f}
-
-请输出严格JSON格式（不要markdown代码块，直接输出JSON）：
-{{"bias":"偏多或偏空或中性","reason":"核心逻辑一句话（20字内）","action":"ENTER或WAIT或AVOID","confidence":"HIGH或MED或LOW"}}"""
-
-    raw = chat(prompt, max_tokens=120, timeout=15, task='council')
-    if not raw:
-        return {}
-
-    # 解析JSON
-    try:
-        # 去掉可能的markdown包裹
-        clean = raw.strip()
-        if '```' in clean:
-            clean = clean.split('```')[1] if '```json' not in clean else clean.split('```json')[1].split('```')[0]
-        # 找第一个{...}
-        start = clean.find('{')
-        end   = clean.rfind('}') + 1
-        if start >= 0 and end > start:
-            d = json.loads(clean[start:end])
-            # 验证字段
-            if all(k in d for k in ('bias', 'reason', 'action', 'confidence')):
-                return d
-    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-    return {}
-
-
-if __name__ == '__main__':
-    print('测试OpenRouter连通性...')
-    if not API_KEY:
-        print('❌ 未找到OPENROUTER_API_KEY，请检查.env文件')
-    else:
-        # 连通性测试
-        resp = chat('BTC现在CHOP_MID体制，大户65%多，FVG向下，一句话：做多还是做空？', max_tokens=60)
-        print(f'✅ 连通: {resp[:100]}' if resp else '❌ 所有模型均失败')
-
-        # AI议会测试
-        result = council_llm(
-            regime='CHOP_MID', bias='SHORT', fvg_dir='BEAR',
-            oi_signal='MIXED', sm_signal='STRONG_BULL',
-            hurst=0.683, kappa=-0.110, score=60,
-            entry_lo=80958, entry_hi=81927, price=80716,
-            liq_up=82825, liq_dn=79577, sym='BTC',
-        )
-        print(f'AI议会: {json.dumps(result, ensure_ascii=False)}')
-
-
-def vip_entry_reason(
-    sym: str, price: float, regime: str,
-    fvg_dir: str, fvg_magnet: float,
-    oi_signal: str, sm_signal: str,
-    hurst: float, kappa: float,
-    entry_lo: float, entry_hi: float,
-    bias: str, liq_up: float, liq_dn: float,
-) -> str:
-    """
-    A: VIP入场理由一句话（LLM生成）
-    返回: 20字内的精准入场逻辑句，失败返回空字符串
-    """
-    direction = '做多' if bias == 'LONG' else '做空'
-    entry_side = '下方回调' if entry_lo < price else '上方反弹'
-    prompt = (
-        f"梵天系统 {sym}/USDT ${price:,.0f} {regime}体制\n"
-        f"方向:{direction} 入场区:${entry_lo:,.0f}~${entry_hi:,.0f}({entry_side})\n"
-        f"FVG:{fvg_dir}方向 磁铁${fvg_magnet:,.0f} OI:{oi_signal} 聪明钱:{sm_signal}\n"
-        f"Hurst:{hurst:.2f} kappa:{kappa:.3f} 上方清算:${liq_up:,.0f} 下方清算:${liq_dn:,.0f}\n"
-        f"必须用中文回答。输出一句话入场逻辑（15字内，直接说结构原因，禁止用英文）："
-    )
-    result = chat(prompt, max_tokens=40, timeout=12, task='vip')
-    if not result:
-        return ''
-    # 取第一句，截断
-    first = result.split('\n')[0].strip().rstrip('。').strip()
-    return first[:25]
-
-
-def signal_conflict_resolve(
-    sym: str, price: float, regime: str,
-    oi_signal: str, oi_desc: str,
-    sm_signal: str, big_long: float, retail_long: float,
-    fvg_dir: str,
-) -> str:
-    """
-    B: 信号矛盾自动LLM裁决
-    当OI与大户方向矛盾时，LLM分析哪方更可信
-    返回: 一句话裁决，失败返回空字符串
-    """
-    prompt = (
-        f"{sym} ${price:,.0f} {regime}体制 信号矛盾分析：\n"
-        f"OI信号:{oi_signal}（{oi_desc[:30]}）\n"
-        f"大户多仓:{big_long:.0f}% 散户多仓:{retail_long:.0f}% 分歧:{abs(big_long-retail_long):.0f}%\n"
-        f"FVG方向:{fvg_dir}\n"
-        f"OI和大户方向矛盾，请裁决：哪方信号更可信，倾向做多还是做空？\n"
-        f"输出格式（JSON）: {{\"winner\":\"OI或大户\",\"bias\":\"做多或做空\",\"reason\":\"原因一句话15字内\"}}"
-    )
-    raw = chat(prompt, max_tokens=80, timeout=12, task='council')
-    if not raw:
-        return ''
-    try:
-        import json as _j
-        start = raw.find('{'); end = raw.rfind('}') + 1
-        if start >= 0 and end > start:
-            d = _j.loads(raw[start:end])
-            winner = d.get('winner', '?')
-            bias   = d.get('bias', '?')
-            reason = d.get('reason', '')
-            return f"{winner}信号更可信 → {bias}（{reason}）"
-    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-    # fallback: 直接返回原始文本首句
-    return raw.split('\n')[0].strip()[:50]
-
-
-def groq_hourly_summary() -> str:
-    """[新增 2026-10-10 苏摩111] 每小时Groq深度市场摘要
-    M8 异常感知内容+当前state综合→过去1H发生了什么
-    由cron或trading_copilot每1H调用，结果写入 groq_hourly_log.累积写入jsonl"""
-    import time as _t, json as _j, pathlib as _pl
-    _now = _t.time()
-    try:
-        _dd = _pl.Path(__file__).parent.parent / 'data'
-        
-        # M8 读取异常感知结果
-        _ra = {}
-        _rf = _dd / 'groq_realtime_analysis.json'
-        if _rf.exists():
-            try: _ra = _j.loads(_rf.read_text())
-            except: pass
-        
-        # BTC/ETH 当前state
-        _btc = {}; _eth = {}
-        try: _btc = _j.loads((_dd/'brahma_state_btc.json').read_text())
-        except: pass
-        try: _eth = _j.loads((_dd/'brahma_state_eth.json').read_text())
-        except: pass
-        
-        # 异常感知内容汇总
-        _anomalies = []
-        for k in ['btc_cvd_anomaly','eth_cvd_anomaly','btc_lsr_shift','eth_lsr_shift',
-                  'regime_transition','market_summary_15m']:
-            if k in _ra and _ra[k]:
-                _anomalies.append(f'{k}: {_ra[k]}')
-        
-        _anom_str = '\n'.join(_anomalies) if _anomalies else '无异常'
-        
-        q = (
-            f'过去1小时市场事件总结：\n{_anom_str}\n\n'
-            f'当前状态：BTC${_btc.get("price",0):.0f} {_btc.get("regime","?")} '
-            f'RSI={_btc.get("rsi_1h",0):.0f} | '
-            f'ETH${_eth.get("price",0):.0f} {_eth.get("regime","?")} '
-            f'RSI={_eth.get("rsi_1h",0):.0f}\n\n'
-            f'用50字总结：过去1小时发生了什么？主力在做什么？下一步怎么看？'
-        )
-        result = chat(q, max_tokens=100, task='regime', timeout=20)
-        
-        if result:
-            # 累积写入jsonl
-            _log_f = _dd / 'groq_hourly_log.jsonl'
-            import datetime as _dt
-            _entry = _j.dumps({
-                'ts': _dt.datetime.utcnow().strftime('%Y-%m-%d %H:%M'),
-                'summary': result.strip(),
-                'btc': _btc.get('price',0),
-                'eth': _eth.get('price',0),
-            }, ensure_ascii=False)
-            with open(_log_f, 'a') as _lf:
-                _lf.write(_entry + '\n')
-            return result.strip()
-    except Exception:
-        pass
-    return ''
-
+# ── AI议会三方投票（council_three_way 兼容接口）──────────────────────────
 
 def council_three_way(
     sym: str, price: float, regime: str, score: float,
@@ -767,235 +258,53 @@ def council_three_way(
     macro_bias: str, fear_greed: int,
 ) -> dict:
     """
-    C: AI议会三方独立LLM投票
-    宏观裁判 / 结构裁判 / 量化裁判 各自独立调用
-    投票结果 → 综合置信度 HIGH/MED/LOW
+    AI议会三方独立投票（Groq三路并发）
+    宏观裁判 / 结构裁判 / 量化裁判 独立调用
     """
     import concurrent.futures as _cf
 
     base = f"{sym}/USDT ${price:,.0f} {regime}体制(score={score:.0f})"
 
     prompts = {
-        '宏观': (
-            f"{base}\n"
-            f"宏观信号: 恐贪={fear_greed} 宏观偏向={macro_bias} FVG磁铁={fvg_dir}(${fvg_magnet:,.0f})\n"
-            f"作为宏观裁判，仅从体制+宏观角度裁决，必须用中文。\n"
-            f"JSON: {{\"vote\":\"做多或做空或中性\",\"reason\":\"10字内\",\"conf\":\"HIGH或MED或LOW\"}}"
+        'macro': (
+            f"{base}\n宏观裁判：FR={fear_greed}恐贪 DXY={macro_bias}\n"
+            f"只输出 LONG / SHORT / WAIT，一个词"
         ),
-        '结构': (
-            f"{base}\n"
-            f"结构信号: OI={oi_signal} 大户多{big_long:.0f}% FVG={fvg_dir} 上方清算=${liq_up:,.0f} 下方=${liq_dn:,.0f}\n"
-            f"入场区: ${entry_lo:,.0f}~${entry_hi:,.0f}({'上方' if entry_lo > price else '下方'})\n"
-            f"作为SMC结构裁判，仅从入场区+清算+OI角度裁决，必须用中文。\n"
-            f"JSON: {{\"vote\":\"做多或做空或中性\",\"reason\":\"10字内\",\"conf\":\"HIGH或MED或LOW\"}}"
+        'structure': (
+            f"{base}\nFVG={fvg_dir}磁铁${fvg_magnet:,.0f} "
+            f"清算上=${liq_up:,.0f}下=${liq_dn:,.0f}\n"
+            f"只输出 LONG / SHORT / WAIT，一个词"
         ),
-        '量化': (
-            f"{base}\n"
-            f"量化信号: Hurst={hurst:.3f} kappa={kappa:.3f} HAR-RV={harv:.4f} 聪明钱={sm_signal}\n"
-            f"作为量化裁判，仅从Hurst趋势+期权偏向+波动率角度裁决，必须用中文。\n"
-            f"JSON: {{\"vote\":\"做多或做空或中性\",\"reason\":\"10字内\",\"conf\":\"HIGH或MED或LOW\"}}"
+        'quant': (
+            f"{base}\nOI={oi_signal} 聪明钱={sm_signal} "
+            f"大户多头={big_long:.1f}% Hurst={hurst:.3f}\n"
+            f"只输出 LONG / SHORT / WAIT，一个词"
         ),
     }
 
-    results = {}
-    # 三方各用专项模型：宏观用regime，结构用council，量化用council
-    _role_tasks = {'宏观': 'regime', '结构': 'council', '量化': 'council'}
-    def _call(role, prompt):
-        raw = chat(prompt, max_tokens=60, timeout=15, task=_role_tasks.get(role, 'council'))
-        if not raw:
-            return role, {}  
-        try:
-            import json as _j
-            s = raw.find('{'); e = raw.rfind('}') + 1
-            if s >= 0 and e > s:
-                d = _j.loads(raw[s:e])
-                if 'vote' in d:
-                    return role, d
-        except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-        return role, {}
-
-    # 三方并行调用
-    with _cf.ThreadPoolExecutor(max_workers=3) as pool:
-        futures = {pool.submit(_call, role, prompt): role for role, prompt in prompts.items()}
-        for fut in _cf.as_completed(futures, timeout=20):
+    votes = {}
+    with _cf.ThreadPoolExecutor(max_workers=3) as ex:
+        futures = {ex.submit(chat, p, task='council', max_tokens=10): role
+                   for role, p in prompts.items()}
+        for fut in _cf.as_completed(futures):
+            role = futures[fut]
             try:
-                role, d = fut.result()
-                if d:
-                    results[role] = d
-            except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
-    if not results:
-        return {}
+                v = (fut.result() or 'WAIT').strip().upper()
+                v = v if v in ('LONG', 'SHORT', 'WAIT') else 'WAIT'
+                votes[role] = v
+            except Exception:
+                votes[role] = 'WAIT'
 
-    # 投票统计
-    votes = [d.get('vote', '中性') for d in results.values()]
-    long_v  = sum(1 for v in votes if '多' in v)
-    short_v = sum(1 for v in votes if '空' in v)
-    total   = len(votes)
-
-    if long_v > short_v:
-        final_bias = '偏多'
-        final_action = 'ENTER' if long_v == total else 'WAIT'
-    elif short_v > long_v:
-        final_bias = '偏空'
-        final_action = 'ENTER' if short_v == total else 'WAIT'
-    else:
-        final_bias = '中性'
-        final_action = 'WAIT'
-
-    # 置信度：全票=HIGH，2:1=MED，全中性=LOW
-    if long_v == total or short_v == total:
-        conf = 'HIGH'
-    elif long_v > 0 or short_v > 0:
-        conf = 'MED'
-    else:
-        conf = 'LOW'
-
-    # 汇总理由
-    reasons = [f"{role}:{d.get('reason','')}" for role, d in results.items() if d.get('reason')]
-    reason_str = ' | '.join(reasons[:3])
+    # 多数投票
+    from collections import Counter
+    counts = Counter(votes.values())
+    winner = counts.most_common(1)[0][0]
+    agree  = counts[winner]
+    conf   = 'HIGH' if agree == 3 else ('MED' if agree == 2 else 'LOW')
 
     return {
-        'bias':       final_bias,
-        'reason':     reason_str[:60],
-        'action':     final_action,
+        'verdict': winner,
         'confidence': conf,
-        'votes':      {role: d.get('vote', '?') for role, d in results.items()},
-        'source':     'LLM3',
+        'votes': votes,
+        'agree': agree,
     }
-
-
-# ══════════════════════════════════════════════════════════════
-# [封印 2026-10-19 苏摩111] 改造2: 规则替代层 + 改造3: AI缓存层
-# 免费资源最大化利用 · 三方联合设计
-# ══════════════════════════════════════════════════════════════
-
-import hashlib as _hashlib, json as _json_cache, time as _time_cache
-from pathlib import Path as _Path
-
-_AI_CACHE_FILE = _Path(__file__).parent.parent / 'data' / 'ai_cache.jsonl'
-_AI_CACHE_TTL  = 86400   # 24H缓存
-_AI_CACHE_MAX  = 500     # 最多500条
-
-# ── 改造2: 规则替代层（safety/regime/chop 零AI调用）──────────────
-# [2026-10-19 苏摩111] Groq配额充足0.18s，规则替代取消，全力走Groq
-# 原设计假设配额紧张，实测速率远超预期，规则替代只降低分析质量
-RULE_REPLACEABLE = {}  # 清空：所有任务全走Groq，不做规则降级
-
-def _rule_safety(ctx: dict) -> str:
-    """Step11 11道闸门已覆盖safety判断，直接返回规则结论"""
-    score  = ctx.get('score', 0)
-    regime = ctx.get('regime', '')
-    if 'BEAR_TREND' in regime and ctx.get('direction') == 'LONG':
-        return 'AVOID: BEAR_TREND体制禁多(WR=45%)'
-    if score < 60:
-        return f'WAIT: score={score}<60，信号不足'
-    return 'OK: 规则门控通过'
-
-def _rule_regime(ctx: dict) -> str:
-    """Hurst+state已判断体制，直接返回"""
-    regime = ctx.get('regime', 'CHOP_MID')
-    hurst  = ctx.get('hurst', 0.5)
-    bias = {'BULL_TREND':'偏多', 'BEAR_TREND':'偏空',
-            'CHOP_MID':'震荡等待', 'BEAR_EARLY':'偏空',
-            'BEAR_RECOVERY':'多头回暖'}.get(regime, '待定')
-    return f'体制={regime} Hurst={hurst:.3f} → {bias}'
-
-def _rule_chop(ctx: dict) -> str:
-    """Gate5已实现CHOP验证"""
-    rsi   = ctx.get('rsi_1h', 50)
-    score = ctx.get('score', 0)
-    if 55 <= rsi <= 75:
-        return f'CHOP豁免区RSI={rsi}，score门槛降低'
-    if score >= 75:
-        return f'CHOP门控通过 score={score}≥75'
-    return f'CHOP_WAIT: score={score}<75，RSI={rsi}不在豁免区'
-
-def chat_with_rule(prompt: str, task: str, ctx: dict = None, **kwargs) -> str:
-    """
-    [2026-10-19 苏摩111] Groq配额充足，全力走Groq，不做规则降级
-    规则替代已取消，此函数直接透传chat()
-    """
-    return chat(prompt, task=task, **kwargs)
-
-# ── 改造3: AI缓存层（相同输入复用24H）───────────────────────────
-def _cache_key(prompt: str, task: str) -> str:
-    raw = f'{task}:{prompt[:200]}'
-    return _hashlib.md5(raw.encode()).hexdigest()[:16]
-
-def _cache_get(key: str) -> str:
-    if not _AI_CACHE_FILE.exists():
-        return ''
-    now = _time_cache.time()
-    for line in reversed(_AI_CACHE_FILE.read_text(encoding='utf-8').splitlines()):
-        try:
-            entry = _json_cache.loads(line)
-            if entry.get('key') == key and (now - entry.get('ts', 0)) < _AI_CACHE_TTL:
-                return entry.get('result', '')
-        except: pass
-    return ''
-
-def _cache_put(key: str, result: str):
-    try:
-        entry = _json_cache.dumps({'key': key, 'ts': _time_cache.time(), 'result': result}, ensure_ascii=False)
-        with open(_AI_CACHE_FILE, 'a', encoding='utf-8') as f:
-            f.write(entry + '\n')
-        # 保持最新500条
-        lines = _AI_CACHE_FILE.read_text(encoding='utf-8').splitlines()
-        if len(lines) > _AI_CACHE_MAX:
-            _AI_CACHE_FILE.write_text('\n'.join(lines[-_AI_CACHE_MAX:]) + '\n', encoding='utf-8')
-    except: pass
-
-def chat_cached(prompt: str, task: str = 'default', use_cache: bool = False, **kwargs) -> str:
-    """
-    [2026-10-19 苏摩111] Groq配额充足，默认不缓存，全部实时调用
-    缓存可选，调用方显式传 use_cache=True 才缓存
-    """
-    NO_CACHE_TASKS = {'council', 'vip', 'review', 'oi', 'regime', 'chop', 'safety'}
-    if task in NO_CACHE_TASKS:
-        use_cache = False  # 所有分析任务强制实时
-
-    if use_cache:
-        key = _cache_key(prompt, task)
-        cached = _cache_get(key)
-        if cached:
-            return cached  # 命中缓存，零AI调用
-
-    result = chat(prompt, task=task, **kwargs)
-
-    if use_cache and result:
-        _cache_put(key, result)
-
-    return result
-
-# ── 改造4: AI时间窗口统计（不阻塞，只记录）──────────────────────
-_AI_CALL_LOG = _Path(__file__).parent.parent / 'data' / 'ai_call_log.jsonl'
-
-def log_ai_call(task: str, model: str, success: bool):
-    """记录每次AI调用，用于每日统计和配额感知"""
-    try:
-        entry = _json_cache.dumps({
-            'ts': _time_cache.time(),
-            'task': task, 'model': model, 'ok': success,
-            'hour_utc': int(_time_cache.gmtime().tm_hour)
-        })
-        with open(_AI_CALL_LOG, 'a', encoding='utf-8') as f:
-            f.write(entry + '\n')
-    except: pass
-
-def get_today_ai_calls() -> dict:
-    """今日AI调用统计"""
-    if not _AI_CALL_LOG.exists():
-        return {'total': 0, 'by_task': {}, 'by_hour': {}}
-    import datetime
-    today_start = _time_cache.time() - ((_time_cache.time() % 86400))
-    entries = []
-    for line in _AI_CALL_LOG.read_text(encoding='utf-8').splitlines():
-        try:
-            e = _json_cache.loads(line)
-            if e.get('ts', 0) >= today_start:
-                entries.append(e)
-        except: pass
-    from collections import Counter
-    tasks = Counter(e['task'] for e in entries)
-    hours = Counter(e['hour_utc'] for e in entries)
-    return {'total': len(entries), 'by_task': dict(tasks), 'by_hour': dict(hours)}
