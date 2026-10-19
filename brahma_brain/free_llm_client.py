@@ -84,12 +84,18 @@ def _load_groq_key() -> str:
 
 GROQ_KEY = _load_groq_key()
 
+# [2026-10-19 苏摩111] 全力Groq，配额充足0.18s，所有任务走qwen3.8-27b
 GROQ_TASK_MODEL_MAP = {
-    'council': 'qwen/qwen3.8-27b', 'vip': 'qwen/qwen3.8-27b',
-    'oi': 'qwen/qwen3.8-27b',      'regime': 'qwen/qwen3.8-27b',
-    'wr_audit': 'qwen/qwen3.8-27b','review': 'qwen/qwen3.8-27b',
-    'hcme': 'openai/gpt-oss-120b', 'chop': 'qwen/qwen3.8-27b',
-    'safety': 'qwen/qwen3.8-27b',  'default': 'qwen/qwen3.8-27b',
+    'council':  'qwen/qwen3.8-27b',
+    'vip':      'qwen/qwen3.8-27b',
+    'oi':       'qwen/qwen3.8-27b',
+    'regime':   'qwen/qwen3.8-27b',
+    'wr_audit': 'qwen/qwen3.8-27b',
+    'review':   'qwen/qwen3.8-27b',
+    'hcme':     'qwen/qwen3.8-27b',
+    'chop':     'qwen/qwen3.8-27b',
+    'safety':   'qwen/qwen3.8-27b',
+    'default':  'qwen/qwen3.8-27b',
 }
 _groq_backoff_until = 0.0
 
@@ -871,11 +877,9 @@ _AI_CACHE_TTL  = 86400   # 24H缓存
 _AI_CACHE_MAX  = 500     # 最多500条
 
 # ── 改造2: 规则替代层（safety/regime/chop 零AI调用）──────────────
-RULE_REPLACEABLE = {
-    'safety': lambda d: _rule_safety(d),
-    'regime': lambda d: _rule_regime(d),
-    'chop':   lambda d: _rule_chop(d),
-}
+# [2026-10-19 苏摩111] Groq配额充足0.18s，规则替代取消，全力走Groq
+# 原设计假设配额紧张，实测速率远超预期，规则替代只降低分析质量
+RULE_REPLACEABLE = {}  # 清空：所有任务全走Groq，不做规则降级
 
 def _rule_safety(ctx: dict) -> str:
     """Step11 11道闸门已覆盖safety判断，直接返回规则结论"""
@@ -908,11 +912,9 @@ def _rule_chop(ctx: dict) -> str:
 
 def chat_with_rule(prompt: str, task: str, ctx: dict = None, **kwargs) -> str:
     """
-    规则优先路由：可规则替代的任务直接返回，其余走LLM
-    接入位置：替换 from free_llm_client import chat 的调用处
+    [2026-10-19 苏摩111] Groq配额充足，全力走Groq，不做规则降级
+    规则替代已取消，此函数直接透传chat()
     """
-    if task in RULE_REPLACEABLE and ctx:
-        return RULE_REPLACEABLE[task](ctx)
     return chat(prompt, task=task, **kwargs)
 
 # ── 改造3: AI缓存层（相同输入复用24H）───────────────────────────
@@ -943,15 +945,14 @@ def _cache_put(key: str, result: str):
             _AI_CACHE_FILE.write_text('\n'.join(lines[-_AI_CACHE_MAX:]) + '\n', encoding='utf-8')
     except: pass
 
-def chat_cached(prompt: str, task: str = 'default', use_cache: bool = True, **kwargs) -> str:
+def chat_cached(prompt: str, task: str = 'default', use_cache: bool = False, **kwargs) -> str:
     """
-    带缓存的LLM调用。相同prompt+task在24H内直接返回缓存结果。
-    council/vip/review 默认不缓存（需要实时性）
-    oi/safety/regime/chop 默认缓存（相同市场状态结论相同）
+    [2026-10-19 苏摩111] Groq配额充足，默认不缓存，全部实时调用
+    缓存可选，调用方显式传 use_cache=True 才缓存
     """
-    NO_CACHE_TASKS = {'council', 'vip', 'review'}
+    NO_CACHE_TASKS = {'council', 'vip', 'review', 'oi', 'regime', 'chop', 'safety'}
     if task in NO_CACHE_TASKS:
-        use_cache = False
+        use_cache = False  # 所有分析任务强制实时
 
     if use_cache:
         key = _cache_key(prompt, task)
