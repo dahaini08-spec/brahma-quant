@@ -345,3 +345,6 @@ result=run_deep_analysis(['BTC','ETH'])
 Path('data/deep_analysis_latest.json').write_text(json.dumps({'ts':time.time(),'output':result}))
 print('[deep_analysis] 完成', time.strftime('%H:%M'))
 " >> logs/deep_analysis.log 2>&1
+
+# ── [封印 2026-10-19 苏摩111] 神经感知VIP监控 ──────────────────────────────
+*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 45 python3 scripts/brahma_vip_watcher.py >> logs/vip_watcher.log 2>&1

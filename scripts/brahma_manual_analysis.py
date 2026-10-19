@@ -4871,5 +4871,37 @@ def main():
         print(f'[WARN] auto_analysis_latest写入失败: {_e}', file=sys.stderr)
 
 
+# [封印 2026-10-19 苏摩111] 深度分析引擎接入入口
+# 苏摩发"分析BTC ETH"时，main()调用后自动运行深度分析
+def run_with_deep(symbols=None):
+    """
+    联合入口: 原有分析(step11) + 深度分析引擎(推理链+VIP)
+    接入位置: if __name__ == '__main__' 和外部调用
+    """
+    if symbols is None:
+        import sys as _sys_d
+        import argparse as _ap_d
+        parser = _ap_d.ArgumentParser()
+        parser.add_argument('--symbols', nargs='+', default=['BTC','ETH'])
+        args = parser.parse_args()
+        symbols = args.symbols
+
+    # Step1: 原有分析流程
+    main()
+
+    # Step2: 深度分析引擎（梵天2.0推理链）
+    try:
+        import sys as _sys2
+        _sys2.path.insert(0, str(Path(__file__).parent))
+        from brahma_deep_analysis import run_deep_analysis
+        print('\n' + '='*60)
+        print('🏛️ 梵天2.0 深度推理层')
+        print('='*60)
+        deep_out = run_deep_analysis(symbols)
+        print(deep_out)
+    except Exception as _de:
+        print(f'[WARN] 深度分析层失败(不阻断): {_de}', file=sys.stderr)
+
+
 if __name__ == '__main__':
     main()

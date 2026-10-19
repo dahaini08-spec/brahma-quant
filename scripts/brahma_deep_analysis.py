@@ -17,7 +17,7 @@ import sys, json, time, urllib.request
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-BASE = Path(__file__).parent
+BASE = Path(__file__).parent.parent  # trading-system根目录（不管从scripts/还是根目录调用）
 sys.path.insert(0, str(BASE / 'brahma_brain'))
 sys.path.insert(0, str(BASE / 'scripts'))
 
@@ -493,8 +493,8 @@ def format_vip(d: dict, reasoning: dict) -> str:
     rr = reasoning['rr']
 
     if direction == 'LONG':
-        tp1 = round(liq_up * 0.998, 1) if liq_up > px else round(px + atr4h * 2, 1)
-        tp2 = round(liq_up * 1.005, 1) if liq_up > px else round(px + atr4h * 3, 1)
+        tp1 = round(liq_up * 0.998, 1) if liq_up > px * 1.005 else round(px + atr4h * 2, 1)
+        tp2 = round(liq_up * 1.005, 1) if liq_up > px * 1.005 else round(px + atr4h * 3, 1)
         rr_str = f"{rr:.2f}" if rr > 0 else "计算中"
         long_line  = f"🟢 多单｜挂单区 ${px*0.997:,.1f}~${px*0.999:,.1f}"
         long_sl    = f"止损${sl_long:,.1f}｜目标${tp1:,.1f}→${tp2:,.1f}"
@@ -502,8 +502,8 @@ def format_vip(d: dict, reasoning: dict) -> str:
         warn = f"{'LSR>2.5猎杀结构，等清算池' if d['lsr_g']>2.5 else f'方向={direction} RR={rr_str}'}"
         bust = f"跌破${sl_long:,.1f}+OI减少作废"
     elif direction == 'SHORT':
-        tp1 = round(liq_dn * 1.002, 1) if liq_dn < px else round(px - atr4h * 2, 1)
-        tp2 = round(liq_dn * 0.995, 1) if liq_dn < px else round(px - atr4h * 3, 1)
+        tp1 = round(liq_dn * 1.002, 1) if 0 < liq_dn < px * 0.995 else round(px - atr4h * 2, 1)
+        tp2 = round(liq_dn * 0.995, 1) if 0 < liq_dn < px * 0.995 else round(px - atr4h * 3, 1)
         rr_str = f"{rr:.2f}" if rr > 0 else "计算中"
         long_line  = "🟢 暂无多单｜等待结构"
         short_line = f"🔴 空单｜挂单区 ${px*1.001:,.1f}~${px*1.003:,.1f}"
@@ -593,8 +593,42 @@ def run_deep_analysis(symbols: list = None) -> str:
             f" {'✅ 方向一致' if d1==d2 or 'WAIT' in (d1,d2) else '⚠️ 方向冲突→以方仓置信度高者为准'}",
         ]
 
-    output.append(f"\n总耗时={round(time.time()-t_total,2)}s")
-    return '\n'.join(output)
+    elapsed = round(time.time()-t_total, 2)
+    output.append(f"\n总耗时={elapsed}s")
+    result = '\n'.join(output)
+
+    # 保存快照（神经感知用）
+    try:
+        snap = {
+            'ts': time.time(), 'elapsed': elapsed,
+            'output': result,
+            'symbols': {sym: {
+                'px': raw_data[sym]['px'],
+                'direction': reasonings[sym]['direction'],
+                'sl_long': reasonings[sym]['sl_long'],
+                'sl_short': reasonings[sym]['sl_short'],
+                'bias': reasonings[sym]['bias'],
+                'council': councils[sym]['verdict'],
+                'vip': format_vip(raw_data[sym], reasonings[sym]),
+            } for sym in symbols}
+        }
+        import json as _j
+        _snap_f = BASE / 'data' / 'deep_analysis_latest.json'
+        _snap_f.write_text(_j.dumps(snap, ensure_ascii=False))
+        for sym in symbols:
+            _vip_f = BASE / 'data' / f'vip_snapshot_{sym.lower()}.json'
+            _vip_f.write_text(_j.dumps({
+                'ts': time.time(), 'sym': sym,
+                'px': raw_data[sym]['px'],
+                'direction': reasonings[sym]['direction'],
+                'vip': format_vip(raw_data[sym], reasonings[sym]),
+                'bias': reasonings[sym]['bias'],
+                'council': councils[sym],
+            }, ensure_ascii=False))
+    except Exception as _se:
+        pass
+
+    return result
 
 
 if __name__ == '__main__':
