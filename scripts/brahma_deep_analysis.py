@@ -191,9 +191,19 @@ def fetch_all(sym: str) -> dict:
         'zf':      sd.get('zero_flip', 0),
         'liq_up':  sd.get('liq_short', 0),
         'liq_dn':  sd.get('liq_long', 0),
+        'liq_up2': sd.get('liq_short2', 0),
+        'liq_dn2': sd.get('liq_long2', 0),
         'iv':      sd.get('iv_rank', 0),
         'bb_width':sd.get('bb_width', 2.0),
         'score':   sd.get('score_final', 0),
+        # OB字段（梵天大脑核心SMC）
+        'ob_list': [o for o in sd.get('ob_list', []) if o.get('valid', True) and o.get('age', 999) < 50],
+        'ob_1h_lo':sd.get('ob_1h_lo', 0),
+        'ob_1h_hi':sd.get('ob_1h_hi', 0),
+        'ob_4h_lo':sd.get('ob_4h_lo', 0),
+        'ob_4h_hi':sd.get('ob_4h_hi', 0),
+        'fvg_magnet':  sd.get('fvg_magnet', 0),
+        'fvg_4h_magnet':sd.get('fvg_4h_magnet', 0) or sd.get('fvg_magnet', 0),
     }
 
 
@@ -310,7 +320,29 @@ def reason_40yr(d: dict) -> dict:
     elif oi_dir == 'FLAT':
         chain.append(('OI', f"FLAT OI8H={oi_8h:+.2f}% = 无明确建仓方向", 0))
 
-    # ⑥ GEX ZeroFlip
+    # ⑥ OB有效性（梵天铁律：age<50且valid才算有效OB）
+    ob_list = d.get('ob_list', [])
+    ob_1h_lo = d.get('ob_1h_lo', 0); ob_1h_hi = d.get('ob_1h_hi', 0)
+    ob_4h_lo = d.get('ob_4h_lo', 0); ob_4h_hi = d.get('ob_4h_hi', 0)
+    if ob_1h_lo > 0:
+        in_ob_1h = ob_1h_lo <= px <= ob_1h_hi
+        ob_age_1h = next((o['age'] for o in ob_list if o.get('tf')=='1H' and o.get('side')=='BULL'), 999)
+        if in_ob_1h:
+            chain.append(('OB1H', f"价格在1H Bull OB内[${ob_1h_lo:,.0f}~${ob_1h_hi:,.0f}] age={ob_age_1h}bar = 支撑区有效，偏多", +2))
+            bias += 2
+        elif px < ob_1h_lo:
+            chain.append(('OB1H', f"价格在1H OB下方${ob_1h_lo:,.0f} = OB未触达，等回踩", 0))
+        else:
+            chain.append(('OB1H', f"价格突破1H OB上沿${ob_1h_hi:,.0f} = OB被消耗，失效", -1))
+            bias -= 1
+    if ob_4h_lo > 0 and ob_4h_lo != ob_1h_lo:
+        in_ob_4h = ob_4h_lo <= px <= ob_4h_hi
+        ob_age_4h = next((o['age'] for o in ob_list if o.get('tf')=='4H'), 999)
+        if in_ob_4h:
+            chain.append(('OB4H', f"价格在4H Bull OB内[${ob_4h_lo:,.0f}~${ob_4h_hi:,.0f}] age={ob_age_4h}bar = 强支撑，主力成本区", +2))
+            bias += 2
+
+    # ⑦ GEX ZeroFlip
     if zf > 0:
         zf_dist = (px - zf) / px * 100
         if abs(zf_dist) < 0.3:
@@ -438,9 +470,25 @@ def format_full(d: dict, reasoning: dict, council: dict) -> str:
         f"【盘口深度】",
         f" 买/卖={d['ba']}x  {'买盘厚✅' if d['ba']>1.5 else '卖盘厚⚡' if d['ba']<0.7 else '均衡'}",
         f"",
-        f"【GEX+FVG+清算】",
+        f"【GEX+FVG+OB+清算】",
         f" GEX ZF=${zf:,.0f}({'站上ZF' if zf_pct>0 else 'ZF下方'} {zf_pct:+.2f}%)",
         f" FVG4H Bull磁铁={fvg_str}",
+    ]
+    # OB显示
+    ob_list = d.get('ob_list', [])
+    ob_1h_lo = d.get('ob_1h_lo',0); ob_1h_hi = d.get('ob_1h_hi',0)
+    ob_4h_lo = d.get('ob_4h_lo',0); ob_4h_hi = d.get('ob_4h_hi',0)
+    if ob_1h_lo > 0:
+        in_ob = '📍在OB内' if ob_1h_lo <= d['px'] <= ob_1h_hi else ('↑OB上方' if d['px'] > ob_1h_hi else '↓OB下方等回踩')
+        age_1h = next((o['age'] for o in ob_list if o.get('tf')=='1H' and o.get('side')=='BULL'), '?')
+        lines.append(f" OB 1H Bull [${ob_1h_lo:,.0f}~${ob_1h_hi:,.0f}] age={age_1h}bar {in_ob}")
+    if ob_4h_lo > 0 and ob_4h_lo != ob_1h_lo:
+        in_ob4 = '📍在OB内' if ob_4h_lo <= d['px'] <= ob_4h_hi else ('↑OB上方' if d['px'] > ob_4h_hi else '↓等回踩')
+        age_4h = next((o['age'] for o in ob_list if o.get('tf')=='4H'), '?')
+        lines.append(f" OB 4H Bull [${ob_4h_lo:,.0f}~${ob_4h_hi:,.0f}] age={age_4h}bar {in_ob4}")
+    # 清算地图（二级清算池也显示）
+    liq_up2 = d.get('liq_up2',0); liq_dn2 = d.get('liq_dn2',0)
+    lines += [
         f" 清算↑${liq_up:,.0f}({up_pct:+.2f}%)  ↓${liq_dn:,.0f}({dn_pct:+.2f}%)",
         f"",
         f"【近4根1H K线】",
