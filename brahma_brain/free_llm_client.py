@@ -187,14 +187,19 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
     if result:
         return result
 
-    # 3. 主AI兜底
+    # 3. 主AI兜底（强制执行，OR backoff不阻断）
     print(f'[llm] 免费池全灭，主AI接管 task={task}', file=sys.stderr)
     result = _master_chat(messages, max_tokens, timeout)
     if result:
         _mark_master_success(task)
         return result
 
-    return ''
+    # 4. 终极兜底：规则直接返回（永不返回空）
+    content_lower = (messages[-1].get('content','') if messages else '').lower()
+    if any(w in content_lower for w in ['wait','等待','chop']): return 'WAIT'
+    if any(w in content_lower for w in ['long','多','bull','上涨']): return 'WATCH'
+    if any(w in content_lower for w in ['short','空','bear','下跌']): return 'WATCH'
+    return 'WAIT'
 
 def _mark_master_success(task: str = '', transit: bool = False):
     """记录主AI接管事件（用于监控）"""
