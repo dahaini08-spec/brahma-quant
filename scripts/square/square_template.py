@@ -193,7 +193,7 @@ def build_battlefield_report(sym, analysis_data):
     lines.extend([
         AI_WATERMARK,
         f'{BRAND_SUFFIX}',
-        f'${sym} #{sym} #合约交易 #永续合约',
+        f'${sym} #{sym}'  # [2026-10-20] BRAND_SUFFIX已含，避免220095超限,
         f'',
         f'{INTERACTION_HOOKS["battlefield"]}',
     ])
@@ -482,7 +482,6 @@ def build_battlefield_report_combined(analysis_by_sym: dict) -> str:
         AI_WATERMARK,
         LIVE_CTA,
         f'{BRAND_SUFFIX}',
-        f'$BTC $ETH #BTC #ETH #合约交易 #永续合约',
         f'',
         f'{INTERACTION_HOOKS["battlefield"]}',
     ])
@@ -716,7 +715,7 @@ def build_signal_alert(sym, chg, price, high, low, vol, fr, ls,
     # 品牌后缀
     lines.append(AI_WATERMARK)
     lines.append(f'{BRAND_SUFFIX}')
-    lines.append(f'${sym} #{sym} #合约交易 #永续合约')
+    lines.append(f'${sym} #{sym}')  # [2026-10-20] BRAND_SUFFIX已含#合约，避免220095超限
     lines.append('')
     lines.append(f'{INTERACTION_HOOKS["signal"]}')
     return '\n'.join(lines)

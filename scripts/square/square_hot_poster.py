@@ -1310,7 +1310,8 @@ def post_to_square(content: str, dry_run: bool = False) -> bool:
     _lines = content.split('\n')
     _lines = [l for l in _lines if not _re2.match(r'^[#$][A-Za-z]', l.strip())]
     content = '\n'.join(_lines).rstrip()
-    _FULL_SUFFIX = f'\n{_LCTA}\n{_BS}\n$BTC $ETH #BTC #ETH #合约交易 #永续合约'
+    # [2026-10-20 苏摩111] BS已含$BTC $ETH，不重复追加
+    _FULL_SUFFIX = f'\n{_LCTA}\n{_BS}'
     # [2026-10-16 苏摩111] 备用池用「不是建议」, 原判断漏检导致双重品牌后缀+220095
     if '仅供参考' not in content and '不是建议' not in content:
         content = f'{content}{_FULL_SUFFIX}'
