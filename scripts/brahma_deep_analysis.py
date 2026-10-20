@@ -53,6 +53,38 @@ def _atr4h(k4h: list) -> float:
 
 # ── Step1: 全量数据拉取（U本位宪法）─────────────────────────────────────
 
+def _get_liq(sym: str, sd: dict, field: str) -> float:
+    """[修复 2026-10-20] liq三级fallback，解决ETH清算位=0的bug"""
+    # 1. state直接字段
+    v = sd.get(field, 0)
+    if v and float(v) > 0:
+        return float(v)
+    # 2. liq_heatmap_{sym}usdt.json
+    try:
+        import json as _j
+        liq_f = BASE / 'data' / f'liq_heatmap_{sym.lower()}usdt.json'
+        if liq_f.exists():
+            liq_d = _j.loads(liq_f.read_text())
+            key_map = {'liq_short': 'nearest_short_liq', 'liq_long': 'nearest_long_liq'}
+            v2 = float(liq_d.get(key_map.get(field, field), 0))
+            if v2 > 0:
+                return v2
+    except Exception:
+        pass
+    # 3. asset_config.json
+    try:
+        import json as _j2
+        ac_f = BASE / 'data' / 'asset_config.json'
+        if ac_f.exists():
+            ac = _j2.loads(ac_f.read_text())
+            v3 = float(ac.get(sym.upper(), {}).get(field, 0))
+            if v3 > 0:
+                return v3
+    except Exception:
+        pass
+    return 0.0
+
+
 def fetch_all(sym: str) -> dict:
     s = sym.upper() + 'USDT'
     with ThreadPoolExecutor(max_workers=8) as ex:
@@ -69,6 +101,7 @@ def fetch_all(sym: str) -> dict:
             'lsr_t':  ex.submit(fetch, f'https://fapi.binance.com/futures/data/topLongShortAccountRatio?symbol={s}&period=5m&limit=3'),
             'lsr_p':  ex.submit(fetch, f'https://fapi.binance.com/futures/data/topLongShortPositionRatio?symbol={s}&period=5m&limit=3'),
             'taker':  ex.submit(fetch, f'https://fapi.binance.com/futures/data/takerlongshortRatio?symbol={s}&period=5m&limit=6'),
+            'taker1m': ex.submit(fetch, f'https://fapi.binance.com/futures/data/takerlongshortRatio?symbol={s}&period=1m&limit=3'),
             'depth':  ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/depth?symbol={s}&limit=20'),
         }
         raw = {k: f.result(timeout=10) for k, f in futs.items()}
@@ -155,6 +188,10 @@ def fetch_all(sym: str) -> dict:
     tak_vals = [round(float(x.get('buySellRatio',1)),3) for x in tak_list]
     tak_now  = tak_vals[-1] if tak_vals else 1
     tak_avg  = round(sum(tak_vals)/len(tak_vals),3) if tak_vals else 1
+    # [修复⑤ 2026-10-20] 1min Taker覆盖tak_now（EU_OPEN高波动期更实时）
+    tak1m = raw.get('taker1m') or []
+    if isinstance(tak1m, list) and tak1m:
+        tak_now = round(float(tak1m[-1].get('buySellRatio', tak_now)), 3)
     tak_trend= '↑' if len(tak_vals)>1 and tak_vals[-1]>tak_vals[0] else '↓'
 
     # 盘口
@@ -189,8 +226,10 @@ def fetch_all(sym: str) -> dict:
         'regime':  sd.get('regime', 'CHOP_MID'),
         'hurst':   sd.get('hurst', 0),
         'zf':      sd.get('zero_flip', 0),
-        'liq_up':  sd.get('liq_short', 0),
-        'liq_dn':  sd.get('liq_long', 0),
+        # [修复 2026-10-20 苏摩111] liq三级fallback:
+        #   1. state直接字段 → 2. liq_heatmap_{sym}usdt.json → 3. asset_config.json
+        'liq_up':  _get_liq(sym, sd, 'liq_short'),
+        'liq_dn':  _get_liq(sym, sd, 'liq_long'),
         'liq_up2': sd.get('liq_short2', 0),
         'liq_dn2': sd.get('liq_long2', 0),
         'iv':      sd.get('iv_rank', 0),
@@ -291,6 +330,31 @@ def reason_40yr(d: dict) -> dict:
     patterns = d['patterns']
     candles = d['candles']
     regime = d['regime']; hurst = d['hurst']
+    # [修复 2026-10-20 苏摩111] Hurst=0时实时计算（ETH state字段缺失bug）
+    if not hurst or hurst == 0:
+        try:
+            import numpy as _np
+            kl = fetch(f"https://fapi.binance.com/fapi/v1/klines?symbol={d['sym']}USDT&interval=1h&limit=60")
+            if kl and len(kl) >= 20:
+                closes = [float(k[4]) for k in kl]
+                lags = [2, 4, 8, 16]
+                rs_vals = []
+                for lag in lags:
+                    sub = closes[-lag*2:]
+                    if len(sub) < lag: continue
+                    series = _np.diff(_np.log([c for c in sub if c > 0]))
+                    mean_s = _np.mean(series)
+                    deviation = _np.cumsum(series - mean_s)
+                    R = _np.max(deviation) - _np.min(deviation)
+                    S = _np.std(series, ddof=1)
+                    if S > 0: rs_vals.append((lag, R/S))
+                if len(rs_vals) >= 2:
+                    x = _np.log([r[0] for r in rs_vals])
+                    y = _np.log([r[1] for r in rs_vals])
+                    hurst = round(float(_np.polyfit(x, y, 1)[0]), 3)
+                    d['hurst'] = hurst
+        except Exception:
+            hurst = 0.55  # 中性兜底，不影响其他维度
 
     chain = []   # 推理链，每条含[信号,结论,权重]
     bias = 0     # 正=偏多 负=偏空
@@ -372,13 +436,25 @@ def reason_40yr(d: dict) -> dict:
     else:
         chain.append(('CVD', f"CVD中性，无明确主力方向", 0))
 
-    # ⑤ OI资金流
+    # ⑤ OI资金流 + CVD仲裁 [修复 2026-10-20 苏摩111]
+    # OI是领先指标（建仓意图），CVD/Taker是实时方向，两者矛盾时OI优先
+    cvd_net_count = d.get('cvd_net', 0)   # 净买K线数（>0=主力买，<0=主力卖）
+    oi_taker_agree = (
+        (oi_dir in ('BUILD','LONG_BUILD') and tak >= 1.0) or
+        (oi_dir in ('SHORT_BUILD','UNWIND') and tak <= 1.0)
+    )
     if oi_dir == 'SHORT_BUILD' and tak < 0.8:
-        chain.append(('OI', f"SHORT_BUILD+Taker卖 = 主力主动建空仓，方向向下", -2))
-        bias -= 2
+        chain.append(('OI', f"SHORT_BUILD+Taker卖{tak:.2f} = 主力主动建空，方向向下⚡", -2)); bias -= 2
+    elif oi_dir == 'SHORT_BUILD' and tak >= 1.0:
+        # OI vs Taker矛盾：空头建仓但主动买 = 警告
+        chain.append(('OI矛盾⚠️', f"OI空头建仓但Taker={tak:.2f}主动买 = 信号冲突，降级中性", 0))
+    elif oi_dir in ('BUILD','LONG_BUILD') and tak >= 1.1:
+        chain.append(('OI+Taker共振', f"OI建仓{oi_8h:+.2f}%+Taker={tak:.2f} = 主力真实多头⚡", +2)); bias += 2
+    elif oi_dir in ('BUILD','LONG_BUILD') and tak < 0.85:
+        # OI多头建仓但Taker净卖 = 可能是空头建仓（不对称解读）
+        chain.append(('OI矛盾⚠️', f"OI BUILD{oi_8h:+.2f}%但Taker={tak:.2f}净卖 = 空头建仓概率高", -1)); bias -= 1
     elif oi_dir == 'LONG_UNWIND' and tak > 1.2:
-        chain.append(('OI', f"LONG_UNWIND+Taker买 = 逼空行情，空头被迫平仓", +1))
-        bias += 1
+        chain.append(('OI', f"LONG_UNWIND+Taker买 = 逼空行情", +1)); bias += 1
     elif oi_dir == 'FLAT':
         chain.append(('OI', f"FLAT OI8H={oi_8h:+.2f}% = 无明确建仓方向", 0))
 
@@ -432,13 +508,26 @@ def reason_40yr(d: dict) -> dict:
         rsi_prev = d.get('rsi_4h', 50)  # 用4H RSI近似前期RSI
         price_falling = prices[-1] < prices[0]
         price_rising  = prices[-1] > prices[0]
-        # 看涨背离：价格新低但RSI未新低（>30）
-        if price_falling and rsi_now > 28 and rsi_now < 45:
-            chain.append(('RSI背离', f"价格↓新低但RSI={rsi_now}未破超卖 = 看涨背离⚡ 底部反转信号", +2))
+        # 看涨背离：多周期交叉验证（修复①：4根K线窗口不足→改为双周期交叉）
+        # 条件：价格(1H)下跌 + RSI_1H偏低但未破超卖 + RSI_4H同样未破超卖(双周期确认)
+        rsi_4h = d.get('rsi_4h', 50)
+        # 真实背离：1H价格新低 + 1H RSI不创新低(与4H对比，4H RSI > 1H RSI + 2)
+        real_divergence = (price_falling and rsi_now > 28 and rsi_now < 45
+                           and rsi_4h > rsi_now  # 4H RSI高于1H = 1H超跌背离
+                           and rsi_4h < 55)       # 4H RSI不能太高（排除强势行情误判）
+        if real_divergence:
+            chain.append(('RSI背离', f"1H价格↓新低RSI={rsi_now} 4H={rsi_4h}未破超卖 = 双周期背离⚡", +2))
             bias += 2
-        # 看跌背离：价格新高但RSI未新高（<75）
+        elif price_falling and rsi_now > 28 and rsi_now < 42:
+            # 单周期弱信号（不加bias，仅显示）
+            chain.append(('RSI弱背离', f"价格↓RSI={rsi_now}偏低但需双周期确认", 0))
+        # 看跌背离：双周期交叉验证（修复①升级）
         elif price_rising and rsi_now < 72 and rsi_now > 55:
-            chain.append(('RSI背离', f"价格↑新高但RSI={rsi_now}未破超买 = 看跌背离⚡ 顶部反转信号", -1))
+            rsi_4h_b = d.get('rsi_4h', 50)
+            if rsi_4h_b < rsi_now and rsi_4h_b > 45:
+                chain.append(('RSI看跌背离', f"1H价格↑RSI={rsi_now} 4H={rsi_4h_b}背离确认 = 顶部信号⚡", -2))
+            else:
+                chain.append(('RSI弱顶背离', f"价格↑RSI={rsi_now}偏高，待4H确认", 0))
             bias -= 1
 
     # ⑤.2 HAR-RV波动率边界（P0②）
