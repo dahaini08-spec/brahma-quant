@@ -461,6 +461,39 @@ def reason_40yr(d: dict) -> dict:
     chain = []   # 推理链，每条含[信号,结论,权重]
     bias = 0     # 正=偏多 负=偏空
 
+    # ══ Step-1: 预判型矩阵 [2026-10-20 苏摩111] ══
+    # 40年核心：找"蓄力完成但未爆发"的结构，比确认信号早30min~4H
+    bb_w_pre  = d.get('bb_width', 2.0)
+    oi_dir_pre = d.get('oi_dir', 'FLAT')
+    oi_8h_pre  = d.get('oi_8h', 0)
+    tak_pre    = d.get('tak', 1.0)
+    lsr_g_pre  = d.get('lsr_g', 1.0)
+    lsr_max_pre= d.get('lsr_g_24h_max', lsr_g_pre)
+    fr_pre     = float(d.get('fr', 0))
+    liq_dn_pre = d.get('liq_dn', 0)
+    px_pre     = d.get('px', 1)
+    dn_dist_pre= (px_pre-liq_dn_pre)/px_pre*100 if liq_dn_pre>0 and px_pre>0 else 99
+
+    # 蓄力爆发（BB收窄+OI平台+Taker中性 = 主力悄悄建仓）
+    amb_score = 0; amb_flags = []
+    if bb_w_pre < 0.8:  amb_score+=1; amb_flags.append(f"BB={bb_w_pre:.2f}%极窄")
+    if oi_dir_pre=='FLAT' and abs(oi_8h_pre)<0.5: amb_score+=1; amb_flags.append("OI平台建仓")
+    if 0.7 < tak_pre < 1.3: amb_score+=1; amb_flags.append(f"Taker={tak_pre:.2f}中性蓄力")
+    if amb_score >= 3:
+        chain.append(('蕃力预判', f"P0⚡⚡ {'+'.join(amb_flags)} = 主力情情建仓，爆发在即！等催化剂", 0))
+    elif amb_score == 2:
+        chain.append(('蕃力预判', f"P1⚡ {'+'.join(amb_flags)} = 蕃力结构形成中，关注触发", 0))
+
+    # 猎杀预判（LSR极值+FR转负+清算近 = 猎杀结构就绪）
+    hunt_score = 0; hunt_flags = []
+    if lsr_g_pre >= lsr_max_pre*0.95 and lsr_g_pre > 2.5: hunt_score+=1; hunt_flags.append(f"LSR={lsr_g_pre:.2f}接近极值")
+    if fr_pre < 0: hunt_score+=1; hunt_flags.append(f"FR={fr_pre*100:+.4f}%转负")
+    if dn_dist_pre < 3.0: hunt_score+=1; hunt_flags.append(f"清算{dn_dist_pre:.1f}%近")
+    if hunt_score >= 2:
+        lv = 'P0⚡⚡' if hunt_score==3 else 'P1⚡'
+        chain.append(('猎杀预判', f"{lv} {'+'.join(hunt_flags)} = 猎杀结构就绪，等Taker<0.5确认", -1 if hunt_score==3 else 0))
+        if hunt_score == 3: bias -= 1
+
     # ① K线结构读取
     if candles:
         last = candles[-1]
