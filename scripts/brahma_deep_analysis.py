@@ -246,6 +246,13 @@ def fetch_all(sym: str) -> dict:
 
 def enrich(d: dict) -> dict:
     sym = d['sym']
+    # 自动注入最新state（修复断裂点①：state过期问题）
+    try:
+        from brahma_state_refresh import _inject_gex_to_state, _inject_fangcang_to_state
+        _inject_gex_to_state()
+        _inject_fangcang_to_state()
+    except Exception:
+        pass
     try:
         import fangcang_engine as fe
         fe._CACHE_LOADED = False; fe._FANGCANG_CACHE = []

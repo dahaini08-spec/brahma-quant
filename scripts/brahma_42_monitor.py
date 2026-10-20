@@ -249,6 +249,22 @@ def run_monitor(mode: str = 'quick') -> str:
 
     result_str = '\n'.join(lines)
 
+    # ── 断裂点③修复：S级信号自动触发deep_analysis推送VIP ─────────
+    if s_list and mode in ('deep','signal'):
+        # S级标的：自动跑深度分析获取精准VIP策略
+        s_syms = [sym for sym, _ in s_list[:2]]  # 最多2个防内存峰值
+        try:
+            from brahma_deep_analysis import run_deep_analysis
+            deep_out = run_deep_analysis(s_syms)
+            # 提取VIP卡片行
+            vip_lines = [l for l in deep_out.splitlines() if '姓赵' in l or '止损' in l or '多单' in l or '空单' in l]
+            if vip_lines:
+                lines.append('[S级自动深度策略]')
+                lines.extend(vip_lines[:8])
+                result_str = '\n'.join(lines)
+        except Exception as e:
+            pass
+
     # ── 免费AI增强层（Groq qwen3.8-27b全力利用）──────────────────
     if s_list and mode in ('deep','signal'):
         # S级标的：用Groq一句话摘要（免费，0.24s/次）
