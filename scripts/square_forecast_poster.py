@@ -85,6 +85,7 @@ ETH：震荡区间 ${eth_dn:,.2f}~${eth_up:,.2f}
 
 关注我，每晚21:00直播+SMC教学
 注册享20%手续费折扣 🔗 www.bsmkweb.cc/register?ref=XZBX666
+$BTC $ETH #BTC #ETH #合约交易 #永续合约
 🌿 姓赵不宣 | 仅供参考"""
 
 
@@ -123,6 +124,7 @@ ETH ${eth_now:,.2f}（{eth_chg:+.1f}%）
 
 关注我，每晚21:00直播+SMC教学
 注册享20%手续费折扣 🔗 www.bsmkweb.cc/register?ref=XZBX666
+$BTC $ETH #BTC #ETH #合约交易 #永续合约
 🌿 姓赵不宣 | 仅供参考"""
 
 

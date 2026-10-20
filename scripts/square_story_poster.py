@@ -30,7 +30,11 @@ SQUARE_KEY = _gsk('auto_post')
 SQUARE_URL = 'https://www.binance.com/bapi/composite/v1/public/pgc/openApi/content/add'
 _ssl_ctx   = ssl.create_default_context()
 
-BRAND = '关注我，每晚21:00直播+SMC教学\n注册享20%手续费折扣 🔗 www.bsmkweb.cc/register?ref=XZBX666\n🌿 姓赵不宣 | 仅供参考'
+# [2026-10-20 苏摩111] 改用square_template.BRAND_SUFFIX，自动包含$BTC $ETH
+BRAND = ('关注我，每晚21:00直播+SMC教学\n'
+         '注册享20%手续费折扣 🔗 www.bsmkweb.cc/register?ref=XZBX666\n'
+         '🌿 姓赵不宣 | 仅供参考\n'
+         '$BTC $ETH #BTC #ETH #合约交易 #永续合约')
 
 # ═══════════════════════════════════════════════════════════════
 # 叙事帖库（8条，约每8周轮换一圈）

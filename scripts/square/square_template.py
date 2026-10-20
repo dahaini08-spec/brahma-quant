@@ -35,7 +35,10 @@ UTC = timezone.utc
 # ═══════════════════════════════════════════════════════════════
 
 BRAND_PREFIX = ''  # 顶端不出现IP，放在后缀
-BRAND_SUFFIX = '注册享20%手续费折扣 🔗 www.bsmkweb.cc/register?ref=XZBX666\n🌿 姓赵不宣 | 仅供参考'
+# [2026-10-20 苏摩111] 强制追加U本位合约币种标注，全库自动生效
+BRAND_SUFFIX = ('注册享20%手续费折扣 🔗 www.bsmkweb.cc/register?ref=XZBX666\n'
+                '🌿 姓赵不宣 | 仅供参考\n'
+                '$BTC $ETH #BTC #ETH #合约交易 #永续合约')
 LIVE_CTA = '关注我，每晚21:00直播+SMC教学'  # [2026-09-30 苏摩111] 发帖清单#2：签名前必须带CTA，全库原缺失
 REFERRAL_CTA = '🔗 开通币安：www.bsmkweb.cc/register?ref=XZBX666'  # [2026-10-03 苏摩111] 苏摩那件码，全库自动植入
 AI_WATERMARK = ''  # [2026-10-03 苏摩111] 禁止出现AI生成水印

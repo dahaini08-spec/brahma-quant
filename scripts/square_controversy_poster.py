@@ -94,7 +94,10 @@ _CONTROVERSY_TOPICS = [
     },
 ]
 
-BRAND_SUFFIX = '关注我，每晚21:00直播+SMC教学\n注册享20%手续费折扣 🔗 www.bsmkweb.cc/register?ref=XZBX666\n🌿 姓赵不宣 | 仅供参考'
+BRAND_SUFFIX = ('关注我，每晚21:00直播+SMC教学\n'
+                '注册享20%手续费折扣 🔗 www.bsmkweb.cc/register?ref=XZBX666\n'
+                '🌿 姓赵不宣 | 仅供参考\n'
+                '$BTC $ETH #BTC #ETH #合约交易 #永续合约')
 
 
 def build_controversy_post(topic: dict) -> str:
