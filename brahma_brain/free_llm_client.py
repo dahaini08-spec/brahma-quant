@@ -315,7 +315,10 @@ def council_three_way(
     counts = Counter(votes.values())
     winner = counts.most_common(1)[0][0]
     agree  = counts[winner]
-    conf   = 'HIGH' if agree == 3 else ('MED' if agree == 2 else 'LOW')
+    # [修复W6-W8 2026-10-20] 规则兜底时明确标注
+    conf = ('RULE_FALLBACK' if not free_available
+            else 'HIGH' if agree == 3
+            else ('MED' if agree == 2 else 'LOW'))
 
     return {
         'verdict': winner,

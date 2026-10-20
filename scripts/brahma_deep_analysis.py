@@ -71,6 +71,22 @@ def _calc_atr(klines, fallback: float = 200.0, n: int = 14) -> float:
         return fallback
 
 
+def _parse_ob(ob_list, tf: str, side: str) -> float:
+    """[修复W2/W3 2026-10-20] 从ob_list直接解析OB价格位（兼容多种格式）"""
+    if not ob_list: return 0.0
+    obs = ob_list if isinstance(ob_list, list) else []
+    for ob in obs:
+        if not isinstance(ob, dict): continue
+        ob_tf = ob.get('timeframe', ob.get('tf', ob.get('interval', '')))
+        if tf not in str(ob_tf): continue
+        if side == 'lo':
+            v = ob.get('lo', ob.get('low', ob.get('bottom', ob.get('price_lo', 0))))
+        else:
+            v = ob.get('hi', ob.get('high', ob.get('top', ob.get('price_hi', 0))))
+        if v and float(v) > 0: return round(float(v), 2)
+    return 0.0
+
+
 def _get_liq(sym: str, sd: dict, field: str) -> float:
     """[修复 2026-10-20] liq三级fallback，解决ETH清算位=0的bug"""
     # 1. state直接字段
@@ -307,10 +323,11 @@ def fetch_all(sym: str) -> dict:
         'score':   sd.get('score_final', 0),
         # OB字段（梵天大脑核心SMC）
         'ob_list':  [o for o in sd.get('ob_list', []) if o.get('valid', True) and o.get('age', 999) < 50],
-        'ob_1h_lo': sd.get('ob_1h_lo', 0),
-        'ob_1h_hi': sd.get('ob_1h_hi', 0),
-        'ob_4h_lo': sd.get('ob_4h_lo', 0),
-        'ob_4h_hi': sd.get('ob_4h_hi', 0),
+        # [修复W2/W3 2026-10-20] 从ob_list直接解析1H/4H OB位置（不依赖缺失的分解字段）
+        'ob_1h_lo': _parse_ob(sd.get('ob_list'), '1h', 'lo'),
+        'ob_1h_hi': _parse_ob(sd.get('ob_list'), '1h', 'hi'),
+        'ob_4h_lo': _parse_ob(sd.get('ob_list'), '4h', 'lo'),
+        'ob_4h_hi': _parse_ob(sd.get('ob_list'), '4h', 'hi'),
         # P0① 多周期FVG磁铁共振
         'fvg_15m_magnet': sd.get('fvg_15m_magnet', 0),
         'fvg_1h_magnet':  sd.get('fvg_1h_magnet', 0),
@@ -537,6 +554,17 @@ def reason_40yr(d: dict) -> dict:
         chain.append(('OI7D', f"7日OI萎缩{oi_7d:+.1f}% = 主力持续撤离，趋势减弱⚡", -2)); bias -= 2
     elif oi_7d_dir == 'EXPAND' and oi_7d > 5:
         chain.append(('OI7D', f"7日OI扩张{oi_7d:+.1f}% = 主力持续建仓，趋势强化", +1)); bias += 1
+
+    # ④.6.5 FR趋势判断（基于d字段，无需raw）[修复 2026-10-20 苏摩111]
+    fr_now   = float(d.get('fr', 0))
+    fr_basis = float(d.get('basis', 0))
+    # FR + 基差联合判断：双负 = 空头加速建仓
+    if fr_now < -0.001 and fr_basis < -0.03:
+        chain.append(('FR趋势', f"FR={fr_now:+.4f}%负值+基差{fr_basis:+.4f}% = 空头双重建仓加速⚡", -2)); bias -= 2
+    elif fr_now < 0:
+        chain.append(('FR趋势', f"FR={fr_now:+.4f}%转负 = 空头开始付费，空头信心增强", -1)); bias -= 1
+    elif fr_now > 0.01:
+        chain.append(('FR趋势', f"FR={fr_now:+.4f}%偏高 = 多头过热，回调风险", -1)); bias -= 1
 
     # ④.7 MACD趋势（新增 2026-10-20）
     macd1h_dir = d.get('macd1h_dir','FLAT')
