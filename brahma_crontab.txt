@@ -278,6 +278,8 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 0 15 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_opinion_poster.py >> logs/syscron.log 2>&1
 # [2026-10-11 苏摩111] 争议帖：每周二/五 北京11:00(UTC03:00)
 0 3 * * 2,5 cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_controversy_poster.py >> logs/syscron.log 2>&1
+# [2026-10-20 苏摩111] 叙事帖：每周三 北京21:00(UTC13:00)
+0 13 * * 3 cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_story_poster.py >> logs/syscron.log 2>&1
 # [2026-10-11 苏摩111] 存档预测帖：周一北京09:00(UTC01:00) + 周日验证北京21:00(UTC13:00)
 0 1 * * 1 cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_forecast_poster.py --mode archive >> logs/syscron.log 2>&1
 0 13 * * 0 cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/square_forecast_poster.py --mode verify >> logs/syscron.log 2>&1
